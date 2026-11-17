@@ -6,13 +6,13 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it } from 'vitest';
 import { closedDetailOf } from '../../../../tests/support/closed-detail-fixtures.ts';
-import { openDetailAt, openDetailOf, openDetailUncovered, PC1, PC2, PC3, pc3Excess, X1, X2 } from '../../../../tests/support/open-detail-fixtures.ts';
+import { openDetailAt, openDetailOf, PC1, PC2, PC3, pc3Excess, X1, X2 } from '../../../../tests/support/open-detail-fixtures.ts';
 import { optionOpenDetail } from '../../../../tests/support/option-detail-fixtures.ts';
 import { OC_PC1, OC_PC2, OC_X1, OS_S1, OS2_S1 } from '../../../../tests/support/option-trade-fixtures.ts';
 import { plannedDetail } from '../../../../tests/support/views-fixtures.ts';
 import type { Instrument } from '../../../domain/instrument/index.ts';
 import type { TodayReplay } from '../../cockpit/drawers/today.props.ts';
-import { CurrentMarksOnly, TodayDrawer } from '../../cockpit/drawers/today.tsx';
+import { CurrentMarksOnly } from '../../cockpit/drawers/today.tsx';
 import { available, MON_CLOSE, openDrawer, renderView, termValue, THURSDAY, tuesday, useFixedClock } from './test-support.ts';
 
 afterEach(cleanup);
@@ -28,87 +28,28 @@ function currentMarks(panel: HTMLElement): HTMLElement {
 describe("Trade Detail: the legacy blocks' figures in one place (revision 96)", () => {
   // The option Trade's cases read the current year from the clock, so it is fixed.
   useFixedClock();
-  it("should show each Instrument's current Mark with its date, source and saved time, and any correction, in the Today drawer", async () => {
-    const user = userEvent.setup();
-    renderView(openDetailAt([PC1, PC2], tuesday(available('52.00', { correctionReason: 'Typo in the first save.' }))));
-    await openDrawer(user, 'Today');
-    const card = currentMarks(screen.getByRole('tabpanel', { name: 'Today' }));
-    expect(termValue(card, 'Mark')).toBe('$52.00');
-    expect(termValue(card, 'Source')).toBe('Manual');
-    expect(termValue(card, 'Saved')).toBe('2026-10-13 17:30');
-    expect(within(card).getByText('Corrected', { selector: '.badge' })).toBeTruthy();
-    expect(within(card).getByText('Typo in the first save.')).toBeTruthy();
-    cleanup();
-
-    renderView(openDetailAt([PC1, PC2], tuesday(available('52.00'))));
-    await openDrawer(user, 'Today');
-    expect(within(currentMarks(screen.getByRole('tabpanel', { name: 'Today' }))).queryByText('Corrected')).toBeNull();
-    cleanup();
-
-    // Where the comparison shows the Mark with its provenance (the replay T8P.22 passes), the card does not show it twice.
-    const xyz: Instrument = { kind: 'Stock', symbol: 'XYZ' };
-    const marked = (price: string): TodayReplay['sessions'][number]['marks'][number] => ({
-      instrument: xyz,
-      resolution: { kind: 'Available', mark: { price, source: 'Manual', savedAt: '2026-10-13T21:30:00Z' } },
-      change: null,
-    });
-    const replay: TodayReplay = {
-      instruments: [xyz],
-      sessions: [
-        { date: '2026-10-12', marks: [marked('51.20')] },
-        { date: '2026-10-13', marks: [marked('52.00')] },
-      ],
-    };
-    const { container } = render(
-      <MemoryRouter>
-        <TodayDrawer view={openDetailAt([PC1, PC2], tuesday(available('52.00')))} timeZone="America/New_York" replay={replay} />
-      </MemoryRouter>,
-    );
-    expect(screen.getByRole('table', { name: 'Marks: Tue Oct 13 against Mon Oct 12' })).toBeTruthy();
-    for (const term of ['Mark', 'Source', 'Saved']) expect(within(container).queryByText(term, { selector: 'dt' })).toBeNull();
-    expect(termValue(currentMarks(container), 'Expected Mark Date')).toBe('Tue Oct 13');
-  });
-
-  it("should show a missing Mark's Instrument and date with any older Stale context, and an acknowledged one as the trader's acknowledgment, not a price", async () => {
+  // T8R.6 (W29): Today's one Marks table replaces the current-Marks card on an Open Detail. T8P.31's cases for the Mark with its Source, Saved
+  // and correction, the Underlying Mark and the Expected Mark Date retire: the table's cases are in today.props.test.ts, and each Mark's
+  // provenance and correction are Price History's (T8R.4). The Stale context and the acknowledgment stay, under the table.
+  it("should show a missing Mark's Stale context and an acknowledged one as the trader's acknowledgment, not a price, in the Today drawer, with no Mark-missing link", async () => {
     const user = userEvent.setup();
     const monContext = { tradingDate: '2026-10-12', price: '51.20', revisionId: 'm-0', revisionNumber: 1, closeInstant: MON_CLOSE };
     renderView(openDetailAt([PC1, PC2], tuesday({ kind: 'Missing', stale: monContext })));
     await openDrawer(user, 'Today');
-    const missing = currentMarks(screen.getByRole('tabpanel', { name: 'Today' }));
-    // The Review opens this Trade's card, not another Trade's on the same Instrument.
-    expect(within(missing).getByRole('link', { name: 'Mark missing for XYZ on Tue Oct 13' }).getAttribute('href')).toBe('/review?trade=trade-1&instrument=XYZ');
+    const missing = screen.getByRole('tabpanel', { name: 'Today' });
     expect(within(missing).getByText('Stale context: $51.20 from Mon Oct 12 close (stale, not used in any current figure)')).toBeTruthy();
+    expect(within(missing).queryByRole('link', { name: /Mark missing for/, hidden: true })).toBeNull();
+    expect(missing.querySelector('.current-marks')).toBeNull();
     cleanup();
 
     const acknowledgment = { versionId: 'ack-1', kind: 'Asserted', observedAt: '2026-10-13T21:00:00Z', savedAt: '2026-10-13T21:30:00Z' };
     renderView(openDetailAt([PC1, PC2], tuesday({ kind: 'AcknowledgedUnavailable', acknowledgment, stale: monContext } as never)));
     await openDrawer(user, 'Today');
-    const acknowledged = currentMarks(screen.getByRole('tabpanel', { name: 'Today' }));
+    const acknowledged = screen.getByRole('tabpanel', { name: 'Today' });
     expect(within(acknowledged).getByText('Mark acknowledged unavailable for XYZ on Tue Oct 13: your acknowledgment, not a price')).toBeTruthy();
     expect(within(acknowledged).queryByRole('link', { hidden: true })).toBeNull();
     expect(within(acknowledged).queryByText(/Mark missing for/)).toBeNull();
     expect(within(acknowledged).getByText(/^Stale context: \$51\.20/)).toBeTruthy();
-  });
-
-  it('should show the Underlying Mark and the Expected Mark Date with the current Marks', async () => {
-    const user = userEvent.setup();
-    renderView(openDetailAt([PC1, PC2], tuesday(available('52.00'))));
-    await openDrawer(user, 'Today');
-    expect(termValue(currentMarks(screen.getByRole('tabpanel', { name: 'Today' })), 'Expected Mark Date')).toBe('Tue Oct 13');
-    cleanup();
-
-    renderView(optionOpenDetail('O-C', [OC_PC1, OC_PC2, OC_X1], THURSDAY));
-    await openDrawer(user, 'Today');
-    const option = currentMarks(screen.getByRole('tabpanel', { name: 'Today' }));
-    expect(termValue(option, 'Underlying Mark')).toBe('$52.00 · Manual');
-    cleanup();
-
-    // Outside the market calendar no Mark is expected: no date, and no card with nothing in it.
-    renderView(openDetailUncovered([PC1, PC2], '2031-01-02'));
-    await openDrawer(user, 'Today');
-    const panel = screen.getByRole('tabpanel', { name: 'Today' });
-    expect(panel.querySelector('.current-marks')).toBeNull();
-    expect(within(panel).queryByText('Expected Mark Date')).toBeNull();
   });
 
   it('should show the Trade Summary in the Position drawer on a Closed Detail and in the Plan and Risk drawer on a Planned one', async () => {

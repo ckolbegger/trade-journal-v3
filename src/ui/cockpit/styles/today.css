@@ -8,15 +8,8 @@
   color: var(--info-ink);
 }
 
-.cockpit-drawers table.trades .provenance {
-  display: block;
-  font-size: 0.78rem;
-  font-weight: 400;
-  color: var(--muted);
-}
-
-/* T8P.23-B14: the comparison fits its box on a phone, so the current Marks and their change show without a sideways scroll. The label
-   column is not pinned and wraps, the cells are tight, and a provenance wraps below its figure. */
+/* T8P.23-B14: the Marks table fits its box on a phone, so its columns show without a sideways scroll. The label column is not pinned
+   and wraps, and the cells are tight. */
 @media (max-width: 959.98px) {
   .cockpit-drawers table.trades[aria-labelledby='today-marks-heading'] th,
   .cockpit-drawers table.trades[aria-labelledby='today-marks-heading'] td {
@@ -41,10 +34,6 @@
     min-width: 0;
     max-width: none;
     border-right: 0;
-  }
-
-  .cockpit-drawers table.trades[aria-labelledby='today-marks-heading'] .provenance {
-    font-size: 0.72rem;
   }
 
   .cockpit-drawers table.trades[aria-labelledby='today-marks-heading'] thead th {

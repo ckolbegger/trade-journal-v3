@@ -18,7 +18,7 @@ test.describe('B4.14 Breach, overrun, and intraday lines', () => {
 
     // Monday 17:00, Mark 47.00 below the Stop at 47.50.
     await openDrawer(page, 'Today');
-    await expect(detail.todayFigure(page, 'Mark')).toHaveText('$47.00');
+    await expect(detail.marksCell(page, 'XYZ Mark', 'Today')).toHaveText('$47.00');
     await expect(conditionFigure(page, STOP)).toHaveText('Breached');
     await expect(detail.conditionBlock(page, STOP).locator('.condition-text')).toHaveText(STOP);
     await expect(detail.conditionBlock(page, STOP).locator('.condition-why')).toContainText('$50.00 (0.20R) of Trade P&L past this Stop');

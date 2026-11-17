@@ -7,8 +7,8 @@ test.use({ actionTimeout: 15_000 });
 const CALL = 'XYZ Nov 20 $55 Call';
 const WIDTHS = [375, 320] as const;
 
-// T8P.23-B14 and B14-B1 (W8): at 375 and 320 px the comparison's current column and its Change lie inside the scroll box at load, and
-// no figure, sign, date or time breaks inside itself (text wraps only at spaces).
+// T8P.23-B14 and B14-B1 (W8), amended by T8R.6 (W29): at 375 and 320 px the Marks table's Today, Yesterday and Change columns lie inside the
+// scroll box at load, and no figure, sign, heading or date breaks inside itself (text wraps only at spaces).
 async function openTodayComparison(page: Page, tradeId: string): Promise<Locator> {
   await page.goto(`/trades/${tradeId}`);
   await expect(detail.heading(page, 'XYZ')).toBeVisible();
@@ -20,11 +20,11 @@ async function openTodayComparison(page: Page, tradeId: string): Promise<Locator
   return region;
 }
 
-// The cells of the current and Change columns (header and body) that reach outside the scroll box's visible rect.
+// The cells of the Today, Yesterday and Change columns (header and body) that reach outside the scroll box's visible rect.
 const cellsOutside = (region: Locator) =>
   region.evaluate((box) => {
     const frame = box.getBoundingClientRect();
-    const cells = [...box.querySelectorAll('tr')].flatMap((row) => [...row.children].slice(2));
+    const cells = [...box.querySelectorAll('tr')].flatMap((row) => [...row.children].slice(1));
     return cells
       .filter((cell) => {
         const r = cell.getBoundingClientRect();
@@ -74,7 +74,7 @@ async function expectFitsWhole(page: Page, region: Locator): Promise<void> {
 }
 
 test.describe('T8P.23-B14 the Today comparison at narrow widths', () => {
-  test('should show the current date column and the Change column inside the comparison scroll box at 375 and 320 px, with no sideways page scroll', async ({ profile }) => {
+  test('should show the Today, Yesterday and Change columns inside the Marks table scroll box at 375 and 320 px, with no sideways page scroll', async ({ profile }) => {
     test.setTimeout(300_000);
     const { context: setup, page: setupPage } = await onboardedAt(profile, MONDAY_1700);
     await confirmOptionPlan(setupPage, { ...OC, planTime: '2026-10-12T09:00' });
@@ -100,7 +100,7 @@ test.describe('T8P.23-B14 the Today comparison at narrow widths', () => {
     await context.close();
   });
 
-  test('should keep a three-digit stock Mark, a negative change and the provenance date and time whole at 375 and 320 px', async ({ profile }) => {
+  test('should keep a three-digit stock Mark, a negative change and the column headings whole at 375 and 320 px', async ({ profile }) => {
     test.setTimeout(300_000);
     const { context: setup, page: setupPage } = await onboardedAt(profile, MONDAY_1700);
     const xyz = { symbol: 'XYZ', tradeId: await createTradeAt(setupPage, { ...PLAN, symbol: 'XYZ', quantity: '100', entry: '400', stop: '380', target: '450' }, '2026-10-12T09:30', [['100', '400.00', '2026-10-12T10:00']]) };

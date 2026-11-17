@@ -36,8 +36,11 @@ const debt: TradeDetailDebt = {
 };
 
 // XYZ valued at Thursday's Mark of 53.00, with one reflection owed.
-const thursday = (journal: readonly TradeDetailDebt[] = [debt]) =>
-  openDetailAt([PC1, PC2], { instrumentKey: 'XYZ', tradingDate: '2026-10-15', closeInstant: '2026-10-15T20:00:00Z', previousCloseInstant: '2026-10-14T20:00:00Z', resolution: available('53.00') }, { journal });
+const thursday = (journal: readonly TradeDetailDebt[] = [debt]) => ({
+  ...openDetailAt([PC1, PC2], { instrumentKey: 'XYZ', tradingDate: '2026-10-15', closeInstant: '2026-10-15T20:00:00Z', previousCloseInstant: '2026-10-14T20:00:00Z', resolution: available('53.00') }, { journal }),
+  // A232: the Today table's column dates, which Trade Views names (T8R.21).
+  marksColumns: { today: { date: '2026-10-15', next: false }, yesterday: '2026-10-14' },
+});
 
 const markOf = (price: string | undefined) => ({
   instrument: STOCK,
@@ -138,8 +141,10 @@ describe('Trade Detail: the replay read (P95)', () => {
     expect(await within(rail).findByText('+$200.00 since Mon Oct 12')).toBeTruthy();
     expect(facade.TradeViewsAndReporting.replayTrade).toHaveBeenCalledTimes(1);
     expect(facade.TradeViewsAndReporting.replayTrade).toHaveBeenCalledWith({ tradeId: 'trade-1', binding: BINDING });
-    // The Today comparison.
-    expect(within(screen.getByRole('tabpanel', { name: 'Today' })).getByRole('heading', { name: 'Marks: Thu Oct 15 against Mon Oct 12' })).toBeTruthy();
+    // The Today table: Thursday's Mark from the replay, and Wednesday, which had none, a dash.
+    const marksTable = within(screen.getByRole('tabpanel', { name: 'Today' })).getByRole('table', { name: 'Marks' });
+    expect(within(marksTable).getAllByRole('columnheader').map((cell) => cell.textContent)).toEqual(['Today, Thu Oct 15', 'Yesterday, Wed Oct 14', 'Change']);
+    expect(within(within(marksTable).getAllByRole('row')[1]!).getAllByRole('cell').map((cell) => cell.textContent)).toEqual(['$53.00', '—', '—']);
     // The tabs carry W1's counts: the sessions without Marks and the reflections owed.
     expect(within(screen.getByRole('tab', { name: 'Price History' })).getByText('2')).toBeTruthy();
     expect(within(screen.getByRole('tab', { name: 'Journal' })).getByText('1 owed')).toBeTruthy();
@@ -239,15 +244,15 @@ describe('Trade Detail: the replay read (P95)', () => {
     expect(onePlace('Entry')).toBe('drawer-panel-plan-and-risk');
     expect(onePlace('Risk to stop')).toBe('drawer-panel-plan-and-risk');
     expect(onePlace('Reward to target')).toBe('drawer-panel-plan-and-risk');
-    expect(onePlace('Expected Mark Date')).toBe('drawer-panel-today');
-    for (const term of ['Mark', 'Source', 'Saved']) expect(screen.queryAllByText(term, { selector: 'dt' }), term).toEqual([]);
+    // W29: Today's table shows the Marks, so the Expected Mark Date, Source and Saved are gone, hidden drawer panels included.
+    for (const term of ['Expected Mark Date', 'Mark', 'Source', 'Saved']) expect(screen.queryAllByText(term, { selector: 'dt' }), term).toEqual([]);
     cleanup();
 
-    // Without a comparison (the replay is not applicable) the current Marks stand in Today, once.
+    // Without a replay (not applicable) there is no table, and still no current-Marks card.
     show({ replayResult: { kind: 'NotApplicable', reason: 'NeverExposed' } });
     await screen.findByRole('region', { name: 'State of play' });
-    expect(document.querySelectorAll('.current-marks')).toHaveLength(1);
-    for (const term of ['Expected Mark Date', 'Mark', 'Source', 'Saved']) expect(onePlace(term), term).toBe('drawer-panel-today');
+    expect(document.querySelectorAll('.current-marks')).toHaveLength(0);
+    for (const term of ['Expected Mark Date', 'Mark', 'Source', 'Saved']) expect(screen.queryAllByText(term, { selector: 'dt' }), term).toEqual([]);
     cleanup();
 
     // The "Deviation active" badge is gone from the identity card (W22, T8R.13); a Deviation shows in Plan and Risk (T8R.11).

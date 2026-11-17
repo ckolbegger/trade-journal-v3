@@ -3,8 +3,8 @@ import { Link } from 'react-router';
 import { Badge } from '../../Badge.tsx';
 import { Figure } from '../../screens/trade-detail/figure.tsx';
 import { PriceTrack } from '../track.tsx';
-import type { CurrentMarks, MarkCell, TodayDrawerProps } from './today.types.ts';
-import { todayProps, type TodayInput } from './today.props.ts';
+import type { CurrentMarks, TodayDrawerProps } from './today.types.ts';
+import { currentMarksProps, todayProps, type TodayInput } from './today.props.ts';
 
 // A line that may wrap only at its spaces: each word is held whole, so a date breaks neither at its hyphens nor a time at its colon.
 const Words = ({ text }: { readonly text: string }) =>
@@ -38,22 +38,6 @@ function ScrollsToEnd({ label, children }: { readonly label: string; readonly ch
     </div>
   );
 }
-
-const MarkValue = ({ cell }: { readonly cell: MarkCell }) => (
-  <>
-    <span>{cell.price}</span>
-    {cell.provenance && (
-      <small className="provenance">
-        <Words text={cell.provenance} />
-      </small>
-    )}
-    {cell.correction !== undefined && (
-      <small className="provenance">
-        <Badge tone="info">Corrected</Badge> {cell.correction}
-      </small>
-    )}
-  </>
-);
 
 // A card of labelled figures: the dated line and At entry.
 const FigureCard = ({ id, heading, rows }: { readonly id: string; readonly heading: string; readonly rows: readonly { readonly label: string; readonly value: string }[] }) => (
@@ -98,27 +82,39 @@ const CurrentMarksCard = ({ currentMarks }: { readonly currentMarks: CurrentMark
 // What a state without a Today drawer shows in its Position drawer: the current Marks card and nothing else of Today's (revision 96, T8P.31).
 // No comparison is drawn there, so the card is built without the replay and leaves no Mark out as "already shown".
 export function CurrentMarksOnly({ view, timeZone }: TodayInput) {
-  const { currentMarks } = todayProps({ view, timeZone });
+  const currentMarks = currentMarksProps({ view, timeZone });
   return currentMarks ? <CurrentMarksCard currentMarks={currentMarks} /> : null;
 }
 
+// The Stale context and the acknowledgment, each only where it applies, under the table.
+const Notes = ({ notes }: { readonly notes: NonNullable<TodayDrawerProps['notes']> }) => (
+  <>
+    {notes.acknowledged && <p className="grid-note">{notes.acknowledged}</p>}
+    {notes.stale && <p className="grid-note">{notes.stale}</p>}
+  </>
+);
+
 // The Today drawer's content from finished props (A216).
-export function TodayDrawerView({ marks, currentMarks, noMarksText, tracksHeading, tracks, valuedAt, atEntry }: TodayDrawerProps) {
+export function TodayDrawerView({ marks, notes, noMarksText, tracksHeading, tracks, valuedAt, atEntry }: TodayDrawerProps) {
   return (
     <>
       {noMarksText && <p className="waiting">{noMarksText}</p>}
-      {currentMarks && <CurrentMarksCard currentMarks={currentMarks} />}
+      {!marks && notes && (
+        <section className="card">
+          <Notes notes={notes} />
+        </section>
+      )}
       {marks && (
         <section className="card" aria-labelledby="today-marks-heading">
-          <h2 id="today-marks-heading">{marks.heading}</h2>
-          <ScrollsToEnd label={marks.heading}>
+          <h2 id="today-marks-heading">Marks</h2>
+          <ScrollsToEnd label="Marks">
             <table className="trades" aria-labelledby="today-marks-heading">
               <thead>
                 <tr>
                   <td />
                   {marks.columns.map((column) => (
                     <th key={column} scope="col" className="number">
-                      {column}
+                      <Words text={column} />
                     </th>
                   ))}
                 </tr>
@@ -128,10 +124,10 @@ export function TodayDrawerView({ marks, currentMarks, noMarksText, tracksHeadin
                   <tr key={row.label}>
                     <th scope="row">{row.label}</th>
                     <td className="number">
-                      <MarkValue cell={row.earlier} />
+                      <span>{row.today}</span>
                     </td>
                     <td className="number">
-                      <MarkValue cell={row.current} />
+                      <span>{row.yesterday}</span>
                     </td>
                     <td className="number">{row.change}</td>
                   </tr>
@@ -139,7 +135,7 @@ export function TodayDrawerView({ marks, currentMarks, noMarksText, tracksHeadin
               </tbody>
             </table>
           </ScrollsToEnd>
-          {marks.note && <p className="grid-note">{marks.note}</p>}
+          {notes && <Notes notes={notes} />}
         </section>
       )}
       {tracks.length > 0 && (

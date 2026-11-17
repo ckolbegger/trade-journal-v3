@@ -9,7 +9,7 @@ import { calculation, dollarsAndR, pnlText, signed } from '../../figures.ts';
 import { contractCount, conditionDirection } from '../../screens/option-words.ts';
 import { abs, type Evaluation } from '../../screens/trade-detail/words.ts';
 import type { PriceTrackProps } from '../track.types.ts';
-import type { MarkCell, TodayDrawerProps } from './today.types.ts';
+import type { CurrentMarks, TodayDrawerProps } from './today.types.ts';
 
 // The adapter from the Detail view, and the replay when there is one, to the Today drawer's plain props (A216). The replay is absent until
 // Trade Detail reads `replayTrade` (T8P.22); without it the drawer leaves the comparison and the earlier markers out.
@@ -46,14 +46,11 @@ const markOf = (session: Session | undefined, instrument: Instrument): ReplayedM
 
 const hasMarks = (session: Session): boolean => session.marks.some((m) => m.resolution.kind === 'Available');
 
-// The latest session, the latest earlier one with Marks, and the session just before the latest when it had none and was passed over.
-function comparisonOf(replay: TodayReplay | undefined): { readonly now: Session; readonly earlier: Session; readonly passedOver?: Session } | undefined {
+// The latest session and the latest earlier one with Marks: the price tracks' "earlier" marker (T8R.8 gives the tracks their own design).
+function comparisonOf(replay: TodayReplay | undefined): { readonly now: Session; readonly earlier: Session } | undefined {
   const now = replay?.sessions.at(-1);
-  const before = replay?.sessions.slice(0, -1) ?? [];
-  const earlier = before.findLast(hasMarks);
-  if (!now || !earlier) return undefined;
-  const last = before.at(-1);
-  return { now, earlier, ...(last !== earlier && last && { passedOver: last }) };
+  const earlier = replay?.sessions.slice(0, -1).findLast(hasMarks);
+  return now && earlier ? { now, earlier } : undefined;
 }
 
 // "Put Mark" for an option, "MNO Mark" for a stock.
@@ -65,32 +62,27 @@ const asNumber = (value: Rational): number => Number(value.numerator) / Number(v
 const priceTextOf = (optionTrade: boolean) => (instrument: Instrument, text: string): string =>
   instrument.kind === 'Option' || !optionTrade ? decimalMoney(text) : decimalUnderlyingPrice(text);
 
-function marksOf({ timeZone, replay }: TodayInput, optionTrade: boolean): TodayDrawerProps['marks'] {
-  const comparison = comparisonOf(replay);
-  if (!replay || !comparison) return undefined;
-  const { now, earlier, passedOver } = comparison;
+// The table's cells are selected, never computed (A233): a Mark comes from the replay session dated the column's date, and a session that has
+// not ended (so is not in the replay) or had no Mark reads "—". Change is the replay's, for Today's session, and only against Yesterday's column.
+// Outside session-policy coverage the view names no dates (A232): the headings carry none and no cell is selected.
+function marksOf({ replay }: TodayInput, { marksColumns: columns }: OpenTradeDetail, optionTrade: boolean): TodayDrawerProps['marks'] {
+  if (!replay) return undefined;
   const price = priceTextOf(optionTrade);
-  const cell = (instrument: Instrument, mark: ReplayedMark | undefined): MarkCell => {
-    if (mark?.resolution.kind !== 'Available') return { price: '—' };
-    const { price: text, source, savedAt, correctionReason } = mark.resolution.mark;
-    return { price: price(instrument, text), provenance: `${source} · ${localTime(savedAt, timeZone)}`, ...(correctionReason !== undefined && { correction: correctionReason }) };
+  const sessionOn = (date: string | undefined): Session | undefined => replay.sessions.find((s) => s.date === date);
+  const today = sessionOn(columns?.today.date);
+  const yesterday = sessionOn(columns?.yesterday);
+  const cell = (instrument: Instrument, session: Session | undefined): string => {
+    const mark = markOf(session, instrument);
+    return mark?.resolution.kind === 'Available' ? price(instrument, mark.resolution.mark.price) : '—';
   };
-  const change = (instrument: Instrument, mark: ReplayedMark | undefined): string => {
-    // Only a change against the compared session: an Instrument with no Mark then has its change against an older one.
-    const against = mark?.change;
-    if (!against || against.since !== earlier.date) return '—';
+  const change = (instrument: Instrument): string => {
+    const against = markOf(today, instrument)?.change;
+    if (!against || against.since !== columns?.yesterday) return '—';
     return signed(instrument.kind === 'Option' || !optionTrade ? money : underlyingPrice)(against.dollars);
   };
   return {
-    heading: `Marks: ${shortDate(now.date)} against ${shortDate(earlier.date)}`,
-    columns: [shortDate(earlier.date), shortDate(now.date), 'Change'],
-    rows: replay.instruments.map((instrument) => ({
-      label: rowLabel(instrument),
-      earlier: cell(instrument, markOf(earlier, instrument)),
-      current: cell(instrument, markOf(now, instrument)),
-      change: change(instrument, markOf(now, instrument)),
-    })),
-    ...(passedOver && { note: `${shortDate(passedOver.date)} has no Marks, so ${shortDate(now.date)} is compared with ${shortDate(earlier.date)}.` }),
+    columns: [columns ? `${columns.today.next ? 'Next session' : 'Today'}, ${shortDate(columns.today.date)}` : 'Today', columns ? `Yesterday, ${shortDate(columns.yesterday)}` : 'Yesterday', 'Change'],
+    rows: replay.instruments.map((instrument) => ({ label: rowLabel(instrument), today: cell(instrument, today), yesterday: cell(instrument, yesterday), change: change(instrument) })),
   };
 }
 
@@ -230,15 +222,26 @@ function noMarksTextOf(view: OpenTradeDetail, timeZone: string): string | undefi
   return `No Marks yet. This Trade opened${when}. Its first Marks, and every figure that needs them, are due once the ${shortDate(firstMarksDue)} session ends.`;
 }
 
-// The Mark that valued the figures at the Expected Mark Date, in the words the Valuation section gave it (revision 96).
-// An Instrument whose current Mark the comparison already shows, with its provenance, is not shown again.
-function currentMarksOf({ timeZone, replay }: TodayInput, open: OpenTradeDetail): TodayDrawerProps['currentMarks'] {
-  const { markResolution, evaluation, expectedMarkDate } = open.current;
+// Under the table (W29): an acknowledged Mark as the trader's acknowledgment, not a price, and the older Stale context. Each only where it applies.
+function notesOf({ timeZone }: TodayInput, { current }: OpenTradeDetail): TodayDrawerProps['notes'] {
+  const { markResolution, evaluation } = current;
+  const stale = evaluation.staleContext;
+  const acknowledged =
+    markResolution?.kind === 'AcknowledgedUnavailable'
+      ? `${text(unavailableWords({ reason: 'AcknowledgedUnavailable', instrument: evaluation.observation.instrument, date: evaluation.valuationDate }, 'sentence', timeZone), timeZone)}: your acknowledgment, not a price`
+      : undefined;
+  if (!stale && !acknowledged) return undefined;
+  return {
+    ...(acknowledged && { acknowledged }),
+    ...(stale && { stale: `Stale context: ${decimalMoney(stale.price)} from ${shortDate(stale.tradingDate)} close (stale, not used in any current figure)` }),
+  };
+}
+
+// The Mark that valued the figures at the Expected Mark Date, in the words the Valuation section gave it (revision 96). What a Settlement Due
+// Detail shows in Today until T8R.7 gives it W29's table; an Open Detail's Today has the table and the notes instead.
+function currentMarksOf({ timeZone }: TodayInput, open: OpenTradeDetail): CurrentMarks | undefined {
+  const { markResolution, evaluation, expectedMarkDate, mark, underlyingMark } = open.current;
   const { instrument } = evaluation.observation;
-  const now = comparisonOf(replay)?.now;
-  const compared = (of: Instrument) => markOf(now, of)?.resolution.kind === 'Available';
-  const mark = compared(instrument) ? undefined : open.current.mark;
-  const underlyingMark = compared({ kind: 'Stock', symbol: open.plan.underlying }) ? undefined : open.current.underlyingMark;
   const date = evaluation.valuationDate;
   const sentence = (reason: UnavailableReason) => text(unavailableWords(reason, 'sentence', timeZone), timeZone);
   const stale = evaluation.staleContext;
@@ -272,16 +275,23 @@ function currentMarksOf({ timeZone, replay }: TodayInput, open: OpenTradeDetail)
   };
 }
 
+// The current-Marks card of a Settlement Due Detail's Today (T8R.7 replaces it): no table is drawn there, so no Mark is left out as "already shown".
+export function currentMarksProps(input: TodayInput): CurrentMarks | undefined {
+  const { view } = input;
+  if (!('current' in view) || 'terminalDisposition' in view) return undefined;
+  return currentMarksOf(input, view);
+}
+
 export function todayProps(input: TodayInput): TodayDrawerProps {
   const { view } = input;
   if (!('current' in view) || 'terminalDisposition' in view) return { tracks: [] };
   const optionTrade = view.plan.legs[0]?.instrument.kind === 'Option';
-  const marks = marksOf(input, optionTrade);
+  const marks = marksOf(input, view, optionTrade);
   const noMarksText = noMarksTextOf(view, input.timeZone);
-  const currentMarks = currentMarksOf(input, view);
+  const notes = notesOf(input, view);
   return {
     ...(marks && { marks }),
-    ...(currentMarks && { currentMarks }),
+    ...(notes && { notes }),
     ...(noMarksText && { noMarksText }),
     tracksHeading: optionTrade ? 'Where the prices sit' : 'Where the price sits',
     tracks: tracksOf(input, view, optionTrade),

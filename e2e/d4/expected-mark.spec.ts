@@ -21,10 +21,10 @@ test.describe('B4.5 Expected Mark Date (AC-MARK-001)', () => {
     await setClock(context, page, TUESDAY_NOON);
     await openTradeFromOpenList(page, 'XYZ');
     await openDrawer(page, 'Today');
-    const valuation = detail.valuation(page);
-    await expect(valuation.getByRole('link', { name: 'Mark missing for XYZ on Mon Oct 12' })).toBeVisible();
-    await expect(valuation).toContainText('Stale context: $51.20 from Fri Oct 9 close (stale, not used in any current figure)');
-    await expect(detail.todayFigure(page, 'Expected Mark Date')).toHaveText('Mon Oct 12');
+    // W29: the Stale context stands under the Marks table; the Mark-missing link and the Expected Mark Date are gone from Today.
+    await expect(detail.marksNotes(page)).toContainText('Stale context: $51.20 from Fri Oct 9 close (stale, not used in any current figure)');
+    await expect(page.locator('.trade-detail #drawer-panel-today a', { hasText: 'Mark missing for' })).toHaveCount(0);
+    await expect(page.locator('.trade-detail').getByText('Expected Mark Date')).toHaveCount(0);
     await expect(detail.datedHeading(page, 'At the Fri Oct 9 Marks')).toBeVisible();
     await openDrawer(page, 'Position');
     await expect(detail.positionOpenPnlFigure(page)).toHaveText('Mark missing: XYZ, Mon Oct 12');
@@ -35,7 +35,7 @@ test.describe('B4.5 Expected Mark Date (AC-MARK-001)', () => {
     await expect(detail.conditionBlocks(page).locator('.condition-figure')).toHaveText(['Mark missing', 'Mark missing']);
     // The current sections hold no dollar figure from Friday's Mark: dollars appear only in the stale line and the dated section.
     await openDrawer(page, 'Today');
-    await expect(detail.anywhere(() => detail.todayFigure(page, 'Mark'))).toHaveCount(0);
+    for (const column of ['Today', 'Yesterday', 'Change'] as const) await expect(detail.marksCell(page, 'XYZ Mark', column)).toHaveText('—');
     await expect(detail.datedFigure(page, 'At the Fri Oct 9 Marks', 'Mark')).toHaveText('$51.20');
 
     // The Review lists Monday's Mark; entering it makes the Detail Available.
@@ -43,17 +43,16 @@ test.describe('B4.5 Expected Mark Date (AC-MARK-001)', () => {
     await enterMark(page, 'XYZ', 'Mon Oct 12', '52.00');
     await openXyz(page);
     await openDrawer(page, 'Today');
-    await expect(detail.todayFigure(page, 'Expected Mark Date')).toHaveText('Mon Oct 12');
-    // With Monday's and Friday's Marks, Today's comparison shows Monday's Mark with its provenance, so the current-Marks card does not repeat it.
-    await expect(detail.comparedMark(page)).toHaveText('$52.00');
+    // Tuesday noon: Today is Tuesday (not ended) and Yesterday is Monday, whose Mark is $52.00 (W29, A232).
+    await expect(detail.marksHeadings(page)).toHaveText(['Today, Tue Oct 13', 'Yesterday, Mon Oct 12', 'Change']);
+    await expect(detail.marksCell(page, 'XYZ Mark', 'Yesterday')).toHaveText('$52.00');
     await expect(detail.currentMarkedPnl(page)).toContainText('$199.00');
-    await expect(valuation).not.toContainText('Stale context');
-    await expect(valuation).not.toContainText('Mark missing');
+    await expect(detail.marksNotes(page)).toHaveCount(0);
 
     // Both Marks are durable observation records.
     await page.reload();
     await openDrawer(page, 'Today');
-    await expect(detail.comparedMark(page)).toHaveText('$52.00');
+    await expect(detail.marksCell(page, 'XYZ Mark', 'Yesterday')).toHaveText('$52.00');
     expect(observationsOf(workspaceOf(await probe(page))!).map((o) => [o.tradingDate, o.marks[0]!.price])).toEqual([['2026-10-09', '51.2'], ['2026-10-12', '52']]);
     await context.close();
   });

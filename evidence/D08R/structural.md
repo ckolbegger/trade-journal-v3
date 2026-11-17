@@ -505,3 +505,9 @@ T8R.15-F2 changes:
 ## Usage-limit wait, 02:20 to 03:50
 
 ChatGPT's usage limit blocked every ocr review from about 02:20 until 03:50. While waiting, one review agent killed its own wait loops with `pkill -f` on part of their command text. That pattern could have matched other waiters; the main session's own waiter ended at that time. Later briefs say to kill only your own processes, by PID.
+
+## T8R.6 Today: one Marks table on an Open Trade
+
+Behavioral task; its rows are in `tdd-log/T8R.6.md`. Browser specs changed in lane TD: `e2e/d4/expected-mark.spec.ts`, `e2e/d4/breach-overrun.spec.ts`, `e2e/d4/responsive-a11y.spec.ts`, `e2e/d8p/states.spec.ts`, `e2e/d8p/today-narrow.spec.ts`, through the new `marksTable`, `marksHeadings`, `marksCell` and `marksNotes` helpers in `e2e/support/detail/today.ts`.
+
+Run in the lane (`npm run build:faults`, `npm run build:releases`, then `npx playwright test <specs>` under `with-browser-lock.sh`): `first-marks-pending` and `states` pass. `expected-mark`, `breach-overrun`, `d4/responsive-a11y` and both `today-narrow` cases fail only on a Mark or change value (each reads a dash), because Trade Views does not name the column dates until T8R.21 merges (the cells are selected by those dates, A233). Their assertions are written for the merged state; rerun them after T8R.21.

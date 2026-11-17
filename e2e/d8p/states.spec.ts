@@ -128,7 +128,9 @@ test.describe('B8P.4 States', () => {
       await expect(detail.pnlFigure(page)).toHaveText('$199.00');
       await expect(detail.pnlCard(page)).toContainText('100 of 100 shares open');
       await expect(detail.conditionBlocks(page).locator('.condition-text')).toHaveText(['ABC at or below $28.00', 'ABC at or above $36.00']);
-      await expect(page.getByRole('region', { name: /^Marks: / })).toHaveCount(0);
+      // W29: one Marks table, whether or not an earlier session has Marks.
+      await expect(detail.marksTable(page)).toBeVisible();
+      await expect(detail.marksCell(page, 'ABC Mark', 'Change')).toHaveText('—');
       await expect(page.locator(`${PANEL('Today')} h2:text-is("Where the price sits")`)).toBeVisible();
       // W14: a stock Trade has one Not applicable line, and no chart.
       await openDrawer(page, 'Payoff');

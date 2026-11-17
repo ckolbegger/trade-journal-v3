@@ -12,22 +12,22 @@ describe('today drawer component (A216)', () => {
     expect(container.innerHTML).toBe('');
   });
 
-  it('should render the comparison, its note, and each track with its markers from the props alone', () => {
+  it('should render the Marks table, its notes, and each track with its markers from the props alone', () => {
     render(
       <TodayDrawerView
         marks={{
-          heading: 'Marks: Thu Oct 15 against Tue Oct 13',
-          columns: ['Tue Oct 13', 'Thu Oct 15', 'Change'],
-          rows: [{ label: 'XYZ Mark', earlier: { price: '$51.80' }, current: { price: '$52.30' }, change: '+$0.50' }],
-          note: 'Wed Oct 14 has no Marks, so Thu Oct 15 is compared with Tue Oct 13.',
+          columns: ['Today, Thu Oct 15', 'Yesterday, Wed Oct 14', 'Change'],
+          rows: [{ label: 'XYZ Mark', today: '$52.30', yesterday: '—', change: '—' }],
         }}
+        notes={{ stale: 'Stale context: $51.80 from Tue Oct 13 close (stale, not used in any current figure)' }}
         tracksHeading="Where the price sits"
         tracks={[{ title: 'XYZ', accessibleName: 'XYZ: Stop $47.50, Target $56.00, now $52.30', min: 45, max: 58, zones: [], markers: [{ kind: 'now', label: 'now', price: 52.3 }], conditionLines: [] }]}
       />,
     );
-    const table = screen.getByRole('table', { name: 'Marks: Thu Oct 15 against Tue Oct 13' });
+    const table = screen.getByRole('table', { name: 'Marks' });
     expect(within(table).getByRole('rowheader', { name: 'XYZ Mark' })).toBeTruthy();
-    expect(screen.getByText('Wed Oct 14 has no Marks, so Thu Oct 15 is compared with Tue Oct 13.')).toBeTruthy();
+    expect(within(table).getAllByRole('columnheader').map((cell) => cell.textContent)).toEqual(['Today, Thu Oct 15', 'Yesterday, Wed Oct 14', 'Change']);
+    expect(screen.getByText('Stale context: $51.80 from Tue Oct 13 close (stale, not used in any current figure)')).toBeTruthy();
     expect(screen.getByRole('img', { name: 'XYZ: Stop $47.50, Target $56.00, now $52.30' }).querySelector<HTMLElement>('.mk')?.style.left).toBe('56.15%');
   });
 });

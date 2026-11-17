@@ -7,7 +7,7 @@ import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it } from 'vitest';
 import { execution, openDetailAt, PC1, PC2, positionChange } from '../../../../tests/support/open-detail-fixtures.ts';
 import { optionOpenDetail } from '../../../../tests/support/option-detail-fixtures.ts';
-import { OC_PC1, OC_PC2, OC_X1, OS2_S1 } from '../../../../tests/support/option-trade-fixtures.ts';
+import { OC_CONTRACT, OC_PC1, OC_PC2, OC_X1, OS2_S1 } from '../../../../tests/support/option-trade-fixtures.ts';
 import type { OpenTradeDetail } from '../../../app/types.ts';
 import type { Instrument } from '../../../domain/instrument/index.ts';
 import { parseDecimal, Rational } from '../../../domain/values/index.ts';
@@ -68,39 +68,7 @@ const drawer = (view: OpenTradeDetail, replay?: TodayReplay) =>
   render(createElement(MemoryRouter, null, createElement(TodayDrawer, { view, timeZone: ZONE, ...(replay && { replay }) })));
 
 describe('Today drawer (W8)', () => {
-  it('should show "Marks: Thu Oct 15 against Wed Oct 14" with each Mark, its change and its provenance, Corrected with its reason', () => {
-    drawer(
-      thursday(),
-      replayOf([
-        session('2026-10-14', [mark(MNO, '42.50'), mark(PUT, '3.10')]),
-        session('2026-10-15', [mark(MNO, '43.00', { since: '2026-10-14', amount: '0.50' }), mark(PUT, '3.20', { since: '2026-10-14', amount: '0.10' }, 'Typo in the first entry')]),
-      ]),
-    );
-    expect(screen.getByRole('heading', { name: 'Marks: Thu Oct 15 against Wed Oct 14' })).toBeTruthy();
-    const table = screen.getByRole('table', { name: 'Marks: Thu Oct 15 against Wed Oct 14' });
-    expect(within(table).getAllByRole('columnheader').map((cell) => cell.textContent)).toEqual(['Wed Oct 14', 'Thu Oct 15', 'Change']);
-    const [first, second] = within(table).getAllByRole('row').slice(1);
-    expect(within(first!).getByRole('rowheader').textContent).toBe('MNO Mark');
-    expect(within(first!).getAllByRole('cell').map((cell) => cell.textContent)).toEqual(['42.50Manual · 2026-10-15 16:30', '43.00Manual · 2026-10-15 16:30', '+0.50']);
-    expect(within(second!).getByRole('rowheader').textContent).toBe('Put Mark');
-    expect(within(second!).getAllByRole('cell').map((cell) => cell.textContent)).toEqual(['$3.10Manual · 2026-10-15 16:30', '$3.20Manual · 2026-10-15 16:30Corrected Typo in the first entry', '+$0.10']);
-  });
-
-  it('should compare with the latest earlier session with Marks, and name the session that had none', () => {
-    drawer(
-      thursday(),
-      replayOf([
-        session('2026-10-13', [mark(MNO, '42.00'), mark(PUT, '3.00')]),
-        session('2026-10-14', [mark(MNO, undefined), mark(PUT, undefined)]),
-        session('2026-10-15', [mark(MNO, '43.00', { since: '2026-10-13', amount: '1.00' }), mark(PUT, '3.20', { since: '2026-10-13', amount: '0.20' })]),
-      ]),
-    );
-    const table = screen.getByRole('table', { name: 'Marks: Thu Oct 15 against Tue Oct 13' });
-    expect(within(table).getAllByRole('columnheader').map((cell) => cell.textContent)).toEqual(['Tue Oct 13', 'Thu Oct 15', 'Change']);
-    expect(within(within(table).getAllByRole('row')[1]!).getAllByRole('cell').map((cell) => cell.textContent)).toEqual(['42.00Manual · 2026-10-15 16:30', '43.00Manual · 2026-10-15 16:30', '+1.00']);
-    expect(screen.getByText('Wed Oct 14 has no Marks, so Thu Oct 15 is compared with Tue Oct 13.')).toBeTruthy();
-  });
-
+  // The Marks table's cases are in "Today drawer: the Marks table (W29)", below; each Mark's provenance is Price History's (T8R.4).
   it("should place each price track's Stop and Target zones, entry, the earlier Mark and now, with an accessible name listing the prices", () => {
     drawer(thursday(), wednesdayAndThursday());
     expect(screen.getByRole('heading', { name: 'Where the prices sit' })).toBeTruthy();
@@ -143,7 +111,8 @@ describe('Today drawer (W8)', () => {
     const unmarked = openDetailAt([afterClose], friday);
     drawer({ ...unmarked, current: { ...unmarked.current, firstMarksDue: '2026-10-12' } }, replayOf([]));
     expect(screen.getByText('No Marks yet. This Trade opened Fri Oct 9 at 4:30 pm. Its first Marks, and every figure that needs them, are due once the Mon Oct 12 session ends.')).toBeTruthy();
-    expect(screen.queryByRole('table', { hidden: true })).toBeNull();
+    // The table stands with a dash in every cell (W29); the view names no column dates here, so its headings carry none (A232).
+    expect([...screen.getByRole('table').querySelectorAll('tbody td')].map((cell) => cell.textContent)).toEqual(['—', '—', '—', '—', '—', '—']);
     expect(screen.queryByRole('region', { name: /^At the .* Marks$/, hidden: true })).toBeNull();
     // The tracks still show where the Stop and the Target sit, with no "now".
     expect(screen.getByRole('heading', { name: 'Where the price sits' })).toBeTruthy();
@@ -204,17 +173,17 @@ describe('Today drawer (W8): gaps and crowding (T8P.16-B)', () => {
   it('should show a change only against the compared session when an Instrument had no Mark then', () => {
     // Both Instruments marked Tuesday, only MNO on Wednesday, both on Thursday: the put's change on Thursday is since Tuesday.
     drawer(
-      thursday(),
+      { ...thursday(), marksColumns: { today: { date: '2026-10-15', next: false }, yesterday: '2026-10-14' } },
       replayOf([
         session('2026-10-13', [mark(MNO, '42.00'), mark(PUT, '3.00')]),
         session('2026-10-14', [mark(MNO, '42.50'), mark(PUT, undefined)]),
         session('2026-10-15', [mark(MNO, '43.00', { since: '2026-10-14', amount: '0.50' }), mark(PUT, '3.20', { since: '2026-10-13', amount: '0.20' })]),
       ]),
     );
-    const table = screen.getByRole('table', { name: 'Marks: Thu Oct 15 against Wed Oct 14' });
+    const table = screen.getByRole('table', { name: 'Marks' });
     const [mnoRow, putRow] = within(table).getAllByRole('row').slice(1);
-    expect(within(mnoRow!).getAllByRole('cell').map((cell) => cell.textContent)).toEqual(['42.50Manual · 2026-10-15 16:30', '43.00Manual · 2026-10-15 16:30', '+0.50']);
-    expect(within(putRow!).getAllByRole('cell').map((cell) => cell.textContent)).toEqual(['—', '$3.20Manual · 2026-10-15 16:30', '—']);
+    expect(within(mnoRow!).getAllByRole('cell').map((cell) => cell.textContent)).toEqual(['43.00', '42.50', '+0.50']);
+    expect(within(putRow!).getAllByRole('cell').map((cell) => cell.textContent)).toEqual(['$3.20', '—', '—']);
     expect(screen.queryByText('+$0.20')).toBeNull();
   });
 
@@ -304,5 +273,136 @@ describe('Today drawer: figures moved from the retired Valuation section and con
       expect(termValue(line, 'Distance on XYZ')).toBe('Mark missing: XYZ, Thu Nov 19');
       expect(line.textContent).not.toContain('—');
     }
+  });
+});
+
+// O-C3 (XYZ's Long Call): the replay's Instruments are the Underlying then the contract, and the view names the table's column dates (A232).
+describe('Today drawer: the Marks table (W29)', () => {
+  const XYZ: Instrument = { kind: 'Stock', symbol: 'XYZ' };
+  const CALL = OC_CONTRACT;
+  const openAt = (tradingDate: string, closeInstant: string, contractMark?: string, underlyingMark?: string): OpenTradeDetail =>
+    optionOpenDetail('O-C', [OC_PC1, OC_PC2, OC_X1], { tradingDate, closeInstant, ...(contractMark && { contractMark }), ...(underlyingMark && { underlyingMark }) });
+  const withColumns = (view: OpenTradeDetail, date: string, yesterday: string, next = false): OpenTradeDetail => ({ ...view, marksColumns: { today: { date, next }, yesterday } });
+  // One session of both Instruments' Marks; `since` is the session each change is against.
+  const sessionOf = (date: string, xyz: string | undefined, call: string | undefined, since?: string): ReplaySession =>
+    session(date, [
+      mark(XYZ, xyz, since && xyz ? { since, amount: '0.50' } : undefined),
+      mark(CALL, call, since && call ? { since, amount: '0.20' } : undefined),
+    ]);
+  const replayOfOc = (sessions: readonly ReplaySession[]): TodayReplay => ({ instruments: [XYZ, CALL], sessions });
+  const tableCells = () => {
+    const table = screen.getByRole('table');
+    return {
+      headings: within(table).getAllByRole('columnheader').map((cell) => cell.textContent),
+      rows: within(table)
+        .getAllByRole('row')
+        .slice(1)
+        .map((row) => [within(row).getByRole('rowheader').textContent, ...within(row).getAllByRole('cell').map((cell) => cell.textContent)]),
+    };
+  };
+
+  it("should show Today, Thu Oct 15 and Yesterday, Wed Oct 14 and Change with each Instrument's Mark and change at Thu 18:00", () => {
+    drawer(
+      withColumns(openAt('2026-10-15', '2026-10-15T20:00:00Z', '3.10', '52.30'), '2026-10-15', '2026-10-14'),
+      replayOfOc([sessionOf('2026-10-14', '51.80', '2.90'), sessionOf('2026-10-15', '52.30', '3.10', '2026-10-14')]),
+    );
+    expect(tableCells()).toEqual({
+      headings: ['Today, Thu Oct 15', 'Yesterday, Wed Oct 14', 'Change'],
+      rows: [
+        ['XYZ Mark', '52.30', '51.80', '+0.50'],
+        ['Call Mark', '$3.10', '$2.90', '+$0.20'],
+      ],
+    });
+  });
+
+  it("should show a dash in every Today cell and in Change while the session hasn't ended, at Fri 12:00", () => {
+    drawer(
+      withColumns(openAt('2026-10-16', '2026-10-16T20:00:00Z'), '2026-10-16', '2026-10-15'),
+      replayOfOc([sessionOf('2026-10-14', '51.80', '2.90'), sessionOf('2026-10-15', '52.30', '3.10', '2026-10-14')]),
+    );
+    expect(tableCells()).toEqual({
+      headings: ['Today, Fri Oct 16', 'Yesterday, Thu Oct 15', 'Change'],
+      rows: [
+        ['XYZ Mark', '—', '52.30', '—'],
+        ['Call Mark', '—', '$3.10', '—'],
+      ],
+    });
+  });
+
+  it('should show Next session, Mon Oct 19 and Friday as Yesterday on a Saturday', () => {
+    drawer(
+      withColumns(openAt('2026-10-16', '2026-10-16T20:00:00Z', '3.40', '53.00'), '2026-10-19', '2026-10-16', true),
+      replayOfOc([sessionOf('2026-10-15', '52.30', '3.10'), sessionOf('2026-10-16', '53.00', '3.40', '2026-10-15')]),
+    );
+    expect(tableCells()).toEqual({
+      headings: ['Next session, Mon Oct 19', 'Yesterday, Fri Oct 16', 'Change'],
+      rows: [
+        ['XYZ Mark', '—', '53.00', '—'],
+        ['Call Mark', '—', '$3.40', '—'],
+      ],
+    });
+  });
+
+  it("should show a dash for Yesterday when that session had no Marks, never an earlier session's", () => {
+    // Tuesday had Marks, Wednesday had none, Thursday's change is against Tuesday: Wednesday's column and Thursday's Change read a dash.
+    drawer(
+      withColumns(openAt('2026-10-15', '2026-10-15T20:00:00Z', '3.10', '52.30'), '2026-10-15', '2026-10-14'),
+      replayOfOc([sessionOf('2026-10-13', '51.00', '2.80'), sessionOf('2026-10-14', undefined, undefined), sessionOf('2026-10-15', '52.30', '3.10', '2026-10-13')]),
+    );
+    expect(tableCells().rows).toEqual([
+      ['XYZ Mark', '52.30', '—', '—'],
+      ['Call Mark', '$3.10', '—', '—'],
+    ]);
+    expect(document.body.textContent).not.toContain('51.00');
+    expect(document.body.textContent).not.toMatch(/has no Marks, so/);
+  });
+
+  it('should show dashes in both columns beside the No Marks yet note before the first Marks', () => {
+    const unmarked = withColumns(openAt('2026-10-12', '2026-10-12T20:00:00Z'), '2026-10-12', '2026-10-09');
+    drawer({ ...unmarked, current: { ...unmarked.current, firstMarksDue: '2026-10-12' } }, replayOfOc([]));
+    expect(screen.getByText(/^No Marks yet\./)).toBeTruthy();
+    expect(tableCells()).toEqual({
+      headings: ['Today, Mon Oct 12', 'Yesterday, Fri Oct 9', 'Change'],
+      rows: [
+        ['XYZ Mark', '—', '—', '—'],
+        ['Call Mark', '—', '—', '—'],
+      ],
+    });
+  });
+
+  it('should show the Stale context and an acknowledgment under the table only when they apply', () => {
+    const stale = { tradingDate: '2026-10-14', price: '51.80', revisionId: 'm-0', revisionNumber: 1, closeInstant: '2026-10-14T20:00:00Z' };
+    const acknowledgment = { versionId: 'ack-1', kind: 'Asserted', observedAt: '2026-10-15T21:00:00Z', savedAt: '2026-10-15T21:30:00Z' };
+    const replay = replayOfOc([sessionOf('2026-10-14', '51.80', '2.90')]);
+    const resolved = (resolution: unknown) => {
+      const view = withColumns(openAt('2026-10-15', '2026-10-15T20:00:00Z', '3.10', '52.30'), '2026-10-15', '2026-10-14');
+      return { ...view, current: { ...view.current, markResolution: resolution } } as OpenTradeDetail;
+    };
+    const underTable = (text: string) => {
+      const note = screen.getByText(text);
+      expect(screen.getByRole('table').compareDocumentPosition(note) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    };
+    const view = withColumns(openAt('2026-10-15', '2026-10-15T20:00:00Z'), '2026-10-15', '2026-10-14');
+    drawer({ ...view, current: { ...view.current, evaluation: { ...view.current.evaluation, staleContext: stale } } }, replay);
+    underTable('Stale context: $51.80 from Wed Oct 14 close (stale, not used in any current figure)');
+    cleanup();
+
+    drawer(resolved({ kind: 'AcknowledgedUnavailable', acknowledgment }), replay);
+    underTable('Mark acknowledged unavailable for XYZ Nov 20 $55 Call on Thu Oct 15: your acknowledgment, not a price');
+    cleanup();
+
+    drawer(resolved({ kind: 'Available', mark: { source: 'Manual', revisionId: 'm', revisionNumber: 1, price: '3.10', savedAt: '2026-10-15T20:30:00Z' } }), replay);
+    expect(document.body.textContent).not.toMatch(/Stale context|acknowledged unavailable/);
+  });
+
+  it('should not show Expected Mark Date, Source, Saved or a Mark-missing link (gone)', () => {
+    const view = withColumns(openAt('2026-10-15', '2026-10-15T20:00:00Z', '3.10', '52.30'), '2026-10-15', '2026-10-14');
+    const missing = { ...view, current: { ...view.current, markResolution: { kind: 'Missing' } } } as OpenTradeDetail;
+    drawer(missing, replayOfOc([sessionOf('2026-10-14', '51.80', '2.90'), sessionOf('2026-10-15', '52.30', '3.10', '2026-10-14')]));
+    for (const term of ['Expected Mark Date', 'Source', 'Saved', 'Mark', 'Underlying Mark']) expect(screen.queryByText(term, { selector: 'dt' }), term).toBeNull();
+    expect(document.body.textContent).not.toMatch(/Expected Mark Date|Manual|Saved/);
+    expect(screen.queryByRole('link', { hidden: true })).toBeNull();
+    expect(screen.queryByText(/Mark missing for/)).toBeNull();
+    expect(document.querySelector('.current-marks')).toBeNull();
   });
 });

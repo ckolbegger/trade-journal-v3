@@ -165,18 +165,18 @@ test.describe('B4.13 Responsive and accessible', () => {
     // Detail in each evaluation state.
     await openTradeFromOpenList(page, 'ABC');
     await openDrawer(page, 'Today');
-    await expect(detail.todayFigure(page, 'Mark')).toHaveText('$27.50');
+    await expect(detail.marksCell(page, 'ABC Mark', 'Today')).toHaveText('$27.50');
     await expect(detail.riskFigure(page, 'Max reward')).toHaveText('Unbounded above');
     // (Max reward is the rail's Conditions card's, so it needs no drawer.)
     await expectAccessible(page, 'Detail Available (Stop Breached, Unbounded)');
     await openDetail(page, 'DEF');
     await openDrawer(page, 'Today');
-    await expect(detail.valuation(page)).toContainText('Mark acknowledged unavailable for DEF on Mon Oct 12: your acknowledgment, not a price');
+    await expect(detail.marksNotes(page)).toContainText('Mark acknowledged unavailable for DEF on Mon Oct 12: your acknowledgment, not a price');
     await expectAccessible(page, 'Detail Acknowledged Unavailable');
     await openDetail(page, 'JKL');
     await openDrawer(page, 'Today');
-    await expect(detail.valuation(page).getByRole('link', { name: 'Mark missing for JKL on Mon Oct 12' })).toBeVisible();
-    await expect(detail.valuation(page)).toContainText('Stale context: $20.80 from Fri Oct 9 close (stale, not used in any current figure)');
+    await expect(page.locator('.trade-detail #drawer-panel-today a', { hasText: 'Mark missing for' })).toHaveCount(0);
+    await expect(detail.marksNotes(page)).toContainText('Stale context: $20.80 from Fri Oct 9 close (stale, not used in any current figure)');
     await expectAccessible(page, 'Detail Missing with Stale context');
     await page.setViewportSize({ width: 390, height: 844 });
     await expectAccessible(page, 'Detail Missing with Stale context, narrow');
