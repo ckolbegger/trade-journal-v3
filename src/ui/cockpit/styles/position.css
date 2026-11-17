@@ -35,9 +35,9 @@
   text-align: right;
 }
 
-/* T8P.26-B2: at the desktop width the Bought and Sold cells wrap at their spaces so the Realized column stays in view; narrower, the table scrolls in its box. */
+/* T8P.26-B2, T8R.5-F1: at the desktop width the Instrument, Bought and Sold cells wrap at their spaces so the Realized column stays in view; narrower, the table scrolls in its box. */
 @media (min-width: 960px) {
-  .cockpit-drawers [aria-labelledby='lot-matches-heading'] td.nowrap:nth-child(-n + 2) {
+  .cockpit-drawers [aria-labelledby='lot-matches-heading'] td.nowrap:nth-child(-n + 3) {
     white-space: normal;
   }
 }
@@ -54,7 +54,20 @@
   white-space: nowrap;
 }
 
-/* Open Lots header text wraps rather than being cut off, so all four columns fit the drawer at 1280 px. */
+/* Open Lots header text wraps rather than being cut off, so all five columns fit the drawer at 1280 px. */
 .cockpit-drawers table.lots th {
   white-space: normal;
+}
+
+/* T8R.5-F1: table.trades gives its second column the Trade cell's 11.5rem minimum. In Open Lots that column is Opened, whose date and time need less, so the five columns fit the drawer at 1280 px. */
+.cockpit-drawers table.lots th:nth-child(2),
+.cockpit-drawers table.lots td:nth-child(2) {
+  min-width: 0;
+}
+
+/* Narrower than the desktop width the Instrument cell stays on one line and the region scrolls; at it the cell wraps at its spaces. */
+@media (min-width: 960px) {
+  .cockpit-drawers table.lots td:first-child {
+    white-space: normal;
+  }
 }

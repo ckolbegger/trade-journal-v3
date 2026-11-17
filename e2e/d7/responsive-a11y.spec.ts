@@ -183,7 +183,7 @@ test.describe('B7.13 Responsive and accessible', () => {
         columns: el.querySelectorAll('thead th').length,
       };
     });
-    expect(fit).toEqual({ scrolls: false, cut: [], columns: 4 });
+    expect(fit).toEqual({ scrolls: false, cut: [], columns: 5 });
     await expect(region.getByText('$0.65')).toBeInViewport({ ratio: 1 });
 
     // The name Lot Matches is visible text once (the heading); the caption stays in the tree, hidden from the eye.

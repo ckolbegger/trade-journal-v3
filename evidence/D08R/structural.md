@@ -902,3 +902,7 @@ Lane JR is ready to merge after merge run 2.
 **Position drawer at 1280 px (4 specs).** These are B6.12 (`d6/responsive-a11y.spec.ts:293`), B7.13 (`d7/responsive-a11y.spec.ts:163`) and both cases in `d8p/lot-matches-fit.spec.ts` (lines 55 and 75). All four are the Instrument column that T8R.5 added. T8R.5-F1 already traced the cause to T8R.5 (`fc58e8ca`) and fixed it in lane PO (`8449ed9f`); its own browser runs passed `d6/responsive-a11y`, `d7/responsive-a11y` and `lot-matches-fit`. No new task: lane PO merges, and the next merge run confirms the fix.
 
 **`d8p/cockpit.spec.ts:37` (B8P.1).** Plan and Risk's headings on O-C3 now end with "planned-leg fulfillment", which the spec's `HEADINGS` does not list. The spec passed in wave1-merge1 on `db0352e9`. To be traced to a commit with one targeted run after this batch of lanes merges, then fixed in a fresh task (bug task T8R.10-F3 or similar, named after the commit the trace finds), failing spec first.
+
+## T8R.5-F1
+
+B7.13 passed at `fc58e8ca^` and failed first at `fc58e8ca` (T8R.5's Instrument column): Open Lots scrolled and cut "Unconsumed opening fee" and "$0.65". Fix in `position.css`: Open Lots' second column (Opened) loses the 11.5rem minimum `table.trades` gives its Trade column, and Instrument cells wrap at their spaces from 960 px; Lot Matches' Instrument cell wraps with Bought and Sold from 960 px. The expected Open Lots column count moves from 4 to 5. Region 550 px; table 566 px before, 550 px after. Detail in `tdd-log/T8R.5-F1.md`.
