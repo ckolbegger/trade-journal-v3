@@ -1552,3 +1552,18 @@ Reviewer notes (not ocr findings):
 - The rail and Plan and Risk agree in every state: dated line present or absent, Settlement Due, before the first Marks, a stale weekend, and stock Trades.
 - No undated figure should be dated.
 - No case tests the `firstMarksDue` guard with an `underlyingReading` present. This is a small gap.
+
+## T8R.25-B7 returned
+
+T8R.25-B7 is committed as `3c97292d` in lane C2. Its ocr review is pending.
+
+**Fix.** The Payoff table box now uses Plan and Risk's table-box pattern: `role="region"`, the name "<table name> table", and `tabIndex={0}`. A unit case and an axe case at 320 px each went red, then green. 23 browser specs passed.
+
+**New flake.** The lane tier's unit stage failed 1 of 2111 tests: `PositionChangeForm.test.tsx > focus after navigation > should move focus to the Record entry heading when the form finishes loading`. It is unrelated to Payoff, and that file passed twice on rerun (52 of 52). This is not the flake in tech debt item 11. It is recorded for the final report, and the full run after lane C2 merges is the deciding run.
+
+**ocr on T8R.25-B7.** Session 9b8f3d31-3b4a-411b-a8f9-ef40d7d9c18f reviewed 3 files and made 0 comments. Raw output: `ocr/T8R.25-B7-3c97292d.json`.
+
+Reviewer notes (not ocr findings):
+- **Names.** Region lookups match exactly, so the names don't clash. They read slightly repetitive next to the section's name.
+- **Focus.** The box takes focus even at widths where it doesn't scroll. That matches every other table box in the app.
+- **Axe case.** It doesn't check that the table overflows at 320 px, so it could pass vacuously if the table ever fits.
