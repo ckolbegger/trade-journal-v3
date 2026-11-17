@@ -1,0 +1,165 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 0,
+    "total_tokens": 60292,
+    "input_tokens": 59009,
+    "output_tokens": 1283,
+    "cache_read_tokens": 9984,
+    "elapsed": "46s"
+  },
+  "tool_calls": {
+    "total": 14,
+    "by_tool": {
+      "code_search": 5,
+      "file_read": 8,
+      "file_read_diff": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Trade view columns and summary behavior",
+      "files": [
+        "src/coordinators/trade-views/columns.test.ts",
+        "src/coordinators/trade-views/trade-summary.test.ts",
+        "src/coordinators/trade-views/trade-views.ts"
+      ]
+    },
+    {
+      "label": "Market data session reading",
+      "files": [
+        "src/modules/market-data/market-data.ts",
+        "src/modules/market-data/read-session.test.ts"
+      ]
+    }
+  ],
+  "session_id": "aafa7fb0-ab39-44cd-a414-ae89c9997b49",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "aafa7fb0-ab39-44cd-a414-ae89c9997b49",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "60c526db",
+      "resolved_base": "fee1f3adadc9e00b658109e1cf1ff2db4f152951",
+      "resolved_head": "60c526db553985c9fd9895ba686ee15e17f46d52",
+      "exact_range": "fee1f3adadc9e00b658109e1cf1ff2db4f152951..60c526db553985c9fd9895ba686ee15e17f46d52",
+      "source_artifact_sha256": "edaa0cafc4393057c0d6468d4df4cb6c4bd1025f5884ebcfbf04d21aeb5d8ab3"
+    },
+    "execution": {
+      "ocr_version": "v1.13.11",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "2adc065778c3db7bc72ad5abe2b6a20204a20c57cac95c74af22a5a4842823b1",
+          "path": "src/modules/market-data/read-session.test.ts",
+          "fingerprint": "8740e6e5c6736a6ef5455194b86c3c40ae747372fb7f89647c8ed2f0c0093b75"
+        },
+        {
+          "item_id": "2de3c2a3801e9c40d4316c531c61d6d45ad9375aca72a8d35884b2cf0b4edbbb",
+          "path": "src/coordinators/trade-views/trade-summary.test.ts",
+          "fingerprint": "d2b1033843d7269af9ec9ba266c4489213d3a9c13d7f8f1712995b9d94e5ad64"
+        },
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "7ebc8b2e7182eba0e269493195c58c0246c1db259854e2d8b2b75230d0c0da9f"
+        },
+        {
+          "item_id": "3ab795e03d8397afcb9f00baa25886ad50fc3ba75957c1adce38b168142c23c1",
+          "path": "src/coordinators/trade-views/columns.test.ts",
+          "fingerprint": "eb9c46c89af3ce094cfda3f73cecc07d4be21c549500f32afa1f1c5679a088e6"
+        },
+        {
+          "item_id": "70c9d5b6c3936c08c792eaf13450c0216fd2c8094414ca3361baf96d37547c3e",
+          "path": "src/modules/market-data/market-data.ts",
+          "fingerprint": "98355a3ac378e39d1c8b6ac65c15062b8443bc269d1f83ccf4e45bcf037e3ece"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "2adc065778c3db7bc72ad5abe2b6a20204a20c57cac95c74af22a5a4842823b1",
+          "path": "src/modules/market-data/read-session.test.ts",
+          "fingerprint": "8740e6e5c6736a6ef5455194b86c3c40ae747372fb7f89647c8ed2f0c0093b75"
+        },
+        {
+          "item_id": "2de3c2a3801e9c40d4316c531c61d6d45ad9375aca72a8d35884b2cf0b4edbbb",
+          "path": "src/coordinators/trade-views/trade-summary.test.ts",
+          "fingerprint": "d2b1033843d7269af9ec9ba266c4489213d3a9c13d7f8f1712995b9d94e5ad64"
+        },
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "7ebc8b2e7182eba0e269493195c58c0246c1db259854e2d8b2b75230d0c0da9f"
+        },
+        {
+          "item_id": "3ab795e03d8397afcb9f00baa25886ad50fc3ba75957c1adce38b168142c23c1",
+          "path": "src/coordinators/trade-views/columns.test.ts",
+          "fingerprint": "eb9c46c89af3ce094cfda3f73cecc07d4be21c549500f32afa1f1c5679a088e6"
+        },
+        {
+          "item_id": "70c9d5b6c3936c08c792eaf13450c0216fd2c8094414ca3361baf96d37547c3e",
+          "path": "src/modules/market-data/market-data.ts",
+          "fingerprint": "98355a3ac378e39d1c8b6ac65c15062b8443bc269d1f83ccf4e45bcf037e3ece"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "01095857532fc1dc9da05756e220cf2e98f2953bc9b0855a566dbecbc37263ae",
+          "path": "evidence/D08R/suite-runs/T8R.21-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "485887fb46a4d0a77cb9dbf3a54b7421c4d5c1ced684a7aa65bc885fd69961a6",
+          "path": "evidence/D08R/structural.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "492e7efdff761bebcdf2263da2acec1da877fa2004bc1675d5b711a5ad1d7625",
+          "path": "evidence/D08R/suite-runs/T8R.21-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "86a1da111a7ef90a9ee485cbebbfb32a48e88267e78ce2929ffeb10d1729993d",
+          "path": "evidence/D08R/tdd-log/T8R.21.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "d2a4634b180d23cb81f78b1c66d857537dcd988dc806dcc3a72d7616e390a13b",
+          "path": "evidence/D08R/suite-runs/T8R.21-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "fb513981200d4e045cb37fdcb3c6ef2d82b3b9b2716114bfc6833aee8d017852",
+          "path": "evidence/D08R/suite-runs/T8R.21-unit.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 46246
+  }
+}

@@ -276,3 +276,21 @@ T8R.13 notes (from its hand-back): the rail CSS lives at `src/ui/cockpit/styles/
 ## T8R.13 Rail: no Deviation active badge; the P&L card's dated line
 
 Behavioral task; its red and green rows are in `tdd-log/T8R.13.md`. The badge assertions in `TradeDetail.test.tsx` (the "Deviation active" block) and `trade-detail/Placed.test.tsx` now prove absence. The rail styles live in `src/ui/cockpit/styles/rail-a.css` (the brief named `src/ui/styles/`). No browser spec changed, so none was run.
+
+## Merge: lane RA (T8R.13)
+
+Rebased `d08r/ra` onto `claude-opus-5.5` (`355d6823`): T8R.13 `4f54cea2` → `5237ada5`. The one conflict was in this file, where both sides had appended; kept both. The rebase brought in T8R.18's code, so the lane tier reran on `5237ada5` (`suite-runs/T8R.13-rebased-*.txt`): unit 2051 passed, integration 258 passed, 14 of 14 checks exit 0. The evidence commit is `06a8135f`. Fast-forwarded to it, then removed the lane worktree `d08r-ra` and the branch `d08r/ra`.
+
+## T8R.21 ocr review
+
+ocr on `60c526db` (session aafa7fb0-ab39-44cd-a414-ae89c9997b49, gpt-6.1-sol, 5 files reviewed, 0 comments; raw output `ocr/T8R.21-60c526db.json`): **No findings.** Reviewer notes, not ocr findings:
+- The reviewer traced `marksColumnsOf` by hand. At Thu 12:00 it gives Today Thu, `next: false`, Yesterday Wed. At Thu 18:00 it gives the same. On a Saturday it gives Mon, `next: true`, Yesterday Fri. At Thanksgiving noon, Fri 11-27, `next: true`, Yesterday Wed. On Monday before the close, Mon, `next: false`, Yesterday Fri. So `next` is true only when the exchange date is not a session (A232, W29).
+- The new fields are additive. `previousSession` makes no store request, and the frozen fixtures still compare equal.
+- Case 1's helper `detailAt` checks the view kind leniently, but its assertions are strict.
+
+T8R.21 notes, from its hand-back:
+- `exchangeDate` stays optional. A Review or Historical session has no as-of instant; a Current session always carries it.
+- `marksColumns` is filled on Open, Settlement Due and Closed Details, never on Planned or Incoherent ones.
+- `trade-summary.test.ts` gained `'marksColumns'` in its exact key list. That file is in lane BV's `src/coordinators/trade-views/`. The change is additive, and no value changed.
+- Cases 3, 4 and 5 passed on their first run. Each was mutation-checked: `next` forced to false; `yesterday` fabricated. They are listed in the handoff's open questions.
+- Lane tier: unit 2049, integration 258, 14 of 14 checks.

@@ -671,12 +671,12 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T8R.10 | 1 | PR | In progress from `77d475d0` | |
 | T8R.11 | 1 | PR | Not started | |
 | T8R.12 | 1 | PR | Not started | |
-| T8R.13 | 1 | RA | In progress from `77d475d0` | |
+| T8R.13 | 1 | RA | Done | `5237ada5` |
 | T8R.14 | 1 | RA | Not started | |
 | T8R.15 | 1 | JR | In progress from `77d475d0` | |
 | T8R.16 | 1 | JR | Not started | |
 | T8R.17 | 1 | JR | Not started | |
-| T8R.18 | 1 | BA | Committed `682bd8fb` (from `77d475d0`) | |
+| T8R.18 | 1 | BA | Done | `69582aaa` |
 | T8R.19 | 1 | BA | Not started | |
 | T8R.20 | 1 | BA | Not started | |
 | T8R.21 | 1 | BV | In progress from `77d475d0` | |
