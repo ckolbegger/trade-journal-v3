@@ -663,7 +663,7 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T8R.3-B1-F1 | 0 | CN | Done | `61451412` |
 | T8R.4 | 0 | PH | Done | `c7a9a3ca`; B1 met by F1 |
 | T8R.4-F1 | 0 | PH | Done | `bed2afe0` |
-| T8R.5 | 1 | PO | Not started | |
+| T8R.5 | 1 | PO | In progress from `80f0d7d9` | |
 | T8R.6 | 1 | TD | In progress from `77d475d0` | |
 | T8R.7 | 1 | TD | Not started | |
 | T8R.8 | 1 | TD | Not started | |
@@ -676,7 +676,7 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T8R.15 | 1 | JR | In progress from `77d475d0` | |
 | T8R.16 | 1 | JR | Not started | |
 | T8R.17 | 1 | JR | Not started | |
-| T8R.18 | 1 | BA | In progress from `77d475d0` | |
+| T8R.18 | 1 | BA | Committed `682bd8fb` (from `77d475d0`) | |
 | T8R.19 | 1 | BA | Not started | |
 | T8R.20 | 1 | BA | Not started | |
 | T8R.21 | 1 | BV | In progress from `77d475d0` | |
