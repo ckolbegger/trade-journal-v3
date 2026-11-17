@@ -186,6 +186,17 @@ describe('Price History (W9, P99)', () => {
       expect(call?.getAttribute('title')).toBe('Manual · saved 2026-10-14 17:00');
     });
 
+    it('should show a visible Corrected marker in a corrected Mark cell, and none in an uncorrected one', () => {
+      const corrected: ReplaySession = { ...WED, marks: [available(STOCK, '57.40', 'Typo in the first entry'), available(CALL, '2.90')] };
+      const { container } = render(<PriceHistoryTable {...priceHistoryProps(replay([corrected]), () => undefined, ZONE)} />);
+      const [xyz, call] = cells(container);
+      expect(xyz?.textContent).toBe('57.40Corrected');
+      const marker = xyz?.querySelector('[aria-hidden="true"]');
+      expect(marker?.textContent).toBe('Corrected');
+      expect(call?.textContent).toBe('$2.90');
+      expect(call?.querySelector('[aria-hidden="true"]')).toBeNull();
+    });
+
     it('should give a gap no provenance', () => {
       const { container } = render(<PriceHistoryTable {...priceHistoryProps(replay([TUE]), () => undefined, ZONE)} />);
       const [xyz] = cells(container);

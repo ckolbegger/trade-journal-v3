@@ -24,6 +24,11 @@
   font-weight: 600;
   color: inherit;
 }
+/* A corrected Mark's marker sits under its price, so the column stays as narrow as the other cells. */
+.price-history-corrected {
+  display: block;
+  font-size: 0.75rem;
+}
 .price-history-gaps {
   color: var(--muted);
 }

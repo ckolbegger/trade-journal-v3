@@ -37,7 +37,7 @@ function markCell(session: Session, instrument: Instrument, optionTrade: boolean
   const text = instrument.kind === 'Stock' && optionTrade ? decimalUnderlyingPrice(price) : decimalMoney(price);
   const saved = `${source} · saved ${localTime(savedAt, timeZone)}`;
   const provenance = correctionReason === undefined ? saved : `${saved}. Corrected: ${correctionReason}`;
-  return { text, provenance, label: `${text}. ${provenance}` };
+  return { text, provenance, label: `${text}. ${provenance}`, ...(correctionReason !== undefined && { corrected: true as const }) };
 }
 
 function pnlCell(session: Session): Cell {

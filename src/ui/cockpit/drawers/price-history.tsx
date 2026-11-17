@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router';
 import { ROUTES } from '../../../app/routes.ts';
 import { plural } from '../../format.ts';
+import { Badge } from '../../Badge.tsx';
 import type { ShellProps } from '../placeholder.ts';
 import { priceHistoryProps, type ReplaySource } from './price-history.props.ts';
 import type { PriceHistoryProps } from './price-history.types.ts';
@@ -35,6 +36,12 @@ export function PriceHistoryTable({ rowLabels, columns, missingCount, onOpenRevi
               return (
                 <td key={`${column.weekday}-${column.date}`} className={cell?.tone} title={cell?.provenance} aria-label={cell?.label}>
                   {cell ? cell.text : <span role="img" aria-label="No Mark">—</span>}
+                  {cell?.corrected && (
+                    // The cell's accessible name already says "Corrected: <reason>", so the visible marker stays out of the accessibility tree.
+                    <span className="price-history-corrected" aria-hidden="true">
+                      <Badge tone="info">Corrected</Badge>
+                    </span>
+                  )}
                 </td>
               );
             })}
