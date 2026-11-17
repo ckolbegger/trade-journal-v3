@@ -221,6 +221,18 @@ describe('Plan and Risk: Conditions (W31)', () => {
     expect(within(conditions).getByText('The contract expired, so its conditions are no longer measured.')).toBeTruthy();
     expect(conditions.textContent).not.toContain('Marks');
   });
+
+  it('should show the Settlement Due reason in every Conditions cell on the expiration evening, as the note and the rail do', () => {
+    // Fri 11-20 after 4:00 pm with the day's Marks saved: every condition carries a reading, yet the contract is due for settlement (W6).
+    const friday = { tradingDate: '2026-11-20', closeInstant: '2026-11-20T21:00:00Z', underlyingMark: '52.00' };
+    const base = optionOpenDetail('O-C', [OC_PC1, OC_PC2, OC_X1], friday);
+    expect(base.settlement.length).toBeGreaterThan(0);
+    const view = { ...base, current: { ...base.current, evaluation: { ...base.current.evaluation, conditions: [stop(), target()] } } };
+    render(<PlanRiskDrawer view={view} timeZone="America/New_York" />);
+    const conditions = screen.getByRole('region', { name: 'Conditions' });
+    expect(rowsOf(within(conditions).getByRole('table')).flatMap((cells) => cells.slice(1, 3))).toEqual(Array(4).fill('Settlement Due: XYZ Nov 20 $55 Call'));
+    expect(within(conditions).getByText('The contract expired, so its conditions are no longer measured.')).toBeTruthy();
+  });
 });
 
 describe('Plan and Risk: Since the last Marks (W23)', () => {
@@ -262,7 +274,8 @@ describe('Plan and Risk: Since the last Marks (W23)', () => {
   it('should not show Since the last Marks on a Settlement Due Trade whose lots predate its last Marks', () => {
     // O-S2X at Mon 11-23 18:00: the Fri 11-20 Marks came after the lots, and the contract is due for settlement.
     const base = oc3([stop(), target()]);
-    const view = { ...base, settlement: [{ tradeId: 'O-S2X' }], current: { ...base.current, evaluation: { ...base.current.evaluation, atEntry }, noLotsAfterMarks: true } } as unknown as OpenView;
+    const due = optionOpenDetail('O-C', [OC_PC1, OC_PC2, OC_X1], { tradingDate: '2026-11-20', closeInstant: '2026-11-20T21:00:00Z', underlyingMark: '52.00' }).settlement;
+    const view = { ...base, settlement: due, current: { ...base.current, evaluation: { ...base.current.evaluation, atEntry }, noLotsAfterMarks: true } } as unknown as OpenView;
     render(<PlanRiskDrawer view={view} timeZone="America/New_York" />);
     expect(screen.queryByRole('region', { name: 'Since the last Marks' })).toBeNull();
   });

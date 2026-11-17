@@ -1338,3 +1338,9 @@ Fix: Trade Views adds the optional, additive field `OpenCurrentEvaluation.noLots
 Known limit: a Settlement Due Trade is treated as having no lots after Marks, since an expired contract reads no Mark and cannot be bought after expiration.
 
 Browser, via with-browser-lock.sh on 5175 (after `npm run build:faults` and `npm run build:releases`): e2e/d8p/states.spec.ts, e2e/d8p/cockpit.spec.ts, e2e/d7s (all four specs): 12 passed.
+
+## T8R.25-B2
+
+Plan and Risk's Conditions cells read the Settlement Due reason whenever the view is due for settlement (the same `view.settlement` the note and the rail use), not only when a condition's result is Unavailable. Fixes the expiration evening (Fri 11-20 18:30 with the day's Marks saved), where readings exist yet the contract is due.
+- Case: should show the Settlement Due reason in every Conditions cell on the expiration evening, as the note and the rail do (red, then green; see tdd-log/T8R.25-B2.md).
+- Browser (port 5175): e2e/d8p/states, e2e/d8p/settlement-due-replay and the four e2e/d7s specs, 11 passed.

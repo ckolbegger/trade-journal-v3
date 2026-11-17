@@ -83,10 +83,10 @@ function conditionsGroup(view: TradeDetailView, timeZone: string): PlanRiskGroup
     Target: conditionLines('Target', view.plan.targets, leg, view.plan.underlying),
   };
   // A figure with no reading says why at the figure length, where it lives (A222).
-  // A contract due for settlement is not measured (W6), whichever reason its result carries on the expiration day.
+  // A contract due for settlement is not measured (W6), whatever its result carries: another reason, or a reading from the expiration evening's Marks.
   const due = 'settlement' in view ? view.settlement[0] : undefined;
   const figureOf = (c: (typeof conditions)[number], format: (reading: Reading) => string) =>
-    due && c.result.kind === 'Unavailable' ? settlementDueFigure(due, timeZone) : calculation(c.result, format, timeZone);
+    due ? settlementDueFigure(due, timeZone) : calculation(c.result, format, timeZone);
   const rows = conditions.map((c) => {
     // An option's Underlying condition is measured in the Underlying's price (C3); every other condition in dollars.
     const priced = (value: Rational) => (option && c.kind === 'UnderlyingPrice' ? underlyingPrice(value) : money(value));
