@@ -262,3 +262,13 @@ ocr on `682bd8fb` (session 45db47a3-9eb7-4ae8-a290-d6086aaa0286, gpt-6.1-sol, 2 
 ## T8R.18
 
 Lane tier on `fee1f3ad` plus the T8R.18 change (`suite-runs/T8R.18-*.txt`): unit 193 files, 2048 passed; integration 118 files, 258 passed; 14 of 14 checks exit 0. `verify:fixtures` passes, so no frozen expected view failed on the added `trigger` field. `nearest` is untouched (T8R.20 removes it).
+
+## Merge: lane BA (T8R.18)
+
+Rebased `d08r/ba` onto `claude-opus-5.5`: T8R.18 `682bd8fb` → `69582aaa`. The only conflict was in this file, where both sides had appended; kept both. The deliverable branch had changed only plan and evidence since the base, so the lane tier stands. Fast-forwarded to `69582aaa`; removed lane worktree `d08r-ba` and branch `d08r/ba`. T8R.19 waits for T8R.21.
+
+## T8R.13 ocr review
+
+ocr on `4f54cea2` (session 66457317-1c8a-4b47-afda-466530310994, gpt-6.1-sol, 11 files reviewed, 0 comments; raw output `ocr/T8R.13-4f54cea2.json`): **No findings.** Reviewer notes (not ocr findings): `datedLineProps` reads `view.current.datedLine` and formats it, so ADR 0001 holds. It says "Marks" when the first plan leg is an Option. When the expiration is due, `openProps` returns before the dated line is spread in, so an expiration-due Trade shows no dated line. Neither A231 nor the cases cover that path.
+
+T8R.13 notes (from its hand-back): the rail CSS lives at `src/ui/cockpit/styles/rail-a.css`, which is the lane's file at the real path. `PnlCardProps` gains `datedLine?` and `datedTone?`; `IdentityCardProps` loses `deviationActive`. The Deviation active assertions in `TradeDetail.test.tsx` and `Placed.test.tsx` now assert absence, as the task retires that badge. No browser spec changed. Lane tier: unit 2047, integration 258, 14 of 14 checks.
