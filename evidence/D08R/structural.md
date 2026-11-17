@@ -618,3 +618,11 @@ Browser (after `npm run build:faults` and `npm run build:releases`, through `wit
 - Also affected, not owned: `e2e/d8p/cockpit.spec.ts:144-145` read `riskToStop` and `rewardToTarget` with `'$220.00 · 1.10R'` and `'$180.00 · 0.90R'`; they now need the "Risk to stop " and "Reward to target " prefixes.
 
 Lane tier: `evidence/D08R/suite-runs/T8R.10-F1-*.txt`; unit 2049 passed, integration 258 passed, 14 of 14 checks exit 0.
+
+## T8R.10-B2 The Distance cell without a chained ternary
+
+`src/ui/cockpit/drawers/plan-risk.props.ts`: the chained ternary in the Distance cell became a named function `distanceText` with the same three outcomes (blank without a trigger, "... away" while Active, "... past" once crossed).
+
+- Before (after B1, ternary still in place): `npx vitest run src/ui/cockpit/drawers/plan-risk.test.tsx` exit 0, 13 passed.
+- After: `npx vitest run src/ui/cockpit/drawers` exit 0, 7 files, 54 passed; `npm run typecheck` exit 0.
+- `git diff --stat`: only `plan-risk.props.ts`, 6 insertions, 3 deletions, all in that function.

@@ -90,9 +90,12 @@ function conditionsGroup(view: TradeDetailView, timeZone: string): PlanRiskGroup
   const rows = conditions.map((c) => {
     // An option's Underlying condition is measured in the Underlying's price (C3); every other condition in dollars.
     const priced = (value: Rational) => (option && c.kind === 'UnderlyingPrice' ? underlyingPrice(value) : money(value));
-    const distance = figureOf(c, ({ status, trigger }) =>
-      !trigger ? '' : status === 'Active' ? `${priced(trigger.distance)} away${datedLabel}` : `${status} · ${priced(trigger.beyond ?? trigger.distance)} past${datedLabel}`,
-    );
+    const distanceText = ({ status, trigger }: Reading): string => {
+      if (!trigger) return '';
+      if (status === 'Active') return `${priced(trigger.distance)} away${datedLabel}`;
+      return `${status} · ${priced(trigger.beyond ?? trigger.distance)} past${datedLabel}`;
+    };
+    const distance = figureOf(c, distanceText);
     const label = c.role === 'Stop' ? 'Risk to stop' : 'Reward to target';
     const risk = figureOf(c, ({ status, distance: toward, overrun }) => `${label} ${status === 'Active' || !overrun ? measureText(toward) : `${measureText(overrun)} past`}`);
     const at = Number(c.id.split('-')[1]) - 1;
