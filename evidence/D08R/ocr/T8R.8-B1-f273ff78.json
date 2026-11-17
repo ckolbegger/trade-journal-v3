@@ -1,0 +1,148 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 0,
+    "total_tokens": 14860,
+    "input_tokens": 14654,
+    "output_tokens": 206,
+    "cache_read_tokens": 3328,
+    "elapsed": "16s"
+  },
+  "tool_calls": {
+    "total": 4,
+    "by_tool": {
+      "file_read": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Cockpit today view and track behavior, styling, and tests",
+      "files": [
+        "src/ui/cockpit/drawers/today.props.test.ts",
+        "src/ui/cockpit/styles/today.css",
+        "src/ui/cockpit/track.test.tsx",
+        "src/ui/cockpit/track.tsx"
+      ]
+    }
+  ],
+  "session_id": "f2e46efe-fcda-488e-aa26-516617c81746",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "f2e46efe-fcda-488e-aa26-516617c81746",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "c0905d18",
+      "requested_head": "f273ff78",
+      "resolved_base": "c0905d18c11b72e8401726f7ca859d6143807ffc",
+      "resolved_head": "f273ff78a77aca3bfd517f0a0062daafe03561c4",
+      "exact_range": "c0905d18c11b72e8401726f7ca859d6143807ffc..f273ff78a77aca3bfd517f0a0062daafe03561c4",
+      "source_artifact_sha256": "7e90f805c7c2d444c7a5a05e2234073cd0bfd8abd4507e466c835329272ce914"
+    },
+    "execution": {
+      "ocr_version": "v1.13.11",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "17967f2880477819ffc0a80b8af02aac1dad2820b8d25bc31255a900085ef21c",
+          "path": "src/ui/cockpit/track.tsx",
+          "fingerprint": "c6755949c23be34f629b4e5bd540497bdcdca5dc327ed03859b91686ecb172d7"
+        },
+        {
+          "item_id": "84323b389981b5568fcce60c01816e443436963e6a2f2bce57f690d555fde82d",
+          "path": "src/ui/cockpit/drawers/today.props.test.ts",
+          "fingerprint": "b19553843ca9336cb7ab9c11ee96db4c1fcf788876e2ba6bc4b3fcd6e2e144b2"
+        },
+        {
+          "item_id": "ea4496d7bca47ad402de8c65e77b207fb14e6a37a91984bf37a2f776af21ea7d",
+          "path": "src/ui/cockpit/styles/today.css",
+          "fingerprint": "1b11a991e8595a07213d25cda4ab2d5a59103b1d4e79584f14d604b9fd573e6d"
+        },
+        {
+          "item_id": "ef8017352d01443e147be423a646947d658d39d9d1ccd8c9d6a83ff109fb6427",
+          "path": "src/ui/cockpit/track.test.tsx",
+          "fingerprint": "351a73ff66d8947fe318e6f8591b789749f10b72ddf42718e30d6e0180607b6c"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "17967f2880477819ffc0a80b8af02aac1dad2820b8d25bc31255a900085ef21c",
+          "path": "src/ui/cockpit/track.tsx",
+          "fingerprint": "c6755949c23be34f629b4e5bd540497bdcdca5dc327ed03859b91686ecb172d7"
+        },
+        {
+          "item_id": "84323b389981b5568fcce60c01816e443436963e6a2f2bce57f690d555fde82d",
+          "path": "src/ui/cockpit/drawers/today.props.test.ts",
+          "fingerprint": "b19553843ca9336cb7ab9c11ee96db4c1fcf788876e2ba6bc4b3fcd6e2e144b2"
+        },
+        {
+          "item_id": "ea4496d7bca47ad402de8c65e77b207fb14e6a37a91984bf37a2f776af21ea7d",
+          "path": "src/ui/cockpit/styles/today.css",
+          "fingerprint": "1b11a991e8595a07213d25cda4ab2d5a59103b1d4e79584f14d604b9fd573e6d"
+        },
+        {
+          "item_id": "ef8017352d01443e147be423a646947d658d39d9d1ccd8c9d6a83ff109fb6427",
+          "path": "src/ui/cockpit/track.test.tsx",
+          "fingerprint": "351a73ff66d8947fe318e6f8591b789749f10b72ddf42718e30d6e0180607b6c"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "527b4643d282d653097283b77960cc0f53604dd146b47408f588b5f62f771dc2",
+          "path": "evidence/D08R/suite-runs/T8R.8-B1-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "601a54f36727d04af090fa9e21a59cd3a9c1f18cc3ffcbf19e3e435ec0495844",
+          "path": "evidence/D08R/structural.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "6d17479db239fe3aade8588fe8ddd3e22accde9df932dd926ab4b5d7c5273fbd",
+          "path": "evidence/D08R/suite-runs/T8R.8-B1-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "8c61f4552441b6a80998e5c4fd1ef4f466643e5144791edd4de161853a605cb8",
+          "path": "evidence/D08R/suite-runs/T8R.8-B1-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "b832596da9490374c9c4c4f8626dfece30423f1b00986790793963369dfff80c",
+          "path": "evidence/D08R/tdd-log/T8R.8-B1.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "e27074399f228b3ac04a8b12fe6485992bb2b7eefce24baf29f35403d7e4d4e7",
+          "path": "evidence/D08R/suite-runs/T8R.8-B1-integration.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 16150
+  }
+}

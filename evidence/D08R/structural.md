@@ -1098,3 +1098,23 @@ Orphans in files this lane does not own: none found. `ConditionReading.underlyin
 ## T8R.8-B1
 
 The price track's lot ticks are no longer inside the `role="img"` element. `.track` is now a plain positioned container holding a `.track-art` image (the track's accessible name, zones and markers) and the ticks as sibling named images, so ARIA no longer makes the ticks presentational. Testing Library does not model presentational children, so the case checks that no ancestor of a tick has `role="img"`; Playwright's `getByRole` does not model it either, so no browser case was added. `today.css` gained `.track-art` and z-index values that keep ticks under the markers. Browser: `e2e/d8p/responsive-a11y.spec.ts` and `e2e/d8p/today-narrow.spec.ts`, 4 passed.
+
+## T8R.8-B1 and the lane TD merge: wave 1 complete
+
+**T8R.8-B1** was committed as `f273ff78`.
+- The ticks now sit beside a `.track-art` `role="img"` element, which carries the track's unchanged accessible name. They no longer sit inside it.
+- First red attempt: invalid. Testing Library's `getByRole` does not model presentational children, so the case passed. A case was then added that asserts no ancestor of a tick has `role="img"`, which is the ARIA rule itself. That gave a genuine red, then green.
+- Browser specs: `d8p/responsive-a11y` (axe) and `d8p/today-narrow`, 4 passed.
+
+**ocr:** session f2e46efe-fcda-488e-aa26-516617c81746. 4 files reviewed, 0 comments, raw output at `ocr/T8R.8-B1-f273ff78.json`.
+
+**Lane TD** was rebased onto `ff3b517e`. The new commits are T8R.8 `e43b29f0`, T8R.9 `8134c1af` and T8R.8-B1 `777d6329`.
+- Lane-tier rerun (`T8R.9-rebased`): 2092 unit, 258 integration, 14 of 14 checks.
+- Fast-forwarded to `d31b7e8f`, and the lane was removed.
+
+**Wave 1 is complete:** every wave-1 task and follow-up has merged.
+
+**Next:**
+- T8R.24 starts in lane WD.
+- T8R.26 is running in lane NS; it started early, as the handoff allows.
+- A full-tier run follows T8R.24's merge.
