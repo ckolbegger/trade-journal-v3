@@ -348,6 +348,31 @@ describe('Market Data read session: the next session (revision 92)', () => {
   });
 });
 
+describe('Read session: the session before (P110)', () => {
+  it('should name the session before its trading date and the as-of exchange date', async () => {
+    const { marketData } = await setup();
+    // Tuesday noon: the trading date is Monday 10-12, so the session before it is Friday 10-09.
+    const { result: current, requests } = await countRequests(() => marketData.openReadSession({ kind: 'Current', asOf: TUESDAY_NOON }));
+    expect(current.tradingDate).toBe('2026-10-12');
+    expect(current.previousSessionDate).toBe('2026-10-09');
+    expect(current.exchangeDate).toBe('2026-10-13');
+    expect(requests).toEqual([]);
+    // A Saturday as-of: the exchange date is the Saturday, a day that is not a session.
+    const saturday = await marketData.openReadSession({ kind: 'Current', asOf: '2026-10-17T14:00:00Z' });
+    expect(saturday.tradingDate).toBe('2026-10-16');
+    expect(saturday.previousSessionDate).toBe('2026-10-15');
+    expect(saturday.exchangeDate).toBe('2026-10-17');
+    // A Historical context has no as-of instant, so no exchange date.
+    const historical = await marketData.openReadSession({ kind: 'Historical', tradingDate: '2026-10-12' });
+    expect(historical.previousSessionDate).toBe('2026-10-09');
+    expect(historical.exchangeDate).toBeUndefined();
+    // Outside coverage: the exchange date is still carried, no previous session is named.
+    const outside = await marketData.openReadSession({ kind: 'Current', asOf: '2029-01-05T02:00:00Z' });
+    expect(outside.previousSessionDate).toBeUndefined();
+    expect(outside.exchangeDate).toBe('2029-01-04');
+  });
+});
+
 describe("the read session's gaps scan (decision 106)", () => {
   // The lower bound of each index range read, as [instrumentKey, date], while `run` runs.
   async function scanLowerBounds<T>(run: () => Promise<T>) {

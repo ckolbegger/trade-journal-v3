@@ -467,6 +467,17 @@ type ExpectedMark = Pick<OpenCurrentFigures, 'expectedMarkDate' | 'markResolutio
 const expectedMarkOf = (session: MarketDataReadSession, frame: MarkFrame | undefined): ExpectedMark =>
   session.covered ? { expectedMarkDate: session.tradingDate, ...(frame && { markResolution: frame.resolution }) } : {};
 
+// The Today table's column dates (A232). Today is the as-of exchange date when it is a session, else the next session;
+// Yesterday is the session just before Today's column. The read session's trading date is the last completed session,
+// so Today is it once that session has ended on the exchange date, and the next session otherwise. None outside coverage.
+function marksColumnsOf(session: MarketDataReadSession): OpenTradeDetail['marksColumns'] {
+  const { tradingDate, exchangeDate, previousSessionDate, nextSessionDate } = session;
+  // Outside coverage the session names no previous or next session, so no column dates follow.
+  if (exchangeDate === undefined) return undefined;
+  if (exchangeDate === tradingDate) return previousSessionDate === undefined ? undefined : { today: { date: tradingDate, next: false }, yesterday: previousSessionDate };
+  return nextSessionDate === undefined ? undefined : { today: { date: nextSessionDate, next: nextSessionDate !== exchangeDate }, yesterday: tradingDate };
+}
+
 // The session after the Expected Mark Date, which the read session names from the calendar, while the Trade awaits its
 // first close: the figures are Unavailable for the close they await (AwaitingClose), no session's Mark has valued any
 // Lot, and no contract is settling.
@@ -812,7 +823,7 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
           // A Closed Trade holds nothing, so no contract is awaiting settlement. Its evaluation is at its terminal date, with no read (A92).
           const closedEvaluation = valuation.evaluation;
           const current: ClosedCurrentEvaluation = { coverage: [{ instrument: closedEvaluation.observation.instrument, coverage: closedEvaluation.coverage }], evaluation: closedEvaluation };
-          const view = closedDetail(detailWithoutValuation(planned, analysis, derived, withDueStatus(narrative, closes), lastActivity, []), current, analysis, derived, closeReason);
+          const view = closedDetail({ ...detailWithoutValuation(planned, analysis, derived, withDueStatus(narrative, closes), lastActivity, []), ...optional('marksColumns', marksColumnsOf(session)) }, current, analysis, derived, closeReason);
           return { binding, view };
         }
         const { evaluation, settlement, frame, underlyingFrame, datedLine } = valuation;
@@ -831,7 +842,7 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
         const closes = !hasDebt ? undefined : frame ? closesOf(frame) : session.covered ? await sessionCloses(analysis.plan.underlying, asOf) : undefined;
         // A contract due for settlement has its panel, which says so, so it has no line (decision 105).
         const expiration = settlement.length === 0 ? expirationLineOf(analysis, 'Expires', asOf) : undefined;
-        const view: OpenTradeDetail = { ...detailWithoutValuation(planned, analysis, derived, withDueStatus(narrative, closes), lastActivity, settlement), ...optional('contractExpiration', expiration), current };
+        const view: OpenTradeDetail = { ...detailWithoutValuation(planned, analysis, derived, withDueStatus(narrative, closes), lastActivity, settlement), ...optional('contractExpiration', expiration), ...optional('marksColumns', marksColumnsOf(session)), current };
         return { binding, view, ...optional('marketDataSnapshotId', snapshotIdOf(session)) };
       });
     },

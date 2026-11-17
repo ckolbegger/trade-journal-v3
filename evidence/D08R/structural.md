@@ -294,3 +294,7 @@ T8R.21 notes, from its hand-back:
 - `trade-summary.test.ts` gained `'marksColumns'` in its exact key list. That file is in lane BV's `src/coordinators/trade-views/`. The change is additive, and no value changed.
 - Cases 3, 4 and 5 passed on their first run. Each was mutation-checked: `next` forced to false; `yesterday` fabricated. They are listed in the handoff's open questions.
 - Lane tier: unit 2049, integration 258, 14 of 14 checks.
+
+## T8R.21
+
+Today's column dates (A232, P110). Behavioral; rows in `tdd-log/T8R.21.md`. `MarketDataReadSession.exchangeDate` stays optional: only a Current context has an as-of instant, so a Review or Historical session carries none; a Current session always carries it, covered or not. `previousSessionDate` comes from the calendar alone, as `nextSessionDate` does. `marksColumns` is derived in Trade Views from the session's trading date, exchange date, previous and next sessions, with no calendar of its own, and is filled on Open, Settlement Due and Closed Details with a session read.

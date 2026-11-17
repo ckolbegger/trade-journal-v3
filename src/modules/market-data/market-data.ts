@@ -815,7 +815,7 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
         if (!resolved.issues.some((issue) => issue.code === 'SessionPolicyCoverage')) throw new Error(`no read session for ${JSON.stringify(context)}`);
         const tradingDate =
           context.kind === 'Current' ? Temporal.Instant.from(context.asOf).toZonedDateTimeISO('America/New_York').toPlainDate().toString() : context.kind === 'Review' ? context.reviewDate : context.tradingDate;
-        return { tradingDate, covered: false, frames: () => Promise.resolve([]), historicalFrames: () => Promise.resolve([]), gaps: () => Promise.resolve([]), series: () => Promise.resolve([]), settlementTime: (contract) => Promise.resolve(calendarSettlementTime(contract)), binding: () => ({ evidenceBinding: [], snapshotIds: {} }) };
+        return { tradingDate, ...(context.kind === 'Current' && { exchangeDate: tradingDate }), covered: false, frames: () => Promise.resolve([]), historicalFrames: () => Promise.resolve([]), gaps: () => Promise.resolve([]), series: () => Promise.resolve([]), settlementTime: (contract) => Promise.resolve(calendarSettlementTime(contract)), binding: () => ({ evidenceBinding: [], snapshotIds: {} }) };
       }
       const { day } = resolved;
       // The reads asked of a date in one synchronous run share one read snapshot, as `recover` reads a date's frames, Stale
@@ -930,10 +930,13 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
       const gapKeys = new Map<string, BoundKey>();
       // The calendar alone: unlike a frame's `nextSession`, it is named before that session completes.
       const next = deps.sessionPolicy.nextSession(day.date);
+      const previous = deps.sessionPolicy.previousSession(day.date);
       return {
         tradingDate: day.date,
         closeInstant: day.close,
         ...(next.ok && { nextSessionDate: next.value.date }),
+        ...(previous.ok && { previousSessionDate: previous.value.date }),
+        ...(context.kind === 'Current' && { exchangeDate: Temporal.Instant.from(context.asOf).toZonedDateTimeISO('America/New_York').toPlainDate().toString() }),
         covered: true,
         frames: (instruments) => framesAt(context, day, instruments),
         // Keys and snapshot ids as one `ResolveFrames` per date over every Instrument read on it gives them.
