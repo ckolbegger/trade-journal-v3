@@ -1383,3 +1383,15 @@ Next, lane BR (T8R.27, plus T8R.27-B1 once it has been reviewed) merges. Then co
 B2's brief lets it clear the tags inside the tag step it rewrites. The other two notes go to the final report.
 
 **Round count.** A third ocr round on this chain (T8R.27, then B1, then B2) that still leaves findings becomes a pending decision for the user (handoff, section 5).
+
+## Full-tier run wave2-full2 (on `54a9c95d`), before critic-2
+
+| Stage | Result |
+|---|---|
+| Unit | 2100 passed |
+| Integration | 269 passed |
+| Checks | 14 of 14 |
+| Browser 1 | 126 passed (5.1 min) |
+| Browser 2 | 121 passed (7.6 min) |
+
+`run-complete.sh` confirms the run is complete, and there was no flake. Next comes critic-2, the second critic at the T8R.25 checkpoint, run fresh on flows C8R.1 to C8R.4.
