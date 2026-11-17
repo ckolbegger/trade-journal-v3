@@ -1094,3 +1094,7 @@ Retired browser expectations:
 Removed code: `atEntryOf`, `valuedAtOf`, `conditionLineOf` (`today.props.ts`); `FigureCard` (`today.tsx`); `TodayDrawerProps.atEntry` and `.valuedAt`; `PriceTrackProps.conditionLines` and the track's Conditions list; the `.conds` rules in `styles/today.css`. `CurrentMarksCard` was already gone (T8R.7).
 
 Orphans in files this lane does not own: none found. `ConditionReading.underlying` and `trigger` are now unread by Today, as A230 says; the `underlying` field's removal waits for the next fixture refreeze.
+
+## T8R.8-B1
+
+The price track's lot ticks are no longer inside the `role="img"` element. `.track` is now a plain positioned container holding a `.track-art` image (the track's accessible name, zones and markers) and the ticks as sibling named images, so ARIA no longer makes the ticks presentational. Testing Library does not model presentational children, so the case checks that no ancestor of a tick has `role="img"`; Playwright's `getByRole` does not model it either, so no browser case was added. `today.css` gained `.track-art` and z-index values that keep ticks under the markers. Browser: `e2e/d8p/responsive-a11y.spec.ts` and `e2e/d8p/today-narrow.spec.ts`, 4 passed.

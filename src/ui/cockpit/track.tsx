@@ -10,20 +10,23 @@ export function PriceTrack({ title, accessibleName, min, max, zones, markers, ti
   return (
     <div className="track-block">
       <h3>{title}</h3>
-      <div className="track" role="img" aria-label={accessibleName}>
-        {zones.map((zone, index) => (
-          <span key={index} className={`zone z-${zone.role.toLowerCase()}`} data-role={zone.role} style={{ left: `${pct(zone.from)}%`, width: `${Number((pct(zone.to) - pct(zone.from)).toFixed(2))}%` }} />
-        ))}
+      <div className="track">
+        {/* The ticks sit beside the named image, not inside it: ARIA makes an image's children presentational, which would hide the ticks' names (A237). */}
+        <div className="track-art" role="img" aria-label={accessibleName}>
+          {zones.map((zone, index) => (
+            <span key={index} className={`zone z-${zone.role.toLowerCase()}`} data-role={zone.role} style={{ left: `${pct(zone.from)}%`, width: `${Number((pct(zone.to) - pct(zone.from)).toFixed(2))}%` }} />
+          ))}
+          {markers.map((marker) => (
+            <span key={marker.kind} className={`mk ${marker.kind}`} data-kind={marker.kind} style={{ left: `${pct(marker.price)}%` }}>
+              <span className="dot" />
+              <span className="lab" data-lane={LANES[marker.kind]}>
+                {marker.label}
+              </span>
+            </span>
+          ))}
+        </div>
         {ticks.map((tick, index) => (
           <span key={index} className="tick" role="img" aria-label={tick.label} title={tick.label} style={{ left: `${pct(tick.price)}%` }} />
-        ))}
-        {markers.map((marker) => (
-          <span key={marker.kind} className={`mk ${marker.kind}`} data-kind={marker.kind} style={{ left: `${pct(marker.price)}%` }}>
-            <span className="dot" />
-            <span className="lab" data-lane={LANES[marker.kind]}>
-              {marker.label}
-            </span>
-          </span>
         ))}
       </div>
     </div>

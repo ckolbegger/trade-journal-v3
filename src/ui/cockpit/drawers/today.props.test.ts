@@ -426,7 +426,8 @@ describe('Price track: open lots', () => {
   const lateBuy = ocChange('pc-3', '2026-10-16T15:00:00Z', 5, 'Buy', '1', '3.30', '0.65');
   const FRIDAY = { tradingDate: '2026-10-16', closeInstant: '2026-10-16T20:00:00Z', contractMark: '3.50', underlyingMark: '53.00' };
   const oc3Plus = (): OpenTradeDetail => ({ ...optionOpenDetail('O-C', [buy, sell, lateBuy], FRIDAY), openAverage: rational('2.65') });
-  const optionTrack = () => screen.getByRole('img', { name: /^Option price: / });
+  // The ticks sit beside the named image, so the parts are read from the track around it.
+  const optionTrack = () => screen.getByRole('img', { name: /^Option price: / }).closest<HTMLElement>('.track')!;
   const left = (element: HTMLElement | undefined) => Number.parseFloat(element!.style.left);
 
   it("should place the entry dot at the open lots' average, $2.65, not the first entry's $2.00", () => {
