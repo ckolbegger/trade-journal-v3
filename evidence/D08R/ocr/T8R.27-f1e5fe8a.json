@@ -1,0 +1,215 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 9 selected item(s).",
+  "summary": {
+    "files_reviewed": 9,
+    "comments": 1,
+    "total_tokens": 320767,
+    "input_tokens": 318520,
+    "output_tokens": 2247,
+    "cache_read_tokens": 16640,
+    "elapsed": "2m4s"
+  },
+  "tool_calls": {
+    "total": 29,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 10,
+      "file_find": 2,
+      "file_read": 16
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "e2e/d8r/names.spec.ts",
+      "content": "This filters labels through the same broker-format regex that the test is meant to validate. For example, visible `XYZ Dec 18 $55 Call` with an incorrect `aria-label=\"XYZ 2026-12-18 55 Call\"` still passes: the label produces no matches, so `expectNamed` never checks it. It also omits `alt` and does not resolve multiple `aria-labelledby` references into the resulting accessible name. Assert the full accessible name of each contract-bearing element against its visible name (for example with `toHaveAccessibleName`) rather than checking only matching substrings, so B8R.5 detects alternative screen-reader spellings.",
+      "existing_code": "      for (const label of labels) accessible.push(...(label?.match(pattern) ?? []).map((name) =\u003e name.trim()));",
+      "start_line": 27,
+      "end_line": 27,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "D8R end-to-end test suite and shared support updates",
+      "files": [
+        "e2e/d8p/support.ts",
+        "e2e/d8r/history.spec.ts",
+        "e2e/d8r/names.spec.ts",
+        "e2e/d8r/plan-risk.spec.ts",
+        "e2e/d8r/rail.spec.ts",
+        "e2e/d8r/responsive-a11y.spec.ts",
+        "e2e/d8r/states.spec.ts",
+        "e2e/d8r/support.ts",
+        "e2e/d8r/today.spec.ts"
+      ]
+    }
+  ],
+  "session_id": "059e5d4d-0192-499f-8ffe-0378636c964d",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "059e5d4d-0192-499f-8ffe-0378636c964d",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "f1e5fe8a",
+      "resolved_base": "241abe687413de80d713a261a76bf29f7b8c5795",
+      "resolved_head": "f1e5fe8a1e746c09ca30b7160eb3726133f5e3be",
+      "exact_range": "241abe687413de80d713a261a76bf29f7b8c5795..f1e5fe8a1e746c09ca30b7160eb3726133f5e3be",
+      "source_artifact_sha256": "0a7d335e84a114b9a34db4f2f4943992b9188890ec92b1978f5e7ad76d84c0ed"
+    },
+    "execution": {
+      "ocr_version": "v1.13.11",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0cf6f8c81d90b1b214f198a17ea555ace5105abe5cc4bd17cda5135f20f9c102",
+          "path": "e2e/d8r/states.spec.ts",
+          "fingerprint": "5cda48c0a8cb06051a471fec447df00055c7ea5c8023db82bd9ab71ff0edc2e0"
+        },
+        {
+          "item_id": "1afde35a58e3e0e9a9f6507d22fcbd3f3e2aca36a344bf1896873e07fec7ad17",
+          "path": "e2e/d8p/support.ts",
+          "fingerprint": "c16fcb5d151a7f1c27f93d2c5952bf5f89dff22b266744fb41db5f64036d84fc"
+        },
+        {
+          "item_id": "1f60c656112c1026f80b579c580299aaaaac955aab3baf1390fbfc6e2288cceb",
+          "path": "e2e/d8r/history.spec.ts",
+          "fingerprint": "1f2e58bf9d349ef65f4a2a0a46f55c4bb72d0bf45a1086c0e965ec89352c61c8"
+        },
+        {
+          "item_id": "2adcb3c7b02dfb0f11a29d0aea7dec7ea0c3d1d28b92bd3eb0dddee5cf39f6eb",
+          "path": "e2e/d8r/names.spec.ts",
+          "fingerprint": "6e2d72f439f07bcd1b8f834a66d6ad6d1084983f08478fe82ba3cde73fb4e987"
+        },
+        {
+          "item_id": "5056b38c802cad31932fca5d7ee5ca026a05257056595f1e7aba939b32759d63",
+          "path": "e2e/d8r/rail.spec.ts",
+          "fingerprint": "6e51d947c19070aef4ba77016d79975339a5f7184c29d57a347a86a953e650ed"
+        },
+        {
+          "item_id": "5aa3b7437fca46e1cfc6cec523929e224123a1800fa77dca6b850d1197f4656b",
+          "path": "e2e/d8r/responsive-a11y.spec.ts",
+          "fingerprint": "0b124b830c70727d7126a380eb3e6f4f9f6c6bf35b068e093577ad4333876ed3"
+        },
+        {
+          "item_id": "d3eb99946b5bb7f90658427e630f7c2515168d299467467f8bbc8ee72641f7e3",
+          "path": "e2e/d8r/support.ts",
+          "fingerprint": "9128ca0fa94779cbffa17a03674948957649e29636fddb2f6b3017fe3a9f7e2b"
+        },
+        {
+          "item_id": "d76dc36cd0ca75847f731730eb49f083d4aca9bd2dd312ed1b1454319ad4d5a1",
+          "path": "e2e/d8r/plan-risk.spec.ts",
+          "fingerprint": "3044813e73380e9f57863aa8660b4155bb05b8696bd8a5f1ef47f2803d66ae83"
+        },
+        {
+          "item_id": "ef534729fd6836df58cddd01829d10e4273fd00a0302a62edd8d94d4d7f1b060",
+          "path": "e2e/d8r/today.spec.ts",
+          "fingerprint": "dec3f27355d3c2d2145b5e8cd4d3ce9720857518de72196501a1bfdf670c4ae4"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0cf6f8c81d90b1b214f198a17ea555ace5105abe5cc4bd17cda5135f20f9c102",
+          "path": "e2e/d8r/states.spec.ts",
+          "fingerprint": "5cda48c0a8cb06051a471fec447df00055c7ea5c8023db82bd9ab71ff0edc2e0"
+        },
+        {
+          "item_id": "1afde35a58e3e0e9a9f6507d22fcbd3f3e2aca36a344bf1896873e07fec7ad17",
+          "path": "e2e/d8p/support.ts",
+          "fingerprint": "c16fcb5d151a7f1c27f93d2c5952bf5f89dff22b266744fb41db5f64036d84fc"
+        },
+        {
+          "item_id": "1f60c656112c1026f80b579c580299aaaaac955aab3baf1390fbfc6e2288cceb",
+          "path": "e2e/d8r/history.spec.ts",
+          "fingerprint": "1f2e58bf9d349ef65f4a2a0a46f55c4bb72d0bf45a1086c0e965ec89352c61c8"
+        },
+        {
+          "item_id": "2adcb3c7b02dfb0f11a29d0aea7dec7ea0c3d1d28b92bd3eb0dddee5cf39f6eb",
+          "path": "e2e/d8r/names.spec.ts",
+          "fingerprint": "6e2d72f439f07bcd1b8f834a66d6ad6d1084983f08478fe82ba3cde73fb4e987"
+        },
+        {
+          "item_id": "5056b38c802cad31932fca5d7ee5ca026a05257056595f1e7aba939b32759d63",
+          "path": "e2e/d8r/rail.spec.ts",
+          "fingerprint": "6e51d947c19070aef4ba77016d79975339a5f7184c29d57a347a86a953e650ed"
+        },
+        {
+          "item_id": "5aa3b7437fca46e1cfc6cec523929e224123a1800fa77dca6b850d1197f4656b",
+          "path": "e2e/d8r/responsive-a11y.spec.ts",
+          "fingerprint": "0b124b830c70727d7126a380eb3e6f4f9f6c6bf35b068e093577ad4333876ed3"
+        },
+        {
+          "item_id": "d3eb99946b5bb7f90658427e630f7c2515168d299467467f8bbc8ee72641f7e3",
+          "path": "e2e/d8r/support.ts",
+          "fingerprint": "9128ca0fa94779cbffa17a03674948957649e29636fddb2f6b3017fe3a9f7e2b"
+        },
+        {
+          "item_id": "d76dc36cd0ca75847f731730eb49f083d4aca9bd2dd312ed1b1454319ad4d5a1",
+          "path": "e2e/d8r/plan-risk.spec.ts",
+          "fingerprint": "3044813e73380e9f57863aa8660b4155bb05b8696bd8a5f1ef47f2803d66ae83"
+        },
+        {
+          "item_id": "ef534729fd6836df58cddd01829d10e4273fd00a0302a62edd8d94d4d7f1b060",
+          "path": "e2e/d8r/today.spec.ts",
+          "fingerprint": "dec3f27355d3c2d2145b5e8cd4d3ce9720857518de72196501a1bfdf670c4ae4"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "16dce196a3daad4a1611385affee8a9e5a9caad511443b30e91a3845dea3a0ab",
+          "path": "evidence/D08R/suite-runs/T8R.27-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "2323c8a86bacb8d42c7fb3cada7abea6dfe0c46c5e3933e5a7cd49d28bf1214d",
+          "path": "evidence/D08R/tdd-log/T8R.27.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "2bee1430678fe8ba132dee77c8eb8692b7f6a65ef3ae130d77df26a6fbce00e9",
+          "path": "evidence/D08R/suite-runs/T8R.27-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "485887fb46a4d0a77cb9dbf3a54b7421c4d5c1ced684a7aa65bc885fd69961a6",
+          "path": "evidence/D08R/structural.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "50bb67ae7340bc6946a896309a94ce27b11c5e6f1b2d79365d68331424b13333",
+          "path": "evidence/D08R/suite-runs/T8R.27-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "59d7cb8b3491fa50240dc81f6b2b86facfebfee0183dd0c6c42483963ab69de5",
+          "path": "evidence/D08R/suite-runs/T8R.27-checks.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 124268
+  }
+}

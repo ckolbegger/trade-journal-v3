@@ -1279,3 +1279,52 @@ T8R.27 is committed as `f1e5fe8a` in lane BR.
 **W24 punctuation.** The Journal line has no final period after the button, as shipped. critic-1 raised the same point as minor observation 3. It goes in the final report.
 
 **`e2e/d8p/history.spec.ts`.** The T8R.27 agent thought this spec might be stale. It is not: it passed in `wave2-full1`.
+
+## ocr: T8R.27
+
+- Commit `f1e5fe8a`, reviewed in place.
+- Session 059e5d4d-0192-499f-8ffe-0378636c964d.
+- 9 files reviewed, 6 excluded.
+- 1 comment. Raw output: `ocr/T8R.27-f1e5fe8a.json`.
+
+**Finding (medium, test, Valid).** `e2e/d8r/names.spec.ts:27`: `namesOn` collects only the accessible-text substrings that match the broker-format pattern. A contract spelled any other way, such as `aria-label="XYZ 2026-12-18 55 Call"`, is never compared. B8R.5 exists to catch exactly that spelling. This becomes bug task **T8R.27-B1** in lane BR.
+
+**Reviewer notes** (not ocr findings):
+- `buildOc3`'s existing callers are unchanged.
+- In `rail.spec.ts`, the class-based absence check is partly trivial. The text checks for "nearest", "Worst case" and "Max reward" are the real guard.
+- Possible flake sources were noted, but none was confirmed.
+
+## T8R.25-B2 returned; ocr
+
+T8R.25-B2 was committed as `96d9cec9` in lane CB.
+
+**Root cause.** `figureOf` showed the Settlement Due reason only when a result was Unavailable. On the expiration evening the Marks are saved, so the results are real readings. The note and the rail test `view.settlement`.
+
+**Fix.** `figureOf` now follows `view.settlement` too.
+
+**Tests.** One case went red, then green. Changed test double: B1's stub settlement entry was replaced with the real one. The 11 browser specs passed.
+
+**ocr.** Session 989671c4-8325-491f-920c-522eb22d7656, 2 files, 0 comments, raw output in `ocr/T8R.25-B2-96d9cec9.json`.
+
+**Reviewer notes** (not ocr findings):
+- A single-leg Plan has no second leg, so no live leg's figures can be hidden.
+- `settlementDueFigure` cannot throw on a real entry.
+- ADR 0001 holds.
+
+## T8R.25-B3 returned; ocr
+
+T8R.25-B3 is committed as `320bda9e` in lane CB.
+- The Condition cell now uses the rail's `conditionText`, exported from `rail/conditions.props.ts`. A stock condition reads "<Underlying> at or below $47.50". Option rows are unchanged.
+- One case went red, then green.
+- Browser: `e2e/d4` and `d8p/cockpit`, 27 passed.
+
+**Reading for the final report.** On a stock Trade, the Value at expiration column is kept with empty cells. T8R.10's new-words row approves the empty cell, and hiding the whole column would be a plan change. critic-1 mentioned the column inside defect 3. critic-2 will judge it again.
+
+**ocr:** session 4eb8370e-6ba4-49c1-b2a8-42cd7242e14e, 3 files, 0 comments, raw output `ocr/T8R.25-B3-320bda9e.json`.
+
+**Reviewer notes** (not ocr findings):
+- Option wording is identical to before.
+- `drawers/` may import from `rail/`; both files are `*.props.ts` adapters.
+- Nothing else used `triggers`.
+- The Plan group's Stop and Target rows keep the bare stock price, as W6 says.
+- The test name says "ABC", but the fixture's Underlying is XYZ. The assertion is sound.
