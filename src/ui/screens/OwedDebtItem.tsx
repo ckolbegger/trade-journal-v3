@@ -5,6 +5,7 @@ import { Badge } from '../Badge.tsx';
 import { DUE_TEXT } from '../due-text.ts';
 import { localTime } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
+import { entryLine } from '../cockpit/drawers/journal-line.ts';
 import { DebtForm, type DebtFormProps, type DebtResolved, type DebtSubmitResult } from './DebtForm.tsx';
 
 // An Outstanding Debt in a Trade's narrative: its Entry Type and "Reflection owed" beside its Position Change, with its
@@ -84,7 +85,7 @@ export function OwedDebtItem({
     formArea.current?.scrollIntoView?.({ block: 'start' });
   }, [definition]);
   // What the save returned: the item is relabelled from it, without reading the Trade again.
-  const [settled, setSettled] = useState<{ readonly label: string; readonly timeLabel: string; readonly time?: string }>();
+  const [settled, setSettled] = useState<{ readonly label: string; readonly time?: string }>();
   useEffect(() => {
     if (settled) formArea.current?.focus();
   }, [settled]);
@@ -92,7 +93,6 @@ export function OwedDebtItem({
     const answered = result.entry !== undefined;
     setSettled({
       label: answered ? 'Deferred, answered' : 'Declined later',
-      timeLabel: answered ? 'Answered' : 'Declined',
       time: (result.entry ?? result.decline)?.authoredTime,
     });
     request.settled?.(debt.id);
@@ -138,14 +138,12 @@ export function OwedDebtItem({
         <Badge tone="neutral">{debt.entryType}</Badge>
         {settled ? <Badge tone="info">{settled.label}</Badge> : <Badge tone="warning">Reflection owed</Badge>}
       </h3>
-      <p>
-        Position Change at <span className="nowrap">{localTime(debt.momentTime, timeZone)}</span>
-      </p>
-      {settled?.time && (
-        <dl>
-          <dt>{settled.timeLabel}</dt>
-          <dd>{localTime(settled.time, timeZone)}</dd>
-        </dl>
+      {settled?.time ? (
+        <p className="journal-line">{entryLine(debt.source, debt.momentTime, settled.time, timeZone)}</p>
+      ) : (
+        <p>
+          Position Change at <span className="nowrap">{localTime(debt.momentTime, timeZone)}</span>
+        </p>
       )}
       {!settled && debt.dueStatus && (
         <dl>

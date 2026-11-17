@@ -283,10 +283,10 @@ describe('Debt on Trade Detail (A69, P17)', () => {
 
   it('should relabel a reflection resolved on Trade Detail as "Deferred, answered" or "Declined later" with its time, without "Reflection owed" or a due status', async () => {
     const cases = [
-      { label: 'Deferred, answered', term: 'Answered', time: '2026-10-13 09:05', button: 'Answer', saved: { entry: { id: 'entry-9', authoredTime: '2026-10-13T13:05:00Z', responses: [] } } },
-      { label: 'Declined later', term: 'Declined', time: '2026-10-13 09:10', button: 'Decline', saved: { decline: { id: 'decl-1', authoredTime: '2026-10-13T13:10:00Z' } } },
+      { label: 'Deferred, answered', term: 'Answered',button: 'Answer', saved: { entry: { id: 'entry-9', authoredTime: '2026-10-13T13:05:00Z', responses: [] } } },
+      { label: 'Declined later', term: 'Declined',button: 'Decline', saved: { decline: { id: 'decl-1', authoredTime: '2026-10-13T13:10:00Z' } } },
     ];
-    for (const { label, term, time, button, saved } of cases) {
+    for (const { label, term, button, saved } of cases) {
       const facade = facadeDouble();
       vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockResolvedValue({ kind: 'Ready', view: openDetailOf([PC1, PC2], { journal: [owedDebt('debt-1', 'pc-1', '2026-10-12T14:00:00Z', 'Due')] }), binding: {} } as never);
       vi.mocked(facade.Journal.getDefinitions).mockResolvedValue({ kind: 'Found', definition: reflectionDefinition } as never);
@@ -312,12 +312,37 @@ describe('Debt on Trade Detail (A69, P17)', () => {
       await user.click(within(form).getByRole('button', { name: button }));
       const item = (await screen.findByRole('region', { name: 'Saved reflection' })).closest('li') as HTMLElement;
       expect(within(item).getByText(label, { selector: '.badge' })).toBeTruthy();
-      expect(termValue(item, term)).toBe(time);
+      expect(within(item).getByText(`Position Change · Mon Oct 12, 10:00 am · written Tue Oct 13`)).toBeTruthy();
+      expect(within(item).queryByText(term, { selector: 'dt' })).toBeNull();
       expect(within(item).queryByText('Reflection owed')).toBeNull();
       expect(within(item).queryByText('Due', { selector: 'dt' })).toBeNull();
       expect(facade.TradeViewsAndReporting.getTradeDetail).toHaveBeenCalledTimes(1);
       cleanup();
     }
+  });
+
+  it('should show the dated line on an owed Debt resolved in place, and no Answered or Declined row', async () => {
+    const facade = facadeDouble();
+    vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockResolvedValue({ kind: 'Ready', view: openDetailOf([PC1, PC2], { journal: [owedDebt('debt-1', 'pc-1', '2026-10-12T14:00:00Z', 'Due')] }), binding: {} } as never);
+    vi.mocked(facade.Journal.getDefinitions).mockResolvedValue({ kind: 'Found', definition: reflectionDefinition } as never);
+    vi.mocked(facade.Journal.save).mockResolvedValue({ kind: 'Saved', decline: { id: 'decl-1', authoredTime: '2026-10-13T13:10:00Z' }, debt: { debtId: 'debt-1' }, currentOutcome: { kind: 'Decline', id: 'decl-1' }, snapshot: { journalRevision: 5 } } as never);
+    render(
+      <RuntimeContext.Provider value={{ writable: true, report: () => undefined }}>
+        <MemoryRouter initialEntries={['/trades/trade-1']}>
+          <Routes>
+            <Route path="/trades/:tradeId" element={<TradeDetail facade={facade} timeZone="America/New_York" />} />
+          </Routes>
+        </MemoryRouter>
+      </RuntimeContext.Provider>,
+    );
+    const user = userEvent.setup();
+    await openDrawer(user, 'Journal');
+    await user.click(await within(await screen.findByRole('tabpanel', { name: 'Journal' })).findByRole('button', { name: 'Reflect now' }));
+    await user.click(await screen.findByRole('button', { name: 'Decline' }));
+    const item = (await screen.findByRole('region', { name: 'Saved reflection' })).closest('li') as HTMLElement;
+    expect(within(item).getByText('Position Change · Mon Oct 12, 10:00 am · written Tue Oct 13')).toBeTruthy();
+    expect(within(item).queryByText('Answered', { selector: 'dt' })).toBeNull();
+    expect(within(item).queryByText('Declined', { selector: 'dt' })).toBeNull();
   });
 
   it('should show an unclassified Outstanding Debt as "Reflection owed" with no due text, with Reflect now and Decline still offered while Writable', async () => {
