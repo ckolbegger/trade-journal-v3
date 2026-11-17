@@ -1,0 +1,144 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 1,
+    "total_tokens": 177579,
+    "input_tokens": 176100,
+    "output_tokens": 1479,
+    "cache_read_tokens": 13312,
+    "elapsed": "1m13s"
+  },
+  "tool_calls": {
+    "total": 15,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 1,
+      "file_find": 1,
+      "file_read": 12
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/trade-detail/Cockpit.tsx",
+      "content": "The required A240 request for ('Plan and Risk', 'Deviations') cannot focus its target: Deviations is currently rendered by DetailFooter outside all drawer panels, so this panel-scoped lookup always returns undefined. The new test uses Plan Baseline and therefore misses this failure. Align the Deviations placement/target lookup with the requested contract and test the actual Deviations request.",
+      "existing_code": "    const panel = document.getElementById(`drawer-panel-${tabId(focusing.drawer)}`);\n    const target = [...(panel?.querySelectorAll\u003cHTMLElement\u003e('h1, h2, h3, h4, h5, h6') ?? [])].find((h) =\u003e h.textContent?.trim() === focusing.heading);",
+      "start_line": 91,
+      "end_line": 92,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "e2e/d8p/states.spec.ts",
+        "src/ui/screens/trade-detail/Cockpit.test.tsx",
+        "src/ui/screens/trade-detail/Cockpit.tsx"
+      ]
+    }
+  ],
+  "session_id": "eef43a5c-004a-4c73-8397-d77bef04b28f",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "eef43a5c-004a-4c73-8397-d77bef04b28f",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "7fefc1f2",
+      "resolved_base": "0c6f9828eeb12826d6c565bee782bd68cf878f2d",
+      "resolved_head": "7fefc1f238a0a882c079337a6e67da812fa8fad5",
+      "exact_range": "0c6f9828eeb12826d6c565bee782bd68cf878f2d..7fefc1f238a0a882c079337a6e67da812fa8fad5",
+      "source_artifact_sha256": "3e16a6f14bdd131d8544f0b1244d0f82b699857f7925297c48cf6e94da9bd4a5"
+    },
+    "execution": {
+      "ocr_version": "v1.13.11",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "12f8d33ae57db509336618f70d5433f9e94127f7db546b8539f31cbd601f05b6",
+          "path": "src/ui/screens/trade-detail/Cockpit.test.tsx",
+          "fingerprint": "7d43a48ecdc97f79589a69b3d961519f2e3e3362cdc9f941ad4dd100cd2e7127"
+        },
+        {
+          "item_id": "30273611721b694304fcba1e627fe765af668fd478e0661a0cc14f1ce1b4a3ab",
+          "path": "e2e/d8p/states.spec.ts",
+          "fingerprint": "ebd45eb08ad55a9a2733f8ca1914438f7e2588476f48abe1c7d82b04f44e12c4"
+        },
+        {
+          "item_id": "bad5c69b3d1e03bf54bd2b1b2b13ff5e5a0dabd158881300fc1e86a4a591bb75",
+          "path": "src/ui/screens/trade-detail/Cockpit.tsx",
+          "fingerprint": "098effc721a6d2b4eaddf70ffe648c79b3183d6e666cedb58c3021692b8ff112"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "12f8d33ae57db509336618f70d5433f9e94127f7db546b8539f31cbd601f05b6",
+          "path": "src/ui/screens/trade-detail/Cockpit.test.tsx",
+          "fingerprint": "7d43a48ecdc97f79589a69b3d961519f2e3e3362cdc9f941ad4dd100cd2e7127"
+        },
+        {
+          "item_id": "30273611721b694304fcba1e627fe765af668fd478e0661a0cc14f1ce1b4a3ab",
+          "path": "e2e/d8p/states.spec.ts",
+          "fingerprint": "ebd45eb08ad55a9a2733f8ca1914438f7e2588476f48abe1c7d82b04f44e12c4"
+        },
+        {
+          "item_id": "bad5c69b3d1e03bf54bd2b1b2b13ff5e5a0dabd158881300fc1e86a4a591bb75",
+          "path": "src/ui/screens/trade-detail/Cockpit.tsx",
+          "fingerprint": "098effc721a6d2b4eaddf70ffe648c79b3183d6e666cedb58c3021692b8ff112"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "0463061c5993e5b58ef91f7564920617a260b0313e545bd4122b72a57605f3f7",
+          "path": "evidence/D08R/suite-runs/T8R.2-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "26a79d90930238cd828992c680a3482313344c3dc47d82a9e97693f5ab57d1d9",
+          "path": "evidence/D08R/suite-runs/T8R.2-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "97b9a20703c1843e3b8530c814140554ee3aae7d52baa7253bf2a449e8e6fe4d",
+          "path": "evidence/D08R/tdd-log/T8R.2.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "d1f41ea8887bd0285e1a05e1330a37645198a77ceea018d92edba6514977a6a4",
+          "path": "evidence/D08R/suite-runs/T8R.2-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "f5a37805e285eaf8bf9fef6467910bac6b7629e265d8927f916a3277029d64e1",
+          "path": "evidence/D08R/suite-runs/T8R.2-integration.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 73120
+  }
+}

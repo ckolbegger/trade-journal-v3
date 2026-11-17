@@ -104,3 +104,24 @@ Bug task from ocr (medium, `trade-views.ts:329`): `ClosedTradeDetail extends Ope
 - File outside the task's lane, granted by the main session for this bug task (type-level change only): `tests/support/closed-detail-fixtures.ts`. `closedDetailOf` now types its Open Detail as `Omit<OpenTradeDetail, 'openAverage'>` (import added). No runtime change: `openDetailOf` never sets `openAverage`. (A destructure-away form failed lint as an unused variable.)
 - Results (each exit 0): `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint` (2 pre-existing warnings), `npm run lint:deps`; the new test passes under vitest; lane tier `.claude/scripts/full-suite.sh evidence/D08R T8R.1-B1 lane`: unit 2028 passed, integration 258 passed, 14 of 14 checks exit 0 (`evidence/D08R/suite-runs/T8R.1-B1-*.txt`).
 - Correction to the T8R.1 note above: `ClosedTradeDetail` no longer inherits a usable `openAverage` (it is `never`); it still inherits `settlementUnderlying` and `marksColumns`.
+
+## Merge: lane TY (T8R.1, T8R.1-B1)
+
+Rebased `d08r/ty` onto `claude-opus-5.5` (`63355868`): T8R.1 `e4ca52b0` → `dddd063b`, T8R.1-B1 `3b78080e` → `5b333e64`. The one conflict was in this file (both sides appended); the main session kept the deliverable branch's text and appended T8R.1's section after it. No code file changed in the rebase, so B1's lane tier stands. Fast-forwarded `claude-opus-5.5` to `5b333e64`; lane worktree `d08r-ty` and branch `d08r/ty` removed.
+
+## T8R.2 ocr review
+
+ocr on `7fefc1f2` (session eef43a5c-004a-4c73-8397-d77bef04b28f, gpt-6.1-sol, 3 files reviewed, 1 comment; raw output `ocr/T8R.2-7fefc1f2.json`):
+
+| Severity | Category | Location | Claim | Assessment |
+|---|---|---|---|---|
+| medium | bug | `src/ui/screens/trade-detail/Cockpit.tsx:91-92` | The drawer request looks for its heading only inside the requested drawer's panel, so a request for ("Plan and Risk", "Deviations") finds nothing while `DetailFooter` renders Deviations outside every panel; the test asks for "Plan Baseline". | Reviewer: Doubtful. |
+
+**Dismissed (Wrong), after checking the cited lines.** The behavior is the planned one: T8R.2's fourth case is "should select a requested drawer and move focus to the requested heading **in it**". The claimed failure needs a caller asking for Deviations while Deviations is still in the footer, and none exists: `useDrawerRequest` has no non-test caller in this commit. The plan moves Deviations into Plan and Risk in T8R.11 and makes the first call in T8R.17, which is blocked by T8R.11, and T8R.17's second case ("should select Plan and Risk and move focus to its Deviations heading when See Plan and Risk is pressed") proves that very request. Listed in the handoff's open questions for the final report.
+
+## T8R.3 notes
+
+- Task summary (`5580fda4`, 37 files): 6 cases; case 1 and case 2 red then green; cases 3, 4, 5 and 6 are first-run passes, each with a mutation check that failed it as expected (an earlier year using `<=`; a raw strike; the two-digit year), flagged for the final report. About 100 expectation lines changed, every appendix line present and changed; none found outside the appendix in `src/` and `e2e/`. One appendix line changed its strike too, as case 4 requires ("BRK.B Nov 20 $412.50 Put", was "BRK.B 20 Nov 2026 412.5 Put"). Six screen test files gained a clock pin. Ten browser spec files passed under the lock.
+- `instrumentLabel` takes no time zone, so its current-year rule uses the UTC year, as `summaryExpiration` does when given none; A238 names the Workspace zone. Noted for ocr and the final report.
+- Lane tier: unit 2032 passed, 1 failed (`tools/bench/compare.test.ts`, the old contract-name form); integration 258; checks 14 of 14.
+- **Follow-up T8R.3-F1** (main session's implementation-level decision): section 1.5 says `tools/bench/compare.ts` and its test "keep working" untouched, but the appendix's grep searched `e2e/`, `tests/` and `src/**/*.test.*`, never `tools/`, and `compare.test.ts` asserts two contract names in the old form. They are contract-name expectations the appendix missed, so they follow W28 like the rest (C1). F1, in lane CN, changes only those two names, pins the case's clock, and updates the comment at `compare.ts:63`; no code in `tools/` changes and the bench's generated rows are not regenerated. Listed for the user in the final report.

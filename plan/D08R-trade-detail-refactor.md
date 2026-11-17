@@ -655,10 +655,11 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 
 | Task | Wave | Lane | Status | Commits |
 |---|---|---|---|---|
-| T8R.1 | 0 | TY | In progress from `1a01d594` | |
+| T8R.1 | 0 | TY | Done | `dddd063b`; B1 `5b333e64` |
 | T8R.2 | 0 | SH | In progress from `1a01d594` | |
 | T8R.2-F1 | 0 | SH | In progress from `7fefc1f2` | |
 | T8R.3 | 0 | CN | In progress from `1a01d594` | |
+| T8R.3-F1 | 0 | CN | In progress from `5580fda4` | |
 | T8R.4 | 0 | PH | Done | `c7a9a3ca`; B1 met by F1 |
 | T8R.4-F1 | 0 | PH | Done | `bed2afe0` |
 | T8R.5 | 1 | PO | Not started | |
