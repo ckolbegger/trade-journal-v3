@@ -665,7 +665,7 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T8R.4-F1 | 0 | PH | Done | `bed2afe0` |
 | T8R.5 | 1 | PO | In progress from `80f0d7d9` | |
 | T8R.6 | 1 | TD | Committed `651e5470` (from `77d475d0`) | |
-| T8R.6-F1 | 1 | TD | In progress from `400b4b02` | |
+| T8R.6-F1 | 1 | TD | Committed `3226c502` (from `400b4b02`); B1 met by `columns.test.ts`, no code | |
 | T8R.7 | 1 | TD | Not started | |
 | T8R.8 | 1 | TD | Not started | |
 | T8R.9 | 1 | TD | Not started | |
@@ -682,12 +682,12 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T8R.17 | 1 | JR | Not started | |
 | T8R.18 | 1 | BA | Done | `69582aaa` |
 | T8R.19 | 1 | BA | Committed `a471e993` (from `400b4b02`) | |
-| T8R.19-F1 | 1 | BA | In progress from `a471e993` | |
+| T8R.19-F1 | 1 | BA | Committed `972795f5` (from `a471e993`) | |
 | T8R.20 | 1 | BA | Not started | |
 | T8R.21 | 1 | BV | Done | `c9155d02` |
-| T8R.22 | 1 | BV | In progress from `438d6f42` | |
-| T8R.22-F1 | 1 | BV | In progress (with T8R.22's commit) | |
-| T8R.23 | 1 | BV | Not started | |
+| T8R.22 | 1 | BV | Done | `a414c8c4` |
+| T8R.22-F1 | 1 | BV | Done | `ef9f6ba7` |
+| T8R.23 | 1 | BV | In progress from `HEADNEXT` | |
 | T8R.24 | 2 | — | Not started | |
 | T8R.25 | 2 | — | Not started | |
 | T8R.26 | 2 | — | Not started | |

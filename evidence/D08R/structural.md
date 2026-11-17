@@ -463,3 +463,45 @@ Structural; `tests/integration/d7/query-count.test.ts`, the T7.29 case at line 1
 - Before: title "... should issue the same Trade Detail requests, bar the frame reads, for an expired and a live contract at one clock"; due tally `{ ..., 'meta.get': PINNED['meta.get'] - 1, 'trades.get': 2 }`.
 - After: title "... bar the frame reads and the Underlying series read ..."; due tally `{ ..., 'meta.get': PINNED['meta.get'], 'observations.getAll': 2, 'trades.get': 2 }`, with a comment naming A234 and I8R.7. The live assertion and every other assertion are unchanged.
 - The extra requests, all from the one `series` call (no other query-count proof reads a series, so the source was read): `observations.getAll` 1, the scan's `byInstrumentDate` range read (`historicalGaps`); `observations.getAll` 1, the clock date's evidence read (`evidenceFor`, because the series reaches the session's own date); `meta.get` 1, the read snapshot's id (one shared snapshot for both). Nothing else.
+
+## Merge: lane BV (T8R.22, T8R.22-F1)
+
+`d08r/bv` was rebased onto `claude-opus-5.5` at `6b3cd7a7`:
+- T8R.22: `c2c42f24` → `a414c8c4`
+- T8R.22-F1: `11de60eb` → `ef9f6ba7`
+
+The only conflicts were in this file, where both sides had appended. The main session kept both sides and appended the lane's T8R.22 and T8R.22-F1 sections, one per commit. The rebase brought in code the lane doesn't own (T8R.15 and others), so the lane tier was rerun as `suite-runs/T8R.22-rebased-*.txt`:
+- unit: 2063 passed
+- integration: 258 passed
+- checks: 14 of 14 exit 0
+
+That evidence is commit `d0ddd741`. Main fast-forwarded to `d0ddd741`, and lane worktree `d08r-bv` and branch `d08r/bv` were removed. T8R.23 is next in lane BV.
+
+## T8R.6-F1 ocr review
+
+ocr on `3226c502` (test-only, reviewed in place): session e1ba32d4-cb40-438d-b570-fb561c9b6251, gpt-6.1-sol, 2 files reviewed, 0 comments. Raw output: `ocr/T8R.6-F1-3226c502.json`. **No findings.** The first run hit the usage limit, and the agent waited from 02:23 to 03:50.
+
+T8R.6-F1 notes:
+- `correct-mark.spec.ts:23-26` now reads the Price History cell's corrected provenance.
+- `runtime-failure.spec.ts:61` now reads the Today "ABC Mark" cell as "—" (W29).
+- 16 of 16 specs pass on T8R.21's merged column dates, which confirms T8R.6 ocr finding 1 was met by T8R.21's merge.
+
+T8R.6-B1 changed no code. `TradeDetail.test.tsx:42`'s `marksColumns` override stays, because that test renders a hand-built view through `facadeDouble()` and never runs the coordinator. Real emission is proved in `columns.test.ts` (I8R.2, A232). Recorded as met by that coverage.
+
+## T8R.19-F1 ocr review
+
+ocr on `972795f5` (test-only): session 2ee26eb2-170f-4c7e-aa51-da1551d98a47, gpt-6.1-sol, 3 files reviewed, 0 comments. Raw output: `ocr/T8R.19-F1-972795f5.json`. **No findings.**
+
+An earlier agent gave up while waiting on the usage limit (sessions 82caa9ab and 7ad5d16d, nothing reviewed). It was not counted, and a fresh agent ran the review once usage came back.
+
+## T8R.15-F2 ocr review
+
+ocr on `f6eaacff` (test-only, reviewed in place): session ad09b055-ee9a-429b-83f6-b0e76f9851fe, gpt-6.1-sol, 2 files reviewed, 0 comments. Raw output: `ocr/T8R.15-F2-f6eaacff.json`. **No findings.** The first run hit the usage limit, and the agent waited from 02:44 to 03:52.
+
+T8R.15-F2 changes:
+- **B5.3:** the "Answered" and "2026-10-13 12:30" rows are replaced by the exact dated line "Trade Detail · Tue Oct 13, 10:00 am". The answer came the same day, so there is no "· written" part (A239). The time 12:30 no longer shows anywhere on the Journal, so the "12:30" in the test name has nothing to assert against. This goes in the final report.
+- **T2.64:** this is an interim, looser check. Plan and Risk's `dl.figure-grid` left edges must equal the Fulfillment list's, and Fulfillment's right edge must be at most the drawer values' maximum. The footer's 480 px column can't share a right edge with Plan and Risk's narrower columns. The main session accepts this until T8R.11 moves Fulfillment into Plan and Risk (handoff note for T8R.11), and it goes in the final report.
+
+## Usage-limit wait, 02:20 to 03:50
+
+ChatGPT's usage limit blocked every ocr review from about 02:20 until 03:50. While waiting, one review agent killed its own wait loops with `pkill -f` on part of their command text. That pattern could have matched other waiters; the main session's own waiter ended at that time. Later briefs say to kill only your own processes, by PID.
