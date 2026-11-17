@@ -131,6 +131,23 @@ test.describe('B8P.2 Price History and Journal', () => {
     await context.close();
   });
 
+  // B8R.6 (tech debt item 24): paging with the keyboard to either end disables the pressed button; focus moves to the other paging button.
+  test('should keep keyboard focus on a paging button when paging to either end of the Journal', async ({ profile }) => {
+    test.setTimeout(420_000);
+    const trade = await buildOc3(profile, { thursdayHold: true });
+    const { context, page } = await openDetailAt(profile, THURSDAY_1800, trade);
+    await expect(detail.heading(page, 'XYZ')).toBeVisible(READY);
+    await openDrawer(page, 'Journal');
+    await earlier(page).focus();
+    await page.keyboard.press('Enter');
+    await expect(earlier(page)).toBeDisabled();
+    await expect(newer(page)).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(newer(page)).toBeDisabled();
+    await expect(earlier(page)).toBeFocused();
+    await context.close();
+  });
+
   test('should select the Journal drawer from Reflect now in Needs you and open the form on Wednesday card, from any page of cards', async ({ profile }) => {
     test.setTimeout(420_000);
     const trade = await buildOc3(profile, { thursdayHold: true });

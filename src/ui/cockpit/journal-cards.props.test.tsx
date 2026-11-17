@@ -187,6 +187,35 @@ describe('Journal session cards (W10–W13, A214)', () => {
     expect(earlier.hasAttribute('disabled')).toBe(false);
   });
 
+  describe('Journal paging: keyboard focus', () => {
+    const days = ['2026-11-02', '2026-11-03', '2026-11-04', '2026-11-05', '2026-11-06', '2026-11-09', '2026-11-10'];
+    const showSeven = () => show(replayOf(days.map((date, at) => session(date, BigInt(at), '52.30', at === 0 ? null : { since: days[at - 1]!, dollars: 1n }))));
+
+    it('should keep focus on the paging button pressed while it stays enabled', async () => {
+      showSeven();
+      const earlier = screen.getByRole('button', { name: 'Earlier sessions' });
+      earlier.focus();
+      await userEvent.setup().keyboard('{Enter}');
+      expect(earlier.hasAttribute('disabled')).toBe(false);
+      expect(document.activeElement).toBe(earlier);
+    });
+
+    it('should move focus to the other paging button when the pressed one becomes disabled', async () => {
+      // Two pages: the other button is itself disabled until the press renders the new page.
+      show(replayOf(days.slice(0, 4).map((date, at) => session(date, BigInt(at), '52.30', at === 0 ? null : { since: days[at - 1]!, dollars: 1n }))));
+      const newer = screen.getByRole('button', { name: 'Newer sessions' });
+      const earlier = screen.getByRole('button', { name: 'Earlier sessions' });
+      const user = userEvent.setup();
+      earlier.focus();
+      await user.keyboard('{Enter}');
+      expect(earlier.hasAttribute('disabled')).toBe(true);
+      expect(document.activeElement).toBe(newer);
+      await user.keyboard('{Enter}');
+      expect(newer.hasAttribute('disabled')).toBe(true);
+      expect(document.activeElement).toBe(earlier);
+    });
+  });
+
   it('should show the Plan card and the card of the session not yet ended', () => {
     const planned = { ...view, plan: { ...view.plan, planTime: '2026-11-05T18:40:00Z' } };
     const planReflection = { kind: 'Entry', ...plannedDetail.journal[0] };

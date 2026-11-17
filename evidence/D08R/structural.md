@@ -570,3 +570,7 @@ Test-only; no product code changed.
 - B5.3: the Answered and `2026-10-13 12:30` expectations became one on the dated line, `Trade Detail · Tue Oct 13, 10:00 am`. The line shows the moment, not the answer time, and has no "· written" because the answer came the same day (W27, A239). The time 12:30 now appears nowhere on the Journal.
 - T2.64: Fulfillment renders in the footer below the drawers. The Journal's `<dl>` items are gone, so the check now opens Plan and Risk. Its figure lists are two 259 px columns at 1280, while Fulfillment is one 480 px column, so no value column shares its right edge any more. The check now asserts the same left edge for the figure lists and Fulfillment, and the Fulfillment value right edge within the drawer values' right extent. The row-width cap, answers-below-questions and accessibility parts are unchanged.
 - Green: both pass; the whole of `ui-alignment.spec.ts` and `detail-debt.spec.ts` passes (46).
+
+## T8R.16
+
+Journal paging keeps keyboard focus (tech debt item 24). B8R.6's focus case written first, red (`toBeFocused` on Newer sessions: inactive), green after the fix. Two unit cases in `journal-cards.props.test.tsx`; the first passed on its first run (flagged and mutation-checked in `tdd-log/T8R.16.md`). Lane tier: `.claude/scripts/full-suite.sh evidence/D08R T8R.16 lane` exit 0 (unit 2063, integration 258, 14 of 14 checks).

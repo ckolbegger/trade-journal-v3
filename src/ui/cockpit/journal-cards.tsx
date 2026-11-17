@@ -1,6 +1,7 @@
 // The Journal drawer's session cards (W10 to W13, A214): one card per session, newest first. The adapter (`drawers/journal.props`) turns the
 // replay and the Detail's view into display values; without a replay this renders nothing, and the Journal section keeps the drawer.
-import { useContext, useState } from 'react';
+import { useContext, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 import { Badge } from '../Badge.tsx';
 import { ReflectRequestContext } from '../screens/OwedDebtItem.tsx';
 import { journalCards, type JournalCardsInput } from './drawers/journal.props.ts';
@@ -102,6 +103,10 @@ export function JournalCards(input: JournalCardsInput) {
   // At most one owed reflection's form is open at a time; a resolved one stays as it rendered.
   const [active, setActive] = useState<{ readonly itemId: string; readonly resolved: boolean }>();
   const [requested, setPage] = useState(0);
+  // A disabled button can't hold focus, so paging to either end hands focus to the other paging button (tech debt item 24). The page is
+  // rendered first (flushSync), because the other button may itself be disabled until then.
+  const newerButton = useRef<HTMLButtonElement>(null);
+  const earlierButton = useRef<HTMLButtonElement>(null);
   const props = journalCards(input);
   // "Reflect now" for a Debt (A217): the cards turn to the page holding that Debt's card, whose item opens its own form from the same request.
   // The page is set while rendering, once per new request (state adjusted from a changed input, not in an effect).
@@ -127,10 +132,15 @@ export function JournalCards(input: JournalCardsInput) {
       {props.heading && (
         <div className="journal-cards-head">
           <h2 id="journal-cards-heading">{props.heading}</h2>
-          <button type="button" className="pill secondary" aria-label="Newer sessions" disabled={page === 0} onClick={() => setPage(page - 1)}>
+          <button type="button" className="pill secondary" aria-label="Newer sessions" disabled={page === 0} ref={newerButton} onClick={() => {
+              flushSync(() => setPage(page - 1));
+              if (page - 1 === 0) earlierButton.current?.focus();
+            }}>
             ‹
           </button>
-          <button type="button" className="pill secondary" aria-label="Earlier sessions" disabled={page >= pages - 1} onClick={() => setPage(page + 1)}>
+          <button type="button" className="pill secondary" aria-label="Earlier sessions" disabled={page >= pages - 1} ref={earlierButton} onClick={() => {
+              flushSync(() => setPage(page + 1));
+              if (page + 1 >= pages - 1) newerButton.current?.focus();            }}>
             ›
           </button>
         </div>
