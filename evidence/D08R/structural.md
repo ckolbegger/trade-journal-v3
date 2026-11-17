@@ -214,3 +214,7 @@ ocr on `8df55c00` (session 9a511e82-0c81-402a-8c81-1fe02361e6cb, gpt-6.1-sol, 21
 ## T8R.3-B2 notes
 
 `562b715f` (lane CN): 1 case in `calculation-words.test.ts`, red (`expected 'XYZ Dec 18 $52.51 Put' to be 'XYZ Dec 18 $52.505 Put'`) then green; no first-run pass. `summaryStrike` shows the comma-grouped 3-decimal value when the third digit is non-zero and keeps the old output otherwise ("$150", "$52.50", "$55"); the Trade Summary line gains the same. No signature change; every expected value unchanged. The brief's example "$150.00" was wrong (W28 writes "$150"); B2 kept the existing behavior. Lane tier: unit 2037, integration 258, 14 of 14 checks.
+
+## T8R.3-B2 ocr review
+
+ocr on `562b715f` (session 40534323-5d48-443c-a033-690b4f44aae8, gpt-6.1-sol, 2 files reviewed, 0 comments; raw output `ocr/T8R.3-B2-562b715f.json`): **No findings.**
