@@ -348,11 +348,14 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
     result: marked((mark, source): ConditionReading => {
       const toward = quantity.mul(multiplier).mul(role === 'Stop' ? mark.sub(decimal(boundary)) : decimal(boundary).sub(mark));
       const crossed = toward.compare(ZERO) <= 0;
+      // A230: the same distance in the condition's own price, the quantity's sign carrying the side.
+      const priceToward = toward.div((quantity.compare(ZERO) > 0 ? quantity : ZERO.sub(quantity)).mul(multiplier));
       return {
         status: statusOf(role, crossed),
         distance: measure(atLeastZero(toward)),
         overrun: crossed ? measure(ZERO.sub(toward)) : null,
         evidence: { instrument: frame.instrument, date, mark: source },
+        trigger: { distance: atLeastZero(priceToward), beyond: crossed ? ZERO.sub(priceToward) : null },
       };
     }),
   });
@@ -371,6 +374,7 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
           overrun: r.overrun && measure(r.overrun),
           evidence: { instrument: underlyingInstrument, date: underlyingDate, mark: source },
           underlying: r.underlying,
+          trigger: r.underlying,
         };
       }),
     };

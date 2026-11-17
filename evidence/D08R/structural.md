@@ -258,3 +258,7 @@ ocr on `682bd8fb` (session 45db47a3-9eb7-4ae8-a290-d6086aaa0286, gpt-6.1-sol, 2 
 - The distance is in price per share or contract quote for both sides: the dollar `toward` divided by |quantity| × multiplier leaves the sign-adjusted price difference. Short stock and short option-price conditions are covered by reading only, with no case.
 - Case 4's Underlying Stop (48.00, Underlying 47.50) is crossed rather than "at its boundary": distance 0, beyond 1/2, consistent with A230. A Mark exactly on the boundary counts as crossed (`toward <= 0`), giving beyond 0, consistent with the existing `status` and `overrun`.
 - A net quantity of zero with lots left would divide by zero; the reviewer found no path to it.
+
+## T8R.18
+
+Lane tier on `fee1f3ad` plus the T8R.18 change (`suite-runs/T8R.18-*.txt`): unit 193 files, 2048 passed; integration 118 files, 258 passed; 14 of 14 checks exit 0. `verify:fixtures` passes, so no frozen expected view failed on the added `trigger` field. `nearest` is untouched (T8R.20 removes it).
