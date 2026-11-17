@@ -30,9 +30,9 @@ test.describe('B4.5 Expected Mark Date (AC-MARK-001)', () => {
     await expect(detail.positionOpenPnlFigure(page)).toHaveText('Mark missing: XYZ, Mon Oct 12');
     await openDrawer(page, 'Today');
     await expect(detail.currentMarkedPnl(page)).toHaveText('Mark missing: XYZ, Mon Oct 12');
-    // Each condition's figure says why it has none, in the rail's Conditions card (Stop, then Target), as "Mark missing"; the P&L card above
-    // names the Instrument and date.
-    await expect(detail.conditionBlocks(page).locator('.condition-figure')).toHaveText(['Mark missing', 'Mark missing']);
+    // With today's Mark missing, each condition's figure in the rail's Conditions card (Stop, then Target) is its distance at the dated Marks, with
+    // that date (W21, A231); the P&L card above names the Instrument and date of the missing Mark.
+    await expect(detail.conditionBlocks(page).locator('.condition-figure')).toHaveText(['$3.70 away · Fri Oct 9 Mark', '$4.80 away · Fri Oct 9 Mark']);
     // The current sections hold no dollar figure from Friday's Mark: dollars appear only in the stale line and the dated section.
     await openDrawer(page, 'Today');
     for (const column of ['Today', 'Yesterday', 'Change'] as const) await expect(detail.marksCell(page, 'XYZ Mark', column)).toHaveText('—');

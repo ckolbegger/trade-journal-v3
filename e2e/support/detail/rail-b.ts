@@ -4,27 +4,29 @@ import type { Locator, Page } from '@playwright/test';
 import { detailRoot, figureIn, journalRegion, regionOf, roleOf, valueIn } from './scope.ts';
 
 // Conditions. Each condition's Risk to stop or Reward to target is a Plan and Risk card (T8P.31), one line per condition in Plan order: open that
-// drawer first. Worst case and Max reward are the rail's Conditions card's.
+// drawer first. Worst case and Max reward sit beneath the Conditions table in that drawer (T8R.10, W31).
 const planRiskPanel = (page: Page): Locator => detailRoot(page).locator('#drawer-panel-plan-and-risk');
 // The Conditions table's "Risk or reward" cells (W31): each reads "Risk to stop $220.00 · 1.10R", or "... past" once crossed (W32).
 const conditionsTable = (page: Page): Locator => planRiskPanel(page).getByRole('region', { name: 'Conditions table', exact: true });
 export const riskToStop = (page: Page): Locator => conditionsTable(page).getByRole('cell').filter({ hasText: /^Risk to stop / });
 export const rewardToTarget = (page: Page): Locator => conditionsTable(page).getByRole('cell').filter({ hasText: /^Reward to target / });
+// The list of notes beneath the Conditions table: "Worst case: ..." and "Max reward: ...", each figure in a .number span (W6's words).
+export const planRiskNotes = (page: Page): Locator => planRiskPanel(page).getByRole('list', { name: 'Worst case and Max reward' });
 export const riskFigure = (page: Page, term: string): Locator => {
   if (term === 'Worst case' || term === 'Max reward') {
-    return conditionsSummary(page).locator('li', { hasText: `${term}:` }).locator('.number');
+    return planRiskNotes(page).locator('li', { hasText: `${term}:` }).locator('.number');
   }
   if (term === 'Risk to stop') return riskToStop(page);
   return figureIn(planRiskPanel(page), term);
 };
 
 // The rail's Conditions card (W5, W21): one block per condition in Plan order, each with its distance, then the note that stands in for them before the
-// first Marks (Worst case and Max reward left the rail in T8R.14).
+// first Marks (Worst case and Max reward left the rail in T8R.14; its notes list is named Conditions notes).
 export const conditionsCard = (page: Page): Locator => regionOf(page, 'Conditions');
 export const conditionBlocks = (page: Page): Locator => conditionsCard(page).getByRole('list', { name: 'Conditions', exact: true }).getByRole('listitem');
 // The block of the condition whose row 2 reads `text` ("MNO at or below 41.00").
 export const conditionBlock = (page: Page, text: string): Locator => conditionBlocks(page).filter({ has: page.getByText(text, { exact: true }) });
-export const conditionsSummary = (page: Page): Locator => conditionsCard(page).getByRole('list', { name: 'Worst case and Max reward' });
+export const conditionsNotes = (page: Page): Locator => conditionsCard(page).getByRole('list', { name: 'Conditions notes' });
 
 // Needs you (W7): the rail's card, which holds the Settlement Due panel, the alerts and the owed reflections' headings.
 export const needsYouCard = (page: Page): Locator => regionOf(page, 'Needs you');

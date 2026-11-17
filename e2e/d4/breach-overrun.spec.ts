@@ -19,11 +19,12 @@ test.describe('B4.14 Breach, overrun, and intraday lines', () => {
     // Monday 17:00, Mark 47.00 below the Stop at 47.50.
     await openDrawer(page, 'Today');
     await expect(detail.marksCell(page, 'XYZ Mark', 'Today')).toHaveText('$47.00');
-    await expect(conditionFigure(page, STOP)).toHaveText('Breached');
+    // W21: a crossed condition reads "Breached · $0.50 past" (the Mark 47.00 against the Stop 47.50); the card no longer words the Trade P&L past it.
+    await expect(conditionFigure(page, STOP)).toHaveText('Breached · $0.50 past');
     await expect(detail.conditionBlock(page, STOP).locator('.condition-text')).toHaveText(STOP);
-    await expect(detail.conditionBlock(page, STOP).locator('.condition-why')).toContainText('$50.00 (0.20R) of Trade P&L past this Stop');
+    await expect(detail.conditionBlock(page, STOP).locator('.condition-why')).toHaveCount(0);
     // An Active condition shows its distance, not a status word.
-    await expect(conditionFigure(page, TARGET)).toHaveText(/^\+\$/);
+    await expect(conditionFigure(page, TARGET)).toHaveText(/^\$[\d,]+\.\d\d away$/);
     await openDrawer(page, 'Plan and Risk');
     await expect(detail.riskFigure(page, 'Risk to stop')).toHaveText('Risk to stop $50.00 · 0.20R past');
     // No Deviation is recorded, so the Deviations group is not shown at all (T8R.11).
@@ -40,10 +41,11 @@ test.describe('B4.14 Breach, overrun, and intraday lines', () => {
     await expect(detail.positionOpenPnlFigure(page)).toHaveText('Awaiting the close after Mon Oct 12');
     await expect(detail.currentMarkedPnl(page)).toHaveText('Awaiting the close after Mon Oct 12');
     await openDrawer(page, 'Plan and Risk');
-    await expect(detail.riskFigure(page, 'Worst case')).toHaveText('Awaiting the close after Mon Oct 12');
-    // The Conditions card words an unavailable condition's figure "Awaiting close" (the Awaiting-the-close sentence is the P&L card's).
-    await expect(conditionFigure(page, STOP)).toHaveText('Awaiting close');
-    await expect(conditionFigure(page, TARGET)).toHaveText('Awaiting close');
+    // W31: with today's Mark missing, Worst case reads the last Marks' figure, labelled with its date.
+    await expect(detail.riskFigure(page, 'Worst case')).toHaveText('$4,700.00 · 18.80R if XYZ goes to zero · Mon Oct 12 Mark');
+    // With today's Mark not yet this session's, the Conditions card shows each condition's distance at the dated Marks, with the date (W21, A231).
+    await expect(conditionFigure(page, STOP)).toHaveText('Breached · $0.50 past · Mon Oct 12 Mark');
+    await expect(conditionFigure(page, TARGET)).toHaveText(/^\$[\d,]+\.\d\d away · Mon Oct 12 Mark$/);
 
     // The dated line: the Position held at Monday's close with its own figures.
     const dated = 'At the Mon Oct 12 Marks';

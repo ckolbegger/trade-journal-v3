@@ -13,9 +13,9 @@ const PANEL = (name: DrawerName): string => `#drawer-panel-${name.toLowerCase().
 
 // The cards of each drawer, by their headings (a drawer's content appears once; the unselected drawers are mounted and hidden, T8P.5-B1).
 const HEADINGS: Record<'Today' | 'Position' | 'Plan and Risk' | 'Payoff', readonly string[]> = {
-  Today: ['marks: thu oct 15 against wed oct 14', 'where the prices sit'],
+  Today: ['marks', 'where the prices sit'],
   Position: ['position', 'lot matches', 'fee reconciliation', 'executions (2)'],
-  'Plan and Risk': ['plan', 'plan baseline', 'entry quality'],
+  'Plan and Risk': ['plan', 'conditions', 'plan baseline', 'entry quality'],
   Payoff: ['expiration payoff'],
 };
 
@@ -113,8 +113,9 @@ test.describe('B8P.1 The cockpit', () => {
       const counts = await labelCounts(page);
       const repeated = Object.entries(counts).filter(([, n]) => n > 1).map(([key]) => key).sort();
       // Accepted repeats (C8P.2): the Position drawer's Incurred fees beside the Fee reconciliation, and Entry Quality's reward : risk beside the Plan
-      // Baseline's. Every other card heading and term stands once, in the drawer that owns it, hidden drawers included.
-      expect(repeated).toEqual(['dt: incurred fees', 'dt: reward : risk']);
+      // Baseline's, and the heading Conditions, which names both the rail's card (W5) and Plan and Risk's group (W31). Every other card heading and
+      // term stands once, in the drawer that owns it, hidden drawers included.
+      expect(repeated).toEqual(['dt: incurred fees', 'dt: reward : risk', 'h2: conditions']);
       // W14: one chart and its two text-equivalent tables, each once.
       await expect(detail.anywhere(() => detail.payoffChart(page))).toHaveCount(1);
       await expect(detail.anywhere(() => detail.payoff(page, 'Planned'))).toHaveCount(1);

@@ -46,7 +46,7 @@ test.describe('B7.4 Settlement Due on Detail', () => {
     // The Position card words its Open P&L "Settlement Due" (T8P.17); the contract it waits on is the P&L card's line below.
     await expect(detail.positionOpenPnl(again)).toHaveText('Settlement Due');
     await expect(detail.currentMarkedPnl(again)).toHaveText(`Settlement Due: ${PUT}`);
-    await expect(detail.conditionsSummary(again)).toHaveText('The contract expired, so its conditions are no longer measured.');
+    await expect(detail.conditionsNotes(again)).toHaveText('The contract expired, so its conditions are no longer measured.');
     await openDrawer(again, 'Payoff');
     await expect(detail.latestCloseValue(again, 'MNO')).toHaveText(`Settlement Due: ${PUT}`);
 

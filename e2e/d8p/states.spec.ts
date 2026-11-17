@@ -50,7 +50,7 @@ test.describe('B8P.4 States', () => {
     await expect(detail.pnlLine(page)).toHaveText('Trade P&L once the expiration is recorded');
     await openDrawer(page, 'Position');
     await expect(detail.positionOpenPnl(page)).toHaveText('Settlement Due');
-    await expect(detail.conditionsSummary(page)).toHaveText('The contract expired, so its conditions are no longer measured.');
+    await expect(detail.conditionsNotes(page)).toHaveText('The contract expired, so its conditions are no longer measured.');
     await expect(detail.conditionBlocks(page)).toHaveCount(2);
     await expect(detail.conditionBlocks(page).locator('.condition-why')).toHaveCount(0);
     await expect(detail.recordExpirationLink(page)).toBeVisible();
@@ -74,7 +74,7 @@ test.describe('B8P.4 States', () => {
     await expect(detail.anywhere(() => detail.recordExitLink(page))).toHaveCount(0);
     // The Close Review was left for later, so the rail lists it as owed.
     await expect(detail.closeReviewOwedHeading(page)).toBeVisible();
-    await expect(detail.conditionsSummary(page)).toHaveCount(0);
+    await expect(detail.conditionsNotes(page)).toHaveCount(0);
     await context.close();
   });
 
@@ -113,8 +113,8 @@ test.describe('B8P.4 States', () => {
       await expect(detail.conditionBlocks(page)).toHaveCount(2);
       await expect(detail.conditionBlocks(page).locator('.condition-why')).toHaveCount(0);
       await expect(detail.conditionBlocks(page).locator('.condition-figure')).toHaveCount(0);
-      await expect(detail.conditionsSummary(page)).toHaveCount(0);
-      await expect(detail.needsYouCard(page).getByText('Nothing needs you now.')).toBeVisible();
+      await expect(detail.conditionsNotes(page)).toHaveCount(0);
+  await expect(detail.needsYouCard(page).getByText('Nothing needs you now.')).toBeVisible();
       await expect(detail.positionOpenPnl(page)).toHaveCount(0);
     });
 

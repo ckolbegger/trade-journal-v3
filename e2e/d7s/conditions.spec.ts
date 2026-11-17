@@ -1,6 +1,6 @@
 import type { BrowserContext, Page } from '@playwright/test';
 import {
-  cardHeader, createOs2Trade, detail, expect, firstPage, launchAt, onboardedAt, openReview, reachCard, READY, reloadReview, saveSessionMarks, test, tradeCard, TUESDAY, TUESDAY_1030, TUESDAY_1700, WEDNESDAY, WEDNESDAY_1700_NY,
+  cardHeader, createOs2Trade, detail, expect, firstPage, launchAt, onboardedAt, openDrawer, openReview, reachCard, READY, reloadReview, saveSessionMarks, test, tradeCard, TUESDAY, TUESDAY_1030, TUESDAY_1700, WEDNESDAY, WEDNESDAY_1700_NY,
   THURSDAY, THURSDAY_1700_NY, type TradeRef,
 } from './support.ts';
 
@@ -47,13 +47,16 @@ test.describe('B7S.3 Detail and list on Thursday', () => {
 
     await page.goto(`/trades/${trade.tradeId}`);
     await expect(detail.heading(page, 'MNO')).toBeVisible(READY);
-    // The rail's Conditions card (W5, W6): each condition's figure is its distance, or Breached or Reached, and Worst case and Max reward sit beneath.
+    // The rail's Conditions card (W5, W21): each condition's figure is its distance, or Breached or Reached with how far past; a stock price carries no $.
     await expect(detail.conditionBlocks(page)).toHaveCount(4);
-    await expect(detail.conditionBlock(page, 'MNO at or below 41.00')).toContainText('−$70.00');
-    await expect(detail.conditionBlock(page, 'Option at or above $3.60')).toContainText('Breached');
-    await expect(detail.conditionBlock(page, 'MNO at or above 44.50')).toContainText('Reached');
-    await expect(detail.conditionBlock(page, 'Option at or below $0.30')).toContainText('+$670.00');
-    await expect(detail.conditionsSummary(page).getByRole('listitem')).toHaveText(['Worst case: $8,270.00 · 17.23R if MNO goes to zero', 'Max reward: $730.00 · 1.52R']);
+    await expect(detail.conditionBlock(page, 'MNO at or below 41.00').locator('.condition-figure')).toHaveText('3.60 away');
+    await expect(detail.conditionBlock(page, 'Option at or above $3.60').locator('.condition-figure')).toHaveText('Breached · $0.05 past');
+    await expect(detail.conditionBlock(page, 'MNO at or above 44.50').locator('.condition-figure')).toHaveText('Reached · 0.10 past');
+    await expect(detail.conditionBlock(page, 'Option at or below $0.30').locator('.condition-figure')).toHaveText('$3.35 away');
+    // Worst case and Max reward left the rail (T8R.14) for beneath the Plan and Risk Conditions table (T8R.10, W31).
+    await expect(detail.conditionsNotes(page)).toHaveCount(0);
+    await openDrawer(page, 'Plan and Risk');
+    await expect(detail.planRiskNotes(page).getByRole('listitem')).toHaveText(['Worst case: $8,270.00 · 17.23R if MNO goes to zero', 'Max reward: $730.00 · 1.52R']);
     await context.close();
   });
 });

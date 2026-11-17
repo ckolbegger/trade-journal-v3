@@ -166,8 +166,10 @@ test.describe('B4.13 Responsive and accessible', () => {
     await openTradeFromOpenList(page, 'ABC');
     await openDrawer(page, 'Today');
     await expect(detail.marksCell(page, 'ABC Mark', 'Today')).toHaveText('$27.50');
+    // (Max reward sits beneath the Conditions table in Plan and Risk, T8R.10.)
+    await openDrawer(page, 'Plan and Risk');
     await expect(detail.riskFigure(page, 'Max reward')).toHaveText('Unbounded above');
-    // (Max reward is the rail's Conditions card's, so it needs no drawer.)
+    await openDrawer(page, 'Today');
     await expectAccessible(page, 'Detail Available (Stop Breached, Unbounded)');
     await openDetail(page, 'DEF');
     await openDrawer(page, 'Today');

@@ -761,3 +761,15 @@ Behavioral bug task; its red and green rows are in `tdd-log/T8R.14-B1.md`. The C
 The older case "should say beneath the conditions when their distances arrive..." now queries the new name. This is not a loosening: it still expects exactly the three notes where they apply and an empty result on a Closed Detail, so it still proves the list is absent where it should be. Querying the old name would have passed vacuously everywhere after the rename.
 
 Left alone, for T8R.14-F1 after T8R.10 merges: `e2e/support/detail/rail-b.ts` `conditionsSummary` (line 20) still finds the list by the old name, and the browser specs that use it.
+
+## T8R.14-F1
+
+Test-only follow-up (lane RA). No product code. Browser specs and `rail-b.ts` follow T8R.14's rail and T8R.10's Plan and Risk. Reds were run at head `85bbb4c1` with the old `rail-b.ts` (stashed) before the spec edits.
+
+- `rail-b.ts`: `riskFigure`'s Worst case and Max reward now read a new `planRiskNotes` (the "Worst case and Max reward" list in `#drawer-panel-plan-and-risk`); early-return form kept. `conditionsSummary` is now `conditionsNotes`, finding the rail's list named "Conditions notes". Callers renamed in `d8p/states.spec.ts` and `d7/settlement-due.spec.ts`.
+- `d8p/cockpit.spec.ts`: red `Plan and Risk cards ... + "conditions"`; HEADINGS gets "conditions"; lines 144-145 then run and pass. Two more stale lines surfaced: Today's heading is now "marks" (was "marks: thu oct 15 against wed oct 14"), and the accepted repeats gain `h2: conditions` (rail card W5 and Plan and Risk group W31).
+- `d4/breach-overrun.spec.ts`: red `Expected "Breached" / Received "Breached · $0.50 past"`; now asserts it, `.condition-why` count 0, Target `^$x away$`, Worst case `$4,700.00 · 18.80R if XYZ goes to zero · Mon Oct 12 Mark` (W31 dated), and the rail's Stop and Target figures `... · Mon Oct 12 Mark` (W21, A231).
+- `d4/responsive-a11y.spec.ts`: Max reward read after opening Plan and Risk; Today reopened before the axe pass so what it audits is unchanged.
+- `d7s/conditions.spec.ts`: red `Expected substring "−$70.00" / Received "Stop · 3.60 away..."`; now `3.60 away`, `Breached · $0.05 past`, `Reached · 0.10 past`, `$3.35 away` on `.condition-figure`, an absence check on `conditionsNotes`, and Worst case and Max reward read from Plan and Risk.
+- `d4/expected-mark.spec.ts:35`: red `Expected "Mark missing" / Received "$3.70 away · Fri Oct 9 Mark"`; the earlier note that this line was still true was wrong; now expects the dated distances (A231).
+- Not fixed, not in this lane: `e2e/d7/responsive-a11y.spec.ts:186` (Open Lots shows a fifth column "Unconsumed opening fee", cut off, `scrolls: true` at 1280 px). A Position drawer layout, untouched by T8R.14 or this task.
