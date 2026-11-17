@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { useEffect, useState, type KeyboardEvent, type ReactNode } from 'react';
 import type { UiFacade } from '../../../app/compose.ts';
 import type { TradeDetailView, TradeReplayView } from '../../../app/types.ts';
 import { ConditionsCard } from '../../cockpit/rail/conditions.tsx';
@@ -15,17 +15,13 @@ import { PriceHistory } from '../../cockpit/drawers/price-history.tsx';
 import { TodayDrawer } from '../../cockpit/drawers/today.tsx';
 import { ReflectRequestContext } from '../OwedDebtItem.tsx';
 import { IncoherentPanel, IntegrityPanel } from './Banner.tsx';
+import { DRAWERS, DrawerRequestContext, useDrawerRequest, type Drawer, type DrawerRequest } from './drawer-request.ts';
 
 // The cockpit shell (D08P T8P.5, A217, W1): the full-width banner, the rail beside the drawers, and the footer. A wave-1 lane replaces the
 // content behind a `src/ui/cockpit/` path and never edits this file. The selected drawer is component state, not the URL.
-const DRAWERS = ['Today', 'Position', 'Plan and Risk', 'Price History', 'Journal', 'Payoff'] as const;
-export type Drawer = (typeof DRAWERS)[number];
-
-// A drawer request from inside the cockpit (A240): select a drawer by its W1 name, then move focus to the heading in it whose text is `heading`.
-// The selected drawer is component state, so the address does not change.
-export type DrawerRequest = (drawer: Drawer, heading: string) => void;
-const DrawerRequestContext = createContext<DrawerRequest>(() => undefined);
-export const useDrawerRequest = (): DrawerRequest => useContext(DrawerRequestContext);
+// The drawer names live in `drawer-request.ts`, which the Journal cards import without a cycle.
+export type { Drawer };
+export { useDrawerRequest };
 
 // The drawers a state shows, and the one it selects by default (A217).
 function drawersOf(view: TradeDetailView): { readonly shown: readonly Drawer[]; readonly initial: Drawer } {

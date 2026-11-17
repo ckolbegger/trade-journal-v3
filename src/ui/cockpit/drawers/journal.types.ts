@@ -44,6 +44,8 @@ export interface JournalCardProps {
 }
 
 export interface JournalDrawerProps {
+  // W24: "1 active Deviation." and the button beside it, "See Plan and Risk"; absent when no Deviation is active.
+  readonly deviations?: { readonly line: string; readonly action: string };
   // "Sessions, newest first": the cards are sessions, and ‹ and › page through them.
   readonly heading?: string;
   // Newest first.

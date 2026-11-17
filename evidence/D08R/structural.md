@@ -946,3 +946,15 @@ Removed: the `nearest?: true` field, `nearestOf`, `nearestConditions` and `condi
 Fixture diff check: `git diff --stat tests/fixtures` shows 5 files, 90 insertions, 180 deletions. `git diff -U0 tests/fixtures`, with indentation stripped and sorted, shows exactly 90 `-"nearest": true`, 90 `-},` and 90 `+}`, and nothing else. So 90 `"nearest": true` lines are deleted, each with the comma on the line before it.
 
 After: `npm run typecheck` exit 0; `npx vitest run src/domain` 258 passed; `npm run verify:fixtures` OK (all seven workspaces and the backups, views equal); `npm run test:integration` passed. Remaining `nearest` hits are unrelated wording only (plan.ts and derive.ts condition-picking helpers and comments, PayoffView.tsx label placement, session-policy, entry tests, rail "no nearest" negative checks).
+
+## T8R.17 Journal: the active Deviation line (lane JR)
+
+**Count's place (A240).** `deviationsOf(view)` in `src/ui/cockpit/drawers/journal.props.ts` counts the Deviations whose last version has `status === 'Active'`. It is the same test `identity.props.ts:38` used before T8R.13. The line shows above the sessions, with a "See Plan and Risk" button that selects Plan and Risk and moves focus to its Deviations heading (W24).
+
+**Drawer-request move (main-session decision to break an import cycle).** `journal-cards.tsx` needs `useDrawerRequest`, which lived in `Cockpit.tsx`, and `Cockpit.tsx` imports `journal-cards.tsx`; `npm run lint:deps` failed with `no-circular`. The main session decided to move `DrawerRequest`, `DrawerRequestContext` and `useDrawerRequest` into `src/ui/screens/trade-detail/drawer-request.ts`. A type-only import of `Drawer` from `Cockpit.tsx` still counted as a cycle, so `DRAWERS` and the `Drawer` type moved there too (one step beyond the stated lines, needed for the same fix). `Cockpit.tsx` imports them and still exports `useDrawerRequest` and `Drawer`, so `Cockpit.test.tsx` is unchanged. No behaviour change: Cockpit and Journal tests were 39 passed before the move and 39 passed after. `lint:deps` is clean afterwards.
+
+**Case 3 first-run pass.** "should not show the line when no Deviation is active" passed on its first run (with no line built yet, absence passed trivially; once cases 1 and 2 built the line, the case guards the Active test). Its mutation check, counting every Deviation with a current version, failed the case; see `tdd-log/T8R.17.md`.
+
+**Fallback list.** The fallback Journal list (`Composed.tsx`, shown without a replay) has no Deviation line; only the session cards do.
+
+**Browser specs** (after `build:faults` and `build:releases`): `d8p/history.spec.ts`, `d8p/journal-final-session.spec.ts` and `d2/open-position.spec.ts` pass. `d4/breach-overrun.spec.ts` B4.14 fails at its Worst case check on Plan and Risk, before any Journal step. That spec is brought up to date by T8R.14-F1 in lane RA, which this lane's base does not contain (`9a116056` is not an ancestor); not caused by this task.

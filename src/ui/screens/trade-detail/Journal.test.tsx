@@ -5,10 +5,10 @@ import { MemoryRouter, Route, Routes } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { closedDetailOf } from '../../../../tests/support/closed-detail-fixtures.ts';
 import { facadeDouble } from '../../../../tests/support/facade-double.ts';
-import { openDetailOf, openDetailUncovered, PC1, PC2, pc1Reflection, pc2Decline, PC3, X1, X2 } from '../../../../tests/support/open-detail-fixtures.ts';
+import { openDetailOf, openDetailUncovered, PC1, PC2, pc1Reflection, pc2Decline, pc3Excess, PC3, X1, X2 } from '../../../../tests/support/open-detail-fixtures.ts';
 import { reflectionDefinition } from '../../../../tests/support/position-change-form-facade.ts';
 import { plannedDetail } from '../../../../tests/support/views-fixtures.ts';
-import type { DueClassification, NarrativeItem, TradeDetailDebt } from '../../../app/types.ts';
+import type { DueClassification, NarrativeItem, RecordedDeviation, TradeDetailDebt } from '../../../app/types.ts';
 import { RuntimeContext } from '../../runtime.tsx';
 import { TradeDetail } from '../TradeDetail.tsx';
 import { openDrawer, renderView, termValue } from './test-support.ts';
@@ -565,6 +565,59 @@ describe('Closed Trade Detail owed Debts (T6.19-B1)', () => {
     for (const item of [reflection, closeReview]) {
       expect(within(item).getByText('Reflection owed')).toBeTruthy();
       expect(item.textContent).toContain('Position Change at 2026-10-13 14:00');
+    }
+  });
+});
+
+describe('Journal: active Deviations (W24)', () => {
+  const superseded = { ...pc3Excess, occurrenceId: 'dev-2', versions: [...pc3Excess.versions, { ...pc3Excess.versions[0]!, status: 'Superseded' }] } as RecordedDeviation;
+  const second = { ...pc3Excess, occurrenceId: 'dev-3' } as RecordedDeviation;
+
+  // The cards need a replay; one with no sessions is enough for the line above them.
+  async function journalWith(recordedDeviations: RecordedDeviation[]) {
+    const user = userEvent.setup();
+    const facade = facadeDouble();
+    const view = openDetailOf([PC1, PC2, PC3], { recordedDeviations });
+    vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockResolvedValue({ kind: 'Ready', view, binding: {} } as never);
+    vi.mocked(facade.TradeViewsAndReporting.replayTrade).mockResolvedValue({ kind: 'Ready', view: { tradeId: 'trade-1', instruments: [], sessions: [], plan: [], pending: null }, binding: {} } as never);
+    render(
+      <RuntimeContext.Provider value={{ writable: true, report: () => undefined, timeZone: 'America/New_York' }}>
+        <MemoryRouter initialEntries={['/trades/trade-1']}>
+          <Routes>
+            <Route path="/trades/:tradeId" element={<TradeDetail facade={facade} timeZone="America/New_York" />} />
+          </Routes>
+        </MemoryRouter>
+      </RuntimeContext.Provider>,
+    );
+    await openDrawer(user, 'Journal');
+    return { user, panel: screen.getByRole('tabpanel', { name: 'Journal' }) };
+  }
+
+  it('should show 1 active Deviation. See Plan and Risk. above the sessions', async () => {
+    const { panel } = await journalWith([pc3Excess, superseded]);
+    const line = within(panel).getByText('1 active Deviation.');
+    expect(within(line.closest('p')!).getByRole('button', { name: 'See Plan and Risk' })).toBeTruthy();
+    expect(line.compareDocumentPosition(await within(panel).findByRole('heading', { name: 'Sessions, newest first' })) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    cleanup();
+    const two = await journalWith([pc3Excess, second]);
+    expect(within(two.panel).getByText('2 active Deviations.')).toBeTruthy();
+  });
+
+  it('should select Plan and Risk and move focus to its Deviations heading when See Plan and Risk is pressed', async () => {
+    const { user, panel } = await journalWith([pc3Excess]);
+    await user.click(within(panel).getByRole('button', { name: 'See Plan and Risk' }));
+    expect(screen.getByRole('tab', { name: 'Plan and Risk' }).getAttribute('aria-selected')).toBe('true');
+    expect(document.activeElement).toBe(within(screen.getByRole('tabpanel', { name: 'Plan and Risk' })).getByRole('heading', { name: 'Deviations' }));
+  });
+
+  it('should not show the line when no Deviation is active (gone)', async () => {
+    const allSuperseded = { ...pc3Excess, versions: [{ ...pc3Excess.versions[0]!, status: 'Superseded' }] } as RecordedDeviation;
+    for (const deviations of [[], [allSuperseded]]) {
+      const { panel } = await journalWith(deviations);
+      await within(panel).findByRole('heading', { name: 'Sessions, newest first' });
+      expect(within(panel).queryByText(/active Deviation/)).toBeNull();
+      expect(within(panel).queryByRole('button', { name: 'See Plan and Risk' })).toBeNull();
+      cleanup();
     }
   });
 });

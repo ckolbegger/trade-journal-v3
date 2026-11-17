@@ -93,9 +93,21 @@ export function journalTabCount(view: unknown): string | undefined {
   return owed > 0 ? `${owed} owed` : undefined;
 }
 
+// W24, A240: the occurrences whose current version is Active, as "1 active Deviation."; absent when none is.
+function deviationsOf(view: TradeDetailView | undefined): JournalDrawerProps['deviations'] {
+  const active = view && 'deviations' in view ? view.deviations.filter((d) => d.versions.at(-1)?.status === 'Active').length : 0;
+  return active > 0 ? { line: `${active} active Deviation${active === 1 ? '' : 's'}.`, action: 'See Plan and Risk' } : undefined;
+}
+
 export function journalCards(input: JournalCardsInput): JournalDrawerProps | undefined {
-  const { timeZone = 'UTC' } = input;
   if (!input.replay) return undefined;
+  const props = cardsOf(input);
+  const deviations = deviationsOf(input.view);
+  return deviations ? { ...props, deviations } : props;
+}
+
+function cardsOf(input: Extract<JournalCardsInput, { readonly replay: object | string }>): JournalDrawerProps {
+  const { timeZone = 'UTC' } = input;
   const { view } = input;
   // A Planned Detail's entries carry no kind; they are the Plan Reflection saved with the Plan, so they are the Plan card's items.
   const replay =

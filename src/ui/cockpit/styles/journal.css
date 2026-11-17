@@ -10,6 +10,9 @@
 .journal-cards > ol > li[hidden] {
   display: none;
 }
+.journal-deviations {
+  margin: 0 0 0.5rem;
+}
 .journal-cards-head {
   display: flex;
   align-items: center;

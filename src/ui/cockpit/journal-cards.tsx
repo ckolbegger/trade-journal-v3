@@ -4,6 +4,7 @@ import { useContext, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { Badge } from '../Badge.tsx';
 import { ReflectRequestContext } from '../screens/OwedDebtItem.tsx';
+import { useDrawerRequest } from '../screens/trade-detail/drawer-request.ts';
 import { journalCards, type JournalCardsInput } from './drawers/journal.props.ts';
 import type { JournalCardItem, JournalCardProps, OwedControl } from './drawers/journal.types.ts';
 
@@ -108,6 +109,7 @@ export function JournalCards(input: JournalCardsInput) {
   const newerButton = useRef<HTMLButtonElement>(null);
   const earlierButton = useRef<HTMLButtonElement>(null);
   const props = journalCards(input);
+  const requestDrawer = useDrawerRequest();
   // "Reflect now" for a Debt (A217): the cards turn to the page holding that Debt's card, whose item opens its own form from the same request.
   // The page is set while rendering, once per new request (state adjusted from a changed input, not in an effect).
   const request = useContext(ReflectRequestContext);
@@ -129,6 +131,14 @@ export function JournalCards(input: JournalCardsInput) {
   });
   return (
     <section className="journal-cards" {...(props.heading && { 'aria-labelledby': 'journal-cards-heading' })}>
+      {props.deviations && (
+        <p className="journal-deviations">
+          {props.deviations.line}{' '}
+          <button type="button" className="pill secondary" onClick={() => requestDrawer('Plan and Risk', 'Deviations')}>
+            {props.deviations.action}
+          </button>
+        </p>
+      )}
       {props.heading && (
         <div className="journal-cards-head">
           <h2 id="journal-cards-heading">{props.heading}</h2>
