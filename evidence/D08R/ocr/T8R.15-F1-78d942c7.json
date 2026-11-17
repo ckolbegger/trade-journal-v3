@@ -1,0 +1,126 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 0,
+    "total_tokens": 37672,
+    "input_tokens": 37444,
+    "output_tokens": 228,
+    "cache_read_tokens": 6912,
+    "elapsed": "16s"
+  },
+  "tool_calls": {
+    "total": 5,
+    "by_tool": {
+      "code_search": 2,
+      "file_read": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/screens/OwedDebtItem.tsx",
+        "src/ui/screens/trade-detail/Journal.test.tsx"
+      ]
+    }
+  ],
+  "session_id": "d23df672-a042-4570-91a6-e4769f2fa3e8",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "d23df672-a042-4570-91a6-e4769f2fa3e8",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "78d942c7",
+      "resolved_base": "da5e23ce5fa715b91fab42f7508de78f5dff3d51",
+      "resolved_head": "78d942c75754c2fe2b4c983fb9faea53143a8bfd",
+      "exact_range": "da5e23ce5fa715b91fab42f7508de78f5dff3d51..78d942c75754c2fe2b4c983fb9faea53143a8bfd",
+      "source_artifact_sha256": "50f88d3711ed3c4aed6c551f1dd107548183b8489f1fcb54934fb547c48c8ecc"
+    },
+    "execution": {
+      "ocr_version": "v1.13.11",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "710ba1a8ebaf3134eff8729095ed7a9840ac0dae47b51f10fb69b069ca0ff95b",
+          "path": "src/ui/screens/OwedDebtItem.tsx",
+          "fingerprint": "079cbe534584f0ed614492a606e765dea0dde51f64617c6c889b6e819b077f9a"
+        },
+        {
+          "item_id": "d1b0434436125f95b927cdbf8d883e22b28d270f07bb22b34419537cdd21677a",
+          "path": "src/ui/screens/trade-detail/Journal.test.tsx",
+          "fingerprint": "6bff404c4c1fd2b52bb07fbfeeb0d470a48a0b88047b7abc86b8aa25b260b7b6"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "710ba1a8ebaf3134eff8729095ed7a9840ac0dae47b51f10fb69b069ca0ff95b",
+          "path": "src/ui/screens/OwedDebtItem.tsx",
+          "fingerprint": "079cbe534584f0ed614492a606e765dea0dde51f64617c6c889b6e819b077f9a"
+        },
+        {
+          "item_id": "d1b0434436125f95b927cdbf8d883e22b28d270f07bb22b34419537cdd21677a",
+          "path": "src/ui/screens/trade-detail/Journal.test.tsx",
+          "fingerprint": "6bff404c4c1fd2b52bb07fbfeeb0d470a48a0b88047b7abc86b8aa25b260b7b6"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "485887fb46a4d0a77cb9dbf3a54b7421c4d5c1ced684a7aa65bc885fd69961a6",
+          "path": "evidence/D08R/structural.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "5730bd5034e863fc3001daee20ef8f15ae57a36b2957d97282466b1a62d3a475",
+          "path": "evidence/D08R/suite-runs/T8R.15-F1-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "7f08b6ab4db469067a78503801af34592b7fb4ff17595ffd8156bdb62f8fe8a8",
+          "path": "evidence/D08R/tdd-log/T8R.15-F1.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "8068ef8858828a9339b1bc41374d32a0016af7a16e812bc6468e8ef81242e338",
+          "path": "evidence/D08R/suite-runs/T8R.15-F1-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "9d9ea102bcbcbcdc9e9ca719911ebbe20a96e593da60aefa8fd89a3c05a2deec",
+          "path": "evidence/D08R/suite-runs/T8R.15-F1-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "a4eeb778ec267e4c721d60d570606f5cc88873746a80bf711135031c059031b3",
+          "path": "evidence/D08R/suite-runs/T8R.15-F1-lane.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 15910
+  }
+}

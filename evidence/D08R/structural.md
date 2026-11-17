@@ -366,3 +366,9 @@ ocr on `88a8d106` (session d7b3fa98-17a2-4d5f-ab21-d0ae9079f73c, gpt-6.1-sol, 9 
 **T8R.5-B1.** Defect: no case pins the Instrument column on a Trade with two different contracts, so a first-leg-only label would pass. Case: "it should name each open lot and each Lot Match by its own contract on a Trade with two contracts", a $55 and a $60 call, one lot of each, one partly closed. The case may pass on its first run, because the code reads as correct. The mutation then labels every row with the first leg's contract. Runs in lane PO.
 
 T8R.5 notes, from its hand-back: 4 cases, red then green. An Expiration-receipt case was a first-run pass and was mutation-checked. The agent edited `PositionChangeFormExit.test.tsx` and `PositionChangeFormOptions.test.tsx`, which belong to no lane and hold the exit receipt's Lot Matches expectations, adding only the new column. No new words. `src/ui/styles/position.css` does not exist. Narrow-width browser checks in `e2e/d6`, `e2e/d7` and `e2e/d2/ui-alignment.spec.ts`'s Open Lots may be affected and were not run; the next merge run covers them. Lane tier: unit 2049, integration 258, 14 of 14 checks.
+
+## T8R.15-F1 ocr review
+
+ocr on `78d942c7` (session d23df672-a042-4570-91a6-e4769f2fa3e8, gpt-6.1-sol, 2 files reviewed, 0 comments; raw output `ocr/T8R.15-F1-78d942c7.json`): **No findings.**
+
+F1's notes, from its hand-back: 1 case, red ("Unable to find … Position Change · Mon Oct 12, 10:00 am · written Tue Oct 13") then green, with no first-run pass. An owed Debt resolved in place now shows `entryLine(...)` in a `.journal-line`. The existing case "should relabel a reflection resolved on Trade Detail …" changed from `termValue(item, 'Answered'|'Declined')` = `2026-10-13 09:05`/`09:10` to the dated line, with no Answered or Declined `dt`. Its other assertions stayed. Lane tier: unit 2049, integration 258, 14 of 14 checks.
