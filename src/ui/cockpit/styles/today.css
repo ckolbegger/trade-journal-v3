@@ -43,6 +43,14 @@
   }
 }
 
+/* T8R.25-B4: on a desktop the column headings ("Next session, Mon Oct 19") may wrap at their spaces, so the table fits its box and opens
+   unscrolled; a nowrap heading made it 38 px too wide, and the scroll-to-the-right-end then put the pinned column over the first heading. */
+@media (min-width: 960px) {
+  .cockpit-drawers table.trades[aria-labelledby='today-marks-heading'] thead th {
+    white-space: normal;
+  }
+}
+
 /* T8R.7 (A242, W30): a Closed Trade's Today is greyed with the app's muted text colour, which keeps WCAG AA contrast (no opacity). The "Closed"
    stamp is real text, so the screen readers announce it. */
 .cockpit-drawers .closed-today,

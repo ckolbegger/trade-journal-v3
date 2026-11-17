@@ -1567,3 +1567,8 @@ Reviewer notes (not ocr findings):
 - **Names.** Region lookups match exactly, so the names don't clash. They read slightly repetitive next to the section's name.
 - **Focus.** The box takes focus even at widths where it doesn't scroll. That matches every other table box in the app.
 - **Axe case.** It doesn't check that the table overflows at 320 px, so it could pass vacuously if the table ever fits.
+
+## T8R.25-B4 Today table fits at 1280 px (critic-2, defect 1)
+
+Cause: from 960 px up every table header is nowrap, so the three Marks headings ("Next session, Mon Oct 19" and the others) made the table 563 to 588 px in a 550 px box. The Today drawer keeps its scroll box at the right end (`ScrollsToEnd`), so it opened at scrollLeft 38 and the pinned first column covered the start of the first heading. Fix: `src/ui/cockpit/styles/today.css`, at 960 px and up the Marks table's headings may wrap at their spaces. No scroll-to-end change: with no overflow it stays at 0.
+- Case in `e2e/d8r/responsive-a11y.spec.ts`: red (588 > 550), then green. Browser run: `e2e/d8r` and the d8p specs that touch Today (cockpit, journal-final-session, history, responsive-a11y, states, today-narrow): 27 passed under the browser lock.

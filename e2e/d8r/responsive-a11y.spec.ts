@@ -2,7 +2,7 @@ import type { Locator, Page } from '@playwright/test';
 import { expectNoSidewaysScroll, setWidth } from '../d7p/support.ts';
 import type { DrawerName } from '../support/detail/index.ts';
 import {
-  addOs2x, buildOc3, detail, expect, expectAccessible, launchAt, MONDAY_NOV_1700, openDetailAt, openDrawer, READY, recordExpiration, test, THURSDAY_1800, firstPage,
+  addOs2x, buildOc3, detail, expect, expectAccessible, launchAt, MONDAY_NOV_1700, openDetailAt, openDrawer, READY, recordExpiration, SATURDAY_1000, test, THURSDAY_1800, firstPage,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
@@ -53,6 +53,38 @@ const contrastOf = (cells: Locator) =>
       return { text: element.textContent, ratio: (light! + 0.05) / (dark! + 0.05) };
     });
   });
+
+// T8R.25-B4 (critic-2, defect 1): at 1280 px the Marks table fits its scroll box and opens unscrolled, so no column heading sits under the pinned row-header column.
+async function expectTodayTableFits(page: Page, state: string): Promise<void> {
+  await setWidth(page, 1280);
+  await openDrawer(page, 'Today');
+  const table = detail.marksTable(page);
+  await expect(table).toBeVisible(READY);
+  const measures = await table.evaluate((element) => {
+    const box = element.closest('.table-scroll') as HTMLElement;
+    const pinned = element.querySelector('tbody tr > :first-child')!.getBoundingClientRect();
+    return {
+      scrollWidth: box.scrollWidth, clientWidth: box.clientWidth, scrollLeft: box.scrollLeft, pinnedRight: pinned.right,
+      headings: [...element.querySelectorAll('thead th')].map((th) => ({ text: th.textContent, left: th.getBoundingClientRect().left })),
+    };
+  });
+  expect(measures.scrollWidth, `${state}: Marks table content wider than its box`).toBeLessThanOrEqual(measures.clientWidth);
+  expect(measures.scrollLeft, `${state}: Marks table scrollLeft`).toBe(0);
+  expect(measures.headings.length).toBeGreaterThan(0);
+  for (const { text, left } of measures.headings) expect(left, `${state}: heading "${text}" under the pinned column`).toBeGreaterThanOrEqual(measures.pinnedRight);
+}
+
+test.describe('T8R.25-B4 Today at 1280 px', () => {
+  test('should fit the Today table in its drawer at 1280 px, unscrolled, with each column heading read in full', async ({ profile }) => {
+    test.setTimeout(600_000);
+    const oc3 = await buildOc3(profile, { thursdayHold: true });
+    for (const [instant, state] of [[SATURDAY_1000, 'O-C3 Sat 10-17 10:00'], [THURSDAY_1800, 'O-C3 Thu evening']] as const) {
+      const { context, page } = await openDetailAt(profile, instant, oc3);
+      await expectTodayTableFits(page, state);
+      await context.close();
+    }
+  });
+});
 
 test.describe('B8R.7 Responsive and accessible', () => {
   test('should fit Today, Plan and Risk and Position on an Open, a Settlement Due and a Closed Trade at 1280, 375 and 320 px, with no sideways scroll and no WCAG 2.1 AA violations, the greyed Closed Today included', async ({ profile }) => {
