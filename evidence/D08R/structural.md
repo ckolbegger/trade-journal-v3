@@ -1516,3 +1516,21 @@ This becomes bug task **T8R.25-B8**, queued after T8R.25-B6 in lane C2.
 - `underlyingReading` is not read by attention, Needs you alerts, the Trade List badges or the Review card. When the Underlying has crossed a Stop but the contract's Mark is missing, the rail reads "Breached · X past", while there is no alert, no badge and no band.
 - That is consistent with A109, because an Alert needs the dollar overrun. It still shows as an inconsistency on screen. It is recorded for the final report and for critic-3.
 - The guards, ADR 0001 and A245 all hold.
+
+## T8R.25-B6 returned
+
+T8R.25-B6 is committed as `9a4940f6` in lane C2. The ocr review is pending.
+- **Change.** Today now adds a note under the table for an acknowledged Underlying Mark: "Mark acknowledged unavailable for XYZ on Fri Oct 16: your acknowledgment, not a price". The wording comes from the same `unavailableWords` as the contract's note.
+- **New field.** `OpenCurrentEvaluation.underlyingMarkResolution?` is additive.
+- **Drawer props.** `notes.acknowledged` changes from a string to an array. This stays inside the drawer's own props, so no view type changes.
+- **Tests.** Two cases went red, then green. 27 browser specs pass.
+
+**Process slip.** The coordinator case was written after its one-line field code. A mutation check (setting the field to `undefined`) then made it fail. It is flagged in the log and goes into the final report. The stock-Trade case passed on its first run and was checked by mutation, which is correct procedure.
+
+**ocr on T8R.25-B6.** Session 8cb4ce10-f6ba-4197-9763-a08c2111bb77 reviewed 6 files and left 0 comments. The raw output is in `ocr/T8R.25-B6-9a4940f6.json`.
+
+Reviewer notes (not ocr findings):
+- The field comes from the frame of the session being viewed.
+- A stock Trade can't get two notes, because only an option has an Underlying frame.
+- The change is additive (A245).
+- ADR 0001 holds.
