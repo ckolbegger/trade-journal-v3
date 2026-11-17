@@ -437,3 +437,11 @@ Failures:
 Tech debt item 11's flake did not occur. Both failures are in the Journal drawer, so the suspect is T8R.15. One targeted run, before and after T8R.15, is pinning them. The fix goes to a fresh `tdd-task` from the current head, failing test first.
 
 Load note: T8R.19-F1's first lane-tier run had two 5-second timeouts (`tools/wording-rules.test.ts`, `src/app/bench-generator.test.ts`). Both passed alone, and the whole tier passed on rerun. Several lanes were running suites at once.
+
+### Pinned: T8R.15, and follow-up T8R.15-F2
+
+One targeted run of the two specs, in a scratch worktree removed afterwards: both pass at `75b3ef64` and both fail at `727fd53a` (T8R.15), with the merge run's failure lines. T8R.15-F1 is not involved.
+- **T2.64** lined the Fulfillment value up with the `dl:not(.answers) dd` values above it in the open drawer panel. The only matches were the Journal items' details `<dl>`, which T8R.15 replaced with `<p class="journal-line">`.
+- **B5.3** expected the old details row "Answered" with "2026-10-13 12:30". T8R.15 removed that row: the answer came the same day, so the dated line has no "· written" part (A239).
+
+The plan supports the new markup. T8R.15 "replaces W10's items and the details grid"; W27 gives the dated line, and A239 gives "· written". T8R.15's file list named neither spec. **T8R.15-F2** (test-only) brings both specs up to date in a fresh lane, JF: worktree `.claude/worktrees/d08r-jf`, branch `d08r/jf`, from `41e9b8dc`.
