@@ -1602,3 +1602,16 @@ Defect (critic-2, defect 3): axe reported `scrollable-region-focusable` on the P
 Fix (`payoff.tsx`, one line): the box takes the pattern the Plan and Risk table box uses (`plan-risk.tsx`), `role="region"`, `aria-label` and `tabIndex={0}`, named "<table name> table" (for example "Planned Expiration Payoff table").
 Cases: `payoff.test.tsx` (1: each table box is a focusable named region), `e2e/d8r/responsive-a11y.spec.ts` (1: axe clean on Payoff at 320 px, Settlement Due O-S2X; red before the fix).
 Browser: `e2e/d8r` and the d8p specs that open Payoff (cockpit, first-marks-pending, payoff-fit, responsive-a11y, states): 23 passed.
+
+## Lane C2 merged (T8R.25-B4, B5, B6, B8, B7)
+
+Lane C2 was rebased onto `120ee788`. Upstream had changed no code since its base, so no rerun was needed, and the lane was fast-forwarded.
+
+Rebased hashes:
+- B4 `e0704377`
+- B5 `bffabe3c`
+- B6 `7b3990fa`
+- B8 `e5624d06`
+- B7 `580bace8`
+
+Next: one full run (browser full), `wave2-full3`, then critic-3. This is the checkpoint's last critic.
