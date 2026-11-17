@@ -10,7 +10,7 @@ export const THURSDAY = 'Thu Oct 15';
 export const WEDNESDAY_1700_NY = '2026-10-14T21:00:00Z';
 export const THURSDAY_1700_NY = '2026-10-15T21:00:00Z';
 
-export const MNO_DEC_PUT = 'MNO 18 Dec 2026 45 Put';
+export const MNO_DEC_PUT = 'MNO Dec 18 $45 Put';
 
 // The four price fields of an option Plan: the Underlying ones keep D7's labels, the option-price ones are W1's.
 export interface BothKinds extends OptionPlanValues {

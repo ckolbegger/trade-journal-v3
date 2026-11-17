@@ -119,7 +119,7 @@ describe('Needs you (W7)', () => {
     const view = optionOpenDetail('O-S', [OS_S1], friday);
     const card = renderCard(view, true)!;
     const panel = within(card).getByRole('region', { name: 'Settlement Due' });
-    expect(termValue(panel, 'Contract')).toBe('MNO 20 Nov 2026 45 Put');
+    expect(termValue(panel, 'Contract')).toBe('MNO Nov 20 $45 Put');
     expect(termValue(panel, 'Quantity')).toBe('Short 2 contracts');
     expect(termValue(panel, 'Expired')).toBe('Fri Nov 20');
     expect(termValue(panel, 'Settlement time')).toBe('Fri Nov 20, 16:00');

@@ -3,6 +3,7 @@ import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Link, MemoryRouter, Route, Routes } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { useFixedClock as fixClock } from './trade-detail/test-support.ts';
 import { exitFormFacade, plannedDetail } from '../../../tests/support/position-change-form-facade.ts';
 import { expiredOptionTrade, OC_CONTRACT } from '../../../tests/support/option-trade-fixtures.ts';
 import type { UiFacade } from '../../app/compose.ts';
@@ -11,6 +12,7 @@ import { RuntimeContext } from '../runtime.tsx';
 import { ExpirationForm } from './ExpirationForm.tsx';
 
 afterEach(cleanup);
+fixClock();
 
 // Friday 2026-11-20 16:00 New York, the close of the expiration session.
 const SETTLEMENT_TIME = '2026-11-20T21:00:00Z';
@@ -47,7 +49,7 @@ describe('rendering A113', () => {
     expect(await screen.findByRole('heading', { level: 1, name: 'Expiration' })).toBeTruthy();
     const terms = screen.getByRole('region', { name: 'Expiration' });
     const value = (term: string) => within(terms).getByText(term).nextElementSibling?.textContent;
-    expect(value('Contract')).toBe('XYZ 20 Nov 2026 55 Call');
+    expect(value('Contract')).toBe('XYZ Nov 20 $55 Call');
     expect(value('Quantity')).toBe('Long 1 contract');
     expect(value('Settlement time')).toContain('Fri Nov 20, 16:00');
     expect(within(terms).getByText('The close of the expiration session.')).toBeTruthy();
@@ -98,7 +100,7 @@ describe('submission', () => {
     );
     expect(command).not.toHaveProperty('closeReasonId');
     expect(await screen.findByRole('heading', { level: 1, name: 'Expiration recorded' })).toBeTruthy();
-    expect(screen.getByText('Expiration of 1 XYZ 20 Nov 2026 55 Call, no price or fee')).toBeTruthy();
+    expect(screen.getByText('Expiration of 1 XYZ Nov 20 $55 Call, no price or fee')).toBeTruthy();
     expect(screen.getByText('Expired on 2026-11-20 16:00')).toBeTruthy();
     expect(screen.getByText('Lifecycle').nextElementSibling?.textContent).toBe('Closed');
     expect(screen.getByText('Closed via sale of 1 contract and expiration of 1 contract')).toBeTruthy();

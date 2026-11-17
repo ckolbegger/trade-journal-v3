@@ -112,7 +112,7 @@ describe('option Trade Detail value at expiration without a number (row 23.11)',
     renderView(optionOpenDetail('O-S', [OS_S1], { tradingDate: '2026-11-23', closeInstant: '2026-11-23T21:00:00Z', underlyingMark: '46.00' }));
     await openDrawer(user, 'Payoff');
     await screen.findByRole('heading', { name: 'MNO', level: 1 });
-    expect(termIn("Value at expiration at MNO's latest Mark")).toBe('Settlement Due: MNO 20 Nov 2026 45 Put');
+    expect(termIn("Value at expiration at MNO's latest Mark")).toBe('Settlement Due: MNO Nov 20 $45 Put');
   });
 });
 

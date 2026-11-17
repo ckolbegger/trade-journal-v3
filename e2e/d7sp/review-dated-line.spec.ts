@@ -5,7 +5,7 @@ import { expectNoSidewaysScroll, setWidth } from '../d7p/support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
-const CALL = 'XYZ 20 Nov 2026 55 Call';
+const CALL = 'XYZ Nov 20 $55 Call';
 
 test.describe('B7SP.11 The option dated line in the Review', () => {
   test('should show O-C bought Monday, in the Tuesday 17:00 Review with the calls Monday Mark only, a Mon Oct 12 close group with its figures at 320 and 1280 px and no sideways scroll', async ({ profile }) => {

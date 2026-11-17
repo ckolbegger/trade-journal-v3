@@ -295,17 +295,17 @@ describe('closed option Trade Detail (A119)', () => {
     await openDrawer(user, 'Position');
     const executions = await screen.findByRole('region', { name: 'Executions (3)' });
     expect(within(executions).getAllByRole('button').map((b) => b.textContent)).toEqual([
-      'Buy to open 1 XYZ 20 Nov 2026 55 Call @ $2.10 2026-10-12 10:00details',
-      'Buy to open 1 XYZ 20 Nov 2026 55 Call @ $1.90 2026-10-12 11:00details',
-      'Sell to close 1 XYZ 20 Nov 2026 55 Call @ $3.00 2026-10-13 10:00details',
+      'Buy to open 1 XYZ Nov 20 $55 Call @ $2.10 2026-10-12 10:00details',
+      'Buy to open 1 XYZ Nov 20 $55 Call @ $1.90 2026-10-12 11:00details',
+      'Sell to close 1 XYZ Nov 20 $55 Call @ $3.00 2026-10-13 10:00details',
     ]);
     const settlement = screen.getByRole('region', { name: 'Settlement (1)' });
     expect(executions.compareDocumentPosition(settlement) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     const row = within(settlement).getByRole('button');
-    expect(row.textContent).toBe('Expiration of 1 XYZ 20 Nov 2026 55 Call 2026-11-20 16:00details');
+    expect(row.textContent).toBe('Expiration of 1 XYZ Nov 20 $55 Call 2026-11-20 16:00details');
     row.click();
     expect(await within(settlement).findByText('Settlement time', { selector: 'dt' })).toBeTruthy();
-    expect(termValue(settlement, 'Instrument')).toBe('XYZ 20 Nov 2026 55 Call');
+    expect(termValue(settlement, 'Instrument')).toBe('XYZ Nov 20 $55 Call');
     expect(termValue(settlement, 'Settlement time')).toBe('2026-11-20 16:00');
     expect(within(settlement).getByText('Position Change', { selector: 'dt' })).toBeTruthy();
     expect(within(settlement).queryByText('Fee', { selector: 'dt' })).toBeNull();
@@ -317,7 +317,7 @@ describe('option Trade Detail on an incoherent Detail (ocr comment 1)', () => {
   it('should list a recorded Expiration in its Settlement section on an incoherent Detail too', async () => {
     renderView(incoherentDetailOf([OC_PC1, OC_PC2, OC_X1, OC_E1], [{ factId: 'ex-1', kind: 'Execution', instrument: OC_CONTRACT, economicTime: '2026-10-12T14:00:00Z', side: 'Buy', quantity: '60', reason: 'UnknownPlannedLeg' }]));
     const settlement = await screen.findByRole('region', { name: 'Settlement (1)' });
-    expect(within(settlement).getByRole('button').textContent).toBe('Expiration of 1 XYZ 20 Nov 2026 55 Call 2026-11-20 16:00details');
+    expect(within(settlement).getByRole('button').textContent).toBe('Expiration of 1 XYZ Nov 20 $55 Call 2026-11-20 16:00details');
   });
 });
 

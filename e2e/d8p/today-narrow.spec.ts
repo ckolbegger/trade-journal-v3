@@ -4,7 +4,7 @@ import { expectNoSidewaysScroll, setWidth } from '../d7p/support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
-const CALL = 'XYZ 20 Nov 2026 55 Call';
+const CALL = 'XYZ Nov 20 $55 Call';
 const WIDTHS = [375, 320] as const;
 
 // T8P.23-B14 and B14-B1 (W8): at 375 and 320 px the comparison's current column and its Change lie inside the scroll box at load, and

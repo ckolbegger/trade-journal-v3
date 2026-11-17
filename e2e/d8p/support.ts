@@ -18,7 +18,7 @@ export const WEDNESDAY_1105 = '2026-10-14T15:05:00Z';
 export const THURSDAY_1700 = '2026-10-15T21:00:00Z';
 export const THURSDAY_1800 = '2026-10-15T22:00:00Z';
 
-export const OC3_CALL = 'XYZ 18 Dec 2026 55 Call';
+export const OC3_CALL = 'XYZ Dec 18 $55 Call';
 
 // O-C3: 2 Calls at 2.00; Stop "option at or below 1.00", Target "XYZ at or above 60.00" (the Underlying Stop and the option Target stay empty).
 export const OC3: OptionPlanValues = {

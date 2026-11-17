@@ -4,7 +4,7 @@ export type Tone = 'gain' | 'loss';
 export interface PnlCardProps {
   // The card's accessible name: "Trade P&L".
   readonly name: string;
-  // "$188.05", "—", "Not available", an Unavailable reason at the `figure` length, or "Settlement Due: NVDA 18 Dec 2026 150 Call".
+  // "$188.05", "—", "Not available", an Unavailable reason at the `figure` length, or "Settlement Due: NVDA Dec 18 $150 Call".
   readonly figure: string;
   readonly tone?: Tone;
   // "+$169.35 since Mon Oct 12", "Trade P&L once today's session ends", or "+1.10R realized, final"; absent with an

@@ -101,7 +101,7 @@ test.describe('B7.13 Responsive and accessible', () => {
     const panel = detail.settlementDuePanel(due);
     await expect(panel).toBeVisible(READY);
     await expect(detail.settlementDueHeading(due)).toBeVisible();
-    await expect(detail.settlementDueValue(due, 'Contract')).toHaveText('MNO 20 Nov 2026 45 Put');
+    await expect(detail.settlementDueValue(due, 'Contract')).toHaveText('MNO Nov 20 $45 Put');
     await expectPayoffChart(due, 'Planned');
     await expectPayoffChart(due, 'Current');
     await accessibleAtBothWidths(due, 'option Detail with Settlement Due');
@@ -115,7 +115,7 @@ test.describe('B7.13 Responsive and accessible', () => {
     await openReview(due);
     await expect(completion(due)).toHaveText('Incomplete');
     const settlement = await openSettlement(due, t3);
-    await expect(settlement).toContainText('MNO 20 Nov 2026 45 Put');
+    await expect(settlement).toContainText('MNO Nov 20 $45 Put');
     await expect(settlement.getByRole('link', { name: 'Record expiration' })).toBeVisible();
     await accessibleAtBothWidths(due, 'Review settlement panel');
     await friday.close();

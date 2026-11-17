@@ -61,7 +61,7 @@ describe('P&L card (W3, W4)', () => {
     const missing = optionOpenDetail('O-C', [OC_PC1, OC_PC2, OC_X1], { tradingDate: '2026-10-14', closeInstant: '2026-10-14T20:00:00Z' });
     // A replay is at hand, and still no change is shown beside a figure that is not there.
     const card = show(missing, sinceMonday);
-    expect(card.querySelector('.pnl-figure')?.textContent).toBe('Mark missing: XYZ 20 Nov 2026 55 Call, Wed Oct 14');
+    expect(card.querySelector('.pnl-figure')?.textContent).toBe('Mark missing: XYZ Nov 20 $55 Call, Wed Oct 14');
     expect(card.querySelector('.pnl-figure')?.getAttribute('data-tone')).toBeNull();
     expect(card.querySelector('.pnl-line')).toBeNull();
     expect(within(card).getByText('1 of 2 contracts open')).toBeTruthy();
@@ -133,7 +133,7 @@ describe('P&L card (W3, W4)', () => {
     const view = optionOpenDetail('O-C', [OC_PC1, OC_PC2], friday);
     expect(view.settlement.length).toBeGreaterThan(0);
     const due = show(view, sinceMonday);
-    expect(due.querySelector('.pnl-figure')?.textContent).toBe('Settlement Due: XYZ 20 Nov 2026 55 Call');
+    expect(due.querySelector('.pnl-figure')?.textContent).toBe('Settlement Due: XYZ Nov 20 $55 Call');
     expect(due.querySelector('.pnl-line')?.textContent).toBe('Trade P&L once the expiration is recorded');
     expect(due.textContent).not.toContain('Mark missing');
   });
@@ -142,7 +142,7 @@ describe('P&L card (W3, W4)', () => {
     // The contract expired on 20 Nov and is still held on the Monday after: the Trade P&L waits for the expiration to be recorded.
     const monday = { tradingDate: '2026-11-23', closeInstant: '2026-11-23T21:00:00Z', contractMark: '0.80', underlyingMark: '52.00' };
     const due = show(optionOpenDetail('O-C', [OC_PC1, OC_PC2], monday), sinceMonday);
-    expect(due.querySelector('.pnl-figure')?.textContent).toBe('Settlement Due: XYZ 20 Nov 2026 55 Call');
+    expect(due.querySelector('.pnl-figure')?.textContent).toBe('Settlement Due: XYZ Nov 20 $55 Call');
     expect(due.querySelector('.pnl-line')?.textContent).toBe('Trade P&L once the expiration is recorded');
     expect(due.querySelector('.pnl-open')).toBeNull();
     cleanup();

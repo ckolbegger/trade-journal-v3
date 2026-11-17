@@ -5,7 +5,7 @@ import {
 
 test.use({ actionTimeout: 15_000 });
 
-const PUT = 'MNO 20 Nov 2026 45 Put';
+const PUT = 'MNO Nov 20 $45 Put';
 
 test.describe('B7.4 Settlement Due on Detail', () => {
   test('should show the Settlement Due panel on Friday and on Monday with the Trade Open and no current dollar figures on Monday, then record the expiration to Closed via expiration of 2 contracts, Fully held to expiration', async ({ profile }) => {

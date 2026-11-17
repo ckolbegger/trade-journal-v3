@@ -3,6 +3,7 @@ import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { useFixedClock as fixClock } from './trade-detail/test-support.ts';
 import { cardProgress, reflectionsOwedProgress } from '../../../tests/support/card-progress.ts';
 import { expiredOptionTrade, OC_CONTRACT } from '../../../tests/support/option-trade-fixtures.ts';
 import { exitFormFacade, plannedDetail, reflectionDefinition } from '../../../tests/support/position-change-form-facade.ts';
@@ -13,6 +14,7 @@ import { ExpirationForm } from './ExpirationForm.tsx';
 import { ReviewView } from './ReviewView.tsx';
 
 afterEach(cleanup);
+fixClock();
 
 type Ready = Extract<OpenDailyReviewResult, { kind: 'Ready' }>;
 
@@ -163,7 +165,7 @@ describe('record expiration from the Review (A113, conflict K14)', () => {
 
     // The Review is read again: the Trade has left the walk, and its owed reflection names the recorded Expiration.
     const owedTrade = await screen.findByRole('region', { name: 'XYZ review' });
-    expect(within(owedTrade).getByText('Expiration of 1 XYZ 20 Nov 2026 55 Call, no price or fee')).toBeTruthy();
+    expect(within(owedTrade).getByText('Expiration of 1 XYZ Nov 20 $55 Call, no price or fee')).toBeTruthy();
     expect(screen.queryByRole('link', { name: 'Record expiration' })).toBeNull();
   });
 });

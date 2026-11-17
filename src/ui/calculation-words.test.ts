@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { IncoherentFact } from '../domain/calculation-result/index.ts';
 import { Rational } from '../domain/values/index.ts';
 import { instrumentOf, type OptionInstrument } from '../domain/instrument/index.ts';
@@ -6,6 +6,14 @@ import { acknowledgedUnavailableStatusLabel, findingWords, instrumentLabel, isEx
 
 const ZONE = 'America/New_York';
 const XYZ = instrumentOf('XYZ');
+// A contract name shows no year in the current year, so every case here fixes the clock.
+beforeEach(() => {
+  vi.useFakeTimers({ toFake: ['Date'], now: new Date('2026-11-08T17:00:00Z') });
+});
+afterEach(() => {
+  vi.useRealTimers();
+});
+
 const words = (reason: Parameters<typeof unavailableWords>[0], length: 'label' | 'figure' | 'sentence') => text(unavailableWords(reason, length, ZONE));
 
 describe('calculation words (P70, P71, section 1.4)', () => {
@@ -55,10 +63,10 @@ describe('calculation words (P70, P71, section 1.4)', () => {
 
   it('should word AfterExpiration and ContractQuantityNotWhole after the option head as decision 82 gives', () => {
     expect(sentence({ ...optionExecution('Buy', '1'), reason: 'AfterExpiration' })).toBe(
-      "Buy of 1 XYZ 20 Nov 2026 55 Call on Mon Nov 23, 10:00 is dated after the contract's expiration",
+      "Buy of 1 XYZ Nov 20 $55 Call on Mon Nov 23, 10:00 is dated after the contract's expiration",
     );
     expect(sentence({ ...optionExecution('Buy', '1.5'), reason: 'ContractQuantityNotWhole' })).toBe(
-      "Buy of 1.5 XYZ 20 Nov 2026 55 Call on Mon Nov 23, 10:00 isn't a whole number of contracts",
+      "Buy of 1.5 XYZ Nov 20 $55 Call on Mon Nov 23, 10:00 isn't a whole number of contracts",
     );
   });
 
@@ -67,35 +75,35 @@ describe('calculation words (P70, P71, section 1.4)', () => {
 
   it('should word the three Expiration findings after the Expiration head as decision 83 gives', () => {
     expect(sentence({ ...expiration(CALL, '1'), reason: 'ExpirationMustSettleAllOpen', available: Rational.of(2n, 1n) })).toBe(
-      "Expiration of 1 XYZ 20 Nov 2026 55 Call at Fri Nov 20, 16:00 doesn't settle all 2 contracts in the position",
+      "Expiration of 1 XYZ Nov 20 $55 Call at Fri Nov 20, 16:00 doesn't settle all 2 contracts in the position",
     );
     expect(sentence({ ...expiration(CALL, '1'), reason: 'SettlementTimeInvalid' })).toBe(
-      "Expiration of 1 XYZ 20 Nov 2026 55 Call at Fri Nov 20, 16:00 is dated after the contract's expiration or before an Execution on it",
+      "Expiration of 1 XYZ Nov 20 $55 Call at Fri Nov 20, 16:00 is dated after the contract's expiration or before an Execution on it",
     );
     expect(sentence({ ...expiration(XYZ, '100'), reason: 'NotAnOption' })).toBe('Expiration of 100 XYZ at Fri Nov 20, 16:00 names a stock, not an option');
   });
 
   it('should word an Expiration DuplicateFactId after the Expiration head with the shared identity tail', () => {
     expect(sentence({ ...expiration(CALL, '1'), reason: 'DuplicateFactId' })).toBe(
-      'Expiration of 1 XYZ 20 Nov 2026 55 Call at Fri Nov 20, 16:00 shares its identity with another record',
+      'Expiration of 1 XYZ Nov 20 $55 Call at Fri Nov 20, 16:00 shares its identity with another record',
     );
   });
 
   it('should word an Expiration NonpositiveQuantity after the Expiration head with the existing quantity tail', () => {
     expect(sentence({ ...expiration(CALL, '0'), reason: 'NonpositiveQuantity' })).toBe(
-      "Expiration of 0 XYZ 20 Nov 2026 55 Call at Fri Nov 20, 16:00 has a quantity that isn't positive",
+      "Expiration of 0 XYZ Nov 20 $55 Call at Fri Nov 20, 16:00 has a quantity that isn't positive",
     );
   });
 
   it('should word the quantity findings in the position with the singular at 1', () => {
     expect(sentence({ ...optionExecution('Buy', '3'), reason: 'ExceedsOpenQuantity', available: Rational.of(1n, 1n) })).toBe(
-      'Buy of 3 XYZ 20 Nov 2026 55 Call on Mon Nov 23, 10:00 is more than the 1 contract in the position',
+      'Buy of 3 XYZ Nov 20 $55 Call on Mon Nov 23, 10:00 is more than the 1 contract in the position',
     );
     expect(sentence({ ...optionExecution('Buy', '3'), reason: 'ExceedsOpenQuantity', available: Rational.of(2n, 1n) })).toBe(
-      'Buy of 3 XYZ 20 Nov 2026 55 Call on Mon Nov 23, 10:00 is more than the 2 contracts in the position',
+      'Buy of 3 XYZ Nov 20 $55 Call on Mon Nov 23, 10:00 is more than the 2 contracts in the position',
     );
     expect(sentence({ ...expiration(CALL, '1'), reason: 'ExpirationMustSettleAllOpen', available: Rational.of(1n, 1n) })).toBe(
-      "Expiration of 1 XYZ 20 Nov 2026 55 Call at Fri Nov 20, 16:00 doesn't settle the 1 contract in the position",
+      "Expiration of 1 XYZ Nov 20 $55 Call at Fri Nov 20, 16:00 doesn't settle the 1 contract in the position",
     );
     expect(sentence({ ...execution('Sell', '120'), reason: 'ExceedsOpenQuantity', available: Rational.of(100n, 1n) })).toBe(
       'Sell of 120 XYZ on Wed Oct 14, 10:30 is more than the 100 shares in the position',
@@ -142,8 +150,8 @@ describe('calculation words (P70, P71, section 1.4)', () => {
   it('should word SettlementDue at the label, figure and sentence lengths as decision 81 gives', () => {
     const reason = { reason: 'SettlementDue', instrument: CALL as OptionInstrument, expiration: '2026-11-20' } as const;
     expect(words(reason, 'label')).toBe('Settlement Due');
-    expect(words(reason, 'figure')).toBe('Settlement Due: XYZ 20 Nov 2026 55 Call');
-    expect(words(reason, 'sentence')).toBe('Settlement Due for XYZ 20 Nov 2026 55 Call, which expired Fri Nov 20');
+    expect(words(reason, 'figure')).toBe('Settlement Due: XYZ Nov 20 $55 Call');
+    expect(words(reason, 'sentence')).toBe('Settlement Due for XYZ Nov 20 $55 Call, which expired Fri Nov 20');
   });
 
   it('should word SettlementDue in parts, with the Instrument and the expiration date as their own parts', () => {
@@ -177,9 +185,9 @@ describe('calculation words (P70, P71, section 1.4)', () => {
     expect(instrumentLabel(instrumentOf('BRK.B'))).toBe('BRK.B');
   });
 
-  it('should label an Option Instrument as XYZ 20 Nov 2026 55 Call', () => {
-    expect(instrumentLabel(instrumentOf('XYZ261120C00055000'))).toBe('XYZ 20 Nov 2026 55 Call');
-    expect(instrumentLabel({ kind: 'Option', symbol: 'BRK.B', root: 'BRKB', expiration: '2026-11-20', strike: '412.5', right: 'Put', multiplier: 100 })).toBe('BRK.B 20 Nov 2026 412.5 Put');
+  it('should label an Option Instrument as XYZ Nov 20 $55 Call', () => {
+    expect(instrumentLabel(instrumentOf('XYZ261120C00055000'))).toBe('XYZ Nov 20 $55 Call');
+    expect(instrumentLabel({ kind: 'Option', symbol: 'BRK.B', root: 'BRKB', expiration: '2026-11-20', strike: '412.5', right: 'Put', multiplier: 100 })).toBe('BRK.B Nov 20 $412.50 Put');
   });
 
   it('should label the Expected-Mark Status Acknowledged Unavailable with the Mark row casing', () => {
@@ -191,5 +199,23 @@ describe('calculation words (P70, P71, section 1.4)', () => {
     expect(isExceedsOpenQuantityIssue({ code: 'FlatBeforeLaterFacts' })).toBe(false);
     expect(isFlatBeforeLaterFactsIssue({ code: 'FlatBeforeLaterFacts' })).toBe(true);
     expect(isFlatBeforeLaterFactsIssue({ code: 'ExceedsOpenQuantity' })).toBe(false);
+  });
+});
+
+describe('instrumentLabel (W28)', () => {
+  it('should name a contract NVDA Dec 18 150 Call in the current year', () => {
+    expect(instrumentLabel(instrumentOf('NVDA261218C00150000'))).toBe('NVDA Dec 18 $150 Call');
+  });
+
+  it('should show the full year for a contract expiring in a later year, XYZ Jan 15 2027 55 Call', () => {
+    expect(instrumentLabel(instrumentOf('XYZ270115C00055000'))).toBe('XYZ Jan 15 2027 $55 Call');
+  });
+
+  it('should show the full year for a contract that expired in an earlier year, XYZ Dec 19 2025 55 Call (P117)', () => {
+    expect(instrumentLabel(instrumentOf('XYZ251219C00055000'))).toBe('XYZ Dec 19 2025 $55 Call');
+  });
+
+  it('should keep the strike decimals as the Trade Summary does, XYZ Dec 18 52.50 Put', () => {
+    expect(instrumentLabel(instrumentOf('XYZ261218P00052500'))).toBe('XYZ Dec 18 $52.50 Put');
   });
 });

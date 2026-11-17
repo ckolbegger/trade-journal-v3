@@ -25,7 +25,7 @@ test.describe('B7.10 Recovery Only (faults build)', () => {
     const openTrades = page.getByRole('table', { name: 'Open Trades' });
     await expect(openTrades).toBeVisible(READY);
     await expect(openTrades.locator('tbody tr', { hasText: 'MNO' })).toBeVisible();
-    await openTrades.locator('tbody tr', { hasText: 'XYZ 20 Nov 2026 55 Call' }).getByRole('link', { name: 'XYZ', exact: true }).click();
+    await openTrades.locator('tbody tr', { hasText: 'XYZ Nov 20 $55 Call' }).getByRole('link', { name: 'XYZ', exact: true }).click();
     await expect(detail.heading(page, 'XYZ')).toBeVisible(READY);
     await openDrawer(page, 'Payoff');
     await expect(detail.payoff(page, 'Planned')).toContainText('Breakeven 57.00');
@@ -42,7 +42,7 @@ test.describe('B7.10 Recovery Only (faults build)', () => {
     await openReview(page);
     await expect(completion(page)).toHaveText('Incomplete');
     const panel = await openSettlement(page, t1);
-    await expect(panel).toContainText('XYZ 20 Nov 2026 55 Call');
+    await expect(panel).toContainText('XYZ Nov 20 $55 Call');
     await expect(panel.getByRole('link', { name: 'Record expiration' })).toHaveCount(0);
     await expect((await openSettlement(page, t3)).getByRole('link', { name: 'Record expiration' })).toHaveCount(0);
 

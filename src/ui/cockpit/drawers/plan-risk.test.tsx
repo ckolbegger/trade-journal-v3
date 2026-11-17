@@ -70,8 +70,8 @@ describe('Plan and Risk drawer: figures moved from the retired Summary card and 
   it('should show the contract, the Leg and the Exercise Intent of an option Trade Plan', () => {
     render(<PlanRiskDrawer view={optionOpenDetail('O-C', [OC_PC1, OC_PC2, OC_X1], THURSDAY)} timeZone="America/New_York" />);
     const plan = screen.getByRole('region', { name: 'Plan' });
-    expect(valueOf(plan, 'Contract')).toBe('XYZ 20 Nov 2026 55 Call');
-    expect(valueOf(plan, 'Leg')).toBe('Long 2 contracts of XYZ 20 Nov 2026 55 Call');
+    expect(valueOf(plan, 'Contract')).toBe('XYZ Nov 20 $55 Call');
+    expect(valueOf(plan, 'Leg')).toBe('Long 2 contracts of XYZ Nov 20 $55 Call');
     expect(valueOf(plan, 'Exercise Intent')).toBe('Not authorized in advance');
   });
 
@@ -108,7 +108,7 @@ describe('Plan and Risk drawer: unavailable condition figures (A222, T8P.23-B8)'
     const figures = Array.from(container.querySelectorAll('dt'))
       .filter((term) => ['Risk to stop', 'Reward to target'].includes(term.textContent ?? ''))
       .map((term) => term.nextElementSibling?.textContent);
-    expect(figures).toEqual(['Settlement Due: XYZ 20 Nov 2026 55 Call', 'Settlement Due: XYZ 20 Nov 2026 55 Call']);
+    expect(figures).toEqual(['Settlement Due: XYZ Nov 20 $55 Call', 'Settlement Due: XYZ Nov 20 $55 Call']);
     expect(container.textContent).not.toContain('Mark missing');
   });
 });

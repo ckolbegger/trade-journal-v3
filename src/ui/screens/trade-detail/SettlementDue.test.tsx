@@ -15,7 +15,7 @@ describe('option Trade Detail Settlement Due panel (rows 23.9 and 23.10)', () =>
   it('should show a Settlement Due panel with the contract, quantity, expiry and settlement time, an explanation keyed by the quantity sign, and Record expiration only while Writable', async () => {
     renderView(optionOpenDetail('O-S', [OS_S1], FRIDAY), true);
     const panel = await screen.findByRole('region', { name: 'Settlement Due' });
-    expect(termValue(panel, 'Contract')).toBe('MNO 20 Nov 2026 45 Put');
+    expect(termValue(panel, 'Contract')).toBe('MNO Nov 20 $45 Put');
     expect(termValue(panel, 'Quantity')).toBe('Short 2 contracts');
     expect(termValue(panel, 'Expired')).toBe('Fri Nov 20');
     expect(termValue(panel, 'Settlement time')).toBe('Fri Nov 20, 16:00');

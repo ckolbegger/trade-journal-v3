@@ -3,6 +3,7 @@ import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { useFixedClock as fixClock } from './trade-detail/test-support.ts';
 import { cardProgress } from '../../../tests/support/card-progress.ts';
 import { facadeDouble } from '../../../tests/support/facade-double.ts';
 import type { UiFacade } from '../../app/compose.ts';
@@ -12,6 +13,7 @@ import { RuntimeContext } from '../runtime.tsx';
 import { ReviewView } from './ReviewView.tsx';
 
 afterEach(cleanup);
+fixClock();
 
 type Ready = Extract<OpenDailyReviewResult, { kind: 'Ready' }>;
 
@@ -138,10 +140,10 @@ describe('settlement family (A112)', () => {
     const lines = within(blockers).getAllByRole('listitem').map((li) => li.textContent);
     expect(lines.slice(0, 3)).toEqual([
       'Mark missing for MNO on Fri Nov 20',
-      'Settlement Due for XYZ 20 Nov 2026 55 Call, which expired Fri Nov 20',
-      'Settlement Due for MNO 20 Nov 2026 45 Put, which expired Fri Nov 20',
+      'Settlement Due for XYZ Nov 20 $55 Call, which expired Fri Nov 20',
+      'Settlement Due for MNO Nov 20 $45 Put, which expired Fri Nov 20',
     ]);
-    expect(within(blockers).getByRole('link', { name: 'MNO 20 Nov 2026 45 Put' }).getAttribute('href')).toBe('/review?trade=t3&panel=Settlement');
+    expect(within(blockers).getByRole('link', { name: 'MNO Nov 20 $45 Put' }).getAttribute('href')).toBe('/review?trade=t3&panel=Settlement');
 
     // The collapsed card says what remains, with the settlement between the reflections and the Action (row 24.3).
     const card = await screen.findByRole('region', { name: 'MNO review' });
@@ -154,7 +156,7 @@ describe('settlement family (A112)', () => {
     await user.click(header);
 
     const panel = settlementPanel(card);
-    expect(termValue(panel, 'Contract')).toBe('MNO 20 Nov 2026 45 Put');
+    expect(termValue(panel, 'Contract')).toBe('MNO Nov 20 $45 Put');
     expect(termValue(panel, 'Quantity')).toBe('Short 2 contracts');
     expect(termValue(panel, 'Settlement time')).toBe('Fri Nov 20, 16:00');
     expect(within(panel).getByText("If it was assigned, this release can't record the assignment yet, so this Review stays incomplete until a later release can")).toBeTruthy();
@@ -203,7 +205,7 @@ describe('the Settlement panel around its items', () => {
   it('should state the Settlement Due reason in the card and offer Record expiration only while the runtime is writable', async () => {
     const { card } = await open(MNO_ITEM, 'MNO', cardProgress(0, 0, { settlement: true }), { writable: false });
 
-    expect(within(card).getByText('Settlement Due for MNO 20 Nov 2026 45 Put, which expired Fri Nov 20')).toBeTruthy();
+    expect(within(card).getByText('Settlement Due for MNO Nov 20 $45 Put, which expired Fri Nov 20')).toBeTruthy();
     expect(within(card).queryByRole('link', { name: 'Record expiration' })).toBeNull();
   });
 

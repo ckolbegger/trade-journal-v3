@@ -66,7 +66,7 @@ describe('Payoff drawer (W14)', () => {
     cleanup();
     // The Monday after expiration, with no Mark for the expired contract.
     render(<PayoffDrawer view={optionOpenDetail('O-S', [OS_S1], { tradingDate: '2026-11-23', closeInstant: '2026-11-23T21:00:00Z', underlyingMark: '46.00' })} />);
-    expect(termIn("Value at expiration at MNO's latest Mark")).toBe('Settlement Due: MNO 20 Nov 2026 45 Put');
+    expect(termIn("Value at expiration at MNO's latest Mark")).toBe('Settlement Due: MNO Nov 20 $45 Put');
   });
 
   it('should not say a Mark is missing for the value at expiration before the first Marks, and say when they are due', () => {

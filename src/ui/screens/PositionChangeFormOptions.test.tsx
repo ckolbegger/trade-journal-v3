@@ -3,6 +3,7 @@ import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { useFixedClock as fixClock } from './trade-detail/test-support.ts';
 import { exitFormFacade, plannedDetail } from '../../../tests/support/position-change-form-facade.ts';
 import { closedLongPutTrade, OC_CONTRACT, optionTrade, OS_CONTRACT } from '../../../tests/support/option-trade-fixtures.ts';
 import { Rational } from '../../domain/values/index.ts';
@@ -12,6 +13,7 @@ import { PositionChangeForm } from './PositionChangeForm.tsx';
 import { PositionChangeReceipt } from './PositionChangeReceipt.tsx';
 
 afterEach(cleanup);
+fixClock();
 
 // A Plan's one option leg: O-C's Long Call (2 contracts) or O-S's Cash-Secured Put (a signed -2).
 const CALL_LEG = { factId: 'leg-oc', side: 'Long', instrument: OC_CONTRACT, quantity: '2', intendedEntry: '2.00' };
@@ -70,7 +72,7 @@ describe('option receipts', () => {
         <PositionChangeReceipt result={recorded(record, { ...derivation, entryQuality: { kind: 'NotApplicable' } }, ['pc-s1']) as never} timeZone="America/New_York" />
       </MemoryRouter>,
     );
-    expect(screen.getByText('Sell to open 2 MNO 20 Nov 2026 45 Put')).toBeTruthy();
+    expect(screen.getByText('Sell to open 2 MNO Nov 20 $45 Put')).toBeTruthy();
     expect(screen.getByText('@ $1.25')).toBeTruthy();
   });
 
@@ -81,7 +83,7 @@ describe('option receipts', () => {
         <ExitReceipt result={recorded(record, derivation, ['pc-x1'], []) as never} timeZone="America/New_York" closeReasons={[]} />
       </MemoryRouter>,
     );
-    expect(screen.getByText('Sell to close 1 XYZ 20 Nov 2026 55 Call')).toBeTruthy();
+    expect(screen.getByText('Sell to close 1 XYZ Nov 20 $55 Call')).toBeTruthy();
     const table = screen.getByRole('table', { name: 'Lot Matches' });
     expect(within(table).getAllByRole('columnheader').map((h) => h.textContent)).toEqual(['Opened', 'Closed', 'Quantity', 'Realized']);
   });
@@ -165,10 +167,10 @@ describe('option Executions (A117)', () => {
   it('should label the action Buy to open and Sell to close on a Long Call and Sell to open and Buy to close on a Cash-Secured Put, take contracts and premium, and show each rows cash amount', async () => {
     const user = userEvent.setup();
     const cases = [
-      { leg: CALL_LEG, strategy: 'Long Call', held: 1n, action: 'Buy', words: 'Buy to open', contract: 'XYZ 20 Nov 2026 55 Call', planned: 'Long 2 contracts of XYZ 20 Nov 2026 55 Call', price: '2.10', amount: '= $210.00 for 1 contract', progress: '1 of 2 contracts entered' },
-      { leg: CALL_LEG, strategy: 'Long Call', held: 2n, action: 'Sell', words: 'Sell to close', contract: 'XYZ 20 Nov 2026 55 Call', planned: 'Long 2 contracts of XYZ 20 Nov 2026 55 Call', price: '3.00', amount: '= $300.00 credit for 1 contract' },
-      { leg: PUT_LEG, strategy: 'Cash-Secured Put', held: -1n, action: 'Sell', words: 'Sell to open', contract: 'MNO 20 Nov 2026 45 Put', planned: 'Short 2 contracts of MNO 20 Nov 2026 45 Put', price: '3.00', amount: '= $300.00 credit for 1 contract', progress: '1 of 2 contracts entered' },
-      { leg: PUT_LEG, strategy: 'Cash-Secured Put', held: -2n, action: 'Buy', words: 'Buy to close', contract: 'MNO 20 Nov 2026 45 Put', planned: 'Short 2 contracts of MNO 20 Nov 2026 45 Put', price: '0.60', amount: '= $60.00 for 1 contract' },
+      { leg: CALL_LEG, strategy: 'Long Call', held: 1n, action: 'Buy', words: 'Buy to open', contract: 'XYZ Nov 20 $55 Call', planned: 'Long 2 contracts of XYZ Nov 20 $55 Call', price: '2.10', amount: '= $210.00 for 1 contract', progress: '1 of 2 contracts entered' },
+      { leg: CALL_LEG, strategy: 'Long Call', held: 2n, action: 'Sell', words: 'Sell to close', contract: 'XYZ Nov 20 $55 Call', planned: 'Long 2 contracts of XYZ Nov 20 $55 Call', price: '3.00', amount: '= $300.00 credit for 1 contract' },
+      { leg: PUT_LEG, strategy: 'Cash-Secured Put', held: -1n, action: 'Sell', words: 'Sell to open', contract: 'MNO Nov 20 $45 Put', planned: 'Short 2 contracts of MNO Nov 20 $45 Put', price: '3.00', amount: '= $300.00 credit for 1 contract', progress: '1 of 2 contracts entered' },
+      { leg: PUT_LEG, strategy: 'Cash-Secured Put', held: -2n, action: 'Buy', words: 'Buy to close', contract: 'MNO Nov 20 $45 Put', planned: 'Short 2 contracts of MNO Nov 20 $45 Put', price: '0.60', amount: '= $60.00 for 1 contract' },
     ] as const;
     for (const c of cases) {
       const exit = c.words.endsWith('close');
@@ -269,6 +271,6 @@ describe('option form errors', () => {
     } as never);
     await user.click(within(message).getByRole('button', { name: 'Load the latest Trade' }));
     const latest = await screen.findByRole('region', { name: 'Latest Trade' });
-    expect(within(latest).getByText('Long 1 contract of XYZ 20 Nov 2026 55 Call')).toBeTruthy();
+    expect(within(latest).getByText('Long 1 contract of XYZ Nov 20 $55 Call')).toBeTruthy();
   });
 });

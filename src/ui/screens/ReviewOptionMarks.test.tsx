@@ -3,6 +3,7 @@ import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { useFixedClock as fixClock } from './trade-detail/test-support.ts';
 import { cardProgress } from '../../../tests/support/card-progress.ts';
 import { facadeDouble } from '../../../tests/support/facade-double.ts';
 import { payoffFixtures } from '../../../tests/support/payoff-fixtures.ts';
@@ -13,6 +14,7 @@ import { RuntimeContext } from '../runtime.tsx';
 import { ReviewView } from './ReviewView.tsx';
 
 afterEach(cleanup);
+fixClock();
 
 type Ready = Extract<OpenDailyReviewResult, { kind: 'Ready' }>;
 
@@ -121,8 +123,8 @@ describe('option Marks (A115)', () => {
     const card = await screen.findByRole('region', { name: 'MNO review' });
     // The contract is named by its label in the row heading and the row's region (convention C6), never by its OCC key.
     const marks = within(card).getByRole('region', { name: 'Marks' });
-    expect(within(marks).getAllByRole('heading', { level: 4 }).map((h) => h.textContent)).toEqual(['MNO 20 Nov 2026 45 Put', 'MNO', 'XYZ']);
-    const contract = markRegion(card, 'MNO 20 Nov 2026 45 Put');
+    expect(within(marks).getAllByRole('heading', { level: 4 }).map((h) => h.textContent)).toEqual(['MNO Nov 20 $45 Put', 'MNO', 'XYZ']);
+    const contract = markRegion(card, 'MNO Nov 20 $45 Put');
 
     // 0 is an honest closing value, with the note saying so, for every Instrument.
     await user.type(within(contract).getByLabelText('Price'), '0');
@@ -171,7 +173,7 @@ describe('a contract named by its label (conflict K18) and the card payoff summa
 
     const card = await screen.findByRole('region', { name: 'MNO review' });
 
-    expect(within(card).getByText('Mark $0.45 for MNO 20 Nov 2026 45 Put, Fri Nov 20')).toBeTruthy();
+    expect(within(card).getByText('Mark $0.45 for MNO Nov 20 $45 Put, Fri Nov 20')).toBeTruthy();
     expect(within(card).getByText('At expiration: breakeven 43.76 · max profit $248.70 · max loss $8,751.30')).toBeTruthy();
   });
 
@@ -181,10 +183,10 @@ describe('a contract named by its label (conflict K18) and the card payoff summa
     const card = await screen.findByRole('region', { name: 'MNO review' });
 
     const blockers = within(screen.getByRole('region', { name: 'Review status' })).getByRole('list', { name: 'Blockers' });
-    expect(within(blockers).getByText(/^Mark missing for/).textContent).toBe('Mark missing for MNO 20 Nov 2026 45 Put on Fri Nov 20');
-    await user.click(within(blockers).getByRole('link', { name: 'MNO 20 Nov 2026 45 Put' }));
+    expect(within(blockers).getByText(/^Mark missing for/).textContent).toBe('Mark missing for MNO Nov 20 $45 Put on Fri Nov 20');
+    await user.click(within(blockers).getByRole('link', { name: 'MNO Nov 20 $45 Put' }));
 
-    expect(markRegion(card, 'MNO 20 Nov 2026 45 Put').contains(document.activeElement)).toBe(true);
+    expect(markRegion(card, 'MNO Nov 20 $45 Put').contains(document.activeElement)).toBe(true);
   });
 
   it('should word Market Datas AfterExpiration beside the contract row with the expiration date', async () => {
@@ -194,10 +196,10 @@ describe('a contract named by its label (conflict K18) and the card payoff summa
     renderReview(facade);
     const card = await screen.findByRole('region', { name: 'MNO review' });
 
-    await user.type(within(markRegion(card, 'MNO 20 Nov 2026 45 Put')).getByLabelText('Price'), '0.10');
+    await user.type(within(markRegion(card, 'MNO Nov 20 $45 Put')).getByLabelText('Price'), '0.10');
     await user.click(within(card).getByRole('button', { name: /^Save Marks/ }));
 
-    expect(within(markRegion(card, 'MNO 20 Nov 2026 45 Put')).getByText('This contract expired on Fri Nov 20, so it has no Mark for a later date.')).toBeTruthy();
+    expect(within(markRegion(card, 'MNO Nov 20 $45 Put')).getByText('This contract expired on Fri Nov 20, so it has no Mark for a later date.')).toBeTruthy();
   });
 
   it('should list a contract acknowledged unavailable by its label', async () => {
@@ -206,6 +208,6 @@ describe('a contract named by its label (conflict K18) and the card payoff summa
 
     const group = await screen.findByRole('group', { name: 'Unavailable Marks' });
 
-    expect(within(group).getByText('Instruments: MNO 20 Nov 2026 45 Put')).toBeTruthy();
+    expect(within(group).getByText('Instruments: MNO Nov 20 $45 Put')).toBeTruthy();
   });
 });

@@ -23,13 +23,13 @@ test.describe('B7.3 Expiration from the Review', () => {
     await openReview(page);
     await expect(completion(page)).toHaveText('Incomplete');
     const blockers = page.getByRole('list', { name: 'Blockers' });
-    await expect(blockers).toContainText('Settlement Due for XYZ 20 Nov 2026 55 Call, which expired Fri Nov 20');
-    await expect(blockers).toContainText('Settlement Due for MNO 20 Nov 2026 45 Put, which expired Fri Nov 20');
+    await expect(blockers).toContainText('Settlement Due for XYZ Nov 20 $55 Call, which expired Fri Nov 20');
+    await expect(blockers).toContainText('Settlement Due for MNO Nov 20 $45 Put, which expired Fri Nov 20');
     await enterMark(page, t1, FRIDAY_NOV, '52.00');
 
     // T-1's card Settlement panel names the contract and the long-contract explanation; Record expiration opens the form.
     const panel = await openSettlement(page, t1);
-    await expect(panel).toContainText('XYZ 20 Nov 2026 55 Call');
+    await expect(panel).toContainText('XYZ Nov 20 $55 Call');
     await expect(panel).toContainText("If it was exercised, this release can't record the exercise yet, so this Review stays incomplete until a later release can");
     await panel.getByRole('link', { name: 'Record expiration' }).click();
     await expect(page).toHaveURL(/\/record-expiration\?from=review/);

@@ -34,7 +34,7 @@ test.describe('B7.1 Plan and open a Long Call', () => {
     await expect(detail.heading(reopened, 'XYZ')).toBeVisible();
     await expect(detail.lifecycleBadge(reopened)).toHaveText('Long Call, Open');
     await openDrawer(reopened, 'Position');
-    await expect(detail.positionValue(reopened)).toHaveText('Long 2 contracts of XYZ 20 Nov 2026 55 Call');
+    await expect(detail.positionValue(reopened)).toHaveText('Long 2 contracts of XYZ Nov 20 $55 Call');
     await openDrawer(reopened, 'Plan and Risk');
     await expect(detail.actualInitialRisk(reopened)).toContainText('$401.30');
     await openDrawer(reopened, 'Payoff');

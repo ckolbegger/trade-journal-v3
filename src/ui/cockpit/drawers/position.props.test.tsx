@@ -73,7 +73,7 @@ describe('Position drawer: figures moved from the retired Summary card and Valua
   it('should show the option Trade Summary text, the held contracts, and the Opening fees of three Position Changes', () => {
     show(optionOpenDetail('O-C', [OC_PC1, OC_PC2, OC_X1], THURSDAY));
     expect(screen.getByRole('region', { name: 'Position' }).querySelector('.summary-text')?.textContent).toBe('Long 1 Nov 20 $55 Call');
-    expect(termValue(screen.getByRole('region', { name: 'Position' }), 'Position')).toBe('Long 1 contract of XYZ 20 Nov 2026 55 Call');
+    expect(termValue(screen.getByRole('region', { name: 'Position' }), 'Position')).toBe('Long 1 contract of XYZ Nov 20 $55 Call');
     cleanup();
 
     show(optionOpenDetail('O-S', [OS_S1], THURSDAY));

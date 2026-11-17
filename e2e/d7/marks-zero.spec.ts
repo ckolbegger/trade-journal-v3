@@ -8,7 +8,7 @@ test.use({ actionTimeout: 15_000 });
 
 const ZERO_NOTE = '0 means it closed with no value';
 const stock = (symbol: string) => ({ ...PLAN, symbol, quantity: '100', entry: '20', stop: '19', target: '30' });
-const PUT = 'MNO 20 Nov 2026 45 Put';
+const PUT = 'MNO Nov 20 $45 Put';
 
 test.describe('B7.6 Marks of 0', () => {
   test('should save a Mark of 0 for the MNO put and for KLM stock with the note, refuse -1 for ABC with A price cannot be negative., and store two Mark revisions', async ({ profile }) => {

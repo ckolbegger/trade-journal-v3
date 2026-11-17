@@ -42,15 +42,15 @@ const SHORT_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'S
 // The calendar year now in the Workspace zone (UTC until a zone is known).
 const currentYear = (timeZone = 'UTC'): number => Number(new Intl.DateTimeFormat('en-US', { year: 'numeric', timeZone }).format(new Date()));
 
-// "Nov 20", with a two-digit year ("Jan 21 '28") when the expiration is not in the current year (plan section 2a).
-const summaryExpiration = (expiration: string, timeZone: string | undefined): string => {
+// "Nov 20", with the full year ("Jan 21 2028") when the expiration is not in the current year, earlier or later (plan section 2a, P114, P117).
+export const summaryExpiration = (expiration: string, timeZone: string | undefined): string => {
   const [year = '', month = '1', day = '1'] = expiration.split('-');
   const date = `${SHORT_MONTHS[Number(month) - 1]} ${Number(day)}`;
-  return Number(year) === currentYear(timeZone) ? date : `${date} '${year.slice(-2)}`;
+  return Number(year) === currentYear(timeZone) ? date : `${date} ${year}`;
 };
 
 // A strike as whole dollars, or with cents when it has decimals (row 23.16).
-const summaryStrike = (strike: string): string => {
+export const summaryStrike = (strike: string): string => {
   const parsed = parseDecimal(strike);
   if (!parsed.ok) return strike;
   return parsed.value.denominator === 1n ? money(parsed.value).replace(/\.00$/, '') : money(parsed.value);

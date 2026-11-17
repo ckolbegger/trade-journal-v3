@@ -27,7 +27,7 @@ test.describe('B7.2 Cash-Secured Put', () => {
     const page2 = await firstPage(context);
     await page2.goto(`/trades/${tradeId}`);
     await openDrawer(page2, 'Position');
-    await expect(detail.positionValue(page2)).toHaveText('Short 2 contracts of MNO 20 Nov 2026 45 Put');
+    await expect(detail.positionValue(page2)).toHaveText('Short 2 contracts of MNO Nov 20 $45 Put');
     await fillOptionExit(page2, [{ quantity: '3', price: '0.60', fee: '0.65', time: '2026-10-13T10:00' }]);
     await page2.getByRole('button', { name: 'Save exit' }).click();
     await expect(page2.getByRole('heading', { name: 'This exit can’t be saved yet' })).toBeVisible();
@@ -53,7 +53,7 @@ test.describe('B7.2 Cash-Secured Put', () => {
     const reopened = await firstPage(relaunched);
     await reopened.goto(`/trades/${tradeId}`);
     await openDrawer(reopened, 'Position');
-    await expect(detail.positionValue(reopened)).toHaveText('Short 1 contract of MNO 20 Nov 2026 45 Put');
+    await expect(detail.positionValue(reopened)).toHaveText('Short 1 contract of MNO Nov 20 $45 Put');
     await expect(detail.positionRealizedToDate(reopened)).toContainText('$63.70');
     await expect(detail.lifecycleBadge(reopened)).toHaveText('Cash-Secured Put, Open');
     const final = tradesOf(workspaceOf(await probe(reopened))!)[0]!;

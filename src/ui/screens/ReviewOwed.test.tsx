@@ -3,6 +3,7 @@ import { cleanup, render, screen, waitFor, within } from '@testing-library/react
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { useFixedClock as fixClock } from './trade-detail/test-support.ts';
 import { OC_PC1, optionTrade } from '../../../tests/support/option-trade-fixtures.ts';
 import { cardProgress,reflectionsOwedProgress } from '../../../tests/support/card-progress.ts';
 import { facadeDouble } from '../../../tests/support/facade-double.ts';
@@ -15,6 +16,7 @@ import { RuntimeContext } from '../runtime.tsx';
 import { ReviewView } from './ReviewView.tsx';
 
 afterEach(cleanup);
+fixClock();
 
 type Ready = Extract<OpenDailyReviewResult, { kind: 'Ready' }>;
 type Empty = Extract<OpenDailyReviewResult, { kind: 'Empty' }>;
@@ -309,7 +311,7 @@ describe('owed-reflection group (P19, P20)', () => {
     expect(within(close).getByRole('heading', { name: 'Close Review' }).compareDocumentPosition(form) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
-  it('should name an option Execution in a Review reflection by the role action, count and label, Buy to open 1 XYZ 20 Nov 2026 55 Call @ $2.10, with no fee', async () => {
+  it('should name an option Execution in a Review reflection by the role action, count and label, Buy to open 1 XYZ Nov 20 $55 Call @ $2.10, with no fee', async () => {
     const facade = reviewFacade(ready());
     const option: OwedReflection = {
       ...reflection('d-opt', 'Due', '2026-10-12T14:00:00Z'),
@@ -320,7 +322,7 @@ describe('owed-reflection group (P19, P20)', () => {
     vi.mocked(facade.DailyReview.getTrade).mockImplementation(({ reviewDate }) => Promise.resolve({ kind: 'ReflectionsOwed', reviewDate, cutoff: CUTOFF, card }));
     renderReview(facade);
     const panel = await screen.findByRole('region', { name: 'Reflections' });
-    expect(within(panel).getAllByRole('listitem').map((li) => li.textContent)).toContain('Buy to open 1 XYZ 20 Nov 2026 55 Call @ $2.10');
+    expect(within(panel).getAllByRole('listitem').map((li) => li.textContent)).toContain('Buy to open 1 XYZ Nov 20 $55 Call @ $2.10');
   });
 
   it('should show the same Trades with owed reflections group inside the Empty view', async () => {

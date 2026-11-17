@@ -77,6 +77,6 @@ describe('option Trade Detail Deviations and Fulfillment (rows 20.15, 23.2, 23.8
     const deviations = await screen.findByRole('region', { name: 'Deviations' });
     expect(within(deviations).getByText('Entry Size (Excess): 1 contract above plan, caused by the Position Change at 2026-10-12 12:00.')).toBeTruthy();
     const fulfillment = screen.getByRole('region', { name: 'Planned-Leg Fulfillment' });
-    expect(within(fulfillment).getByText('Long 2 contracts of XYZ 20 Nov 2026 55 Call', { selector: 'dt' })).toBeTruthy();
+    expect(within(fulfillment).getByText('Long 2 contracts of XYZ Nov 20 $55 Call', { selector: 'dt' })).toBeTruthy();
   });
 });

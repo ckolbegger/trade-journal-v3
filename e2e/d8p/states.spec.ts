@@ -46,7 +46,7 @@ test.describe('B8P.4 States', () => {
     await expect(detail.settlementDueHeading(page)).toBeVisible(READY);
     await expectDrawers(page, ['Today', 'Position', 'Plan and Risk', PRICE_HISTORY, 'Journal', 'Payoff'], [], 'Today');
     // W4: the contract, then what the figure waits for. W15: the Position drawer's Open P&L reads "Settlement Due". W6: the conditions are not measured.
-    await expect(detail.pnlFigure(page)).toHaveText('Settlement Due: MNO 20 Nov 2026 45 Put');
+    await expect(detail.pnlFigure(page)).toHaveText('Settlement Due: MNO Nov 20 $45 Put');
     await expect(detail.pnlLine(page)).toHaveText('Trade P&L once the expiration is recorded');
     await openDrawer(page, 'Position');
     await expect(detail.positionOpenPnl(page)).toHaveText('Settlement Due');
