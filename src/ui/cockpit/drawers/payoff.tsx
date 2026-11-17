@@ -93,7 +93,7 @@ function LineTable({ line, captionId }: { readonly line: PayoffLineProps; readon
   return (
     <section className="payoff-section" aria-labelledby={headingId}>
       <h3 id={headingId}>{line.tableName}</h3>
-      <div className="table-scroll">
+      <div className="table-scroll" role="region" aria-label={`${line.tableName} table`} tabIndex={0}>
         <table className="payoff-table">
           <caption id={captionId}>{line.caption}</caption>
           <thead>

@@ -2,7 +2,7 @@ import type { Locator, Page } from '@playwright/test';
 import { expectNoSidewaysScroll, setWidth } from '../d7p/support.ts';
 import type { DrawerName } from '../support/detail/index.ts';
 import {
-  addOs2x, buildOc3, detail, expect, expectAccessible, launchAt, MONDAY_NOV_1700, openDetailAt, openDrawer, READY, recordExpiration, SATURDAY_1000, test, THURSDAY_1800, firstPage,
+  addOs2x, buildOc3, buildOs2x, detail, expect, expectAccessible, launchAt, MONDAY_NOV_1700, openDetailAt, openDrawer, READY, recordExpiration, SATURDAY_1000, test, THURSDAY_1800, firstPage,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
@@ -83,6 +83,23 @@ test.describe('T8R.25-B4 Today at 1280 px', () => {
       await expectTodayTableFits(page, state);
       await context.close();
     }
+  });
+});
+
+// T8R.25-B7 (critic-2, defect 3): the Payoff drawer's scrolling text-equivalent table box takes keyboard focus, so axe finds no scrollable-region-focusable on a Settlement Due put at 320 px.
+test.describe('T8R.25-B7 Payoff at 320 px', () => {
+  test('should pass axe on the Payoff drawer at 320 px', async ({ profile }) => {
+    test.setTimeout(300_000);
+    const os2x = await buildOs2x(profile);
+    const context = await launchAt(profile, MONDAY_NOV_1700);
+    const page = await firstPage(context);
+    await page.goto(`/trades/${os2x.tradeId}`);
+    await expect(detail.settlementDueHeading(page)).toBeVisible(READY);
+    await setWidth(page, 320);
+    await openDrawer(page, 'Payoff');
+    await expect(page.locator('#drawer-panel-payoff')).toBeVisible();
+    await expectAccessible(page, 'Settlement Due, Payoff at 320');
+    await context.close();
   });
 });
 

@@ -1595,3 +1595,10 @@ Defect (ocr on T8R.25-B5): Plan and Risk read `underlyingReading` only when a da
 Fix (`plan-risk.props.ts`, one condition): an Underlying condition with an `underlyingReading` shows its distance from it, undated, unless the contract is Settlement Due or the Trade waits for its first Marks (as the rail). Dollar cells are unchanged: the dated figure with a dated line, else the Unavailable words (A109).
 Case: `plan-risk.test.tsx` (1), which also compares the drawer distance with the rail's.
 Browser: `e2e/d8r` and `e2e/d8p`: 34 passed.
+
+## T8R.25-B7
+
+Defect (critic-2, defect 3): axe reported `scrollable-region-focusable` on the Payoff drawer's `.payoff-section > .table-scroll` at 320 px (Settlement Due or Closed-by-expiration O-S2X); the scrolling text-equivalent table box could not take keyboard focus.
+Fix (`payoff.tsx`, one line): the box takes the pattern the Plan and Risk table box uses (`plan-risk.tsx`), `role="region"`, `aria-label` and `tabIndex={0}`, named "<table name> table" (for example "Planned Expiration Payoff table").
+Cases: `payoff.test.tsx` (1: each table box is a focusable named region), `e2e/d8r/responsive-a11y.spec.ts` (1: axe clean on Payoff at 320 px, Settlement Due O-S2X; red before the fix).
+Browser: `e2e/d8r` and the d8p specs that open Payoff (cockpit, first-marks-pending, payoff-fit, responsive-a11y, states): 23 passed.

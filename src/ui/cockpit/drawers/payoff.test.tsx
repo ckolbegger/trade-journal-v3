@@ -30,6 +30,16 @@ describe('Payoff drawer (W14)', () => {
     expect(within(within(current).getByRole('table')).getByRole('caption').textContent).toBe('Current payoff at expiration by XYZ price, including +$88.70 realized to date');
   });
 
+  it('should let the Payoff table scroll box take keyboard focus, with a name', () => {
+    render(<PayoffDrawer view={optionOpenDetail('O-C', [OC_PC1, OC_PC2, OC_X1], THURSDAY)} />);
+    for (const name of ['Planned Expiration Payoff table', 'Current Expiration Payoff table']) {
+      const box = screen.getByRole('region', { name });
+      expect(box.tabIndex).toBe(0);
+      expect(box.classList.contains('table-scroll')).toBe(true);
+      expect(within(box).getByRole('table')).toBeTruthy();
+    }
+  });
+
   it('should draw only the planned line with "Now: Not applicable: no open position" on a Closed Detail', () => {
     render(<PayoffDrawer view={optionClosedDetail('O-C', [OC_PC1, OC_PC2, OC_X1, OC_E1])} />);
     const drawer = screen.getByRole('region', { name: 'Expiration Payoff' });
