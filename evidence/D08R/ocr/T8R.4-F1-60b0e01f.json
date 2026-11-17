@@ -1,0 +1,154 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 0,
+    "total_tokens": 34985,
+    "input_tokens": 34667,
+    "output_tokens": 318,
+    "cache_read_tokens": 6656,
+    "elapsed": "30s"
+  },
+  "tool_calls": {
+    "total": 8,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 7
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Price history drawer props, types, rendering, styles, and tests",
+      "files": [
+        "src/ui/cockpit/drawers/price-history.props.test.tsx",
+        "src/ui/cockpit/drawers/price-history.props.ts",
+        "src/ui/cockpit/drawers/price-history.tsx",
+        "src/ui/cockpit/drawers/price-history.types.ts",
+        "src/ui/cockpit/styles/history.css"
+      ]
+    }
+  ],
+  "session_id": "e0346156-4ce0-4160-bd77-94a4f9f31475",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "e0346156-4ce0-4160-bd77-94a4f9f31475",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "60b0e01f",
+      "resolved_base": "15811755950210231bf04cf1a0b23da8c87b1caa",
+      "resolved_head": "60b0e01f52f4269c08a8a36f2b75d10b8761a15a",
+      "exact_range": "15811755950210231bf04cf1a0b23da8c87b1caa..60b0e01f52f4269c08a8a36f2b75d10b8761a15a",
+      "source_artifact_sha256": "0d8c58fb2839dd1f903b825a652344e53b9ff821651a6bdf8c35e09da02feedc"
+    },
+    "execution": {
+      "ocr_version": "v1.13.11",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "27f4c20fbe03ab5fb9668f9c243fb0dc88f6a4a58def686c3bda3a2e31955703",
+          "path": "src/ui/cockpit/styles/history.css",
+          "fingerprint": "f01c582da1bcc3b99c93e3d7f572135603145c62f3783f4326ee3035552c2c57"
+        },
+        {
+          "item_id": "8676b5afcb634bceb0b3456759a23b2bc4466a318b637ab4f4e37539b7f0aba1",
+          "path": "src/ui/cockpit/drawers/price-history.tsx",
+          "fingerprint": "d32ab4896bafd883f0ac9ee51a5468eaa6b4e75c8871f9d5eb0aff28f8adf007"
+        },
+        {
+          "item_id": "c86bede55e682a60063ef80cbeae2ab273f7fe4e803c557b0515a5f8aae21104",
+          "path": "src/ui/cockpit/drawers/price-history.types.ts",
+          "fingerprint": "65fd7a19483f8a24e04bfafe9ade956bc7c254d944bd35b332c5e3f46dab95d4"
+        },
+        {
+          "item_id": "ef97ec8adcb3f7b11445abde758d6f413b0e72418b1d1e70110aaeb9d0da2558",
+          "path": "src/ui/cockpit/drawers/price-history.props.ts",
+          "fingerprint": "d5fd22df4891075a5cd26f0f8bd4ee9af077485ddf9fe2ba39f24a1816a966d6"
+        },
+        {
+          "item_id": "f17148ce925f689ef36048ab528a1c1fc622264812e6a2b3ad4bf29f654514db",
+          "path": "src/ui/cockpit/drawers/price-history.props.test.tsx",
+          "fingerprint": "6789480154f8ade432292383345d60e021fef32d6207624c7025b636986c9018"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "27f4c20fbe03ab5fb9668f9c243fb0dc88f6a4a58def686c3bda3a2e31955703",
+          "path": "src/ui/cockpit/styles/history.css",
+          "fingerprint": "f01c582da1bcc3b99c93e3d7f572135603145c62f3783f4326ee3035552c2c57"
+        },
+        {
+          "item_id": "8676b5afcb634bceb0b3456759a23b2bc4466a318b637ab4f4e37539b7f0aba1",
+          "path": "src/ui/cockpit/drawers/price-history.tsx",
+          "fingerprint": "d32ab4896bafd883f0ac9ee51a5468eaa6b4e75c8871f9d5eb0aff28f8adf007"
+        },
+        {
+          "item_id": "c86bede55e682a60063ef80cbeae2ab273f7fe4e803c557b0515a5f8aae21104",
+          "path": "src/ui/cockpit/drawers/price-history.types.ts",
+          "fingerprint": "65fd7a19483f8a24e04bfafe9ade956bc7c254d944bd35b332c5e3f46dab95d4"
+        },
+        {
+          "item_id": "ef97ec8adcb3f7b11445abde758d6f413b0e72418b1d1e70110aaeb9d0da2558",
+          "path": "src/ui/cockpit/drawers/price-history.props.ts",
+          "fingerprint": "d5fd22df4891075a5cd26f0f8bd4ee9af077485ddf9fe2ba39f24a1816a966d6"
+        },
+        {
+          "item_id": "f17148ce925f689ef36048ab528a1c1fc622264812e6a2b3ad4bf29f654514db",
+          "path": "src/ui/cockpit/drawers/price-history.props.test.tsx",
+          "fingerprint": "6789480154f8ade432292383345d60e021fef32d6207624c7025b636986c9018"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "713afea59f0c6fccd5da82a84117a09cbe7abfcbdbdb62cddbb552da2fc1761d",
+          "path": "evidence/D08R/suite-runs/T8R.4-F1-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "7df006720b873da2a5c2e024f41d75cd3c70c34590bc5725f6309101d3da2067",
+          "path": "evidence/D08R/tdd-log/T8R.4-F1.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "8546eb3fd2c2efbbe9b95b62c00a629f08003fdc64214537842c8eaa0d64a490",
+          "path": "evidence/D08R/suite-runs/T8R.4-F1-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "b25b0d0d0dae2405469e16fc4cd91e06942523a6f448286863bafc83adaa7cbf",
+          "path": "evidence/D08R/suite-runs/T8R.4-F1-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "fb5456a5ee39436311dd326288e6a7b44415ac4cab9e17bd862e1ad5c5ee563f",
+          "path": "evidence/D08R/suite-runs/T8R.4-F1-checks.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 29798
+  }
+}
