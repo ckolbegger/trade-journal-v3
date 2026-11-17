@@ -94,8 +94,9 @@ export function journalTabCount(view: unknown): string | undefined {
 }
 
 // W24, A240: the occurrences whose current version is Active, as "1 active Deviation."; absent when none is.
+// An incoherent Detail draws no Deviations in Plan and Risk, so it offers no line whose button leads there.
 function deviationsOf(view: TradeDetailView | undefined): JournalDrawerProps['deviations'] {
-  const active = view && 'deviations' in view ? view.deviations.filter((d) => d.versions.at(-1)?.status === 'Active').length : 0;
+  const active = view && 'deviations' in view && !('recordedPositionChanges' in view) ? view.deviations.filter((d) => d.versions.at(-1)?.status === 'Active').length : 0;
   return active > 0 ? { line: `${active} active Deviation${active === 1 ? '' : 's'}.`, action: 'See Plan and Risk' } : undefined;
 }
 

@@ -958,3 +958,7 @@ After: `npm run typecheck` exit 0; `npx vitest run src/domain` 258 passed; `npm 
 **Fallback list.** The fallback Journal list (`Composed.tsx`, shown without a replay) has no Deviation line; only the session cards do.
 
 **Browser specs** (after `build:faults` and `build:releases`): `d8p/history.spec.ts`, `d8p/journal-final-session.spec.ts` and `d2/open-position.spec.ts` pass. `d4/breach-overrun.spec.ts` B4.14 fails at its Worst case check on Plan and Risk, before any Journal step. That spec is brought up to date by T8R.14-F1 in lane RA, which this lane's base does not contain (`9a116056` is not an ancestor); not caused by this task.
+
+## T8R.17-B1
+
+The Journal's active-Deviation line is hidden on an incoherent Detail. The plan (W24, A240, test list for T8R.17) says nothing about Deviations on an incoherent Detail, and Plan and Risk draws none there (`'positionChanges' in view` is false), so the line's button would lead nowhere. `deviationsOf` in `journal.props.ts` now also requires the Detail not to have `recordedPositionChanges`. Red then green in `tdd-log/T8R.17-B1.md`.

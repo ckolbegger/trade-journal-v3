@@ -5,7 +5,7 @@ import { MemoryRouter, Route, Routes } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { closedDetailOf } from '../../../../tests/support/closed-detail-fixtures.ts';
 import { facadeDouble } from '../../../../tests/support/facade-double.ts';
-import { openDetailOf, openDetailUncovered, PC1, PC2, pc1Reflection, pc2Decline, pc3Excess, PC3, X1, X2 } from '../../../../tests/support/open-detail-fixtures.ts';
+import { incoherentDetailOf, openDetailOf, openDetailUncovered, PC1, PC2, pc1Reflection, pc2Decline, pc3Excess, PC3, X1, X2 } from '../../../../tests/support/open-detail-fixtures.ts';
 import { reflectionDefinition } from '../../../../tests/support/position-change-form-facade.ts';
 import { plannedDetail } from '../../../../tests/support/views-fixtures.ts';
 import type { DueClassification, NarrativeItem, RecordedDeviation, TradeDetailDebt } from '../../../app/types.ts';
@@ -574,10 +574,9 @@ describe('Journal: active Deviations (W24)', () => {
   const second = { ...pc3Excess, occurrenceId: 'dev-3' } as RecordedDeviation;
 
   // The cards need a replay; one with no sessions is enough for the line above them.
-  async function journalWith(recordedDeviations: RecordedDeviation[]) {
+  async function journalWith(recordedDeviations: RecordedDeviation[], view: unknown = openDetailOf([PC1, PC2, PC3], { recordedDeviations })) {
     const user = userEvent.setup();
     const facade = facadeDouble();
-    const view = openDetailOf([PC1, PC2, PC3], { recordedDeviations });
     vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockResolvedValue({ kind: 'Ready', view, binding: {} } as never);
     vi.mocked(facade.TradeViewsAndReporting.replayTrade).mockResolvedValue({ kind: 'Ready', view: { tradeId: 'trade-1', instruments: [], sessions: [], plan: [], pending: null }, binding: {} } as never);
     render(
@@ -608,6 +607,15 @@ describe('Journal: active Deviations (W24)', () => {
     await user.click(within(panel).getByRole('button', { name: 'See Plan and Risk' }));
     expect(screen.getByRole('tab', { name: 'Plan and Risk' }).getAttribute('aria-selected')).toBe('true');
     expect(document.activeElement).toBe(within(screen.getByRole('tabpanel', { name: 'Plan and Risk' })).getByRole('heading', { name: 'Deviations' }));
+  });
+
+  it('should not show the active Deviation line on an incoherent Detail', async () => {
+    // Plan and Risk draws no Deviations on an incoherent Detail, so the line's button would lead nowhere.
+    const view = { ...incoherentDetailOf([PC1, PC2], []), deviations: [pc3Excess] };
+    const { panel } = await journalWith([], view);
+    await within(panel).findByRole('heading', { name: 'Journal' });
+    expect(within(panel).queryByText(/active Deviation/)).toBeNull();
+    expect(within(panel).queryByRole('button', { name: 'See Plan and Risk' })).toBeNull();
   });
 
   it('should not show the line when no Deviation is active (gone)', async () => {
