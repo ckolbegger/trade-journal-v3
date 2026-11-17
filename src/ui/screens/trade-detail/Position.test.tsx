@@ -34,11 +34,11 @@ describe('Open Trade Detail', () => {
 
     const position = screen.getByRole('region', { name: 'Position' });
     expect(termValue(position, 'Position')).toBe('100 shares of XYZ');
-    expect(termValue(position, 'Opening fees')).toBe('$2.00');
+    expect(within(position).queryByText('Opening fees', { selector: 'dt' })).toBeNull();
     const lots = within(position).getByRole('table', { name: 'Open Lots' });
     expect(rowsOf(lots)).toEqual([
-      ['2026-10-12 10:00', '60', '$50.10', '$1.00'],
-      ['2026-10-12 11:00', '40', '$50.30', '$1.00'],
+      ['XYZ', '2026-10-12 10:00', '60', '$50.10', '$1.00'],
+      ['XYZ', '2026-10-12 11:00', '40', '$50.30', '$1.00'],
     ]);
     // Numbers are right-aligned in tabular numerals.
     expect(within(lots).getAllByText('$50.10')[0]!.className).toContain('number');
@@ -267,7 +267,7 @@ describe('Open Trade Detail after a partial exit', () => {
     // Realized to date is the Position drawer's own figure now (the Valuation section it was read from is retired).
     expect(termValue(await screen.findByRole('region', { name: 'Position' }), 'Realized to date')).toBe('+$55.90');
     const section = screen.getByRole('region', { name: 'Lot Matches' });
-    expect(rowsOf(within(section).getByRole('table', { name: 'Lot Matches' }))).toEqual([['$50.10 on 2026-10-12 10:00', '$52.00 on 2026-10-13 10:00', '30', '+$55.90']]);
+    expect(rowsOf(within(section).getByRole('table', { name: 'Lot Matches' }))).toEqual([['XYZ', '$50.10 on 2026-10-12 10:00', '$52.00 on 2026-10-13 10:00', '30', '+$55.90']]);
     expect(within(section).getByText('Each match’s amount is rounded to the cent for display.')).toBeTruthy();
 
     const exit = screen.getByRole('link', { name: 'Record exit' });
@@ -329,18 +329,18 @@ describe('option Trade Detail Lot Matches (row 20.13)', () => {
     renderView(optionClosedDetail('O-C', [OC_PC1, OC_PC2, OC_X1, OC_E1]));
     await openDrawer(user, 'Position');
     await screen.findByRole('region', { name: 'Lot Matches' });
-    expect(headers()).toEqual(['Opened', 'Closed', 'Quantity', 'Realized']);
+    expect(headers()).toEqual(['Instrument', 'Opened', 'Closed', 'Quantity', 'Realized']);
     cleanup();
 
     renderView(optionOpenDetail('O-C', [OC_PC1, OC_PC2, OC_X1], THURSDAY));
     await openDrawer(user, 'Position');
     await screen.findByRole('region', { name: 'Lot Matches' });
-    expect(headers()).toEqual(['Opened', 'Closed', 'Quantity', 'Realized']);
+    expect(headers()).toEqual(['Instrument', 'Opened', 'Closed', 'Quantity', 'Realized']);
     cleanup();
 
     renderView(openDetailOf([PC1, PC2, X1]));
     await openDrawer(user, 'Position');
     await screen.findByRole('region', { name: 'Lot Matches' });
-    expect(headers()).toEqual(['Bought', 'Sold', 'Quantity', 'Realized']);
+    expect(headers()).toEqual(['Instrument', 'Bought', 'Sold', 'Quantity', 'Realized']);
   });
 });

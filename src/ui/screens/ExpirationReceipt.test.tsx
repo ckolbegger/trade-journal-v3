@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expiredOptionTrade } from '../../../tests/support/option-trade-fixtures.ts';
@@ -37,5 +37,17 @@ describe('contract names in the Workspace zone (A238)', () => {
       </MemoryRouter>,
     );
     expect(screen.getByText(/^Expiration of 1 /).textContent).toContain('XYZ Jan 15 2027');
+  });
+
+  it('should name each Lot Matchs contract in a first column Instrument on the Expiration receipt (T8R.5)', () => {
+    vi.useFakeTimers({ toFake: ['Date'], now: new Date('2027-01-01T03:00:00Z') });
+    render(
+      <MemoryRouter>
+        <ExpirationReceipt {...receiptProps()} />
+      </MemoryRouter>,
+    );
+    const table = screen.getByRole('table', { name: 'Lot Matches' });
+    expect(within(table).getAllByRole('columnheader')[0]!.textContent).toBe('Instrument');
+    expect(within(within(table).getAllByRole('row')[1]!).getAllByRole('cell')[0]!.textContent).toBe('XYZ Nov 20 $55 Call');
   });
 });

@@ -3,7 +3,7 @@
 // Only an adapter or its test may import a view's types, so every view is built here.
 import { cleanup, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { openDetailAt, openDetailOf, openDetailUncovered, PC1, PC2, PC3 } from '../../../../tests/support/open-detail-fixtures.ts';
+import { openDetailAt, openDetailOf, openDetailUncovered, PC1, PC2, PC3, X1 } from '../../../../tests/support/open-detail-fixtures.ts';
 import { optionClosedDetail, optionOpenDetail, type OptionFrames } from '../../../../tests/support/option-detail-fixtures.ts';
 import { ocChange, OC_E1, OC_PC1, OC_PC2, OC_X1, OS_S1 } from '../../../../tests/support/option-trade-fixtures.ts';
 import type { TradeDetailView } from '../../../app/types.ts';
@@ -27,7 +27,7 @@ describe('Position drawer (P96)', () => {
     show(optionOpenDetail('O-C', [OC3_BUY, OC3_SELL], WEDNESDAY));
     const position = screen.getByRole('region', { name: 'Position' });
     const lots = within(position).getByRole('table', { name: 'Open Lots' });
-    expect(rowsOf(lots)).toEqual([['2026-10-12 10:00', '1', '$2.00', '$0.65']]);
+    expect(rowsOf(lots)).toEqual([['XYZ Nov 20 $55 Call', '2026-10-12 10:00', '1', '$2.00', '$0.65']]);
     expect(termValue(position, 'Open P&L')).toBe('+$89.35');
     expect(termValue(position, 'Realized to date')).toBe('+$98.70');
     expect(termValue(position, 'Incurred fees')).toBe('$1.95');
@@ -66,11 +66,58 @@ describe('Position drawer (P96)', () => {
   });
 });
 
+// W28, T8R.5: each lot and each match names its contract in a first column, one Position row per leg, and no Opening fees.
+describe('Position drawer: naming each contract', () => {
+  useFixedClock();
+
+  it('should name each open lots contract in a first column Instrument', () => {
+    show(optionOpenDetail('O-C', [OC3_BUY, OC3_SELL], WEDNESDAY));
+    const lots = within(screen.getByRole('region', { name: 'Position' })).getByRole('table', { name: 'Open Lots' });
+    expect(within(lots).getAllByRole('columnheader').map((h) => h.textContent)).toEqual(['Instrument', 'Opened', 'Quantity', 'Price', 'Unconsumed opening fee']);
+    expect(rowsOf(lots)).toEqual([['XYZ Nov 20 $55 Call', '2026-10-12 10:00', '1', '$2.00', '$0.65']]);
+    cleanup();
+
+    show(openDetailOf([PC1, PC2]));
+    const stock = within(screen.getByRole('region', { name: 'Position' })).getByRole('table', { name: 'Open Lots' });
+    expect(rowsOf(stock).map((row) => row[0])).toEqual(['XYZ', 'XYZ']);
+  });
+
+  it('should name each Lot Matchs contract in a first column Instrument, on the drawer and on the exit and expiration receipts', () => {
+    show(optionClosedDetail('O-C', [OC_PC1, OC_PC2, OC_X1, OC_E1]));
+    const matches = screen.getByRole('table', { name: 'Lot Matches' });
+    expect(within(matches).getAllByRole('columnheader').map((h) => h.textContent)).toEqual(['Instrument', 'Opened', 'Closed', 'Quantity', 'Realized']);
+    expect(rowsOf(matches).map((row) => row[0])).toEqual(['XYZ Nov 20 $55 Call', 'XYZ Nov 20 $55 Call']);
+    cleanup();
+
+    show(openDetailOf([PC1, PC2, X1]));
+    expect(rowsOf(screen.getByRole('table', { name: 'Lot Matches' }))).toEqual([['XYZ', '$50.10 on 2026-10-12 10:00', '$52.00 on 2026-10-13 10:00', '30', '+$55.90']]);
+  });
+
+  it('should show one Position row per leg', () => {
+    const one = optionOpenDetail('O-C', [OC_PC1, OC_PC2, OC_X1], THURSDAY);
+    const second = { ...one.positions[0]!, instrument: { ...one.positions[0]!.instrument, strike: '60' } };
+    show({ ...one, positions: [one.positions[0]!, second] });
+    const terms = within(screen.getByRole('region', { name: 'Position' })).getAllByText('Position', { selector: 'dt' });
+    expect(terms.map((term) => term.nextElementSibling?.textContent)).toEqual(['Long 1 contract of XYZ Nov 20 $55 Call', 'Long 1 contract of XYZ Nov 20 $60 Call']);
+  });
+
+  it('should not show Opening fees, which the Fee reconciliation already shows', () => {
+    show(openDetailOf([PC1, PC2, PC3]));
+    expect(screen.queryByText('Opening fees', { selector: 'dt' })).toBeNull();
+    cleanup();
+
+    show(optionClosedDetail('O-C', [OC_PC1, OC_PC2, OC_X1, OC_E1]));
+    const fees = screen.getByText('Fee reconciliation').closest('details')!;
+    expect(termValue(fees, 'Opening fees incurred')).toBe('$1.30');
+    expect(screen.queryByText('Opening fees', { selector: 'dt' })).toBeNull();
+  });
+});
+
 // Figures the retired Summary card and Valuation section gave, moved here with their expected values (T8P.27, revision 86).
 describe('Position drawer: figures moved from the retired Summary card and Valuation section (T8P.27)', () => {
   useFixedClock();
 
-  it('should show the option Trade Summary text, the held contracts, and the Opening fees of three Position Changes', () => {
+  it('should show the option Trade Summary text and the held contracts', () => {
     show(optionOpenDetail('O-C', [OC_PC1, OC_PC2, OC_X1], THURSDAY));
     expect(screen.getByRole('region', { name: 'Position' }).querySelector('.summary-text')?.textContent).toBe('Long 1 Nov 20 $55 Call');
     expect(termValue(screen.getByRole('region', { name: 'Position' }), 'Position')).toBe('Long 1 contract of XYZ Nov 20 $55 Call');
@@ -78,10 +125,6 @@ describe('Position drawer: figures moved from the retired Summary card and Valua
 
     show(optionOpenDetail('O-S', [OS_S1], THURSDAY));
     expect(screen.getByRole('region', { name: 'Position' }).querySelector('.summary-text')?.textContent).toBe('Short 2 Nov 20 $45 Put');
-    cleanup();
-
-    show(openDetailOf([PC1, PC2, PC3]));
-    expect(termValue(screen.getByRole('region', { name: 'Position' }), 'Opening fees')).toBe('$3.00');
   });
 
   it('should show realized to date, Open P&L and Incurred fees for a stock Trade at a Tuesday Mark, a loss with its minus, and each in words without a Mark', () => {

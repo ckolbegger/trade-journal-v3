@@ -574,3 +574,10 @@ Test-only; no product code changed.
 ## T8R.16
 
 Journal paging keeps keyboard focus (tech debt item 24). B8R.6's focus case written first, red (`toBeFocused` on Newer sessions: inactive), green after the fix. Two unit cases in `journal-cards.props.test.tsx`; the first passed on its first run (flagged and mutation-checked in `tdd-log/T8R.16.md`). Lane tier: `.claude/scripts/full-suite.sh evidence/D08R T8R.16 lane` exit 0 (unit 2063, integration 258, 14 of 14 checks).
+
+## T8R.5
+
+Behavioral task (4 cases); rows in `tdd-log/T8R.5.md`. Notes:
+- The handoff note on `payoff.props.ts:63`, `journal.props.ts:177` and the `ReviewCard` header's `tradeSummary` zone did not apply: none of those files belongs to lane PO.
+- `src/ui/styles/position.css` does not exist and needed no change. `e2e/support/detail/position.ts` needed no change; no browser spec was changed, so none was run.
+- The exit receipt has no test file of its own; its tests live in `PositionChangeFormExit.test.tsx` and `PositionChangeFormOptions.test.tsx`, whose Lot Matches expectations gained the Instrument column.

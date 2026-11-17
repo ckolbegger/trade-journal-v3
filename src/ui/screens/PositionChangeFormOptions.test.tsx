@@ -85,7 +85,8 @@ describe('option receipts', () => {
     );
     expect(screen.getByText('Sell to close 1 XYZ Nov 20 $55 Call')).toBeTruthy();
     const table = screen.getByRole('table', { name: 'Lot Matches' });
-    expect(within(table).getAllByRole('columnheader').map((h) => h.textContent)).toEqual(['Opened', 'Closed', 'Quantity', 'Realized']);
+    expect(within(table).getAllByRole('columnheader').map((h) => h.textContent)).toEqual(['Instrument', 'Opened', 'Closed', 'Quantity', 'Realized']);
+    expect(within(within(table).getAllByRole('row')[1]!).getAllByRole('cell')[0]!.textContent).toBe('XYZ Nov 20 $55 Call');
   });
 });
 

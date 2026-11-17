@@ -1,6 +1,7 @@
 // The Position drawer's adapter (A216): the Detail view and the time zone in, finished display values out. Only this file and its test import the view's types.
 import { createElement } from 'react';
 import type { TradeDetailView } from '../../../app/types.ts';
+import { instrumentLabel } from '../../calculation-words.ts';
 import { calculation, signed, unavailableLabel } from '../../figures.ts';
 import { localTime, money, netCost, quantity, tradeSummary } from '../../format.ts';
 import { LotMatchesTable } from '../../screens/LotMatchesTable.tsx';
@@ -21,7 +22,7 @@ export function positionProps(input: unknown, timeZone: string): PositionDrawerP
   const { positionChanges } = view;
   const executions = positionChanges.flatMap((change) => change.executions);
   const openedAt = (executionId: string) => localTime(executions.find((e) => e.factId === executionId)?.economicTime ?? '', timeZone);
-  const { fees, feeReconciliation } = view;
+  const { feeReconciliation } = view;
   const due = 'settlement' in view ? view.settlement[0] : undefined;
   return {
     ...(view.summary && { tradeSummary: tradeSummary(view.summary, timeZone) }),
@@ -29,15 +30,15 @@ export function positionProps(input: unknown, timeZone: string): PositionDrawerP
       ? {}
       : {
           summary: [
-            { label: 'Position', value: view.positions.map((p) => positionText(p, timeZone)).join(', ') },
+            // One row for each leg.
+            ...view.positions.map((p) => ({ label: 'Position', value: positionText(p, timeZone) })),
             ...(view.netCost.kind === 'Value' ? [{ label: 'Net cost', value: netCost(view.netCost.value) }] : []),
-            { label: 'Opening fees', value: money(fees.incurredOpening) },
             { label: 'Last activity', value: localTime(view.lastActivity, timeZone), plain: true },
           ],
           openLots: {
-            columns: ['Opened', 'Quantity', 'Price', 'Unconsumed opening fee'],
+            columns: ['Instrument', 'Opened', 'Quantity', 'Price', 'Unconsumed opening fee'],
             rows: view.positions.flatMap((p) =>
-              p.openLots.map((lot) => [openedAt(lot.openingExecutionId), quantity(lot.quantity), money(lot.price), money(lot.unconsumedOpeningFee)]),
+              p.openLots.map((lot) => [instrumentLabel(p.instrument, timeZone), openedAt(lot.openingExecutionId), quantity(lot.quantity), money(lot.price), money(lot.unconsumedOpeningFee)]),
             ),
           },
           figures: [

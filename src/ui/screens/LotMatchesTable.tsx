@@ -1,5 +1,6 @@
 import type { CalculationResult, ExecutionFact } from '../../app/types.ts';
 import type { Rational } from '../../domain/values/index.ts';
+import { instrumentLabel } from '../calculation-words.ts';
 import { calculation, signed } from '../figures.ts';
 import { decimalMoney as price, localTime, money, quantity } from '../format.ts';
 
@@ -45,6 +46,7 @@ export function LotMatchesTable({
       {caption !== undefined && <caption>{caption}</caption>}
       <thead>
         <tr>
+          <th scope="col">Instrument</th>
           <th scope="col">{option ? 'Opened' : 'Bought'}</th>
           <th scope="col">{option ? 'Closed' : 'Sold'}</th>
           <th scope="col" className="number">
@@ -58,6 +60,7 @@ export function LotMatchesTable({
       <tbody>
         {rows.map((match) => (
           <tr key={`${match.openingExecutionId}|${match.disposingExecutionId}`}>
+            <td className="nowrap">{instrumentLabel(executions.find((e) => e.factId === match.openingExecutionId)!.instrument, timeZone)}</td>
             <td className="nowrap">{at(match.openingExecutionId)}</td>
             <td className="nowrap">{at(match.disposingExecutionId)}</td>
             <td className="number nowrap">{quantity(match.quantity)}</td>

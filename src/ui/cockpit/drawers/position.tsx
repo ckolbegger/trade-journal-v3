@@ -24,8 +24,8 @@ export function PositionPanel({ tradeSummary, summary, openLots, figures, lotMat
           {summaryLine}
           {summary && (
             <dl className="figure-grid">
-              {summary.map(({ label, value, plain }) => (
-                <Figure key={label} term={label} {...(plain && { plain })}>
+              {summary.map(({ label, value, plain }, at) => (
+                <Figure key={at} term={label} {...(plain && { plain })}>
                   {value}
                 </Figure>
               ))}
@@ -39,7 +39,7 @@ export function PositionPanel({ tradeSummary, summary, openLots, figures, lotMat
                 <thead>
                   <tr>
                     {openLots.columns.map((column, at) => (
-                      <th key={column} scope="col" className={at > 0 ? 'number' : undefined}>
+                      <th key={column} scope="col" className={at > 1 ? 'number' : undefined}>
                         {column}
                       </th>
                     ))}
@@ -49,7 +49,7 @@ export function PositionPanel({ tradeSummary, summary, openLots, figures, lotMat
                   {openLots.rows.map((row, at) => (
                     <tr key={at}>
                       {row.map((cell, column) => (
-                        <td key={column} className={column > 0 ? 'number' : undefined}>
+                        <td key={column} className={column > 1 ? 'number' : undefined}>
                           {cell}
                         </td>
                       ))}
