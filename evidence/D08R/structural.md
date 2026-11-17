@@ -236,3 +236,18 @@ Rebased `d08r/cn` onto `claude-opus-5.5` (`9e01e6a0`): T8R.3 `5580fda4` → `556
 ## Merge run: wave 0
 
 Complete cumulative run on `11c5c14a` via `suite-runner` (label `wave0-merge`, `browser-auto 0c6f9828` → full tier, first matching path `e2e/d7/marks-zero.spec.ts`): unit 192 files, 2044 passed; integration 118 files, 258 passed; browser stage 1 126 passed (5.1m), stage 2 120 passed (7.5m); 14 of 14 checks exit 0. `run-complete.sh`: run complete. No failures; the Ready-state case did not fail. Outputs `suite-runs/wave0-merge-*.txt`. This is the base for wave 1's `browser-auto`.
+
+## Wave 1: lane worktrees
+
+Created by hand from `fee1f3ad` (the Progress commit; the rows say `77d475d0`, the head before it, which differs only in the plan), each with `lane-setup.sh` (exit 0), under this worktree's `.claude/worktrees/`:
+
+| Lane | Worktree | Branch | First task |
+|---|---|---|---|
+| TD | `d08r-td` | `d08r/td` | T8R.6 |
+| BV | `d08r-bv` | `d08r/bv` | T8R.21 |
+| PR | `d08r-pr` | `d08r/pr` | T8R.10 |
+| RA | `d08r-ra` | `d08r/ra` | T8R.13 |
+| BA | `d08r-ba` | `d08r/ba` | T8R.18 |
+| JR | `d08r-jr` | `d08r/jr` | T8R.15 |
+
+PO (T8R.5) waits for the first free slot (agent cap 6).
