@@ -354,3 +354,15 @@ ocr on `d8fd9ffe` (session d4043ab7-10f8-455f-9caa-41fa7eb9d011, gpt-6.1-sol, 7 
 - **T8R.10-B2** (finding 2). Defect: the Distance cell's chained ternary is hard to read. Fix: a small named function with the same three outcomes (blank, "away", "past"). Kind: structural, with existing cases unchanged.
 
 Both run in lane PR after T8R.10-F1.
+
+## T8R.5 ocr review and bug task
+
+ocr on `88a8d106` (session d7b3fa98-17a2-4d5f-ab21-d0ae9079f73c, gpt-6.1-sol, 9 files reviewed, 1 comment; raw output `ocr/T8R.5-88a8d106.json`):
+
+| Severity | Category | Location | Claim | Assessment |
+|---|---|---|---|---|
+| medium | test | `src/ui/cockpit/drawers/position.props.test.tsx:89` | The Instrument assertions cover only single-instrument Trades, and the two-leg case checks only the Position rows. Labelling every lot or Lot Match with the first leg's contract would still pass. | Valid |
+
+**T8R.5-B1.** Defect: no case pins the Instrument column on a Trade with two different contracts, so a first-leg-only label would pass. Case: "it should name each open lot and each Lot Match by its own contract on a Trade with two contracts", a $55 and a $60 call, one lot of each, one partly closed. The case may pass on its first run, because the code reads as correct. The mutation then labels every row with the first leg's contract. Runs in lane PO.
+
+T8R.5 notes, from its hand-back: 4 cases, red then green. An Expiration-receipt case was a first-run pass and was mutation-checked. The agent edited `PositionChangeFormExit.test.tsx` and `PositionChangeFormOptions.test.tsx`, which belong to no lane and hold the exit receipt's Lot Matches expectations, adding only the new column. No new words. `src/ui/styles/position.css` does not exist. Narrow-width browser checks in `e2e/d6`, `e2e/d7` and `e2e/d2/ui-alignment.spec.ts`'s Open Lots may be affected and were not run; the next merge run covers them. Lane tier: unit 2049, integration 258, 14 of 14 checks.

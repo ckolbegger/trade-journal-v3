@@ -1,0 +1,230 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 9 selected item(s).",
+  "summary": {
+    "files_reviewed": 9,
+    "comments": 1,
+    "total_tokens": 143286,
+    "input_tokens": 141224,
+    "output_tokens": 2062,
+    "cache_read_tokens": 18304,
+    "elapsed": "1m7s"
+  },
+  "tool_calls": {
+    "total": 25,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 2,
+      "file_read": 20,
+      "file_read_diff": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/drawers/position.props.test.tsx",
+      "content": "The new instrument assertions only exercise single-instrument trades, while the two-leg test below checks summary text using a copied position that retains the original lot/execution IDs. Consequently, labeling every lot or match with the first instrument would still pass. Add a multi-leg case with distinct opening executions and lots/matches, and assert each row's Instrument value (ideally with matches ordered differently from executions). This would protect the required opening-Execution attribution as well as per-leg open-lot labeling.",
+      "existing_code": "    expect(rowsOf(matches).map((row) =\u003e row[0])).toEqual(['XYZ Nov 20 $55 Call', 'XYZ Nov 20 $55 Call']);",
+      "start_line": 89,
+      "end_line": 89,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Cockpit position drawer and props tests",
+      "files": [
+        "src/ui/cockpit/drawers/position.props.test.tsx",
+        "src/ui/cockpit/drawers/position.props.ts",
+        "src/ui/cockpit/drawers/position.tsx"
+      ]
+    },
+    {
+      "label": "Expiration receipt and lot matching display",
+      "files": [
+        "src/ui/screens/ExpirationReceipt.test.tsx",
+        "src/ui/screens/LotMatchesTable.tsx"
+      ]
+    },
+    {
+      "label": "Position change form tests",
+      "files": [
+        "src/ui/screens/PositionChangeFormExit.test.tsx",
+        "src/ui/screens/PositionChangeFormOptions.test.tsx"
+      ]
+    },
+    {
+      "label": "Trade detail position and result tests",
+      "files": [
+        "src/ui/screens/trade-detail/Position.test.tsx",
+        "src/ui/screens/trade-detail/Result.test.tsx"
+      ]
+    }
+  ],
+  "session_id": "d7b3fa98-17a2-4d5f-ab21-d0ae9079f73c",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "d7b3fa98-17a2-4d5f-ab21-d0ae9079f73c",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "88a8d106",
+      "resolved_base": "a861c468a79f05c9f229fab4510bd3f7e58961ef",
+      "resolved_head": "88a8d106015ad0fef699616e4366aa110093f3d3",
+      "exact_range": "a861c468a79f05c9f229fab4510bd3f7e58961ef..88a8d106015ad0fef699616e4366aa110093f3d3",
+      "source_artifact_sha256": "692145633416d13d3e6d1108f99493b17e80081f1e1a5b07cb979e5cb729757f"
+    },
+    "execution": {
+      "ocr_version": "v1.13.11",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0d129b946292efdd49d588aa11889cb22107c912bcc10326e6d2ad34ae9493bd",
+          "path": "src/ui/screens/ExpirationReceipt.test.tsx",
+          "fingerprint": "52374d8d2d8c1665ec4519581256f0f0458bc883a9e1a4f059df67f52a09bc34"
+        },
+        {
+          "item_id": "206f12b349580a7ca7bfe204fd47734ca6be44fdfe081b024605d59503f19841",
+          "path": "src/ui/cockpit/drawers/position.tsx",
+          "fingerprint": "383e609896d2d683ffd5f4bd61499d7ce8cb0716ea1b415013783905472b9f46"
+        },
+        {
+          "item_id": "58dcdeb8ac8b6e57d1c5c6b7b8d07087d57dfe9aa9aac008014ac84b43a794c5",
+          "path": "src/ui/cockpit/drawers/position.props.test.tsx",
+          "fingerprint": "b855f6eb87059d4efcb87c91951a2aa30302b777265f06481dfef810bb918d5e"
+        },
+        {
+          "item_id": "59b4b2506f61405795c057e6323b802d74ed26b419c182ab7ae9aae981f45d99",
+          "path": "src/ui/screens/PositionChangeFormOptions.test.tsx",
+          "fingerprint": "adbb8f8ac8f73415fbfe2112bb466a495ed5e1c3ad9b8904134c087868b02c7b"
+        },
+        {
+          "item_id": "829f831b6260b98151855d0cebc18a9c103747faf3328034408bb44e9b588424",
+          "path": "src/ui/screens/PositionChangeFormExit.test.tsx",
+          "fingerprint": "026dc8611fc00143928bfc6041e10194cef3908a84778ef608399a096bfb1b79"
+        },
+        {
+          "item_id": "8adc510db5d8c589002e742d0da0075c5ee50162c0cfe23822135e24c49b46ea",
+          "path": "src/ui/screens/trade-detail/Position.test.tsx",
+          "fingerprint": "d7031b314de670b5e8606f89d914cbe1f90d9ed60fd66371a4dfd4096ee668ac"
+        },
+        {
+          "item_id": "c90f11a8b2d1d91f7bf1e0a2bd2a7f3a710b9872a7776c5d7f211309e04a67bc",
+          "path": "src/ui/cockpit/drawers/position.props.ts",
+          "fingerprint": "e545e3ff6884d852160a69e32807d3979494353cc2e50cf9894693bffe10a9de"
+        },
+        {
+          "item_id": "e2f2d46d15c2f4fab0b22f66b91a79dcb7f58fdd53703a93878b0eb1564bb4e8",
+          "path": "src/ui/screens/LotMatchesTable.tsx",
+          "fingerprint": "2e2a3f1d2a84696f0a95fc694e9cd9365c5b6e4926f3ba9b2c69cf208e9f34e8"
+        },
+        {
+          "item_id": "ea0588e106f411a3d18b01faf53a3647c9ed28d8e647873431f4ed45b37bd92e",
+          "path": "src/ui/screens/trade-detail/Result.test.tsx",
+          "fingerprint": "ab4df9dc2d6adf4c034996c475810ca2abdfd1085d601827ec79a1c2230c9371"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0d129b946292efdd49d588aa11889cb22107c912bcc10326e6d2ad34ae9493bd",
+          "path": "src/ui/screens/ExpirationReceipt.test.tsx",
+          "fingerprint": "52374d8d2d8c1665ec4519581256f0f0458bc883a9e1a4f059df67f52a09bc34"
+        },
+        {
+          "item_id": "206f12b349580a7ca7bfe204fd47734ca6be44fdfe081b024605d59503f19841",
+          "path": "src/ui/cockpit/drawers/position.tsx",
+          "fingerprint": "383e609896d2d683ffd5f4bd61499d7ce8cb0716ea1b415013783905472b9f46"
+        },
+        {
+          "item_id": "58dcdeb8ac8b6e57d1c5c6b7b8d07087d57dfe9aa9aac008014ac84b43a794c5",
+          "path": "src/ui/cockpit/drawers/position.props.test.tsx",
+          "fingerprint": "b855f6eb87059d4efcb87c91951a2aa30302b777265f06481dfef810bb918d5e"
+        },
+        {
+          "item_id": "59b4b2506f61405795c057e6323b802d74ed26b419c182ab7ae9aae981f45d99",
+          "path": "src/ui/screens/PositionChangeFormOptions.test.tsx",
+          "fingerprint": "adbb8f8ac8f73415fbfe2112bb466a495ed5e1c3ad9b8904134c087868b02c7b"
+        },
+        {
+          "item_id": "829f831b6260b98151855d0cebc18a9c103747faf3328034408bb44e9b588424",
+          "path": "src/ui/screens/PositionChangeFormExit.test.tsx",
+          "fingerprint": "026dc8611fc00143928bfc6041e10194cef3908a84778ef608399a096bfb1b79"
+        },
+        {
+          "item_id": "8adc510db5d8c589002e742d0da0075c5ee50162c0cfe23822135e24c49b46ea",
+          "path": "src/ui/screens/trade-detail/Position.test.tsx",
+          "fingerprint": "d7031b314de670b5e8606f89d914cbe1f90d9ed60fd66371a4dfd4096ee668ac"
+        },
+        {
+          "item_id": "c90f11a8b2d1d91f7bf1e0a2bd2a7f3a710b9872a7776c5d7f211309e04a67bc",
+          "path": "src/ui/cockpit/drawers/position.props.ts",
+          "fingerprint": "e545e3ff6884d852160a69e32807d3979494353cc2e50cf9894693bffe10a9de"
+        },
+        {
+          "item_id": "e2f2d46d15c2f4fab0b22f66b91a79dcb7f58fdd53703a93878b0eb1564bb4e8",
+          "path": "src/ui/screens/LotMatchesTable.tsx",
+          "fingerprint": "2e2a3f1d2a84696f0a95fc694e9cd9365c5b6e4926f3ba9b2c69cf208e9f34e8"
+        },
+        {
+          "item_id": "ea0588e106f411a3d18b01faf53a3647c9ed28d8e647873431f4ed45b37bd92e",
+          "path": "src/ui/screens/trade-detail/Result.test.tsx",
+          "fingerprint": "ab4df9dc2d6adf4c034996c475810ca2abdfd1085d601827ec79a1c2230c9371"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "07a811e1afe26dc1ad3861b590d49ee3278118373d0632ad81e9031afe8faadf",
+          "path": "evidence/D08R/suite-runs/T8R.5-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "241d347924d49d5865d0d3da576bb14b1fd4b047406e60466deb2e6082765817",
+          "path": "evidence/D08R/tdd-log/T8R.5.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "328cb9812f37745d904b015db57797ab29d6ba285c9f37a98b9586bd00d177f9",
+          "path": "evidence/D08R/suite-runs/T8R.5-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "3b976ed82738ccbc7837f0ca20982dab732ef765cb91beaeaad796e09ccd7479",
+          "path": "evidence/D08R/suite-runs/T8R.5-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "485887fb46a4d0a77cb9dbf3a54b7421c4d5c1ced684a7aa65bc885fd69961a6",
+          "path": "evidence/D08R/structural.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "f557ce9bb28e882d94a7de2ac422a2e12ba191f62f6394c4748d97f35e93e313",
+          "path": "evidence/D08R/suite-runs/T8R.5-unit.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 66662
+  }
+}
