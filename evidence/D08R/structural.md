@@ -534,3 +534,9 @@ Browser results (`npm run build:faults`, `build:releases`, `build`; then `npx pl
 | `d8p/states` | pass (3 cases) | pass |
 
 The four lane specs written for the merged state pass now that T8R.21 fills the column dates; none needed a change. `breach-overrun.spec.ts` lines 28 and 53 were not touched.
+
+## T8R.6-B1 Trade Detail's Marks-table test uses the Detail's own column dates
+
+ocr found that `src/ui/screens/TradeDetail.test.tsx` adds `marksColumns` to its `thursday()` fixture by hand (line 42). T8R.21 now fills the field in `getTradeDetail`.
+
+Result: the override stays; no code changed. The test does not build its Detail through the coordinator. `facadeOf` makes `getTradeDetail` a mock (`facadeDouble()`, `mockResolvedValue({ kind: 'Ready', view, binding })`) and returns the hand-built `thursday()` view, so the screen only ever renders what the fixture holds. Removing the override would leave the table with no dates and the heading assertion (`Today, Thu Oct 15`, `Yesterday, Wed Oct 14`, `Change`) would fail for want of a source that this test has none of; a `marksColumnsOf` mutation could not reach it. The real emission is checked where the coordinator runs: `src/coordinators/trade-views/columns.test.ts` (I8R.2, A232), which T8R.21 added. The override mirrors the real field's shape (`{ today: { date, next }, yesterday }`), so it cannot drift silently from the type.
