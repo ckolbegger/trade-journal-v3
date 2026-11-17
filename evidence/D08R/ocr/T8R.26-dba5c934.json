@@ -1,0 +1,181 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 6 selected item(s).",
+  "summary": {
+    "files_reviewed": 6,
+    "comments": 0,
+    "total_tokens": 85155,
+    "input_tokens": 83772,
+    "output_tokens": 1383,
+    "cache_read_tokens": 15360,
+    "elapsed": "59s"
+  },
+  "tool_calls": {
+    "total": 13,
+    "by_tool": {
+      "code_search": 4,
+      "file_read": 9
+    },
+    "failure": 1,
+    "failure_by_tool": {
+      "file_read": 1
+    },
+    "failure_details": [
+      {
+        "tool_call_number": 8,
+        "tool_name": "file_read",
+        "file_path": "tests/integration/d8r/columns.test.ts,tests/integration/d8r/detail.test.ts,tests/integration/d8r/query-count.test.ts,tests/integration/d8r/restore.test.ts,tests/integration/d8r/settlement.test.ts,tests/integration/d8r/support.ts",
+        "arguments": "{\"file_path\":\"tests/integration/d8/restore.test.ts\",\"start_line\":1,\"end_line\":100}",
+        "error": "file \"tests/integration/d8/restore.test.ts\" not found: git show dba5c93489540b3b6c9cc64574168a626310c570:tests/integration/d8/restore.test.ts: exit status 128: fatal: path 'tests/integration/d8/restore.test.ts' does not exist in 'dba5c93489540b3b6c9cc64574168a626310c570'\n"
+      }
+    ]
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "d8r integration tests and shared support",
+      "files": [
+        "tests/integration/d8r/columns.test.ts",
+        "tests/integration/d8r/detail.test.ts",
+        "tests/integration/d8r/query-count.test.ts",
+        "tests/integration/d8r/restore.test.ts",
+        "tests/integration/d8r/settlement.test.ts",
+        "tests/integration/d8r/support.ts"
+      ]
+    }
+  ],
+  "session_id": "a9c5e00e-7a72-477e-a72c-cc3616eb4e2a",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "a9c5e00e-7a72-477e-a72c-cc3616eb4e2a",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "ff3b517e",
+      "requested_head": "dba5c934",
+      "resolved_base": "ff3b517e883bbcc7b956869eabf60724ee27fe1e",
+      "resolved_head": "dba5c93489540b3b6c9cc64574168a626310c570",
+      "exact_range": "ff3b517e883bbcc7b956869eabf60724ee27fe1e..dba5c93489540b3b6c9cc64574168a626310c570",
+      "source_artifact_sha256": "1409873ad73a85266bddb4cdea38863b271163e92f756877975051d7d9432aac"
+    },
+    "execution": {
+      "ocr_version": "v1.13.11",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "66078b339b79e43ea84052d57d06eb9d776c6de707c8d0ccf46517f4d0e0915e",
+          "path": "tests/integration/d8r/detail.test.ts",
+          "fingerprint": "49aa00a67352ba290e2507317ad694d6b1e806c4b5facc8c7c65e40686b567cc"
+        },
+        {
+          "item_id": "665356052593be0693b0482e86fcc761d6e56fe44b15ea20c90ccc8364b84d84",
+          "path": "tests/integration/d8r/columns.test.ts",
+          "fingerprint": "a404e7e6729e88589c44f4a4284501282b429b0d0cbae58950cbfbd0a1d94452"
+        },
+        {
+          "item_id": "ae5da2ee9c85eaceed53d0fcd181f5241b981d1aacc5d9c1bb989437c5a096a1",
+          "path": "tests/integration/d8r/settlement.test.ts",
+          "fingerprint": "9fe5ff22764401ea2553f05512877f6ee891de5356fecdaa11dfc5977fcb205d"
+        },
+        {
+          "item_id": "bd407d130bc84e51721801810232fb30be04cb1e9f468e9395e659512c94c481",
+          "path": "tests/integration/d8r/query-count.test.ts",
+          "fingerprint": "f1fede7d6dbe00b3db90b0ed7e0236aad696ec84e7c72588e698efe16fcea429"
+        },
+        {
+          "item_id": "d1041cf866afa0f33c334d715bf9967caa115262a81342ba7f41e90be7b9c52c",
+          "path": "tests/integration/d8r/support.ts",
+          "fingerprint": "e69499d2ebdeeb5cbfa6922c608ca3dc5e7bf7199a1e8c1a4ca4992b2ef677b7"
+        },
+        {
+          "item_id": "e5847b56382d3d6010494d9d92a901104e63ee500dab25fd6811ac5594ef57ac",
+          "path": "tests/integration/d8r/restore.test.ts",
+          "fingerprint": "d044780bbc9cbbcc712c047b385d1f2b9b795b4fec3eb2c2b1ae122bfa984ce1"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "66078b339b79e43ea84052d57d06eb9d776c6de707c8d0ccf46517f4d0e0915e",
+          "path": "tests/integration/d8r/detail.test.ts",
+          "fingerprint": "49aa00a67352ba290e2507317ad694d6b1e806c4b5facc8c7c65e40686b567cc"
+        },
+        {
+          "item_id": "665356052593be0693b0482e86fcc761d6e56fe44b15ea20c90ccc8364b84d84",
+          "path": "tests/integration/d8r/columns.test.ts",
+          "fingerprint": "a404e7e6729e88589c44f4a4284501282b429b0d0cbae58950cbfbd0a1d94452"
+        },
+        {
+          "item_id": "ae5da2ee9c85eaceed53d0fcd181f5241b981d1aacc5d9c1bb989437c5a096a1",
+          "path": "tests/integration/d8r/settlement.test.ts",
+          "fingerprint": "9fe5ff22764401ea2553f05512877f6ee891de5356fecdaa11dfc5977fcb205d"
+        },
+        {
+          "item_id": "bd407d130bc84e51721801810232fb30be04cb1e9f468e9395e659512c94c481",
+          "path": "tests/integration/d8r/query-count.test.ts",
+          "fingerprint": "f1fede7d6dbe00b3db90b0ed7e0236aad696ec84e7c72588e698efe16fcea429"
+        },
+        {
+          "item_id": "d1041cf866afa0f33c334d715bf9967caa115262a81342ba7f41e90be7b9c52c",
+          "path": "tests/integration/d8r/support.ts",
+          "fingerprint": "e69499d2ebdeeb5cbfa6922c608ca3dc5e7bf7199a1e8c1a4ca4992b2ef677b7"
+        },
+        {
+          "item_id": "e5847b56382d3d6010494d9d92a901104e63ee500dab25fd6811ac5594ef57ac",
+          "path": "tests/integration/d8r/restore.test.ts",
+          "fingerprint": "d044780bbc9cbbcc712c047b385d1f2b9b795b4fec3eb2c2b1ae122bfa984ce1"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "12fdc728b58f76de0e71089515ffbdf510283168a2fd982e9622bbc9ae12ae2b",
+          "path": "evidence/D08R/tdd-log/T8R.26.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "48d4e47c64864cca8a060bf6e6769b177d008a15a3f37847aa9ab12011b94542",
+          "path": "evidence/D08R/suite-runs/T8R.26-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "4d741613d8783bdcd503dc73bdf27dc6a2b11987a96e1dbb8f6e3e7fbde59c9e",
+          "path": "evidence/D08R/suite-runs/T8R.26-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "601a54f36727d04af090fa9e21a59cd3a9c1f18cc3ffcbf19e3e435ec0495844",
+          "path": "evidence/D08R/structural.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "d0d66935fec8bbd8b96d858d8fa51d408fc4686ec58d25917cb1d3c6ca508c54",
+          "path": "evidence/D08R/suite-runs/T8R.26-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "e006a3156bab84218c2c15efa3d2d31c2c086076c9d934a6785420b2879a2d47",
+          "path": "evidence/D08R/suite-runs/T8R.26-unit.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 59222
+  }
+}

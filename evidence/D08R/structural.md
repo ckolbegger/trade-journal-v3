@@ -1144,3 +1144,24 @@ T8R.24 is committed as `09ab4c86` in lane WD.
 - Wording rule (eslint.wording.config.js): `PHRASES` keeps "Awaiting close", "Awaiting the close", "Awaiting the next close". New `PHRASE_PATTERNS` ("Awaiting the .+ close" and "Awaiting the $", the opening words before the date in a template or JSX text) joins the same regex, so a screen cannot write the dated words either whole or split around the date. Red: `tools/wording-rules.test.ts` case "fails on the dated before-Marks words" failed (`expected [] to deeply equal [ 1 ]`) before the change; green after. `npm run verify:wording` exit 0 on the real src/ui.
 - Screen expectations changed (browser, real app at Tuesday noon, Monday's Mark in hand, so due is Tue Oct 13): e2e/d7p/layout.spec.ts (AWAITING_TUESDAY, two uses), e2e/d4/responsive-a11y.spec.ts lines 222 and 231, e2e/d4/breach-overrun.spec.ts lines 11, 41, 42. Unit expectations that build an AwaitingClose by hand without `due` keep the old words and are unchanged.
 - Browser: `npm run build:faults`, `npm run build:releases`, then the three specs through with-browser-lock.sh: 10 passed.
+
+## T8R.24 merged; T8R.26 returned; ocr
+
+**T8R.24 merged.** It was rebased to `80d37dd1`. Upstream had changed no code since its base, so no rerun was needed, and it was fast-forwarded.
+
+**T8R.26 committed as `dba5c934` (lane NS).**
+- It holds seven cases, I8R.1 to I8R.7, in `tests/integration/d8r/`. All passed on their first run, because they re-prove merged behaviour.
+- Each case was then mutated to fail and restored; the failure lines are in `tdd-log/T8R.26.md`.
+- The full integration suite runs 269 tests, all passing.
+- I8R.7 matches D8's 20-request baseline exactly. A Settlement Due Detail adds exactly one read: the Underlying's `series`, from `byInstrumentDate` `getAll`.
+- The acceptance script passes its Node rows. Its three `e2e/d8r` browser rows fail until T8R.27 writes them.
+
+**Plan reading for I8R.1** (implementation level; for the final report). The Given says "Fri 10-16 12:00 with Friday's call Mark missing". At 12:00 Friday's session has not closed, so no Friday Mark is due and no dated line can show. The case therefore reads at two times:
+- Fri 12:00: the figures equal Thursday's.
+- Fri 18:00, with no Friday call Mark: the dated line carries Thursday's distances, which is what the plan's Then says.
+
+B8R.3 (`rail.spec.ts`) has the same Given. T8R.27's brief carries this reading.
+
+**ocr.** Session a9c5e00e-7a72-477e-a72c-cc3616eb4e2a, 6 files reviewed, 0 comments, raw output in `ocr/T8R.26-dba5c934.json`. ocr reported one failed `file_read`, of a D8 path that does not exist; all 6 selected files completed.
+
+**Reviewer note** (not an ocr finding). The closing `evaluationOf(...).resolves.toBeDefined()` in `columns.test.ts` cannot fail, because `evaluationOf` already throws. It is redundant but harmless; for the final report.
