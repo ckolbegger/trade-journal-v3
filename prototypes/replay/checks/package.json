@@ -1,0 +1,5 @@
+{
+  "private": true,
+  "type": "commonjs",
+  "description": "Check scripts for the replay prototypes. They use require, so this folder is CommonJS while the project is not."
+}
