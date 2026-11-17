@@ -58,7 +58,8 @@ test.describe('B4.10 Recovery Only (faults build)', () => {
     await openDrawer(page, 'Position');
     await expect(detail.position(page)).toContainText('100 shares of ABC');
     await openDrawer(page, 'Today');
-    await expect(detail.valuation(page)).toContainText('Mark missing');
+    // W29: a cell without a Mark reads a dash; the Mark-missing link left Today.
+    await expect(detail.marksCell(page, 'ABC Mark', 'Today')).toHaveText('—');
 
     expect(await probe(page)).toEqual(before);
     await context.close();

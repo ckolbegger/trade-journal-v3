@@ -511,3 +511,26 @@ ChatGPT's usage limit blocked every ocr review from about 02:20 until 03:50. Whi
 Behavioral task; its rows are in `tdd-log/T8R.6.md`. Browser specs changed in lane TD: `e2e/d4/expected-mark.spec.ts`, `e2e/d4/breach-overrun.spec.ts`, `e2e/d4/responsive-a11y.spec.ts`, `e2e/d8p/states.spec.ts`, `e2e/d8p/today-narrow.spec.ts`, through the new `marksTable`, `marksHeadings`, `marksCell` and `marksNotes` helpers in `e2e/support/detail/today.ts`.
 
 Run in the lane (`npm run build:faults`, `npm run build:releases`, then `npx playwright test <specs>` under `with-browser-lock.sh`): `first-marks-pending` and `states` pass. `expected-mark`, `breach-overrun`, `d4/responsive-a11y` and both `today-narrow` cases fail only on a Mark or change value (each reads a dash), because Trade Views does not name the column dates until T8R.21 merges (the cells are selected by those dates, A233). Their assertions are written for the merged state; rerun them after T8R.21.
+
+## T8R.6-F1 The browser specs read the Marks table
+
+Structural. Two specs outside the lane read the old current-Marks card; both now read where W29 and A232 put the fact.
+
+- `e2e/d4/correct-mark.spec.ts`: the "Corrected" badge and the reason are read on Price History (T8R.4, T8R.4-F1), as the Mon Oct 12 cell whose accessible name is `$51.50. <provenance>. Corrected: Misread the closing quote.` (the Price History drawer is opened first). The `$130.00` check on the rail and the two-revision probe are unchanged.
+- `e2e/d4/runtime-failure.spec.ts`: "Mark missing" in the old card becomes ABC's Today cell in the Marks table reading a dash (W29: a cell without a Mark reads "—"; the Mark-missing link left Today). Every other expectation is unchanged.
+
+Browser results (`npm run build:faults`, `build:releases`, `build`; then `npx playwright test <files> --reporter=list` under `with-browser-lock.sh`; nothing on 5175, 9341 or 9342 before or after):
+
+| Spec | Before my changes (on T8R.21) | After |
+| --- | --- | --- |
+| `d4/correct-mark` | fail (`.current-marks` not found) | pass |
+| `d4/runtime-failure` (B4.10) | fail (`.current-marks` not found) | pass |
+| `d4/runtime-failure` (B4.11) | pass | pass |
+| `d4/expected-mark` | pass | pass |
+| `d4/breach-overrun` | pass | pass |
+| `d4/responsive-a11y` | pass (all 5) | pass |
+| `d8p/today-narrow` (both cases) | pass | pass |
+| `d8p/first-marks-pending` | pass | pass |
+| `d8p/states` | pass (3 cases) | pass |
+
+The four lane specs written for the merged state pass now that T8R.21 fills the column dates; none needed a change. `breach-overrun.spec.ts` lines 28 and 53 were not touched.

@@ -20,9 +20,11 @@ test.describe('B4.4 Correct a Mark', () => {
     await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Trades' }).click();
     await openTradeFromOpenList(page, 'XYZ');
     await openDrawer(page, 'Today');
-    const valuation = detail.valuation(page);
-    await expect(valuation).toContainText('Corrected');
-    await expect(valuation).toContainText('Misread the closing quote.');
+    // A corrected Mark's provenance lives on Price History (T8R.4): the visible badge and the cell's accessible name.
+    await openDrawer(page, 'Price History');
+    const corrected = page.locator('#drawer-panel-price-history table.price-history').getByRole('cell', { name: /^\$51\.50\. .*\. Corrected: Misread the closing quote\.$/ });
+    await expect(corrected).toHaveCount(1);
+    await expect(corrected).toContainText('Corrected');
     await expect(detail.currentMarkedPnl(page)).toContainText('$130.00');
 
     // Two revisions of the one observation: the initial Mark, then the Correction that supersedes it.
