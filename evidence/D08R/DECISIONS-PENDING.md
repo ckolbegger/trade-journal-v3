@@ -27,3 +27,5 @@ The options:
 1. Merge lane BR as it stands, and record both findings as tech debt in the final report.
 2. One more bug task, T8R.27-B3, closing the two gaps in the hand-built name.
 3. One more bug task, T8R.27-B3, replacing the hand-built name with the browser's own computed name, read through Chromium's accessibility tree.
+
+**P2 answered 2026-11-17: option 1.** Lane BR merges as it stands. ocr's two findings on T8R.27-B2 are recorded as tech debt in the final report, and no T8R.27-B3 is created.

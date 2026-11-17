@@ -1230,6 +1230,7 @@ The report is in `critic-1.md`, saved with `tools/agent-report.ts`. The critic r
 | Critic | Brief | Tokens | Tool calls | Duration | Defects |
 |---|---|---|---|---|---|
 | critic-1 (T8R.25) | critic-brief template, flows C8R.1 to C8R.4, plus decision P1 | 217,339 | 94 | 14 min 17 s | 3 moderate |
+| critic-2 (T8R.25) | as critic-1, plus nearby states and 375/320 px on every drawer | 197,247 | 71 | 12 min 27 s | 4 moderate |
 
 ## T8R.25-B1 returned; ocr
 
@@ -1412,3 +1413,19 @@ ocr session dc51b3c3-0288-42fb-818f-367855a5003d reviewed 1 file and left 2 comm
 - No new source of flakes.
 
 Neither DOM shape exists in the app; the check passes on every real screen. This is the third round on this spec to leave findings, so it is pending decision **P2** for the user, not an automatic T8R.27-B3.
+
+## T8R.25: checkpoint critic-2
+
+critic-2 tested the `949e4aef` build: **PASS, with 4 moderate defects.** Its report is in `critic-2.md`, and its cost row is in the critic-cost table under critic-1. All four flows passed, C8R.1, C8R.2, C8R.3 and C8R.4.
+
+The critic could not find the `e2e/d8r` helpers, because lane BR had not merged yet. It built the starting states from the D8P, D7 and D4 helpers instead.
+
+Each defect becomes a bug task. They run one at a time in a new lane, C2, branched from main:
+- **T8R.25-B4** (defect 1). At 1280 px the Today table is wider than its box: about 588 px of content in a 550 px box. It loads scrolled sideways, so the sticky column covers the first heading, which reads "T SESSION, MON OCT 19".
+- **T8R.25-B5** (defect 2). The call's Mark is missing or acknowledged, but the Underlying's Mark exists. The Underlying Target still reads "2.10 away · Thu Oct 15 Marks" when it should read the current "1.90 away", undated. This conflicts with A110 and A231, and with section 7 of the audit.
+- **T8R.25-B6** (defect 4). On an option Trade, when the Underlying's Mark is acknowledged unavailable, no note appears under the Today table. `notesOf` checks only the contract's own `markResolution`.
+- **T8R.25-B7** (defect 3). At 320 px, axe reports `scrollable-region-focusable` on the Payoff drawer's `.table-scroll`. It probably predates D8R, but it sits in a Trade Detail drawer at a width B8R.7 requires.
+
+The critic's 10 minor observations go to the final report.
+
+After B7, one full run (browser full) follows, then critic-3. That is the last critic this checkpoint allows.
