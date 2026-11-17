@@ -1588,3 +1588,10 @@ Cause: `notesOf` in `today.props.ts` read only `current.markResolution`. The Und
 Words: the one `unavailableWords(..., 'sentence')` function plus ": your acknowledgment, not a price", with the Underlying's symbol in place of the contract, so "Mark acknowledged unavailable for XYZ on Fri Oct 16: your acknowledgment, not a price". No new words. `notes.acknowledged` is now a list, the Underlying's note first (the table's row order), then the contract's.
 Cases: `today.props.test.ts` (3: Underlying, both in order, stock Trade), `option-views.test.ts` (1: the view field).
 Browser: `e2e/d8r` and the d8p specs that touch Today (cockpit, history, journal-final-session, responsive-a11y, states, today-narrow): 27 passed.
+
+## T8R.25-B8
+
+Defect (ocr on T8R.25-B5): Plan and Risk read `underlyingReading` only when a dated line existed, so a contract with no earlier Marks (or only an acknowledged-unavailable session) showed "Mark missing" while the rail showed the undated Underlying distance.
+Fix (`plan-risk.props.ts`, one condition): an Underlying condition with an `underlyingReading` shows its distance from it, undated, unless the contract is Settlement Due or the Trade waits for its first Marks (as the rail). Dollar cells are unchanged: the dated figure with a dated line, else the Unavailable words (A109).
+Case: `plan-risk.test.tsx` (1), which also compares the drawer distance with the rail's.
+Browser: `e2e/d8r` and `e2e/d8p`: 34 passed.

@@ -94,7 +94,8 @@ function conditionsGroup(view: TradeDetailView, timeZone: string): PlanRiskGroup
     };
     // A110: an Underlying condition whose own Mark is in reads it today, undated, while the contract's Mark is missing; its dollar figure needs both
     // Marks, so it stays the dated line's and says so (one date per row).
-    const currentReading = dated && !due ? view.current.evaluation.conditions.find((n) => n.id === c.id)?.underlyingReading : undefined;
+    // With no earlier Marks (no dated line) the dollar cells keep their Unavailable words; before the first Marks nothing is measured (as the rail).
+    const currentReading = !due && view.current.firstMarksDue === undefined ? view.current.evaluation.conditions.find((n) => n.id === c.id)?.underlyingReading : undefined;
     const distance = currentReading ? distanceText(currentReading, '') : figureOf(c, (reading) => distanceText(reading, datedLabel));
     const label = c.role === 'Stop' ? 'Risk to stop' : 'Reward to target';
     const riskFigure = figureOf(c, ({ status, distance: toward, overrun }) => `${label} ${status === 'Active' || !overrun ? measureText(toward) : `${measureText(overrun)} past`}`);

@@ -8,6 +8,7 @@ import { OC_CONTRACT, OC_PC1, OC_PC2, OC_X1 } from '../../../../tests/support/op
 import { plannedDetail } from '../../../../tests/support/views-fixtures.ts';
 import { Rational } from '../../../domain/values/index.ts';
 import { OC_PC3, rowsOf, THURSDAY, tuesday, useFixedClock } from '../../screens/trade-detail/test-support.ts';
+import { conditionsProps } from '../rail/conditions.props.ts';
 import { PlanRiskDrawer } from './plan-risk.tsx';
 
 afterEach(cleanup);
@@ -230,6 +231,27 @@ describe('Plan and Risk: Conditions (W31)', () => {
       ['$2.20 away · Thu Oct 15 Marks', 'Risk to stop $220.00 · 1.10R'],
       ['1.90 away', 'Reward to target $180.00 · 0.90R · Thu Oct 15 Marks'],
     ]);
+  });
+
+  it('should show an Underlying conditions current distance in Plan and Risk when the contract has no earlier Marks, as the rail does', () => {
+    // Fri 10-16: XYZ's Mark is in (1.90 below the Target) but the call has never had a Mark, so there is no dated line.
+    const missing = (c: Condition): Condition => ({ ...c, result: { kind: 'Unavailable', reason: 'MarkMissing', instrument: OC_CONTRACT, date: '2026-10-16' } });
+    const base = target();
+    const targetNow: Condition = {
+      ...missing(base),
+      underlyingReading: { status: 'Active', trigger: { distance: R(190n), beyond: null }, evidence: base.result.kind === 'Value' ? base.result.value.evidence : undefined! },
+    };
+    const view = oc3([missing(stop()), targetNow]);
+    expect(view.current.datedLine).toBeUndefined();
+    render(<PlanRiskDrawer view={view} timeZone="America/New_York" />);
+    const conditions = screen.getByRole('region', { name: 'Conditions' });
+    const rows = rowsOf(within(conditions).getByRole('table'));
+    expect(rows[1]?.[1]).toBe('1.90 away');
+    // The rail says the same, and the dollar cell keeps the words it shows with no Mark.
+    const rail = conditionsProps(view)?.conditions.find((item) => item.id === 'target-1');
+    expect(rail?.figure).toBe(rows[1]?.[1]);
+    expect(rows[1]?.[2]).toMatch(/^Mark missing: /);
+    expect(rows[0]?.[1]).toMatch(/^Mark missing: /);
   });
 
   it('should show the expired note and no dated figures on a Settlement Due Trade whose current Mark is missing', () => {
