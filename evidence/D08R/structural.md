@@ -1615,3 +1615,11 @@ Rebased hashes:
 - B7 `580bace8`
 
 Next: one full run (browser full), `wave2-full3`, then critic-3. This is the checkpoint's last critic.
+
+## Full-tier run wave2-full3 (on `5b54aa2c`), before critic-3
+
+The run is complete per `run-complete.sh`: unit 2111, integration 269, checks 14 of 14, browser-1 126 (5.1 min), browser-2 136 (8.9 min). Neither the TradeList flake nor the PositionChangeForm flake recurred.
+
+**Tech debt note for the final report.** browser-2 now takes 8.9 min, close to its limit, and the suite runner suggests adding a browser-3 stage. That would be a `.claude/` tooling change, which D8R does not plan.
+
+Next: critic-3, the checkpoint's last critic.
