@@ -75,3 +75,7 @@ ocr on `60b0e01f` (session e0346156-4ce0-4160-bd77-94a4f9f31475, gpt-6.1-sol, 5 
 ## Merge: lane PH (T8R.4, T8R.4-F1)
 
 Rebased `d08r/ph` onto `claude-opus-5.5` (`62106632`): T8R.4 `15811755` → `c7a9a3ca`, T8R.4-F1 `60b0e01f` → `bed2afe0`. The rebase brought in only the main session's evidence commits, no file the tasks own, so F1's lane tier stands. Fast-forwarded `claude-opus-5.5` to `bed2afe0`; lane worktree `d08r-ph` and branch `d08r/ph` removed.
+
+## T8R.1-B1 ocr review
+
+ocr on `3b78080e` (session 559cf529-888a-4d66-8e8e-12bc149df4f5, gpt-6.1-sol, 3 files reviewed, 0 comments; raw output `ocr/T8R.1-B1-3b78080e.json`): **No findings.** Reviewer note (not an ocr finding): `current:ClosedCurrentEvaluation` lacks a space after the colon in `closedDetail`'s signature; cosmetic. B1's first agent stopped for one test double outside lane TY (`tests/support/closed-detail-fixtures.ts`, owned by no wave-0 lane); the main session granted it, and a fresh agent finished B1 from the uncommitted work, with the first agent's recorded red.
