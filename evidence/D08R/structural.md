@@ -389,3 +389,31 @@ F1's notes, from its hand-back: 1 case, red ("Unable to find … Position Change
 - `OwedDebtItem.tsx`: once resolved in place, the saved item shows `entryLine(debt.source, debt.momentTime, authoredTime, timeZone)` (the same line the cards build) in place of the "Position Change at" line, and no Answered or Declined row. The unresolved item is unchanged. The `timeLabel` state field is removed.
 - New case in `Journal.test.tsx`: the dated line "Position Change · Mon Oct 12, 10:00 am · written Tue Oct 13", no Answered or Declined term.
 - Changed expectation, `Journal.test.tsx` "should relabel a reflection resolved on Trade Detail ...": before, `termValue(item, term)` was `2026-10-13 09:05` (Answered) or `2026-10-13 09:10` (Declined); after, the item has the text "Position Change · Mon Oct 12, 10:00 am · written Tue Oct 13" and no `dt` named Answered or Declined. The label, no "Reflection owed" and no Due expectations are unchanged. The table's `time` field is removed.
+
+## Merge: lane JR (T8R.15, T8R.15-F1)
+
+Rebased `d08r/jr` onto `claude-opus-5.5` (`75b3ef64`): T8R.15 `da5e23ce` → `727fd53a`, T8R.15-F1 `78d942c7` → `17b8abc6`. Conflicts only in this file, where both sides had appended; the main session kept both and checked there were no duplicate sections. The rebase brought in T8R.13's, T8R.18's and T8R.21's code, so the lane tier reran (`suite-runs/T8R.15-rebased-*.txt`): unit 2061 passed, integration 258 passed, 14 of 14 checks exit 0, with evidence in `e7e5f7bf`. Fast-forwarded to `e7e5f7bf`; lane worktree `d08r-jr` and branch `d08r/jr` removed. T8R.16 is next in lane JR, once a slot frees.
+
+## T8R.10-F1 ocr review and bug task
+
+ocr on `ccc698f1` (test-only; session 35762f66-12f1-4cc2-8669-ceec59d8d208, gpt-6.1-sol, 2 files reviewed, 1 comment; raw output `ocr/T8R.10-F1-ccc698f1.json`):
+
+| Severity | Category | Location | Claim | Assessment |
+|---|---|---|---|---|
+| low | maintainability | `e2e/support/detail/rail-b.ts:16-18` | The new `riskFigure` adds a nested ternary; a block with early returns would be clearer. | Doubtful |
+
+**T8R.10-F1-B1** (structural): rewrite `riskFigure` with early returns, same three outcomes, with the browser specs that use it passing before and after. It runs in lane PR after T8R.10-B1, B2 and F2.
+
+T8R.10-F1 notes: the helpers read the "Conditions table" cells. `breach-overrun.spec.ts:28` now expects "Risk to stop $50.00 · 0.20R past" (W32), and lines 53 and `d7s/conditions.spec.ts:25` needed no change. `d7s/conditions` has 2 passing cases. `breach-overrun` passes line 28 but fails at line 42: `riskFigure(page, 'Worst case')` matches both the rail card and Plan and Risk's new notes until T8R.14 removes the rail's Worst case. With `.first()` tried and then reverted, the whole spec passed. **So T8R.10 and T8R.14 merge in one batch before a merge run.** `e2e/d8p/cockpit.spec.ts:144-145` goes to T8R.10-F2.
+
+## T8R.19 ocr review, and follow-up F1
+
+ocr on `a471e993` (session 1b85ba45-15c8-4d56-afc6-1ba3c5e436e1, gpt-6.1-sol, 4 files reviewed, 0 comments; raw output `ocr/T8R.19-a471e993.json`): **No findings.** Reviewer notes: `due` is always the session after `after`, since both come from the same `day.date` through `sessionPolicy.nextSession`. Outside coverage the result is SessionPolicyNotCovered, not AwaitingClose. The Closed, dated-line and replay-series paths cannot produce AwaitingClose, because they have no `resolution` or are cut off at the close. `trade-views.ts:487` and its replay view at line 876 read `nextSessionDate` from the session directly; T8R.24 may consider reading `due` instead.
+
+T8R.19 notes: 3 cases plus one extra pass-through case in `value-trade.test.ts`. Case 3 passed on its first run, and its mutation check is recorded. `valueTrade` passes `nextSessionDate` into the main evaluation only. The lane tier had 3 failures: exact AwaitingClose expectations outside lane BA (`tests/integration/d4/intraday.test.ts` I4.18, `trade-views/current-evaluation.test.ts`, `trade-views/option-views.test.ts`). `verify:fixtures` stayed green. **Follow-up T8R.19-F1** (lane BA) adds `due` to those three exact values and loosens nothing, as A243 and A245 require. It is listed for the final report.
+
+## T8R.22 stop, and follow-up F1
+
+T8R.22's agent built both cases (case 2 a first-run pass, mutation-checked) and stopped before committing. Its lane tier failed one existing proof: `tests/integration/d7/query-count.test.ts:126`, T7.29, "should issue the same Trade Detail requests, bar the frame reads, for an expired and a live contract at one clock". A234's Underlying `series` read gives the expired Detail extra requests (seen as two `observations.getAll` reads and one more `meta.get`). The plan's I8R.7 records that the Settlement Due Detail gains exactly that one read, so T7.29's "the same requests" premise no longer holds, and the plan's rule that existing proofs keep their exact lists cannot hold for T7.29.
+
+The main session's implementation-level decision: T7.29 keeps an exact comparison, and the expired list equals the live list plus exactly the one series read's requests. If those requests are more than one series read needs, that is a stop. A fresh agent commits T8R.22 and makes this change as **T8R.22-F1**. The first agent still had background work in the lane and was stopped. Listed for the final report.

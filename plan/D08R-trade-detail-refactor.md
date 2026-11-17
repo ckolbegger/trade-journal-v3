@@ -675,15 +675,17 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T8R.12 | 1 | PR | Not started | |
 | T8R.13 | 1 | RA | Done | `5237ada5` |
 | T8R.14 | 1 | RA | In progress from `359e0498` | |
-| T8R.15 | 1 | JR | Committed `da5e23ce` (from `77d475d0`) | |
-| T8R.15-F1 | 1 | JR | In progress from `da5e23ce` | |
+| T8R.15 | 1 | JR | Done | `727fd53a` |
+| T8R.15-F1 | 1 | JR | Done | `17b8abc6` |
 | T8R.16 | 1 | JR | Not started | |
 | T8R.17 | 1 | JR | Not started | |
 | T8R.18 | 1 | BA | Done | `69582aaa` |
-| T8R.19 | 1 | BA | In progress from `400b4b02` | |
+| T8R.19 | 1 | BA | Committed `a471e993` (from `400b4b02`) | |
+| T8R.19-F1 | 1 | BA | In progress from `a471e993` | |
 | T8R.20 | 1 | BA | Not started | |
 | T8R.21 | 1 | BV | Done | `c9155d02` |
 | T8R.22 | 1 | BV | In progress from `438d6f42` | |
+| T8R.22-F1 | 1 | BV | In progress (with T8R.22's commit) | |
 | T8R.23 | 1 | BV | Not started | |
 | T8R.24 | 2 | — | Not started | |
 | T8R.25 | 2 | — | Not started | |

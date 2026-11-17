@@ -1,0 +1,133 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 1,
+    "total_tokens": 78764,
+    "input_tokens": 78022,
+    "output_tokens": 742,
+    "cache_read_tokens": 22400,
+    "elapsed": "51s"
+  },
+  "tool_calls": {
+    "total": 16,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 6,
+      "file_find": 2,
+      "file_read": 7
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "e2e/support/detail/rail-b.ts",
+      "content": "This adds a nested ternary, which is explicitly disallowed by the review checklist. Use a block-bodied function with early returns for the summary terms and 'Risk to stop', followed by the default figureIn lookup.",
+      "existing_code": "    : term === 'Risk to stop'\n      ? riskToStop(page)\n      : figureIn(planRiskPanel(page), term);",
+      "start_line": 16,
+      "end_line": 18,
+      "category": "maintainability",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "e2e/d4/breach-overrun.spec.ts",
+        "e2e/support/detail/rail-b.ts"
+      ]
+    }
+  ],
+  "session_id": "35762f66-12f1-4cc2-8669-ceec59d8d208",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "35762f66-12f1-4cc2-8669-ceec59d8d208",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "ccc698f1",
+      "resolved_base": "d8fd9ffef6a3ce1254a98d2cacc565cad77ab067",
+      "resolved_head": "ccc698f19de0fdcd9d6ebfe7dfec6360210f01ee",
+      "exact_range": "d8fd9ffef6a3ce1254a98d2cacc565cad77ab067..ccc698f19de0fdcd9d6ebfe7dfec6360210f01ee",
+      "source_artifact_sha256": "a81b31789968471eb47bb05e12874b898d73fc176cdd74cbc94847aa3b07fba5"
+    },
+    "execution": {
+      "ocr_version": "v1.13.11",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "b92e16500abd20dbbb59c0cc55fbda79143a842d0e5653c18c442a0e869dc7f5",
+          "path": "e2e/support/detail/rail-b.ts",
+          "fingerprint": "8200b7f3efe6b8e356edcb8495bfe7000942c1c867e7e46ae3fed319e164122c"
+        },
+        {
+          "item_id": "f8565eaf99bb6cb36551c81082e4fdcb90dc46890728697803cf46683c39ccb6",
+          "path": "e2e/d4/breach-overrun.spec.ts",
+          "fingerprint": "254b47c4fb40d6fd98c883d48eabeab75421cf34ac5232e0193953f425f61953"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "b92e16500abd20dbbb59c0cc55fbda79143a842d0e5653c18c442a0e869dc7f5",
+          "path": "e2e/support/detail/rail-b.ts",
+          "fingerprint": "8200b7f3efe6b8e356edcb8495bfe7000942c1c867e7e46ae3fed319e164122c"
+        },
+        {
+          "item_id": "f8565eaf99bb6cb36551c81082e4fdcb90dc46890728697803cf46683c39ccb6",
+          "path": "e2e/d4/breach-overrun.spec.ts",
+          "fingerprint": "254b47c4fb40d6fd98c883d48eabeab75421cf34ac5232e0193953f425f61953"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "3639b454c33b390bdcb7ca3f93ba092a96f1093a7e65fc86df6b43fe4a839b77",
+          "path": "evidence/D08R/suite-runs/T8R.10-F1-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "485887fb46a4d0a77cb9dbf3a54b7421c4d5c1ced684a7aa65bc885fd69961a6",
+          "path": "evidence/D08R/structural.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "67946dd5574b57e6edeb5b1985bab1bec9289001a696a6a6774be2ed13764b64",
+          "path": "evidence/D08R/suite-runs/T8R.10-F1-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "cfe988a90b1eec7b222da5b909db9536fc2b07d9a5e1bf9624b63df4243f019b",
+          "path": "evidence/D08R/suite-runs/T8R.10-F1-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ef6768a28e023317b324b59c6f4ba0a9bfff742fabbb444a37e255fa07b6d274",
+          "path": "evidence/D08R/suite-runs/T8R.10-F1-checks.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 50521
+  }
+}
