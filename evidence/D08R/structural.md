@@ -1118,3 +1118,23 @@ The price track's lot ticks are no longer inside the `role="img"` element. `.tra
 - T8R.24 starts in lane WD.
 - T8R.26 is running in lane NS; it started early, as the handoff allows.
 - A full-tier run follows T8R.24's merge.
+
+## T8R.24 returned; ocr
+
+T8R.24 is committed as `09ab4c86` in lane WD.
+
+**Cases.** Case 1 went red then green. Case 2, which checks that the words are unchanged without `due`, passed on its first run. Its mutation check (always take the `due` branch) failed as expected, then the code was restored.
+
+**Wording rule.** `PHRASE_PATTERNS` was added, and `tools/wording-rules.test.ts` went red then green.
+
+**Browser expectations.** Three specs changed: `d7p/layout`, `d4/responsive-a11y` and `d4/breach-overrun`. They now read "Awaiting the Tue Oct 13 close" for Tuesday noon with Monday's Mark in hand. 10 passed.
+
+**Unit expectations.** Unit tests that build `AwaitingClose` without `due` keep the old words, which is correct (W34).
+
+**ocr.** Session 4b1eca24-2898-49e5-a71a-faf83ff133df, 7 files reviewed, 0 comments, raw output in `ocr/T8R.24-09ab4c86.json`. No bug task.
+
+**Reviewer's answer to the main session's C1 question.** This is not an ocr finding, so it creates no bug task (decision 114).
+- **Trade Detail, the Trades list and the Review's figures** all get `due` through `valueTrade` (`value-trade.ts:94`), because every covered session carries `nextSessionDate` (`market-data.ts:937`).
+- **The Review's attention sentence is the one gap.** `daily-review/attention.ts:102-103` (`unavailableReason`) rebuilds the `AwaitingClose` reason without `due`, so that sentence would still read "Awaiting the next close after …". `ReviewCards.test.tsx:1146` and `:1161` expect the old words.
+- **It is likely unreachable.** Review reads use `factsAtClose`, so `openedAfterClose` (`evaluate.ts:233`) is false.
+- **Follow-up.** The fix is one line (carry `due`). Recorded for the final report as a known C1 gap. The checkpoint critic (T8R.25) and the gate will show whether any Review flow reaches it.

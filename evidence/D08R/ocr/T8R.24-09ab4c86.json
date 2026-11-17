@@ -1,0 +1,193 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 7 selected item(s).",
+  "summary": {
+    "files_reviewed": 7,
+    "comments": 0,
+    "total_tokens": 71697,
+    "input_tokens": 71031,
+    "output_tokens": 666,
+    "cache_read_tokens": 11648,
+    "elapsed": "21s"
+  },
+  "tool_calls": {
+    "total": 10,
+    "by_tool": {
+      "code_search": 1,
+      "file_find": 1,
+      "file_read": 7,
+      "file_read_diff": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "End-to-end layout and accessibility checks",
+      "files": [
+        "e2e/d4/breach-overrun.spec.ts",
+        "e2e/d4/responsive-a11y.spec.ts",
+        "e2e/d7p/layout.spec.ts"
+      ]
+    },
+    {
+      "label": "Wording lint configuration and rule tests",
+      "files": [
+        "eslint.wording.config.js",
+        "tools/wording-rules.test.ts"
+      ]
+    },
+    {
+      "label": "Calculation wording and unit tests",
+      "files": [
+        "src/ui/calculation-words.test.ts",
+        "src/ui/calculation-words.ts"
+      ]
+    }
+  ],
+  "session_id": "4b1eca24-2898-49e5-a71a-faf83ff133df",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "4b1eca24-2898-49e5-a71a-faf83ff133df",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "09ab4c86",
+      "resolved_base": "52aae5457faefd0fc5e5c1a33f48eb2c8ac56dbd",
+      "resolved_head": "09ab4c8682b56a7ede859b538edad5bcc7f40872",
+      "exact_range": "52aae5457faefd0fc5e5c1a33f48eb2c8ac56dbd..09ab4c8682b56a7ede859b538edad5bcc7f40872",
+      "source_artifact_sha256": "346cf1564d00c2d9343079dfdafc21c80740c2958f0e6cf63a548df1628cd159"
+    },
+    "execution": {
+      "ocr_version": "v1.13.11",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "856d01bbd2e134c577d38a43ff27eb1f42ac3b5352ac113ab0dc7f3d80cc1286",
+          "path": "e2e/d7p/layout.spec.ts",
+          "fingerprint": "2177317c96e3f619b169d992a011024c35d01cb90f7e138126cb4db42fb13592"
+        },
+        {
+          "item_id": "9fc2814396ca8fdc4b4a786543b42eb524301cfcaa0ad2260221dc91be7ee063",
+          "path": "e2e/d4/responsive-a11y.spec.ts",
+          "fingerprint": "b931d86d0a3543f3be7e76c57417caad6adad778bac91b9b378902d1b61f90d3"
+        },
+        {
+          "item_id": "b97f93888873a5cfbfa6ea81c67212e9ec93c9cd38993483a43d6b0df12eaa9d",
+          "path": "src/ui/calculation-words.test.ts",
+          "fingerprint": "6ef3283356ad9f0652203bbbf890985421c64de298056a3fe1e6dbbcccd5f937"
+        },
+        {
+          "item_id": "e1d2a6e20fc363ca1e18ec79af181d72fdc859550c22cf63ad51fd75c7d7b877",
+          "path": "src/ui/calculation-words.ts",
+          "fingerprint": "875ea5d1a5e3e8eac463bab842a2001d885f2f96e79a9280fc1eca0d4bc84e77"
+        },
+        {
+          "item_id": "e49ffc3b4818bf7b678a3115fa8ccf3fb1f5303089862033bb4d9b92852ab285",
+          "path": "eslint.wording.config.js",
+          "fingerprint": "16a366c4387f8fa6a9e5b9d18634e86a4d3f85f4c241c326455618d4cee51ed9"
+        },
+        {
+          "item_id": "f8565eaf99bb6cb36551c81082e4fdcb90dc46890728697803cf46683c39ccb6",
+          "path": "e2e/d4/breach-overrun.spec.ts",
+          "fingerprint": "f981bcffdebcded5f1fdf0f8f58384fe386e6f61d4370f94f7c8a1338bc5c4b3"
+        },
+        {
+          "item_id": "fd7c2fac114661ddbd6bf20476d05533810c446f458e850c68058424395f11db",
+          "path": "tools/wording-rules.test.ts",
+          "fingerprint": "5ed930e92172faa5aab68a5eed7e98430a30874de5408c93bd0276d85e377b8e"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "856d01bbd2e134c577d38a43ff27eb1f42ac3b5352ac113ab0dc7f3d80cc1286",
+          "path": "e2e/d7p/layout.spec.ts",
+          "fingerprint": "2177317c96e3f619b169d992a011024c35d01cb90f7e138126cb4db42fb13592"
+        },
+        {
+          "item_id": "9fc2814396ca8fdc4b4a786543b42eb524301cfcaa0ad2260221dc91be7ee063",
+          "path": "e2e/d4/responsive-a11y.spec.ts",
+          "fingerprint": "b931d86d0a3543f3be7e76c57417caad6adad778bac91b9b378902d1b61f90d3"
+        },
+        {
+          "item_id": "b97f93888873a5cfbfa6ea81c67212e9ec93c9cd38993483a43d6b0df12eaa9d",
+          "path": "src/ui/calculation-words.test.ts",
+          "fingerprint": "6ef3283356ad9f0652203bbbf890985421c64de298056a3fe1e6dbbcccd5f937"
+        },
+        {
+          "item_id": "e1d2a6e20fc363ca1e18ec79af181d72fdc859550c22cf63ad51fd75c7d7b877",
+          "path": "src/ui/calculation-words.ts",
+          "fingerprint": "875ea5d1a5e3e8eac463bab842a2001d885f2f96e79a9280fc1eca0d4bc84e77"
+        },
+        {
+          "item_id": "e49ffc3b4818bf7b678a3115fa8ccf3fb1f5303089862033bb4d9b92852ab285",
+          "path": "eslint.wording.config.js",
+          "fingerprint": "16a366c4387f8fa6a9e5b9d18634e86a4d3f85f4c241c326455618d4cee51ed9"
+        },
+        {
+          "item_id": "f8565eaf99bb6cb36551c81082e4fdcb90dc46890728697803cf46683c39ccb6",
+          "path": "e2e/d4/breach-overrun.spec.ts",
+          "fingerprint": "f981bcffdebcded5f1fdf0f8f58384fe386e6f61d4370f94f7c8a1338bc5c4b3"
+        },
+        {
+          "item_id": "fd7c2fac114661ddbd6bf20476d05533810c446f458e850c68058424395f11db",
+          "path": "tools/wording-rules.test.ts",
+          "fingerprint": "5ed930e92172faa5aab68a5eed7e98430a30874de5408c93bd0276d85e377b8e"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "485887fb46a4d0a77cb9dbf3a54b7421c4d5c1ced684a7aa65bc885fd69961a6",
+          "path": "evidence/D08R/structural.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "5147e5bf2305966488eed5637cb112fc967ebd55711f76fc65c609da891f63a8",
+          "path": "evidence/D08R/suite-runs/T8R.24-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "713eaf029f5b266de87871edd4510ec2576471c606be318e38dfeafc1e0a0393",
+          "path": "evidence/D08R/tdd-log/T8R.24.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "84d69515ff68c846adfed176a5b45cbdb65f4da15556b53a34b306e2ed16b34d",
+          "path": "evidence/D08R/suite-runs/T8R.24-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "93cd24e65003b9fdcae335e4e251c7ce3ce024853ce18e967af48bd49f4744a6",
+          "path": "evidence/D08R/suite-runs/T8R.24-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ed645a2858de722ff81957d34aaac3fc2ab50e3dbc65ca6d496f139be9dd068e",
+          "path": "evidence/D08R/suite-runs/T8R.24-lane.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 20821
+  }
+}
