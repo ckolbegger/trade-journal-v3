@@ -655,10 +655,10 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 
 | Task | Wave | Lane | Status | Commits |
 |---|---|---|---|---|
-| T8R.1 | 0 | TY | Not started | |
-| T8R.2 | 0 | SH | Not started | |
-| T8R.3 | 0 | CN | Not started | |
-| T8R.4 | 0 | PH | Not started | |
+| T8R.1 | 0 | TY | In progress from `1a01d594` | |
+| T8R.2 | 0 | SH | In progress from `1a01d594` | |
+| T8R.3 | 0 | CN | In progress from `1a01d594` | |
+| T8R.4 | 0 | PH | In progress from `1a01d594` | |
 | T8R.5 | 1 | PO | Not started | |
 | T8R.6 | 1 | TD | Not started | |
 | T8R.7 | 1 | TD | Not started | |
