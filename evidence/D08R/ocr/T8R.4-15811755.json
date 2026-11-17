@@ -1,0 +1,176 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 1,
+    "total_tokens": 158770,
+    "input_tokens": 156922,
+    "output_tokens": 1848,
+    "cache_read_tokens": 13312,
+    "elapsed": "1m22s"
+  },
+  "tool_calls": {
+    "total": 28,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 12,
+      "file_find": 1,
+      "file_read": 14
+    },
+    "failure": 1,
+    "failure_by_tool": {
+      "file_read": 1
+    },
+    "failure_details": [
+      {
+        "tool_call_number": 18,
+        "tool_name": "file_read",
+        "file_path": "e2e/d8p/history.spec.ts,src/ui/cockpit/drawers/price-history.props.test.tsx,src/ui/cockpit/drawers/price-history.props.ts,src/ui/cockpit/drawers/price-history.tsx,src/ui/cockpit/drawers/price-history.types.ts",
+        "arguments": "{\"file_path\": \"src/ui/cockpit/shell.props.ts\"}",
+        "error": "file \"src/ui/cockpit/shell.props.ts\" not found: git show 15811755950210231bf04cf1a0b23da8c87b1caa:src/ui/cockpit/shell.props.ts: exit status 128: fatal: path 'src/ui/cockpit/shell.props.ts' does not exist in '15811755950210231bf04cf1a0b23da8c87b1caa'\n"
+      }
+    ]
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/drawers/price-history.props.ts",
+      "content": "Corrected Marks still render only the price: correction status is placed exclusively in `title` and `aria-label`, and `PriceHistoryTable` renders only `cell.text`. This misses the requirement for a visible “Corrected” marker, so sighted users cannot distinguish corrected Marks without hovering. Pass correction status through the cell props and render a visible marker beside the price; extend the corrected-Mark test to assert it is visible.",
+      "existing_code": "  return { text, provenance, label: `${text}. ${provenance}` };",
+      "start_line": 40,
+      "end_line": 40,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Price history drawer behavior, props, types, and tests",
+      "files": [
+        "e2e/d8p/history.spec.ts",
+        "src/ui/cockpit/drawers/price-history.props.test.tsx",
+        "src/ui/cockpit/drawers/price-history.props.ts",
+        "src/ui/cockpit/drawers/price-history.tsx",
+        "src/ui/cockpit/drawers/price-history.types.ts"
+      ]
+    }
+  ],
+  "session_id": "d5afeeab-88c6-4249-b050-6ece010ce024",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "d5afeeab-88c6-4249-b050-6ece010ce024",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "15811755",
+      "resolved_base": "0c6f9828eeb12826d6c565bee782bd68cf878f2d",
+      "resolved_head": "15811755950210231bf04cf1a0b23da8c87b1caa",
+      "exact_range": "0c6f9828eeb12826d6c565bee782bd68cf878f2d..15811755950210231bf04cf1a0b23da8c87b1caa",
+      "source_artifact_sha256": "fec6d99e80cf0968bda4ba5ff114c50dcf107fe33996833ee12879f6589f8fc9"
+    },
+    "execution": {
+      "ocr_version": "v1.13.11",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "8676b5afcb634bceb0b3456759a23b2bc4466a318b637ab4f4e37539b7f0aba1",
+          "path": "src/ui/cockpit/drawers/price-history.tsx",
+          "fingerprint": "1015b675b932e45c0d5b4c5b0ad987162a1d61da8c84f7c6204a11fb2d729f33"
+        },
+        {
+          "item_id": "9f7af3c06eb197acffdab622fd5fd97caa7a3dfc83bdfd399fecf6bbf95cd101",
+          "path": "e2e/d8p/history.spec.ts",
+          "fingerprint": "26ce40dc82e77926c5414d710ba170368d8242bef9daac8d7cb4f8474bcc2ba0"
+        },
+        {
+          "item_id": "c86bede55e682a60063ef80cbeae2ab273f7fe4e803c557b0515a5f8aae21104",
+          "path": "src/ui/cockpit/drawers/price-history.types.ts",
+          "fingerprint": "db8f10d32f1f94fda8ba62e4656d36f4b69dd43e61fe738963450553eec55d40"
+        },
+        {
+          "item_id": "ef97ec8adcb3f7b11445abde758d6f413b0e72418b1d1e70110aaeb9d0da2558",
+          "path": "src/ui/cockpit/drawers/price-history.props.ts",
+          "fingerprint": "76868787c1b7dd1e551b8418abedc72c5a3a887f966e842d3b1a7bcb3f132d62"
+        },
+        {
+          "item_id": "f17148ce925f689ef36048ab528a1c1fc622264812e6a2b3ad4bf29f654514db",
+          "path": "src/ui/cockpit/drawers/price-history.props.test.tsx",
+          "fingerprint": "8ba1a781b1763f0ea36fd0934de74d7c8c3e98811a8d6b4490236cfb2fa16cad"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "8676b5afcb634bceb0b3456759a23b2bc4466a318b637ab4f4e37539b7f0aba1",
+          "path": "src/ui/cockpit/drawers/price-history.tsx",
+          "fingerprint": "1015b675b932e45c0d5b4c5b0ad987162a1d61da8c84f7c6204a11fb2d729f33"
+        },
+        {
+          "item_id": "9f7af3c06eb197acffdab622fd5fd97caa7a3dfc83bdfd399fecf6bbf95cd101",
+          "path": "e2e/d8p/history.spec.ts",
+          "fingerprint": "26ce40dc82e77926c5414d710ba170368d8242bef9daac8d7cb4f8474bcc2ba0"
+        },
+        {
+          "item_id": "c86bede55e682a60063ef80cbeae2ab273f7fe4e803c557b0515a5f8aae21104",
+          "path": "src/ui/cockpit/drawers/price-history.types.ts",
+          "fingerprint": "db8f10d32f1f94fda8ba62e4656d36f4b69dd43e61fe738963450553eec55d40"
+        },
+        {
+          "item_id": "ef97ec8adcb3f7b11445abde758d6f413b0e72418b1d1e70110aaeb9d0da2558",
+          "path": "src/ui/cockpit/drawers/price-history.props.ts",
+          "fingerprint": "76868787c1b7dd1e551b8418abedc72c5a3a887f966e842d3b1a7bcb3f132d62"
+        },
+        {
+          "item_id": "f17148ce925f689ef36048ab528a1c1fc622264812e6a2b3ad4bf29f654514db",
+          "path": "src/ui/cockpit/drawers/price-history.props.test.tsx",
+          "fingerprint": "8ba1a781b1763f0ea36fd0934de74d7c8c3e98811a8d6b4490236cfb2fa16cad"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "1ea52e7554d2d53f06d36f30ef94ca2ef9120b0259cb7bc5ef55660a0c96a692",
+          "path": "evidence/D08R/suite-runs/T8R.4-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "24fc92480a0cb32c22263f8b2dffe2de4330fddf378839afeaf42eda774e8d3e",
+          "path": "evidence/D08R/suite-runs/T8R.4-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "2868383fadc185b8bb24b0b2a5671a8699ed375dc4f25898beaf6c39606c1767",
+          "path": "evidence/D08R/suite-runs/T8R.4-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "5164f0a9ddd0229a91cd4bf70b5426fb7d54e59c0a5bb681009c87e927b7c32a",
+          "path": "evidence/D08R/suite-runs/T8R.4-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "79dfd574cf9d71c00f87d2ba9efa4dbdfbb9c6b54867d2542bf025a445214a06",
+          "path": "evidence/D08R/tdd-log/T8R.4.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 81947
+  }
+}
