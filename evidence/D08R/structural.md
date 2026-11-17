@@ -206,3 +206,7 @@ Left on the UTC default:
 - **Not an `instrumentLabel` caller:** `tradeSummary` in the `ReviewCard` header.
 
 Lane tier: unit 2036, integration 258, 14 of 14 checks.
+
+## T8R.3-B1-F1 ocr review
+
+ocr on `8df55c00` (session 9a511e82-0c81-402a-8c81-1fe02361e6cb, gpt-6.1-sol, 21 files reviewed, 0 comments; raw output `ocr/T8R.3-B1-F1-8df55c00.json`): **No findings.** The plan files the reviewer saw change during its run were the main session's own commit `7868d587`.
