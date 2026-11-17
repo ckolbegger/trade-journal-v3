@@ -581,3 +581,7 @@ Behavioral task (4 cases); rows in `tdd-log/T8R.5.md`. Notes:
 - The handoff note on `payoff.props.ts:63`, `journal.props.ts:177` and the `ReviewCard` header's `tradeSummary` zone did not apply: none of those files belongs to lane PO.
 - `src/ui/styles/position.css` does not exist and needed no change. `e2e/support/detail/position.ts` needed no change; no browser spec was changed, so none was run.
 - The exit receipt has no test file of its own; its tests live in `PositionChangeFormExit.test.tsx` and `PositionChangeFormOptions.test.tsx`, whose Lot Matches expectations gained the Instrument column.
+
+## T8R.5-B1
+
+Behavioral bug task (1 case); rows in `tdd-log/T8R.5-B1.md`. First-run pass with a two-part mutation, no product change. The case builds a Trade with a $55 call and a $60 call and checks that each open lot and the Lot Match name their own contract.

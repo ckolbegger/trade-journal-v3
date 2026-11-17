@@ -93,6 +93,30 @@ describe('Position drawer: naming each contract', () => {
     expect(rowsOf(screen.getByRole('table', { name: 'Lot Matches' }))).toEqual([['XYZ', '$50.10 on 2026-10-12 10:00', '$52.00 on 2026-10-13 10:00', '30', '+$55.90']]);
   });
 
+  it('should name each open lot and each Lot Match by its own contract on a Trade with two contracts', () => {
+    // A $55 call and a $60 call, one lot of each; the $60 lot is partly closed, so its Lot Match must name the $60.
+    const base = optionOpenDetail('O-C', [OC3_BUY, OC3_SELL], WEDNESDAY);
+    const call55 = base.positions[0]!;
+    const buy55 = base.positionChanges[0]!.executions[0]!;
+    const sale = base.positionChanges[1]!.executions[0]!;
+    const instrument60 = { ...call55.instrument, strike: '60' };
+    const buy60 = { ...buy55, factId: 'exec-60', instrument: instrument60 };
+    const lot55 = { ...call55.openLots[0]!, quantity: Rational.of(1n) };
+    const call60 = { ...call55, instrument: instrument60, openLots: [{ ...lot55, openingExecutionId: 'exec-60' }] };
+    const call55Whole = { ...call55, openLots: [lot55] };
+    const closed60 = { ...base.lotMatches[0]!, openingExecutionId: 'exec-60', disposingExecutionId: sale.factId };
+    show({
+      ...base,
+      positions: [call55Whole, call60],
+      positionChanges: [{ ...base.positionChanges[0]!, executions: [buy55, buy60] }, base.positionChanges[1]!],
+      lotMatches: [closed60],
+    });
+    const position = screen.getByRole('region', { name: 'Position' });
+    const lots = within(position).getByRole('table', { name: 'Open Lots' });
+    expect(rowsOf(lots).map((row) => row[0])).toEqual(['XYZ Nov 20 $55 Call', 'XYZ Nov 20 $60 Call']);
+    expect(rowsOf(screen.getByRole('table', { name: 'Lot Matches' })).map((row) => row[0])).toEqual(['XYZ Nov 20 $60 Call']);
+  });
+
   it('should show one Position row per leg', () => {
     const one = optionOpenDetail('O-C', [OC_PC1, OC_PC2, OC_X1], THURSDAY);
     const second = { ...one.positions[0]!, instrument: { ...one.positions[0]!.instrument, strike: '60' } };
