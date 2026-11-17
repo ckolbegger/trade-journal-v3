@@ -1362,3 +1362,24 @@ Lane CB was rebased onto `91b0ed1c`. Upstream had changed no code since its base
 - B3 `0adedd00`
 
 Next, lane BR (T8R.27, plus T8R.27-B1 once it has been reviewed) merges. Then come one full run (browser full) and a fresh critic-2.
+
+## ocr: T8R.27-B1 (second ocr round on T8R.27's names spec)
+
+**T8R.27-B1** was committed as `8ce31c4f`. A planted misspelling passed the old check and fails the new one, and all 13 `e2e/d8r` tests pass.
+
+**Review card label.** The agent asked whether "XYZ (Long 2 Dec 18 $55 Call)" breaks W28. It doesn't: it is the Trade Summary form P117 approves ("Long 1 Dec 19 2025 $55 Call"). Answered by the main session.
+
+**ocr run.** Session c395d403-a021-4f24-be10-e807150e3d73, 1 file reviewed, 2 comments. Raw output: `ocr/T8R.27-B1-8ce31c4f.json`.
+
+**Findings.** Both are medium, test, and Valid. Both become bug task **T8R.27-B2**.
+1. `names.spec.ts:40`: an element whose own label lacks "XYZ", but whose child shows the contract, is never tagged. A name that leaves out the contract is therefore not compared with the visible text.
+2. `names.spec.ts:31-32`: the attribute scan no longer resolves `aria-labelledby`, and `ariaSnapshot` skips hidden elements. A hidden drawer panel labelled by a misspelt contract would pass. This is a coverage regression from T8R.27.
+
+**Reviewer notes** (not ocr findings):
+- The mention pattern is case-sensitive.
+- The prefix strip applies on every screen, not only on the Review card.
+- `data-b8r5` tags are never cleared between calls, a latent strict-mode flake.
+
+B2's brief lets it clear the tags inside the tag step it rewrites. The other two notes go to the final report.
+
+**Round count.** A third ocr round on this chain (T8R.27, then B1, then B2) that still leaves findings becomes a pending decision for the user (handoff, section 5).
