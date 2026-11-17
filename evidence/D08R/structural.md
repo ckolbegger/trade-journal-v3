@@ -1441,3 +1441,12 @@ Browser suite, `e2e/d8r/` (`today.spec.ts`, `states.spec.ts`, `rail.spec.ts`, `p
 - Readings applied: B8R.3's Fri 12:00 shows no dated line, and the dated distances are read at Fri 18:00 (as I8R.1). B8R.4's group order is Plan, Since the last Marks, Conditions, Plan Baseline, Entry Quality, Planned-Leg Fulfillment, Deviations, with W23's four figures ($3.30 average, $230.00 · 1.15R, $170.00 · 0.85R). B8R.2's K1 column is "Exit Fri Nov 13" (decision P1).
 - K1's Underlying cell reads a dash: K1 was sold at 11:00 on Fri 11-13, before that session's close, so no NVDA Mark exists for it (T8R.7-B1's case "sold before the close").
 - B8R.6's keyboard paging case is also in `e2e/d8p/history.spec.ts` (T8R.16); it is repeated in `e2e/d8r/history.spec.ts` on the corrected-Mark fixture.
+
+## T8R.27-B1
+
+`e2e/d8r/names.spec.ts` now compares the whole accessible name of every element that names an XYZ option, not only substrings that fit the broker format. It reads the browser's accessibility tree (`ariaSnapshot`, so aria-label, aria-labelledby, alt, title and content are joined by the browser), every aria-label, title and alt attribute, and each tagged element's accessible name against its visible text. A mention is anything from XYZ through a digit to Call or Put, so "XYZ 2026-12-18 55 Call" is found.
+
+- Red: with `aria-label="XYZ 2026-12-18 55 Call"` set on a contract element, the old spec passed (1 passed), the new spec failed (`Detail: an accessible name's contract`, expected "XYZ Dec 18 $55 Call", received "XYZ 2026-12-18 55 Call"). Mutation removed; new spec passed. Rows in `tdd-log/T8R.27-B1.md`.
+- `npm run build:faults` and `npm run build:releases`: exit 0. `npx playwright test e2e/d8r/names.spec.ts`: 1 passed. `npx playwright test e2e/d8r`: 13 passed (1.2 min), both under the browser lock.
+- Reading applied: the Review card names a position "XYZ (Long 2 Dec 18 $55 Call)" and its button "Review XYZ Long 2 Dec 18 $55 Call ...". The check removes the side and quantity and requires the remaining contract text to be the W28 name. Raised as a question to the main session.
+- Typecheck, `tsc6`, lint (0 errors, 2 existing warnings), `lint:deps`: exit 0.
