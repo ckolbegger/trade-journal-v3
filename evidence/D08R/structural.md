@@ -1353,3 +1353,12 @@ Plan and Risk's Conditions table names each condition in its Condition cell with
 - No new-words row: the wording is the rail's (W21, W22).
 - `e2e/d8r/plan-risk.spec.ts` does not exist on this lane, so there was nothing to change there.
 - Browser (port 5175): e2e/d4 (all) and e2e/d8p/cockpit.spec.ts, 27 passed.
+
+## Lane CB merged (T8R.25-B1, B2, B3)
+
+Lane CB was rebased onto `91b0ed1c`. Upstream had changed no code since its base, so no rerun was needed. It was then fast-forwarded. The rebased hashes are:
+- B1 `a3256de7`
+- B2 `aef3d956`
+- B3 `0adedd00`
+
+Next, lane BR (T8R.27, plus T8R.27-B1 once it has been reviewed) merges. Then come one full run (browser full) and a fresh critic-2.
