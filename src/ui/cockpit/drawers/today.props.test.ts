@@ -463,7 +463,7 @@ describe('Today drawer: Settlement Due and Closed (W25, W26, W30)', () => {
   // K1 (sold out by Fri Nov 13 at $12.40) and the replay to that session; the Underlying's Mark at it is 55.00.
   const closedBySale = (): { view: OpenTradeDetail; replay: TodayReplay } => {
     const sold = ocChange('pc-k1', '2026-11-13T15:00:00Z', 5, 'Sell', '2', '12.40', '0.65');
-    const view = { ...optionClosedDetail('O-C', [OC_PC1, OC_PC2, sold]), marksColumns: columns };
+    const view = { ...optionClosedDetail('O-C', [OC_PC1, OC_PC2, sold]), marksColumns: columns, exitSessionDate: '2026-11-13' };
     const replay: TodayReplay = { instruments: [XYZ_STOCK, OC_CONTRACT], sessions: [session('2026-11-12', [mark(XYZ_STOCK, '54.00'), mark(OC_CONTRACT, '12.00')]), session('2026-11-13', [mark(XYZ_STOCK, '55.00'), mark(OC_CONTRACT, '12.30')])] };
     return { view, replay };
   };
@@ -478,8 +478,32 @@ describe('Today drawer: Settlement Due and Closed (W25, W26, W30)', () => {
     ]);
   });
 
+  // T8R.7-B1 (decision P1): the column is dated by the exit session, which the Detail names, not by the replay's last session.
+  it('should head a Closed Trade sold before the close Exit with the exit session date and show the Underlying cell as a dash', () => {
+    const sold = ocChange('pc-k1', '2026-11-20T16:00:00Z', 5, 'Sell', '2', '12.40', '0.65');
+    const view = { ...optionClosedDetail('O-C', [OC_PC1, OC_PC2, sold]), marksColumns: columns, exitSessionDate: '2026-11-20' };
+    // The replay's newest session is Thu Nov 19; Fri Nov 20, the exit session, has not closed.
+    const replay: TodayReplay = { instruments: [XYZ_STOCK, OC_CONTRACT], sessions: [session('2026-11-18', [mark(XYZ_STOCK, '54.00')]), session('2026-11-19', [mark(XYZ_STOCK, '55.00')])] };
+    drawer(view, replay);
+    expect(tableCells().headings).toEqual(['Today, Mon Nov 23', 'Exit Fri Nov 20', 'Change']);
+    expect(tableCells().rows.map(([label, , exit]) => [label, exit])).toEqual([
+      ['XYZ Mark', '—'],
+      ['Call Mark', '$12.40'],
+    ]);
+  });
+
+  it("should show the Underlying Mark at the exit session once that session has closed", () => {
+    const sold = ocChange('pc-k1', '2026-11-13T15:00:00Z', 5, 'Sell', '2', '12.40', '0.65');
+    const view = { ...optionClosedDetail('O-C', [OC_PC1, OC_PC2, sold]), marksColumns: columns, exitSessionDate: '2026-11-13' };
+    // The replay runs past the exit session; the cell is the exit session's Mark, not the newest one's.
+    const replay: TodayReplay = { instruments: [XYZ_STOCK, OC_CONTRACT], sessions: [session('2026-11-12', [mark(XYZ_STOCK, '54.00')]), session('2026-11-13', [mark(XYZ_STOCK, '55.00')]), session('2026-11-16', [mark(XYZ_STOCK, '56.00')])] };
+    drawer(view, replay);
+    expect(tableCells().headings).toEqual(['Today, Mon Nov 23', 'Exit Fri Nov 13', 'Change']);
+    expect(tableCells().rows[0]!.slice(0, 3)).toEqual(['XYZ Mark', '', '55.00']);
+  });
+
   it("should show Expired for the option and the Underlying's expiration Mark under Expired Fri Nov 20", () => {
-    const view = { ...optionClosedDetail('O-S', [OS_S1, OS_ES]), marksColumns: columns };
+    const view = { ...optionClosedDetail('O-S', [OS_S1, OS_ES]), marksColumns: columns, exitSessionDate: '2026-11-20' };
     const replay: TodayReplay = { instruments: [MNO_STOCK, NOV_PUT], sessions: [session('2026-11-19', [mark(MNO_STOCK, '51.50')]), session('2026-11-20', [mark(MNO_STOCK, '52.00')])] };
     drawer(view, replay);
     expect(tableCells().headings).toEqual(['Today, Mon Nov 23', 'Expired Fri Nov 20', 'Change']);

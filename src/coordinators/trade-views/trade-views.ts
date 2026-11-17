@@ -356,6 +356,9 @@ export interface ClosedTradeDetail extends OpenTradeDetail {
   readonly closeReason?: CloseReasonLabel;
   // The terminal Position Change's Economic Time.
   readonly terminalTime: string;
+  // T8R.7-B1 (A235): the trading date of the session that holds the final exit (by sale) or of the expiration session (by expiration),
+  // whether or not that session has closed. Absent outside session-policy coverage.
+  readonly exitSessionDate?: string;
   readonly realizedR: DerivedTradeState['realizedR'];
 }
 
@@ -643,7 +646,7 @@ export function feeReconciliationOf(derived: DerivedTradeState): FeeReconciliati
 const optionTimingOf = (analysis: TradeAnalysisRecord, derived: DerivedTradeState) =>
   analysis.plan.legs[0]!.instrument.kind === 'Option' ? { optionDispositionTiming: derived.optionDispositionTiming } : {};
 
-function closedDetail(open: Omit<OpenTradeDetail, 'current' | 'openAverage'>, current:ClosedCurrentEvaluation, analysis: TradeAnalysisRecord, derived: DerivedTradeState, closeReason: CloseReasonLabel | undefined): ClosedTradeDetail {
+function closedDetail(open: Omit<OpenTradeDetail, 'current' | 'openAverage'>, current:ClosedCurrentEvaluation, analysis: TradeAnalysisRecord, derived: DerivedTradeState, closeReason: CloseReasonLabel | undefined, exitSessionDate: string | undefined): ClosedTradeDetail {
   return {
     ...open,
     // The entered quantity, since no Lot is open (decision 48).
@@ -655,6 +658,7 @@ function closedDetail(open: Omit<OpenTradeDetail, 'current' | 'openAverage'>, cu
     ...optionTimingOf(analysis, derived),
     ...optional('closeReason', closeReason),
     terminalTime: terminalTimeOf(analysis, derived),
+    ...optional('exitSessionDate', exitSessionDate),
     realizedR: derived.realizedR,
   };
 }
@@ -840,7 +844,9 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
           // A Closed Trade holds nothing, so no contract is awaiting settlement. Its evaluation is at its terminal date, with no read (A92).
           const closedEvaluation = valuation.evaluation;
           const current: ClosedCurrentEvaluation = { coverage: [{ instrument: closedEvaluation.observation.instrument, coverage: closedEvaluation.coverage }], evaluation: closedEvaluation };
-          const view = closedDetail({ ...detailWithoutValuation(planned, analysis, derived, withDueStatus(narrative, closes), lastActivity, []), ...optional('marksColumns', marksColumnsOf(session)) }, current, analysis, derived, closeReason);
+          // The exit session is the Today column's date of a read taken at the terminal time (the session in progress, or the next one): the calendar alone, no stored read.
+          const exitSessionDate = marksColumnsOf(await openSession(terminalTimeOf(analysis, derived)))?.today.date;
+          const view = closedDetail({ ...detailWithoutValuation(planned, analysis, derived, withDueStatus(narrative, closes), lastActivity, []), ...optional('marksColumns', marksColumnsOf(session)) }, current, analysis, derived, closeReason, exitSessionDate);
           return { binding, view };
         }
         const { evaluation, settlement, frame, underlyingFrame, datedLine } = valuation;

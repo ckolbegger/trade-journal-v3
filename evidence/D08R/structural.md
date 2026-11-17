@@ -930,3 +930,9 @@ ocr finding (low, maintainability): the `yesterday` cell in `closedMarksOf` (`sr
 - Before: `npx vitest run src/ui/cockpit/drawers/today.props.test.ts src/ui/screens/trade-detail/Today.test.tsx src/ui/screens/trade-detail/SettlementDue.test.tsx src/ui/screens/trade-detail/Placed.test.tsx` gave 4 files, 32 passed.
 - After: the same command gave 4 files, 32 passed.
 - `npm run typecheck`: exit 0. `npm run lint`: exit 0.
+
+## T8R.7-B1
+
+ocr finding (medium, Valid; decision P1): a Closed Trade's second Today column was dated by the replay's last session, so a Trade sold out in a session that has not closed read "Exit <previous session>" with today's sale price. The Closed Detail now carries `exitSessionDate` (an optional string, additive per A245): the trading date of the session that holds the final exit, or the expiration session. Trade Views reads it as the Today column's date of a read opened at the terminal time (`marksColumnsOf(await openSession(terminalTime))`, calendar only, no stored read); it is absent outside session-policy coverage. The Today adapter heads the column "Exit <date>" or "Expired <date>" from it, and the Underlying's cell is the replay's Mark at that session, or a dash while the replay has not reached it. The exit price of the option or stock is unchanged.
+
+- Expectations that gained the field: `src/ui/cockpit/drawers/today.props.test.ts`, the two existing Closed views in "Settlement Due and Closed" (the by-sale view, `exitSessionDate: '2026-11-13'`, and the by-expiration view, `'2026-11-20'`), compared exactly. No Trade Views expectation compares a whole Closed Detail with `toEqual`, so none changed.

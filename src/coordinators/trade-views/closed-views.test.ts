@@ -91,8 +91,8 @@ describe('browseTrades: Closed (A95)', () => {
 });
 
 // T-A on a stack whose Catalog and Journal carry the D6 seeds; the clock reads Tuesday 17:00.
-async function tradeA() {
-  const stack = await reviewStack(TUESDAY_1700);
+async function tradeA(now = TUESDAY_1700) {
+  const stack = await reviewStack(now);
   await stack.catalog.seedDefaults(D6_CATALOG_MANIFEST);
   await stack.journal.seedDefaults(D5_JOURNAL_MANIFEST);
   const reasons = await stack.catalog.query({ family: 'CloseReason' });
@@ -138,12 +138,13 @@ async function tradeA() {
       ],
       true,
     );
+  const exitAll = (economicTime: string) => exit([{ economicTime, quantity: '100', price: '52.00', fee: '1.00' }], true);
   const analysis = async (): Promise<TradeAnalysisRecord> => {
     const record = await stack.tradeRecord.getRecord({ tradeId: trade.tradeId, projection: 'AnalysisInput' });
     if (record.kind !== 'Found') throw new Error('no Trade');
     return record.projection as TradeAnalysisRecord;
   };
-  return { stack, trade, closeReason: { id: reasons.items[0]!.id, label: reasons.items[0]!.label }, x1, x2, analysis };
+  return { stack, trade, closeReason: { id: reasons.items[0]!.id, label: reasons.items[0]!.label }, x1, x2, exitAll, analysis };
 }
 
 describe('getTradeDetail: Closed', () => {
@@ -232,6 +233,23 @@ describe('getTradeDetail: Closed', () => {
     expect(result.view.closeReason).toEqual({ id: 'no-such-reason', label: '' });
     expect(result.view.labels).toEqual({ strategy: t.stack.strategy.label, account: t.stack.account.label, institution: t.stack.institution.label });
   });
+});
+
+// T8R.7-B1 (decision P1): the Closed Detail names the session that holds the final exit, though that session has not closed.
+describe('getTradeDetail: Closed exit session (T8R.7-B1, A235)', () => {
+  const TUESDAY_NOON = '2026-10-13T16:00:00Z';
+  const TUESDAY_11AM = '2026-10-13T15:00:00Z';
+
+  it('should give a Closed Detail sold before the close the exit session date', async () => {
+    const t = await tradeA(TUESDAY_NOON);
+    // All 100 shares sold at 11:00 on Tuesday, read at noon: the session has not closed.
+    await t.exitAll(TUESDAY_11AM);
+
+    const result = await createTradeViews(t.stack).getTradeDetail({ tradeId: t.trade.tradeId });
+    if (result.kind !== 'Ready' || !('terminalDisposition' in result.view)) throw new Error('expected the Closed form of Detail');
+
+    expect(result.view.exitSessionDate).toBe('2026-10-13');
+  }, 60_000);
 });
 
 describe('getTradeDetail: Closed reads no Market Data and requires no Mark (T6.14-B1)', () => {

@@ -121,12 +121,14 @@ function settlementMarksOf(input: TodayInput, view: OpenTradeDetail): TodayDrawe
 }
 
 // A Closed Detail's table (A235): the second column is the exit session's, headed "Exit Fri Nov 13" (by sale) or "Expired Fri Nov 20" (by
-// expiration) by the replay's last session. An Instrument's cell is its final exit Execution's price (an option that expired reads "Expired") and the
-// Underlying's its Mark at that session. Today's column is headed by the view and empty.
+// expiration) by the Detail's exit session. An Instrument's cell is its final exit Execution's price (an option that expired reads "Expired") and the
+// Underlying's its Mark at that session, or "—" until that session's Marks exist. Today's column is headed by the view and empty.
 function closedMarksOf({ replay }: TodayInput, view: ClosedTradeDetail, optionTrade: boolean): TodayDrawerProps['marks'] {
   if (!replay) return undefined;
   const byExpiration = view.terminalDisposition.kind === 'Value' && view.terminalDisposition.value.some(({ mechanism }) => mechanism === 'Expiration');
-  const last = replay.sessions.at(-1);
+  // The exit session is the Detail's (decision P1); the replay reaches it only once that session has closed, so until then the Underlying's cell is a dash.
+  const exitDate = view.exitSessionDate;
+  const exitSession = replay.sessions.find((session) => session.date === exitDate);
   const cell = markCellOf(optionTrade);
   const exitPrice = (instrument: Instrument): string => {
     const final = view.positionChanges.flatMap((change) => change.executions).filter((e) => instrumentKey(e.instrument) === instrumentKey(instrument)).at(-1);
@@ -135,11 +137,11 @@ function closedMarksOf({ replay }: TodayInput, view: ClosedTradeDetail, optionTr
   // The exit cell: the option's "Expired" by expiration, the Underlying's Mark at the exit session, otherwise the final exit Execution's price.
   const exitCell = (instrument: Instrument, underlying: boolean, expired: boolean): string => {
     if (expired) return 'Expired';
-    if (underlying) return cell(instrument, last);
+    if (underlying) return cell(instrument, exitSession);
     return exitPrice(instrument);
   };
   return {
-    columns: [todayHeadingOf(view.marksColumns), `${byExpiration ? 'Expired' : 'Exit'}${last ? ` ${shortDate(last.date)}` : ''}`, 'Change'],
+    columns: [todayHeadingOf(view.marksColumns), `${byExpiration ? 'Expired' : 'Exit'}${exitDate ? ` ${shortDate(exitDate)}` : ''}`, 'Change'],
     rows: replay.instruments.map((instrument) => {
       const underlying = optionTrade && instrument.kind === 'Stock';
       // By expiration the option's cell is "Expired", not a price.
