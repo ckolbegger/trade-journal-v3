@@ -59,6 +59,8 @@ export interface ConditionReading {
   // An option condition's Underlying price distance to its trigger (zero once crossed) and the price distance
   // beyond it (null while not crossed); the Measures above are then the option's risk or reward (A109).
   readonly underlying?: { readonly distance: Rational; readonly beyond: Rational | null };
+  // A230: the distance to the condition's own price trigger, in that price: zero once crossed, `beyond` the distance past it.
+  readonly trigger?: { readonly distance: Rational; readonly beyond: Rational | null };
 }
 
 // Each Stop and Target is read independently (OR semantics); the id is its role and 1-based position.
@@ -77,6 +79,8 @@ export interface TradeEvaluationInput {
   // For an option Trade `frame` is the contract's and `underlyingFrame` is the Underlying's (A110).
   readonly frame: ObservationFrame | UncoveredObservation;
   readonly underlyingFrame?: ObservationFrame | UncoveredObservation;
+  // A243: the session after the read session's trading date, when covered; it sets `AwaitingClose.due`.
+  readonly nextSessionDate?: string;
 }
 
 export interface AtEntryFigures {

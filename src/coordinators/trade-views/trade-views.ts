@@ -29,13 +29,13 @@ import { closedLongStockSummary, openTradeSummary, optionSummary, plannedTradeSu
 import type { Clock, Instant } from '../../domain/time/index.ts';
 import { parseDecimal, Rational } from '../../domain/values/index.ts';
 import type { Journal, NarrativeEntry, NarrativeItem, TradeNarrativeItem } from '../../modules/journal/index.ts';
-import type { MarkFrame, MarketData, MarketDataReadSession, MarkResolution } from '../../modules/market-data/index.ts';
+import type { MarkFrame, MarketData, MarketDataReadSession, MarkResolution, SeriesPoint } from '../../modules/market-data/index.ts';
 import type { ReferenceCatalog } from '../../modules/reference-catalog/index.ts';
 import type { BrowseRecord, TradeRecord, TradeSummary as RecordSummary } from '../../modules/trade-record/index.ts';
 import type { Persistence, WorkspaceSnapshotBinding } from '../../persistence/index.ts';
 import { payoffOf } from '../settlement.ts';
 import { firstExposureOf, placeJournal, replayInstruments, replaySessions, replayView, settlementExpirationOf } from './replay-trade.ts';
-import type { ReplayNotApplicable, ReplayTradeRequest, ReplayTradeResult, TradeReplayView } from './replay-view.ts';
+import type { ReplayChange, ReplayNotApplicable, ReplayTradeRequest, ReplayTradeResult, TradeReplayView } from './replay-view.ts';
 import type { ReadViewResult, TradeDetailDebt, TradeDetailNarrativeItem, ViewBinding } from './view-types.ts';
 import { valueTrade, type DatedLine, type SettlementItem } from '../valuation/index.ts';
 
@@ -321,6 +321,12 @@ export interface OpenTradeDetail extends Omit<PlannedTradeDetail, 'journal'> {
   readonly findings: readonly IntegrityFinding[];
   readonly journal: readonly TradeDetailNarrativeItem[];
   readonly current: OpenCurrentEvaluation;
+  // A232: the Today table's column dates; absent outside session-policy coverage. Closed Details carry it too.
+  readonly marksColumns?: { readonly today: { readonly date: string; readonly next: boolean }; readonly yesterday: string };
+  // A234: a Settlement Due Detail (an Open Detail with `settlement` items): the Underlying's Marks at the two column dates, and their change.
+  readonly settlementUnderlying?: { readonly today?: SeriesPoint; readonly yesterday?: SeriesPoint; readonly change?: ReplayChange };
+  // A236: the open lots' average price, on every Open Detail (stock and option); a Closed Detail has none.
+  readonly openAverage?: Rational;
 }
 
 // The Closed form's valuation: the evaluation and its coverage only. A Closed Trade has no current figures

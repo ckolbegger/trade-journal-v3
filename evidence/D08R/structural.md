@@ -79,3 +79,18 @@ Rebased `d08r/ph` onto `claude-opus-5.5` (`62106632`): T8R.4 `15811755` → `c7a
 ## T8R.1-B1 ocr review
 
 ocr on `3b78080e` (session 559cf529-888a-4d66-8e8e-12bc149df4f5, gpt-6.1-sol, 3 files reviewed, 0 comments; raw output `ocr/T8R.1-B1-3b78080e.json`): **No findings.** Reviewer note (not an ocr finding): `current:ClosedCurrentEvaluation` lacks a space after the colon in `closedDetail`'s signature; cosmetic. B1's first agent stopped for one test double outside lane TY (`tests/support/closed-detail-fixtures.ts`, owned by no wave-0 lane); the main session granted it, and a fresh agent finished B1 from the uncommitted work, with the first agent's recorded red.
+
+## T8R.1
+
+Types only, in lane TY. Commands (each exit 0): `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`; lane tier `.claude/scripts/full-suite.sh evidence/D08R T8R.1 lane` (unit 2027 passed, integration 258 passed, 14 of 14 checks exit 0; outputs in `evidence/D08R/suite-runs/T8R.1-*.txt`).
+
+Every new field is optional, including `MarketDataReadSession.exchangeDate`, which section 4.1 writes without a `?`: a required field would force producer and test-double changes in a types-only task. T8R.21 decides whether it becomes required.
+
+Final shapes:
+- `ConditionReading.trigger?: { distance: Rational; beyond: Rational | null }` (`src/domain/trade-analysis/evaluate.ts`)
+- `TradeEvaluationInput.nextSessionDate?: string` (same file)
+- `UnavailableReason` AwaitingClose case: `{ reason: 'AwaitingClose'; after: string; due?: string }` (`src/domain/calculation-result/index.ts`)
+- `MarketDataReadSession.previousSessionDate?: string`, `exchangeDate?: string` (`src/modules/market-data/market-data.ts`; readonly fields like `nextSessionDate`)
+- `OpenTradeDetail` (`src/coordinators/trade-views/trade-views.ts`): `marksColumns?: { today: { date: string; next: boolean }; yesterday: string }`; `settlementUnderlying?: { today?: SeriesPoint; yesterday?: SeriesPoint; change?: ReplayChange }`; `openAverage?: Rational`. `ClosedTradeDetail extends OpenTradeDetail`, so it inherits all three.
+- A Settlement Due Detail has no variant of its own: it is an `OpenTradeDetail` whose `settlement` array has items, so the fields sit on `OpenTradeDetail`. `ClosedTradeDetail` inherits `settlementUnderlying` and `openAverage` as optional; A236 says Closed has none, which T8R.23 should enforce by never filling them.
+- `src/app/types.ts` already re-exports `OpenTradeDetail` and `ClosedTradeDetail`, so no change was needed.

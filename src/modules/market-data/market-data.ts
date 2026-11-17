@@ -295,6 +295,10 @@ export interface MarketDataReadSession {
   readonly closeInstant?: string;
   // The session after `tradingDate`, from the calendar alone; absent outside session-policy coverage (revision 92).
   readonly nextSessionDate?: string;
+  // The session just before `tradingDate`, from the calendar alone; absent outside coverage (P110, revision 104).
+  readonly previousSessionDate?: string;
+  // The as-of exchange date: the as-of instant's date in the exchange's time zone, a session or not (P110, revision 104).
+  readonly exchangeDate?: string;
   readonly covered: boolean;
   // The session's date, then an earlier one: a frame per Instrument asked, in the order asked, none outside coverage.
   frames(instruments: readonly string[]): Promise<readonly MarkFrame[]>;
