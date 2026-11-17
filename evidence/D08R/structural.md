@@ -968,3 +968,45 @@ The Journal's active-Deviation line is hidden on an incoherent Detail. The plan 
 `e2e/d8p/cockpit.spec.ts` (B8P.1) listed Plan and Risk's cards without Planned-Leg Fulfillment. T8R.11 (`d8682e62`) made it the drawer's last group, and T8R.14-F1 edited the list from an older base. Fix: `'planned-leg fulfillment'` added to `HEADINGS['Plan and Risk']`. Plan text: `plan/D08R-trade-detail-refactor.md` line 10 and the kept-words row ("Deviations and Planned-Leg Fulfillment keep their words as Plan and Risk's last groups; Deviations is hidden when there are none"), and T8R.11's "gone" case, so a plain O-C3 shows no Deviations card. No other expectation changed: the label counts and accepted repeats passed unchanged.
 
 Red: `npx playwright test e2e/d8p/cockpit.spec.ts` after `npm run build:faults` and `npm run build:releases`: `Plan and Risk cards ... + "planned-leg fulfillment"`. Green: same command, 1 passed. Whole `e2e/d8p` folder: 18 passed, 2 failed, both in `lot-matches-fit.spec.ts` (the Instrument column that T8R.5-F1 fixes in lane PO, not this task).
+
+## ocr: T8R.11-F1
+
+- Commit `6d3f6498`, session 078febd4-bd28-491b-ba30-b469d0734a52.
+- 1 file reviewed (`e2e/d8p/cockpit.spec.ts`); 6 excluded.
+- 0 comments, so there is no bug task.
+- Raw output: `ocr/T8R.11-F1-6d3f6498.json`.
+
+## Merges after wave1-merge2: lanes PO, PR, TD, BA, JR, FX
+
+Each lane was rebased onto the head at the time. Upstream had changed code each lane does not own, so each got a lane-tier rerun (`<task>-rebased`) and then a fast-forward.
+
+| Lane | Tasks | Rebased commits | Rerun (unit, integration, checks) |
+|---|---|---|---|
+| PO | T8R.5-F1 | `3e3e6862` | 2083, 258, 14 of 14 |
+| PR | T8R.12, T8R.12-F1 | `27f3a0bf`, `01f728ff` | 2085, 258, 14 of 14 |
+| TD | T8R.7, T8R.7-B2, T8R.7-B1 | `a28d05f9`, `e9834187`, `4cd6991a` | 2092, 258, 14 of 14 |
+| BA | T8R.20 | `1474e144` | 2088, 258, 14 of 14 |
+| JR | T8R.17, T8R.17-B1 | `f62cb546`, `708d67ea` | 2092, 258, 14 of 14 |
+| FX | T8R.11-F1 | `9d873233` | 2092, 258, 14 of 14 |
+
+**Conflicts.** Lanes PR and TD each had conflicts in `new-words.md` and `structural.md`. Both were resolved by hand:
+- `new-words.md`: both sides' rows were kept.
+- `structural.md`: ours was kept, and the lane's saved additions were appended.
+
+There were no code conflicts. `Cockpit.tsx` merged on its own: lane TD's T8R.7 edits and lane JR's drawer-request move touch different lines.
+
+**Lane state.** Lane TD stays open for T8R.8 (`e1c1ddc1`, ocr review running) and T8R.9 (in progress). Lanes PO, PR, BA, JR and FX are removed.
+
+**T8R.17's B4.14 note.** T8R.17's own browser run failed `d4/breach-overrun.spec.ts` B4.14, because its base was older than T8R.14-F1's spec update. Merge run 3 runs it again on the merged head.
+
+## T8R.8 returned
+
+T8R.8 is committed as `e1c1ddc1` (lane TD). It has 3 cases, each red then green, and no first-run pass.
+
+**Process slip, for the final report.** The tick code was written while case 1 was being made green, ahead of the red runs for cases 2 and 3. The agent then took genuine reds by temporarily rendering no ticks, and restored the code afterwards; the tdd-log notes it. The same kind of slip as T8R.11's.
+
+**Data.** The entry dot reads `view.openAverage` (T8R.23). The ticks read `positions[].openLots` (selection), dated by each lot's opening Execution. `PriceTrackProps` gains a required `ticks`.
+
+**New word.** The tick's name, "$3.30 · Fri Oct 16" (A237).
+
+**Note for later fixtures.** The fixture builders in `tests/support` do not set `openAverage`.
