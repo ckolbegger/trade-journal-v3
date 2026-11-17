@@ -656,8 +656,8 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | Task | Wave | Lane | Status | Commits |
 |---|---|---|---|---|
 | T8R.1 | 0 | TY | Done | `dddd063b`; B1 `5b333e64` |
-| T8R.2 | 0 | SH | In progress from `1a01d594` | |
-| T8R.2-F1 | 0 | SH | In progress from `7fefc1f2` | |
+| T8R.2 | 0 | SH | Done | `29e50716` |
+| T8R.2-F1 | 0 | SH | Done | `08437851` |
 | T8R.3 | 0 | CN | In progress from `1a01d594` | |
 | T8R.3-F1 | 0 | CN | In progress from `5580fda4` | |
 | T8R.4 | 0 | PH | Done | `c7a9a3ca`; B1 met by F1 |
