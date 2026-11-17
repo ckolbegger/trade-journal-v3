@@ -57,7 +57,7 @@ describe('just-confirmed Plan: expiration line (A209, tech debt item 23)', () =>
 });
 
 // Plan section 6.1's I8P.5 and I8P.6. The cases above are T8P.9's, titled "should ..." (that file's convention); these two carry the
-// section 6.1 names word for word. The expiration-line figures of I8P.5 are also T8P.9's first case, above; this one adds the nearest marks.
+// section 6.1 names word for word. The expiration-line figures of I8P.5 are also T8P.9's first case, above; this one adds the condition ids.
 describe('I8P.5 Nearest and days', () => {
   it('I8P.5 Nearest and days', async () => {
     const { app } = await onboardedAt(TUESDAY_1700_NY);
@@ -67,7 +67,6 @@ describe('I8P.5 Nearest and days', () => {
     const detail = await detailOf(app, tradeId);
 
     if (!('positions' in detail)) throw new Error('expected an Open Detail');
-    expect(detail.current.evaluation.conditions.filter((c) => c.nearest === true).map((c) => c.id)).toEqual(['stop-2', 'target-1']);
     expect(detail.current.evaluation.conditions.map((c) => c.id)).toEqual(['stop-1', 'stop-2', 'target-1', 'target-2']);
     expect(detail.contractExpiration).toEqual({ status: 'Expires', date: '2026-12-18', days: 66 });
   });

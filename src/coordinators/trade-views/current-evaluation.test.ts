@@ -50,7 +50,6 @@ describe('browseTrades: Open with current evaluation', () => {
       role,
       kind: 'UnderlyingPrice',
       boundary: role === 'Stop' ? '47.5' : '56',
-      nearest: true,
       result: {
         kind: 'Value',
         value: expect.objectContaining({ status, distance: { dollars: distance, planR: distance.div(oneR) }, overrun: null }) as unknown,

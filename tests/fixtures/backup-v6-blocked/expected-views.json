@@ -390,8 +390,7 @@
                       }
                     }
                   }
-                },
-                "nearest": true
+                }
               },
               {
                 "id": "target-1",
@@ -420,8 +419,7 @@
                       }
                     }
                   }
-                },
-                "nearest": true
+                }
               }
             ],
             "expirationValueAtUnderlyingClose": {
@@ -1360,8 +1358,7 @@
                       }
                     }
                   }
-                },
-                "nearest": true
+                }
               },
               {
                 "id": "target-1",
@@ -1390,8 +1387,7 @@
                       }
                     }
                   }
-                },
-                "nearest": true
+                }
               }
             ],
             "expirationValueAtUnderlyingClose": {
@@ -1768,8 +1764,7 @@
                       }
                     }
                   }
-                },
-                "nearest": true
+                }
               },
               {
                 "id": "target-1",
@@ -1798,8 +1793,7 @@
                       }
                     }
                   }
-                },
-                "nearest": true
+                }
               }
             ],
             "expirationValueAtUnderlyingClose": {
@@ -3943,8 +3937,7 @@
                       }
                     }
                   }
-                },
-                "nearest": true
+                }
               },
               {
                 "id": "target-1",
@@ -3973,8 +3966,7 @@
                       }
                     }
                   }
-                },
-                "nearest": true
+                }
               }
             ],
             "expirationValueAtUnderlyingClose": {
@@ -7293,8 +7285,7 @@
                       }
                     }
                   }
-                },
-                "nearest": true
+                }
               },
               {
                 "id": "target-1",
@@ -7323,8 +7314,7 @@
                       }
                     }
                   }
-                },
-                "nearest": true
+                }
               }
             ],
             "expirationValueAtUnderlyingClose": {
@@ -8153,8 +8143,7 @@
                       }
                     }
                   }
-                },
-                "nearest": true
+                }
               },
               {
                 "id": "target-1",
@@ -8183,8 +8172,7 @@
                       }
                     }
                   }
-                },
-                "nearest": true
+                }
               }
             ],
             "expirationValueAtUnderlyingClose": {
@@ -13307,8 +13295,7 @@
                     }
                   }
                 }
-              },
-              "nearest": true
+              }
             },
             {
               "id": "target-1",
@@ -13337,8 +13324,7 @@
                     }
                   }
                 }
-              },
-              "nearest": true
+              }
             }
           ],
           "expirationValueAtUnderlyingClose": {
@@ -14930,8 +14916,7 @@
                     }
                   }
                 }
-              },
-              "nearest": true
+              }
             },
             {
               "id": "target-1",
@@ -14960,8 +14945,7 @@
                     }
                   }
                 }
-              },
-              "nearest": true
+              }
             }
           ],
           "expirationValueAtUnderlyingClose": {
@@ -15562,8 +15546,7 @@
                     }
                   }
                 }
-              },
-              "nearest": true
+              }
             },
             {
               "id": "target-1",
@@ -15592,8 +15575,7 @@
                     }
                   }
                 }
-              },
-              "nearest": true
+              }
             }
           ],
           "expirationValueAtUnderlyingClose": {

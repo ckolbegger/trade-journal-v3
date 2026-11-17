@@ -70,8 +70,6 @@ export interface ConditionStatus {
   readonly kind: 'UnderlyingPrice' | 'StructureValue';
   readonly boundary: string;
   readonly result: CalculationResult<ConditionReading>;
-  // A207: set on the one condition per role whose Value distance sets that role's headline, only while that headline is positive.
-  readonly nearest?: true;
 }
 
 export interface TradeEvaluationInput {
@@ -400,13 +398,6 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
   };
   const ongoingRiskToStop = headlineOf('Stop');
   const incrementalRewardToTarget = headlineOf('Target');
-  // A207: the first condition in Plan order whose distance is the role's positive headline.
-  const nearestOf = (role: 'Stop' | 'Target', headline: CalculationResult<Rational>): ConditionStatus | undefined =>
-    headline.kind === 'Value' && headline.value.compare(ZERO) > 0
-      ? conditions.find((c) => c.role === role && c.result.kind === 'Value' && c.result.value.distance.dollars.compare(headline.value) === 0)
-      : undefined;
-  const nearestConditions = [nearestOf('Stop', ongoingRiskToStop), nearestOf('Target', incrementalRewardToTarget)];
-  const conditionsWithNearest = conditions.map((c) => (nearestConditions.includes(c) ? { ...c, nearest: true as const } : c));
   const inPlanR = (result: CalculationResult<Rational>): CalculationResult<Rational> =>
     result.kind === 'Value' ? value(result.value.div(state.baseline.oneR)) : result;
   // At expiration a long option loses its value; the short Put is put the shares, worth the strike less the Mark (A109).
@@ -468,7 +459,7 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
     incrementalRewardToTargetInPlanR: inPlanR(incrementalRewardToTarget),
     maximumIncrementalReward: maxReward,
     maximumIncrementalRewardInPlanR: inPlanR(maxReward),
-    conditions: conditionsWithNearest,
+    conditions,
     expirationValueAtUnderlyingClose: expirationValueAtUnderlyingClose(),
     settlement: state.positions.flatMap((p): SettlementItem[] =>
       p.instrument.kind === 'Option' && p.openLots.length > 0
