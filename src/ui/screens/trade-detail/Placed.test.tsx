@@ -210,31 +210,11 @@ describe("Trade Detail: the legacy blocks' figures in one place (revision 96)", 
     expect(linesOf('Reward to target')).toHaveLength(2);
   });
 
-  it('should show the current Marks in the Position drawer on a state without a Today drawer', async () => {
+  it('should show only the current Marks card in the Today drawer on a Settlement Due Detail', async () => {
     const user = userEvent.setup();
-    // Friday 2026-11-20 after the close: the expiration date, whose contracts are due for settlement, so the Detail has no Today drawer.
     renderView(optionOpenDetail('O-S', [OS_S1], { tradingDate: '2026-11-20', closeInstant: '2026-11-20T21:00:00Z', contractMark: '0.80', underlyingMark: '52.00' }));
-    await openDrawer(user, 'Position');
-    expect(screen.queryByRole('tab', { name: 'Today' })).toBeNull();
-    const card = currentMarks(screen.getByRole('tabpanel', { name: 'Position' }));
-    expect(termValue(card, 'Mark')).toBe('$0.80');
-    expect(termValue(card, 'Source')).toBe('Manual');
-    expect(termValue(card, 'Saved')).toBe('2026-11-20 16:00');
-    cleanup();
-
-    // A state with a Today drawer keeps them there only: its Position panel, hidden or not, holds no second card.
-    renderView(openDetailAt([PC1, PC2], tuesday(available('52.00'))));
     await openDrawer(user, 'Today');
-    const position = document.getElementById('drawer-panel-position');
-    expect(position?.hidden).toBe(true);
-    expect(position?.querySelector('.current-marks')).toBeNull();
-  });
-
-  it('should show only the current Marks card of the Today drawer in the Position drawer on a Settlement Due Detail', async () => {
-    const user = userEvent.setup();
-    renderView(optionOpenDetail('O-S', [OS_S1], { tradingDate: '2026-11-20', closeInstant: '2026-11-20T21:00:00Z', contractMark: '0.80', underlyingMark: '52.00' }));
-    await openDrawer(user, 'Position');
-    const panel = document.getElementById('drawer-panel-position')!;
+    const panel = document.getElementById('drawer-panel-today')!;
     expect(panel.querySelector('section.current-marks')).not.toBeNull();
     // The tracks, condition lines and At entry are the Today drawer's own, so they are gone, hidden panels included.
     expect(panel.querySelector('.tracks, .price-track')).toBeNull();

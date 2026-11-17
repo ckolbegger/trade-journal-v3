@@ -148,3 +148,20 @@ ocr on `d731bf2f` (test-only, relocated; session 686bc8fa-d2a5-4c4c-b1a5-308b646
 ## T8R.3-F1 ocr review
 
 ocr on `740b4008` (session c8e0b9ea-dc03-4e08-a1a0-4ee150c05928, gpt-6.1-sol, 2 files reviewed, 0 comments; raw output `ocr/T8R.3-F1-740b4008.json`): **No findings.** F1 changed three contract-name expectations in `tools/bench/compare.test.ts` (NVDA, AAPL, and QAB, which surfaced once the clock was pinned), pinned the case's clock to 2026-11-17 (`Date` only), and updated `compare.ts:63`'s comment. Lane tier passed (unit 2033, integration 258, 14 of 14 checks).
+
+## T8R.2-F1: earlier cases that read the old default drawer
+
+Six cases outside T8R.2 assumed the old default drawer (Position) and failed after W1 amended (Today first, opens on Today).
+
+| Case | File | Change |
+|---|---|---|
+| should list an Expiration in its own Settlement section after the Executions, with the contract named by its label | Position.test.tsx | Reach only: `await openDrawer(user, 'Position')` before the read; every expect unchanged |
+| should show a Closed option Trades Lot Match disposed by an Expiration as Expired on 2026-11-20 16:00 on Trade Detail | Position.test.tsx | Reach only, same |
+| should head an option Trades Lot Matches Opened and Closed on Trade Detail, open or closed, and a stock Trades Bought and Sold | Position.test.tsx | Reach only, added to the Closed render |
+| should show lifecycle Closed as text, Closed via sale of 100 shares and the Close Reason ... | Result.test.tsx | Reach only: open Position before the Position tabpanel lookup |
+| should show only the current Marks card of the Today drawer in the Position drawer on a Settlement Due Detail | Placed.test.tsx | Rewritten and renamed "should show only the current Marks card in the Today drawer on a Settlement Due Detail": opens Today, reads `#drawer-panel-today`; other assertions unchanged; the no-Today-tab assertion dropped |
+| should show the current Marks in the Position drawer on a state without a Today drawer | Placed.test.tsx | Retired: no state with current Marks lacks a Today drawer now. Covered by T8R.2's third case in Cockpit.test.tsx, "should show the Settlement Due current Marks in Today, not in Position" |
+
+Mutation (rewritten case): in `Cockpit.tsx` the Today panel's Settlement Due branch `<CurrentMarksOnly {...replayed} />` replaced by `<div />`. The case failed: `AssertionError: expected null not to be null` (the `section.current-marks` check). Restored; `git diff -- src` shows only the three test files.
+
+Results: the three files pass (29 cases); `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` exit 0. Lane tier (`.claude/scripts/full-suite.sh evidence/D08R T8R.2-F1 lane`) exit 0: unit 189 files, 2029 tests; integration 118 files, 258 tests; 14 of 14 checks exit 0. Outputs in `evidence/D08R/suite-runs/T8R.2-F1-*.txt`.

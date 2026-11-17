@@ -243,7 +243,9 @@ describe('Executions', () => {
 
 describe('Closed option Trade Detail (T7.21-B2)', () => {
   it('should show a Closed option Trades Lot Match disposed by an Expiration as Expired on 2026-11-20 16:00 on Trade Detail', async () => {
+    const user = userEvent.setup();
     renderView(optionClosedDetail('O-C', expiredOptionTrade('O-C').record.positionChanges), true);
+    await openDrawer(user, 'Position');
     const matches = within(await screen.findByRole('region', { name: 'Lot Matches' })).getByRole('table', { name: 'Lot Matches' });
     expect(within(matches).getAllByText('Expired on 2026-11-20 16:00').length).toBeGreaterThan(0);
   });
@@ -288,7 +290,9 @@ describe('Open Trade Detail after a partial exit', () => {
 describe('closed option Trade Detail (A119)', () => {
   useFixedClock();
   it('should list an Expiration in its own Settlement section after the Executions, with the contract named by its label', async () => {
+    const user = userEvent.setup();
     renderView(optionClosedDetail('O-C', [OC_PC1, OC_PC2, OC_X1, OC_E1]));
+    await openDrawer(user, 'Position');
     const executions = await screen.findByRole('region', { name: 'Executions (3)' });
     expect(within(executions).getAllByRole('button').map((b) => b.textContent)).toEqual([
       'Buy to open 1 XYZ 20 Nov 2026 55 Call @ $2.10 2026-10-12 10:00details',
@@ -323,6 +327,7 @@ describe('option Trade Detail Lot Matches (row 20.13)', () => {
     const user = userEvent.setup();
     const headers = () => within(screen.getByRole('region', { name: 'Lot Matches' })).getAllByRole('columnheader').map((h) => h.textContent);
     renderView(optionClosedDetail('O-C', [OC_PC1, OC_PC2, OC_X1, OC_E1]));
+    await openDrawer(user, 'Position');
     await screen.findByRole('region', { name: 'Lot Matches' });
     expect(headers()).toEqual(['Opened', 'Closed', 'Quantity', 'Realized']);
     cleanup();
