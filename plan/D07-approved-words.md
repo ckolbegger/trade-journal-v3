@@ -19,7 +19,7 @@ Every user-visible phrase D7's remaining tasks need, approved by the user in one
 
 ### Conventions
 
-**Amended by D8R (decision 115, revision 104).** C2, C5 and C6 name a contract in the broker style: "XYZ Dec 18 $55 Call" when it expires in the current year, and "XYZ Jan 15 2027 $55 Call" for a later year, so "Long 2 contracts of XYZ Nov 20 $55 Call" and "Buy to open 1 XYZ Nov 20 $55 Call @ $2.10". Screen readers read the same text. The "Expires" and "Expired" lines keep the long date. The examples below keep their original form as the record of what D7 approved; [D08R](D08R-trade-detail-refactor.md) W28 is the current rule.
+**Amended by D8R (decision 115, revision 104).** C2, C5 and C6 name a contract in the broker style: "XYZ Dec 18 $55 Call" when it expires in the current year, and the full year for any other year, "XYZ Jan 15 2027 $55 Call" (revision 105), so "Long 2 contracts of XYZ Nov 20 $55 Call" and "Buy to open 1 XYZ Nov 20 $55 Call @ $2.10". Screen readers read the same text. The "Expires" and "Expired" lines keep the long date. The examples below keep their original form as the record of what D7 approved; [D08R](D08R-trade-detail-refactor.md) W28 is the current rule.
 
 | # | Where, and the code or state | Approved words |
 |---|---|---|

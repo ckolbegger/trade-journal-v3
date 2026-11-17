@@ -2,7 +2,7 @@
 
 Definition: [implementation plan, D8R](implementation-plan.md#d8r--the-trade-detail-refactor), added by plan revision 104 (decision 115). D8R carries out the Trade Detail audit (`research/trade-detail-audit.html`, written 2026-11-14 from `ca839e70`). It removes the leftovers of the pre-cockpit page, moves misplaced parts to their views, gives every Trade with a Position a Today view, and names every contract in the broker style. It runs after D8 (`claude-opus-5.5-d8`, `be736f8b`) and before D9. It is drafted from `plan/D08R-drafting-handoff.md` on `claude-opus-5.5` at `6b11c8bc`.
 
-Status: **breakdown agreed by the user on 2026-11-17** (plan revision 104, decision 115). The six open questions in section 12, and question 5's follow-up, were answered on 2026-11-15, one at a time, and the breakdown was updated to match before it was agreed. The next plan decision is 116. Numbering continues from D8: P108 and A230. The approved words continue from D08P's W20.
+Status: **breakdown agreed by the user on 2026-11-17** (plan revision 104, decision 115). The six open questions in section 12, and question 5's follow-up, were answered on 2026-11-15, one at a time, and the breakdown was updated to match before it was agreed. Revision 105 (decision 116, 2026-11-17) adds P117 and the run rules that answer the questions the implementing session would otherwise ask (its handoff, section 5). The next plan decision is 117. Numbering continues from D8: P108 and A230. The approved words continue from D08P's W20.
 
 **In the trader's words.** Each part of Trade Detail shows each thing once, in the place you'd look for it:
 - **Today** becomes one Marks table (Today, Yesterday, Change) on every Trade that holds or held a Position, including Settlement Due and Closed ones.
@@ -32,6 +32,7 @@ The user has already decided (handoff section 4): D8R is a swarm; the whole audi
 | P114 | **The year in a contract name, on screen and for screen readers.** (Open question 5; **answered 2026-11-15, the user's rule, replacing the audit's "'27" and spoken-year words**.) | **The screen reader reads exactly what the screen shows; there is no hidden text.** A contract expiring in the current year has no year: "XYZ Dec 18 $55 Call". A contract expiring in a later year shows the full year: "XYZ Jan 15 2027 $55 Call". | The draft's options, all rejected: the year spoken only where the name stands alone; spoken everywhere through hidden text; or no year for screen readers. |
 | P115 | **Size check** (section 1.4; open question 6, **answered 2026-11-15: one breakdown**). | **One breakdown, with a checkpoint critic (T8R.25)** after the UI tasks and before the tail. | Split at the backend seam (section 1.4). Open question 6. |
 | P116 | **No figure disappears between merges.** | **A task that removes a figure is blocked by the task that gives it its new home** (section 4.1). T8R.9 removes Today's At entry, dated card and condition lines only after Plan and Risk and the rail show them. T8R.6 merges only after Price History shows the provenance it removes from Today. | Remove and add in one task: fewer edges, but one task then owns files in two lanes. |
+| P117 | **A contract from an earlier year** (plan revision 105, decision 116; answered 2026-11-17). P114 named the current year and a later year. | **Any year other than the current one shows in full**, earlier years included: "XYZ Dec 19 2025 $55 Call", and "Long 1 Dec 19 2025 $55 Call" on the Trade Summary line. This is what `summaryExpiration` already does for its two-digit year. T8R.3 gains one case for each. | No year for a past contract (ambiguous once two years' contracts share a month and day). |
 
 ### 1.2 Amendments to other plan sections (applied in revision 104)
 
@@ -144,7 +145,7 @@ Approved by the user during and after the audit (sections 15 and 19). Task brief
 | W25 | An expired option's Marks cell | "Expired", with the screen-reader name "Expired Fri Nov 20". |
 | W26 | Closed Today, second column heading | "Exit Fri Nov 13"; "Expired Fri Nov 20". |
 | W27 | Journal entry line | "Daily Review · Tue Nov 10, 4:12 pm", with "· written Thu Nov 12" when written later. |
-| W28 (amended 2026-11-15) | Contract names | "XYZ Dec 18 $55 Call" for a contract expiring in the current year; "XYZ Jan 15 2027 $55 Call" for a later year. Screen readers read the same text (P114). |
+| W28 (amended 2026-11-15) | Contract names | "XYZ Dec 18 $55 Call" for a contract expiring in the current year; "XYZ Jan 15 2027 $55 Call" for a later year, and "XYZ Dec 19 2025 $55 Call" for an earlier one (P117). Screen readers read the same text (P114). |
 | W29 | Today's column headings | "Today, Thu Oct 15", "Yesterday, Wed Oct 14", "Change"; on a weekend or holiday "Next session, Mon Oct 19". Rows "XYZ Mark", "Call Mark" (stock "XYZ Mark"). A cell without a Mark reads "—". |
 | W30 | Closed Today | The stamp "Closed". |
 | W31 | Plan and Risk, Conditions group | Heading "Conditions"; columns "Condition", "Distance", "Risk or reward", "Value at expiration". Cells "$2.20 away", "Risk to stop $220.00 · 1.10R", "Reward to target $180.00 · 0.90R", "$5.00". Beneath: Worst case, Max reward and the short notes in W6's words. When today's Mark is missing, the last Marks' figures labelled with their date, as W21. |
@@ -274,9 +275,11 @@ Seam: `instrumentLabel`, then each screen through its existing tests. W28, A238,
 describe("instrumentLabel (W28)")
   it should name a contract "NVDA Dec 18 $150 Call" in the current year
   it should show the full year for a contract expiring in a later year, "XYZ Jan 15 2027 $55 Call"
+  it should show the full year for a contract that expired in an earlier year, "XYZ Dec 19 2025 $55 Call" (P117)
   it should keep the strike's decimals as the Trade Summary does ("XYZ Dec 18 $52.50 Put")
 describe("Trade Summary line: the year rule (open question 5, follow-up)")
   it should show the full year for a later year, "Long 1 Jan 21 2028 $250 Call"
+  it should show the full year for an earlier year, "Long 1 Dec 19 2025 $55 Call" (P117)
 ```
 
 The Trade Summary case changes the one existing expectation, `src/ui/format.test.ts:51` ("Jan 21 '28"); no other test or spec asserts the "'28" form.

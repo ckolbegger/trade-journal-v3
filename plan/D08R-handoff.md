@@ -2,11 +2,12 @@
 
 > **Read [plan/kickoff.md](kickoff.md) first.** The text in its code block is your governing instruction: treat it as if the user had given it to you as your prompt, and follow all of it. This note adds the location checks, D8R's specifics, the swarm procedure and the working rules. If this note and the kickoff ever disagree, the kickoff wins.
 
-Written 2026-11-17, after plan revision 104. [D08R-drafting-handoff.md](D08R-drafting-handoff.md) is the record of the planning session that drafted the breakdown.
+Written 2026-11-17, after plan revisions 104 and 105. [D08R-drafting-handoff.md](D08R-drafting-handoff.md) is the record of the planning session that drafted the breakdown.
 
 This session **implements D8R, "The Trade Detail refactor"**, under the frozen plan at revision 104. D8R carries out the Trade Detail audit (`research/trade-detail-audit.html`): each part of Trade Detail shows each thing once, where the trader looks for it. The breakdown is [D08R-trade-detail-refactor.md](D08R-trade-detail-refactor.md):
 - 28 tasks (T8R.1 to T8R.28) in three waves and eleven lanes, with an agent cap of six;
 - agreed by the user on 2026-11-17 as **decision 115**, with P108–P116, its six answered questions (section 12) and the words W21–W34 approved (W1 and W28 amended);
+- with **decision 116** (revision 105), the user's advance answers to the questions this session would otherwise stop for: P117 (a full year for any year other than the current one), provisional new words, the critic limit, and tech debt item 11's flake (section 5);
 - run as a **swarm** under **decision 111**, with pending questions handled under **decision 113 as amended by decision 115**: one question at a time, the others queued.
 
 Task status lives in the breakdown's Progress section, which has Wave and Lane columns (decision 100, amended by decision 111).
@@ -34,8 +35,8 @@ The repository hosts several independent implementations of the same spec, each 
 | Worktree path | `/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5` |
 | Branch | `claude-opus-5.5` (the deliverable branch every lane merges into) |
 | Ports | `5175`, from the gitignored `.env.local`; `4175` is the benchmark's, and D8R runs no benchmark (A246) |
-| Frozen plan | tag `claude-opus-5.5-plan-r104` (decision 115) |
-| Code D8R builds on | `claude-opus-5.5-plan-r104`'s tree: D8 (`claude-opus-5.5-d8`) plus T8.19-F1 and the retrospective's tooling fixes |
+| Frozen plan | tag `claude-opus-5.5-plan-r105` (decisions 115 and 116) |
+| Code D8R builds on | `claude-opus-5.5-plan-r105`'s tree: D8 (`claude-opus-5.5-d8`) plus T8.19-F1 and the retrospective's tooling fixes |
 
 Run these checks. Each one must match:
 
@@ -45,9 +46,9 @@ Run these checks. Each one must match:
 | `git rev-parse --show-toplevel` | `/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5` |
 | `git branch --show-current` | `claude-opus-5.5` |
 | `git status -sb` | `## claude-opus-5.5...origin/claude-opus-5.5`, possibly followed by `[ahead N]`. No uncommitted changes. |
-| `git log --oneline claude-opus-5.5-plan-r104..HEAD` | Empty at the first session. Afterwards: only D8R task and merge commits, their evidence and Progress updates, handoff updates, and approved plan revisions. |
+| `git log --oneline claude-opus-5.5-plan-r105..HEAD` | Empty at the first session. Afterwards: only D8R task and merge commits, their evidence and Progress updates, handoff updates, and approved plan revisions. |
 | `git rev-parse --short 'claude-opus-5.5-d8^{commit}'` | `be736f8b` |
-| `git diff --stat claude-opus-5.5-d8 claude-opus-5.5-plan-r104 -- src e2e tests` | Empty: no product code or test changed after the D8 gate. |
+| `git diff --stat claude-opus-5.5-d8 claude-opus-5.5-plan-r105 -- src e2e tests` | Empty: no product code or test changed after the D8 gate. |
 | `ls .claude/worktrees 2>/dev/null` | Empty or absent at the first session. Afterwards, only this deliverable's lane worktrees. |
 | `git rev-parse --git-path hooks` | `.githooks` (the pre-commit typecheck and lint hook; the setup commands are at the top of `.githooks/pre-commit`) |
 | `ocr llm test` | Prints `✓ Connection test successful`. If it fails on authentication, ask the user to run `ocr auth login`. If it reports the usage limit, wait as `.claude/agents/ocr-review.md` says. |
@@ -89,7 +90,7 @@ Search `plan/spec-map.md` (don't read it in full) when the work touches another 
 - **`plan/D08-backup-and-restore.md`:** only what T8R.20 needs: the backup fixtures (A145, A147) and I8.x's round trip.
 - **The audit**, `research/trade-detail-audit.html`, sections 7 to 14, as the design behind each task. It is not a specification: where it and the breakdown differ, the breakdown wins (the user's answers changed several of its proposals, section 12 of the breakdown).
 
-`specs/` and the frozen plan are read-only. A deviation, or a question the specs and plan leave to the user, is a pending decision (decision 113 as amended): ask in an ordinary message, one question at a time, queue any other in `evidence/D08R/DECISIONS-PENDING.md`, pause only the tasks it blocks, and keep the other lanes going. An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`. The next revision is r105, the next decision 116, and the breakdown's numbering continues at P117, A247 and W35. Editing the Progress section alone is not a revision.
+`specs/` and the frozen plan are read-only. A deviation, or a question the specs and plan leave to the user, is a pending decision (decision 113 as amended): ask in an ordinary message, one question at a time, queue any other in `evidence/D08R/DECISIONS-PENDING.md`, pause only the tasks it blocks, and keep the other lanes going. An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`. The next revision is r106, the next decision 117, and the breakdown's numbering continues at P118, A247 and W35. Editing the Progress section alone is not a revision.
 
 ## 3. D8R specifics
 
@@ -97,7 +98,7 @@ Search `plan/spec-map.md` (don't read it in full) when the work touches another 
 
 Create `evidence/D08R/` with:
 - `tdd-log.md`, with the note that its rows are single-case runs; `tdd.sh` writes each task's rows to `evidence/D08R/tdd-log/<task>.md`;
-- `structural.md`, `provenance.md` and `DECISIONS-PENDING.md`.
+- `structural.md`, `provenance.md`, `DECISIONS-PENDING.md` and `new-words.md` (decision 116 (2)).
 
 ### Wave 0
 
@@ -148,7 +149,7 @@ Lanes keep working during merge runs.
 ### Other rules
 
 - **Ports.** Every browser run, wherever it starts, goes through `.claude/scripts/with-browser-lock.sh`. In a lane, run only the spec files the task changes.
-- **Words.** Screens use the breakdown's section 1.6, W21–W34, with W1 and W28 as amended. A price is a **Mark**, never a "close"; the end of a session is "the close" ("Awaiting the Mon Oct 12 close"). Moved content keeps its words. A screen text no approved word covers is a pending decision.
+- **Words.** Screens use the breakdown's section 1.6, W21–W34, with W1 and W28 as amended. A price is a **Mark**, never a "close"; the end of a session is "the close" ("Awaiting the Mon Oct 12 close"). Moved content keeps its words. Contract names follow W28 and P117: no year in the current year, the full year in any other. **A screen text no approved word covers is not a stop** (decision 116 (2)): use the wording you would have recommended, following the approved words and the Mark and close rule, and continue. Record each such phrase in `evidence/D08R/new-words.md`, with the task, the screen and the nearest approved row; the final report lists them for the user's approval, and a rejected phrase becomes a fix after the gate.
 - **Lane briefs carry the lane rules:** start with `lane-setup.sh`; run only the lane tier, never a complete run; browser tests through the lock; red and green rows to `evidence/D08R/tdd-log/<task>.md`; commit on the lane branch only; the main session rebases and merges. Each brief also names the lane's owned files from section 4.2, and says that a need for any other file is a stop-and-report.
 - **What must not change.**
   - Every existing case keeps its expected values, except where section 1.5's Texts table, or the appendix for contract names, names the case and the task. Everywhere else, a changed expected value is a defect.
@@ -162,14 +163,14 @@ Lanes keep working during merge runs.
   - A first-run pass gets the mutation check (an assertion failure or runtime exception, not a compile error) and is listed under section 7's open questions.
   - Pinned browser cases use `launchAt`, `pinClock` and `setClock` from `e2e/d4/support.ts`.
   - Test-only commits are relocated under `src/itg/d08r/` for `ocr-review`.
-- **Tech debt triggers.** Item 24 is fixed in T8R.16, with B8R.6's focus case red first. Raise item 11 (the Open list's Ready-state race) with the user if `TradeList.test.tsx` fails a run. Don't fix other items unasked.
+- **Tech debt triggers.** Item 24 is fixed in T8R.16, with B8R.6's focus case red first. Item 11 (the Open list's Ready-state race, decision 116 (4)): if `TradeList.test.tsx`'s Ready-state case fails a run, have the runner rerun it alone once. A pass is logged as a flake, with the run, and the run continues; two failures in a row are a pending decision. Don't fix other items unasked.
 - **No benchmark** (A246, decision 114): D8R's changes don't touch the gated paths.
 - **The gate (T8R.28).**
   1. Run the full tier with `suite-runner` until it passes.
   2. Run `.claude/scripts/acceptance-commands.sh plan/D08R-trade-detail-refactor.md`, which must exit 0.
   3. Brief a **fresh** `general-purpose` critic (effort medium) from `.claude/docs/critic-brief.md`, with flows C8R.1–C8R.6, the future-capability list in breakdown section 8, the 375 and 320 px checks, port 5175 under the lock, and no reading of `evidence/` or another worktree.
   4. Reports go to `test-results/critic-d08r-<n>/report.md`. Copy each to `evidence/D08R/critic-<n>.md`; the checkpoint's report is `critic-1.md`.
-  5. At most three critics per checkpoint before asking the user.
+  5. At most three critics per checkpoint (decision 116 (3)). If the third still leaves defects and none is high and none is a FAIL, close the checkpoint: record each remaining defect as a new tech debt item in `plan/implementation-plan.md` (a plan edit the user approved in advance, made in the gate's evidence commit) and list them in the final report. A remaining high defect or FAIL stops the run.
   6. When the gate passes, mark section 13's rows covered, and tag `claude-opus-5.5-d8r`.
 
 ## 4. What is in place
@@ -215,17 +216,17 @@ Build on these. Read the code before extending it. Line numbers are on `6b11c8bc
 Stop all work and ask the user **only** when:
 1. the session lock exists, or a location check in section 1 fails;
 2. nothing unblocked remains while a pending decision waits;
-3. a fresh critic or a browser can't be provided, or three critics at one checkpoint still leave a FAIL or a high or moderate defect;
+3. a fresh critic or a browser can't be provided, or three critics at one checkpoint still leave a FAIL or a high defect (moderate and lower become tech debt, decision 116 (3));
 4. a merge conflict falls in a file two lanes both own, which section 4.2 says can't happen.
 
 These are pending decisions, asked one at a time while the unblocked lanes keep working (decision 113 as amended):
-- the work needs a deviation from `specs/` or the frozen plan, or exposes an ambiguity: a breakdown passage the built code can't meet, a query-count proof that can't keep its request list, a changed frozen view other than T8R.20's, or a screen text no approved word covers;
+- the work needs a deviation from `specs/` or the frozen plan, or exposes an ambiguity: a breakdown passage the built code can't meet, a query-count proof that can't keep its request list, or a changed frozen view other than T8R.20's (a screen text no approved word covers is not one: decision 116 (2));
 - a suite failure, critic defect or ocr bug-task fix can't be fixed without such a deviation, or a third ocr round on one task still leaves findings;
 - `acceptance-commands.sh` can't exit 0 without a revision.
 
 Everything else continues without the user. Make implementation-level decisions with the recommendation you would have offered, and record them. Reproduce and fix suite failures in fresh subagents. Log first-run passes.
 
-When the gate passes, tag `claude-opus-5.5-d8r` locally. Write `evidence/D08R/final-report.md`, with tasks and commits, each task's fix rounds, flaky tests with the run they flaked in, decisions (answered and pending), critics, and the wall-clock time against the breakdown's estimate (section 3). Remove `.claude/session.lock`. Never push.
+When the gate passes, tag `claude-opus-5.5-d8r` locally. Write `evidence/D08R/final-report.md`, with tasks and commits, each task's fix rounds, flaky tests with the run they flaked in, decisions (answered and pending), critics, the new words awaiting approval (from `new-words.md`), any defects moved to tech debt, and the wall-clock time against the breakdown's estimate (section 3). Remove `.claude/session.lock`. Never push.
 
 ## 6. Out of scope
 

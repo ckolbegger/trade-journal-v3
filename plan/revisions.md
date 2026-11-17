@@ -2,6 +2,13 @@
 
 Every revision of the frozen plan, newest first, one entry each. Each revision is a commit tagged `claude-opus-5.5-plan-r<n>`. The freeze record in `implementation-plan.md` ("Immutable revision") names only the current revision. A new revision adds its entry at the top of this list and replaces the freeze record's entry. Edits to a breakdown's Progress section alone are not revisions (decision 100).
 
+- Revision 105: the commit tagged `claude-opus-5.5-plan-r105` (revision 104 plus decision 116), 2026-11-17. The user answered, all as recommended, four questions D8R's session would otherwise stop for:
+  - a contract name shows the full year for any year other than the current one, an earlier year included (P117; two cases added to T8R.3; W28 and the D7 approved words' note amended);
+  - words no approved row covers are used provisionally, listed in `evidence/D08R/new-words.md` and approved after the gate;
+  - moderate or lower defects left after three critics become tech debt; a high defect or a FAIL still stops;
+  - tech debt item 11's flaky case is rerun once, and stops only on a second failure.
+
+  No spec, acceptance scenario, stored data or fixture changes. The next decision is 117.
 - Revision 104: the commit tagged `claude-opus-5.5-plan-r104` (revision 103 plus decision 115). The user agreed D8R's breakdown on 2026-11-17, after answering its six questions one at a time on 2026-11-15.
   - **Decision 115:** D8R, the Trade Detail refactor, runs after D8 and before D9, from [D08R-trade-detail-refactor.md](D08R-trade-detail-refactor.md): 28 tasks in three waves and eleven lanes, an agent cap of six, one breakdown with a checkpoint critic.
   - **The answers:**
