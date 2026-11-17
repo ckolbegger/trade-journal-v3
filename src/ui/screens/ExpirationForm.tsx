@@ -152,7 +152,7 @@ export function ExpirationForm({ facade, timeZone, onDirtyChange }: ExpirationFo
         <PageTitle id="expiration-heading">Expiration</PageTitle>
         <dl>
           <dt>Contract</dt>
-          <dd>{instrumentLabel(item.instrument)}</dd>
+          <dd>{instrumentLabel(item.instrument, timeZone)}</dd>
           <dt>Quantity</dt>
           <dd>{heldWords(item.quantity)}</dd>
           <dt>Settlement time</dt>

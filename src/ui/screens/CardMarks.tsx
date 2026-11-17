@@ -151,9 +151,10 @@ function KeyRow({ panel, instrumentKey, instrument, tradingDate, resolution, res
 function TodayRow({ panel, row, cardTradeId, tradeLine }: { readonly panel: Panel; readonly row: MarkRow; readonly cardTradeId: string; readonly tradeLine: (tradeId: string) => string }) {
   // A shared Instrument names the other Trades that hold it, by their summary line (A153, decision 67).
   const others = row.trades.filter((tradeId) => tradeId !== cardTradeId);
+  const { timeZone } = useRuntime();
   return (
     <li>
-      <h4>{instrumentLabel(row.instrument)}</h4>
+      <h4>{instrumentLabel(row.instrument, timeZone)}</h4>
       {others.length > 0 && (
         <p>
           also held by{' '}
@@ -205,12 +206,13 @@ function GapList({ panel: shared, group }: { readonly panel: Panel; readonly gro
   const panel = { ...shared, onEntryDirty };
   const blocked = dirtyIds.size > 0 || Object.entries(shared.drafts).some(([id, draft]) => id.startsWith(`${group.instrumentKey}:`) && isDraft(draft));
   const holdId = useId();
+  const { timeZone } = useRuntime();
   const sessions = sessionsOf(group);
   const first = page * GAPS_PER_PAGE;
   const shown = sessions.slice(first, first + GAPS_PER_PAGE);
   return (
-    <section aria-label={`${instrumentLabel(group.instrument)} earlier sessions`}>
-      <h4>{instrumentLabel(group.instrument)}</h4>
+    <section aria-label={`${instrumentLabel(group.instrument, timeZone)} earlier sessions`}>
+      <h4>{instrumentLabel(group.instrument, timeZone)}</h4>
       <ul className="review-rows">
         {shown.map((date) => (
           <li key={date}>

@@ -68,10 +68,10 @@ function blockerText(reason: IncompleteReason, review: Ready, name: (tradeId: st
     return parts.map((part, i) =>
       part.kind === 'instrument' && tradeId !== undefined ? (
         <CardLink key={i} tradeId={tradeId} open={open} panel="Marks" instrument={instrumentKey(part.instrument)}>
-          {text([part])}
+          {text([part], timeZone)}
         </CardLink>
       ) : (
-        <Fragment key={i}>{text([part])}</Fragment>
+        <Fragment key={i}>{text([part], timeZone)}</Fragment>
       ),
     );
   }
@@ -81,10 +81,10 @@ function blockerText(reason: IncompleteReason, review: Ready, name: (tradeId: st
     return parts.map((part, i) =>
       part.kind === 'instrument' ? (
         <CardLink key={i} tradeId={reason.tradeId} open={open} panel="Settlement">
-          {text([part])}
+          {text([part], timeZone)}
         </CardLink>
       ) : (
-        <Fragment key={i}>{text([part])}</Fragment>
+        <Fragment key={i}>{text([part], timeZone)}</Fragment>
       ),
     );
   }
@@ -114,7 +114,7 @@ function blockerText(reason: IncompleteReason, review: Ready, name: (tradeId: st
       // The Trade links to its Detail, where each finding is listed; the sentence is the module's.
       return (
         <>
-          <Link to={`/trades/${reason.tradeId}`}>{name(reason.tradeId)}</Link>: {text(unavailableWords({ reason: 'FactsIncoherent', findings: reason.findings }, 'sentence', timeZone))}
+          <Link to={`/trades/${reason.tradeId}`}>{name(reason.tradeId)}</Link>: {text(unavailableWords({ reason: 'FactsIncoherent', findings: reason.findings }, 'sentence', timeZone), timeZone)}
         </>
       );
   }
@@ -160,7 +160,7 @@ function Status({ review, completion, name, openCard }: { readonly review: Ready
       </p>
       {completion.kind === 'CompleteWithUnavailableMarks' && (
         <div role="group" aria-label="Unavailable Marks">
-          <p>Instruments: {completion.instruments.map(instrumentLabel).join(', ')}</p>
+          <p>Instruments: {completion.instruments.map((instrument) => instrumentLabel(instrument, timeZone)).join(', ')}</p>
           <p>Trades: {completion.trades.map(name).join(', ')}</p>
           <p>Not calculated: {completion.families.map((family) => FAMILY_TEXT[family]).join(', ')}</p>
         </div>

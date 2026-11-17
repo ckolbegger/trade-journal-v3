@@ -3,7 +3,8 @@ import type { DailyTradeReview } from '../../app/types.ts';
 import { instrumentLabel } from '../calculation-words.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { decimalMoney, decimalUnderlyingPrice, money, ratio, shortDate } from '../format.ts';
-import { calculation, dollarsAndR, pnlText } from '../figures.ts';
+import { useRuntime } from '../runtime.tsx';
+import { calculation,dollarsAndR, pnlText } from '../figures.ts';
 import { conditionDirection } from './option-words.ts';
 import { payoffSummary, valueAtCloseTerm, valueAtCloseText } from './payoff-text.ts';
 
@@ -65,6 +66,7 @@ function Conditions({ trade, evaluation }: { readonly trade: DailyTradeReview; r
 // then the dated last close (D4 P12, P13) and the at-entry lots, each in its own group. A figure that is not a Value reads in words.
 export function CardFigures({ trade }: CardFiguresProps) {
   const uid = useId();
+  const { timeZone } = useRuntime();
   const { evaluation, datedLastClose } = trade;
   const mark = evaluation?.observation.mark;
   const atClose = evaluation?.expirationValueAtUnderlyingClose;
@@ -74,7 +76,7 @@ export function CardFigures({ trade }: CardFiguresProps) {
         <>
           {mark && (
             <p>
-              Mark {decimalMoney(mark.price)} for {instrumentLabel(evaluation.observation.instrument)}, {shortDate(evaluation.observation.tradingDate)}
+              Mark {decimalMoney(mark.price)} for {instrumentLabel(evaluation.observation.instrument, timeZone)}, {shortDate(evaluation.observation.tradingDate)}
             </p>
           )}
           <Figures evaluation={evaluation}>

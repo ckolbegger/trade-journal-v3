@@ -45,7 +45,7 @@ const FITS: Record<'Enter' | 'Correct' | 'Acknowledge', readonly MarkResolution[
 
 // One Instrument's Mark for one session: its resolution and the actions that change it.
 export function MarkEntry({ facade, instrumentKey, instrument, tradingDate, resolution: initial, resolutionRevision: initialRevision, withdraw = true, onDirtyChange, onSaved, offerEntry = true, children }: MarkEntryProps) {
-  const { writable, report } = useRuntime();
+  const { writable, report, timeZone } = useRuntime();
   const [resolution, setResolution] = useState(initial);
   const [revision, setRevision] = useState(initialRevision);
   // A refreshed Review hands this key a newer resolution with a newer revision; entered values and the open form stay.
@@ -152,7 +152,7 @@ export function MarkEntry({ facade, instrumentKey, instrument, tradingDate, reso
   };
 
   return (
-    <section aria-label={`${instrumentLabel(instrument)} Mark, ${shortDate(tradingDate)}`} data-instrument-key={instrumentKey}>
+    <section aria-label={`${instrumentLabel(instrument, timeZone)} Mark, ${shortDate(tradingDate)}`} data-instrument-key={instrumentKey}>
       {resolution.kind === 'Available' && (
         <p>
           <span className="number">{decimalMoney(resolution.mark.price)}</span> · {resolution.mark.source}

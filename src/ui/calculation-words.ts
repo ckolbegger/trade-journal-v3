@@ -13,23 +13,23 @@ export type Part =
 export type Parts = readonly Part[];
 
 // The only code that names an Instrument in text.
-export const instrumentLabel = (instrument: Instrument): string =>
+export const instrumentLabel = (instrument: Instrument, timeZone?: string): string =>
   instrument.kind === 'Option'
-    ? `${instrument.symbol} ${summaryExpiration(instrument.expiration, undefined)} ${summaryStrike(instrument.strike)} ${instrument.right}`
+    ? `${instrument.symbol} ${summaryExpiration(instrument.expiration, timeZone)} ${summaryStrike(instrument.strike)} ${instrument.right}`
     : instrument.symbol;
-const partText = (part: Part): string => {
+const partText = (part: Part, timeZone?: string): string => {
   switch (part.kind) {
     case 'text':
       return part.text;
     case 'instrument':
-      return instrumentLabel(part.instrument);
+      return instrumentLabel(part.instrument, timeZone);
     case 'date':
       return shortDate(part.date);
     default:
       return part satisfies never;
   }
 };
-export const text = (parts: Parts): string => parts.map(partText).join('');
+export const text = (parts: Parts, timeZone?: string): string => parts.map((part) => partText(part, timeZone)).join('');
 
 const t = (value: string): Part => ({ kind: 'text', text: value });
 const instrumentPart = (instrument: Instrument): Part => ({ kind: 'instrument', instrument });

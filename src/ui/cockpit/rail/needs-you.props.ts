@@ -54,7 +54,7 @@ function markMissingItems(view: OpenTradeDetail, timeZone: string): NeedsYouItem
   const { evaluation, markResolution, firstMarksDue } = view.current;
   if (markResolution?.kind !== 'Missing' || firstMarksDue !== undefined) return [];
   const { instrument } = evaluation.observation;
-  const sentence = text(unavailableWords({ reason: 'MarkMissing', instrument, date: evaluation.valuationDate }, 'sentence', timeZone));
+  const sentence = text(unavailableWords({ reason: 'MarkMissing', instrument, date: evaluation.valuationDate }, 'sentence', timeZone), timeZone);
   return [{ kind: 'MarkMissing', id: 'mark-missing', text: sentence, reviewTo: `/review?trade=${encodeURIComponent(view.tradeId)}&instrument=${encodeURIComponent(instrument.symbol)}` }];
 }
 
@@ -79,7 +79,7 @@ function settlementItems(view: OpenTradeDetail, options: NeedsYouOptions): Needs
       // The calculation-words module owns the words "Settlement Due" (conflict K4).
       heading: unavailableLabel({ reason: 'SettlementDue', instrument: first.instrument, expiration: first.expiration }),
       rows: settlement.flatMap((item) => [
-        { label: 'Contract', value: instrumentLabel(item.instrument) },
+        { label: 'Contract', value: instrumentLabel(item.instrument, options.timeZone) },
         { label: 'Quantity', value: `${short(item) ? 'Short' : 'Long'} ${contractCount(quantity(abs(item.quantity)))}` },
         { label: 'Expired', value: shortDate(item.expiration) },
         { label: 'Settlement time', value: calculation(item.settlementTime, (instant) => settlementTime(instant, options.timeZone)) },

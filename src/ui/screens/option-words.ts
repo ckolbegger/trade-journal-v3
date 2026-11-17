@@ -16,8 +16,8 @@ export const signedContracts = (open: Rational): string => {
 };
 
 // A holding or leg: direction first, then count, then the contract (C2).
-export const holdingText = (side: 'Long' | 'Short', amount: string | number, instrument: OptionInstrument): string =>
-  `${side} ${contractCount(amount)} of ${instrumentLabel(instrument)}`;
+export const holdingText = (side: 'Long' | 'Short', amount: string | number, instrument: OptionInstrument, timeZone?: string): string =>
+  `${side} ${contractCount(amount)} of ${instrumentLabel(instrument, timeZone)}`;
 
 // A Long Call and a Cash-Secured Put gain as the Underlying rises; a Long Put as it falls.
 export const isBullish = (role: { readonly right: 'Call' | 'Put'; readonly side: 'Long' | 'Short' }): boolean => (role.right === 'Call') === (role.side === 'Long');

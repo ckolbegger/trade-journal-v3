@@ -32,7 +32,7 @@ function conditionLines(role: 'Stop' | 'Target', conditions: readonly Condition[
 function planGroup(view: TradeDetailView, timeZone: string): PlanRiskGroup {
   const leg = view.plan.legs[0];
   const rows: PlanRiskRow[] = [];
-  if (leg?.instrument.kind === 'Option') rows.push({ label: 'Contract', value: instrumentLabel(leg.instrument), plain: true });
+  if (leg?.instrument.kind === 'Option') rows.push({ label: 'Contract', value: instrumentLabel(leg.instrument, timeZone), plain: true });
   rows.push({ label: 'Leg', value: leg ? legText(leg) : '', plain: true });
   if (view.plan.exerciseIntent) rows.push({ label: 'Exercise Intent', value: exerciseIntentText(view.plan.exerciseIntent), plain: true });
   rows.push(

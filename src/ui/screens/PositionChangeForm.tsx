@@ -453,7 +453,7 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
                 ? view.positions
                     .map((p) =>
                       p.instrument.kind === 'Option'
-                        ? `${p.quantity.compare(Rational.of(0n)) < 0 ? 'Short' : 'Long'} ${plural(Number(unsigned(p.quantity).numerator), 'contract', 'contracts')} of ${instrumentLabel(p.instrument)}`
+                        ? `${p.quantity.compare(Rational.of(0n)) < 0 ? 'Short' : 'Long'} ${plural(Number(unsigned(p.quantity).numerator), 'contract', 'contracts')} of ${instrumentLabel(p.instrument, timeZone)}`
                         : `${quantity(p.quantity)} shares of ${p.instrument.symbol}`,
                     )
                     .join(', ')
@@ -468,13 +468,13 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
         <h2 id="entry-terms-heading">{exit ? 'Exit' : 'Entry'}</h2>
         <dl>
           <dt>{option ? 'Contract' : 'Symbol'}</dt>
-          <dd>{option ? instrumentLabel(option) : leg.instrument.symbol}</dd>
+          <dd>{option ? instrumentLabel(option, timeZone) :leg.instrument.symbol}</dd>
           <dt>Action</dt>
           <dd>{actionWords}</dd>
           <dt>Planned Leg</dt>
           <dd>
             {option
-              ? `${leg.side} ${plural(Number(leg.quantity.replace('-', '')), 'contract', 'contracts')} of ${instrumentLabel(option)}`
+              ? `${leg.side} ${plural(Number(leg.quantity.replace('-', '')), 'contract', 'contracts')} of ${instrumentLabel(option, timeZone)}`
               : `${leg.side} ${leg.quantity} shares of ${leg.instrument.symbol}`}
           </dd>
         </dl>

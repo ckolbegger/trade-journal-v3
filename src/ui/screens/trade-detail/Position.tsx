@@ -58,7 +58,7 @@ function ExecutionRow({
   const time = localTime(e.economicTime, timeZone);
   const group = change.executions.length > 1;
   // An option is named by its label and its role's action (C5, C6); a stock Execution reads as it always has.
-  const what = executionWhat(e, legs);
+  const what = executionWhat(e, legs, timeZone);
   return (
     <li data-group={group ? change.factId : undefined}>
       <button
@@ -87,7 +87,7 @@ function ExecutionRow({
         <div id={`execution-details-${e.factId}`} className="execution-details">
           <dl>
             <dt>Instrument</dt>
-            <dd>{instrumentLabel(e.instrument)}</dd>
+            <dd>{instrumentLabel(e.instrument, timeZone)}</dd>
             <dt>Economic Time</dt>
             <dd>{time}</dd>
             <dt>Fee</dt>
@@ -151,7 +151,7 @@ function SettlementRow({ settlement: s, change, timeZone }: { readonly settlemen
         onClick={() => setExpanded(!expanded)}
       >
         <span id={`settlement-summary-${s.factId}`} className="execution-summary">
-          <span className="execution-what">{`Expiration of ${s.quantity} ${instrumentLabel(s.instrument)}`}</span> <span className="nowrap">{time}</span>
+          <span className="execution-what">{`Expiration of ${s.quantity} ${instrumentLabel(s.instrument, timeZone)}`}</span> <span className="nowrap">{time}</span>
         </span>
         <span id={`settlement-hint-${s.factId}`} className="visually-hidden">
           details
@@ -162,7 +162,7 @@ function SettlementRow({ settlement: s, change, timeZone }: { readonly settlemen
         <div id={`settlement-details-${s.factId}`} className="execution-details">
           <dl>
             <dt>Instrument</dt>
-            <dd>{instrumentLabel(s.instrument)}</dd>
+            <dd>{instrumentLabel(s.instrument, timeZone)}</dd>
             <dt>Settlement time</dt>
             <dd>{time}</dd>
             <dt>Position Change</dt>

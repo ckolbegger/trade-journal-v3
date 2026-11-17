@@ -43,11 +43,11 @@ export function SettlementPanel({ tradeId, items, timeZone }: SettlementPanelPro
       {items.map((item) => {
         const note = notASession(item);
         return (
-          <div key={`${instrumentLabel(item.instrument)}`}>
+          <div key={`${instrumentLabel(item.instrument, timeZone)}`}>
             <dl>
               <div>
                 <dt>Contract</dt>
-                <dd>{instrumentLabel(item.instrument)}</dd>
+                <dd>{instrumentLabel(item.instrument, timeZone)}</dd>
               </div>
               <div>
                 <dt>Quantity</dt>
