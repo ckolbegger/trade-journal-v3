@@ -13,6 +13,7 @@ import { plannedDetail } from '../../../../tests/support/views-fixtures.ts';
 import type { TradeDetailDebt } from '../../../app/types.ts';
 import { RuntimeContext } from '../../runtime.tsx';
 import { TradeDetail } from '../TradeDetail.tsx';
+import { Cockpit, useDrawerRequest, type Drawer as DrawerName } from './Cockpit.tsx';
 import { openDrawer, renderView, useFixedClock } from './test-support.ts';
 
 afterEach(cleanup);
@@ -79,27 +80,72 @@ describe('Trade Detail cockpit (W1, A217)', () => {
 
   describe('Closed and Settlement Due', () => {
     useFixedClock();
-    it('should leave out Today on a Closed or Settlement Due Detail, and select Position', async () => {
-      renderView(closedDetailOf([PC1, PC2, X1, X2]));
-      await screen.findByRole('region', { name: 'State of play' });
-      expect(tabNames()).not.toContain('Today');
-      expect(tabNames()[0]).toBe('Position');
-      expect(selectedTab()).toBe('Position');
-      // The Result is the rail's P&L card, not a Position drawer region (W4); the drawer opens on its Lot Matches.
-      expect(within(screen.getByRole('region', { name: 'Trade P&L' })).getByText('Terminal Disposition', { selector: 'dt' })).toBeTruthy();
-      expect(within(screen.getByRole('tabpanel', { name: 'Position' })).getByRole('region', { name: 'Lot Matches' })).toBeTruthy();
-      cleanup();
+    // A Settlement Due Detail: Friday 2026-11-20 after the close, the expiration date (W1, amended).
+    const settlementDue = () => optionOpenDetail('O-S', [OS_S1], FRIDAY);
 
-      // The Valuation and Risk and reward legacy blocks are retired (T8P.22), so the default drawer holds the Position.
-      renderView(optionOpenDetail('O-S', [OS_S1], FRIDAY));
+    it('should show Today first and select it on a Settlement Due Detail', async () => {
+      renderView(settlementDue());
       await screen.findByRole('region', { name: 'State of play' });
-      expect(tabNames()).not.toContain('Today');
-      expect(selectedTab()).toBe('Position');
-      const panel = screen.getByRole('tabpanel', { name: 'Position' });
+      expect(tabNames()).toEqual(['Today', 'Position', 'Plan and Risk', 'Price History', 'Journal', 'Payoff']);
+      expect(selectedTab()).toBe('Today');
+      expect(screen.getByRole('tabpanel', { name: 'Today' })).toBeTruthy();
+      // The Position drawer is still mounted, hidden, with its content; the legacy blocks stay retired (T8P.22).
+      const panel = document.getElementById('drawer-panel-position')!;
+      expect(panel.hidden).toBe(true);
+      expect(within(panel).getByRole('region', { name: 'Position', hidden: true })).toBeTruthy();
       for (const name of ['Valuation', 'Risk and reward']) expect(screen.queryAllByRole('region', { name, hidden: true }), name).toEqual([]);
-      expect(within(panel).getByRole('region', { name: 'Position' })).toBeTruthy();
       // The Settlement Due panel stands in the rail.
       expect(within(screen.getByRole('region', { name: 'State of play' })).getByRole('region', { name: 'Settlement Due' })).toBeTruthy();
+    });
+
+    it('should show Today first and select it on a Closed Detail', async () => {
+      renderView(closedDetailOf([PC1, PC2, X1, X2]));
+      await screen.findByRole('region', { name: 'State of play' });
+      expect(tabNames()).toEqual(['Today', 'Position', 'Plan and Risk', 'Price History', 'Journal', 'Payoff']);
+      expect(selectedTab()).toBe('Today');
+      expect(screen.getByRole('tabpanel', { name: 'Today' })).toBeTruthy();
+      // The Result is the rail's P&L card (W4), and the Position drawer keeps its Lot Matches.
+      expect(within(screen.getByRole('region', { name: 'Trade P&L' })).getByText('Terminal Disposition', { selector: 'dt' })).toBeTruthy();
+      const position = document.getElementById('drawer-panel-position')!;
+      expect(within(position).getByRole('region', { name: 'Lot Matches', hidden: true })).toBeTruthy();
+    });
+
+    it('should show the Settlement Due current Marks in Today, not in Position', async () => {
+      renderView(settlementDue());
+      await screen.findByRole('region', { name: 'State of play' });
+      const card = document.getElementById('drawer-panel-today')!.querySelector<HTMLElement>('section.current-marks');
+      expect(card).not.toBeNull();
+      expect(within(card!).getByText('$0.80')).toBeTruthy();
+      // Absence, hidden panels included (T8P.30): the Position panel holds no current Marks card.
+      expect(document.getElementById('drawer-panel-position')!.querySelector('.current-marks')).toBeNull();
+    });
+  });
+
+  describe('a drawer request (T8R.17 asks for Plan and Risk and its Deviations heading)', () => {
+    // A probe inside the cockpit stands in for that button.
+    const Probe = ({ drawer, heading }: { readonly drawer: DrawerName; readonly heading: string }) => {
+      const request = useDrawerRequest();
+      return (
+        <button type="button" onClick={() => request(drawer, heading)}>
+          Ask
+        </button>
+      );
+    };
+
+    it('should select a requested drawer and move focus to the requested heading in it', async () => {
+      const user = userEvent.setup();
+      render(
+        <MemoryRouter>
+          <Cockpit facade={facadeDouble()} view={openDetailOf([PC1, PC2])} replay={{ kind: 'None' }} timeZone="America/New_York">
+            <Probe drawer="Plan and Risk" heading="Plan Baseline" />
+          </Cockpit>
+        </MemoryRouter>,
+      );
+      expect(selectedTab()).toBe('Today');
+      await user.click(screen.getByRole('button', { name: 'Ask' }));
+      expect(selectedTab()).toBe('Plan and Risk');
+      const heading = within(screen.getByRole('tabpanel', { name: 'Plan and Risk' })).getByRole('heading', { name: 'Plan Baseline' });
+      await waitFor(() => expect(document.activeElement).toBe(heading));
     });
   });
 

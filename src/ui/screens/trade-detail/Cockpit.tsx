@@ -1,4 +1,4 @@
-import { useState, type KeyboardEvent, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, type KeyboardEvent, type ReactNode } from 'react';
 import type { UiFacade } from '../../../app/compose.ts';
 import type { TradeDetailView, TradeReplayView } from '../../../app/types.ts';
 import { ConditionsCard } from '../../cockpit/rail/conditions.tsx';
@@ -20,13 +20,18 @@ import { IncoherentPanel, IntegrityPanel } from './Banner.tsx';
 // The cockpit shell (D08P T8P.5, A217, W1): the full-width banner, the rail beside the drawers, and the footer. A wave-1 lane replaces the
 // content behind a `src/ui/cockpit/` path and never edits this file. The selected drawer is component state, not the URL.
 const DRAWERS = ['Today', 'Position', 'Plan and Risk', 'Price History', 'Journal', 'Payoff'] as const;
-type Drawer = (typeof DRAWERS)[number];
+export type Drawer = (typeof DRAWERS)[number];
+
+// A drawer request from inside the cockpit (A240): select a drawer by its W1 name, then move focus to the heading in it whose text is `heading`.
+// The selected drawer is component state, so the address does not change.
+export type DrawerRequest = (drawer: Drawer, heading: string) => void;
+const DrawerRequestContext = createContext<DrawerRequest>(() => undefined);
+export const useDrawerRequest = (): DrawerRequest => useContext(DrawerRequestContext);
 
 // The drawers a state shows, and the one it selects by default (A217).
 function drawersOf(view: TradeDetailView): { readonly shown: readonly Drawer[]; readonly initial: Drawer } {
   if ('recordedPositionChanges' in view) return { shown: ['Position', 'Plan and Risk', 'Journal'], initial: 'Position' };
   if (!('positionChanges' in view)) return { shown: ['Plan and Risk', 'Journal', 'Payoff'], initial: 'Plan and Risk' };
-  if ('terminalDisposition' in view || view.settlement.length > 0) return { shown: ['Position', 'Plan and Risk', 'Price History', 'Journal', 'Payoff'], initial: 'Position' };
   return { shown: DRAWERS, initial: 'Today' };
 }
 
@@ -36,6 +41,8 @@ export interface CockpitProps {
   readonly replay: ReplayRead;
   readonly timeZone: string;
   readonly onDirtyChange?: (dirty: boolean) => void;
+  // Content placed inside the drawer request's reach, for a test's probe.
+  readonly children?: ReactNode;
 }
 
 // What the screen holds of the replay: none (a Planned or incoherent Detail, or a replay that could not be read, so the cockpit shows what the
@@ -45,7 +52,7 @@ export type ReplayRead = { readonly kind: 'None' } | { readonly kind: 'Pending' 
 // The words a drawer shows while its content is still being read (W20): the Detail's own.
 const Loading = () => <p role="status">Loading the Trade…</p>;
 
-export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange }: CockpitProps) {
+export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange, children }: CockpitProps) {
   const replay = read.kind === 'Ready' ? read.replay : undefined;
   const pending = read.kind === 'Pending';
   // What the Journal's session cards take as their replay: the replay itself, 'Incoherent' for a Detail whose facts cannot be replayed, or
@@ -54,8 +61,7 @@ export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange }:
   const { shown, initial } = drawersOf(view);
   const [selected, setSelected] = useState<Drawer | undefined>(undefined);
   const current = selected && shown.includes(selected) ? selected : initial;
-  const hasToday = shown.includes('Today');
-  const open = 'positionChanges' in view && !('terminalDisposition' in view) ? view : undefined;
+  const settlementDue = 'positionChanges' in view && !('terminalDisposition' in view) && view.settlement.length > 0;
   const shell = { view, timeZone };
   // Wherever a card or drawer takes the replay, it takes the view beside it.
   const replayed = { ...shell, ...(replay && { replay }) };
@@ -73,6 +79,21 @@ export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange }:
 
   // "Reflect now" in Needs you (A217): select the Journal drawer and hand the Debt's id down. Every drawer stays mounted, and that Debt's own
   // item opens its form under the one-form-at-a-time rule, then clears the request so the same Debt can be requested again.
+  // A drawer request (A240): the drawer is selected now, and once its panel is shown the heading takes focus. A heading is not focusable by
+  // itself, so it is made a programmatic tab stop. Each request is a new object, so the same request can be made again.
+  const [focusing, setFocusing] = useState<{ readonly drawer: Drawer; readonly heading: string }>();
+  const requestDrawer: DrawerRequest = (drawer, heading) => {
+    setSelected(drawer);
+    setFocusing({ drawer, heading });
+  };
+  useEffect(() => {
+    if (!focusing) return;
+    const panel = document.getElementById(`drawer-panel-${tabId(focusing.drawer)}`);
+    const target = [...(panel?.querySelectorAll<HTMLElement>('h1, h2, h3, h4, h5, h6') ?? [])].find((h) => h.textContent?.trim() === focusing.heading);
+    if (!target) return;
+    if (!target.hasAttribute('tabindex')) target.tabIndex = -1;
+    target.focus();
+  }, [focusing]);
   const [reflecting, setReflecting] = useState<string>();
   const reflectNow = (debtId: string) => {
     setSelected('Journal');
@@ -97,15 +118,10 @@ export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange }:
   const panelOf =(drawer: Drawer): ReactNode => {
     switch (drawer) {
       case 'Today':
-        return <TodayDrawer {...replayed} />;
+        // A Settlement Due Detail shows only the current Marks card here (revision 96); T8R.7 replaces it with the Settlement Due table.
+        return settlementDue ? <CurrentMarksOnly {...replayed} /> : <TodayDrawer {...replayed} />;
       case 'Position':
-        // A state with no Today tab shows Valuation's content, the current Marks card, in its default drawer (revision 96).
-        return (
-          <>
-            {!hasToday && open && <CurrentMarksOnly {...replayed} />}
-            <PositionDrawer {...shell} />
-          </>
-        );
+        return <PositionDrawer {...shell} />;
       case 'Plan and Risk':
         return <PlanRiskDrawer {...shell} />;
       case 'Price History':
@@ -123,6 +139,8 @@ export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange }:
 
   return (
     <ReflectRequestContext.Provider value={request}>
+      <DrawerRequestContext.Provider value={requestDrawer}>
+      {children}
       {'positionChanges' in view && view.findings.length > 0 && <IntegrityPanel view={view} timeZone={timeZone} />}
       {'recordedPositionChanges' in view && <IncoherentPanel view={view} timeZone={timeZone} />}
       <section className="cockpit-rail" aria-label="State of play">
@@ -167,6 +185,7 @@ export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange }:
         ))}
         <DetailFooter {...shell} />
       </div>
+      </DrawerRequestContext.Provider>
     </ReflectRequestContext.Provider>
   );
 }

@@ -15,7 +15,8 @@ async function expectDrawers(page: Page, shown: readonly (string | RegExp)[], go
   const tabs = page.getByRole('tablist', { name: 'Detail' });
   await expect(tabs.getByRole('tab')).toHaveText([...shown]);
   await expect(tabs.getByRole('tab', { selected: true })).toHaveText(selected);
-  await expect(page.locator(PANEL(selected))).toBeVisible();
+  // The selected panel is shown, not `hidden`. A Closed Detail's Today holds no content until T8R.7, so it has no size to be "visible" by.
+  await expect(page.locator(PANEL(selected))).not.toHaveAttribute('hidden');
   for (const name of gone) {
     await expect(tabs.getByRole('tab', { name, exact: true })).toHaveCount(0);
     await expect(page.locator(PANEL(name))).toHaveCount(0);
@@ -25,7 +26,7 @@ async function expectDrawers(page: Page, shown: readonly (string | RegExp)[], go
 const PRICE_HISTORY = /^Price History( \d+)?$/;
 
 test.describe('B8P.4 States', () => {
-  test('should show a Settlement Due Detail with Position selected and Settlement Due in the P&L card, then the expired put Closed via expiration with its Result rows', async ({ profile }) => {
+  test('should show a Settlement Due Detail with Today selected and Settlement Due in the P&L card, then the expired put Closed via expiration with its Result rows', async ({ profile }) => {
     test.setTimeout(420_000);
     // D7's Settlement Due fixture: O-S, 2 short MNO puts at 1.25 (Mon 10:00, fee 1.30), expiring Fri Nov 20; viewed Mon Nov 23 17:00.
     const { context: setup, page: setupPage } = await onboardedAt(profile, MONDAY_0900);
@@ -43,10 +44,11 @@ test.describe('B8P.4 States', () => {
     const page = await firstPage(context);
     await page.goto(`/trades/${tradeId}`);
     await expect(detail.settlementDueHeading(page)).toBeVisible(READY);
-    await expectDrawers(page, ['Position', 'Plan and Risk', PRICE_HISTORY, 'Journal', 'Payoff'], ['Today'], 'Position');
+    await expectDrawers(page, ['Today', 'Position', 'Plan and Risk', PRICE_HISTORY, 'Journal', 'Payoff'], [], 'Today');
     // W4: the contract, then what the figure waits for. W15: the Position drawer's Open P&L reads "Settlement Due". W6: the conditions are not measured.
     await expect(detail.pnlFigure(page)).toHaveText('Settlement Due: MNO 20 Nov 2026 45 Put');
     await expect(detail.pnlLine(page)).toHaveText('Trade P&L once the expiration is recorded');
+    await openDrawer(page, 'Position');
     await expect(detail.positionOpenPnl(page)).toHaveText('Settlement Due');
     await expect(detail.conditionsSummary(page)).toHaveText('The contract expired, so its conditions are no longer measured.');
     await expect(detail.conditionBlocks(page)).toHaveCount(2);
@@ -59,7 +61,7 @@ test.describe('B8P.4 States', () => {
     await recordExpiration(page);
     await page.getByRole('link', { name: 'Back to the Trade' }).click();
     await expect(detail.heading(page, 'MNO')).toBeVisible(READY);
-    await expectDrawers(page, ['Position', 'Plan and Risk', PRICE_HISTORY, 'Journal 1 owed', 'Payoff'], ['Today'], 'Position');
+    await expectDrawers(page, ['Today', 'Position', 'Plan and Risk', PRICE_HISTORY, 'Journal 1 owed', 'Payoff'], [], 'Today');
     await expect(detail.lifecycleBadge(page)).toHaveText('Cash-Secured Put, Closed');
     await expect(detail.identityCard(page).getByText('Expired Fri 20 Nov 2026', { exact: true })).toBeVisible();
     await expect(detail.pnlFigure(page)).toHaveText('$248.70');
@@ -95,10 +97,10 @@ test.describe('B8P.4 States', () => {
     const context = await launchAt(profile, MONDAY_1700);
     const page = await firstPage(context);
 
-    await test.step('Closed by sale: Position selected, the realized P&L and its R, the Result rows, nothing to record', async () => {
+    await test.step('Closed by sale: Today selected, the realized P&L and its R, the Result rows, nothing to record', async () => {
       await page.goto(`/trades/${def}`);
       await expect(detail.heading(page, 'DEF')).toBeVisible(READY);
-      await expectDrawers(page, ['Position', 'Plan and Risk', PRICE_HISTORY, 'Journal', 'Payoff'], ['Today'], 'Position');
+      await expectDrawers(page, ['Today', 'Position', 'Plan and Risk', PRICE_HISTORY, 'Journal', 'Payoff'], [], 'Today');
       await expect(detail.lifecycleBadge(page)).toHaveText('Long Stock, Closed');
       // 100 x (44.00 - 40.00) - 1.00 - 1.00 = $398.00; 1R is (40.00 - 38.00) x 100 = $200.00.
       await expect(detail.pnlFigure(page)).toHaveText('$398.00');
