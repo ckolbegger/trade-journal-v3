@@ -1182,3 +1182,19 @@ Node integration suite, `tests/integration/d8r/` (`detail.test.ts`, `columns.tes
 T8R.26 was rebased to `77ee17e1`. The lane tier was rerun as `T8R.26-rebased`: unit 2095, integration 269, and 14 of 14 checks. The branch was then fast-forwarded to `16876019`.
 
 Next is a full-tier run (`wave2-full1`, browser full). After it, T8R.25 (the checkpoint critic) runs beside T8R.27 (the browser suite).
+
+## Full-tier run: wave2-full1 (on `241abe68`)
+
+This full run (browser full) came before the checkpoint critic. Every stage passed:
+
+| Stage | Result |
+|---|---|
+| Unit | 2095 passed |
+| Integration | 269 passed |
+| Checks | 14 of 14 exit 0 |
+| Browser 1 | 126 passed (5.1 min) |
+| Browser 2 | 121 passed (7.6 min) |
+
+`run-complete.sh` confirms the run is complete. The tech debt item 11 flake did not occur.
+
+Next: T8R.25, the checkpoint critic (critic-1, flows C8R.1 to C8R.4), on `241abe68`. T8R.27 is being written in lane BR at the same time.
