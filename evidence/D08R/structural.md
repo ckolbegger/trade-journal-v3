@@ -626,3 +626,10 @@ Lane tier: `evidence/D08R/suite-runs/T8R.10-F1-*.txt`; unit 2049 passed, integra
 - Before (after B1, ternary still in place): `npx vitest run src/ui/cockpit/drawers/plan-risk.test.tsx` exit 0, 13 passed.
 - After: `npx vitest run src/ui/cockpit/drawers` exit 0, 7 files, 54 passed; `npm run typecheck` exit 0.
 - `git diff --stat`: only `plan-risk.props.ts`, 6 insertions, 3 deletions, all in that function.
+
+## T8R.10-F2 The cockpit spec reads the Conditions table cells
+
+`e2e/d8p/cockpit.spec.ts` lines 144-145: the expected texts of `riskToStop` and `rewardToTarget` now carry the cell labels: `'Risk to stop $220.00 · 1.10R'`, `'Reward to target $180.00 · 0.90R'`.
+
+- Before: `.claude/scripts/with-browser-lock.sh npx playwright test e2e/d8p/cockpit.spec.ts` exit 1, 1 failed: B8P.1 at line 116 (`Plan and Risk cards`: received an extra "conditions" heading, not in the spec's HEADINGS list). The test stops there, before lines 144-145.
+- After: same command, exit 1, same single failure at line 116. Lines 144-145 are not reached, so the new texts are not yet exercised; the line 116 expectation is outside this task's lines (T8R.14 owns that file's other lines).

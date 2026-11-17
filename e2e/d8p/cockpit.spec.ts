@@ -141,8 +141,8 @@ test.describe('B8P.1 The cockpit', () => {
     await test.step('every condition is listed with its status (AC-CALC-003)', async () => {
       // The Plan holds two conditions, and the rail lists both with a status word or a distance in each row.
       await openDrawer(page, 'Plan and Risk');
-      await expect(detail.riskToStop(page)).toHaveText('$220.00 · 1.10R');
-      await expect(detail.rewardToTarget(page)).toHaveText('$180.00 · 0.90R');
+      await expect(detail.riskToStop(page)).toHaveText('Risk to stop $220.00 · 1.10R');
+      await expect(detail.rewardToTarget(page)).toHaveText('Reward to target $180.00 · 0.90R');
       const blocks = detail.conditionBlocks(page);
       await expect(blocks).toHaveCount(2);
       for (const block of await blocks.all()) {
