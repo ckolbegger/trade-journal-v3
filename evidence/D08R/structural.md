@@ -1231,6 +1231,7 @@ The report is in `critic-1.md`, saved with `tools/agent-report.ts`. The critic r
 |---|---|---|---|---|---|
 | critic-1 (T8R.25) | critic-brief template, flows C8R.1 to C8R.4, plus decision P1 | 217,339 | 94 | 14 min 17 s | 3 moderate |
 | critic-2 (T8R.25) | as critic-1, plus nearby states and 375/320 px on every drawer | 197,247 | 71 | 12 min 27 s | 4 moderate |
+| critic-3 (T8R.25) | as critic-2, plus mixed-Mark days and 1280/1100/1024/960 px | 215,828 | 86 | 17 min 44 s | 1 moderate, 2 low |
 
 ## T8R.25-B1 returned; ocr
 
@@ -1623,3 +1624,18 @@ The run is complete per `run-complete.sh`: unit 2111, integration 269, checks 14
 **Tech debt note for the final report.** browser-2 now takes 8.9 min, close to its limit, and the suite runner suggests adding a browser-3 stage. That would be a `.claude/` tooling change, which D8R does not plan.
 
 Next: critic-3, the checkpoint's last critic.
+
+## T8R.25: checkpoint critic-3, and the checkpoint closes
+
+critic-3, run on the `2fc04bdd` build, reported **PASS, with 1 moderate defect and 2 low ones.** The report is in `critic-3.md`, and its cost row is in the critic-cost table. All four flows passed: C8R.1, C8R.2, C8R.3 and C8R.4. axe was clean on every drawer at 1280, 1100, 1024, 960, 375 and 320 px.
+
+critic-3 is the checkpoint's third critic, and handoff section 3 (the gate, step 5) applies, as set by decision 116 (3). No defect is high and no flow failed, so the checkpoint closes. Each remaining defect becomes a tech debt item in `plan/implementation-plan.md`, an edit the user approved in advance:
+- **Item 25 (moderate):** at 960 to 1100 px the Today table opens scrolled to its right end, covering the Today heading. `ScrollsToEnd` predates W29's column order.
+- **Item 26 (low):** an owed reflection keeps the old Journal layout.
+- **Item 27 (low):** W24's line has no final full stop.
+
+The critic's 10 minor observations go to the final report.
+
+`.claude/docs/critic-brief.md` says a third critic's moderate defect stops the run. The handoff's later rule, decision 116 (3), approved by the user, takes precedence.
+
+**T8R.25 is Done.** Next: T8R.28, the gate.

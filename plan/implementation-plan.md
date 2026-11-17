@@ -1677,3 +1677,16 @@ Its repeats (D-2, T-H's D-6 and the midday D-1) were removed. `reflections.test.
     - **Where to look:** the paging buttons in the Journal drawer's session cards (`src/ui/cockpit/journal-cards.tsx`).
     - **Fix:** a browser case first, pressing each paging button by keyboard to its end and asserting focus stays in the Journal drawer (on the other paging button, or the cards list), then the fix. A likely shape: when the pressed button becomes disabled, move focus to the other paging button.
     - **Trigger:** the next change to the Journal drawer's paging or session cards, or D08P's follow-on that trims the Journal (breakdown section 10), whichever comes first.
+25. **The Today table opens scrolled to its right end at 960 to 1100 px, hiding the Today column's heading (D8R, T8R.25 critic-3's defect 1, moderate; recorded 2026-11-17 under decision 116 (3)).**
+    - **Symptom.** In Trade Detail's Today drawer, the Marks box opens with `scrollLeft` at 146 px at 960 px wide, 82 px at 1024 px and 6 px at 1100 px. The sticky row-header column then covers the start of the Today column. At 1024 px the heading reads ", THU OCT 15", so the trader can't tell which column is Today without scrolling back. Open, Closed and Settlement Due Trades are all affected. At 1280, 375 and 320 px the table fits.
+    - **Cause.** `ScrollsToEnd` in `src/ui/cockpit/drawers/today.tsx` keeps the box at its right end. That made sense when the latest session was the right-hand column. W29's order (Today, Yesterday, Change) now puts it on the left.
+    - **Fix.** A browser case first: at 1024 px, `scrollLeft` is 0 and the first heading is not covered. Then drop the scroll-to-end, or scroll to the start instead.
+    - **Trigger.** The next change to the Today drawer, or D9's breakdown, which adds the chart beside it.
+26. **An owed reflection keeps the old Journal layout (D8R, critic-3's defect 2, low; recorded 2026-11-17 under decision 116 (3)).**
+    - **Symptom.** An owed Position Change reflection in the Journal drawer reads "Position Change at 2026-10-14 11:00", followed by a "Due" term whose value is also "Due". Every other item has W27's one dated line in the app's format, for example "Position Change · Wed Oct 14, 11:00 am" (A239).
+    - **Fix.** Give the owed item the same dated line, with a case first.
+    - **Trigger.** The next change to the Journal drawer's items or to owed reflections.
+27. **W24's Deviation line has no final full stop (D8R, critic-3's defect 3, low; recorded 2026-11-17 under decision 116 (3)).**
+    - **Symptom.** The Journal shows "1 active Deviation. See Plan and Risk", with nothing after the button. W24 reads "… See Plan and Risk.".
+    - **Fix.** Add the full stop after the button, with a case first.
+    - **Trigger.** The next change to the Journal's Deviation line.
