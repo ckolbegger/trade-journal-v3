@@ -14,7 +14,12 @@ type TradeReplayView = ReplaySource;
 
 const STOCK: Instrument = { kind: 'Stock', symbol: 'XYZ' };
 const CALL: Instrument = { kind: 'Option', symbol: 'XYZ   261218C00055000', root: 'XYZ', expiration: '2026-12-18', strike: '55', right: 'Call', multiplier: 100 };
-const available = (instrument: Instrument, price: string): ReplaySession['marks'][number] => ({ instrument, resolution: { kind: 'Available', mark: { price } } });
+const ZONE = 'America/New_York';
+// Each Mark was saved at 17:00 New York (21:00 UTC) on 2026-10-14; `correctionReason` marks a corrected revision (W33).
+const available = (instrument: Instrument, price: string, correctionReason?: string): ReplaySession['marks'][number] => ({
+  instrument,
+  resolution: { kind: 'Available', mark: { price, source: 'Manual', savedAt: '2026-10-14T21:00:00.000Z', ...(correctionReason !== undefined && { correctionReason }) } },
+});
 const missing = (instrument: Instrument): ReplaySession['marks'][number] => ({ instrument, resolution: { kind: 'Missing' } });
 const cents = (n: number) => Rational.of(BigInt(n), 100n);
 
@@ -34,7 +39,7 @@ const THU = session('2026-10-15', '57.90', '3.20', 21805);
 
 describe('Price History (W9, P99)', () => {
   it('should show sessions as columns, newest on the left, with rows for each Instrument\'s Mark and Trade P&L', () => {
-    const { container } = render(<PriceHistoryTable {...priceHistoryProps(replay([MON, WED, THU]), () => undefined)} />);
+    const { container } = render(<PriceHistoryTable {...priceHistoryProps(replay([MON, WED, THU]), () => undefined, ZONE)} />);
     const table = container.querySelector('table') as HTMLElement;
     const rows = within(table).getAllByRole('row').map((row) => Array.from(row.children).map((c) => c.textContent));
     expect(rows).toEqual([
@@ -54,11 +59,11 @@ describe('Price History (W9, P99)', () => {
       marks: [available(STOCK, price)],
     });
     const stockTrade: TradeReplayView = { instruments: [STOCK], sessions: [stockSession('2026-10-14', '51.00'), stockSession('2026-10-15', '51.50')] };
-    const stockTable = render(<PriceHistoryTable {...priceHistoryProps(stockTrade, () => undefined)} />).container.querySelector('table') as HTMLElement;
+    const stockTable = render(<PriceHistoryTable {...priceHistoryProps(stockTrade, () => undefined, ZONE)} />).container.querySelector('table') as HTMLElement;
     const stockRows = within(stockTable).getAllByRole('row').map((row) => Array.from(row.children).map((c) => c.textContent));
     expect(stockRows[1]).toEqual(['XYZ Mark', '$51.50', '$51.00']);
 
-    const optionTable = render(<PriceHistoryTable {...priceHistoryProps(replay([MON, WED]), () => undefined)} />).container.querySelector('table') as HTMLElement;
+    const optionTable = render(<PriceHistoryTable {...priceHistoryProps(replay([MON, WED]), () => undefined, ZONE)} />).container.querySelector('table') as HTMLElement;
     const optionRows = within(optionTable).getAllByRole('row').map((row) => Array.from(row.children).map((c) => c.textContent));
     expect(optionRows[1]).toEqual(['XYZ Mark', '57.40', '56.00']);
     expect(optionRows[2]).toEqual(['Call Mark', '$2.90', '$2.10']);
@@ -81,7 +86,7 @@ describe('Price History (W9, P99)', () => {
 
   // T8P.20-B2.
   it('should scroll a long history inside the drawer, not the page', () => {
-    const { container } = render(<PriceHistoryTable {...priceHistoryProps(replay([MON, WED, THU]), () => undefined)} />);
+    const { container } = render(<PriceHistoryTable {...priceHistoryProps(replay([MON, WED, THU]), () => undefined, ZONE)} />);
     const region = within(container).getByRole('region', { name: 'Price History' });
     expect(region.classList.contains('table-scroll')).toBe(true);
     expect(region.getAttribute('tabindex')).toBe('0');
@@ -108,7 +113,7 @@ describe('Price History (W9, P99)', () => {
   it('should render a 500-session history in one table', () => {
     const day = (i: number) => new Date(Date.UTC(2025, 0, 1 + i)).toISOString().slice(0, 10);
     const sessions = Array.from({ length: 500 }, (_, i) => session(day(i), '56.00', '2.10', 1870));
-    const { container } = render(<PriceHistoryTable {...priceHistoryProps(replay(sessions), () => undefined)} />);
+    const { container } = render(<PriceHistoryTable {...priceHistoryProps(replay(sessions), () => undefined, ZONE)} />);
     expect(container.querySelectorAll('table')).toHaveLength(1);
     expect(container.querySelectorAll('thead th')).toHaveLength(501);
     expect(container.querySelectorAll('tbody tr')).toHaveLength(3);
@@ -118,7 +123,7 @@ describe('Price History (W9, P99)', () => {
   });
 
   it('should say "No sessions yet" before the first session ends', () => {
-    const { container } = render(<PriceHistoryTable {...priceHistoryProps(replay([]), () => undefined)} />);
+    const { container } = render(<PriceHistoryTable {...priceHistoryProps(replay([]), () => undefined, ZONE)} />);
     expect(container.textContent).toBe("No sessions yet: the first ends once the Trade's first session ends.");
     expect(container.querySelector('table')).toBeNull();
     expect(priceHistoryTabCount(replay([]))).toBe(0);
@@ -127,7 +132,7 @@ describe('Price History (W9, P99)', () => {
   it('should show a gap as "—" named "No Mark", count sessions without Marks on the tab, and link to the Review', () => {
     const gappy = replay([MON, TUE, WED, THU, session('2026-10-16', null, null, null)]);
     let opened = 0;
-    const { container } = render(<PriceHistoryTable {...priceHistoryProps(gappy, () => (opened += 1))} />);
+    const { container } = render(<PriceHistoryTable {...priceHistoryProps(gappy, () => (opened += 1), ZONE)} />);
     const table = container.querySelector('table') as HTMLElement;
     const gaps = within(table).getAllByRole('img', { name: 'No Mark' });
     expect(gaps).toHaveLength(6);
@@ -136,7 +141,7 @@ describe('Price History (W9, P99)', () => {
     expect(container.textContent).toContain('2 sessions without Marks.');
     fireEvent.click(within(container).getByRole('link', { name: 'Enter Marks in the Review' }));
     expect(opened).toBe(1);
-    const whole = render(<PriceHistoryTable {...priceHistoryProps(replay([MON, WED, THU]), () => undefined)} />);
+    const whole = render(<PriceHistoryTable {...priceHistoryProps(replay([MON, WED, THU]), () => undefined, ZONE)} />);
     expect(whole.container.textContent).not.toContain('without Marks');
     expect(within(whole.container).queryByRole('link', { hidden: true })).toBeNull();
     expect(priceHistoryTabCount(replay([MON, WED, THU]))).toBe(0);
@@ -146,7 +151,7 @@ describe('Price History (W9, P99)', () => {
   it('should not count the final session of a Closed Trade, flat at its close, as a session without Marks', () => {
     const flat: ReplaySession = { ...session('2026-10-13', null, null, 19800), positions: [{ quantity: Rational.of(0n) }] };
     const closed = replay([session('2026-10-12', '51.00', '2.10', 100), flat]);
-    const { container } = render(<PriceHistoryTable {...priceHistoryProps(closed, () => undefined)} />);
+    const { container } = render(<PriceHistoryTable {...priceHistoryProps(closed, () => undefined, ZONE)} />);
     expect(priceHistoryTabCount(closed)).toBe(0);
     expect(container.querySelector('.price-history-gaps')).toBeNull();
     expect(container.textContent).not.toContain('without Marks');
@@ -157,6 +162,36 @@ describe('Price History (W9, P99)', () => {
     // A real gap before the final session still counts, and only that one.
     const gappy = replay([session('2026-10-12', '51.00', '2.10', 100), TUE, flat]);
     expect(priceHistoryTabCount(gappy)).toBe(1);
-    expect(render(<PriceHistoryTable {...priceHistoryProps(gappy, () => undefined)} />).container.textContent).toContain('1 session without Marks.');
+    expect(render(<PriceHistoryTable {...priceHistoryProps(gappy, () => undefined, ZONE)} />).container.textContent).toContain('1 session without Marks.');
+  });
+
+  describe('Price History: Mark provenance (W33)', () => {
+    const cells = (container: HTMLElement) => container.querySelectorAll('tbody td');
+
+    it('should give each Mark cell "Manual · saved 2026-10-14 17:00" as hover text and in its accessible name', () => {
+      const { container } = render(<PriceHistoryTable {...priceHistoryProps(replay([WED]), () => undefined, ZONE)} />);
+      const [xyz] = cells(container);
+      expect(xyz?.getAttribute('title')).toBe('Manual · saved 2026-10-14 17:00');
+      expect(xyz?.getAttribute('aria-label')).toBe('57.40. Manual · saved 2026-10-14 17:00');
+      expect(within(container).getByRole('cell', { name: '57.40. Manual · saved 2026-10-14 17:00' })).toBe(xyz);
+      expect(xyz?.hasAttribute('tabindex')).toBe(false);
+    });
+
+    it('should add Corrected and its reason after the saved time on a corrected Mark', () => {
+      const corrected: ReplaySession = { ...WED, marks: [available(STOCK, '57.40', 'Typo in the first entry'), available(CALL, '2.90')] };
+      const { container } = render(<PriceHistoryTable {...priceHistoryProps(replay([corrected]), () => undefined, ZONE)} />);
+      const [xyz, call] = cells(container);
+      expect(xyz?.getAttribute('title')).toBe('Manual · saved 2026-10-14 17:00. Corrected: Typo in the first entry');
+      expect(xyz?.getAttribute('aria-label')).toBe('57.40. Manual · saved 2026-10-14 17:00. Corrected: Typo in the first entry');
+      expect(call?.getAttribute('title')).toBe('Manual · saved 2026-10-14 17:00');
+    });
+
+    it('should give a gap no provenance', () => {
+      const { container } = render(<PriceHistoryTable {...priceHistoryProps(replay([TUE]), () => undefined, ZONE)} />);
+      const [xyz] = cells(container);
+      expect(xyz?.hasAttribute('title')).toBe(false);
+      expect(xyz?.hasAttribute('aria-label')).toBe(false);
+      expect(within(xyz as HTMLElement).getByRole('img', { name: 'No Mark' }).textContent).toBe('—');
+    });
   });
 });

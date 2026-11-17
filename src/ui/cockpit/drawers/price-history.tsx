@@ -33,7 +33,7 @@ export function PriceHistoryTable({ rowLabels, columns, missingCount, onOpenRevi
             {columns.map((column) => {
               const cell = column.cells[row];
               return (
-                <td key={`${column.weekday}-${column.date}`} className={cell?.tone}>
+                <td key={`${column.weekday}-${column.date}`} className={cell?.tone} title={cell?.provenance} aria-label={cell?.label}>
                   {cell ? cell.text : <span role="img" aria-label="No Mark">—</span>}
                 </td>
               );
@@ -62,7 +62,7 @@ export function PriceHistoryTable({ rowLabels, columns, missingCount, onOpenRevi
 }
 
 // The Price History drawer. Without a replay it renders nothing.
-export function PriceHistory({ replay }: ShellProps & { readonly replay?: ReplaySource }) {
+export function PriceHistory({ replay, timeZone }: ShellProps & { readonly replay?: ReplaySource }) {
   const navigate = useNavigate();
-  return replay ?<PriceHistoryTable {...priceHistoryProps(replay, () => void navigate(REVIEW_PATH))} /> : null;
+  return replay && timeZone ? <PriceHistoryTable {...priceHistoryProps(replay, () => void navigate(REVIEW_PATH), timeZone)} /> : null;
 }

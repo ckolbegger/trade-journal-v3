@@ -31,6 +31,12 @@ test.describe('B8P.2 Price History and Journal', () => {
       await expect(table.locator('tbody tr').nth(0).locator('td')).toHaveText(['57.90', '57.40', '—', '56.00']);
       await expect(table.locator('tbody tr').nth(1).locator('td')).toHaveText(['$3.20', '$2.90', '—', '$2.10']);
       await expect(table.locator('tbody tr').nth(2).locator('td')).toHaveText(['$218.05', '$188.05', '—', '$18.70']);
+      // W33: each Mark cell's hover text and accessible name carry its provenance (Wednesday's Marks were saved at 17:00), and the cells are not tab stops.
+      const wednesdayXyz = table.locator('tbody tr').nth(0).locator('td').nth(1);
+      await expect(wednesdayXyz).toHaveAttribute('title', 'Manual · saved 2026-10-14 17:00');
+      await expect(table.getByRole('cell', { name: '57.40. Manual · saved 2026-10-14 17:00' })).toHaveCount(1);
+      await expect(table.locator('tbody td[tabindex]')).toHaveCount(0);
+      await expect(table.locator('tbody tr').nth(0).locator('td').nth(2)).not.toHaveAttribute('title');
       await expect(table.getByRole('img', { name: 'No Mark' })).toHaveCount(3);
       for (const row of await table.locator('tbody tr').all()) await expect(row.locator('td').nth(2).getByRole('img', { name: 'No Mark' })).toBeVisible();
       await expect(page.getByRole('tab', { name: 'Price History', exact: true })).toHaveText('Price History 1');

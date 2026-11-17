@@ -6,7 +6,8 @@ export interface PriceHistoryProps {
   readonly columns: readonly {
     readonly weekday: string;
     readonly date: string;
-    readonly cells: readonly ({ readonly text: string; readonly tone?: 'gain' | 'loss' } | null)[];
+    // A Mark's `provenance` is its hover text (W33); `label` is the cell's accessible name, the price then the provenance.
+    readonly cells: readonly ({ readonly text: string; readonly tone?: 'gain' | 'loss'; readonly provenance?: string; readonly label?: string } | null)[];
   }[];
   // Sessions without Marks, for "2 sessions without Marks." and the tab's count.
   readonly missingCount: number;
