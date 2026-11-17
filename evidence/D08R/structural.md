@@ -251,3 +251,10 @@ Created by hand from `fee1f3ad` (the Progress commit; the rows say `77d475d0`, t
 | JR | `d08r-jr` | `d08r/jr` | T8R.15 |
 
 PO (T8R.5) waits for the first free slot (agent cap 6).
+
+## T8R.18 ocr review
+
+ocr on `682bd8fb` (session 45db47a3-9eb7-4ae8-a290-d6086aaa0286, gpt-6.1-sol, 2 files reviewed, 0 comments; raw output `ocr/T8R.18-682bd8fb.json`): **No findings.** Reviewer notes (not ocr findings):
+- The distance is in price per share or contract quote for both sides: the dollar `toward` divided by |quantity| × multiplier leaves the sign-adjusted price difference. Short stock and short option-price conditions are covered by reading only, with no case.
+- Case 4's Underlying Stop (48.00, Underlying 47.50) is crossed rather than "at its boundary": distance 0, beyond 1/2, consistent with A230. A Mark exactly on the boundary counts as crossed (`toward <= 0`), giving beyond 0, consistent with the existing `status` and `overrun`.
+- A net quantity of zero with lots left would divide by zero; the reviewer found no path to it.
