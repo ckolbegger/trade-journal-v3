@@ -246,4 +246,4 @@ Task status and commits are in the breakdown's Progress section. This section ho
 
 ### Open questions
 
-- (none yet)
+- The Agent tool's `isolation: "worktree"` built wave 0's first worktrees under the main checkout, on branches from `main`, so no lane could start (`evidence/D08R/structural.md`, "Lane worktrees"). The main session now creates each lane with `git worktree add` under `.claude/worktrees/d08r-<lane>` and dispatches without isolation. Section 3's "`isolation: "worktree"`" wording, and the same line in `.claude/docs/implementing.md`, should be updated after D8R.
