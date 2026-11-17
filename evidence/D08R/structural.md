@@ -1459,3 +1459,16 @@ Browser suite, `e2e/d8r/` (`today.spec.ts`, `states.spec.ts`, `rail.spec.ts`, `p
 - Red (b): a hidden panel `aria-labelledby` a hidden target "XYZ 2026-12-18 55 Call". B1 spec: `1 passed`. New spec: `1 failed`, `Detail: the accessible name "XYZ 2026-12-18 55 Call"`.
 - No mutation: `e2e/d8r/names.spec.ts` 1 passed; `npx playwright test e2e/d8r`: 13 passed (1.1 min), under the browser lock. `npm run build:faults` and `npm run build:releases`: exit 0. No real misnamed contract was found on any screen.
 - Rows in `tdd-log/T8R.27-B2.md`.
+
+## Lane BR merged (T8R.27, B1, B2)
+
+Lane BR was rebased onto `efb105b7`. Since its base, upstream had changed Plan and Risk code (T8R.25-B1, T8R.25-B2, T8R.25-B3), so the lane tier was rerun with the label `T8R.27-rebased`. Results: unit 2100, integration 269, checks 14 of 14. The run is committed in the lane as `42c96d2d`.
+
+The lane was then fast-forwarded, and T8R.27 is Done. Its rebased hashes:
+- T8R.27: `d26eef1b`
+- B1: `f7c2682f`
+- B2: `4a2b68d6`
+
+The B2 commit carries decision P2: the two findings from the third ocr round are tech debt.
+
+The critic-2 fixes run next, in lane C2 from `HEAD`.

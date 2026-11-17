@@ -694,9 +694,9 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T8R.22-F1 | 1 | BV | Done | `ef9f6ba7` |
 | T8R.23 | 1 | BV | Done | `7d5d1543` |
 | T8R.24 | 2 | WD | Done | `80d37dd1` |
-| T8R.25 | 2 | CB | critic-1 PASS with 3 moderate defects, all fixed; critic-2 after the full run | B1 `a3256de7`; B2 `aef3d956`; B3 `0adedd00` |
+| T8R.25 | 2 | CB, C2 | critic-1 PASS with 3 moderate defects, all fixed; critic-2 PASS with 4 moderate defects, B4 in progress, B5, B6, B7 queued | B1 `a3256de7`; B2 `aef3d956`; B3 `0adedd00` |
 | T8R.26 | 2 | NS | Done | `77ee17e1` |
-| T8R.27 | 2 | BR | Committed `f1e5fe8a` (from `241abe68`) | |
+| T8R.27 | 2 | BR | Done | `d26eef1b`; B1 `f7c2682f`; B2 `4a2b68d6` (decision P2) |
 | T8R.28 | 2 | — | Not started | |
 
 ---
