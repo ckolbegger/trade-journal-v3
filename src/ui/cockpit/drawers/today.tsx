@@ -36,21 +36,6 @@ function ScrollsToEnd({ label, children }: { readonly label: string; readonly ch
   );
 }
 
-// A card of labelled figures: the dated line and At entry.
-const FigureCard = ({ id, heading, rows }: { readonly id: string; readonly heading: string; readonly rows: readonly { readonly label: string; readonly value: string }[] }) => (
-  <section className="card" aria-labelledby={id}>
-    <h2 id={id}>{heading}</h2>
-    <dl className="figure-grid">
-      {rows.map((row) => (
-        <div key={row.label}>
-          <dt>{row.label}</dt>
-          <dd className="number">{row.value}</dd>
-        </div>
-      ))}
-    </dl>
-  </section>
-);
-
 // The Stale context and the acknowledgment, each only where it applies, under the table.
 const Notes = ({ notes }: { readonly notes: NonNullable<TodayDrawerProps['notes']> }) => (
   <>
@@ -60,7 +45,7 @@ const Notes = ({ notes }: { readonly notes: NonNullable<TodayDrawerProps['notes'
 );
 
 // The Today drawer's content from finished props (A216).
-export function TodayDrawerView({ marks, notes, stamp, noMarksText, tracksHeading, tracks, valuedAt, atEntry }: TodayDrawerProps) {
+export function TodayDrawerView({ marks, notes, stamp, noMarksText, tracksHeading, tracks }: TodayDrawerProps) {
   const content = (
     <>
       {stamp && <p className="closed-stamp">{stamp}</p>}
@@ -114,8 +99,6 @@ export function TodayDrawerView({ marks, notes, stamp, noMarksText, tracksHeadin
           </div>
         </section>
       )}
-      {valuedAt && <FigureCard id="today-valued-at-heading" {...valuedAt} />}
-      {atEntry && <FigureCard id="today-at-entry-heading" {...atEntry} />}
     </>
   );
   // A Closed Trade's Today is greyed as a whole (A242); the other states add no wrapper.

@@ -12,6 +12,4 @@ export interface PriceTrackProps {
   readonly markers: readonly { readonly kind: 'entry' | 'now' | 'earlier'; readonly label: string; readonly price: number }[];
   // A237: one tick per open lot, at its price, named "$3.30 · Fri Oct 16" (its accessible name and hover text).
   readonly ticks: readonly { readonly label: string; readonly price: number }[];
-  // An Underlying track's lines, one per Underlying condition: its heading, then its value at expiration and distance under their existing terms (A223).
-  readonly conditionLines: readonly { readonly label: string; readonly figures: readonly { readonly term: string; readonly value: string }[] }[];
 }

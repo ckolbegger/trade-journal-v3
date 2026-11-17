@@ -2,11 +2,10 @@ import type { ClosedTradeDetail, OpenTradeDetail, TradeDetailView } from '../../
 import { expiredOn, instrumentKey, type Instrument } from '../../../domain/instrument/index.ts';
 import { text, unavailableWords } from '../../calculation-words.ts';
 import type { Rational } from '../../../domain/values/index.ts';
-import { decimalMoney, decimalUnderlyingPrice, money, quantity, rMultiple, shortDate, underlyingPrice } from '../../format.ts';
+import { decimalMoney, decimalUnderlyingPrice, money, shortDate, underlyingPrice } from '../../format.ts';
 import { toWorkspaceLocal } from '../../../domain/time/index.ts';
-import { calculation, dollarsAndR, pnlText, signed } from '../../figures.ts';
-import { contractCount, conditionDirection } from '../../screens/option-words.ts';
-import { abs, type Evaluation } from '../../screens/trade-detail/words.ts';
+import { signed } from '../../figures.ts';
+import { conditionDirection } from '../../screens/option-words.ts';
 import type { PriceTrackProps } from '../track.types.ts';
 import type { TodayDrawerProps } from './today.types.ts';
 
@@ -188,23 +187,6 @@ function trackOf(
       ...(markers.now === undefined ? [] : [{ kind: 'now' as const, label: 'now', price: markers.now }]),
     ],
     ticks,
-    conditionLines: [],
-  };
-}
-
-// An Underlying condition's line under its track (A223): the contract's value at expiration at the boundary and the distance on the
-// Underlying, in the words the Conditions table gave them (row 23.17).
-function conditionLineOf(view: OpenTradeDetail, condition: OpenTradeDetail['current']['evaluation']['conditions'][number], timeZone: string): PriceTrackProps['conditionLines'][number] {
-  const symbol = view.plan.underlying;
-  const basis = (condition.role === 'Stop' ? view.baseline.stopBasis : view.baseline.targetBasis)[Number(condition.id.split('-')[1]) - 1];
-  // A result with no reading says why at the figure length (A222); only a reading without an Underlying distance keeps the dash.
-  const distance = calculation(condition.result, (reading) => (reading.underlying ? underlyingPrice(reading.underlying.distance) : '—'), timeZone);
-  return {
-    label: `${condition.role} on ${symbol}`,
-    figures: [
-      { term: 'Value at expiration', value: basis?.valueAtExpiration ? money(basis.valueAtExpiration) : '—' },
-      { term: `Distance on ${symbol}`, value: distance },
-    ],
   };
 }
 
@@ -245,44 +227,11 @@ function tracksOf({ replay, timeZone }: TodayInput, view: OpenTradeDetail, optio
   const underlyingTrack = trackOf(symbol, conditionsOf('UnderlyingPrice'), { ...earlierMarker(underlying), ...(underlyingMark && { now: Number(underlyingMark.price) }) }, decimalUnderlyingPrice, underlyingMark?.price, false);
   return drawn([
     trackOf('Option price', conditionsOf('StructureValue'), { ...(entryPrice !== undefined && { entry: entryPrice }), ...earlierMarker(leg.instrument), ...(mark && { now: Number(mark.price) }) }, decimalMoney, mark?.price, true, ticks),
-    underlyingTrack && { ...underlyingTrack, conditionLines: evaluation.conditions.filter((c) => c.kind === 'UnderlyingPrice').map((condition) => conditionLineOf(view, condition, timeZone)) },
+    underlyingTrack,
   ]);
 }
 
 const drawn = (tracks: readonly (PriceTrackProps | undefined)[]): readonly PriceTrackProps[] => tracks.filter((track): track is PriceTrackProps => track !== undefined);
-
-type Row = { readonly label: string; readonly value: string };
-
-// The Position held at an earlier session's Marks, valued with that session's own Mark: the figures the dated line has always shown (P12, P13).
-function valuedAtOf(line: NonNullable<OpenTradeDetail['current']['datedLine']>, timeZone: string): NonNullable<TodayDrawerProps['valuedAt']> {
-  const { evaluation } = line;
-  const { mark } = evaluation.observation;
-  const rows: Row[] = [
-    ...(mark ? [{ label: 'Mark', value: decimalMoney(mark.price) }] : []),
-    { label: 'Realized to date', value: calculation(evaluation.realizedToDate, signed(money)) },
-    { label: 'Open P&L', value: calculation(evaluation.remainingOpenPnl, signed(money), timeZone) },
-    { label: 'Current Marked Trade P&L', value: pnlText(evaluation.currentMarkedPnl, evaluation.currentMarkedPnlInPlanR, timeZone) },
-    { label: 'Incurred fees', value: calculation(evaluation.incurredFees, money) },
-    { label: 'Risk to stop', value: dollarsAndR(evaluation.ongoingRiskToStop, evaluation.ongoingRiskToStopInPlanR, undefined, timeZone) },
-    { label: 'Worst case', value: dollarsAndR(evaluation.worstCaseOngoingRisk, evaluation.worstCaseOngoingRiskInPlanR, undefined, timeZone) },
-    { label: 'Reward to target', value: dollarsAndR(evaluation.incrementalRewardToTarget, evaluation.incrementalRewardToTargetInPlanR, undefined, timeZone) },
-  ];
-  return { heading: `At the ${shortDate(line.tradingDate)} Marks`, rows };
-}
-
-// Lots bought after the last Marks: risk and reward measured from their prices, never a P&L (A54).
-function atEntryOf(atEntry: NonNullable<Evaluation['atEntry']>, optionTrade: boolean): NonNullable<TodayDrawerProps['atEntry']> {
-  const inR = (dollars: Rational, planR: Rational) => `${money(dollars)} · ${rMultiple(planR)}`;
-  return {
-    heading: 'At entry',
-    rows: [
-      { label: 'Quantity', value: optionTrade ? contractCount(quantity(abs(atEntry.quantity))) : `${quantity(atEntry.quantity)} shares` },
-      { label: 'Average entry', value: money(atEntry.averageEntry) },
-      { label: 'Risk from entry', value: inR(atEntry.riskFromEntry, atEntry.riskFromEntryInPlanR) },
-      { label: 'Reward from entry', value: inR(atEntry.rewardFromEntry, atEntry.rewardFromEntryInPlanR) },
-    ],
-  };
-}
 
 // "10:20 am" in the Workspace zone.
 const clockTime = (instant: string, timeZone: string): string =>
@@ -340,7 +289,5 @@ export function todayProps(input: TodayInput): TodayDrawerProps {
     ...(noMarksText && { noMarksText }),
     tracksHeading: optionTrade ? 'Where the prices sit' : 'Where the price sits',
     tracks: tracksOf(input, view, optionTrade),
-    ...(view.current.datedLine && { valuedAt: valuedAtOf(view.current.datedLine, input.timeZone) }),
-    ...(view.current.evaluation.atEntry && { atEntry: atEntryOf(view.current.evaluation.atEntry, optionTrade) }),
   };
 }

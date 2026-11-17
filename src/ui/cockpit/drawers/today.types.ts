@@ -1,7 +1,6 @@
 import type { PriceTrackProps } from '../track.types.ts';
 
-// W8, W19, A215, A223. Finished display values only (A216).
-type Row = { readonly label: string; readonly value: string };
+// W8, A215. Finished display values only (A216).
 
 export interface TodayDrawerProps {
   // W29's table, absent only while the replay is. Each cell is a price or "—" (A233).
@@ -28,7 +27,4 @@ export interface TodayDrawerProps {
   // "Where the price sits" or "Where the prices sit".
   readonly tracksHeading?: string;
   readonly tracks: readonly PriceTrackProps[];
-  // "At the Mon Oct 12 Marks" with its figures (W19).
-  readonly valuedAt?: { readonly heading: string; readonly rows: readonly Row[] };
-  readonly atEntry?: { readonly heading: string; readonly rows: readonly Row[] };
 }

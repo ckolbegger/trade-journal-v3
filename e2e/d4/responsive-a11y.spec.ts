@@ -213,7 +213,7 @@ test.describe('B4.13 Responsive and accessible', () => {
     await expectAccessible(page, 'Review Complete with Unavailable Marks, narrow');
     await page.setViewportSize({ width: 1280, height: 900 });
 
-    // Tuesday noon: 40 more shares at 10:00 make XYZ's current figures Awaiting the next close, with dated and at-entry lines.
+    // Tuesday noon: 40 more shares at 10:00 make XYZ's current figures Awaiting the next close.
     await setClock(context, page, TUESDAY_NOON);
     await openTradeFromOpenList(page, 'XYZ');
     await recordEntry(page, [{ quantity: '40', price: '50.30', fee: '1.00', time: '2026-10-13T10:00' }]);
@@ -221,10 +221,9 @@ test.describe('B4.13 Responsive and accessible', () => {
     await openDrawer(page, 'Position');
     await expect(detail.positionOpenPnlFigure(page)).toHaveText('Awaiting the close after Mon Oct 12');
     await openDrawer(page, 'Today');
-    await expect(detail.datedHeading(page, 'At the Mon Oct 12 Marks')).toBeVisible();
-    await expect(detail.atEntryHeading(page)).toBeVisible();
-    await expect(detail.atEntryFigure(page, 'Quantity')).toHaveText('40 shares');
-    await expectAccessible(page, 'Detail AwaitingClose with dated and at-entry sections');
+    await expect(detail.todayCard(page, 'At the Mon Oct 12 Marks')).toHaveCount(0);
+    await expect(detail.todayCard(page, 'At entry')).toHaveCount(0);
+    await expectAccessible(page, 'Detail AwaitingClose');
     await page.setViewportSize({ width: 390, height: 844 });
     await expectAccessible(page, 'Detail AwaitingClose, narrow');
     await page.setViewportSize({ width: 1280, height: 900 });

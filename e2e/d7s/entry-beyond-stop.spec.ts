@@ -10,15 +10,13 @@ const NVDA_CALL: BothKinds = {
 };
 
 test.describe('BUG-3 Entry beyond the option-price Stop', () => {
-  test('should read Risk from entry $735.00 with 0.98R on Detail and Actual initial risk $735.00 on the summary card after recording 1 at 7.35, past the 7.50 option Stop', async ({ profile }) => {
+  test('should read Actual initial risk $735.00 on the summary card after recording 1 at 7.35, past the 7.50 option Stop', async ({ profile }) => {
     test.setTimeout(240_000);
     const { context, page } = await onboardedAt(profile, TUESDAY_1030);
     await confirmBothKinds(page, NVDA_CALL);
     await recordOptionEntry(page, [{ quantity: '1', price: '7.35', fee: '0', time: '2026-10-12T10:00' }]);
     await page.getByRole('link', { name: 'Back to the Trade' }).click();
     await expect(detail.heading(page, 'NVDA')).toBeVisible(READY);
-    await openDrawer(page, 'Today');
-    await expect(detail.atEntryFigure(page, 'Risk from entry')).toHaveText('$735.00 · 0.98R');
     await openDrawer(page, 'Plan and Risk');
     await expect(detail.actualInitialRisk(page)).toContainText('$735.00');
     await context.close();

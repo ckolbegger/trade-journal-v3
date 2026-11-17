@@ -8,7 +8,7 @@ const TARGET = 'XYZ at or above $56.00';
 const conditionFigure = (page: Page, text: string) => detail.conditionBlock(page, text).locator('.condition-figure');
 
 test.describe('B4.14 Breach, overrun, and intraday lines', () => {
-  test('should show Stop Breached with Risk to stop $0.00 and Stop Overrun $50.00 and no Deviation, then Awaiting the close after Mon Oct 12 with Mon Oct 12 close and At entry sections for the 40 shares', async ({ profile }) => {
+  test('should show Stop Breached with Risk to stop $0.00 and Stop Overrun $50.00 and no Deviation, then Awaiting the close after Mon Oct 12 with no dated or At entry card on Today for the 40 shares', async ({ profile }) => {
     const { context, page } = await onboardedAt(profile, MONDAY_1700);
     await createTrades(page, [FOUR_TRADES[0]!]);
     await openReview(page);
@@ -47,19 +47,11 @@ test.describe('B4.14 Breach, overrun, and intraday lines', () => {
     await expect(conditionFigure(page, STOP)).toHaveText('Breached · $0.50 past · Mon Oct 12 Mark');
     await expect(conditionFigure(page, TARGET)).toHaveText(/^\$[\d,]+\.\d\d away · Mon Oct 12 Mark$/);
 
-    // The dated line: the Position held at Monday's close with its own figures.
-    const dated = 'At the Mon Oct 12 Marks';
+    // Today no longer carries the dated card or At entry: each figure has one home (P116), in Plan and Risk and the rail.
     await openDrawer(page, 'Today');
-    await expect(detail.datedHeading(page, dated)).toBeVisible();
-    await expect(detail.datedFigure(page, dated, 'Mark')).toHaveText('$47.00');
-    await expect(detail.datedFigure(page, dated, 'Open P&L')).toHaveText('−$320.00');
-    await expect(detail.datedFigure(page, dated, 'Risk to stop')).toHaveText('$0.00 · 0.00R');
-    // The at-entry line for the 40 shares: their own risk and reward.
-    await expect(detail.atEntryHeading(page)).toBeVisible();
-    await expect(detail.atEntryFigure(page, 'Quantity')).toHaveText('40 shares');
-    await expect(detail.atEntryFigure(page, 'Average entry')).toHaveText('$50.30');
-    await expect(detail.atEntryFigure(page, 'Risk from entry')).toHaveText('$112.00 · 0.45R');
-    await expect(detail.atEntryFigure(page, 'Reward from entry')).toHaveText('$228.00 · 0.91R');
+    await expect(detail.marksCell(page, 'XYZ Mark', 'Yesterday')).toHaveText('$47.00');
+    await expect(detail.todayCard(page, 'At the Mon Oct 12 Marks')).toHaveCount(0);
+    await expect(detail.todayCard(page, 'At entry')).toHaveCount(0);
     await context.close();
   });
 });

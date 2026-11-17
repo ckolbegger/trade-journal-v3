@@ -25,7 +25,7 @@ test.describe('B4.5 Expected Mark Date (AC-MARK-001)', () => {
     await expect(detail.marksNotes(page)).toContainText('Stale context: $51.20 from Fri Oct 9 close (stale, not used in any current figure)');
     await expect(page.locator('.trade-detail #drawer-panel-today a', { hasText: 'Mark missing for' })).toHaveCount(0);
     await expect(page.locator('.trade-detail').getByText('Expected Mark Date')).toHaveCount(0);
-    await expect(detail.datedHeading(page, 'At the Fri Oct 9 Marks')).toBeVisible();
+    await expect(detail.todayCard(page, 'At the Fri Oct 9 Marks')).toHaveCount(0);
     await openDrawer(page, 'Position');
     await expect(detail.positionOpenPnlFigure(page)).toHaveText('Mark missing: XYZ, Mon Oct 12');
     await openDrawer(page, 'Today');
@@ -33,10 +33,9 @@ test.describe('B4.5 Expected Mark Date (AC-MARK-001)', () => {
     // With today's Mark missing, each condition's figure in the rail's Conditions card (Stop, then Target) is its distance at the dated Marks, with
     // that date (W21, A231); the P&L card above names the Instrument and date of the missing Mark.
     await expect(detail.conditionBlocks(page).locator('.condition-figure')).toHaveText(['$3.70 away · Fri Oct 9 Mark', '$4.80 away · Fri Oct 9 Mark']);
-    // The current sections hold no dollar figure from Friday's Mark: dollars appear only in the stale line and the dated section.
+    // The current sections hold no dollar figure from Friday's Mark: dollars appear only in the stale line.
     await openDrawer(page, 'Today');
     for (const column of ['Today', 'Yesterday', 'Change'] as const) await expect(detail.marksCell(page, 'XYZ Mark', column)).toHaveText('—');
-    await expect(detail.datedFigure(page, 'At the Fri Oct 9 Marks', 'Mark')).toHaveText('$51.20');
 
     // The Review lists Monday's Mark; entering it makes the Detail Available.
     await openReview(page);

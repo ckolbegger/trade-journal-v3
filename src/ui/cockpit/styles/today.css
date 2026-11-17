@@ -167,22 +167,3 @@
   top: 14px;
   color: var(--muted);
 }
-
-.track-block .conds {
-  display: grid;
-  gap: 0.5rem;
-  margin: 1.25rem 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.track-block .conds li {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 0.25rem;
-  font-size: 0.9rem;
-}
-
-.track-block .conds dl.figure-grid {
-  margin: 0;
-}

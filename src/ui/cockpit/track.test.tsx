@@ -19,7 +19,6 @@ describe('price track (A215)', () => {
         ]}
         markers={[{ kind: 'now', label: 'now', price: 50 }]}
         ticks={[]}
-        conditionLines={[]}
       />,
     );
     const track = screen.getByRole('img', { name: 'XYZ: Stop $40.00, Target $60.00, now $50.00' });

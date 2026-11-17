@@ -10,7 +10,7 @@ import { optionClosedDetail, optionOpenDetail } from '../../../../tests/support/
 import { OC_CONTRACT, OC_PC1, OC_PC2, OC_X1, ocChange, OS_CONTRACT, OS_ES, OS_S1, OS2_S1 } from '../../../../tests/support/option-trade-fixtures.ts';import type { OpenTradeDetail } from '../../../app/types.ts';
 import type { Instrument } from '../../../domain/instrument/index.ts';
 import { parseDecimal, Rational } from '../../../domain/values/index.ts';
-import { MON_CLOSE, THURSDAY, tuesday, useFixedClock } from '../../screens/trade-detail/test-support.ts';
+import { THURSDAY, tuesday } from '../../screens/trade-detail/test-support.ts';
 import type { TodayReplay } from './today.props.ts';
 import { TodayDrawer } from './today.tsx';
 
@@ -56,9 +56,6 @@ const wednesdayAndThursday = (): TodayReplay =>
     session('2026-10-14', [mark(MNO, '42.50'), mark(PUT, '3.10')]),
     session('2026-10-15', [mark(MNO, '43.00', { since: '2026-10-14', amount: '0.50' }), mark(PUT, '3.20', { since: '2026-10-14', amount: '0.10' })]),
   ]);
-
-// The text of the definition following a term, within one element.
-const termValue = (scope: HTMLElement, term: string) => within(scope).getByText(term, { selector: 'dt' }).nextElementSibling?.textContent;
 
 const parts = (track: HTMLElement, selector: string) => [...track.querySelectorAll<HTMLElement>(selector)];
 // Where a zone ends, in percent of the track: its left edge plus its width.
@@ -124,50 +121,6 @@ describe('Today drawer (W8)', () => {
     drawer(unmarked, replayOf([]));
     expect(screen.queryByText(/No Marks yet/)).toBeNull();
   });
-
-  it('should show "At the Mon Oct 12 Marks" and At entry in their existing figures', () => {
-    // 40 shares bought Monday 17:00 New York, after Monday's Marks; the Mark for Tuesday is not yet in.
-    const afterMarks = positionChange('pc-9', 3, [execution('ex-9', '2026-10-12T21:00:00Z', 4, '40', '50.30', '1.00')]);
-    const monday = { instrumentKey: 'XYZ', tradingDate: '2026-10-12', closeInstant: '2026-10-12T20:00:00Z', previousCloseInstant: '2026-10-09T20:00:00Z', resolution: { kind: 'Available', mark: { revisionId: 'm-1', revisionNumber: 1, price: '51.20', source: 'Manual', savedAt: '2026-10-12T21:30:00Z' } } } as const;
-    drawer(openDetailAt([PC1, afterMarks], monday));
-
-    const dated = screen.getByRole('region', { name: 'At the Mon Oct 12 Marks' });
-    expect(screen.queryByRole('region', { name: 'At Mon Oct 12 close', hidden: true })).toBeNull();
-    expect(within(dated).getAllByRole('term').map((term) => term.textContent)).toEqual([
-      'Mark',
-      'Realized to date',
-      'Open P&L',
-      'Current Marked Trade P&L',
-      'Incurred fees',
-      'Risk to stop',
-      'Worst case',
-      'Reward to target',
-    ]);
-    expect(termValue(dated, 'Mark')).toBe('$51.20');
-    expect(termValue(dated, 'Current Marked Trade P&L')).toBe('+$65.00 · +0.26R');
-
-    const atEntry = screen.getByRole('region', { name: 'At entry' });
-    expect(within(atEntry).getAllByRole('term').map((term) => term.textContent)).toEqual(['Quantity', 'Average entry', 'Risk from entry', 'Reward from entry']);
-    expect(termValue(atEntry, 'Quantity')).toBe('40 shares');
-    expect(termValue(atEntry, 'Average entry')).toBe('$50.30');
-    expect(termValue(atEntry, 'Risk from entry')).toBe('$112.00 · 0.45R');
-    expect(termValue(atEntry, 'Reward from entry')).toBe('$228.00 · 0.91R');
-  });
-
-  it("should list each Underlying condition's value at expiration and distance on the Underlying under its track", () => {
-    drawer(thursday(), wednesdayAndThursday());
-    const lines = screen.getAllByRole('list', { name: 'Conditions' });
-    expect(lines).toHaveLength(1);
-    const [stop, target] = within(lines[0]!).getAllByRole('listitem');
-    expect(within(stop!).getByText('Stop on MNO')).toBeTruthy();
-    expect(termValue(stop!, 'Value at expiration')).toBe('$4.00');
-    expect(termValue(stop!, 'Distance on MNO')).toBe('2.00');
-    expect(within(target!).getByText('Target on MNO')).toBeTruthy();
-    expect(termValue(target!, 'Value at expiration')).toBe('$0.50');
-    expect(termValue(target!, 'Distance on MNO')).toBe('1.50');
-    // The option-price track carries no such lines: its conditions are in the Conditions card.
-    expect(within(screen.getByRole('img', { name: /^Option price:/ }).closest('.track-block') as HTMLElement).queryByRole('list', { hidden: true })).toBeNull();
-  });
 });
 
 describe('Today drawer (W8): gaps and crowding (T8P.16-B)', () => {
@@ -214,69 +167,6 @@ describe('Today drawer (W8): gaps and crowding (T8P.16-B)', () => {
 });
 
 // Figures the retired Valuation section and conditions table gave, moved here with their expected values (T8P.27, revision 86).
-describe('Today drawer: figures moved from the retired Valuation section and conditions table (T8P.27)', () => {
-  useFixedClock();
-  const monContext = { tradingDate: '2026-10-12', price: '51.20', revisionId: 'm-0', revisionNumber: 1, closeInstant: MON_CLOSE };
-
-  it('should show the At the Mon Oct 12 Marks section with its own figures beside a missing Mark and its stale context, and realized to date signed', () => {
-    drawer(openDetailAt([PC1, PC2], tuesday({ kind: 'Missing', stale: monContext })));
-    const dated = screen.getByRole('region', { name: 'At the Mon Oct 12 Marks' });
-    expect(termValue(dated, 'Mark')).toBe('$51.20');
-    expect(termValue(dated, 'Open P&L')).toBe('+$100.00');
-    expect(termValue(dated, 'Current Marked Trade P&L')).toBe('+$100.00 · +0.40R');
-    expect(termValue(dated, 'Risk to stop')).toBe('$370.00 · 1.48R');
-    expect(termValue(dated, 'Reward to target')).toBe('$480.00 · 1.92R');
-    cleanup();
-
-    // Realized to date carries a plus sign for a gain and a minus sign for a loss in the dated figures.
-    const withRealized = (value: bigint) => {
-      const detail = openDetailAt([PC1, PC2], tuesday({ kind: 'Missing', stale: monContext }));
-      const realizedToDate = { kind: 'Value' as const, value: Rational.of(value) };
-      const { datedLine } = detail.current;
-      if (!datedLine) throw new Error('fixture needs a dated line');
-      return { ...detail, current: { ...detail.current, evaluation: { ...detail.current.evaluation, realizedToDate }, datedLine: { ...datedLine, evaluation: { ...datedLine.evaluation, realizedToDate } } } };
-    };
-    drawer(withRealized(120n));
-    expect(termValue(screen.getByRole('region', { name: 'At the Mon Oct 12 Marks' }), 'Realized to date')).toBe('+$120.00');
-    cleanup();
-
-    drawer(withRealized(-75n));
-    expect(termValue(screen.getByRole('region', { name: 'At the Mon Oct 12 Marks' }), 'Realized to date')).toBe('−$75.00');
-  });
-
-  it('should list a Long Call Stop and Target with their value at expiration and distance on the Underlying, and the O-S2 Wednesday Stop on MNO', () => {
-    const conditionOf = (role: string) => within(screen.getByRole('list', { name: 'Conditions' })).getAllByRole('listitem').find((item) => within(item).queryByText(role));
-    drawer(optionOpenDetail('O-C', [OC_PC1, OC_PC2, OC_X1], THURSDAY));
-    const stop = conditionOf('Stop on XYZ')!;
-    expect(termValue(stop, 'Value at expiration')).toBe('$0.00');
-    expect(termValue(stop, 'Distance on XYZ')).toBe('4.00');
-    const target = conditionOf('Target on XYZ')!;
-    expect(termValue(target, 'Value at expiration')).toBe('$5.00');
-    expect(termValue(target, 'Distance on XYZ')).toBe('8.00');
-    cleanup();
-
-    // Wednesday 10-14: MNO 43.20, the put 3.70.
-    drawer(optionOpenDetail('O-S2', [OS2_S1], { tradingDate: '2026-10-14', closeInstant: '2026-10-14T20:00:00Z', contractMark: '3.70', underlyingMark: '43.20' }));
-    const mno = conditionOf('Stop on MNO')!;
-    expect(termValue(mno, 'Value at expiration')).toBe('$4.00');
-    expect(termValue(mno, 'Distance on MNO')).toBe('2.20');
-  });
-
-  // A222 (T8P.23-B8): an Underlying condition with no reading says why at the figure length, never a bare "—".
-  it('should word an unavailable condition result in the distance on the Underlying line at the figure length, with no bare dash', () => {
-    const open = optionOpenDetail('O-C', [OC_PC1, OC_PC2, OC_X1], THURSDAY);
-    const reason = { reason: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'XYZ' }, date: '2026-11-19' } as const;
-    const conditions = open.current.evaluation.conditions.map((c) => ({ ...c, result: { kind: 'Unavailable', ...reason } as const }));
-    drawer({ ...open, current: { ...open.current, evaluation: { ...open.current.evaluation, conditions } } });
-    const lines = within(screen.getByRole('list', { name: 'Conditions' })).getAllByRole('listitem');
-    expect(lines).toHaveLength(2);
-    for (const line of lines) {
-      expect(termValue(line, 'Distance on XYZ')).toBe('Mark missing: XYZ, Thu Nov 19');
-      expect(line.textContent).not.toContain('—');
-    }
-  });
-});
-
 // O-C3 (XYZ's Long Call): the replay's Instruments are the Underlying then the contract, and the view names the table's column dates (A232).
 describe('Today drawer: the Marks table (W29)', () => {
   const XYZ: Instrument = { kind: 'Stock', symbol: 'XYZ' };
@@ -561,5 +451,40 @@ describe('Price track: open lots', () => {
     // O-C: Mon Buy 1 @ 2.10, Mon Buy 1 @ 1.90, Tue Sell 1 @ 3.00. The first lot is sold, so only the $1.90 lot is open.
     drawer({ ...optionOpenDetail('O-C', [OC_PC1, OC_PC2, OC_X1], THURSDAY), openAverage: rational('1.90') });
     expect(parts(optionTrack(), '.tick').map((tick) => tick.getAttribute('aria-label'))).toEqual(['$1.90 · Mon Oct 12']);
+  });
+});
+
+// Each figure has one home (P116): At entry and the dated card are Plan and Risk's Since the last Marks group and the rail's dated line, and a
+// condition's value at expiration and distance are Plan and Risk's Conditions rows (T8R.10, T8R.12, T8R.13, T8R.14).
+describe('Today drawer: one place for each figure', () => {
+  // 40 shares bought Monday 17:00 New York, after Monday's Marks: the dated card and At entry both had content.
+  const afterMarks = positionChange('pc-9', 3, [execution('ex-9', '2026-10-12T21:00:00Z', 4, '40', '50.30', '1.00')]);
+  const monday = { instrumentKey: 'XYZ', tradingDate: '2026-10-12', closeInstant: '2026-10-12T20:00:00Z', previousCloseInstant: '2026-10-09T20:00:00Z', resolution: { kind: 'Available', mark: { revisionId: 'm-1', revisionNumber: 1, price: '51.20', source: 'Manual', savedAt: '2026-10-12T21:30:00Z' } } } as const;
+
+  it('should not show the At entry card (gone)', () => {
+    drawer(openDetailAt([PC1, afterMarks], monday));
+    expect(screen.queryByRole('region', { name: 'At entry', hidden: true })).toBeNull();
+    expect(screen.queryByText('Risk from entry')).toBeNull();
+    expect(screen.queryByText('Reward from entry')).toBeNull();
+  });
+
+  it('should not show the At the Thu Oct 15 Marks card (gone)', () => {
+    // The Mark for Friday is missing, so the Detail carries the line dated at the last Marks: Thursday's.
+    const missing = openDetailAt([PC1, PC2], tuesday({ kind: 'Missing', stale: { tradingDate: '2026-10-15', price: '51.20', revisionId: 'm-0', revisionNumber: 1, closeInstant: '2026-10-15T20:00:00Z' } }));
+    const { datedLine } = missing.current;
+    if (!datedLine) throw new Error('fixture needs a dated line');
+    drawer({ ...missing, current: { ...missing.current, datedLine: { ...datedLine, tradingDate: '2026-10-15' } } });
+    expect(screen.queryByRole('region', { name: /^At the .* Marks$/, hidden: true })).toBeNull();
+    expect(screen.queryByText('Current Marked Trade P&L')).toBeNull();
+    expect(screen.queryByText('Incurred fees')).toBeNull();
+  });
+
+  it("should not show a condition's value at expiration or distance on the Underlying under its track (gone)", () => {
+    drawer(thursday(), wednesdayAndThursday());
+    expect(screen.queryByRole('list', { name: 'Conditions', hidden: true })).toBeNull();
+    expect(screen.queryByText('Value at expiration')).toBeNull();
+    expect(screen.queryByText('Distance on MNO')).toBeNull();
+    // The tracks themselves stay.
+    expect(screen.getByRole('img', { name: /^MNO:/ })).toBeTruthy();
   });
 });

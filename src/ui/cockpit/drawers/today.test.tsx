@@ -21,7 +21,7 @@ describe('today drawer component (A216)', () => {
         }}
         notes={{ stale: 'Stale context: $51.80 from Tue Oct 13 close (stale, not used in any current figure)' }}
         tracksHeading="Where the price sits"
-        tracks={[{ title: 'XYZ', accessibleName: 'XYZ: Stop $47.50, Target $56.00, now $52.30', min: 45, max: 58, zones: [], markers: [{ kind: 'now', label: 'now', price: 52.3 }], ticks: [], conditionLines: [] }]}
+        tracks={[{ title: 'XYZ', accessibleName: 'XYZ: Stop $47.50, Target $56.00, now $52.30', min: 45, max: 58, zones: [], markers: [{ kind: 'now', label: 'now', price: 52.3 }], ticks: [] }]}
       />,
     );
     const table = screen.getByRole('table', { name: 'Marks' });

@@ -1070,3 +1070,27 @@ The price track's entry dot is the view's `openAverage` (A236), no longer Entry 
 
 - Existing expectations that gained the field: `today.props.test.ts` (the O-S2 views gained `openAverage: 1.25`), `track.test.tsx` and `today.test.tsx` (`ticks: []`).
 - No browser spec reads the track's entry dot or ticks (grep of `e2e` for `.mk`, `.track`, `.dot`, `data-kind` finds none), so no browser line changed.
+
+## T8R.9
+
+Today drops At entry, the dated "At the <date> Marks" card and the Underlying condition lines under its track (items 4, 5, 7). Each figure's home is Plan and Risk (T8R.10, T8R.12), the rail's dated line (T8R.13) and its Conditions card (T8R.14).
+
+Retired unit expectations (the replacement is the three cases in "Today drawer: one place for each figure"):
+
+- `src/ui/cockpit/drawers/today.props.test.ts`, T8P.16's case 5 "should show At the Mon Oct 12 Marks and At entry in their existing figures" (was about line 128). New homes: Plan and Risk's "Since the last Marks" group (T8R.12, `plan-risk.test.tsx`) and the rail's dated line (T8R.13).
+- `today.props.test.ts`, T8P.16's case 4 "should list each Underlying condition's value at expiration and distance on the Underlying under its track" (was about line 157; A223 reversed). New homes: Plan and Risk's Conditions rows (T8R.10) and the rail's Conditions card (T8R.14).
+- `today.props.test.ts`, the whole describe "figures moved from the retired Valuation section and conditions table (T8P.27)" (was about lines 217 to 279): the dated card with its signed Realized to date (T8R.13), the Long Call and O-S2 Stop and Target value at expiration and distance (T8R.10, T8R.14), and the unavailable condition result worded at figure length (T8R.10, T8R.14).
+- `src/ui/screens/trade-detail/Today.test.tsx`, deleted with both its cases: the stock At entry section and the option contract-count At entry (T8R.12, "Since the last Marks").
+- `Placed.test.tsx` (the Settlement Due case's negative assertions on tracks, condition lines and At entry) stays: it asserts absence, which still holds. `SettlementDue.test.tsx` held no removed figure. The Position-drawer case named in the handoff was already retired by T8R.7.
+
+Retired browser expectations:
+
+- `e2e/d4/breach-overrun.spec.ts`: the dated figures (Mark, Open P&L, Risk to stop) and the At entry figures (Quantity, Average entry, Risk from entry, Reward from entry) on Today; now two absence checks and the Yesterday Mark. Homes: T8R.12, T8R.13.
+- `e2e/d4/expected-mark.spec.ts`: the "At the Fri Oct 9 Marks" heading and its Mark figure; the heading is now an absence check. Home: T8R.13.
+- `e2e/d4/responsive-a11y.spec.ts`: the dated and At entry headings and Quantity; now absence checks, and the accessibility scan label no longer names the cards.
+- `e2e/d7s/entry-beyond-stop.spec.ts`: "Risk from entry $735.00 · 0.98R" on Today; the case keeps Actual initial risk in Plan and Risk. Its new home (Plan and Risk's "Risk from that price") is covered by `plan-risk.test.tsx` only; no browser line reads it any more.
+- `e2e/support/detail/today.ts`: `dated`, `datedHeading`, `datedFigure`, `atEntryHeading`, `atEntryFigure` removed; `todayCard` added for the absence checks.
+
+Removed code: `atEntryOf`, `valuedAtOf`, `conditionLineOf` (`today.props.ts`); `FigureCard` (`today.tsx`); `TodayDrawerProps.atEntry` and `.valuedAt`; `PriceTrackProps.conditionLines` and the track's Conditions list; the `.conds` rules in `styles/today.css`. `CurrentMarksCard` was already gone (T8R.7).
+
+Orphans in files this lane does not own: none found. `ConditionReading.underlying` and `trigger` are now unread by Today, as A230 says; the `underlying` field's removal waits for the next fixture refreeze.
