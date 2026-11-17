@@ -659,8 +659,8 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T8R.2 | 0 | SH | In progress from `1a01d594` | |
 | T8R.2-F1 | 0 | SH | In progress from `7fefc1f2` | |
 | T8R.3 | 0 | CN | In progress from `1a01d594` | |
-| T8R.4 | 0 | PH | In progress from `1a01d594` | |
-| T8R.4-F1 | 0 | PH | In progress from `15811755` | |
+| T8R.4 | 0 | PH | Done | `c7a9a3ca`; B1 met by F1 |
+| T8R.4-F1 | 0 | PH | Done | `bed2afe0` |
 | T8R.5 | 1 | PO | Not started | |
 | T8R.6 | 1 | TD | Not started | |
 | T8R.7 | 1 | TD | Not started | |
