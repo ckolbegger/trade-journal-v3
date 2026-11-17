@@ -1010,3 +1010,15 @@ T8R.8 is committed as `e1c1ddc1` (lane TD). It has 3 cases, each red then green,
 **New word.** The tick's name, "$3.30 · Fri Oct 16" (A237).
 
 **Note for later fixtures.** The fixture builders in `tests/support` do not set `openAverage`.
+
+## ocr: T8R.8
+
+- **Commit:** `e1c1ddc1`
+- **Session:** c201279a-4b7a-4326-a117-3144a34a5cf8
+- **Files reviewed:** 7 (7 excluded)
+- **Comments:** 1
+- **Raw output:** `ocr/T8R.8-e1c1ddc1.json`
+
+**Finding (medium, bug, Valid).** `track.tsx:18` makes each lot tick a `role="img"` span. The ticks sit inside the `.track` div, which is itself `role="img"`. ARIA treats the children of an `img` as presentational, so screen readers may not announce the ticks' names ("$3.30 · Fri Oct 16") that A237 asks for. The unit test reads `aria-label` from the DOM, so it passes without proving the name is exposed.
+
+This becomes bug task **T8R.8-B1**. It runs in lane TD after T8R.9, which is already working in that worktree.
