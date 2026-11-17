@@ -1754,14 +1754,22 @@ test.describe('T2.64 Detail cards', () => {
         });
         expect(row.width, 'Fulfillment row width').toBeLessThanOrEqual(480.5);
         // The values of the description lists above the Fulfillment row in the drawer column (the Summary card now sits in the rail).
+        // The Journal's items are one dated line now (T8R.15), so the value columns are the Plan and Risk panel's.
+        await openDrawer(page, 'Plan and Risk');
         const edges = await page.evaluate((rowTop) => {
           // The Journal's prose answers (`dl.answers`) fill their own line, so they are not value columns.
           return [...document.querySelectorAll('.cockpit-drawers [role="tabpanel"]:not([hidden]) dl:not(.answers) dd')]
             .filter((dd) => dd.getBoundingClientRect().bottom <= rowTop)
             .map((dd) => dd.getBoundingClientRect().right);
         }, await fulfillment.locator('dt').first().evaluate((dt) => dt.parentElement!.getBoundingClientRect().top));
+        // The Plan and Risk figure lists are two columns at 1280, narrower than Fulfillment's one 480 px column, so no value column shares its right edge: the lists share the left edge instead.
+        const lefts = await page.evaluate(() => [...document.querySelectorAll('.cockpit-drawers [role="tabpanel"]:not([hidden]) dl.figure-grid')].map((dl) => dl.getBoundingClientRect().left));
+        const fulfillmentLeft = await fulfillment.locator('dl').first().evaluate((dl) => dl.getBoundingClientRect().left);
+        expect(lefts.length, 'Plan and Risk figure lists').toBeGreaterThan(0);
+        for (const left of lefts) expect(Math.abs(left - fulfillmentLeft), `Fulfillment left edge ${fulfillmentLeft} vs figure list ${left}`).toBeLessThanOrEqual(1);
         expect(edges.length, 'description-list values above the Fulfillment row').toBeGreaterThan(0);
-        expect(Math.abs(row.valueRight - Math.max(...edges)), `Fulfillment value right edge ${row.valueRight} vs drawer values ${edges.join(',')}`).toBeLessThanOrEqual(1);
+        expect(row.valueRight, `Fulfillment value right edge ${row.valueRight} within drawer values ${edges.join(',')}`).toBeLessThanOrEqual(Math.max(...edges) + 1);
+        await openDrawer(page, 'Journal');
       }
       const pairs = await journal.locator('dl.answers dt').evaluateAll((dts) =>
         dts.map((dt) => {

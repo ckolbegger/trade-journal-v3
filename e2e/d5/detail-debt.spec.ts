@@ -22,8 +22,8 @@ test.describe('B5.3 Reflect on Trade Detail', () => {
     await expect(detail.heading(page, 'XYZ')).toBeVisible();
     await openDrawer(page, 'Journal');
     await expect(detail.journal(page).getByText('Deferred, answered', { exact: true })).toBeVisible();
-    await expect(detail.journal(page).getByText('Answered', { exact: true })).toBeVisible();
-    await expect(detail.journal(page).getByText('2026-10-13 12:30')).toBeVisible();
+    // The dated line shows the moment (Tue 10:00 am), not the 12:30 answer time; it adds "· written" only for a later date, and this answer came the same day (W27, A239).
+    await expect(detail.journal(page).locator('p.journal-line', { hasText: 'Trade Detail' })).toHaveText('Trade Detail · Tue Oct 13, 10:00 am');
     await expect(detail.anywhere(() => detail.reflectionOwed(page))).toHaveCount(0);
     await expect(detail.anywhere(() => detail.dueNote(page, 'Due in the Review after next'))).toHaveCount(0);
 

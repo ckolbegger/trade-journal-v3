@@ -561,3 +561,12 @@ Result: the override stays; no code changed. The test does not build its Detail 
   - before: `... toEqual({ kind: 'Unavailable', reason: 'AwaitingClose', after: '2026-10-12' });`
   - after: `... toEqual({ kind: 'Unavailable', reason: 'AwaitingClose', after: '2026-10-12', due: '2026-10-13' });`
 - After: the three files pass together (3 files, 33 tests).
+
+## T8R.15-F2
+
+Test-only; no product code changed.
+
+- Red at base `6ea5d5aa`: B5.3 failed at `detail-debt.spec.ts:25` (`getByText('Answered', { exact: true })`: element(s) not found); T2.64 failed at `ui-alignment.spec.ts:1763` ("description-list values above the Fulfillment row": expected > 0, received 0).
+- B5.3: the Answered and `2026-10-13 12:30` expectations became one on the dated line, `Trade Detail · Tue Oct 13, 10:00 am`. The line shows the moment, not the answer time, and has no "· written" because the answer came the same day (W27, A239). The time 12:30 now appears nowhere on the Journal.
+- T2.64: Fulfillment renders in the footer below the drawers. The Journal's `<dl>` items are gone, so the check now opens Plan and Risk. Its figure lists are two 259 px columns at 1280, while Fulfillment is one 480 px column, so no value column shares its right edge any more. The check now asserts the same left edge for the figure lists and Fulfillment, and the Fulfillment value right edge within the drawer values' right extent. The row-width cap, answers-below-questions and accessibility parts are unchanged.
+- Green: both pass; the whole of `ui-alignment.spec.ts` and `detail-debt.spec.ts` passes (46).
