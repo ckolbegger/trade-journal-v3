@@ -70,6 +70,13 @@ export interface ConditionStatus {
   readonly kind: 'UnderlyingPrice' | 'StructureValue';
   readonly boundary: string;
   readonly result: CalculationResult<ConditionReading>;
+  // A110: an option's Underlying condition reads the Underlying's Mark by itself. While only the contract's Mark is missing the dollar `result`
+  // above is Unavailable, but the Underlying's status and price distance are still known, from today's Mark: present only then.
+  readonly underlyingReading?: {
+    readonly status: ConditionReading['status'];
+    readonly trigger: NonNullable<ConditionReading['trigger']>;
+    readonly evidence: ConditionReading['evidence'];
+  };
 }
 
 export interface TradeEvaluationInput {
@@ -325,15 +332,20 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
   const stopBelow = option !== undefined && (option.right === 'Call') === (quantity.compare(ZERO) > 0);
   // One option condition read at the contract's Mark and the Underlying's price: the risk or reward the
   // Position keeps while the trigger holds, the Overrun once it is crossed, and the Underlying's distance.
-  const optionReadingOf = (role: 'Stop' | 'Target', trigger: Rational, measureValue: Rational, mark: Rational, price: Rational) => {
+  // The Underlying's side of that reading needs only its Mark: whether the trigger is crossed and how far.
+  const optionTriggerOf = (role: 'Stop' | 'Target', trigger: Rational, price: Rational) => {
     const toward = (role === 'Stop') === stopBelow ? price.sub(trigger) : trigger.sub(price);
     const crossed = toward.compare(ZERO) <= 0;
+    return { crossed, underlying: { distance: atLeastZero(toward), beyond: crossed ? ZERO.sub(toward) : null } };
+  };
+  const optionReadingOf = (role: 'Stop' | 'Target', trigger: Rational, measureValue: Rational, mark: Rational, price: Rational) => {
+    const { crossed, underlying } = optionTriggerOf(role, trigger, price);
     const raw = quantity.mul(multiplier).mul(role === 'Stop' ? mark.sub(measureValue) : measureValue.sub(mark));
     return {
       crossed,
       amount: crossed ? ZERO : atLeastZero(raw),
       overrun: crossed ? atLeastZero(ZERO.sub(raw)) : null,
-      underlying: { distance: atLeastZero(toward), beyond: crossed ? ZERO.sub(toward) : null },
+      underlying,
     };
   };
   // A condition read at the contract's own Mark (stock, or an option-price condition): the distance is the
@@ -359,11 +371,21 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
   });
   const optionConditionOf = (role: 'Stop' | 'Target', index: number, basis: ConditionBasis): ConditionStatus => {
     if (basis.condition.kind === 'StructureValue') return conditionOf(role, index, basis.condition.price, 'StructureValue');
+    // Only the contract's own Mark is absent (missing or acknowledged), not the Position or its session: the Underlying's Mark still reads.
+    const contractMarkAbsent = lots.length > 0 && covered !== undefined && !foreign && !openedAfterClose && !pastExpiration && !usableMark;
+    const underlyingOnly = contractMarkAbsent && underlyingMark ? optionTriggerOf(role, decimal(basis.condition.price), decimal(underlyingMark.price)) : undefined;
     return {
       id: `${role.toLowerCase()}-${index + 1}`,
       role,
       kind: 'UnderlyingPrice',
       boundary: basis.condition.price,
+      ...(underlyingOnly && underlyingMark && {
+        underlyingReading: {
+          status: statusOf(role, underlyingOnly.crossed),
+          trigger: underlyingOnly.underlying,
+          evidence: { instrument: underlyingInstrument, date: underlyingDate, mark: underlyingMark },
+        },
+      }),
       result: markedWithUnderlying((mark, price, source): ConditionReading => {
         const r = optionReadingOf(role, decimal(basis.condition.price), basis.valueAtExpiration!, mark, price);
         return {

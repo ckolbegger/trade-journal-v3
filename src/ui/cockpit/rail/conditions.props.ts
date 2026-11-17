@@ -38,7 +38,7 @@ export function conditionText(plan: Plan, condition: Stated): string {
 
 // Row 1's distance (W21), formatted from the reading's trigger in the condition's own price (A230, ADR 0001): "$1.80 away", or "3.00 away" for an
 // option Trade's Underlying condition, which is measured in the Underlying's price.
-function distanceText(plan: Plan, condition: Condition, reading: Reading): string | undefined {
+function distanceText(plan: Plan, condition: Condition, reading: Pick<Reading, 'status' | 'trigger'>): string | undefined {
   const { trigger } = reading;
   if (!trigger) return undefined;
   const price = isOption(plan) && condition.kind === 'UnderlyingPrice' ? underlyingPrice : money;
@@ -63,6 +63,9 @@ function measuredItem(plan: Plan, condition: Condition, waiting: boolean, dated:
   // An Unavailable condition shows its dated distance, else says why in the label's words, except while the Trade waits for its first Mark: then
   // rows 1 and 2 only show, as on a Closed Detail.
   if (result.kind === 'Unavailable' && !waiting) {
+    // A110: an Underlying condition whose own Mark is in reads it today, undated, even while the contract's Mark is missing.
+    const current = condition.underlyingReading && distanceText(plan, condition, condition.underlyingReading);
+    if (current !== undefined) return { ...item, figure: current, figureTone };
     const figure = datedDistance(plan, condition, dated);
     return figure === undefined ? { ...item, figure: unavailableLabel(result) } : { ...item, figure, figureTone };
   }

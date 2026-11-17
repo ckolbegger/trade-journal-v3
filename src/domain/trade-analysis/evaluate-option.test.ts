@@ -236,3 +236,41 @@ describe('at-entry line for options (A110, decision 26)', () => {
     });
   });
 });
+
+describe('each Mark has its own availability (A110, A231)', () => {
+  const contractFrame = (resolution: { kind: 'Missing' } | { kind: 'AcknowledgedUnavailable' }): ObservationFrame => ({
+    instrument: OC_CONTRACT,
+    tradingDate: '2026-10-12',
+    closeInstant: MONDAY_CLOSE,
+    resolution,
+  });
+  const readFrom = (resolution: { kind: 'Missing' } | { kind: 'AcknowledgedUnavailable' }, price: string) =>
+    evaluate({ state: derivedState(ocRecord([OC_PC1, OC_PC2])), frame: contractFrame(resolution), underlyingFrame: frameOf(XYZ, price) }).conditions;
+
+  it('should read an Underlying condition from the current Underlying Mark, undated, when only the contracts Mark is missing', () => {
+    for (const resolution of [{ kind: 'Missing' }, { kind: 'AcknowledgedUnavailable' }] as const) {
+      const conditions = readFrom(resolution, '52.00');
+      const [stop, target] = [conditions[0]!, conditions[1]!];
+      // The dollar figures need the contract's Mark, so they stay Unavailable; the Underlying's reading stands beside them.
+      expect(stop.result.kind).toBe('Unavailable');
+      expect(stop.underlyingReading && { status: stop.underlyingReading.status, trigger: stop.underlyingReading.trigger }).toEqual({
+        status: 'Active',
+        trigger: { distance: Rational.of(4n), beyond: null },
+      });
+      expect(target.underlyingReading?.trigger.distance).toEqual(Rational.of(8n));
+    }
+  });
+
+  it('should read a crossed Underlying condition from the Underlying Mark alone with its distance beyond the trigger', () => {
+    const stop = readFrom({ kind: 'Missing' }, '47.50')[0]!;
+    expect(stop.underlyingReading && { status: stop.underlyingReading.status, trigger: stop.underlyingReading.trigger }).toEqual({
+      status: 'Breached',
+      trigger: { distance: Rational.of(0n), beyond: Rational.of(1n, 2n) },
+    });
+  });
+
+  it('should give no Underlying reading when the Underlying Mark is missing too', () => {
+    const conditions = evaluate({ state: derivedState(ocRecord([OC_PC1, OC_PC2])), frame: contractFrame({ kind: 'Missing' }), underlyingFrame: missingFrame(XYZ, '2026-10-12', MONDAY_CLOSE) }).conditions;
+    expect(conditions.map((c) => c.underlyingReading)).toEqual([undefined, undefined]);
+  });
+});

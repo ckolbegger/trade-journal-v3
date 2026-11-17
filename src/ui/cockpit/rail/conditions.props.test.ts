@@ -72,6 +72,19 @@ describe('Conditions card (W5, W6)', () => {
     expect(heads(stockDated)[0]).toMatch(/^Stop · \$[\d,.]+ away · Mon Oct 12 Mark$/);
   });
 
+  it('should show an Underlying row from the current Underlying Mark, undated, when only the contracts Mark is missing, and keep the option-price rows dated', () => {
+    // Tuesday's MNO Mark is in, the put's is missing; Monday's Marks measured everything.
+    const missing = os2({ ...TUESDAY, contractMark: undefined });
+    const monday = os2({ tradingDate: '2026-10-12', closeInstant: '2026-10-12T20:00:00Z', contractMark: '1.90', underlyingMark: '43.50' });
+    const view: OpenTradeDetail = { ...missing, current: { ...missing.current, datedLine: { tradingDate: '2026-10-12', evaluation: monday.current.evaluation } } };
+    const heads = blocks(renderCard(view)).map((item) => item.querySelector('.condition-head')?.textContent);
+    // MNO 44.00 today: the Underlying rows carry no date; the option-price rows (the put's own Mark) still say Monday's.
+    expect(heads[0]).toBe('Stop · 3.00 away');
+    expect(heads[1]).toMatch(/^Stop · \$[\d,.]+ away · Mon Oct 12 Marks$/);
+    expect(heads[2]).toBe('Target · 0.50 away');
+    expect(heads[3]).toMatch(/^Target · \$[\d,.]+ away · Mon Oct 12 Marks$/);
+  });
+
   it("should show an Unavailable condition's reason at the label length on row 1", () => {
     // MNO has no Mark on Tuesday, so the Underlying conditions are Unavailable while the option-price ones are measured.
     const items = blocks(renderCard(os2({ ...TUESDAY, underlyingMark: undefined })));

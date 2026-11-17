@@ -87,14 +87,18 @@ function conditionsGroup(view: TradeDetailView, timeZone: string): PlanRiskGroup
   const rows = conditions.map((c) => {
     // An option's Underlying condition is measured in the Underlying's price (C3); every other condition in dollars.
     const priced = (value: Rational) => (option && c.kind === 'UnderlyingPrice' ? underlyingPrice(value) : money(value));
-    const distanceText = ({ status, trigger }: Reading): string => {
+    const distanceText = ({ status, trigger }: Pick<Reading, 'status' | 'trigger'>, dateLabel: string): string => {
       if (!trigger) return '';
-      if (status === 'Active') return `${priced(trigger.distance)} away${datedLabel}`;
-      return `${status} · ${priced(trigger.beyond ?? trigger.distance)} past${datedLabel}`;
+      if (status === 'Active') return `${priced(trigger.distance)} away${dateLabel}`;
+      return `${status} · ${priced(trigger.beyond ?? trigger.distance)} past${dateLabel}`;
     };
-    const distance = figureOf(c, distanceText);
+    // A110: an Underlying condition whose own Mark is in reads it today, undated, while the contract's Mark is missing; its dollar figure needs both
+    // Marks, so it stays the dated line's and says so (one date per row).
+    const currentReading = dated && !due ? view.current.evaluation.conditions.find((n) => n.id === c.id)?.underlyingReading : undefined;
+    const distance = currentReading ? distanceText(currentReading, '') : figureOf(c, (reading) => distanceText(reading, datedLabel));
     const label = c.role === 'Stop' ? 'Risk to stop' : 'Reward to target';
-    const risk = figureOf(c, ({ status, distance: toward, overrun }) => `${label} ${status === 'Active' || !overrun ? measureText(toward) : `${measureText(overrun)} past`}`);
+    const riskFigure = figureOf(c, ({ status, distance: toward, overrun }) => `${label} ${status === 'Active' || !overrun ? measureText(toward) : `${measureText(overrun)} past`}`);
+    const risk = currentReading && c.result.kind === 'Value' ? `${riskFigure}${datedLabel}` : riskFigure;
     const at = Number(c.id.split('-')[1]) - 1;
     // Only an option's Underlying condition has one: the contract's value if the Underlying sits at the boundary at expiration.
     const basis = (c.role === 'Stop' ? view.baseline.stopBasis : view.baseline.targetBasis)[at];

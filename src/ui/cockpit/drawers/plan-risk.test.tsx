@@ -215,6 +215,23 @@ describe('Plan and Risk: Conditions (W31)', () => {
     for (const note of notes) expect(note.textContent).toMatch(/ · Thu Oct 15 Marks$/);
   });
 
+  it('should read an Underlying condition from the current Underlying Mark, undated, when only the contracts Mark is missing, and date the dollar figures that need the contracts Mark', () => {
+    // Fri 10-16: XYZ's Mark is in (58.10, 1.90 below the Target at 60.00) but the call's is missing. The Stop is an option-price condition.
+    const missing = (c: Condition): Condition => ({ ...c, result: { kind: 'Unavailable', reason: 'MarkMissing', instrument: OC_CONTRACT, date: '2026-10-16' } });
+    const underlyingOnly = (c: Condition): Condition => ({
+      ...missing(c),
+      underlyingReading: { status: 'Active', trigger: { distance: R(190n), beyond: null }, evidence: c.result.kind === 'Value' ? c.result.value.evidence : undefined! },
+    });
+    const live = oc3([stop(), target()]);
+    const view = oc3([missing(stop()), underlyingOnly(target())], { datedLine: { tradingDate: '2026-10-15', evaluation: live.current.evaluation } });
+    render(<PlanRiskDrawer view={view} timeZone="America/New_York" />);
+    const conditions = screen.getByRole('region', { name: 'Conditions' });
+    expect(rowsOf(within(conditions).getByRole('table')).map((cells) => cells.slice(1, 3))).toEqual([
+      ['$2.20 away · Thu Oct 15 Marks', 'Risk to stop $220.00 · 1.10R'],
+      ['1.90 away', 'Reward to target $180.00 · 0.90R · Thu Oct 15 Marks'],
+    ]);
+  });
+
   it('should show the expired note and no dated figures on a Settlement Due Trade whose current Mark is missing', () => {
     // On 20 Nov the contract is due for settlement with no Mark; a dated line from stale Marks must not stand in (W6).
     const friday = { tradingDate: '2026-11-20', closeInstant: '2026-11-20T21:00:00Z', underlyingMark: '52.00' };
