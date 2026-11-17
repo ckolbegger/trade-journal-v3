@@ -1,0 +1,12 @@
+# D08R TDD log, T8R.22
+
+One file per task (decision 111), so parallel lanes never edit one file. Each row is one single-case run; see `../tdd-log.md` for the rules.
+
+| T8R.22 | should give the Underlying.s Marks at the Today and Yesterday columns with their change | red | `npx vitest run src/coordinators/trade-views/option-views.test.ts -t "should give the Underlying.s Marks at the Today and Yesterday columns with their change"` | exit 1; Tests  1 failed, 24 skipped (25) | AssertionError: expected undefined to deeply equal { today: ObjectContaining{…}, …(2) }  |
+| T8R.22 | should give the Underlying.s Marks at the Today and Yesterday columns with their change | green | `npx vitest run src/coordinators/trade-views/option-views.test.ts -t "should give the Underlying.s Marks at the Today and Yesterday columns with their change"` | exit 1; Tests  1 failed, 24 skipped (25) | AssertionError: expected { …(3) } to deeply equal { today: ObjectContaining{…}, …(2) }  |
+| T8R.22 | should give a missing Mark as a gap and no change | red | `npx vitest run src/coordinators/trade-views/option-views.test.ts -t "should give a missing Mark as a gap and no change"` | exit 0; Tests  1 passed, 24 skipped (25) |  |
+| T8R.22 | should give the Underlying.s Marks at the Today and Yesterday columns with their change | green | `npx vitest run src/coordinators/trade-views/option-views.test.ts -t "should give the Underlying.s Marks at the Today and Yesterday columns with their change"` | exit 0; Tests  1 passed, 24 skipped (25) |  |
+| T8R.22 | should give a missing Mark as a gap and no change | green | `npx vitest run src/coordinators/trade-views/option-views.test.ts -t "should give a missing Mark as a gap and no change"` | exit 0; Tests  1 passed, 24 skipped (25) |  |
+
+| note | should give a missing Mark as a gap and no change | First-run pass, flagged for the user. The change-only-when-both-Available guard was written in case 1's green (the series read and subtraction are one function). Mutation: change given whenever both points exist, as zero. Command: npx vitest run src/coordinators/trade-views/option-views.test.ts -t "should give a missing Mark as a gap and no change". Failure: AssertionError: expected { …(3) } to deeply equal { today: ObjectContaining{…}, …(1) }. Restored; green rerun. |
+| refactor | none | No changes worth making. Case 1 first red had a test price expectation of 45.50 corrected to 45.5 (Market Data normalizes the decimal). |

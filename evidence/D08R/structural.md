@@ -451,3 +451,7 @@ The plan supports the new markup. T8R.15 "replaces W10's items and the details g
 ocr on the range `82e339bf..11de60eb` (`c2c42f24` T8R.22, `11de60eb` T8R.22-F1). Session 80bece3d-1ea3-4771-9ada-541d07f4feb3, gpt-6.1-sol, 3 files reviewed, 0 comments, raw output in `ocr/T8R.22-11de60eb.json`. **No findings.**
 
 The first run (session 09a2f606) hit the ChatGPT usage limit on every file. The agent waited from 02:23 to 03:50 and reran. T8R.22-F1 notes: the expired Detail's extra requests are exactly what one `series` call makes: two `observations.getAll` (the range scan, and the evidence read for the clock date) and one `meta.get` (the shared snapshot id). So T7.29 stays exact: the live list plus those three.
+
+## T8R.22
+
+Behavioral task; rows in `tdd-log/T8R.22.md`. `settlementUnderlying` on an Open Detail with `settlement` items and column dates, from one `series` read of the Underlying over the two column dates.

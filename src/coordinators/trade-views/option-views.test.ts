@@ -566,3 +566,35 @@ describe('replayTrade: a Settlement Due Trade (A212, revision 98)', () => {
     expect(view.pending).toEqual({ date: '2026-11-20', journal: [] });
   }, 60_000);
 });
+
+// T8R.22 (A234): O-S2X, MNO's expired put, Settlement Due from Sat 11-21, with the Underlying's Marks at the two column dates.
+describe('getTradeDetail: Settlement Due Underlying Marks (A234)', () => {
+  const WEDNESDAY_NOV_25_1700 = '2026-11-25T22:00:00Z';
+
+  it("should give the Underlying's Marks at the Today and Yesterday columns with their change", async () => {
+    const monday = await optionStack(MONDAY_NOV_23_1700);
+    const tradeId = await monday.openCashSecuredPut();
+    await monday.stack.saveMark('MNO', '45.50', '2026-11-20');
+    await monday.stack.saveMark('MNO', '44.25', '2026-11-23');
+
+    const detail = openDetail(await monday.tradeViews.getTradeDetail({ tradeId }));
+
+    expect(detail.marksColumns).toEqual({ today: { date: '2026-11-23', next: false }, yesterday: '2026-11-20' });
+    const { today, yesterday, change } = detail.settlementUnderlying!;
+    expect(today).toMatchObject({ kind: 'Available', tradingDate: '2026-11-23', price: '44.25' });
+    expect(yesterday).toMatchObject({ kind: 'Available', tradingDate: '2026-11-20', price: '45.5' });
+    expect(change).toEqual({ since: '2026-11-20', dollars: money('-1.25') });
+  }, 60_000);
+
+  it('should give a missing Mark as a gap and no change', async () => {
+    const wednesday = await optionStack(WEDNESDAY_NOV_25_1700);
+    const tradeId = await wednesday.openCashSecuredPut();
+
+    const detail = openDetail(await wednesday.tradeViews.getTradeDetail({ tradeId }));
+
+    const { today, yesterday } = detail.settlementUnderlying!;
+    expect(today).toMatchObject({ kind: 'Missing', tradingDate: '2026-11-25' });
+    expect(yesterday).toMatchObject({ kind: 'Missing', tradingDate: '2026-11-24' });
+    expect(detail.settlementUnderlying).not.toHaveProperty('change');
+  }, 60_000);
+});

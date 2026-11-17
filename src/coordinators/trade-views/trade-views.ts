@@ -478,6 +478,16 @@ function marksColumnsOf(session: MarketDataReadSession): OpenTradeDetail['marksC
   return nextSessionDate === undefined ? undefined : { today: { date: nextSessionDate, next: nextSessionDate !== exchangeDate }, yesterday: tradingDate };
 }
 
+// A Settlement Due Detail's Underlying Marks at the two column dates (A234), one `series` read. A date the series does not
+// reach (the next session, not yet completed) has no point. The change is Trade Views' own subtraction, only when both are Available.
+async function settlementUnderlyingOf(session: MarketDataReadSession, symbol: string, columns: NonNullable<OpenTradeDetail['marksColumns']>): Promise<OpenTradeDetail['settlementUnderlying']> {
+  const points = await session.series(instrumentKey({ kind: 'Stock', symbol }), columns.yesterday, columns.today.date);
+  const today = points.find((p) => p.tradingDate === columns.today.date);
+  const yesterday = points.find((p) => p.tradingDate === columns.yesterday);
+  const change = today?.kind === 'Available' && yesterday?.kind === 'Available' ? { since: yesterday.tradingDate, dollars: decimal(today.price).sub(decimal(yesterday.price)) } : undefined;
+  return { ...optional('today', today), ...optional('yesterday', yesterday), ...optional('change', change) };
+}
+
 // The session after the Expected Mark Date, which the read session names from the calendar, while the Trade awaits its
 // first close: the figures are Unavailable for the close they await (AwaitingClose), no session's Mark has valued any
 // Lot, and no contract is settling.
@@ -842,7 +852,9 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
         const closes = !hasDebt ? undefined : frame ? closesOf(frame) : session.covered ? await sessionCloses(analysis.plan.underlying, asOf) : undefined;
         // A contract due for settlement has its panel, which says so, so it has no line (decision 105).
         const expiration = settlement.length === 0 ? expirationLineOf(analysis, 'Expires', asOf) : undefined;
-        const view: OpenTradeDetail = { ...detailWithoutValuation(planned, analysis, derived, withDueStatus(narrative, closes), lastActivity, settlement), ...optional('contractExpiration', expiration), ...optional('marksColumns', marksColumnsOf(session)), current };
+        const columns = marksColumnsOf(session);
+        const settlementUnderlying = settlement.length > 0 && columns ? await settlementUnderlyingOf(session, analysis.plan.underlying, columns) : undefined;
+        const view: OpenTradeDetail = { ...detailWithoutValuation(planned, analysis, derived, withDueStatus(narrative, closes), lastActivity, settlement), ...optional('contractExpiration', expiration), ...optional('marksColumns', columns), ...optional('settlementUnderlying', settlementUnderlying), current };
         return { binding, view, ...optional('marketDataSnapshotId', snapshotIdOf(session)) };
       });
     },
