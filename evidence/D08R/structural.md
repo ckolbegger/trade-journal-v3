@@ -773,3 +773,39 @@ Test-only follow-up (lane RA). No product code. Browser specs and `rail-b.ts` fo
 - `d7s/conditions.spec.ts`: red `Expected substring "−$70.00" / Received "Stop · 3.60 away..."`; now `3.60 away`, `Breached · $0.05 past`, `Reached · 0.10 past`, `$3.35 away` on `.condition-figure`, an absence check on `conditionsNotes`, and Worst case and Max reward read from Plan and Risk.
 - `d4/expected-mark.spec.ts:35`: red `Expected "Mark missing" / Received "$3.70 away · Fri Oct 9 Mark"`; the earlier note that this line was still true was wrong; now expects the dated distances (A231).
 - Not fixed, not in this lane: `e2e/d7/responsive-a11y.spec.ts:186` (Open Lots shows a fifth column "Unconsumed opening fee", cut off, `scrolls: true` at 1280 px). A Position drawer layout, untouched by T8R.14 or this task.
+
+## Merge: lane RA (T8R.14, T8R.14-B1, T8R.14-F1)
+
+`d08r/ra` was rebased onto `70cbef94`, which brought in T8R.11's code. That gave:
+- T8R.14 `9a116056`
+- T8R.14-B1 `8a44e36c`
+- T8R.14-F1 `703452dd`
+
+`breach-overrun.spec.ts` took T8R.11's line 29 and F1's lines 24 and 42 without a conflict. The lane tier was rerun (`T8R.14-rebased-*`): unit 2083, integration 258, 14 of 14. Fast-forwarded to `60fd04f6`, and the lane was removed.
+
+With this merge, `breach-overrun.spec.ts:42` (two Worst case matches), `cockpit.spec.ts:116` (the "conditions" heading) and `cockpit.spec.ts:37` (Today's "marks" heading, as reported by T8R.5-F1) are fixed on the deliverable branch.
+
+## Decision P1 answered; T8R.7-B1
+
+T8R.7's ocr review was session 79ac0ad5-ff53-421a-bbcf-3224c150373f, gpt-6.1-sol, 10 files reviewed, 2 comments, raw output in `ocr/T8R.7-932587cb.json`. It raised two findings:
+1. **Medium, bug, Valid:** `today.props.ts:136` dated a Closed Trade's Exit column by the replay's last session. A Trade sold out before today's close then read "Exit <yesterday>". This follows A235 as written, so it was put to the user as decision P1 (`DECISIONS-PENDING.md`). **Answer: date the column by the exit session.** It becomes **T8R.7-B1**: Trade Views gives the Closed Detail the exit session's trading date (additive, A245), the adapter heads the column with it, and the Underlying's cell shows "—" until that session's Marks exist.
+2. **Low, maintainability, Valid:** a nested ternary in the `yesterday` cell. This became **T8R.7-B2**, committed as `493ee2f6`, a structural change: an `exitCell` function with early returns and the same outcomes (32 of 32 tests before and after; lane tier 2090, 258, 14 of 14).
+
+Reviewer notes, ADR 0001: `expiredOn` comes from `domain/instrument`, which is the route `eslint.deps.config.js` prescribes. The exit price is a selection of the last Execution, which A235 calls selection, not arithmetic.
+
+## Returns: T8R.12, T8R.17, T8R.5-F1
+
+**T8R.12** is committed as `ed21a477` (lane PR). It has 2 cases, red then green, with no first-run pass. All four figures come from existing `evaluation.atEntry` fields. The group sits after Conditions and is hidden while `firstMarksDue` is set. Its new words are in `new-words.md`.
+
+On the group's place, B8R.4 reads "W23, W31 and W32 groups in order". The main session reads that literally: Since the last Marks (W23) comes before Conditions (W31, W32), and T8R.27's browser case will check that order. Follow-up **T8R.12-F1** moves the group. This is an implementation-level reading of the plan and goes in the final report.
+
+**T8R.17** (lane JR, uncommitted) is built. Its 3 cases are red then green; case 3 passed on its first run, and a mutation check is recorded. The count follows A240 in `journal.props.ts`. An earlier agent had stopped because the main session's first brief wrongly forbade counting in the UI; that was a brief error, since A240 settles it.
+
+The build now fails `lint:deps` with a cycle: `journal-cards.tsx` imports `useDrawerRequest` from `Cockpit.tsx`, which imports `JournalCards`. The main session's decision is to move `DrawerRequest`, `DrawerRequestContext` and `useDrawerRequest` (`Cockpit.tsx` lines 26 to 28) into `src/ui/screens/trade-detail/drawer-request.ts`. Cockpit re-exports the hook, so existing imports keep working. A fresh agent finishes T8R.17 with that grant.
+
+**T8R.5-F1** is committed as `8449ed9f` (lane PO). Pinned: B7.13 passes at `fc58e8ca^` and fails at `fc58e8ca`. The fix is in `position.css` only:
+- `min-width: 0` on Open Lots' second column, which `table.trades` gave an 11.5rem minimum;
+- the Instrument cell wraps from 960 px;
+- Lot Matches' wrap rule now covers Instrument as well.
+
+At 1280 px the table is 550 px wide inside a 550 px region, with no scroll. That is an exact fit, so any wider column brings the scroll back; listed for the final report. B7.13's column count goes from 4 to 5. `lot-matches-fit.spec.ts` broke on the first fix and passes on the second. 66 layout specs pass.

@@ -666,26 +666,26 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T8R.5 | 1 | PO | Done | `fc58e8ca`; B1 `ff8f7f72` |
 | T8R.6 | 1 | TD | Done | `c4585d5e`; B1 met by `columns.test.ts`, no code |
 | T8R.6-F1 | 1 | TD | Done | `665baf34` |
-| T8R.7 | 1 | TD | Committed `932587cb` (from `8fdf918a`) | |
+| T8R.7 | 1 | TD | Committed `932587cb` (from `8fdf918a`); B2 `493ee2f6`; B1 in progress (decision P1) | |
 | T8R.8 | 1 | TD | Not started | |
 | T8R.9 | 1 | TD | Not started | |
 | T8R.10 | 1 | PR | Done | `ff4b2d79`; B1 `a80d5663`; B2 `992e5792` |
 | T8R.10-F1 | 1 | PR | Done | `e69bf95e`; B1 `db0ecf20` |
 | T8R.10-F2 | 1 | PR | Done | `2d901dfe` |
 | T8R.11 | 1 | PR | Done | `d8682e62` |
-| T8R.12 | 1 | PR | Not started | |
+| T8R.12 | 1 | PR | Committed `ed21a477` (from `70cbef94`); F1 in progress | |
 | T8R.13 | 1 | RA | Done | `5237ada5` |
-| T8R.14 | 1 | RA | Committed `51b50abc` (from `359e0498`); B1 `0ef232cd` | |
-| T8R.14-F1 | 1 | RA | Committed `9c82340c` (from `85bbb4c1`) | |
+| T8R.14 | 1 | RA | Done | `9a116056`; B1 `8a44e36c` |
+| T8R.14-F1 | 1 | RA | Done | `703452dd` |
 | T8R.15 | 1 | JR | Done | `727fd53a` |
 | T8R.15-F1 | 1 | JR | Done | `17b8abc6` |
 | T8R.15-F2 | 1 | JF | Done | `5b653d2d` |
 | T8R.16 | 1 | JR | Done | `9170efb5` |
-| T8R.17 | 1 | JR | Not started | |
+| T8R.17 | 1 | JR | In progress from `70cbef94` | |
 | T8R.18 | 1 | BA | Done | `69582aaa` |
 | T8R.19 | 1 | BA | Done | `ce6d4c88` |
 | T8R.19-F1 | 1 | BA | Done | `e1ae8adc` |
-| T8R.20 | 1 | BA | Not started | |
+| T8R.20 | 1 | BA | In progress from the records commit after `60fd04f6` | |
 | T8R.21 | 1 | BV | Done | `c9155d02` |
 | T8R.22 | 1 | BV | Done | `a414c8c4` |
 | T8R.22-F1 | 1 | BV | Done | `ef9f6ba7` |
