@@ -1,6 +1,6 @@
 import type { OpenTradeDetail, PlannedTradeDetail, TradeDetailView } from '../../../app/types.ts';
-import { dollarsAndR, unavailableLabel } from '../../figures.ts';
-import { decimalMoney, decimalUnderlyingPrice, money, rMultiple, shortDate } from '../../format.ts';
+import { unavailableLabel } from '../../figures.ts';
+import { decimalMoney, decimalUnderlyingPrice, money, shortDate, underlyingPrice } from '../../format.ts';
 import { conditionDirection } from '../../screens/option-words.ts';
 import type { ShellProps } from '../placeholder.ts';
 import type { ConditionItem, ConditionsCardProps } from './conditions.types.ts';
@@ -36,37 +36,39 @@ function conditionText(plan: Plan, condition: Stated): string {
   return `${subject} ${crossingWords(plan, condition)}`;
 }
 
-// "−" before a Stop's amount, "+" before a Target's: formatting the Measure `evaluate` gave, never arithmetic (A206, ADR 0001).
-const glyph = (role: Stated['role']): string => (role === 'Stop' ? '−' : '+');
-
-// Row 3, muted, for a condition not yet crossed: what the Trade P&L changes by if the Mark (or the Underlying at expiration) reaches the condition.
-function whyText(plan: Plan, condition: Condition, reading: Reading): string {
-  const stock = !isOption(plan);
-  return `Change in Trade P&L from the ${shortDate(reading.evidence.date)} ${stock ? 'Mark' : 'Marks'} if ${subjectText(plan, condition)} (${glyph(condition.role)}${rMultiple(reading.distance.planR)}).`;
+// Row 1's distance (W21), formatted from the reading's trigger in the condition's own price (A230, ADR 0001): "$1.80 away", or "3.00 away" for an
+// option Trade's Underlying condition, which is measured in the Underlying's price.
+function distanceText(plan: Plan, condition: Condition, reading: Reading): string | undefined {
+  const { trigger } = reading;
+  if (!trigger) return undefined;
+  const price = isOption(plan) && condition.kind === 'UnderlyingPrice' ? underlyingPrice : money;
+  // A crossed condition says so, and how far past it the Mark is (W21).
+  if (trigger.beyond !== null) return `${reading.status} · ${price(trigger.beyond)} past`;
+  return `${price(trigger.distance)} away`;
 }
 
-// What the condition is reached by: a stock's Mark, an option's Mark, or the Underlying at expiration.
-function subjectText(plan: Plan, condition: Condition): string {
-  if (!isOption(plan)) return `${plan.underlying}'s Mark is ${decimalMoney(condition.boundary)}`;
-  if (condition.kind === 'StructureValue') return `the option's Mark is ${decimalMoney(condition.boundary)}`;
-  return `${plan.underlying} is at ${decimalUnderlyingPrice(condition.boundary)} at expiration`;
+// A231: with no reading today, the same condition at the last session with Marks, from the view's dated line, with its date: "2.50 away · Mon Oct 12
+// Marks" ("Mark" for a stock Trade). A condition the dated Marks could not measure either shows nothing.
+function datedDistance(plan: Plan, condition: Condition, dated: OpenTradeDetail['current']['datedLine']): string | undefined {
+  const result = dated?.evaluation.conditions.find((c) => c.id === condition.id)?.result;
+  if (!dated || result?.kind !== 'Value') return undefined;
+  const distance = distanceText(plan, condition, result.value);
+  return distance && `${distance} · ${shortDate(dated.tradingDate)} ${isOption(plan) ? 'Marks' : 'Mark'}`;
 }
 
-function measuredItem(plan: Plan, condition: Condition, waiting: boolean): ConditionItem {
-  const item: ConditionItem = { id: condition.id, role: condition.role, nearest: condition.nearest === true, text: conditionText(plan, condition) };
+function measuredItem(plan: Plan, condition: Condition, waiting: boolean, dated: OpenTradeDetail['current']['datedLine']): ConditionItem {
+  const item: ConditionItem = { id: condition.id, role: condition.role, text: conditionText(plan, condition) };
   const { result } = condition;
-  // An Unavailable condition says why, in the label's words, except while the Trade waits for its first Mark: then rows 1 and 2 only show, as
-  // on a Closed Detail.
-  if (result.kind === 'Unavailable' && !waiting) return { ...item, figure: unavailableLabel(result) };
-  if (result.kind !== 'Value') return item;
-  const reading = result.value;
   const figureTone = condition.role === 'Stop' ? ('loss' as const) : ('gain' as const);
-  // A crossed condition says so, and how far past it the Mark is, in dollars and R (the Overrun).
-  if (reading.status !== 'Active' && reading.overrun) {
-    const past = `The ${shortDate(reading.evidence.date)} Mark is ${money(reading.overrun.dollars)} (${rMultiple(reading.overrun.planR)}) of Trade P&L past this ${condition.role}.`;
-    return { ...item, figure: reading.status, figureTone, why: past };
+  // An Unavailable condition shows its dated distance, else says why in the label's words, except while the Trade waits for its first Mark: then
+  // rows 1 and 2 only show, as on a Closed Detail.
+  if (result.kind === 'Unavailable' && !waiting) {
+    const figure = datedDistance(plan, condition, dated);
+    return figure === undefined ? { ...item, figure: unavailableLabel(result) } : { ...item, figure, figureTone };
   }
-  return { ...item, figure: `${glyph(condition.role)}${money(reading.distance.dollars)}`, figureTone, why: whyText(plan, condition, reading) };
+  if (result.kind !== 'Value') return item;
+  const figure = distanceText(plan, condition, result.value);
+  return figure === undefined ? item : { ...item, figure, figureTone };
 }
 
 // A Plan's conditions in Plan order: Stops, then Targets, with the ids `evaluate` gives them.
@@ -75,46 +77,31 @@ const stated = (plan: Plan): Stated[] => [
   ...plan.targets.map((c, i) => ({ id: `target-${i + 1}`, role: 'Target' as const, kind: c.kind, boundary: c.price })),
 ];
 
-const unmeasured = (plan: Plan): ConditionItem[] => stated(plan).map((c) => ({ id: c.id, role: c.role, nearest: false, text: conditionText(plan, c) }));
+const unmeasured = (plan: Plan): ConditionItem[] => stated(plan).map((c) => ({ id: c.id, role: c.role, text: conditionText(plan, c) }));
 
-// W6: what the worst case is, when it can be measured. A long option loses its premium as the contract expires worthless; a Cash-Secured Put and
-// a stock Position lose most if the Underlying goes to zero.
-function worstCaseWords(plan: Plan): string {
-  const leg = plan.legs[0];
-  return leg?.instrument.kind === 'Option' && leg.side === 'Long' ? `the ${leg.instrument.right.toLowerCase()} expires worthless` : `${plan.underlying} goes to zero`;
-}
-
-const BEFORE_MARKS = 'Distances to each condition and the worst case arrive with the first Marks.';
+const BEFORE_MARKS = 'Distances to each condition arrive with the first Marks.';
 const PLANNED = 'Distances to each condition arrive with the first Marks after entry.';
 const EXPIRED = 'The contract expired, so its conditions are no longer measured.';
 
-function openProps(view: OpenTradeDetail, timeZone: string | undefined): ConditionsCardProps {
+function openProps(view: OpenTradeDetail): ConditionsCardProps {
   const { plan } = view;
   const { evaluation } = view.current;
   // Once the contract expired its conditions are no longer measured (W6).
   if (view.settlement.length > 0) return { conditions: unmeasured(plan), summary: [{ text: EXPIRED }] };
   // Trade Views states when no Mark has valued the Trade yet (revision 90); the card infers nothing from the waiting figures.
   const waiting = view.current.firstMarksDue !== undefined;
-  const conditions = evaluation.conditions.map((condition) => measuredItem(plan, condition, waiting));
+  const conditions = evaluation.conditions.map((condition) => measuredItem(plan, condition, waiting, view.current.datedLine));
   if (waiting) return { conditions, summary: [{ text: BEFORE_MARKS }] };
-  // A Closed Detail has no open Position to measure.
-  if ('terminalDisposition' in view) return { conditions, summary: [] };
-  const worst = dollarsAndR(evaluation.worstCaseOngoingRisk, evaluation.worstCaseOngoingRiskInPlanR, undefined, timeZone);
-  return {
-    conditions,
-    summary: [
-      { label: 'Worst case', text: evaluation.worstCaseOngoingRisk.kind === 'Value' ? `${worst} if ${worstCaseWords(plan)}` : worst },
-      { label: 'Max reward', text: dollarsAndR(evaluation.maximumIncrementalReward, evaluation.maximumIncrementalRewardInPlanR, undefined, timeZone) },
-    ],
-  };
+  // Nothing beneath the conditions: the worst case and the maximum reward live in Plan and Risk (W31).
+  return { conditions, summary: [] };
 }
 
-export function conditionsProps(view: TradeDetailView, timeZone?: string): ConditionsCardProps | undefined {
-  if ('current' in view) return openProps(view, timeZone);
+export function conditionsProps(view: TradeDetailView): ConditionsCardProps | undefined {
+  if ('current' in view) return openProps(view);
   // An incoherent Detail has no replay to measure against, so its card lists the Plan's conditions, rows 1 and 2 only, and says nothing beneath (W5).
   if ('recordedPositionChanges' in view) return { conditions: unmeasured(view.plan), summary: [] };
   return { conditions: unmeasured(view.plan), summary: [{ text: PLANNED }] };
 }
 
 // The shell hands a card its view as `unknown` (ShellProps), since a component may not name `app/types`.
-export const conditionsPropsOf = ({ view, timeZone }: ShellProps): ConditionsCardProps | undefined => (view === undefined ? undefined : conditionsProps(view as TradeDetailView, timeZone));
+export const conditionsPropsOf = ({ view }: ShellProps): ConditionsCardProps | undefined => (view === undefined ? undefined : conditionsProps(view as TradeDetailView));

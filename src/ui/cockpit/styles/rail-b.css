@@ -34,9 +34,13 @@
   color: var(--target);
 }
 
-/* The figure sits at the right of row 1. */
-.condition-figure {
+/* The distance, with its "·", sits at the right of row 1; a dated one may wrap beneath its role. */
+.condition-distance {
   margin-left: auto;
+  text-align: right;
+}
+
+.condition-figure {
   font-weight: 600;
 }
 
@@ -46,21 +50,11 @@
   min-width: 0;
 }
 
-.condition-why {
-  margin: 2px 0 0;
-  color: var(--muted);
-  font-size: 0.875em;
-}
-
 .conditions-summary {
   list-style: none;
   margin: 8px 0 0;
   padding: 8px 0 0;
   border-top: 1px solid var(--line);
-}
-
-.conditions-summary .summary-label {
-  font-weight: 600;
 }
 
 /* Needs you: one list, each item its own block. The words always show; the colour only reinforces an alert. */

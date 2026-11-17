@@ -56,22 +56,17 @@ test.describe('B8P.1 The cockpit', () => {
       await expect(detail.pnlFigure(page)).toHaveText('$218.05');
       await expect(detail.pnlLine(page)).toHaveText('+$30.00 since Wed Oct 14');
       await expect(detail.pnlCard(page)).toContainText('1 of 2 contracts open');
-      // W5: Plan order (the option Stop, then the XYZ Target), each with its role, "nearest", figure, condition and its change in Trade P&L.
+      // W5, W21: Plan order (the option Stop, then the XYZ Target), each with its role, its distance and its condition; nothing beneath.
       await expect(detail.conditionBlocks(page)).toHaveCount(2);
       const stop = detail.conditionBlocks(page).nth(0);
-      await expect(stop.locator('.condition-role')).toHaveText('Stop');
-      await expect(stop.getByText('nearest', { exact: true })).toBeVisible();
-      await expect(stop.locator('.condition-figure')).toHaveText('−$220.00');
+      await expect(stop.locator('.condition-head')).toHaveText('Stop · $2.20 away');
       await expect(stop.locator('.condition-text')).toHaveText('Option at or below $1.00');
-      await expect(stop.locator('.condition-why')).toHaveText("Change in Trade P&L from the Thu Oct 15 Marks if the option's Mark is $1.00 (−1.10R).");
       const target = detail.conditionBlocks(page).nth(1);
-      await expect(target.locator('.condition-role')).toHaveText('Target');
-      await expect(target.getByText('nearest', { exact: true })).toBeVisible();
-      await expect(target.locator('.condition-figure')).toHaveText('+$180.00');
+      await expect(target.locator('.condition-head')).toHaveText('Target · 2.10 away');
       await expect(target.locator('.condition-text')).toHaveText('XYZ at or above 60.00');
-      await expect(target.locator('.condition-why')).toHaveText('Change in Trade P&L from the Thu Oct 15 Marks if XYZ is at 60.00 at expiration (+0.90R).');
-      // W6: the lines beneath.
-      await expect(detail.conditionsSummary(page).getByRole('listitem')).toHaveText(['Worst case: $320.00 · 1.60R if the call expires worthless', 'Max reward: Unbounded above']);
+      // Gone from the rail: the nearest badge, the change in Trade P&L, Worst case and Max reward (hidden panels included).
+      await expect(detail.conditionsCard(page).locator('.condition-nearest, .condition-why, .conditions-summary')).toHaveCount(0);
+      await expect(detail.conditionsCard(page).getByText(/nearest|Change in Trade P&L|Worst case|Max reward/)).toHaveCount(0);
       // W7: the owed exit reflection with its due text and Reflect now. Nothing is breached or reached, so no alert, and the empty line is gone.
       const needs = detail.needsYouCard(page);
       await expect(needs.getByRole('heading', { name: 'Position Change Reflection Reflection owed', level: 3 })).toBeVisible();
@@ -147,7 +142,7 @@ test.describe('B8P.1 The cockpit', () => {
       await expect(blocks).toHaveCount(2);
       for (const block of await blocks.all()) {
         await expect(block.locator('.condition-role')).toHaveText(/^(Stop|Target)$/);
-        await expect(block.locator('.condition-figure')).toHaveText(/^(−\$|\+\$)[\d,]+\.\d\d$|^(Breached|Reached)$/);
+        await expect(block.locator('.condition-figure')).toHaveText(/^\$?[\d,]+\.\d\d away$|^(Breached|Reached) · \$?[\d,]+\.\d\d past$/);
         await expect(block.locator('.condition-text')).not.toBeEmpty();
       }
     });

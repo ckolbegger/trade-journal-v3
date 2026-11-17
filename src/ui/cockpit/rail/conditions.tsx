@@ -15,21 +15,21 @@ export function ConditionsCard(props: ShellProps | ConditionsCardProps) {
           <li key={condition.id}>
             <div className="condition-head">
               <span className={`condition-role ${condition.role.toLowerCase()}`}>{condition.role}</span>
-              {condition.nearest && <span className="badge condition-nearest" data-tone="info">nearest</span>}
-              {condition.figure && <span className={`condition-figure number ${condition.figureTone ?? ''}`}>{condition.figure}</span>}
+              {condition.figure && (
+                <span className="condition-distance">
+                  {' · '}
+                  <span className={`condition-figure number ${condition.figureTone ?? ''}`}>{condition.figure}</span>
+                </span>
+              )}
             </div>
             <div className="condition-text nowrap">{condition.text}</div>
-            {condition.why && <p className="condition-why">{condition.why}</p>}
           </li>
         ))}
       </ul>
       {card.summary.length > 0 && (
         <ul className="conditions-summary" aria-label="Worst case and Max reward">
           {card.summary.map((line) => (
-            <li key={line.label ?? line.text}>
-              {line.label && <span className="summary-label">{line.label}: </span>}
-              <span className="number">{line.text}</span>
-            </li>
+            <li key={line.text}>{line.text}</li>
           ))}
         </ul>
       )}

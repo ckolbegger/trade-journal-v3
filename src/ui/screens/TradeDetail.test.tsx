@@ -233,7 +233,8 @@ describe('Trade Detail: the replay read (P95)', () => {
     expect(onePlace('Realized to date')).toBe('drawer-panel-position');
     expect(onePlace('Average entry')).toBe('drawer-panel-plan-and-risk');
     expect(onePlace('Actual initial risk')).toBe('drawer-panel-plan-and-risk');
-    expect(onePlace('Worst case:', '.summary-label')).toBe('rail');
+    // The rail no longer gives the worst case or the maximum reward (T8R.14); Plan and Risk owns them (T8R.10).
+    expect(document.querySelector('.cockpit-rail')!.textContent).not.toMatch(/Worst case|Max reward/);
     // The Trade Summary text is in the Position drawer, once.
     const summaries = [...document.querySelectorAll('.summary-text')];
     expect(summaries.map((element) => element.textContent)).toEqual(['Long 100 shares @ $50.18']);

@@ -4,12 +4,11 @@
 import { cleanup, render, within } from '@testing-library/react';
 import { createElement } from 'react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { incoherentDetailOf, openDetailAt, openDetailUncovered, PC1, PC2 } from '../../../../tests/support/open-detail-fixtures.ts';
+import { incoherentDetailOf, openDetailAt, PC1, PC2 } from '../../../../tests/support/open-detail-fixtures.ts';
 import { available, tuesday } from '../../screens/trade-detail/test-support.ts';
 import { optionClosedDetail, optionOpenDetail, optionPlannedDetail, type OptionFrames } from '../../../../tests/support/option-detail-fixtures.ts';
 import { OC_E1, OC_PC1, OC_PC2, OC_X1, OS2_S1 } from '../../../../tests/support/option-trade-fixtures.ts';
 import type { OpenTradeDetail, TradeDetailView } from '../../../app/types.ts';
-import { Rational } from '../../../domain/values/index.ts';
 import { ConditionsCard } from './conditions.tsx';
 
 afterEach(cleanup);
@@ -20,12 +19,6 @@ const TUESDAY: OptionFrames = { tradingDate: '2026-10-13', closeInstant: '2026-1
 const WEDNESDAY: OptionFrames = { tradingDate: '2026-10-14', closeInstant: '2026-10-14T20:00:00Z', contractMark: '3.70', underlyingMark: '43.20' };
 
 const os2 = (frames: OptionFrames): OpenTradeDetail => optionOpenDetail('O-S2', [OS2_S1], frames);
-
-// What T8P.6 adds to each Detail: `nearest` on the one condition per role that sets the role's headline (A207).
-const withNearest = (view: OpenTradeDetail, ...ids: string[]): OpenTradeDetail => ({
-  ...view,
-  current: { ...view.current, evaluation: { ...view.current.evaluation, conditions: view.current.evaluation.conditions.map((c) => (ids.includes(c.id) ? { ...c, nearest: true as const } : c)) } },
-});
 
 // The card as the shell renders it.
 const renderCard = (view: TradeDetailView) => render(createElement(ConditionsCard, { view, timeZone: TIME_ZONE })).container;
@@ -45,26 +38,38 @@ describe('Conditions card (W5, W6)', () => {
     for (const item of items) expect(item.querySelector('.condition-text')?.classList.contains('nowrap')).toBe(true);
   });
 
-  it('should show Tuesday\'s option-price Stop as "−$360.00" with "nearest" and "Change in Trade P&L from the Tue Oct 13 Marks if the option\'s Mark is $3.60 (−0.75R)."', () => {
-    const items = blocks(renderCard(withNearest(os2(TUESDAY), 'stop-2', 'target-1')));
-    const stop = items[1]!;
-    expect(within(stop).getByText('−$360.00')).toBeTruthy();
-    expect(within(stop).getByText('nearest')).toBeTruthy();
-    expect(within(stop).getByText("Change in Trade P&L from the Tue Oct 13 Marks if the option's Mark is $3.60 (−0.75R).")).toBeTruthy();
-    // Only the nearest condition of a role carries the badge.
-    expect(items.map((item) => within(item).queryByText('nearest') !== null)).toEqual([false, true, true, false]);
+  it('should show an option-price Stop as "Stop · $1.80 away" and an Underlying Target as "Target · 0.50 away"', () => {
+    // Tuesday 10-13: the put is $1.80 against its $3.60 Stop (it must rise $1.80), and MNO is 44.00 against its 44.50 Target (W21, A230).
+    const heads = blocks(renderCard(os2(TUESDAY))).map((item) => item.querySelector('.condition-head')?.textContent);
+    expect(heads).toEqual(['Stop · 3.00 away', 'Stop · $1.80 away', 'Target · 0.50 away', 'Target · $1.50 away']);
   });
 
-  it('should explain an Underlying condition as "… if MNO is at 41.00 at expiration (−0.92R)."', () => {
-    const stop = blocks(renderCard(os2(TUESDAY)))[0]!;
-    expect(within(stop).getByText('−$440.00')).toBeTruthy();
-    expect(within(stop).getByText('Change in Trade P&L from the Tue Oct 13 Marks if MNO is at 41.00 at expiration (−0.92R).')).toBeTruthy();
-  });
-
-  it('should show Wednesday\'s option-price Stop as "Breached" with "The Wed Oct 14 Mark is $20.00 (0.04R) of Trade P&L past this Stop."', () => {
+  it('should show Wednesday\'s option-price Stop as "Breached · $0.10 past" and Thursday\'s Underlying Target as "Reached · 0.10 past"', () => {
     const stop = blocks(renderCard(os2(WEDNESDAY)))[1]!;
-    expect(within(stop).getByText('Breached')).toBeTruthy();
-    expect(within(stop).getByText('The Wed Oct 14 Mark is $20.00 (0.04R) of Trade P&L past this Stop.')).toBeTruthy();
+    expect(stop.querySelector('.condition-head')?.textContent).toBe('Stop · Breached · $0.10 past');
+    cleanup();
+    // Thursday 10-15: MNO is 44.60, 0.10 beyond its 44.50 Target.
+    const target = blocks(renderCard(os2({ tradingDate: '2026-10-15', closeInstant: '2026-10-15T20:00:00Z', contractMark: '3.65', underlyingMark: '44.60' })))[2]!;
+    expect(target.querySelector('.condition-head')?.textContent).toBe('Target · Reached · 0.10 past');
+  });
+
+  it('should show a dated distance "· Mon Oct 12 Marks" when today\'s Mark is missing, and the reason when the dated Mark is missing too', () => {
+    // Tuesday's MNO Mark is missing (the Underlying conditions are Unavailable); Monday's Marks measured them.
+    const missing = os2({ ...TUESDAY, underlyingMark: undefined });
+    const monday = os2({ tradingDate: '2026-10-12', closeInstant: '2026-10-12T20:00:00Z', contractMark: '1.90', underlyingMark: '43.50' });
+    const withDated = (dated: OpenTradeDetail): OpenTradeDetail => ({ ...missing, current: { ...missing.current, datedLine: { tradingDate: '2026-10-12', evaluation: dated.current.evaluation } } });
+    const heads = (view: OpenTradeDetail) => blocks(renderCard(view)).map((item) => item.querySelector('.condition-head')?.textContent);
+    // One date per row; the option-price rows are today's own.
+    expect(heads(withDated(monday))).toEqual(['Stop · 2.50 away · Mon Oct 12 Marks', 'Stop · $1.80 away', 'Target · 1.00 away · Mon Oct 12 Marks', 'Target · $1.50 away']);
+    cleanup();
+    // The dated Marks had no Underlying Mark either: the reason stays (A231).
+    const bothMissing = os2({ tradingDate: '2026-10-12', closeInstant: '2026-10-12T20:00:00Z', contractMark: '1.90', underlyingMark: undefined });
+    expect(heads(withDated(bothMissing))).toEqual(['Stop · Mark missing', 'Stop · $1.80 away', 'Target · Mark missing', 'Target · $1.50 away']);
+    cleanup();
+    // A stock Trade's dated distance says "Mark".
+    const stock = openDetailAt([PC1, PC2], tuesday({ kind: 'Missing' }));
+    const stockDated: OpenTradeDetail = { ...stock, current: { ...stock.current, datedLine: { tradingDate: '2026-10-12', evaluation: openDetailAt([PC1, PC2], tuesday(available('52.00'))).current.evaluation } } };
+    expect(heads(stockDated)[0]).toMatch(/^Stop · \$[\d,.]+ away · Mon Oct 12 Mark$/);
   });
 
   it("should show an Unavailable condition's reason at the label length on row 1", () => {
@@ -74,7 +79,7 @@ describe('Conditions card (W5, W6)', () => {
     expect(within(stop).getByText('Mark missing')).toBeTruthy();
     expect(within(stop).getByText('MNO at or below 41.00')).toBeTruthy();
     expect(stop.querySelector('.condition-why')).toBeNull();
-    expect(within(items[1]!).getByText('−$360.00')).toBeTruthy();
+    expect(within(items[1]!).getByText('$1.80 away')).toBeTruthy();
   });
 
   it('should show only rows 1 and 2 before any Marks and on a Closed Detail', () => {
@@ -124,34 +129,18 @@ describe('Conditions card (W5, W6)', () => {
     }
   });
 
-  it('should show Worst case and Max reward beneath the conditions', () => {
-    // Thursday 10-15: MNO 44.60, the put 3.65. A Cash-Secured Put's worst case is MNO going to zero.
-    const thursday = renderCard(os2({ tradingDate: '2026-10-15', closeInstant: '2026-10-15T20:00:00Z', contractMark: '3.65', underlyingMark: '44.60' }));
-    const summary = within(thursday).getByRole('list', { name: 'Worst case and Max reward' });
-    expect(within(summary).getAllByRole('listitem').map((item) => item.textContent)).toEqual(['Worst case: $8,270.00 · 17.23R if MNO goes to zero', 'Max reward: $730.00 · 1.52R']);
-    // The summary follows the conditions.
-    expect(thursday.querySelector('.conditions-list')!.compareDocumentPosition(summary) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    cleanup();
-
-    // A long call's worst case is its premium, and its reward has no ceiling.
-    const call = renderCard(optionOpenDetail('O-C', [OC_PC1, OC_PC2], { tradingDate: '2026-10-13', closeInstant: '2026-10-13T20:00:00Z', contractMark: '2.50', underlyingMark: '52.00' }));
-    const lines = within(within(call).getByRole('list', { name: 'Worst case and Max reward' })).getAllByRole('listitem').map((item) => item.textContent);
-    expect(lines[0]).toMatch(/^Worst case: \$[\d,.]+ · [\d.]+R if the call expires worthless$/);
-    expect(lines[1]).toBe('Max reward: Unbounded above');
-  });
-
-  it('should show a bounded Max reward with its R beneath the conditions', () => {
-    // Thursday 10-15: the Cash-Secured Put's reward is bounded by its premium, and its R is the evaluation's, never computed by the card.
-    const thursday = renderCard(os2({ tradingDate: '2026-10-15', closeInstant: '2026-10-15T20:00:00Z', contractMark: '3.65', underlyingMark: '44.60' }));
-    const summary = within(thursday).getByRole('list', { name: 'Worst case and Max reward' });
-    expect(within(summary).getAllByRole('listitem').map((item) => item.textContent)).toEqual(['Worst case: $8,270.00 · 17.23R if MNO goes to zero', 'Max reward: $730.00 · 1.52R']);
-    cleanup();
-
-    // The R comes from the evaluation: a Max reward whose R is the evaluation's own figure shows that figure.
-    const view = os2({ tradingDate: '2026-10-15', closeInstant: '2026-10-15T20:00:00Z', contractMark: '3.65', underlyingMark: '44.60' });
-    const changed: OpenTradeDetail = { ...view, current: { ...view.current, evaluation: { ...view.current.evaluation, maximumIncrementalRewardInPlanR: { kind: 'Value', value: Rational.of(3n, 2n) } } } };
-    const lines = within(within(renderCard(changed)).getByRole('list', { name: 'Worst case and Max reward' })).getAllByRole('listitem').map((item) => item.textContent);
-    expect(lines[1]).toBe('Max reward: $730.00 · 1.50R');
+  it('should not show nearest, a Change in Trade P&L sentence, Worst case or Max reward', () => {
+    // Thursday 10-15: two conditions crossed or close, a Worst case and a Max reward the rail used to give. Hidden elements count, so the check holds
+    // in a collapsed panel too.
+    const thursday = { tradingDate: '2026-10-15', closeInstant: '2026-10-15T20:00:00Z', contractMark: '3.65', underlyingMark: '44.60' };
+    const views: TradeDetailView[] = [os2(TUESDAY), os2(thursday), openDetailAt([PC1, PC2], tuesday(available('52.00'))), optionOpenDetail('O-C', [OC_PC1, OC_PC2], { tradingDate: '2026-10-13', closeInstant: '2026-10-13T20:00:00Z', contractMark: '2.50', underlyingMark: '52.00' })];
+    for (const view of views) {
+      const container = renderCard(view);
+      expect(blocks(container).length).toBeGreaterThan(0);
+      expect(container.querySelector('.condition-nearest, .condition-why, .conditions-summary, .summary-label')).toBeNull();
+      expect(within(container).queryAllByText(/nearest|Change in Trade P&L|Worst case|Max reward/, { ignore: 'none' })).toEqual([]);
+      cleanup();
+    }
   });
 
   it('should say beneath the conditions when their distances arrive: before Marks, on a Planned Detail and once the contract expired, and show nothing beneath a Closed Detail', () => {
@@ -170,7 +159,7 @@ describe('Conditions card (W5, W6)', () => {
         evaluation: { ...waiting.current.evaluation, conditions: waiting.current.evaluation.conditions.map((c) => ({ ...c, result: { kind: 'Unavailable' as const, reason: 'AwaitingClose' as const, after: '2026-10-12' } })) },
       },
     };
-    expect(notes(beforeMarks)).toEqual(['Distances to each condition and the worst case arrive with the first Marks.']);
+    expect(notes(beforeMarks)).toEqual(['Distances to each condition arrive with the first Marks.']);
     expect(notes(optionPlannedDetail('O-S2'))).toEqual(['Distances to each condition arrive with the first Marks after entry.']);
     const expired = optionOpenDetail('O-S2', [OS2_S1], { tradingDate: '2026-12-18', closeInstant: '2026-12-18T21:00:00Z', contractMark: '0.10', underlyingMark: '43.20' });
     expect(notes(expired)).toEqual(['The contract expired, so its conditions are no longer measured.']);
@@ -195,22 +184,6 @@ describe('Conditions card (W5, W6)', () => {
   });
 });
 
-// Figures the retired Risk and reward section gave, moved here with their expected values (T8P.27, revision 86).
-describe('Conditions card: figures moved from the retired Risk and reward section (T8P.27)', () => {
-  const beneath = (view: TradeDetailView) => {
-    const lines = within(within(renderCard(view)).getByRole('list', { name: 'Worst case and Max reward' })).getAllByRole('listitem').map((item) => item.textContent);
-    cleanup();
-    return lines;
-  };
-
-  it('should show a stock Trade Worst case in dollars and R and Max reward as Unbounded above, and Worst case as its reason when the Mark is missing', () => {
-    expect(beneath(openDetailAt([PC1, PC2], tuesday(available('52.00'))))).toEqual(['Worst case: $5,200.00 · 20.80R if XYZ goes to zero', 'Max reward: Unbounded above']);
-    expect(beneath(openDetailAt([PC1, PC2], tuesday({ kind: 'Missing' })))).toEqual(['Worst case: Mark missing: XYZ, Tue Oct 13', 'Max reward: Unbounded above']);
-    // Outside the market calendar the Max reward is still unbounded.
-    expect(beneath(openDetailUncovered([PC1, PC2], '2031-01-02')).at(-1)).toBe('Max reward: Unbounded above');
-  });
-});
-
 describe('Conditions card: first Marks pending (revision 90)', () => {
   it('should show the reason on row 1, not the first-Marks note, when shares were added after an earlier Mark', () => {
     // Shares bought after an earlier session's Marks: every condition waits for the next close, but Trade Views states no `firstMarksDue`,
@@ -224,11 +197,8 @@ describe('Conditions card: first Marks pending (revision 90)', () => {
     expect(items).toHaveLength(4);
     for (const item of items) {
       expect(item.querySelector('.condition-figure')?.textContent).toBe('Awaiting close');
-      expect(item.querySelector('.condition-why')).toBeNull();
     }
-    const summary = within(container).getByRole('list', { name: 'Worst case and Max reward' });
-    const lines = within(summary).getAllByRole('listitem').map((item) => item.textContent ?? '');
-    expect(lines.map((line) => line.split(':')[0])).toEqual(['Worst case', 'Max reward']);
+    expect(container.querySelector('.conditions-summary')).toBeNull();
     expect(container.textContent).not.toContain('arrive with the first Marks');
   });
 });

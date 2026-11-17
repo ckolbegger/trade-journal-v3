@@ -18,7 +18,8 @@ export const riskFigure = (page: Page, term: string): Locator => {
   return figureIn(planRiskPanel(page), term);
 };
 
-// The rail's Conditions card (W5, W6): one block per condition in Plan order, then Worst case and Max reward, or the note that stands in for them.
+// The rail's Conditions card (W5, W21): one block per condition in Plan order, each with its distance, then the note that stands in for them before the
+// first Marks (Worst case and Max reward left the rail in T8R.14).
 export const conditionsCard = (page: Page): Locator => regionOf(page, 'Conditions');
 export const conditionBlocks = (page: Page): Locator => conditionsCard(page).getByRole('list', { name: 'Conditions', exact: true }).getByRole('listitem');
 // The block of the condition whose row 2 reads `text` ("MNO at or below 41.00").

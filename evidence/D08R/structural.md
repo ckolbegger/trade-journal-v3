@@ -740,3 +740,16 @@ It edited one case outside its lane: `Cockpit.test.tsx`'s "should show the Settl
 It added new words (rows in `new-words.md`): a Closed Today column heading over empty cells, and the "Closed" stamp drawn as a bordered tag.
 
 T8R.14-F1 ocr review: on `9c82340c`, session 8b44f72c-96e1-42c6-9b63-b62451ddae0c, gpt-6.1-sol, 8 files reviewed, 0 comments. Raw output: `ocr/T8R.14-F1-9c82340c.json`. **No findings.** Lane RA (T8R.14, B1, F1) can merge.
+
+## T8R.14
+
+Behavioral task; its red and green rows are in `tdd-log/T8R.14.md`. The rail's Conditions card now shows each condition's distance from `trigger` (W21): "Stop · $2.20 away", "Target · 2.10 away", "Breached · $0.10 past", and a dated "· Mon Oct 12 Marks" form. The `nearest` badge, the "Change in Trade P&L" sentence, Worst case and Max reward are gone from the card. The card's `ConditionItem` lost `nearest` and `why`; the summary lost its `label`; `conditionsProps` no longer takes a time zone.
+
+Browser spec run: `e2e/d8p/cockpit.spec.ts` passes.
+
+Outside this task's files, still reading what the rail no longer shows (not edited):
+- `e2e/d4/breach-overrun.spec.ts:24` (`.condition-why`), `:42` (`riskFigure(page, 'Worst case')`)
+- `e2e/d4/responsive-a11y.spec.ts:169` (`riskFigure(page, 'Max reward')`)
+- `e2e/d7s/conditions.spec.ts:52-55` (old figures `−$70.00`, `+$670.00`, `Breached`, `Reached` via `toContainText`) and `:56` (`conditionsSummary` Worst case, Max reward)
+- `e2e/support/detail/rail-b.ts` `riskFigure`'s Worst case and Max reward branch reads the rail's summary (the Plan and Risk helpers in that file belong to T8R.10-F1)
+- `e2e/d8p/states.spec.ts:55,114` and `e2e/d4/expected-mark.spec.ts:35` read `.condition-why` and `.condition-figure` as absent or as "Mark missing": still true.
