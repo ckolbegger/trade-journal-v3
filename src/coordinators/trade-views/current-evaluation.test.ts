@@ -124,7 +124,7 @@ describe('browseTrades: Open with current evaluation', () => {
 
     const [item] = view.items;
     if (!item || !('current' in item)) throw new Error('expected a coherent Open item with current figures');
-    const awaiting = { kind: 'Unavailable', reason: 'AwaitingClose', after: REVIEW_DATE };
+    const awaiting = { kind: 'Unavailable', reason: 'AwaitingClose', after: REVIEW_DATE, due: '2026-10-13' };
     expect(item.current).toEqual(
       expect.objectContaining({
         expectedMarkDate: REVIEW_DATE,

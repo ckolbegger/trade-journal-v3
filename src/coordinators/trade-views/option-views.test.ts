@@ -511,7 +511,7 @@ describe('Trade Detail: first Marks pending (revision 90)', () => {
       { shares: '150' },
     );
 
-    expect(detail.current.evaluation.currentMarkedPnl).toEqual({ kind: 'Unavailable', reason: 'AwaitingClose', after: '2026-10-12' });
+    expect(detail.current.evaluation.currentMarkedPnl).toEqual({ kind: 'Unavailable', reason: 'AwaitingClose', after: '2026-10-12', due: '2026-10-13' });
     expect(detail.current.datedLine).toBeDefined();
     expect(detail.current).not.toHaveProperty('firstMarksDue');
   }, 60_000);

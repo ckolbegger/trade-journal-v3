@@ -546,3 +546,18 @@ Result: the override stays; no code changed. The test does not build its Detail 
 - Cases: 3 in `src/domain/trade-analysis/evaluate.test.ts`, plus one coordinator case in `src/coordinators/valuation/value-trade.test.ts` for the pass-through (A243). Case 3 was a first-run pass, mutation-checked.
 - `AwaitingClose.due` is set from `TradeEvaluationInput.nextSessionDate`; `valueTrade` passes the read session's `nextSessionDate` into the main evaluation (not the dated line's).
 - Lane tier: three existing tests outside the lane now see `due` in toEqual expectations and fail: `tests/integration/d4/intraday.test.ts` (I4.18), `src/coordinators/trade-views/current-evaluation.test.ts` (AwaitingClose figures with dated and at-entry lines), `src/coordinators/trade-views/option-views.test.ts` ("should not say so once shares are added after an earlier Mark"). No frozen fixture failed: `verify:fixtures` exit 0. 14 of 14 checks exit 0.
+
+## T8R.19-F1
+
+- Before: each of the three cases failed with "AssertionError: expected { kind: 'Unavailable', ... } to deeply equal ..." where the actual value carried the extra `"due": "2026-10-13"` (current-evaluation shows it twice, for `remainingOpenPnl`-style figures and conditions).
+- Every true `due` is 2026-10-13, the session after Monday 2026-10-12, as A243 says. Nothing else changed; every comparison stays exact.
+- `tests/integration/d4/intraday.test.ts` line 35:
+  - before: `const awaiting = { kind: 'Unavailable', reason: 'AwaitingClose', after: MONDAY };`
+  - after: `const awaiting = { kind: 'Unavailable', reason: 'AwaitingClose', after: MONDAY, due: TUESDAY };`
+- `src/coordinators/trade-views/current-evaluation.test.ts` line 127:
+  - before: `const awaiting = { kind: 'Unavailable', reason: 'AwaitingClose', after: REVIEW_DATE };`
+  - after: `const awaiting = { kind: 'Unavailable', reason: 'AwaitingClose', after: REVIEW_DATE, due: '2026-10-13' };`
+- `src/coordinators/trade-views/option-views.test.ts` line 514:
+  - before: `... toEqual({ kind: 'Unavailable', reason: 'AwaitingClose', after: '2026-10-12' });`
+  - after: `... toEqual({ kind: 'Unavailable', reason: 'AwaitingClose', after: '2026-10-12', due: '2026-10-13' });`
+- After: the three files pass together (3 files, 33 tests).

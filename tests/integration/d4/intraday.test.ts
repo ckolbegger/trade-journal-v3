@@ -32,7 +32,7 @@ const atEntry = { label: 'AtEntry', quantity: dec('40'), averageEntry: dec('50.3
 describe('I4.18 intraday and missing lines', () => {
   it('should show AwaitingClose figures with the Monday close line of 60 shares and the 40-share at-entry line on Tuesday noon, and Missing Tuesday figures with only the Monday line on Tuesday 17:00', async () => {
     const intraday = await book(TUESDAY_NOON);
-    const awaiting = { kind: 'Unavailable', reason: 'AwaitingClose', after: MONDAY };
+    const awaiting = { kind: 'Unavailable', reason: 'AwaitingClose', after: MONDAY, due: TUESDAY };
     const check = async (app: typeof intraday.app) => {
       const item = (await openItem(app, intraday.tradeId)).current;
       const view = (await detail(app, intraday.tradeId)).current;
