@@ -19,7 +19,8 @@ export interface TodayDrawerProps {
     }[];
   };
   // Under the table: the Stale context and an acknowledgment, each only where it applies.
-  readonly notes?: { readonly stale?: string; readonly acknowledged?: string };
+  // An acknowledgment note for each acknowledged Mark, in the table's order (the Underlying, then the contract).
+  readonly notes?: { readonly stale?: string; readonly acknowledged?: readonly string[] };
   // "Closed" (W30): a Closed Trade's Today is greyed (A242) and carries this stamp as real text.
   readonly stamp?: string;
   // "No Marks yet. This Trade opened today at 10:20 am. ..."

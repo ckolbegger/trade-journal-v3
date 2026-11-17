@@ -190,6 +190,17 @@ describe('getTradeDetail: option Underlying Mark (T7.23-B1)', () => {
 
     expect(detail.current.underlyingMark).toEqual(expect.objectContaining({ source: 'Manual', price: '46' }));
   }, 60_000);
+
+  it('should carry the Underlying acknowledged-unavailable resolution apart from the contract resolution, T8R.25-B6', async () => {
+    const thursday = await optionStack(THURSDAY_1700);
+    const tradeId = await thursday.openCashSecuredPut();
+    await thursday.stack.acknowledge('MNO', '2026-11-19');
+
+    const detail = openDetail(await thursday.tradeViews.getTradeDetail({ tradeId }));
+
+    expect(detail.current.underlyingMarkResolution).toEqual(expect.objectContaining({ kind: 'AcknowledgedUnavailable' }));
+    expect(detail.current.markResolution).toEqual(expect.objectContaining({ kind: 'Missing' }));
+  }, 60_000);
 });
 
 describe('getTradeDetail: option dated line (T7.30-B3)', () => {

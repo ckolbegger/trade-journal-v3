@@ -264,6 +264,8 @@ export interface OpenCurrentEvaluation {
   readonly mark?: MarkProvenance;
   // An option Trade's Underlying Mark, when one is exact (row 23.18).
   readonly underlyingMark?: MarkProvenance;
+  // How the Underlying's Mark resolved, as `markResolution` does the contract's: the Today drawer names an acknowledged one (T8R.25-B6).
+  readonly underlyingMarkResolution?: MarkResolution;
   // Per Instrument; a Long Stock Trade has one.
   readonly coverage: readonly { readonly instrument: TradeEvaluation['observation']['instrument']; readonly coverage: TradeEvaluation['coverage'] }[];
   readonly evaluation: TradeEvaluation;
@@ -867,6 +869,7 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
           ...expectedMarkOf(session, frame),
           ...optional('mark', markProvenance(frame)),
           ...optional('underlyingMark', markProvenance(underlyingFrame)),
+          ...optional('underlyingMarkResolution', underlyingFrame && 'resolution' in underlyingFrame ? underlyingFrame.resolution : undefined),
           coverage: [{ instrument: evaluation.observation.instrument, coverage: evaluation.coverage }],
           evaluation,
           ...optional('datedLine', datedLine),

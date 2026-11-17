@@ -286,6 +286,36 @@ describe('Today drawer: the Marks table (W29)', () => {
     expect(document.body.textContent).not.toMatch(/Stale context|acknowledged unavailable/);
   });
 
+  // T8R.25-B6: the Underlying's own acknowledged Mark, in the contract's words with the symbol for the contract.
+  describe('an acknowledged Mark under the table (T8R.25-B6)', () => {
+    const acknowledgment = { versionId: 'ack-1', kind: 'Asserted', observedAt: '2026-10-16T21:00:00Z', savedAt: '2026-10-16T21:30:00Z' };
+    const acknowledged = { kind: 'AcknowledgedUnavailable', acknowledgment };
+    const CONTRACT_NOTE = 'Mark acknowledged unavailable for XYZ Nov 20 $55 Call on Fri Oct 16: your acknowledgment, not a price';
+    const UNDERLYING_NOTE = 'Mark acknowledged unavailable for XYZ on Fri Oct 16: your acknowledgment, not a price';
+    const fridayView = (current: object): OpenTradeDetail => {
+      const view = withColumns(openAt('2026-10-16', '2026-10-16T20:00:00Z', '3.40'), '2026-10-16', '2026-10-15');
+      return { ...view, current: { ...view.current, ...current } };
+    };
+    const noteTexts = () => [...document.querySelectorAll('.grid-note')].map((note) => note.textContent);
+
+    it("should note an acknowledged Underlying Mark under the Today table, as it notes the contract's", () => {
+      drawer(fridayView({ underlyingMarkResolution: acknowledged }), replayOfOc([sessionOf('2026-10-15', '51.80', '2.90')]));
+      expect(noteTexts()).toEqual([UNDERLYING_NOTE]);
+      expect(screen.getByRole('table').compareDocumentPosition(screen.getByText(UNDERLYING_NOTE)) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+
+    it('should note both acknowledged Marks in the table order, the Underlying first', () => {
+      drawer(fridayView({ markResolution: acknowledged, underlyingMarkResolution: acknowledged }));
+      expect(noteTexts()).toEqual([UNDERLYING_NOTE, CONTRACT_NOTE]);
+    });
+
+    it("should note a stock Trade's acknowledged Mark", () => {
+      const view = openDetailAt([PC1, PC2], tuesday({ kind: 'Missing' }));
+      drawer({ ...view, current: { ...view.current, markResolution: acknowledged } } as OpenTradeDetail);
+      expect(noteTexts()).toEqual([expect.stringMatching(/^Mark acknowledged unavailable for XYZ on .*: your acknowledgment, not a price$/)]);
+    });
+  });
+
   it('should not show Expected Mark Date, Source, Saved or a Mark-missing link (gone)', () => {
     const view = withColumns(openAt('2026-10-15', '2026-10-15T20:00:00Z', '3.10', '52.30'), '2026-10-15', '2026-10-14');
     const missing = { ...view, current: { ...view.current, markResolution: { kind: 'Missing' } } } as OpenTradeDetail;

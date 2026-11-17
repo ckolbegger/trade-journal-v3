@@ -39,7 +39,7 @@ function ScrollsToEnd({ label, children }: { readonly label: string; readonly ch
 // The Stale context and the acknowledgment, each only where it applies, under the table.
 const Notes = ({ notes }: { readonly notes: NonNullable<TodayDrawerProps['notes']> }) => (
   <>
-    {notes.acknowledged && <p className="grid-note">{notes.acknowledged}</p>}
+    {notes.acknowledged?.map((note) => <p className="grid-note" key={note}>{note}</p>)}
     {notes.stale && <p className="grid-note">{notes.stale}</p>}
   </>
 );

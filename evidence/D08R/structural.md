@@ -1580,3 +1580,11 @@ Fix, in Trade Analysis (`src/domain/trade-analysis/evaluate.ts`): `ConditionStat
 Dollar figures: "Reward to target" and "Risk to stop" need the contract's Mark (A109: `n x 100 x (m - sE)`), so they stay Unavailable today and show the dated line's figure, now with its own date on the cell when its distance is undated (one date per row, A231). The specs state no other rule, so none was invented; Worst case and Max reward keep their existing dated handling.
 Option-price conditions (Stop on the call's price) are unchanged: still "Thu Oct 15 Marks" while the call's Mark is missing (rail case asserts it).
 Cases: `evaluate-option.test.ts` (3), `conditions.props.test.ts` (1), `plan-risk.test.tsx` (1).
+
+## T8R.25-B6
+
+Defect (critic-2, defect 4): the Today drawer noted only the contract's acknowledged Mark; an acknowledged Underlying Mark (XYZ, Fri Oct 16 on O-C3) showed "—" with no note.
+Cause: `notesOf` in `today.props.ts` read only `current.markResolution`. The Underlying's resolution was not reachable from the Detail view (a condition's result carries the contract's reason when the contract's Mark is absent too), so Trade Views gains the optional, additive `current.underlyingMarkResolution` (the Underlying frame's resolution, as `markResolution` is the contract's).
+Words: the one `unavailableWords(..., 'sentence')` function plus ": your acknowledgment, not a price", with the Underlying's symbol in place of the contract, so "Mark acknowledged unavailable for XYZ on Fri Oct 16: your acknowledgment, not a price". No new words. `notes.acknowledged` is now a list, the Underlying's note first (the table's row order), then the contract's.
+Cases: `today.props.test.ts` (3: Underlying, both in order, stock Trade), `option-views.test.ts` (1: the view field).
+Browser: `e2e/d8r` and the d8p specs that touch Today (cockpit, history, journal-final-session, responsive-a11y, states, today-narrow): 27 passed.

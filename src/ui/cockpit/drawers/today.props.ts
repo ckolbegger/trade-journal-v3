@@ -252,16 +252,19 @@ function noMarksTextOf(view: OpenTradeDetail, timeZone: string): string | undefi
 }
 
 // Under the table (W29): an acknowledged Mark as the trader's acknowledgment, not a price, and the older Stale context. Each only where it applies.
-function notesOf({ timeZone }: TodayInput, { current }: OpenTradeDetail): TodayDrawerProps['notes'] {
-  const { markResolution, evaluation } = current;
+function notesOf({ timeZone }: TodayInput, view: OpenTradeDetail): TodayDrawerProps['notes'] {
+  const { markResolution, underlyingMarkResolution, evaluation } = view.current;
   const stale = evaluation.staleContext;
-  const acknowledged =
-    markResolution?.kind === 'AcknowledgedUnavailable'
-      ? `${text(unavailableWords({ reason: 'AcknowledgedUnavailable', instrument: evaluation.observation.instrument, date: evaluation.valuationDate }, 'sentence', timeZone), timeZone)}: your acknowledgment, not a price`
-      : undefined;
-  if (!stale && !acknowledged) return undefined;
+  // The same words for each Mark, the Underlying's (the table's first row) before the contract's.
+  const acknowledgmentOf = (instrument: Instrument): string =>
+    `${text(unavailableWords({ reason: 'AcknowledgedUnavailable', instrument, date: evaluation.valuationDate }, 'sentence', timeZone), timeZone)}: your acknowledgment, not a price`;
+  const acknowledged = [
+    ...(underlyingMarkResolution?.kind === 'AcknowledgedUnavailable' ? [acknowledgmentOf({ kind: 'Stock', symbol: view.plan.underlying })] : []),
+    ...(markResolution?.kind === 'AcknowledgedUnavailable' ? [acknowledgmentOf(evaluation.observation.instrument)] : []),
+  ];
+  if (!stale && acknowledged.length === 0) return undefined;
   return {
-    ...(acknowledged && { acknowledged }),
+    ...(acknowledged.length > 0 && { acknowledged }),
     ...(stale && { stale: `Stale context: ${decimalMoney(stale.price)} from ${shortDate(stale.tradingDate)} close (stale, not used in any current figure)` }),
   };
 }
