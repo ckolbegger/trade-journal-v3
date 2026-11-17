@@ -1534,3 +1534,21 @@ Reviewer notes (not ocr findings):
 - A stock Trade can't get two notes, because only an option has an Underlying frame.
 - The change is additive (A245).
 - ADR 0001 holds.
+
+## T8R.25-B8 returned
+
+T8R.25-B8 is committed as `a8756cca` in lane C2. Its ocr review is pending.
+
+**Fix.** Plan and Risk now reads `currentReading` whenever the contract is not Settlement Due and `firstMarksDue` is undefined, even when there is no dated line. This matches the rail's `!waiting`.
+
+**Tests and runs.**
+- One case went red, then green. It checks that the drawer's distance equals the rail's.
+- There were no first-run passes.
+- 34 browser specs pass, and the lane tier is green.
+
+**ocr on T8R.25-B8.** Session b262e054-d4f6-45e9-a95f-8815b081aeda reviewed 2 files and left 0 comments. Raw output: `ocr/T8R.25-B8-a8756cca.json`.
+
+Reviewer notes (not ocr findings):
+- The rail and Plan and Risk agree in every state: dated line present or absent, Settlement Due, before the first Marks, a stale weekend, and stock Trades.
+- No undated figure should be dated.
+- No case tests the `firstMarksDue` guard with an `underlyingReading` present. This is a small gap.
