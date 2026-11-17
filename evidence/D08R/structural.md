@@ -1022,3 +1022,44 @@ T8R.8 is committed as `e1c1ddc1` (lane TD). It has 3 cases, each red then green,
 **Finding (medium, bug, Valid).** `track.tsx:18` makes each lot tick a `role="img"` span. The ticks sit inside the `.track` div, which is itself `role="img"`. ARIA treats the children of an `img` as presentational, so screen readers may not announce the ticks' names ("$3.30 · Fri Oct 16") that A237 asks for. The unit test reads `aria-label` from the DOM, so it passes without proving the name is exposed.
 
 This becomes bug task **T8R.8-B1**. It runs in lane TD after T8R.9, which is already working in that worktree.
+
+## Merge run: wave1-merge3 (on `a17e6f89`)
+
+The full browser tier ran (`browser-auto bf3218f1`). `run-complete.sh` confirms the run is complete.
+
+| Suite | Result |
+|---|---|
+| Unit | 2092 passed |
+| Integration | 258 passed |
+| Checks | 14 of 14 exit 0 |
+| Browser 1 | 126 passed (5.2 min) |
+| Browser 2 | 121 passed (7.8 min) |
+
+wave1-merge2's 5 failures now pass:
+- B6.12
+- B7.13
+- both `lot-matches-fit` cases
+- B8P.1
+
+They were fixed by T8R.5-F1 and T8R.11-F1. T8R.17's B4.14 note is closed: `d4/breach-overrun` passes on the merged head. The tech debt item 11 flake did not occur.
+
+## T8R.9 returned; ocr
+
+T8R.9 is committed as `c0905d18` in lane TD. It has 3 cases, each red then green. Case 2 first logged a skipped run as exit 0, because the quotes in the `-t` filter stopped it matching. That run is flagged as an invalid red, and a genuine red was then taken. There were no first-run passes.
+
+**Retired:**
+- T8P.16's case 5 and case 4
+- the "figures moved (T8P.27)" describe, which held 3 cases
+- `Today.test.tsx`, which held 2 cases
+
+**Changed browser lines:**
+- `d4/breach-overrun`, `d4/expected-mark` and `d4/responsive-a11y`: each removed figure is now an absence check
+- `d7s/entry-beyond-stop`: the "Risk from entry" line is dropped
+
+All 21 Today specs passed.
+
+**Coverage gap.** No browser spec now reads Plan and Risk's "Risk from that price". It is covered only by `plan-risk.test.tsx` until T8R.27's B8R.4 (`plan-risk.spec.ts`, "W23, W31 and W32 groups in order"). That case should check the W23 figures. This goes into T8R.27's brief.
+
+**Orphans in files T8R.9 does not own:** `ConditionReading.underlying` and `trigger` are no longer read by Today, as A230 says. Removing `underlying` waits for the next fixture refreeze; listed for the final report.
+
+**ocr:** session 06f4f8a9-e600-4441-8133-d07f15a51354, 14 files reviewed, 0 comments, raw output in `ocr/T8R.9-c0905d18.json`. The reviewer checked by hand that no dead code remains and that the absence checks use the same region lookup that would have matched the old cards.

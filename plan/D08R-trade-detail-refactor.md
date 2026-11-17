@@ -668,8 +668,8 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T8R.6 | 1 | TD | Done | `c4585d5e`; B1 met by `columns.test.ts`, no code |
 | T8R.6-F1 | 1 | TD | Done | `665baf34` |
 | T8R.7 | 1 | TD | Done | `a28d05f9`; B1 `4cd6991a` (decision P1); B2 `e9834187` |
-| T8R.8 | 1 | TD | Committed `e1c1ddc1` (from `0d70da86`) | |
-| T8R.9 | 1 | TD | In progress from `e1c1ddc1` | |
+| T8R.8 | 1 | TD | Committed `e1c1ddc1` (from `0d70da86`); B1 in progress | |
+| T8R.9 | 1 | TD | Committed `c0905d18` (from `e1c1ddc1`) | |
 | T8R.10 | 1 | PR | Done | `ff4b2d79`; B1 `a80d5663`; B2 `992e5792` |
 | T8R.10-F1 | 1 | PR | Done | `e69bf95e`; B1 `db0ecf20` |
 | T8R.10-F2 | 1 | PR | Done | `2d901dfe` |
