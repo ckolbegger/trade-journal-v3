@@ -1198,3 +1198,35 @@ This full run (browser full) came before the checkpoint critic. Every stage pass
 `run-complete.sh` confirms the run is complete. The tech debt item 11 flake did not occur.
 
 Next: T8R.25, the checkpoint critic (critic-1, flows C8R.1 to C8R.4), on `241abe68`. T8R.27 is being written in lane BR at the same time.
+
+## T8R.25: checkpoint critic-1
+
+The report is in `critic-1.md`, saved with `tools/agent-report.ts`. The critic ran on `ad832150` after `wave2-full1`.
+
+**Result:** PASS overall. All four flows passed, C8R.1 to C8R.4, and the 375 and 320 px checks passed. The critic found **3 moderate defects**, in states next to the named scenarios. Each becomes a bug task. They run one at a time, and each starts with a failing test (critic-brief).
+
+| Bug task | Defect | Severity |
+|---|---|---|
+| T8R.25-B1 | Plan and Risk shows "Since the last Marks" when no lots were bought after earlier Marks: on O-S2X with no Marks at Fri 11-20 12:00, and on Settlement Due at Mon 11-23 18:00. W23 says "Shown only when lots were bought after earlier Marks". | Moderate |
+| T8R.25-B2 | On the expiration evening (Fri 11-20 18:30), Plan and Risk's Conditions table still measures the expired contract, while the note beneath it says it is no longer measured and the rail shows no distances. | Moderate |
+| T8R.25-B3 | On a stock Trade, the Conditions table's Condition cell shows a bare price ("$47.50") instead of naming the condition ("ABC at or below $47.50"), unlike option Trades and the rail (W31). | Moderate |
+
+**Minor observations** are not defects, so they create no bug tasks. All 10 go in the final report:
+1. Payoff repeats Realized to date and the XYZ Mark.
+2. The track's markers lag the table at midday.
+3. W24's line has no closing period after the button.
+4. An owed reflection on a Journal card keeps the old form.
+5. The Daily Trade Review keeps "Action: Hold" as its own row.
+6. The Conditions table scrolls at 375 px.
+7. The Settlement Due Today table scrolls 14 px at 1280 px on the expiration evening.
+8. The Closed-by-sale row is labelled "Call Mark" for the exit price.
+9. The same date appears in both columns on the exit day.
+10. Dated Risk or reward cells carry no date.
+
+**What follows.** Moderate defects remain, so after the last fix there is one full run (browser full) and then a fresh critic-2 (critic-brief: "FAIL, or any high or moderate defect: spawn a fresh critic"). The checkpoint may use at most three critics (decision 116 (3)).
+
+### Critic cost
+
+| Critic | Brief | Tokens | Tool calls | Duration | Defects |
+|---|---|---|---|---|---|
+| critic-1 (T8R.25) | critic-brief template, flows C8R.1 to C8R.4, plus decision P1 | 217,339 | 94 | 14 min 17 s | 3 moderate |
