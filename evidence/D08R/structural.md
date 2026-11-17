@@ -232,3 +232,7 @@ The bench comparison's contract-name expectations (structural; test expectations
 ## Merge: lane CN (T8R.3, T8R.3-F1, T8R.3-B1, T8R.3-B1-F1, T8R.3-B2)
 
 Rebased `d08r/cn` onto `claude-opus-5.5` (`9e01e6a0`): T8R.3 `5580fda4` → `556a1e2a`, T8R.3-F1 `740b4008` → `b7a648d4`, T8R.3-B1 `48cbd15b` → `0cd52adf`, T8R.3-B1-F1 `8df55c00` → `61451412`, T8R.3-B2 `562b715f` → `87bd7743`. The one conflict was in this file (F1's section; both sides appended); the main session kept the deliverable branch's text and appended F1's section after it. The rebase brought T8R.1's, T8R.2's and T8R.4's code under lane CN, so the lane tier reran on `87bd7743` (`suite-runs/T8R.3-rebased-*.txt`): unit 2044 passed, integration 258 passed, 14 of 14 checks exit 0; evidence commit `2d24c9cb`. Fast-forwarded `claude-opus-5.5` to `2d24c9cb`; lane worktree `d08r-cn` and branch `d08r/cn` removed. Every wave-0 lane has merged.
+
+## Merge run: wave 0
+
+Complete cumulative run on `11c5c14a` via `suite-runner` (label `wave0-merge`, `browser-auto 0c6f9828` → full tier, first matching path `e2e/d7/marks-zero.spec.ts`): unit 192 files, 2044 passed; integration 118 files, 258 passed; browser stage 1 126 passed (5.1m), stage 2 120 passed (7.5m); 14 of 14 checks exit 0. `run-complete.sh`: run complete. No failures; the Ready-state case did not fail. Outputs `suite-runs/wave0-merge-*.txt`. This is the base for wave 1's `browser-auto`.
