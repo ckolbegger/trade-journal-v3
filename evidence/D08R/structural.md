@@ -125,3 +125,18 @@ ocr on `7fefc1f2` (session eef43a5c-004a-4c73-8397-d77bef04b28f, gpt-6.1-sol, 3 
 - `instrumentLabel` takes no time zone, so its current-year rule uses the UTC year, as `summaryExpiration` does when given none; A238 names the Workspace zone. Noted for ocr and the final report.
 - Lane tier: unit 2032 passed, 1 failed (`tools/bench/compare.test.ts`, the old contract-name form); integration 258; checks 14 of 14.
 - **Follow-up T8R.3-F1** (main session's implementation-level decision): section 1.5 says `tools/bench/compare.ts` and its test "keep working" untouched, but the appendix's grep searched `e2e/`, `tests/` and `src/**/*.test.*`, never `tools/`, and `compare.test.ts` asserts two contract names in the old form. They are contract-name expectations the appendix missed, so they follow W28 like the rest (C1). F1, in lane CN, changes only those two names, pins the case's clock, and updates the comment at `compare.ts:63`; no code in `tools/` changes and the bench's generated rows are not regenerated. Listed for the user in the final report.
+
+## T8R.3 ocr review and bug tasks
+
+ocr on `5580fda4` (session 0fdfc9e7-d876-46a2-8c63-7e417b40cf5c, gpt-6.1-sol, 32 files reviewed, 2 comments; raw output `ocr/T8R.3-5580fda4.json`):
+
+| Severity | Category | Location | Claim | Assessment |
+|---|---|---|---|---|
+| medium | bug | `src/ui/calculation-words.ts:18` | `instrumentLabel` passes no time zone, so its current-year test uses UTC; near New Year the contract name can drop the year while the Trade Summary line, given the Workspace zone, shows it. | Valid (A238 names the Workspace zone). |
+| medium | bug | `src/ui/calculation-words.ts:18` | `summaryStrike` rounds through `money` to 2 decimals, but strikes carry up to 3 (decision 77), so 52.501 and 52.504 both read "$52.50"; the old label printed the raw strike. | Valid (`validateOptionContract` accepts 3 decimals). |
+
+Reviewer note (not an ocr finding): several `tradeSummary` callers (`ReviewCard`, `ReviewOwedCard`, `ReviewView`, `tradeName`) also omit the zone.
+
+**T8R.3-B1** (finding 1). Defect: a contract name decides "the current year" in UTC. Between the Workspace zone's New Year and UTC's, a contract name shows or drops its year differently from the Trade Summary line and from the trader's calendar. Case: "it should decide the current year in the Workspace zone": with the clock at 2027-01-01 03:00 UTC (Thu Dec 31 2026, 22:00 in New York) and the zone America/New_York, a contract expiring 2027-01-15 reads "XYZ Jan 15 2027 $55 Call". Fix: `instrumentLabel` takes the Workspace zone and passes it to `summaryExpiration`; each caller passes the zone it already holds.
+
+**T8R.3-B2** (finding 2). Defect: a strike with a third decimal is rounded, so two contracts can read alike. Case: "it should keep a strike's third decimal": "XYZ Dec 18 $52.505 Put", while 52.5 still reads "$52.50" (case 4). Fix: `summaryStrike` shows two decimals, and the third when the strike has one. The Trade Summary line shares it and gains the same.

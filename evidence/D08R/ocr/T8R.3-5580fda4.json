@@ -1,0 +1,507 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 32 selected item(s).",
+  "summary": {
+    "files_reviewed": 32,
+    "comments": 2,
+    "total_tokens": 452482,
+    "input_tokens": 448881,
+    "output_tokens": 3601,
+    "cache_read_tokens": 63616,
+    "elapsed": "1m21s"
+  },
+  "tool_calls": {
+    "total": 52,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 10,
+      "file_find": 1,
+      "file_read": 40
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/calculation-words.ts",
+      "content": "Passing `undefined` always compares the expiration year with UTC, rather than the Workspace year used by `tradeSummary`. For example, at 2027-01-01T01:00Z in America/New_York, a 2027 contract omits its year here but includes `2027` in the Trade Summary because the Workspace is still in 2026. Thread the Workspace time zone through contract-label rendering and add a New Year boundary test so both names follow the same current-year rule.",
+      "existing_code": "    ? `${instrument.symbol} ${summaryExpiration(instrument.expiration, undefined)} ${summaryStrike(instrument.strike)} ${instrument.right}`",
+      "start_line": 18,
+      "end_line": 18,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/calculation-words.ts",
+      "content": "`summaryStrike` formats through `money`, which rounds to two decimal places, but valid option strikes support three fractional digits (`validateOptionContract` and OCC parsing). Consequently, distinct strikes such as `52.501` and `52.504` now both appear as `$52.50` in contract names, whereas the previous label preserved their identity. Preserve all significant strike digits (while padding one-decimal strikes to cents) and add coverage for a three-decimal strike.",
+      "existing_code": "    ? `${instrument.symbol} ${summaryExpiration(instrument.expiration, undefined)} ${summaryStrike(instrument.strike)} ${instrument.right}`",
+      "start_line": 18,
+      "end_line": 18,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Calculation wording and formatting utilities with unit tests",
+      "files": [
+        "src/ui/calculation-words.test.ts",
+        "src/ui/calculation-words.ts",
+        "src/ui/format.test.ts",
+        "src/ui/format.ts"
+      ]
+    },
+    {
+      "label": "D7 end-to-end scenarios",
+      "files": [
+        "e2e/d7/marks-zero.spec.ts",
+        "e2e/d7/plan-open.spec.ts",
+        "e2e/d7/responsive-a11y.spec.ts",
+        "e2e/d7/review-expiration.spec.ts",
+        "e2e/d7/runtime-failure.spec.ts",
+        "e2e/d7/settlement-due.spec.ts",
+        "e2e/d7/short-put.spec.ts"
+      ]
+    },
+    {
+      "label": "D7 variant end-to-end support and dated review",
+      "files": [
+        "e2e/d7s/support.ts",
+        "e2e/d7sp/review-dated-line.spec.ts"
+      ]
+    },
+    {
+      "label": "D8P end-to-end scenarios and shared support",
+      "files": [
+        "e2e/d8p/states.spec.ts",
+        "e2e/d8p/support.ts",
+        "e2e/d8p/today-narrow.spec.ts"
+      ]
+    },
+    {
+      "label": "Cockpit drawer component tests",
+      "files": [
+        "src/ui/cockpit/drawers/payoff.test.tsx",
+        "src/ui/cockpit/drawers/plan-risk.test.tsx",
+        "src/ui/cockpit/drawers/position.props.test.tsx"
+      ]
+    },
+    {
+      "label": "Cockpit rail tests and P\u0026L types",
+      "files": [
+        "src/ui/cockpit/rail/needs-you.props.test.tsx",
+        "src/ui/cockpit/rail/pnl.props.test.tsx",
+        "src/ui/cockpit/rail/pnl.types.ts"
+      ]
+    },
+    {
+      "label": "Position and expiration review form tests",
+      "files": [
+        "src/ui/screens/ExpirationForm.test.tsx",
+        "src/ui/screens/PositionChangeFormOptions.test.tsx",
+        "src/ui/screens/ReviewExpiration.test.tsx",
+        "src/ui/screens/ReviewOptionMarks.test.tsx",
+        "src/ui/screens/ReviewOwed.test.tsx",
+        "src/ui/screens/ReviewSettlement.test.tsx"
+      ]
+    },
+    {
+      "label": "Trade-detail component tests",
+      "files": [
+        "src/ui/screens/trade-detail/Footer.test.tsx",
+        "src/ui/screens/trade-detail/Payoff.test.tsx",
+        "src/ui/screens/trade-detail/Position.test.tsx",
+        "src/ui/screens/trade-detail/SettlementDue.test.tsx"
+      ]
+    }
+  ],
+  "session_id": "0fdfc9e7-d876-46a2-8c63-7e417b40cf5c",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "0fdfc9e7-d876-46a2-8c63-7e417b40cf5c",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "5580fda4",
+      "resolved_base": "0c6f9828eeb12826d6c565bee782bd68cf878f2d",
+      "resolved_head": "5580fda4a43500ad29f5d489a937c3c36463f328",
+      "exact_range": "0c6f9828eeb12826d6c565bee782bd68cf878f2d..5580fda4a43500ad29f5d489a937c3c36463f328",
+      "source_artifact_sha256": "23ad55da1fdfd75a78c0702accd15cf8307e574e9d2db5d110ccc57265f39968"
+    },
+    "execution": {
+      "ocr_version": "v1.13.11",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0160d24f46c444f6775d6d047f26c1eb6d45ec60ec8feb3c6adef1d9e38a1306",
+          "path": "src/ui/cockpit/drawers/plan-risk.test.tsx",
+          "fingerprint": "3a903208e81cd39e514b69cdaad840b416951cf7bf138ad908b8c19f481d733d"
+        },
+        {
+          "item_id": "1408b9ec5a414d262bd9dca6cacbb1ddcce76440bff0774009eca7c8694a94c2",
+          "path": "src/ui/format.test.ts",
+          "fingerprint": "e2867cf636a43e4a2dd6913641f6f59de89b3ba11206cce4e997190255834696"
+        },
+        {
+          "item_id": "1afde35a58e3e0e9a9f6507d22fcbd3f3e2aca36a344bf1896873e07fec7ad17",
+          "path": "e2e/d8p/support.ts",
+          "fingerprint": "367d0d5a6e2e178fea70da9b7a1bf940b90e38465bf2240e04f97b560cdfec82"
+        },
+        {
+          "item_id": "1ccbf570ad6e384cc56076140f1fc24d78ea6b24b2df44390628e2db1dbc8609",
+          "path": "e2e/d7/review-expiration.spec.ts",
+          "fingerprint": "5af82d99666bd181cbfc0b491022a9b4f1600a0b353e7cfbdc676044a6c03595"
+        },
+        {
+          "item_id": "30273611721b694304fcba1e627fe765af668fd478e0661a0cc14f1ce1b4a3ab",
+          "path": "e2e/d8p/states.spec.ts",
+          "fingerprint": "56611aeff1a922d3f1cc9367b7f1cac1bf91e48d5a43a295bd58f4d9982e7e33"
+        },
+        {
+          "item_id": "3bf5cc07412de666946e6ff0c99e1dd3ad9f9512e250588d302344352b95cf60",
+          "path": "src/ui/cockpit/drawers/payoff.test.tsx",
+          "fingerprint": "66331aa4252a37ce858eb7525b223477f6514c89c4a94f02ef2737af54b801d7"
+        },
+        {
+          "item_id": "41e36b2fc461f001fd3da3ef154d234ed6312c47fd74d522eb021fe693bb95a6",
+          "path": "src/ui/screens/ExpirationForm.test.tsx",
+          "fingerprint": "b35132099891b47d9f6a0fcf9b698b9172a53b3c3d381753cf9c4efe4f82c14e"
+        },
+        {
+          "item_id": "459aafe26ac450e9ab0d9496b85f05b870a21059b32b7cfc7b465308a56bd289",
+          "path": "e2e/d7/marks-zero.spec.ts",
+          "fingerprint": "8a148bfd0646818653a175ce9c2db1956babd70b28511c4729526d67f726f41e"
+        },
+        {
+          "item_id": "4e995098d3a2739c27d7614956fdc9064c2736a0d40ad8a2991a03a83a3e6552",
+          "path": "e2e/d7/responsive-a11y.spec.ts",
+          "fingerprint": "dbb4dd5fb4b817b36caeee82ed9d0e6575c87d789e2f4f6678f2cb42b6fe4897"
+        },
+        {
+          "item_id": "4eb7d13073aead8500407b51367b7a90ebc5f83a39e4658414cf17c4fcfc106f",
+          "path": "src/ui/screens/trade-detail/SettlementDue.test.tsx",
+          "fingerprint": "72003bc64bc4dd784f2e38ba99a7acc12136a1350dfcf220958bfd6c77831294"
+        },
+        {
+          "item_id": "568de8ec6ac91580ff3b7766932eabc4d40b6eb6772be489396db52c78341f48",
+          "path": "e2e/d7/settlement-due.spec.ts",
+          "fingerprint": "60c60e064521214b7e14b9d5c8af07332bb56beedfab308fb85ba72548cc59bf"
+        },
+        {
+          "item_id": "584ec8e0f52c3bc07ad2d67c83d43d2d4b848ce33cd965265746f838d631cb24",
+          "path": "src/ui/cockpit/rail/pnl.types.ts",
+          "fingerprint": "416faf6cdcdf525cd7e764dbea212f223eaf3ab2f17a0cccfee75d413b8bfd4d"
+        },
+        {
+          "item_id": "58dcdeb8ac8b6e57d1c5c6b7b8d07087d57dfe9aa9aac008014ac84b43a794c5",
+          "path": "src/ui/cockpit/drawers/position.props.test.tsx",
+          "fingerprint": "3e1008e442d3967952135275b4fc70bc6750465cdbb334faa1be747053b2b1ab"
+        },
+        {
+          "item_id": "59b4b2506f61405795c057e6323b802d74ed26b419c182ab7ae9aae981f45d99",
+          "path": "src/ui/screens/PositionChangeFormOptions.test.tsx",
+          "fingerprint": "510bc990d7be68f88a9db07bf397688eca9fe87d283651f1f92e17e7d3ebf5e6"
+        },
+        {
+          "item_id": "65bccfc98e101dd12c3c3c7d1e445313eab5ae6feae6a2b9a027d8ea4143e4db",
+          "path": "src/ui/screens/ReviewExpiration.test.tsx",
+          "fingerprint": "6f01daebb714a19933f76ae2ef53fee99aea0728fe843ee1c8665f846b04c42e"
+        },
+        {
+          "item_id": "7b7b43bd5aace0812a09a79f8e75a4a90b528793f840469a3f893fe9d5819452",
+          "path": "src/ui/cockpit/rail/needs-you.props.test.tsx",
+          "fingerprint": "8b85a6760c212041746d358cb79d4f797cc16df8b7b7518c50a6e737eccc08cf"
+        },
+        {
+          "item_id": "7da074be733e6e3dcb060936f47561a3f43f6170367b45dffd798a785bd40a03",
+          "path": "e2e/d7s/support.ts",
+          "fingerprint": "9f14c587c1bc306c27f39e7e28232717250d006d6a7c28d88dd04ccc67595cc8"
+        },
+        {
+          "item_id": "7e3df8d89ae8a89b3a5c2a7bc4d39089e507d6c5d8719fb1eb7817ab109b0959",
+          "path": "e2e/d7/plan-open.spec.ts",
+          "fingerprint": "3809837d6e32b86dcafc7e898f675a9c66fa3c638bb1a79cd0d45ca205d0d23f"
+        },
+        {
+          "item_id": "890841e2c16e3045bc2504d3d6fce0be8da08c4c977123935c6676007173ee08",
+          "path": "src/ui/screens/trade-detail/Payoff.test.tsx",
+          "fingerprint": "cef6ff4175c2b3e1c1506b0e942019394c940f6c735fbab939796fba670f5999"
+        },
+        {
+          "item_id": "89df4030085f934c1ca4f2e9bd85400025be538773e76fb4641ac78ddf0342c1",
+          "path": "src/ui/screens/trade-detail/Footer.test.tsx",
+          "fingerprint": "5e00231bdd0ec6732a165f43aaad3cbaf1cef92eb18bfec58ba744d32b8f268f"
+        },
+        {
+          "item_id": "8adc510db5d8c589002e742d0da0075c5ee50162c0cfe23822135e24c49b46ea",
+          "path": "src/ui/screens/trade-detail/Position.test.tsx",
+          "fingerprint": "bfbdc161631e239d6aa1c2d57dac9e7984e9a5ecdd82851248dd8bf2f187a5e5"
+        },
+        {
+          "item_id": "9e888db941aaa026b03ee9ea52c8deac995d9f8bc522c19b2caf8ec3de412ae5",
+          "path": "e2e/d7/runtime-failure.spec.ts",
+          "fingerprint": "3bcf4c4b918ce21dc242fba59a25518a24215157c2d4afb876cf5c48d55d881d"
+        },
+        {
+          "item_id": "ad13d00cdea5a32ed4df94074d0ca5dcb24d5eda97ae7e238a4c75dd844a7c59",
+          "path": "src/ui/screens/ReviewOptionMarks.test.tsx",
+          "fingerprint": "3c7a9dbebb86300a1f20dcbefd1b39edf0a6feb22c5e219748cb1dcee046496e"
+        },
+        {
+          "item_id": "b97f93888873a5cfbfa6ea81c67212e9ec93c9cd38993483a43d6b0df12eaa9d",
+          "path": "src/ui/calculation-words.test.ts",
+          "fingerprint": "66b126727c3188b776f4135c5d1253a1ff01f61cbd80f99432b1e0e5e478df4e"
+        },
+        {
+          "item_id": "ba5fbb04fca03ff1953f3df04141a6756ee49b97455790da564dbc547ad53e17",
+          "path": "src/ui/format.ts",
+          "fingerprint": "b3030adca30a7cca60a87e2fde0fedd00e7c2dd7939da40da4af68ca605f5cb8"
+        },
+        {
+          "item_id": "ca830210571b3c1c130132730f3b5ff5e6224fd42856b0400a111e121dfb1fc8",
+          "path": "src/ui/screens/ReviewSettlement.test.tsx",
+          "fingerprint": "5a88e295bded669dcb84ea4fd23893e9d75ea8b5dc5120412817dfb033f230a9"
+        },
+        {
+          "item_id": "cb951f0e781341c345e2e5c6025d5492613286e042e1584ec29ab9e51a98c9b7",
+          "path": "e2e/d8p/today-narrow.spec.ts",
+          "fingerprint": "2c31cb9fd0bcde2be4be4a894518ff29e2d983d7108dce69372093cef8512672"
+        },
+        {
+          "item_id": "cea0d669790e87a141d06f85b7d2efa926a2bf80e3ca4142ea44ec95644e94bc",
+          "path": "e2e/d7sp/review-dated-line.spec.ts",
+          "fingerprint": "0dae6fb90ebafcd382168ce8415f0dd9f36763dae34f462e43624b943acdc4e0"
+        },
+        {
+          "item_id": "e0f92c04a14e3fa2fbeac53f784875c9f2e0e24f657520a9963d8539c115898c",
+          "path": "src/ui/cockpit/rail/pnl.props.test.tsx",
+          "fingerprint": "2db444fd3d3e486e0db3af2974e69410593c6d565806a8e626efc2a6d692d41c"
+        },
+        {
+          "item_id": "e1d2a6e20fc363ca1e18ec79af181d72fdc859550c22cf63ad51fd75c7d7b877",
+          "path": "src/ui/calculation-words.ts",
+          "fingerprint": "fc560365c14658a4caf40372162f4fcd1cc24f8d99a8074cddb670734246aca8"
+        },
+        {
+          "item_id": "ebac0363fecacc54fb409a16cc5e41ccfa2bc47d244c88ff98b35d2ab811b8da",
+          "path": "e2e/d7/short-put.spec.ts",
+          "fingerprint": "bd5b8c82c88f9d8c6f513faabc0380004332670845a4e619f79b6b2e9be0f8a8"
+        },
+        {
+          "item_id": "f60d40a2fcf211e72668946f9d6c2357941e916774d36dd5cb14b2a35255d3a9",
+          "path": "src/ui/screens/ReviewOwed.test.tsx",
+          "fingerprint": "05b50c2e54189e2d86538a217d6495adbe290c94e6f244aeef56556f31daf6fd"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0160d24f46c444f6775d6d047f26c1eb6d45ec60ec8feb3c6adef1d9e38a1306",
+          "path": "src/ui/cockpit/drawers/plan-risk.test.tsx",
+          "fingerprint": "3a903208e81cd39e514b69cdaad840b416951cf7bf138ad908b8c19f481d733d"
+        },
+        {
+          "item_id": "1408b9ec5a414d262bd9dca6cacbb1ddcce76440bff0774009eca7c8694a94c2",
+          "path": "src/ui/format.test.ts",
+          "fingerprint": "e2867cf636a43e4a2dd6913641f6f59de89b3ba11206cce4e997190255834696"
+        },
+        {
+          "item_id": "1afde35a58e3e0e9a9f6507d22fcbd3f3e2aca36a344bf1896873e07fec7ad17",
+          "path": "e2e/d8p/support.ts",
+          "fingerprint": "367d0d5a6e2e178fea70da9b7a1bf940b90e38465bf2240e04f97b560cdfec82"
+        },
+        {
+          "item_id": "1ccbf570ad6e384cc56076140f1fc24d78ea6b24b2df44390628e2db1dbc8609",
+          "path": "e2e/d7/review-expiration.spec.ts",
+          "fingerprint": "5af82d99666bd181cbfc0b491022a9b4f1600a0b353e7cfbdc676044a6c03595"
+        },
+        {
+          "item_id": "30273611721b694304fcba1e627fe765af668fd478e0661a0cc14f1ce1b4a3ab",
+          "path": "e2e/d8p/states.spec.ts",
+          "fingerprint": "56611aeff1a922d3f1cc9367b7f1cac1bf91e48d5a43a295bd58f4d9982e7e33"
+        },
+        {
+          "item_id": "3bf5cc07412de666946e6ff0c99e1dd3ad9f9512e250588d302344352b95cf60",
+          "path": "src/ui/cockpit/drawers/payoff.test.tsx",
+          "fingerprint": "66331aa4252a37ce858eb7525b223477f6514c89c4a94f02ef2737af54b801d7"
+        },
+        {
+          "item_id": "41e36b2fc461f001fd3da3ef154d234ed6312c47fd74d522eb021fe693bb95a6",
+          "path": "src/ui/screens/ExpirationForm.test.tsx",
+          "fingerprint": "b35132099891b47d9f6a0fcf9b698b9172a53b3c3d381753cf9c4efe4f82c14e"
+        },
+        {
+          "item_id": "459aafe26ac450e9ab0d9496b85f05b870a21059b32b7cfc7b465308a56bd289",
+          "path": "e2e/d7/marks-zero.spec.ts",
+          "fingerprint": "8a148bfd0646818653a175ce9c2db1956babd70b28511c4729526d67f726f41e"
+        },
+        {
+          "item_id": "4e995098d3a2739c27d7614956fdc9064c2736a0d40ad8a2991a03a83a3e6552",
+          "path": "e2e/d7/responsive-a11y.spec.ts",
+          "fingerprint": "dbb4dd5fb4b817b36caeee82ed9d0e6575c87d789e2f4f6678f2cb42b6fe4897"
+        },
+        {
+          "item_id": "4eb7d13073aead8500407b51367b7a90ebc5f83a39e4658414cf17c4fcfc106f",
+          "path": "src/ui/screens/trade-detail/SettlementDue.test.tsx",
+          "fingerprint": "72003bc64bc4dd784f2e38ba99a7acc12136a1350dfcf220958bfd6c77831294"
+        },
+        {
+          "item_id": "568de8ec6ac91580ff3b7766932eabc4d40b6eb6772be489396db52c78341f48",
+          "path": "e2e/d7/settlement-due.spec.ts",
+          "fingerprint": "60c60e064521214b7e14b9d5c8af07332bb56beedfab308fb85ba72548cc59bf"
+        },
+        {
+          "item_id": "584ec8e0f52c3bc07ad2d67c83d43d2d4b848ce33cd965265746f838d631cb24",
+          "path": "src/ui/cockpit/rail/pnl.types.ts",
+          "fingerprint": "416faf6cdcdf525cd7e764dbea212f223eaf3ab2f17a0cccfee75d413b8bfd4d"
+        },
+        {
+          "item_id": "58dcdeb8ac8b6e57d1c5c6b7b8d07087d57dfe9aa9aac008014ac84b43a794c5",
+          "path": "src/ui/cockpit/drawers/position.props.test.tsx",
+          "fingerprint": "3e1008e442d3967952135275b4fc70bc6750465cdbb334faa1be747053b2b1ab"
+        },
+        {
+          "item_id": "59b4b2506f61405795c057e6323b802d74ed26b419c182ab7ae9aae981f45d99",
+          "path": "src/ui/screens/PositionChangeFormOptions.test.tsx",
+          "fingerprint": "510bc990d7be68f88a9db07bf397688eca9fe87d283651f1f92e17e7d3ebf5e6"
+        },
+        {
+          "item_id": "65bccfc98e101dd12c3c3c7d1e445313eab5ae6feae6a2b9a027d8ea4143e4db",
+          "path": "src/ui/screens/ReviewExpiration.test.tsx",
+          "fingerprint": "6f01daebb714a19933f76ae2ef53fee99aea0728fe843ee1c8665f846b04c42e"
+        },
+        {
+          "item_id": "7b7b43bd5aace0812a09a79f8e75a4a90b528793f840469a3f893fe9d5819452",
+          "path": "src/ui/cockpit/rail/needs-you.props.test.tsx",
+          "fingerprint": "8b85a6760c212041746d358cb79d4f797cc16df8b7b7518c50a6e737eccc08cf"
+        },
+        {
+          "item_id": "7da074be733e6e3dcb060936f47561a3f43f6170367b45dffd798a785bd40a03",
+          "path": "e2e/d7s/support.ts",
+          "fingerprint": "9f14c587c1bc306c27f39e7e28232717250d006d6a7c28d88dd04ccc67595cc8"
+        },
+        {
+          "item_id": "7e3df8d89ae8a89b3a5c2a7bc4d39089e507d6c5d8719fb1eb7817ab109b0959",
+          "path": "e2e/d7/plan-open.spec.ts",
+          "fingerprint": "3809837d6e32b86dcafc7e898f675a9c66fa3c638bb1a79cd0d45ca205d0d23f"
+        },
+        {
+          "item_id": "890841e2c16e3045bc2504d3d6fce0be8da08c4c977123935c6676007173ee08",
+          "path": "src/ui/screens/trade-detail/Payoff.test.tsx",
+          "fingerprint": "cef6ff4175c2b3e1c1506b0e942019394c940f6c735fbab939796fba670f5999"
+        },
+        {
+          "item_id": "89df4030085f934c1ca4f2e9bd85400025be538773e76fb4641ac78ddf0342c1",
+          "path": "src/ui/screens/trade-detail/Footer.test.tsx",
+          "fingerprint": "5e00231bdd0ec6732a165f43aaad3cbaf1cef92eb18bfec58ba744d32b8f268f"
+        },
+        {
+          "item_id": "8adc510db5d8c589002e742d0da0075c5ee50162c0cfe23822135e24c49b46ea",
+          "path": "src/ui/screens/trade-detail/Position.test.tsx",
+          "fingerprint": "bfbdc161631e239d6aa1c2d57dac9e7984e9a5ecdd82851248dd8bf2f187a5e5"
+        },
+        {
+          "item_id": "9e888db941aaa026b03ee9ea52c8deac995d9f8bc522c19b2caf8ec3de412ae5",
+          "path": "e2e/d7/runtime-failure.spec.ts",
+          "fingerprint": "3bcf4c4b918ce21dc242fba59a25518a24215157c2d4afb876cf5c48d55d881d"
+        },
+        {
+          "item_id": "ad13d00cdea5a32ed4df94074d0ca5dcb24d5eda97ae7e238a4c75dd844a7c59",
+          "path": "src/ui/screens/ReviewOptionMarks.test.tsx",
+          "fingerprint": "3c7a9dbebb86300a1f20dcbefd1b39edf0a6feb22c5e219748cb1dcee046496e"
+        },
+        {
+          "item_id": "b97f93888873a5cfbfa6ea81c67212e9ec93c9cd38993483a43d6b0df12eaa9d",
+          "path": "src/ui/calculation-words.test.ts",
+          "fingerprint": "66b126727c3188b776f4135c5d1253a1ff01f61cbd80f99432b1e0e5e478df4e"
+        },
+        {
+          "item_id": "ba5fbb04fca03ff1953f3df04141a6756ee49b97455790da564dbc547ad53e17",
+          "path": "src/ui/format.ts",
+          "fingerprint": "b3030adca30a7cca60a87e2fde0fedd00e7c2dd7939da40da4af68ca605f5cb8"
+        },
+        {
+          "item_id": "ca830210571b3c1c130132730f3b5ff5e6224fd42856b0400a111e121dfb1fc8",
+          "path": "src/ui/screens/ReviewSettlement.test.tsx",
+          "fingerprint": "5a88e295bded669dcb84ea4fd23893e9d75ea8b5dc5120412817dfb033f230a9"
+        },
+        {
+          "item_id": "cb951f0e781341c345e2e5c6025d5492613286e042e1584ec29ab9e51a98c9b7",
+          "path": "e2e/d8p/today-narrow.spec.ts",
+          "fingerprint": "2c31cb9fd0bcde2be4be4a894518ff29e2d983d7108dce69372093cef8512672"
+        },
+        {
+          "item_id": "cea0d669790e87a141d06f85b7d2efa926a2bf80e3ca4142ea44ec95644e94bc",
+          "path": "e2e/d7sp/review-dated-line.spec.ts",
+          "fingerprint": "0dae6fb90ebafcd382168ce8415f0dd9f36763dae34f462e43624b943acdc4e0"
+        },
+        {
+          "item_id": "e0f92c04a14e3fa2fbeac53f784875c9f2e0e24f657520a9963d8539c115898c",
+          "path": "src/ui/cockpit/rail/pnl.props.test.tsx",
+          "fingerprint": "2db444fd3d3e486e0db3af2974e69410593c6d565806a8e626efc2a6d692d41c"
+        },
+        {
+          "item_id": "e1d2a6e20fc363ca1e18ec79af181d72fdc859550c22cf63ad51fd75c7d7b877",
+          "path": "src/ui/calculation-words.ts",
+          "fingerprint": "fc560365c14658a4caf40372162f4fcd1cc24f8d99a8074cddb670734246aca8"
+        },
+        {
+          "item_id": "ebac0363fecacc54fb409a16cc5e41ccfa2bc47d244c88ff98b35d2ab811b8da",
+          "path": "e2e/d7/short-put.spec.ts",
+          "fingerprint": "bd5b8c82c88f9d8c6f513faabc0380004332670845a4e619f79b6b2e9be0f8a8"
+        },
+        {
+          "item_id": "f60d40a2fcf211e72668946f9d6c2357941e916774d36dd5cb14b2a35255d3a9",
+          "path": "src/ui/screens/ReviewOwed.test.tsx",
+          "fingerprint": "05b50c2e54189e2d86538a217d6495adbe290c94e6f244aeef56556f31daf6fd"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "113660ed902439884dc43890055f3015fdae83898bf75971e6a5b786f07c584f",
+          "path": "evidence/D08R/tdd-log/T8R.3.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "38f2af284deea2f0bf3d7994f30e55a96529755cad42ca1500d8d0d2570c2fd7",
+          "path": "evidence/D08R/suite-runs/T8R.3-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "a06467fd430d6127ea94bc7b4149492526d0e58b5d5c6925b985122d6e2b0a0b",
+          "path": "evidence/D08R/suite-runs/T8R.3-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "d35b2f871e083ae920bf41a16322dcc02ecedbf365dcfcbb2a11c0ee7bd70ee7",
+          "path": "evidence/D08R/suite-runs/T8R.3-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ed592306c72d94d1e5378707f2d82ea518b67ed5e4af112afc290731828fabb0",
+          "path": "evidence/D08R/suite-runs/T8R.3-checks.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 80774
+  }
+}
