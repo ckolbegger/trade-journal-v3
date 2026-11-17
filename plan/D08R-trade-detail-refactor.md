@@ -661,8 +661,8 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T8R.3 | 0 | CN | In progress from `1a01d594` | |
 | T8R.3-F1 | 0 | CN | Committed `740b4008` | |
 | T8R.3-B1 | 0 | CN | Committed `48cbd15b` | |
-| T8R.3-B1-F1 | 0 | CN | In progress from `48cbd15b` | |
-| T8R.3-B2 | 0 | CN | Not started (after B1-F1) | |
+| T8R.3-B1-F1 | 0 | CN | Committed `8df55c00` | |
+| T8R.3-B2 | 0 | CN | In progress from `8df55c00` | |
 | T8R.4 | 0 | PH | Done | `c7a9a3ca`; B1 met by F1 |
 | T8R.4-F1 | 0 | PH | Done | `bed2afe0` |
 | T8R.5 | 1 | PO | Not started | |

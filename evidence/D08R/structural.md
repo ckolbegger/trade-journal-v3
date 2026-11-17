@@ -179,3 +179,30 @@ Rebased `d08r/sh` onto `claude-opus-5.5` twice; the second was needed because `2
 ## T8R.3-B1 ocr review
 
 ocr on `48cbd15b` (session 8433ad1b-b957-4085-9308-d40b7d69bfa3, gpt-6.1-sol, 14 files reviewed, 0 comments; raw output `ocr/T8R.3-B1-48cbd15b.json`): **No findings.** The background named the callers outside the lane, which B1-F1 is threading, as known.
+
+## T8R.3-B1-F1 notes
+
+`8df55c00` (lane CN, 28 files) has 2 cases, each pinned to 2027-01-01 03:00 UTC with the zone America/New_York.
+- **The Expiration receipt.** Red: `expected 'Expiration of 1 XYZ Jan 15 $55 Call, …' to contain 'XYZ Jan 15 2027'`. An earlier red failed on a fixture error ("reading 'price'") and was rejected; the fixture was fixed first. Then green.
+- **`review-attention.ts`'s `reasonText` for a MarkMissing reason.** Red: `expected 'Mark missing for XYZ Jan 15 $55 Call …' to contain 'XYZ Jan 15 2027'`. Then green.
+
+No first-run pass and no changed expected value.
+
+The zone now reaches:
+- the receipts and `ReviewReflections`;
+- `legText` and `positionText` in `trade-detail/words.ts`, through `footer.props`, `plan-risk.props` and `position.props`;
+- `review-attention.ts`, `today.props.ts` and `Banner.tsx`;
+- the figure words in `figures.ts`, which used `NO_ZONE` for MarkMissing, AcknowledgedUnavailable and SettlementDue, through `pnl.props.ts` (which had received the zone and ignored it), `conditions.props.ts`, `CardFigures`, `ReviewCard` and `TradeList`.
+
+Signature changes:
+- **Zone now required:** `expirationLine`, `executionWhat`, `holdingText`, `legText`, `positionText`.
+- **Optional trailing zone, defaulting to UTC:** `calculation`, `dollarsAndR`, `pnlText`, `settlementDueFigure`, `pnlProps`, `conditionsProps`.
+- **Zone still optional:** `instrumentLabel` (`tools/bench/compare.ts` calls with none) and `text` (it also words parts with no instrument).
+
+Left on the UTC default:
+- **Words with no instrument:** `unavailableLabel`, `FACTS_INCOHERENT_FIGURE`, the payoff words and `ActionForm`.
+- **Results that never depend on a Mark:** realized R, disposition, fees, lot matches.
+- **Callers wave-1 lanes will take:** `payoff.props.ts:63` and `journal.props.ts:177`. Each has a zone in reach and could name a contract in an Unavailable result. They are noted in the handoff for T8R.5 and T8R.15.
+- **Not an `instrumentLabel` caller:** `tradeSummary` in the `ReviewCard` header.
+
+Lane tier: unit 2036, integration 258, 14 of 14 checks.
