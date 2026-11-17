@@ -962,3 +962,9 @@ After: `npm run typecheck` exit 0; `npx vitest run src/domain` 258 passed; `npm 
 ## T8R.17-B1
 
 The Journal's active-Deviation line is hidden on an incoherent Detail. The plan (W24, A240, test list for T8R.17) says nothing about Deviations on an incoherent Detail, and Plan and Risk draws none there (`'positionChanges' in view` is false), so the line's button would lead nowhere. `deviationsOf` in `journal.props.ts` now also requires the Detail not to have `recordedPositionChanges`. Red then green in `tdd-log/T8R.17-B1.md`.
+
+## T8R.11-F1
+
+`e2e/d8p/cockpit.spec.ts` (B8P.1) listed Plan and Risk's cards without Planned-Leg Fulfillment. T8R.11 (`d8682e62`) made it the drawer's last group, and T8R.14-F1 edited the list from an older base. Fix: `'planned-leg fulfillment'` added to `HEADINGS['Plan and Risk']`. Plan text: `plan/D08R-trade-detail-refactor.md` line 10 and the kept-words row ("Deviations and Planned-Leg Fulfillment keep their words as Plan and Risk's last groups; Deviations is hidden when there are none"), and T8R.11's "gone" case, so a plain O-C3 shows no Deviations card. No other expectation changed: the label counts and accepted repeats passed unchanged.
+
+Red: `npx playwright test e2e/d8p/cockpit.spec.ts` after `npm run build:faults` and `npm run build:releases`: `Plan and Risk cards ... + "planned-leg fulfillment"`. Green: same command, 1 passed. Whole `e2e/d8p` folder: 18 passed, 2 failed, both in `lot-matches-fit.spec.ts` (the Instrument column that T8R.5-F1 fixes in lane PO, not this task).

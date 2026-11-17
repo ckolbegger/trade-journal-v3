@@ -1,0 +1,2 @@
+| T8R.11-F1 | B8P.1 should show the rail with W2, W3, W5 and W7, the tabs in W1 order ... and every condition with its status | red | `npx playwright test e2e/d8p/cockpit.spec.ts` (via with-browser-lock.sh, after build:faults and build:releases) | exit 1; 1 failed | Error: Plan and Risk cards, Array [ "plan", "conditions", "plan baseline", "entry quality", + "planned-leg fulfillment" ] |
+| T8R.11-F1 | B8P.1 (same case) | green | `npx playwright test e2e/d8p/cockpit.spec.ts` | exit 0; 1 passed | |

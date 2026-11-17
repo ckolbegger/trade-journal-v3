@@ -15,7 +15,7 @@ const PANEL = (name: DrawerName): string => `#drawer-panel-${name.toLowerCase().
 const HEADINGS: Record<'Today' | 'Position' | 'Plan and Risk' | 'Payoff', readonly string[]> = {
   Today: ['marks', 'where the prices sit'],
   Position: ['position', 'lot matches', 'fee reconciliation', 'executions (2)'],
-  'Plan and Risk': ['plan', 'conditions', 'plan baseline', 'entry quality'],
+  'Plan and Risk': ['plan', 'conditions', 'plan baseline', 'entry quality', 'planned-leg fulfillment'],
   Payoff: ['expiration payoff'],
 };
 
