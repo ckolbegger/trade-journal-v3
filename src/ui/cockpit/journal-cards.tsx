@@ -24,15 +24,7 @@ function Item({ item, control }: { readonly item: JournalCardItem; readonly cont
           </Badge>
         ))}
       </h3>
-      <dl>
-        {item.details.map(({ term, value }) => (
-          <div key={term}>
-            <dt>{term}</dt>
-            <dd>{value}</dd>
-          </div>
-        ))}
-      </dl>
-      {item.declined ? (
+      <p className="journal-line">{item.line}</p>      {item.declined ? (
         <>
           <p>
             <Badge tone="warning">{item.declined.badge}</Badge>

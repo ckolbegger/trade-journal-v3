@@ -90,8 +90,7 @@ describe('Journal session cards (W10–W13, A214)', () => {
     // Each session's items, in their existing words.
     const [entry] = within(monday).getAllByRole('listitem');
     expect(within(entry!).getByText('Position Change Reflection', { selector: '.badge' })).toBeTruthy();
-    expect(termValue(entry!, 'Moment')).toBe('2026-10-12 10:00');
-    expect(termValue(entry!, 'Anchor')).toBe('Trade XYZ');
+    expect(entry!.querySelector('h3')!.nextElementSibling?.textContent).toBe('Position Change · Mon Oct 12, 10:00 am');
     const [declined] = within(tuesday).getAllByRole('listitem');
     expect(within(declined!).getByText('Reflection declined')).toBeTruthy();
     expect(termValue(declined!, 'Reason')).toBe('Same plan, second fill.');
@@ -229,7 +228,7 @@ describe('Journal session cards (W10–W13, A214)', () => {
     expect(items.map((item) => item.querySelector('.badge')?.textContent)).toEqual(['Position Change Reflection', 'Position Change Reflection', 'Position Change Reflection']);
     expect(within(items[0]!).getByText('Reflection owed')).toBeTruthy();
     expect(within(items[1]!).getByText('Reflection declined')).toBeTruthy();
-    expect(termValue(items[2]!, 'Moment')).toBe('2026-10-12 10:00');
+    expect(items[2]!.querySelector('h3')!.nextElementSibling?.textContent).toBe('Position Change · Mon Oct 12, 10:00 am');
     // No session list: no heading for it and no paging, anywhere in the document.
     expect(document.querySelector('.journal-cards-head')).toBeNull();
     expect(screen.queryAllByRole('button', { name: /sessions$/, hidden: true })).toHaveLength(0);
@@ -282,11 +281,11 @@ describe('Journal session cards (W10–W13, A214)', () => {
     show(replayOf([session('2026-11-09', 10n, '52.30', null, [answered, declined])]));
     const [entry, decline] = within(screen.getByRole('article')).getAllByRole('listitem') as [HTMLElement, HTMLElement];
     expect([...entry.querySelectorAll('h3 .badge')].map((badge) => badge.textContent)).toEqual(['Position Change Reflection', 'Edited', 'Deferred, answered']);
-    expect(termValue(entry, 'Answered')).toBe('2026-10-13 10:00');
-    expect(within(entry).queryByText('Authored', { selector: 'dt' })).toBeNull();
+    expect(entry.querySelector('h3')!.nextElementSibling?.textContent).toBe('Position Change · Mon Oct 12, 10:00 am · written Tue Oct 13');
+    expect(within(entry).queryByText('Answered', { selector: 'dt' })).toBeNull();
     expect(within(decline).getByText('Declined later', { selector: '.badge' })).toBeTruthy();
     expect(within(decline).queryByText('Reflection declined')).toBeNull();
-    expect(termValue(decline, 'Declined')).toBe('2026-10-13 11:00');
+    expect(decline.querySelector('h3')!.nextElementSibling?.textContent).toBe('Position Change · Mon Oct 12, 11:00 am · written Tue Oct 13');
     expect(termValue(decline, 'Reason')).toBe('Same plan, second fill.');
   });
 
@@ -328,5 +327,67 @@ describe('Journal session cards (W10–W13, A214)', () => {
     await user.click(within(tuesday).getByRole('button', { name: 'Cancel' }));
     expect(within(tuesday).queryByRole('form', { hidden: true })).toBeNull();
     expect(within(monday).getByRole('button', { name: 'Reflect now' }).hasAttribute('disabled')).toBe(false);
+  });
+});
+
+describe('Journal entries: one dated line (W27)', () => {
+  const settled = { debtId: 'debt-1', dueAnchor: '2026-10-12T20:00:00Z' };
+  const dailyReview = {
+    ...pc1Reflection,
+    id: 'e-dr',
+    entryType: 'Daily Trade Review',
+    entryTypeKey: 'entry-type.daily-trade-review',
+    source: 'Daily Review',
+    momentTime: '2026-10-15T20:00:00Z',
+    authoredTime: '2026-10-15T20:05:00Z',
+    reviewDate: '2026-10-15',
+  };
+  const itemsOf = (replay: unknown, extra: Record<string, unknown> = {}) => {
+    show(replay, extra);
+    return [...document.querySelectorAll<HTMLElement>('ul.narrative > li')];
+  };
+  const lineOf = (item: HTMLElement) => item.querySelector('h3')!.nextElementSibling?.textContent;
+  const tradeWords = ['Review Date', 'Anchor', 'Source', 'Moment', 'Authored', 'Answered', 'Declined'];
+  const termsOf = () => [...document.querySelectorAll('dt')].map((dt) => dt.textContent);
+
+  it('should show the Source and moment line under an entry type', () => {
+    const [entry] = itemsOf(replayOf([session('2026-11-09', 10n, '52.30', null, [dailyReview])]));
+    expect(lineOf(entry!)).toBe('Daily Review · Thu Oct 15, 4:00 pm');
+  });
+
+  it('should add the written date when the entry was answered on a later date', () => {
+    const answered = { ...dailyReview, answeredLater: settled, authoredTime: '2026-10-16T14:00:00Z' };
+    const declined = { ...pc2Decline, declinedLater: settled, authoredTime: '2026-10-13T15:00:00Z' };
+    const [late, gone, same] = itemsOf(replayOf([session('2026-11-09', 10n, '52.30', null, [answered, declined, pc1Reflection])]));
+    expect(lineOf(late!)).toBe('Daily Review · Thu Oct 15, 4:00 pm · written Fri Oct 16');
+    expect(lineOf(gone!)).toBe('Position Change · Mon Oct 12, 11:00 am · written Tue Oct 13');
+    expect(lineOf(same!)).toBe('Position Change · Mon Oct 12, 10:00 am');
+    // The saved status stays.
+    expect(within(late!).getByText('Deferred, answered')).toBeTruthy();
+    expect(within(gone!).getByText('Declined later')).toBeTruthy();
+    expect(within(gone!).getByText('Same plan, second fill.')).toBeTruthy();
+  });
+
+  it('should not show Review Date, Anchor, Source, Moment or Authored rows', () => {
+    itemsOf(replayOf([session('2026-11-09', 10n, '52.30', null, [dailyReview, pc1Reflection, pc2Decline, { ...pc1Reflection, id: 'e-9', answeredLater: settled, authoredTime: '2026-10-13T14:00:00Z' }])]));
+    const terms = termsOf();
+    expect(terms.length).toBeGreaterThan(0);
+    for (const word of tradeWords) expect(terms).not.toContain(word);
+    expect(document.body.textContent).not.toContain('Trade XYZ');
+  });
+
+  it('should not show a row for an unanswered prompt', () => {
+    itemsOf(replayOf([session('2026-11-09', 10n, '52.30', null, [pc1Reflection])]));
+    expect(termsOf()).toContain('Primary emotion');
+    expect(termsOf()).not.toContain('Note');
+    expect(document.body.textContent).not.toContain('Not answered');
+  });
+
+  it('should show the same line in the list kept for an incoherent Detail', () => {
+    const incoherent = incoherentDetailOf([PC1, PC2], [], [pc1Reflection, pc2Decline]);
+    const [declined, entry] = itemsOf('Incoherent', { view: incoherent, facade: facadeDouble() });
+    expect(lineOf(entry!)).toBe('Position Change · Mon Oct 12, 10:00 am');
+    expect(lineOf(declined!)).toBe('Position Change · Mon Oct 12, 11:00 am');
+    expect(termsOf()).not.toContain('Moment');
   });
 });

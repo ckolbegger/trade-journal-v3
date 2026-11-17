@@ -4,7 +4,7 @@ import { buildOc3, detail, expect, fillDebtAnswers, openDetailAt, openDrawer, RE
 test.use({ actionTimeout: 15_000 });
 
 // B8P.2 (plan section 7.2): O-C3 as in B8P.1, clock Thu 2026-10-15 18:00. Figures are section 5's table; the Journal items sit where A213 puts them:
-// the Plan Reflection (Mon 09:00) before the first exposure, the entry reflection (Mon 10:05) in Monday's session, the Hold for Review Date Tue 10-13
+// the Plan Reflection (Mon 09:00) before the first exposure, the entry reflection (Mon 10:05) in Monday's session, the Hold for Tue 10-13
 // in Tuesday's, the owed exit reflection (Wed 11:05) in Wednesday's (the first session closing at or after it), the Thursday Hold in Thursday's.
 const journal = (page: Page): Locator => page.locator('#drawer-panel-journal');
 const card = (page: Page, heading: RegExp): Locator => journal(page).locator('article.journal-card').filter({ hasText: heading });
@@ -69,7 +69,7 @@ test.describe('B8P.2 Price History and Journal', () => {
       await expect(card(page, /^\s*Today, Thu Oct 15/)).toContainText('$218.05');
       await expect(card(page, /^\s*Today, Thu Oct 15/)).toContainText('+$30.00 since Wed Oct 14');
       await expect(card(page, /^\s*Today, Thu Oct 15/).locator('.journal-card-marks')).toContainText('XYZ Mark57.90');
-      await expect(card(page, /^\s*Today, Thu Oct 15/)).toContainText('Review DateThu Oct 15');
+      await expect(card(page, /^\s*Today, Thu Oct 15/)).toContainText('Daily Review · Thu Oct 15, 4:00 pm');
       await expect(card(page, WEDNESDAY)).toContainText('$188.05');
       await expect(card(page, WEDNESDAY)).toContainText('+$169.35 since Mon Oct 12');
       await expect(card(page, WEDNESDAY)).toContainText('Reflection owed');
@@ -82,7 +82,9 @@ test.describe('B8P.2 Price History and Journal', () => {
       const tuesday = card(page, /^\s*Tue Oct 13 without Marks/);
       await expect(tuesday.locator('.journal-card-marks')).toHaveCount(0);
       await expect(tuesday.locator('.journal-card-change')).toHaveCount(0);
-      await expect(tuesday).toContainText('Review DateTue Oct 13');
+      await expect(tuesday).toContainText('Daily Review · Tue Oct 13');
+      // The rows the one dated line replaced are gone from the whole drawer, hidden cards included (W27).
+      for (const word of ['Review Date', 'Anchor', 'Moment', 'Authored', 'Not answered']) await expect(journal(page).getByText(word, { exact: true })).toHaveCount(0);
       await expect(card(page, /^\s*Mon Oct 12/)).toContainText('$18.70');
       await expect(card(page, /^\s*Mon Oct 12/)).toContainText('First Mark');
       await expect(card(page, /^\s*Mon Oct 12/)).toContainText('Position Change Reflection');
@@ -118,7 +120,7 @@ test.describe('B8P.2 Price History and Journal', () => {
       const wednesday = card(page, WEDNESDAY);
       await expect(wednesday).toBeVisible();
       await expect(wednesday).toContainText('Deferred, answered');
-      await expect(wednesday).toContainText('Answered2026-10-15 18:00');
+      await expect(wednesday).toContainText('Trade Detail · Wed Oct 14, 11:00 am · written Thu Oct 15');
       await expect(wednesday).toContainText('Decision modeAs Planned');
       await expect(wednesday).toContainText('Primary emotionCalm');
       await expect(wednesday).toContainText('Decision confidence4');

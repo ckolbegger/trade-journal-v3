@@ -73,13 +73,13 @@ describe('Open Trade Detail', () => {
     ]);
 
     const [, entry, decline] = items as [HTMLElement, HTMLElement, HTMLElement];
-    expect(termValue(entry, 'Moment')).toBe('2026-10-12 10:00');
+    expect(entry.querySelector('h3')!.nextElementSibling?.textContent).toBe('Position Change · Mon Oct 12, 10:00 am');
     expect(termValue(entry, 'Decision mode')).toBe('Planned');
     expect(termValue(entry, 'Primary emotion')).toBe('Calm');
     expect(termValue(entry, 'Decision confidence')).toBe('4');
-    expect(termValue(entry, 'Note')).toBe('Not answered');
+    expect(within(entry).queryByText('Note', { selector: 'dt' })).toBeNull();
 
-    expect(termValue(decline, 'Moment')).toBe('2026-10-12 11:00');
+    expect(decline.querySelector('h3')!.nextElementSibling?.textContent).toBe('Position Change · Mon Oct 12, 11:00 am');
     expect(within(decline).getByText('Reflection declined')).toBeTruthy();
     expect(termValue(decline, 'Reason')).toBe('Same plan, second fill.');
     // The narrative is the Journal section's alone: no separate Plan Reflection region.

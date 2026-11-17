@@ -1,7 +1,7 @@
 // Shared support for the D08P browser suite (plan section 7.2): D7S's helpers (which re-export D7's and the earlier folders'), and O-C3
 // of plan section 5 built through the UI, in the order the events happened (the same order as tests/integration/d8p/support.ts):
 //   Mon 09:00 the Plan with its Reflection; Mon 10:05 Buy 2 @ 2.00 (10:00, fee 1.30) with its reflection; Mon 17:00 Monday's Marks;
-//   Wed 08:00 the Daily Action Hold for Review Date Tue 10-13; Wed 11:05 Sell 1 @ 3.00 (11:00, fee 0.65) with its reflection deferred;
+//   Wed 08:00 the Daily Action Hold for Tue 10-13; Wed 11:05 Sell 1 @ 3.00 (11:00, fee 0.65) with its reflection deferred;
 //   Wed 17:00 Wednesday's Marks; Thu 17:00 Thursday's Marks; Thu 18:00 the Hold for Thu 10-15.
 // Tuesday has no Marks. Every figure and word the specs assert is plan section 5's, 1.6's or a W or A row's.
 import type { Page } from '@playwright/test';

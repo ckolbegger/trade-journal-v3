@@ -15,6 +15,9 @@ import { openDrawer, renderView, termValue } from './test-support.ts';
 
 afterEach(cleanup);
 
+// An entry's one dated line (W27) sits under its heading.
+const lineOf = (item: HTMLElement) => item.querySelector('h3')!.nextElementSibling?.textContent;
+
 describe('badge meanings', () => {
   it('should give Reflection declined the warning tone', async () => {
     const user = userEvent.setup();
@@ -37,43 +40,32 @@ describe('Journal entries', () => {
     return { region, items: within(region).getAllByRole('listitem') };
   }
 
-  it('should show each Entry as its own item with the Entry Type as a badge, the Anchor, the Source labelled as Source, and the moment time', async () => {
+  it('should show each Entry as its own item with the Entry Type as a badge and one line of its Source and moment', async () => {
     const { items } = await journalItems([pc1Reflection]);
     expect(items).toHaveLength(1);
     const item = items[0]!;
     expect(within(item).getByText('Position Change Reflection', { selector: '.badge' })).toBeTruthy();
-    expect(termValue(item, 'Anchor')).toBe('Trade XYZ');
-    expect(termValue(item, 'Source')).toBe('Position Change');
-    expect(termValue(item, 'Moment')).toBe('2026-10-12 10:00');
+    expect(lineOf(item)).toBe('Position Change · Mon Oct 12, 10:00 am');
     expect(termValue(item, 'Decision mode')).toBe('Planned');
   });
 
-  it('should show the authored time as well when it differs from the moment time', async () => {
-    const same = { ...pc1Reflection, authoredTime: pc1Reflection.momentTime } as NarrativeItem;
-    const { items } = await journalItems([planEntry, same]);
-    const [differs, equal] = items as [HTMLElement, HTMLElement];
-    expect(termValue(differs, 'Authored')).toBe('2026-10-12 10:05');
-    expect(within(equal).queryByText('Authored', { selector: 'dt' })).toBeNull();
+  it('should show the same line in the fallback list, with the written date only when it is later', async () => {
+    const later = { ...pc1Reflection, authoredTime: '2026-10-13T14:00:00Z' } as NarrativeItem;
+    const { items } = await journalItems([planEntry, later]);
+    const [sameDay, laterDay] = items as [HTMLElement, HTMLElement];
+    expect(lineOf(sameDay)).toBe('Plan Confirmation · Mon Oct 12, 9:30 am');
+    expect(lineOf(laterDay)).toBe('Position Change · Mon Oct 12, 10:00 am · written Tue Oct 13');
+    for (const term of ['Anchor', 'Source', 'Moment', 'Authored']) expect(within(sameDay).queryByText(term, { selector: 'dt' })).toBeNull();
   });
 
-  it('should not show the authored time when it reads the same as the moment time', async () => {
-    const moment = new Date(pc1Reflection.momentTime);
-    const seconds = { ...pc1Reflection, authoredTime: new Date(moment.getTime() + 30_000).toISOString() } as NarrativeItem;
-    const { items } = await journalItems([seconds]);
-    expect(within(items[0]!).queryByText('Authored', { selector: 'dt' })).toBeNull();
-  });
-
-  it('should show a decline with the warning badge Reflection declined, its reason or No reason given, its Anchor and Source', async () => {
+  it('should show a decline with the warning badge Reflection declined, its reason or No reason given, and its line', async () => {
     const noReason = { ...pc2Decline, id: 'd-2', reason: undefined } as NarrativeItem;
     const { items } = await journalItems([pc2Decline, noReason]);
     const [withReason, without] = items as [HTMLElement, HTMLElement];
     expect(within(withReason).getByText('Reflection declined').getAttribute('data-tone')).toBe('warning');
     expect(termValue(withReason, 'Reason')).toBe('Same plan, second fill.');
     expect(termValue(without, 'Reason')).toBe('No reason given');
-    for (const item of [withReason, without]) {
-      expect(termValue(item, 'Anchor')).toBe('Trade XYZ');
-      expect(termValue(item, 'Source')).toBe('Position Change');
-    }
+    for (const item of [withReason, without]) expect(lineOf(item)).toBe('Position Change · Mon Oct 12, 11:00 am');
   });
 
   it('should label the region with the number of items', async () => {
@@ -100,14 +92,10 @@ describe('journal prose', () => {
     expect(question.nextElementSibling?.textContent).toBe('Calm');
   });
 
-  it('should keep Anchor, Source, Moment and Authored as a label/value list', async () => {
+  it('should keep the answers as the only label/value list', async () => {
     const item = await journalItem();
-    const anchor = within(item).getByText('Anchor', { selector: 'dt' }).closest('dl')!;
-    expect(anchor.classList.contains('answers')).toBe(false);
-    for (const term of ['Source', 'Moment', 'Authored']) {
-      expect(within(anchor).getByText(term, { selector: 'dt' })).toBeTruthy();
-    }
-    expect(within(anchor).queryByText('Primary emotion')).toBeNull();
+    expect(within(item).getByText('Primary emotion', { selector: 'dt' }).closest('dl')!.classList.contains('answers')).toBe(true);
+    expect(item.querySelectorAll('dl:not(.answers)')).toHaveLength(0);
   });
 });
 
@@ -129,17 +117,17 @@ describe('Actions', () => {
     ],
   });
 
-  it('should list Daily Trade Review Actions in the narrative with Review Date, Action, Intent, and an Edited indicator', async () => {
+  it('should list Daily Trade Review Actions in the narrative with Action, Intent when answered, and an Edited indicator', async () => {
     const user = userEvent.setup();
     renderView(openDetailOf([PC1, PC2], { journal: [action('a-1', '2026-10-12', 'Hold', undefined), action('a-2', '2026-10-13', 'Exit', 'Take the gain.', true)] }));
     await openDrawer(user, 'Journal');
     const journal = await screen.findByRole('region', { name: 'Journal (2)' });
     const [hold, exit] = within(journal).getAllByRole('listitem');
-    expect(termValue(hold!, 'Review Date')).toBe('Mon Oct 12');
+    expect(within(hold!).queryByText('Review Date', { selector: 'dt' })).toBeNull();
     expect(termValue(hold!, 'Action')).toBe('Hold');
-    expect(termValue(hold!, 'Intent')).toBe('Not answered');
+    expect(within(hold!).queryByText('Intent', { selector: 'dt' })).toBeNull();
     expect(within(hold!).queryByText('Edited')).toBeNull();
-    expect(termValue(exit!, 'Review Date')).toBe('Tue Oct 13');
+    expect(within(exit!).queryByText('Review Date', { selector: 'dt' })).toBeNull();
     expect(termValue(exit!, 'Action')).toBe('Exit');
     expect(termValue(exit!, 'Intent')).toBe('Take the gain.');
     expect(within(exit!).getByText('Edited', { selector: '.badge' })).toBeTruthy();
@@ -210,12 +198,11 @@ describe('Debt on Trade Detail (A69, P17)', () => {
     const region = await screen.findByRole('region', { name: 'Journal (2)' });
     const [first, second] = within(region).getAllByRole('listitem') as [HTMLElement, HTMLElement];
     expect(within(first).getByText('Deferred, answered', { selector: '.badge' })).toBeTruthy();
-    expect(termValue(first, 'Answered')).toBe('2026-10-12 12:30');
-    expect(termValue(first, 'Source')).toBe('Position Change');
+    expect(lineOf(first)).toBe('Position Change · Mon Oct 12, 10:00 am');
     expect(termValue(first, 'Decision mode')).toBe('Planned');
     expect(within(second).getByText('Declined later', { selector: '.badge' })).toBeTruthy();
     expect(within(second).queryByText('Reflection declined')).toBeNull();
-    expect(termValue(second, 'Declined')).toBe('2026-10-12 13:15');
+    expect(lineOf(second)).toBe('Position Change · Mon Oct 12, 11:00 am');
     expect(termValue(second, 'Reason')).toBe('Same plan, second fill.');
     expect(within(region).queryByText('Reflection owed')).toBeNull();
   });

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { UiFacade } from '../../../app/compose.ts';
 import type { TradeDetailNarrativeItem } from '../../../app/types.ts';
 import { Badge } from '../../Badge.tsx';
-import { localTime, shortDate } from '../../format.ts';
+import { entryLine } from '../../cockpit/drawers/journal-line.ts';
 import { OwedDebtItem } from '../OwedDebtItem.tsx';
 import { answerText } from './words.ts';
 
@@ -11,13 +11,13 @@ import { answerText } from './words.ts';
 export function JournalSection({
   facade,
   journal,
-  symbol,
   timeZone,
   onDirtyChange,
 }: {
   readonly facade: UiFacade;
   readonly journal: readonly TradeDetailNarrativeItem[];
-  readonly symbol: string;
+  // Not read since the Journal line dropped the Trade Anchor (P112); `Composed.tsx` is another lane's file and still passes it.
+  readonly symbol?: string;
   readonly timeZone: string;
   readonly onDirtyChange?: (dirty: boolean) => void;
 }) {
@@ -43,11 +43,6 @@ export function JournalSection({
               />
             );
           }
-          const moment = localTime(item.momentTime, timeZone);
-          const authored = localTime(item.authoredTime, timeZone);
-          // A reflection resolved after it was deferred always shows when the trader resolved it.
-          const settledLater = item.kind === 'Entry' ? item.answeredLater : item.declinedLater;
-          const laterTimeLabel = settledLater && (item.kind === 'Entry' ? 'Answered' : 'Declined');
           return (
           <li key={item.id}>
             <h3>
@@ -55,29 +50,10 @@ export function JournalSection({
               {item.kind === 'Entry' && item.edited && <Badge tone="info">Edited</Badge>}
               {item.kind === 'Entry' && item.answeredLater && <Badge tone="info">Deferred, answered</Badge>}
             </h3>
-            <dl>
-              {item.kind === 'Entry' && item.reviewDate !== undefined && (
-                <>
-                  <dt>Review Date</dt>
-                  <dd>{shortDate(item.reviewDate)}</dd>
-                </>
-              )}
-              <dt>Anchor</dt>
-              <dd>{`Trade ${symbol}`}</dd>
-              <dt>Source</dt>
-              <dd>{item.source}</dd>
-              <dt>Moment</dt>
-              <dd>{moment}</dd>
-              {(authored !== moment || laterTimeLabel) && (
-                <>
-                  <dt>{laterTimeLabel ?? 'Authored'}</dt>
-                  <dd>{authored}</dd>
-                </>
-              )}
-            </dl>
+            <p className="journal-line">{entryLine(item.source, item.momentTime, item.authoredTime, timeZone)}</p>
             {item.kind === 'Entry' ? (
               <dl className="answers">
-                {item.responses.map((response) => (
+                {item.responses.filter((response) => response.answer.kind !== 'Unanswered').map((response) => (
                   <div key={response.prompt}>
                     <dt>{response.prompt}</dt>
                     <dd>{answerText(response.answer)}</dd>

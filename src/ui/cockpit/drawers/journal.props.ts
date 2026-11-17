@@ -10,6 +10,7 @@ import { calculation, signed } from '../../figures.ts';
 import { decimalMoney, decimalUnderlyingPrice, localTime, money, shortDate } from '../../format.ts';
 import { OwedDebtItem } from '../../screens/OwedDebtItem.tsx';
 import { answerText } from '../../screens/trade-detail/words.ts';
+import { dateAndTime, entryLine } from './journal-line.ts';
 import type { JournalCardItem, JournalCardProps, JournalDrawerProps, OwedControl } from './journal.types.ts';
 
 // The slice of `TradeReplayView` the cards read. `ui-only-through-facade` bars importing the coordinator's type, so it is declared here and the
@@ -62,42 +63,25 @@ function changeOf(tradePnl: CalculationResult<Rational>, change: JournalReplaySe
 
 const DAY = 24 * 60 * 60 * 1000;
 
-// "Thu Nov 12, 1:40 pm": the Plan's moment in the Workspace zone.
-function plannedAt(instant: string, timeZone: string): string {
-  const [date = '', time = '00:00'] = localTime(instant, timeZone).split(' ');
-  const [hour = 0, minute = '00'] = time.split(':');
-  return `${shortDate(date)}, ${Number(hour) % 12 || 12}:${minute} ${Number(hour) < 12 ? 'am' : 'pm'}`;
-}
-
 // A session whose close held no Position (a Closed Trade's final session) was owed no Mark (A211's Position held).
 const heldNothing = (session: JournalReplaySession): boolean => session.positions.every((p) => p.quantity.numerator === 0n);
 
 // A session without a Mark: Marks were due, and no Instrument has one that day.
 const withoutMarks = (session: JournalReplaySession): boolean => !heldNothing(session) && session.marks.every((mark) => mark.resolution.kind !== 'Available');
 
-function itemOf(item: TradeDetailNarrativeItem, symbol: string, timeZone: string, facade: UiFacade, onDirtyChange?: (dirty: boolean) => void): JournalCardItem {
+function itemOf(item: TradeDetailNarrativeItem, timeZone: string, facade: UiFacade, onDirtyChange?: (dirty: boolean) => void): JournalCardItem {
   if (item.kind === 'Debt') {
     const owed = (control: OwedControl) => createElement(OwedDebtItem, { key: item.id, facade, debt: item, timeZone, ...control, ...(onDirtyChange && { onDirtyChange }) });
-    return { id: item.id, type: item.entryType, badges: [], details: [], answers: [], owed };
+    return { id: item.id, type: item.entryType, badges: [], line: '', answers: [], owed };
   }
-  const moment = localTime(item.momentTime, timeZone);
-  const authored = localTime(item.authoredTime, timeZone);
-  const settledLater = item.kind === 'Entry' ? item.answeredLater : item.declinedLater;
-  const laterTimeLabel = settledLater && (item.kind === 'Entry' ? 'Answered' : 'Declined');
-  const details = [
-    ...(item.kind === 'Entry' && item.reviewDate !== undefined ? [{ term: 'Review Date', value: shortDate(item.reviewDate) }] : []),
-    { term: 'Anchor', value: `Trade ${symbol}` },
-    { term: 'Source', value: item.source },
-    { term: 'Moment', value: moment },
-    // A reflection resolved after it was deferred always shows when the trader resolved it.
-    ...(authored !== moment || settledLater ? [{ term: laterTimeLabel ?? 'Authored', value: authored }] : []),
-  ];
   return {
     id: item.id,
     type: item.entryType,
     badges: [...(item.kind === 'Entry' && item.edited ? ['Edited'] : []), ...(item.kind === 'Entry' && item.answeredLater ? ['Deferred, answered'] : [])],
-    details,
-    answers: item.kind === 'Entry' ? item.responses.map((response) => ({ prompt: response.prompt, answer: answerText(response.answer) })) : [],
+    // The Trade Anchor is the page's own subject, so it is left out (P112).
+    line: entryLine(item.source, item.momentTime, item.authoredTime, timeZone),
+    // An unanswered prompt has no row.
+    answers: item.kind === 'Entry' ? item.responses.filter((response) => response.answer.kind !== 'Unanswered').map((response) => ({ prompt: response.prompt, answer: answerText(response.answer) })) : [],
     ...(item.kind === 'Decline' && { declined: { badge: item.declinedLater ? 'Declined later' : 'Reflection declined', reason: item.reason ?? 'No reason given' } }),
   };
 }
@@ -119,14 +103,13 @@ export function journalCards(input: JournalCardsInput): JournalDrawerProps | und
       ? { sessions: [], plan: view.journal.map((entry) => ({ kind: 'Entry' as const, ...entry })), pending: null }
       : input.replay;
   const { plan } = view;
-  const symbol = plan.underlying;
   // A replayed Debt carries no due status, so an owed reflection takes it from the Detail's own Debt of the same id.
   const dueOf = new Map(view.journal.flatMap((item) => ('dueStatus' in item && item.dueStatus ? [[item.id, item.dueStatus] as const] : [])));
   const withDue = (item: TradeDetailNarrativeItem): TradeDetailNarrativeItem => {
     const dueStatus = item.kind === 'Debt' ? dueOf.get(item.id) : undefined;
     return item.kind === 'Debt' && dueStatus ? { ...item, dueStatus } : item;
   };
-  const items = (journal: readonly TradeDetailNarrativeItem[]) => journal.map((item) => itemOf(withDue(item), symbol, timeZone, input.facade, input.onDirtyChange));
+  const items = (journal: readonly TradeDetailNarrativeItem[]) => journal.map((item) => itemOf(withDue(item), timeZone, input.facade, input.onDirtyChange));
   if (replay === 'Incoherent') {
     // Only an incoherent Detail is listed this way, and its entries carry their kind.
     const entries = (view as Extract<TradeDetailView, { readonly recordedPositionChanges: unknown }>).journal;
@@ -174,7 +157,7 @@ export function journalCards(input: JournalCardsInput): JournalDrawerProps | und
       id: session.date,
       kind: 'Session',
       when: `${dayOf(session.date)}${at === last && replay.pending === null ? ', final session' : ''}`,
-      title: calculation(tradePnl, money),
+      title: calculation(tradePnl, money, timeZone),
       ...(tradePnl.kind === 'Value' && toneProp('titleTone', tradePnl.value)),
       ...changeOf(tradePnl, change, !heldNothing(session)),
       marks: session.marks.map(({ instrument, resolution }) => ({
@@ -199,6 +182,6 @@ export function journalCards(input: JournalCardsInput): JournalDrawerProps | und
       ]
     : [];
   const planned: JournalCardProps[] =
-    replay.plan.length > 0 ? [{ id: 'plan', kind: 'Plan', when: `Planned ${plannedAt(plan.planTime, timeZone)}`, title: 'Plan', marks: [], items: items(replay.plan) }] : [];
+    replay.plan.length > 0 ? [{ id: 'plan', kind: 'Plan', when: `Planned ${dateAndTime(plan.planTime, timeZone)}`, title: 'Plan', marks: [], items: items(replay.plan) }] : [];
   return { heading: 'Sessions, newest first', cards: [...pending, ...cards.reverse(), ...planned] };
 }

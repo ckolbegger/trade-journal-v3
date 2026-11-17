@@ -16,9 +16,8 @@ export interface JournalCardItem {
   readonly type: string;
   // Further badges beside the type: "Edited", "Deferred, answered".
   readonly badges: readonly string[];
-  // The existing term and value rows: "Anchor", "Source", "Moment".
-  readonly details: readonly { readonly term: string; readonly value: string }[];
-  // An Entry's prompts and answers.
+  // The one dated line (W27): "Daily Review · Thu Oct 15, 4:00 pm", with "· written Fri Oct 16" when written on a later date.
+  readonly line: string;  // An Entry's prompts and answers.
   readonly answers: readonly { readonly prompt: string; readonly answer: string }[];
   // A decline: its badge and its reason.
   readonly declined?: { readonly badge: string; readonly reason: string };

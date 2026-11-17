@@ -9,6 +9,14 @@ export const journal = (page: Page): Locator => journalRegion(page);
 export const journalEntries = (page: Page): Locator => journalRegion(page).locator('ul.narrative > li');
 // The Plan Reflection: the Plan card, on a Planned Detail (W11, revision 96) and once the Trade has been entered.
 export const planReflection = (page: Page): Locator => roleOf(detailRoot(page), 'article', { name: 'Plan', exact: true });
-// A settled item (an Entry or a decline), which shows its moment on its own line, for the Position Change at a local time.
+// "2026-10-12 10:30" as the Journal's dated line writes it: "Mon Oct 12, 10:30 am".
+const lineMoment = (when: string): string => {
+  const [date = '', time = '00:00'] = when.split(' ');
+  const parts = new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' }).formatToParts(new Date(`${date}T00:00:00Z`));
+  const part = (type: string) => parts.find((p) => p.type === type)?.value ?? '';
+  const [hour = 0, minute = '00'] = time.split(':');
+  return `${part('weekday')} ${part('month')} ${part('day')}, ${Number(hour) % 12 || 12}:${minute} ${Number(hour) < 12 ? 'am' : 'pm'}`;
+};
+// A settled item (an Entry or a decline), whose dated line names its moment, for the Position Change at a local time ("2026-10-12 10:30").
 export const settledItem = (page: Page, when: string): Locator =>
-  journalRegion(page).locator('li', { has: page.getByRole('heading', { level: 3 }), hasText: new RegExp(`Moment\\s*${when}`) }).last();
+  journalRegion(page).locator('li', { has: page.getByRole('heading', { level: 3 }), hasText: `· ${lineMoment(when)}` }).last();

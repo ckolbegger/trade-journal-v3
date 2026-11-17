@@ -26,7 +26,8 @@
 }
 .journal-card-change,
 .journal-card-when,
-.journal-card-note {
+.journal-card-note,
+.journal-line {
   margin: 0;
   color: var(--muted);
 }
