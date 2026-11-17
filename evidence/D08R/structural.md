@@ -328,3 +328,29 @@ T8R.15 notes, from its hand-back:
   - Four lane browser specs (`d4/expected-mark`, `d4/breach-overrun`, `d4/responsive-a11y`, `d8p/today-narrow`) assert the merged state and need T8R.21's dates.
   - Two specs outside the lane still read the old card: `e2e/d4/correct-mark.spec.ts:23-26`, where "Corrected" now belongs on Price History (T8R.4), and `e2e/d4/runtime-failure.spec.ts:61` ("Mark missing"). The main session gives them to follow-up **T8R.6-F1** in lane TD, after rebasing onto T8R.21.
   - The agent's reading of A232 matches the plan: when `marksColumns` is absent, the table draws with undated "Today" and "Yesterday" headings and dashes.
+
+## T8R.6 ocr review and bug tasks
+
+ocr on `651e5470` (session 390e1509-a32f-4f9c-b235-a575e5e32f8a, gpt-6.1-sol, 14 files reviewed, 2 comments; raw output `ocr/T8R.6-651e5470.json`):
+
+| Severity | Category | Location | Claim | Assessment |
+|---|---|---|---|---|
+| high | bug | `src/ui/cockpit/drawers/today.props.ts:72` | Production `getTradeDetail` never fills `marksColumns`, so every Open Trade shows undated headings and dashes. | Doubtful (planned interim state until T8R.21) |
+| medium | test | `src/ui/screens/TradeDetail.test.tsx:42` | The fixture adds `marksColumns` by hand, so the dated-table assertion passes on data production never emitted. | Doubtful |
+
+- **Finding 1, met by T8R.21's merge.** It was true at `651e5470`. T8R.21 merged (`c9155d02`) before T8R.6, and lane TD was rebased onto it (`f0cd69cd`), so production now fills the field. Its proof is T8R.6-F1's rerun of the four browser specs that read dated cells.
+- **T8R.6-B1** (finding 2). Defect: the Trade Detail test's dated table rests on a hand-made `marksColumns`. Fix: remove the override now that the Detail fills it, keeping the expected values. Proof: a mutation of `marksColumnsOf` fails the test. It runs in lane TD with T8R.6-F1, as its own commit.
+
+## T8R.10 ocr review and bug tasks
+
+ocr on `d8fd9ffe` (session d4043ab7-10f8-455f-9caa-41fa7eb9d011, gpt-6.1-sol, 7 files reviewed, 2 comments; raw output `ocr/T8R.10-d8fd9ffe.json`):
+
+| Severity | Category | Location | Claim | Assessment |
+|---|---|---|---|---|
+| medium | bug | `src/ui/cockpit/drawers/plan-risk.props.ts:76` | The dated fallback is chosen without checking `settlement`. A Settlement Due Trade with no current Mark but a `datedLine` shows the last Marks' figures beside "The contract expired, so its conditions are no longer measured." | Valid |
+| low | maintainability | `src/ui/cockpit/drawers/plan-risk.props.ts:93` | A chained ternary builds the Distance cell. | Doubtful |
+
+- **T8R.10-B1** (finding 1). Defect: on a Settlement Due Trade whose current Mark is missing, the Conditions table shows dated figures that contradict its expired note. Case: "it should show the expired note and no dated figures on a Settlement Due Trade whose current Mark is missing". Fix: check `settlement` before choosing the dated fallback, as the rail's `conditions.props.ts` does.
+- **T8R.10-B2** (finding 2). Defect: the Distance cell's chained ternary is hard to read. Fix: a small named function with the same three outcomes (blank, "away", "past"). Kind: structural, with existing cases unchanged.
+
+Both run in lane PR after T8R.10-F1.

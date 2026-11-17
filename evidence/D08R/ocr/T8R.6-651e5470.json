@@ -1,0 +1,294 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 14 selected item(s).",
+  "summary": {
+    "files_reviewed": 14,
+    "comments": 2,
+    "total_tokens": 444709,
+    "input_tokens": 440928,
+    "output_tokens": 3781,
+    "cache_read_tokens": 37120,
+    "elapsed": "1m38s"
+  },
+  "tool_calls": {
+    "total": 42,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 12,
+      "file_read": 26,
+      "file_read_diff": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/TradeDetail.test.tsx",
+      "content": "This override supplies data that the production Detail builder never emits: `getTradeDetail` constructs the Open view without `marksColumns`, and its only production occurrence is the optional type declaration. Consequently, real Open Trades reach `marksOf` without dates and display undated headings and dashes even when the replay has Marks, while this test passes. Add coverage using a production-built Detail and wire up the column dates before relying on this synthetic fixture for the dated-table assertion.",
+      "existing_code": "  marksColumns: { today: { date: '2026-10-15', next: false }, yesterday: '2026-10-14' },",
+      "start_line": 42,
+      "end_line": 42,
+      "category": "test",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/cockpit/drawers/today.props.ts",
+      "content": "The production Detail view never populates `marksColumns`: `getTradeDetail` returns the Open view with `current` but no column dates, and the only assignments in this tree are in test fixtures. Consequently both session lookups here receive `undefined`, so every Open Trade now displays undated headings and dashes even when replay Marks are available. Please wire the A232 date producer into the production view before switching to this selector (and cover the real producer-to-drawer path rather than only injecting dates in tests).",
+      "existing_code": "  const today = sessionOn(columns?.today.date);\n  const yesterday = sessionOn(columns?.yesterday);",
+      "start_line": 72,
+      "end_line": 73,
+      "category": "bug",
+      "severity": "high"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Today drawer props, types, rendering, and styles",
+      "files": [
+        "src/ui/cockpit/drawers/today.props.test.ts",
+        "src/ui/cockpit/drawers/today.props.ts",
+        "src/ui/cockpit/drawers/today.test.tsx",
+        "src/ui/cockpit/drawers/today.tsx",
+        "src/ui/cockpit/drawers/today.types.ts",
+        "src/ui/cockpit/styles/today.css"
+      ]
+    },
+    {
+      "label": "Today detail end-to-end behavior, responsiveness, and test support",
+      "files": [
+        "e2e/d4/breach-overrun.spec.ts",
+        "e2e/d4/expected-mark.spec.ts",
+        "e2e/d4/responsive-a11y.spec.ts",
+        "e2e/d8p/states.spec.ts",
+        "e2e/d8p/today-narrow.spec.ts",
+        "e2e/support/detail/today.ts"
+      ]
+    },
+    {
+      "label": "Trade detail and placed-state integration tests",
+      "files": [
+        "src/ui/screens/TradeDetail.test.tsx",
+        "src/ui/screens/trade-detail/Placed.test.tsx"
+      ]
+    }
+  ],
+  "session_id": "390e1509-a32f-4f9c-b235-a575e5e32f8a",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "390e1509-a32f-4f9c-b235-a575e5e32f8a",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "651e5470",
+      "resolved_base": "fee1f3adadc9e00b658109e1cf1ff2db4f152951",
+      "resolved_head": "651e5470a796346d8747a1c01318e69fd7377ebc",
+      "exact_range": "fee1f3adadc9e00b658109e1cf1ff2db4f152951..651e5470a796346d8747a1c01318e69fd7377ebc",
+      "source_artifact_sha256": "8006a7994bea69063f606435de35a4a25b9afd58f8db5a37341a332ad9541521"
+    },
+    "execution": {
+      "ocr_version": "v1.13.11",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "13033c5d57dbb68c47de6d3b8c9b66b3f9c270f5dcac8dfc0d3abb862c44fc5d",
+          "path": "src/ui/cockpit/drawers/today.props.ts",
+          "fingerprint": "8d75750a34087b6fab0686fc0c043304da3a8970b2beedb5da53a389419aa6c8"
+        },
+        {
+          "item_id": "2f29483a20cf819d78adcf87bd86cc0db609dcc672d82b2d33e0f0aaf00d5137",
+          "path": "src/ui/screens/trade-detail/Placed.test.tsx",
+          "fingerprint": "f928a92cefa8681eacc5b5c725816c9650f279317be3ff2ea05ca8ce92b6d695"
+        },
+        {
+          "item_id": "30273611721b694304fcba1e627fe765af668fd478e0661a0cc14f1ce1b4a3ab",
+          "path": "e2e/d8p/states.spec.ts",
+          "fingerprint": "5549bbbb6bc09de0b59faaf8e2fe03dcc886a4848abd0466ca692c62f5bd1e34"
+        },
+        {
+          "item_id": "3d0115b251110086341f7337a4cc51124dc1674e1a25fa485322476ed661a31e",
+          "path": "src/ui/cockpit/drawers/today.props.test.ts",
+          "fingerprint": "8fde436449277194af16435e862f2d0d0abb9a1ef320090f66fe8d690d881fc0"
+        },
+        {
+          "item_id": "4c241d6c5eecadba796905a06d23596f0f80acb086d1ef30c479e409f4d3c0bf",
+          "path": "src/ui/cockpit/drawers/today.tsx",
+          "fingerprint": "834cd7f6cf6b4f139884bb65bafea6dba589b07f7495a05ba60db78d05f9a601"
+        },
+        {
+          "item_id": "4ca62b08b3c2d54b873195c74136eb9b0d7c6da9d82e71b8833caf97e0f71477",
+          "path": "src/ui/cockpit/drawers/today.test.tsx",
+          "fingerprint": "073f415dbc8bdf615ba51e1eec877615a2bbbab344e715e22ff3428ba1a13825"
+        },
+        {
+          "item_id": "6ea0954282df13574616ce2cd50570ef664c3dc7eb20e5c95fc4cceb2e0425fb",
+          "path": "e2e/d4/expected-mark.spec.ts",
+          "fingerprint": "a04e0f6948508d48d16a1ace6a0b8b11a0eb22ea2ca3a9a701cfeb93493082ca"
+        },
+        {
+          "item_id": "7d813f293c3c9e34e82918dc916b7817657ad87c55a573f0c6c536858d6d366f",
+          "path": "src/ui/cockpit/styles/today.css",
+          "fingerprint": "2da4a390b9ad0862ee42719c5316fcca9cce68c583dd502c49e2aed42db852d7"
+        },
+        {
+          "item_id": "87638b8e40a8471b5a00443528a3c98bf4752f964c11c4b564b6258d593b8716",
+          "path": "src/ui/screens/TradeDetail.test.tsx",
+          "fingerprint": "eca69c14dba21c97455c60b191ed79c970b503701f4c4f495fcd4ab8622c1473"
+        },
+        {
+          "item_id": "8847a3b11ab7dccf4aa5ec8f58a6afaa4451b338a79490598a074149e0d0b745",
+          "path": "src/ui/cockpit/drawers/today.types.ts",
+          "fingerprint": "ab7acc666ad9f1724c16077e5540e96da4cc6a80c8e0f9dbb4f9a4386dda7b4e"
+        },
+        {
+          "item_id": "9fc2814396ca8fdc4b4a786543b42eb524301cfcaa0ad2260221dc91be7ee063",
+          "path": "e2e/d4/responsive-a11y.spec.ts",
+          "fingerprint": "9bbebe6630365df8d78a967c30c339f95db335c7c5dcec48d8118f63bef2937a"
+        },
+        {
+          "item_id": "cb951f0e781341c345e2e5c6025d5492613286e042e1584ec29ab9e51a98c9b7",
+          "path": "e2e/d8p/today-narrow.spec.ts",
+          "fingerprint": "64160eeb74da0b611096a16cf67bca7265e5f90d4ad1519c8458698ac623f9d0"
+        },
+        {
+          "item_id": "de4ca41395ecef648650a63a9a9509595c4b44099c70208a18936d6ada1eadba",
+          "path": "e2e/support/detail/today.ts",
+          "fingerprint": "a7275f8bda88accbd2b1a0f2c2d8dea9e7e500fa6f32b9f45b58d3c9d106db85"
+        },
+        {
+          "item_id": "f8565eaf99bb6cb36551c81082e4fdcb90dc46890728697803cf46683c39ccb6",
+          "path": "e2e/d4/breach-overrun.spec.ts",
+          "fingerprint": "8f675dd5698b00656c70d99dd74ba161799020801d3cd43fabb0c5b59f949ec0"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "13033c5d57dbb68c47de6d3b8c9b66b3f9c270f5dcac8dfc0d3abb862c44fc5d",
+          "path": "src/ui/cockpit/drawers/today.props.ts",
+          "fingerprint": "8d75750a34087b6fab0686fc0c043304da3a8970b2beedb5da53a389419aa6c8"
+        },
+        {
+          "item_id": "2f29483a20cf819d78adcf87bd86cc0db609dcc672d82b2d33e0f0aaf00d5137",
+          "path": "src/ui/screens/trade-detail/Placed.test.tsx",
+          "fingerprint": "f928a92cefa8681eacc5b5c725816c9650f279317be3ff2ea05ca8ce92b6d695"
+        },
+        {
+          "item_id": "30273611721b694304fcba1e627fe765af668fd478e0661a0cc14f1ce1b4a3ab",
+          "path": "e2e/d8p/states.spec.ts",
+          "fingerprint": "5549bbbb6bc09de0b59faaf8e2fe03dcc886a4848abd0466ca692c62f5bd1e34"
+        },
+        {
+          "item_id": "3d0115b251110086341f7337a4cc51124dc1674e1a25fa485322476ed661a31e",
+          "path": "src/ui/cockpit/drawers/today.props.test.ts",
+          "fingerprint": "8fde436449277194af16435e862f2d0d0abb9a1ef320090f66fe8d690d881fc0"
+        },
+        {
+          "item_id": "4c241d6c5eecadba796905a06d23596f0f80acb086d1ef30c479e409f4d3c0bf",
+          "path": "src/ui/cockpit/drawers/today.tsx",
+          "fingerprint": "834cd7f6cf6b4f139884bb65bafea6dba589b07f7495a05ba60db78d05f9a601"
+        },
+        {
+          "item_id": "4ca62b08b3c2d54b873195c74136eb9b0d7c6da9d82e71b8833caf97e0f71477",
+          "path": "src/ui/cockpit/drawers/today.test.tsx",
+          "fingerprint": "073f415dbc8bdf615ba51e1eec877615a2bbbab344e715e22ff3428ba1a13825"
+        },
+        {
+          "item_id": "6ea0954282df13574616ce2cd50570ef664c3dc7eb20e5c95fc4cceb2e0425fb",
+          "path": "e2e/d4/expected-mark.spec.ts",
+          "fingerprint": "a04e0f6948508d48d16a1ace6a0b8b11a0eb22ea2ca3a9a701cfeb93493082ca"
+        },
+        {
+          "item_id": "7d813f293c3c9e34e82918dc916b7817657ad87c55a573f0c6c536858d6d366f",
+          "path": "src/ui/cockpit/styles/today.css",
+          "fingerprint": "2da4a390b9ad0862ee42719c5316fcca9cce68c583dd502c49e2aed42db852d7"
+        },
+        {
+          "item_id": "87638b8e40a8471b5a00443528a3c98bf4752f964c11c4b564b6258d593b8716",
+          "path": "src/ui/screens/TradeDetail.test.tsx",
+          "fingerprint": "eca69c14dba21c97455c60b191ed79c970b503701f4c4f495fcd4ab8622c1473"
+        },
+        {
+          "item_id": "8847a3b11ab7dccf4aa5ec8f58a6afaa4451b338a79490598a074149e0d0b745",
+          "path": "src/ui/cockpit/drawers/today.types.ts",
+          "fingerprint": "ab7acc666ad9f1724c16077e5540e96da4cc6a80c8e0f9dbb4f9a4386dda7b4e"
+        },
+        {
+          "item_id": "9fc2814396ca8fdc4b4a786543b42eb524301cfcaa0ad2260221dc91be7ee063",
+          "path": "e2e/d4/responsive-a11y.spec.ts",
+          "fingerprint": "9bbebe6630365df8d78a967c30c339f95db335c7c5dcec48d8118f63bef2937a"
+        },
+        {
+          "item_id": "cb951f0e781341c345e2e5c6025d5492613286e042e1584ec29ab9e51a98c9b7",
+          "path": "e2e/d8p/today-narrow.spec.ts",
+          "fingerprint": "64160eeb74da0b611096a16cf67bca7265e5f90d4ad1519c8458698ac623f9d0"
+        },
+        {
+          "item_id": "de4ca41395ecef648650a63a9a9509595c4b44099c70208a18936d6ada1eadba",
+          "path": "e2e/support/detail/today.ts",
+          "fingerprint": "a7275f8bda88accbd2b1a0f2c2d8dea9e7e500fa6f32b9f45b58d3c9d106db85"
+        },
+        {
+          "item_id": "f8565eaf99bb6cb36551c81082e4fdcb90dc46890728697803cf46683c39ccb6",
+          "path": "e2e/d4/breach-overrun.spec.ts",
+          "fingerprint": "8f675dd5698b00656c70d99dd74ba161799020801d3cd43fabb0c5b59f949ec0"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "2a362a925937caf620d237f2a19428ac83aa0ee611b62452b1e719dfeffda7de",
+          "path": "evidence/D08R/tdd-log/T8R.6.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "4514c2c3d7ba7a441f23d110b81f7814fec44debc412d8a70a18d590638431b5",
+          "path": "evidence/D08R/suite-runs/T8R.6-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "485887fb46a4d0a77cb9dbf3a54b7421c4d5c1ced684a7aa65bc885fd69961a6",
+          "path": "evidence/D08R/structural.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "6408ca9fc88337bcf615ddb1fcd06692410d3e5b2e8f3d07ac73630ff2cf8a62",
+          "path": "evidence/D08R/suite-runs/T8R.6-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "b3f2573afc6e5ef618bc2b3fa1407931c4d6d8f0de663c8ef511a8d0ab72248f",
+          "path": "evidence/D08R/new-words.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "be5bb95f8179d8534d87d852931e1f26cfeb4c039bf22ddf581676c3b330c3b3",
+          "path": "evidence/D08R/suite-runs/T8R.6-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ed188a2b2d40536b022bf5159dc9f262b8a3e3603ade81de11ebb3e4ef6b97ce",
+          "path": "evidence/D08R/suite-runs/T8R.6-checks.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 98475
+  }
+}
