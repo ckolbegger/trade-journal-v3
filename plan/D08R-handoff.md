@@ -242,8 +242,11 @@ Task status and commits are in the breakdown's Progress section. This section ho
 
 ### Notes for later tasks
 
-- (none yet)
+- For T8R.21, T8R.22, T8R.23: a Settlement Due Detail has no view variant of its own. It is an `OpenTradeDetail` whose `settlement` array has items, and `ClosedTradeDetail extends OpenTradeDetail`. T8R.1 put `marksColumns?`, `settlementUnderlying?` (`{ today?: SeriesPoint; yesterday?: SeriesPoint; change?: ReplayChange }`) and `openAverage?: Rational` on `OpenTradeDetail`; T8R.1-B1 makes `openAverage?: never` on `ClosedTradeDetail`. Never fill `settlementUnderlying` or `openAverage` on a Closed Detail (A234, A236).
+- For T8R.21: `MarketDataReadSession.previousSessionDate?` and `exchangeDate?` are optional readonly `string` fields, the same form as `nextSessionDate` (T8R.1). The spec says a current context's session always carries the as-of exchange date, even outside coverage; decide whether `exchangeDate` becomes required, and record it.
+- For T8R.27: B8R.6 needs a corrected Mark in the browser. T8R.4 covered the corrected cell at unit level only, because adding a correction step to `e2e/d8p/support.ts` (`buildOc3`) was outside its lane.
 
 ### Open questions
 
+- T8R.4's case "should give a gap no provenance" passed on its first run (cases 1 and 2 had built it); its mutation check failed it as expected. Flagged for the final report.
 - The Agent tool's `isolation: "worktree"` built wave 0's first worktrees under the main checkout, on branches from `main`, so no lane could start (`evidence/D08R/structural.md`, "Lane worktrees"). The main session now creates each lane with `git worktree add` under `.claude/worktrees/d08r-<lane>` and dispatches without isolation. Section 3's "`isolation: "worktree"`" wording, and the same line in `.claude/docs/implementing.md`, should be updated after D8R.

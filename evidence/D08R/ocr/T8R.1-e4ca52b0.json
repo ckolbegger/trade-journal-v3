@@ -1,0 +1,154 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 1,
+    "total_tokens": 56971,
+    "input_tokens": 56195,
+    "output_tokens": 776,
+    "cache_read_tokens": 14592,
+    "elapsed": "49s"
+  },
+  "tool_calls": {
+    "total": 11,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 2,
+      "file_read": 8
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/coordinators/trade-views/trade-views.ts",
+      "content": "`ClosedTradeDetail` extends `OpenTradeDetail`, so this also adds `openAverage?: Rational` to Closed Details, contrary to A236's Open-only contract. Closed-detail doubles and producers can now supply an open average without a type error. Override `openAverage?: never` on `ClosedTradeDetail` (or omit it from the inherited shape) while retaining the inherited `marksColumns`.",
+      "existing_code": "  readonly openAverage?: Rational;",
+      "start_line": 329,
+      "end_line": 329,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Trade analysis calculation and market-data integration in trade views",
+      "files": [
+        "src/coordinators/trade-views/trade-views.ts",
+        "src/domain/calculation-result/index.ts",
+        "src/domain/trade-analysis/evaluate.ts",
+        "src/modules/market-data/market-data.ts"
+      ]
+    }
+  ],
+  "session_id": "2f91a416-4b51-4f15-94df-b3a2472643b6",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "2f91a416-4b51-4f15-94df-b3a2472643b6",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "e4ca52b0",
+      "resolved_base": "0c6f9828eeb12826d6c565bee782bd68cf878f2d",
+      "resolved_head": "e4ca52b0807e032c65aa19a200b0159ab2f4b898",
+      "exact_range": "0c6f9828eeb12826d6c565bee782bd68cf878f2d..e4ca52b0807e032c65aa19a200b0159ab2f4b898",
+      "source_artifact_sha256": "787fe97bf9d56e48c9fa600ee68cd82c0e0c3958526f461e4dcdc860a498fccc"
+    },
+    "execution": {
+      "ocr_version": "v1.13.11",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "2cdfac52e8ab493575d7f44a1a39167101fcd433edd529507860ca0fdba1d8b0",
+          "path": "src/domain/trade-analysis/evaluate.ts",
+          "fingerprint": "382fcc37ec85b4809523ab75a8367da3b09e5e4e686e600067c353067e3757e6"
+        },
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "b8b6ada0aef175083b5ee70d99149a0d944933e1a90f7d9e94e3f14fc9f671a2"
+        },
+        {
+          "item_id": "70c9d5b6c3936c08c792eaf13450c0216fd2c8094414ca3361baf96d37547c3e",
+          "path": "src/modules/market-data/market-data.ts",
+          "fingerprint": "dabd2047795de6599497ea67207785b1e0b8aa88b339ec4385837fe1ef6360c5"
+        },
+        {
+          "item_id": "70e214474d988982c39e4d734294a055cde92d28cf9a907f6d943a826d2eb100",
+          "path": "src/domain/calculation-result/index.ts",
+          "fingerprint": "5be9ed51b1ba979341386fc81f619bcccf272f74363e402af9d1cd3356946284"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "2cdfac52e8ab493575d7f44a1a39167101fcd433edd529507860ca0fdba1d8b0",
+          "path": "src/domain/trade-analysis/evaluate.ts",
+          "fingerprint": "382fcc37ec85b4809523ab75a8367da3b09e5e4e686e600067c353067e3757e6"
+        },
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "b8b6ada0aef175083b5ee70d99149a0d944933e1a90f7d9e94e3f14fc9f671a2"
+        },
+        {
+          "item_id": "70c9d5b6c3936c08c792eaf13450c0216fd2c8094414ca3361baf96d37547c3e",
+          "path": "src/modules/market-data/market-data.ts",
+          "fingerprint": "dabd2047795de6599497ea67207785b1e0b8aa88b339ec4385837fe1ef6360c5"
+        },
+        {
+          "item_id": "70e214474d988982c39e4d734294a055cde92d28cf9a907f6d943a826d2eb100",
+          "path": "src/domain/calculation-result/index.ts",
+          "fingerprint": "5be9ed51b1ba979341386fc81f619bcccf272f74363e402af9d1cd3356946284"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "011291e260367e3c59733dd5815135b36e9c902be86c6e582324dd177c6267f2",
+          "path": "evidence/D08R/suite-runs/T8R.1-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "40bbb8c037f148c6b483887d5ed545579c7fca5db64f17b6dbd4d54415a8e6ee",
+          "path": "evidence/D08R/suite-runs/T8R.1-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "485887fb46a4d0a77cb9dbf3a54b7421c4d5c1ced684a7aa65bc885fd69961a6",
+          "path": "evidence/D08R/structural.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "aa7063b8f869d99e405c4ca3833399bf089a755f142f2f305ea7b1eff5566305",
+          "path": "evidence/D08R/suite-runs/T8R.1-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "af29d4cf392585bce6a657aada0d9351b072c7e09bf3b6d88705af49c5ee52ae",
+          "path": "evidence/D08R/suite-runs/T8R.1-checks.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 48574
+  }
+}
