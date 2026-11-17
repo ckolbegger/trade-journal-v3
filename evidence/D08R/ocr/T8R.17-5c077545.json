@@ -1,0 +1,193 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 7 selected item(s).",
+  "summary": {
+    "files_reviewed": 7,
+    "comments": 1,
+    "total_tokens": 138601,
+    "input_tokens": 136977,
+    "output_tokens": 1624,
+    "cache_read_tokens": 9984,
+    "elapsed": "1m12s"
+  },
+  "tool_calls": {
+    "total": 22,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 5,
+      "file_read": 16
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/drawers/journal.props.ts",
+      "content": "IncoherentTradeDetail also exposes recorded `deviations`, so an incoherent trade with an Active occurrence now displays this button. However, Plan and Risk's `fulfillmentGroups()` returns no groups when `positionChanges` is absent, so that state has no Deviations heading. Clicking the button selects the drawer but cannot transfer focus (leaving focus in the hidden Journal panel). Ensure the destination renders the recorded Deviations for this state, or otherwise provide a valid focus target, and add an incoherent-detail navigation test.",
+      "existing_code": "const active = view \u0026\u0026 'deviations' in view ? view.deviations.filter((d) =\u003e d.versions.at(-1)?.status === 'Active').length : 0;",
+      "start_line": 98,
+      "end_line": 98,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Journal drawer requests and trade-detail cockpit integration",
+      "files": [
+        "src/ui/cockpit/drawers/journal.props.ts",
+        "src/ui/cockpit/drawers/journal.types.ts",
+        "src/ui/cockpit/journal-cards.tsx",
+        "src/ui/cockpit/styles/journal.css",
+        "src/ui/screens/trade-detail/Cockpit.tsx",
+        "src/ui/screens/trade-detail/Journal.test.tsx",
+        "src/ui/screens/trade-detail/drawer-request.ts"
+      ]
+    }
+  ],
+  "session_id": "ba66fd8a-f8de-467d-a98c-bdbda537eca1",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "ba66fd8a-f8de-467d-a98c-bdbda537eca1",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "70cbef94",
+      "requested_head": "5c077545",
+      "resolved_base": "70cbef9455f344068a10d1e940e44afd4642d1b7",
+      "resolved_head": "5c077545a0c40c5386df88e5c89a103933a054f1",
+      "exact_range": "70cbef9455f344068a10d1e940e44afd4642d1b7..5c077545a0c40c5386df88e5c89a103933a054f1",
+      "source_artifact_sha256": "a7fe116089d6392897c6d79e5650e35aaee39f8ccb03cf515f05bef8c99f22fb"
+    },
+    "execution": {
+      "ocr_version": "v1.13.11",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "271c27ff6c190777795a35c72ac6ae807b6e084c956217cc6ce685a447b821a2",
+          "path": "src/ui/screens/trade-detail/Journal.test.tsx",
+          "fingerprint": "076656932f28205ed6a1a5d29a91e82509bbf4803aacd9de8655b044d28c3c05"
+        },
+        {
+          "item_id": "2f62f7c49a7ee15a5d93dae245fe390e3984d5e28015ad933ded4ad84740ad0c",
+          "path": "src/ui/cockpit/styles/journal.css",
+          "fingerprint": "9f29ba5cbc55a1cef234cb4e10108d750555f262cd1f606a2a147dea7e1c40f0"
+        },
+        {
+          "item_id": "52fc9e0f740af4668e49bfd2e1199ec69a0393f16df133159ee993f5599d280c",
+          "path": "src/ui/screens/trade-detail/Cockpit.tsx",
+          "fingerprint": "1c51576ab93b8150349312a56e7dfb9a993380b493e91dd60518050c65049b2c"
+        },
+        {
+          "item_id": "68550cdcb15ce7b796c4600369a86935d873cddbfeb80de1cee50007a3960dff",
+          "path": "src/ui/cockpit/drawers/journal.props.ts",
+          "fingerprint": "aa832cd202dfc113a6f4c3c2e97098809061b8b6d5b81b4a7e5bb9fec917b532"
+        },
+        {
+          "item_id": "cb9ca06b1ca49fb41e854b9775177d877d84d1c508dbfa3de313905fd916dbdc",
+          "path": "src/ui/cockpit/drawers/journal.types.ts",
+          "fingerprint": "d523bac1bcae8a984b12115d13a8a714475e765dfce98fb2d8d26e275c17b91c"
+        },
+        {
+          "item_id": "e78021b1dc8588994b4a5de268534a72bbb8d196f3a4e19b566fb75a665ebdbf",
+          "path": "src/ui/screens/trade-detail/drawer-request.ts",
+          "fingerprint": "70e1f014881cdb54ba785ab65268adca74c5d1c08798486d9586f7285794f6ba"
+        },
+        {
+          "item_id": "ede9460d616f7e0836d7534dc7e022336380e4d3fdf755235e22829a50eecdb0",
+          "path": "src/ui/cockpit/journal-cards.tsx",
+          "fingerprint": "d6b0ec764ebcd04fd2a2fba8b163257b26711657c2ec772317e65714183fa0c9"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "271c27ff6c190777795a35c72ac6ae807b6e084c956217cc6ce685a447b821a2",
+          "path": "src/ui/screens/trade-detail/Journal.test.tsx",
+          "fingerprint": "076656932f28205ed6a1a5d29a91e82509bbf4803aacd9de8655b044d28c3c05"
+        },
+        {
+          "item_id": "2f62f7c49a7ee15a5d93dae245fe390e3984d5e28015ad933ded4ad84740ad0c",
+          "path": "src/ui/cockpit/styles/journal.css",
+          "fingerprint": "9f29ba5cbc55a1cef234cb4e10108d750555f262cd1f606a2a147dea7e1c40f0"
+        },
+        {
+          "item_id": "52fc9e0f740af4668e49bfd2e1199ec69a0393f16df133159ee993f5599d280c",
+          "path": "src/ui/screens/trade-detail/Cockpit.tsx",
+          "fingerprint": "1c51576ab93b8150349312a56e7dfb9a993380b493e91dd60518050c65049b2c"
+        },
+        {
+          "item_id": "68550cdcb15ce7b796c4600369a86935d873cddbfeb80de1cee50007a3960dff",
+          "path": "src/ui/cockpit/drawers/journal.props.ts",
+          "fingerprint": "aa832cd202dfc113a6f4c3c2e97098809061b8b6d5b81b4a7e5bb9fec917b532"
+        },
+        {
+          "item_id": "cb9ca06b1ca49fb41e854b9775177d877d84d1c508dbfa3de313905fd916dbdc",
+          "path": "src/ui/cockpit/drawers/journal.types.ts",
+          "fingerprint": "d523bac1bcae8a984b12115d13a8a714475e765dfce98fb2d8d26e275c17b91c"
+        },
+        {
+          "item_id": "e78021b1dc8588994b4a5de268534a72bbb8d196f3a4e19b566fb75a665ebdbf",
+          "path": "src/ui/screens/trade-detail/drawer-request.ts",
+          "fingerprint": "70e1f014881cdb54ba785ab65268adca74c5d1c08798486d9586f7285794f6ba"
+        },
+        {
+          "item_id": "ede9460d616f7e0836d7534dc7e022336380e4d3fdf755235e22829a50eecdb0",
+          "path": "src/ui/cockpit/journal-cards.tsx",
+          "fingerprint": "d6b0ec764ebcd04fd2a2fba8b163257b26711657c2ec772317e65714183fa0c9"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "47e9cb4be6df2aa0ec4a240120c37a47afcd1169ca2a48f0e9e27bca5c6656f3",
+          "path": "evidence/D08R/suite-runs/T8R.17-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "601a54f36727d04af090fa9e21a59cd3a9c1f18cc3ffcbf19e3e435ec0495844",
+          "path": "evidence/D08R/structural.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "66ccd3ba99e0342e2747dfb11fdbb68d9e76476c309a83286f9ff58cf5f32c12",
+          "path": "evidence/D08R/suite-runs/T8R.17-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "8bafa1c2e90bf9ffd174f3007aba4ceb5c8ca2297b7748bfa5733d4852c0ccb6",
+          "path": "evidence/D08R/suite-runs/T8R.17-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "b5d4a03988d35b338b712a6440787ec667eed1c0884fa64a3b9c9a077bcca8bb",
+          "path": "evidence/D08R/tdd-log/T8R.17.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "c2a385ecfc836ca64d70a412f9bdd937eae3c1167900a17111c572e8e3b30f53",
+          "path": "evidence/D08R/suite-runs/T8R.17-checks.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 72169
+  }
+}

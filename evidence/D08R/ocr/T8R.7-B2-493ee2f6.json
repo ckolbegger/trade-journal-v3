@@ -1,0 +1,107 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 3558,
+    "input_tokens": 3509,
+    "output_tokens": 49,
+    "cache_read_tokens": 1664,
+    "elapsed": "5s"
+  },
+  "tool_calls": {
+    "total": 0,
+    "by_tool": {},
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "src/ui/cockpit/drawers/today.props.ts",
+      "files": [
+        "src/ui/cockpit/drawers/today.props.ts"
+      ]
+    }
+  ],
+  "session_id": "a4ad8f09-aef4-49ad-9983-4bc9f60db2f6",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "a4ad8f09-aef4-49ad-9983-4bc9f60db2f6",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "493ee2f6",
+      "resolved_base": "932587cb67cb7acf6b295fcb1e6e0f096d0ccaf7",
+      "resolved_head": "493ee2f6c9e03a2f229a4ea032788094bb395803",
+      "exact_range": "932587cb67cb7acf6b295fcb1e6e0f096d0ccaf7..493ee2f6c9e03a2f229a4ea032788094bb395803",
+      "source_artifact_sha256": "1779bae249b7574faee5f9ed1c540dcd93d3bf7f20c029009a5fdc59ab32ab4d"
+    },
+    "execution": {
+      "ocr_version": "v1.13.11",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "13033c5d57dbb68c47de6d3b8c9b66b3f9c270f5dcac8dfc0d3abb862c44fc5d",
+          "path": "src/ui/cockpit/drawers/today.props.ts",
+          "fingerprint": "dfb187798f55d3442a43360d711f8e3e99a3ba27b7e9ae58a0b0bb5994abdf8d"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "13033c5d57dbb68c47de6d3b8c9b66b3f9c270f5dcac8dfc0d3abb862c44fc5d",
+          "path": "src/ui/cockpit/drawers/today.props.ts",
+          "fingerprint": "dfb187798f55d3442a43360d711f8e3e99a3ba27b7e9ae58a0b0bb5994abdf8d"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "485887fb46a4d0a77cb9dbf3a54b7421c4d5c1ced684a7aa65bc885fd69961a6",
+          "path": "evidence/D08R/structural.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "9126f08855032bfd12254b63693f463441984784da8362bb48cd3b4fe8bc535f",
+          "path": "evidence/D08R/suite-runs/T8R.7-B2-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "b355b5c8c41b285959064b46a7784a44944f4a71bb0ee9d95040b22b5bd06315",
+          "path": "evidence/D08R/suite-runs/T8R.7-B2-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "e50fa7d5c0d3a7a061608a72989d01f6c0a93ceeb36dbf6e9159b5e4dfd865b7",
+          "path": "evidence/D08R/suite-runs/T8R.7-B2-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "e71ae5f668c112648d2d66031950fe1705969c943cfd965ded8e4883c3f55ddd",
+          "path": "evidence/D08R/suite-runs/T8R.7-B2-integration.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 5064
+  }
+}

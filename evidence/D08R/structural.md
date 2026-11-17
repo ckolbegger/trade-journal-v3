@@ -809,3 +809,96 @@ The build now fails `lint:deps` with a cycle: `journal-cards.tsx` imports `useDr
 - Lot Matches' wrap rule now covers Instrument as well.
 
 At 1280 px the table is 550 px wide inside a 550 px region, with no scroll. That is an exact fit, so any wider column brings the scroll back; listed for the final report. B7.13's column count goes from 4 to 5. `lot-matches-fit.spec.ts` broke on the first fix and passes on the second. 66 layout specs pass.
+
+## ocr: T8R.7-B2 and T8R.5-F1
+
+| Task | Commit | Session | Files | Comments | Raw output |
+|---|---|---|---|---|---|
+| T8R.7-B2 | `493ee2f6` | a4ad8f09-aef4-49ad-9983-4bc9f60db2f6 | 1 (5 excluded) | 0 | `ocr/T8R.7-B2-493ee2f6.json` |
+| T8R.5-F1 | `8449ed9f` | dbb2b598-170f-43f1-992c-66a8853a297c | 2 (6 excluded) | 0 | `ocr/T8R.5-F1-8449ed9f.json` |
+
+Neither review raised a finding, so neither creates a bug task.
+
+**T8R.7-B2, reviewer note:** `exitCell` checks the same conditions in the same order as the old ternary.
+
+**T8R.5-F1, reviewer notes.** None of these are ocr findings, so none becomes a bug task (decision 114). All go to the final report.
+- **The exact fit.** "550 = 550" is the table stretched by `width: 100%`. The real margin is the sum of the columns' smallest widths, which is not recorded.
+- **What absorbs a squeeze.** The Instrument cell can shrink because `table.trades td:first-child` sets `overflow-wrap: anywhere`. The nowrap figure columns can't: a five-digit Price, a large Quantity or a large fee could bring the scroll back, and B7.13's `$0.65`-sized figures cannot catch that.
+- **Sturdier options the reviewer named:**
+  - a B7.13 variant with wide figures;
+  - scoping `app.css`'s 11.5rem minimum to `table.trades:not(.lots)` instead of overriding it in `position.css`;
+  - letting Opened wrap from 960 px.
+
+  Each would touch files or specs outside lane PO's scope. Recorded as tech debt for the final report; not acted on.
+
+**Lane PO's merge** waits for merge run 2 (`wave1-merge2`, on `bf3218f1`) to finish, so that the run tests one fixed head.
+
+## ocr: T8R.12 and T8R.12-F1
+
+- **Range:** `70cbef94..6c58bd33`.
+- **Session:** 2f955e69-b1fd-41d9-b723-2c08c9a6c662.
+- **Files reviewed:** 2 (`plan-risk.props.ts`, `plan-risk.test.tsx`); 12 excluded.
+- **Result:** 0 comments, so there is no bug task.
+- **Raw output:** `ocr/T8R.12-F1-6c58bd33.json`.
+
+Lane PR's merge waits for merge run 2 (`wave1-merge2`, on `bf3218f1`) to finish.
+
+## ocr: T8R.17 and T8R.7-B1
+
+| Task | Commit | Session | Files | Comments | Raw output |
+|---|---|---|---|---|---|
+| T8R.17 | `5c077545` | ba66fd8a-f8de-467d-a98c-bdbda537eca1 | 7 | 1 | `ocr/T8R.17-5c077545.json` |
+| T8R.7-B1 | `0ab30648` | 637d3cc4-cefb-406b-b568-5e2d9092d162 | 4 (6 excluded) | 0 | `ocr/T8R.7-B1-0ab30648.json` |
+
+### T8R.17: one finding, which becomes T8R.17-B1
+
+- **Severity:** medium. **Category:** bug. **Verdict:** Valid.
+- **Location:** `journal.props.ts:98`.
+- **Finding:** on an incoherent Detail, the Journal shows the active-Deviation line and its "See Plan and Risk" button. Plan and Risk shows no Deviations heading for that state (`plan-risk.props.ts:165-166`, which builds its groups only when `'positionChanges' in view`). So the button selects the drawer, but focus cannot move to the heading.
+- **Becomes:** bug task **T8R.17-B1**.
+
+### T8R.7-B1: no findings
+
+The reviewer's notes, which are not ocr findings:
+- **An exit between 16:00 and 16:30** is dated today, as intended. No test covers that window.
+- **An exit on a Saturday or Sunday** is dated the next Monday: "the session that holds the terminal time", which is how the Today column treats a weekend read. That follows decision P1's wording. Not acted on; it goes in the final report.
+- **Reads:** one `openReadSession` per Closed Detail, with no stored read. The query count is unchanged.
+
+## ocr: T8R.20
+
+- **Commit:** `349c0898`.
+- **Session:** a9304efe-5f1b-40c6-9979-d2b6041b8287.
+- **Files reviewed:** 4.
+- **Excluded:** 10, which are the five fixture `expected-views.json` files (by request) and evidence.
+- **Comments:** 0, so there is no bug task.
+- **Raw output:** `ocr/T8R.20-349c0898.json`.
+
+The main session checked the fixture diff separately with `git diff -U0 bf3218f1 349c0898 -- tests/fixtures`. It holds only 90 `-"nearest": true`, 90 `-},` and 90 `+}` lines, and nothing else (P111).
+
+## ocr: T8R.17-B1
+
+- Commit `bf818480`.
+- Session cbeb3384-20ea-4afb-a233-80ca9ded0d5b.
+- 2 files reviewed, 6 excluded.
+- 0 comments, so there is no bug task.
+- Raw output: `ocr/T8R.17-B1-bf818480.json`.
+
+Lane JR is ready to merge after merge run 2.
+
+## Merge run: wave1-merge2 (on `bf3218f1`)
+
+- **Browser tier:** full (`browser-auto db0352e9`).
+- **Results:**
+  - unit: 2083 passed
+  - integration: 258 passed
+  - checks: 14 of 14 exit 0
+  - browser-1: 126 passed
+  - browser-2: 116 passed, 5 failed
+- `run-complete.sh` confirms the run is complete.
+- **Timing:** browser-2 took 8.1 minutes, over the 8-minute mark, so the runner suggests adding a browser-3 stage. This is a tooling note for the final report and is not acted on in D8R.
+
+### Failures
+
+**Position drawer at 1280 px (4 specs).** These are B6.12 (`d6/responsive-a11y.spec.ts:293`), B7.13 (`d7/responsive-a11y.spec.ts:163`) and both cases in `d8p/lot-matches-fit.spec.ts` (lines 55 and 75). All four are the Instrument column that T8R.5 added. T8R.5-F1 already traced the cause to T8R.5 (`fc58e8ca`) and fixed it in lane PO (`8449ed9f`); its own browser runs passed `d6/responsive-a11y`, `d7/responsive-a11y` and `lot-matches-fit`. No new task: lane PO merges, and the next merge run confirms the fix.
+
+**`d8p/cockpit.spec.ts:37` (B8P.1).** Plan and Risk's headings on O-C3 now end with "planned-leg fulfillment", which the spec's `HEADINGS` does not list. The spec passed in wave1-merge1 on `db0352e9`. To be traced to a commit with one targeted run after this batch of lanes merges, then fixed in a fresh task (bug task T8R.10-F3 or similar, named after the commit the trace finds), failing spec first.
