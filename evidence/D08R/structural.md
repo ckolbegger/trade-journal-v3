@@ -1165,3 +1165,14 @@ B8R.3 (`rail.spec.ts`) has the same Given. T8R.27's brief carries this reading.
 **ocr.** Session a9c5e00e-7a72-477e-a72c-cc3616eb4e2a, 6 files reviewed, 0 comments, raw output in `ocr/T8R.26-dba5c934.json`. ocr reported one failed `file_read`, of a D8 path that does not exist; all 6 selected files completed.
 
 **Reviewer note** (not an ocr finding). The closing `evaluationOf(...).resolves.toBeDefined()` in `columns.test.ts` cannot fail, because `evaluationOf` already throws. It is redundant but harmless; for the final report.
+
+## T8R.26
+
+Node integration suite, `tests/integration/d8r/` (`detail.test.ts`, `columns.test.ts`, `settlement.test.ts`, `restore.test.ts`, `query-count.test.ts`, `support.ts`). Tests only; no production code.
+
+- `npm run test:integration`: 123 files, 269 tests, all passed (the 5 new files hold 11 tests: I8R.1 to I8R.7, with I8R.6 one test per backup fixture).
+- `.claude/scripts/acceptance-commands.sh plan/D08R-trade-detail-refactor.md`: the Node rows pass (`npm run test:integration -- d8r/detail` lists 3 tests; `-- d8r/query-count` lists 1). The three Playwright rows (`e2e/d8r/states.spec.ts`, `today.spec.ts`, `responsive-a11y.spec.ts`) print `FAIL: playwright --list exited 1, no tests` because T8R.27 has not written `e2e/d8r/` yet, so the script exits 1 until then. Summary line: `5 commands checked, 3 failed, 0 rows are procedures, not checked`.
+- `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint` (0 errors; 2 existing warnings in `OwedDebtItem.tsx`), `npm run lint:deps`: all exit 0.
+- I8R.7's measured counts match D8's baseline with no adjustment: Open Detail of O-C3 and of O-S2X, 20 requests each (D7S_DETAIL); Settlement Due Detail of O-S2X, the same 20 plus one `observations` `byInstrumentDate` `getAll` (the Underlying's series).
+- Deviation from the plan's wording for I8R.1: "Fri 10-16 12:00 with Friday's call Mark missing" cannot give a dated line, since at 12:00 the read session's Marks are Thursday's and are present. The case reads Fri 18:00 (after Friday's close, no Friday Mark for the call), where the figures are Unavailable and the dated line carries Thursday's distances, and also reads Fri 12:00.
+- Each case's first-run pass and mutation are in `tdd-log/T8R.26.md`.
