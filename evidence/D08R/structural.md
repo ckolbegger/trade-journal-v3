@@ -601,3 +601,20 @@ Behavioral bug task (1 case); rows in `tdd-log/T8R.5-B1.md`. First-run pass with
 Plan and Risk's Conditions group (behavioral; 5 cases, rows in `evidence/D08R/tdd-log/T8R.10.md`). Files: `src/ui/cockpit/drawers/plan-risk.{tsx,props.ts,types.ts,test.tsx}`, `src/ui/cockpit/styles/plan.css` (the path of "styles/plan.css" in this repository), and the T8R.10-assigned expectations in `src/ui/screens/TradeDetail.test.tsx` and `src/ui/screens/trade-detail/Placed.test.tsx`.
 
 - Not done here, left for the lane that owns the file: `e2e/support/detail/rail-b.ts` (`riskToStop`, `rewardToTarget` and `figureIn(... 'Risk to stop')` read the old `dt` rows) and the specs that call them (`e2e/d4/breach-overrun.spec.ts:28,53`, `e2e/d7s/conditions.spec.ts:25`). They need the Conditions table's cells.
+
+## T8R.10-F1
+
+The browser helpers read the Conditions table (structural; follow-up to T8R.10).
+
+- `e2e/support/detail/rail-b.ts`: `riskToStop` was `valueIn(planRiskPanel(page), 'Risk to stop')`, now the cell of the "Conditions table" region (inside Plan and Risk's panel) whose text starts "Risk to stop "; `rewardToTarget` likewise with "Reward to target ". `riskFigure(page, 'Risk to stop')` now returns `riskToStop(page)`. The cell text carries its label (W31), so an expectation reads "Risk to stop $220.00 · 1.10R".
+- `e2e/d4/breach-overrun.spec.ts:28`: before `toHaveText('$0.00 · 0.00R')`, after `toHaveText('Risk to stop $50.00 · 0.20R past')` (W32's past form; the Stop is crossed by $50.00, 0.20R).
+- `e2e/d4/breach-overrun.spec.ts:53`: unchanged. It reads the dated line's own `dt` row in the Today drawer, which T8R.10 did not touch; it passes.
+- `e2e/d7s/conditions.spec.ts:25`: unchanged. Line 25 is only the test title; the body never calls `riskToStop` or `rewardToTarget`. Passes before and after.
+- `e2e/support/detail/plan.ts`: no line read the old rows; unchanged.
+
+Browser (after `npm run build:faults` and `npm run build:releases`, through `with-browser-lock.sh`):
+- Before: `e2e/d7s/conditions.spec.ts` 2 passed; `e2e/d4/breach-overrun.spec.ts:11` failed at line 28, "Expected: "$0.00 · 0.00R" ... element(s) not found".
+- After: `e2e/d7s/conditions.spec.ts` 2 passed; `e2e/d4/breach-overrun.spec.ts:11` passes line 28 and fails at line 42 (not an owned line): `detail.riskFigure(page, 'Worst case')` is a strict-mode violation, resolving to 2 elements, the rail's Conditions card (still has Worst case until T8R.14) and Plan and Risk's new notes list (T8R.10). With `.first()` on that line (temporary, reverted) the whole spec passes, so line 53 holds.
+- Also affected, not owned: `e2e/d8p/cockpit.spec.ts:144-145` read `riskToStop` and `rewardToTarget` with `'$220.00 · 1.10R'` and `'$180.00 · 0.90R'`; they now need the "Risk to stop " and "Reward to target " prefixes.
+
+Lane tier: `evidence/D08R/suite-runs/T8R.10-F1-*.txt`; unit 2049 passed, integration 258 passed, 14 of 14 checks exit 0.

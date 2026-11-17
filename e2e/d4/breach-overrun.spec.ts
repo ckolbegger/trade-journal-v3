@@ -25,7 +25,7 @@ test.describe('B4.14 Breach, overrun, and intraday lines', () => {
     // An Active condition shows its distance, not a status word.
     await expect(conditionFigure(page, TARGET)).toHaveText(/^\+\$/);
     await openDrawer(page, 'Plan and Risk');
-    await expect(detail.riskFigure(page, 'Risk to stop')).toHaveText('$0.00 · 0.00R');
+    await expect(detail.riskFigure(page, 'Risk to stop')).toHaveText('Risk to stop $50.00 · 0.20R past');
     await expect(detail.deviations(page)).toContainText('No Deviations recorded.');
 
     // Tuesday noon, after 40 more shares at Tuesday 10:00: the Mark is not yet this session's.
