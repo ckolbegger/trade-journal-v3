@@ -1,0 +1,268 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 14 selected item(s).",
+  "summary": {
+    "files_reviewed": 14,
+    "comments": 0,
+    "total_tokens": 116132,
+    "input_tokens": 114989,
+    "output_tokens": 1143,
+    "cache_read_tokens": 18304,
+    "elapsed": "29s"
+  },
+  "tool_calls": {
+    "total": 24,
+    "by_tool": {
+      "code_search": 4,
+      "file_read": 20
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Calculation terminology and tests",
+      "files": [
+        "src/ui/calculation-words.test.ts",
+        "src/ui/calculation-words.ts"
+      ]
+    },
+    {
+      "label": "Cockpit risk and attention messaging",
+      "files": [
+        "src/ui/cockpit/drawers/plan-risk.props.ts",
+        "src/ui/cockpit/rail/needs-you.props.ts"
+      ]
+    },
+    {
+      "label": "Card figures and mark entry",
+      "files": [
+        "src/ui/screens/CardFigures.tsx",
+        "src/ui/screens/CardMarks.tsx",
+        "src/ui/screens/MarkEntry.tsx"
+      ]
+    },
+    {
+      "label": "Trade lifecycle forms, review, and position terminology",
+      "files": [
+        "src/ui/screens/ExpirationForm.tsx",
+        "src/ui/screens/PositionChangeForm.tsx",
+        "src/ui/screens/ReviewSettlement.tsx",
+        "src/ui/screens/ReviewView.tsx",
+        "src/ui/screens/execution-line.ts",
+        "src/ui/screens/option-words.ts",
+        "src/ui/screens/trade-detail/Position.tsx"
+      ]
+    }
+  ],
+  "session_id": "8433ad1b-b957-4085-9308-d40b7d69bfa3",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "8433ad1b-b957-4085-9308-d40b7d69bfa3",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "48cbd15b",
+      "resolved_base": "740b4008ae7a10a84bb678846c3c6a40e357fc57",
+      "resolved_head": "48cbd15bfa06d9ccc191c1e5c9fa68295a43917e",
+      "exact_range": "740b4008ae7a10a84bb678846c3c6a40e357fc57..48cbd15bfa06d9ccc191c1e5c9fa68295a43917e",
+      "source_artifact_sha256": "47c52ce63d925558b2a814ec9533fa77b2af8f945a43f31e7330dcef0de543e7"
+    },
+    "execution": {
+      "ocr_version": "v1.13.11",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "29ae33ee3fa14edcc6dc201e66201667dc7a859a1f8eaa515015cd749106e8b5",
+          "path": "src/ui/screens/CardFigures.tsx",
+          "fingerprint": "cbe2a099a6c5e9665f8ff2d3316355898633ea2786d07f578eb2542d2ea4849e"
+        },
+        {
+          "item_id": "2a625df83184b76985e64941dad800508a19445382c4fe1de1d861d7db398236",
+          "path": "src/ui/screens/PositionChangeForm.tsx",
+          "fingerprint": "5f86d7f75b8060b53280ddb80d6a59d17d64a9a5468979c1e7332a116475eaa1"
+        },
+        {
+          "item_id": "4adfc6ce34b9e063c4fd2e824910468c856c2592999d55587510f5a894e22511",
+          "path": "src/ui/screens/option-words.ts",
+          "fingerprint": "1039219c96c88ab6d0868e67a0edf987609ea0da49a4a0c395ddcede0b067574"
+        },
+        {
+          "item_id": "6376131ed368e5ac2277c2f7a6073ab00b06d8dcc7fa59c84c1807d7587ffa40",
+          "path": "src/ui/screens/ReviewSettlement.tsx",
+          "fingerprint": "9a06006adede2865e95d60847ffb12ae61a744cb720e3a1779158c11549d154f"
+        },
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "91587a66bef781c374cbede3c3126bcf09c46611a13d4e740fbd6e6fa3d3e97e"
+        },
+        {
+          "item_id": "8cafdf7056bcd91e91f1079e2cc3ad454d495596823efca5c67a82a9a5d41102",
+          "path": "src/ui/screens/CardMarks.tsx",
+          "fingerprint": "93e00abe7b220310fb1ef747705284c47be977b83af2168923b203035a623562"
+        },
+        {
+          "item_id": "8f669bf40c4e0581202e35b0025c05599ce1cb413cf1791b9979e09d426e5d54",
+          "path": "src/ui/screens/ExpirationForm.tsx",
+          "fingerprint": "83059b9ea3bfe86f389decf87cc899708b058ed2e202cc5c1749fb57aae2bdee"
+        },
+        {
+          "item_id": "99a5dcfc3fa6accda036957803f199282ebd53d3e96cc3cb09b6201be2281cee",
+          "path": "src/ui/cockpit/rail/needs-you.props.ts",
+          "fingerprint": "36ab203f313b0a93912e697ff343cffaaf35fc710216d7e33440dd8eddc01da5"
+        },
+        {
+          "item_id": "b97f93888873a5cfbfa6ea81c67212e9ec93c9cd38993483a43d6b0df12eaa9d",
+          "path": "src/ui/calculation-words.test.ts",
+          "fingerprint": "60fcd4550e3d3d9c34dbb495c7a6fcb8729ea4f6da9c91781d1b05ed32b2e67e"
+        },
+        {
+          "item_id": "bc0243c3f6d1e7459e2f145a2f56c7b96f61591d0ab01ce04fe2d9d0e13cfeeb",
+          "path": "src/ui/cockpit/drawers/plan-risk.props.ts",
+          "fingerprint": "c4920707f29b36d18c5d704cd498d2d384de8391a1e316239447efac51332cb7"
+        },
+        {
+          "item_id": "bf3fb813b0b8a1539d594afbbd72d70d7e89daf6f67c93fe497aa1482703f55b",
+          "path": "src/ui/screens/trade-detail/Position.tsx",
+          "fingerprint": "231dc9f7e9987c927b25cb8b1013d65bf47e1f4b68ca67af7ee2266d8d16e897"
+        },
+        {
+          "item_id": "c986f208cd94f9f07b0ebb3c169ef0911febddecd602ee0263ec1950274b1035",
+          "path": "src/ui/screens/MarkEntry.tsx",
+          "fingerprint": "853b3c4a32e7775d136fc68c7d606b6905baae7a410e911ec6c0a014101de803"
+        },
+        {
+          "item_id": "da77021484a256bc0425123fca373469bac6fba5c1aaac8a1b6524588b580dda",
+          "path": "src/ui/screens/execution-line.ts",
+          "fingerprint": "d22a3914a50a0494514048336f467b0b5fecebc1a2105274ec8a7a88caf58fb3"
+        },
+        {
+          "item_id": "e1d2a6e20fc363ca1e18ec79af181d72fdc859550c22cf63ad51fd75c7d7b877",
+          "path": "src/ui/calculation-words.ts",
+          "fingerprint": "50e1c28dfa668f983d3cd074865281b70dcc5e3550655360a82679b9feb80481"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "29ae33ee3fa14edcc6dc201e66201667dc7a859a1f8eaa515015cd749106e8b5",
+          "path": "src/ui/screens/CardFigures.tsx",
+          "fingerprint": "cbe2a099a6c5e9665f8ff2d3316355898633ea2786d07f578eb2542d2ea4849e"
+        },
+        {
+          "item_id": "2a625df83184b76985e64941dad800508a19445382c4fe1de1d861d7db398236",
+          "path": "src/ui/screens/PositionChangeForm.tsx",
+          "fingerprint": "5f86d7f75b8060b53280ddb80d6a59d17d64a9a5468979c1e7332a116475eaa1"
+        },
+        {
+          "item_id": "4adfc6ce34b9e063c4fd2e824910468c856c2592999d55587510f5a894e22511",
+          "path": "src/ui/screens/option-words.ts",
+          "fingerprint": "1039219c96c88ab6d0868e67a0edf987609ea0da49a4a0c395ddcede0b067574"
+        },
+        {
+          "item_id": "6376131ed368e5ac2277c2f7a6073ab00b06d8dcc7fa59c84c1807d7587ffa40",
+          "path": "src/ui/screens/ReviewSettlement.tsx",
+          "fingerprint": "9a06006adede2865e95d60847ffb12ae61a744cb720e3a1779158c11549d154f"
+        },
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "91587a66bef781c374cbede3c3126bcf09c46611a13d4e740fbd6e6fa3d3e97e"
+        },
+        {
+          "item_id": "8cafdf7056bcd91e91f1079e2cc3ad454d495596823efca5c67a82a9a5d41102",
+          "path": "src/ui/screens/CardMarks.tsx",
+          "fingerprint": "93e00abe7b220310fb1ef747705284c47be977b83af2168923b203035a623562"
+        },
+        {
+          "item_id": "8f669bf40c4e0581202e35b0025c05599ce1cb413cf1791b9979e09d426e5d54",
+          "path": "src/ui/screens/ExpirationForm.tsx",
+          "fingerprint": "83059b9ea3bfe86f389decf87cc899708b058ed2e202cc5c1749fb57aae2bdee"
+        },
+        {
+          "item_id": "99a5dcfc3fa6accda036957803f199282ebd53d3e96cc3cb09b6201be2281cee",
+          "path": "src/ui/cockpit/rail/needs-you.props.ts",
+          "fingerprint": "36ab203f313b0a93912e697ff343cffaaf35fc710216d7e33440dd8eddc01da5"
+        },
+        {
+          "item_id": "b97f93888873a5cfbfa6ea81c67212e9ec93c9cd38993483a43d6b0df12eaa9d",
+          "path": "src/ui/calculation-words.test.ts",
+          "fingerprint": "60fcd4550e3d3d9c34dbb495c7a6fcb8729ea4f6da9c91781d1b05ed32b2e67e"
+        },
+        {
+          "item_id": "bc0243c3f6d1e7459e2f145a2f56c7b96f61591d0ab01ce04fe2d9d0e13cfeeb",
+          "path": "src/ui/cockpit/drawers/plan-risk.props.ts",
+          "fingerprint": "c4920707f29b36d18c5d704cd498d2d384de8391a1e316239447efac51332cb7"
+        },
+        {
+          "item_id": "bf3fb813b0b8a1539d594afbbd72d70d7e89daf6f67c93fe497aa1482703f55b",
+          "path": "src/ui/screens/trade-detail/Position.tsx",
+          "fingerprint": "231dc9f7e9987c927b25cb8b1013d65bf47e1f4b68ca67af7ee2266d8d16e897"
+        },
+        {
+          "item_id": "c986f208cd94f9f07b0ebb3c169ef0911febddecd602ee0263ec1950274b1035",
+          "path": "src/ui/screens/MarkEntry.tsx",
+          "fingerprint": "853b3c4a32e7775d136fc68c7d606b6905baae7a410e911ec6c0a014101de803"
+        },
+        {
+          "item_id": "da77021484a256bc0425123fca373469bac6fba5c1aaac8a1b6524588b580dda",
+          "path": "src/ui/screens/execution-line.ts",
+          "fingerprint": "d22a3914a50a0494514048336f467b0b5fecebc1a2105274ec8a7a88caf58fb3"
+        },
+        {
+          "item_id": "e1d2a6e20fc363ca1e18ec79af181d72fdc859550c22cf63ad51fd75c7d7b877",
+          "path": "src/ui/calculation-words.ts",
+          "fingerprint": "50e1c28dfa668f983d3cd074865281b70dcc5e3550655360a82679b9feb80481"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "2faa7bb26a5a935b70b4f76cc9a539e645e4bc5ad2670f4081bfec757d69c96e",
+          "path": "evidence/D08R/suite-runs/T8R.3-B1-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "3d611b926c78a1b2ae66d55ec3e6e2945d71f3411eff0ec18cbbbcb5eb1c52ce",
+          "path": "evidence/D08R/tdd-log/T8R.3-B1.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "7bc3868d1997ebc5b449120e0b9ead2b8b9740f0abc236f0e3d0a56c0f85859d",
+          "path": "evidence/D08R/suite-runs/T8R.3-B1-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "af4e9b61507eab87ef48c458a6d18ca970a074486177bd068cf2286d86f4b434",
+          "path": "evidence/D08R/suite-runs/T8R.3-B1-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "c085b18815588cf7b7a7d51dd3c4c3af9a998107c14462e4f2bd076f487bcad4",
+          "path": "evidence/D08R/suite-runs/T8R.3-B1-unit.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 28814
+  }
+}
