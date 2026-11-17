@@ -683,7 +683,7 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T8R.19 | 1 | BA | In progress from `400b4b02` | |
 | T8R.20 | 1 | BA | Not started | |
 | T8R.21 | 1 | BV | Done | `c9155d02` |
-| T8R.22 | 1 | BV | Not started | |
+| T8R.22 | 1 | BV | In progress from `438d6f42` | |
 | T8R.23 | 1 | BV | Not started | |
 | T8R.24 | 2 | — | Not started | |
 | T8R.25 | 2 | — | Not started | |
