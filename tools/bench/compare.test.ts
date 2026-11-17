@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { BENCH_SETTLEMENT_DUE, expectedSettlementDue, openOptionTradesOf } from '../../src/app/bench.ts';
 import { Rational } from '../../src/domain/values/index.ts';
 import { instrumentLabel } from '../../src/ui/calculation-words.ts';
@@ -159,13 +159,19 @@ describe('partial dataset last session', () => {
 });
 
 describe('settlement identities (T7.29)', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
   it('should word a contract key, a signed quantity and an expiration date as the Review does', () => {
-    expect(contractLabel('NVDA261120C00107000')).toBe('NVDA 20 Nov 2026 107 Call');
-    expect(contractLabel('QAB270104P00092500')).toBe('QAB 4 Jan 2027 92.5 Put');
+    // The broker-style contract name shows the year only when it is not the current one, so the current year is pinned to 2026.
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-11-17T12:00:00Z'));
+    expect(contractLabel('NVDA261120C00107000')).toBe('NVDA Nov 20 $107 Call');
+    expect(contractLabel('QAB270104P00092500')).toBe('QAB Jan 4 2027 $92.50 Put');
     expect(signedContractsText('20')).toBe('Long 20 contracts');
     expect(signedContractsText('-1')).toBe('Short 1 contract');
     expect(reviewShortDate('2026-11-20')).toBe('Fri Nov 20');
-    expect(expectedSettlementIdentity({ tradeId: 't1', contract: 'AAPL261120C00105000', expiration: '2026-11-20', quantity: '20' })).toBe('t1 AAPL 20 Nov 2026 105 Call Long 20 contracts expired Fri Nov 20');
+    expect(expectedSettlementIdentity({ tradeId: 't1', contract: 'AAPL261120C00105000', expiration: '2026-11-20', quantity: '20' })).toBe('t1 AAPL Nov 20 $105 Call Long 20 contracts expired Fri Nov 20');
   });
 });
 

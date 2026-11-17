@@ -218,3 +218,13 @@ ocr on `8df55c00` (session 9a511e82-0c81-402a-8c81-1fe02361e6cb, gpt-6.1-sol, 21
 ## T8R.3-B2 ocr review
 
 ocr on `562b715f` (session 40534323-5d48-443c-a033-690b4f44aae8, gpt-6.1-sol, 2 files reviewed, 0 comments; raw output `ocr/T8R.3-B2-562b715f.json`): **No findings.**
+
+## T8R.3-F1
+
+The bench comparison's contract-name expectations (structural; test expectations and one comment).
+
+- Before: `npx vitest run tools/bench/compare.test.ts` failed 1 of 15: `Expected: "NVDA 20 Nov 2026 107 Call"  Received: "NVDA Nov 20 $107 Call"` (case "should word a contract key, a signed quantity and an expiration date as the Review does").
+- Changed lines in `tools/bench/compare.test.ts`: NVDA expectation to "NVDA Nov 20 $107 Call"; the QAB expectation (a year other than 2026, so it keeps its year) to "QAB Jan 4 2027 $92.50 Put" (hidden behind the first failure; same case, same concept); the settlement identity to "t1 AAPL Nov 20 $105 Call Long 20 contracts expired Fri Nov 20".
+- Clock pin: inside that case, `vi.useFakeTimers({ toFake: ['Date'] })` and `vi.setSystemTime(new Date('2026-11-17T12:00:00Z'))`, with `afterEach(() => vi.useRealTimers())` in the describe. Only Date is faked, so no async work is affected.
+- `tools/bench/compare.ts` line 63: comment only, now `("NVDA Nov 20 $107 Call")`; no code change.
+- After: compare.test.ts 15 of 15 pass; typecheck, tsc6, lint, lint:deps exit 0; lane tier (unit 2033, integration 258, 14 of 14 checks) all pass; outputs in `evidence/D08R/suite-runs/T8R.3-F1-*.txt`.

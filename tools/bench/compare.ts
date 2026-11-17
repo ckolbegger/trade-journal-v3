@@ -60,7 +60,7 @@ export interface ExpectedSettlementItem {
   readonly quantity: string;
 }
 
-// The contract as the UI labels it ("NVDA 20 Nov 2026 107 Call"), from the generator's OCC-style key ("NVDA261120C00107000").
+// The contract as the UI labels it ("NVDA Nov 20 $107 Call"), from the generator's OCC-style key ("NVDA261120C00107000").
 export function contractLabel(key: string): string {
   const instrument = instrumentOf(key);
   if (instrument.kind !== 'Option') throw new Error(`not an option contract key: ${key}`);
