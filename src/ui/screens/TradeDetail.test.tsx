@@ -242,8 +242,8 @@ describe('Trade Detail: the replay read (P95)', () => {
     // to target in Plan and Risk, and Today's comparison holding the Marks with their provenance, so the current-Marks card does not repeat them.
     expect(onePlace('Net cost')).toBe('drawer-panel-position');
     expect(onePlace('Entry')).toBe('drawer-panel-plan-and-risk');
-    expect(onePlace('Risk to stop')).toBe('drawer-panel-plan-and-risk');
-    expect(onePlace('Reward to target')).toBe('drawer-panel-plan-and-risk');
+    // T8R.10: each condition's Risk to stop and Reward to target is a cell of Plan and Risk's Conditions table.
+    expect(onePlace('Risk or reward', 'th')).toBe('drawer-panel-plan-and-risk');
     // W29: Today's table shows the Marks, so the Expected Mark Date, Source and Saved are gone, hidden drawer panels included.
     for (const term of ['Expected Mark Date', 'Mark', 'Source', 'Saved']) expect(screen.queryAllByText(term, { selector: 'dt' }), term).toEqual([]);
     cleanup();

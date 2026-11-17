@@ -27,6 +27,47 @@ function Group({ group }: { readonly group: PlanRiskGroup }) {
     <section className="card" {...(group.heading !== undefined && { 'aria-labelledby': `${group.id}-heading` })}>
       {group.heading !== undefined && <h2 id={`${group.id}-heading`}>{group.heading}</h2>}
       {group.note !== undefined && <p>{group.note}</p>}
+      {group.table && (
+        <div className="table-scroll" role="region" aria-label={`${group.heading} table`} tabIndex={0}>
+          <table>
+            <thead>
+              <tr>
+                {group.table.columns.map((column) => (
+                  <th key={column} scope="col">
+                    {column}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {group.table.rows.map((cells, at) => (
+                <tr key={at}>
+                  {cells.map((cell, column) => (
+                    <td key={column} className={column > 0 ? 'number' : undefined}>
+                      {cell}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      {group.notes && (
+        <ul className="plan-risk-notes" aria-label={group.notes.every((note) => note.label !== undefined) ? 'Worst case and Max reward' : 'Notes'}>
+          {group.notes.map((note) => (
+            <li key={note.label ?? note.text}>
+              {note.label === undefined ? (
+                note.text
+              ) : (
+                <>
+                  {note.label}: <span className="number">{note.text}</span>
+                </>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
       {group.rows.length > 0 && (
         <dl className="figure-grid">
           {group.rows.map((row) => (

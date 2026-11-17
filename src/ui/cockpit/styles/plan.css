@@ -1,1 +1,7 @@
-/* Empty until the lane that owns it adds rules (D08P plan section 4.2); T8P.5 creates it so `index.css` never changes. */
+/* Plan and Risk's Conditions group (D08R T8R.10, W31): Worst case and Max reward beneath the table, as short muted lines. */
+.plan-risk-notes {
+  margin: 0.6rem 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--muted);
+}

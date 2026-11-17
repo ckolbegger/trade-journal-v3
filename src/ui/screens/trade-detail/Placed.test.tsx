@@ -117,8 +117,16 @@ describe("Trade Detail: the legacy blocks' figures in one place (revision 96)", 
 
   it("should show every condition's Risk to stop or Reward to target in the Plan and Risk drawer", async () => {
     const user = userEvent.setup();
-    // One line per condition in Plan order, as the Plan's own Stop and Target lines are.
-    const linesOf = (term: string) => Array.from(within(screen.getByRole('tabpanel', { name: 'Plan and Risk' })).getByText(term, { selector: 'dt' }).nextElementSibling?.children ?? []).map((line) => line.textContent);
+    // T8R.10: one row per condition in Plan order in the Conditions table, every Stop then every Target; a figure with no reading carries its
+    // reason without the label.
+    const linesOf = (term: string) => {
+      const cells = within(screen.getByRole('tabpanel', { name: 'Plan and Risk' }))
+        .getAllByRole('row')
+        .slice(1)
+        .map((row) => within(row).getAllByRole('cell')[2]!.textContent ?? '');
+      const half = cells.length / 2;
+      return (term === 'Risk to stop' ? cells.slice(0, half) : cells.slice(half)).map((cell) => (cell.startsWith(term) ? cell.slice(term.length).trim() : cell));
+    };
     const planAt = async (view: Parameters<typeof renderView>[0]) => {
       renderView(view);
       await openDrawer(user, 'Plan and Risk');
@@ -129,11 +137,12 @@ describe("Trade Detail: the legacy blocks' figures in one place (revision 96)", 
     cleanup();
 
     await planAt(openDetailAt([PC1, PC2], tuesday(available('57.00'))));
-    expect(linesOf('Reward to target')).toEqual(['$0.00 · 0.00R']);
+    // W32: a crossed condition shows how far past it the Trade is, not a zero.
+    expect(linesOf('Reward to target')).toEqual(['$100.00 · 0.40R past']);
     cleanup();
 
     await planAt(openDetailAt([PC1, PC2], tuesday(available('47.00'))));
-    expect(linesOf('Risk to stop')).toEqual(['$0.00 · 0.00R']);
+    expect(linesOf('Risk to stop')).toEqual(['$50.00 · 0.20R past']);
     cleanup();
 
     // Without a Mark no distance is invented: the reason shows at the figure length (A222, T8P.23-B8).

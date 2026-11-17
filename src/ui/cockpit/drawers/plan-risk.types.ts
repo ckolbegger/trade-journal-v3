@@ -11,6 +11,12 @@ export interface PlanRiskRow {
   readonly second?: string;
 }
 
+// The Conditions group's table (W31): one row per condition in Plan order, one cell per column.
+export interface PlanRiskTable {
+  readonly columns: readonly string[];
+  readonly rows: readonly (readonly string[])[];
+}
+
 export interface PlanRiskGroup {
   // The heading's id stem ("plan" gives `plan-heading`).
   readonly id: string;
@@ -19,6 +25,9 @@ export interface PlanRiskGroup {
   readonly rows: readonly PlanRiskRow[];
   // A sentence standing where the rows would be.
   readonly note?: string;
+  readonly table?: PlanRiskTable;
+  // Short lines beneath the table (W31): Worst case and Max reward, or one sentence with no label (a contract due for settlement).
+  readonly notes?: readonly { readonly label?: string; readonly text: string }[];
 }
 
 export interface PlanRiskDrawerProps {

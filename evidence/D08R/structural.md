@@ -595,3 +595,9 @@ Behavioral bug task (1 case); rows in `tdd-log/T8R.5-B1.md`. First-run pass with
 - **Key list:** `'openAverage'` was added to the Open Detail's exact key list in "should keep every other field of every item and Detail unchanged" (`trade-summary.test.ts`): main-session decision, additive (A245). The comparison stays exact.
 - **Note for T8R.8:** `openAverage` is absent on an Open Detail with no open lots, so the track must handle an undefined field.
 - **Lane tier:** `.claude/scripts/full-suite.sh evidence/D08R T8R.23 lane`: unit 2065 passed, integration 258 passed, 14 of 14 checks exit 0.
+
+## T8R.10
+
+Plan and Risk's Conditions group (behavioral; 5 cases, rows in `evidence/D08R/tdd-log/T8R.10.md`). Files: `src/ui/cockpit/drawers/plan-risk.{tsx,props.ts,types.ts,test.tsx}`, `src/ui/cockpit/styles/plan.css` (the path of "styles/plan.css" in this repository), and the T8R.10-assigned expectations in `src/ui/screens/TradeDetail.test.tsx` and `src/ui/screens/trade-detail/Placed.test.tsx`.
+
+- Not done here, left for the lane that owns the file: `e2e/support/detail/rail-b.ts` (`riskToStop`, `rewardToTarget` and `figureIn(... 'Risk to stop')` read the old `dt` rows) and the specs that call them (`e2e/d4/breach-overrun.spec.ts:28,53`, `e2e/d7s/conditions.spec.ts:25`). They need the Conditions table's cells.

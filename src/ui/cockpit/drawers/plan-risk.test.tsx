@@ -4,9 +4,10 @@ import type { ComponentProps } from 'react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { openDetailAt, openDetailOf, openDetailUncovered, PC1, PC2, PC3 } from '../../../../tests/support/open-detail-fixtures.ts';
 import { optionOpenDetail } from '../../../../tests/support/option-detail-fixtures.ts';
-import { OC_PC1, OC_PC2, OC_X1 } from '../../../../tests/support/option-trade-fixtures.ts';
+import { OC_CONTRACT, OC_PC1, OC_PC2, OC_X1 } from '../../../../tests/support/option-trade-fixtures.ts';
 import { plannedDetail } from '../../../../tests/support/views-fixtures.ts';
-import { THURSDAY, tuesday, useFixedClock } from '../../screens/trade-detail/test-support.ts';
+import { Rational } from '../../../domain/values/index.ts';
+import { rowsOf, THURSDAY, tuesday, useFixedClock } from '../../screens/trade-detail/test-support.ts';
 import { PlanRiskDrawer } from './plan-risk.tsx';
 
 afterEach(cleanup);
@@ -91,11 +92,10 @@ describe('Plan and Risk drawer: unavailable condition figures (A222, T8P.23-B8)'
   it('should word a missing Mark in Risk to stop and Reward to target at the figure length, with no bare dash left', () => {
     const view = openDetailAt([PC1, PC2], tuesday({ kind: 'Missing' }));
     expect(view.current.evaluation.conditions.every((c) => c.result.kind === 'Unavailable')).toBe(true);
-    const { container } = render(<PlanRiskDrawer view={view} timeZone="America/New_York" />);
-    const figures = Array.from(container.querySelectorAll('dt'))
-      .filter((term) => ['Risk to stop', 'Reward to target'].includes(term.textContent ?? ''))
-      .map((term) => term.nextElementSibling?.textContent);
-    expect(figures).toEqual(['Mark missing: XYZ, Tue Oct 13', 'Mark missing: XYZ, Tue Oct 13']);
+    render(<PlanRiskDrawer view={view} timeZone="America/New_York" />);
+    // T8R.10: the Conditions table's figure cells (Distance, Risk or reward) carry the reason, each at the figure length.
+    const figures = rowsOf(within(screen.getByRole('region', { name: 'Conditions' })).getByRole('table')).flatMap((cells) => cells.slice(1, 3));
+    expect(figures).toEqual(Array(4).fill('Mark missing: XYZ, Tue Oct 13'));
     expect(figures.some((figure) => figure?.includes('—'))).toBe(false);
   });
 
@@ -105,10 +105,105 @@ describe('Plan and Risk drawer: unavailable condition figures (A222, T8P.23-B8)'
     const view = optionOpenDetail('O-C', [OC_PC1, OC_PC2], friday);
     expect(view.settlement.length).toBeGreaterThan(0);
     const { container } = render(<PlanRiskDrawer view={view} timeZone="America/New_York" />);
-    const figures = Array.from(container.querySelectorAll('dt'))
-      .filter((term) => ['Risk to stop', 'Reward to target'].includes(term.textContent ?? ''))
-      .map((term) => term.nextElementSibling?.textContent);
-    expect(figures).toEqual(['Settlement Due: XYZ Nov 20 $55 Call', 'Settlement Due: XYZ Nov 20 $55 Call']);
+    const figures = rowsOf(within(screen.getByRole('region', { name: 'Conditions' })).getByRole('table')).flatMap((cells) => cells.slice(1, 3));
+    expect(figures).toEqual(Array(4).fill('Settlement Due: XYZ Nov 20 $55 Call'));
     expect(container.textContent).not.toContain('Mark missing');
+    // W6: beneath the rows, the sentence stands in for Worst case and Max reward.
+    expect(within(screen.getByRole('region', { name: 'Conditions' })).getByText('The contract expired, so its conditions are no longer measured.')).toBeTruthy();
+  });
+});
+
+// D8R, T8R.10: the Conditions group (W31, W32). O-C3 at Thu 10-15 18:00 is a view double: an O-C Detail whose Plan and conditions are O-C3's
+// (Stop the option at or below 1.00, Target XYZ at or above 60.00; the call at 3.20, XYZ at 57.90, 1 of 2 contracts held, 1R $200), since
+// the fixture builders know no O-C3 and the domain's `trigger` (A230, T8R.18) is not filled yet.
+type OpenView = ReturnType<typeof optionOpenDetail>;
+type Condition = OpenView['current']['evaluation']['conditions'][number];
+type Reading = Extract<Condition['result'], { kind: 'Value' }>['value'];
+
+const R = (cents: bigint) => Rational.of(cents, 100n);
+const measure = (dollars: bigint, planR: bigint) => ({ dollars: R(dollars), planR: R(planR) });
+const evidence = { instrument: OC_CONTRACT, date: '2026-10-15', mark: { source: 'Manual', revisionId: 'm-1', revisionNumber: 1, price: '3.20', savedAt: '2026-10-15T22:00:00Z' } } as const;
+
+const stop = (reading: Partial<Reading> = {}): Condition => ({
+  id: 'stop-1',
+  role: 'Stop',
+  kind: 'StructureValue',
+  boundary: '1.00',
+  result: { kind: 'Value', value: { status: 'Active', distance: measure(22000n, 110n), overrun: null, evidence, trigger: { distance: R(220n), beyond: null }, ...reading } },
+});
+const target = (reading: Partial<Reading> = {}): Condition => ({
+  id: 'target-1',
+  role: 'Target',
+  kind: 'UnderlyingPrice',
+  boundary: '60.00',
+  result: { kind: 'Value', value: { status: 'Active', distance: measure(18000n, 90n), overrun: null, evidence, trigger: { distance: R(210n), beyond: null }, underlying: { distance: R(210n), beyond: null }, ...reading } },
+});
+
+function oc3(conditions: readonly Condition[], extra: Partial<OpenView['current']> = {}): OpenView {
+  const view = optionOpenDetail('O-C', [OC_PC1, OC_PC2, OC_X1], THURSDAY);
+  const stopBasis = [{ ...view.baseline.stopBasis[0]!, valueAtExpiration: R(0n) }];
+  const targetBasis = [{ ...view.baseline.targetBasis[0]!, valueAtExpiration: R(500n) }];
+  return {
+    ...view,
+    plan: { ...view.plan, stops: [{ factId: 'stop-1', kind: 'StructureValue', price: '1.00' }], targets: [{ factId: 'target-1', kind: 'UnderlyingPrice', price: '60.00' }] },
+    baseline: { ...view.baseline, stopBasis, targetBasis },
+    current: { ...view.current, evaluation: { ...view.current.evaluation, conditions }, ...extra },
+  };
+}
+
+describe('Plan and Risk: Conditions (W31)', () => {
+  useFixedClock();
+
+  it('should list each condition with its trigger, its distance away and its Risk to stop in dollars and R', () => {
+    render(<PlanRiskDrawer view={oc3([stop(), target()])} timeZone="America/New_York" />);
+    const conditions = screen.getByRole('region', { name: 'Conditions' });
+    expect(rowsOf(within(conditions).getByRole('table')).map((cells) => cells.slice(0, 3))).toEqual([
+      ['Option at or below $1.00', '$2.20 away', 'Risk to stop $220.00 · 1.10R'],
+      ['XYZ at or above 60.00', '2.10 away', 'Reward to target $180.00 · 0.90R'],
+    ]);
+  });
+
+  it('should show an Underlying condition value at expiration in its row', () => {
+    render(<PlanRiskDrawer view={oc3([stop(), target()])} timeZone="America/New_York" />);
+    const conditions = screen.getByRole('region', { name: 'Conditions' });
+    expect(within(conditions).getAllByRole('columnheader').map((head) => head.textContent)).toEqual(['Condition', 'Distance', 'Risk or reward', 'Value at expiration']);
+    // Only the Underlying condition has one: the option-price Stop is measured in the option's own price.
+    expect(rowsOf(within(conditions).getByRole('table')).map((cells) => cells[3])).toEqual(['', '$5.00']);
+  });
+
+  it('should show a breached Stop as Breached with its price past and its Risk to stop past', () => {
+    // O-S2's Wednesday style breach, on this double: the call at 0.50, so the Stop at 1.00 is crossed by $0.50 and the Trade is $60.00 (0.24R) past it.
+    const breached = stop({ status: 'Breached', distance: measure(0n, 0n), overrun: measure(6000n, 24n), trigger: { distance: R(0n), beyond: R(50n) } });
+    render(<PlanRiskDrawer view={oc3([breached, target()])} timeZone="America/New_York" />);
+    const [stopRow] = rowsOf(within(screen.getByRole('region', { name: 'Conditions' })).getByRole('table'));
+    expect(stopRow?.slice(1, 3)).toEqual(['Breached · $0.50 past', 'Risk to stop $60.00 · 0.24R past']);
+  });
+
+  it('should show Worst case, Max reward and the short notes under the rows', () => {
+    const view = oc3([stop(), target()]);
+    const { evaluation } = view.current;
+    const withFigures = { ...view, current: { ...view.current, evaluation: { ...evaluation, worstCaseOngoingRisk: { kind: 'Value', value: R(32000n) }, worstCaseOngoingRiskInPlanR: { kind: 'Value', value: R(160n) } } } } as OpenView;
+    render(<PlanRiskDrawer view={withFigures} timeZone="America/New_York" />);
+    const conditions = screen.getByRole('region', { name: 'Conditions' });
+    const notes = within(conditions).getByRole('list', { name: 'Worst case and Max reward' });
+    expect(within(notes).getAllByRole('listitem').map((item) => item.textContent)).toEqual(['Worst case: $320.00 · 1.60R if the call expires worthless', 'Max reward: Unbounded above']);
+    // They sit beneath the rows.
+    expect(within(conditions).getByRole('table').compareDocumentPosition(notes) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('should show the last Marks figures with their date when todays Mark is missing', () => {
+    // Fri 10-16: the call has no Mark, so every current condition is Unavailable; the Thu Oct 15 Marks' conditions stand in the dated line.
+    const missing = (c: Condition): Condition => ({ ...c, result: { kind: 'Unavailable', reason: 'MarkMissing', instrument: OC_CONTRACT, date: '2026-10-16' } });
+    const live = oc3([stop(), target()]);
+    const view = oc3([missing(stop()), missing(target())], { datedLine: { tradingDate: '2026-10-15', evaluation: live.current.evaluation } });
+    render(<PlanRiskDrawer view={view} timeZone="America/New_York" />);
+    const conditions = screen.getByRole('region', { name: 'Conditions' });
+    expect(rowsOf(within(conditions).getByRole('table')).map((cells) => cells.slice(1, 3))).toEqual([
+      ['$2.20 away · Thu Oct 15 Marks', 'Risk to stop $220.00 · 1.10R'],
+      ['2.10 away · Thu Oct 15 Marks', 'Reward to target $180.00 · 0.90R'],
+    ]);
+    // Worst case and Max reward are the dated Marks' too, and say so.
+    const notes = within(within(conditions).getByRole('list', { name: 'Worst case and Max reward' })).getAllByRole('listitem');
+    for (const note of notes) expect(note.textContent).toMatch(/ · Thu Oct 15 Marks$/);
   });
 });
