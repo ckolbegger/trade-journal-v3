@@ -241,9 +241,8 @@ describe('Plan and Risk: Since the last Marks (W23)', () => {
     expect(valueOf(group, 'Average price of new lots')).toBe('$3.30');
     expect(valueOf(group, 'Risk from that price')).toBe('$110.00 · 0.55R');
     expect(valueOf(group, 'Reward from that price')).toBe('$90.00 · 0.45R');
-    // After Conditions, before Planned-Leg Fulfillment.
-    expect(headings().slice(headings().indexOf('Conditions'), headings().indexOf('Conditions') + 2)).toEqual(['Conditions', 'Since the last Marks']);
-    expect(headings().indexOf('Since the last Marks')).toBeLessThan(headings().indexOf('Planned-Leg Fulfillment'));
+    // Before Conditions (browser row B8R.4: W23, then W31 and W32).
+    expect(headings().slice(headings().indexOf('Since the last Marks'), headings().indexOf('Since the last Marks') + 2)).toEqual(['Since the last Marks', 'Conditions']);
   });
 
   it('should not show the group before the first Marks, when Entry Quality covers the entry', () => {

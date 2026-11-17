@@ -215,8 +215,8 @@ export function planRiskProps({ view, timeZone }: PlanRiskSource): PlanRiskDrawe
     ...(!('positionChanges' in view) && 'summary' in view && view.summary && { tradeSummary: tradeSummary(view.summary, timeZone) }),
     groups: [
       planGroup(view, timeZone),
-      ...(figures ? [figures] : []),
       ...(since ? [since] : []),
+      ...(figures ? [figures] : []),
       ...('baseline' in view ? [baselineGroup(view.baseline)] : []),
       // An incoherent Detail has no derived figures, so no Entry Quality.
       ...('baseline' in view ? [entryQualityGroup(view, timeZone)] : []),

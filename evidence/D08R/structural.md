@@ -910,3 +910,7 @@ B7.13 passed at `fc58e8ca^` and failed first at `fc58e8ca` (T8R.5's Instrument c
 ## T8R.12
 
 Behavioral, 2 cases; rows in `tdd-log/T8R.12.md`. The group "Since the last Marks" reads `evaluation.atEntry` (quantity, averageEntry, riskFromEntry, rewardFromEntry and their Plan R figures), all existing Trade Analysis fields, so nothing is calculated in the UI. It is hidden when `current.firstMarksDue` is set (before the first Marks), and on a Closed Trade. It sits after Conditions and before Plan Baseline, Entry Quality and Planned-Leg Fulfillment; W23 and the plan name no place, so this is the recorded choice. The first case went red, green; the second went red, green after the first case's code showed the group before the first Marks, so no first-run pass. No browser heading list needed the new group: only O-C3+ style Trades with lots newer than the Marks show it, and the grep of `e2e` for Plan and Risk headings found none that list the group order.
+
+## T8R.12-F1
+
+Since the last Marks (W23) moved to sit immediately before Conditions (W31, W32), after the Plan group, following browser row B8R.4 ("W23, W31 and W32 groups in order; Deviations last"). Only `planRiskProps` changed order; every other group keeps its place. Case 1 of T8R.12 went red (Conditions came first), then green. `grep -rn "Since the last\|since-last" e2e` finds nothing, so no browser spec reads the group's place (`e2e/d8p/cockpit.spec.ts` HEADINGS reads O-C3 without new lots). The T8R.12 place row in `new-words.md` was updated.
