@@ -664,22 +664,25 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T8R.4 | 0 | PH | Done | `c7a9a3ca`; B1 met by F1 |
 | T8R.4-F1 | 0 | PH | Done | `bed2afe0` |
 | T8R.5 | 1 | PO | In progress from `80f0d7d9` | |
-| T8R.6 | 1 | TD | In progress from `77d475d0` | |
+| T8R.6 | 1 | TD | Committed `651e5470` (from `77d475d0`) | |
+| T8R.6-F1 | 1 | TD | In progress from `400b4b02` | |
 | T8R.7 | 1 | TD | Not started | |
 | T8R.8 | 1 | TD | Not started | |
 | T8R.9 | 1 | TD | Not started | |
-| T8R.10 | 1 | PR | In progress from `77d475d0` | |
+| T8R.10 | 1 | PR | Committed `d8fd9ffe` (from `77d475d0`) | |
+| T8R.10-F1 | 1 | PR | In progress from `d8fd9ffe` | |
 | T8R.11 | 1 | PR | Not started | |
 | T8R.12 | 1 | PR | Not started | |
 | T8R.13 | 1 | RA | Done | `5237ada5` |
 | T8R.14 | 1 | RA | In progress from `359e0498` | |
-| T8R.15 | 1 | JR | In progress from `77d475d0` | |
+| T8R.15 | 1 | JR | Committed `da5e23ce` (from `77d475d0`) | |
+| T8R.15-F1 | 1 | JR | In progress from `da5e23ce` | |
 | T8R.16 | 1 | JR | Not started | |
 | T8R.17 | 1 | JR | Not started | |
 | T8R.18 | 1 | BA | Done | `69582aaa` |
-| T8R.19 | 1 | BA | Not started | |
+| T8R.19 | 1 | BA | In progress from `400b4b02` | |
 | T8R.20 | 1 | BA | Not started | |
-| T8R.21 | 1 | BV | In progress from `77d475d0` | |
+| T8R.21 | 1 | BV | Done | `c9155d02` |
 | T8R.22 | 1 | BV | Not started | |
 | T8R.23 | 1 | BV | Not started | |
 | T8R.24 | 2 | — | Not started | |

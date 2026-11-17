@@ -298,3 +298,33 @@ T8R.21 notes, from its hand-back:
 ## T8R.21
 
 Today's column dates (A232, P110). Behavioral; rows in `tdd-log/T8R.21.md`. `MarketDataReadSession.exchangeDate` stays optional: only a Current context has an as-of instant, so a Review or Historical session carries none; a Current session always carries it, covered or not. `previousSessionDate` comes from the calendar alone, as `nextSessionDate` does. `marksColumns` is derived in Trade Views from the session's trading date, exchange date, previous and next sessions, with no calendar of its own, and is filled on Open, Settlement Due and Closed Details with a session read.
+
+## Merge: lane BV (T8R.21)
+
+Rebased `d08r/bv` onto `claude-opus-5.5` twice. The first rebase, onto `359e0498`, had one conflict, in this file, where both sides had appended; I kept both. It brought in T8R.13's and T8R.18's code, so I reran the lane tier (`suite-runs/T8R.21-rebased-*.txt`): unit 2056 passed, integration 258 passed, 14 of 14 checks exit 0. The second rebase, onto `3189b504`, brought in a plan row only. T8R.21 `60c526db` → `c9155d02`, plus evidence `400b4b02`. Fast-forwarded to `400b4b02`, then removed lane worktree `d08r-bv` and branch `d08r/bv`. T8R.19 (lane BA) is now unblocked.
+
+## T8R.15 ocr review
+
+ocr on `da5e23ce` (session 3305c4fc-d802-42af-bcb8-8c295e32c786, gpt-6.1-sol, 13 files reviewed, 0 comments; raw output `ocr/T8R.15-da5e23ce.json`): **No findings.**
+
+T8R.15 notes, from its hand-back:
+- Cases: 5, red then green. The incoherent-list test passed on its first run because it shares the card item builder; its mutation (joining with " - ") failed it, and it is flagged.
+- Changed expectations: `JournalCardItem.details` became `line`. The Anchor, Source, Moment, Authored and Review Date expectations in `journal-cards.props.test.tsx`, `Journal.test.tsx`, `Position.test.tsx:76–82` and `history.spec.ts` became dated-line or absence checks (W27). `history.spec.ts` passed in the browser (2 passed).
+- Not yet verified: `e2e/d5/responsive.spec.ts:97–98`. It serves `dist-releases/current`, the classifier denied `npm run build:releases` in the lane, and against the stale release it fails. The agent changed `settledItem` to match the new line. The merge run's full tier rebuilds the release and will verify it.
+- `journal.props.ts:177` now passes the Workspace zone to `calculation` (the handoff note for T8R.15). `JournalSection`'s `symbol` prop is now optional and unread; `Composed.tsx`, not lane JR's, still passes it.
+- `OwedDebtItem.tsx` kept its old rows. Follow-up T8R.15-F1 in lane JR covers it.
+- The CSS sits at `src/ui/cockpit/styles/journal.css`. Lane tier: unit 2048, integration 258, 14 of 14 checks.
+
+## T8R.10 and T8R.6 notes (committed in their lanes; follow-ups running)
+
+- **T8R.10** (`d8fd9ffe`, lane PR):
+  - Cases: 5, each red then green.
+  - The Conditions table replaces `conditionFiguresGroup`.
+  - Three browser places outside the lane read the old Risk to stop and Reward to target rows: `e2e/support/detail/rail-b.ts`, `e2e/d4/breach-overrun.spec.ts:28,53` and `e2e/d7s/conditions.spec.ts:25`. The main session granted them to follow-up **T8R.10-F1** in lane PR. It told T8R.14, lane RA, to leave those helpers in `rail-b.ts`.
+  - W6's "arrive with the first Marks" notes are not built: before the first Marks, Worst case and Max reward show their own unavailable words.
+  - The agent ran prettier by mistake, then redid its edits by hand. The final diff holds only the intended lines.
+- **T8R.6** (`651e5470`, lane TD):
+  - Cases: 7. Cases 2, 4 and 5 were first-run passes, each mutation-checked.
+  - Four lane browser specs (`d4/expected-mark`, `d4/breach-overrun`, `d4/responsive-a11y`, `d8p/today-narrow`) assert the merged state and need T8R.21's dates.
+  - Two specs outside the lane still read the old card: `e2e/d4/correct-mark.spec.ts:23-26`, where "Corrected" now belongs on Price History (T8R.4), and `e2e/d4/runtime-failure.spec.ts:61` ("Mark missing"). The main session gives them to follow-up **T8R.6-F1** in lane TD, after rebasing onto T8R.21.
+  - The agent's reading of A232 matches the plan: when `marksColumns` is absent, the table draws with undated "Today" and "Yesterday" headings and dashes.
