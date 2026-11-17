@@ -206,4 +206,19 @@ describe('Plan and Risk: Conditions (W31)', () => {
     const notes = within(within(conditions).getByRole('list', { name: 'Worst case and Max reward' })).getAllByRole('listitem');
     for (const note of notes) expect(note.textContent).toMatch(/ · Thu Oct 15 Marks$/);
   });
+
+  it('should show the expired note and no dated figures on a Settlement Due Trade whose current Mark is missing', () => {
+    // On 20 Nov the contract is due for settlement with no Mark; a dated line from stale Marks must not stand in (W6).
+    const friday = { tradingDate: '2026-11-20', closeInstant: '2026-11-20T21:00:00Z', underlyingMark: '52.00' };
+    const base = optionOpenDetail('O-C', [OC_PC1, OC_PC2, OC_X1], friday);
+    expect(base.settlement.length).toBeGreaterThan(0);
+    const missing = (c: Condition): Condition => ({ ...c, result: { kind: 'Unavailable', reason: 'MarkMissing', instrument: OC_CONTRACT, date: '2026-11-20' } });
+    const live = oc3([stop(), target()]);
+    const view = { ...base, current: { ...base.current, evaluation: { ...base.current.evaluation, conditions: [missing(stop()), missing(target())] }, datedLine: { tradingDate: '2026-10-15', evaluation: live.current.evaluation } } };
+    render(<PlanRiskDrawer view={view} timeZone="America/New_York" />);
+    const conditions = screen.getByRole('region', { name: 'Conditions' });
+    expect(rowsOf(within(conditions).getByRole('table')).flatMap((cells) => cells.slice(1, 3))).toEqual(Array(4).fill('Settlement Due: XYZ Nov 20 $55 Call'));
+    expect(within(conditions).getByText('The contract expired, so its conditions are no longer measured.')).toBeTruthy();
+    expect(conditions.textContent).not.toContain('Marks');
+  });
 });

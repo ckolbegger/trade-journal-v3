@@ -73,7 +73,8 @@ function conditionsGroup(view: TradeDetailView, timeZone: string): PlanRiskGroup
   const option = leg?.instrument.kind === 'Option';
   // Without today's Mark (every condition Unavailable) the last Marks' figures stand in, labelled with their date (W31, as W21).
   const { datedLine } = view.current;
-  const dated = datedLine && view.current.evaluation.conditions.every((c) => c.result.kind === 'Unavailable') ? datedLine : undefined;
+  // A contract due for settlement is not measured (W6), so no dated figures stand in for it.
+  const dated = datedLine && !('settlement' in view && view.settlement.length > 0) && view.current.evaluation.conditions.every((c) => c.result.kind === 'Unavailable') ? datedLine : undefined;
   const evaluation = dated?.evaluation ?? view.current.evaluation;
   const { conditions } = evaluation;
   const datedLabel = dated ? ` · ${shortDate(dated.tradingDate)} ${option ? 'Marks' : 'Mark'}` : '';
