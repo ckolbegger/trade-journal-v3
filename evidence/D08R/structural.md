@@ -1429,3 +1429,15 @@ Each defect becomes a bug task. They run one at a time in a new lane, C2, branch
 The critic's 10 minor observations go to the final report.
 
 After B7, one full run (browser full) follows, then critic-3. That is the last critic this checkpoint allows.
+
+## T8R.27
+
+Browser suite, `e2e/d8r/` (`today.spec.ts`, `states.spec.ts`, `rail.spec.ts`, `plan-risk.spec.ts`, `names.spec.ts`, `history.spec.ts`, `responsive-a11y.spec.ts`, `support.ts`): B8R.1 to B8R.7, 13 tests. Tests only; no production code. The correction step B8R.6 needs is `buildOc3`'s `correctedWednesdayXyz` option in `e2e/d8p/support.ts`, which also exports `confirmOc3` and `at`.
+
+- `npm run build:faults` and `npm run build:releases`: exit 0.
+- `npx playwright test e2e/d8r` (under `.claude/scripts/with-browser-lock.sh`): 13 passed, 1.2 min run time. Mutation notes in `tdd-log/T8R.27.md`.
+- `.claude/scripts/acceptance-commands.sh plan/D08R-trade-detail-refactor.md`: exit 0, `5 commands checked, 0 failed` (states 4 tests, today 2, responsive-a11y 1, detail 3, query-count 1).
+- `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint` (0 errors; 2 existing warnings), `npm run lint:deps`: exit 0. Lane tier `T8R.27 lane`: unit 2095, integration 269, 14 of 14 checks.
+- Readings applied: B8R.3's Fri 12:00 shows no dated line, and the dated distances are read at Fri 18:00 (as I8R.1). B8R.4's group order is Plan, Since the last Marks, Conditions, Plan Baseline, Entry Quality, Planned-Leg Fulfillment, Deviations, with W23's four figures ($3.30 average, $230.00 · 1.15R, $170.00 · 0.85R). B8R.2's K1 column is "Exit Fri Nov 13" (decision P1).
+- K1's Underlying cell reads a dash: K1 was sold at 11:00 on Fri 11-13, before that session's close, so no NVDA Mark exists for it (T8R.7-B1's case "sold before the close").
+- B8R.6's keyboard paging case is also in `e2e/d8p/history.spec.ts` (T8R.16); it is repeated in `e2e/d8r/history.spec.ts` on the corrected-Mark fixture.

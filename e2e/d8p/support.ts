@@ -7,7 +7,7 @@
 import type { Page } from '@playwright/test';
 import {
   currentTradeId, detail, enterMark, executionRow, expect, fillOptionPlan, firstPage, launchAt, MONDAY, MONDAY_0900, MONDAY_1700, onboardedAt, openReview, optionMarkRow, READY, reachCard, recordOptionEntry,
-  saveAction, saveMarkPrice, savedOptionMarkRow, THURSDAY, WEDNESDAY, WEDNESDAY_1700, type OptionPlanValues, type Profile, type TradeRef,
+  markRow, saveAction, saveMarkPrice, savedOptionMarkRow, THURSDAY, WEDNESDAY, WEDNESDAY_1700, type OptionPlanValues, type Profile, type TradeRef,
 } from '../d7s/support.ts';
 
 export * from '../d7s/support.ts';
@@ -26,7 +26,7 @@ export const OC3: OptionPlanValues = {
 };
 
 // Confirms O-C3's Plan at the pinned clock, ending on its Trade Detail; returns the Trade's id.
-async function confirmOc3(page: Page): Promise<string> {
+export async function confirmOc3(page: Page): Promise<string> {
   await fillOptionPlan(page, OC3);
   await page.getByLabel('Stop (option price at or below)', { exact: true }).fill('1.00');
   await page.getByRole('button', { name: 'Confirm Plan' }).click();
@@ -44,7 +44,7 @@ async function saveOc3Marks(page: Page, trade: TradeRef, date: string, xyz: stri
 }
 
 // A fresh launch at the instant, one step of the Trade's history, and a close.
-async function at(profile: Profile, instant: string, step: (page: Page) => Promise<void>): Promise<void> {
+export async function at(profile: Profile, instant: string, step: (page: Page) => Promise<void>): Promise<void> {
   const context = await launchAt(profile, instant);
   const page = await firstPage(context);
   await step(page);
@@ -68,7 +68,9 @@ async function sellOneAndDefer(page: Page): Promise<void> {
 // O-C3 with section 5's executions, Marks and Journal, created through the UI. With `thursdayHold` the Hold for Thu 10-15 is saved at Thu 18:00
 // (without it the history ends at Thu 17:00, since a Hold saved at 18:00 is after it). Every browser is closed on return; the caller launches
 // at the final clock itself.
-export async function buildOc3(profile: Profile, options: { readonly thursdayHold?: boolean } = {}): Promise<TradeRef> {
+// With `correctedWednesdayXyz` (T8R.27, B8R.6) Wednesday's XYZ Mark is corrected to that price straight after it is saved, with a reason.
+export const CORRECTION_REASON = 'Misread the closing quote.';
+export async function buildOc3(profile: Profile, options: { readonly thursdayHold?: boolean; readonly correctedWednesdayXyz?: string } = {}): Promise<TradeRef> {
   const { context: setup, page: setupPage } = await onboardedAt(profile, MONDAY_0900);
   const trade: TradeRef = { symbol: 'XYZ', tradeId: await confirmOc3(setupPage), label: 'O-C3' };
   await setup.close();
@@ -90,7 +92,16 @@ export async function buildOc3(profile: Profile, options: { readonly thursdayHol
     await expect(detail.heading(page, 'XYZ')).toBeVisible(READY);
     await sellOneAndDefer(page);
   });
-  await at(profile, WEDNESDAY_1700, (page) => saveOc3Marks(page, trade, WEDNESDAY, '57.40', '2.90'));
+  await at(profile, WEDNESDAY_1700, async (page) => {
+    await saveOc3Marks(page, trade, WEDNESDAY, '57.40', '2.90');
+    if (options.correctedWednesdayXyz === undefined) return;
+    const entry = await markRow(page, trade, WEDNESDAY);
+    await entry.getByRole('button', { name: 'Correct', exact: true }).click();
+    await entry.getByLabel('Price').fill(options.correctedWednesdayXyz);
+    await entry.getByLabel('Reason (required)').fill(CORRECTION_REASON);
+    await entry.getByRole('button', { name: 'Save correction' }).click();
+    await expect(entry).toContainText(`Corrected: ${CORRECTION_REASON}`, READY);
+  });
   await at(profile, THURSDAY_1700, (page) => saveOc3Marks(page, trade, THURSDAY, '57.90', '3.20'));
   if (options.thursdayHold === true)
     await at(profile, THURSDAY_1800, async (page) => {
