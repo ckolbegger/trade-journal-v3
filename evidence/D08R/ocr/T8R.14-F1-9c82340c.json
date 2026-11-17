@@ -1,0 +1,203 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 8 selected item(s).",
+  "summary": {
+    "files_reviewed": 8,
+    "comments": 0,
+    "total_tokens": 152886,
+    "input_tokens": 151847,
+    "output_tokens": 1039,
+    "cache_read_tokens": 23296,
+    "elapsed": "28s"
+  },
+  "tool_calls": {
+    "total": 21,
+    "by_tool": {
+      "code_search": 6,
+      "file_read": 14,
+      "file_read_diff": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "D4 detail behavior and accessibility tests",
+      "files": [
+        "e2e/d4/breach-overrun.spec.ts",
+        "e2e/d4/expected-mark.spec.ts",
+        "e2e/d4/responsive-a11y.spec.ts"
+      ]
+    },
+    {
+      "label": "D7 settlement and conditions tests",
+      "files": [
+        "e2e/d7/settlement-due.spec.ts",
+        "e2e/d7s/conditions.spec.ts"
+      ]
+    },
+    {
+      "label": "D8P cockpit and state tests",
+      "files": [
+        "e2e/d8p/cockpit.spec.ts",
+        "e2e/d8p/states.spec.ts"
+      ]
+    },
+    {
+      "label": "Shared detail rail B test support",
+      "files": [
+        "e2e/support/detail/rail-b.ts"
+      ]
+    }
+  ],
+  "session_id": "8b44f72c-96e1-42c6-9b63-b62451ddae0c",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "8b44f72c-96e1-42c6-9b63-b62451ddae0c",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "9c82340c",
+      "resolved_base": "85bbb4c14d5091c7814e91efa388da1a7cf9e637",
+      "resolved_head": "9c82340c2ce207270ed586c0b5a8271cbcb6fc22",
+      "exact_range": "85bbb4c14d5091c7814e91efa388da1a7cf9e637..9c82340c2ce207270ed586c0b5a8271cbcb6fc22",
+      "source_artifact_sha256": "2f89815bfbed3b9088f6b673b95ec9524698b0136817bf1a3b630163a4857b55"
+    },
+    "execution": {
+      "ocr_version": "v1.13.11",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "30273611721b694304fcba1e627fe765af668fd478e0661a0cc14f1ce1b4a3ab",
+          "path": "e2e/d8p/states.spec.ts",
+          "fingerprint": "b88eff5ff7a650e7068476e843e5fb625b4d34776f807a216d9980bb727727cc"
+        },
+        {
+          "item_id": "4e8c9fded9c24bb922049c410df7d1152836a705500c2ae0b2bd9662c565f721",
+          "path": "e2e/d8p/cockpit.spec.ts",
+          "fingerprint": "1f5648632fe3c64a16a10c8aa5465ccd71412bf01ad4e9b705ae3514441b9101"
+        },
+        {
+          "item_id": "568de8ec6ac91580ff3b7766932eabc4d40b6eb6772be489396db52c78341f48",
+          "path": "e2e/d7/settlement-due.spec.ts",
+          "fingerprint": "db99e13dd1b56c128fb6f3ea40500b433f39f9c1a08bea0922fbff6c1435f1f4"
+        },
+        {
+          "item_id": "6ea0954282df13574616ce2cd50570ef664c3dc7eb20e5c95fc4cceb2e0425fb",
+          "path": "e2e/d4/expected-mark.spec.ts",
+          "fingerprint": "a8a44175218eb7121ee09b68631f85201c63b5152a0b12e88fdd6e4623a35933"
+        },
+        {
+          "item_id": "8332ef1442450b9997aabfe40988b41aa84c07aec277d347537800aad865d572",
+          "path": "e2e/d7s/conditions.spec.ts",
+          "fingerprint": "65ca397db4828861c5a5cda2945c5bc128ce16f924abe61568fafe60232b9d96"
+        },
+        {
+          "item_id": "9fc2814396ca8fdc4b4a786543b42eb524301cfcaa0ad2260221dc91be7ee063",
+          "path": "e2e/d4/responsive-a11y.spec.ts",
+          "fingerprint": "82179813585817dfda5d77beeb156ebf07b175dbcae05d30660fbfb65bbc1b33"
+        },
+        {
+          "item_id": "b92e16500abd20dbbb59c0cc55fbda79143a842d0e5653c18c442a0e869dc7f5",
+          "path": "e2e/support/detail/rail-b.ts",
+          "fingerprint": "42c196632e9e4edc62d0f432a11896c206d4e35d17dcc9f6ce51c3e26fba765f"
+        },
+        {
+          "item_id": "f8565eaf99bb6cb36551c81082e4fdcb90dc46890728697803cf46683c39ccb6",
+          "path": "e2e/d4/breach-overrun.spec.ts",
+          "fingerprint": "339bdf14afceaadab36b49e366f30307cff3a23735cb5e3a426805cf77ad2da0"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "30273611721b694304fcba1e627fe765af668fd478e0661a0cc14f1ce1b4a3ab",
+          "path": "e2e/d8p/states.spec.ts",
+          "fingerprint": "b88eff5ff7a650e7068476e843e5fb625b4d34776f807a216d9980bb727727cc"
+        },
+        {
+          "item_id": "4e8c9fded9c24bb922049c410df7d1152836a705500c2ae0b2bd9662c565f721",
+          "path": "e2e/d8p/cockpit.spec.ts",
+          "fingerprint": "1f5648632fe3c64a16a10c8aa5465ccd71412bf01ad4e9b705ae3514441b9101"
+        },
+        {
+          "item_id": "568de8ec6ac91580ff3b7766932eabc4d40b6eb6772be489396db52c78341f48",
+          "path": "e2e/d7/settlement-due.spec.ts",
+          "fingerprint": "db99e13dd1b56c128fb6f3ea40500b433f39f9c1a08bea0922fbff6c1435f1f4"
+        },
+        {
+          "item_id": "6ea0954282df13574616ce2cd50570ef664c3dc7eb20e5c95fc4cceb2e0425fb",
+          "path": "e2e/d4/expected-mark.spec.ts",
+          "fingerprint": "a8a44175218eb7121ee09b68631f85201c63b5152a0b12e88fdd6e4623a35933"
+        },
+        {
+          "item_id": "8332ef1442450b9997aabfe40988b41aa84c07aec277d347537800aad865d572",
+          "path": "e2e/d7s/conditions.spec.ts",
+          "fingerprint": "65ca397db4828861c5a5cda2945c5bc128ce16f924abe61568fafe60232b9d96"
+        },
+        {
+          "item_id": "9fc2814396ca8fdc4b4a786543b42eb524301cfcaa0ad2260221dc91be7ee063",
+          "path": "e2e/d4/responsive-a11y.spec.ts",
+          "fingerprint": "82179813585817dfda5d77beeb156ebf07b175dbcae05d30660fbfb65bbc1b33"
+        },
+        {
+          "item_id": "b92e16500abd20dbbb59c0cc55fbda79143a842d0e5653c18c442a0e869dc7f5",
+          "path": "e2e/support/detail/rail-b.ts",
+          "fingerprint": "42c196632e9e4edc62d0f432a11896c206d4e35d17dcc9f6ce51c3e26fba765f"
+        },
+        {
+          "item_id": "f8565eaf99bb6cb36551c81082e4fdcb90dc46890728697803cf46683c39ccb6",
+          "path": "e2e/d4/breach-overrun.spec.ts",
+          "fingerprint": "339bdf14afceaadab36b49e366f30307cff3a23735cb5e3a426805cf77ad2da0"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "485887fb46a4d0a77cb9dbf3a54b7421c4d5c1ced684a7aa65bc885fd69961a6",
+          "path": "evidence/D08R/structural.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "5a065d41a01964b350725be7774815057c666d7be4d5eb1208fb8f52856b6827",
+          "path": "evidence/D08R/suite-runs/T8R.14-F1-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "603a0bd70a12268144b48f652ecb4335fd292f347e71eea16a7dc654435bce96",
+          "path": "evidence/D08R/suite-runs/T8R.14-F1-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "a631403d7bf3101763755994258897c03ad13b9d95bb2bfe7392187e9f22a118",
+          "path": "evidence/D08R/suite-runs/T8R.14-F1-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "f26e99ca0c9bd317489075170f01290cb1637867f7dae34bc735c859d764dc8c",
+          "path": "evidence/D08R/suite-runs/T8R.14-F1-integration.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 27515
+  }
+}

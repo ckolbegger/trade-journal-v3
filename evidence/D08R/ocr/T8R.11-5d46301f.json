@@ -1,0 +1,228 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 9 selected item(s).",
+  "summary": {
+    "files_reviewed": 9,
+    "comments": 0,
+    "total_tokens": 102342,
+    "input_tokens": 100788,
+    "output_tokens": 1554,
+    "cache_read_tokens": 8320,
+    "elapsed": "1m6s"
+  },
+  "tool_calls": {
+    "total": 17,
+    "by_tool": {
+      "code_search": 3,
+      "file_read": 14
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Plan-risk drawer updates and trade-detail integration coverage",
+      "files": [
+        "e2e/d2/ui-alignment.spec.ts",
+        "e2e/d4/breach-overrun.spec.ts",
+        "e2e/support/detail/plan.ts",
+        "src/ui/cockpit/drawers/plan-risk.props.ts",
+        "src/ui/cockpit/drawers/plan-risk.test.tsx",
+        "src/ui/cockpit/drawers/plan-risk.tsx",
+        "src/ui/cockpit/drawers/plan-risk.types.ts",
+        "src/ui/screens/trade-detail/Cockpit.tsx",
+        "src/ui/screens/trade-detail/Plan.test.tsx"
+      ]
+    }
+  ],
+  "session_id": "918c4936-19d1-4d29-a315-088fde9680e5",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "918c4936-19d1-4d29-a315-088fde9680e5",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "5d46301f",
+      "resolved_base": "8fdf918a3da16353b4f344d703bf775dbaa88d67",
+      "resolved_head": "5d46301ff358ae4befa8dbb1256deac864d0a3e8",
+      "exact_range": "8fdf918a3da16353b4f344d703bf775dbaa88d67..5d46301ff358ae4befa8dbb1256deac864d0a3e8",
+      "source_artifact_sha256": "a7d060240307d6920f6e7085dca58441f73b0ed5a5bdcca0b981db9fb2991749"
+    },
+    "execution": {
+      "ocr_version": "v1.13.11",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0160d24f46c444f6775d6d047f26c1eb6d45ec60ec8feb3c6adef1d9e38a1306",
+          "path": "src/ui/cockpit/drawers/plan-risk.test.tsx",
+          "fingerprint": "ca8c0aa666ab2ba16e59d19b38b35c29237fbf43c9648ea34fb28b1e03d892cd"
+        },
+        {
+          "item_id": "0d60b4889ae8b40cf74bf36f8c2bcc7edaedb94a7a88aa4417e952f5439a6310",
+          "path": "src/ui/cockpit/drawers/plan-risk.types.ts",
+          "fingerprint": "6b30a482016a7bf46cb250ce8fd9aeae712e6bebc49084e81bb394713cec2580"
+        },
+        {
+          "item_id": "155c2e9275573ccb2c1e92a9fcf986107ce471306b2def10d78c6d57e94afbd9",
+          "path": "src/ui/cockpit/drawers/plan-risk.tsx",
+          "fingerprint": "7bcd6a053a5e88222c47d0e07ab8d861cf5dc720bae8a2ca8efa1f9587d70b66"
+        },
+        {
+          "item_id": "38c7559a1d44c1ac805a615d6c11a2e76abcd24da1155e0613bc2c44c5d01775",
+          "path": "e2e/support/detail/plan.ts",
+          "fingerprint": "edd514b1a627f627d85fdab13b37f15bc7ab68ef68f29bde3ef6431453f99132"
+        },
+        {
+          "item_id": "69445e32facf52e874852777792ea21dbbda0973a4b442cf16481cb83b5d4a29",
+          "path": "src/ui/screens/trade-detail/Plan.test.tsx",
+          "fingerprint": "19d7ac289b84a3a05940fd3df49272b94bf2ed259459cf7cf3d744a229dd4566"
+        },
+        {
+          "item_id": "bad5c69b3d1e03bf54bd2b1b2b13ff5e5a0dabd158881300fc1e86a4a591bb75",
+          "path": "src/ui/screens/trade-detail/Cockpit.tsx",
+          "fingerprint": "af3da28f8fbc2304e22bcbbdc0ee5bd8fd5d32d5ae6ebb5cac58abdb84186995"
+        },
+        {
+          "item_id": "bc0243c3f6d1e7459e2f145a2f56c7b96f61591d0ab01ce04fe2d9d0e13cfeeb",
+          "path": "src/ui/cockpit/drawers/plan-risk.props.ts",
+          "fingerprint": "c1ba5611eaf5845f5bb384939c38ac3b0bcad2cf526c7fc54d813e8465742afe"
+        },
+        {
+          "item_id": "e630dd00330887432bb10e4974e4b1787c75858db07df4ad1ab592adab06f1eb",
+          "path": "e2e/d2/ui-alignment.spec.ts",
+          "fingerprint": "7068d439590d1f9187b6369c954053fb3f8a1a5ec16b99d416ba339b6044af6a"
+        },
+        {
+          "item_id": "f8565eaf99bb6cb36551c81082e4fdcb90dc46890728697803cf46683c39ccb6",
+          "path": "e2e/d4/breach-overrun.spec.ts",
+          "fingerprint": "8df51b99e21332b0f819136bdfbca359df0a6e75b7790df4b3843842a4907ba7"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0160d24f46c444f6775d6d047f26c1eb6d45ec60ec8feb3c6adef1d9e38a1306",
+          "path": "src/ui/cockpit/drawers/plan-risk.test.tsx",
+          "fingerprint": "ca8c0aa666ab2ba16e59d19b38b35c29237fbf43c9648ea34fb28b1e03d892cd"
+        },
+        {
+          "item_id": "0d60b4889ae8b40cf74bf36f8c2bcc7edaedb94a7a88aa4417e952f5439a6310",
+          "path": "src/ui/cockpit/drawers/plan-risk.types.ts",
+          "fingerprint": "6b30a482016a7bf46cb250ce8fd9aeae712e6bebc49084e81bb394713cec2580"
+        },
+        {
+          "item_id": "155c2e9275573ccb2c1e92a9fcf986107ce471306b2def10d78c6d57e94afbd9",
+          "path": "src/ui/cockpit/drawers/plan-risk.tsx",
+          "fingerprint": "7bcd6a053a5e88222c47d0e07ab8d861cf5dc720bae8a2ca8efa1f9587d70b66"
+        },
+        {
+          "item_id": "38c7559a1d44c1ac805a615d6c11a2e76abcd24da1155e0613bc2c44c5d01775",
+          "path": "e2e/support/detail/plan.ts",
+          "fingerprint": "edd514b1a627f627d85fdab13b37f15bc7ab68ef68f29bde3ef6431453f99132"
+        },
+        {
+          "item_id": "69445e32facf52e874852777792ea21dbbda0973a4b442cf16481cb83b5d4a29",
+          "path": "src/ui/screens/trade-detail/Plan.test.tsx",
+          "fingerprint": "19d7ac289b84a3a05940fd3df49272b94bf2ed259459cf7cf3d744a229dd4566"
+        },
+        {
+          "item_id": "bad5c69b3d1e03bf54bd2b1b2b13ff5e5a0dabd158881300fc1e86a4a591bb75",
+          "path": "src/ui/screens/trade-detail/Cockpit.tsx",
+          "fingerprint": "af3da28f8fbc2304e22bcbbdc0ee5bd8fd5d32d5ae6ebb5cac58abdb84186995"
+        },
+        {
+          "item_id": "bc0243c3f6d1e7459e2f145a2f56c7b96f61591d0ab01ce04fe2d9d0e13cfeeb",
+          "path": "src/ui/cockpit/drawers/plan-risk.props.ts",
+          "fingerprint": "c1ba5611eaf5845f5bb384939c38ac3b0bcad2cf526c7fc54d813e8465742afe"
+        },
+        {
+          "item_id": "e630dd00330887432bb10e4974e4b1787c75858db07df4ad1ab592adab06f1eb",
+          "path": "e2e/d2/ui-alignment.spec.ts",
+          "fingerprint": "7068d439590d1f9187b6369c954053fb3f8a1a5ec16b99d416ba339b6044af6a"
+        },
+        {
+          "item_id": "f8565eaf99bb6cb36551c81082e4fdcb90dc46890728697803cf46683c39ccb6",
+          "path": "e2e/d4/breach-overrun.spec.ts",
+          "fingerprint": "8df51b99e21332b0f819136bdfbca359df0a6e75b7790df4b3843842a4907ba7"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "16cc17da64bbc1b63663b20a949b9789883074411e61e15fa13c7fb3e90a28b4",
+          "path": "evidence/D08R/suite-runs/T8R.11-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "2e8ccd197573db0fefa7a0a820b5e30de1a59b55b4a776844a41a8117ead0d9f",
+          "path": "src/ui/cockpit/footer.test.tsx",
+          "exclude_reason": "deleted"
+        },
+        {
+          "item_id": "485887fb46a4d0a77cb9dbf3a54b7421c4d5c1ced684a7aa65bc885fd69961a6",
+          "path": "evidence/D08R/structural.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "6170c06e1de005a124055467e014db07a3c537c36061aee24060a8c8c2347111",
+          "path": "evidence/D08R/suite-runs/T8R.11-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "69a38c84abea898c3ed4970583dc892914a95e5ee84bcefac343bb68ad82e54b",
+          "path": "src/ui/cockpit/footer.props.ts",
+          "exclude_reason": "deleted"
+        },
+        {
+          "item_id": "706724690bfc3cf242ed3396eaa688369bc3abe11241aec03211871bce850e51",
+          "path": "evidence/D08R/suite-runs/T8R.11-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "9411a61a5a66641599eeaf14be54477d2ce4747be61bd2d6c4e7ab795b847f05",
+          "path": "evidence/D08R/suite-runs/T8R.11-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ac6fece3b70ab1627f410f2a4fbce5421846e23330f2637f1cc4d1c1a4d02661",
+          "path": "src/ui/cockpit/footer.types.ts",
+          "exclude_reason": "deleted"
+        },
+        {
+          "item_id": "d328a5f29c40cf20bb968db685b6b82192e50f9ce61e0339810b66023340d831",
+          "path": "evidence/D08R/tdd-log/T8R.11.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "eb321ee7d28dbd46e6e5ad6ef6a5f52d284b469376c4e4c8a3a9676a6babfa35",
+          "path": "src/ui/screens/trade-detail/Footer.test.tsx",
+          "exclude_reason": "deleted"
+        },
+        {
+          "item_id": "f41a06cec3025b7f3c303100e25644050ab1cbf09b6e281d197713a667bfd002",
+          "path": "src/ui/cockpit/footer.tsx",
+          "exclude_reason": "deleted"
+        }
+      ]
+    },
+    "elapsed_ms": 65526
+  }
+}

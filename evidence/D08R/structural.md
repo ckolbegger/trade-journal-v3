@@ -704,3 +704,39 @@ Browser specs changed (run after `npm run build:faults` and `npm run build:relea
 - `open-position`, `d2/responsive-a11y` read `detail.deviations` and `detail.fulfillment` after opening Plan and Risk and passed unchanged.
 
 Not touched: `src/ui/cockpit/styles/legacy-detail.css` `dl.figure-grid.one-column` is now unused (not a lane PR file; left). `Cockpit.tsx:19`'s comment still says "and the footer".
+
+## T8R.11 ocr review, and the lane PR merge
+
+ocr ran on `5d46301f`: session 918c4936-19d1-4d29-a315-088fde9680e5, gpt-6.1-sol, 9 files reviewed, 0 comments, raw output in `ocr/T8R.11-5d46301f.json`. **No findings.**
+
+Merge: `d08r/pr` was rebased onto `e5c91f2a`, which upstream only changed in the plan, so the lane tier was not rerun. T8R.11 is now `d8682e62`. The lane worktree and branch were removed.
+
+T8R.11 notes:
+- The footer is deleted. Planned-Leg Fulfillment and Deviations are Plan and Risk's last two groups. Deviations is omitted when none is recorded, and "No Deviations recorded." is gone.
+- `PlanRiskGroup.items?` was added.
+- The Deviations heading is exactly "Deviations", ready for T8R.17's drawer request.
+- Retired: T8P.18's case 3 and `Footer.test.tsx`'s five cases.
+- T2.64's exact right-edge match is restored, and its 480 px cap is gone.
+- `breach-overrun.spec.ts:29` now has an absence check for Deviations.
+- **Coding ahead of red:** the agent first wrote the code for cases 1, 2 and 3 together. It noticed, removed the omit-when-empty condition and the struck-through markup, ran cases 2 and 3 to a genuine red, then restored the code. This is recorded in its tdd-log and listed for the final report.
+- **Left as orphans outside the lane:**
+  - `dl.figure-grid.one-column` in `src/ui/cockpit/styles/legacy-detail.css` is now unused.
+  - The comment at `Cockpit.tsx:19` still says "and the footer".
+  
+  Both are listed for the final report as small cleanups.
+
+## T8R.14-F1 and T8R.7 returned; follow-up T8R.5-F1
+
+**T8R.14-F1** (`9c82340c`, lane RA, test-only) brings the rail and Plan and Risk specs up to date. One choice in it was checked against the plan: during Awaiting close, the specs now expect the last Marks' dated figures ("… · Mon Oct 12 Mark") where they used to expect "Awaiting close". A231 supports this: each condition row whose current reading is unavailable shows its dated distance. W31 gives the same for Plan and Risk.
+
+The agent also fixed `d4/expected-mark.spec.ts:35`, which now shows the dated distance, and `cockpit.spec.ts`'s Today heading "marks" (from T8R.6). With the old name, two `toHaveCount(0)` checks in `states.spec.ts` passed without testing anything; they now find the renamed list.
+
+One browser spec still fails outside its files: `e2e/d7/responsive-a11y.spec.ts:163` (B7.13). At 1280 px the Position drawer has 5 columns and scrolls, and "Unconsumed opening fee" and "$0.65" are cut off. The suspect is T8R.5's Instrument column. **T8R.5-F1** (lane PO, from `e5c91f2a`) pins it with one targeted run and fixes the layout so the five columns fit without a scroll. The column count changes from 4 to 5.
+
+**T8R.7** (`932587cb`, lane TD) returned all five cases red then green, with no first-run pass. It removes `CurrentMarksOnly`, `currentMarksProps`, the `CurrentMarks` type and Cockpit's `settlementDue` local. `states.spec.ts` checks `toBeVisible` again.
+
+It edited one case outside its lane: `Cockpit.test.tsx`'s "should show the Settlement Due current Marks in Today, not in Position" asserted the card T8R.7 removed. It now reads "should show no current Marks card in Today or in Position on a Settlement Due Detail". The main session accepts this as cleanup of the task's own change.
+
+It added new words (rows in `new-words.md`): a Closed Today column heading over empty cells, and the "Closed" stamp drawn as a bordered tag.
+
+T8R.14-F1 ocr review: on `9c82340c`, session 8b44f72c-96e1-42c6-9b63-b62451ddae0c, gpt-6.1-sol, 8 files reviewed, 0 comments. Raw output: `ocr/T8R.14-F1-9c82340c.json`. **No findings.** Lane RA (T8R.14, B1, F1) can merge.
