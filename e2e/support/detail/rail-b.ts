@@ -10,12 +10,13 @@ const planRiskPanel = (page: Page): Locator => detailRoot(page).locator('#drawer
 const conditionsTable = (page: Page): Locator => planRiskPanel(page).getByRole('region', { name: 'Conditions table', exact: true });
 export const riskToStop = (page: Page): Locator => conditionsTable(page).getByRole('cell').filter({ hasText: /^Risk to stop / });
 export const rewardToTarget = (page: Page): Locator => conditionsTable(page).getByRole('cell').filter({ hasText: /^Reward to target / });
-export const riskFigure = (page: Page, term: string): Locator =>
-  term === 'Worst case' || term === 'Max reward'
-    ? conditionsSummary(page).locator('li', { hasText: `${term}:` }).locator('.number')
-    : term === 'Risk to stop'
-      ? riskToStop(page)
-      : figureIn(planRiskPanel(page), term);
+export const riskFigure = (page: Page, term: string): Locator => {
+  if (term === 'Worst case' || term === 'Max reward') {
+    return conditionsSummary(page).locator('li', { hasText: `${term}:` }).locator('.number');
+  }
+  if (term === 'Risk to stop') return riskToStop(page);
+  return figureIn(planRiskPanel(page), term);
+};
 
 // The rail's Conditions card (W5, W6): one block per condition in Plan order, then Worst case and Max reward, or the note that stands in for them.
 export const conditionsCard = (page: Page): Locator => regionOf(page, 'Conditions');

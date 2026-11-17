@@ -633,3 +633,16 @@ Lane tier: `evidence/D08R/suite-runs/T8R.10-F1-*.txt`; unit 2049 passed, integra
 
 - Before: `.claude/scripts/with-browser-lock.sh npx playwright test e2e/d8p/cockpit.spec.ts` exit 1, 1 failed: B8P.1 at line 116 (`Plan and Risk cards`: received an extra "conditions" heading, not in the spec's HEADINGS list). The test stops there, before lines 144-145.
 - After: same command, exit 1, same single failure at line 116. Lines 144-145 are not reached, so the new texts are not yet exercised; the line 116 expectation is outside this task's lines (T8R.14 owns that file's other lines).
+
+## T8R.10-F1-B1
+
+`riskFigure` in `e2e/support/detail/rail-b.ts` is now a block with early returns instead of a nested ternary. The three outcomes are unchanged: Worst case and Max reward read the rail's summary list, Risk to stop reads `riskToStop`, anything else reads `figureIn(planRiskPanel(page), term)`.
+
+Specs that call `riskFigure` (grep of `e2e/`): `e2e/d4/breach-overrun.spec.ts`, `e2e/d4/responsive-a11y.spec.ts`. Both runs: `npm run build:faults && npm run build:releases`, then `.claude/scripts/with-browser-lock.sh npx playwright test <both specs> --reporter=list`.
+
+| Spec | Before (ca42db6b) | After |
+|---|---|---|
+| e2e/d4/breach-overrun.spec.ts | 1 failed at line 11 test (strict mode violation: the Worst case locator resolved to 2 elements) | identical failure |
+| e2e/d4/responsive-a11y.spec.ts | passed | passed |
+
+Totals both times: 1 failed, 5 passed. `npm run typecheck` exit 0, `npm run lint` exit 0.
