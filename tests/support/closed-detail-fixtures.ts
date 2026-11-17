@@ -1,6 +1,6 @@
 // Closed Trade Detail fixtures for the UI tests: T-A's Trade (PC1, PC2, X1, X2), derived by Trade
 // Analysis so every figure is the one the coordinator would show. A Closed Detail reads no Mark (A92).
-import type { ClosedTradeDetail, NarrativeItem, PositionChangeFact } from '../../src/app/types.ts';
+import type { ClosedTradeDetail, NarrativeItem, OpenTradeDetail, PositionChangeFact } from '../../src/app/types.ts';
 import { derive, evaluate } from '../../src/domain/trade-analysis/index.ts';
 import { referenceRecord } from '../../src/domain/trade-analysis/reference-trade.ts';
 import { closedLongStockSummary } from '../../src/domain/trade-summary.ts';
@@ -12,7 +12,8 @@ export interface ClosedDetailOptions extends Omit<OpenDetailOptions, 'storedLife
 
 export function closedDetailOf(positionChanges: readonly PositionChangeFact[], options: ClosedDetailOptions = {}): ClosedTradeDetail {
   const { closeReason, ...rest } = options;
-  const open = openDetailOf(positionChanges, { ...rest, storedLifecycle: 'Closed' });
+  // A Closed Detail has no open average (A236); openDetailOf never sets one, so the type leaves it out.
+  const open: Omit<OpenTradeDetail, 'openAverage'> = openDetailOf(positionChanges, { ...rest, storedLifecycle: 'Closed' });
   const derived = derive({ record: referenceRecord(positionChanges, 'Closed') });
   if (derived.kind !== 'Derived' || derived.terminalTime === null) throw new Error('incoherent fixture');
   const instrument = { kind: 'Stock', symbol: 'XYZ' } as const;

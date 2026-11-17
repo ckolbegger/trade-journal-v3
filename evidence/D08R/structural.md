@@ -94,3 +94,13 @@ Final shapes:
 - `OpenTradeDetail` (`src/coordinators/trade-views/trade-views.ts`): `marksColumns?: { today: { date: string; next: boolean }; yesterday: string }`; `settlementUnderlying?: { today?: SeriesPoint; yesterday?: SeriesPoint; change?: ReplayChange }`; `openAverage?: Rational`. `ClosedTradeDetail extends OpenTradeDetail`, so it inherits all three.
 - A Settlement Due Detail has no variant of its own: it is an `OpenTradeDetail` whose `settlement` array has items, so the fields sit on `OpenTradeDetail`. `ClosedTradeDetail` inherits `settlementUnderlying` and `openAverage` as optional; A236 says Closed has none, which T8R.23 should enforce by never filling them.
 - `src/app/types.ts` already re-exports `OpenTradeDetail` and `ClosedTradeDetail`, so no change was needed.
+
+## T8R.1-B1
+
+Bug task from ocr (medium, `trade-views.ts:329`): `ClosedTradeDetail extends OpenTradeDetail` inherited `openAverage?`, though A236 (section 1.3 of the D8R trade detail refactor plan) says a Closed Detail has none. Types only, lane TY.
+
+- Red: new `src/coordinators/trade-views/detail-types.test.ts` sets `openAverage` on a `Pick<ClosedTradeDetail, 'openAverage'>` under `@ts-expect-error`, and on an Open Detail with no error. Before the fix `npm run typecheck` failed: `detail-types.test.ts(8,5): error TS2578: Unused '@ts-expect-error' directive`.
+- Fix: `ClosedTradeDetail` declares `readonly openAverage?: never;`; the `closedDetail` parameter `open` is `Omit<OpenTradeDetail, 'current' | 'openAverage'>`.
+- File outside the task's lane, granted by the main session for this bug task (type-level change only): `tests/support/closed-detail-fixtures.ts`. `closedDetailOf` now types its Open Detail as `Omit<OpenTradeDetail, 'openAverage'>` (import added). No runtime change: `openDetailOf` never sets `openAverage`. (A destructure-away form failed lint as an unused variable.)
+- Results (each exit 0): `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint` (2 pre-existing warnings), `npm run lint:deps`; the new test passes under vitest; lane tier `.claude/scripts/full-suite.sh evidence/D08R T8R.1-B1 lane`: unit 2028 passed, integration 258 passed, 14 of 14 checks exit 0 (`evidence/D08R/suite-runs/T8R.1-B1-*.txt`).
+- Correction to the T8R.1 note above: `ClosedTradeDetail` no longer inherits a usable `openAverage` (it is `never`); it still inherits `settlementUnderlying` and `marksColumns`.

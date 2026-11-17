@@ -348,6 +348,8 @@ export interface ClosedCurrentEvaluation extends Pick<OpenCurrentEvaluation, 'co
 // `positions` holds no Open Lot.
 export interface ClosedTradeDetail extends OpenTradeDetail {
   readonly current: ClosedCurrentEvaluation;
+  // A236: a Closed Detail has no open average (declared so a reader of either form can name it).
+  readonly openAverage?: never;
   readonly terminalDisposition: DerivedTradeState['terminalDisposition'];
   // How a Closed option Trade's contracts were disposed, with both quantities (A108, A119); absent for stock.
   readonly optionDispositionTiming?: DerivedTradeState['optionDispositionTiming'];
@@ -613,7 +615,7 @@ export function feeReconciliationOf(derived: DerivedTradeState): FeeReconciliati
 const optionTimingOf = (analysis: TradeAnalysisRecord, derived: DerivedTradeState) =>
   analysis.plan.legs[0]!.instrument.kind === 'Option' ? { optionDispositionTiming: derived.optionDispositionTiming } : {};
 
-function closedDetail(open: Omit<OpenTradeDetail, 'current'>, current: ClosedCurrentEvaluation, analysis: TradeAnalysisRecord, derived: DerivedTradeState, closeReason: CloseReasonLabel | undefined): ClosedTradeDetail {
+function closedDetail(open: Omit<OpenTradeDetail, 'current' | 'openAverage'>, current:ClosedCurrentEvaluation, analysis: TradeAnalysisRecord, derived: DerivedTradeState, closeReason: CloseReasonLabel | undefined): ClosedTradeDetail {
   return {
     ...open,
     // The entered quantity, since no Lot is open (decision 48).
