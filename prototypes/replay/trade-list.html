@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trade List mockup: a Stop-to-Target meter in each row</title>
+<style>
+/* Colours, type, tabs, table and badges are copied from the app (src/ui/app.css) so the mockup reads as the real screen. */
+:root {
+  --ground: #f7f3ea; --card: #ffffff; --ink: #1c1b19; --muted: #55524b; --line: #d9d3c5; --focus: #1f5fbf;
+  --warning-ground: #fff4dd; --warning-line: #b26b00; --stop: #a3261b; --target: #1d6b34;
+  --info-ground: #e4edfa; --info-ink: #163b75; --info-line: #1f5fbf; --neutral-ground: #ece7da; --tint: #f3efe6;
+  --up-light: #c2e2c9; --dn-light: #f2c6c0; --ghost: #8f8a7e; --radius: 14px;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; color: var(--ink); background: var(--ground); line-height: 1.45;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--ground); }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+h1 { font-size: 1.5rem; margin: 0 0 0.75rem; }
+h2 { font-size: 1rem; margin: 0 0 0.4rem; }
+a { color: var(--ink); text-decoration: underline; }
+
+/* The mockup's own controls: not part of the proposed screen. */
+.mock { background: var(--tint); border-bottom: 2px dashed var(--muted); padding: 0.6rem 1rem; display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; align-items: center; font-size: 0.9rem; }
+.mock strong { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+.mock fieldset { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 0.3rem 0.4rem; align-items: center; }
+.mock legend { float: left; padding: 0; margin-right: 0.5rem; font-weight: 600; }
+.mock label { display: inline-flex; align-items: center; gap: 0.35rem; min-height: 44px; padding: 0 0.7rem; border: 2px solid var(--ink); border-radius: 999px; background: var(--card); cursor: pointer; font-weight: 600; }
+.mock label:has(input:checked) { background: var(--ink); color: #fff; }
+.mock label:has(input:focus-visible) { outline: 3px solid var(--focus); outline-offset: 2px; }
+.mock input { position: absolute; opacity: 0; pointer-events: none; }
+
+.shell { display: grid; grid-template-columns: 1fr; }
+.shell > * { min-width: 0; }
+.content { padding: 1rem; width: 100%; max-width: 960px; margin: 0 auto; padding-bottom: 5rem; }
+.nav { position: fixed; inset: auto 0 0 0; z-index: 2; display: flex; justify-content: space-around; background: var(--card); border-top: 1px solid var(--line); padding: 0.5rem; }
+.nav a { padding: 0.6rem 0.8rem; min-height: 44px; text-decoration: none; font-weight: 600; }
+.nav a[aria-current] { text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 2px; }
+.nav .wordmark, .nav .wide-link { display: none; }
+@media (min-width: 960px) {
+  .shell { grid-template-columns: 220px 1fr; }
+  .nav { position: sticky; inset: auto; top: 0; height: 100vh; flex-direction: column; justify-content: flex-start; border-top: none; border-right: 1px solid var(--line); padding: 1.5rem 1rem; grid-row: 1; }
+  .nav .wordmark { display: block; font-weight: 700; padding: 0 0.8rem 1rem; }
+  .nav .wide-link { display: block; }
+  .content { padding-bottom: 2rem; }
+}
+
+.tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+.tabs [role='tab'] { min-height: 44px; padding: 0.5rem 1.2rem; border: 2px solid var(--ink); border-radius: 999px; background: transparent; color: var(--ink); font: inherit; font-weight: 600; cursor: pointer; }
+.tabs [role='tab'][aria-selected='true'] { background: var(--ink); color: #fff; }
+
+.badge { display: inline-block; border: 1px solid var(--ink); border-radius: 999px; padding: 0 0.6rem; font-size: 0.85rem; font-weight: 600; white-space: nowrap; margin-left: 0.25rem; }
+.badge[data-tone='info'] { background: var(--info-ground); border-color: var(--info-line); color: var(--info-ink); }
+.badge[data-tone='warning'] { background: var(--warning-ground); border-color: var(--warning-line); color: var(--ink); }
+
+.number { text-align: right; font-variant-numeric: tabular-nums; }
+.table-scroll { overflow-x: auto; --pin: 6.5rem; background: var(--card); border-radius: var(--radius); }
+table.trades { width: 100%; border-collapse: collapse; }
+table.trades caption { text-align: left; font-weight: 700; padding: 0.5rem 0.6rem; width: fit-content; position: sticky; left: 0; }
+table.trades th, table.trades td { padding: 0.6rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+table.trades th:first-child, table.trades td:first-child { position: sticky; left: 0; z-index: 1; width: var(--pin); min-width: var(--pin); max-width: var(--pin); overflow-wrap: anywhere; background: var(--card); border-right: 1px solid var(--line); }
+table.trades th:nth-child(2), table.trades td:nth-child(2) { min-width: 11.5rem; }
+table.trades th { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); text-align: left; }
+table.trades th:first-child { overflow-wrap: normal; word-break: keep-all; }
+table.trades th.number { text-align: right; }
+table.trades td a { font-weight: 700; }
+.trade-line { display: block; color: var(--muted); font-size: 0.875rem; }
+.dated { display: block; color: var(--muted); font-size: 0.875rem; }
+@media (max-width: 959.98px) {
+  table.trades .wide-only { display: none; }
+  table.trades td:nth-child(n + 3) { white-space: nowrap; }
+  .dated { display: inline; }
+}
+@media (min-width: 960px) {
+  .trade-line, .narrow-only { display: none !important; }
+  .table-scroll { --pin: 7rem; }
+  table.trades th, table.trades td:nth-child(n + 3) { white-space: nowrap; }
+  table.trades td.pnl { min-width: 11rem; max-width: 11rem; white-space: normal; }
+}
+
+/* ---- The new part: the Stop-to-Target meter. ----
+   The track runs from the Trade's result at the Stop to its result at the Target (and always includes break-even).
+   Fill from break-even to the pointer: outlined = open, solid = banked. Green = profit, red = loss. Hatched = past the Stop or Target. */
+.meter { position: relative; display: block; height: 22px; margin-top: 5px; padding: 0 9px; cursor: default; }
+.m-in { position: relative; display: block; height: 100%; }
+.m-in > span { position: absolute; }
+.m-track { left: 0; right: 0; top: 6px; height: 10px; border-radius: 3px; background: var(--tint); box-shadow: inset 0 0 0 1px var(--line); }
+.m-open, .m-bank, .m-over { top: 6px; height: 10px; min-width: 2px; }
+.m-open.up { background: var(--up-light); box-shadow: inset 0 0 0 1.5px var(--target); }
+.m-open.dn { background: var(--dn-light); box-shadow: inset 0 0 0 1.5px var(--stop); }
+.m-bank.up { background: var(--target); }
+.m-bank.dn { background: var(--stop); }
+.m-over.s { background: repeating-linear-gradient(45deg, var(--stop) 0 1.5px, transparent 1.5px 4px), repeating-linear-gradient(-45deg, var(--stop) 0 1.5px, transparent 1.5px 4px), var(--dn-light); box-shadow: inset 0 0 0 1px var(--stop); }
+.m-over.t { background: repeating-linear-gradient(45deg, var(--target) 0 1.5px, transparent 1.5px 4px), var(--up-light); box-shadow: inset 0 0 0 1px var(--target); }
+.m-stop, .m-target { top: 2px; width: 3px; height: 18px; margin-left: -1.5px; border-radius: 1px; box-shadow: 0 0 0 1.5px var(--card); }
+.m-stop { background: var(--stop); }
+.m-target { background: var(--target); }
+.m-even { top: 3px; width: 2px; height: 16px; margin-left: -1px; background: var(--ink); box-shadow: 0 0 0 1px var(--card); }
+.key .sw > span { box-shadow: none; }
+.key .sw .m-open.up { box-shadow: inset 0 0 0 1.5px var(--target); }
+.key .sw .m-open.dn { box-shadow: inset 0 0 0 1.5px var(--stop); }
+.key .sw .m-over.s { box-shadow: inset 0 0 0 1px var(--stop); }
+.key .sw .m-over.t { box-shadow: inset 0 0 0 1px var(--target); }
+.key .sw .m-now { box-shadow: 0 0 0 2px var(--card); }
+.fig { white-space: nowrap; }
+.m-prev { top: 7px; width: 8px; height: 8px; margin-left: -4px; border-radius: 50%; background: var(--card); border: 2px solid var(--ghost); }
+.m-now { top: 4px; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; border: 3px solid var(--ink); background: var(--card); box-shadow: 0 0 0 2px var(--card); }
+.m-now.pinned { border-radius: 3px; }
+.meter.none .m-track { background: var(--neutral-ground); box-shadow: none; border: 1px dashed var(--muted); }
+body.no-meter .meter, body.no-meter .key { display: none; }
+
+.key { display: flex; flex-wrap: wrap; gap: 0.3rem 1.1rem; margin: 0.75rem 0 0; padding: 0; list-style: none; font-size: 0.85rem; color: var(--muted); }
+.key li { display: inline-flex; align-items: center; gap: 0.4rem; }
+.key .sw { position: relative; display: inline-block; width: 26px; height: 22px; flex: none; }
+.key .sw > span { position: absolute; }
+.key .sw .m-open, .key .sw .m-bank, .key .sw .m-over { left: 0; width: 26px; }
+.key .sw .m-stop, .key .sw .m-target, .key .sw .m-even, .key .sw .m-prev, .key .sw .m-now { left: 50%; }
+
+.tip { position: fixed; z-index: 5; max-width: 19rem; background: var(--ink); color: #fff; border-radius: 8px; padding: 0.5rem 0.7rem; font-size: 0.85rem; pointer-events: none; }
+.tip b { display: block; }
+.tip span { display: block; }
+
+.notes { margin-top: 1.5rem; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 1rem 1.25rem; font-size: 0.95rem; }
+.notes ul { margin: 0.25rem 0 0.75rem; padding-left: 1.2rem; }
+.notes li { margin: 0.2rem 0; }
+</style>
+</head>
+<body>
+<div class="mock" role="group" aria-label="Mockup controls, not part of the screen">
+  <strong>Mockup controls</strong>
+  <fieldset id="order">
+    <legend>Order</legend>
+    <label><input type="radio" name="order" value="activity" checked>Last Activity (today's order)</label>
+    <label><input type="radio" name="order" value="attention">Attention (Daily Review's order)</label>
+  </fieldset>
+  <fieldset id="show">
+    <legend>Meter</legend>
+    <label><input type="radio" name="show" value="on" checked>On</label>
+    <label><input type="radio" name="show" value="off">Off (today's list)</label>
+  </fieldset>
+  <a href="round-2.html">Replay prototypes, round 2</a>
+</div>
+
+<div class="shell">
+  <nav class="nav" aria-label="Primary">
+    <span class="wordmark">Trade Journal</span>
+    <a href="#" aria-current="page">Trades</a>
+    <a href="#">Review</a>
+    <a href="#">New Plan</a>
+    <a href="#" class="wide-link">Accounts</a>
+    <a href="#" class="wide-link">Backup</a>
+    <a href="#" class="wide-link">About</a>
+  </nav>
+  <main class="content">
+    <h1>Trades</h1>
+    <div role="tablist" aria-label="Trades by lifecycle" class="tabs">
+      <button type="button" role="tab" aria-selected="true">Open</button>
+      <button type="button" role="tab" aria-selected="false" aria-disabled="true" title="Not part of this mockup">Planned</button>
+      <button type="button" role="tab" aria-selected="false" aria-disabled="true" title="Not part of this mockup">Closed</button>
+    </div>
+    <div class="table-scroll" role="region" aria-label="Open Trades" tabindex="0">
+      <table class="trades">
+        <caption>Open Trades</caption>
+        <thead>
+          <tr>
+            <th scope="col">Underlying</th>
+            <th scope="col">Trade</th>
+            <th scope="col" class="number wide-only">Net cost</th>
+            <th scope="col" class="number wide-only" id="pnl-head">P&amp;L</th>
+            <th scope="col">Entry</th>
+            <th scope="col">Account</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <ul class="key" aria-label="How to read the meter">
+      <li><span class="sw"><span class="m-stop"></span></span>Result at the Stop</li>
+      <li><span class="sw"><span class="m-target"></span></span>Result at the Target</li>
+      <li><span class="sw"><span class="m-even"></span></span>Break-even</li>
+      <li><span class="sw"><span class="m-now"></span></span>P&amp;L now</li>
+      <li><span class="sw"><span class="m-prev"></span></span>Session before</li>
+      <li><span class="sw"><span class="m-open up"></span></span>Open profit</li>
+      <li><span class="sw"><span class="m-open dn"></span></span>Open loss</li>
+      <li><span class="sw"><span class="m-bank up"></span></span>Banked</li>
+      <li><span class="sw"><span class="m-over s"></span></span>Past the Stop</li>
+      <li><span class="sw"><span class="m-over t"></span></span>Past the Target</li>
+    </ul>
+
+    <section class="notes" aria-label="About this mockup">
+      <h2>About this mockup</h2>
+      <ul>
+        <li><b>New:</b> one meter per row, under the P&amp;L figure (inside the Trade cell on a phone). Everything else is the Open list as it is today.</li>
+        <li><b>The track</b> runs from the Trade's result at the Stop to its result at the Target, so every row has the same ends and rows can be compared down the list. Where the break-even tick sits shows the reward to risk: nearer the left means more reward than risk.</li>
+        <li><b>Hover a meter</b> for its figures. A screen reader hears the same words.</li>
+        <li><b>Order</b> is a mockup control. The app's Open list is in Last Activity order today; Attention is the Daily Review's order, where the meter explains why a Trade is near the top.</li>
+        <li><b>Twelve made-up Trades</b>, Marked at the Fri Nov 13 close. Rows worth a look: DALE (past the Stop), HELO (past the Target), GALT (half sold: the Stop now locks in a profit), LUMA (a banked profit and an open loss), IRIS (no Mark), JUNO (entered that day).</li>
+      </ul>
+    </section>
+  </main>
+</div>
+<div class="tip" id="tip" hidden></div>
+
+<script>
+/* Twelve open Trades, Marked at the Fri Nov 13 close. Dollars.
+   pnl: Current Marked Trade P&L (banked + open). oneR, reward: risk and reward at entry.
+   atStop, atTarget: the Trade's result if what is open now went out at the Stop or at the Target.
+   banked: realized so far. prev: the P&L at the Thu Nov 12 close (absent if the Trade was not open then). */
+const TRADES = [
+  { und: 'AXIO', sum: 'Long 100 shares @ $50.00', cost: '$5,000.00', pnl: 240, oneR: 300, reward: 600, atStop: -300, atTarget: 600, banked: 0, prev: 150, entry: 'Resolved · 100 of 100', acct: 'Fidelity — Taxable', last: '2026-11-09T10:12' },
+  { und: 'BREN', sum: 'Long 2 Dec 18 $100 Call', cost: '$840.00', pnl: -310, oneR: 420, reward: 1260, atStop: -420, atTarget: 1260, banked: 0, prev: -180, entry: 'Resolved · 2 of 2', acct: 'Fidelity — Taxable', last: '2026-11-12T09:40' },
+  { und: 'CORV', sum: 'Long 1 Dec 18 $80 Put', cost: '$310.00', pnl: 120, oneR: 155, reward: 465, atStop: -155, atTarget: 465, banked: 0, prev: 165, entry: 'Resolved · 1 of 1', acct: 'Schwab — IRA', last: '2026-11-10T14:31' },
+  { und: 'DALE', sum: 'Short 2 Dec 18 $57.50 Put', cost: '$360.00 credit', pnl: -540, oneR: 400, reward: 300, atStop: -400, atTarget: 300, banked: 0, prev: -350, entry: 'Resolved · 2 of 2', acct: 'Schwab — IRA', last: '2026-11-05T11:02' },
+  { und: 'GALT', sum: 'Long 150 shares @ $32.00', cost: '$4,800.00', pnl: 990, oneR: 600, reward: 1800, atStop: 150, atTarget: 1350, banked: 450, prev: 870, entry: 'Resolved · 150 of 300', acct: 'Fidelity — Taxable', last: '2026-11-13T13:48' },
+  { und: 'HELO', sum: 'Long 3 Nov 20 $45 Call', cost: '$720.00', pnl: 810, oneR: 360, reward: 720, atStop: -360, atTarget: 720, banked: 0, prev: 640, entry: 'Resolved · 3 of 3', acct: 'Fidelity — Taxable', last: '2026-11-03T09:55' },
+  { und: 'IRIS', sum: 'Long 200 shares @ $18.50', cost: '$3,700.00', pnl: null, oneR: 400, reward: 800, atStop: -400, atTarget: 800, banked: 0, prev: -84, entry: 'Resolved · 200 of 200', acct: 'Schwab — IRA', last: '2026-10-30T15:20' },
+  { und: 'JUNO', sum: 'Long 1 Dec 18 $210 Call', cost: '$630.00', pnl: -6, oneR: 315, reward: 945, atStop: -315, atTarget: 945, banked: 0, prev: null, entry: 'Resolved · 1 of 1', acct: 'Fidelity — Taxable', last: '2026-11-13T10:05' },
+  { und: 'KITE', sum: 'Long 80 shares @ $121.00', cost: '$9,680.00', pnl: -392, oneR: 640, reward: 1280, atStop: -640, atTarget: 1280, banked: 0, prev: -470, entry: 'Resolved · 80 of 80', acct: 'Schwab — IRA', last: '2026-11-06T12:15' },
+  { und: 'LUMA', sum: 'Long 3 Dec 18 $30 Call', cost: '$600.00', pnl: -30, oneR: 400, reward: 1200, atStop: -150, atTarget: 1050, banked: 150, prev: 60, entry: 'Resolved · 3 of 4', acct: 'Fidelity — Taxable', last: '2026-11-12T11:30' },
+  { und: 'MERA', sum: 'Long 50 shares @ $88.00', cost: '$4,400.00', pnl: 95, oneR: 250, reward: 500, atStop: -250, atTarget: 500, banked: 0, prev: 120, entry: 'Resolved · 50 of 50', acct: 'Schwab — IRA', last: '2026-11-04T10:44' },
+  { und: 'NOVA', sum: 'Long 2 Dec 18 $15 Put', cost: '$220.00', pnl: -44, oneR: 110, reward: 330, atStop: -110, atTarget: 330, banked: 0, prev: -20, entry: 'Resolved · 2 of 2', acct: 'Fidelity — Taxable', last: '2026-10-29T09:50' },
+];
+
+const esc = (s) => String(s).replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+const money = (v) => `$${Math.abs(v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const signed = (v) => `${v < 0 ? '−' : '+'}${money(v)}`;
+const rOf = (t, v) => `${v < 0 ? '−' : '+'}${Math.abs(v / t.oneR).toFixed(2)}R`;
+const pnlText = (t, v) => `${signed(v)} · ${rOf(t, v)}`;
+const pct = (f) => `${Math.round(f * 100)}%`;
+
+const pastStop = (t) => t.pnl != null && t.pnl < t.atStop;
+const pastTarget = (t) => t.pnl != null && t.pnl > t.atTarget;
+
+/* The Daily Review's order, as the app works it out (attention.ts): past a Stop or Target first, then no Mark, then by the
+   larger share of the entry risk or the entry reward used up; on a tie a losing side goes before a winning one, then Last Activity. */
+function attention(t) {
+  if (t.pnl == null) return { band: 2, share: 0, losing: false };
+  const losing = (t.oneR - (t.pnl - t.atStop)) / t.oneR;
+  const winning = (t.reward - (t.atTarget - t.pnl)) / t.reward;
+  const band = pastStop(t) || pastTarget(t) ? 1 : Math.max(losing, winning) > 0 ? 3 : 4;
+  return losing >= winning ? { band, share: losing, losing: true } : { band, share: winning, losing: false };
+}
+const byActivity = (a, b) => (a.last < b.last ? 1 : -1);
+function byAttention(a, b) {
+  const x = attention(a);
+  const y = attention(b);
+  return x.band - y.band || y.share - x.share || Number(y.losing) - Number(x.losing) || byActivity(a, b);
+}
+
+/* Where the pointer stands, in words: for the hover and for a screen reader. */
+function where(t) {
+  if (t.pnl == null) return 'No Mark for Fri Nov 13: the P&L cannot be placed.';
+  if (pastStop(t)) return `Past the Stop by ${money(t.atStop - t.pnl)}.`;
+  if (pastTarget(t)) return `Past the Target by ${money(t.pnl - t.atTarget)}.`;
+  if (Math.abs(t.pnl) < t.oneR * 0.03) return 'At break-even.';
+  if (t.pnl < 0) return `${pct(t.pnl / t.atStop)} of the way from break-even to the Stop.`;
+  return `${pct(t.pnl / t.atTarget)} of the way from break-even to the Target.`;
+}
+function figures(t) {
+  const lines = [];
+  if (t.pnl != null) lines.push(`P&L ${pnlText(t, t.pnl)}`);
+  lines.push(`Result at the Stop ${signed(t.atStop)}`, `Result at the Target ${signed(t.atTarget)}`);
+  if (t.banked) lines.push(`Banked ${signed(t.banked)}`);
+  if (t.prev != null) lines.push(`${t.pnl == null ? 'Thu Nov 12 close' : 'Session before'} ${signed(t.prev)}`);
+  return lines;
+}
+
+function meter(t) {
+  // The track always holds the Stop, break-even and the Target. A P&L past a rail stretches it that way, by a third of its length at most.
+  const lo0 = Math.min(0, t.atStop);
+  const hi0 = Math.max(0, t.atTarget);
+  const p = t.pnl == null ? 0 : t.pnl;
+  const lo = Math.max(Math.min(lo0, p), lo0 - (hi0 - lo0) / 3);
+  const hi = Math.min(Math.max(hi0, p), hi0 + (hi0 - lo0) / 3);
+  const f = (v) => Math.max(0, Math.min(1, (v - lo) / (hi - lo)));
+  const at = (v) => `left:${(f(v) * 100).toFixed(2)}%`;
+  const seg = (a, b, cls) => `<span class="${cls}" style="left:${(Math.min(f(a), f(b)) * 100).toFixed(2)}%;width:${(Math.abs(f(b) - f(a)) * 100).toFixed(2)}%"></span>`;
+  const label = `${where(t)} ${figures(t).join(', ')}.`;
+  let s = `<span class="meter${t.pnl == null ? ' none' : ''}" role="img" aria-label="${esc(label)}" data-und="${t.und}"><span class="m-in"><span class="m-track"></span>`;
+  if (t.pnl != null) {
+    if (Math.abs(t.pnl) >= 0.005) s += seg(0, t.pnl, `m-open ${t.pnl > 0 ? 'up' : 'dn'}`);
+    if (t.banked) s += seg(0, t.banked, `m-bank ${t.banked > 0 ? 'up' : 'dn'}`);
+    // Past a rail: hatched from the rail to the P&L (the Stop can sit right of break-even once profit is banked).
+    if (pastStop(t)) s += seg(t.pnl, t.atStop, 'm-over s');
+    if (pastTarget(t)) s += seg(t.atTarget, t.pnl, 'm-over t');
+  }
+  s += `<span class="m-stop" style="${at(t.atStop)}"></span><span class="m-target" style="${at(t.atTarget)}"></span><span class="m-even" style="${at(0)}"></span>`;
+  if (t.prev != null) s += `<span class="m-prev" style="${at(t.prev)}"></span>`;
+  if (t.pnl != null) {
+    // A square pointer says the P&L is past a rail, as the Review card's slider does today.
+    s += `<span class="m-now${pastStop(t) || pastTarget(t) ? ' pinned' : ''}" style="${at(t.pnl)}"></span>`;
+  }
+  return s + '</span></span>';
+}
+
+function badges(t) {
+  let s = '';
+  if (t.pnl == null) s += ' <span class="badge" data-tone="warning">Mark missing</span>';
+  if (pastStop(t)) s += ' <span class="badge" data-tone="warning">Stop breached</span>';
+  if (pastTarget(t)) s += ' <span class="badge" data-tone="info">Target reached</span>';
+  return s;
+}
+function pnlCell(t) {
+  if (t.pnl != null) return `<span class="fig">${esc(pnlText(t, t.pnl))}</span>`;
+  return `<a href="#">Mark missing: ${t.und}, Fri Nov 13</a> <span class="dated">Thu Nov 12 close <span class="fig">${esc(pnlText(t, t.prev))}</span></span>`;
+}
+
+const state = { order: 'activity', show: 'on' };
+function render() {
+  document.body.classList.toggle('no-meter', state.show === 'off');
+  document.getElementById('pnl-head').textContent = state.show === 'off' ? 'P&L' : 'P&L · Stop to Target';
+  const rows = TRADES.slice().sort(state.order === 'attention' ? byAttention : byActivity);
+  document.getElementById('rows').innerHTML = rows.map((t) => `<tr data-und="${t.und}">
+    <td><a href="#">${t.und}</a></td>
+    <td>${esc(t.sum)}${badges(t)} <span class="trade-line">Net cost ${esc(t.cost)} · P&amp;L ${pnlCell(t)}</span><span class="narrow-only">${meter(t)}</span></td>
+    <td class="number wide-only">${esc(t.cost)}</td>
+    <td class="number wide-only pnl">${pnlCell(t)}${meter(t)}</td>
+    <td>${esc(t.entry)}</td>
+    <td>${esc(t.acct)}</td>
+  </tr>`).join('');
+}
+document.querySelectorAll('.mock input').forEach((el) => el.addEventListener('change', () => { state[el.name] = el.value; render(); }));
+
+/* Hover: the meter's figures (mouse only; the same words are the meter's accessible name). */
+const tip = document.getElementById('tip');
+document.addEventListener('pointermove', (e) => {
+  const m = e.pointerType === 'mouse' && e.target.closest ? e.target.closest('.meter[data-und]') : null;
+  if (!m) { tip.hidden = true; return; }
+  const t = TRADES.find((x) => x.und === m.dataset.und);
+  tip.innerHTML = `<b>${esc(where(t))}</b>${figures(t).map((l) => `<span>${esc(l)}</span>`).join('')}`;
+  tip.hidden = false;
+  const w = tip.offsetWidth;
+  tip.style.left = `${Math.max(8, Math.min(window.innerWidth - w - 8, e.clientX - w / 2))}px`;
+  tip.style.top = `${e.clientY + 18 + tip.offsetHeight > window.innerHeight ? e.clientY - tip.offsetHeight - 12 : e.clientY + 18}px`;
+});
+render();
+</script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 # Replay: what it must do in the daily review
 
-A running record of the replay interview (started 2026-11-15, from `plan/D09-replay-prototype-handoff.md`). It is research: it changes no product code, tests or plan. The page it leads to is `prototypes/replay/index.html` (round 1). After the user's review a second set was built at `prototypes/replay/round-2.html`; see "Round 2" near the end, which also holds the current recommendation.
+A running record of the replay interview (started 2026-11-15, from `plan/D09-replay-prototype-handoff.md`). It is research: it changes no product code, tests or plan. The page it leads to is `prototypes/replay/index.html` (round 1). After the user's review a second set was built at `prototypes/replay/round-2.html`; see "Round 2" near the end, which also holds the current recommendation. A mockup of the meter in the Open list followed at `prototypes/replay/trade-list.html`; see "After round 2".
 
 ## Settled before the interview (handoff section 2)
 
@@ -308,8 +308,64 @@ Round 2 has no expiration payoff line in replay, so the UI contract's sentence (
 - DALE bullish in Gauge: a low ceiling and a far floor, on one line.
 - On a phone, or a narrow window: Corridor and Ribbon side by side in two tabs.
 
+## After round 2: the meter outside the replay (2026-11-16)
+
+Mockup: `prototypes/replay/trade-list.html` (open it in a browser; no server). Research only: no product code, test or plan was changed.
+
+### The user's first impressions of round 2
+
+Given before a fuller study, so not yet a decision:
+
+- Loves Corridor; likes Balance a lot; Gauge is very good; so is Ribbon; Inset worked better than expected.
+- Share equivalent did not work as a chart, "but displaying it as information text might work".
+- This is warmer toward Balance and Inset than the recommendation after round 2 (which says not to build them). The recommendation stands as the planner's view until the user has studied the page.
+
+### The idea (the user's)
+
+Use the Gauge's meter on the Trade Detail screen (the user said "Position Detail"), with a small version of it in each row of the trade list, as a visual cue to why the Trades are ordered as they are.
+
+### What the app has today
+
+- **A small meter already exists.** Each Daily Review card has a Stop-to-Target slider (`StopTargetSlider`): a dot at the Mark, a tick at entry, a square dot when past the Stop or the Target, and no visible words. The list meter is an upgrade of this, not a new part.
+- **The Open list is ordered by Last Activity**, most recent first. A meter there is a status cue; it does not explain that order.
+- **The Daily Review's cards are ordered by attention**: blockers, then past a Stop or Target, then missing evidence, then the larger share of the entry risk or entry reward used up, a losing side before a winning one. There the meter does explain the order.
+
+### What the mockup shows
+
+The Open list as it is today, with one meter per row. Twelve made-up Trades (stock and single options, the two kinds the app's summary line words today), Marked at the Fri Nov 13 close. Two mockup controls sit above the screen: the order (Last Activity or Attention) and the meter on or off, to compare with today's list.
+
+### Decisions the planner made while building the mockup (for the user's review)
+
+| # | Decision | Why |
+|---|---|---|
+| M1 | **No new column.** At desktop width the meter sits under the figure in the P&L column; on a phone it sits under the figures line in the Trade cell. | A separate column pushed the Account column off a 1280 px screen. The figure and the meter belong together. |
+| M2 | **The track runs from the Trade's result at the Stop to its result at the Target and always includes break-even.** | Every row has the same ends, so rows compare down the list. Where the break-even tick sits shows the reward to risk. Once profit is banked the Stop's marker can sit right of break-even (GALT), which shows a locked-in profit. |
+| M3 | **A P&L past a rail stretches the track that way, by a third of its length at most**, hatched from the rail to the P&L, with a square pointer. | The distance past the Stop is the figure that matters on that row; the square pointer keeps the slider's existing meaning. |
+| M4 | **Fill from break-even to the pointer: outlined is open, solid is banked; green is profit, red is loss.** | The round 2 rule that colour follows the result, at row size. |
+| M5 | **A faint ring marks the P&L at the session before.** No line over time. | A line needs its own scale per row, so rows could not be compared; the ring shows which way the Trade moved. |
+| M6 | **The meter shows no words.** Hovering gives its figures; the same words are its accessible name. The signed P&L figure is beside it. | The same rule as today's slider; colour and position never carry the meaning alone. |
+| M7 | **No Mark: a dashed, empty track**, with the faint ring at the last session that had one. | Unavailable stays Unavailable; nothing is drawn as if it were current. |
+| M8 | **The order control is the mockup's, and it opens in today's order.** | Whether the Open list gets an attention order is the user's decision. |
+
+### What the mockup showed
+
+- **In attention order the meter explains the order for a Trade that has not scaled out.** The longest fills toward an end are at the top.
+- **It does not for a Trade that has scaled out.** LUMA (one of four contracts sold at a profit, the rest slightly under water) sorts high, because 70% of its entry risk is gone, while its pointer sits just left of break-even. Today's slider has the same gap between where the dot is and how the card is sorted. D9's planning should say which the trader is meant to read.
+- **Row height grows by about 27 px** at desktop width (a one-line row becomes two). On a phone the row gains one line.
+
+### How it was checked
+
+Playwright at 1280, 375 and 320 px, both orders, meter on and off: no errors, no sideways page scroll, twelve meters shown, the table fits its region at 1280 px (on phones its columns scroll inside the region beside the pinned Underlying, as in the app). The hover and the order radios by keyboard were checked at 1280 px, and screenshots were read at 1280 and 375 px.
+
+### Not done
+
+- **Trade Detail's meter is not mocked up.** The user asked for the list. Round 2's Gauge tab shows the larger meter.
+- **This is outside D9's replay.** Putting a meter in the lists or on Trade Detail is a plan change the user has not yet decided.
+
 ## Open points
 
 Round 2 adds: whether Ribbon is built as well as Corridor; whether the meter is used in the Review card.
+
+After round 2: whether the meter goes on Trade Detail, in the Open list, and in place of the Review card's slider; whether the Open list gets an attention order; what the meter and the order should say about a Trade that has scaled out; whether Share equivalent is shown as text.
 
 Left to D9's planning: how a moved Stop is drawn; the interest rate used for implied volatility; whether the dollar split and the payoff line in replay are built; and the round trip between the Review and Price History.
