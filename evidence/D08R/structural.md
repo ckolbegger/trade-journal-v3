@@ -1176,3 +1176,9 @@ Node integration suite, `tests/integration/d8r/` (`detail.test.ts`, `columns.tes
 - I8R.7's measured counts match D8's baseline with no adjustment: Open Detail of O-C3 and of O-S2X, 20 requests each (D7S_DETAIL); Settlement Due Detail of O-S2X, the same 20 plus one `observations` `byInstrumentDate` `getAll` (the Underlying's series).
 - Deviation from the plan's wording for I8R.1: "Fri 10-16 12:00 with Friday's call Mark missing" cannot give a dated line, since at 12:00 the read session's Marks are Thursday's and are present. The case reads Fri 18:00 (after Friday's close, no Friday Mark for the call), where the figures are Unavailable and the dated line carries Thursday's distances, and also reads Fri 12:00.
 - Each case's first-run pass and mutation are in `tdd-log/T8R.26.md`.
+
+## T8R.26 merged
+
+T8R.26 was rebased to `77ee17e1`. The lane tier was rerun as `T8R.26-rebased`: unit 2095, integration 269, and 14 of 14 checks. The branch was then fast-forwarded to `16876019`.
+
+Next is a full-tier run (`wave2-full1`, browser full). After it, T8R.25 (the checkpoint critic) runs beside T8R.27 (the browser suite).

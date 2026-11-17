@@ -695,7 +695,7 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T8R.23 | 1 | BV | Done | `7d5d1543` |
 | T8R.24 | 2 | WD | Done | `80d37dd1` |
 | T8R.25 | 2 | — | Not started | |
-| T8R.26 | 2 | NS | Committed `dba5c934` (from `ff3b517e`) | |
+| T8R.26 | 2 | NS | Done | `77ee17e1` |
 | T8R.27 | 2 | — | Not started | |
 | T8R.28 | 2 | — | Not started | |
 
