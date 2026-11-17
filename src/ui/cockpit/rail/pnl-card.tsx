@@ -1,7 +1,7 @@
 import type { PnlCardProps } from './pnl.types.ts';
 
 // The rail's P&L card (W3, W4): the Trade P&L figure, its change line, how much of the Trade is open, and a Closed Trade's Result rows.
-export function PnlCardView({ name, figure, tone, line, lineTone, openLine, result }: PnlCardProps) {
+export function PnlCardView({ name, figure, tone, line, lineTone, datedLine, datedTone, openLine, result }: PnlCardProps) {
   return (
     <section className="card pnl-card" aria-label={name}>
       <p className="pnl-figure number" data-tone={tone}>
@@ -12,7 +12,12 @@ export function PnlCardView({ name, figure, tone, line, lineTone, openLine, resu
           {line}
         </p>
       )}
-      {openLine && <p className="pnl-open">{openLine}</p>}
+      {datedLine && (
+        <p className="pnl-dated number" data-tone={datedTone}>
+          {datedLine}
+        </p>
+      )}
+      {openLine &&<p className="pnl-open">{openLine}</p>}
       {result && (
         <dl className="pnl-result">
           {result.map(({ label, value }) => (

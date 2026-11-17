@@ -11,6 +11,9 @@ export interface PnlCardProps {
   // unavailable Trade P&L (no change line).
   readonly line?: string;
   readonly lineTone?: Tone;
+  // With no Trade P&L today and a dated line: "+$340.00 at the Tue Nov 10 Marks" ("Mark" for a stock Trade), under the figure (W22).
+  readonly datedLine?: string;
+  readonly datedTone?: Tone;
   // "1 of 2 contracts open", "100 of 100 shares open"; absent on an incoherent Detail.
   readonly openLine?: string;
   // A Closed Trade's Result rows, in their existing labels.

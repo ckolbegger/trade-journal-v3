@@ -3,7 +3,7 @@ import { cleanup, render, screen } from '@testing-library/react';
 import { createElement } from 'react';
 import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it } from 'vitest';
-import { incoherentDetailOf, openDetailOf, PC1 } from '../../../../tests/support/open-detail-fixtures.ts';
+import { incoherentDetailOf, openDetailOf, PC1, PC2, PC3, pc3Excess } from '../../../../tests/support/open-detail-fixtures.ts';
 import { optionClosedDetail, optionOpenDetail, optionPlannedDetail } from '../../../../tests/support/option-detail-fixtures.ts';
 import { ocChange, OC_E1, OC_PC1, OC_PC2, OC_X1, OS_ES, OS_S1, osChange } from '../../../../tests/support/option-trade-fixtures.ts';
 import { plannedDetail } from '../../../../tests/support/views-fixtures.ts';
@@ -71,6 +71,14 @@ describe('identity card (W2)', () => {
     expect(document.querySelector('.badge')?.textContent).toBe('Long Stock, Open');
     expect(screen.queryByText(/^Strike /)).toBeNull();
     expect(screen.queryByText(/^Expire[sd] /)).toBeNull();
+  });
+
+  it('should not show the Deviation active badge, gone', () => {
+    // A recorded Active Deviation is on the Detail; the badge that once named it is gone, so only the lifecycle badge stands.
+    show(openDetailOf([PC1, PC2, PC3], { recordedDeviations: [pc3Excess] }));
+    expect(document.querySelectorAll('.badge')).toHaveLength(1);
+    expect(screen.getByText('Long Stock, Open', { selector: '.badge' })).toBeTruthy();
+    expect(screen.queryByText(/Deviation/)).toBeNull();
   });
 
   it('should show the expiration line on a Planned option Trade', () => {

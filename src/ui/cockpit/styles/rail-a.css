@@ -15,6 +15,7 @@
 }
 
 .pnl-line,
+.pnl-dated,
 .pnl-open {
   color: var(--muted);
 }

@@ -67,6 +67,35 @@ describe('P&L card (W3, W4)', () => {
     expect(within(card).getByText('1 of 2 contracts open')).toBeTruthy();
   });
 
+  it('should show the dated line at the Thu Oct 15 Marks under the reason when the current figure is unavailable', () => {
+    // O-C3 on Friday 10-16 with Friday's call Mark missing: Thursday's Marks value the Position at +$218.05 (W22, A231).
+    const missing = optionOpenDetail('O-C', [OC_PC1, OC_PC2, OC_X1], { tradingDate: '2026-10-16', closeInstant: '2026-10-16T20:00:00Z' });
+    const dated = { ...missing, current: { ...missing.current, datedLine: { tradingDate: '2026-10-15', evaluation: { ...missing.current.evaluation, currentMarkedPnl: cents(21805n) } } } };
+    const card = show(dated, sinceMonday);
+    expect(card.querySelector('.pnl-figure')?.textContent).toBe('Mark missing: XYZ Nov 20 $55 Call, Fri Oct 16');
+    const line = card.querySelector('.pnl-dated');
+    expect(line?.textContent).toBe('+$218.05 at the Thu Oct 15 Marks');
+    expect(line?.getAttribute('data-tone')).toBe('gain');
+    expect(line?.previousElementSibling).toBe(card.querySelector('.pnl-figure'));
+    expect(within(card).getByText('1 of 2 contracts open')).toBeTruthy();
+    cleanup();
+
+    // No dated line: only the reason, as before.
+    expect(show(missing, sinceMonday).querySelector('.pnl-dated')).toBeNull();
+    cleanup();
+
+    // A figure is available today: the card shows it and no dated line.
+    expect(show(oc3(), sinceMonday).querySelector('.pnl-dated')).toBeNull();
+  });
+
+  it('should say Mark for a stock Trade dated line', () => {
+    const missing = openDetailAt([PC1, PC2], tuesday({ kind: 'Missing' }));
+    const dated = { ...missing, current: { ...missing.current, datedLine: { tradingDate: '2026-10-12', evaluation: { ...missing.current.evaluation, currentMarkedPnl: cents(-4000n) } } } };
+    const line = show(dated).querySelector('.pnl-dated');
+    expect(line?.textContent).toBe('−$40.00 at the Mon Oct 12 Mark');
+    expect(line?.getAttribute('data-tone')).toBe('loss');
+  });
+
   it('should show "—" and "Trade P&L once the Mon Oct 12 session ends" before any Marks, and the Planned words on a Planned Detail', () => {
     // Shares bought after the close the figures are valued at, with no earlier Mark: nothing is marked yet, and Trade Views says when the
     // first Marks arrive (revision 90).

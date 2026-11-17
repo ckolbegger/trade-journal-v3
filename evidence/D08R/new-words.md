@@ -7,3 +7,4 @@ Screen texts no approved row covers (decision 116 (2)). Each is the wording the 
 | A Mark cell's accessible name: "57.40. Manual · saved 2026-10-14 17:00" (the Mark, ". ", then W33's provenance) | T8R.4 | Trade Detail, Price History | W33 |
 | A corrected Mark cell's accessible name and hover text: "… Manual · saved 2026-10-14 17:00. Corrected: <reason>" (". " before "Corrected:") | T8R.4 | Trade Detail, Price History | W33 |
 | A corrected Mark cell's visible marker: the word "Corrected" in a badge on its own line under the price, with no reason beside it (the reason is in the hover text and accessible name) | T8R.4-F1 | Trade Detail, Price History | W33; A241 |
+| The dated line's tone and place: "−$40.00 at the Mon Oct 12 Mark" in the figure's gain or loss colour, in a line of its own under the reason (W22 gives the words; the colour and the line are new) | T8R.13 | Trade Detail, rail, P&L card | W22 |

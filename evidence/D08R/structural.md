@@ -272,3 +272,7 @@ Rebased `d08r/ba` onto `claude-opus-5.5`: T8R.18 `682bd8fb` → `69582aaa`. The 
 ocr on `4f54cea2` (session 66457317-1c8a-4b47-afda-466530310994, gpt-6.1-sol, 11 files reviewed, 0 comments; raw output `ocr/T8R.13-4f54cea2.json`): **No findings.** Reviewer notes (not ocr findings): `datedLineProps` reads `view.current.datedLine` and formats it, so ADR 0001 holds. It says "Marks" when the first plan leg is an Option. When the expiration is due, `openProps` returns before the dated line is spread in, so an expiration-due Trade shows no dated line. Neither A231 nor the cases cover that path.
 
 T8R.13 notes (from its hand-back): the rail CSS lives at `src/ui/cockpit/styles/rail-a.css`, which is the lane's file at the real path. `PnlCardProps` gains `datedLine?` and `datedTone?`; `IdentityCardProps` loses `deviationActive`. The Deviation active assertions in `TradeDetail.test.tsx` and `Placed.test.tsx` now assert absence, as the task retires that badge. No browser spec changed. Lane tier: unit 2047, integration 258, 14 of 14 checks.
+
+## T8R.13 Rail: no Deviation active badge; the P&L card's dated line
+
+Behavioral task; its red and green rows are in `tdd-log/T8R.13.md`. The badge assertions in `TradeDetail.test.tsx` (the "Deviation active" block) and `trade-detail/Placed.test.tsx` now prove absence. The rail styles live in `src/ui/cockpit/styles/rail-a.css` (the brief named `src/ui/styles/`). No browser spec changed, so none was run.

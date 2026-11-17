@@ -34,6 +34,16 @@ function openLineOf(view: PlannedTradeDetail | OpenTradeDetail): string {
   return `${quantity(held)} of ${leg?.quantity ?? ''} shares open`;
 }
 
+// W22: with no figure today, the Position's value at the last session with Marks, from the view's dated line: "+$340.00 at the Tue Nov 10 Marks"
+// ("Mark" for a stock Trade). A dated figure that is itself unavailable shows nothing.
+function datedLineProps(view: OpenTradeDetail): Pick<PnlCardProps, 'datedLine' | 'datedTone'> {
+  const dated = view.current.datedLine;
+  const pnl = dated?.evaluation.currentMarkedPnl;
+  if (!dated || pnl?.kind !== 'Value') return {};
+  const noun = view.plan.legs[0]?.instrument.kind === 'Option' ? 'Marks' : 'Mark';
+  return { datedLine: `${signed(money)(pnl.value)} at the ${shortDate(dated.tradingDate)} ${noun}`, ...toneProps('datedTone', pnl.value) };
+}
+
 function openProps(view: OpenTradeDetail, replay: PnlReplay | undefined, timeZone: string | undefined): Omit<PnlCardProps, 'name'> {
   const pnl = view.current.evaluation.currentMarkedPnl;
   const change = replay?.sessions.at(-1)?.change;
@@ -45,6 +55,7 @@ function openProps(view: OpenTradeDetail, replay: PnlReplay | undefined, timeZon
   if (due && pnl.kind === 'Unavailable') return { figure: settlementDueFigure(due, timeZone), line: 'Trade P&L once the expiration is recorded' };
   return {
     figure: calculation(pnl, money, timeZone),
+    ...(pnl.kind !== 'Value' && datedLineProps(view)),
     ...(pnl.kind === 'Value' && toneProps('tone', pnl.value)),
     ...(pnl.kind === 'Value' && change && { line: `${signed(money)(change.dollars)} since ${shortDate(change.since)}`, ...toneProps('lineTone', change.dollars) }),
     openLine: openLineOf(view),

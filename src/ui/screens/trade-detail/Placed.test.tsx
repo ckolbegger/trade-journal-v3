@@ -136,7 +136,7 @@ describe("Trade Detail: the legacy blocks' figures in one place (revision 96)", 
     expect(summaryIn('plan-and-risk')).toBeNull();
   });
 
-  it('should show Net cost in the Position drawer, the Entry status in Entry Quality, and Deviation active beside the lifecycle badge', async () => {
+  it('should show Net cost in the Position drawer, the Entry status in Entry Quality, and no Deviation active badge in the identity card', async () => {
     const user = userEvent.setup();
     const netCostOf = async (view: Parameters<typeof renderView>[0]) => {
       renderView(view);
@@ -165,9 +165,8 @@ describe("Trade Detail: the legacy blocks' figures in one place (revision 96)", 
 
     renderView(openDetailOf([PC1, PC2, PC3], { recordedDeviations: [pc3Excess] }));
     const identity = (await screen.findByRole('heading', { name: 'XYZ', level: 1 })).closest('header')!;
-    const deviation = within(identity).getByText('Deviation active');
-    expect(deviation.getAttribute('data-tone')).toBe('warning');
-    expect(deviation.parentElement).toBe(within(identity).getByText('Long Stock, Open', { selector: '.badge' }).parentElement);
+    expect(within(identity).queryByText('Deviation active')).toBeNull();
+    expect(within(identity).getByText('Long Stock, Open', { selector: '.badge' })).toBeTruthy();
     cleanup();
 
     renderView(openDetailOf([PC1, PC2]));

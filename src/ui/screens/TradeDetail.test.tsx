@@ -250,13 +250,10 @@ describe('Trade Detail: the replay read (P95)', () => {
     for (const term of ['Expected Mark Date', 'Mark', 'Source', 'Saved']) expect(onePlace(term), term).toBe('drawer-panel-today');
     cleanup();
 
-    // "Deviation active" is beside the lifecycle badge in the identity card, once.
+    // The "Deviation active" badge is gone from the identity card (W22, T8R.13); a Deviation shows in Plan and Risk (T8R.11).
     show({ view: openDetailAt([PC1, PC2, PC3], { instrumentKey: 'XYZ', tradingDate: '2026-10-15', closeInstant: '2026-10-15T20:00:00Z', previousCloseInstant: '2026-10-14T20:00:00Z', resolution: available('53.00') }, { recordedDeviations: [pc3Excess] }) });
     await screen.findByRole('region', { name: 'State of play' });
-    const active = screen.getAllByText('Deviation active');
-    expect(active).toHaveLength(1);
-    expect(placeOf(active[0]!)).toBe('rail');
-    expect(active[0]!.closest('header')).toBeTruthy();
+    expect(screen.queryAllByText('Deviation active')).toEqual([]);
   });
 
   it('should not read replayTrade for a Planned or incoherent Detail', async () => {
