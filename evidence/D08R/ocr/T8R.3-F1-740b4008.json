@@ -1,0 +1,121 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 0,
+    "total_tokens": 33437,
+    "input_tokens": 33230,
+    "output_tokens": 207,
+    "cache_read_tokens": 4992,
+    "elapsed": "14s"
+  },
+  "tool_calls": {
+    "total": 5,
+    "by_tool": {
+      "code_search": 2,
+      "file_read": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "tools/bench/compare.test.ts",
+        "tools/bench/compare.ts"
+      ]
+    }
+  ],
+  "session_id": "c8e0b9ea-dc03-4e08-a1a0-4ee150c05928",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "c8e0b9ea-dc03-4e08-a1a0-4ee150c05928",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "740b4008",
+      "resolved_base": "5580fda4a43500ad29f5d489a937c3c36463f328",
+      "resolved_head": "740b4008ae7a10a84bb678846c3c6a40e357fc57",
+      "exact_range": "5580fda4a43500ad29f5d489a937c3c36463f328..740b4008ae7a10a84bb678846c3c6a40e357fc57",
+      "source_artifact_sha256": "bdce291ea17ea404d30f396db281208154df37f4b1c61c53271aca3a923615b0"
+    },
+    "execution": {
+      "ocr_version": "v1.13.11",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "c402bc3e1c4cd52318cc7c9461bf4303b1918b6c131f94e914fd9329d2aff974",
+          "path": "tools/bench/compare.ts",
+          "fingerprint": "f2596dd336c6361a43b15a6b2c725d94270c1871267dd15f6a1e9ef72df61d45"
+        },
+        {
+          "item_id": "c97b486e6fc1597191fc5f735365a09aaa7cbe18c7092bd783f6fddb72377e5b",
+          "path": "tools/bench/compare.test.ts",
+          "fingerprint": "52c6ae80a681237846a7e379ca1cf5986cc3e745fc9028adc3ac959d5833548f"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "c402bc3e1c4cd52318cc7c9461bf4303b1918b6c131f94e914fd9329d2aff974",
+          "path": "tools/bench/compare.ts",
+          "fingerprint": "f2596dd336c6361a43b15a6b2c725d94270c1871267dd15f6a1e9ef72df61d45"
+        },
+        {
+          "item_id": "c97b486e6fc1597191fc5f735365a09aaa7cbe18c7092bd783f6fddb72377e5b",
+          "path": "tools/bench/compare.test.ts",
+          "fingerprint": "52c6ae80a681237846a7e379ca1cf5986cc3e745fc9028adc3ac959d5833548f"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "485887fb46a4d0a77cb9dbf3a54b7421c4d5c1ced684a7aa65bc885fd69961a6",
+          "path": "evidence/D08R/structural.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "aea60738045e50f47b42c5c673493df44e1a42c8c0205140e9604a9bc7e6e5b8",
+          "path": "evidence/D08R/suite-runs/T8R.3-F1-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "b58e865d2463a31f1f5a392a7a36fe43861274b1cb10592bb8655ce620663033",
+          "path": "evidence/D08R/suite-runs/T8R.3-F1-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ba42ce052c7ba08929f426e4a4ab249d577f5fd9d40d0d0fd851c9b470930f2f",
+          "path": "evidence/D08R/suite-runs/T8R.3-F1-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ff372e325b39c22171dd74a644c0a3a093b581dd0ff453d2d5b4589aebf2b119",
+          "path": "evidence/D08R/suite-runs/T8R.3-F1-lane.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 13920
+  }
+}

@@ -144,3 +144,7 @@ Reviewer note (not an ocr finding): several `tradeSummary` callers (`ReviewCard`
 ## T8R.2-F1 ocr review
 
 ocr on `d731bf2f` (test-only, relocated; session 686bc8fa-d2a5-4c4c-b1a5-308b64628f07, gpt-6.1-sol, 3 files reviewed, 0 comments; raw output `ocr/T8R.2-F1-d731bf2f.json`): **No findings.** F1's summary: four cases took a reach step with every matcher and value kept; the Settlement Due current-Marks case in `Placed.test.tsx` reads the Today drawer (mutation: `<CurrentMarksOnly>` replaced by `<div />` failed it with "expected null not to be null"); the "state without a Today drawer" case was retired, covered by T8R.2's third case. Lane tier passed (unit 2029, integration 258, 14 of 14 checks).
+
+## T8R.3-F1 ocr review
+
+ocr on `740b4008` (session c8e0b9ea-dc03-4e08-a1a0-4ee150c05928, gpt-6.1-sol, 2 files reviewed, 0 comments; raw output `ocr/T8R.3-F1-740b4008.json`): **No findings.** F1 changed three contract-name expectations in `tools/bench/compare.test.ts` (NVDA, AAPL, and QAB, which surfaced once the clock was pinned), pinned the case's clock to 2026-11-17 (`Date` only), and updated `compare.ts:63`'s comment. Lane tier passed (unit 2033, integration 258, 14 of 14 checks).
