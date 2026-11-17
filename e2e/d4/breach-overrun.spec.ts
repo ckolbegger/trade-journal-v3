@@ -8,7 +8,7 @@ const TARGET = 'XYZ at or above $56.00';
 const conditionFigure = (page: Page, text: string) => detail.conditionBlock(page, text).locator('.condition-figure');
 
 test.describe('B4.14 Breach, overrun, and intraday lines', () => {
-  test('should show Stop Breached with Risk to stop $0.00 and Stop Overrun $50.00 and no Deviation, then Awaiting the close after Mon Oct 12 with no dated or At entry card on Today for the 40 shares', async ({ profile }) => {
+  test('should show Stop Breached with Risk to stop $0.00 and Stop Overrun $50.00 and no Deviation, then Awaiting the Tue Oct 13 close with no dated or At entry card on Today for the 40 shares', async ({ profile }) => {
     const { context, page } = await onboardedAt(profile, MONDAY_1700);
     await createTrades(page, [FOUR_TRADES[0]!]);
     await openReview(page);
@@ -38,8 +38,8 @@ test.describe('B4.14 Breach, overrun, and intraday lines', () => {
     await expect(detail.heading(page, 'XYZ')).toBeVisible();
     await openDrawer(page, 'Position');
     await expect(detail.tradeSummary(page).getByText('Long 140 shares')).toBeVisible();
-    await expect(detail.positionOpenPnlFigure(page)).toHaveText('Awaiting the close after Mon Oct 12');
-    await expect(detail.currentMarkedPnl(page)).toHaveText('Awaiting the close after Mon Oct 12');
+    await expect(detail.positionOpenPnlFigure(page)).toHaveText('Awaiting the Tue Oct 13 close');
+    await expect(detail.currentMarkedPnl(page)).toHaveText('Awaiting the Tue Oct 13 close');
     await openDrawer(page, 'Plan and Risk');
     // W31: with today's Mark missing, Worst case reads the last Marks' figure, labelled with its date.
     await expect(detail.riskFigure(page, 'Worst case')).toHaveText('$4,700.00 · 18.80R if XYZ goes to zero · Mon Oct 12 Mark');

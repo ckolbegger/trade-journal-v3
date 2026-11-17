@@ -219,7 +219,7 @@ test.describe('B4.13 Responsive and accessible', () => {
     await recordEntry(page, [{ quantity: '40', price: '50.30', fee: '1.00', time: '2026-10-13T10:00' }]);
     await page.getByRole('link', { name: 'Back to the Trade' }).click();
     await openDrawer(page, 'Position');
-    await expect(detail.positionOpenPnlFigure(page)).toHaveText('Awaiting the close after Mon Oct 12');
+    await expect(detail.positionOpenPnlFigure(page)).toHaveText('Awaiting the Tue Oct 13 close');
     await openDrawer(page, 'Today');
     await expect(detail.todayCard(page, 'At the Mon Oct 12 Marks')).toHaveCount(0);
     await expect(detail.todayCard(page, 'At entry')).toHaveCount(0);
@@ -228,7 +228,7 @@ test.describe('B4.13 Responsive and accessible', () => {
     await expectAccessible(page, 'Detail AwaitingClose, narrow');
     await page.setViewportSize({ width: 1280, height: 900 });
     await toOpenList(page);
-    await expect(openList(page).getByRole('row', { name: /XYZ/ })).toContainText('Awaiting the close after Mon Oct 12');
+    await expect(openList(page).getByRole('row', { name: /XYZ/ })).toContainText('Awaiting the Tue Oct 13 close');
     await expectAccessible(page, 'Open list with an AwaitingClose row');
 
     // Review Loading: the trades store is held behind a read-only transaction, so the read waits.

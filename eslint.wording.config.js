@@ -46,6 +46,9 @@ export const PHRASES = [
   'or before an Execution on it',
   'names a stock, not an option',
 ];
+// W34's figure splits its fixed words around the date ("Awaiting the <date> close"), so these are regular
+// expressions (already escaped where needed): the whole phrase, or the opening words that end a text before the date.
+export const PHRASE_PATTERNS = ['Awaiting the .+ close', 'Awaiting the $'];
 export const CODES = [
   'MarkMissing',
   'AcknowledgedUnavailable',
@@ -88,7 +91,7 @@ export const REASON_WORDS = [
 
 const escape = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 // An apostrophe may be straight or curly in source text.
-const phraseRe = PHRASES.map((p) => escape(p).replace(/'/g, "['’]")).join('|');
+const phraseRe = [...PHRASES.map((p) => escape(p).replace(/'/g, "['’]")), ...PHRASE_PATTERNS].join('|');
 const reasonRe = `^\\s*(${REASON_WORDS.map(escape).join('|')})\\s*$`;
 const codeRe = `^(${CODES.join('|')})$`;
 // `as`, `satisfies`, `<T>x` and `x!` wrap their operand in `.expression`; ESTree has no parenthesis nodes.

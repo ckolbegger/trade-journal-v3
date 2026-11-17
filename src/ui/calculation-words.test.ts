@@ -229,3 +229,19 @@ describe('instrumentLabel (W28)', () => {
     vi.setSystemTime(new Date('2026-11-08T17:00:00Z'));
   });
 });
+
+describe('AwaitingClose words (W34)', () => {
+  it('should word a figure and a sentence "Awaiting the Mon Oct 12 close"', () => {
+    const awaiting = { reason: 'AwaitingClose', after: '2026-10-09', due: '2026-10-12' } as const;
+    expect(words(awaiting, 'label')).toBe('Awaiting close');
+    expect(words(awaiting, 'figure')).toBe('Awaiting the Mon Oct 12 close');
+    expect(words(awaiting, 'sentence')).toBe('Awaiting the Mon Oct 12 close');
+  });
+
+  it('should keep the existing words when due is absent', () => {
+    const awaiting = { reason: 'AwaitingClose', after: '2026-10-12' } as const;
+    expect(words(awaiting, 'label')).toBe('Awaiting close');
+    expect(words(awaiting, 'figure')).toBe('Awaiting the close after Mon Oct 12');
+    expect(words(awaiting, 'sentence')).toBe('Awaiting the next close after Mon Oct 12');
+  });
+});

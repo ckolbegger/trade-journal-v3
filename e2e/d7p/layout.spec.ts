@@ -16,7 +16,9 @@ const TWO_FINDINGS = [
   'Sell of 130 XYZ on Mon Oct 12, 14:00 is more than the 100 shares in the position',
 ];
 const FACTS_INCOHERENT = "Facts can't be replayed";
-const MARK_MISSING_ABC = `Mark missing: ABC, ${DATE}`;
+// W34: with Monday's Mark in hand, the next session to end is Tuesday's.
+const AWAITING_TUESDAY = 'Awaiting the Tue Oct 13 close';
+const MARK_MISSING_ABC =`Mark missing: ABC, ${DATE}`;
 const [XYZ, ABC, DEF] = FOUR_TRADES;
 
 // XYZ (100 shares bought) is sold in two parts, 40 at 13:00 and 20 at 14:00 on Monday.
@@ -95,12 +97,12 @@ test.describe('T7P.11 Layout of the worded reasons', () => {
     await recordEntry(page, [{ quantity: '40', price: '40.30', fee: '1.00', time: '2026-10-13T10:00' }]);
     await page.getByRole('link', { name: 'Back to the Trade' }).click();
     await openDrawer(page, 'Today');
-    await expect(detail.currentMarkedPnl(page)).toContainText(`Awaiting the close after ${DATE}`, READY);
+    await expect(detail.currentMarkedPnl(page)).toContainText(AWAITING_TUESDAY, READY);
     await openDrawer(page, 'Position');
     for (const width of WIDTHS) {
       await setWidth(page, width);
       await expectNoSidewaysScroll(page, `DEF Detail at ${width}`);
-      await expectShownInFull(detail.positionOpenPnl(page), `Awaiting the close after ${DATE}`, `Awaiting the close at ${width}`);
+      await expectShownInFull(detail.positionOpenPnl(page), AWAITING_TUESDAY,`Awaiting the close at ${width}`);
     }
     await page.goto('/');
     await openTradeFromOpenList(page, 'ABC');

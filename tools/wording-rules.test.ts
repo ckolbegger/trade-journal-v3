@@ -53,6 +53,13 @@ describe('verify:wording rules', () => {
     expect(lines(scanSource('src/ui/U.tsx', source))).toEqual([2]);
   });
 
+  it('fails on the dated before-Marks words, whole or split around the date, W34', () => {
+    expect(lines(scanSource('src/ui/T1.tsx', "const a = 'Awaiting the Mon Oct 12 close';"))).toEqual([1]);
+    expect(lines(scanSource('src/ui/T2.tsx', 'const a = `Awaiting the ${date} close`;'))).toEqual([1]);
+    expect(lines(scanSource('src/ui/T3.tsx', "const a = 'Awaiting close';"))).toEqual([1]);
+    expect(lines(scanSource('src/ui/calculation-words.ts', "const a = 'Awaiting the Mon Oct 12 close';"))).toEqual([]);
+  });
+
   it('still ignores real comments and keeps line numbers', () => {
     const source = [
       "// case 'NotClosed':",

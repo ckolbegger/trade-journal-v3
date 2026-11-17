@@ -1138,3 +1138,9 @@ T8R.24 is committed as `09ab4c86` in lane WD.
 - **The Review's attention sentence is the one gap.** `daily-review/attention.ts:102-103` (`unavailableReason`) rebuilds the `AwaitingClose` reason without `due`, so that sentence would still read "Awaiting the next close after …". `ReviewCards.test.tsx:1146` and `:1161` expect the old words.
 - **It is likely unreachable.** Review reads use `factsAtClose`, so `openedAfterClose` (`evaluate.ts:233`) is false.
 - **Follow-up.** The fix is one line (carry `due`). Recorded for the final report as a known C1 gap. The checkpoint critic (T8R.25) and the gate will show whether any Review flow reaches it.
+
+## T8R.24
+
+- Wording rule (eslint.wording.config.js): `PHRASES` keeps "Awaiting close", "Awaiting the close", "Awaiting the next close". New `PHRASE_PATTERNS` ("Awaiting the .+ close" and "Awaiting the $", the opening words before the date in a template or JSX text) joins the same regex, so a screen cannot write the dated words either whole or split around the date. Red: `tools/wording-rules.test.ts` case "fails on the dated before-Marks words" failed (`expected [] to deeply equal [ 1 ]`) before the change; green after. `npm run verify:wording` exit 0 on the real src/ui.
+- Screen expectations changed (browser, real app at Tuesday noon, Monday's Mark in hand, so due is Tue Oct 13): e2e/d7p/layout.spec.ts (AWAITING_TUESDAY, two uses), e2e/d4/responsive-a11y.spec.ts lines 222 and 231, e2e/d4/breach-overrun.spec.ts lines 11, 41, 42. Unit expectations that build an AwaitingClose by hand without `due` keep the old words and are unchanged.
+- Browser: `npm run build:faults`, `npm run build:releases`, then the three specs through with-browser-lock.sh: 10 passed.

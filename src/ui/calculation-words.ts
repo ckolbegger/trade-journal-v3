@@ -50,6 +50,7 @@ export const unavailableWords = (reason: UnavailableReason, length: WordLength, 
       return [t('Mark acknowledged unavailable for '), instrumentPart(reason.instrument), t(' on '), datePart(reason.date)];
     case 'AwaitingClose':
       if (length === 'label') return [t('Awaiting close')];
+      if (reason.due) return [t('Awaiting the '), datePart(reason.due), t(' close')];
       if (length === 'figure') return [t('Awaiting the close after '), datePart(reason.after)];
       return [t('Awaiting the next close after '), datePart(reason.after)];
     case 'SettlementDue':
