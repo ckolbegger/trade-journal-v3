@@ -228,3 +228,7 @@ The bench comparison's contract-name expectations (structural; test expectations
 - Clock pin: inside that case, `vi.useFakeTimers({ toFake: ['Date'] })` and `vi.setSystemTime(new Date('2026-11-17T12:00:00Z'))`, with `afterEach(() => vi.useRealTimers())` in the describe. Only Date is faked, so no async work is affected.
 - `tools/bench/compare.ts` line 63: comment only, now `("NVDA Nov 20 $107 Call")`; no code change.
 - After: compare.test.ts 15 of 15 pass; typecheck, tsc6, lint, lint:deps exit 0; lane tier (unit 2033, integration 258, 14 of 14 checks) all pass; outputs in `evidence/D08R/suite-runs/T8R.3-F1-*.txt`.
+
+## Merge: lane CN (T8R.3, T8R.3-F1, T8R.3-B1, T8R.3-B1-F1, T8R.3-B2)
+
+Rebased `d08r/cn` onto `claude-opus-5.5` (`9e01e6a0`): T8R.3 `5580fda4` → `556a1e2a`, T8R.3-F1 `740b4008` → `b7a648d4`, T8R.3-B1 `48cbd15b` → `0cd52adf`, T8R.3-B1-F1 `8df55c00` → `61451412`, T8R.3-B2 `562b715f` → `87bd7743`. The one conflict was in this file (F1's section; both sides appended); the main session kept the deliverable branch's text and appended F1's section after it. The rebase brought T8R.1's, T8R.2's and T8R.4's code under lane CN, so the lane tier reran on `87bd7743` (`suite-runs/T8R.3-rebased-*.txt`): unit 2044 passed, integration 258 passed, 14 of 14 checks exit 0; evidence commit `2d24c9cb`. Fast-forwarded `claude-opus-5.5` to `2d24c9cb`; lane worktree `d08r-cn` and branch `d08r/cn` removed. Every wave-0 lane has merged.
