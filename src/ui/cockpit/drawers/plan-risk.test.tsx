@@ -223,6 +223,37 @@ describe('Plan and Risk: Conditions (W31)', () => {
   });
 });
 
+describe('Plan and Risk: Since the last Marks (W23)', () => {
+  useFixedClock();
+  const headings = () => screen.getAllByRole('heading', { level: 2 }).map((heading) => heading.textContent);
+  const atEntry = { label: 'AtEntry', quantity: Rational.of(1n), averageEntry: Rational.of(330n, 100n), riskFromEntry: R(11000n), rewardFromEntry: R(9000n), riskFromEntryInPlanR: R(55n), rewardFromEntryInPlanR: R(45n) } as const;
+  // O-C3+: the second contract was bought Fri 10-16 at $3.30, after the Thu 10-15 Marks.
+  const oc3Plus = (extra: Partial<OpenView['current']> = {}): OpenView => {
+    const view = oc3([stop(), target()]);
+    return { ...view, current: { ...view.current, evaluation: { ...view.current.evaluation, atEntry }, ...extra } };
+  };
+
+  it('should show New lots 1 contract, Average price of new lots $3.30, Risk from that price and Reward from that price', () => {
+    render(<PlanRiskDrawer view={oc3Plus()} timeZone="America/New_York" />);
+    const group = screen.getByRole('region', { name: 'Since the last Marks' });
+    expect(termsIn(group)).toEqual(['New lots', 'Average price of new lots', 'Risk from that price', 'Reward from that price']);
+    expect(valueOf(group, 'New lots')).toBe('1 contract');
+    expect(valueOf(group, 'Average price of new lots')).toBe('$3.30');
+    expect(valueOf(group, 'Risk from that price')).toBe('$110.00 · 0.55R');
+    expect(valueOf(group, 'Reward from that price')).toBe('$90.00 · 0.45R');
+    // After Conditions, before Planned-Leg Fulfillment.
+    expect(headings().slice(headings().indexOf('Conditions'), headings().indexOf('Conditions') + 2)).toEqual(['Conditions', 'Since the last Marks']);
+    expect(headings().indexOf('Since the last Marks')).toBeLessThan(headings().indexOf('Planned-Leg Fulfillment'));
+  });
+
+  it('should not show the group before the first Marks, when Entry Quality covers the entry', () => {
+    // Before any Marks every lot is "after the last Marks", so Trade Views' firstMarksDue names the session whose close brings the first.
+    render(<PlanRiskDrawer view={oc3Plus({ firstMarksDue: '2026-10-15' })} timeZone="America/New_York" />);
+    expect(screen.queryByRole('region', { name: 'Since the last Marks' })).toBeNull();
+    expect(screen.getByRole('region', { name: 'Entry Quality' })).toBeTruthy();
+  });
+});
+
 describe('Plan and Risk: Fulfillment and Deviations', () => {
   const zone = 'America/New_York';
   const superseded = { ...pc3Excess, versions: [{ ...pc3Excess.versions[0]!, status: 'Superseded' as const, reason: 'NoLongerExpected' as const }] } as unknown as typeof pc3Excess;

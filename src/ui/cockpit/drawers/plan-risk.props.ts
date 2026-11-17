@@ -6,7 +6,7 @@ import { calculation, dollarsAndR, settlementDueFigure } from '../../figures.ts'
 import { decimalMoney as price, decimalUnderlyingPrice, localTime, money, quantity, ratio, rMultiple, shortDate, tradeSummary, underlyingPrice } from '../../format.ts';
 import { instrumentLabel } from '../../calculation-words.ts';
 import { conditionDirection, contractCount, exerciseIntentText } from '../../screens/option-words.ts';
-import { changeTime, legText, measureText } from '../../screens/trade-detail/words.ts';
+import { abs, changeTime, legText, measureText } from '../../screens/trade-detail/words.ts';
 import type { PlanRiskDrawerProps, PlanRiskGroup, PlanRiskRow } from './plan-risk.types.ts';
 
 // What the shell hands the drawer: the Detail's view and the Workspace zone.
@@ -114,6 +114,27 @@ function conditionsGroup(view: TradeDetailView, timeZone: string): PlanRiskGroup
   };
 }
 
+// Since the last Marks (W23): the lots bought after the latest Marks, measured from their own prices, as Trade Analysis gave them (`atEntry`,
+// A54). Absent when no lot is newer than the Marks.
+function sinceLastMarksGroup(view: TradeDetailView): PlanRiskGroup | undefined {
+  if (!('current' in view) || 'terminalDisposition' in view) return undefined;
+  const { atEntry } = view.current.evaluation;
+  // Before the first Marks every lot is newer than them, and Entry Quality covers the entry (`firstMarksDue`, revision 90).
+  if (!atEntry || view.current.firstMarksDue !== undefined) return undefined;
+  const optionTrade = view.plan.legs[0]?.instrument.kind === 'Option';
+  const inR = (dollars: Rational, planR: Rational) => `${money(dollars)} · ${rMultiple(planR)}`;
+  return {
+    id: 'since-last-marks',
+    heading: 'Since the last Marks',
+    rows: [
+      { label: 'New lots', value: optionTrade ? contractCount(quantity(abs(atEntry.quantity))) : `${quantity(atEntry.quantity)} shares`, plain: true },
+      { label: 'Average price of new lots', value: money(atEntry.averageEntry) },
+      { label: 'Risk from that price', value: inR(atEntry.riskFromEntry, atEntry.riskFromEntryInPlanR) },
+      { label: 'Reward from that price', value: inR(atEntry.rewardFromEntry, atEntry.rewardFromEntryInPlanR) },
+    ],
+  };
+}
+
 function baselineGroup(baseline: { readonly oneR: Rational; readonly originalPlannedReward: Rational; readonly rewardRiskRatio: Rational }): PlanRiskGroup {
   return {
     id: 'baseline',
@@ -188,12 +209,14 @@ function fulfillmentGroups(view: TradeDetailView, timeZone: string): PlanRiskGro
 
 export function planRiskProps({ view, timeZone }: PlanRiskSource): PlanRiskDrawerProps {
   const figures = conditionsGroup(view, timeZone);
+  const since = sinceLastMarksGroup(view);
   return {
     // Only a Planned Detail: the others have it in Position.
     ...(!('positionChanges' in view) && 'summary' in view && view.summary && { tradeSummary: tradeSummary(view.summary, timeZone) }),
     groups: [
       planGroup(view, timeZone),
       ...(figures ? [figures] : []),
+      ...(since ? [since] : []),
       ...('baseline' in view ? [baselineGroup(view.baseline)] : []),
       // An incoherent Detail has no derived figures, so no Entry Quality.
       ...('baseline' in view ? [entryQualityGroup(view, timeZone)] : []),

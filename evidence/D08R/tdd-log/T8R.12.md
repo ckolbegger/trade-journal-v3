@@ -1,0 +1,10 @@
+# D08R TDD log, T8R.12
+
+One file per task (decision 111), so parallel lanes never edit one file. Each row is one single-case run; see `../tdd-log.md` for the rules.
+
+| T8R.12 | should show New lots 1 contract, Average price of new lots | red | `npx vitest run src/ui/cockpit/drawers/plan-risk.test.tsx -t "should show New lots 1 contract, Average price of new lots"` | exit 1; Tests  1 failed, 17 skipped (18) | TestingLibraryElementError: Unable to find an accessible element with the role "region" and name "Since the last Marks"  |
+| T8R.12 | should show New lots 1 contract, Average price of new lots | green | `npx vitest run src/ui/cockpit/drawers/plan-risk.test.tsx -t "should show New lots 1 contract, Average price of new lots"` | exit 0; Tests  1 passed, 17 skipped (18) |  |
+| T8R.12 | should not show the group before the first Marks | red | `npx vitest run src/ui/cockpit/drawers/plan-risk.test.tsx -t "should not show the group before the first Marks"` | exit 1; Tests  1 failed, 17 skipped (18) | AssertionError: expected <section class="card" …(1)>…(2)</section> to be null  |
+| T8R.12 | should not show the group before the first Marks | green | `npx vitest run src/ui/cockpit/drawers/plan-risk.test.tsx -t "should not show the group before the first Marks"` | exit 0; Tests  1 passed, 17 skipped (18) |  |
+| T8R.12 | should not show the group before the first Marks | green | `npx vitest run src/ui/cockpit/drawers/plan-risk.test.tsx -t "should not show the group before the first Marks"` | exit 0; Tests  1 passed, 17 skipped (18) |  |
+| T8R.12 | refactor | refactor | n/a | No change after review: the group's adapter mirrors Today's atEntryOf and is removed from there by T8R.9. Case names rephrased: "should show New lots 1 contract, Average price of new lots $3.30, Risk from that price and Reward from that price" is the full planned name; "-t" uses its prefix. "should not show the group before the first Marks, when Entry Quality covers the entry (gone)" drops "(gone)". Assertion added beyond the plan: the group's place (after Conditions, before Planned-Leg Fulfillment). | |

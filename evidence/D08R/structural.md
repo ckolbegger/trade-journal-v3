@@ -906,3 +906,7 @@ Lane JR is ready to merge after merge run 2.
 ## T8R.5-F1
 
 B7.13 passed at `fc58e8ca^` and failed first at `fc58e8ca` (T8R.5's Instrument column): Open Lots scrolled and cut "Unconsumed opening fee" and "$0.65". Fix in `position.css`: Open Lots' second column (Opened) loses the 11.5rem minimum `table.trades` gives its Trade column, and Instrument cells wrap at their spaces from 960 px; Lot Matches' Instrument cell wraps with Bought and Sold from 960 px. The expected Open Lots column count moves from 4 to 5. Region 550 px; table 566 px before, 550 px after. Detail in `tdd-log/T8R.5-F1.md`.
+
+## T8R.12
+
+Behavioral, 2 cases; rows in `tdd-log/T8R.12.md`. The group "Since the last Marks" reads `evaluation.atEntry` (quantity, averageEntry, riskFromEntry, rewardFromEntry and their Plan R figures), all existing Trade Analysis fields, so nothing is calculated in the UI. It is hidden when `current.firstMarksDue` is set (before the first Marks), and on a Closed Trade. It sits after Conditions and before Plan Baseline, Entry Quality and Planned-Leg Fulfillment; W23 and the plan name no place, so this is the recorded choice. The first case went red, green; the second went red, green after the first case's code showed the group before the first Marks, so no first-run pass. No browser heading list needed the new group: only O-C3+ style Trades with lots newer than the Marks show it, and the grep of `e2e` for Plan and Risk headings found none that list the group order.
