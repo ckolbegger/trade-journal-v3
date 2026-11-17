@@ -89,6 +89,14 @@ describe('Plan and Risk drawer: figures moved from the retired Summary card and 
 describe('Plan and Risk drawer: unavailable condition figures (A222, T8P.23-B8)', () => {
   useFixedClock();
 
+  // T8R.25-B3: the fixture's Underlying is XYZ; the words are the rail's, "<Underlying> at or below $47.50".
+  it('should name a stock Trades conditions in the Condition cell, ABC at or below $47.50 and ABC at or above $56.00', () => {
+    const view = openDetailAt([PC1, PC2], tuesday({ kind: 'Missing' }));
+    render(<PlanRiskDrawer view={view} timeZone="America/New_York" />);
+    const conditions = rowsOf(within(screen.getByRole('region', { name: 'Conditions' })).getByRole('table')).map((cells) => cells[0]);
+    expect(conditions).toEqual([`${view.plan.underlying} at or below $47.50`, `${view.plan.underlying} at or above $56.00`]);
+  });
+
   it('should word a missing Mark in Risk to stop and Reward to target at the figure length, with no bare dash left', () => {
     const view = openDetailAt([PC1, PC2], tuesday({ kind: 'Missing' }));
     expect(view.current.evaluation.conditions.every((c) => c.result.kind === 'Unavailable')).toBe(true);

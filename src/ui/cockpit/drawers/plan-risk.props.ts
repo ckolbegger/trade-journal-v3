@@ -7,6 +7,7 @@ import { decimalMoney as price, decimalUnderlyingPrice, localTime, money, quanti
 import { instrumentLabel } from '../../calculation-words.ts';
 import { conditionDirection, contractCount, exerciseIntentText } from '../../screens/option-words.ts';
 import { abs, changeTime, legText, measureText } from '../../screens/trade-detail/words.ts';
+import { conditionText } from '../rail/conditions.props.ts';
 import type { PlanRiskDrawerProps, PlanRiskGroup, PlanRiskRow } from './plan-risk.types.ts';
 
 // What the shell hands the drawer: the Detail's view and the Workspace zone.
@@ -78,10 +79,6 @@ function conditionsGroup(view: TradeDetailView, timeZone: string): PlanRiskGroup
   const evaluation = dated?.evaluation ?? view.current.evaluation;
   const { conditions } = evaluation;
   const datedLabel = dated ? ` · ${shortDate(dated.tradingDate)} ${option ? 'Marks' : 'Mark'}` : '';
-  const triggers = {
-    Stop: conditionLines('Stop', view.plan.stops, leg, view.plan.underlying),
-    Target: conditionLines('Target', view.plan.targets, leg, view.plan.underlying),
-  };
   // A figure with no reading says why at the figure length, where it lives (A222).
   // A contract due for settlement is not measured (W6), whatever its result carries: another reason, or a reading from the expiration evening's Marks.
   const due = 'settlement' in view ? view.settlement[0] : undefined;
@@ -102,7 +99,10 @@ function conditionsGroup(view: TradeDetailView, timeZone: string): PlanRiskGroup
     // Only an option's Underlying condition has one: the contract's value if the Underlying sits at the boundary at expiration.
     const basis = (c.role === 'Stop' ? view.baseline.stopBasis : view.baseline.targetBasis)[at];
     const atExpiration = option && c.kind === 'UnderlyingPrice' && basis?.valueAtExpiration ? money(basis.valueAtExpiration) : '';
-    return [triggers[c.role][at] ?? '', distance, risk, atExpiration];
+    const planned = (c.role === 'Stop' ? view.plan.stops : view.plan.targets)[at];
+    // The rail's own words (row 2), so the two places cannot drift: "ABC at or below $47.50".
+    const trigger = planned ? conditionText(view.plan, { id: c.id, role: c.role, kind: planned.kind, boundary: planned.price }) : '';
+    return [trigger, distance, risk, atExpiration];
   });
   if (rows.length === 0) return undefined;
   return {

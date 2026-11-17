@@ -31,7 +31,7 @@ export function crossingWords(plan: Plan, condition: Stated): string {
 }
 
 // Row 2: the full condition on one line, in D7S's W6 words.
-function conditionText(plan: Plan, condition: Stated): string {
+export function conditionText(plan: Plan, condition: Stated): string {
   const subject = isOption(plan) && condition.kind === 'StructureValue' ? 'Option' : plan.underlying;
   return `${subject} ${crossingWords(plan, condition)}`;
 }

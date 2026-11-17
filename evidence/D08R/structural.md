@@ -1344,3 +1344,12 @@ Browser, via with-browser-lock.sh on 5175 (after `npm run build:faults` and `npm
 Plan and Risk's Conditions cells read the Settlement Due reason whenever the view is due for settlement (the same `view.settlement` the note and the rail use), not only when a condition's result is Unavailable. Fixes the expiration evening (Fri 11-20 18:30 with the day's Marks saved), where readings exist yet the contract is due.
 - Case: should show the Settlement Due reason in every Conditions cell on the expiration evening, as the note and the rail do (red, then green; see tdd-log/T8R.25-B2.md).
 - Browser (port 5175): e2e/d8p/states, e2e/d8p/settlement-due-replay and the four e2e/d7s specs, 11 passed.
+
+## T8R.25-B3
+
+Plan and Risk's Conditions table names each condition in its Condition cell with the rail's own words (`conditionText`, exported from `rail/conditions.props.ts`): "XYZ at or below $47.50", "XYZ at or above $56.00" on a stock Trade; an option Trade's rows read as before ("Option at or below $1.00"). The Plan group's Stop and Target rows keep their bare price.
+- Case: should name a stock Trades conditions in the Condition cell (red, then green; see tdd-log/T8R.25-B3.md).
+- Reading for the main session: the Value at expiration column is kept on a stock Trade, its cells empty. The plan's new-words row approves an empty cell for a stock condition and says nothing of hiding the column; hiding it would be a deviation.
+- No new-words row: the wording is the rail's (W21, W22).
+- `e2e/d8r/plan-risk.spec.ts` does not exist on this lane, so there was nothing to change there.
+- Browser (port 5175): e2e/d4 (all) and e2e/d8p/cockpit.spec.ts, 27 passed.
