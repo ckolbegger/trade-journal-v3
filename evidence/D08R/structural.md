@@ -445,3 +445,9 @@ One targeted run of the two specs, in a scratch worktree removed afterwards: bot
 - **B5.3** expected the old details row "Answered" with "2026-10-13 12:30". T8R.15 removed that row: the answer came the same day, so the dated line has no "· written" part (A239).
 
 The plan supports the new markup. T8R.15 "replaces W10's items and the details grid"; W27 gives the dated line, and A239 gives "· written". T8R.15's file list named neither spec. **T8R.15-F2** (test-only) brings both specs up to date in a fresh lane, JF: worktree `.claude/worktrees/d08r-jf`, branch `d08r/jf`, from `41e9b8dc`.
+
+## T8R.22 and T8R.22-F1 ocr review
+
+ocr on the range `82e339bf..11de60eb` (`c2c42f24` T8R.22, `11de60eb` T8R.22-F1). Session 80bece3d-1ea3-4771-9ada-541d07f4feb3, gpt-6.1-sol, 3 files reviewed, 0 comments, raw output in `ocr/T8R.22-11de60eb.json`. **No findings.**
+
+The first run (session 09a2f606) hit the ChatGPT usage limit on every file. The agent waited from 02:23 to 03:50 and reran. T8R.22-F1 notes: the expired Detail's extra requests are exactly what one `series` call makes: two `observations.getAll` (the range scan, and the evidence read for the clock date) and one `meta.get` (the shared snapshot id). So T7.29 stays exact: the live list plus those three.
