@@ -19,10 +19,10 @@ const SIZES = [
 
 // The headline's top and the P&L chart's bottom are within one screen's height, and both charts and the readout lie inside the viewport's width.
 async function expectFitsOneScreen(scope: Locator, size: { width: number; height: number }, where: string): Promise<void> {
-  // B12: the charts are drawn at their box's width (a phone's box, under 460, at its own width, not below 240; else the full 640) before the heights are read: a viewport change is redrawn a moment later.
+  // B12: the charts are drawn at their box's width (a phone's box, under 460, at its own width, not below 200; else the full 640) before the heights are read: a viewport change is redrawn a moment later.
   await expect.poll(() => scope.evaluate((element) => {
     const box = element.querySelector('.replay-plot-frame')!.clientWidth;
-    const want = box < 460 ? Math.max(box, 240) : 640;
+    const want = box < 460 ? Math.max(box, 200) : 640;
     return ['svg.price-strip', 'svg.pnl-chart'].map((selector) => Number(element.querySelector(selector)!.getAttribute('width')) - want);
   }), { message: `${where}: charts drawn at their box's width` }).toEqual([0, 0]);
   const measure = await scope.evaluate((element) => {
@@ -113,6 +113,8 @@ async function throughSizes(page: Page, scope: () => Locator, surface: string, s
     await expectFitsOneScreen(scope(), size, where);
     await expectReadoutShownInFull(scope(), size, where);
     if (size.width < 460) await expectChartTextInside(scope(), where);
+    // T9.19-B8: the phone words and the real-size text (at least 10 px) on the Review card too, not on the Detail alone.
+    if (size.width < 460) await expectPhoneWords(scope(), where);
     // The labels no phone chart may lose: the two results at the lines (the "Break-even" and "Sold 2" labels may be dropped on a tight chart).
     expect(await chartText(pnlChart(scope())), where).toEqual(expect.arrayContaining(['Stop +$316', 'Target +$956']));
     await expectNoSidewaysScroll(page, where);

@@ -86,6 +86,10 @@
 
 /* On a phone Previous, the slider and Next share one row and the session's date and count sit under them, so the controls take two lines, not three. */
 @media (max-width: 480px) {
+  .replay-card {
+    padding: 12px 10px 12px 12px;
+  }
+
   .replay-slider {
     margin: 4px 0;
     gap: 4px 8px;
