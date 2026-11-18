@@ -86,6 +86,20 @@ Stage A runs as a swarm (decision 111, agent cap 4). Each task's heading holds i
 - Implementation-level decisions: "the result" that is never dropped means the Stop and Target labels at the slider's session, the strip's Mark label and both stake tags (`PlotSession` has no label for the P&L value itself); marker labels are drawn once, in the P&L chart, with only the dashed line in the strip; the time axis's end label moved to the P&L chart; the Plan column has no label; the banked band follows the revealed sessions' finished `banked` figure and is not broken at a session with no Mark (realized P&L needs no Mark, A248); a cursor line and a dot per session in the P&L chart. `onSelectSession`, `onHoverSession`, `hoverIndex` still unused; the key (W44) is the frame's.
 - P137: nothing shortened. New words: none ("Break-even" is W40).
 - `axisMoney` now writes a minus sign for negatives.
+- ocr round 1 (`ocr/T9.13-02c047e7.json`), 4 findings:
+
+| Severity | Location | Claim | Assessment | Outcome |
+|---|---|---|---|---|
+| medium | `corridor-pnl.tsx:85` | The profit and loss fills clamp each point to break-even separately, so between sessions of opposite sign both fills span the whole gap and overlap instead of meeting at the crossing | Valid | T9.13-B1 |
+| medium | `corridor-pnl.tsx:127-131` | A banked band spanning two sales is labelled with the last sale's text at the first sale's column and level (+$478 then +$700 reads "Banked +$700" at the +$478 level) | Valid | T9.13-B2 |
+| medium | `corridor-pnl.tsx:82` | `.filter(run => run.length > 1)` drops a single session with a figure (between gaps, or the first revealed session) from both fills | Valid | T9.13-B3 |
+| low | `geometry.ts:76` | Nested ternary in `LabelPlacer.place`'s anchor offset | Valid (style) | T9.13-B4 |
+
+- **T9.13-B1.** Case: "it should meet the profit and loss fills at break-even between sessions of opposite sign, with no overlap".
+- **T9.13-B2.** Case: "it should label each banked level with its own figure, at that level, when a later sale changes it".
+- **T9.13-B3.** Case: "it should fill a single session with a figure between two gaps, and the first revealed session".
+- **T9.13-B4.** Readability, no behavior; verification `corridor.test.tsx` and `price-strip.test.tsx` unchanged before and after.
+- Lanes TA and CF were brought to `bf1c01b9` by rebase (lane CF's T9.9 is now `25a696bb`, T9.9-B2 `4413ad4e`).
 
 ## T9.9 Replay adapter: the headline and the stake sentence
 
