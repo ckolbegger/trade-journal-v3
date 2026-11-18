@@ -4,6 +4,7 @@ import {
   BREN, build, cardReplay, chartText, closeOf, expect, expectAccessible, firstPage, headline, hits, launchAt, openDrawer, openReview, pnlChart, priceStrip, reachCard, READY, replay, seek, setViewport,
   slider, sliderValue, test,
 } from './support.ts';
+import { tradeCard } from '../d8r/support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -148,6 +149,44 @@ test.describe('B9.5 Responsive, accessible and offline', () => {
     await headline(cardReplay(page, trade)).evaluate((element) => element.scrollIntoView({ block: 'start' }));
     await expectFitsOneScreen(cardReplay(page, trade), SIZES[2], 'Review card replay at 320 px, Mon 11-16');
     await throughSizes(page, () => cardReplay(page, trade), 'Review card replay', [SIZES[2]]);
+    await context.close();
+  });
+
+  // T9.19-B7 (AC-UI-002, C9.4): Tabbing through the Review card's replay controls on a phone, none sits under the fixed bottom navigation, where its control and value cannot be seen.
+  test('should keep a focused replay control clear of the bottom navigation on a phone', async ({ profile }) => {
+    test.setTimeout(240_000);
+    const { context, page, trade } = await build(profile, BREN, closeOf('2026-11-16'), 10);
+    await page.goto('/');
+    await openReview(page);
+    await reachCard(page, trade);
+    for (const size of SIZES.slice(1)) {
+      const where = `Review card replay at ${size.width} px`;
+      await setViewport(page, size.width, size.height);
+      const scope = cardReplay(page, trade);
+      await expect(headline(scope)).toBeVisible();
+      await page.evaluate(() => window.scrollTo(0, 0));
+      // From the Action panel's header, Tab through every replay control.
+      await tradeCard(page, trade).getByRole('button', { name: /^Action/ }).first().focus();
+      const seen: string[] = [];
+      for (let step = 0; step < 40; step += 1) {
+        await page.keyboard.press('Tab');
+        const result = await page.evaluate(() => {
+          const focused = document.activeElement as HTMLElement;
+          const inReplay = !!focused.closest('section.review-card-replay');
+          const nav = document.querySelector('.shell > .nav')!.getBoundingClientRect();
+          const box = focused.getBoundingClientRect();
+          const hidden = box.bottom > nav.top && box.top < nav.bottom && box.right > nav.left && box.left < nav.right;
+          return { inReplay, hidden, label: focused.getAttribute('aria-label') ?? focused.textContent?.trim().slice(0, 30) ?? '', top: Math.round(box.top), bottom: Math.round(box.bottom), navTop: Math.round(nav.top) };
+        });
+        if (!result.inReplay) {
+          if (seen.length > 0) break;
+          continue;
+        }
+        seen.push(result.label);
+        expect(result.hidden, `${where}: "${result.label}" (y ${result.top} to ${result.bottom}) is under the bottom navigation (top ${result.navTop})`).toBe(false);
+      }
+      expect(seen.length, `${where}: replay controls reached`).toBeGreaterThan(3);
+    }
     await context.close();
   });
 

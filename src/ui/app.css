@@ -84,6 +84,11 @@ a {
   padding-bottom: 5rem;
 }
 
+/* Focus and scrollIntoView keep an element above the fixed bottom bar (the bar is about 60px; the content's foot padding lets the last content scroll clear of it). */
+html:has(.shell:not([data-layout='wide'])) {
+  scroll-padding-bottom: 5rem;
+}
+
 .shell > .nav {
   position: fixed;
   inset: auto 0 0 0;
