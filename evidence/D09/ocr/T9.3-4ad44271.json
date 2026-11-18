@@ -1,0 +1,172 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 3,
+    "total_tokens": 224521,
+    "input_tokens": 222400,
+    "output_tokens": 2121,
+    "cache_read_tokens": 14976,
+    "elapsed": "1m34s"
+  },
+  "tool_calls": {
+    "total": 12,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 4,
+      "file_read": 7
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/domain/trade-analysis/evaluate.ts",
+      "content": "For an open long Call after expiration, maximumIncrementalReward() returns Unavailable(SettlementDue) before its Unbounded branch. This fallback then prices the Call at its strike and reports a finite maximum P\u0026L. Boundary outcomes are Mark-independent, and a Call's strike is not its price ceiling. Determine the outcome's unboundedness directly from the instrument type (after checking for no remaining position), rather than from the current incremental-reward result.",
+      "existing_code": "    atMaxReward: maxReward.kind === 'Unbounded' ? maxReward : resultAt(short ? ZERO : strike!),",
+      "start_line": 499,
+      "end_line": 499,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/domain/trade-analysis/outcomes.test.ts",
+      "content": "ReplayTestSeries permits shorter observation arrays, but the non-null assertions do not convert absent entries into null. For example, evaluating R_DALE_U on 2026-11-20 constructs Available Marks with undefined prices instead of Missing observations. Normalize each lookup with `?? null` (including the stock branch), so this helper implements the fixture's missing-observation contract.",
+      "existing_code": "    frame: frameOf(held, date, series.held[i]!),\n    underlyingFrame: frameOf({ kind: 'Stock', symbol: series.record.plan.underlying }, date, series.underlying[i]!),",
+      "start_line": 28,
+      "end_line": 29,
+      "category": "test",
+      "severity": "low"
+    },
+    {
+      "path": "src/domain/trade-analysis/evaluate.ts",
+      "content": "This nested ternary violates the requested checklist and obscures the profit/risk clamp. Use an explicit if/else or a named minimum/clamp helper to express the zero floor and risk cap.",
+      "existing_code": "    const atRisk = openProfit.compare(ZERO) \u003c= 0 ? ZERO : openProfit.compare(ongoingRiskToStop.value) \u003c 0 ? openProfit : ongoingRiskToStop.value;",
+      "start_line": 524,
+      "end_line": 524,
+      "category": "style",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Trade analysis evaluation and outcome coverage",
+      "files": [
+        "src/domain/trade-analysis/evaluate.ts",
+        "src/domain/trade-analysis/option-trade.ts",
+        "src/domain/trade-analysis/outcomes.test.ts",
+        "src/domain/trade-analysis/reference-trade.ts"
+      ]
+    }
+  ],
+  "session_id": "9e0c602c-6e1e-43c3-9644-7428c970e201",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "9e0c602c-6e1e-43c3-9644-7428c970e201",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "4ad44271",
+      "resolved_base": "301aa24bd00c05e4ba29695d9df5140e1d3ad090",
+      "resolved_head": "4ad44271709c5252c341a2301ab1c788cb4c2c69",
+      "exact_range": "301aa24bd00c05e4ba29695d9df5140e1d3ad090..4ad44271709c5252c341a2301ab1c788cb4c2c69",
+      "source_artifact_sha256": "8ef25bcaea228a210b40cc74a19fea88b5eae070285c4c4dc677489dadecf36e"
+    },
+    "execution": {
+      "ocr_version": "v1.13.12",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "09c9a9306a8db70c392815e68f0bb89488cddd9f0eac8dc65649d823e7f32256",
+          "path": "src/domain/trade-analysis/outcomes.test.ts",
+          "fingerprint": "6a97472ee5bf422e8827116c530bb908a8d2c563526b2f3d38a58f6a07b670ee"
+        },
+        {
+          "item_id": "2cdfac52e8ab493575d7f44a1a39167101fcd433edd529507860ca0fdba1d8b0",
+          "path": "src/domain/trade-analysis/evaluate.ts",
+          "fingerprint": "1fa1679a3df7fabbdada028827b169fe8811beca0a768b942e6ac91f4b872984"
+        },
+        {
+          "item_id": "88f0c79f0d6ae90fdface99f338e9cb3d58faaee39f1938a972ad5881034ca98",
+          "path": "src/domain/trade-analysis/reference-trade.ts",
+          "fingerprint": "d9f344f82d6c54941e96b882925b3f74372615e1f14e84ea0c25843e79badb24"
+        },
+        {
+          "item_id": "e3568abba3ad9fd5d760a2828ba583f0fb046da316fea9e0c1800af3e6d91f35",
+          "path": "src/domain/trade-analysis/option-trade.ts",
+          "fingerprint": "923b59f323f7451c8a152e5e48be944be67290689b29df759b386edb4f0dcb12"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "09c9a9306a8db70c392815e68f0bb89488cddd9f0eac8dc65649d823e7f32256",
+          "path": "src/domain/trade-analysis/outcomes.test.ts",
+          "fingerprint": "6a97472ee5bf422e8827116c530bb908a8d2c563526b2f3d38a58f6a07b670ee"
+        },
+        {
+          "item_id": "2cdfac52e8ab493575d7f44a1a39167101fcd433edd529507860ca0fdba1d8b0",
+          "path": "src/domain/trade-analysis/evaluate.ts",
+          "fingerprint": "1fa1679a3df7fabbdada028827b169fe8811beca0a768b942e6ac91f4b872984"
+        },
+        {
+          "item_id": "88f0c79f0d6ae90fdface99f338e9cb3d58faaee39f1938a972ad5881034ca98",
+          "path": "src/domain/trade-analysis/reference-trade.ts",
+          "fingerprint": "d9f344f82d6c54941e96b882925b3f74372615e1f14e84ea0c25843e79badb24"
+        },
+        {
+          "item_id": "e3568abba3ad9fd5d760a2828ba583f0fb046da316fea9e0c1800af3e6d91f35",
+          "path": "src/domain/trade-analysis/option-trade.ts",
+          "fingerprint": "923b59f323f7451c8a152e5e48be944be67290689b29df759b386edb4f0dcb12"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "4fc058cc58de66fdd72a8f0bea5bd9f9dcbbd7fbddb58245ce10a17c19a9cd48",
+          "path": "evidence/D09/suite-runs/T9.3-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "6a5b6bb202810ce65062239e18f4b9b56a9e7c3549657749d3ef713ee8e55eee",
+          "path": "evidence/D09/suite-runs/T9.3-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "946ab23bfab13d7cf7f4fd334fc991299d97e88479f5d800be5ed76d2808a5a6",
+          "path": "evidence/D09/tdd-log/T9.3.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "bc7ce85b6adbc59fd87d4b161e1affd3e5957b47c20f9e9ca1bca64e8b5ad50b",
+          "path": "evidence/D09/suite-runs/T9.3-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ee14f5304aeaff2ad88c64926dd95e6ddabd7156ca447774ea796853082c2048",
+          "path": "evidence/D09/suite-runs/T9.3-unit.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 94479
+  }
+}

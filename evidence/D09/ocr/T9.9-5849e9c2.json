@@ -1,0 +1,192 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 3,
+    "total_tokens": 280566,
+    "input_tokens": 277468,
+    "output_tokens": 3098,
+    "cache_read_tokens": 31616,
+    "elapsed": "1m10s"
+  },
+  "tool_calls": {
+    "total": 30,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 15,
+      "file_read": 13
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/replay/replay.props.ts",
+      "content": "The production replay contract never supplies this field: ReplayFigures omits currentMarkedPnlInPlanR, and replay()/the replay view assembler do not populate it. The local optional extension only makes this access type-check; consequently real sessions always omit the required R headline (e.g. '+$28.00 · 0.09R'). The tests hide this by injecting the extra property. Wire the evaluated R result through the replay contract/producer and test a production-shaped view, without deriving R in the UI.",
+      "existing_code": "  const inR = session.figures?.currentMarkedPnlInPlanR;",
+      "start_line": 37,
+      "end_line": 37,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/cockpit/replay/replay.props.ts",
+      "content": "This nested ternary violates the supplied checklist's explicit prohibition. The same pattern occurs in toneOf and the final-result sentence. Replace nested conditional expressions with explicit branches or small formatting helpers so each result case is independently readable.",
+      "existing_code": "    const cap = max?.kind === 'Unbounded' ? ' · no cap above' : max?.kind === 'Value' ? ` · at most ${money(max.value)} more` : '';",
+      "start_line": 102,
+      "end_line": 102,
+      "category": "maintainability",
+      "severity": "low"
+    },
+    {
+      "path": "src/ui/cockpit/replay/replay.props.test.ts",
+      "content": "This fixture adds a headline figure that the production replay contract does not provide. `ReplayFigures` in `domain/trade-analysis/replay-series.ts` does not include `currentMarkedPnlInPlanR`, and the replay producer does not populate it. Consequently, these headline tests pass with an R suffix that real replay sessions cannot display, masking the missing data-path integration. Expose and populate the domain-calculated value through the replay contract, and build this fixture against that contract without the intersection extension (ideally add a producer-to-adapter test).",
+      "existing_code": "  const figures: Figures \u0026 { readonly currentMarkedPnlInPlanR?: CalculationResult\u003cRational\u003e } = {",
+      "start_line": 54,
+      "end_line": 54,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "src/ui/cockpit/replay/replay.props.test.ts",
+      "files": [
+        "src/ui/cockpit/replay/replay.props.test.ts"
+      ]
+    },
+    {
+      "label": "src/ui/cockpit/replay/replay.props.ts",
+      "files": [
+        "src/ui/cockpit/replay/replay.props.ts"
+      ]
+    }
+  ],
+  "warnings": [
+    {
+      "file": "src/ui/cockpit/replay/replay.props.ts",
+      "message": "round 2: LLM completion error: received error while streaming: {\"message\":\"Our servers are currently overloaded. Please try again later.\",\"type\":\"service_unavailable_error\",\"param\":null,\"code\":\"server_is_overloaded\",\"headers\":{\"retry-after\":\"322\",\"retry-after-ms\":\"322000\"}}",
+      "type": "review_round_failed"
+    }
+  ],
+  "session_id": "7b8c50b2-7301-4660-ac74-b011825203d5",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "7b8c50b2-7301-4660-ac74-b011825203d5",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "5849e9c2",
+      "resolved_base": "301aa24bd00c05e4ba29695d9df5140e1d3ad090",
+      "resolved_head": "5849e9c2da60d1face73edf2d3dc64eb041f7076",
+      "exact_range": "301aa24bd00c05e4ba29695d9df5140e1d3ad090..5849e9c2da60d1face73edf2d3dc64eb041f7076",
+      "source_artifact_sha256": "9db552da7dcc4aaf470c9b49094638ae650184a9afaa8a6553122e644703bd18"
+    },
+    "execution": {
+      "ocr_version": "v1.13.12",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0060ea44ecacab2865c5d4dceb1c75627a3c3566a4f16698d1c3465ec458b6cf",
+          "path": "src/ui/cockpit/replay/replay.props.test.ts",
+          "fingerprint": "b9c01985d3bb52b509e6c075e83e59b0b482da5054712bda62b8bcba897fe9fd"
+        },
+        {
+          "item_id": "ea03ecbf36e42899eb18f897fb8983e3c8efff8a23ee606ee3aa718ee2111f66",
+          "path": "src/ui/cockpit/replay/replay.props.ts",
+          "fingerprint": "fb2cd413e53f3103df7f8fc9ca8e514470c5a19608a74a8c95bfbdc13162f9ae"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0060ea44ecacab2865c5d4dceb1c75627a3c3566a4f16698d1c3465ec458b6cf",
+          "path": "src/ui/cockpit/replay/replay.props.test.ts",
+          "fingerprint": "b9c01985d3bb52b509e6c075e83e59b0b482da5054712bda62b8bcba897fe9fd"
+        },
+        {
+          "item_id": "ea03ecbf36e42899eb18f897fb8983e3c8efff8a23ee606ee3aa718ee2111f66",
+          "path": "src/ui/cockpit/replay/replay.props.ts",
+          "fingerprint": "fb2cd413e53f3103df7f8fc9ca8e514470c5a19608a74a8c95bfbdc13162f9ae"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "03cc2191729d6819e7720e725aeae0a5931b7dc2ae22f58efa83319323fd2759",
+          "path": "evidence/D09/tdd-log/T9.9.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "4a2197bd65933ea320338e249af98fa35aaa8a06799cdde8ac2cad770b2deeed",
+          "path": "evidence/D09/suite-runs/T9.9-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "6264890963647bcd55ef340ff1c41eaee72e70abe859ab2e7f5782fc661bac77",
+          "path": "evidence/D09/suite-runs/T9.9-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "957b110bf8b96ae2852a8ed5895d5f6333584258fc2716961f33482227017207",
+          "path": "evidence/D09/suite-runs/T9.9-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "971c78fd74e2b406599c95b04b7647595ec15c455cc4f0db52ef772a8b07d9d7",
+          "path": "evidence/D09/suite-runs/T9.9-checks.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 70396
+  },
+  "retry_report": {
+    "schema_version": "ocr.llm-retry-report/v1",
+    "total_requests": 24,
+    "retried_requests": 0,
+    "total_retries": 0,
+    "recovered_requests": 0,
+    "failed_requests": 1,
+    "cancelled_requests": 0,
+    "requests": [
+      {
+        "logical_request_id": "0deff257dd606ef1ea174ddd050c75a6c7df1f780ea934c56d944a387d75153a",
+        "provider": "chatgpt",
+        "model": "gpt-6.1-sol",
+        "file_path": "src/ui/cockpit/replay/replay.props.ts",
+        "task_type": "main_task",
+        "request_no": 8,
+        "outcome": "failed",
+        "attempts": [
+          {
+            "attempt": 1,
+            "outcome": "error",
+            "error_class": "provider",
+            "failure_phase": "stream",
+            "status_code": 200,
+            "duration_to_headers_ms": 753
+          }
+        ]
+      }
+    ]
+  }
+}

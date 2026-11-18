@@ -61,6 +61,31 @@ Stage A runs as a swarm (decision 111, agent cap 4). Each task's heading holds i
 - **First-run passes (7), each with its mutation check** (`tdd-log/T9.3.md` has a note row for each): case 2 (`resultAt` priced a fixed 100 shares: '-5440/1' vs '-740/1'); case 3 (left out realized P&L: '-162/1' vs '316/1'); case 4 (the condition's own price, not its measurement: '-31836/1' vs '-1536/1'); case 5 (went through `marked(...)`: Unavailable vs '-318/1'); case 8 (a Value with nothing held); case 13 (`crossed: true` on the PastStop branch); case 16 (Unavailable AcknowledgedUnavailable whenever the Mark was absent). Each an assertion failure; each restored.
 - Implementation-level decisions (recorded, not pending): the zone comes from dollars only, a result exactly on a line counting as past it (pastBy 0); `crossed` is true when any condition of that role is Breached or Reached. A crossed Underlying-price condition whose dollars are still short of the line stays `Between` with no `crossed` flag; A249 is silent on that direction and the zone is defined by dollars, so the replay follows `evaluate`'s own condition statuses for the crossing. `openProfitAtRisk` is always set on a standing Value (zero with no open profit). `atMaxReward` reuses `maximumIncrementalReward`. Case 14's break-even session is built in the test from R-AXIO-U at its fill.
 - Test support added: `reference-trade.ts` `REPLAY_SESSION_DATES` (15 dates, 11-02 to 11-20), `ReplayTestSeries`, `R_AXIO_U`, `R_AXIO_D`, `AXIO`, `AXIO_LEG_ID`; `option-trade.ts` `R_BREN_U`, `K_SALE`, `R_CORV_D`, `R_DALE_D`, `R_DALE_U`, `BREN_CALL`, `CORV_PUT`, `DALE_PUT`. The test file's `evaluateAt(series, date)` helper derives at that day's 16:00 New York close.
+- ocr round 1 (`ocr/T9.3-4ad44271.json`), 3 findings:
+
+| Severity | Location | Claim | Assessment | Outcome |
+|---|---|---|---|---|
+| medium | `evaluate.ts:499` | For an open long Call past expiration, `atMaxReward` is a finite figure (the strike), because `maximumIncrementalReward` returns Unavailable(SettlementDue) before its Unbounded branch | Valid | T9.3-B1 |
+| low | `outcomes.test.ts:28-29` | `evaluateAt` reads `series.held[i]!`; a series shorter than the sessions gives `undefined`, an Available Mark with no price, not Missing | Valid | T9.3-B2 |
+| low | `evaluate.ts:524` | The nested ternary clamping open profit should be an if/else or a clamp helper | Doubtful (readability) | T9.3-B3 |
+
+- **T9.3-B1.** Defect: a long Call held past its expiration session gets a finite result at the Max reward (the strike priced), against A248 ("Unbounded above for stock and a long Call"; none of the four reads a Mark). Case: "it should give a long Call held past its expiration a result at the Max reward that is Unbounded above".
+- **T9.3-B2.** Defect: a test series with fewer Marks than sessions evaluates its later sessions as Available with an undefined price, breaking `reference-trade.ts`'s documented contract. Case: "it should evaluate a session beyond a shorter series' Marks as having no Mark".
+- T9.3-B1 commit `f9db22e8`: red `expected { kind: 'Value', … } to match object { kind: 'Unbounded', … }` (R_BREN_U evaluated on 2026-11-23, still held, no Marks), then green. `atMaxReward` decides Unbounded from the Position's structure (lots held; stock or a Call) through a shared `unboundedReward()` helper; `maximumIncrementalReward`'s own result unchanged. Lane tier `T9.3-B1`: unit 2129, integration 269, checks 14 of 14. One invalid red row (a stray "it" prefix matched no test) is noted in the log. ocr (`ocr/T9.3-B1-f9db22e8.json`): **No findings.**
+- T9.3-B2 commit `9a0d01de` (test only): red a runtime exception, "Invalid stored decimal: undefined" (R_AXIO_U cut to 3 Marks, evaluated on Fri 11-06 while held), then green with `?? null` in `evaluateAt`. Lane tier `T9.3-B2`: unit 2130, integration 269, checks 14 of 14. ocr (`ocr/T9.3-B2-9a0d01de.json`): **No findings.** The reviewer reviewed the test file in place (its instructions say every commit is reviewed in place, and `.claude/ocr-rule.json` brings `*.test.ts` files in), not relocated under `src/itg/d09/` as the handoff says; 1 of 1 file selected.
+- **T9.3-B3.** A readability change with no behavior: the clamp becomes a named helper or if/else. No failing test is possible; verification is the T9.3 cases passing unchanged before and after (a refactor, recorded as such).
+- T9.3-B3 commit `e5b5a31a`: the clamp in `standingOf` is an explicit if/else. `outcomes.test.ts` 19 passed before and 19 after. Lane tier `T9.3-B3`: unit 2130, integration 269, checks 14 of 14. ocr (`ocr/T9.3-B3-e5b5a31a.json`): **No findings.** All three T9.3 bug tasks are clean.
+- Lane TA rebased onto `9849a614` (only lane CP's UI and the evidence between; no file of lane TA's changed) and merged by fast-forward: T9.3 `ad1ffc33`, B1 `8df5d829`, B2 `6791f5db`, B3 `2a9c512d`, and T9.9-B1 `516ba4c3` (ocr `ocr/T9.9-B1-910d1095.json`: **No findings**).
+
+## T9.13 Corridor: the Trade P&L area, the two lines, the banked band and markers
+
+- Lane CP, base `512ec7a1` (lane at `9849a614`), commit `02c047e7` (before rebase). 10 cases green (`tdd-log/T9.13.md`; cases 5 and 10 each have failed "green" rows kept as run, where the test's own helper or fixture was wrong and the test, not the code, was fixed). No first-run passes.
+- Lane tier `T9.13`: unit 2129, integration 269, checks 14 of 14.
+- The prototype was seen at 1280 px only; the plot was also rendered to static markup at 640 and 340 px. Browser checks at 375 and 320 px are left to T9.18 and the critic.
+- No-arithmetic check (from the summary): every dollar figure arrives finished; the arithmetic is SVG positions, band and area geometry, and a 10% axis pad (`pnlRange`); the P&L range comes from break-even, the revealed sessions' figures and the Plan's two results, and Worst case and Max reward never stretch it.
+- Implementation-level decisions: "the result" that is never dropped means the Stop and Target labels at the slider's session, the strip's Mark label and both stake tags (`PlotSession` has no label for the P&L value itself); marker labels are drawn once, in the P&L chart, with only the dashed line in the strip; the time axis's end label moved to the P&L chart; the Plan column has no label; the banked band follows the revealed sessions' finished `banked` figure and is not broken at a session with no Mark (realized P&L needs no Mark, A248); a cursor line and a dot per session in the P&L chart. `onSelectSession`, `onHoverSession`, `hoverIndex` still unused; the key (W44) is the frame's.
+- P137: nothing shortened. New words: none ("Break-even" is W40).
+- `axisMoney` now writes a minus sign for negatives.
 
 ## T9.9 Replay adapter: the headline and the stake sentence
 
@@ -73,6 +98,19 @@ Stage A runs as a swarm (decision 111, agent cap 4). Each task's heading holds i
   - The side a price is "still" on ("though DALE is still above $54.00") comes from the existing `conditionDirection` helper, reading the held Instrument's right and the sign of the first position's quantity, and assuming long for stock.
   - A final session's "banked before the end" is the previous session's `realizedPnl`, selected, not calculated.
   - A Stop passed by exactly $0.00 reads "Past the Stop by $0.00 (0.00R)."; no approved row and no case covers it (W37 has "Target reached." for the Target side). For the stage report.
+- ocr round 1 (`ocr/T9.9-5849e9c2.json`; one round of `replay.props.ts` hit a provider overload, `server_is_overloaded`, and the run still finished with no failed items), 3 findings:
+
+| Severity | Location | Claim | Assessment | Outcome |
+|---|---|---|---|---|
+| medium | `replay.props.ts:37` | The adapter reads `figures.currentMarkedPnlInPlanR`, which the production view never carries, so the headline's R never shows | Valid | T9.9-B1 (lane TA) |
+| medium | `replay.props.test.ts:54` | The fixture adds `currentMarkedPnlInPlanR` by intersection, so the headline cases pass with an R a production-shaped view can't supply | Valid | T9.9-B3 (lane CF, after B1 merges) |
+| low | `replay.props.ts:102` | Nested ternaries (lines 28, 57, 67, 102) | Doubtful (readability) | T9.9-B2 (lane CF) |
+
+- **T9.9-B1 (lane TA).** The fix lies in Trade Analysis, which lane CF may not edit: `ReplayFigures` (`replay-series.ts`) gains `currentMarkedPnlInPlanR` in its `Pick`, so the view carries the Trade P&L in Plan R per session (W36, A250 "exactly as `evaluate` returns them"). Type-only now; T9.4 fills `figures` from `evaluate`, so the field comes with it and T9.4's first case asserts it. Verification: `typecheck`. Runs in lane TA after T9.3-B3, and merges with T9.3. Implementation-level decision: an ocr bug task run in the lane that owns the file.
+- **T9.9-B2 (lane CF).** Readability, no behavior: the nested ternaries become if/else or small named functions. Verification: `replay.props.test.ts` unchanged before and after.
+- T9.9-B1 commit `910d1095` (lane TA): `currentMarkedPnlInPlanR` added to `ReplayFigures`' `Pick`; the view's `ReplayFigures` is derived (`NonNullable<ReplayedSession['figures']>`), so `replay-view.ts` needed no edit. `typecheck`, `tsc6`, `lint`, `lint:deps` exit 0. Lane tier `T9.9-B1`: unit 2130, integration 269, checks 14 of 14.
+- T9.9-B2 commit `dcf5f90d`: `toneOf`, the final-result sentence (a named `ending`), the Ahead/Behind return and the stake sentence's `cap` are if/else; `plannedAmountWords`' single ternary left. `replay.props.test.ts` 12 of 12 before and after. Lane tier `T9.9-B2`: unit 2123, integration 269, checks 14 of 14. ocr (`ocr/T9.9-B2-dcf5f90d.json`): **No findings.**
+- **T9.9-B3 (lane CF).** After B1 merges and lane CF rebases: `ReplayWordsView`'s widening and the fixture's intersection go; the fixture is built from the real `TradeReplayView`. Verification: `typecheck` and the 12 cases unchanged. T9.9 merges after B3.
 
 ## Merge runs
 

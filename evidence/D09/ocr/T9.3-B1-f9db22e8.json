@@ -1,0 +1,121 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 0,
+    "total_tokens": 52288,
+    "input_tokens": 52042,
+    "output_tokens": 246,
+    "cache_read_tokens": 8320,
+    "elapsed": "15s"
+  },
+  "tool_calls": {
+    "total": 5,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/domain/trade-analysis/evaluate.ts",
+        "src/domain/trade-analysis/outcomes.test.ts"
+      ]
+    }
+  ],
+  "session_id": "03640f5b-1aac-4e96-8298-4301d71d6383",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "03640f5b-1aac-4e96-8298-4301d71d6383",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "f9db22e8",
+      "resolved_base": "4ad44271709c5252c341a2301ab1c788cb4c2c69",
+      "resolved_head": "f9db22e8e82373fd8bd4060a166d28a97d174049",
+      "exact_range": "4ad44271709c5252c341a2301ab1c788cb4c2c69..f9db22e8e82373fd8bd4060a166d28a97d174049",
+      "source_artifact_sha256": "b011ab03288af3264ffc7307c15342ee426e1c6a98294189a8977edb6163a013"
+    },
+    "execution": {
+      "ocr_version": "v1.13.12",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "09c9a9306a8db70c392815e68f0bb89488cddd9f0eac8dc65649d823e7f32256",
+          "path": "src/domain/trade-analysis/outcomes.test.ts",
+          "fingerprint": "36b003d05c9b64306806bbe7de9d27a4a0016579e358c01c008602bb892447ba"
+        },
+        {
+          "item_id": "2cdfac52e8ab493575d7f44a1a39167101fcd433edd529507860ca0fdba1d8b0",
+          "path": "src/domain/trade-analysis/evaluate.ts",
+          "fingerprint": "f04cb40be811df7c15e8617f5ff8869444c78f4062adf4080fbdb957897c04b5"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "09c9a9306a8db70c392815e68f0bb89488cddd9f0eac8dc65649d823e7f32256",
+          "path": "src/domain/trade-analysis/outcomes.test.ts",
+          "fingerprint": "36b003d05c9b64306806bbe7de9d27a4a0016579e358c01c008602bb892447ba"
+        },
+        {
+          "item_id": "2cdfac52e8ab493575d7f44a1a39167101fcd433edd529507860ca0fdba1d8b0",
+          "path": "src/domain/trade-analysis/evaluate.ts",
+          "fingerprint": "f04cb40be811df7c15e8617f5ff8869444c78f4062adf4080fbdb957897c04b5"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "2055e5f0370f0c8b91e77d2c0a5a54a8477d04cdfb56b485e326f7d52359f4ed",
+          "path": "evidence/D09/tdd-log/T9.3-B1.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "65e0e24f88901b92fb1a27befdcf85a3a0ae6117d0bda82d62b48c84efcd942e",
+          "path": "evidence/D09/suite-runs/T9.3-B1-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "6c1a289e92513b843ad0acec67cef15b7dbdc6171a495dad02e93a345cb107c9",
+          "path": "evidence/D09/suite-runs/T9.3-B1-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "be8a6949bb8644290bd263a441d03d24f45b8888f12036f2d68a8008ececa5bc",
+          "path": "evidence/D09/suite-runs/T9.3-B1-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "bff0aaab9e0b3b07f178f9c6e51dc1fee096ca4aeba2195a759765ebf3848a20",
+          "path": "evidence/D09/suite-runs/T9.3-B1-checks.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 15227
+  }
+}

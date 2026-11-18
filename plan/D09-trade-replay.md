@@ -934,7 +934,7 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 |---|---|---|---|---|---|
 | T9.1 | A | 0 | TL | Done | `adcc6abb` |
 | T9.2 | A | 0 | TY | Done | `7251c72b` |
-| T9.3 | A | 1 | TA | In progress from `301aa24b` | |
+| T9.3 | A | 1 | TA | Done | `ad1ffc33`; B1 `8df5d829`; B2 `6791f5db`; B3 `2a9c512d` |
 | T9.4 | A | 1 | TA | Not started | |
 | T9.5 | A | 1 | TA | Not started | |
 | T9.9 | A | 1 | CF | In progress from `301aa24b` | |
