@@ -37,4 +37,10 @@ Stage A runs as a swarm (decision 111, agent cap 4). Each task's heading holds i
 
 ## Merge runs
 
-- None yet.
+### wave0 (on `1aa7c69e`, after T9.1 and T9.2)
+
+- Browser tier: full (`first matching path since 84d4ed50: package.json`). The first run with three browser stages.
+- Unit 191 files, 2111 tests; integration 123 files, 269 tests; browser-1 126 passed (5.4 min); browser-2 79 passed (5.0 min); browser-3 56 passed, **1 failed** (4.4 min); checks 14 of 14. `run-complete.sh`: run complete (six stage files).
+- The failure: `e2e/d8/responsive-a11y.spec.ts:299`, B8.16 "should complete a Restore with the keyboard only, every focused control showing a focus ring", `TimeoutError: page.waitForEvent: Timeout 15000ms exceeded while waiting for event "filechooser"` (`chooseFile`, `e2e/d8/support.ts:43`). Not one of P138's known flaky cases.
+- Reproduction (main session, under the lock): the case alone passed (2.1 s); the whole `test:e2e:3` stage again passed 57 of 57 in 4.2 min (`suite-runs/wave0-browser-3-rerun.txt`). It did not reproduce, so no failing test can be written for it, and wave 0 changed no product or test code. Logged as an unreproduced browser failure (a suspected flake) for the stage report; if it fails again in a later run, it becomes a pending decision under P138's spirit.
+- Stage times: none near 8 minutes, so the third stage meets T9.1's expected result.

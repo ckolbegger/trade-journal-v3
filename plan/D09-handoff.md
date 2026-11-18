@@ -254,4 +254,5 @@ Task status and commits are in the breakdown's Progress section. This section ho
 ### Open questions
 
 - Session 1 (2026-11-17): the main session read the D9-specific ranges of `plan/spec-reading/D09.md` (Trade Analysis, Daily Review, the UI contract), not all 132 entries; each brief names the spec ranges its task needs. Recorded in `evidence/D09/structural.md`, "Session reading".
+- Run `wave0`: B8.16's keyboard Restore case (`e2e/d8/responsive-a11y.spec.ts:299`) timed out waiting for the file chooser; it passed alone and in a rerun of the whole third stage. Logged as a suspected flake, not one of P138's two known cases.
 - Session 1: T9.1 and T9.2 were dispatched after the breakdown was read and before the rest of the reading, since neither needs it.
