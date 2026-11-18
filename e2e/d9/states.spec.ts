@@ -87,7 +87,7 @@ test.describe('B9.4 How a replay ends', () => {
     await expect(headline(scope)).toHaveText('Mark missing: DALE Nov 20 $57.50 Put, Fri Nov 20');
     await expect(going(scope)).toHaveText('No Mark.');
     await expect(scope).not.toContainText('Final result');
-    await expect(scope.locator('.replay-readout-group h3')).toHaveText(['How it is going', 'Marks', 'Position', 'The Plan']);
+    await expect(scope.locator('.replay-readout-group h3')).toHaveText(['How it is going', 'At stake from here, whole Position', 'Marks', 'Position', 'The Plan']);
     await expectNoPayoffOrTheory(page);
     // Thu 11-19, the last session with a Mark: the put is worth $0.00 and the Trade is ahead, with the Stop and Target as the Plan set them.
     await seek(page, scope, 'ArrowLeft');
