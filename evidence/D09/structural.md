@@ -92,6 +92,15 @@ Stage A runs as a swarm (decision 111, agent cap 4). Each task's heading holds i
 - **First-run pass:** "should leave the Plan column unchanged after a second lot": the Plan code reads the whole record's Plan Baseline. Mutation `atStop` as `ZERO.add(oneR)`: `AssertionError: expected '600/1' to be '-600/1'`; restored. The fact-order sort was written ahead of its case, then removed for a genuine red and restored (in the log).
 - Lane tier `T9.5`: unit 1 failure, `TradeList.test.tsx` "should render distinct Loading, Ready, Empty …" — P138's known flaky case; it passed alone (36 of 36), so the tier counts as passed; integration 269; checks 14 of 14. Trade Analysis 237 of 237.
 - Implementation-level notes: `markers` is always set (an empty array for a session with no Position Change), though the type still declares it optional; effect is Opened when nothing was open before, Closed when nothing is open after, else Added or Reduced by the change in open quantity's size; an Expiration has one fill `{ instrument, action: 'Expire', quantity }` with no `price`. `plan` is from the whole record's Plan Baseline.
+- ocr round 1 (`ocr/T9.5-6e171f5f.json`), 2 findings:
+
+| Severity | Location | Claim | Assessment | Outcome |
+|---|---|---|---|---|
+| medium | `replay-series.ts:141` | Markers come from the whole record, chosen by Position Change id, so a Position Change whose fills straddle a session's close shows its later fills (and an effect counting them) in the earlier session, while that session's Position and P&L (`derive` at the cutoff) leave them out | Valid | T9.5-B1 |
+| low | `replay-series.ts:175` | The nested ternary picking Opened, Closed, Added or Reduced | Valid (readability) | T9.5-B2, structural |
+
+- **T9.5-B1.** Case: "it should list only the fills up to the session's close in a Position Change that straddles it, with the effect they make".
+- **T9.5-B2.** Readability: the effect as an if/else chain; verification `replay-series.test.ts` unchanged before and after.
 
 ## T9.10 Replay frame: the slider reveals sessions
 
@@ -109,6 +118,8 @@ Stage A runs as a swarm (decision 111, agent cap 4). Each task's heading holds i
 
 - **T9.10-B1.** Defect: the screen can't keep the slider's session (A257; the Review's round trip, P129). Case: "it should tell the screen the slider's new session when it moves".
 - T9.10-B1 commit `eb181921`: red `expected last "vi.fn()" call to have been called with [ '2026-11-13' ]`, then green. `onSessionChange(date)` is called on a move by a button, a key or the range input, only when the date changes; not on first render, a Trade change or an appended session. Lane tier `T9.10-B1`: unit 2159, integration 269, checks 14 of 14. ocr (`ocr/T9.10-B1-eb181921.json`): **No findings.**
+- T9.10-B2 commit `9dee11cb` (test only): **first-run pass**, as expected. Mutation: the held date starts as `initialSession ?? sessions[last]?.date` (an unmoved slider holds the first-rendered last session): `AssertionError: expected '10' to be '11'`; restored. Lane tier `T9.10-B2`: unit 2160, integration 269, checks 14 of 14. ocr (`ocr/T9.10-B2-9dee11cb.json`): **No findings.**
+- Lane CF rebased onto `16b88fc8` and merged by fast-forward: T9.10 `0e0a8efb`, B1 `b3f0a4c7`, B2 `62e57929`.
 - **T9.10-B2.** Implementation-level decision (recorded, not pending): the current behavior is the intended one. A slider the trader hasn't moved rests on the newest session, so after Save Marks the Review card shows the new Mark's session (T9.15's third case, A254); a slider the trader moved keeps that session (T9.10's seventh case, A257). The bug task pins this with a case, "it should follow a new last session when the slider has not been moved, and keep a moved slider's session"; it is expected to pass on its first run, and gets the mutation check.
 
 ## T9.13 Corridor: the Trade P&L area, the two lines, the banked band and markers
