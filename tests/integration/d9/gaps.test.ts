@@ -36,6 +36,7 @@ describe('I9.2 Gaps stay gaps (AC-MARK-004)', () => {
     expect(putMark(before, TUE).resolution).toEqual({ kind: 'Missing' });
     expect(tuesday.change).toBeNull();
     expect(tuesday.riskChange).toBeUndefined();
+    expect(tuesday.rewardChange).toBeUndefined();
     // Wednesday is measured from Monday 11-09, the last session that had each figure.
     const wednesday = session(before, WED);
     expect(row(wednesday)).toMatchObject({ tradePnl: q(903n), risk: q(1221n), reward: q(0n) });
@@ -54,6 +55,14 @@ describe('I9.2 Gaps stay gaps (AC-MARK-004)', () => {
     expect(figure(acknowledged.tradePnl)).toBe('Unavailable:AcknowledgedUnavailable');
     expect(row(acknowledged)).toMatchObject({ risk: 'Unavailable:AcknowledgedUnavailable', reward: 'Unavailable:AcknowledgedUnavailable', atStop: q(-318n), atTarget: q(867n) });
     expect(acknowledged.change).toBeNull();
-    expect(session(after, WED).change).toEqual(wednesday.change);
+    expect(acknowledged.riskChange).toBeUndefined();
+    expect(acknowledged.rewardChange).toBeUndefined();
+    // Wednesday still measures all three changes from Monday, with the same values as before.
+    const wednesdayAfter = session(after, WED);
+    expect(wednesdayAfter.change).toEqual(wednesday.change);
+    expect(wednesdayAfter.riskChange).toEqual(wednesday.riskChange);
+    expect(wednesdayAfter.rewardChange).toEqual(wednesday.rewardChange);
+    expect(wednesdayAfter.riskChange && { since: wednesdayAfter.riskChange.since, dollars: frac(wednesdayAfter.riskChange.dollars) }).toEqual({ since: '2026-11-09', dollars: q(261n) });
+    expect(wednesdayAfter.rewardChange && { since: wednesdayAfter.rewardChange.since, dollars: frac(wednesdayAfter.rewardChange.dollars) }).toEqual({ since: '2026-11-09', dollars: q(-225n) });
   });
 });
