@@ -525,4 +525,24 @@ describe('Corridor: drawn at a phone\'s real width (W39, W40, W41)', () => {
       vi.restoreAllMocks();
     }
   });
+
+  it('should keep the banked label inside the chart when the sale is on the last session, drawn narrow', () => {
+    for (const width of [280, 240]) {
+      frameWidth(width);
+      // Fifteen sessions, the sale on the last slot (14); the plan's doubles stop at slot 10, so the rest are filler.
+      const sessions = Array.from({ length: 15 }, (_, i) =>
+        bren(Math.min(i, 10), { slot: i, banked: i === 14 ? 478 : 0, bankedLabel: i === 14 ? 'Banked +$478' : undefined, markers: [] }),
+      );
+      const { container } = render(<CorridorPlot {...props({ sessions, sliderIndex: 14 })} />);
+      const t = [...pnl(container).querySelectorAll('text.banked-label')].find((e) => e.textContent === 'Banked +$478')!;
+      expect(t, `${width}: the banked label is kept`).toBeTruthy();
+      const x = num(t, 'x');
+      const w = t.textContent.length * 6;
+      const start = t.getAttribute('text-anchor') === 'end' ? x - w : x;
+      expect(start, `${width}: left edge`).toBeGreaterThanOrEqual(0);
+      expect(start + w, `${width}: right edge`).toBeLessThanOrEqual(width);
+      cleanup();
+      vi.restoreAllMocks();
+    }
+  });
 });

@@ -137,11 +137,20 @@ export function PnlChart({ props, width }: { props: ReplayPlotProps; width: numb
       const left = time.x(s.slot) - time.column / 2 + 3;
       const y = value.y(s.banked);
       const [first, second] = s.banked > 0 ? [y - 4, y + 12] : [y + 12, y - 4];
-      put(`banked-${s.slot}`, 'banked-label', text, [
-        { x: left, y: first, anchor: 'start' },
-        { x: left, y: second, anchor: 'start' },
-        // On a phone the banked label is never left out; the "Break-even" and "Sold 2" labels give way to it.
-      ], props.compact);
+      // A sale near the last session would run past the edge, so there the label ends at the column instead.
+      const runsPast = left + text.length * 6 + 2 > width;
+      const rightEdge = time.x(s.slot) + time.column / 2 - 3;
+      const anchored: Spot[] = runsPast
+        ? [
+            { x: rightEdge, y: first, anchor: 'end' },
+            { x: rightEdge, y: second, anchor: 'end' },
+          ]
+        : [
+            { x: left, y: first, anchor: 'start' },
+            { x: left, y: second, anchor: 'start' },
+          ];
+      // On a phone the banked label is never left out; the "Break-even" and "Sold 2" labels give way to it.
+      put(`banked-${s.slot}`, 'banked-label', text, anchored, props.compact);
     });
   }
   if (current?.stake && current.tradePnl !== null) {

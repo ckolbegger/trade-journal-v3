@@ -1,0 +1,45 @@
+
+ RUN  v4.1.12 /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/.claude/worktrees/d09-br
+
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > lifecycle tabs > should show Open, Planned, and Closed tabs as a tablist with Open selected by default 63ms
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > lifecycle tabs > should request a fresh page on every tab switch 12ms
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > Trades heading > should show an h1 Trades above the tabs in the Loading, Ready, Empty, and Error states of both tabs 42ms
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > Open list > should render distinct Loading, Ready, Empty explaining that recording an entry on a Planned Trade opens it, and Error with Retry states 21ms
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > Planned list > should render distinct Loading, Ready, Empty (with a New Plan action), and Error (with Retry) states 15ms
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > Closed list (A95) > should render distinct Loading, Ready, Empty, and Error states, and rows with signed realized P&L, Realized R, Closed via sale, Close Reason, close date, and indicators with text, numbers right-aligned in tabular numerals 29ms
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > Closed list (A95) > should show an incoherent Closed row with Facts cannot be replayed and Not available in place of its realized figures, keeping its Close Reason, close date and account 11ms
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > Closed list (A95) > should show the close date as Not available when the Workspace zone is unknown, rather than a date in some other zone 7ms
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > Closed list paging (T6.18-B1) > should append the next page in order with Show more closed trades, ask with the cursor, hold the rows and the button busy while it loads, and drop the button when no cursor remains 22ms
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > Closed list paging (T6.18-B1) > should reload from the first page and say the list was refreshed when the cursor has expired, never the generic error 12ms
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > Closed list paging (T6.18-B1) > should keep the loaded rows and show the failure beside a Retry when a next page fails, then append it on Retry 16ms
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > Closed list paging (T6.18-B1) > should discard a late next page after a tab switch, and start again from the first page on return 14ms
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > Closed list paging (T6.18-B1) > should move focus to the refreshed status line when a cursor-expired reload leaves no Show more button, instead of dropping it to the page 8ms
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > Closed list paging (T6.18-B1) > should move focus to the empty message when a cursor-expired reload finds no closed trades 9ms
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > Closed list paging (T6.18-B1) > should leave focus where the trader moved it when the final page arrives late 13ms
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > Closed list paging (T6.18-B1) > should leave focus on the page when the trader clicked blank space while the final page loaded, since the Show more button no longer held it 11ms
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > Trades table columns > should show the Open columns in order Underlying, Trade, Net cost, P&L, Entry, Account, with Underlying a link named by the symbol, and no Fees, Integrity, Deviations or Last activity column 9ms
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > Trades table columns > should show the Planned columns in order Underlying, Trade, 1R, Reward : risk, Entry, Account, with no Planned reward or Plan time column 9ms
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > Trades table columns > should show the Trade cell summary text and, on a second line, Net cost 3,007.00 for Open or 1R 250.00 and Reward : risk 2.4 for Planned 13ms
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > Trades table columns > should separate the Trade cell's summary, badge and second line with a space 9ms
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > Trades table columns > should show Entering · 60 of 100 or Resolved · 120.5 of 100 in the Open Entry cell 9ms
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > Trades table columns > badge meanings > should give a Records disagree badge the warning tone 5ms
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > Trades table columns > should carry the Net cost of an incoherent Open row, Not available, in the second line of its Trade cell 6ms
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > Trades table columns > should carry 1R and Reward : risk of an incoherent Planned row, Not available, in the second line of its Trade cell 6ms
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > Trades table columns > should show a Records disagree badge in the Trade cell of a disagreeing row, coherent or incoherent, and none on an agreeing row 19ms
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > Open list current evaluation > should show per row the signed Current Marked Trade P&L in dollars and R right-aligned in tabular numerals and Stop breached or Target reached badges with text in the Trade cell, with no Risk to stop or Reward to target column 13ms
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > Open list current evaluation > should show Mark missing linking to the Review Marks family in place of the P&L, never a number, plus the dated line P&L labelled with its date when present 11ms
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > Open list current evaluation > should link the Open list Mark missing figure to the Review with its trade id and instrument key 8ms
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > Open list current evaluation > should show Awaiting the close after the date in place of the P&L when the evaluation reports AwaitingClose, with no at-entry risk in the list, and the dated line when present 7ms
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > Open list current evaluation > should give the compact P&L heading its canonical term Current Marked Trade P&L in its accessible name 6ms
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > Open list current evaluation > should show Outside the market calendar with no Review link and no Mark missing badge when the date lies outside session-policy coverage 7ms
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > Open list current evaluation > should word an Acknowledged Unavailable P&L as the trader acknowledgment, linked to the Review, with no Mark missing badge 7ms
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > Open list current evaluation > should carry the P&L after Net cost in the second line of the Trade cell, with the Review link for a missing Mark, for the narrow layout 7ms
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > lists, Detail and receipt words (P72) > should show a missing Mark figure text in the Open list P&L cell and the Mark missing badge, from the module 7ms
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > lists, Detail and receipt words (P72) > should show Facts cannot be replayed as the badge of a Trade whose facts cannot be replayed, and Records disagree only on a Trade with an integrity disagreement 8ms
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > Open rows as text > should return from openRowsOf the headers and rows the Open list renders 17ms
+
+ Test Files  1 passed (1)
+      Tests  36 passed (36)
+   Start at  10:36:28
+   Duration  1.08s (transform 205ms, setup 14ms, import 301ms, tests 487ms, environment 201ms)
+
