@@ -4,7 +4,7 @@
 # Main case: it should report run INCOMPLETE for a run with unit, integration and checks files but no
 # browser file and no lane marker (the browser stage never ran, so it is not a lane tier).
 # Also checks: a lane-tier run (the <label>-lane.txt marker full-suite.sh writes) still reports run
-# complete, and what must keep working: the full tier (5 files) and the task tier (4 files) report run
+# complete, and what must keep working: the full tier (6 files) and the task tier (4 files) report run
 # complete when finished and run INCOMPLETE when a file is missing or a command is unfinished.
 here=$(cd "$(dirname "$0")" && pwd)
 rc="$here/run-complete.sh"
@@ -41,13 +41,21 @@ printf '$ npm run lint\n' >"$t/lane/suite-runs/x-checks.txt"
 verdict lane x
 [[ $code != 0 && "$out" == *"run INCOMPLETE"* ]] || bad "a marked lane-tier run with a cut-off stage was not reported INCOMPLETE: $out"
 
-# The full tier (5 files) and the task tier (4 files) still work.
-mk full x unit integration browser-1 browser-2 checks
+# The full tier (6 files) and the task tier (4 files) still work.
+mk full x unit integration browser-1 browser-2 browser-3 checks
 verdict full x
 [[ $code == 0 && "$out" == *"run complete"* ]] || bad "a finished full-tier run was not reported complete: $out"
 rm "$t/full/suite-runs/x-browser-2.txt"
 verdict full x
 [[ $code != 0 && "$out" == *"browser-2: missing"* ]] || bad "a full-tier run missing browser-2 was not reported INCOMPLETE: $out"
+# A run with the older two-stage browser files only (no browser-3) is not complete.
+mk full2 x unit integration browser-1 browser-2 checks
+verdict full2 x
+[[ $code != 0 && "$out" == *"browser-3: missing"* ]] || bad "a full-tier run missing browser-3 was not reported INCOMPLETE: $out"
+# browser-3 alone marks the full tier, so the other two browser files are named.
+mk full3 x unit integration browser-3 checks
+verdict full3 x
+[[ $code != 0 && "$out" == *"browser-1: missing"* && "$out" == *"browser-2: missing"* ]] || bad "a run with only browser-3 did not name browser-1 and browser-2: $out"
 mk task x unit integration browser checks
 verdict task x
 [[ $code == 0 && "$out" == *"run complete"* ]] || bad "a finished task-tier run was not reported complete: $out"

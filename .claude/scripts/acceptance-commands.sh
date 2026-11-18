@@ -68,10 +68,10 @@ run_list() { # prints "N tests" or "FAIL: reason"
       out=$(CLAUDE_FULL_OUTPUT=1 npx vitest list --project "$proj" ${SPLIT[@]+"${SPLIT[@]}"} 2>&1); rc=$?
       if (( rc != 0 )); then echo "FAIL: vitest list exited $rc"; return; fi
       n=$(printf '%s\n' "$out" | grep -c '^\[') ;;
-    "npm run test:e2e"|"npm run test:e2e:1"|"npm run test:e2e:2")
+    "npm run test:e2e"|"npm run test:e2e:1"|"npm run test:e2e:2"|"npm run test:e2e:3")
       # Bare form: the folders and --grep-invert that package.json's script names (read as text, never run).
       local scripts=("${cmd#npm run }") s sargs sn; n=0
-      [[ "$cmd" == "npm run test:e2e" ]] && scripts=(test:e2e:1 test:e2e:2)
+      [[ "$cmd" == "npm run test:e2e" ]] && scripts=(test:e2e:1 test:e2e:2 test:e2e:3)
       for s in "${scripts[@]}"; do
         sargs=$(node -e 'const s = JSON.parse(require("fs").readFileSync("package.json", "utf8")).scripts[process.argv[1]] || ""; const m = s.match(/playwright test (.*)$/); process.stdout.write(m ? m[1] : "")' "$s")
         if [[ -z "$sargs" ]]; then echo "FAIL: no playwright command in script $s"; return; fi

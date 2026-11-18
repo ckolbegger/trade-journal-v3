@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Checks that a cumulative run's stage files are all finished.
 # Usage: run-complete.sh <evidence-dir> <label>
-# A full-tier run has five files (unit, integration, browser-1, browser-2, checks); a task-tier
+# A full-tier run has six files (unit, integration, browser-1, browser-2, browser-3, checks); a task-tier
 # run, or a run made before decision 98's revision 65, has four (unit, integration, browser, checks).
-# The tier is read from the files: if either browser-1 or browser-2 exists, both are required;
+# The tier is read from the files: if any of browser-1, browser-2 or browser-3 exists, all three are required;
 # otherwise the single browser file is. A run is a lane tier (decision 111), needing three files
 # (unit, integration, checks), only when it has the marker file <label>-lane.txt that full-suite.sh's
 # lane stage writes and no browser file; a run with neither is judged as the task tier, so its missing
@@ -12,8 +12,8 @@
 # started (full-suite.sh writes "$ <command>" before each command in a multi-command file).
 set -u
 dir="$1/suite-runs"; label="$2"; incomplete=0
-if [[ -f "$dir/$label-browser-1.txt" || -f "$dir/$label-browser-2.txt" ]]; then
-  stages=(unit integration browser-1 browser-2 checks)
+if [[ -f "$dir/$label-browser-1.txt" || -f "$dir/$label-browser-2.txt" || -f "$dir/$label-browser-3.txt" ]]; then
+  stages=(unit integration browser-1 browser-2 browser-3 checks)
 elif [[ ! -f "$dir/$label-browser.txt" && -f "$dir/$label-lane.txt" ]]; then
   stages=(unit integration checks) # lane tier (decision 111): only with the marker full-suite.sh's lane stage writes
 else
