@@ -294,6 +294,21 @@ describe('replay: markers (A251)', () => {
     expect(markers.map((m) => [m.id, m.effect])).toEqual([['pc-bren-2', 'Reduced'], ['pc-bren-x', 'Reduced']]);
     expect(markers.map((m) => fillsOf(m).map((f) => [f.quantity, f.price]))).toEqual([[[q(2n), q(4n)]], [[q(1n), q(410n, 100n)]]]);
   });
+
+  it("should list only the fills up to the session's close in a Position Change that straddles it, with the effect they make", () => {
+    // R-BREN-U's sale of 4 as one Position Change: 2 at 4.00 Thu 11-12 and the other 2 at 4.10 after Fri 11-13's open, before its close.
+    const [buy, sale] = R_BREN_U.record.positionChanges as [PositionChangeFact, PositionChangeFact];
+    const first = sale.executions[0]!;
+    const straddling: PositionChangeFact = {
+      ...sale,
+      executions: [first, { ...first, factId: 'ex-pc-bren-2b', economicTime: '2026-11-13T15:00:00Z', recordedSequence: first.recordedSequence + 1, price: '4.10' }],
+    };
+    const series: ReplayTestSeries = { ...R_BREN_U, record: { ...R_BREN_U.record, positionChanges: [buy, straddling] } };
+    const markers = markersAt(series, '2026-11-12')!;
+    expect(markers.map((m) => [m.id, m.effect])).toEqual([['pc-bren-2', 'Reduced']]);
+    expect(markers.map((m) => fillsOf(m).map((f) => [f.quantity, f.price]))).toEqual([[[q(2n), q(4n)]]]);
+    expect(sessionAt(series, '2026-11-12').heldQuantity).toEqual(Rational.of(2n));
+  });
 });
 
 const planOf = (series: ReplayTestSeries) => {
