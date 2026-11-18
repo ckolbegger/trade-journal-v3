@@ -318,6 +318,9 @@ Stage A runs as a swarm (decision 111, agent cap 4). Each task's heading holds i
   8. Low: the Review card's chart text is 9.0 to 9.4 px at 320 px (the suite's bar is 10). → T9.19-B8.
   Minor observations are listed for the stage report, not tasks.
 
+- T9.19-B1 commit `57d17175`: red "Review card replay at 320 px, Mon 11-16: the headline and both charts span 676 px of 588.921875 (667 less 78 under the bottom navigation)"; green. `expectFitsOneScreen` subtracts the fixed bar `.shell > .nav` (78 at 320 and 375; a side-column nav 0); the 320 card case scrolls the headline to the top first. Fix, layout only: `span.replay-figure` (nowrap) in `frame.tsx`; under 480 px the slider margin is 4 px and Previous, slider, Next share one row with the date and count below. e2e d9, d8r, d5r: 48 passed. Quick run: unit 2271, integration 280, checks 14 of 14; browser task tier: first run failed two `responsive-a11y` fit cases (Detail at 1280 span 868 of 740; card at 375 span 933 of 667), not reproduced (the file alone 5 of 5; a second task-tier run 23 of 23); its output was overwritten, the errors are in the tdd log. **Watch:** possibly a load-timing flake in the charts' width measurement. 320×568 still doesn't fit (not required). B7 not fixed by this.
+- T9.19-B2 running, from `57d17175`. Implementation-level decision (recorded): no two chart labels overlap, nor a chart title; the Stop and Target result labels and the banked label are always kept; the stake tags become droppable (their figures stay in the readout's "Risk to stop" and "Reward to target"), changing A256's "never the stake tags" under P137.
+
 | Critic | Brief | Tokens | Tool calls | Duration | Defects |
 |---|---|---|---|---|---|
 | critic-1 | `critic-brief.md`, stage A flows, decisions since the plan listed | 246,675 | 77 | 12 min 20 s | yes (1 high, 6 moderate, 1 low) | T9.18-F3 (the charts) waits for F1 (lane PL edits `geometry.ts` and `corridor-pnl.tsx`) to merge, then runs in lane BR.
