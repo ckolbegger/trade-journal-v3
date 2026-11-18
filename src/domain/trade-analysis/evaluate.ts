@@ -5,7 +5,7 @@ import { parseDecimal, Rational } from '../values/index.ts';
 import type { CalculationResult } from '../calculation-result/index.ts';
 import { type ContractStatus, type DerivedTradeState, type EntryQuality, type OpenLot } from './derive.ts';
 import { currentExpirationView, expirationValueAt } from './payoff.ts';
-import { measurementAheadOf, type ConditionBasis, type PlanBaseline } from './plan.ts';
+import { headlineBasisOf, measurementAheadOf, measurementOf, type ConditionBasis, type PlanBaseline } from './plan.ts';
 
 // The exact Mark revision a figure was valued with.
 export interface MarkEvidence {
@@ -486,6 +486,45 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
     return value(incrementalRewardToTarget.value.div(ongoingRiskToStop.value));
   };
   const maxReward = maximumIncrementalReward();
+  // A248: the Trade's result were the held Instrument at `heldValue`. Reads no Mark.
+  const resultAt = (heldValue: Rational): CalculationResult<Rational> => (lots.length === 0 ? noRemainingPosition : value(currentMarked(heldValue)));
+  const stopMeasurement = measurementOf(headlineBasisOf(state.baseline.stopBasis));
+  const targetMeasurement = measurementOf(headlineBasisOf(state.baseline.targetBasis));
+  const outcomes: TradeOutcomes = {
+    atStop: resultAt(stopMeasurement),
+    atTarget: resultAt(targetMeasurement),
+    // Worst case: a long Position's Instrument is worth nothing, the short Put is worth its strike (A109).
+    atWorstCase: resultAt(strike && short ? strike : ZERO),
+    // Max reward: no ceiling for stock and a long Call; otherwise a short Put's Instrument is worth nothing and a long Put's its strike.
+    atMaxReward: maxReward.kind === 'Unbounded' ? maxReward : resultAt(short ? ZERO : strike!),
+  };
+  const crossedIn = (role: 'Stop' | 'Target') => conditions.some((c) => c.role === role && c.result.kind === 'Value' && c.result.value.status !== 'Active');
+  // A249: where the Trade P&L stands against the result at the Stop and at the Target.
+  const zoneOf = (result: Rational): Omit<TradeStandingReading, 'openProfitAtRisk'> => {
+    const atStop = currentMarked(stopMeasurement);
+    const atTarget = currentMarked(targetMeasurement);
+    if (result.compare(atStop) <= 0) {
+      const beyond = atStop.sub(result);
+      return { zone: 'PastStop', pastBy: { dollars: beyond, r: beyond.div(state.baseline.oneR), crossed: crossedIn('Stop') } };
+    }
+    if (result.compare(atTarget) >= 0) {
+      const beyond = result.sub(atTarget);
+      return { zone: 'PastTarget', pastBy: { dollars: beyond, r: beyond.div(state.baseline.oneR), crossed: crossedIn('Target') } };
+    }
+    if (result.compare(ZERO) === 0) return { zone: 'Between' };
+    return { zone: 'Between', share: result.compare(ZERO) > 0 ? result.div(atTarget) : result.div(atStop) };
+  };
+  const standingOf = (): CalculationResult<TradeStandingReading> => {
+    const pnl = marked(currentMarked);
+    // The Risk to stop is the evaluation's own, so an option's missing Underlying Mark gives its reason too.
+    if (pnl.kind !== 'Value') return pnl;
+    if (ongoingRiskToStop.kind !== 'Value') return ongoingRiskToStop;
+    // Of the Risk to stop, the part that is open profit: all the profit, or the Risk when that is less.
+    const openProfit = pnl.value.sub(realized);
+    const atRisk = openProfit.compare(ZERO) <= 0 ? ZERO : openProfit.compare(ongoingRiskToStop.value) < 0 ? openProfit : ongoingRiskToStop.value;
+    return value({ ...zoneOf(pnl.value), openProfitAtRisk: atRisk });
+  };
+  const standing = standingOf();
   return {
     kind: 'Evaluated',
     valuationDate: date,
@@ -509,6 +548,8 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
     maximumIncrementalReward: maxReward,
     maximumIncrementalRewardInPlanR: inPlanR(maxReward),
     conditions,
+    outcomes,
+    standing,
     expirationValueAtUnderlyingClose: expirationValueAtUnderlyingClose(),
     settlement: state.positions.flatMap((p): SettlementItem[] =>
       p.instrument.kind === 'Option' && p.openLots.length > 0
