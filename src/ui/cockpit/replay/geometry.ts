@@ -73,7 +73,9 @@ export class LabelPlacer {
   place(text: string, spots: readonly Spot[], must = false): Spot | null {
     const box = (s: Spot) => {
       const w = text.length * 6 + 2;
-      const x0 = s.anchor === 'start' ? s.x : s.anchor === 'end' ? s.x - w : s.x - w / 2;
+      let x0 = s.x - w / 2;
+      if (s.anchor === 'start') x0 = s.x;
+      else if (s.anchor === 'end') x0 = s.x - w;
       return { x0, x1: x0 + w, y0: s.y - 10, y1: s.y + 3 };
     };
     const free = (b: ReturnType<typeof box>) =>
