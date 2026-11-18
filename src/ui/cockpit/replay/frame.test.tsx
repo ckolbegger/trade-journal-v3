@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ComponentType } from 'react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ReplayFrame } from './frame.tsx';
 import type { PlotSession, ReplayFrameSession, ReplayPlotProps, ReplayProps } from './replay.types.ts';
 
@@ -129,6 +129,21 @@ describe('Replay frame: the slider (W42)', () => {
     expect(attr(slider(), 'max')).toBe('11');
     rerender(<ReplayFrame {...props({ tradeKey: 'trade-other' }, 12)} />);
     expect(value()).toBe('11');
+  });
+
+  it('should tell the screen the slider\'s new session when it moves', async () => {
+    const user = userEvent.setup();
+    const onSessionChange = vi.fn();
+    render(<ReplayFrame {...props({ onSessionChange })} />);
+    expect(onSessionChange).not.toHaveBeenCalled();
+    await user.click(screen.getByRole('button', { name: 'Previous session' }));
+    expect(onSessionChange).toHaveBeenLastCalledWith('2026-11-13');
+    slider().focus();
+    await user.keyboard('{Home}');
+    expect(onSessionChange).toHaveBeenLastCalledWith('2026-11-02');
+    fireEvent.change(slider(), { target: { value: '4' } });
+    expect(onSessionChange).toHaveBeenLastCalledWith('2026-11-06');
+    expect(onSessionChange).toHaveBeenCalledTimes(3);
   });
 
   it('should edge the card in the result\'s colour and say the result in words, never by colour alone', async () => {

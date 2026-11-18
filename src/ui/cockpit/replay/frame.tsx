@@ -2,7 +2,7 @@ import { useState, type KeyboardEvent } from 'react';
 import type { ReplayProps } from './replay.types.ts';
 
 // A255: the frame owns the headline, the slider and the reveal rule. It selects finished values; it works out none.
-export function ReplayFrame({ tradeKey, sessions, initialSession, sliderLabel, previousLabel, nextLabel, plotBase, Plot, renderSince, renderChips }: ReplayProps) {
+export function ReplayFrame({ tradeKey, sessions, initialSession, sliderLabel, previousLabel, nextLabel, plotBase, Plot, renderSince, renderChips, onSessionChange }: ReplayProps) {
   const last = sessions.length - 1;
   // A257: the slider's session is a date held with the Trade it belongs to, so a longer replay of the same Trade keeps it and another Trade starts afresh.
   const [held, setHeld] = useState({ tradeKey, date: initialSession });
@@ -15,7 +15,10 @@ export function ReplayFrame({ tradeKey, sessions, initialSession, sliderLabel, p
   const headline = session.headline.figure ?? session.headline.reason ?? '';
   const move = (to: number) => {
     const date = sessions[Math.min(last, Math.max(0, to))]?.date;
-    if (date) setHeld({ tradeKey, date });
+    if (!date) return;
+    setHeld({ tradeKey, date });
+    // A257: only a real move is told to the screen, never the first render or a step against an end.
+    if (date !== session.date) onSessionChange?.(date);
   };
   // The keys are handled here so every browser steps the same way; the native step is cancelled.
   const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
