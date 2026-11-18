@@ -39,8 +39,8 @@ function frameSession(index: number): ReplayFrameSession {
 // The plot double lists what it is given, so a test can see what the frame passes it.
 // Each session is a button that hovers, focuses and selects the way the real plot's hit areas do; one more, past the
 // revealed sessions, stands for a pointer reaching a session the frame has not revealed.
-const PlotDouble: ComponentType<ReplayPlotProps> = ({ sessions, sliderIndex, onHoverSession, onSelectSession }) => (
-  <div data-testid="plot" data-slider={sliderIndex}>
+const PlotDouble: ComponentType<ReplayPlotProps> = ({ sessions, sliderIndex, describedBy, onHoverSession, onSelectSession }) => (
+  <div data-testid="plot" data-slider={sliderIndex} aria-describedby={describedBy}>
     {sessions.map((s, i) => (
       <button key={s.slot} type="button" data-testid="point" data-mark={s.underlyingMark ?? ''} onMouseEnter={() => onHoverSession?.(i)} onFocus={() => onHoverSession?.(i)} onMouseLeave={() => onHoverSession?.(null)} onBlur={() => onHoverSession?.(null)} onClick={() => onSelectSession?.(i)}>
         {s.dateLabel}
@@ -264,6 +264,14 @@ describe('Replay frame: the text equivalent (W45)', () => {
     const rows = within(fold).getAllByRole('row', { hidden: true }).slice(1);
     expect(rows.map((r) => text(r))).toEqual(['Mon Nov 2$100.00-$40.00', 'Tue Nov 3$101.00-$120.00', 'Wed Nov 4$102.00+$60.00']);
     expect(attr(fold.querySelector('table')!, 'id')).toBe('replay-table');
+  });
+
+  it('should give the plot the table id to describe it', () => {
+    const base = withTable(11, '2026-11-04');
+    const { container } = render(<ReplayFrame {...base} plotBase={{ ...base.plotBase, describedBy: 'bren-table' }} />);
+    const tableId = attr(container.querySelector('details table')!, 'id');
+    expect(tableId).toBe('bren-table');
+    expect(attr(screen.getByTestId('plot'), 'aria-describedby')).toBe(tableId);
   });
 
   it('should read a session without a Mark as No Mark in its cells, never a carried value', () => {
