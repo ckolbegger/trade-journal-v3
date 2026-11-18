@@ -72,7 +72,7 @@ export async function seriesStack(series: ReplayTestSeries, strategyKey: string,
   for (const [i, date] of REPLAY_SESSION_DATES.slice(0, options.marksThrough + 1).entries()) {
     const stock = series.underlying[i];
     const option = series.held[i];
-    if (stock != null) await stack.saveMark(instrumentKey(underlying), stock, date);
+    if (stock !== null && stock !== undefined) await stack.saveMark(instrumentKey(underlying), stock, date);
     if (option != null) await stack.saveMark(instrumentKey(held), option, date);
   }
   for (const { instrument, date, price } of options.extraMarks ?? []) await stack.saveMark(instrumentKey(instrument), price, date);
