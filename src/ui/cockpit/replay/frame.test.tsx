@@ -131,6 +131,19 @@ describe('Replay frame: the slider (W42)', () => {
     expect(value()).toBe('11');
   });
 
+  it('should follow a new last session when the slider has not been moved, and keep a moved slider\'s session', async () => {
+    const user = userEvent.setup();
+    const untouched = render(<ReplayFrame {...props({}, 11)} />);
+    untouched.rerender(<ReplayFrame {...props({}, 12)} />);
+    expect(value()).toBe('11');
+    expect(attr(slider(), 'max')).toBe('11');
+    untouched.unmount();
+    const moved = render(<ReplayFrame {...props({}, 11)} />);
+    await user.click(screen.getByRole('button', { name: 'Previous session' }));
+    moved.rerender(<ReplayFrame {...props({}, 12)} />);
+    expect(value()).toBe('9');
+  });
+
   it('should tell the screen the slider\'s new session when it moves', async () => {
     const user = userEvent.setup();
     const onSessionChange = vi.fn();
