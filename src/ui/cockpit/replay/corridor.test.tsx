@@ -589,7 +589,9 @@ describe('Corridor: labels apart (T9.19-B2)', () => {
       const text = t.textContent ?? '';
       const w = text.length * (t.classList.contains('plot-title') ? 7 : 6) + 2;
       const [x, y, anchor] = [num(t, 'x'), num(t, 'y'), t.getAttribute('text-anchor')];
-      const x0 = anchor === 'end' ? x - w : anchor === 'middle' ? x - w / 2 : x;
+      let x0 = x;
+      if (anchor === 'end') x0 = x - w;
+      else if (anchor === 'middle') x0 = x - w / 2;
       return { name: text, x0, x1: x0 + w, y0: y - 10, y1: y + 3 };
     });
   const clashes = (svg: Element): string[] => {
