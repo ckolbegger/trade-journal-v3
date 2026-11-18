@@ -117,6 +117,7 @@ export function replay(input: ReplayInput): ReplayResult {
   const lastReward: LastFigure = {};
   // Each Instrument's latest Available Mark so far: a gap is skipped, never filled.
   const lastMark = new Map<string, { readonly date: string; readonly price: Rational }>();
+  const allMarkers = markersOf(input.record);
   const sessions = input.sessions.map((session, index): ReplayedSession => {
     // The Position at the session's close, valued with that session's own Marks (A211).
     const state = derive({ record: input.record, cutoff: session.closeInstant, valuationDate: session.tradingDate });
@@ -134,8 +135,10 @@ export function replay(input: ReplayInput): ReplayResult {
     const positionChangeIds = input.record.positionChanges
       .filter((pc) => (previousClose === undefined || Temporal.Instant.compare(pc.economicTime, previousClose) > 0) && Temporal.Instant.compare(pc.economicTime, session.closeInstant) <= 0)
       .map((pc) => pc.factId);
+    const sessionIds = new Set(positionChangeIds);
     return {
       date: session.tradingDate,
+      markers: allMarkers.filter((m) => sessionIds.has(m.id)),
       positions,
       heldQuantity: positions.reduce((total, p) => total.add(p.quantity), ZERO),
       realizedPnl: state.realizedToDate,
@@ -148,7 +151,30 @@ export function replay(input: ReplayInput): ReplayResult {
       ...(rewardChange && { rewardChange }),
     };
   });
-  return { kind: 'Replayed', sessions };
+  const { oneR, originalPlannedReward, rewardRiskRatio } = whole.baseline;
+  return { kind: 'Replayed', sessions, plan: { atStop: ZERO.sub(oneR), atTarget: originalPlannedReward, rewardRisk: rewardRiskRatio } };
+}
+
+// A251: one marker per Position Change of the whole record, in fact order (Economic Time, then Recorded Sequence). Its
+// effect compares the open quantity before and after it, in magnitude.
+function markersOf(record: TradeAnalysisRecord): readonly ReplayMarker[] {
+  const byFactOrder = (a: { economicTime: Instant; recordedSequence: number }, b: { economicTime: Instant; recordedSequence: number }) =>
+    Temporal.Instant.compare(a.economicTime, b.economicTime) || a.recordedSequence - b.recordedSequence;
+  const shortLegs = new Set(record.plan.legs.filter((l) => l.side === 'Short').map((l) => l.factId));
+  let open = ZERO;
+  return [...record.positionChanges].sort(byFactOrder).map((pc): ReplayMarker => {
+    const before = open;
+    const executions = [...pc.executions].sort(byFactOrder);
+    const settlements = [...(pc.settlements ?? [])].sort(byFactOrder);
+    const fills = [
+      ...executions.map((e): ReplayMarkerFill => ({ instrument: e.instrument, action: e.action, quantity: decimal(e.quantity), price: decimal(e.price) })),
+      ...settlements.map((s): ReplayMarkerFill => ({ instrument: s.instrument, action: 'Expire', quantity: decimal(s.quantity) })),
+    ];
+    for (const e of executions) open = shortLegs.has(e.intent.plannedLegId) === (e.action === 'Sell') ? open.add(decimal(e.quantity)) : open.sub(decimal(e.quantity));
+    for (const s of settlements) open = open.sub(decimal(s.quantity));
+    const effect = before.compare(ZERO) === 0 ? 'Opened' : open.compare(ZERO) === 0 ? 'Closed' : open.compare(before) > 0 ? 'Added' : 'Reduced';
+    return { id: pc.factId, kind: settlements.length > 0 ? 'Expiration' : 'Execution', effect, fills };
+  });
 }
 
 function markOf(frame: ObservationFrame, lastMark: Map<string, { readonly date: string; readonly price: Rational }>): ReplayMark {

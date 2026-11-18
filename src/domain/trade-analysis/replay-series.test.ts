@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import type { Instrument } from '../instrument/index.ts';
 import { Rational } from '../values/index.ts';
-import { derive, evaluate, type CalculationResult, type TradeAnalysisRecord } from './index.ts';
-import { OC2_CONTRACT, OC3_BUY, OC3_SELL, oc3Record, OS_CONTRACT, OS_S1, osRecord, CORV_PUT, R_BREN_U, R_CORV_D, R_DALE_D } from './option-trade.ts';
-import { PC1, PC2, referenceRecord, REPLAY_SESSION_DATES, type ReplayTestSeries, X1, X2 } from './reference-trade.ts';
+import { derive, evaluate, type CalculationResult, type PositionChangeFact, type TradeAnalysisRecord } from './index.ts';
+import { BREN_CALL, DALE_PUT, K_SALE, OC2_CONTRACT, OC3_BUY, OC3_SELL, oc3Record, OS_CONTRACT, OS_S1, osRecord, CORV_PUT, R_BREN_U, R_CORV_D, R_DALE_D, R_DALE_U } from './option-trade.ts';
+import { AXIO, PC1, PC2, R_AXIO_U, referenceRecord, REPLAY_SESSION_DATES, type ReplayTestSeries, X1, X2 } from './reference-trade.ts';
 import { replay, type ReplayResult, type ReplaySessionInput } from './replay-series.ts';
 
 const XYZ: Instrument = { kind: 'Stock', symbol: 'XYZ' };
@@ -239,5 +239,83 @@ describe("replay: each session's risk, reward and condition status (A250)", () =
     expect(wednesday.riskChange && { since: wednesday.riskChange.since, dollars: frac(wednesday.riskChange.dollars) }).toEqual({ since: '2026-11-09', dollars: q(261n) });
     expect(wednesday.rewardChange && { since: wednesday.rewardChange.since, dollars: frac(wednesday.rewardChange.dollars) }).toEqual({ since: '2026-11-09', dollars: q(-225n) });
     expect(sessionAt(R_CORV_D, '2026-11-10').riskChange).toBeUndefined();
+  });
+});
+
+const markersAt = (series: ReplayTestSeries, date: string) => sessionAt(series, date).markers;
+const fillsOf = (marker: NonNullable<ReturnType<typeof markersAt>>[number]) =>
+  marker.fills.map((f) => ({ instrument: f.instrument, action: f.action, quantity: frac(f.quantity), price: f.price && frac(f.price) }));
+
+describe('replay: markers (A251)', () => {
+  it("should mark R-AXIO-U's Mon 11-02 session Opened, with a Buy of 100 at 50.00", () => {
+    const markers = markersAt(R_AXIO_U, '2026-11-02')!;
+    expect(markers.map((m) => ({ id: m.id, kind: m.kind, effect: m.effect }))).toEqual([{ id: 'pc-axio-1', kind: 'Execution', effect: 'Opened' }]);
+    expect(fillsOf(markers[0]!)).toEqual([{ instrument: AXIO, action: 'Buy', quantity: q(100n), price: q(50n) }]);
+  });
+
+  it('should mark Fri 11-06 Added with the second lot, and give a session without a Position Change no marker', () => {
+    const markers = markersAt(R_AXIO_U, '2026-11-06')!;
+    expect(markers.map((m) => ({ id: m.id, kind: m.kind, effect: m.effect }))).toEqual([{ id: 'pc-axio-2', kind: 'Execution', effect: 'Added' }]);
+    expect(fillsOf(markers[0]!)).toEqual([{ instrument: AXIO, action: 'Buy', quantity: q(100n), price: q(5140n, 100n) }]);
+    expect(markersAt(R_AXIO_U, '2026-11-03')).toEqual([]);
+  });
+
+  it("should mark R-BREN-U's Thu 11-12 Reduced, with a Sell of 2 at 4.00 and the Position Change's id", () => {
+    const markers = markersAt(R_BREN_U, '2026-11-12')!;
+    expect(markers.map((m) => ({ id: m.id, kind: m.kind, effect: m.effect }))).toEqual([{ id: 'pc-bren-2', kind: 'Execution', effect: 'Reduced' }]);
+    expect(fillsOf(markers[0]!)).toEqual([{ instrument: BREN_CALL, action: 'Sell', quantity: q(2n), price: q(4n) }]);
+  });
+
+  it("should mark K-sale's Fri 11-13 Closed", () => {
+    const markers = markersAt(K_SALE, '2026-11-13')!;
+    expect(markers.map((m) => ({ id: m.id, kind: m.kind, effect: m.effect }))).toEqual([{ id: 'pc-bren-3', kind: 'Execution', effect: 'Closed' }]);
+    expect(fillsOf(markers[0]!)).toEqual([{ instrument: BREN_CALL, action: 'Sell', quantity: q(2n), price: q(491n, 100n) }]);
+  });
+
+  it("should mark R-DALE-U's recorded Expiration as an Expiration naming the contract, Closed", () => {
+    const markers = markersAt(R_DALE_U, '2026-11-20')!;
+    expect(markers.map((m) => ({ id: m.id, kind: m.kind, effect: m.effect }))).toEqual([{ id: 'pc-dale-e', kind: 'Expiration', effect: 'Closed' }]);
+    expect(markers[0]!.fills).toEqual([{ instrument: DALE_PUT, action: 'Expire', quantity: Rational.of(6n) }]);
+    expect(markers[0]!.fills[0]).not.toHaveProperty('price');
+  });
+
+  it('should give a session with two Position Changes two markers, in fact order', () => {
+    // R-BREN-U with a later sale of 1 at 4.10 the same Thu 11-12, handed over before the earlier sale of 2 at 4.00.
+    const [buy, sale] = R_BREN_U.record.positionChanges as [PositionChangeFact, PositionChangeFact];
+    const later: PositionChangeFact = {
+      ...sale,
+      factId: 'pc-bren-x',
+      economicTime: '2026-11-12T18:00:00Z',
+      recordedSequence: 5,
+      executions: sale.executions.map((e) => ({ ...e, factId: 'ex-pc-bren-x', economicTime: '2026-11-12T18:00:00Z', recordedSequence: 6, quantity: '1', price: '4.10' })),
+    };
+    const series: ReplayTestSeries = { ...R_BREN_U, record: { ...R_BREN_U.record, positionChanges: [buy, later, sale] } };
+    const markers = markersAt(series, '2026-11-12')!;
+    expect(markers.map((m) => [m.id, m.effect])).toEqual([['pc-bren-2', 'Reduced'], ['pc-bren-x', 'Reduced']]);
+    expect(markers.map((m) => fillsOf(m).map((f) => [f.quantity, f.price]))).toEqual([[[q(2n), q(4n)]], [[q(1n), q(410n, 100n)]]]);
+  });
+});
+
+const planOf = (series: ReplayTestSeries) => {
+  const result = replay({ record: series.record, sessions: sessionsOf(series) });
+  if (result.kind !== 'Replayed' || !result.plan) throw new Error(`expected a Plan on a Replayed result, got ${result.kind}`);
+  return result.plan;
+};
+
+describe('replay: the Plan column (A252)', () => {
+  it("should give R-BREN-U's Plan minus 324.00 at the Stop, plus 956.00 at the Target and 2.95 to 1", () => {
+    const plan = planOf(R_BREN_U);
+    expect(frac(plan.atStop)).toBe(q(-324n));
+    expect(frac(plan.atTarget)).toBe(q(956n));
+    expect(frac(plan.rewardRisk)).toBe(q(956n, 324n));
+    expect(Number(plan.rewardRisk.numerator) / Number(plan.rewardRisk.denominator)).toBeCloseTo(2.95, 2);
+  });
+
+  it('should leave the Plan column unchanged after a second lot (R-AXIO-U: minus 600.00 and plus 1,200.00)', () => {
+    const plan = planOf(R_AXIO_U);
+    expect(frac(plan.atStop)).toBe(q(-600n));
+    expect(frac(plan.atTarget)).toBe(q(1200n));
+    const beforeSecondLot = replay({ record: { ...R_AXIO_U.record, positionChanges: R_AXIO_U.record.positionChanges.slice(0, 1) }, sessions: sessionsOf(R_AXIO_U) });
+    expect(beforeSecondLot).toMatchObject({ plan });
   });
 });
