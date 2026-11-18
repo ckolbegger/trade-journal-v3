@@ -124,6 +124,31 @@ describe('Corridor: the Trade P&L (W40, W41)', () => {
     expect(edgeXs.some((x) => x > gapX[2]! && x < gapX[3]!)).toBe(false);
   });
 
+  it('should fill a single session with a figure between two gaps, and the first revealed session', () => {
+    const sessions = [bren(0, { tradePnl: null }), bren(1, { tradePnl: 100 }), bren(2, { tradePnl: null }), bren(3, { tradePnl: -60 }), bren(4, { tradePnl: null })];
+    const { container } = render(<CorridorPlot {...props({ sessions, sliderIndex: 3 })} />);
+    const z = zeroY(container);
+    const [up, down] = dots(container);
+    const xs = (cls: string) => [...pnl(container).querySelector(`path.area.${cls}`)!.getAttribute('d')!.matchAll(/[ML](-?[\d.]+) /g)].map((m) => Number(m[1]));
+    // Each lone session gets a block across its own column, from break-even to its figure, and none reaches a neighbour.
+    for (const [cls, dot] of [['profit', up!], ['loss', down!]] as const) {
+      const d = pnl(container).querySelector(`path.area.${cls}`)!.getAttribute('d')!;
+      const [cx, cy] = [num(dot, 'cx'), num(dot, 'cy')];
+      expect(d.match(/M/g)).toHaveLength(1);
+      expect(ys(d)).toContain(cy);
+      expect(ys(d)).toContain(z);
+      expect(Math.min(...xs(cls))).toBeLessThan(cx);
+      expect(Math.max(...xs(cls))).toBeGreaterThan(cx);
+      expect(Math.min(...xs(cls))).toBeGreaterThan(cx - 15);
+      expect(Math.max(...xs(cls))).toBeLessThan(cx + 15);
+    }
+    // The first revealed session, alone, is filled as well.
+    cleanup();
+    const first = render(<CorridorPlot {...props({ sessions: [bren(0)], sliderIndex: 0 })} />);
+    const d = pnl(first.container).querySelector('path.area.profit')!.getAttribute('d')!;
+    expect(Math.min(...ys(d))).toBe(num(dots(first.container)[0]!, 'cy'));
+  });
+
   it('should draw the result at the Stop and at the Target as two lines that step on the session of a Position Change, labelled "Stop +$316" and "Target +$956"', () => {
     const { container } = render(<CorridorPlot {...props()} />);
     const stop = pnl(container).querySelector('path.result-line.stop')!.getAttribute('d')!;

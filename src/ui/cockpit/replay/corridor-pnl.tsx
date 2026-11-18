@@ -80,8 +80,14 @@ export function PnlChart({ props, width }: { props: ReplayPlotProps; width: numb
   // edge turns at break-even, where the straight line between them crosses it, so the two fills meet there.
   const areaPath = (side: (p: number, zero: number) => number): string =>
     runs(sessions)
-      .filter((run) => run.length > 1)
       .map((run) => {
+        // A lone session has no neighbour to join: a short block across its own column, never reaching a gap.
+        if (run.length === 1) {
+          if (side(run[0]!.pnl, 0) === 0) return '';
+          const [x, y] = [time.x(run[0]!.s.slot), f1(value.y(side(run[0]!.pnl, 0)))];
+          const half = time.column / 4;
+          return `M${f1(x - half)} ${f1(y0)}L${f1(x - half)} ${y}L${f1(x + half)} ${y}L${f1(x + half)} ${f1(y0)}Z`;
+        }
         const edge = run.map((r, i) => {
           const point = `L${f1(time.x(r.s.slot))} ${f1(value.y(side(r.pnl, 0)))}`;
           const prev = run[i - 1];
