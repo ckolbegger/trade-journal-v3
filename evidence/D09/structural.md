@@ -367,6 +367,13 @@ Stage A runs as a swarm (decision 111, agent cap 4). Each task's heading holds i
 - Browser tier: full (`first matching path since 801c5ff8: src/ui/cockpit/replay/corridor-pnl.tsx`).
 - Unit 197 files, 2201 tests; integration 123 files, 269 tests; browser-1 126 passed (5.2 min); browser-2 79 passed (4.9 min); browser-3 57 passed (4.4 min); checks 14 of 14. `run-complete.sh`: run complete. **No failures.**
 
+### wave2c (after T9.8, and T9.14 with B1, B2, B3, B4, B5, B6, B7, B8, B9, F1, F2)
+
+- Source at `5d74779e` throughout (later commits plan and evidence only). 2026-11-18.
+- Browser tier: full (`first matching path since 468a5256: e2e/d8p/cockpit.spec.ts`).
+- Unit 198 files, 2251 tests; integration 123 files, 269 tests; browser-2 79 passed (4.8 min); browser-3 57 passed (4.3 min); checks 14 of 14. `run-complete.sh`: run complete.
+- **Failure:** browser-1 125 passed, 1 failed (5.3 min): `e2e/d2/narrow.spec.ts:72` "should keep the Open Trade Detail within 375 and 320 px with every table inside a scroll container" — `resolved Open Detail at 375:  inside a scroll container` (expected true, received false; a table with an empty caption outside a scroll container). One targeted rerun alone: failed again. Not a P138 case: a real regression, most likely T9.14's Replay drawer table. Routed as **T9.14-B10** (lane DW, from main).
+
 ### wave2b (after T9.7 with B1, B2, F2, F3)
 
 - Source at `468a5256` throughout (HEAD moved to `7af1df86` during the run; `git diff 468a5256 7af1df86` touches only `evidence/`). 2026-11-18, 08:23 to 08:41.
