@@ -202,12 +202,20 @@ function stakeGroup(view: TradeReplayView, session: ViewSession): ReadoutGroup |
   // The condition status says the same as the headline (F2): a crossed condition ends the ratio whatever the dollars.
   const stopCrossed = crossedCondition(session, 'Stop') !== undefined;
   const targetCrossed = crossedCondition(session, 'Target') !== undefined;
-  const ending = stopOverrun ? (triggered || stopCrossed ? 'Stop breached' : 'Not triggered') : targetOverrun ? (triggered || targetCrossed ? 'Target reached' : 'Not triggered') : stopCrossed ? 'Stop breached' : targetCrossed ? 'Target reached' : undefined;
+  const stopBreached = triggered || stopCrossed;
+  const targetReached = triggered || targetCrossed;
+  let ending: string | undefined;
+  if (stopOverrun) ending = stopBreached ? 'Stop breached' : 'Not triggered';
+  else if (targetOverrun) ending = targetReached ? 'Target reached' : 'Not triggered';
+  else if (stopCrossed) ending = 'Stop breached';
+  else if (targetCrossed) ending = 'Target reached';
+  const stopOverrunLabel = triggered ? 'Stop Overrun' : "Past Stop's amount";
+  const targetOverrunLabel = triggered ? 'Target Overrun' : "Past Target's amount";
   const rows = [
-    stopOverrun ? row(triggered ? 'Stop Overrun' : "Past Stop's amount", stopOverrun) : row('Risk to stop', valueOf(f.ongoingRiskToStop, money, f.ongoingRiskToStopInPlanR), changeWords(session.riskChange)),
+    stopOverrun ? row(stopOverrunLabel, stopOverrun) : row('Risk to stop', valueOf(f.ongoingRiskToStop, money, f.ongoingRiskToStopInPlanR), changeWords(session.riskChange)),
     row('Result at the Stop', valueOf(f.outcomes?.atStop, signedMoney)),
     row('Worst case', valueOf(f.worstCaseOngoingRisk, money, f.worstCaseOngoingRiskInPlanR)),
-    targetOverrun ? row(triggered ? 'Target Overrun' : "Past Target's amount", targetOverrun) : row('Reward to target', valueOf(f.incrementalRewardToTarget, money, f.incrementalRewardToTargetInPlanR), changeWords(session.rewardChange)),
+    targetOverrun ? row(targetOverrunLabel, targetOverrun) : row('Reward to target', valueOf(f.incrementalRewardToTarget, money, f.incrementalRewardToTargetInPlanR), changeWords(session.rewardChange)),
     row('Result at the Target', valueOf(f.outcomes?.atTarget, signedMoney)),
     row('Max reward', f.maximumIncrementalReward.kind === 'Unbounded' ? { kind: 'Unbounded', text: 'No cap above' } : valueOf(f.maximumIncrementalReward, money, f.maximumIncrementalRewardInPlanR)),
     ending ? row('Reward to risk', figure(ending)) : row('Reward to risk', valueOf(f.rewardRiskNow, ratioWords), view.planColumn ? `(Plan ${ratioWords(view.planColumn.rewardRisk)})` : undefined),
