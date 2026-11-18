@@ -8,6 +8,7 @@ import type { Rational } from '../../domain/values/index.ts';
 import type { WorkspaceSnapshotBinding } from '../../persistence/index.ts';
 import type { StorageFailure } from '../mutation-guard.ts';
 import type { SettlementItem } from '../valuation/index.ts';
+import type { TradeReplayView } from '../trade-views/index.ts';
 import type { AnswerInput, DailyAction, DebtProjection, DeclineProjection, EntryDefinitionRecord, EntryProjection, JournalIssue, JournalObligationKey, ObligationOutcome } from '../../modules/journal/index.ts';
 import type { AcknowledgmentVersion, ExpectedResolutionRevision, MarkFrame, MarketDataConflictedKey, MarketDataIssue, MarketDataPrepareEntry, MarketDataPrepareIssue, MarkResolution, ObservationKey, PreparedMarketDataEntry } from '../../modules/market-data/index.ts';
 
@@ -269,6 +270,9 @@ export interface DailyTradeReview {
   // The Trade's stored lifecycle now, which differs from the cutoff's for a Trade closed after the close (A91).
   readonly lifecycle: LifecycleState;
   readonly summary?: TradeSummary;
+  // A254: the Trade's replay to the Review Date, the same view `replayTrade` returns; absent when the Trade's facts
+  // cannot be replayed. `open` does not read it.
+  readonly replay?: TradeReplayView;
   // The Trade's band and reasons, as the overview lists them.
   readonly attention: ReviewTradeItem;
   readonly labels: { readonly strategy: string; readonly account: string; readonly institution: string };

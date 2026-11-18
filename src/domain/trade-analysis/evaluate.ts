@@ -113,6 +113,29 @@ export interface SettlementItem {
   readonly status: 'Due' | 'NotYetDue';
 }
 
+// A248: the Trade's result in dollars if it ended at each boundary: realized P&L to date plus the remaining Position priced
+// there, less its unconsumed opening fees. None reads a Mark. Unbounded above at the Max reward for stock and a long Call;
+// all four are Not Applicable once nothing is held.
+export interface TradeOutcomes {
+  readonly atStop: CalculationResult<Rational>;
+  readonly atTarget: CalculationResult<Rational>;
+  readonly atWorstCase: CalculationResult<Rational>;
+  readonly atMaxReward: CalculationResult<Rational>;
+}
+
+// A249: where the Trade's result stands against its Stop and Target.
+export interface TradeStandingReading {
+  readonly zone: 'Between' | 'PastStop' | 'PastTarget';
+  // Beyond that line: dollars and R. `crossed` says the condition itself is Breached or Reached; false when an
+  // Underlying-price Stop's dollar amount is passed while the Underlying has not reached its trigger (B7).
+  readonly pastBy?: { readonly dollars: Rational; readonly r: Rational; readonly crossed: boolean };
+  // Only in the Between zone: the result as a fraction of the result at the Target (above break-even) or at the Stop
+  // (below it); absent at break-even.
+  readonly share?: Rational;
+  // The part of the Risk to stop that is open profit.
+  readonly openProfitAtRisk?: Rational;
+}
+
 export interface TradeEvaluation {
   readonly kind: 'Evaluated';
   readonly valuationDate: string;
@@ -168,6 +191,10 @@ export interface TradeEvaluation {
   readonly atEntry: AtEntryFigures | null;
   // Disclosure only: the latest earlier Mark, present when the frame's Mark is Missing.
   readonly staleContext?: StaleContext;
+  // A248: the Trade's result at the Stop, Target, Worst case and Max reward.
+  readonly outcomes?: TradeOutcomes;
+  // A249: where the result stands; Unavailable with the evaluation's own reason when there is no Mark.
+  readonly standing?: CalculationResult<TradeStandingReading>;
 }
 
 const ZERO = Rational.of(0n);
