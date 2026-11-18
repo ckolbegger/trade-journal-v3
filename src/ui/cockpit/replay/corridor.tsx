@@ -26,7 +26,7 @@ function SessionHits({ props, width }: { props: ReplayPlotProps; width: number }
           className="replay-hit"
           aria-label={s.dateLabel}
           data-hovered={props.hoverIndex === i ? 'true' : undefined}
-          style={{ left: `${((time.x(s.slot) / width) * 100).toFixed(3)}%`, width: `${((time.column / width) * 100).toFixed(3)}%` }}
+          style={{ left: `${(((time.x(s.slot) - time.column / 2) / width) * 100).toFixed(3)}%`, width: `${((time.column / width) * 100).toFixed(3)}%` }}
           onPointerEnter={() => hold('pointer', i)}
           onPointerLeave={() => hold('pointer', null)}
           onFocus={() => hold('focus', i)}

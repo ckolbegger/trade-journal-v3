@@ -234,7 +234,8 @@
   stroke-dasharray: 2 2;
 }
 
-/* One hit area per session over both charts: transparent, at least 44 px wide, reachable by keyboard. */
+/* One hit area per session over both charts: transparent, exactly its session's column wide so
+   neighbours never overlap (the slider and Previous and Next are the full-size way to every session), reachable by keyboard. */
 .replay-plot-frame {
   position: relative;
 }
@@ -249,8 +250,6 @@
   position: absolute;
   top: 0;
   bottom: 0;
-  min-width: 44px;
-  transform: translateX(-50%);
   padding: 0;
   border: 0;
   background: transparent;

@@ -2,6 +2,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { CorridorPlot } from './corridor.tsx';
+import { timeAxis } from './geometry.ts';
 import type { LabelledFigure, PlotMarker, PlotSession, ReplayPlotProps } from './replay.types.ts';
 
 afterEach(cleanup);
@@ -438,5 +439,17 @@ describe('Corridor: the Trade P&L (W40, W41)', () => {
     expect(container.querySelectorAll('svg.pnl-chart rect.hover-column')).toHaveLength(1);
     expect(hits()[6]!.getAttribute('data-hovered')).toBe('true');
     expect(hits()[5]!.getAttribute('data-hovered')).toBeNull();
+  });
+
+  it('should give each session a target that never overlaps its neighbour\'s, at a phone\'s width', () => {
+    render(<CorridorPlot {...props({ compact: true })} />);
+    const spans = hits().map((h) => ({ left: parseFloat(h.style.left), width: parseFloat(h.style.width) }));
+    expect(spans.length).toBeGreaterThan(1);
+    // Left is the column's own left edge (the component sets no centring), so the first starts where slot 0's column does.
+    const time = timeAxis(340, 15);
+    expect(spans[0]!.left).toBeCloseTo(((time.x(0) - time.column / 2) / 340) * 100, 2);
+    for (let i = 1; i < spans.length; i++) {
+      expect(spans[i - 1]!.left + spans[i - 1]!.width).toBeCloseTo(spans[i]!.left, 2);
+    }
   });
 });
