@@ -880,7 +880,7 @@ Asked one at a time, in this order. Each answer is recorded here.
 7. **The Open list in attention order (P131).** It costs one sort, one sentence in the Trade Views spec, the benchmark's expected rows regenerated, and a check of 15 positional test lines. Recommended: yes. **Answered 2026-11-17: attention order for now. Sorting and filtering will be added to the Trades list later, and nothing here may prevent that** (A262 lists how).
 8. **`rangePosition` (P132).** Keep it returned and unread, or remove it and delete 84 entries from eight frozen fixtures. Recommended: keep it. **Answered 2026-11-17: remove it now.** It became T9.40.
 9. **The session-before mark on the list and the Review cards (P133).** It costs one more date of Marks per page and a second valuation per Trade. Recommended: build it, and let the benchmark decide; the fallback is to keep it on Trade Detail only. **Answered 2026-11-17: build it everywhere, and let the benchmark decide.**
-10. **The words W35 to W52, and W1's amended drawers (P135).** Recommended: approve, or edit in place.
+10. **The words W35 to W52, and W1's amended drawers (P135).** Recommended: approve, or edit in place. **Answered 2026-11-17: stage A's words are approved** (W1 as amended, W35, W36, W37, W38, W39, W40, W41, W42, W43, W44, W45, W46). Stage B's (W47, W48, W49, W50) and stage C's (W51, W52) are reviewed when each stage starts. The user's concern, recorded with the answer: too much text on the chart.
 
 ---
 
