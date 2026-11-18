@@ -506,6 +506,13 @@ describe('Corridor: drawn at a phone\'s real width (W39, W40, W41)', () => {
     expect(screen.getByText('Risk to stop $672')).toBeTruthy();
   });
 
+  it('should draw at 240 wide, scaled to fit, when the box is narrower than 240', () => {
+    frameWidth(200);
+    const { container } = render(<CorridorPlot {...props()} />);
+    expect(container.querySelector('svg.price-strip')!.getAttribute('width')).toBe('240');
+    expect(pnl(container).getAttribute('width')).toBe('240');
+  });
+
   it('should keep the result and banked labels when drawn narrow', () => {
     for (const width of [280, 240]) {
       frameWidth(width);

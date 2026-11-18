@@ -8,7 +8,7 @@ const WIDTH = 640;
 const WIDTH_COMPACT = 340;
 // A box narrower than this is a phone's: scaled from 640 its text would fall under 8 px (the axis already switches its layout at 460).
 const WIDTH_PHONE = 460;
-// The narrowest drawing: below it the box scrolls sideways inside the plot rather than squeeze the labels further.
+// The narrowest drawing: in a box under it the 240-wide drawing is scaled down to fit (the svg is width: 100%), so nothing scrolls sideways.
 const WIDTH_MIN = 240;
 
 // One hit area per revealed session, over the column both charts share (they use the same time axis): a button named by
