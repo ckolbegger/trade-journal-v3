@@ -241,6 +241,8 @@ Task status and commits are in the breakdown's Progress section. This section ho
 ### Notes for later tasks
 
 - For T9.4: `tradePnlOf` builds a frame for the held Instrument only. Each session's `evaluate` call now needs the Underlying's frame too, or an option Trade's Underlying condition reads as Mark missing on every session (A250).
+- For T9.6, T9.9: the view's Plan column is `TradeReplayView.planColumn` (T9.2), since `plan` already holds the pre-exposure Journal items. The domain result's field is `plan`.
+- For T9.6, T9.8: T9.2 added no re-exports of the new type names (`ReplayFigures`, `ReplayMarker`, `ReplayFinal`, `ReplayPlanColumn`, `TradeOutcomes`, `TradeStandingReading`) to `trade-analysis/index.ts`, `trade-views/index.ts` or `src/app/types.ts`. Add them where an adapter needs them.
 - For T9.7: before the brief, read how `daily-review.ts` builds the card a Save Marks result returns. A254 assumes it is the function `getTrade` uses, so the card carries the replay with no further read. If it is built another way, that is a pending decision, not something to work around.
 - For T9.12, T9.13: the test Trades' full series are in the model block of `prototypes/replay/round-2.html`; section 5's table names only the sessions the cases use.
 - For T9.14: Replay is the second drawer, after Today. Every drawer list in section 1.5's Texts table changes in this task and nowhere else.

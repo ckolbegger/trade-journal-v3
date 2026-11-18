@@ -25,6 +25,16 @@ Stage A runs as a swarm (decision 111, agent cap 4). Each task's heading holds i
 - ocr (`ocr/T9.1-adcc6abb.json`): **No findings.** 5 files reviewed; `suite-runner.md` and `implementing.md` excluded (ocr skips `.md`).
 - Merged by fast-forward as `adcc6abb` (the rebase changed nothing: no commit had landed since the base).
 
+## T9.2 Freeze the replay view and chart props types
+
+- Lane TY, base `84d4ed50`, commit `355a665d` (on `d09/ty`, before rebase).
+- `typecheck`, `tsc6 --noEmit`, `lint` (0 errors; 2 existing warnings in `OwedDebtItem.tsx`), `lint:deps`: exit 0. Lane tier `T9.2`: unit 2111, integration 269, checks 14 of 14.
+- Added: `evaluate.ts` `TradeOutcomes`, `TradeStandingReading`, `TradeEvaluation.outcomes?`, `.standing?`. `replay-series.ts` `ReplayFigures` (a `Pick` of `TradeEvaluation`), `ReplayMarkerFill` (action `Buy` | `Sell` | `Expire`, `price?` absent for an Expiration), `ReplayMarker`, `ReplayPlan` (three `Rational`s), `ReplayedSession.figures?`, `.riskChange?`, `.rewardChange?` (the existing `ReplayChange`), `.markers?`, result `plan?`. `replay-view.ts` `ReplayFigures`, `ReplayMarker`, `ReplayPlanColumn`, `ReplayFinal` (`Sold` | `Expired` with the contract), `ReplaySession.figures?`, `.riskChange?`, `.rewardChange?`, `.markers?`, `.final?`, `TradeReplayView.planColumn?`. `daily-review/types.ts` `DailyTradeReview.replay?: TradeReplayView`. New `src/ui/cockpit/replay/replay.types.ts`: `ReplayProps`, `ReplayFrameSession`, `ReplayPlotProps`, `PlotSession`, `PlotAnchors`, `PlotMarker`, `LabelledFigure`, `ReadoutValue`, `ReadoutRow`, `ReadoutGroup`, `TableRow`, `ReplayTone`; `plotBase` is `ReplayPlotProps` without the per-render fields.
+- **Implementation-level decision (recorded, not a pending decision):** the view's Plan column is named `planColumn`, because `TradeReplayView.plan` already holds the pre-exposure Journal items (A252 names the result field `plan`; the domain result keeps `plan`).
+- `src/app/types.ts` gained no re-exports: the new names are not exported from `trade-analysis/index.ts` or `trade-views/index.ts`, which lane TY doesn't own. The facade's existing `TradeReplayView` and `DailyTradeReview` carry the new fields. Left to lane RV (T9.6, T9.8) if a screen needs the names.
+- ocr (`ocr/T9.2-355a665d.json`): **No findings.** 5 files reviewed.
+- Rebased onto `2ddbba88` (only T9.1's tooling and evidence between; no file of T9.2's changed) and merged by fast-forward as `7251c72b`.
+
 ## Merge runs
 
 - None yet.

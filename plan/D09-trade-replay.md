@@ -933,7 +933,7 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | Task | Stage | Wave | Lane | Status | Commits |
 |---|---|---|---|---|---|
 | T9.1 | A | 0 | TL | Done | `adcc6abb` |
-| T9.2 | A | 0 | TY | In progress from `84d4ed50` | |
+| T9.2 | A | 0 | TY | Done | `7251c72b` |
 | T9.3 | A | 1 | TA | Not started | |
 | T9.4 | A | 1 | TA | Not started | |
 | T9.5 | A | 1 | TA | Not started | |
