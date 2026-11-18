@@ -94,7 +94,8 @@ test.describe('B5R.10 Offline and Recovery Only (faults build)', () => {
       const card = await reachCard(page, trade);
       await expect(card).toBeVisible();
       // Every panel stays mounted, so these counts cover the Marks, Reflections and Action panels alike.
-      await expect(card.locator('input, textarea')).toHaveCount(0);
+      // The Replay section's slider only moves through sessions and writes nothing, so it stays and is left out of the count.
+      await expect(card.locator('input:not(.review-card-replay *), textarea:not(.review-card-replay *)')).toHaveCount(0);
       await expect(card.getByRole('button', { name: /^Save/ })).toHaveCount(0);
       await expect(card.getByRole('button', { name: 'Discard' })).toHaveCount(0);
       await expect(card.getByRole('button', { name: 'Answer', exact: true })).toHaveCount(0);
