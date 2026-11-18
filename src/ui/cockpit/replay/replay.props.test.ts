@@ -496,6 +496,21 @@ describe('replay.props: the readout of a session in flight (W43)', () => {
     expect(rowsOfGroup(props, 0, 'How it is going')).toEqual({ 'Trade P&L': '+$1,138.00', Banked: '+$478.00' });
   });
 
+  it('should call a planned-amount overrun by its words, not a breach, when the condition has not triggered', () => {
+    const untriggered = (zone: 'PastStop' | 'PastTarget') =>
+      rowsOfGroup(
+        replayProps(view([session({ date: '2026-11-12', instrument: DALE, held: -3, pnl: -1272, standing: value({ zone, pastBy: { dollars: usd(9), r: frac(9, 1536), crossed: false } }) })]), { Plot }),
+        0,
+        'At stake from here, whole Position',
+      );
+    const stopRows = untriggered('PastStop');
+    expect(stopRows).toMatchObject({ "Past Stop's amount": '$9.00 · 0.01R', 'Reward to risk': 'Not triggered' });
+    expect(stopRows).not.toHaveProperty('Stop Overrun');
+    const targetRows = untriggered('PastTarget');
+    expect(targetRows).toMatchObject({ "Past Target's amount": '$9.00 · 0.01R', 'Reward to risk': 'Not triggered' });
+    expect(targetRows).not.toHaveProperty('Target Overrun');
+  });
+
   it('should show Final result with the Execution on a final session, and No Mark in place of the stake and the Marks on a session without one', () => {
     const sale = { id: 'x2', kind: 'Execution', effect: 'Closed', fills: [{ instrument: BREN, action: 'Sell', quantity: usd(2), price: usd(4) }] } as const;
     const final = { ...withMarks(session({ date: '2026-11-13', held: 0, pnl: 1260, realized: 1260, standing: NOT_APPLICABLE, final: { kind: 'Sold' } }), [markOf(BREN_STOCK, '104.60'), markOf(BREN)]), markers: [sale] };

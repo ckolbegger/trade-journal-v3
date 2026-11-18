@@ -174,12 +174,14 @@ function stakeGroup(view: TradeReplayView, session: ViewSession): ReadoutGroup |
   const overrun = (past: boolean) => (past && pastBy ? figure(`${money(pastBy.dollars)} · ${rMultiple(pastBy.r)}`) : undefined);
   const stopOverrun = overrun(standing?.zone === 'PastStop');
   const targetOverrun = overrun(standing?.zone === 'PastTarget');
-  const ending = stopOverrun ? 'Stop breached' : targetOverrun ? 'Target reached' : undefined;
+  // Past a line by its planned amount with the condition not triggered is no breach (W37): shorter words say so.
+  const triggered = pastBy?.crossed ?? true;
+  const ending = stopOverrun ? (triggered ? 'Stop breached' : 'Not triggered') : targetOverrun ? (triggered ? 'Target reached' : 'Not triggered') : undefined;
   const rows = [
-    stopOverrun ? row('Stop Overrun', stopOverrun) : row('Risk to stop', valueOf(f.ongoingRiskToStop, money, f.ongoingRiskToStopInPlanR), changeWords(session.riskChange)),
+    stopOverrun ? row(triggered ? 'Stop Overrun' : "Past Stop's amount", stopOverrun) : row('Risk to stop', valueOf(f.ongoingRiskToStop, money, f.ongoingRiskToStopInPlanR), changeWords(session.riskChange)),
     row('Result at the Stop', valueOf(f.outcomes?.atStop, signedMoney)),
     row('Worst case', valueOf(f.worstCaseOngoingRisk, money, f.worstCaseOngoingRiskInPlanR)),
-    targetOverrun ? row('Target Overrun', targetOverrun) : row('Reward to target', valueOf(f.incrementalRewardToTarget, money, f.incrementalRewardToTargetInPlanR), changeWords(session.rewardChange)),
+    targetOverrun ? row(triggered ? 'Target Overrun' : "Past Target's amount", targetOverrun) : row('Reward to target', valueOf(f.incrementalRewardToTarget, money, f.incrementalRewardToTargetInPlanR), changeWords(session.rewardChange)),
     row('Result at the Target', valueOf(f.outcomes?.atTarget, signedMoney)),
     row('Max reward', f.maximumIncrementalReward.kind === 'Unbounded' ? { kind: 'Unbounded', text: 'No cap above' } : valueOf(f.maximumIncrementalReward, money, f.maximumIncrementalRewardInPlanR)),
     ending ? row('Reward to risk', figure(ending)) : row('Reward to risk', valueOf(f.rewardRiskNow, ratioWords), view.planColumn ? `(Plan ${ratioWords(view.planColumn.rewardRisk)})` : undefined),
