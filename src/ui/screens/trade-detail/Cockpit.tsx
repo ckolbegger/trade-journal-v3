@@ -12,11 +12,11 @@ import { PlanRiskDrawer } from '../../cockpit/drawers/plan-risk.tsx';
 import { PositionDrawer } from '../../cockpit/drawers/position.tsx';
 import { priceHistoryTabCount } from '../../cockpit/drawers/price-history.props.ts';
 import { PriceHistory } from '../../cockpit/drawers/price-history.tsx';
-import { ReplayDrawer } from '../../cockpit/drawers/replay.tsx';
+import { ReplayDrawer, type SessionLinks } from '../../cockpit/drawers/replay.tsx';
 import { TodayDrawer } from '../../cockpit/drawers/today.tsx';
 import { ReflectRequestContext } from '../OwedDebtItem.tsx';
 import { IncoherentPanel, IntegrityPanel } from './Banner.tsx';
-import { DRAWERS, DrawerRequestContext, useDrawerRequest, type Drawer, type DrawerRequest } from './drawer-request.ts';
+import { DRAWERS, DrawerFocusContext, DrawerRequestContext, useDrawerRequest, type Drawer, type DrawerFocus, type DrawerRequest } from './drawer-request.ts';
 
 // The cockpit shell (D08P T8P.5, A217, W1): the full-width banner, the rail beside the drawers, and the footer. A wave-1 lane replaces the
 // content behind a `src/ui/cockpit/` path and never edits this file. The selected drawer is component state, not the URL.
@@ -40,6 +40,8 @@ export interface CockpitProps {
   // The drawer and the Replay session the address named on load (A257); a drawer this Detail does not show leaves its default.
   readonly initialDrawer?: Drawer;
   readonly initialSession?: string;
+  // Called when the Replay slider moves to another session.
+  readonly onSessionChange?: (date: string) => void;
   // Content placed inside the drawer request's reach, for a test's probe.
   readonly children?: ReactNode;
 }
@@ -51,7 +53,7 @@ export type ReplayRead = { readonly kind: 'None' } | { readonly kind: 'Pending' 
 // The words a drawer shows while its content is still being read (W20): the Detail's own.
 const Loading = () => <p role="status">Loading the Trade…</p>;
 
-export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange, initialDrawer, initialSession, children }: CockpitProps) {
+export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange, initialDrawer, initialSession, onSessionChange, children }: CockpitProps) {
   const replay = read.kind === 'Ready' ? read.replay : undefined;
   const pending = read.kind === 'Pending';
   // What the Journal's session cards take as their replay: the replay itself, 'Incoherent' for a Detail whose facts cannot be replayed, or
@@ -79,15 +81,19 @@ export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange, i
   // item opens its form under the one-form-at-a-time rule, then clears the request so the same Debt can be requested again.
   // A drawer request (A240): the drawer is selected now, and once its panel is shown the heading takes focus. A heading is not focusable by
   // itself, so it is made a programmatic tab stop. Each request is a new object, so the same request can be made again.
-  const [focusing, setFocusing] = useState<{ readonly drawer: Drawer; readonly heading: string }>();
-  const requestDrawer: DrawerRequest = (drawer, heading) => {
+  const [focusing, setFocusing] = useState<DrawerFocus>();
+  const requestDrawer: DrawerRequest = (drawer, target) => {
     setSelected(drawer);
-    setFocusing({ drawer, heading });
+    setFocusing({ drawer, target });
   };
   useEffect(() => {
     if (!focusing) return;
     const panel = document.getElementById(`drawer-panel-${tabId(focusing.drawer)}`);
-    const target = [...(panel?.querySelectorAll<HTMLElement>('h1, h2, h3, h4, h5, h6') ?? [])].find((h) => h.textContent?.trim() === focusing.heading);
+    const { target: wanted } = focusing;
+    const target =
+      typeof wanted === 'string'
+        ? [...(panel?.querySelectorAll<HTMLElement>('h1, h2, h3, h4, h5, h6') ?? [])].find((h) => h.textContent?.trim() === wanted)
+        : panel?.querySelector<HTMLElement>(wanted.selector);
     if (!target) return;
     if (!target.hasAttribute('tabindex')) target.tabIndex = -1;
     target.focus();
@@ -119,7 +125,7 @@ export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange, i
         return <TodayDrawer {...replayed} />;
       case 'Replay':
         if (pending) return <Loading />;
-        return replay ? <ReplayDrawer replay={replay} {...(initialSession !== undefined && { initialSession })} /> : <p>No replay.</p>;
+        return replay ? <ReplayDrawer replay={replay} links={(at) => <ReplayLinks at={at} request={requestDrawer} />} {...(initialSession !== undefined && { initialSession })} {...(onSessionChange && { onSessionChange })} /> : <p>No replay.</p>;
       case 'Position':
         return <PositionDrawer {...shell} />;
       case 'Plan and Risk':
@@ -140,6 +146,7 @@ export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange, i
   return (
     <ReflectRequestContext.Provider value={request}>
       <DrawerRequestContext.Provider value={requestDrawer}>
+      <DrawerFocusContext.Provider value={focusing}>
       {children}
       {'positionChanges' in view && view.findings.length > 0 && <IntegrityPanel view={view} timeZone={timeZone} />}
       {'recordedPositionChanges' in view && <IncoherentPanel view={view} timeZone={timeZone} />}
@@ -184,8 +191,30 @@ export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange, i
           </div>
         ))}
       </div>
+      </DrawerFocusContext.Provider>
       </DrawerRequestContext.Provider>
     </ReflectRequestContext.Provider>
+  );
+}
+
+// W46: the links from the Replay drawer's session to the drawers that hold its facts, each moving focus to that session's place in them.
+function ReplayLinks({ at, request }: { readonly at: SessionLinks; readonly request: DrawerRequest }) {
+  return (
+    <p className="replay-links">
+      <button type="button" className="pill secondary" onClick={() => request('Price History', { selector: `th[data-session="${at.date}"]` })}>
+        Price History
+      </button>
+      {at.changeId !== undefined && (
+        <button type="button" className="pill secondary" onClick={() => request('Position', { selector: `[data-change="${at.changeId}"] button` })}>
+          Position
+        </button>
+      )}
+      {at.hasJournal && (
+        <button type="button" className="pill secondary" onClick={() => request('Journal', { selector: `[id="journal-card-${at.date}"]`, card: at.date })}>
+          Journal
+        </button>
+      )}
+    </p>
   );
 }
 

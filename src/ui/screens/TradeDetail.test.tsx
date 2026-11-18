@@ -463,3 +463,88 @@ describe('Trade Detail: the Replay drawer (W1 amended)', () => {
     expect((await within(panel).findByRole('slider', { name: 'Session' })).getAttribute('aria-valuetext')).toBe('Tue Oct 13 · 2 of 4. +$100.00');
   });
 });
+
+// Four sessions with Marks: Monday holds the Position Change pc-1 (a purchase of 60) and the owed reflection, Tuesday has neither.
+const withMonday = (): TradeReplayView => {
+  const base = replay([debt], true);
+  const [monday, ...rest] = base.sessions;
+  const marker = { id: 'pc-1', kind: 'Execution', effect: 'Opened', fills: [{ instrument: STOCK, action: 'Buy', quantity: Rational.of(60n), price: Rational.of(5010n, 100n) }] };
+  return { ...base, sessions: [{ ...monday!, markers: [marker] }, ...rest] } as unknown as TradeReplayView;
+};
+
+describe('Replay: the round trip from the Review (P129)', () => {
+  useFixedClock();
+
+  it('should show Back to the Review on a Detail opened that way, and not otherwise', async () => {
+    renderWith(facadeOf(), '/trades/trade-1?drawer=price-history&session=2026-10-13&from=review');
+    await screen.findByRole('region', { name: 'State of play' });
+    expect(screen.getByRole('link', { name: 'Back to the Review' })).toBeTruthy();
+    cleanup();
+    for (const address of ['/trades/trade-1', '/trades/trade-1?drawer=price-history&session=2026-10-13', '/trades/trade-1?from=trades']) {
+      renderWith(facadeOf(), address);
+      await screen.findByRole('region', { name: 'State of play' });
+      expect(screen.queryByRole('link', { name: 'Back to the Review' })).toBeNull();
+      cleanup();
+    }
+  });
+
+  it('should return to that Trade card with its Action panel open and the slider on the same session, by the address Back to the Review holds', async () => {
+    const user = userEvent.setup();
+    renderWith(facadeOf({ replayResult: { kind: 'Ready', view: replay([debt], true), binding: BINDING } }), '/trades/trade-1?drawer=replay&session=2026-10-13&from=review');
+    const panel = within(await screen.findByRole('tabpanel', { name: 'Replay' }));
+    expect(screen.getByRole('link', { name: 'Back to the Review' }).getAttribute('href')).toBe('/review?trade=trade-1&panel=Action&session=2026-10-13');
+    // The session is the slider's now: moved on the Detail, it is the one the Review is told.
+    await user.click(await panel.findByRole('button', { name: 'Next session' }));
+    expect(screen.getByRole('link', { name: 'Back to the Review' }).getAttribute('href')).toBe('/review?trade=trade-1&panel=Action&session=2026-10-14');
+  });
+});
+
+describe('Replay: audit navigation (W46)', () => {
+  useFixedClock();
+  const open = async (session: string) => {
+    renderWith(facadeOf({ replayResult: { kind: 'Ready', view: withMonday(), binding: BINDING } }), `/trades/trade-1?drawer=replay&session=${session}`);
+    return within(await screen.findByRole('tabpanel', { name: 'Replay' }));
+  };
+
+  it('should offer Price History for the slider session, selecting that drawer with the session column in focus', async () => {
+    const user = userEvent.setup();
+    const panel = await open('2026-10-13');
+    await user.click(await panel.findByRole('button', { name: 'Price History' }));
+    expect(screen.getByRole('tab', { selected: true }).getAttribute('aria-label')).toBe('Price History');
+    expect(document.activeElement?.textContent).toBe('TueOct 13');
+    // The link follows the slider.
+    await user.click(screen.getByRole('tab', { name: 'Replay' }));
+    await user.click(within(screen.getByRole('tabpanel', { name: 'Replay' })).getByRole('button', { name: 'Previous session' }));
+    await user.click(within(screen.getByRole('tabpanel', { name: 'Replay' })).getByRole('button', { name: 'Price History' }));
+    expect(document.activeElement?.textContent).toBe('MonOct 12');
+  });
+
+  it('should offer Position on a session with a marker, with the Execution row in focus', async () => {
+    const user = userEvent.setup();
+    // Tuesday has no marker, so no link.
+    const tuesday = await open('2026-10-13');
+    await tuesday.findByRole('button', { name: 'Price History' });
+    expect(tuesday.queryByRole('button', { name: 'Position' })).toBeNull();
+    cleanup();
+    const panel = await open('2026-10-12');
+    await user.click(await panel.findByRole('button', { name: 'Position' }));
+    expect(screen.getByRole('tab', { selected: true }).getAttribute('aria-label')).toBe('Position');
+    // The Execution's own toggle holds focus, inside its row.
+    expect(document.activeElement?.closest('li')?.textContent).toContain('Buy 60 XYZ');
+    expect(document.activeElement?.tagName).toBe('BUTTON');
+  });
+
+  it('should offer Journal on a session with Journal items, with that session card in focus', async () => {
+    const user = userEvent.setup();
+    // Tuesday has no Journal items, so no link.
+    const tuesday = await open('2026-10-13');
+    await tuesday.findByRole('button', { name: 'Price History' });
+    expect(tuesday.queryByRole('button', { name: 'Journal' })).toBeNull();
+    cleanup();
+    const panel = await open('2026-10-12');
+    await user.click(await panel.findByRole('button', { name: 'Journal' }));
+    expect(screen.getByRole('tab', { selected: true }).getAttribute('aria-label')).toBe('Journal');
+    // Monday is the oldest of four cards, so it is on the second page of three: the cards turn to it first.
+    expect(document.activeElement?.id).toBe('journal-card-2026-10-12');
+  });
+});

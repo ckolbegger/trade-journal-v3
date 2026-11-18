@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useParams, useSearchParams } from 'react-router';
+import { Link, useParams, useSearchParams } from 'react-router';
+import { BackIcon } from '../icons.tsx';
 import type { UiFacade } from '../../app/compose.ts';
 import type { TradeDetailView, ViewBinding } from '../../app/types.ts';
 import { PageTitle } from '../PageTitle.tsx';
@@ -50,7 +51,9 @@ function TradeDetailOf({ facade, timeZone, onDirtyChange }: TradeDetailProps) {
   const { tradeId = '' } = useParams();
   // A257: the drawer and the Replay session the address names are read once, on load; the slider and the tabs are state after that.
   const [params] = useSearchParams();
-  const [address] = useState(() => ({ drawer: drawerNamed(params.get('drawer')), session: params.get('session') }));
+  const [address] = useState(() => ({ drawer: drawerNamed(params.get('drawer')), session: params.get('session'), from: params.get('from') }));
+  // The Replay slider's session, for the way back to the Review (P129): the address's until the slider moves.
+  const [session, setSession] = useState(address.session);
   // A Plan just confirmed arrives with its post-commit view, so it is shown without a read.
   // It is handed over in memory (not in history state, which the browser structured-clones and strips the Rational
   // values of), taken once; a reload, a back/forward or a later visit takes the normal read.
@@ -141,6 +144,12 @@ function TradeDetailOf({ facade, timeZone, onDirtyChange }: TradeDetailProps) {
 
   return (
     <article className="trade-detail">
+      {address.from === 'review' && (
+        <Link className="back-link" to={`/review?trade=${tradeId}&panel=Action${session ? `&session=${session}` : ''}`}>
+          <BackIcon />
+          Back to the Review
+        </Link>
+      )}
       <Cockpit
         facade={facade}
         view={state.view}
@@ -148,6 +157,7 @@ function TradeDetailOf({ facade, timeZone, onDirtyChange }: TradeDetailProps) {
         timeZone={timeZone}
         {...(address.drawer && { initialDrawer: address.drawer })}
         {...(address.session && { initialSession: address.session })}
+        onSessionChange={setSession}
         {...(onDirtyChange && { onDirtyChange })}
       />
     </article>

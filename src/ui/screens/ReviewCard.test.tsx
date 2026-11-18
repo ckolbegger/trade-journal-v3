@@ -112,9 +112,9 @@ function ShellLike({ children }: { readonly children: ReactNode }) {
   const [writable, setWritable] = useState(true);
   return <RuntimeContext.Provider value={{ writable, report: (result) => result.kind === 'RuntimeNotWritable' && setWritable(false) }}>{children}</RuntimeContext.Provider>;
 }
-function renderWalk(facade: UiFacade, options: { writable?: boolean; onDirtyChange?: (dirty: boolean) => void; report?: (result: { kind: string }) => void; shellLike?: boolean } = {}) {
+function renderWalk(facade: UiFacade, options: { writable?: boolean; onDirtyChange?: (dirty: boolean) => void; report?: (result: { kind: string }) => void; shellLike?: boolean; address?: string } = {}) {
   const review = (
-    <MemoryRouter initialEntries={['/review']}>
+    <MemoryRouter initialEntries={[options.address ?? '/review']}>
       <ReviewView facade={facade} now={() => '2026-10-12T21:00:00Z'} onDirtyChange={options.onDirtyChange ?? (() => undefined)} />
     </MemoryRouter>
   );
@@ -1729,6 +1729,28 @@ describe('Review card: the replay (W35)', () => {
     const owedCard = await openTrade(user, 'ABC');
     expect(within(owedCard).getByRole('region', { name: 'Result' })).toBeTruthy();
     expect(within(owedCard).queryByRole('region', { name: 'Replay' })).toBeNull();
+  });
+
+  it('should link the card Price History to the Trade Detail with the drawer, the session and from=review in the address', async () => {
+    const user = userEvent.setup();
+    renderWalk(walkFacade(ready([item('t1', 'XYZ')]), tradeReview('t1', 'XYZ', { replay: THURSDAY_AND_MONDAY })));
+    const section = within(await openTrade(user, 'XYZ')).getByRole('region', { name: 'Replay' });
+    expect(within(section).getByRole('link', { name: 'Price History' }).getAttribute('href')).toBe('/trades/t1?drawer=price-history&session=2026-10-12&from=review');
+    // The link follows the slider, and the card offers no link to the Journal or the Position.
+    await user.click(within(section).getByRole('button', { name: 'Previous session' }));
+    expect(within(section).getByRole('link', { name: 'Price History' }).getAttribute('href')).toBe('/trades/t1?drawer=price-history&session=2026-10-08&from=review');
+    expect(within(section).queryByRole('link', { name: 'Journal' })).toBeNull();
+    expect(within(section).queryByRole('link', { name: 'Position' })).toBeNull();
+  });
+
+  it('should return to that Trade card with its Action panel open and the slider on the same session, from the address', async () => {
+    // Two cards: the first not done would open by itself, so the card named is the one that opens, on the session named.
+    renderWalk(walkFacade(ready([item('t2', 'ABC'), item('t1', 'XYZ')]), tradeReview('t1', 'XYZ', { replay: THURSDAY_AND_MONDAY })), { address: '/review?trade=t1&panel=Action&session=2026-10-08' });
+    const card = await screen.findByRole('region', { name: 'XYZ review' });
+    const section = within(card).getByRole('region', { name: 'Replay' });
+    expect(within(section).getByRole('slider', { name: 'Session' }).getAttribute('aria-valuetext')).toBe('Thu Oct 8 · 1 of 2. $0.00');
+    expect(within(card).getByRole('button', { name: /^Action\b/ }).getAttribute('aria-expanded')).toBe('true');
+    expect(section.closest('[hidden]')).toBeNull();
   });
 
   it('should show the card other panels and the Action form when the Trade facts cannot be replayed', async () => {

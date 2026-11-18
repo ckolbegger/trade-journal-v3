@@ -63,7 +63,7 @@ export function priceHistoryProps(replay: TradeReplayView, onOpenReview: () => v
     rowLabels: [...replay.instruments.map(rowLabel), 'Trade P&L'],
     columns: sessions.map((session) => {
       const [weekday = '', ...date] = shortDate(session.date).split(' ');
-      return { weekday, date: date.join(' '), cells: [...replay.instruments.map((i) => markCell(session, i, optionTrade, timeZone)), pnlCell(session)] };
+      return { session: session.date, weekday, date: date.join(' '), cells: [...replay.instruments.map((i) => markCell(session, i, optionTrade, timeZone)), pnlCell(session)] };
     }),
     missingCount: priceHistoryTabCount(replay),
     onOpenReview,

@@ -60,7 +60,7 @@ function ExecutionRow({
   // An option is named by its label and its role's action (C5, C6); a stock Execution reads as it always has.
   const what = executionWhat(e, legs, timeZone);
   return (
-    <li data-group={group ? change.factId : undefined}>
+    <li data-group={group ? change.factId : undefined} data-change={change.factId}>
       <button
         type="button"
         className="execution-toggle"

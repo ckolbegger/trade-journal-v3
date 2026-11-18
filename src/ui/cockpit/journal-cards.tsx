@@ -4,7 +4,7 @@ import { useContext, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { Badge } from '../Badge.tsx';
 import { ReflectRequestContext } from '../screens/OwedDebtItem.tsx';
-import { useDrawerRequest } from '../screens/trade-detail/drawer-request.ts';
+import { DrawerFocusContext, useDrawerRequest, type DrawerFocus } from '../screens/trade-detail/drawer-request.ts';
 import { journalCards, type JournalCardsInput } from './drawers/journal.props.ts';
 import type { JournalCardItem, JournalCardProps, OwedControl } from './drawers/journal.types.ts';
 
@@ -118,6 +118,15 @@ export function JournalCards(input: JournalCardsInput) {
     setSeen(request.debtId);
     const at = props?.cards.findIndex((card) => card.items.some((item) => item.id === request.debtId)) ?? -1;
     if (request.debtId !== undefined && at >= 0) setPage(Math.floor(at / PAGE_SIZE));
+  }
+  // W46: a request for a session's card turns the cards to the page holding it, once per request.
+  const focus = useContext(DrawerFocusContext);
+  const [seenFocus, setSeenFocus] = useState<DrawerFocus>();
+  if (focus !== seenFocus) {
+    setSeenFocus(focus);
+    const card = typeof focus?.target === 'object' ? focus.target.card : undefined;
+    const at = card === undefined ? -1 : (props?.cards.findIndex((c) => c.id === card) ?? -1);
+    if (at >= 0) setPage(Math.floor(at / PAGE_SIZE));
   }
   if (!props) return null;
   const pages = Math.ceil(props.cards.length / PAGE_SIZE);

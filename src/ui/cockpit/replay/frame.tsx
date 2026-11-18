@@ -2,7 +2,7 @@ import { useState, type KeyboardEvent } from 'react';
 import type { ReplayProps } from './replay.types.ts';
 
 // A255: the frame owns the headline, the slider and the reveal rule. It selects finished values; it works out none.
-export function ReplayFrame({ tradeKey, sessions, initialSession, sliderLabel, previousLabel, nextLabel, tableTitle, tableColumns, plotBase, Plot, renderSince, renderChips, onSessionChange }: ReplayProps) {
+export function ReplayFrame({ tradeKey, sessions, initialSession, sliderLabel, previousLabel, nextLabel, tableTitle, tableColumns, plotBase, Plot, renderSince, renderChips, renderLinks, onSessionChange }: ReplayProps) {
   const last = sessions.length - 1;
   // A257: the slider's session is a date held with the Trade it belongs to, so a longer replay of the same Trade keeps it and another Trade starts afresh.
   const [held, setHeld] = useState({ tradeKey, date: initialSession });
@@ -90,6 +90,8 @@ export function ReplayFrame({ tradeKey, sessions, initialSession, sliderLabel, p
           </section>
         ))}
       </div>
+      {/* W46: the screen's links for the slider's session, under the readout. */}
+      {renderLinks?.(session)}
       {/* W45: the charts' text equivalent, folded; the plot is described by this table, so it holds the revealed sessions only (P118). */}
       <details className="replay-table" onToggle={(e) => setTableOpen(e.currentTarget.open)}>
         <summary>

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { Link } from 'react-router';
 import type { CardProgress, DailyTradeReview, PanelProgress, PostSaveReview, SliderEvaluation, WalkedTrade } from '../../app/types.ts';
 import { Badge } from '../Badge.tsx';
 import { money, plural, ratio, shortDate, tradeName, tradeSummary } from '../format.ts';
@@ -49,6 +50,8 @@ export type PanelName = (typeof PANELS)[number];
 export interface Go {
   readonly panel?: PanelName;
   readonly instrument?: string;
+  // The Replay session the card's slider opens on, from a way back from Trade Detail (A257).
+  readonly session?: string;
   readonly count: number;
 }
 export const NO_GO: Go = { count: 0 };
@@ -249,6 +252,8 @@ function CardBody({ facade, trade, progress, name, advance, go, marks, held, onR
   };
   // The card opens on the panel a link names, or else on its first panel that is not done.
   const [open, setOpen] = useState<PanelName>(() => (go.panel && panels.includes(go.panel) ? go.panel : (panels.find((name) => !headers[name].done) ?? 'Action')));
+  // The slider opens on the session a link names once, when the card opens; after that it is the slider's own.
+  const [openOn] = useState(go.session);
   const panelButtons = useRef<Partial<Record<PanelName, HTMLButtonElement | null>>>({});
   const [focusPanel, setFocusPanel] = useState<{ readonly panel: PanelName }>();
   useEffect(() => {
@@ -334,7 +339,8 @@ function CardBody({ facade, trade, progress, name, advance, go, marks, held, onR
             {name === 'Action' && trade.replay && (
               <section aria-labelledby={`${uid}-replay`} className="review-card-replay">
                 <h5 id={`${uid}-replay`}>Replay</h5>
-                <ReplayDrawer replay={trade.replay} />
+                {/* P129: the one link out; the address carries the drawer, the session and the way back. */}
+                <ReplayDrawer replay={trade.replay} {...(openOn !== undefined && { initialSession: openOn })} links={({ date }) => <Link to={`/trades/${trade.tradeId}?drawer=price-history&session=${date}&from=review`}>Price History</Link>} />
               </section>
             )}
             {name === 'Action' && <ActionForm facade={facade} form={trade.form} binding={trade.saveBinding} onSaved={onSaved} onRefresh={onRefresh} onDirtyChange={report} pending={pending} />}

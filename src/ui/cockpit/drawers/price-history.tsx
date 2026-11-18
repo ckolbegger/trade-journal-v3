@@ -20,7 +20,7 @@ export function PriceHistoryTable({ rowLabels, columns, missingCount, onOpenRevi
         <tr>
           <th scope="col">Session</th>
           {columns.map((column) => (
-            <th key={`${column.weekday}-${column.date}`} scope="col">
+            <th key={`${column.weekday}-${column.date}`} scope="col" data-session={column.session}>
               <span>{column.weekday}</span>
               <span>{column.date}</span>
             </th>

@@ -198,6 +198,8 @@ interface LinkedCard {
   readonly tradeId: string;
   readonly panel?: PanelName;
   readonly instrument?: string;
+  // The Replay session its slider opens on (A257).
+  readonly session?: string;
 }
 
 // The card a link's search params name, if the Review holds it (A161): ?trade= picks the card, ?instrument= its Marks row when
@@ -214,7 +216,8 @@ function linkedCard(held: Held, params: URLSearchParams): LinkedCard | undefined
     if (holds) return { tradeId: wanted, panel: 'Marks', instrument };
     // An unknown panel name is ignored: the first panel not done opens.
     const panel = PANELS.find((name) => name === params.get('panel'));
-    return panel === undefined ? { tradeId: wanted } : { tradeId: wanted, panel };
+    const session = params.get('session');
+    return { tradeId: wanted, ...(panel !== undefined && { panel }), ...(session !== null && { session }) };
   }
   const holder = instrument === null ? undefined : holderOf(review, instrument);
   return instrument !== null && holder !== undefined ? { tradeId: holder, panel: 'Marks', instrument } : undefined;
@@ -264,7 +267,7 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
   // The first card not done, in walk order and then group order (A90), opens when nothing else is named.
   const [firstId] = useState(() => link?.tradeId ?? [...walkedTrades(initial), ...initial.owed].find((t) => !t.progress.done)?.tradeId);
   // The link the open card is to answer, and the card it is for.
-  const [go, setGo] = useState<{ readonly tradeId: string | undefined; readonly go: Go }>({ tradeId: link?.tradeId, go: link ? { panel: link.panel, instrument: link.instrument, count: 1 } : NO_GO });
+  const [go, setGo] = useState<{ readonly tradeId: string | undefined; readonly go: Go }>({ tradeId: link?.tradeId, go: link ? { panel: link.panel, instrument: link.instrument, session: link.session, count: 1 } : NO_GO });
   const [shown, setShown] = useState<Shown | undefined>(firstId === undefined ? undefined : { tradeId: firstId, opening: 0, detail: 'Loading' });
   // A count of the changes to what is open; each opening carries the count it was shown at, so a result for an earlier opening is not applied.
   const selection = useRef(0);
