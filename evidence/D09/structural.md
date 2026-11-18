@@ -181,6 +181,7 @@ Stage A runs as a swarm (decision 111, agent cap 4). Each task's heading holds i
 - **T9.7-B1.** The same root as T9.6-B1's note (`ended` follows `terminalTime` alone). Case: "it should treat a Trade closed after the Review Date as not yet ended on the card". It runs while PD3 is open: it does not depend on PD3's answer.
 - T9.7-B1 commit `f768fef0`: red `expected null not to be null` (K-sale closing Fri 11-13, Review Date Thu 11-12), then green. `assembleReplay`: `ended = (terminalTime !== null && !closedLater) || expiration !== null`, the guard that already decides `final`; `replayTrade` gains it too (this also settles T9.6-B1's note). Daily-review, replay and trade-views folders 248 of 248. Lane tier `T9.7-B1`: unit 2208, checks 14 of 14, integration only the three PD3 failures. ocr (`ocr/T9.7-B1-f768fef0.json`): **No findings.**
 - **T9.7-B2.** Readability: `!== null && !== undefined`; verification: the file's users unchanged before and after.
+- T9.7-B2 commit `ed14ca17`: line 75 `stock !== null && stock !== undefined`. `daily-review.test.ts` 72 passed before and after. Lane tier `T9.7-B2`: unit 2208, checks 14 of 14, integration 266 passed and only the three PD3 failures. The bug task noted the same loose check at line 76 (`option != null`); not an ocr finding, so no bug task. ocr (`ocr/T9.7-B2-ed14ca17.json`): **No findings.** T9.7's ocr is now clean; it stays unmerged until PD3 is answered.
 
 ## T9.10 Replay frame: the slider reveals sessions
 
