@@ -1,0 +1,323 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 5 finding(s) across 15 selected item(s).",
+  "summary": {
+    "files_reviewed": 15,
+    "comments": 5,
+    "total_tokens": 846885,
+    "input_tokens": 841742,
+    "output_tokens": 5143,
+    "cache_read_tokens": 74880,
+    "elapsed": "2m30s"
+  },
+  "tool_calls": {
+    "total": 66,
+    "by_tool": {
+      "code_comment": 3,
+      "code_search": 19,
+      "file_find": 4,
+      "file_read": 39,
+      "file_read_diff": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/TradeDetail.tsx",
+      "content": "The query parameters are captured for the lifetime of TradeDetail, not for each trade load. The router does not key this screen by tradeId, so navigating between two /trades/:tradeId addresses reuses this state: the second trade inherits the first URL's drawer/session and ignores its own deep-link parameters. Reset the address and the cockpit's initial selection when the trade changes (or remount the screen per trade), while keeping tab/slider interactions local within a visit. Add a navigation test without cleanup between the two addresses.",
+      "existing_code": "  const [address] = useState(() =\u003e ({ drawer: drawerNamed(params.get('drawer')), session: params.get('session') }));",
+      "start_line": 46,
+      "end_line": 46,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/trade-detail/Cockpit.tsx",
+      "content": "A replay read failure leaves an available Replay tab with a completely empty panel. readReplay converts rejected requests and non-Ready results to kind: 'None', while drawersOf still includes Replay for coherent Open/Closed trades. Render an explicit unavailable/error message (and preferably a retry action) instead of null, and cover a rejected replay request in the integration tests.",
+      "existing_code": "        return replay ? \u003cReplayDrawer replay={replay} {...(initialSession !== undefined \u0026\u0026 { initialSession })} /\u003e : null;",
+      "start_line": 122,
+      "end_line": 122,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/cockpit/replay/replay.props.ts",
+      "content": "The option axis counts weekdays, but plotted slots use the session index. Replay sessions come from Market Data and exclude exchange holidays, so the promised blank holiday slot is never left blank: every subsequent point shifts left, and even a completed expiration session can appear before the expiration endpoint. Assign slots using the same weekday offset as the axis (or obtain both slots and axis length from a consistent session calendar). Add a case spanning Thanksgiving.",
+      "existing_code": "    slot: index,",
+      "start_line": 305,
+      "end_line": 305,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/cockpit/replay/replay.props.ts",
+      "content": "This guard removes both stake annotations after a Stop breach, even when incrementalRewardToTarget is still a valid positive figure. For example, the new PastStop readout test retains $1,080 of reward, but its chart receives no reward annotation. Build the risk and reward labels independently so breaching the Stop suppresses only the risk label; the plot stake type may need to permit a reward-only object.",
+      "existing_code": "    ...(risk?.kind === 'Value' \u0026\u0026 zone !== 'PastStop' \u0026\u0026 {",
+      "start_line": 318,
+      "end_line": 318,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/cockpit/replay/replay.props.ts",
+      "content": "These labels ignore `pastBy.crossed`. A `PastStop`/`PastTarget` standing can mean only that the planned dollar amount was exceeded, while the actual condition remains untriggered (both cases already appear in the existing `sessionWords` tests). The drawer would then say, for example, “Stop breached” in the readout while saying the underlying is still above the Stop in its summary. Check `pastBy.crossed` before claiming a breach/reach, and use planned-amount wording when it is false.",
+      "existing_code": "  const ending = stopOverrun ? 'Stop breached' : targetOverrun ? 'Target reached' : undefined;",
+      "start_line": 177,
+      "end_line": 177,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Replay drawer and replay props implementation with tests",
+      "files": [
+        "src/ui/cockpit/drawers/replay.test.tsx",
+        "src/ui/cockpit/drawers/replay.tsx",
+        "src/ui/cockpit/replay/replay.props.test.ts",
+        "src/ui/cockpit/replay/replay.props.ts"
+      ]
+    },
+    {
+      "label": "Trade detail cockpit integration and drawer requests",
+      "files": [
+        "src/ui/screens/TradeDetail.test.tsx",
+        "src/ui/screens/TradeDetail.tsx",
+        "src/ui/screens/trade-detail/Cockpit.test.tsx",
+        "src/ui/screens/trade-detail/Cockpit.tsx",
+        "src/ui/screens/trade-detail/drawer-request.ts"
+      ]
+    },
+    {
+      "label": "Cockpit and trade detail end-to-end coverage and support",
+      "files": [
+        "e2e/d8p/cockpit.spec.ts",
+        "e2e/d8p/responsive-a11y.spec.ts",
+        "e2e/d8p/states.spec.ts",
+        "e2e/d8r/states.spec.ts",
+        "e2e/d8r/support.ts",
+        "e2e/support/detail/index.ts"
+      ]
+    }
+  ],
+  "session_id": "909d793f-eae3-4062-83ef-e84cb89b9858",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "909d793f-eae3-4062-83ef-e84cb89b9858",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "951867db",
+      "resolved_base": "91c4576d7dd45ef5dc6a80e961b6f60abf6944e2",
+      "resolved_head": "951867dbe65175c4a4e8d5d392f53e357e64eb7b",
+      "exact_range": "91c4576d7dd45ef5dc6a80e961b6f60abf6944e2..951867dbe65175c4a4e8d5d392f53e357e64eb7b",
+      "source_artifact_sha256": "d4460e9f76badb3160efaa183ccaec1bbec1bd26cab065f70f8206d05b6de901"
+    },
+    "execution": {
+      "ocr_version": "v1.13.12",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0060ea44ecacab2865c5d4dceb1c75627a3c3566a4f16698d1c3465ec458b6cf",
+          "path": "src/ui/cockpit/replay/replay.props.test.ts",
+          "fingerprint": "20f32f59429350f3bdd96d47fceca66117b1e60f59642c6d4935fd1c8dd7e436"
+        },
+        {
+          "item_id": "0cf6f8c81d90b1b214f198a17ea555ace5105abe5cc4bd17cda5135f20f9c102",
+          "path": "e2e/d8r/states.spec.ts",
+          "fingerprint": "6b2269b2814f5fe11f3addcb432862b59261c4d86b24a4c606f04466b99fe104"
+        },
+        {
+          "item_id": "0db0c382b1e88a4f0d77204dd6e715a250ade6135af2584704ed7ae1561e6156",
+          "path": "src/ui/cockpit/drawers/replay.tsx",
+          "fingerprint": "a8f6d6fceadda2e0d1f9c1478f5b0ff261f851f5a07c5ba711516304bf54ade5"
+        },
+        {
+          "item_id": "12f8d33ae57db509336618f70d5433f9e94127f7db546b8539f31cbd601f05b6",
+          "path": "src/ui/screens/trade-detail/Cockpit.test.tsx",
+          "fingerprint": "2eaa34f52857353ae237a85b67e9a3c970bff24c5d8ca6f45810d844740147e3"
+        },
+        {
+          "item_id": "30273611721b694304fcba1e627fe765af668fd478e0661a0cc14f1ce1b4a3ab",
+          "path": "e2e/d8p/states.spec.ts",
+          "fingerprint": "bac773c016ca6862c2dccf8891c5e147ab9ea6b884fef6d7e5bd494d878a9cae"
+        },
+        {
+          "item_id": "4e8c9fded9c24bb922049c410df7d1152836a705500c2ae0b2bd9662c565f721",
+          "path": "e2e/d8p/cockpit.spec.ts",
+          "fingerprint": "4fb4999c2ae8b4310bc4ea2d799593e4dd75458d799ff7db36e51624e8b02917"
+        },
+        {
+          "item_id": "7a11420bfbb41bf1786c11a97abc2efd178f61cda0a62e22d7d52f9d87dbe6ab",
+          "path": "src/ui/screens/TradeDetail.tsx",
+          "fingerprint": "4f4dd30fa7d95a5e364ec719ec6d000e90ac889529570445b642cc8578bc9d49"
+        },
+        {
+          "item_id": "87638b8e40a8471b5a00443528a3c98bf4752f964c11c4b564b6258d593b8716",
+          "path": "src/ui/screens/TradeDetail.test.tsx",
+          "fingerprint": "73e0434feceae8e4ae6fcb885b3cd9f665d947becc2b3566412adf6fc9cfbca3"
+        },
+        {
+          "item_id": "8efdf39f24a254fc2596c2242b5fdd91be966cb4df378539958efc40963e5bc1",
+          "path": "src/ui/cockpit/drawers/replay.test.tsx",
+          "fingerprint": "8fd90e28fada2f19647a081cec2313942dbb3eec5c6fdb54e87bc66f60455fdc"
+        },
+        {
+          "item_id": "a59561cd58b7f035c39bcd7f475b31b7f72e2fa2fd9f758783eb7a99c745de46",
+          "path": "src/ui/screens/trade-detail/drawer-request.ts",
+          "fingerprint": "d8ec5fc5891ba96f16312eecb69282b0de27122618427b44d61d26dbad88247a"
+        },
+        {
+          "item_id": "bad5c69b3d1e03bf54bd2b1b2b13ff5e5a0dabd158881300fc1e86a4a591bb75",
+          "path": "src/ui/screens/trade-detail/Cockpit.tsx",
+          "fingerprint": "d95b370218bfd1add1b0d6df4c408a289487533a50f8fe7b6c2b74125d434898"
+        },
+        {
+          "item_id": "bf86d89a9e8ae774a65e30260f2824321612838d6476ba640ffa26ad8b501773",
+          "path": "e2e/support/detail/index.ts",
+          "fingerprint": "1e54a8917da5b2c7b91cc524e981ffe28a41206476a55ee78e4fbda1f2362a67"
+        },
+        {
+          "item_id": "d3eb99946b5bb7f90658427e630f7c2515168d299467467f8bbc8ee72641f7e3",
+          "path": "e2e/d8r/support.ts",
+          "fingerprint": "7ae66afe47803c7d22857b2b4b7c6b273d9250ac78f38fff13f3955757a89563"
+        },
+        {
+          "item_id": "ea03ecbf36e42899eb18f897fb8983e3c8efff8a23ee606ee3aa718ee2111f66",
+          "path": "src/ui/cockpit/replay/replay.props.ts",
+          "fingerprint": "377d3330196f03048e0e8d76889c7c2c782e073fc9897dd05783bebac4b033a5"
+        },
+        {
+          "item_id": "efe807094ca709ea98548a6a284f2e579157551da75e12941da6d413bd8797a6",
+          "path": "e2e/d8p/responsive-a11y.spec.ts",
+          "fingerprint": "8a2999d18713b0a6298188edacfed38a546baf8f7b4f0aa48bad94425ef48116"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0060ea44ecacab2865c5d4dceb1c75627a3c3566a4f16698d1c3465ec458b6cf",
+          "path": "src/ui/cockpit/replay/replay.props.test.ts",
+          "fingerprint": "20f32f59429350f3bdd96d47fceca66117b1e60f59642c6d4935fd1c8dd7e436"
+        },
+        {
+          "item_id": "0cf6f8c81d90b1b214f198a17ea555ace5105abe5cc4bd17cda5135f20f9c102",
+          "path": "e2e/d8r/states.spec.ts",
+          "fingerprint": "6b2269b2814f5fe11f3addcb432862b59261c4d86b24a4c606f04466b99fe104"
+        },
+        {
+          "item_id": "0db0c382b1e88a4f0d77204dd6e715a250ade6135af2584704ed7ae1561e6156",
+          "path": "src/ui/cockpit/drawers/replay.tsx",
+          "fingerprint": "a8f6d6fceadda2e0d1f9c1478f5b0ff261f851f5a07c5ba711516304bf54ade5"
+        },
+        {
+          "item_id": "12f8d33ae57db509336618f70d5433f9e94127f7db546b8539f31cbd601f05b6",
+          "path": "src/ui/screens/trade-detail/Cockpit.test.tsx",
+          "fingerprint": "2eaa34f52857353ae237a85b67e9a3c970bff24c5d8ca6f45810d844740147e3"
+        },
+        {
+          "item_id": "30273611721b694304fcba1e627fe765af668fd478e0661a0cc14f1ce1b4a3ab",
+          "path": "e2e/d8p/states.spec.ts",
+          "fingerprint": "bac773c016ca6862c2dccf8891c5e147ab9ea6b884fef6d7e5bd494d878a9cae"
+        },
+        {
+          "item_id": "4e8c9fded9c24bb922049c410df7d1152836a705500c2ae0b2bd9662c565f721",
+          "path": "e2e/d8p/cockpit.spec.ts",
+          "fingerprint": "4fb4999c2ae8b4310bc4ea2d799593e4dd75458d799ff7db36e51624e8b02917"
+        },
+        {
+          "item_id": "7a11420bfbb41bf1786c11a97abc2efd178f61cda0a62e22d7d52f9d87dbe6ab",
+          "path": "src/ui/screens/TradeDetail.tsx",
+          "fingerprint": "4f4dd30fa7d95a5e364ec719ec6d000e90ac889529570445b642cc8578bc9d49"
+        },
+        {
+          "item_id": "87638b8e40a8471b5a00443528a3c98bf4752f964c11c4b564b6258d593b8716",
+          "path": "src/ui/screens/TradeDetail.test.tsx",
+          "fingerprint": "73e0434feceae8e4ae6fcb885b3cd9f665d947becc2b3566412adf6fc9cfbca3"
+        },
+        {
+          "item_id": "8efdf39f24a254fc2596c2242b5fdd91be966cb4df378539958efc40963e5bc1",
+          "path": "src/ui/cockpit/drawers/replay.test.tsx",
+          "fingerprint": "8fd90e28fada2f19647a081cec2313942dbb3eec5c6fdb54e87bc66f60455fdc"
+        },
+        {
+          "item_id": "a59561cd58b7f035c39bcd7f475b31b7f72e2fa2fd9f758783eb7a99c745de46",
+          "path": "src/ui/screens/trade-detail/drawer-request.ts",
+          "fingerprint": "d8ec5fc5891ba96f16312eecb69282b0de27122618427b44d61d26dbad88247a"
+        },
+        {
+          "item_id": "bad5c69b3d1e03bf54bd2b1b2b13ff5e5a0dabd158881300fc1e86a4a591bb75",
+          "path": "src/ui/screens/trade-detail/Cockpit.tsx",
+          "fingerprint": "d95b370218bfd1add1b0d6df4c408a289487533a50f8fe7b6c2b74125d434898"
+        },
+        {
+          "item_id": "bf86d89a9e8ae774a65e30260f2824321612838d6476ba640ffa26ad8b501773",
+          "path": "e2e/support/detail/index.ts",
+          "fingerprint": "1e54a8917da5b2c7b91cc524e981ffe28a41206476a55ee78e4fbda1f2362a67"
+        },
+        {
+          "item_id": "d3eb99946b5bb7f90658427e630f7c2515168d299467467f8bbc8ee72641f7e3",
+          "path": "e2e/d8r/support.ts",
+          "fingerprint": "7ae66afe47803c7d22857b2b4b7c6b273d9250ac78f38fff13f3955757a89563"
+        },
+        {
+          "item_id": "ea03ecbf36e42899eb18f897fb8983e3c8efff8a23ee606ee3aa718ee2111f66",
+          "path": "src/ui/cockpit/replay/replay.props.ts",
+          "fingerprint": "377d3330196f03048e0e8d76889c7c2c782e073fc9897dd05783bebac4b033a5"
+        },
+        {
+          "item_id": "efe807094ca709ea98548a6a284f2e579157551da75e12941da6d413bd8797a6",
+          "path": "e2e/d8p/responsive-a11y.spec.ts",
+          "fingerprint": "8a2999d18713b0a6298188edacfed38a546baf8f7b4f0aa48bad94425ef48116"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "215cbf10eaf75d142bb16018db436fafd698270662dead1548401434b7df574a",
+          "path": "evidence/D09/suite-runs/T9.14-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "7197e681b3cd77fc279635486fc19edb14d6d4653cf1327dd74f4d87c16ba497",
+          "path": "evidence/D09/tdd-log/T9.14.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "c63ed94e7ea9c42578f60135495e2877a1b19433b8673dd361c7bb5babedaf91",
+          "path": "evidence/D09/suite-runs/T9.14-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "d6d2e2c6770ca763b240bc020c5911b4de228cae8c7c99d0ad916c3489d4b47e",
+          "path": "evidence/D09/suite-runs/T9.14-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "e4f71c8851dffe748057bce78ace18365d31dfffd691575334e66e7d2df997fa",
+          "path": "evidence/D09/suite-runs/T9.14-checks.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 149542
+  }
+}

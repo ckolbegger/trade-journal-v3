@@ -11,4 +11,5 @@ Screen words no approved row covers, used as the session would have recommended,
 | T9.14 | Readout, Reward to risk change | "(Plan 2.95 to 1)" | W43's "Plan 2.95 to 1" |
 | T9.14 | Hover lines | "BREN Mark: 101.80", "Trade P&L: No Mark" | W44's "No Mark" |
 | T9.14 | Chart's accessible name | "BREN Marks and Trade P&L by session" | W39 |
+| T9.14-B4 (decided) | Replay drawer when the replay could not be read | "No replay." | none; W35 |
 | T9.14 | P&L chart labels | "Banked +$478", "Realized −$495" with cents dropped only when zero | W40 |

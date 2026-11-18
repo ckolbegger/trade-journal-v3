@@ -156,6 +156,22 @@ Stage A runs as a swarm (decision 111, agent cap 4). Each task's heading holds i
 - **Gap: no "Open" row in the readout (W43).** The view has no open P&L figure and the UI may not subtract (ADR 0001); it needs a field in `ReplayFigures` (`replay-series.ts`, lane TA's, merged). To route after T9.14's ocr.
 - Notes for later tasks: an option Trade's time axis counts weekdays to expiration (a holiday leaves one blank slot; a calendar-aware count would need a coordinator field); "11 of 15" counts the view's sessions, not the axis slots; no stake tag on the plot when the Stop is breached, nor a reward tag when the Target is reached (both stay in the readout); the panel renders nothing when the replay could not be read (no approved words cover it); `drawerNamed("price-history")` gives "Price History"; `replayProps(view, { Plot, initialSession?, onSessionChange? })`, `ReplayView`, `ReplayDrawer`, `CockpitProps.initialDrawer`/`initialSession` are T9.15's and T9.16's to use. `build:releases` was not run (the permission classifier denied it; `lane-setup.sh` had cloned `dist-releases`).
 - No-arithmetic check (from the summary): finished values selected and formatted; plot coordinates by `Number(numerator)/Number(denominator)`; an unsigned copy for "down $…"; a weekday count for the axis (drawing).
+- ocr round 1 (`ocr/T9.14-951867db.json`), 5 findings, all Valid:
+
+| Severity | Location | Claim | Outcome |
+|---|---|---|---|
+| medium | `replay.props.ts:305` | Plot slots use the session index while the option axis counts weekdays, so after a holiday every later point shifts left and the blank holiday slot never appears | T9.14-B1 |
+| medium | `replay.props.ts:318` | The `zone !== 'PastStop'` guard drops both stake tags after a Stop breach, though W38 still states the reward ("$1,080.00 back up to the Target") | T9.14-B2 |
+| medium | `replay.props.ts:177` | The readout's "Stop breached"/"Target reached" and the Overrun rows ignore `pastBy.crossed`, so a planned-amount overrun with the condition untriggered is called a breach, contradicting the headline | T9.14-B3 |
+| medium | `Cockpit.tsx:122` | A failed or non-Ready replay read leaves Replay selectable with an empty panel | T9.14-B4 |
+| medium | `TradeDetail.tsx:46` | `drawer`/`session` are captured once for the screen's lifetime, so going from one Trade's address straight to another's reuses the first address's | T9.14-B5 |
+
+- **T9.14-B1.** Case: "it should place each session in its own weekday slot, leaving a holiday blank".
+- **T9.14-B2.** Case: "it should keep the reward tag after a Stop breach". If `PlotSession`'s stake type (frozen `replay.types.ts`) can't hold a reward alone, stop and report.
+- **T9.14-B3.** Case: "it should call a planned-amount overrun by its words, not a breach, when the condition has not triggered".
+- **T9.14-B4.** Implementation-level decision (recorded): when the replay could not be read, the Replay panel says so in one line, "No replay." (provisional words, `new-words.md`), rather than leaving the tab empty or hiding it (the drawer list stays the same on every coherent Detail). Case: "it should say so in the Replay drawer when the replay could not be read".
+- **T9.14-B5.** Case: "it should read the drawer and session again when the address names another Trade".
+- **T9.14-F1** (the "Open" gap, routed by the main session after ocr, not an ocr finding): add the open P&L to `ReplayFigures` (lane TA's `replay-series.ts`, merged and free) and the readout's "Open" row (W43). Case: "it should show the open part of the Trade P&L in the readout".
 
 ## T9.6 The shared replay assembly; `replayTrade` carries the new fields
 
