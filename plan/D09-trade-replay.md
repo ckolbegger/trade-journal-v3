@@ -23,7 +23,7 @@ The user has already decided (handoff section 4): D9 builds Corridor; the result
 | # | Question | Recommendation | Alternatives and tradeoff |
 |---|---|---|---|
 | P118 | **Size.** 39 tasks, and ten questions for the user (section 12). The drafting guide's limit is 25 tasks or five questions. (Open question 1; **answered 2026-11-17: as recommended**.) | **One breakdown, run as three stages, each with its own session, suites and fresh critic** (section 1.4): **A**, the replay chart; **B**, the option estimates; **C**, the meter and the Open list's order. The benchmark runs once, after stage C. | (a) One run of 39 tasks with a checkpoint critic: no stage gates, but D8R's 28 tasks took 16.6 hours and three critics. (b) Three separate deliverables with their own files and names: the same work, with three sets of handoffs and tags. |
-| P119 | **Swarm or serial.** | **A swarm in each stage** (decision 111), agent cap 4. Stage A's wave 1 runs Trade Analysis, the chart's frame and the chart's plot at once. | Serial: about twice the time. The D9 definition itself says these three run in parallel once the view type is fixed. |
+| P119 | **Swarm or serial.** (Open question 2; **answered 2026-11-17: a swarm for stage A only**, the user's choice over the recommendation.) | **Stage A is a swarm** (decision 111), agent cap 4: its wave 1 runs Trade Analysis, the chart's frame and the chart's plot at once. **Stages B and C run one task at a time** (decision 100). | A swarm in every stage, the draft's recommendation: about 3 hours less on B and 4 on C, with the merge work a swarm brings. Serial throughout: about twice the time on A. |
 | P120 | **Who works out each per-session figure** (handoff section 5, item 1). | **Trade Analysis.** `evaluate` gains the Trade's result at the Stop, at the Target, at the Worst case and at the Max reward, and where the result stands between them (A248, A249). `replay` returns `evaluate`'s figures and condition status for every session (A250), the markers and the Plan column (A251, A252). The coordinators pass them through. | Trade Views does the sums: it would put arithmetic in a coordinator and give the meter a second copy of it. |
 | P121 | **Keeping estimates apart from exact figures** (item 2). | **A separate pure module in floating point, `src/domain/option-pricing/`, read by one file, `replay-estimates.ts`. Its results have their own type, `Estimate`, which holds a plain number and never a `Rational`.** An ESLint rule keeps both files from being imported anywhere else and from building an exact value (A258). `Rational` has no constructor from a number, so the type system already blocks the direct path. | Estimates as `CalculationResult<Rational>`: nothing would stop one from being added to a P&L. |
 | P122 | **The interest rate** (item on rates; the interview gave 4% short-term and 5.25% long-term). | **Two constants in code, chosen by days to expiration: 4% up to 365 days, 5.25% beyond.** The rate used is returned with each estimate and stated on screen. Open question 3 asks the user to confirm the 365-day line. | A Workspace setting: a schema change that reaches every layer, and a specialist input the trader shouldn't have to supply. A dated rate table: more accurate for old Trades, but the rate moves a short-dated option's implied volatility very little. |
@@ -203,11 +203,11 @@ Persistence, migrations, Market Data, Trade Record, Journal, the Reference Catal
 
 On D8R's basis: a behavioral task about 35 minutes in `tdd-task`, ocr about 5, a lane tier about 4, a complete run about 13 with three browser stages. Critic defects and their bug tasks are left out, and in D8R they doubled the estimate.
 
-| Stage | Serial | Swarm | Where the time goes |
+| Stage | Serial | Swarm | Chosen (open question 2) |
 |---|---|---|---|
-| A | about 16 hours | **about 7 hours** | Wave 1's three lanes at once; the two wiring tasks at once; then the suites and the critic. |
-| B | about 7 hours | **about 4 hours** | The domain lane is a chain of four; the UI lane runs beside it on doubles. |
-| C | about 9 hours | **about 5 hours** | The meter component beside the backend lane; then three wiring tasks at once. |
+| A | about 16 hours | about 7 hours | **Swarm.** Wave 1's three lanes at once; the two wiring tasks at once; then the suites and the critic. |
+| B | about 7 hours | about 4 hours | **Serial.** Mostly a chain of four tasks, so a swarm saves little. |
+| C | about 9 hours | about 5 hours | **Serial.** |
 
 ---
 
@@ -238,35 +238,35 @@ Kind: **B** = behavioral (TDD, red then green per case), **S** = structural (exa
 | T9.17 | Stage A: Node integration suite | A, 3 | S | T9.8 | `test:integration` | none (tests only) |
 | T9.18 | Stage A: browser suite | A, 3 | S | T9.16 | `test:e2e` | none (tests only) |
 | T9.19 | Stage A gate: fresh browser critic | A, 3 | S | T9.17, T9.18 | critic report | none |
-| T9.20 | Estimates stay apart: their types and the lint rule | B, 0, ES | B | T9.19 | `tools/estimate-rules.test.ts`, `typecheck` | **lint; types:** `estimates?` on a replayed session |
-| T9.21 | Option pricing and implied volatility | B, 1, ES | B | T9.20 | `option-pricing` | **new pure module** |
-| T9.22 | The share equivalent and the split | B, 1, ES | B | T9.21 (lane order) | `replay-estimates` | **Trade Analysis:** A258, A259 |
-| T9.23 | `replay` and both views carry each session's estimates | B, 1, ES | B | T9.22 (lane order) | `TradeAnalysis.replay`; `replayTrade`; `getTrade` | **Trade Analysis; replay assembly** |
-| T9.24 | Chips: implied volatility and the share equivalent | B, 1, EU | B | T9.20 | `ReplayFrame` | none |
-| T9.25 | The "since the session before" line, and the estimates in the readout and table | B, 1, EU | B | T9.24 (lane order); merges after T9.23 | `ReplayFrame`, `replay.props` | none |
-| T9.26 | Stage B: Node integration suite | B, 2 | S | T9.23 | `test:integration` | none (tests only) |
-| T9.27 | Stage B: browser suite | B, 2 | S | T9.25 | `test:e2e` | none (tests only) |
-| T9.28 | Stage B gate: fresh browser critic | B, 2 | S | T9.26, T9.27 | critic report | none |
-| T9.29 | The meter | C, 0, MT | B | T9.28 | `Meter` | none |
-| T9.30 | Attention shared, and the meter's reading | C, 0, AT | B | T9.28 | `attentionOf`, `meterReadingOf` (valuation module) | **valuation, Daily Review:** A260, A261 |
-| T9.31 | Daily Review: each walked Trade's meter reading | C, 1, AT | B | T9.30 (lane order) | `DailyReview.open`, `save` | **Daily Review** |
-| T9.32 | Trade Views: the Open list in attention order, with each row's meter reading | C, 1, AT | B | T9.31 (lane order) | `TradeViews.browseTrades` | **Trade Views:** A262 |
-| T9.33 | Review card: the meter replaces the slider | C, 1, MR | B | T9.29, T9.31 | `ReviewCard` | none |
-| T9.34 | Open list: the meter under the P&L, in the read's order | C, 1, ML | B | T9.29, T9.32 | `TradeList` | none |
-| T9.35 | Trade Detail: the meter on the Conditions card | C, 1, MD | B | T9.29, T9.30 | `ConditionsCard`, `conditions.props` | none |
-| T9.36 | The benchmark's expected Open rows, in the new order | C, 2 | S | T9.34 | `bench:expected`, `git diff` | **tools:** `bench/expected-open-rows.json` |
-| T9.37 | Stage C: Node integration suite | C, 2 | S | T9.32 | `test:integration` | none (tests only) |
-| T9.38 | Stage C: browser suite | C, 2 | S | T9.34, T9.35 | `test:e2e` | none (tests only) |
-| T9.39 | Deliverable gate: fresh browser critic | C, 2 | S | all | critic report | none |
+| T9.20 | Estimates stay apart: their types and the lint rule | B, serial | B | T9.19 | `tools/estimate-rules.test.ts`, `typecheck` | **lint; types:** `estimates?` on a replayed session |
+| T9.21 | Option pricing and implied volatility | B, serial | B | T9.20 | `option-pricing` | **new pure module** |
+| T9.22 | The share equivalent and the split | B, serial | B | T9.21 | `replay-estimates` | **Trade Analysis:** A258, A259 |
+| T9.23 | `replay` and both views carry each session's estimates | B, serial | B | T9.22 | `TradeAnalysis.replay`; `replayTrade`; `getTrade` | **Trade Analysis; replay assembly** |
+| T9.24 | Chips: implied volatility and the share equivalent | B, serial | B | T9.23 | `ReplayFrame` | none |
+| T9.25 | The "since the session before" line, and the estimates in the readout and table | B, serial | B | T9.24 | `ReplayFrame`, `replay.props` | none |
+| T9.26 | Stage B: Node integration suite | B, serial | S | T9.23 | `test:integration` | none (tests only) |
+| T9.27 | Stage B: browser suite | B, serial | S | T9.25 | `test:e2e` | none (tests only) |
+| T9.28 | Stage B gate: fresh browser critic | B, serial | S | T9.26, T9.27 | critic report | none |
+| T9.29 | The meter | C, serial | B | T9.28 | `Meter` | none |
+| T9.30 | Attention shared, and the meter's reading | C, serial | B | T9.28 | `attentionOf`, `meterReadingOf` (valuation module) | **valuation, Daily Review:** A260, A261 |
+| T9.31 | Daily Review: each walked Trade's meter reading | C, serial | B | T9.30 | `DailyReview.open`, `save` | **Daily Review** |
+| T9.32 | Trade Views: the Open list in attention order, with each row's meter reading | C, serial | B | T9.31 | `TradeViews.browseTrades` | **Trade Views:** A262 |
+| T9.33 | Review card: the meter replaces the slider | C, serial | B | T9.29, T9.31 | `ReviewCard` | none |
+| T9.34 | Open list: the meter under the P&L, in the read's order | C, serial | B | T9.29, T9.32 | `TradeList` | none |
+| T9.35 | Trade Detail: the meter on the Conditions card | C, serial | B | T9.29, T9.30 | `ConditionsCard`, `conditions.props` | none |
+| T9.36 | The benchmark's expected Open rows, in the new order | C, serial | S | T9.34 | `bench:expected`, `git diff` | **tools:** `bench/expected-open-rows.json` |
+| T9.37 | Stage C: Node integration suite | C, serial | S | T9.32 | `test:integration` | none (tests only) |
+| T9.38 | Stage C: browser suite | C, serial | S | T9.34, T9.35 | `test:e2e` | none (tests only) |
+| T9.39 | Deliverable gate: fresh browser critic | C, serial | S | all | critic report | none |
 
 **Run order.**
 - **Stage A.** Wave 0: T9.1 and T9.2 at once. Wave 1: lanes TA, CF and CP at once, each in its listed order; CF and CP test against doubles built from T9.2's types. Wave 2: lane RV (T9.6, T9.7, T9.8) starts when T9.5 merges; T9.14 and T9.15 run at once when their blockers merge; T9.16 last. Wave 3: T9.17 may start once T9.8 merges; T9.18 after T9.16; then T9.19.
-- **Stage B.** T9.20 alone. Then lanes ES (T9.21, T9.22, T9.23) and EU (T9.24, T9.25) at once; T9.25 merges after T9.23. Then T9.26, T9.27, T9.28.
-- **Stage C.** T9.29 and T9.30 at once. Then lane AT (T9.31, T9.32); T9.35 may start when T9.29 and T9.30 merge; T9.33 after T9.31; T9.34 after T9.32. Then T9.36, T9.37, T9.38, T9.39. The benchmark follows the gate (decision 114).
+- **Stage B, serial** (decision 100; open question 2): T9.20, T9.21, T9.22, T9.23, T9.24, T9.25, T9.26, T9.27, T9.28, one at a time on the deliverable branch, each ending with its own complete run.
+- **Stage C, serial:** T9.29, T9.30, T9.31, T9.32, T9.33, T9.34, T9.35, T9.36, T9.37, T9.38, T9.39, the same way. The benchmark follows the gate (decision 114).
 
 ### 4.2 Lanes and file ownership
 
-A lane is one git worktree (`.claude/worktrees/d09-<lane>`) on one branch (`d09/<lane>`), set up by `lane-setup.sh`. A file is owned by one lane per wave.
+In stage A, a lane is one git worktree (`.claude/worktrees/d09-<lane>`) on one branch (`d09/<lane>`), set up by `lane-setup.sh`, and a file is owned by one lane per wave. Stages B and C are serial and have no lanes; their rows (marked B or C) list the files each task changes, for the briefs.
 
 | Lane | Tasks | Owns |
 |---|---|---|
@@ -278,19 +278,19 @@ A lane is one git worktree (`.claude/worktrees/d09-<lane>`) on one branch (`d09/
 | RV | T9.6, T9.7, T9.8 | `src/coordinators/replay/` (new); `src/coordinators/trade-views/replay-trade.ts`, `replay-view.ts`, and `replayTrade` in `trade-views.ts`; `getTrade` in `src/coordinators/daily-review/daily-review.ts`; `src/coordinators/workspace/capabilities.ts` and `workspace.test.ts`; `src/app/routes.ts`, `compose.ts`, `types.ts`; `tests/support/` builders it extends |
 | DW | T9.14, T9.16 | `src/ui/screens/trade-detail/Cockpit.tsx`, `drawer-request.ts`, `Cockpit.test.tsx`; `src/ui/screens/TradeDetail.tsx` and its test; `e2e/support/detail/index.ts`; the drawer lines of the specs in section 1.5. For T9.16 only: `linkedCard` in `src/ui/screens/ReviewView.tsx`, after RW has merged. |
 | RW | T9.15 | `src/ui/screens/ReviewCard.tsx`, `ReviewCard.test.tsx`, `ReviewCards.test.tsx`; the card's styles |
-| ES | T9.20, T9.21, T9.22, T9.23 | `eslint.estimates.config.js`, `eslint.config.js` (one merge line), `tools/estimate-rules.test.ts`; `src/domain/option-pricing/` (new); `src/domain/trade-analysis/replay-estimates.ts` (new) and `replay-series.ts`; `src/coordinators/replay/` (the pass-through) |
-| EU | T9.24, T9.25 | `src/ui/cockpit/replay/chips*`, `since-line*`; the estimate rows of `replay.props*`, `readout*` and `table*`; `styles/replay-estimates.css` |
-| MT | T9.29 | `src/ui/cockpit/meter/` (new); `src/ui/cockpit/styles/meter.css` |
-| AT | T9.30, T9.31, T9.32 | `src/coordinators/valuation/attention.ts` (moved) and `meter.ts` (new); `src/coordinators/daily-review/` (`open`, `save`, types, the re-exports); `browseTrades` and the Open item types in `src/coordinators/trade-views/trade-views.ts`; the positional reads listed in section 1.5 |
-| MR | T9.33 | `src/ui/screens/ReviewCard.tsx` (its header); `StopTargetSlider.tsx` and its test (deleted); `e2e/d5r/sliders.spec.ts`, `review.spec.ts`, `marks.spec.ts`, `responsive-a11y.spec.ts`, `support.ts`; `e2e/d7p/layout.spec.ts` (its slider lines) |
-| ML | T9.34 | `src/ui/screens/TradeList.tsx`, `TradeList.test.tsx`, `TradeListOptions.test.tsx`; the list's styles |
-| MD | T9.35 | `src/ui/cockpit/rail/conditions*`; `styles/rail-b.css` |
+| B | T9.20, T9.21, T9.22, T9.23 | `eslint.estimates.config.js`, `eslint.config.js` (one merge line), `tools/estimate-rules.test.ts`; `src/domain/option-pricing/` (new); `src/domain/trade-analysis/replay-estimates.ts` (new) and `replay-series.ts`; `src/coordinators/replay/` (the pass-through) |
+| B | T9.24, T9.25 | `src/ui/cockpit/replay/chips*`, `since-line*`; the estimate rows of `replay.props*`, `readout*` and `table*`; `styles/replay-estimates.css` |
+| C | T9.29 | `src/ui/cockpit/meter/` (new); `src/ui/cockpit/styles/meter.css` |
+| C | T9.30, T9.31, T9.32 | `src/coordinators/valuation/attention.ts` (moved) and `meter.ts` (new); `src/coordinators/daily-review/` (`open`, `save`, types, the re-exports); `browseTrades` and the Open item types in `src/coordinators/trade-views/trade-views.ts`; the positional reads listed in section 1.5 |
+| C | T9.33 | `src/ui/screens/ReviewCard.tsx` (its header); `StopTargetSlider.tsx` and its test (deleted); `e2e/d5r/sliders.spec.ts`, `review.spec.ts`, `marks.spec.ts`, `responsive-a11y.spec.ts`, `support.ts`; `e2e/d7p/layout.spec.ts` (its slider lines) |
+| C | T9.34 | `src/ui/screens/TradeList.tsx`, `TradeList.test.tsx`, `TradeListOptions.test.tsx`; the list's styles |
+| C | T9.35 | `src/ui/cockpit/rail/conditions*`; `styles/rail-b.css` |
 
 **Shared files, and how they are split or sequenced.**
-- **`replay-series.ts`:** TY in wave 0 (types), TA in stage A, ES in stage B.
-- **`replay.props.ts`, `readout`, `table`:** CF in stage A, EU in stage B.
-- **`ReviewCard.tsx`:** RW in stage A (the body), MR in stage C (the header).
-- **`trade-views.ts` and `daily-review.ts`:** RV in stage A (`replayTrade`, `getTrade`), AT in stage C (`browseTrades`, `open`). Never both in one wave.
+- **`replay-series.ts`:** TY in wave 0 (types), TA in stage A, T9.23 in stage B.
+- **`replay.props.ts`, `readout`, `table`:** CF in stage A, T9.25 in stage B.
+- **`ReviewCard.tsx`:** RW in stage A (the body), T9.33 in stage C (the header).
+- **`trade-views.ts` and `daily-review.ts`:** RV in stage A (`replayTrade`, `getTrade`); T9.31 and T9.32 in stage C (`open`, `browseTrades`).
 - **`Cockpit.tsx`:** DW only.
 
 ---
@@ -826,7 +826,7 @@ It runs `npm run build && npm run preview` (port 5175, under the lock) itself an
 
 ## 9. Process
 
-- **Decision 111's swarm rules** apply in each stage, with D08P's and D8R's tooling: lane worktrees set up by hand with `git worktree add` and `lane-setup.sh`, the lane tier, merge runs, the browser lock, and the full tier before every critic.
+- **Decision 111's swarm rules** apply in stage A only (stages B and C follow decision 100: one task at a time, each ending with a complete run), with D08P's and D8R's tooling: lane worktrees set up by hand with `git worktree add` and `lane-setup.sh`, the lane tier, merge runs, the browser lock, and the full tier before every critic.
 - **One session per stage.** Each starts from its own handoff, takes the session lock, and ends with its final report. Stage B's and stage C's handoffs are written when the stage before them ends.
 - **Run rules to carry into the handoffs,** if the user agrees (they were decision 116 for D8R): provisional words listed for approval; moderate defects left after three critics become tech debt; one rerun for tech debt item 11's flaky case.
 - **Evidence** for all three stages is under `evidence/D09/`, since `tdd.sh` maps `T9.n` there.
@@ -861,7 +861,7 @@ It runs `npm run build && npm run preview` (port 5175, under the lock) itself an
 Asked one at a time, in this order. Each answer is recorded here.
 
 1. **Three stages or one run (P118).** Recommended: three stages (A the chart, B the estimates, C the meter), each with its own session and critic. **Answered 2026-11-17: three stages in one deliverable**, as recommended.
-2. **A swarm in each stage (P119).** Recommended: yes, with an agent cap of 4.
+2. **A swarm in each stage (P119).** Recommended: yes, with an agent cap of 4. **Answered 2026-11-17: a swarm for stage A only.** Stages B and C run one task at a time.
 3. **The interest rate (P122).** Two fixed rates chosen by days to expiration, 4% up to 365 days and 5.25% beyond, shown on screen. Recommended: yes, with the line at one year.
 4. **The spec amendments (P123).** ADR 0007, the spec index, four glossary terms, two Trade Analysis sentences and one UI contract sentence, worded as in section 1.2. Recommended: approve as written.
 5. **A new acceptance scenario, AC-CALC-005 (P123).** Recommended: add it, so the estimates have a row in the matrix.
@@ -911,7 +911,7 @@ Each critic defect is first reproduced by a failing test.
 
 ## 15. Progress
 
-Status, not plan: editing this section is not a plan revision (decision 100, amended by decision 111). The main session alone edits it.
+Status, not plan: editing this section is not a plan revision (decision 100, amended by decision 111). The main session alone edits it. Stage A's rows have a wave and a lane and run as a swarm; stage B's and stage C's have none and run one at a time, in this order.
 
 | Task | Stage | Wave | Lane | Status | Commits |
 |---|---|---|---|---|---|
@@ -934,23 +934,23 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T9.17 | A | 3 | — | Not started | |
 | T9.18 | A | 3 | — | Not started | |
 | T9.19 | A | 3 | — | Not started | |
-| T9.20 | B | 0 | ES | Not started | |
-| T9.21 | B | 1 | ES | Not started | |
-| T9.22 | B | 1 | ES | Not started | |
-| T9.23 | B | 1 | ES | Not started | |
-| T9.24 | B | 1 | EU | Not started | |
-| T9.25 | B | 1 | EU | Not started | |
-| T9.26 | B | 2 | — | Not started | |
-| T9.27 | B | 2 | — | Not started | |
-| T9.28 | B | 2 | — | Not started | |
-| T9.29 | C | 0 | MT | Not started | |
-| T9.30 | C | 0 | AT | Not started | |
-| T9.31 | C | 1 | AT | Not started | |
-| T9.32 | C | 1 | AT | Not started | |
-| T9.33 | C | 1 | MR | Not started | |
-| T9.34 | C | 1 | ML | Not started | |
-| T9.35 | C | 1 | MD | Not started | |
-| T9.36 | C | 2 | — | Not started | |
-| T9.37 | C | 2 | — | Not started | |
-| T9.38 | C | 2 | — | Not started | |
-| T9.39 | C | 2 | — | Not started | |
+| T9.20 | B | — | — | Not started | |
+| T9.21 | B | — | — | Not started | |
+| T9.22 | B | — | — | Not started | |
+| T9.23 | B | — | — | Not started | |
+| T9.24 | B | — | — | Not started | |
+| T9.25 | B | — | — | Not started | |
+| T9.26 | B | — | — | Not started | |
+| T9.27 | B | — | — | Not started | |
+| T9.28 | B | — | — | Not started | |
+| T9.29 | C | — | — | Not started | |
+| T9.30 | C | — | — | Not started | |
+| T9.31 | C | — | — | Not started | |
+| T9.32 | C | — | — | Not started | |
+| T9.33 | C | — | — | Not started | |
+| T9.34 | C | — | — | Not started | |
+| T9.35 | C | — | — | Not started | |
+| T9.36 | C | — | — | Not started | |
+| T9.37 | C | — | — | Not started | |
+| T9.38 | C | — | — | Not started | |
+| T9.39 | C | — | — | Not started | |
