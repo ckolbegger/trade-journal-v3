@@ -1,0 +1,110 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 13367,
+    "input_tokens": 13212,
+    "output_tokens": 155,
+    "cache_read_tokens": 4992,
+    "elapsed": "10s"
+  },
+  "tool_calls": {
+    "total": 3,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "e2e/d5r/durability.spec.ts",
+      "files": [
+        "e2e/d5r/durability.spec.ts"
+      ]
+    }
+  ],
+  "session_id": "81bb44a4-671f-4f88-b066-356a0bf9a519",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "81bb44a4-671f-4f88-b066-356a0bf9a519",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "460f63a4",
+      "resolved_base": "aec459f5e07ee08188d8be1335dc319f233f21f2",
+      "resolved_head": "460f63a4cc4437593723635d90786de1e198578b",
+      "exact_range": "aec459f5e07ee08188d8be1335dc319f233f21f2..460f63a4cc4437593723635d90786de1e198578b",
+      "source_artifact_sha256": "21c1334fac0d7ea834a35829b76a094b63c4834b9c41ffeec41be4989bee9c90"
+    },
+    "execution": {
+      "ocr_version": "v1.13.12",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "f293e207e9d62bb3a1147b0c02824d6e01749fe2220ab94a9c11d82317c664b9",
+          "path": "e2e/d5r/durability.spec.ts",
+          "fingerprint": "8da3104df19192608fe243f8484f2e1ee78961994486a0f32d148490ebb7703d"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "f293e207e9d62bb3a1147b0c02824d6e01749fe2220ab94a9c11d82317c664b9",
+          "path": "e2e/d5r/durability.spec.ts",
+          "fingerprint": "8da3104df19192608fe243f8484f2e1ee78961994486a0f32d148490ebb7703d"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "1eae10b1e7afafda2161182c71ac795d2a75512840b14734810a3c568d3c616d",
+          "path": "evidence/D09/tdd-log/T9.15-B1.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "60763f067195a9fa44cf3302021f1b7adc1aa715dab755449c19c8f0268f31f4",
+          "path": "evidence/D09/suite-runs/T9.15-B1-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "967b023a717c87d8641ec7d4228bf52fe2a48865a5a6fbd6fa8db90cd9b2d4d3",
+          "path": "evidence/D09/suite-runs/T9.15-B1-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "cd0e2f1ba12bcec58e0806a1f451f5386c51b964e374772c9c7d013de2aaef9e",
+          "path": "evidence/D09/suite-runs/T9.15-B1-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "d34595bcb44d100177cf7d558f0d62b679f7f3008a0e6cd1c60730071fdcf6e3",
+          "path": "evidence/D09/suite-runs/T9.15-B1-checks.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 9645
+  }
+}
