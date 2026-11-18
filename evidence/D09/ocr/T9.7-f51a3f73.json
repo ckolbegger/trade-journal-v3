@@ -1,0 +1,153 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 2,
+    "total_tokens": 134722,
+    "input_tokens": 132685,
+    "output_tokens": 2037,
+    "cache_read_tokens": 11648,
+    "elapsed": "1m29s"
+  },
+  "tool_calls": {
+    "total": 17,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 4,
+      "file_find": 2,
+      "file_read": 10
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/coordinators/daily-review/daily-review.ts",
+      "content": "For a historical Review Date before a subsequently recorded closing Position Change, the whole-lifetime state has a non-null terminalTime. assembleReplay consequently sets ended=true, and placeJournal attaches every later journal item (including the future Close Review) to the last historical session instead of pending; the returned pending column is also null. The series dates are bounded correctly, but the replay's journal placement treats the Trade as already ended. Preserve the whole-lifetime integrity check, but make the assembler's ended/journal placement decision relative to the read-session cutoff, and add coverage for a Trade closed after the Review Date.",
+      "existing_code": "    const replayed = found.integrity.kind === 'Derived' \u0026\u0026 analysis.positionChanges.length \u003e 0 ? await assembleReplay(deps, analysis, found.integrity, read) : undefined;",
+      "start_line": 653,
+      "end_line": 653,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "tests/support/replay-series-stack.ts",
+      "content": "These loose inequality checks violate the requested strict-equality convention. Use explicit undefined/null checks (or just an undefined check if the series type excludes null) while retaining support for zero-valued marks.",
+      "existing_code": "    if (stock != null) await stack.saveMark(instrumentKey(underlying), stock, date);\n    if (option != null) await stack.saveMark(instrumentKey(held), option, date);",
+      "start_line": 75,
+      "end_line": 76,
+      "category": "style",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/coordinators/daily-review/daily-review.test.ts",
+        "src/coordinators/daily-review/daily-review.ts",
+        "tests/support/replay-series-stack.ts"
+      ]
+    }
+  ],
+  "session_id": "b2b6e5fe-427b-4992-a919-6dbe9a03dc5d",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "b2b6e5fe-427b-4992-a919-6dbe9a03dc5d",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "f51a3f73",
+      "resolved_base": "632a7febfcf633a10f6e53d7705eb81f4269c2a8",
+      "resolved_head": "f51a3f737d1e6c9672bfee4efc56cc1f1029d198",
+      "exact_range": "632a7febfcf633a10f6e53d7705eb81f4269c2a8..f51a3f737d1e6c9672bfee4efc56cc1f1029d198",
+      "source_artifact_sha256": "4e2d12f4ea8fe7b96de84b3b9304d98261dc89461c1576d13281a63d9706dc4a"
+    },
+    "execution": {
+      "ocr_version": "v1.13.12",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "354bb09af947614d9af63250b29d2e818fbae75e74d5a22f2a59d104da1351c1"
+        },
+        {
+          "item_id": "5ee14afc5ed4f81e9e986dc0193e7a09ec1f9124a2060aed5e5fe510724365fd",
+          "path": "tests/support/replay-series-stack.ts",
+          "fingerprint": "b35c17a33a144c0e5ca448a5fde6fbf8f65e202ea75a64bfb5198889ed27c798"
+        },
+        {
+          "item_id": "835fe238986a14f50aa73feeedba69e298a0728d45c05d35543575d749816715",
+          "path": "src/coordinators/daily-review/daily-review.test.ts",
+          "fingerprint": "35ec690078d868a1414fc326c1841db57bec1b260febc62a44826ae67c9553d7"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "354bb09af947614d9af63250b29d2e818fbae75e74d5a22f2a59d104da1351c1"
+        },
+        {
+          "item_id": "5ee14afc5ed4f81e9e986dc0193e7a09ec1f9124a2060aed5e5fe510724365fd",
+          "path": "tests/support/replay-series-stack.ts",
+          "fingerprint": "b35c17a33a144c0e5ca448a5fde6fbf8f65e202ea75a64bfb5198889ed27c798"
+        },
+        {
+          "item_id": "835fe238986a14f50aa73feeedba69e298a0728d45c05d35543575d749816715",
+          "path": "src/coordinators/daily-review/daily-review.test.ts",
+          "fingerprint": "35ec690078d868a1414fc326c1841db57bec1b260febc62a44826ae67c9553d7"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "16799ec207eeb1bef02bf4a5cb05ff83792182aef4b0495a441583577079c6d2",
+          "path": "evidence/D09/suite-runs/T9.7-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "25a6d73c76a614a8cc4a2dde3553db2c08af2acb69cf4327b8df276adf7ed8d5",
+          "path": "evidence/D09/suite-runs/T9.7-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "36164f28c659483aff0d6b062cfe0fe58b5559464f63096c6a42fc638dcef798",
+          "path": "evidence/D09/tdd-log/T9.7.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "afdca4374651b28c81d9641174242e4cac8732769037c8b9eaa8a1ddb50e2e5f",
+          "path": "evidence/D09/suite-runs/T9.7-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "f05ed92d9a8449f9a3c195004ff72af9c276fe286a03be2d337194eeecd6e43e",
+          "path": "evidence/D09/suite-runs/T9.7-integration.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 88746
+  }
+}

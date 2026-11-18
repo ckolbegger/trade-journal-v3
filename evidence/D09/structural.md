@@ -171,6 +171,16 @@ Stage A runs as a swarm (decision 111, agent cap 4). Each task's heading holds i
   - `tests/integration/d7sp/review-query-count.test.ts` "should add at most one observations read for the Trade dated line in getTrade": 2 more `observations` `byInstrumentDate` `getAll` reads. **Planned:** I9.6 (section 4) says `getTrade` adds one series read per Instrument (R-BREN-U: the call and BREN). Decision (recorded): this case's bound rises by one series read per Instrument, citing I9.6; that is the only change to its expected values.
   - `tests/integration/d5r/query-count.test.ts` "should save 1 Marks …" and "should save 3 Marks … then assemble as a Trade Action save does": one more `readonly` snapshot where none was expected. **Not planned** by I9.6 (a series read, not a snapshot), and it may mean the post-save card reads its replay outside the card's one revision (A46). Sent to a fresh subagent, **T9.7-F1**: make the replay's reads join the card's existing read so no snapshot is added; if that cannot be done inside lane RV's files, stop and report (a pending decision).
 - T9.7-F1 stopped with no change: the snapshot is the Journal's `TradeNarrative` query in `assembleReplay` (not the series read, which uses the Review read session as I9.6 says); `Journal.query` always opens its own snapshot, and the Journal has no read session to join. Before T9.7 the Marks card's Trade (no Debt) made no narrative read; the replay now makes one per card. **PD3** in `DECISIONS-PENDING.md`; T9.7 is parked, and the d7sp bound change waits with it.
+- ocr round 1 (`ocr/T9.7-f51a3f73.json`), 2 findings:
+
+| Severity | Location | Claim | Assessment | Outcome |
+|---|---|---|---|---|
+| medium | `daily-review.ts:653` | The card passes the whole-lifetime derivation to `assembleReplay`; for a Review Date before a later closing Position Change, `terminalTime` is set, so `ended` is true: `pending` is null and every later Journal item (the future Close Review included) lands on the last session | Valid | T9.7-B1 |
+| low | `tests/support/replay-series-stack.ts:75` | Loose `!= null` | Doubtful (no `eqeqeq` rule; correct for zero Marks) | T9.7-B2, structural |
+
+- **T9.7-B1.** The same root as T9.6-B1's note (`ended` follows `terminalTime` alone). Case: "it should treat a Trade closed after the Review Date as not yet ended on the card". It runs while PD3 is open: it does not depend on PD3's answer.
+- T9.7-B1 commit `f768fef0`: red `expected null not to be null` (K-sale closing Fri 11-13, Review Date Thu 11-12), then green. `assembleReplay`: `ended = (terminalTime !== null && !closedLater) || expiration !== null`, the guard that already decides `final`; `replayTrade` gains it too (this also settles T9.6-B1's note). Daily-review, replay and trade-views folders 248 of 248. Lane tier `T9.7-B1`: unit 2208, checks 14 of 14, integration only the three PD3 failures. ocr (`ocr/T9.7-B1-f768fef0.json`): **No findings.**
+- **T9.7-B2.** Readability: `!== null && !== undefined`; verification: the file's users unchanged before and after.
 
 ## T9.10 Replay frame: the slider reveals sessions
 
@@ -266,3 +276,9 @@ Stage A runs as a swarm (decision 111, agent cap 4). Each task's heading holds i
 - Browser tier: full (`first matching path since 1aa7c69e: src/ui/cockpit/index.css`).
 - Unit 197 files, 2180 tests; integration 123 files, 269 tests; browser-1 126 passed (5.4 min); browser-2 79 passed (5.0 min); browser-3 56 passed, **1 failed** (4.4 min); checks 14 of 14. `run-complete.sh`: run complete.
 - The failure: `e2e/d8/restore.spec.ts:31`, B8.3 "Restore with a safety backup › should show the preview with counts, enable Replace only after both steps, render the summary, and after relaunch show lists and Details equal to profile A…", `expect(received).toEqual(expected)`: after the relaunch the Today text lacked the Marks block (TODAY, YESTERDAY, CHANGE) and the "Wed Oct 14" lines. Not one of P138's known cases. The case alone passed (17.6 s, `suite-runs/wave1a-browser-3-rerun-restore.txt`): not reproduced. D9 has touched no Restore, Today or Marks code. Logged as a second suspected flake in the D8 Restore family (after `wave0`'s B8.16), for the stage report.
+
+### wave2a (after T9.5, T9.6, T9.11 with its bug tasks)
+
+- **Not one commit:** unit at `c183e890` (T9.5, T9.6, T9.11-B5/B6/B7 merged; T9.11 and B1 to B4 not yet), integration and browser-1 at `c183e890` plus evidence edits, browser-2 at `b6c2978e` (T9.11 merged), browser-3 and checks at `0059c29d`. Between them only lane CF's frame commits and evidence changed.
+- Browser tier: full (`first matching path since 801c5ff8: src/ui/cockpit/replay/corridor-pnl.tsx`).
+- Unit 197 files, 2201 tests; integration 123 files, 269 tests; browser-1 126 passed (5.2 min); browser-2 79 passed (4.9 min); browser-3 57 passed (4.4 min); checks 14 of 14. `run-complete.sh`: run complete. **No failures.**
