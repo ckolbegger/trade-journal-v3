@@ -238,9 +238,13 @@ describe('T5R.13 query count: the Review open and the Marks save', () => {
       { store: 'meta', index: undefined, method: 'get' },
     ]);
     expect(assembly(marks.requests)).toEqual(assembly(action.requests));
-    // And no recovery or gap scan in it: no cursor, no per-Instrument date index, no write.
+    // And no recovery or gap scan in it: no cursor, no write, and no per-Instrument date-index read beyond the card replay's
+    // one series read per Instrument of the card's Trade (I9.6): the Missing Instrument's Trade has one Instrument.
     const assembled = saved.after.flatMap((tx) => tx.all);
-    expect(assembled.filter((r) => r.on === 'cursor' || r.index === 'byInstrumentDate')).toEqual([]);
+    expect(assembled.filter((r) => r.on === 'cursor')).toEqual([]);
+    expect(assembled.filter((r) => r.index === 'byInstrumentDate')).toEqual([
+      { on: 'index', store: 'observations', index: 'byInstrumentDate', method: 'getAll' },
+    ]);
     expect(saved.after.filter((tx) => tx.mode === 'readwrite')).toEqual([]);
   });
 });
