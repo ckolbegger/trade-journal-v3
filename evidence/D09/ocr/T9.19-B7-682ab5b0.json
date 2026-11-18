@@ -1,0 +1,122 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 0,
+    "total_tokens": 43245,
+    "input_tokens": 42874,
+    "output_tokens": 371,
+    "cache_read_tokens": 6656,
+    "elapsed": "18s"
+  },
+  "tool_calls": {
+    "total": 8,
+    "by_tool": {
+      "code_search": 2,
+      "file_find": 1,
+      "file_read": 5
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "e2e/d9/responsive-a11y.spec.ts",
+        "src/ui/app.css"
+      ]
+    }
+  ],
+  "session_id": "4fe1c29f-847c-4d80-af45-96718bcea704",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "4fe1c29f-847c-4d80-af45-96718bcea704",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "682ab5b0",
+      "resolved_base": "d5dc99d0f2ed06fb703a2b881da86f11a911c0de",
+      "resolved_head": "682ab5b00a6639d8198e60e50ab74fa45d6be31c",
+      "exact_range": "d5dc99d0f2ed06fb703a2b881da86f11a911c0de..682ab5b00a6639d8198e60e50ab74fa45d6be31c",
+      "source_artifact_sha256": "dd3e058d15dd6c6f47fd224a073157477df0212eaa5e7c050189727f9932e329"
+    },
+    "execution": {
+      "ocr_version": "v1.13.12",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "af7fe4eacc952f081f78f245aaa358b40f80971e6b04b7d0e5eda3ada590f919"
+        },
+        {
+          "item_id": "b6c384b7587d1b65ac5792148e7e8c421811373d53aa2bdd93b3c7790c3895b2",
+          "path": "e2e/d9/responsive-a11y.spec.ts",
+          "fingerprint": "6f816bb790c3c9f8200825980fc44fa0bda05da5267dd7683c94e8c82a714646"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "af7fe4eacc952f081f78f245aaa358b40f80971e6b04b7d0e5eda3ada590f919"
+        },
+        {
+          "item_id": "b6c384b7587d1b65ac5792148e7e8c421811373d53aa2bdd93b3c7790c3895b2",
+          "path": "e2e/d9/responsive-a11y.spec.ts",
+          "fingerprint": "6f816bb790c3c9f8200825980fc44fa0bda05da5267dd7683c94e8c82a714646"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "9e58f17e6db164449fc5c605cf982355992559e9a9de9c7451ee70b1c4b76faf",
+          "path": "evidence/D09/tdd-log/T9.19-B7.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "a4ea814655751f99f4f0a4946bc7cc977b5af7f6cc2c54498110da664c92b555",
+          "path": "evidence/D09/suite-runs/T9.19-B7-browser.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "a908fc2973841f6915038d0d9b197a3f4f0b700835af3dbf8f8e47a03e3aa884",
+          "path": "evidence/D09/suite-runs/T9.19-B7-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "c715c64151823bbdec08d87d806816bd0db8dd44a9e72039c801c2ec404e08d6",
+          "path": "evidence/D09/suite-runs/T9.19-B7-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "cb41bc26356fbd5ca7159d13f3965d96e92551be1fec01f0ac9565c369a40cda",
+          "path": "evidence/D09/suite-runs/T9.19-B7-unit.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 18284
+  }
+}
