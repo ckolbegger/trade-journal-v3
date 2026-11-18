@@ -1,0 +1,31 @@
+
+Running 18 tests using 1 worker
+
+[1/18] [chromium] › e2e/d9/gaps.spec.ts:9:3 › B9.2 A gap, a breach and a sale below the Stop › should show No Mark on Tue 11-10 with the two results kept and no figure carried, and Wed 11-11 measured from Mon 11-09
+[2/18] [chromium] › e2e/d9/gaps.spec.ts:45:3 › B9.2 A gap, a breach and a sale below the Stop › should read Past the Stop by $180.00 (0.30R) on Mon 11-09 with the sale as banked loss, in the readout and in the table
+[3/18] [chromium] › e2e/d9/gaps.spec.ts:71:3 › B9.2 A gap, a breach and a sale below the Stop › should label the banked loss "Realized −$440" in the P&L chart on Mon 11-09
+[4/18] [chromium] › e2e/d9/replay.spec.ts:17:3 › B9.1 Replay in Trade Detail › should show Mon 11-16 with the headline, how it is going, what is at stake and the labels W36 to W41 name
+[5/18] [chromium] › e2e/d9/replay.spec.ts:52:3 › B9.1 Replay in Trade Detail › should step back to Thu 11-12 by keyboard with its own figures, the Stop line stepped at the sale and the banked band begun, and nothing of a later session
+[6/18] [chromium] › e2e/d9/replay.spec.ts:91:3 › B9.1 Replay in Trade Detail › should step back to Mon 11-02 by keyboard with the first session, no band and no sale, and nothing of a later session
+[7/18] [chromium] › e2e/d9/replay.spec.ts:114:3 › B9.1 Replay in Trade Detail › should name each revealed session as a button, mark the hovered one in both charts and move to the one pressed
+[8/18] [chromium] › e2e/d9/responsive-a11y.spec.ts:104:3 › B9.5 Responsive, accessible and offline › should fit the Detail replay on one screen at 1280, 375 and 320 px with no sideways scroll and no WCAG violation, keeping the session across a resize
+[9/18] [chromium] › e2e/d9/responsive-a11y.spec.ts:112:3 › B9.5 Responsive, accessible and offline › should fit the Review card replay on one screen at 1280 and 375 px with no sideways scroll and no WCAG violation, keeping the session across a resize
+[10/18] [chromium] › e2e/d9/responsive-a11y.spec.ts:124:3 › B9.5 Responsive, accessible and offline › should fit the Review card replay at 320 px with no sideways scroll
+[11/18] [chromium] › e2e/d9/responsive-a11y.spec.ts:141:3 › B9.5 Responsive, accessible and offline › should use the phone words in both charts at 375 and 320 px
+[chromium] › e2e/d9/responsive-a11y.spec.ts:141:3 › B9.5 Responsive, accessible and offline › should use the phone words in both charts at 375 and 320 px
+Detail Replay at 375 px: smallest chart text 10.50 px
+
+Detail Replay at 375 px: smallest chart text 10.00 px
+
+Detail Replay at 320 px: smallest chart text 10.50 px
+
+Detail Replay at 320 px: smallest chart text 10.00 px
+
+[12/18] [chromium] › e2e/d9/responsive-a11y.spec.ts:152:3 › B9.5 Responsive, accessible and offline › should read the replay offline after a cold restart with the server stopped (AC-DEL-001)
+[13/18] [chromium] › e2e/d9/review.spec.ts:11:3 › B9.3 Replay in the Review, and the round trip › should show the Replay section above the Action form, headed Replay, with Price History as its only link
+[14/18] [chromium] › e2e/d9/review.spec.ts:38:3 › B9.3 Replay in the Review, and the round trip › should move the slider on the card, open Price History on that session and return to the same card, panel and session
+[15/18] [chromium] › e2e/d9/states.spec.ts:36:3 › B9.4 How a replay ends › should show the Replay drawer second on an Open Trade, with Today selected and no payoff line in the replay
+[16/18] [chromium] › e2e/d9/states.spec.ts:47:3 › B9.4 How a replay ends › should end K-sale on its sale with a Final result headline, the banked total and an Events row, and show every drawer
+[17/18] [chromium] › e2e/d9/states.spec.ts:75:3 › B9.4 How a replay ends › should end R-DALE-U at Fri 11-20 with no Mark while Settlement Due, then with a Final result once its Expiration is recorded
+[18/18] [chromium] › e2e/d9/states.spec.ts:117:3 › B9.4 How a replay ends › should show no Replay drawer on a Planned Trade, and Plan and Risk selected
+  18 passed (43.9s)

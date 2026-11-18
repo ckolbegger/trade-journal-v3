@@ -512,6 +512,20 @@ describe('Corridor: drawn at a phone\'s real width (W39, W40, W41)', () => {
     expect(screen.getByText('Risk to stop $672')).toBeTruthy();
   });
 
+  // B12: a resize is drawn in the frame it is observed in. The observer's callback runs between layout and paint; a redraw left to React's scheduler can land after the paint (and after a check that waits two frames), leaving a frame at the old width.
+  it('should redraw at the new box width within the resize callback, not later', () => {
+    let notify: () => void = () => {};
+    let width = 900;
+    vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockImplementation(() => width);
+    vi.stubGlobal('ResizeObserver', class { constructor(cb: () => void) { notify = cb; } observe() {} unobserve() {} disconnect() {} });
+    const { container } = render(<CorridorPlot {...props()} />);
+    expect(container.querySelector('svg.price-strip')!.getAttribute('width')).toBe('640');
+    width = 320;
+    notify();
+    expect(container.querySelector('svg.price-strip')!.getAttribute('width')).toBe('320');
+    expect(pnl(container).getAttribute('width')).toBe('320');
+  });
+
   it('should draw at 240 wide, scaled to fit, when the box is narrower than 240', () => {
     frameWidth(200);
     const { container } = render(<CorridorPlot {...props()} />);

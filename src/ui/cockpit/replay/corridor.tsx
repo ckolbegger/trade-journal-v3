@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef, useState, type RefObject } from 'react';
+import { flushSync } from 'react-dom';
 import { PnlChart } from './corridor-pnl.tsx';
 import { timeAxis } from './geometry.ts';
 import { PriceStrip } from './price-strip.tsx';
@@ -51,7 +52,8 @@ function useBoxWidth(box: RefObject<HTMLDivElement | null>): number {
     const read = () => setMeasured(el.clientWidth);
     read();
     if (typeof ResizeObserver === 'undefined') return;
-    const watch = new ResizeObserver(read);
+    // The observer reports between layout and paint: drawn at once (flushSync), the resized frame is never painted at the old width.
+    const watch = new ResizeObserver(() => flushSync(read));
     watch.observe(el);
     return () => watch.disconnect();
   }, [box]);
