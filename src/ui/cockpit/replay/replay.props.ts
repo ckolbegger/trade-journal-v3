@@ -298,7 +298,10 @@ function gapStakeGroup(session: ViewSession): ReadoutGroup | undefined {
 
 function readoutOf(view: TradeReplayView, session: ViewSession): ReadoutGroup[] {
   // A final session has nothing at stake; a session without a Mark keeps only the figures that need none.
-  const staked = session.final ? undefined : session.tradePnl.kind === 'Value' ? stakeGroup(view, session) : gapStakeGroup(session);
+  let staked: ReadoutGroup | undefined;
+  if (session.final) staked = undefined;
+  else if (session.tradePnl.kind === 'Value') staked = stakeGroup(view, session);
+  else staked = gapStakeGroup(session);
   const groups = [goingGroup(session), staked, marksGroup(view, session), positionGroup(session), planGroup(view)];
   return groups.filter((group): group is ReadoutGroup => group !== undefined && group.rows.length > 0);
 }
