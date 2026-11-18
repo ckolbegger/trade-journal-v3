@@ -240,9 +240,6 @@ Task status and commits are in the breakdown's Progress section. This section ho
 
 ### Notes for later tasks
 
-- For T9.18: Corridor's plot was checked at 1280 px against the prototype only; check 375 and 320 px (the "Break-even" and "Sold 2" labels may be dropped on a tight phone chart).
-- For T9.18: add `e2e/d9` to `test:e2e:3` in the same commit as the first spec.
-- For T9.18: the chart's sessions are `button.replay-hit`, one per revealed session, named by the date label (`getByRole('button', { name: 'Mon Nov 16' })`), in `div.replay-hits[role=group][aria-label=Sessions]`; the hover mark is `rect.hover-column` in `svg.price-strip` and `svg.pnl-chart` (T9.11-B5).
 - For T9.19: two of `acceptance-commands.sh`'s nine commands fail by design at stage A (section 3, "The stage gate").
 - For T9.23 (stage B): `replay-series.ts` is lane TA's in stage A. Stage B adds `estimates` to the same session shape; keep `figures` free of any number type.
 - For T9.33, T9.40 (stage C): stage A leaves `StopTargetSlider` and `rangePosition` exactly as they are.
