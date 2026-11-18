@@ -182,7 +182,12 @@ const row = (label: string, value: ReadoutValue, change?: string): Row => ({ lab
 function goingGroup(session: ViewSession): ReadoutGroup {
   const { figure: text, reason } = headlineOf(session);
   const rows = [row('Trade P&L', text !== undefined ? figure(text) : { kind: 'Unavailable', text: reason ?? '' }, changeWords(session.change))];
-  if (session.realizedPnl.compare(ZERO) !== 0) rows.push(row('Banked', figure(signedMoney(session.realizedPnl))));
+  if (session.realizedPnl.compare(ZERO) !== 0) {
+    rows.push(row('Banked', figure(signedMoney(session.realizedPnl))));
+    // Open is the rest of the Trade P&L: shown beside Banked, never on a final session, which holds nothing open.
+    const open = session.figures?.openPnl;
+    if (open?.kind === 'Value' && !session.final) rows.push(row('Open', figure(signedMoney(open.value))));
+  }
   return { title: session.final ? 'Final result' : 'How it is going', rows };
 }
 

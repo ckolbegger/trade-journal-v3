@@ -39,6 +39,8 @@ interface Spec {
   readonly pnl: number | null;
   readonly pnlR?: Rational;
   readonly realized?: number;
+  // The open part of the Trade P&L, as the domain finished it.
+  readonly open?: number;
   readonly standing?: Standing;
   readonly figures?: Partial<Figures>;
   readonly outcomes?: Partial<Outcomes>;
@@ -65,6 +67,7 @@ function session(spec: Spec): Session {
     outcomes: { atStop: NOT_APPLICABLE, atTarget: NOT_APPLICABLE, atWorstCase: NOT_APPLICABLE, atMaxReward: NOT_APPLICABLE, ...spec.outcomes },
     standing: spec.standing ?? unavailable,
     currentMarkedPnlInPlanR: spec.pnlR ? value(spec.pnlR) : unavailable,
+    openPnl: spec.open === undefined ? unavailable : value(usd(spec.open)),
     ...spec.figures,
   };
   return {
@@ -593,6 +596,12 @@ describe('replay.props: the readout of a session in flight (W43)', () => {
     expect(targetRows).toMatchObject({ 'Risk to stop': '$672.00', 'Target Overrun': '$182.00 · 0.56R', 'Reward to risk': 'Target reached' });
     expect(targetRows).not.toHaveProperty('Reward to target');
     expect(rowsOfGroup(props, 0, 'How it is going')).toEqual({ 'Trade P&L': '+$1,138.00', Banked: '+$478.00' });
+  });
+
+  it('should show the open part of the Trade P&L in the readout', () => {
+    // 2 of 4 contracts sold for +$478 banked; the 2 held are open +$660 of the +$1,138.
+    const props = replayProps(view([session({ date: '2026-11-13', held: 2, pnl: 1138, realized: 478, open: 660 })]), { Plot });
+    expect(rowsOfGroup(props, 0, 'How it is going')).toEqual({ 'Trade P&L': '+$1,138.00', Banked: '+$478.00', Open: '+$660.00' });
   });
 
   it('should call a planned-amount overrun by its words, not a breach, when the condition has not triggered', () => {

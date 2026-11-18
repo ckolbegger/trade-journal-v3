@@ -246,6 +246,15 @@ const markersAt = (series: ReplayTestSeries, date: string) => sessionAt(series, 
 const fillsOf = (marker: NonNullable<ReturnType<typeof markersAt>>[number]) =>
   marker.fills.map((f) => ({ instrument: f.instrument, action: f.action, quantity: frac(f.quantity), price: f.price && frac(f.price) }));
 
+describe('replay: the open part of the Trade P&L (W43)', () => {
+  // R-BREN-U buys 4 calls at 1.61. Mon 11-02 the call is 1.68: 4 x 100 x 0.07 = 28.00 open, nothing realized.
+  // Thu 11-12, after the sale of 2 at 4.00 (478.00 realized), the 2 held are at 4.13: 2 x 100 x 2.52 = 504.00 open.
+  it('should give each session its open P&L', () => {
+    expect(valueOf(figuresAt(R_BREN_U, '2026-11-02').openPnl)).toBe(q(28n));
+    expect(valueOf(figuresAt(R_BREN_U, '2026-11-12').openPnl)).toBe(q(504n));
+  });
+});
+
 describe('replay: markers (A251)', () => {
   it("should mark R-AXIO-U's Mon 11-02 session Opened, with a Buy of 100 at 50.00", () => {
     const markers = markersAt(R_AXIO_U, '2026-11-02')!;

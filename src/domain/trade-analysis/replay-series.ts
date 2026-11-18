@@ -35,7 +35,10 @@ export interface ReplayMark {
 
 // A250: one session's figures, as `evaluate` returns them for the Position held at that session's Mark; the field types
 // are `TradeEvaluation`'s own.
-export type ReplayFigures = Pick<
+export type ReplayFigures = {
+  // W43: the open (unrealized) part of the session's Trade P&L.
+  readonly openPnl: CalculationResult<Rational>;
+} & Pick<
   TradeEvaluation,
   | 'ongoingRiskToStop'
   | 'ongoingRiskToStopInPlanR'
@@ -145,7 +148,7 @@ export function replay(input: ReplayInput): ReplayResult {
       change,
       marks: session.frames.map((frame) => markOf(frame, lastMark)),
       positionChangeIds,
-      figures: figuresOf(evaluation),
+      figures: figuresOf(evaluation, openPnlOf(tradePnl, state.realizedToDate)),
       ...(riskChange && { riskChange }),
       ...(rewardChange && { rewardChange }),
     };
@@ -211,8 +214,14 @@ function changeOf(figure: CalculationResult<Rational>, last: LastFigure, date: s
   return change;
 }
 
-function figuresOf(e: TradeEvaluation): ReplayFigures {
+// W43: the open part of the Trade P&L is what the Trade P&L holds beyond what was realized; unavailable when it is.
+function openPnlOf(tradePnl: CalculationResult<Rational>, realized: Rational): CalculationResult<Rational> {
+  return tradePnl.kind === 'Value' ? { kind: 'Value', value: tradePnl.value.sub(realized) } : tradePnl;
+}
+
+function figuresOf(e: TradeEvaluation, openPnl: CalculationResult<Rational>): ReplayFigures {
   return {
+    openPnl,
     ongoingRiskToStop: e.ongoingRiskToStop,
     ongoingRiskToStopInPlanR: e.ongoingRiskToStopInPlanR,
     incrementalRewardToTarget: e.incrementalRewardToTarget,
