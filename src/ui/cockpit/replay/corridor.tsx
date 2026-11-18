@@ -58,6 +58,13 @@ function useBoxWidth(box: RefObject<HTMLDivElement | null>): number {
   return measured;
 }
 
+// A narrow box is drawn at its own width (not below WIDTH_MIN); otherwise the compact flag picks.
+function drawingWidth(narrow: boolean, measured: number, compact: boolean | undefined): number {
+  if (narrow) return Math.max(measured, WIDTH_MIN);
+  if (compact) return WIDTH_COMPACT;
+  return WIDTH;
+}
+
 // A255: the one plot, taking ReplayPlotProps so a later Ribbon plot takes the same. The price strip for now.
 // On a phone's width both charts are drawn at the box's real width, so their text keeps its
 // size instead of shrinking with a scaled-down drawing, and they use the phone words (W39 to W41).
@@ -65,7 +72,7 @@ export function CorridorPlot(props: ReplayPlotProps) {
   const box = useRef<HTMLDivElement>(null);
   const measured = useBoxWidth(box);
   const narrow = measured > 0 && measured < WIDTH_PHONE;
-  const width = narrow ? Math.max(measured, WIDTH_MIN) : props.compact ? WIDTH_COMPACT : WIDTH;
+  const width = drawingWidth(narrow, measured, props.compact);
   const plot = narrow || props.compact ? { ...props, compact: true } : props;
   return (
     <div className="replay-plot-frame" ref={box}>
