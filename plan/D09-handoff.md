@@ -241,7 +241,6 @@ Task status and commits are in the breakdown's Progress section. This section ho
 ### Notes for later tasks
 
 - For T9.4, T9.5, T9.6, T9.7: T9.3's test Trades are `R_AXIO_U`, `R_AXIO_D` (`reference-trade.ts`) and `R_BREN_U`, `K_SALE`, `R_CORV_D`, `R_DALE_D`, `R_DALE_U` (`option-trade.ts`), each a `ReplayTestSeries { id, record, underlying, held }` whose Mark arrays index `REPLAY_SESSION_DATES` (15 dates from 2026-11-02; `null` is no Mark; `R_DALE_U` has 14 entries). `outcomes.test.ts` holds an `evaluateAt(series, date)` helper worth lifting into shared support. Don't put `$` in test names: it breaks `-t` filtering.
-- For T9.6, T9.9: the view's Plan column is `TradeReplayView.planColumn` (T9.2), since `plan` already holds the pre-exposure Journal items. The domain result's field is `plan`.
 - For T9.6, T9.8: T9.2 added no re-exports of the new type names (`ReplayFigures`, `ReplayMarker`, `ReplayFinal`, `ReplayPlanColumn`, `TradeOutcomes`, `TradeStandingReading`) to `trade-analysis/index.ts`, `trade-views/index.ts` or `src/app/types.ts`. Add them where an adapter needs them.
 - For T9.7: before the brief, read how `daily-review.ts` builds the card a Save Marks result returns. A254 assumes it is the function `getTrade` uses, so the card carries the replay with no further read. If it is built another way, that is a pending decision, not something to work around.
 - For T9.12, T9.13: the test Trades' full series are in the model block of `prototypes/replay/round-2.html`; section 5's table names only the sessions the cases use.

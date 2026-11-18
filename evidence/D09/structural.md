@@ -112,6 +112,22 @@ Stage A runs as a swarm (decision 111, agent cap 4). Each task's heading holds i
 - `replayProps(view)` is still not written: no case needed it. The adapter must build a final session's groups and write "No Mark".
 - **The real `CorridorPlot` has no hover or tap.** The frame holds `hoverIndex` and passes `onHoverSession`/`onSelectSession` to `Plot`, but `CorridorPlot` (lane CP, merged) never calls them. It needs a focusable hit area per revealed session (44 px touch target) calling `onHoverSession(i)` on pointer enter and focus, `onHoverSession(null)` on leave and blur, `onSelectSession(i)` on click or tap, and marking `hoverIndex`. No planned case covers this in the real plot: **PD2** in `DECISIONS-PENDING.md`.
 - No-arithmetic check (from the summary): finished strings from props only. P137: no change; the frame adds only W45's "Session" and "Events" headings. Test names reworded without apostrophes. `renderLinks` is still not rendered.
+- ocr round 1 (`ocr/T9.11-cf9585f2.json`), 5 findings. A second review round on `frame.tsx` inside the run failed on a provider overload, so its coverage of `frame.tsx` may be partial; the bug tasks' reviews read it again.
+
+| Severity | Location | Claim | Assessment | Outcome |
+|---|---|---|---|---|
+| medium | `frame.tsx:57` | The real `CorridorPlot`, `PriceStrip` and `PnlChart` never call `onHoverSession`/`onSelectSession`, so hover and tap do nothing outside the test double | Doubtful (accurate; no planned case covers the real plot) | T9.11-B5, lane CP |
+| medium | `frame.tsx:14` | `hoverIndex` isn't reset when `tradeKey` changes, so a Trade switch mid-hover shows the new Trade's session at the old index | Valid | T9.11-B1 |
+| medium | `frame.test.tsx:236` | The readout tests use only the last session, so they'd pass if the readout always showed the last session | Valid | T9.11-B2 |
+| low | `frame.test.tsx:257` | The plot double drops `describedBy`, so removing it from the plot call would still pass | Valid | T9.11-B3 |
+| low | `replay-frame.css:155` | `.replay-table summary { display: flex }` removes the disclosure marker, so the folded table has no open or closed cue | Valid | T9.11-B4 |
+
+- PD2 is withdrawn: ocr raised the real plot's hover and tap itself, so it is a bug task by the rule. B5 (lane CP) and B1 (lane CF) run at once: different lanes, no shared file; B2, B3 and B4 follow in lane CF one at a time. T9.11 is mergeable when all five are clean.
+- **T9.11-B5.** Cases (`corridor.test.tsx`): "it should report hover and focus on a revealed session, and its end on leave and blur"; "it should select a revealed session on a click or tap"; "it should mark the hovered session".
+- **T9.11-B1.** Case: "it should clear the hover when another Trade's replay is passed in".
+- **T9.11-B2.** Case: "it should show the readout of the slider's session, not the last".
+- **T9.11-B3.** Case: "it should give the plot the table's id to describe it".
+- **T9.11-B4.** Case: "it should show whether the table is folded or open".
 
 ## T9.10 Replay frame: the slider reveals sessions
 

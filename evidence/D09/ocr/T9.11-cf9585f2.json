@@ -1,0 +1,228 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 5 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 5,
+    "total_tokens": 249756,
+    "input_tokens": 245816,
+    "output_tokens": 3940,
+    "cache_read_tokens": 34944,
+    "elapsed": "1m11s"
+  },
+  "tool_calls": {
+    "total": 30,
+    "by_tool": {
+      "code_comment": 3,
+      "code_search": 7,
+      "file_find": 1,
+      "file_read": 16,
+      "file_read_diff": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/replay/frame.test.tsx",
+      "content": "The readout assertions only exercise the initial (last) session. They would also pass if the readout always rendered the last session, even though the requirement is to follow the slider. Add a navigation case with distinct readouts on adjacent sessions, including rewinding from a final session, and assert that the previous values and `Final result` group disappear.",
+      "existing_code": "    render(\u003cReplayFrame {...mixed({ isFinal: true, readout: final })} /\u003e);",
+      "start_line": 236,
+      "end_line": 236,
+      "category": "test",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/cockpit/replay/frame.test.tsx",
+      "content": "This checks the fixture's table ID but not the required association between the plot and its text equivalent. The plot double discards `describedBy`, so removing that prop from the frame's plot invocation would leave this test passing. Expose `describedBy` in the double and assert that it matches the rendered table's ID, preferably using a non-default ID to catch hardcoding.",
+      "existing_code": "    expect(attr(fold.querySelector('table')!, 'id')).toBe('replay-table');",
+      "start_line": 257,
+      "end_line": 257,
+      "category": "test",
+      "severity": "low"
+    },
+    {
+      "path": "src/ui/cockpit/styles/replay-frame.css",
+      "content": "Setting the summary to `display: flex` removes its native disclosure marker in browsers such as Firefox and Chromium. The markup contains only the title, so the folded table has no visible expand/collapse indicator or indication of its open state. Preserve `display: list-item` (using padding/line-height for sizing), or add an explicit indicator that changes with `details[open]`.",
+      "existing_code": "  min-height: 44px;\n  display: flex;\n  align-items: center;",
+      "start_line": 155,
+      "end_line": 157,
+      "category": "bug",
+      "severity": "low"
+    },
+    {
+      "path": "src/ui/cockpit/replay/frame.tsx",
+      "content": "These callbacks are only exercised by PlotDouble: the production CorridorPlot, PriceStrip and PnlChart never consume onHoverSession or onSelectSession and provide no focusable session targets. Consequently the actual plot cannot show these hover details or move the slider on click/tap. Wire the callbacks into the production plot's session hit targets and add an integration test using CorridorPlot rather than only the double.",
+      "existing_code": "      \u003cPlot {...plotBase} sessions={sessions.slice(0, current + 1).map((s) =\u003e s.plot)} sliderIndex={current} hoverIndex={hoverIndex} onHoverSession={setHoverIndex} onSelectSession={(index) =\u003e index \u003c= current \u0026\u0026 move(index)} /\u003e",
+      "start_line": 57,
+      "end_line": 57,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/cockpit/replay/frame.tsx",
+      "content": "Hover state is not scoped to the trade/session identity, unlike the slider state. After a plot reports a hover, rerendering the frame with another trade retains that index and immediately displays the new trade's session details without a hover/focus event on that session. Reordering or replacing sessions can likewise retarget the index. Store the hovered date together with tradeKey (or clear hover when its identity changes), and test a trade switch while hover is active.",
+      "existing_code": "  const [hoverIndex, setHoverIndex] = useState\u003cnumber | null\u003e(null);",
+      "start_line": 14,
+      "end_line": 14,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "src/ui/cockpit/replay/frame.test.tsx",
+      "files": [
+        "src/ui/cockpit/replay/frame.test.tsx"
+      ]
+    },
+    {
+      "label": "src/ui/cockpit/replay/frame.tsx",
+      "files": [
+        "src/ui/cockpit/replay/frame.tsx"
+      ]
+    },
+    {
+      "label": "src/ui/cockpit/styles/replay-frame.css",
+      "files": [
+        "src/ui/cockpit/styles/replay-frame.css"
+      ]
+    }
+  ],
+  "warnings": [
+    {
+      "file": "src/ui/cockpit/replay/frame.tsx",
+      "message": "round 2: LLM completion error: received error while streaming: {\"message\":\"Our servers are currently overloaded. Please try again later.\",\"type\":\"service_unavailable_error\",\"param\":null,\"code\":\"server_is_overloaded\",\"headers\":{\"retry-after\":\"329\",\"retry-after-ms\":\"329000\"}}",
+      "type": "review_round_failed"
+    }
+  ],
+  "session_id": "20b4e976-9e1e-41ef-adb6-6dc65b31ee81",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "20b4e976-9e1e-41ef-adb6-6dc65b31ee81",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "cf9585f2",
+      "resolved_base": "801c5ff82b180c3a726a3c8ac7955a16745d03d5",
+      "resolved_head": "cf9585f234d4086300e7ab2a07f56d6744f64f81",
+      "exact_range": "801c5ff82b180c3a726a3c8ac7955a16745d03d5..cf9585f234d4086300e7ab2a07f56d6744f64f81",
+      "source_artifact_sha256": "2879680bebc26c5746c16232a42a2e55d7fed8e494844fe532cf75b5c21f94c2"
+    },
+    "execution": {
+      "ocr_version": "v1.13.12",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "07d6ddb61a627b6e3202a0c5e3f9547cfb10f6fad784c8ca12a580a08252b174",
+          "path": "src/ui/cockpit/replay/frame.test.tsx",
+          "fingerprint": "4737cb725cd74304b4c9ab199c6f841e775ab60cd0a8fda1142e6e2acf8a191d"
+        },
+        {
+          "item_id": "1e9818d41ff29d7730ea06bdd1d154959f0a952a460b3d5f13d2bde01ff86492",
+          "path": "src/ui/cockpit/replay/frame.tsx",
+          "fingerprint": "d7cc0d20aa07ebef7e66407caced156cc65ab545178a64dea2dc6eca435a361b"
+        },
+        {
+          "item_id": "8303bd665d3dd32df6f3f063e4691f5ac45a3c8b7df30b0004df8234dc2fed2a",
+          "path": "src/ui/cockpit/styles/replay-frame.css",
+          "fingerprint": "c35f90fd843a442b902a71b9011500a3ea81400f90fb12d61bfdb74f031d3667"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "07d6ddb61a627b6e3202a0c5e3f9547cfb10f6fad784c8ca12a580a08252b174",
+          "path": "src/ui/cockpit/replay/frame.test.tsx",
+          "fingerprint": "4737cb725cd74304b4c9ab199c6f841e775ab60cd0a8fda1142e6e2acf8a191d"
+        },
+        {
+          "item_id": "1e9818d41ff29d7730ea06bdd1d154959f0a952a460b3d5f13d2bde01ff86492",
+          "path": "src/ui/cockpit/replay/frame.tsx",
+          "fingerprint": "d7cc0d20aa07ebef7e66407caced156cc65ab545178a64dea2dc6eca435a361b"
+        },
+        {
+          "item_id": "8303bd665d3dd32df6f3f063e4691f5ac45a3c8b7df30b0004df8234dc2fed2a",
+          "path": "src/ui/cockpit/styles/replay-frame.css",
+          "fingerprint": "c35f90fd843a442b902a71b9011500a3ea81400f90fb12d61bfdb74f031d3667"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "5411a8adfd0d0b25c49a193ec841c385bd767387604f7cbe1773299ffbf9db08",
+          "path": "evidence/D09/suite-runs/T9.11-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "556c847d1a41ec5f88091ad11bbb0e419348e8db1ac5bf77dadad2be86b6df95",
+          "path": "evidence/D09/suite-runs/T9.11-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "9a5bed11451d95e1d522a09d8c82eeb9a564f9fc189b8b01b09c92a80cd7f242",
+          "path": "evidence/D09/suite-runs/T9.11-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "c31c215042fc01fcb5d8f974d49053ea93c7e4e2ffd0789d9256c917eaf1c968",
+          "path": "evidence/D09/tdd-log/T9.11.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "dd743b8f79fd84c0c47528aab749013023f7eae46f5c4a1558a93d0e9329419a",
+          "path": "evidence/D09/suite-runs/T9.11-lane.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 70549
+  },
+  "retry_report": {
+    "schema_version": "ocr.llm-retry-report/v1",
+    "total_requests": 29,
+    "retried_requests": 0,
+    "total_retries": 0,
+    "recovered_requests": 0,
+    "failed_requests": 1,
+    "cancelled_requests": 0,
+    "requests": [
+      {
+        "logical_request_id": "c2145f23d4c1307d74126ab8512083d93b804d48b9fa8e3fd1add09b4bda72dd",
+        "provider": "chatgpt",
+        "model": "gpt-6.1-sol",
+        "file_path": "src/ui/cockpit/replay/frame.tsx",
+        "task_type": "main_task",
+        "request_no": 9,
+        "outcome": "failed",
+        "attempts": [
+          {
+            "attempt": 1,
+            "outcome": "error",
+            "error_class": "provider",
+            "failure_phase": "stream",
+            "status_code": 200,
+            "duration_to_headers_ms": 917
+          }
+        ]
+      }
+    ]
+  }
+}
