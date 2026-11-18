@@ -1,9 +1,10 @@
 import { axisMoney, LabelPlacer, pnlRange, ticks, timeAxis, valueAxis, type Spot } from './geometry.ts';
 import type { LabelledFigure, PlotSession, ReplayPlotProps } from './replay.types.ts';
 
-const HEIGHT = 210;
+// Drawn at a phone's real width the chart is no longer shrunk with the screen, so it is shorter, to keep the headline and both charts on one screen.
+const HEIGHT_FULL = 210;
+const HEIGHT_PHONE = 170;
 const TOP = 20;
-const FLOOR = HEIGHT - 22;
 
 const f1 = (n: number): string => String(Math.round(n * 10) / 10);
 
@@ -44,6 +45,8 @@ function bands(sessions: readonly PlotSession[]): PlotSession[][] {
 // The Corridor's Trade P&L chart (W40): dollars for the whole Position, break-even between profit and loss.
 export function PnlChart({ props, width }: { props: ReplayPlotProps; width: number }) {
   const { sessions, anchors, axis } = props;
+  const HEIGHT = props.compact ? HEIGHT_PHONE : HEIGHT_FULL;
+  const FLOOR = HEIGHT - 22;
   const time = timeAxis(width, axis.slots);
   const figures = [
     ...sessions.flatMap((s) => [s.tradePnl, s.banked, s.resultAtStop?.value ?? null, s.resultAtTarget?.value ?? null]),
@@ -137,7 +140,8 @@ export function PnlChart({ props, width }: { props: ReplayPlotProps; width: numb
       put(`banked-${s.slot}`, 'banked-label', text, [
         { x: left, y: first, anchor: 'start' },
         { x: left, y: second, anchor: 'start' },
-      ]);
+        // On a phone the banked label is never left out; the "Break-even" and "Sold 2" labels give way to it.
+      ], props.compact);
     });
   }
   if (current?.stake && current.tradePnl !== null) {

@@ -58,6 +58,15 @@ async function expectPhoneWords(scope: Locator, where: string): Promise<void> {
   expect(pnl.join('|'), `${where}: no long P&L title`).not.toContain('dollars for the whole Position');
   for (const text of pnl.filter((t) => /^Sold/.test(t))) expect(text, `${where}: marker`).toBe('Sold 2');
   expect(pnl.filter((t) => /^(Risk|Reward)\b/.test(t)).every((t) => /^(Risk|Reward) \$/.test(t)), `${where}: stake tags ${pnl.join(' | ')}`).toBe(true);
+  // The text is drawn at its real size, not shrunk with a scaled-down drawing: its size on the screen is its font size times the drawing's scale.
+  for (const chart of [priceStrip(scope), pnlChart(scope)]) {
+    const smallest = await chart.evaluate((svg: SVGSVGElement) => {
+      const scale = svg.getBoundingClientRect().width / svg.viewBox.baseVal.width;
+      return Math.min(...[...svg.querySelectorAll('text')].map((t) => parseFloat(getComputedStyle(t).fontSize) * scale));
+    });
+    console.log(`${where}: smallest chart text ${smallest.toFixed(2)} px`);
+    expect(smallest, `${where}: smallest chart text`).toBeGreaterThanOrEqual(10);
+  }
 }
 
 // One surface through the three sizes with the slider moved to Thu 11-12: each size's checks, then the next size, and back to the first.
@@ -101,7 +110,7 @@ test.describe('B9.5 Responsive, accessible and offline', () => {
   });
 
   // At 320 px the Review card's readout reaches past the screen: "+$478.00" (Banked) ends at x = 328 and "+$316.00" (Result at the Stop) at 324, so the page scrolls sideways (scrollWidth
-  // 328 over 320). Reported to the main session as a UI defect, so this case is fixme until it is fixed.
+  // 328 over 320). Reported to the main session as a UI defect; T9.18-F2 fixed it and this case now runs.
   test('should fit the Review card replay at 320 px with no sideways scroll', async ({ profile }) => {
     test.setTimeout(420_000);
     const { context, page, trade } = await build(profile, BREN, closeOf('2026-11-16'), 10);
@@ -112,9 +121,9 @@ test.describe('B9.5 Responsive, accessible and offline', () => {
     await context.close();
   });
 
-  // W39, W40 and W41 name phone words ("BREN price", "Trade P&L", "Risk $672", "Reward $928", "Sold 2"). At 375 and 320 px the charts draw the long words instead, in the same 640-unit
-  // drawing scaled down to the screen's width (about 0.47 and 0.39 of its size): reported to the main session, so this case is fixme until the phone words are used or the plan is amended.
-  test.fixme('should use the phone words in both charts at 375 and 320 px', async ({ profile }) => {
+  // W39, W40 and W41 name phone words ("BREN price", "Trade P&L", "Risk $672", "Reward $928", "Sold 2"). In a box under 460 px wide (a phone) the charts are drawn at their real width with those words, so
+  // their text keeps its size; at the full drawing the long words stay.
+  test('should use the phone words in both charts at 375 and 320 px', async ({ profile }) => {
     test.setTimeout(240_000);
     const { context, page } = await build(profile, BREN, closeOf('2026-11-16'), 10);
     await openDrawer(page, 'Replay');

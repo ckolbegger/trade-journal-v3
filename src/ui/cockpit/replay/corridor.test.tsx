@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CorridorPlot } from './corridor.tsx';
 import { timeAxis } from './geometry.ts';
 import type { LabelledFigure, PlotMarker, PlotSession, ReplayPlotProps } from './replay.types.ts';
@@ -467,6 +467,62 @@ describe('Corridor: the Trade P&L (W40, W41)', () => {
     expect(spans[0]!.left).toBeCloseTo(((time.x(0) - time.column / 2) / 340) * 100, 2);
     for (let i = 1; i < spans.length; i++) {
       expect(spans[i - 1]!.left + spans[i - 1]!.width).toBeCloseTo(spans[i]!.left, 2);
+    }
+  });
+});
+
+// jsdom has no layout: the box the plot is drawn in is given its width here.
+function frameWidth(width: number): void {
+  vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(width);
+  vi.stubGlobal('ResizeObserver', class { observe() {} unobserve() {} disconnect() {} });
+}
+
+describe('Corridor: drawn at a phone\'s real width (W39, W40, W41)', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
+  it('should use the phone words when drawn narrow', () => {
+    frameWidth(280);
+    const stake = { riskLabel: 'Risk to stop $672', riskShortLabel: 'Risk $672', rewardLabel: 'Reward to target $928', rewardShortLabel: 'Reward $928' };
+    const sessions = DAYS.map((_, i) => bren(i, i === 10 ? { stake } : {}));
+    const { container } = render(<CorridorPlot {...props({ sessions })} />);
+    // Drawn at its real width, so its text is not scaled down.
+    expect(container.querySelector('svg.price-strip')!.getAttribute('width')).toBe('280');
+    expect(pnl(container).getAttribute('width')).toBe('280');
+    expect(screen.getByText('BREN price')).toBeTruthy();
+    expect(screen.queryByText('BREN price · one Mark per session')).toBeNull();
+    expect(screen.getByText('Risk $672')).toBeTruthy();
+    expect(screen.getByText('Reward $928')).toBeTruthy();
+    expect(screen.queryByText('Risk to stop $672')).toBeNull();
+    expect(screen.queryByText('Sold 2 at $4.00')).toBeNull();
+    cleanup();
+    // A wide box keeps the long words at the full drawing.
+    vi.restoreAllMocks();
+    frameWidth(900);
+    const wide = render(<CorridorPlot {...props({ sessions })} />);
+    expect(wide.container.querySelector('svg.price-strip')!.getAttribute('width')).toBe('640');
+    expect(screen.getByText('Risk to stop $672')).toBeTruthy();
+  });
+
+  it('should keep the result and banked labels when drawn narrow', () => {
+    for (const width of [280, 240]) {
+      frameWidth(width);
+      const { container } = render(<CorridorPlot {...props()} />);
+      expect(pnl(container).getAttribute('width')).toBe(String(width));
+      const text = [...pnl(container).querySelectorAll('text')].map((t) => t.textContent);
+      expect(text, `${width}: ${text.join(' | ')}`).toEqual(expect.arrayContaining(['Stop +$316', 'Target +$956', 'Banked +$478']));
+      // Each of them sits inside the drawing, so none is cut off at the edge.
+      for (const t of pnl(container).querySelectorAll('text.result-label, text.banked-label')) {
+        const x = num(t, 'x');
+        const w = t.textContent.length * 6;
+        const start = t.getAttribute('text-anchor') === 'end' ? x - w : t.getAttribute('text-anchor') === 'middle' ? x - w / 2 : x;
+        expect(start).toBeGreaterThanOrEqual(0);
+        expect(start + w).toBeLessThanOrEqual(width);
+      }
+      cleanup();
+      vi.restoreAllMocks();
     }
   });
 });
