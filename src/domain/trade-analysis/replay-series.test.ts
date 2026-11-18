@@ -162,7 +162,7 @@ const sessionsOf = (series: ReplayTestSeries): readonly ReplaySessionInput[] =>
   REPLAY_SESSION_DATES.map((date, i) => {
     const closeInstant = `${date}T21:00:00Z`;
     const frame = (instrument: Instrument, price: string | null | undefined) =>
-      price == null ? missing(instrument, date, closeInstant) : available(instrument, date, closeInstant, price);
+      price === null || price === undefined ? missing(instrument, date, closeInstant) : available(instrument, date, closeInstant, price);
     return {
       tradingDate: date,
       closeInstant,
