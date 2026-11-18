@@ -275,6 +275,19 @@ describe('replay.props: the words follow the condition status (T9.14-F2)', () =>
     expect(headline).toBe('Stop breached: BREN $0.30 past $54.00.');
     expect(stake?.rows.find((r) => r.label === 'Reward to risk')?.value.text).toBe('Stop breached');
   });
+
+  it('should read Target reached when the Target is crossed though the dollars are past the Stop planned amount', () => {
+    const targetPastStopAmount = session({
+      date: '2026-11-16',
+      pnl: -1272,
+      standing: value({ zone: 'PastStop', pastBy: { dollars: usd(9), r: frac(9, 1536), crossed: false } }),
+      figures: { conditions: [reading('Target', '104.00', 'Reached', frac(1, 2))] },
+    });
+    const v = view([targetPastStopAmount]);
+    const stake = replayProps(v, { Plot: () => null }).sessions[0]!.readout.find((g) => g.title === 'At stake from here, whole Position');
+    expect(sessionWords(v, 0).howItIsGoing).toBe('Target reached.');
+    expect(stake?.rows.find((r) => r.label === 'Reward to risk')?.value.text).toBe('Target reached');
+  });
 });
 
 describe('replay.props: what is at stake (W38)', () => {

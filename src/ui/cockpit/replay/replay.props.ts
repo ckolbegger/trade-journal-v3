@@ -81,8 +81,8 @@ function howItIsGoingOf(session: ViewSession): string {
   const stopCrossed = crossedCondition(session, 'Stop');
   if (zone === 'PastStop' && pastBy?.crossed) return `Past the Stop by ${money(pastBy.dollars)} (${rMultiple(pastBy.r)}).`;
   if (stopCrossed) return stopBreachedWords(stopCrossed, session);
-  if (zone === 'PastStop' && pastBy) return plannedAmountWords('Stop', pastBy.dollars, session);
   if (zone !== 'PastTarget' && crossedCondition(session, 'Target')) return 'Target reached.';
+  if (zone === 'PastStop' && pastBy) return plannedAmountWords('Stop', pastBy.dollars, session);
   if (zone === 'PastTarget' && pastBy) {
     if (!pastBy.crossed) return plannedAmountWords('Target', pastBy.dollars, session);
     return pastBy.dollars.compare(ZERO) === 0 ? 'Target reached.' : `Target reached, ${money(pastBy.dollars)} past it.`;
@@ -206,7 +206,7 @@ function stakeGroup(view: TradeReplayView, session: ViewSession): ReadoutGroup |
   const targetReached = triggered || targetCrossed;
   let ending: string | undefined;
   if (stopCrossed) ending = 'Stop breached';
-  else if (stopOverrun) ending = stopBreached ? 'Stop breached' : 'Not triggered';
+  else if (stopOverrun) ending = stopBreached ? 'Stop breached' : targetCrossed ? 'Target reached' : 'Not triggered';
   else if (targetOverrun) ending = targetReached ? 'Target reached' : 'Not triggered';
   else if (targetCrossed) ending = 'Target reached';
   const stopOverrunLabel = triggered ? 'Stop Overrun' : "Past Stop's amount";
