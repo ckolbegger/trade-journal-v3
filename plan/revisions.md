@@ -2,6 +2,15 @@
 
 Every revision of the frozen plan, newest first, one entry each. Each revision is a commit tagged `claude-opus-5.5-plan-r<n>`. The freeze record in `implementation-plan.md` ("Immutable revision") names only the current revision. A new revision adds its entry at the top of this list and replaces the freeze record's entry. Edits to a breakdown's Progress section alone are not revisions (decision 100).
 
+- Revision 106: the commit tagged `claude-opus-5.5-plan-r106` (revision 105 plus decision 117), 2026-11-17. The user agreed D9's breakdown, [D09-trade-replay.md](D09-trade-replay.md), after answering its ten questions one at a time:
+  - 40 tasks in one deliverable, run as three stages, each with its own session, suites and fresh critic: the replay chart (a swarm), then the option estimates and the meter (each one task at a time);
+  - replay is Corridor, in a Trade Detail drawer and in the Review card; `evaluate` gains the Trade's result at each boundary, and `DailyReview.getTrade` returns the replay to the Review Date;
+  - implied volatility, the Share Equivalent and the Mark Change Split are labelled Estimates from a separate pure module; the rates (4% up to 365 days, 5.25% beyond) are stated on the About page only;
+  - the meter replaces the Review slider and goes on the Open list and Trade Detail's Conditions card; `rangePosition` is removed, with its 84 entries in eight frozen fixtures' expected views;
+  - the Open list's default order is the Review's attention order, built so that sorting and filtering can be added later;
+  - a task may shorten screen text and records the before and after (P137).
+
+  It amends `specs/`: ADR 0007, the spec index, four glossary terms, Trade Analysis's `evaluate` and `replay`, the UI contract, Trade Views' `browseTrades`, and a new acceptance scenario, AC-CALC-005. The spec map's 260 entries were rechecked, D9 was retagged and the reading lists were regenerated. The acceptance matrix has 68 rows. No schema, store, seed, migration or backup-version change. The next decision is 118.
 - Revision 105: the commit tagged `claude-opus-5.5-plan-r105` (revision 104 plus decision 116), 2026-11-17. The user answered, all as recommended, four questions D8R's session would otherwise stop for:
   - a contract name shows the full year for any year other than the current one, an earlier year included (P117; two cases added to T8R.3; W28 and the D7 approved words' note amended);
   - words no approved row covers are used provisionally, listed in `evidence/D08R/new-words.md` and approved after the gate;

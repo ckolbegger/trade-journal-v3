@@ -135,6 +135,10 @@ Journal Entries capture saved versions only. Drafts, keystrokes, field focus, an
 | **Payoff Zero Set** | The normalized set of Crossing points, Touch points, and Zero Ranges at which an available payoff curve equals zero. | Breakeven list only |
 | **Payoff Maximum** | The signed greatest payoff over nonnegative underlying prices, with its complete Attainment Set or `Unbounded Above`. | Positive-only max profit |
 | **Payoff Minimum** | The signed least payoff over nonnegative underlying prices, with its complete Attainment Set or `Unbounded Below`. | Negative-only max loss |
+| **Estimate** | A figure worked out from observed Marks through a pricing formula and stated assumptions, to explain a past price. It is always labelled, is never a Mark, and is never an input to an exact calculation. Added by plan decision 117. | Theoretical price, fair value, forecast |
+| **Implied Volatility** | The Estimate of the volatility at which the formula returns an option's exact Mark, given the same session's Underlying Mark. It is Unavailable when either Mark is missing or no volatility fits. Added by plan decision 117. | Historical volatility, trader-entered volatility |
+| **Share Equivalent** | The Estimate of how many shares of the Underlying an option Position's value currently moves like. It is exact for stock. Added by plan decision 117. | Delta as a risk figure |
+| **Mark Change Split** | The Estimate that divides one session's change in an option's Mark between the Underlying's move, time passing and Implied Volatility changing. The parts and any unexplained remainder add up to the real change. Added by plan decision 117. | P&L attribution as fact |
 
 An exact Mark, Daily Bar, and Unavailable Mark Acknowledgment are separate facts. Exact Mark precedence makes the Expected-Mark Status Available even when acknowledgment history also exists. An acknowledgment may allow Daily Review to complete with unavailable calculations, but it never supplies a value.
 

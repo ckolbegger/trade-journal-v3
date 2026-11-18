@@ -337,6 +337,15 @@ A workflow scenario needs evidence at its public boundary and durable after-stat
 - **Then:** Planned and Current payoff curves are independent and contain all zero crossings/touches/ranges, signed extrema, and attainment sets; current includes realized offset while open. No theoretical option price is produced. Flat current exposure is Not Applicable; multiple expirations are Unavailable; stock-only without option anchor is Not Applicable.
 - **Evidence:** curves/results and separately sourced current valuation.
 
+### AC-CALC-005 — Estimates explain and never value
+
+Added by plan decision 117 (2026-11-17).
+
+- **Given:** an option Trade with exact Marks for its contract and its Underlying over several sessions, one session with the contract's Mark missing, and one Mark at the contract's exercise value.
+- **When:** its replay is read.
+- **Then:** each session's Implied Volatility reproduces that session's Mark through the stated formula and rate; the Share Equivalent and the Mark Change Split are returned as Estimates, and the split's parts add up to the Mark's real change; each is Unavailable with a stable reason where it can't be worked out; a stock Trade's are Not Applicable or exact; and every Trade P&L, risk, reward and condition status is the same whether or not an Estimate is available.
+- **Evidence:** the per-session results, the formula's inputs, and the exact figures compared with and without the Estimates.
+
 ## Deterministic reports
 
 ### AC-RPT-001 — Report Period resolution

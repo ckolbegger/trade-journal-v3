@@ -20,40 +20,46 @@ This table is the source of truth. After changing a tag or class here, regenerat
 
 **Revision 104** (2026-11-15, D8R's P110 and P112) added two sentences: S124's read-session paragraph names the session before its trading date and a current context's as-of exchange date, and S211's Journal-timeline paragraph lets Trade Detail leave out the Trade Anchor. No line moved. S124's character count changed from 2,610 to 2,776 and S211's from 1,216 to 1,396. No tag changed (D8R has no tag, its breakdown's A244). The reading lists and the table below were regenerated.
 
+**Revision 106** (2026-11-17, D9's decision 117) amended seven specs and retagged D9 from its breakdown, so D9's tags are no longer provisional.
+- **Lines moved:** `acceptance-contract.md` gained AC-CALC-005 as a new entry, S260 (340–348), and S054 through S078 moved down nine lines. `trade-analysis.md` gained one line in `evaluate` (S167), so S168 through S173 moved down one. `glossary.md` gained four terms in S251, so S252 through S256 moved down four. ADR 0007 (S085) grew to eleven lines.
+- **Character counts only:** S003 (the spec index's product boundaries), S169 (`replay`), S188 (`browseTrades`) and S212 (the UI contract's numbers and graphs).
+- **D9 tags added:** S052 (AC-CALC-003), S090 (the Review's ordering), S092 (`getTrade`), S167 (`evaluate`), S188 (`browseTrades`) and S260.
+- All 260 entries' line ranges and character counts were checked against `specs/` by script. The reading lists and the table below were regenerated.
+
 ## Reading cost per deliverable
 
-Characters of spec text a session reads (core plus tagged), and an estimate in tokens at about 2.4 characters per token. All of `specs/` is 316,457 bytes (every `.md` file, as of 2026-11-10).
+Characters of spec text a session reads (core plus tagged), and an estimate in tokens at about 2.4 characters per token. All of `specs/` is 320,557 bytes (every `.md` file, as of 2026-11-17).
 
 | Deliverable | Core | Tagged (non-core) | Total characters | ≈ Tokens |
 |---|---|---|---|---|
-| D1 | 151,264 | 42,967 | 194,231 | 81K |
-| D2 | 151,264 | 49,004 | 200,268 | 83K |
-| D4 | 151,264 | 66,799 | 218,063 | 91K |
-| D5 | 151,264 | 66,860 | 218,124 | 91K |
-| D6 | 151,264 | 73,184 | 224,448 | 94K |
-| D7 | 151,264 | 74,071 | 225,335 | 94K |
-| D8 | 151,264 | 57,629 | 208,893 | 87K |
-| D9 (provisional) | 151,264 | 8,175 | 159,439 | 66K |
-| D10 (provisional) | 151,264 | 40,774 | 192,038 | 80K |
-| D11 (provisional) | 151,264 | 21,883 | 173,147 | 72K |
-| D12 (provisional) | 151,264 | 32,921 | 184,185 | 77K |
-| D13 (provisional) | 151,264 | 28,578 | 179,842 | 75K |
-| D14 (provisional) | 151,264 | 16,641 | 167,905 | 70K |
-| D15 (provisional) | 151,264 | 32,488 | 183,752 | 77K |
-| D16 (provisional) | 151,264 | 18,430 | 169,694 | 71K |
-| D17 (provisional) | 151,264 | 22,558 | 173,822 | 72K |
-| D18 (provisional) | 151,264 | 8,307 | 159,571 | 66K |
-| D19 (provisional) | 151,264 | 12,306 | 163,570 | 68K |
-| D20 (provisional) | 151,264 | 45,101 | 196,365 | 82K |
-| D21 (provisional) | 151,264 | 40,188 | 191,452 | 80K |
-| D22 (provisional) | 151,264 | 29,210 | 180,474 | 75K |
-| D23 (provisional) | 151,264 | 7,514 | 158,778 | 66K |
-| D24 (provisional) | 151,264 | 17,656 | 168,920 | 70K |
-| D25 (provisional) | 151,264 | 16,444 | 167,708 | 70K |
-| D26 (provisional) | 151,264 | 10,291 | 161,555 | 67K |
-| D27 (provisional) | 151,264 | 19,613 | 170,877 | 71K |
-| D28 (provisional) | 151,264 | 6,314 | 157,578 | 66K |
-| RC (provisional) | 151,264 | 5,112 | 156,376 | 65K |
+| D1 | 153,337 | 43,194 | 196,531 | 82K |
+| D2 | 153,337 | 49,231 | 202,568 | 84K |
+| D4 | 153,337 | 67,419 | 220,756 | 92K |
+| D5 | 153,337 | 67,480 | 220,817 | 92K |
+| D6 | 153,337 | 73,619 | 226,956 | 95K |
+| D7 | 153,337 | 74,506 | 227,843 | 95K |
+| D8 | 153,337 | 57,856 | 211,193 | 88K |
+| D9 | 153,337 | 15,625 | 168,962 | 70K |
+| D10 (provisional) | 153,337 | 42,087 | 195,424 | 81K |
+| D11 (provisional) | 153,337 | 21,883 | 175,220 | 73K |
+| D12 (provisional) | 153,337 | 33,314 | 186,651 | 78K |
+| D13 (provisional) | 153,337 | 28,578 | 181,915 | 76K |
+| D14 (provisional) | 153,337 | 16,868 | 170,205 | 71K |
+| D15 (provisional) | 153,337 | 32,488 | 185,825 | 77K |
+| D16 (provisional) | 153,337 | 18,638 | 171,975 | 72K |
+| D17 (provisional) | 153,337 | 22,951 | 176,288 | 73K |
+| D18 (provisional) | 153,337 | 8,307 | 161,644 | 67K |
+| D19 (provisional) | 153,337 | 12,306 | 165,643 | 69K |
+| D20 (provisional) | 153,337 | 45,101 | 198,438 | 83K |
+| D21 (provisional) | 153,337 | 40,188 | 193,525 | 81K |
+| D22 (provisional) | 153,337 | 29,437 | 182,774 | 76K |
+| D23 (provisional) | 153,337 | 7,514 | 160,851 | 67K |
+| D24 (provisional) | 153,337 | 17,656 | 170,993 | 71K |
+| D25 (provisional) | 153,337 | 16,444 | 169,781 | 71K |
+| D26 (provisional) | 153,337 | 10,291 | 163,628 | 68K |
+| D27 (provisional) | 153,337 | 19,613 | 172,950 | 72K |
+| D28 (provisional) | 153,337 | 6,314 | 159,651 | 67K |
+| RC (provisional) | 153,337 | 5,112 | 158,449 | 66K |
 
 ## Entries
 
@@ -63,7 +69,7 @@ Characters of spec text a session reads (core plus tagged), and an estimate in t
 |---|---|---|---|---|---|---|---|
 | S001 | 1–6 | (opening) | 710 | core — Governs product boundaries. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | Spec scope: frozen stack-neutral spec; one-trader after-close journal for U.S. USD securities in one device-local Workspace. |
 | S002 | 7–20 | Authority and interpretation | 860 | core — Governs authority and interpretation. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | Normative wording and precedence order among glossary, ADRs, module contracts, acceptance, visuals; report contradictions. |
-| S003 | 21–41 | Product boundaries | 1,681 | core — Governs product boundaries. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | Required MVP capabilities and explicitly excluded features (live trading, sync, login, Insights, etc.). |
+| S003 | 21–41 | Product boundaries | 1,775 | core — Governs product boundaries. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | Required MVP capabilities and explicitly excluded features (live trading, sync, login, Insights, etc.). |
 | S004 | 44–58 | Canonical documents › Domain and decisions | 1,222 | core — Canonical-document index under authority rules; points every deliverable to glossary and ADRs. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | Index of glossary and the ten accepted ADRs. |
 | S005 | 59–76 | Canonical documents › Architecture and interfaces | 1,079 | core — States cross-cutting seam rules (Persistence never UI-callable, host capabilities not domain interfaces). | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | Index of design overview, module contracts with operation counts, UI/delivery contracts; Pricing Provider port, host capabilities, internal Persistence seam. |
 | S006 | 77–84 | Canonical documents › Acceptance and later evaluation | 400 | core — Small canonical-document index; part of the authority map every session uses. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | Index of acceptance contract, planning protocol, traceability, kickoff prompt, and screenshot index. |
@@ -117,33 +123,34 @@ Characters of spec text a session reads (core plus tagged), and an estimate in t
 | S049 | 303–309 | Market evidence › AC-MARK-006 — Daily Bar range evidence is honest | 690 | tagged |  | D11, D12 | AC-MARK-006: trailing Stop/Target uses same-date highs/lows for single-Instrument, synchronized Marks for multi. |
 | S050 | 312–318 | Risk, valuation, and payoff › AC-CALC-001 — frozen baseline and Entry Quality | 542 | tagged | D1, D2, D4, D6, D7 | D17 | AC-CALC-001: 1R stays frozen; Entry Quality resolved once at Entry Resolution Point; current risk uses effective management. |
 | S051 | 319–325 | Risk, valuation, and payoff › AC-CALC-002 — independent calculation availability | 456 | tagged | D4, D6, D7 | D10 | AC-CALC-002: calculations available independently; Missing Mark makes affected results Unavailable without substitution. |
-| S052 | 326–332 | Risk, valuation, and payoff › AC-CALC-003 — Stops, Targets, risk, reward, and Overrun | 593 | tagged | D4, D6, D7 | D10, D17 | AC-CALC-003: independent OR Stop/Target conditions, Ongoing/Worst-Case risk, Incremental Reward, Overrun; not Deviations. |
+| S052 | 326–332 | Risk, valuation, and payoff › AC-CALC-003 — Stops, Targets, risk, reward, and Overrun | 593 | tagged | D4, D6, D7 | D9, D10, D17 | AC-CALC-003: independent OR Stop/Target conditions, Ongoing/Worst-Case risk, Incremental Reward, Overrun; not Deviations. |
 | S053 | 333–339 | Risk, valuation, and payoff › AC-CALC-004 — Expiration Payoff is not valuation | 661 | tagged | D7 | D10 | AC-CALC-004: Planned and Current Expiration Payoff curves separate from valuation; Not Applicable/Unavailable cases. |
-| S054 | 342–348 | Deterministic reports › AC-RPT-001 — Report Period resolution | 550 | tagged |  | D16, D24, D25, D27 | AC-RPT-001: Report Period presets resolve exact calendar dates; no custom range; Current Exposure has none. |
-| S055 | 349–355 | Deterministic reports › AC-RPT-002 — Outcomes populations and arithmetic | 708 | tagged | D6 | D24 | AC-RPT-002: Outcomes populations, cumulative realization, Closed-R, classification, Profit Factor, corrected points. |
-| S056 | 356–362 | Deterministic reports › AC-RPT-003 — Current Exposure preserves coverage | 608 | tagged |  | D16 | AC-RPT-003: Current Exposure keeps covered subtotals, Unbounded contributors, separate unavailable cohorts, no ratio averaging. |
-| S057 | 363–369 | Deterministic reports › AC-RPT-004 — Process Scorecard uses metric-specific opportunities | 717 | tagged |  | D25 | AC-RPT-004: Process Scorecard families with natural dates, denominators, episodes, separate Deviations, no composite grade. |
-| S058 | 370–376 | Deterministic reports › AC-RPT-005 — categorical Journal Field uses current identity once | 725 | tagged |  | D27 | AC-RPT-005: Journal Field report groups one categorical field by stable value, one count per effective Entry. |
-| S059 | 377–383 | Deterministic reports › AC-RPT-006 — filters, grouping, labels, and completeness | 706 | tagged |  | D16, D22, D24, D25, D27 | AC-RPT-006: report filters AND/OR by stable identity, one Break Down By, Unspecified last, exhaustive contributors. |
-| S060 | 386–392 | Reference configuration › AC-REF-001 — exact defaults and protection | 608 | tagged | D1, D6, D7 | D10, D14, D21, D22 | AC-REF-001: exact Catalog default seeds (Strategies, reasons, IdeaSource) with stable identities and policies. |
-| S061 | 393–399 | Reference configuration › AC-REF-002 — inactive history remains valid but new use is blocked | 572 | tagged |  | D23 | AC-REF-002: retired/renamed references stay valid historically, blocked for new selection; concurrent retirement conflicts. |
-| S062 | 402–408 | Backup, Restore, and reconstruction › AC-BACK-001 — full coherent backup, verified download, and secrets exclusion | 1,528 | core — Backup round trip is a cumulative obligation for every data-adding deliverable. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28, RC | AC-BACK-001: full single-snapshot backup excluding secrets; Downloaded vs read-back-verified CompletedBackupReceipt; failures yield no receipt. |
-| S063 | 409–415 | Backup, Restore, and reconstruction › AC-REST-001 — preparation validates without mutation | 570 | core — Cumulative Restore round-trip obligation for every data-adding/schema-changing deliverable. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | AC-REST-001: Restore preparation validates, migrates older data in isolation, discloses repair, never mutates or contacts provider. |
-| S064 | 416–422 | Backup, Restore, and reconstruction › AC-REST-002 — replace-only confirmation and safety offer | 986 | tagged | D8 |  | AC-REST-002: replace-only Restore needs confirmation and exact-target receipt or explicit decline; unverified/stale write nothing. |
-| S065 | 423–429 | Backup, Restore, and reconstruction › AC-REST-003 — all-section atomicity | 636 | tagged | D8 |  | AC-REST-003: Restore apply is all-section atomic; success returns new binding, status, landing; old views invalidated. |
-| S066 | 430–436 | Backup, Restore, and reconstruction › AC-REST-004 — migration failure preserves recoverability | 486 | core — Migrations are cross-cutting: every schema-change deliverable carries a migration-failure test. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | AC-REST-004: failed startup migration never becomes Ready; prior data stays readable/exportable; retry activates atomically. |
-| S067 | 437–443 | Backup, Restore, and reconstruction › AC-REBUILD-001 — reconstruction is observationally equivalent | 720 | core — Cumulative obligation for every new index or projection. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | AC-REBUILD-001: rebuilding private indexes/projections from facts yields observationally equivalent results. |
-| S068 | 446–452 | Offline, responsive, accessibility, and performance › AC-DEL-001 — stopped application reopens offline | 769 | core — Offline behavior is cross-cutting; cumulative obligation. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28, RC | AC-DEL-001: stopped app reopens offline as Writable with every Manual workflow working. |
-| S069 | 453–459 | Offline, responsive, accessibility, and performance › AC-DEL-002 — update never interrupts active work | 797 | tagged | D1, D2, D4, D5, D7, D8 | D28, RC | AC-DEL-002: update staged and verified in background; activation waits for safe reload; unsaved work kept. |
-| S070 | 460–466 | Offline, responsive, accessibility, and performance › AC-DEL-003 — PWA identity and support are browser-neutral | 1,221 | core — Cumulative obligation: browser-tab launch and browser-neutral readiness re-proven each deliverable. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28, RC | AC-DEL-003: Web App Manifest identity, complete Offline Release Inventory, tab and installed use, browser-neutral readiness. |
-| S071 | 467–473 | Offline, responsive, accessibility, and performance › AC-DEL-004 — Runtime Readiness gates every write | 1,722 | core — Runtime Readiness and RuntimeNotWritable are cross-cutting for every mutation. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28, RC | AC-DEL-004: Runtime Readiness checks gate every write; failures Unsupported with all reasons; RuntimeNotWritable everywhere. |
-| S072 | 474–480 | Offline, responsive, accessibility, and performance › AC-DEL-005 — failed readiness preserves read-only recovery | 1,564 | core — Runtime Readiness/Recovery Only behavior applies to every mutating deliverable. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28, RC | AC-DEL-005: failed readiness with readable data is Recovery Only; unreadable store is Integrity Blocked; no false receipts. |
-| S073 | 481–487 | Offline, responsive, accessibility, and performance › AC-DEL-006 — readiness is re-established at every safety boundary | 900 | core — Cumulative Runtime Readiness obligation for every mutation. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28, RC | AC-DEL-006: readiness re-established at every launch, update, Restore; runtime failure invalidates Writable immediately. |
-| S074 | 488–494 | Offline, responsive, accessibility, and performance › AC-UI-001 — viewport-driven live adaptation | 467 | core — UI shared layout; cumulative obligation for every new view. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | AC-UI-001: live viewport resize switches sidebar/bottom navigation while preserving route and unsaved state. |
-| S075 | 495–501 | Offline, responsive, accessibility, and performance › AC-UI-002 — state, availability, and accessibility | 666 | core — UI state and accessibility rules; cumulative obligation for every new view. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | AC-UI-002: distinguishable view states, keyboard/accessibility semantics, WCAG AA, graph text equivalents. |
-| S076 | 502–508 | Offline, responsive, accessibility, and performance › AC-PERF-001 — mature-scale latency and correctness | 787 | core — Cumulative performance obligation re-proven by every deliverable. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | AC-PERF-001: 25,000-Trade dataset; cold start p95 <= 2.5s, warm open-list p95 <= 1.5s with full correctness. |
-| S077 | 509–515 | Offline, responsive, accessibility, and performance › AC-CAP-001 — installed capabilities are honest | 852 | core — Cumulative capability-honesty obligation for every deliverable. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | AC-CAP-001: Installed Capability Manifest honest; omitted behavior absent; declared capabilities complete and reachable. |
-| S078 | 516–518 | Conformance decision | 494 | core — Governs acceptance and conformance for every deliverable. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28, RC | Conformance decision: all applicable plus foundational scenarios required; waivers need explicit spec change. |
+| S260 | 340–348 | Risk, valuation, and payoff › AC-CALC-005 — Estimates explain and never value | 920 | tagged |  | D9, D10 | AC-CALC-005: Implied Volatility, Share Equivalent and Mark Change Split are labelled Estimates, Unavailable with reasons; no exact figure reads them. |
+| S054 | 351–357 | Deterministic reports › AC-RPT-001 — Report Period resolution | 550 | tagged |  | D16, D24, D25, D27 | AC-RPT-001: Report Period presets resolve exact calendar dates; no custom range; Current Exposure has none. |
+| S055 | 358–364 | Deterministic reports › AC-RPT-002 — Outcomes populations and arithmetic | 708 | tagged | D6 | D24 | AC-RPT-002: Outcomes populations, cumulative realization, Closed-R, classification, Profit Factor, corrected points. |
+| S056 | 365–371 | Deterministic reports › AC-RPT-003 — Current Exposure preserves coverage | 608 | tagged |  | D16 | AC-RPT-003: Current Exposure keeps covered subtotals, Unbounded contributors, separate unavailable cohorts, no ratio averaging. |
+| S057 | 372–378 | Deterministic reports › AC-RPT-004 — Process Scorecard uses metric-specific opportunities | 717 | tagged |  | D25 | AC-RPT-004: Process Scorecard families with natural dates, denominators, episodes, separate Deviations, no composite grade. |
+| S058 | 379–385 | Deterministic reports › AC-RPT-005 — categorical Journal Field uses current identity once | 725 | tagged |  | D27 | AC-RPT-005: Journal Field report groups one categorical field by stable value, one count per effective Entry. |
+| S059 | 386–392 | Deterministic reports › AC-RPT-006 — filters, grouping, labels, and completeness | 706 | tagged |  | D16, D22, D24, D25, D27 | AC-RPT-006: report filters AND/OR by stable identity, one Break Down By, Unspecified last, exhaustive contributors. |
+| S060 | 395–401 | Reference configuration › AC-REF-001 — exact defaults and protection | 608 | tagged | D1, D6, D7 | D10, D14, D21, D22 | AC-REF-001: exact Catalog default seeds (Strategies, reasons, IdeaSource) with stable identities and policies. |
+| S061 | 402–408 | Reference configuration › AC-REF-002 — inactive history remains valid but new use is blocked | 572 | tagged |  | D23 | AC-REF-002: retired/renamed references stay valid historically, blocked for new selection; concurrent retirement conflicts. |
+| S062 | 411–417 | Backup, Restore, and reconstruction › AC-BACK-001 — full coherent backup, verified download, and secrets exclusion | 1,528 | core — Backup round trip is a cumulative obligation for every data-adding deliverable. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28, RC | AC-BACK-001: full single-snapshot backup excluding secrets; Downloaded vs read-back-verified CompletedBackupReceipt; failures yield no receipt. |
+| S063 | 418–424 | Backup, Restore, and reconstruction › AC-REST-001 — preparation validates without mutation | 570 | core — Cumulative Restore round-trip obligation for every data-adding/schema-changing deliverable. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | AC-REST-001: Restore preparation validates, migrates older data in isolation, discloses repair, never mutates or contacts provider. |
+| S064 | 425–431 | Backup, Restore, and reconstruction › AC-REST-002 — replace-only confirmation and safety offer | 986 | tagged | D8 |  | AC-REST-002: replace-only Restore needs confirmation and exact-target receipt or explicit decline; unverified/stale write nothing. |
+| S065 | 432–438 | Backup, Restore, and reconstruction › AC-REST-003 — all-section atomicity | 636 | tagged | D8 |  | AC-REST-003: Restore apply is all-section atomic; success returns new binding, status, landing; old views invalidated. |
+| S066 | 439–445 | Backup, Restore, and reconstruction › AC-REST-004 — migration failure preserves recoverability | 486 | core — Migrations are cross-cutting: every schema-change deliverable carries a migration-failure test. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | AC-REST-004: failed startup migration never becomes Ready; prior data stays readable/exportable; retry activates atomically. |
+| S067 | 446–452 | Backup, Restore, and reconstruction › AC-REBUILD-001 — reconstruction is observationally equivalent | 720 | core — Cumulative obligation for every new index or projection. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | AC-REBUILD-001: rebuilding private indexes/projections from facts yields observationally equivalent results. |
+| S068 | 455–461 | Offline, responsive, accessibility, and performance › AC-DEL-001 — stopped application reopens offline | 769 | core — Offline behavior is cross-cutting; cumulative obligation. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28, RC | AC-DEL-001: stopped app reopens offline as Writable with every Manual workflow working. |
+| S069 | 462–468 | Offline, responsive, accessibility, and performance › AC-DEL-002 — update never interrupts active work | 797 | tagged | D1, D2, D4, D5, D7, D8 | D28, RC | AC-DEL-002: update staged and verified in background; activation waits for safe reload; unsaved work kept. |
+| S070 | 469–475 | Offline, responsive, accessibility, and performance › AC-DEL-003 — PWA identity and support are browser-neutral | 1,221 | core — Cumulative obligation: browser-tab launch and browser-neutral readiness re-proven each deliverable. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28, RC | AC-DEL-003: Web App Manifest identity, complete Offline Release Inventory, tab and installed use, browser-neutral readiness. |
+| S071 | 476–482 | Offline, responsive, accessibility, and performance › AC-DEL-004 — Runtime Readiness gates every write | 1,722 | core — Runtime Readiness and RuntimeNotWritable are cross-cutting for every mutation. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28, RC | AC-DEL-004: Runtime Readiness checks gate every write; failures Unsupported with all reasons; RuntimeNotWritable everywhere. |
+| S072 | 483–489 | Offline, responsive, accessibility, and performance › AC-DEL-005 — failed readiness preserves read-only recovery | 1,564 | core — Runtime Readiness/Recovery Only behavior applies to every mutating deliverable. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28, RC | AC-DEL-005: failed readiness with readable data is Recovery Only; unreadable store is Integrity Blocked; no false receipts. |
+| S073 | 490–496 | Offline, responsive, accessibility, and performance › AC-DEL-006 — readiness is re-established at every safety boundary | 900 | core — Cumulative Runtime Readiness obligation for every mutation. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28, RC | AC-DEL-006: readiness re-established at every launch, update, Restore; runtime failure invalidates Writable immediately. |
+| S074 | 497–503 | Offline, responsive, accessibility, and performance › AC-UI-001 — viewport-driven live adaptation | 467 | core — UI shared layout; cumulative obligation for every new view. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | AC-UI-001: live viewport resize switches sidebar/bottom navigation while preserving route and unsaved state. |
+| S075 | 504–510 | Offline, responsive, accessibility, and performance › AC-UI-002 — state, availability, and accessibility | 666 | core — UI state and accessibility rules; cumulative obligation for every new view. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | AC-UI-002: distinguishable view states, keyboard/accessibility semantics, WCAG AA, graph text equivalents. |
+| S076 | 511–517 | Offline, responsive, accessibility, and performance › AC-PERF-001 — mature-scale latency and correctness | 787 | core — Cumulative performance obligation re-proven by every deliverable. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | AC-PERF-001: 25,000-Trade dataset; cold start p95 <= 2.5s, warm open-list p95 <= 1.5s with full correctness. |
+| S077 | 518–524 | Offline, responsive, accessibility, and performance › AC-CAP-001 — installed capabilities are honest | 852 | core — Cumulative capability-honesty obligation for every deliverable. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | AC-CAP-001: Installed Capability Manifest honest; omitted behavior absent; declared capabilities complete and reachable. |
+| S078 | 525–527 | Conformance decision | 494 | core — Governs acceptance and conformance for every deliverable. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28, RC | Conformance decision: all applicable plus foundational scenarios required; waivers need explicit spec change. |
 
 ### `specs/adr/0001-domain-facts-pure-analysis-and-coordinators.md`
 
@@ -185,7 +192,7 @@ Characters of spec text a session reads (core plus tagged), and an estimate in t
 
 | ID | Lines | Section | Chars | Class | D1–D8 | D9–D28 (provisional) | Summary |
 |---|---|---|---|---|---|---|---|
-| S085 | 1–9 | (opening) | 981 | core — Every ADR is core. | D1, D4, D5, D6, D7, D8 | D9, D10, D11, D16, D17, D19, D24 | ADR 0007: Mark-to-Market valuation separate from Expiration Payoff; no theoretical pricing; mixed expirations unavailable. |
+| S085 | 1–11 | (opening) | 1,711 | core — Every ADR is core. | D1, D4, D5, D6, D7, D8 | D9, D10, D11, D16, D17, D19, D24 | ADR 0007: Mark-to-Market valuation separate from Expiration Payoff; no theoretical pricing; mixed expirations unavailable. |
 
 ### `specs/adr/0008-pwa-delivery-and-runtime-readiness.md`
 
@@ -216,9 +223,9 @@ Characters of spec text a session reads (core plus tagged), and an estimate in t
 | ID | Lines | Section | Chars | Class | D1–D8 | D9–D28 (provisional) | Summary |
 |---|---|---|---|---|---|---|---|
 | S089 | 3–16 | Contract | 764 | core — Module contract/purpose section. | D4, D5, D6, D7, D8 | D11, D12, D13, D15, D20, D21 | Daily Review contract: coordinates after-close ritual for one session; owns no Review state; four operations. |
-| S090 | 17–33 | Date, eligibility, and ordering | 2,598 | tagged | D4, D5, D6, D7, D8 | D12, D15, D20 | Review Date selection, Open-at-cutoff eligibility, normative task-family order, attention bands and ranking rules. |
+| S090 | 17–33 | Date, eligibility, and ordering | 2,598 | tagged | D4, D5, D6, D7, D8 | D9, D12, D15, D20 | Review Date selection, Open-at-cutoff eligibility, normative task-family order, attention bands and ranking rules. |
 | S091 | 34–65 | `open` | 1,718 | tagged | D4, D5, D6, D7, D8 | D11, D12, D15, D20 | open: resolves date, queries cutoff-eligible Trades, derives, recovers Marks, assembles one coherent Review read. |
-| S092 | 66–71 | `getTrade` | 670 | tagged | D4, D5, D6, D7 | D10, D12, D20, D21 | getTrade: one bound eligible Trade view, ReviewChanged on incoherence, Hold preselection, Action Intent rules. |
+| S092 | 66–71 | `getTrade` | 670 | tagged | D4, D5, D6, D7 | D9, D10, D12, D20, D21 | getTrade: one bound eligible Trade view, ReviewChanged on incoherence, Hold preselection, Action Intent rules. |
 | S093 | 72–77 | `getDebt` | 531 | tagged | D4, D5, D6, D7 | D20 | getDebt: pages global due Debt; workflow-routed Debt first; routes rather than settles management Debt. |
 | S094 | 78–126 | `save` | 2,731 | tagged | D4, D5, D6, D7 | D12, D13, D15, D20, D21 | save: SaveTradeAction with exact bindings and atomic Deviation reconciliation, or ResolveReviewDebt; uniqueness and retries. |
 | S095 | 127–145 | Settlement Due | 981 | tagged | D5, D7 | D15, D20 | Settlement Due keeps Review incomplete until Trade Workflows records explicit settlement; calendar never manufactures Expiration. |
@@ -328,13 +335,13 @@ Characters of spec text a session reads (core plus tagged), and an estimate in t
 | S164 | 21–48 | Shared values | 1,015 | core — Shared result vocabulary used by every calculating and displaying deliverable. | D1, D2, D4, D6, D7, D8 | D9, D10, D16 | CalculationResult states, FactOrder, DerivedTradeState contents; no substitution of fabricated values. |
 | S165 | 51–58 | Operation contracts › `assessPlan` | 1,109 | tagged | D1, D2, D4, D7 | D10, D20, D21 | assessPlan: Plan validation, Plan Baseline and 1R, option underlying-price Stop monetary boundary, typed rejection. |
 | S166 | 59–72 | Operation contracts › `derive` | 2,251 | tagged | D1, D2, D4, D5, D6, D7, D8 | D10, D14, D15, D20, D24 | derive: replay effective facts, Positions, Lots, fees, lifecycle, Entry window, leg fulfillment, Scaling, Disposition Timing; contract status at a valuation date (decision 101). |
-| S167 | 73–86 | Operation contracts › `evaluate` | 1,173 | tagged | D4, D5, D6, D7 | D10, D12, D16, D17 | evaluate: valuation, ongoing risk/reward, condition status, Overrun, independent P&L components and coverage. |
-| S168 | 87–92 | Operation contracts › `expirationPayoff` | 866 | tagged | D1, D7, D8 | D10 | expirationPayoff: Planned and Current piecewise payoff, zero sets, extrema; Not Applicable and multi-expiration Unavailable. |
-| S169 | 93–98 | Operation contracts › `replay` | 876 | tagged | D4, D5 | D9, D10, D12, D17 | replay: per-frame corrected tracks with gaps; Stop Discipline episodes and stable fingerprints. |
-| S170 | 99–102 | Operation contracts › `assessChange` | 390 | tagged |  | D15, D18, D19, D20, D21 | assessChange: validates before/candidate records, returns reconciliation and Correction Footprint; never writes. |
-| S171 | 103–116 | Normative analytical rules | 2,200 | tagged | D1, D2, D4, D6, D7, D8 | D10, D12, D14, D17, D20, D21 | Normative rules: Execution ownership, FIFO, lot-aware fees, settlement basis, lifecycle, 1R, Deviation categories. |
-| S172 | 117–133 | Staged evaluation | 622 | tagged | D1, D2, D4, D5, D6, D7 | D9, D16 | Staged evaluation data dependency: derive, obtain one observation frame, evaluate, expirationPayoff. |
-| S173 | 134–138 | Failures and integrity | 704 | core — Module failures section. | D1, D2, D4, D5, D6, D7, D8 | D10, D20 | Typed rejections versus calculation states; callers never convert either into a plausible number. |
+| S167 | 73–87 | Operation contracts › `evaluate` | 1,381 | tagged | D4, D5, D6, D7 | D9, D10, D12, D16, D17 | evaluate: valuation, ongoing risk/reward, condition status, Overrun, independent P&L components and coverage. |
+| S168 | 88–93 | Operation contracts › `expirationPayoff` | 866 | tagged | D1, D7, D8 | D10 | expirationPayoff: Planned and Current piecewise payoff, zero sets, extrema; Not Applicable and multi-expiration Unavailable. |
+| S169 | 94–99 | Operation contracts › `replay` | 1,061 | tagged | D4, D5 | D9, D10, D12, D17 | replay: per-frame corrected tracks with gaps; Stop Discipline episodes and stable fingerprints. |
+| S170 | 100–103 | Operation contracts › `assessChange` | 390 | tagged |  | D15, D18, D19, D20, D21 | assessChange: validates before/candidate records, returns reconciliation and Correction Footprint; never writes. |
+| S171 | 104–117 | Normative analytical rules | 2,200 | tagged | D1, D2, D4, D6, D7, D8 | D10, D12, D14, D17, D20, D21 | Normative rules: Execution ownership, FIFO, lot-aware fees, settlement basis, lifecycle, 1R, Deviation categories. |
+| S172 | 118–134 | Staged evaluation | 622 | tagged | D1, D2, D4, D5, D6, D7 | D9, D16 | Staged evaluation data dependency: derive, obtain one observation frame, evaluate, expirationPayoff. |
+| S173 | 135–139 | Failures and integrity | 704 | core — Module failures section. | D1, D2, D4, D5, D6, D7, D8 | D10, D20 | Typed rejections versus calculation states; callers never convert either into a plausible number. |
 
 ### `specs/design/trade-record.md`
 
@@ -359,7 +366,7 @@ Characters of spec text a session reads (core plus tagged), and an estimate in t
 |---|---|---|---|---|---|---|---|
 | S186 | 3–17 | Contract | 1,139 | core — Module contract/purpose section. | D1, D2, D4, D5, D6, D7, D8 | D9, D16, D19, D22, D24, D25, D27 | Trade Views and Reporting contract: cross-module read boundary, five operations, ReadViewResult states and bindings. |
 | S187 | 18–23 | Labels and navigation | 622 | core — Label and navigation rules apply to every read view and report. | D1, D2, D4, D5, D6, D7 | D16, D22, D23, D24 | Current versus at-time label lenses, inactive status, stable contributor navigation in every view. |
-| S188 | 24–36 | `browseTrades` | 876 | tagged | D1, D2, D4, D5, D6, D7, D8 | D14, D22 | browseTrades filters, Institution expansion, page-only derivation, lifecycle-specific list item contents. |
+| S188 | 24–36 | `browseTrades` | 1,103 | tagged | D1, D2, D4, D5, D6, D7, D8 | D9, D14, D22 | browseTrades filters, Institution expansion, page-only derivation, lifecycle-specific list item contents. |
 | S189 | 37–67 | `getTradeDetail` | 1,519 | tagged | D1, D2, D4, D5, D6, D7, D8 | D10, D12, D13, D15, D17, D20, D21 | getTradeDetail contents and assembly sequence; derive once; reads never repair or record. |
 | S190 | 68–92 | `replayTrade` | 1,267 | tagged |  | D9, D10, D11, D12, D15, D17 | replayTrade: automatically derived lifetime, markers, candles, points, gaps; no user range or interpolation. |
 | S191 | 93–96 | `runReport` | 436 | tagged |  | D16, D22, D24, D25, D27 | runReport: four families; coordinator exhausts population, derives data, delegates meaning to Performance Analysis. |
@@ -393,7 +400,7 @@ Characters of spec text a session reads (core plus tagged), and an estimate in t
 | S209 | 58–69 | Installation and Runtime Readiness | 2,412 | core — Runtime Readiness UI gating applies to every mutating control. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28, RC | UI for readiness pending, install affordance, protection warning, Unsupported, Recovery Only, Integrity Blocked, backup claims. |
 | S210 | 70–81 | Forms and evidence capture | 1,053 | core — Form rules apply to every form-bearing deliverable. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | Accessible forms, chip semantics, exact definition rendering, no implicit evidence, Save as boundary, Hold preselect. |
 | S211 | 82–89 | Trade and Journal presentation | 1,396 | core — Trade Detail and Journal presentation is extended by most deliverables. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | Distinguish Plan, Leg, Position Change, Execution, Position, Lot; Trade Detail concepts; Journal timeline display. |
-| S212 | 90–99 | Numbers, availability, and graphs | 1,140 | core — Calculation-availability rendering is used by every figure-showing deliverable. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | Unrounded values, distinct availability rendering, Missing evidence display, replay candles/points/gaps, accessible graphs. |
+| S212 | 90–99 | Numbers, availability, and graphs | 1,300 | core — Calculation-availability rendering is used by every figure-showing deliverable. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | Unrounded values, distinct availability rendering, Missing evidence display, replay candles/points/gaps, accessible graphs. |
 | S213 | 100–107 | Corrections and destructive actions | 1,202 | tagged | D4, D5, D8 | D13, D14, D15, D17, D18, D19, D20, D21, D23, D26, D28 | Edit/View history, previewed Replace/Void/Rebuild, two-step backup verify, whole-Workspace Restore confirmation and safety backup. |
 | S214 | 108–122 | Screenshot limitations | 731 | core — Applies to all UI work referencing screenshots. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | Prototype screenshot behaviors not to copy; screenshots omit many normative flows. |
 | S215 | 123–127 | Accessibility and responsive acceptance | 508 | core — Accessibility acceptance is cumulative across all UI. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28, RC | Keyboard-only core workflows, names/roles/states, focus, zoom/reflow, non-color cues, live resize; manual verification. |
@@ -457,12 +464,12 @@ Characters of spec text a session reads (core plus tagged), and an estimate in t
 | S248 | 71–81 | Planning and trading facts › Lifecycle meanings | 776 | core — The glossary is core. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | Lifecycle meanings Planned/Open/Closed/Abandoned; Abandonment eligibility; Terminal Disposition applicability. |
 | S249 | 82–92 | Planning and trading facts › Deviation taxonomy | 607 | core — The glossary is core. | D2, D4, D5, D6, D7, D8 | D10, D12, D15, D17, D18, D20, D21, D25 | Fixed Deviation types: Planned-Leg Terms, Entry Size, Unplanned Exposure, Stop Discipline; non-Deviation facts. |
 | S250 | 93–120 | Journal language | 3,865 | core — The glossary is core. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | Terms: Journal, Entry, Entry Type/Definition, Prompt, Option, Anchor, Source, Edit, Addendum, Void, Debt, Due Classification (decision 69), Decline, Action; seven types. |
-| S251 | 121–142 | Market observations and valuation | 2,807 | core — The glossary is core. | D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D15, D16, D17, D19, D20, D21, D24, D25 | Terms: Mark, Manual Mark, Daily Bar, Expected Mark Date/Status, acknowledgment, Stale, Calculation Result, valuation, payoff sets. |
-| S252 | 143–172 | Risk, reward, and outcome language | 2,728 | core — The glossary is core. | D1, D2, D4, D5, D6, D7 | D9, D10, D12, D16, D17, D20, D21, D24, D25 | Terms: Plan Baseline, 1R, original and ongoing risk/reward, Overrun, Entry Quality, Realized R; OR conditions; compact labels. |
-| S253 | 173–188 | Review and reporting language | 1,671 | core — The glossary is core. | D4, D5, D6, D7 | D11, D12, D13, D15, D16, D20, D21, D22, D23, D24, D25, D27 | Terms: Daily Review, Review Date/Cutoff, Report Period presets, Break Down By dimensions, Coverage, Future Insights. |
-| S254 | 189–201 | Key relationships and invariants | 1,316 | core — The glossary is core. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | Key relationships and invariants among Trade, Account, Plan, Position Change, Execution, Lots, Entries, Marks, Review. |
-| S255 | 202–215 | Example dialogue | 850 | core — The glossary is core. | D2, D5, D6, D7 | D10, D20 | Example dialogue: fills in one Position Change, explicit Expiration without Close Reason, deferral as Debt. |
-| S256 | 216–225 | Flagged ambiguities and canonical resolutions | 964 | core — The glossary is core. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | Canonical resolutions for Position, Fill, Actual Leg, Closed via, Idea Source, Unavailable, Review complete, Insight. |
+| S251 | 121–146 | Market observations and valuation | 3,896 | core — The glossary is core. | D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D15, D16, D17, D19, D20, D21, D24, D25 | Terms: Mark, Manual Mark, Daily Bar, Expected Mark Date/Status, acknowledgment, Stale, Calculation Result, valuation, payoff sets. |
+| S252 | 147–176 | Risk, reward, and outcome language | 2,728 | core — The glossary is core. | D1, D2, D4, D5, D6, D7 | D9, D10, D12, D16, D17, D20, D21, D24, D25 | Terms: Plan Baseline, 1R, original and ongoing risk/reward, Overrun, Entry Quality, Realized R; OR conditions; compact labels. |
+| S253 | 177–192 | Review and reporting language | 1,671 | core — The glossary is core. | D4, D5, D6, D7 | D11, D12, D13, D15, D16, D20, D21, D22, D23, D24, D25, D27 | Terms: Daily Review, Review Date/Cutoff, Report Period presets, Break Down By dimensions, Coverage, Future Insights. |
+| S254 | 193–205 | Key relationships and invariants | 1,316 | core — The glossary is core. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | Key relationships and invariants among Trade, Account, Plan, Position Change, Execution, Lots, Entries, Marks, Review. |
+| S255 | 206–219 | Example dialogue | 850 | core — The glossary is core. | D2, D5, D6, D7 | D10, D20 | Example dialogue: fills in one Position Change, explicit Expiration without Close Reason, deferral as Debt. |
+| S256 | 220–229 | Flagged ambiguities and canonical resolutions | 964 | core — The glossary is core. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | Canonical resolutions for Position, Fill, Actual Leg, Closed via, Idea Source, Unavailable, Review complete, Insight. |
 
 ### `specs/reference/ui-screenshots/index.md`
 
@@ -485,7 +492,7 @@ Core is read by every deliverable, so it sets the floor of every reading list. T
 - S131 (3,456 chars) `specs/design/overview.md` Approved modules
 - S086 (3,336 chars) `specs/adr/0008-pwa-delivery-and-runtime-readiness.md` (opening)
 - S250 (3,222 chars) `specs/glossary.md` Journal language
-- S251 (2,807 chars) `specs/glossary.md` Market observations and valuation
+- S251 (3,896 chars) `specs/glossary.md` Market observations and valuation
 - S130 (2,790 chars) `specs/design/overview.md` Load-bearing rules
 - S252 (2,728 chars) `specs/glossary.md` Risk, reward, and outcome language
 - S209 (2,412 chars) `specs/design/ui-contract.md` Installation and Runtime Readiness

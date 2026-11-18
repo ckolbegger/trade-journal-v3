@@ -33,7 +33,7 @@ Required now:
 
 Explicitly outside the MVP:
 
-- Live or streaming trading, intraday valuation replay, and theoretical option pricing.
+- Live or streaming trading, intraday valuation replay, and theoretical option pricing as valuation or projection (ADR 0007 allows labelled Estimates that explain an observed Mark).
 - International instruments, non-USD accounting, brokerage cash reconciliation, Account Snapshots, and an account-equity curve.
 - Application login, hosted journal-data storage, automatic synchronization, and merge Restore.
 - Campaign or lineage aggregation, provider-performance analytics, arbitrary Boolean queries, custom date ranges, nested grouping, and a general report builder.

@@ -78,6 +78,7 @@ Accepts one `DerivedTradeState`, an exact observation frame, and any required hi
 - Ongoing Risk to each effective Stop, Worst-Case Ongoing Risk, Incremental Reward, and Plan-R conversions;
 - per-condition Stop and Target status under independent OR semantics;
 - Overrun when price or structure value has crossed a Stop without flattening the applicable Position;
+- the Trade's result at its headline Stop, at its headline Target, at its structural worst case and at its structural maximum, and where the marked result stands between them (plan decision 117, 2026-11-17);
 - Mark-dependent Deviation occurrences and the observation binding used.
 
 Current calculations use only remaining open exposure, effective Management Revisions, and eligible exact-date Marks. A stale observation is context, not valuation evidence. Underlying-price and structure-value conditions remain independently visible even when a headline nearest boundary is available.
@@ -92,7 +93,7 @@ The operation performs no theoretical pricing. Co-expiring option structures of 
 
 ### `replay`
 
-Accepts one corrected Trade snapshot and an ordered series of explicit Mark frames over a caller-specified relevant lifetime. It returns corrected Position, realized and marked results, lifecycle transitions, management, condition status, Deviations, Journal navigation keys, and explicit gaps at each point. It neither selects dates nor carries values through missing evidence.
+Accepts one corrected Trade snapshot and an ordered series of explicit Mark frames over a caller-specified relevant lifetime. It returns corrected Position, realized and marked results, lifecycle transitions, management, condition status, Deviations, Journal navigation keys, and explicit gaps at each point. It neither selects dates nor carries values through missing evidence. For an option it also returns each session's labelled Estimates: Implied Volatility, Share Equivalent and Mark Change Split. No other result reads them (plan decision 117, 2026-11-17).
 
 Stop Discipline is derived as continuous episodes against the effective Stop revisions. An episode begins at the first exact observation demonstrating breach after activation or an observed unbreached state, and ends only with an exact unbreached observation or condition replacement/retirement. A preceding gap means “first observed,” never a fabricated crossing date. Stable episode fingerprints allow atomic create/retain/supersede/Void reconciliation without daily duplicates.
 

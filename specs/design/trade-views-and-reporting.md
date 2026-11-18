@@ -23,7 +23,7 @@ Every report/calculation exposes stable contributor navigation to the represente
 
 ## `browseTrades`
 
-Supports current Lifecycle, Institution, Account, Strategy, Underlying, Trade Tag, Plan IdeaSource, and exact Trade filters, with fixed factual sorts and bounded pagination. Institution expands through all relevant Accounts under one catalog snapshot. Different dimensions use AND and values within one use OR.
+Supports current Lifecycle, Institution, Account, Strategy, Underlying, Trade Tag, Plan IdeaSource, and exact Trade filters, with fixed factual sorts and bounded pagination. The Open list is a single page that is valued in full, and its default order is the Daily Review's attention order at the current Expected Mark Date; Planned and Closed keep their factual sorts (plan decision 117, 2026-11-17). Institution expands through all relevant Accounts under one catalog snapshot. Different dimensions use AND and values within one use OR.
 
 Trade Record selects/indexes membership. Only the page is derived/evaluated. List items have a lifecycle-specific presentation:
 
