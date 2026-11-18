@@ -75,9 +75,9 @@ export async function seriesApp(series: ReplayTestSeries, strategyKey: string, n
   for (const [i, date] of REPLAY_SESSION_DATES.slice(0, options.marksThrough + 1).entries()) {
     const stock = series.underlying[i];
     const held = series.held[i];
-    if (stock != null) await saveMark(app, instrumentKey(underlying), date, stock);
+    if (stock !== null && stock !== undefined) await saveMark(app, instrumentKey(underlying), date, stock);
     // A stock Trade's held Instrument is its Underlying, whose Mark is saved once.
-    if (held != null && leg.instrument.kind === 'Option' && !(options.skipHeldOn ?? []).includes(date)) await saveMark(app, instrumentKey(leg.instrument), date, held);
+    if (held !== null && held !== undefined && leg.instrument.kind === 'Option' && !(options.skipHeldOn ?? []).includes(date)) await saveMark(app, instrumentKey(leg.instrument), date, held);
   }
   for (const { instrument, date, price } of options.extraMarks ?? []) await saveMark(app, instrumentKey(instrument), date, price);
   // A fresh launch, so no read is warmed by the writes.
