@@ -87,7 +87,11 @@ async function expectChartTextInside(scope: Locator, where: string): Promise<voi
       const box = svg.getBoundingClientRect();
       return [...svg.querySelectorAll('text')].flatMap((t) => {
         const r = t.getBoundingClientRect();
-        return r.left < box.left - 0.5 || r.right > box.right + 0.5 ? [`${t.textContent} (${r.left.toFixed(1)} to ${r.right.toFixed(1)} of ${box.left.toFixed(1)} to ${box.right.toFixed(1)})`] : [];
+        const sideways = r.left < box.left - 0.5 || r.right > box.right + 0.5;
+        const vertical = r.top < box.top - 0.5 || r.bottom > box.bottom + 0.5;
+        return sideways || vertical
+          ? [`${t.textContent} (${r.left.toFixed(1)} to ${r.right.toFixed(1)} of ${box.left.toFixed(1)} to ${box.right.toFixed(1)}; ${r.top.toFixed(1)} to ${r.bottom.toFixed(1)} of ${box.top.toFixed(1)} to ${box.bottom.toFixed(1)})`]
+          : [];
       });
     });
     expect(outside, `${where}: chart text outside its chart`).toEqual([]);
