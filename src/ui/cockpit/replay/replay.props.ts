@@ -176,7 +176,18 @@ function valueOf(result: CalculationResult<Rational> | undefined, format: (value
 }
 
 type Row = ReadoutGroup['rows'][number];
-const row = (label: string, value: ReadoutValue, change?: string): Row => ({ label, value, ...(change !== undefined && { change }) });
+const row = (label: string, value: ReadoutValue, change?: string, pnl?: ReadoutValue, heading?: string): Row => ({
+  label,
+  value,
+  ...(change !== undefined && { change }),
+  ...(pnl !== undefined && { pnl }),
+  ...(heading !== undefined && { heading }),
+});
+// The Max reward row: "No cap above" with no result to show when unbounded, else its amount and the Trade's result there.
+function maxRewardRow(f: NonNullable<ViewSession['figures']>, amount: ReadoutValue): Row {
+  if (f.maximumIncrementalReward.kind === 'Unbounded') return row('At Max reward', { kind: 'Unbounded', text: 'No cap above' });
+  return row('At Max reward', amount, undefined, valueOf(f.outcomes?.atMaxReward, signedMoney));
+}
 
 // How it is going (W43): the Trade P&L as the headline words it.
 function goingGroup(session: ViewSession): ReadoutGroup {
@@ -220,12 +231,14 @@ function stakeGroup(view: TradeReplayView, session: ViewSession): ReadoutGroup |
   const stopOverrunLabel = triggered ? 'Stop Overrun' : "Past Stop's amount";
   const targetOverrunLabel = triggered ? 'Target Overrun' : "Past Target's amount";
   const rows = [
-    stopOverrun ? row(stopOverrunLabel, stopOverrun) : row('Risk to stop', valueOf(f.ongoingRiskToStop, money, f.ongoingRiskToStopInPlanR), changeWords(session.riskChange)),
-    row('Result at the Stop', valueOf(f.outcomes?.atStop, signedMoney)),
-    row('Worst case', valueOf(f.worstCaseOngoingRisk, money, f.worstCaseOngoingRiskInPlanR)),
-    targetOverrun ? row(targetOverrunLabel, targetOverrun) : row('Reward to target', valueOf(f.incrementalRewardToTarget, money, f.incrementalRewardToTargetInPlanR), changeWords(session.rewardChange)),
-    row('Result at the Target', valueOf(f.outcomes?.atTarget, signedMoney)),
-    row('Max reward', f.maximumIncrementalReward.kind === 'Unbounded' ? { kind: 'Unbounded', text: 'No cap above' } : valueOf(f.maximumIncrementalReward, money, f.maximumIncrementalRewardInPlanR)),
+    stopOverrun
+      ? row(stopOverrunLabel, stopOverrun, undefined, valueOf(f.outcomes?.atStop, signedMoney), 'Current Risk')
+      : row('At Stop', valueOf(f.ongoingRiskToStop, money, f.ongoingRiskToStopInPlanR), changeWords(session.riskChange), valueOf(f.outcomes?.atStop, signedMoney), 'Current Risk'),
+    row('At Worst case', valueOf(f.worstCaseOngoingRisk, money, f.worstCaseOngoingRiskInPlanR), undefined, valueOf(f.outcomes?.atWorstCase, signedMoney)),
+    targetOverrun
+      ? row(targetOverrunLabel, targetOverrun, undefined, valueOf(f.outcomes?.atTarget, signedMoney), 'Remaining Reward')
+      : row('At Target', valueOf(f.incrementalRewardToTarget, money, f.incrementalRewardToTargetInPlanR), changeWords(session.rewardChange), valueOf(f.outcomes?.atTarget, signedMoney), 'Remaining Reward'),
+    maxRewardRow(f, valueOf(f.maximumIncrementalReward, money, f.maximumIncrementalRewardInPlanR)),
     ending ? row('Reward to risk', figure(ending)) : row('Reward to risk', valueOf(f.rewardRiskNow, ratioWords), view.planColumn ? `(Plan ${ratioWords(view.planColumn.rewardRisk)})` : undefined),
   ];
   return { title: 'At stake from here, whole Position', rows };
@@ -285,12 +298,10 @@ function gapStakeGroup(session: ViewSession): ReadoutGroup | undefined {
   const noMark = { kind: 'Unavailable', text: 'No Mark' } as const;
   const standing = (result: CalculationResult<Rational>, inR: CalculationResult<Rational>) => (result.kind === 'Value' ? valueOf(result, money, inR) : noMark);
   const rows = [
-    row('Risk to stop', noMark),
-    row('Result at the Stop', valueOf(outcomes.atStop, signedMoney)),
-    row('Worst case', standing(f.worstCaseOngoingRisk, f.worstCaseOngoingRiskInPlanR)),
-    row('Reward to target', noMark),
-    row('Result at the Target', valueOf(outcomes.atTarget, signedMoney)),
-    row('Max reward', f.maximumIncrementalReward.kind === 'Unbounded' ? { kind: 'Unbounded', text: 'No cap above' } : standing(f.maximumIncrementalReward, f.maximumIncrementalRewardInPlanR)),
+    row('At Stop', noMark, undefined, valueOf(outcomes.atStop, signedMoney), 'Current Risk'),
+    row('At Worst case', standing(f.worstCaseOngoingRisk, f.worstCaseOngoingRiskInPlanR), undefined, valueOf(outcomes.atWorstCase, signedMoney)),
+    row('At Target', noMark, undefined, valueOf(outcomes.atTarget, signedMoney), 'Remaining Reward'),
+    maxRewardRow(f, standing(f.maximumIncrementalReward, f.maximumIncrementalRewardInPlanR)),
     row('Reward to risk', noMark),
   ];
   return { title: 'At stake from here, whole Position', rows };
@@ -326,11 +337,16 @@ function tableRowOf(view: TradeReplayView, session: ViewSession, marks: ReadoutG
       ...marks.rows.map((r) => r.value.text),
       cellOf(session.tradePnl, signedMoney, marked),
       session.realizedPnl.compare(ZERO) !== 0 ? signedMoney(session.realizedPnl) : '',
+      // The results, the Worst case and the Max reward read no Mark (A248), so they stand on a session without one.
       cellOf(f?.ongoingRiskToStop, money, marked),
-      cellOf(f?.incrementalRewardToTarget, money, marked),
-      // The two results read no Mark (A248), so they stand on a session without one.
       cellOf(f?.outcomes?.atStop, signedMoney, marked || f?.outcomes?.atStop.kind === 'Value'),
+      cellOf(f?.worstCaseOngoingRisk, money, marked || f?.worstCaseOngoingRisk.kind === 'Value'),
+      cellOf(f?.outcomes?.atWorstCase, signedMoney, marked || f?.outcomes?.atWorstCase.kind === 'Value'),
+      cellOf(f?.incrementalRewardToTarget, money, marked),
       cellOf(f?.outcomes?.atTarget, signedMoney, marked || f?.outcomes?.atTarget.kind === 'Value'),
+      // No cap, so nothing to end at: the readout's words, and an empty cell.
+      f?.maximumIncrementalReward.kind === 'Unbounded' ? 'No cap above' : cellOf(f?.maximumIncrementalReward, money, marked || f?.maximumIncrementalReward.kind === 'Value'),
+      f?.maximumIncrementalReward.kind === 'Unbounded' ? '' : cellOf(f?.outcomes?.atMaxReward, signedMoney, marked || f?.outcomes?.atMaxReward.kind === 'Value'),
       triggerOf(view, session, 'Stop'),
       triggerOf(view, session, 'Target'),
     ],
@@ -385,8 +401,8 @@ function plotSessionOf(view: TradeReplayView, index: number): PlotSession {
     // What is at stake from here, tagged at the slider's session: the risk unless the Stop is breached, the reward unless the Target is reached.
     ...(risk?.kind === 'Value' && (zone !== 'PastStop' || reward?.kind === 'Value') && {
       stake: {
-        ...(zone !== 'PastStop' && { riskLabel: `Risk to stop ${chartMoney(risk.value)}`, riskShortLabel: `Risk ${chartMoney(risk.value)}` }),
-        ...(reward?.kind === 'Value' && zone !== 'PastTarget' && { rewardLabel: `Reward to target ${chartMoney(reward.value)}`, rewardShortLabel: `Reward ${chartMoney(reward.value)}` }),
+        ...(zone !== 'PastStop' && { riskLabel: `Current Risk ${chartMoney(risk.value)}`, riskShortLabel: `Risk ${chartMoney(risk.value)}` }),
+        ...(reward?.kind === 'Value' && zone !== 'PastTarget' && { rewardLabel: `Remaining Reward ${chartMoney(reward.value)}`, rewardShortLabel: `Reward ${chartMoney(reward.value)}` }),
       },
     }),
     markers: (session.markers ?? []).map(plotMarkerOf),
@@ -473,7 +489,7 @@ export function replayProps(view: TradeReplayView, { Plot, initialSession, onSes
     previousLabel: 'Previous session',
     nextLabel: 'Next session',
     tableTitle: 'Session by session',
-    tableColumns: [`${underlying} Mark`, ...(contract ? [`${contract.right} Mark`] : []), 'Trade P&L', 'Banked', 'Risk to stop', 'Reward to target', 'Result at the Stop', 'Result at the Target', 'Stop', 'Target'],
+    tableColumns: [`${underlying} Mark`, ...(contract ? [`${contract.right} Mark`] : []), 'Trade P&L', 'Banked', 'Current Risk at Stop', 'P&L at Stop', 'Current Risk at Worst case', 'P&L at Worst case', 'Remaining Reward at Target', 'P&L at Target', 'Remaining Reward at Max reward', 'P&L at Max reward', 'Stop', 'Target'],
     plotBase: plotBaseOf(view),
     Plot,
     ...(onSessionChange && { onSessionChange }),

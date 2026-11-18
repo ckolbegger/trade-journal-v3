@@ -189,6 +189,8 @@ export const pnlChart = (scope: Locator): Locator => scope.locator('svg.pnl-char
 export const chartText = (chart: Locator): Promise<string[]> => chart.locator('text').allTextContents();
 // A readout row's value, by its name ("Trade P&L", "Banked", "Open", "Stop Overrun" ...).
 export const readoutValue = (scope: Locator, row: string): Locator => scope.locator(`.replay-readout-row[data-row="${row}"] .replay-value`);
+// The Trade's result beside a stake row's amount ("At Stop", "At Worst case", "At Target", "At Max reward"): the "P&L" figure.
+export const readoutPnl = (scope: Locator, row: string): Locator => scope.locator(`.replay-readout-row[data-row="${row}"] .replay-pnl-value`);
 // The folded "Session by session" table: opened on first use, then a row's cells (every column after the Session) by its date.
 export async function openTable(scope: Locator): Promise<Locator> {
   const details = scope.locator('details.replay-table');

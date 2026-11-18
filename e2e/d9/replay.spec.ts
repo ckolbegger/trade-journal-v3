@@ -1,5 +1,5 @@
 import {
-  BREN, build, chartText, closeOf, expect, going, headline, hits, openDrawer, openTable, pnlChart, priceStrip, readoutValue, replay, seek, sessionLabels, slider, sliderValue, stake, tableRow, test,
+  BREN, build, chartText, closeOf, expect, going, headline, hits, openDrawer, openTable, pnlChart, priceStrip, readoutPnl, readoutValue, replay, seek, sessionLabels, slider, sliderValue, stake, tableRow, test,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
@@ -33,18 +33,18 @@ test.describe('B9.1 Replay in Trade Detail', () => {
     expect(await chartText(pnlChart(scope))).toEqual(
       expect.arrayContaining([
         'Trade P&L · dollars for the whole Position, between the result at the Stop and at the Target',
-        'Stop +$316', 'Target +$956', 'Break-even', 'Banked +$478', 'Worst case +$156', '$32 past the Target', 'Risk to stop $672', 'Sold 2 at $4.00',
+        'Stop +$316', 'Target +$956', 'Break-even', 'Banked +$478', 'Worst case +$156', '$32 past the Target', 'Current Risk $672', 'Sold 2 at $4.00',
       ]),
     );
     // W43: the readout's rows, with the Open row beside Banked.
     await expect(readoutValue(scope, 'Trade P&L')).toHaveText('+$988.00 · 3.05R');
     await expect(readoutValue(scope, 'Banked')).toHaveText('+$478.00');
     await expect(readoutValue(scope, 'Open')).toHaveText('+$510.00');
-    await expect(readoutValue(scope, 'Risk to stop')).toHaveText('$672.00 · 2.07R');
-    await expect(readoutValue(scope, 'Result at the Stop')).toHaveText('+$316.00');
-    await expect(readoutValue(scope, 'Result at the Target')).toHaveText('+$956.00');
+    await expect(readoutValue(scope, 'At Stop')).toHaveText('$672.00 · 2.07R');
+    await expect(readoutPnl(scope, 'At Stop')).toHaveText('+$316.00');
+    await expect(readoutPnl(scope, 'Target Overrun')).toHaveText('+$956.00');
     await expect(readoutValue(scope, 'Target Overrun')).toHaveText('$32.00 · 0.10R');
-    await expect(readoutValue(scope, 'Max reward')).toHaveText('No cap above');
+    await expect(readoutValue(scope, 'At Max reward')).toHaveText('No cap above');
     await expect(readoutValue(scope, 'Reward to risk')).toHaveText('Target reached');
     await context.close();
   });
@@ -64,10 +64,15 @@ test.describe('B9.1 Replay in Trade Detail', () => {
     expect(await chartText(pnlChart(scope))).toEqual(expect.arrayContaining(['Stop +$316', 'Target +$956', '$26 past the Target', 'Sold 2 at $4.00']));
     // The two lines step at the sale: the Stop line's result is −$324 until Wed 11-11 and +$316 from Thu 11-12; the Target line does not move.
     const table = await openTable(scope);
-    const columns = ['BREN Mark', 'Call Mark', 'Trade P&L', 'Banked', 'Risk to stop', 'Reward to target', 'Result at the Stop', 'Result at the Target', 'Stop', 'Target', 'Events'];
+    const columns = [
+      'BREN Mark', 'Call Mark', 'Trade P&L', 'Banked',
+      'Current Risk at Stop', 'P&L at Stop', 'Current Risk at Worst case', 'P&L at Worst case',
+      'Remaining Reward at Target', 'P&L at Target', 'Remaining Reward at Max reward', 'P&L at Max reward',
+      'Stop', 'Target', 'Events',
+    ];
     await expect(table.locator('thead th')).toHaveText(['Session', ...columns]);
-    await expect(tableRow(table, 'Wed Nov 11').locator('td')).toHaveText(['101.80', '$2.91', '+$520.00', '', '$844.00', '$436.00', '−$324.00', '+$956.00', '$0.80', '$4.00', '']);
-    await expect(tableRow(table, 'Thu Nov 12').locator('td')).toHaveText(['103.60', '$4.13', '+$982.00', '+$478.00', '$666.00', '$0.00', '+$316.00', '+$956.00', '$0.80', '$4.00', 'Sold 2 at $4.00']);
+    await expect(tableRow(table, 'Wed Nov 11').locator('td')).toHaveText(['101.80', '$2.91', '+$520.00', '', '$844.00', '−$324.00', '$1,164.00', '−$644.00', '$436.00', '+$956.00', 'No cap above', '', '$0.80', '$4.00', '']);
+    await expect(tableRow(table, 'Thu Nov 12').locator('td')).toHaveText(['103.60', '$4.13', '+$982.00', '+$478.00', '$666.00', '+$316.00', '$826.00', '+$156.00', '$0.00', '+$956.00', 'No cap above', '', '$0.80', '$4.00', 'Sold 2 at $4.00']);
     // In the chart the Stop line has one vertical step (at the sale) and the Target line has none; the banked band is drawn.
     await expect(pnlChart(scope).locator('path.result-line.stop')).toHaveAttribute('d', /V[\d.]+H[\d.]+$/);
     expect(await pnlChart(scope).locator('path.result-line.stop').getAttribute('d')).toMatch(/^[^V]*V[^V]*$/);
@@ -88,6 +93,24 @@ test.describe('B9.1 Replay in Trade Detail', () => {
     await context.close();
   });
 
+  test('should hold the chart’s Worst case figure in the readout’s At Worst case row and in the table (C9.2)', async ({ profile }) => {
+    test.setTimeout(240_000);
+    const { context, page } = await build(profile, BREN, closeOf('2026-11-16'), 10);
+    await openDrawer(page, 'Replay');
+    const scope = replay(page);
+    await seek(page, scope, 'ArrowLeft', 2);
+    await expect(sliderValue(scope)).toHaveText('Thu Nov 12 · 9 of 11');
+    const label = (await chartText(pnlChart(scope))).find((t) => t.startsWith('Worst case '));
+    expect(label).toBe('Worst case +$156');
+    const figure = `${label!.slice('Worst case '.length)}.00`;
+    await expect(readoutPnl(scope, 'At Worst case')).toHaveText(figure);
+    await expect(scope.locator('.replay-readout-row[data-row="At Worst case"]')).toContainText(`P&L ${figure}`);
+    const table = await openTable(scope);
+    const headers = await table.locator('thead th').allTextContents();
+    await expect(tableRow(table, 'Thu Nov 12').locator('td').nth(headers.indexOf('P&L at Worst case') - 1)).toHaveText(figure);
+    await context.close();
+  });
+
   test('should step back to Mon 11-02 by keyboard with the first session, no band and no sale, and nothing of a later session', async ({ profile }) => {
     test.setTimeout(240_000);
     const { context, page } = await build(profile, BREN, closeOf('2026-11-16'), 10);
@@ -99,9 +122,9 @@ test.describe('B9.1 Replay in Trade Detail', () => {
     await expect(going(scope)).toHaveText('Ahead: 3% of the way to the Target.');
     await expect(stake(scope)).toHaveText('From here: $352.00 at risk to the Stop · $928.00 more to the Target · 2.64 to 1 (the Plan was 2.95 to 1).');
     await expect(scope.locator('.replay-readout-row[data-row="Reward to risk"]')).toHaveText('Reward to risk2.64 to 1 (Plan 2.95 to 1)');
-    await expect(readoutValue(scope, 'Result at the Stop')).toHaveText('−$324.00');
-    await expect(readoutValue(scope, 'Result at the Target')).toHaveText('+$956.00');
-    expect(await chartText(pnlChart(scope))).toEqual(expect.arrayContaining(['Stop −$324', 'Target +$956', 'Risk to stop $352', 'Reward to target $928']));
+    await expect(readoutPnl(scope, 'At Stop')).toHaveText('−$324.00');
+    await expect(readoutPnl(scope, 'At Target')).toHaveText('+$956.00');
+    expect(await chartText(pnlChart(scope))).toEqual(expect.arrayContaining(['Stop −$324', 'Target +$956', 'Current Risk $352', 'Remaining Reward $928']));
     await expect(pnlChart(scope).locator('path.banked-band')).toHaveCount(0);
     for (const later of LATER['Mon Nov 2']) await expect(scope).not.toContainText(later);
     const table = await openTable(scope);

@@ -1,5 +1,15 @@
-import { useState, type KeyboardEvent } from 'react';
-import type { ReplayProps } from './replay.types.ts';
+import { Fragment, useState, type KeyboardEvent } from 'react';
+import type { ReadoutRow, ReplayProps } from './replay.types.ts';
+
+// A group's rows in runs, a new run beginning at each row that carries a heading.
+function rowsUnderHeadings(rows: readonly ReadoutRow[]): ReadoutRow[][] {
+  const runs: ReadoutRow[][] = [];
+  for (const row of rows) {
+    if (row.heading || runs.length === 0) runs.push([row]);
+    else runs[runs.length - 1]!.push(row);
+  }
+  return runs;
+}
 
 // A255: the frame owns the headline, the slider and the reveal rule. It selects finished values; it works out none.
 export function ReplayFrame({ tradeKey, sessions, initialSession, sliderLabel, previousLabel, nextLabel, tableTitle, tableColumns, plotBase, Plot, renderSince, renderChips, renderLinks, onSessionChange }: ReplayProps) {
@@ -74,8 +84,12 @@ export function ReplayFrame({ tradeKey, sessions, initialSession, sliderLabel, p
         {session.readout.map((group) => (
           <section key={group.title} className="replay-readout-group">
             <h3>{group.title}</h3>
+            {/* A row with a heading opens a new list under that heading ("Current Risk", "Remaining Reward"); a list holds only its terms. */}
+            {rowsUnderHeadings(group.rows).map((part) => (
+            <Fragment key={part[0]!.label}>
+            {part[0]!.heading && <h4 className="replay-readout-heading">{part[0]!.heading}</h4>}
             <dl>
-              {group.rows.map((row) => (
+              {part.map((row) => (
                 <div key={row.label} className="replay-readout-row" data-row={row.label}>
                   <dt>{row.label}</dt>
                   <dd>
@@ -84,10 +98,21 @@ export function ReplayFrame({ tradeKey, sessions, initialSession, sliderLabel, p
                       {row.value.text}
                     </span>
                     {row.change && <span className="replay-change"> {row.change}</span>}
+                    {/* Where the Trade would end, beside the amount from here. */}
+                    {row.pnl && (
+                      <span className="replay-pnl">
+                        {' · P&L '}
+                        <span className="replay-pnl-value" data-kind={row.pnl.kind}>
+                          {row.pnl.text}
+                        </span>
+                      </span>
+                    )}
                   </dd>
                 </div>
               ))}
             </dl>
+            </Fragment>
+            ))}
           </section>
         ))}
       </div>

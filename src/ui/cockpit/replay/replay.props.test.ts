@@ -369,7 +369,12 @@ describe('replay.props: the frame, the slider and the table columns (W42, W45)',
     const tue = session({ date: '2026-11-03', pnl: -12, pnlR: frac(-12, 324), standing: value({ zone: 'Between', share: frac(12, 324) }) });
     const props = replayProps(fullView([brenMon1102, tue]), { Plot, initialSession: '2026-11-02' });
     expect(props).toMatchObject({ tradeKey: 'T-1', initialSession: '2026-11-02', sliderLabel: 'Session', previousLabel: 'Previous session', nextLabel: 'Next session', tableTitle: 'Session by session', Plot });
-    expect(props.tableColumns).toEqual(['BREN Mark', 'Call Mark', 'Trade P&L', 'Banked', 'Risk to stop', 'Reward to target', 'Result at the Stop', 'Result at the Target', 'Stop', 'Target']);
+    expect(props.tableColumns).toEqual([
+      'BREN Mark', 'Call Mark', 'Trade P&L', 'Banked',
+      'Current Risk at Stop', 'P&L at Stop', 'Current Risk at Worst case', 'P&L at Worst case',
+      'Remaining Reward at Target', 'P&L at Target', 'Remaining Reward at Max reward', 'P&L at Max reward',
+      'Stop', 'Target',
+    ]);
     expect(props.sessions.map((s) => [s.date, s.dateLabel, s.sliderValue])).toEqual([
       ['2026-11-02', 'Mon Nov 2', 'Mon Nov 2 · 1 of 2'],
       ['2026-11-03', 'Tue Nov 3', 'Tue Nov 3 · 2 of 2'],
@@ -427,8 +432,8 @@ describe('replay.props: Session by session (W45)', () => {
     const none = withMarks(session({ date: '2026-11-12', pnl: null }), [markOf(BREN_STOCK, '100.20'), markOf(BREN)]);
     const props = replayProps(fullView([wed, none]), { Plot });
     expect(props.sessions.map((s) => s.tableRow)).toEqual([
-      { dateLabel: 'Wed Nov 11', cells: ['101.80', '$3.20', '+$520.00', '+$478.00', '$352.00', '$928.00', '−$324.00', '+$956.00', '96.00', '104.00'], events: ['Sold 2 at $4.00'] },
-      { dateLabel: 'Thu Nov 12', cells: ['100.20', 'No Mark', 'No Mark', '', 'No Mark', 'No Mark', 'No Mark', 'No Mark', '', ''], events: [] },
+      { dateLabel: 'Wed Nov 11', cells: ['101.80', '$3.20', '+$520.00', '+$478.00', '$352.00', '−$324.00', '$644.00', 'Not applicable: no open position', '$928.00', '+$956.00', 'No cap above', '', '96.00', '104.00'], events: ['Sold 2 at $4.00'] },
+      { dateLabel: 'Thu Nov 12', cells: ['100.20', 'No Mark', 'No Mark', '', ...Array<string>(8).fill('No Mark'), '', ''], events: [] },
     ]);
     // One cell for each column after "Session" and before "Events".
     expect(props.sessions.every((s) => s.tableRow.cells.length === props.tableColumns.length)).toBe(true);
@@ -455,7 +460,7 @@ describe('replay.props: what the plot draws of a session (W39 to W41, W44)', () 
       resultAtTarget: { value: 956, label: 'Target +$956' },
       worstCase: null,
       maxReward: null,
-      stake: { riskLabel: 'Risk to stop $352', riskShortLabel: 'Risk $352', rewardLabel: 'Reward to target $928', rewardShortLabel: 'Reward $928' },
+      stake: { riskLabel: 'Current Risk $352', riskShortLabel: 'Risk $352', rewardLabel: 'Remaining Reward $928', rewardShortLabel: 'Reward $928' },
       markers: [{ id: 'x2', kind: 'Execution', effect: 'Reduced', label: 'Sold 2 at $4.00', shortLabel: 'Sold 2', isEntry: false }],
     });
   });
@@ -482,8 +487,8 @@ describe('replay.props: what the plot draws of a session (W39 to W41, W44)', () 
       worstCase: { value: 156, label: 'Worst case +$156' },
       maxReward: { value: 564, label: 'Max reward +$564' },
       past: { line: 'Target', label: '$182 past the Target' },
-      // Nothing more to reach: only the Risk to stop is tagged.
-      stake: { riskLabel: 'Risk to stop $672', riskShortLabel: 'Risk $672' },
+      // Nothing more to reach: only the Current Risk is tagged.
+      stake: { riskLabel: 'Current Risk $672', riskShortLabel: 'Risk $672' },
     });
     expect(one!.markers).toEqual([
       { id: 'x1', kind: 'Execution', effect: 'Opened', label: 'Bought 4 at $1.68', shortLabel: 'Bought 4', isEntry: true },
@@ -503,7 +508,7 @@ describe('replay.props: what the plot draws of a session (W39 to W41, W44)', () 
       figures: { ongoingRiskToStop: value(usd(0)), incrementalRewardToTarget: value(usd(1080)) },
     });
     const plot = replayProps(view([pastStop]), { Plot }).sessions[0]!.plot;
-    expect(plot.stake).toEqual({ rewardLabel: 'Reward to target $1,080', rewardShortLabel: 'Reward $1,080' });
+    expect(plot.stake).toEqual({ rewardLabel: 'Remaining Reward $1,080', rewardShortLabel: 'Reward $1,080' });
   });
 
   it('should place each session in its own weekday slot, leaving a holiday blank', () => {
@@ -580,8 +585,8 @@ describe('replay.props: the readout of a session in flight (W43)', () => {
       figures: { ongoingRiskToStop: value(usd(0)), incrementalRewardToTarget: value(usd(1080)) },
     });
     const stopRows = rowsOfGroup(replayProps(view([pastStop]), { Plot }), 0, 'At stake from here, whole Position');
-    expect(stopRows).toMatchObject({ 'Stop Overrun': '$180.00 · 0.30R', 'Reward to target': '$1,080.00', 'Reward to risk': 'Stop breached' });
-    expect(stopRows).not.toHaveProperty('Risk to stop');
+    expect(stopRows).toMatchObject({ 'Stop Overrun': '$180.00 · 0.30R', 'At Target': '$1,080.00', 'Reward to risk': 'Stop breached' });
+    expect(stopRows).not.toHaveProperty('At Stop');
     // Past the Target with 2 of 4 contracts sold: the sale's +$478 is banked.
     const pastTarget = session({
       date: '2026-11-13',
@@ -593,8 +598,8 @@ describe('replay.props: the readout of a session in flight (W43)', () => {
     });
     const props = replayProps(view([pastTarget]), { Plot });
     const targetRows = rowsOfGroup(props, 0, 'At stake from here, whole Position');
-    expect(targetRows).toMatchObject({ 'Risk to stop': '$672.00', 'Target Overrun': '$182.00 · 0.56R', 'Reward to risk': 'Target reached' });
-    expect(targetRows).not.toHaveProperty('Reward to target');
+    expect(targetRows).toMatchObject({ 'At Stop': '$672.00', 'Target Overrun': '$182.00 · 0.56R', 'Reward to risk': 'Target reached' });
+    expect(targetRows).not.toHaveProperty('At Target');
     expect(rowsOfGroup(props, 0, 'How it is going')).toEqual({ 'Trade P&L': '+$1,138.00', Banked: '+$478.00' });
   });
 
@@ -639,13 +644,15 @@ describe('replay.props: the readout of a session in flight (W43)', () => {
     const props = replayProps(fullView([none], PLAN), { Plot });
     expect(props.sessions[0]!.readout.map((group) => group.title)).toEqual(['How it is going', 'At stake from here, whole Position', 'Marks', 'Position', 'The Plan']);
     expect(rowsOfGroup(props, 0, 'At stake from here, whole Position')).toMatchObject({
-      'Risk to stop': 'No Mark',
-      'Result at the Stop': '−$324.00',
-      'Reward to target': 'No Mark',
-      'Result at the Target': '+$956.00',
+      'At Stop': 'No Mark',
+      'At Target': 'No Mark',
       'Reward to risk': 'No Mark',
     });
-    expect(props.sessions[0]!.tableRow.cells.slice(-6, -2)).toEqual(['No Mark', 'No Mark', '−$324.00', '+$956.00']);
+    // What the Trade would end at needs no Mark, so it stands beside the "No Mark".
+    expect(rowNamed(props, 0, 'At Stop')!.pnl).toMatchObject({ text: '−$324.00' });
+    expect(rowNamed(props, 0, 'At Target')!.pnl).toMatchObject({ text: '+$956.00' });
+    const cells = props.sessions[0]!.tableRow.cells;
+    expect([cells[props.tableColumns.indexOf('Current Risk at Stop')], cells[props.tableColumns.indexOf('P&L at Stop')], cells[props.tableColumns.indexOf('Remaining Reward at Target')], cells[props.tableColumns.indexOf('P&L at Target')]]).toEqual(['No Mark', '−$324.00', 'No Mark', '+$956.00']);
   });
 
   it('should group How it is going, At stake from here, Marks, Position and The Plan, each figure finished, with its change since the earlier session', () => {
@@ -655,12 +662,10 @@ describe('replay.props: the readout of a session in flight (W43)', () => {
       [
         'At stake from here, whole Position',
         [
-          ['Risk to stop', 'Figure', '$352.00 · 1.09R', 'down $60.00 since Tue Nov 10'],
-          ['Result at the Stop', 'Figure', '−$324.00', undefined],
-          ['Worst case', 'Figure', '$644.00 · 1.99R', undefined],
-          ['Reward to target', 'Figure', '$928.00 · 2.86R', 'up $60.00 since Tue Nov 10'],
-          ['Result at the Target', 'Figure', '+$956.00', undefined],
-          ['Max reward', 'Unbounded', 'No cap above', undefined],
+          ['At Stop', 'Figure', '$352.00 · 1.09R', 'down $60.00 since Tue Nov 10'],
+          ['At Worst case', 'Figure', '$644.00 · 1.99R', undefined],
+          ['At Target', 'Figure', '$928.00 · 2.86R', 'up $60.00 since Tue Nov 10'],
+          ['At Max reward', 'Unbounded', 'No cap above', undefined],
           ['Reward to risk', 'Figure', '2.64 to 1', '(Plan 2.95 to 1)'],
         ],
       ],
@@ -681,5 +686,87 @@ describe('replay.props: the readout of a session in flight (W43)', () => {
         ],
       ],
     ]);
+  });
+});
+
+// T9.19-B4 (PD4): what is at stake from here is separate from where the Trade would end.
+const STAKE = 'At stake from here, whole Position';
+const stakeRows = (props: ReturnType<typeof replayProps>, index: number) => props.sessions[index]!.readout.find((group) => group.title === STAKE)!.rows;
+const rowNamed = (props: ReturnType<typeof replayProps>, index: number, label: string) => stakeRows(props, index).find((r) => r.label === label);
+
+// R-BREN-U on Thu 11-12: 2 of the 4 contracts sold, the Target passed by $26; the Worst case still at risk $832.00 (2.57R), the Trade ending +$156 there.
+const brenThu1112 = session({
+  date: '2026-11-12',
+  held: 2,
+  pnl: 982,
+  realized: 478,
+  standing: value({ zone: 'PastTarget', pastBy: { dollars: usd(26), r: frac(26, 324), crossed: true }, openProfitAtRisk: usd(504) }),
+  figures: {
+    ongoingRiskToStop: value(usd(672)),
+    ongoingRiskToStopInPlanR: value(frac(672, 324)),
+    worstCaseOngoingRisk: value(usd(832)),
+    worstCaseOngoingRiskInPlanR: value(frac(832, 324)),
+    incrementalRewardToTarget: value(usd(0)),
+    maximumIncrementalReward: UNBOUNDED,
+  },
+  outcomes: { atStop: value(usd(316)), atTarget: value(usd(956)), atWorstCase: value(usd(156)) },
+});
+
+describe('replay.props: the readout separates what is at stake from where the Trade ends (T9.19-B4)', () => {
+  it('should head Current Risk and Remaining Reward, and give At Stop and At Worst case their amount and their P&L, with none of the six old row names', () => {
+    const props = replayProps(fullView([brenThu1112], PLAN), { Plot });
+    const rows = stakeRows(props, 0);
+    expect(rows.filter((r) => r.heading).map((r) => [r.heading, r.label])).toEqual([['Current Risk', 'At Stop'], ['Remaining Reward', 'Target Overrun']]);
+    expect(rowNamed(props, 0, 'At Stop')).toMatchObject({ value: { kind: 'Figure', text: '$672.00 · 2.07R' }, pnl: { kind: 'Figure', text: '+$316.00' } });
+    expect(rowNamed(props, 0, 'At Worst case')).toMatchObject({ value: { kind: 'Figure', text: '$832.00 · 2.57R' }, pnl: { kind: 'Figure', text: '+$156.00' } });
+    // The overrun stands in the place of "At Target", and the Trade's result at the Target stays beside it.
+    expect(rowNamed(props, 0, 'Target Overrun')).toMatchObject({ value: { text: '$26.00 · 0.08R' }, pnl: { text: '+$956.00' } });
+    const labels = rows.map((r) => r.label);
+    for (const old of ['Risk to stop', 'Result at the Stop', 'Worst case', 'Reward to target', 'Result at the Target', 'Max reward']) expect(labels).not.toContain(old);
+  });
+
+  it('should give At Max reward its amount and P&L for a short put, and No cap above with no P&L for a long call', () => {
+    const dale = session({
+      date: '2026-11-12',
+      instrument: DALE,
+      held: -3,
+      pnl: 100,
+      standing: value({ zone: 'Between', share: frac(1, 10) }),
+      figures: {
+        ongoingRiskToStop: value(usd(543)),
+        incrementalRewardToTarget: value(usd(1284)),
+        maximumIncrementalReward: value(usd(464)),
+        maximumIncrementalRewardInPlanR: value(frac(464, 1536)),
+      },
+      outcomes: { atMaxReward: value(usd(564)) },
+    });
+    const props = replayProps(view([dale]), { Plot });
+    expect(rowNamed(props, 0, 'At Max reward')).toMatchObject({ value: { kind: 'Figure', text: '$464.00 · 0.30R' }, pnl: { kind: 'Figure', text: '+$564.00' } });
+    const long = replayProps(fullView([brenThu1112], PLAN), { Plot });
+    const unbounded = rowNamed(long, 0, 'At Max reward')!;
+    expect(unbounded.value).toEqual({ kind: 'Unbounded', text: 'No cap above' });
+    expect(unbounded.pnl).toBeUndefined();
+  });
+
+  it('should name the table columns for each condition with its from-here column and its P&L column, and match the Worst case P&L cell to the chart label', () => {
+    const props = replayProps(fullView([brenThu1112], PLAN), { Plot });
+    expect(props.tableColumns).toEqual([
+      'BREN Mark', 'Call Mark', 'Trade P&L', 'Banked',
+      'Current Risk at Stop', 'P&L at Stop', 'Current Risk at Worst case', 'P&L at Worst case',
+      'Remaining Reward at Target', 'P&L at Target', 'Remaining Reward at Max reward', 'P&L at Max reward',
+      'Stop', 'Target',
+    ]);
+    const cells = props.sessions[0]!.tableRow.cells;
+    const cell = (name: string) => cells[props.tableColumns.indexOf(name)];
+    expect(cell('Current Risk at Worst case')).toBe('$832.00');
+    expect(cell('P&L at Worst case')).toBe('+$156.00');
+    expect(cell('P&L at Stop')).toBe('+$316.00');
+    // The chart's label figure is the table's P&L at the Worst case.
+    expect(props.sessions[0]!.plot.worstCase!.label).toBe(`Worst case ${cell('P&L at Worst case')!.replace(/\.00$/, '')}`);
+  });
+
+  it('should tag what is at stake Current Risk and Remaining Reward, with Risk and Reward as the phone forms', () => {
+    const props = replayProps(fullView([brenMon1102], PLAN), { Plot });
+    expect(props.sessions[0]!.plot.stake).toEqual({ riskLabel: 'Current Risk $352', riskShortLabel: 'Risk $352', rewardLabel: 'Remaining Reward $928', rewardShortLabel: 'Reward $928' });
   });
 });

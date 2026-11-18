@@ -111,9 +111,13 @@ export type ReadoutValue =
   | { readonly kind: 'NotApplicable'; readonly text: string };
 
 export interface ReadoutRow {
-  // "Trade P&L", "Risk to stop", "Result at the Stop".
+  // "Trade P&L", "At Stop", "At Worst case".
   readonly label: string;
   readonly value: ReadoutValue;
+  // Where the Trade would end at that point, beside the amount from here; absent where there is none ("No cap above").
+  readonly pnl?: ReadoutValue;
+  // "Current Risk" or "Remaining Reward": a heading shown above the row that opens its part of the group.
+  readonly heading?: string;
   // "down $150.00 since Fri Nov 13"; absent when the figure has no earlier one.
   readonly change?: string;
   // Set for a figure the charts draw, which the readout must hold too.

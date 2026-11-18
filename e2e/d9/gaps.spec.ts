@@ -1,4 +1,4 @@
-import { AXIO, build, chartText, closeOf, CORV, expect, going, headline, openDrawer, openTable, pnlChart, priceStrip, readoutValue, replay, seek, sliderValue, stake, tableRow, test } from './support.ts';
+import { AXIO, build, chartText, closeOf, CORV, expect, going, headline, openDrawer, openTable, pnlChart, priceStrip, readoutPnl, readoutValue, replay, seek, sliderValue, stake, tableRow, test } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -25,20 +25,20 @@ test.describe('B9.2 A gap, a breach and a sale below the Stop', () => {
     await expect(going(scope)).toHaveText('No Mark.');
     await expect(stake(scope)).toHaveCount(0);
     await expect(readoutValue(scope, 'Put Mark')).toHaveText('No Mark');
-    await expect(readoutValue(scope, 'Result at the Stop')).toHaveText('−$318.00');
-    await expect(readoutValue(scope, 'Result at the Target')).toHaveText('+$867.00');
-    await expect(readoutValue(scope, 'Risk to stop')).toHaveText('No Mark');
+    await expect(readoutPnl(scope, 'At Stop')).toHaveText('−$318.00');
+    await expect(readoutPnl(scope, 'At Target')).toHaveText('+$867.00');
+    await expect(readoutValue(scope, 'At Stop')).toHaveText('No Mark');
     await expect(readoutValue(scope, 'CORV Mark')).toHaveText('76.20');
     await expect(readoutValue(scope, 'Trade P&L')).toHaveText('Mark missing: CORV Nov 20 $80 Put, Tue Nov 10');
     expect(await chartText(pnlChart(scope))).toEqual(expect.arrayContaining(['Stop −$318', 'Target +$867']));
-    expect(await chartText(pnlChart(scope))).not.toContainEqual(expect.stringMatching(/^(Risk to stop|Reward to target)/));
+    expect(await chartText(pnlChart(scope))).not.toContainEqual(expect.stringMatching(/^(Current Risk|Remaining Reward)/));
     // The table says the same: Tuesday's row reads "No Mark" in every cell that needs the Put's Mark, never a carried value (the chart keeps the two result lines, above); Monday's and
     // Wednesday's rows are whole.
     await seek(page, scope, 'End');
     const table = await openTable(scope);
-    await expect(tableRow(table, 'Mon Nov 9').locator('td')).toHaveText(['76.80', '$4.25', '+$642.00', '', '$960.00', '$225.00', '−$318.00', '+$867.00', '$1.05', '$5.00', '']);
-    await expect(tableRow(table, 'Tue Nov 10').locator('td')).toHaveText(['76.20', 'No Mark', 'No Mark', '', 'No Mark', 'No Mark', '−$318.00', '+$867.00', '$1.05', '$5.00', '']);
-    await expect(tableRow(table, 'Wed Nov 11').locator('td')).toHaveText(['75.40', '$5.12', '+$903.00', '', '$1,221.00', '$0.00', '−$318.00', '+$867.00', '$1.05', '$5.00', '']);
+    await expect(tableRow(table, 'Mon Nov 9').locator('td')).toHaveText(['76.80', '$4.25', '+$642.00', '', '$960.00', '−$318.00', '$1,275.00', '−$633.00', '$225.00', '+$867.00', '$22,725.00', '+$23,367.00', '$1.05', '$5.00', '']);
+    await expect(tableRow(table, 'Tue Nov 10').locator('td')).toHaveText(['76.20', 'No Mark', 'No Mark', '', 'No Mark', '−$318.00', 'No Mark', '−$633.00', 'No Mark', '+$867.00', 'No Mark', '+$23,367.00', '$1.05', '$5.00', '']);
+    await expect(tableRow(table, 'Wed Nov 11').locator('td')).toHaveText(['75.40', '$5.12', '+$903.00', '', '$1,221.00', '−$318.00', '$1,536.00', '−$633.00', '$0.00', '+$867.00', '$22,464.00', '+$23,367.00', '$1.05', '$5.00', '']);
     await context.close();
   });
 
@@ -54,16 +54,16 @@ test.describe('B9.2 A gap, a breach and a sale below the Stop', () => {
     await expect(readoutValue(scope, 'Banked')).toHaveText('−$440.00');
     await expect(readoutValue(scope, 'Open')).toHaveText('−$480.00');
     await expect(readoutValue(scope, 'Stop Overrun')).toHaveText('$180.00 · 0.30R');
-    await expect(readoutValue(scope, 'Result at the Stop')).toHaveText('−$740.00');
-    await expect(readoutValue(scope, 'Result at the Target')).toHaveText('+$160.00');
+    await expect(readoutPnl(scope, 'Stop Overrun')).toHaveText('−$740.00');
+    await expect(readoutPnl(scope, 'At Target')).toHaveText('+$160.00');
     await expect(readoutValue(scope, 'Reward to risk')).toHaveText('Stop breached');
     // The two results step at the sale (−$600 to −$740 and +$1,200 to +$160) and the chart names the sale.
     expect(await chartText(pnlChart(scope))).toEqual(expect.arrayContaining(['Stop −$740', 'Target +$160', 'Sold 100 at $45.60']));
     expect(await chartText(priceStrip(scope))).toEqual(expect.arrayContaining(['Stop $47.00', 'Target $56.00']));
     await expect(pnlChart(scope).locator('path.banked-band.loss')).toHaveCount(1);
     const table = await openTable(scope);
-    await expect(tableRow(table, 'Fri Nov 6').locator('td')).toHaveText(['$48.10', '−$380.00', '', '$220.00', '$1,580.00', '−$600.00', '+$1,200.00', '$47.00', '$56.00', '']);
-    await expect(tableRow(table, 'Mon Nov 9').locator('td')).toHaveText(['$45.20', '−$920.00', '−$440.00', '$0.00', '$1,080.00', '−$740.00', '+$160.00', '$47.00', '$56.00', 'Sold 100 at $45.60']);
+    await expect(tableRow(table, 'Fri Nov 6').locator('td')).toHaveText(['$48.10', '−$380.00', '', '$220.00', '−$600.00', '$9,620.00', '−$10,000.00', '$1,580.00', '+$1,200.00', 'No cap above', '', '$47.00', '$56.00', '']);
+    await expect(tableRow(table, 'Mon Nov 9').locator('td')).toHaveText(['$45.20', '−$920.00', '−$440.00', '$0.00', '−$740.00', '$4,520.00', '−$5,440.00', '$1,080.00', '+$160.00', 'No cap above', '', '$47.00', '$56.00', 'Sold 100 at $45.60']);
     await context.close();
   });
 

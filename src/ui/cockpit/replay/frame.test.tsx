@@ -180,10 +180,10 @@ const mixed = (over: Partial<ReplayFrameSession> = {}, count = 11): ReplayProps 
 describe('Replay frame: the readout (W43)', () => {
   const groups: ReplayFrameSession['readout'] = [
     { title: 'How it is going', rows: [{ label: 'Trade P&L', value: { kind: 'Figure', text: '+$988.00' }, drawn: true }, { label: 'Banked', value: { kind: 'Figure', text: '+$478.00' }, drawn: true }] },
-    { title: 'At stake from here, whole Position', rows: [{ label: 'Risk to stop', value: { kind: 'Figure', text: '$672.00' }, drawn: true }, { label: 'Max reward', value: { kind: 'Unbounded', text: 'No cap above' } }] },
+    { title: 'At stake from here, whole Position', rows: [{ label: 'At Stop', value: { kind: 'Figure', text: '$672.00' }, drawn: true }, { label: 'At Max reward', value: { kind: 'Unbounded', text: 'No cap above' } }] },
     { title: 'Marks', rows: [{ label: 'BREN Mark', value: { kind: 'Figure', text: '$110.00' }, drawn: true }] },
     { title: 'Position', rows: [{ label: 'Open', value: { kind: 'Figure', text: '+$510.00' }, drawn: true }] },
-    { title: 'The Plan', rows: [{ label: 'Result at the Stop', value: { kind: 'Figure', text: '+$316.00' }, drawn: true }, { label: 'Result at the Target', value: { kind: 'Figure', text: '+$956.00' }, drawn: true }] },
+    { title: 'The Plan', rows: [{ label: 'At the Stop', value: { kind: 'Figure', text: '+$316.00' }, drawn: true }, { label: 'At the Target', value: { kind: 'Figure', text: '+$956.00' }, drawn: true }] },
   ];
 
   it('should list the slider session under its five groups, with every figure the charts draw', () => {
@@ -199,18 +199,37 @@ describe('Replay frame: the readout (W43)', () => {
       {
         title: 'The Plan',
         rows: [
-          { label: 'Max reward', value: { kind: 'Unbounded', text: 'No cap above' } },
-          { label: 'Result at the Stop', value: { kind: 'Unavailable', text: 'No Mark on Mon Nov 16' } },
+          { label: 'At Max reward', value: { kind: 'Unbounded', text: 'No cap above' } },
+          { label: 'At Stop', value: { kind: 'Unavailable', text: 'No Mark on Mon Nov 16' } },
           { label: 'Stop Overrun', value: { kind: 'NotApplicable', text: 'Not applicable' } },
         ],
       },
     ];
     render(<ReplayFrame {...mixed({ readout: rows })} />);
     const cell = (label: string) => screen.getByText(label).closest('[data-row]')!.querySelector('[data-kind]')!;
-    expect(text(cell('Max reward'))).toBe('No cap above');
-    expect(text(cell('Result at the Stop'))).toBe('No Mark on Mon Nov 16');
+    expect(text(cell('At Max reward'))).toBe('No cap above');
+    expect(text(cell('At Stop'))).toBe('No Mark on Mon Nov 16');
     expect(text(cell('Stop Overrun'))).toBe('Not applicable');
-    expect(new Set(['Max reward', 'Result at the Stop', 'Stop Overrun'].map((l) => attr(cell(l), 'data-kind'))).size).toBe(3);
+    expect(new Set(['At Max reward', 'At Stop', 'Stop Overrun'].map((l) => attr(cell(l), 'data-kind'))).size).toBe(3);
+  });
+
+  it('should show a row heading above its row and the P&L beside the amount from here (T9.19-B4)', () => {
+    const rows: ReplayFrameSession['readout'] = [
+      {
+        title: 'At stake from here, whole Position',
+        rows: [
+          { label: 'At Worst case', heading: 'Current Risk', value: { kind: 'Figure', text: '$832.00 · 2.57R' }, pnl: { kind: 'Figure', text: '+$156.00' } },
+          { label: 'At Max reward', heading: 'Remaining Reward', value: { kind: 'Unbounded', text: 'No cap above' } },
+        ],
+      },
+    ];
+    render(<ReplayFrame {...mixed({ readout: rows })} />);
+    const readout = screen.getByTestId('readout');
+    expect(within(readout).getAllByRole('heading', { level: 4 }).map(text)).toEqual(['Current Risk', 'Remaining Reward']);
+    const worst = readout.querySelector('[data-row="At Worst case"]')!;
+    expect(text(worst.querySelector('.replay-value')!)).toBe('$832.00 · 2.57R');
+    expect(text(worst.querySelector('dd')!)).toBe('$832.00 · 2.57R · P&L +$156.00');
+    expect(readout.querySelector('[data-row="At Max reward"] .replay-pnl')).toBeNull();
   });
 
   it('should give each figure its change since the session it is measured from', () => {

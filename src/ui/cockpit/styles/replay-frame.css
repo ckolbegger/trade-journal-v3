@@ -132,6 +132,14 @@
   border-bottom: 1px solid var(--line);
 }
 
+/* "Current Risk" / "Remaining Reward": a heading line above the row that opens its part of the group. */
+.replay-readout-heading {
+  flex: 0 0 100%;
+  margin: 4px 0 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
 .replay-readout dt {
   color: var(--muted);
 }
