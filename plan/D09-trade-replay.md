@@ -22,7 +22,7 @@ The user has already decided (handoff section 4): D9 builds Corridor; the result
 
 | # | Question | Recommendation | Alternatives and tradeoff |
 |---|---|---|---|
-| P118 | **Size.** 39 tasks, and ten questions for the user (section 12). The drafting guide's limit is 25 tasks or five questions. (Open question 1; **answered 2026-11-17: as recommended**.) | **One breakdown, run as three stages, each with its own session, suites and fresh critic** (section 1.4): **A**, the replay chart; **B**, the option estimates; **C**, the meter and the Open list's order. The benchmark runs once, after stage C. | (a) One run of 39 tasks with a checkpoint critic: no stage gates, but D8R's 28 tasks took 16.6 hours and three critics. (b) Three separate deliverables with their own files and names: the same work, with three sets of handoffs and tags. |
+| P118 | **Size.** 40 tasks, and ten questions for the user (section 12). The drafting guide's limit is 25 tasks or five questions. (Open question 1; **answered 2026-11-17: as recommended**.) | **One breakdown, run as three stages, each with its own session, suites and fresh critic** (section 1.4): **A**, the replay chart; **B**, the option estimates; **C**, the meter and the Open list's order. The benchmark runs once, after stage C. | (a) One run of 39 tasks with a checkpoint critic: no stage gates, but D8R's 28 tasks took 16.6 hours and three critics. (b) Three separate deliverables with their own files and names: the same work, with three sets of handoffs and tags. |
 | P119 | **Swarm or serial.** (Open question 2; **answered 2026-11-17: a swarm for stage A only**, the user's choice over the recommendation.) | **Stage A is a swarm** (decision 111), agent cap 4: its wave 1 runs Trade Analysis, the chart's frame and the chart's plot at once. **Stages B and C run one task at a time** (decision 100). | A swarm in every stage, the draft's recommendation: about 3 hours less on B and 4 on C, with the merge work a swarm brings. Serial throughout: about twice the time on A. |
 | P120 | **Who works out each per-session figure** (handoff section 5, item 1). | **Trade Analysis.** `evaluate` gains the Trade's result at the Stop, at the Target, at the Worst case and at the Max reward, and where the result stands between them (A248, A249). `replay` returns `evaluate`'s figures and condition status for every session (A250), the markers and the Plan column (A251, A252). The coordinators pass them through. | Trade Views does the sums: it would put arithmetic in a coordinator and give the meter a second copy of it. |
 | P121 | **Keeping estimates apart from exact figures** (item 2). | **A separate pure module in floating point, `src/domain/option-pricing/`, read by one file, `replay-estimates.ts`. Its results have their own type, `Estimate`, which holds a plain number and never a `Rational`.** An ESLint rule keeps both files from being imported anywhere else and from building an exact value (A258). `Rational` has no constructor from a number, so the type system already blocks the direct path. | Estimates as `CalculationResult<Rational>`: nothing would stop one from being added to a P&L. |
@@ -36,7 +36,7 @@ The user has already decided (handoff section 4): D9 builds Corridor; the result
 | P129 | **Leaving the Review and coming back.** | **The address carries it.** The card's "Price History" link opens Trade Detail with the drawer, the session and `from=review` in the address; "Back to the Review" returns to that Trade's card, its Action panel and the slider's session (A257). The Review Date needs nothing: the Review opens the latest completed session, the only one installed. | Held state in memory: lost on reload. |
 | P130 | **The meter on Trade Detail** (item 7). (Open question 6; **answered 2026-11-17: as recommended**.) | **At the top of the rail's Conditions card.** That card already holds each condition's distance. | In the P&L card: beside the figure it describes, but away from the Stop and Target it runs between. |
 | P131 | **The Open list in attention order** (item 8; the user's lean). (Open question 7; **answered 2026-11-17: attention order for now, built so that sorting and filtering can be added to the Trades list later**.) | **Do it, with one spec sentence** (section 1.2). The cost is small: the Open list is already read and valued in full, so the order is a sort in Trade Views with no extra read (section 1.5, "The Open list's order"). A262 says how it stays open to later sorting and filtering. | Keep Last Activity order: no spec change, and the meter is then only a status cue. |
-| P132 | **What the meter reads** (item 9). | **A new finished value, the meter reading (A260), beside `rangePosition`, which stays.** `rangePosition` is in eight frozen fixtures' expected views (84 places), so removing it would mean editing them, as `nearest` did in D8R. It stays returned and unread. | Remove it and edit the fixtures: tidier, at the cost of 84 deletions in frozen files. Open question 8. |
+| P132 | **What the meter reads** (item 9). (Open question 8; **answered 2026-11-17: remove `rangePosition` now**, the user's choice over the recommendation.) | **A new finished value, the meter reading (A260), replaces `rangePosition`, which T9.40 removes.** `rangePosition` is in eight frozen fixtures' expected views (84 places). T9.40 deletes exactly those 84 entries, with a diff check that nothing else in the files changed, as T8R.20 did for `nearest`. The backup data itself does not change. | Keep it returned and unread, the draft's recommendation: no frozen file changes, and a figure no screen shows. |
 | P133 | **The faint mark for the session before, on the list and the Review cards.** It needs each Trade's P&L at the session before. | **Build it as accepted, and prove the cost.** One more date's Marks are read per page, never per Trade, and each Trade is valued a second time. Integration cases count the reads; the benchmark after stage C checks the budget. | Leave the mark off the list and the collapsed cards, keeping it on Trade Detail, where the replay already holds it. Open question 9. |
 | P134 | **Left out of D9.** | **Deviation markers** (Stop Discipline episodes arrive with D12); **the lowest and highest result so far** (neither Corridor nor the accepted meter draws them); **the Plan's Worst case and Max reward** (Corridor's Plan column draws only the two lines); **spreads** (D10); **Daily Bar candles** (D11). | Each is a field nothing in D9 would show. |
 | P135 | **Words.** | **Section 1.6 proposes W35 to W52 from the prototype's own text.** They need the user's approval (open question 10). During the run, D8R's rule applies: words no row covers are used provisionally and listed for approval. | — |
@@ -62,7 +62,7 @@ The user has already decided (handoff section 4): D9 builds Corridor; the result
   > **AC-CALC-005 — Estimates explain and never value.** **Given:** an option Trade with exact Marks for its contract and its Underlying over several sessions, one session with the contract's Mark missing, and one Mark at the contract's exercise value. **When:** its replay is read. **Then:** each session's Implied Volatility reproduces that session's Mark through the stated formula and rate; the Share Equivalent and the Mark Change Split are returned as Estimates, and the split's parts add up to the Mark's real change; each is Unavailable with a stable reason where it can't be worked out; a stock Trade's are Not Applicable or exact; and every Trade P&L, risk, reward and condition status is the same whether or not an Estimate is available. **Evidence:** the per-session results, the formula's inputs, and the exact figures compared with and without the Estimates.
 - **Spec map.** The line ranges and character counts of the six amended files are recalculated. D9's tags are added to: Trade Analysis `evaluate`; Daily Review's "Date, eligibility, and ordering" and `getTrade`; Trade Views' `browseTrades`; AC-CALC-003 (S052); AC-CALC-005. The reading lists are regenerated with `.claude/scripts/spec-reading-lists.py`.
 - **Acceptance matrix.** Rows in section 13; one new row for AC-CALC-005.
-- **D08P and D8R breakdowns.** A note under each status line names what D9 changes: W1's drawers per state gain Replay (T9.14); `StopTargetSlider` and its words (D5R's P39) are replaced by the meter (T9.33); A211's "no condition status, Deviations or markers" is now met for condition status and markers.
+- **D08P and D8R breakdowns.** A note under each status line names what D9 changes: W1's drawers per state gain Replay (T9.14); `StopTargetSlider` and its words (D5R's P39) are replaced by the meter (T9.33), and P39's range position is removed (T9.40), with D5R's cases that assert it re-pointed at the meter reading; A211's "no condition status, Deviations or markers" is now met for condition status and markers.
 - **`.claude/docs/implementing.md`, `.claude/agents/suite-runner.md`, `.claude/scripts/`:** the `browser-3` stage (T9.1).
 
 ### 1.3 Working assumptions
@@ -87,13 +87,13 @@ These are implementation-level choices. They stand unless you object.
 | A260 | **The meter reading** (stage C, T9.30). One finished value: the two rails (`outcomes.atStop` and `outcomes.atTarget`, which need no Mark); `banked`, the realized P&L to date; `now`, a Calculation Result holding the Trade P&L with `standing`'s zone and `pastBy`; and `previous`, the Trade P&L at the session before with its date, or absent. With no Mark, `now` is Unavailable and the rails and `previous` still come back, so the track can be drawn empty. Placing these on a track is presentation (A215): the track always includes break-even, and stretches by a third at most past a rail. |
 | A261 | **Attention moves to the shared valuation module** (T9.30). `attentionOf`, `byAttention` and their types move from `src/coordinators/daily-review/attention.ts` to `src/coordinators/valuation/attention.ts`, which both coordinators already import from. Daily Review re-exports the types, so no reader changes. The Open list then calls the same functions at the current Expected Mark Date, and does not depend on the Review. |
 | A262 | **The Open list's order** (T9.32). Trade Record still returns the Open book by Last Activity. Trade Views sorts that one page with `byAttention` after valuing it. Each item gains `attention` (band and reasons) and `meter`. A Trade whose facts can't be replayed is in the Blocker band, first. Planned and Closed keep their orders. A scaled-out Trade's order and its meter may disagree, as the user accepted. **Room for later sorting and filtering (the user's condition, 2026-11-17):** (1) attention is the default order, one named sort step applied after the page is selected and valued, so a later `order` choice on the request picks another step and a filter narrows the page before it; (2) nothing in Trade Record's query, its index or its cursor changes, so its filters and factual sorts are untouched; (3) every item carries what a sort would need (`attention`, `lastActivity`, the P&L and the meter reading), and the screen never sorts for itself; (4) no test or fixture names attention order as the only order: cases say "the default order". One limit to know: attention order works because the Open list is one page of at most 200; a paged Open list could not use it as a cursor order. |
-| A263 | **Durable compatibility.** No schema, store, seed, migration or backup-version change. Every new view field is additive, and `compareSnapshot` allows added fields. No frozen fixture holds a replay view. The Installed Capability Manifest gains variants only (T9.8); no operation is added. |
+| A263 | **Durable compatibility.** No schema, store, seed, migration or backup-version change. Every new view field is additive, and `compareSnapshot` allows added fields. No frozen fixture holds a replay view. The one exception to "additive" is P132's removal of `rangePosition`, which edits eight fixtures' expected views (T9.40). The Installed Capability Manifest changes variants only (T9.8, T9.40); no operation is added. |
 | A264 | **Reading list.** The implementing session reads `plan/spec-reading/D09.md`, regenerated with the retag in section 1.2. |
 | A265 | **The benchmark** (decision 114) runs once, after stage C's gate. Stages A and B change neither the cold start nor the Open list. Query-count cases cover each stage's reads (I9.6, I9.11). |
 
 ### 1.4 Size check and the stages
 
-The graph has **39 tasks** and **ten open questions**. There is no schema change. Two of the guide's three criteria are met.
+The graph has **40 tasks** and **ten open questions**. There is no schema change. Two of the guide's three criteria are met.
 
 **Proposed: three stages, in this order, in one breakdown.**
 
@@ -101,12 +101,12 @@ The graph has **39 tasks** and **ten open questions**. There is no schema change
 |---|---|---|---|
 | **A. The replay chart** | Corridor, with its headline, slider, readout and table, in Trade Detail and the Review card, for stock and single options. | T9.1, T9.2, T9.3, T9.4, T9.5, T9.6, T9.7, T9.8, T9.9, T9.10, T9.11, T9.12, T9.13, T9.14, T9.15, T9.16, T9.17, T9.18, T9.19 | The cumulative suites and a fresh critic. Tag `claude-opus-5.5-d9a`. |
 | **B. The option estimates** | Implied volatility, the share equivalent and the split, under the chart. | T9.20, T9.21, T9.22, T9.23, T9.24, T9.25, T9.26, T9.27, T9.28 | The same. Tag `claude-opus-5.5-d9b`. |
-| **C. The meter** | The meter on Review cards, the Open list and Trade Detail; the Open list in attention order. | T9.29, T9.30, T9.31, T9.32, T9.33, T9.34, T9.35, T9.36, T9.37, T9.38, T9.39 | The suites, the gate critic, then the benchmark. Tag `claude-opus-5.5-d9`. |
+| **C. The meter** | The meter on Review cards, the Open list and Trade Detail; the Open list in attention order. | T9.29, T9.30, T9.31, T9.32, T9.33, T9.34, T9.35, T9.40, T9.36, T9.37, T9.38, T9.39 | The suites, the gate critic, then the benchmark. Tag `claude-opus-5.5-d9`. |
 
 - **What stage A leaves unfinished, and why that is acceptable.** After A, the replay is whole for stock and readable for options, but an option's wrong Mark is still hard to spot: it looks like a plausible P&L move. Stage B is what catches it (a wrong Mark shows as a spike in implied volatility). So B follows A at once and must not drift. Nothing is released for real use between stages.
 - **Why B comes before C.** B sits on A's chart, so the chart's words and layout are still fresh when its chips and line are added. C needs nothing from B. It needs only T9.3's results at the Stop and the Target, which stage A builds.
 - **Each stage starts a new session** from its own handoff, so no session carries three stages' work in one context.
-- **If the user keeps one run:** the same 39 tasks, with stage A's gate as a checkpoint critic and one gate at the end.
+- **If the user keeps one run:** the same 40 tasks, with stage A's gate as a checkpoint critic and one gate at the end.
 - **If the user wants C first or beside A:** move T9.3 into stage C. C's Open-list change touches a shared screen and the benchmark's expected rows, so it runs alone, never beside another deliverable.
 
 ### 1.5 Lookups (drafting guide)
@@ -132,7 +132,7 @@ Run on `85a7630e`. If the branch moves before D9 starts, rerun them.
 **Shapes.**
 - **Added, all additive:** `outcomes` and `standing` on `TradeEvaluation` (T9.3); `figures`, `riskChange`, `rewardChange` and `markers` on a replayed session, and `plan` on the result (T9.4, T9.5); `final` on the view's last session (T9.6); `replay` on `DailyTradeReview` (T9.7); `estimates` on a replayed session (T9.23); `meter` on a walked Trade and `attention` and `meter` on an Open item (T9.31, T9.32).
 - **Frozen fixtures.** `grep -rl positionChangeIds tests/fixtures bench` finds nothing: no fixture holds a replay view. The fixtures' expected views hold `TradeEvaluation` objects, and `compareSnapshot` allows added fields, so `outcomes` and `standing` break none.
-- **Kept, unread:** `rangePosition`, in eight fixtures' `expected-views.json` (`backup-v3-blocked` 6, `backup-v4-blocked` 6, `backup-v5-blocked` 10, `backup-v6-blocked` 12, `backup-v7` 14, `workspace-v5` 10, `workspace-v6` 12, `workspace-v7` 14). Its `RangePosition` capability variant stays (`routes.ts:47`, `capabilities.ts:103`, `workspace.test.ts:417`).
+- **Removed (T9.40, P132):** `rangePosition`, in eight fixtures' `expected-views.json`: `backup-v3-blocked` 6, `backup-v4-blocked` 6, `backup-v5-blocked` 10, `backup-v6-blocked` 12, `backup-v7` 14, `workspace-v5` 10, `workspace-v6` 12, `workspace-v7` 14, 84 entries in all. Each entry is an object of several lines, so the count is of entries, not lines. `compareSnapshot` fails a field the views no longer have (through `verify:fixtures` and `tests/integration/d8/round-trip.test.ts`), which is why the task owns both the code and the fixtures. No fixture holds the `RangePosition` capability variant (`grep -rl RangePosition tests/fixtures bench tools` finds nothing), so the variant is replaced in `routes.ts:47`, `capabilities.ts:103` and `workspace.test.ts:417`.
 - **Stores and schema:** unchanged.
 
 **Checks.**
@@ -146,6 +146,11 @@ Run on `85a7630e`. If the branch moves before D9 starts, rerun them.
 - **`browser-2` and `test:e2e:2`** (T9.1): `package.json`, `.claude/scripts/full-suite.sh`, `run-complete.sh`, `run-complete.test.sh`, `acceptance-commands.sh`, `.claude/agents/suite-runner.md`, `.claude/docs/implementing.md`. Each gains the third stage; `run-complete.sh` then expects six stage files for the full tier.
 - **`attention.ts`** (T9.30): imported by `src/coordinators/daily-review/daily-review.ts:14` and `attention.test.ts:6`. Both move to the new path. `src/ui/screens/review-attention.ts` is a different file and stays.
 - **`StopTargetSlider`** (T9.33): `src/ui/screens/ReviewCard.tsx:15,124`, its own file and test. The component and its test are deleted. `SliderFigures` (`daily-review/types.ts:91`, re-exported as `SliderEvaluation` at `src/app/types.ts:219`) stays: the meter's name speaks the same figures.
+- **`rangePosition`, `RangePlacement`, `RangePositionResult`, `rangePositionOf`** (T9.40):
+  - code: `src/coordinators/daily-review/attention.ts` (8 places; by then moved to `valuation/`), `types.ts:51,59,72`, `daily-review.ts:77`, `index.ts:2`, `src/app/types.ts:216,217`;
+  - unit tests: `daily-review.test.ts` (11), `save-marks.test.ts` (4), `attention.test.ts` (3), `option-attention.test.ts` (1), `src/ui/screens/ReviewCards.test.tsx` (6), `CardMarks.test.tsx` (2), and one each in `ReviewCard.test.tsx`, `ReviewView.test.tsx`, `ReviewOwed.test.tsx`, `ReviewOptionMarks.test.tsx`, `ReviewSettlement.test.tsx`, `ReviewExpiration.test.tsx`, `held-review.test.ts`;
+  - integration tests: `tests/integration/d5r/shared-mark.test.ts` (2), `save-marks.test.ts` (1), `range-and-baseline.test.ts` (1), `query-count.test.ts` (1);
+  - the `RangePosition` variant: `routes.ts:47`, `capabilities.ts:103`, `workspace.test.ts:417`.
 - **`DRAWERS`** (T9.14): `drawer-request.ts:3` and its readers in the Texts table.
 - **`TradeReplayView` readers** (unchanged by the added fields): `rail/pnl.props.ts`, `drawers/price-history.props.ts`, `drawers/journal.props.ts`, `drawers/today.props.ts`, `Cockpit.tsx`, and their tests.
 
@@ -195,7 +200,7 @@ Taken from `round-2.html` and `trade-list.html`. Conventions C1 to C8 of the D7 
 
 Persistence, migrations, Market Data, Trade Record, Journal, the Reference Catalog and Trade Workflows need no change. `ReadSeries` already returns what the chart needs.
 
-**Which tasks change code outside `src/ui/`.** T9.1 (tooling), T9.2 (types), T9.3, T9.4, T9.5 (Trade Analysis), T9.6, T9.7, T9.8 (coordinators and the facade), T9.20 (lint), T9.21, T9.22, T9.23 (the estimates), T9.30, T9.31, T9.32 (attention and the two reads), T9.36 (the benchmark's expected rows). The other behavioral tasks are UI only.
+**Which tasks change code outside `src/ui/`.** T9.1 (tooling), T9.2 (types), T9.3, T9.4, T9.5 (Trade Analysis), T9.6, T9.7, T9.8 (coordinators and the facade), T9.20 (lint), T9.21, T9.22, T9.23 (the estimates), T9.30, T9.31, T9.32 (attention and the two reads), T9.40 (the range position removed, with its fixture entries), T9.36 (the benchmark's expected rows). The other behavioral tasks are UI only.
 
 ---
 
@@ -254,6 +259,7 @@ Kind: **B** = behavioral (TDD, red then green per case), **S** = structural (exa
 | T9.33 | Review card: the meter replaces the slider | C, serial | B | T9.29, T9.31 | `ReviewCard` | none |
 | T9.34 | Open list: the meter under the P&L, in the read's order | C, serial | B | T9.29, T9.32 | `TradeList` | none |
 | T9.35 | Trade Detail: the meter on the Conditions card | C, serial | B | T9.29, T9.30 | `ConditionsCard`, `conditions.props` | none |
+| T9.40 | Remove the range position (runs after T9.35) | C, serial | S | T9.33 | `typecheck`, `verify:fixtures`, `verify:capabilities`, `test:integration` | **Daily Review, valuation, facade:** the field, its types and its variant removed; **fixtures:** 84 entries deleted (P132) |
 | T9.36 | The benchmark's expected Open rows, in the new order | C, serial | S | T9.34 | `bench:expected`, `git diff` | **tools:** `bench/expected-open-rows.json` |
 | T9.37 | Stage C: Node integration suite | C, serial | S | T9.32 | `test:integration` | none (tests only) |
 | T9.38 | Stage C: browser suite | C, serial | S | T9.34, T9.35 | `test:e2e` | none (tests only) |
@@ -262,7 +268,7 @@ Kind: **B** = behavioral (TDD, red then green per case), **S** = structural (exa
 **Run order.**
 - **Stage A.** Wave 0: T9.1 and T9.2 at once. Wave 1: lanes TA, CF and CP at once, each in its listed order; CF and CP test against doubles built from T9.2's types. Wave 2: lane RV (T9.6, T9.7, T9.8) starts when T9.5 merges; T9.14 and T9.15 run at once when their blockers merge; T9.16 last. Wave 3: T9.17 may start once T9.8 merges; T9.18 after T9.16; then T9.19.
 - **Stage B, serial** (decision 100; open question 2): T9.20, T9.21, T9.22, T9.23, T9.24, T9.25, T9.26, T9.27, T9.28, one at a time on the deliverable branch, each ending with its own complete run.
-- **Stage C, serial:** T9.29, T9.30, T9.31, T9.32, T9.33, T9.34, T9.35, T9.36, T9.37, T9.38, T9.39, the same way. The benchmark follows the gate (decision 114).
+- **Stage C, serial:** T9.29, T9.30, T9.31, T9.32, T9.33, T9.34, T9.35, T9.40, T9.36, T9.37, T9.38, T9.39, the same way. The benchmark follows the gate (decision 114).
 
 ### 4.2 Lanes and file ownership
 
@@ -285,6 +291,7 @@ In stage A, a lane is one git worktree (`.claude/worktrees/d09-<lane>`) on one b
 | C | T9.33 | `src/ui/screens/ReviewCard.tsx` (its header); `StopTargetSlider.tsx` and its test (deleted); `e2e/d5r/sliders.spec.ts`, `review.spec.ts`, `marks.spec.ts`, `responsive-a11y.spec.ts`, `support.ts`; `e2e/d7p/layout.spec.ts` (its slider lines) |
 | C | T9.34 | `src/ui/screens/TradeList.tsx`, `TradeList.test.tsx`, `TradeListOptions.test.tsx`; the list's styles |
 | C | T9.35 | `src/ui/cockpit/rail/conditions*`; `styles/rail-b.css` |
+| C | T9.40 | Every file in section 1.5's Names entry for `rangePosition`; the eight fixtures' `expected-views.json` |
 
 **Shared files, and how they are split or sequenced.**
 - **`replay-series.ts`:** TY in wave 0 (types), TA in stage A, T9.23 in stage B.
@@ -688,7 +695,6 @@ Seams: `DailyReview.open` and `save`. P133.
 ```text
 describe("open: the meter reading (A260)")
   it should give each walked Trade its meter reading at the Review Date, with the session before as the earlier result
-  it should still return `rangePosition` as before
   it should read one more date's Marks for the whole Review and none per Trade
   it should refresh the reading of every card that shares a saved Mark's Instrument, in the Save Marks result
 ```
@@ -759,6 +765,7 @@ describe("Conditions card: the meter (P130)")
 | T9.26 Stage B: Node integration suite | `npm run test:integration`; the acceptance script | I9.8 and I9.9 pass. | |
 | T9.27 Stage B: browser suite | `npm run test:e2e`; the acceptance script | B9.6 and B9.7 pass. | |
 | T9.28 Stage B gate | A fresh critic, flows C9.5 and C9.6, after a full-tier run | Every flow passes. Tag `claude-opus-5.5-d9b`. | |
+| T9.40 Remove the range position | `npm run typecheck`; `npx vitest run src/coordinators src/ui`; `npm run verify:capabilities`; `npm run verify:fixtures`; `npm run test:integration`; `git diff --stat tests/fixtures` and `git diff -U0 tests/fixtures`; `grep -rn "rangePosition\|RangePosition\|RangePlacement" src tests tools e2e` | `rangePosition`, `RangePlacement`, `RangePositionResult` and `rangePositionOf` are gone, and the grep finds nothing. The fixture diff deletes exactly the 84 `rangePosition` entries (and the comma each leaves) in the eight files and nothing else. `DailyReview.open`'s `RangePosition` variant becomes `Meter`, and `browseTrades` gains `AttentionOrder` and `Meter`. `verify:fixtures` and the D8 round trip pass. | P132. After T9.33 removed the only reader. Each D5R case that asserts the range position is re-pointed at the meter reading for the same Trades, or deleted where T9.30 or T9.31 already asserts the same fact; `evidence/D09/structural.md` lists each one and which it was. |
 | T9.36 Expected Open rows | `npm run bench:expected`; `git diff --stat bench/`; a sorted comparison of the old and new rows | `bench/expected-open-rows.json` holds the same rows in attention order, with the same headers; any change to a row's text is only the meter's name, if the comparison reads it. | If the generator orders the rows itself, its sort changes here too; the task's file list comes from `grep -rn "expected-open-rows" tools`. |
 | T9.37 Stage C: Node integration suite | `npm run test:integration`; `npm run verify:fixtures`; the acceptance script | I9.10 and I9.11 pass; every frozen fixture's views still compare. | |
 | T9.38 Stage C: browser suite | `npm run test:e2e`; the acceptance script | B9.8, B9.9, B9.10 and B9.11 pass; the script exits 0 for every row. | |
@@ -783,7 +790,7 @@ D1 to D8R's disclosed substitutes still apply. D9 adds none.
 | I9.7 The manifest (AC-CAP-001) | `capabilities.test.ts` | The installed manifest and routes. | The variants of T9.8, and every route's requirements installed. |
 | I9.8 Estimates explain and never value (AC-CALC-005) | `estimates.test.ts` | R-BREN-U, R-CORV-D and R-DALE-D through the facade. | Each session's implied volatility prices back to its Mark; the split's parts add to the Mark's change; Tuesday's are Unavailable; the reasons are stable codes; a stock Trade's are Not applicable or exact. |
 | I9.9 The exact figures don't read the estimates | `estimates.test.ts` | R-BREN-U with Mon 11-16's call Mark saved at its exercise value, then corrected to $4.16. | With the first Mark, no implied volatility and every exact figure a Value; after the correction, the estimates appear and the exact figures are those of section 5. |
-| I9.10 The meter and the order | `meter.test.ts` | The four Trades open at Fri 11-13; `browseTrades`; the Review for Fri 11-13. | The Open list's order equals the Review's walk; each item's reading matches A260; `rangePosition` is still returned. |
+| I9.10 The meter and the order | `meter.test.ts` | The four Trades open at Fri 11-13; `browseTrades`; the Review for Fri 11-13. | The Open list's order equals the Review's walk; each item's reading matches A260; no view holds a `rangePosition`. |
 | I9.11 Query counts with the meter (AC-PERF-001) | `query-count.test.ts` | The same four Trades; count the requests of `browseTrades` and `open`. | Each reads one more date's observations than in stage A, and nothing per Trade. |
 
 ### 7.2 Browser suite (`e2e/d9/`, Playwright against the built app on `localhost:5175`, under the lock)
@@ -845,7 +852,6 @@ It runs `npm run build && npm run preview` (port 5175, under the lock) itself an
 - **Stop Discipline episodes** as markers (D12), **a moved Stop's marker** (D17), **correction markers** (D15).
 - **Sorting and filtering on the Trades list** (the user, 2026-11-17; filters are D22's). Attention stays the default order, and a sort choice is added to the request (A262).
 - **A Review for an earlier date**, which the round trip's address would then carry.
-- **`rangePosition`**, unread after T9.33: remove it with the next fixture refreeze, if the user wants.
 
 ---
 
@@ -872,7 +878,7 @@ Asked one at a time, in this order. Each answer is recorded here.
 5. **A new acceptance scenario, AC-CALC-005 (P123).** Recommended: add it, so the estimates have a row in the matrix. **Answered 2026-11-17: add it, as recommended.**
 6. **The meter on Trade Detail (P130).** Recommended: at the top of the Conditions card. **Answered 2026-11-17: at the top of the Conditions card, as recommended.**
 7. **The Open list in attention order (P131).** It costs one sort, one sentence in the Trade Views spec, the benchmark's expected rows regenerated, and a check of 15 positional test lines. Recommended: yes. **Answered 2026-11-17: attention order for now. Sorting and filtering will be added to the Trades list later, and nothing here may prevent that** (A262 lists how).
-8. **`rangePosition` (P132).** Keep it returned and unread, or remove it and delete 84 lines from eight frozen fixtures. Recommended: keep it.
+8. **`rangePosition` (P132).** Keep it returned and unread, or remove it and delete 84 entries from eight frozen fixtures. Recommended: keep it. **Answered 2026-11-17: remove it now.** It became T9.40.
 9. **The session-before mark on the list and the Review cards (P133).** It costs one more date of Marks per page and a second valuation per Trade. Recommended: build it, and let the benchmark decide; the fallback is to keep it on Trade Detail only.
 10. **The words W35 to W52, and W1's amended drawers (P135).** Recommended: approve, or edit in place.
 
@@ -955,6 +961,7 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T9.33 | C | — | — | Not started | |
 | T9.34 | C | — | — | Not started | |
 | T9.35 | C | — | — | Not started | |
+| T9.40 | C | — | — | Not started | |
 | T9.36 | C | — | — | Not started | |
 | T9.37 | C | — | — | Not started | |
 | T9.38 | C | — | — | Not started | |
