@@ -534,6 +534,23 @@ describe('Replay: audit navigation (W46)', () => {
     expect(document.activeElement?.tagName).toBe('BUTTON');
   });
 
+  it('should focus the Expiration row when Position is chosen on a session whose marker is an Expiration', async () => {
+    const user = userEvent.setup();
+    const settlement = { factId: 'exp-1', economicTime: '2026-10-12T20:00:00Z', recordedSequence: 3, instrument: { kind: 'Stock', symbol: 'XYZ' }, quantity: '1' };
+    const detail = thursday();
+    const view = { ...detail, positionChanges: [...detail.positionChanges, { ...detail.positionChanges[0]!, factId: 'pc-exp', executions: [], settlements: [settlement] }] } as unknown as TradeDetailView;
+    const base = withMonday();
+    const marker = { id: 'pc-exp', kind: 'Expiration', effect: 'Closed', fills: [{ instrument: STOCK, action: 'Expire', quantity: Rational.of(1n) }] };
+    const replayView = { ...base, sessions: [{ ...base.sessions[0]!, markers: [marker] }, ...base.sessions.slice(1)] } as unknown as TradeReplayView;
+    renderWith(facadeOf({ view, replayResult: { kind: 'Ready', view: replayView, binding: BINDING } }), '/trades/trade-1?drawer=replay&session=2026-10-12');
+    const panel = within(await screen.findByRole('tabpanel', { name: 'Replay' }));
+    await user.click(await panel.findByRole('button', { name: 'Position' }));
+    expect(screen.getByRole('tab', { selected: true }).getAttribute('aria-label')).toBe('Position');
+    // The Expiration's own toggle holds focus, inside its row.
+    expect(document.activeElement?.closest('li')?.textContent).toContain('Expiration of');
+    expect(document.activeElement?.tagName).toBe('BUTTON');
+  });
+
   it('should offer Journal on a session with Journal items, with that session card in focus', async () => {
     const user = userEvent.setup();
     // Tuesday has no Journal items, so no link.

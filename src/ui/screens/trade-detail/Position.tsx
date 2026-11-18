@@ -141,7 +141,7 @@ function SettlementRow({ settlement: s, change, timeZone }: { readonly settlemen
   const [expanded, setExpanded] = useState(false);
   const time = localTime(s.economicTime, timeZone);
   return (
-    <li>
+    <li data-change={change.factId}>
       <button
         type="button"
         className="execution-toggle"
