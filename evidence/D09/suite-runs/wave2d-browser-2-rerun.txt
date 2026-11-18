@@ -1,0 +1,37 @@
+
+Running 2 tests using 1 worker
+
+  ✓  1 [chromium] › e2e/d5r/durability.spec.ts:47:3 › B5R.10 Offline and Recovery Only (faults build) › should save Marks offline after a full stop and keep them across another offline restart (AC-DEL-001) (4.8s)
+  ✘  2 [chromium] › e2e/d5r/durability.spec.ts:77:3 › B5R.10 Offline and Recovery Only (faults build) › should open every card read only in Recovery Only, with no inputs or Save buttons, and leave the probe unchanged (9.8s)
+
+
+  1) [chromium] › e2e/d5r/durability.spec.ts:77:3 › B5R.10 Offline and Recovery Only (faults build) › should open every card read only in Recovery Only, with no inputs or Save buttons, and leave the probe unchanged 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('li.review-card[data-trade-id="245fd93c-d234-4c84-886a-78ec13f3d0c8"]').getByRole('region', { name: /^XYZ(?: \([^)]*\))? review$/ }).locator('input, textarea')
+    Expected: 0
+    Received: 1
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('li.review-card[data-trade-id="245fd93c-d234-4c84-886a-78ec13f3d0c8"]').getByRole('region', { name: /^XYZ(?: \([^)]*\))? review$/ }).locator('input, textarea') with timeout 5000ms
+      - waiting for locator('li.review-card[data-trade-id="245fd93c-d234-4c84-886a-78ec13f3d0c8"]').getByRole('region', { name: /^XYZ(?: \([^)]*\))? review$/ }).locator('input, textarea')
+        14 × locator resolved to 1 element
+           - unexpected value "1"
+
+
+       95 |       await expect(card).toBeVisible();
+       96 |       // Every panel stays mounted, so these counts cover the Marks, Reflections and Action panels alike.
+    >  97 |       await expect(card.locator('input, textarea')).toHaveCount(0);
+          |                                                     ^
+       98 |       await expect(card.getByRole('button', { name: /^Save/ })).toHaveCount(0);
+       99 |       await expect(card.getByRole('button', { name: 'Discard' })).toHaveCount(0);
+      100 |       await expect(card.getByRole('button', { name: 'Answer', exact: true })).toHaveCount(0);
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d5r/durability.spec.ts:97:53
+
+    Error Context: test-results/d5r-durability-B5R-10-Offl-599ca-d-leave-the-probe-unchanged-chromium/error-context.md
+
+  1 failed
+    [chromium] › e2e/d5r/durability.spec.ts:77:3 › B5R.10 Offline and Recovery Only (faults build) › should open every card read only in Recovery Only, with no inputs or Save buttons, and leave the probe unchanged 
+  1 passed (15.7s)

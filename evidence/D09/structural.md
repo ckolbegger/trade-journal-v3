@@ -388,6 +388,14 @@ Stage A runs as a swarm (decision 111, agent cap 4). Each task's heading holds i
 - Browser tier: full (`first matching path since 801c5ff8: src/ui/cockpit/replay/corridor-pnl.tsx`).
 - Unit 197 files, 2201 tests; integration 123 files, 269 tests; browser-1 126 passed (5.2 min); browser-2 79 passed (4.9 min); browser-3 57 passed (4.4 min); checks 14 of 14. `run-complete.sh`: run complete. **No failures.**
 
+### wave2d (after T9.15, T9.14-B10, T9.17 with B1, B2, B3)
+
+- Source at `309025e4` throughout (later commits evidence only). 2026-11-18.
+- Browser tier: full (`first matching path since 5d74779e: src/ui/app.css`).
+- Unit 198 files, 2257 tests; integration 130 files, 280 tests; browser-1 126 passed (5.3 min); browser-3 57 passed (4.4 min); checks 14 of 14. `run-complete.sh`: run complete. The d2 narrow failure of `wave2c` is gone (T9.14-B10).
+- **Failure:** browser-2 78 passed, 1 failed (5.1 min): `e2e/d5r/durability.spec.ts:77` "B5R.10 … should open every card read only in Recovery Only, with no inputs or Save buttons, and leave the probe unchanged" — line 97 `expect(card.locator('input, textarea')).toHaveCount(0)`: received 1, in the XYZ review card. Rerun alone after `build:faults`: same failure (`wave2d-browser-2-rerun.txt`). Not a P138 case: real, from T9.15 — the card's Replay section holds the slider, an `<input type="range">`.
+- Implementation-level decision (recorded): the slider moves through sessions and writes nothing, so it keeps working in Recovery Only (as in Trade Detail); the case's point — nothing on a read-only card can enter or save data — holds. Routed as **T9.15-B1** (lane RW): the case's selector leaves out the Replay section's slider and still counts every other input and textarea; T9.15's brief allowed changing "only what the new section forces". If the user prefers no slider on a Recovery Only card, that is a UI change instead.
+
 ### wave2c (after T9.8, and T9.14 with B1, B2, B3, B4, B5, B6, B7, B8, B9, F1, F2)
 
 - Source at `5d74779e` throughout (later commits plan and evidence only). 2026-11-18.
