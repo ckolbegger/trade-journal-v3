@@ -278,6 +278,15 @@ Stage A runs as a swarm (decision 111, agent cap 4). Each task's heading holds i
 - T9.17-B3 commit `f5bbd74e` (structural): lines 78 and 80 `x !== null && x !== undefined`; `npx vitest run tests/integration/d9` 7 files, 11 tests before and after, unedited. Lane tier `T9.17-B3`: unit 2223, integration 280, checks 14 of 14. ocr (`ocr/T9.17-B3-f5bbd74e.json`): **No findings.**
 - Lane IN rebased onto `1e6a0c9d` and merged by fast-forward: T9.17 `416d52df`, B1 `749aff06`, B2 `d2732e30`, B3 `e216f70a`.
 
+## T9.18 Stage A: browser suite
+
+- Lane BR, from `79a47449`, commit `8fe2ad27`. `e2e/d9/`: `replay` (4), `gaps` (2 + 1 fixme), `review` (2), `states` (4), `responsive-a11y` (3 + 2 fixme), `support.ts`; `test:e2e:3` is `e2e/d8p e2e/d8 e2e/d9`. All first-run passes (acceptance tests), each spec with a mutation check of one expected value (e.g. replay headline `+$989.00 · 3.05R` for `+$988.00`; review return `session=2026-11-11` for `2026-11-12`). Lane tier `T9.18`: unit 2266, integration 280, checks 14 of 14; browser-3 72 passed, 3 skipped (4.7 min). `acceptance-commands.sh`: 7 of 9 (AC-CALC-005, AC-REV-002 fail by design).
+- **Three planned cases fail against the UI** (stop-and-report; each `test.fixme` with the plan's expected value, its red recorded):
+  1. B9.2, W40: R-AXIO-D Mon 11-09 at 1280 px draws no "Realized −$440" — `LabelPlacer` (`geometry.ts`) places the banked label last, after the stake tag "Reward to target $1,080". Same for "Banked +$478" on R-BREN-U Thu 11-12. Implementation-level decision (recorded): the banked label outranks the stake tags and "Break-even" when space runs short (what is locked in; the stake stays in the readout). **T9.18-F1**, lane PL (from `8fe2ad27`).
+  2. B9.5, AC-UI-001: the Review card at 320 px scrolls sideways (`scrollWidth 328 > 320`; the readout's "+$478.00" and "+$316.00"). **T9.18-F2**, lane BR, CSS only.
+  3. W39, W41: the charts never switch to the phone words; both are one 640-unit drawing scaled to 0.42 at 375 px and 0.34 at 320 px, so 10.5-unit text renders at about 4.4 and 3.5 px. **T9.18-F3**, lane BR after F2.
+- Notes (no task): W42's "11 of 15" reads "11 of 11" on R-BREN-U at Mon 11-16 (the slider counts the view's sessions; T9.14 recorded it); R-CORV-D's Tuesday table says "No Mark" in the two Result cells while the chart keeps both lines (I9.2 keeps the results); "Price History opens on that session" selects the drawer and session without column focus from the Review's link (A257).
+
 ## T9.15 Review card: the replay before the Action
 
 - Lane RW, from `d7d43e12`, commit `654d5771`. Case 1 "should show the replay in a section named Replay directly above the Action form, resting on the Review Date": red, no region "Replay", then green (an h5 "Replay" section holding `ReplayDrawer`, inside the Action panel just above the form; slider "Mon Oct 12 · 2 of 2. +$582.00").
