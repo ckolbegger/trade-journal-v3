@@ -1705,3 +1705,10 @@ Its repeats (D-2, T-H's D-6 and the midday D-1) were removed. `reflections.test.
       - `src/ui/screens/CardFigures.tsx`
     - **Fix.** First decide, as a specs question, whether a crossing known from the Underlying alone raises an Alert without its dollar figure. Then make every screen follow that one answer, with a case for each.
     - **Trigger.** The next change to Alerts or attention bands, or D9's breakdown, which adds condition status per session.
+29. **The contract-names browser test builds accessible names by hand and can miss a misnamed contract (D8R, ocr's third round on T8R.27-B2; recorded 2026-11-17 under decision P2, at the user's direction).**
+    - **What the test does.** `e2e/d8r/names.spec.ts` (B8R.5) checks that a screen reader hears each contract name as shown (P114). It works out each element's accessible name from the page's markup itself, instead of reading the name Chromium computes. That leaves two gaps:
+      - **A label inside a button.** For `<button><span aria-label="Open">XYZ Dec 18 $55 Call</span></button>`, a screen reader announces "Open". The test takes the button's name from its text, so it passes.
+      - **Labelled elements of other roles.** For something like `<div role="img" aria-label="Open">XYZ Dec 18 $55 Call</div>`, the test keeps no visible text. Its label is never compared with the contract it shows. The same applies to checkboxes, switches and cells.
+    - **Current effect.** Neither pattern exists in the app today. The test passes on every screen, and D8R's gate critic found every accessible name equal to its visible text.
+    - **Fix.** Read the computed names from Chromium's accessibility tree, through CDP `Accessibility.getFullAXTree` or Playwright's accessible-name support, and compare those. This closes both gaps and any others like them. Show each gap red first with a planted mutation, as T8R.27-B1 and T8R.27-B2 did.
+    - **Trigger.** The next change to `e2e/d8r/names.spec.ts`, or D10's breakdown, which adds new contract screens for spreads.

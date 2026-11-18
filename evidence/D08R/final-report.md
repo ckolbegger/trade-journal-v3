@@ -197,3 +197,4 @@ The estimate leaves out critic defects and their bug tasks, and these took most 
 
 - **New words:** the user approved all 21 rows in `new-words.md`, plus the two choices made in the bug tasks (section 6).
 - **The Underlying "Breached" mismatch** (section 8): recorded as tech debt item 28 in `plan/implementation-plan.md`, at the user's direction.
+- **The two gaps in the contract-names test** (section 5): recorded as tech debt item 29, at the user's direction.
