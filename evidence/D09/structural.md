@@ -246,7 +246,7 @@ Stage A runs as a swarm (decision 111, agent cap 4). Each task's heading holds i
   - "should show the new Mark session after Save Marks, from the save result, without reading again" (ReviewView already passes the save's Trade; T9.7 and case 1 built it): the first replay held in `useState` → `expected 'Thu Oct 8 · 1 of 1. $0.00' to be 'Mon Oct 12 · 2 of 2. +$582.00'`.
   - "should show no replay on a card that only owes reflections" (`ReviewOwedCard`, which never had one; its fixture carries a `replay` to show it is ignored): a temporary Replay section in `ReviewOwedCard.tsx`, reverted → `expected <section aria-label="Replay"></section> to be null`.
   - "should show the card other panels and the Action form when the Trade facts cannot be replayed": the section always rendered → runtime `TypeError`, "Unable to find region XYZ review".
-- Visible on the Action panel only (the card's other panels stay hidden then). Styles `.review-card-replay` in `app.css`. No words shortened; "Replay" is W35's; `verify:wording` exit 0. No e2e spec touched or run (the merge run's browser tier covers it). Lane tier `T9.15`: unit 2256, integration 269, checks 14 of 14.
+- Visible on the Action panel only (the card's other panels stay hidden then). Styles `.review-card-replay` in `app.css`. No words shortened; "Replay" is W35's; `verify:wording` exit 0. No e2e spec touched or run (the merge run's browser tier covers it). Lane tier `T9.15`: unit 2256, integration 269, checks 14 of 14. ocr (`ocr/T9.15-654d5771.json`): **No findings.** Mergeable; held until merge run `wave2c` finishes.
 - For T9.16: the card's `ReplayDrawer` has no `initialSession`/`onSessionChange` yet, nor a "Price History" link.
 
 ## T9.10 Replay frame: the slider reveals sessions
