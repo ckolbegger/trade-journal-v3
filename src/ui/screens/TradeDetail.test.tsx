@@ -564,4 +564,17 @@ describe('Replay: audit navigation (W46)', () => {
     // Monday is the oldest of four cards, so it is on the second page of three: the cards turn to it first.
     expect(document.activeElement?.id).toBe('journal-card-2026-10-12');
   });
+
+  it('should focus the merged card that holds the session when Journal is chosen on a later session of a Mark-less run', async () => {
+    const user = userEvent.setup();
+    // Tuesday and Wednesday have no Marks, so they are one card (Tuesday's); the owed reflection is on Wednesday.
+    const base = replay([debt]);
+    const [monday, tuesday, wednesday, ...rest] = base.sessions;
+    const view = { ...base, sessions: [{ ...monday!, journal: [] }, tuesday!, { ...wednesday!, journal: monday!.journal }, ...rest] } as unknown as TradeReplayView;
+    renderWith(facadeOf({ replayResult: { kind: 'Ready', view, binding: BINDING } }), '/trades/trade-1?drawer=replay&session=2026-10-14');
+    const panel = within(await screen.findByRole('tabpanel', { name: 'Replay' }));
+    await user.click(await panel.findByRole('button', { name: 'Journal' }));
+    expect(screen.getByRole('tab', { selected: true }).getAttribute('aria-label')).toBe('Journal');
+    expect(document.activeElement?.id).toBe('journal-card-2026-10-13');
+  });
 });

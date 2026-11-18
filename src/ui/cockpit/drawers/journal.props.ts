@@ -161,13 +161,14 @@ function cardsOf(input: Extract<JournalCardsInput, { readonly replay: object | s
     if (withoutMarks(first)) {
       const lastOfRun = run[run.length - 1]!;
       const dates = first === lastOfRun ? shortDate(first.date) : `${shortDate(first.date)} to ${shortDate(lastOfRun.date)}`;
-      return { id: first.date, kind: 'Merged', when: `${dates} without Marks`, marks: [], items: items(run.flatMap((session) => session.journal)) };
+      return { id: first.date, dates: run.map((session) => session.date), kind: 'Merged', when: `${dates} without Marks`, marks: [], items: items(run.flatMap((session) => session.journal)) };
     }
     const session = first;
     const { tradePnl, change } = session;
     const at = replay.sessions.indexOf(session);
     return {
       id: session.date,
+      dates: [session.date],
       kind: 'Session',
       when: `${dayOf(session.date)}${at === last && replay.pending === null ? ', final session' : ''}`,
       title: calculation(tradePnl, money, timeZone),

@@ -210,7 +210,7 @@ function ReplayLinks({ at, request }: { readonly at: SessionLinks; readonly requ
         </button>
       )}
       {at.hasJournal && (
-        <button type="button" className="pill secondary" onClick={() => request('Journal', { selector: `[id="journal-card-${at.date}"]`, card: at.date })}>
+        <button type="button" className="pill secondary" onClick={() => request('Journal', { selector: `[data-sessions~="${at.date}"]`, card: at.date })}>
           Journal
         </button>
       )}

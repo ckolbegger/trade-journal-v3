@@ -27,6 +27,8 @@ export interface JournalCardItem {
 
 export interface JournalCardProps {
   readonly id: string;
+  // The sessions' dates the card covers (a merged run covers each of its sessions); absent for a card that is no session's.
+  readonly dates?: readonly string[];
   readonly kind: 'Session' | 'Merged' | 'Plan' | 'Pending' | 'List';
   // "Wed Nov 11, final session", "Mon Nov 9".
   readonly when: string;

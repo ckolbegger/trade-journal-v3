@@ -64,7 +64,7 @@ function Card({ card, hidden, controlOf }: { readonly card: JournalCardProps; re
           </>
         ) : (
           <>
-            <h3 id={headingId}>{card.when}</h3>
+            <h3 id={headingId} {...(card.dates && { 'data-sessions': card.dates.join(' ') })}>{card.when}</h3>
             {card.title && (
               <p className="journal-card-title" data-tone={card.titleTone}>
                 {card.title}
@@ -125,7 +125,7 @@ export function JournalCards(input: JournalCardsInput) {
   if (focus !== seenFocus) {
     setSeenFocus(focus);
     const card = typeof focus?.target === 'object' ? focus.target.card : undefined;
-    const at = card === undefined ? -1 : (props?.cards.findIndex((c) => c.id === card) ?? -1);
+    const at = card === undefined ? -1 : (props?.cards.findIndex((c) => c.dates?.includes(card)) ?? -1);
     if (at >= 0) setPage(Math.floor(at / PAGE_SIZE));
   }
   if (!props) return null;
