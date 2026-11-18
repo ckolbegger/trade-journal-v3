@@ -50,6 +50,25 @@ function plannedAmountWords(role: 'Stop' | 'Target', dollars: Rational, session:
   return `${amount}, though ${instrument.symbol} is still ${side} ${decimalMoney(condition.boundary)}.`;
 }
 
+type SessionCondition = NonNullable<ViewSession['figures']>['conditions'][number];
+
+// F2: the session's own condition status (T9.4) says whether a line is crossed, whatever the dollars say: the condition's finished reading,
+// or its Underlying reading while only the contract's Mark is missing (A110). The role's crossing is Breached for a Stop, Reached for a Target.
+function crossedCondition(session: ViewSession, role: 'Stop' | 'Target'): { readonly condition: SessionCondition; readonly beyond: Rational | null } | undefined {
+  for (const condition of session.figures?.conditions ?? []) {
+    const reading = condition.result.kind === 'Value' ? condition.result.value : condition.underlyingReading;
+    if (condition.role === role && reading && reading.status !== 'Active') return { condition, beyond: reading.trigger?.beyond ?? null };
+  }
+  return undefined;
+}
+
+// "Stop breached: DALE $0.30 past $54.00.": the Underlying, how far past the condition's price it is, and the price.
+function stopBreachedWords(crossed: NonNullable<ReturnType<typeof crossedCondition>>, session: ViewSession): string {
+  const symbol = session.positions[0]?.instrument.symbol;
+  if (!crossed.beyond || !symbol) return 'Stop breached.';
+  return `Stop breached: ${symbol} ${money(crossed.beyond)} past ${decimalMoney(crossed.condition.boundary)}.`;
+}
+
 function howItIsGoingOf(session: ViewSession): string {
   const { tradePnl, final } = session;
   if (final) {
@@ -59,7 +78,11 @@ function howItIsGoingOf(session: ViewSession): string {
   const standing = session.figures?.standing;
   if (tradePnl.kind !== 'Value' || standing?.kind !== 'Value') return 'No Mark.';
   const { zone, pastBy, share } = standing.value;
-  if (zone === 'PastStop' && pastBy) return pastBy.crossed ? `Past the Stop by ${money(pastBy.dollars)} (${rMultiple(pastBy.r)}).` : plannedAmountWords('Stop', pastBy.dollars, session);
+  const stopCrossed = crossedCondition(session, 'Stop');
+  if (zone === 'PastStop' && pastBy?.crossed) return `Past the Stop by ${money(pastBy.dollars)} (${rMultiple(pastBy.r)}).`;
+  if (stopCrossed) return stopBreachedWords(stopCrossed, session);
+  if (zone === 'PastStop' && pastBy) return plannedAmountWords('Stop', pastBy.dollars, session);
+  if (zone !== 'PastTarget' && crossedCondition(session, 'Target')) return 'Target reached.';
   if (zone === 'PastTarget' && pastBy) {
     if (!pastBy.crossed) return plannedAmountWords('Target', pastBy.dollars, session);
     return pastBy.dollars.compare(ZERO) === 0 ? 'Target reached.' : `Target reached, ${money(pastBy.dollars)} past it.`;
@@ -176,7 +199,10 @@ function stakeGroup(view: TradeReplayView, session: ViewSession): ReadoutGroup |
   const targetOverrun = overrun(standing?.zone === 'PastTarget');
   // Past a line by its planned amount with the condition not triggered is no breach (W37): shorter words say so.
   const triggered = pastBy?.crossed ?? true;
-  const ending = stopOverrun ? (triggered ? 'Stop breached' : 'Not triggered') : targetOverrun ? (triggered ? 'Target reached' : 'Not triggered') : undefined;
+  // The condition status says the same as the headline (F2): a crossed condition ends the ratio whatever the dollars.
+  const stopCrossed = crossedCondition(session, 'Stop') !== undefined;
+  const targetCrossed = crossedCondition(session, 'Target') !== undefined;
+  const ending = stopOverrun ? (triggered || stopCrossed ? 'Stop breached' : 'Not triggered') : targetOverrun ? (triggered || targetCrossed ? 'Target reached' : 'Not triggered') : stopCrossed ? 'Stop breached' : targetCrossed ? 'Target reached' : undefined;
   const rows = [
     stopOverrun ? row(triggered ? 'Stop Overrun' : "Past Stop's amount", stopOverrun) : row('Risk to stop', valueOf(f.ongoingRiskToStop, money, f.ongoingRiskToStopInPlanR), changeWords(session.riskChange)),
     row('Result at the Stop', valueOf(f.outcomes?.atStop, signedMoney)),

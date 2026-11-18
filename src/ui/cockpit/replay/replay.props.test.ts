@@ -191,6 +191,78 @@ describe('replay.props: how it is going (W36, W37)', () => {
   });
 });
 
+// F2: each session follows its own condition status (T9.4), not the dollars' zone alone: a crossed Underlying price changes the words.
+describe('replay.props: the words follow the condition status (T9.14-F2)', () => {
+  // A condition read at the session's Mark: crossed with the distance past its price, or still active.
+  const reading = (role: 'Stop' | 'Target', boundary: string, status: 'Active' | 'Breached' | 'Reached', beyond: Rational | null): Figures['conditions'][number] => ({
+    ...condition(role, 'UnderlyingPrice', boundary),
+    result: {
+      kind: 'Value',
+      value: { status, distance: { dollars: usd(0), planR: usd(0) }, overrun: null, trigger: { distance: usd(0), beyond } },
+    } as unknown as Figures['conditions'][number]['result'],
+  });
+  const daleFri1113 = session({
+    date: '2026-11-13',
+    instrument: DALE,
+    held: -3,
+    pnl: -900,
+    pnlR: frac(-900, 1536),
+    standing: value({ zone: 'Between', share: frac(900, 1536) }),
+    figures: { conditions: [reading('Stop', '54.00', 'Breached', frac(30, 100))] },
+  });
+  const daleMon1116 = session({
+    date: '2026-11-16',
+    instrument: DALE,
+    held: -3,
+    pnl: -500,
+    pnlR: frac(-500, 1536),
+    standing: value({ zone: 'Between', share: frac(500, 1536) }),
+    figures: { conditions: [reading('Stop', '54.00', 'Active', null)] },
+  });
+
+  it('should read past the Stop on a session where the Underlying has crossed the Stop though the Trade P&L has not', () => {
+    const words = sessionWords(view([daleFri1113]), 0);
+    expect(words.howItIsGoing).toBe('Stop breached: DALE $0.30 past $54.00.');
+    expect(words.headline).toEqual({ figure: '−$900.00 · −0.59R', tone: 'Loss' });
+    const stake = replayProps(view([daleFri1113]), { Plot: () => null }).sessions[0]!.readout.find((g) => g.title === 'At stake from here, whole Position');
+    expect(stake?.rows.find((r) => r.label === 'Reward to risk')?.value.text).toBe('Stop breached');
+    // The dollars past the line as well: W37's words stand.
+    const both = session({ ...{ date: '2026-11-13', instrument: DALE, held: -3, pnl: -1700 }, standing: value({ zone: 'PastStop', pastBy: { dollars: usd(180), r: frac(3, 10), crossed: true } }), figures: { conditions: [reading('Stop', '54.00', 'Breached', frac(30, 100))] } });
+    expect(sessionWords(view([both]), 0).howItIsGoing).toBe('Past the Stop by $180.00 (0.30R).');
+  });
+
+  it('should go back to Behind on a later session where the condition is no longer crossed', () => {
+    const v = view([daleFri1113, daleMon1116]);
+    expect(sessionWords(v, 0).howItIsGoing).toBe('Stop breached: DALE $0.30 past $54.00.');
+    expect(sessionWords(v, 1).howItIsGoing).toBe('Behind: 33% of the way to the Stop.');
+    const stake = replayProps(v, { Plot: () => null }).sessions[1]!.readout.find((g) => g.title === 'At stake from here, whole Position');
+    expect(stake?.rows.find((r) => r.label === 'Reward to risk')?.value.text).not.toBe('Stop breached');
+    // Dollars past the planned amount alone, the price short of its trigger: the planned-amount words.
+    const dollarsOnly = session({
+      date: '2026-11-17',
+      instrument: DALE,
+      held: -3,
+      pnl: -1272,
+      standing: value({ zone: 'PastStop', pastBy: { dollars: usd(9), r: frac(9, 1536), crossed: false } }),
+      figures: { conditions: [reading('Stop', '54.00', 'Active', null)] },
+    });
+    expect(sessionWords(view([dollarsOnly]), 0).howItIsGoing).toBe("Past the Stop's planned amount by $9.00, though DALE is still above $54.00.");
+  });
+
+  it('should read Target reached on a session where the Target condition is reached though the Trade P&L is short of it', () => {
+    const brenTarget = session({
+      date: '2026-11-16',
+      pnl: 700,
+      pnlR: frac(700, 324),
+      standing: value({ zone: 'Between', share: frac(700, 956) }),
+      figures: { conditions: [reading('Target', '104.00', 'Reached', frac(1, 2))] },
+    });
+    expect(sessionWords(view([brenTarget]), 0).howItIsGoing).toBe('Target reached.');
+    const stake = replayProps(view([brenTarget]), { Plot: () => null }).sessions[0]!.readout.find((g) => g.title === 'At stake from here, whole Position');
+    expect(stake?.rows.find((r) => r.label === 'Reward to risk')?.value.text).toBe('Target reached');
+  });
+});
+
 describe('replay.props: what is at stake (W38)', () => {
   it('should say "From here: $352.00 at risk to the Stop · $928.00 more to the Target · 2.64 to 1 (the Plan was 2.95 to 1)."', () => {
     expect(sessionWords(view([brenMon1102]), 0).stake).toBe('From here: $352.00 at risk to the Stop · $928.00 more to the Target · 2.64 to 1 (the Plan was 2.95 to 1).');
