@@ -1,0 +1,233 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 9 selected item(s).",
+  "summary": {
+    "files_reviewed": 9,
+    "comments": 3,
+    "total_tokens": 164161,
+    "input_tokens": 162276,
+    "output_tokens": 1885,
+    "cache_read_tokens": 11648,
+    "elapsed": "1m12s"
+  },
+  "tool_calls": {
+    "total": 13,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 4,
+      "file_read": 8
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "tests/integration/d9/lifetime.test.ts",
+      "content": "The pending-expiration branch never asserts that the facade actually reports Settlement Due. These replay assertions would still pass if the Settlement Due item disappeared, and comparing two held quantities does not establish outstanding exposure. Before recording expiration, read getTradeDetail and assert an Open lifecycle, the DALE put settlement item, and the expected nonzero held quantity.",
+      "existing_code": "    expect(due.sessions.at(-1)!.heldQuantity).toEqual(due.sessions.at(-2)!.heldQuantity);",
+      "start_line": 36,
+      "end_line": 36,
+      "category": "test",
+      "severity": "medium"
+    },
+    {
+      "path": "tests/integration/d9/gaps.test.ts",
+      "content": "Please also compare Wednesday's riskChange and rewardChange after acknowledgment with their pre-acknowledgment values. They maintain separate baselines from trade P\u0026L, so checking only change allows a regression that resets either baseline on AcknowledgedUnavailable to pass this gap-preservation test. Tuesday's riskChange and rewardChange should also remain absent.",
+      "existing_code": "    expect(session(after, WED).change).toEqual(wednesday.change);",
+      "start_line": 57,
+      "end_line": 57,
+      "category": "test",
+      "severity": "medium"
+    },
+    {
+      "path": "tests/support/replay-series-app.ts",
+      "content": "Both Mark guards use loose inequality, which the supplied checklist explicitly prohibits. These arrays can yield null entries and undefined past their end; preserve both missing-value cases with explicit strict checks for null and undefined.",
+      "suggestion_code": "    if (stock !== null \u0026\u0026 stock !== undefined) await saveMark(app, instrumentKey(underlying), date, stock);",
+      "existing_code": "    if (stock != null) await saveMark(app, instrumentKey(underlying), date, stock);",
+      "start_line": 78,
+      "end_line": 78,
+      "category": "style",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "D9 integration tests and shared replay-series support",
+      "files": [
+        "tests/integration/d9/capabilities.test.ts",
+        "tests/integration/d9/gaps.test.ts",
+        "tests/integration/d9/lifetime.test.ts",
+        "tests/integration/d9/query-count.test.ts",
+        "tests/integration/d9/replay.test.ts",
+        "tests/integration/d9/review.test.ts",
+        "tests/integration/d9/scaling.test.ts",
+        "tests/integration/d9/support.ts",
+        "tests/support/replay-series-app.ts"
+      ]
+    }
+  ],
+  "session_id": "d752125a-1784-47ac-921e-3782ad781435",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "d752125a-1784-47ac-921e-3782ad781435",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "bd6ec2f3",
+      "resolved_base": "74b021e28fe5fc72b61bfb0321bf5fa1e38a9040",
+      "resolved_head": "bd6ec2f38c0ad0b7b3b3394aa655a01e463ac22b",
+      "exact_range": "74b021e28fe5fc72b61bfb0321bf5fa1e38a9040..bd6ec2f38c0ad0b7b3b3394aa655a01e463ac22b",
+      "source_artifact_sha256": "93cbe2c82a594005bd13a4e89d1c534b130d21f925a7b667cf28d6577649d760"
+    },
+    "execution": {
+      "ocr_version": "v1.13.12",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "1262bc9d298ee0b805f201fd99dc5185012d5c9789c15052cef0c24c8f10f9e8",
+          "path": "tests/integration/d9/gaps.test.ts",
+          "fingerprint": "bda0d71cbc8c40ca219e7618dbe13c2447d73d9ba352d47a718d2a68a273b602"
+        },
+        {
+          "item_id": "1651fd83f7205866256658ace41eb0d3a7e3b2da826a09a0cc8850a7b6c3f46e",
+          "path": "tests/integration/d9/support.ts",
+          "fingerprint": "581f7bb7980d82358e4a6f48e8b9778b8800a7d2ae4cce77c95b637f3f77b1d7"
+        },
+        {
+          "item_id": "1e601d1a56ad3fee323589674806fd60bb94a71af11b7eb969142cdabfb1a93b",
+          "path": "tests/support/replay-series-app.ts",
+          "fingerprint": "21acbdbe2d71a17eb8679f18cfa854aafbf19316c44690de67d4cc3955b2f79b"
+        },
+        {
+          "item_id": "45b8cde153848222749bfb983162f844946a42754cb63e613315558d71dfea51",
+          "path": "tests/integration/d9/query-count.test.ts",
+          "fingerprint": "3e5cd0e64f949d19286c4afed0a114073436c448f83efced83402aad3b3014bc"
+        },
+        {
+          "item_id": "881d3d9ff91403254a60773a5482f8ed1643de99e02ae564f706b9c4b277a432",
+          "path": "tests/integration/d9/review.test.ts",
+          "fingerprint": "20984fc37498ca99005556e4ec3012b6b783caeea40ca5fd092900429466d1d9"
+        },
+        {
+          "item_id": "962e129931a5460d2bb99ed4f59e82a0ae12b1bd47d8c37dcd8174d86d602241",
+          "path": "tests/integration/d9/lifetime.test.ts",
+          "fingerprint": "a33c83e4e7abdddb9d881982bd904c42aa0ba757f801a3a20b9a5d7e851c3322"
+        },
+        {
+          "item_id": "b7b7852e7bb26de6caaef793273c4a62d4c43b0a1b1cede96731a5c27eced294",
+          "path": "tests/integration/d9/capabilities.test.ts",
+          "fingerprint": "b260e67aea21c5332998579c3debe4e3c2b7c9d24e4051058828acf0b3e7e5ce"
+        },
+        {
+          "item_id": "db6bd185cad940e1c5b42c2ffb321e09baa69cbea1e5f20771f645c4e5fef761",
+          "path": "tests/integration/d9/replay.test.ts",
+          "fingerprint": "c98a9602639b27271fa44c52fd7fd2981d3214ee4b74ba0bdb4be82f01fa7ad0"
+        },
+        {
+          "item_id": "f43a157120f5d7d0f5deac457b07d1d0bec3092f030458715af79e5883d0ce14",
+          "path": "tests/integration/d9/scaling.test.ts",
+          "fingerprint": "d7e637fdb1e4a2dc1bc39bb03708d122efb126f3dbe2d7675220499b6bbde52b"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "1262bc9d298ee0b805f201fd99dc5185012d5c9789c15052cef0c24c8f10f9e8",
+          "path": "tests/integration/d9/gaps.test.ts",
+          "fingerprint": "bda0d71cbc8c40ca219e7618dbe13c2447d73d9ba352d47a718d2a68a273b602"
+        },
+        {
+          "item_id": "1651fd83f7205866256658ace41eb0d3a7e3b2da826a09a0cc8850a7b6c3f46e",
+          "path": "tests/integration/d9/support.ts",
+          "fingerprint": "581f7bb7980d82358e4a6f48e8b9778b8800a7d2ae4cce77c95b637f3f77b1d7"
+        },
+        {
+          "item_id": "1e601d1a56ad3fee323589674806fd60bb94a71af11b7eb969142cdabfb1a93b",
+          "path": "tests/support/replay-series-app.ts",
+          "fingerprint": "21acbdbe2d71a17eb8679f18cfa854aafbf19316c44690de67d4cc3955b2f79b"
+        },
+        {
+          "item_id": "45b8cde153848222749bfb983162f844946a42754cb63e613315558d71dfea51",
+          "path": "tests/integration/d9/query-count.test.ts",
+          "fingerprint": "3e5cd0e64f949d19286c4afed0a114073436c448f83efced83402aad3b3014bc"
+        },
+        {
+          "item_id": "881d3d9ff91403254a60773a5482f8ed1643de99e02ae564f706b9c4b277a432",
+          "path": "tests/integration/d9/review.test.ts",
+          "fingerprint": "20984fc37498ca99005556e4ec3012b6b783caeea40ca5fd092900429466d1d9"
+        },
+        {
+          "item_id": "962e129931a5460d2bb99ed4f59e82a0ae12b1bd47d8c37dcd8174d86d602241",
+          "path": "tests/integration/d9/lifetime.test.ts",
+          "fingerprint": "a33c83e4e7abdddb9d881982bd904c42aa0ba757f801a3a20b9a5d7e851c3322"
+        },
+        {
+          "item_id": "b7b7852e7bb26de6caaef793273c4a62d4c43b0a1b1cede96731a5c27eced294",
+          "path": "tests/integration/d9/capabilities.test.ts",
+          "fingerprint": "b260e67aea21c5332998579c3debe4e3c2b7c9d24e4051058828acf0b3e7e5ce"
+        },
+        {
+          "item_id": "db6bd185cad940e1c5b42c2ffb321e09baa69cbea1e5f20771f645c4e5fef761",
+          "path": "tests/integration/d9/replay.test.ts",
+          "fingerprint": "c98a9602639b27271fa44c52fd7fd2981d3214ee4b74ba0bdb4be82f01fa7ad0"
+        },
+        {
+          "item_id": "f43a157120f5d7d0f5deac457b07d1d0bec3092f030458715af79e5883d0ce14",
+          "path": "tests/integration/d9/scaling.test.ts",
+          "fingerprint": "d7e637fdb1e4a2dc1bc39bb03708d122efb126f3dbe2d7675220499b6bbde52b"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "20a069fd9a019a86129cb547d7070ca642cf271712edfe3011c9aeff5db05563",
+          "path": "evidence/D09/tdd-log/T9.17.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "63982aa94b6afff445368634782e3c2a46b396533cf8e6ef6e70d712202cd3fd",
+          "path": "evidence/D09/suite-runs/T9.17-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "79533e1bc09c93a12834f3db9b8b6185b2ece082b69f8bf33e99a506f76bd877",
+          "path": "evidence/D09/suite-runs/T9.17-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "8262d83d61edbb2f14d6d83cd7c7a726ceb568c53710b359992e8056721b383c",
+          "path": "evidence/D09/suite-runs/T9.17-acceptance-commands.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "94ea56facbb84bd8b1aa2d1dfc9bf21a15694e82c1e1a477d1a0063189dbde67",
+          "path": "evidence/D09/suite-runs/T9.17-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "d2abefcb357d69b41fe125020fefdefbe1fcc909b522600006bb13b5e5255f80",
+          "path": "evidence/D09/suite-runs/T9.17-checks.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 72252
+  }
+}

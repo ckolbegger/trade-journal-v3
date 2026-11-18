@@ -244,6 +244,15 @@ Stage A runs as a swarm (decision 111, agent cap 4). Each task's heading holds i
 - All first-run passes (acceptance tests of merged behaviour), each file with a mutation check of one expected value (e.g. replay: Thu 11-12 Trade P&L 983 for 982 → `AssertionError … to deeply equal …`; query-count: `replayTrade` `meta.get` 9 for 8; capabilities: `['ConditionStatus']` alone). I9.2's first run failed on the test's own guess (after an acknowledgment the reason is `AcknowledgedUnavailable`, not `MarkMissing`); fixed in the test, no section 5 figure changed; logged.
 - I9.6: `replayTrade`'s requests equal D8P's pinned count; `getTrade`: two `byInstrumentDate` getAll for two Instruments, no Journal narrative read; `open` and `getTrade` tallies pinned from today's code (no pre-D9 baseline).
 - Lane tier `T9.17`: unit 2223, integration 279 (130 files), checks 14 of 14. `acceptance-commands.sh`: 3 of 9 now (AC-CALC-003, AC-CAP-001, AC-PERF-001); the six others need T9.18's `e2e/d9` specs or stage B's `estimates.test.ts`. At the gate: 7 of 9 expected, AC-CALC-005 and AC-REV-002 failing by design.
+- ocr round 1 (`ocr/T9.17-bd6ec2f3.json`), 3 findings:
+
+| Severity | Location | Claim | Assessment | Outcome |
+|---|---|---|---|---|
+| medium | `lifetime.test.ts:36` | The pending-expiration case never asserts Settlement Due, and comparing the last two held quantities doesn't show exposure outstanding | Valid | T9.17-B1 |
+| medium | `gaps.test.ts:57` | After the acknowledgment only Wednesday's `change` is re-checked; `riskChange`/`rewardChange` and Tuesday's absent changes aren't | Valid | T9.17-B2 |
+| low | `replay-series-app.ts:78` | Loose `!= null` (lines 78, 80) | Doubtful (no `eqeqeq` rule; correct) | T9.17-B3, structural |
+
+- **T9.17-B1.** Case: "should report R-DALE-U as Settlement Due with exposure outstanding before its Expiration is recorded" (strengthens the I9.5 case). **T9.17-B2.** Case: strengthen I9.2 so after the acknowledgment Wednesday's `riskChange` and `rewardChange` still measure from Monday and Tuesday's three changes stay absent. **T9.17-B3.** Explicit null and undefined checks; verification: the d9 files unchanged before and after. One at a time in lane IN. Test-only bug tasks: a first-run pass is expected; each needs a mutation check of the behaviour it now pins.
 
 ## T9.15 Review card: the replay before the Action
 
