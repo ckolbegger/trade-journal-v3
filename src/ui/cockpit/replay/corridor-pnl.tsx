@@ -206,6 +206,9 @@ export function PnlChart({ props, width }: { props: ReplayPlotProps; width: numb
             </text>
           </g>
         ))}
+      {sessions[props.hoverIndex ?? -1] && (
+        <rect className="hover-column" x={f1(time.x(sessions[props.hoverIndex!]!.slot) - time.column / 2)} y={TOP} width={f1(time.column)} height={FLOOR - TOP} />
+      )}
       <path className="area profit" d={areaPath(Math.max)} />
       <path className="area loss" d={areaPath(Math.min)} />
       {sessions.map((s) => {

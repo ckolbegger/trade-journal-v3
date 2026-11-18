@@ -61,6 +61,9 @@ export function PriceStrip({ props, width }: { props: ReplayPlotProps; width: nu
           </text>
         </g>
       ))}
+      {sessions[props.hoverIndex ?? -1] && (
+        <rect className="hover-column" x={f1(time.x(sessions[props.hoverIndex!]!.slot) - time.column / 2)} y={TOP} width={f1(time.column)} height={FLOOR - TOP} />
+      )}
       {sessions
         .filter((s) => s.underlyingMark === null)
         .map((s) => (

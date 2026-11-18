@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { CorridorPlot } from './corridor.tsx';
 import type { LabelledFigure, PlotMarker, PlotSession, ReplayPlotProps } from './replay.types.ts';
@@ -391,5 +391,38 @@ describe('Corridor: the Trade P&L (W40, W41)', () => {
     expect(num(first, 'y')).toBeGreaterThan(num(second, 'y'));
     expect(num(first, 'x')).toBeLessThan(num(second, 'x'));
     expect(pnl(container).querySelectorAll('text.banked-label')).toHaveLength(2);
+  });
+
+  // T9.11-B5: one hit area per revealed session, shared by both charts (they use the same time axis), in a group beside
+  // the charts' image: a button named by the session's date label.
+  const hits = (): HTMLElement[] => screen.getAllByRole('button');
+
+  it('should report hover and focus on a revealed session, and its end on leave and blur', () => {
+    const seen: (number | null)[] = [];
+    render(<CorridorPlot {...props({ sessions: DAYS.slice(0, 4).map((_, i) => bren(i)), onHoverSession: (i) => seen.push(i) })} />);
+    expect(hits().map((h) => h.getAttribute('aria-label'))).toEqual(DAYS.slice(0, 4));
+    fireEvent.pointerEnter(hits()[2]!);
+    fireEvent.pointerLeave(hits()[2]!);
+    fireEvent.focus(hits()[3]!);
+    fireEvent.blur(hits()[3]!);
+    expect(seen).toEqual([2, null, 3, null]);
+  });
+
+  it('should select a revealed session on a click or tap', () => {
+    const picked: number[] = [];
+    render(<CorridorPlot {...props({ onSelectSession: (i) => picked.push(i) })} />);
+    fireEvent.click(hits()[5]!);
+    expect(picked).toEqual([5]);
+  });
+
+  it('should mark the hovered session', () => {
+    const { container, rerender } = render(<CorridorPlot {...props()} />);
+    expect(container.querySelectorAll('rect.hover-column')).toHaveLength(0);
+    rerender(<CorridorPlot {...props({ hoverIndex: 6 })} />);
+    // A column in each chart, outlined as well as tinted so the cue is not colour alone, and the hit area says so too.
+    expect(container.querySelectorAll('svg.price-strip rect.hover-column')).toHaveLength(1);
+    expect(container.querySelectorAll('svg.pnl-chart rect.hover-column')).toHaveLength(1);
+    expect(hits()[6]!.getAttribute('data-hovered')).toBe('true');
+    expect(hits()[5]!.getAttribute('data-hovered')).toBeNull();
   });
 });

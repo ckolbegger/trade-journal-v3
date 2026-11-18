@@ -225,3 +225,40 @@
   stroke: var(--card);
   stroke-width: 1.5;
 }
+
+/* Hover and focus on a session (D9 T9.11-B5): the column is tinted and outlined, so colour is not the only cue. */
+.replay-plot .hover-column {
+  fill: var(--tint);
+  stroke: var(--ink);
+  stroke-width: 1;
+  stroke-dasharray: 2 2;
+}
+
+/* One hit area per session over both charts: transparent, at least 44 px wide, reachable by keyboard. */
+.replay-plot-frame {
+  position: relative;
+}
+
+.replay-hits {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.replay-hit {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  min-width: 44px;
+  transform: translateX(-50%);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.replay-hit:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
