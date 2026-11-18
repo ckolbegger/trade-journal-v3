@@ -205,9 +205,9 @@ function stakeGroup(view: TradeReplayView, session: ViewSession): ReadoutGroup |
   const stopBreached = triggered || stopCrossed;
   const targetReached = triggered || targetCrossed;
   let ending: string | undefined;
-  if (stopOverrun) ending = stopBreached ? 'Stop breached' : 'Not triggered';
+  if (stopCrossed) ending = 'Stop breached';
+  else if (stopOverrun) ending = stopBreached ? 'Stop breached' : 'Not triggered';
   else if (targetOverrun) ending = targetReached ? 'Target reached' : 'Not triggered';
-  else if (stopCrossed) ending = 'Stop breached';
   else if (targetCrossed) ending = 'Target reached';
   const stopOverrunLabel = triggered ? 'Stop Overrun' : "Past Stop's amount";
   const targetOverrunLabel = triggered ? 'Target Overrun' : "Past Target's amount";
