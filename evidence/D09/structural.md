@@ -142,8 +142,14 @@ Stage A runs as a swarm (decision 111, agent cap 4). Each task's heading holds i
 - **T9.11-B2.** Case: "it should show the readout of the slider's session, not the last".
 - T9.11-B2 commit `ce8e32af` (test only): **first-run pass**, as expected (the frame reads `session.readout`). Mutation: the readout maps `sessions[last].readout`: `AssertionError: expected 'MarksBREN Mark$110.00' to contain '$103.00'`; restored. Lane tier `T9.11-B2`: unit 2192, integration 269, checks 14 of 14. ocr (`ocr/T9.11-B2-ce8e32af.json`): **No findings.**
 - **T9.11-B3.** Case: "it should give the plot the table's id to describe it".
-- T9.11-B3 commit `ba52e7cc` (test only): **first-run pass**, as expected (`describedBy` reaches the plot through the `plotBase` spread). The plot double now sets `aria-describedby`. Mutation: `describedBy=""` after the spread: `AssertionError: expected '' to be 'bren-table'`; restored. Test name "the table id" (no apostrophe). Lane tier `T9.11-B3`: unit 2193, integration 269, checks 14 of 14.
+- T9.11-B3 commit `ba52e7cc` (test only): **first-run pass**, as expected (`describedBy` reaches the plot through the `plotBase` spread). The plot double now sets `aria-describedby`. Mutation: `describedBy=""` after the spread: `AssertionError: expected '' to be 'bren-table'`; restored. Test name "the table id" (no apostrophe). Lane tier `T9.11-B3`: unit 2193, integration 269, checks 14 of 14. ocr (`ocr/T9.11-B3-ba52e7cc.json`): **No findings.**
 - **T9.11-B4.** Case: "it should show whether the table is folded or open".
+- T9.11-B4 commit `5ea8fd77`: red a runtime `TypeError` reading `textContent` of null (no cue element: behavior absent, accepted as valid red), then green. An `aria-hidden` `span.replay-table-cue` in the summary shows ▸ folded, ▾ open, from the `details` element's `onToggle`. The W45 fold case's summary-text assertion now strips the glyph (in the refactor row). Lane tier `T9.11-B4`: unit 2194, integration 269, checks 14 of 14. ocr (`ocr/T9.11-B4-5ea8fd77.json`): **No findings.**
+- Lane CF rebased onto `c183e890` and merged by fast-forward: T9.11 `b6701de5`, B1 `1b092cdd`, B2 `691b16b8`, B3 `bf9d8758`, B4 `82154dd3`. Lane CF's tasks are all done.
+
+## T9.14 Trade Detail: the Replay drawer
+
+- **Who writes `replayProps(view)`** (implementation-level decision, recorded): no case in T9.9, T9.10 or T9.11 needed the full adapter, so it is unwritten. T9.14 writes it in `replay.props.ts` (lane CF is finished, so the file is free), with its own cases in `replay.props.test.ts` for each part its seam draws from (slider text, headline, readout groups, table rows, plot sessions), using only section 1.6's approved words and the domain's finished values. T9.15 then uses it as merged; if T9.7 merges before T9.14, T9.15 waits for T9.14 rather than writing a second adapter.
 
 ## T9.6 The shared replay assembly; `replayTrade` carries the new fields
 

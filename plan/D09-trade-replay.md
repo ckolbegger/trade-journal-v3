@@ -939,13 +939,13 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T9.5 | A | 1 | TA | Done | `1bbca00d`; B1 `f9b9172f`; B2 `f670c081` |
 | T9.9 | A | 1 | CF | Done | `1687f447`; B1 `516ba4c3` (lane TA); B2 `486c719d`; B3 `e52bbe37` |
 | T9.10 | A | 1 | CF | Done | `0e0a8efb`; B1 `b3f0a4c7`; B2 `62e57929` |
-| T9.11 | A | 1 | CF | In progress from `62e57929` | |
+| T9.11 | A | 1 | CF | Done | `b6701de5`; B1 `1b092cdd`; B2 `691b16b8`; B3 `bf9d8758`; B4 `82154dd3`; B5 `65b5ba3c`; B6 `69cd07c8`; B7 `a9183904` (B5, B6, B7 in lane CP) |
 | T9.12 | A | 1 | CP | Done | `9fbdd2f3`; B1 `523decd4` |
 | T9.13 | A | 1 | CP | Done | `622301c9`; B1 `51ec9e0d`; B2 `d3acb89b`; B3 `f3e996c3`; B4 `e263efa1` |
 | T9.6 | A | 2 | RV | Done | `8c810c83`; B1 `40b6263e` |
 | T9.7 | A | 2 | RV | In progress from `40b6263e` | |
 | T9.8 | A | 2 | RV | Not started | |
-| T9.14 | A | 2 | DW | Not started | |
+| T9.14 | A | 2 | DW | In progress from `82154dd3` | |
 | T9.15 | A | 2 | RW | Not started | |
 | T9.16 | A | 2 | DW | Not started | |
 | T9.17 | A | 3 | — | Not started | |
