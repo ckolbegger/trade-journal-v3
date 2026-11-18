@@ -83,7 +83,7 @@
 /* The readout (W43): groups side by side where there is room, one under another on a phone. */
 .replay-readout {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
   gap: 12px 24px;
   margin-top: 12px;
 }
@@ -100,8 +100,9 @@
 
 .replay-readout-row {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
-  gap: 8px;
+  gap: 0 8px;
   padding: 2px 0;
   border-bottom: 1px solid var(--line);
 }

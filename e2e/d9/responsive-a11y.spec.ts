@@ -85,7 +85,7 @@ test.describe('B9.5 Responsive, accessible and offline', () => {
 
   // At 320 px the Review card's readout reaches past the screen: "+$478.00" (Banked) ends at x = 328 and "+$316.00" (Result at the Stop) at 324, so the page scrolls sideways (scrollWidth
   // 328 over 320). Reported to the main session as a UI defect, so this case is fixme until it is fixed.
-  test.fixme('should fit the Review card replay at 320 px with no sideways scroll', async ({ profile }) => {
+  test('should fit the Review card replay at 320 px with no sideways scroll', async ({ profile }) => {
     test.setTimeout(420_000);
     const { context, page, trade } = await build(profile, BREN, closeOf('2026-11-16'), 10);
     await page.goto('/');
