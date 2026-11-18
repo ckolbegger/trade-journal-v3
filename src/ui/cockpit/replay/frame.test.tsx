@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ComponentType } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -37,13 +37,16 @@ function frameSession(index: number): ReplayFrameSession {
 }
 
 // The plot double lists what it is given, so a test can see what the frame passes it.
-const PlotDouble: ComponentType<ReplayPlotProps> = ({ sessions, sliderIndex }) => (
+// Each session is a button that hovers, focuses and selects the way the real plot's hit areas do; one more, past the
+// revealed sessions, stands for a pointer reaching a session the frame has not revealed.
+const PlotDouble: ComponentType<ReplayPlotProps> = ({ sessions, sliderIndex, onHoverSession, onSelectSession }) => (
   <div data-testid="plot" data-slider={sliderIndex}>
-    {sessions.map((s) => (
-      <span key={s.slot} data-testid="point" data-mark={s.underlyingMark ?? ''}>
+    {sessions.map((s, i) => (
+      <button key={s.slot} type="button" data-testid="point" data-mark={s.underlyingMark ?? ''} onMouseEnter={() => onHoverSession?.(i)} onFocus={() => onHoverSession?.(i)} onMouseLeave={() => onHoverSession?.(null)} onBlur={() => onHoverSession?.(null)} onClick={() => onSelectSession?.(i)}>
         {s.dateLabel}
-      </span>
+      </button>
     ))}
+    <button type="button" aria-label="Later session" onMouseEnter={() => onHoverSession?.(sessions.length)} onClick={() => onSelectSession?.(sessions.length)} />
   </div>
 );
 
@@ -168,5 +171,149 @@ describe('Replay frame: the slider (W42)', () => {
     await user.keyboard('{Home}');
     expect(attr(screen.getByTestId('replay-card'), 'data-tone')).toBe('Loss');
     expect(screen.queryByText('Behind: 12% of the way to the Stop.')).not.toBeNull();
+  });
+});
+
+// The readout, table and hover are finished text from the props; the last session carries some for the cases below.
+const mixed = (over: Partial<ReplayFrameSession> = {}, count = 11): ReplayProps => props({ sessions: Array.from({ length: count }, (_, i) => (i === count - 1 ? { ...frameSession(i), ...over } : frameSession(i))) }, count);
+
+describe('Replay frame: the readout (W43)', () => {
+  const groups: ReplayFrameSession['readout'] = [
+    { title: 'How it is going', rows: [{ label: 'Trade P&L', value: { kind: 'Figure', text: '+$988.00' }, drawn: true }, { label: 'Banked', value: { kind: 'Figure', text: '+$478.00' }, drawn: true }] },
+    { title: 'At stake from here, whole Position', rows: [{ label: 'Risk to stop', value: { kind: 'Figure', text: '$672.00' }, drawn: true }, { label: 'Max reward', value: { kind: 'Unbounded', text: 'No cap above' } }] },
+    { title: 'Marks', rows: [{ label: 'BREN Mark', value: { kind: 'Figure', text: '$110.00' }, drawn: true }] },
+    { title: 'Position', rows: [{ label: 'Open', value: { kind: 'Figure', text: '+$510.00' }, drawn: true }] },
+    { title: 'The Plan', rows: [{ label: 'Result at the Stop', value: { kind: 'Figure', text: '+$316.00' }, drawn: true }, { label: 'Result at the Target', value: { kind: 'Figure', text: '+$956.00' }, drawn: true }] },
+  ];
+
+  it('should list the slider session under its five groups, with every figure the charts draw', () => {
+    render(<ReplayFrame {...mixed({ readout: groups })} />);
+    const readout = screen.getByTestId('readout');
+    expect(within(readout).getAllByRole('heading').map(text)).toEqual(['How it is going', 'At stake from here, whole Position', 'Marks', 'Position', 'The Plan']);
+    for (const figure of ['+$988.00', '+$478.00', '$672.00', '$110.00', '+$510.00', '+$316.00', '+$956.00']) expect(text(readout)).toContain(figure);
+    expect(within(readout).getByText('Trade P&L')).toBeTruthy();
+  });
+
+  it('should read an Unbounded Max reward as No cap above, an Unavailable figure as its reason, and a Not applicable one differently from both', () => {
+    const rows: ReplayFrameSession['readout'] = [
+      {
+        title: 'The Plan',
+        rows: [
+          { label: 'Max reward', value: { kind: 'Unbounded', text: 'No cap above' } },
+          { label: 'Result at the Stop', value: { kind: 'Unavailable', text: 'No Mark on Mon Nov 16' } },
+          { label: 'Stop Overrun', value: { kind: 'NotApplicable', text: 'Not applicable' } },
+        ],
+      },
+    ];
+    render(<ReplayFrame {...mixed({ readout: rows })} />);
+    const cell = (label: string) => screen.getByText(label).closest('[data-row]')!.querySelector('[data-kind]')!;
+    expect(text(cell('Max reward'))).toBe('No cap above');
+    expect(text(cell('Result at the Stop'))).toBe('No Mark on Mon Nov 16');
+    expect(text(cell('Stop Overrun'))).toBe('Not applicable');
+    expect(new Set(['Max reward', 'Result at the Stop', 'Stop Overrun'].map((l) => attr(cell(l), 'data-kind'))).size).toBe(3);
+  });
+
+  it('should give each figure its change since the session it is measured from', () => {
+    const rows: ReplayFrameSession['readout'] = [
+      {
+        title: 'How it is going',
+        rows: [
+          { label: 'Trade P&L', value: { kind: 'Figure', text: '+$688.00' }, change: 'down $150.00 since Fri Nov 13' },
+          { label: 'Banked', value: { kind: 'Figure', text: '+$478.00' }, change: 'up $60.00 since Fri Nov 13' },
+          { label: 'Open', value: { kind: 'Figure', text: '+$210.00' } },
+        ],
+      },
+    ];
+    render(<ReplayFrame {...mixed({ readout: rows })} />);
+    const row = (label: string) => screen.getByText(label).closest('[data-row]')!;
+    expect(text(row('Trade P&L'))).toContain('down $150.00 since Fri Nov 13');
+    expect(text(row('Banked'))).toContain('up $60.00 since Fri Nov 13');
+    expect(text(row('Open'))).not.toContain('since');
+  });
+
+  it('should show Final result in place of the first two groups on a final session', () => {
+    const final: ReplayFrameSession['readout'] = [{ title: 'Final result', rows: [{ label: 'Trade P&L', value: { kind: 'Figure', text: '+$988.00' } }] }, groups[2]!];
+    render(<ReplayFrame {...mixed({ isFinal: true, readout: final })} />);
+    expect(within(screen.getByTestId('readout')).getAllByRole('heading').map(text)).toEqual(['Final result', 'Marks']);
+    expect(screen.queryByText('How it is going', { selector: 'h3' })).toBeNull();
+  });
+});
+
+describe('Replay frame: the text equivalent (W45)', () => {
+  // Each session's table row, finished: a Mark, the Trade P&L and the events.
+  const withTable = (count = 11, initialSession?: string): ReplayProps => {
+    const base = props({ tableColumns: ['BREN Mark', 'Trade P&L'], initialSession }, count);
+    return { ...base, sessions: base.sessions.map((s, i) => ({ ...s, tableRow: { dateLabel: DAYS[i] ?? '', cells: [`$${100 + i}.00`, FIGURES[i]?.split(' · ')[0] ?? ''], events: i === 3 ? ['Sold 2 at $4.00', 'Stop moved'] : [] } })) };
+  };
+
+  it('should fold a table titled Session by session under the charts, one row per revealed session', () => {
+    const { container } = render(<ReplayFrame {...withTable(11, '2026-11-04')} />);
+    const fold = container.querySelector('details')!;
+    expect(fold.hasAttribute('open')).toBe(false);
+    expect(text(fold.querySelector('summary')!)).toBe('Session by session');
+    expect(within(fold).getAllByRole('columnheader', { hidden: true }).map(text)).toEqual(['Session', 'BREN Mark', 'Trade P&L', 'Events']);
+    const rows = within(fold).getAllByRole('row', { hidden: true }).slice(1);
+    expect(rows.map((r) => text(r))).toEqual(['Mon Nov 2$100.00-$40.00', 'Tue Nov 3$101.00-$120.00', 'Wed Nov 4$102.00+$60.00']);
+    expect(attr(fold.querySelector('table')!, 'id')).toBe('replay-table');
+  });
+
+  it('should read a session without a Mark as No Mark in its cells, never a carried value', () => {
+    const base = withTable(11, '2026-11-04');
+    const gap = { ...base, sessions: base.sessions.map((s, i) => (i === 1 ? { ...s, tableRow: { ...s.tableRow, cells: ['No Mark', 'No Mark'] } } : s)) };
+    render(<ReplayFrame {...gap} />);
+    const row = within(screen.getByRole('table', { hidden: true })).getByText('Tue Nov 3').closest('tr')!;
+    expect(within(row).getAllByRole('cell', { hidden: true }).map(text)).toEqual(['No Mark', 'No Mark', '']);
+    expect(text(row)).not.toContain('$100.00');
+  });
+
+  it('should name each session events in the Events column', () => {
+    render(<ReplayFrame {...withTable()} />);
+    const row = within(screen.getByRole('table', { hidden: true })).getByText('Thu Nov 5').closest('tr')!;
+    const cells = within(row).getAllByRole('cell', { hidden: true });
+    expect(text(cells[cells.length - 1]!)).toBe('Sold 2 at $4.00; Stop moved');
+  });
+});
+
+describe('Replay frame: hover and tap', () => {
+  const withHover = (initialSession?: string): ReplayProps => {
+    const base = props({ initialSession });
+    return { ...base, sessions: base.sessions.map((s, i) => ({ ...s, hover: [DAYS[i] ?? '', `BREN Mark $${100 + i}.00`, `Trade P&L ${FIGURES[i]?.split(' · ')[0]}`] })) };
+  };
+  const point = (day: string) => screen.getAllByTestId('point').find((p) => text(p) === day)!;
+
+  it('should show a revealed session Marks and result on hover and on focus', async () => {
+    const user = userEvent.setup();
+    render(<ReplayFrame {...withHover()} />);
+    expect(screen.queryByTestId('hover')).toBeNull();
+    await user.hover(point('Tue Nov 3'));
+    expect(text(screen.getByTestId('hover'))).toBe('Tue Nov 3BREN Mark $101.00Trade P&L -$120.00');
+    await user.unhover(point('Tue Nov 3'));
+    expect(screen.queryByTestId('hover')).toBeNull();
+    act(() => point('Fri Nov 6').focus());
+    expect(text(screen.getByTestId('hover'))).toBe('Fri Nov 6BREN Mark $104.00Trade P&L +$210.00');
+    act(() => point('Fri Nov 6').blur());
+    expect(screen.queryByTestId('hover')).toBeNull();
+  });
+
+  it('should move the slider to a session when it is clicked or tapped', async () => {
+    const user = userEvent.setup();
+    const onSessionChange = vi.fn();
+    render(<ReplayFrame {...withHover()} onSessionChange={onSessionChange} />);
+    await user.click(point('Wed Nov 4'));
+    expect(value()).toBe('2');
+    expect(onSessionChange).toHaveBeenLastCalledWith('2026-11-04');
+    expect(text(screen.getByTestId('headline'))).toContain('+$60.00 · 0.09R');
+    expect(screen.getAllByTestId('point')).toHaveLength(3);
+  });
+
+  it('should show nothing for a session not yet revealed', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<ReplayFrame {...withHover('2026-11-04')} />);
+    await user.hover(screen.getByRole('button', { name: 'Later session' }));
+    expect(screen.queryByTestId('hover')).toBeNull();
+    expect(text(container)).not.toContain('Thu Nov 5');
+    expect(text(container)).not.toContain('$103.00');
+    await user.click(screen.getByRole('button', { name: 'Later session' }));
+    expect(value()).toBe('2');
   });
 });

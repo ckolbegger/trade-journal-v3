@@ -2,7 +2,7 @@ import { useState, type KeyboardEvent } from 'react';
 import type { ReplayProps } from './replay.types.ts';
 
 // A255: the frame owns the headline, the slider and the reveal rule. It selects finished values; it works out none.
-export function ReplayFrame({ tradeKey, sessions, initialSession, sliderLabel, previousLabel, nextLabel, plotBase, Plot, renderSince, renderChips, onSessionChange }: ReplayProps) {
+export function ReplayFrame({ tradeKey, sessions, initialSession, sliderLabel, previousLabel, nextLabel, tableTitle, tableColumns, plotBase, Plot, renderSince, renderChips, onSessionChange }: ReplayProps) {
   const last = sessions.length - 1;
   // A257: the slider's session is a date held with the Trade it belongs to, so a longer replay of the same Trade keeps it and another Trade starts afresh.
   const [held, setHeld] = useState({ tradeKey, date: initialSession });
@@ -10,7 +10,11 @@ export function ReplayFrame({ tradeKey, sessions, initialSession, sliderLabel, p
   const found = sessions.findIndex((s) => s.date === (held.tradeKey === tradeKey ? held.date : initialSession));
   const current = found < 0 ? last : found;
   const session = sessions[current];
+  // The session under the pointer or the keyboard's focus, which the plot reports and the frame shows.
+  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
   if (!session) return null;
+  // P118: a session after the slider's is not shown, however it was reached.
+  const hovered = hoverIndex === null || hoverIndex > current ? undefined : sessions[hoverIndex];
   // W36: with no Mark the reason stands in the figure's place.
   const headline = session.headline.figure ?? session.headline.reason ?? '';
   const move = (to: number) => {
@@ -50,7 +54,63 @@ export function ReplayFrame({ tradeKey, sessions, initialSession, sliderLabel, p
         </span>
       </div>
       {/* P118: only the sessions up to the slider's reach the plot; a later one is never in the page. */}
-      <Plot {...plotBase} sessions={sessions.slice(0, current + 1).map((s) => s.plot)} sliderIndex={current} />
+      <Plot {...plotBase} sessions={sessions.slice(0, current + 1).map((s) => s.plot)} sliderIndex={current} hoverIndex={hoverIndex} onHoverSession={setHoverIndex} onSelectSession={(index) => index <= current && move(index)} />
+      {/* Hover and focus show the session's own lines, finished in the props. */}
+      {hovered && (
+        <div className="replay-hover" data-testid="hover">
+          {hovered.hover.map((line, i) => (
+            <div key={i}>{line}</div>
+          ))}
+        </div>
+      )}
+      {/* W43: the slider's session as text, every figure the charts draw; the rows are finished, nothing is added up here. */}
+      <div className="replay-readout" data-testid="readout">
+        {session.readout.map((group) => (
+          <section key={group.title} className="replay-readout-group">
+            <h3>{group.title}</h3>
+            <dl>
+              {group.rows.map((row) => (
+                <div key={row.label} className="replay-readout-row" data-row={row.label}>
+                  <dt>{row.label}</dt>
+                  <dd>
+                    {/* The kind is for the styling: an Unavailable figure reads in italics, a Not applicable one muted, apart from a Figure. */}
+                    <span className="replay-value" data-kind={row.value.kind}>
+                      {row.value.text}
+                    </span>
+                    {row.change && <span className="replay-change"> {row.change}</span>}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+        ))}
+      </div>
+      {/* W45: the charts' text equivalent, folded; the plot is described by this table, so it holds the revealed sessions only (P118). */}
+      <details className="replay-table">
+        <summary>{tableTitle}</summary>
+        <table id={plotBase.describedBy}>
+          <thead>
+            <tr>
+              {['Session', ...tableColumns, 'Events'].map((column) => (
+                <th key={column} scope="col">
+                  {column}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {sessions.slice(0, current + 1).map((s) => (
+              <tr key={s.date}>
+                <th scope="row">{s.tableRow.dateLabel}</th>
+                {s.tableRow.cells.map((cell, i) => (
+                  <td key={i}>{cell}</td>
+                ))}
+                <td>{s.tableRow.events.join('; ')}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </details>
     </section>
   );
 }
