@@ -100,7 +100,18 @@ Stage A runs as a swarm (decision 111, agent cap 4). Each task's heading holds i
 | low | `replay-series.ts:175` | The nested ternary picking Opened, Closed, Added or Reduced | Valid (readability) | T9.5-B2, structural |
 
 - **T9.5-B1.** Case: "it should list only the fills up to the session's close in a Position Change that straddles it, with the effect they make".
+- T9.5-B1 commit `8cf1f154`: red `expected [['pc-bren-2','Closed']] to equal [['pc-bren-2','Reduced']]` (R-BREN-U with pc-bren-2 a sale of 4: 2 at 4.00 on 11-12, 2 at 4.10 on 11-13 after 11-12's close), then green. `markersOf(record, cutoff)` filters fills by `atCutoff`'s rule, per session; the effect uses the open quantity the kept fills make. Lane tier `T9.5-B1`: unit 2166, integration 269, checks 14 of 14. The later fills get no marker on any day (the Position Change is listed only in its first fill's session, A211): **PD1** in `DECISIONS-PENDING.md`. ocr (`ocr/T9.5-B1-8cf1f154.json`): **No findings.**
 - **T9.5-B2.** Readability: the effect as an if/else chain; verification `replay-series.test.ts` unchanged before and after.
+- T9.5-B2 commit `b8265864`: `replay-series.test.ts` 26 passed before and after. Lane tier `T9.5-B2` (run before the commit, so headed "8cf1f154 + uncommitted changes"): unit 2166, integration 269, checks 14 of 14. ocr (`ocr/T9.5-B2-b8265864.json`): **No findings.**
+- Lane TA rebased onto `801c5ff8` and merged by fast-forward: T9.5 `1bbca00d`, B1 `f9b9172f`, B2 `f670c081`. Lane TA's tasks are all done.
+
+## T9.11 Replay frame: the readout, the table, hover and tap
+
+- Lane CF, base `62e57929` (lane at `801c5ff8`), commit `cf9585f2` (before rebase). 10 cases green (`tdd-log/T9.11.md`). Lane tier `T9.11`: unit 2190, integration 269, checks 14 of 14.
+- **First-run passes (2), each a pass-through of the props:** "Final result in place of the first two groups" (mutation: filter out the group titled "Final result": a heading-list assertion failed) and "No Mark in its cells" (mutation: render "No Mark" as "Mark": a cells-list assertion failed); each restored. The Events case's code was written ahead, then removed for a genuine red (`'' vs 'Sold 2 at $4.00; Stop moved'`) and restored.
+- `replayProps(view)` is still not written: no case needed it. The adapter must build a final session's groups and write "No Mark".
+- **The real `CorridorPlot` has no hover or tap.** The frame holds `hoverIndex` and passes `onHoverSession`/`onSelectSession` to `Plot`, but `CorridorPlot` (lane CP, merged) never calls them. It needs a focusable hit area per revealed session (44 px touch target) calling `onHoverSession(i)` on pointer enter and focus, `onHoverSession(null)` on leave and blur, `onSelectSession(i)` on click or tap, and marking `hoverIndex`. No planned case covers this in the real plot: **PD2** in `DECISIONS-PENDING.md`.
+- No-arithmetic check (from the summary): finished strings from props only. P137: no change; the frame adds only W45's "Session" and "Events" headings. Test names reworded without apostrophes. `renderLinks` is still not rendered.
 
 ## T9.10 Replay frame: the slider reveals sessions
 

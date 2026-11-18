@@ -2,4 +2,5 @@
 
 Decision 113 as amended by decision 115: one question asked at a time; the others queued here.
 
-- None yet.
+- **PD1 (asked 2026-11-18): a Position Change whose fills fall on two days.** A Position Change belongs to the session of its first fill (A211). After T9.5-B1, a session's marker lists only the fills up to that session's close, so the fills after it get no marker on any day, though the later day's P&L counts them. Options: (a) leave it — one Position Change spanning two sessions is rare; (b) list such a Position Change in each session it touches, with that session's fills (changes A211's session ids; a bug task in lane TA). Parks nothing: T9.5 merges as it is.
+- **PD2 (queued): hover and tap on the real chart.** T9.11's hover and tap cases pass against a stand-in plot; the real `CorridorPlot` (T9.12, T9.13, merged) never calls `onHoverSession`/`onSelectSession`, so in the app neither hover, focus nor a tap on a session does anything. No planned task covers it. Recommended: an added task in lane CP before T9.18 (hit areas per revealed session, focusable, 44 px), with cases mirroring T9.11's three. The alternative is to leave it to the critic.
