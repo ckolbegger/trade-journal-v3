@@ -1,0 +1,10 @@
+AC-MARK-004 (partial: points and gaps in the chart and its table; Daily Bar candles in D11) | npx playwright test e2e/d9/gaps.spec.ts | FAIL: playwright --list exited 1, no tests
+AC-CALC-003 (re-proven per session: each condition's status, the risk and reward, and the Overrun) | npm run test:integration -- d9/replay | 1 tests
+AC-CALC-005 (new: Estimates explain and never value) | npm run test:integration -- d9/estimates | FAIL: 0 tests
+AC-CALC-004 (cumulative: no payoff line in replay; no theoretical price shown as a value) | npx playwright test e2e/d9/states.spec.ts | FAIL: playwright --list exited 1, no tests
+AC-CAP-001 (cumulative) | npm run test:integration -- d9/capabilities | 1 tests
+AC-PERF-001 (cumulative: reads counted; the benchmark after stage C) | npm run test:integration -- d9/query-count | 1 tests
+AC-UI-001, AC-UI-002 (cumulative: the chart's gaps, its text equivalent, live resize, keyboard) | npx playwright test e2e/d9/responsive-a11y.spec.ts | FAIL: playwright --list exited 1, no tests
+AC-DEL-001 (cumulative: the replay reads after a stopped, offline restart) | npx playwright test e2e/d9/responsive-a11y.spec.ts | FAIL: playwright --list exited 1, no tests
+AC-REV-002 (cumulative: the Review's order and resumption unchanged by the meter) | npx playwright test e2e/d9/meter-review.spec.ts | FAIL: playwright --list exited 1, no tests
+summary: 9 commands checked, 6 failed, 0 rows are procedures, not checked
