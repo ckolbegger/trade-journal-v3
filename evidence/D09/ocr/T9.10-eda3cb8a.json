@@ -1,0 +1,173 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 2,
+    "total_tokens": 121139,
+    "input_tokens": 119818,
+    "output_tokens": 1321,
+    "cache_read_tokens": 11648,
+    "elapsed": "1m10s"
+  },
+  "tool_calls": {
+    "total": 14,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 5,
+      "file_read": 7
+    },
+    "failure": 1,
+    "failure_by_tool": {
+      "file_read": 1
+    },
+    "failure_details": [
+      {
+        "tool_call_number": 11,
+        "tool_name": "file_read",
+        "file_path": "src/ui/cockpit/index.css,src/ui/cockpit/replay/frame.test.tsx,src/ui/cockpit/replay/frame.tsx,src/ui/cockpit/styles/replay-frame.css",
+        "arguments": "{\"file_path\": \"src/ui/cockpit/styles/tokens.css\"}",
+        "error": "file \"src/ui/cockpit/styles/tokens.css\" not found: git show eda3cb8add30b6f4ffb739a21f526f9ed4b1c661:src/ui/cockpit/styles/tokens.css: exit status 128: fatal: path 'src/ui/cockpit/styles/tokens.css' does not exist in 'eda3cb8add30b6f4ffb739a21f526f9ed4b1c661'\n"
+      }
+    ]
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/replay/frame.tsx",
+      "content": "When `initialSession` is absent, `held.date` stays undefined until the user navigates. If the same trade receives an appended session before any interaction, `found` remains -1 and `current` advances to the new last session instead of preserving the displayed date. Store the resolved initial session date (also when resetting for another trade), and add a rerender test that appends a session without first clicking Previous; the selected index should remain 10 when the count grows from 11 to 12.",
+      "existing_code": "  const [held, setHeld] = useState({ tradeKey, date: initialSession });",
+      "start_line": 8,
+      "end_line": 8,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/cockpit/replay/frame.tsx",
+      "content": "`ReplayProps.onSessionChange` promises to notify the screen when the selected session changes, but the frame never reads or calls it. Consequently, navigating with the buttons, keyboard, or range input updates only local state, leaving a parent's persisted session or address stale. Accept the callback and invoke it with the selected date when navigation changes the session; add a test covering this notification.",
+      "existing_code": "    if (date) setHeld({ tradeKey, date });",
+      "start_line": 18,
+      "end_line": 18,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Replay frame component, tests, and styling",
+      "files": [
+        "src/ui/cockpit/index.css",
+        "src/ui/cockpit/replay/frame.test.tsx",
+        "src/ui/cockpit/replay/frame.tsx",
+        "src/ui/cockpit/styles/replay-frame.css"
+      ]
+    }
+  ],
+  "session_id": "63ba6ddb-c393-4855-9bb7-9a4a430a7526",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "63ba6ddb-c393-4855-9bb7-9a4a430a7526",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "eda3cb8a",
+      "resolved_base": "2102f1d40dc95fd623821ea614a52b6e4c102115",
+      "resolved_head": "eda3cb8add30b6f4ffb739a21f526f9ed4b1c661",
+      "exact_range": "2102f1d40dc95fd623821ea614a52b6e4c102115..eda3cb8add30b6f4ffb739a21f526f9ed4b1c661",
+      "source_artifact_sha256": "0bdcb597825b8a5ae0dff0afe169d59a6c386c511018fdb9f74f1bb00ecdaac3"
+    },
+    "execution": {
+      "ocr_version": "v1.13.12",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "07d6ddb61a627b6e3202a0c5e3f9547cfb10f6fad784c8ca12a580a08252b174",
+          "path": "src/ui/cockpit/replay/frame.test.tsx",
+          "fingerprint": "711a26032d9d603d347fd55c96eb1b55de4470373a8166d1a725b60183e9ab10"
+        },
+        {
+          "item_id": "1e9818d41ff29d7730ea06bdd1d154959f0a952a460b3d5f13d2bde01ff86492",
+          "path": "src/ui/cockpit/replay/frame.tsx",
+          "fingerprint": "36ebe6d514a4db2ff30840526a2ec29cad82705170c468061ca03d9097d11c5d"
+        },
+        {
+          "item_id": "31d44f685aa4a2c24e316e1f051e995cfa50e50ecf25310e8e9017d7f35d5147",
+          "path": "src/ui/cockpit/index.css",
+          "fingerprint": "4bf8c8774e44b598225d953206435cf237cd26433cd9eb9e3c768f112dc8c1c4"
+        },
+        {
+          "item_id": "8303bd665d3dd32df6f3f063e4691f5ac45a3c8b7df30b0004df8234dc2fed2a",
+          "path": "src/ui/cockpit/styles/replay-frame.css",
+          "fingerprint": "27ab216c137eedfa73e211e28e37fe9b9067847b50cf54cb949973c0de0adbc7"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "07d6ddb61a627b6e3202a0c5e3f9547cfb10f6fad784c8ca12a580a08252b174",
+          "path": "src/ui/cockpit/replay/frame.test.tsx",
+          "fingerprint": "711a26032d9d603d347fd55c96eb1b55de4470373a8166d1a725b60183e9ab10"
+        },
+        {
+          "item_id": "1e9818d41ff29d7730ea06bdd1d154959f0a952a460b3d5f13d2bde01ff86492",
+          "path": "src/ui/cockpit/replay/frame.tsx",
+          "fingerprint": "36ebe6d514a4db2ff30840526a2ec29cad82705170c468061ca03d9097d11c5d"
+        },
+        {
+          "item_id": "31d44f685aa4a2c24e316e1f051e995cfa50e50ecf25310e8e9017d7f35d5147",
+          "path": "src/ui/cockpit/index.css",
+          "fingerprint": "4bf8c8774e44b598225d953206435cf237cd26433cd9eb9e3c768f112dc8c1c4"
+        },
+        {
+          "item_id": "8303bd665d3dd32df6f3f063e4691f5ac45a3c8b7df30b0004df8234dc2fed2a",
+          "path": "src/ui/cockpit/styles/replay-frame.css",
+          "fingerprint": "27ab216c137eedfa73e211e28e37fe9b9067847b50cf54cb949973c0de0adbc7"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "4d5133ab5fd54dea872a2c50976c6aeba39b0cc89cb6d0b6d9190b8e3ebc6718",
+          "path": "evidence/D09/suite-runs/T9.10-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "520ed1d7fff001b8d03fbbd88da676e91374bbc717daf2a06c533ead0f84b46a",
+          "path": "evidence/D09/suite-runs/T9.10-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "a9a6db09425a648e07cd2fda2037aca800f887f115bea87716dd51879d5df51c",
+          "path": "evidence/D09/suite-runs/T9.10-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "c489265d0bcb7494f3a56e69726c12d68c86c1971eb948674c8b36a14a6686cb",
+          "path": "evidence/D09/suite-runs/T9.10-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "e6f63cfd1dd2e451c6b93a313b24bdfebfb353c394fd7881fff10d316b76c95c",
+          "path": "evidence/D09/tdd-log/T9.10.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 69611
+  }
+}

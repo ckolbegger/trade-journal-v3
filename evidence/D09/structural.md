@@ -86,6 +86,31 @@ Stage A runs as a swarm (decision 111, agent cap 4). Each task's heading holds i
 - T9.4-B1 commit `611bb798`: line 165 `price === null || price === undefined`. `replay-series.test.ts` 17 passed before and after. Lane tier `T9.4-B1`: unit 2145, integration 269, checks 14 of 14. ocr (`ocr/T9.4-B1-611bb798.json`): **No findings.**
 - Rebased onto `37ebf97e` (lane CF's T9.9 and evidence between; no file of lane TA's changed) and merged by fast-forward: T9.4 `7ee4e93a`, B1 `b565f15e`.
 
+## T9.5 Trade Analysis: markers and the Plan column
+
+- Lane TA, base `b565f15e`, commit `6e171f5f` (before rebase). 8 cases green (`tdd-log/T9.5.md`); the two-Position-Changes case builds its Trade in the test from R-BREN-U (a later sale of 1 at 4.10, handed over in reverse). Test names reword "$", "-" and "+" amounts.
+- **First-run pass:** "should leave the Plan column unchanged after a second lot": the Plan code reads the whole record's Plan Baseline. Mutation `atStop` as `ZERO.add(oneR)`: `AssertionError: expected '600/1' to be '-600/1'`; restored. The fact-order sort was written ahead of its case, then removed for a genuine red and restored (in the log).
+- Lane tier `T9.5`: unit 1 failure, `TradeList.test.tsx` "should render distinct Loading, Ready, Empty …" — P138's known flaky case; it passed alone (36 of 36), so the tier counts as passed; integration 269; checks 14 of 14. Trade Analysis 237 of 237.
+- Implementation-level notes: `markers` is always set (an empty array for a session with no Position Change), though the type still declares it optional; effect is Opened when nothing was open before, Closed when nothing is open after, else Added or Reduced by the change in open quantity's size; an Expiration has one fill `{ instrument, action: 'Expire', quantity }` with no `price`. `plan` is from the whole record's Plan Baseline.
+
+## T9.10 Replay frame: the slider reveals sessions
+
+- Lane CF, base `2d81aafc` (lane at `2102f1d4`), commit `eda3cb8a` (before rebase). 8 cases green (`tdd-log/T9.10.md`). Lane tier `T9.10`: unit 2158, integration 269, checks 14 of 14 (`verify:wording` included).
+- **First-run pass:** "should start from a given session when one is passed in": the `initialSession` handling came with the third case, which opens on a given session. Mutation `given < 0 ? last : given` → `last + 0 * given`: `AssertionError: expected '10' to be '8'`; restored. The "keeps the session" case's red came from its other-Trade-resets half; its keep half passed first.
+- Notes: the frame handles ArrowLeft, ArrowRight, Home and End itself (a range input steps differently in jsdom and the browser); the slider's session is held as a date plus the Trade key and falls back to the last session when the date is gone; the frame also renders `stake` and the `renderSince`, `renderChips` slots, which no case covers yet; `replayProps(view)` is still not written (T9.11 or T9.14). The prototype was not looked at in a browser.
+- No-arithmetic check (from the summary): "11 of 15" is the adapter's `sliderValue`; the edge colour follows `headline.tone` through `data-tone`.
+- P137: the Previous and Next buttons show the glyphs ‹ and ›, with "Previous session" and "Next session" as their accessible names (recorded in `words-changed.md`). New words: none.
+- ocr round 1 (`ocr/T9.10-eda3cb8a.json`), 2 findings:
+
+| Severity | Location | Claim | Assessment | Outcome |
+|---|---|---|---|---|
+| medium | `frame.tsx:18` | `ReplayProps.onSessionChange` is never called, so a parent is never told when the session changes | Valid | T9.10-B1 |
+| medium | `frame.tsx:8` | With no `initialSession`, the held date stays undefined until the user moves, so a session appended before any interaction moves the slider to the new last session | Doubtful | T9.10-B2 |
+
+- **T9.10-B1.** Defect: the screen can't keep the slider's session (A257; the Review's round trip, P129). Case: "it should tell the screen the slider's new session when it moves".
+- T9.10-B1 commit `eb181921`: red `expected last "vi.fn()" call to have been called with [ '2026-11-13' ]`, then green. `onSessionChange(date)` is called on a move by a button, a key or the range input, only when the date changes; not on first render, a Trade change or an appended session. Lane tier `T9.10-B1`: unit 2159, integration 269, checks 14 of 14. ocr (`ocr/T9.10-B1-eb181921.json`): **No findings.**
+- **T9.10-B2.** Implementation-level decision (recorded, not pending): the current behavior is the intended one. A slider the trader hasn't moved rests on the newest session, so after Save Marks the Review card shows the new Mark's session (T9.15's third case, A254); a slider the trader moved keeps that session (T9.10's seventh case, A257). The bug task pins this with a case, "it should follow a new last session when the slider has not been moved, and keep a moved slider's session"; it is expected to pass on its first run, and gets the mutation check.
+
 ## T9.13 Corridor: the Trade P&L area, the two lines, the banked band and markers
 
 - Lane CP, base `512ec7a1` (lane at `9849a614`), commit `02c047e7` (before rebase). 10 cases green (`tdd-log/T9.13.md`; cases 5 and 10 each have failed "green" rows kept as run, where the test's own helper or fixture was wrong and the test, not the code, was fixed). No first-run passes.
@@ -109,6 +134,10 @@ Stage A runs as a swarm (decision 111, agent cap 4). Each task's heading holds i
 - **T9.13-B2.** Case: "it should label each banked level with its own figure, at that level, when a later sale changes it".
 - T9.13-B2 commit `60ac05e2`: red `TestingLibraryElementError: Unable to find an element with the text: Banked +$478` (the label was absent: a runtime error from the query, not an `expect` mismatch, accepted as valid red), then green. Each run of the same banked figure inside a band gets that level's first session's own `bankedLabel`, at that level and column. Lane tier `T9.13-B2`: unit 2131, integration 269, checks 14 of 14. ocr (`ocr/T9.13-B2-60ac05e2.json`, the third run; the first two failed on a provider overload, `server_is_overloaded`): **No findings.**
 - **T9.13-B3.** Case: "it should fill a single session with a figure between two gaps, and the first revealed session".
+- T9.13-B3 commit `9efa3ce2`: red an assertion failure (the lone-session fill path was empty), then green. A lone session gets a rectangle across the middle half of its column, from break-even to its figure, on its own side of break-even only. Lane tier `T9.13-B3`: unit 2132, integration 269, checks 14 of 14.
+- T9.13-B4 commit `23b9341e`: the anchor offset is an explicit if/else. `src/ui/cockpit/replay` 20 tests before and after. Lane tier `T9.13-B4`: unit 2132, integration 269, checks 14 of 14. ocr (`ocr/T9.13-B4-23b9341e.json`): **No findings.**
+- T9.13-B3 ocr (`ocr/T9.13-B3-9efa3ce2.json`): **No findings.**
+- Lane CP rebased onto `484e41b5` and merged by fast-forward: T9.13 `622301c9`, B1 `51ec9e0d`, B2 `d3acb89b`, B3 `f3e996c3`, B4 `e263efa1`. Lane CP's tasks are all done.
 - **T9.13-B4.** Readability, no behavior; verification `corridor.test.tsx` and `price-strip.test.tsx` unchanged before and after.
 - T9.9-B3 commit `b4545d7d` (lane CF, on `bf1c01b9`): `SessionWithR`, `ReplayWordsView` and an unused import removed; `sessionWords` takes the real `TradeReplayView`; the fixture is typed with the real `Figures` and sets `currentMarkedPnlInPlanR` on every session (a Value where the case has an R, the Unavailable double otherwise). `replay.props.test.ts` 12 of 12 before and after. Lane tier `T9.9-B3`: unit 195 files, 2150 tests; integration 269; checks 14 of 14.
   ocr (`ocr/T9.9-B3-b4545d7d.json`): **No findings.**
