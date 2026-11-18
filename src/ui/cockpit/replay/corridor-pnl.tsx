@@ -6,7 +6,10 @@ const HEIGHT_FULL = 210;
 const HEIGHT_PHONE = 170;
 const TOP = 20;
 
-const f1 = (n: number): string => String(Math.round(n * 10) / 10);
+const TITLE_Y = 12;
+const TITLE_SPOT = (left: number): Spot => ({ x: left, y: TITLE_Y, anchor: 'start' });
+
+const f1 =(n: number): string => String(Math.round(n * 10) / 10);
 
 // Runs of consecutive revealed sessions that have a Trade P&L: a session without one ends the run (AC-MARK-004).
 function runs(sessions: readonly PlotSession[]): { s: PlotSession; pnl: number }[][] {
@@ -103,9 +106,11 @@ export function PnlChart({ props, width }: { props: ReplayPlotProps; width: numb
       })
       .join('');
 
-  // Labels, placed in priority order: the results, the banked labels and the stake tags first (the results and tags are
-  // never left out), then the rest, each taking the first free spot or none.
+  // Labels, placed in priority order: the results, the banked labels and the stake tags first (the results and banked
+  // labels are never left out), then the rest, each taking the first free spot or none. The title's space is held.
   const placer = new LabelPlacer(width, HEIGHT);
+  const title = words(props.pnlTitle, props.pnlShortTitle);
+  placer.reserve(title, TITLE_SPOT(time.left));
   const labels: { key: string; cls: string; text: string; spot: Spot }[] = [];
   const put = (key: string, cls: string, text: string, spots: Spot[], must = false) => {
     const spot = placer.place(text, spots, must);
@@ -124,6 +129,10 @@ export function PnlChart({ props, width }: { props: ReplayPlotProps; width: numb
         { x: right + 4, y: y + 3.5, anchor: 'start' },
         { x: xc - time.column / 2 - 4, y: y - 4, anchor: 'end' },
         { x: xc - time.column / 2 - 4, y: y + 12, anchor: 'end' },
+        { x: right + 4, y: y - 8, anchor: 'start' },
+        { x: right + 4, y: y + 15, anchor: 'start' },
+        { x: xc - time.column / 2 - 4, y: y - 16, anchor: 'end' },
+        { x: xc - time.column / 2 - 4, y: y + 24, anchor: 'end' },
       ], true);
     }
   }
@@ -136,21 +145,13 @@ export function PnlChart({ props, width }: { props: ReplayPlotProps; width: numb
       if (!text) return;
       const left = time.x(s.slot) - time.column / 2 + 3;
       const y = value.y(s.banked);
-      const [first, second] = s.banked > 0 ? [y - 4, y + 12] : [y + 12, y - 4];
+      const [first, second, third, fourth] = s.banked > 0 ? [y - 4, y + 12, y - 16, y + 24] : [y + 12, y - 4, y + 24, y - 16];
       // A sale near the last session would run past the edge, so there the label ends at the column instead.
       const runsPast = left + text.length * 6 + 2 > width;
       const rightEdge = time.x(s.slot) + time.column / 2 - 3;
-      const anchored: Spot[] = runsPast
-        ? [
-            { x: rightEdge, y: first, anchor: 'end' },
-            { x: rightEdge, y: second, anchor: 'end' },
-          ]
-        : [
-            { x: left, y: first, anchor: 'start' },
-            { x: left, y: second, anchor: 'start' },
-          ];
-      // On a phone the banked label is never left out; the "Break-even" and "Sold 2" labels give way to it.
-      put(`banked-${s.slot}`, 'banked-label', text, anchored, props.compact);
+      const anchored: Spot[] = [first, second, third, fourth].map((dy): Spot => (runsPast ? { x: rightEdge, y: dy, anchor: 'end' } : { x: left, y: dy, anchor: 'start' }));
+      // The banked label is never left out; the stake tags, "Break-even" and "Sold 2" labels give way to it.
+      put(`banked-${s.slot}`, 'banked-label', text, anchored, true);
     });
   }
   if (current?.stake && current.tradePnl !== null) {
@@ -163,7 +164,7 @@ export function PnlChart({ props, width }: { props: ReplayPlotProps; width: numb
       put(`stake-${kind}`, `stake-tag ${kind}`, words(label, short), [
         { x: xc - 7, y: mid, anchor: 'end' },
         { x: xc + 7, y: mid, anchor: 'start' },
-      ], true);
+      ]);
     }
   }
   if (current?.past && current.tradePnl !== null) {
@@ -272,8 +273,8 @@ export function PnlChart({ props, width }: { props: ReplayPlotProps; width: numb
           <circle key={s.slot} className={s === current ? 'pnl-dot current' : 'pnl-dot'} cx={f1(time.x(s.slot))} cy={f1(value.y(s.tradePnl))} r={s === current ? 5 : 3} />
         ),
       )}
-      <text className="plot-title" x={time.left} y={12}>
-        {words(props.pnlTitle, props.pnlShortTitle)}
+      <text className="plot-title" x={time.left} y={TITLE_Y}>
+        {title}
       </text>
       <text className="axis-end" x={time.right} y={HEIGHT - 4} textAnchor="end">
         {axis.endLabel}

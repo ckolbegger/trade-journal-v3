@@ -33,6 +33,8 @@ export function PriceStrip({ props, width }: { props: ReplayPlotProps; width: nu
 
   // Labels take a free spot or are left out; the slider's Mark is the result and is placed first, never left out.
   const placer = new LabelPlacer(width, HEIGHT);
+  const title = props.compact ? (props.priceShortTitle ?? props.priceTitle) : props.priceTitle;
+  placer.reserve(title, { x: time.left, y: 12, anchor: 'start' });
   const markSpot =
     current && current.underlyingMark !== null && current.underlyingLabel
       ? placer.place(
@@ -40,6 +42,8 @@ export function PriceStrip({ props, width }: { props: ReplayPlotProps; width: nu
           [
             { x: time.x(current.slot), y: value.y(current.underlyingMark) - 9, anchor: 'middle' },
             { x: time.x(current.slot), y: value.y(current.underlyingMark) + 17, anchor: 'middle' },
+            { x: time.x(current.slot) + 9, y: value.y(current.underlyingMark) + 3.5, anchor: 'start' },
+            { x: time.x(current.slot) - 9, y: value.y(current.underlyingMark) + 3.5, anchor: 'end' },
           ],
           true,
         )
@@ -83,7 +87,7 @@ export function PriceStrip({ props, width }: { props: ReplayPlotProps; width: nu
         </text>
       ))}
       <text className="plot-title" x={time.left} y={12}>
-        {props.compact ? (props.priceShortTitle ?? props.priceTitle) : props.priceTitle}
+        {title}
       </text>
       {sessions
         .filter((s) => s.markers.some((m) => !m.isEntry))

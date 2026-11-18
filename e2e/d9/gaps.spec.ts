@@ -55,7 +55,7 @@ test.describe('B9.2 A gap, a breach and a sale below the Stop', () => {
     await expect(readoutValue(scope, 'Result at the Target')).toHaveText('+$160.00');
     await expect(readoutValue(scope, 'Reward to risk')).toHaveText('Stop breached');
     // The two results step at the sale (−$600 to −$740 and +$1,200 to +$160) and the chart names the sale.
-    expect(await chartText(pnlChart(scope))).toEqual(expect.arrayContaining(['Stop −$740', 'Target +$160', 'Sold 100 at $45.60', 'Reward to target $1,080']));
+    expect(await chartText(pnlChart(scope))).toEqual(expect.arrayContaining(['Stop −$740', 'Target +$160', 'Sold 100 at $45.60']));
     expect(await chartText(priceStrip(scope))).toEqual(expect.arrayContaining(['Stop $47.00', 'Target $56.00']));
     await expect(pnlChart(scope).locator('path.banked-band.loss')).toHaveCount(1);
     const table = await openTable(scope);

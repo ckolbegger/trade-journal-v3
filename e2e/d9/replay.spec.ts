@@ -61,7 +61,7 @@ test.describe('B9.1 Replay in Trade Detail', () => {
     await expect(stake(scope)).toHaveText('From here: $666.00 at risk back to the Stop ($504.00 of it open profit) · no cap above. Even at the Stop this Trade would end $316.00 ahead.');
     await expect(readoutValue(scope, 'Banked')).toHaveText('+$478.00');
     await expect(readoutValue(scope, 'Open')).toHaveText('+$504.00');
-    expect(await chartText(pnlChart(scope))).toEqual(expect.arrayContaining(['Stop +$316', 'Target +$956', '$26 past the Target', 'Risk to stop $666', 'Sold 2 at $4.00']));
+    expect(await chartText(pnlChart(scope))).toEqual(expect.arrayContaining(['Stop +$316', 'Target +$956', '$26 past the Target', 'Sold 2 at $4.00']));
     // The two lines step at the sale: the Stop line's result is −$324 until Wed 11-11 and +$316 from Thu 11-12; the Target line does not move.
     const table = await openTable(scope);
     const columns = ['BREN Mark', 'Call Mark', 'Trade P&L', 'Banked', 'Risk to stop', 'Reward to target', 'Result at the Stop', 'Result at the Target', 'Stop', 'Target', 'Events'];

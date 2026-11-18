@@ -58,7 +58,7 @@ export interface Spot {
 }
 
 // Where each label goes. A label takes the first of its spots that sits inside the chart and clears every label kept
-// before it; with none free it is left out. A `must` label (a result or a stake tag) is never left out: it takes
+// before it; with none free it is left out. A `must` label (a result) is never left out: with no spot free it takes
 // its first spot even when that overlaps. Call in priority order.
 export class LabelPlacer {
   private readonly kept: { x0: number; x1: number; y0: number; y1: number }[] = [];
@@ -70,14 +70,21 @@ export class LabelPlacer {
     this.height = height;
   }
 
+  private static box(text: string, s: Spot, charWidth: number) {
+    const w = text.length * charWidth + 2;
+    let x0 = s.x - w / 2;
+    if (s.anchor === 'start') x0 = s.x;
+    else if (s.anchor === 'end') x0 = s.x - w;
+    return { x0, x1: x0 + w, y0: s.y - 10, y1: s.y + 3 };
+  }
+
+  // Holds a text's space (a chart title, drawn bold and wider) so no label is placed over it.
+  reserve(text: string, spot: Spot, charWidth = 7): void {
+    this.kept.push(LabelPlacer.box(text, spot, charWidth));
+  }
+
   place(text: string, spots: readonly Spot[], must = false): Spot | null {
-    const box = (s: Spot) => {
-      const w = text.length * 6 + 2;
-      let x0 = s.x - w / 2;
-      if (s.anchor === 'start') x0 = s.x;
-      else if (s.anchor === 'end') x0 = s.x - w;
-      return { x0, x1: x0 + w, y0: s.y - 10, y1: s.y + 3 };
-    };
+    const box = (s: Spot) => LabelPlacer.box(text, s, 6);
     const free = (b: ReturnType<typeof box>) =>
       b.x0 >= 0 && b.x1 <= this.width && b.y0 >= 0 && b.y1 <= this.height && !this.kept.some((k) => b.x0 < k.x1 && k.x0 < b.x1 && b.y0 < k.y1 && k.y0 < b.y1);
     const spot = spots.find((s) => free(box(s))) ?? (must ? spots[0] : undefined);

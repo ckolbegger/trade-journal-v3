@@ -349,7 +349,7 @@ describe('Corridor: the Trade P&L (W40, W41)', () => {
     expect(none.container.querySelectorAll('path.worst-case, path.max-reward')).toHaveLength(0);
   });
 
-  it('should leave out a label that has no free spot, and never the result or the stake tags', () => {
+  it('should leave out a label that has no free spot, and never the result', () => {
     // Eight Position Changes on the slider's session, the Stop and the Target at the same level, and a stake: the
     // chart has room for only some of the marker labels, and none for a second label at the same level.
     const crowd: PlotMarker[] = Array.from({ length: 8 }, (_, k) => ({ id: `m${k}`, kind: 'Execution', effect: 'Reduced', label: `Sold ${k + 1} at $4.00`, isEntry: false }));
@@ -366,11 +366,10 @@ describe('Corridor: the Trade P&L (W40, W41)', () => {
     expect(kept.length).toBeLessThan(9);
     // Their lines are still drawn: only the words are left out.
     expect(pnl(container).querySelectorAll('path.marker-line')).toHaveLength(2);
-    // The result and stake tags stay, even where they have no free spot.
+    // The result labels stay, even where they have no free spot; a stake tag with none is left out.
     expect(screen.getByText('Stop +$316')).toBeTruthy();
     expect(screen.getByText('Target +$316')).toBeTruthy();
-    expect(screen.getByText('Risk to stop $672')).toBeTruthy();
-    expect(screen.getByText('Reward to target $0')).toBeTruthy();
+    expect(screen.queryByText('Reward to target $0')).toBeNull();
     cleanup();
     // The price strip's labels follow the same rule: three lines at one price leave room for only two labels.
     const same = (kind: 'Strike' | 'Stop' | 'Target') => ({ kind, price: 100, label: `${kind} $100` });
@@ -408,7 +407,8 @@ describe('Corridor: the Trade P&L (W40, W41)', () => {
     );
     const { container } = render(<CorridorPlot {...props({ sessions, sliderIndex: SALE })} />);
     expect(screen.getByText('Realized −$440')).toBeTruthy();
-    expect(pnl(container).querySelectorAll('text.stake-tag')).toHaveLength(2);
+    // A stake tag with no free spot is left out (its figure stays in the readout), so one of the two gives way.
+    expect(pnl(container).querySelectorAll('text.stake-tag').length).toBeLessThan(2);
   });
 
   // T9.11-B5: one hit area per revealed session, shared by both charts (they use the same time axis), in a group beside
@@ -493,10 +493,16 @@ describe('Corridor: drawn at a phone\'s real width (W39, W40, W41)', () => {
     expect(pnl(container).getAttribute('width')).toBe('280');
     expect(screen.getByText('BREN price')).toBeTruthy();
     expect(screen.queryByText('BREN price · one Mark per session')).toBeNull();
-    expect(screen.getByText('Risk $672')).toBeTruthy();
-    expect(screen.getByText('Reward $928')).toBeTruthy();
-    expect(screen.queryByText('Risk to stop $672')).toBeNull();
+    // A stake tag drawn at this width (where it has a free spot; otherwise it is left out) uses the phone words.
+    expect(screen.queryByText(/^(Risk|Reward) to /)).toBeNull();
     expect(screen.queryByText('Sold 2 at $4.00')).toBeNull();
+    cleanup();
+    vi.restoreAllMocks();
+    frameWidth(340);
+    const phone = render(<CorridorPlot {...props({ sessions })} />);
+    expect(phone.container.querySelectorAll('text.stake-tag').length, 'a stake tag fits at 340').toBeGreaterThan(0);
+    expect(screen.queryByText(/^(Risk|Reward) to /)).toBeNull();
+    expect(screen.queryAllByText(/^(Risk|Reward) \$/).length).toBeGreaterThan(0);
     cleanup();
     // A wide box keeps the long words at the full drawing.
     vi.restoreAllMocks();
@@ -548,6 +554,96 @@ describe('Corridor: drawn at a phone\'s real width (W39, W40, W41)', () => {
       const start = t.getAttribute('text-anchor') === 'end' ? x - w : x;
       expect(start, `${width}: left edge`).toBeGreaterThanOrEqual(0);
       expect(start + w, `${width}: right edge`).toBeLessThanOrEqual(width);
+      cleanup();
+      vi.restoreAllMocks();
+    }
+  });
+});
+
+// T9.19-B2: no two labels overlap, and none overlaps a chart title. The boxes are estimated as LabelPlacer estimates
+// them (6 px a character, 2 more, 13 px tall about the baseline); a title is bold and larger, so 7 px a character.
+describe('Corridor: labels apart (T9.19-B2)', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
+  const LABELS = 'text.plot-title, text.result-label, text.banked-label, text.stake-tag, text.past-label, text.marker-label, text.worst-case-label, text.max-reward-label, text.break-even-label, text.price-line-label, text.mark-label';
+  type Box = { name: string; x0: number; x1: number; y0: number; y1: number };
+  const boxesOf = (svg: Element): Box[] =>
+    [...svg.querySelectorAll(LABELS)].map((t) => {
+      const text = t.textContent ?? '';
+      const w = text.length * (t.classList.contains('plot-title') ? 7 : 6) + 2;
+      const [x, y, anchor] = [num(t, 'x'), num(t, 'y'), t.getAttribute('text-anchor')];
+      const x0 = anchor === 'end' ? x - w : anchor === 'middle' ? x - w / 2 : x;
+      return { name: text, x0, x1: x0 + w, y0: y - 10, y1: y + 3 };
+    });
+  const clashes = (svg: Element): string[] => {
+    const all = boxesOf(svg);
+    return all.flatMap((a, i) => all.slice(i + 1).filter((b) => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1).map((b) => `"${a.name}" over "${b.name}"`));
+  };
+
+  // R-AXIO-D: 2 of 3 sold on Mon 11-09 (slot 5) at a loss, -$440 realized; Stop -$740, Target +$760.
+  const axio = (slider: number): Partial<ReplayPlotProps> => ({
+    sessions: DAYS.slice(0, slider + 1).map((_, i) =>
+      bren(i, {
+        tradePnl: i < 5 ? -100 : -440,
+        banked: i >= 5 ? -440 : 0,
+        bankedLabel: i >= 5 ? 'Realized −$440' : undefined,
+        resultAtStop: fig(-740, 'Stop −$740'),
+        resultAtTarget: fig(760, 'Target +$760'),
+        markers: i === 5 ? [sale] : [],
+        stake: i === slider ? { riskLabel: 'Risk to stop $300', riskShortLabel: 'Risk $300', rewardLabel: 'Reward to target $1,200', rewardShortLabel: 'Reward $1,200' } : undefined,
+        underlyingLabel: '$45.60',
+      }),
+    ),
+    anchors: { ...props().anchors, planAtStop: fig(-740, 'Stop −$740'), planAtTarget: fig(760, 'Target +$760') },
+    sliderIndex: slider,
+  });
+  // R-BREN-U after the sale: Worst case +$156, Target +$956 passed on Thu and Mon.
+  const brenAt = (slider: number): Partial<ReplayPlotProps> => ({
+    sessions: DAYS.slice(0, slider + 1).map((_, i) =>
+      bren(i, {
+        worstCase: i >= SALE ? fig(156, 'Worst case +$156', 'Worst +$156') : null,
+        past: i >= SALE ? { line: 'Target', label: `$${PAST[i]} past the Target`, shortLabel: `$${PAST[i]} past` } : undefined,
+        stake: i === slider ? { riskLabel: 'Risk to stop $672', riskShortLabel: 'Risk $672' } : undefined,
+        underlyingLabel: '$103.60',
+      }),
+    ),
+    sliderIndex: slider,
+  });
+  // R-DALE-D held, a short put: every figure below break-even but the Target's, Max reward +$564 at the top.
+  const dale = (slider: number): Partial<ReplayPlotProps> => ({
+    sessions: DAYS.slice(0, slider + 1).map((_, i) => ({
+      slot: i,
+      dateLabel: DAYS[i]!,
+      underlyingMark: 56 + i * 0.1,
+      underlyingLabel: '$56.00',
+      tradePnl: -720 - i * 40,
+      banked: 0,
+      resultAtStop: fig(-1263, 'Stop −$1,263'),
+      resultAtTarget: fig(564, 'Target +$564'),
+      worstCase: null,
+      maxReward: fig(564, 'Max reward +$564', 'Max +$564'),
+      markers: [],
+      stake: i === slider ? { riskLabel: 'Risk to stop $543', rewardLabel: 'Reward to target $1,284', riskShortLabel: 'Risk $543', rewardShortLabel: 'Reward $1,284' } : undefined,
+    })),
+    anchors: { entryPrice: 56, priceLines: [{ kind: 'Strike', price: 55, label: 'Strike $55' }, { kind: 'Stop', price: 59, label: 'Stop $59' }, { kind: 'Target', price: 52, label: 'Target $52' }], planAtStop: fig(-1263, 'Stop −$1,263'), planAtTarget: fig(564, 'Target +$564') },
+    sliderIndex: slider,
+    priceTitle: 'DALE price · one Mark per session',
+    priceShortTitle: 'DALE price',
+  });
+
+  it('should place no two labels on top of each other, nor over a chart title', () => {
+    const cases: [string, number, Partial<ReplayPlotProps>][] = [];
+    for (const width of [640, 340, 280]) {
+      cases.push([`AXIO Mon 11-09 at ${width}`, width, axio(5)], [`BREN Thu 11-12 at ${width}`, width, brenAt(8)], [`BREN Mon 11-16 at ${width}`, width, brenAt(10)]);
+    }
+    cases.push(['AXIO Mon 11-16 at 640', 640, axio(10)], ['DALE Mon 11-02 at 640', 640, dale(0)], ['DALE Mon 11-16 at 640', 640, dale(10)]);
+    for (const [name, width, over] of cases) {
+      frameWidth(width === 640 ? 900 : width);
+      const { container } = render(<CorridorPlot {...props(over)} />);
+      for (const svg of container.querySelectorAll('svg')) expect(clashes(svg), `${name}, ${svg.getAttribute('class')}`).toEqual([]);
       cleanup();
       vi.restoreAllMocks();
     }
