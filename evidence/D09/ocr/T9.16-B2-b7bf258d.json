@@ -1,0 +1,154 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 0,
+    "total_tokens": 44097,
+    "input_tokens": 43819,
+    "output_tokens": 278,
+    "cache_read_tokens": 4992,
+    "elapsed": "14s"
+  },
+  "tool_calls": {
+    "total": 6,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 5
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Journal drawer and cards integration in the trade detail cockpit",
+      "files": [
+        "src/ui/cockpit/drawers/journal.props.ts",
+        "src/ui/cockpit/drawers/journal.types.ts",
+        "src/ui/cockpit/journal-cards.tsx",
+        "src/ui/screens/TradeDetail.test.tsx",
+        "src/ui/screens/trade-detail/Cockpit.tsx"
+      ]
+    }
+  ],
+  "session_id": "246eb27e-7b0a-4615-8596-2e236d1747aa",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "246eb27e-7b0a-4615-8596-2e236d1747aa",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "b7bf258d",
+      "resolved_base": "7bd72de7b2b9de6abb7c42cfde840629a58a5692",
+      "resolved_head": "b7bf258d70f553d431a4c057fc818b79abadddba",
+      "exact_range": "7bd72de7b2b9de6abb7c42cfde840629a58a5692..b7bf258d70f553d431a4c057fc818b79abadddba",
+      "source_artifact_sha256": "d8cbf2c11a651d3d0dfcb94842b8e95cb4981fa26b39696e56f2346b9f987f22"
+    },
+    "execution": {
+      "ocr_version": "v1.13.12",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "36929d6fb7ed25af6be2a65d495c393863186e35fe0b9825684d58aa75ce5d6a",
+          "path": "src/ui/cockpit/drawers/journal.types.ts",
+          "fingerprint": "d4f81fab471b12ae2667e57bcd99f597ca64b4e1eaeba98cefaf867ff0654190"
+        },
+        {
+          "item_id": "87638b8e40a8471b5a00443528a3c98bf4752f964c11c4b564b6258d593b8716",
+          "path": "src/ui/screens/TradeDetail.test.tsx",
+          "fingerprint": "53ac8e8dad8bdce327d7050ec72d23bf3b026361e0cf7c6070bf653732513734"
+        },
+        {
+          "item_id": "8ecc008bbb6c9e6e322f69b9ad1d0d9dba27db95c0ac2185937a7a93f257f755",
+          "path": "src/ui/cockpit/journal-cards.tsx",
+          "fingerprint": "d54172ce74c0cbf97871606345b30b3b683e304cb197c73d6a80abba4e1ac2fd"
+        },
+        {
+          "item_id": "adea4cb067ea760f59c6416d1d6e39c53028b95a6e7ecbecf206c6fde24296a0",
+          "path": "src/ui/cockpit/drawers/journal.props.ts",
+          "fingerprint": "bcc4018a981346f98f1bfc84d6afefff4d51a0aac604aafda2d5867b0ed1352b"
+        },
+        {
+          "item_id": "bad5c69b3d1e03bf54bd2b1b2b13ff5e5a0dabd158881300fc1e86a4a591bb75",
+          "path": "src/ui/screens/trade-detail/Cockpit.tsx",
+          "fingerprint": "2183cc5d89d7268dbf6b2f16a5469a13db45b0b8212ea77270f5fa1a9b5904f7"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "36929d6fb7ed25af6be2a65d495c393863186e35fe0b9825684d58aa75ce5d6a",
+          "path": "src/ui/cockpit/drawers/journal.types.ts",
+          "fingerprint": "d4f81fab471b12ae2667e57bcd99f597ca64b4e1eaeba98cefaf867ff0654190"
+        },
+        {
+          "item_id": "87638b8e40a8471b5a00443528a3c98bf4752f964c11c4b564b6258d593b8716",
+          "path": "src/ui/screens/TradeDetail.test.tsx",
+          "fingerprint": "53ac8e8dad8bdce327d7050ec72d23bf3b026361e0cf7c6070bf653732513734"
+        },
+        {
+          "item_id": "8ecc008bbb6c9e6e322f69b9ad1d0d9dba27db95c0ac2185937a7a93f257f755",
+          "path": "src/ui/cockpit/journal-cards.tsx",
+          "fingerprint": "d54172ce74c0cbf97871606345b30b3b683e304cb197c73d6a80abba4e1ac2fd"
+        },
+        {
+          "item_id": "adea4cb067ea760f59c6416d1d6e39c53028b95a6e7ecbecf206c6fde24296a0",
+          "path": "src/ui/cockpit/drawers/journal.props.ts",
+          "fingerprint": "bcc4018a981346f98f1bfc84d6afefff4d51a0aac604aafda2d5867b0ed1352b"
+        },
+        {
+          "item_id": "bad5c69b3d1e03bf54bd2b1b2b13ff5e5a0dabd158881300fc1e86a4a591bb75",
+          "path": "src/ui/screens/trade-detail/Cockpit.tsx",
+          "fingerprint": "2183cc5d89d7268dbf6b2f16a5469a13db45b0b8212ea77270f5fa1a9b5904f7"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "3e1040529fd87a7f612df4e02cb211b2def0615f0f50e4125310e55bee59bfe2",
+          "path": "evidence/D09/suite-runs/T9.16-B2-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "6a0361973594a881cd33a6c8c10a12c7ac840864c020b94f24a897bb48090daf",
+          "path": "evidence/D09/suite-runs/T9.16-B2-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "8a9ab9dd74c847c285016f1219a69c7b6a8dd6a39a3a93271c7ac0151246a485",
+          "path": "evidence/D09/suite-runs/T9.16-B2-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "f6833dce14b032a98a4c4a5a85ce141d8d09898bdf5ef033a84da6aba8a0aeb2",
+          "path": "evidence/D09/suite-runs/T9.16-B2-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "f6ba94002b079d775d2ab32619016b88cf7c9ad0331e3988c833fa3fde99fd35",
+          "path": "evidence/D09/tdd-log/T9.16-B2.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 14278
+  }
+}

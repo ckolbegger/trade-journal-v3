@@ -255,7 +255,8 @@ Stage A runs as a swarm (decision 111, agent cap 4). Each task's heading holds i
 
 - **T9.16-B1.** Case: "it should focus the Expiration row when Position is chosen on a session whose marker is an Expiration". **T9.16-B2.** Case: "it should focus the merged card that holds the session when Journal is chosen on a later session of a Mark-less run". One at a time in lane DW.
 - T9.16-B1 commit `7bd72de7`: a first red was a fixture fault (a Temporal parse in the Today drawer), not counted; then a valid red (nothing focused; the `activeElement` text check failed), then green. `SettlementRow`'s `<li>` carries `data-change={change.factId}`; its toggle button takes focus. `Cockpit.tsx` unchanged. `TradeDetail.test.tsx` 22 of 22. Lane tier `T9.16-B1`: unit 2265, integration 269, checks 14 of 14. ocr (`ocr/T9.16-B1-7bd72de7.json`): **No findings.**
-- T9.16-B2 commit `b7bf258d`: red `expected '' to be 'journal-card-2026-10-13'`, then green. `JournalCardProps.dates?` (Session: its date; Merged: every date in its run); Session and Merged headings carry `data-sessions`; the link's selector `[data-sessions~="<date>"]`; `JournalCards` turns to the page whose card covers the date. Lane tier `T9.16-B2`: unit 2266, integration 269, checks 14 of 14.
+- T9.16-B2 commit `b7bf258d`: red `expected '' to be 'journal-card-2026-10-13'`, then green. `JournalCardProps.dates?` (Session: its date; Merged: every date in its run); Session and Merged headings carry `data-sessions`; the link's selector `[data-sessions~="<date>"]`; `JournalCards` turns to the page whose card covers the date. Lane tier `T9.16-B2`: unit 2266, integration 269, checks 14 of 14. ocr (`ocr/T9.16-B2-b7bf258d.json`): **No findings.**
+- Lane DW rebased onto `efcf12b4` and merged by fast-forward: T9.16 `8cbdd619`, B1 `f4e9b8a6`, B2 `ecaa8bbd`. T9.18 next (lane BR).
 
 ## T9.17 Stage A: Node integration suite
 
