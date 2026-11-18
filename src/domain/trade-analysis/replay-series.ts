@@ -173,7 +173,11 @@ function markersOf(record: TradeAnalysisRecord, cutoff: Instant): readonly Repla
     ];
     for (const e of executions) open = shortLegs.has(e.intent.plannedLegId) === (e.action === 'Sell') ? open.add(decimal(e.quantity)) : open.sub(decimal(e.quantity));
     for (const s of settlements) open = open.sub(decimal(s.quantity));
-    const effect = before.compare(ZERO) === 0 ? 'Opened' : open.compare(ZERO) === 0 ? 'Closed' : open.compare(before) > 0 ? 'Added' : 'Reduced';
+    let effect: ReplayMarker['effect'];
+    if (before.compare(ZERO) === 0) effect = 'Opened';
+    else if (open.compare(ZERO) === 0) effect = 'Closed';
+    else if (open.compare(before) > 0) effect = 'Added';
+    else effect = 'Reduced';
     return { id: pc.factId, kind: settlements.length > 0 ? 'Expiration' : 'Execution', effect, fills };
   });
 }
