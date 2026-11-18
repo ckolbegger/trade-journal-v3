@@ -525,7 +525,9 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
     if (ongoingRiskToStop.kind !== 'Value') return ongoingRiskToStop;
     // Of the Risk to stop, the part that is open profit: all the profit, or the Risk when that is less.
     const openProfit = pnl.value.sub(realized);
-    const atRisk = openProfit.compare(ZERO) <= 0 ? ZERO : openProfit.compare(ongoingRiskToStop.value) < 0 ? openProfit : ongoingRiskToStop.value;
+    let atRisk = openProfit;
+    if (openProfit.compare(ZERO) <= 0) atRisk = ZERO;
+    else if (openProfit.compare(ongoingRiskToStop.value) >= 0) atRisk = ongoingRiskToStop.value;
     return value({ ...zoneOf(pnl.value), openProfitAtRisk: atRisk });
   };
   const standing = standingOf();
