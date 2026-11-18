@@ -306,6 +306,15 @@ describe('Replay frame: hover and tap', () => {
     expect(screen.getAllByTestId('point')).toHaveLength(3);
   });
 
+  it('should clear the hover when another Trade\'s replay is passed in', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<ReplayFrame {...withHover()} />);
+    await user.hover(point('Tue Nov 3'));
+    expect(screen.getByTestId('hover')).toBeTruthy();
+    rerender(<ReplayFrame {...withHover()} tradeKey="trade-other" />);
+    expect(screen.queryByTestId('hover')).toBeNull();
+  });
+
   it('should show nothing for a session not yet revealed', async () => {
     const user = userEvent.setup();
     const { container } = render(<ReplayFrame {...withHover('2026-11-04')} />);

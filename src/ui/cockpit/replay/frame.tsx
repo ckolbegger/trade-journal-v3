@@ -6,12 +6,16 @@ export function ReplayFrame({ tradeKey, sessions, initialSession, sliderLabel, p
   const last = sessions.length - 1;
   // A257: the slider's session is a date held with the Trade it belongs to, so a longer replay of the same Trade keeps it and another Trade starts afresh.
   const [held, setHeld] = useState({ tradeKey, date: initialSession });
-  if (held.tradeKey !== tradeKey) setHeld({ tradeKey, date: initialSession });
+  // The session under the pointer or the keyboard's focus, which the plot reports and the frame shows.
+  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+  if (held.tradeKey !== tradeKey) {
+    setHeld({ tradeKey, date: initialSession });
+    // Another Trade's sessions are not the ones the pointer was over.
+    setHoverIndex(null);
+  }
   const found = sessions.findIndex((s) => s.date === (held.tradeKey === tradeKey ? held.date : initialSession));
   const current = found < 0 ? last : found;
   const session = sessions[current];
-  // The session under the pointer or the keyboard's focus, which the plot reports and the frame shows.
-  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
   if (!session) return null;
   // P118: a session after the slider's is not shown, however it was reached.
   const hovered = hoverIndex === null || hoverIndex > current ? undefined : sessions[hoverIndex];
