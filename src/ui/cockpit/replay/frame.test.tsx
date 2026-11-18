@@ -259,11 +259,23 @@ describe('Replay frame: the text equivalent (W45)', () => {
     const { container } = render(<ReplayFrame {...withTable(11, '2026-11-04')} />);
     const fold = container.querySelector('details')!;
     expect(fold.hasAttribute('open')).toBe(false);
-    expect(text(fold.querySelector('summary')!)).toBe('Session by session');
+    expect(text(fold.querySelector('summary')!).replace(text(fold.querySelector('.replay-table-cue')!), '')).toBe('Session by session');
     expect(within(fold).getAllByRole('columnheader', { hidden: true }).map(text)).toEqual(['Session', 'BREN Mark', 'Trade P&L', 'Events']);
     const rows = within(fold).getAllByRole('row', { hidden: true }).slice(1);
     expect(rows.map((r) => text(r))).toEqual(['Mon Nov 2$100.00-$40.00', 'Tue Nov 3$101.00-$120.00', 'Wed Nov 4$102.00+$60.00']);
     expect(attr(fold.querySelector('table')!, 'id')).toBe('replay-table');
+  });
+
+  it('should show whether the table is folded or open', () => {
+    const { container } = render(<ReplayFrame {...withTable(11, '2026-11-04')} />);
+    const fold = container.querySelector('details')!;
+    const cue = () => text(fold.querySelector('summary .replay-table-cue')!);
+    const folded = cue();
+    fold.setAttribute('open', '');
+    fireEvent(fold, new Event('toggle'));
+    const open = cue();
+    expect(folded).not.toBe(open);
+    expect(text(fold.querySelector('summary')!)).toBe(`${open}Session by session`);
   });
 
   it('should give the plot the table id to describe it', () => {

@@ -8,6 +8,7 @@ export function ReplayFrame({ tradeKey, sessions, initialSession, sliderLabel, p
   const [held, setHeld] = useState({ tradeKey, date: initialSession });
   // The session under the pointer or the keyboard's focus, which the plot reports and the frame shows.
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+  const [tableOpen, setTableOpen] = useState(false);
   if (held.tradeKey !== tradeKey) {
     setHeld({ tradeKey, date: initialSession });
     // Another Trade's sessions are not the ones the pointer was over.
@@ -90,8 +91,13 @@ export function ReplayFrame({ tradeKey, sessions, initialSession, sliderLabel, p
         ))}
       </div>
       {/* W45: the charts' text equivalent, folded; the plot is described by this table, so it holds the revealed sessions only (P118). */}
-      <details className="replay-table">
-        <summary>{tableTitle}</summary>
+      <details className="replay-table" onToggle={(e) => setTableOpen(e.currentTarget.open)}>
+        <summary>
+          <span className="replay-table-cue" aria-hidden="true">
+            {tableOpen ? '▾' : '▸'}
+          </span>
+          {tableTitle}
+        </summary>
         <table id={plotBase.describedBy}>
           <thead>
             <tr>
