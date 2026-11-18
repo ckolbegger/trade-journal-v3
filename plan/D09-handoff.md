@@ -240,9 +240,6 @@ Task status and commits are in the breakdown's Progress section. This section ho
 
 ### Notes for later tasks
 
-- For T9.6, T9.8: T9.2 added no re-exports of the new type names (`ReplayFigures`, `ReplayMarker`, `ReplayFinal`, `ReplayPlanColumn`, `TradeOutcomes`, `TradeStandingReading`) to `trade-analysis/index.ts`, `trade-views/index.ts` or `src/app/types.ts`. Add them where an adapter needs them.
-- For T9.12, T9.13: the test Trades' full series are in the model block of `prototypes/replay/round-2.html`; section 5's table names only the sessions the cases use.
-- For T9.15: T9.14 writes `replayProps(view)` in `replay.props.ts` (decision in `evidence/D09/structural.md`, T9.14); T9.15 uses it as merged and starts after T9.14 has merged. `ReplayFrame` renders `stake`, `renderSince` and `renderChips`, which no case yet covers.
 - For T9.18: Corridor's plot was checked at 1280 px against the prototype only; check 375 and 320 px (the "Break-even" and "Sold 2" labels may be dropped on a tight phone chart).
 - For T9.18: add `e2e/d9` to `test:e2e:3` in the same commit as the first spec.
 - For T9.18: the chart's sessions are `button.replay-hit`, one per revealed session, named by the date label (`getByRole('button', { name: 'Mon Nov 16' })`), in `div.replay-hits[role=group][aria-label=Sessions]`; the hover mark is `rect.hover-column` in `svg.price-strip` and `svg.pnl-chart` (T9.11-B5).
