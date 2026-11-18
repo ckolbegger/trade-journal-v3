@@ -408,6 +408,20 @@ describe('Corridor: the Trade P&L (W40, W41)', () => {
     expect(seen).toEqual([2, null, 3, null]);
   });
 
+  it('should keep a focused session marked when the pointer leaves, and return to it when the pointer leaves another', () => {
+    const seen: (number | null)[] = [];
+    render(<CorridorPlot {...props({ sessions: DAYS.slice(0, 4).map((_, i) => bren(i)), onHoverSession: (i) => seen.push(i) })} />);
+    fireEvent.focus(hits()[1]!);
+    fireEvent.pointerEnter(hits()[2]!);
+    fireEvent.pointerLeave(hits()[2]!);
+    expect(seen).toEqual([1, 2, 1]);
+    fireEvent.pointerEnter(hits()[3]!);
+    fireEvent.blur(hits()[1]!);
+    expect(seen.at(-1)).toBe(3);
+    fireEvent.pointerLeave(hits()[3]!);
+    expect(seen.at(-1)).toBeNull();
+  });
+
   it('should select a revealed session on a click or tap', () => {
     const picked: number[] = [];
     render(<CorridorPlot {...props({ onSelectSession: (i) => picked.push(i) })} />);

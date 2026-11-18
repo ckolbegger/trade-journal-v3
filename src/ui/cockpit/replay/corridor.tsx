@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { PnlChart } from './corridor-pnl.tsx';
 import { timeAxis } from './geometry.ts';
 import { PriceStrip } from './price-strip.tsx';
@@ -10,6 +11,12 @@ const WIDTH_COMPACT = 340;
 // the session's date label. Hover and focus report the session, leave and blur its end, a click or tap selects it.
 function SessionHits({ props, width }: { props: ReplayPlotProps; width: number }) {
   const time = timeAxis(width, props.axis.slots);
+  // Pointer and focus each hold a session; the pointer's wins while it is over one, then the focused one, else none.
+  const held = useRef<{ pointer: number | null; focus: number | null }>({ pointer: null, focus: null });
+  const hold = (source: 'pointer' | 'focus', i: number | null) => {
+    held.current[source] = i;
+    props.onHoverSession?.(held.current.pointer ?? held.current.focus);
+  };
   return (
     <div className="replay-hits" role="group" aria-label="Sessions">
       {props.sessions.map((s, i) => (
@@ -20,10 +27,10 @@ function SessionHits({ props, width }: { props: ReplayPlotProps; width: number }
           aria-label={s.dateLabel}
           data-hovered={props.hoverIndex === i ? 'true' : undefined}
           style={{ left: `${((time.x(s.slot) / width) * 100).toFixed(3)}%`, width: `${((time.column / width) * 100).toFixed(3)}%` }}
-          onPointerEnter={() => props.onHoverSession?.(i)}
-          onPointerLeave={() => props.onHoverSession?.(null)}
-          onFocus={() => props.onHoverSession?.(i)}
-          onBlur={() => props.onHoverSession?.(null)}
+          onPointerEnter={() => hold('pointer', i)}
+          onPointerLeave={() => hold('pointer', null)}
+          onFocus={() => hold('focus', i)}
+          onBlur={() => hold('focus', null)}
           onClick={() => props.onSelectSession?.(i)}
         />
       ))}
