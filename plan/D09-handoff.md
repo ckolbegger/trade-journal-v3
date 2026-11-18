@@ -248,7 +248,6 @@ Task status and commits are in the breakdown's Progress section. This section ho
 - For T9.12, T9.13: the test Trades' full series are in the model block of `prototypes/replay/round-2.html`; section 5's table names only the sessions the cases use.
 - For T9.10, T9.11: `CorridorPlot` (T9.12, T9.13) leaves `onSelectSession`, `onHoverSession` and `hoverIndex` unused; T9.11's hover and tap cases may need the plot to call them, which is lane CP's file: a need is a stop-and-report for the main session to route. The frame passes `axis.endLabel` and the P&L titles, draws the key (W44), and sits inside an element that supplies the cockpit's CSS variables `--stop`, `--target`, `--ink`, `--card`, `--tint`, `--line`, `--muted`, `--focus`.
 - For T9.18: Corridor's plot was checked at 1280 px against the prototype only; check 375 and 320 px (the "Break-even" and "Sold 2" labels may be dropped on a tight phone chart).
-- For T9.10: T9.12-B1 adds a test that every stylesheet under `src/ui/cockpit/styles/` is imported by `src/ui/cockpit/index.css`, and imports `replay-plot.css`. If lane CF has added `replay-frame.css`, T9.10 adds its `@import` line to `index.css` (lane CF owns that line once B1 has merged).
 - For T9.14: Replay is the second drawer, after Today. Every drawer list in section 1.5's Texts table changes in this task and nowhere else.
 - For T9.18: add `e2e/d9` to `test:e2e:3` in the same commit as the first spec.
 - For T9.19: two of `acceptance-commands.sh`'s nine commands fail by design at stage A (section 3, "The stage gate").
