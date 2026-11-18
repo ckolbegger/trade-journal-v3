@@ -46,6 +46,7 @@ export type ReplayFigures = Pick<
   | 'maximumIncrementalReward'
   | 'maximumIncrementalRewardInPlanR'
   | 'rewardRiskNow'
+  | 'currentMarkedPnlInPlanR'
   | 'conditions'
   | 'outcomes'
   | 'standing'
