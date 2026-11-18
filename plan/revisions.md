@@ -8,7 +8,8 @@ Every revision of the frozen plan, newest first, one entry each. Each revision i
   - implied volatility, the Share Equivalent and the Mark Change Split are labelled Estimates from a separate pure module; the rates (4% up to 365 days, 5.25% beyond) are stated on the About page only;
   - the meter replaces the Review slider and goes on the Open list and Trade Detail's Conditions card; `rangePosition` is removed, with its 84 entries in eight frozen fixtures' expected views;
   - the Open list's default order is the Review's attention order, built so that sorting and filtering can be added later;
-  - a task may shorten screen text and records the before and after (P137).
+  - a task may shorten screen text and records the before and after (P137);
+  - added the same day, after the agreement and before any D9 task (the tag was moved to include it): D8R's run rules, decision 116 (3) and (4), apply to every stage of D9 (P138): moderate defects left after three critics become tech debt, and a known flaky case gets one rerun.
 
   It amends `specs/`: ADR 0007, the spec index, four glossary terms, Trade Analysis's `evaluate` and `replay`, the UI contract, Trade Views' `browseTrades`, and a new acceptance scenario, AC-CALC-005. The spec map's 260 entries were rechecked, D9 was retagged and the reading lists were regenerated. The acceptance matrix has 68 rows. No schema, store, seed, migration or backup-version change. The next decision is 118.
 - Revision 105: the commit tagged `claude-opus-5.5-plan-r105` (revision 104 plus decision 116), 2026-11-17. The user answered, all as recommended, four questions D8R's session would otherwise stop for:

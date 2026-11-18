@@ -6,7 +6,7 @@ Written 2026-11-17, with plan revision 106. [D09-drafting-handoff.md](D09-drafti
 
 This session **implements stage A of D9, "Trade replay"**, under the frozen plan at revision 106. Stage A builds the replay chart: the Underlying's price over the Trade's P&L, drawn between what the Trade would make at its Stop and at its Target, with a slider that steps back through the sessions. It goes in a new Replay drawer on Trade Detail and in the Review card before the Action. The breakdown is [D09-trade-replay.md](D09-trade-replay.md):
 - 40 tasks in three stages; **this session runs stage A only**: T9.1, T9.2, T9.3, T9.4, T9.5, T9.6, T9.7, T9.8, T9.9, T9.10, T9.11, T9.12, T9.13, T9.14, T9.15, T9.16, T9.17, T9.18, T9.19;
-- agreed by the user on 2026-11-17 as **decision 117**, with P118–P137, its ten answered questions (section 12) and the words W35–W52 approved (W1 amended);
+- agreed by the user on 2026-11-17 as **decision 117**, with P118–P138, its ten answered questions (section 12) and the words W35–W52 approved (W1 amended);
 - stage A runs as a **swarm** under **decision 111**, with an agent cap of 4, and pending questions under **decision 113 as amended by decision 115**: one question at a time, the others queued;
 - stages B (the option estimates) and C (the meter) each get their own session and handoff, and run one task at a time.
 
@@ -46,7 +46,7 @@ Run these checks. Each one must match:
 | `git rev-parse --show-toplevel` | `/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5` |
 | `git branch --show-current` | `claude-opus-5.5` |
 | `git status -sb` | `## claude-opus-5.5...origin/claude-opus-5.5`, possibly followed by `[ahead N]`. No uncommitted changes. |
-| `git log --oneline claude-opus-5.5-plan-r106..HEAD` | At the first session: only this handoff's commit. Afterwards: only D9 task and merge commits, their evidence and Progress updates, handoff updates, and approved plan revisions. |
+| `git log --oneline claude-opus-5.5-plan-r106..HEAD` | Empty at the first session. Afterwards: only D9 task and merge commits, their evidence and Progress updates, handoff updates, and approved plan revisions. |
 | `git rev-parse --short 'claude-opus-5.5-d8r^{commit}'` | `85a7630e` |
 | `git diff --stat claude-opus-5.5-d8r claude-opus-5.5-plan-r106 -- src e2e tests tools .claude package.json` | Empty. |
 | `ls .claude/worktrees 2>/dev/null` | Empty or absent at the first session. Afterwards, only this deliverable's lane worktrees. |
@@ -87,7 +87,7 @@ Read [.claude/docs/implementing.md](../.claude/docs/implementing.md) first, all 
   - `prototypes/replay/checks/verify.js`, which states what each per-session figure must equal, and loads the model block that holds every session of the test Trades (`buildSeries(trade, 'bull' or 'bear').rows`).
   - The prototype is a picture, not code to port and not a specification: where it and the breakdown differ, the breakdown wins (for example P124, the expiration session).
 
-`specs/` and the frozen plan are read-only. A deviation, or a question the specs and plan leave to the user, is a pending decision (decision 113 as amended): ask in an ordinary message, one question at a time, queue any other in `evidence/D09/DECISIONS-PENDING.md`, pause only the tasks it blocks, and keep the other lanes going. An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`. The next revision is r107, the next decision 118, and the breakdown's numbering continues at P138, A266 and W53. Editing the Progress section alone is not a revision.
+`specs/` and the frozen plan are read-only. A deviation, or a question the specs and plan leave to the user, is a pending decision (decision 113 as amended): ask in an ordinary message, one question at a time, queue any other in `evidence/D09/DECISIONS-PENDING.md`, pause only the tasks it blocks, and keep the other lanes going. An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`. The next revision is r107, the next decision 118, and the breakdown's numbering continues at P139, A266 and W53. Editing the Progress section alone is not a revision.
 
 ## 3. Stage A specifics
 
@@ -157,14 +157,15 @@ Lanes **TA** (T9.3, T9.4, T9.5), **CF** (T9.9, T9.10, T9.11) and **CP** (T9.12, 
   - Pinned browser cases use `launchAt`, `pinClock` and `setClock` from `e2e/d4/support.ts`.
   - Test-only commits are relocated under `src/itg/d09/` for `ocr-review`.
 - **Tech debt.** Item 28 is not fixed here; the replay follows `evaluate` (breakdown section 11). Don't fix other items unasked.
-- **Flaky tests and the critic limit.** Decision 116's rules for these were D8R's only and have not been extended to D9. A failing test is a failure: reproduce it with one targeted run. If it passes alone, record it as a suspected flake with its run and treat a second failure as a pending decision. The critic cap is `.claude/docs/critic-brief.md`'s: a third critic that still reports a high or moderate defect stops the run.
+- **Flaky tests (P138 (2), decision 117 (9)).** Two cases are known to flake: tech debt item 11's (`TradeList.test.tsx`, the Ready state) and the `PositionChangeForm` focus case ("should move focus to the Record entry heading when the form finishes loading"). If either fails a run, have the runner rerun it alone once. A pass is logged as a flake, with the run, and the run continues; two failures in a row are a pending decision. Any other failing test is a failure: reproduce it with one targeted run and fix it in a fresh subagent.
+- **The critic limit (P138 (1), decision 117 (9)).** At most three critics at the gate. If the third still leaves defects and none is high and none is a FAIL, close the gate: record each remaining defect as a new tech debt item in `plan/implementation-plan.md` (a plan edit the user approved in advance, made in the gate's evidence commit) and list them in the stage report. A remaining high defect or a FAIL stops the run. This replaces `.claude/docs/critic-brief.md`'s cap for D9.
 - **No benchmark in stage A** (A265, decision 114). It runs once, after stage C.
 - **The stage gate (T9.19).**
   1. Run the full tier with `suite-runner` until it passes.
   2. Run `.claude/scripts/acceptance-commands.sh plan/D09-trade-replay.md`. Seven of its nine commands must pass. The two that name later stages' files fail by design until those stages land: AC-CALC-005 (`d9/estimates`) and AC-REV-002 (`e2e/d9/meter-review.spec.ts`). Any other failure is a defect.
   3. Brief a **fresh** `general-purpose` critic (effort medium) from `.claude/docs/critic-brief.md`, with flows C9.1, C9.2, C9.3 and C9.4, the future-capability list in breakdown section 8 (which names the estimates and the meter as not defects in stage A), the 375 and 320 px checks, port 5175 under the lock, and no reading of `evidence/` or another worktree.
   4. Reports go to `test-results/critic-d09-<n>/report.md`. Copy each to `evidence/D09/critic-<n>.md`.
-  5. Each critic defect is first reproduced by a failing test, then fixed as a bug task, then a fresh critic repeats all four flows.
+  5. Each critic defect is first reproduced by a failing test, then fixed as a bug task, then a fresh critic repeats all four flows, up to three critics (the critic limit above).
   6. When the gate passes, mark the stage A rows of section 13 covered where stage A completes them, and tag `claude-opus-5.5-d9a`.
 
 ## 4. What is in place
@@ -206,13 +207,13 @@ Build on these. Read the code before extending it. Line numbers are on `85a7630e
 Stop all work and ask the user **only** when:
 1. the session lock exists, or a location check in section 1 fails;
 2. nothing unblocked remains while a pending decision waits;
-3. a fresh critic or a browser can't be provided, or a third critic at the gate still reports a high or moderate defect;
+3. a fresh critic or a browser can't be provided, or three critics at the gate still leave a FAIL or a high defect (moderate and lower become tech debt, P138);
 4. a merge conflict falls in a file two lanes both own, which section 4.2 says can't happen.
 
 These are pending decisions, asked one at a time while the unblocked lanes keep working (decision 113 as amended):
 - the work needs a deviation from `specs/` or the frozen plan, or exposes an ambiguity: a breakdown passage the built code can't meet, a query-count proof that can't keep its request list, or a changed frozen view;
 - a suite failure, critic defect or ocr bug-task fix can't be fixed without such a deviation, or a third ocr round on one task still leaves findings;
-- a test fails a second time after passing alone;
+- a known flaky case fails twice in a row (P138);
 - `acceptance-commands.sh` can't pass stage A's seven commands without a revision.
 
 Not pending decisions: a screen text no approved word covers (P135), and a text a task shortens under P137. Both are recorded and reported.
@@ -221,7 +222,7 @@ Everything else continues without the user. Make implementation-level decisions 
 
 When the gate passes:
 1. tag `claude-opus-5.5-d9a` locally;
-2. write `evidence/D09/stage-a-report.md`, with tasks and commits, each task's fix rounds, flaky tests with the run they flaked in, decisions (answered and pending), critics, the new words awaiting approval, every text shortened under P137 with its before and after, and the wall-clock time against the breakdown's estimate (section 3);
+2. write `evidence/D09/stage-a-report.md`, with tasks and commits, each task's fix rounds, flaky tests with the run they flaked in, decisions (answered and pending), critics, any defects moved to tech debt, the new words awaiting approval, every text shortened under P137 with its before and after, and the wall-clock time against the breakdown's estimate (section 3);
 3. write stage B's handoff, `plan/D09B-handoff.md`, in this note's form, for T9.20, T9.21, T9.22, T9.23, T9.24, T9.25, T9.26, T9.27 and T9.28, run one task at a time (decision 100), carrying the "Starting a session" paragraph, these stop conditions, and the notes below that name stage B's tasks;
 4. remove `.claude/session.lock`. Never push.
 
