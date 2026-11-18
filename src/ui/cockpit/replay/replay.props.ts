@@ -316,10 +316,9 @@ function plotSessionOf(view: TradeReplayView, index: number): PlotSession {
     maxReward: labelled(f?.outcomes?.atMaxReward, 'Max reward'),
     ...(past && { past: { line: past.line, label: `${chartMoney(past.dollars)} past the ${past.line}` } }),
     // What is at stake from here, tagged at the slider's session: the risk unless the Stop is breached, the reward unless the Target is reached.
-    ...(risk?.kind === 'Value' && zone !== 'PastStop' && {
+    ...(risk?.kind === 'Value' && (zone !== 'PastStop' || reward?.kind === 'Value') && {
       stake: {
-        riskLabel: `Risk to stop ${chartMoney(risk.value)}`,
-        riskShortLabel: `Risk ${chartMoney(risk.value)}`,
+        ...(zone !== 'PastStop' && { riskLabel: `Risk to stop ${chartMoney(risk.value)}`, riskShortLabel: `Risk ${chartMoney(risk.value)}` }),
         ...(reward?.kind === 'Value' && zone !== 'PastTarget' && { rewardLabel: `Reward to target ${chartMoney(reward.value)}`, rewardShortLabel: `Reward ${chartMoney(reward.value)}` }),
       },
     }),

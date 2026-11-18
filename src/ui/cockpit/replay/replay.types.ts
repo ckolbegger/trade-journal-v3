@@ -55,8 +55,8 @@ export interface PlotSession {
   readonly maxReward: LabelledFigure | null;
   // Where the result stands against the lines, to hatch the area past one and label it ("$32 past the Target").
   readonly past?: { readonly line: 'Stop' | 'Target'; readonly label: string; readonly shortLabel?: string };
-  // What is at stake from here, tagged at the slider's session only: the neutral-ink bar and its two tags.
-  readonly stake?: { readonly riskLabel: string; readonly riskShortLabel?: string; readonly rewardLabel?: string; readonly rewardShortLabel?: string };
+  // What is at stake from here, tagged at the slider's session only: the neutral-ink bar and its two tags (reward only after a Stop breach).
+  readonly stake?: { readonly riskLabel?: string; readonly riskShortLabel?: string; readonly rewardLabel?: string; readonly rewardShortLabel?: string };
   // The Position Changes in this session, in fact order.
   readonly markers: readonly PlotMarker[];
 }

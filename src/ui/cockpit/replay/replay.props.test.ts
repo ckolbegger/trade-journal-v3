@@ -391,6 +391,19 @@ describe('replay.props: what the plot draws of a session (W39 to W41, W44)', () 
     expect(two).not.toHaveProperty('stake');
   });
 
+  it('should keep the reward tag after a Stop breach', () => {
+    const pastStop = session({
+      date: '2026-11-09',
+      instrument: AXIO,
+      held: 100,
+      pnl: -920,
+      standing: value({ zone: 'PastStop', pastBy: { dollars: usd(180), r: frac(3, 10), crossed: true } }),
+      figures: { ongoingRiskToStop: value(usd(0)), incrementalRewardToTarget: value(usd(1080)) },
+    });
+    const plot = replayProps(view([pastStop]), { Plot }).sessions[0]!.plot;
+    expect(plot.stake).toEqual({ rewardLabel: 'Reward to target $1,080', rewardShortLabel: 'Reward $1,080' });
+  });
+
   it('should place each session in its own weekday slot, leaving a holiday blank', () => {
     // Wed 11-25, then Fri 11-27 (Thanksgiving Thu 11-26 has no session), then Mon 11-30.
     const days = ['2026-11-25', '2026-11-27', '2026-11-30'].map((date) => withMarks(session({ date, pnl: 10 }), [markOf(BREN_STOCK, '100.00')]));
