@@ -25,7 +25,9 @@ const HUNDRED = Rational.of(100n);
 
 const toneOf = (pnl: Rational): ReplayTone => {
   const sign = pnl.compare(ZERO);
-  return sign > 0 ? 'Profit' : sign < 0 ? 'Loss' : 'Even';
+  if (sign > 0) return 'Profit';
+  if (sign < 0) return 'Loss';
+  return 'Even';
 };
 
 // A fraction as a whole percent: formatting a finished share, not working one out.
@@ -54,7 +56,10 @@ function plannedAmountWords(role: 'Stop' | 'Target', dollars: Rational, session:
 
 function howItIsGoingOf(session: ReplayWordsView['sessions'][number]): string {
   const { tradePnl, final } = session;
-  if (final) return `Final result: ${final.kind === 'Sold' ? 'sold out' : `the ${final.contract.right.toLowerCase()} expired`} ${shortDate(session.date)}.`;
+  if (final) {
+    const ending = final.kind === 'Sold' ? 'sold out' : `the ${final.contract.right.toLowerCase()} expired`;
+    return `Final result: ${ending} ${shortDate(session.date)}.`;
+  }
   const standing = session.figures?.standing;
   if (tradePnl.kind !== 'Value' || standing?.kind !== 'Value') return 'No Mark.';
   const { zone, pastBy, share } = standing.value;
@@ -64,7 +69,8 @@ function howItIsGoingOf(session: ReplayWordsView['sessions'][number]): string {
     return pastBy.dollars.compare(ZERO) === 0 ? 'Target reached.' : `Target reached, ${money(pastBy.dollars)} past it.`;
   }
   if (share === undefined) return '';
-  return tradePnl.value.compare(ZERO) > 0 ? `Ahead: ${percent(share)} of the way to the Target.` : `Behind: ${percent(share)} of the way to the Stop.`;
+  if (tradePnl.value.compare(ZERO) > 0) return `Ahead: ${percent(share)} of the way to the Target.`;
+  return `Behind: ${percent(share)} of the way to the Stop.`;
 }
 
 // "Even at the Stop this Trade would end $316.00 ahead.", said only when the result at the Stop is above break-even.
@@ -99,7 +105,9 @@ function stakeSentence(view: ReplayWordsView, session: ReplayWordsView['sessions
   if (standing.value.zone === 'PastTarget') {
     const { openProfitAtRisk } = standing.value;
     const max = figures?.maximumIncrementalReward;
-    const cap = max?.kind === 'Unbounded' ? ' · no cap above' : max?.kind === 'Value' ? ` · at most ${money(max.value)} more` : '';
+    let cap = '';
+    if (max?.kind === 'Unbounded') cap = ' · no cap above';
+    else if (max?.kind === 'Value') cap = ` · at most ${money(max.value)} more`;
     const open = openProfitAtRisk ? ` (${money(openProfitAtRisk)} of it open profit)` : '';
     return `From here: ${money(risk.value)} at risk back to the Stop${open}${cap}.`;
   }
