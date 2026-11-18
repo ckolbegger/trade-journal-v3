@@ -1,0 +1,120 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 0,
+    "total_tokens": 16047,
+    "input_tokens": 15939,
+    "output_tokens": 108,
+    "cache_read_tokens": 4992,
+    "elapsed": "10s"
+  },
+  "tool_calls": {
+    "total": 2,
+    "by_tool": {
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/cockpit/replay/corridor.test.tsx",
+        "src/ui/cockpit/replay/corridor.tsx"
+      ]
+    }
+  ],
+  "session_id": "c6039ace-4c51-4eb2-89c8-ef6bf3ec2d23",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "c6039ace-4c51-4eb2-89c8-ef6bf3ec2d23",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "f52b10a5",
+      "resolved_base": "589c1d282f9d075b35f94c648d3e4312cd8ced3d",
+      "resolved_head": "f52b10a58d5e1a232e52f5060a7fd2474cdc42c3",
+      "exact_range": "589c1d282f9d075b35f94c648d3e4312cd8ced3d..f52b10a58d5e1a232e52f5060a7fd2474cdc42c3",
+      "source_artifact_sha256": "bb3663a6b8fb195a026b5f5eec84b4b93a360cbb2fd72f28db39323d92cc63f8"
+    },
+    "execution": {
+      "ocr_version": "v1.13.12",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "b9ff77485ea8c227fe111b6e6915407572768e86debadd842eefda14f4e4bcf1",
+          "path": "src/ui/cockpit/replay/corridor.tsx",
+          "fingerprint": "f3058dfdca80b827583f3566fd08ef07cfffee6335c771d54fa6bacb3d75f03d"
+        },
+        {
+          "item_id": "ba578f97f7698c0e6bcb181e747f8c8ef3dafb90b6f8eef6f25b35b639e1dd2c",
+          "path": "src/ui/cockpit/replay/corridor.test.tsx",
+          "fingerprint": "97a7e3bb465783a0fb43e4d26886c5cffde8103abf47a281fadcd0e45e1e85be"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "b9ff77485ea8c227fe111b6e6915407572768e86debadd842eefda14f4e4bcf1",
+          "path": "src/ui/cockpit/replay/corridor.tsx",
+          "fingerprint": "f3058dfdca80b827583f3566fd08ef07cfffee6335c771d54fa6bacb3d75f03d"
+        },
+        {
+          "item_id": "ba578f97f7698c0e6bcb181e747f8c8ef3dafb90b6f8eef6f25b35b639e1dd2c",
+          "path": "src/ui/cockpit/replay/corridor.test.tsx",
+          "fingerprint": "97a7e3bb465783a0fb43e4d26886c5cffde8103abf47a281fadcd0e45e1e85be"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "5a827fc702102e6e6b0dc3823f624e182ce28fe62a1c11e80f2f5e03b1561b2d",
+          "path": "evidence/D09/suite-runs/T9.11-B6-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "871a39317f2f07d2bca1d7462e8046f40490de072141d95ece3e3cef482221f0",
+          "path": "evidence/D09/tdd-log/T9.11-B6.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ca04b626a19750543da1deea42aac268587d61fb5c555b0468c92f170280334b",
+          "path": "evidence/D09/suite-runs/T9.11-B6-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "d37a7c9d9339ffb47299ff882564badf0b57aabf14f91d24c4e1f94ef698118f",
+          "path": "evidence/D09/suite-runs/T9.11-B6-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "e28189f82d955c54d6da2f7b87b606117acc1e890c23daccf3130eba3a5160d8",
+          "path": "evidence/D09/suite-runs/T9.11-B6-checks.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 10414
+  }
+}

@@ -1,0 +1,157 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 1,
+    "total_tokens": 224626,
+    "input_tokens": 222602,
+    "output_tokens": 2024,
+    "cache_read_tokens": 16640,
+    "elapsed": "1m37s"
+  },
+  "tool_calls": {
+    "total": 27,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 11,
+      "file_find": 2,
+      "file_read": 13
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/coordinators/replay/assemble-replay.ts",
+      "content": "Only attach `final` once the terminal event is included in the replayed session. For example, if the remaining contract is sold today before the session completes (or after the latest close), Market Data still supplies sessions only through the previous completed close. `replaySessions` then retains that earlier horizon, and this line labels its last session `Sold` even though its cutoff-derived position is still open and its P\u0026L is not the realized closing result. Check the last session's close against the terminal event before adding the annotation, and add coverage for a closure beyond the completed-session horizon.",
+      "existing_code": "      ...(final \u0026\u0026 i === replayed.sessions.length - 1 \u0026\u0026 { final }),",
+      "start_line": 139,
+      "end_line": 139,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Replay assembly extraction and trade-view integration tests",
+      "files": [
+        "src/coordinators/replay/assemble-replay.ts",
+        "src/coordinators/replay/index.ts",
+        "src/coordinators/trade-views/replay-trade.test.ts",
+        "src/coordinators/trade-views/trade-views.ts"
+      ]
+    }
+  ],
+  "session_id": "f7b96d8b-46e9-4ec2-a4e4-ad75267e618d",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "f7b96d8b-46e9-4ec2-a4e4-ad75267e618d",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "cfd8e482",
+      "resolved_base": "342a45dc74af9e337dc4b551b6212d7fb7d04b4e",
+      "resolved_head": "cfd8e482f54e38f09e5c0068e7458798f677c4fd",
+      "exact_range": "342a45dc74af9e337dc4b551b6212d7fb7d04b4e..cfd8e482f54e38f09e5c0068e7458798f677c4fd",
+      "source_artifact_sha256": "eecbc3d03abbe56683dcf8fc3d03879f4f64706a46f59f9cb23a1c1dbfaf2f33"
+    },
+    "execution": {
+      "ocr_version": "v1.13.12",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "1d45db421e94e4694f6f3250c8a059de25ae8ed03b5c669cf5f50e18144d7d03",
+          "path": "src/coordinators/trade-views/replay-trade.test.ts",
+          "fingerprint": "44ecb0e6bb58981a85c041669aaad4f646a59f172c4caefc393aff5d7d460631"
+        },
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "ee342fe9fb61c9cb5a0cbde1694b93dfd09f659c8f611f1bbe312b20a3793d72"
+        },
+        {
+          "item_id": "95cf165690376fe92681d574544b74ab4575a4fba2e8facb66f056fa89ff6ea1",
+          "path": "src/coordinators/replay/index.ts",
+          "fingerprint": "663e518e4f29db687d490d4f3dfd161d0d4a2feacd4f0f38aaefbf1843c93753"
+        },
+        {
+          "item_id": "b1b2a02fb7da0d724ece7399474d7940809dd378f13725099e9b9856f1003150",
+          "path": "src/coordinators/replay/assemble-replay.ts",
+          "old_path": "src/coordinators/trade-views/replay-trade.ts",
+          "fingerprint": "f17d9b7e22705e9766c6546849feb285beecc360269dfdd7592117edbac43b9f"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "1d45db421e94e4694f6f3250c8a059de25ae8ed03b5c669cf5f50e18144d7d03",
+          "path": "src/coordinators/trade-views/replay-trade.test.ts",
+          "fingerprint": "44ecb0e6bb58981a85c041669aaad4f646a59f172c4caefc393aff5d7d460631"
+        },
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "ee342fe9fb61c9cb5a0cbde1694b93dfd09f659c8f611f1bbe312b20a3793d72"
+        },
+        {
+          "item_id": "95cf165690376fe92681d574544b74ab4575a4fba2e8facb66f056fa89ff6ea1",
+          "path": "src/coordinators/replay/index.ts",
+          "fingerprint": "663e518e4f29db687d490d4f3dfd161d0d4a2feacd4f0f38aaefbf1843c93753"
+        },
+        {
+          "item_id": "b1b2a02fb7da0d724ece7399474d7940809dd378f13725099e9b9856f1003150",
+          "path": "src/coordinators/replay/assemble-replay.ts",
+          "old_path": "src/coordinators/trade-views/replay-trade.ts",
+          "fingerprint": "f17d9b7e22705e9766c6546849feb285beecc360269dfdd7592117edbac43b9f"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "05430651bf8a4d9eb6dc1d6f47e10f2e701d6653394b609e6c55f56f63214dee",
+          "path": "evidence/D09/suite-runs/T9.6-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "4386fd60d6c42c2df5b84a16f855076a0e8b3093ac243f8fc41a5a5f13b5ea12",
+          "path": "evidence/D09/tdd-log/T9.6.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "70f6fa61b035db3099b1de878249777544fb50193064fbb6712c8ad7979217b5",
+          "path": "evidence/D09/suite-runs/T9.6-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "afdbf5e3cc84de5caa1b3255d7da8c171b0ec69e12c617d050af87d4b2ed631e",
+          "path": "evidence/D09/suite-runs/T9.6-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "b60e0d3f524cd64eb32763440b8df673b66d11d39e743483c9da49ac45d8ed3f",
+          "path": "evidence/D09/suite-runs/T9.6-lane.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 97199
+  }
+}

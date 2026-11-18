@@ -133,10 +133,12 @@ Stage A runs as a swarm (decision 111, agent cap 4). Each task's heading holds i
 | medium | `replay-plot.css:252` | `.replay-hit { min-width: 44px }` centred on columns about 18 px apart at 340 px wide (about 39 px at 640 px, 15 slots), so neighbouring targets overlap and a tap can select the next session | Valid | T9.11-B7 |
 
 - **T9.11-B6.** Case: "it should keep a focused session marked when the pointer leaves, and return to it when the pointer leaves another".
+- T9.11-B6 commit `f52b10a5`: red `expected [ 1, 2, null ] to deeply equal [ 1, 2, 1 ]`, then green. `SessionHits` keeps the pointer's and the focused session in a ref and reports `pointer ?? focus`. Lane tier `T9.11-B6`: unit 2193, integration 269, checks 14 of 14. ocr (`ocr/T9.11-B6-f52b10a5.json`): **No findings.**
 - **T9.11-B7.** Implementation-level decision (recorded, not pending): each hit area spans exactly its session's column, edge to edge, so targets never overlap; where a column is narrower than 44 px, the slider and its Previous and Next buttons (W42, full-size) are the equivalent way to reach every session (the target-size rule's equivalent-control exception). Case: "it should give each session a target that never overlaps its neighbour's, at a phone's width".
 - **T9.11-B1.** Case: "it should clear the hover when another Trade's replay is passed in".
 - T9.11-B1 commit `a448021b`: red `expected <div class="replay-hover" …> to be null`, then green. The Trade-switch branch that resets the held date also clears `hoverIndex`. Lane tier `T9.11-B1`: unit 2191, integration 269, checks 14 of 14. ocr (`ocr/T9.11-B1-a448021b.json`): **No findings.**
 - **T9.11-B2.** Case: "it should show the readout of the slider's session, not the last".
+- T9.11-B2 commit `ce8e32af` (test only): **first-run pass**, as expected (the frame reads `session.readout`). Mutation: the readout maps `sessions[last].readout`: `AssertionError: expected 'MarksBREN Mark$110.00' to contain '$103.00'`; restored. Lane tier `T9.11-B2`: unit 2192, integration 269, checks 14 of 14. ocr (`ocr/T9.11-B2-ce8e32af.json`): **No findings.**
 - **T9.11-B3.** Case: "it should give the plot the table's id to describe it".
 - **T9.11-B4.** Case: "it should show whether the table is folded or open".
 
@@ -145,6 +147,11 @@ Stage A runs as a swarm (decision 111, agent cap 4). Each task's heading holds i
 - Lane RV, base `342a45dc` (code `f670c081`), commit `cfd8e482` (before rebase). Refactor step: the assembly moved to `src/coordinators/replay/assemble-replay.ts` (`assembleReplay(deps, analysis, whole, session)`, plus `index.ts`); `replay-trade.test.ts` 10 files, 87 tests before and after (one import path changed). 6 cases green (`tdd-log/T9.6.md`). Lane tier `T9.6`: unit 2195, integration 269, checks 14 of 14.
 - **First-run passes (3), each with its mutation check:** case 1 (built by T9.4 and T9.5; mutation: each session's `markers` as `[]`: `expected [] to deeply equal [ [ 'Execution', 'Opened' ] ]`); case 5, Settlement Due (built by revision 98 and the `terminalTime === null` guard in `finalOf`; mutation: guard removed: `expected false to be true`); case 6, each series read once (mutation: one series read twice: `expected [ 'BREN', 'BREN', … ] to deeply equal [ 'BREN', 'BREN261120C00100000' ]`). Each restored. Case 4 (Expired) passed first because its branch was written with case 3; reverted for a genuine red and restored.
 - Implementation-level notes: `final` is worked out in the assembly from `terminalPositionChangeOf`: `Expired` when that change has an option settlement (naming the last settled contract), else `Sold`. `assembleReplay` takes no end date yet; T9.7 adds the Review Date. No re-exports of the new type names were added. Test helper `seriesStack(series, strategyKey, now, options)` in `replay-trade.test.ts` (T9.7 may lift it into `tests/support/`).
+- ocr round 1 (`ocr/T9.6-cfd8e482.json`, the second run; the first failed on a provider stream error), 1 finding: medium, `assemble-replay.ts:139`: `final` goes on the last replayed session of any Closed Trade, so when the closing fill comes after the last completed session's close, that session reads Sold while its Position is still open and its P&L is not the realized result (breaks A253). Valid. Outcome: **T9.6-B1**, case "it should flag nothing final when the Trade closed after the last completed session".
+
+## T9.7 Daily Review: the card's replay, to the Review Date
+
+- **Before the brief (the handoff's T9.7 note):** the card a Save Marks result returns is built by `postMarksReview` (`daily-review.ts:867`), which calls `readTrade` (line 872), the same function `getTrade` is (line 720), through `assembleTrade` (line 628). A254's assumption holds: the replay added in `assembleTrade` reaches the Save Marks card with no further read. No pending decision.
 
 ## T9.10 Replay frame: the slider reveals sessions
 
