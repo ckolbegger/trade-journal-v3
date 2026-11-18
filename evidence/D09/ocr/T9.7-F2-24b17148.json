@@ -1,0 +1,153 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 0,
+    "total_tokens": 21393,
+    "input_tokens": 21139,
+    "output_tokens": 254,
+    "cache_read_tokens": 3328,
+    "elapsed": "11s"
+  },
+  "tool_calls": {
+    "total": 5,
+    "by_tool": {
+      "file_read": 5
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Daily review coordination, replay assembly, and query-count coverage",
+      "files": [
+        "src/coordinators/daily-review/daily-review.test.ts",
+        "src/coordinators/daily-review/daily-review.ts",
+        "src/coordinators/daily-review/types.ts",
+        "src/coordinators/replay/assemble-replay.ts",
+        "tests/integration/d7sp/review-query-count.test.ts"
+      ]
+    }
+  ],
+  "session_id": "7bb3b23a-05e3-4db7-a25e-bbe2664df8f0",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "7bb3b23a-05e3-4db7-a25e-bbe2664df8f0",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "24b17148",
+      "resolved_base": "ed14ca17f0efe4459186223a7d6e0ae51d40c749",
+      "resolved_head": "24b17148b52032f52370aea2afd3ef97d9f6b97c",
+      "exact_range": "ed14ca17f0efe4459186223a7d6e0ae51d40c749..24b17148b52032f52370aea2afd3ef97d9f6b97c",
+      "source_artifact_sha256": "85c6c634357afe6f6f144fc7d5f1b0f56edec6f479e6a115c810e4b88a5bc24e"
+    },
+    "execution": {
+      "ocr_version": "v1.13.12",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "e7e295896fb9f83d2dc150ca6fc4bf0f25872d0c0a1cec221182ac0d9244110f"
+        },
+        {
+          "item_id": "59a90146bc9310fb39a6cbbabb86171d0825ff24b320772ffddf0cf1202a8a54",
+          "path": "tests/integration/d7sp/review-query-count.test.ts",
+          "fingerprint": "ee41682ae1376c56369d00ca79ccff3624dba9690fa46a6d783f022dc518167a"
+        },
+        {
+          "item_id": "835fe238986a14f50aa73feeedba69e298a0728d45c05d35543575d749816715",
+          "path": "src/coordinators/daily-review/daily-review.test.ts",
+          "fingerprint": "030ae11a57a96c9df10e7b2a2a1c5243cb8504790d8507f163492fb4e2834a6d"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "52ed59b1c1c6185171b430a7de5862b874817dd1835fb89ff444cde04fb2baee"
+        },
+        {
+          "item_id": "eff004ad86195c6699e393b8cb23f8fc840046aaeacffc656f1ac6c885bf0860",
+          "path": "src/coordinators/replay/assemble-replay.ts",
+          "fingerprint": "4067ab4116613bcce86faaa5dbb55d1e57c26926c68587d00ef96f1bcb7465c2"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "e7e295896fb9f83d2dc150ca6fc4bf0f25872d0c0a1cec221182ac0d9244110f"
+        },
+        {
+          "item_id": "59a90146bc9310fb39a6cbbabb86171d0825ff24b320772ffddf0cf1202a8a54",
+          "path": "tests/integration/d7sp/review-query-count.test.ts",
+          "fingerprint": "ee41682ae1376c56369d00ca79ccff3624dba9690fa46a6d783f022dc518167a"
+        },
+        {
+          "item_id": "835fe238986a14f50aa73feeedba69e298a0728d45c05d35543575d749816715",
+          "path": "src/coordinators/daily-review/daily-review.test.ts",
+          "fingerprint": "030ae11a57a96c9df10e7b2a2a1c5243cb8504790d8507f163492fb4e2834a6d"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "52ed59b1c1c6185171b430a7de5862b874817dd1835fb89ff444cde04fb2baee"
+        },
+        {
+          "item_id": "eff004ad86195c6699e393b8cb23f8fc840046aaeacffc656f1ac6c885bf0860",
+          "path": "src/coordinators/replay/assemble-replay.ts",
+          "fingerprint": "4067ab4116613bcce86faaa5dbb55d1e57c26926c68587d00ef96f1bcb7465c2"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "115b79fb55bf0df0ab76f8d21e557a0b284d87c75590666bf518b18fd20b42c5",
+          "path": "evidence/D09/suite-runs/T9.7-F2-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "47b5b02ffcea1643bf145fc628a7cc7f12a096478fd724f36421110c9b85cb66",
+          "path": "evidence/D09/suite-runs/T9.7-F2-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "99b1f6d1e03f426497036c11b02ebeb848b8c990b5797410d4f191a25b15b3b1",
+          "path": "evidence/D09/tdd-log/T9.7-F2.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "cf0cdcf13a5141892d4c725fb92ccd12d6de7cbafc3ebee9689a150e24382212",
+          "path": "evidence/D09/suite-runs/T9.7-F2-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "de0dfc693bb37d269eeb8ad363334c80fef2c238b6d12e4cb7cc2d0d152b3380",
+          "path": "evidence/D09/suite-runs/T9.7-F2-integration.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 11421
+  }
+}
