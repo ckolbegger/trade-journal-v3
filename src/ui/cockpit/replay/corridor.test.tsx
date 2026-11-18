@@ -394,6 +394,23 @@ describe('Corridor: the Trade P&L (W40, W41)', () => {
     expect(pnl(container).querySelectorAll('text.banked-label')).toHaveLength(2);
   });
 
+  it('should keep the banked label when a stake tag competes for its space', () => {
+    // The sale's session is the slider's: a realized loss of -$440 starts there, and the stake tags sit in the same column.
+    const sessions = DAYS.slice(0, SALE + 1).map((_, i) =>
+      bren(i, {
+        tradePnl: i === SALE ? -920 : 0,
+        banked: i === SALE ? -440 : 0,
+        bankedLabel: i === SALE ? 'Realized −$440' : undefined,
+        resultAtStop: fig(-740, 'Stop −$740'),
+        resultAtTarget: fig(160, 'Target +$160'),
+        stake: i === SALE ? { riskLabel: 'Risk to stop $180', rewardLabel: 'Reward to target $1,080' } : undefined,
+      }),
+    );
+    const { container } = render(<CorridorPlot {...props({ sessions, sliderIndex: SALE })} />);
+    expect(screen.getByText('Realized −$440')).toBeTruthy();
+    expect(pnl(container).querySelectorAll('text.stake-tag')).toHaveLength(2);
+  });
+
   // T9.11-B5: one hit area per revealed session, shared by both charts (they use the same time axis), in a group beside
   // the charts' image: a button named by the session's date label.
   const hits = (): HTMLElement[] => screen.getAllByRole('button');

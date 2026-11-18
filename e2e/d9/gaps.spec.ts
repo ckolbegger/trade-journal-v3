@@ -64,9 +64,8 @@ test.describe('B9.2 A gap, a breach and a sale below the Stop', () => {
     await context.close();
   });
 
-  // W40 names the label "Realized −$440" for a banked loss. On R-AXIO-D's Mon 11-09 at 1280 px the chart does not draw it (the label placer leaves it out, since the stake tag
-  // "Reward to target $1,080" holds the space), so this case is fixme until the label is drawn or the plan's expectation is amended: reported to the main session.
-  test.fixme('should label the banked loss "Realized −$440" in the P&L chart on Mon 11-09', async ({ profile }) => {
+  // W40 names the label "Realized −$440" for a banked loss; the label placer gives it the space before the stake tags.
+  test('should label the banked loss "Realized −$440" in the P&L chart on Mon 11-09', async ({ profile }) => {
     test.setTimeout(240_000);
     const { context, page } = await build(profile, AXIO, closeOf('2026-11-09'), 5);
     await openDrawer(page, 'Replay');

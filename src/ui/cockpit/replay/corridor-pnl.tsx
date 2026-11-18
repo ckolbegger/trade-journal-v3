@@ -100,8 +100,8 @@ export function PnlChart({ props, width }: { props: ReplayPlotProps; width: numb
       })
       .join('');
 
-  // Labels, placed in priority order: the results and the stake tags first (never left out), then the rest, each
-  // taking the first free spot or none.
+  // Labels, placed in priority order: the results, the banked labels and the stake tags first (the results and tags are
+  // never left out), then the rest, each taking the first free spot or none.
   const placer = new LabelPlacer(width, HEIGHT);
   const labels: { key: string; cls: string; text: string; spot: Spot }[] = [];
   const put = (key: string, cls: string, text: string, spots: Spot[], must = false) => {
@@ -123,21 +123,9 @@ export function PnlChart({ props, width }: { props: ReplayPlotProps; width: numb
         { x: xc - time.column / 2 - 4, y: y + 12, anchor: 'end' },
       ], true);
     }
-    if (current.stake && current.tradePnl !== null) {
-      for (const [kind, end, label, short] of [
-        ['risk', current.resultAtStop, current.stake.riskLabel, current.stake.riskShortLabel],
-        ['reward', current.resultAtTarget, current.stake.rewardLabel, current.stake.rewardShortLabel],
-      ] as const) {
-        if (!end || !label) continue;
-        const mid = (value.y(current.tradePnl) + value.y(end.value)) / 2 + 3.5;
-        put(`stake-${kind}`, `stake-tag ${kind}`, words(label, short), [
-          { x: xc - 7, y: mid, anchor: 'end' },
-          { x: xc + 7, y: mid, anchor: 'start' },
-        ], true);
-      }
-    }
   }
-  // One label for each level a band steps through, that level's own finished text, at its first session.
+  // One label for each level a band steps through, that level's own finished text, at its first session. It is placed
+  // before the stake tags: it states what is already locked in, so it wins the space when the two compete.
   for (const band of bands(sessions)) {
     band.forEach((s, i) => {
       if (i > 0 && band[i - 1]!.banked === s.banked) return;
@@ -151,6 +139,19 @@ export function PnlChart({ props, width }: { props: ReplayPlotProps; width: numb
         { x: left, y: second, anchor: 'start' },
       ]);
     });
+  }
+  if (current?.stake && current.tradePnl !== null) {
+    for (const [kind, end, label, short] of [
+      ['risk', current.resultAtStop, current.stake.riskLabel, current.stake.riskShortLabel],
+      ['reward', current.resultAtTarget, current.stake.rewardLabel, current.stake.rewardShortLabel],
+    ] as const) {
+      if (!end || !label) continue;
+      const mid = (value.y(current.tradePnl) + value.y(end.value)) / 2 + 3.5;
+      put(`stake-${kind}`, `stake-tag ${kind}`, words(label, short), [
+        { x: xc - 7, y: mid, anchor: 'end' },
+        { x: xc + 7, y: mid, anchor: 'start' },
+      ], true);
+    }
   }
   if (current?.past && current.tradePnl !== null) {
     const y = value.y(current.tradePnl);
