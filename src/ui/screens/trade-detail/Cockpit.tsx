@@ -119,7 +119,7 @@ export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange, i
         return <TodayDrawer {...replayed} />;
       case 'Replay':
         if (pending) return <Loading />;
-        return replay ? <ReplayDrawer replay={replay} {...(initialSession !== undefined && { initialSession })} /> : null;
+        return replay ? <ReplayDrawer replay={replay} {...(initialSession !== undefined && { initialSession })} /> : <p>No replay.</p>;
       case 'Position':
         return <PositionDrawer {...shell} />;
       case 'Plan and Risk':

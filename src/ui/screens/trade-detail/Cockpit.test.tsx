@@ -160,6 +160,17 @@ describe('Trade Detail cockpit (W1, A217)', () => {
     expect(selectedTab()).toBe('Position');
   });
 
+  it('should say so in the Replay drawer when the replay could not be read', async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <Cockpit facade={facadeDouble()} view={openDetailOf([PC1, PC2])} replay={{ kind: 'None' }} timeZone="America/New_York" />
+      </MemoryRouter>,
+    );
+    await user.click(screen.getByRole('tab', { name: 'Replay' }));
+    expect(within(screen.getByRole('tabpanel', { name: 'Replay' })).getByText('No replay.')).toBeTruthy();
+  });
+
   it('should move between the shown drawers with the arrow keys, Home and End, and keep focus on the selected tab', async () => {
     const user = userEvent.setup();
     renderView(openDetailOf([PC1, PC2]));
