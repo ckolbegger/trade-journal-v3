@@ -1,0 +1,6 @@
+
+Running 1 test using 1 worker
+
+  ✓  1 [chromium] › e2e/d8/restore.spec.ts:31:3 › B8.3 Restore with a safety backup › should show the preview with counts, enable Replace only after both steps, render the summary, and after relaunch show lists and Details equal to profile A with a new pointer target and the old database gone (16.2s)
+
+  1 passed (17.6s)

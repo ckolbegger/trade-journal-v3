@@ -124,10 +124,27 @@ Stage A runs as a swarm (decision 111, agent cap 4). Each task's heading holds i
 
 - PD2 is withdrawn: ocr raised the real plot's hover and tap itself, so it is a bug task by the rule. B5 (lane CP) and B1 (lane CF) run at once: different lanes, no shared file; B2, B3 and B4 follow in lane CF one at a time. T9.11 is mergeable when all five are clean.
 - **T9.11-B5.** Cases (`corridor.test.tsx`): "it should report hover and focus on a revealed session, and its end on leave and blur"; "it should select a revealed session on a click or tap"; "it should mark the hovered session".
+- T9.11-B5 commit `589c1d28` (lane CP, from `342a45dc`): three cases green. Reds: the first a thrown `Unable to find an accessible element with the role button` (no hit areas existed: behavior absent, accepted as valid red), then two assertion failures. The click handler and `data-hovered` were written ahead, removed before the first green, and restored after their reds. One `button.replay-hit` per revealed session in `div.replay-hits[role=group][aria-label=Sessions]`, a sibling of the `role="img"` wrapper inside `div.replay-plot-frame`; named by the date label; at least 44 px wide; the hover mark is `rect.hover-column` in each chart, tinted and dashed. Lane tier `T9.11-B5`: unit 2192, integration 269, checks 14 of 14.
+- T9.11-B5 ocr (`ocr/T9.11-B5-589c1d28.json`), 2 findings:
+
+| Severity | Location | Claim | Assessment | Outcome |
+|---|---|---|---|---|
+| medium | `corridor.tsx:24-26` | Pointer leave and blur each send `onHoverSession(null)` on their own, so after a click focuses a session, moving the pointer off clears the hover though the button keeps focus (and leaving another hovered session doesn't restore the focused one) | Valid | T9.11-B6 |
+| medium | `replay-plot.css:252` | `.replay-hit { min-width: 44px }` centred on columns about 18 px apart at 340 px wide (about 39 px at 640 px, 15 slots), so neighbouring targets overlap and a tap can select the next session | Valid | T9.11-B7 |
+
+- **T9.11-B6.** Case: "it should keep a focused session marked when the pointer leaves, and return to it when the pointer leaves another".
+- **T9.11-B7.** Implementation-level decision (recorded, not pending): each hit area spans exactly its session's column, edge to edge, so targets never overlap; where a column is narrower than 44 px, the slider and its Previous and Next buttons (W42, full-size) are the equivalent way to reach every session (the target-size rule's equivalent-control exception). Case: "it should give each session a target that never overlaps its neighbour's, at a phone's width".
 - **T9.11-B1.** Case: "it should clear the hover when another Trade's replay is passed in".
+- T9.11-B1 commit `a448021b`: red `expected <div class="replay-hover" …> to be null`, then green. The Trade-switch branch that resets the held date also clears `hoverIndex`. Lane tier `T9.11-B1`: unit 2191, integration 269, checks 14 of 14. ocr (`ocr/T9.11-B1-a448021b.json`): **No findings.**
 - **T9.11-B2.** Case: "it should show the readout of the slider's session, not the last".
 - **T9.11-B3.** Case: "it should give the plot the table's id to describe it".
 - **T9.11-B4.** Case: "it should show whether the table is folded or open".
+
+## T9.6 The shared replay assembly; `replayTrade` carries the new fields
+
+- Lane RV, base `342a45dc` (code `f670c081`), commit `cfd8e482` (before rebase). Refactor step: the assembly moved to `src/coordinators/replay/assemble-replay.ts` (`assembleReplay(deps, analysis, whole, session)`, plus `index.ts`); `replay-trade.test.ts` 10 files, 87 tests before and after (one import path changed). 6 cases green (`tdd-log/T9.6.md`). Lane tier `T9.6`: unit 2195, integration 269, checks 14 of 14.
+- **First-run passes (3), each with its mutation check:** case 1 (built by T9.4 and T9.5; mutation: each session's `markers` as `[]`: `expected [] to deeply equal [ [ 'Execution', 'Opened' ] ]`); case 5, Settlement Due (built by revision 98 and the `terminalTime === null` guard in `finalOf`; mutation: guard removed: `expected false to be true`); case 6, each series read once (mutation: one series read twice: `expected [ 'BREN', 'BREN', … ] to deeply equal [ 'BREN', 'BREN261120C00100000' ]`). Each restored. Case 4 (Expired) passed first because its branch was written with case 3; reverted for a genuine red and restored.
+- Implementation-level notes: `final` is worked out in the assembly from `terminalPositionChangeOf`: `Expired` when that change has an option settlement (naming the last settled contract), else `Sold`. `assembleReplay` takes no end date yet; T9.7 adds the Review Date. No re-exports of the new type names were added. Test helper `seriesStack(series, strategyKey, now, options)` in `replay-trade.test.ts` (T9.7 may lift it into `tests/support/`).
 
 ## T9.10 Replay frame: the slider reveals sessions
 
@@ -216,3 +233,10 @@ Stage A runs as a swarm (decision 111, agent cap 4). Each task's heading holds i
 - The failure: `e2e/d8/responsive-a11y.spec.ts:299`, B8.16 "should complete a Restore with the keyboard only, every focused control showing a focus ring", `TimeoutError: page.waitForEvent: Timeout 15000ms exceeded while waiting for event "filechooser"` (`chooseFile`, `e2e/d8/support.ts:43`). Not one of P138's known flaky cases.
 - Reproduction (main session, under the lock): the case alone passed (2.1 s); the whole `test:e2e:3` stage again passed 57 of 57 in 4.2 min (`suite-runs/wave0-browser-3-rerun.txt`). It did not reproduce, so no failing test can be written for it, and wave 0 changed no product or test code. Logged as an unreproduced browser failure (a suspected flake) for the stage report; if it fails again in a later run, it becomes a pending decision under P138's spirit.
 - Stage times: none near 8 minutes, so the third stage meets T9.1's expected result.
+
+### wave1a (after T9.3, T9.4, T9.9, T9.10, T9.12, T9.13; T9.5 partly)
+
+- **Not one commit:** the head moved during the run. Unit and integration ran at `801c5ff8` (before T9.5 merged), browser-2 and browser-3 at `342a45dc` (T9.5 merged), checks at `8f42affb` (evidence only since). Each header shows "+ uncommitted changes" (the main session's evidence edits). T9.5's lane tiers passed; the next merge run covers it whole.
+- Browser tier: full (`first matching path since 1aa7c69e: src/ui/cockpit/index.css`).
+- Unit 197 files, 2180 tests; integration 123 files, 269 tests; browser-1 126 passed (5.4 min); browser-2 79 passed (5.0 min); browser-3 56 passed, **1 failed** (4.4 min); checks 14 of 14. `run-complete.sh`: run complete.
+- The failure: `e2e/d8/restore.spec.ts:31`, B8.3 "Restore with a safety backup › should show the preview with counts, enable Replace only after both steps, render the summary, and after relaunch show lists and Details equal to profile A…", `expect(received).toEqual(expected)`: after the relaunch the Today text lacked the Marks block (TODAY, YESTERDAY, CHANGE) and the "Wed Oct 14" lines. Not one of P138's known cases. The case alone passed (17.6 s, `suite-runs/wave1a-browser-3-rerun-restore.txt`): not reproduced. D9 has touched no Restore, Today or Marks code. Logged as a second suspected flake in the D8 Restore family (after `wave0`'s B8.16), for the stage report.

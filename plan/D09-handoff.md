@@ -248,6 +248,7 @@ Task status and commits are in the breakdown's Progress section. This section ho
 - For T9.18: Corridor's plot was checked at 1280 px against the prototype only; check 375 and 320 px (the "Break-even" and "Sold 2" labels may be dropped on a tight phone chart).
 - For T9.14: Replay is the second drawer, after Today. Every drawer list in section 1.5's Texts table changes in this task and nowhere else.
 - For T9.18: add `e2e/d9` to `test:e2e:3` in the same commit as the first spec.
+- For T9.18: the chart's sessions are `button.replay-hit`, one per revealed session, named by the date label (`getByRole('button', { name: 'Mon Nov 16' })`), in `div.replay-hits[role=group][aria-label=Sessions]`; the hover mark is `rect.hover-column` in `svg.price-strip` and `svg.pnl-chart` (T9.11-B5).
 - For T9.19: two of `acceptance-commands.sh`'s nine commands fail by design at stage A (section 3, "The stage gate").
 - For T9.23 (stage B): `replay-series.ts` is lane TA's in stage A. Stage B adds `estimates` to the same session shape; keep `figures` free of any number type.
 - For T9.33, T9.40 (stage C): stage A leaves `StopTargetSlider` and `rangePosition` exactly as they are.
@@ -256,5 +257,6 @@ Task status and commits are in the breakdown's Progress section. This section ho
 
 - Session 1 (2026-11-17): the main session read the D9-specific ranges of `plan/spec-reading/D09.md` (Trade Analysis, Daily Review, the UI contract), not all 132 entries; each brief names the spec ranges its task needs. Recorded in `evidence/D09/structural.md`, "Session reading".
 - Run `wave0`: B8.16's keyboard Restore case (`e2e/d8/responsive-a11y.spec.ts:299`) timed out waiting for the file chooser; it passed alone and in a rerun of the whole third stage. Logged as a suspected flake, not one of P138's two known cases.
+- Run `wave1a`: B8.3's Restore case (`e2e/d8/restore.spec.ts:31`) failed once (after the relaunch the Today text lacked the Marks block) and passed alone. A second D8 Restore case after `wave0`'s B8.16; logged as a suspected flake. Two in the same spec family may be one cause (the relaunch racing the Marks read): worth a look if a third appears.
 - T9.3-B2's test-only commit was reviewed by ocr in place, not relocated under `src/itg/d09/`: the `ocr-review` agent's instructions now review every commit in place, with `.claude/ocr-rule.json` bringing `*.test.ts` in. The handoff's relocation note is out of date.
 - Session 1: T9.1 and T9.2 were dispatched after the breakdown was read and before the rest of the reading, since neither needs it.

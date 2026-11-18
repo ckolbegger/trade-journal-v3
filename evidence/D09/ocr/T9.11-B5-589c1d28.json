@@ -1,0 +1,175 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 2,
+    "total_tokens": 243114,
+    "input_tokens": 241058,
+    "output_tokens": 2056,
+    "cache_read_tokens": 19968,
+    "elapsed": "1m48s"
+  },
+  "tool_calls": {
+    "total": 24,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 6,
+      "file_find": 2,
+      "file_read": 15
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/styles/replay-plot.css",
+      "content": "The minimum width makes adjacent session targets overlap, with later buttons winning hit testing. For example, at the compact width of 340px with the test fixture's 15 slots, session centers are only 18.25px apart; the next button's 44px target covers the previous session's center. Clicking directly on a plotted Mark can therefore select the next session. Keep the hit regions non-overlapping while meeting the touch-target requirement (for example, provide enough scrollable chart width), and add a browser-level coordinate-based interaction test; fireEvent on a chosen button cannot detect this.",
+      "existing_code": "  min-width: 44px;",
+      "start_line": 252,
+      "end_line": 252,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/cockpit/replay/corridor.tsx",
+      "content": "Pointer and keyboard interaction share one callback state but clear it independently. After clicking a session button to focus it, moving the pointer off it emits null even though that button still has focus, hiding its hover details and highlight. Likewise, leaving another hovered session does not restore the still-focused session. Track pointer and focus ownership separately and resolve the active session before emitting null; add mixed pointer/focus tests rather than testing each modality only in isolation.",
+      "existing_code": "          onPointerLeave={() =\u003e props.onHoverSession?.(null)}\n          onFocus={() =\u003e props.onHoverSession?.(i)}\n          onBlur={() =\u003e props.onHoverSession?.(null)}",
+      "start_line": 24,
+      "end_line": 26,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Replay corridor visualization, related plot components, styling, and tests",
+      "files": [
+        "src/ui/cockpit/replay/corridor-pnl.tsx",
+        "src/ui/cockpit/replay/corridor.test.tsx",
+        "src/ui/cockpit/replay/corridor.tsx",
+        "src/ui/cockpit/replay/price-strip.tsx",
+        "src/ui/cockpit/styles/replay-plot.css"
+      ]
+    }
+  ],
+  "session_id": "1c7d3722-fba7-43d2-a04a-7d9c5d4e517b",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "1c7d3722-fba7-43d2-a04a-7d9c5d4e517b",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "589c1d28",
+      "resolved_base": "342a45dc74af9e337dc4b551b6212d7fb7d04b4e",
+      "resolved_head": "589c1d282f9d075b35f94c648d3e4312cd8ced3d",
+      "exact_range": "342a45dc74af9e337dc4b551b6212d7fb7d04b4e..589c1d282f9d075b35f94c648d3e4312cd8ced3d",
+      "source_artifact_sha256": "43bb474186cd979c2fcd660ee136ddf471e941ffee627a8219d4e384deaa155c"
+    },
+    "execution": {
+      "ocr_version": "v1.13.12",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "18de86b152c71edf7b69e5ef56c77c1958afecdf4524893fdc802e9700a6dfe1",
+          "path": "src/ui/cockpit/replay/corridor-pnl.tsx",
+          "fingerprint": "6a7185345554965088b7fe310b63bc5f1d3730fce52663c7aa5a29c06050fd1d"
+        },
+        {
+          "item_id": "36f39170a3d0629cf5d55776919719e766ca53573881aad557775fade7e81c9e",
+          "path": "src/ui/cockpit/replay/price-strip.tsx",
+          "fingerprint": "2ee1ed6e7a1ad8199f03e2eeda674cf91513ca9dfbabe016f2f6b3c2c5566ef7"
+        },
+        {
+          "item_id": "67c8b9c55df4db1a19bdc33843dfc7b544ae3cacc462c048b5f3913d82cd7b19",
+          "path": "src/ui/cockpit/styles/replay-plot.css",
+          "fingerprint": "171a3b24382ca8ad93a067a6ad92c462746c9966a55b253054ac4f31d72bc686"
+        },
+        {
+          "item_id": "b9ff77485ea8c227fe111b6e6915407572768e86debadd842eefda14f4e4bcf1",
+          "path": "src/ui/cockpit/replay/corridor.tsx",
+          "fingerprint": "076473321e76d9c5aecf33cb7cceb990f230e97212a0286c4d2fbbb2c9189980"
+        },
+        {
+          "item_id": "ba578f97f7698c0e6bcb181e747f8c8ef3dafb90b6f8eef6f25b35b639e1dd2c",
+          "path": "src/ui/cockpit/replay/corridor.test.tsx",
+          "fingerprint": "f585fdf6f99d9dd09511356c6dafc4f58a8cc4a8e1d7b528bdb4e42a0eb28a6e"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "18de86b152c71edf7b69e5ef56c77c1958afecdf4524893fdc802e9700a6dfe1",
+          "path": "src/ui/cockpit/replay/corridor-pnl.tsx",
+          "fingerprint": "6a7185345554965088b7fe310b63bc5f1d3730fce52663c7aa5a29c06050fd1d"
+        },
+        {
+          "item_id": "36f39170a3d0629cf5d55776919719e766ca53573881aad557775fade7e81c9e",
+          "path": "src/ui/cockpit/replay/price-strip.tsx",
+          "fingerprint": "2ee1ed6e7a1ad8199f03e2eeda674cf91513ca9dfbabe016f2f6b3c2c5566ef7"
+        },
+        {
+          "item_id": "67c8b9c55df4db1a19bdc33843dfc7b544ae3cacc462c048b5f3913d82cd7b19",
+          "path": "src/ui/cockpit/styles/replay-plot.css",
+          "fingerprint": "171a3b24382ca8ad93a067a6ad92c462746c9966a55b253054ac4f31d72bc686"
+        },
+        {
+          "item_id": "b9ff77485ea8c227fe111b6e6915407572768e86debadd842eefda14f4e4bcf1",
+          "path": "src/ui/cockpit/replay/corridor.tsx",
+          "fingerprint": "076473321e76d9c5aecf33cb7cceb990f230e97212a0286c4d2fbbb2c9189980"
+        },
+        {
+          "item_id": "ba578f97f7698c0e6bcb181e747f8c8ef3dafb90b6f8eef6f25b35b639e1dd2c",
+          "path": "src/ui/cockpit/replay/corridor.test.tsx",
+          "fingerprint": "f585fdf6f99d9dd09511356c6dafc4f58a8cc4a8e1d7b528bdb4e42a0eb28a6e"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "2ea046e8cd54ba3ce79ca73d7a56bdba2fab2d969fe001060a1255ad261e2cda",
+          "path": "evidence/D09/suite-runs/T9.11-B5-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "47238952c01a206f806c08941d8302095db095786d4ea422be191c81e39add18",
+          "path": "evidence/D09/tdd-log/T9.11-B5.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "6d88eb7f8a40f391d8d0fa97e60ee55be6ca013b9cc85eaf5964731e8ce7c846",
+          "path": "evidence/D09/suite-runs/T9.11-B5-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "f53b877f8260efe3a1ec89b3b31f326d3c37a0ef078805f43f5e9172a69b13cb",
+          "path": "evidence/D09/suite-runs/T9.11-B5-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "fffffb553a0f4884d209bb8182fc64e5c27588016088df5e0934f8dfb3f8837a",
+          "path": "evidence/D09/suite-runs/T9.11-B5-integration.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 107845
+  }
+}
