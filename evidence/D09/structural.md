@@ -327,6 +327,7 @@ Stage A runs as a swarm (decision 111, agent cap 4). Each task's heading holds i
   3. low, readability, `corridor.test.tsx:578`: a nested ternary in the test helper `boxesOf`. → structural **T9.19-F1**.
   Queued after B5, one at a time (same files).
 - B3 also waits on PD4 (if the two lines are dropped, B3 has nothing to fix). T9.19-B5 next.
+- T9.19-B5 commits `873db3c7`, `869b9ad2`: case "should show the results at the Stop and the Target on a session without a Mark": red (the readout lacked "At stake from here, whole Position"), green; `src/ui/cockpit/replay` 88 of 88. `replay.props.ts`'s `gapStakeGroup` keeps the group on a no-Mark session with the two results from `outcomes`; Risk to stop, Reward to target, Reward to risk read "No Mark"; Worst case and Max reward show the replay's figure if any; dropped if neither result is a Value. The table's two result cells show the result. `gaps.spec.ts`: Tuesday cells −$318.00 and +$867.00, plus readout assertions. `states.spec.ts:90` (B9.4 Settlement Due) pinned the same wrong behaviour; extended to the task (second commit), groups now include "At stake from here, whole Position". `e2e/d9` 18 passed; lane unit 2273, integration 280, checks 14 of 14; browser-task passed.
 
 | Critic | Brief | Tokens | Tool calls | Duration | Defects |
 |---|---|---|---|---|---|
