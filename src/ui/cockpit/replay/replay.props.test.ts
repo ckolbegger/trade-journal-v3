@@ -3,7 +3,7 @@ import type { TradeReplayView } from '../../../app/types.ts';
 import type { CalculationResult } from '../../../domain/calculation-result/index.ts';
 import type { Instrument, OptionInstrument } from '../../../domain/instrument/index.ts';
 import { Rational } from '../../../domain/values/index.ts';
-import { sessionWords, type ReplayWordsView } from './replay.props.ts';
+import { sessionWords } from './replay.props.ts';
 
 // Doubles of the replay view, built from T9.2's types with the breakdown's section 5 figures as finished values: the
 // adapter selects and formats them and works out nothing, so nothing here is derived either.
@@ -51,7 +51,7 @@ function session(spec: Spec): Session {
   const instrument = spec.instrument ?? BREN;
   const noMark = spec.pnl === null;
   const unavailable = { ...FIGURES_ABSENT, instrument, date: spec.date } as CalculationResult<never>;
-  const figures: Figures & { readonly currentMarkedPnlInPlanR?: CalculationResult<Rational> } = {
+  const figures: Figures = {
     ongoingRiskToStop: unavailable,
     ongoingRiskToStopInPlanR: unavailable,
     incrementalRewardToTarget: unavailable,
@@ -64,7 +64,7 @@ function session(spec: Spec): Session {
     conditions: [],
     outcomes: { atStop: NOT_APPLICABLE, atTarget: NOT_APPLICABLE, atWorstCase: NOT_APPLICABLE, atMaxReward: NOT_APPLICABLE, ...spec.outcomes },
     standing: spec.standing ?? unavailable,
-    ...(spec.pnlR && { currentMarkedPnlInPlanR: value(spec.pnlR) }),
+    currentMarkedPnlInPlanR: spec.pnlR ? value(spec.pnlR) : unavailable,
     ...spec.figures,
   };
   return {
@@ -82,7 +82,7 @@ function session(spec: Spec): Session {
   };
 }
 
-const view = (sessions: readonly Session[], planColumn: TradeReplayView['planColumn'] = { atStop: usd(-324), atTarget: usd(956), rewardRisk: frac(956, 324) }): ReplayWordsView => ({
+const view = (sessions: readonly Session[], planColumn: TradeReplayView['planColumn'] = { atStop: usd(-324), atTarget: usd(956), rewardRisk: frac(956, 324) }): TradeReplayView => ({
   tradeId: 'T-1',
   instruments: [BREN],
   sessions,
