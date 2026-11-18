@@ -21,7 +21,6 @@ import {
   type LifecycleState,
   type PlanBaseline,
   type TradeAnalysisRecord,
-  replay,
 } from '../../domain/trade-analysis/index.ts';
 import { daysToExpiration, instrumentKey } from '../../domain/instrument/index.ts';
 import { classifyDue, type SessionCloses } from '../../domain/journal-debt/index.ts';
@@ -34,7 +33,7 @@ import type { ReferenceCatalog } from '../../modules/reference-catalog/index.ts'
 import type { BrowseRecord, TradeRecord, TradeSummary as RecordSummary } from '../../modules/trade-record/index.ts';
 import type { Persistence, WorkspaceSnapshotBinding } from '../../persistence/index.ts';
 import { payoffOf } from '../settlement.ts';
-import { firstExposureOf, placeJournal, replayInstruments, replaySessions, replayView, settlementExpirationOf } from './replay-trade.ts';
+import { assembleReplay } from '../replay/index.ts';
 import type { ReplayChange, ReplayNotApplicable, ReplayTradeRequest, ReplayTradeResult, TradeReplayView } from './replay-view.ts';
 import type { ReadViewResult, TradeDetailDebt, TradeDetailNarrativeItem, ViewBinding } from './view-types.ts';
 import { valueTrade, type DatedLine, type SettlementItem } from '../valuation/index.ts';
@@ -903,20 +902,7 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
         const whole = derive({ record: analysis });
         if (whole.kind !== 'Derived') return { binding, view: { kind: 'NotApplicable' as const, reason: 'FactsIncoherent' as const, findings: whole.findings } };
         if (analysis.positionChanges.length === 0) return { binding, view: { kind: 'NotApplicable' as const, reason: 'NeverExposed' as const } };
-        const { terminalTime } = whole;
-        // One read session: each Instrument's series is one read, whatever the number of sessions replayed.
-        const session = await openSession();
-        const instruments = replayInstruments(analysis);
-        const firstExposure = firstExposureOf(analysis);
-        const series = await Promise.all(instruments.map((instrument) => session.series(instrumentKey(instrument), firstExposure.slice(0, 10), session.tradingDate)));
-        const expiration = settlementExpirationOf(whole.positions, session.tradingDate);
-        const sessions = replaySessions(instruments, series, firstExposure, terminalTime, expiration);
-        const replayed = replay({ record: analysis, sessions: sessions.inputs });
-        if (replayed.kind === 'NotApplicable') return { binding, view: replayed };
-        const { items } = await deps.journal.query({ scope: 'TradeNarrative', tradeId: request.tradeId });
-        const ended = terminalTime !== null || expiration !== null;
-        const journal = placeJournal(items, sessions.inputs, firstExposure, ended);
-        return { binding, view: replayView(analysis.tradeId, instruments, replayed.sessions, sessions, journal, session.nextSessionDate, ended) };
+        return { binding, view: await assembleReplay(deps, analysis, whole, await openSession()) };
       });
       return result.kind === 'Ready' && 'kind' in result.view ? result.view : (result as ReadViewResult<TradeReplayView>);
     },
