@@ -3,6 +3,10 @@ import { breakFirstExecution, cardFixture, fiveTradeFixture, rawEditTrade, MONDA
 import { Rational } from '../../domain/values/index.ts';
 import { dumpAll } from '../../../tests/support/stack.ts';
 import { createDailyReview, type OpenDailyReviewResult, type ReflectionSaveBinding, type SaveDailyReviewResult } from './index.ts';
+import { seriesStack } from '../../../tests/support/replay-series-stack.ts';
+import { BREN_CALL, R_BREN_U } from '../../domain/trade-analysis/option-trade.ts';
+import { instrumentKey } from '../../domain/instrument/index.ts';
+import { REPLAY_SESSION_DATES } from '../../domain/trade-analysis/reference-trade.ts';
 
 const open = (stack: ReviewStack, asOf: string) => stack.dailyReview.open({ date: { kind: 'LatestCompleted' }, asOf });
 const stock = (symbol: string) => ({ kind: 'Stock', symbol }) as const;
@@ -1230,4 +1234,95 @@ describe("the Review's session-policy reach (P73)", () => {
       issues: [{ field: 'asOf', code: 'SessionPolicyCoverage', date: '2023-12-31', coverage: { first: '2024-01-01', last: '2028-12-31' } }],
     });
   }, 30_000);
+});
+
+// Monday 2026-11-16 17:00 New York: the Review Date is Mon 11-16, the replay's eleventh session.
+const MON_1116_1700 = '2026-11-16T22:00:00Z';
+
+// The card of a replay Trade at the latest completed session, read as the screen does: open, then getTrade.
+async function replayCard(stack: ReviewStack, tradeId: string, asOf: string) {
+  const opened = ready(await open(stack, asOf));
+  const card = await stack.dailyReview.getTrade({ reviewDate: opened.reviewDate, tradeId, binding: opened.binding });
+  if (card.kind !== 'Ready') throw new Error(`expected Ready, got ${card.kind}`);
+  return card.trade;
+}
+
+describe("getTrade: the card's replay (A254)", () => {
+  it("should return R-BREN-U's replay ending at the Review Date, with that session's figures", async () => {
+    const { stack, tradeId } = await seriesStack(R_BREN_U, 'strategy.long-call', MON_1116_1700, { marksThrough: 10 });
+
+    const { replay } = await replayCard(stack, tradeId, MON_1116_1700);
+
+    if (!replay) throw new Error('no replay');
+    expect(replay.sessions.map((s) => s.date)).toEqual(REPLAY_SESSION_DATES.slice(0, 11));
+    const risk = replay.sessions.at(-1)!.figures!.ongoingRiskToStop;
+    expect(risk.kind).toBe('Value');
+  }, 60_000);
+
+  it('should end at the Review Date even when a later session already has Marks', async () => {
+    // Wed 11-18 17:00: Marks exist through that day, but the Review opened as of Monday's close.
+    const { stack, tradeId } = await seriesStack(R_BREN_U, 'strategy.long-call', '2026-11-18T22:00:00Z', { marksThrough: 12 });
+
+    const { replay } = await replayCard(stack, tradeId, MON_1116_1700);
+
+    expect(replay?.sessions.map((s) => s.date)).toEqual(REPLAY_SESSION_DATES.slice(0, 11));
+  }, 60_000);
+
+  it('should give the same sessions as replayTrade when the Review Date is the Expected Mark Date', async () => {
+    const { stack, tradeId, replay: replayTrade } = await seriesStack(R_BREN_U, 'strategy.long-call', MON_1116_1700, { marksThrough: 10 });
+
+    const { replay } = await replayCard(stack, tradeId, MON_1116_1700);
+
+    const detail = await replayTrade();
+    if (detail.kind !== 'Ready' || !('sessions' in detail.view)) throw new Error('expected a replay');
+    expect(replay?.sessions).toEqual(detail.view.sessions);
+    expect(replay).toEqual(detail.view);
+  }, 60_000);
+
+  it("should leave out the replay when the Trade's facts cannot be replayed", async () => {
+    const { stack, tradeId } = await seriesStack(R_BREN_U, 'strategy.long-call', MON_1116_1700, { marksThrough: 10 });
+    await breakFirstExecution(stack, tradeId);
+
+    const trade = await replayCard(stack, tradeId, MON_1116_1700);
+
+    expect(trade.attention.reasons).toEqual([expect.objectContaining({ code: 'Unavailable', reason: 'FactsIncoherent' })]);
+    expect(trade).not.toHaveProperty('replay');
+  }, 60_000);
+
+  it('should read no series in open: the replay is read by getTrade alone', async () => {
+    const { stack, tradeId } = await seriesStack(R_BREN_U, 'strategy.long-call', MON_1116_1700, { marksThrough: 10 });
+    const read: string[] = [];
+    const counted = {
+      ...stack.marketData,
+      openReadSession: async (context: Parameters<typeof stack.marketData.openReadSession>[0]) => {
+        const session = await stack.marketData.openReadSession(context);
+        return { ...session, series: (key: string, from: string, to: string) => (read.push(key), session.series(key, from, to)) };
+      },
+    };
+    const counting = createDailyReview({ ...stack, marketData: counted });
+
+    const opened = await counting.open({ date: { kind: 'LatestCompleted' }, asOf: MON_1116_1700 });
+    if (opened.kind !== 'Ready') throw new Error(`expected Ready, got ${opened.kind}`);
+    expect(read).toEqual([]);
+    const card = await counting.getTrade({ reviewDate: opened.reviewDate, tradeId, binding: opened.binding });
+
+    expect(card.kind === 'Ready' && card.trade.replay).toBeTruthy();
+    expect(read).toHaveLength(2);
+  }, 60_000);
+
+  it('should carry the replay, with the new Mark, on the card a Save Marks result returns', async () => {
+    // R-BREN-U with Marks through Fri 11-13: Monday's close has none until the trader saves them.
+    const { stack, tradeId } = await seriesStack(R_BREN_U, 'strategy.long-call', MON_1116_1700, { marksThrough: 9 });
+    const opened = ready(await open(stack, MON_1116_1700));
+    const before = await stack.dailyReview.getTrade({ reviewDate: opened.reviewDate, tradeId, binding: opened.binding });
+    expect(before.kind === 'Ready' && before.trade.replay?.sessions.at(-1)?.marks.map((m) => m.resolution.kind)).toEqual(['Missing', 'Missing']);
+
+    const entry = (instrument: string, price: string) => ({ key: { instrumentKey: instrument, tradingDate: opened.reviewDate }, expectedRevision: 'None' as const, intention: { kind: 'RecordInitialManualMark' as const, price } });
+    const saved = await stack.dailyReview.save({ kind: 'SaveReviewMarks', reviewDate: opened.reviewDate, tradeId, binding: opened.binding, entries: [entry('BREN', '74.20'), entry(instrumentKey(BREN_CALL), '5.84')] });
+
+    if (saved.kind !== 'MarksSaved' || saved.review.kind !== 'Ready') throw new Error(`expected a Ready review, got ${saved.kind}`);
+    const monday = saved.review.trade.replay!.sessions.at(-1)!;
+    expect(monday.date).toBe('2026-11-16');
+    expect(monday.marks.map((m) => m.resolution.kind === 'Available' && m.resolution.mark.price)).toEqual(['74.2', '5.84']);
+  }, 60_000);
 });

@@ -10,6 +10,7 @@ import type { BrowseRecord, TradeRecord } from '../../modules/trade-record/index
 import { beginSemanticTransaction, type Persistence, type WorkspaceSnapshotBinding } from '../../persistence/index.ts';
 import type { MutationGuard } from '../mutation-guard.ts';
 import { payoffOf } from '../settlement.ts';
+import { assembleReplay } from '../replay/index.ts';
 import { valueTrade, type TradeValuation } from '../valuation/index.ts';
 import { attentionOf, byAttention, unavailableFamilies } from './attention.ts';
 import type {
@@ -648,6 +649,9 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     const figures = valuation ? figuresOf(analysis, valuation) : {};
     const settlement = settlementItems([{ valuation }]);
     const payoff = entry.derivation.kind === 'Derived' ? payoffOf(analysis, entry.derivation) : undefined;
+    // A254: the Trade's replay to the Review Date, the read session's date; the whole-lifetime derivation is the integrity one.
+    const replayed = found.integrity.kind === 'Derived' && analysis.positionChanges.length > 0 ? await assembleReplay(deps, analysis, found.integrity, read) : undefined;
+    const replay = replayed && !('kind' in replayed) ? replayed : undefined;
     const saved = (await deps.journal.queryActions({ reviewDate })).actions[analysis.tradeId];
     // The Trade's Outstanding Debt, each classified against the closes around the Review Date (A63).
     const outstanding = await boundDebts(analysis.tradeId, request.binding);
@@ -681,6 +685,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
           ...figures,
           settlement,
           ...(payoff && { payoff }),
+          ...(replay && { replay }),
           reflections,
           progress,
           form,
