@@ -416,6 +416,18 @@ describe('replayTrade: the D9 fields (A250 to A253)', () => {
     expect(last.figures!.ongoingRiskToStop).toEqual({ kind: 'NotApplicable', reason: 'NoRemainingPosition' });
   });
 
+  it('should flag nothing final when the Trade closed after the last completed session', async () => {
+    // K-sale's closing sale is Fri 11-13 10:00 New York; at 13:00 that day only the sessions through Thu 11-12 have completed.
+    const { replay } = await seriesStack(K_SALE, 'strategy.long-call', '2026-11-13T18:00:00Z', { marksThrough: 8, closes: true });
+    const view = ready(await replay());
+
+    expect(view.sessions.map((s) => s.date)).toEqual(REPLAY_SESSION_DATES.slice(0, 9));
+    expect(view.sessions.every((s) => s.final === undefined)).toBe(true);
+    const last = view.sessions.at(-1)!;
+    expect(frac(last.heldQuantity)).toBe(q(2n));
+    expect(last.figures!.ongoingRiskToStop.kind).toBe('Value');
+  });
+
   it("should flag R-DALE-U's last session final, Expired, naming the contract", async () => {
     const { replay } = await seriesStack(R_DALE_U, 'strategy.cash-secured-put', MON_2300, { marksThrough: 13, closes: true });
     const view = ready(await replay());

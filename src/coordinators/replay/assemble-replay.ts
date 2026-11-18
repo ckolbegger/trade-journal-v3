@@ -159,5 +159,8 @@ export async function assembleReplay(deps: { readonly journal: Journal }, analys
   const { items } = await deps.journal.query({ scope: 'TradeNarrative', tradeId: analysis.tradeId });
   const ended = terminalTime !== null || expiration !== null;
   const journal = placeJournal(items, sessions.inputs, firstExposure, ended);
-  return replayView(analysis.tradeId, instruments, replayed, sessions, journal, session.nextSessionDate, ended, finalOf(analysis, terminalTime));
+  // A253: only a session closing at or after the terminal fill is final; a Trade closed after the last completed session has none yet.
+  const last = sessions.inputs.at(-1);
+  const final = last !== undefined && terminalTime !== null && before(last.closeInstant, terminalTime) ? undefined : finalOf(analysis, terminalTime);
+  return replayView(analysis.tradeId, instruments, replayed, sessions, journal, session.nextSessionDate, ended, final);
 }
