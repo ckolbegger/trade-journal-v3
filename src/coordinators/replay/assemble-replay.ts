@@ -157,10 +157,12 @@ export async function assembleReplay(deps: { readonly journal: Journal }, analys
   const replayed = replay({ record: analysis, sessions: sessions.inputs });
   if (replayed.kind === 'NotApplicable') return replayed;
   const { items } = await deps.journal.query({ scope: 'TradeNarrative', tradeId: analysis.tradeId });
-  const ended = terminalTime !== null || expiration !== null;
-  const journal = placeJournal(items, sessions.inputs, firstExposure, ended);
-  // A253: only a session closing at or after the terminal fill is final; a Trade closed after the last completed session has none yet.
+  // A253: only a session closing at or after the terminal fill is final; a Trade closed after the last completed session has not
+  // ended yet there (no final, a pending column, and no later Journal item on the last session).
   const last = sessions.inputs.at(-1);
-  const final = last !== undefined && terminalTime !== null && before(last.closeInstant, terminalTime) ? undefined : finalOf(analysis, terminalTime);
+  const closedLater = last !== undefined && terminalTime !== null && before(last.closeInstant, terminalTime);
+  const ended = (terminalTime !== null && !closedLater) || expiration !== null;
+  const journal = placeJournal(items, sessions.inputs, firstExposure, ended);
+  const final = closedLater ? undefined : finalOf(analysis, terminalTime);
   return replayView(analysis.tradeId, instruments, replayed, sessions, journal, session.nextSessionDate, ended, final);
 }

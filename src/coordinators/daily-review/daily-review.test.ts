@@ -4,7 +4,7 @@ import { Rational } from '../../domain/values/index.ts';
 import { dumpAll } from '../../../tests/support/stack.ts';
 import { createDailyReview, type OpenDailyReviewResult, type ReflectionSaveBinding, type SaveDailyReviewResult } from './index.ts';
 import { seriesStack } from '../../../tests/support/replay-series-stack.ts';
-import { BREN_CALL, R_BREN_U } from '../../domain/trade-analysis/option-trade.ts';
+import { BREN_CALL, K_SALE, R_BREN_U } from '../../domain/trade-analysis/option-trade.ts';
 import { instrumentKey } from '../../domain/instrument/index.ts';
 import { REPLAY_SESSION_DATES } from '../../domain/trade-analysis/reference-trade.ts';
 
@@ -1308,6 +1308,18 @@ describe("getTrade: the card's replay (A254)", () => {
 
     expect(card.kind === 'Ready' && card.trade.replay).toBeTruthy();
     expect(read).toHaveLength(2);
+  }, 60_000);
+
+  it('should treat a Trade closed after the Review Date as not yet ended on the card', async () => {
+    // K-sale's closing sale is Fri 11-13 10:00 New York; at 13:00 that day the Review Date is Thu 11-12.
+    const { stack, tradeId } = await seriesStack(K_SALE, 'strategy.long-call', '2026-11-13T18:00:00Z', { marksThrough: 8, closes: true });
+    const { replay } = await replayCard(stack, tradeId, '2026-11-13T18:00:00Z');
+
+    if (!replay) throw new Error('no replay');
+    expect(replay.pending).not.toBeNull();
+    const last = replay.sessions.at(-1)!;
+    expect(last.date).toBe('2026-11-12');
+    expect(last.journal.filter((item) => item.momentTime > '2026-11-12T22:00:00Z')).toEqual([]);
   }, 60_000);
 
   it('should carry the replay, with the new Mark, on the card a Save Marks result returns', async () => {
