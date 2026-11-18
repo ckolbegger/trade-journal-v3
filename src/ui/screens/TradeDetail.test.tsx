@@ -441,4 +441,25 @@ describe('Trade Detail: the Replay drawer (W1 amended)', () => {
     await screen.findByRole('region', { name: 'State of play' });
     expect(screen.getByRole('tab', { selected: true }).getAttribute('aria-label')).toBe('Plan and Risk');
   });
+
+  it('should read the drawer and session again when the address names another Trade', async () => {
+    const user = userEvent.setup();
+    const facade = facadeOf({ replayResult: { kind: 'Ready', view: replay([debt], true), binding: BINDING } });
+    render(
+      <RuntimeContext.Provider value={{ writable: true, report: () => undefined, timeZone: 'America/New_York' }}>
+        <MemoryRouter initialEntries={['/trades/trade-1?drawer=price-history']}>
+          <Link to="/trades/trade-2?drawer=replay&session=2026-10-13">Other</Link>
+          <Routes>
+            <Route path="/trades/:tradeId" element={<TradeDetail facade={facade} timeZone="America/New_York" />} />
+          </Routes>
+        </MemoryRouter>
+      </RuntimeContext.Provider>,
+    );
+    await screen.findByRole('region', { name: 'State of play' });
+    expect(screen.getByRole('tab', { selected: true }).getAttribute('aria-label')).toBe('Price History');
+    await user.click(screen.getByRole('link', { name: 'Other' }));
+    const panel = await screen.findByRole('tabpanel', { name: 'Replay' });
+    expect(screen.getByRole('tab', { selected: true }).getAttribute('aria-label')).toBe('Replay');
+    expect((await within(panel).findByRole('slider', { name: 'Session' })).getAttribute('aria-valuetext')).toBe('Tue Oct 13 · 2 of 4. +$100.00');
+  });
 });

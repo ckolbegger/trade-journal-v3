@@ -39,7 +39,14 @@ type DetailState =
   | { readonly kind: 'NotFound' }
   | { readonly kind: 'Error' };
 
-export function TradeDetail({ facade, timeZone, onDirtyChange }: TradeDetailProps) {
+// One route element serves every Trade, so each Trade gets its own screen state: the address's drawer and session (and a Plan just
+// confirmed) are read afresh when the address names another Trade.
+export function TradeDetail(props: TradeDetailProps) {
+  const { tradeId = '' } = useParams();
+  return <TradeDetailOf key={tradeId} {...props} />;
+}
+
+function TradeDetailOf({ facade, timeZone, onDirtyChange }: TradeDetailProps) {
   const { tradeId = '' } = useParams();
   // A257: the drawer and the Replay session the address names are read once, on load; the slider and the tabs are state after that.
   const [params] = useSearchParams();
