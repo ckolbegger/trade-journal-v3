@@ -6,6 +6,7 @@ import { calculation, FACTS_INCOHERENT_FIGURE, signed } from '../figures.ts';
 import { useRuntime } from '../runtime.tsx';
 import type { UiFacade } from '../../app/compose.ts';
 import { ActionForm, type SavedAction } from './ActionForm.tsx';
+import { ReplayDrawer } from '../cockpit/drawers/replay.tsx';
 import { CardFigures } from './CardFigures.tsx';
 import { CardMarks, type CardMarksProps, type EntryDirty } from './CardMarks.tsx';
 import type { CardMarkRows } from './held-review.ts';
@@ -330,6 +331,12 @@ function CardBody({ facade, trade, progress, name, advance, go, marks, held, onR
             {name === 'Marks' && <CardMarks facade={facade} tradeId={trade.tradeId} marks={marks} held={held} onResult={onResult} tradeLine={tradeLine} onEntryDirty={onEntryDirty} onMarkSaved={onMarkSaved} onSaveMarks={onSaveMarks} outOfDate={outOfDate} onRefresh={onRefresh} />}
             {name === 'Reflections' && <ReviewReflections facade={facade} reviewDate={trade.saveBinding.reviewDate} reflections={trade.reflections} onReview={onReflectionResolved} onNoneRemaining={finishPanel} onEntryDirty={onEntryDirty} />}
             {name === 'Settlement' && <SettlementPanel tradeId={trade.tradeId} items={trade.settlement} timeZone={timeZone ?? 'UTC'} />}
+            {name === 'Action' && trade.replay && (
+              <section aria-labelledby={`${uid}-replay`} className="review-card-replay">
+                <h5 id={`${uid}-replay`}>Replay</h5>
+                <ReplayDrawer replay={trade.replay} />
+              </section>
+            )}
             {name === 'Action' && <ActionForm facade={facade} form={trade.form} binding={trade.saveBinding} onSaved={onSaved} onRefresh={onRefresh} onDirtyChange={report} pending={pending} />}
           </div>
         </div>

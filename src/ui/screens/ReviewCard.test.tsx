@@ -8,13 +8,13 @@ import { facadeDouble } from '../../../tests/support/facade-double.ts';
 import { optionOpenDetail } from '../../../tests/support/option-detail-fixtures.ts';
 import { OS2_S1 } from '../../../tests/support/option-trade-fixtures.ts';
 import type { UiFacade } from '../../app/compose.ts';
-import type { DailyTradeReview, MarkRow, OpenDailyReviewResult, OwedReflection, ReviewBinding, ReviewCompletion, ReviewTradeItem, SaveDailyReviewResult } from '../../app/types.ts';
+import type { DailyTradeReview, MarkRow, OpenDailyReviewResult, OwedReflection, OwedReflectionsCard, ReviewBinding, ReviewCompletion, ReviewTradeItem, SaveDailyReviewResult } from '../../app/types.ts';
 import { reflectionDefinition } from '../../../tests/support/position-change-form-facade.ts';
 import { DAILY_TRADE_REVIEW_PROMPTS } from '../../domain/daily-trade-review-prompts.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { RuntimeContext } from '../runtime.tsx';
 import { ReviewView } from './ReviewView.tsx';
-import { cardProgress } from '../../../tests/support/card-progress.ts';
+import { cardProgress, reflectionsOwedProgress } from '../../../tests/support/card-progress.ts';
 
 afterEach(cleanup);
 
@@ -1658,5 +1658,85 @@ describe('Review card: conditions (W8)', () => {
       'Target on MNO at or above 44.50: Mark missing: MNO, Wed Oct 14',
       'Target on the option price at or below $0.30: Active',
     ]);
+  });
+});
+
+// XYZ held 200 shares: the replay a card carries, ending at the Review Date (finished figures; the adapter's own cases are in replay.props.test.ts).
+const replaySession = (date: string, price: string, pnl: bigint) => ({
+  date,
+  positions: [{ instrument: symbol, quantity: Rational.of(200n) }],
+  heldQuantity: Rational.of(200n),
+  realizedPnl: Rational.of(0n),
+  tradePnl: value(pnl),
+  change: null,
+  marks: [{ instrument: symbol, resolution: { kind: 'Available', mark: { price, revisionNumber: 1, source: 'Manual', savedAt: `${date}T21:30:00Z` } }, change: null }],
+  positionChangeIds: [],
+  journal: [],
+});
+const replayTo = (...sessions: ReturnType<typeof replaySession>[]) => ({ tradeId: 't1', instruments: [symbol], sessions, plan: [], pending: null }) as unknown as DailyTradeReview['replay'];
+const THURSDAY_AND_MONDAY = replayTo(replaySession('2026-10-08', '50.00', 0n), replaySession('2026-10-12', '52.00', 582n));
+
+describe('Review card: the replay (W35)', () => {
+  it('should show the replay in a section named Replay directly above the Action form, resting on the Review Date', async () => {
+    const user = userEvent.setup();
+    renderWalk(walkFacade(ready([item('t1', 'XYZ')]), tradeReview('t1', 'XYZ', { replay: THURSDAY_AND_MONDAY })));
+    const card = await openTrade(user, 'XYZ');
+    const section = within(card).getByRole('region', { name: 'Replay' });
+    expect(section.nextElementSibling).toBe(within(card).getByRole('form', { name: 'Action' }));
+    expect(within(section).getByRole('slider', { name: 'Session' }).getAttribute('aria-valuetext')).toBe('Mon Oct 12 · 2 of 2. +$582.00');
+  });
+
+  it('should draw it from getTrade result and never call replayTrade', async () => {
+    const user = userEvent.setup();
+    const facade = walkFacade(ready([item('t1', 'XYZ')]), tradeReview('t1', 'XYZ', { replay: THURSDAY_AND_MONDAY }));
+    renderWalk(facade);
+    const card = await openTrade(user, 'XYZ');
+    expect(within(card).getByRole('region', { name: 'Replay' })).toBeTruthy();
+    expect(facade.DailyReview.getTrade).toHaveBeenCalledTimes(1);
+    expect(facade.TradeViewsAndReporting.replayTrade).not.toHaveBeenCalled();
+  });
+
+  it('should show the new Mark session after Save Marks, from the save result, without reading again', async () => {
+    const user = userEvent.setup();
+    const walked = { ...item('t1', 'XYZ'), progress: cardProgress(0, 0, { needed: 1, resolved: 0 }) };
+    const review = ready([walked], [], { families: [{ family: 'Marks', today: [markRow('XYZ')], earlier: [] }, { family: 'Trades', trades: [walked] }] });
+    const before = tradeReview('t1', 'XYZ', { progress: walked.progress, replay: replayTo(replaySession('2026-10-08', '50.00', 0n)) });
+    const after = tradeReview('t1', 'XYZ', { replay: THURSDAY_AND_MONDAY });
+    const facade = walkFacade(review, before);
+    const mark = { revisionId: 'r1', revisionNumber: 1, price: '52.00', source: 'Manual', savedAt: '2026-10-12T21:00:00Z' } as const;
+    vi.mocked(facade.DailyReview.save).mockResolvedValueOnce({
+      kind: 'MarksSaved',
+      marks: [{ key: { instrumentKey: 'XYZ', tradingDate: '2026-10-12' }, resolution: { kind: 'Available', mark }, resolutionRevision: 1, classification: 'InitialManual' }],
+      review: { kind: 'Ready', progress: { tradesWithAction: 0, tradesEligible: 1 }, completion: { kind: 'Incomplete', reasons: [{ code: 'ActionMissing', tradeId: 't1' }] }, binding, trades: [{ ...walked, progress: cardProgress(0, 0, { resolved: 1 }) }], trade: after, nextStep: { kind: 'Trade', trade: after } },
+    });
+    renderWalk(facade);
+    const card = await openTrade(user, 'XYZ');
+    await user.type(within(card).getByLabelText('Price'), '52.00');
+    await user.click(within(card).getByRole('button', { name: 'Save Marks (1)' }));
+    const section = await within(card).findByRole('region', { name: 'Replay' });
+    expect(within(section).getByRole('slider', { name: 'Session' }).getAttribute('aria-valuetext')).toBe('Mon Oct 12 · 2 of 2. +$582.00');
+    expect(facade.DailyReview.getTrade).toHaveBeenCalledTimes(1);
+  });
+
+  it('should show no replay on a card that only owes reflections', async () => {
+    const user = userEvent.setup();
+    const progress = reflectionsOwedProgress(1, 0);
+    const card = { tradeId: 't9', underlying: 'ABC', lifecycle: 'Closed', labels: { strategy: 'Long Stock', account: 'Main', institution: 'Broker' }, reflections: [], progress, replay: THURSDAY_AND_MONDAY } as unknown as OwedReflectionsCard;
+    const review = ready([item('t1', 'XYZ')], [], { owed: [{ tradeId: 't9', underlying: 'ABC', lifecycle: 'Closed', owed: [], progress }] });
+    const facade = walkFacade(review);
+    vi.mocked(facade.DailyReview.getTrade).mockResolvedValue({ kind: 'ReflectionsOwed', reviewDate: '2026-10-12', cutoff: review.cutoff, card });
+    renderWalk(facade);
+    const owedCard = await openTrade(user, 'ABC');
+    expect(within(owedCard).getByRole('region', { name: 'Result' })).toBeTruthy();
+    expect(within(owedCard).queryByRole('region', { name: 'Replay' })).toBeNull();
+  });
+
+  it('should show the card other panels and the Action form when the Trade facts cannot be replayed', async () => {
+    const user = userEvent.setup();
+    renderWalk(walkFacade(ready([item('t1', 'XYZ')]), tradeReview('t1', 'XYZ')));
+    const card = await openTrade(user, 'XYZ');
+    expect(within(card).queryByRole('region', { name: 'Replay' })).toBeNull();
+    for (const name of ['Marks', 'Reflections', 'Action']) expect(within(card).getByRole('button', { name: new RegExp(`^${name}\\b`) })).toBeTruthy();
+    expect(within(card).getByRole('form', { name: 'Action' })).toBeTruthy();
   });
 });
