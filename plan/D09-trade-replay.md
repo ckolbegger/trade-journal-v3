@@ -940,7 +940,7 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T9.9 | A | 1 | CF | In progress from `301aa24b` | |
 | T9.10 | A | 1 | CF | Not started | |
 | T9.11 | A | 1 | CF | Not started | |
-| T9.12 | A | 1 | CP | In progress from `301aa24b` | |
+| T9.12 | A | 1 | CP | Done | `9fbdd2f3`; B1 `523decd4` |
 | T9.13 | A | 1 | CP | Not started | |
 | T9.6 | A | 2 | RV | Not started | |
 | T9.7 | A | 2 | RV | Not started | |
