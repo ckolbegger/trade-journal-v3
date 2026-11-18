@@ -1,0 +1,170 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 2,
+    "total_tokens": 95850,
+    "input_tokens": 94912,
+    "output_tokens": 938,
+    "cache_read_tokens": 14976,
+    "elapsed": "39s"
+  },
+  "tool_calls": {
+    "total": 8,
+    "by_tool": {
+      "code_comment": 1,
+      "file_read": 6,
+      "file_read_diff": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/replay/replay.props.ts",
+      "content": "This introduces a nested ternary, which the review checklist explicitly prohibits. Use explicit branches to distinguish final, marked, and no-Mark sessions.",
+      "suggestion_code": "  let staked: ReadoutGroup | undefined;\n  if (!session.final) {\n    staked = session.tradePnl.kind === 'Value' ? stakeGroup(view, session) : gapStakeGroup(session);\n  }",
+      "existing_code": "  const staked = session.final ? undefined : session.tradePnl.kind === 'Value' ? stakeGroup(view, session) : gapStakeGroup(session);",
+      "start_line": 301,
+      "end_line": 301,
+      "category": "maintainability",
+      "severity": "low"
+    },
+    {
+      "path": "src/ui/cockpit/replay/replay.props.test.ts",
+      "content": "The new test omits Worst case and Max reward from its partial assertion, so it would still pass if these required rows were missing or incorrectly formatted. Add assertions for supplied Value figures, the unavailable fallback ('No Mark'), and an Unbounded maximum ('No cap above').",
+      "existing_code": "    expect(rowsOfGroup(props, 0, 'At stake from here, whole Position')).toMatchObject({\n      'Risk to stop': 'No Mark',\n      'Result at the Stop': '−$324.00',\n      'Reward to target': 'No Mark',\n      'Result at the Target': '+$956.00',\n      'Reward to risk': 'No Mark',\n    });",
+      "start_line": 641,
+      "end_line": 647,
+      "category": "test",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Replay properties implementation and unit tests",
+      "files": [
+        "src/ui/cockpit/replay/replay.props.test.ts",
+        "src/ui/cockpit/replay/replay.props.ts"
+      ]
+    },
+    {
+      "label": "D9 gaps and states end-to-end tests",
+      "files": [
+        "e2e/d9/gaps.spec.ts",
+        "e2e/d9/states.spec.ts"
+      ]
+    }
+  ],
+  "session_id": "059abcbe-7c4e-43d2-9288-43620d66bd90",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "059abcbe-7c4e-43d2-9288-43620d66bd90",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "39525f01",
+      "requested_head": "869b9ad2",
+      "resolved_base": "39525f0154943e0935b14bf0cf456c05f14a8963",
+      "resolved_head": "869b9ad2efa0131aa9ea2630d17ffc9d1efadea1",
+      "exact_range": "39525f0154943e0935b14bf0cf456c05f14a8963..869b9ad2efa0131aa9ea2630d17ffc9d1efadea1",
+      "source_artifact_sha256": "455f30b6243103e093942fa0209ea06f21ab48dda35d32b55c51c036c910dfdc"
+    },
+    "execution": {
+      "ocr_version": "v1.13.12",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "94795a0efc5e578cc9e20d8de873849ab993d776273afc5eb6333a0c8efa8209",
+          "path": "src/ui/cockpit/replay/replay.props.ts",
+          "fingerprint": "b6f8ec70261f23fca779f061f845c967cf5b1ed0ff0ab6ada6e66914317395e6"
+        },
+        {
+          "item_id": "9b25acaeb39fd349940fe7a039f2cdc4d4dea6666645b33b4f494c91aaccb763",
+          "path": "e2e/d9/gaps.spec.ts",
+          "fingerprint": "13a2667902e8db9e63d152520906a176422c9bb00c61c5051e8fc3ecddc93f01"
+        },
+        {
+          "item_id": "d01ecb69cbc4c27e7a40e214cdfef8a29456b3b24f7e6b33a3c22e3a436ab0dc",
+          "path": "src/ui/cockpit/replay/replay.props.test.ts",
+          "fingerprint": "0d0505de847f3488bdc0688e2a034be07fcd8ecae717abdfe31e5c3666f00c42"
+        },
+        {
+          "item_id": "e66a9f786fad74db81238b7734c40901d93568bc1eca866d6a0cad15779ffcc2",
+          "path": "e2e/d9/states.spec.ts",
+          "fingerprint": "1c1eb1183aaa750aa3956f777e3d7c90c6eb7f47af4fe3e9588fa8781e80b879"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "94795a0efc5e578cc9e20d8de873849ab993d776273afc5eb6333a0c8efa8209",
+          "path": "src/ui/cockpit/replay/replay.props.ts",
+          "fingerprint": "b6f8ec70261f23fca779f061f845c967cf5b1ed0ff0ab6ada6e66914317395e6"
+        },
+        {
+          "item_id": "9b25acaeb39fd349940fe7a039f2cdc4d4dea6666645b33b4f494c91aaccb763",
+          "path": "e2e/d9/gaps.spec.ts",
+          "fingerprint": "13a2667902e8db9e63d152520906a176422c9bb00c61c5051e8fc3ecddc93f01"
+        },
+        {
+          "item_id": "d01ecb69cbc4c27e7a40e214cdfef8a29456b3b24f7e6b33a3c22e3a436ab0dc",
+          "path": "src/ui/cockpit/replay/replay.props.test.ts",
+          "fingerprint": "0d0505de847f3488bdc0688e2a034be07fcd8ecae717abdfe31e5c3666f00c42"
+        },
+        {
+          "item_id": "e66a9f786fad74db81238b7734c40901d93568bc1eca866d6a0cad15779ffcc2",
+          "path": "e2e/d9/states.spec.ts",
+          "fingerprint": "1c1eb1183aaa750aa3956f777e3d7c90c6eb7f47af4fe3e9588fa8781e80b879"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "764c1d19c03757f7126598655ecf9310d58861a0acd8243060e6b39bad227cf9",
+          "path": "evidence/D09/suite-runs/T9.19-B5-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "951fefae2a8431944d644d2ea4b6d42dab6da15b0c9e6729bd20e527a1a76a37",
+          "path": "evidence/D09/suite-runs/T9.19-B5-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "bd2f8952d171474f0e37e51eb8a97f6e3566192e81adbf5a9b8539af35a9b93b",
+          "path": "evidence/D09/suite-runs/T9.19-B5-browser.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "d3e218aa98941953980674c13a7dba162b4a430f88ece5e62a1bce7c58ee80f2",
+          "path": "evidence/D09/tdd-log/T9.19-B5.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ffe69f6607b9478825cb02a940160b7e3713f660a08ad43e56872a46ded93ea1",
+          "path": "evidence/D09/suite-runs/T9.19-B5-checks.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 39236
+  }
+}

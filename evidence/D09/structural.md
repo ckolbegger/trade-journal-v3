@@ -328,6 +328,9 @@ Stage A runs as a swarm (decision 111, agent cap 4). Each task's heading holds i
   Queued after B5, one at a time (same files).
 - B3 also waits on PD4 (if the two lines are dropped, B3 has nothing to fix). T9.19-B5 next.
 - T9.19-B5 commits `873db3c7`, `869b9ad2`: case "should show the results at the Stop and the Target on a session without a Mark": red (the readout lacked "At stake from here, whole Position"), green; `src/ui/cockpit/replay` 88 of 88. `replay.props.ts`'s `gapStakeGroup` keeps the group on a no-Mark session with the two results from `outcomes`; Risk to stop, Reward to target, Reward to risk read "No Mark"; Worst case and Max reward show the replay's figure if any; dropped if neither result is a Value. The table's two result cells show the result. `gaps.spec.ts`: Tuesday cells −$318.00 and +$867.00, plus readout assertions. `states.spec.ts:90` (B9.4 Settlement Due) pinned the same wrong behaviour; extended to the task (second commit), groups now include "At stake from here, whole Position". `e2e/d9` 18 passed; lane unit 2273, integration 280, checks 14 of 14; browser-task passed.
+- ocr on B5 (`ocr/T9.19-B5-869b9ad2.json`, range `39525f01..869b9ad2`), 2 findings:
+  1. low, Valid, test, `replay.props.test.ts:641`: the no-Mark case's partial `toMatchObject` leaves out the Worst case and Max reward rows (figure, "No Mark" fallback, "No cap above"). → **T9.19-B11**, after B4 (PD4 may rename those rows).
+  2. low, Doubtful, readability, `replay.props.ts:301`: the `staked` line nests a ternary. → structural **T9.19-F2**.
 
 | Critic | Brief | Tokens | Tool calls | Duration | Defects |
 |---|---|---|---|---|---|
