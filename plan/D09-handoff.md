@@ -240,7 +240,6 @@ Task status and commits are in the breakdown's Progress section. This section ho
 
 ### Notes for later tasks
 
-- For T9.19: two of `acceptance-commands.sh`'s nine commands fail by design at stage A (section 3, "The stage gate").
 - For T9.23 (stage B): `replay-series.ts` is lane TA's in stage A. Stage B adds `estimates` to the same session shape; keep `figures` free of any number type.
 - For T9.33, T9.40 (stage C): stage A leaves `StopTargetSlider` and `rangePosition` exactly as they are.
 

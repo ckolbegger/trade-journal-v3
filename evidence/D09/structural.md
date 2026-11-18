@@ -306,7 +306,21 @@ Stage A runs as a swarm (decision 111, agent cap 4). Each task's heading holds i
 ## T9.19 Stage A gate
 
 - Acceptance script on `94ff9db3` (`suite-runs/T9.19-acceptance.txt`, `8105d35c`): 7 of 9 pass — AC-MARK-004 (3), AC-CALC-003 (1), AC-CALC-004 (4), AC-CAP-001 (1), AC-PERF-001 (1), AC-UI-001/AC-UI-002 (5), AC-DEL-001 (5); AC-CALC-005 (`d9/estimates`, 0 tests) and AC-REV-002 (`meter-review.spec.ts`, none) fail by design at stage A.
-- Critic-1 dispatched on `8105d35c` (general-purpose, medium effort; brief from `.claude/docs/critic-brief.md`; flows C9.1, C9.2, C9.3, C9.4 plus 375 and 320 px; port 5175 under the lock; no `evidence/`). T9.18-F3 (the charts) waits for F1 (lane PL edits `geometry.ts` and `corridor-pnl.tsx`) to merge, then runs in lane BR.
+- Critic-1 dispatched on `8105d35c` (general-purpose, medium effort; brief from `.claude/docs/critic-brief.md`; flows C9.1, C9.2, C9.3, C9.4 plus 375 and 320 px; port 5175 under the lock; no `evidence/`).
+- **Critic-1** (`critic-1.md`): **FAIL**. C9.1 PASS; C9.2 PASS with moderate defects; C9.3 PASS; C9.4 FAIL. Eight defects, each a bug task, run one at a time:
+  1. High: the Review card at 320×667 doesn't fit one screen (676 px plus the fixed bottom navigation). → **T9.19-B1** (running, lane BR from `85b620da`).
+  2. Moderate: chart labels overlap (AXIO "Realized −$440", "Reward $1,200", "Stop −$740" at 375 and 320; BREN "Banked +$478" over "Risk $672"; at 1280 too; DALE "Max reward +$564" over the chart title). → T9.19-B2.
+  3. Moderate: the "Worst case" and "Max reward" lines are flat across the whole axis at the slider session's value (`path.worst-case M50 122.5H632`), claiming +$156 before the sale and running through unrevealed sessions. → T9.19-B3.
+  4. Moderate: the chart's "Worst case +$156" / "Max reward +$564" (the results at those boundaries) are in neither the readout nor the table, and the readout's "Worst case" / "Max reward" rows show different figures (the amount still at risk). → T9.19-B4, **parked on PD4** (asked).
+  5. Moderate: on a session with no Mark, the table's "Result at the Stop" and "Result at the Target" read "No Mark" and the readout drops the whole "At stake" group, though A248 says those results hold without a Mark (R-CORV-D Tue 11-10: −$318, +$867). `gaps.spec.ts` pinned the wrong behaviour; T9.18 noted it and I recorded it as a note — my mistake. → T9.19-B5.
+  6. Moderate: on a phone a negative axis tick loses its minus sign ("$1,000" top and bottom) and the price chart's "$44.00" is cut at the right edge. → T9.19-B6.
+  7. Moderate (accessibility): on the card at 375 px, keyboard focus lands on "Previous session" and the slider under the fixed bottom navigation. → T9.19-B7.
+  8. Low: the Review card's chart text is 9.0 to 9.4 px at 320 px (the suite's bar is 10). → T9.19-B8.
+  Minor observations are listed for the stage report, not tasks.
+
+| Critic | Brief | Tokens | Tool calls | Duration | Defects |
+|---|---|---|---|---|---|
+| critic-1 | `critic-brief.md`, stage A flows, decisions since the plan listed | 246,675 | 77 | 12 min 20 s | yes (1 high, 6 moderate, 1 low) | T9.18-F3 (the charts) waits for F1 (lane PL edits `geometry.ts` and `corridor-pnl.tsx`) to merge, then runs in lane BR.
 - Notes (no task): W42's "11 of 15" reads "11 of 11" on R-BREN-U at Mon 11-16 (the slider counts the view's sessions; T9.14 recorded it); R-CORV-D's Tuesday table says "No Mark" in the two Result cells while the chart keeps both lines (I9.2 keeps the results); "Price History opens on that session" selects the drawer and session without column focus from the Review's link (A257).
 
 ## T9.15 Review card: the replay before the Action
