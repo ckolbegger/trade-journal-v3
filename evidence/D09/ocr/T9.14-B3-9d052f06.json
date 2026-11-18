@@ -1,0 +1,131 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 1,
+    "total_tokens": 48150,
+    "input_tokens": 47656,
+    "output_tokens": 494,
+    "cache_read_tokens": 15360,
+    "elapsed": "28s"
+  },
+  "tool_calls": {
+    "total": 5,
+    "by_tool": {
+      "code_comment": 1,
+      "file_read": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/replay/replay.props.ts",
+      "content": "The updated ending expression nests several ternaries, contrary to the review checklist's explicit prohibition. The updated stop/target row expressions also nest label-selection ternaries. Use an if/else block for the ending and precompute the two labels so each row expression has only one conditional.",
+      "existing_code": "  const ending = stopOverrun ? (triggered ? 'Stop breached' : 'Not triggered') : targetOverrun ? (triggered ? 'Target reached' : 'Not triggered') : undefined;",
+      "start_line": 179,
+      "end_line": 179,
+      "category": "maintainability",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/cockpit/replay/replay.props.test.ts",
+        "src/ui/cockpit/replay/replay.props.ts"
+      ]
+    }
+  ],
+  "session_id": "02755e47-dbd6-40d4-902a-2655d487e399",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "02755e47-dbd6-40d4-902a-2655d487e399",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "9d052f06",
+      "resolved_base": "3ae0ea3a4a8466cb9380e20f25fac515fe4ca900",
+      "resolved_head": "9d052f06f51a1a44961a8d9057e5d2861878aca4",
+      "exact_range": "3ae0ea3a4a8466cb9380e20f25fac515fe4ca900..9d052f06f51a1a44961a8d9057e5d2861878aca4",
+      "source_artifact_sha256": "8efc496766bbeffa287642592be85fac9fc9102b9fbc9fd991a758a24ac5bdc4"
+    },
+    "execution": {
+      "ocr_version": "v1.13.12",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0060ea44ecacab2865c5d4dceb1c75627a3c3566a4f16698d1c3465ec458b6cf",
+          "path": "src/ui/cockpit/replay/replay.props.test.ts",
+          "fingerprint": "2a87f5cde8b7599f4574865b3aec2ed4b624657939a6f4945eca291dc193b4a4"
+        },
+        {
+          "item_id": "ea03ecbf36e42899eb18f897fb8983e3c8efff8a23ee606ee3aa718ee2111f66",
+          "path": "src/ui/cockpit/replay/replay.props.ts",
+          "fingerprint": "290d8788084906c44332a3be39bbfdb87c64cb4b19049f7c652e4c370153d2ae"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0060ea44ecacab2865c5d4dceb1c75627a3c3566a4f16698d1c3465ec458b6cf",
+          "path": "src/ui/cockpit/replay/replay.props.test.ts",
+          "fingerprint": "2a87f5cde8b7599f4574865b3aec2ed4b624657939a6f4945eca291dc193b4a4"
+        },
+        {
+          "item_id": "ea03ecbf36e42899eb18f897fb8983e3c8efff8a23ee606ee3aa718ee2111f66",
+          "path": "src/ui/cockpit/replay/replay.props.ts",
+          "fingerprint": "290d8788084906c44332a3be39bbfdb87c64cb4b19049f7c652e4c370153d2ae"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "097ed581926a5002bf45ecda7b8fa10c2fd089dd2f28ea692f791938518fa40d",
+          "path": "evidence/D09/suite-runs/T9.14-B3-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "7612727b0e8cca182eb5d0318f556535fcbb42cd0bdb6477416eae754ef9c066",
+          "path": "evidence/D09/suite-runs/T9.14-B3-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "82a0a55b6da44d7fb8edf4efcb5eced58d6e8291495320ca60d4623415bc347b",
+          "path": "evidence/D09/tdd-log/T9.14-B3.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "83e4e763c0a14ecb469146fc788a1dac47c075be11c23ca19865e5766d196fe3",
+          "path": "evidence/D09/suite-runs/T9.14-B3-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "e90eba1855911f593fdc355c4b8c0d21d19849b3c5577af89f65c05cfa1870c9",
+          "path": "evidence/D09/suite-runs/T9.14-B3-lane.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 28076
+  }
+}
