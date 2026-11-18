@@ -634,6 +634,20 @@ describe('replay.props: the readout of a session in flight (W43)', () => {
     expect(rowsOfGroup(gap, 0, 'How it is going')).toEqual({ 'Trade P&L': 'Mark missing: BREN Nov 20 $100 Call, Tue Nov 10' });
   });
 
+  it('should show the results at the Stop and the Target on a session without a Mark', () => {
+    const none = withMarks(session({ date: '2026-11-10', pnl: null, outcomes: { atStop: value(usd(-324)), atTarget: value(usd(956)) } }), [markOf(BREN_STOCK, '100.20'), markOf(BREN)]);
+    const props = replayProps(fullView([none], PLAN), { Plot });
+    expect(props.sessions[0]!.readout.map((group) => group.title)).toEqual(['How it is going', 'At stake from here, whole Position', 'Marks', 'Position', 'The Plan']);
+    expect(rowsOfGroup(props, 0, 'At stake from here, whole Position')).toMatchObject({
+      'Risk to stop': 'No Mark',
+      'Result at the Stop': '−$324.00',
+      'Reward to target': 'No Mark',
+      'Result at the Target': '+$956.00',
+      'Reward to risk': 'No Mark',
+    });
+    expect(props.sessions[0]!.tableRow.cells.slice(-6, -2)).toEqual(['No Mark', 'No Mark', '−$324.00', '+$956.00']);
+  });
+
   it('should group How it is going, At stake from here, Marks, Position and The Plan, each figure finished, with its change since the earlier session', () => {
     const props = replayProps(fullView([brenWed1111], PLAN), { Plot });
     expect(readoutOf(props, 0)).toEqual([

@@ -277,9 +277,28 @@ function positionGroup(session: ViewSession): ReadoutGroup {
   return { title: 'Position', rows: [...held, ...(session.markers ?? []).map((marker) => row(`Execution, ${shortDate(session.date)}`, figure(markerWords(marker))))] };
 }
 
+// A session without a Mark (A248): the results at the Stop and the Target, the Worst case and the Max reward read no Mark, so they stand; what needs the Mark reads "No Mark".
+function gapStakeGroup(session: ViewSession): ReadoutGroup | undefined {
+  const f = session.figures;
+  const outcomes = f?.outcomes;
+  if (!f || (outcomes?.atStop.kind !== 'Value' && outcomes?.atTarget.kind !== 'Value')) return undefined;
+  const noMark = { kind: 'Unavailable', text: 'No Mark' } as const;
+  const standing = (result: CalculationResult<Rational>, inR: CalculationResult<Rational>) => (result.kind === 'Value' ? valueOf(result, money, inR) : noMark);
+  const rows = [
+    row('Risk to stop', noMark),
+    row('Result at the Stop', valueOf(outcomes.atStop, signedMoney)),
+    row('Worst case', standing(f.worstCaseOngoingRisk, f.worstCaseOngoingRiskInPlanR)),
+    row('Reward to target', noMark),
+    row('Result at the Target', valueOf(outcomes.atTarget, signedMoney)),
+    row('Max reward', f.maximumIncrementalReward.kind === 'Unbounded' ? { kind: 'Unbounded', text: 'No cap above' } : standing(f.maximumIncrementalReward, f.maximumIncrementalRewardInPlanR)),
+    row('Reward to risk', noMark),
+  ];
+  return { title: 'At stake from here, whole Position', rows };
+}
+
 function readoutOf(view: TradeReplayView, session: ViewSession): ReadoutGroup[] {
-  // A final session has nothing at stake, and a session without a Mark has no figures to stake; each is said once, in the words above.
-  const staked = !session.final && session.tradePnl.kind === 'Value' ? stakeGroup(view, session) : undefined;
+  // A final session has nothing at stake; a session without a Mark keeps only the figures that need none.
+  const staked = session.final ? undefined : session.tradePnl.kind === 'Value' ? stakeGroup(view, session) : gapStakeGroup(session);
   const groups = [goingGroup(session), staked, marksGroup(view, session), positionGroup(session), planGroup(view)];
   return groups.filter((group): group is ReadoutGroup => group !== undefined && group.rows.length > 0);
 }
@@ -306,8 +325,9 @@ function tableRowOf(view: TradeReplayView, session: ViewSession, marks: ReadoutG
       session.realizedPnl.compare(ZERO) !== 0 ? signedMoney(session.realizedPnl) : '',
       cellOf(f?.ongoingRiskToStop, money, marked),
       cellOf(f?.incrementalRewardToTarget, money, marked),
-      cellOf(f?.outcomes?.atStop, signedMoney, marked),
-      cellOf(f?.outcomes?.atTarget, signedMoney, marked),
+      // The two results read no Mark (A248), so they stand on a session without one.
+      cellOf(f?.outcomes?.atStop, signedMoney, marked || f?.outcomes?.atStop.kind === 'Value'),
+      cellOf(f?.outcomes?.atTarget, signedMoney, marked || f?.outcomes?.atTarget.kind === 'Value'),
       triggerOf(view, session, 'Stop'),
       triggerOf(view, session, 'Target'),
     ],
