@@ -1,0 +1,116 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 0,
+    "total_tokens": 126050,
+    "input_tokens": 125600,
+    "output_tokens": 450,
+    "cache_read_tokens": 25088,
+    "elapsed": "43s"
+  },
+  "tool_calls": {
+    "total": 9,
+    "by_tool": {
+      "code_search": 5,
+      "file_read": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/cockpit/replay/replay.props.test.ts",
+        "src/ui/cockpit/replay/replay.props.ts"
+      ]
+    }
+  ],
+  "session_id": "6d6b3756-94b0-4635-8292-ced63ad0955a",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "6d6b3756-94b0-4635-8292-ced63ad0955a",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "b4545d7d",
+      "resolved_base": "4413ad4e0028b8e9ef7e578b677ed2f718e165f6",
+      "resolved_head": "b4545d7d51a44ce9ebeac658e084d83030849d5d",
+      "exact_range": "4413ad4e0028b8e9ef7e578b677ed2f718e165f6..b4545d7d51a44ce9ebeac658e084d83030849d5d",
+      "source_artifact_sha256": "1eb3c642bfe07ac31f9ad18ed9eaa5729a40303a7754e725ca7c8e90b6b52c61"
+    },
+    "execution": {
+      "ocr_version": "v1.13.12",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0060ea44ecacab2865c5d4dceb1c75627a3c3566a4f16698d1c3465ec458b6cf",
+          "path": "src/ui/cockpit/replay/replay.props.test.ts",
+          "fingerprint": "2eba7e5689ca1a993d1e2a094d1287ec45a7fb7c24b4ba3cdcf9c30b216593f9"
+        },
+        {
+          "item_id": "ea03ecbf36e42899eb18f897fb8983e3c8efff8a23ee606ee3aa718ee2111f66",
+          "path": "src/ui/cockpit/replay/replay.props.ts",
+          "fingerprint": "29ae239a6643b667df4794b178434bf949407a0105e89ff87943fcf5710a7759"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0060ea44ecacab2865c5d4dceb1c75627a3c3566a4f16698d1c3465ec458b6cf",
+          "path": "src/ui/cockpit/replay/replay.props.test.ts",
+          "fingerprint": "2eba7e5689ca1a993d1e2a094d1287ec45a7fb7c24b4ba3cdcf9c30b216593f9"
+        },
+        {
+          "item_id": "ea03ecbf36e42899eb18f897fb8983e3c8efff8a23ee606ee3aa718ee2111f66",
+          "path": "src/ui/cockpit/replay/replay.props.ts",
+          "fingerprint": "29ae239a6643b667df4794b178434bf949407a0105e89ff87943fcf5710a7759"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "0c99c75233ebbc4c527eb747315f23e7a17cd856c7c4e7fa4e0bf0b8a532d22b",
+          "path": "evidence/D09/suite-runs/T9.9-B3-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "14063d88c59dd7ce67128557d3d58190237a7d4d43fbdf6d2b8b2c9b7bc7d3c8",
+          "path": "evidence/D09/suite-runs/T9.9-B3-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "2bb8fb12018ee72b1be669187d36086d7234581460432a7375b878a64af362da",
+          "path": "evidence/D09/suite-runs/T9.9-B3-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "88cf666addf2ae3f9f0eeeb63d24bbf751a986c173ef7f38600ecf2a7173706b",
+          "path": "evidence/D09/suite-runs/T9.9-B3-unit.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 43164
+  }
+}

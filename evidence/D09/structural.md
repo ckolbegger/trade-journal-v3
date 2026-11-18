@@ -77,6 +77,12 @@ Stage A runs as a swarm (decision 111, agent cap 4). Each task's heading holds i
 - T9.3-B3 commit `e5b5a31a`: the clamp in `standingOf` is an explicit if/else. `outcomes.test.ts` 19 passed before and 19 after. Lane tier `T9.3-B3`: unit 2130, integration 269, checks 14 of 14. ocr (`ocr/T9.3-B3-e5b5a31a.json`): **No findings.** All three T9.3 bug tasks are clean.
 - Lane TA rebased onto `9849a614` (only lane CP's UI and the evidence between; no file of lane TA's changed) and merged by fast-forward: T9.3 `ad1ffc33`, B1 `8df5d829`, B2 `6791f5db`, B3 `2a9c512d`, and T9.9-B1 `516ba4c3` (ocr `ocr/T9.9-B1-910d1095.json`: **No findings**).
 
+## T9.4 Trade Analysis: each session's risk, reward and condition status
+
+- Lane TA, base `bf1c01b9`, commit `1c6c4ec1` (before rebase). 7 cases green (`tdd-log/T9.4.md`). Lane tier `T9.4`: unit 2145, integration 269, checks 14 of 14.
+- **First-run passes (4), each with its mutation check:** the results stepping on a sale (`atStop` set to `atTarget`: '956/1' vs '-324/1'); each session's own status across a gap (Stop and Target roles swapped); Tue 11-10's figures Unavailable naming the put (Unavailable risk replaced by a Value of 0); the change across a gap (a session without the figure resets the latest: undefined vs `{ since: '2026-11-09', … }`). Each an assertion failure; each restored. In case 1's green the Underlying frame (case 2's behavior) was written early, then reverted for a genuine red on case 2, and re-added (noted in the log).
+- Implementation-level notes: `replay` now evaluates every session, flat ones included (the last position's Instrument, or the Plan's first leg, with a Missing frame where the session has none); a flat session's Trade P&L is still the realized amount. `riskChange`/`rewardChange` are left out with no earlier session holding the figure as a Value. `tradePnlOf` became `evaluationOf` and `frameFor`. Test helpers `sessionsOf`, `sessionAt`, `figuresAt` are in `replay-series.test.ts`.
+
 ## T9.13 Corridor: the Trade P&L area, the two lines, the banked band and markers
 
 - Lane CP, base `512ec7a1` (lane at `9849a614`), commit `02c047e7` (before rebase). 10 cases green (`tdd-log/T9.13.md`; cases 5 and 10 each have failed "green" rows kept as run, where the test's own helper or fixture was wrong and the test, not the code, was fixed). No first-run passes.
@@ -96,9 +102,13 @@ Stage A runs as a swarm (decision 111, agent cap 4). Each task's heading holds i
 | low | `geometry.ts:76` | Nested ternary in `LabelPlacer.place`'s anchor offset | Valid (style) | T9.13-B4 |
 
 - **T9.13-B1.** Case: "it should meet the profit and loss fills at break-even between sessions of opposite sign, with no overlap".
+- T9.13-B1 commit `428e4826`: red `expected [] to have a length of 1 but got +0` (no vertex at break-even between +100 and −100), then green; `areaPath` adds a vertex where the line between two drawn points crosses break-even. One invalid red row (a stray "it" prefix) noted in the log. Lane tier `T9.13-B1`: unit 2130, integration 269, checks 14 of 14. ocr (`ocr/T9.13-B1-428e4826.json`): **No findings.**
 - **T9.13-B2.** Case: "it should label each banked level with its own figure, at that level, when a later sale changes it".
 - **T9.13-B3.** Case: "it should fill a single session with a figure between two gaps, and the first revealed session".
 - **T9.13-B4.** Readability, no behavior; verification `corridor.test.tsx` and `price-strip.test.tsx` unchanged before and after.
+- T9.9-B3 commit `b4545d7d` (lane CF, on `bf1c01b9`): `SessionWithR`, `ReplayWordsView` and an unused import removed; `sessionWords` takes the real `TradeReplayView`; the fixture is typed with the real `Figures` and sets `currentMarkedPnlInPlanR` on every session (a Value where the case has an R, the Unavailable double otherwise). `replay.props.test.ts` 12 of 12 before and after. Lane tier `T9.9-B3`: unit 195 files, 2150 tests; integration 269; checks 14 of 14.
+  ocr (`ocr/T9.9-B3-b4545d7d.json`): **No findings.**
+- Lane CF rebased onto `85d52b8c` (evidence only since its last rebase) and merged by fast-forward: T9.9 `1687f447`, B2 `486c719d`, B3 `e52bbe37`.
 - Lanes TA and CF were brought to `bf1c01b9` by rebase (lane CF's T9.9 is now `25a696bb`, T9.9-B2 `4413ad4e`).
 
 ## T9.9 Replay adapter: the headline and the stake sentence
