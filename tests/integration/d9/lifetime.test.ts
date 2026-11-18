@@ -51,6 +51,25 @@ describe('I9.5 How a replay ends', () => {
     expect(expired.pending).toBeNull();
   });
 
+  it('I9.5 should report R-DALE-U as Settlement Due with exposure outstanding before its Expiration is recorded', { timeout: 120_000 }, async () => {
+    const marks = [{ instrument: { kind: 'Stock', symbol: 'DALE' } as const, date: '2026-11-20', price: '61.90' }, { instrument: DALE_PUT, date: '2026-11-20', price: '0.00' }];
+    const { app, tradeId } = await seriesApp(R_DALE_U, 'strategy.cash-secured-put', MON_1123_1800, { marksThrough: 13, without: (id) => id === 'pc-dale-e', extraMarks: marks });
+
+    const { detail, result } = await replayView(app, tradeId);
+
+    // The Detail reports the Settlement Due: the put's Expiration Fri 11-20 is past and unrecorded, still Open.
+    const view = detail.view;
+    if (!('current' in view)) throw new Error('expected an Open Detail');
+    expect(view.settlement).toEqual([expect.objectContaining({ expiration: '2026-11-20' })]);
+    expect(view.lifecycle).toEqual({ stored: 'Open', agreement: { kind: 'Agrees' } });
+    // The replay ends at Fri 11-20 with the exposure still held.
+    if (result.kind !== 'Ready' || !('sessions' in result.view)) throw new Error(`replayTrade: ${result.kind}`);
+    const last = result.view.sessions.at(-1)!;
+    expect(last.date).toBe('2026-11-20');
+    expect(last.final).toBeUndefined();
+    expect(last.heldQuantity.numerator).not.toBe(0n);
+  });
+
   it('I9.5 should give a Planned Trade no replay: Not applicable', { timeout: 120_000 }, async () => {
     const d = await device(undefined, MON_1116_1700);
     const app = await onboarded(d);
