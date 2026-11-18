@@ -1,4 +1,4 @@
-import { axisMoney, LabelPlacer, priceRange, ticks, timeAxis, valueAxis, type Spot } from './geometry.ts';
+import { axisMoney, LabelPlacer, priceRange, tickFits, ticks, timeAxis, valueAxis, type Spot } from './geometry.ts';
 import type { ReplayPlotProps } from './replay.types.ts';
 
 const HEIGHT = 136;
@@ -46,6 +46,8 @@ export function PriceStrip({ props, width }: { props: ReplayPlotProps; width: nu
             { x: time.x(current.slot) - 9, y: value.y(current.underlyingMark) + 3.5, anchor: 'end' },
           ],
           true,
+          // Drawn bold and larger, about 7 px a character, so it is placed by that width and never runs past an edge.
+          7,
         )
       : null;
   const lineLabels = anchors.priceLines.flatMap((l, i) => {
@@ -57,7 +59,7 @@ export function PriceStrip({ props, width }: { props: ReplayPlotProps; width: nu
 
   return (
     <svg className="price-strip" viewBox={`0 0 ${width} ${HEIGHT}`} width={width} height={HEIGHT}>
-      {ticks(min, max, 3).map((v) => (
+      {ticks(min, max, 3).filter((v) => tickFits(axisMoney(v), time.left)).map((v) => (
         <g key={v}>
           <path className="grid" d={`M${time.left} ${f1(value.y(v))}H${time.right}`} />
           <text x={time.left - 5} y={f1(value.y(v) + 3.5)} textAnchor="end">

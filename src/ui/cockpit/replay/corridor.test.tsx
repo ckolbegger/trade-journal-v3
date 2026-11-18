@@ -683,3 +683,39 @@ describe('Corridor: labels apart (T9.19-B2)', () => {
     }
   });
 });
+
+// B6: a text's box as LabelPlacer estimates it (6 px a character and 2 over, from its anchor); it must lie inside the drawing.
+function outsideDrawing(svg: SVGSVGElement): string[] {
+  const width = Number(svg.getAttribute('width'));
+  return [...svg.querySelectorAll('text')]
+    .filter((t) => t.getAttribute('x') !== null)
+    .flatMap((t) => {
+      const w = t.textContent.length * 6 + 2;
+      const x = Number(t.getAttribute('x'));
+      const anchor = t.getAttribute('text-anchor');
+      const x0 = anchor === 'end' ? x - w : anchor === 'middle' ? x - w / 2 : x;
+      return x0 < 0 || x0 + w > width ? [`${t.textContent} (${x0} to ${x0 + w} of ${width})`] : [];
+    });
+}
+
+describe('Corridor: every figure drawn is readable in full (B6)', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
+  it('should keep every axis tick inside the chart, minus sign included, when drawn narrow', () => {
+    for (const [low, high] of [[-1000, 1000], [-2000, 500]] as const) {
+      for (const width of [340, 280]) {
+        frameWidth(width);
+        const sessions = DAYS.map((_, i) => bren(i, { tradePnl: i % 2 === 0 ? low : high, banked: 0, bankedLabel: undefined, resultAtStop: null, resultAtTarget: null }));
+        const { container } = render(<CorridorPlot {...props({ sessions, anchors: { priceLines: [], planAtStop: null, planAtTarget: null } })} />);
+        const ticks = [...pnl(container).querySelectorAll('text')].filter((t) => /^−?\$[\d,]+$/.test(t.textContent));
+        expect(ticks.some((t) => t.textContent.startsWith('−')), `${low}, ${width}: a negative tick is drawn`).toBe(true);
+        expect(outsideDrawing(pnl(container)), `${low}, ${width}`).toEqual([]);
+        cleanup();
+        vi.restoreAllMocks();
+      }
+    }
+  });
+});

@@ -79,6 +79,20 @@ async function expectPhoneWords(scope: Locator, where: string): Promise<void> {
   }
 }
 
+// B6: every figure a chart draws is readable in full: each text's box lies inside its svg's box (a tick's minus sign or a price's last digit is not cut off).
+async function expectChartTextInside(scope: Locator, where: string): Promise<void> {
+  for (const chart of [priceStrip(scope), pnlChart(scope)]) {
+    const outside = await chart.evaluate((svg: SVGSVGElement) => {
+      const box = svg.getBoundingClientRect();
+      return [...svg.querySelectorAll('text')].flatMap((t) => {
+        const r = t.getBoundingClientRect();
+        return r.left < box.left - 0.5 || r.right > box.right + 0.5 ? [`${t.textContent} (${r.left.toFixed(1)} to ${r.right.toFixed(1)} of ${box.left.toFixed(1)} to ${box.right.toFixed(1)})`] : [];
+      });
+    });
+    expect(outside, `${where}: chart text outside its chart`).toEqual([]);
+  }
+}
+
 // One surface through the three sizes with the slider moved to Thu 11-12: each size's checks, then the next size, and back to the first.
 async function throughSizes(page: Page, scope: () => Locator, surface: string, sizes: readonly (typeof SIZES)[number][] = SIZES): Promise<void> {
   await seek(page, scope(), 'ArrowLeft', 2);
@@ -93,6 +107,7 @@ async function throughSizes(page: Page, scope: () => Locator, surface: string, s
     await expect(hits(scope()).getByRole('button'), where).toHaveCount(9);
     await expectFitsOneScreen(scope(), size, where);
     await expectReadoutShownInFull(scope(), size, where);
+    if (size.width < 460) await expectChartTextInside(scope(), where);
     // The labels no phone chart may lose: the two results at the lines (the "Break-even" and "Sold 2" labels may be dropped on a tight chart).
     expect(await chartText(pnlChart(scope())), where).toEqual(expect.arrayContaining(['Stop +$316', 'Target +$956']));
     await expectNoSidewaysScroll(page, where);

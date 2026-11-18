@@ -1,4 +1,4 @@
-import { axisMoney, LabelPlacer, pnlRange, ticks, timeAxis, valueAxis, type Spot } from './geometry.ts';
+import { axisMoney, LabelPlacer, pnlRange, tickFits, ticks, timeAxis, valueAxis, type Spot } from './geometry.ts';
 import type { LabelledFigure, PlotSession, ReplayPlotProps } from './replay.types.ts';
 
 // Drawn at a phone's real width the chart is no longer shrunk with the screen, so it is shorter, to keep the headline and both charts on one screen.
@@ -145,11 +145,12 @@ export function PnlChart({ props, width }: { props: ReplayPlotProps; width: numb
       if (!text) return;
       const left = time.x(s.slot) - time.column / 2 + 3;
       const y = value.y(s.banked);
-      const [first, second, third, fourth] = s.banked > 0 ? [y - 4, y + 12, y - 20, y + 28] : [y + 12, y - 4, y + 28, y - 20];
+      // Six rows, alternating above and below the level (a narrow chart, with its wider axis margin, leaves the nearer ones to the results).
+      const rows = s.banked > 0 ? [y - 4, y + 12, y - 20, y + 28, y - 36, y + 44] : [y + 12, y - 4, y + 28, y - 20, y + 44, y - 36];
       // A sale near the last session would run past the edge, so there the label ends at the column instead.
       const runsPast = left + text.length * 6 + 2 > width;
       const rightEdge = time.x(s.slot) + time.column / 2 - 3;
-      const anchored: Spot[] = [first, second, third, fourth].map((dy): Spot => (runsPast ? { x: rightEdge, y: dy, anchor: 'end' } : { x: left, y: dy, anchor: 'start' }));
+      const anchored: Spot[] = rows.map((dy): Spot => (runsPast ? { x: rightEdge, y: dy, anchor: 'end' } : { x: left, y: dy, anchor: 'start' }));
       // The banked label is never left out; the stake tags, "Break-even" and "Sold 2" labels give way to it.
       put(`banked-${s.slot}`, 'banked-label', text, anchored, true);
     });
@@ -212,7 +213,7 @@ export function PnlChart({ props, width }: { props: ReplayPlotProps; width: numb
         ))}
       </defs>
       {ticks(min, max, 4)
-        .filter((v) => v !== 0)
+        .filter((v) => v !== 0 && tickFits(axisMoney(v), time.left))
         .map((v) => (
           <g key={v}>
             <path className="grid" d={`M${time.left} ${f1(value.y(v))}H${time.right}`} />

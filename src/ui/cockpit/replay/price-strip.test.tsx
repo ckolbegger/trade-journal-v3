@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CorridorPlot } from './corridor.tsx';
 import type { PlotSession, ReplayPlotProps } from './replay.types.ts';
 
@@ -191,5 +191,32 @@ describe("Corridor: the Underlying's price (W39)", () => {
     render(<CorridorPlot {...props({ compact: true })} />);
     expect(screen.getByText('BREN price')).toBeTruthy();
     expect(screen.queryByText('BREN price · one Mark per session')).toBeNull();
+  });
+});
+
+describe('Corridor: price labels stay inside the chart (B6)', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
+  it('should keep price labels inside the chart’s right edge', () => {
+    for (const width of [340, 280]) {
+      vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(width);
+      vi.stubGlobal('ResizeObserver', class { observe() {} unobserve() {} disconnect() {} });
+      // The slider's Mark is on the last column (slot 10 of 11 slots; the first column is the Plan's). It is drawn bold and larger, about 7 px a character, so its box is estimated at that.
+      const sessions = BREN_MARKS.map((m, i) => session(i, m, i === 10 ? '$44.00' : undefined));
+      const { container } = render(<CorridorPlot {...props({ sessions, axis: { slots: 11, endLabel: 'Fri Nov 20' } })} />);
+      const label = strip(container).querySelector('text.mark-label')!;
+      expect(label.textContent).toBe('$44.00');
+      const w = label.textContent.length * 7 + 2;
+      const x = Number(label.getAttribute('x'));
+      const anchor = label.getAttribute('text-anchor');
+      const x0 = anchor === 'end' ? x - w : anchor === 'middle' ? x - w / 2 : x;
+      expect(x0, `${width}: left`).toBeGreaterThanOrEqual(0);
+      expect(x0 + w, `${width}: right`).toBeLessThanOrEqual(width);
+      cleanup();
+      vi.restoreAllMocks();
+    }
   });
 });

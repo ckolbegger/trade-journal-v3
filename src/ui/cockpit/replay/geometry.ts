@@ -14,7 +14,8 @@ export interface TimeAxis {
 // `slots` trading sessions from the first to the contract's expiration (to the last session for stock): the axis
 // always runs the full width, and later sessions are left blank.
 export function timeAxis(width: number, slots: number): TimeAxis {
-  const left = width < 460 ? 40 : 50;
+  // On a phone the room is for "−$1,000", the widest axis figure a chart usually draws, minus sign included.
+  const left = width < 460 ? 49 : 50;
   const right = width - 8;
   const column = (right - left) / (slots + 1);
   return { width, left, right, column, x: (slot) => left + column * (slot + 1.5) };
@@ -83,8 +84,9 @@ export class LabelPlacer {
     this.kept.push(LabelPlacer.box(text, spot, charWidth));
   }
 
-  place(text: string, spots: readonly Spot[], must = false): Spot | null {
-    const box = (s: Spot) => LabelPlacer.box(text, s, 6);
+  // `charWidth` is the text's estimated width a character: 6 unless it is drawn bold and larger.
+  place(text: string, spots: readonly Spot[], must = false, charWidth = 6): Spot | null {
+    const box = (s: Spot) => LabelPlacer.box(text, s, charWidth);
     const free = (b: ReturnType<typeof box>) =>
       b.x0 >= 0 && b.x1 <= this.width && b.y0 >= 0 && b.y1 <= this.height && !this.kept.some((k) => b.x0 < k.x1 && k.x0 < b.x1 && b.y0 < k.y1 && k.y0 < b.y1);
     const spot = spots.find((s) => free(box(s))) ?? (must ? spots[0] : undefined);
@@ -111,6 +113,11 @@ export function ticks(min: number, max: number, want: number): number[] {
   const out: number[] = [];
   for (let v = Math.ceil(min / step - 1e-9) * step; v <= max + 1e-9; v += step) out.push(+v.toFixed(6));
   return out;
+}
+
+// Whether an axis figure, right-aligned 5 px left of the plot area, lies inside the drawing; one that doesn't is left out, never cut (A256).
+export function tickFits(text: string, left: number): boolean {
+  return left - 5 - (text.length * 6 + 2) >= 0;
 }
 
 // An axis label: "$100", "$54.50".
