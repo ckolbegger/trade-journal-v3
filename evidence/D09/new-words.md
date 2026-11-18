@@ -11,5 +11,7 @@ Screen words no approved row covers, used as the session would have recommended,
 | T9.14 | Readout, Reward to risk change | "(Plan 2.95 to 1)" | W43's "Plan 2.95 to 1" |
 | T9.14 | Hover lines | "BREN Mark: 101.80", "Trade P&L: No Mark" | W44's "No Mark" |
 | T9.14 | Chart's accessible name | "BREN Marks and Trade P&L by session" | W39 |
+| T9.14-F2 (**approved by the user, 2026-11-18**) | Replay headline when a Stop condition is crossed but the Trade P&L is short of the Stop's result | "Stop breached: DALE $0.30 past $54.00." | W37 |
+| T9.14-B3 | Readout, "At stake from here", a session past a line by its planned amount with the condition not triggered | Rows "Past Stop's amount", "Past Target's amount" (for "Stop Overrun", "Target Overrun"); Reward to risk ending "Not triggered" (for "Stop breached", "Target reached") | W43 |
 | T9.14-B4 (decided) | Replay drawer when the replay could not be read | "No replay." | none; W35 |
 | T9.14 | P&L chart labels | "Banked +$478", "Realized −$495" with cents dropped only when zero | W40 |
