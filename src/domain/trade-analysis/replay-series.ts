@@ -112,6 +112,9 @@ export function replay(input: ReplayInput): ReplayResult {
   if (input.record.positionChanges.length === 0) return { kind: 'NotApplicable', reason: 'NeverExposed' };
   // The latest session so far with a Trade P&L figure: the next figure's change is measured from it (A211).
   let lastFigure: { readonly date: string; readonly value: Rational } | undefined;
+  // The same for the Risk to stop and the Reward to target (A250).
+  const lastRisk: LastFigure = {};
+  const lastReward: LastFigure = {};
   // Each Instrument's latest Available Mark so far: a gap is skipped, never filled.
   const lastMark = new Map<string, { readonly date: string; readonly price: Rational }>();
   const sessions = input.sessions.map((session, index): ReplayedSession => {
@@ -119,9 +122,13 @@ export function replay(input: ReplayInput): ReplayResult {
     const state = derive({ record: input.record, cutoff: session.closeInstant, valuationDate: session.tradingDate });
     if (state.kind !== 'Derived') throw new Error('facts cannot be replayed');
     const positions = state.positions.filter((p) => p.openLots.length > 0).map((p) => ({ instrument: p.instrument, quantity: p.quantity }));
-    const tradePnl = tradePnlOf(state, session);
+    const { held, evaluation } = evaluationOf(state, session, input.record);
+    // Nothing held: the Trade P&L is what was realized, and no Mark is needed.
+    const tradePnl: CalculationResult<Rational> = held ? evaluation.currentMarkedPnl : { kind: 'Value', value: state.realizedToDate };
     const change = tradePnl.kind === 'Value' && lastFigure ? { since: lastFigure.date, dollars: tradePnl.value.sub(lastFigure.value) } : null;
     if (tradePnl.kind === 'Value') lastFigure = { date: session.tradingDate, value: tradePnl.value };
+    const riskChange = changeOf(evaluation.ongoingRiskToStop, lastRisk, session.tradingDate);
+    const rewardChange = changeOf(evaluation.incrementalRewardToTarget, lastReward, session.tradingDate);
     // The Position Changes after the previous session's close, up to this one's.
     const previousClose = input.sessions[index - 1]?.closeInstant;
     const positionChangeIds = input.record.positionChanges
@@ -136,6 +143,9 @@ export function replay(input: ReplayInput): ReplayResult {
       change,
       marks: session.frames.map((frame) => markOf(frame, lastMark)),
       positionChangeIds,
+      figures: figuresOf(evaluation),
+      ...(riskChange && { riskChange }),
+      ...(rewardChange && { rewardChange }),
     };
   });
   return { kind: 'Replayed', sessions };
@@ -158,16 +168,57 @@ function decimal(text: string): Rational {
   return parsed.value;
 }
 
-function tradePnlOf(state: DerivedTradeState, session: ReplaySessionInput): CalculationResult<Rational> {
-  const held = state.positions.find((p) => p.openLots.length > 0)?.instrument;
-  // Nothing held: the Trade P&L is what was realized, and no Mark is needed.
-  if (!held) return { kind: 'Value', value: state.realizedToDate };
-  // A session without the held Instrument's frame has a Missing Mark for it: a gap, never a crash.
-  const frame: ObservationFrame = session.frames.find((f) => instrumentKey(f.instrument) === instrumentKey(held)) ?? {
-    instrument: held,
-    tradingDate: session.tradingDate,
-    closeInstant: session.closeInstant,
-    resolution: { kind: 'Missing' },
+interface LastFigure {
+  latest?: { readonly date: string; readonly value: Rational };
+}
+
+// The change in a figure since the latest earlier session that had it; a session without it changes nothing and is skipped.
+function changeOf(figure: CalculationResult<Rational>, last: LastFigure, date: string): ReplayChange | undefined {
+  if (figure.kind !== 'Value') return undefined;
+  const change = last.latest ? { since: last.latest.date, dollars: figure.value.sub(last.latest.value) } : undefined;
+  last.latest = { date, value: figure.value };
+  return change;
+}
+
+function figuresOf(e: TradeEvaluation): ReplayFigures {
+  return {
+    ongoingRiskToStop: e.ongoingRiskToStop,
+    ongoingRiskToStopInPlanR: e.ongoingRiskToStopInPlanR,
+    incrementalRewardToTarget: e.incrementalRewardToTarget,
+    incrementalRewardToTargetInPlanR: e.incrementalRewardToTargetInPlanR,
+    worstCaseOngoingRisk: e.worstCaseOngoingRisk,
+    worstCaseOngoingRiskInPlanR: e.worstCaseOngoingRiskInPlanR,
+    maximumIncrementalReward: e.maximumIncrementalReward,
+    maximumIncrementalRewardInPlanR: e.maximumIncrementalRewardInPlanR,
+    rewardRiskNow: e.rewardRiskNow,
+    currentMarkedPnlInPlanR: e.currentMarkedPnlInPlanR,
+    conditions: e.conditions,
+    outcomes: e.outcomes,
+    standing: e.standing,
   };
-  return evaluate({ state, frame }).currentMarkedPnl;
+}
+
+// A session's frame for an Instrument: a session without it has a Missing Mark for it, a gap, never a crash.
+function frameFor(instrument: Instrument, session: ReplaySessionInput): ObservationFrame {
+  return (
+    session.frames.find((f) => instrumentKey(f.instrument) === instrumentKey(instrument)) ?? {
+      instrument,
+      tradingDate: session.tradingDate,
+      closeInstant: session.closeInstant,
+      resolution: { kind: 'Missing' },
+    }
+  );
+}
+
+// A250: the Position held at the session's close evaluated with that session's frames: the held Instrument's, and for an
+// option Trade the Underlying's too, which its Underlying condition reads.
+function evaluationOf(state: DerivedTradeState, session: ReplaySessionInput, record: TradeAnalysisRecord): { held: Instrument | undefined; evaluation: TradeEvaluation } {
+  const held = state.positions.find((p) => p.openLots.length > 0)?.instrument;
+  const instrument = held ?? state.positions[0]?.instrument ?? record.plan.legs[0]!.instrument;
+  const frame = frameFor(instrument, session);
+  const evaluation =
+    instrument.kind === 'Stock'
+      ? evaluate({ state, frame })
+      : evaluate({ state, frame, underlyingFrame: frameFor({ kind: 'Stock', symbol: record.plan.underlying }, session) });
+  return { held, evaluation };
 }

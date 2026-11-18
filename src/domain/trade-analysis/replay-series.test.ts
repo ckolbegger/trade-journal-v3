@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import type { Instrument } from '../instrument/index.ts';
 import { Rational } from '../values/index.ts';
-import { derive, evaluate, type TradeAnalysisRecord } from './index.ts';
-import { OC2_CONTRACT, OC3_BUY, OC3_SELL, oc3Record, OS_CONTRACT, OS_S1, osRecord } from './option-trade.ts';
-import { PC1, PC2, referenceRecord, X1, X2 } from './reference-trade.ts';
+import { derive, evaluate, type CalculationResult, type TradeAnalysisRecord } from './index.ts';
+import { OC2_CONTRACT, OC3_BUY, OC3_SELL, oc3Record, OS_CONTRACT, OS_S1, osRecord, CORV_PUT, R_BREN_U, R_CORV_D, R_DALE_D } from './option-trade.ts';
+import { PC1, PC2, referenceRecord, REPLAY_SESSION_DATES, type ReplayTestSeries, X1, X2 } from './reference-trade.ts';
 import { replay, type ReplayResult, type ReplaySessionInput } from './replay-series.ts';
 
 const XYZ: Instrument = { kind: 'Stock', symbol: 'XYZ' };
@@ -153,5 +153,91 @@ describe("evaluate: Max reward's R (W6, revision 89)", () => {
       underlyingFrame: available(XYZ, DATE.mon, CLOSE.mon, '56.00'),
     });
     expect(call.maximumIncrementalRewardInPlanR).toMatchObject({ kind: 'Unbounded', direction: 'Above' });
+  });
+});
+
+// D9's test Trades: every session of the series, closing 16:00 New York (EST from Sun 2026-11-01), with each session's
+// Marks observed (null: no Mark).
+const sessionsOf = (series: ReplayTestSeries): readonly ReplaySessionInput[] =>
+  REPLAY_SESSION_DATES.map((date, i) => {
+    const closeInstant = `${date}T21:00:00Z`;
+    const frame = (instrument: Instrument, price: string | null | undefined) =>
+      price == null ? missing(instrument, date, closeInstant) : available(instrument, date, closeInstant, price);
+    return {
+      tradingDate: date,
+      closeInstant,
+      frames: [frame({ kind: 'Stock', symbol: series.record.plan.underlying }, series.underlying[i]), frame(series.record.plan.legs[0]!.instrument, series.held[i])],
+    };
+  });
+const sessionAt = (series: ReplayTestSeries, date: string) => {
+  const session = replayed(replay({ record: series.record, sessions: sessionsOf(series) })).find((s) => s.date === date);
+  if (!session) throw new Error(`no session ${date}`);
+  return session;
+};
+const figuresAt = (series: ReplayTestSeries, date: string) => {
+  const { figures } = sessionAt(series, date);
+  if (!figures) throw new Error(`no figures on ${date}`);
+  return figures;
+};
+const valueOf = (result: CalculationResult<Rational>) => (result.kind === 'Value' ? frac(result.value) : result);
+
+describe("replay: each session's risk, reward and condition status (A250)", () => {
+  it("should give R-BREN-U's Mon 11-02 session a Risk to stop of 352.00 (1.09R) and a Reward to target of 928.00, both conditions Active", () => {
+    const figures = figuresAt(R_BREN_U, '2026-11-02');
+    expect(valueOf(figures.ongoingRiskToStop)).toBe(q(352n));
+    expect(valueOf(figures.ongoingRiskToStopInPlanR)).toBe(q(352n, 324n));
+    expect(valueOf(figures.incrementalRewardToTarget)).toBe(q(928n));
+    expect(valueOf(figures.currentMarkedPnlInPlanR)).toBe(q(28n, 324n));
+    expect(figures.conditions.map((c) => [c.role, c.result.kind === 'Value' && c.result.value.status])).toEqual([['Stop', 'Active'], ['Target', 'Active']]);
+  });
+
+  it("should read an option Trade's Underlying condition from that session's Underlying Mark: R-DALE-D Fri 11-13, the Stop Breached, DALE 0.30 past 54.00", () => {
+    const stop = figuresAt(R_DALE_D, '2026-11-13').conditions.find((c) => c.role === 'Stop')!;
+    if (stop.result.kind !== 'Value') throw new Error(`expected a Value, got ${JSON.stringify(stop.result)}`);
+    expect(stop.result.value.status).toBe('Breached');
+    expect(stop.result.value.trigger && frac(stop.result.value.trigger.beyond!)).toBe(q(30n, 100n));
+    expect(stop.result.value.evidence.instrument).toEqual({ kind: 'Stock', symbol: 'DALE' });
+  });
+
+  it('should carry each session\'s results at the Stop and the Target, stepping on the session of a sale (R-BREN-U: -324.00 on Wed 11-11, +316.00 on Thu 11-12)', () => {
+    const before = figuresAt(R_BREN_U, '2026-11-11').outcomes!;
+    expect(valueOf(before.atStop)).toBe(q(-324n));
+    expect(valueOf(before.atTarget)).toBe(q(956n));
+    const after = figuresAt(R_BREN_U, '2026-11-12').outcomes!;
+    expect(valueOf(after.atStop)).toBe(q(316n));
+    expect(valueOf(after.atTarget)).toBe(q(956n));
+  });
+
+  it('should give each session its own status and never an earlier date across a gap (R-CORV-D: Target Reached Fri 11-06, Active Mon 11-09, Reached Wed 11-11)', () => {
+    const target = (date: string) => {
+      const c = figuresAt(R_CORV_D, date).conditions.find((x) => x.role === 'Target')!;
+      if (c.result.kind !== 'Value') throw new Error(`expected a Value on ${date}, got ${JSON.stringify(c.result)}`);
+      return { status: c.result.value.status, date: c.result.value.evidence.date };
+    };
+    expect(target('2026-11-06')).toEqual({ status: 'Reached', date: '2026-11-06' });
+    expect(target('2026-11-09')).toEqual({ status: 'Active', date: '2026-11-09' });
+    expect(target('2026-11-11')).toEqual({ status: 'Reached', date: '2026-11-11' });
+  });
+
+  it("should leave Tue 11-10's Mark-dependent figures Unavailable naming the put, and keep its two results", () => {
+    const figures = figuresAt(R_CORV_D, '2026-11-10');
+    const unavailable = { kind: 'Unavailable', reason: 'MarkMissing', instrument: CORV_PUT, date: '2026-11-10' };
+    expect(figures.ongoingRiskToStop).toEqual(unavailable);
+    expect(figures.incrementalRewardToTarget).toEqual(unavailable);
+    expect(figures.worstCaseOngoingRisk).toEqual(unavailable);
+    expect(valueOf(figures.outcomes!.atStop)).toBe(q(-318n));
+    expect(valueOf(figures.outcomes!.atTarget)).toBe(q(867n));
+  });
+
+  it('should give the change in Risk to stop since the previous session with the figure (R-BREN-U Mon 11-16: down 150.00 since 11-13)', () => {
+    const { riskChange } = sessionAt(R_BREN_U, '2026-11-16');
+    expect(riskChange && { since: riskChange.since, dollars: frac(riskChange.dollars) }).toEqual({ since: '2026-11-13', dollars: q(-150n) });
+  });
+
+  it('should measure a change across a gap from the last session that had the figure (R-CORV-D Wed 11-11: since 11-09)', () => {
+    const wednesday = sessionAt(R_CORV_D, '2026-11-11');
+    expect(wednesday.riskChange && { since: wednesday.riskChange.since, dollars: frac(wednesday.riskChange.dollars) }).toEqual({ since: '2026-11-09', dollars: q(261n) });
+    expect(wednesday.rewardChange && { since: wednesday.rewardChange.since, dollars: frac(wednesday.rewardChange.dollars) }).toEqual({ since: '2026-11-09', dollars: q(-225n) });
+    expect(sessionAt(R_CORV_D, '2026-11-10').riskChange).toBeUndefined();
   });
 });
