@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expectNoSidewaysScroll } from '../d7p/support.ts';
+import { expectNoSidewaysScroll, expectShownInFull } from '../d7p/support.ts';
 import {
   BREN, build, cardReplay, chartText, closeOf, expect, expectAccessible, firstPage, headline, hits, launchAt, openDrawer, openReview, pnlChart, priceStrip, reachCard, READY, replay, seek, setViewport,
   slider, sliderValue, test,
@@ -32,6 +32,22 @@ async function expectFitsOneScreen(scope: Locator, size: { width: number; height
   expect(measure.pnlWidth, `${where}: P&L chart width`).toBeGreaterThan(150);
 }
 
+// Every readout value is shown in full (not clipped by itself or an ancestor) and lies inside the viewport's width: the document's scrollWidth alone would miss a value clipped by an ancestor.
+async function expectReadoutShownInFull(scope: Locator, size: { width: number; height: number }, where: string): Promise<void> {
+  const values = scope.locator('.replay-readout-row .replay-value');
+  const count = await values.count();
+  expect(count, `${where}: readout values`).toBeGreaterThan(0);
+  for (let index = 0; index < count; index += 1) {
+    const value = values.nth(index);
+    const text = ((await value.textContent()) ?? '').replace(/\s+/g, ' ').trim();
+    expect(text, `${where}: readout value ${index + 1} has text`).not.toBe('');
+    await expectShownInFull(value, text, `${where}: readout value ${index + 1} (${text})`);
+    const box = (await value.boundingBox())!;
+    expect(box.x, `${where}: readout value ${text} left edge`).toBeGreaterThanOrEqual(-0.5);
+    expect(box.x + box.width, `${where}: readout value ${text} right edge`).toBeLessThanOrEqual(size.width + 0.5);
+  }
+}
+
 // W39 and W41 on a phone: the short chart titles, and the short marker "Sold 2" wherever a sale is named (the "Break-even" and "Sold 2" labels may be dropped on a tight chart).
 async function expectPhoneWords(scope: Locator, where: string): Promise<void> {
   const price = await chartText(priceStrip(scope));
@@ -57,6 +73,7 @@ async function throughSizes(page: Page, scope: () => Locator, surface: string, s
     await expect(headline(scope()), where).toHaveText('+$982.00 · 3.03R');
     await expect(hits(scope()).getByRole('button'), where).toHaveCount(9);
     await expectFitsOneScreen(scope(), size, where);
+    await expectReadoutShownInFull(scope(), size, where);
     // The labels no phone chart may lose: the two results at the lines (the "Break-even" and "Sold 2" labels may be dropped on a tight chart).
     expect(await chartText(pnlChart(scope())), where).toEqual(expect.arrayContaining(['Stop +$316', 'Target +$956']));
     await expectNoSidewaysScroll(page, where);
