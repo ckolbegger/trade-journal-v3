@@ -943,8 +943,8 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T9.12 | A | 1 | CP | Done | `9fbdd2f3`; B1 `523decd4` |
 | T9.13 | A | 1 | CP | Done | `622301c9`; B1 `51ec9e0d`; B2 `d3acb89b`; B3 `f3e996c3`; B4 `e263efa1` |
 | T9.6 | A | 2 | RV | Done | `8c810c83`; B1 `40b6263e` |
-| T9.7 | A | 2 | RV | In progress from `40b6263e` | |
-| T9.8 | A | 2 | RV | Not started | |
+| T9.7 | A | 2 | RV | Done | `09025961`; B1 `93b4518d`; B2 `1e0cc8cd`; F2 `b7420080`; F3 `42c9a72b` |
+| T9.8 | A | 2 | RV | In progress from `42c9a72b` | |
 | T9.14 | A | 2 | DW | In progress from `82154dd3` | |
 | T9.15 | A | 2 | RW | Not started | |
 | T9.16 | A | 2 | DW | Not started | |
