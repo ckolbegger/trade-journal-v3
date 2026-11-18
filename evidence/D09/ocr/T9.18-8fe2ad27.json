@@ -1,0 +1,193 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 7 selected item(s).",
+  "summary": {
+    "files_reviewed": 7,
+    "comments": 1,
+    "total_tokens": 258999,
+    "input_tokens": 256947,
+    "output_tokens": 2052,
+    "cache_read_tokens": 32896,
+    "elapsed": "1m31s"
+  },
+  "tool_calls": {
+    "total": 19,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 7,
+      "file_find": 1,
+      "file_read": 10
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "e2e/d9/responsive-a11y.spec.ts",
+      "content": "The responsive check never measures the readout or its values, so it can pass when Banked/Result at the Stop text is clipped inside a width-constrained container. `expectNoSidewaysScroll` only checks document scrollWidth and will also pass if an ancestor hides that overflow. Include the readout values in the horizontal-fit checks and verify they are not clipped (for example, using the existing `expectShownInFull` helper), so fixing page overflow by hiding content cannot silently satisfy B9.5.",
+      "existing_code": "    return { span: pnl.bottom - headlineBox.top, rights: [headlineBox.right, price.right, pnl.right], lefts: [headlineBox.left, price.left, pnl.left], priceWidth: price.width, pnlWidth: pnl.width };",
+      "start_line": 26,
+      "end_line": 26,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "D9 end-to-end test suite, shared support, and test configuration",
+      "files": [
+        "e2e/d9/gaps.spec.ts",
+        "e2e/d9/replay.spec.ts",
+        "e2e/d9/responsive-a11y.spec.ts",
+        "e2e/d9/review.spec.ts",
+        "e2e/d9/states.spec.ts",
+        "e2e/d9/support.ts",
+        "package.json"
+      ]
+    }
+  ],
+  "session_id": "7b81e07f-9687-4941-8418-f496cf0bdb42",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "7b81e07f-9687-4941-8418-f496cf0bdb42",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "8fe2ad27",
+      "resolved_base": "79a47449ce88a67daa856a0a9b6763188df6a4fe",
+      "resolved_head": "8fe2ad27213d706a8354f99cdc01f1d98ceea813",
+      "exact_range": "79a47449ce88a67daa856a0a9b6763188df6a4fe..8fe2ad27213d706a8354f99cdc01f1d98ceea813",
+      "source_artifact_sha256": "a971ca8d90e33ae36a72d63c3178a34b46e8826e84616e2dbaa1fe0eaf426faa"
+    },
+    "execution": {
+      "ocr_version": "v1.13.12",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "001642d35c9cff107e49edc93a963642e592ca6c0fe7ac6604c26b7f2b539427",
+          "path": "e2e/d9/states.spec.ts",
+          "fingerprint": "dd0e7541b23e009c332da64644f5b1d64fe349055fd5c59663eaf41bc14342a6"
+        },
+        {
+          "item_id": "02ef688178a59e01b4d1904319b272eae02b0d93eac4650ab9dc734486689b0d",
+          "path": "e2e/d9/gaps.spec.ts",
+          "fingerprint": "8f10062ddc112ce6e62ad834bdf15abdfef2e6ab8c3fbe74301fae0b9f0c29f8"
+        },
+        {
+          "item_id": "347917e3fc99ea10df3899c14b251305db47c31ef851de4417dcd15cdba0c770",
+          "path": "e2e/d9/review.spec.ts",
+          "fingerprint": "08350ff073592ef8f18e141a6358655fa316b70b84a815400e6c2fa19ed45189"
+        },
+        {
+          "item_id": "a50e78b43d9da674ed99eaeeda80fea2f24b5f39189d6f4650878a33f631ea72",
+          "path": "e2e/d9/replay.spec.ts",
+          "fingerprint": "2c20d38e4f9d2f69fb83663fd8ad25b0b540ad5ae3e6ecb4401424ea3f697992"
+        },
+        {
+          "item_id": "b6c384b7587d1b65ac5792148e7e8c421811373d53aa2bdd93b3c7790c3895b2",
+          "path": "e2e/d9/responsive-a11y.spec.ts",
+          "fingerprint": "64f7f29602660cde7f03a376dae5daf067deab6c12093108f0370ab312f09abd"
+        },
+        {
+          "item_id": "d0126439061216e58eb2b1a6bab019f2d20601558a9531d4100a29b4b9c5c3f9",
+          "path": "e2e/d9/support.ts",
+          "fingerprint": "ef631a7a0bb6ce68927bb85e903539f20f79064a275ea35dc508cfce2a4e6d47"
+        },
+        {
+          "item_id": "de566e6284a31c2314451a985c1f7d6df2743b4e564b2caa20d17560bbad6f03",
+          "path": "package.json",
+          "fingerprint": "c0933612b5f416c5ac766b24a6fb87156302c7825a014addd7927bce082196c0"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "001642d35c9cff107e49edc93a963642e592ca6c0fe7ac6604c26b7f2b539427",
+          "path": "e2e/d9/states.spec.ts",
+          "fingerprint": "dd0e7541b23e009c332da64644f5b1d64fe349055fd5c59663eaf41bc14342a6"
+        },
+        {
+          "item_id": "02ef688178a59e01b4d1904319b272eae02b0d93eac4650ab9dc734486689b0d",
+          "path": "e2e/d9/gaps.spec.ts",
+          "fingerprint": "8f10062ddc112ce6e62ad834bdf15abdfef2e6ab8c3fbe74301fae0b9f0c29f8"
+        },
+        {
+          "item_id": "347917e3fc99ea10df3899c14b251305db47c31ef851de4417dcd15cdba0c770",
+          "path": "e2e/d9/review.spec.ts",
+          "fingerprint": "08350ff073592ef8f18e141a6358655fa316b70b84a815400e6c2fa19ed45189"
+        },
+        {
+          "item_id": "a50e78b43d9da674ed99eaeeda80fea2f24b5f39189d6f4650878a33f631ea72",
+          "path": "e2e/d9/replay.spec.ts",
+          "fingerprint": "2c20d38e4f9d2f69fb83663fd8ad25b0b540ad5ae3e6ecb4401424ea3f697992"
+        },
+        {
+          "item_id": "b6c384b7587d1b65ac5792148e7e8c421811373d53aa2bdd93b3c7790c3895b2",
+          "path": "e2e/d9/responsive-a11y.spec.ts",
+          "fingerprint": "64f7f29602660cde7f03a376dae5daf067deab6c12093108f0370ab312f09abd"
+        },
+        {
+          "item_id": "d0126439061216e58eb2b1a6bab019f2d20601558a9531d4100a29b4b9c5c3f9",
+          "path": "e2e/d9/support.ts",
+          "fingerprint": "ef631a7a0bb6ce68927bb85e903539f20f79064a275ea35dc508cfce2a4e6d47"
+        },
+        {
+          "item_id": "de566e6284a31c2314451a985c1f7d6df2743b4e564b2caa20d17560bbad6f03",
+          "path": "package.json",
+          "fingerprint": "c0933612b5f416c5ac766b24a6fb87156302c7825a014addd7927bce082196c0"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "2ce68b1a394ba4269731fb0bfbe1a1240d65e6ca36fb33a8ee14db9e29be63bd",
+          "path": "evidence/D09/suite-runs/T9.18-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "660a9d4ac06e016b6e1225f3d0fe734c6cd110cfd5deea2f8a27ab735f385f54",
+          "path": "evidence/D09/suite-runs/T9.18-browser-3.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "8a7216f08344bc82a4e32d62012282c20e92fab0b4ea935a90e033cb9ab84622",
+          "path": "evidence/D09/tdd-log/T9.18.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "a27afc924b9e839224c8cccae8d580d89dd9c5e91834c39a6d0e85080d803d12",
+          "path": "evidence/D09/suite-runs/T9.18-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "cf1c114bb9bc514eb3306bc988d4da20b362d2b97d1f54e49c5883dc641f0f76",
+          "path": "evidence/D09/suite-runs/T9.18-acceptance.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "cf420ecbbff5256ff5f1dffe0a9def01c4ec2a8850f959c4505fe9b3ad1823c0",
+          "path": "evidence/D09/suite-runs/T9.18-checks.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 90809
+  }
+}
