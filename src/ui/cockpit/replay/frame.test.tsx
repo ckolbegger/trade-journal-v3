@@ -266,6 +266,15 @@ describe('Replay frame: the text equivalent (W45)', () => {
     expect(attr(fold.querySelector('table')!, 'id')).toBe('replay-table');
   });
 
+  it('should keep the replay table inside a scroll container', () => {
+    const { container } = render(<ReplayFrame {...withTable(11, '2026-11-04')} />);
+    const region = container.querySelector('details table')!.parentElement!;
+    expect(region.className).toBe('replay-table-scroll');
+    expect(region.getAttribute('role')).toBe('region');
+    expect(region.getAttribute('aria-label')).toBe('Session by session');
+    expect(region.getAttribute('tabindex')).toBe('0');
+  });
+
   it('should show whether the table is folded or open', () => {
     const { container } = render(<ReplayFrame {...withTable(11, '2026-11-04')} />);
     const fold = container.querySelector('details')!;

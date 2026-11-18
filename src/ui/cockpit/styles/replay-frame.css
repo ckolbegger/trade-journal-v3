@@ -170,9 +170,12 @@
   outline-offset: 2px;
 }
 
-.replay-table table {
-  display: block;
+/* The scroll container is the table's parent, so a checker walking up from the table finds it. */
+.replay-table-scroll {
   overflow-x: auto;
+}
+
+.replay-table table {
   border-collapse: collapse;
   font-variant-numeric: tabular-nums;
 }

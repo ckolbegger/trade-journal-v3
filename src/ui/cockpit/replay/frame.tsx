@@ -98,28 +98,31 @@ export function ReplayFrame({ tradeKey, sessions, initialSession, sliderLabel, p
           </span>
           {tableTitle}
         </summary>
-        <table id={plotBase.describedBy}>
-          <thead>
-            <tr>
-              {['Session', ...tableColumns, 'Events'].map((column) => (
-                <th key={column} scope="col">
-                  {column}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {sessions.slice(0, current + 1).map((s) => (
-              <tr key={s.date}>
-                <th scope="row">{s.tableRow.dateLabel}</th>
-                {s.tableRow.cells.map((cell, i) => (
-                  <td key={i}>{cell}</td>
+        {/* The table scrolls sideways inside its own region, a focusable one so the keyboard can reach it. */}
+        <div className="replay-table-scroll" role="region" aria-label={tableTitle} tabIndex={0}>
+          <table id={plotBase.describedBy}>
+            <thead>
+              <tr>
+                {['Session', ...tableColumns, 'Events'].map((column) => (
+                  <th key={column} scope="col">
+                    {column}
+                  </th>
                 ))}
-                <td>{s.tableRow.events.join('; ')}</td>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {sessions.slice(0, current + 1).map((s) => (
+                <tr key={s.date}>
+                  <th scope="row">{s.tableRow.dateLabel}</th>
+                  {s.tableRow.cells.map((cell, i) => (
+                    <td key={i}>{cell}</td>
+                  ))}
+                  <td>{s.tableRow.events.join('; ')}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </details>
     </section>
   );
