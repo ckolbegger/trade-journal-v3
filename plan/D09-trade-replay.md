@@ -2,7 +2,7 @@
 
 Definition: [implementation plan, D9](implementation-plan.md#d9--trade-replay), as amended by decision 110. Requirements: `research/replay-requirements.md` (the interview and two rounds of prototypes) and `plan/D09-drafting-handoff.md`. The pictures are `prototypes/replay/round-2.html` (the Corridor tab) and `prototypes/replay/trade-list.html` (the meter). Drafted on `claude-opus-5.5` at `85a7630e` (`claude-opus-5.5-d8r`), after D8R's gate, so every lookup below was run on the tree D9 is built on.
 
-Status: **Draft, not agreed.** Nothing here is a plan revision. When the user agrees it, it is recorded as revision 106 with decision 117, and the amendments in section 1.2 are applied then. Numbering continues from D8R: P118, A247 and W35.
+Status: **Draft, not agreed.** All ten open questions in section 12 were answered on 2026-11-17, one at a time, and the breakdown was updated to match. It waits for the user's agreement to the breakdown as a whole. Nothing here is a plan revision. When the user agrees it, it is recorded as revision 106 with decision 117, and the amendments in section 1.2 are applied then. Numbering continues from D8R: P118, A247 and W35.
 
 **In the trader's words.**
 - **Replay** is one screen that says how a Trade is going. On top, the Underlying's price. Under it, the Trade's profit or loss as a green or red area, drawn between two lines: what the Trade would make at its Stop and at its Target. A sentence above them reads the trade-off: what you risk from here, and what is left to gain.
@@ -39,7 +39,8 @@ The user has already decided (handoff section 4): D9 builds Corridor; the result
 | P132 | **What the meter reads** (item 9). (Open question 8; **answered 2026-11-17: remove `rangePosition` now**, the user's choice over the recommendation.) | **A new finished value, the meter reading (A260), replaces `rangePosition`, which T9.40 removes.** `rangePosition` is in eight frozen fixtures' expected views (84 places). T9.40 deletes exactly those 84 entries, with a diff check that nothing else in the files changed, as T8R.20 did for `nearest`. The backup data itself does not change. | Keep it returned and unread, the draft's recommendation: no frozen file changes, and a figure no screen shows. |
 | P133 | **The faint mark for the session before, on the list and the Review cards.** It needs each Trade's P&L at the session before. (Open question 9; **answered 2026-11-17: as recommended**. If the benchmark after stage C fails, decision 114 applies and the user chooses between a fix and taking the mark off the list.) | **Build it as accepted, and prove the cost.** One more date's Marks are read per page, never per Trade, and each Trade is valued a second time. Integration cases count the reads; the benchmark after stage C checks the budget. | Leave the mark off the list and the collapsed cards, keeping it on Trade Detail, where the replay already holds it. Open question 9. |
 | P134 | **Left out of D9.** | **Deviation markers** (Stop Discipline episodes arrive with D12); **the lowest and highest result so far** (neither Corridor nor the accepted meter draws them); **the Plan's Worst case and Max reward** (Corridor's Plan column draws only the two lines); **spreads** (D10); **Daily Bar candles** (D11). | Each is a field nothing in D9 would show. |
-| P135 | **Words.** | **Section 1.6 proposes W35 to W52 from the prototype's own text.** They need the user's approval (open question 10). During the run, D8R's rule applies: words no row covers are used provisionally and listed for approval. | — |
+| P135 | **Words.** (Open question 10; **answered 2026-11-17: W1 as amended and W35 to W52 are all approved**, built as the prototype has them, under P137.) | **Section 1.6 holds W35 to W52, from the prototype's own text.** During the run, D8R's rule applies: words no row covers are used provisionally and listed for approval. | — |
+| P137 | **Too much text** (the user's rule, 2026-11-17, with open question 10: "err on the side of being too concise, not too verbose"). | **Each task that puts words on screen judges whether they should be shorter, and shortens them when it thinks so. The user has approved this in advance.** What a task may do: use fewer words for the same meaning; drop a label from the chart; move part of a sentence to the readout, the hover or the table. What it may not do: lengthen anything; change a figure or how it is worked out; take a figure off the page altogether (each stays in the readout or the table); or change what a planned case tests. When a planned case quotes words that are shortened, the case's quoted words change to match and nothing else in the case does. Every change is recorded with its before and after in `evidence/D09/words-changed.md`, by task, and listed in the stage's final report. Section 1.6 keeps the approved wording as the starting point. | Leave every word as approved and judge the built chart at each gate: the chart would reach the user crowded first. |
 | P136 | **A third browser stage.** `browser-2` took 8.9 minutes at D8R's gate, and D9's folder would join it. | **T9.1 adds `browser-3`** for `e2e/d8p`, `e2e/d8`, `e2e/d8r` and `e2e/d9`, as `.claude/docs/implementing.md` says to do above 8 minutes. | Leave it: the stage would pass the Bash tool's 10-minute limit during stage A. |
 
 ### 1.2 Amendments to other plan sections (applied when the breakdown is agreed)
@@ -154,9 +155,9 @@ Run on `85a7630e`. If the branch moves before D9 starts, rerun them.
 - **`DRAWERS`** (T9.14): `drawer-request.ts:3` and its readers in the Texts table.
 - **`TradeReplayView` readers** (unchanged by the added fields): `rail/pnl.props.ts`, `drawers/price-history.props.ts`, `drawers/journal.props.ts`, `drawers/today.props.ts`, `Cockpit.tsx`, and their tests.
 
-### 1.6 Proposed words (need the user's approval)
+### 1.6 Approved words
 
-Taken from `round-2.html` and `trade-list.html`. Conventions C1 to C8 of the D7 approved words apply, and a price is a Mark. Examples use section 5's Trades.
+Approved by the user on 2026-11-17 (open question 10), as the starting point: a task may shorten them under P137, recording the before and after. Taken from `round-2.html` and `trade-list.html`. Conventions C1 to C8 of the D7 approved words apply, and a price is a Mark. Examples use section 5's Trades.
 
 | # | Where | Words |
 |---|---|---|
@@ -305,6 +306,8 @@ In stage A, a lane is one git worktree (`.claude/worktrees/d09-<lane>`) on one b
 ## 5. Behavioral tasks
 
 Every case runs **red → green** individually. A case that passes on its first run, or fails for a syntax, configuration, fixture or unrelated reason, is not valid red evidence. A genuine first-run pass needs a mutation check (an assertion failure or runtime exception, not a compile error) and is flagged. Cases are ordered so each needs behavior the earlier ones don't. No test may be written after the code it covers.
+
+**Quoted words.** A case that quotes screen text quotes section 1.6's wording. Under P137 a task may shorten that text; the case then quotes the shorter text, asserts the same thing, and the change is recorded.
 
 **The test Trades.** They are four of the prototype's six, entered as Marks. All dates are 2026, New York time. Every entry is Mon 11-02 at 10:00, every fee is $0.00, and every option is the Fri 11-20 contract. The figures are those `prototypes/replay/checks/verify.js` checks; the prototype's Marks came from a model, and here they are observed Marks.
 
@@ -839,6 +842,7 @@ It runs `npm run build && npm run preview` (port 5175, under the lock) itself an
 
 - **Decision 111's swarm rules** apply in stage A only (stages B and C follow decision 100: one task at a time, each ending with a complete run), with D08P's and D8R's tooling: lane worktrees set up by hand with `git worktree add` and `lane-setup.sh`, the lane tier, merge runs, the browser lock, and the full tier before every critic.
 - **One session per stage.** Each starts from its own handoff, takes the session lock, and ends with its final report. Stage B's and stage C's handoffs are written when the stage before them ends.
+- **The wording rule (P137)** goes into every brief for a task that puts words on screen, word for word: what the task may shorten, what it may not, and that its summary must list each change with its before and after. The main session copies each one into `evidence/D09/words-changed.md`.
 - **Run rules to carry into the handoffs,** if the user agrees (they were decision 116 for D8R): provisional words listed for approval; moderate defects left after three critics become tech debt; one rerun for tech debt item 11's flaky case.
 - **Evidence** for all three stages is under `evidence/D09/`, since `tdd.sh` maps `T9.n` there.
 
@@ -880,7 +884,7 @@ Asked one at a time, in this order. Each answer is recorded here.
 7. **The Open list in attention order (P131).** It costs one sort, one sentence in the Trade Views spec, the benchmark's expected rows regenerated, and a check of 15 positional test lines. Recommended: yes. **Answered 2026-11-17: attention order for now. Sorting and filtering will be added to the Trades list later, and nothing here may prevent that** (A262 lists how).
 8. **`rangePosition` (P132).** Keep it returned and unread, or remove it and delete 84 entries from eight frozen fixtures. Recommended: keep it. **Answered 2026-11-17: remove it now.** It became T9.40.
 9. **The session-before mark on the list and the Review cards (P133).** It costs one more date of Marks per page and a second valuation per Trade. Recommended: build it, and let the benchmark decide; the fallback is to keep it on Trade Detail only. **Answered 2026-11-17: build it everywhere, and let the benchmark decide.**
-10. **The words W35 to W52, and W1's amended drawers (P135).** Recommended: approve, or edit in place. **Answered 2026-11-17: stage A's words are approved** (W1 as amended, W35, W36, W37, W38, W39, W40, W41, W42, W43, W44, W45, W46). Stage B's (W47, W48, W49, W50) and stage C's (W51, W52) are reviewed when each stage starts. The user's concern, recorded with the answer: too much text on the chart.
+10. **The words W35 to W52, and W1's amended drawers (P135).** Recommended: approve, or edit in place. **Answered 2026-11-17: stage A's words are approved** (W1 as amended, W35, W36, W37, W38, W39, W40, W41, W42, W43, W44, W45, W46). The user's concern, recorded with the answer: too much text on the chart. **Follow-up, answered 2026-11-17:** build the text as the prototype has it; each task judges whether its words should be shorter, erring toward concise, and may shorten them with the user's approval given in advance, keeping the before and after (P137). On that basis **stage B's words (W47, W48, W49, W50) and stage C's (W51, W52) are approved too.**
 
 ---
 
@@ -914,6 +918,7 @@ Under `evidence/D09/`:
 - `ocr/`;
 - `DECISIONS-PENDING.md` (decision 113, as amended);
 - `new-words.md` (words used provisionally);
+- `words-changed.md` (P137: each shortened text, by task, with its before and after);
 - `bench.md` (the benchmark after stage C).
 
 Each critic defect is first reproduced by a failing test.
