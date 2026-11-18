@@ -251,4 +251,5 @@ Task status and commits are in the breakdown's Progress section. This section ho
 
 ### Open questions
 
-- None yet.
+- Session 1 (2026-11-17): the main session read the D9-specific ranges of `plan/spec-reading/D09.md` (Trade Analysis, Daily Review, the UI contract), not all 132 entries; each brief names the spec ranges its task needs. Recorded in `evidence/D09/structural.md`, "Session reading".
+- Session 1: T9.1 and T9.2 were dispatched after the breakdown was read and before the rest of the reading, since neither needs it.

@@ -1,0 +1,158 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 0,
+    "total_tokens": 25154,
+    "input_tokens": 24937,
+    "output_tokens": 217,
+    "cache_read_tokens": 3328,
+    "elapsed": "13s"
+  },
+  "tool_calls": {
+    "total": 5,
+    "by_tool": {
+      "file_read": 5
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Acceptance and full-suite execution scripts, tests, and package commands",
+      "files": [
+        ".claude/scripts/acceptance-commands.sh",
+        ".claude/scripts/full-suite.sh",
+        ".claude/scripts/run-complete.sh",
+        ".claude/scripts/run-complete.test.sh",
+        "package.json"
+      ]
+    }
+  ],
+  "session_id": "c33feb95-9e41-4654-8261-291cc2131bda",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "c33feb95-9e41-4654-8261-291cc2131bda",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "adcc6abb",
+      "resolved_base": "84d4ed50e09ad708affe7c5946a4933b2a7475d0",
+      "resolved_head": "adcc6abbf7e6ff2d8b53785aa13606ca20129636",
+      "exact_range": "84d4ed50e09ad708affe7c5946a4933b2a7475d0..adcc6abbf7e6ff2d8b53785aa13606ca20129636",
+      "source_artifact_sha256": "47e47573448e61aca7f7100f10d1590d4aa5c07ea670c5f42263bb95f431ba54"
+    },
+    "execution": {
+      "ocr_version": "v1.13.12",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0f1386c58c2865675881f17f7828295cb39b10f89988ac675d4125689d2143b6",
+          "path": ".claude/scripts/run-complete.test.sh",
+          "fingerprint": "42128fe738bfadfc416c8f2142b9d8923bfc37b3f8ef950193bdc383ec9fe1a7"
+        },
+        {
+          "item_id": "2d551ca3c40012e66cfafd685e4a9537a289001e49e24e17bcfb2e05ea1bd547",
+          "path": ".claude/scripts/run-complete.sh",
+          "fingerprint": "8ffdbe69c3685db958352e7249cfd090bb5be7ce340fe4e646211e65107d2967"
+        },
+        {
+          "item_id": "5c39ed0244642be76c6610333408ab4d112b6e3e48622e17065a72d557ee72ce",
+          "path": ".claude/scripts/acceptance-commands.sh",
+          "fingerprint": "91552402c68e077925f0212895edcc1d3f90530d2efb8aa9ce97803539653dfa"
+        },
+        {
+          "item_id": "6805b966253a4ff25b9c1027cf96bb81fb371062cf552ec6b8b4ff969b0ad97f",
+          "path": ".claude/scripts/full-suite.sh",
+          "fingerprint": "84db0142afd941ee767d98afb3f3f5b9789a1d1d84d1f7b33a9a95cd0613dfdd"
+        },
+        {
+          "item_id": "de566e6284a31c2314451a985c1f7d6df2743b4e564b2caa20d17560bbad6f03",
+          "path": "package.json",
+          "fingerprint": "479e8f4c719fca462cf06369ce7d25929b39c04ed30eee562e51794bf0c8ef99"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0f1386c58c2865675881f17f7828295cb39b10f89988ac675d4125689d2143b6",
+          "path": ".claude/scripts/run-complete.test.sh",
+          "fingerprint": "42128fe738bfadfc416c8f2142b9d8923bfc37b3f8ef950193bdc383ec9fe1a7"
+        },
+        {
+          "item_id": "2d551ca3c40012e66cfafd685e4a9537a289001e49e24e17bcfb2e05ea1bd547",
+          "path": ".claude/scripts/run-complete.sh",
+          "fingerprint": "8ffdbe69c3685db958352e7249cfd090bb5be7ce340fe4e646211e65107d2967"
+        },
+        {
+          "item_id": "5c39ed0244642be76c6610333408ab4d112b6e3e48622e17065a72d557ee72ce",
+          "path": ".claude/scripts/acceptance-commands.sh",
+          "fingerprint": "91552402c68e077925f0212895edcc1d3f90530d2efb8aa9ce97803539653dfa"
+        },
+        {
+          "item_id": "6805b966253a4ff25b9c1027cf96bb81fb371062cf552ec6b8b4ff969b0ad97f",
+          "path": ".claude/scripts/full-suite.sh",
+          "fingerprint": "84db0142afd941ee767d98afb3f3f5b9789a1d1d84d1f7b33a9a95cd0613dfdd"
+        },
+        {
+          "item_id": "de566e6284a31c2314451a985c1f7d6df2743b4e564b2caa20d17560bbad6f03",
+          "path": "package.json",
+          "fingerprint": "479e8f4c719fca462cf06369ce7d25929b39c04ed30eee562e51794bf0c8ef99"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "04aa8a513087c90c3d0f38133cc47321fadbfe2ac4bb93d896d0eb114d84803e",
+          "path": ".claude/agents/suite-runner.md",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "16d08eec6858f9ff60e5913069254976778491fd8d8787243f4e7dbce27bc075",
+          "path": ".claude/docs/implementing.md",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "4a5f0f2ec4b8862e6c7702f69ea4ec7a2610ebfc3acc896fce2062ecc6289e5a",
+          "path": "evidence/D09/suite-runs/T9.1-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "518c13a59d11cd195f3b59801ed7bbd5a95f30a4551686999910ba34c89d3561",
+          "path": "evidence/D09/suite-runs/T9.1-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "b0a1683e1a0e2be08429cbc3a111572e00c46077233207ce0d1a538001786921",
+          "path": "evidence/D09/suite-runs/T9.1-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "f0bc88793d2aec1f76def54a940eb2c055e35bd34e2bde67a50580adbef6eaa2",
+          "path": "evidence/D09/suite-runs/T9.1-integration.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 13396
+  }
+}
