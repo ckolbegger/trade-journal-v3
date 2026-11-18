@@ -950,7 +950,7 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T9.16 | A | 2 | DW | Done | `8cbdd619`; B1 `f4e9b8a6`; B2 `ecaa8bbd` |
 | T9.17 | A | 3 | IN | Done | `416d52df`; B1 `749aff06`; B2 `d2732e30`; B3 `e216f70a` |
 | T9.18 | A | 3 | BR | Done | `2266321b`; F2 `561635ef`; B1 `de7818ac`; F1 `7a653e1b`; F3 `7ed4d0ff`; B2 `a58f0858`; B3 `e00066ac`; F4 `8773200f` |
-| T9.19 | A | 3 | — | Not started | |
+| T9.19 | A | 3 | — | In progress from `e718be57` | |
 | T9.20 | B | — | — | Not started | |
 | T9.21 | B | — | — | Not started | |
 | T9.22 | B | — | — | Not started | |
