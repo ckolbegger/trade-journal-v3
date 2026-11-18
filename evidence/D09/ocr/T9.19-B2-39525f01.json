@@ -1,0 +1,199 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 6 selected item(s).",
+  "summary": {
+    "files_reviewed": 6,
+    "comments": 3,
+    "total_tokens": 148155,
+    "input_tokens": 145856,
+    "output_tokens": 2299,
+    "cache_read_tokens": 11648,
+    "elapsed": "1m20s"
+  },
+  "tool_calls": {
+    "total": 15,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 2,
+      "file_read": 12
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/replay/price-strip.tsx",
+      "content": "The new side candidates use start/end anchors, but the rendered mark-label still hardcodes textAnchor=\"middle\". When either candidate is selected, the actual label is shifted by half its width from the box reserved by LabelPlacer, so it can overlap the title or another label despite passing placement checks. Render textAnchor={markSpot.anchor} and add a regression case that selects a side candidate.",
+      "existing_code": "            { x: time.x(current.slot) + 9, y: value.y(current.underlyingMark) + 3.5, anchor: 'start' },\n            { x: time.x(current.slot) - 9, y: value.y(current.underlyingMark) + 3.5, anchor: 'end' },",
+      "start_line": 45,
+      "end_line": 46,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/cockpit/replay/corridor-pnl.tsx",
+      "content": "Making every historical banked level mandatory can still force overlapping labels. For example, three sales on consecutive sessions with realized totals −$440, −$441 and −$442 have overlapping horizontal boxes and nearly identical y coordinates. The first two labels consume the +12 and −4 offsets; the remaining +24 and −16 offsets are only 12 pixels away from those occupied rows, less than the 13-pixel box height. The third label therefore falls back onto the first. Add a clustered-sales regression and search additional non-overlapping rows (or reflow mandatory labels) rather than relying on these four candidates.",
+      "existing_code": "      put(`banked-${s.slot}`, 'banked-label', text, anchored, true);",
+      "start_line": 154,
+      "end_line": 154,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/cockpit/replay/corridor.test.tsx",
+      "content": "This nested ternary violates the requested no-nested-ternaries rule. Use an if/else alignment calculation, as LabelPlacer.box does, to keep the collision-test helper straightforward.",
+      "existing_code": "      const x0 = anchor === 'end' ? x - w : anchor === 'middle' ? x - w / 2 : x;",
+      "start_line": 578,
+      "end_line": 578,
+      "category": "maintainability",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Replay corridor rendering, geometry, and end-to-end coverage",
+      "files": [
+        "e2e/d9/gaps.spec.ts",
+        "e2e/d9/replay.spec.ts",
+        "src/ui/cockpit/replay/corridor-pnl.tsx",
+        "src/ui/cockpit/replay/corridor.test.tsx",
+        "src/ui/cockpit/replay/geometry.ts",
+        "src/ui/cockpit/replay/price-strip.tsx"
+      ]
+    }
+  ],
+  "session_id": "1ed41754-4e98-443d-ba4e-835dd79d7723",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "1ed41754-4e98-443d-ba4e-835dd79d7723",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "39525f01",
+      "resolved_base": "57d171752f9ebd1d9c4c0d1ee0539313472d8248",
+      "resolved_head": "39525f0154943e0935b14bf0cf456c05f14a8963",
+      "exact_range": "57d171752f9ebd1d9c4c0d1ee0539313472d8248..39525f0154943e0935b14bf0cf456c05f14a8963",
+      "source_artifact_sha256": "579f03075c2cccab3845d2e2d0ecf804e4ebf90225eafbc7cc04fa305378b1ca"
+    },
+    "execution": {
+      "ocr_version": "v1.13.12",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "02ef688178a59e01b4d1904319b272eae02b0d93eac4650ab9dc734486689b0d",
+          "path": "e2e/d9/gaps.spec.ts",
+          "fingerprint": "31ee1b969fed025e4df951816f673dc6899d482490ac638d3253d594a574a2ac"
+        },
+        {
+          "item_id": "18de86b152c71edf7b69e5ef56c77c1958afecdf4524893fdc802e9700a6dfe1",
+          "path": "src/ui/cockpit/replay/corridor-pnl.tsx",
+          "fingerprint": "6a1421e4e40d164dd1869cb52cd9fce2ca3a5ca1bdb1b5dd8ea34f8b324cb2a6"
+        },
+        {
+          "item_id": "36f39170a3d0629cf5d55776919719e766ca53573881aad557775fade7e81c9e",
+          "path": "src/ui/cockpit/replay/price-strip.tsx",
+          "fingerprint": "775a33a16972614767aef2943d4015e2df268157af862bf5d8787473a84d560c"
+        },
+        {
+          "item_id": "94e5facfd6dd05335ee3c317788f81c9d2ddec02992be55f544dbbeb5f392508",
+          "path": "src/ui/cockpit/replay/geometry.ts",
+          "fingerprint": "a57fe698490e16489e9426ddae9502e744f7d143cb46eee75dc412ea2d43b251"
+        },
+        {
+          "item_id": "a50e78b43d9da674ed99eaeeda80fea2f24b5f39189d6f4650878a33f631ea72",
+          "path": "e2e/d9/replay.spec.ts",
+          "fingerprint": "1c931a11186f2b4663eb2b861b7f32c9d467f61a9c65fd8d3fe41fc413d48a56"
+        },
+        {
+          "item_id": "ba578f97f7698c0e6bcb181e747f8c8ef3dafb90b6f8eef6f25b35b639e1dd2c",
+          "path": "src/ui/cockpit/replay/corridor.test.tsx",
+          "fingerprint": "12f1b012194483e8277f717f077f14369351ef54c6818dacdc08f26d36d49736"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "02ef688178a59e01b4d1904319b272eae02b0d93eac4650ab9dc734486689b0d",
+          "path": "e2e/d9/gaps.spec.ts",
+          "fingerprint": "31ee1b969fed025e4df951816f673dc6899d482490ac638d3253d594a574a2ac"
+        },
+        {
+          "item_id": "18de86b152c71edf7b69e5ef56c77c1958afecdf4524893fdc802e9700a6dfe1",
+          "path": "src/ui/cockpit/replay/corridor-pnl.tsx",
+          "fingerprint": "6a1421e4e40d164dd1869cb52cd9fce2ca3a5ca1bdb1b5dd8ea34f8b324cb2a6"
+        },
+        {
+          "item_id": "36f39170a3d0629cf5d55776919719e766ca53573881aad557775fade7e81c9e",
+          "path": "src/ui/cockpit/replay/price-strip.tsx",
+          "fingerprint": "775a33a16972614767aef2943d4015e2df268157af862bf5d8787473a84d560c"
+        },
+        {
+          "item_id": "94e5facfd6dd05335ee3c317788f81c9d2ddec02992be55f544dbbeb5f392508",
+          "path": "src/ui/cockpit/replay/geometry.ts",
+          "fingerprint": "a57fe698490e16489e9426ddae9502e744f7d143cb46eee75dc412ea2d43b251"
+        },
+        {
+          "item_id": "a50e78b43d9da674ed99eaeeda80fea2f24b5f39189d6f4650878a33f631ea72",
+          "path": "e2e/d9/replay.spec.ts",
+          "fingerprint": "1c931a11186f2b4663eb2b861b7f32c9d467f61a9c65fd8d3fe41fc413d48a56"
+        },
+        {
+          "item_id": "ba578f97f7698c0e6bcb181e747f8c8ef3dafb90b6f8eef6f25b35b639e1dd2c",
+          "path": "src/ui/cockpit/replay/corridor.test.tsx",
+          "fingerprint": "12f1b012194483e8277f717f077f14369351ef54c6818dacdc08f26d36d49736"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "01d385312bc7231dc93254972b2e88a789c77e1d49526aa7b2dca8e82ac5c3bf",
+          "path": "evidence/D09/suite-runs/T9.19-B2-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "6b9a8d1aeaa3e5a6854bd410e13a94db6108499b813e67ede4aec2d2739fad2d",
+          "path": "evidence/D09/suite-runs/T9.19-B2-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "719ec8f718c4931d8441053d80ee2f57ff6e7bf617d0d5a7795dad5ad849a1ff",
+          "path": "evidence/D09/suite-runs/T9.19-B2-browser.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "765bcffdbeecc304727b7dcb96dd3a20aeac9556583612978882d9c431e8e83f",
+          "path": "evidence/D09/tdd-log/T9.19-B2.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "85fba1147ba8e705645439199035ecf3971fdab5e93cc2c1361413355c69ef55",
+          "path": "evidence/D09/words-changed.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ac42b5878471cc4030e127fc55a8695ca9666b724c11b6c3acaf7cd7635a2e90",
+          "path": "evidence/D09/suite-runs/T9.19-B2-integration.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 79618
+  }
+}
