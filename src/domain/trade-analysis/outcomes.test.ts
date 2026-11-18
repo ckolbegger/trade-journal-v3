@@ -22,11 +22,13 @@ function evaluateAt(series: ReplayTestSeries, date: string): TradeEvaluation {
   const state = derive({ record: series.record, cutoff: closeOf(date), valuationDate: date });
   if (state.kind !== 'Derived') throw new Error(`expected Derived, got ${JSON.stringify(state)}`);
   const held = state.positions[0]?.instrument ?? series.record.plan.legs[0]!.instrument;
-  if (held.kind === 'Stock') return evaluate({ state, frame: frameOf(held, date, series.held[i]!) });
+  // A series shorter than the sessions has no Mark on its later sessions.
+  const heldPrice = series.held[i] ?? null;
+  if (held.kind === 'Stock') return evaluate({ state, frame: frameOf(held, date, heldPrice) });
   return evaluate({
     state,
-    frame: frameOf(held, date, series.held[i]!),
-    underlyingFrame: frameOf({ kind: 'Stock', symbol: series.record.plan.underlying }, date, series.underlying[i]!),
+    frame: frameOf(held, date, heldPrice),
+    underlyingFrame: frameOf({ kind: 'Stock', symbol: series.record.plan.underlying }, date, series.underlying[i] ?? null),
   });
 }
 
@@ -166,5 +168,12 @@ describe('evaluate: standing (A249)', () => {
     const evaluation = evaluateAt({ ...R_DALE_D, underlying: R_DALE_D.underlying.map((u, i) => (i === 8 ? null : u)) }, '2026-11-12');
     expect(evaluation.ongoingRiskToStop.kind).toBe('Unavailable');
     expect(evaluation.standing).toEqual(evaluation.ongoingRiskToStop);
+  });
+});
+
+describe('evaluateAt: a session beyond a shorter series', () => {
+  it("should evaluate a session beyond a shorter series' Marks as having no Mark", () => {
+    const shorter = { ...R_AXIO_U, underlying: R_AXIO_U.underlying.slice(0, 3), held: R_AXIO_U.held.slice(0, 3) };
+    expect(evaluateAt(shorter, '2026-11-06').currentMarkedPnl.kind).toBe('Unavailable');
   });
 });
