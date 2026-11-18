@@ -76,14 +76,22 @@ export function PnlChart({ props, width }: { props: ReplayPlotProps; width: numb
     }
     return d;
   };
-  // One sub-path per run, so the area breaks where a session has no figure.
+  // One sub-path per run, so the area breaks where a session has no figure. Between two sessions of opposite sign the
+  // edge turns at break-even, where the straight line between them crosses it, so the two fills meet there.
   const areaPath = (side: (p: number, zero: number) => number): string =>
     runs(sessions)
       .filter((run) => run.length > 1)
-      .map(
-        (run) =>
-          `M${f1(time.x(run[0]!.s.slot))} ${f1(y0)}${run.map((r) => `L${f1(time.x(r.s.slot))} ${f1(value.y(side(r.pnl, 0)))}`).join('')}L${f1(time.x(run.at(-1)!.s.slot))} ${f1(y0)}Z`,
-      )
+      .map((run) => {
+        const edge = run.map((r, i) => {
+          const point = `L${f1(time.x(r.s.slot))} ${f1(value.y(side(r.pnl, 0)))}`;
+          const prev = run[i - 1];
+          if (!prev || prev.pnl * r.pnl >= 0) return point;
+          const xa = time.x(prev.s.slot);
+          const cross = xa + ((time.x(r.s.slot) - xa) * prev.pnl) / (prev.pnl - r.pnl);
+          return `L${f1(cross)} ${f1(y0)}${point}`;
+        });
+        return `M${f1(time.x(run[0]!.s.slot))} ${f1(y0)}${edge.join('')}L${f1(time.x(run.at(-1)!.s.slot))} ${f1(y0)}Z`;
+      })
       .join('');
 
   // Labels, placed in priority order: the results and the stake tags first (never left out), then the rest, each

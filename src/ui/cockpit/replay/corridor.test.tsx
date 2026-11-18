@@ -89,6 +89,24 @@ describe('Corridor: the Trade P&L (W40, W41)', () => {
     expect(screen.getByText('Break-even')).toBeTruthy();
   });
 
+  it('should meet the profit and loss fills at break-even between sessions of opposite sign, with no overlap', () => {
+    const sessions = [bren(0, { tradePnl: 100 }), bren(1, { tradePnl: -100 })];
+    const { container } = render(<CorridorPlot {...props({ sessions, sliderIndex: 1 })} />);
+    const z = zeroY(container);
+    const [xa, xb] = dots(container).map((d) => num(d, 'cx'));
+    const verticesAtZero = (cls: string) =>
+      [...pnl(container).querySelector(`path.area.${cls}`)!.getAttribute('d')!.matchAll(/[ML](-?[\d.]+) (-?[\d.]+)/g)]
+        .map((m) => ({ x: Number(m[1]), y: Number(m[2]) }))
+        .filter((p) => p.y === z && p.x > xa! && p.x < xb!);
+    // Both fills turn at the break-even crossing, halfway between +100 and -100, so neither slopes across the gap.
+    const mid = (xa! + xb!) / 2;
+    for (const cls of ['profit', 'loss']) {
+      const at = verticesAtZero(cls);
+      expect(at).toHaveLength(1);
+      expect(Math.abs(at[0]!.x - mid)).toBeLessThan(0.2);
+    }
+  });
+
   it('should break the area at a session without a figure', () => {
     // R-CORV-D has no put Mark on one session: its Trade P&L is missing, and the lines still come from the Plan.
     const sessions = DAYS.slice(0, 7).map((_, i) => (i === 3 ? bren(i, { tradePnl: null, underlyingMark: null }) : bren(i)));
