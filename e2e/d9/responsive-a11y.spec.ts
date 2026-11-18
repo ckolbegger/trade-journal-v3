@@ -23,9 +23,13 @@ async function expectFitsOneScreen(scope: Locator, size: { width: number; height
     const headlineBox = rect('[data-testid="headline"]');
     const price = rect('svg.price-strip');
     const pnl = rect('svg.pnl-chart');
-    return { span: pnl.bottom - headlineBox.top, rights: [headlineBox.right, price.right, pnl.right], lefts: [headlineBox.left, price.left, pnl.left], priceWidth: price.width, pnlWidth: pnl.width };
+    // The fixed bottom navigation (a bar along the foot, not the wide layout's side column) covers the screen's lowest part.
+    const nav = document.querySelector('.shell > .nav');
+    const navBox = nav && getComputedStyle(nav).position === 'fixed' ? nav.getBoundingClientRect() : null;
+    const covered = navBox && navBox.width >= window.innerWidth * 0.9 ? window.innerHeight - navBox.top : 0;
+    return { covered, span: pnl.bottom - headlineBox.top, rights: [headlineBox.right, price.right, pnl.right], lefts: [headlineBox.left, price.left, pnl.left], priceWidth: price.width, pnlWidth: pnl.width };
   });
-  expect(measure.span, `${where}: the headline and both charts span ${Math.round(measure.span)} px of ${size.height}`).toBeLessThanOrEqual(size.height);
+  expect(measure.span, `${where}: the headline and both charts span ${Math.round(measure.span)} px of ${size.height - measure.covered} (${size.height} less ${Math.round(measure.covered)} under the bottom navigation)`).toBeLessThanOrEqual(size.height - measure.covered);
   for (const right of measure.rights) expect(right, `${where}: right edge`).toBeLessThanOrEqual(size.width + 0.5);
   for (const left of measure.lefts) expect(left, `${where}: left edge`).toBeGreaterThanOrEqual(-0.5);
   expect(measure.priceWidth, `${where}: price chart width`).toBeGreaterThan(150);
@@ -117,6 +121,11 @@ test.describe('B9.5 Responsive, accessible and offline', () => {
     await page.goto('/');
     await openReview(page);
     await reachCard(page, trade);
+    // The card as it opens (Review Date Mon 11-16, the slider at its last session), the headline scrolled to the top: it and both charts clear the bottom navigation.
+    await setViewport(page, SIZES[2].width, SIZES[2].height);
+    await expect(headline(cardReplay(page, trade))).toHaveText('+$988.00 · 3.05R');
+    await headline(cardReplay(page, trade)).evaluate((element) => element.scrollIntoView({ block: 'start' }));
+    await expectFitsOneScreen(cardReplay(page, trade), SIZES[2], 'Review card replay at 320 px, Mon 11-16');
     await throughSizes(page, () => cardReplay(page, trade), 'Review card replay', [SIZES[2]]);
     await context.close();
   });

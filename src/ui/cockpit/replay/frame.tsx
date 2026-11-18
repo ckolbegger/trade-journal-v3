@@ -40,7 +40,8 @@ export function ReplayFrame({ tradeKey, sessions, initialSession, sliderLabel, p
     // The card's edge takes the headline's finished tone; the words below say the result too, so colour is never the only cue (W37).
     <section className="replay-card" data-testid="replay-card" data-tone={session.headline.tone}>
       <p className="replay-headline" data-testid="headline">
-        {headline}
+        {/* A figure stays on one line (the reason standing in for it may wrap). */}
+        {session.headline.figure ? <span className="replay-figure">{headline}</span> : headline}
       </p>
       <p className="replay-going">{session.howItIsGoing}</p>
       {session.stake && <p className="replay-stake">{session.stake}</p>}

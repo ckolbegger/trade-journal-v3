@@ -23,6 +23,10 @@
   color: var(--ink);
 }
 
+.replay-figure {
+  white-space: nowrap;
+}
+
 .replay-card[data-tone='Profit'] .replay-headline {
   color: var(--target);
 }
@@ -78,6 +82,23 @@
 .replay-slider-value {
   font-variant-numeric: tabular-nums;
   color: var(--muted);
+}
+
+/* On a phone Previous, the slider and Next share one row and the session's date and count sit under them, so the controls take two lines, not three. */
+@media (max-width: 480px) {
+  .replay-slider {
+    margin: 4px 0;
+    gap: 4px 8px;
+  }
+
+  .replay-slider input[type='range'] {
+    flex-basis: 0;
+  }
+
+  .replay-slider-value {
+    flex: 1 0 100%;
+    line-height: 1.2;
+  }
 }
 
 /* The readout (W43): groups side by side where there is room, one under another on a phone. */
