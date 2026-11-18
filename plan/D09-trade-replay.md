@@ -948,7 +948,7 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T9.14 | A | 2 | DW | In progress from `82154dd3` | |
 | T9.15 | A | 2 | RW | Not started | |
 | T9.16 | A | 2 | DW | Not started | |
-| T9.17 | A | 3 | — | Not started | |
+| T9.17 | A | 3 | — | In progress from `74b021e2` | |
 | T9.18 | A | 3 | — | Not started | |
 | T9.19 | A | 3 | — | Not started | |
 | T9.20 | B | — | — | Not started | |
