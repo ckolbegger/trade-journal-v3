@@ -1,0 +1,177 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 3,
+    "total_tokens": 188424,
+    "input_tokens": 185665,
+    "output_tokens": 2759,
+    "cache_read_tokens": 29952,
+    "elapsed": "1m54s"
+  },
+  "tool_calls": {
+    "total": 21,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 4,
+      "file_read": 15
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/replay/corridor-pnl.tsx",
+      "content": "Making banked labels mandatory can force them outside the SVG: both candidate positions are start-anchored at the sale's column, and LabelPlacer falls back to the first candidate even when neither fits. For example, at width 240 with 15 slots, a banked change at slot 14 starts around x=223, so `Banked +$478` extends well past the right edge and is clipped by the plot's overflow container. Add end-anchored or horizontally clamped candidates before forcing placement, and cover a sale near the final slot in the narrow-layout test.",
+      "existing_code": "      ], props.compact);",
+      "start_line": 144,
+      "end_line": 144,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/cockpit/replay/corridor.tsx",
+      "content": "The 240-unit minimum does not establish a minimum rendered width. Existing `.replay-plot svg` CSS sets `width: 100%; height: auto`, so a container below 240 px still scales this drawing down instead of scrolling it, shrinking text below the intended readable size. Give the rendered plot a matching minimum width and keep the session-hit overlay in the same scrollable coordinate space; test a container below 240 px in a real browser.",
+      "existing_code": "  const width = narrow ? Math.max(measured, WIDTH_MIN) : props.compact ? WIDTH_COMPACT : WIDTH;",
+      "start_line": 68,
+      "end_line": 68,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/cockpit/replay/corridor.tsx",
+      "content": "This nested ternary violates the requested no-nested-ternaries rule. Extract the explicit compact/default width into a separate variable, then use a single ternary for the responsive override so the sizing precedence is clear.",
+      "existing_code": "  const width = narrow ? Math.max(measured, WIDTH_MIN) : props.compact ? WIDTH_COMPACT : WIDTH;",
+      "start_line": 68,
+      "end_line": 68,
+      "category": "style",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Replay corridor P\u0026L, responsive accessibility, and tests",
+      "files": [
+        "e2e/d9/responsive-a11y.spec.ts",
+        "src/ui/cockpit/replay/corridor-pnl.tsx",
+        "src/ui/cockpit/replay/corridor.test.tsx",
+        "src/ui/cockpit/replay/corridor.tsx"
+      ]
+    }
+  ],
+  "session_id": "e4ec0b69-4412-44d7-97bd-d41a0fff46b1",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "e4ec0b69-4412-44d7-97bd-d41a0fff46b1",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "4cb6116b",
+      "resolved_base": "7a653e1b9ff8bedd767318563468692b15ed59e1",
+      "resolved_head": "4cb6116b6a0540ec240fec49cc3b294af051f292",
+      "exact_range": "7a653e1b9ff8bedd767318563468692b15ed59e1..4cb6116b6a0540ec240fec49cc3b294af051f292",
+      "source_artifact_sha256": "579a91f443713a6097cb339124931710b38248701910867067ee8f584d3297d4"
+    },
+    "execution": {
+      "ocr_version": "v1.13.12",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "18de86b152c71edf7b69e5ef56c77c1958afecdf4524893fdc802e9700a6dfe1",
+          "path": "src/ui/cockpit/replay/corridor-pnl.tsx",
+          "fingerprint": "bd82b4dfc8abec8d30af7036b1c0477ed57a9778755a807003274a5d0daf33e2"
+        },
+        {
+          "item_id": "b6c384b7587d1b65ac5792148e7e8c421811373d53aa2bdd93b3c7790c3895b2",
+          "path": "e2e/d9/responsive-a11y.spec.ts",
+          "fingerprint": "5b46a371e179c8051e16e3cef58e25d588b1ed2b3f6bbe1344ecf92480d90dcf"
+        },
+        {
+          "item_id": "b9ff77485ea8c227fe111b6e6915407572768e86debadd842eefda14f4e4bcf1",
+          "path": "src/ui/cockpit/replay/corridor.tsx",
+          "fingerprint": "83c34475c8dbb34c422065090e5bd6e31692ebc5c5820d41df6743b2f291abae"
+        },
+        {
+          "item_id": "ba578f97f7698c0e6bcb181e747f8c8ef3dafb90b6f8eef6f25b35b639e1dd2c",
+          "path": "src/ui/cockpit/replay/corridor.test.tsx",
+          "fingerprint": "89b952aa70aacd54b73df4c78511d2f2169327f729d0bd5c74a035299ab4e28e"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "18de86b152c71edf7b69e5ef56c77c1958afecdf4524893fdc802e9700a6dfe1",
+          "path": "src/ui/cockpit/replay/corridor-pnl.tsx",
+          "fingerprint": "bd82b4dfc8abec8d30af7036b1c0477ed57a9778755a807003274a5d0daf33e2"
+        },
+        {
+          "item_id": "b6c384b7587d1b65ac5792148e7e8c421811373d53aa2bdd93b3c7790c3895b2",
+          "path": "e2e/d9/responsive-a11y.spec.ts",
+          "fingerprint": "5b46a371e179c8051e16e3cef58e25d588b1ed2b3f6bbe1344ecf92480d90dcf"
+        },
+        {
+          "item_id": "b9ff77485ea8c227fe111b6e6915407572768e86debadd842eefda14f4e4bcf1",
+          "path": "src/ui/cockpit/replay/corridor.tsx",
+          "fingerprint": "83c34475c8dbb34c422065090e5bd6e31692ebc5c5820d41df6743b2f291abae"
+        },
+        {
+          "item_id": "ba578f97f7698c0e6bcb181e747f8c8ef3dafb90b6f8eef6f25b35b639e1dd2c",
+          "path": "src/ui/cockpit/replay/corridor.test.tsx",
+          "fingerprint": "89b952aa70aacd54b73df4c78511d2f2169327f729d0bd5c74a035299ab4e28e"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "50b3f5e374c0667f51e2fc5008b9c5739c1407b3b4dfe92b559f27226f6da078",
+          "path": "evidence/D09/suite-runs/T9.18-F3-e2e3.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "633bdfa3a28fbac7a67727602b4a65e3ff4becd27e5f6fad286c616a1037576c",
+          "path": "evidence/D09/suite-runs/T9.18-F3-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "6f84cea1aa820f65caa3fd79c8fef6620054368671177babecc641a7775ac753",
+          "path": "evidence/D09/suite-runs/T9.18-F3-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "92d56cbfe618f23ca83af30a097b198523890bd8547b7fc469a5e2af81a2e2d2",
+          "path": "evidence/D09/suite-runs/T9.18-F3-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "d02799b69d4016806b2c7476d223d07ca2090b00c3e652519e60ef97da64b20e",
+          "path": "evidence/D09/suite-runs/T9.18-F3-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "d62257597892f2a0b1d17f7b03dd7d6fafd3d69d589c051754eaa3df5cb3681b",
+          "path": "evidence/D09/tdd-log/T9.18-F3.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 113768
+  }
+}
