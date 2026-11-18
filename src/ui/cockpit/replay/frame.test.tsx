@@ -232,6 +232,18 @@ describe('Replay frame: the readout (W43)', () => {
     expect(readout.querySelector('[data-row="At Max reward"] .replay-pnl')).toBeNull();
   });
 
+  it('should put the P&L right after the amount and before the change on a row with both (T9.19-B14)', () => {
+    const rows: ReplayFrameSession['readout'] = [
+      {
+        title: 'At stake from here, whole Position',
+        rows: [{ label: 'At Stop', value: { kind: 'Figure', text: '$832.00 · 2.57R' }, pnl: { kind: 'Figure', text: '+$156.00' }, change: 'down $150.00 since Fri Nov 13' }],
+      },
+    ];
+    render(<ReplayFrame {...mixed({ readout: rows })} />);
+    const dd = screen.getByTestId('readout').querySelector('[data-row="At Stop"] dd')!;
+    expect(text(dd)).toBe('$832.00 · 2.57R · P&L +$156.00 down $150.00 since Fri Nov 13');
+  });
+
   it('should give each figure its change since the session it is measured from', () => {
     const rows: ReplayFrameSession['readout'] = [
       {

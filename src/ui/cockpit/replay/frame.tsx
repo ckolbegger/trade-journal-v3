@@ -97,8 +97,7 @@ export function ReplayFrame({ tradeKey, sessions, initialSession, sliderLabel, p
                     <span className="replay-value" data-kind={row.value.kind}>
                       {row.value.text}
                     </span>
-                    {row.change && <span className="replay-change"> {row.change}</span>}
-                    {/* Where the Trade would end, beside the amount from here. */}
+                    {/* Where the Trade would end, beside the amount from here; the change line (a block) follows, below both. */}
                     {row.pnl && (
                       <span className="replay-pnl">
                         {' · P&L '}
@@ -107,6 +106,7 @@ export function ReplayFrame({ tradeKey, sessions, initialSession, sliderLabel, p
                         </span>
                       </span>
                     )}
+                    {row.change && <span className="replay-change"> {row.change}</span>}
                   </dd>
                 </div>
               ))}
