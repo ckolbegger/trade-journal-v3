@@ -237,6 +237,15 @@ describe('Replay frame: the readout (W43)', () => {
     expect(within(screen.getByTestId('readout')).getAllByRole('heading').map(text)).toEqual(['Final result', 'Marks']);
     expect(screen.queryByText('How it is going', { selector: 'h3' })).toBeNull();
   });
+
+  it('should show the readout of the slider session, not the last', () => {
+    const own = (index: number): ReplayFrameSession['readout'] => [{ title: 'Marks', rows: [{ label: 'BREN Mark', value: { kind: 'Figure', text: `$${100 + index}.00` } }] }];
+    render(<ReplayFrame {...props({ sessions: Array.from({ length: 11 }, (_, i) => ({ ...frameSession(i), readout: own(i) })) })} />);
+    expect(text(screen.getByTestId('readout'))).toContain('$110.00');
+    fireEvent.change(slider(), { target: { value: '3' } });
+    expect(text(screen.getByTestId('readout'))).toContain('$103.00');
+    expect(text(screen.getByTestId('readout'))).not.toContain('$110.00');
+  });
 });
 
 describe('Replay frame: the text equivalent (W45)', () => {
