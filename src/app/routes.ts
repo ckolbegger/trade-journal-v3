@@ -45,7 +45,7 @@ export const ROUTES = [
       // D5 P17: each Trade's card lists its owed reflections and resolves them (no Debt family).
       // D6 P20, A89, A90: the group of Trades outside the walk with a reflection owed, and its cards.
       'DailyReview.open': ['LatestCompleted', 'OwedReflections', 'RangePosition', 'GapTrades', 'OwedReflectionGroup', 'SettlementFamily'],
-      'DailyReview.getTrade': ['OwedReflections', 'PlanBaseline', 'RewardRiskNow', 'ReflectionsOwed', 'ExpirationPayoff', 'SettlementDue'],
+      'DailyReview.getTrade': ['OwedReflections', 'PlanBaseline', 'RewardRiskNow', 'ReflectionsOwed', 'ExpirationPayoff', 'SettlementDue', 'Replay'],
       'DailyReview.save': ['SaveTradeAction', 'ResolveReviewDebt', 'SaveReviewMarks'],
       'MarketData.save': ['RecordInitialManualMark', 'CorrectMark', 'AssertUnavailable', 'WithdrawAcknowledgment', 'Stock', 'Option'],
       'MarketData.query': ['ResolveFrames', 'ResolveSession', 'Current', 'Review', 'Historical', 'PreviousClose', 'Option'],
@@ -62,6 +62,7 @@ export const ROUTES = [
     requires: ['TradeViewsAndReporting.getTradeDetail', 'TradeViewsAndReporting.replayTrade', 'MarketData.query', 'Journal.query', 'Journal.save'],
     variants: {
       'TradeViewsAndReporting.getTradeDetail': ['Planned', 'Open', 'Closed', 'CurrentEvaluation', 'Debt', 'ExpirationPayoff', 'SettlementDue'],
+      'TradeViewsAndReporting.replayTrade': ['ConditionStatus', 'Markers'],
       'MarketData.query': ['ReadSeries'],
       'Journal.query': ['TradeNarrative', 'OutstandingDebt'],
       'Journal.save': ['ResolveDebt', 'Answer', 'Decline', 'TradeDetailSource'],
