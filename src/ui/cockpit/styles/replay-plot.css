@@ -1,0 +1,92 @@
+/* The replay plot (D9 T9.12): Corridor's price strip. Colours follow the cockpit's tokens; the chart scales with its box. */
+.replay-plot {
+  overflow-x: auto;
+}
+
+.replay-plot svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.replay-plot text {
+  font-size: 10.5px;
+  fill: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.replay-plot .plot-title {
+  fill: var(--ink);
+  font-weight: 650;
+  font-size: 11.5px;
+}
+
+.replay-plot .price-line-label,
+.replay-plot .mark-label {
+  fill: var(--ink);
+  paint-order: stroke;
+  stroke: var(--card);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+
+.replay-plot .mark-label {
+  font-weight: 700;
+  font-size: 11.5px;
+}
+
+.replay-plot .price-line-label.stop {
+  fill: var(--stop);
+}
+
+.replay-plot .price-line-label.target {
+  fill: var(--target);
+}
+
+.replay-plot .grid {
+  stroke: var(--line);
+  stroke-width: 1;
+  opacity: 0.6;
+}
+
+.replay-plot .price-line {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 1;
+  stroke-dasharray: 1 3;
+}
+
+.replay-plot .price-line.stop {
+  stroke: var(--stop);
+  stroke-width: 1.5;
+  stroke-dasharray: 6 3;
+}
+
+.replay-plot .price-line.target {
+  stroke: var(--target);
+  stroke-width: 1.5;
+  stroke-dasharray: 2 3;
+}
+
+/* A session without a Mark: shaded, with "No Mark" up the column; the line is not drawn across it. */
+.replay-plot .no-mark {
+  fill: var(--tint);
+}
+
+.replay-plot .mark-line {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 1.2;
+}
+
+.replay-plot .mark {
+  fill: var(--ink);
+  stroke: var(--card);
+  stroke-width: 1.5;
+}
+
+.replay-plot .cursor {
+  stroke: var(--focus);
+  stroke-width: 1.5;
+}
