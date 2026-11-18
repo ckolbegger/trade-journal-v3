@@ -51,6 +51,49 @@ export function priceRange(anchors: readonly number[], marks: readonly number[])
   return lo === hi ? [lo - 1, hi + 1] : [lo, hi];
 }
 
+export interface Spot {
+  readonly x: number;
+  readonly y: number;
+  readonly anchor: 'start' | 'middle' | 'end';
+}
+
+// Where each label goes. A label takes the first of its spots that sits inside the chart and clears every label kept
+// before it; with none free it is left out. A `must` label (a result or a stake tag) is never left out: it takes
+// its first spot even when that overlaps. Call in priority order.
+export class LabelPlacer {
+  private readonly kept: { x0: number; x1: number; y0: number; y1: number }[] = [];
+  private readonly width: number;
+  private readonly height: number;
+
+  constructor(width: number, height: number) {
+    this.width = width;
+    this.height = height;
+  }
+
+  place(text: string, spots: readonly Spot[], must = false): Spot | null {
+    const box = (s: Spot) => {
+      const w = text.length * 6 + 2;
+      const x0 = s.anchor === 'start' ? s.x : s.anchor === 'end' ? s.x - w : s.x - w / 2;
+      return { x0, x1: x0 + w, y0: s.y - 10, y1: s.y + 3 };
+    };
+    const free = (b: ReturnType<typeof box>) =>
+      b.x0 >= 0 && b.x1 <= this.width && b.y0 >= 0 && b.y1 <= this.height && !this.kept.some((k) => b.x0 < k.x1 && k.x0 < b.x1 && b.y0 < k.y1 && k.y0 < b.y1);
+    const spot = spots.find((s) => free(box(s))) ?? (must ? spots[0] : undefined);
+    if (!spot) return null;
+    this.kept.push(box(spot));
+    return spot;
+  }
+}
+
+// The P&L axis: break-even and every finished dollar figure the chart draws (the Plan's results, and each revealed
+// session's result, banked and results at the lines), with room around them. A later session is never passed.
+export function pnlRange(values: readonly number[]): readonly [number, number] {
+  const lo = Math.min(0, ...values);
+  const hi = Math.max(0, ...values);
+  const pad = (hi - lo) * 0.1 || 1;
+  return [lo - pad, hi + pad];
+}
+
 // Round gridline values inside the range.
 export function ticks(min: number, max: number, want: number): number[] {
   const raw = (max - min) / want;
@@ -63,5 +106,6 @@ export function ticks(min: number, max: number, want: number): number[] {
 
 // An axis label: "$100", "$54.50".
 export function axisMoney(value: number): string {
-  return `$${value.toLocaleString('en-US', { minimumFractionDigits: Number.isInteger(value) ? 0 : 2, maximumFractionDigits: 2 })}`;
+  const text = Math.abs(value).toLocaleString('en-US', { minimumFractionDigits: Number.isInteger(value) ? 0 : 2, maximumFractionDigits: 2 });
+  return `${value < 0 ? '−' : ''}$${text}`;
 }

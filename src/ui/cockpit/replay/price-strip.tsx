@@ -1,4 +1,4 @@
-import { axisMoney, priceRange, ticks, timeAxis, valueAxis } from './geometry.ts';
+import { axisMoney, LabelPlacer, priceRange, ticks, timeAxis, valueAxis, type Spot } from './geometry.ts';
 import type { ReplayPlotProps } from './replay.types.ts';
 
 const HEIGHT = 136;
@@ -31,6 +31,26 @@ export function PriceStrip({ props, width }: { props: ReplayPlotProps; width: nu
     open = true;
   }
 
+  // Labels take a free spot or are left out; the slider's Mark is the result and is placed first, never left out.
+  const placer = new LabelPlacer(width, HEIGHT);
+  const markSpot =
+    current && current.underlyingMark !== null && current.underlyingLabel
+      ? placer.place(
+          current.underlyingLabel,
+          [
+            { x: time.x(current.slot), y: value.y(current.underlyingMark) - 9, anchor: 'middle' },
+            { x: time.x(current.slot), y: value.y(current.underlyingMark) + 17, anchor: 'middle' },
+          ],
+          true,
+        )
+      : null;
+  const lineLabels = anchors.priceLines.flatMap((l, i) => {
+    const y = value.y(l.price);
+    const spots: Spot[] = [-4, 12].map((dy) => ({ x: time.left + 4, y: y + dy, anchor: 'start' }));
+    const spot = placer.place(l.label, l.kind === 'Stop' ? spots.reverse() : spots);
+    return spot ? [{ key: `${l.kind}-${i}`, kind: l.kind.toLowerCase(), text: l.label, y: spot.y }] : [];
+  });
+
   return (
     <svg className="price-strip" viewBox={`0 0 ${width} ${HEIGHT}`} width={width} height={HEIGHT}>
       {ticks(min, max, 3).map((v) => (
@@ -51,23 +71,22 @@ export function PriceStrip({ props, width }: { props: ReplayPlotProps; width: nu
             </text>
           </g>
         ))}
-      {anchors.priceLines.map((l) => {
-        const y = value.y(l.price);
-        return (
-          <g key={l.kind}>
-            <path className={`price-line ${l.kind.toLowerCase()}`} data-kind={l.kind} d={`M${time.left} ${f1(y)}H${time.right}`} />
-            <text className={`price-line-label ${l.kind.toLowerCase()}`} x={time.left + 4} y={f1(y + (l.kind === 'Stop' ? 12 : -4))}>
-              {l.label}
-            </text>
-          </g>
-        );
-      })}
+      {anchors.priceLines.map((l, i) => (
+        <path key={`${l.kind}-${i}`} className={`price-line ${l.kind.toLowerCase()}`} data-kind={l.kind} d={`M${time.left} ${f1(value.y(l.price))}H${time.right}`} />
+      ))}
+      {lineLabels.map((l) => (
+        <text key={l.key} className={`price-line-label ${l.kind}`} x={time.left + 4} y={f1(l.y)}>
+          {l.text}
+        </text>
+      ))}
       <text className="plot-title" x={time.left} y={12}>
         {props.compact ? (props.priceShortTitle ?? props.priceTitle) : props.priceTitle}
       </text>
-      <text className="axis-end" x={time.right} y={HEIGHT - 2} textAnchor="end">
-        {axis.endLabel}
-      </text>
+      {sessions
+        .filter((s) => s.markers.some((m) => !m.isEntry))
+        .map((s) => (
+          <path key={s.slot} className="marker-line" d={`M${f1(time.x(s.slot))} ${TOP}V${FLOOR}`} />
+        ))}
       <path className="mark-line" d={d} />
       {drawn.map((p) => (
         <circle key={p.x} className={p.current ? 'mark current' : 'mark'} cx={f1(p.x)} cy={f1(p.y)} r={p.current ? 5 : 3} />
@@ -75,8 +94,8 @@ export function PriceStrip({ props, width }: { props: ReplayPlotProps; width: nu
       {current && (
         <g>
           <path className="cursor" d={`M${f1(time.x(current.slot))} ${TOP}V${FLOOR}`} />
-          {current.underlyingMark !== null && current.underlyingLabel && (
-            <text className="mark-label" x={f1(time.x(current.slot))} y={f1(value.y(current.underlyingMark) - 9)} textAnchor="middle">
+          {markSpot && current.underlyingLabel && (
+            <text className="mark-label" x={f1(markSpot.x)} y={f1(markSpot.y)} textAnchor="middle">
               {current.underlyingLabel}
             </text>
           )}

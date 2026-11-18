@@ -1,0 +1,254 @@
+import { axisMoney, LabelPlacer, pnlRange, ticks, timeAxis, valueAxis, type Spot } from './geometry.ts';
+import type { LabelledFigure, PlotSession, ReplayPlotProps } from './replay.types.ts';
+
+const HEIGHT = 210;
+const TOP = 20;
+const FLOOR = HEIGHT - 22;
+
+const f1 = (n: number): string => String(Math.round(n * 10) / 10);
+
+// Runs of consecutive revealed sessions that have a Trade P&L: a session without one ends the run (AC-MARK-004).
+function runs(sessions: readonly PlotSession[]): { s: PlotSession; pnl: number }[][] {
+  const out: { s: PlotSession; pnl: number }[][] = [];
+  let run: { s: PlotSession; pnl: number }[] | null = null;
+  for (const s of sessions) {
+    if (s.tradePnl === null) {
+      run = null;
+      continue;
+    }
+    if (!run) {
+      run = [];
+      out.push(run);
+    }
+    run.push({ s, pnl: s.tradePnl });
+  }
+  return out;
+}
+
+// Runs of consecutive revealed sessions with something banked (a realized result), one run for each sign.
+function bands(sessions: readonly PlotSession[]): PlotSession[][] {
+  const out: PlotSession[][] = [];
+  let run: PlotSession[] | null = null;
+  for (const s of sessions) {
+    if (s.banked === 0 || (run && Math.sign(run[0]!.banked) !== Math.sign(s.banked))) run = null;
+    if (s.banked === 0) continue;
+    if (!run) {
+      run = [];
+      out.push(run);
+    }
+    run.push(s);
+  }
+  return out;
+}
+
+// The Corridor's Trade P&L chart (W40): dollars for the whole Position, break-even between profit and loss.
+export function PnlChart({ props, width }: { props: ReplayPlotProps; width: number }) {
+  const { sessions, anchors, axis } = props;
+  const time = timeAxis(width, axis.slots);
+  const figures = [
+    ...sessions.flatMap((s) => [s.tradePnl, s.banked, s.resultAtStop?.value ?? null, s.resultAtTarget?.value ?? null]),
+    anchors.planAtStop?.value ?? null,
+    anchors.planAtTarget?.value ?? null,
+  ].filter((v): v is number => v !== null);
+  const [min, max] = pnlRange(figures);
+  const value = valueAxis([min, max], TOP, FLOOR);
+  const y0 = value.y(0);
+  const current = sessions[props.sliderIndex];
+  const words = (full: string, short?: string): string => (props.compact ? (short ?? full) : full);
+
+  // A result line: level over each session's column, a vertical step at the left edge of the column where it changes,
+  // and a break where a session has no figure. Both lines start in the Plan's column, at the Plan's results (A252).
+  const stepPath = (pick: (s: PlotSession) => LabelledFigure | null, plan: LabelledFigure | null): string => {
+    let d = plan ? `M${f1(time.x(-1))} ${f1(value.y(plan.value))}` : '';
+    let prev: number | null = plan ? plan.value : null;
+    for (const s of sessions) {
+      const f = pick(s);
+      if (!f) {
+        prev = null;
+        continue;
+      }
+      const left = time.x(s.slot) - time.column / 2;
+      const y = f1(value.y(f.value));
+      if (prev === null) d += `M${f1(left)} ${y}`;
+      else if (f.value !== prev) d += `H${f1(left)}V${y}`;
+      d += `H${f1(time.x(s.slot) + time.column / 2)}`;
+      prev = f.value;
+    }
+    return d;
+  };
+  // One sub-path per run, so the area breaks where a session has no figure.
+  const areaPath = (side: (p: number, zero: number) => number): string =>
+    runs(sessions)
+      .filter((run) => run.length > 1)
+      .map(
+        (run) =>
+          `M${f1(time.x(run[0]!.s.slot))} ${f1(y0)}${run.map((r) => `L${f1(time.x(r.s.slot))} ${f1(value.y(side(r.pnl, 0)))}`).join('')}L${f1(time.x(run.at(-1)!.s.slot))} ${f1(y0)}Z`,
+      )
+      .join('');
+
+  // Labels, placed in priority order: the results and the stake tags first (never left out), then the rest, each
+  // taking the first free spot or none.
+  const placer = new LabelPlacer(width, HEIGHT);
+  const labels: { key: string; cls: string; text: string; spot: Spot }[] = [];
+  const put = (key: string, cls: string, text: string, spots: Spot[], must = false) => {
+    const spot = placer.place(text, spots, must);
+    if (spot) labels.push({ key, cls, text, spot });
+  };
+  const xc = current ? time.x(current.slot) : 0;
+  const right = xc + time.column / 2;
+  if (current) {
+    for (const [kind, f] of [
+      ['stop', current.resultAtStop],
+      ['target', current.resultAtTarget],
+    ] as const) {
+      if (!f) continue;
+      const y = value.y(f.value);
+      put(kind, `result-label ${kind}`, words(f.label, f.shortLabel), [
+        { x: right + 4, y: y + 3.5, anchor: 'start' },
+        { x: xc - time.column / 2 - 4, y: y - 4, anchor: 'end' },
+        { x: xc - time.column / 2 - 4, y: y + 12, anchor: 'end' },
+      ], true);
+    }
+    if (current.stake && current.tradePnl !== null) {
+      for (const [kind, end, label, short] of [
+        ['risk', current.resultAtStop, current.stake.riskLabel, current.stake.riskShortLabel],
+        ['reward', current.resultAtTarget, current.stake.rewardLabel, current.stake.rewardShortLabel],
+      ] as const) {
+        if (!end || !label) continue;
+        const mid = (value.y(current.tradePnl) + value.y(end.value)) / 2 + 3.5;
+        put(`stake-${kind}`, `stake-tag ${kind}`, words(label, short), [
+          { x: xc - 7, y: mid, anchor: 'end' },
+          { x: xc + 7, y: mid, anchor: 'start' },
+        ], true);
+      }
+    }
+  }
+  for (const band of bands(sessions)) {
+    const text = band.findLast((s) => s.bankedLabel !== undefined)?.bankedLabel;
+    if (!text) continue;
+    const gain = band[0]!.banked > 0;
+    const left = time.x(band[0]!.slot) - time.column / 2 + 3;
+    const y = value.y(band[0]!.banked);
+    const [first, second] = gain ? [y - 4, y + 12] : [y + 12, y - 4];
+    put(`banked-${band[0]!.slot}`, 'banked-label', text, [
+      { x: left, y: first, anchor: 'start' },
+      { x: left, y: second, anchor: 'start' },
+    ]);
+  }
+  if (current?.past && current.tradePnl !== null) {
+    const y = value.y(current.tradePnl);
+    const [first, second] = current.past.line === 'Target' ? [y - 8, y + 16] : [y + 16, y - 8];
+    put('past', 'past-label', words(current.past.label, current.past.shortLabel), [
+      { x: xc, y: first, anchor: 'middle' },
+      { x: xc, y: second, anchor: 'middle' },
+    ]);
+  }
+  for (const s of sessions) {
+    const x = time.x(s.slot);
+    s.markers
+      .filter((m) => !m.isEntry)
+      .forEach((m) => {
+        const rows = [0, 1, 2].map((r) => TOP + 10 + r * 12);
+        put(`marker-${m.id}`, 'marker-label', words(m.label, m.shortLabel), [
+          ...rows.map((y): Spot => ({ x: x + 4, y, anchor: 'start' })),
+          ...rows.map((y): Spot => ({ x: x - 4, y, anchor: 'end' })),
+        ]);
+      });
+  }
+  // A limit is drawn only inside the range the Plan and the revealed sessions set; it never stretches the axis.
+  const limits = (
+    [
+      ['worst-case', current?.worstCase, 12],
+      ['max-reward', current?.maxReward, -4],
+    ] as const
+  ).flatMap(([kind, limit, dy]) => (limit && limit.value >= min && limit.value <= max ? [{ kind, limit, dy }] : []));
+  for (const { kind, limit, dy } of limits) {
+    put(kind, `${kind}-label`, words(limit.label, limit.shortLabel), [{ x: time.right - 4, y: value.y(limit.value) + dy, anchor: 'end' }]);
+  }
+  put('break-even', 'break-even-label', 'Break-even', [
+    { x: time.left + 4, y: y0 - 4, anchor: 'start' },
+    { x: time.left + 4, y: y0 + 12, anchor: 'start' },
+  ]);
+
+  return (
+    <svg className="pnl-chart" viewBox={`0 0 ${width} ${HEIGHT}`} width={width} height={HEIGHT}>
+      <defs>
+        {(['stop', 'target'] as const).map((kind) => (
+          <pattern key={kind} id={`replay-hatch-${kind}`} className={`hatch-pattern ${kind}`} width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+            <path d="M0 0V6" />
+          </pattern>
+        ))}
+      </defs>
+      {ticks(min, max, 4)
+        .filter((v) => v !== 0)
+        .map((v) => (
+          <g key={v}>
+            <path className="grid" d={`M${time.left} ${f1(value.y(v))}H${time.right}`} />
+            <text x={time.left - 5} y={f1(value.y(v) + 3.5)} textAnchor="end">
+              {axisMoney(v)}
+            </text>
+          </g>
+        ))}
+      <path className="area profit" d={areaPath(Math.max)} />
+      <path className="area loss" d={areaPath(Math.min)} />
+      {sessions.map((s) => {
+        const line = s.past && (s.past.line === 'Stop' ? s.resultAtStop : s.resultAtTarget);
+        if (!s.past || !line || s.tradePnl === null) return null;
+        const kind = s.past.line === 'Stop' ? 'stop' : 'target';
+        const [a, b] = [value.y(line.value), value.y(s.tradePnl)];
+        return (
+          <rect key={s.slot} className={`hatch ${kind}`} fill={`url(#replay-hatch-${kind})`} x={f1(time.x(s.slot) - time.column / 2)} y={f1(Math.min(a, b))} width={f1(time.column)} height={f1(Math.abs(a - b))} />
+        );
+      })}
+      {bands(sessions).map((band) => {
+        const left = time.x(band[0]!.slot) - time.column / 2;
+        const steps = band.map((s) => `V${f1(value.y(s.banked))}H${f1(time.x(s.slot) + time.column / 2)}`).join('');
+        return <path key={band[0]!.slot} className={`banked-band ${band[0]!.banked > 0 ? 'gain' : 'loss'}`} d={`M${f1(left)} ${f1(y0)}${steps}V${f1(y0)}Z`} />;
+      })}
+      {sessions.map((s) =>
+        s.markers.some((m) => !m.isEntry) ? <path key={s.slot} className="marker-line" d={`M${f1(time.x(s.slot))} ${TOP}V${FLOOR}`} /> : null,
+      )}
+      {(['stop', 'target'] as const).map((kind) => (
+        <path
+          key={kind}
+          className={`result-line ${kind}`}
+          d={stepPath((s) => (kind === 'stop' ? s.resultAtStop : s.resultAtTarget), kind === 'stop' ? anchors.planAtStop : anchors.planAtTarget)}
+        />
+      ))}
+      {limits.map(({ kind, limit }) => (
+        <path key={kind} className={kind} d={`M${time.left} ${f1(value.y(limit.value))}H${time.right}`} />
+      ))}
+      <path className="break-even" d={`M${time.left} ${f1(y0)}H${time.right}`} />
+      {current && <path className="cursor" d={`M${f1(xc)} ${TOP}V${FLOOR}`} />}
+      {current?.stake && current.tradePnl !== null && (
+        <g className="stake">
+          {(
+            [
+              ['risk', current.resultAtStop],
+              ['reward', current.resultAtTarget],
+            ] as const
+          ).map(([kind, end]) => {
+            const label = kind === 'risk' ? current.stake?.riskLabel : current.stake?.rewardLabel;
+            return end && label ? <path key={kind} className={`stake-beam ${kind}`} d={`M${f1(xc)} ${f1(value.y(current.tradePnl!))}V${f1(value.y(end.value))}`} /> : null;
+          })}
+        </g>
+      )}
+      {sessions.map((s) =>
+        s.tradePnl === null ? null : (
+          <circle key={s.slot} className={s === current ? 'pnl-dot current' : 'pnl-dot'} cx={f1(time.x(s.slot))} cy={f1(value.y(s.tradePnl))} r={s === current ? 5 : 3} />
+        ),
+      )}
+      <text className="plot-title" x={time.left} y={12}>
+        {words(props.pnlTitle, props.pnlShortTitle)}
+      </text>
+      <text className="axis-end" x={time.right} y={HEIGHT - 4} textAnchor="end">
+        {axis.endLabel}
+      </text>
+      {labels.map((l) => (
+        <text key={l.key} className={l.cls} x={f1(l.spot.x)} y={f1(l.spot.y)} textAnchor={l.spot.anchor}>
+          {l.text}
+        </text>
+      ))}
+    </svg>
+  );
+}

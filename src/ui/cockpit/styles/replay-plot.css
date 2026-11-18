@@ -90,3 +90,138 @@
   stroke: var(--focus);
   stroke-width: 1.5;
 }
+
+/* The Trade P&L chart (D9 T9.13). Colour is never the only signal: labels, hatch, outline and line style say it too. */
+.replay-plot .area {
+  stroke: none;
+}
+
+.replay-plot .area.profit {
+  fill: var(--target);
+  fill-opacity: 0.18;
+}
+
+.replay-plot .area.loss {
+  fill: var(--stop);
+  fill-opacity: 0.18;
+}
+
+.replay-plot .break-even {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1;
+}
+
+.replay-plot .break-even-label {
+  font-size: 10px;
+}
+
+.replay-plot .result-line {
+  fill: none;
+}
+
+.replay-plot .result-line.stop,
+.replay-plot .worst-case {
+  stroke: var(--stop);
+  stroke-width: 1.5;
+  stroke-dasharray: 6 3;
+}
+
+.replay-plot .result-line.target,
+.replay-plot .max-reward {
+  stroke: var(--target);
+  stroke-width: 1.5;
+  stroke-dasharray: 2 3;
+}
+
+.replay-plot .worst-case,
+.replay-plot .max-reward {
+  fill: none;
+  opacity: 0.55;
+}
+
+.replay-plot .result-label,
+.replay-plot .stake-tag,
+.replay-plot .banked-label,
+.replay-plot .past-label,
+.replay-plot .marker-label,
+.replay-plot .worst-case-label,
+.replay-plot .max-reward-label {
+  fill: var(--ink);
+  font-weight: 650;
+  paint-order: stroke;
+  stroke: var(--card);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+
+.replay-plot .result-label.stop,
+.replay-plot .worst-case-label {
+  fill: var(--stop);
+}
+
+.replay-plot .result-label.target,
+.replay-plot .max-reward-label {
+  fill: var(--target);
+}
+
+.replay-plot .marker-label {
+  font-weight: 500;
+}
+
+/* What is banked: solid, because no later Mark can move it. */
+.replay-plot .banked-band.gain {
+  fill: var(--target);
+  fill-opacity: 0.85;
+}
+
+.replay-plot .banked-band.loss {
+  fill: var(--stop);
+  fill-opacity: 0.85;
+}
+
+.replay-plot .banked-label {
+  font-weight: 700;
+}
+
+/* Past a line: hatched and outlined. */
+.replay-plot .hatch-pattern path {
+  stroke-width: 1.5;
+}
+
+.replay-plot .hatch-pattern.stop path,
+.replay-plot .hatch.stop {
+  stroke: var(--stop);
+}
+
+.replay-plot .hatch-pattern.target path,
+.replay-plot .hatch.target {
+  stroke: var(--target);
+}
+
+.replay-plot .hatch {
+  stroke-width: 1;
+}
+
+/* What is at stake: neutral ink, so it is never read as a gain or a loss. */
+.replay-plot .stake-beam {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 3;
+  stroke-linecap: round;
+  opacity: 0.7;
+}
+
+/* A Position Change after the entry, through both charts. */
+.replay-plot .marker-line {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+
+.replay-plot .pnl-dot {
+  fill: var(--ink);
+  stroke: var(--card);
+  stroke-width: 1.5;
+}

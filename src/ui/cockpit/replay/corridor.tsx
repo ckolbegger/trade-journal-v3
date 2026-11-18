@@ -1,3 +1,4 @@
+import { PnlChart } from './corridor-pnl.tsx';
 import { PriceStrip } from './price-strip.tsx';
 import type { ReplayPlotProps } from './replay.types.ts';
 
@@ -9,6 +10,7 @@ export function CorridorPlot(props: ReplayPlotProps) {
   return (
     <div className="replay-plot" role="img" aria-label={props.accessibleName} aria-describedby={props.describedBy}>
       <PriceStrip props={props} width={props.compact ? WIDTH_COMPACT : WIDTH} />
+      <PnlChart props={props} width={props.compact ? WIDTH_COMPACT : WIDTH} />
     </div>
   );
 }
