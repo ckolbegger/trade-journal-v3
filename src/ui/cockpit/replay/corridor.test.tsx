@@ -648,4 +648,22 @@ describe('Corridor: labels apart (T9.19-B2)', () => {
       vi.restoreAllMocks();
     }
   });
+
+  // T9.19-B10: banked labels are never left out, so their own spots must not clash with one another either.
+  it('should keep three banked labels apart when sales fall on consecutive sessions at nearly the same level', () => {
+    const levels = [0, 0, 0, 0, 0, 478, 480, 482, 482, 482, 482];
+    const over: Partial<ReplayPlotProps> = {
+      sessions: DAYS.map((_, i) => bren(i, { banked: levels[i]!, bankedLabel: levels[i]! > 0 ? `Banked +$${levels[i]}` : undefined, markers: [] })),
+      sliderIndex: 10,
+    };
+    for (const width of [640, 340]) {
+      frameWidth(width === 640 ? 900 : width);
+      const { container } = render(<CorridorPlot {...props(over)} />);
+      const svg = pnl(container);
+      expect([...svg.querySelectorAll('text.banked-label')].length, `${width}`).toBe(3);
+      expect(clashes(svg), `${width}`).toEqual([]);
+      cleanup();
+      vi.restoreAllMocks();
+    }
+  });
 });

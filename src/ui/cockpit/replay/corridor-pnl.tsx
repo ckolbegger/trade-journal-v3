@@ -145,7 +145,7 @@ export function PnlChart({ props, width }: { props: ReplayPlotProps; width: numb
       if (!text) return;
       const left = time.x(s.slot) - time.column / 2 + 3;
       const y = value.y(s.banked);
-      const [first, second, third, fourth] = s.banked > 0 ? [y - 4, y + 12, y - 16, y + 24] : [y + 12, y - 4, y + 24, y - 16];
+      const [first, second, third, fourth] = s.banked > 0 ? [y - 4, y + 12, y - 20, y + 28] : [y + 12, y - 4, y + 28, y - 20];
       // A sale near the last session would run past the edge, so there the label ends at the column instead.
       const runsPast = left + text.length * 6 + 2 > width;
       const rightEdge = time.x(s.slot) + time.column / 2 - 3;
