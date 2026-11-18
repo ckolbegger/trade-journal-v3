@@ -79,6 +79,19 @@ describe("evaluate: the Trade's result at each boundary (A248)", () => {
     expect(exact(evaluateAt(R_DALE_D, '2026-11-09').outcomes!.atMaxReward)).toBe(dollars(564n));
   });
 
+  it('should give a long Call held past its expiration a result at the Max reward that is Unbounded above', () => {
+    const date = '2026-11-23';
+    const state = derive({ record: R_BREN_U.record, cutoff: closeOf(date), valuationDate: date });
+    if (state.kind !== 'Derived') throw new Error(`expected Derived, got ${JSON.stringify(state)}`);
+    const held = state.positions[0]!.instrument;
+    const { outcomes } = evaluate({
+      state,
+      frame: frameOf(held, date, null),
+      underlyingFrame: frameOf({ kind: 'Stock', symbol: R_BREN_U.record.plan.underlying }, date, null),
+    });
+    expect(outcomes!.atMaxReward).toMatchObject({ kind: 'Unbounded', direction: 'Above' });
+  });
+
   it('should give all four Not applicable, No remaining Position, once nothing is held', () => {
     const { outcomes } = evaluateAt(K_SALE, '2026-11-13');
     const none = { kind: 'NotApplicable', reason: 'NoRemainingPosition' };

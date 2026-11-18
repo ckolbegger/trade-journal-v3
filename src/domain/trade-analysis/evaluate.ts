@@ -455,12 +455,15 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
   const worstCaseOngoingRisk = marked((mark) =>
     strike && short ? ZERO.sub(quantity).mul(multiplier).mul(strike.sub(mark)) : quantity.mul(multiplier).mul(mark),
   );
-  const maximumIncrementalReward = (): CalculationResult<Rational> => {
+  const unboundedReward = (): CalculationResult<Rational> => ({
+    kind: 'Unbounded',
+    direction: 'Above',
+    explanation: option ? 'A long Call has no price ceiling' : 'A long Stock Position has no price ceiling',
+  });
+  const maximumIncrementalReward = ():CalculationResult<Rational> => {
     if (lots.length === 0) return noRemainingPosition;
     if (pastExpiration) return unavailable;
-    if (!option || !strike || option.right === 'Call') {
-      return { kind: 'Unbounded', direction: 'Above', explanation: option ? 'A long Call has no price ceiling' : 'A long Stock Position has no price ceiling' };
-    }
+    if (!option || !strike || option.right === 'Call') return unboundedReward();
     return marked((mark) => (short ? ZERO.sub(quantity).mul(multiplier).mul(mark) : quantity.mul(multiplier).mul(strike.sub(mark))));
   };
   // The Current Expiration Payoff read at the Underlying's exact Mark; never a Stale price, and never a
@@ -496,7 +499,8 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
     // Worst case: a long Position's Instrument is worth nothing, the short Put is worth its strike (A109).
     atWorstCase: resultAt(strike && short ? strike : ZERO),
     // Max reward: no ceiling for stock and a long Call; otherwise a short Put's Instrument is worth nothing and a long Put's its strike.
-    atMaxReward: maxReward.kind === 'Unbounded' ? maxReward : resultAt(short ? ZERO : strike!),
+    // A248: read from the Position's structure, so a long Call past its expiration is still Unbounded.
+    atMaxReward: lots.length > 0 && (!option || option.right === 'Call') ? unboundedReward() : resultAt(short ? ZERO : strike!),
   };
   const crossedIn = (role: 'Stop' | 'Target') => conditions.some((c) => c.role === role && c.result.kind === 'Value' && c.result.value.status !== 'Active');
   // A249: where the Trade P&L stands against the result at the Stop and at the Target.
