@@ -934,13 +934,13 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 |---|---|---|---|---|---|
 | T9.1 | A | 0 | TL | Done | `adcc6abb` |
 | T9.2 | A | 0 | TY | Done | `7251c72b` |
-| T9.3 | A | 1 | TA | Not started | |
+| T9.3 | A | 1 | TA | In progress from `301aa24b` | |
 | T9.4 | A | 1 | TA | Not started | |
 | T9.5 | A | 1 | TA | Not started | |
-| T9.9 | A | 1 | CF | Not started | |
+| T9.9 | A | 1 | CF | In progress from `301aa24b` | |
 | T9.10 | A | 1 | CF | Not started | |
 | T9.11 | A | 1 | CF | Not started | |
-| T9.12 | A | 1 | CP | Not started | |
+| T9.12 | A | 1 | CP | In progress from `301aa24b` | |
 | T9.13 | A | 1 | CP | Not started | |
 | T9.6 | A | 2 | RV | Not started | |
 | T9.7 | A | 2 | RV | Not started | |
