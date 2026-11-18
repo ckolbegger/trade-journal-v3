@@ -355,4 +355,16 @@ describe('Corridor: the Trade P&L (W40, W41)', () => {
     // The Mark's own label is the result: it stays.
     expect(screen.getByText('$104.00')).toBeTruthy();
   });
+
+  it('should label each banked level with its own figure, at that level, when a later sale changes it', () => {
+    // A second sale on Mon 11-16 (slot 10) takes what is banked from +$478 to +$700: one run, two levels.
+    const sessions = DAYS.map((_, i) => bren(i, i === 10 ? { banked: 700, bankedLabel: 'Banked +$700' } : {}));
+    const { container } = render(<CorridorPlot {...props({ sessions })} />);
+    const first = screen.getByText('Banked +$478');
+    const second = screen.getByText('Banked +$700');
+    // Each label sits at its own level: the lower figure lower on the chart, in an earlier column.
+    expect(num(first, 'y')).toBeGreaterThan(num(second, 'y'));
+    expect(num(first, 'x')).toBeLessThan(num(second, 'x'));
+    expect(pnl(container).querySelectorAll('text.banked-label')).toHaveLength(2);
+  });
 });

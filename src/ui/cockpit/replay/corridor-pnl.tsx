@@ -131,17 +131,20 @@ export function PnlChart({ props, width }: { props: ReplayPlotProps; width: numb
       }
     }
   }
+  // One label for each level a band steps through, that level's own finished text, at its first session.
   for (const band of bands(sessions)) {
-    const text = band.findLast((s) => s.bankedLabel !== undefined)?.bankedLabel;
-    if (!text) continue;
-    const gain = band[0]!.banked > 0;
-    const left = time.x(band[0]!.slot) - time.column / 2 + 3;
-    const y = value.y(band[0]!.banked);
-    const [first, second] = gain ? [y - 4, y + 12] : [y + 12, y - 4];
-    put(`banked-${band[0]!.slot}`, 'banked-label', text, [
-      { x: left, y: first, anchor: 'start' },
-      { x: left, y: second, anchor: 'start' },
-    ]);
+    band.forEach((s, i) => {
+      if (i > 0 && band[i - 1]!.banked === s.banked) return;
+      const text = s.bankedLabel;
+      if (!text) return;
+      const left = time.x(s.slot) - time.column / 2 + 3;
+      const y = value.y(s.banked);
+      const [first, second] = s.banked > 0 ? [y - 4, y + 12] : [y + 12, y - 4];
+      put(`banked-${s.slot}`, 'banked-label', text, [
+        { x: left, y: first, anchor: 'start' },
+        { x: left, y: second, anchor: 'start' },
+      ]);
+    });
   }
   if (current?.past && current.tradePnl !== null) {
     const y = value.y(current.tradePnl);
