@@ -24,3 +24,5 @@ Screen texts no approved row covers (decision 116 (2)). Each is the wording the 
 | A Closed Trade's Today column heading stays the view's "Today, Mon Nov 23" (A235) over empty cells, beside "Exit Fri Nov 13" or "Expired Fri Nov 20" | T8R.7 | Trade Detail, Today | W26, W29 |
 | The "Closed" stamp is drawn as a bordered tag at the top of a Closed Trade's Today (W30 gives only the word) | T8R.7 | Trade Detail, Today | W30 |
 | A lot tick's accessible name and hover text: "$3.30 · Fri Oct 16" (the lot's price, " · ", the date it was opened; A237 gives the shape) | T8R.8 | Trade Detail, Today, price track | A237 |
+
+**Approved by the user on 2026-11-17:** every row above, along with T8R.25-B5's dated dollar cell and T8R.25-B7's Payoff table names, both listed in section 6 of the final report.

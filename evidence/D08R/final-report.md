@@ -192,3 +192,8 @@ The estimate leaves out critic defects and their bug tasks, and these took most 
 - An earlier year's "Expired Fri Dec 19" has no year.
 - "Mark missing" names the call when XYZ's Mark is missing too.
 - Tab after Journal paging goes to the primary navigation.
+
+## 10. After the gate (2026-11-17)
+
+- **New words:** the user approved all 21 rows in `new-words.md`, plus the two choices made in the bug tasks (section 6).
+- **The Underlying "Breached" mismatch** (section 8): recorded as tech debt item 28 in `plan/implementation-plan.md`, at the user's direction.

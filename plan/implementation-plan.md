@@ -1690,3 +1690,18 @@ Its repeats (D-2, T-H's D-6 and the midday D-1) were removed. `reflections.test.
     - **Symptom.** The Journal shows "1 active Deviation. See Plan and Risk", with nothing after the button. W24 reads "… See Plan and Risk.".
     - **Fix.** Add the full stop after the button, with a case first.
     - **Trigger.** The next change to the Journal's Deviation line.
+28. **An Underlying condition can read "Breached" on the rail with no alert elsewhere (D8R, T8R.25-B5's review note; recorded 2026-11-17 at the user's direction).**
+    - **Symptom.** On an option Trade whose contract Mark is missing or acknowledged unavailable while the Underlying's Mark is in, an Underlying Stop or Target is read from the Underlying's Mark alone (T8R.25-B5). If the Underlying has crossed it, the rail and Plan and Risk read "Breached · X past", but the other screens disagree:
+      - no Needs you alert appears;
+      - the Trade List shows no "Stop breached" or "Target reached" badge;
+      - the Daily Review shows no attention band;
+      - the Review card says "Mark missing".
+    - **Why.** An Alert and its band need the dollar overrun, which needs the contract's Mark (A109). The other screens read the condition's `result`; only the rail and Plan and Risk read `ConditionStatus.underlyingReading`.
+    - **Where to look:**
+      - `src/domain/trade-analysis/evaluate.ts` (`underlyingReading`)
+      - `src/ui/screens/daily-review/attention.ts`
+      - `src/ui/cockpit/rail/needs-you.props.ts`
+      - `src/ui/screens/TradeList.tsx`
+      - `src/ui/screens/CardFigures.tsx`
+    - **Fix.** First decide, as a specs question, whether a crossing known from the Underlying alone raises an Alert without its dollar figure. Then make every screen follow that one answer, with a case for each.
+    - **Trigger.** The next change to Alerts or attention bands, or D9's breakdown, which adds condition status per session.
