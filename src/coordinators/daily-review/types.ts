@@ -270,7 +270,7 @@ export interface DailyTradeReview {
   // The Trade's stored lifecycle now, which differs from the cutoff's for a Trade closed after the close (A91).
   readonly lifecycle: LifecycleState;
   readonly summary?: TradeSummary;
-  // A254: the Trade's replay to the Review Date, the same view `replayTrade` returns; absent when the Trade's facts
+  // A254: the Trade's replay to the Review Date, the view `replayTrade` returns, with no Journal items placed; absent when the Trade's facts
   // cannot be replayed. `open` does not read it.
   readonly replay?: TradeReplayView;
   // The Trade's band and reasons, as the overview lists them.

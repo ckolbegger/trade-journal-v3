@@ -650,7 +650,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     const settlement = settlementItems([{ valuation }]);
     const payoff = entry.derivation.kind === 'Derived' ? payoffOf(analysis, entry.derivation) : undefined;
     // A254: the Trade's replay to the Review Date, the read session's date; the whole-lifetime derivation is the integrity one.
-    const replayed = found.integrity.kind === 'Derived' && analysis.positionChanges.length > 0 ? await assembleReplay(deps, analysis, found.integrity, read) : undefined;
+    const replayed = found.integrity.kind === 'Derived' && analysis.positionChanges.length > 0 ? await assembleReplay(deps, analysis, found.integrity, read, { withJournal: false }) : undefined;
     const replay = replayed && !('kind' in replayed) ? replayed : undefined;
     const saved = (await deps.journal.queryActions({ reviewDate })).actions[analysis.tradeId];
     // The Trade's Outstanding Debt, each classified against the closes around the Review Date (A63).

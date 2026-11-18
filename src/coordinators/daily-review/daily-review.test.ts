@@ -1275,8 +1275,10 @@ describe("getTrade: the card's replay (A254)", () => {
 
     const detail = await replayTrade();
     if (detail.kind !== 'Ready' || !('sessions' in detail.view)) throw new Error('expected a replay');
-    expect(replay?.sessions).toEqual(detail.view.sessions);
-    expect(replay).toEqual(detail.view);
+    // The card places no Journal items: the same view with every placed item removed.
+    const unplaced = { ...detail.view, plan: [], sessions: detail.view.sessions.map((s) => ({ ...s, journal: [] })), ...(detail.view.pending && { pending: { ...detail.view.pending, journal: [] } }) };
+    expect(replay?.sessions).toEqual(unplaced.sessions);
+    expect(replay).toEqual(unplaced);
   }, 60_000);
 
   it("should leave out the replay when the Trade's facts cannot be replayed", async () => {
@@ -1308,6 +1310,22 @@ describe("getTrade: the card's replay (A254)", () => {
 
     expect(card.kind === 'Ready' && card.trade.replay).toBeTruthy();
     expect(read).toHaveLength(2);
+  }, 60_000);
+
+  it('should build the card replay without reading the Trade narrative', async () => {
+    const { stack, tradeId } = await seriesStack(R_BREN_U, 'strategy.long-call', MON_1116_1700, { marksThrough: 10 });
+    const scopes: string[] = [];
+    const query = ((request: Parameters<typeof stack.journal.query>[0]) => (scopes.push(request.scope), stack.journal.query(request))) as typeof stack.journal.query;
+    const counting = createDailyReview({ ...stack, journal: { ...stack.journal, query } });
+    const opened = await counting.open({ date: { kind: 'LatestCompleted' }, asOf: MON_1116_1700 });
+    if (opened.kind !== 'Ready') throw new Error(`expected Ready, got ${opened.kind}`);
+    scopes.length = 0;
+
+    const card = await counting.getTrade({ reviewDate: opened.reviewDate, tradeId, binding: opened.binding });
+
+    if (card.kind !== 'Ready' || !card.trade.replay) throw new Error('no replay');
+    expect(scopes).not.toContain('TradeNarrative');
+    expect(card.trade.replay.sessions.every((session) => session.journal.length === 0)).toBe(true);
   }, 60_000);
 
   it('should treat a Trade closed after the Review Date as not yet ended on the card', async () => {

@@ -147,7 +147,7 @@ export function replayView(
 // The lifetime, the series reads and the call to `replay`, shared by the Trade Detail's replay and the Review card's (P127). The
 // facts are already known to derive (`whole`) and to include a Position Change. One read session: each Instrument's series is
 // one read, whatever the number of sessions replayed.
-export async function assembleReplay(deps: { readonly journal: Journal }, analysis: TradeAnalysisRecord, whole: DerivedTradeState, session: MarketDataReadSession): Promise<TradeReplayView | ReplayNotApplicable> {
+export async function assembleReplay(deps: { readonly journal: Journal }, analysis: TradeAnalysisRecord, whole: DerivedTradeState, session: MarketDataReadSession, options: { readonly withJournal?: boolean } = {}): Promise<TradeReplayView | ReplayNotApplicable> {
   const { terminalTime } = whole;
   const instruments = replayInstruments(analysis);
   const firstExposure = firstExposureOf(analysis);
@@ -156,7 +156,8 @@ export async function assembleReplay(deps: { readonly journal: Journal }, analys
   const sessions = replaySessions(instruments, series, firstExposure, terminalTime, expiration);
   const replayed = replay({ record: analysis, sessions: sessions.inputs });
   if (replayed.kind === 'NotApplicable') return replayed;
-  const { items } = await deps.journal.query({ scope: 'TradeNarrative', tradeId: analysis.tradeId });
+  // The Review card places no Journal items (`withJournal: false`), so it skips the narrative read.
+  const items = options.withJournal === false ? [] : (await deps.journal.query({ scope: 'TradeNarrative', tradeId: analysis.tradeId })).items;
   // A253: only a session closing at or after the terminal fill is final; a Trade closed after the last completed session has not
   // ended yet there (no final, a pending column, and no later Journal item on the last session).
   const last = sessions.inputs.at(-1);

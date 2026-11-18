@@ -73,8 +73,9 @@ describe('the Review requests with option dated lines (P84, decision 104)', () =
 
       if (card.result.kind !== 'Ready') throw new Error(`getTrade: ${card.result.kind}`);
       expect(card.result.trade.datedLastClose?.tradingDate).toBe(MONDAY_DATE);
-      // Tuesday's date-wide read and the Stale lookups of the open's Instruments, then one read of Monday's date for the line.
-      expect(on(card.requests, 'observations')).toEqual([GET_ALL, CURSOR, CURSOR, GET_ALL]);
+      // Tuesday's date-wide read and the Stale lookups of the open's Instruments, then one read of Monday's date for the line,
+      // then the card's replay: one series read per Instrument (I9.6), the Underlying and the call.
+      expect(on(card.requests, 'observations')).toEqual([GET_ALL, CURSOR, CURSOR, GET_ALL, SCAN, SCAN]);
       expect(on(card.requests, 'observations').filter((r) => r.on === 'store' && r.method === 'getAll')).toHaveLength(on(open.requests, 'observations').filter((r) => r.on === 'store' && r.method === 'getAll').length + 1);
     }
   });
