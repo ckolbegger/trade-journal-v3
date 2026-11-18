@@ -302,7 +302,8 @@ function plotSessionOf(view: TradeReplayView, index: number): PlotSession {
   const zone = standing?.zone;
   const past = zone === 'PastStop' || zone === 'PastTarget' ? (standing?.pastBy && { line: zone === 'PastStop' ? ('Stop' as const) : ('Target' as const), dollars: standing.pastBy.dollars }) : undefined;
   return {
-    slot: index,
+    // A weekday count from the first session, so a holiday's slot stays blank (A256).
+    slot: weekdaysThrough(view.sessions[0]!.date, session.date) - 1,
     dateLabel: shortDate(session.date),
     underlyingMark: price === undefined ? null : Number(price),
     ...(price !== undefined && { underlyingLabel: decimalMoney(price) }),
@@ -367,7 +368,7 @@ function plotBaseOf(view: TradeReplayView): ReplayProps['plotBase'] {
       planAtTarget: plan ? labelledValue(plan.atTarget, 'Target') : null,
     },
     // To the contract's expiration; a stock Trade's axis ends at its last session.
-    axis: contract && first ? { slots: weekdaysThrough(first, contract.expiration), endLabel: shortDate(contract.expiration) } : { slots: view.sessions.length, endLabel: last ? shortDate(last) : '' },
+    axis: contract && first ? { slots: weekdaysThrough(first, contract.expiration), endLabel: shortDate(contract.expiration) } : { slots: last ? weekdaysThrough(first!, last) : 0, endLabel: last ? shortDate(last) : '' },
   };
 }
 

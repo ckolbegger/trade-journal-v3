@@ -390,6 +390,14 @@ describe('replay.props: what the plot draws of a session (W39 to W41, W44)', () 
     expect(two).toMatchObject({ slot: 1, underlyingMark: 100.2, tradePnl: null, banked: -495, bankedLabel: 'Realized −$495', resultAtStop: null, resultAtTarget: null });
     expect(two).not.toHaveProperty('stake');
   });
+
+  it('should place each session in its own weekday slot, leaving a holiday blank', () => {
+    // Wed 11-25, then Fri 11-27 (Thanksgiving Thu 11-26 has no session), then Mon 11-30.
+    const days = ['2026-11-25', '2026-11-27', '2026-11-30'].map((date) => withMarks(session({ date, pnl: 10 }), [markOf(BREN_STOCK, '100.00')]));
+    const props = replayProps(fullView(days, PLAN), { Plot });
+    expect(props.sessions.map((s) => s.plot.slot)).toEqual([0, 2, 3]);
+    expect(props.sessions.map((s) => s.plot.slot)).not.toContain(1);
+  });
 });
 
 describe('replay.props: the hover and the marker flag', () => {
