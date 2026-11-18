@@ -1,0 +1,142 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 2,
+    "total_tokens": 232511,
+    "input_tokens": 230134,
+    "output_tokens": 2377,
+    "cache_read_tokens": 37248,
+    "elapsed": "1m51s"
+  },
+  "tool_calls": {
+    "total": 18,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 5,
+      "file_find": 1,
+      "file_read": 10
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/replay/replay.props.ts",
+      "content": "Reward-to-risk still prioritizes the dollar zone over a breached Stop. If the session is `PastTarget` and its Stop condition is breached (e.g. option Mark and Underlying-trigger readings diverge), `targetOverrun` selects either `Target reached` or `Not triggered` before `stopCrossed` is considered. The headline instead says `Stop breached`, violating both the Stop-wins rule and the requirement that the ending agree with the headline. Select crossed Stop, then crossed Target, before the dollar-zone fallback, using explicit conditionals rather than the prohibited nested ternaries. Add a regression covering a breached Stop in the `PastTarget` zone.",
+      "existing_code": "  const ending = stopOverrun ? (triggered || stopCrossed ? 'Stop breached' : 'Not triggered') : targetOverrun ? (triggered || targetCrossed ? 'Target reached' : 'Not triggered') : stopCrossed ? 'Stop breached' : targetCrossed ? 'Target reached' : undefined;",
+      "start_line": 205,
+      "end_line": 205,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/cockpit/replay/replay.props.ts",
+      "content": "A reached Target is still ignored when the dollar standing is `PastStop` but the Stop itself is not crossed. The preceding `PastStop` branch returns the planned-amount sentence before this condition is evaluated. This can occur when option Mark/realized P\u0026L and the Underlying trigger diverge, and violates the requirement that a reached Target determines the headline unless a Stop is breached. Check the Target status after the breached-Stop checks but before the uncrossed `PastStop` fallback, and add a regression case for that combination.",
+      "existing_code": "  if (zone === 'PastStop' \u0026\u0026 pastBy) return plannedAmountWords('Stop', pastBy.dollars, session);\n  if (zone !== 'PastTarget' \u0026\u0026 crossedCondition(session, 'Target')) return 'Target reached.';",
+      "start_line": 84,
+      "end_line": 85,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/cockpit/replay/replay.props.test.ts",
+        "src/ui/cockpit/replay/replay.props.ts"
+      ]
+    }
+  ],
+  "session_id": "ea34ecdb-9d1b-40b6-a070-f6c2c0beec66",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "ea34ecdb-9d1b-40b6-a070-f6c2c0beec66",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "063c68bf",
+      "resolved_base": "9d052f06f51a1a44961a8d9057e5d2861878aca4",
+      "resolved_head": "063c68bf767e5438633f6757314518ef4fd787f0",
+      "exact_range": "9d052f06f51a1a44961a8d9057e5d2861878aca4..063c68bf767e5438633f6757314518ef4fd787f0",
+      "source_artifact_sha256": "bc0ce172e73015feb91921a8dd65ce11346f0783d4ddcadd3d62d01868c20f22"
+    },
+    "execution": {
+      "ocr_version": "v1.13.12",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0060ea44ecacab2865c5d4dceb1c75627a3c3566a4f16698d1c3465ec458b6cf",
+          "path": "src/ui/cockpit/replay/replay.props.test.ts",
+          "fingerprint": "e9ff45ab1212f0540143270916aa712829e68411bd46af3021d155aebc05c237"
+        },
+        {
+          "item_id": "ea03ecbf36e42899eb18f897fb8983e3c8efff8a23ee606ee3aa718ee2111f66",
+          "path": "src/ui/cockpit/replay/replay.props.ts",
+          "fingerprint": "ea2cda662cb2fd144be9d453c50bd28335f7563cc3e679a0a017afdd01943be2"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0060ea44ecacab2865c5d4dceb1c75627a3c3566a4f16698d1c3465ec458b6cf",
+          "path": "src/ui/cockpit/replay/replay.props.test.ts",
+          "fingerprint": "e9ff45ab1212f0540143270916aa712829e68411bd46af3021d155aebc05c237"
+        },
+        {
+          "item_id": "ea03ecbf36e42899eb18f897fb8983e3c8efff8a23ee606ee3aa718ee2111f66",
+          "path": "src/ui/cockpit/replay/replay.props.ts",
+          "fingerprint": "ea2cda662cb2fd144be9d453c50bd28335f7563cc3e679a0a017afdd01943be2"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "0726220631b04fbdc3c25826c8b0e159f0229982d6ce74556b87067364136981",
+          "path": "evidence/D09/tdd-log/T9.14-F2.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "7121c44031f02e87f0eb15e4910860afe1659827427664d37c00b774a5e6dd75",
+          "path": "evidence/D09/suite-runs/T9.14-F2-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "79e6702e0540ef0ae5e375540688b3e84edc1618fe1141c5d2aa25b51b4e3107",
+          "path": "evidence/D09/suite-runs/T9.14-F2-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "9694591120203145d52b60674586c5684187eee6d07cd808b9c2e1c4e580d4af",
+          "path": "evidence/D09/suite-runs/T9.14-F2-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "d744e10d596e7c8cdde9a4beeac5b8888e3f168bf1c8277678d0f3404129d562",
+          "path": "evidence/D09/suite-runs/T9.14-F2-lane.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 110950
+  }
+}
