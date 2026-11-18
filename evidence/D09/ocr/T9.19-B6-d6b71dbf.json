@@ -1,0 +1,156 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 6 selected item(s).",
+  "summary": {
+    "files_reviewed": 6,
+    "comments": 1,
+    "total_tokens": 130863,
+    "input_tokens": 129079,
+    "output_tokens": 1784,
+    "cache_read_tokens": 11648,
+    "elapsed": "1m7s"
+  },
+  "tool_calls": {
+    "total": 14,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 1,
+      "file_read": 12
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "e2e/d9/responsive-a11y.spec.ts",
+      "content": "This containment assertion checks only left/right bounds, so text extending above or below the SVG still passes. The other viewport assertions measure the SVG itself, not its text, and the new unit helper also checks only horizontal bounds. Include `r.top \u003c box.top - 0.5` and `r.bottom \u003e box.bottom + 0.5` here to cover the stated full-text containment requirement, including the additional banked-label rows.",
+      "existing_code": "        return r.left \u003c box.left - 0.5 || r.right \u003e box.right + 0.5 ? [`${t.textContent} (${r.left.toFixed(1)} to ${r.right.toFixed(1)} of ${box.left.toFixed(1)} to ${box.right.toFixed(1)})`] : [];",
+      "start_line": 89,
+      "end_line": 89,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Replay corridor and price-strip rendering, geometry, and responsive accessibility tests",
+      "files": [
+        "e2e/d9/responsive-a11y.spec.ts",
+        "src/ui/cockpit/replay/corridor-pnl.tsx",
+        "src/ui/cockpit/replay/corridor.test.tsx",
+        "src/ui/cockpit/replay/geometry.ts",
+        "src/ui/cockpit/replay/price-strip.test.tsx",
+        "src/ui/cockpit/replay/price-strip.tsx"
+      ]
+    }
+  ],
+  "session_id": "bd4a81c5-97d8-496f-925f-d0958bb72ca7",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "bd4a81c5-97d8-496f-925f-d0958bb72ca7",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "d6b71dbf",
+      "resolved_base": "7cf7be6b1dfaf2b76e19eb0c7ed1227cffb2b474",
+      "resolved_head": "d6b71dbf646ee9fc993ec15d0e1124407113be8a",
+      "exact_range": "7cf7be6b1dfaf2b76e19eb0c7ed1227cffb2b474..d6b71dbf646ee9fc993ec15d0e1124407113be8a",
+      "source_artifact_sha256": "906bdcb703a6a36169c1528e65c2aaadd6d2db6be19085fb7dbbeddc68d8906c"
+    },
+    "execution": {
+      "ocr_version": "v1.13.12",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "18de86b152c71edf7b69e5ef56c77c1958afecdf4524893fdc802e9700a6dfe1",
+          "path": "src/ui/cockpit/replay/corridor-pnl.tsx",
+          "fingerprint": "b6bdf2111bb52ee69f075224ca92a12c5aa299e832c1452555a23f5a1bcd3b1e"
+        },
+        {
+          "item_id": "36f39170a3d0629cf5d55776919719e766ca53573881aad557775fade7e81c9e",
+          "path": "src/ui/cockpit/replay/price-strip.tsx",
+          "fingerprint": "826577f35332902b8671dcc02a070611bcec7bcef20766c2634b728dc5f583e9"
+        },
+        {
+          "item_id": "91ab23b784d7e960047b11faf7807d7e6026043efe45af28c94574cf4bbcd741",
+          "path": "src/ui/cockpit/replay/price-strip.test.tsx",
+          "fingerprint": "57ddd756be24d9d64aa6f6b77b74413f1ce5314e8784e7186e8ca789db913cd2"
+        },
+        {
+          "item_id": "94e5facfd6dd05335ee3c317788f81c9d2ddec02992be55f544dbbeb5f392508",
+          "path": "src/ui/cockpit/replay/geometry.ts",
+          "fingerprint": "67e1c78045bea14725444275f9773abd62c3ca6cffeaf63f5e646684f69c9a18"
+        },
+        {
+          "item_id": "b6c384b7587d1b65ac5792148e7e8c421811373d53aa2bdd93b3c7790c3895b2",
+          "path": "e2e/d9/responsive-a11y.spec.ts",
+          "fingerprint": "595d8bfc4cfcfb36f5a67f93484230913b5fcfbf68d107570bc4bc5f036cf89e"
+        },
+        {
+          "item_id": "ba578f97f7698c0e6bcb181e747f8c8ef3dafb90b6f8eef6f25b35b639e1dd2c",
+          "path": "src/ui/cockpit/replay/corridor.test.tsx",
+          "fingerprint": "a55988e5c8232c5e01671a9b6f6345678d8afe9aba44889c0ca46d95136eac28"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "18de86b152c71edf7b69e5ef56c77c1958afecdf4524893fdc802e9700a6dfe1",
+          "path": "src/ui/cockpit/replay/corridor-pnl.tsx",
+          "fingerprint": "b6bdf2111bb52ee69f075224ca92a12c5aa299e832c1452555a23f5a1bcd3b1e"
+        },
+        {
+          "item_id": "36f39170a3d0629cf5d55776919719e766ca53573881aad557775fade7e81c9e",
+          "path": "src/ui/cockpit/replay/price-strip.tsx",
+          "fingerprint": "826577f35332902b8671dcc02a070611bcec7bcef20766c2634b728dc5f583e9"
+        },
+        {
+          "item_id": "91ab23b784d7e960047b11faf7807d7e6026043efe45af28c94574cf4bbcd741",
+          "path": "src/ui/cockpit/replay/price-strip.test.tsx",
+          "fingerprint": "57ddd756be24d9d64aa6f6b77b74413f1ce5314e8784e7186e8ca789db913cd2"
+        },
+        {
+          "item_id": "94e5facfd6dd05335ee3c317788f81c9d2ddec02992be55f544dbbeb5f392508",
+          "path": "src/ui/cockpit/replay/geometry.ts",
+          "fingerprint": "67e1c78045bea14725444275f9773abd62c3ca6cffeaf63f5e646684f69c9a18"
+        },
+        {
+          "item_id": "b6c384b7587d1b65ac5792148e7e8c421811373d53aa2bdd93b3c7790c3895b2",
+          "path": "e2e/d9/responsive-a11y.spec.ts",
+          "fingerprint": "595d8bfc4cfcfb36f5a67f93484230913b5fcfbf68d107570bc4bc5f036cf89e"
+        },
+        {
+          "item_id": "ba578f97f7698c0e6bcb181e747f8c8ef3dafb90b6f8eef6f25b35b639e1dd2c",
+          "path": "src/ui/cockpit/replay/corridor.test.tsx",
+          "fingerprint": "a55988e5c8232c5e01671a9b6f6345678d8afe9aba44889c0ca46d95136eac28"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "26f6ccb3ffeacf29fc4004faba248222762670066bab8ed3299e8fb08b58b816",
+          "path": "evidence/D09/tdd-log/T9.19-B6.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 67341
+  }
+}
