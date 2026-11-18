@@ -9,7 +9,7 @@ test.use({ actionTimeout: 15_000 });
 // B8R.2 (plan section 7.2): Today on every state. O-S2X at Mon 11-23 (Settlement Due), then expired and recorded (Closed); K1 Closed by sale; a Planned Trade; D2's incoherent
 // fixture. W1 (amended) per state: the drawers each shows and the one selected; W25 ("Expired", named "Expired Fri Nov 20"), W26 (the second column's heading) and W30
 // (the "Closed" stamp, read by the accessibility tree). A Closed Trade's Exit column is dated by the session that holds the final exit (decision P1, T8R.7-B1).
-type TabName = 'Today' | 'Position' | 'Plan and Risk' | 'Price History' | 'Journal' | 'Payoff';
+type TabName = 'Today' | 'Replay' | 'Position' | 'Plan and Risk' | 'Price History' | 'Journal' | 'Payoff';
 const PANEL = (name: TabName): string => `#drawer-panel-${name.toLowerCase().replaceAll(' ', '-')}`;
 
 async function expectDrawers(page: Page, shown: readonly (string | RegExp)[], gone: readonly TabName[], selected: TabName): Promise<void> {
@@ -57,7 +57,7 @@ test.describe('B8R.2 Today on every state', () => {
     await recordExpiration(page);
     await page.getByRole('link', { name: 'Back to the Trade' }).click();
     await expect(detail.heading(page, 'MNO')).toBeVisible(READY);
-    await expectDrawers(page, ['Today', 'Position', 'Plan and Risk', /^Price History( \d+)?$/, /^Journal/, 'Payoff'], [], 'Today');
+    await expectDrawers(page, ['Today', 'Replay', 'Position', 'Plan and Risk', /^Price History( \d+)?$/, /^Journal/, 'Payoff'], [], 'Today');
     await expect(detail.lifecycleBadge(page)).toHaveText('Cash-Secured Put, Closed');
     await expect(detail.marksHeadings(page)).toHaveText(['Today, Mon Nov 23', 'Expired Fri Nov 20', 'Change']);
     await expect(detail.marksCell(page, 'Put Mark', 'Today')).toHaveText('');
@@ -79,7 +79,7 @@ test.describe('B8R.2 Today on every state', () => {
     await page.goto(`/trades/${k1.tradeId}`);
     await expect(detail.heading(page, 'NVDA')).toBeVisible(READY);
     await expect(detail.lifecycleBadge(page)).toHaveText('Long Call, Closed');
-    await expectDrawers(page, ['Today', 'Position', 'Plan and Risk', /^Price History( \d+)?$/, /^Journal/, 'Payoff'], [], 'Today');
+    await expectDrawers(page, ['Today', 'Replay', 'Position', 'Plan and Risk', /^Price History( \d+)?$/, /^Journal/, 'Payoff'], [], 'Today');
     // W26: the second column is headed by the session of the final exit (decision P1), and its option cell is the final exit's price.
     await expect(detail.marksHeadings(page)).toHaveText(['Today, Mon Nov 23', 'Exit Fri Nov 13', 'Change']);
     await expect(detail.marksTable(page).locator('tbody th')).toHaveText(['NVDA Mark', 'Call Mark']);

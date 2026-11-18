@@ -8,7 +8,7 @@ test.use({ actionTimeout: 15_000 });
 // Figures are section 5's table at Thursday (Trade P&L $218.05, "+$30.00 since Wed Oct 14", 1 contract of 2 open), and W5's distances from them:
 // the call's Mark 3.20 to the option Stop at 1.00 is $2.20 x 100 = $220.00 (1R is $200.00, so 1.10R); XYZ's Mark 57.90 to the Target at 60.00 moves the
 // call from 3.20 to its 5.00 at expiration, +$180.00 (0.90R); the worst case is the call expiring worthless, 98.70 - 200.65 = -101.95 against 218.05.
-const TABS = ['Today', 'Position', 'Plan and Risk', 'Price History', 'Journal', 'Payoff'] as const satisfies readonly DrawerName[];
+const TABS = ['Today', 'Replay', 'Position', 'Plan and Risk', 'Price History', 'Journal', 'Payoff'] as const satisfies readonly DrawerName[];
 const PANEL = (name: DrawerName): string => `#drawer-panel-${name.toLowerCase().replaceAll(' ', '-')}`;
 
 // The cards of each drawer, by their headings (a drawer's content appears once; the unselected drawers are mounted and hidden, T8P.5-B1).
@@ -78,7 +78,7 @@ test.describe('B8P.1 The cockpit', () => {
 
     await test.step('the tabs follow W1 and the arrow keys move between them', async () => {
       const tabs = page.getByRole('tablist', { name: 'Detail' });
-      await expect(tabs.getByRole('tab')).toHaveText(['Today', 'Position', 'Plan and Risk', 'Price History 1', 'Journal 1 owed', 'Payoff']);
+      await expect(tabs.getByRole('tab')).toHaveText(['Today', 'Replay', 'Position', 'Plan and Risk', 'Price History 1', 'Journal 1 owed', 'Payoff']);
       const tab = (name: DrawerName) => tabs.getByRole('tab', { name, exact: true });
       await expect(tab('Today')).toHaveAttribute('aria-selected', 'true');
       await tab('Today').focus();

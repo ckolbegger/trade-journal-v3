@@ -8,7 +8,7 @@ test.use({ actionTimeout: 15_000 });
 
 // B8P.4 (plan section 7.2): each state shows the drawers A217 names, selects the default drawer A217 names, and shows W4's P&L card. A tab that a state
 // does not show is gone: it is not in the tab list, and its panel is not in the DOM (hidden panels included).
-type TabName = 'Today' | 'Position' | 'Plan and Risk' | 'Price History' | 'Journal' | 'Payoff';
+type TabName = 'Today' | 'Replay' | 'Position' | 'Plan and Risk' | 'Price History' | 'Journal' | 'Payoff';
 const PANEL = (name: TabName): string => `#drawer-panel-${name.toLowerCase().replaceAll(' ', '-')}`;
 
 async function expectDrawers(page: Page, shown: readonly (string | RegExp)[], gone: readonly TabName[], selected: TabName): Promise<void> {
@@ -43,7 +43,7 @@ test.describe('B8P.4 States', () => {
     const page = await firstPage(context);
     await page.goto(`/trades/${tradeId}`);
     await expect(detail.settlementDueHeading(page)).toBeVisible(READY);
-    await expectDrawers(page, ['Today', 'Position', 'Plan and Risk', PRICE_HISTORY, 'Journal', 'Payoff'], [], 'Today');
+    await expectDrawers(page, ['Today', 'Replay', 'Position', 'Plan and Risk', PRICE_HISTORY, 'Journal', 'Payoff'], [], 'Today');
     // T8R.7 (W25): the put expired on Fri Nov 20, so Today's cell for it reads "Expired" and a screen reader hears "Expired Fri Nov 20".
     await expect(detail.marksHeadings(page)).toHaveText(['Today, Mon Nov 23', 'Yesterday, Fri Nov 20', 'Change']);
     await expect(detail.marksCell(page, 'Put Mark', 'Today')).toHaveText('Expired');
@@ -64,7 +64,7 @@ test.describe('B8P.4 States', () => {
     await recordExpiration(page);
     await page.getByRole('link', { name: 'Back to the Trade' }).click();
     await expect(detail.heading(page, 'MNO')).toBeVisible(READY);
-    await expectDrawers(page, ['Today', 'Position', 'Plan and Risk', PRICE_HISTORY, 'Journal 1 owed', 'Payoff'], [], 'Today');
+    await expectDrawers(page, ['Today', 'Replay', 'Position', 'Plan and Risk', PRICE_HISTORY, 'Journal 1 owed', 'Payoff'], [], 'Today');
     await expect(detail.lifecycleBadge(page)).toHaveText('Cash-Secured Put, Closed');
     // T8R.7 (W26, W30): a Closed Trade's Today carries the "Closed" stamp, an empty Today column, and the expiration session's column.
     await expect(page.locator(PANEL('Today')).getByText('Closed', { exact: true })).toBeVisible();
@@ -108,7 +108,7 @@ test.describe('B8P.4 States', () => {
     await test.step('Closed by sale: Today selected, the realized P&L and its R, the Result rows, nothing to record', async () => {
       await page.goto(`/trades/${def}`);
       await expect(detail.heading(page, 'DEF')).toBeVisible(READY);
-      await expectDrawers(page, ['Today', 'Position', 'Plan and Risk', PRICE_HISTORY, 'Journal', 'Payoff'], [], 'Today');
+      await expectDrawers(page, ['Today', 'Replay', 'Position', 'Plan and Risk', PRICE_HISTORY, 'Journal', 'Payoff'], [], 'Today');
       await expect(detail.lifecycleBadge(page)).toHaveText('Long Stock, Closed');
       // 100 x (44.00 - 40.00) - 1.00 - 1.00 = $398.00; 1R is (40.00 - 38.00) x 100 = $200.00.
       await expect(detail.pnlFigure(page)).toHaveText('$398.00');
@@ -129,7 +129,7 @@ test.describe('B8P.4 States', () => {
     await test.step('a stock Trade: Today selected, all six drawers, no strike or expiration line, "100 of 100 shares open"', async () => {
       await page.goto(`/trades/${abc}`);
       await expect(detail.heading(page, 'ABC')).toBeVisible(READY);
-      await expectDrawers(page, ['Today', 'Position', 'Plan and Risk', PRICE_HISTORY, 'Journal', 'Payoff'], [], 'Today');
+      await expectDrawers(page, ['Today', 'Replay', 'Position', 'Plan and Risk', PRICE_HISTORY, 'Journal', 'Payoff'], [], 'Today');
       await expect(detail.lifecycleBadge(page)).toHaveText('Long Stock, Open');
       await expect(detail.identityCard(page).getByText(/^(Strike|Expires|Expired)/)).toHaveCount(0);
       // 100 x (32.00 - 30.00) - 1.00 opening fee = $199.00.
@@ -149,7 +149,7 @@ test.describe('B8P.4 States', () => {
     await test.step('a Trade with two open lots: the Position drawer lists both, and the P&L card counts the shares', async () => {
       await page.goto(`/trades/${xyz}`);
       await expect(detail.heading(page, 'XYZ')).toBeVisible(READY);
-      await expectDrawers(page, ['Today', 'Position', 'Plan and Risk', PRICE_HISTORY, 'Journal', 'Payoff'], [], 'Today');
+      await expectDrawers(page, ['Today', 'Replay', 'Position', 'Plan and Risk', PRICE_HISTORY, 'Journal', 'Payoff'], [], 'Today');
       await openDrawer(page, 'Position');
       await expect(detail.openLots(page).locator('tbody tr')).toHaveCount(2);
       await expect(detail.openLots(page).locator('tbody tr').nth(0)).toContainText('60');

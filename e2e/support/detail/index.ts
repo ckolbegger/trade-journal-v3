@@ -11,9 +11,9 @@ import * as railB from './rail-b.ts';
 import { anywhere, detailRoot, regionOf } from './scope.ts';
 import * as today from './today.ts';
 
-export type DrawerName = 'Today' | 'Position' | 'Plan and Risk' | 'Price History' | 'Journal' | 'Payoff';
+export type DrawerName = 'Today' | 'Replay' | 'Position' | 'Plan and Risk' | 'Price History' | 'Journal' | 'Payoff';
 
-const DRAWER_NAMES: readonly DrawerName[] = ['Today', 'Position', 'Plan and Risk', 'Price History', 'Journal', 'Payoff'];
+const DRAWER_NAMES: readonly DrawerName[] = ['Today', 'Replay', 'Position', 'Plan and Risk', 'Price History', 'Journal', 'Payoff'];
 
 // A Trade Detail is the page at /trades/<id>. Other pages (the Plan form, the Review) have no Detail and no drawers.
 const onTradeDetail = (page: Page): boolean => /^\/trades\/[^/]+\/?$/.test(new URL(page.url()).pathname);

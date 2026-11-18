@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useParams } from 'react-router';
+import { useParams, useSearchParams } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
 import type { TradeDetailView, ViewBinding } from '../../app/types.ts';
 import { PageTitle } from '../PageTitle.tsx';
 import { clearHandedOver, handedOverConfirmed } from './confirmed-handoff.ts';
 import { Cockpit, type ReplayRead } from './trade-detail/Cockpit.tsx';
+import { drawerNamed } from './trade-detail/drawer-request.ts';
 import { BackToTrades } from './trade-detail/Identity.tsx';
 
 export interface TradeDetailProps {
@@ -40,6 +41,9 @@ type DetailState =
 
 export function TradeDetail({ facade, timeZone, onDirtyChange }: TradeDetailProps) {
   const { tradeId = '' } = useParams();
+  // A257: the drawer and the Replay session the address names are read once, on load; the slider and the tabs are state after that.
+  const [params] = useSearchParams();
+  const [address] = useState(() => ({ drawer: drawerNamed(params.get('drawer')), session: params.get('session') }));
   // A Plan just confirmed arrives with its post-commit view, so it is shown without a read.
   // It is handed over in memory (not in history state, which the browser structured-clones and strips the Rational
   // values of), taken once; a reload, a back/forward or a later visit takes the normal read.
@@ -130,7 +134,15 @@ export function TradeDetail({ facade, timeZone, onDirtyChange }: TradeDetailProp
 
   return (
     <article className="trade-detail">
-      <Cockpit facade={facade} view={state.view} replay={state.replay} timeZone={timeZone} {...(onDirtyChange && { onDirtyChange })} />
+      <Cockpit
+        facade={facade}
+        view={state.view}
+        replay={state.replay}
+        timeZone={timeZone}
+        {...(address.drawer && { initialDrawer: address.drawer })}
+        {...(address.session && { initialSession: address.session })}
+        {...(onDirtyChange && { onDirtyChange })}
+      />
     </article>
   );
 }

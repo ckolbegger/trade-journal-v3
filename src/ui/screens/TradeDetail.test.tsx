@@ -5,14 +5,17 @@ import userEvent from '@testing-library/user-event';
 import { Link, MemoryRouter, Route, Routes } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { UiFacade } from '../../app/compose.ts';
+import { closedDetailOf } from '../../../tests/support/closed-detail-fixtures.ts';
 import { facadeDouble } from '../../../tests/support/facade-double.ts';
-import { incoherentDetailOf, openDetailAt, PC1, PC2, PC3, pc1Reflection, pc3Excess } from '../../../tests/support/open-detail-fixtures.ts';
+import { incoherentDetailOf, openDetailAt, PC1, PC2, PC3, pc1Reflection, pc3Excess, X1, X2 } from '../../../tests/support/open-detail-fixtures.ts';
+import { optionOpenDetail, type OptionFrames } from '../../../tests/support/option-detail-fixtures.ts';
+import { OS_S1 } from '../../../tests/support/option-trade-fixtures.ts';
 import { reflectionDefinition } from '../../../tests/support/position-change-form-facade.ts';
 import { plannedDetail } from '../../../tests/support/views-fixtures.ts';
 import type { TradeDetailDebt, TradeDetailView, TradeReplayView } from '../../app/types.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { RuntimeContext } from '../runtime.tsx';
-import { available } from './trade-detail/test-support.ts';
+import { available, openDrawer, useFixedClock } from './trade-detail/test-support.ts';
 import { TradeDetail } from './TradeDetail.tsx';
 
 afterEach(cleanup);
@@ -100,10 +103,10 @@ function facadeOf({ view = thursday(), replayResult = { kind: 'Ready', view: rep
   return facade;
 }
 
-function renderWith(facade: UiFacade) {
+function renderWith(facade: UiFacade, address = '/trades/trade-1') {
   render(
     <RuntimeContext.Provider value={{ writable: true, report: () => undefined, timeZone: 'America/New_York' }}>
-      <MemoryRouter initialEntries={['/trades/trade-1']}>
+      <MemoryRouter initialEntries={[address]}>
         <Routes>
           <Route path="/trades/:tradeId" element={<TradeDetail facade={facade} timeZone="America/New_York" />} />
         </Routes>
@@ -361,5 +364,81 @@ describe('Trade Detail: Needs you follows the Journal (revision 95)', () => {
     expect(within(screen.getByRole('tab', { name: 'Journal' })).getByText('1 owed')).toBeTruthy();
     expect(facade.TradeViewsAndReporting.getTradeDetail).toHaveBeenCalledTimes(1);
     expect(facade.TradeViewsAndReporting.replayTrade).toHaveBeenCalledTimes(1);
+  });
+});
+
+// W1 (amended), P128: a seventh drawer, Replay, second after Today.
+const tabNames = () => within(screen.getByRole('tablist', { name: 'Detail' })).getAllByRole('tab').map((tab) => tab.getAttribute('aria-label'));
+// Friday 2026-11-20 after the close: the expiration date, whose contracts are due for settlement.
+const FRIDAY: OptionFrames = { tradingDate: '2026-11-20', closeInstant: '2026-11-20T21:00:00Z', contractMark: '0.80', underlyingMark: '52.00' };
+
+describe('Trade Detail: the Replay drawer (W1 amended)', () => {
+  useFixedClock();
+
+  it('should show Replay second, after Today, on an Open, a Settlement Due and a Closed Detail', async () => {
+    for (const view of [thursday(), optionOpenDetail('O-S', [OS_S1], FRIDAY), closedDetailOf([PC1, PC2, X1, X2])]) {
+      show({ view });
+      await screen.findByRole('region', { name: 'State of play' });
+      expect(tabNames().slice(0, 3)).toEqual(['Today', 'Replay', 'Position']);
+      cleanup();
+    }
+  });
+
+  it('should show no Replay drawer on a Planned Detail or one whose records disagree', async () => {
+    const findings = [{ factId: 'pc-9', kind: 'PositionChange', economicTime: '2026-10-14T14:30:00Z', reason: 'DuplicateFactId' }] as const;
+    for (const view of [plannedDetail, incoherentDetailOf([PC1, PC2], findings, [pc1Reflection])]) {
+      show({ view });
+      await screen.findByRole('region', { name: 'State of play' });
+      expect(tabNames()).not.toContain('Replay');
+      // No panel for it either, hidden or not.
+      expect(document.getElementById('drawer-panel-replay')).toBeNull();
+      cleanup();
+    }
+  });
+
+  it('should draw the chart from the replay the Detail already read, with no second read', async () => {
+    const user = userEvent.setup();
+    const facade = show();
+    await openDrawer(user, 'Replay');
+    const panel = screen.getByRole('tabpanel', { name: 'Replay' });
+    // The newest session is shown: Thursday's Trade P&L, the slider on it, and the Corridor's charts with their text equivalent.
+    expect(within(panel).getByTestId('headline').textContent).toBe('+$250.00');
+    expect(within(panel).getByRole('slider', { name: 'Session' }).getAttribute('aria-valuetext')).toBe('Thu Oct 15 · 4 of 4. +$250.00');
+    expect(within(panel).getByRole('img', { name: 'XYZ Marks and Trade P&L by session' })).toBeTruthy();
+    expect(within(panel).getByRole('group', { name: 'Sessions' })).toBeTruthy();
+    expect(facade.TradeViewsAndReporting.replayTrade).toHaveBeenCalledTimes(1);
+  });
+
+  it('should show Loading the Trade… in the drawer while the replay is pending', async () => {
+    const user = userEvent.setup();
+    let arrive: (result: unknown) => void = () => undefined;
+    const facade = facadeOf();
+    vi.mocked(facade.TradeViewsAndReporting.replayTrade).mockReturnValue(new Promise((resolve) => (arrive = resolve)) as never);
+    renderWith(facade);
+    await openDrawer(user, 'Replay');
+    const panel = screen.getByRole('tabpanel', { name: 'Replay' });
+    expect(within(panel).getByText('Loading the Trade…')).toBeTruthy();
+    expect(within(panel).queryByTestId('headline')).toBeNull();
+    arrive({ kind: 'Ready', view: replay(), binding: BINDING });
+    expect(await within(panel).findByTestId('headline')).toBeTruthy();
+    expect(within(panel).queryByText('Loading the Trade…')).toBeNull();
+  });
+
+  it('should select the drawer and the session named in the address on load', async () => {
+    const facade = facadeOf({ replayResult: { kind: 'Ready', view: replay([debt], true), binding: BINDING } });
+    renderWith(facade, '/trades/trade-1?drawer=replay&session=2026-10-13&from=review');
+    await screen.findByRole('region', { name: 'State of play' });
+    expect(screen.getByRole('tab', { selected: true }).getAttribute('aria-label')).toBe('Replay');
+    const panel = await screen.findByRole('tabpanel', { name: 'Replay' });
+    expect((await within(panel).findByRole('slider', { name: 'Session' })).getAttribute('aria-valuetext')).toBe('Tue Oct 13 · 2 of 4. +$100.00');
+    // A drawer named by its address form ("price-history") opens too, and one this Detail does not show leaves the default.
+    cleanup();
+    renderWith(facadeOf(), '/trades/trade-1?drawer=price-history');
+    await screen.findByRole('region', { name: 'State of play' });
+    expect(screen.getByRole('tab', { selected: true }).getAttribute('aria-label')).toBe('Price History');
+    cleanup();
+    renderWith(facadeOf({ view: plannedDetail }), '/trades/trade-1?drawer=replay');
+    await screen.findByRole('region', { name: 'State of play' });
+    expect(screen.getByRole('tab', { selected: true }).getAttribute('aria-label')).toBe('Plan and Risk');
   });
 });

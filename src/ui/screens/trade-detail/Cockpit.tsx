@@ -12,6 +12,7 @@ import { PlanRiskDrawer } from '../../cockpit/drawers/plan-risk.tsx';
 import { PositionDrawer } from '../../cockpit/drawers/position.tsx';
 import { priceHistoryTabCount } from '../../cockpit/drawers/price-history.props.ts';
 import { PriceHistory } from '../../cockpit/drawers/price-history.tsx';
+import { ReplayDrawer } from '../../cockpit/drawers/replay.tsx';
 import { TodayDrawer } from '../../cockpit/drawers/today.tsx';
 import { ReflectRequestContext } from '../OwedDebtItem.tsx';
 import { IncoherentPanel, IntegrityPanel } from './Banner.tsx';
@@ -36,6 +37,9 @@ export interface CockpitProps {
   readonly replay: ReplayRead;
   readonly timeZone: string;
   readonly onDirtyChange?: (dirty: boolean) => void;
+  // The drawer and the Replay session the address named on load (A257); a drawer this Detail does not show leaves its default.
+  readonly initialDrawer?: Drawer;
+  readonly initialSession?: string;
   // Content placed inside the drawer request's reach, for a test's probe.
   readonly children?: ReactNode;
 }
@@ -47,14 +51,14 @@ export type ReplayRead = { readonly kind: 'None' } | { readonly kind: 'Pending' 
 // The words a drawer shows while its content is still being read (W20): the Detail's own.
 const Loading = () => <p role="status">Loading the Trade…</p>;
 
-export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange, children }: CockpitProps) {
+export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange, initialDrawer, initialSession, children }: CockpitProps) {
   const replay = read.kind === 'Ready' ? read.replay : undefined;
   const pending = read.kind === 'Pending';
   // What the Journal's session cards take as their replay: the replay itself, 'Incoherent' for a Detail whose facts cannot be replayed, or
   // 'Planned' for a Detail that has no Position to replay.
   const cardsReplay = replay ?? cardsReplayOf(view);
   const { shown, initial } = drawersOf(view);
-  const [selected, setSelected] = useState<Drawer | undefined>(undefined);
+  const [selected, setSelected] = useState<Drawer | undefined>(initialDrawer);
   const current = selected && shown.includes(selected) ? selected : initial;
   const shell = { view, timeZone };
   // Wherever a card or drawer takes the replay, it takes the view beside it.
@@ -113,6 +117,9 @@ export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange, c
     switch (drawer) {
       case 'Today':
         return <TodayDrawer {...replayed} />;
+      case 'Replay':
+        if (pending) return <Loading />;
+        return replay ? <ReplayDrawer replay={replay} {...(initialSession !== undefined && { initialSession })} /> : null;
       case 'Position':
         return <PositionDrawer {...shell} />;
       case 'Plan and Risk':
