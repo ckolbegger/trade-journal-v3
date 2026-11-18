@@ -102,7 +102,7 @@ export function PriceStrip({ props, width }: { props: ReplayPlotProps; width: nu
         <g>
           <path className="cursor" d={`M${f1(time.x(current.slot))} ${TOP}V${FLOOR}`} />
           {markSpot && current.underlyingLabel && (
-            <text className="mark-label" x={f1(markSpot.x)} y={f1(markSpot.y)} textAnchor="middle">
+            <text className="mark-label" x={f1(markSpot.x)} y={f1(markSpot.y)} textAnchor={markSpot.anchor}>
               {current.underlyingLabel}
             </text>
           )}

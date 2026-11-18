@@ -165,6 +165,16 @@ describe("Corridor: the Underlying's price (W39)", () => {
     expect(screen.queryByText('$104.00')).toBeNull();
   });
 
+  it('should draw the Mark label with the anchor of the spot it was placed in', () => {
+    // The slider's session is the last column, so the label overflows the right edge above and below the dot: it is placed left of it.
+    const { container } = render(<CorridorPlot {...props({ compact: true, axis: { slots: 11, endLabel: 'Tue Nov 17' } })} />);
+    const label = strip(container).querySelector('text.mark-label')!;
+    const dot = strip(container).querySelector('circle.mark.current')!;
+    expect(label.getAttribute('text-anchor')).toBe('end');
+    // LabelPlacer's estimate of the box (6 per character plus 2), end-anchored: it ends left of the dot.
+    expect(num(label, 'x')).toBeLessThan(num(dot, 'cx') - num(dot, 'r'));
+  });
+
   it('should give the chart an accessible name, and describe it by the table', () => {
     const { container } = render(
       <>
