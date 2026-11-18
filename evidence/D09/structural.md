@@ -335,3 +335,9 @@ Stage A runs as a swarm (decision 111, agent cap 4). Each task's heading holds i
 - **Not one commit:** unit at `c183e890` (T9.5, T9.6, T9.11-B5/B6/B7 merged; T9.11 and B1 to B4 not yet), integration and browser-1 at `c183e890` plus evidence edits, browser-2 at `b6c2978e` (T9.11 merged), browser-3 and checks at `0059c29d`. Between them only lane CF's frame commits and evidence changed.
 - Browser tier: full (`first matching path since 801c5ff8: src/ui/cockpit/replay/corridor-pnl.tsx`).
 - Unit 197 files, 2201 tests; integration 123 files, 269 tests; browser-1 126 passed (5.2 min); browser-2 79 passed (4.9 min); browser-3 57 passed (4.4 min); checks 14 of 14. `run-complete.sh`: run complete. **No failures.**
+
+### wave2b (after T9.7 with B1, B2, F2, F3)
+
+- Source at `468a5256` throughout (HEAD moved to `7af1df86` during the run; `git diff 468a5256 7af1df86` touches only `evidence/`). 2026-11-18, 08:23 to 08:41.
+- Browser tier: full (`first matching path since c183e890: src/ui/cockpit/replay/frame.tsx`).
+- Unit 197 files, 2223 tests; integration 123 files, 269 tests; browser-1 126 passed (5.5 min); browser-2 79 passed (5.1 min); browser-3 57 passed (4.4 min); checks 14 of 14. `run-complete.sh evidence/D09`: run complete. **No failures.**
