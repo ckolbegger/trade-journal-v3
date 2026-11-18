@@ -1,0 +1,298 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 14 selected item(s).",
+  "summary": {
+    "files_reviewed": 14,
+    "comments": 3,
+    "total_tokens": 536572,
+    "input_tokens": 532104,
+    "output_tokens": 4468,
+    "cache_read_tokens": 62208,
+    "elapsed": "1m49s"
+  },
+  "tool_calls": {
+    "total": 56,
+    "by_tool": {
+      "code_comment": 3,
+      "code_search": 11,
+      "file_read": 38,
+      "file_read_diff": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/trade-detail/Cockpit.tsx",
+      "content": "The Position link is also offered for expiration markers, but this selector only matches ExecutionRow elements. SettlementRow has no `data-change` attribute, so clicking Position on an expiration-only session switches drawers without focusing the matching row (and focus can remain in the now-hidden Replay panel). Support settlement targets as well, for example by adding the same change identifier to settlement rows and selecting their disclosure button. Add an expiration-session navigation test.",
+      "existing_code": "        \u003cbutton type=\"button\" className=\"pill secondary\" onClick={() =\u003e request('Position', { selector: `[data-change=\"${at.changeId}\"] button` })}\u003e",
+      "start_line": 208,
+      "end_line": 208,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/trade-detail/Position.tsx",
+      "content": "The new Position focus selector is only supported on Execution rows. Replay markers also include Expiration Position Changes (including changes with no executions), and ReplayLinks offers Position for those markers too. Their SettlementRow has no `data-change`, so clicking Position switches drawers but cannot find or focus a target. Add the same change identifier to SettlementRow's `\u003cli\u003e` and cover an expiration-only session in the navigation tests.",
+      "existing_code": "    \u003cli data-group={group ? change.factId : undefined} data-change={change.factId}\u003e",
+      "start_line": 63,
+      "end_line": 63,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/trade-detail/Cockpit.tsx",
+      "content": "For consecutive sessions without Marks, `journalCards()` merges them into one card whose ID is the first session's date (`journal.props.ts`, lines 152–164). If a later session in that run contains Journal items, this link requests a card ID that does not exist: pagination cannot locate it and the focus selector matches nothing. Resolve the selected session to its containing (possibly merged) card before constructing both `card` and the selector, and cover navigation from a non-first session in a merged run.",
+      "existing_code": "        \u003cbutton type=\"button\" className=\"pill secondary\" onClick={() =\u003e request('Journal', { selector: `[id=\"journal-card-${at.date}\"]`, card: at.date })}\u003e",
+      "start_line": 213,
+      "end_line": 213,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Price history drawer component and contracts",
+      "files": [
+        "src/ui/cockpit/drawers/price-history.props.ts",
+        "src/ui/cockpit/drawers/price-history.tsx",
+        "src/ui/cockpit/drawers/price-history.types.ts"
+      ]
+    },
+    {
+      "label": "Replay drawer and trade cockpit integration",
+      "files": [
+        "src/ui/cockpit/drawers/replay.tsx",
+        "src/ui/cockpit/replay/frame.tsx",
+        "src/ui/screens/trade-detail/Cockpit.tsx",
+        "src/ui/screens/trade-detail/drawer-request.ts"
+      ]
+    },
+    {
+      "label": "Journal and review card presentation",
+      "files": [
+        "src/ui/cockpit/journal-cards.tsx",
+        "src/ui/screens/ReviewCard.test.tsx",
+        "src/ui/screens/ReviewCard.tsx",
+        "src/ui/screens/ReviewView.tsx"
+      ]
+    },
+    {
+      "label": "Trade detail screen and position behavior",
+      "files": [
+        "src/ui/screens/TradeDetail.test.tsx",
+        "src/ui/screens/TradeDetail.tsx",
+        "src/ui/screens/trade-detail/Position.tsx"
+      ]
+    }
+  ],
+  "session_id": "3d62e131-beaf-436e-9112-a32abe1fff9d",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "3d62e131-beaf-436e-9112-a32abe1fff9d",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "96c33ef4",
+      "resolved_base": "d52de7fcf9ca10da5d180780de883a957f92bc7f",
+      "resolved_head": "96c33ef45ebed9d4a7f3451406e844a09d8e37e3",
+      "exact_range": "d52de7fcf9ca10da5d180780de883a957f92bc7f..96c33ef45ebed9d4a7f3451406e844a09d8e37e3",
+      "source_artifact_sha256": "a21054e50815ce3aa2333f4240752f082acca3da65cebb77b2cd4881494895c1"
+    },
+    "execution": {
+      "ocr_version": "v1.13.12",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0db0c382b1e88a4f0d77204dd6e715a250ade6135af2584704ed7ae1561e6156",
+          "path": "src/ui/cockpit/drawers/replay.tsx",
+          "fingerprint": "6fac145c05b37054e52902236454ab8c02a2b2dfcac74ca3893efbf7820c4f7d"
+        },
+        {
+          "item_id": "1e9818d41ff29d7730ea06bdd1d154959f0a952a460b3d5f13d2bde01ff86492",
+          "path": "src/ui/cockpit/replay/frame.tsx",
+          "fingerprint": "abcf159f01e0c53b774b00c18ebe19966cefe3c9cee1bf9887d169e8bf01617b"
+        },
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "f7a076f43335ee647f9bd4f2217f1d64e3f748288c2deaf7afc73594a99de87e"
+        },
+        {
+          "item_id": "7a11420bfbb41bf1786c11a97abc2efd178f61cda0a62e22d7d52f9d87dbe6ab",
+          "path": "src/ui/screens/TradeDetail.tsx",
+          "fingerprint": "eb2ca8a7bb5683b356e3e04eda2075e122451fb3a27ebba652f2c40ad97c488e"
+        },
+        {
+          "item_id": "8676b5afcb634bceb0b3456759a23b2bc4466a318b637ab4f4e37539b7f0aba1",
+          "path": "src/ui/cockpit/drawers/price-history.tsx",
+          "fingerprint": "030a880bf5fc2c0546dfbe114969383d465674f88baf14dd51c065b2b874e93e"
+        },
+        {
+          "item_id": "87638b8e40a8471b5a00443528a3c98bf4752f964c11c4b564b6258d593b8716",
+          "path": "src/ui/screens/TradeDetail.test.tsx",
+          "fingerprint": "6f8cfe950f2f65eb6328c6075c740f1f11050a13095f35cc2d5d6b8eaf875d9b"
+        },
+        {
+          "item_id": "8ecc008bbb6c9e6e322f69b9ad1d0d9dba27db95c0ac2185937a7a93f257f755",
+          "path": "src/ui/cockpit/journal-cards.tsx",
+          "fingerprint": "1881d9b758da8bdffb5336dda68b2ca2629740555819f47b05398cd33d4ea5dc"
+        },
+        {
+          "item_id": "a59561cd58b7f035c39bcd7f475b31b7f72e2fa2fd9f758783eb7a99c745de46",
+          "path": "src/ui/screens/trade-detail/drawer-request.ts",
+          "fingerprint": "671ea79010f57d4086854c27833306dafff9e82756c2beb677797be16e6c6fb5"
+        },
+        {
+          "item_id": "a83706f3444e16c14ac613c874f7293d7adce6354226bde7d7b9b892fce05701",
+          "path": "src/ui/screens/ReviewCard.test.tsx",
+          "fingerprint": "2a360f664f41a4f26bad781f00f8bdd318ea60555409cb5b4bc1f7b75c1946af"
+        },
+        {
+          "item_id": "bad5c69b3d1e03bf54bd2b1b2b13ff5e5a0dabd158881300fc1e86a4a591bb75",
+          "path": "src/ui/screens/trade-detail/Cockpit.tsx",
+          "fingerprint": "faeb934f6d669d469435ec0e23a19d38646308a5c69625f02bb3d4879c514160"
+        },
+        {
+          "item_id": "bf3fb813b0b8a1539d594afbbd72d70d7e89daf6f67c93fe497aa1482703f55b",
+          "path": "src/ui/screens/trade-detail/Position.tsx",
+          "fingerprint": "23bda29931ff2a4745d7d499a92cac5a8037ad22dd8daf5232f7290edba0d4cb"
+        },
+        {
+          "item_id": "c86bede55e682a60063ef80cbeae2ab273f7fe4e803c557b0515a5f8aae21104",
+          "path": "src/ui/cockpit/drawers/price-history.types.ts",
+          "fingerprint": "4af047601b93b2691f14c011f073a87031b8897992ee17717ac1903ef65bcd83"
+        },
+        {
+          "item_id": "ef97ec8adcb3f7b11445abde758d6f413b0e72418b1d1e70110aaeb9d0da2558",
+          "path": "src/ui/cockpit/drawers/price-history.props.ts",
+          "fingerprint": "022baf48369dffd563a4208457a0b766455a29cca433a5286ec05fbea3f47e42"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "174d1421d715a05a301a66e635af2065ee7a03c8ed17c84f6ae318325b574a38"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0db0c382b1e88a4f0d77204dd6e715a250ade6135af2584704ed7ae1561e6156",
+          "path": "src/ui/cockpit/drawers/replay.tsx",
+          "fingerprint": "6fac145c05b37054e52902236454ab8c02a2b2dfcac74ca3893efbf7820c4f7d"
+        },
+        {
+          "item_id": "1e9818d41ff29d7730ea06bdd1d154959f0a952a460b3d5f13d2bde01ff86492",
+          "path": "src/ui/cockpit/replay/frame.tsx",
+          "fingerprint": "abcf159f01e0c53b774b00c18ebe19966cefe3c9cee1bf9887d169e8bf01617b"
+        },
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "f7a076f43335ee647f9bd4f2217f1d64e3f748288c2deaf7afc73594a99de87e"
+        },
+        {
+          "item_id": "7a11420bfbb41bf1786c11a97abc2efd178f61cda0a62e22d7d52f9d87dbe6ab",
+          "path": "src/ui/screens/TradeDetail.tsx",
+          "fingerprint": "eb2ca8a7bb5683b356e3e04eda2075e122451fb3a27ebba652f2c40ad97c488e"
+        },
+        {
+          "item_id": "8676b5afcb634bceb0b3456759a23b2bc4466a318b637ab4f4e37539b7f0aba1",
+          "path": "src/ui/cockpit/drawers/price-history.tsx",
+          "fingerprint": "030a880bf5fc2c0546dfbe114969383d465674f88baf14dd51c065b2b874e93e"
+        },
+        {
+          "item_id": "87638b8e40a8471b5a00443528a3c98bf4752f964c11c4b564b6258d593b8716",
+          "path": "src/ui/screens/TradeDetail.test.tsx",
+          "fingerprint": "6f8cfe950f2f65eb6328c6075c740f1f11050a13095f35cc2d5d6b8eaf875d9b"
+        },
+        {
+          "item_id": "8ecc008bbb6c9e6e322f69b9ad1d0d9dba27db95c0ac2185937a7a93f257f755",
+          "path": "src/ui/cockpit/journal-cards.tsx",
+          "fingerprint": "1881d9b758da8bdffb5336dda68b2ca2629740555819f47b05398cd33d4ea5dc"
+        },
+        {
+          "item_id": "a59561cd58b7f035c39bcd7f475b31b7f72e2fa2fd9f758783eb7a99c745de46",
+          "path": "src/ui/screens/trade-detail/drawer-request.ts",
+          "fingerprint": "671ea79010f57d4086854c27833306dafff9e82756c2beb677797be16e6c6fb5"
+        },
+        {
+          "item_id": "a83706f3444e16c14ac613c874f7293d7adce6354226bde7d7b9b892fce05701",
+          "path": "src/ui/screens/ReviewCard.test.tsx",
+          "fingerprint": "2a360f664f41a4f26bad781f00f8bdd318ea60555409cb5b4bc1f7b75c1946af"
+        },
+        {
+          "item_id": "bad5c69b3d1e03bf54bd2b1b2b13ff5e5a0dabd158881300fc1e86a4a591bb75",
+          "path": "src/ui/screens/trade-detail/Cockpit.tsx",
+          "fingerprint": "faeb934f6d669d469435ec0e23a19d38646308a5c69625f02bb3d4879c514160"
+        },
+        {
+          "item_id": "bf3fb813b0b8a1539d594afbbd72d70d7e89daf6f67c93fe497aa1482703f55b",
+          "path": "src/ui/screens/trade-detail/Position.tsx",
+          "fingerprint": "23bda29931ff2a4745d7d499a92cac5a8037ad22dd8daf5232f7290edba0d4cb"
+        },
+        {
+          "item_id": "c86bede55e682a60063ef80cbeae2ab273f7fe4e803c557b0515a5f8aae21104",
+          "path": "src/ui/cockpit/drawers/price-history.types.ts",
+          "fingerprint": "4af047601b93b2691f14c011f073a87031b8897992ee17717ac1903ef65bcd83"
+        },
+        {
+          "item_id": "ef97ec8adcb3f7b11445abde758d6f413b0e72418b1d1e70110aaeb9d0da2558",
+          "path": "src/ui/cockpit/drawers/price-history.props.ts",
+          "fingerprint": "022baf48369dffd563a4208457a0b766455a29cca433a5286ec05fbea3f47e42"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "174d1421d715a05a301a66e635af2065ee7a03c8ed17c84f6ae318325b574a38"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "5b5f8f22131afe4e8ffc704d4de9de6889f4207b1d15c1631749e33e8d9d8e63",
+          "path": "evidence/D09/suite-runs/T9.16-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "6cab4045e19c011d570462898d6a8b1beb3de883a799aa83756ab2cbf76e938a",
+          "path": "evidence/D09/suite-runs/T9.16-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "d1fc0747a0eeb26d326b70e1740d9823916ffcba466e4cb5ddb157f2d272b6f7",
+          "path": "evidence/D09/suite-runs/T9.16-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "e46824cf375ca4e2fa0158129a76964f2b00f66083939a12398d8259c154b319",
+          "path": "evidence/D09/tdd-log/T9.16.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "fe416ac26a3ebb65e1b036ce0c437d8b5f9861f6a5953ab690c7e40769c7a4ec",
+          "path": "evidence/D09/suite-runs/T9.16-lane.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 108770
+  }
+}

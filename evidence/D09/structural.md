@@ -244,7 +244,16 @@ Stage A runs as a swarm (decision 111, agent cap 4). Each task's heading holds i
 - Lane DW, from `d52de7fc`, commit `96c33ef4`. Seven cases, each red then green (the planned sixth split in two: the Detail's "Back to the Review" address, and the Review opening from it). One red was first a fixture mistake (`within` of a `within`), fixed before the valid red. No first-run passes.
 - Addresses: the card's link `/trades/<id>?drawer=price-history&session=<slider date>&from=review`; "Back to the Review" `/review?trade=<id>&panel=Action&session=<the Detail slider's session>`, following the slider.
 - Shapes: `ReplayDrawerProps.links` (`SessionLinks = { date; changeId?; hasJournal }`) wired to the frame's `renderLinks` (under the readout, above the table); `DrawerRequest` takes a string (a heading) or a `FocusTarget = { selector; card? }`; `DrawerFocusContext` (Journal cards turn to the page holding the card); `CockpitProps.onSessionChange`; `PriceHistoryProps.columns[].session`; `Go.session`; `LinkedCard.session`. Focus hooks: `data-change` on Position rows (`Position.tsx`, accepted as the Position drawer's focus hook), `data-session` on Price History headers; Journal cards already had ids. No new CSS; words all W46's; `verify:wording` exit 0. `src/ui` 940 of 940. Lane tier `T9.16`: unit 2264, integration 269, checks 14 of 14. No e2e spec changed.
-- Notes (not ocr findings, no bug task): "Position" on a session whose only marker is an Expiration selects the drawer without focus (`SettlementRow` has no `data-change`); "Journal" on a session inside a merged run of Mark-less sessions selects the drawer without focusing a card. For the critic and the stage report.
+- Notes (not ocr findings, no bug task): "Position" on a session whose only marker is an Expiration selects the drawer without focus (`SettlementRow` has no `data-change`); "Journal" on a session inside a merged run of Mark-less sessions selects the drawer without focusing a card. For the critic and the stage report. (Both then raised by ocr: now bug tasks.)
+- ocr round 1 (`ocr/T9.16-96c33ef4.json`), 3 findings, all Valid:
+
+| Severity | Location | Claim | Outcome |
+|---|---|---|---|
+| medium | `Cockpit.tsx:208` | "Position" is offered for an Expiration marker, but the `[data-change]` selector matches Execution rows only, so nothing takes focus | T9.16-B1 |
+| medium | `Position.tsx:63` | Only `ExecutionRow` carries `data-change`; `SettlementRow` doesn't (same defect as the row above) | T9.16-B1 |
+| medium | `Cockpit.tsx:213` | "Journal" asks for `journal-card-<date>`, but back-to-back Mark-less sessions merge into one card with the first session's date, so a later session in the run has no card | T9.16-B2 |
+
+- **T9.16-B1.** Case: "it should focus the Expiration row when Position is chosen on a session whose marker is an Expiration". **T9.16-B2.** Case: "it should focus the merged card that holds the session when Journal is chosen on a later session of a Mark-less run". One at a time in lane DW.
 
 ## T9.17 Stage A: Node integration suite
 
