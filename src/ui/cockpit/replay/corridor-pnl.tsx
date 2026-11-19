@@ -240,11 +240,22 @@ export function drawPnl(props: ReplayPlotProps, width: number): DrawnChart {
       const near = [top + 8, top + 20, top + 26];
       const grid = Array.from({ length: Math.floor((FLOOR - TOP - 8) / 6) + 1 }, (_, n) => TOP + 8 + n * 6).filter((row) => !near.includes(row));
       const rows = [...near, ...grid.sort((a, b) => Math.abs(a - near[0]!) - Math.abs(b - near[0]!))].filter((row) => row <= FLOOR);
-      put(key, `crossing-label ${crossing.line.toLowerCase()}`, words(crossing.label, crossing.shortLabel), rows.flatMap((row): Spot[] => [
+      // A row that would run over the cursor's line is tried only after those that do not (the line is drawn under the label, whose halo
+      // keeps it legible, but a label across the cursor is hard to read as the flag's).
+      const text = words(crossing.label, crossing.shortLabel);
+      const spots = rows.flatMap((row): Spot[] => [
         { x: x + 6, y: row, anchor: 'start' },
         { x: x - 6, y: row, anchor: 'end' },
-      ]));
-      return kept.has(key) ? [{ key, line: crossing.line.toLowerCase(), label: crossing.label, x, y, top }] : [];
+      ]);
+      const crossesCursor = (s: Spot): boolean => {
+        const x0 = s.anchor === 'start' ? s.x : s.x - (text.length * 6 + 2);
+        return !!current && x0 < xc && xc < x0 + text.length * 6 + 2;
+      };
+      put(key, `crossing-label ${crossing.line.toLowerCase()}`, text, [...spots.filter((s) => !crossesCursor(s)), ...spots.filter(crossesCursor)]);
+      // The label is always joined to its flag: a label beyond the pole's foot or above its top has the pole carried on to the label's row (B2).
+      const row = (labels.find((l) => l.key === key)?.spot.y ?? NaN) - 4;
+      const tie = row > y ? { from: y, to: row } : row < top ? { from: top, to: row } : undefined;
+      return kept.has(key) ? [{ key, line: crossing.line.toLowerCase(), label: crossing.label, x, y, top, tie }] : [];
     }),
   );
   for (const s of sessions) {
@@ -417,6 +428,7 @@ export function drawPnl(props: ReplayPlotProps, width: number): DrawnChart {
       {flags.map((f) => (
         <g key={f.key} className={`first-crossing ${f.line}`}>
           <path className="flag-pole" d={`M${f1(f.x)} ${f1(f.y)}V${f1(f.top)}`} />
+          {f.tie && <path className="flag-pole tie" d={`M${f1(f.x)} ${f1(f.tie.from)}V${f1(f.tie.to)}`} />}
           <path className="flag-pennant" d={`M${f1(f.x)} ${f1(f.top)}h6l-3 4l3 4h-6Z`} />
         </g>
       ))}

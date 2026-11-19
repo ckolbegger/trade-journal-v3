@@ -195,6 +195,32 @@ test.describe('B9AR.5 The chart', () => {
         const before = i < 5;
         expect(flagged, `${width}, ${day}: the flag is ${before ? 'not yet' : 'still'} on the chart (${seen.join(' | ')})`).toBe(!before);
         expect(named, `${width}, ${day}: the key ${before ? 'does not name' : 'still names'} it`).toBe(!before);
+        if (before) continue;
+        // T9AR.24-B7-B2 and B3: the label is the flag's (the pole runs to it, beside it) and is legible over whatever it sits on: it has its
+        // halo (paint-order stroke, 3 px, the card's colour) and nothing is painted after it, so no line or area shows through its words.
+        const look = await pnlChart(scope).evaluate((svg: SVGSVGElement) => {
+          const label = svg.querySelector('text.crossing-label') as SVGTextElement;
+          const b = label.getBBox();
+          const style = getComputedStyle(label);
+          const poles = [...svg.querySelectorAll('g.first-crossing path.flag-pole')].map((p) => (p as SVGGraphicsElement).getBBox());
+          const poleTop = Math.min(...poles.map((p) => p.y));
+          const poleBottom = Math.max(...poles.map((p) => p.y + p.height));
+          const poleX = poles[0]!.x;
+          const after = [...svg.querySelectorAll('path, rect, circle')].filter((e) => !(label.compareDocumentPosition(e) & Node.DOCUMENT_POSITION_PRECEDING)).map((e) => e.getAttribute('class'));
+          const cursor = svg.querySelector<SVGPathElement>('path.cursor');
+          const cursorX = cursor ? cursor.getBBox().x : null;
+          return {
+            halo: style.paintOrder.startsWith('stroke') && parseFloat(style.strokeWidth) >= 3 && style.stroke !== 'none',
+            tied: b.y + b.height / 2 >= poleTop && b.y + b.height / 2 <= poleBottom && Math.abs(Math.min(Math.abs(b.x - poleX), Math.abs(b.x + b.width - poleX)) - 6) < 3,
+            after,
+            crossesCursor: cursorX !== null && b.x < cursorX && cursorX < b.x + b.width,
+            at: `label ${Math.round(b.x)},${Math.round(b.y)} pole ${Math.round(poleX)}, ${Math.round(poleTop)} to ${Math.round(poleBottom)}`,
+          };
+        });
+        expect(look.halo, `${width}, ${day}: the label has its halo`).toBe(true);
+        expect(look.tied, `${width}, ${day}: the pole runs to the label (${look.at})`).toBe(true);
+        expect(look.after, `${width}, ${day}: nothing is drawn over the label`).toEqual([]);
+        expect(look.crossesCursor, `${width}, ${day}: the label is off the cursor line (${look.at})`).toBe(false);
       }
     }
     await context.close();

@@ -925,6 +925,67 @@ describe('Corridor: labels apart (T9.19-B2)', () => {
       }
     }
   });
+
+  // T9AR.24-B7-B2 and B3: the flag's label, wherever its row falls, reads as the flag's: the pole runs down to it (so it is never a distant,
+  // unattached word), it is painted after every line, area and dot (its halo, in the CSS, keeps it legible over them), and it does not
+  // straddle the cursor's line when a side clear of it has room.
+  it('should join the Stop breached label to its pole, paint it above every drawn shape and keep it off the cursor line, on AXIO and the hard geometries', () => {
+    const signed = (n: number) => `${n < 0 ? '−' : '+'}$${Math.abs(n).toLocaleString('en-US')}`;
+    // [realized, stop, target, Trade P&L after the sale]; the first is R-AXIO-D's own (Stop -$740, Target +$160 after the sale).
+    const geometries: [number, number, number, number][] = [
+      [-440, -740, 160, -1010],
+      [-600, -740, 760, -860],
+      [-600, -740, 760, -500],
+      [-600, -740, 760, 100],
+      [-600, -740, 760, -1500],
+      [-700, -740, 600, -500],
+      [-440, -600, 400, -1500],
+    ];
+    for (const [realized, stop, target, late] of geometries) {
+      for (const width of [837, 1000, 1300, 1700]) {
+        for (const slider of [5, 6, 7, 8, 9, 10]) {
+          const sessions = DAYS.slice(0, slider + 1).map((_, i) =>
+            bren(i, {
+              tradePnl: i < 5 ? -100 : i === 5 ? realized : late,
+              banked: i >= 5 ? realized : 0,
+              bankedLabel: i >= 5 ? `Realized ${signed(realized)}` : undefined,
+              resultAtStop: fig(stop, `Stop ${signed(stop)}`),
+              resultAtTarget: fig(target, `Target ${signed(target)}`),
+              markers: i === 5 ? [sale] : [],
+              ...(i === 5 && { firstCrossing: [{ line: 'Stop' as const, label: 'Stop breached' }], keyEntries: [{ kind: 'FirstCrossing' as const, label: 'Stop breached' }] }),
+              ...(i === slider && {
+                ...(late < stop && i > 5 && { past: { line: 'Stop' as const, label: '$120 past the Stop', shortLabel: '$120 past' } }),
+                stake: { rewardLabel: 'Remaining Reward $1,020', rewardShortLabel: 'Reward $1,020' },
+              }),
+            }),
+          );
+          const name = `${realized}/${stop}/${target}/${late} at ${width}, slider ${slider}`;
+          frameWidth(width);
+          const { container } = render(<CorridorPlot {...props({ sessions, anchors: { ...props().anchors, planAtStop: fig(stop, 'Stop'), planAtTarget: fig(target, 'Target') }, axis: { slots: 11, startLabel: 'Mon Nov 2', endLabels: [] }, sliderIndex: slider })} />);
+          const svg = pnl(container);
+          const label = svg.querySelector('text.crossing-label')!;
+          const poles = [...svg.querySelectorAll('g.first-crossing path.flag-pole')].map((p) => p.getAttribute('d')!);
+          // A pole's path is "M x y V y2": its x, then the two ends.
+          const poleX = Number(poles[0]!.match(/[\d.]+/g)![0]);
+          const ys = poles.flatMap((d) => d.match(/[\d.]+/g)!.slice(1).map(Number));
+          const [bottom, top] = [Math.max(...ys), Math.min(...ys)];
+          const labelY = num(label, 'y') - 4;
+          expect(Math.abs(num(label, 'x') - poleX), `label beside its pole, ${name}`).toBeCloseTo(6, 0);
+          expect(labelY >= top && labelY <= bottom, `the pole (${top} to ${bottom}) reaches the label's row (${labelY}), ${name}`).toBe(true);
+          const later = [...svg.querySelectorAll('path, rect, circle')].filter((e) => !(label.compareDocumentPosition(e) & Node.DOCUMENT_POSITION_PRECEDING));
+          expect(later.map((e) => e.getAttribute('class')), `nothing drawn over the label, ${name}`).toEqual([]);
+          const cursor = svg.querySelector('path.cursor');
+          if (cursor) {
+            const cx = Number(/^M([\d.]+)/.exec(cursor.getAttribute('d')!)![1]);
+            const box = boxesOf(svg).find((b) => b.name === 'Stop breached')!;
+            expect(box.x0 < cx && cx < box.x1, `the label crosses the cursor line, ${name}`).toBe(false);
+          }
+          cleanup();
+          vi.restoreAllMocks();
+        }
+      }
+    }
+  });
 });
 
 // B6: a text's box as LabelPlacer estimates it (6 px a character and 2 over, from its anchor); it must lie inside the drawing.
