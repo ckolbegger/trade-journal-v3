@@ -747,6 +747,31 @@ Lane BR (`d09ar/br`), base `70ce0f74`.
           - A touch outside the session columns does not clear a mouse hover, which can only happen on a hybrid device.
           - The rule rests on the Chromium probe. Firefox and WebKit are unverified.
     - **Merged** B5's two commits by fast-forward. Lane PL's base `b65d25be` was main's head.
+  - **T9AR.24-B6** `74294bbe` (lane PL, from `14982570`):
+    - **Cause:**
+      - The stake bar and the hatch at the cursor were drawn whether or not their label fitted.
+      - At the last session the centred "past" label ran off the right edge.
+      - The key had no entries for the hatch or the bar.
+    - **Fix:**
+      - The "past" label gets two spots ending at the cursor on the last session, so AXIO Mon Nov 16 shows "$300 past the Stop" at 1280 and 1440.
+      - A bar or hatch at the cursor is drawn only with its label. On a phone its label goes to the strip.
+      - The key names "Past the Stop", "Past the Target" and "At stake" (W66) while each is drawn, on every Trade.
+      - On AXIO Mon Nov 16 the "Remaining Reward $1,200" bar has no room and is dropped. The readout keeps both figures (P148), and the e2e asserts them.
+    - **Cases**, all red then green:
+      - unit: three, covering drawing only with its label and the key, "Past the Stop" in the key, and the past label at the right edge;
+      - e2e: AXIO at 1280 and 1440, and BREN's key.
+      - No first-run passes. No expected values changed.
+    - **Files outside the brief's list**, accepted: `replay.types.ts` (the key's `PlotKeyEntry` union gains three kinds) and `replay-plot.css` (key swatches). Both are lane PL's chart and key files.
+    - **New words:** none. The key entries are W66's.
+    - **Defect 8:** the key gains up to two short entries and was not measured at 1280. B8 takes it.
+    - Browser: 72 passed, with the 320 fit holding. Lane tier `T9AR.24-B6`: unit 2470, integration 286, checks 14 of 14.
+    - **ocr** on `74294bbe` (`ocr/T9AR.24-B6-74294bbe.json`): **no findings**.
+      - Reviewer's notes, for the final report:
+        - The key and the drawing come from one set, so they agree.
+        - A cursor session's hatch with no room for its label is dropped while the slider is on it, and drawn once the slider moves on. This is intended, but visible while dragging.
+        - Earlier sessions' hatches are unlabelled areas, and the key names them. A280 speaks of lines.
+        - The three key words are hardcoded in `corridor.tsx`'s `DRAWN_AREAS`, not in `plot.props.ts` like the other key entries.
+    - **Merged** by fast-forward. Lane PL's base `14982570` was main's head.
         - Reviewer's notes:
           - `isMarkLacking` is exactly MarkMissing or AcknowledgedUnavailable.
           - The Trade P&L row's figure is the contract's own, so the Underlying's Mark cannot reach it.

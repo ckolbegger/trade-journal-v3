@@ -1,0 +1,166 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 6 selected item(s).",
+  "summary": {
+    "files_reviewed": 6,
+    "comments": 0,
+    "total_tokens": 231718,
+    "input_tokens": 230385,
+    "output_tokens": 1333,
+    "cache_read_tokens": 17280,
+    "elapsed": "55s"
+  },
+  "tool_calls": {
+    "total": 13,
+    "by_tool": {
+      "code_search": 4,
+      "file_find": 1,
+      "file_read": 8
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Replay corridor chart, P\u0026L display, styling, and tests",
+      "files": [
+        "e2e/d9ar/chart.spec.ts",
+        "src/ui/cockpit/replay/corridor-pnl.tsx",
+        "src/ui/cockpit/replay/corridor.test.tsx",
+        "src/ui/cockpit/replay/corridor.tsx",
+        "src/ui/cockpit/replay/replay.types.ts",
+        "src/ui/cockpit/styles/replay-plot.css"
+      ]
+    }
+  ],
+  "session_id": "1cc7c32c-d961-4166-8929-4832e3ecb2b9",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "1cc7c32c-d961-4166-8929-4832e3ecb2b9",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "74294bbe",
+      "resolved_base": "14982570a8cdb3f870f27d8079d9b60bffc2e9c1",
+      "resolved_head": "74294bbe3c258c9f48bf8794f752667af3eed68c",
+      "exact_range": "14982570a8cdb3f870f27d8079d9b60bffc2e9c1..74294bbe3c258c9f48bf8794f752667af3eed68c",
+      "source_artifact_sha256": "66050a8ac60b4e56616c71630eebd733bff64147a8590e040da0c3ef67534988"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "18de86b152c71edf7b69e5ef56c77c1958afecdf4524893fdc802e9700a6dfe1",
+          "path": "src/ui/cockpit/replay/corridor-pnl.tsx",
+          "fingerprint": "0cc3e580f7a53f460793d1939e027291b5075f2ecfb8644ed8dbc96b31369575"
+        },
+        {
+          "item_id": "4d061a48434c6088fc28388241ae61f9c345d2f278e56b2b7f845f542f3b4e61",
+          "path": "src/ui/cockpit/replay/replay.types.ts",
+          "fingerprint": "490c8f26f419d1fced5755087baefedabf3b1f855849ef7c06b9ce6a5ed0ab80"
+        },
+        {
+          "item_id": "67c8b9c55df4db1a19bdc33843dfc7b544ae3cacc462c048b5f3913d82cd7b19",
+          "path": "src/ui/cockpit/styles/replay-plot.css",
+          "fingerprint": "c93269889756c829b7ab0493d3e96f7d33331de6324cbdfbec18c1fc2bb3e0d8"
+        },
+        {
+          "item_id": "b9ff77485ea8c227fe111b6e6915407572768e86debadd842eefda14f4e4bcf1",
+          "path": "src/ui/cockpit/replay/corridor.tsx",
+          "fingerprint": "988b7b65cfe5c4bffa665c98b85e07ee90724920c70bf022f46e002c9c26b2eb"
+        },
+        {
+          "item_id": "ba578f97f7698c0e6bcb181e747f8c8ef3dafb90b6f8eef6f25b35b639e1dd2c",
+          "path": "src/ui/cockpit/replay/corridor.test.tsx",
+          "fingerprint": "4294458e19e014b788e2becd6625335d913865e40e538f35a8dae57036512baa"
+        },
+        {
+          "item_id": "ebc9d1c2c701d17b6b1d061b466cab052ef9bc2b403b5d98ee1865f679a05db8",
+          "path": "e2e/d9ar/chart.spec.ts",
+          "fingerprint": "016aafeb1670e4206a5fa4e6db4c5884c3d51f0a36cd3d43a85828dcb9479f96"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "18de86b152c71edf7b69e5ef56c77c1958afecdf4524893fdc802e9700a6dfe1",
+          "path": "src/ui/cockpit/replay/corridor-pnl.tsx",
+          "fingerprint": "0cc3e580f7a53f460793d1939e027291b5075f2ecfb8644ed8dbc96b31369575"
+        },
+        {
+          "item_id": "4d061a48434c6088fc28388241ae61f9c345d2f278e56b2b7f845f542f3b4e61",
+          "path": "src/ui/cockpit/replay/replay.types.ts",
+          "fingerprint": "490c8f26f419d1fced5755087baefedabf3b1f855849ef7c06b9ce6a5ed0ab80"
+        },
+        {
+          "item_id": "67c8b9c55df4db1a19bdc33843dfc7b544ae3cacc462c048b5f3913d82cd7b19",
+          "path": "src/ui/cockpit/styles/replay-plot.css",
+          "fingerprint": "c93269889756c829b7ab0493d3e96f7d33331de6324cbdfbec18c1fc2bb3e0d8"
+        },
+        {
+          "item_id": "b9ff77485ea8c227fe111b6e6915407572768e86debadd842eefda14f4e4bcf1",
+          "path": "src/ui/cockpit/replay/corridor.tsx",
+          "fingerprint": "988b7b65cfe5c4bffa665c98b85e07ee90724920c70bf022f46e002c9c26b2eb"
+        },
+        {
+          "item_id": "ba578f97f7698c0e6bcb181e747f8c8ef3dafb90b6f8eef6f25b35b639e1dd2c",
+          "path": "src/ui/cockpit/replay/corridor.test.tsx",
+          "fingerprint": "4294458e19e014b788e2becd6625335d913865e40e538f35a8dae57036512baa"
+        },
+        {
+          "item_id": "ebc9d1c2c701d17b6b1d061b466cab052ef9bc2b403b5d98ee1865f679a05db8",
+          "path": "e2e/d9ar/chart.spec.ts",
+          "fingerprint": "016aafeb1670e4206a5fa4e6db4c5884c3d51f0a36cd3d43a85828dcb9479f96"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "6ac5ff8d26f5ecc26e05c0054096b883a532a0aa939a349241251bcd4f2343a2",
+          "path": "evidence/D09AR/suite-runs/T9AR.24-B6-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "8b01e85804fac308634c1fec788f09ab1ae7dd16564341ec03522e93949080d1",
+          "path": "evidence/D09AR/suite-runs/T9AR.24-B6-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "aabfdab61de839378e0ca9d258fd4a7c71c066c5063881f3b4a9191318015d49",
+          "path": "evidence/D09AR/suite-runs/T9AR.24-B6-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "dec8ec51eb0417668921dc42157e6ca13f35302d2a861fab5a7c80a1bf6b435c",
+          "path": "evidence/D09AR/tdd-log/T9AR.24-B6.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "fe845604eec17faa0a768945609dd145a90fd6c98a3e228bfb3a666e43120ab6",
+          "path": "evidence/D09AR/suite-runs/T9AR.24-B6-integration.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 55047
+  }
+}
