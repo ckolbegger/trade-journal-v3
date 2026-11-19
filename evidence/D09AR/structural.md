@@ -309,6 +309,8 @@ Lane OV (`d09ar/ov`), base `e526637e`, commit `52838a3a`. 8 planned cases: 3 red
 - **T9AR.9-B2** Case: it should keep the card the trader opened by its header when the overlay closes back to an older address.
 - **T9AR.9-B3** Case: it should go back one entry on the second Close after Replay, Close, Forward (Review card).
 - **T9AR.8-B4** Case: the same on Trade Detail.
+  - Done, one commit each: B1 `04ebce05` (red: the Action panel's `aria-expanded` 'false'; a first fix deleting `instrument` was not enough and was reverted, one extra `green exit=1` row in the log; the fix is in `ReviewView.tsx`'s search-change effect: a change of the `replay` param is recorded as applied and opens no card); B2 `595ee9d3` (test only; first-run pass, B1's fix covers it; mutation, the check made inert, failed with `Unable to find an accessible element with the role "region" and name "ABC review"`); B3 `15e2891f` (red `expected '/review?trade=t1&panel=Action' to be '/review'`); T9AR.8-B4 `5946c86c` (red `expected 'REPLACE' to be 'POP'`). typecheck, tsc6, lint, `lint:deps` exit 0.
+  - Lane tier `T9AR.9-B`: integration 280, checks 14 of 14, **unit 2 failed of 2362**: `src/app/bench-generator.test.ts` and `tools/wording-rules.test.ts`, each at about 5.4 s against the 5 s timeout while two lane tiers ran at once. Reproduced alone by the main session (`npx vitest run --project unit src/app/bench-generator.test.ts tools/wording-rules.test.ts`): 62 of 62 passed. Not reproduced: load timeouts, not a defect; the lane's rerun after its rebase is the tier of record.
 
 ## T9AR.13 Readout: the stake grid, a Trade past a line, the change line
 
@@ -326,7 +328,19 @@ Lane RO (`d09ar/ro`), base `e526637e`, commit `aa047c46`. Planned cases red then
 - **T9AR.13-F1** Structural: the stylesheet rule is the one source; the case checks the rule.
   - Done: `06741b51`. `UNBREAKABLE` and the three inline styles removed from `readout.tsx`; the "unbreakable cells" case reads `replay-readout.css` with postcss (as `corridor.test.tsx` does) and checks each figure cell is a `td` in `.replay-stake-grid`. `readout.test.tsx` 8 of 8; typecheck, lint exit 0. Mutation (the `nowrap` line deleted): `expected undefined to be 'nowrap'`, restored. Lane tier `T9AR.13-F1`: unit 2370, integration 280, checks 14 of 14. ocr on `06741b51` (`ocr/T9AR.13-F1-06741b51.json`): 0 comments, **no findings**.
 - Lane RO rebased onto `bc7444e2` (it brought in T9AR.6 and T9AR.11; `new-words.md` conflicted and was resolved by keeping both tasks' rows): `e7c42f5d` (T9AR.13), `a086218b` (F1). Lane tier rerun as `T9AR.13-rebased`: unit 2373, integration 280, checks 14 of 14; `run-complete.sh`: run complete. Merged by fast-forward to `a086218b`.
-- Lane PL then rebased onto `a086218b` (`DECISIONS-PENDING.md` conflicted; main's answered version kept): `8bf78d34` (T9AR.12), `94ea7114` (D1), `373f41dc` (B1), `912e01db` (F1). Lane tier rerun as `T9AR.12-rebased`.
+- Lane PL then rebased onto `a086218b` (`DECISIONS-PENDING.md` conflicted; main's answered version kept): `8bf78d34` (T9AR.12), `94ea7114` (D1), `373f41dc` (B1), `912e01db` (F1). Lane tier rerun as `T9AR.12-rebased`: unit 2379, integration 280, checks 14 of 14; `run-complete.sh`: run complete. Rebased again over the evidence-only `bcab74c4` (no code between, no rerun): `9c501b86`, `c2b1f641`, `33146bfe`, `199c0216`. Merged by fast-forward to `199c0216`.
+
+## T9AR.16 The top of the replay, a session with no Mark, the hover box
+
+Lane SC (`d09ar/sc`), base `b75e4597`, commit `0ba39920` (four of five planned cases). Red then green: the date beside the headline figure; the no-Mark line in `calculation-words.test.ts` (a new `line` length) and in `session-words.props.test.ts` (an existing case rewritten) and in the frame (normal size); the hover box over the chart. First-run pass: the acknowledgment case (the `line` length already sent every other reason to its figure words); mutation (AcknowledgedUnavailable no longer sent to its figure words) failed with `expected { …(2) } to deeply equal { …(2) }`. Lane tier `T9AR.16`: unit 2362, integration 280, checks 14 of 14. Browser: `gaps.spec.ts` with `states.spec.ts` 7 passed.
+
+- **Not built: "Add the Mark".** `ReplayFrameSession` carries no link target and the frame cannot tell an Open Trade. Routed to lane TY as **T9AR.2-B1** (an optional `addMarkTo?` on `ReplayFrameSession`, set by the adapter only on an Open Trade, A281); T9AR.16's last case follows in lane SC once it merges.
+- Lines changed (section 1.5's "headline on a session with no Mark" row): `e2e/d9/gaps.spec.ts` (2) and `e2e/d9/states.spec.ts` (2): the headline reads "No Mark for the put on …", the going line count 0. The row's `replay.props.test.ts` "Mark missing" lines now live in `session-words.props.test.ts` (T9AR.2's split); changed there. Hover row: the existing `frame.test.tsx` hover cases unchanged.
+- Words: W61's line replaces "Mark missing: CORV Nov 20 $80 Put, Tue Nov 10" (largest type) and the "No Mark." sentence; the acknowledgment's words unchanged, now at normal size. Uncovered: the session's date beside the headline (muted, smaller); "the call" for a call (the plan names the put).
+- Types: `WordLength` gains `'line'`; `topLineOf` added beside `headlineOf`.
+- **Layout note:** the frame now wraps the plot and the hover box in `div.replay-chart-box` (the overlay grid's child). The task reports that `.replay-overlay .replay-plot-frame` (column 1, T9AR.7-B2) never matched the plot, which was `.replay-corridor`. To check at T9AR.16's merge, and route to lane OV if the overlay's two columns are not in effect.
+- ocr on `0ba39920` (`ocr/T9AR.16-0ba39920.json`): 9 files (5 excluded), 0 comments. **No findings.**
+- **T9AR.2-B1** (lane TY) done: `7f6618fc`, `replay.types.ts` only: `ReplayFrameSession.addMarkTo?` after `headline`, naming A281. typecheck, tsc6, lint exit 0; `src/ui/cockpit/replay` 156 passed.
 
 ## Suite runs
 
