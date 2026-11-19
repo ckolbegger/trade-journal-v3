@@ -16,7 +16,7 @@ function triggerOf(view: TradeReplayView, session: ViewSession, role: 'Stop' | '
   return { kind: 'Figure', text: bare ? decimalUnderlyingPrice(condition.boundary) : decimalMoney(condition.boundary) };
 }
 
-const stakeCardRow = ({ label, term, fromHere, r, pnlIfHit, weight }: StakeRow): SessionCardRow => ({ label, value: fromHere, ...(r && { r }), ...(pnlIfHit && { pnl: pnlIfHit }), term, ...(weight && { weight }) });
+const stakeCardRow = ({ label, term, fromHere, r, pnlIfHit, weight }: StakeRow): SessionCardRow => ({ label, value: fromHere, ...(r?.text && { r }), ...(pnlIfHit?.text && { pnl: pnlIfHit }), term, ...(weight && { weight }) });
 
 export function cardOf(view: TradeReplayView, session: ViewSession, readout: readonly ReadoutGroup[]): SessionCardBody {
   const group = (title: string) => readout.find((g) => g.title === title);

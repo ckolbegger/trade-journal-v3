@@ -1,0 +1,11 @@
+# D09AR TDD log, T9AR.17-B3
+
+One file per task (decision 111), so parallel lanes never edit one file. Each row is one single-case run; see `../tdd-log.md` for the rules.
+
+| T9AR.17-B3 | should hold every per-session figure on a card, top to bottom | red | `npx vitest run src/ui/cockpit/replay/cards.props.test.ts -t "should hold every per-session figure on a card, top to bottom"` | exit 0; Tests  1 passed (1) |  |
+| T9AR.17-B3 | should leave out the R and the P&L if hit of a stake row that has none | red | `npx vitest run src/ui/cockpit/replay/cards.props.test.ts -t "should leave out the R and the P&L if hit of a stake row that has none"` | exit 1; Tests  1 failed, 1 skipped (2) | AssertionError: expected 'Not applicable: no open position' to be '' // Object.is equality  |
+| T9AR.17-B3 | should leave out the R and the P&L if hit of a stake row that has none | red | `npx vitest run src/ui/cockpit/replay/cards.props.test.ts -t "should leave out the R and the P&L if hit of a stake row that has none"` | exit 1; Tests  1 failed, 1 skipped (2) | AssertionError: expected { label: 'At Worst case', …(5) } to not have property "r"  |
+| T9AR.17-B3 | should leave out the R and the P&L if hit of a stake row that has none | green | `npx vitest run src/ui/cockpit/replay/cards.props.test.ts -t "should leave out the R and the P&L if hit of a stake row that has none"` | exit 1; Tests  1 failed, 1 skipped (2) | AssertionError: expected { label: 'At Worst case', …(4) } to not have property "pnl"  |
+| T9AR.17-B3 | should leave out the R and the P&L if hit of a stake row that has none | green | `npx vitest run src/ui/cockpit/replay/cards.props.test.ts -t "should leave out the R and the P&L if hit of a stake row that has none"` | exit 0; Tests  1 passed, 1 skipped (2) |  |
+| T9AR.17-B3 | should leave out the R and the P&L if hit of a stake row that has none | green | `npx vitest run src/ui/cockpit/replay/cards.props.test.ts -t "should leave out the R and the P&L if hit of a stake row that has none"` | exit 0; Tests  1 passed, 1 skipped (2) |  |
+| T9AR.17-B3 | should leave out the R and the P&L if hit of a stake row that has none | green | `npx vitest run src/ui/cockpit/replay/cards.props.test.ts -t "should leave out the R and the P&L if hit of a stake row that has none"` | exit 0; Tests  1 passed, 1 skipped (2) |  |
