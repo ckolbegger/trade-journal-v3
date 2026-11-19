@@ -108,6 +108,15 @@ export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange, i
     if (wasOpen.current && !replayOpen) replayButton.current?.focus();
     wasOpen.current = replayOpen === true;
   }, [replayOpen]);
+  // An address that names Price History and a session (the Review's link, a reload, a pasted address) arrives the way Replay's own link does:
+  // once the replay is read and the history is drawn, that session's column header takes focus and scrolls into view.
+  const arrival = useRef({ wanted: initialDrawer === 'Price History' ? initialSession : undefined });
+  useEffect(() => {
+    const date = arrival.current.wanted;
+    if (!date || !replay || replayOpen || !shown.includes('Price History')) return;
+    arrival.current.wanted = undefined;
+    requestDrawer('Price History', { selector: `th[data-session="${date}"]` });
+  });
   const answered = useRef<DrawerFocus | undefined>(undefined);
   useEffect(() => {
     if (!focusing || replayOpen || answered.current === focusing) return;
@@ -121,6 +130,8 @@ export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange, i
     if (!target) return;
     if (!target.hasAttribute('tabindex')) target.tabIndex = -1;
     target.focus();
+    // A focus alone leaves a column that is beyond a sticky row-label column out of view on arrival; jsdom has no scrollIntoView.
+    if (typeof target.scrollIntoView === 'function') target.scrollIntoView({ block: 'nearest', inline: 'nearest' });
   }, [focusing, replayOpen]);
   const [reflecting, setReflecting] = useState<string>();
   const reflectNow = (debtId: string) => {

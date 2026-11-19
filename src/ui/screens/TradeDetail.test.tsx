@@ -675,6 +675,13 @@ describe('Replay: audit navigation (W46)', () => {
     expect(document.activeElement?.textContent).toBe('MonOct 12');
   });
 
+  it('should arrive from an address naming Price History and a session with that session column in focus', async () => {
+    renderWith(facadeOf({ replayResult: { kind: 'Ready', view: withMonday(), binding: BINDING } }), '/trades/trade-1?drawer=price-history&session=2026-10-12&from=review');
+    await screen.findByRole('region', { name: 'State of play' });
+    await waitFor(() => expect(document.activeElement?.textContent).toBe('MonOct 12'));
+    expect(screen.getByRole('tab', { selected: true }).getAttribute('aria-label')).toBe('Price History');
+  });
+
   it('should offer Position on a session with a marker, with the Execution row in focus', async () => {
     const user = userEvent.setup();
     // Tuesday has no marker, so no link.

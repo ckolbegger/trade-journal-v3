@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import {
-  actionEntriesOf, actionFormOf, buildReview, cardReplayButton, closeButton, detail, expect, headline, openCardReplay, probe, reachCard, READY, replay, seek, sliderValue, test, tradeCard, workspaceOf,
+  actionEntriesOf, actionFormOf, boxOf, buildReview,cardReplayButton, closeButton, detail, expect, headline, openCardReplay, probe, reachCard, READY, replay, seek, sliderValue, test, tradeCard, workspaceOf,
   type TradeRef,
 } from './support.ts';
 
@@ -138,6 +138,27 @@ test.describe('B9AR.2 The overlay in the Review, and the summary', () => {
     await closeButton(replay(page)).click();
     await expectActionStarted(page, bren, 'after Forward and Back');
     expect(await actions(page), 'the browser trips record nothing').toBe(0);
+    await context.close();
+  });
+
+  // T9AR.24-B11 (gate critic-2, defect 3, W46): Price History from the Review's overlay arrives with the session's column header focused and in view.
+  test('should arrive at Price History from the Review with the slider session column header focused and inside its scroller', async ({ profile }) => {
+    test.setTimeout(420_000);
+    const { context, page, trades } = await buildReview(profile);
+    const axio = trades[1]!;
+    await reachCard(page, axio);
+    const section = await openCardReplay(page, axio);
+    await seek(page, section, 'ArrowLeft', 5);
+    await expect(sliderValue(section)).toHaveText(/^Mon Nov 9 · /);
+    await section.getByRole('link', { name: 'Price History' }).click();
+    await expect(detail.heading(page, 'AXIO')).toBeVisible(READY);
+    await expect(page).toHaveURL(/drawer=price-history&session=2026-11-09&from=review/);
+    const header = page.getByRole('columnheader', { name: /Mon\s*Nov 9/ });
+    await expect(header).toBeFocused(READY);
+    const scroller = page.getByRole('region', { name: 'Price History' });
+    const [h, s] = [await boxOf(header), await boxOf(scroller)];
+    expect(h.x, 'column starts inside the scroller').toBeGreaterThanOrEqual(s.x - 1);
+    expect(h.x + h.width, 'column ends inside the scroller').toBeLessThanOrEqual(s.x + s.width + 1);
     await context.close();
   });
 

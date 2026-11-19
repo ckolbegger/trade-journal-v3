@@ -1,0 +1,9 @@
+# D09AR TDD log, T9AR.24-B11
+
+One file per task (decision 111), so parallel lanes never edit one file. Each row is one single-case run; see `../tdd-log.md` for the rules.
+
+| T9AR.24-B11 | should arrive from an address naming Price History and a session with that session column in focus | red | `npx vitest run src/ui/screens/TradeDetail.test.tsx -t "should arrive from an address naming Price History and a session with that session column in focus"` | exit 1; Tests  1 failed, 29 skipped (30) | AssertionError: expected 'Back to the ReviewBack to TradesXYZLo…' to be 'MonOct 12' // Object.is equality Expected: "MonOct 12"  |
+| T9AR.24-B11 | should arrive from an address naming Price History and a session with that session column in focus | green | `npx vitest run src/ui/screens/TradeDetail.test.tsx -t "should arrive from an address naming Price History and a session with that session column in focus"` | exit 0; Tests  1 passed, 29 skipped (30) |  |
+| T9AR.24-B11 | should arrive from an address naming Price History and a session with that session column in focus | green | `npx vitest run src/ui/screens/TradeDetail.test.tsx -t "should arrive from an address naming Price History and a session with that session column in focus"` | exit 0; Tests  1 passed, 29 skipped (30) |  |
+| note | e2e red | e2e/d9ar/review.spec.ts "should arrive at Price History from the Review with the slider session column header focused and inside its scroller": red with the arrival step disabled (Expected: focused, Received: inactive); the first fix (focus only) left the column at x 1299 outside the scroller (1215), so scrollIntoView was added; green after, 92 passed across e2e/d9ar, d9 review/replay/responsive-a11y, d8p, d8r, d4 specs naming drawer=price-history |
+| refactor | none beyond the fix | no changes; a typeof guard on scrollIntoView keeps jsdom working |
