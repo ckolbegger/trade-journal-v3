@@ -7,7 +7,7 @@ import { decimalMoney, money, quantity, rMultiple, shortDate, summaryStrike } fr
 import { conditionDirection } from '../../screens/option-words.ts';
 import type { PlanBlock, ReadoutGroup, ReadoutValue, StakeGrid, StakePastLineRow, StakeRow } from './replay.types.ts';
 import { crossedCondition, headlineOf, markerPlanWords } from './session-words.props.ts';
-import { ratioWords, ratioWordsOf } from './stake-words.props.ts';
+import { pastLineWords, ratioWords, ratioWordsOf } from './stake-words.props.ts';
 
 // The readout's rows (W43): finished values selected and formatted from the view; no figure is worked out here (ADR 0001, A256).
 type ViewSession = TradeReplayView['sessions'][number];
@@ -75,7 +75,7 @@ function goingGroup(session: ViewSession): ReadoutGroup {
 
 // "Past the Stop by $300.00 (0.50R) · at Stop −$740.00": a Trade past a line, in one row. A planned amount passed with the condition not crossed is no breach (W37).
 function pastLineRow(role: 'Stop' | 'Target', pastBy: { dollars: Rational; r: Rational; crossed: boolean }, outcome: CalculationResult<Rational> | undefined): StakePastLineRow {
-  const line = `Past the ${role}${pastBy.crossed ? '' : "'s amount"} by ${money(pastBy.dollars)} (${rMultiple(pastBy.r)})`;
+  const line = pastLineWords(role, pastBy);
   return { text: `${line} · at ${role} ${valueOf(outcome, signedMoney).text}`, term: `${role} Overrun` };
 }
 
