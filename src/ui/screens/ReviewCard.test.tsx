@@ -1849,6 +1849,28 @@ describe('Review card: the Replay button (decision 3)', () => {
     expect(screen.queryByRole('region', { name: 'XYZ review' })).toBeNull();
   });
 
+  it('should go back one entry on the second Close after Replay, Close, Forward', async () => {
+    const user = userEvent.setup();
+    renderWalk(walkFacade(ready([item('t1', 'XYZ')]), tradeReview('t1', 'XYZ', { replay: THURSDAY_AND_MONDAY })));
+    const card = await openTrade(user, 'XYZ');
+    const before = here.address;
+    await user.click(within(card).getByRole('button', { name: 'Replay' }));
+    await user.click(within(await screen.findByRole('dialog', { name: 'Replay, XYZ' })).getByRole('button', { name: 'Close' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    await act(() => {
+      here.go?.(1);
+      return Promise.resolve();
+    });
+    const dialog = await screen.findByRole('dialog', { name: 'Replay, XYZ' });
+    await user.click(within(dialog).getByRole('button', { name: 'Close' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(here.address).toBe(before);
+    expect(here.how).toBe('POP');
+    // No extra closed entry is left: one more Back stays where it was.
+    await browserBack();
+    expect(here.address).toBe(before);
+  });
+
   it('should show no Replay button on a card that only owes reflections, or one whose Trade facts cannot be replayed', async () => {
     const user = userEvent.setup();
     const progress = reflectionsOwedProgress(1, 0);
