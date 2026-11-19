@@ -834,22 +834,29 @@ describe('Corridor: labels apart (T9.19-B2)', () => {
   });
 
   // T9AR.24-B7: R-AXIO-D's Stop breached flag (Mon 11-09, slot 5) is on every later session, though that session's own labels (the hatch's, the
-  // stake tags, the Execution's) crowd it; the flag, a fact that stays, is placed before the labels that belong to the session on the slider.
+  // stake tags, the Execution's) crowd it; the flag, a fact that stays, takes the first free row down the pole, after those labels are placed.
+  // The series is R-AXIO-D's own (reference-trade.ts): 200 shares bought at $50.00, 100 sold at $45.60 on slot 5, the Marks AXIO_D_UNDERLYING.
   it('should keep the Stop breached flag drawn, clear of every other label, on each AXIO session after Mon 11-09', () => {
+    const tradePnl = [-60, -20, -160, -280, -380, -920, -860, -950, -1010, -930, -1040];
     for (const slider of [5, 6, 7, 10]) {
       const base = axio(slider);
       const sessions = base.sessions!.map((s, i) => ({
         ...s,
         ...(i === 5 && { firstCrossing: [{ line: 'Stop' as const, label: 'Stop breached' }], keyEntries: [{ kind: 'FirstCrossing' as const, label: 'Stop breached' }] }),
-        // The real sessions after the sale: the Trade P&L is past the Stop, the hatch is labelled and only the reward's stake tag is drawn.
-        resultAtTarget: fig(160, 'Target +$160'),
-        worstCase: fig(-5440, 'Worst case −$5,440 ↓', 'Worst −$5,440'),
-        ...(i >= 6 && { tradePnl: -860 }),
-        ...(i === slider && slider > 5 && { past: { line: 'Stop' as const, label: '$120 past the Stop', shortLabel: '$120 past' }, stake: { rewardLabel: 'Remaining Reward $1,020', rewardShortLabel: 'Reward $1,020' } }),
+        // Before the sale the Stop is -$600 and the Target +$1,200; after it the Stop is -$740 and the Target +$160, with the Worst case at -$5,440.
+        tradePnl: tradePnl[i]!,
+        resultAtStop: fig(i < 5 ? -600 : -740, i < 5 ? 'Stop −$600' : 'Stop −$740'),
+        resultAtTarget: i < 5 ? fig(1200, 'Target +$1,200') : fig(160, 'Target +$160'),
+        worstCase: i < 5 ? fig(-10000, 'Worst case −$10,000 ↓', 'Worst −$10,000') : fig(-5440, 'Worst case −$5,440 ↓', 'Worst −$5,440'),
+        // On the slider's session after the sale the Trade P&L is past the Stop, the hatch is labelled and only the reward's stake tag is drawn.
+        ...(i === slider && i >= 5 && {
+          past: { line: 'Stop' as const, label: `$${-740 - tradePnl[i]!} past the Stop`, shortLabel: `$${-740 - tradePnl[i]!} past` },
+          stake: { rewardLabel: `Remaining Reward $${(160 - tradePnl[i]!).toLocaleString('en-US')}`, rewardShortLabel: `Reward $${(160 - tradePnl[i]!).toLocaleString('en-US')}` },
+        }),
       }));
       frameWidth(837);
       // A stock's axis has the eleven sessions and no expiration, so each column is wider than the option fixtures'.
-      const { container } = render(<CorridorPlot {...props({ ...base, sessions, anchors: { ...base.anchors!, planAtTarget: fig(1000, 'Target +$1,000') }, axis: { slots: 11, startLabel: 'Mon Nov 2', endLabels: [] } })} />);
+      const { container } = render(<CorridorPlot {...props({ ...base, sessions, anchors: { ...base.anchors!, planAtTarget: fig(1200, 'Target +$1,200') }, axis: { slots: 11, startLabel: 'Mon Nov 2', endLabels: [] } })} />);
       expect([...pnl(container).querySelectorAll('text.crossing-label')].map((t) => t.textContent), `slider ${slider}`).toEqual(['Stop breached']);
       expect([...container.querySelectorAll('.replay-key li')].map((li) => li.textContent), `key at ${slider}`).toContain('Stop breached');
       expect(clashes(pnl(container)), `slider ${slider}`).toEqual([]);
@@ -857,6 +864,7 @@ describe('Corridor: labels apart (T9.19-B2)', () => {
       vi.restoreAllMocks();
     }
   });
+
 });
 
 // B6: a text's box as LabelPlacer estimates it (6 px a character and 2 over, from its anchor); it must lie inside the drawing.
