@@ -1146,7 +1146,14 @@ describe('Corridor on a phone (suggestion 9)', () => {
       const x = num(t, 'x');
       const w = t.textContent.length * 6 + 2;
       const a = t.getAttribute('text-anchor');
-      const x0 = a === 'start' ? x : a === 'end' ? x - w : x - w / 2;
+      let x0: number;
+      if (a === 'start') {
+        x0 = x;
+      } else if (a === 'end') {
+        x0 = x - w;
+      } else {
+        x0 = x - w / 2;
+      }
       return { x0, x1: x0 + w, text: t.textContent };
     };
     for (const slider of [14, 0]) {
