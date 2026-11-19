@@ -220,7 +220,10 @@ export function drawPnl(props: ReplayPlotProps, width: number): DrawnChart {
   // slider's session under the cursor. An edge label the cursor's name would cover is left out.
   const span = (text: string, x: number, anchor: 'start' | 'middle' | 'end') => {
     const w = text.length * 6 + 2;
-    const x0 = anchor === 'start' ? x : anchor === 'end' ? x - w : x - w / 2;
+    let x0: number;
+    if (anchor === 'start') x0 = x;
+    else if (anchor === 'end') x0 = x - w;
+    else x0 = x - w / 2;
     return { x0, x1: x0 + w };
   };
   const cursorText = current ? (props.cursorLabel ?? current.dateLabel) : undefined;
