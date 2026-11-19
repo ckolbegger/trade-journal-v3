@@ -51,15 +51,17 @@ describe('Replay overlay (decision 3)', () => {
   it('should keep Tab and Shift+Tab inside the dialog', async () => {
     open();
     const user = userEvent.setup();
-    const dialog = screen.getByRole('dialog');
-    for (let i = 0; i < 5; i++) {
-      await user.tab();
-      expect(dialog.contains(document.activeElement)).toBe(true);
-    }
-    for (let i = 0; i < 5; i++) {
-      await user.tab({ shift: true });
-      expect(dialog.contains(document.activeElement)).toBe(true);
-    }
+    const close = screen.getByRole('button', { name: 'Close' });
+    const inside = screen.getByRole('button', { name: 'Inside button' });
+    expect(document.activeElement).toBe(close);
+    await user.tab();
+    expect(document.activeElement).toBe(inside);
+    await user.tab();
+    expect(document.activeElement).toBe(close);
+    await user.tab({ shift: true });
+    expect(document.activeElement).toBe(inside);
+    await user.tab({ shift: true });
+    expect(document.activeElement).toBe(close);
   });
 
   it('should wrap Tab from the last control that can take focus to Close, and Shift+Tab from Close to it, when the dialog holds a closed details with a summary and a hidden region that has tabIndex 0', async () => {
