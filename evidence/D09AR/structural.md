@@ -589,6 +589,32 @@ Lane BR (`d09ar/br`), base `70ce0f74`.
         - Reviewer's notes: the loose pattern gave no false failures on card words and catches a parted sign; a plain pair cannot swallow the edge pair.
         - Watch item: "63% of the way" in the status line would fail the check if it ever reached a card.
       - **Merged** B1 and B1-B1 by fast-forward (lane SC's base `69cb4360` was main's head). The quick run is folded into the full run after the last fix, since each fix's lane tier and browser files already ran.
+  - **T9AR.24-B2** `85c8f95c` (lane RO, from `b443b4c3`):
+    - `figureParts` moved to `figure-parts.ts` (`cards.props.ts` re-exports it).
+    - A shared `Words` component (`figure-words.tsx`) draws each figure in a nowrap `card-figure` span. It is used by:
+      - the session cards;
+      - the readout's past-a-line row and its rows (ratio, odds, change line);
+      - the overlay's header.
+    - Stake-grid cells stay plain; their CSS already keeps each cell whole.
+    - Cases:
+      - "draw every figure of the past-a-line row, the rows and the change line as one unbreakable piece with its sign": red `$552.00: expected [] to include '$552.00'`, then green. It was renamed after the red.
+      - "keep the header's figure as one unbreakable piece with its sign": red `expected [] to deeply equal [ '−$2,088.00' ]`, then green.
+      - E2e "keep every figure in the readout and the header on one line … at 1280, 1440, 1920, 375 and 320", run on DALE-hold Mon Nov 16, AXIO Mon Nov 16 and DALE-hold Thu Nov 12, with an independent loose pattern: red, 3 failed ("unmarked figure in "down $1.10 since Fri Nov 13""); green, 3 passed.
+    - The red was taken with the fix stashed. The shared stash list holds no entry from this session afterwards.
+    - No existing expected value changed.
+    - Browser: `e2e/d9ar` plus `e2e/d9` `gaps`, `replay` and `responsive-a11y`: 69 passed, with the 320 fit holding. Lane tier `T9AR.24-B2`: unit 2459, integration 286, checks 14 of 14.
+    - **ocr** on `85c8f95c` (`ocr/T9AR.24-B2-85c8f95c.json`): 9 files, 1 comment.
+      - **T9AR.24-B2-F1** (Valid, maintainability, `readout.tsx:11`): a nested ternary. Done as `096c855b`:
+        - three early returns with the same output;
+        - replay tests 230 green and unchanged;
+        - lane tier unit 2459, integration 286, checks 14 of 14;
+        - ocr (`ocr/T9AR.24-B2-F1-096c855b.json`): **no findings**.
+      - **Merged:** rebased onto `bc683ada` (evidence and plan only) and fast-forwarded. B2 is `825dd738`, F1 `c354ff33`.
+      - Reviewer's notes:
+        - `card-figure` is a global rule, loaded app-wide, so it holds in the overlay. Its name ties it to the cards' stylesheet.
+        - The dialog's name and the header's text are unchanged.
+        - The No Mark dash and the odds keep their `role="img"` labels.
+        - The change line and the Plan comparison read the same.
   - Minor observations, for the final report:
     - A final session's headline has no R.
     - "up $0.00 since Thu Nov 19" on the expired DALE-U.

@@ -1,0 +1,209 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 9 selected item(s).",
+  "summary": {
+    "files_reviewed": 9,
+    "comments": 1,
+    "total_tokens": 107860,
+    "input_tokens": 106230,
+    "output_tokens": 1630,
+    "cache_read_tokens": 9984,
+    "elapsed": "1m19s"
+  },
+  "tool_calls": {
+    "total": 17,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 6,
+      "file_read": 10
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/replay/readout.tsx",
+      "content": "This adds a nested ternary, which the review checklist explicitly prohibits. Handle the unavailable marker with an early return, then use a single conditional to choose between `Words` and plain text so the row/grid distinction remains clear.",
+      "existing_code": "  ) : inRow ? (\n    \u003cWords text={value.text} /\u003e",
+      "start_line": 11,
+      "end_line": 12,
+      "category": "maintainability",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Replay figure parts and words refactor with overlay and readout integration",
+      "files": [
+        "e2e/d9ar/readout.spec.ts",
+        "src/ui/cockpit/replay/cards.props.ts",
+        "src/ui/cockpit/replay/figure-parts.ts",
+        "src/ui/cockpit/replay/figure-words.tsx",
+        "src/ui/cockpit/replay/overlay.test.tsx",
+        "src/ui/cockpit/replay/overlay.tsx",
+        "src/ui/cockpit/replay/readout.test.tsx",
+        "src/ui/cockpit/replay/readout.tsx",
+        "src/ui/cockpit/replay/session-cards.tsx"
+      ]
+    }
+  ],
+  "session_id": "7d042faf-c45c-4f49-bb83-4c01ce6217d0",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "7d042faf-c45c-4f49-bb83-4c01ce6217d0",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "85c8f95c",
+      "resolved_base": "b443b4c31197af7926f84d382edb78795ffdc1f1",
+      "resolved_head": "85c8f95c27b474f8e536a5f73458de394053e521",
+      "exact_range": "b443b4c31197af7926f84d382edb78795ffdc1f1..85c8f95c27b474f8e536a5f73458de394053e521",
+      "source_artifact_sha256": "3ad4ac635fe1d93af1aa9e30f716adf750a68ec2048f48cea19746668dc3aab9"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "043c18224e1363aae52e830f5a8d7ca6804934be44af6999409659137216bf89",
+          "path": "src/ui/cockpit/replay/session-cards.tsx",
+          "fingerprint": "804fa3ad31db0b35c604ae034865ca741bd078fc9e1105ba7a14de7565060bb1"
+        },
+        {
+          "item_id": "1f1cde75c007ef44b7a42884ebbefdadc6bd52a3556903ee28f2f353ead37e61",
+          "path": "e2e/d9ar/readout.spec.ts",
+          "fingerprint": "3b8070ae3d28d39c7af69fd2f62961738c4ed96cc0475e6b601b0c611f166643"
+        },
+        {
+          "item_id": "40e532c485d36ff93b0b2d9c4484480c51906d67b1ca219dcb3425dc15fe41f0",
+          "path": "src/ui/cockpit/replay/figure-parts.ts",
+          "fingerprint": "337b085cdb874b633bb4cc33ff0205277dfbf1143ebcb0a424c87b65b43f5b7c"
+        },
+        {
+          "item_id": "4bff47699e89dd1fa74ea24a7ec2ab9e5b3419e9791e79fd1108b630c332a950",
+          "path": "src/ui/cockpit/replay/cards.props.ts",
+          "fingerprint": "6154bf3ec2de2ef7b841db9faa29e0afa885ff9e8a744204bcf35329877ec6b7"
+        },
+        {
+          "item_id": "6d86b77abf8fdc8225b334a55d2bb3f62131271add4d139cb41a499b1d9c9a07",
+          "path": "src/ui/cockpit/replay/readout.tsx",
+          "fingerprint": "b28b43039ce4e6524de558b793299f82ceb530dda0ed4ec9f2af495bd646661d"
+        },
+        {
+          "item_id": "8b547364fd0ee37ffb23b8a069fa28da75878d5d15fe22c97908e2f019a35c39",
+          "path": "src/ui/cockpit/replay/figure-words.tsx",
+          "fingerprint": "caf866e5c7b3a966703479f4f04928289165ea5e755be89dcbe2da65d1471b08"
+        },
+        {
+          "item_id": "9d9fa217e129811e2651c02ebf53a158c6611c1aa867b6abb12f116117d9379c",
+          "path": "src/ui/cockpit/replay/readout.test.tsx",
+          "fingerprint": "87336287c0d96685b2eacf859c1b0d0b7562d0e4a28315da6211a21b4c151b1e"
+        },
+        {
+          "item_id": "e1f92202f07a1fca0a590345d20829a25e1a08332816189a8bbcb90cd7573047",
+          "path": "src/ui/cockpit/replay/overlay.test.tsx",
+          "fingerprint": "9b7500ff8626d3ea2b6af2f2097019fe8e20d3ae6d56ef1d8893b063612b7462"
+        },
+        {
+          "item_id": "f988deb822048101fc25fabacdda8b5fbd876414f9f75e9ab850767bfddd76f8",
+          "path": "src/ui/cockpit/replay/overlay.tsx",
+          "fingerprint": "0d7fa91892d49bad3580aa2f5eabf5de1d296bb17f4572daf028a893ed5037bc"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "043c18224e1363aae52e830f5a8d7ca6804934be44af6999409659137216bf89",
+          "path": "src/ui/cockpit/replay/session-cards.tsx",
+          "fingerprint": "804fa3ad31db0b35c604ae034865ca741bd078fc9e1105ba7a14de7565060bb1"
+        },
+        {
+          "item_id": "1f1cde75c007ef44b7a42884ebbefdadc6bd52a3556903ee28f2f353ead37e61",
+          "path": "e2e/d9ar/readout.spec.ts",
+          "fingerprint": "3b8070ae3d28d39c7af69fd2f62961738c4ed96cc0475e6b601b0c611f166643"
+        },
+        {
+          "item_id": "40e532c485d36ff93b0b2d9c4484480c51906d67b1ca219dcb3425dc15fe41f0",
+          "path": "src/ui/cockpit/replay/figure-parts.ts",
+          "fingerprint": "337b085cdb874b633bb4cc33ff0205277dfbf1143ebcb0a424c87b65b43f5b7c"
+        },
+        {
+          "item_id": "4bff47699e89dd1fa74ea24a7ec2ab9e5b3419e9791e79fd1108b630c332a950",
+          "path": "src/ui/cockpit/replay/cards.props.ts",
+          "fingerprint": "6154bf3ec2de2ef7b841db9faa29e0afa885ff9e8a744204bcf35329877ec6b7"
+        },
+        {
+          "item_id": "6d86b77abf8fdc8225b334a55d2bb3f62131271add4d139cb41a499b1d9c9a07",
+          "path": "src/ui/cockpit/replay/readout.tsx",
+          "fingerprint": "b28b43039ce4e6524de558b793299f82ceb530dda0ed4ec9f2af495bd646661d"
+        },
+        {
+          "item_id": "8b547364fd0ee37ffb23b8a069fa28da75878d5d15fe22c97908e2f019a35c39",
+          "path": "src/ui/cockpit/replay/figure-words.tsx",
+          "fingerprint": "caf866e5c7b3a966703479f4f04928289165ea5e755be89dcbe2da65d1471b08"
+        },
+        {
+          "item_id": "9d9fa217e129811e2651c02ebf53a158c6611c1aa867b6abb12f116117d9379c",
+          "path": "src/ui/cockpit/replay/readout.test.tsx",
+          "fingerprint": "87336287c0d96685b2eacf859c1b0d0b7562d0e4a28315da6211a21b4c151b1e"
+        },
+        {
+          "item_id": "e1f92202f07a1fca0a590345d20829a25e1a08332816189a8bbcb90cd7573047",
+          "path": "src/ui/cockpit/replay/overlay.test.tsx",
+          "fingerprint": "9b7500ff8626d3ea2b6af2f2097019fe8e20d3ae6d56ef1d8893b063612b7462"
+        },
+        {
+          "item_id": "f988deb822048101fc25fabacdda8b5fbd876414f9f75e9ab850767bfddd76f8",
+          "path": "src/ui/cockpit/replay/overlay.tsx",
+          "fingerprint": "0d7fa91892d49bad3580aa2f5eabf5de1d296bb17f4572daf028a893ed5037bc"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "0a7b07e243e826ff5a875e2a789b245310fcbdaf330bb4a799c32ab48c2f3ef9",
+          "path": "evidence/D09AR/suite-runs/T9AR.24-B2-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "0e707517e0f0b4ea75718453a41b3a8b429692811d62d4d50776ce5ebfd29934",
+          "path": "evidence/D09AR/suite-runs/T9AR.24-B2-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "3ecad5b3668d0f925043c0f856b17aa4cbecb45fabce936922f0e3ba714fa114",
+          "path": "evidence/D09AR/tdd-log/T9AR.24-B2.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "9723df2b76e3ecc376be1cc6ce9fa704c64b12f23a8911fc299917b7f6f43cae",
+          "path": "evidence/D09AR/suite-runs/T9AR.24-B2-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "aac5997403e9a6e1b5cfe3d16e5d5eb44aaf22496f1c1a927e473d855c7e57af",
+          "path": "evidence/D09AR/suite-runs/T9AR.24-B2-checks.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 78757
+  }
+}
