@@ -45,6 +45,7 @@
 
 .replay-overlay .replay-plot-frame {
   grid-column: 1;
+  align-self: start;
 }
 
 .replay-overlay .replay-readout {

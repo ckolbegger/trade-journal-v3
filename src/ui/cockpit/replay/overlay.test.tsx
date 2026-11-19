@@ -251,4 +251,8 @@ describe('Replay overlay layout (A275)', () => {
     expect(decls('(max-width: 860px)', plot)['grid-column']).toBe('1');
     expect(decls('(max-width: 860px)', readout)['grid-column']).toBe('1');
   });
+
+  it('should keep the plot frame at its own height in the wide grid, so no session button lies below the charts', () => {
+    expect(decls(null, plot)['align-self']).toBe('start');
+  });
 });
