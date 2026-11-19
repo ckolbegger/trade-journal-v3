@@ -548,6 +548,7 @@ Lane BR (`d09ar/br`), base `70ce0f74`.
 |---|---|---|---|---|---|
 | critic-1 | `critic-brief.md`, section 8's flows, coach review 1's 15 points to recheck, `words-changed.md` and `new-words.md` named | 284,147 | 98 | 16 min 21 s | yes (5 high, 2 moderate, 2 low) |
 | critic-2 | the same brief, with the flows listed by ID, the support exports named and the port rule, and without critic-1's report | 279,440 | 118 | 26 min 45 s | yes (1 high, 3 moderate) |
+| critic-3 | critic-2's brief, with the widths 1366 and 1536, the answered decisions named, and P153 with the releases build | 287,086 | 149 | 22 min 59 s | yes (1 moderate, 2 low) |
 
 - **critic-1** (`critic-1.md`), at `38978773`: **FAIL**.
   - Passed: C9AR.1, C9AR.4 and C9AR.6. Failed: C9AR.2, C9AR.3, C9AR.5 and C9AR.7.
@@ -1008,6 +1009,10 @@ Lane BR (`d09ar/br`), base `70ce0f74`.
     - The open tech debt is reviewed with the user after the gate passes.
     - The main session also stops sending tasks back for a "part 2" on the strength of reviewer notes. B5, B7 and B11-B1 had been sent back that way.
     - So a critic-3 with only low defects closes the gate on the `gate3` full run.
+  - **Critic-3** (`critic-3.md`, at `7a776e7e`): every flow from C9AR.1 to C9AR.7 PASSES, and the coach's 15 points are addressed. Overall PASS, with 3 defects:
+    1. **Moderate.** The Review card summary files the past-a-line row under "Current Risk" or "Remaining Reward" (AXIO and DALE "Current Risk · Past the Stop by …", BREN "Remaining Reward · Past the Target by $32.00"). W56, decision 7 and coach point 6 say this row belongs above both headings. **The cap applies: put to the user.**
+    2. **Low.** Finished Trades draw the Stop and Target lines with no label (A280). Recorded in `tech-debt.md`.
+    3. **Low.** Some labels are drawn over on sessions other than the entry, and at 320. Recorded in `tech-debt.md`.
         - Reviewer's notes:
           - `isMarkLacking` is exactly MarkMissing or AcknowledgedUnavailable.
           - The Trade P&L row's figure is the contract's own, so the Underlying's Mark cannot reach it.
