@@ -856,4 +856,15 @@ describe('Corridor: the key, the dates and the lines (suggestion 3)', () => {
     expect([start.textContent, start.getAttribute('text-anchor'), num(start, 'x')]).toEqual(['Mon Nov 2', 'start', time.left]);
     expect([end.textContent, end.getAttribute('text-anchor'), num(end, 'x')]).toEqual(['Expires Fri Nov 20', 'end', time.right]);
   });
+
+  it('should keep Expires Fri Nov 20 on an option time axis at the last session, with the cursor date beside it and not overlapping it', () => {
+    const { container } = render(<CorridorPlot {...props({ axis: { slots: 11, startLabel: 'Mon Nov 2', endLabel: 'Expires Fri Nov 20' }, sliderIndex: 10, sessions: DAYS.map((_, i) => bren(i)) })} />);
+    const end = pnl(container).querySelector('text.axis-end')!;
+    const cursor = pnl(container).querySelector('text.cursor-label')!;
+    expect([end.textContent, cursor.textContent]).toEqual(['Expires Fri Nov 20', 'Mon Nov 16']);
+    const width = (t: Element) => t.textContent.length * 6 + 2;
+    const endLeft = num(end, 'x') - width(end);
+    const cursorRight = cursor.getAttribute('text-anchor') === 'end' ? num(cursor, 'x') : num(cursor, 'x') + width(cursor) / 2;
+    expect(cursorRight).toBeLessThanOrEqual(endLeft);
+  });
 });

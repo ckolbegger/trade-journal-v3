@@ -223,12 +223,15 @@ export function drawPnl(props: ReplayPlotProps, width: number): DrawnChart {
   };
   const cursorText = current ? (props.cursorLabel ?? current.dateLabel) : undefined;
   const half = cursorText ? (cursorText.length * 6 + 2) / 2 : 0;
-  const cursorX = Math.min(Math.max(xc, half), width - half);
+  // The end label always stays (the expiry is a different fact); the cursor's name steps left of it instead.
+  const endLeft = axis.endLabel ? span(axis.endLabel, time.right, 'end').x0 - 4 : width;
+  const cursorX = Math.min(Math.max(xc, half), width - half, endLeft - half);
   const cursorSpan = cursorText ? span(cursorText, cursorX, 'middle') : undefined;
   const axisText: { cls: string; text: string; x: number; anchor: 'start' | 'middle' | 'end' }[] = [
     ...(axis.startLabel ? [{ cls: 'axis-start', text: axis.startLabel, x: time.left, anchor: 'start' as const }] : []),
     ...(axis.endLabel ? [{ cls: 'axis-end', text: axis.endLabel, x: time.right, anchor: 'end' as const }] : []),
   ].filter((t) => {
+    if (t.cls === 'axis-end') return true;
     if (!cursorSpan) return true;
     const s = span(t.text, t.x, t.anchor);
     return s.x1 <= cursorSpan.x0 || cursorSpan.x1 <= s.x0;
