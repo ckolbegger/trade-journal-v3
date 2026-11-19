@@ -668,6 +668,34 @@ describe('replay.props: the readout of a session in flight (W43)', () => {
     expect([cells[props.tableColumns.indexOf('Current Risk at Stop')], cells[props.tableColumns.indexOf('P&L at Stop')], cells[props.tableColumns.indexOf('Remaining Reward at Target')], cells[props.tableColumns.indexOf('P&L at Target')]]).toEqual(['No Mark', '−$324.00', 'No Mark', '+$956.00']);
   });
 
+  it('should keep At Worst case standing and At Max reward bounded or No cap above on a session without a Mark', () => {
+    // Short put (DALE): the Max reward is bounded, so its amount stands beside "No Mark" for Stop and Target; the Trade's result at each stands too.
+    const dale = session({
+      date: '2026-11-12',
+      instrument: DALE,
+      held: -3,
+      pnl: null,
+      figures: {
+        worstCaseOngoingRisk: value(usd(4520)),
+        worstCaseOngoingRiskInPlanR: value(frac(4520, 1536)),
+        maximumIncrementalReward: value(usd(464)),
+        maximumIncrementalRewardInPlanR: value(frac(464, 1536)),
+      },
+      outcomes: { atStop: value(usd(-543)), atTarget: value(usd(1284)), atWorstCase: value(usd(-4520)), atMaxReward: value(usd(564)) },
+    });
+    const bounded = replayProps(view([dale]), { Plot });
+    expect(rowNamed(bounded, 0, 'At Stop')).toMatchObject({ value: { text: 'No Mark' } });
+    expect(rowNamed(bounded, 0, 'At Worst case')).toMatchObject({ value: { kind: 'Figure', text: '$4,520.00 · 2.94R' }, pnl: { kind: 'Figure', text: '−$4,520.00' } });
+    expect(rowNamed(bounded, 0, 'At Max reward')).toMatchObject({ value: { kind: 'Figure', text: '$464.00 · 0.30R' }, pnl: { kind: 'Figure', text: '+$564.00' } });
+    // Long call (BREN): nothing caps the reward above, and there is no result to show there.
+    const none = withMarks(session({ date: '2026-11-10', pnl: null, figures: { worstCaseOngoingRisk: value(usd(644)), worstCaseOngoingRiskInPlanR: value(frac(644, 324)), maximumIncrementalReward: UNBOUNDED }, outcomes: { atStop: value(usd(-324)), atTarget: value(usd(956)), atWorstCase: value(usd(-644)) } }), [markOf(BREN_STOCK, '100.20'), markOf(BREN)]);
+    const long = replayProps(fullView([none], PLAN), { Plot });
+    expect(rowNamed(long, 0, 'At Worst case')).toMatchObject({ value: { kind: 'Figure', text: '$644.00 · 1.99R' }, pnl: { kind: 'Figure', text: '−$644.00' } });
+    const unbounded = rowNamed(long, 0, 'At Max reward')!;
+    expect(unbounded.value).toEqual({ kind: 'Unbounded', text: 'No cap above' });
+    expect(unbounded.pnl).toBeUndefined();
+  });
+
   it('should group How it is going, At stake from here, Marks, Position and The Plan, each figure finished, with its change since the earlier session', () => {
     const props = replayProps(fullView([brenWed1111], PLAN), { Plot });
     expect(readoutOf(props, 0)).toEqual([
