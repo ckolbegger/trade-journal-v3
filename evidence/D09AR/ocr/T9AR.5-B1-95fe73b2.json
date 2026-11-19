@@ -1,0 +1,120 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 0,
+    "total_tokens": 14247,
+    "input_tokens": 14120,
+    "output_tokens": 127,
+    "cache_read_tokens": 3328,
+    "elapsed": "7s"
+  },
+  "tool_calls": {
+    "total": 2,
+    "by_tool": {
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/domain/trade-analysis/replay-crossings.test.ts",
+        "src/domain/trade-analysis/replay-series.ts"
+      ]
+    }
+  ],
+  "session_id": "ebe6a229-5f2c-4cda-b31c-0cd4c7bdd599",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "ebe6a229-5f2c-4cda-b31c-0cd4c7bdd599",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "95fe73b2",
+      "resolved_base": "27e47d5ab50c36296be7dac1d5e55c5ef90702cc",
+      "resolved_head": "95fe73b28a116524b15c7049ea7c2055d2bce396",
+      "exact_range": "27e47d5ab50c36296be7dac1d5e55c5ef90702cc..95fe73b28a116524b15c7049ea7c2055d2bce396",
+      "source_artifact_sha256": "6b778389a5c54dab29041a6debd1e4b653f0e065cb0ff7af0d2852e24d22b6a1"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "de1beaa60a06296193805786659604179172ba3bd041ed973d569a327558927e",
+          "path": "src/domain/trade-analysis/replay-crossings.test.ts",
+          "fingerprint": "2092607695e18a7eff556b69c2824cda449b73012c6c18b78cac0bec6e30c0f0"
+        },
+        {
+          "item_id": "dfdfcb18f28569b5071aabb67f85b536832edb984e2c85f887674cad403f13cd",
+          "path": "src/domain/trade-analysis/replay-series.ts",
+          "fingerprint": "a2dbdd8a64eeafbb15c464278c80fd5260efb91e93b596302d6018d511c0bf46"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "de1beaa60a06296193805786659604179172ba3bd041ed973d569a327558927e",
+          "path": "src/domain/trade-analysis/replay-crossings.test.ts",
+          "fingerprint": "2092607695e18a7eff556b69c2824cda449b73012c6c18b78cac0bec6e30c0f0"
+        },
+        {
+          "item_id": "dfdfcb18f28569b5071aabb67f85b536832edb984e2c85f887674cad403f13cd",
+          "path": "src/domain/trade-analysis/replay-series.ts",
+          "fingerprint": "a2dbdd8a64eeafbb15c464278c80fd5260efb91e93b596302d6018d511c0bf46"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "05e608392beed8f54aad9a6e871e4ee5598b13e77c0bd27e59e7343e3bdcbe7e",
+          "path": "evidence/D09AR/tdd-log/T9AR.5-B1.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "1953165d8b4a0143ee239f2800d0fd306330aa79328ba148fdbee02081ba9921",
+          "path": "evidence/D09AR/suite-runs/T9AR.5-B1-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "5de60b66c5ac2f738a90c836d92cca36757adbeb894ced63e1b381a26a5f6fdc",
+          "path": "evidence/D09AR/suite-runs/T9AR.5-B1-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "61cb6232133b472b7cbb8c37b8ad1615311c56b335f5a9aef1c6b00ae5bb1a5d",
+          "path": "evidence/D09AR/suite-runs/T9AR.5-B1-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "f85a4da27d2653171aac767b517e7e9c1da73987394d2bed7c8e8762553eeac5",
+          "path": "evidence/D09AR/suite-runs/T9AR.5-B1-lane.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 6823
+  }
+}

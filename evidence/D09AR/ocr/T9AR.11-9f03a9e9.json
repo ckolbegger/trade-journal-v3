@@ -1,0 +1,188 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 7 selected item(s).",
+  "summary": {
+    "files_reviewed": 7,
+    "comments": 1,
+    "total_tokens": 178533,
+    "input_tokens": 176311,
+    "output_tokens": 2222,
+    "cache_read_tokens": 11648,
+    "elapsed": "1m22s"
+  },
+  "tool_calls": {
+    "total": 18,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 2,
+      "file_find": 1,
+      "file_read": 14
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/replay/corridor-pnl.tsx",
+      "content": "The new gap-edge handling is skipped for isolated valid sessions: `run.length === 1` returns earlier with a block only `time.column / 2` wide. For `[null, 100, null]` (and the negative equivalent), the fill therefore stops a quarter-column short of each shaded column rather than reaching its boundaries as required. Apply the gap-aware start/end calculation to singleton runs too, and extend the existing isolated-session test to assert those boundary coordinates.",
+      "existing_code": "        const xStart = time.x(first.s.slot) - (gapBefore ? time.column / 2 : 0);\n        const xEnd = time.x(last.s.slot) + (gapAfter ? time.column / 2 : 0);",
+      "start_line": 115,
+      "end_line": 116,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Replay plot corridor P\u0026L, price strip, props, styling, and tests",
+      "files": [
+        "src/ui/cockpit/replay/corridor-pnl.tsx",
+        "src/ui/cockpit/replay/corridor.test.tsx",
+        "src/ui/cockpit/replay/plot.props.test.ts",
+        "src/ui/cockpit/replay/plot.props.ts",
+        "src/ui/cockpit/replay/price-strip.test.tsx",
+        "src/ui/cockpit/replay/price-strip.tsx",
+        "src/ui/cockpit/styles/replay-plot.css"
+      ]
+    }
+  ],
+  "session_id": "0473ebcb-4748-4480-86cf-6e5cd2317680",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "0473ebcb-4748-4480-86cf-6e5cd2317680",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "9f03a9e9",
+      "resolved_base": "72ece0c83e162a7810cc84e98deaf8f7d1175313",
+      "resolved_head": "9f03a9e939b43f8580bab7bb1b9d3658c25467bc",
+      "exact_range": "72ece0c83e162a7810cc84e98deaf8f7d1175313..9f03a9e939b43f8580bab7bb1b9d3658c25467bc",
+      "source_artifact_sha256": "d8d9eb62a1a2072a7ffae130a4c3d3267820c797322e1e918a2804f41a10bce3"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "18de86b152c71edf7b69e5ef56c77c1958afecdf4524893fdc802e9700a6dfe1",
+          "path": "src/ui/cockpit/replay/corridor-pnl.tsx",
+          "fingerprint": "fcf0dfa11a4d651866e360a176cf9009866430d03c7ef64aea32938e21c7cea5"
+        },
+        {
+          "item_id": "36f39170a3d0629cf5d55776919719e766ca53573881aad557775fade7e81c9e",
+          "path": "src/ui/cockpit/replay/price-strip.tsx",
+          "fingerprint": "80e101c2db22a667d48c1c2a8b094f89270ba05cae110199dfee36169033ac74"
+        },
+        {
+          "item_id": "3c9a7cc1262b7d0ad636414c60005031bb565c86e552422f341c6235b5459dcf",
+          "path": "src/ui/cockpit/replay/plot.props.ts",
+          "fingerprint": "cbd31995ea90907d9590d76b8e5206d1d941eb48d72dd6b7296151a8cf729d61"
+        },
+        {
+          "item_id": "5d73acbebf781c477d11b1dab2cf1e4652c24b5ff821e19aff81ce44093f310a",
+          "path": "src/ui/cockpit/replay/plot.props.test.ts",
+          "fingerprint": "6e7fbef5b7e1a66b79868341a202e4f2daa2261d050c5e01019841a4dcbe64b3"
+        },
+        {
+          "item_id": "67c8b9c55df4db1a19bdc33843dfc7b544ae3cacc462c048b5f3913d82cd7b19",
+          "path": "src/ui/cockpit/styles/replay-plot.css",
+          "fingerprint": "c897e8460fdd18e9a4e1c6b8aa5299cb4afe2387f48f73688b2b726aad4c8833"
+        },
+        {
+          "item_id": "91ab23b784d7e960047b11faf7807d7e6026043efe45af28c94574cf4bbcd741",
+          "path": "src/ui/cockpit/replay/price-strip.test.tsx",
+          "fingerprint": "5e5a3d27bd5d4236867ea712137549c0613aa39efc9ebd672b4eca4e181d6552"
+        },
+        {
+          "item_id": "ba578f97f7698c0e6bcb181e747f8c8ef3dafb90b6f8eef6f25b35b639e1dd2c",
+          "path": "src/ui/cockpit/replay/corridor.test.tsx",
+          "fingerprint": "0ef8861c633f67c25614e722b0d87d2c420b12915f5e395868356543da0faf0f"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "18de86b152c71edf7b69e5ef56c77c1958afecdf4524893fdc802e9700a6dfe1",
+          "path": "src/ui/cockpit/replay/corridor-pnl.tsx",
+          "fingerprint": "fcf0dfa11a4d651866e360a176cf9009866430d03c7ef64aea32938e21c7cea5"
+        },
+        {
+          "item_id": "36f39170a3d0629cf5d55776919719e766ca53573881aad557775fade7e81c9e",
+          "path": "src/ui/cockpit/replay/price-strip.tsx",
+          "fingerprint": "80e101c2db22a667d48c1c2a8b094f89270ba05cae110199dfee36169033ac74"
+        },
+        {
+          "item_id": "3c9a7cc1262b7d0ad636414c60005031bb565c86e552422f341c6235b5459dcf",
+          "path": "src/ui/cockpit/replay/plot.props.ts",
+          "fingerprint": "cbd31995ea90907d9590d76b8e5206d1d941eb48d72dd6b7296151a8cf729d61"
+        },
+        {
+          "item_id": "5d73acbebf781c477d11b1dab2cf1e4652c24b5ff821e19aff81ce44093f310a",
+          "path": "src/ui/cockpit/replay/plot.props.test.ts",
+          "fingerprint": "6e7fbef5b7e1a66b79868341a202e4f2daa2261d050c5e01019841a4dcbe64b3"
+        },
+        {
+          "item_id": "67c8b9c55df4db1a19bdc33843dfc7b544ae3cacc462c048b5f3913d82cd7b19",
+          "path": "src/ui/cockpit/styles/replay-plot.css",
+          "fingerprint": "c897e8460fdd18e9a4e1c6b8aa5299cb4afe2387f48f73688b2b726aad4c8833"
+        },
+        {
+          "item_id": "91ab23b784d7e960047b11faf7807d7e6026043efe45af28c94574cf4bbcd741",
+          "path": "src/ui/cockpit/replay/price-strip.test.tsx",
+          "fingerprint": "5e5a3d27bd5d4236867ea712137549c0613aa39efc9ebd672b4eca4e181d6552"
+        },
+        {
+          "item_id": "ba578f97f7698c0e6bcb181e747f8c8ef3dafb90b6f8eef6f25b35b639e1dd2c",
+          "path": "src/ui/cockpit/replay/corridor.test.tsx",
+          "fingerprint": "0ef8861c633f67c25614e722b0d87d2c420b12915f5e395868356543da0faf0f"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "58c4d5def75b34757706869d64595f9f1a7016377fd5321e4fb5e06a9de1228f",
+          "path": "evidence/D09AR/suite-runs/T9AR.11-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "7710e6395fa6d2f3025768769bfd788b2e981e616623e6f2729ad3246f9d95a3",
+          "path": "evidence/D09AR/suite-runs/T9AR.11-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "8e334e4d26ba45d344c992e298b8117fcdcbc5b61c02c020ea30a1f51312e1b2",
+          "path": "evidence/D09AR/suite-runs/T9AR.11-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "d26ba7e77d87a21039c14fa6915c1687adc09f6d111674be08a24cee44aaee52",
+          "path": "evidence/D09AR/tdd-log/T9AR.11.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "eed0ccf049f4bba505d68427f36b29896ea58d1c4acfcf9053aff9f4eee34a18",
+          "path": "evidence/D09AR/suite-runs/T9AR.11-lane.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 81550
+  }
+}

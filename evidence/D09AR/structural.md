@@ -104,6 +104,8 @@ Lane DM (`d09ar/dm`), base `523a8a0e`, commit `27e47d5a`. 7 cases: 6 red then gr
 
 - **Implementation-level decision (main session) for the fix:** a role reads crossed when any of its conditions reads crossed; it reads not crossed only when every condition has a reading and none is crossed; otherwise (a condition unreadable and none crossed) the role has no reading for the session. This follows A271 ("a session with no reading neither starts nor ends a run") and AC-RPT-004 ("gaps cannot prove no episode").
 - **T9AR.5-B1** Case: it should hold the role's run through a session where its crossed condition has no reading and another condition reads Active, and mark nothing after a gap when it is crossed again (O-S2: the option Stop crossed, then the option's Mark missing while MNO is Active, then the option crossed again; the role's `since` keeps the first run's start, as the option condition's does).
+  - Done: `95fe73b2`; red `expected [ '2026-10-12', '2026-10-14' ] to deeply equal [ '2026-10-12', '2026-10-12' ]`, green; no first-run pass. The test builds a copy of O-S2 (MNO 43.20 on Mon 10-12, Tue 10-13, Wed 10-14; the put 3.70, missing, 3.70), since O-S2's own Marks give no such sequence. `verify:fixtures` exit 0. Lane tier `T9AR.5-B1`: unit 2313, integration 280, checks 14 of 14. ocr on `95fe73b2` (`ocr/T9AR.5-B1-95fe73b2.json`): 2 files, 0 comments. **No findings.**
+- Rebased onto `72ece0c8`. The rebase brought in lanes OV's and PL's code, which lane DM does not own, so the lane tier was rerun: `T9AR.5-rebased` on `6855e7d3`, unit 2340, integration 280, checks 14 of 14. Merge held until the `merge2` run finished; then merged by fast-forward: `60e4bd32` (T9AR.5), `6855e7d3` (B1).
 
 ## T9AR.7 The Replay overlay
 
@@ -156,7 +158,7 @@ Lane PL (`d09ar/pl`), base `8245f6c6`, commits `07916b2e` (the task), `80c143ad`
 - Notes from the task's summary (not ocr findings):
   - Existing expected values changed as consequences of planned cases, not listed in section 1.5's lookup: `corridor.test.tsx`'s "leave out a label that has no free spot" now expects 2 price lines, not 3 (A280: a line is drawn only with its label); its width at a 900 wide box expects '900', not '640', in two places (drawn at the box's own width). `plot.props.test.ts`'s expected objects gain `keyEntries`, `startLabel`, the "Expires …" end label, the single title and the stock axis. Accepted as implementation-level: each follows directly from a planned case.
   - `e2e/d9/responsive-a11y.spec.ts` line 69 (`not.toContain('dollars for the whole Position')`) left as it is: still true.
-  - `pnlShortTitle` is no longer read but is still declared, optional, in `replay.types.ts` (lane TY's file). Routed to lane TY as **T9AR.2-F1** (delete the field; verified by typecheck and the same cases passing).
+  - `pnlShortTitle` is no longer read but is still declared, optional, in `replay.types.ts` (lane TY's file). Routed to lane TY as **T9AR.2-F1** (delete the field; verified by typecheck and the same cases passing). Held until lane PL is idle: `plot.props.test.ts` (lane PL's) line 173 still reads `plotBase.pnlShortTitle` (asserting it undefined), so the deletion must change that line too, and lane PL is mid-chain.
   - ocr on `07916b2e` (`ocr/T9AR.10-07916b2e.json`): 9 files reviewed (1 excluded), 5 comments.
 
 | Severity | Location | Finding | Verdict |
@@ -180,12 +182,39 @@ Lane PL (`d09ar/pl`), base `8245f6c6`, commits `07916b2e` (the task), `80c143ad`
 
 - T9AR.10 rebased onto `e7f9f474`. The rebase brought in lane DM's and lane OV's code, which lane PL does not own, so the lane tier was rerun: `T9AR.10-rebased` on `8ef41e51`, unit 2332, integration 280, checks 14 of 14; `run-complete.sh`: run complete. Merged by fast-forward: `170970f4` (T9AR.10), `611d3453` (its lane tier files), `61c562e6` (B1), `3235985a` (B2), `c7c01655` (B3), `8ef41e51` (F1).
 
+## T9AR.11 Chart: the entry session, an off-scale Worst case, a session with no Mark
+
+Lane PL (`d09ar/pl`), base `72ece0c8`, commit `9f03a9e9`. 5 planned cases plus 2 the task added (the Worst case and Max reward lines kept at the last session, from the handoff's note; the adapter's `worstCaseTag`), all red then green; one green row first failed on the test's own bug (it dropped each sub-path's first point), fixed in the test. No first-run pass. Lane tier `T9AR.11`: unit 2340, integration 280, checks 14 of 14. Browser: `e2e/d9/replay.spec.ts`, `gaps.spec.ts`, `responsive-a11y.spec.ts`: 11 passed, 3 failed (below).
+
+- Notes from the task's summary (not ocr findings):
+  - Existing assertions changed as consequences of planned cases: `corridor.test.tsx`'s "should break the area at a session without a figure" now asserts nothing inside the gap's own column (the area now runs edge to edge, P146); `price-strip.test.tsx`'s No Mark case counts the price chart's own label (the P&L chart now says it too). Accepted as implementation-level.
+  - The P&L chart's no-Mark column is a session whose `tradePnl` is null; the price chart's is a null Underlying Mark (they differ on an option Trade with only the contract's Mark missing, R-CORV-D).
+  - A lone session between two gaps keeps its short block (a quarter column each side).
+  - `worstCaseTag` is offered only for a losing Worst case; weight `figures.extremes ?? 'Main'`; drawn only when the line is below the range. Classes `worst-case-tag.main` and `.remote`.
+  - Break-even keeps its label on the chart; the `e2e/d9` lines that assert it still pass, so none changed.
+  - Worst case and Max reward labels have a second spot at the left end; price-strip labels carry a `spot` with an anchor.
+  - **Browser failure the task reports as not its own:** `e2e/d9/responsive-a11y.spec.ts` lines 126, 134, 146 (`expectFitsOneScreen`, "charts drawn at their box's width") expect 640 on a wide box, and the chart now draws at its box's width, a change T9AR.10 made (A275). Expected to show in `merge2`'s `browser-3`; pinned to T9AR.10.
+- ocr on `9f03a9e9` (`ocr/T9AR.11-9f03a9e9.json`): 7 files, 1 comment.
+
+| Severity | Location | Finding | Verdict |
+|---|---|---|---|
+| medium | `corridor-pnl.tsx:115-116` | A lone session between two No Mark sessions keeps its half-column block, so its area stops a quarter column short of each shaded column, where P146 says the area runs to the column's edge | Valid: T9AR.11-B1 |
+
+- **Implementation-level decision (main session):** P146 governs the lone session too: its area runs to the edge of the No Mark column on each side. The older block's comment ("never reaching a gap") and the lone-session case's bound (within 15 px of the dot) predate P146; the bug task changes that bound to match and records it.
+- **T9AR.11-B1** Case: it should run a lone session's area between two No Mark sessions to the edge of each shaded column, and end it upright.
+  - Done: `126a37dd`; red "expected 131.8 to be close to 122.75", green; no first-run pass. Each side of a lone session's block is `column/2` when that neighbour has no Mark, else `column/4` (unchanged with a Mark on both sides, and for the first revealed session). Changed assertion in "should fill a single session with a figure between two gaps, and the first revealed session": before, the area's x-extent within the dot ± 15; after, within the dot ± `column/2` (0.1 px tolerance). Lane tier `T9AR.11-B1`: unit 2341, integration 280, checks 14 of 14.
+
 ## Suite runs
 
 | Run | Commit | Tier | Result |
 |---|---|---|---|
+| `merge2` (after T9AR.4, T9AR.7, T9AR.10 with their bug and follow-up tasks) | `72ece0c8` | full (`browser-auto 79b900d3`: first matching path `e2e/d9/replay.spec.ts`) | unit 2332 (206 files), integration 280, browser-1 126, browser-2 79, checks 14 of 14 all exit 0; **browser-3 failed: 3 failed, 74 passed** (below); `run-complete.sh`: run complete |
 | `merge1` (after T9AR.3 with T9AR.3-B1, T9AR.3-B2) | `79b900d3` | task (`browser-auto 1018d618`: no changed path is on the full-tier list) | unit 2297 (204 files), integration 280 (130 files), browser `@every-task` 5, checks 14 of 14; all exit 0; `run-complete.sh`: run complete |
 | `wave0` (merge run after T9AR.1, T9AR.2) | `1018d618` | full (`browser-auto 1cc612ea`: first matching path `src/ui/cockpit/index.css`) | unit 2289 (203 files), integration 280 (130 files), browser-1 126, browser-2 79, browser-3 77, checks 14 of 14; all exit 0; `run-complete.sh`: run complete |
+
+### `merge2` failures
+
+`e2e/d9/responsive-a11y.spec.ts` lines 126, 134 and 146 ("should fit the Detail replay on one screen…", "should fit the Review card replay on one screen…", "should fit the Review card replay at 320 px…"), each `<where> at 1280 px: charts drawn at their box's width`. Reproduced in lane PL's T9AR.11 browser run (the same three). Cause, from the spec: `expectFitsOneScreen` (lines 22 to 27) expects a wide box's chart at the fixed 640 (`box < 460 ? Math.max(box, 200) : 640`), and T9AR.10 made the chart draw at its box's own width at every size (A275, its case "it should draw at its box's own width on a wide screen"). Pinned to T9AR.10; fixed in lane PL as **T9AR.10-S1**: the check expects the box's own width (at least 200) at every size, a consequence of A275 recorded as a changed expected value.
 
 ## Critics
 
