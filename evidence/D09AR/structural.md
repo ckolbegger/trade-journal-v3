@@ -485,6 +485,15 @@ Lane BR (`d09ar/br`), base `70ce0f74`.
     - The frozen plan's lookup rows (the time-axis row in section 1.5, and the index) still name `endLabel`. That is a lookup miss to record, not a revision.
   - Lane tier rerun `T9AR.23-OVPL-r`: unit 2455, integration 286, checks 14 of 14. Run complete.
   - **Merged** by fast-forward; main is at `206c4e0c`. **T9AR.23 is Done.** Next: the merge run `merge6`, then `acceptance-commands.sh` (T9AR.22's four browser rows now have their specs), then the full tier and the gate T9AR.24.
+
+## Merge run merge6 (full tier, `dbafc601`)
+
+- Unit 2455, integration 286, checks 14 of 14. browser-1: 126 passed (5.0m). browser-2: 79 passed (4.7m).
+- **browser-3: 124 passed, 1 failed (7.0m)**, so it stays under 8 minutes.
+  - The failure: `e2e/d9/gaps.spec.ts:94` (B9.2), "the grid fits" at 1280 on R-DALE-D Fri 11-13. `.replay-stake-grid` runs past the viewport.
+  - Likely cause: T9AR.23-S1's 340 px readout column, as its ocr reviewer predicted.
+- The suite-runner's final report was refused by the harness (one report per agent), so these results were read from the run files.
+- **merge6-S1** briefed in lane OV. The branch `d09ar/ov` was re-pointed to main `dbafc601` first: its old pre-rebase commits were all on main under their new hashes (`git cherry`). The case's red is the run itself.
 - **Part 1 notes:**
   - The Detail overlay's slider session does not survive a reload (the address holds only `replay=open`; the plan does not ask that it survive).
   - The Review card reopens on its last session.
