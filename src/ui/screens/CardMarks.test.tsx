@@ -267,7 +267,7 @@ describe('Save Marks (P37, A155) rendering', () => {
     renderReview(facade);
     const user = userEvent.setup();
     const panel = await marksPanel();
-    expect(screen.queryByText('Current Marked Trade P&L')).toBeNull();
+    expect(screen.queryByText('Trade P&L')).toBeNull();
     const otherHeader = tfHeader();
     expect(otherHeader.textContent).toContain('1 Mark');
     await user.type(within(rowOf(panel, 'XYZ', MONDAY_LABEL)).getByLabelText('Price'), '52.00');
@@ -284,7 +284,7 @@ describe('Save Marks (P37, A155) rendering', () => {
     expect(within(rowOf(panel, 'XYZ', MONDAY_LABEL)).getByRole('button', { name: 'Correct' })).toBeTruthy();
     // The card's figures come from the result.
     const card = screen.getByRole('region', { name: 'XYZ review' });
-    expect(within(card).getByText('Current Marked Trade P&L')).toBeTruthy();
+    expect(within(card).getByText('Trade P&L')).toBeTruthy();
     // The other XYZ card's summary and slider follow the shared Mark.
     const sharedHeader = tfHeader();
     expect(sharedHeader.textContent).not.toContain('1 Mark');

@@ -24,8 +24,8 @@ test.describe('B5R.1 Review end to end on cards', () => {
     // Type the first card's Mark and press Save Marks: its figures and both XYZ sliders follow the result.
     await enterMark(page, tA, MONDAY, '52.00');
     const figure = (term: string) => tradeCard(page, 'XYZ').locator('dt', { hasText: new RegExp(`^${term}$`) }).locator('xpath=following-sibling::dd[1]');
-    await expect(figure('Current Marked Trade P&L')).toHaveText('+$180.00 · +0.72R');
-    await expect(figure('Ongoing Risk to Stop')).toHaveText('$450.00 · 1.80R');
+    await expect(figure('Trade P&L')).toHaveText('+$180.00 · +0.72R');
+    await expect(figure('Current Risk · At Stop')).toHaveText('$450.00 · 1.80R');
     await expect(sliderOf(page, tA)).toHaveAccessibleName(/^53% of the way from the Stop to the Target, entry at 32%\. Risk to stop \$450\.00, P&L \+\$180\.00, Reward : risk 0\.89\.$/);
     await expect(sliderOf(page, tF)).toHaveAccessibleName(/^57% of the way from the Stop to the Target, entry at 29%\. Risk to stop \$200\.00, P&L \+\$99\.00, Reward : risk 0\.75\.$/);
 

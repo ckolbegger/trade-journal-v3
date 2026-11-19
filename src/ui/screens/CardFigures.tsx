@@ -2,38 +2,80 @@ import { useId, type ReactNode } from 'react';
 import type { DailyTradeReview } from '../../app/types.ts';
 import { instrumentLabel } from '../calculation-words.ts';
 import { Rational } from '../../domain/values/index.ts';
-import { decimalMoney, decimalUnderlyingPrice, money, ratio, shortDate } from '../format.ts';
+import { pastLineWords, ratioWordsOf } from '../cockpit/replay/stake-words.props.ts';
+import { decimalMoney, decimalUnderlyingPrice, money, ratioToOne, shortDate } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
 import { calculation,dollarsAndR, pnlText } from '../figures.ts';
 import { conditionDirection } from './option-words.ts';
 import { payoffSummary, valueAtCloseTerm, valueAtCloseText } from './payoff-text.ts';
 
 type Evaluation = NonNullable<DailyTradeReview['evaluation']>;
+type ExtremesWeight = NonNullable<Evaluation['extremes']>;
 
 export interface CardFiguresProps {
   readonly trade: DailyTradeReview;
 }
 
-function Figure({ term, children }: { readonly term: string; readonly children: ReactNode }) {
+// `title` is the canonical term behind a renamed label: hover text and accessible description, nothing more to see (A287).
+// `weight` is the Plan's weight for an extreme (decision 6): a Remote one is smaller and grey, as in the replay's readout.
+function Figure({ term, title, weight, children }: { readonly term: string; readonly title?: string; readonly weight?: ExtremesWeight; readonly children: ReactNode }) {
   return (
-    <div>
-      <dt>{term}</dt>
+    <div data-weight={weight} style={weight === 'Remote' ? { fontSize: '0.85em', color: 'var(--muted)' } : undefined}>
+      <dt title={title}>{term}</dt>
       <dd className="number">{children}</dd>
     </div>
   );
 }
 
-// Current Marked Trade P&L in dollars and R, then the Mark-dependent risk and reward.
+// Trade P&L in dollars and R, then the Mark-dependent risk and reward.
 function Figures({ evaluation, children }: { readonly evaluation: Evaluation; readonly children?: ReactNode }) {
   const { timeZone } = useRuntime();
+  // Past a line one row says by how much, in place of the risk or the reward, which is zero there (W56).
+  const standing = evaluation.standing?.kind === 'Value' ? evaluation.standing.value : undefined;
+  const pastStop = standing?.zone === 'PastStop' ? standing.pastBy : undefined;
+  const pastTarget = standing?.zone === 'PastTarget' ? standing.pastBy : undefined;
   return (
     <dl>
-      <Figure term="Current Marked Trade P&L">{pnlText(evaluation.currentMarkedPnl, evaluation.currentMarkedPnlInPlanR, timeZone)}</Figure>
-      <Figure term="Ongoing Risk to Stop">{dollarsAndR(evaluation.ongoingRiskToStop, evaluation.ongoingRiskToStopInPlanR, undefined, timeZone)}</Figure>
-      <Figure term="Worst-Case Ongoing Risk">{dollarsAndR(evaluation.worstCaseOngoingRisk, evaluation.worstCaseOngoingRiskInPlanR, undefined, timeZone)}</Figure>
-      <Figure term="Incremental Reward to Target">{dollarsAndR(evaluation.incrementalRewardToTarget, evaluation.incrementalRewardToTargetInPlanR, undefined, timeZone)}</Figure>
+      <Figure term="Trade P&L">{pnlText(evaluation.currentMarkedPnl, evaluation.currentMarkedPnlInPlanR, timeZone)}</Figure>
+      {pastStop ? (
+        <Figure term="Current Risk" title="Stop Overrun">{pastLineWords('Stop', pastStop)}</Figure>
+      ) : (
+        <Figure term="Current Risk · At Stop" title="Ongoing Risk to Stop">{dollarsAndR(evaluation.ongoingRiskToStop, evaluation.ongoingRiskToStopInPlanR, undefined, timeZone)}</Figure>
+      )}
+      <Figure term="Current Risk · At Worst case" title="Worst-Case Ongoing Risk" weight={evaluation.extremes ?? 'Main'}>{dollarsAndR(evaluation.worstCaseOngoingRisk, evaluation.worstCaseOngoingRiskInPlanR, undefined, timeZone)}</Figure>
+      {pastTarget ? (
+        <Figure term="Remaining Reward" title="Target Overrun">{pastLineWords('Target', pastTarget)}</Figure>
+      ) : (
+        <Figure term="Remaining Reward · At Target" title="Incremental Reward to Target">{dollarsAndR(evaluation.incrementalRewardToTarget, evaluation.incrementalRewardToTargetInPlanR, undefined, timeZone)}</Figure>
+      )}
       {children}
     </dl>
+  );
+}
+
+// "Reward to risk" in the replay's words (W59, W60): the ratio, the estimated odds, and the Plan's own beside them. The odds part is
+// read in full by a screen reader. A ratio with no value says why instead, as every figure does.
+function RewardToRisk({ evaluation }: { readonly evaluation: Evaluation }) {
+  const { timeZone } = useRuntime();
+  const { rewardRiskNow, rewardRiskOdds, planOdds, planBaseline, standing } = evaluation;
+  // Past a line there is no ratio to show (W56).
+  if (standing?.kind === 'Value' && standing.value.pastBy) return null;
+  // The Plan's ratio stays on the card when the ratio now has no value, as the old planned row did.
+  if (rewardRiskNow.kind !== 'Value') return <Figure term="Reward to risk">{calculation(rewardRiskNow, ratioToOne, timeZone)}{planBaseline.kind === 'Value' && ` (Plan ${ratioToOne(planBaseline.value.rewardRiskRatio)})`}</Figure>;
+  const plan = planBaseline.kind === 'Value' ? { rewardRisk: planBaseline.value.rewardRiskRatio, ...(planOdds?.kind === 'Value' && { odds: planOdds.value }) } : undefined;
+  const words = ratioWordsOf(rewardRiskNow.value, rewardRiskOdds?.kind === 'Value' ? rewardRiskOdds.value : undefined, plan);
+  const [ratioText, ...oddsMarks] = words.text.split(' · ');
+  return (
+    <Figure term="Reward to risk">
+      {words.odds ? (
+        <>
+          {ratioText} · <span role="img" aria-label={words.odds.spoken}>{oddsMarks.join(' · ')}</span>
+        </>
+      ) : (
+        words.text
+      )}
+      {words.plan && ` (Plan ${words.plan})`}
+    </Figure>
   );
 }
 
@@ -82,8 +124,7 @@ export function CardFigures({ trade }: CardFiguresProps) {
             </p>
           )}
           <Figures evaluation={evaluation}>
-            <Figure term="Reward : risk now">{calculation(evaluation.rewardRiskNow, ratio, timeZone)}</Figure>
-            <Figure term="Reward : risk planned">{calculation(evaluation.planBaseline, (baseline) => ratio(baseline.rewardRiskRatio), timeZone)}</Figure>
+            <RewardToRisk evaluation={evaluation} />
           </Figures>
           <Conditions trade={trade} evaluation={evaluation} />
         </>

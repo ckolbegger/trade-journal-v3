@@ -171,9 +171,9 @@ describe('Trade in the walk', () => {
     expect(vi.mocked(facade.DailyReview.getTrade)).toHaveBeenCalledExactlyOnceWith({ reviewDate: '2026-10-12', tradeId: 't1', binding });
     expect(within(trade).getByText('Mark $52.00 for XYZ, Mon Oct 12')).toBeTruthy();
     const figure = (term: string) => within(trade).getByText(term).nextElementSibling?.textContent;
-    expect(figure('Current Marked Trade P&L')).toBe('+$582.00 · +2.33R');
-    expect(figure('Ongoing Risk to Stop')).toBe('$400.00 · 1.60R');
-    expect(figure('Incremental Reward to Target')).toBe('$1,200.00 · 4.80R');
+    expect(figure('Trade P&L')).toBe('+$582.00 · +2.33R');
+    expect(figure('Current Risk · At Stop')).toBe('$400.00 · 1.60R');
+    expect(figure('Remaining Reward · At Target')).toBe('$1,200.00 · 4.80R');
     expect(within(trade).getByText('31% of the way from entry to the Target')).toBeTruthy();
     expect(within(trade).queryByRole('group', { name: /close/ })).toBeNull();
     expect(within(trade).queryByRole('group', { name: 'At entry' })).toBeNull();
@@ -198,14 +198,14 @@ describe('Trade in the walk', () => {
     const again = walkFacade(ready([limited]), missing);
     renderWalk(again);
     const second = await openTrade(user, 'XYZ');
-    expect(figure2(second, 'Current Marked Trade P&L')).toBe('Mark missing: XYZ, Mon Oct 12');
-    expect(figure2(second, 'Ongoing Risk to Stop')).toBe('Mark missing: XYZ, Mon Oct 12');
+    expect(figure2(second, 'Trade P&L')).toBe('Mark missing: XYZ, Mon Oct 12');
+    expect(figure2(second, 'Current Risk · At Stop')).toBe('Mark missing: XYZ, Mon Oct 12');
     expect(within(second).queryByText('Mark $52.00 for XYZ, Mon Oct 12')).toBeNull();
     const dated = within(second).getByRole('group', { name: 'Fri Oct 9 close' });
-    expect(figure2(dated, 'Current Marked Trade P&L')).toBe('−$50.00 · −0.20R');
-    expect(figure2(dated, 'Ongoing Risk to Stop')).toBe('$300.00 · 1.20R');
-    expect(figure2(dated, 'Worst-Case Ongoing Risk')).toBe('$2,600.00 · 10.40R');
-    expect(figure2(dated, 'Incremental Reward to Target')).toBe('$900.00 · 3.60R');
+    expect(figure2(dated, 'Trade P&L')).toBe('−$50.00 · −0.20R');
+    expect(figure2(dated, 'Current Risk · At Stop')).toBe('$300.00 · 1.20R');
+    expect(figure2(dated, 'Current Risk · At Worst case')).toBe('$2,600.00 · 10.40R');
+    expect(figure2(dated, 'Remaining Reward · At Target')).toBe('$900.00 · 3.60R');
     const atEntry = within(second).getByRole('group', { name: 'At entry' });
     expect(figure2(atEntry, 'Risk to stop')).toBe('$60.00');
     expect(figure2(atEntry, 'Reward to target')).toBe('$200.00');
@@ -226,12 +226,12 @@ describe('Trade figures in R and worst case', () => {
     }));
     renderWalk(facade);
     const trade = await openTrade(userEvent.setup(), 'XYZ');
-    expect(figure2(trade, 'Current Marked Trade P&L')).toBe('+$180.00 · +0.72R');
-    expect(figure2(trade, 'Ongoing Risk to Stop')).toBe('$450.00 · 1.80R');
-    expect(figure2(trade, 'Worst-Case Ongoing Risk')).toBe('$5,200.00 · 20.80R');
-    expect(figure2(trade, 'Incremental Reward to Target')).toBe('$400.00 · 1.60R');
+    expect(figure2(trade, 'Trade P&L')).toBe('+$180.00 · +0.72R');
+    expect(figure2(trade, 'Current Risk · At Stop')).toBe('$450.00 · 1.80R');
+    expect(figure2(trade, 'Current Risk · At Worst case')).toBe('$5,200.00 · 20.80R');
+    expect(figure2(trade, 'Remaining Reward · At Target')).toBe('$400.00 · 1.60R');
     const terms = [...trade.querySelectorAll('dt')].map((dt) => dt.textContent);
-    expect(terms.slice(0, 4)).toEqual(['Current Marked Trade P&L', 'Ongoing Risk to Stop', 'Worst-Case Ongoing Risk', 'Incremental Reward to Target']);
+    expect(terms.slice(0, 4)).toEqual(['Trade P&L', 'Current Risk · At Stop', 'Current Risk · At Worst case', 'Remaining Reward · At Target']);
   });
 
   it('should show the worst case Unavailable in the same words as the other figures when the Mark is missing', async () => {
@@ -244,8 +244,8 @@ describe('Trade figures in R and worst case', () => {
     }));
     renderWalk(facade);
     const trade = await openTrade(userEvent.setup(), 'XYZ');
-    expect(figure2(trade, 'Worst-Case Ongoing Risk')).toBe('Mark missing: XYZ, Mon Oct 12');
-    expect(figure2(trade, 'Ongoing Risk to Stop')).toBe('Mark missing: XYZ, Mon Oct 12');
+    expect(figure2(trade, 'Current Risk · At Worst case')).toBe('Mark missing: XYZ, Mon Oct 12');
+    expect(figure2(trade, 'Current Risk · At Stop')).toBe('Mark missing: XYZ, Mon Oct 12');
   });
 });
 

@@ -327,7 +327,7 @@ describe('opening in place (A151)', () => {
     // The open card sits inside its own list item, under its header.
     expect(card.closest('li')).toBe(headers()[0]!.closest('li'));
     // Its figures and panels: Marks, Reflections, and the Action, which is the first not done.
-    expect(within(card).getByText('Current Marked Trade P&L')).toBeTruthy();
+    expect(within(card).getByText('Trade P&L')).toBeTruthy();
     expect((['Marks', 'Reflections', 'Action'] as const).map((name) => within(card).getByRole('button', { name: new RegExp(`^${name}\\b`) }).getAttribute('aria-expanded'))).toEqual(['false', 'false', 'true']);
     expect(within(card).getByRole('form', { name: 'Action' })).toBeTruthy();
 
@@ -637,7 +637,7 @@ describe('read only (A162)', () => {
     const first = await screen.findByRole('region', { name: 'ABC review' });
 
     // The first card: its figures, and its Mark as saved, with nothing to enter.
-    expect(within(first).getByText('Current Marked Trade P&L')).toBeTruthy();
+    expect(within(first).getByText('Trade P&L')).toBeTruthy();
     expect(within(first).getByText('No Action saved.')).toBeTruthy();
     await showPanel(user, first, 'Marks');
     expect(within(first).getByRole('region', { name: 'ABC Mark, Mon Oct 12' }).textContent).toContain('$27.50');

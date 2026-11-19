@@ -30,7 +30,7 @@ test.describe('B7SP.11 The option dated line in the Review', () => {
       await reachCard(page, oc);
       const group = tradeCard(page, oc).getByRole('group', { name: 'Mon Oct 12 close' });
       await expect(group, `${width} px`).toBeVisible();
-      await expect(group.locator('dt'), `${width} px figures`).toHaveText(['Current Marked Trade P&L', 'Ongoing Risk to Stop', 'Worst-Case Ongoing Risk', 'Incremental Reward to Target']);
+      await expect(group.locator('dt'), `${width} px figures`).toHaveText(['Trade P&L', 'Current Risk · At Stop', 'Current Risk · At Worst case', 'Remaining Reward · At Target']);
       // Contract-only figures are values; the Underlying-dependent ones read as unavailable (XYZ has no Monday Mark).
       await expect(group.locator('dd'), `${width} px values`).toHaveText(['+$98.70 · +0.25R', 'Mark missing: XYZ, Mon Oct 12', '$500.00 · 1.25R', 'Mark missing: XYZ, Mon Oct 12']);
       await expectNoSidewaysScroll(page, `Review card at ${width} px`);

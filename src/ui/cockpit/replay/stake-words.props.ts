@@ -1,7 +1,7 @@
 import type { TradeReplayView } from '../../../app/types.ts';
 import { Rational } from '../../../domain/values/index.ts';
 import { signed } from '../../figures.ts';
-import { money, ratioToOne } from '../../format.ts';
+import { money, ratioToOne, rMultiple } from '../../format.ts';
 import type { StakeOdds } from './replay.types.ts';
 // The stake sentence (W38): "From here: $352.00 at risk to the Stop · ...". Finished values only; nothing is worked out here (ADR 0001).
 type ViewSession = TradeReplayView['sessions'][number];
@@ -46,13 +46,21 @@ function oddsSpoken(odds: Odds): string {
 export function ratioWords(view: TradeReplayView, session: ViewSession): { text: string; plan?: string; odds?: StakeOdds } | undefined {
   const { rewardRiskNow, rewardRiskOdds } = session.figures ?? {};
   if (rewardRiskNow?.kind !== 'Value') return undefined;
-  const planColumn = view.planColumn;
-  const odds = rewardRiskOdds?.kind === 'Value' ? rewardRiskOdds.value : undefined;
+  return ratioWordsOf(rewardRiskNow.value, rewardRiskOdds?.kind === 'Value' ? rewardRiskOdds.value : undefined, view.planColumn);
+}
+
+// The same words from the finished figures themselves, for a screen that holds an evaluation and no replay (the Review card).
+export function ratioWordsOf(now: Rational, odds: Odds | undefined, planColumn: { rewardRisk: Rational; odds?: Odds } | undefined): { text: string; plan?: string; odds?: StakeOdds } {
   const planPair = odds && planColumn?.odds ? ` · ${oddsPair(planColumn.odds, false)}` : '';
   const plan = planColumn ? `${ratioToOne(planColumn.rewardRisk)}${planPair}` : undefined;
-  const text = `${ratioToOne(rewardRiskNow.value)}${odds ? ` · ${oddsPair(odds, true)}` : ''}`;
+  const text = `${ratioToOne(now)}${odds ? ` · ${oddsPair(odds, true)}` : ''}`;
   const note = 'Odds: Target first : Stop first, estimated with no edge and no time limit.';
   return { text, ...(plan && { plan }), ...(odds && { odds: { text, ...(plan && { planText: `(Plan ${plan})` }), spoken: oddsSpoken(odds), note } }) };
+}
+
+// W56: "Past the Stop by $300.00 (0.50R)"; a planned amount passed with the condition not crossed is no breach: "Past the Stop's amount by ...".
+export function pastLineWords(role: 'Stop' | 'Target', pastBy: { dollars: Rational; r: Rational; crossed: boolean }): string {
+  return `Past the ${role}${pastBy.crossed ? '' : "'s amount"} by ${money(pastBy.dollars)} (${rMultiple(pastBy.r)})`;
 }
 
 export function stakeOf(view: TradeReplayView, index: number, session: ViewSession): string | null {

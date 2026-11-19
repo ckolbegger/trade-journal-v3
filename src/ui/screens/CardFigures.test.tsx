@@ -44,37 +44,36 @@ const figure = (scope: HTMLElement, term: string) => within(scope).getAllByText(
 describe('figures (A158)', () => {
   it('should show Current P&L, Risk to stop, Worst case, and Reward to target, each in dollars and R, then Reward : risk now 0.89 and planned 2.4, then At entry, for T-A at XYZ 52.00', () => {
     const { container: root } = render(<CardFigures trade={trade()} />);
-    expect(figure(root, 'Current Marked Trade P&L')).toBe('+$180.00 · +0.72R');
-    expect(figure(root, 'Ongoing Risk to Stop')).toBe('$450.00 · 1.80R');
-    expect(figure(root, 'Worst-Case Ongoing Risk')).toBe('$5,200.00 · 20.80R');
-    expect(figure(root, 'Incremental Reward to Target')).toBe('$400.00 · 1.60R');
-    expect(figure(root, 'Reward : risk now')).toBe('0.89');
-    expect(figure(root, 'Reward : risk planned')).toBe('2.4');
+    expect(figure(root, 'Trade P&L')).toBe('+$180.00 · +0.72R');
+    expect(figure(root, 'Current Risk · At Stop')).toBe('$450.00 · 1.80R');
+    expect(figure(root, 'Current Risk · At Worst case')).toBe('$5,200.00 · 20.80R');
+    expect(figure(root, 'Remaining Reward · At Target')).toBe('$400.00 · 1.60R');
+    expect(figure(root, 'Reward to risk')).toBe('0.89 to 1 (Plan 2.40 to 1)');
     const terms = [...root.querySelectorAll('dt')].map((dt) => dt.textContent);
-    expect(terms).toEqual(['Current Marked Trade P&L', 'Ongoing Risk to Stop', 'Worst-Case Ongoing Risk', 'Incremental Reward to Target', 'Reward : risk now', 'Reward : risk planned', 'Risk to stop', 'Reward to target']);
+    expect(terms).toEqual(['Trade P&L', 'Current Risk · At Stop', 'Current Risk · At Worst case', 'Remaining Reward · At Target', 'Reward to risk', 'Risk to stop', 'Reward to target']);
     expect(within(root).getByRole('group', { name: 'At entry' })).toBeTruthy();
   });
 
   it('should show each figure that is not a Value in words, never as 0: T-C Mark missing: DEF, Oct 12, T-B Reward : risk Not applicable', () => {
     const gone = missing('DEF', '2026-10-12');
     const { container: root } = render(<CardFigures trade={trade({ evaluation: evaluation({ currentMarkedPnl: gone, currentMarkedPnlInPlanR: gone, ongoingRiskToStop: gone, ongoingRiskToStopInPlanR: gone, worstCaseOngoingRisk: gone, worstCaseOngoingRiskInPlanR: gone, incrementalRewardToTarget: gone, incrementalRewardToTargetInPlanR: gone, rewardRiskNow: gone, atEntry: null }) })} />);
-    for (const term of ['Current Marked Trade P&L', 'Ongoing Risk to Stop', 'Worst-Case Ongoing Risk', 'Incremental Reward to Target', 'Reward : risk now']) expect(figure(root, term)).toBe('Mark missing: DEF, Mon Oct 12');
-    expect(figure(root, 'Reward : risk planned')).toBe('2.4');
+    for (const term of ['Trade P&L', 'Current Risk · At Stop', 'Current Risk · At Worst case', 'Remaining Reward · At Target']) expect(figure(root, term)).toBe('Mark missing: DEF, Mon Oct 12');
+    expect(figure(root, 'Reward to risk')).toBe('Mark missing: DEF, Mon Oct 12 (Plan 2.40 to 1)');
     expect(root.textContent).not.toMatch(/\$0\.00|(^|\s)0(\s|$)/);
     cleanup();
 
     const b = render(<CardFigures trade={trade({ evaluation: evaluation({ rewardRiskNow: { kind: 'NotApplicable', reason: 'EntryAtOrBeyondStop' } }) })} />);
-    expect(figure(b.container,'Reward : risk now')).toBe('Not applicable: entry at or beyond the Stop');
+    expect(figure(b.container,'Reward to risk')).toBe('Not applicable: entry at or beyond the Stop (Plan 2.40 to 1)');
   });
 
   it('should keep the dated last-close group beside the figures when the Review-date Mark is missing', () => {
     const gone = missing('XYZ', '2026-10-12');
     const dated = evaluation({ currentMarkedPnl: value(-50n), currentMarkedPnlInPlanR: value(-1n, 5n) });
     const { container: root } = render(<CardFigures trade={trade({ evaluation: evaluation({ currentMarkedPnl: gone, currentMarkedPnlInPlanR: gone, observation: { instrument: symbol, tradingDate: '2026-10-12', mark: null } }), datedLastClose: { tradingDate: '2026-10-09', evaluation: dated } })} />);
-    expect(figure(root, 'Current Marked Trade P&L')).toBe('Mark missing: XYZ, Mon Oct 12');
+    expect(figure(root, 'Trade P&L')).toBe('Mark missing: XYZ, Mon Oct 12');
     const group = within(root).getByRole('group', { name: 'Fri Oct 9 close' });
-    expect(figure(group, 'Current Marked Trade P&L')).toBe('−$50.00 · −0.20R');
-    expect(figure(group, 'Ongoing Risk to Stop')).toBe('$450.00 · 1.80R');
+    expect(figure(group, 'Trade P&L')).toBe('−$50.00 · −0.20R');
+    expect(figure(group, 'Current Risk · At Stop')).toBe('$450.00 · 1.80R');
   });
 });
 
@@ -104,5 +103,87 @@ describe('value at expiration at the Underlying latest close (A122)', () => {
     const { container: root } = render(<CardFigures trade={trade({ evaluation: evaluation({ expirationValueAtUnderlyingClose: { kind: 'NotApplicable', reason: 'NoOptionExpirationAnchor' } }) })} />);
     expect(root.textContent).not.toMatch(/at expiration/);
     expect(root.textContent).not.toMatch(/latest Mark/);
+  });
+});
+
+const odds = (target: bigint, stop: bigint) => ({ kind: 'Value' as const, value: { targetFirst: Rational.of(target, 100n), stopFirst: Rational.of(stop, 100n), percent: { targetFirst: Rational.of(target), stopFirst: Rational.of(stop) } } });
+
+describe("Review card: the summary in the replay's words (decision 7)", () => {
+  it('should name the figures Current Risk At Stop, Current Risk At Worst case and Remaining Reward At Target, with their amounts as before, in the Review-date group and the dated group alike', () => {
+    const dated = evaluation({ currentMarkedPnl: value(-50n), currentMarkedPnlInPlanR: value(-1n, 5n) });
+    const { container: root } = render(<CardFigures trade={trade({ datedLastClose: { tradingDate: '2026-10-09', evaluation: dated } })} />);
+    for (const scope of [root, within(root).getByRole('group', { name: 'Fri Oct 9 close' })]) {
+      expect(figure(scope, 'Current Risk · At Stop')).toBe('$450.00 · 1.80R');
+      expect(figure(scope, 'Current Risk · At Worst case')).toBe('$5,200.00 · 20.80R');
+      expect(figure(scope, 'Remaining Reward · At Target')).toBe('$400.00 · 1.60R');
+    }
+    expect(root.textContent).not.toMatch(/Ongoing Risk to Stop|Worst-Case Ongoing Risk|Incremental Reward to Target/);
+  });
+
+  it('should read Reward to risk in one row, 0.89 to 1 with the odds and the Plan beside it for T-A, with no separate planned row', () => {
+    const { container: root } = render(<CardFigures trade={trade({ evaluation: evaluation({ rewardRiskOdds: odds(53n, 47n), planOdds: odds(29n, 71n) }) })} />);
+    expect(figure(root, 'Reward to risk')).toBe('0.89 to 1 · about 53% : 47% (Plan 2.40 to 1 · 29% : 71%)');
+    expect(within(root).getByRole('img').getAttribute('aria-label')).toBe('about 53% chance of the Target first, 47% of the Stop first');
+    expect(root.textContent).not.toMatch(/Reward : risk/);
+    expect([...root.querySelectorAll('dt')].map((dt) => dt.textContent).filter((term) => /^Reward (to|:) risk/.test(term ?? ''))).toEqual(['Reward to risk']);
+  });
+
+  it('should use the replay wording past a line: Past the Target by 32.00 and Past the Stop by 300.00 in place of the row, never 0.00, and no Reward to risk row', () => {
+    const past = (zone: 'PastStop' | 'PastTarget', dollars: bigint, r: Rational, over: Record<string, unknown>) =>
+      evaluation({ rewardRiskOdds: odds(53n, 47n), standing: { kind: 'Value', value: { zone, pastBy: { dollars: Rational.of(dollars), r, crossed: true } } }, ...over });
+    const target = render(<CardFigures trade={trade({ evaluation: past('PastTarget', 32n, Rational.of(1n, 10n), { incrementalRewardToTarget: value(0n), incrementalRewardToTargetInPlanR: value(0n) }) })} />);
+    expect(figure(target.container, 'Remaining Reward')).toBe('Past the Target by $32.00 (0.10R)');
+    expect(target.container.textContent).not.toMatch(/Remaining Reward · At Target|Reward to risk/);
+    expect(target.container.textContent).not.toContain('$0.00');
+    expect(figure(target.container, 'Current Risk · At Stop')).toBe('$450.00 · 1.80R');
+    cleanup();
+    const stop = render(<CardFigures trade={trade({ evaluation: past('PastStop', 300n, Rational.of(1n, 2n), { ongoingRiskToStop: value(0n), ongoingRiskToStopInPlanR: value(0n) }) })} />);
+    expect(figure(stop.container, 'Current Risk')).toBe('Past the Stop by $300.00 (0.50R)');
+    expect(stop.container.textContent).not.toMatch(/Current Risk · At Stop|Reward to risk/);
+    expect(stop.container.textContent).not.toContain('$0.00');
+    expect(figure(stop.container, 'Remaining Reward · At Target')).toBe('$400.00 · 1.60R');
+  });
+
+  it('should name the marked result Trade P&L, in the Review-date group and the dated group alike', () => {
+    const { container: root } = render(<CardFigures trade={trade({ datedLastClose: { tradingDate: '2026-10-09', evaluation: evaluation({ currentMarkedPnl: value(-50n), currentMarkedPnlInPlanR: value(-1n, 5n) }) } })} />);
+    expect(figure(root, 'Trade P&L')).toBe('+$180.00 · +0.72R');
+    expect(figure(within(root).getByRole('group', { name: 'Fri Oct 9 close' }), 'Trade P&L')).toBe('−$50.00 · −0.20R');
+    expect(root.textContent).not.toContain('Current Marked Trade P&L');
+  });
+
+  it('should keep each renamed figure canonical term as accessible text, with nothing added to see', () => {
+    const { container: root } = render(<CardFigures trade={trade()} />);
+    for (const [label, term] of [['Current Risk · At Stop', 'Ongoing Risk to Stop'], ['Current Risk · At Worst case', 'Worst-Case Ongoing Risk'], ['Remaining Reward · At Target', 'Incremental Reward to Target']] as const) {
+      const dt = within(root).getByText(label, { selector: 'dt' });
+      expect(dt.getAttribute('title')).toBe(term);
+      expect(within(root).getByRole('term', { description: term }).textContent).toBe(label);
+    }
+    expect(root.textContent).not.toMatch(/Ongoing Risk to Stop|Worst-Case Ongoing Risk|Incremental Reward to Target/);
+    cleanup();
+    // The row past a line carries Stop Overrun or Target Overrun the same way.
+    const pastBy = (zone: string) => ({ kind: 'Value', value: { zone, pastBy: { dollars: Rational.of(32n), r: Rational.of(1n, 10n), crossed: true } } });
+    const target = render(<CardFigures trade={trade({ evaluation: evaluation({ standing: pastBy('PastTarget') }) })} />);
+    expect(within(target.container).getByRole('term', { description: 'Target Overrun' }).textContent).toBe('Remaining Reward');
+    cleanup();
+    const stop = render(<CardFigures trade={trade({ evaluation: evaluation({ standing: pastBy('PastStop') }) })} />);
+    expect(within(stop.container).getByRole('term', { description: 'Stop Overrun' }).textContent).toBe('Current Risk');
+  });
+
+  it("should give At Worst case the extremes' weight", () => {
+    const rowOfTerm = (scope: HTMLElement, term: string) => within(scope).getAllByText(term, { selector: 'dt' })[0]?.parentElement;
+    const remote = render(<CardFigures trade={trade({ evaluation: evaluation({ extremes: 'Remote' }) })} />);
+    const worst = rowOfTerm(remote.container, 'Current Risk · At Worst case');
+    expect(worst?.getAttribute('data-weight')).toBe('Remote');
+    expect(worst?.style.color).toBe('var(--muted)');
+    expect(rowOfTerm(remote.container, 'Current Risk · At Stop')?.getAttribute('data-weight')).toBeNull();
+    expect(rowOfTerm(remote.container, 'Remaining Reward · At Target')?.getAttribute('data-weight')).toBeNull();
+    cleanup();
+    for (const over of [{ extremes: 'Main' }, {}]) {
+      const main = render(<CardFigures trade={trade({ evaluation: evaluation(over) })} />);
+      const row = rowOfTerm(main.container, 'Current Risk · At Worst case');
+      expect(row?.getAttribute('data-weight')).toBe('Main');
+      expect(row?.style.color).toBe('');
+      cleanup();
+    }
   });
 });
