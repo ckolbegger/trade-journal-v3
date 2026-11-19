@@ -493,6 +493,33 @@ Lane BR (`d09ar/br`), base `70ce0f74`.
   - The failure: `e2e/d9/gaps.spec.ts:94` (B9.2), "the grid fits" at 1280 on R-DALE-D Fri 11-13. `.replay-stake-grid` runs past the viewport.
   - Likely cause: T9AR.23-S1's 340 px readout column, as its ocr reviewer predicted.
 - The suite-runner's final report was refused by the harness (one report per agent), so these results were read from the run files.
+- **merge6-S1** `1538b776` (lane OV, from `dbafc601`):
+  - The wide readout column is `fit-content(480px)`, and from 861 px up the body's side padding is 8 px.
+  - Red: `gaps.spec.ts:94` "the grid fits" on R-DALE-D. Green: it passes.
+  - Measured: R-DALE-D's grid is 402 px and R-BREN-U Mon 11-02's is 438.
+  - Browser: `e2e/d9ar` and `e2e/d9` `gaps`, `responsive-a11y` and `replay`: 61 passed. Lane tier `merge6-S1`: unit 2455, integration 286, checks 14 of 14.
+  - **Sent back, not accepted:**
+    - By the agent's own estimate the P&L chart at R-BREN-U Mon 11-02 is about 771 px. B9AR.7 expects at least 800 at 1280, and the test passed only because it measures Mon 11-16.
+    - The `fit-content` column also changes the chart's width as the slider moves.
+    - The agent continues in lane OV with a follow-up: one column width at every session, every grid fitting it, the chart at 800 or more at every session. If that can't be done, it stops and reports for a user decision.
+  - **Follow-up** `87555266`, measured on every session of the five Trades at 1280:
+    - Red against `1538b776`: the widest grid was 473 px (AXIO Mon 11-09) and the narrowest chart 736 px. Under `fit-content` the "Past the Stop by …" sentence counted at its unwrapped width.
+    - Each grid's real minimum with figures on one line: BREN 310, CORV 324, AXIO 327, DALE 367.3 px.
+    - Fix: the readout column is a fixed 372 px. From 861 px up only (`replay-readout.css`, lane RO, idle, allowed by the brief): the stake grid's cell left padding is 6 px and the stake group's right padding 0.
+    - Green: on every session the grid is 372 px with no overflow and the P&L chart 837 px; neither moves with the slider.
+    - The throwaway measuring spec was deleted, because lane OV owns no e2e file. **No permanent case measures the chart's width at every session**; noted for the gate critic.
+    - Browser: 61 passed. Lane tier `merge6-S1b`: unit 2455, integration 286, checks 14 of 14.
+    - Agent's note: between 861 and about 1100 px the fixed column leaves the chart narrower than before; no case measures it.
+  - **ocr** on `dbafc601..87555266` (`ocr/merge6-S1-87555266.json`): 2 files, **no findings**.
+    - Reviewer's notes, for the gate critic:
+      - The breakpoints match at 860/861.
+      - `padding-right: 0` on the stake group changes nothing.
+      - Only about 5 px of headroom over the grid's minimum, which depends on the font, with no committed guard.
+      - The "(Plan …)" and other rows wrap and cannot overflow.
+      - From 861 to 1100 px the chart is about 418 to 657 px, which is untested.
+      - The 6 px cell gap matches the phone rule.
+  - **Merged:** rebased onto `668819de` (evidence only, so no rerun) and fast-forwarded. merge6-S1 is `2882fee8`, its follow-up `c614cd64`.
+  - **merge6-S1-D1** briefed in lane BR (re-pointed to main `c614cd64`; its old commits were all on main): a committed case stepping all five Trades at 1280 that guards the chart width, the stable layout and the grid fitting its column.
 - **merge6-S1** briefed in lane OV. The branch `d09ar/ov` was re-pointed to main `dbafc601` first: its old pre-rebase commits were all on main under their new hashes (`git cherry`). The case's red is the run itself.
 - **Part 1 notes:**
   - The Detail overlay's slider session does not survive a reload (the address holds only `replay=open`; the plan does not ask that it survive).
