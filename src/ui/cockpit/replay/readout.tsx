@@ -86,9 +86,15 @@ export function Readout({ groups }: ReadoutProps) {
                     <span className="replay-value" data-kind={row.value.kind}>
                       {row.label === 'Reward to risk' && group.grid?.odds ? (
                         // The odds are heard in full, where the page shows them as ratio-like marks (A267).
-                        <span role="img" aria-label={group.grid.odds.spoken}>
-                          {row.value.text}
-                        </span>
+                        // The ratio stays plain text; only the odds part is labelled, since an image hides its children.
+                        (() => {
+                          const [ratio, ...oddsMarks] = row.value.text.split(' · ');
+                          return (
+                            <>
+                              {ratio} · <span role="img" aria-label={group.grid.odds.spoken}>{oddsMarks.join(' · ')}</span>
+                            </>
+                          );
+                        })()
                       ) : (
                         shown(row.value)
                       )}

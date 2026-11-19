@@ -164,11 +164,21 @@ describe('Replay frame: the readout (W43)', () => {
     const table = screen.getByRole('table');
     expect(table.compareDocumentPosition(screen.getByText(note)) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(text(readout.querySelector('[data-row="Reward to risk"]')!)).toContain('11.69 to 1 · about 8% : 92%');
-    expect(within(readout).getByRole('img', { name: odds.spoken }).textContent).toBe(odds.text);
+    expect(within(readout).getByRole('img', { name: odds.spoken }).textContent).toBe('about 8% : 92%');
     // No odds, no note.
     cleanup();
     render(<Readout groups={[stakeGroup]} />);
     expect(screen.queryByText(note)).toBeNull();
+  });
+
+  it('should speak the current ratio and the odds in full to a screen reader in the Reward to risk row', () => {
+    const odds = { text: '11.69 to 1 · about 8% : 92%', planText: '(Plan 0.29 to 1 · 78% : 22%)', spoken: 'about 8% chance of the Target first, 92% of the Stop first', note: 'Odds note.' };
+    const withOdds = { ...stakeGroup, rows: [{ label: 'Reward to risk', value: fig(odds.text), change: odds.planText }], grid: { ...stakeGroup.grid!, odds } };
+    render(<Readout groups={[withOdds]} />);
+    const row = screen.getByTestId('readout').querySelector('[data-row="Reward to risk"]') as HTMLElement;
+    // The ratio is plain text, not inside the labelled image (an image hides its children from a screen reader).
+    expect(within(row).getByText(/11\.69 to 1/).closest('[role="img"]')).toBeNull();
+    expect(within(row).getByRole('img', { name: odds.spoken })).toBeTruthy();
   });
 
   it('should carry the extremes weight on the At Worst case and At Max reward rows for the stylesheet to dim', () => {
