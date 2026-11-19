@@ -56,6 +56,13 @@ export function plotSessionOf(view: TradeReplayView, index: number): PlotSession
   const tradePnl = session.tradePnl.kind === 'Value' ? session.tradePnl.value : undefined;
   const worstCase = f?.outcomes?.atWorstCase?.kind === 'Value' ? f.outcomes.atWorstCase.value : undefined;
   const hasStrike = instrumentsOf(view).contract !== undefined;
+  // A271, W64: the flag is on the session a role was first crossed in; the plot keeps it on later sessions. The view says which session.
+  const crossing =
+    session.crossings?.stop.first?.date === session.date
+      ? { line: 'Stop' as const, label: 'Stop breached' }
+      : session.crossings?.target.first?.date === session.date
+        ? { line: 'Target' as const, label: 'Target reached' }
+        : undefined;
   const keyEntries: PlotKeyEntry[] = [
     ...(price === undefined ? [{ kind: 'NoMark' as const, label: 'No Mark' }] : [{ kind: 'Mark' as const, label: 'Mark' }]),
     ...(tradePnl && tradePnl.compare(ZERO) !== 0 ? [{ kind: 'TradePnl' as const, label: tradePnl.compare(ZERO) > 0 ? 'Open profit' : 'Open loss' }] : []),
@@ -67,6 +74,7 @@ export function plotSessionOf(view: TradeReplayView, index: number): PlotSession
     ...(f?.outcomes?.atMaxReward?.kind === 'Value' ? [{ kind: 'MaxReward' as const, label: 'At Max reward' }] : []),
     ...(hasStrike ? [{ kind: 'Strike' as const, label: 'Strike' }] : []),
     ...((session.markers ?? []).some((m) => m.effect !== 'Opened') ? [{ kind: 'Execution' as const, label: 'Execution' }] : []),
+    ...(crossing ? [{ kind: 'FirstCrossing' as const, label: crossing.label }] : []),
   ];
   return {
     keyEntries,
@@ -84,6 +92,7 @@ export function plotSessionOf(view: TradeReplayView, index: number): PlotSession
     maxReward: labelled(f?.outcomes?.atMaxReward, 'Max reward'),
     // A losing Worst case's tag for the bottom edge (W68); the chart draws it only when the line is below its range. A figure with no weight is Main.
     ...(worstCase && worstCase.compare(ZERO) < 0 && { worstCaseTag: { label: `Worst case ${chartSigned(worstCase)} ↓`, weight: f?.extremes ?? 'Main' } }),
+    ...(crossing && { firstCrossing: crossing }),
     ...(past && { past: { line: past.line, label: `${chartMoney(past.dollars)} past the ${past.line}` } }),
     // What is at stake from here, tagged at the slider's session: the risk unless the Stop is breached, the reward unless the Target is reached.
     ...(risk?.kind === 'Value' && (zone !== 'PastStop' || reward?.kind === 'Value') && {

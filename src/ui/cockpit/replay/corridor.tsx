@@ -69,8 +69,8 @@ function drawingWidth(measured: number, compact: boolean | undefined): number {
 }
 
 // A280: every kind of thing the revealed sessions drew, once each, in the order they first appeared. A Worst case, a Max reward
-// and a Strike are named only when their line is on the page.
-const LINE_KINDS: ReadonlySet<PlotKeyEntry['kind']> = new Set(['WorstCase', 'MaxReward', 'Strike']);
+// and a Strike are named only when their line is on the page, and a first crossing only when its flag is.
+const LINE_KINDS: ReadonlySet<PlotKeyEntry['kind']> = new Set(['WorstCase', 'MaxReward', 'Strike', 'FirstCrossing']);
 function keyOf(sessions: readonly PlotSession[], drawn: ReadonlySet<PlotKeyEntry['kind']>): PlotKeyEntry[] {
   const seen = new Set<string>();
   return sessions

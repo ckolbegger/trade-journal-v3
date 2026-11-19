@@ -1,5 +1,5 @@
 import { axisMoney, type DrawnChart, LabelPlacer, pnlRange, signedAxisMoney, tickFits, ticks, timeAxis, valueAxis, type Spot } from './geometry.ts';
-import type { LabelledFigure, PlotSession, ReplayPlotProps } from './replay.types.ts';
+import type { LabelledFigure, PlotKeyEntry, PlotSession, ReplayPlotProps } from './replay.types.ts';
 
 // A phone's chart is at least 200 high: its labels are in the strip under it, so the drawing keeps its room.
 const HEIGHT_FULL = 210;
@@ -220,6 +220,25 @@ export function drawPnl(props: ReplayPlotProps, width: number): DrawnChart {
       { x: xc, y: second, anchor: 'middle' },
     ]);
   }
+  // A first crossing (A271, W64): a flag at the session, on the line it crossed (the Trade P&L where that line has no figure); the plot is
+  // given every revealed session, so the flag stays on later ones. It is drawn only with its label, or in the phone's strip.
+  const flags = sessions.flatMap((s) => {
+    const crossing = s.firstCrossing;
+    const at = crossing && (crossing.line === 'Stop' ? s.resultAtStop : s.resultAtTarget)?.value;
+    const level = at ?? s.tradePnl;
+    if (!crossing || level === null) return [];
+    const x = time.x(s.slot);
+    const y = value.y(level);
+    const top = Math.max(TOP, y - 18);
+    const key = `crossing-${s.slot}`;
+    put(key, `crossing-label ${crossing.line.toLowerCase()}`, words(crossing.label, crossing.shortLabel), [
+      { x: x + 6, y: top + 8, anchor: 'start' },
+      { x: x - 6, y: top + 8, anchor: 'end' },
+      { x: x + 6, y: top + 20, anchor: 'start' },
+      { x: x - 6, y: top + 20, anchor: 'end' },
+    ]);
+    return kept.has(key) ? [{ key, line: crossing.line.toLowerCase(), x, y, top }] : [];
+  });
   for (const s of sessions) {
     const x = time.x(s.slot);
     s.markers
@@ -305,7 +324,7 @@ export function drawPnl(props: ReplayPlotProps, width: number): DrawnChart {
     const d = limitPath(pick);
     return d && kept.has(css) ? [{ css, keyKind, d }] : [];
   });
-  const drawn = new Set(limitLines.map((l) => l.keyKind));
+  const drawn = new Set<PlotKeyEntry['kind']>([...limitLines.map((l) => l.keyKind), ...(flags.length > 0 ? ['FirstCrossing' as const] : [])]);
   const svg = (
     <svg className="pnl-chart" viewBox={`0 0 ${width} ${HEIGHT}`} width={width} height={HEIGHT}>
       <defs>
@@ -368,6 +387,12 @@ export function drawPnl(props: ReplayPlotProps, width: number): DrawnChart {
         <path key={l.css} className={l.css} d={l.d} />
       ))}
       <path className="break-even" d={`M${time.left} ${f1(y0)}H${time.right}`} />
+      {flags.map((f) => (
+        <g key={f.key} className={`first-crossing ${f.line}`}>
+          <path className="flag-pole" d={`M${f1(f.x)} ${f1(f.y)}V${f1(f.top)}`} />
+          <path className="flag-pennant" d={`M${f1(f.x)} ${f1(f.top)}h6l-3 4l3 4h-6Z`} />
+        </g>
+      ))}
       {current && <path className="cursor" d={`M${f1(xc)} ${TOP}V${FLOOR}`} />}
       {current?.stake && current.tradePnl !== null && (
         <g className="stake">

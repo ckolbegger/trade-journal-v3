@@ -1,0 +1,12 @@
+# D09AR TDD log, T9AR.19
+
+One file per task (decision 111), so parallel lanes never edit one file. Each row is one single-case run; see `../tdd-log.md` for the rules.
+
+| T9AR.19 | should flag a line at the session its condition was first crossed | red | `npx vitest run src/ui/cockpit/replay/corridor.test.tsx -t "should flag a line at the session its condition was first crossed"` | exit 1; Tests  1 failed, 53 skipped (54) | AssertionError: slider 4: expected [] to have a length of 1 but got +0  |
+| T9AR.19 | should flag a line at the session its condition was first crossed | red | `npx vitest run src/ui/cockpit/replay/corridor.test.tsx -t "should flag a line at the session its condition was first crossed"` | exit 1; Tests  1 failed, 53 skipped (54) | AssertionError: slider 4: expected [] to have a length of 1 but got +0  |
+| T9AR.19 | should flag a line at the session its condition was first crossed | green | `npx vitest run src/ui/cockpit/replay/corridor.test.tsx -t "should flag a line at the session its condition was first crossed"` | exit 0; Tests  1 passed, 53 skipped (54) |  |
+| T9AR.19 | should flag a line at the session its condition was first crossed | red | `npx vitest run src/ui/cockpit/replay/plot.props.test.ts -t "should flag a line at the session its condition was first crossed"` | exit 1; Tests  1 failed, 13 skipped (14) | AssertionError: expected [ undefined, undefined, undefined ] to deeply equal [ undefined, …(2) ]  |
+| T9AR.19 | should flag a line at the session its condition was first crossed | green | `npx vitest run src/ui/cockpit/replay/plot.props.test.ts -t "should flag a line at the session its condition was first crossed"` | exit 0; Tests  1 passed, 13 skipped (14) |  |
+| T9AR.19 | should name the flag in the key | red | `npx vitest run src/ui/cockpit/replay/corridor.test.tsx -t "should name the flag in the key"` | exit 1; Tests  1 failed, 54 skipped (55) | AssertionError: expected [ 'Target reached' ] to deeply equal []  |
+| T9AR.19 | should name the flag in the key | green | `npx vitest run src/ui/cockpit/replay/corridor.test.tsx -t "should name the flag in the key"` | exit 0; Tests  1 passed, 54 skipped (55) |  |
+| T9AR.19 | refactor | refactor | `npx vitest run src/ui/cockpit` | exit 0; 316 passed | No refactor earned: the flag lookup was written as two plain branches, not a nested ternary helper. Both cases are in corridor.test.tsx and the first also in plot.props.test.ts under the same planned name. |

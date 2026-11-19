@@ -201,3 +201,23 @@ describe('replay.props: the readout separates what is at stake from where the Tr
     expect(props.sessions[0]!.plot.stake).toEqual({ riskLabel: 'Current Risk $352', riskShortLabel: 'Risk $352', rewardLabel: 'Remaining Reward $928', rewardShortLabel: 'Reward $928' });
   });
 });
+
+describe('Corridor: a first crossing (decision 2)', () => {
+  const none = { conditions: [] };
+  const crossings = (stop?: string, target?: string) => ({
+    stop: { ...none, ...(stop && { first: { date: stop, afterGap: false }, since: { date: stop, afterGap: false } }) },
+    target: { ...none, ...(target && { first: { date: target, afterGap: false }, since: { date: target, afterGap: false } }) },
+  });
+  const day = (date: string, c: ReturnType<typeof crossings>) => ({ ...withMarks(session({ date, pnl: 100 }), [markOf(BREN_STOCK, '100.20')]), crossings: c });
+
+  it('should flag a line at the session its condition was first crossed, labelled "Target reached" (R-CORV-D Fri 11-06) or "Stop breached" (R-AXIO-D Mon 11-09), and keep the flag on later sessions', () => {
+    // R-CORV-D: the Target first reached on Fri 11-06 and still crossed on Mon 11-09; the flag is on the session of the first crossing only,
+    // and the plot, given every revealed session, keeps it on screen. Not crossed yet: no flag.
+    const target = replayProps(fullView([day('2026-11-05', crossings()), day('2026-11-06', crossings(undefined, '2026-11-06')), day('2026-11-09', crossings(undefined, '2026-11-06'))], PLAN), { Plot }).sessions.map((s) => s.plot);
+    expect(target.map((p) => p.firstCrossing)).toEqual([undefined, { line: 'Target', label: 'Target reached' }, undefined]);
+    expect(target.map((p) => p.keyEntries?.some((e) => e.kind === 'FirstCrossing' && e.label === 'Target reached'))).toEqual([false, true, false]);
+    // R-AXIO-D: the Stop breached on Mon 11-09.
+    const stop = replayProps(fullView([day('2026-11-09', crossings('2026-11-09'))], PLAN), { Plot }).sessions[0]!.plot;
+    expect(stop.firstCrossing).toEqual({ line: 'Stop', label: 'Stop breached' });
+  });
+});

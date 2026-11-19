@@ -146,6 +146,7 @@
 .replay-plot .banked-label,
 .replay-plot .past-label,
 .replay-plot .marker-label,
+.replay-plot .crossing-label,
 .replay-plot .worst-case-label,
 .replay-plot .worst-case-tag,
 .replay-plot .max-reward-label {
@@ -158,8 +159,28 @@
 }
 
 .replay-plot .result-label.stop,
+.replay-plot .crossing-label.stop,
 .replay-plot .worst-case-label {
   fill: var(--stop);
+}
+
+/* A first crossing's flag (decision 2): a pole on the line it crossed, with a pennant, in the line's colour. */
+.replay-plot .first-crossing .flag-pole {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 1.5px;
+}
+
+.replay-plot .first-crossing.stop .flag-pennant {
+  fill: var(--stop);
+}
+
+.replay-plot .first-crossing.target .flag-pennant {
+  fill: var(--target);
+}
+
+.replay-plot .crossing-label.target {
+  fill: var(--target);
 }
 
 /* The Worst case's off-scale tag takes the extremes' weight (decision 6): full strength, or grey and lighter on a stock or a long option. */
@@ -312,6 +333,14 @@
 .replay-key .key-Target::before,
 .replay-key .key-MaxReward::before {
   border-top: 2px dotted var(--target);
+}
+
+/* The flag's swatch: a small filled square. */
+.replay-key .key-FirstCrossing::before {
+  width: 8px;
+  height: 8px;
+  border-top: 0;
+  background: var(--ink);
 }
 
 .replay-key .key-BreakEven::before {

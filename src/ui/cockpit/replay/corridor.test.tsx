@@ -1210,3 +1210,54 @@ describe('Corridor on a phone (suggestion 9)', () => {
     for (let n = 1; n <= 9; n += 1) expect(listed, `Sold ${n}`).toContain(`Sold ${n}`);
   });
 });
+
+describe('Corridor: a first crossing (decision 2)', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+  // R-CORV-D: the Target first reached on Fri Nov 6 (slot 4); the plot is given every revealed session, so the flag stays.
+  const crossed = (stop: 'Stop' | 'Target', label: string, at: number, upTo: number): PlotSession[] =>
+    DAYS.slice(0, upTo + 1).map((_, i) => bren(i, i === at ? { firstCrossing: { line: stop, label, shortLabel: label }, keyEntries: [{ kind: 'FirstCrossing', label }] } : {}));
+  const flags = (c: HTMLElement) => [...pnl(c).querySelectorAll('.first-crossing')];
+  const words = (c: HTMLElement) => [...pnl(c).querySelectorAll('text.crossing-label')].map((t) => t.textContent);
+
+  it('should flag a line at the session its condition was first crossed, labelled "Target reached" (R-CORV-D Fri 11-06) or "Stop breached" (R-AXIO-D Mon 11-09), and keep the flag on later sessions', () => {
+    // Before the session is revealed there is no flag (P145); from it on, the flag is at its column.
+    const before = render(<CorridorPlot {...props({ sessions: crossed('Target', 'Target reached', 4, 3), sliderIndex: 3 })} />);
+    expect(flags(before.container)).toHaveLength(0);
+    cleanup();
+    const time = timeAxis(640, 15);
+    for (const upTo of [4, 7, 10]) {
+      const { container } = render(<CorridorPlot {...props({ sessions: crossed('Target', 'Target reached', 4, upTo), sliderIndex: upTo })} />);
+      const [flag] = flags(container);
+      expect(flags(container), `slider ${upTo}`).toHaveLength(1);
+      expect(flag!.classList.contains('target')).toBe(true);
+      expect(words(container)).toEqual(['Target reached']);
+      expect(Math.abs(Number(/^M([\d.]+) /.exec(flag!.querySelector('path.flag-pole')!.getAttribute('d')!)![1]) - time.x(4))).toBeLessThan(1);
+      cleanup();
+    }
+    const stop = render(<CorridorPlot {...props({ sessions: crossed('Stop', 'Stop breached', 5, 6), sliderIndex: 6 })} />);
+    expect(words(stop.container)).toEqual(['Stop breached']);
+    expect(flags(stop.container)[0]!.classList.contains('stop')).toBe(true);
+  });
+
+  it('should name the flag in the key, and list its words in the phone\'s strip', () => {
+    const keyOf = (c: HTMLElement) => [...c.querySelectorAll('.replay-key li')].map((li) => li.textContent);
+    // Wide: the key names the flag once it is on the page, in the flag's own words, and not before.
+    const wide = render(<CorridorPlot {...props({ sessions: crossed('Target', 'Target reached', 4, 7), sliderIndex: 7 })} />);
+    expect(keyOf(wide.container)).toEqual(['Target reached']);
+    expect(wide.container.querySelector('.replay-key .key-FirstCrossing')).toBeTruthy();
+    cleanup();
+    // A key entry with no flag drawn (the session carries no crossing) is not named.
+    const none = render(<CorridorPlot {...props({ sessions: [bren(0, { keyEntries: [{ kind: 'FirstCrossing', label: 'Target reached' }] })], sliderIndex: 0 })} />);
+    expect(keyOf(none.container)).toEqual([]);
+    cleanup();
+    // A phone's drawing carries no label on a line: the words go to the strip under it, after the figures' labels.
+    frameWidth(340);
+    const phone = render(<CorridorPlot {...props({ sessions: crossed('Target', 'Target reached', 4, 7), sliderIndex: 7 })} />);
+    expect(pnl(phone.container).querySelectorAll('text.crossing-label')).toHaveLength(0);
+    expect(phone.container.querySelector('.replay-strip-labels')!.textContent).toContain('Target reached');
+    expect(keyOf(phone.container)).toEqual(['Target reached']);
+  });
+});
