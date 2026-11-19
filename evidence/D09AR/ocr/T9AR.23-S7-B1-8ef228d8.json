@@ -1,0 +1,132 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 1,
+    "total_tokens": 82509,
+    "input_tokens": 81653,
+    "output_tokens": 856,
+    "cache_read_tokens": 13312,
+    "elapsed": "41s"
+  },
+  "tool_calls": {
+    "total": 11,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 2,
+      "file_read": 8
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/replay/corridor-pnl.tsx",
+      "content": "The weekday-removal regex is not restricted to the expected `Expires \u003cweekday\u003e ...` format. For example, an endLabel of `Fri Nov 20` (already used by the plot fixtures) becomes `Fri 20` when the full label does not fit: it removes the month rather than the weekday. Other nonmatching labels can similarly lose arbitrary three-letter words. Only generate shortened variants when the full expiration-label format matches; otherwise preserve the supplied label.",
+      "existing_code": "    ? [axis.endLabel, axis.endLabel.replace(/ \\w{3} /, ' '), axis.endLabel.replace(/^Expires \\w{3} /, 'Exp ')].find((t) =\u003e span(t, time.right, 'end').x0 \u003e= startRight) ?? axis.endLabel.replace(/^Expires \\w{3} /, 'Exp ')",
+      "start_line": 310,
+      "end_line": 310,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/cockpit/replay/corridor-pnl.tsx",
+        "src/ui/cockpit/replay/corridor.test.tsx"
+      ]
+    }
+  ],
+  "session_id": "880e6ab1-2f33-4ce6-8a59-5fee9d13ea18",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "880e6ab1-2f33-4ce6-8a59-5fee9d13ea18",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "8ef228d8",
+      "resolved_base": "dd6a4dd75478d85b9568fa6e1956136bb7f5b456",
+      "resolved_head": "8ef228d8aa15bf6a147364faeeae0e5c47f6c972",
+      "exact_range": "dd6a4dd75478d85b9568fa6e1956136bb7f5b456..8ef228d8aa15bf6a147364faeeae0e5c47f6c972",
+      "source_artifact_sha256": "4e25a6b518b3ed0ac5d015acc64e180a599ad7aa0f30cef17fb38c77c41ba149"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "18de86b152c71edf7b69e5ef56c77c1958afecdf4524893fdc802e9700a6dfe1",
+          "path": "src/ui/cockpit/replay/corridor-pnl.tsx",
+          "fingerprint": "7723fd49a1029b0e6e087742e0ea5381e1b1ce00dac004e6b1e439e78c9cd6e0"
+        },
+        {
+          "item_id": "ba578f97f7698c0e6bcb181e747f8c8ef3dafb90b6f8eef6f25b35b639e1dd2c",
+          "path": "src/ui/cockpit/replay/corridor.test.tsx",
+          "fingerprint": "9f6fc794f5b148ef82a726fbd3b75d8087b73bacf2cb63ea7f989f34a427d12b"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "18de86b152c71edf7b69e5ef56c77c1958afecdf4524893fdc802e9700a6dfe1",
+          "path": "src/ui/cockpit/replay/corridor-pnl.tsx",
+          "fingerprint": "7723fd49a1029b0e6e087742e0ea5381e1b1ce00dac004e6b1e439e78c9cd6e0"
+        },
+        {
+          "item_id": "ba578f97f7698c0e6bcb181e747f8c8ef3dafb90b6f8eef6f25b35b639e1dd2c",
+          "path": "src/ui/cockpit/replay/corridor.test.tsx",
+          "fingerprint": "9f6fc794f5b148ef82a726fbd3b75d8087b73bacf2cb63ea7f989f34a427d12b"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "39698abb6ef43eb2d2e3d433bd9053e13a53dd58b36b7027ea5b0388d2fb58f8",
+          "path": "evidence/D09AR/suite-runs/T9AR.23-S7-B1-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "4a84251c63fddd2f7a7bc8ead21adfa3b61138f8fbaadb335c5290a17ac3092b",
+          "path": "evidence/D09AR/suite-runs/T9AR.23-S7-B1-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "6b04d4b9220f82d58a878ae750f7e8f377606fdb23a2eceb221afdc1074ea387",
+          "path": "evidence/D09AR/suite-runs/T9AR.23-S7-B1-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "937e29a4aef2c041668880c18e8aa84e43a34d16b7358bd147091bd0ebca0a6e",
+          "path": "evidence/D09AR/tdd-log/T9AR.23-S7-B1.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ac607408114aedd044bdec2646d2d78de2b32b9d38da0d2f8e68018b7411ebc0",
+          "path": "evidence/D09AR/suite-runs/T9AR.23-S7-B1-unit.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 40697
+  }
+}

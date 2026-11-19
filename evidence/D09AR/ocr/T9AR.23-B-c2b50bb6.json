@@ -1,0 +1,141 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 90863,
+    "input_tokens": 89484,
+    "output_tokens": 1379,
+    "cache_read_tokens": 8320,
+    "elapsed": "53s"
+  },
+  "tool_calls": {
+    "total": 9,
+    "by_tool": {
+      "code_search": 2,
+      "file_read": 7
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "e2e/d9ar/cards.spec.ts",
+      "files": [
+        "e2e/d9ar/cards.spec.ts"
+      ]
+    }
+  ],
+  "session_id": "f1bfce61-cb93-4ca8-a431-de73c5e31b5f",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "f1bfce61-cb93-4ca8-a431-de73c5e31b5f",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "9618d87b",
+      "requested_head": "c2b50bb6",
+      "resolved_base": "9618d87bb425490459ee5d042af0b0291627a0d1",
+      "resolved_head": "c2b50bb657b3383ce5d70f4c111ddec2da536ed9",
+      "exact_range": "9618d87bb425490459ee5d042af0b0291627a0d1..c2b50bb657b3383ce5d70f4c111ddec2da536ed9",
+      "source_artifact_sha256": "46f153267f79601ea3af7fb5078074a822be4dc9415419bda8abdcb58d380f85"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "6b40b6193ff7b48714123c667885102539bb5cd3d991be06e1e7e545d78fb626",
+          "path": "e2e/d9ar/cards.spec.ts",
+          "fingerprint": "5cb8c2350b3a740bf7d9cfc1b5ce9ed4905cff2e94f86439a35e75f439f9f385"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "6b40b6193ff7b48714123c667885102539bb5cd3d991be06e1e7e545d78fb626",
+          "path": "e2e/d9ar/cards.spec.ts",
+          "fingerprint": "5cb8c2350b3a740bf7d9cfc1b5ce9ed4905cff2e94f86439a35e75f439f9f385"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "026ac462fda3127775e5f023e943e1c57824aa809a98694e0451f003ae2a4586",
+          "path": "evidence/D09AR/tdd-log/T9AR.23.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "07445d0ee9f2deaeb68975ff33c8c9d6d9afbcd8eee92f791056829ace47f17c",
+          "path": "evidence/D09AR/screenshots/B9AR.4-BREN-session-11.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "1161affab2f621cd36b93a0022af9fb7e1f4830a3c2fa901cbc18dda033259c6",
+          "path": "evidence/D09AR/screenshots/B9AR.4-BREN-session-3.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "1c772fd346400b507506cbfc2917db7f893f483ac90f264339c1861f2ee8e57a",
+          "path": "evidence/D09AR/screenshots/B9AR.4-BREN-session-5.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "309b74581d9307a54d93e47f10353f0800568169494adc17bed481bb0ac4aade",
+          "path": "evidence/D09AR/screenshots/B9AR.4-BREN-session-7.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "55c3e26ed4eda8dec5a458d799718f6f805f5ec2cc6abeab46c35d9fd6840347",
+          "path": "evidence/D09AR/screenshots/B9AR.4-BREN-session-10.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "598aee5d6f92740b3a94f16f1d84b30a7b10e53199a616c1b73936733c4fde5f",
+          "path": "evidence/D09AR/screenshots/B9AR.4-BREN-session-2.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "63ecf7dc3c27455b3e99cb80680a97b9789dc26406adea594c6b01f105fe11fe",
+          "path": "evidence/D09AR/screenshots/B9AR.4-BREN-session-8.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "64bea64cae05aec0f1e585483d066b09860f111822d6a43c6d86deb37a3af8e9",
+          "path": "evidence/D09AR/screenshots/B9AR.4-BREN-session-9.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "682e9a0219f8742917ec3c4a770754aca208628025dd882b116d01120ff5d8d4",
+          "path": "evidence/D09AR/screenshots/B9AR.4-BREN-session-6.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "be09268812879014028834055775e1be6d065f690d49d96953b99d2843b21f98",
+          "path": "evidence/D09AR/screenshots/B9AR.4-BREN-session-4.png",
+          "exclude_reason": "binary"
+        }
+      ]
+    },
+    "elapsed_ms": 53015
+  }
+}

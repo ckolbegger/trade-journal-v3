@@ -368,6 +368,99 @@ Lane BR (`d09ar/br`), base `70ce0f74`.
     - Both notes are for the final report.
 - Lane PL was rebased onto `9b908473`, which brings in T9AR.18 and lane SC's fixes. Lane tier rerun `T9AR.23-S-PL-r`: unit 2444, integration 286, checks 14 of 14. Run complete.
 - **Merged** by fast-forward; main is at `7f62fec6`. After the rebase: T9AR.23-S6 `85ef2c57`, S5 `54bc7766`, S5-B1 `7f62fec6`.
+- **Lane OV** (from `9bce9630`): S1 `c4e56a07`, S3 `706cca7d`, S2 `bd86c24e`, test and evidence `96dfb359`. Rebased onto `e339e847` as `3faba47b`, `6ffb41c6`, `6606e5fd` and `46d1f526`. The two screenshots that conflicted (`B9AR.3-from-here-colour.png`, `B9AR.7-tap-hover-box.png`) keep main's copies, which come from the lanes that fixed those cases.
+  - **T9AR.23-S1:**
+    - Red: the readout at x 770, below the charts. With only the chart box moved, the one-line cases still failed: "+$988.00 · 3.05R" was 41 px high, because the app-wide two-column `dl` in `app.css` halved each row.
+    - Fix (`replay-overlay.css`): `.replay-chart-box` takes column 1; from 861 px up the readout's `dl` is one column; the grid is `minmax(0,1fr) minmax(0,340px)`. A 3fr/2fr split made the P&L chart 715 px, under the 800 minimum; it is now about 853 at 1280.
+    - Green: `overlay.spec.ts` and the five one-line cases pass.
+    - `overlay.test.tsx`'s A275 selector constant changed to `.replay-chart-box`; its expectations are unchanged.
+  - **T9AR.23-S3:** red, Close 21 px high. Fix: on a phone the header has no vertical padding and `[data-close]` gets `min-height: 44px`. Green.
+  - **T9AR.23-S2:** the span went from 708 px to 688 after S3, and to 665 of 667 now (2 px margin). The phone title is `0.9rem` with line-height 1.2, and the body's and the card's top padding are 4 px. No chart was shortened, no word cut, no figure hidden. Green.
+  - Browser: `e2e/d9ar` and `e2e/d9/responsive-a11y.spec.ts` gave 40 passed, 1 failed: `chart.spec.ts:42`, where `text.axis-start` "Mon Nov 2" was missing at Mon 11-02.
+    - Cause: `corridor-pnl.tsx` drops the start label when the cursor's name overlaps it, and at about 853 px it does.
+    - The agent offered three options. Changing the label rule meets W67 as written (both the left date and the cursor's name), and the end label already keeps its place with the cursor's name stepping aside. So it is a fix within the plan, **not a pending decision**: **T9AR.23-S7** in lane PL.
+  - Lane tier `T9AR.23-S-OV` (on the old base): unit 2426, integration 286, checks 14 of 14.
+  - **ocr** on `e339e847..46d1f526` (`ocr/T9AR.23-S1-S2-S3-46d1f526.json`): 5 files, **no findings**.
+  - **Reviewer's notes, not findings (for the final report and the gate critic):**
+    - On a phone (860 px and below) the app-wide two-column `dl` still applies to the readout, so its rows alternate between half-width and full-width cells. The 320 screenshot does not show the readout, so check it before calling A275 done.
+    - Between 860 and 861 px (fractional, under zoom) the override is off.
+    - The phone title can wrap to two lines. It still fits under the 44 px Close button, but the CSS comment says "one line".
+    - The readout column is a fixed 340 px with `nowrap` stake cells. Four-digit stake figures could overflow it at 1280 and wider; no test covers that.
+    - The file ends with `}}` on one line.
+  - Lane PL was fast-forwarded to `46d1f526`, so S7 builds on lane OV. The two merge together, and S7's lane tier stands for both on main's latest code.
+- **Part 2** `c0792f4b` (lane BR, from `9b908473`), tests only. **Every case passes against the product; none disagrees, no `test.fail`.**
+  - `cards.spec.ts` (B9AR.4): 3 cases.
+    - R-AXIO-D through all 11 sessions: the Plan block, the cards, paging, the headings move the slider, and W63 and W64 on the sale.
+    - R-BREN-U.
+    - R-CORV-D's crossing from Fri 11-06 on.
+  - `states.spec.ts` (B9AR.6): 4 cases.
+    - K-sale.
+    - R-DALE-U's Settlement Due, then its Expiration and Final result.
+    - A Planned Trade has no Replay button.
+    - R-CORV-D's missing Mark, then acknowledged unavailable.
+  - `readout.spec.ts`: 2 Position-group cases.
+  - Wording the agent narrowed or filled in, for the gate critic:
+    - The figures check covers the P&L chart's labelled figures only.
+    - The price chart's Stop and Target lines are checked against the Plan block.
+    - R-CORV-D's Plan rows are taken from the product, since the plan gives no W62 words for them.
+    - The acknowledged top line is matched loosely: it contains "acknowledged unavailable" and "Tue Nov 10", and not "No Mark for". The product writes "Acknowledged unavailable: …".
+  - The first run had 5 failures, all mistakes in the tests, fixed there and logged.
+  - Timing: `e2e/d9ar` 2.0m with 45 cases. browser-3 is estimated at about 7.0m, under 8, so no `browser-4`.
+  - Lane tier `T9AR.23-2`: unit 2440, integration 286, checks 14 of 14.
+  - **ocr** on `c0792f4b` (`ocr/T9AR.23-2-c0792f4b.json`): 4 files, 3 comments, all Valid. Each became a task, briefed in lane BR (rebased onto `e339e847`, so part 2 is now `9618d87b`):
+    - **T9AR.23-B1** (`cards.spec.ts:25`): the readout's and the card's figures are merged into one set and matched by bare number.
+    - **T9AR.23-B2** (`cards.spec.ts:27`, `cards.spec.ts:30`, `cards.spec.ts:31`): the loops can run zero times, and the price chart's Mark is promised but never checked.
+    - **T9AR.23-B3** (`cards.spec.ts:126`, `cards.spec.ts:127`): R-BREN-U is checked only at sessions 1 and 9.
+  - **Done in lane BR** (from `9618d87b`), tests only, no case disagreeing with the product:
+    - **T9AR.23-B1** `f7e72247`: each drawn P&L figure is checked on its own row, by label and figure, in the readout and on the card. Bite: the Stop result mapped to "at Worst case" failed (expected −600, received [9940, −10000]).
+    - **T9AR.23-B2** `e843b82b`:
+      - Each Trade names the price lines it must draw (AXIO Stop and Target; BREN and CORV Strike), matched to the Plan block's rows.
+      - The price chart's Mark is checked on the "<symbol> Mark" row of both surfaces.
+      - Each P&L label must yield a figure, and at least one must be compared.
+      - Bites: an expected "Strike" on AXIO failed; a wrong Mark row label failed (received []).
+    - **T9AR.23-B3** `c2b50bb6`: R-BREN-U steps through every session. Bite: expecting session 5 at session 6 failed. The new screenshots are `B9AR.4-BREN-session-2.png` to `-11.png`; the old `B9AR.4-BREN-Thu-11-12.png` is left in place.
+    - `e2e/d9ar --workers=1` 45 passed in 2.0m. Lane tier `T9AR.23-B` (`cc663d5d`): unit 2444, integration 286, checks 14 of 14.
+    - **ocr** on `9618d87b..c2b50bb6` (`ocr/T9AR.23-B-c2b50bb6.json`): **no findings**.
+    - Reviewer's notes, not findings, for the gate critic:
+      - Labels still not compared: Max reward, the slider's value, and markers.
+      - The stake tag and the result share the "at Stop" row, so a swap would pass.
+      - Requiring the price lines on every session is brittle, because a line without room for its label is not drawn.
+      - The check ties to the readout's row words, and "Past the Stop's amount by" is not mapped.
+      - The stale `B9AR.4-BREN-Thu-11-12.png` is left in place.
+    - **Merged** by fast-forward, since lane BR's base `e339e847` was main's head. Main is at `cc663d5d`. T9AR.23 part 2 is `9618d87b`; B1 `f7e72247`, B2 `e843b82b`, B3 `c2b50bb6`.
+  - Reviewer's notes, not findings, for the gate critic:
+    - The figure filter leaves out `slider-value`, `max-reward-label`, `break-even-label` and `marker-label`.
+    - The acknowledged-unavailable check could be an exact match of `calculation-words.ts`'s words.
+- **T9AR.23-S7** `dd6a4dd7` (lane PL, on lane OV's `46d1f526`):
+  - The start label is always drawn, and the cursor's name steps between it and the end label.
+  - On the first session the cursor's name is the start label, so it is drawn once. The existing "not drawn twice" case is unchanged.
+  - On a chart too narrow for all three labels, the cursor's name is left out.
+  - Cases in `corridor.test.tsx`:
+    - 560 px, session 2: red, `axis-start` null; then green.
+    - 850 px, first session: red, `['cursor-label']` against `['axis-start']`; then green.
+    - 280 px: a **first-run pass**, flagged. It was written with the fix. Mutation: always draw the cursor's name; it failed, was restored, and is green.
+  - A first draft of case 1 at 850 px passed on the old code. Its red row in the log is invalid and noted there; the agent's deletion was denied and not retried.
+  - Browser: `e2e/d9ar` 47 passed, including `chart.spec.ts:42` and lane OV's 320 fit cases on main's T9AR.18 code. `e2e/d9/responsive-a11y.spec.ts` and `replay.spec.ts` 11 passed.
+  - Lane tier `T9AR.23-S7` (stands for lane OV too): unit 2447, integration 286, checks 14 of 14.
+  - **ocr** on `dd6a4dd7` (`ocr/T9AR.23-S7-dd6a4dd7.json`): 2 files, 1 comment.
+    - **T9AR.23-S7-B1** (Valid, `corridor-pnl.tsx:313-316`): both edge labels are always drawn, so at widths 200 to 222 the start label and "Expires Fri Nov 20" overlap, by 8 px at 215 and 23 px at 200. The Review card's chart at 320 px is 215 to 226 wide. Briefed in lane PL: fix by placement, or by a P137 shortening used only when narrow; stop and report if neither works.
+    - Reviewer's notes, not findings, for the gate critic and the final report:
+      - The cursor's name is clamped between the edge labels with no tie to its column, so on a narrow chart with many sessions it can sit about 5 columns from its session. The left-hand clamp is new.
+      - On the first session of a wide chart, the date is drawn once at the far left, about 1.5 columns from the cursor.
+      - The slider's `aria-valuetext`, the card and the hit buttons still name the session when the cursor's name is left out.
+- **T9AR.23-S7-B1** `8ef228d8` (lane PL):
+  - Case: "should draw both edge labels without overlap at width %i on an option Trade", run at 200, 215, 223 and 240.
+  - Red: 2 failed, 2 passed. At 200 it reported "expected 105 to be <= 82", and at 215 "expected 105 to be <= 97". Then green: 4 passed, and the 222 replay tests pass.
+  - Fix: P137 shortening, nothing hidden and no height added. The end label takes the first form that clears the start label by 4 px:
+    - "Expires Fri Nov 20";
+    - "Expires Nov 20";
+    - "Exp Nov 20".
+  - The cursor's room uses the label drawn. Recorded in `words-changed.md`.
+  - Browser: `e2e/d9ar` and `e2e/d9/responsive-a11y.spec.ts` 42 passed.
+  - Lane tier `T9AR.23-S7-B1`: unit 2451, integration 286, checks 14 of 14.
+  - **ocr** on `8ef228d8` (`ocr/T9AR.23-S7-B1-8ef228d8.json`): 2 files, 1 comment.
+    - **T9AR.23-S7-B2** (Valid, latent; `corridor-pnl.tsx:310`): the unanchored weekday regex turns an `endLabel` of another shape ("Fri Nov 20") into "Fri 20". Deriving words in the component also goes against ADR 0001. Briefed in lane PL: `plot.props.ts` supplies the three finished forms and the component only picks one.
+    - Reviewer's notes: the narrowest form clears down to about 185 px (the minimum is 200), and the shortened label is visual only (the chart's accessible name carries no expiry).
 - **Part 1 notes:**
   - The Detail overlay's slider session does not survive a reload (the address holds only `replay=open`; the plan does not ask that it survive).
   - The Review card reopens on its last session.

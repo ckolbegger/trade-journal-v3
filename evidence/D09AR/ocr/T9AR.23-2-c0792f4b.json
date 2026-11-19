@@ -1,0 +1,318 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 3,
+    "total_tokens": 277921,
+    "input_tokens": 275603,
+    "output_tokens": 2318,
+    "cache_read_tokens": 57088,
+    "elapsed": "1m39s"
+  },
+  "tool_calls": {
+    "total": 17,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 6,
+      "file_find": 1,
+      "file_read": 9
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "e2e/d9ar/cards.spec.ts",
+      "content": "Combining these figures checks presence in either the readout or the current card, not in both as B9AR.4 requires. Removing a figure from one surface still passes as long as the other contains it. Build separate sets and assert each chart figure against both.",
+      "existing_code": "  const there = new Set([...figuresIn(readout), ...figuresIn(card)]);",
+      "start_line": 25,
+      "end_line": 25,
+      "category": "test",
+      "severity": "medium"
+    },
+    {
+      "path": "e2e/d9ar/cards.spec.ts",
+      "content": "This check passes without checking any figures when no Stop/Target labels match, and it never inspects the price chart's current `.mark-label`. Thus a missing AXIO line label or an incorrect displayed Mark escapes the promised chart/readout coverage. Assert the expected labels for fixtures that have these lines, assert that numeric labels actually parse, and compare the current price-chart Mark with the readout (and current card). Apply a parsed-figure assertion to the P\u0026L labels too: `drawn.length \u003e 0` alone does not ensure the inner numeric assertions run.",
+      "existing_code": "  const lines = await scope.locator('svg.price-strip text').evaluateAll((texts) =\u003e texts.map((t) =\u003e t.textContent ?? '').filter((t) =\u003e /^(Stop|Target) \\$/.test(t)));\n  for (const text of lines) for (const figure of figuresIn(text)) expect(plan.includes(figure), `${where}: the price chart's \"${text}\" is in the Plan block`).toBe(true);",
+      "start_line": 30,
+      "end_line": 31,
+      "category": "test",
+      "severity": "medium"
+    },
+    {
+      "path": "e2e/d9ar/cards.spec.ts",
+      "content": "BREN only validates synchronization at indices 0 and 8; the eight-key seek skips all intermediate assertions and the test never checks sessions 9 and 10. The requested first-to-last traversal applies to R-BREN-U as well as AXIO/CORV, so intermediate or final-session card regressions can pass. Step through all 11 sessions with `expectCardsAt` after each step, retaining the sale-specific crossing assertion at index 8.",
+      "existing_code": "    await seek(page, scope, 'ArrowRight', 8);\n    await expectCardsAt(page, scope, 8, 11, 'BREN Thu 11-12');",
+      "start_line": 126,
+      "end_line": 127,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "D9AR end-to-end tests and shared support",
+      "files": [
+        "e2e/d9ar/cards.spec.ts",
+        "e2e/d9ar/readout.spec.ts",
+        "e2e/d9ar/states.spec.ts",
+        "e2e/d9ar/support.ts"
+      ]
+    }
+  ],
+  "session_id": "fe171445-5da6-4705-a1e4-a0575805aefb",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "fe171445-5da6-4705-a1e4-a0575805aefb",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "c0792f4b",
+      "resolved_base": "9b9084737e0825fb08c72beb58656eeddd4ba9a8",
+      "resolved_head": "c0792f4be36073c8c7b691acb4384fcce5fd8c46",
+      "exact_range": "9b9084737e0825fb08c72beb58656eeddd4ba9a8..c0792f4be36073c8c7b691acb4384fcce5fd8c46",
+      "source_artifact_sha256": "59ad938abef44c20565912e36fcc67db544a13a7b9d765ff3b658d9eaab5f81f"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "1de8fed67f607b0be507730f908872b3f8f30f8f306122ecd3148a9f45f3bdd1",
+          "path": "e2e/d9ar/cards.spec.ts",
+          "fingerprint": "43843488d9202e963a499ad87f7823b7f4d58b1973df98021aadaa956d1740fc"
+        },
+        {
+          "item_id": "1f1cde75c007ef44b7a42884ebbefdadc6bd52a3556903ee28f2f353ead37e61",
+          "path": "e2e/d9ar/readout.spec.ts",
+          "fingerprint": "a3faa46848bc1ac0f8eec9c25fe30433cca9e94e6cab75b0b20aa92e45ac076a"
+        },
+        {
+          "item_id": "49ad97a3c181c65873b9cdb94f891e8568a88a72186d154fb0b4930f1edf79a7",
+          "path": "e2e/d9ar/states.spec.ts",
+          "fingerprint": "1e799856fd88956317ba14845ab15bf95f9f71022cf787cbf4875f8b978e2020"
+        },
+        {
+          "item_id": "839b5d74be9dab57ce22d8164cf43a870716504e404925773518309e596f49ef",
+          "path": "e2e/d9ar/support.ts",
+          "fingerprint": "730b6f055ebbb86db67d2914e162667d3c3739e42dfa3239f010fb34dbdf7485"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "1de8fed67f607b0be507730f908872b3f8f30f8f306122ecd3148a9f45f3bdd1",
+          "path": "e2e/d9ar/cards.spec.ts",
+          "fingerprint": "43843488d9202e963a499ad87f7823b7f4d58b1973df98021aadaa956d1740fc"
+        },
+        {
+          "item_id": "1f1cde75c007ef44b7a42884ebbefdadc6bd52a3556903ee28f2f353ead37e61",
+          "path": "e2e/d9ar/readout.spec.ts",
+          "fingerprint": "a3faa46848bc1ac0f8eec9c25fe30433cca9e94e6cab75b0b20aa92e45ac076a"
+        },
+        {
+          "item_id": "49ad97a3c181c65873b9cdb94f891e8568a88a72186d154fb0b4930f1edf79a7",
+          "path": "e2e/d9ar/states.spec.ts",
+          "fingerprint": "1e799856fd88956317ba14845ab15bf95f9f71022cf787cbf4875f8b978e2020"
+        },
+        {
+          "item_id": "839b5d74be9dab57ce22d8164cf43a870716504e404925773518309e596f49ef",
+          "path": "e2e/d9ar/support.ts",
+          "fingerprint": "730b6f055ebbb86db67d2914e162667d3c3739e42dfa3239f010fb34dbdf7485"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "0287ae8bfc2cf0afdc7b53b378679371474541d215f0ce0f26b5959b43d4993b",
+          "path": "evidence/D09AR/screenshots/B9AR.6-k-sale-final-result.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "07292bc70c40132eba8dd1e6bbfce9cb411e2ba775a3db824a55cd88086fc083",
+          "path": "evidence/D09AR/screenshots/B9AR.4-BREN-first-session.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "09d9477d9df3e15af851fd6d4350b534f8926a00dcf28ea5e454dd9313a2f6a6",
+          "path": "evidence/D09AR/screenshots/B9AR.4-AXIO-session-4.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "142285cc8e1b75f205d2917ceb4669db14e32adff8d733e94c157aeda942a76a",
+          "path": "evidence/D09AR/screenshots/B9AR.4-CORV-Mon-Nov-2.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "1bbefa4e943154c706893d2334a2a194b0e82d57ce01b4b97eafa27e504a6b90",
+          "path": "evidence/D09AR/screenshots/B9AR.4-AXIO-session-3.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "28fdf1f54dbd07b9977d735169f25a8ff5867cd63964f22fd75322a261110649",
+          "path": "evidence/D09AR/screenshots/B9AR.4-AXIO-session-10.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "2a182000fdd050aa74ce22e77d8b2bd192d4f38b0aa20f6c756269da377e1e07",
+          "path": "evidence/D09AR/screenshots/B9AR.4-CORV-Fri-Nov-6.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "3224942d1ec1395892f23c25cab2399cc04bf90ba4457fa598a95973ec9f9f5a",
+          "path": "evidence/D09AR/tdd-log/T9AR.23.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "3d9350533f1baccde05301c7ea23f3409b3cf1316370595cfedb15c01f15b6ae",
+          "path": "evidence/D09AR/screenshots/B9AR.4-CORV-Thu-Nov-5.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "3e14ef9b31481ceff33a0de462d315eda42184e1e983e16a852de59f7dcec0e2",
+          "path": "evidence/D09AR/screenshots/B9AR.4-AXIO-session-5.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "3e6e2e1b836f226dc855bf01a05c755d075a47e6cd4849620dca2f8eaf826959",
+          "path": "evidence/D09AR/screenshots/B9AR.4-AXIO-session-8.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "3e96741be78c27934c819ea91434411a5f9678799505bd5d86ec889e536c17fb",
+          "path": "evidence/D09AR/suite-runs/T9AR.23-2-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "4307285b7b9534ca22bb58d26134fc86988a259ec845a7bc3321a52541df3b48",
+          "path": "evidence/D09AR/screenshots/B9AR.6-corv-add-the-mark.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "4ada1c54c1c1a01970fa65781647b2bebda8ff44560015be5baaf7db81dd5f2f",
+          "path": "evidence/D09AR/screenshots/B9AR.4-AXIO-after-pressing-Mon-Nov-9.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "4c0132814f1899aa9c383d3a70b3a7752be3dc8196a8148df23a86637608d1db",
+          "path": "evidence/D09AR/screenshots/B9AR.6-dale-expired.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "4c4850da529d70d0a0d634c04b01a50d6cfed71c461e21208dcee997ee2a4153",
+          "path": "evidence/D09AR/screenshots/B9AR.4-CORV-Tue-Nov-10.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "514c1fd669588f6a7bf2548284a0a94a2bcdc6ee41abd2ca065beb10823d21dd",
+          "path": "evidence/D09AR/screenshots/B9AR.6-corv-acknowledged.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "52d0a139688e17d1c1875564eed4330d8a403837bcddb98bb95b058c6c0b968d",
+          "path": "evidence/D09AR/suite-runs/T9AR.23-2-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "546e81cf86425e3f1d43ac477a8e6870a41de0fe0b2241bef15910cb9978b625",
+          "path": "evidence/D09AR/screenshots/B9AR.4-AXIO-session-6.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "5659d29e66a2ddf16267c2fa160b7ba650218e8304c9becf461c38bb301a5df7",
+          "path": "evidence/D09AR/screenshots/B9AR.4-CORV-Wed-Nov-11.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "5f48975f18180c9e3b93897f28c1e49e8b8c83f16ae9c8486baedbc79112d827",
+          "path": "evidence/D09AR/screenshots/B9AR.6-corv-no-mark.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "74b8e0a55a84715e052f92bb12fd524eef6bd30f035f7ad83ffb23f74457fd50",
+          "path": "evidence/D09AR/suite-runs/T9AR.23-2-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "7d9be942bb61ca9322910d831c205aecb12d3032a43e7f83c45dcc16ae6482f2",
+          "path": "evidence/D09AR/screenshots/B9AR.4-AXIO-session-2.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "7e5fcfceeefffc4a739cfbd903e256ef219e8422b1b2f04bdd6c686ee3db6b70",
+          "path": "evidence/D09AR/screenshots/B9AR.4-AXIO-first-session.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "7ee0a02f9431e1b7cd9669192c9132cd2dcc6b71a07ea41928f1e67a7ed95678",
+          "path": "evidence/D09AR/screenshots/B9AR.4-AXIO-after-pressing-Mon-Nov-2.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "b2ef1e53e37561238ff7fafcc80cf75cc4383da5bd3be959621536ad818a0c50",
+          "path": "evidence/D09AR/screenshots/B9AR.4-AXIO-session-9.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "c489d31434532a99234ee70577be71ecfaac6dee2aa8f3caef49f0a82ff6acae",
+          "path": "evidence/D09AR/screenshots/B9AR.4-CORV-Mon-Nov-9.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "d5fb3cc020fafd0ffbb021ba3fafa93493504ad6e8cf65647b0e2c9c1fb6fbc3",
+          "path": "evidence/D09AR/screenshots/B9AR.4-AXIO-session-7.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "d68388a2fb0989bf231eed445e1eab3ef9213d04f244277730bc0bf26d37ad44",
+          "path": "evidence/D09AR/screenshots/B9AR.4-AXIO-session-11.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "d917fa4f94a9ba4e081a88b6e1518625f8daf62bd576e6443f15690a3c8fdf27",
+          "path": "evidence/D09AR/screenshots/B9AR.4-CORV-Tue-Nov-3.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "db029ada4f4289925193b7eee4a0dec441aa41a9aa36d7a752a0a28927e8df8c",
+          "path": "evidence/D09AR/suite-runs/T9AR.23-2-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "dc05478b2f3dc4603fcd8cf4f9d5cfcc2546ad44a8e1b3ec86f34a710fbaa1af",
+          "path": "evidence/D09AR/screenshots/B9AR.4-BREN-Thu-11-12.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "e237f69bb15f21d409edd5db930806a60c4c63f58b12dbbddf6ee0174a198cc1",
+          "path": "evidence/D09AR/screenshots/B9AR.4-CORV-Wed-Nov-4.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "fcb7b53ea02f2cacd16ad4487613f284777a2156c79ca07dd40402c62d89d05c",
+          "path": "evidence/D09AR/screenshots/B9AR.6-dale-settlement-due.png",
+          "exclude_reason": "binary"
+        }
+      ]
+    },
+    "elapsed_ms": 99137
+  }
+}

@@ -1,0 +1,216 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 0,
+    "total_tokens": 91464,
+    "input_tokens": 90581,
+    "output_tokens": 883,
+    "cache_read_tokens": 8320,
+    "elapsed": "37s"
+  },
+  "tool_calls": {
+    "total": 17,
+    "by_tool": {
+      "code_search": 5,
+      "file_find": 1,
+      "file_read": 11
+    },
+    "failure": 1,
+    "failure_by_tool": {
+      "file_read": 1
+    },
+    "failure_details": [
+      {
+        "tool_call_number": 12,
+        "tool_name": "file_read",
+        "file_path": "e2e/d9ar/overlay.spec.ts,e2e/d9ar/readout.spec.ts,e2e/d9ar/responsive-a11y.spec.ts,src/ui/cockpit/replay/overlay.test.tsx,src/ui/cockpit/styles/replay-overlay.css",
+        "arguments": "{\"file_path\": \"src/ui/cockpit/replay/overlay.tsx\", \"start_line\": 90, \"end_line\": 190}",
+        "error": "file \"src/ui/cockpit/replay/overlay.tsx\" has only 65 lines, requested range 90-190"
+      }
+    ]
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Replay overlay styling and end-to-end accessibility/readout tests",
+      "files": [
+        "e2e/d9ar/overlay.spec.ts",
+        "e2e/d9ar/readout.spec.ts",
+        "e2e/d9ar/responsive-a11y.spec.ts",
+        "src/ui/cockpit/replay/overlay.test.tsx",
+        "src/ui/cockpit/styles/replay-overlay.css"
+      ]
+    }
+  ],
+  "session_id": "284bc08d-ed03-45df-898f-d213f0a64cc3",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "284bc08d-ed03-45df-898f-d213f0a64cc3",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "e339e847",
+      "requested_head": "46d1f526",
+      "resolved_base": "e339e847612f4f0074167d5497126ef4e24cd125",
+      "resolved_head": "46d1f52691ae8f8ece67e57b7526b281c7e9c9ef",
+      "exact_range": "e339e847612f4f0074167d5497126ef4e24cd125..46d1f52691ae8f8ece67e57b7526b281c7e9c9ef",
+      "source_artifact_sha256": "51ed55c81e1c462ade1b38e5b9d9a30e6cfb673da45018a340a1647da4e272e2"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "2740b3deee41c7f3853b5aeccccfab292c736af3433cf49b58bf6219c035a8fb",
+          "path": "e2e/d9ar/readout.spec.ts",
+          "fingerprint": "84eeddea90c283479d2f2b66cebc1a62a9c5ec6198077075e9a7c867448de2e3"
+        },
+        {
+          "item_id": "7217987441d63f89befeb454c02940fdbc1c449fad1aae042130a789a9cd93b5",
+          "path": "src/ui/cockpit/replay/overlay.test.tsx",
+          "fingerprint": "d3afb25b696183dab8b6c07fc707f160bab006d821afbbfe3feb6d96f2e6223c"
+        },
+        {
+          "item_id": "7b17e9ba568571a735adb943b7c673f754933f0537b1aa6015b2e3dbd9a1e0da",
+          "path": "e2e/d9ar/overlay.spec.ts",
+          "fingerprint": "94b601fda1c9182c9f9dfb54f4b73ccdd4db6f406b1a414c782adad94dc71264"
+        },
+        {
+          "item_id": "8a55dee40da631e4ec3c363419af1061ce615a35ff5518a978527b5cc2756cd2",
+          "path": "src/ui/cockpit/styles/replay-overlay.css",
+          "fingerprint": "12b542bef9203741e59a8dacb691791ad6c6597113ce7b2089f2bfbfe0d775d8"
+        },
+        {
+          "item_id": "e7f923df23a9662691b604086a2feed24d110c75c6b6d14bb61a26251750030b",
+          "path": "e2e/d9ar/responsive-a11y.spec.ts",
+          "fingerprint": "715714436e4a794f9f2987c7209355ac50cdab65956b9f1f492710c5db0912b0"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "2740b3deee41c7f3853b5aeccccfab292c736af3433cf49b58bf6219c035a8fb",
+          "path": "e2e/d9ar/readout.spec.ts",
+          "fingerprint": "84eeddea90c283479d2f2b66cebc1a62a9c5ec6198077075e9a7c867448de2e3"
+        },
+        {
+          "item_id": "7217987441d63f89befeb454c02940fdbc1c449fad1aae042130a789a9cd93b5",
+          "path": "src/ui/cockpit/replay/overlay.test.tsx",
+          "fingerprint": "d3afb25b696183dab8b6c07fc707f160bab006d821afbbfe3feb6d96f2e6223c"
+        },
+        {
+          "item_id": "7b17e9ba568571a735adb943b7c673f754933f0537b1aa6015b2e3dbd9a1e0da",
+          "path": "e2e/d9ar/overlay.spec.ts",
+          "fingerprint": "94b601fda1c9182c9f9dfb54f4b73ccdd4db6f406b1a414c782adad94dc71264"
+        },
+        {
+          "item_id": "8a55dee40da631e4ec3c363419af1061ce615a35ff5518a978527b5cc2756cd2",
+          "path": "src/ui/cockpit/styles/replay-overlay.css",
+          "fingerprint": "12b542bef9203741e59a8dacb691791ad6c6597113ce7b2089f2bfbfe0d775d8"
+        },
+        {
+          "item_id": "e7f923df23a9662691b604086a2feed24d110c75c6b6d14bb61a26251750030b",
+          "path": "e2e/d9ar/responsive-a11y.spec.ts",
+          "fingerprint": "715714436e4a794f9f2987c7209355ac50cdab65956b9f1f492710c5db0912b0"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "0f87390c1268747bfdd056d207a6b3151daea908350c9694d188bc4cade5cfdd",
+          "path": "evidence/D09AR/screenshots/B9AR.3-DALE-hold-Wed-11-11.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "40f9d7bbd1c3f80b18d273e7783e520e31cb6451bffa5d9e140075b24d92e01b",
+          "path": "evidence/D09AR/screenshots/B9AR.3-BREN-Wed-11-11.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "4456b4beacd5e7bfdd5c80b3dc53dcba08b1c89946d40de71b695057bfa547fa",
+          "path": "evidence/D09AR/suite-runs/T9AR.23-S-OV-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "4f26e44cc40635da6333d3e07a2b7edb1e22622906d6cf51fa980c8c563181b3",
+          "path": "evidence/D09AR/suite-runs/T9AR.23-S-OV-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "5cf8e6a41816d73a094cafb4f8e90d434203a70a29aa8a0b2a64faa1b54b2fcf",
+          "path": "evidence/D09AR/screenshots/B9AR.3-CORV-Mon-11-09.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "600724dbbf2e905119730db94a351f941695b127bf035c16adf331ccab2519d0",
+          "path": "evidence/D09AR/screenshots/B9AR.7-detail-320.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "7804d5a4833ab68f39d6547a0f068d65eedbfda1452cc80ce05606938c181c02",
+          "path": "evidence/D09AR/tdd-log/T9AR.23-S2.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "781bdc41dbf9222b4907e6c63ea4c21ae72b3a7d6e42b13d181dc74f14eeedbd",
+          "path": "evidence/D09AR/screenshots/B9AR.3-BREN-Mon-11-16.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "917e1dd1c516be28627d368b6d6419ce3cbaa3505077e960df5a0655c7c1a526",
+          "path": "evidence/D09AR/screenshots/B9AR.3-AXIO-Mon-11-16.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "a3e45baed09e5403509dd16eadac2b44410eec656dae18146a149c2648f353ab",
+          "path": "evidence/D09AR/screenshots/B9AR.7-phone-close-button.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "af8146dcfb73086511e83fac975ce4265911f442d1f738f0f0a407735fb11b0f",
+          "path": "evidence/D09AR/suite-runs/T9AR.23-S-OV-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "e1b777d39f53ae741db935ee4be5a30e7eb33cc57d3265e7824349ee9e437db1",
+          "path": "evidence/D09AR/tdd-log/T9AR.23-S3.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ea0a02746c727a3f4d89f57593ebaa648d1e83fafa959129f4041609ce87eacd",
+          "path": "evidence/D09AR/suite-runs/T9AR.23-S-OV-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ea9f88fd487b9e4798f005dbd882c4a65b3f2216c292304ac51b514e9335679b",
+          "path": "evidence/D09AR/tdd-log/T9AR.23-S1.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "f4f0f23c03420a4e3c6af9d372d4f467e3be6da7a209f41bbc613ff9058e2d45",
+          "path": "evidence/D09AR/screenshots/B9AR.1-overlay-1280.png",
+          "exclude_reason": "binary"
+        }
+      ]
+    },
+    "elapsed_ms": 37042
+  }
+}

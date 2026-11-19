@@ -1,0 +1,133 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 1,
+    "total_tokens": 119925,
+    "input_tokens": 118711,
+    "output_tokens": 1214,
+    "cache_read_tokens": 14976,
+    "elapsed": "58s"
+  },
+  "tool_calls": {
+    "total": 13,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 2,
+      "file_find": 1,
+      "file_read": 9
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/replay/corridor-pnl.tsx",
+      "content": "Keeping both edge labels unconditionally introduces overlap at supported phone widths. With the labels in the new tests and a 200 px drawing (the supported WIDTH_MIN), the start label spans x=49–105 and the expiry label spans x=88–192. Hiding the cursor does not resolve this collision; it also occurs around the documented 215 px card width. Add an edge-label collision fallback (for example, separate rows or shorter labels) and test the minimum drawing width, not just 280 px.",
+      "existing_code": "  const axisText: { cls: string; text: string; x: number; anchor: 'start' | 'middle' | 'end' }[] = [\n    ...(axis.startLabel ? [{ cls: 'axis-start', text: axis.startLabel, x: time.left, anchor: 'start' as const }] : []),\n    ...(axis.endLabel ? [{ cls: 'axis-end', text: axis.endLabel, x: time.right, anchor: 'end' as const }] : []),\n  ];",
+      "start_line": 313,
+      "end_line": 316,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/cockpit/replay/corridor-pnl.tsx",
+        "src/ui/cockpit/replay/corridor.test.tsx"
+      ]
+    }
+  ],
+  "session_id": "40e08dc0-81f6-42a3-adfc-84f6c0d4885f",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "40e08dc0-81f6-42a3-adfc-84f6c0d4885f",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "dd6a4dd7",
+      "resolved_base": "46d1f52691ae8f8ece67e57b7526b281c7e9c9ef",
+      "resolved_head": "dd6a4dd75478d85b9568fa6e1956136bb7f5b456",
+      "exact_range": "46d1f52691ae8f8ece67e57b7526b281c7e9c9ef..dd6a4dd75478d85b9568fa6e1956136bb7f5b456",
+      "source_artifact_sha256": "8136a32be4a264c8c04a7ed31d246705f974a0de4d24f7daaea5b950454575c5"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "18de86b152c71edf7b69e5ef56c77c1958afecdf4524893fdc802e9700a6dfe1",
+          "path": "src/ui/cockpit/replay/corridor-pnl.tsx",
+          "fingerprint": "1330498a9b21849f08d6969e727bf16253007669ee46b221984cecd08945d548"
+        },
+        {
+          "item_id": "ba578f97f7698c0e6bcb181e747f8c8ef3dafb90b6f8eef6f25b35b639e1dd2c",
+          "path": "src/ui/cockpit/replay/corridor.test.tsx",
+          "fingerprint": "bc976bc933b504d0d6ab618843c24ad43f2198d015d49596230ca55f57be44ef"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "18de86b152c71edf7b69e5ef56c77c1958afecdf4524893fdc802e9700a6dfe1",
+          "path": "src/ui/cockpit/replay/corridor-pnl.tsx",
+          "fingerprint": "1330498a9b21849f08d6969e727bf16253007669ee46b221984cecd08945d548"
+        },
+        {
+          "item_id": "ba578f97f7698c0e6bcb181e747f8c8ef3dafb90b6f8eef6f25b35b639e1dd2c",
+          "path": "src/ui/cockpit/replay/corridor.test.tsx",
+          "fingerprint": "bc976bc933b504d0d6ab618843c24ad43f2198d015d49596230ca55f57be44ef"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "1e4a3f71d0381f526a5f9da4bc39af1c00b27b71000e2856c80d56ee85da9e7a",
+          "path": "evidence/D09AR/suite-runs/T9AR.23-S7-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "4ba979397cdce597bc336e60aff3731966aedaa923096acfbbb32dc42957ecc4",
+          "path": "evidence/D09AR/suite-runs/T9AR.23-S7-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "81de0d55b012fbff84ff05310147b912f7dc9b8ada098899de30b4a9b71be7e9",
+          "path": "evidence/D09AR/tdd-log/T9AR.23-S7.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "917bdbdb6379cbbfd1aa31214d7e80b5475c19cdd3c61a806018bf1d24d4999a",
+          "path": "evidence/D09AR/suite-runs/T9AR.23-S7-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "98c11095488c9c87b70a8866e1181b63d0d98fea2a7faca50f56ce68982d0f72",
+          "path": "evidence/D09AR/suite-runs/T9AR.23-S7-checks.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 57999
+  }
+}
