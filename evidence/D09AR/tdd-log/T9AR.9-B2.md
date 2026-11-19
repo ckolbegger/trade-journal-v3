@@ -1,0 +1,7 @@
+# D09AR TDD log, T9AR.9-B2
+
+One file per task (decision 111), so parallel lanes never edit one file. Each row is one single-case run; see `../tdd-log.md` for the rules.
+
+| T9AR.9-B2 | should keep the card the trader opened by its header when the overlay closes back to an older address | red | `npx vitest run src/ui/screens/ReviewCard.test.tsx -t "should keep the card the trader opened by its header when the overlay closes back to an older address"` | exit 0; Tests  1 passed, 67 skipped (68) |  |
+| T9AR.9-B2 | should keep the card the trader opened by its header when the overlay closes back to an older address | green | `npx vitest run src/ui/screens/ReviewCard.test.tsx -t "should keep the card the trader opened by its header when the overlay closes back to an older address"` | exit 0; Tests  1 passed, 67 skipped (68) |  |
+| T9AR.9-B2 | should keep the card the trader opened by its header when the overlay closes back to an older address | note | `npx vitest run src/ui/screens/ReviewCard.test.tsx -t "should keep the card the trader opened by its header"` | First-run pass, flagged for the user. The overlay-move check added to the search-change effect in ReviewView.tsx for T9AR.9-B1 built the behavior. Mutation: that check made inert (`if (overlayMoved && !overlayMoved)`), restored after. | TestingLibraryElementError: Unable to find an accessible element with the role "region" and name "ABC review" |

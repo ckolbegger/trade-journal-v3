@@ -1835,6 +1835,20 @@ describe('Review card: the Replay button (decision 3)', () => {
     expect(document.activeElement).toBe(within(card).getByRole('button', { name: 'Replay' }));
   });
 
+  it('should keep the card the trader opened by its header when the overlay closes back to an older address', async () => {
+    const user = userEvent.setup();
+    const t1 = item('t1', 'XYZ');
+    const t2 = item('t2', 'ABC');
+    renderWalk(walkFacade(ready([t1, t2]), tradeReview('t1', 'XYZ'), tradeReview('t2', 'ABC', { replay: THURSDAY_AND_MONDAY })), { address: '/review?trade=t1&panel=Action' });
+    const card = await openTrade(user, 'ABC');
+    await user.click(within(card).getByRole('button', { name: 'Replay' }));
+    const dialog = await screen.findByRole('dialog', { name: /^Replay/ });
+    await user.click(within(dialog).getByRole('button', { name: 'Close' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(screen.getByRole('region', { name: 'ABC review' })).toBeTruthy();
+    expect(screen.queryByRole('region', { name: 'XYZ review' })).toBeNull();
+  });
+
   it('should show no Replay button on a card that only owes reflections, or one whose Trade facts cannot be replayed', async () => {
     const user = userEvent.setup();
     const progress = reflectionsOwedProgress(1, 0);
