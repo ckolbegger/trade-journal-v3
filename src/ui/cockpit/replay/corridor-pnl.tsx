@@ -92,12 +92,15 @@ export function drawPnl(props: ReplayPlotProps, width: number): DrawnChart {
   const areaPath = (side: (p: number, zero: number) => number): string =>
     runs(sessions)
       .map((run) => {
-        // A lone session has no neighbour to join: a short block across its own column, never reaching a gap.
+        // A lone session has no neighbour to join: a short block across its own column, except that beside a session
+        // with no Mark it runs to the edge of that column (P146), as a run of several sessions does.
         if (run.length === 1) {
           if (side(run[0]!.pnl, 0) === 0) return '';
           const [x, y] = [time.x(run[0]!.s.slot), f1(value.y(side(run[0]!.pnl, 0)))];
-          const half = time.column / 4;
-          return `M${f1(x - half)} ${f1(y0)}L${f1(x - half)} ${y}L${f1(x + half)} ${y}L${f1(x + half)} ${f1(y0)}Z`;
+          const at = sessions.indexOf(run[0]!.s);
+          const before = sessions[at - 1]?.tradePnl === null ? time.column / 2 : time.column / 4;
+          const after = sessions[at + 1]?.tradePnl === null ? time.column / 2 : time.column / 4;
+          return `M${f1(x - before)} ${f1(y0)}L${f1(x - before)} ${y}L${f1(x + after)} ${y}L${f1(x + after)} ${f1(y0)}Z`;
         }
         const edge = run.map((r, i) => {
           const point = `L${f1(time.x(r.s.slot))} ${f1(value.y(side(r.pnl, 0)))}`;

@@ -129,6 +129,26 @@ describe('Corridor: the Trade P&L (W40, W41)', () => {
     expect(edgeXs.some((x) => x > time.x(3) - time.column / 2 + 0.1 && x < time.x(3) + time.column / 2 - 0.1)).toBe(false);
   });
 
+  it('should run a lone session area between two No Mark sessions to the edge of each shaded column, and end it upright', () => {
+    const sessions = [bren(0, { tradePnl: null }), bren(1, { tradePnl: 100 }), bren(2, { tradePnl: null }), bren(3, { tradePnl: -60 }), bren(4, { tradePnl: null })];
+    const { container } = render(<CorridorPlot {...props({ sessions, sliderIndex: 3 })} />);
+    const time = timeAxis(640, 15);
+    const z = zeroY(container);
+    for (const [cls, slot] of [['profit', 1], ['loss', 3]] as const) {
+      const d = pnl(container).querySelector(`path.area.${cls}`)!.getAttribute('d')!;
+      const pts = [...d.matchAll(/[ML](-?[\d.]+) (-?[\d.]+)/g)].map((m) => ({ x: Number(m[1]), y: Number(m[2]) }));
+      const [left, right] = [time.x(slot) - time.column / 2, time.x(slot) + time.column / 2];
+      expect(Math.min(...pts.map((p) => p.x))).toBeCloseTo(left, 0);
+      expect(Math.max(...pts.map((p) => p.x))).toBeCloseTo(right, 0);
+      // Upright: each side is a vertical edge from break-even to the figure.
+      for (const edge of [left, right]) {
+        const ends = pts.filter((p) => Math.abs(p.x - edge) < 0.1).map((p) => p.y);
+        expect(ends).toContain(z);
+        expect(ends.some((y) => y !== z)).toBe(true);
+      }
+    }
+  });
+
   it('should fill a single session with a figure between two gaps, and the first revealed session', () => {
     const sessions = [bren(0, { tradePnl: null }), bren(1, { tradePnl: 100 }), bren(2, { tradePnl: null }), bren(3, { tradePnl: -60 }), bren(4, { tradePnl: null })];
     const { container } = render(<CorridorPlot {...props({ sessions, sliderIndex: 3 })} />);
@@ -144,8 +164,10 @@ describe('Corridor: the Trade P&L (W40, W41)', () => {
       expect(ys(d)).toContain(z);
       expect(Math.min(...xs(cls))).toBeLessThan(cx);
       expect(Math.max(...xs(cls))).toBeGreaterThan(cx);
-      expect(Math.min(...xs(cls))).toBeGreaterThan(cx - 15);
-      expect(Math.max(...xs(cls))).toBeLessThan(cx + 15);
+      // P146: no further than the edge of its own column (the neighbours' shaded columns begin there).
+      const half = timeAxis(640, 15).column / 2;
+      expect(Math.min(...xs(cls))).toBeGreaterThanOrEqual(cx - half - 0.1);
+      expect(Math.max(...xs(cls))).toBeLessThanOrEqual(cx + half + 0.1);
     }
     // The first revealed session, alone, is filled as well.
     cleanup();
