@@ -1,0 +1,181 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 6 selected item(s).",
+  "summary": {
+    "files_reviewed": 6,
+    "comments": 1,
+    "total_tokens": 191713,
+    "input_tokens": 189738,
+    "output_tokens": 1975,
+    "cache_read_tokens": 9984,
+    "elapsed": "1m15s"
+  },
+  "tool_calls": {
+    "total": 19,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 1,
+      "file_read": 17
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/replay/corridor-pnl.tsx",
+      "content": "Both candidates are centered at the same x, so neither fits when the slider reaches a session near the right edge. For example, at width 340 with 15 slots, slot 14 is at x≈323; a `+$1,138` label extends to x≈345. `LabelPlacer` then forcibly returns the first candidate despite its failed bounds check, leaving the required slider value outside the drawing (and potentially clipped or causing horizontal overflow). Add horizontally clamped or end-anchored candidates and cover the last session at narrow widths in a bounds test.",
+      "existing_code": "    const spot = placer.place(signedAxisMoney(current.tradePnl), [\n      { x: xc, y: y - 9, anchor: 'middle' },\n      { x: xc, y: y + 17, anchor: 'middle' },\n    ], true);",
+      "start_line": 153,
+      "end_line": 156,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Replay corridor rendering, geometry, styling, and accessibility tests",
+      "files": [
+        "e2e/d9/responsive-a11y.spec.ts",
+        "src/ui/cockpit/replay/corridor-pnl.tsx",
+        "src/ui/cockpit/replay/corridor.test.tsx",
+        "src/ui/cockpit/replay/corridor.tsx",
+        "src/ui/cockpit/replay/geometry.ts",
+        "src/ui/cockpit/styles/replay-plot.css"
+      ]
+    }
+  ],
+  "session_id": "3239ef16-26bc-4282-8b86-0f51d79c168d",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "3239ef16-26bc-4282-8b86-0f51d79c168d",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "933ffabf",
+      "resolved_base": "d74afb24cf375fa508888940bbdae15eaf38e942",
+      "resolved_head": "933ffabf861b98c29b895add3bbb12f05ea5ef10",
+      "exact_range": "d74afb24cf375fa508888940bbdae15eaf38e942..933ffabf861b98c29b895add3bbb12f05ea5ef10",
+      "source_artifact_sha256": "1498f3633f253b163332437fdb8dc3b5b122839c9f3f9be9c98bbc0df9f05261"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "18de86b152c71edf7b69e5ef56c77c1958afecdf4524893fdc802e9700a6dfe1",
+          "path": "src/ui/cockpit/replay/corridor-pnl.tsx",
+          "fingerprint": "48b55238bcbca18fc7de96438b7bc3d4a59988d1e2ee7cb14e358fede706c622"
+        },
+        {
+          "item_id": "67c8b9c55df4db1a19bdc33843dfc7b544ae3cacc462c048b5f3913d82cd7b19",
+          "path": "src/ui/cockpit/styles/replay-plot.css",
+          "fingerprint": "a582be42f95915a2d4f4a2cfcb2ac908624a590f373ecea3aa81d1491f6655ce"
+        },
+        {
+          "item_id": "94e5facfd6dd05335ee3c317788f81c9d2ddec02992be55f544dbbeb5f392508",
+          "path": "src/ui/cockpit/replay/geometry.ts",
+          "fingerprint": "9baba216e885f4aced6d4605285b8d6eef92204a717c7edaaa89f2c33d989029"
+        },
+        {
+          "item_id": "b6c384b7587d1b65ac5792148e7e8c421811373d53aa2bdd93b3c7790c3895b2",
+          "path": "e2e/d9/responsive-a11y.spec.ts",
+          "fingerprint": "0fad34a152b49ed158475f22e07386eed090710717520672963984373fb16b3d"
+        },
+        {
+          "item_id": "b9ff77485ea8c227fe111b6e6915407572768e86debadd842eefda14f4e4bcf1",
+          "path": "src/ui/cockpit/replay/corridor.tsx",
+          "fingerprint": "7aee9417f7a868913f7194e2e8398a6b8bbbceea1f64d8d41b1d3bc3168074f7"
+        },
+        {
+          "item_id": "ba578f97f7698c0e6bcb181e747f8c8ef3dafb90b6f8eef6f25b35b639e1dd2c",
+          "path": "src/ui/cockpit/replay/corridor.test.tsx",
+          "fingerprint": "63f6a263f5b21d37000fe4165eb9194bb74cab78d01d818036f95374e76bad7e"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "18de86b152c71edf7b69e5ef56c77c1958afecdf4524893fdc802e9700a6dfe1",
+          "path": "src/ui/cockpit/replay/corridor-pnl.tsx",
+          "fingerprint": "48b55238bcbca18fc7de96438b7bc3d4a59988d1e2ee7cb14e358fede706c622"
+        },
+        {
+          "item_id": "67c8b9c55df4db1a19bdc33843dfc7b544ae3cacc462c048b5f3913d82cd7b19",
+          "path": "src/ui/cockpit/styles/replay-plot.css",
+          "fingerprint": "a582be42f95915a2d4f4a2cfcb2ac908624a590f373ecea3aa81d1491f6655ce"
+        },
+        {
+          "item_id": "94e5facfd6dd05335ee3c317788f81c9d2ddec02992be55f544dbbeb5f392508",
+          "path": "src/ui/cockpit/replay/geometry.ts",
+          "fingerprint": "9baba216e885f4aced6d4605285b8d6eef92204a717c7edaaa89f2c33d989029"
+        },
+        {
+          "item_id": "b6c384b7587d1b65ac5792148e7e8c421811373d53aa2bdd93b3c7790c3895b2",
+          "path": "e2e/d9/responsive-a11y.spec.ts",
+          "fingerprint": "0fad34a152b49ed158475f22e07386eed090710717520672963984373fb16b3d"
+        },
+        {
+          "item_id": "b9ff77485ea8c227fe111b6e6915407572768e86debadd842eefda14f4e4bcf1",
+          "path": "src/ui/cockpit/replay/corridor.tsx",
+          "fingerprint": "7aee9417f7a868913f7194e2e8398a6b8bbbceea1f64d8d41b1d3bc3168074f7"
+        },
+        {
+          "item_id": "ba578f97f7698c0e6bcb181e747f8c8ef3dafb90b6f8eef6f25b35b639e1dd2c",
+          "path": "src/ui/cockpit/replay/corridor.test.tsx",
+          "fingerprint": "63f6a263f5b21d37000fe4165eb9194bb74cab78d01d818036f95374e76bad7e"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "01c87e2c5c7f1ba343879d7e9cc9387864d50dce4bbe9c4319c73b3fc2282eab",
+          "path": "evidence/D09AR/suite-runs/T9AR.12-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "4bdb3469e68ca6db9e0d27528f3607892499b6bfe0580060601be7bf80d6aa6d",
+          "path": "evidence/D09AR/suite-runs/T9AR.12-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "65e41d8b97069620b7290b710638f11c7e0a3db7368181026a26d1edc98ce472",
+          "path": "evidence/D09AR/suite-runs/T9AR.12-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "6e1346a9e4e823d140772c4bb9c2f6f98b4d26ff869c8b7df7c4dea138979751",
+          "path": "evidence/D09AR/tdd-log/T9AR.12.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "be5fd6e3aaeaf700900e447762866e3c0100636bbf5e6d75f0d3eeb168c23863",
+          "path": "evidence/D09AR/DECISIONS-PENDING.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "eadeab853298abb152d1a552cd13e41e7323bad80ff95312dd985929d305dfd1",
+          "path": "evidence/D09AR/suite-runs/T9AR.12-unit.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 75086
+  }
+}

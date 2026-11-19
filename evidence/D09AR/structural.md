@@ -260,10 +260,28 @@ Lane PL (`d09ar/pl`), base `72ece0c8`, commit `9f03a9e9`. 5 planned cases plus 2
 - **T9AR.11-B1** Case: it should run a lone session's area between two No Mark sessions to the edge of each shaded column, and end it upright.
   - Done: `126a37dd`; red "expected 131.8 to be close to 122.75", green; no first-run pass. Each side of a lone session's block is `column/2` when that neighbour has no Mark, else `column/4` (unchanged with a Mark on both sides, and for the first revealed session). Changed assertion in "should fill a single session with a figure between two gaps, and the first revealed session": before, the area's x-extent within the dot ± 15; after, within the dot ± `column/2` (0.1 px tolerance). Lane tier `T9AR.11-B1`: unit 2341, integration 280, checks 14 of 14. ocr on `126a37dd` (`ocr/T9AR.11-B1-126a37dd.json`): 2 files, 0 comments. **No findings.**
 
+## T9AR.12 Chart on a phone: the labels in a strip
+
+Lane PL (`d09ar/pl`), base `d74afb24`, commit `933ffabf`. 4 planned cases: three red then green (case 3's code had been written ahead and was disabled for a genuine red, then restored); case 4 a first-run pass (the strip already listed every phone label), mutation "list a label only when the placer finds it a spot" failed with `Sold 3: expected 'Stop +$316 · Banked +$478 · Target +$…' to contain 'Sold 3'`. Lane tier `T9AR.12`: unit 2353, integration 280, checks 14 of 14.
+
+- Existing corridor cases that read phone labels on the drawing now read the strip (the stake tags, "Sold 2", the phone words, the result and banked labels drawn narrow, the banked label on the last session drawn narrow, B10's three banked labels at 340); wide expectations unchanged.
+- `e2e/d9/responsive-a11y.spec.ts` (P150, the two named lines): `expectPhoneWords`'s Sold and stake-tag checks read `.replay-strip-labels`, plus a check that no line label is on the drawing; "labels no phone chart may lose" reads the strip when there is one.
+- Browser: 4 passed, 2 failed: B9.5's fit check at 320 by 667 on the Detail replay and the Review card replay, 601 px of 589. **Pending decision, asked and answered** (`DECISIONS-PENDING.md`): take the 12 px from the price chart's phone height: **T9AR.12-D1**.
+- Types: `DrawnChart.strip?`, `signedAxisMoney` in `geometry.ts`; `PlotSession.stripLabels` stays unused. New words in `new-words.md` (the slider's value on the phone drawing; the strip's order).
+- ocr on `933ffabf` (`ocr/T9AR.12-933ffabf.json`): 6 files (6 excluded), 1 comment.
+
+| Severity | Location | Finding | Verdict |
+|---|---|---|---|
+| medium | `corridor-pnl.tsx:153` | On a phone, both spots for the slider's value are centred on the cursor; at a late session in a narrow chart neither fits, the placer falls back to the first, and the value runs past the drawing's edge (width 340, 15 sessions: ends near 345) | Valid: T9AR.12-B1 |
+
+- **T9AR.12-D1** Case: it should fit the replay on one screen at 320 by 667 with the P&L chart 200 high, the price chart giving up the 12 px.
+- **T9AR.12-B1** Case: it should keep the slider's value inside the phone drawing at the last session.
+
 ## Suite runs
 
 | Run | Commit | Tier | Result |
 |---|---|---|---|
+| `merge3` (after T9AR.5, T9AR.11 with B1 and T9AR.10-S1, T9AR.8 with B1, B2, B3, F1) | `e526637e` | full (`browser-auto 72ece0c8`) | unit 2357 (208 files), integration 280, browser-1 126, browser-2 79, browser-3 77, checks 14 of 14, all exit 0; `run-complete.sh`: run complete |
 | `merge2` (after T9AR.4, T9AR.7, T9AR.10 with their bug and follow-up tasks) | `72ece0c8` | full (`browser-auto 79b900d3`: first matching path `e2e/d9/replay.spec.ts`) | unit 2332 (206 files), integration 280, browser-1 126, browser-2 79, checks 14 of 14 all exit 0; **browser-3 failed: 3 failed, 74 passed** (below); `run-complete.sh`: run complete |
 | `merge1` (after T9AR.3 with T9AR.3-B1, T9AR.3-B2) | `79b900d3` | task (`browser-auto 1018d618`: no changed path is on the full-tier list) | unit 2297 (204 files), integration 280 (130 files), browser `@every-task` 5, checks 14 of 14; all exit 0; `run-complete.sh`: run complete |
 | `wave0` (merge run after T9AR.1, T9AR.2) | `1018d618` | full (`browser-auto 1cc612ea`: first matching path `src/ui/cockpit/index.css`) | unit 2289 (203 files), integration 280 (130 files), browser-1 126, browser-2 79, browser-3 77, checks 14 of 14; all exit 0; `run-complete.sh`: run complete |
