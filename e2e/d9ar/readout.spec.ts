@@ -74,7 +74,6 @@ test.describe('B9AR.3 The readout', () => {
   // T9AR.16: the "From here" sentence in normal ink, the status line's own colour. The product draws it in the muted grey (rgb 85, 82, 75 against the status line's 28, 27, 25).
   test('should draw the From here sentence in the status line’s colour', async ({ profile }) => {
     test.setTimeout(240_000);
-    test.fail(true, 'the "From here" sentence is drawn in the muted grey, not the status line colour (reported to the main session)');
     const { context, page } = await build(profile, BREN, closeOf('2026-11-16'), 10);
     const scope = await openAt(page, 'ArrowLeft', 3);
     await expect(sliderValue(scope)).toHaveText('Wed Nov 11 · 8 of 11');

@@ -64,10 +64,6 @@
   color: var(--ink);
 }
 
-.replay-stake {
-  color: var(--muted);
-}
-
 /* Decision 5: the Plan block above the cards; one line to a row, the figures tabular. */
 .replay-plan {
   margin-top: 12px;
