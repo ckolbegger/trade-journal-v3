@@ -944,9 +944,14 @@ describe('Corridor: labels apart (T9.19-B2)', () => {
     for (const [realized, stop, target, late] of geometries) {
       for (const width of [837, 1000, 1300, 1700]) {
         for (const slider of [5, 6, 7, 8, 9, 10]) {
+          const pnlAt = (i: number): number => {
+            if (i < 5) return -100;
+            if (i === 5) return realized;
+            return late;
+          };
           const sessions = DAYS.slice(0, slider + 1).map((_, i) =>
             bren(i, {
-              tradePnl: i < 5 ? -100 : i === 5 ? realized : late,
+              tradePnl: pnlAt(i),
               banked: i >= 5 ? realized : 0,
               bankedLabel: i >= 5 ? `Realized ${signed(realized)}` : undefined,
               resultAtStop: fig(stop, `Stop ${signed(stop)}`),

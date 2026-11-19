@@ -254,7 +254,9 @@ export function drawPnl(props: ReplayPlotProps, width: number): DrawnChart {
       put(key, `crossing-label ${crossing.line.toLowerCase()}`, text, [...spots.filter((s) => !crossesCursor(s)), ...spots.filter(crossesCursor)]);
       // The label is always joined to its flag: a label beyond the pole's foot or above its top has the pole carried on to the label's row (B2).
       const row = (labels.find((l) => l.key === key)?.spot.y ?? NaN) - 4;
-      const tie = row > y ? { from: y, to: row } : row < top ? { from: top, to: row } : undefined;
+      let tie: { from: number; to: number } | undefined;
+      if (row > y) tie = { from: y, to: row };
+      else if (row < top) tie = { from: top, to: row };
       return kept.has(key) ? [{ key, line: crossing.line.toLowerCase(), label: crossing.label, x, y, top, tie }] : [];
     }),
   );
