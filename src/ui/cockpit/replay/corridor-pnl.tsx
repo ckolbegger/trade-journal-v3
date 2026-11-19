@@ -234,15 +234,16 @@ export function drawPnl(props: ReplayPlotProps, width: number): DrawnChart {
       const y = level === null ? TOP + 18 : value.y(level);
       const top = Math.max(TOP, y - 18);
       const key = `crossing-${s.slot}-${crossing.line}`;
-      put(key, `crossing-label ${crossing.line.toLowerCase()}`, words(crossing.label, crossing.shortLabel), [
-        { x: x + 6, y: top + 8, anchor: 'start' },
-        { x: x - 6, y: top + 8, anchor: 'end' },
-        { x: x + 6, y: top + 20, anchor: 'start' },
-        { x: x - 6, y: top + 20, anchor: 'end' },
-        // A sale's banked label sits just above the Stop's line, a row's height from the first two rows; one row a little lower clears it.
-        { x: x + 6, y: top + 26, anchor: 'start' },
-        { x: x - 6, y: top + 26, anchor: 'end' },
-      ]);
+      // The flag is a fact that stays on later sessions (T9AR.19, W64), so its label searches the plot's rows: three rows from the pole's top
+      // first, then every 6 px row, the nearest first, none lower than the plot's floor (which keeps it clear of the axis's cursor text).
+      // Each row is tried on both sides of the pole. The flag is left out only when no row to the floor is free on either side (A280).
+      const near = [top + 8, top + 20, top + 26];
+      const grid = Array.from({ length: Math.floor((FLOOR - TOP - 8) / 6) + 1 }, (_, n) => TOP + 8 + n * 6).filter((row) => !near.includes(row));
+      const rows = [...near, ...grid.sort((a, b) => Math.abs(a - near[0]!) - Math.abs(b - near[0]!))].filter((row) => row <= FLOOR);
+      put(key, `crossing-label ${crossing.line.toLowerCase()}`, words(crossing.label, crossing.shortLabel), rows.flatMap((row): Spot[] => [
+        { x: x + 6, y: row, anchor: 'start' },
+        { x: x - 6, y: row, anchor: 'end' },
+      ]));
       return kept.has(key) ? [{ key, line: crossing.line.toLowerCase(), label: crossing.label, x, y, top }] : [];
     }),
   );

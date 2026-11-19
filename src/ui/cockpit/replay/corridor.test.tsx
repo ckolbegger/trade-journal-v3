@@ -865,6 +865,60 @@ describe('Corridor: labels apart (T9.19-B2)', () => {
     }
   });
 
+
+  // T9AR.24-B7 part 2: the flag stays however the figures fall (T9AR.19, W64): it is not tuned to one trade's rows. Each geometry is a sale on
+  // Mon 11-09 at a realized figure against a Stop, a Target and a later Trade P&L, hard for the rows beside the pole.
+  it('should keep the Stop breached flag drawn, in the key and clear of every label and the axis cursor, on every later session of hard geometries', () => {
+    const geometries: [number, number, number, number][] = [
+      [-600, -740, 760, -860],
+      [-600, -740, 760, -500],
+      [-600, -740, 760, 100],
+      [-600, -740, 760, -1500],
+      [-700, -740, 600, -500],
+      [-440, -600, 400, -1500],
+    ];
+    const signed = (n: number) => `${n < 0 ? '−' : '+'}$${Math.abs(n).toLocaleString('en-US')}`;
+    for (const [realized, stop, target, late] of geometries) {
+      for (const width of [837, 1000, 1300, 1700]) {
+        for (const slider of [6, 7, 8, 9, 10]) {
+          const past = late < stop;
+          const sessions = DAYS.slice(0, slider + 1).map((_, i) =>
+            bren(i, {
+              tradePnl: i < 5 ? -100 : i === 5 ? realized : late,
+              banked: i >= 5 ? realized : 0,
+              bankedLabel: i >= 5 ? `Realized ${signed(realized)}` : undefined,
+              resultAtStop: fig(stop, `Stop ${signed(stop)}`),
+              resultAtTarget: fig(target, `Target ${signed(target)}`),
+              worstCase: fig(-5440, 'Worst case −$5,440 ↓', 'Worst −$5,440'),
+              markers: i === 5 ? [sale] : [],
+              ...(i === 5 && { firstCrossing: [{ line: 'Stop' as const, label: 'Stop breached' }], keyEntries: [{ kind: 'FirstCrossing' as const, label: 'Stop breached' }] }),
+              ...(i === slider && {
+                ...(past && { past: { line: 'Stop' as const, label: '$120 past the Stop', shortLabel: '$120 past' } }),
+                stake: { ...(past ? {} : { riskLabel: 'Current Risk $300', riskShortLabel: 'Risk $300' }), rewardLabel: 'Remaining Reward $1,020', rewardShortLabel: 'Reward $1,020' },
+              }),
+            }),
+          );
+          const name = `${realized}/${stop}/${target}/${late} at ${width}, slider ${slider}`;
+          frameWidth(width);
+          const { container } = render(<CorridorPlot {...props({ sessions, anchors: { ...props().anchors, planAtStop: fig(stop, 'Stop'), planAtTarget: fig(target, 'Target') }, axis: { slots: 11, startLabel: 'Mon Nov 2', endLabels: [] }, sliderIndex: slider })} />);
+          const svg = pnl(container);
+          expect([...svg.querySelectorAll('text.crossing-label')].map((t) => t.textContent), name).toEqual(['Stop breached']);
+          expect([...container.querySelectorAll('.replay-key li')].map((li) => li.textContent), `key, ${name}`).toContain('Stop breached');
+          expect(clashes(svg), name).toEqual([]);
+          const flag = boxesOf(svg).find((b) => b.name === 'Stop breached')!;
+          const cursor = svg.querySelector('text.cursor-label');
+          if (cursor) {
+            const w = (cursor.textContent ?? '').length * 6 + 2;
+            const x0 = num(cursor, 'x') - w / 2;
+            const y = num(cursor, 'y');
+            expect(flag.x0 < x0 + w && x0 < flag.x1 && flag.y0 < y + 3 && y - 10 < flag.y1, `clear of the cursor text, ${name}`).toBe(false);
+          }
+          cleanup();
+          vi.restoreAllMocks();
+        }
+      }
+    }
+  });
 });
 
 // B6: a text's box as LabelPlacer estimates it (6 px a character and 2 over, from its anchor); it must lie inside the drawing.
@@ -1417,10 +1471,12 @@ describe('Corridor: a first crossing (decision 2)', () => {
   });
 
   it('should name in the key only the flags that are drawn, each by its own words', () => {
-    // A Target flag at slot 4 whose label finds no room (a long banked label holds the spots beside it) and a Stop flag at slot 5 that is drawn.
+    // A Target flag at slot 4 whose label finds no room (T9AR.24-B7 part 2: the flag searches every row to the floor, so its label is wider than
+    // the whole drawing, and no row on either side holds it) and a Stop flag at slot 5 that is drawn.
+    const wide = `Target reached ${'on a session whose label is wider than the drawing '.repeat(3)}`;
     const sessions = DAYS.slice(0, 7).map((_, i) =>
       bren(i, {
-        ...(i === 4 && { resultAtTarget: null, tradePnl: 300, banked: 300, bankedLabel: 'Banked +$300 from a very long sale that takes the room', firstCrossing: [{ line: 'Target' as const, label: 'Target reached' }], keyEntries: [{ kind: 'FirstCrossing' as const, label: 'Target reached' }] }),
+        ...(i === 4 && { resultAtTarget: null, tradePnl: 300, banked: 300, bankedLabel: 'Banked +$300 from a very long sale that takes the room', firstCrossing: [{ line: 'Target' as const, label: wide }], keyEntries: [{ kind: 'FirstCrossing' as const, label: wide }] }),
         ...(i === 5 && { firstCrossing: [{ line: 'Stop' as const, label: 'Stop breached' }], keyEntries: [{ kind: 'FirstCrossing' as const, label: 'Stop breached' }] }),
       }),
     );

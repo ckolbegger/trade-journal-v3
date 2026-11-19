@@ -179,19 +179,23 @@ test.describe('B9AR.5 The chart', () => {
     const { context, page } = await build(profile, AXIO, closeOf('2026-11-16'), 10);
     let scope = await open(page, 0);
     await expect(sliderValue(scope)).toHaveText('Mon Nov 16 · 11 of 11');
-    await seek(page, scope, 'Home');
-    scope = replay(page);
-    const seen: string[] = [];
-    for (let i = 0; i < 11; i++) {
-      if (i > 0) await seek(page, scope, 'ArrowRight');
+    for (const width of [1280, 1440, 1920]) {
+      await setViewport(page, width, 900);
       scope = replay(page);
-      const day = (await sliderValue(scope).textContent()) ?? '';
-      const flagged = (await pnlChart(scope).locator('g.first-crossing.stop').count()) > 0 && (await chartText(pnlChart(scope))).includes('Stop breached');
-      const named = (await key(scope)).includes('Stop breached');
-      seen.push(`${day}: chart ${flagged}, key ${named}`);
-      const before = i < 5;
-      expect(flagged, `${day}: the flag is ${before ? 'not yet' : 'still'} on the chart (${seen.join(' | ')})`).toBe(!before);
-      expect(named, `${day}: the key ${before ? 'does not name' : 'still names'} it`).toBe(!before);
+      await seek(page, scope, 'Home');
+      scope = replay(page);
+      const seen: string[] = [];
+      for (let i = 0; i < 11; i++) {
+        if (i > 0) await seek(page, scope, 'ArrowRight');
+        scope = replay(page);
+        const day = (await sliderValue(scope).textContent()) ?? '';
+        const flagged = (await pnlChart(scope).locator('g.first-crossing.stop').count()) > 0 && (await chartText(pnlChart(scope))).includes('Stop breached');
+        const named = (await key(scope)).includes('Stop breached');
+        seen.push(`${day}: chart ${flagged}, key ${named}`);
+        const before = i < 5;
+        expect(flagged, `${width}, ${day}: the flag is ${before ? 'not yet' : 'still'} on the chart (${seen.join(' | ')})`).toBe(!before);
+        expect(named, `${width}, ${day}: the key ${before ? 'does not name' : 'still names'} it`).toBe(!before);
+      }
     }
     await context.close();
   });
