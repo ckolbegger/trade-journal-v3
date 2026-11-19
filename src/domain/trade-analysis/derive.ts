@@ -398,6 +398,8 @@ export interface DerivedTradeState {
   // opening fees (D4's C + F). Stock only until options add a multiplier.
   readonly netCost: CalculationResult<Rational, never, Extract<NotApplicableReason, { reason: 'NoRemainingPosition' }>>;
   readonly baseline: PlanBaseline;
+  // A268: from the Plan, fixed for the Trade's life: Main when it holds a short option leg, else Remote.
+  readonly extremes: 'Main' | 'Remote';
   readonly entryResolution: EntryResolution;
   readonly entryQuality: EntryQuality;
   readonly legFulfillment: readonly LegFulfillment[];
@@ -1117,6 +1119,7 @@ export function derive(input: TradeDerivationInput): DerivationResult {
     },
     netCost: netCostOf(positions),
     baseline,
+    extremes: record.plan.legs.some((l) => l.instrument.kind === 'Option' && l.side === 'Short') ? 'Main' : 'Remote',
     entryResolution: entry.resolution,
     entryQuality: entryQualityOf(entry.resolution, entry.window, record.plan, baseline),
     legFulfillment: legFulfillmentOf(record.plan, facts, deviations, opens),

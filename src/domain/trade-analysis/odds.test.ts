@@ -83,4 +83,10 @@ describe("evaluate: the extremes' weight (A268)", () => {
   it('should call them Main for the Cash-Secured Put (R-DALE-D)', () => {
     expect(evaluateAt(R_DALE_D, '2026-11-02').extremes).toBe('Main');
   });
+
+  it('should give the weight from the Plan before any Execution: Remote for a long-stock Plan, Main for a Cash-Secured Put Plan', () => {
+    const unfilled = (series: ReplayTestSeries): ReplayTestSeries => ({ ...series, record: { ...series.record, positionChanges: [] } });
+    expect(evaluateAt(unfilled(R_AXIO_U), '2026-11-02').extremes).toBe('Remote');
+    expect(evaluateAt(unfilled(R_DALE_D), '2026-11-02').extremes).toBe('Main');
+  });
 });

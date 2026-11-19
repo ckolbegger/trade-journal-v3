@@ -582,9 +582,7 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
     incrementalRewardToTarget,
     rewardRiskNow: rewardRiskNowOf(),
     rewardRiskOdds: rewardRiskOddsOf(),
-    // A268: the state holds no Plan side, so it is read from the Trade's first Execution, which always opens a Planned Leg:
-    // a Sell of an option opens a short option leg. A Trade with no Execution yet has none to read.
-    ...(state.facts[0] && { extremes: state.facts[0].instrument.kind === 'Option' && state.facts[0].action === 'Sell' ? ('Main' as const) : ('Remote' as const) }),
+    extremes: state.extremes,
     planOdds: value(oddsOf(state.baseline.oneR, state.baseline.originalPlannedReward)),
     ongoingRiskToStopInPlanR: inPlanR(ongoingRiskToStop),
     worstCaseOngoingRiskInPlanR: inPlanR(worstCaseOngoingRisk),
