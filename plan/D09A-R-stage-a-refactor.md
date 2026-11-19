@@ -872,8 +872,8 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T9AR.4 | 1 | DM | Done (from `79b900d3`) | `955e3568`; F1 `70ddec48` |
 | T9AR.5 | 1 | DM | In progress from `70ddec48` | |
 | T9AR.6 | 1 | DM | Not started | |
-| T9AR.7 | 1 | OV | In progress from `8245f6c6` | |
-| T9AR.8 | 1 | OV | Not started | |
+| T9AR.7 | 1 | OV | Done (from `8245f6c6`) | `4fd70538`; B1 `6a0cb594`; B2 `e45bd7a5`; B3 `6ffc25fb`; B4 `4ac0f109`; B5 `59714fa3`; B6 `ddc5e849` |
+| T9AR.8 | 1 | OV | In progress from `ddc5e849` | |
 | T9AR.9 | 1 | OV | Not started | |
 | T9AR.10 | 1 | PL | In progress from `8245f6c6` | |
 | T9AR.11 | 1 | PL | Not started | |
