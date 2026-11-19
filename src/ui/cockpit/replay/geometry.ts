@@ -93,6 +93,11 @@ export class LabelPlacer {
     this.kept.push(LabelPlacer.box(text, spot, charWidth));
   }
 
+  // Holds a column of the chart free from top to bottom (the cursor's, A280): a label placed after it takes no spot over it.
+  reserveColumn(x0: number, x1: number): void {
+    this.kept.push({ x0, x1, y0: 0, y1: this.height });
+  }
+
   // `charWidth` is the text's estimated width a character: 6 unless it is drawn bold and larger.
   place(text: string, spots: readonly Spot[], must = false, charWidth = 6): Spot | null {
     const box = (s: Spot) => LabelPlacer.box(text, s, charWidth);

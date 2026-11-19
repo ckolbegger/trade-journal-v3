@@ -351,6 +351,34 @@ describe('Corridor: the Trade P&L (W40, W41)', () => {
     expect(none.container.querySelectorAll('path.worst-case, path.max-reward')).toHaveLength(0);
   });
 
+  // T9AR.10-B3 (A280): the cursor's column is held free; no level label is placed over it.
+  it('should keep the Worst case and Max reward labels out of the cursor’s column at the last session', () => {
+    const sessions: PlotSession[] = [0, 1, 2, 3].map((i) => ({
+      slot: i,
+      dateLabel: `Day ${i}`,
+      underlyingMark: 56 - i,
+      tradePnl: -700 - i * 10,
+      banked: 0,
+      resultAtStop: fig(-1263, 'Stop −$1,263'),
+      resultAtTarget: fig(-273, 'Target −$273'),
+      worstCase: fig(-1500, 'Worst case −$1,500'),
+      maxReward: fig(500, 'Max reward +$500'),
+      markers: [],
+    }));
+    const anchors = { priceLines: [], planAtStop: fig(-1536, 'Stop −$1,536'), planAtTarget: fig(444, 'Target +$444') };
+    const { container } = render(<CorridorPlot {...props({ sessions, sliderIndex: 3, anchors, axis: { slots: 4 } })} />);
+    const chart = pnl(container);
+    const xc = Number(/^M([\d.]+) /.exec(chart.querySelector('path.cursor')!.getAttribute('d')!)![1]);
+    const half = Number(/H([\d.]+)$/.exec(chart.querySelector('path.result-line.target')!.getAttribute('d')!)![1]) - xc;
+    for (const cls of ['worst-case-label', 'max-reward-label']) {
+      const label = chart.querySelector(`text.${cls}`);
+      if (!label) continue; // a label with no free place is not drawn, and neither is its line
+      const x1 = Number(label.getAttribute('x'));
+      const x0 = x1 - (label.textContent.length * 6 + 2);
+      expect(x1 <= xc - half || xc + half <= x0).toBe(true);
+    }
+  });
+
   // T9.19-B3: the Worst case and the Max reward step with each revealed session's own figure and stop at the slider's session.
   describe('the Worst case and Max reward lines per session', () => {
     const anchors = { priceLines: [], planAtStop: fig(-324, 'Stop −$324'), planAtTarget: fig(956, 'Target +$956') };

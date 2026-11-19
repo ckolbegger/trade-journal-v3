@@ -200,6 +200,8 @@ export function drawPnl(props: ReplayPlotProps, width: number): DrawnChart {
       ['max-reward', current?.maxReward, -4],
     ] as const
   ).flatMap(([kind, limit, dy]) => (limit && limit.value >= min && limit.value <= max ? [{ kind, limit, dy }] : []));
+  // The cursor's column is held free (A280): the two limit labels, placed from here on, take no spot over it.
+  if (current) placer.reserveColumn(xc - time.column / 2, xc + time.column / 2);
   for (const { kind, limit, dy } of limits) {
     put(kind, `${kind}-label`, words(limit.label, limit.shortLabel), [{ x: time.right - 4, y: value.y(limit.value) + dy, anchor: 'end' }]);
   }
