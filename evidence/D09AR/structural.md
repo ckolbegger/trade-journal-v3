@@ -281,6 +281,14 @@ Lane PL (`d09ar/pl`), base `d74afb24`, commit `933ffabf`. 4 planned cases: three
   - D1 done: `b5412945`; red `expected 136 to be 124`, green. **12 px was half a pixel short** in the browser (the Review card replay at 320: 589.42 against 588.92), so the phone price chart takes the least more: 123 high, 13 px shorter than 136 (the brief allowed the least more needed; the P&L chart stays 200; the wide price chart stays 136). The case's expected value moved from 124 to 123 before its commit; its title still says "12 px" (a nit, left). No existing case pinned the phone height. `e2e/d9/responsive-a11y.spec.ts`: 6 of 6 (4 and 2 failed at 124).
   - B1 done: `d4324a1b`; red `slider 14, right edge: expected 345.2 to be less than or equal to 340`, green. Four more spots (start- and end-anchored at the cursor ± 6, above and below the dot) after the two centred ones. The spec 6 of 6 again.
   - No first-run pass. Lane tier `T9AR.12-DB`: unit 2355, integration 280, checks 14 of 14.
+  - ocr on `b5412945` (`ocr/T9AR.12-D1-b5412945.json`): 0 comments, **no findings**. ocr on `d4324a1b` (`ocr/T9AR.12-B1-d4324a1b.json`): 1 comment.
+
+| Severity | Location | Finding | Verdict |
+|---|---|---|---|
+| low | `corridor.test.tsx:1149` | The test helper `extent` picks the anchor offset with a nested ternary | Doubtful (readability; this branch removed nested ternaries in T9AR.10-F1 and T9AR.8-F1): T9AR.12-F1 |
+
+- **T9AR.12-F1** Structural: explicit branches in the test helper.
+  - Done: `404fd3c3`, `corridor.test.tsx` only. `corridor.test.tsx` 53 of 53; typecheck, lint exit 0. ocr on `404fd3c3` (`ocr/T9AR.12-F1-404fd3c3.json`): 0 comments, **no findings**. Lane PL's merge waits for lane RO's (its lane tier rerun is in progress), so lane PL rebases once.
 
 ## T9AR.9 Review card: the Replay button
 
@@ -316,7 +324,9 @@ Lane RO (`d09ar/ro`), base `e526637e`, commit `aa047c46`. Planned cases red then
 | low | `readout.tsx:51` | A static `style={UNBREAKABLE}` duplicates the stylesheet's `nowrap`, and the unit test checks the inline copy | Doubtful (readability): T9AR.13-F1 |
 
 - **T9AR.13-F1** Structural: the stylesheet rule is the one source; the case checks the rule.
-  - Done: `06741b51`. `UNBREAKABLE` and the three inline styles removed from `readout.tsx`; the "unbreakable cells" case reads `replay-readout.css` with postcss (as `corridor.test.tsx` does) and checks each figure cell is a `td` in `.replay-stake-grid`. `readout.test.tsx` 8 of 8; typecheck, lint exit 0. Mutation (the `nowrap` line deleted): `expected undefined to be 'nowrap'`, restored. Lane tier `T9AR.13-F1`: unit 2370, integration 280, checks 14 of 14.
+  - Done: `06741b51`. `UNBREAKABLE` and the three inline styles removed from `readout.tsx`; the "unbreakable cells" case reads `replay-readout.css` with postcss (as `corridor.test.tsx` does) and checks each figure cell is a `td` in `.replay-stake-grid`. `readout.test.tsx` 8 of 8; typecheck, lint exit 0. Mutation (the `nowrap` line deleted): `expected undefined to be 'nowrap'`, restored. Lane tier `T9AR.13-F1`: unit 2370, integration 280, checks 14 of 14. ocr on `06741b51` (`ocr/T9AR.13-F1-06741b51.json`): 0 comments, **no findings**.
+- Lane RO rebased onto `bc7444e2` (it brought in T9AR.6 and T9AR.11; `new-words.md` conflicted and was resolved by keeping both tasks' rows): `e7c42f5d` (T9AR.13), `a086218b` (F1). Lane tier rerun as `T9AR.13-rebased`: unit 2373, integration 280, checks 14 of 14; `run-complete.sh`: run complete. Merged by fast-forward to `a086218b`.
+- Lane PL then rebased onto `a086218b` (`DECISIONS-PENDING.md` conflicted; main's answered version kept): `8bf78d34` (T9AR.12), `94ea7114` (D1), `373f41dc` (B1), `912e01db` (F1). Lane tier rerun as `T9AR.12-rebased`.
 
 ## Suite runs
 

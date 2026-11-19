@@ -878,15 +878,15 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T9AR.10 | 1 | PL | Done (from `8245f6c6`) | `170970f4`, `611d3453`; B1 `61c562e6`; B2 `3235985a`; B3 `c7c01655`; F1 `8ef41e51`; S1 `780b88e1` |
 | T9AR.11 | 1 | PL | Done (from `8ef41e51`) | `fa1e2f64`; B1 `8258d88c` |
 | T9AR.12 | 1 | PL | In progress from `d74afb24` | |
-| T9AR.13 | 2 | RO | In progress from `e526637e` | |
-| T9AR.14 | 2 | RO | Not started | |
+| T9AR.13 | 2 | RO | Done (from `e526637e`) | `e7c42f5d`; F1 `a086218b` |
+| T9AR.14 | 2 | RO | In progress from `a086218b` | |
 | T9AR.15 | 2 | RO | Not started | |
 | T9AR.16 | 2 | SC | In progress from `b75e4597` | |
 | T9AR.17 | 2 | SC | Not started | |
 | T9AR.18 | 2 | SC | Not started | |
 | T9AR.19 | 2 | PL | Not started | |
 | T9AR.20 | 2 | RW | Not started | |
-| T9AR.21 | 2 | DM | Not started | |
+| T9AR.21 | 2 | DM | In progress from `a086218b` | |
 | T9AR.22 | 3 | IN | Not started | |
 | T9AR.23 | 3 | BR | Not started | |
 | T9AR.24 | 3 | — | Not started | |
