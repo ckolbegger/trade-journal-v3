@@ -2,6 +2,7 @@
 # status.sh <Dnn>: read-only status of a deliverable. Prints the breakdown's Progress rows that are not
 # Done or Withdrawn (task, wave, lane, status, and how many follow-up F and bug B tasks the Commits cell
 # names), then every question in evidence/<Dnn>/DECISIONS-PENDING.md without an answer, then the counts.
+# For a name with a hyphen (D09A-R) the folder without it (evidence/D09AR) is read when the named one is absent.
 # A "**Answer" line answers the question whose section it sits in; a "**Qn answer" line answers Qn.
 # STATUS_ROOT overrides the repository root (used by the tests). Writes no file.
 # A missing breakdown or Progress table exits 1 naming the file; a missing decisions file prints
@@ -57,6 +58,8 @@ if [[ -n $rows ]]; then
 else echo "  none"; fi
 
 dec="$root/evidence/$d/DECISIONS-PENDING.md"
+# A deliverable named with a hyphen (D09A-R) keeps its evidence in the folder without it (D09AR).
+[[ -f $dec || $d != *-* ]] || { alt="$root/evidence/${d//-/}/DECISIONS-PENDING.md"; [[ -f $alt ]] && dec=$alt; }
 nq=0
 echo "Open questions:"
 if [[ ! -f $dec ]]; then

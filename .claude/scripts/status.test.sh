@@ -10,7 +10,8 @@
 # 10 a decisions file that exists but cannot be read exits non-zero naming it (skipped as root), a missing one
 # still prints "no decisions file"; 11 the breakdown is the file whose Progress section holds a table, not
 # one with a Progress heading and only prose (and with no such file the script exits 1 naming a file);
-# 12 IDs after any task-ID prefix count; 13 each ID counts once when text precedes a chained ID.
+# 12 IDs after any task-ID prefix count; 13 each ID counts once when text precedes a chained ID;
+# 14 a deliverable named with a hyphen (D98-R) reads the evidence folder named without it (D98R).
 here=$(cd "$(dirname "$0")" && pwd)
 st="$here/status.sh"
 t=$(mktemp -d)
@@ -147,6 +148,17 @@ if want 13; then
   mkfix real '| T8.9 | 1 | WR | Paused | `c8815d65`; F1 `8de26d7d`, F1-B1 and F1-B2 `a656ccc5`; B2 `d85e5c57`, B3 `c1b3b8c7`, B6 `c2e505f5`, B7 `b1ca23af`, B8 `58f845f9`, B9 and B11 `53a54f99`, B10 `8dd43e59`, B12 and B13 `114bcda1`, B14 `4935b752` (B1 moved to T8.11; B4 and B5 closed by Q11) |'
   out=$(STATUS_ROOT="$t/real" "$st" D99 2>&1)
   [[ "$out" == *"F 1, B 16"* ]] || bad "real D08 T8.9 cell wrongly counted (want F 1, B 16): $out"
+fi
+
+if want 14; then
+  d="$t/hy"; mkdir -p "$d/plan" "$d/evidence/D98R"
+  printf '# D98-R\n\n## 11. Progress\n\n| Task | Wave | Lane | Status | Commits |\n|---|---|---|---|---|\n| T98R.1 | 1 | A | Paused | `x` |\n' >"$d/plan/D98-R-fixture.md"
+  printf '## Q1. One — open\n\nText.\n' >"$d/evidence/D98R/DECISIONS-PENDING.md"
+  out=$(STATUS_ROOT="$d" "$st" D98-R 2>&1); code=$?
+  [[ $code == 0 && "$out" == *"Q1."* && "$out" == *"1 open question"* && "$out" != *"no decisions file"* ]] || bad "hyphenated deliverable did not read the evidence folder named without the hyphen (exit $code): $out"
+  rm -r "$d/evidence/D98R"
+  out=$(STATUS_ROOT="$d" "$st" D98-R 2>&1); code=$?
+  [[ $code == 0 && "$out" == *"no decisions file"* ]] || bad "neither folder present changed behavior (exit $code): $out"
 fi
 
 [[ $fail == 0 ]] && echo "status.test.sh: all requested cases passed"
