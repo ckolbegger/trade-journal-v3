@@ -228,6 +228,20 @@ Run on `bbc3ae28`. The commands and their full output are in the appendix; this 
 | 7. The Review card's summary | T9AR.20 |
 | 8. The "since" line | T9AR.13, T9AR.21 |
 
+### 1.8 Carried from D9's Stage A gate (critic-2)
+
+D9's Stage A gate critic-2 (`evidence/D09/critic-2.md`, FAIL: 1 high, 1 moderate, 2 low) found four defects. **The user chose, 2026-11-18, to close Stage A without fixing them and to carry all four into D9A-R** (an exception to the rule that every critic defect is fixed before its gate closes, since D9A-R replaces most of what they touch). Each is a case in the task named, written red first like any other, and D9A-R's gate critic checks each again.
+
+| Critic-2 defect | Severity | Task | Case to add |
+|---|---|---|---|
+| 1a. The chart's overrun labels ("$180 past the Stop", "$32 past the Target") are not in the table, whose "Current Risk at Stop" reads "$0.00" for a Trade past its Stop | High | T9AR.17 | it should show a session past a line on its card as W56's row ("Past the Stop by $180.00 (0.30R) · at Stop −$740.00", R-AXIO-D Mon 11-09), never "$0.00" at risk |
+| 1b. The price chart's "Strike $100" line is in neither the readout nor the table | High | T9AR.18 | it should show an option's strike in "The Plan" block, in W40's words ("Strike $100", R-BREN-U; "Strike $57.50", R-DALE-D), so every chart figure is also off the chart |
+| 2. The minus sign wraps away from its amount ("P&L –" / "$17,463.00", DALE-D at 1280 wide) | Moderate | T9AR.13 | it should keep a signed amount on one line in every grid cell at 1280, 375 and 320 wide (R-DALE-D Fri 11-13's At Worst case; R-BREN-U Mon 11-02) |
+| 3. On a stock Trade the axis end label names the last session before it is revealed ("Tue Nov 17" at "1 of 12", R-AXIO-U) | Low | T9AR.10 | it should show nothing at the right end of a stock Trade's time axis at any session (W67) |
+| 4. An Expiration is labelled "Execution, Fri Nov 20" in the readout's Position group (R-DALE-U) | Low | T9AR.18 | it should name an Expiration "Expiration, Fri Nov 20" with "Expired", never "Execution" (the glossary: an Expiration is a Position Change, not an Execution) |
+
+Critic-2's minor observations already covered by D9A-R: the bare Underlying price (W58), the ratios' decimals (W59), crowded phone labels (W69), the leftover hover box (suggestion 14), the 16-column phone table (decision 5). Not covered, for D9A-R's critic to look at again: a final session's headline drops the R ("+$1,138.00", where W36 shows "· 3.05R"); "up $0.00 since Thu Nov 19" on an expired put's final session; focus lands on `<body>` after the Review card's Price History link returns; each revealed session is its own tab stop (11 on BREN).
+
 ---
 
 ## 2. Implementation boundaries extended in D9A-R

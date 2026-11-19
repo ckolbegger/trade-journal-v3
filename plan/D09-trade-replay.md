@@ -956,7 +956,7 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T9.16 | A | 2 | DW | Done | `8cbdd619`; B1 `f4e9b8a6`; B2 `ecaa8bbd` |
 | T9.17 | A | 3 | IN | Done | `416d52df`; B1 `749aff06`; B2 `d2732e30`; B3 `e216f70a` |
 | T9.18 | A | 3 | BR | Done | `2266321b`; F2 `561635ef`; B1 `de7818ac`; F1 `7a653e1b`; F3 `7ed4d0ff`; B2 `a58f0858`; B3 `e00066ac`; F4 `8773200f` |
-| T9.19 | A | 3 | — | In progress from `e718be57` | |
+| T9.19 | A | 3 | — | Done (closed by the user's decision with critic-2's four defects carried into D9A-R, section 1.8) | B1 `ae55b7e6`; B2 `e718c280`; B5 `24473015`, `12d7c4a7`; B9 `ddcb01c7`; B10 `8a9a3c14`; B12 `c8aab4cb`; F1 `b0c1c0e3`; B6 `7a4f37b1`; B7 `c30e4da6`; B13 `dd84dec5`; B8 `806857e7`; F2 `c4187556`; B4 `4ea73e48`, `55388096`; B14 `e70946fe`; B3 `f84a9391`; B11 `1047b81a`; full run `2b9497c7`; critic-2 `946e2257` |
 | D9A-R | — | — | — | Runs here, after T9.19 and before T9.20: see [D09A-R-stage-a-refactor.md](D09A-R-stage-a-refactor.md), section 15 | |
 | T9.20 | B | — | — | Not started | |
 | T9.21 | B | — | — | Not started | |
