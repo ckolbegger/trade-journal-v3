@@ -1,0 +1,143 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 1,
+    "total_tokens": 178793,
+    "input_tokens": 176745,
+    "output_tokens": 2048,
+    "cache_read_tokens": 34944,
+    "elapsed": "1m8s"
+  },
+  "tool_calls": {
+    "total": 18,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 4,
+      "file_read": 13
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/domain/trade-analysis/replay-series.ts",
+      "content": "This nested ternary violates the review checklist's prohibition on nested ternary expressions. Separate the missing-leg guard from the opening-versus-reducing comparison using explicit branches; likewise expand the nested ternary that computes `side` in `against`. This keeps the three distinct cases easier to follow.",
+      "existing_code": "        const againstPlan = !leg ? undefined : opens ? against('Entry', price, leg.entryPrice) : againstConditions(e.instrument, price, leg.side, terms);",
+      "start_line": 261,
+      "end_line": 261,
+      "category": "maintainability",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/domain/trade-analysis/evaluate.ts",
+        "src/domain/trade-analysis/replay-plan.test.ts",
+        "src/domain/trade-analysis/replay-series.ts"
+      ]
+    }
+  ],
+  "session_id": "7a5b6d3f-8e82-4cc8-bbc7-96d6637f18d1",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "7a5b6d3f-8e82-4cc8-bbc7-96d6637f18d1",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "62acd165",
+      "resolved_base": "79b900d318c03e1c8127d66335ed6a7b02d0e282",
+      "resolved_head": "62acd1654e9124fec0a274a4f8f55f62f860881f",
+      "exact_range": "79b900d318c03e1c8127d66335ed6a7b02d0e282..62acd1654e9124fec0a274a4f8f55f62f860881f",
+      "source_artifact_sha256": "dfeecdf598b056af612db2157f3c095144301762a8393924f1b56e52f9cdb037"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "2cdfac52e8ab493575d7f44a1a39167101fcd433edd529507860ca0fdba1d8b0",
+          "path": "src/domain/trade-analysis/evaluate.ts",
+          "fingerprint": "459c1df537e81991025e5373b0d7ff9d04f72b31ad23e5b9a4e19c36810b48bf"
+        },
+        {
+          "item_id": "deb743b934e3e8afc88ad5e21aadb5b903557bdbf4c8dd72ceac06ee7b6b7481",
+          "path": "src/domain/trade-analysis/replay-plan.test.ts",
+          "fingerprint": "9088e4b3269c1705f25fc02176c58834102718c48817fb5f337cfa40f72d97a6"
+        },
+        {
+          "item_id": "dfdfcb18f28569b5071aabb67f85b536832edb984e2c85f887674cad403f13cd",
+          "path": "src/domain/trade-analysis/replay-series.ts",
+          "fingerprint": "dd9004e283bdba373f960f6f7130007ae4949e0c476837a9193990bfa3960ae2"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "2cdfac52e8ab493575d7f44a1a39167101fcd433edd529507860ca0fdba1d8b0",
+          "path": "src/domain/trade-analysis/evaluate.ts",
+          "fingerprint": "459c1df537e81991025e5373b0d7ff9d04f72b31ad23e5b9a4e19c36810b48bf"
+        },
+        {
+          "item_id": "deb743b934e3e8afc88ad5e21aadb5b903557bdbf4c8dd72ceac06ee7b6b7481",
+          "path": "src/domain/trade-analysis/replay-plan.test.ts",
+          "fingerprint": "9088e4b3269c1705f25fc02176c58834102718c48817fb5f337cfa40f72d97a6"
+        },
+        {
+          "item_id": "dfdfcb18f28569b5071aabb67f85b536832edb984e2c85f887674cad403f13cd",
+          "path": "src/domain/trade-analysis/replay-series.ts",
+          "fingerprint": "dd9004e283bdba373f960f6f7130007ae4949e0c476837a9193990bfa3960ae2"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "177ee64d04ba39ce99ae779e998d08c65d0409b93a6bcdcdb803cd5cb08f56bc",
+          "path": "evidence/D09AR/suite-runs/T9AR.4-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "99ff142a6fc355322cb52b90a369113bd44927771827e8e425b5fea1f784c6ce",
+          "path": "evidence/D09AR/suite-runs/T9AR.4-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "cfb4f22f6dddd6301c2c801d38a51fdc7bea3084f9dc936f46ccb67c0dfe3c81",
+          "path": "evidence/D09AR/suite-runs/T9AR.4-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ed9b39ee974f87c77644c8ee744869a15010710ef24d8475e232e142194ab0ee",
+          "path": "evidence/D09AR/tdd-log/T9AR.4.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "febd4bce1f00de2cf0410c6a56b2e4814cbbf428ffc066ea268520b5cefba4bc",
+          "path": "evidence/D09AR/suite-runs/T9AR.4-checks.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 67515
+  }
+}

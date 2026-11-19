@@ -76,6 +76,20 @@ Lane DM (`d09ar/dm`), base `8245f6c6`, commit `76e83bd3`. 6 cases, each red then
   - Done: `e576c67e`; red "expected undefined to be 'Remote'", green; no first-run pass. `derive` sets a new required `DerivedTradeState.extremes` from `record.plan.legs` (`Main` when any leg is a short option), and `evaluate` passes it through; `TradeEvaluation.extremes` unchanged. No frozen view touched; `verify:fixtures` exit 0. Lane tier `T9AR.3-B2`: unit 2297, integration 280, checks 14 of 14. ocr on `e576c67e` (`ocr/T9AR.3-B2-e576c67e.json`): 3 files, 0 comments. **No findings.**
 - Rebased onto `4b3d9c45` (only evidence and plan files had changed on the branch, none of lane DM's, so no rerun). Merged by fast-forward: `5187512d` (T9AR.3), `02b4f51c` (B1), `499751ed` (B2).
 
+## T9AR.4 Trade Analysis: the Plan's terms, and each fill against the Plan
+
+Lane DM (`d09ar/dm`), base `79b900d3`, commit `62acd165`. 8 cases: 5 red then green; 3 first-run passes, each with a mutation check that failed on an assertion (O-S2's every condition with its own result: a Stop's `pnlIfHit` not negated; R-AXIO-U's added lot Above the entry: Above and Below swapped; R-DALE-D's buyback Above the Target: an option fill matched to Underlying conditions). `verify:fixtures` exit 0. Lane tier `T9AR.4`: unit 2305 (205 files), integration 280, checks 14 of 14.
+
+- Notes from the task's summary (not ocr findings): `terms.conditions` lists Stops then Targets, each in Plan order; `priceOf` is `Option` for a structure-value condition, else `Underlying`; leg quantities unsigned. A reducing fill matches conditions by its Instrument's kind; a Stop is "at or beyond" at or below it for a Long leg, at or above for a Short. `oddsOf` exported from `evaluate.ts` (not from the index) so the Plan column reuses it.
+- ocr on `62acd165` (`ocr/T9AR.4-62acd165.json`): 3 files, 1 comment.
+
+| Severity | Location | Finding | Verdict |
+|---|---|---|---|
+| low | `replay-series.ts:261` | Nested ternaries (the Entry-or-conditions choice, and `side` in `against`) should be explicit branches | Doubtful, readability: T9AR.4-F1 (structural). The reviewer notes the logic reads correctly and no repo rule bans nested ternaries; made an F task for consistency with T9AR.10-F1. |
+
+- **T9AR.4-F1** (structural) The two nested ternaries in `replay-series.ts` become explicit branches; verified by the same cases passing before and after.
+  - Done: `24de6a9c`. `npx vitest run src/domain/trade-analysis`: 24 files, 255 tests passing before and after; no test changed; typecheck, tsc6, lint exit 0. Lane tier `T9AR.4-F1`: unit 2305, integration 280, checks 14 of 14.
+
 ## T9AR.7 The Replay overlay
 
 Lane OV (`d09ar/ov`), base `8245f6c6`, commit `14ff2e7d`. 9 cases; 7 red then green, 2 first-run passes with mutation checks (the finished-Trade and symbol-alone header: heading rendered `header.slice(0, 4)` failed on the heading text; the shell banner: cleanup set `aria-hidden` in place of removing `inert` failed with the banner still inert). Lane tier `T9AR.7`: unit 2298 (204 files), integration 280, checks 14 of 14.
@@ -102,7 +116,9 @@ Reviewer's notes (not findings): `overlay.tsx` line 16 lacks a space (`||sibling
 | medium | `overlay.tsx:5` | The `summary` selector also matches `<summary tabIndex={-1}>`, which the browser skips, so the trap can wrap onto it | Valid: T9AR.7-B5 |
 
   - **T9AR.7-B4** Case: it should count a button inside a closed `<details>`' `summary` as a Tab edge when it is the last control.
+    - Done: `5d4e1b9c`; red (assertion: Tab did not wrap from the summary's button), green; no first-run pass. `canTakeFocus` exempts anything whose ancestor just below a closed `<details>` is that details' `summary`. Lane tier `T9AR.7-B4`: unit 2301, integration 280, checks 14 of 14. ocr on `5d4e1b9c` (`ocr/T9AR.7-B4-5d4e1b9c.json`), round 3: 2 files, 0 comments. **No findings.**
   - **T9AR.7-B5** Case: it should not count a `summary` with `tabIndex=-1` as a Tab edge.
+    - Done: `4b63b292`; red (assertion: the trap wrapped onto the `tabIndex=-1` summary), green; no first-run pass. Selector now `summary:not([tabindex="-1"])`. Lane tier `T9AR.7-B5`: unit 2302, integration 280, checks 14 of 14. ocr on `4b63b292` (`ocr/T9AR.7-B5-4b63b292.json`), round 3: 2 files, 0 comments. **No findings.**
 - **T9AR.7-B2** No wide layout. Case: it should place the charts on the left and the readout on the right inside the overlay at 1280 wide, and one column at 375 (A275).
   - Done: `9a34b48a`. First red row was a fixture error (reading the CSS through `import.meta.url`), logged as not valid; valid red "expected undefined to be 'grid'", then green; no first-run pass. The test parses `replay-overlay.css` with `postcss` (jsdom computes no layout). Under `.replay-overlay`, `.replay-card` is a grid of `minmax(0,3fr) minmax(0,2fr)` with dense row flow; every child spans the full width but `.replay-plot-frame` (column 1) and `.replay-readout` (column 2); one column under `@media (max-width: 860px)`, the shell's phone breakpoint. `frame.tsx` unchanged. Lane tier `T9AR.7-B2`: unit 2300, integration 280, checks 14 of 14.
   - ocr on `9a34b48a` (`ocr/T9AR.7-B2-9a34b48a.json`), round 2: 2 files, 1 comment.
@@ -113,7 +129,7 @@ Reviewer's notes (not findings): `overlay.tsx` line 16 lacks a space (`||sibling
 
   - **T9AR.7-B6** Case: it should keep the plot frame at its own height in the wide grid (`align-self: start`), so no session button lies below the charts.
 - **T9AR.7-B3** The Tab case can pass with Tab swallowed. Case: the existing Tab case asserts the order (Close, the inside button, Close; and the reverse with Shift+Tab). A test-only change: it must fail against a trap that always refocuses Close.
-  - Done: `22a2baca` (test only; `overlay.tsx` unchanged). Mutation check: the trap changed to always refocus Close failed the tightened case with an assertion failure (Close focused where the inside button was expected), which the old assertion would have passed; restored, green. Lane tier `T9AR.7-B3`: unit 2300, integration 280, checks 14 of 14.
+  - Done: `22a2baca` (test only; `overlay.tsx` unchanged). Mutation check: the trap changed to always refocus Close failed the tightened case with an assertion failure (Close focused where the inside button was expected), which the old assertion would have passed; restored, green. Lane tier `T9AR.7-B3`: unit 2300, integration 280, checks 14 of 14. ocr on `22a2baca` (`ocr/T9AR.7-B3-22a2baca.json`): 1 file, 0 comments. **No findings.**
 
 ## T9AR.10 Chart: the key, the dates, every line labelled
 
@@ -137,6 +153,7 @@ Lane PL (`d09ar/pl`), base `8245f6c6`, commits `07916b2e` (the task), `80c143ad`
   - **T9AR.10-B1** The expiry label vanishes near the end. Case: it should keep "Expires Fri Nov 20" on an option's axis at the last session, with the cursor's date beside it, never on top of it (W67).
     - Done: `daddc978`. Red: TypeError reading the absent label's `textContent` (a runtime exception), then green; no first-run pass. The "Expires …" label no longer goes through the cursor-overlap filter; the cursor's date is clamped to end 4 px left of it; the start label is still hidden under a same-date cursor. Lane tier `T9AR.10-B1`: unit 2300, integration 280, checks 14 of 14. ocr on `daddc978` (`ocr/T9AR.10-B1-daddc978.json`): 2 files, 0 comments. **No findings.**
   - **T9AR.10-B2** The key's swatches don't match the drawing. Case: it should give each key entry the swatch of what it names: Open profit and Open loss their areas' colours, Banked and Realized loss their bands' colours.
+    - Done: `a41bad90`; red (no `data-swatch` on the entries), green (one first green run failed on the test's own file path, fixed in the test); no first-run pass. `Key` sets `data-swatch` (`area-profit`, `area-loss`, `banked-gain`, `banked-loss`) from the entry's kind and label; four `::before` rules in `replay-plot.css` use the same colour variable and opacity as the drawing's `.area.*` and `.banked-band.*` rules, checked by parsing the stylesheet with `postcss`. Lane tier `T9AR.10-B2`: unit 2301, integration 280, checks 14 of 14. Note: the variant is chosen from the entry's label in the component because `PlotKeyEntry` (lane TY's type) has no variant field; carrying it on the entry would be a type change for lane TY. ocr on `a41bad90` (`ocr/T9AR.10-B2-a41bad90.json`): 3 files, 0 comments. **No findings.**
   - **T9AR.10-B3** Worst case and Max reward labels can sit in the cursor's column. Case: it should keep the Worst case and Max reward labels out of the cursor's column at the last session (A280). T9AR.11's planned case covers the other level labels.
   - **T9AR.10-F1** (structural) The nested ternary in `span` replaced by explicit branches; verified by the same cases passing before and after.
   - `drawPnl` and `drawStrip` return `{ svg, drawn }` (`DrawnChart` in `geometry.ts`), so the key names Worst case, Max reward and Strike only when drawn. The key sits beside the hit-area frame in a new `div.replay-corridor`. An axis end label is hidden when it would sit under the cursor's date. `corridor.tsx` uses `props.cursorLabel ?? current.dateLabel`; nothing sets `cursorLabel` yet.

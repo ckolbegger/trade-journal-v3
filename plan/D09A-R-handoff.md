@@ -268,4 +268,6 @@ Task status and commits are in the breakdown's Progress section. This section ho
 
 ### Open questions
 
+- First-run passes, each with a mutation check (`structural.md`): T9AR.7, two (the finished-Trade header; the shell banner); T9AR.4, three (O-S2's conditions; R-AXIO-U's added lot; R-DALE-D's buyback); T9AR.7-B3, test-only, proved by mutation.
+- T9AR.10's dismissed ocr finding (the key's At Stop and At Target and the price strip's lines), with its reason in `structural.md`.
 - Stage A's provisional words (`evidence/D09/new-words.md`) still await the user's approval; some look replaced by D9A-R's W53 to W70 (check "Past Stop's amount" and "Not triggered" against W56, and the Underlying price without "$" against W58). List in the final report which stage A words D9A-R replaced.
