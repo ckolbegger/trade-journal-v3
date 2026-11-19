@@ -72,6 +72,46 @@ test.describe('B9AR.2 The overlay in the Review, and the summary', () => {
     await context.close();
   });
 
+  // T9AR.24-B3 (C9AR.5, AC-JOUR-001, AC-REV-003): the Review is left for Price History and read again on the way back, yet the started Action is still on the card, and one press saves it.
+  test('should restore a started Action on each card after the Price History round trip, and save exactly it with one press', async ({ profile }) => {
+    test.setTimeout(420_000);
+    const { context, page, trades } = await buildReview(profile);
+    const [bren, axio] = trades as [TradeRef, TradeRef];
+    let saved = 0;
+    for (const trade of [bren, axio]) {
+      const intent = `Why ${trade.symbol}: the Trade has run its course.`;
+      await reachCard(page, trade);
+      const form = await actionFormOf(page, trade);
+      await form.getByRole('radio', { name: 'Exit', exact: true }).check();
+      await form.getByLabel(/^Why are you taking this action\?/).fill(intent);
+      await openCardReplay(page, trade);
+      await seek(page, replay(page), 'End');
+      await seek(page, replay(page), 'ArrowLeft', 2);
+      await expect(sliderValue(replay(page))).toHaveText('Thu Nov 12 · 9 of 11');
+      await replay(page).getByRole('link', { name: 'Price History' }).click();
+      await expect(detail.heading(page, trade.symbol)).toBeVisible(READY);
+      expect(await actions(page), `the trip away records nothing (${trade.symbol})`).toBe(saved);
+      await page.getByRole('link', { name: 'Back to the Review' }).click();
+      await expect(replay(page)).toBeVisible(READY);
+      await expect(sliderValue(replay(page))).toHaveText('Thu Nov 12 · 9 of 11');
+      await closeButton(replay(page)).click();
+      await expect(replay(page)).toHaveCount(0);
+      const back = await actionFormOf(page, trade);
+      await expect(back.getByRole('radio', { name: 'Exit', exact: true }), `${trade.symbol}: Exit after the return`).toBeChecked();
+      await expect(back.getByLabel(/^Why are you taking this action\?/), `${trade.symbol}: Intent after the return`).toHaveValue(intent);
+      const hidden = await back.elementHandle();
+      await back.getByRole('button', { name: 'Save' }).click();
+      await hidden.waitForElementState('hidden', READY);
+      saved += 1;
+      expect(await actions(page), 'one press saves one Action').toBe(saved);
+      const mine = actionEntriesOf(workspaceOf(await probe(page))!).find((entry) => entry.obligationKey?.[2] === trade.tradeId);
+      const answers = (mine?.versions as { responses: { promptId: string; value: unknown }[] }[] | undefined)?.at(-1)?.responses;
+      expect(answers?.find((r) => r.promptId === 'prompt.daily-trade-review.action')?.value, `${trade.symbol}: the choice saved`).toEqual({ kind: 'Option', optionId: 'option.daily-trade-review.action.exit' });
+      expect(answers?.find((r) => r.promptId === 'prompt.daily-trade-review.intent')?.value, `${trade.symbol}: the Intent saved`).toEqual({ kind: 'Text', text: intent });
+    }
+    await context.close();
+  });
+
   test('should read each card’s summary in the replay’s words, with no zero Overrun', async ({ profile }) => {
     test.setTimeout(420_000);
     const { context, page, trades } = await buildReview(profile);

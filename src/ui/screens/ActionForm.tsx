@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import type { UiFacade } from '../../app/compose.ts';
 import { DAILY_TRADE_REVIEW_PROMPTS } from '../../domain/daily-trade-review-prompts.ts';
 import { useRuntime } from '../runtime.tsx';
+import { draftKey, draftSetAside, dropDraftSetAside, holdDraft } from './action-draft.ts';
 import { fieldIssues } from './form-issues.tsx';
 import type { FieldIssue } from './plan-issues.ts';
 import type { ActionChoice, ActionForm as ActionFormState, SaveDailyReviewResult, TradeSaveBinding } from '../../app/types.ts';
@@ -86,14 +87,18 @@ function returnedValues(form: ActionFormState): Values {
 export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyChange, pending = false }: ActionFormProps) {
   const { writable, report } = useRuntime();
   const returned = returnedValues(form);
-  const [action, setAction] = useState(returned.action);
+  // A form opened on the way back from Price History starts from the Action the trader had started there (C9AR.5).
+  const key = draftKey(binding.reviewDate, binding.tradeId);
+  const [started] = useState(() => draftSetAside(key));
+  useEffect(() => dropDraftSetAside(key), [key]);
+  const [action, setAction] = useState((started?.action as ActionChoice | undefined) ?? returned.action);
   // A saved Action is shown as it is until the trader chooses to change it.
   const [changing, setChanging] = useState(false);
   // One save at a time: a second would carry the same binding.
-  const [intent, setIntent] = useState(returned.intent);
-  const [conviction, setConviction] = useState(returned.conviction);
-  const [considered, setConsidered] = useState(returned.considered);
-  const [note, setNote] = useState(returned.note);
+  const [intent, setIntent] = useState(started?.intent ?? returned.intent);
+  const [conviction, setConviction] = useState(started?.conviction ?? returned.conviction);
+  const [considered, setConsidered] = useState(started?.considered ?? returned.considered);
+  const [note, setNote] = useState(started?.note ?? returned.note);
   const [issues, setIssues] = useState<readonly FieldIssue[]>([]);
   const uid = useId();
   const intentField = `${uid}-intent`;
@@ -108,6 +113,11 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
   const dirty = action !== returned.action || intent !== returned.intent || conviction !== returned.conviction || considered !== returned.considered || note !== returned.note;
   // Once the shell is read only the values can no longer be saved, so they hold nothing back: the trader can leave the Trade.
   useEffect(() => onDirtyChange(dirty && writable), [dirty, writable, onDirtyChange]);
+  // What the form holds is kept for a trip to Price History, which the Review's Price History link starts.
+  useEffect(() => {
+    holdDraft(key, dirty ? { action, intent, conviction, considered, note } : undefined);
+    return () => holdDraft(key, undefined);
+  }, [key, dirty, action, intent, conviction, considered, note]);
   // Leaving abandons the values, so the form no longer holds an update back.
   useEffect(() => () => onDirtyChange(false), [onDirtyChange]);
   // The save wrote nothing and the values stay: the Review or the Action changed since the form was opened, or storage failed.

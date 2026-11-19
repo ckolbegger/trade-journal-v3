@@ -6,6 +6,7 @@ import { money, plural, ratio, shortDate, tradeName, tradeSummary } from '../for
 import { calculation, FACTS_INCOHERENT_FIGURE, signed } from '../figures.ts';
 import { useRuntime } from '../runtime.tsx';
 import type { UiFacade } from '../../app/compose.ts';
+import { setDraftsAside } from './action-draft.ts';
 import { ActionForm, type SavedAction } from './ActionForm.tsx';
 import { ReplayDrawer } from '../cockpit/drawers/replay.tsx';
 import { overlayWordsOf } from '../cockpit/replay/overlay.props.ts';
@@ -402,7 +403,7 @@ function CardBody({ facade, trade, progress, name, advance, go, marks, held, onR
       {trade.replay && replayOpen && (
         <ReplayOverlay {...overlayWordsOf(trade.underlying, trade.replay)} onClose={closeReplay}>
           {/* P129: the one link out; the address carries the drawer, the session and the way back. */}
-          <ReplayDrawer replay={trade.replay} {...(params.get('session') !== null && { initialSession: params.get('session')! })} onSessionChange={onSliderMove} links={({ date }) => <Link to={`/trades/${trade.tradeId}?drawer=price-history&session=${date}&from=review`}>Price History</Link>} />
+          <ReplayDrawer replay={trade.replay} {...(params.get('session') !== null && { initialSession: params.get('session')! })} onSessionChange={onSliderMove} links={({ date }) => <Link to={`/trades/${trade.tradeId}?drawer=price-history&session=${date}&from=review`} onClick={setDraftsAside}>Price History</Link>} />
         </ReplayOverlay>
       )}
     </section>

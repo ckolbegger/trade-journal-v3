@@ -1819,6 +1819,41 @@ describe('Review card: the Replay button (decision 3)', () => {
     expect(within(await screen.findByRole('dialog', { name: 'Replay, XYZ' })).getByRole('slider', { name: 'Session' }).getAttribute('aria-valuetext')).toBe('Thu Oct 8 · 1 of 2. $0.00');
   });
 
+  it('should keep a started Action when the Review is left for Price History and read again on the way back', async () => {
+    const user = userEvent.setup();
+    const save = vi.fn();
+    renderWalk(walkFacade(ready([item('t1', 'XYZ')]), tradeReview('t1', 'XYZ', { replay: THURSDAY_AND_MONDAY })));
+    const card = await openTrade(user, 'XYZ');
+    await user.click(within(card).getByRole('radio', { name: 'Exit' }));
+    await user.type(within(card).getByRole('textbox', { name: `${INTENT_PROMPT} (required)` }), 'Take the profit.');
+    await user.click(within(card).getByRole('button', { name: 'Replay' }));
+    await user.click(within(await screen.findByRole('dialog', { name: 'Replay, XYZ' })).getByRole('link', { name: 'Price History' }));
+    // The Review leaves the page and is read again from the address the way back names.
+    cleanup();
+    const facade = walkFacade(ready([item('t1', 'XYZ')]), tradeReview('t1', 'XYZ', { replay: THURSDAY_AND_MONDAY }));
+    vi.mocked(facade.DailyReview.save).mockImplementation(save);
+    renderWalk(facade, { address: '/review?trade=t1&panel=Action&replay=open&session=2026-10-08' });
+    await user.click(within(await screen.findByRole('dialog', { name: 'Replay, XYZ' })).getByRole('button', { name: 'Close' }));
+    const back = await screen.findByRole('region', { name: 'XYZ review' });
+    expect(within(back).getByRole('radio', { name: 'Exit' })).toHaveProperty('checked', true);
+    expect(within(back).getByRole('textbox', { name: `${INTENT_PROMPT} (required)` })).toHaveProperty('value', 'Take the profit.');
+    // The trip itself recorded nothing.
+    expect(save).not.toHaveBeenCalled();
+  });
+
+  it('should not bring a started Action back when the Review was left some other way', async () => {
+    const user = userEvent.setup();
+    renderWalk(walkFacade(ready([item('t1', 'XYZ')]), tradeReview('t1', 'XYZ')));
+    const card = await openTrade(user, 'XYZ');
+    await user.click(within(card).getByRole('radio', { name: 'Exit' }));
+    await user.type(within(card).getByRole('textbox', { name: `${INTENT_PROMPT} (required)` }), 'Take the profit.');
+    cleanup();
+    renderWalk(walkFacade(ready([item('t1', 'XYZ')]), tradeReview('t1', 'XYZ')));
+    const back = await openTrade(user, 'XYZ');
+    expect(within(back).getByRole('radio', { name: 'Hold' })).toHaveProperty('checked', true);
+    expect(within(back).getByRole('textbox', { name: `${INTENT_PROMPT} (optional)` })).toHaveProperty('value', '');
+  });
+
   it('should open the overlay over the Action panel even when the address still names an Instrument', async () => {
     const user = userEvent.setup();
     const walked = { ...item('t1', 'XYZ'), progress: cardProgress(0, 0, { needed: 1, resolved: 0 }) };
