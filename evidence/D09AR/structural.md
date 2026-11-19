@@ -55,6 +55,44 @@ Split of the code (A286): `replay.props.ts` keeps `replayProps`, the table row a
   - The domain's new type names are not exported from `trade-analysis/index.ts`; lane DM adds the exports.
 - **Implementation-level decision (main session): `src/ui/cockpit/replay/view-doubles.props.ts`.** The split made this shared file of test doubles, which section 4.2's ownership table does not name. Rule for the lanes: a lane may add a new double or helper to it; changing or removing an existing export is a stop-and-report, routed to lane TY as a bug task, as `replay.types.ts` changes are.
 
+## T9AR.3 Trade Analysis: the estimated odds and the extremes' weight
+
+Lane DM (`d09ar/dm`), base `8245f6c6`, commit `76e83bd3`. 6 cases, each red then green; no first-run pass. `npm run verify:fixtures` exit 0. Lane tier `T9AR.3`: unit 2295, integration 280, checks 14 of 14.
+
+- Notes from the task's summary (not ocr findings):
+  - `RewardRiskOdds` and `ExtremesWeight` are now exported from `trade-analysis/index.ts`; shapes unchanged. Percents are whole-number Rationals; `planOdds` is always a Value (from 1R and the Original Planned Reward).
+  - The task read the extremes' weight from the Trade's first Execution (an option sale gives `Main`), because the derived state holds no Plan leg side; a Trade with no Execution gets none. The main session first accepted this as an implementation-level choice; ocr then raised it (below), so it is bug task T9AR.3-B2.
+- ocr on `76e83bd3` (`ocr/T9AR.3-76e83bd3.json`): 3 files reviewed (5 excluded), 2 comments.
+
+| Severity | Location | Finding | Verdict |
+|---|---|---|---|
+| medium | `evaluate.ts:584` | `rewardRiskOdds` and `extremes` never reach a replay session's figures: `figuresOf()` in `replay-series.ts` copies neither, though A267 and A268 say a session's figures carry them | Valid: T9AR.3-B1 |
+| medium | `evaluate.ts:587` | `extremes` is set only when the Trade has an Execution, so a confirmed Plan before entry has no weight and a stock or long option reads as `Main`; A268 takes it from the Plan, fixed for the Trade's life, and `derive` has `record.plan` | Valid: T9AR.3-B2 |
+
+**Bug tasks** (lane DM, one at a time):
+- **T9AR.3-B1** A session's figures lack the odds and the weight. Case: it should carry the estimated odds and the extremes' weight in each replayed session's figures (R-DALE-D Wed 11-11: 78/990, 8 and 92, `Main`; R-BREN-U: `Remote`).
+- **T9AR.3-B2** The weight is read from the first fill, not the Plan. Case: it should give the weight from the Plan before any Execution (a confirmed long-stock Plan: `Remote`; a confirmed Cash-Secured Put Plan: `Main`).
+
+## T9AR.7 The Replay overlay
+
+Lane OV (`d09ar/ov`), base `8245f6c6`, commit `14ff2e7d`. 9 cases; 7 red then green, 2 first-run passes with mutation checks (the finished-Trade and symbol-alone header: heading rendered `header.slice(0, 4)` failed on the heading text; the shell banner: cleanup set `aria-hidden` in place of removing `inert` failed with the banner still inert). Lane tier `T9AR.7`: unit 2298 (204 files), integration 280, checks 14 of 14.
+
+- Notes from the task's summary: `role="dialog"` with `aria-modal`, rendered through a portal to `document.body`, `inert` on every other body child while open (P153: nothing hidden or changed); focus to Close on open; Escape calls `onClose` unless a control inside called `preventDefault`. No words shortened, no uncovered words.
+- ocr on `14ff2e7d` (`ocr/T9AR.7-14ff2e7d.json`): 3 files reviewed (5 excluded), 3 comments.
+
+| Severity | Location | Finding | Verdict |
+|---|---|---|---|
+| medium | `overlay.tsx:33` | The Tab trap's edge selector matches elements that cannot take focus (a closed `<details>`' `tabIndex=0` region) and misses `summary`, so Tab can leave the dialog | Valid: T9AR.7-B1 |
+| medium | `replay-overlay.css:27` | One column at every width; A275's wide layout (charts left, readout right) is never applied | Valid: T9AR.7-B2 |
+| medium | `overlay.test.tsx:54` | The Tab case checks only that focus is inside, so a trap that swallows Tab would pass | Valid: T9AR.7-B3 |
+
+Reviewer's notes (not findings): `overlay.tsx` line 16 lacks a space (`||sibling`).
+
+**Bug tasks** (lane OV, one at a time):
+- **T9AR.7-B1** Tab leaves the dialog past a closed `<details>`. Case: it should wrap Tab from the last control that can take focus to Close, and Shift+Tab from Close to it, when the dialog holds a closed `<details>` whose hidden region has `tabIndex=0` and a `summary`.
+- **T9AR.7-B2** No wide layout. Case: it should place the charts on the left and the readout on the right inside the overlay at 1280 wide, and one column at 375 (A275).
+- **T9AR.7-B3** The Tab case can pass with Tab swallowed. Case: the existing Tab case asserts the order (Close, the inside button, Close; and the reverse with Shift+Tab). A test-only change: it must fail against a trap that always refocuses Close.
+
 ## Suite runs
 
 | Run | Commit | Tier | Result |

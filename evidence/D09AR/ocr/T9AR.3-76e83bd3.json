@@ -1,0 +1,152 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 2,
+    "total_tokens": 160203,
+    "input_tokens": 158011,
+    "output_tokens": 2192,
+    "cache_read_tokens": 16640,
+    "elapsed": "1m9s"
+  },
+  "tool_calls": {
+    "total": 21,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 5,
+      "file_read": 15
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/domain/trade-analysis/evaluate.ts",
+      "content": "The new results do not reach replay session figures: `replay-series.ts` builds them through an explicit `figuresOf()` projection that copies neither `rewardRiskOdds` nor `extremes`. Consequently every replay session still exposes these as undefined, despite A268 requiring the weight in session figures (and ReplayFigures already declaring both fields). Update that projection and add a replay-level regression test.",
+      "existing_code": "    rewardRiskOdds: rewardRiskOddsOf(),",
+      "start_line": 584,
+      "end_line": 584,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/domain/trade-analysis/evaluate.ts",
+      "content": "This omits `extremes` for a confirmed Plan before its first execution, including replay cutoffs before entry. Such states are supported by derive/evaluate, but A268 defines the weight from the Plan and fixes it for the Trade's life. A long-stock or long-option Plan therefore has no weight until entry (and consumers using the documented missing-value fallback treat it as Main rather than Remote). Carry the classification from the frozen Plan into the derived state instead of depending on an execution, and test a pre-entry evaluation.",
+      "existing_code": "    ...(state.facts[0] \u0026\u0026 { extremes: state.facts[0].instrument.kind === 'Option' \u0026\u0026 state.facts[0].action === 'Sell' ? ('Main' as const) : ('Remote' as const) }),",
+      "start_line": 587,
+      "end_line": 587,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/domain/trade-analysis/evaluate.ts",
+        "src/domain/trade-analysis/index.ts",
+        "src/domain/trade-analysis/odds.test.ts"
+      ]
+    }
+  ],
+  "session_id": "a4d08d98-7f96-4991-9862-8dea5fcb28a4",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "a4d08d98-7f96-4991-9862-8dea5fcb28a4",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "76e83bd3",
+      "resolved_base": "8245f6c687272a6ebc01682c9912042798ec089b",
+      "resolved_head": "76e83bd3d6ea93d9bff0ebc42389c943f976a203",
+      "exact_range": "8245f6c687272a6ebc01682c9912042798ec089b..76e83bd3d6ea93d9bff0ebc42389c943f976a203",
+      "source_artifact_sha256": "ffdda71d77a8ed73a39dc75ee60e87981bca7e72ab80470b36a0e4c6a337b4b5"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "2cdfac52e8ab493575d7f44a1a39167101fcd433edd529507860ca0fdba1d8b0",
+          "path": "src/domain/trade-analysis/evaluate.ts",
+          "fingerprint": "12c5741b52c36502b31a2ea6f9d593c76dfc48c16748de3e8e7b5b23ec2d2148"
+        },
+        {
+          "item_id": "5729f37ba14ab4005d5f1ea0df14b27a73f7cf33ad2caa08bdd979f015dd2a86",
+          "path": "src/domain/trade-analysis/odds.test.ts",
+          "fingerprint": "2a48371d785ed09996bfe1ac25317db6e94645d154420acfe27c5487650f1917"
+        },
+        {
+          "item_id": "8411810b972f01aae046b61cff46f2696ec8bf23a4e9d6abff256a42fc139477",
+          "path": "src/domain/trade-analysis/index.ts",
+          "fingerprint": "4c693557ccf77d5495c198b6f0f50a3e0ae0a57c99dd6b70866632468787fbca"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "2cdfac52e8ab493575d7f44a1a39167101fcd433edd529507860ca0fdba1d8b0",
+          "path": "src/domain/trade-analysis/evaluate.ts",
+          "fingerprint": "12c5741b52c36502b31a2ea6f9d593c76dfc48c16748de3e8e7b5b23ec2d2148"
+        },
+        {
+          "item_id": "5729f37ba14ab4005d5f1ea0df14b27a73f7cf33ad2caa08bdd979f015dd2a86",
+          "path": "src/domain/trade-analysis/odds.test.ts",
+          "fingerprint": "2a48371d785ed09996bfe1ac25317db6e94645d154420acfe27c5487650f1917"
+        },
+        {
+          "item_id": "8411810b972f01aae046b61cff46f2696ec8bf23a4e9d6abff256a42fc139477",
+          "path": "src/domain/trade-analysis/index.ts",
+          "fingerprint": "4c693557ccf77d5495c198b6f0f50a3e0ae0a57c99dd6b70866632468787fbca"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "235d21e7633ef6b46983b1a77fddef62a3d57653d6a9d024db890794c60438c8",
+          "path": "evidence/D09AR/suite-runs/T9AR.3-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "6746cdecdca4e7573dc36fc07f60d514c30498076b21b1e2684fefe532d081dd",
+          "path": "evidence/D09AR/tdd-log/T9AR.3.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "9521d17069113b02b9f4f7903b053da88113ca8b16126f62132863263904d63e",
+          "path": "evidence/D09AR/suite-runs/T9AR.3-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "e773a59088533b212b0946fad11af734dab8006ca9f4806207d87bd446dc36f7",
+          "path": "evidence/D09AR/suite-runs/T9AR.3-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "f5b8ce4d40c9e6f94529b6e832c77fb877d6f038f536e91b9b32c8b3edffce57",
+          "path": "evidence/D09AR/suite-runs/T9AR.3-unit.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 68644
+  }
+}

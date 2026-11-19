@@ -1,0 +1,173 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 3,
+    "total_tokens": 142274,
+    "input_tokens": 139414,
+    "output_tokens": 2860,
+    "cache_read_tokens": 31616,
+    "elapsed": "41s"
+  },
+  "tool_calls": {
+    "total": 30,
+    "by_tool": {
+      "code_comment": 3,
+      "code_search": 7,
+      "file_find": 4,
+      "file_read": 14,
+      "file_read_diff": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/styles/replay-overlay.css",
+      "content": "The overlay remains a single-column layout at every viewport width. Its body has no responsive layout rules, and the existing ReplayFrame stylesheet also leaves the plot and readout as sequential blocks, so the wide-screen layout required by A275 (charts left, readout right, full-width content below) is never applied. Add overlay-scoped wide-screen grid rules for the frame's content, retaining the stacked layout on phones without changing/remounting the frame.",
+      "existing_code": ".replay-overlay-body {\n  flex: 1;\n  min-height: 0;\n  overflow: auto;\n  padding: 12px 16px;\n}",
+      "start_line": 27,
+      "end_line": 32,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/cockpit/replay/overlay.tsx",
+      "content": "Filter this list to actual tabbable elements before choosing the trap boundaries. The selector also matches hidden inputs, controls in hidden/inert containers, and native controls with `tabindex=\"-1\"`. For example, if children end with a hidden input, the last visible button is never considered the edge, so Tab follows the browser's default navigation out of the dialog rather than wrapping to Close. Add coverage with hidden/inert trailing controls and negative-tabindex controls in addition to the visible-button case.",
+      "existing_code": "    const items = Array.from(e.currentTarget.querySelectorAll\u003cHTMLElement\u003e(FOCUSABLE));",
+      "start_line": 33,
+      "end_line": 33,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/cockpit/replay/overlay.test.tsx",
+      "content": "The containment assertions also pass if the Tab handler prevents every Tab event and leaves focus permanently on Close. Since this fixture has two focusable buttons, assert the actual sequence (Close → Inside button → Close) and the reverse sequence for Shift+Tab. This verifies both keyboard navigation and wrapping, rather than accepting a focus trap that makes the content unreachable.",
+      "existing_code": "      await user.tab();\n      expect(dialog.contains(document.activeElement)).toBe(true);",
+      "start_line": 54,
+      "end_line": 55,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "src/ui/cockpit/replay/overlay.test.tsx",
+      "files": [
+        "src/ui/cockpit/replay/overlay.test.tsx"
+      ]
+    },
+    {
+      "label": "src/ui/cockpit/replay/overlay.tsx",
+      "files": [
+        "src/ui/cockpit/replay/overlay.tsx"
+      ]
+    },
+    {
+      "label": "src/ui/cockpit/styles/replay-overlay.css",
+      "files": [
+        "src/ui/cockpit/styles/replay-overlay.css"
+      ]
+    }
+  ],
+  "session_id": "d9745cb2-bfbf-4e38-885e-e137e5a979e3",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "d9745cb2-bfbf-4e38-885e-e137e5a979e3",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "14ff2e7d",
+      "resolved_base": "8245f6c687272a6ebc01682c9912042798ec089b",
+      "resolved_head": "14ff2e7dbbaa6b2b6dbecd4ff6ad1a801838c928",
+      "exact_range": "8245f6c687272a6ebc01682c9912042798ec089b..14ff2e7dbbaa6b2b6dbecd4ff6ad1a801838c928",
+      "source_artifact_sha256": "02211444e525df8eb80a9110f22e6d9efbbf464542cb66a7f131e0bc4dfbfaea"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "de31a9170a08b375f51fa298e4e0c932e4a8816c12b5758d5e764a9f0591eeb3",
+          "path": "src/ui/cockpit/styles/replay-overlay.css",
+          "fingerprint": "77b3f25b444b51c2bd5fefe9bb9964f2c578a1327bb75a7d353d1177ddb74936"
+        },
+        {
+          "item_id": "e1f92202f07a1fca0a590345d20829a25e1a08332816189a8bbcb90cd7573047",
+          "path": "src/ui/cockpit/replay/overlay.test.tsx",
+          "fingerprint": "d4f240cd2fb80fae7198bdcd7ed44cf578d0369cee3222347fe87c9a9f68eaf5"
+        },
+        {
+          "item_id": "f988deb822048101fc25fabacdda8b5fbd876414f9f75e9ab850767bfddd76f8",
+          "path": "src/ui/cockpit/replay/overlay.tsx",
+          "fingerprint": "b07e909bd6f92639f6584e73b6741b0008b6d369ad6e98c7b79f62bd9ab9cd8a"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "de31a9170a08b375f51fa298e4e0c932e4a8816c12b5758d5e764a9f0591eeb3",
+          "path": "src/ui/cockpit/styles/replay-overlay.css",
+          "fingerprint": "77b3f25b444b51c2bd5fefe9bb9964f2c578a1327bb75a7d353d1177ddb74936"
+        },
+        {
+          "item_id": "e1f92202f07a1fca0a590345d20829a25e1a08332816189a8bbcb90cd7573047",
+          "path": "src/ui/cockpit/replay/overlay.test.tsx",
+          "fingerprint": "d4f240cd2fb80fae7198bdcd7ed44cf578d0369cee3222347fe87c9a9f68eaf5"
+        },
+        {
+          "item_id": "f988deb822048101fc25fabacdda8b5fbd876414f9f75e9ab850767bfddd76f8",
+          "path": "src/ui/cockpit/replay/overlay.tsx",
+          "fingerprint": "b07e909bd6f92639f6584e73b6741b0008b6d369ad6e98c7b79f62bd9ab9cd8a"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "1dd4857c2f3624c60bede8654a2c37bf49695ed29c0c2d60c2355a63aa75d3b6",
+          "path": "evidence/D09AR/suite-runs/T9AR.7-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "9f24ac23febd33920edc0cbd1de6190a8d20b328aced8c14b17bf2791bc3934a",
+          "path": "evidence/D09AR/tdd-log/T9AR.7.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "d1c1a77819cd17e372b402715f46392afb3ad4b3a36fc47d2d18b12605e4a09b",
+          "path": "evidence/D09AR/suite-runs/T9AR.7-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "d39904a21ff12244b10e7fe53ae6d35937072564f2c642aff1738a5afe150ca1",
+          "path": "evidence/D09AR/suite-runs/T9AR.7-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ec9904f0ab725d22bd511d68ff7722ea5f7ba381c288c101e8a7ab6f657dccc9",
+          "path": "evidence/D09AR/suite-runs/T9AR.7-integration.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 40755
+  }
+}
