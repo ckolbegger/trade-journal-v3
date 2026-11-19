@@ -2,7 +2,16 @@ import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import type { ReplayOverlayProps } from './replay.types.ts';
 
-const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+const FOCUSABLE = 'summary, a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+// Whether Tab can land on it: not hidden, and not inside a closed details (its own summary is fine).
+function canTakeFocus(el: HTMLElement): boolean {
+  if (el.closest('[hidden]')) return false;
+  for (let p = el.parentElement; p; p = p.parentElement) {
+    if (p instanceof HTMLDetailsElement && !p.open && !(el.tagName === 'SUMMARY' && el.parentElement === p)) return false;
+  }
+  return true;
+}
 
 // A273: a modal dialog drawn over the whole viewport. It is a portal on the body, and every other child of the body
 // is made inert while it is open (P153: inert only, never hidden or changed).
@@ -30,7 +39,7 @@ export function ReplayOverlay({ name, header, onClose, children }: ReplayOverlay
       return;
     }
     if (e.key !== 'Tab') return;
-    const items = Array.from(e.currentTarget.querySelectorAll<HTMLElement>(FOCUSABLE));
+    const items = Array.from(e.currentTarget.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(canTakeFocus);
     if (items.length === 0) return;
     const edge = items[e.shiftKey ? 0 : items.length - 1];
     if (document.activeElement === edge || !e.currentTarget.contains(document.activeElement)) {

@@ -60,6 +60,26 @@ describe('Replay overlay (decision 3)', () => {
     }
   });
 
+  it('should wrap Tab from the last control that can take focus to Close, and Shift+Tab from Close to it, when the dialog holds a closed details with a summary and a hidden region that has tabIndex 0', async () => {
+    render(
+      <ReplayOverlay name="Replay, BREN" header="BREN · Trade P&L +$988.00" onClose={vi.fn()}>
+        <button type="button">Inside button</button>
+        <details>
+          <summary>Table</summary>
+          <div tabIndex={0}>Hidden region</div>
+        </details>
+      </ReplayOverlay>,
+    );
+    const user = userEvent.setup();
+    const close = screen.getByRole('button', { name: 'Close' });
+    const summary = screen.getByText('Table');
+    summary.focus();
+    await user.tab();
+    expect(document.activeElement).toBe(close);
+    await user.tab({ shift: true });
+    expect(document.activeElement).toBe(summary);
+  });
+
   it('should call onClose from the Close button and from Escape', async () => {
     const { onClose } = open();
     const user = userEvent.setup();
