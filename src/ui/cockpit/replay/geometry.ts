@@ -1,3 +1,6 @@
+import type { ReactElement } from 'react';
+import type { PlotKeyEntry } from './replay.types.ts';
+
 // A255, A256: geometry is presentation. It turns finished prices and session slots into SVG coordinates and picks the
 // vertical range from the Plan's anchors and the revealed sessions; it never works out a figure the screen shows.
 
@@ -50,6 +53,12 @@ export function priceRange(anchors: readonly number[], marks: readonly number[])
     if (mhi > hi) hi = mhi + pad;
   }
   return lo === hi ? [lo - 1, hi + 1] : [lo, hi];
+}
+
+// A chart as drawn, with the kinds of key entry (A280) whose lines it actually drew.
+export interface DrawnChart {
+  readonly svg: ReactElement;
+  readonly drawn: ReadonlySet<PlotKeyEntry['kind']>;
 }
 
 export interface Spot {

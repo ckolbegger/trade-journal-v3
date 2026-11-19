@@ -1,4 +1,4 @@
-import { axisMoney, LabelPlacer, pnlRange, tickFits, ticks, timeAxis, valueAxis, type Spot } from './geometry.ts';
+import { axisMoney, type DrawnChart, LabelPlacer, pnlRange, tickFits, ticks, timeAxis, valueAxis, type Spot } from './geometry.ts';
 import type { LabelledFigure, PlotSession, ReplayPlotProps } from './replay.types.ts';
 
 // Drawn at a phone's real width the chart is no longer shrunk with the screen, so it is shorter, to keep the headline and both charts on one screen.
@@ -47,6 +47,11 @@ function bands(sessions: readonly PlotSession[]): PlotSession[][] {
 
 // The Corridor's Trade P&L chart (W40): dollars for the whole Position, break-even between profit and loss.
 export function PnlChart({ props, width }: { props: ReplayPlotProps; width: number }) {
+  return drawPnl(props, width).svg;
+}
+
+// The chart and what it drew, so the key names only what is on the page.
+export function drawPnl(props: ReplayPlotProps, width: number): DrawnChart {
   const { sessions, anchors, axis } = props;
   const HEIGHT = props.compact ? HEIGHT_PHONE : HEIGHT_FULL;
   const FLOOR = HEIGHT - 22;
@@ -109,7 +114,7 @@ export function PnlChart({ props, width }: { props: ReplayPlotProps; width: numb
   // Labels, placed in priority order: the results, the banked labels and the stake tags first (the results and banked
   // labels are never left out), then the rest, each taking the first free spot or none. The title's space is held.
   const placer = new LabelPlacer(width, HEIGHT);
-  const title = words(props.pnlTitle, props.pnlShortTitle);
+  const title = props.pnlTitle;
   placer.reserve(title, TITLE_SPOT(time.left));
   const labels: { key: string; cls: string; text: string; spot: Spot }[] = [];
   const put = (key: string, cls: string, text: string, spots: Spot[], must = false) => {
@@ -209,7 +214,39 @@ export function PnlChart({ props, width }: { props: ReplayPlotProps; width: numb
     { x: time.left + 4, y: y0 + 12, anchor: 'start' },
   ]);
 
-  return (
+  // The time axis's words, one row under the chart: the first date at the left, the end (an option's expiration) at the right, and the
+  // slider's session under the cursor. An edge label the cursor's name would cover is left out.
+  const span = (text: string, x: number, anchor: 'start' | 'middle' | 'end') => {
+    const w = text.length * 6 + 2;
+    const x0 = anchor === 'start' ? x : anchor === 'end' ? x - w : x - w / 2;
+    return { x0, x1: x0 + w };
+  };
+  const cursorText = current ? (props.cursorLabel ?? current.dateLabel) : undefined;
+  const half = cursorText ? (cursorText.length * 6 + 2) / 2 : 0;
+  const cursorX = Math.min(Math.max(xc, half), width - half);
+  const cursorSpan = cursorText ? span(cursorText, cursorX, 'middle') : undefined;
+  const axisText: { cls: string; text: string; x: number; anchor: 'start' | 'middle' | 'end' }[] = [
+    ...(axis.startLabel ? [{ cls: 'axis-start', text: axis.startLabel, x: time.left, anchor: 'start' as const }] : []),
+    ...(axis.endLabel ? [{ cls: 'axis-end', text: axis.endLabel, x: time.right, anchor: 'end' as const }] : []),
+  ].filter((t) => {
+    if (!cursorSpan) return true;
+    const s = span(t.text, t.x, t.anchor);
+    return s.x1 <= cursorSpan.x0 || cursorSpan.x1 <= s.x0;
+  });
+  if (cursorText) axisText.push({ cls: 'cursor-label', text: cursorText, x: cursorX, anchor: 'middle' });
+  // A line is drawn only with its label (A280): one whose label found no room is not drawn at all.
+  const placed = new Set(labels.map((l) => l.key));
+  const limitLines = (
+    [
+      ['worst-case', 'WorstCase', (s: PlotSession) => s.worstCase],
+      ['max-reward', 'MaxReward', (s: PlotSession) => s.maxReward],
+    ] as const
+  ).flatMap(([css, keyKind, pick]) => {
+    const d = limitPath(pick);
+    return d && placed.has(css) ? [{ css, keyKind, d }] : [];
+  });
+  const drawn = new Set(limitLines.map((l) => l.keyKind));
+  const svg = (
     <svg className="pnl-chart" viewBox={`0 0 ${width} ${HEIGHT}`} width={width} height={HEIGHT}>
       <defs>
         {(['stop', 'target'] as const).map((kind) => (
@@ -257,15 +294,9 @@ export function PnlChart({ props, width }: { props: ReplayPlotProps; width: numb
           d={stepPath((s) => (kind === 'stop' ? s.resultAtStop : s.resultAtTarget), kind === 'stop' ? anchors.planAtStop : anchors.planAtTarget)}
         />
       ))}
-      {(
-        [
-          ['worst-case', (s: PlotSession) => s.worstCase],
-          ['max-reward', (s: PlotSession) => s.maxReward],
-        ] as const
-      ).flatMap(([kind, pick]) => {
-        const d = limitPath(pick);
-        return d ? [<path key={kind} className={kind} d={d} />] : [];
-      })}
+      {limitLines.map((l) => (
+        <path key={l.css} className={l.css} d={l.d} />
+      ))}
       <path className="break-even" d={`M${time.left} ${f1(y0)}H${time.right}`} />
       {current && <path className="cursor" d={`M${f1(xc)} ${TOP}V${FLOOR}`} />}
       {current?.stake && current.tradePnl !== null && (
@@ -289,9 +320,11 @@ export function PnlChart({ props, width }: { props: ReplayPlotProps; width: numb
       <text className="plot-title" x={time.left} y={TITLE_Y}>
         {title}
       </text>
-      <text className="axis-end" x={time.right} y={HEIGHT - 4} textAnchor="end">
-        {axis.endLabel}
-      </text>
+      {axisText.map((t) => (
+        <text key={t.cls} className={t.cls} x={f1(t.x)} y={HEIGHT - 4} textAnchor={t.anchor}>
+          {t.text}
+        </text>
+      ))}
       {labels.map((l) => (
         <text key={l.key} className={l.cls} x={f1(l.spot.x)} y={f1(l.spot.y)} textAnchor={l.spot.anchor}>
           {l.text}
@@ -299,4 +332,5 @@ export function PnlChart({ props, width }: { props: ReplayPlotProps; width: numb
       ))}
     </svg>
   );
+  return { svg, drawn };
 }

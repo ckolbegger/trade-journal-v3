@@ -1,9 +1,9 @@
 import { useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { flushSync } from 'react-dom';
-import { PnlChart } from './corridor-pnl.tsx';
+import { drawPnl } from './corridor-pnl.tsx';
 import { timeAxis } from './geometry.ts';
-import { PriceStrip } from './price-strip.tsx';
-import type { ReplayPlotProps } from './replay.types.ts';
+import { drawStrip } from './price-strip.tsx';
+import type { PlotKeyEntry, PlotSession, ReplayPlotProps } from './replay.types.ts';
 
 const WIDTH = 640;
 const WIDTH_COMPACT = 340;
@@ -61,11 +61,34 @@ function useBoxWidth(box: RefObject<HTMLDivElement | null>): number {
   return measured;
 }
 
-// A narrow box is drawn at its own width (not below WIDTH_MIN); otherwise the compact flag picks.
-function drawingWidth(narrow: boolean, measured: number, compact: boolean | undefined): number {
-  if (narrow) return Math.max(measured, WIDTH_MIN);
-  if (compact) return WIDTH_COMPACT;
-  return WIDTH;
+// A box with a layout is drawn at its own width at every size (not below WIDTH_MIN), so the text keeps its size (A275);
+// before it has one, the compact flag picks a width.
+function drawingWidth(measured: number, compact: boolean | undefined): number {
+  if (measured > 0) return Math.max(measured, WIDTH_MIN);
+  return compact ? WIDTH_COMPACT : WIDTH;
+}
+
+// A280: every kind of thing the revealed sessions drew, once each, in the order they first appeared. A Worst case, a Max reward
+// and a Strike are named only when their line is on the page.
+const LINE_KINDS: ReadonlySet<PlotKeyEntry['kind']> = new Set(['WorstCase', 'MaxReward', 'Strike']);
+function keyOf(sessions: readonly PlotSession[], drawn: ReadonlySet<PlotKeyEntry['kind']>): PlotKeyEntry[] {
+  const seen = new Set<string>();
+  return sessions
+    .flatMap((s) => s.keyEntries ?? [])
+    .filter((e) => (!LINE_KINDS.has(e.kind) || drawn.has(e.kind)) && !seen.has(`${e.kind}|${e.label}`) && seen.add(`${e.kind}|${e.label}`));
+}
+
+function Key({ entries }: { entries: readonly PlotKeyEntry[] }) {
+  if (entries.length === 0) return null;
+  return (
+    <ul className="replay-key">
+      {entries.map((e) => (
+        <li key={`${e.kind}|${e.label}`} className={`key-${e.kind}`}>
+          {e.label}
+        </li>
+      ))}
+    </ul>
+  );
 }
 
 // A255: the one plot, taking ReplayPlotProps so a later Ribbon plot takes the same. The price strip for now.
@@ -75,15 +98,20 @@ export function CorridorPlot(props: ReplayPlotProps) {
   const box = useRef<HTMLDivElement>(null);
   const measured = useBoxWidth(box);
   const narrow = measured > 0 && measured < WIDTH_PHONE;
-  const width = drawingWidth(narrow, measured, props.compact);
+  const width = drawingWidth(measured, props.compact);
   const plot = narrow || props.compact ? { ...props, compact: true } : props;
+  const strip = drawStrip(plot, width);
+  const pnl = drawPnl(plot, width);
   return (
-    <div className="replay-plot-frame" ref={box}>
-      <div className="replay-plot" role="img" aria-label={props.accessibleName} aria-describedby={props.describedBy}>
-        <PriceStrip props={plot} width={width} />
-        <PnlChart props={plot} width={width} />
+    <div className="replay-corridor">
+      <div className="replay-plot-frame" ref={box}>
+        <div className="replay-plot" role="img" aria-label={props.accessibleName} aria-describedby={props.describedBy}>
+          {strip.svg}
+          {pnl.svg}
+        </div>
+        <SessionHits props={props} width={width} />
       </div>
-      <SessionHits props={props} width={width} />
+      <Key entries={keyOf(props.sessions, new Set([...strip.drawn, ...pnl.drawn]))} />
     </div>
   );
 }

@@ -408,11 +408,11 @@ describe('Corridor: the Trade P&L (W40, W41)', () => {
     expect(screen.getByText('Target +$316')).toBeTruthy();
     expect(screen.queryByText('Reward to target $0')).toBeNull();
     cleanup();
-    // The price strip's labels follow the same rule: three lines at one price leave room for only two labels.
+    // The price strip's labels follow the same rule: three lines at one price leave room for only two labels, and a line is drawn only with its label (T9AR.10).
     const same = (kind: 'Strike' | 'Stop' | 'Target') => ({ kind, price: 100, label: `${kind} $100` });
     const labelled = DAYS.map((_, i) => bren(i, i === 10 ? { underlyingLabel: '$104.00' } : {}));
     const strip = render(<CorridorPlot {...props({ sessions: labelled, anchors: { ...props().anchors, priceLines: [same('Strike'), same('Stop'), same('Target')] } })} />);
-    expect(strip.container.querySelectorAll('svg.price-strip path.price-line')).toHaveLength(3);
+    expect(strip.container.querySelectorAll('svg.price-strip path.price-line')).toHaveLength(2);
     expect(strip.container.querySelectorAll('svg.price-strip text.price-line-label')).toHaveLength(2);
     // The Mark's own label is the result: it stays.
     expect(screen.getByText('$104.00')).toBeTruthy();
@@ -545,7 +545,7 @@ describe('Corridor: drawn at a phone\'s real width (W39, W40, W41)', () => {
     vi.restoreAllMocks();
     frameWidth(900);
     const wide = render(<CorridorPlot {...props({ sessions })} />);
-    expect(wide.container.querySelector('svg.price-strip')!.getAttribute('width')).toBe('640');
+    expect(wide.container.querySelector('svg.price-strip')!.getAttribute('width')).toBe('900');
     expect(screen.getByText('Risk to stop $672')).toBeTruthy();
   });
 
@@ -556,7 +556,7 @@ describe('Corridor: drawn at a phone\'s real width (W39, W40, W41)', () => {
     vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockImplementation(() => width);
     vi.stubGlobal('ResizeObserver', class { constructor(cb: () => void) { notify = cb; } observe() {} unobserve() {} disconnect() {} });
     const { container } = render(<CorridorPlot {...props()} />);
-    expect(container.querySelector('svg.price-strip')!.getAttribute('width')).toBe('640');
+    expect(container.querySelector('svg.price-strip')!.getAttribute('width')).toBe('900');
     width = 320;
     notify();
     expect(container.querySelector('svg.price-strip')!.getAttribute('width')).toBe('320');
@@ -754,5 +754,106 @@ describe('Corridor: every figure drawn is readable in full (B6)', () => {
         vi.restoreAllMocks();
       }
     }
+  });
+});
+
+describe('Corridor: the key, the dates and the lines (suggestion 3)', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
+  const keyed = (i: number): PlotSession =>
+    bren(i, {
+      keyEntries: [
+        ...(i === 0
+          ? ([
+              { kind: 'Mark', label: 'Mark' },
+              { kind: 'TradePnl', label: 'Open profit' },
+              { kind: 'BreakEven', label: 'Break-even' },
+              { kind: 'Stop', label: 'At Stop' },
+              { kind: 'Target', label: 'At Target' },
+              { kind: 'WorstCase', label: 'At Worst case' },
+            ] as const)
+          : []),
+        ...(i === SALE ? ([{ kind: 'Banked', label: 'Banked' }] as const) : []),
+      ],
+    });
+  const keyOf = (c: HTMLElement) => [...c.querySelectorAll('.replay-key li')].map((li) => li.textContent);
+
+  it('should show a one-line key under the charts naming each thing drawn so far and nothing else', () => {
+    const early = render(<CorridorPlot {...props({ sessions: [keyed(0)], sliderIndex: 0 })} />);
+    // No Banked on Mon 11-02; the Worst case is named by a session but its line is not drawn (no figure), so it is not in the key.
+    expect(keyOf(early.container)).toEqual(['Mark', 'Open profit', 'Break-even', 'At Stop', 'At Target']);
+    cleanup();
+    const thu = render(<CorridorPlot {...props({ sessions: DAYS.slice(0, SALE + 1).map((_, i) => keyed(i)), sliderIndex: SALE })} />);
+    expect(keyOf(thu.container)).toEqual(['Mark', 'Open profit', 'Break-even', 'At Stop', 'At Target', 'Banked']);
+  });
+
+  it('should draw at its box own width on a wide screen, the text the same size at 860 and at 1400', () => {
+    const scales: number[] = [];
+    for (const box of [860, 1400]) {
+      frameWidth(box);
+      const { container } = render(<CorridorPlot {...props()} />);
+      for (const svg of [container.querySelector('svg.price-strip')!, pnl(container)]) {
+        // Drawn at the box's width with a viewBox of the same width: one drawing unit is one pixel, so the text is not scaled.
+        expect(svg.getAttribute('width')).toBe(String(box));
+        expect(svg.getAttribute('viewBox')!.split(' ')[2]).toBe(String(box));
+        scales.push(num(svg, 'width') / Number(svg.getAttribute('viewBox')!.split(' ')[2]));
+      }
+      cleanup();
+      vi.restoreAllMocks();
+    }
+    expect(new Set(scales)).toEqual(new Set([1]));
+  });
+
+  it('should draw a Worst case, Max reward or price line only with its label: the P&L chart', () => {
+    const maxReward = fig(1250, 'Max reward +$1,250');
+    const sessions = DAYS.map((_, i) => bren(i, { maxReward }));
+    // With room: line and label are both drawn.
+    const roomy = render(<CorridorPlot {...props({ sessions })} />);
+    expect(roomy.container.querySelectorAll('path.max-reward')).toHaveLength(1);
+    expect(screen.getByText('Max reward +$1,250')).toBeTruthy();
+    cleanup();
+    // The title takes the room the label needs (R-DALE-D's Max reward under the title): neither is drawn.
+    const crowded = render(<CorridorPlot {...props({ sessions, pnlTitle: 'T'.repeat(80) })} />);
+    expect(screen.queryByText('Max reward +$1,250')).toBeNull();
+    expect(crowded.container.querySelectorAll('path.max-reward')).toHaveLength(0);
+    // The key does not name a line that is not drawn.
+    expect(crowded.container.querySelector('.key-MaxReward')).toBeNull();
+  });
+
+  it('should draw a Worst case, Max reward or price line only with its label: the price chart', () => {
+    const lines = [
+      { kind: 'Strike' as const, price: 100, label: 'Strike $100' },
+      { kind: 'Stop' as const, price: 100, label: 'Stop $100.00' },
+      { kind: 'Target' as const, price: 100.05, label: 'Target $100.05' },
+    ];
+    const { container } = render(<CorridorPlot {...props({ anchors: { ...props().anchors, priceLines: lines } })} />);
+    const strip = container.querySelector('svg.price-strip')!;
+    // The Target's label has no free spot beside the other two, so its line is not drawn either.
+    expect([...strip.querySelectorAll('text.price-line-label')].map((t) => t.textContent)).toEqual(['Strike $100', 'Stop $100.00']);
+    expect([...strip.querySelectorAll('path.price-line')].map((p) => p.getAttribute('data-kind'))).toEqual(['Strike', 'Stop']);
+  });
+
+  it('should label nothing at the right on a stock Trade, and name the slider session under the cursor', () => {
+    const { container } = render(<CorridorPlot {...props({ axis: { slots: 5, startLabel: 'Mon Nov 2' }, sliderIndex: 3, sessions: DAYS.slice(0, 4).map((_, i) => bren(i)) })} />);
+    const time = timeAxis(640, 5);
+    expect(pnl(container).querySelector('text.axis-end')).toBeNull();
+    const under = pnl(container).querySelector('text.cursor-label')!;
+    expect([under.textContent, under.getAttribute('text-anchor'), num(under, 'x')]).toEqual(['Thu Nov 5', 'middle', Math.round(time.x(3) * 10) / 10]);
+    // On an option the name sits under the cursor as well, and the first session's own date is not drawn twice.
+    cleanup();
+    const first = render(<CorridorPlot {...props({ axis: { slots: 15, startLabel: 'Mon Nov 2', endLabel: 'Expires Fri Nov 20' }, sliderIndex: 0, sessions: [bren(0)] })} />);
+    expect([...pnl(first.container).querySelectorAll('text')].filter((t) => t.textContent === 'Mon Nov 2')).toHaveLength(1);
+  });
+
+  it('should label the time axis with the first session date at the left and Expires Fri Nov 20 at the right on an option: the drawing', () => {
+    const { container } = render(<CorridorPlot {...props({ axis: { slots: 15, startLabel: 'Mon Nov 2', endLabel: 'Expires Fri Nov 20' }, sliderIndex: 5, sessions: DAYS.slice(0, 6).map((_, i) => bren(i)) })} />);
+    const time = timeAxis(640, 15);
+    const start = pnl(container).querySelector('text.axis-start')!;
+    const end = pnl(container).querySelector('text.axis-end')!;
+    expect([start.textContent, start.getAttribute('text-anchor'), num(start, 'x')]).toEqual(['Mon Nov 2', 'start', time.left]);
+    expect([end.textContent, end.getAttribute('text-anchor'), num(end, 'x')]).toEqual(['Expires Fri Nov 20', 'end', time.right]);
   });
 });

@@ -11,6 +11,16 @@ describe('replay.props: what the plot draws of a session (W39 to W41, W44)', () 
     const wed = { ...brenWed1111, realizedPnl: usd(478), markers: [sale] };
     const props = replayProps(fullView([wed], PLAN), { Plot });
     expect(props.sessions[0]!.plot).toEqual({
+      keyEntries: [
+        { kind: 'Mark', label: 'Mark' },
+        { kind: 'TradePnl', label: 'Open profit' },
+        { kind: 'Banked', label: 'Banked' },
+        { kind: 'BreakEven', label: 'Break-even' },
+        { kind: 'Stop', label: 'At Stop' },
+        { kind: 'Target', label: 'At Target' },
+        { kind: 'Strike', label: 'Strike' },
+        { kind: 'Execution', label: 'Execution' },
+      ],
       slot: 0,
       dateLabel: 'Wed Nov 11',
       underlyingMark: 101.8,
@@ -103,8 +113,7 @@ describe('replay.props: the plot titles, anchors and time axis (W39, W40, A256)'
     expect(plotBase).toEqual({
       priceTitle: 'BREN price · one Mark per session',
       priceShortTitle: 'BREN price',
-      pnlTitle: 'Trade P&L · dollars for the whole Position, between the result at the Stop and at the Target',
-      pnlShortTitle: 'Trade P&L',
+      pnlTitle: 'Trade P&L',
       accessibleName: 'BREN Marks and Trade P&L by session',
       describedBy: 'replay-table-T-1',
       anchors: {
@@ -117,8 +126,51 @@ describe('replay.props: the plot titles, anchors and time axis (W39, W40, A256)'
         planAtTarget: { value: 956, label: 'Target +$956' },
       },
       // Mon Nov 9 to Fri Nov 20: ten trading days, the later ones left blank until the slider reaches them.
-      axis: { slots: 10, endLabel: 'Fri Nov 20' },
+      axis: { slots: 10, startLabel: 'Mon Nov 9', endLabel: 'Expires Fri Nov 20' },
     });
+  });
+
+  it('should show a one-line key under the charts naming each thing drawn so far and nothing else: the entries each session names', () => {
+    const sale = { id: 'x2', kind: 'Execution', effect: 'Reduced', fills: [{ instrument: BREN, action: 'Sell', quantity: usd(2), price: usd(4) }] } as const;
+    const wed = { ...brenWed1111, realizedPnl: usd(478), markers: [sale] };
+    const mon = brenMon1102;
+    const props = replayProps(fullView([mon, wed], PLAN), { Plot });
+    // Quiet Mon 11-02: no Banked and no Execution. Wed 11-11 has both; each entry is named on the session where it first appears.
+    expect(props.sessions[0]!.plot.keyEntries!.map((e) => e.label)).not.toContain('Banked');
+    expect(props.sessions[1]!.plot.keyEntries).toEqual(
+      expect.arrayContaining([
+        { kind: 'Mark', label: 'Mark' },
+        { kind: 'TradePnl', label: 'Open profit' },
+        { kind: 'Banked', label: 'Banked' },
+        { kind: 'BreakEven', label: 'Break-even' },
+        { kind: 'Stop', label: 'At Stop' },
+        { kind: 'Target', label: 'At Target' },
+        { kind: 'Strike', label: 'Strike' },
+        { kind: 'Execution', label: 'Execution' },
+      ]),
+    );
+  });
+
+  it('should label the time axis with the first session date at the left and Expires Fri Nov 20 at the right on an option: the props', () => {
+    const wed = { ...brenWed1111, figures: { ...brenWed1111.figures!, conditions: [] } };
+    const mon = withMarks(session({ date: '2026-11-09', pnl: 28 }), [markOf(BREN_STOCK, '97.20'), markOf(BREN, '1.61')]);
+    expect(replayProps(fullView([mon, wed], PLAN), { Plot }).plotBase.axis).toEqual({ slots: 10, startLabel: 'Mon Nov 9', endLabel: 'Expires Fri Nov 20' });
+  });
+
+  it('should show nothing at the right end of a stock Trade time axis at any session', () => {
+    // R-AXIO-U: twelve sessions, the last on Tue Nov 17; at 1 of 12 that date must not be named anywhere.
+    const days = ['2026-11-02', '2026-11-03', '2026-11-04', '2026-11-05', '2026-11-06', '2026-11-09', '2026-11-10', '2026-11-11', '2026-11-12', '2026-11-13', '2026-11-16', '2026-11-17'];
+    const sessions = days.map((date) => session({ date, instrument: AXIO, held: 200, pnl: 10 }));
+    const props = replayProps({ ...view(sessions), instruments: [AXIO] }, { Plot });
+    expect(props.plotBase.axis).toEqual({ slots: 12, startLabel: 'Mon Nov 2' });
+    expect(JSON.stringify([props.plotBase, props.sessions[0]!.plot])).not.toContain('Tue Nov 17');
+    expect(props.sessions.at(-1)!.plot.dateLabel).toBe('Tue Nov 17');
+  });
+
+  it('should title the P&L chart Trade P&L at every width', () => {
+    const { plotBase } = replayProps(fullView([brenMon1102], PLAN), { Plot });
+    expect(plotBase.pnlTitle).toBe('Trade P&L');
+    expect(plotBase.pnlShortTitle).toBeUndefined();
   });
 
   it('should end a stock Trade axis on its last session, and anchor it at the price it was bought at', () => {
@@ -127,7 +179,7 @@ describe('replay.props: the plot titles, anchors and time axis (W39, W40, A256)'
     const mon = session({ date: '2026-11-09', instrument: AXIO, held: 200, pnl: -920 });
     const { plotBase } = replayProps({ ...view([fri, mon]), instruments: [AXIO] }, { Plot });
     expect(plotBase.anchors.entryPrice).toBe(48);
-    expect(plotBase.axis).toEqual({ slots: 2, endLabel: 'Mon Nov 9' });
+    expect(plotBase.axis).toEqual({ slots: 2, startLabel: 'Fri Nov 6' });
     expect(plotBase.priceTitle).toBe('AXIO price · one Mark per session');
   });
 });

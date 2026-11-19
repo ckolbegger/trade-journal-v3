@@ -32,7 +32,7 @@ test.describe('B9.1 Replay in Trade Detail', () => {
     expect(await chartText(priceStrip(scope))).toEqual(expect.arrayContaining(['BREN price · one Mark per session', 'Strike $100']));
     expect(await chartText(pnlChart(scope))).toEqual(
       expect.arrayContaining([
-        'Trade P&L · dollars for the whole Position, between the result at the Stop and at the Target',
+        'Trade P&L',
         'Stop +$316', 'Target +$956', 'Break-even', 'Banked +$478', 'Worst case +$156', '$32 past the Target', 'Current Risk $672', 'Sold 2 at $4.00',
       ]),
     );

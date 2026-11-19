@@ -261,3 +261,49 @@
   outline: 2px solid var(--focus);
   outline-offset: -2px;
 }
+
+/* The key (A280): one line under the charts naming what is drawn so far; it wraps rather than scrolls on a narrow box. */
+.replay-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 14px;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.replay-key li::before {
+  content: '';
+  display: inline-block;
+  width: 10px;
+  height: 0;
+  margin-right: 5px;
+  vertical-align: middle;
+  border-top: 2px solid var(--muted);
+}
+
+.replay-key .key-Stop::before,
+.replay-key .key-WorstCase::before {
+  border-top: 2px dashed var(--stop);
+}
+
+.replay-key .key-Target::before,
+.replay-key .key-MaxReward::before {
+  border-top: 2px dotted var(--target);
+}
+
+.replay-key .key-BreakEven::before {
+  border-top-color: var(--ink);
+}
+
+.replay-key .key-Mark::before,
+.replay-key .key-TradePnl::before {
+  border-top-color: var(--ink);
+}
+
+.replay-plot .cursor-label {
+  fill: var(--ink);
+  font-weight: 600;
+}

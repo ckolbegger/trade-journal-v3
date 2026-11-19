@@ -1,5 +1,5 @@
-import { axisMoney, LabelPlacer, priceRange, tickFits, ticks, timeAxis, valueAxis, type Spot } from './geometry.ts';
-import type { ReplayPlotProps } from './replay.types.ts';
+import { axisMoney, type DrawnChart, LabelPlacer, priceRange, tickFits, ticks, timeAxis, valueAxis, type Spot } from './geometry.ts';
+import type { PlotKeyEntry, ReplayPlotProps } from './replay.types.ts';
 
 const HEIGHT = 136;
 const TOP = 18;
@@ -9,6 +9,11 @@ const f1 = (n: number): string => String(Math.round(n * 10) / 10);
 
 // The Corridor's price strip (W39): one Mark per revealed session, joined in order, the line broken at a gap.
 export function PriceStrip({ props, width }: { props: ReplayPlotProps; width: number }) {
+  return drawStrip(props, width).svg;
+}
+
+// The strip and what it drew, so the key names only what is on the page.
+export function drawStrip(props: ReplayPlotProps, width: number): DrawnChart {
   const { sessions, anchors, axis } = props;
   const time = timeAxis(width, axis.slots);
   const anchorPrices = [...(anchors.entryPrice === undefined ? [] : [anchors.entryPrice]), ...anchors.priceLines.map((l) => l.price)];
@@ -57,7 +62,8 @@ export function PriceStrip({ props, width }: { props: ReplayPlotProps; width: nu
     return spot ? [{ key: `${l.kind}-${i}`, kind: l.kind.toLowerCase(), text: l.label, y: spot.y }] : [];
   });
 
-  return (
+  const shown = new Set<PlotKeyEntry['kind']>(lineLabels.some((l) => l.kind === 'strike') ? ['Strike'] : []);
+  const svg = (
     <svg className="price-strip" viewBox={`0 0 ${width} ${HEIGHT}`} width={width} height={HEIGHT}>
       {ticks(min, max, 3).filter((v) => tickFits(axisMoney(v), time.left)).map((v) => (
         <g key={v}>
@@ -80,9 +86,12 @@ export function PriceStrip({ props, width }: { props: ReplayPlotProps; width: nu
             </text>
           </g>
         ))}
-      {anchors.priceLines.map((l, i) => (
-        <path key={`${l.kind}-${i}`} className={`price-line ${l.kind.toLowerCase()}`} data-kind={l.kind} d={`M${time.left} ${f1(value.y(l.price))}H${time.right}`} />
-      ))}
+      {anchors.priceLines.map((l, i) =>
+        // A line is drawn only with its label (A280): one whose label found no room is not drawn.
+        lineLabels.some((t) => t.key === `${l.kind}-${i}`) ? (
+          <path key={`${l.kind}-${i}`} className={`price-line ${l.kind.toLowerCase()}`} data-kind={l.kind} d={`M${time.left} ${f1(value.y(l.price))}H${time.right}`} />
+        ) : null,
+      )}
       {lineLabels.map((l) => (
         <text key={l.key} className={`price-line-label ${l.kind}`} x={time.left + 4} y={f1(l.y)}>
           {l.text}
@@ -112,4 +121,5 @@ export function PriceStrip({ props, width }: { props: ReplayPlotProps; width: nu
       )}
     </svg>
   );
+  return { svg, drawn: shown };
 }

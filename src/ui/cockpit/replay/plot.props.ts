@@ -4,7 +4,7 @@ import { instrumentKey, type OptionInstrument } from '../../../domain/instrument
 import { Rational } from '../../../domain/values/index.ts';
 import { signed } from '../../figures.ts';
 import { decimalMoney, money, quantity, shortDate, summaryStrike } from '../../format.ts';
-import type { LabelledFigure, PlotMarker, PlotSession, ReplayProps, ReplayPlotProps } from './replay.types.ts';
+import type { LabelledFigure, PlotKeyEntry, PlotMarker, PlotSession, ReplayProps, ReplayPlotProps } from './replay.types.ts';
 import { FILL_VERBS, markerWords } from './session-words.props.ts';
 
 // What the plot draws (W39 to W41, W44): finished values turned into the numbers it places, beside their finished labels.
@@ -53,7 +53,22 @@ export function plotSessionOf(view: TradeReplayView, index: number): PlotSession
   const standing = f?.standing?.kind === 'Value' ? f.standing.value : undefined;
   const zone = standing?.zone;
   const past = zone === 'PastStop' || zone === 'PastTarget' ? (standing?.pastBy && { line: zone === 'PastStop' ? ('Stop' as const) : ('Target' as const), dollars: standing.pastBy.dollars }) : undefined;
+  const tradePnl = session.tradePnl.kind === 'Value' ? session.tradePnl.value : undefined;
+  const hasStrike = instrumentsOf(view).contract !== undefined;
+  const keyEntries: PlotKeyEntry[] = [
+    ...(price === undefined ? [{ kind: 'NoMark' as const, label: 'No Mark' }] : [{ kind: 'Mark' as const, label: 'Mark' }]),
+    ...(tradePnl && tradePnl.compare(ZERO) !== 0 ? [{ kind: 'TradePnl' as const, label: tradePnl.compare(ZERO) > 0 ? 'Open profit' : 'Open loss' }] : []),
+    ...(banked ? [{ kind: 'Banked' as const, label: session.realizedPnl.compare(ZERO) > 0 ? 'Banked' : 'Realized loss' }] : []),
+    { kind: 'BreakEven', label: 'Break-even' },
+    ...(f?.outcomes?.atStop?.kind === 'Value' ? [{ kind: 'Stop' as const, label: 'At Stop' }] : []),
+    ...(f?.outcomes?.atTarget?.kind === 'Value' ? [{ kind: 'Target' as const, label: 'At Target' }] : []),
+    ...(f?.outcomes?.atWorstCase?.kind === 'Value' ? [{ kind: 'WorstCase' as const, label: 'At Worst case' }] : []),
+    ...(f?.outcomes?.atMaxReward?.kind === 'Value' ? [{ kind: 'MaxReward' as const, label: 'At Max reward' }] : []),
+    ...(hasStrike ? [{ kind: 'Strike' as const, label: 'Strike' }] : []),
+    ...((session.markers ?? []).some((m) => m.effect !== 'Opened') ? [{ kind: 'Execution' as const, label: 'Execution' }] : []),
+  ];
   return {
+    keyEntries,
     // A weekday count from the first session, so a holiday's slot stays blank (A256).
     slot: weekdaysThrough(view.sessions[0]!.date, session.date) - 1,
     dateLabel: shortDate(session.date),
@@ -108,8 +123,7 @@ export function plotBaseOf(view: TradeReplayView): ReplayProps['plotBase'] {
   return {
     priceTitle: `${underlying} price · one Mark per session`,
     priceShortTitle: `${underlying} price`,
-    pnlTitle: 'Trade P&L · dollars for the whole Position, between the result at the Stop and at the Target',
-    pnlShortTitle: 'Trade P&L',
+    pnlTitle: 'Trade P&L',
     accessibleName: `${underlying} Marks and Trade P&L by session`,
     describedBy: `replay-table-${view.tradeId}`,
     anchors: {
@@ -119,6 +133,6 @@ export function plotBaseOf(view: TradeReplayView): ReplayProps['plotBase'] {
       planAtTarget: plan ? labelledValue(plan.atTarget, 'Target') : null,
     },
     // To the contract's expiration; a stock Trade's axis ends at its last session.
-    axis: contract && first ? { slots: weekdaysThrough(first, contract.expiration), endLabel: shortDate(contract.expiration) } : { slots: last ? weekdaysThrough(first!, last) : 0, endLabel: last ? shortDate(last) : '' },
+    axis: contract && first ? { slots: weekdaysThrough(first, contract.expiration), startLabel: shortDate(first), endLabel: `Expires ${shortDate(contract.expiration)}` } : { slots: last ? weekdaysThrough(first!, last) : 0, ...(first && { startLabel: shortDate(first) }) },
   };
 }
