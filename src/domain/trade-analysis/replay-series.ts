@@ -3,7 +3,7 @@ import { instrumentKey, type Instrument } from '../instrument/index.ts';
 import type { Instant } from '../time/index.ts';
 import type { CalculationResult } from '../calculation-result/index.ts';
 import { parseDecimal, Rational } from '../values/index.ts';
-import { evaluate, oddsOf, type ObservationFrame, type RewardRiskOdds, type TradeEvaluation } from './evaluate.ts';
+import { evaluate, oddsOf, type ConditionReading, type ConditionStatus, type ObservationFrame, type RewardRiskOdds, type TradeEvaluation } from './evaluate.ts';
 import type { ConditionBasis, PlanBaseline } from './plan.ts';
 import { derive, type DerivedTradeState, type IncoherentFact, type TradeAnalysisRecord } from './derive.ts';
 
@@ -188,6 +188,9 @@ export function replay(input: ReplayInput): ReplayResult {
   const lastReward: LastFigure = {};
   // Each Instrument's latest Available Mark so far: a gap is skipped, never filled.
   const lastMark = new Map<string, { readonly date: string; readonly price: Rational }>();
+  // Each role's crossings so far (A271); the first session has no session before it, so no gap.
+  const stopCrossings: RoleCrossingState = { previousRead: true, conditions: new Map() };
+  const targetCrossings: RoleCrossingState = { previousRead: true, conditions: new Map() };
   const sessions = input.sessions.map((session, index): ReplayedSession => {
     // The Position at the session's close, valued with that session's own Marks (A211).
     const state = derive({ record: input.record, cutoff: session.closeInstant, valuationDate: session.tradingDate });
@@ -219,10 +222,63 @@ export function replay(input: ReplayInput): ReplayResult {
       figures: figuresOf(evaluation, openPnlOf(tradePnl, state.realizedToDate)),
       ...(riskChange && { riskChange }),
       ...(rewardChange && { rewardChange }),
+      crossings: {
+        stop: crossingsOf(evaluation.conditions, 'Stop', session.tradingDate, stopCrossings),
+        target: crossingsOf(evaluation.conditions, 'Target', session.tradingDate, targetCrossings),
+      },
     };
   });
   const { oneR, originalPlannedReward, rewardRiskRatio } = whole.baseline;
   return { kind: 'Replayed', sessions, plan: { atStop: ZERO.sub(oneR), atTarget: originalPlannedReward, rewardRisk: rewardRiskRatio, odds: oddsOf(oneR, originalPlannedReward), terms } };
+}
+
+// A271: what a role's crossings remember between sessions: its first crossing, the run it is in, and whether the session before had
+// a reading for it.
+interface CrossingState {
+  first?: ReplayCrossingDate;
+  run?: ReplayCrossingDate;
+  previousRead: boolean;
+}
+
+// A271, A110: a condition's own reading, or while only the contract's Mark is missing its Underlying reading; undefined with none.
+function statusOf(condition: ConditionStatus): ConditionReading['status'] | undefined {
+  return condition.result.kind === 'Value' ? condition.result.value.status : condition.underlyingReading?.status;
+}
+
+// A271: a role's state, with each of its conditions' own.
+interface RoleCrossingState extends CrossingState {
+  readonly conditions: Map<string, CrossingState>;
+}
+
+// A271: one session's reading moves a state on: crossed starts a run (and the first crossing) if none is held, Active ends the run,
+// and no reading changes neither. `since` is given only on a session where it is crossed.
+function advance(state: CrossingState, reading: 'crossed' | 'active' | undefined, date: string): ReplayCrossingDates {
+  if (reading === 'crossed') {
+    state.run ??= { date, afterGap: !state.previousRead };
+    state.first ??= { date, afterGap: !state.previousRead };
+  } else if (reading === 'active') {
+    state.run = undefined;
+  }
+  state.previousRead = reading !== undefined;
+  return { ...(state.first && { first: state.first }), ...(reading === 'crossed' && state.run && { since: state.run }) };
+}
+
+const readingOf = (condition: ConditionStatus): 'crossed' | 'active' | undefined => {
+  const status = statusOf(condition);
+  if (status === undefined) return undefined;
+  return status === 'Active' ? 'active' : 'crossed';
+};
+
+// A271: a role is crossed in this session when any of its conditions is, by its own reading.
+function crossingsOf(conditions: readonly ConditionStatus[], role: 'Stop' | 'Target', date: string, state: RoleCrossingState): ReplayRoleCrossings {
+  const own = conditions.filter((c) => c.role === role);
+  const readings = own.map(readingOf);
+  for (const c of own) if (!state.conditions.has(c.id)) state.conditions.set(c.id, { previousRead: true });
+  const perCondition = [...state.conditions].map(([id, s]) => ({ id, ...advance(s, readings[own.findIndex((c) => c.id === id)], date) }));
+  let reading: 'crossed' | 'active' | undefined;
+  if (readings.includes('crossed')) reading = 'crossed';
+  else if (readings.includes('active')) reading = 'active';
+  return { ...advance(state, reading, date), conditions: perCondition };
 }
 
 // A269: the confirmed Plan's legs, and every Stop and Target with the planned result it carries in the Plan Baseline.
