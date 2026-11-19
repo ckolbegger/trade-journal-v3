@@ -1,5 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen, within } from '@testing-library/react';
+import { readFileSync } from 'node:fs';
+import postcss from 'postcss';
 import { afterEach, describe, expect, it } from 'vitest';
 import { Readout } from './readout.tsx';
 import type { ReplayFrameSession } from './replay.types.ts';
@@ -106,7 +108,16 @@ describe('Replay frame: the readout (W43)', () => {
     const table = screen.getByRole('table');
     const cells = within(table).getAllByRole('cell');
     expect(cells.length).toBeGreaterThan(0);
-    for (const cell of cells) expect(window.getComputedStyle(cell).whiteSpace).toBe('nowrap');
+    // A278: the stylesheet rule on the grid's td is the one source of the no-break.
+    const rules: Record<string, string> = {};
+    postcss.parse(readFileSync('src/ui/cockpit/styles/replay-readout.css', 'utf8')).walkRules((rule) => {
+      if (rule.selectors.some((sel) => sel.replace(/\s+/g, ' ') === '.replay-stake-grid td')) rule.walkDecls((d) => void (rules[d.prop] = d.value));
+    });
+    expect(rules['white-space']).toBe('nowrap');
+    for (const cell of cells) {
+      expect(cell.tagName).toBe('TD');
+      expect(cell.closest('table')!.classList.contains('replay-stake-grid')).toBe(true);
+    }
     // The sign and the amount are one piece of text, so no line break can fall between them.
     expect(within(table).getByText('−$644.00').getAttribute('data-kind')).toBe('Figure');
   });

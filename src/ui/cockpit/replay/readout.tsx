@@ -11,9 +11,6 @@ function shown(value: ReadoutValue) {
   );
 }
 
-// A278: a cell is one figure and never breaks across lines, its sign included.
-const UNBREAKABLE = { whiteSpace: 'nowrap' } as const;
-
 function StakeGridTable({ grid }: { grid: StakeGrid }) {
   return (
     <table className="replay-stake-grid">
@@ -48,16 +45,16 @@ function StakeGridTable({ grid }: { grid: StakeGrid }) {
           {group.rows.map((row) => (
             <tr key={row.label} data-row={row.label} title={row.term}>
               <th scope="row">{row.label}</th>
-              <td className="replay-value" data-kind={row.fromHere.kind} style={UNBREAKABLE} colSpan={row.r ? 1 : 3}>
+              <td className="replay-value" data-kind={row.fromHere.kind} colSpan={row.r ? 1 : 3}>
                 {shown(row.fromHere)}
               </td>
               {row.r && (
-                <td className="replay-r" data-kind={row.r.kind} style={UNBREAKABLE}>
+                <td className="replay-r" data-kind={row.r.kind}>
                   {shown(row.r)}
                 </td>
               )}
               {row.pnlIfHit && (
-                <td className="replay-pnl-value" data-kind={row.pnlIfHit.kind} style={UNBREAKABLE}>
+                <td className="replay-pnl-value" data-kind={row.pnlIfHit.kind}>
                   {shown(row.pnlIfHit)}
                 </td>
               )}
