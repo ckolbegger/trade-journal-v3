@@ -325,7 +325,7 @@ test.describe('B9AR.7 Responsive, touch, accessible and offline', () => {
     });
   }
 
-  test('should leave the slider’s value uncovered by a hover band for DALE from Trade Detail at 320', async ({ profile }) => {
+  test('should leave the slider’s value uncovered by any chart element for DALE from Trade Detail at 320', async ({ profile }) => {
     test.setTimeout(420_000);
     const built = await build(profile, DALE_HOLD, closeOf('2026-11-16'), 10);
     const trade = built.trade;

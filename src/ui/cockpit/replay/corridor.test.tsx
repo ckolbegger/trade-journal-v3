@@ -527,18 +527,37 @@ describe('Corridor: the Trade P&L (W40, W41)', () => {
     }
     expect(seen).toEqual([]);
     fireEvent.pointerEnter(hits()[2]!, { pointerType: 'mouse' });
+    fireEvent.pointerMove(hits()[2]!, { pointerType: 'mouse' });
     expect(seen).toEqual([2]);
   });
 
   // T9AR.24-B5: a tap elsewhere (the Review card's Replay button) opens the chart under the finger, and the browser then
   // sends the hit under it a mouse pointerenter with no mouse behind it: that is no hover.
-  it('should not report the mouse pointerenter a browser sends under a finger just after a touch', () => {
+  // Part 2: the browser's own enter comes with no pointermove (a real mouse always moves), so a mouse hovers from its first move.
+  it('should report a mouse hover only from a real pointermove, not from the pointerenter alone, at any time after a touch', () => {
     const seen: (number | null)[] = [];
     render(<CorridorPlot {...props({ sessions: DAYS.slice(0, 4).map((_, i) => bren(i)), onHoverSession: (i) => seen.push(i) })} />);
     fireEvent.pointerDown(document.body, { pointerType: 'touch' });
     fireEvent.pointerUp(document.body, { pointerType: 'touch' });
     fireEvent.pointerEnter(hits()[0]!, { pointerType: 'mouse' });
     expect(seen).toEqual([]);
+    fireEvent.pointerMove(hits()[0]!, { pointerType: 'mouse' });
+    fireEvent.pointerMove(hits()[0]!, { pointerType: 'mouse' });
+    expect(seen).toEqual([0]);
+    fireEvent.pointerLeave(hits()[0]!, { pointerType: 'mouse' });
+    expect(seen).toEqual([0, null]);
+  });
+
+  it('should clear a mouse hover when a touch or pen taps a session', () => {
+    for (const pointerType of ['touch', 'pen']) {
+      const seen: (number | null)[] = [];
+      const { unmount } = render(<CorridorPlot {...props({ sessions: DAYS.slice(0, 4).map((_, i) => bren(i)), onHoverSession: (i) => seen.push(i) })} />);
+      fireEvent.pointerEnter(hits()[1]!, { pointerType: 'mouse' });
+      fireEvent.pointerMove(hits()[1]!, { pointerType: 'mouse' });
+      fireEvent.pointerDown(hits()[2]!, { pointerType });
+      expect(seen, pointerType).toEqual([1, null]);
+      unmount();
+    }
   });
 
   it('should not report the focus a tap on a session gives its button, but still report keyboard focus', () => {
