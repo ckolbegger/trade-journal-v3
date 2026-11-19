@@ -1,0 +1,134 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 1,
+    "total_tokens": 118537,
+    "input_tokens": 117855,
+    "output_tokens": 682,
+    "cache_read_tokens": 11648,
+    "elapsed": "36s"
+  },
+  "tool_calls": {
+    "total": 12,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 2,
+      "file_find": 1,
+      "file_read": 8
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/replay/readout.props.ts",
+      "content": "This introduces a nested ternary, which the review checklist explicitly prohibits. Use explicit branches for the figure, missing-Mark, and other-reason cases so the three display states remain easy to follow.",
+      "suggestion_code": "  let value: ReadoutValue;\n  if (text !== undefined) {\n    value = figure(text);\n  } else if (noMark) {\n    value = NO_MARK;\n  } else {\n    value = { kind: 'Unavailable', text: reason ?? '' };\n  }",
+      "existing_code": "  const value: ReadoutValue = text !== undefined ? figure(text) : noMark ? NO_MARK : { kind: 'Unavailable', text: reason ?? '' };",
+      "start_line": 70,
+      "end_line": 70,
+      "category": "maintainability",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/cockpit/replay/readout.props.test.ts",
+        "src/ui/cockpit/replay/readout.props.ts"
+      ]
+    }
+  ],
+  "session_id": "5d9e2b20-8c17-4e5b-8293-fdf22fb9bcf9",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "5d9e2b20-8c17-4e5b-8293-fdf22fb9bcf9",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "a242cc63",
+      "resolved_base": "a7fe9d086993b094b79d352416d991040353717d",
+      "resolved_head": "a242cc63c284bb164853eadf324c22bf2f680c7d",
+      "exact_range": "a7fe9d086993b094b79d352416d991040353717d..a242cc63c284bb164853eadf324c22bf2f680c7d",
+      "source_artifact_sha256": "976859f5a7752ce815538c58757a187a70f835ff3c54678ff8167115f21afdb6"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "63c0d43b245d37c2fa601fdd5364ad0a5b7bdede1e576259fe71f3d4f2783723",
+          "path": "src/ui/cockpit/replay/readout.props.test.ts",
+          "fingerprint": "208c34c16f65e9de6b32cfe7de25af7c809438976720a6dbf250099ace9effc9"
+        },
+        {
+          "item_id": "97f9f0e3c683f597aee7b0503f4803e42d85c73c0fcec512065b995b7820da16",
+          "path": "src/ui/cockpit/replay/readout.props.ts",
+          "fingerprint": "804f08042d119e00ddb294c1190c509255c883ff20367c1e4048e62a8020b5e5"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "63c0d43b245d37c2fa601fdd5364ad0a5b7bdede1e576259fe71f3d4f2783723",
+          "path": "src/ui/cockpit/replay/readout.props.test.ts",
+          "fingerprint": "208c34c16f65e9de6b32cfe7de25af7c809438976720a6dbf250099ace9effc9"
+        },
+        {
+          "item_id": "97f9f0e3c683f597aee7b0503f4803e42d85c73c0fcec512065b995b7820da16",
+          "path": "src/ui/cockpit/replay/readout.props.ts",
+          "fingerprint": "804f08042d119e00ddb294c1190c509255c883ff20367c1e4048e62a8020b5e5"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "111e8fbdd71dc4beabdf661a22e1cdc6c18bdf946dc1fcb31536364e37df1dc2",
+          "path": "evidence/D09AR/suite-runs/T9AR.24-B4-B1-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "180e0fd01e15328fca86265886082255f0dac10b5412809e2620bc45efd825c3",
+          "path": "evidence/D09AR/suite-runs/T9AR.24-B4-B1-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "22acb8d128eb7f5b2eb9dc1632067729b22a1911922b4a9c7e94279cd738bbc1",
+          "path": "evidence/D09AR/tdd-log/T9AR.24-B4-B1.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "363960854017610370558d4f6afa55d9ff1104f820f85b9d0f84b3857a2e3129",
+          "path": "evidence/D09AR/suite-runs/T9AR.24-B4-B1-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "a95db19daec8d424b6c8a75152ffc5fa8025d54512ddc3dfb20537ad3500fdb2",
+          "path": "evidence/D09AR/suite-runs/T9AR.24-B4-B1-lane.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 36152
+  }
+}

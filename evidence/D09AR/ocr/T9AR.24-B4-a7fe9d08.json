@@ -1,0 +1,165 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 1,
+    "total_tokens": 115693,
+    "input_tokens": 114808,
+    "output_tokens": 885,
+    "cache_read_tokens": 11648,
+    "elapsed": "41s"
+  },
+  "tool_calls": {
+    "total": 16,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 2,
+      "file_read": 13
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/replay/readout.props.ts",
+      "content": "This replaces every non-value Trade P\u0026L reason with “No Mark”, not just a missing Mark. For example, an AwaitingClose or SettlementDue session now loses its explanatory words in this row and incorrectly appears to have a missing Mark. The requirement says other reasons must keep their words. Restrict NO_MARK to the missing-Mark case (using the existing reason predicate) and retain headlineOf(session).reason for other non-value results; add a regression case for one of those reasons.",
+      "existing_code": "  const rows = [row('Trade P\u0026L', text !== undefined ? figure(text) : NO_MARK, changeWords(session.change))];",
+      "start_line": 66,
+      "end_line": 66,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Replay readout and session-word behavior with regression tests",
+      "files": [
+        "e2e/d9/gaps.spec.ts",
+        "e2e/d9ar/readout.spec.ts",
+        "src/ui/cockpit/replay/readout.props.test.ts",
+        "src/ui/cockpit/replay/readout.props.ts",
+        "src/ui/cockpit/replay/session-words.props.ts"
+      ]
+    }
+  ],
+  "session_id": "acfd06cc-bd19-4f4e-bdc3-54dc0da8582c",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "acfd06cc-bd19-4f4e-bdc3-54dc0da8582c",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "a7fe9d08",
+      "resolved_base": "414235031e984cdc6e70156a0971b42ddd16b1d4",
+      "resolved_head": "a7fe9d086993b094b79d352416d991040353717d",
+      "exact_range": "414235031e984cdc6e70156a0971b42ddd16b1d4..a7fe9d086993b094b79d352416d991040353717d",
+      "source_artifact_sha256": "06a159e981f8d72dfb45d21b776b39527f3492fdd6e7470b081cfa2be016f37f"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "02ef688178a59e01b4d1904319b272eae02b0d93eac4650ab9dc734486689b0d",
+          "path": "e2e/d9/gaps.spec.ts",
+          "fingerprint": "31e582b49afc2ae053941cf04d1d33bd870ed5ebeac785789963fd6199c54aa8"
+        },
+        {
+          "item_id": "1f1cde75c007ef44b7a42884ebbefdadc6bd52a3556903ee28f2f353ead37e61",
+          "path": "e2e/d9ar/readout.spec.ts",
+          "fingerprint": "c07ce6828ed38a01a49083655868359b86f1e29a6914b7d5c5c57caba278d39f"
+        },
+        {
+          "item_id": "63c0d43b245d37c2fa601fdd5364ad0a5b7bdede1e576259fe71f3d4f2783723",
+          "path": "src/ui/cockpit/replay/readout.props.test.ts",
+          "fingerprint": "56bab76c5677ddb2730c562d6f03a9afee2fafeee74d5dd2383d3027db6a0842"
+        },
+        {
+          "item_id": "97f9f0e3c683f597aee7b0503f4803e42d85c73c0fcec512065b995b7820da16",
+          "path": "src/ui/cockpit/replay/readout.props.ts",
+          "fingerprint": "970c3ca372829eac405b217b1d9f2eb6d228b203d4741c9f2065c10b993edd3e"
+        },
+        {
+          "item_id": "ee7e147832c5a7d3d16b81393835049e14ef595334d5858de78f216b61060a0e",
+          "path": "src/ui/cockpit/replay/session-words.props.ts",
+          "fingerprint": "aeda9f5cafac148c58edb4b67533850b5aed7678023bf03402e58555f532181f"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "02ef688178a59e01b4d1904319b272eae02b0d93eac4650ab9dc734486689b0d",
+          "path": "e2e/d9/gaps.spec.ts",
+          "fingerprint": "31e582b49afc2ae053941cf04d1d33bd870ed5ebeac785789963fd6199c54aa8"
+        },
+        {
+          "item_id": "1f1cde75c007ef44b7a42884ebbefdadc6bd52a3556903ee28f2f353ead37e61",
+          "path": "e2e/d9ar/readout.spec.ts",
+          "fingerprint": "c07ce6828ed38a01a49083655868359b86f1e29a6914b7d5c5c57caba278d39f"
+        },
+        {
+          "item_id": "63c0d43b245d37c2fa601fdd5364ad0a5b7bdede1e576259fe71f3d4f2783723",
+          "path": "src/ui/cockpit/replay/readout.props.test.ts",
+          "fingerprint": "56bab76c5677ddb2730c562d6f03a9afee2fafeee74d5dd2383d3027db6a0842"
+        },
+        {
+          "item_id": "97f9f0e3c683f597aee7b0503f4803e42d85c73c0fcec512065b995b7820da16",
+          "path": "src/ui/cockpit/replay/readout.props.ts",
+          "fingerprint": "970c3ca372829eac405b217b1d9f2eb6d228b203d4741c9f2065c10b993edd3e"
+        },
+        {
+          "item_id": "ee7e147832c5a7d3d16b81393835049e14ef595334d5858de78f216b61060a0e",
+          "path": "src/ui/cockpit/replay/session-words.props.ts",
+          "fingerprint": "aeda9f5cafac148c58edb4b67533850b5aed7678023bf03402e58555f532181f"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "329b90fde74516a682d1b83f125e756cf9af7f12a8abbea734971b428c03553a",
+          "path": "evidence/D09AR/suite-runs/T9AR.24-B4-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "716aeeb37f306d13fbeefb909e3458371078a372e12631f94eb436d722599acc",
+          "path": "evidence/D09AR/suite-runs/T9AR.24-B4-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "8c6619a952d69316eb2fc6961721b988068dbcc82bef4331e81e14a44c4984c3",
+          "path": "evidence/D09AR/suite-runs/T9AR.24-B4-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "9c75b30df7ffecc947a4ad0cf1b06975a26f79560fed29b89e8ba5618b73635d",
+          "path": "evidence/D09AR/tdd-log/T9AR.24-B4.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "f3f4e3e796d5805d8f9ed392870dae63c3ae9b68f6211c8dad22756aef780378",
+          "path": "evidence/D09AR/suite-runs/T9AR.24-B4-lane.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 41300
+  }
+}

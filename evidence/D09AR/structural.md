@@ -663,6 +663,46 @@ Lane BR (`d09ar/br`), base `70ce0f74`.
           - The bite fails before the new steps. Only a mutant that breaks the browser's Forward alone would prove those steps.
           - No choice-and-Intent check sits between the second Back and the Forward.
     - **Merged** B3, B3-B1 and B3-B2 (one commit), B3-F1 and B3-B3 by fast-forward. Lane RW's base `18d54158` was main's head.
+  - **T9AR.24-B4** (lane RO, from `41423503`), first commit `ab9ff604`:
+    - **Cause:** `goingGroup` in `readout.props.ts` gave the Trade P&L row the headline's reason ("Mark missing: CORV Nov 20 $80 Put, Tue Nov 10"). The top line already says "No Mark for the put on Tue Nov 10.", and that one is kept. The row now takes `NO_MARK`, the dash named "No Mark".
+    - Cases, red then green:
+      - unit, "show the dash named No Mark in the Trade P&L row, and say no Mark missing anywhere in the readout, R-CORV-D Tue 11-10";
+      - e2e on R-CORV-D Tue Nov 10: the missing Mark is said once on the replay.
+    - **Existing expected values changed:** these lines held the defect itself, and the main session accepted the change:
+      - one line in `readout.props.test.ts` ("Mark missing: BREN …" became "No Mark");
+      - `e2e/d9/gaps.spec.ts:40`, which failed after the fix.
+    - The task was sent back to change `gaps.spec.ts:40` to the dash named "No Mark", correct a stale comment in `session-words.props.ts`, and amend the commit.
+    - **Amended as `a7fe9d08`** (it replaces `ab9ff604`):
+      - `gaps.spec.ts:40` now checks the img named "No Mark" holding "—". Its red was the earlier failing run, and it is now green.
+      - The comment is corrected.
+      - Browser: `e2e/d9ar` plus `e2e/d9` `replay`, `gaps` and `responsive-a11y`: 72 passed.
+      - Lane tier `T9AR.24-B4`: unit 2463, integration 286, checks 14 of 14.
+    - **ocr** on `a7fe9d08` (`ocr/T9AR.24-B4-a7fe9d08.json`): 5 files, 1 comment.
+      - **T9AR.24-B4-B1** (Doubtful, `readout.props.ts:66`): every non-value reason gets the dash named "No Mark", so an AwaitingClose or SettlementDue session would be named wrongly. It is unreachable on the replay today. Briefed in lane RO.
+      - Reviewer's notes, for the final report:
+        - The top line words every reason once.
+        - The Review card summary (`CardFigures.tsx`) is unaffected.
+        - The new cases cover only an option's missing Mark. Nothing asserts the readout row for Acknowledged unavailable.
+        - The Journal drawer's session card titles a no-Mark session "Mark missing: …" (`journal.props.ts:174`). That is a separate surface, outside this deliverable's fix.
+    - **T9AR.24-B4-B1** `a242cc63`:
+      - The dash named "No Mark" is shown only when `isMarkLacking` holds or the Mark is Acknowledged unavailable. Other reasons keep their pre-B4 words. A direct reason-code comparison was rejected by `verify:wording`, so the code uses the existing helper.
+      - Cases:
+        - "keep the reason words, not the dash named No Mark … AwaitingClose": red, then green.
+        - "show the dash named No Mark … Acknowledged unavailable": a **first-run pass, flagged**. Mutation: the Acknowledged clause was removed, and the case failed. Restored.
+      - Lane tier `T9AR.24-B4-B1`: unit 2465, integration 286, checks 14 of 14.
+      - **ocr** on `a242cc63` (`ocr/T9AR.24-B4-B1-a242cc63.json`): 2 files, 1 comment.
+        - **T9AR.24-B4-B1-F1** (Valid, maintainability, `readout.props.ts:70`): a nested ternary. Done as `bcc2a893`:
+          - a local `tradePnlValue()` with early returns, giving the same output;
+          - replay tests: 233 green, none changed;
+          - lane tier: unit 2465, integration 286, checks 14 of 14;
+          - main's checkout was untouched;
+          - ocr (`ocr/T9AR.24-B4-B1-F1-bcc2a893.json`): **no findings**.
+    - **Merged** B4, B4-B1 and B4-B1-F1 by fast-forward. Lane RO's base `41423503` was main's head.
+        - Reviewer's notes:
+          - `isMarkLacking` is exactly MarkMissing or AcknowledgedUnavailable.
+          - The Trade P&L row's figure is the contract's own, so the Underlying's Mark cannot reach it.
+          - No reason falls to the wrong branch.
+          - The `reason ?? ''` fallback cannot run.
       - Reviewer's notes:
         - `card-figure` is a global rule, loaded app-wide, so it holds in the overlay. Its name ties it to the cards' stylesheet.
         - The dialog's name and the header's text are unchanged.
