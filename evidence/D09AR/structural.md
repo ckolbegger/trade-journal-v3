@@ -88,7 +88,8 @@ Lane DM (`d09ar/dm`), base `79b900d3`, commit `62acd165`. 8 cases: 5 red then gr
 | low | `replay-series.ts:261` | Nested ternaries (the Entry-or-conditions choice, and `side` in `against`) should be explicit branches | Doubtful, readability: T9AR.4-F1 (structural). The reviewer notes the logic reads correctly and no repo rule bans nested ternaries; made an F task for consistency with T9AR.10-F1. |
 
 - **T9AR.4-F1** (structural) The two nested ternaries in `replay-series.ts` become explicit branches; verified by the same cases passing before and after.
-  - Done: `24de6a9c`. `npx vitest run src/domain/trade-analysis`: 24 files, 255 tests passing before and after; no test changed; typecheck, tsc6, lint exit 0. Lane tier `T9AR.4-F1`: unit 2305, integration 280, checks 14 of 14.
+  - Done: `24de6a9c`. `npx vitest run src/domain/trade-analysis`: 24 files, 255 tests passing before and after; no test changed; typecheck, tsc6, lint exit 0. Lane tier `T9AR.4-F1`: unit 2305, integration 280, checks 14 of 14. ocr on `24de6a9c` (`ocr/T9AR.4-F1-24de6a9c.json`): 1 file, 0 comments. **No findings.**
+- Rebased onto `13f6a618` (only evidence and plan files had changed, none of lane DM's; no rerun). Merged by fast-forward: `955e3568` (T9AR.4), `70ddec48` (F1).
 
 ## T9AR.7 The Replay overlay
 
