@@ -1,0 +1,187 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 6 selected item(s).",
+  "summary": {
+    "files_reviewed": 6,
+    "comments": 1,
+    "total_tokens": 150865,
+    "input_tokens": 149327,
+    "output_tokens": 1538,
+    "cache_read_tokens": 22912,
+    "elapsed": "1m7s"
+  },
+  "tool_calls": {
+    "total": 20,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 4,
+      "file_read": 15
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "e2e/d9ar/review.spec.ts",
+      "content": "This exercises Back to Price History followed by Forward to Review, rather than the Forward-to-Price-History/Back-to-Review scenario named by the test. Clicking “Back to the Review” pushes a new entry, so the navigation directions are reversed. To cover the intended regression, return from the first Price History visit with `page.goBack()`, then use `page.goForward()` to revisit Price History and `page.goBack()` to return, asserting the draft after each return.",
+      "existing_code": "    await page.goBack();\n    await expect(detail.heading(page, 'BREN')).toBeVisible(READY);\n    await page.goForward();",
+      "start_line": 129,
+      "end_line": 131,
+      "category": "test",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Review action drafting and editing flow with UI and end-to-end tests",
+      "files": [
+        "e2e/d9ar/review.spec.ts",
+        "src/ui/screens/ActionForm.tsx",
+        "src/ui/screens/ReviewCard.test.tsx",
+        "src/ui/screens/ReviewCard.tsx",
+        "src/ui/screens/ReviewView.tsx",
+        "src/ui/screens/action-draft.ts"
+      ]
+    }
+  ],
+  "session_id": "7fef744e-0b62-4b71-9242-f348fce98f02",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "7fef744e-0b62-4b71-9242-f348fce98f02",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "53ba488a",
+      "requested_head": "c0b48dad",
+      "resolved_base": "53ba488ab6050b07f1503e0ad7de5af77a2d70fe",
+      "resolved_head": "c0b48dad6f297a2850c867abf5b0bf9fe58d089b",
+      "exact_range": "53ba488ab6050b07f1503e0ad7de5af77a2d70fe..c0b48dad6f297a2850c867abf5b0bf9fe58d089b",
+      "source_artifact_sha256": "915be89a54ebeb33ef0c05274cd411215ebb5b3677942c2390415b4f3fb6a8e8"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "1dbde88c6725d05650fb2063254f42ad12a901f378aa609cfe3a4c2c69f6ba94",
+          "path": "e2e/d9ar/review.spec.ts",
+          "fingerprint": "21132f623cf58457a9d7b1a8ecfd2967104547a6acfb68d71bd7ceb1ab2b177e"
+        },
+        {
+          "item_id": "2aa0341444a1921ffd05d33525a1cd8b52950e6319bf29824d81bde09d8b550f",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "42e3f6fe06f90f1985ececb8a2b37fc63ec46ab5f16b3d58f697d7cd1c515bf0"
+        },
+        {
+          "item_id": "5b385c845542d6ccb7cd429923948b5ea16275e021991c866647b870c23c4c76",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "d1f226f422a380155756a11f5eda46c6701c5a4734dcf85941a5718e31cbad97"
+        },
+        {
+          "item_id": "86402b846a7b1ca78b6e8b31050858e2273e229772b422189f4243f77cfcb88c",
+          "path": "src/ui/screens/ActionForm.tsx",
+          "fingerprint": "b10f69d51afc5104989cdb654d00b4a6cd6c4eebf41ade289f762cc7d05a944d"
+        },
+        {
+          "item_id": "86bd057eaa6ea9a77e8bdf3197d497830977b494dcfe642b4961ac0a7269dbf8",
+          "path": "src/ui/screens/ReviewCard.test.tsx",
+          "fingerprint": "1e5a65af6c89ead970957a70a127a147ffe2bdf79662f6b36fce8f42b996808e"
+        },
+        {
+          "item_id": "c6ce3865a0028b436806f3105f290e017e17c8563ec532dd3a4f20506e4906c7",
+          "path": "src/ui/screens/action-draft.ts",
+          "fingerprint": "08d6d9643d9ffda14f180dc2ae6a413b34218e89094b0ead7f6099700c810152"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "1dbde88c6725d05650fb2063254f42ad12a901f378aa609cfe3a4c2c69f6ba94",
+          "path": "e2e/d9ar/review.spec.ts",
+          "fingerprint": "21132f623cf58457a9d7b1a8ecfd2967104547a6acfb68d71bd7ceb1ab2b177e"
+        },
+        {
+          "item_id": "2aa0341444a1921ffd05d33525a1cd8b52950e6319bf29824d81bde09d8b550f",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "42e3f6fe06f90f1985ececb8a2b37fc63ec46ab5f16b3d58f697d7cd1c515bf0"
+        },
+        {
+          "item_id": "5b385c845542d6ccb7cd429923948b5ea16275e021991c866647b870c23c4c76",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "d1f226f422a380155756a11f5eda46c6701c5a4734dcf85941a5718e31cbad97"
+        },
+        {
+          "item_id": "86402b846a7b1ca78b6e8b31050858e2273e229772b422189f4243f77cfcb88c",
+          "path": "src/ui/screens/ActionForm.tsx",
+          "fingerprint": "b10f69d51afc5104989cdb654d00b4a6cd6c4eebf41ade289f762cc7d05a944d"
+        },
+        {
+          "item_id": "86bd057eaa6ea9a77e8bdf3197d497830977b494dcfe642b4961ac0a7269dbf8",
+          "path": "src/ui/screens/ReviewCard.test.tsx",
+          "fingerprint": "1e5a65af6c89ead970957a70a127a147ffe2bdf79662f6b36fce8f42b996808e"
+        },
+        {
+          "item_id": "c6ce3865a0028b436806f3105f290e017e17c8563ec532dd3a4f20506e4906c7",
+          "path": "src/ui/screens/action-draft.ts",
+          "fingerprint": "08d6d9643d9ffda14f180dc2ae6a413b34218e89094b0ead7f6099700c810152"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "00c85c86f87347b51113b85f9e242bea21b476ee56b84c5852385677443bd149",
+          "path": "evidence/D09AR/tdd-log/T9AR.24-B3-F1.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "0aa15ee1455bcc574bad80896cba1890f87da5b6f4450a112a1f3cf8e94f105a",
+          "path": "evidence/D09AR/suite-runs/T9AR.24-B3-fixes-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "7843356323e6efa3a042b463ecfd04e08cfc8f1189b70a09883e5c2a07619b0a",
+          "path": "evidence/D09AR/suite-runs/T9AR.24-B3-fixes-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "98ddcf68ea0f6f9f86963f083aad2054d0f656d202faabe6e153fe640f49f1fe",
+          "path": "evidence/D09AR/tdd-log/T9AR.24-B3-B1.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "cd8862c80bbb9d30e20f85860f7526fb1ecfd4a12a780fd8adec252755419e3e",
+          "path": "evidence/D09AR/suite-runs/T9AR.24-B3-fixes-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "f48925d454a72f3c908b98fb35b9231e7530f8770552b96f22f99003697f7733",
+          "path": "evidence/D09AR/suite-runs/T9AR.24-B3-fixes-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "f57d2f84963cbb6f4a71720e51557ceff89a6f3a4294520e79c707cdd454cee8",
+          "path": "evidence/D09AR/tdd-log/T9AR.24-B3-B2.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 66636
+  }
+}

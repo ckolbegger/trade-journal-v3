@@ -1,0 +1,194 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 6 selected item(s).",
+  "summary": {
+    "files_reviewed": 6,
+    "comments": 3,
+    "total_tokens": 140237,
+    "input_tokens": 137744,
+    "output_tokens": 2493,
+    "cache_read_tokens": 18048,
+    "elapsed": "1m30s"
+  },
+  "tool_calls": {
+    "total": 14,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 2,
+      "file_read": 10
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/ReviewCard.tsx",
+      "content": "This handler also snapshots drafts on Ctrl/Cmd-click, when React Router leaves the current Review mounted and opens Price History in another tab. Saving or discarding the Action afterward only removes the live draft; the set-aside snapshot remains. Reopening the same Review via a replay=open URL can therefore resurrect obsolete input after Save or abandonment. Snapshot only for an actual same-tab navigation, and invalidate any retained snapshot when its Action is saved or abandoned. Add a modified-click regression test.",
+      "existing_code": "          \u003cReplayDrawer replay={trade.replay} {...(params.get('session') !== null \u0026\u0026 { initialSession: params.get('session')! })} onSessionChange={onSliderMove} links={({ date }) =\u003e \u003cLink to={`/trades/${trade.tradeId}?drawer=price-history\u0026session=${date}\u0026from=review`} onClick={setDraftsAside}\u003ePrice History\u003c/Link\u003e} /\u003e",
+      "start_line": 406,
+      "end_line": 406,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/ReviewView.tsx",
+      "content": "This state initializer mutates a module-level cache during rendering, contrary to the render-side-effect requirement. React can replay or abandon a render, but clearing this map cannot be rolled back. Move draft invalidation to a committed navigation lifecycle or an effect, coordinating it with draft consumption so a normal Review still cannot restore a stale draft.",
+      "existing_code": "  useState(() =\u003e {\n    if (params.get('replay') !== 'open') discardDraftsSetAside();\n  });",
+      "start_line": 269,
+      "end_line": 271,
+      "category": "maintainability",
+      "severity": "low"
+    },
+    {
+      "path": "src/ui/screens/ActionForm.tsx",
+      "content": "The snapshot is consumed on the first return, but it is only recreated by clicking the Price History link. After a normal round trip, using browser Forward to revisit Price History unmounts the form and clears its live draft without recreating the snapshot; browser Back then restores Hold/blank answers instead of the started Action. Preserve the draft across history-driven departures to Price History as well, while still invalidating it on Save or unrelated departures, and add a Back → Forward → Back regression test.",
+      "existing_code": "  useEffect(() =\u003e dropDraftSetAside(key), [key]);",
+      "start_line": 93,
+      "end_line": 93,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Action draft handling and review workflow with unit and end-to-end coverage",
+      "files": [
+        "e2e/d9ar/review.spec.ts",
+        "src/ui/screens/ActionForm.tsx",
+        "src/ui/screens/ReviewCard.test.tsx",
+        "src/ui/screens/ReviewCard.tsx",
+        "src/ui/screens/ReviewView.tsx",
+        "src/ui/screens/action-draft.ts"
+      ]
+    }
+  ],
+  "session_id": "35373ef3-1258-4afa-b1d1-2312cfe7140f",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "35373ef3-1258-4afa-b1d1-2312cfe7140f",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "53ba488a",
+      "resolved_base": "18d54158edf0b07d5544cc48121ab9bac298d948",
+      "resolved_head": "53ba488ab6050b07f1503e0ad7de5af77a2d70fe",
+      "exact_range": "18d54158edf0b07d5544cc48121ab9bac298d948..53ba488ab6050b07f1503e0ad7de5af77a2d70fe",
+      "source_artifact_sha256": "5c3e5437ad0da347d18cfc4c263d537c6b8ecc9a0cc0bbd63ac6c99551665dac"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "28d9dac30140868b5ff82f3128fe52a527534ffce26da1ec10da0741844bd9af",
+          "path": "src/ui/screens/ActionForm.tsx",
+          "fingerprint": "7e9a203a985bcc22491e141ee82cf729f74b335dbba93cfa9febaecd8b1255cd"
+        },
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "068ed93837ba1e0195fecb07a3ad0910cea8cfcce2e8e2e25e6106512523ea04"
+        },
+        {
+          "item_id": "716444d2ad72532ed3fc5a2150f1ae6550fc8f3a369807dee2eea4e94b5f33df",
+          "path": "src/ui/screens/action-draft.ts",
+          "fingerprint": "cbd8081991d51eb3037080a30747a6188f5cea193230ce59ac48c9678e361e4a"
+        },
+        {
+          "item_id": "a83706f3444e16c14ac613c874f7293d7adce6354226bde7d7b9b892fce05701",
+          "path": "src/ui/screens/ReviewCard.test.tsx",
+          "fingerprint": "f0dfeb5e6451eb8cee6f0c2f13a6f9d59dedc0de2a3f8692e6028db35dbd7419"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "8bbb1ff31fdb6a207f69b00a54ed5620436512865744cdca2798658ae3ef421e"
+        },
+        {
+          "item_id": "f7406ef2881011b62532c827cd87807e71f1ffb772c241794158f993a5a0fd38",
+          "path": "e2e/d9ar/review.spec.ts",
+          "fingerprint": "efc31953c4911886b2a2696ceba8f879f3d0a5c671145783775529ddd364ec88"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "28d9dac30140868b5ff82f3128fe52a527534ffce26da1ec10da0741844bd9af",
+          "path": "src/ui/screens/ActionForm.tsx",
+          "fingerprint": "7e9a203a985bcc22491e141ee82cf729f74b335dbba93cfa9febaecd8b1255cd"
+        },
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "068ed93837ba1e0195fecb07a3ad0910cea8cfcce2e8e2e25e6106512523ea04"
+        },
+        {
+          "item_id": "716444d2ad72532ed3fc5a2150f1ae6550fc8f3a369807dee2eea4e94b5f33df",
+          "path": "src/ui/screens/action-draft.ts",
+          "fingerprint": "cbd8081991d51eb3037080a30747a6188f5cea193230ce59ac48c9678e361e4a"
+        },
+        {
+          "item_id": "a83706f3444e16c14ac613c874f7293d7adce6354226bde7d7b9b892fce05701",
+          "path": "src/ui/screens/ReviewCard.test.tsx",
+          "fingerprint": "f0dfeb5e6451eb8cee6f0c2f13a6f9d59dedc0de2a3f8692e6028db35dbd7419"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "8bbb1ff31fdb6a207f69b00a54ed5620436512865744cdca2798658ae3ef421e"
+        },
+        {
+          "item_id": "f7406ef2881011b62532c827cd87807e71f1ffb772c241794158f993a5a0fd38",
+          "path": "e2e/d9ar/review.spec.ts",
+          "fingerprint": "efc31953c4911886b2a2696ceba8f879f3d0a5c671145783775529ddd364ec88"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "5f38d808cdd6b647c30476ae1c3ccdeb92509892f40d22224c0baea542e78128",
+          "path": "evidence/D09AR/suite-runs/T9AR.24-B3-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "709b204795ec120f25f944657f716f56ccc87df4598026f1bda8994b000a985d",
+          "path": "evidence/D09AR/tdd-log/T9AR.24-B3.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "b9c2c0995f4e481b6420fc17c11bbb7c7b5418cde182e3bd32358133f88dc089",
+          "path": "evidence/D09AR/suite-runs/T9AR.24-B3-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "bce2db6890bcbc0a87d982e7d09573529380eb3941a54f3707be403274975af3",
+          "path": "evidence/D09AR/suite-runs/T9AR.24-B3-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "d80098c5c9958373064d1395adeb732aab3d5fc0d4671a381c25898cc2c196f9",
+          "path": "evidence/D09AR/suite-runs/T9AR.24-B3-integration.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 89581
+  }
+}

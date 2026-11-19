@@ -610,6 +610,59 @@ Lane BR (`d09ar/br`), base `70ce0f74`.
         - lane tier unit 2459, integration 286, checks 14 of 14;
         - ocr (`ocr/T9AR.24-B2-F1-096c855b.json`): **no findings**.
       - **Merged:** rebased onto `bc683ada` (evidence and plan only) and fast-forwarded. B2 is `825dd738`, F1 `c354ff33`.
+  - **T9AR.24-B3** `53ba488a` (lane RW, from `18d54158`):
+    - **Cause:** the Action form's values lived only in its own state. The Price History link leaves `/review`, so the Review unmounts and "Back to the Review" reads it afresh.
+    - **Fix:**
+      - a new in-memory holder, `src/ui/screens/action-draft.ts`;
+      - `ActionForm.tsx` reports its draft, and starts from a set-aside draft for the same Review date and Trade;
+      - `ReviewCard.tsx`'s Price History link sets drafts aside on click;
+      - `ReviewView.tsx` discards a set-aside draft when the address lacks `replay=open`.
+      - The trip itself records nothing.
+    - **Cases:**
+      - E2e "restore a started Action on each card after the Price History round trip, and save exactly it with one press" (BREN, then AXIO): red, Exit unchecked; then green.
+      - Unit "keep a started Action when the Review is left for Price History …": red, then green.
+      - Unit "not bring a started Action back when the Review was left some other way": a **first-run pass, flagged**. Mutation: set aside on every report, with the discard disabled; it failed. Restored.
+    - **Lines changed:** `ActionForm.tsx`'s five `useState` initialisers read the started draft first, and a reporting effect is added.
+    - **Limit:** a full reload on the way back loses the draft (in memory).
+    - **Browser:**
+      - `e2e/d9ar/review.spec.ts`: 3 passed.
+      - Review specs in `e2e/d9`, `e2e/d7` and `e2e/d4`: 14 passed.
+      - Not run: the other `e2e/d7` and `e2e/d4` Review specs. The full run after the last fix covers them.
+    - **Lane tier** `T9AR.24-B3`: unit 2461, integration 286, checks 14 of 14.
+    - **ocr** on `53ba488a` (`ocr/T9AR.24-B3-53ba488a.json`): 6 files, 3 comments. All three became tasks, briefed in lane RW:
+      - **T9AR.24-B3-B1** (Valid, `ReviewCard.tsx:406`): a Ctrl or Cmd click on Price History sets drafts aside while the Review stays mounted, so a stale snapshot can return after a Save.
+      - **T9AR.24-B3-B2** (Valid, `ActionForm.tsx:93`): after a round trip, Forward then Back loses the started Action, because only the click makes a snapshot.
+      - **T9AR.24-B3-F1** (Valid, maintainability, `ReviewView.tsx:269`): a module-level map is cleared during render.
+    - Reviewer's notes:
+      - No leak to the wrong card, Trade or date.
+      - One card at a time still holds.
+      - No reporting loop.
+      - The holder has no test reset, so order dependence between tests is possible.
+    - **T9AR.24-B3-B1 and B2** `3fc56da6`, one change:
+      - The click handler is gone. A form that unmounts while the location is the Review's Price History page (`drawer=price-history` and `from=review`, read from the router's `UNSAFE_NavigationContext`) sets its draft aside.
+      - A form takes the snapshot only on a `replay=open` address. `resetDrafts()` is called in `ReviewCard.test.tsx`'s `beforeEach`.
+      - B1's case, "show the saved Action, not an earlier draft, after a Ctrl click on Price History, a Save, and a switch to another card and back": the first red was a test fault, then a valid red (the stale draft's textarea present), then green.
+      - B2's e2e case, "keep a started Action when the browser goes Forward to Price History and Back again after a round trip": a **first-run pass, flagged**, since B1's change covers it. Mutation: `from === 'review'` changed to `'nope'` failed ("after the round trip: Exit"). Restored.
+    - **T9AR.24-B3-F1** `c0b48dad`: the clear runs in a mount effect keyed on a constant read from `replay=open`. Tests are unchanged.
+    - Browser: `e2e/d9ar/review.spec.ts` and `e2e/d9/review.spec.ts` 6 passed; `e2e/d7/review-expiration` and `e2e/d4/review` 2 passed.
+    - Lane tier `T9AR.24-B3-fixes`: unit 2462, integration 286, checks 14 of 14.
+    - **ocr** on `53ba488a..c0b48dad` (`ocr/T9AR.24-B3-fixes-c0b48dad.json`): 6 files, 1 comment. This is round 2 of B3's bug tasks.
+      - **T9AR.24-B3-B3** (Valid, low, test; `review.spec.ts:129-131`): the Forward-and-Back case does Back, then Forward, so the leg its title names is not exercised. Briefed in lane RW.
+      - Reviewer's notes, for the final report:
+        - `UNSAFE_NavigationContext.navigator.location` works with `BrowserRouter` and `MemoryRouter`. Under a data router (`createBrowserRouter`) it is undefined, and the draft's survival would stop silently. Nothing uses data mode today.
+        - Cleanup order is safe.
+        - No wrong restore was found; drafts are keyed by date and Trade.
+        - The mount effect cannot clear a draft the same mount reads.
+    - **T9AR.24-B3-B3** `50ba4feb` (test only; `git diff -- src` empty):
+      - The case now goes: round trip by the links; browser Back twice to the first Review entry; Forward to Price History; Back to the Review; then asserts.
+      - Bite: `'review'` changed to `'reviewX'` in `setDraftAsideOnTrip`. It failed at the first check, after the link round trip. One check serves both paths, so the new leg cannot fail alone. Restored.
+      - Case: 1 passed. Lane tier `T9AR.24-B3-B3`: unit 2462, integration 286, checks 14 of 14.
+      - **ocr** on `50ba4feb` (`ocr/T9AR.24-B3-B3-50ba4feb.json`, round 3 of B3's chain): **no findings**.
+        - Reviewer's notes, for the final report:
+          - The steps match the title, and the waits are right.
+          - The bite fails before the new steps. Only a mutant that breaks the browser's Forward alone would prove those steps.
+          - No choice-and-Intent check sits between the second Back and the Forward.
+    - **Merged** B3, B3-B1 and B3-B2 (one commit), B3-F1 and B3-B3 by fast-forward. Lane RW's base `18d54158` was main's head.
       - Reviewer's notes:
         - `card-figure` is a global rule, loaded app-wide, so it holds in the overlay. Its name ties it to the cards' stylesheet.
         - The dialog's name and the header's text are unchanged.
