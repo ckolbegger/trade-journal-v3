@@ -402,7 +402,7 @@ function CardBody({ facade, trade, progress, name, advance, go, marks, held, onR
       {trade.replay && replayOpen && (
         <ReplayOverlay {...overlayWordsOf(trade.underlying, trade.replay)} onClose={closeReplay}>
           {/* P129: the one link out; the address carries the drawer, the session and the way back. */}
-          <ReplayDrawer replay={trade.replay} {...(params.get('session') !== null && { initialSession: params.get('session')! })} onSessionChange={onSliderMove} links={({ date }) => <Link to={`/trades/${trade.tradeId}?drawer=price-history&session=${date}&from=review`}>Price History</Link>} />
+          <ReplayDrawer replay={trade.replay} {...(params.get('session') !== null && { initialSession: params.get('session')! })} onSessionChange={onSliderMove} links={({ date }) => <p className="replay-links"><Link className="pill secondary" to={`/trades/${trade.tradeId}?drawer=price-history&session=${date}&from=review`}>Price History</Link></p>} />
         </ReplayOverlay>
       )}
     </section>

@@ -325,6 +325,26 @@ test.describe('B9AR.7 Responsive, touch, accessible and offline', () => {
     });
   }
 
+  // T9AR.24-B9 (critic-1 defect 9): the Review overlay's Price History link is a touch target, at least 44 pixels high at 375 and at 320.
+  for (const width of [375, 320]) {
+    test(`should make the Review overlay's Price History link at least 44 pixels high at ${width}`, async ({ profile }) => {
+      test.setTimeout(420_000);
+      const built = await buildReview(profile, [BREN]);
+      const trade = built.trades[0]!;
+      await built.context.close();
+      const context = await launchTouchAt(profile, closeOf('2026-11-16'), width);
+      const page = await firstPage(context);
+      await page.goto('/');
+      await setViewport(page, width, 667);
+      await openReview(page);
+      await reachCard(page, trade);
+      await cardReplayButton(page, trade).tap();
+      await expect(sliderValue(replay(page))).toHaveText('Mon Nov 16 · 11 of 11');
+      await expectTall(replay(page).getByRole('link', { name: 'Price History' }), 'the Review overlay’s Price History link');
+      await context.close();
+    });
+  }
+
   test('should leave the slider’s value uncovered by any chart element for DALE from Trade Detail at 320', async ({ profile }) => {
     test.setTimeout(420_000);
     const built = await build(profile, DALE_HOLD, closeOf('2026-11-16'), 10);
