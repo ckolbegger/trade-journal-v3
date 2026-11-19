@@ -498,6 +498,19 @@ describe('replay.props: what the plot draws of a session (W39 to W41, W44)', () 
     expect(two).not.toHaveProperty('stake');
   });
 
+  // T9.19-B3: each session's own Worst case and Max reward, so the chart can step them where the Position changes.
+  it('should give the plot each session its own Worst case, a loss before the sale and a gain from it', () => {
+    const at = (date: string, worst: number, max: number) =>
+      withMarks(session({ date, held: 4, pnl: 100, outcomes: { atStop: value(usd(-324)), atTarget: value(usd(956)), atWorstCase: value(usd(worst)), atMaxReward: value(usd(max)) } }), [markOf(BREN_STOCK, '100.20')]);
+    const plots = replayProps(fullView([at('2026-11-02', -644, 564), at('2026-11-11', -644, 564), at('2026-11-12', 156, 564)], PLAN), { Plot }).sessions.map((s) => s.plot);
+    expect(plots.map((p) => p.worstCase)).toEqual([
+      { value: -644, label: 'Worst case −$644' },
+      { value: -644, label: 'Worst case −$644' },
+      { value: 156, label: 'Worst case +$156' },
+    ]);
+    expect(plots.map((p) => p.maxReward?.value)).toEqual([564, 564, 564]);
+  });
+
   it('should keep the reward tag after a Stop breach', () => {
     const pastStop = session({
       date: '2026-11-09',

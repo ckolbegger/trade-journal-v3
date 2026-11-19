@@ -198,6 +198,12 @@ export function PnlChart({ props, width }: { props: ReplayPlotProps; width: numb
   for (const { kind, limit, dy } of limits) {
     put(kind, `${kind}-label`, words(limit.label, limit.shortLabel), [{ x: time.right - 4, y: value.y(limit.value) + dy, anchor: 'end' }]);
   }
+  // The line itself steps with each revealed session's own figure; a session without one, or outside the range, leaves a break.
+  const limitPath = (pick: (s: PlotSession) => LabelledFigure | null): string =>
+    stepPath((s) => {
+      const f = pick(s);
+      return f && f.value >= min && f.value <= max ? f : null;
+    }, null);
   put('break-even', 'break-even-label', 'Break-even', [
     { x: time.left + 4, y: y0 - 4, anchor: 'start' },
     { x: time.left + 4, y: y0 + 12, anchor: 'start' },
@@ -251,9 +257,15 @@ export function PnlChart({ props, width }: { props: ReplayPlotProps; width: numb
           d={stepPath((s) => (kind === 'stop' ? s.resultAtStop : s.resultAtTarget), kind === 'stop' ? anchors.planAtStop : anchors.planAtTarget)}
         />
       ))}
-      {limits.map(({ kind, limit }) => (
-        <path key={kind} className={kind} d={`M${time.left} ${f1(value.y(limit.value))}H${time.right}`} />
-      ))}
+      {(
+        [
+          ['worst-case', (s: PlotSession) => s.worstCase],
+          ['max-reward', (s: PlotSession) => s.maxReward],
+        ] as const
+      ).flatMap(([kind, pick]) => {
+        const d = limitPath(pick);
+        return d ? [<path key={kind} className={kind} d={d} />] : [];
+      })}
       <path className="break-even" d={`M${time.left} ${f1(y0)}H${time.right}`} />
       {current && <path className="cursor" d={`M${f1(xc)} ${TOP}V${FLOOR}`} />}
       {current?.stake && current.tradePnl !== null && (

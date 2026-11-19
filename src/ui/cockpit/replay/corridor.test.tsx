@@ -349,6 +349,43 @@ describe('Corridor: the Trade P&L (W40, W41)', () => {
     expect(none.container.querySelectorAll('path.worst-case, path.max-reward')).toHaveLength(0);
   });
 
+  // T9.19-B3: the Worst case and the Max reward step with each revealed session's own figure and stop at the slider's session.
+  describe('the Worst case and Max reward lines per session', () => {
+    const anchors = { priceLines: [], planAtStop: fig(-324, 'Stop −$324'), planAtTarget: fig(956, 'Target +$956') };
+    const draw = (kind: string, sessions: PlotSession[], slider = sessions.length - 1) => {
+      const { container } = render(<CorridorPlot {...props({ sessions, sliderIndex: slider, anchors })} />);
+      return pnl(container).querySelector(`path.${kind}`)?.getAttribute('d') ?? null;
+    };
+    const lastX = (d: string) => Number(/H([\d.]+)$/.exec(d)![1]);
+
+    it('should step the Worst case at the sale and end at the slider session', () => {
+      // BREN: -$644 before the sale, +$156 from it; the slider on the sale's session.
+      const sessions = DAYS.slice(0, SALE + 1).map((_, i) => bren(i, { tradePnl: i === 0 ? -700 : PNL[i]!, worstCase: i >= SALE ? fig(156, 'Worst case +$156') : fig(-644, 'Worst case −$644') }));
+      const d = draw('worst-case', sessions)!;
+      expect(d.match(/V/g)).toHaveLength(1);
+      expect(d).not.toMatch(/^M[\d.]+ [\d.]+H[\d.]+$/);
+      const sliderRight = Number(/H([\d.]+)$/.exec(draw('result-line.target', sessions)!)![1]);
+      expect(lastX(d)).toBe(sliderRight);
+    });
+
+    it('should draw the Max reward as one level that ends at the slider session', () => {
+      const sessions = [0, 1, 2].map((i) => ({ ...bren(i), tradePnl: -700 + i * 10, maxReward: fig(564, 'Max reward +$564') }));
+      const d = draw('max-reward', sessions)!;
+      expect(d).not.toContain('V');
+      const sliderRight = Number(/H([\d.]+)$/.exec(draw('result-line.target', sessions)!)![1]);
+      expect(lastX(d)).toBe(sliderRight);
+      // The frame passes the revealed sessions only: with the slider on the second, the line ends there.
+      cleanup();
+      expect(lastX(draw('max-reward', sessions.slice(0, 2))!)).toBeLessThan(lastX(d));
+    });
+
+    it('should draw no segment for a session whose Worst case is unavailable', () => {
+      const sessions = [0, 1, 2, 3].map((i) => bren(i, { tradePnl: -700, worstCase: i === 1 || i === 2 ? null : fig(-644, 'Worst case −$644') }));
+      const d = draw('worst-case', sessions)!;
+      expect(d.match(/M/g)).toHaveLength(2);
+    });
+  });
+
   it('should leave out a label that has no free spot, and never the result', () => {
     // Eight Position Changes on the slider's session, the Stop and the Target at the same level, and a stake: the
     // chart has room for only some of the marker labels, and none for a second label at the same level.
