@@ -52,7 +52,7 @@
 /* A275, wide: the header across the top (above), under it the charts on the left and the readout on the right, everything else across the full width below. Dense packing lets the readout sit beside the charts whatever full-width lines come between them. */
 .replay-overlay .replay-card {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) fit-content(480px);
+  grid-template-columns: minmax(0, 1fr) 372px;
   grid-auto-flow: row dense;
   column-gap: 16px;
 }
@@ -72,7 +72,7 @@
 
 /* Beside the charts the readout's column is narrow; the app's two-column term list would give each row half of a group, so a row takes the group's whole width and every figure stays on one line. */
 @media (min-width: 861px) {
-  /* The readout column is as wide as its widest figures (to 480 px); the body's side padding gives 16 px back so the P&L chart keeps 800 px at 1280. */
+  /* The readout column is one width at every session (372 px, the widest stake grid any Trade shows is 368), so the charts never move with the slider; the body's side padding gives 16 px back so the P&L chart keeps 800 px at 1280. */
   .replay-overlay-body {
     padding-inline: 8px;
   }

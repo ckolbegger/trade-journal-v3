@@ -102,6 +102,18 @@
   }
 }
 
+/* Beside the charts (A275) the readout column is one fixed width and the P&L chart keeps 800 px at 1280, so the grid's gaps are tighter there. */
+@media (min-width: 861px) {
+  .replay-readout-group-stake {
+    padding-right: 0;
+  }
+
+  .replay-stake-grid td,
+  .replay-stake-grid thead th + th {
+    padding-left: 6px;
+  }
+}
+
 /* A Trade past a line: one row above the two headings, in the figures' own ink. */
 .replay-stake-grid .replay-past-line td {
   padding-left: 0;
