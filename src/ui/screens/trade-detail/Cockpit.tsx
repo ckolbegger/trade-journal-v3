@@ -164,6 +164,17 @@ export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange, i
     }
   };
 
+  let overlayBody: ReactNode;
+  if (pending) {
+    overlayBody = <Loading />;
+  } else if (replay) {
+    overlayBody = (
+      <ReplayDrawer replay={replay} links={(at) => <ReplayLinks at={at} request={requestFromOverlay} />} {...(initialSession !== undefined && { initialSession })} {...(onSessionChange && { onSessionChange })} />
+    );
+  } else {
+    overlayBody = <p>No replay.</p>;
+  }
+
   return (
     <ReflectRequestContext.Provider value={request}>
       <DrawerRequestContext.Provider value={requestDrawer}>
@@ -222,13 +233,7 @@ export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange, i
       </div>
       {replayable && replayOpen && (
         <ReplayOverlay {...overlayWordsOf(view.plan.underlying, replay)} onClose={onReplayClose ?? (() => undefined)}>
-          {pending ? (
-            <Loading />
-          ) : replay ? (
-            <ReplayDrawer replay={replay} links={(at) => <ReplayLinks at={at} request={requestFromOverlay} />} {...(initialSession !== undefined && { initialSession })} {...(onSessionChange && { onSessionChange })} />
-          ) : (
-            <p>No replay.</p>
-          )}
+          {overlayBody}
         </ReplayOverlay>
       )}
       </DrawerFocusContext.Provider>
