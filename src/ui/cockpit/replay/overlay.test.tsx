@@ -1,0 +1,158 @@
+// @vitest-environment jsdom
+import { cleanup, render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { useState } from 'react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { ReplayOverlay } from './overlay.tsx';
+
+afterEach(cleanup);
+
+const open = (props: Partial<Parameters<typeof ReplayOverlay>[0]> = {}) => {
+  const onClose = vi.fn();
+  const view = render(
+    <div>
+      <div data-testid="page">
+        <p>The page behind</p>
+        <button type="button">Page button</button>
+      </div>
+      <ReplayOverlay name="Replay, BREN" header="BREN · Trade P&L +$988.00" onClose={onClose} {...props}>
+        <p>Replay content</p>
+        <button type="button">Inside button</button>
+      </ReplayOverlay>
+    </div>,
+  );
+  return { onClose, ...view };
+};
+
+describe('Replay overlay (decision 3)', () => {
+  it('should show its content in a modal dialog named "Replay, BREN", with the page behind it inert', () => {
+    open();
+    const dialog = screen.getByRole('dialog', { name: 'Replay, BREN' });
+    expect(dialog.getAttribute('aria-modal')).toBe('true');
+    expect(within(dialog).getByText('Replay content')).toBeTruthy();
+    expect(screen.getByTestId('page').closest('[inert]')).not.toBeNull();
+    expect(dialog.closest('[inert]')).toBeNull();
+  });
+
+  it('should head it "BREN · Trade P&L +$988.00" with a Close button', () => {
+    open();
+    const dialog = screen.getByRole('dialog', { name: 'Replay, BREN' });
+    expect(within(dialog).getByRole('heading').textContent).toBe('BREN · Trade P&L +$988.00');
+    expect(within(dialog).getByRole('button', { name: 'Close' })).toBeTruthy();
+  });
+
+  it('should move focus into the dialog when it opens', () => {
+    open();
+    expect(screen.getByRole('dialog').contains(document.activeElement)).toBe(true);
+  });
+
+  it('should keep Tab and Shift+Tab inside the dialog', async () => {
+    open();
+    const user = userEvent.setup();
+    const dialog = screen.getByRole('dialog');
+    for (let i = 0; i < 5; i++) {
+      await user.tab();
+      expect(dialog.contains(document.activeElement)).toBe(true);
+    }
+    for (let i = 0; i < 5; i++) {
+      await user.tab({ shift: true });
+      expect(dialog.contains(document.activeElement)).toBe(true);
+    }
+  });
+
+  it('should call onClose from the Close button and from Escape', async () => {
+    const { onClose } = open();
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: 'Close' }));
+    expect(onClose).toHaveBeenCalledTimes(1);
+    await user.keyboard('{Escape}');
+    expect(onClose).toHaveBeenCalledTimes(2);
+  });
+
+  it('should leave Escape to a control inside it that handles Escape itself, and close on the next', async () => {
+    const onClose = vi.fn();
+    const onEscape = vi.fn();
+    render(
+      <ReplayOverlay name="Replay, BREN" header="BREN" onClose={onClose}>
+        <input
+          aria-label="Inner"
+          onKeyDown={(e) => {
+            if (e.key === 'Escape' && onEscape.mock.calls.length === 0) {
+              onEscape();
+              e.preventDefault();
+            }
+          }}
+        />
+      </ReplayOverlay>,
+    );
+    screen.getByLabelText('Inner').focus();
+    const user = userEvent.setup();
+    await user.keyboard('{Escape}');
+    expect(onEscape).toHaveBeenCalledTimes(1);
+    expect(onClose).not.toHaveBeenCalled();
+    await user.keyboard('{Escape}');
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('should return focus to the control that opened it when it closes', async () => {
+    function Host() {
+      const [shown, setShown] = useState(false);
+      return (
+        <div>
+          <button type="button" onClick={() => setShown(true)}>
+            Replay
+          </button>
+          {shown ? (
+            <ReplayOverlay name="Replay, BREN" header="BREN" onClose={() => setShown(false)}>
+              <p>content</p>
+            </ReplayOverlay>
+          ) : null}
+        </div>
+      );
+    }
+    render(<Host />);
+    const user = userEvent.setup();
+    const opener = screen.getByRole('button', { name: 'Replay' });
+    await user.click(opener);
+    expect(screen.getByRole('dialog').contains(document.activeElement)).toBe(true);
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(document.activeElement).toBe(opener);
+    expect(opener.closest('[inert]')).toBeNull();
+  });
+
+  it('should head a finished Trade "BREN · Final result +$1,138.00", and show the symbol alone when the latest session has no Mark', () => {
+    const first = open({ header: 'BREN · Final result +$1,138.00' });
+    expect(within(screen.getByRole('dialog')).getByRole('heading').textContent).toBe('BREN · Final result +$1,138.00');
+    first.unmount();
+    open({ name: 'Replay, CORV', header: 'CORV' });
+    expect(within(screen.getByRole('dialog', { name: 'Replay, CORV' })).getByRole('heading').textContent).toBe('CORV');
+  });
+
+  it('should leave a shell banner present when the overlay opens in place and unchanged, and readable again the moment the overlay closes', () => {
+    function Shell({ shown }: { shown: boolean }) {
+      return (
+        <div>
+          <div data-testid="page">
+            <div role="status">Update available</div>
+          </div>
+          {shown ? (
+            <ReplayOverlay name="Replay, BREN" header="BREN" onClose={() => undefined}>
+              <p>content</p>
+            </ReplayOverlay>
+          ) : null}
+        </div>
+      );
+    }
+    const { rerender } = render(<Shell shown={false} />);
+    const banner = screen.getByText('Update available');
+    rerender(<Shell shown />);
+    expect(screen.getByText('Update available')).toBe(banner);
+    expect(banner.textContent).toBe('Update available');
+    expect(banner.closest('[aria-hidden="true"]')).toBeNull();
+    rerender(<Shell shown={false} />);
+    expect(screen.getByText('Update available')).toBe(banner);
+    expect(banner.closest('[inert]')).toBeNull();
+    expect(screen.getByRole('status').textContent).toBe('Update available');
+  });
+});
