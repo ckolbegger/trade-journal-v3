@@ -34,14 +34,27 @@ describe('I9AR.2 The odds', () => {
     expect(odds(sessionOf(daleView, '2026-11-11'))).toBe(`${q(78n, 990n)} ${q(912n, 990n)} ${q(8n)}:${q(92n)}`);
     expect(odds(sessionOf(brenView, '2026-11-02'))).toBe(`${q(352n, 1280n)} ${q(928n, 1280n)} ${q(28n)}:${q(72n)}`);
     expect(odds(sessionOf(brenView, '2026-11-11'))).toBe(`${q(844n, 1280n)} ${q(436n, 1280n)} ${q(66n)}:${q(34n)}`);
-    // Every pair of whole percents adds to 100.
-    for (const s of [...daleView.sessions, ...brenView.sessions]) {
-      const r = s.figures?.rewardRiskOdds;
-      if (r?.kind === 'Value') expect(r.value.percent.targetFirst.add(r.value.percent.stopFirst).compare(Rational.of(100n))).toBe(0);
+    // Every session of both Trades has odds as a Value (neither is past the Stop), its whole percents are the ones pinned here and add to 100.
+    const percents = {
+      dale: { '2026-11-02': [73n, 27n], '2026-11-03': [67n, 33n], '2026-11-04': [58n, 42n], '2026-11-05': [66n, 34n], '2026-11-06': [49n, 51n], '2026-11-09': [41n, 59n], '2026-11-10': [20n, 80n], '2026-11-11': [8n, 92n] },
+      bren: { '2026-11-02': [28n, 72n], '2026-11-03': [22n, 78n], '2026-11-04': [22n, 78n], '2026-11-05': [16n, 84n], '2026-11-06': [13n, 87n], '2026-11-09': [19n, 81n], '2026-11-10': [40n, 60n], '2026-11-11': [66n, 34n], '2026-11-12': [100n, 0n], '2026-11-13': [100n, 0n], '2026-11-16': [100n, 0n] },
+    } as const;
+    for (const [name, view] of [['dale', daleView], ['bren', brenView]] as const) {
+      const expected: Record<string, readonly [bigint, bigint]> = percents[name];
+      expect(view.sessions.map((s) => s.date)).toEqual(Object.keys(expected));
+      for (const s of view.sessions) {
+        const r = s.figures?.rewardRiskOdds;
+        expect(r?.kind, `${name} ${s.date} odds kind`).toBe('Value');
+        if (r?.kind !== 'Value') continue;
+        const [target, stop] = expected[s.date]!;
+        expect(`${frac(r.value.percent.targetFirst)}:${frac(r.value.percent.stopFirst)}`, `${name} ${s.date} percents`).toBe(`${q(target)}:${q(stop)}`);
+        expect(r.value.percent.targetFirst.add(r.value.percent.stopFirst).compare(Rational.of(100n))).toBe(0);
+      }
     }
-    // Not applicable past the Stop: R-AXIO-D on Mon 11-16 ($44.00) is $300 past it.
-    expect(odds(sessionOf(axioView, '2026-11-16'))).toMatch(/^NotApplicable:/);
-    expect(odds(sessionOf(axioView, '2026-11-16'))).not.toContain('/');
+    // Not applicable past the Stop: R-AXIO-D is past it from Mon 11-09 (and $300 past on Mon 11-16 at $44.00); the reason is No ongoing risk.
+    for (const date of ['2026-11-09', '2026-11-10', '2026-11-11', '2026-11-12', '2026-11-13', '2026-11-16']) {
+      expect(odds(sessionOf(axioView, date)), `axio ${date}`).toBe('NotApplicable:NoOngoingRisk');
+    }
 
     // The Plan's odds on every session: BREN 324/1,280 (25 : 75), DALE 1,536/1,980 (78 : 22).
     const planOdds = (view: typeof brenView) => {
