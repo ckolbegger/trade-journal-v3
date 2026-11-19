@@ -192,7 +192,8 @@ export async function openCardReplay(page: Page, card: TradeRef): Promise<Locato
 }
 export const headline = (scope: Locator): Locator => scope.getByTestId('headline');
 export const going = (scope: Locator): Locator => scope.locator('.replay-going');
-export const stake = (scope: Locator): Locator => scope.locator('.replay-stake');
+// What a sighted trader reads: the visible sentence (the aria-hidden span when a spoken form sits beside it), else the plain paragraph.
+export const stake = (scope: Locator): Locator => scope.locator('.replay-stake > [aria-hidden="true"], .replay-stake:not(:has(> [aria-hidden="true"]))');
 export const slider = (scope: Locator): Locator => scope.getByRole('slider', { name: 'Session' });
 export const sliderValue = (scope: Locator): Locator => scope.locator('.replay-slider-value');
 export const hits = (scope: Locator): Locator => scope.locator('div.replay-hits[role=group][aria-label=Sessions]');
