@@ -173,6 +173,29 @@ test.describe('B9AR.5 The chart', () => {
     await context.close();
   });
 
+  // T9AR.24-B7 (critic-1 defect 7; T9AR.19, W64): the Stop breached flag, once drawn, stays on every later session, in the chart and in the key; P145: no flag before it.
+  test('should keep AXIO’s Stop breached flag on the P&L chart and in the key on every session from Mon Nov 9 to Mon Nov 16, and none before', async ({ profile }) => {
+    test.setTimeout(240_000);
+    const { context, page } = await build(profile, AXIO, closeOf('2026-11-16'), 10);
+    let scope = await open(page, 0);
+    await expect(sliderValue(scope)).toHaveText('Mon Nov 16 · 11 of 11');
+    await seek(page, scope, 'Home');
+    scope = replay(page);
+    const seen: string[] = [];
+    for (let i = 0; i < 11; i++) {
+      if (i > 0) await seek(page, scope, 'ArrowRight');
+      scope = replay(page);
+      const day = (await sliderValue(scope).textContent()) ?? '';
+      const flagged = (await pnlChart(scope).locator('g.first-crossing.stop').count()) > 0 && (await chartText(pnlChart(scope))).includes('Stop breached');
+      const named = (await key(scope)).includes('Stop breached');
+      seen.push(`${day}: chart ${flagged}, key ${named}`);
+      const before = i < 5;
+      expect(flagged, `${day}: the flag is ${before ? 'not yet' : 'still'} on the chart (${seen.join(' | ')})`).toBe(!before);
+      expect(named, `${day}: the key ${before ? 'does not name' : 'still names'} it`).toBe(!before);
+    }
+    await context.close();
+  });
+
   test('should name the hatch and the stake bar in the key on BREN, where both are drawn with their labels', async ({ profile }) => {
     test.setTimeout(240_000);
     const { context, page } = await build(profile, BREN, closeOf('2026-11-16'), 10);

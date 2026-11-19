@@ -832,6 +832,31 @@ describe('Corridor: labels apart (T9.19-B2)', () => {
       vi.restoreAllMocks();
     }
   });
+
+  // T9AR.24-B7: R-AXIO-D's Stop breached flag (Mon 11-09, slot 5) is on every later session, though that session's own labels (the hatch's, the
+  // stake tags, the Execution's) crowd it; the flag, a fact that stays, is placed before the labels that belong to the session on the slider.
+  it('should keep the Stop breached flag drawn, clear of every other label, on each AXIO session after Mon 11-09', () => {
+    for (const slider of [5, 6, 7, 10]) {
+      const base = axio(slider);
+      const sessions = base.sessions!.map((s, i) => ({
+        ...s,
+        ...(i === 5 && { firstCrossing: [{ line: 'Stop' as const, label: 'Stop breached' }], keyEntries: [{ kind: 'FirstCrossing' as const, label: 'Stop breached' }] }),
+        // The real sessions after the sale: the Trade P&L is past the Stop, the hatch is labelled and only the reward's stake tag is drawn.
+        resultAtTarget: fig(160, 'Target +$160'),
+        worstCase: fig(-5440, 'Worst case −$5,440 ↓', 'Worst −$5,440'),
+        ...(i >= 6 && { tradePnl: -860 }),
+        ...(i === slider && slider > 5 && { past: { line: 'Stop' as const, label: '$120 past the Stop', shortLabel: '$120 past' }, stake: { rewardLabel: 'Remaining Reward $1,020', rewardShortLabel: 'Reward $1,020' } }),
+      }));
+      frameWidth(837);
+      // A stock's axis has the eleven sessions and no expiration, so each column is wider than the option fixtures'.
+      const { container } = render(<CorridorPlot {...props({ ...base, sessions, anchors: { ...base.anchors!, planAtTarget: fig(1000, 'Target +$1,000') }, axis: { slots: 11, startLabel: 'Mon Nov 2', endLabels: [] } })} />);
+      expect([...pnl(container).querySelectorAll('text.crossing-label')].map((t) => t.textContent), `slider ${slider}`).toEqual(['Stop breached']);
+      expect([...container.querySelectorAll('.replay-key li')].map((li) => li.textContent), `key at ${slider}`).toContain('Stop breached');
+      expect(clashes(pnl(container)), `slider ${slider}`).toEqual([]);
+      cleanup();
+      vi.restoreAllMocks();
+    }
+  });
 });
 
 // B6: a text's box as LabelPlacer estimates it (6 px a character and 2 over, from its anchor); it must lie inside the drawing.

@@ -239,6 +239,9 @@ export function drawPnl(props: ReplayPlotProps, width: number): DrawnChart {
         { x: x - 6, y: top + 8, anchor: 'end' },
         { x: x + 6, y: top + 20, anchor: 'start' },
         { x: x - 6, y: top + 20, anchor: 'end' },
+        // A sale's banked label sits just above the Stop's line, a row's height from the first two rows; one row a little lower clears it.
+        { x: x + 6, y: top + 26, anchor: 'start' },
+        { x: x - 6, y: top + 26, anchor: 'end' },
       ]);
       return kept.has(key) ? [{ key, line: crossing.line.toLowerCase(), label: crossing.label, x, y, top }] : [];
     }),
