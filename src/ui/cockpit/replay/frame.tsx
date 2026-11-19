@@ -1,5 +1,6 @@
 import { useState, type KeyboardEvent } from 'react';
 import { Link } from 'react-router';
+import { Words } from './figure-words.tsx';
 import { Readout } from './readout.tsx';
 import type { ReplayProps } from './replay.types.ts';
 import { SessionCards } from './session-cards.tsx';
@@ -110,7 +111,9 @@ export function ReplayFrame({ tradeKey, sessions, initialSession, sliderLabel, p
           <h3 id="replay-plan-title">{plan.title}</h3>
           <ul>
             {plan.rows.map((row) => (
-              <li key={row}>{row}</li>
+              <li key={row}>
+                <Words text={row} />
+              </li>
             ))}
           </ul>
         </section>

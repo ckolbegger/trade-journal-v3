@@ -328,6 +328,16 @@ describe('Replay: the Plan block (decision 5)', () => {
   });
 });
 
+describe('Replay: the Plan block figures (C9AR.2, A278)', () => {
+  it('should draw each figure of the Plan block, a signed amount and an odds pair included, as one card-figure span', () => {
+    const plan = { title: 'The Plan', rows: ['Entry: 4 contracts at $1.61', 'Stop: call at or below $0.80 · P&L if hit −$324.00', 'Reward to risk: 2.95 to 1 · 25% : 75%'] };
+    render(<ReplayFrame {...props({ plan })} />);
+    const block = screen.getByRole('region', { name: 'The Plan' });
+    expect([...block.querySelectorAll('.card-figure')].map(text)).toEqual(['$1.61', '$0.80', '−$324.00', '2.95 to 1', '25% : 75%']);
+    expect(within(block).getAllByRole('listitem').map(text)).toEqual(plan.rows);
+  });
+});
+
 describe('Replay: a first crossing after the status line (decision 2)', () => {
   it('should show the crossing sentence right after the status line, and only for the slider session', () => {
     const sessions = Array.from({ length: 11 }, (_, i) => ({ ...frameSession(i), ...(i >= 4 && { crossingWords: 'Target first reached Fri Nov 6.' }) }));
