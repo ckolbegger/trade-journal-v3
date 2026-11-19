@@ -1,0 +1,349 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 5 finding(s) across 17 selected item(s).",
+  "summary": {
+    "files_reviewed": 17,
+    "comments": 5,
+    "total_tokens": 529496,
+    "input_tokens": 524477,
+    "output_tokens": 5019,
+    "cache_read_tokens": 34944,
+    "elapsed": "1m46s"
+  },
+  "tool_calls": {
+    "total": 50,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 9,
+      "file_read": 37,
+      "file_read_diff": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/TradeDetail.tsx",
+      "content": "Reopening Replay loses the selected session. After moving the slider, closing, and clicking Replay again, this writes the updated `session` into the URL, but Cockpit still receives `address.session` as `initialSession`. Because the overlay unmounts ReplayFrame on close, it initializes from the original session (or the newest session), rather than the one now named in the URL. Pass the retained session to Cockpit and add a move/close/reopen regression test.",
+      "existing_code": "      if (session) next.set('session', session);",
+      "start_line": 70,
+      "end_line": 70,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/TradeDetail.tsx",
+      "content": "This discards ownership of the pushed history entry on browser Back. Open Replay, press Back, then Forward: the same overlay entry returns, but Close/Escape now replaces it instead of going back to the entry this visit pushed. The history then contains two closed Detail entries, so another Back appears to do nothing. Track ownership by history-entry identity rather than clearing a boolean whenever Replay closes, and cover Back → Forward → Close.",
+      "existing_code": "  useEffect(() =\u003e {\n    if (!replayOpen) pushed.current = false;\n  }, [replayOpen]);",
+      "start_line": 62,
+      "end_line": 64,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/trade-detail/Cockpit.tsx",
+      "content": "Closing the overlay now unmounts ReplayFrame, which owns the slider state. Reopening initializes it from the original initialSession again (or the latest session when absent), even though onSessionChange has recorded a newer selection in TradeDetail. For example, move from Thursday to Tuesday, close, and reopen: the slider returns to Thursday while the parent still remembers Tuesday. Preserve the selected session across overlay mounts and pass that current session when reopening; add a close/reopen test after moving the slider.",
+      "existing_code": "            \u003cReplayDrawer replay={replay} links={(at) =\u003e \u003cReplayLinks at={at} request={requestFromOverlay} /\u003e} {...(initialSession !== undefined \u0026\u0026 { initialSession })} {...(onSessionChange \u0026\u0026 { onSessionChange })} /\u003e",
+      "start_line": 220,
+      "end_line": 220,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/trade-detail/Cockpit.tsx",
+      "content": "On a direct load with replay=open, ReplayOverlay captures the currently focused element (normally body), not the Replay button, and restores that element on dismissal. Consequently Close/Escape on a deep-linked overlay does not return focus to Replay as required. Supply an explicit return-focus target or handle dismissal focus here, while allowing overlay-to-drawer navigation to retain its session target. Cover direct-load dismissal focus in a test.",
+      "existing_code": "        \u003cReplayOverlay {...overlayWordsOf(view.plan.underlying, replay)} onClose={onReplayClose ?? (() =\u003e undefined)}\u003e",
+      "start_line": 216,
+      "end_line": 216,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/trade-detail/Cockpit.tsx",
+      "content": "This adds a nested ternary, which the supplied TypeScript checklist explicitly prohibits. Extract the overlay body into a render helper using early returns for pending, ready, and unavailable states.",
+      "existing_code": "          {pending ? (\n            \u003cLoading /\u003e\n          ) : replay ? (",
+      "start_line": 217,
+      "end_line": 219,
+      "category": "maintainability",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Cockpit replay overlay behavior, styling, and tests",
+      "files": [
+        "e2e/d8p/cockpit.spec.ts",
+        "e2e/d8p/responsive-a11y.spec.ts",
+        "e2e/d8p/states.spec.ts",
+        "src/ui/cockpit/replay/overlay.props.test.ts",
+        "src/ui/cockpit/replay/overlay.props.ts",
+        "src/ui/cockpit/styles/replay-overlay.css",
+        "src/ui/screens/trade-detail/Cockpit.test.tsx",
+        "src/ui/screens/trade-detail/Cockpit.tsx"
+      ]
+    },
+    {
+      "label": "Trade detail screen and drawer integration",
+      "files": [
+        "e2e/support/detail/index.ts",
+        "src/ui/screens/TradeDetail.test.tsx",
+        "src/ui/screens/TradeDetail.tsx",
+        "src/ui/screens/trade-detail/drawer-request.ts"
+      ]
+    },
+    {
+      "label": "D8R state tests and support",
+      "files": [
+        "e2e/d8r/states.spec.ts",
+        "e2e/d8r/support.ts"
+      ]
+    },
+    {
+      "label": "D9 review and state tests with shared support",
+      "files": [
+        "e2e/d9/review.spec.ts",
+        "e2e/d9/states.spec.ts",
+        "e2e/d9/support.ts"
+      ]
+    }
+  ],
+  "session_id": "c8a2a491-aedd-4b5f-84fd-e20cd305e460",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "c8a2a491-aedd-4b5f-84fd-e20cd305e460",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "44e50ef1",
+      "resolved_base": "e7f9f47470f8a41c459017961716857ce2184707",
+      "resolved_head": "44e50ef14ae860c9a4c9c368b4f7f64f005eadcb",
+      "exact_range": "e7f9f47470f8a41c459017961716857ce2184707..44e50ef14ae860c9a4c9c368b4f7f64f005eadcb",
+      "source_artifact_sha256": "0256465caaf9935a93603483ed0faa0b751fd79a5bb1188911f83976b4f97a76"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "001642d35c9cff107e49edc93a963642e592ca6c0fe7ac6604c26b7f2b539427",
+          "path": "e2e/d9/states.spec.ts",
+          "fingerprint": "e254ef2a552e251108987f66cb2647bbbb54ac051bf2ec5ed66464595f532dae"
+        },
+        {
+          "item_id": "0cf6f8c81d90b1b214f198a17ea555ace5105abe5cc4bd17cda5135f20f9c102",
+          "path": "e2e/d8r/states.spec.ts",
+          "fingerprint": "b8ad8530d948bc93e37571f1958c102501e1e9548f39003b763846873f2f1fd5"
+        },
+        {
+          "item_id": "12f8d33ae57db509336618f70d5433f9e94127f7db546b8539f31cbd601f05b6",
+          "path": "src/ui/screens/trade-detail/Cockpit.test.tsx",
+          "fingerprint": "aa6372154e09fa89e42171e15da3a600cc04b0bb023ebc2553c9fc03b3e9d416"
+        },
+        {
+          "item_id": "30273611721b694304fcba1e627fe765af668fd478e0661a0cc14f1ce1b4a3ab",
+          "path": "e2e/d8p/states.spec.ts",
+          "fingerprint": "a72007a12489c4bcdda1374d9b5140aaa45309888c238e82c2412093e361b8ff"
+        },
+        {
+          "item_id": "347917e3fc99ea10df3899c14b251305db47c31ef851de4417dcd15cdba0c770",
+          "path": "e2e/d9/review.spec.ts",
+          "fingerprint": "7ebff02a9eb2b56e4a2d01e6c1fb72ceb83698a6bb7d1f27fc8b9ea7f2a5859f"
+        },
+        {
+          "item_id": "4e8c9fded9c24bb922049c410df7d1152836a705500c2ae0b2bd9662c565f721",
+          "path": "e2e/d8p/cockpit.spec.ts",
+          "fingerprint": "153e6e1e589554178f055bb556407303663d8b8ee63945154bfca2ed3cdec45d"
+        },
+        {
+          "item_id": "585183a45918e8a109fd0d5c73530146cb301432d106a80e069d78082ba7f533",
+          "path": "src/ui/cockpit/replay/overlay.props.test.ts",
+          "fingerprint": "3a14dc1c664d70b58d59f5df195670f4a9c9555be14919bdd376c2a869a780dc"
+        },
+        {
+          "item_id": "71f60de64d3df572066a6d3a1e58b67ae2c187d4e19e52b48a6802834eb54b13",
+          "path": "src/ui/cockpit/replay/overlay.props.ts",
+          "fingerprint": "71ee1fc1a16f59b3291d2e563daaaa4d7925e56c4b522753975bf9b95ea67f35"
+        },
+        {
+          "item_id": "7a11420bfbb41bf1786c11a97abc2efd178f61cda0a62e22d7d52f9d87dbe6ab",
+          "path": "src/ui/screens/TradeDetail.tsx",
+          "fingerprint": "ef2c7ddc62cc7e57d11f58ab306b03941a9bc8c0e468811b8679ef32ce50053d"
+        },
+        {
+          "item_id": "87638b8e40a8471b5a00443528a3c98bf4752f964c11c4b564b6258d593b8716",
+          "path": "src/ui/screens/TradeDetail.test.tsx",
+          "fingerprint": "9390b5aa3d6e1e6ee0f7148c098d4889c5eeef97437751719e56b527efa41bdd"
+        },
+        {
+          "item_id": "a59561cd58b7f035c39bcd7f475b31b7f72e2fa2fd9f758783eb7a99c745de46",
+          "path": "src/ui/screens/trade-detail/drawer-request.ts",
+          "fingerprint": "68ebc3108183ed7b03a4adb8bc2e82d382fd919bc5f8d2b28032fd1c5916513b"
+        },
+        {
+          "item_id": "bad5c69b3d1e03bf54bd2b1b2b13ff5e5a0dabd158881300fc1e86a4a591bb75",
+          "path": "src/ui/screens/trade-detail/Cockpit.tsx",
+          "fingerprint": "d68c034e92ed6fbc6b4b61858eec7025255f521c971f29ff9e6ac0ced250d419"
+        },
+        {
+          "item_id": "bf86d89a9e8ae774a65e30260f2824321612838d6476ba640ffa26ad8b501773",
+          "path": "e2e/support/detail/index.ts",
+          "fingerprint": "21e1ba8c02a266e82998958243b8f849bb24677d3b07bf57bb342c20192cfe70"
+        },
+        {
+          "item_id": "d0126439061216e58eb2b1a6bab019f2d20601558a9531d4100a29b4b9c5c3f9",
+          "path": "e2e/d9/support.ts",
+          "fingerprint": "5712f7cc8c9bf34f10e8300ee6acfc5296227c742c9195830caf7aac01606482"
+        },
+        {
+          "item_id": "d3eb99946b5bb7f90658427e630f7c2515168d299467467f8bbc8ee72641f7e3",
+          "path": "e2e/d8r/support.ts",
+          "fingerprint": "615dd755d074ea6129bd480e405c61474a69b74fecffb8260525702c3d3c6cc3"
+        },
+        {
+          "item_id": "de31a9170a08b375f51fa298e4e0c932e4a8816c12b5758d5e764a9f0591eeb3",
+          "path": "src/ui/cockpit/styles/replay-overlay.css",
+          "fingerprint": "b45c539057013506dc487ce12243929f787201d7ed90db4cdbd606951b9455df"
+        },
+        {
+          "item_id": "efe807094ca709ea98548a6a284f2e579157551da75e12941da6d413bd8797a6",
+          "path": "e2e/d8p/responsive-a11y.spec.ts",
+          "fingerprint": "98aa8972b9ba6e771fbfdf1732b9eba950189237ae93f666f8e8001c088aafa4"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "001642d35c9cff107e49edc93a963642e592ca6c0fe7ac6604c26b7f2b539427",
+          "path": "e2e/d9/states.spec.ts",
+          "fingerprint": "e254ef2a552e251108987f66cb2647bbbb54ac051bf2ec5ed66464595f532dae"
+        },
+        {
+          "item_id": "0cf6f8c81d90b1b214f198a17ea555ace5105abe5cc4bd17cda5135f20f9c102",
+          "path": "e2e/d8r/states.spec.ts",
+          "fingerprint": "b8ad8530d948bc93e37571f1958c102501e1e9548f39003b763846873f2f1fd5"
+        },
+        {
+          "item_id": "12f8d33ae57db509336618f70d5433f9e94127f7db546b8539f31cbd601f05b6",
+          "path": "src/ui/screens/trade-detail/Cockpit.test.tsx",
+          "fingerprint": "aa6372154e09fa89e42171e15da3a600cc04b0bb023ebc2553c9fc03b3e9d416"
+        },
+        {
+          "item_id": "30273611721b694304fcba1e627fe765af668fd478e0661a0cc14f1ce1b4a3ab",
+          "path": "e2e/d8p/states.spec.ts",
+          "fingerprint": "a72007a12489c4bcdda1374d9b5140aaa45309888c238e82c2412093e361b8ff"
+        },
+        {
+          "item_id": "347917e3fc99ea10df3899c14b251305db47c31ef851de4417dcd15cdba0c770",
+          "path": "e2e/d9/review.spec.ts",
+          "fingerprint": "7ebff02a9eb2b56e4a2d01e6c1fb72ceb83698a6bb7d1f27fc8b9ea7f2a5859f"
+        },
+        {
+          "item_id": "4e8c9fded9c24bb922049c410df7d1152836a705500c2ae0b2bd9662c565f721",
+          "path": "e2e/d8p/cockpit.spec.ts",
+          "fingerprint": "153e6e1e589554178f055bb556407303663d8b8ee63945154bfca2ed3cdec45d"
+        },
+        {
+          "item_id": "585183a45918e8a109fd0d5c73530146cb301432d106a80e069d78082ba7f533",
+          "path": "src/ui/cockpit/replay/overlay.props.test.ts",
+          "fingerprint": "3a14dc1c664d70b58d59f5df195670f4a9c9555be14919bdd376c2a869a780dc"
+        },
+        {
+          "item_id": "71f60de64d3df572066a6d3a1e58b67ae2c187d4e19e52b48a6802834eb54b13",
+          "path": "src/ui/cockpit/replay/overlay.props.ts",
+          "fingerprint": "71ee1fc1a16f59b3291d2e563daaaa4d7925e56c4b522753975bf9b95ea67f35"
+        },
+        {
+          "item_id": "7a11420bfbb41bf1786c11a97abc2efd178f61cda0a62e22d7d52f9d87dbe6ab",
+          "path": "src/ui/screens/TradeDetail.tsx",
+          "fingerprint": "ef2c7ddc62cc7e57d11f58ab306b03941a9bc8c0e468811b8679ef32ce50053d"
+        },
+        {
+          "item_id": "87638b8e40a8471b5a00443528a3c98bf4752f964c11c4b564b6258d593b8716",
+          "path": "src/ui/screens/TradeDetail.test.tsx",
+          "fingerprint": "9390b5aa3d6e1e6ee0f7148c098d4889c5eeef97437751719e56b527efa41bdd"
+        },
+        {
+          "item_id": "a59561cd58b7f035c39bcd7f475b31b7f72e2fa2fd9f758783eb7a99c745de46",
+          "path": "src/ui/screens/trade-detail/drawer-request.ts",
+          "fingerprint": "68ebc3108183ed7b03a4adb8bc2e82d382fd919bc5f8d2b28032fd1c5916513b"
+        },
+        {
+          "item_id": "bad5c69b3d1e03bf54bd2b1b2b13ff5e5a0dabd158881300fc1e86a4a591bb75",
+          "path": "src/ui/screens/trade-detail/Cockpit.tsx",
+          "fingerprint": "d68c034e92ed6fbc6b4b61858eec7025255f521c971f29ff9e6ac0ced250d419"
+        },
+        {
+          "item_id": "bf86d89a9e8ae774a65e30260f2824321612838d6476ba640ffa26ad8b501773",
+          "path": "e2e/support/detail/index.ts",
+          "fingerprint": "21e1ba8c02a266e82998958243b8f849bb24677d3b07bf57bb342c20192cfe70"
+        },
+        {
+          "item_id": "d0126439061216e58eb2b1a6bab019f2d20601558a9531d4100a29b4b9c5c3f9",
+          "path": "e2e/d9/support.ts",
+          "fingerprint": "5712f7cc8c9bf34f10e8300ee6acfc5296227c742c9195830caf7aac01606482"
+        },
+        {
+          "item_id": "d3eb99946b5bb7f90658427e630f7c2515168d299467467f8bbc8ee72641f7e3",
+          "path": "e2e/d8r/support.ts",
+          "fingerprint": "615dd755d074ea6129bd480e405c61474a69b74fecffb8260525702c3d3c6cc3"
+        },
+        {
+          "item_id": "de31a9170a08b375f51fa298e4e0c932e4a8816c12b5758d5e764a9f0591eeb3",
+          "path": "src/ui/cockpit/styles/replay-overlay.css",
+          "fingerprint": "b45c539057013506dc487ce12243929f787201d7ed90db4cdbd606951b9455df"
+        },
+        {
+          "item_id": "efe807094ca709ea98548a6a284f2e579157551da75e12941da6d413bd8797a6",
+          "path": "e2e/d8p/responsive-a11y.spec.ts",
+          "fingerprint": "98aa8972b9ba6e771fbfdf1732b9eba950189237ae93f666f8e8001c088aafa4"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "81c0a4c14e33467abe98a063e3baf1834c044d4a756744244714034b9cd13796",
+          "path": "evidence/D09AR/tdd-log/T9AR.8.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "89b97bc82ba6f415a36eacb99aab34a920bacf48dd09e453270e8bc72c116fcd",
+          "path": "evidence/D09AR/suite-runs/T9AR.8-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "c24fdf1a55826101046ec416e3c19f724e6bfa24964da0413f82d5f40eb31bec",
+          "path": "evidence/D09AR/suite-runs/T9AR.8-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ced92edb66d97bd755b07943a19768ed4194c979c79af418152cb81b46b3a460",
+          "path": "evidence/D09AR/suite-runs/T9AR.8-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "fbd7dd66eed10f2b918d2d6e622e9f80b8ebd3fd5f0ddc5dfe1489a6c71e323f",
+          "path": "evidence/D09AR/suite-runs/T9AR.8-lane.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 106241
+  }
+}

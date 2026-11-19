@@ -158,6 +158,20 @@ Lane OV (`d09ar/ov`), base `e7f9f474`, commit `44e50ef1`. 8 planned cases, all g
 - Browser lines re-pointed (P150): `e2e/support/detail/index.ts`, `e2e/d8p/cockpit.spec.ts`, `e2e/d8p/states.spec.ts`, `e2e/d8p/responsive-a11y.spec.ts` (ArrowRight now expects Position; two lines added for the Tab stop on the Replay button after the tab row), `e2e/d8r/states.spec.ts`, `e2e/d8r/support.ts` drop 'Replay' from the drawers; `e2e/d9/support.ts`'s `replay(page)` is the dialog and `openDrawer(page, 'Replay')` presses the button, so the other `e2e/d9` callers are unchanged; `e2e/d9/states.spec.ts` (the Planned case checks for no Replay button; a Close click before `recordExpirationLink`, since the page under the overlay is inert); `e2e/d9/review.spec.ts` (a Close click before "Back to the Review"; the address now ends `&panel=Action&replay=open&session=2026-11-12`). `cardReplay` untouched (T9AR.9). Stage A test titles saying "Replay drawer" kept (P150).
 - Browser runs, once each under the lock: `d8p/cockpit` 1 passed; `d8p/states` with `d8r/states` 7 passed; `d8p/responsive-a11y` 2 passed (after adding the Tab stop); `d9/replay` 5 passed; `d9/gaps` with `d9/states` 6 passed and 1 failed (the inert page), fixed and rerun with `review`, 6 passed; `d9/responsive-a11y` 6 passed. The fit check did not recur.
 - Notes from the task's summary: new `overlay.props.ts` (`overlayWordsOf(symbol, replay?)`, W53's header and the dialog's name); `CockpitProps` gains `replayOpen?`, `onReplayOpen?`, `onReplayClose?`; `DRAWERS` loses 'Replay'. `.cockpit-tab-row` and `.cockpit-replay-button` rules put in `replay-overlay.css` (the shell's stylesheets are not lane OV's). `drawer=replay` is ignored; `replay=open` on a Detail with no replay opens nothing. Opening writes the slider's session to the address. A drawer link inside the overlay closes it, then focuses its target once the page is no longer inert. No words shortened; no uncovered words.
+- ocr on `44e50ef1` (`ocr/T9AR.8-44e50ef1.json`): 17 files (5 excluded), 5 comments.
+
+| Severity | Location | Finding | Verdict |
+|---|---|---|---|
+| medium | `TradeDetail.tsx:70` | Move the slider, Close, press Replay again: the slider restarts on the load-time `address.session`, not the session written on open | Valid: T9AR.8-B1 |
+| medium | `Cockpit.tsx:220` | The same defect from the Cockpit side (the frame remounts from `initialSession`) | Valid: folded into T9AR.8-B1 |
+| medium | `TradeDetail.tsx:62` | After Back then Forward, the overlay returns but Close replaces the entry instead of going back (A274), leaving two closed Detail entries | Valid: T9AR.8-B2 |
+| medium | `Cockpit.tsx:216` | On a load with `replay=open`, the overlay keeps the body as its opener, so Close returns focus to the body | Doubtful: T9AR.8-B3 (implementation-level decision: focus goes to the Replay button, the overlay's control on the page, per A273) |
+| low | `Cockpit.tsx:217` | A nested ternary in the overlay body | Valid (readability): T9AR.8-F1 |
+
+- **T9AR.8-B1** Case: it should reopen the overlay on the session the slider was on when it closed.
+- **T9AR.8-B2** Case: it should go back one entry on Close after Back then Forward brought the overlay back.
+- **T9AR.8-B3** Case: it should put focus on the Replay button when an overlay opened from the address closes.
+- **T9AR.8-F1** Structural: explicit branches in place of the nested ternary.
 
 ## T9AR.10 Chart: the key, the dates, every line labelled
 
@@ -223,7 +237,8 @@ Lane PL (`d09ar/pl`), base `72ece0c8`, commit `9f03a9e9`. 5 planned cases plus 2
 ### `merge2` failures
 
 `e2e/d9/responsive-a11y.spec.ts` lines 126, 134 and 146 ("should fit the Detail replay on one screen…", "should fit the Review card replay on one screen…", "should fit the Review card replay at 320 px…"), each `<where> at 1280 px: charts drawn at their box's width`. Reproduced in lane PL's T9AR.11 browser run (the same three). Cause, from the spec: `expectFitsOneScreen` (lines 22 to 27) expects a wide box's chart at the fixed 640 (`box < 460 ? Math.max(box, 200) : 640`), and T9AR.10 made the chart draw at its box's own width at every size (A275, its case "it should draw at its box's own width on a wide screen"). Pinned to T9AR.10; fixed in lane PL as **T9AR.10-S1**: the check expects the box's own width (at least 200) at every size, a consequence of A275 recorded as a changed expected value.
-- T9AR.10-S1 done: `532b7d79`. Reproduced first under the lock: 3 failed, 3 passed; each expected `[0, 0]`, received `[215, 215]` (the 1280 px chart box is 855 wide). Changed line: before `const want = box < 460 ? Math.max(box, 200) : 640;`, after `const want = Math.max(box, 200);`; the comment on line 22 changed to match. After: 6 passed. Lane tier `T9AR.10-S1`: unit 2341, integration 280, checks 14 of 14.
+- T9AR.10-S1 done: `532b7d79`. Reproduced first under the lock: 3 failed, 3 passed; each expected `[0, 0]`, received `[215, 215]` (the 1280 px chart box is 855 wide). Changed line: before `const want = box < 460 ? Math.max(box, 200) : 640;`, after `const want = Math.max(box, 200);`; the comment on line 22 changed to match. After: 6 passed. Lane tier `T9AR.10-S1`: unit 2341, integration 280, checks 14 of 14. ocr on `532b7d79` (`ocr/T9AR.10-S1-532b7d79.json`): 1 file, 0 comments. **No findings.**
+- Lane PL rebased onto `c292e409` (it brought in T9AR.5's domain files): `fa1e2f64` (T9AR.11), `8258d88c` (T9AR.11-B1), `780b88e1` (T9AR.10-S1). Lane tier rerun as `T9AR.11-rebased`: unit 2349, integration 280, checks 14 of 14; `run-complete.sh`: run complete. Merged by fast-forward to `780b88e1`.
 
 ## Critics
 
