@@ -67,8 +67,16 @@ function goingGroup(session: ViewSession): ReadoutGroup {
   const { figure: text, reason } = headlineOf(session);
   const { tradePnl } = session;
   const noMark = tradePnl.kind === 'Unavailable' && isMarkLacking(tradePnl);
-  const value: ReadoutValue = text !== undefined ? figure(text) : noMark ? NO_MARK : { kind: 'Unavailable', text: reason ?? '' };
-  const rows = [row('Trade P&L', value, changeWords(session.change))];
+  function tradePnlValue(): ReadoutValue {
+    if (text !== undefined) {
+      return figure(text);
+    }
+    if (noMark) {
+      return NO_MARK;
+    }
+    return { kind: 'Unavailable', text: reason ?? '' };
+  }
+  const rows = [row('Trade P&L', tradePnlValue(), changeWords(session.change))];
   if (session.realizedPnl.compare(ZERO) !== 0) {
     // W57: a loss that was realized is "Realized"; a gain keeps "Banked".
     rows.push(row(session.realizedPnl.compare(ZERO) < 0 ? 'Realized' : 'Banked', figure(signedMoney(session.realizedPnl))));
