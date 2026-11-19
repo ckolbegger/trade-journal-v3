@@ -698,6 +698,55 @@ Lane BR (`d09ar/br`), base `70ce0f74`.
           - main's checkout was untouched;
           - ocr (`ocr/T9AR.24-B4-B1-F1-bcc2a893.json`): **no findings**.
     - **Merged** B4, B4-B1 and B4-B1-F1 by fast-forward. Lane RO's base `41423503` was main's head.
+  - **T9AR.24-B5** `da8dcb7e` (lane PL, from `b65d25be`):
+    - **Cause:** confirmed by logging pointer events.
+      - The tap on the Review card's "Replay" opens the chart under the finger.
+      - Chromium then sends a mouse-type `pointerenter` to the session button there ("Mon Nov 2" at 320). The handler ignored only touch and pen, so this became a hover, drawing the box and the band.
+      - Taps then never cleared it, because no mouse leave arrives. The `tapped` ref was not involved.
+    - **Fix:** `corridor.tsx` records touch and pen `pointerdown` times in a document listener installed at module load. A mouse `pointerenter` within 1000 ms of one is not a hover.
+    - **Cases:**
+      - Unit, "not report the mouse pointerenter a browser sends under a finger just after a touch": red, then green.
+      - E2e at 320 from the Review card, no box or band on open or after two taps: red ("Expected: 0, Received: 1"), then green.
+      - The 375 case and the DALE-from-Detail case at 320 are **first-run passes, flagged**. Neither could be reproduced, and a never-blocking mutation left both passing. They are kept as guards and do not detect the defect.
+    - **Lines changed:** one `onPointerEnter` condition. No expected values changed.
+    - **Browser:** `e2e/d9ar` plus `e2e/d9/replay.spec.ts`: 64 passed, including the 320 fit and the mouse hover cases.
+    - **Lane tier** `T9AR.24-B5`: unit 2466, integration 286, checks 14 of 14.
+    - **Agent's notes:**
+      - The 1000 ms window is a heuristic. A real mouse within 1 s of a touch, on a hybrid device, is ignored until it re-enters.
+      - A hover set some other way is still not cleared by a tap.
+    - **ocr** on `da8dcb7e` (`ocr/T9AR.24-B5-da8dcb7e.json`): **no findings**.
+      - Reviewer's notes:
+        - The module-load listener is safe for server rendering and sees every tap.
+        - A held hover is never cleared by a tap.
+        - The 1000 ms window fails if the chart appears over 1 s after the tap.
+        - The DALE case's title implies more than it checks.
+        - The timestamp is shared between tests.
+        - The unit case has no boundary.
+    - **Sent back as B5 part 2** by the main session. This is not a bug task from the notes. B5 did not yet meet its own defect's expected behaviour (C9AR.7, "A tap … leaves no hover box behind"), and the critic saw taps fail to clear the box. The brief:
+      - a tap clears any held hover;
+      - a gate against the synthetic enter that does not depend on a delay, if a simple one holds;
+      - boundary cases;
+      - the DALE case renamed;
+      - a test reset.
+    - **B5 part 2** `0f1f4935`:
+      - A probe showed Chromium's synthetic hover sends `pointerover` and `pointerenter` with no `pointermove`. So a mouse now hovers only from its first real `pointermove`. The 1000 ms window and its module timestamp are removed, so no test reset is needed.
+      - A touch or pen `pointerdown` on a session clears a held hover. It does so only when one is held, because clearing every time broke two existing cases.
+      - Cases, red then green:
+        - "clear a mouse hover when a touch or pen taps a session";
+        - "report a mouse hover only from a real pointermove, not from the pointerenter alone, at any time after a touch".
+        - No first-run passes.
+      - Lines changed:
+        - one existing unit case now fires a `pointerMove` after the enter, with its expected `[2]` unchanged;
+        - the DALE case is renamed to "leave the slider's value uncovered by any chart element for DALE from Trade Detail at 320". The tdd-log notes the critic's band did not reproduce.
+      - The tap-clears path has no e2e case (a touch context has no mouse); the unit case covers it.
+      - Browser: 64 passed. Lane tier `T9AR.24-B5-part2`: unit 2467, integration 286, checks 14 of 14.
+      - **ocr** on `0f1f4935` (`ocr/T9AR.24-B5-part2-0f1f4935.json`): **no findings**.
+        - Reviewer's notes, for the final report:
+          - Wide-screen mouse hover works through `pointermove`.
+          - A mouse resting on a session when the chart opens shows no hover until it moves.
+          - A touch outside the session columns does not clear a mouse hover, which can only happen on a hybrid device.
+          - The rule rests on the Chromium probe. Firefox and WebKit are unverified.
+    - **Merged** B5's two commits by fast-forward. Lane PL's base `b65d25be` was main's head.
         - Reviewer's notes:
           - `isMarkLacking` is exactly MarkMissing or AcknowledgedUnavailable.
           - The Trade P&L row's figure is the contract's own, so the Underlying's Mark cannot reach it.
