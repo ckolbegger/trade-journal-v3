@@ -230,7 +230,7 @@ Run on `bbc3ae28`. The commands and their full output are in the appendix; this 
 
 ### 1.8 Carried from D9's Stage A gate (critic-2)
 
-D9's Stage A gate critic-2 (`evidence/D09/critic-2.md`, FAIL: 1 high, 1 moderate, 2 low) found four defects. **The user chose, 2026-11-18, to close Stage A without fixing them and to carry all four into D9A-R** (an exception to the rule that every critic defect is fixed before its gate closes, since D9A-R replaces most of what they touch). Each is a case in the task named, written red first like any other, and D9A-R's gate critic checks each again.
+D9's Stage A gate critic-2 (`evidence/D09/critic-2.md`, FAIL: 1 high, 1 moderate, 2 low) found four defects. **The user chose, 2026-11-18, to close Stage A without fixing them and to carry all four into D9A-R** (an exception to the rule that every critic defect is fixed before its gate closes, since D9A-R replaces most of what they touch). Each is a case in the task named, written red first like any other, and D9A-R's gate critic checks each again. The cases below are also in each task's own case list in section 5, under a describe block "carried from D9's Stage A gate (critic-2, section 1.8)".
 
 | Critic-2 defect | Severity | Task | Case to add |
 |---|---|---|---|
@@ -482,6 +482,8 @@ describe("Corridor: the key, the dates and the lines (suggestion 3)")
   it should label nothing at the right on a stock Trade, and name the slider's session under the cursor
   it should draw a Worst case, Max reward or price line only with its label: one with no room for its label is not drawn (R-DALE-D's Max reward under the title)
   it should draw at its box's own width on a wide screen, the text the same size at 860 and at 1,400
+describe("Chart: carried from D9's Stage A gate (critic-2, section 1.8)")
+  it should show nothing at the right end of a stock Trade's time axis at any session, never the last session's date before it is revealed (defect 3: "Tue Nov 17" at "1 of 12", R-AXIO-U)
 ```
 
 ### T9AR.11 Chart: the entry session, an off-scale Worst case, a session with no Mark
@@ -533,6 +535,8 @@ describe("Readout: the change line (decision 8)")
   it should show "down $150.00 since Fri Nov 13" under Trade P&L and under each Mark, and under no stake row (R-BREN-U Mon 11-16)
 describe("Readout: a session with no Mark (suggestion 12)")
   it should show a dash named "No Mark" in each cell that needs the Mark, and keep the endings and the Worst case, which need none (R-CORV-D Tue 11-10)
+describe("Readout: carried from D9's Stage A gate (critic-2, section 1.8)")
+  it should keep a signed amount on one line in every grid cell at 1280, 375 and 320 wide, never "P&L –" on one line and "$17,463.00" on the next (defect 2: R-DALE-D Fri 11-13's At Worst case; R-BREN-U Mon 11-02)
 ```
 
 ### T9AR.14 One name per figure in the replay
@@ -595,6 +599,8 @@ describe("Replay: session cards (decision 5)")
   it should page with "Newer sessions" and "Earlier sessions", a page being the cards that fit side by side, handing focus on at either end
   it should turn back to the page holding the slider's card when the slider moves
   it should name the cards' list as the charts' description
+describe("Session cards: carried from D9's Stage A gate (critic-2, section 1.8)")
+  it should show a session past a line on its card as W56's row ("Past the Stop by $180.00 (0.30R) · at Stop −$740.00", R-AXIO-D Mon 11-09), never "$0.00" at risk (defect 1a)
 ```
 
 The "Stop" and "Target" rows hold the two prices the table's last columns held. T9AR.18 moves them to the Plan block (P148).
@@ -617,6 +623,9 @@ describe("Replay: a condition's first crossing (decision 2)")
   it should say "Past the Stop since Mon Nov 9." on each session of the run (R-AXIO-D), and "Stop first breached Mon Nov 9." once the Stop is no longer crossed
   it should say "first seen" after a session with no Mark: "Target reached, first seen Fri Nov 6."
   it should list "Target first reached" in the Events of the card of the session it happened in
+describe("The Plan beside what happened: carried from D9's Stage A gate (critic-2, section 1.8)")
+  it should show an option's strike in "The Plan" block in W40's words ("Strike $100", R-BREN-U; "Strike $57.50", R-DALE-D), so every chart figure is also off the chart (defect 1b)
+  it should name an Expiration "Expiration, Fri Nov 20" with "Expired" in the readout's Position group, never "Execution" (defect 4: R-DALE-U; the glossary: an Expiration is a Position Change, not an Execution)
 ```
 
 ### T9AR.19 Chart: a first crossing
