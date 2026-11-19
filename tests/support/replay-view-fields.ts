@@ -4,9 +4,15 @@
 import type { Instrument } from '../../src/domain/instrument/index.ts';
 import type { ReplayCrossings, ReplayFigures, ReplayPlanColumn } from '../../src/coordinators/trade-views/replay-view.ts';
 import { oddsOf as domainOddsOf } from '../../src/domain/trade-analysis/evaluate.ts';
-import { Rational } from '../../src/domain/values/index.ts';
+import { parseDecimal } from '../../src/domain/values/index.ts';
 
-const r = (n: number, d = 1) => Rational.of(BigInt(n), BigInt(d));
+// A plain number (a price may carry decimals) as the exact Rational the codebase's own decimal parsing gives.
+const exact = (n: number) => {
+  const parsed = parseDecimal(String(n));
+  if (!parsed.ok) throw new Error(`Not a decimal: ${n}`);
+  return parsed.value;
+};
+const r = (n: number, d = 1) => exact(n).div(exact(d));
 
 type Odds = NonNullable<ReplayPlanColumn['odds']>;
 type Terms = NonNullable<ReplayPlanColumn['terms']>;
