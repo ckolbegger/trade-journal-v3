@@ -298,6 +298,29 @@ Lane SC (`d09ar/sc`), from `445aa9d9`, commit `cd2e813f`; rebased onto `9bce9630
   - A re-crossed Stop says only "Past the Stop since".
   - A card's Events say "first breached" even after a gap.
 - **Next, briefed in lane SC in order:** T9AR.18-D1, T9AR.18-B1, T9AR.18-F1, T9AR.23-S4, T9AR.20-F1.
+- **Done in lane SC** (from `bb3ac29a`), evidence `ee37e3b4`:
+  - **T9AR.18-D1** `b49ff547`:
+    - Red: both B9.5 fit cases ("span 616 px of 588.9"), and the new position case (860 px: the sentence at y 139.8, the charts end at 631.6).
+    - Fix: in `replay-frame.css`, at 860 px and below, `.replay-card` becomes a flex column; the sentence gets `order: 1` and everything after the chart box `order: 2`.
+    - Green: all three pass.
+    - New `e2e/d9ar/crossing-position.spec.ts` (AXIO; 1280 and 861 px after the status line; 860 and 375 px after the charts).
+    - **Note for the final report:** a screen reader follows the page's order, not the CSS order, so on a phone it still hears the sentence after the status line, which is the same order as on a wide screen. Matching the seen order would need the sentence rendered twice, or JS. That was not done; the brief's "reading order follows what is seen" is not met.
+  - **T9AR.18-B1** `5f074418`, structural (no case can go red; the producer always fills `terms`):
+    - `terms` is now required in `ReplayPlan` (`replay-series.ts`) and in `ReplayPlanColumn` (`replay-view.ts`, lane DM, idle; outside the brief's list but in its "domain and view types").
+    - `NO_TERMS` added to `view-doubles.props.ts` (not listed; it holds the shared plan doubles).
+    - Typecheck passes; 931 tests green.
+  - **T9AR.18-F1** `9805e4a5`, structural: plain if/else, same sentences; 211 replay tests green.
+  - **T9AR.23-S4** `40d132af`:
+    - Red: the e2e case with its `test.fail` removed, rgb(85, 82, 75) against rgb(28, 27, 25).
+    - Fix: the `.replay-stake` muted colour removed. Green.
+  - **T9AR.20-F1** `12c9b1f9`, structural: `pastLineRow` calls `pastLineWords`. Tests unchanged and green.
+  - No first-run pass.
+  - Browser: `e2e/d9` `gaps`, `replay`, `states`, `session-cards` and `responsive-a11y`, plus `e2e/d9ar` `readout`, `responsive-a11y` and `crossing-position`: 45 passed (other lanes' `test.fail` cases counted).
+  - Lane tier `T9AR.18-fixes`: unit 2440, integration 286, checks 14 of 14.
+  - **ocr** on `bb3ac29a..12c9b1f9` (`ocr/T9AR.18-fixes-12c9b1f9.json`): 9 files, **no findings**.
+    - Reviewer's notes, not findings: the flex-column lines are inert, because `.replay-overlay .replay-card { display: grid }` wins, so only `order` takes effect (on grid items) and the relative order is kept; the `:not(.replay-crossing)` is redundant. Both are left for the final report.
+  - **Merged:** rebased onto `237a717f` (evidence only since its base, so no rerun) and fast-forwarded. Main is at `a3e91cd3`. T9AR.18 is now `b52cfe8f`; D1 `55aa3561`, B1 `6a0106ce`, F1 `e2ea1776`, T9AR.23-S4 `6a8d7f0e`, T9AR.20-F1 `cc983980`.
+  - Lanes OV and PL will bring this code in on their rebase and rerun their lane tiers. Lane BR was fast-forwarded to `a3e91cd3` for T9AR.23 part 2.
 
 ## T9AR.23 Browser suite
 
@@ -320,6 +343,20 @@ Lane BR (`d09ar/br`), base `70ce0f74`.
   - **T9AR.23-S4** (lane SC; `readout.spec.ts:77`): the "From here" sentence is muted grey, not the status line's colour.
   - **T9AR.23-S5** (lane PL; `responsive-a11y.spec.ts:264`): a tap leaves the hover box.
   - **T9AR.23-S6** (lane PL; `chart.spec.ts:125`): the key does not list "No Mark" when the P&L chart shades the put's missing Mark. This rests on W66, "lists what is drawn".
+- **T9AR.23-S6** `60fbad9e` (lane PL): unit case "should list No Mark in the key for a session whose result is missing though the Underlying has a Mark (W66)".
+  - Red: `expected [ 'Mark', 'Break-even', 'Strike' ] to include 'No Mark'`; then green.
+  - `chart.spec.ts`'s case passes with its `test.fail` removed.
+- **T9AR.23-S5** `a40db82d` (lane PL): two unit cases, both red then green.
+  - "touch or pen pointer reports no hover": red `expected [ 1, null, 1, null ] to deeply equal []`.
+  - "the focus a tap gives its button is not reported": red `expected [ 1 ] to deeply equal []`.
+  - The pointer fix alone left the e2e failing (`Expected: 0, Received: 1`). The real second cause was the focus a tap gives the session button.
+  - The e2e passes with its `test.fail` removed.
+- No first-run pass. Evidence `94afc000`.
+- Browser: `e2e/d9ar/chart.spec.ts`, `e2e/d9ar/responsive-a11y.spec.ts` and `e2e/d9/responsive-a11y.spec.ts` 25 passed. The ✘ on the Close-button case is its `test.fail` (an expected failure, lane OV's S3), not a flake.
+- Lane tier `T9AR.23-S-PL`: unit 2429, integration 286, checks 14 of 14.
+- **ocr** on `9bce9630..a40db82d` (`ocr/T9AR.23-S5-S6-a40db82d.json`): 6 files, 1 comment, in `a40db82d`.
+  - **T9AR.23-S5-B1** (Valid, `corridor.tsx:40`): `tapped` is cleared only by a focus event. A tap on the focused button, or a touch that turns into a scroll, leaves it set, and the next keyboard focus reports no hover. Briefed in lane PL.
+  - The reviewer confirmed S6 lists "No Mark" exactly when a column is drawn.
 - **Part 1 notes:**
   - The Detail overlay's slider session does not survive a reload (the address holds only `replay=open`; the plan does not ask that it survive).
   - The Review card reopens on its last session.

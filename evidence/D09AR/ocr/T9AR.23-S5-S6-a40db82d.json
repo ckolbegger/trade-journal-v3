@@ -1,0 +1,179 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 6 selected item(s).",
+  "summary": {
+    "files_reviewed": 6,
+    "comments": 1,
+    "total_tokens": 97534,
+    "input_tokens": 96440,
+    "output_tokens": 1094,
+    "cache_read_tokens": 18304,
+    "elapsed": "47s"
+  },
+  "tool_calls": {
+    "total": 13,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 1,
+      "file_find": 1,
+      "file_read": 9,
+      "file_read_diff": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/replay/corridor.tsx",
+      "content": "`tapped` is cleared only when a focus event occurs, but a touch/pen pointerdown does not always cause one. For example, tapping an already-focused session sets this flag without firing another focus event; pressing Tab then suppresses the next session's genuine keyboard focus. A canceled gesture can leave the same stale flag. Scope suppression to the tap's focus transition and clear it when switching to keyboard navigation. Add a regression test that taps an already-focused button and then tabs to another; the current test always supplies a focus event immediately after pointerdown, so it misses this case.",
+      "existing_code": "          onPointerDown={(e) =\u003e {\n            tapped.current = e.pointerType === 'touch' || e.pointerType === 'pen';\n          }}",
+      "start_line": 40,
+      "end_line": 42,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "D9AR end-to-end test adjustments",
+      "files": [
+        "e2e/d9ar/chart.spec.ts",
+        "e2e/d9ar/responsive-a11y.spec.ts"
+      ]
+    },
+    {
+      "label": "Replay corridor component and tests",
+      "files": [
+        "src/ui/cockpit/replay/corridor.test.tsx",
+        "src/ui/cockpit/replay/corridor.tsx"
+      ]
+    },
+    {
+      "label": "Replay plot properties and tests",
+      "files": [
+        "src/ui/cockpit/replay/plot.props.test.ts",
+        "src/ui/cockpit/replay/plot.props.ts"
+      ]
+    }
+  ],
+  "session_id": "ad4e8ae0-2e74-420b-b31d-258041bf99c9",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "ad4e8ae0-2e74-420b-b31d-258041bf99c9",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "9bce9630",
+      "requested_head": "a40db82d",
+      "resolved_base": "9bce96306943061ad3bdda53e539ad28534d144c",
+      "resolved_head": "a40db82d5775a603974fd75c8e44f6d535f5c856",
+      "exact_range": "9bce96306943061ad3bdda53e539ad28534d144c..a40db82d5775a603974fd75c8e44f6d535f5c856",
+      "source_artifact_sha256": "a29775f977769da7198ade1ac2f2a07c8626abeb04046303bd94f88330c9b87d"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "a410ae5445083fd827c54d8b9d86d21ba715904b98c9a444a96a1055354891ea",
+          "path": "src/ui/cockpit/replay/plot.props.ts",
+          "fingerprint": "01b619317f9edf231e442ae66f30488e07ae4d80b36d795ba0e66ebb4c1f29cc"
+        },
+        {
+          "item_id": "d64dd08eac4c57ce67dbeddfe6a9a32cd39eef6945c93dfb8c5de484438e35e2",
+          "path": "src/ui/cockpit/replay/corridor.tsx",
+          "fingerprint": "6f09c9e6848e71a3e10c4252aa71fdd6196947f68b9e9b72fc3605d3fc2ae8da"
+        },
+        {
+          "item_id": "e7f923df23a9662691b604086a2feed24d110c75c6b6d14bb61a26251750030b",
+          "path": "e2e/d9ar/responsive-a11y.spec.ts",
+          "fingerprint": "ed94d8348c9ade5a5566583260cbd7ee446083050c1660f0fc9a80a0f6e934ec"
+        },
+        {
+          "item_id": "f16b10bf3e13de7d3a70534f7bcf4d5affdae4bb70ab671a2b91a7ba1b948579",
+          "path": "src/ui/cockpit/replay/corridor.test.tsx",
+          "fingerprint": "17ad653f45eac6cc2ca40b2fbfb9316fb531ccda86126a6796f4c8fd79cc2470"
+        },
+        {
+          "item_id": "f29e81c73f1f29a685757ce194909f6690dbd33074294256066040f12aa0915d",
+          "path": "e2e/d9ar/chart.spec.ts",
+          "fingerprint": "ae0dad761c9b43bb3a174b91dbf53e9a03d24aff5bdbea407d5d7cb918d838d2"
+        },
+        {
+          "item_id": "f5f4040558fe30e2570decb93527016f5d42d1a8a147d28a8a9f3a24aec64378",
+          "path": "src/ui/cockpit/replay/plot.props.test.ts",
+          "fingerprint": "9029ded99c9e6b0e37a31ac37c708c795fb828cc700f43edad81995a9ef377ad"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "a410ae5445083fd827c54d8b9d86d21ba715904b98c9a444a96a1055354891ea",
+          "path": "src/ui/cockpit/replay/plot.props.ts",
+          "fingerprint": "01b619317f9edf231e442ae66f30488e07ae4d80b36d795ba0e66ebb4c1f29cc"
+        },
+        {
+          "item_id": "d64dd08eac4c57ce67dbeddfe6a9a32cd39eef6945c93dfb8c5de484438e35e2",
+          "path": "src/ui/cockpit/replay/corridor.tsx",
+          "fingerprint": "6f09c9e6848e71a3e10c4252aa71fdd6196947f68b9e9b72fc3605d3fc2ae8da"
+        },
+        {
+          "item_id": "e7f923df23a9662691b604086a2feed24d110c75c6b6d14bb61a26251750030b",
+          "path": "e2e/d9ar/responsive-a11y.spec.ts",
+          "fingerprint": "ed94d8348c9ade5a5566583260cbd7ee446083050c1660f0fc9a80a0f6e934ec"
+        },
+        {
+          "item_id": "f16b10bf3e13de7d3a70534f7bcf4d5affdae4bb70ab671a2b91a7ba1b948579",
+          "path": "src/ui/cockpit/replay/corridor.test.tsx",
+          "fingerprint": "17ad653f45eac6cc2ca40b2fbfb9316fb531ccda86126a6796f4c8fd79cc2470"
+        },
+        {
+          "item_id": "f29e81c73f1f29a685757ce194909f6690dbd33074294256066040f12aa0915d",
+          "path": "e2e/d9ar/chart.spec.ts",
+          "fingerprint": "ae0dad761c9b43bb3a174b91dbf53e9a03d24aff5bdbea407d5d7cb918d838d2"
+        },
+        {
+          "item_id": "f5f4040558fe30e2570decb93527016f5d42d1a8a147d28a8a9f3a24aec64378",
+          "path": "src/ui/cockpit/replay/plot.props.test.ts",
+          "fingerprint": "9029ded99c9e6b0e37a31ac37c708c795fb828cc700f43edad81995a9ef377ad"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "65ba466ee441b8533cd3f9ad0b9969947cd04237fca762a75a151101c9f7916f",
+          "path": "evidence/D09AR/tdd-log/T9AR.23-S5.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "8c533a74b6ec2f145b35ba78542544bf65b009cac1b8f7780632f3a253d61e5d",
+          "path": "evidence/D09AR/screenshots/B9AR.7-tap-hover-box.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "979fc47602d81a8007de23489f368ac259b510cc4a5be7cedf30d4a776645c4e",
+          "path": "evidence/D09AR/tdd-log/T9AR.23-S6.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 46774
+  }
+}

@@ -1,0 +1,199 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 9 selected item(s).",
+  "summary": {
+    "files_reviewed": 9,
+    "comments": 0,
+    "total_tokens": 87890,
+    "input_tokens": 86317,
+    "output_tokens": 1573,
+    "cache_read_tokens": 8320,
+    "elapsed": "56s"
+  },
+  "tool_calls": {
+    "total": 15,
+    "by_tool": {
+      "code_search": 7,
+      "file_read": 8
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Replay crossing-position behavior, readouts, and presentation",
+      "files": [
+        "e2e/d9ar/crossing-position.spec.ts",
+        "e2e/d9ar/readout.spec.ts",
+        "src/coordinators/trade-views/replay-view.ts",
+        "src/domain/trade-analysis/replay-series.ts",
+        "src/ui/cockpit/replay/readout.props.test.ts",
+        "src/ui/cockpit/replay/readout.props.ts",
+        "src/ui/cockpit/replay/session-words.props.ts",
+        "src/ui/cockpit/replay/view-doubles.props.ts",
+        "src/ui/cockpit/styles/replay-frame.css"
+      ]
+    }
+  ],
+  "session_id": "812ca35c-5b22-4964-9af0-135f3a1617c3",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "812ca35c-5b22-4964-9af0-135f3a1617c3",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "bb3ac29a",
+      "requested_head": "12c9b1f9",
+      "resolved_base": "bb3ac29ad77eb743d8abe7729265463ebcba4c00",
+      "resolved_head": "12c9b1f9f114b36a99f5edf8a4997f2c4bb2e5e0",
+      "exact_range": "bb3ac29ad77eb743d8abe7729265463ebcba4c00..12c9b1f9f114b36a99f5edf8a4997f2c4bb2e5e0",
+      "source_artifact_sha256": "971bc81cb8b4acadeadd07b9fabde0f7143490aebf6b0e5329e5141d93396803"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0c585bcd229773a3f0708e517a2ad9350fb57d3c2c186990f19985c1ebdce0e8",
+          "path": "src/ui/cockpit/styles/replay-frame.css",
+          "fingerprint": "695290e8ca3d0087821f6b04b1147e861946a2370f9de0cfbdf3ffe0b10808a8"
+        },
+        {
+          "item_id": "1692cb51775d9bcbfbbcdae8eb26d45e9fdc98a6e5a4783107fab6d7b8115d3a",
+          "path": "src/ui/cockpit/replay/view-doubles.props.ts",
+          "fingerprint": "790fb33fcf5527962095de969bfb62fa64a82448eb17171738b0675ebccd3faf"
+        },
+        {
+          "item_id": "2740b3deee41c7f3853b5aeccccfab292c736af3433cf49b58bf6219c035a8fb",
+          "path": "e2e/d9ar/readout.spec.ts",
+          "fingerprint": "f1f73b3871f55a7a1d982352f72731900e28741395a95f470e9c8197c4a67326"
+        },
+        {
+          "item_id": "8023195fb5ff8eacfa085a0ee6128d2ccac3475f3463353dc3edf82dabcb74de",
+          "path": "src/ui/cockpit/replay/readout.props.ts",
+          "fingerprint": "87056a96173eae8667a6f0bd7e1d2a51db71a51598818a0bc6eab453c9132e82"
+        },
+        {
+          "item_id": "9976d18c2274e41cf36a98b67683994039c21a1af78841e836a624f6b5572d8f",
+          "path": "e2e/d9ar/crossing-position.spec.ts",
+          "fingerprint": "10d3d8adbafbbf6aff9c0130f3a53b110de5962d885c2aa3ca84b0d150f29c2b"
+        },
+        {
+          "item_id": "a12148e44ef3ddcc92a297f35500d8d2e12aed5c42397adf025920c15f36d0ee",
+          "path": "src/domain/trade-analysis/replay-series.ts",
+          "fingerprint": "5f3db4eb72dec253fbcf14d5532f733022919c66202c19c70cc980a5ffae9a06"
+        },
+        {
+          "item_id": "ae4600f33addb44bb7bf9b2d15c8e0e5db21f5366a4625fd4cdfd8768a646fb3",
+          "path": "src/ui/cockpit/replay/readout.props.test.ts",
+          "fingerprint": "ce7692c15ef4aa3c4cfd649844e13dcf9e3f268d8cf138e691d3071247a32628"
+        },
+        {
+          "item_id": "d052e22160bb764f5ae6499b78ac706b434e4d578745d4efee3f5d833ab2fcb1",
+          "path": "src/coordinators/trade-views/replay-view.ts",
+          "fingerprint": "9bd84685b5bc7b6f685e76c9b161d09b0c5ea6a192a1022f17fe0141bd671de8"
+        },
+        {
+          "item_id": "d4504f3e17e0d84929b5e414b862ba5847912ba3a9b73025b5a0fe9f18406551",
+          "path": "src/ui/cockpit/replay/session-words.props.ts",
+          "fingerprint": "3e1356259cb7f43f510ccc32a55ef9e122e704225e6063de873f388d01a6712d"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0c585bcd229773a3f0708e517a2ad9350fb57d3c2c186990f19985c1ebdce0e8",
+          "path": "src/ui/cockpit/styles/replay-frame.css",
+          "fingerprint": "695290e8ca3d0087821f6b04b1147e861946a2370f9de0cfbdf3ffe0b10808a8"
+        },
+        {
+          "item_id": "1692cb51775d9bcbfbbcdae8eb26d45e9fdc98a6e5a4783107fab6d7b8115d3a",
+          "path": "src/ui/cockpit/replay/view-doubles.props.ts",
+          "fingerprint": "790fb33fcf5527962095de969bfb62fa64a82448eb17171738b0675ebccd3faf"
+        },
+        {
+          "item_id": "2740b3deee41c7f3853b5aeccccfab292c736af3433cf49b58bf6219c035a8fb",
+          "path": "e2e/d9ar/readout.spec.ts",
+          "fingerprint": "f1f73b3871f55a7a1d982352f72731900e28741395a95f470e9c8197c4a67326"
+        },
+        {
+          "item_id": "8023195fb5ff8eacfa085a0ee6128d2ccac3475f3463353dc3edf82dabcb74de",
+          "path": "src/ui/cockpit/replay/readout.props.ts",
+          "fingerprint": "87056a96173eae8667a6f0bd7e1d2a51db71a51598818a0bc6eab453c9132e82"
+        },
+        {
+          "item_id": "9976d18c2274e41cf36a98b67683994039c21a1af78841e836a624f6b5572d8f",
+          "path": "e2e/d9ar/crossing-position.spec.ts",
+          "fingerprint": "10d3d8adbafbbf6aff9c0130f3a53b110de5962d885c2aa3ca84b0d150f29c2b"
+        },
+        {
+          "item_id": "a12148e44ef3ddcc92a297f35500d8d2e12aed5c42397adf025920c15f36d0ee",
+          "path": "src/domain/trade-analysis/replay-series.ts",
+          "fingerprint": "5f3db4eb72dec253fbcf14d5532f733022919c66202c19c70cc980a5ffae9a06"
+        },
+        {
+          "item_id": "ae4600f33addb44bb7bf9b2d15c8e0e5db21f5366a4625fd4cdfd8768a646fb3",
+          "path": "src/ui/cockpit/replay/readout.props.test.ts",
+          "fingerprint": "ce7692c15ef4aa3c4cfd649844e13dcf9e3f268d8cf138e691d3071247a32628"
+        },
+        {
+          "item_id": "d052e22160bb764f5ae6499b78ac706b434e4d578745d4efee3f5d833ab2fcb1",
+          "path": "src/coordinators/trade-views/replay-view.ts",
+          "fingerprint": "9bd84685b5bc7b6f685e76c9b161d09b0c5ea6a192a1022f17fe0141bd671de8"
+        },
+        {
+          "item_id": "d4504f3e17e0d84929b5e414b862ba5847912ba3a9b73025b5a0fe9f18406551",
+          "path": "src/ui/cockpit/replay/session-words.props.ts",
+          "fingerprint": "3e1356259cb7f43f510ccc32a55ef9e122e704225e6063de873f388d01a6712d"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "0d600d2399e2d57e13ba907e0526b3c77642ef3d190890fa1e98e16befc3b24c",
+          "path": "evidence/D09AR/tdd-log/T9AR.18-F1.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "1b6b613d36752dd9778a73a346514a4daaf4632b51235aae986ca1f1d9dac1be",
+          "path": "evidence/D09AR/tdd-log/T9AR.18-D1.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "215d2ea2a2f62785cdae86ead99e73e0c7f0f056c51bef979e03b7b20d98e704",
+          "path": "evidence/D09AR/tdd-log/T9AR.20-F1.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "80d3cb2dadb8df4ba0eb69e3dcdc4468775ac9593a4cb9ed17616433fc163ba5",
+          "path": "evidence/D09AR/tdd-log/T9AR.18-B1.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "a6cbc29e98ec9a195df2e5f045e6b96fc44e71b4c327b86a9aa3b5c434f85d25",
+          "path": "evidence/D09AR/tdd-log/T9AR.23-S4.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 55578
+  }
+}
