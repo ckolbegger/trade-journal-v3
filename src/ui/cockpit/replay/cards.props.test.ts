@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { figureParts } from './cards.props.ts';
 import { replayProps } from './replay.props.ts';
 import type { SessionCardRow } from './replay.types.ts';
 import { BREN, BREN_STOCK, brenThu1112, brenWed1111, condition, fullView, markOf, NOT_APPLICABLE, Plot, PLAN, usd, value, withMarks } from './view-doubles.props.ts';
@@ -18,6 +19,23 @@ const wed1111 = { ...brenWed1111, figures: { ...brenWed1111.figures!, conditions
 
 // A row as the card draws it: "$672.00 · 2.07R · P&L if hit +$316.00".
 const said = (row: SessionCardRow) => [row.label, [row.value.text, ...(row.r ? [row.r.text] : []), ...(row.pnl ? [`P&L if hit ${row.pnl.text}`] : [])].join(' · ')];
+
+describe('Replay: session cards, figures as unbreakable parts (T9AR.24-B1)', () => {
+  it('should split a card text into words and figures, each signed amount, R multiple, odds and percentage pair one figure part with its sign', () => {
+    expect(figureParts('Past the Stop by $180.00 (0.30R) · at Stop −$740.00')).toEqual([
+      { text: 'Past the Stop by ' },
+      { text: '$180.00', figure: true },
+      { text: ' (' },
+      { text: '0.30R', figure: true },
+      { text: ') · at Stop ' },
+      { text: '−$740.00', figure: true },
+    ]);
+    expect(figureParts('11.69 to 1 · about 8% : 92%')).toEqual([{ text: '11.69 to 1', figure: true }, { text: ' · about ' }, { text: '8% : 92%', figure: true }]);
+    expect(figureParts('$31,848.00 · +20.73R · P&L if hit +$1,200.00').filter((p) => p.figure).map((p) => p.text)).toEqual(['$31,848.00', '+20.73R', '+$1,200.00']);
+    expect(figureParts('Sold 100 at $45.60').map((p) => p.text).join('')).toBe('Sold 100 at $45.60');
+    expect(figureParts('No Mark')).toEqual([{ text: 'No Mark' }]);
+  });
+});
 
 describe('Replay: session cards, empty parts', () => {
   it('should leave out the R and the P&L if hit of a stake row that has none, never carry an empty part onto the card', () => {

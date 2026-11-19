@@ -133,7 +133,7 @@ describe("Session cards: carried from D9's Stage A gate (critic-2, section 1.8)"
     });
     show(replayProps({ ...view([monday]), instruments: [AXIO] }, { Plot }));
     const card = cardOf('Mon Nov 9');
-    expect(within(card).getByText('Past the Stop by $180.00 (0.30R) · at Stop −$740.00')).toBeTruthy();
+    expect(card.querySelector('.replay-past-line')?.textContent).toBe('Past the Stop by $180.00 (0.30R) · at Stop −$740.00');
     // The risk to the Stop, which is zero once past it, has no row and no figure on the card.
     expect(within(card).queryByText('At Stop')).toBeNull();
     expect(text(card)).not.toContain('$0.00');

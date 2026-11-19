@@ -59,7 +59,9 @@
   outline-offset: 2px;
 }
 
+/* Every row has the card's whole width: the global `dl` is a two-column grid, which put the rows in two columns of about 87 px. */
 .replay-session-card dl {
+  display: block;
   margin: 0;
 }
 
@@ -81,6 +83,11 @@
   text-align: right;
   font-variant-numeric: tabular-nums;
   color: var(--ink);
+}
+
+/* C9AR.2, A278: a figure (a signed amount, an R multiple, the odds, a percentage pair) is one piece: a row wraps between figures, never inside one. */
+.card-figure {
+  white-space: nowrap;
 }
 
 /* A268: the extremes carry less weight, as in the readout's grid. */

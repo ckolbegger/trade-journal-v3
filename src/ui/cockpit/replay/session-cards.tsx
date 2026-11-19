@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { CardPager, useCardsPerPage } from '../card-pager.tsx';
+import { figureParts } from './cards.props.ts';
 import type { ReadoutValue, SessionCard, SessionCardsProps } from './replay.types.ts';
 
 // A card's least width and the gap between cards, in px: the carousel's width over these is how many fit.
@@ -13,7 +14,24 @@ function shown(value: ReadoutValue) {
       —
     </span>
   ) : (
-    value.text
+    <Words text={value.text} />
+  );
+}
+
+// C9AR.2, A278: a card's words may wrap between figures, never inside one and never between a sign and its number.
+function Words({ text }: { readonly text: string }) {
+  return (
+    <>
+      {figureParts(text).map((part, at) =>
+        part.figure ? (
+          <span key={at} className="card-figure">
+            {part.text}
+          </span>
+        ) : (
+          part.text
+        ),
+      )}
+    </>
   );
 }
 
@@ -27,7 +45,7 @@ function Row({ row }: { readonly row: SessionCard['rows'][number] }) {
           {row.spoken ? (
             // A267: the odds are heard in full, where the page shows them as ratio-like marks; only the odds part is labelled.
             <>
-              {row.value.text.split(' · ')[0]} · <span role="img" aria-label={row.spoken}>{row.value.text.split(' · ').slice(1).join(' · ')}</span>
+              <Words text={row.value.text.split(' · ')[0]!} /> · <span role="img" aria-label={row.spoken}><Words text={row.value.text.split(' · ').slice(1).join(' · ')} /></span>
             </>
           ) : (
             shown(row.value)
@@ -85,7 +103,7 @@ export function SessionCards({ title, newerLabel, earlierLabel, cards, id, onSel
               {/* W56: a Trade past a line, in one row above the stake rows. */}
               {card.pastLine && (
                 <p className="replay-past-line" title={card.pastLine.term}>
-                  {card.pastLine.text}
+                  <Words text={card.pastLine.text} />
                 </p>
               )}
               <dl>
@@ -95,7 +113,9 @@ export function SessionCards({ title, newerLabel, earlierLabel, cards, id, onSel
                 {card.events.length > 0 && (
                   <div className="replay-card-row" data-row="Events">
                     <dt>Events</dt>
-                    <dd>{card.events.join('; ')}</dd>
+                    <dd>
+                      <Words text={card.events.join('; ')} />
+                    </dd>
                   </div>
                 )}
               </dl>

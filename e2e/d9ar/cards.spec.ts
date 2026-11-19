@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import { REPLAY_SESSION_DATES } from '../../src/domain/trade-analysis/reference-trade.ts';
-import { AXIO, BREN, build, cardRows, closeOf, CORV, expect, label, openDrawer, replay, seek, sessionCard, sessionCards, sliderValue, test } from './support.ts';
+import { AXIO, BREN, build, cardRows, closeOf, CORV, DALE_HOLD, expect, label, openDrawer, replay, seek, sessionCard, sessionCards, setViewport, sliderValue, test } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -207,4 +207,73 @@ test.describe('B9AR.4 The Plan block and the cards', () => {
     for (const date of ['Mon Nov 9', 'Tue Nov 10', 'Wed Nov 11']) await expect(await sessionCard(scope, date), `${date}'s card`).not.toContainText('first reached');
     await context.close();
   });
+});
+
+// T9AR.24-B1 (critic-1 defect 1, C9AR.2, A278): no figure on a session card breaks across lines and no sign parts from its number. Measured by the figure's own text, whatever the markup: a signed amount, an R multiple,
+// the odds "11.69 to 1" and a percentage pair each lie in one line box on every visible card, at every width, on the Trades whose figures are four-digit or signed.
+const FIGURES = String.raw`[−+]?\$[\d,]+(?:\.\d+)?|[−+]?\d[\d,]*(?:\.\d+)?R\b|\d+(?:\.\d+)? to \d+|\d+% : \d+%`;
+async function brokenFigures(scope: Locator): Promise<string[]> {
+  return sessionCards(scope).evaluateAll((cards, source) => {
+    const broken: string[] = [];
+    for (const card of cards) {
+      if (!(card as HTMLElement).offsetParent) continue;
+      // A figure may be split by markup (a span round the sign), so the card's text is matched as one string and each match is measured over the text nodes it spans.
+      const walker = document.createTreeWalker(card, NodeFilter.SHOW_TEXT);
+      const nodes: Text[] = [];
+      for (let n = walker.nextNode(); n; n = walker.nextNode()) nodes.push(n as Text);
+      const whole = nodes.map((n) => n.data).join('');
+      for (const m of whole.matchAll(new RegExp(source, 'g'))) {
+        const from = m.index;
+        const to = from + m[0].length;
+        const range = document.createRange();
+        let at = 0;
+        let started = false;
+        for (const n of nodes) {
+          const end = at + n.data.length;
+          if (!started && from < end) {
+            range.setStart(n, from - at);
+            started = true;
+          }
+          if (started && to <= end) {
+            range.setEnd(n, to - at);
+            break;
+          }
+          at = end;
+        }
+        const rects = [...range.getClientRects()].filter((r) => r.width > 0 && r.height > 0);
+        const font = parseFloat(getComputedStyle(card).fontSize);
+        if (rects.length && Math.max(...rects.map((r) => r.bottom)) - Math.min(...rects.map((r) => r.top)) > font * 1.6) broken.push(`${(card.querySelector('h4')?.textContent ?? '').trim()}: "${m[0]}"`);
+      }
+    }
+    return broken;
+  }, FIGURES);
+}
+
+test.describe('T9AR.24-B1 Figures on the session cards', () => {
+  for (const [name, fixture] of [['DALE-hold', DALE_HOLD], ['AXIO', AXIO], ['BREN', BREN]] as const) {
+    test(`should keep every figure on a session card on one line, sign with its number, at 1280, 1440, 375 and 320, ${name}`, async ({ profile }) => {
+      test.setTimeout(300_000);
+      const { context, page } = await build(profile, fixture, closeOf('2026-11-16'), 10);
+      const scope = await openReplay(page);
+      await seek(page, scope, 'End');
+      for (const width of [1280, 1440, 375, 320]) {
+        await setViewport(page, width, 800);
+        const newer = scope.getByRole('button', { name: 'Newer sessions', exact: true });
+        const earlier = scope.getByRole('button', { name: 'Earlier sessions', exact: true });
+        while (await newer.isEnabled()) await newer.click();
+        // Every page of the cards, from the newest.
+        for (let pages = 0; pages < 12; pages += 1) {
+          expect(await brokenFigures(scope), `${name} at ${width}, cards page ${pages + 1}`).toEqual([]);
+          // Each row has the card's whole width, not half of it: a row narrower than 80% of its card is one of two columns of rows.
+          const narrow = await sessionCards(scope).evaluateAll((cards) =>
+            cards.filter((c) => (c as HTMLElement).offsetParent).flatMap((c) => [...c.querySelectorAll('.replay-card-row')].filter((r) => r.getBoundingClientRect().width < c.getBoundingClientRect().width * 0.8).map((r) => (r.textContent ?? '').trim())),
+          );
+          expect(narrow, `${name} at ${width}, cards page ${pages + 1}: rows in a narrow column`).toEqual([]);
+          if (!(await earlier.isEnabled())) break;
+          await earlier.click();
+        }
+      }
+      await context.close();
+    });
+  }
 });

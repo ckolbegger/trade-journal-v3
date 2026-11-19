@@ -10,6 +10,25 @@ type ViewSession = TradeReplayView['sessions'][number];
 
 const stakeCardRow = ({ label, term, fromHere, r, pnlIfHit, weight }: StakeRow): SessionCardRow => ({ label, value: fromHere, ...(r?.text && { r }), ...(pnlIfHit?.text && { pnl: pnlIfHit }), term, ...(weight && { weight }) });
 
+// A card text as the parts the page draws: its words, and each figure (a signed amount, an R multiple, the odds "11.69 to 1", a percentage pair "8% : 92%") as a part of its own that the page keeps on one
+// line (C9AR.2, A278). It splits text the readout already worded; it works out nothing.
+export interface FigurePart {
+  readonly text: string;
+  readonly figure?: true;
+}
+const FIGURE = /[−+]?\$[\d,]+(?:\.\d+)?|[−+]?\d[\d,]*(?:\.\d+)?R\b|\d+(?:\.\d+)? to \d+|\d+% : \d+%/g;
+export function figureParts(text: string): FigurePart[] {
+  const parts: FigurePart[] = [];
+  let at = 0;
+  for (const m of text.matchAll(FIGURE)) {
+    if (m.index > at) parts.push({ text: text.slice(at, m.index) });
+    parts.push({ text: m[0], figure: true });
+    at = m.index + m[0].length;
+  }
+  if (at < text.length) parts.push({ text: text.slice(at) });
+  return parts;
+}
+
 export function cardOf(session: ViewSession, readout: readonly ReadoutGroup[]): SessionCardBody {
   const group = (title: string) => readout.find((g) => g.title === title);
   const plain = (rows: readonly { label: string; value: ReadoutValue }[] | undefined, only?: readonly string[]): SessionCardRow[] => (rows ?? []).filter((r) => !only || only.includes(r.label)).map(({ label, value }) => ({ label, value }));
