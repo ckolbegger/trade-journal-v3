@@ -55,11 +55,17 @@ export function drawStrip(props: ReplayPlotProps, width: number): DrawnChart {
           7,
         )
       : null;
+  // The cursor's column is held free (A280): a line's label takes the left end, or the right end when the cursor is there.
+  if (current) placer.reserveColumn(time.x(current.slot) - time.column / 2, time.x(current.slot) + time.column / 2);
   const lineLabels = anchors.priceLines.flatMap((l, i) => {
     const y = value.y(l.price);
-    const spots: Spot[] = [-4, 12].map((dy) => ({ x: time.left + 4, y: y + dy, anchor: 'start' }));
+    const left: Spot[] = [-4, 12].map((dy) => ({ x: time.left + 4, y: y + dy, anchor: 'start' }));
+    const right: Spot[] = [-4, 12].map((dy) => ({ x: time.right - 4, y: y + dy, anchor: 'end' }));
+    // The right end is for a label whose left end the cursor's column covers.
+    const covered = current !== undefined && time.left + 4 + l.label.length * 6 + 2 > time.x(current.slot) - time.column / 2;
+    const spots = covered ? right : left;
     const spot = placer.place(l.label, l.kind === 'Stop' ? spots.reverse() : spots);
-    return spot ? [{ key: `${l.kind}-${i}`, kind: l.kind.toLowerCase(), text: l.label, y: spot.y }] : [];
+    return spot ? [{ key: `${l.kind}-${i}`, kind: l.kind.toLowerCase(), text: l.label, spot }] : [];
   });
 
   const shown = new Set<PlotKeyEntry['kind']>(lineLabels.some((l) => l.kind === 'strike') ? ['Strike'] : []);
@@ -93,7 +99,7 @@ export function drawStrip(props: ReplayPlotProps, width: number): DrawnChart {
         ) : null,
       )}
       {lineLabels.map((l) => (
-        <text key={l.key} className={`price-line-label ${l.kind}`} x={time.left + 4} y={f1(l.y)}>
+        <text key={l.key} className={`price-line-label ${l.kind}`} x={f1(l.spot.x)} y={f1(l.spot.y)} textAnchor={l.spot.anchor}>
           {l.text}
         </text>
       ))}

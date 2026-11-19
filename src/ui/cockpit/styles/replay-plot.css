@@ -146,6 +146,7 @@
 .replay-plot .past-label,
 .replay-plot .marker-label,
 .replay-plot .worst-case-label,
+.replay-plot .worst-case-tag,
 .replay-plot .max-reward-label {
   fill: var(--ink);
   font-weight: 650;
@@ -158,6 +159,16 @@
 .replay-plot .result-label.stop,
 .replay-plot .worst-case-label {
   fill: var(--stop);
+}
+
+/* The Worst case's off-scale tag takes the extremes' weight (decision 6): full strength, or grey and lighter on a stock or a long option. */
+.replay-plot .worst-case-tag.main {
+  fill: var(--stop);
+}
+
+.replay-plot .worst-case-tag.remote {
+  fill: var(--muted);
+  font-weight: 500;
 }
 
 .replay-plot .result-label.target,

@@ -7,6 +7,17 @@ describe('replay.props: what the plot draws of a session (W39 to W41, W44)', () 
   const buy = { id: 'x1', kind: 'Execution', effect: 'Opened', fills: [{ instrument: BREN, action: 'Buy', quantity: usd(4), price: usd(1.68) }] } as const;
   const expiry = { id: 'x3', kind: 'Expiration', effect: 'Closed', fills: [{ instrument: BREN, action: 'Expire', quantity: usd(2) }] } as const;
 
+  it('should tag a losing Worst case with its finished figure and the extremes’ weight, and tag none where there is no loss', () => {
+    const at = (worst: number, extremes?: 'Main' | 'Remote') =>
+      session({ date: '2026-11-09', pnl: -720, outcomes: { atStop: value(usd(-1263)), atTarget: value(usd(-273)), atWorstCase: value(usd(worst)) }, ...(extremes && { figures: { extremes } }) });
+    const tags = (spec: ReturnType<typeof at>) => replayProps(fullView([spec], PLAN), { Plot }).sessions[0]!.plot.worstCaseTag;
+    expect(tags(at(-33936, 'Remote'))).toEqual({ label: 'Worst case −$33,936 ↓', weight: 'Remote' });
+    expect(tags(at(-33936, 'Main'))).toEqual({ label: 'Worst case −$33,936 ↓', weight: 'Main' });
+    // A screen shown no weight treats it as Main; a Worst case that is no loss has no tag to draw.
+    expect(tags(at(-33936))?.weight).toBe('Main');
+    expect(tags(at(156))).toBeUndefined();
+  });
+
   it('should give the plot each session Marks, result, banked and Stop and Target as numbers beside their finished labels', () => {
     const wed = { ...brenWed1111, realizedPnl: usd(478), markers: [sale] };
     const props = replayProps(fullView([wed], PLAN), { Plot });

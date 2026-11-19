@@ -76,7 +76,8 @@ describe("Corridor: the Underlying's price (W39)", () => {
     const right = xs[4]!;
     expect(num(gap[0]!, 'x')).toBeGreaterThan(left);
     expect(num(gap[0]!, 'x') + num(gap[0]!, 'width')).toBeLessThan(right);
-    expect(screen.getAllByText('No Mark')).toHaveLength(1);
+    // This chart says it once (the P&L chart, whose doubles here have no Trade P&L, shades its own columns).
+    expect([...strip(container).querySelectorAll('text.no-mark-label')].map((t) => t.textContent)).toEqual(['No Mark']);
   });
 
   it("should draw the strike on an option Trade, and a condition's line where the condition is on the Underlying's price", () => {

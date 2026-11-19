@@ -124,7 +124,9 @@ describe('Corridor: the Trade P&L (W40, W41)', () => {
     const hi = mid(gapX[2]!, gapX[3]!) + 1;
     const edgeXs = [...area.matchAll(/[ML](-?[\d.]+) /g)].map((m) => Number(m[1]));
     expect(edgeXs.some((x) => x > lo && x < hi)).toBe(false);
-    expect(edgeXs.some((x) => x > gapX[2]! && x < gapX[3]!)).toBe(false);
+    // The area runs to the edge of the gap's column and no further (T9AR.11, P146): nothing inside the column itself.
+    const time = timeAxis(640, 15);
+    expect(edgeXs.some((x) => x > time.x(3) - time.column / 2 + 0.1 && x < time.x(3) + time.column / 2 - 0.1)).toBe(false);
   });
 
   it('should fill a single session with a figure between two gaps, and the first revealed session', () => {
@@ -940,5 +942,149 @@ describe('Corridor: the key, the dates and the lines (suggestion 3)', () => {
     const endLeft = num(end, 'x') - width(end);
     const cursorRight = cursor.getAttribute('text-anchor') === 'end' ? num(cursor, 'x') : num(cursor, 'x') + width(cursor) / 2;
     expect(cursorRight).toBeLessThanOrEqual(endLeft);
+  });
+});
+
+// T9AR.11 (A280, A256, P146): the entry session, an off-scale Worst case, a session with no Mark.
+describe('Corridor: labels clear of the cursor (suggestion 10)', () => {
+  // The cursor's column on a 640-wide drawing of an 11-slot option axis, and a label's box by the placer's own estimate.
+  const AXIS = { slots: 11, startLabel: 'Mon Nov 2', endLabel: 'Expires Fri Nov 20' };
+  const LINES = [
+    { kind: 'Strike' as const, price: 100, label: 'Strike $100' },
+    { kind: 'Stop' as const, price: 94, label: 'Stop $94.00' },
+  ];
+  const clear = (label: Element, slot: number): boolean => {
+    const time = timeAxis(640, AXIS.slots);
+    const w = label.textContent.length * 6 + 2;
+    const x = Number(label.getAttribute('x'));
+    const x0 = label.getAttribute('text-anchor') === 'end' ? x - w : x;
+    return x0 + w <= time.x(slot) - time.column / 2 || time.x(slot) + time.column / 2 <= x0;
+  };
+
+  it.each([
+    ['the entry session', 0],
+    ['the last session', 10],
+  ])('should keep every level label out of the cursor’s column, on %s', (_name, i) => {
+    const sessions = DAYS.slice(0, i + 1).map((_d, k) => bren(k));
+    const { container } = render(<CorridorPlot {...props({ sessions, sliderIndex: i, axis: AXIS, anchors: { ...props().anchors, priceLines: LINES } })} />);
+    const strip = container.querySelector('svg.price-strip')!;
+    for (const text of ['Strike $100', 'Stop $94.00']) {
+      const label = [...strip.querySelectorAll('text.price-line-label')].find((t) => t.textContent === text);
+      expect(label, text).toBeTruthy();
+      expect(clear(label!, i), text).toBe(true);
+    }
+    const breakEven = pnl(container).querySelector('text.break-even-label');
+    expect(breakEven, 'Break-even').toBeTruthy();
+    expect(clear(breakEven!, i), 'Break-even').toBe(true);
+  });
+
+  it('should keep the Worst case and Max reward lines on the chart at the last session, their labels clear of the cursor', () => {
+    const sessions = DAYS.map((_d, k) => bren(k, { worstCase: fig(-400, 'Worst case −$400'), maxReward: fig(1000, 'Max reward +$1,000') }));
+    const { container } = render(<CorridorPlot {...props({ sessions, sliderIndex: 10, axis: AXIS })} />);
+    for (const css of ['worst-case', 'max-reward']) {
+      expect(pnl(container).querySelectorAll(`path.${css}`), css).toHaveLength(1);
+      expect(clear(pnl(container).querySelector(`text.${css}-label`)!, 10), css).toBe(true);
+    }
+  });
+});
+
+describe('Corridor: a Worst case off the scale (suggestion 13)', () => {
+  // R-DALE-D after the buy-back: the Worst case (-$33,936) is far below the chart; the adapter hands each session its tag.
+  const dale = (worst: number, weight: 'Main' | 'Remote' = 'Main', tagged = true): PlotSession[] =>
+    [-720, -1065, -1150, -1272].map((p, i) => ({
+      slot: i,
+      dateLabel: `Day ${i}`,
+      underlyingMark: 56 - i,
+      tradePnl: p,
+      banked: i >= 1 ? -495 : 0,
+      resultAtStop: fig(-1263, 'Stop −$1,263'),
+      resultAtTarget: fig(-273, 'Target −$273'),
+      worstCase: fig(worst, `Worst case ${worst < 0 ? '−' : '+'}$${Math.abs(worst).toLocaleString('en-US')}`),
+      maxReward: null,
+      ...(tagged && { worstCaseTag: { label: `Worst case ${worst < 0 ? '−' : '+'}$${Math.abs(worst).toLocaleString('en-US')} ↓`, weight } }),
+      markers: [],
+    }));
+  const anchors = { priceLines: [], planAtStop: fig(-1536, 'Stop −$1,536'), planAtTarget: fig(444, 'Target +$444') };
+  const draw = (sessions: PlotSession[], sliderIndex = 3) => render(<CorridorPlot {...props({ sessions, sliderIndex, anchors, axis: { slots: 4 } })} />);
+
+  it('should tag the bottom edge "Worst case −$33,936 ↓" when the Worst case is below the chart’s range without stretching the axis, and show no tag when its line is on the scale', () => {
+    const { container } = draw(dale(-33936));
+    const tag = pnl(container).querySelector('text.worst-case-tag')!;
+    expect(tag.textContent).toBe('Worst case −$33,936 ↓');
+    // At the bottom edge of the plotted area, clear of the cursor's column; its line is not drawn.
+    expect(Number(tag.getAttribute('y'))).toBeGreaterThan(Math.max(...dots(container).map((d) => num(d, 'cy'))));
+    expect(Number(tag.getAttribute('y'))).toBeLessThanOrEqual(Number(pnl(container).getAttribute('height')) - 22);
+    const time = timeAxis(640, 4);
+    const x = Number(tag.getAttribute('x'));
+    const x0 = tag.getAttribute('text-anchor') === 'end' ? x - (tag.textContent.length * 6 + 2) : x;
+    expect(x0 + tag.textContent.length * 6 + 2 <= time.x(3) - time.column / 2 || time.x(3) + time.column / 2 <= x0).toBe(true);
+    expect(pnl(container).querySelectorAll('path.worst-case')).toHaveLength(0);
+    // The axis is the same as with no Worst case at all: the dots do not move.
+    const cys = dots(container).map((d) => num(d, 'cy'));
+    cleanup();
+    const bare = draw(dale(-33936, 'Main', false).map((s) => ({ ...s, worstCase: null })));
+    expect(dots(bare.container).map((d) => num(d, 'cy'))).toEqual(cys);
+    cleanup();
+    // On the scale the line carries its own label and no tag is drawn.
+    const on = draw(dale(-1500));
+    expect(on.container.querySelector('text.worst-case-tag')).toBeNull();
+    expect(screen.getByText('Worst case −$1,500')).toBeTruthy();
+  });
+
+  it('should give the tag the extremes’ weight: grey for a stock or long option, full strength for a short option', () => {
+    const remote = draw(dale(-33936, 'Remote')).container.querySelector('text.worst-case-tag')!;
+    cleanup();
+    const main = draw(dale(-33936, 'Main')).container.querySelector('text.worst-case-tag')!;
+    expect(remote.getAttribute('class')).toContain('remote');
+    expect(main.getAttribute('class')).toContain('main');
+    const rules = new Map<string, Record<string, string>>();
+    postcss.parse(readFileSync('src/ui/cockpit/styles/replay-plot.css', 'utf8')).walkRules((rule) => {
+      const decls: Record<string, string> = {};
+      rule.walkDecls((d) => {
+        decls[d.prop] = d.value;
+      });
+      for (const sel of rule.selectors) rules.set(sel.replace(/\s+/g, ' '), { ...rules.get(sel.replace(/\s+/g, ' ')), ...decls });
+    });
+    expect(rules.get('.replay-plot .worst-case-tag.remote')?.fill).toBe('var(--muted)');
+    expect(rules.get('.replay-plot .worst-case-tag.main')?.fill).toBe('var(--stop)');
+    expect(rules.get('.replay-plot .worst-case-tag')?.['font-weight']).toBe('650');
+    expect(rules.get('.replay-plot .worst-case-tag.remote')?.['font-weight']).toBe('500');
+  });
+});
+
+describe('Corridor: a session with no Mark (suggestion 12)', () => {
+  // R-CORV-D has no put Mark on one session: its Trade P&L is missing (P146: shaded and labelled, bridged by nothing).
+  const AXIS = { slots: 11 };
+  const withGap = (): PlotSession[] => DAYS.slice(0, 7).map((_d, i) => (i === 3 ? bren(i, { tradePnl: null, underlyingMark: null }) : bren(i)));
+  const draw = () => render(<CorridorPlot {...props({ sessions: withGap(), sliderIndex: 6, axis: AXIS })} />);
+
+  it('should shade that session’s column in the P&L chart and label it "No Mark", as the price chart does', () => {
+    const { container } = draw();
+    const time = timeAxis(640, AXIS.slots);
+    const shade = pnl(container).querySelectorAll('rect.no-mark');
+    expect(shade).toHaveLength(1);
+    expect(num(shade[0]!, 'x')).toBeCloseTo(time.x(3) - time.column / 2, 1);
+    expect(num(shade[0]!, 'width')).toBeCloseTo(time.column, 1);
+    expect([...pnl(container).querySelectorAll('text.no-mark-label')].map((t) => t.textContent)).toEqual(['No Mark']);
+    // The same shading and words as the price chart's.
+    expect(container.querySelector('svg.price-strip rect.no-mark')!.getAttribute('x')).toBe(shade[0]!.getAttribute('x'));
+  });
+
+  it('should run the area to the edge of that column on each side and end it upright, joining nothing across it', () => {
+    const sessions = withGap().map((s) => (s.tradePnl === null ? s : { ...s, tradePnl: 100 + s.slot * 10 }));
+    const { container } = render(<CorridorPlot {...props({ sessions, sliderIndex: 6, axis: AXIS })} />);
+    const time = timeAxis(640, AXIS.slots);
+    const [gapLeft, gapRight] = [time.x(3) - time.column / 2, time.x(3) + time.column / 2];
+    const z = zeroY(container);
+    const cy = (slot: number) => num(dots(container).find((d) => num(d, 'cx') === Math.round(time.x(slot) * 10) / 10)!, 'cy');
+    const [before, after] = pnl(container).querySelector('path.area.profit')!.getAttribute('d')!.split(/(?=M)/).map((p) => [...p.matchAll(/[ML](-?[\d.]+) (-?[\d.]+)/g)].map((m) => ({ x: Number(m[1]), y: Number(m[2]) })));
+    // The run before the gap ends at the gap's left edge, at its last level, then drops straight to break-even.
+    expect(before!.at(-2)).toEqual({ x: Math.round(gapLeft * 10) / 10, y: cy(2) });
+    expect(before!.at(-1)).toEqual({ x: Math.round(gapLeft * 10) / 10, y: z });
+    // The run after it starts at the gap's right edge, straight up from break-even to its first level.
+    expect(after![0]).toEqual({ x: Math.round(gapRight * 10) / 10, y: z });
+    expect(after![1]).toEqual({ x: Math.round(gapRight * 10) / 10, y: cy(4) });
+    // Nothing is drawn inside the gap's column.
+    expect([...before!, ...after!].some((p) => p.x > gapLeft + 0.1 && p.x < gapRight - 0.1)).toBe(false);
   });
 });

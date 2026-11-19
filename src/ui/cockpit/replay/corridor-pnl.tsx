@@ -107,7 +107,16 @@ export function drawPnl(props: ReplayPlotProps, width: number): DrawnChart {
           const cross = xa + ((time.x(r.s.slot) - xa) * prev.pnl) / (prev.pnl - r.pnl);
           return `L${f1(cross)} ${f1(y0)}${point}`;
         });
-        return `M${f1(time.x(run[0]!.s.slot))} ${f1(y0)}${edge.join('')}L${f1(time.x(run.at(-1)!.s.slot))} ${f1(y0)}Z`;
+        // Beside a session with no Mark (P146) the area runs to the edge of that column and ends upright there, joining nothing across it.
+        const first = run[0]!;
+        const last = run.at(-1)!;
+        const gapBefore = sessions[sessions.indexOf(first.s) - 1]?.tradePnl === null;
+        const gapAfter = sessions[sessions.indexOf(last.s) + 1]?.tradePnl === null;
+        const xStart = time.x(first.s.slot) - (gapBefore ? time.column / 2 : 0);
+        const xEnd = time.x(last.s.slot) + (gapAfter ? time.column / 2 : 0);
+        const lead = gapBefore ? `L${f1(xStart)} ${f1(value.y(side(first.pnl, 0)))}` : '';
+        const trail = gapAfter ? `L${f1(xEnd)} ${f1(value.y(side(last.pnl, 0)))}` : '';
+        return `M${f1(xStart)} ${f1(y0)}${lead}${edge.join('')}${trail}L${f1(xEnd)} ${f1(y0)}Z`;
       })
       .join('');
 
@@ -202,8 +211,20 @@ export function drawPnl(props: ReplayPlotProps, width: number): DrawnChart {
   ).flatMap(([kind, limit, dy]) => (limit && limit.value >= min && limit.value <= max ? [{ kind, limit, dy }] : []));
   // The cursor's column is held free (A280): the two limit labels, placed from here on, take no spot over it.
   if (current) placer.reserveColumn(xc - time.column / 2, xc + time.column / 2);
+  // A Worst case below the range is tagged at the bottom edge, clear of the cursor's column; the axis is not stretched to it (A256).
+  const tag = current?.worstCaseTag;
+  if (tag && current.worstCase && current.worstCase.value < min) {
+    put('worst-case-tag', `worst-case-tag ${tag.weight.toLowerCase()}`, tag.label, [
+      { x: time.right - 4, y: FLOOR - 4, anchor: 'end' },
+      { x: time.left + 4, y: FLOOR - 4, anchor: 'start' },
+    ]);
+  }
   for (const { kind, limit, dy } of limits) {
-    put(kind, `${kind}-label`, words(limit.label, limit.shortLabel), [{ x: time.right - 4, y: value.y(limit.value) + dy, anchor: 'end' }]);
+    // The right end, or the left end when the cursor is at the right.
+    put(kind, `${kind}-label`, words(limit.label, limit.shortLabel), [
+      { x: time.right - 4, y: value.y(limit.value) + dy, anchor: 'end' },
+      { x: time.left + 4, y: value.y(limit.value) + dy, anchor: 'start' },
+    ]);
   }
   // The line itself steps with each revealed session's own figure; a session without one, or outside the range, leaves a break.
   const limitPath = (pick: (s: PlotSession) => LabelledFigure | null): string =>
@@ -214,6 +235,8 @@ export function drawPnl(props: ReplayPlotProps, width: number): DrawnChart {
   put('break-even', 'break-even-label', 'Break-even', [
     { x: time.left + 4, y: y0 - 4, anchor: 'start' },
     { x: time.left + 4, y: y0 + 12, anchor: 'start' },
+    { x: time.right - 4, y: y0 - 4, anchor: 'end' },
+    { x: time.right - 4, y: y0 + 12, anchor: 'end' },
   ]);
 
   // The time axis's words, one row under the chart: the first date at the left, the end (an option's expiration) at the right, and the
@@ -276,6 +299,16 @@ export function drawPnl(props: ReplayPlotProps, width: number): DrawnChart {
       {sessions[props.hoverIndex ?? -1] && (
         <rect className="hover-column" x={f1(time.x(sessions[props.hoverIndex!]!.slot) - time.column / 2)} y={TOP} width={f1(time.column)} height={FLOOR - TOP} />
       )}
+      {sessions
+        .filter((s) => s.tradePnl === null)
+        .map((s) => (
+          <g key={s.slot}>
+            <rect className="no-mark" x={f1(time.x(s.slot) - time.column / 2)} y={TOP} width={f1(time.column)} height={FLOOR - TOP} />
+            <text className="no-mark-label" transform={`translate(${f1(time.x(s.slot) + 3.5)} ${FLOOR - 4}) rotate(-90)`}>
+              No Mark
+            </text>
+          </g>
+        ))}
       <path className="area profit" d={areaPath(Math.max)} />
       <path className="area loss" d={areaPath(Math.min)} />
       {sessions.map((s) => {

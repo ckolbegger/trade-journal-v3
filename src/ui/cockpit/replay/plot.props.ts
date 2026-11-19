@@ -54,6 +54,7 @@ export function plotSessionOf(view: TradeReplayView, index: number): PlotSession
   const zone = standing?.zone;
   const past = zone === 'PastStop' || zone === 'PastTarget' ? (standing?.pastBy && { line: zone === 'PastStop' ? ('Stop' as const) : ('Target' as const), dollars: standing.pastBy.dollars }) : undefined;
   const tradePnl = session.tradePnl.kind === 'Value' ? session.tradePnl.value : undefined;
+  const worstCase = f?.outcomes?.atWorstCase?.kind === 'Value' ? f.outcomes.atWorstCase.value : undefined;
   const hasStrike = instrumentsOf(view).contract !== undefined;
   const keyEntries: PlotKeyEntry[] = [
     ...(price === undefined ? [{ kind: 'NoMark' as const, label: 'No Mark' }] : [{ kind: 'Mark' as const, label: 'Mark' }]),
@@ -81,6 +82,8 @@ export function plotSessionOf(view: TradeReplayView, index: number): PlotSession
     resultAtTarget: labelled(f?.outcomes?.atTarget, 'Target'),
     worstCase: labelled(f?.outcomes?.atWorstCase, 'Worst case'),
     maxReward: labelled(f?.outcomes?.atMaxReward, 'Max reward'),
+    // A losing Worst case's tag for the bottom edge (W68); the chart draws it only when the line is below its range. A figure with no weight is Main.
+    ...(worstCase && worstCase.compare(ZERO) < 0 && { worstCaseTag: { label: `Worst case ${chartSigned(worstCase)} ↓`, weight: f?.extremes ?? 'Main' } }),
     ...(past && { past: { line: past.line, label: `${chartMoney(past.dollars)} past the ${past.line}` } }),
     // What is at stake from here, tagged at the slider's session: the risk unless the Stop is breached, the reward unless the Target is reached.
     ...(risk?.kind === 'Value' && (zone !== 'PastStop' || reward?.kind === 'Value') && {
