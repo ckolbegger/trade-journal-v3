@@ -109,7 +109,6 @@ test.describe('B9AR.7 Responsive, touch, accessible and offline', () => {
     test(`should fit the ${surface} overlay’s header, headline and both charts on one 320 by 667 screen`, async ({ profile }) => {
       test.setTimeout(240_000);
       // T9AR.12 names this outcome: the header, the headline, the stake sentence and a 200 high P&L chart span 708 px of the 667 (reported to the main session).
-      test.fail(true, 'the header, headline and both charts span more than 667 px at 320');
       if (surface === 'Detail') {
         const { context, page } = await build(profile, BREN, closeOf('2026-11-16'), 10);
         await setViewport(page, 320, 667);

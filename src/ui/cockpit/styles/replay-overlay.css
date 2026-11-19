@@ -95,4 +95,18 @@
 
   .replay-overlay-header [data-close] {
     min-height: 44px;
+  }
+
+  /* On a 320 by 667 screen the header, the headline and both charts must fit: the title stays on one line, and the body's and the card's top padding is small. */
+  .replay-overlay-header h2 {
+    font-size: 0.9rem;
+    line-height: 1.2;
+  }
+
+  .replay-overlay-body {
+    padding-top: 4px;
+  }
+
+  .replay-overlay .replay-card {
+    padding-top: 4px;
   }}
