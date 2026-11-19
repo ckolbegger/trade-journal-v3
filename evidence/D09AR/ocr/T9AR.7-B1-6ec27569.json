@@ -1,0 +1,141 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 2,
+    "total_tokens": 59873,
+    "input_tokens": 59039,
+    "output_tokens": 834,
+    "cache_read_tokens": 13312,
+    "elapsed": "39s"
+  },
+  "tool_calls": {
+    "total": 8,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 1,
+      "file_read": 5
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/replay/overlay.tsx",
+      "content": "Focusable descendants of the visible summary are incorrectly excluded for closed details. For example, with `\u003cdetails\u003e\u003csummary\u003eTable \u003ca href=\"/help\"\u003eHelp\u003c/a\u003e\u003c/summary\u003e…\u003c/details\u003e` as the last content, the link remains tabbable in the browser, but this filter treats the summary as the last stop. Tab therefore wraps before reaching Help, and Shift+Tab from Close skips it too. Allow elements contained in the closed details' first summary, not just the summary element itself, and add a regression test for that case.",
+      "existing_code": "    if (p instanceof HTMLDetailsElement \u0026\u0026 !p.open \u0026\u0026 !(el.tagName === 'SUMMARY' \u0026\u0026 el.parentElement === p)) return false;",
+      "start_line": 11,
+      "end_line": 11,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/cockpit/replay/overlay.tsx",
+      "content": "The unconditional `summary` selector also includes `\u003csummary tabIndex={-1}\u003e`, although it is explicitly excluded from sequential keyboard navigation. If that summary is the last child control, Shift+Tab from Close now moves focus to it instead of the preceding tabbable control. Exclude negative-tabindex summaries as well, and add a regression test for this case.",
+      "existing_code": "const FOCUSABLE = 'summary, a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex=\"-1\"])';",
+      "start_line": 5,
+      "end_line": 5,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/cockpit/replay/overlay.test.tsx",
+        "src/ui/cockpit/replay/overlay.tsx"
+      ]
+    }
+  ],
+  "session_id": "33283718-c0b8-415b-ae9f-231a4d591f9e",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "33283718-c0b8-415b-ae9f-231a4d591f9e",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "6ec27569",
+      "resolved_base": "14ff2e7dbbaa6b2b6dbecd4ff6ad1a801838c928",
+      "resolved_head": "6ec275692ba854b5f549d5275158add3ce76ae6b",
+      "exact_range": "14ff2e7dbbaa6b2b6dbecd4ff6ad1a801838c928..6ec275692ba854b5f549d5275158add3ce76ae6b",
+      "source_artifact_sha256": "6ac8b65446561e513be82e0e5be216cb9597fb86ba66e51401428da13786b79d"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "e1f92202f07a1fca0a590345d20829a25e1a08332816189a8bbcb90cd7573047",
+          "path": "src/ui/cockpit/replay/overlay.test.tsx",
+          "fingerprint": "4622a9c0e84ffbabe643640dd10dea7cd00ebbbb53e4148804c64dfe015fab42"
+        },
+        {
+          "item_id": "f988deb822048101fc25fabacdda8b5fbd876414f9f75e9ab850767bfddd76f8",
+          "path": "src/ui/cockpit/replay/overlay.tsx",
+          "fingerprint": "14db4236de0aa69ac8dadc9fcf07773aaba8d263d8a0ed86a39eba1a93fbbdcc"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "e1f92202f07a1fca0a590345d20829a25e1a08332816189a8bbcb90cd7573047",
+          "path": "src/ui/cockpit/replay/overlay.test.tsx",
+          "fingerprint": "4622a9c0e84ffbabe643640dd10dea7cd00ebbbb53e4148804c64dfe015fab42"
+        },
+        {
+          "item_id": "f988deb822048101fc25fabacdda8b5fbd876414f9f75e9ab850767bfddd76f8",
+          "path": "src/ui/cockpit/replay/overlay.tsx",
+          "fingerprint": "14db4236de0aa69ac8dadc9fcf07773aaba8d263d8a0ed86a39eba1a93fbbdcc"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "151fde589c163939a81163ee9c8af9c0cd15d2a8d9193dca8782fe974fc22f13",
+          "path": "evidence/D09AR/suite-runs/T9AR.7-B1-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "3d439ced7286c9cd34743159085ee043743cf99827c93ebb8bac83be819d8638",
+          "path": "evidence/D09AR/suite-runs/T9AR.7-B1-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "4b9ee4421d0d9fea429043d7e8e92ca51b576d7e16c33cb440861f798ea8ac15",
+          "path": "evidence/D09AR/suite-runs/T9AR.7-B1-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "55702a6dc388d640a19ecd3675725efe1eba4922d87376aedcd9ee83603ffcfe",
+          "path": "evidence/D09AR/tdd-log/T9AR.7-B1.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "5d3d998b4e34df6197bb2b4812cd3908c0aa3fa2a1b5212769525bc414481432",
+          "path": "evidence/D09AR/suite-runs/T9AR.7-B1-checks.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 38819
+  }
+}

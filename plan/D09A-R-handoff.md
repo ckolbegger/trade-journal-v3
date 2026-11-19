@@ -256,8 +256,8 @@ Task status and commits are in the breakdown's Progress section. This section ho
 
 ### Notes for later tasks
 
-- For T9AR.2: section 1.5's lookups were run on `bbc3ae28`; T9.19-B3 (`f84a9391`) and T9.19-B11 (`1047b81a`) have since merged. Rerun any lookup whose lines they may have moved before the brief.
-- For T9AR.10: critic-2's defect 3 (a stock Trade's axis end) is this task's case "it should show nothing at the right end of a stock Trade's time axis at any session (W67)".
+- For T9AR.15, T9AR.20: the extremes' weight is now always filled by `evaluate`, from the Plan's legs (T9AR.3-B2); a session's figures carry `rewardRiskOdds` and `extremes` (T9AR.3-B1).
+- For T9AR.17, T9AR.18, T9AR.23: inside the overlay, `.replay-card` is a grid (`replay-overlay.css`, T9AR.7-B2): `.replay-plot-frame` in column 1, `.replay-readout` in column 2, every other child full width. The Plan block and the cards must render as children of `.replay-card` to land full width below; the 3fr : 2fr split is a choice T9AR.23's measured widths may tune.
 - For T9AR.13: critic-2's defect 2 (the minus sign wraps) is this task's case at 1280, 375 and 320 wide (R-DALE-D Fri 11-13's At Worst case; R-BREN-U Mon 11-02).
 - For T9AR.17: critic-2's defect 1a (overrun not in the table) is this task's case on R-AXIO-D Mon 11-09, never "$0.00" at risk.
 - For T9AR.18: critic-2's defects 1b (the strike in "The Plan" block) and 4 ("Expiration, Fri Nov 20", never "Execution") are this task's cases.

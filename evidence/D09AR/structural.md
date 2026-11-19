@@ -73,6 +73,8 @@ Lane DM (`d09ar/dm`), base `8245f6c6`, commit `76e83bd3`. 6 cases, each red then
 - **T9AR.3-B1** A session's figures lack the odds and the weight. Case: it should carry the estimated odds and the extremes' weight in each replayed session's figures (R-DALE-D Wed 11-11: 78/990, 8 and 92, `Main`; R-BREN-U: `Remote`).
   - Done: `49ea194f`; red ("expected a Value, got undefined"), green; no first-run pass; `verify:fixtures` exit 0; lane tier `T9AR.3-B1`: unit 2296, integration 280, checks 14 of 14. ocr on `49ea194f` (`ocr/T9AR.3-B1-49ea194f.json`): 2 files, 0 comments. **No findings.**
 - **T9AR.3-B2** The weight is read from the first fill, not the Plan. Case: it should give the weight from the Plan before any Execution (a confirmed long-stock Plan: `Remote`; a confirmed Cash-Secured Put Plan: `Main`).
+  - Done: `e576c67e`; red "expected undefined to be 'Remote'", green; no first-run pass. `derive` sets a new required `DerivedTradeState.extremes` from `record.plan.legs` (`Main` when any leg is a short option), and `evaluate` passes it through; `TradeEvaluation.extremes` unchanged. No frozen view touched; `verify:fixtures` exit 0. Lane tier `T9AR.3-B2`: unit 2297, integration 280, checks 14 of 14. ocr on `e576c67e` (`ocr/T9AR.3-B2-e576c67e.json`): 3 files, 0 comments. **No findings.**
+- Rebased onto `4b3d9c45` (only evidence and plan files had changed on the branch, none of lane DM's, so no rerun). Merged by fast-forward: `5187512d` (T9AR.3), `02b4f51c` (B1), `499751ed` (B2).
 
 ## T9AR.7 The Replay overlay
 
@@ -91,7 +93,18 @@ Reviewer's notes (not findings): `overlay.tsx` line 16 lacks a space (`||sibling
 
 **Bug tasks** (lane OV, one at a time):
 - **T9AR.7-B1** Tab leaves the dialog past a closed `<details>`. Case: it should wrap Tab from the last control that can take focus to Close, and Shift+Tab from Close to it, when the dialog holds a closed `<details>` whose hidden region has `tabIndex=0` and a `summary`.
+  - Done: `6ec27569`. First red run was a fixture error (logged); valid red "expected <div tabindex=0> to be <button>", then green; no first-run pass. `summary` added to the selector; a `canTakeFocus` filter drops elements inside `[hidden]` or a closed `<details>` other than its own `summary`. Lane tier `T9AR.7-B1`: unit 2299, integration 280, checks 14 of 14.
+  - ocr on `6ec27569` (`ocr/T9AR.7-B1-6ec27569.json`), round 2: 2 files, 2 comments.
+
+| Severity | Location | Finding | Verdict |
+|---|---|---|---|
+| medium | `overlay.tsx:11` | A control inside a closed `<details>`' visible `summary` is dropped from the Tab edges, since only the `summary` itself is exempt | Valid: T9AR.7-B4 |
+| medium | `overlay.tsx:5` | The `summary` selector also matches `<summary tabIndex={-1}>`, which the browser skips, so the trap can wrap onto it | Valid: T9AR.7-B5 |
+
+  - **T9AR.7-B4** Case: it should count a button inside a closed `<details>`' `summary` as a Tab edge when it is the last control.
+  - **T9AR.7-B5** Case: it should not count a `summary` with `tabIndex=-1` as a Tab edge.
 - **T9AR.7-B2** No wide layout. Case: it should place the charts on the left and the readout on the right inside the overlay at 1280 wide, and one column at 375 (A275).
+  - Done: `9a34b48a`. First red row was a fixture error (reading the CSS through `import.meta.url`), logged as not valid; valid red "expected undefined to be 'grid'", then green; no first-run pass. The test parses `replay-overlay.css` with `postcss` (jsdom computes no layout). Under `.replay-overlay`, `.replay-card` is a grid of `minmax(0,3fr) minmax(0,2fr)` with dense row flow; every child spans the full width but `.replay-plot-frame` (column 1) and `.replay-readout` (column 2); one column under `@media (max-width: 860px)`, the shell's phone breakpoint. `frame.tsx` unchanged. Lane tier `T9AR.7-B2`: unit 2300, integration 280, checks 14 of 14.
 - **T9AR.7-B3** The Tab case can pass with Tab swallowed. Case: the existing Tab case asserts the order (Close, the inside button, Close; and the reverse with Shift+Tab). A test-only change: it must fail against a trap that always refocuses Close.
 
 ## T9AR.10 Chart: the key, the dates, every line labelled
