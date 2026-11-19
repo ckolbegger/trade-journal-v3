@@ -532,6 +532,17 @@ Lane BR (`d09ar/br`), base `70ce0f74`.
         - The stake-grid loop would pass on zero grids.
         - There is a stray whitespace edit on `INTENT`.
     - **Merged:** rebased onto `18cd5aae` (evidence only) and fast-forwarded. Next is the full run `merge7` before the gate.
+
+## Full run merge7 (full tier, `3e92c98f`)
+
+- Unit 2455, integration 286, browser-1 126 (5.0m), browser-2 79 (4.7m), browser-3 127 (7.1m), checks 14 of 14. **No failures**, no flaky case. Run complete.
+- The run rewrote the `e2e/d9ar` screenshots, which are committed as this run's.
+- `acceptance-commands.sh plan/D09A-R-stage-a-refactor.md`: **7 commands checked, 0 failed.** T9AR.22's four browser rows now name their specs.
+
+## T9AR.24 Gate
+
+- In progress from `3e92c98f`. Critic-1 is briefed from `.claude/docs/critic-brief.md`, with section 8's flows C9AR.1, C9AR.2, C9AR.3, C9AR.4, C9AR.5, C9AR.6 and C9AR.7.
+- P151: if three critics leave only moderate or lower defects, the gate closes with tech debt items.
 - **merge6-S1** briefed in lane OV. The branch `d09ar/ov` was re-pointed to main `dbafc601` first: its old pre-rebase commits were all on main under their new hashes (`git cherry`). The case's red is the run itself.
 - **Part 1 notes:**
   - The Detail overlay's slider session does not survive a reload (the address holds only `replay=open`; the plan does not ask that it survive).
