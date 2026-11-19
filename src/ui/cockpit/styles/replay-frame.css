@@ -151,6 +151,22 @@
   }
 }
 
+/* W64, on a phone (the app's 860 px breakpoint): the first-crossing sentence reads after the charts, above the readout, so the charts stay in the first screen. */
+@media (max-width: 860px) {
+  .replay-card {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .replay-crossing {
+    order: 1;
+  }
+
+  .replay-chart-box ~ :not(.replay-crossing) {
+    order: 2;
+  }
+}
+
 /* The hover and focus lines. */
 .replay-chart-box {
   position: relative;
