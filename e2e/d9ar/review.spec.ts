@@ -162,6 +162,26 @@ test.describe('B9AR.2 The overlay in the Review, and the summary', () => {
     await context.close();
   });
 
+  // T9AR.24-B11-B1: a reload with Replay open on a Price History address does not arrive; Close returns focus to the Replay button (A273).
+  test('should return focus to Replay on Close after a reload of the Price History address with Replay open', async ({ profile }) => {
+    test.setTimeout(420_000);
+    const { context, page, trades } = await buildReview(profile);
+    const axio = trades[1]!;
+    await reachCard(page, axio);
+    const section = await openCardReplay(page, axio);
+    await section.getByRole('link', { name: 'Price History' }).click();
+    await expect(detail.heading(page, 'AXIO')).toBeVisible(READY);
+    await page.getByRole('button', { name: 'Replay' }).click();
+    await expect(page).toHaveURL(/drawer=price-history&session=[\d-]+.*replay=open/);
+    await page.reload();
+    const dialog = page.getByRole('dialog', { name: /^Replay/ });
+    await expect(dialog).toBeVisible(READY);
+    await closeButton(dialog).click();
+    await expect(dialog).toBeHidden(READY);
+    await expect(page.getByRole('button', { name: 'Replay' })).toBeFocused(READY);
+    await context.close();
+  });
+
   test('should read each card’s summary in the replay’s words, with no zero Overrun', async ({ profile }) => {
     test.setTimeout(420_000);
     const { context, page, trades } = await buildReview(profile);

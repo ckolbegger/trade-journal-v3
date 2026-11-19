@@ -682,6 +682,25 @@ describe('Replay: audit navigation (W46)', () => {
     expect(screen.getByRole('tab', { selected: true }).getAttribute('aria-label')).toBe('Price History');
   });
 
+  it('should leave focus on the Replay button when the overlay opened from an address naming Price History and a session is closed', async () => {
+    const user = userEvent.setup();
+    renderWith(facadeOf({ replayResult: { kind: 'Ready', view: withMonday(), binding: BINDING } }), '/trades/trade-1?drawer=price-history&session=2026-10-12&replay=open');
+    const dialog = within(await screen.findByRole('dialog', { name: 'Replay, XYZ' }));
+    await user.click(await dialog.findByRole('button', { name: 'Close' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Replay' }));
+  });
+
+  it('should answer a Position link from an overlay opened from an address naming Price History and a session, not the Price History arrival', async () => {
+    const user = userEvent.setup();
+    renderWith(facadeOf({ replayResult: { kind: 'Ready', view: withMonday(), binding: BINDING } }), '/trades/trade-1?drawer=price-history&session=2026-10-12&replay=open');
+    const dialog = within(await screen.findByRole('dialog', { name: 'Replay, XYZ' }));
+    await user.click(await dialog.findByRole('button', { name: 'Position' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(screen.getByRole('tab', { selected: true }).getAttribute('aria-label')).toBe('Position');
+    expect(document.activeElement?.closest('li')?.textContent).toContain('Buy 60 XYZ');
+  });
+
   it('should offer Position on a session with a marker, with the Execution row in focus', async () => {
     const user = userEvent.setup();
     // Tuesday has no marker, so no link.

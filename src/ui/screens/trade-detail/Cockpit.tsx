@@ -90,7 +90,11 @@ export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange, i
   // A drawer request (A240): the drawer is selected now, and once its panel is shown the heading takes focus. A heading is not focusable by
   // itself, so it is made a programmatic tab stop. Each request is a new object, so the same request can be made again.
   const [focusing, setFocusing] = useState<DrawerFocus>();
+  // An arrival from the address (below) is pending until the first request: any explicit drawer request has the last word over it.
+  // A page that loads with the overlay already open does not arrive: the overlay's own links and Close answer instead (A273).
+  const arrival = useRef({ wanted: initialDrawer === 'Price History' && !replayOpen ? initialSession : undefined });
   const requestDrawer: DrawerRequest = (drawer, target) => {
+    arrival.current.wanted = undefined;
     setSelected(drawer);
     setFocusing({ drawer, target });
   };
@@ -110,7 +114,6 @@ export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange, i
   }, [replayOpen]);
   // An address that names Price History and a session (the Review's link, a reload, a pasted address) arrives the way Replay's own link does:
   // once the replay is read and the history is drawn, that session's column header takes focus and scrolls into view.
-  const arrival = useRef({ wanted: initialDrawer === 'Price History' ? initialSession : undefined });
   useEffect(() => {
     const date = arrival.current.wanted;
     if (!date || !replay || replayOpen || !shown.includes('Price History')) return;
