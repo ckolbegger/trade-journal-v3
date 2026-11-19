@@ -1,0 +1,122 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 0,
+    "total_tokens": 84121,
+    "input_tokens": 83646,
+    "output_tokens": 475,
+    "cache_read_tokens": 27392,
+    "elapsed": "21s"
+  },
+  "tool_calls": {
+    "total": 11,
+    "by_tool": {
+      "code_search": 4,
+      "file_read": 7
+    },
+    "failure": 1,
+    "failure_by_tool": {
+      "file_read": 1
+    },
+    "failure_details": [
+      {
+        "tool_call_number": 6,
+        "tool_name": "file_read",
+        "file_path": "e2e/d9ar/readout.spec.ts,src/ui/cockpit/replay/frame.test.tsx,src/ui/cockpit/replay/frame.tsx",
+        "arguments": "{\"file_path\": \"src/ui/cockpit/replay/plan-block.props.ts\"}",
+        "error": "file \"src/ui/cockpit/replay/plan-block.props.ts\" not found: git show ef1c9b20388d285592814600a82fcafcb36fab8c:src/ui/cockpit/replay/plan-block.props.ts: exit status 128: fatal: path 'src/ui/cockpit/replay/plan-block.props.ts' does not exist in 'ef1c9b20388d285592814600a82fcafcb36fab8c'\n"
+      }
+    ]
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "e2e/d9ar/readout.spec.ts",
+        "src/ui/cockpit/replay/frame.test.tsx",
+        "src/ui/cockpit/replay/frame.tsx"
+      ]
+    }
+  ],
+  "session_id": "f43fb83b-842a-42c3-9e05-2270e7f27c71",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "f43fb83b-842a-42c3-9e05-2270e7f27c71",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "ef1c9b20",
+      "resolved_base": "02c6fc1eb5ca911a7cfdd3c0e8d8dc4b61333e50",
+      "resolved_head": "ef1c9b20388d285592814600a82fcafcb36fab8c",
+      "exact_range": "02c6fc1eb5ca911a7cfdd3c0e8d8dc4b61333e50..ef1c9b20388d285592814600a82fcafcb36fab8c",
+      "source_artifact_sha256": "89b5de875fff269d9dfc4e723557bf5bcfe84c33a899443529d9f65207f4432b"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "07d6ddb61a627b6e3202a0c5e3f9547cfb10f6fad784c8ca12a580a08252b174",
+          "path": "src/ui/cockpit/replay/frame.test.tsx",
+          "fingerprint": "c8fdbe39dc1c7d54f5d5af76dd50d4c3bb4b5c8538fb03a13dab1af1cc5548cb"
+        },
+        {
+          "item_id": "1e9818d41ff29d7730ea06bdd1d154959f0a952a460b3d5f13d2bde01ff86492",
+          "path": "src/ui/cockpit/replay/frame.tsx",
+          "fingerprint": "5dad2ec632bb61adc5b4ffc0d054dc063e0f11362908248072f54eeee020431b"
+        },
+        {
+          "item_id": "1f1cde75c007ef44b7a42884ebbefdadc6bd52a3556903ee28f2f353ead37e61",
+          "path": "e2e/d9ar/readout.spec.ts",
+          "fingerprint": "edc747c1f317e97c3b232e85478816dab71acf96f1ce7d42ced356fdb56c498b"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "07d6ddb61a627b6e3202a0c5e3f9547cfb10f6fad784c8ca12a580a08252b174",
+          "path": "src/ui/cockpit/replay/frame.test.tsx",
+          "fingerprint": "c8fdbe39dc1c7d54f5d5af76dd50d4c3bb4b5c8538fb03a13dab1af1cc5548cb"
+        },
+        {
+          "item_id": "1e9818d41ff29d7730ea06bdd1d154959f0a952a460b3d5f13d2bde01ff86492",
+          "path": "src/ui/cockpit/replay/frame.tsx",
+          "fingerprint": "5dad2ec632bb61adc5b4ffc0d054dc063e0f11362908248072f54eeee020431b"
+        },
+        {
+          "item_id": "1f1cde75c007ef44b7a42884ebbefdadc6bd52a3556903ee28f2f353ead37e61",
+          "path": "e2e/d9ar/readout.spec.ts",
+          "fingerprint": "edc747c1f317e97c3b232e85478816dab71acf96f1ce7d42ced356fdb56c498b"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "6e6aee6782b49e46c04db1945d11951f8a7bb9f831792f50babda9e5b4daa024",
+          "path": "evidence/D09AR/tdd-log/T9AR.24-B12.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 21419
+  }
+}

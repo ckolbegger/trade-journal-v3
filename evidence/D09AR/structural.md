@@ -981,6 +981,21 @@ Lane BR (`d09ar/br`), base `70ce0f74`.
           - One edge remains: browser Back or Forward onto a `replay=open` entry while the replay loads sets the overlay open without `openReplay`, so the arrival could later take focus from Replay. It is narrow and Doubtful.
           - The arrow keys and "Reflect now" have no case of their own.
     - **Merged** B11, B11-B1, B11-B2 and B11-B1 part 2 by fast-forward. Lane RW's base `d9a15cb8` was main's head.
+  - **T9AR.24-B12** `ef1c9b20` (lane RO, from `02c6fc1e`; lane-tier evidence `845b75e6`):
+    - **Cause:** the Plan block in `ReplayFrame` rendered each row as plain `<li>{row}</li>`, outside `Words`.
+    - **Fix:** the Plan rows draw through `Words`. `figureParts` already knew every form. The text and names are unchanged.
+    - **Cases:**
+      - Unit, "draw each figure of the Plan block, a signed amount and an odds pair included, as one card-figure span": red, then green.
+      - E2e for BREN, AXIO and CORV at 375 and 320, "keep every figure in the Plan block on one line, sign with its number": red, 3 failed (an unmarked figure in "… P&L if hit −$324.00"), then green.
+      - No first-run passes. No existing lines changed.
+    - Browser: 81 passed, with the 320 fit holding. Lane tier `T9AR.24-B12`: unit 2485, integration 286, checks 14 of 14.
+    - **ocr** on `ef1c9b20` (`ocr/T9AR.24-B12-ef1c9b20.json`): **no findings**.
+      - Reviewer's notes:
+        - `figureParts` recognises every Plan row form.
+        - Nothing is flattened, and `card-figure` is global.
+        - The e2e's stray-mark scan bites. It does not assert that each odds pair and signed amount is marked per fixture.
+    - **Merged** by fast-forward. Lane RO's base `02c6fc1e` was main's head.
+    - **Every critic-2 defect that became a bug task is merged.** Next: one full run, then critic-3, the last under the cap.
         - Reviewer's notes:
           - `isMarkLacking` is exactly MarkMissing or AcknowledgedUnavailable.
           - The Trade P&L row's figure is the contract's own, so the Underlying's Mark cannot reach it.
