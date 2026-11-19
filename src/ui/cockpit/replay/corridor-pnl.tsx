@@ -237,7 +237,7 @@ export function drawPnl(props: ReplayPlotProps, width: number): DrawnChart {
       { x: x + 6, y: top + 20, anchor: 'start' },
       { x: x - 6, y: top + 20, anchor: 'end' },
     ]);
-    return kept.has(key) ? [{ key, line: crossing.line.toLowerCase(), x, y, top }] : [];
+    return kept.has(key) ? [{ key, line: crossing.line.toLowerCase(), label: crossing.label, x, y, top }] : [];
   });
   for (const s of sessions) {
     const x = time.x(s.slot);
@@ -428,5 +428,5 @@ export function drawPnl(props: ReplayPlotProps, width: number): DrawnChart {
     </svg>
   );
   const levels = stripped.filter((l) => l.level !== undefined).sort((a, b) => a.level! - b.level!);
-  return { svg, drawn, strip: [...levels, ...stripped.filter((l) => l.level === undefined)].map((l) => l.text) };
+  return { svg, drawn, crossingLabels: new Set(flags.map((f) => f.label)), strip: [...levels, ...stripped.filter((l) => l.level === undefined)].map((l) => l.text) };
 }

@@ -59,6 +59,8 @@ export function priceRange(anchors: readonly number[], marks: readonly number[])
 export interface DrawnChart {
   readonly svg: ReactElement;
   readonly drawn: ReadonlySet<PlotKeyEntry['kind']>;
+  // The words of each first-crossing flag drawn, so the key names a flag only while it is on the page (W66).
+  readonly crossingLabels?: ReadonlySet<string>;
   // A phone's labels, which the drawing leaves to the strip under it (A280), in the order the strip lists them.
   readonly strip?: readonly string[];
 }

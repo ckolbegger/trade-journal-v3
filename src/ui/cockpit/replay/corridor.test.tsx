@@ -1260,4 +1260,17 @@ describe('Corridor: a first crossing (decision 2)', () => {
     expect(phone.container.querySelector('.replay-strip-labels')!.textContent).toContain('Target reached');
     expect(keyOf(phone.container)).toEqual(['Target reached']);
   });
+
+  it('should name in the key only the flags that are drawn, each by its own words', () => {
+    // A Target flag at slot 4 whose label finds no room (a long banked label holds the spots beside it) and a Stop flag at slot 5 that is drawn.
+    const sessions = DAYS.slice(0, 7).map((_, i) =>
+      bren(i, {
+        ...(i === 4 && { resultAtTarget: null, tradePnl: 300, banked: 300, bankedLabel: 'Banked +$300 from a very long sale that takes the room', firstCrossing: { line: 'Target' as const, label: 'Target reached' }, keyEntries: [{ kind: 'FirstCrossing' as const, label: 'Target reached' }] }),
+        ...(i === 5 && { firstCrossing: { line: 'Stop' as const, label: 'Stop breached' }, keyEntries: [{ kind: 'FirstCrossing' as const, label: 'Stop breached' }] }),
+      }),
+    );
+    const { container } = render(<CorridorPlot {...props({ sessions, sliderIndex: 6 })} />);
+    expect(words(container)).toEqual(['Stop breached']);
+    expect([...container.querySelectorAll('.replay-key li')].map((li) => li.textContent)).toEqual(['Stop breached']);
+  });
 });

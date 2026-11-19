@@ -71,11 +71,11 @@ function drawingWidth(measured: number, compact: boolean | undefined): number {
 // A280: every kind of thing the revealed sessions drew, once each, in the order they first appeared. A Worst case, a Max reward
 // and a Strike are named only when their line is on the page, and a first crossing only when its flag is.
 const LINE_KINDS: ReadonlySet<PlotKeyEntry['kind']> = new Set(['WorstCase', 'MaxReward', 'Strike', 'FirstCrossing']);
-function keyOf(sessions: readonly PlotSession[], drawn: ReadonlySet<PlotKeyEntry['kind']>): PlotKeyEntry[] {
+function keyOf(sessions: readonly PlotSession[], drawn: ReadonlySet<PlotKeyEntry['kind']>, crossingLabels: ReadonlySet<string> = new Set()): PlotKeyEntry[] {
   const seen = new Set<string>();
   return sessions
     .flatMap((s) => s.keyEntries ?? [])
-    .filter((e) => (!LINE_KINDS.has(e.kind) || drawn.has(e.kind)) && !seen.has(`${e.kind}|${e.label}`) && seen.add(`${e.kind}|${e.label}`));
+    .filter((e) => (!LINE_KINDS.has(e.kind) || drawn.has(e.kind)) && (e.kind !== 'FirstCrossing' || crossingLabels.has(e.label)) && !seen.has(`${e.kind}|${e.label}`) && seen.add(`${e.kind}|${e.label}`));
 }
 
 // The swatch of what an area or a band is drawn in: the Target's colour for a gain, the Stop's for a loss.
@@ -120,7 +120,7 @@ export function CorridorPlot(props: ReplayPlotProps) {
         <SessionHits props={props} width={width} />
       </div>
       {pnl.strip && pnl.strip.length > 0 && <p className="replay-strip-labels">{pnl.strip.join(' · ')}</p>}
-      <Key entries={keyOf(props.sessions, new Set([...strip.drawn, ...pnl.drawn]))} />
+      <Key entries={keyOf(props.sessions, new Set([...strip.drawn, ...pnl.drawn]), pnl.crossingLabels)} />
     </div>
   );
 }
