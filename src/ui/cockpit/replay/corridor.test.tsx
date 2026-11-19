@@ -530,6 +530,17 @@ describe('Corridor: the Trade P&L (W40, W41)', () => {
     expect(seen).toEqual([2]);
   });
 
+  // T9AR.24-B5: a tap elsewhere (the Review card's Replay button) opens the chart under the finger, and the browser then
+  // sends the hit under it a mouse pointerenter with no mouse behind it: that is no hover.
+  it('should not report the mouse pointerenter a browser sends under a finger just after a touch', () => {
+    const seen: (number | null)[] = [];
+    render(<CorridorPlot {...props({ sessions: DAYS.slice(0, 4).map((_, i) => bren(i)), onHoverSession: (i) => seen.push(i) })} />);
+    fireEvent.pointerDown(document.body, { pointerType: 'touch' });
+    fireEvent.pointerUp(document.body, { pointerType: 'touch' });
+    fireEvent.pointerEnter(hits()[0]!, { pointerType: 'mouse' });
+    expect(seen).toEqual([]);
+  });
+
   it('should not report the focus a tap on a session gives its button, but still report keyboard focus', () => {
     const seen: (number | null)[] = [];
     render(<CorridorPlot {...props({ sessions: DAYS.slice(0, 4).map((_, i) => bren(i)), onHoverSession: (i) => seen.push(i) })} />);

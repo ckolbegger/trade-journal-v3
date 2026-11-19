@@ -2,7 +2,7 @@ import type { Locator, Page } from '@playwright/test';
 import { expectNoSidewaysScroll } from '../d7p/support.ts';
 import {
   actionFormOf, AXIO, BREN, build, buildReview, cardReplayButton, cardRows, chartText, checkForUpdate, closeButton, closeOf, detailReplayButton, expect, expectAccessible, expectChartTextInside, expectFitsOneScreen,
-  expectReadoutShownInFull, expectSmallestChartTextAtLeast, expectWideLayoutAtEverySession, CORV, DALE, DALE_HOLD, firstPage, headline, hits, launchAt, launchTouchAt, notice, openCardReplay, openDrawer, pnlChart, priceStrip, reachCard, READY, replay, seek,
+  expectReadoutShownInFull, expectSmallestChartTextAtLeast, expectWideLayoutAtEverySession, CORV, DALE, DALE_HOLD, firstPage, headline, hits, launchAt, launchTouchAt, notice, openCardReplay, openDrawer, openReview, pnlChart, priceStrip, reachCard, READY, replay, seek,
   sessionCard, sessionCards, setViewport, slider, sliderValue, smallestChartText, test, type TradeRef,
 } from './support.ts';
 
@@ -293,6 +293,55 @@ test.describe('B9AR.7 Responsive, touch, accessible and offline', () => {
     await page.screenshot({ path: 'evidence/D09AR/screenshots/B9AR.7-tap-hover-box.png' });
     await expect(scope.getByTestId('hover'), 'a tap leaves no hover box').toHaveCount(0);
     await expect(scope.locator('rect.hover-column'), 'a tap leaves no hover column').toHaveCount(0);
+    await context.close();
+  });
+
+  // T9AR.24-B5 (critic-1 defect 5): on a phone the tap on the Review card's Replay button must start no hover box or band, and two taps on sessions leave none.
+  for (const width of [375, 320]) {
+    test(`should show no hover box or band from the Review card's Replay tap and after two taps on sessions at ${width}`, async ({ profile }) => {
+      test.setTimeout(420_000);
+      const built = await buildReview(profile, [BREN]);
+      const trade = built.trades[0]!;
+      await built.context.close();
+      const context = await launchTouchAt(profile, closeOf('2026-11-16'), width);
+      const page = await firstPage(context);
+      await page.goto('/');
+      await setViewport(page, width, 667);
+      await openReview(page);
+      await reachCard(page, trade);
+      await cardReplayButton(page, trade).tap();
+      const scope = replay(page);
+      await expect(sliderValue(scope)).toHaveText('Mon Nov 16 · 11 of 11');
+      await expect(scope.getByTestId('hover'), 'no hover box on open').toHaveCount(0);
+      await expect(scope.locator('rect.hover-column'), 'no hover band on open').toHaveCount(0);
+      await expect(scope.locator('.replay-hit[data-hovered]'), 'no hit marked hovered on open').toHaveCount(0);
+      await hits(scope).getByRole('button', { name: 'Thu Nov 12', exact: true }).tap();
+      await expect(sliderValue(scope)).toHaveText('Thu Nov 12 · 9 of 11');
+      await hits(scope).getByRole('button', { name: 'Wed Nov 11', exact: true }).tap();
+      await expect(sliderValue(scope)).toHaveText('Wed Nov 11 · 8 of 11');
+      await expect(scope.getByTestId('hover'), 'no hover box after two taps').toHaveCount(0);
+      await expect(scope.locator('rect.hover-column'), 'no hover band after two taps').toHaveCount(0);
+      await context.close();
+    });
+  }
+
+  test('should leave the slider’s value uncovered by a hover band for DALE from Trade Detail at 320', async ({ profile }) => {
+    test.setTimeout(420_000);
+    const built = await build(profile, DALE_HOLD, closeOf('2026-11-16'), 10);
+    const trade = built.trade;
+    await built.context.close();
+    const context = await launchTouchAt(profile, closeOf('2026-11-16'), 320);
+    const page = await firstPage(context);
+    await page.goto(`/trades/${trade.tradeId}`);
+    await setViewport(page, 320, 667);
+    await detailReplayButton(page).tap();
+    const scope = replay(page);
+    await expect(sliderValue(scope)).toBeVisible();
+    await expect(scope.locator('rect.hover-column'), 'no hover band').toHaveCount(0);
+    await expect(scope.getByTestId('hover'), 'no hover box').toHaveCount(0);
+    const value = (await sliderValue(scope).boundingBox())!;
+    const covered = await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.className?.toString() ?? '', { x: value.x + value.width / 2, y: value.y + value.height / 2 });
+    expect(covered, 'what is at the slider value’s centre').not.toMatch(/hover|replay-hit|replay-plot/);
     await context.close();
   });
 

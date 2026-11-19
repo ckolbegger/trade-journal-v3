@@ -13,6 +13,21 @@ const WIDTH_PHONE = 460;
 // The Review card's box at 320 px is about 215 to 226 wide: drawn at 240 its text shrank under 10 px.
 const WIDTH_MIN = 200;
 
+// A tap elsewhere (the Review card's Replay button) opens the chart under the finger, and the browser then sends the hit under
+// it a mouse pointerenter with no mouse behind it. Any touch or pen contact is noted (from before the chart exists), and a mouse
+// enter within this many ms of one is not a hover. The event's own timestamp is used: the page's clock may be pinned.
+const SYNTHETIC_ENTER_MS = 1000;
+let lastTouchAt = -Infinity;
+if (typeof document !== 'undefined') {
+  document.addEventListener(
+    'pointerdown',
+    (e) => {
+      if (e.pointerType === 'touch' || e.pointerType === 'pen') lastTouchAt = e.timeStamp;
+    },
+    true,
+  );
+}
+
 // One hit area per revealed session, over the column both charts share (they use the same time axis): a button named by
 // the session's date label. Hover and focus report the session, leave and blur its end, a click or tap selects it.
 function SessionHits({ props, width }: { props: ReplayPlotProps; width: number }) {
@@ -35,7 +50,7 @@ function SessionHits({ props, width }: { props: ReplayPlotProps; width: number }
           data-hovered={props.hoverIndex === i ? 'true' : undefined}
           style={{ left: `${(((time.x(s.slot) - time.column / 2) / width) * 100).toFixed(3)}%`, width: `${((time.column / width) * 100).toFixed(3)}%` }}
           // A touch or pen contact is a tap (it selects), not a hover: only a mouse hovers.
-          onPointerEnter={(e) => e.pointerType !== 'touch' && e.pointerType !== 'pen' && hold('pointer', i)}
+          onPointerEnter={(e) => e.pointerType !== 'touch' && e.pointerType !== 'pen' && !(e.pointerType === 'mouse' && e.timeStamp - lastTouchAt < SYNTHETIC_ENTER_MS) && hold('pointer', i)}
           onPointerLeave={(e) => e.pointerType !== 'touch' && e.pointerType !== 'pen' && hold('pointer', null)}
           onPointerDown={(e) => {
             tapped.current = e.pointerType === 'touch' || e.pointerType === 'pen';
