@@ -225,6 +225,15 @@ function decimal(text: string): Rational {
   return parsed.value;
 }
 
+// A267: Risk over (Risk + Reward), the Stop's chance the rest, and the pair as whole percents (the Target's half going up).
+function oddsOf(risk: Rational, reward: Rational): RewardRiskOdds {
+  const targetFirst = risk.div(risk.add(reward));
+  const hundred = Rational.of(100n);
+  const scaled = targetFirst.mul(hundred).add(Rational.of(1n, 2n));
+  const targetPercent = Rational.of(scaled.numerator / scaled.denominator);
+  return { targetFirst, stopFirst: Rational.of(1n).sub(targetFirst), percent: { targetFirst: targetPercent, stopFirst: hundred.sub(targetPercent) } };
+}
+
 const value = <T>(v: T): CalculationResult<T> => ({ kind: 'Value', value: v });
 
 // Risk and reward of lots measured from their execution prices, never called valuation or P&L (A54).
@@ -506,6 +515,12 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
     if (ongoingRiskToStop.value.compare(ZERO) <= 0) return { kind: 'NotApplicable', reason: 'NoOngoingRisk' };
     return value(incrementalRewardToTarget.value.div(ongoingRiskToStop.value));
   };
+  const rewardRiskOddsOf = (): CalculationResult<RewardRiskOdds> => {
+    const ratio = rewardRiskNowOf();
+    // A Value ratio means both of its parts are Values.
+    if (ratio.kind !== 'Value' || ongoingRiskToStop.kind !== 'Value' || incrementalRewardToTarget.kind !== 'Value') return ratio as Exclude<typeof ratio, { kind: 'Value' }>;
+    return value(oddsOf(ongoingRiskToStop.value, incrementalRewardToTarget.value));
+  };
   const maxReward = maximumIncrementalReward();
   // A248: the Trade's result were the held Instrument at `heldValue`. Reads no Mark.
   const resultAt = (heldValue: Rational): CalculationResult<Rational> => (lots.length === 0 ? noRemainingPosition : value(currentMarked(heldValue)));
@@ -566,6 +581,11 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
     worstCaseOngoingRisk,
     incrementalRewardToTarget,
     rewardRiskNow: rewardRiskNowOf(),
+    rewardRiskOdds: rewardRiskOddsOf(),
+    // A268: the state holds no Plan side, so it is read from the Trade's first Execution, which always opens a Planned Leg:
+    // a Sell of an option opens a short option leg. A Trade with no Execution yet has none to read.
+    ...(state.facts[0] && { extremes: state.facts[0].instrument.kind === 'Option' && state.facts[0].action === 'Sell' ? ('Main' as const) : ('Remote' as const) }),
+    planOdds: value(oddsOf(state.baseline.oneR, state.baseline.originalPlannedReward)),
     ongoingRiskToStopInPlanR: inPlanR(ongoingRiskToStop),
     worstCaseOngoingRiskInPlanR: inPlanR(worstCaseOngoingRisk),
     incrementalRewardToTargetInPlanR: inPlanR(incrementalRewardToTarget),

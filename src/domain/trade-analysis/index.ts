@@ -76,6 +76,8 @@ export {
 } from './replay-series.ts';
 export {
   evaluate,
+  type ExtremesWeight,
+  type RewardRiskOdds,
   type AtEntryFigures,
   type ConditionReading,
   type ConditionStatus,
