@@ -1,0 +1,384 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 24 selected item(s).",
+  "summary": {
+    "files_reviewed": 24,
+    "comments": 0,
+    "total_tokens": 415153,
+    "input_tokens": 410751,
+    "output_tokens": 4402,
+    "cache_read_tokens": 21632,
+    "elapsed": "46s"
+  },
+  "tool_calls": {
+    "total": 27,
+    "by_tool": {
+      "code_search": 3,
+      "file_read": 20,
+      "file_read_diff": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Trade-analysis replay data and view coordination",
+      "files": [
+        "src/coordinators/trade-views/replay-view.ts",
+        "src/domain/trade-analysis/evaluate.ts",
+        "src/domain/trade-analysis/replay-series.ts"
+      ]
+    },
+    {
+      "label": "Replay plot properties and tests",
+      "files": [
+        "src/ui/cockpit/replay/plot.props.test.ts",
+        "src/ui/cockpit/replay/plot.props.ts"
+      ]
+    },
+    {
+      "label": "Replay readout, session and stake wording, and styling",
+      "files": [
+        "src/ui/cockpit/replay/readout.props.test.ts",
+        "src/ui/cockpit/replay/readout.props.ts",
+        "src/ui/cockpit/replay/readout.test.tsx",
+        "src/ui/cockpit/replay/readout.tsx",
+        "src/ui/cockpit/replay/session-words.props.test.ts",
+        "src/ui/cockpit/replay/session-words.props.ts",
+        "src/ui/cockpit/replay/stake-words.props.test.ts",
+        "src/ui/cockpit/replay/stake-words.props.ts",
+        "src/ui/cockpit/styles/replay-readout.css"
+      ]
+    },
+    {
+      "label": "Replay property composition, shared types, and test doubles",
+      "files": [
+        "src/ui/cockpit/replay/replay.props.test.ts",
+        "src/ui/cockpit/replay/replay.props.ts",
+        "src/ui/cockpit/replay/replay.types.ts",
+        "src/ui/cockpit/replay/view-doubles.props.ts"
+      ]
+    },
+    {
+      "label": "Replay frame layout and stylesheet integration",
+      "files": [
+        "src/ui/cockpit/index.css",
+        "src/ui/cockpit/replay/frame.test.tsx",
+        "src/ui/cockpit/replay/frame.tsx",
+        "src/ui/cockpit/styles/replay-cards.css",
+        "src/ui/cockpit/styles/replay-frame.css",
+        "src/ui/cockpit/styles/replay-overlay.css"
+      ]
+    }
+  ],
+  "session_id": "a9b6cd97-e337-46e6-8ce3-7e44e0943348",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "a9b6cd97-e337-46e6-8ce3-7e44e0943348",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "07d00eec",
+      "resolved_base": "90658cdf0f9735f7331546ea0b238d8a10b69197",
+      "resolved_head": "07d00eece13b742b4fecfce4631f5cfc446956e9",
+      "exact_range": "90658cdf0f9735f7331546ea0b238d8a10b69197..07d00eece13b742b4fecfce4631f5cfc446956e9",
+      "source_artifact_sha256": "90da547b3bb1c1a813e40a22ca0f25a33a9e68b3f9157f9b4d80d27fb9226664"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0060ea44ecacab2865c5d4dceb1c75627a3c3566a4f16698d1c3465ec458b6cf",
+          "path": "src/ui/cockpit/replay/replay.props.test.ts",
+          "fingerprint": "ac39c3f3f40f0203ec6e412af4ef38123050b7880dbfea43477ed838179b26f2"
+        },
+        {
+          "item_id": "07d6ddb61a627b6e3202a0c5e3f9547cfb10f6fad784c8ca12a580a08252b174",
+          "path": "src/ui/cockpit/replay/frame.test.tsx",
+          "fingerprint": "29404390111cc40ad418ca7fedeb7ee5973703b3288585d6b9c7993cba8df3ef"
+        },
+        {
+          "item_id": "1e9818d41ff29d7730ea06bdd1d154959f0a952a460b3d5f13d2bde01ff86492",
+          "path": "src/ui/cockpit/replay/frame.tsx",
+          "fingerprint": "dc393643fdc854b230ebff95db85cbd6ff20d68e841b9f04d81ada9b66b3a439"
+        },
+        {
+          "item_id": "22c31039993eb9c636876dd88bc26bd2b069aa0a030d44e5115ffacae90e39b2",
+          "path": "src/ui/cockpit/styles/replay-cards.css",
+          "fingerprint": "975fcb37e937b224eb8b9807f748aab7bba050b033b4c932d89a50bbb895f513"
+        },
+        {
+          "item_id": "2cdfac52e8ab493575d7f44a1a39167101fcd433edd529507860ca0fdba1d8b0",
+          "path": "src/domain/trade-analysis/evaluate.ts",
+          "fingerprint": "f20cffbf4d138291ec1944ed043fdcfa57efd1efa8db27a059aecb9caf409da9"
+        },
+        {
+          "item_id": "31d44f685aa4a2c24e316e1f051e995cfa50e50ecf25310e8e9017d7f35d5147",
+          "path": "src/ui/cockpit/index.css",
+          "fingerprint": "1c642109cc05c633394538e110a46cefc0808abc93c2d0b8f9c5e8ec7de0e84e"
+        },
+        {
+          "item_id": "3c9a7cc1262b7d0ad636414c60005031bb565c86e552422f341c6235b5459dcf",
+          "path": "src/ui/cockpit/replay/plot.props.ts",
+          "fingerprint": "9738b2a193490ad99224ee723f87b317cd8f23f51401b7c0587a9e2266ba9cf3"
+        },
+        {
+          "item_id": "4d061a48434c6088fc28388241ae61f9c345d2f278e56b2b7f845f542f3b4e61",
+          "path": "src/ui/cockpit/replay/replay.types.ts",
+          "fingerprint": "cf97d3cefcee844c1fbfc97c40dcb5105746a1853ec44eddbb5e62b337fcaf40"
+        },
+        {
+          "item_id": "5d73acbebf781c477d11b1dab2cf1e4652c24b5ff821e19aff81ce44093f310a",
+          "path": "src/ui/cockpit/replay/plot.props.test.ts",
+          "fingerprint": "d550cad6fda7bbb5fb4ff69fb88a3e056961d0e9fa88fefdf2bbfa8a1826f330"
+        },
+        {
+          "item_id": "63c0d43b245d37c2fa601fdd5364ad0a5b7bdede1e576259fe71f3d4f2783723",
+          "path": "src/ui/cockpit/replay/readout.props.test.ts",
+          "fingerprint": "d00df5caf8d1f45e58a406cdadcc4cf6510d2f630c5c942edd6fd1335c87c89a"
+        },
+        {
+          "item_id": "6d86b77abf8fdc8225b334a55d2bb3f62131271add4d139cb41a499b1d9c9a07",
+          "path": "src/ui/cockpit/replay/readout.tsx",
+          "fingerprint": "65e41c2cda9f52a7fc7caa3277e486787226fae87af798290936500c0e623360"
+        },
+        {
+          "item_id": "7b421335c0764439879c584c7e0b31bdb7f9530beb3bfc23aa266d683b982c32",
+          "path": "src/ui/cockpit/replay/session-words.props.test.ts",
+          "fingerprint": "24c9c662b6c29452b22d3baef54b14d6490f4905f2c47fabd58a5bf0255fac77"
+        },
+        {
+          "item_id": "8303bd665d3dd32df6f3f063e4691f5ac45a3c8b7df30b0004df8234dc2fed2a",
+          "path": "src/ui/cockpit/styles/replay-frame.css",
+          "fingerprint": "4e175d7101fd6bf7dd9c66fc4269f5298219e1a3878838255581ce1a04ce2504"
+        },
+        {
+          "item_id": "8b513a4dc3f3a0bb37e210f170b1865c12ce5abe33a89f05ed01739058197e3f",
+          "path": "src/ui/cockpit/replay/view-doubles.props.ts",
+          "fingerprint": "c0f4adc2132b68c1507f271c8df4aaccf1b1c4a8bec46661321483c1c34f3d21"
+        },
+        {
+          "item_id": "8b806389c79abca78c362100c42cd8f5897f283f3d5df4f9cbacda85d10b0df9",
+          "path": "src/ui/cockpit/replay/stake-words.props.test.ts",
+          "fingerprint": "e040718beafe2ac78fc64542c9bbb0d6b51a9ab73532f6aa94455b5f1873ff67"
+        },
+        {
+          "item_id": "8c66adbcab958299167661bda6e7b87a185ee6d5f3802d58253a87fde25e374e",
+          "path": "src/ui/cockpit/replay/stake-words.props.ts",
+          "fingerprint": "ca3c9c9ca82dba512325551100635cef6baa0503500a199ee095c5d1ae4f2901"
+        },
+        {
+          "item_id": "93d04e7e222932950b3c4a67d3e43488fa370fb9d3fb3f1786e0dabaaf197e6a",
+          "path": "src/coordinators/trade-views/replay-view.ts",
+          "fingerprint": "16df843bf197a98b9911ca65f61f63a0679bf69cdf523d67e44c6dc354c487c5"
+        },
+        {
+          "item_id": "97f9f0e3c683f597aee7b0503f4803e42d85c73c0fcec512065b995b7820da16",
+          "path": "src/ui/cockpit/replay/readout.props.ts",
+          "fingerprint": "d96d3fca501e6d61c79688b207ef2f6c69dac265c45be19168154e3d51e9c3c4"
+        },
+        {
+          "item_id": "9d9fa217e129811e2651c02ebf53a158c6611c1aa867b6abb12f116117d9379c",
+          "path": "src/ui/cockpit/replay/readout.test.tsx",
+          "fingerprint": "8d224000e54e191991d2063bfe1866a496578e54902e6f2ccbdfc66e2b2bed67"
+        },
+        {
+          "item_id": "c227943fa1533d9c2d4f1b82b596c384bb84f3c6c07964958d0c39ddb35fa702",
+          "path": "src/ui/cockpit/styles/replay-readout.css",
+          "fingerprint": "bd02e6491b73c7980650b4c7274bee3976095d093c9a16099215cd29ee2ff06e"
+        },
+        {
+          "item_id": "de31a9170a08b375f51fa298e4e0c932e4a8816c12b5758d5e764a9f0591eeb3",
+          "path": "src/ui/cockpit/styles/replay-overlay.css",
+          "fingerprint": "ffdb7c80f9e0b27c67112d365a46178ca84e93b9f81124caefa5282dffd9a376"
+        },
+        {
+          "item_id": "dfdfcb18f28569b5071aabb67f85b536832edb984e2c85f887674cad403f13cd",
+          "path": "src/domain/trade-analysis/replay-series.ts",
+          "fingerprint": "ce055095075e1d37fbdd745392d5dda76b43ac5f1be3aca849bd2f97759f04be"
+        },
+        {
+          "item_id": "ea03ecbf36e42899eb18f897fb8983e3c8efff8a23ee606ee3aa718ee2111f66",
+          "path": "src/ui/cockpit/replay/replay.props.ts",
+          "fingerprint": "92c29066f2bdd2539209f0320f7e45f611304701a2438d5ecbe73ab5df6cfbd2"
+        },
+        {
+          "item_id": "ee7e147832c5a7d3d16b81393835049e14ef595334d5858de78f216b61060a0e",
+          "path": "src/ui/cockpit/replay/session-words.props.ts",
+          "fingerprint": "7a1712c823783a5943e2918e8b0b0915b55dc443a3c7b5e7a9eddb0575cbf5ab"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0060ea44ecacab2865c5d4dceb1c75627a3c3566a4f16698d1c3465ec458b6cf",
+          "path": "src/ui/cockpit/replay/replay.props.test.ts",
+          "fingerprint": "ac39c3f3f40f0203ec6e412af4ef38123050b7880dbfea43477ed838179b26f2"
+        },
+        {
+          "item_id": "07d6ddb61a627b6e3202a0c5e3f9547cfb10f6fad784c8ca12a580a08252b174",
+          "path": "src/ui/cockpit/replay/frame.test.tsx",
+          "fingerprint": "29404390111cc40ad418ca7fedeb7ee5973703b3288585d6b9c7993cba8df3ef"
+        },
+        {
+          "item_id": "1e9818d41ff29d7730ea06bdd1d154959f0a952a460b3d5f13d2bde01ff86492",
+          "path": "src/ui/cockpit/replay/frame.tsx",
+          "fingerprint": "dc393643fdc854b230ebff95db85cbd6ff20d68e841b9f04d81ada9b66b3a439"
+        },
+        {
+          "item_id": "22c31039993eb9c636876dd88bc26bd2b069aa0a030d44e5115ffacae90e39b2",
+          "path": "src/ui/cockpit/styles/replay-cards.css",
+          "fingerprint": "975fcb37e937b224eb8b9807f748aab7bba050b033b4c932d89a50bbb895f513"
+        },
+        {
+          "item_id": "2cdfac52e8ab493575d7f44a1a39167101fcd433edd529507860ca0fdba1d8b0",
+          "path": "src/domain/trade-analysis/evaluate.ts",
+          "fingerprint": "f20cffbf4d138291ec1944ed043fdcfa57efd1efa8db27a059aecb9caf409da9"
+        },
+        {
+          "item_id": "31d44f685aa4a2c24e316e1f051e995cfa50e50ecf25310e8e9017d7f35d5147",
+          "path": "src/ui/cockpit/index.css",
+          "fingerprint": "1c642109cc05c633394538e110a46cefc0808abc93c2d0b8f9c5e8ec7de0e84e"
+        },
+        {
+          "item_id": "3c9a7cc1262b7d0ad636414c60005031bb565c86e552422f341c6235b5459dcf",
+          "path": "src/ui/cockpit/replay/plot.props.ts",
+          "fingerprint": "9738b2a193490ad99224ee723f87b317cd8f23f51401b7c0587a9e2266ba9cf3"
+        },
+        {
+          "item_id": "4d061a48434c6088fc28388241ae61f9c345d2f278e56b2b7f845f542f3b4e61",
+          "path": "src/ui/cockpit/replay/replay.types.ts",
+          "fingerprint": "cf97d3cefcee844c1fbfc97c40dcb5105746a1853ec44eddbb5e62b337fcaf40"
+        },
+        {
+          "item_id": "5d73acbebf781c477d11b1dab2cf1e4652c24b5ff821e19aff81ce44093f310a",
+          "path": "src/ui/cockpit/replay/plot.props.test.ts",
+          "fingerprint": "d550cad6fda7bbb5fb4ff69fb88a3e056961d0e9fa88fefdf2bbfa8a1826f330"
+        },
+        {
+          "item_id": "63c0d43b245d37c2fa601fdd5364ad0a5b7bdede1e576259fe71f3d4f2783723",
+          "path": "src/ui/cockpit/replay/readout.props.test.ts",
+          "fingerprint": "d00df5caf8d1f45e58a406cdadcc4cf6510d2f630c5c942edd6fd1335c87c89a"
+        },
+        {
+          "item_id": "6d86b77abf8fdc8225b334a55d2bb3f62131271add4d139cb41a499b1d9c9a07",
+          "path": "src/ui/cockpit/replay/readout.tsx",
+          "fingerprint": "65e41c2cda9f52a7fc7caa3277e486787226fae87af798290936500c0e623360"
+        },
+        {
+          "item_id": "7b421335c0764439879c584c7e0b31bdb7f9530beb3bfc23aa266d683b982c32",
+          "path": "src/ui/cockpit/replay/session-words.props.test.ts",
+          "fingerprint": "24c9c662b6c29452b22d3baef54b14d6490f4905f2c47fabd58a5bf0255fac77"
+        },
+        {
+          "item_id": "8303bd665d3dd32df6f3f063e4691f5ac45a3c8b7df30b0004df8234dc2fed2a",
+          "path": "src/ui/cockpit/styles/replay-frame.css",
+          "fingerprint": "4e175d7101fd6bf7dd9c66fc4269f5298219e1a3878838255581ce1a04ce2504"
+        },
+        {
+          "item_id": "8b513a4dc3f3a0bb37e210f170b1865c12ce5abe33a89f05ed01739058197e3f",
+          "path": "src/ui/cockpit/replay/view-doubles.props.ts",
+          "fingerprint": "c0f4adc2132b68c1507f271c8df4aaccf1b1c4a8bec46661321483c1c34f3d21"
+        },
+        {
+          "item_id": "8b806389c79abca78c362100c42cd8f5897f283f3d5df4f9cbacda85d10b0df9",
+          "path": "src/ui/cockpit/replay/stake-words.props.test.ts",
+          "fingerprint": "e040718beafe2ac78fc64542c9bbb0d6b51a9ab73532f6aa94455b5f1873ff67"
+        },
+        {
+          "item_id": "8c66adbcab958299167661bda6e7b87a185ee6d5f3802d58253a87fde25e374e",
+          "path": "src/ui/cockpit/replay/stake-words.props.ts",
+          "fingerprint": "ca3c9c9ca82dba512325551100635cef6baa0503500a199ee095c5d1ae4f2901"
+        },
+        {
+          "item_id": "93d04e7e222932950b3c4a67d3e43488fa370fb9d3fb3f1786e0dabaaf197e6a",
+          "path": "src/coordinators/trade-views/replay-view.ts",
+          "fingerprint": "16df843bf197a98b9911ca65f61f63a0679bf69cdf523d67e44c6dc354c487c5"
+        },
+        {
+          "item_id": "97f9f0e3c683f597aee7b0503f4803e42d85c73c0fcec512065b995b7820da16",
+          "path": "src/ui/cockpit/replay/readout.props.ts",
+          "fingerprint": "d96d3fca501e6d61c79688b207ef2f6c69dac265c45be19168154e3d51e9c3c4"
+        },
+        {
+          "item_id": "9d9fa217e129811e2651c02ebf53a158c6611c1aa867b6abb12f116117d9379c",
+          "path": "src/ui/cockpit/replay/readout.test.tsx",
+          "fingerprint": "8d224000e54e191991d2063bfe1866a496578e54902e6f2ccbdfc66e2b2bed67"
+        },
+        {
+          "item_id": "c227943fa1533d9c2d4f1b82b596c384bb84f3c6c07964958d0c39ddb35fa702",
+          "path": "src/ui/cockpit/styles/replay-readout.css",
+          "fingerprint": "bd02e6491b73c7980650b4c7274bee3976095d093c9a16099215cd29ee2ff06e"
+        },
+        {
+          "item_id": "de31a9170a08b375f51fa298e4e0c932e4a8816c12b5758d5e764a9f0591eeb3",
+          "path": "src/ui/cockpit/styles/replay-overlay.css",
+          "fingerprint": "ffdb7c80f9e0b27c67112d365a46178ca84e93b9f81124caefa5282dffd9a376"
+        },
+        {
+          "item_id": "dfdfcb18f28569b5071aabb67f85b536832edb984e2c85f887674cad403f13cd",
+          "path": "src/domain/trade-analysis/replay-series.ts",
+          "fingerprint": "ce055095075e1d37fbdd745392d5dda76b43ac5f1be3aca849bd2f97759f04be"
+        },
+        {
+          "item_id": "ea03ecbf36e42899eb18f897fb8983e3c8efff8a23ee606ee3aa718ee2111f66",
+          "path": "src/ui/cockpit/replay/replay.props.ts",
+          "fingerprint": "92c29066f2bdd2539209f0320f7e45f611304701a2438d5ecbe73ab5df6cfbd2"
+        },
+        {
+          "item_id": "ee7e147832c5a7d3d16b81393835049e14ef595334d5858de78f216b61060a0e",
+          "path": "src/ui/cockpit/replay/session-words.props.ts",
+          "fingerprint": "7a1712c823783a5943e2918e8b0b0915b55dc443a3c7b5e7a9eddb0575cbf5ab"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "16edf404be76e85bdd31a1281dd44376b4bb33f80d59b04a89c25f676d52bdb3",
+          "path": "evidence/D09AR/structural.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "3902f557b6d4f33d21a6b4c03f3ff453f79f6d1d4ffe9c8a6b4212e51f297d03",
+          "path": "evidence/D09AR/suite-runs/T9AR.2-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "46aa254b9bbbe62a5117b54ea822d0a371e3493cd73f9c8663111d7488170f27",
+          "path": "evidence/D09AR/suite-runs/T9AR.2-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "934f6c718440e4238a6fd110dd128449e287a10faca4a21f01886274b62aed80",
+          "path": "evidence/D09AR/suite-runs/T9AR.2-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "d3aa7f6ad7c84d7daa91082b37e730fd6c976af43511ba3248d4ccc83b1b28c1",
+          "path": "evidence/D09AR/suite-runs/T9AR.2-unit.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 46016
+  }
+}
