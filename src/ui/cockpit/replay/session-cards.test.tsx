@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { act, cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { replayProps } from './replay.props.ts';
@@ -81,6 +81,26 @@ describe('Replay: session cards, paging (A277)', () => {
     vi.spyOn(Element.prototype, 'clientWidth', 'get').mockReturnValue(100);
     draw();
     expect(shown()).toEqual(['Fri Nov 6']);
+  });
+
+  it('should hand focus to an enabled paging button when a resize repaginates the cards and hides the card heading or disables the button that held focus', async () => {
+    let width = 700;
+    let notify = () => undefined as void;
+    vi.spyOn(Element.prototype, 'clientWidth', 'get').mockImplementation(() => width);
+    vi.stubGlobal('ResizeObserver', class { constructor(cb: () => void) { notify = cb; } observe() {} unobserve() {} disconnect() {} });
+    draw();
+    const user = userEvent.setup();
+    // The last page of two per page holds Mon Nov 2 alone; its heading holds focus.
+    await user.click(button('Earlier sessions'));
+    await user.click(button('Earlier sessions'));
+    await user.click(screen.getByRole('button', { name: 'Mon Nov 2' }));
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Mon Nov 2' }));
+    // Narrowed to one per page the cards stay on page 3 of 5, so Mon Nov 2 is hidden.
+    width = 100;
+    act(() => notify());
+    expect(shown()).toEqual(['Wed Nov 4']);
+    expect(document.activeElement).toBe(button('Newer sessions'));
+    expect((document.activeElement as HTMLButtonElement).disabled).toBe(false);
   });
 });
 

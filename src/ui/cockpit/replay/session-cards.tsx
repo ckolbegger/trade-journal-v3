@@ -1,4 +1,4 @@
-import { useRef, useState, type CSSProperties } from 'react';
+import { useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { CardPager, useCardsPerPage } from '../card-pager.tsx';
 import type { ReadoutValue, SessionCard, SessionCardsProps } from './replay.types.ts';
 
@@ -55,8 +55,20 @@ export function SessionCards({ title, newerLabel, earlierLabel, cards, id, onSel
   const perPage = useCardsPerPage(list, CARD_WIDTH, CARD_GAP);
   const pages = Math.max(1, Math.ceil(cards.length / perPage));
   const page = Math.min(requested, pages - 1);
+  // A resize that changes the page size repaginates; a card heading it hides or a paging button it disables can't hold focus, so focus goes to an
+  // enabled paging button, or with none (one page) to the first shown card's heading.
+  const root = useRef<HTMLElement>(null);
+  const sized = useRef(perPage);
+  useLayoutEffect(() => {
+    if (sized.current === perPage) return;
+    sized.current = perPage;
+    const held = document.activeElement;
+    if (!root.current || !held || !root.current.contains(held)) return;
+    if (!held.closest('li[hidden]') && !(held as HTMLButtonElement).disabled) return;
+    root.current.querySelector<HTMLElement>('.replay-cards-head button:not(:disabled), li:not([hidden]) h4 button')?.focus();
+  }, [perPage]);
   return (
-    <section className="replay-cards" aria-labelledby={`${id}-title`} style={{ '--cards-per-page': perPage } as CSSProperties}>
+    <section className="replay-cards" ref={root} aria-labelledby={`${id}-title`} style={{ '--cards-per-page': perPage } as CSSProperties}>
       <div className="replay-cards-head">
         <h3 id={`${id}-title`}>{title}</h3>
         <CardPager page={page} pages={pages} onPage={setPage} newerLabel={newerLabel} earlierLabel={earlierLabel} />
