@@ -354,7 +354,8 @@ Stage A runs as a swarm (decision 111, agent cap 4). Each task's heading holds i
 
 | Critic | Brief | Tokens | Tool calls | Duration | Defects |
 |---|---|---|---|---|---|
-| critic-1 | `critic-brief.md`, stage A flows, decisions since the plan listed | 246,675 | 77 | 12 min 20 s | yes (1 high, 6 moderate, 1 low) | T9.18-F3 (the charts) waits for F1 (lane PL edits `geometry.ts` and `corridor-pnl.tsx`) to merge, then runs in lane BR.
+| critic-1 | `critic-brief.md`, stage A flows, decisions since the plan listed | 246,675 | 77 | 12 min 20 s | yes (1 high, 6 moderate, 1 low) |
+| critic-2 | `critic-brief.md`, stage A flows as before D9A-R's amendment, D9A-R named as not built, earlier reviews withheld | 191,064 | 74 | 11 min 6 s | yes (1 high, 1 moderate, 2 low) | T9.18-F3 (the charts) waits for F1 (lane PL edits `geometry.ts` and `corridor-pnl.tsx`) to merge, then runs in lane BR.
 - Notes (no task): W42's "11 of 15" reads "11 of 11" on R-BREN-U at Mon 11-16 (the slider counts the view's sessions; T9.14 recorded it); R-CORV-D's Tuesday table says "No Mark" in the two Result cells while the chart keeps both lines (I9.2 keeps the results); "Price History opens on that session" selects the drawer and session without column focus from the Review's link (A257).
 
 ## T9.15 Review card: the replay before the Action
