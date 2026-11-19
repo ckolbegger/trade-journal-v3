@@ -186,9 +186,51 @@ Lane RO (`d09ar/ro`), base `9a40b95a`, commit `5f395db7`.
   - Lane S4 then rebased onto it, with its tier rerun as `merge4-S1-rebased`. Lane SC fast-forwarded to `3cb51638`.
   - Briefed:
     - T9AR.15-D1 again, in lane SC;
-    - T9AR.20 in the new lane RW at `3cb51638`. It may make a minimal change to `stake-words.props.ts`, since lane RO is idle. `readout.props.ts` is left to lane SC, whose T9AR.17 exports its row builders.
+    - T9AR.20 in the new lane RW at `3cb51638`.
+- **T9AR.15-D1** `3fa682b6` (lane SC): "it should speak the stake sentence with the odds in full to a screen reader", in two files.
+  - `session-words.props.test.ts`: red `expected undefined to be` the spoken sentence; then green.
+  - `frame.test.tsx`: red `TestingLibraryElementError`; then green.
+  - No first-run pass.
+  - `stakeSpokenOf` swaps the visible odds pair for `ratioWords(...).odds.spoken`. The Plan's part keeps its visible words, since there is no spoken form for it. The field is unset where the sentence has no odds.
+  - The frame renders an `aria-hidden` visible span and a `visually-hidden` spoken span.
+  - No new words; no browser run.
+  - Lane tier `T9AR.15-D1`: unit 2412, integration 286, checks 14 of 14.
+  - ocr on `3fa682b6` (`ocr/T9AR.15-D1-3fa682b6.json`): 4 files (5 excluded), 0 comments, **no findings**.
+    - The reviewer checked the swap: a Plan pair equal to the current pair still swaps only the current one, which comes first.
+    - Suggestion, recorded for the final report alongside T9AR.15-B1's: build the visible and spoken sentences from the same parts in `stake-words.props.ts`, not by searching the finished sentence.
+    - The edge wordings are untested here.
+  - T9AR.17 briefed on top of it in lane SC; it may export (only) the row builders from `readout.props.ts` and replace the table types in `replay.types.ts`. It may make a minimal change to `stake-words.props.ts`, since lane RO is idle. `readout.props.ts` is left to lane SC, whose T9AR.17 exports its row builders.
 - **T9AR.15-D1** briefed in lane SC at `4179346d`: fill `stakeSpoken` from `ratioWords(...).odds.spoken`.
   - It stopped with no change: `ratioWords` is lane RO's and is not merged yet (the main session's brief was premature). Parked until lane RO merges, then re-briefed on lane SC rebased onto it.
+
+## T9AR.20 Review card: the summary in the replay's words
+
+Lane RW (`d09ar/rw`), base `3cb51638`, commit `50ef6d4a`.
+
+- **Cases:** all 6 planned cases in `CardFigures.test.tsx` went red then green. The A287 `title` had been written ahead of red; it was backed out for a genuine red, then restored. No first-run pass. Titles dropped quotes, `$` and `%`.
+- **Lines changed (section 1.5's last two Texts rows):** `CardFigures.test.tsx` (the three older cases); `ReviewCard.test.tsx` 174-176, 201-208, 229-234, 247-248; `ReviewCards.test.tsx` 330, 640; `e2e/d4/review.spec.ts` 46-49; `e2e/d5r/review.spec.ts` 27-28; `e2e/d7sp/review-dated-line.spec.ts` 33.
+- **`CardMarks.test.tsx` 270 and 287** were also changed: "Current Marked Trade P&L" became "Trade P&L". Section 1.5 lists this file under Stays, but these two lines assert the card's own summary, so W70 renames them. Accepted as a lookup miss in section 1.5 (the approved word applied, nothing else changed).
+- **API in `stake-words.props.ts` (lane RO idle):**
+  - `ratioWordsOf(now, odds, planColumn)`; `ratioWords` delegates to it, with its tests unchanged.
+  - `pastLineWords(role, pastBy)`. `readout.props.ts`'s `pastLineRow` still has its own copy of the sentence; lane SC owns that file during T9AR.17.
+- **Choices:**
+  - The Remote weight is an inline style plus `data-weight` (no stylesheet in the lane).
+  - The past-a-line row's label is the group heading ("Current Risk" or "Remaining Reward"), with the Overrun term as its title.
+  - With no current ratio, the row reads "<reason> (Plan 2.40 to 1)", so the Plan's ratio stays on the card (P148).
+  - No odds note on the card.
+- **Words:** W56, W59, W60 and W70 as written; none shortened. Uncovered: the past-a-line row's heading-only labels, and the "(Plan …)" suffix after a reason (in `new-words.md`).
+- **Tests:** checks exit 0. Lane tier `T9AR.20`: unit 2416, integration 286, checks 14 of 14.
+- **Browser:** `e2e/d7sp/review-dated-line.spec.ts` passed. `e2e/d4/review.spec.ts` and the first case of `e2e/d5r/review.spec.ts` **failed against a stale `dist-releases/current`**: the agent's `npm run build:releases` was **denied by the permission classifier**. The main session does not rerun a denied command for an agent. These specs are left to the next merge run's browser tier, and the denial is reported to the user.
+- **ocr** on `50ef6d4a` (`ocr/T9AR.20-50ef6d4a.json`): 9 files (5 excluded), 1 comment, Valid (maintainability).
+  - **T9AR.20-F1**: `readout.props.ts:77`'s `pastLineRow` builds its own copy of the "Past the … by" sentence instead of calling `pastLineWords`, so a wording change would not reach the card.
+  - `readout.props.ts` is in use by T9AR.17 (lane SC), so F1 goes to lane SC after T9AR.17, once lane RW has merged.
+- **Reviewer's notes, not findings (for the final report):**
+  - The card drops Reward to risk only past a line, while the replay also drops it when a condition is crossed but the dollar amount is not passed. The two can differ.
+  - The card keeps the row as "<reason> (Plan …)" where the replay hides it.
+  - The Remote weight is an inline style: a stylesheet rule on `[data-weight='Remote']` would keep the two screens' looks together.
+  - `RewardToRisk` splits the built string at " · ", like T9AR.15-B1.
+  - No odds note on the card.
+- Rebased onto `4926687a`: `c20b4c28`. Lane tier rerun `T9AR.20-rebased`: unit 2416, integration 286, checks 14 of 14; `run-complete.sh`: run complete. Merged by fast-forward to `c20b4c28`.
 
 ## T9AR.19 Chart: a first crossing
 

@@ -1,0 +1,209 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 9 selected item(s).",
+  "summary": {
+    "files_reviewed": 9,
+    "comments": 1,
+    "total_tokens": 186319,
+    "input_tokens": 184510,
+    "output_tokens": 1809,
+    "cache_read_tokens": 13312,
+    "elapsed": "1m7s"
+  },
+  "tool_calls": {
+    "total": 14,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 5,
+      "file_read": 8
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/replay/stake-words.props.ts",
+      "content": "This adds a second implementation rather than sharing the replay's word builder: `pastLineRow` in `src/ui/cockpit/replay/readout.props.ts` still constructs this same sentence independently. Consequently, changes to replay wording (including the `crossed: false` amount distinction) will not propagate to Review cards, contrary to the stated requirement that these cannot drift. Have `pastLineRow` call this helper as well.",
+      "existing_code": "export function pastLineWords(role: 'Stop' | 'Target', pastBy: { dollars: Rational; r: Rational; crossed: boolean }): string {\n  return `Past the ${role}${pastBy.crossed ? '' : \"'s amount\"} by ${money(pastBy.dollars)} (${rMultiple(pastBy.r)})`;\n}",
+      "start_line": 62,
+      "end_line": 64,
+      "category": "maintainability",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Review card figures, stake-word presentation, and related regression tests",
+      "files": [
+        "e2e/d4/review.spec.ts",
+        "e2e/d5r/review.spec.ts",
+        "e2e/d7sp/review-dated-line.spec.ts",
+        "src/ui/cockpit/replay/stake-words.props.ts",
+        "src/ui/screens/CardFigures.test.tsx",
+        "src/ui/screens/CardFigures.tsx",
+        "src/ui/screens/CardMarks.test.tsx",
+        "src/ui/screens/ReviewCard.test.tsx",
+        "src/ui/screens/ReviewCards.test.tsx"
+      ]
+    }
+  ],
+  "session_id": "add33b45-a069-4f0c-9f6b-89e67803c303",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "add33b45-a069-4f0c-9f6b-89e67803c303",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "50ef6d4a",
+      "resolved_base": "3cb5163878b673393963219fbc3dc8b53a9f5211",
+      "resolved_head": "50ef6d4ab4f58ab98b4f06a302af962354f8efdd",
+      "exact_range": "3cb5163878b673393963219fbc3dc8b53a9f5211..50ef6d4ab4f58ab98b4f06a302af962354f8efdd",
+      "source_artifact_sha256": "e992a247fe6524497e8171cc011e0a63ce9333422a579c0490ddd4909d765f14"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "06129f7bc0959665459bced5dd2b2fe42e6eefa20b943b5bcb22e15d914c46d2",
+          "path": "src/ui/screens/ReviewCards.test.tsx",
+          "fingerprint": "3789b5a1aab3787ab0b3d25a4576e2cde7654d835d75d632d0374c0fde592c3e"
+        },
+        {
+          "item_id": "0ef3c9ad6dce33615f4b8370bcbfebec46e319b75f3a3d3b28181ccc9c7e7eb6",
+          "path": "src/ui/screens/CardFigures.test.tsx",
+          "fingerprint": "c056cc74361d4f6157074a11b8d59de5725b35905cb161662cbd10eef5475bef"
+        },
+        {
+          "item_id": "0fd701e170b57a6485c092b664d7902b2162d8503a77796b5fe7b087d4d19316",
+          "path": "src/ui/screens/CardMarks.test.tsx",
+          "fingerprint": "91528a1e555ca2e47e60ed56cb9be480aee2cd43266d6e55499f50a69f99ba55"
+        },
+        {
+          "item_id": "1b082253820cd8fbd78a8475f54342bfab29f8d4db9c540964aedc626dbb875f",
+          "path": "e2e/d4/review.spec.ts",
+          "fingerprint": "830e1b120a8e8eebe3254b36b3c8f7ccfd5da0e95060575fea069b16d989fff7"
+        },
+        {
+          "item_id": "29ae33ee3fa14edcc6dc201e66201667dc7a859a1f8eaa515015cd749106e8b5",
+          "path": "src/ui/screens/CardFigures.tsx",
+          "fingerprint": "04055d138f541e9ab43bc281fc634f7e790e8d872c1de2ffb4e171aa8419dc04"
+        },
+        {
+          "item_id": "5a7479061290e878cd699b58fd728ca81cd25fa2b215e151727c95f8558dc27e",
+          "path": "e2e/d5r/review.spec.ts",
+          "fingerprint": "fc21cc28ab2a3dad165ee6258b290c173b52c1b3456821d2725fb13b223c33b7"
+        },
+        {
+          "item_id": "8c66adbcab958299167661bda6e7b87a185ee6d5f3802d58253a87fde25e374e",
+          "path": "src/ui/cockpit/replay/stake-words.props.ts",
+          "fingerprint": "7365b9d7231cc330051d5e0fca20713d8517ef3c8e27f56c49fd6e132d1570d7"
+        },
+        {
+          "item_id": "a83706f3444e16c14ac613c874f7293d7adce6354226bde7d7b9b892fce05701",
+          "path": "src/ui/screens/ReviewCard.test.tsx",
+          "fingerprint": "3801cece7711e37975d89cc2eca3f51bcc14e3c5005337a5d143a9d56be93de1"
+        },
+        {
+          "item_id": "cea0d669790e87a141d06f85b7d2efa926a2bf80e3ca4142ea44ec95644e94bc",
+          "path": "e2e/d7sp/review-dated-line.spec.ts",
+          "fingerprint": "2f29ac5d75ce20a7663609522da3eb69486b98c4bea19d5317930cf33ba073e6"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "06129f7bc0959665459bced5dd2b2fe42e6eefa20b943b5bcb22e15d914c46d2",
+          "path": "src/ui/screens/ReviewCards.test.tsx",
+          "fingerprint": "3789b5a1aab3787ab0b3d25a4576e2cde7654d835d75d632d0374c0fde592c3e"
+        },
+        {
+          "item_id": "0ef3c9ad6dce33615f4b8370bcbfebec46e319b75f3a3d3b28181ccc9c7e7eb6",
+          "path": "src/ui/screens/CardFigures.test.tsx",
+          "fingerprint": "c056cc74361d4f6157074a11b8d59de5725b35905cb161662cbd10eef5475bef"
+        },
+        {
+          "item_id": "0fd701e170b57a6485c092b664d7902b2162d8503a77796b5fe7b087d4d19316",
+          "path": "src/ui/screens/CardMarks.test.tsx",
+          "fingerprint": "91528a1e555ca2e47e60ed56cb9be480aee2cd43266d6e55499f50a69f99ba55"
+        },
+        {
+          "item_id": "1b082253820cd8fbd78a8475f54342bfab29f8d4db9c540964aedc626dbb875f",
+          "path": "e2e/d4/review.spec.ts",
+          "fingerprint": "830e1b120a8e8eebe3254b36b3c8f7ccfd5da0e95060575fea069b16d989fff7"
+        },
+        {
+          "item_id": "29ae33ee3fa14edcc6dc201e66201667dc7a859a1f8eaa515015cd749106e8b5",
+          "path": "src/ui/screens/CardFigures.tsx",
+          "fingerprint": "04055d138f541e9ab43bc281fc634f7e790e8d872c1de2ffb4e171aa8419dc04"
+        },
+        {
+          "item_id": "5a7479061290e878cd699b58fd728ca81cd25fa2b215e151727c95f8558dc27e",
+          "path": "e2e/d5r/review.spec.ts",
+          "fingerprint": "fc21cc28ab2a3dad165ee6258b290c173b52c1b3456821d2725fb13b223c33b7"
+        },
+        {
+          "item_id": "8c66adbcab958299167661bda6e7b87a185ee6d5f3802d58253a87fde25e374e",
+          "path": "src/ui/cockpit/replay/stake-words.props.ts",
+          "fingerprint": "7365b9d7231cc330051d5e0fca20713d8517ef3c8e27f56c49fd6e132d1570d7"
+        },
+        {
+          "item_id": "a83706f3444e16c14ac613c874f7293d7adce6354226bde7d7b9b892fce05701",
+          "path": "src/ui/screens/ReviewCard.test.tsx",
+          "fingerprint": "3801cece7711e37975d89cc2eca3f51bcc14e3c5005337a5d143a9d56be93de1"
+        },
+        {
+          "item_id": "cea0d669790e87a141d06f85b7d2efa926a2bf80e3ca4142ea44ec95644e94bc",
+          "path": "e2e/d7sp/review-dated-line.spec.ts",
+          "fingerprint": "2f29ac5d75ce20a7663609522da3eb69486b98c4bea19d5317930cf33ba073e6"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "22f7cd3ac2386f8de04000f3d091dd6c28af5a6746157d8bcef6f6cdd6ce58c5",
+          "path": "evidence/D09AR/suite-runs/T9AR.20-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "66c0a2be88f02c5a6ac463fc737e0b0b7c5b7c930a397c724ee58f383af08264",
+          "path": "evidence/D09AR/tdd-log/T9AR.20.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "8a4e4925bcdd19b7103a0f50331c0df20b02834f1d2a5099c6799c2406e9156b",
+          "path": "evidence/D09AR/suite-runs/T9AR.20-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "e32df4f8a2c1003ecb58677a97f604eba200845295c5741d8c6f9c51d71e6d2b",
+          "path": "evidence/D09AR/suite-runs/T9AR.20-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "eeddd73a16e5637d0d6e96f9bc8b2a79fb1903f9a8bc21215f1197d9db21020a",
+          "path": "evidence/D09AR/suite-runs/T9AR.20-lane.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 66706
+  }
+}
