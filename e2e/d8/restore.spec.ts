@@ -16,6 +16,8 @@ async function viewsOf(page: Page, tradeId: string): Promise<Record<string, stri
   const views: Record<string, string> = { list: await page.getByRole('table').first().innerText() };
   await page.goto(`/trades/${tradeId}`);
   await expect(detail.heading(page, 'XYZ')).toBeVisible(READY);
+  // The Detail shows before its replay is read (W20); the Marks are built from the replay, so wait until no drawer still says it is loading.
+  await expect(page.locator('[role="status"]', { hasText: 'Loading the Trade' })).toHaveCount(0, READY);
   for (const drawer of ['Today', 'Position', 'Plan and Risk', 'Journal'] as const) {
     await openDrawer(page, drawer);
     views[drawer] = await page.locator(`#drawer-panel-${drawer.toLowerCase().replaceAll(' ', '-')}`).innerText();
