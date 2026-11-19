@@ -292,6 +292,8 @@ export interface ReplayFrameSession {
   readonly dateLabel: string;
   // W36: "+$988.00 · 3.05R"; absent with no Mark, when `reason` stands in its place (no figure of another session).
   readonly headline: { readonly figure?: string; readonly reason?: string; readonly tone: ReplayTone };
+  // A281: where "Add the Mark" links, the Review's Marks row for the Instrument whose Mark is missing (or acknowledged unavailable), "/review?trade=<id>&instrument=<key>"; set only on an Open Trade, absent on a Trade that has ended.
+  readonly addMarkTo?: string;
   // W37: "Ahead: 85% of the way to the Target."; "Final result: sold out Thu Nov 12." on a final session.
   readonly howItIsGoing: string;
   // W38: the stake sentence; null when the session has none to say.
