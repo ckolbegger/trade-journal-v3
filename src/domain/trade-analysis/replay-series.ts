@@ -258,7 +258,10 @@ function markersOf(record: TradeAnalysisRecord, cutoff: Instant, terms: ReplayPl
         const price = decimal(e.price);
         const opens = shortLegs.has(e.intent.plannedLegId) === (e.action === 'Sell');
         const leg = terms.legs[record.plan.legs.findIndex((l) => l.factId === e.intent.plannedLegId)];
-        const againstPlan = !leg ? undefined : opens ? against('Entry', price, leg.entryPrice) : againstConditions(e.instrument, price, leg.side, terms);
+        let againstPlan: ReplayMarkerFill['againstPlan'];
+        if (!leg) againstPlan = undefined;
+        else if (opens) againstPlan = against('Entry', price, leg.entryPrice);
+        else againstPlan = againstConditions(e.instrument, price, leg.side, terms);
         return { instrument: e.instrument, action: e.action, quantity: decimal(e.quantity), price, ...(againstPlan && { againstPlan }) };
       }),
       ...settlements.map((s): ReplayMarkerFill => ({ instrument: s.instrument, action: 'Expire', quantity: decimal(s.quantity) })),
@@ -278,7 +281,11 @@ function markersOf(record: TradeAnalysisRecord, cutoff: Instant, terms: ReplayPl
 function against(line: 'Entry' | 'Stop' | 'Target', price: Rational, lineAt: Rational): NonNullable<ReplayMarkerFill['againstPlan']> {
   const difference = price.sub(lineAt);
   const order = difference.compare(ZERO);
-  return { line, side: order === 0 ? 'At' : order > 0 ? 'Above' : 'Below', distance: order < 0 ? ZERO.sub(difference) : difference };
+  let side: 'At' | 'Above' | 'Below';
+  if (order === 0) side = 'At';
+  else if (order > 0) side = 'Above';
+  else side = 'Below';
+  return { line, side, distance: order < 0 ? ZERO.sub(difference) : difference };
 }
 
 // A270: a reducing or closing fill against the Plan's conditions that are prices of the fill's own Instrument: the nearest Stop
