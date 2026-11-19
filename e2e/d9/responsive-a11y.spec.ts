@@ -19,10 +19,10 @@ const SIZES = [
 
 // The headline's top and the P&L chart's bottom are within one screen's height, and both charts and the readout lie inside the viewport's width.
 async function expectFitsOneScreen(scope: Locator, size: { width: number; height: number }, where: string): Promise<void> {
-  // B12: the charts are drawn at their box's width (a phone's box, under 460, at its own width, not below 200; else the full 640) before the heights are read: a viewport change is redrawn a moment later.
+  // B12: the charts are drawn at their box's width (at its box's own width at every size, not below 200) before the heights are read: a viewport change is redrawn a moment later.
   await expect.poll(() => scope.evaluate((element) => {
     const box = element.querySelector('.replay-plot-frame')!.clientWidth;
-    const want = box < 460 ? Math.max(box, 200) : 640;
+    const want = Math.max(box, 200);
     return ['svg.price-strip', 'svg.pnl-chart'].map((selector) => Number(element.querySelector(selector)!.getAttribute('width')) - want);
   }), { message: `${where}: charts drawn at their box's width` }).toEqual([0, 0]);
   const measure = await scope.evaluate((element) => {
