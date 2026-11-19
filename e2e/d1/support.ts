@@ -18,7 +18,7 @@ export const READY = { timeout: 20_000 };
 export interface Profile {
   readonly dir: string;
   // Launches the browser on this profile; closing the context is a full browser restart.
-  launch(options?: { offline?: boolean; userAgent?: string; width?: number }): Promise<BrowserContext>;
+  launch(options?: { offline?: boolean; userAgent?: string; width?: number; touch?: boolean }): Promise<BrowserContext>;
 }
 
 export const test = base.extend<{ server: ReleaseServer; profile: Profile }>({
@@ -63,6 +63,7 @@ export function profileAt(dir: string): Profile {
         viewport: { width: options.width ?? 1280, height: 900 },
         offline: options.offline ?? false,
         ...(options.userAgent ? { userAgent: options.userAgent } : {}),
+        ...(options.touch ? { hasTouch: true } : {}),
       }),
   };
 }
