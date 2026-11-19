@@ -12,12 +12,12 @@ describe('I9.7 The manifest (AC-CAP-001)', () => {
 
     if (status.kind !== 'Ready') throw new Error(`getStatus: ${status.kind}`);
     const { operations } = status.installedCapabilities;
-    expect(operations['TradeViewsAndReporting.replayTrade']).toEqual(['ConditionStatus', 'Markers']);
+    expect(operations['TradeViewsAndReporting.replayTrade']).toEqual(['ConditionStatus', 'Markers', 'PlanComparison', 'Odds']);
     expect(operations['DailyReview.getTrade']).toContain('Replay');
     // The routes that present the replay require those variants, and are offered.
     const routes: readonly RouteDefinition[] = ROUTES;
     const requiring = (id: string, op: string) => routes.find((r) => r.id === id)?.variants?.[op];
-    expect(requiring('trade-detail', 'TradeViewsAndReporting.replayTrade')).toEqual(['ConditionStatus', 'Markers']);
+    expect(requiring('trade-detail', 'TradeViewsAndReporting.replayTrade')).toEqual(['ConditionStatus', 'Markers', 'PlanComparison', 'Odds']);
     expect(requiring('review', 'DailyReview.getTrade')).toContain('Replay');
     // Every route's requirements are installed.
     expect(ROUTES.filter((route) => !isRouteInstalled(route, operations)).map((route) => route.id)).toEqual([]);
