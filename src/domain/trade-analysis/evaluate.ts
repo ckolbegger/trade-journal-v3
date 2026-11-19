@@ -226,7 +226,7 @@ function decimal(text: string): Rational {
 }
 
 // A267: Risk over (Risk + Reward), the Stop's chance the rest, and the pair as whole percents (the Target's half going up).
-function oddsOf(risk: Rational, reward: Rational): RewardRiskOdds {
+export function oddsOf(risk: Rational, reward: Rational): RewardRiskOdds {
   const targetFirst = risk.div(risk.add(reward));
   const hundred = Rational.of(100n);
   const scaled = targetFirst.mul(hundred).add(Rational.of(1n, 2n));

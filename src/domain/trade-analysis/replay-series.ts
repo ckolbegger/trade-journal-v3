@@ -3,7 +3,8 @@ import { instrumentKey, type Instrument } from '../instrument/index.ts';
 import type { Instant } from '../time/index.ts';
 import type { CalculationResult } from '../calculation-result/index.ts';
 import { parseDecimal, Rational } from '../values/index.ts';
-import { evaluate, type ObservationFrame, type RewardRiskOdds, type TradeEvaluation } from './evaluate.ts';
+import { evaluate, oddsOf, type ObservationFrame, type RewardRiskOdds, type TradeEvaluation } from './evaluate.ts';
+import type { ConditionBasis, PlanBaseline } from './plan.ts';
 import { derive, type DerivedTradeState, type IncoherentFact, type TradeAnalysisRecord } from './derive.ts';
 
 // A211: one completed session's Mark points, one frame per Instrument (Available, Missing or AcknowledgedUnavailable,
@@ -179,6 +180,7 @@ export function replay(input: ReplayInput): ReplayResult {
   const whole = derive({ record: input.record });
   if (whole.kind !== 'Derived') return { kind: 'NotApplicable', reason: 'FactsIncoherent', findings: whole.findings };
   if (input.record.positionChanges.length === 0) return { kind: 'NotApplicable', reason: 'NeverExposed' };
+  const terms = termsOf(input.record, whole.baseline);
   // The latest session so far with a Trade P&L figure: the next figure's change is measured from it (A211).
   let lastFigure: { readonly date: string; readonly value: Rational } | undefined;
   // The same for the Risk to stop and the Reward to target (A250).
@@ -206,7 +208,7 @@ export function replay(input: ReplayInput): ReplayResult {
     const sessionIds = new Set(positionChangeIds);
     return {
       date: session.tradingDate,
-      markers: markersOf(input.record, session.closeInstant).filter((m) => sessionIds.has(m.id)),
+      markers: markersOf(input.record, session.closeInstant, terms).filter((m) => sessionIds.has(m.id)),
       positions,
       heldQuantity: positions.reduce((total, p) => total.add(p.quantity), ZERO),
       realizedPnl: state.realizedToDate,
@@ -220,13 +222,28 @@ export function replay(input: ReplayInput): ReplayResult {
     };
   });
   const { oneR, originalPlannedReward, rewardRiskRatio } = whole.baseline;
-  return { kind: 'Replayed', sessions, plan: { atStop: ZERO.sub(oneR), atTarget: originalPlannedReward, rewardRisk: rewardRiskRatio } };
+  return { kind: 'Replayed', sessions, plan: { atStop: ZERO.sub(oneR), atTarget: originalPlannedReward, rewardRisk: rewardRiskRatio, odds: oddsOf(oneR, originalPlannedReward), terms } };
+}
+
+// A269: the confirmed Plan's legs, and every Stop and Target with the planned result it carries in the Plan Baseline.
+function termsOf(record: TradeAnalysisRecord, baseline: PlanBaseline): ReplayPlanTerms {
+  const legs = record.plan.legs.map((leg): ReplayPlanLeg => {
+    const quantity = decimal(leg.quantity);
+    return { instrument: leg.instrument, side: leg.side, quantity: quantity.compare(ZERO) < 0 ? ZERO.sub(quantity) : quantity, entryPrice: decimal(leg.intendedEntry) };
+  });
+  const conditionOf = (role: 'Stop' | 'Target') => (b: ConditionBasis): ReplayPlanCondition => ({
+    role,
+    priceOf: b.condition.kind === 'StructureValue' ? 'Option' : 'Underlying',
+    price: decimal(b.condition.price),
+    pnlIfHit: role === 'Stop' ? ZERO.sub(b.distance) : b.distance,
+  });
+  return { legs, conditions: [...baseline.stopBasis.map(conditionOf('Stop')), ...baseline.targetBasis.map(conditionOf('Target'))] };
 }
 
 // A251: one marker per Position Change, in fact order (Economic Time, then Recorded Sequence), made from the fills up to
 // the session's close, as `derive` keeps them at that cutoff: a Position Change straddling the close shows only its
 // earlier fills there. Its effect compares the open quantity before and after it, in magnitude.
-function markersOf(record: TradeAnalysisRecord, cutoff: Instant): readonly ReplayMarker[] {
+function markersOf(record: TradeAnalysisRecord, cutoff: Instant, terms: ReplayPlanTerms): readonly ReplayMarker[] {
   const upTo = (at: Instant) => Temporal.Instant.compare(at, cutoff) <= 0;
   const byFactOrder = (a: { economicTime: Instant; recordedSequence: number }, b: { economicTime: Instant; recordedSequence: number }) =>
     Temporal.Instant.compare(a.economicTime, b.economicTime) || a.recordedSequence - b.recordedSequence;
@@ -237,7 +254,13 @@ function markersOf(record: TradeAnalysisRecord, cutoff: Instant): readonly Repla
     const executions = pc.executions.filter((e) => upTo(e.economicTime)).sort(byFactOrder);
     const settlements = (pc.settlements ?? []).filter((s) => upTo(s.economicTime)).sort(byFactOrder);
     const fills = [
-      ...executions.map((e): ReplayMarkerFill => ({ instrument: e.instrument, action: e.action, quantity: decimal(e.quantity), price: decimal(e.price) })),
+      ...executions.map((e): ReplayMarkerFill => {
+        const price = decimal(e.price);
+        const opens = shortLegs.has(e.intent.plannedLegId) === (e.action === 'Sell');
+        const leg = terms.legs[record.plan.legs.findIndex((l) => l.factId === e.intent.plannedLegId)];
+        const againstPlan = !leg ? undefined : opens ? against('Entry', price, leg.entryPrice) : againstConditions(e.instrument, price, leg.side, terms);
+        return { instrument: e.instrument, action: e.action, quantity: decimal(e.quantity), price, ...(againstPlan && { againstPlan }) };
+      }),
       ...settlements.map((s): ReplayMarkerFill => ({ instrument: s.instrument, action: 'Expire', quantity: decimal(s.quantity) })),
     ];
     for (const e of executions) open = shortLegs.has(e.intent.plannedLegId) === (e.action === 'Sell') ? open.add(decimal(e.quantity)) : open.sub(decimal(e.quantity));
@@ -249,6 +272,24 @@ function markersOf(record: TradeAnalysisRecord, cutoff: Instant): readonly Repla
     else effect = 'Reduced';
     return { id: pc.factId, kind: settlements.length > 0 ? 'Expiration' : 'Execution', effect, fills };
   });
+}
+
+// A270: where a price lies against a line of the Plan, and how far: a line, a side and a distance, never a verdict.
+function against(line: 'Entry' | 'Stop' | 'Target', price: Rational, lineAt: Rational): NonNullable<ReplayMarkerFill['againstPlan']> {
+  const difference = price.sub(lineAt);
+  const order = difference.compare(ZERO);
+  return { line, side: order === 0 ? 'At' : order > 0 ? 'Above' : 'Below', distance: order < 0 ? ZERO.sub(difference) : difference };
+}
+
+// A270: a reducing or closing fill against the Plan's conditions that are prices of the fill's own Instrument: the nearest Stop
+// the fill is at or beyond (below it for a long leg, above it for a short one), otherwise the nearest Target.
+function againstConditions(instrument: Instrument, price: Rational, side: 'Long' | 'Short', terms: ReplayPlanTerms): ReplayMarkerFill['againstPlan'] {
+  const priceOf: ReplayPriceOf = instrument.kind === 'Stock' ? 'Underlying' : 'Option';
+  const own = terms.conditions.filter((c) => c.priceOf === priceOf);
+  const nearestOf = (role: 'Stop' | 'Target', conditions: readonly ReplayPlanCondition[]) =>
+    conditions.map((c) => against(role, price, c.price)).sort((a, b) => a.distance.compare(b.distance))[0];
+  const beyond = own.filter((c) => c.role === 'Stop' && (side === 'Long' ? price.compare(c.price) <= 0 : price.compare(c.price) >= 0));
+  return nearestOf('Stop', beyond) ?? nearestOf('Target', own.filter((c) => c.role === 'Target'));
 }
 
 function markOf(frame: ObservationFrame, lastMark: Map<string, { readonly date: string; readonly price: Rational }>): ReplayMark {
