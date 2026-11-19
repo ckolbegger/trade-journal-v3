@@ -17,6 +17,10 @@ The session read `plan/spec-reading/D09.md`'s ranges as needed for each brief, p
 | `.claude/scripts/status.sh D09A-R` | Exit 0. Lists the 24 open T9AR rows; "Open questions: none" and no "no decisions file" line, so it read `evidence/D09AR/DECISIONS-PENDING.md`. |
 | `.claude/scripts/full-suite.sh --current-folder evidence/D09AR` | Prints `e2e/d9ar`, exit 0. |
 
+- Lane tier `T9AR.1` (`suite-runs/T9AR.1-*`): unit 2289, integration 280, checks 14 of 14.
+- ocr on `b271d709` (`ocr/T9AR.1-b271d709.json`): 2 files reviewed (both shell scripts; the 5 evidence files excluded), 0 comments. **No findings.**
+- Merged by fast-forward (the rebase was a no-op): `b271d709`.
+
 ## Suite runs
 
 | Run | Commit | Tier | Result |

@@ -1,0 +1,120 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 0,
+    "total_tokens": 28307,
+    "input_tokens": 28132,
+    "output_tokens": 175,
+    "cache_read_tokens": 6656,
+    "elapsed": "13s"
+  },
+  "tool_calls": {
+    "total": 2,
+    "by_tool": {
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        ".claude/scripts/status.sh",
+        ".claude/scripts/status.test.sh"
+      ]
+    }
+  ],
+  "session_id": "3ea3f596-f8b9-49ae-9dc5-60874973b8be",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "3ea3f596-f8b9-49ae-9dc5-60874973b8be",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "b271d709",
+      "resolved_base": "90658cdf0f9735f7331546ea0b238d8a10b69197",
+      "resolved_head": "b271d7099680fdb575e547bc60d2ea34362c106b",
+      "exact_range": "90658cdf0f9735f7331546ea0b238d8a10b69197..b271d7099680fdb575e547bc60d2ea34362c106b",
+      "source_artifact_sha256": "a7b487649ea8be0442842de23951491099d77bd482e8bd5b6c2fc083a1ae416b"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "136d7b8458a5c6081764dadd17d3612ccdcf4ac0f6d91d9902c45d2bf3546e1c",
+          "path": ".claude/scripts/status.test.sh",
+          "fingerprint": "3c1846c5f22d84cdd898ff1a527bb139ef36fdbd1dd0580bf982defaafbbbd3f"
+        },
+        {
+          "item_id": "bf1e4ebf95c5beb817e71f414e7a92fb042ab97bfc4b9859ea8039eab0404a94",
+          "path": ".claude/scripts/status.sh",
+          "fingerprint": "2151293948b5e80eee5077b7e834aba0ad805ef10d7e6cf38fe96ed580587176"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "136d7b8458a5c6081764dadd17d3612ccdcf4ac0f6d91d9902c45d2bf3546e1c",
+          "path": ".claude/scripts/status.test.sh",
+          "fingerprint": "3c1846c5f22d84cdd898ff1a527bb139ef36fdbd1dd0580bf982defaafbbbd3f"
+        },
+        {
+          "item_id": "bf1e4ebf95c5beb817e71f414e7a92fb042ab97bfc4b9859ea8039eab0404a94",
+          "path": ".claude/scripts/status.sh",
+          "fingerprint": "2151293948b5e80eee5077b7e834aba0ad805ef10d7e6cf38fe96ed580587176"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "16edf404be76e85bdd31a1281dd44376b4bb33f80d59b04a89c25f676d52bdb3",
+          "path": "evidence/D09AR/structural.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "30e56940a64caf0b48ebd07cabd6e5167c36a5efe2d529a2b5027c41cfd648a5",
+          "path": "evidence/D09AR/suite-runs/T9AR.1-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "4b645855f2e58955ac3b1d23e91eb38e225d3521e15d3bdc91c48a7672687f08",
+          "path": "evidence/D09AR/suite-runs/T9AR.1-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "846fca09271c23553b1d91ca701c496eb1d87dda050c20538f768b8710c3b669",
+          "path": "evidence/D09AR/suite-runs/T9AR.1-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "c4c96399af3bfb576538a7def6828c90b56234c410e9923bd49746e97289b76a",
+          "path": "evidence/D09AR/suite-runs/T9AR.1-integration.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 12544
+  }
+}
