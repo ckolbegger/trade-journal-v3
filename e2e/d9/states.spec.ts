@@ -61,7 +61,7 @@ test.describe('B9.4 How a replay ends', () => {
     await expect(readoutValue(scope, 'Banked')).toHaveText('+$1,138.00');
     expect(await chartText(pnlChart(scope))).toEqual(expect.arrayContaining(['Banked +$478', 'Banked +$1,138', 'Sold 2 at $4.00']));
     const table = await openTable(scope);
-    await expect(tableRow(table, 'Fri Nov 13').locator('td')).toHaveText(['104.60', '$4.91', '+$1,138.00', '+$1,138.00', ...Array<string>(8).fill('Not applicable: no open position'), '$0.80', '$4.00', 'Sold 2 at $4.91']);
+    await expect(tableRow(table, 'Fri Nov 13').locator('td')).toHaveText(['$104.60', '$4.91', '+$1,138.00', '+$1,138.00', ...Array<string>(8).fill('Not applicable: no open position'), '$0.80', '$4.00', 'Sold 2 at $4.91']);
     // The session before the last is not final: it keeps its own headline and what is still at stake.
     await seek(page, scope, 'ArrowLeft');
     await expect(sliderValue(scope)).toHaveText('Thu Nov 12 · 9 of 10');

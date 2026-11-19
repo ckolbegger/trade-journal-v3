@@ -3,7 +3,7 @@ import type { CalculationResult } from '../../../domain/calculation-result/index
 import { instrumentKey, type Instrument } from '../../../domain/instrument/index.ts';
 import { Rational } from '../../../domain/values/index.ts';
 import { calculation, signed } from '../../figures.ts';
-import { decimalMoney, decimalUnderlyingPrice, money, quantity, rMultiple, ratio, shortDate, underlyingPrice } from '../../format.ts';
+import { decimalMoney, money, quantity, ratioToOne, rMultiple, shortDate } from '../../format.ts';
 import type { ReadoutGroup, ReadoutValue, StakeGrid, StakePastLineRow, StakeRow } from './replay.types.ts';
 import { crossedCondition, headlineOf, markerWords } from './session-words.props.ts';
 
@@ -56,7 +56,8 @@ function goingGroup(session: ViewSession): ReadoutGroup {
   const { figure: text, reason } = headlineOf(session);
   const rows = [row('Trade P&L', text !== undefined ? figure(text) : { kind: 'Unavailable', text: reason ?? '' }, changeWords(session.change))];
   if (session.realizedPnl.compare(ZERO) !== 0) {
-    rows.push(row('Banked', figure(signedMoney(session.realizedPnl))));
+    // W57: a loss that was realized is "Realized"; a gain keeps "Banked".
+    rows.push(row(session.realizedPnl.compare(ZERO) < 0 ? 'Realized' : 'Banked', figure(signedMoney(session.realizedPnl))));
     // Open is the rest of the Trade P&L: shown beside Banked, never on a final session, which holds nothing open.
     const open = session.figures?.openPnl;
     if (open?.kind === 'Value' && !session.final) rows.push(row('Open', figure(signedMoney(open.value))));
@@ -74,7 +75,6 @@ function pastLineRow(role: 'Stop' | 'Target', pastBy: { dollars: Rational; r: Ra
 function stakeGroup(view: TradeReplayView, session: ViewSession): ReadoutGroup | undefined {
   const f = session.figures;
   if (!f) return undefined;
-  const ratioWords = (v: Rational) => `${ratio(v)} to 1`;
   // Past a line one row says by how much, in place of the risk or the reward, which is zero there.
   const standing = f.standing?.kind === 'Value' ? f.standing.value : undefined;
   const pastBy = standing?.pastBy;
@@ -84,7 +84,7 @@ function stakeGroup(view: TradeReplayView, session: ViewSession): ReadoutGroup |
   // No ratio, no row: past a line, or with a condition crossed (the headline says so, F2), or where the view has none.
   const crossed = crossedCondition(session, 'Stop') !== undefined || crossedCondition(session, 'Target') !== undefined;
   const noRatio = pastLine || crossed || f.rewardRiskNow.kind !== 'Value';
-  const rows = noRatio ? [] : [row('Reward to risk', valueOf(f.rewardRiskNow, ratioWords), view.planColumn ? `(Plan ${ratioWords(view.planColumn.rewardRisk)})` : undefined)];
+  const rows = noRatio ? [] : [row('Reward to risk', valueOf(f.rewardRiskNow, ratioToOne), view.planColumn ? `(Plan ${ratioToOne(view.planColumn.rewardRisk)})` : undefined)];
   const atStop = stakeRow('At Stop', 'Ongoing Risk to Stop', f.ongoingRiskToStop, f.ongoingRiskToStopInPlanR, f.outcomes?.atStop);
   const atWorst = stakeRow('At Worst case', 'Worst-Case Ongoing Risk', f.worstCaseOngoingRisk, f.worstCaseOngoingRiskInPlanR, f.outcomes?.atWorstCase);
   const atTarget = stakeRow('At Target', 'Incremental Reward to Target', f.incrementalRewardToTarget, f.incrementalRewardToTargetInPlanR, f.outcomes?.atTarget);
@@ -99,17 +99,14 @@ function stakeGroup(view: TradeReplayView, session: ViewSession): ReadoutGroup |
 // "Call Mark" for a contract, "BREN Mark" for an Underlying or a stock.
 const markLabel = (instrument: Instrument): string => `${instrument.kind === 'Option' ? instrument.right : instrument.symbol} Mark`;
 
-// Marks (W43): each Instrument's Mark in the session, "No Mark" where it has none. An Underlying's price has no "$" on an option Trade (C3).
+// Marks (W43): each Instrument's Mark in the session, "No Mark" where it has none. Every price carries its "$" in the replay (W58).
 export function marksGroup(view: TradeReplayView, session: ViewSession): ReadoutGroup {
-  const optionTrade = view.instruments.some((i) => i.kind === 'Option');
   return {
     title: 'Marks',
     rows: view.instruments.map((instrument) => {
       const found = session.marks.find((m) => instrumentKey(m.instrument) === instrumentKey(instrument));
       if (found?.resolution.kind !== 'Available') return row(markLabel(instrument), NO_MARK);
-      const bare = instrument.kind === 'Stock' && optionTrade;
-      const { price } = found.resolution.mark;
-      return row(markLabel(instrument), figure(bare ? decimalUnderlyingPrice(price) : decimalMoney(price)), changeWords(found.change, bare ? underlyingPrice : money));
+      return row(markLabel(instrument), figure(decimalMoney(found.resolution.mark.price)), changeWords(found.change));
     }),
   };
 }

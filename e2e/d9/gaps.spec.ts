@@ -35,7 +35,7 @@ test.describe('B9.2 A gap, a breach and a sale below the Stop', () => {
     await expect(noMarkDash(readoutValue(scope, 'At Target'))).toBeVisible();
     await expect(noMarkDash(readoutValue(scope, 'At Worst case'))).toBeVisible();
     await expect(readoutPnl(scope, 'At Worst case')).toHaveText('−$633.00');
-    await expect(readoutValue(scope, 'CORV Mark')).toHaveText('76.20');
+    await expect(readoutValue(scope, 'CORV Mark')).toHaveText('$76.20');
     await expect(readoutValue(scope, 'Trade P&L')).toHaveText('Mark missing: CORV Nov 20 $80 Put, Tue Nov 10');
     expect(await chartText(pnlChart(scope))).toEqual(expect.arrayContaining(['Stop −$318', 'Target +$867']));
     expect(await chartText(pnlChart(scope))).not.toContainEqual(expect.stringMatching(/^(Current Risk|Remaining Reward)/));
@@ -43,9 +43,9 @@ test.describe('B9.2 A gap, a breach and a sale below the Stop', () => {
     // Wednesday's rows are whole.
     await seek(page, scope, 'End');
     const table = await openTable(scope);
-    await expect(tableRow(table, 'Mon Nov 9').locator('td')).toHaveText(['76.80', '$4.25', '+$642.00', '', '$960.00', '−$318.00', '$1,275.00', '−$633.00', '$225.00', '+$867.00', '$22,725.00', '+$23,367.00', '$1.05', '$5.00', '']);
-    await expect(tableRow(table, 'Tue Nov 10').locator('td')).toHaveText(['76.20', 'No Mark', 'No Mark', '', 'No Mark', '−$318.00', 'No Mark', '−$633.00', 'No Mark', '+$867.00', 'No Mark', '+$23,367.00', '$1.05', '$5.00', '']);
-    await expect(tableRow(table, 'Wed Nov 11').locator('td')).toHaveText(['75.40', '$5.12', '+$903.00', '', '$1,221.00', '−$318.00', '$1,536.00', '−$633.00', '$0.00', '+$867.00', '$22,464.00', '+$23,367.00', '$1.05', '$5.00', '']);
+    await expect(tableRow(table, 'Mon Nov 9').locator('td')).toHaveText(['$76.80', '$4.25', '+$642.00', '', '$960.00', '−$318.00', '$1,275.00', '−$633.00', '$225.00', '+$867.00', '$22,725.00', '+$23,367.00', '$1.05', '$5.00', '']);
+    await expect(tableRow(table, 'Tue Nov 10').locator('td')).toHaveText(['$76.20', 'No Mark', 'No Mark', '', 'No Mark', '−$318.00', 'No Mark', '−$633.00', 'No Mark', '+$867.00', 'No Mark', '+$23,367.00', '$1.05', '$5.00', '']);
+    await expect(tableRow(table, 'Wed Nov 11').locator('td')).toHaveText(['$75.40', '$5.12', '+$903.00', '', '$1,221.00', '−$318.00', '$1,536.00', '−$633.00', '$0.00', '+$867.00', '$22,464.00', '+$23,367.00', '$1.05', '$5.00', '']);
     await context.close();
   });
 
@@ -58,7 +58,7 @@ test.describe('B9.2 A gap, a breach and a sale below the Stop', () => {
     await expect(headline(scope)).toHaveText('−$920.00 · −1.53R');
     await expect(going(scope)).toHaveText('Past the Stop by $180.00 (0.30R).');
     await expect(stake(scope)).toHaveText('From here: Worst case $4,520.00 more · $1,080.00 back up to the Target.');
-    await expect(readoutValue(scope, 'Banked')).toHaveText('−$440.00');
+    await expect(readoutValue(scope, 'Realized')).toHaveText('−$440.00');
     await expect(readoutValue(scope, 'Open')).toHaveText('−$480.00');
     await expect(pastLine(scope)).toHaveText('Past the Stop by $180.00 (0.30R) · at Stop −$740.00');
     await expect(scope.locator('.replay-readout [data-row="At Stop"]')).toHaveCount(0);

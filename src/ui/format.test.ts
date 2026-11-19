@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { Rational } from '../domain/values/index.ts';
-import { decimalMoney, money, netCost, ratio, rMultiple, tradeName, tradeSummary } from './format.ts';
+import { decimalMoney, money, netCost, ratio, ratioToOne, rMultiple, tradeName, tradeSummary } from './format.ts';
 
 const r = (numerator: bigint, denominator: bigint) => Rational.of(numerator, denominator);
 
@@ -22,6 +22,14 @@ describe('R multiple format', () => {
     expect(ratio(r(13n, 10n))).toBe('1.3');
     expect(ratio(r(1n, 1n))).toBe('1');
     expect(ratio(r(12n, 5n))).toBe('2.4');
+  });
+});
+
+describe('Reward to risk in the replay (W59)', () => {
+  it('should write a ratio to 1 with two decimals always', () => {
+    expect(ratioToOne(r(2n, 1n))).toBe('2.00 to 1');
+    expect(ratioToOne(r(1n, 10n))).toBe('0.10 to 1');
+    expect(ratioToOne(r(1169n, 100n))).toBe('11.69 to 1');
   });
 });
 

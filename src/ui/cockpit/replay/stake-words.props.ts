@@ -1,7 +1,7 @@
 import type { TradeReplayView } from '../../../app/types.ts';
 import { Rational } from '../../../domain/values/index.ts';
 import { signed } from '../../figures.ts';
-import { money, ratio } from '../../format.ts';
+import { money, ratioToOne } from '../../format.ts';
 
 // The stake sentence (W38): "From here: $352.00 at risk to the Stop · ...". Finished values only; nothing is worked out here (ADR 0001).
 type ViewSession = TradeReplayView['sessions'][number];
@@ -17,7 +17,7 @@ function evenAtStopWords(session: ViewSession): string {
 // A final session: nothing is at risk, and what was realized in the sessions before it was banked before the end.
 function finalStakeWords(view: TradeReplayView, index: number): string {
   const banked = view.sessions[index - 1]?.realizedPnl;
-  const bankedWords = banked && banked.compare(ZERO) !== 0 ? ` ${signed(money)(banked)} of the result was banked before the end.` : '';
+  const bankedWords = banked && banked.compare(ZERO) !== 0 ? ` ${signed(money)(banked)} of the result was ${banked.compare(ZERO) < 0 ? 'realized' : 'banked'} before the end.` : '';
   return `Nothing is at risk and nothing is left to gain.${bankedWords}`;
 }
 
@@ -46,7 +46,7 @@ function stakeSentence(view: TradeReplayView, session: ViewSession): string | nu
     const open = openProfitAtRisk ? ` (${money(openProfitAtRisk)} of it open profit)` : '';
     return `From here: ${money(risk.value)} at risk back to the Stop${open}${cap}.`;
   }
-  const plan = view.planColumn ? ` (the Plan was ${ratio(view.planColumn.rewardRisk)} to 1)` : '';
-  const rr = rewardRiskNow?.kind === 'Value' ? ` · ${ratio(rewardRiskNow.value)} to 1${plan}` : '';
+  const plan = view.planColumn ? ` (the Plan was ${ratioToOne(view.planColumn.rewardRisk)})` : '';
+  const rr = rewardRiskNow?.kind === 'Value' ? ` · ${ratioToOne(rewardRiskNow.value)}${plan}` : '';
   return `From here: ${money(risk.value)} at risk to the Stop · ${money(reward.value)} more to the Target${rr}.`;
 }

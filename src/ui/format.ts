@@ -19,6 +19,9 @@ export const decimalMoney = (text: string): string => {
 // A ratio to at most two decimals, without trailing zeros (12/5 → "2.4").
 export const ratio = (value: Rational): string => formatDecimal(value, 2).replace(/\.?0+$/, '');
 
+// A reward-to-risk ratio in the replay, always with two decimals (2/1 → "2.00 to 1"). The shared `ratio` keeps its short form for other screens.
+export const ratioToOne = (value: Rational): string => `${formatDecimal(value, 2)} to 1`;
+
 // An R multiple with exactly two decimals, so 1.30R and 1.08R line up (12/5 → "2.40R").
 export const rMultiple = (value: Rational): string => `${formatDecimal(value, 2)}R`;
 

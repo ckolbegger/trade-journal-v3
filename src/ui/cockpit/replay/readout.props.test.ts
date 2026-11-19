@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { replayProps } from './replay.props.ts';
+import { sessionWords } from './session-words.props.ts';
 import {
   AXIO, BREN, BREN_STOCK, brenThu1112, brenWed1111, DALE, frac, fullView, markOf, NOT_APPLICABLE, Plot, PLAN, readoutOf, rowsOfGroup, session, STAKE, UNBOUNDED, usd, value, view, withMarks,
 } from './view-doubles.props.ts';
@@ -63,7 +64,7 @@ describe('replay.props: the readout of a session in flight (W43)', () => {
     const none = withMarks(session({ date: '2026-11-10', pnl: null }), [markOf(BREN_STOCK, '100.20'), markOf(BREN)]);
     const gap = replayProps(fullView([none], PLAN), { Plot });
     expect(gap.sessions[0]!.readout.map((group) => group.title)).toEqual(['How it is going', 'Marks', 'Position', 'The Plan']);
-    expect(rowsOfGroup(gap, 0, 'Marks')).toEqual({ 'BREN Mark': '100.20', 'Call Mark': 'No Mark' });
+    expect(rowsOfGroup(gap, 0, 'Marks')).toEqual({ 'BREN Mark': '$100.20', 'Call Mark': 'No Mark' });
     expect(rowsOfGroup(gap, 0, 'How it is going')).toEqual({ 'Trade P&L': 'Mark missing: BREN Nov 20 $100 Call, Tue Nov 10' });
   });
 
@@ -104,7 +105,7 @@ describe('replay.props: the readout of a session in flight (W43)', () => {
       [
         'Marks',
         [
-          ['BREN Mark', 'Figure', '101.80', 'up 1.60 since Tue Nov 10'],
+          ['BREN Mark', 'Figure', '$101.80', 'up $1.60 since Tue Nov 10'],
           ['Call Mark', 'Figure', '$3.20', 'down $0.40 since Tue Nov 10'],
         ],
       ],
@@ -249,7 +250,7 @@ describe('Readout: the change line (decision 8)', () => {
     const groups = props.sessions[0]!.readout;
     const changeOf = (title: string, label: string) => groups.find((g) => g.title === title)!.rows.find((r) => r.label === label)!.change;
     expect(changeOf('How it is going', 'Trade P&L')).toBe('down $150.00 since Fri Nov 13');
-    expect(changeOf('Marks', 'BREN Mark')).toBe('down 1.50 since Fri Nov 13');
+    expect(changeOf('Marks', 'BREN Mark')).toBe('down $1.50 since Fri Nov 13');
     expect(changeOf('Marks', 'Call Mark')).toBe('down $150.00 since Fri Nov 13');
     // No stake row says "since": the grid has no place for a change, and its Reward to risk row carries none.
     const stake = groups.find((g) => g.title === STAKE)!;
@@ -329,5 +330,45 @@ describe('Readout: the stake grid (suggestion 1)', () => {
     expect(max.fromHere).toEqual({ kind: 'Unbounded', text: 'No cap above' });
     expect(max.r).toBeUndefined();
     expect(max.pnlIfHit).toBeUndefined();
+  });
+});
+
+describe('Replay: one name per figure (suggestion 8)', () => {
+  it('should name a realized loss Realized -440.00 (R-AXIO-D Mon 11-09) and keep Banked +478.00 for a gain', () => {
+    const loss = session({ date: '2026-11-09', instrument: AXIO, held: 50, pnl: -520, realized: -440, standing: value({ zone: 'Between', share: frac(1, 10) }) });
+    expect(rowsOfGroup(replayProps(view([loss]), { Plot }), 0, 'How it is going')).toEqual({ 'Trade P&L': '−$520.00', Realized: '−$440.00' });
+    const gain = session({ date: '2026-11-13', held: 2, pnl: 1138, realized: 478 });
+    expect(rowsOfGroup(replayProps(view([gain]), { Plot }), 0, 'How it is going')).toEqual({ 'Trade P&L': '+$1,138.00', Banked: '+$478.00' });
+  });
+
+  it('should say -440.00 of the result was realized before the end. on a final session that follows a realized loss', () => {
+    const loss = session({ date: '2026-11-09', instrument: AXIO, held: 50, pnl: -520, realized: -440 });
+    const final = session({ date: '2026-11-10', instrument: AXIO, held: 0, pnl: -440, realized: -440, standing: NOT_APPLICABLE, final: { kind: 'Sold' } });
+    expect(sessionWords(view([loss, final]), 1).stake).toBe('Nothing is at risk and nothing is left to gain. −$440.00 of the result was realized before the end.');
+  });
+
+  it('should put a dollar sign on every price: BREN Mark $104.00 in the readout and BREN Mark: $101.80 in the hover', () => {
+    const mon = withMarks(session({ date: '2026-11-16', pnl: 520 }), [markOf(BREN_STOCK, '104.00', { since: '2026-11-13', dollars: usd(-1.5) }), markOf(BREN, '3.20')]);
+    const props = replayProps(fullView([mon], PLAN), { Plot });
+    expect(rowsOfGroup(props, 0, 'Marks')['BREN Mark']).toBe('$104.00');
+    expect(props.sessions[0]!.readout.find((g) => g.title === 'Marks')!.rows[0]!.change).toBe('down $1.50 since Fri Nov 13');
+    const wed = withMarks(session({ date: '2026-11-11', pnl: 520 }), [markOf(BREN_STOCK, '101.80'), markOf(BREN, '3.20')]);
+    expect(replayProps(fullView([wed], PLAN), { Plot }).sessions[0]!.hover).toContain('BREN Mark: $101.80');
+  });
+
+  it('should give every ratio two decimals: 2.00 to 1 for R-AXIO-U Plan and 0.10 to 1 for its Mon 11-16', () => {
+    const mon = session({
+      date: '2026-11-16',
+      instrument: AXIO,
+      held: 100,
+      pnl: 40,
+      standing: value({ zone: 'Between', share: frac(1, 10) }),
+      figures: { ongoingRiskToStop: value(usd(400)), incrementalRewardToTarget: value(usd(40)), rewardRiskNow: value(frac(1, 10)) },
+    });
+    const planned = view([mon], { atStop: usd(-300), atTarget: usd(600), rewardRisk: frac(2, 1) });
+    const reward = replayProps(planned, { Plot }).sessions[0]!.readout.find((g) => g.title === STAKE)!.rows.find((r) => r.label === 'Reward to risk')!;
+    expect(reward.value.text).toBe('0.10 to 1');
+    expect(reward.change).toBe('(Plan 2.00 to 1)');
+    expect(sessionWords(planned, 0).stake).toBe('From here: $400.00 at risk to the Stop · $40.00 more to the Target · 0.10 to 1 (the Plan was 2.00 to 1).');
   });
 });

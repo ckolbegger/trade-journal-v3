@@ -144,8 +144,8 @@ describe('replay.props: Session by session (W45)', () => {
     const none = withMarks(session({ date: '2026-11-12', pnl: null }), [markOf(BREN_STOCK, '100.20'), markOf(BREN)]);
     const props = replayProps(fullView([wed, none]), { Plot });
     expect(props.sessions.map((s) => s.tableRow)).toEqual([
-      { dateLabel: 'Wed Nov 11', cells: ['101.80', '$3.20', '+$520.00', '+$478.00', '$352.00', '−$324.00', '$644.00', 'Not applicable: no open position', '$928.00', '+$956.00', 'No cap above', '', '96.00', '104.00'], events: ['Sold 2 at $4.00'] },
-      { dateLabel: 'Thu Nov 12', cells: ['100.20', 'No Mark', 'No Mark', '', ...Array<string>(8).fill('No Mark'), '', ''], events: [] },
+      { dateLabel: 'Wed Nov 11', cells: ['$101.80', '$3.20', '+$520.00', '+$478.00', '$352.00', '−$324.00', '$644.00', 'Not applicable: no open position', '$928.00', '+$956.00', 'No cap above', '', '96.00', '104.00'], events: ['Sold 2 at $4.00'] },
+      { dateLabel: 'Thu Nov 12', cells: ['$100.20', 'No Mark', 'No Mark', '', ...Array<string>(8).fill('No Mark'), '', ''], events: [] },
     ]);
     // One cell for each column after "Session" and before "Events".
     expect(props.sessions.every((s) => s.tableRow.cells.length === props.tableColumns.length)).toBe(true);
@@ -158,8 +158,8 @@ describe('replay.props: the hover and the marker flag', () => {
     const none = withMarks(session({ date: '2026-11-12', pnl: null }), [markOf(BREN_STOCK, '100.20'), markOf(BREN)]);
     const props = replayProps(fullView([{ ...brenWed1111, markers: [sale] }, none], PLAN), { Plot });
     expect(props.sessions.map((s) => s.hover)).toEqual([
-      ['Wed Nov 11', 'BREN Mark: 101.80', 'Call Mark: $3.20', 'Sold 2 at $4.00', 'Trade P&L: +$520.00 · 1.60R'],
-      ['Thu Nov 12', 'BREN Mark: 100.20', 'Call Mark: No Mark', 'Trade P&L: No Mark'],
+      ['Wed Nov 11', 'BREN Mark: $101.80', 'Call Mark: $3.20', 'Sold 2 at $4.00', 'Trade P&L: +$520.00 · 1.60R'],
+      ['Thu Nov 12', 'BREN Mark: $100.20', 'Call Mark: No Mark', 'Trade P&L: No Mark'],
     ]);
     expect(props.sessions.map((s) => s.hasMarker)).toEqual([true, false]);
   });

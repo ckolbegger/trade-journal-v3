@@ -72,8 +72,8 @@ test.describe('B9.1 Replay in Trade Detail', () => {
       'Stop', 'Target', 'Events',
     ];
     await expect(table.locator('thead th')).toHaveText(['Session', ...columns]);
-    await expect(tableRow(table, 'Wed Nov 11').locator('td')).toHaveText(['101.80', '$2.91', '+$520.00', '', '$844.00', '−$324.00', '$1,164.00', '−$644.00', '$436.00', '+$956.00', 'No cap above', '', '$0.80', '$4.00', '']);
-    await expect(tableRow(table, 'Thu Nov 12').locator('td')).toHaveText(['103.60', '$4.13', '+$982.00', '+$478.00', '$666.00', '+$316.00', '$826.00', '+$156.00', '$0.00', '+$956.00', 'No cap above', '', '$0.80', '$4.00', 'Sold 2 at $4.00']);
+    await expect(tableRow(table, 'Wed Nov 11').locator('td')).toHaveText(['$101.80', '$2.91', '+$520.00', '', '$844.00', '−$324.00', '$1,164.00', '−$644.00', '$436.00', '+$956.00', 'No cap above', '', '$0.80', '$4.00', '']);
+    await expect(tableRow(table, 'Thu Nov 12').locator('td')).toHaveText(['$103.60', '$4.13', '+$982.00', '+$478.00', '$666.00', '+$316.00', '$826.00', '+$156.00', '$0.00', '+$956.00', 'No cap above', '', '$0.80', '$4.00', 'Sold 2 at $4.00']);
     // In the chart the Stop line has one vertical step (at the sale) and the Target line has none; the banked band is drawn.
     await expect(pnlChart(scope).locator('path.result-line.stop')).toHaveAttribute('d', /V[\d.]+H[\d.]+$/);
     expect(await pnlChart(scope).locator('path.result-line.stop').getAttribute('d')).toMatch(/^[^V]*V[^V]*$/);
