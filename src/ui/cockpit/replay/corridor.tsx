@@ -118,6 +118,7 @@ function swatchOf(e: PlotKeyEntry): string | undefined {
   const loss = e.label === 'Open loss' || e.label === 'Realized loss';
   if (e.kind === 'TradePnl') return loss ? 'area-loss' : 'area-profit';
   if (e.kind === 'Banked') return loss ? 'banked-loss' : 'banked-gain';
+  if (e.kind === 'NoMark') return 'no-mark';
   return undefined;
 }
 

@@ -1,6 +1,7 @@
 import type { Locator, Page } from '@playwright/test';
 import {
-  AXIO, BREN, build, chartText, closeOf, CORV, DALE_HOLD, expect, expectClearOfCursor, hits, openDrawer, pnlChart, priceStrip, replay, seek, setViewport, sliderValue, test,
+  AXIO, BREN, build, chartText, closeOf, CORV, DALE, DALE_HOLD, detail, expect, expectClearOfCursor, hits, MON_1123_1700, openDetailAt, openDrawer, pnlChart, priceStrip, READY, recordExpiration, replay,
+  seek, setViewport, sliderValue, test,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
@@ -254,6 +255,59 @@ test.describe('B9AR.5 The chart', () => {
       expect(during.y, `the readout's top while ${date} is hovered`).toBe(before.y);
       expect((await scope.locator('.replay-chart-box').boundingBox())!.height, `the charts' height while ${date} is hovered`).toBe(chartBefore.height);
     }
+    await context.close();
+  });
+
+  // T9AR.24-B8 (critic-1 defect 8; T9AR.10, W66): the key is one line at 1280, 1440 and 1920 on every session (so on the busiest), and lists no Execution where none is drawn.
+  const WIDE = [1280, 1440, 1920] as const;
+  async function expectKeyOnOneLine(page: Page, sessions: number, where: string): Promise<void> {
+    for (const width of WIDE) {
+      await setViewport(page, width, 900);
+      let scope = replay(page);
+      await seek(page, scope, 'Home');
+      for (let i = 0; i < sessions; i++) {
+        scope = replay(page);
+        if (i > 0) await seek(page, scope, 'ArrowRight');
+        scope = replay(page);
+        const day = (await sliderValue(scope).textContent()) ?? '';
+        const tops = await scope.locator('ul.replay-key li').evaluateAll((items) => items.map((li) => Math.round(li.getBoundingClientRect().top)));
+        const room = await scope.locator('ul.replay-key').evaluate((ul) => `box ${Math.round(ul.getBoundingClientRect().width)}, items ${Math.round([...ul.children].reduce((n, li) => n + li.getBoundingClientRect().width, 0))}`);
+        expect(new Set(tops).size, `${where} at ${width}, ${day}: the key is one line (tops ${tops.join(', ')}; ${room}; ${(await key(scope)).join(' | ')})`).toBe(1);
+      }
+    }
+  }
+
+  for (const [name, fixture, through, close, sessions] of [
+    ['BREN', BREN, 10, '2026-11-16', 11],
+    ['AXIO', AXIO, 10, '2026-11-16', 11],
+    ['DALE-hold', DALE_HOLD, 10, '2026-11-16', 11],
+    ['CORV', CORV, 7, '2026-11-11', 8],
+  ] as const) {
+    test(`should keep ${name}’s key on one line at 1280, 1440 and 1920 on every session`, async ({ profile }) => {
+      test.setTimeout(480_000);
+      const { context, page } = await build(profile, fixture, closeOf(close), through);
+      await open(page, 0);
+      await expectKeyOnOneLine(page, sessions, name);
+      await context.close();
+    });
+  }
+
+  test('should keep R-DALE-U’s key on one line on every session, and name no Execution after the Expiration, which is the only marker drawn', async ({ profile }) => {
+    test.setTimeout(600_000);
+    const built = await build(profile, DALE, closeOf('2026-11-19'), 13, 0);
+    await built.context.close();
+    const { context, page } = await openDetailAt(profile, MON_1123_1700, built.trade);
+    await expect(detail.settlementDueHeading(page)).toBeVisible(READY);
+    await detail.recordExpirationLink(page).click();
+    await recordExpiration(page);
+    await page.getByRole('link', { name: 'Back to the Trade' }).click();
+    await expect(detail.heading(page, 'DALE')).toBeVisible(READY);
+    const scope = await open(page, 0);
+    await expect(sliderValue(scope)).toHaveText('Fri Nov 20 · 15 of 15');
+    await expect(pnlChart(scope).locator('path.marker-line')).toHaveCount(1);
+    const listed = await key(scope);
+    expect(listed, 'the Expired marker is drawn and W66 has no entry for it').not.toContain('Execution');
+    await expectKeyOnOneLine(page, 15, 'DALE-U');
     await context.close();
   });
 });

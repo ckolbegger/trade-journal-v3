@@ -55,6 +55,14 @@ describe('replay.props: what the plot draws of a session (W39 to W41, W44)', () 
     expect(labels(withMarks(session({ date: '2026-11-16', pnl: 10 }), [markOf(BREN_STOCK, '100.20')]))).not.toContain('No Mark');
   });
 
+  // T9AR.24-B8 (critic-1 defect 8; W66): the key lists only what is drawn. W66 has no entry for the Expired marker, so a session with only an Expiration lists no "Execution".
+  it('should list no Execution in the key for a session whose only marker is the Expiration', () => {
+    const labels = (markers: (typeof sale | typeof expiry)[]) =>
+      replayProps(fullView([{ ...brenWed1111, markers }], PLAN), { Plot }).sessions[0]!.plot.keyEntries!.map((e) => e.label);
+    expect(labels([expiry])).not.toContain('Execution');
+    expect(labels([sale])).toContain('Execution');
+  });
+
   it('should label the Worst case and the Max reward, what is past a line, a realized loss and each marker, and draw a session without a Mark as a break', () => {
     const past = withMarks(
       {

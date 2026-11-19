@@ -1106,6 +1106,24 @@ describe('Corridor: the key, the dates and the lines (suggestion 3)', () => {
     }
   });
 
+  // T9AR.24-B8 (critic-1 defect 8): "No Mark" is a shaded column in the drawing, so its swatch is a block in the column's own fill, not a line.
+  it('should give No Mark a block swatch in the fill of the shaded column', () => {
+    const { container } = render(<CorridorPlot {...props({ sessions: [bren(0, { keyEntries: [{ kind: 'NoMark', label: 'No Mark' }] })], sliderIndex: 0 })} />);
+    expect(container.querySelector('.replay-key li')!.getAttribute('data-swatch')).toBe('no-mark');
+    const rules = new Map<string, Record<string, string>>();
+    postcss.parse(readFileSync('src/ui/cockpit/styles/replay-plot.css', 'utf8')).walkRules((rule) => {
+      const decls: Record<string, string> = {};
+      rule.walkDecls((d) => {
+        decls[d.prop] = d.value;
+      });
+      for (const sel of rule.selectors) rules.set(sel.replace(/\s+/g, ' '), { ...rules.get(sel.replace(/\s+/g, ' ')), ...decls });
+    });
+    const s = rules.get(".replay-key li[data-swatch='no-mark']::before")!;
+    expect(s, 'a rule for the swatch').toBeDefined();
+    expect(s['background'] ?? s['background-color']).toBe(rules.get('.replay-plot .no-mark')!['fill']);
+    expect(s['border-top']).toBe('0');
+  });
+
   it('should draw at its box own width on a wide screen, the text the same size at 860 and at 1400', () => {
     const scales: number[] = [];
     for (const box of [860, 1400]) {

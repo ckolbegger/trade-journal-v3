@@ -325,6 +325,19 @@
   border-top: 2px solid var(--muted);
 }
 
+/* The wide overlay holds the busiest key on one line at 1280 (T9AR.10): a tighter gap and swatch gap; the phone's key keeps its layout. */
+@media (min-width: 861px) {
+  .replay-key {
+    gap: 2px 6px;
+    font-size: 10px;
+  }
+
+  .replay-key li::before {
+    width: 8px;
+    margin-right: 2px;
+  }
+}
+
 .replay-key .key-Stop::before,
 .replay-key .key-WorstCase::before {
   border-top: 2px dashed var(--stop);
@@ -386,6 +399,15 @@
 .replay-key li[data-swatch='area-loss']::before {
   background: var(--stop);
   opacity: 0.18;
+}
+
+/* The shaded No Mark column: a block in its own fill. */
+.replay-key li[data-swatch='no-mark']::before {
+  width: 8px;
+  border-top: 0;
+  background: var(--tint);
+  outline: 1px solid var(--muted);
+  outline-offset: -1px;
 }
 
 .replay-key li[data-swatch='banked-gain']::before {

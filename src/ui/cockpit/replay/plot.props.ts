@@ -73,7 +73,8 @@ export function plotSessionOf(view: TradeReplayView, index: number): PlotSession
     ...(f?.outcomes?.atWorstCase?.kind === 'Value' ? [{ kind: 'WorstCase' as const, label: 'At Worst case' }] : []),
     ...(f?.outcomes?.atMaxReward?.kind === 'Value' ? [{ kind: 'MaxReward' as const, label: 'At Max reward' }] : []),
     ...(hasStrike ? [{ kind: 'Strike' as const, label: 'Strike' }] : []),
-    ...((session.markers ?? []).some((m) => m.effect !== 'Opened') ? [{ kind: 'Execution' as const, label: 'Execution' }] : []),
+    // W66 has no entry for the Expired marker, so only an Execution's line is named.
+    ...((session.markers ?? []).some((m) => m.kind === 'Execution' && m.effect !== 'Opened') ? [{ kind: 'Execution' as const, label: 'Execution' }] : []),
     ...crossings.map((c) => ({ kind: 'FirstCrossing' as const, label: c.label })),
   ];
   return {
