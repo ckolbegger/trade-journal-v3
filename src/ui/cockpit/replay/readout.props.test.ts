@@ -66,7 +66,7 @@ describe('replay.props: the readout of a session in flight (W43)', () => {
     const gap = replayProps(fullView([none], PLAN), { Plot });
     expect(gap.sessions[0]!.readout.map((group) => group.title)).toEqual(['How it is going', 'Marks', 'Position']);
     expect(rowsOfGroup(gap, 0, 'Marks')).toEqual({ 'BREN Mark': '$100.20', 'Call Mark': 'No Mark' });
-    expect(rowsOfGroup(gap, 0, 'How it is going')).toEqual({ 'Trade P&L': 'Mark missing: BREN Nov 20 $100 Call, Tue Nov 10' });
+    expect(rowsOfGroup(gap, 0, 'How it is going')).toEqual({ 'Trade P&L': 'No Mark' });
   });
 
   it('should keep At Worst case standing and At Max reward bounded or No cap above on a session without a Mark', () => {
@@ -312,6 +312,14 @@ describe('Readout: a session with no Mark (suggestion 12)', () => {
     for (const [label, ending] of [['At Stop', '−$318.00'], ['At Worst case', '−$633.00'], ['At Target', '+$867.00'], ['At Max reward', '+$23,367.00']] as const) {
       expect(gridRow(grid, label), label).toMatchObject({ fromHere: noMark, r: noMark, pnlIfHit: { text: ending } });
     }
+  });
+
+  it('should show the dash named No Mark in the Trade P&L row, and say no Mark missing anywhere in the readout, R-CORV-D Tue 11-10', () => {
+    const corv = session({ date: '2026-11-10', instrument: DALE, held: -3, pnl: null });
+    const readout = replayProps(view([corv]), { Plot }).sessions[0]!.readout;
+    const pnl = readout.find((group) => group.title === 'How it is going')!.rows.find((r) => r.label === 'Trade P&L')!;
+    expect(pnl.value).toEqual({ kind: 'Unavailable', text: 'No Mark' });
+    expect(JSON.stringify(readout)).not.toContain('Mark missing');
   });
 });
 

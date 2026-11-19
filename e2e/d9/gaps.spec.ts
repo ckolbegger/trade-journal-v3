@@ -37,7 +37,7 @@ test.describe('B9.2 A gap, a breach and a sale below the Stop', () => {
     await expect(noMarkDash(readoutValue(scope, 'At Worst case'))).toBeVisible();
     await expect(readoutPnl(scope, 'At Worst case')).toHaveText('−$633.00');
     await expect(readoutValue(scope, 'CORV Mark')).toHaveText('$76.20');
-    await expect(readoutValue(scope, 'Trade P&L')).toHaveText('Mark missing: CORV Nov 20 $80 Put, Tue Nov 10');
+    await expect(readoutValue(scope, 'Trade P&L').getByRole('img', { name: 'No Mark' })).toHaveText('—');
     expect(await chartText(pnlChart(scope))).toEqual(expect.arrayContaining(['Stop −$318', 'Target +$867']));
     expect(await chartText(pnlChart(scope))).not.toContainEqual(expect.stringMatching(/^(Current Risk|Remaining Reward)/));
     // The cards say the same: Tuesday's card reads a dash named "No Mark" in every row that needs the Put's Mark, never a carried value (the chart keeps the two result lines, above); Monday's and

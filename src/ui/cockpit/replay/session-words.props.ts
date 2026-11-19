@@ -36,7 +36,7 @@ export function headlineOf(session: ViewSession): SessionWords['headline'] {
 }
 
 // A281: the replay's top line. A missing Mark is the one reason with a line of its own; every other reason keeps its words. (The readout's
-// row still reads `headlineOf`, whose reason is the figure-length words, until the readout's own task changes it.)
+// Trade P&L row does not repeat the reason: it shows the dash named "No Mark" instead.)
 function topLineOf(session: ViewSession): SessionWords['headline'] {
   const { tradePnl } = session;
   return tradePnl.kind === 'Unavailable' ? { reason: text(unavailableWords(tradePnl, 'line', 'UTC')), tone: 'None' } : headlineOf(session);

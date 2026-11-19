@@ -61,8 +61,9 @@ function worstCaseRow(f: Figures, outcome: CalculationResult<Rational> | undefin
 
 // How it is going (W43): the Trade P&L as the headline words it.
 function goingGroup(session: ViewSession): ReadoutGroup {
-  const { figure: text, reason } = headlineOf(session);
-  const rows = [row('Trade P&L', text !== undefined ? figure(text) : { kind: 'Unavailable', text: reason ?? '' }, changeWords(session.change))];
+  // Without a figure the row is the dash named "No Mark" (W61); the reason is said once, in the replay's top line (A281).
+  const { figure: text } = headlineOf(session);
+  const rows = [row('Trade P&L', text !== undefined ? figure(text) : NO_MARK, changeWords(session.change))];
   if (session.realizedPnl.compare(ZERO) !== 0) {
     // W57: a loss that was realized is "Realized"; a gain keeps "Banked".
     rows.push(row(session.realizedPnl.compare(ZERO) < 0 ? 'Realized' : 'Banked', figure(signedMoney(session.realizedPnl))));
