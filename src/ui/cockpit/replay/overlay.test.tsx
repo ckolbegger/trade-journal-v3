@@ -84,6 +84,27 @@ describe('Replay overlay (decision 3)', () => {
     expect(document.activeElement).toBe(summary);
   });
 
+  it('should count a button inside a closed details summary as a Tab edge when it is the last control', async () => {
+    render(
+      <ReplayOverlay name="Replay, BREN" header="BREN · Trade P&L +$988.00" onClose={vi.fn()}>
+        <details>
+          <summary>
+            Table <button type="button">Copy</button>
+          </summary>
+          <div>Body</div>
+        </details>
+      </ReplayOverlay>,
+    );
+    const user = userEvent.setup();
+    const close = screen.getByRole('button', { name: 'Close' });
+    const copy = screen.getByRole('button', { name: 'Copy' });
+    copy.focus();
+    await user.tab();
+    expect(document.activeElement).toBe(close);
+    await user.tab({ shift: true });
+    expect(document.activeElement).toBe(copy);
+  });
+
   it('should call onClose from the Close button and from Escape', async () => {
     const { onClose } = open();
     const user = userEvent.setup();

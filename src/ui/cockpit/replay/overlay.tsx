@@ -4,11 +4,12 @@ import type { ReplayOverlayProps } from './replay.types.ts';
 
 const FOCUSABLE = 'summary, a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-// Whether Tab can land on it: not hidden, and not inside a closed details (its own summary is fine).
+// Whether Tab can land on it: not hidden, and not inside a closed details (its own summary, and anything in it, is fine).
 function canTakeFocus(el: HTMLElement): boolean {
   if (el.closest('[hidden]')) return false;
-  for (let p = el.parentElement; p; p = p.parentElement) {
-    if (p instanceof HTMLDetailsElement && !p.open && !(el.tagName === 'SUMMARY' && el.parentElement === p)) return false;
+  let child: HTMLElement = el;
+  for (let p = el.parentElement; p; child = p, p = p.parentElement) {
+    if (p instanceof HTMLDetailsElement && !p.open && !(child.tagName === 'SUMMARY' && child.parentElement === p)) return false;
   }
   return true;
 }
