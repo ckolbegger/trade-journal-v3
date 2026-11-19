@@ -86,4 +86,13 @@
   .replay-overlay .replay-chart-box,
   .replay-overlay .replay-readout {
     grid-column: 1;
+  }
+
+  /* The Close button is a 44 px touch target; the header's own padding gives that height back. */
+  .replay-overlay-header {
+    padding-block: 0;
+  }
+
+  .replay-overlay-header [data-close] {
+    min-height: 44px;
   }}

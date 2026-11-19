@@ -226,7 +226,6 @@ test.describe('B9AR.7 Responsive, touch, accessible and offline', () => {
   test('should make the overlay’s Close button at least 44 pixels high on a phone', async ({ profile }) => {
     test.setTimeout(240_000);
     // Product disagrees with the UI contract's touch targets (reported to the main session): the Close button is 21 px high at 375.
-    test.fail(true, 'the overlay’s Close button is 21 px high on a phone');
     const { context, page } = await build(profile, BREN, closeOf('2026-11-16'), 10);
     await setViewport(page, 375, 667);
     await openDrawer(page, 'Replay');
