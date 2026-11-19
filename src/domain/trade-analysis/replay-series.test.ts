@@ -181,6 +181,17 @@ const figuresAt = (series: ReplayTestSeries, date: string) => {
 };
 const valueOf = (result: CalculationResult<Rational>) => (result.kind === 'Value' ? frac(result.value) : result);
 
+describe("replay: each session's estimated odds and the extremes' weight (A267, A268)", () => {
+  it("should carry the estimated odds and the extremes' weight in each replayed session's figures", () => {
+    const dale = figuresAt(R_DALE_D, '2026-11-11');
+    if (dale.rewardRiskOdds?.kind !== 'Value') throw new Error(`expected a Value, got ${JSON.stringify(dale.rewardRiskOdds)}`);
+    expect(frac(dale.rewardRiskOdds.value.targetFirst)).toBe(q(78n, 990n));
+    expect([frac(dale.rewardRiskOdds.value.percent.targetFirst), frac(dale.rewardRiskOdds.value.percent.stopFirst)]).toEqual(['8/1', '92/1']);
+    expect(dale.extremes).toBe('Main');
+    expect(figuresAt(R_BREN_U, '2026-11-02').extremes).toBe('Remote');
+  });
+});
+
 describe("replay: each session's risk, reward and condition status (A250)", () => {
   it("should give R-BREN-U's Mon 11-02 session a Risk to stop of 352.00 (1.09R) and a Reward to target of 928.00, both conditions Active", () => {
     const figures = figuresAt(R_BREN_U, '2026-11-02');

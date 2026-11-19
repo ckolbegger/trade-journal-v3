@@ -301,6 +301,8 @@ function figuresOf(e: TradeEvaluation, openPnl: CalculationResult<Rational>): Re
     conditions: e.conditions,
     outcomes: e.outcomes,
     standing: e.standing,
+    ...(e.rewardRiskOdds && { rewardRiskOdds: e.rewardRiskOdds }),
+    ...(e.extremes && { extremes: e.extremes }),
   };
 }
 
