@@ -543,6 +543,35 @@ Lane BR (`d09ar/br`), base `70ce0f74`.
 
 - In progress from `3e92c98f`. Critic-1 is briefed from `.claude/docs/critic-brief.md`, with section 8's flows C9AR.1, C9AR.2, C9AR.3, C9AR.4, C9AR.5, C9AR.6 and C9AR.7.
 - P151: if three critics leave only moderate or lower defects, the gate closes with tech debt items.
+
+| Critic | Brief | Tokens | Tool calls | Duration | Defects |
+|---|---|---|---|---|---|
+| critic-1 | `critic-brief.md`, section 8's flows, coach review 1's 15 points to recheck, `words-changed.md` and `new-words.md` named | 284,147 | 98 | 16 min 21 s | yes (5 high, 2 moderate, 2 low) |
+
+- **critic-1** (`critic-1.md`), at `38978773`: **FAIL**.
+  - Passed: C9AR.1, C9AR.4 and C9AR.6. Failed: C9AR.2, C9AR.3, C9AR.5 and C9AR.7.
+  - Coach points: fixed except 1 (figures broken), 12 (No Mark said twice) and a gap in 3 (the key). Critic-2's carried defect 2 is not fixed.
+  - Every defect becomes a bug task, run one at a time, failing test first:
+    - **T9AR.24-B1** (high): the session cards break figures and part minus signs from their numbers. At 1280 DALE's narrow two-column cards read "hit –" / "$33,936.00"; the same at 1440 and 320. Lane SC.
+    - **T9AR.24-B2** (high): the readout's past-a-line row parts the sign ("· at Stop –" / "$1,536.00" at 1280, 1440 and 1920), and so does the overlay header at 320 ("DALE · TRADE P&L –" / "$2,088.00").
+    - **T9AR.24-B3** (high): on a Review card a started Action (Exit plus an Intent) is lost after Replay, Price History, then "Back to the Review". Save then stores Hold with "Unanswered".
+    - **T9AR.24-B4** (high): a missing Mark is said twice. The top line says it, and the readout's Trade P&L row repeats "Mark missing: …" in italics instead of the dash (W61, A281).
+    - **T9AR.24-B5** (high): on a phone, opening Replay from a Review card shows a stale hover box ("Mon Nov 9 · …") that a tap does not clear. At 320 a grey hover band covers the slider's value on DALE.
+    - **T9AR.24-B6** (moderate): AXIO's P&L chart at 1280 and 1440 draws the stake bar and the past-the-Stop hatch without their labels, and the key never names the hatch or the bar on any Trade (A280, W66).
+    - **T9AR.24-B7** (moderate): AXIO's "Stop breached" flag shows only on Mon Nov 9, not on later sessions (T9AR.19's case, W64).
+    - **T9AR.24-B8** (low): the key wraps at 1280 on BREN. "No Mark" has a line swatch for a shaded column. DALE-U after expiry lists "Execution" where only "Expired" is drawn.
+    - **T9AR.24-B9** (low): the Review overlay's "Price History" link is 23 px high on a phone; Trade Detail's is a 46 px button.
+  - Minor observations, for the final report:
+    - A final session's headline has no R.
+    - "up $0.00 since Thu Nov 19" on the expired DALE-U.
+    - Focus lands on `<body>` after the Review's Price History.
+    - Each hit button is its own tab stop.
+    - The cursor crosses "Stop breached" and "No Mark" on non-entry sessions.
+    - DALE's Max reward label sits far from its segment.
+    - At 320 the cursor's date is dropped.
+    - Some wraps keep each figure whole.
+    - The header is in uppercase.
+    - The Review summary reads "+3.05R" where the replay reads "3.05R".
 - **merge6-S1** briefed in lane OV. The branch `d09ar/ov` was re-pointed to main `dbafc601` first: its old pre-rebase commits were all on main under their new hashes (`git cherry`). The case's red is the run itself.
 - **Part 1 notes:**
   - The Detail overlay's slider session does not survive a reload (the address holds only `replay=open`; the plan does not ask that it survive).
