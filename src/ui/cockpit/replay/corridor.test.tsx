@@ -518,6 +518,28 @@ describe('Corridor: the Trade P&L (W40, W41)', () => {
     expect(seen).toEqual([2, null, 3, null]);
   });
 
+  it('should not report hover for a touch or pen pointer, only for a mouse', () => {
+    const seen: (number | null)[] = [];
+    render(<CorridorPlot {...props({ sessions: DAYS.slice(0, 4).map((_, i) => bren(i)), onHoverSession: (i) => seen.push(i) })} />);
+    for (const pointerType of ['touch', 'pen']) {
+      fireEvent.pointerEnter(hits()[1]!, { pointerType });
+      fireEvent.pointerLeave(hits()[1]!, { pointerType });
+    }
+    expect(seen).toEqual([]);
+    fireEvent.pointerEnter(hits()[2]!, { pointerType: 'mouse' });
+    expect(seen).toEqual([2]);
+  });
+
+  it('should not report the focus a tap on a session gives its button, but still report keyboard focus', () => {
+    const seen: (number | null)[] = [];
+    render(<CorridorPlot {...props({ sessions: DAYS.slice(0, 4).map((_, i) => bren(i)), onHoverSession: (i) => seen.push(i) })} />);
+    fireEvent.pointerDown(hits()[1]!, { pointerType: 'touch' });
+    fireEvent.focus(hits()[1]!);
+    expect(seen).toEqual([]);
+    fireEvent.focus(hits()[2]!);
+    expect(seen).toEqual([2]);
+  });
+
   it('should keep a focused session marked when the pointer leaves, and return to it when the pointer leaves another', () => {
     const seen: (number | null)[] = [];
     render(<CorridorPlot {...props({ sessions: DAYS.slice(0, 4).map((_, i) => bren(i)), onHoverSession: (i) => seen.push(i) })} />);

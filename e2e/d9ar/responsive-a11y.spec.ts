@@ -261,7 +261,6 @@ test.describe('B9AR.7 Responsive, touch, accessible and offline', () => {
   test('should leave no hover box after a tap on a session', async ({ profile }) => {
     test.setTimeout(420_000);
     // Product disagrees with the plan (reported to the main session): a tap on a session leaves the hover box and column drawn.
-    test.fail(true, 'a tap leaves the hover box');
     const built = await build(profile, BREN, closeOf('2026-11-16'), 10);
     const trade = built.trade;
     await built.context.close();

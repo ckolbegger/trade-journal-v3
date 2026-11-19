@@ -19,6 +19,7 @@ function SessionHits({ props, width }: { props: ReplayPlotProps; width: number }
   const time = timeAxis(width, props.axis.slots);
   // Pointer and focus each hold a session; the pointer's wins while it is over one, then the focused one, else none.
   const held = useRef<{ pointer: number | null; focus: number | null }>({ pointer: null, focus: null });
+  const tapped = useRef(false);
   const hold = (source: 'pointer' | 'focus', i: number | null) => {
     held.current[source] = i;
     props.onHoverSession?.(held.current.pointer ?? held.current.focus);
@@ -33,9 +34,18 @@ function SessionHits({ props, width }: { props: ReplayPlotProps; width: number }
           aria-label={s.dateLabel}
           data-hovered={props.hoverIndex === i ? 'true' : undefined}
           style={{ left: `${(((time.x(s.slot) - time.column / 2) / width) * 100).toFixed(3)}%`, width: `${((time.column / width) * 100).toFixed(3)}%` }}
-          onPointerEnter={() => hold('pointer', i)}
-          onPointerLeave={() => hold('pointer', null)}
-          onFocus={() => hold('focus', i)}
+          // A touch or pen contact is a tap (it selects), not a hover: only a mouse hovers.
+          onPointerEnter={(e) => e.pointerType !== 'touch' && e.pointerType !== 'pen' && hold('pointer', i)}
+          onPointerLeave={(e) => e.pointerType !== 'touch' && e.pointerType !== 'pen' && hold('pointer', null)}
+          onPointerDown={(e) => {
+            tapped.current = e.pointerType === 'touch' || e.pointerType === 'pen';
+          }}
+          // The focus a tap gives the button is not keyboard focus: it shows no hover box.
+          onFocus={() => {
+            const viaTap = tapped.current;
+            tapped.current = false;
+            if (!viaTap) hold('focus', i);
+          }}
           onBlur={() => hold('focus', null)}
           onClick={() => props.onSelectSession?.(i)}
         />
