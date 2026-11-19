@@ -1,0 +1,209 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 9 selected item(s).",
+  "summary": {
+    "files_reviewed": 9,
+    "comments": 1,
+    "total_tokens": 173231,
+    "input_tokens": 171424,
+    "output_tokens": 1807,
+    "cache_read_tokens": 33152,
+    "elapsed": "1m6s"
+  },
+  "tool_calls": {
+    "total": 17,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 6,
+      "file_read": 10
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/replay/readout.tsx",
+      "content": "This image wraps the entire current value (including `11.69 to 1`), but its accessible name contains only the odds. Since `role=\"img\"` makes its contents presentational, screen readers lose the current reward-to-risk ratio while still hearing the Plan ratio. Keep the ratio outside the labelled odds span, or include it in the accessible name, and extend the accessibility test to verify that both the current ratio and expanded odds remain available.",
+      "existing_code": "                        \u003cspan role=\"img\" aria-label={group.grid.odds.spoken}\u003e\n                          {row.value.text}\n                        \u003c/span\u003e",
+      "start_line": 89,
+      "end_line": 91,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Replay readout, stake wording, and doubles presentation",
+      "files": [
+        "e2e/d9/replay.spec.ts",
+        "src/ui/cockpit/replay/readout.props.test.ts",
+        "src/ui/cockpit/replay/readout.props.ts",
+        "src/ui/cockpit/replay/readout.test.tsx",
+        "src/ui/cockpit/replay/readout.tsx",
+        "src/ui/cockpit/replay/stake-words.props.test.ts",
+        "src/ui/cockpit/replay/stake-words.props.ts",
+        "src/ui/cockpit/replay/view-doubles.props.ts",
+        "src/ui/cockpit/styles/replay-readout.css"
+      ]
+    }
+  ],
+  "session_id": "c3159646-30ca-4740-bba0-b7855fad0181",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "c3159646-30ca-4740-bba0-b7855fad0181",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "5f395db7",
+      "resolved_base": "9a40b95aa6b3455b4db8cebc9d3f7b6765979de3",
+      "resolved_head": "5f395db762f383cbbac84fac364eff3ecf84947f",
+      "exact_range": "9a40b95aa6b3455b4db8cebc9d3f7b6765979de3..5f395db762f383cbbac84fac364eff3ecf84947f",
+      "source_artifact_sha256": "7b235c262ff0e66c1ba66e8ce0050bedcda927fa9409cbc1a143ee12635f90ab"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "63c0d43b245d37c2fa601fdd5364ad0a5b7bdede1e576259fe71f3d4f2783723",
+          "path": "src/ui/cockpit/replay/readout.props.test.ts",
+          "fingerprint": "2c6ebeaf1ff1aebea0a842e9629074c36bdd4b568680dc36b1c27b687480aec7"
+        },
+        {
+          "item_id": "6d86b77abf8fdc8225b334a55d2bb3f62131271add4d139cb41a499b1d9c9a07",
+          "path": "src/ui/cockpit/replay/readout.tsx",
+          "fingerprint": "7366b96a7a40c0a16c745053fc650822ac632739ec6f055282ca9b1034b16411"
+        },
+        {
+          "item_id": "8b513a4dc3f3a0bb37e210f170b1865c12ce5abe33a89f05ed01739058197e3f",
+          "path": "src/ui/cockpit/replay/view-doubles.props.ts",
+          "fingerprint": "520fe1a13d8a33ee830e82a95419b8c7f10e54fa74dfd088d1ddbfe806323590"
+        },
+        {
+          "item_id": "8b806389c79abca78c362100c42cd8f5897f283f3d5df4f9cbacda85d10b0df9",
+          "path": "src/ui/cockpit/replay/stake-words.props.test.ts",
+          "fingerprint": "9398733a69fc5181c0e78f309408687d9223b83d461d49d25c8b05d785042cd8"
+        },
+        {
+          "item_id": "8c66adbcab958299167661bda6e7b87a185ee6d5f3802d58253a87fde25e374e",
+          "path": "src/ui/cockpit/replay/stake-words.props.ts",
+          "fingerprint": "1d90e023f48ad2fece7c5a875efa7cb846ddf8c30281523c5620d66014ac255a"
+        },
+        {
+          "item_id": "97f9f0e3c683f597aee7b0503f4803e42d85c73c0fcec512065b995b7820da16",
+          "path": "src/ui/cockpit/replay/readout.props.ts",
+          "fingerprint": "ff3e276f1c486701f25135463189c236046f507b19b459b0b480bdaf9a5d1b57"
+        },
+        {
+          "item_id": "9d9fa217e129811e2651c02ebf53a158c6611c1aa867b6abb12f116117d9379c",
+          "path": "src/ui/cockpit/replay/readout.test.tsx",
+          "fingerprint": "7ac0a96ce16016b48adf781f92cfc29815c0aa66926a4157910ba279e00f6bda"
+        },
+        {
+          "item_id": "a50e78b43d9da674ed99eaeeda80fea2f24b5f39189d6f4650878a33f631ea72",
+          "path": "e2e/d9/replay.spec.ts",
+          "fingerprint": "6df8acf2f80d3b4199a2061310294168153bac6e958e8f5fc3effc8a774aa39f"
+        },
+        {
+          "item_id": "c227943fa1533d9c2d4f1b82b596c384bb84f3c6c07964958d0c39ddb35fa702",
+          "path": "src/ui/cockpit/styles/replay-readout.css",
+          "fingerprint": "073e05505455b6027e39733efd3f0d87cdde9ce6dab2d1db12587cba3e843efa"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "63c0d43b245d37c2fa601fdd5364ad0a5b7bdede1e576259fe71f3d4f2783723",
+          "path": "src/ui/cockpit/replay/readout.props.test.ts",
+          "fingerprint": "2c6ebeaf1ff1aebea0a842e9629074c36bdd4b568680dc36b1c27b687480aec7"
+        },
+        {
+          "item_id": "6d86b77abf8fdc8225b334a55d2bb3f62131271add4d139cb41a499b1d9c9a07",
+          "path": "src/ui/cockpit/replay/readout.tsx",
+          "fingerprint": "7366b96a7a40c0a16c745053fc650822ac632739ec6f055282ca9b1034b16411"
+        },
+        {
+          "item_id": "8b513a4dc3f3a0bb37e210f170b1865c12ce5abe33a89f05ed01739058197e3f",
+          "path": "src/ui/cockpit/replay/view-doubles.props.ts",
+          "fingerprint": "520fe1a13d8a33ee830e82a95419b8c7f10e54fa74dfd088d1ddbfe806323590"
+        },
+        {
+          "item_id": "8b806389c79abca78c362100c42cd8f5897f283f3d5df4f9cbacda85d10b0df9",
+          "path": "src/ui/cockpit/replay/stake-words.props.test.ts",
+          "fingerprint": "9398733a69fc5181c0e78f309408687d9223b83d461d49d25c8b05d785042cd8"
+        },
+        {
+          "item_id": "8c66adbcab958299167661bda6e7b87a185ee6d5f3802d58253a87fde25e374e",
+          "path": "src/ui/cockpit/replay/stake-words.props.ts",
+          "fingerprint": "1d90e023f48ad2fece7c5a875efa7cb846ddf8c30281523c5620d66014ac255a"
+        },
+        {
+          "item_id": "97f9f0e3c683f597aee7b0503f4803e42d85c73c0fcec512065b995b7820da16",
+          "path": "src/ui/cockpit/replay/readout.props.ts",
+          "fingerprint": "ff3e276f1c486701f25135463189c236046f507b19b459b0b480bdaf9a5d1b57"
+        },
+        {
+          "item_id": "9d9fa217e129811e2651c02ebf53a158c6611c1aa867b6abb12f116117d9379c",
+          "path": "src/ui/cockpit/replay/readout.test.tsx",
+          "fingerprint": "7ac0a96ce16016b48adf781f92cfc29815c0aa66926a4157910ba279e00f6bda"
+        },
+        {
+          "item_id": "a50e78b43d9da674ed99eaeeda80fea2f24b5f39189d6f4650878a33f631ea72",
+          "path": "e2e/d9/replay.spec.ts",
+          "fingerprint": "6df8acf2f80d3b4199a2061310294168153bac6e958e8f5fc3effc8a774aa39f"
+        },
+        {
+          "item_id": "c227943fa1533d9c2d4f1b82b596c384bb84f3c6c07964958d0c39ddb35fa702",
+          "path": "src/ui/cockpit/styles/replay-readout.css",
+          "fingerprint": "073e05505455b6027e39733efd3f0d87cdde9ce6dab2d1db12587cba3e843efa"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "4e63440cd5f1c17d7af2f8300e4bb70fd77d8198593becc7710474dad1cb08af",
+          "path": "evidence/D09AR/tdd-log/T9AR.15.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "4f744abeb6bc6d8375512e99e0217255c3a8a057005fd00aedebce698c4c3747",
+          "path": "evidence/D09AR/suite-runs/T9AR.15-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "5c28e14051129ab76cb5d69fc3b05108f92fd8c2d9b09aa421545c0e031606d0",
+          "path": "evidence/D09AR/suite-runs/T9AR.15-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "e062e5892be5f25c0286fc410a2f0e0c404a5a6e5a574e681b276aa8fbbb621d",
+          "path": "evidence/D09AR/suite-runs/T9AR.15-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ea5eb904bc696f6603724e16ebe8037376137f3d6d34227ca9f3424d6196824e",
+          "path": "evidence/D09AR/suite-runs/T9AR.15-integration.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 66038
+  }
+}

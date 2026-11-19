@@ -1,0 +1,204 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 6 selected item(s).",
+  "summary": {
+    "files_reviewed": 6,
+    "comments": 3,
+    "total_tokens": 257228,
+    "input_tokens": 254650,
+    "output_tokens": 2578,
+    "cache_read_tokens": 40320,
+    "elapsed": "1m44s"
+  },
+  "tool_calls": {
+    "total": 24,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 3,
+      "file_read": 19
+    },
+    "failure": 1,
+    "failure_by_tool": {
+      "file_read": 1
+    },
+    "failure_details": [
+      {
+        "tool_call_number": 8,
+        "tool_name": "file_read",
+        "file_path": "src/ui/cockpit/replay/corridor-pnl.tsx,src/ui/cockpit/replay/corridor.test.tsx,src/ui/cockpit/replay/corridor.tsx,src/ui/cockpit/replay/plot.props.test.ts,src/ui/cockpit/replay/plot.props.ts,src/ui/cockpit/styles/replay-plot.css",
+        "arguments": "{\"file_path\": \"src/ui/cockpit/replay/geometry.ts\", \"start_line\": 180, \"end_line\": 300}",
+        "error": "file \"src/ui/cockpit/replay/geometry.ts\" has only 149 lines, requested range 180-300"
+      }
+    ]
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/replay/plot.props.ts",
+      "content": "This selects only Stop when both roles first cross on the same session, permanently dropping the Target flag and key entry. The domain tracks these roles independently, and option plans can have Stop and Target conditions on different prices (UnderlyingPrice versus StructureValue), so their crossings are not mutually exclusive. Preserve both crossings through the plot contract and rendering, and add a same-date regression test. Independent checks also avoid the nested ternary prohibited by the checklist.",
+      "existing_code": "  const crossing =\n    session.crossings?.stop.first?.date === session.date\n      ? { line: 'Stop' as const, label: 'Stop breached' }\n      : session.crossings?.target.first?.date === session.date\n        ? { line: 'Target' as const, label: 'Target reached' }\n        : undefined;",
+      "start_line": 60,
+      "end_line": 65,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/cockpit/replay/corridor-pnl.tsx",
+      "content": "Visibility needs to be tracked per crossing, not just by kind. With Stop and Target crossings on different revealed sessions, label placement can suppress one flag while retaining the other. Adding FirstCrossing here then causes keyOf to retain both labels, including the flag that is not drawn, violating W66. Return visible crossing identities/labels and filter their key entries individually; cover a case where only one of two crossing labels fits.",
+      "existing_code": "  const drawn = new Set\u003cPlotKeyEntry['kind']\u003e([...limitLines.map((l) =\u003e l.keyKind), ...(flags.length \u003e 0 ? ['FirstCrossing' as const] : [])]);",
+      "start_line": 327,
+      "end_line": 327,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/cockpit/replay/corridor-pnl.tsx",
+      "content": "A crossing can be known even when neither P\u0026L figure exists: replay-series.ts explicitly records UnderlyingPrice crossings from underlyingReading while the contract's mark is missing. This guard drops that first crossing completely (including its phone-strip words and key entry), and later sessions cannot restore it because firstCrossing is attached only to its original session. Preserve the crossing annotation without inventing a P\u0026L value—for example, flag the underlying-price chart when its reading is available—and add a missing-contract-mark regression test.",
+      "existing_code": "    const level = at ?? s.tradePnl;\n    if (!crossing || level === null) return [];",
+      "start_line": 228,
+      "end_line": 229,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Replay corridor P\u0026L plotting, props, styling, and tests",
+      "files": [
+        "src/ui/cockpit/replay/corridor-pnl.tsx",
+        "src/ui/cockpit/replay/corridor.test.tsx",
+        "src/ui/cockpit/replay/corridor.tsx",
+        "src/ui/cockpit/replay/plot.props.test.ts",
+        "src/ui/cockpit/replay/plot.props.ts",
+        "src/ui/cockpit/styles/replay-plot.css"
+      ]
+    }
+  ],
+  "session_id": "3230b79b-9172-4355-8cae-0544302c4c09",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "3230b79b-9172-4355-8cae-0544302c4c09",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "e11d5fb9",
+      "resolved_base": "c2882ae052328913e67cff26b3de8f0a6103e6a2",
+      "resolved_head": "e11d5fb96ac695b279104ac4e4211eff1ca482a3",
+      "exact_range": "c2882ae052328913e67cff26b3de8f0a6103e6a2..e11d5fb96ac695b279104ac4e4211eff1ca482a3",
+      "source_artifact_sha256": "2d4022124d28189bd1b66de0f0a4e35ae1ec1c17d85e4e6f3e0453d03fd89439"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "18de86b152c71edf7b69e5ef56c77c1958afecdf4524893fdc802e9700a6dfe1",
+          "path": "src/ui/cockpit/replay/corridor-pnl.tsx",
+          "fingerprint": "e75bb84b0012d3852460aa477bbd78b8256f3985431d5f0c3b5fd1b319db8233"
+        },
+        {
+          "item_id": "3c9a7cc1262b7d0ad636414c60005031bb565c86e552422f341c6235b5459dcf",
+          "path": "src/ui/cockpit/replay/plot.props.ts",
+          "fingerprint": "036c67f33f1f95f52cb5d05c70e9f9e77982d73df0e5e44540220afc1499d26d"
+        },
+        {
+          "item_id": "5d73acbebf781c477d11b1dab2cf1e4652c24b5ff821e19aff81ce44093f310a",
+          "path": "src/ui/cockpit/replay/plot.props.test.ts",
+          "fingerprint": "edb6df568d7635e71241651a73e4c51fbd3355e0e3c2d4f2397eddbf55e85c6b"
+        },
+        {
+          "item_id": "67c8b9c55df4db1a19bdc33843dfc7b544ae3cacc462c048b5f3913d82cd7b19",
+          "path": "src/ui/cockpit/styles/replay-plot.css",
+          "fingerprint": "29267eb09df74cba34c90edc830403b9c7bec5acd7bb1484d7d510a7d7d73882"
+        },
+        {
+          "item_id": "b9ff77485ea8c227fe111b6e6915407572768e86debadd842eefda14f4e4bcf1",
+          "path": "src/ui/cockpit/replay/corridor.tsx",
+          "fingerprint": "32382931e5acf1d684013a65ac636b33214491bb8dd36f18a4dd042e42c39377"
+        },
+        {
+          "item_id": "ba578f97f7698c0e6bcb181e747f8c8ef3dafb90b6f8eef6f25b35b639e1dd2c",
+          "path": "src/ui/cockpit/replay/corridor.test.tsx",
+          "fingerprint": "ba571fee5ff268783ecf173b0afb523e0c682dddb8202ea1f46144e900ceafe9"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "18de86b152c71edf7b69e5ef56c77c1958afecdf4524893fdc802e9700a6dfe1",
+          "path": "src/ui/cockpit/replay/corridor-pnl.tsx",
+          "fingerprint": "e75bb84b0012d3852460aa477bbd78b8256f3985431d5f0c3b5fd1b319db8233"
+        },
+        {
+          "item_id": "3c9a7cc1262b7d0ad636414c60005031bb565c86e552422f341c6235b5459dcf",
+          "path": "src/ui/cockpit/replay/plot.props.ts",
+          "fingerprint": "036c67f33f1f95f52cb5d05c70e9f9e77982d73df0e5e44540220afc1499d26d"
+        },
+        {
+          "item_id": "5d73acbebf781c477d11b1dab2cf1e4652c24b5ff821e19aff81ce44093f310a",
+          "path": "src/ui/cockpit/replay/plot.props.test.ts",
+          "fingerprint": "edb6df568d7635e71241651a73e4c51fbd3355e0e3c2d4f2397eddbf55e85c6b"
+        },
+        {
+          "item_id": "67c8b9c55df4db1a19bdc33843dfc7b544ae3cacc462c048b5f3913d82cd7b19",
+          "path": "src/ui/cockpit/styles/replay-plot.css",
+          "fingerprint": "29267eb09df74cba34c90edc830403b9c7bec5acd7bb1484d7d510a7d7d73882"
+        },
+        {
+          "item_id": "b9ff77485ea8c227fe111b6e6915407572768e86debadd842eefda14f4e4bcf1",
+          "path": "src/ui/cockpit/replay/corridor.tsx",
+          "fingerprint": "32382931e5acf1d684013a65ac636b33214491bb8dd36f18a4dd042e42c39377"
+        },
+        {
+          "item_id": "ba578f97f7698c0e6bcb181e747f8c8ef3dafb90b6f8eef6f25b35b639e1dd2c",
+          "path": "src/ui/cockpit/replay/corridor.test.tsx",
+          "fingerprint": "ba571fee5ff268783ecf173b0afb523e0c682dddb8202ea1f46144e900ceafe9"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "0a2db905f3b4d41f6e28992aff1bc407ad1c5960d70d2f8b0a5adbdd226c7753",
+          "path": "evidence/D09AR/suite-runs/T9AR.19-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "72641fbd3b0398b01b3b98a61173cb82d8d113b36c563258bdd31dcde70c3f98",
+          "path": "evidence/D09AR/suite-runs/T9AR.19-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "8e0b505e84e28fb42e898c58ae21f65fc95c1f61e0df78950e76f1206accdc2b",
+          "path": "evidence/D09AR/suite-runs/T9AR.19-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "bfeb1902295e2c61597bc5dabfebe1dc430830f8d8c9853243c6da098cfca747",
+          "path": "evidence/D09AR/suite-runs/T9AR.19-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "fa384e27705d519dae105d58f1432557c27e3a0b0b490010de8c1a8252ff921b",
+          "path": "evidence/D09AR/tdd-log/T9AR.19.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 104053
+  }
+}

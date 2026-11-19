@@ -1,0 +1,164 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 2,
+    "total_tokens": 262610,
+    "input_tokens": 261430,
+    "output_tokens": 1180,
+    "cache_read_tokens": 38400,
+    "elapsed": "1m0s"
+  },
+  "tool_calls": {
+    "total": 23,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 5,
+      "file_find": 1,
+      "file_read": 16
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/replay/replay.props.ts",
+      "content": "For an Option, `instrument.symbol` is the underlying/listing symbol, not the contract key used by Review's Marks rows. This sends a missing option Mark to the underlying row (or fails to focus a row), contrary to A281. Use `instrumentKey(tradePnl.instrument)` for the query parameter and add an option-contract test; the current BREN stock cases cannot detect this.",
+      "existing_code": "  return { addMarkTo: `/review?trade=${encodeURIComponent(view.tradeId)}\u0026instrument=${encodeURIComponent(tradePnl.instrument.symbol)}` };",
+      "start_line": 78,
+      "end_line": 78,
+      "category": "bug",
+      "severity": "high"
+    },
+    {
+      "path": "src/ui/cockpit/replay/frame.tsx",
+      "content": "The new business wording is embedded in the component, despite the explicit requirement that words live only in `calculation-words.ts`. Export the label from that module and consume it here (or pass it as finished props) so the wording retains a single owner.",
+      "existing_code": "        {session.addMarkTo \u0026\u0026 \u003cLink to={session.addMarkTo}\u003eAdd the Mark\u003c/Link\u003e}",
+      "start_line": 60,
+      "end_line": 60,
+      "category": "maintainability",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Replay frame behavior and props with corresponding tests",
+      "files": [
+        "src/ui/cockpit/replay/frame.test.tsx",
+        "src/ui/cockpit/replay/frame.tsx",
+        "src/ui/cockpit/replay/replay.props.test.ts",
+        "src/ui/cockpit/replay/replay.props.ts"
+      ]
+    }
+  ],
+  "session_id": "fa869dfe-10fb-43a4-acb3-df02cb5dc31d",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "fa869dfe-10fb-43a4-acb3-df02cb5dc31d",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "3447ef61",
+      "resolved_base": "1ce8e839b20c170a45cf9c705ae57423ae8588bd",
+      "resolved_head": "3447ef615bfc0c000828c1eb60e66fe78344bea5",
+      "exact_range": "1ce8e839b20c170a45cf9c705ae57423ae8588bd..3447ef615bfc0c000828c1eb60e66fe78344bea5",
+      "source_artifact_sha256": "788ff90bf17d60da9f6991a5e055c35419a348eb8e44a5205a5254277a3065b6"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0060ea44ecacab2865c5d4dceb1c75627a3c3566a4f16698d1c3465ec458b6cf",
+          "path": "src/ui/cockpit/replay/replay.props.test.ts",
+          "fingerprint": "ad632fcdae0aa9f1e78e57f23dd5ba797043a8e66b8e648c7f804bb14dadefc0"
+        },
+        {
+          "item_id": "07d6ddb61a627b6e3202a0c5e3f9547cfb10f6fad784c8ca12a580a08252b174",
+          "path": "src/ui/cockpit/replay/frame.test.tsx",
+          "fingerprint": "cc052320b81971095a2d63df96e6a1ba93026d4129cfc14388c94080dc643802"
+        },
+        {
+          "item_id": "1e9818d41ff29d7730ea06bdd1d154959f0a952a460b3d5f13d2bde01ff86492",
+          "path": "src/ui/cockpit/replay/frame.tsx",
+          "fingerprint": "1481ecdc63d82727d01ab3bb1dee66dc339c666dc2efeee06d697620e38a3d55"
+        },
+        {
+          "item_id": "ea03ecbf36e42899eb18f897fb8983e3c8efff8a23ee606ee3aa718ee2111f66",
+          "path": "src/ui/cockpit/replay/replay.props.ts",
+          "fingerprint": "a51a2e60a71aad121f8c58770bd0b08c91615f300b958a5fa1ca04f3bd568bf9"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0060ea44ecacab2865c5d4dceb1c75627a3c3566a4f16698d1c3465ec458b6cf",
+          "path": "src/ui/cockpit/replay/replay.props.test.ts",
+          "fingerprint": "ad632fcdae0aa9f1e78e57f23dd5ba797043a8e66b8e648c7f804bb14dadefc0"
+        },
+        {
+          "item_id": "07d6ddb61a627b6e3202a0c5e3f9547cfb10f6fad784c8ca12a580a08252b174",
+          "path": "src/ui/cockpit/replay/frame.test.tsx",
+          "fingerprint": "cc052320b81971095a2d63df96e6a1ba93026d4129cfc14388c94080dc643802"
+        },
+        {
+          "item_id": "1e9818d41ff29d7730ea06bdd1d154959f0a952a460b3d5f13d2bde01ff86492",
+          "path": "src/ui/cockpit/replay/frame.tsx",
+          "fingerprint": "1481ecdc63d82727d01ab3bb1dee66dc339c666dc2efeee06d697620e38a3d55"
+        },
+        {
+          "item_id": "ea03ecbf36e42899eb18f897fb8983e3c8efff8a23ee606ee3aa718ee2111f66",
+          "path": "src/ui/cockpit/replay/replay.props.ts",
+          "fingerprint": "a51a2e60a71aad121f8c58770bd0b08c91615f300b958a5fa1ca04f3bd568bf9"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "249e1052ecf00a7dd099af76a0a51cc2308db58e322a81ea8a128d0b3ba07b53",
+          "path": "evidence/D09AR/tdd-log/T9AR.16.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "7cacb8943edc860c92e1168f41bb00fed04c8ebb749aa3faddd26d23ea0905f6",
+          "path": "evidence/D09AR/suite-runs/T9AR.16-L-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "92fd7a300392978e237a0ff69d3c6d0153c067165dadf389c9f0204fae0348da",
+          "path": "evidence/D09AR/suite-runs/T9AR.16-L-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "a40305cdfdbc2d6f5d40dd38e318c4054b9e61ef7f4f3ae6b70d8935bdd42ca6",
+          "path": "evidence/D09AR/suite-runs/T9AR.16-L-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "b0f733e44f90d90559dcf4dde9ba32c0f3a97686efdff7f1936349bf5d523fa3",
+          "path": "evidence/D09AR/suite-runs/T9AR.16-L-integration.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 59572
+  }
+}

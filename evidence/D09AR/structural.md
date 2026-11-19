@@ -146,6 +146,35 @@ Lane RO (`d09ar/ro`), base `bcab74c4`, commit `064729f0`. 4 planned cases plus 1
 - ocr on `064729f0` (`ocr/T9AR.14-064729f0.json`): 9 files (5 excluded), 0 comments. **No findings.** Merge after lane DM's (rerun in progress).
 - Rebased onto `cf79c748`; lane tier rerun `T9AR.14-rebased`: unit 2382, integration 280, checks 14 of 14; `run-complete.sh`: run complete. Rebased again over the evidence-only `7f095ba3` (no code between): `9a40b95a`. Merged by fast-forward. Lane OV then rebased onto it: `182b2f55` (T9AR.9), `f8e25291` (B1), `a5949701` (B2), `0587caeb` (B3), `67e462eb` (T9AR.8-B4), `a3946e98` (B4); lane tier rerun as `T9AR.9-rebased`: unit 2388, integration 280, checks 14 of 14; `run-complete.sh`: run complete. Merged by fast-forward to `a3946e98`.
 
+## T9AR.15 Reward to risk with the estimated odds; the extremes' weight
+
+Lane RO (`d09ar/ro`), base `9a40b95a`, commit `5f395db7`.
+
+- 6 planned cases plus 1 added (`data-weight` on the grid rows, for the stylesheet). All went red then green; no first-run pass.
+  - "under 1%" red read "about 1% : 99%": 0.5% rounds to 1, so the edge follows the view's exact fraction against 1/100.
+  - Titles dropped `$`, quotes and parentheses; the quoted words stay in the assertions.
+- Lines changed, under section 1.5's T9AR.15 row:
+  - `e2e/d9/replay.spec.ts`, Mon 11-02: the stake sentence and the Reward to risk row now carry the odds; one line asserting the odds note was added.
+  - `readout.props.test.ts`: the "(Plan 2.95 to 1)" line and the AXIO-U 0.10 to 1 case.
+  - `stake-words.props.test.ts`: the old BREN stake-sentence case is replaced by the planned R-DALE-D case.
+  - The Stays files are untouched.
+  - `view-doubles.props.ts` (a test helper not on any lane's list) gained odds doubles. Accepted as a helper of lane RO's tests.
+- Browser: `e2e/d9/replay.spec.ts` 5 passed.
+- Words: W60 as written; none shortened. Uncovered: the mirror "over 99% : under 1%" and its spoken form (in `new-words.md`).
+- API: `ratioWords(view, session)` in `stake-words.props.ts` returns `{ text, plan?, odds? }`, for T9AR.20.
+  - `StakeRow.weight` is `figures.extremes ?? 'Main'`.
+  - CSS: `tr[data-weight='Remote']` is 0.85em in `--muted`; the note is `.replay-odds-note`.
+  - With no odds in the view, the old wording stays.
+- **Not wired:** `ReplayFrameSession.stakeSpoken` (frozen by T9AR.2) is filled by no task. The stake sentence is not spoken with the odds in full, though the readout row is (W60's case is met there). It is in lane SC's files (`session-words.props.ts`, `replay.props.ts`, `frame.tsx`), so it goes to lane SC as **T9AR.15-D1** after lane SC merges.
+- Lane tier `T9AR.15`: unit 2388, integration 280, checks 14 of 14.
+- ocr on `5f395db7` (`ocr/T9AR.15-5f395db7.json`): 9 files (5 excluded), 1 comment.
+  - **T9AR.15-B1** (Valid, `readout.tsx:89-91`): the `role="img"` span's label holds only the odds, so a screen reader loses the current ratio "11.69 to 1". Briefed in lane RO.
+  - Reviewer's notes, not findings:
+    - The "under 1%" edge compares the view's exact fraction with 1/100 to pick words. That is selection, not calculation, as `plot.props.ts` and `replay.props.ts` already do with `ZERO`. Exactly 1% reads "about 1% : 99%", correctly, but is untested.
+    - The mirror keeps W60's Target-first order and needs the user's approval (in `new-words.md`).
+    - `extremes ?? 'Main'` is right (A268).
+    - With no current odds, the Plan side shows its ratio alone.
+
 ## T9AR.19 Chart: a first crossing
 
 Lane PL (`d09ar/pl`), base `c2882ae0`, commit `e11d5fb9`. Case 1 in two files under its planned name: `corridor.test.tsx` (red `slider 4: expected [] to have a length of 1 but got +0`) and `plot.props.test.ts` (red `expected [ undefined, undefined, undefined ] to deeply equal [ undefined, …(2) ]`); case 2 red `expected [ 'Target reached' ] to deeply equal []` (the key named a flag not drawn). All green; no first-run pass.
@@ -153,6 +182,61 @@ Lane PL (`d09ar/pl`), base `c2882ae0`, commit `e11d5fb9`. Case 1 in two files un
 - The flag's session is the view's `crossings.<role>.first.date` (ADR 0001); a pole and pennant on the P&L chart at that session's At Stop or At Target level; it shows from its session on (P145). The key names it only when drawn; on a phone its words go to the strip through `put()`. W64's and W66's words; none shortened or uncovered. A session whose Stop and Target are both first crossed would get only the Stop flag (judged impossible for one Position). The price chart draws no flag.
 - No existing test or `e2e` line changed; no browser run (no spec changed). The flag can add one line to the phone strip on a flagged session: B9.5's fit check and the strip lines of `e2e/d9/responsive-a11y.spec.ts` are for the next merge run.
 - Lane tier `T9AR.19`: integration 280, checks 14 of 14, **unit 1 failed of 2382**: `src/ui/screens/TradeList.test.tsx` (the Open list's Ready state, `marks('tj:open-list-ready')` expected 2, got 1), tech debt item 11's **known flaky case** (P138); it passed alone (36 of 36). Logged as a flake in this run; the lane's rerun at merge is the tier of record.
+- ocr on `e11d5fb9` (`ocr/T9AR.19-e11d5fb9.json`): 6 files (5 excluded), 3 comments, all **Valid**, made bug tasks:
+  - **T9AR.19-B1** (`plot.props.ts:60`): a Stop and a Target first crossed on the same session keep only the Stop's flag.
+  - **T9AR.19-B2** (`corridor-pnl.tsx:327`): the key names both flags when only one was placed (W66).
+  - **T9AR.19-B3** (`corridor-pnl.tsx:228`): a first crossing on a session with no Trade P&L draws no flag, strip words or key entry, and never returns.
+  - Briefed together in lane PL, one commit each.
+    - `cec3a469`: T9AR.19's own checks log, committed separately.
+    - **B2** `b96ebcd0`: "should name in the key only the flags that are drawn, each by its own words".
+      - Red: `expected ['Stop breached'], got ['Target reached','Stop breached']`; then green.
+      - `DrawnChart.crossingLabels`; `keyOf` takes a flag only when its label was drawn.
+    - **B3** `7c792801`: "should still flag a first crossing on a session with no Trade P&L, at the line's own level or at the top of the plot, and name it in the key and the phone's strip".
+      - Red: `expected [] to have a length of 1 but got +0`; then green.
+      - The flag stands at the line's level, or at the plot's top, with nothing joined across the gap.
+      - The test does not check that the flag stays on later sessions.
+    - `aa3e0019`: lane tier evidence `T9AR.19-B` (unit 2384, integration 280, checks 14 of 14).
+    - No first-run pass.
+    - **B1 stopped:** it needs `PlotSession.firstCrossing` in `replay.types.ts` (lane TY) to hold two flags. Lane TY is idle and fully merged, so the main session routed that one field to lane PL for B1; this is ownership routing, not a plan deviation. Briefed again at `aa3e0019`. B2 and B3 sent to ocr meanwhile.
+    - ocr on `cec3a469..7c792801` (`ocr/T9AR.19-B2-B3-7c792801.json`): 4 files (2 excluded), 0 comments, **no findings**. Reviewer's note, not a finding: B3's test checks the flag's height only loosely (not that its pole stands on the Stop line, nor that the top-of-plot flag clears the title row).
+    - **B1** `728d3279`: "should flag both the Stop and the Target on a session where both were first crossed, and name both in the key".
+      - `plot.props.test.ts`: red was an assertion failure (`expected { Object (line, label) } to deeply equal [ … ]`); then green.
+      - `corridor.test.tsx`: red was a runtime TypeError (`Cannot read properties of undefined (reading 'toLowerCase')`); then green.
+      - No first-run pass.
+      - `PlotSession.firstCrossing` (in `replay.types.ts`, routed from lane TY) is now a list: the Stop first, then the Target; it is absent when nothing was crossed. Label keys are now `crossing-<slot>-<line>`.
+      - Existing lines changed shape only: 2 in `plot.props.test.ts` and 4 doubles in `corridor.test.tsx`, each wrapped in an array.
+      - Lane tier `T9AR.19-B1`: unit 2386, integration 280, checks 14 of 14.
+      - ocr on `728d3279` (`ocr/T9AR.19-B1-728d3279.json`): 5 files (5 excluded), 0 comments, **no findings**. Lane PL is ready; it merges after `merge4` finishes.
+
+## T9AR.22 Node integration suite
+
+Lane IN (`d09ar/in`), base `7f095ba3`, commit `c487a1ed`. Tests only (structural). `tests/integration/d9ar/`:
+- `support.ts`: re-exports D9's helpers.
+- `plan-comparison.test.ts`: I9AR.1.
+- `odds.test.ts`: I9AR.2.
+- `capabilities.test.ts`: I9AR.3.
+- `query-count.test.ts`: I9AR.4, equal to I9.6's tallies.
+- `final.test.ts`: I9AR.5, two cases (K-sale; R-DALE-U Expired).
+
+No case disagreed with the product; no `src/` or `tests/support/` change.
+
+- `npm run test:integration`: 135 files, 286 tests passed.
+- `acceptance-commands.sh plan/D09A-R-stage-a-refactor.md`: 7 commands checked, 4 failed. All 4 are browser rows whose specs T9AR.23 writes: `e2e/d9ar/states.spec.ts`, `review.spec.ts`, and `responsive-a11y.spec.ts` (twice), each "playwright --list exited 1, no tests". They are expected at this point, so this is not a pending decision; the script is rerun after T9AR.23. The node rows pass.
+- Lane tier `T9AR.22`: unit 2377, integration 286, checks 14 of 14.
+- ocr on `c487a1ed` (`ocr/T9AR.22-c487a1ed.json`): 6 files, 2 comments, both **Valid**, made bug tasks:
+  - **T9AR.22-B1** (`odds.test.ts:40`): the loop over each session checks only odds that are a Value, so a session that lost its odds passes.
+  - **T9AR.22-B2** (`final.test.ts:49-50`): the Expiration case compares the Plan column without checking its odds exist, and omits `atStop` and `atTarget` NotApplicable.
+  - Briefed together in lane IN.
+    - **B1** `250a3065`: every session of R-DALE-D (Mon 11-02 to Wed 11-11) and R-BREN-U (Mon 11-02 to Mon 11-16) asserted a Value with pinned whole percents summing to 100. R-AXIO-D Mon 11-09 to Mon 11-16 asserted `NotApplicable:NoOngoingRisk`. Check: the test's own reading of DALE Fri 11-06 made `undefined` failed with `dale 2026-11-06 odds kind: expected undefined to be 'Value'`.
+      - The percents for sessions not in section 5's table come from the product's output; they agree with every session the table lists. R-BREN-U Thu 11-12 to Mon 11-16 read 100:0. Both points were put to ocr.
+    - **B2** `90349135`: the Plan odds are asserted on both sides; `atStop` and `atTarget` are asserted `NotApplicable:NoRemainingPosition`. Check: Plan odds made `undefined` failed with `Error: no Plan odds`; `atStop`/`atTarget` were not checked separately.
+    - Lane tier `T9AR.22-B`: unit 2377, integration 286, checks 14 of 14; run complete (files moved to main).
+    - ocr on `c487a1ed..90349135` (`ocr/T9AR.22-B1-B2-90349135.json`): 2 files (2 excluded), 0 comments, **no findings**.
+      - The reviewer recomputed every pinned percent by hand from the series Marks with A267's formula, and all match. DALE: (3.50 − put Mark) / 3.30. BREN: (call Mark − 0.80) / 3.20.
+      - R-BREN-U's 100:0 on Thu 11-12, Fri 11-13 and Mon 11-16 follows from A267: risk is positive and reward to Target is $0 with an Overrun, so the ratio is the Value 0. The plan does not state this case.
+      - **For the final report's open questions:** past the Target, the odds read "100% : 0%" rather than no odds. That is the plan's formula, not a deviation, so it is not a pending decision.
+    - Lane IN is ready; it merges after `merge4` finishes.
+  - Reviewer's notes, not findings: I9AR.4's counts are copied from I9.6 rather than imported; I9AR.4 omits I9.6's read-order and no-narrative-store checks.
 
 ## T9AR.21 Remove the stake rows' change fields
 
@@ -379,6 +463,17 @@ Lane SC (`d09ar/sc`), base `b75e4597`, commit `0ba39920` (four of five planned c
 - Types: `WordLength` gains `'line'`; `topLineOf` added beside `headlineOf`.
 - **Layout note:** the frame now wraps the plot and the hover box in `div.replay-chart-box` (the overlay grid's child). The task reports that `.replay-overlay .replay-plot-frame` (column 1, T9AR.7-B2) never matched the plot, which was `.replay-corridor`. To check at T9AR.16's merge, and route to lane OV if the overlay's two columns are not in effect.
 - ocr on `0ba39920` (`ocr/T9AR.16-0ba39920.json`): 9 files (5 excluded), 0 comments. **No findings.**
+- **Last case, "Add the Mark"**, after T9AR.2-B1 merged and lane SC rebased (first part now `1ce8e839`): `3447ef61`, split in two. Adapter (`replay.props.test.ts`): red `expected [ undefined, undefined ] to deeply equal [ undefined, …(1) ]`, green; `addMarkLinkOf` sets `/review?trade=<id>&instrument=<symbol>` when `view.pending !== null` and `isMarkLacking(tradePnl)`. Frame (`frame.test.tsx`, under `MemoryRouter`): a first run failed on importing `react-router-dom` (not a valid red, discarded); red `Unable to find an accessible element with the role "link" and name "Add the Mark"`, green. No first-run pass; no CSS change; no browser run. Lane tier `T9AR.16-L`: unit 2386, integration 280, checks 14 of 14.
+- ocr on `3447ef61` (`ocr/T9AR.16-3447ef61.json`): 4 files (5 excluded), 2 comments, made bug tasks:
+  - **T9AR.16-B1** (Valid, `replay.props.ts:78`): the link names the option's listing symbol, not the contract key the Review's Marks rows use, so on an option Trade it misses the row.
+  - **T9AR.16-B2** (Doubtful, `frame.tsx:60`): "Add the Mark" written in the component; briefed to check the convention for link labels and change only if it differs.
+  - Briefed together in lane SC.
+    - **B1** `86b33a7d`: `addMarkTo` uses `instrumentKey(tradePnl.instrument)`. The case "should link an option Trade to the Review row by the contract key the Marks rows use, not the listing symbol" uses the put's double on Tue 11-10 and asserts that a stock still links by its symbol. Red: `expected '/review?trade=T-1&instrument=DALE' to be '…instrument=DALE261120P00057500'`; then green.
+    - B1 changed one expected value: the earlier "Add the Mark" adapter case (same task, `3447ef61`) used an option double (BREN call), so its `instrument=BREN` encoded the bug. It now expects the contract key. Accepted.
+    - Lane tier `T9AR.16-B`: unit 2387, integration 280, checks 14 of 14.
+    - ocr on `86b33a7d` (`ocr/T9AR.16-B1-86b33a7d.json`): 2 files (5 excluded), 0 comments, **no findings**. Lane SC is ready; it merges after `merge4` finishes, since that run uses the main checkout.
+    - **B2: no change.** Link and button labels live in the components: `ReviewCard.tsx:343` and `Cockpit.tsx:250` ("Price History"); "Add the Mark" matches them.
+  - Reviewer's note, not a finding: `needs-you.props.ts:58` and `TradeList.tsx:294` use the same `.symbol` for their Marks links. That is outside D9A-R, so it is recorded for the final report.
 - **T9AR.2-B1** (lane TY) done: `7f6618fc`, `replay.types.ts` only: `ReplayFrameSession.addMarkTo?` after `headline`, naming A281. typecheck, tsc6, lint exit 0; `src/ui/cockpit/replay` 156 passed. Lane TY rebased onto `df012a47`: B1 is now `d88001ac`. ocr on `7f6618fc` (`ocr/T9AR.2-B1-7f6618fc.json`): 0 comments, **no findings**.
 - **T9AR.2-F1** (lane TY, held until lane PL was idle) done: `c2882ae0`: `pnlShortTitle?` removed from `replay.types.ts` (comment now "The P&L chart's title."), and its one assertion from `plot.props.test.ts`'s "should title the P&L chart Trade P&L at every width" (the case stays). `grep -rn pnlShortTitle src e2e tests tools`: nothing; typecheck, tsc6, lint exit 0; `src/ui/cockpit/replay` 162 passed. ocr on `c2882ae0` (`ocr/T9AR.2-F1-c2882ae0.json`): 0 comments, **no findings**. Lane tier run by the main session as `T9AR.2-BF`: unit 2379, integration 280, checks 14 of 14; `run-complete.sh`: run complete. Merged by fast-forward: `d88001ac` (B1), `c2882ae0` (F1).
 - Lane SC rebased onto `c2882ae0`: T9AR.16's first part is now `1ce8e839`; its last case briefed. Lane DM rebased onto `c2882ae0`: T9AR.21 is now `cf79c748`, lane tier rerun as `T9AR.21-rebased`.
@@ -388,6 +483,7 @@ Lane SC (`d09ar/sc`), base `b75e4597`, commit `0ba39920` (four of five planned c
 | Run | Commit | Tier | Result |
 |---|---|---|---|
 | `merge3` (after T9AR.5, T9AR.11 with B1 and T9AR.10-S1, T9AR.8 with B1, B2, B3, F1) | `e526637e` | full (`browser-auto 72ece0c8`) | unit 2357 (208 files), integration 280, browser-1 126, browser-2 79, browser-3 77, checks 14 of 14, all exit 0; `run-complete.sh`: run complete |
+| `merge4` (after T9AR.6, T9AR.12, T9AR.13, T9AR.2-B1, F1, T9AR.21, T9AR.14, T9AR.9 with B1, B2, B3, B4, T9AR.8-B4) | `c394ce6a` | full (`browser-auto e526637e`) | unit 2388 (209 files), integration 280, browser-1 126, browser-2 79, checks 14 of 14 exit 0; **browser-3 1 failed, 78 passed**. The failure: `e2e/d8/restore.spec.ts:31` (B8.3, line 84). After relaunch, the Trade Detail "Today" view lacked its Marks block and "Wed Oct 14" labels. Rerun alone by the main session: the file 6 of 6, then the case 3 of 3 (`--repeat-each=3`), so it looks like a load-timing race in `viewsOf` (it reads the view before the Marks block renders). Not a known flaky case, so it went to **merge4-S1**: settle whether the helper races or D9A-R slowed that view, and fix whichever it is. `run-complete.sh`: run complete |
 | `merge2` (after T9AR.4, T9AR.7, T9AR.10 with their bug and follow-up tasks) | `72ece0c8` | full (`browser-auto 79b900d3`: first matching path `e2e/d9/replay.spec.ts`) | unit 2332 (206 files), integration 280, browser-1 126, browser-2 79, checks 14 of 14 all exit 0; **browser-3 failed: 3 failed, 74 passed** (below); `run-complete.sh`: run complete |
 | `merge1` (after T9AR.3 with T9AR.3-B1, T9AR.3-B2) | `79b900d3` | task (`browser-auto 1018d618`: no changed path is on the full-tier list) | unit 2297 (204 files), integration 280 (130 files), browser `@every-task` 5, checks 14 of 14; all exit 0; `run-complete.sh`: run complete |
 | `wave0` (merge run after T9AR.1, T9AR.2) | `1018d618` | full (`browser-auto 1cc612ea`: first matching path `src/ui/cockpit/index.css`) | unit 2289 (203 files), integration 280 (130 files), browser-1 126, browser-2 79, browser-3 77, checks 14 of 14; all exit 0; `run-complete.sh`: run complete |

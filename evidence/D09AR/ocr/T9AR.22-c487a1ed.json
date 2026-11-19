@@ -1,0 +1,180 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 6 selected item(s).",
+  "summary": {
+    "files_reviewed": 6,
+    "comments": 2,
+    "total_tokens": 142141,
+    "input_tokens": 140358,
+    "output_tokens": 1783,
+    "cache_read_tokens": 9984,
+    "elapsed": "1m7s"
+  },
+  "tool_calls": {
+    "total": 15,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 4,
+      "file_read": 10
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "tests/integration/d9ar/odds.test.ts",
+      "content": "This silently skips missing odds and unexpected non-Value results. Only three dates have explicit odds assertions, so dropping rewardRiskOdds on another eligible session (for example BREN 2026-11-03) still passes I9AR.2. Assert the expected result kind for each session, explicitly accounting for legitimate non-Value dates, before checking percentages. Also check that each percentage is a whole number: summing to 100 alone accepts fractional pairs.",
+      "existing_code": "      if (r?.kind === 'Value') expect(r.value.percent.targetFirst.add(r.value.percent.stopFirst).compare(Rational.of(100n))).toBe(0);",
+      "start_line": 40,
+      "end_line": 40,
+      "category": "test",
+      "severity": "medium"
+    },
+    {
+      "path": "tests/integration/d9ar/final.test.ts",
+      "content": "Equality does not establish that the Expiration scenario preserves Plan odds: omitting odds from both DALE views would pass, and the legs assertion only establishes terms. Assert that the pre-Expiration Plan odds exist (or match their expected values) before comparing. This scenario should also assert that last.figures.outcomes.atStop and atTarget are NoRemainingPosition, as the sale scenario does, to verify the finished-trade 'nothing at stake' requirement for Expiration independently.",
+      "existing_code": "    expect(expired.planColumn).toEqual(due.planColumn);\n    expect(expired.planColumn?.terms?.legs).toHaveLength(1);",
+      "start_line": 49,
+      "end_line": 50,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "D9AR integration tests and shared test support",
+      "files": [
+        "tests/integration/d9ar/capabilities.test.ts",
+        "tests/integration/d9ar/final.test.ts",
+        "tests/integration/d9ar/odds.test.ts",
+        "tests/integration/d9ar/plan-comparison.test.ts",
+        "tests/integration/d9ar/query-count.test.ts",
+        "tests/integration/d9ar/support.ts"
+      ]
+    }
+  ],
+  "session_id": "98841c91-734b-4a65-a472-5bc73ee4679a",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "98841c91-734b-4a65-a472-5bc73ee4679a",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "c487a1ed",
+      "resolved_base": "7f095ba3d7cd1a6a0ae5fc8103dbd166b049afe5",
+      "resolved_head": "c487a1ed131d7d2fa4ddc5490b10fbcf3fade040",
+      "exact_range": "7f095ba3d7cd1a6a0ae5fc8103dbd166b049afe5..c487a1ed131d7d2fa4ddc5490b10fbcf3fade040",
+      "source_artifact_sha256": "97ed9c6a3556a5c072fdd11dbfdf49b41bfa6944ea05051d8122c2424f972814"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "054dfa7270762743e9aca41830d2e115fb23c7d14230bc6b5062300608991c4e",
+          "path": "tests/integration/d9ar/capabilities.test.ts",
+          "fingerprint": "3faa7e96018ed60b81d2ef618884acd19684e1d4a88b617be9e01516928d1c70"
+        },
+        {
+          "item_id": "234865b5d02a64277e34d2238199bbd19638d82382f13836c72352e18129bd43",
+          "path": "tests/integration/d9ar/plan-comparison.test.ts",
+          "fingerprint": "c898f011c55a7e96cc8ca2e374e79d94c25412ed54b01277ccfdca2226991bc6"
+        },
+        {
+          "item_id": "41e68bc0ac06b3c8cd515fc239f8c32e30f9e79a37006063a6f5405537390c02",
+          "path": "tests/integration/d9ar/odds.test.ts",
+          "fingerprint": "dbead3c5c373cb725168c2b9ed35bc23b03526fe696d8763cb44af67038773d7"
+        },
+        {
+          "item_id": "b0be774881b4250372519f75981a0693f72a69a9657063573dffd2e8a4c07126",
+          "path": "tests/integration/d9ar/query-count.test.ts",
+          "fingerprint": "e454e901c9dff69014bca096407d5c0f8e4c876ee03a84ae652fcff2a6042cfe"
+        },
+        {
+          "item_id": "bd28c8b8782504417cb81d272798817078f402acdb7331d6c91992321880323f",
+          "path": "tests/integration/d9ar/support.ts",
+          "fingerprint": "7d91b59670f4d9be1ed67647df180ef166a639a896a2e89e36a3a85c89690267"
+        },
+        {
+          "item_id": "fe5b159a3a50a1bc1328a64c2ef704e3c50e9d5196b811044e4802bbc81b74d4",
+          "path": "tests/integration/d9ar/final.test.ts",
+          "fingerprint": "77557700db9c44e11b3c285f7d91981f32a83fbb7c3b32e1b017e7999d355514"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "054dfa7270762743e9aca41830d2e115fb23c7d14230bc6b5062300608991c4e",
+          "path": "tests/integration/d9ar/capabilities.test.ts",
+          "fingerprint": "3faa7e96018ed60b81d2ef618884acd19684e1d4a88b617be9e01516928d1c70"
+        },
+        {
+          "item_id": "234865b5d02a64277e34d2238199bbd19638d82382f13836c72352e18129bd43",
+          "path": "tests/integration/d9ar/plan-comparison.test.ts",
+          "fingerprint": "c898f011c55a7e96cc8ca2e374e79d94c25412ed54b01277ccfdca2226991bc6"
+        },
+        {
+          "item_id": "41e68bc0ac06b3c8cd515fc239f8c32e30f9e79a37006063a6f5405537390c02",
+          "path": "tests/integration/d9ar/odds.test.ts",
+          "fingerprint": "dbead3c5c373cb725168c2b9ed35bc23b03526fe696d8763cb44af67038773d7"
+        },
+        {
+          "item_id": "b0be774881b4250372519f75981a0693f72a69a9657063573dffd2e8a4c07126",
+          "path": "tests/integration/d9ar/query-count.test.ts",
+          "fingerprint": "e454e901c9dff69014bca096407d5c0f8e4c876ee03a84ae652fcff2a6042cfe"
+        },
+        {
+          "item_id": "bd28c8b8782504417cb81d272798817078f402acdb7331d6c91992321880323f",
+          "path": "tests/integration/d9ar/support.ts",
+          "fingerprint": "7d91b59670f4d9be1ed67647df180ef166a639a896a2e89e36a3a85c89690267"
+        },
+        {
+          "item_id": "fe5b159a3a50a1bc1328a64c2ef704e3c50e9d5196b811044e4802bbc81b74d4",
+          "path": "tests/integration/d9ar/final.test.ts",
+          "fingerprint": "77557700db9c44e11b3c285f7d91981f32a83fbb7c3b32e1b017e7999d355514"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "2038618c49ce9ded4421b80739f0ebddcc28956f7666dd059c010c9609ee38ce",
+          "path": "evidence/D09AR/suite-runs/T9AR.22-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "25d523991f8481fe858aec4a91d1ac32035b8f337b5fc415d83e0addaf49099a",
+          "path": "evidence/D09AR/suite-runs/T9AR.22-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "7ededd336d73ca24fdb4338aa7760b926798887a4da48500cb5e37c992b4ca19",
+          "path": "evidence/D09AR/suite-runs/T9AR.22-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "be29216c1b61f07259e21c7cb11e3781bc223f1139ae1885ddd745a105637850",
+          "path": "evidence/D09AR/suite-runs/T9AR.22-unit.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 67351
+  }
+}
