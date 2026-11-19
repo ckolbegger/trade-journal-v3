@@ -1386,4 +1386,16 @@ describe('Corridor: the time axis keeps its first date (T9AR.23-S7)', () => {
     expect(pnl(container).querySelector('text.axis-end')).not.toBeNull();
     expect(pnl(container).querySelector('text.cursor-label')).toBeNull();
   });
+
+  it.each([200, 215, 223, 240])('should draw both edge labels without overlap at width %i on an option Trade', (w) => {
+    frameWidth(w);
+    const { container } = render(<CorridorPlot {...props({ axis: AXIS, sliderIndex: 0, sessions: [bren(0)] })} />);
+    const start = pnl(container).querySelector('text.axis-start')!;
+    const end = pnl(container).querySelector('text.axis-end')!;
+    expect(start).not.toBeNull();
+    expect(end).not.toBeNull();
+    expect(end.textContent).toContain('Nov 20');
+    expect(box(start)[1]).toBeLessThanOrEqual(box(end)[0]);
+    expect(box(end)[1]).toBeLessThanOrEqual(w);
+  });
 });

@@ -305,14 +305,18 @@ export function drawPnl(props: ReplayPlotProps, width: number): DrawnChart {
   // Both edge labels always stay (the first date and the expiry are different facts); the cursor's name steps right of the first date and
   // left of the end label instead. On a chart too narrow for all three it is left out, and the two edge labels still do not overlap it.
   const startRight = axis.startLabel ? span(axis.startLabel, time.left, 'start').x1 + 4 : 0;
-  const endLeft = axis.endLabel ? span(axis.endLabel, time.right, 'end').x0 - 4 : width;
+  // On the narrowest charts the full end label would run into the first date: it drops its weekday, then shortens "Expires" (P137).
+  const endText = axis.endLabel
+    ? [axis.endLabel, axis.endLabel.replace(/ \w{3} /, ' '), axis.endLabel.replace(/^Expires \w{3} /, 'Exp ')].find((t) => span(t, time.right, 'end').x0 >= startRight) ?? axis.endLabel.replace(/^Expires \w{3} /, 'Exp ')
+    : undefined;
+  const endLeft = endText ? span(endText, time.right, 'end').x0 - 4 : width;
   const lowest = Math.max(half, startRight + half);
   const highest = Math.min(width - half, endLeft - half);
   const cursorX = Math.min(Math.max(xc, lowest), highest);
   const cursorFits = cursorText !== undefined && lowest <= highest;
   const axisText: { cls: string; text: string; x: number; anchor: 'start' | 'middle' | 'end' }[] = [
     ...(axis.startLabel ? [{ cls: 'axis-start', text: axis.startLabel, x: time.left, anchor: 'start' as const }] : []),
-    ...(axis.endLabel ? [{ cls: 'axis-end', text: axis.endLabel, x: time.right, anchor: 'end' as const }] : []),
+    ...(endText ? [{ cls: 'axis-end', text: endText, x: time.right, anchor: 'end' as const }] : []),
   ];
   if (cursorText && cursorFits) axisText.push({ cls: 'cursor-label', text: cursorText, x: cursorX, anchor: 'middle' });
   // A line is drawn only with its label (A280): one whose label found no room is not drawn at all.
