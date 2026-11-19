@@ -214,10 +214,19 @@ describe('Corridor: a first crossing (decision 2)', () => {
     // R-CORV-D: the Target first reached on Fri 11-06 and still crossed on Mon 11-09; the flag is on the session of the first crossing only,
     // and the plot, given every revealed session, keeps it on screen. Not crossed yet: no flag.
     const target = replayProps(fullView([day('2026-11-05', crossings()), day('2026-11-06', crossings(undefined, '2026-11-06')), day('2026-11-09', crossings(undefined, '2026-11-06'))], PLAN), { Plot }).sessions.map((s) => s.plot);
-    expect(target.map((p) => p.firstCrossing)).toEqual([undefined, { line: 'Target', label: 'Target reached' }, undefined]);
+    expect(target.map((p) => p.firstCrossing)).toEqual([undefined, [{ line: 'Target', label: 'Target reached' }], undefined]);
     expect(target.map((p) => p.keyEntries?.some((e) => e.kind === 'FirstCrossing' && e.label === 'Target reached'))).toEqual([false, true, false]);
     // R-AXIO-D: the Stop breached on Mon 11-09.
     const stop = replayProps(fullView([day('2026-11-09', crossings('2026-11-09'))], PLAN), { Plot }).sessions[0]!.plot;
-    expect(stop.firstCrossing).toEqual({ line: 'Stop', label: 'Stop breached' });
+    expect(stop.firstCrossing).toEqual([{ line: 'Stop', label: 'Stop breached' }]);
+  });
+
+  it('should flag both the Stop and the Target on a session where both were first crossed, and name both in the key', () => {
+    const both = replayProps(fullView([day('2026-11-09', crossings('2026-11-09', '2026-11-09'))], PLAN), { Plot }).sessions[0]!.plot;
+    expect(both.firstCrossing).toEqual([
+      { line: 'Stop', label: 'Stop breached' },
+      { line: 'Target', label: 'Target reached' },
+    ]);
+    expect(both.keyEntries?.filter((e) => e.kind === 'FirstCrossing').map((e) => e.label)).toEqual(['Stop breached', 'Target reached']);
   });
 });

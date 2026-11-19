@@ -51,7 +51,8 @@ export interface PlotSession {
   readonly stripLabels?: readonly string[];
   // A271, A280: set on the session where a condition's role was first crossed ("Target reached", "Stop breached"); the flag stays on
   // later sessions because the plot is given every revealed session.
-  readonly firstCrossing?: { readonly line: 'Stop' | 'Target'; readonly label: string; readonly shortLabel?: string };
+  // Both roles can be first crossed on one session, so it is a list: the Stop's entry, then the Target's.
+  readonly firstCrossing?: readonly { readonly line: 'Stop' | 'Target'; readonly label: string; readonly shortLabel?: string }[];
   // Position on the time axis: 0 for the first session, counting every trading session up to `axis.slots - 1`.
   readonly slot: number;
   // "Mon Nov 16": the label for hover and the slider's mark.

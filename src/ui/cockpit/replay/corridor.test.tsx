@@ -1218,7 +1218,7 @@ describe('Corridor: a first crossing (decision 2)', () => {
   });
   // R-CORV-D: the Target first reached on Fri Nov 6 (slot 4); the plot is given every revealed session, so the flag stays.
   const crossed = (stop: 'Stop' | 'Target', label: string, at: number, upTo: number): PlotSession[] =>
-    DAYS.slice(0, upTo + 1).map((_, i) => bren(i, i === at ? { firstCrossing: { line: stop, label, shortLabel: label }, keyEntries: [{ kind: 'FirstCrossing', label }] } : {}));
+    DAYS.slice(0, upTo + 1).map((_, i) => bren(i, i === at ? { firstCrossing: [{ line: stop, label, shortLabel: label }], keyEntries: [{ kind: 'FirstCrossing', label }] } : {}));
   const flags = (c: HTMLElement) => [...pnl(c).querySelectorAll('.first-crossing')];
   const words = (c: HTMLElement) => [...pnl(c).querySelectorAll('text.crossing-label')].map((t) => t.textContent);
 
@@ -1240,6 +1240,16 @@ describe('Corridor: a first crossing (decision 2)', () => {
     const stop = render(<CorridorPlot {...props({ sessions: crossed('Stop', 'Stop breached', 5, 6), sliderIndex: 6 })} />);
     expect(words(stop.container)).toEqual(['Stop breached']);
     expect(flags(stop.container)[0]!.classList.contains('stop')).toBe(true);
+  });
+
+  it('should flag both the Stop and the Target on a session where both were first crossed, and name both in the key', () => {
+    const sessions = DAYS.slice(0, 7).map((_, i) =>
+      bren(i, i === 4 ? { firstCrossing: [{ line: 'Stop' as const, label: 'Stop breached' }, { line: 'Target' as const, label: 'Target reached' }], keyEntries: [{ kind: 'FirstCrossing' as const, label: 'Stop breached' }, { kind: 'FirstCrossing' as const, label: 'Target reached' }] } : {}),
+    );
+    const { container } = render(<CorridorPlot {...props({ sessions, sliderIndex: 6 })} />);
+    expect(flags(container).map((f) => [...f.classList].filter((c) => c === 'stop' || c === 'target')[0])).toEqual(['stop', 'target']);
+    expect(words(container).sort()).toEqual(['Stop breached', 'Target reached']);
+    expect([...container.querySelectorAll('.replay-key li')].map((li) => li.textContent)).toEqual(['Stop breached', 'Target reached']);
   });
 
   it('should name the flag in the key, and list its words in the phone\'s strip', () => {
@@ -1265,8 +1275,8 @@ describe('Corridor: a first crossing (decision 2)', () => {
     // A Target flag at slot 4 whose label finds no room (a long banked label holds the spots beside it) and a Stop flag at slot 5 that is drawn.
     const sessions = DAYS.slice(0, 7).map((_, i) =>
       bren(i, {
-        ...(i === 4 && { resultAtTarget: null, tradePnl: 300, banked: 300, bankedLabel: 'Banked +$300 from a very long sale that takes the room', firstCrossing: { line: 'Target' as const, label: 'Target reached' }, keyEntries: [{ kind: 'FirstCrossing' as const, label: 'Target reached' }] }),
-        ...(i === 5 && { firstCrossing: { line: 'Stop' as const, label: 'Stop breached' }, keyEntries: [{ kind: 'FirstCrossing' as const, label: 'Stop breached' }] }),
+        ...(i === 4 && { resultAtTarget: null, tradePnl: 300, banked: 300, bankedLabel: 'Banked +$300 from a very long sale that takes the room', firstCrossing: [{ line: 'Target' as const, label: 'Target reached' }], keyEntries: [{ kind: 'FirstCrossing' as const, label: 'Target reached' }] }),
+        ...(i === 5 && { firstCrossing: [{ line: 'Stop' as const, label: 'Stop breached' }], keyEntries: [{ kind: 'FirstCrossing' as const, label: 'Stop breached' }] }),
       }),
     );
     const { container } = render(<CorridorPlot {...props({ sessions, sliderIndex: 6 })} />);
@@ -1277,7 +1287,7 @@ describe('Corridor: a first crossing (decision 2)', () => {
   it('should still flag a first crossing on a session with no Trade P&L, at the line\'s own level or at the top of the plot, and name it in the key and the phone\'s strip', () => {
     const noPnl = (withStop: boolean): PlotSession[] =>
       DAYS.slice(0, 7).map((_, i) =>
-        bren(i, i === 4 ? { tradePnl: null, underlyingMark: null, resultAtStop: withStop ? stopAt(4) : null, firstCrossing: { line: 'Stop', label: 'Stop breached', shortLabel: 'Stop breached' }, keyEntries: [{ kind: 'FirstCrossing', label: 'Stop breached' }] } : {}),
+        bren(i, i === 4 ? { tradePnl: null, underlyingMark: null, resultAtStop: withStop ? stopAt(4) : null, firstCrossing: [{ line: 'Stop', label: 'Stop breached', shortLabel: 'Stop breached' }], keyEntries: [{ kind: 'FirstCrossing', label: 'Stop breached' }] } : {}),
       );
     const poleY = (c: HTMLElement) => Number(/^M[\d.]+ ([\d.]+)V([\d.]+)$/.exec(flags(c)[0]!.querySelector('path.flag-pole')!.getAttribute('d')!)![1]);
     const keyNames = (c: HTMLElement) => [...c.querySelectorAll('.replay-key li')].map((li) => li.textContent);

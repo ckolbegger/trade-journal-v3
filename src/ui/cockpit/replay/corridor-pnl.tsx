@@ -222,24 +222,24 @@ export function drawPnl(props: ReplayPlotProps, width: number): DrawnChart {
   }
   // A first crossing (A271, W64): a flag at the session, on the line it crossed (the Trade P&L where that line has no figure); the plot is
   // given every revealed session, so the flag stays on later ones. It is drawn only with its label, or in the phone's strip.
-  const flags = sessions.flatMap((s) => {
-    const crossing = s.firstCrossing;
-    const at = crossing && (crossing.line === 'Stop' ? s.resultAtStop : s.resultAtTarget)?.value;
-    const level = at ?? s.tradePnl;
-    if (!crossing) return [];
-    const x = time.x(s.slot);
-    // A session with no figure to stand on (no Mark column) keeps the flag, at the top of the plot; nothing is joined across it (P146).
-    const y = level === null ? TOP + 18 : value.y(level);
-    const top = Math.max(TOP, y - 18);
-    const key = `crossing-${s.slot}`;
-    put(key, `crossing-label ${crossing.line.toLowerCase()}`, words(crossing.label, crossing.shortLabel), [
-      { x: x + 6, y: top + 8, anchor: 'start' },
-      { x: x - 6, y: top + 8, anchor: 'end' },
-      { x: x + 6, y: top + 20, anchor: 'start' },
-      { x: x - 6, y: top + 20, anchor: 'end' },
-    ]);
-    return kept.has(key) ? [{ key, line: crossing.line.toLowerCase(), label: crossing.label, x, y, top }] : [];
-  });
+  const flags = sessions.flatMap((s) =>
+    (s.firstCrossing ?? []).flatMap((crossing) => {
+      const at = (crossing.line === 'Stop' ? s.resultAtStop : s.resultAtTarget)?.value;
+      const level = at ?? s.tradePnl;
+      const x = time.x(s.slot);
+      // A session with no figure to stand on (no Mark column) keeps the flag, at the top of the plot; nothing is joined across it (P146).
+      const y = level === null ? TOP + 18 : value.y(level);
+      const top = Math.max(TOP, y - 18);
+      const key = `crossing-${s.slot}-${crossing.line}`;
+      put(key, `crossing-label ${crossing.line.toLowerCase()}`, words(crossing.label, crossing.shortLabel), [
+        { x: x + 6, y: top + 8, anchor: 'start' },
+        { x: x - 6, y: top + 8, anchor: 'end' },
+        { x: x + 6, y: top + 20, anchor: 'start' },
+        { x: x - 6, y: top + 20, anchor: 'end' },
+      ]);
+      return kept.has(key) ? [{ key, line: crossing.line.toLowerCase(), label: crossing.label, x, y, top }] : [];
+    }),
+  );
   for (const s of sessions) {
     const x = time.x(s.slot);
     s.markers
