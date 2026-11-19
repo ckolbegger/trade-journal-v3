@@ -21,3 +21,16 @@ Structural task (tests only; B9AR.4 and B9AR.6 wait for T9AR.18). Lane BR, branc
 7. B9AR.7 `should leave no hover box after a tap on a session`: the hover box and column stay drawn.
 
 Screenshots: `evidence/D09AR/screenshots/`.
+
+# T9AR.23 part 2 (B9AR.4, B9AR.6, B9AR.3's Position-group words)
+
+Structural, tests only; lane BR, from `9b908473` (includes T9AR.18). No product code changed.
+
+| Run | Command | Result |
+|---|---|---|
+| New cases, first run | `.claude/scripts/with-browser-lock.sh npx playwright test e2e/d9ar/cards.spec.ts e2e/d9ar/states.spec.ts e2e/d9ar/readout.spec.ts -g "B9AR.4|B9AR.6|Position group" --workers=1` | 5 failed, 4 passed: four of them test mistakes (the cards left on an older page by the lookup; the position group's `has` locator; the Review's saved row read from the wrong panel); fixed in the tests |
+| e2e/d9ar, last run | `.claude/scripts/with-browser-lock.sh npx playwright test e2e/d9ar --workers=1` (after `npm run build:faults` and `npm run build:releases`) | 45 passed (2.0m); none of the new cases needed `test.fail` |
+| Lane tier | `.claude/scripts/full-suite.sh evidence/D09AR T9AR.23-2 lane` | unit 2440 passed (212 files), integration 286 passed (135 files), checks 14 of 14 exit 0 |
+| Stage `browser-3` | not run whole | last recorded 5.0m (79 tests) before `e2e/d9ar`; `e2e/d9ar` is now 2.0m, so about 7.0m: under 8, no `browser-4` yet, about one minute of room |
+
+New cases: cards.spec.ts (3: R-AXIO-D stepped through all 11 sessions, paged, and an earlier card pressed; R-BREN-U's Plan block and W63; R-CORV-D's W64), states.spec.ts (4: K-sale; R-DALE-U Settlement Due then Expired; Planned Trade; R-CORV-D Tue 11-10 then acknowledged), readout.spec.ts (2: Position-group Execution words for AXIO and BREN). Screenshots: `evidence/D09AR/screenshots/B9AR.4-*.png`, `B9AR.6-*.png`.

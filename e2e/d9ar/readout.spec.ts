@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import {
-  AXIO, BREN, build, closeOf, CORV, DALE_HOLD, expect, expectAccessible, expectOneLine, going, openDrawer, pastLine, readoutPnl, readoutR, readoutValue, replay, seek, sliderValue, stake, test,
+  AXIO, BREN, build, closeOf, CORV, DALE_HOLD, expect, expectAccessible, expectOneLine, going, openDrawer, pastLine, positionGroup, readoutPnl, readoutR, readoutValue, replay, seek, sliderValue, stake, test,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
@@ -143,6 +143,36 @@ test.describe('B9AR.3 The readout', () => {
     }
     await expectChangeLineOnlyOnPnlAndMarks(scope, 'DALE-hold Wed 11-11');
     await context.close();
+  });
+
+  // The Position group's Execution words (W63, T9AR.18): each Execution against the Plan. The Expiration's "Expiration, Fri Nov 20" with "Expired" is B9AR.6's R-DALE-U case, in states.spec.ts.
+  test('should word R-AXIO-D’s sale below the Stop against the Plan in the Position group', async ({ profile }) => {
+    test.setTimeout(300_000);
+    const axio = await build(profile, AXIO, closeOf('2026-11-16'), 10);
+    await openDrawer(axio.page, 'Replay');
+    const scope = replay(axio.page);
+    await seek(axio.page, scope, 'ArrowLeft', 5);
+    await expect(sliderValue(scope)).toHaveText('Mon Nov 9 · 6 of 11');
+    await expect(positionGroup(scope).locator('[data-row="Execution, Mon Nov 9"]')).toHaveText('Execution, Mon Nov 9Sold 100 at $45.60, $1.40 below the Stop');
+    await expect(positionGroup(scope).locator('[data-row="Held"]')).toHaveText('Held100 shares');
+    await axio.context.close();
+  });
+
+  test('should word R-BREN-U’s entry and its sale at the Target against the Plan in the Position group', async ({ profile }) => {
+    test.setTimeout(300_000);
+    const bren = await build(profile, BREN, closeOf('2026-11-16'), 10);
+    await openDrawer(bren.page, 'Replay');
+    const scope = replay(bren.page);
+    await seek(bren.page, scope, 'Home');
+    await expect(sliderValue(scope)).toHaveText('Mon Nov 2 · 1 of 11');
+    await expect(positionGroup(scope).locator('[data-row="Execution, Mon Nov 2"]')).toHaveText("Execution, Mon Nov 2Bought 4 at $1.61, at the Plan's entry");
+    await seek(bren.page, scope, 'ArrowRight', 8);
+    await expect(sliderValue(scope)).toHaveText('Thu Nov 12 · 9 of 11');
+    await expect(positionGroup(scope).locator('[data-row="Execution, Thu Nov 12"]')).toHaveText('Execution, Thu Nov 12Sold 2 at $4.00, at the Target');
+    // A session with no Execution has none in its Position group.
+    await seek(bren.page, scope, 'ArrowRight');
+    await expect(positionGroup(scope).locator('[data-row^="Execution"]')).toHaveCount(0);
+    await bren.context.close();
   });
 
   test('should show R-CORV-D at Mon 11-09 with the extremes smaller and grey', async ({ profile }) => {

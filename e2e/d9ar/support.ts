@@ -95,6 +95,9 @@ export const activeElementDescription = (page: Page): Promise<string> =>
     return el ? `${el.tagName.toLowerCase()}${el.className ? `.${String(el.className).split(' ').join('.')}` : ''} "${(el.getAttribute('aria-label') ?? el.textContent ?? '').trim().slice(0, 40)}"` : 'none';
   });
 
+// The readout's "Position" group (not "At stake from here, whole Position"): what is held and each Execution or Expiration of the session.
+export const positionGroup = (scope: Locator): Locator => scope.locator('.replay-readout-group').filter({ has: scope.page().getByRole('heading', { name: 'Position', exact: true }) });
+
 // ---- Measures ---------------------------------------------------------------------------------------------------------------------------------------------
 
 // An element's text lies in one line box: every rectangle of its text is within one line's height.
