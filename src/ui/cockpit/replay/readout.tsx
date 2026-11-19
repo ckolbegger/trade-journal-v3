@@ -4,15 +4,17 @@ import type { ReadoutProps, ReadoutValue, StakeGrid } from './replay.types.ts';
 // W61: a cell or value that needs a Mark it does not have is a dash named "No Mark", as in Price History.
 // A grid cell is one figure and does not wrap (its stylesheet); a row's value may hold several (C9AR.2), so it is drawn by `Words`.
 function shown(value: ReadoutValue, inRow = false) {
-  return value.kind === 'Unavailable' && value.text === 'No Mark' ? (
-    <span role="img" aria-label="No Mark">
-      —
-    </span>
-  ) : inRow ? (
-    <Words text={value.text} />
-  ) : (
-    value.text
-  );
+  if (value.kind === 'Unavailable' && value.text === 'No Mark') {
+    return (
+      <span role="img" aria-label="No Mark">
+        —
+      </span>
+    );
+  }
+  if (inRow) {
+    return <Words text={value.text} />;
+  }
+  return value.text;
 }
 
 function StakeGridTable({ grid }: { grid: StakeGrid }) {
