@@ -43,3 +43,13 @@ Test-only. The P&L chart's figures were merged into one set of numbers across th
 |---|---|---|
 | Bite | the Stop result's row changed to "at Worst case" | `.claude/scripts/with-browser-lock.sh npx playwright test e2e/d9ar/cards.spec.ts -g "R-AXIO-D"`: failed, `AXIO first session: the chart's "Stop −$600" is on its row in the readout`, expected -600, received [9940, -10000]; restored |
 | After | `.claude/scripts/with-browser-lock.sh npx playwright test e2e/d9ar/cards.spec.ts` | 3 passed (9.1s) |
+
+## T9AR.23-B2 (cards.spec.ts: checks that could pass without checking)
+
+Test-only. Each case now names the price-line labels its trade draws (AXIO: Stop and Target; BREN and CORV: Strike) and asserts they are drawn, then matches each to the Plan block's row of the same name by its price. The price chart's Mark is now checked on the "<symbol> Mark" row of the readout and of the slider's card (B9AR.4 says every figure the charts draw). Each P&L label must yield a figure and at least one figure must have been compared.
+
+| Run | Command | Result |
+|---|---|---|
+| Bite, lines | AXIO's expected lines given a "Strike" | `npx playwright test e2e/d9ar/cards.spec.ts -g "R-AXIO-D"` under the lock: failed, `AXIO first session: the price chart draws its Strike line`, expected true, received false; restored |
+| Bite, Mark | the Mark row's label changed to "<symbol> Position" | failed, `the price chart's Mark "$49.70" is on the AXIO Mark row of the readout`, expected 49.7, received []; restored |
+| After | `.claude/scripts/with-browser-lock.sh npx playwright test e2e/d9ar/cards.spec.ts` | see the B3 section's run (same file state apart from B3's loop) |
