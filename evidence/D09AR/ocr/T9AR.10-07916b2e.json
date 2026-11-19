@@ -1,0 +1,226 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 5 finding(s) across 9 selected item(s).",
+  "summary": {
+    "files_reviewed": 9,
+    "comments": 5,
+    "total_tokens": 275432,
+    "input_tokens": 272094,
+    "output_tokens": 3338,
+    "cache_read_tokens": 13312,
+    "elapsed": "1m40s"
+  },
+  "tool_calls": {
+    "total": 20,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 3,
+      "file_read": 15
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/replay/plot.props.ts",
+      "content": "These conditions only account for session outcome figures, although the price strip can draw Stop/Target lines from `anchors.priceLines` even when those figures are unavailable. For example, a revealed session without figures can still show the underlying-price conditions supplied by `plotBaseOf`, but neither line is named in the key. Have the renderers report visible Stop/Target lines and derive the corresponding key entries from that information, with coverage for unavailable outcomes.",
+      "existing_code": "    ...(f?.outcomes?.atStop?.kind === 'Value' ? [{ kind: 'Stop' as const, label: 'At Stop' }] : []),\n    ...(f?.outcomes?.atTarget?.kind === 'Value' ? [{ kind: 'Target' as const, label: 'At Target' }] : []),",
+      "start_line": 63,
+      "end_line": 64,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/cockpit/replay/corridor-pnl.tsx",
+      "content": "This nested ternary violates the supplied checklist. Use explicit branches for the three anchor cases (as `LabelPlacer.box` already does) to keep the overlap calculation straightforward.",
+      "suggestion_code": "    let x0 = x - w / 2;\n    if (anchor === 'start') x0 = x;\n    else if (anchor === 'end') x0 = x - w;",
+      "existing_code": "    const x0 = anchor === 'start' ? x : anchor === 'end' ? x - w : x - w / 2;",
+      "start_line": 221,
+      "end_line": 221,
+      "category": "style",
+      "severity": "low"
+    },
+    {
+      "path": "src/ui/cockpit/replay/corridor-pnl.tsx",
+      "content": "When the slider approaches expiration, this filter removes the option's expiration label entirely. At the last session the cursor date necessarily overlaps `Expires …`, so the required expiration annotation disappears. Preserve the expiration information when resolving collisions (for example, use another row or a combined cursor/expiration label), and cover the last option session in a test.",
+      "existing_code": "  ].filter((t) =\u003e {\n    if (!cursorSpan) return true;\n    const s = span(t.text, t.x, t.anchor);\n    return s.x1 \u003c= cursorSpan.x0 || cursorSpan.x1 \u003c= s.x0;\n  });",
+      "start_line": 231,
+      "end_line": 235,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/cockpit/replay/corridor-pnl.tsx",
+      "content": "A placed label is not necessarily outside the cursor column. The Worst case/Max reward candidates are right-aligned at `time.right - 4`, and the placer only checks other text, so near the end of the axis these labels can occupy the selected session's column and their lines are still drawn. A280 explicitly requires that column to stay free of level labels. Exclude the cursor column from level-label candidates before building `placed`, and hide the corresponding optional line if no alternative position fits.",
+      "existing_code": "  const placed = new Set(labels.map((l) =\u003e l.key));",
+      "start_line": 238,
+      "end_line": 238,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/cockpit/styles/replay-plot.css",
+      "content": "Both “Open profit” and “Open loss” use `key-TradePnl`, so this key renders the same solid ink swatch for two areas that the chart distinguishes with target/stop fills. Banked and Realized loss likewise fall back to the generic grey line despite being solid colored bands. The key therefore does not identify these plotted encodings. Give gain/loss entries a distinguishable tone/class and match their swatches to the corresponding area or band.",
+      "existing_code": ".replay-key .key-Mark::before,\n.replay-key .key-TradePnl::before {\n  border-top-color: var(--ink);\n}",
+      "start_line": 301,
+      "end_line": 304,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Replay corridor plotting, geometry, styling, and tests",
+      "files": [
+        "e2e/d9/replay.spec.ts",
+        "src/ui/cockpit/replay/corridor-pnl.tsx",
+        "src/ui/cockpit/replay/corridor.test.tsx",
+        "src/ui/cockpit/replay/corridor.tsx",
+        "src/ui/cockpit/replay/geometry.ts",
+        "src/ui/cockpit/replay/plot.props.test.ts",
+        "src/ui/cockpit/replay/plot.props.ts",
+        "src/ui/cockpit/replay/price-strip.tsx",
+        "src/ui/cockpit/styles/replay-plot.css"
+      ]
+    }
+  ],
+  "session_id": "ca26767c-1546-4cfa-951a-6ef0dc8fb993",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "ca26767c-1546-4cfa-951a-6ef0dc8fb993",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "07916b2e",
+      "resolved_base": "8245f6c687272a6ebc01682c9912042798ec089b",
+      "resolved_head": "07916b2e3bd9be1814980eb080243e7b2ceedf9a",
+      "exact_range": "8245f6c687272a6ebc01682c9912042798ec089b..07916b2e3bd9be1814980eb080243e7b2ceedf9a",
+      "source_artifact_sha256": "e7abee9f4073680b032e035d82804fa93f7493708143a460841d9c3bbbb9004a"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "18de86b152c71edf7b69e5ef56c77c1958afecdf4524893fdc802e9700a6dfe1",
+          "path": "src/ui/cockpit/replay/corridor-pnl.tsx",
+          "fingerprint": "03186714cd8730d016c7d2f3a4d838662b61e32395145b3e668d267484efa49e"
+        },
+        {
+          "item_id": "36f39170a3d0629cf5d55776919719e766ca53573881aad557775fade7e81c9e",
+          "path": "src/ui/cockpit/replay/price-strip.tsx",
+          "fingerprint": "03c5747fd8904632bfdab4f650625b425be1d15f369a809e3d5760a00cce9da2"
+        },
+        {
+          "item_id": "3c9a7cc1262b7d0ad636414c60005031bb565c86e552422f341c6235b5459dcf",
+          "path": "src/ui/cockpit/replay/plot.props.ts",
+          "fingerprint": "807d3810aaf4648fb0643dbf313d82d8d2a262a6703088e21984930361201b50"
+        },
+        {
+          "item_id": "5d73acbebf781c477d11b1dab2cf1e4652c24b5ff821e19aff81ce44093f310a",
+          "path": "src/ui/cockpit/replay/plot.props.test.ts",
+          "fingerprint": "02f0e542681c727a2ffd34e8434496c8fbe18198bd834ddd6aef3662b80f35e1"
+        },
+        {
+          "item_id": "67c8b9c55df4db1a19bdc33843dfc7b544ae3cacc462c048b5f3913d82cd7b19",
+          "path": "src/ui/cockpit/styles/replay-plot.css",
+          "fingerprint": "c3f15d5287b0c30e7c4e3ed5bcf7c7286f4d56a5d7ae5966c9537cc72076d1c9"
+        },
+        {
+          "item_id": "94e5facfd6dd05335ee3c317788f81c9d2ddec02992be55f544dbbeb5f392508",
+          "path": "src/ui/cockpit/replay/geometry.ts",
+          "fingerprint": "62de46e3b1e77e2bb27c72b1c80561dc954bb19ac397e25f314a38b3a7ca5047"
+        },
+        {
+          "item_id": "a50e78b43d9da674ed99eaeeda80fea2f24b5f39189d6f4650878a33f631ea72",
+          "path": "e2e/d9/replay.spec.ts",
+          "fingerprint": "448821bf4f2dd18bec999d40c3b4f6917cf62a3ddcfc89aa125514864744b037"
+        },
+        {
+          "item_id": "b9ff77485ea8c227fe111b6e6915407572768e86debadd842eefda14f4e4bcf1",
+          "path": "src/ui/cockpit/replay/corridor.tsx",
+          "fingerprint": "9fd4c56f83b2ae7c8c28124859f7f1301002c2d9346d3bf1c7daa1b77db71746"
+        },
+        {
+          "item_id": "ba578f97f7698c0e6bcb181e747f8c8ef3dafb90b6f8eef6f25b35b639e1dd2c",
+          "path": "src/ui/cockpit/replay/corridor.test.tsx",
+          "fingerprint": "e2f7103d28e471d01ebc137b39fdfd529438a4c3aed6d2ae1fe16de2ee0830b0"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "18de86b152c71edf7b69e5ef56c77c1958afecdf4524893fdc802e9700a6dfe1",
+          "path": "src/ui/cockpit/replay/corridor-pnl.tsx",
+          "fingerprint": "03186714cd8730d016c7d2f3a4d838662b61e32395145b3e668d267484efa49e"
+        },
+        {
+          "item_id": "36f39170a3d0629cf5d55776919719e766ca53573881aad557775fade7e81c9e",
+          "path": "src/ui/cockpit/replay/price-strip.tsx",
+          "fingerprint": "03c5747fd8904632bfdab4f650625b425be1d15f369a809e3d5760a00cce9da2"
+        },
+        {
+          "item_id": "3c9a7cc1262b7d0ad636414c60005031bb565c86e552422f341c6235b5459dcf",
+          "path": "src/ui/cockpit/replay/plot.props.ts",
+          "fingerprint": "807d3810aaf4648fb0643dbf313d82d8d2a262a6703088e21984930361201b50"
+        },
+        {
+          "item_id": "5d73acbebf781c477d11b1dab2cf1e4652c24b5ff821e19aff81ce44093f310a",
+          "path": "src/ui/cockpit/replay/plot.props.test.ts",
+          "fingerprint": "02f0e542681c727a2ffd34e8434496c8fbe18198bd834ddd6aef3662b80f35e1"
+        },
+        {
+          "item_id": "67c8b9c55df4db1a19bdc33843dfc7b544ae3cacc462c048b5f3913d82cd7b19",
+          "path": "src/ui/cockpit/styles/replay-plot.css",
+          "fingerprint": "c3f15d5287b0c30e7c4e3ed5bcf7c7286f4d56a5d7ae5966c9537cc72076d1c9"
+        },
+        {
+          "item_id": "94e5facfd6dd05335ee3c317788f81c9d2ddec02992be55f544dbbeb5f392508",
+          "path": "src/ui/cockpit/replay/geometry.ts",
+          "fingerprint": "62de46e3b1e77e2bb27c72b1c80561dc954bb19ac397e25f314a38b3a7ca5047"
+        },
+        {
+          "item_id": "a50e78b43d9da674ed99eaeeda80fea2f24b5f39189d6f4650878a33f631ea72",
+          "path": "e2e/d9/replay.spec.ts",
+          "fingerprint": "448821bf4f2dd18bec999d40c3b4f6917cf62a3ddcfc89aa125514864744b037"
+        },
+        {
+          "item_id": "b9ff77485ea8c227fe111b6e6915407572768e86debadd842eefda14f4e4bcf1",
+          "path": "src/ui/cockpit/replay/corridor.tsx",
+          "fingerprint": "9fd4c56f83b2ae7c8c28124859f7f1301002c2d9346d3bf1c7daa1b77db71746"
+        },
+        {
+          "item_id": "ba578f97f7698c0e6bcb181e747f8c8ef3dafb90b6f8eef6f25b35b639e1dd2c",
+          "path": "src/ui/cockpit/replay/corridor.test.tsx",
+          "fingerprint": "e2f7103d28e471d01ebc137b39fdfd529438a4c3aed6d2ae1fe16de2ee0830b0"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "716c254fa6e624b4ab7c54232db11b8d3f87542a020d282972e124053e1a1b4f",
+          "path": "evidence/D09AR/tdd-log/T9AR.10.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 100280
+  }
+}
