@@ -520,6 +520,18 @@ Lane BR (`d09ar/br`), base `70ce0f74`.
       - The 6 px cell gap matches the phone rule.
   - **Merged:** rebased onto `668819de` (evidence only, so no rerun) and fast-forwarded. merge6-S1 is `2882fee8`, its follow-up `c614cd64`.
   - **merge6-S1-D1** briefed in lane BR (re-pointed to main `c614cd64`; its old commits were all on main): a committed case stepping all five Trades at 1280 that guards the chart width, the stable layout and the grid fitting its column.
+  - **merge6-S1-D1** `409113f9` (lane BR):
+    - The case "should keep the P&L chart 800 wide and still, and each stake grid inside the readout, at every session of …" runs as two tests: R-BREN-U, R-AXIO-D, R-CORV-D and R-DALE-D in one Review, and R-DALE-U held, alone. Two DALE Trades can't share a Review, because the builder finds Marks panels by symbol.
+    - Not covered: R-DALE-D with its Expiration recorded. The Review builder records only partial sales.
+    - A **first-run pass, flagged** (the fix was already merged). Bite: the readout column at 480 px failed both tests, "the P&L chart is 729 wide … Expected: >= 800". Restored, and `git diff -- src` is empty.
+    - Time: 9.6s for both tests. `e2e/d9ar` 47 passed in 2.0m. Lane tier `merge6-S1-D1`: unit 2455, integration 286, checks 14 of 14.
+    - **ocr** on `409113f9` (`ocr/merge6-S1-D1-409113f9.json`): **no findings**.
+      - Reviewer's notes, for the gate critic:
+        - The session count comes from the slider's `max`, but the expected count is never asserted.
+        - The dialog's name is not checked against the Trade.
+        - The stake-grid loop would pass on zero grids.
+        - There is a stray whitespace edit on `INTENT`.
+    - **Merged:** rebased onto `18cd5aae` (evidence only) and fast-forwarded. Next is the full run `merge7` before the gate.
 - **merge6-S1** briefed in lane OV. The branch `d09ar/ov` was re-pointed to main `dbafc601` first: its old pre-rebase commits were all on main under their new hashes (`git cherry`). The case's red is the run itself.
 - **Part 1 notes:**
   - The Detail overlay's slider session does not survive a reload (the address holds only `replay=open`; the plan does not ask that it survive).
