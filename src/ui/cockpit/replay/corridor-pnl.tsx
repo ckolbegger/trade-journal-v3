@@ -128,6 +128,8 @@ export function drawPnl(props: ReplayPlotProps, width: number): DrawnChart {
   const placer = new LabelPlacer(width, HEIGHT);
   const title = props.pnlTitle;
   placer.reserve(title, TITLE_SPOT(time.left));
+  // The y-axis figures' gutter is held too (C9AR.2): no label is placed over a figure, at any width.
+  placer.reserveColumn(0, time.left);
   const labels: { key: string; cls: string; text: string; spot: Spot }[] = [];
   // On a phone (A280) no label is drawn on a line: each goes to the strip under the drawing, whether or not the wide drawing had room
   // for it. The labels of a level (a result, banked, a limit) are listed from the lowest figure up, the rest after them in the order placed.

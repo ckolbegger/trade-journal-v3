@@ -227,6 +227,37 @@ test.describe('B9AR.5 The chart', () => {
     await context.close();
   });
 
+  // T9AR.24-B10 (gate critic-2 defect 1; C9AR.2, A280): on the entry session no label is drawn over a y-axis figure, nor over another label.
+  for (const [name, fixture] of [['BREN', BREN], ['CORV', CORV]] as const) {
+    test(`should draw no label over a y-axis figure or another label on ${name} Mon Nov 2 at 1280, 1366, 1440, 1536 and 1920`, async ({ profile }) => {
+      test.setTimeout(240_000);
+      const { context, page } = await build(profile, fixture, closeOf('2026-11-16'), 10);
+      await open(page, 0);
+      for (const width of [1280, 1366, 1440, 1536, 1920]) {
+        await setViewport(page, width, 800);
+        await seek(page, replay(page), 'Home');
+        const scope = replay(page);
+        await expect(sliderValue(scope)).toHaveText('Mon Nov 2 · 1 of 11');
+        const found = await pnlChart(scope).evaluate((svg: SVGSVGElement) => {
+          const boxes = [...svg.querySelectorAll('text')].map((t) => {
+            const r = t.getBoundingClientRect();
+            return { text: t.textContent ?? '', axis: !t.getAttribute('class') && /^[−+]?\$[\d,]+$/.test(t.textContent ?? ''), l: r.left, r: r.right, t: r.top, b: r.bottom };
+          });
+          const hit = (a: (typeof boxes)[number], b: (typeof boxes)[number]) => a.l < b.r && b.l < a.r && a.t < b.b && b.t < a.b;
+          return {
+            axisFigures: boxes.filter((b) => b.axis).length,
+            overAxis: boxes.filter((b) => !b.axis).flatMap((a) => boxes.filter((b) => b.axis && hit(a, b)).map((b) => `"${a.text}" over "${b.text}"`)),
+            clashes: boxes.flatMap((a, i) => boxes.slice(i + 1).filter((b) => hit(a, b)).map((b) => `"${a.text}" over "${b.text}"`)),
+          };
+        });
+        expect(found.axisFigures, `${width}: the y-axis figures are drawn`).toBeGreaterThan(0);
+        expect(found.overAxis, `${width}: no label over a y-axis figure`).toEqual([]);
+        expect(found.clashes, `${width}: no label over another`).toEqual([]);
+      }
+      await context.close();
+    });
+  }
+
   test('should name the hatch and the stake bar in the key on BREN, where both are drawn with their labels', async ({ profile }) => {
     test.setTimeout(240_000);
     const { context, page } = await build(profile, BREN, closeOf('2026-11-16'), 10);

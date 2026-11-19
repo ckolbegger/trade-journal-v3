@@ -1674,3 +1674,36 @@ describe('Corridor: the time axis keeps its first date (T9AR.23-S7)', () => {
     expect(box(end)[1]).toBeLessThanOrEqual(w);
   });
 });
+
+// T9AR.24-B10 (C9AR.2, A280): no label is drawn over a y-axis figure, as LabelPlacer estimates the boxes (6 px a character and 2 over).
+describe('Corridor: no label over a y-axis figure (T9AR.24-B10)', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
+  const boxOf = (t: Element) => {
+    const w = t.textContent.length * 6 + 2;
+    const x = Number(t.getAttribute('x'));
+    const y = Number(t.getAttribute('y'));
+    const anchor = t.getAttribute('text-anchor');
+    const x0 = anchor === 'end' ? x - w : anchor === 'middle' ? x - w / 2 : x;
+    return { x0, x1: x0 + w, y0: y - 10, y1: y + 3 };
+  };
+
+  it('should not draw a stake tag over a y-axis figure on the entry session at the 1440 frame width', () => {
+    frameWidth(997);
+    const stake = { riskLabel: 'Current Risk $543', riskShortLabel: 'Risk $543', rewardLabel: 'Remaining Reward $928', rewardShortLabel: 'Reward $928' };
+    const sessions = DAYS.map((_, i) => bren(i, i === 0 ? { stake } : {}));
+    const { container } = render(<CorridorPlot {...props({ sessions, sliderIndex: 0 })} />);
+    const figures = [...pnl(container).querySelectorAll('g > text')].filter((t) => /^[−+]?\$[\d,]+$/.test(t.textContent)).map(boxOf);
+    expect(figures.length).toBeGreaterThan(0);
+    const labels = [...pnl(container).querySelectorAll('text')].filter((t) => t.getAttribute('class')?.includes('-label') || t.getAttribute('class')?.includes('stake-tag')).map(boxOf);
+    expect(pnl(container).querySelectorAll('text.stake-tag').length, 'a stake tag is drawn').toBeGreaterThan(0);
+    for (const l of labels) {
+      for (const f of figures) {
+        expect(l.x0 < f.x1 && f.x0 < l.x1 && l.y0 < f.y1 && f.y0 < l.y1, `a label (${l.x0} to ${l.x1}) is over an axis figure (${f.x0} to ${f.x1})`).toBe(false);
+      }
+    }
+  });
+});
