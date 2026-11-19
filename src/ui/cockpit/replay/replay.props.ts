@@ -1,5 +1,6 @@
 import type { TradeReplayView } from '../../../app/types.ts';
 import type { CalculationResult } from '../../../domain/calculation-result/index.ts';
+import { instrumentKey } from '../../../domain/instrument/index.ts';
 import { Rational } from '../../../domain/values/index.ts';
 import { isMarkLacking } from '../../calculation-words.ts';
 import { calculation, signed } from '../../figures.ts';
@@ -75,7 +76,7 @@ function hoverOf(session: ViewSession, marks: ReadoutGroup, pnl: string | undefi
 function addMarkLinkOf(view: TradeReplayView, session: ViewSession): Pick<ReplayFrameSession, 'addMarkTo'> {
   const { tradePnl } = session;
   if (view.pending === null || tradePnl.kind !== 'Unavailable' || !isMarkLacking(tradePnl)) return {};
-  return { addMarkTo: `/review?trade=${encodeURIComponent(view.tradeId)}&instrument=${encodeURIComponent(tradePnl.instrument.symbol)}` };
+  return { addMarkTo: `/review?trade=${encodeURIComponent(view.tradeId)}&instrument=${encodeURIComponent(instrumentKey(tradePnl.instrument))}` };
 }
 
 function frameSessionOf(view: TradeReplayView, index: number): ReplayFrameSession {

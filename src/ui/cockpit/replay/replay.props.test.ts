@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { instrumentKey } from '../../../domain/instrument/index.ts';
 import type { Rational } from '../../../domain/values/index.ts';
 import { replayProps } from './replay.props.ts';
 import { sessionWords } from './session-words.props.ts';
@@ -207,9 +208,19 @@ describe('replay.props: the link to add a missing Mark (A281, T9AR.16)', () => {
 
   it('should link a session with a missing or acknowledged Mark to the Review row of its Instrument on an Open Trade, and nowhere on a Trade that has ended', () => {
     const marked = replayProps(open([brenWed1111, gap]), { Plot }).sessions.map((s) => s.addMarkTo);
-    expect(marked).toEqual([undefined, '/review?trade=T-1&instrument=BREN']);
-    expect(replayProps(open([acknowledged]), { Plot }).sessions[0]!.addMarkTo).toBe('/review?trade=T-1&instrument=BREN');
+    expect(marked).toEqual([undefined, `/review?trade=T-1&instrument=${instrumentKey(BREN)}`]);
+    expect(replayProps(open([acknowledged]), { Plot }).sessions[0]!.addMarkTo).toBe(`/review?trade=T-1&instrument=${instrumentKey(BREN)}`);
     const ended = replayProps(view([brenWed1111, gap]), { Plot }).sessions;
     expect(ended.every((s) => !('addMarkTo' in s))).toBe(true);
+  });
+
+  it('should link an option Trade to the Review row by the contract key the Marks rows use, not the listing symbol, R-CORV-D Tue 11-10', () => {
+    const corv = session({ date: '2026-11-10', instrument: DALE, held: -3, pnl: null });
+    const to = replayProps(open([corv]), { Plot }).sessions[0]!.addMarkTo;
+    expect(to).toBe(`/review?trade=T-1&instrument=${encodeURIComponent(instrumentKey(DALE))}`);
+    expect(to).not.toBe('/review?trade=T-1&instrument=DALE');
+    // A stock's key is its symbol.
+    const stockGap = session({ date: '2026-11-10', instrument: AXIO, held: 10, pnl: null });
+    expect(replayProps(open([stockGap]), { Plot }).sessions[0]!.addMarkTo).toBe('/review?trade=T-1&instrument=AXIO');
   });
 });
