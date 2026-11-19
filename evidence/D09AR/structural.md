@@ -296,3 +296,12 @@ Lane PL (`d09ar/pl`), base `d74afb24`, commit `933ffabf`. 4 planned cases: three
 
 | Critic | Result | Tokens | Tool calls | Time |
 |---|---|---|---|---|
+
+## T9AR.6 Facade and manifest (lane DM)
+
+`replayTrade` gains PlanComparison and Odds; `DailyReview.getTrade` gains Odds; Trade Detail and Review routes and the manifest test list them; `tests/support/replay-view-fields.ts` builds the new view fields.
+
+- `npm run verify:capabilities`: exit 0 (24 operations, 12 variant-qualified, 10 routes)
+- `npx vitest run src/coordinators/workspace`: exit 0, 131 passed
+- `npm run typecheck`: exit 0; `npx tsc6 --noEmit`: exit 0; `npm run lint`: exit 0 (2 existing warnings); `npm run verify:fixtures`: exit 0
+- Lane tier: unit 2340 passed (207 files); integration 1 failed of 280: `tests/integration/d9/capabilities.test.ts` I9.7 asserts the old exact replayTrade list (not an owned file); checks 14 of 14 exit 0.

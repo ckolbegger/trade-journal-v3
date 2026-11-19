@@ -87,7 +87,8 @@ const OPERATIONS: Readonly<Record<string, readonly string[]>> = {
   'TradeViewsAndReporting.getTradeDetail': ['Planned', 'Open', 'Closed', 'CurrentEvaluation', 'Debt', 'ExpirationPayoff', 'SettlementDue'],
   // D08P A212: a Trade's replay by session, its own read (P95).
   // D9 A263: the replay carries each Session's condition status and the markers (no new operation).
-  'TradeViewsAndReporting.replayTrade': ['ConditionStatus', 'Markers'],
+  // D9A-R A272: and the Plan's terms and odds, each fill against the Plan, and each first crossing.
+  'TradeViewsAndReporting.replayTrade': ['ConditionStatus', 'Markers', 'PlanComparison', 'Odds'],
   // D4: Manual Marks, acknowledgments, and withdrawals of Stock Instruments; point-context frames
   // and the session a context names; recovery from stored observations (no provider adapter).
   'MarketData.save': ['RecordInitialManualMark', 'CorrectMark', 'AssertUnavailable', 'WithdrawAcknowledgment', 'Stock', 'Option'],
@@ -102,8 +103,8 @@ const OPERATIONS: Readonly<Record<string, readonly string[]>> = {
   // D6 P20: the Trades outside the walk with a reflection owed form a group after it, whose cards are the
   // ReflectionsOwed kind; there is still no DailyReview.getDebt.
   'DailyReview.open': ['LatestCompleted', 'OwedReflections', 'RangePosition', 'GapTrades', 'OwedReflectionGroup', 'SettlementFamily'],
-  // D9 A263: the card carries the Trade's Replay.
-  'DailyReview.getTrade': ['OwedReflections', 'PlanBaseline', 'RewardRiskNow', 'ReflectionsOwed', 'ExpirationPayoff', 'SettlementDue', 'Replay'],
+  // D9 A263: the card carries the Trade's Replay. D9A-R A272: and the estimated odds.
+  'DailyReview.getTrade': ['OwedReflections', 'PlanBaseline', 'RewardRiskNow', 'ReflectionsOwed', 'ExpirationPayoff', 'SettlementDue', 'Replay', 'Odds'],
   'DailyReview.save': ['SaveTradeAction', 'ResolveReviewDebt', 'SaveReviewMarks'],
   // D8 A145: a backup of a Workspace in normal use (Normal) or of a database a blocked view offers a
   // copy of (BlockedDatabase); its verification; and the two steps of Restore. The fact modules' Restore operations are internal.
