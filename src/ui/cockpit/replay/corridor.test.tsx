@@ -1349,3 +1349,41 @@ describe('Corridor: a first crossing (decision 2)', () => {
     expect(phone.container.querySelector('.replay-strip-labels')!.textContent).toContain('Stop breached');
   });
 });
+
+// T9AR.23-S7 (W67, A280): the first session's date stays at the left of the P&L chart; the cursor's name steps right of it.
+describe('Corridor: the time axis keeps its first date (T9AR.23-S7)', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+  const AXIS = { slots: 15, startLabel: 'Mon Nov 2', endLabel: 'Expires Fri Nov 20' };
+  const box = (t: Element) => {
+    const w = t.textContent.length * 6 + 2;
+    const x = num(t, 'x');
+    const a = t.getAttribute('text-anchor');
+    const x0 = a === 'start' ? x : a === 'end' ? x - w : x - w / 2;
+    return [x0, x0 + w] as const;
+  };
+
+  it('should keep the first session date at the left when the cursor name would cover it, with the cursor name beside it and not overlapping it', () => {
+    frameWidth(560);
+    const { container } = render(<CorridorPlot {...props({ axis: AXIS, sliderIndex: 1, sessions: DAYS.slice(0, 2).map((_, i) => bren(i)) })} />);
+    const start = pnl(container).querySelector('text.axis-start')!;
+    const cursor = pnl(container).querySelector('text.cursor-label')!;
+    expect([start.textContent, cursor.textContent]).toEqual(['Mon Nov 2', 'Tue Nov 3']);
+    expect(box(start)[1]).toBeLessThanOrEqual(box(cursor)[0]);
+  });
+
+  it('should draw the first session date once at the left on the first session at 850 px', () => {
+    frameWidth(850);
+    const { container } = render(<CorridorPlot {...props({ axis: AXIS, sliderIndex: 0, sessions: [bren(0)] })} />);
+    expect([...pnl(container).querySelectorAll('text')].filter((t) => t.textContent === 'Mon Nov 2').map((t) => t.getAttribute('class'))).toEqual(['axis-start']);
+  });
+
+  it('should keep both edge labels and leave out the cursor name on a chart too narrow for all three', () => {
+    frameWidth(280);
+    const { container } = render(<CorridorPlot {...props({ axis: AXIS, sliderIndex: 7, sessions: DAYS.slice(0, 8).map((_, i) => bren(i)) })} />);
+    expect(pnl(container).querySelector('text.axis-start')).not.toBeNull();
+    expect(pnl(container).querySelector('text.axis-end')).not.toBeNull();
+    expect(pnl(container).querySelector('text.cursor-label')).toBeNull();
+  });
+});

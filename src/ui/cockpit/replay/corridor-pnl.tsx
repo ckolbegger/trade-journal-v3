@@ -299,22 +299,22 @@ export function drawPnl(props: ReplayPlotProps, width: number): DrawnChart {
     else x0 = x - w / 2;
     return { x0, x1: x0 + w };
   };
-  const cursorText = current ? (props.cursorLabel ?? current.dateLabel) : undefined;
+  // The first session's own date is the start label already, so it is not named twice.
+  const cursorText = current && (props.cursorLabel ?? current.dateLabel) !== axis.startLabel ? (props.cursorLabel ?? current.dateLabel) : undefined;
   const half = cursorText ? (cursorText.length * 6 + 2) / 2 : 0;
-  // The end label always stays (the expiry is a different fact); the cursor's name steps left of it instead.
+  // Both edge labels always stay (the first date and the expiry are different facts); the cursor's name steps right of the first date and
+  // left of the end label instead. On a chart too narrow for all three it is left out, and the two edge labels still do not overlap it.
+  const startRight = axis.startLabel ? span(axis.startLabel, time.left, 'start').x1 + 4 : 0;
   const endLeft = axis.endLabel ? span(axis.endLabel, time.right, 'end').x0 - 4 : width;
-  const cursorX = Math.min(Math.max(xc, half), width - half, endLeft - half);
-  const cursorSpan = cursorText ? span(cursorText, cursorX, 'middle') : undefined;
+  const lowest = Math.max(half, startRight + half);
+  const highest = Math.min(width - half, endLeft - half);
+  const cursorX = Math.min(Math.max(xc, lowest), highest);
+  const cursorFits = cursorText !== undefined && lowest <= highest;
   const axisText: { cls: string; text: string; x: number; anchor: 'start' | 'middle' | 'end' }[] = [
     ...(axis.startLabel ? [{ cls: 'axis-start', text: axis.startLabel, x: time.left, anchor: 'start' as const }] : []),
     ...(axis.endLabel ? [{ cls: 'axis-end', text: axis.endLabel, x: time.right, anchor: 'end' as const }] : []),
-  ].filter((t) => {
-    if (t.cls === 'axis-end') return true;
-    if (!cursorSpan) return true;
-    const s = span(t.text, t.x, t.anchor);
-    return s.x1 <= cursorSpan.x0 || cursorSpan.x1 <= s.x0;
-  });
-  if (cursorText) axisText.push({ cls: 'cursor-label', text: cursorText, x: cursorX, anchor: 'middle' });
+  ];
+  if (cursorText && cursorFits) axisText.push({ cls: 'cursor-label', text: cursorText, x: cursorX, anchor: 'middle' });
   // A line is drawn only with its label (A280): one whose label found no room is not drawn at all.
   const limitLines = (
     [
