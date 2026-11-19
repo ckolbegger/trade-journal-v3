@@ -866,8 +866,8 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 
 | Task | Wave | Lane | Status | Commits |
 |---|---|---|---|---|
-| T9AR.1 | 0 | TL | Not started | |
-| T9AR.2 | 0 | TY | Not started | |
+| T9AR.1 | 0 | TL | In progress from `1cc612ea` | |
+| T9AR.2 | 0 | TY | In progress from `1cc612ea` | |
 | T9AR.3 | 1 | DM | Not started | |
 | T9AR.4 | 1 | DM | Not started | |
 | T9AR.5 | 1 | DM | Not started | |
