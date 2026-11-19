@@ -113,13 +113,13 @@ function ShellLike({ children }: { readonly children: ReactNode }) {
   return <RuntimeContext.Provider value={{ writable, report: (result) => result.kind === 'RuntimeNotWritable' && setWritable(false) }}>{children}</RuntimeContext.Provider>;
 }
 // The address the page is at now, and how the router got there (A274: opening pushes an entry; Close goes back one, or replaces the address).
-const here = { address: '', how: 'POP' as string, go: undefined as ((delta: number) => void) | undefined };
+const here = { address: '', how: 'POP' as string, go: undefined as ((delta: number) => void) | undefined, push: undefined as ((to: string) => void) | undefined };
 function Where() {
   const location = useLocation();
   const how = useNavigationType();
   const navigate = useNavigate();
   useEffect(() => {
-    Object.assign(here, { address: location.pathname + location.search, how, go: (delta: number) => void navigate(delta) });
+    Object.assign(here, { address: location.pathname + location.search, how, go: (delta: number) => void navigate(delta), push: (to: string) => void navigate(to) });
   });
   return null;
 }
@@ -1847,6 +1847,36 @@ describe('Review card: the Replay button (decision 3)', () => {
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     expect(screen.getByRole('region', { name: 'ABC review' })).toBeTruthy();
     expect(screen.queryByRole('region', { name: 'XYZ review' })).toBeNull();
+  });
+
+  it('should open the card the address names when a history move changes both the card and the overlay', async () => {
+    const user = userEvent.setup();
+    const review = ready([item('t1', 'XYZ'), item('t2', 'ABC')]);
+    const facade = walkFacade(review);
+    vi.mocked(facade.DailyReview.getTrade).mockImplementation(({ tradeId }) =>
+      Promise.resolve({ kind: 'Ready', reviewDate: '2026-10-12', cutoff: review.cutoff, trade: tradeReview(tradeId, tradeId === 't1' ? 'XYZ' : 'ABC', { replay: THURSDAY_AND_MONDAY }) }),
+    );
+    renderWalk(facade, { address: '/review?trade=t1&panel=Action' });
+    await user.click(within(await screen.findByRole('region', { name: 'XYZ review' })).getByRole('button', { name: 'Replay' }));
+    await screen.findByRole('dialog', { name: 'Replay, XYZ' });
+    await act(() => {
+      here.push?.('/review?trade=t2&panel=Action');
+      return Promise.resolve();
+    });
+    await screen.findByRole('region', { name: 'ABC review' });
+    // Back lands on the entry that holds the first card's overlay: that card and its overlay are the ones shown.
+    await browserBack();
+    expect(await screen.findByRole('dialog', { name: 'Replay, XYZ' })).toBeTruthy();
+    expect(screen.getByRole('region', { name: 'XYZ review' })).toBeTruthy();
+    expect(screen.queryByRole('region', { name: 'ABC review' })).toBeNull();
+    // Forward goes to the second card, whose address holds no overlay.
+    await act(() => {
+      here.go?.(1);
+      return Promise.resolve();
+    });
+    expect(await screen.findByRole('region', { name: 'ABC review' })).toBeTruthy();
+    expect(screen.queryByRole('region', { name: 'XYZ review' })).toBeNull();
+    expect(screen.queryByRole('dialog')).toBeNull();
   });
 
   it('should go back one entry on the second Close after Replay, Close, Forward', async () => {

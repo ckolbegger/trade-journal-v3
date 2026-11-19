@@ -268,14 +268,22 @@ function CardBody({ facade, trade, progress, name, advance, go, marks, held, onR
   }, []);
   const openReplay = () => {
     pushed.current = true;
-    setParams((now) => {
-      const next = new URLSearchParams(now);
-      next.set('trade', trade.tradeId);
-      next.set('panel', 'Action');
-      next.set('replay', 'open');
-      if (sliderAt.current !== undefined) next.set('session', sliderAt.current);
-      return next;
-    });
+    // A card opened by its header writes no address, so an entry that names another card, panel or Instrument would be a link when the overlay
+    // closes back to it: it is first replaced by this card's own address, then the overlay's entry is pushed over it.
+    const card = new URLSearchParams(params);
+    card.set('trade', trade.tradeId);
+    card.set('panel', 'Action');
+    card.delete('instrument');
+    card.delete('replay');
+    card.delete('session');
+    const named = new URLSearchParams(params);
+    named.delete('replay');
+    named.delete('session');
+    const overlay = new URLSearchParams(card);
+    overlay.set('replay', 'open');
+    if (sliderAt.current !== undefined) overlay.set('session', sliderAt.current);
+    if (named.size > 0 && named.toString() !== card.toString()) void navigate({ search: card.toString() }, { replace: true });
+    void navigate({ search: overlay.toString() });
   };
   const closeReplay = () => {
     if (pushed.current) {

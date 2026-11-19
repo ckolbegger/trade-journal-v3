@@ -478,14 +478,9 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
     return link.toString();
   };
   const appliedSearch = useRef(searchOf(params));
-  const appliedReplay = useRef(params.get('replay'));
   useEffect(() => {
     const search = searchOf(params);
-    // The overlay opening or closing moves the address between entries of the same card: that is no link, whatever else differs.
-    const replay = params.get('replay');
-    const overlayMoved = replay !== appliedReplay.current;
-    appliedReplay.current = replay;
-    if (overlayMoved) appliedSearch.current = search;
+    // The overlay opening or closing changes only `replay` and `session`, which `searchOf` leaves out: that is no link.
     if (search === appliedSearch.current) return;
     appliedSearch.current = search;
     const next = linkedCard(latest.current, params);
