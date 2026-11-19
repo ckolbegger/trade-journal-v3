@@ -4,10 +4,17 @@
 import { describe, expect, it } from 'vitest';
 import { DALE_PUT, K_SALE, R_BREN_U, R_DALE_U } from '../../../src/domain/trade-analysis/option-trade.ts';
 import { closeReviewDisposition, recordExpiration, restart } from '../d7s/support.ts';
-import { dollars as q, figure, fillsOf, MON_1116_1700, MON_1123_1800, oddsText, readyReplay, seriesApp, sessionOf } from './support.ts';
+import { dollars as q, figure, fillsOf, frac, MON_1116_1700, MON_1123_1800, oddsText, readyReplay, seriesApp, sessionOf } from './support.ts';
 
 const EXPIRATION_TIME = '2026-11-20T21:00:00Z';
 const NOTHING = 'NotApplicable:NoRemainingPosition';
+
+// The Plan column's odds as text; throws when the Plan has none.
+const planOddsOf = (view: Awaited<ReturnType<typeof readyReplay>>) => {
+  const o = view.planColumn?.odds;
+  if (!o) throw new Error('no Plan odds');
+  return `${frac(o.targetFirst)} ${frac(o.stopFirst)} ${frac(o.percent.targetFirst)}:${frac(o.percent.stopFirst)}`;
+};
 
 describe('I9AR.5 A finished Trade', () => {
   it('I9AR.5 should give K-sale a final session with no odds and nothing at stake, its last sale Above the Target by $0.91 and the Plan as before', { timeout: 300_000 }, async () => {
@@ -44,8 +51,13 @@ describe('I9AR.5 A finished Trade', () => {
     expect(oddsText(last.figures!.rewardRiskOdds)).toBe(NOTHING);
     expect(figure(last.figures!.ongoingRiskToStop)).toBe(NOTHING);
     expect(figure(last.figures!.incrementalRewardToTarget)).toBe(NOTHING);
+    expect(figure(last.figures!.outcomes!.atStop)).toBe(NOTHING);
+    expect(figure(last.figures!.outcomes!.atTarget)).toBe(NOTHING);
     expect(sessionOf(expired, '2026-11-19').crossings).toEqual(sessionOf(due, '2026-11-19').crossings);
     // The Plan's terms and odds are as before the Expiration was recorded.
+    expect(due.planColumn?.odds?.percent).toBeDefined();
+    expect(expired.planColumn?.odds?.percent).toBeDefined();
+    expect(planOddsOf(expired)).toBe(planOddsOf(due));
     expect(expired.planColumn).toEqual(due.planColumn);
     expect(expired.planColumn?.terms?.legs).toHaveLength(1);
   });
