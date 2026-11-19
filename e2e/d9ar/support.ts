@@ -6,7 +6,7 @@ import { R_DALE_D } from '../../src/domain/trade-analysis/option-trade.ts';
 import { expectShownInFull } from '../d7p/support.ts';
 import {
   AXIO, BREN, closeOf, currentTradeId, DALE, detail, expect, fillOptionPlan, fillOptionRows, fillPlan, fillRows, label, onboardedAt, openExitForm, openReview, pinClock, pnlChart, priceStrip, READY,
-  answerIn, exitReflection, reachPanel, recordEntry, recordOptionEntry, tradeCard, type Fixture, type Profile, type TradeRef,
+  answerIn, exitReflection, reachPanel, recordEntry, recordOptionEntry, seek, slider, sliderValue, tradeCard, type Fixture, type Profile, type TradeRef,
 } from '../d9/support.ts';
 
 export * from '../d9/support.ts';
@@ -197,4 +197,44 @@ export async function smallestChartText(chart: Locator): Promise<number> {
 }
 export async function expectSmallestChartTextAtLeast(scope: Locator, px: number, where: string): Promise<void> {
   for (const chart of [priceStrip(scope), pnlChart(scope)]) expect(await smallestChartText(chart), `${where}: smallest chart text`).toBeGreaterThanOrEqual(px);
+}
+
+// ---- The overlay's wide layout across the slider ----------------------------------------------------------------------------------------------------------
+
+type Layout = { chart: { left: number; width: number }; readout: { left: number; right: number; width: number }; gridRights: number[] };
+
+const layoutOf = (scope: Locator): Promise<Layout> =>
+  scope.evaluate((element) => {
+    const box = (selector: string) => element.querySelector(selector)!.getBoundingClientRect();
+    const chart = box('svg.pnl-chart');
+    const readout = box('.replay-readout');
+    return {
+      chart: { left: chart.left, width: chart.width },
+      readout: { left: readout.left, right: readout.right, width: readout.width },
+      gridRights: [...element.querySelectorAll('.replay-readout .replay-stake-grid')].map((grid) => grid.getBoundingClientRect().right),
+    };
+  });
+
+// merge6-S1: at every session of the open overlay (from the first on, by the slider's arrow), the P&L chart is at least `minChart` wide, the chart and the readout are as wide and as far left as at the first
+// session (nothing moves with the slider), and each stake grid ends inside the readout's column and inside the viewport.
+export async function expectWideLayoutAtEverySession(page: Page, scope: Locator, size: Size, minChart: number, where: string): Promise<void> {
+  await seek(page, scope, 'Home');
+  const count = Number(await slider(scope).getAttribute('max')) + 1;
+  expect(count, `${where}: sessions`).toBeGreaterThan(1);
+  let first: Layout | undefined;
+  for (let index = 0; index < count; index += 1) {
+    if (index > 0) await seek(page, scope, 'ArrowRight');
+    await expect(slider(scope), where).toHaveValue(String(index));
+    await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
+    const at = `${where}, session ${index + 1} of ${count} (${((await sliderValue(scope).textContent()) ?? '').trim()})`;
+    const now = await layoutOf(scope);
+    first ??= now;
+    expect(now.chart.width, `${at}: the P&L chart is ${now.chart.width} wide`).toBeGreaterThanOrEqual(minChart);
+    expect(now.chart, `${at}: the chart's width and left edge are the first session's`).toEqual(first.chart);
+    expect(now.readout, `${at}: the readout's width and edges are the first session's`).toEqual(first.readout);
+    for (const right of now.gridRights) {
+      expect(right, `${at}: the stake grid ends at ${right}, past the readout's ${now.readout.right}`).toBeLessThanOrEqual(now.readout.right + 0.5);
+      expect(right, `${at}: the stake grid ends at ${right}, past the viewport's ${size.width}`).toBeLessThanOrEqual(size.width + 0.5);
+    }
+  }
 }

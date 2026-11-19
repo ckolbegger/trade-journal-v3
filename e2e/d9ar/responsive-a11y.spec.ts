@@ -1,8 +1,8 @@
 import type { Locator, Page } from '@playwright/test';
 import { expectNoSidewaysScroll } from '../d7p/support.ts';
 import {
-  actionFormOf, BREN, build, buildReview, cardReplayButton, cardRows, chartText, checkForUpdate, closeButton, closeOf, detailReplayButton, expect, expectAccessible, expectChartTextInside, expectFitsOneScreen,
-  expectReadoutShownInFull, expectSmallestChartTextAtLeast, firstPage, headline, hits, launchAt, launchTouchAt, notice, openCardReplay, openDrawer, pnlChart, priceStrip, reachCard, READY, replay, seek,
+  actionFormOf, AXIO, BREN, build, buildReview, cardReplayButton, cardRows, chartText, checkForUpdate, closeButton, closeOf, detailReplayButton, expect, expectAccessible, expectChartTextInside, expectFitsOneScreen,
+  expectReadoutShownInFull, expectSmallestChartTextAtLeast, expectWideLayoutAtEverySession, CORV, DALE, DALE_HOLD, firstPage, headline, hits, launchAt, launchTouchAt, notice, openCardReplay, openDrawer, pnlChart, priceStrip, reachCard, READY, replay, seek,
   sessionCard, sessionCards, setViewport, slider, sliderValue, smallestChartText, test, type TradeRef,
 } from './support.ts';
 
@@ -21,7 +21,9 @@ const SIZES = [
 ] as const;
 type Size = (typeof SIZES)[number];
 const WIDE = SIZES.slice(0, 3);
-const INTENT = 'The Target is reached; take the profit.';
+// R-DALE-U's Marks with no Expiration recorded (a Review's builder records partial sales only).
+const DALE_R_U = { ...DALE, changes: [] };
+const INTENT ='The Target is reached; take the profit.';
 
 // W69: the drawing's labels as one line of text under the P&L chart, and none of them on the drawing.
 async function expectPhoneLabels(scope: Locator, where: string): Promise<void> {
@@ -146,6 +148,24 @@ test.describe('B9AR.7 Responsive, touch, accessible and offline', () => {
     expect(texts[2], 'the text at 1920 is the size it is at 1280').toBeCloseTo(texts[0]!, 1);
     await context.close();
   });
+
+  // merge6-S1: the readout column is one fixed width, so at 1280 the P&L chart keeps 800 px and nothing moves as the slider steps, on every Trade's every session. One Review launch holds R-BREN-U, R-AXIO-D,
+  // R-CORV-D and R-DALE-D held; R-DALE-U is DALE too (a Review's Marks panel is found by symbol), so it has its own launch.
+  for (const [group, fixtures] of [['R-BREN-U, R-AXIO-D, R-CORV-D and R-DALE-D', [BREN, AXIO, CORV, DALE_HOLD]], ['R-DALE-U', [DALE_R_U]]] as const) {
+    test(`should keep the P&L chart 800 wide and still, and each stake grid inside the readout, at every session of ${group} at 1280`, async ({ profile }) => {
+      test.setTimeout(480_000);
+      const review = await buildReview(profile, fixtures);
+      await setViewport(review.page, 1280, 800);
+      for (const trade of review.trades) {
+        await reachCard(review.page, trade);
+        await openCardReplay(review.page, trade);
+        await expectWideLayoutAtEverySession(review.page, replay(review.page), SIZES[0], 800, `${trade.symbol} in ${group} at 1280`);
+        await closeButton(replay(review.page)).click();
+        await expect(replay(review.page)).toHaveCount(0);
+      }
+      await review.context.close();
+    });
+  }
 
   test('should keep Tab inside the overlay, from either end, at 1280 and on a phone', async ({ profile }) => {
     test.setTimeout(240_000);
