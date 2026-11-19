@@ -81,10 +81,8 @@ export interface ReplaySession {
   readonly positionChangeIds: readonly string[];
   // This session's Journal items (A213), in moment-time order.
   readonly journal: readonly TradeDetailNarrativeItem[];
-  // A250: this session's figures, and the change in Risk to stop and Reward to target with the date it is measured from.
+  // A250: this session's figures.
   readonly figures?: ReplayFigures;
-  readonly riskChange?: ReplayChange;
-  readonly rewardChange?: ReplayChange;
   // A251: the Position Changes in this session.
   readonly markers?: readonly ReplayMarker[];
   // A271: each role's first crossing and current run.

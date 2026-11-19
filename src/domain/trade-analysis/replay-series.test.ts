@@ -240,17 +240,6 @@ describe("replay: each session's risk, reward and condition status (A250)", () =
     expect(valueOf(figures.outcomes!.atTarget)).toBe(q(867n));
   });
 
-  it('should give the change in Risk to stop since the previous session with the figure (R-BREN-U Mon 11-16: down 150.00 since 11-13)', () => {
-    const { riskChange } = sessionAt(R_BREN_U, '2026-11-16');
-    expect(riskChange && { since: riskChange.since, dollars: frac(riskChange.dollars) }).toEqual({ since: '2026-11-13', dollars: q(-150n) });
-  });
-
-  it('should measure a change across a gap from the last session that had the figure (R-CORV-D Wed 11-11: since 11-09)', () => {
-    const wednesday = sessionAt(R_CORV_D, '2026-11-11');
-    expect(wednesday.riskChange && { since: wednesday.riskChange.since, dollars: frac(wednesday.riskChange.dollars) }).toEqual({ since: '2026-11-09', dollars: q(261n) });
-    expect(wednesday.rewardChange && { since: wednesday.rewardChange.since, dollars: frac(wednesday.rewardChange.dollars) }).toEqual({ since: '2026-11-09', dollars: q(-225n) });
-    expect(sessionAt(R_CORV_D, '2026-11-10').riskChange).toBeUndefined();
-  });
 });
 
 const markersAt = (series: ReplayTestSeries, date: string) => sessionAt(series, date).markers;

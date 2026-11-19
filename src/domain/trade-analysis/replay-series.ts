@@ -156,11 +156,8 @@ export interface ReplayedSession {
   readonly change: ReplayChange | null;
   readonly marks: readonly ReplayMark[];
   readonly positionChangeIds: readonly string[];
-  // A250: this session's figures; the change in Risk to stop and in Reward to target since the previous session that
-  // had the figure, with that session's date.
+  // A250: this session's figures.
   readonly figures?: ReplayFigures;
-  readonly riskChange?: ReplayChange;
-  readonly rewardChange?: ReplayChange;
   // A251: the Position Changes in this session.
   readonly markers?: readonly ReplayMarker[];
   // A271: each role's first crossing and current run. Not filled until T9AR.5.
@@ -183,9 +180,6 @@ export function replay(input: ReplayInput): ReplayResult {
   const terms = termsOf(input.record, whole.baseline);
   // The latest session so far with a Trade P&L figure: the next figure's change is measured from it (A211).
   let lastFigure: { readonly date: string; readonly value: Rational } | undefined;
-  // The same for the Risk to stop and the Reward to target (A250).
-  const lastRisk: LastFigure = {};
-  const lastReward: LastFigure = {};
   // Each Instrument's latest Available Mark so far: a gap is skipped, never filled.
   const lastMark = new Map<string, { readonly date: string; readonly price: Rational }>();
   // Each role's crossings so far (A271); the first session has no session before it, so no gap.
@@ -201,8 +195,6 @@ export function replay(input: ReplayInput): ReplayResult {
     const tradePnl: CalculationResult<Rational> = held ? evaluation.currentMarkedPnl : { kind: 'Value', value: state.realizedToDate };
     const change = tradePnl.kind === 'Value' && lastFigure ? { since: lastFigure.date, dollars: tradePnl.value.sub(lastFigure.value) } : null;
     if (tradePnl.kind === 'Value') lastFigure = { date: session.tradingDate, value: tradePnl.value };
-    const riskChange = changeOf(evaluation.ongoingRiskToStop, lastRisk, session.tradingDate);
-    const rewardChange = changeOf(evaluation.incrementalRewardToTarget, lastReward, session.tradingDate);
     // The Position Changes after the previous session's close, up to this one's.
     const previousClose = input.sessions[index - 1]?.closeInstant;
     const positionChangeIds = input.record.positionChanges
@@ -220,8 +212,6 @@ export function replay(input: ReplayInput): ReplayResult {
       marks: session.frames.map((frame) => markOf(frame, lastMark)),
       positionChangeIds,
       figures: figuresOf(evaluation, openPnlOf(tradePnl, state.realizedToDate)),
-      ...(riskChange && { riskChange }),
-      ...(rewardChange && { rewardChange }),
       crossings: {
         stop: crossingsOf(evaluation.conditions, 'Stop', session.tradingDate, stopCrossings),
         target: crossingsOf(evaluation.conditions, 'Target', session.tradingDate, targetCrossings),
@@ -371,18 +361,6 @@ function decimal(text: string): Rational {
   const parsed = parseDecimal(text);
   if (!parsed.ok) throw new Error(`Invalid stored decimal: ${text}`);
   return parsed.value;
-}
-
-interface LastFigure {
-  latest?: { readonly date: string; readonly value: Rational };
-}
-
-// The change in a figure since the latest earlier session that had it; a session without it changes nothing and is skipped.
-function changeOf(figure: CalculationResult<Rational>, last: LastFigure, date: string): ReplayChange | undefined {
-  if (figure.kind !== 'Value') return undefined;
-  const change = last.latest ? { since: last.latest.date, dollars: figure.value.sub(last.latest.value) } : undefined;
-  last.latest = { date, value: figure.value };
-  return change;
 }
 
 // W43: the open part of the Trade P&L is what the Trade P&L holds beyond what was realized; unavailable when it is.

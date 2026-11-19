@@ -390,8 +390,6 @@ describe('replayTrade: the D9 fields (A250 to A253)', () => {
     const outcomes = thursday.figures!.outcomes!;
     expect(outcomes.atStop.kind === 'Value' && frac(outcomes.atStop.value)).toBe(q(316n));
     expect(outcomes.atTarget.kind === 'Value' && frac(outcomes.atTarget.value)).toBe(q(956n));
-    const change = view.sessions[10]!.riskChange!;
-    expect({ since: change.since, dollars: frac(change.dollars) }).toEqual({ since: '2026-11-13', dollars: q(-150n) });
     expect(view.sessions.every((s) => s.final === undefined)).toBe(true);
   });
 

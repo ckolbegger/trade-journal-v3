@@ -242,7 +242,7 @@ describe('Readout: the change line (decision 8)', () => {
   it('should show down 150.00 since Fri Nov 13 under Trade P&L and under each Mark, and under no stake row, R-BREN-U Mon 11-16', () => {
     const since = '2026-11-13';
     const mon = withMarks(
-      { ...brenGrid, date: '2026-11-16', change: { since, dollars: usd(-150) }, riskChange: { since, dollars: usd(-150) }, rewardChange: { since, dollars: usd(-150) } },
+      { ...brenGrid, date: '2026-11-16', change: { since, dollars: usd(-150) } },
       [markOf(BREN_STOCK, '101.80', { since, dollars: usd(-1.5) }), markOf(BREN, '3.20', { since, dollars: usd(-150) })],
     );
     const props = replayProps(fullView([mon], PLAN), { Plot });

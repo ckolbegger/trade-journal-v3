@@ -142,8 +142,6 @@ export const brenWed1111 = withMarks(
       outcomes: { atStop: value(usd(-324)), atTarget: value(usd(956)) },
     }),
     change: { since: '2026-11-10', dollars: usd(190) },
-    riskChange: { since: '2026-11-10', dollars: usd(-60) },
-    rewardChange: { since: '2026-11-10', dollars: usd(60) },
   },
   [markOf(BREN_STOCK, '101.80', { since: '2026-11-10', dollars: usd(1.6) }), markOf(BREN, '3.20', { since: '2026-11-10', dollars: usd(-0.4) })],
 );
