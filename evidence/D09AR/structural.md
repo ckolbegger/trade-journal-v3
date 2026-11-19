@@ -357,6 +357,17 @@ Lane BR (`d09ar/br`), base `70ce0f74`.
 - **ocr** on `9bce9630..a40db82d` (`ocr/T9AR.23-S5-S6-a40db82d.json`): 6 files, 1 comment, in `a40db82d`.
   - **T9AR.23-S5-B1** (Valid, `corridor.tsx:40`): `tapped` is cleared only by a focus event. A tap on the focused button, or a touch that turns into a scroll, leaves it set, and the next keyboard focus reports no hover. Briefed in lane PL.
   - The reviewer confirmed S6 lists "No Mark" exactly when a column is drawn.
+- **T9AR.23-S5-B1** `b3225e82` (lane PL), rebased onto `9b908473` as `7f62fec6`:
+  - Case: "should report keyboard focus after a tap that gave no focus, a tap on the focused button or a touch that became a scroll". The parentheses were dropped from the name because `-t` could not filter them, so the first run matched 0 cases and does not count.
+  - Red: `expected [] to deeply equal [ 2 ]`, then green; `corridor.test.tsx` 61 of 61.
+  - Fix: `tapped` is also cleared on `pointercancel`, `keydown` and `click`. Clearing on `pointerup` broke S5's e2e, because in Chromium a touch's focus comes after `pointerup`.
+  - `e2e/d9ar/responsive-a11y.spec.ts` 13 of 13. Lane tier `T9AR.23-S5-B1`: unit 2430, integration 286, checks 14 of 14.
+  - **ocr** on `7f62fec6` (`ocr/T9AR.23-S5-B1-7f62fec6.json`): **no findings**.
+    - Reviewer's notes, not findings: a long-press with no `pointercancel`, or a non-scrolling drag off the button, could still leave the flag stale. Both are doubtful in practice, and the reviewer found no such area in the file.
+    - No test covers the `keydown` reset.
+    - Both notes are for the final report.
+- Lane PL was rebased onto `9b908473`, which brings in T9AR.18 and lane SC's fixes. Lane tier rerun `T9AR.23-S-PL-r`: unit 2444, integration 286, checks 14 of 14. Run complete.
+- **Merged** by fast-forward; main is at `7f62fec6`. After the rebase: T9AR.23-S6 `85ef2c57`, S5 `54bc7766`, S5-B1 `7f62fec6`.
 - **Part 1 notes:**
   - The Detail overlay's slider session does not survive a reload (the address holds only `replay=open`; the plan does not ask that it survive).
   - The Review card reopens on its last session.
