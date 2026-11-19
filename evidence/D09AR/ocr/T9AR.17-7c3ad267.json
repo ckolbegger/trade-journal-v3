@@ -1,0 +1,396 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 4 finding(s) across 22 selected item(s).",
+  "summary": {
+    "files_reviewed": 22,
+    "comments": 4,
+    "total_tokens": 714890,
+    "input_tokens": 708531,
+    "output_tokens": 6359,
+    "cache_read_tokens": 60544,
+    "elapsed": "1m34s"
+  },
+  "tool_calls": {
+    "total": 63,
+    "by_tool": {
+      "code_comment": 3,
+      "code_search": 10,
+      "file_read": 48,
+      "file_read_diff": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "e2e/d9/support.ts",
+      "content": "This helper can only page toward older sessions, but the new tests request cards in chronological order (e.g. Mon Nov 9, then Tue Nov 10, then Wed Nov 11). When those cards span pages, the first lookup leaves the carousel on an older page and subsequent lookups cannot return to a newer one. Because `getByRole` excludes hidden headings, those newer cards do not even match the returned locator, so their assertions time out. Support paging in both directions (or reset to the newest page before searching), and use an include-hidden date locator if needed to identify the target independently of its current visibility.",
+      "existing_code": "  const card = sessionCards(scope).filter({ has: scope.page().getByRole('button', { name: date, exact: true }) });\n  const earlier = scope.getByRole('button', { name: 'Earlier sessions', exact: true });\n  while (!(await card.isVisible()) \u0026\u0026 (await earlier.isEnabled())) await earlier.click();",
+      "start_line": 216,
+      "end_line": 218,
+      "category": "test",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/cockpit/replay/session-cards.tsx",
+      "content": "Repagination can hide the keyboard-focused card without relocating focus. For example, at one card per page, focus the heading on page 1 (card index 1), then widen the carousel to two cards per page: page 1 now shows indices 2–3 and the focused heading becomes hidden. Resizing can also disable a focused pager without invoking its click-only focus handoff. Preserve the focused card's page or explicitly transfer focus when the measured page size changes, and add a ResizeObserver-driven focus test.",
+      "existing_code": "  const page = Math.min(requested, pages - 1);",
+      "start_line": 57,
+      "end_line": 57,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/cockpit/replay/cards.props.ts",
+      "content": "The readout uses truthy `{ kind: 'NotApplicable', text: '' }` objects for empty R and missing outcome cells. Copying those objects into the card causes Row to render separators and labels for nonexistent values (e.g. `$352.00 ·  · P\u0026L if hit −$324.00` when R is unavailable, or a trailing `P\u0026L if hit` for an absent outcome). Omit empty-text optional values when adapting the grid cells, while preserving nonempty unavailable/No Mark values.",
+      "existing_code": "const stakeCardRow = ({ label, term, fromHere, r, pnlIfHit, weight }: StakeRow): SessionCardRow =\u003e ({ label, value: fromHere, ...(r \u0026\u0026 { r }), ...(pnlIfHit \u0026\u0026 { pnl: pnlIfHit }), term, ...(weight \u0026\u0026 { weight }) });",
+      "start_line": 19,
+      "end_line": 19,
+      "category": "bug",
+      "severity": "low"
+    },
+    {
+      "path": "src/ui/cockpit/replay/frame.tsx",
+      "content": "Reset the cards' paging state when `tradeKey` changes, for example by adding `key={tradeKey}` here. `SessionCards` resets its page only when the newest card's date changes. If the user pages to earlier sessions and the frame is then given another Trade with the same selected date, the previous page is retained and the new Trade's slider/current card remains hidden. The frame already supports replacing Trades without unmounting; add a rerender test covering overlapping dates.",
+      "existing_code": "      \u003cSessionCards {...cardsWords} id={plotBase.describedBy} cards={sessions.slice(0, current + 1).reverse().map((s) =\u003e ({ ...s.card, id: s.date, isCurrent: s.date === session.date }))} onSelectSession={(id) =\u003e move(sessions.findIndex((s) =\u003e s.date === id))} /\u003e",
+      "start_line": 106,
+      "end_line": 106,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Replay end-to-end scenarios and shared test support",
+      "files": [
+        "e2e/d9/gaps.spec.ts",
+        "e2e/d9/replay.spec.ts",
+        "e2e/d9/states.spec.ts",
+        "e2e/d9/support.ts"
+      ]
+    },
+    {
+      "label": "Session cards, card properties, shared pagination, and styling",
+      "files": [
+        "src/ui/cockpit/card-pager.tsx",
+        "src/ui/cockpit/journal-cards.tsx",
+        "src/ui/cockpit/replay/cards.props.test.ts",
+        "src/ui/cockpit/replay/cards.props.ts",
+        "src/ui/cockpit/replay/session-cards.test.tsx",
+        "src/ui/cockpit/replay/session-cards.tsx",
+        "src/ui/cockpit/styles/replay-cards.css"
+      ]
+    },
+    {
+      "label": "Replay frame, replay property contracts, and layout styling",
+      "files": [
+        "src/ui/cockpit/replay/frame.test.tsx",
+        "src/ui/cockpit/replay/frame.tsx",
+        "src/ui/cockpit/replay/replay.props.test.ts",
+        "src/ui/cockpit/replay/replay.props.ts",
+        "src/ui/cockpit/replay/replay.types.ts",
+        "src/ui/cockpit/styles/replay-frame.css"
+      ]
+    },
+    {
+      "label": "Replay plot and readout properties and visualization tests",
+      "files": [
+        "src/ui/cockpit/replay/corridor.test.tsx",
+        "src/ui/cockpit/replay/plot.props.test.ts",
+        "src/ui/cockpit/replay/plot.props.ts",
+        "src/ui/cockpit/replay/price-strip.test.tsx",
+        "src/ui/cockpit/replay/readout.props.ts"
+      ]
+    }
+  ],
+  "session_id": "a021d955-fcb5-4414-a879-26e3023a1b93",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "a021d955-fcb5-4414-a879-26e3023a1b93",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "3fa682b6",
+      "requested_head": "7c3ad267",
+      "resolved_base": "3fa682b68caa9219714e6a65b13c6b4c265c41d9",
+      "resolved_head": "7c3ad2677ffefb314dfc94691b443d9b8abcfb9d",
+      "exact_range": "3fa682b68caa9219714e6a65b13c6b4c265c41d9..7c3ad2677ffefb314dfc94691b443d9b8abcfb9d",
+      "source_artifact_sha256": "80565fc219c0916cd6590489e0b85282c8b0f46cb7c3bfa6b6addc126cb483be"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0789de1384d21a3d96a4a1471f0208d8f79e398f46955bb09760297a10191dd1",
+          "path": "src/ui/cockpit/replay/price-strip.test.tsx",
+          "fingerprint": "3c601eae13e81036f9210496b2b4291040303c3d1076cbacbd0e7e239c4c8abd"
+        },
+        {
+          "item_id": "0c585bcd229773a3f0708e517a2ad9350fb57d3c2c186990f19985c1ebdce0e8",
+          "path": "src/ui/cockpit/styles/replay-frame.css",
+          "fingerprint": "e2e5f856631029e5cdb8e8f6e6a2dbbab21520aa97dcfbc327e7f63bd95fadf5"
+        },
+        {
+          "item_id": "3d02853537089f4df8db23804221b3017e0f3959032a155b907339a6eb759539",
+          "path": "e2e/d9/replay.spec.ts",
+          "fingerprint": "5f5138905eec9f406331b0205609b03518cfaa5a2f974bae82023f6aec9a5a70"
+        },
+        {
+          "item_id": "3ef79bb2336883d6a56c683dfdb8ccb10215c7b5253155992d72a45ee0804a94",
+          "path": "src/ui/cockpit/card-pager.tsx",
+          "fingerprint": "d4891101e9365aeb9ba1968bfb9082621199289aed664d7a9dc0494e7c4fe8c6"
+        },
+        {
+          "item_id": "4acef86e21f2c7963c434f2b9aae91854b09af8ff742006b4cad005a2ca9f94e",
+          "path": "src/ui/cockpit/replay/frame.tsx",
+          "fingerprint": "5055a866d5f56e36515442a1983919476da2f7b0cd2ae08f629e4d5981523c94"
+        },
+        {
+          "item_id": "64e612a50247f830ba840755c06b35ca019cd1108bb31a04ef0da50e3149ffbd",
+          "path": "src/ui/cockpit/replay/cards.props.test.ts",
+          "fingerprint": "4e5e9f11778e51f4aa4b0b861d2529c59eebbf0a1e80a7dbae09a1344c90ff13"
+        },
+        {
+          "item_id": "721a312edbf347b68236c1a53fc851563a0dc4f739c9e338ec36a8e76a2baa5f",
+          "path": "src/ui/cockpit/replay/frame.test.tsx",
+          "fingerprint": "56843462c8ba869c8fe6701fc9e4347ea311c6b020f462d9c5033056e9f8b052"
+        },
+        {
+          "item_id": "8023195fb5ff8eacfa085a0ee6128d2ccac3475f3463353dc3edf82dabcb74de",
+          "path": "src/ui/cockpit/replay/readout.props.ts",
+          "fingerprint": "1e0701384d7c753478b1cf31b07e281c7355fd413c2a8ec1f70fea3a6eb5021e"
+        },
+        {
+          "item_id": "830cc0c5ce396f2a868ecf13d66a0c0fe08971829754f993eebebd18a787a0ad",
+          "path": "src/ui/cockpit/styles/replay-cards.css",
+          "fingerprint": "c62790775c77506a7265f0681597c16b93ab38dfb2de6fdeafc36c5845c7ce76"
+        },
+        {
+          "item_id": "94795a0efc5e578cc9e20d8de873849ab993d776273afc5eb6333a0c8efa8209",
+          "path": "src/ui/cockpit/replay/replay.props.ts",
+          "fingerprint": "7fa5f81203c67e134faa30c0c03333441ec3b35e0c894fdad4be4b3504232bed"
+        },
+        {
+          "item_id": "94d9da0dfc00adae8954dd0daed4f3e907ce404eb9e4ab768e60895b3b537ce7",
+          "path": "src/ui/cockpit/replay/replay.types.ts",
+          "fingerprint": "4fb58c8ca3ef32fb8d87e257054ff2afc3ac626ba5ddd08362b5aa4a8f2ddc83"
+        },
+        {
+          "item_id": "998e43770fca3c0775fe392f701e0c6c71954e2618935fabfdb443e3f5046e78",
+          "path": "src/ui/cockpit/replay/cards.props.ts",
+          "fingerprint": "41e2e19e8a2eac9219a1ed92480536a55a344b503a60f04567012e090090301f"
+        },
+        {
+          "item_id": "9b25acaeb39fd349940fe7a039f2cdc4d4dea6666645b33b4f494c91aaccb763",
+          "path": "e2e/d9/gaps.spec.ts",
+          "fingerprint": "bb9fbf401a653c12b30d1f9513fbd2c3d59be391c87cdc6e0888ac0b01f71683"
+        },
+        {
+          "item_id": "a410ae5445083fd827c54d8b9d86d21ba715904b98c9a444a96a1055354891ea",
+          "path": "src/ui/cockpit/replay/plot.props.ts",
+          "fingerprint": "5c69578435f6eb112341fac667182cef9355ab935ce5078fb8e26ddd605f0272"
+        },
+        {
+          "item_id": "bb0933078b123fe6ced13b378c3202df8f149a670d468c4197adcc10bba0cdd3",
+          "path": "src/ui/cockpit/replay/session-cards.test.tsx",
+          "fingerprint": "b372fb1e79c30147ba956b4c022cb3ef9b3f1cb131da03eec44d74a1f5d8c156"
+        },
+        {
+          "item_id": "c4f2575b36d9b0429fcc15b8ae0c21baa32c7181ee70854064127be82833c973",
+          "path": "src/ui/cockpit/replay/session-cards.tsx",
+          "fingerprint": "30f3b06b54d659a8fb52f014f0178be9c8ffcfa23f10cb118d575d2c4fc0f248"
+        },
+        {
+          "item_id": "d01ecb69cbc4c27e7a40e214cdfef8a29456b3b24f7e6b33a3c22e3a436ab0dc",
+          "path": "src/ui/cockpit/replay/replay.props.test.ts",
+          "fingerprint": "0f07008288345cafd2f77550bbcbd6896117d071a4d97078825b90393e519a40"
+        },
+        {
+          "item_id": "d63e202ccea8b383a6e47a85e80a118f739f194102f48b0655c2c88544ba3085",
+          "path": "e2e/d9/support.ts",
+          "fingerprint": "069c333c7df51db5c6c6e1a99e2a725f56d105b820a341426a6e438034b78c0e"
+        },
+        {
+          "item_id": "e66a9f786fad74db81238b7734c40901d93568bc1eca866d6a0cad15779ffcc2",
+          "path": "e2e/d9/states.spec.ts",
+          "fingerprint": "74402847574013c31cfdb0c1a8b05dbc0a83d545a5247907d7e1bc8090a47706"
+        },
+        {
+          "item_id": "ede9460d616f7e0836d7534dc7e022336380e4d3fdf755235e22829a50eecdb0",
+          "path": "src/ui/cockpit/journal-cards.tsx",
+          "fingerprint": "a4664622bda525b982b67c4aea7d7740668f1944832550d13b222cba2b3eff83"
+        },
+        {
+          "item_id": "f16b10bf3e13de7d3a70534f7bcf4d5affdae4bb70ab671a2b91a7ba1b948579",
+          "path": "src/ui/cockpit/replay/corridor.test.tsx",
+          "fingerprint": "8779fa7aa5137cc559081d47d17a7c5596a712252b4185760e3c9bed49e36ff4"
+        },
+        {
+          "item_id": "f5f4040558fe30e2570decb93527016f5d42d1a8a147d28a8a9f3a24aec64378",
+          "path": "src/ui/cockpit/replay/plot.props.test.ts",
+          "fingerprint": "8939c6016b0fc3cffc8a03f66c0666701098cdddc06bfb6f772c81ddc1dc3c15"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0789de1384d21a3d96a4a1471f0208d8f79e398f46955bb09760297a10191dd1",
+          "path": "src/ui/cockpit/replay/price-strip.test.tsx",
+          "fingerprint": "3c601eae13e81036f9210496b2b4291040303c3d1076cbacbd0e7e239c4c8abd"
+        },
+        {
+          "item_id": "0c585bcd229773a3f0708e517a2ad9350fb57d3c2c186990f19985c1ebdce0e8",
+          "path": "src/ui/cockpit/styles/replay-frame.css",
+          "fingerprint": "e2e5f856631029e5cdb8e8f6e6a2dbbab21520aa97dcfbc327e7f63bd95fadf5"
+        },
+        {
+          "item_id": "3d02853537089f4df8db23804221b3017e0f3959032a155b907339a6eb759539",
+          "path": "e2e/d9/replay.spec.ts",
+          "fingerprint": "5f5138905eec9f406331b0205609b03518cfaa5a2f974bae82023f6aec9a5a70"
+        },
+        {
+          "item_id": "3ef79bb2336883d6a56c683dfdb8ccb10215c7b5253155992d72a45ee0804a94",
+          "path": "src/ui/cockpit/card-pager.tsx",
+          "fingerprint": "d4891101e9365aeb9ba1968bfb9082621199289aed664d7a9dc0494e7c4fe8c6"
+        },
+        {
+          "item_id": "4acef86e21f2c7963c434f2b9aae91854b09af8ff742006b4cad005a2ca9f94e",
+          "path": "src/ui/cockpit/replay/frame.tsx",
+          "fingerprint": "5055a866d5f56e36515442a1983919476da2f7b0cd2ae08f629e4d5981523c94"
+        },
+        {
+          "item_id": "64e612a50247f830ba840755c06b35ca019cd1108bb31a04ef0da50e3149ffbd",
+          "path": "src/ui/cockpit/replay/cards.props.test.ts",
+          "fingerprint": "4e5e9f11778e51f4aa4b0b861d2529c59eebbf0a1e80a7dbae09a1344c90ff13"
+        },
+        {
+          "item_id": "721a312edbf347b68236c1a53fc851563a0dc4f739c9e338ec36a8e76a2baa5f",
+          "path": "src/ui/cockpit/replay/frame.test.tsx",
+          "fingerprint": "56843462c8ba869c8fe6701fc9e4347ea311c6b020f462d9c5033056e9f8b052"
+        },
+        {
+          "item_id": "8023195fb5ff8eacfa085a0ee6128d2ccac3475f3463353dc3edf82dabcb74de",
+          "path": "src/ui/cockpit/replay/readout.props.ts",
+          "fingerprint": "1e0701384d7c753478b1cf31b07e281c7355fd413c2a8ec1f70fea3a6eb5021e"
+        },
+        {
+          "item_id": "830cc0c5ce396f2a868ecf13d66a0c0fe08971829754f993eebebd18a787a0ad",
+          "path": "src/ui/cockpit/styles/replay-cards.css",
+          "fingerprint": "c62790775c77506a7265f0681597c16b93ab38dfb2de6fdeafc36c5845c7ce76"
+        },
+        {
+          "item_id": "94795a0efc5e578cc9e20d8de873849ab993d776273afc5eb6333a0c8efa8209",
+          "path": "src/ui/cockpit/replay/replay.props.ts",
+          "fingerprint": "7fa5f81203c67e134faa30c0c03333441ec3b35e0c894fdad4be4b3504232bed"
+        },
+        {
+          "item_id": "94d9da0dfc00adae8954dd0daed4f3e907ce404eb9e4ab768e60895b3b537ce7",
+          "path": "src/ui/cockpit/replay/replay.types.ts",
+          "fingerprint": "4fb58c8ca3ef32fb8d87e257054ff2afc3ac626ba5ddd08362b5aa4a8f2ddc83"
+        },
+        {
+          "item_id": "998e43770fca3c0775fe392f701e0c6c71954e2618935fabfdb443e3f5046e78",
+          "path": "src/ui/cockpit/replay/cards.props.ts",
+          "fingerprint": "41e2e19e8a2eac9219a1ed92480536a55a344b503a60f04567012e090090301f"
+        },
+        {
+          "item_id": "9b25acaeb39fd349940fe7a039f2cdc4d4dea6666645b33b4f494c91aaccb763",
+          "path": "e2e/d9/gaps.spec.ts",
+          "fingerprint": "bb9fbf401a653c12b30d1f9513fbd2c3d59be391c87cdc6e0888ac0b01f71683"
+        },
+        {
+          "item_id": "a410ae5445083fd827c54d8b9d86d21ba715904b98c9a444a96a1055354891ea",
+          "path": "src/ui/cockpit/replay/plot.props.ts",
+          "fingerprint": "5c69578435f6eb112341fac667182cef9355ab935ce5078fb8e26ddd605f0272"
+        },
+        {
+          "item_id": "bb0933078b123fe6ced13b378c3202df8f149a670d468c4197adcc10bba0cdd3",
+          "path": "src/ui/cockpit/replay/session-cards.test.tsx",
+          "fingerprint": "b372fb1e79c30147ba956b4c022cb3ef9b3f1cb131da03eec44d74a1f5d8c156"
+        },
+        {
+          "item_id": "c4f2575b36d9b0429fcc15b8ae0c21baa32c7181ee70854064127be82833c973",
+          "path": "src/ui/cockpit/replay/session-cards.tsx",
+          "fingerprint": "30f3b06b54d659a8fb52f014f0178be9c8ffcfa23f10cb118d575d2c4fc0f248"
+        },
+        {
+          "item_id": "d01ecb69cbc4c27e7a40e214cdfef8a29456b3b24f7e6b33a3c22e3a436ab0dc",
+          "path": "src/ui/cockpit/replay/replay.props.test.ts",
+          "fingerprint": "0f07008288345cafd2f77550bbcbd6896117d071a4d97078825b90393e519a40"
+        },
+        {
+          "item_id": "d63e202ccea8b383a6e47a85e80a118f739f194102f48b0655c2c88544ba3085",
+          "path": "e2e/d9/support.ts",
+          "fingerprint": "069c333c7df51db5c6c6e1a99e2a725f56d105b820a341426a6e438034b78c0e"
+        },
+        {
+          "item_id": "e66a9f786fad74db81238b7734c40901d93568bc1eca866d6a0cad15779ffcc2",
+          "path": "e2e/d9/states.spec.ts",
+          "fingerprint": "74402847574013c31cfdb0c1a8b05dbc0a83d545a5247907d7e1bc8090a47706"
+        },
+        {
+          "item_id": "ede9460d616f7e0836d7534dc7e022336380e4d3fdf755235e22829a50eecdb0",
+          "path": "src/ui/cockpit/journal-cards.tsx",
+          "fingerprint": "a4664622bda525b982b67c4aea7d7740668f1944832550d13b222cba2b3eff83"
+        },
+        {
+          "item_id": "f16b10bf3e13de7d3a70534f7bcf4d5affdae4bb70ab671a2b91a7ba1b948579",
+          "path": "src/ui/cockpit/replay/corridor.test.tsx",
+          "fingerprint": "8779fa7aa5137cc559081d47d17a7c5596a712252b4185760e3c9bed49e36ff4"
+        },
+        {
+          "item_id": "f5f4040558fe30e2570decb93527016f5d42d1a8a147d28a8a9f3a24aec64378",
+          "path": "src/ui/cockpit/replay/plot.props.test.ts",
+          "fingerprint": "8939c6016b0fc3cffc8a03f66c0666701098cdddc06bfb6f772c81ddc1dc3c15"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "23847c6a2cdd4a22cec7fb3e2d0c14fb9e709b5b4619dca79b3d7b43dc9484de",
+          "path": "evidence/D09AR/suite-runs/T9AR.17-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "3c1ad4895d4bdfca5b8d53cfa64e38399efb9abf4ce11cd94ea98794b8c90012",
+          "path": "evidence/D09AR/tdd-log/T9AR.17.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "7a407be9e155cc70ba88a8776f246a158b7bdf05bf77a220d47151c7976dd8ec",
+          "path": "evidence/D09AR/suite-runs/T9AR.17-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "b9d4f08f58b8b300d5cf22e35ee34cb643d95c1153e9520736f59d2585462020",
+          "path": "evidence/D09AR/suite-runs/T9AR.17-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "c7c8c74f74d16e59030bb943019aa7a151f361e4973d20418a8ff5bc6bde011e",
+          "path": "evidence/D09AR/suite-runs/T9AR.17-lane.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 94112
+  }
+}

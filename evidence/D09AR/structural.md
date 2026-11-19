@@ -203,6 +203,71 @@ Lane RO (`d09ar/ro`), base `9a40b95a`, commit `5f395db7`.
 - **T9AR.15-D1** briefed in lane SC at `4179346d`: fill `stakeSpoken` from `ratioWords(...).odds.spoken`.
   - It stopped with no change: `ratioWords` is lane RO's and is not merged yet (the main session's brief was premature). Parked until lane RO merges, then re-briefed on lane SC rebased onto it.
 
+## T9AR.17 Session cards replace the table
+
+Lane SC (`d09ar/sc`), from `3fa682b6`.
+
+- **Commits:** refactor `00968f23` (`card-pager.tsx`, with the Journal's tests unchanged) and cases `7c3ad267`.
+- **Cases:** 9 planned plus 2 added (Events on a card; the odds spoken in full on a card), all red then green.
+  - The second case's first green failed because the test omitted the Held row; the test was corrected, not the code.
+  - **First-run passes:** "name the cards' list as the charts' description" (mutation: list id changed, failed) and carried defect 1a (mutation: past-line text cut, failed with `Unable to find … Past the Stop by $180.00 (0.30R) · at Stop −$740.00`).
+  - Titles dropped `$`, quotes and parentheses (case 2 its "(R-BREN-U Thu 11-12)", fixture unchanged).
+- **Lines changed (section 1.5's T9AR.17 rows):**
+  - `e2e/d9/support.ts`: `openTable` and `tableRow` became `sessionCards`, `sessionCard(scope, date)` and `cardRows`.
+  - `gaps.spec.ts`, `replay.spec.ts` and `states.spec.ts` now assert card rows (the past-line row in place of "$0.00"; a final card has no stake rows).
+  - `frame.test.tsx` and `replay.props.test.ts` table cases became card cases.
+  - The `describedBy` id is `replay-cards` in `corridor.test.tsx`, `price-strip.test.tsx`, `frame.test.tsx` and `plot.props.test.ts`.
+  - **`plot.props.ts`** (lane PL, idle), one line: the id is built there, not in `replay.props.ts` as section 1.5 says. Accepted as a lookup miss.
+- **Types:** `TableRow`, `tableRow`, `tableTitle` and `tableColumns` removed; `card` and `cardsWords` are now required; `SessionCardRow` gained `r?`, `pnl?` and `spoken?`; `SessionCardBody` has `pastLine?` and `events`.
+- **Exports:** only `NO_MARK` added to `readout.props.ts`. `cardOf` selects from the readout's built groups, so the row builders were not exported.
+- **Words:** none shortened or uncovered.
+  - A card's Reward to risk shows the ratio and odds without the "(Plan …)" part; the Plan's ratio stays in the readout and moves to T9AR.18's Plan block (P148 holds).
+  - "Events" shows only when a session has events.
+  - A no-Mark Trade P&L is the dash.
+- **Browser:** `e2e/d9` `gaps`, `replay`, `states`, `responsive-a11y`; B9.5's fit passes.
+  - **`replay.spec.ts:108` fails:** the `stake(scope)` helper reads `.replay-stake`, whose text now includes T9AR.15-D1's visually hidden spoken sentence. This is **T9AR.15-D1's regression**: its agent ran no browser spec, saying none read the paragraph, which was wrong.
+  - Fixed as **T9AR.15-D1-S1** in lane SC: `57ae6099` (evidence `5d227e04`).
+    - The failure was confirmed with the old helper ("1 failed").
+    - Only `stake` in `e2e/d9/support.ts` changed: it selects the paragraph's `aria-hidden` span, or the plain paragraph, and nothing when there is none. No expected value changed.
+    - `replay.spec.ts`, `states.spec.ts` and `gaps.spec.ts` (the only callers) passed 14 of 14.
+    - Lane tier `T9AR.15-D1-S1`: unit 2417, integration 286, checks 14 of 14.
+    - Sent to ocr. T9AR.17-B1, B2, B3 and B4 were briefed on top of it.
+    - ocr on `57ae6099` (`ocr/T9AR.15-D1-S1-57ae6099.json`): 1 file (1 excluded), 0 comments, **no findings**. The reviewer confirmed each shape matches exactly one element and `toHaveCount(0)` stays meaningful.
+- **Lane tier `T9AR.17`:** unit 2417, integration 286, checks 14 of 14.
+- **Note for T9AR.18:** remove the Stop and Target (`triggerOf`) rows from `cards.props.ts` when they move to the Plan block.
+- **ocr** on `3fa682b6..7c3ad267` (`ocr/T9AR.17-7c3ad267.json`): 22 files (5 excluded), 4 comments, all in `7c3ad267`, all **Valid**, made bug tasks:
+  - **T9AR.17-B1** (`frame.tsx:106`): the cards go back to the first page only when the newest card's date changes. Another Trade with the same slider date, without a remount, keeps the old page and hides the slider's card.
+  - **T9AR.17-B2** (`session-cards.tsx:57`): a resize that changes the page size can hide the focused card heading or disable the focused pager button, and focus drops to the page.
+  - **T9AR.17-B3** (`cards.props.ts:19`): an empty Not-applicable R or "P&L if hit" is copied onto the card, which then shows a bare " · " and "P&L if hit " (the test's `said()` filters it out).
+  - **T9AR.17-B4** (`e2e/d9/support.ts:216`): `sessionCard` only presses "Earlier sessions", so finding a newer card after an older one fails once they span pages.
+  - These go to lane SC after T9AR.15-D1-S1.
+    - **B1** `03e819b6`: red `expected ['Tue Nov 10','Mon Nov 9'] to deeply equal ['Thu Nov 12','Wed Nov 11']`; then green. Fix: `key={tradeKey}` on `<SessionCards>`.
+    - **B2** `2f16b8de`: red was the focus assertion; then green. A layout effect on a page-size change hands focus to an enabled pager button, else the first shown heading. The slider's heading was not chosen, since it is hidden off the first page.
+    - **B3** `2010281f`: red `expected { label: 'At Worst case', … } to not have property "r"`; then green. `said()` no longer filters empty parts.
+      - Only the empty R is tested: the fixture's P&L-if-hit reads "Not applicable: no open position", which is not empty.
+    - **B4** `b9f24626`: a new spec `e2e/d9/session-cards.spec.ts`, since no existing spec file is lane SC's. It runs R-BREN-U at 375 wide, one card a page.
+      - Red: the Wed Nov 11 lookup was not found; then green. `sessionCard` pages back to the first page, then earlier.
+      - The tdd-log rows were written by hand (`tdd.sh` runs vitest only).
+    - No first-run pass.
+    - Browser: `session-cards.spec.ts` 1, and `gaps`, `replay`, `states`, `responsive-a11y` 20, all passed.
+    - Lane tier `T9AR.17-B` (`277c5ceb`): unit 2420, integration 286, checks 14 of 14.
+    - ocr on `5d227e04..b9f24626` (`ocr/T9AR.17-B-b9f24626.json`): 8 files (4 excluded), 0 comments, **no findings**.
+      - Reviewer's notes, not findings: B2's disabled-button trigger and its one-page fallback are untested; B3's `pnl` half is vacuous in its test.
+- Lane SC rebased onto `5e0664e7`:
+  - `93dbec7e` (T9AR.15-D1);
+  - `6da6b33f` (T9AR.17 refactor);
+  - `f383ac30` (T9AR.17);
+  - `b8351ccb` (D1-S1) and `06cdd252` (its evidence);
+  - `79b77814` (B1), `445ee9ac` (B2), `c7320081` (B3), `39e8983a` (B4);
+  - `445aa9d9` (evidence).
+
+  Lane tier rerun `T9AR.17-rebased`: unit 2426, integration 286, checks 14 of 14; `run-complete.sh`: run complete. Fast-forwarded to `445aa9d9`. T9AR.18 briefed in lane SC from there; T9AR.20-F1 follows it in lane SC.
+- **Reviewer's notes, not findings (for the final report):**
+  - Finding readout groups by title has no shared constant.
+  - The cards split the odds at " · ", like T9AR.15-B1.
+  - `gapStakeGroup` gives no stake rows when neither Stop nor Target is a Value (doubtful P148).
+  - The charts are described by the shown page of cards only, since off-page cards are hidden. That is A277's design, but narrower than the old table.
+
 ## T9AR.20 Review card: the summary in the replay's words
 
 Lane RW (`d09ar/rw`), base `3cb51638`, commit `50ef6d4a`.

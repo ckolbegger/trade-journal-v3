@@ -882,8 +882,8 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T9AR.14 | 2 | RO | Done (from `bcab74c4`) | `9a40b95a` |
 | T9AR.15 | 2 | RO | Done (from `9a40b95a`) | `fde70be5`; B1 `3cb51638` |
 | T9AR.16 | 2 | SC | Done (from `b75e4597`) | `f1188678`, `c04fb5d0`; B1 `4179346d` |
-| T9AR.17 | 2 | SC | In progress from `3fa682b6` | |
-| T9AR.18 | 2 | SC | Not started | |
+| T9AR.17 | 2 | SC | Done (from `3fa682b6`) | `6da6b33f`, `f383ac30`; B1 `79b77814`; B2 `445ee9ac`; B3 `c7320081`; B4 `39e8983a`; and T9AR.15-D1 `93dbec7e`, its S1 `b8351ccb` |
+| T9AR.18 | 2 | SC | In progress from `445aa9d9` | |
 | T9AR.19 | 2 | PL | Done (from `c2882ae0`) | `fdbfba3f`; B1 `bd746e92`; B2 `c406aab9`; B3 `92933bb9` |
 | T9AR.20 | 2 | RW | Done (from `3cb51638`) | `c20b4c28` |
 | T9AR.21 | 2 | DM | Done (from `bcab74c4`) | `cf79c748` |
