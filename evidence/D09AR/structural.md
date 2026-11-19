@@ -874,6 +874,19 @@ Lane BR (`d09ar/br`), base `70ce0f74`.
         - At 10 px with a 2 px swatch gap, each swatch still reads as its own word's.
         - An Expiration line is drawn but unnamed in the key, because W66 has no entry for it. That is a plan question, not a defect.
     - **Merged** by fast-forward. Lane PL's base `143150e2` was main's head.
+  - **T9AR.24-B9** `d11fddbc` (lane RW, from `0c501bfd`; lane-tier evidence `143f0390`):
+    - **Cause:** the Review's `links` slot rendered a bare `<Link>`, 23 px high. Trade Detail's control is a `pill secondary`, and `.pill` sets `min-height: 44px`.
+    - **Fix:** `<p className="replay-links"><Link className="pill secondary" …>`. It is the same link, with the same role, name and address, so B3's draft set-aside is unchanged. No CSS was changed.
+    - **Cases:** e2e "make the Review overlay's Price History link at least 44 pixels high" at 375 and at 320. Red (Received 23.1875), then green. The rows were written by hand, since `tdd.sh` runs unit cases only. No first-run passes.
+    - **Browser:** `e2e/d9ar` plus `e2e/d9` `review`, `replay` and `responsive-a11y`: 82 passed, including B3's cases and the 320 fit.
+    - **Lane tier** `T9AR.24-B9`: unit 2475, integration 286, checks 14 of 14.
+    - **ocr** on `d11fddbc` (`ocr/T9AR.24-B9-d11fddbc.json`): **no findings**.
+      - Reviewer's notes:
+        - It matches Trade Detail's wrapper and class. It is an `<a>`, not a `<button>`, because it navigates.
+        - The styles are global, so they hold in the portal. `.replay-links` has no rule of its own.
+        - B3's draft set-aside is unaffected.
+    - **Merged** by fast-forward. Lane RW's base `0c501bfd` was main's head.
+    - **Every critic-1 defect has its bug task merged.** Next: one full run, then critic-2.
         - Reviewer's notes:
           - `isMarkLacking` is exactly MarkMissing or AcknowledgedUnavailable.
           - The Trade P&L row's figure is the contract's own, so the Underlying's Mark cannot reach it.
