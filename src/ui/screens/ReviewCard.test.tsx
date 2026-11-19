@@ -1819,6 +1819,22 @@ describe('Review card: the Replay button (decision 3)', () => {
     expect(within(await screen.findByRole('dialog', { name: 'Replay, XYZ' })).getByRole('slider', { name: 'Session' }).getAttribute('aria-valuetext')).toBe('Thu Oct 8 · 1 of 2. $0.00');
   });
 
+  it('should open the overlay over the Action panel even when the address still names an Instrument', async () => {
+    const user = userEvent.setup();
+    const walked = { ...item('t1', 'XYZ'), progress: cardProgress(0, 0, { needed: 1, resolved: 0 }) };
+    const review = ready([walked], ['t1'], { families: [{ family: 'Marks', today: [markRow('XYZ')], earlier: [] }, { family: 'Trades', trades: [walked] }] });
+    renderWalk(walkFacade(review, tradeReview('t1', 'XYZ', { progress: walked.progress, replay: THURSDAY_AND_MONDAY })), { address: '/review?trade=t1&instrument=XYZ' });
+    const card = await screen.findByRole('region', { name: 'XYZ review' });
+    await user.click(within(card).getByRole('button', { name: /^Action\b/ }));
+    await user.click(within(card).getByRole('button', { name: 'Replay' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Replay, XYZ' });
+    expect(within(card).getByRole('button', { name: /^Action\b/ }).getAttribute('aria-expanded')).toBe('true');
+    await user.click(within(dialog).getByRole('button', { name: 'Close' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(within(card).getByRole('button', { name: /^Action\b/ }).getAttribute('aria-expanded')).toBe('true');
+    expect(document.activeElement).toBe(within(card).getByRole('button', { name: 'Replay' }));
+  });
+
   it('should show no Replay button on a card that only owes reflections, or one whose Trade facts cannot be replayed', async () => {
     const user = userEvent.setup();
     const progress = reflectionsOwedProgress(1, 0);

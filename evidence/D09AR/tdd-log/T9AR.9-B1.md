@@ -1,0 +1,8 @@
+# D09AR TDD log, T9AR.9-B1
+
+One file per task (decision 111), so parallel lanes never edit one file. Each row is one single-case run; see `../tdd-log.md` for the rules.
+
+| T9AR.9-B1 | should open the overlay over the Action panel even when the address still names an Instrument | red | `npx vitest run src/ui/screens/ReviewCard.test.tsx -t "should open the overlay over the Action panel even when the address still names an Instrument"` | exit 1; Tests  1 failed, 67 skipped (68) | TestingLibraryElementError: Unable to find role="region" and name "XYZ review" TypeError: Cannot read properties of undefined (reading 'panels')  |
+| T9AR.9-B1 | should open the overlay over the Action panel even when the address still names an Instrument | red | `npx vitest run src/ui/screens/ReviewCard.test.tsx -t "should open the overlay over the Action panel even when the address still names an Instrument"` | exit 1; Tests  1 failed, 67 skipped (68) | AssertionError: expected 'false' to be 'true' // Object.is equality Expected: "true"  |
+| T9AR.9-B1 | should open the overlay over the Action panel even when the address still names an Instrument | green | `npx vitest run src/ui/screens/ReviewCard.test.tsx -t "should open the overlay over the Action panel even when the address still names an Instrument"` | exit 1; Tests  1 failed, 67 skipped (68) | AssertionError: expected 'false' to be 'true' // Object.is equality Expected: "true"  |
+| T9AR.9-B1 | should open the overlay over the Action panel even when the address still names an Instrument | green | `npx vitest run src/ui/screens/ReviewCard.test.tsx -t "should open the overlay over the Action panel even when the address still names an Instrument"` | exit 0; Tests  1 passed, 67 skipped (68) |  |
