@@ -1,10 +1,9 @@
 import type { Locator, Page } from '@playwright/test';
 import { expectNoSidewaysScroll, expectShownInFull } from '../d7p/support.ts';
 import {
-  BREN, build, cardReplay, chartText, closeOf, expect, expectAccessible, firstPage, headline, hits, launchAt, openDrawer, openReview, pnlChart, priceStrip, reachCard, READY, replay, seek, setViewport,
+  BREN, build, chartText, closeOf, expect, expectAccessible, firstPage, headline, hits, launchAt, openCardReplay, openDrawer, openReview, pnlChart, priceStrip, reachCard, READY, replay, seek, setViewport,
   slider, sliderValue, test,
 } from './support.ts';
-import { tradeCard } from '../d8r/support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -143,7 +142,8 @@ test.describe('B9.5 Responsive, accessible and offline', () => {
     await page.goto('/');
     await openReview(page);
     await reachCard(page, trade);
-    await throughSizes(page, () => cardReplay(page, trade), 'Review card replay', [SIZES[0], SIZES[1]]);
+    await openCardReplay(page, trade);
+    await throughSizes(page, () => replay(page), 'Review card replay', [SIZES[0], SIZES[1]]);
     await context.close();
   });
 
@@ -157,10 +157,11 @@ test.describe('B9.5 Responsive, accessible and offline', () => {
     await reachCard(page, trade);
     // The card as it opens (Review Date Mon 11-16, the slider at its last session), the headline scrolled to the top: it and both charts clear the bottom navigation.
     await setViewport(page, SIZES[2].width, SIZES[2].height);
-    await expect(headline(cardReplay(page, trade))).toHaveText('+$988.00 · 3.05R');
-    await headline(cardReplay(page, trade)).evaluate((element) => element.scrollIntoView({ block: 'start' }));
-    await expectFitsOneScreen(cardReplay(page, trade), SIZES[2], 'Review card replay at 320 px, Mon 11-16');
-    await throughSizes(page, () => cardReplay(page, trade), 'Review card replay', [SIZES[2]]);
+    await openCardReplay(page, trade);
+    await expect(headline(replay(page))).toHaveText('+$988.00 · 3.05R');
+    await headline(replay(page)).evaluate((element) => element.scrollIntoView({ block: 'start' }));
+    await expectFitsOneScreen(replay(page), SIZES[2], 'Review card replay at 320 px, Mon 11-16');
+    await throughSizes(page, () => replay(page), 'Review card replay', [SIZES[2]]);
     await context.close();
   });
 
@@ -174,20 +175,19 @@ test.describe('B9.5 Responsive, accessible and offline', () => {
     for (const size of SIZES.slice(1)) {
       const where = `Review card replay at ${size.width} px`;
       await setViewport(page, size.width, size.height);
-      const scope = cardReplay(page, trade);
+      const scope = await openCardReplay(page, trade);
       await expect(headline(scope)).toBeVisible();
-      await page.evaluate(() => window.scrollTo(0, 0));
-      // From the Action panel's header, Tab through every replay control.
-      await tradeCard(page, trade).getByRole('button', { name: /^Action/ }).first().focus();
+      // The overlay is drawn over the bottom navigation, so a control is seen when nothing covers its centre. Tab from the Close button through every replay control.
       const seen: string[] = [];
       for (let step = 0; step < 40; step += 1) {
         await page.keyboard.press('Tab');
         const result = await page.evaluate(() => {
           const focused = document.activeElement as HTMLElement;
-          const inReplay = !!focused.closest('section.review-card-replay');
+          const inReplay = !!focused.closest('[role=dialog]');
           const nav = document.querySelector('.shell > .nav')!.getBoundingClientRect();
           const box = focused.getBoundingClientRect();
-          const hidden = box.bottom > nav.top && box.top < nav.bottom && box.right > nav.left && box.left < nav.right;
+          const covering = document.elementFromPoint((box.left + box.right) / 2, (box.top + box.bottom) / 2);
+          const hidden = covering === null || !focused.contains(covering);
           return { inReplay, hidden, label: focused.getAttribute('aria-label') ?? focused.textContent?.trim().slice(0, 30) ?? '', top: Math.round(box.top), bottom: Math.round(box.bottom), navTop: Math.round(nav.top) };
         });
         if (!result.inReplay) {
@@ -198,6 +198,8 @@ test.describe('B9.5 Responsive, accessible and offline', () => {
         expect(result.hidden, `${where}: "${result.label}" (y ${result.top} to ${result.bottom}) is under the bottom navigation (top ${result.navTop})`).toBe(false);
       }
       expect(seen.length, `${where}: replay controls reached`).toBeGreaterThan(3);
+      await page.keyboard.press('Escape');
+      await expect(replay(page)).toHaveCount(0);
     }
     await context.close();
   });

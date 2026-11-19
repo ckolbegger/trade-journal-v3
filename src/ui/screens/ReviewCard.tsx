@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
-import { Link } from 'react-router';
+import { Link, useNavigate, useSearchParams } from 'react-router';
 import type { CardProgress, DailyTradeReview, PanelProgress, PostSaveReview, SliderEvaluation, WalkedTrade } from '../../app/types.ts';
 import { Badge } from '../Badge.tsx';
 import { money, plural, ratio, shortDate, tradeName, tradeSummary } from '../format.ts';
@@ -8,6 +8,8 @@ import { useRuntime } from '../runtime.tsx';
 import type { UiFacade } from '../../app/compose.ts';
 import { ActionForm, type SavedAction } from './ActionForm.tsx';
 import { ReplayDrawer } from '../cockpit/drawers/replay.tsx';
+import { overlayWordsOf } from '../cockpit/replay/overlay.props.ts';
+import { ReplayOverlay } from '../cockpit/replay/overlay.tsx';
 import { CardFigures } from './CardFigures.tsx';
 import { CardMarks, type CardMarksProps, type EntryDirty } from './CardMarks.tsx';
 import type { CardMarkRows } from './held-review.ts';
@@ -50,7 +52,7 @@ export type PanelName = (typeof PANELS)[number];
 export interface Go {
   readonly panel?: PanelName;
   readonly instrument?: string;
-  // The Replay session the card's slider opens on, from a way back from Trade Detail (A257).
+  // The Replay session the card's overlay opens on, from a way back from Trade Detail (A257, A274).
   readonly session?: string;
   readonly count: number;
 }
@@ -252,8 +254,51 @@ function CardBody({ facade, trade, progress, name, advance, go, marks, held, onR
   };
   // The card opens on the panel a link names, or else on its first panel that is not done.
   const [open, setOpen] = useState<PanelName>(() => (go.panel && panels.includes(go.panel) ? go.panel : (panels.find((name) => !headers[name].done) ?? 'Action')));
-  // The slider opens on the session a link names once, when the card opens; after that it is the slider's own.
-  const [openOn] = useState(go.session);
+  // A274: the overlay is open while the address holds `replay=open`. Opening pushes one history entry, so Back closes it; Close and Escape go
+  // back that entry when this visit pushed it, and otherwise (a reload, a link straight in) replace the address without `replay`.
+  const [params, setParams] = useSearchParams();
+  const navigate = useNavigate();
+  const replayOpen = params.get('replay') === 'open';
+  // It stays set when the browser's Back closes the overlay: the entry is still in history, and Forward brings the overlay back on it.
+  const pushed = useRef(false);
+  // The slider's session, from a link's `session` until the slider moves: opening writes it to the address, so the overlay rests there again.
+  const sliderAt = useRef(go.session);
+  const onSliderMove = useCallback((date: string) => {
+    sliderAt.current = date;
+  }, []);
+  const openReplay = () => {
+    pushed.current = true;
+    setParams((now) => {
+      const next = new URLSearchParams(now);
+      next.set('trade', trade.tradeId);
+      next.set('panel', 'Action');
+      next.set('replay', 'open');
+      if (sliderAt.current !== undefined) next.set('session', sliderAt.current);
+      return next;
+    });
+  };
+  const closeReplay = () => {
+    if (pushed.current) {
+      pushed.current = false;
+      void navigate(-1);
+      return;
+    }
+    setParams(
+      (now) => {
+        const next = new URLSearchParams(now);
+        next.delete('replay');
+        return next;
+      },
+      { replace: true },
+    );
+  };
+  // When the overlay closes, focus is on the Replay button, also for an overlay opened from the address (its opener was the body).
+  const replayButton = useRef<HTMLButtonElement>(null);
+  const wasOpen = useRef(false);
+  useEffect(() => {
+    if (wasOpen.current && !replayOpen) replayButton.current?.focus();
+    wasOpen.current = replayOpen;
+  }, [replayOpen]);
   const panelButtons = useRef<Partial<Record<PanelName, HTMLButtonElement | null>>>({});
   const [focusPanel, setFocusPanel] = useState<{ readonly panel: PanelName }>();
   useEffect(() => {
@@ -265,7 +310,8 @@ function CardBody({ facade, trade, progress, name, advance, go, marks, held, onR
     setHandledGo(go.count);
     if (go.panel && panels.includes(go.panel)) {
       setOpen(go.panel);
-      if (!go.instrument) setFocusPanel({ panel: go.panel });
+      // The Replay button's own address (trade and panel) asks for this card again while its overlay is open: focus stays in the overlay.
+      if (!go.instrument && !replayOpen) setFocusPanel({ panel: go.panel });
     }
   }
   // Focus goes to the row of the Instrument a link names.
@@ -337,16 +383,20 @@ function CardBody({ facade, trade, progress, name, advance, go, marks, held, onR
             {name === 'Reflections' && <ReviewReflections facade={facade} reviewDate={trade.saveBinding.reviewDate} reflections={trade.reflections} onReview={onReflectionResolved} onNoneRemaining={finishPanel} onEntryDirty={onEntryDirty} />}
             {name === 'Settlement' && <SettlementPanel tradeId={trade.tradeId} items={trade.settlement} timeZone={timeZone ?? 'UTC'} />}
             {name === 'Action' && trade.replay && (
-              <section aria-labelledby={`${uid}-replay`} className="review-card-replay">
-                <h5 id={`${uid}-replay`}>Replay</h5>
-                {/* P129: the one link out; the address carries the drawer, the session and the way back. */}
-                <ReplayDrawer replay={trade.replay} {...(openOn !== undefined && { initialSession: openOn })} links={({ date }) => <Link to={`/trades/${trade.tradeId}?drawer=price-history&session=${date}&from=review`}>Price History</Link>} />
-              </section>
+              <button ref={replayButton} type="button" className="pill secondary review-card-replay" onClick={openReplay}>
+                Replay
+              </button>
             )}
             {name === 'Action' && <ActionForm facade={facade} form={trade.form} binding={trade.saveBinding} onSaved={onSaved} onRefresh={onRefresh} onDirtyChange={report} pending={pending} />}
           </div>
         </div>
       ))}
+      {trade.replay && replayOpen && (
+        <ReplayOverlay {...overlayWordsOf(trade.underlying, trade.replay)} onClose={closeReplay}>
+          {/* P129: the one link out; the address carries the drawer, the session and the way back. */}
+          <ReplayDrawer replay={trade.replay} {...(params.get('session') !== null && { initialSession: params.get('session')! })} onSessionChange={onSliderMove} links={({ date }) => <Link to={`/trades/${trade.tradeId}?drawer=price-history&session=${date}&from=review`}>Price History</Link>} />
+        </ReplayOverlay>
+      )}
     </section>
   );
 }

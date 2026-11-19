@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen, within } from '@testing-library/react';
-import { useState, type ReactNode } from 'react';
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import { useEffect, useState, type ReactNode } from 'react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router';
+import { MemoryRouter, useLocation, useNavigate, useNavigationType } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { facadeDouble } from '../../../tests/support/facade-double.ts';
 import { optionOpenDetail } from '../../../tests/support/option-detail-fixtures.ts';
@@ -112,9 +112,27 @@ function ShellLike({ children }: { readonly children: ReactNode }) {
   const [writable, setWritable] = useState(true);
   return <RuntimeContext.Provider value={{ writable, report: (result) => result.kind === 'RuntimeNotWritable' && setWritable(false) }}>{children}</RuntimeContext.Provider>;
 }
+// The address the page is at now, and how the router got there (A274: opening pushes an entry; Close goes back one, or replaces the address).
+const here = { address: '', how: 'POP' as string, go: undefined as ((delta: number) => void) | undefined };
+function Where() {
+  const location = useLocation();
+  const how = useNavigationType();
+  const navigate = useNavigate();
+  useEffect(() => {
+    Object.assign(here, { address: location.pathname + location.search, how, go: (delta: number) => void navigate(delta) });
+  });
+  return null;
+}
+// The browser's Back button.
+const browserBack = () =>
+  act(() => {
+    here.go?.(-1);
+    return Promise.resolve();
+  });
 function renderWalk(facade: UiFacade, options: { writable?: boolean; onDirtyChange?: (dirty: boolean) => void; report?: (result: { kind: string }) => void; shellLike?: boolean; address?: string } = {}) {
   const review = (
     <MemoryRouter initialEntries={[options.address ?? '/review']}>
+      <Where />
       <ReviewView facade={facade} now={() => '2026-10-12T21:00:00Z'} onDirtyChange={options.onDirtyChange ?? (() => undefined)} />
     </MemoryRouter>
   );
@@ -1676,27 +1694,76 @@ const replaySession = (date: string, price: string, pnl: bigint) => ({
 const replayTo = (...sessions: ReturnType<typeof replaySession>[]) => ({ tradeId: 't1', instruments: [symbol], sessions, plan: [], pending: null }) as unknown as DailyTradeReview['replay'];
 const THURSDAY_AND_MONDAY = replayTo(replaySession('2026-10-08', '50.00', 0n), replaySession('2026-10-12', '52.00', 582n));
 
-describe('Review card: the replay (W35)', () => {
-  it('should show the replay in a section named Replay directly above the Action form, resting on the Review Date', async () => {
+describe('Review card: the Replay button (decision 3)', () => {
+  it('should show a Replay button directly above the Action form, and no replay inside the card', async () => {
     const user = userEvent.setup();
     renderWalk(walkFacade(ready([item('t1', 'XYZ')]), tradeReview('t1', 'XYZ', { replay: THURSDAY_AND_MONDAY })));
     const card = await openTrade(user, 'XYZ');
-    const section = within(card).getByRole('region', { name: 'Replay' });
-    expect(section.nextElementSibling).toBe(within(card).getByRole('form', { name: 'Action' }));
-    expect(within(section).getByRole('slider', { name: 'Session' }).getAttribute('aria-valuetext')).toBe('Mon Oct 12 · 2 of 2. +$582.00');
+    const button = within(card).getByRole('button', { name: 'Replay' });
+    expect(button.nextElementSibling).toBe(within(card).getByRole('form', { name: 'Action' }));
+    expect(within(card).queryByRole('region', { name: 'Replay' })).toBeNull();
+    expect(within(card).queryByRole('slider', { name: 'Session' })).toBeNull();
+    expect(screen.queryByRole('dialog')).toBeNull();
   });
 
-  it('should draw it from getTrade result and never call replayTrade', async () => {
+  it('should open the overlay from getTrade replay, resting on the Review Date, and never call replayTrade', async () => {
     const user = userEvent.setup();
     const facade = walkFacade(ready([item('t1', 'XYZ')]), tradeReview('t1', 'XYZ', { replay: THURSDAY_AND_MONDAY }));
     renderWalk(facade);
     const card = await openTrade(user, 'XYZ');
-    expect(within(card).getByRole('region', { name: 'Replay' })).toBeTruthy();
+    await user.click(within(card).getByRole('button', { name: 'Replay' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Replay, XYZ' });
+    expect(within(dialog).getByRole('slider', { name: 'Session' }).getAttribute('aria-valuetext')).toBe('Mon Oct 12 · 2 of 2. +$582.00');
     expect(facade.DailyReview.getTrade).toHaveBeenCalledTimes(1);
     expect(facade.TradeViewsAndReporting.replayTrade).not.toHaveBeenCalled();
   });
 
-  it('should show the new Mark session after Save Marks, from the save result, without reading again', async () => {
+  it('should keep the Action form unsaved choice and Intent through opening and closing the overlay, and save nothing by either', async () => {
+    const user = userEvent.setup();
+    const facade = walkFacade(ready([item('t1', 'XYZ')]), tradeReview('t1', 'XYZ', { replay: THURSDAY_AND_MONDAY }));
+    renderWalk(facade);
+    const card = await openTrade(user, 'XYZ');
+    await user.click(within(card).getByRole('radio', { name: 'Roll' }));
+    await user.type(within(card).getByRole('textbox', { name: INTENT_LABEL }), 'Move to Nov.');
+    await user.click(within(card).getByRole('button', { name: 'Replay' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Replay, XYZ' });
+    // The form is still on the page under the overlay, as it was.
+    expect(within(card).getByRole('radio', { name: 'Roll' })).toHaveProperty('checked', true);
+    expect(within(card).getByRole('textbox', { name: INTENT_LABEL })).toHaveProperty('value', 'Move to Nov.');
+    await user.click(within(dialog).getByRole('button', { name: 'Close' }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(within(card).getByRole('radio', { name: 'Roll' })).toHaveProperty('checked', true);
+    expect(within(card).getByRole('textbox', { name: INTENT_LABEL })).toHaveProperty('value', 'Move to Nov.');
+    expect(facade.DailyReview.save).not.toHaveBeenCalled();
+  });
+
+  it('should close on Close, on Escape and on the browser Back, staying on the card with its Action panel open and focus on the Replay button', async () => {
+    const user = userEvent.setup();
+    renderWalk(walkFacade(ready([item('t1', 'XYZ')]), tradeReview('t1', 'XYZ', { replay: THURSDAY_AND_MONDAY })));
+    const card = await openTrade(user, 'XYZ');
+    const button = within(card).getByRole('button', { name: 'Replay' });
+    const before = here.address;
+    const closers = [
+      () => user.click(screen.getByRole('button', { name: 'Close' })),
+      () => user.keyboard('{Escape}'),
+      () => browserBack(),
+    ];
+    for (const close of closers) {
+      await user.click(button);
+      await screen.findByRole('dialog', { name: 'Replay, XYZ' });
+      // Opening pushed one entry that names the overlay.
+      expect(here.address).toContain('replay=open');
+      await close();
+      await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+      // Still on the card with the address as it was; the entry opening pushed is gone, so Back leaves nothing behind.
+      expect(here.address).toBe(before);
+      expect(here.how).toBe('POP');
+      expect(within(card).getByRole('button', { name: /^Action\b/ }).getAttribute('aria-expanded')).toBe('true');
+      expect(document.activeElement).toBe(button);
+    }
+  });
+
+  it('should show the new Mark session in the overlay after Save Marks, from the save result, without reading again', async () => {
     const user = userEvent.setup();
     const walked = { ...item('t1', 'XYZ'), progress: cardProgress(0, 0, { needed: 1, resolved: 0 }) };
     const review = ready([walked], [], { families: [{ family: 'Marks', today: [markRow('XYZ')], earlier: [] }, { family: 'Trades', trades: [walked] }] });
@@ -1713,51 +1780,61 @@ describe('Review card: the replay (W35)', () => {
     const card = await openTrade(user, 'XYZ');
     await user.type(within(card).getByLabelText('Price'), '52.00');
     await user.click(within(card).getByRole('button', { name: 'Save Marks (1)' }));
-    const section = await within(card).findByRole('region', { name: 'Replay' });
-    expect(within(section).getByRole('slider', { name: 'Session' }).getAttribute('aria-valuetext')).toBe('Mon Oct 12 · 2 of 2. +$582.00');
+    await user.click(await within(card).findByRole('button', { name: 'Replay' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Replay, XYZ' });
+    expect(within(dialog).getByRole('heading', { level: 2 }).textContent).toBe('XYZ · Trade P&L +$582.00');
+    expect(within(dialog).getByRole('slider', { name: 'Session' }).getAttribute('aria-valuetext')).toBe('Mon Oct 12 · 2 of 2. +$582.00');
     expect(facade.DailyReview.getTrade).toHaveBeenCalledTimes(1);
   });
 
-  it('should show no replay on a card that only owes reflections', async () => {
+  it('should link Price History in the overlay to the Trade Detail with the drawer, the session and from=review', async () => {
+    const user = userEvent.setup();
+    renderWalk(walkFacade(ready([item('t1', 'XYZ')]), tradeReview('t1', 'XYZ', { replay: THURSDAY_AND_MONDAY })));
+    await user.click(within(await openTrade(user, 'XYZ')).getByRole('button', { name: 'Replay' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Replay, XYZ' });
+    expect(within(dialog).getByRole('link', { name: 'Price History' }).getAttribute('href')).toBe('/trades/t1?drawer=price-history&session=2026-10-12&from=review');
+    // The link follows the slider, and the overlay offers no link to the Journal or the Position here.
+    await user.click(within(dialog).getByRole('button', { name: 'Previous session' }));
+    expect(within(dialog).getByRole('link', { name: 'Price History' }).getAttribute('href')).toBe('/trades/t1?drawer=price-history&session=2026-10-08&from=review');
+    expect(within(dialog).queryByRole('link', { name: 'Journal' })).toBeNull();
+    expect(within(dialog).queryByRole('link', { name: 'Position' })).toBeNull();
+  });
+
+  it('should reopen the overlay on the named session when the address names the card with replay=open', async () => {
+    const user = userEvent.setup();
+    // Two cards: the first not done would open by itself, so the card named is the one that opens, with its overlay.
+    renderWalk(walkFacade(ready([item('t2', 'ABC'), item('t1', 'XYZ')]), tradeReview('t1', 'XYZ', { replay: THURSDAY_AND_MONDAY })), { address: '/review?trade=t1&panel=Action&replay=open&session=2026-10-08' });
+    const dialog = await screen.findByRole('dialog', { name: 'Replay, XYZ' });
+    expect(within(dialog).getByRole('slider', { name: 'Session' }).getAttribute('aria-valuetext')).toBe('Thu Oct 8 · 1 of 2. $0.00');
+    const card = screen.getByRole('region', { name: 'XYZ review' });
+    expect(within(card).getByRole('button', { name: /^Action\b/ }).getAttribute('aria-expanded')).toBe('true');
+    // This visit pushed nothing, so Close replaces the address without `replay`, the card stays, and the Replay button holds focus.
+    await user.click(within(dialog).getByRole('button', { name: 'Close' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(here.address).toBe('/review?trade=t1&panel=Action&session=2026-10-08');
+    expect(here.how).toBe('REPLACE');
+    expect(document.activeElement).toBe(within(card).getByRole('button', { name: 'Replay' }));
+    // Reopened, it rests on the session the slider was on.
+    await user.click(within(card).getByRole('button', { name: 'Replay' }));
+    expect(within(await screen.findByRole('dialog', { name: 'Replay, XYZ' })).getByRole('slider', { name: 'Session' }).getAttribute('aria-valuetext')).toBe('Thu Oct 8 · 1 of 2. $0.00');
+  });
+
+  it('should show no Replay button on a card that only owes reflections, or one whose Trade facts cannot be replayed', async () => {
     const user = userEvent.setup();
     const progress = reflectionsOwedProgress(1, 0);
-    const card = { tradeId: 't9', underlying: 'ABC', lifecycle: 'Closed', labels: { strategy: 'Long Stock', account: 'Main', institution: 'Broker' }, reflections: [], progress, replay: THURSDAY_AND_MONDAY } as unknown as OwedReflectionsCard;
+    const owed = { tradeId: 't9', underlying: 'ABC', lifecycle: 'Closed', labels: { strategy: 'Long Stock', account: 'Main', institution: 'Broker' }, reflections: [], progress, replay: THURSDAY_AND_MONDAY } as unknown as OwedReflectionsCard;
     const review = ready([item('t1', 'XYZ')], [], { owed: [{ tradeId: 't9', underlying: 'ABC', lifecycle: 'Closed', owed: [], progress }] });
     const facade = walkFacade(review);
-    vi.mocked(facade.DailyReview.getTrade).mockResolvedValue({ kind: 'ReflectionsOwed', reviewDate: '2026-10-12', cutoff: review.cutoff, card });
+    vi.mocked(facade.DailyReview.getTrade).mockImplementation(({ tradeId }) =>
+      Promise.resolve(tradeId === 't9' ? { kind: 'ReflectionsOwed', reviewDate: '2026-10-12', cutoff: review.cutoff, card: owed } : { kind: 'Ready', reviewDate: '2026-10-12', cutoff: review.cutoff, trade: tradeReview('t1', 'XYZ') }),
+    );
     renderWalk(facade);
     const owedCard = await openTrade(user, 'ABC');
     expect(within(owedCard).getByRole('region', { name: 'Result' })).toBeTruthy();
-    expect(within(owedCard).queryByRole('region', { name: 'Replay' })).toBeNull();
-  });
-
-  it('should link the card Price History to the Trade Detail with the drawer, the session and from=review in the address', async () => {
-    const user = userEvent.setup();
-    renderWalk(walkFacade(ready([item('t1', 'XYZ')]), tradeReview('t1', 'XYZ', { replay: THURSDAY_AND_MONDAY })));
-    const section = within(await openTrade(user, 'XYZ')).getByRole('region', { name: 'Replay' });
-    expect(within(section).getByRole('link', { name: 'Price History' }).getAttribute('href')).toBe('/trades/t1?drawer=price-history&session=2026-10-12&from=review');
-    // The link follows the slider, and the card offers no link to the Journal or the Position.
-    await user.click(within(section).getByRole('button', { name: 'Previous session' }));
-    expect(within(section).getByRole('link', { name: 'Price History' }).getAttribute('href')).toBe('/trades/t1?drawer=price-history&session=2026-10-08&from=review');
-    expect(within(section).queryByRole('link', { name: 'Journal' })).toBeNull();
-    expect(within(section).queryByRole('link', { name: 'Position' })).toBeNull();
-  });
-
-  it('should return to that Trade card with its Action panel open and the slider on the same session, from the address', async () => {
-    // Two cards: the first not done would open by itself, so the card named is the one that opens, on the session named.
-    renderWalk(walkFacade(ready([item('t2', 'ABC'), item('t1', 'XYZ')]), tradeReview('t1', 'XYZ', { replay: THURSDAY_AND_MONDAY })), { address: '/review?trade=t1&panel=Action&session=2026-10-08' });
-    const card = await screen.findByRole('region', { name: 'XYZ review' });
-    const section = within(card).getByRole('region', { name: 'Replay' });
-    expect(within(section).getByRole('slider', { name: 'Session' }).getAttribute('aria-valuetext')).toBe('Thu Oct 8 · 1 of 2. $0.00');
-    expect(within(card).getByRole('button', { name: /^Action\b/ }).getAttribute('aria-expanded')).toBe('true');
-    expect(section.closest('[hidden]')).toBeNull();
-  });
-
-  it('should show the card other panels and the Action form when the Trade facts cannot be replayed', async () => {
-    const user = userEvent.setup();
-    renderWalk(walkFacade(ready([item('t1', 'XYZ')]), tradeReview('t1', 'XYZ')));
+    expect(within(owedCard).queryByRole('button', { name: 'Replay' })).toBeNull();
+    // A card with no replay in its Trade keeps its other panels and the Action form.
     const card = await openTrade(user, 'XYZ');
-    expect(within(card).queryByRole('region', { name: 'Replay' })).toBeNull();
+    expect(within(card).queryByRole('button', { name: 'Replay' })).toBeNull();
     for (const name of ['Marks', 'Reflections', 'Action']) expect(within(card).getByRole('button', { name: new RegExp(`^${name}\\b`) })).toBeTruthy();
     expect(within(card).getByRole('form', { name: 'Action' })).toBeTruthy();
   });

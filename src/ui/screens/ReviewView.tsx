@@ -470,9 +470,16 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
   };
   // A change of the search params while the Review is mounted (a navigate, browser history) opens the card they name, as a link
   // does; it only acts on a changed search string, not on an unrelated render.
-  const appliedSearch = useRef(params.toString());
+  // The overlay's `replay` and its `session` come and go with the card's own Replay button, so they are no link (A274).
+  const searchOf = (p: URLSearchParams) => {
+    const link = new URLSearchParams(p);
+    link.delete('replay');
+    link.delete('session');
+    return link.toString();
+  };
+  const appliedSearch = useRef(searchOf(params));
   useEffect(() => {
-    const search = params.toString();
+    const search = searchOf(params);
     if (search === appliedSearch.current) return;
     appliedSearch.current = search;
     const next = linkedCard(latest.current, params);

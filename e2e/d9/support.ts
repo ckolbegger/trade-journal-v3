@@ -183,8 +183,13 @@ export async function openDrawer(page: Page, name: Parameters<typeof openDetailD
   if ((await replay(page).count()) === 0) await page.locator('.trade-detail').getByRole('button', { name: 'Replay', exact: true }).click();
   await replay(page).waitFor();
 }
-// The replay inside the Review card's Action panel, which holds the same `replay-card`.
-export const cardReplay = (page: Page, card: TradeRef): Locator => tradeCard(page, card).locator('section.review-card-replay');
+// T9AR.9: the Review card's "Replay" button, in its Action panel directly above the Action form; the overlay it opens is the Detail's, read with `replay(page)`.
+export const cardReplayButton = (page: Page, card: TradeRef): Locator => tradeCard(page, card).locator('button.review-card-replay');
+export async function openCardReplay(page: Page, card: TradeRef): Promise<Locator> {
+  if ((await replay(page).count()) === 0) await cardReplayButton(page, card).click();
+  await replay(page).waitFor();
+  return replay(page);
+}
 export const headline = (scope: Locator): Locator => scope.getByTestId('headline');
 export const going = (scope: Locator): Locator => scope.locator('.replay-going');
 export const stake = (scope: Locator): Locator => scope.locator('.replay-stake');

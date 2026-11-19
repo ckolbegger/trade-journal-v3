@@ -948,12 +948,9 @@ ul.rows > li {
 .review-panel-name {
   font-weight: 700;
 }
-/* The replay above the Action form (W35). */
+/* The Replay button above the Action form (decision 3). */
 .review-card-replay {
   margin-bottom: 1rem;
-}
-.review-card-replay h5 {
-  margin: 0.5rem 0;
 }
 .review-panel-summary {
   color: var(--muted);
