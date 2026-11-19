@@ -121,8 +121,9 @@ test.describe('B9.1 Replay in Trade Detail', () => {
     await expect(sliderValue(scope)).toHaveText('Mon Nov 2 · 1 of 11');
     await expect(headline(scope)).toHaveText('+$28.00 · 0.09R');
     await expect(going(scope)).toHaveText('Ahead: 3% of the way to the Target.');
-    await expect(stake(scope)).toHaveText('From here: $352.00 at risk to the Stop · $928.00 more to the Target · 2.64 to 1 (the Plan was 2.95 to 1).');
-    await expect(scope.locator('.replay-readout-row[data-row="Reward to risk"]')).toHaveText('Reward to risk2.64 to 1 (Plan 2.95 to 1)');
+    await expect(stake(scope)).toHaveText('From here: $352.00 at risk to the Stop · $928.00 more to the Target · 2.64 to 1 · about 28% : 72% (the Plan was 2.95 to 1 · 25% : 75%).');
+    await expect(scope.locator('.replay-readout-row[data-row="Reward to risk"]')).toHaveText('Reward to risk2.64 to 1 · about 28% : 72% (Plan 2.95 to 1 · 25% : 75%)');
+    await expect(scope.locator('.replay-odds-note')).toHaveText('Odds: Target first : Stop first, estimated with no edge and no time limit.');
     await expect(readoutPnl(scope, 'At Stop')).toHaveText('−$324.00');
     await expect(readoutPnl(scope, 'At Target')).toHaveText('+$956.00');
     expect(await chartText(pnlChart(scope))).toEqual(expect.arrayContaining(['Stop −$324', 'Target +$956', 'Current Risk $352', 'Remaining Reward $928']));

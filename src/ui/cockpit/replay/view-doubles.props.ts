@@ -18,6 +18,14 @@ export const value = <T>(v: T): CalculationResult<T> => ({ kind: 'Value', value:
 export const UNBOUNDED: CalculationResult<never> = { kind: 'Unbounded', direction: 'Above', explanation: 'A long Call has no ceiling.' };
 export const NOT_APPLICABLE: CalculationResult<never> = { kind: 'NotApplicable', reason: 'NoRemainingPosition' };
 
+// A267: the estimated odds as the domain finishes them: the Target's chance is risk over (risk + reward), and the whole percents add to 100.
+export type Odds = NonNullable<Extract<NonNullable<Figures['rewardRiskOdds']>, { kind: 'Value' }>['value']>;
+export const odds = (risk: number, reward: number, targetPercent: number): Odds => ({
+  targetFirst: frac(risk, risk + reward),
+  stopFirst: frac(reward, risk + reward),
+  percent: { targetFirst: usd(targetPercent), stopFirst: usd(100 - targetPercent) },
+});
+
 export const BREN: OptionInstrument ={ kind: 'Option', symbol: 'BREN', root: 'BREN', expiration: '2026-11-20', strike: '100', right: 'Call', multiplier: 100 };
 export const DALE: OptionInstrument ={ kind: 'Option', symbol: 'DALE', root: 'DALE', expiration: '2026-11-20', strike: '57.5', right: 'Put', multiplier: 100 };
 export const AXIO: Instrument = { kind: 'Stock', symbol: 'AXIO' };
@@ -85,7 +93,7 @@ export function session(spec: Spec): Session {
   };
 }
 
-export const view = (sessions: readonly Session[], planColumn: TradeReplayView['planColumn'] = { atStop: usd(-324), atTarget: usd(956), rewardRisk: frac(956, 324) }): TradeReplayView => ({
+export const view = (sessions: readonly Session[], planColumn: TradeReplayView['planColumn'] = { atStop: usd(-324), atTarget: usd(956), rewardRisk: frac(956, 324), odds: odds(324, 956, 25) }): TradeReplayView => ({
   tradeId: 'T-1',
   instruments: [BREN],
   sessions,
@@ -104,8 +112,27 @@ export const brenMon1102 = session({
     ongoingRiskToStop: value(usd(352)),
     incrementalRewardToTarget: value(usd(928)),
     rewardRiskNow: value(frac(928, 352)),
+    rewardRiskOdds: value(odds(352, 928, 28)),
   },
   outcomes: { atStop: value(usd(-324)), atTarget: value(usd(956)) },
+});
+
+// R-DALE-D on Wed 11-11: the short puts, $78 at risk to the Stop and $912 more to the Target, 11.69 to 1 and about 8% : 92%; the Plan was 0.29 to 1, 78% : 22%.
+export const DALE_PLAN = { atStop: usd(-1536), atTarget: usd(444), rewardRisk: frac(444, 1536), odds: odds(1536, 444, 78) } as const;
+export const daleWed1111 = session({
+  date: '2026-11-11',
+  instrument: DALE,
+  held: -4,
+  pnl: 1458,
+  standing: value({ zone: 'Between', share: frac(1458, 1980) }),
+  figures: {
+    ongoingRiskToStop: value(usd(78)),
+    incrementalRewardToTarget: value(usd(912)),
+    rewardRiskNow: value(frac(912, 78)),
+    rewardRiskOdds: value(odds(78, 912, 8)),
+    extremes: 'Main',
+  },
+  outcomes: { atStop: value(usd(-1536)), atTarget: value(usd(444)) },
 });
 
 // replayProps (A255): the whole view as the frame's props. These cases were not in the breakdown; the Replay drawer (T9.14) draws from them.
@@ -138,6 +165,7 @@ export const brenWed1111 = withMarks(
         worstCaseOngoingRiskInPlanR: value(frac(644, 324)),
         maximumIncrementalReward: UNBOUNDED,
         rewardRiskNow: value(frac(928, 352)),
+        rewardRiskOdds: value(odds(352, 928, 28)),
       },
       outcomes: { atStop: value(usd(-324)), atTarget: value(usd(956)) },
     }),
@@ -145,7 +173,7 @@ export const brenWed1111 = withMarks(
   },
   [markOf(BREN_STOCK, '101.80', { since: '2026-11-10', dollars: usd(1.6) }), markOf(BREN, '3.20', { since: '2026-11-10', dollars: usd(-0.4) })],
 );
-export const PLAN = { atStop: usd(-324), atTarget: usd(956), rewardRisk: frac(956, 324) } as const;
+export const PLAN = { atStop: usd(-324), atTarget: usd(956), rewardRisk: frac(956, 324), odds: odds(324, 956, 25) } as const;
 
 type Props = ReturnType<typeof replayProps>;
 

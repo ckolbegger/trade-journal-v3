@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import type { Instrument } from '../../../domain/instrument/index.ts';
 import { replayProps } from './replay.props.ts';
 import { sessionWords } from './session-words.props.ts';
 import {
-  AXIO, BREN, BREN_STOCK, brenThu1112, brenWed1111, DALE, frac, fullView, markOf, NOT_APPLICABLE, Plot, PLAN, readoutOf, rowsOfGroup, session, STAKE, UNBOUNDED, usd, value, view, withMarks,
+  AXIO, BREN, BREN_STOCK, brenThu1112, brenWed1111, DALE, DALE_PLAN, daleWed1111, frac, fullView, markOf, NOT_APPLICABLE, odds, Plot, PLAN, readoutOf, rowNamed, rowsOfGroup, session, STAKE, UNBOUNDED, usd, value, view, withMarks,
 } from './view-doubles.props.ts';
 
 describe('replay.props: the readout of a session in flight (W43)', () => {
@@ -101,7 +102,7 @@ describe('replay.props: the readout of a session in flight (W43)', () => {
     expect(readoutOf(props, 0)).toEqual([
       ['How it is going', [['Trade P&L', 'Figure', '+$520.00 · 1.60R', 'up $190.00 since Tue Nov 10']]],
       // The stake rows are the grid's (decision 8: no change line under them); the group's own rows hold the Reward to risk.
-      ['At stake from here, whole Position', [['Reward to risk', 'Figure', '2.64 to 1', '(Plan 2.95 to 1)']]],
+      ['At stake from here, whole Position', [['Reward to risk', 'Figure', '2.64 to 1 · about 28% : 72%', '(Plan 2.95 to 1 · 25% : 75%)']]],
       [
         'Marks',
         [
@@ -239,6 +240,51 @@ describe('Readout: a Trade past a line (suggestion 6)', () => {
   });
 });
 
+describe('Replay: reward to risk with the estimated odds (decision 4)', () => {
+  const daleProps = () => replayProps(view([daleWed1111], DALE_PLAN), { Plot });
+
+  it('should read the ratio with the odds and the Plan beside it in the Reward to risk row', () => {
+    const reward = rowNamed(daleProps(), 0, 'Reward to risk')!;
+    expect(reward.value).toEqual({ kind: 'Figure', text: '11.69 to 1 · about 8% : 92%' });
+    expect(reward.change).toBe('(Plan 0.29 to 1 · 78% : 22%)');
+  });
+
+  it('should say under 1% : over 99% when a side is under one percent, with no about before it', () => {
+    const edge = (risk: number, reward: number, targetPercent: number) =>
+      rowNamed(
+        replayProps(view([{ ...daleWed1111, figures: { ...daleWed1111.figures!, rewardRiskOdds: value(odds(risk, reward, targetPercent)) } }], { ...DALE_PLAN, odds: odds(risk, reward, targetPercent) }), { Plot }),
+        0,
+        'Reward to risk',
+      )!;
+    // The Target's chance is 0.5%, which the whole percents round to 1: the words follow the exact fraction.
+    expect(edge(5, 995, 1).value.text).toBe('11.69 to 1 · under 1% : over 99%');
+    expect(edge(5, 995, 1).change).toBe('(Plan 0.29 to 1 · under 1% : over 99%)');
+    // The Stop's chance is under one percent.
+    expect(edge(995, 5, 99).value.text).toContain(' · over 99% : under 1%');
+  });
+
+  it('should speak the odds in full to a screen reader: about 8% chance of the Target first, 92% of the Stop first', () => {
+    expect(gridOf(daleProps(), 0).odds?.spoken).toBe('about 8% chance of the Target first, 92% of the Stop first');
+  });
+});
+
+describe("Readout: the extremes' weight (decision 6)", () => {
+  const weightsOf = (figures: Partial<NonNullable<ReturnType<typeof session>['figures']>>, instrument: Instrument = DALE) => {
+    const s = session({ date: '2026-11-11', instrument, held: 1, pnl: 100, standing: value({ zone: 'Between', share: frac(1, 4) }), figures: { maximumIncrementalReward: UNBOUNDED, ...figures } });
+    const rows = gridOf(replayProps(view([s]), { Plot }), 0).groups.flatMap((g) => g.rows);
+    return Object.fromEntries(rows.map((r) => [r.label, r.weight]));
+  };
+
+  it('should mark At Worst case and At Max reward remote for R-AXIO-D and R-CORV-D and main for R-DALE-D, and treat a view without the field as main', () => {
+    expect(weightsOf({ extremes: 'Remote' }, AXIO)).toMatchObject({ 'At Worst case': 'Remote', 'At Max reward': 'Remote' });
+    expect(weightsOf({ extremes: 'Remote' }, BREN)).toMatchObject({ 'At Worst case': 'Remote', 'At Max reward': 'Remote' });
+    expect(weightsOf({ extremes: 'Main' })).toMatchObject({ 'At Worst case': 'Main', 'At Max reward': 'Main' });
+    expect(weightsOf({})).toMatchObject({ 'At Worst case': 'Main', 'At Max reward': 'Main' });
+    // The Stop and the Target carry no mark: they are never dimmed.
+    expect(weightsOf({ extremes: 'Remote' })).toMatchObject({ 'At Stop': undefined, 'At Target': undefined });
+  });
+});
+
 describe('Readout: the change line (decision 8)', () => {
   it('should show down 150.00 since Fri Nov 13 under Trade P&L and under each Mark, and under no stake row, R-BREN-U Mon 11-16', () => {
     const since = '2026-11-13';
@@ -363,12 +409,12 @@ describe('Replay: one name per figure (suggestion 8)', () => {
       held: 100,
       pnl: 40,
       standing: value({ zone: 'Between', share: frac(1, 10) }),
-      figures: { ongoingRiskToStop: value(usd(400)), incrementalRewardToTarget: value(usd(40)), rewardRiskNow: value(frac(1, 10)) },
+      figures: { ongoingRiskToStop: value(usd(400)), incrementalRewardToTarget: value(usd(40)), rewardRiskNow: value(frac(1, 10)), rewardRiskOdds: value(odds(400, 40, 91)) },
     });
-    const planned = view([mon], { atStop: usd(-300), atTarget: usd(600), rewardRisk: frac(2, 1) });
+    const planned = view([mon], { atStop: usd(-300), atTarget: usd(600), rewardRisk: frac(2, 1), odds: odds(300, 600, 33) });
     const reward = replayProps(planned, { Plot }).sessions[0]!.readout.find((g) => g.title === STAKE)!.rows.find((r) => r.label === 'Reward to risk')!;
-    expect(reward.value.text).toBe('0.10 to 1');
-    expect(reward.change).toBe('(Plan 2.00 to 1)');
-    expect(sessionWords(planned, 0).stake).toBe('From here: $400.00 at risk to the Stop · $40.00 more to the Target · 0.10 to 1 (the Plan was 2.00 to 1).');
+    expect(reward.value.text).toBe('0.10 to 1 · about 91% : 9%');
+    expect(reward.change).toBe('(Plan 2.00 to 1 · 33% : 67%)');
+    expect(sessionWords(planned, 0).stake).toBe('From here: $400.00 at risk to the Stop · $40.00 more to the Target · 0.10 to 1 · about 91% : 9% (the Plan was 2.00 to 1 · 33% : 67%).');
   });
 });

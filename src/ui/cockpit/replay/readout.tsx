@@ -43,7 +43,7 @@ function StakeGridTable({ grid }: { grid: StakeGrid }) {
             </th>
           </tr>
           {group.rows.map((row) => (
-            <tr key={row.label} data-row={row.label} title={row.term}>
+            <tr key={row.label} data-row={row.label} data-weight={row.weight} title={row.term}>
               <th scope="row">{row.label}</th>
               <td className="replay-value" data-kind={row.fromHere.kind} colSpan={row.r ? 1 : 3}>
                 {shown(row.fromHere)}
@@ -74,6 +74,8 @@ export function Readout({ groups }: ReadoutProps) {
         <section key={group.title} className={group.grid ? 'replay-readout-group replay-readout-group-stake' : 'replay-readout-group'}>
           <h3>{group.title}</h3>
           {group.grid && <StakeGridTable grid={group.grid} />}
+          {/* W60: what the odds are, once, under the grid. */}
+          {group.grid?.odds && <p className="replay-odds-note">{group.grid.odds.note}</p>}
           {group.rows.length > 0 && (
             <dl>
               {group.rows.map((row) => (
@@ -82,7 +84,14 @@ export function Readout({ groups }: ReadoutProps) {
                   <dd>
                     {/* The kind is for the styling: an Unavailable figure reads in italics, a Not applicable one muted, apart from a Figure. */}
                     <span className="replay-value" data-kind={row.value.kind}>
-                      {shown(row.value)}
+                      {row.label === 'Reward to risk' && group.grid?.odds ? (
+                        // The odds are heard in full, where the page shows them as ratio-like marks (A267).
+                        <span role="img" aria-label={group.grid.odds.spoken}>
+                          {row.value.text}
+                        </span>
+                      ) : (
+                        shown(row.value)
+                      )}
                     </span>
                     {/* The change line (decision 8) is a block under the figure, on the Trade P&L and each Mark only. */}
                     {row.change && <span className="replay-change"> {row.change}</span>}

@@ -2,11 +2,13 @@ import { describe, expect, it } from 'vitest';
 import type { CalculationResult } from '../../../domain/calculation-result/index.ts';
 import type { Rational } from '../../../domain/values/index.ts';
 import { sessionWords } from './session-words.props.ts';
-import { AXIO, brenMon1102, frac, NOT_APPLICABLE, session, UNBOUNDED, usd, value, view } from './view-doubles.props.ts';
+import { AXIO, DALE_PLAN, daleWed1111, frac, NOT_APPLICABLE, session, UNBOUNDED, usd, value, view } from './view-doubles.props.ts';
 
 describe('replay.props: what is at stake (W38)', () => {
-  it('should say "From here: $352.00 at risk to the Stop · $928.00 more to the Target · 2.64 to 1 (the Plan was 2.95 to 1)."', () => {
-    expect(sessionWords(view([brenMon1102]), 0).stake).toBe('From here: $352.00 at risk to the Stop · $928.00 more to the Target · 2.64 to 1 (the Plan was 2.95 to 1).');
+  it('should say the stake sentence with the ratio and the estimated odds beside the Plan own for R-DALE-D on Wed 11-11', () => {
+    expect(sessionWords(view([daleWed1111], DALE_PLAN), 0).stake).toBe(
+      'From here: $78.00 at risk to the Stop · $912.00 more to the Target · 11.69 to 1 · about 8% : 92% (the Plan was 0.29 to 1 · 78% : 22%).',
+    );
   });
 
   it('should say "$672.00 at risk back to the Stop ($510.00 of it open profit) · no cap above." after the Target, and "at most" a bounded Max reward', () => {

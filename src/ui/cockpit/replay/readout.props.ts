@@ -3,9 +3,10 @@ import type { CalculationResult } from '../../../domain/calculation-result/index
 import { instrumentKey, type Instrument } from '../../../domain/instrument/index.ts';
 import { Rational } from '../../../domain/values/index.ts';
 import { calculation, signed } from '../../figures.ts';
-import { decimalMoney, money, quantity, ratioToOne, rMultiple, shortDate } from '../../format.ts';
+import { decimalMoney, money, quantity, rMultiple, shortDate } from '../../format.ts';
 import type { ReadoutGroup, ReadoutValue, StakeGrid, StakePastLineRow, StakeRow } from './replay.types.ts';
 import { crossedCondition, headlineOf, markerWords } from './session-words.props.ts';
+import { ratioWords } from './stake-words.props.ts';
 
 // The readout's rows (W43): finished values selected and formatted from the view; no figure is worked out here (ADR 0001, A256).
 type ViewSession = TradeReplayView['sessions'][number];
@@ -45,10 +46,16 @@ function stakeRow(label: string, term: string, amount: CalculationResult<Rationa
 }
 
 // The Max reward row: "No cap above" across its row when unbounded, with no R and no result; else its amount, R and the Trade's result there.
+// Both extremes carry the Plan's weight (decision 6, A268): a view without it is Main, so nothing is dimmed by mistake.
 function maxRewardRow(f: Figures, noMark = false): StakeRow {
   const term = 'Maximum Incremental Reward';
-  if (f.maximumIncrementalReward.kind === 'Unbounded') return { label: 'At Max reward', term, fromHere: { kind: 'Unbounded', text: 'No cap above' } };
-  return stakeRow('At Max reward', term, f.maximumIncrementalReward, f.maximumIncrementalRewardInPlanR, f.outcomes?.atMaxReward, noMark);
+  const weight = f.extremes ?? 'Main';
+  if (f.maximumIncrementalReward.kind === 'Unbounded') return { label: 'At Max reward', term, fromHere: { kind: 'Unbounded', text: 'No cap above' }, weight };
+  return { ...stakeRow('At Max reward', term, f.maximumIncrementalReward, f.maximumIncrementalRewardInPlanR, f.outcomes?.atMaxReward, noMark), weight };
+}
+
+function worstCaseRow(f: Figures, outcome: CalculationResult<Rational> | undefined, noMark = false): StakeRow {
+  return { ...stakeRow('At Worst case', 'Worst-Case Ongoing Risk', f.worstCaseOngoingRisk, f.worstCaseOngoingRiskInPlanR, outcome, noMark), weight: f.extremes ?? 'Main' };
 }
 
 // How it is going (W43): the Trade P&L as the headline words it.
@@ -84,12 +91,14 @@ function stakeGroup(view: TradeReplayView, session: ViewSession): ReadoutGroup |
   // No ratio, no row: past a line, or with a condition crossed (the headline says so, F2), or where the view has none.
   const crossed = crossedCondition(session, 'Stop') !== undefined || crossedCondition(session, 'Target') !== undefined;
   const noRatio = pastLine || crossed || f.rewardRiskNow.kind !== 'Value';
-  const rows = noRatio ? [] : [row('Reward to risk', valueOf(f.rewardRiskNow, ratioToOne), view.planColumn ? `(Plan ${ratioToOne(view.planColumn.rewardRisk)})` : undefined)];
+  const ratio = ratioWords(view, session);
+  const rows = noRatio || !ratio ? [] : [row('Reward to risk', figure(ratio.text), ratio.plan ? `(Plan ${ratio.plan})` : undefined)];
   const atStop = stakeRow('At Stop', 'Ongoing Risk to Stop', f.ongoingRiskToStop, f.ongoingRiskToStopInPlanR, f.outcomes?.atStop);
-  const atWorst = stakeRow('At Worst case', 'Worst-Case Ongoing Risk', f.worstCaseOngoingRisk, f.worstCaseOngoingRiskInPlanR, f.outcomes?.atWorstCase);
+  const atWorst = worstCaseRow(f, f.outcomes?.atWorstCase);
   const atTarget = stakeRow('At Target', 'Incremental Reward to Target', f.incrementalRewardToTarget, f.incrementalRewardToTargetInPlanR, f.outcomes?.atTarget);
   const grid: StakeGrid = {
     columns: ['From here', 'R', 'P&L if hit'],
+    ...(!noRatio && ratio?.odds && { odds: ratio.odds }),
     ...(pastLine && { pastLine: pastLineRow(pastStop ? 'Stop' : 'Target', pastLine, pastStop ? f.outcomes?.atStop : f.outcomes?.atTarget) }),
     groups: [{ heading: 'Current Risk', rows: pastStop ? [atWorst] : [atStop, atWorst] }, { heading: 'Remaining Reward', rows: pastTarget ? [maxRewardRow(f)] : [atTarget, maxRewardRow(f)] }],
   };
@@ -138,7 +147,7 @@ function gapStakeGroup(session: ViewSession): ReadoutGroup | undefined {
   const outcomes = f?.outcomes;
   if (!f || (outcomes?.atStop.kind !== 'Value' && outcomes?.atTarget.kind !== 'Value')) return undefined;
   const atStop = stakeRow('At Stop', 'Ongoing Risk to Stop', f.ongoingRiskToStop, f.ongoingRiskToStopInPlanR, outcomes.atStop, true);
-  const atWorst = stakeRow('At Worst case', 'Worst-Case Ongoing Risk', f.worstCaseOngoingRisk, f.worstCaseOngoingRiskInPlanR, outcomes.atWorstCase, f.worstCaseOngoingRisk.kind !== 'Value');
+  const atWorst = worstCaseRow(f, outcomes.atWorstCase, f.worstCaseOngoingRisk.kind !== 'Value');
   const atTarget = stakeRow('At Target', 'Incremental Reward to Target', f.incrementalRewardToTarget, f.incrementalRewardToTargetInPlanR, outcomes.atTarget, true);
   const grid: StakeGrid = {
     columns: ['From here', 'R', 'P&L if hit'],

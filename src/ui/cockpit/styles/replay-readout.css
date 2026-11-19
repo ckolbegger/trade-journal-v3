@@ -71,6 +71,20 @@
   padding-right: 8px;
 }
 
+/* Decision 6: the extremes (At Worst case, At Max reward) are smaller and grey when the Plan makes them remote (a stock or a long option); a Main row keeps the full type. */
+.replay-stake-grid tr[data-weight='Remote'] th[scope='row'],
+.replay-stake-grid tr[data-weight='Remote'] td {
+  font-size: 0.85em;
+  color: var(--muted);
+}
+
+/* W60: what the odds are, once, under the grid. */
+.replay-odds-note {
+  margin: 4px 0 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
 /* Phone: the unbreakable figures must still fit in 320px, so the type is smaller, the gaps tighter, and the row's name (not a figure) may wrap. */
 @media (max-width: 480px) {
   .replay-stake-grid {

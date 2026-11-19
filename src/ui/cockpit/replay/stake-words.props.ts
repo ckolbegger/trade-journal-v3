@@ -2,7 +2,7 @@ import type { TradeReplayView } from '../../../app/types.ts';
 import { Rational } from '../../../domain/values/index.ts';
 import { signed } from '../../figures.ts';
 import { money, ratioToOne } from '../../format.ts';
-
+import type { StakeOdds } from './replay.types.ts';
 // The stake sentence (W38): "From here: $352.00 at risk to the Stop · ...". Finished values only; nothing is worked out here (ADR 0001).
 type ViewSession = TradeReplayView['sessions'][number];
 
@@ -21,6 +21,40 @@ function finalStakeWords(view: TradeReplayView, index: number): string {
   return `Nothing is at risk and nothing is left to gain.${bankedWords}`;
 }
 
+// A267: the estimated odds as the view's own pair of whole percents, selected and worded here; no percent is worked out (ADR 0001).
+type Odds = NonNullable<Extract<NonNullable<NonNullable<ViewSession['figures']>['rewardRiskOdds']>, { kind: 'Value' }>['value']>;
+const percentOf = (value: Rational): string => `${value.numerator / value.denominator}%`;
+
+const ONE_PERCENT = Rational.of(1n, 100n);
+
+// "about 8% : 92%"; "under 1% : over 99%" when a side is under one percent, which is no estimate to say "about" before (W60).
+function oddsPair(odds: Odds, about: boolean): string {
+  if (odds.targetFirst.compare(ONE_PERCENT) < 0) return 'under 1% : over 99%';
+  if (odds.stopFirst.compare(ONE_PERCENT) < 0) return 'over 99% : under 1%';
+  return `${about ? 'about ' : ''}${percentOf(odds.percent.targetFirst)} : ${percentOf(odds.percent.stopFirst)}`;
+}
+
+// "about 8% chance of the Target first, 92% of the Stop first" for a screen reader; the edges follow `oddsPair`.
+function oddsSpoken(odds: Odds): string {
+  if (odds.targetFirst.compare(ONE_PERCENT) < 0) return 'under 1% chance of the Target first, over 99% of the Stop first';
+  if (odds.stopFirst.compare(ONE_PERCENT) < 0) return 'over 99% chance of the Target first, under 1% of the Stop first';
+  return `about ${percentOf(odds.percent.targetFirst)} chance of the Target first, ${percentOf(odds.percent.stopFirst)} of the Stop first`;
+}
+
+// The ratio with the odds beside it, and the Plan's own: "11.69 to 1 · about 8% : 92%" and "0.29 to 1 · 78% : 22%". A view that carries no odds
+// gives the ratio alone. Undefined where the session has no ratio.
+export function ratioWords(view: TradeReplayView, session: ViewSession): { text: string; plan?: string; odds?: StakeOdds } | undefined {
+  const { rewardRiskNow, rewardRiskOdds } = session.figures ?? {};
+  if (rewardRiskNow?.kind !== 'Value') return undefined;
+  const planColumn = view.planColumn;
+  const odds = rewardRiskOdds?.kind === 'Value' ? rewardRiskOdds.value : undefined;
+  const planPair = odds && planColumn?.odds ? ` · ${oddsPair(planColumn.odds, false)}` : '';
+  const plan = planColumn ? `${ratioToOne(planColumn.rewardRisk)}${planPair}` : undefined;
+  const text = `${ratioToOne(rewardRiskNow.value)}${odds ? ` · ${oddsPair(odds, true)}` : ''}`;
+  const note = 'Odds: Target first : Stop first, estimated with no edge and no time limit.';
+  return { text, ...(plan && { plan }), ...(odds && { odds: { text, ...(plan && { planText: `(Plan ${plan})` }), spoken: oddsSpoken(odds), note } }) };
+}
+
 export function stakeOf(view: TradeReplayView, index: number, session: ViewSession): string | null {
   if (session.final) return finalStakeWords(view, index);
   const sentence = stakeSentence(view, session);
@@ -29,7 +63,7 @@ export function stakeOf(view: TradeReplayView, index: number, session: ViewSessi
 
 function stakeSentence(view: TradeReplayView, session: ViewSession): string | null {
   const figures = session.figures;
-  const { standing, ongoingRiskToStop: risk, incrementalRewardToTarget: reward, rewardRiskNow } = figures ?? {};
+  const { standing, ongoingRiskToStop: risk, incrementalRewardToTarget: reward } = figures ?? {};
   if (standing?.kind !== 'Value') return null;
   if (standing.value.zone === 'PastStop') {
     const worst = figures?.worstCaseOngoingRisk;
@@ -46,7 +80,7 @@ function stakeSentence(view: TradeReplayView, session: ViewSession): string | nu
     const open = openProfitAtRisk ? ` (${money(openProfitAtRisk)} of it open profit)` : '';
     return `From here: ${money(risk.value)} at risk back to the Stop${open}${cap}.`;
   }
-  const plan = view.planColumn ? ` (the Plan was ${ratioToOne(view.planColumn.rewardRisk)})` : '';
-  const rr = rewardRiskNow?.kind === 'Value' ? ` · ${ratioToOne(rewardRiskNow.value)}${plan}` : '';
+  const words = ratioWords(view, session);
+  const rr = words ? ` · ${words.text}${words.plan ? ` (the Plan was ${words.plan})` : ''}` : '';
   return `From here: ${money(risk.value)} at risk to the Stop · ${money(reward.value)} more to the Target${rr}.`;
 }

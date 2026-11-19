@@ -154,6 +154,30 @@ describe('Replay frame: the readout (W43)', () => {
     expect(text(readout)).not.toContain('No Mark');
   });
 
+  it('should show the odds note once, under the grid, and let a screen reader hear the odds in full', () => {
+    const note = 'Odds: Target first : Stop first, estimated with no edge and no time limit.';
+    const odds = { text: '11.69 to 1 · about 8% : 92%', planText: '(Plan 0.29 to 1 · 78% : 22%)', spoken: 'about 8% chance of the Target first, 92% of the Stop first', note };
+    const withOdds = { ...stakeGroup, rows: [{ label: 'Reward to risk', value: fig(odds.text), change: odds.planText }], grid: { ...stakeGroup.grid!, odds } };
+    render(<Readout groups={[withOdds]} />);
+    const readout = screen.getByTestId('readout');
+    expect(screen.getAllByText(note)).toHaveLength(1);
+    const table = screen.getByRole('table');
+    expect(table.compareDocumentPosition(screen.getByText(note)) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(text(readout.querySelector('[data-row="Reward to risk"]')!)).toContain('11.69 to 1 · about 8% : 92%');
+    expect(within(readout).getByRole('img', { name: odds.spoken }).textContent).toBe(odds.text);
+    // No odds, no note.
+    cleanup();
+    render(<Readout groups={[stakeGroup]} />);
+    expect(screen.queryByText(note)).toBeNull();
+  });
+
+  it('should carry the extremes weight on the At Worst case and At Max reward rows for the stylesheet to dim', () => {
+    const weighted = { ...stakeGroup, grid: { ...stakeGroup.grid!, groups: stakeGroup.grid!.groups.map((g) => ({ ...g, rows: g.rows.map((r) => (r.label === 'At Worst case' || r.label === 'At Max reward' ? { ...r, weight: 'Remote' as const } : r)) })) } };
+    render(<Readout groups={[weighted]} />);
+    const readout = screen.getByTestId('readout');
+    expect(['At Stop', 'At Worst case', 'At Target', 'At Max reward'].map((l) => attr(readout.querySelector(`[data-row="${l}"]`)!, 'data-weight'))).toEqual([null, 'Remote', null, 'Remote']);
+  });
+
   it('should show Final result in place of the first two groups on a final session', () => {
     const final: ReplayFrameSession['readout'] = [{ title: 'Final result', rows: [{ label: 'Trade P&L', value: { kind: 'Figure', text: '+$988.00' } }] }, groups[2]!];
     render(<Readout groups={final} />);
