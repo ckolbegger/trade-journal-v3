@@ -81,7 +81,7 @@ export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange, i
     if (to === undefined) return;
     event.preventDefault();
     const next = shown[(to + shown.length) % shown.length]!;
-    setSelected(next);
+    choose(next);
     document.getElementById(`drawer-tab-${tabId(next)}`)?.focus();
   };
 
@@ -94,9 +94,17 @@ export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange, i
   // A page that loads with the overlay already open does not arrive: the overlay's own links and Close answer instead (A273).
   // A session is a calendar date; anything else in the address is no session, and is never put into a selector.
   const arrival = useRef({ wanted: initialDrawer === 'Price History' && !replayOpen && /^\d{4}-\d{2}-\d{2}$/.test(initialSession ?? '') ? initialSession : undefined });
-  const requestDrawer: DrawerRequest = (drawer, target) => {
+  // Whatever the trader does to the drawers or the overlay has the last word over a pending arrival.
+  const choose = (drawer: Drawer) => {
     arrival.current.wanted = undefined;
     setSelected(drawer);
+  };
+  const openReplay = () => {
+    arrival.current.wanted = undefined;
+    onReplayOpen?.();
+  };
+  const requestDrawer: DrawerRequest = (drawer, target) => {
+    choose(drawer);
     setFocusing({ drawer, target });
   };
   // A link inside the overlay (W46) closes it, then the drawer takes focus: the page is inert until the overlay is gone, and the overlay's
@@ -139,7 +147,7 @@ export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange, i
   }, [focusing, replayOpen]);
   const [reflecting, setReflecting] = useState<string>();
   const reflectNow = (debtId: string) => {
-    setSelected('Journal');
+    choose('Journal');
     setReflecting(debtId);
   };
   // A Debt answered or declined on its card is no longer owed: Needs you and the Journal tab's count follow the card's own save result, so the
@@ -218,7 +226,7 @@ export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange, i
               aria-selected={name === current}
               aria-controls={`drawer-panel-${tabId(name)}`}
               tabIndex={name === current ? 0 : -1}
-              onClick={() => setSelected(name)}
+              onClick={() => choose(name)}
             >
               {name}
               {countOf(name) !== undefined && (
@@ -234,7 +242,7 @@ export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange, i
         </div>
         {/* P143: Replay opens an overlay, so it is a button after the tabs and not one of them. */}
         {replayable && (
-          <button ref={replayButton} type="button" className="pill secondary cockpit-replay-button" onClick={onReplayOpen}>
+          <button ref={replayButton} type="button" className="pill secondary cockpit-replay-button" onClick={openReplay}>
             Replay
           </button>
         )}

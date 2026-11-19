@@ -701,6 +701,55 @@ describe('Replay: audit navigation (W46)', () => {
     expect(document.activeElement?.closest('li')?.textContent).toContain('Buy 60 XYZ');
   });
 
+  // The address names Price History and a session, and the replay read is held until `arrive` is called.
+  const arrivalHeld = async () => {
+    let arrive: (result: unknown) => void = () => undefined;
+    const facade = facadeOf();
+    vi.mocked(facade.TradeViewsAndReporting.replayTrade).mockReturnValue(new Promise((resolve) => (arrive = resolve)) as never);
+    renderWith(facade, '/trades/trade-1?drawer=price-history&session=2026-10-12');
+    await screen.findByRole('region', { name: 'State of play' });
+    const load = () =>
+      act(() => {
+        arrive({ kind: 'Ready', view: withMonday(), binding: BINDING });
+        return Promise.resolve();
+      });
+    return load;
+  };
+
+  it('should leave focus on the Replay button when the overlay was opened while the replay was loading and is closed after it loaded', async () => {
+    const user = userEvent.setup();
+    const load = await arrivalHeld();
+    await user.click(screen.getByRole('button', { name: 'Replay' }));
+    await load();
+    const dialog = within(await screen.findByRole('dialog', { name: 'Replay, XYZ' }));
+    await user.click(await dialog.findByRole('button', { name: 'Close' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Replay' }));
+    expect(screen.getByRole('tab', { selected: true }).getAttribute('aria-label')).toBe('Price History');
+  });
+
+  it('should keep the tab chosen while the replay was loading, with focus where it was, when the replay arrives', async () => {
+    const user = userEvent.setup();
+    const load = await arrivalHeld();
+    await user.click(screen.getByRole('tab', { name: 'Position' }));
+    await load();
+    await screen.findAllByText('+$200.00 since Mon Oct 12');
+    expect(screen.getByRole('tab', { selected: true }).getAttribute('aria-label')).toBe('Position');
+    expect(document.activeElement).toBe(screen.getByRole('tab', { name: 'Position' }));
+  });
+
+  it('should not override a drawer request made from the overlay when the replay arrives while the overlay is open from the button', async () => {
+    const user = userEvent.setup();
+    const load = await arrivalHeld();
+    await user.click(screen.getByRole('button', { name: 'Replay' }));
+    await load();
+    const dialog = within(await screen.findByRole('dialog', { name: 'Replay, XYZ' }));
+    await user.click(await dialog.findByRole('button', { name: 'Position' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(screen.getByRole('tab', { selected: true }).getAttribute('aria-label')).toBe('Position');
+    expect(document.activeElement?.closest('li')?.textContent).toContain('Buy 60 XYZ');
+  });
+
   it('should render the Detail and throw nothing when the address names a session with a quote or a backslash', async () => {
     for (const session of ['a"b', 'x\\']) {
       renderWith(facadeOf({ replayResult: { kind: 'Ready', view: withMonday(), binding: BINDING } }), `/trades/trade-1?drawer=price-history&session=${encodeURIComponent(session)}`);
