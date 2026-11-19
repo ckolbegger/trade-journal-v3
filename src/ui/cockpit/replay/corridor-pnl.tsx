@@ -153,6 +153,11 @@ export function drawPnl(props: ReplayPlotProps, width: number): DrawnChart {
     const spot = placer.place(signedAxisMoney(current.tradePnl), [
       { x: xc, y: y - 9, anchor: 'middle' },
       { x: xc, y: y + 17, anchor: 'middle' },
+      // Near an edge, where the centred spots run past it, the value ends at the cursor or starts at it, on the side with room.
+      { x: xc + 6, y: y - 9, anchor: 'start' },
+      { x: xc - 6, y: y - 9, anchor: 'end' },
+      { x: xc + 6, y: y + 17, anchor: 'start' },
+      { x: xc - 6, y: y + 17, anchor: 'end' },
     ], true);
     if (spot) labels.push({ key: 'slider-value', cls: 'slider-value', text: signedAxisMoney(current.tradePnl), spot });
   }

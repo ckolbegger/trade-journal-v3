@@ -1132,6 +1132,33 @@ describe('Corridor on a phone (suggestion 9)', () => {
     expect(num(wide.container.querySelector('svg.price-strip')!, 'height')).toBe(136);
   });
 
+  it('should keep the slider value inside the phone drawing at the last session', () => {
+    frameWidth(340);
+    const at = (slider: number) =>
+      props({
+        sessions: Array.from({ length: slider + 1 }, (_, i) => bren(i, { tradePnl: 1138, markers: [], resultAtStop: null, resultAtTarget: null })),
+        sliderIndex: slider,
+        axis: { slots: 15, endLabel: 'Fri Nov 20' },
+      });
+    // The label's extent by the same 6 px a character the placer uses, from its anchor.
+    const extent = (c: HTMLElement) => {
+      const t = pnl(c).querySelector('text.slider-value')!;
+      const x = num(t, 'x');
+      const w = t.textContent.length * 6 + 2;
+      const a = t.getAttribute('text-anchor');
+      const x0 = a === 'start' ? x : a === 'end' ? x - w : x - w / 2;
+      return { x0, x1: x0 + w, text: t.textContent };
+    };
+    for (const slider of [14, 0]) {
+      const { container } = render(<CorridorPlot {...at(slider)} />);
+      const e = extent(container);
+      expect(e.text).toBe('+$1,138');
+      expect(e.x0, `slider ${slider}, left edge`).toBeGreaterThanOrEqual(0);
+      expect(e.x1, `slider ${slider}, right edge`).toBeLessThanOrEqual(340);
+      cleanup();
+    }
+  });
+
   // R-BREN-U Thu 11-12: "Stop +$316 · Banked +$478 · Target +$956 · Sold 2".
   it('should take the line labels off the phone drawing and list them in a strip under it', () => {
     frameWidth(340);
