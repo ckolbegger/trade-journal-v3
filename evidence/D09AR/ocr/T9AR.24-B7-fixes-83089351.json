@@ -1,0 +1,167 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 3,
+    "total_tokens": 147886,
+    "input_tokens": 145903,
+    "output_tokens": 1983,
+    "cache_read_tokens": 11648,
+    "elapsed": "1m23s"
+  },
+  "tool_calls": {
+    "total": 13,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 1,
+      "file_read": 11
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/replay/corridor-pnl.tsx",
+      "content": "The fallback can move the label anywhere in the plot, but the flag still renders its original 18px pole and pennant using `y` and `top`. When the nearby rows are occupied, the selected label can therefore be far from its pennant with no connecting geometry, violating the requirement that the label remain tied to its flag line. Retain the selected spot and adjust the pole/pennant or draw a connector; add a crowded-layout assertion for that relationship.",
+      "existing_code": "      const rows = [...near, ...grid.sort((a, b) =\u003e Math.abs(a - near[0]!) - Math.abs(b - near[0]!))].filter((row) =\u003e row \u003c= FLOOR);",
+      "start_line": 242,
+      "end_line": 242,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/cockpit/replay/corridor-pnl.tsx",
+      "content": "These expanded candidates are checked only against previously reserved text boxes: `LabelPlacer.place` knows nothing about result lines, hatch rectangles, stake beams or P\u0026L dots. A fallback row crossing any of those graphics is consequently accepted as free, so preserving the flag can now obscure other chart information. Register the relevant graphical obstacles (or reject intersecting candidates) before choosing a row, and cover graphical intersections in the tests rather than only text-to-text clashes.",
+      "existing_code": "      put(key, `crossing-label ${crossing.line.toLowerCase()}`, words(crossing.label, crossing.shortLabel), rows.flatMap((row): Spot[] =\u003e [\n        { x: x + 6, y: row, anchor: 'start' },\n        { x: x - 6, y: row, anchor: 'end' },\n      ]));",
+      "start_line": 243,
+      "end_line": 246,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/cockpit/replay/corridor.test.tsx",
+      "content": "This nested ternary violates the supplied checklist. Compute the pre-sale, sale and later-session P\u0026L with an explicit conditional before constructing the fixture, so the three cases remain clear.",
+      "existing_code": "              tradePnl: i \u003c 5 ? -100 : i === 5 ? realized : late,",
+      "start_line": 887,
+      "end_line": 887,
+      "category": "style",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "e2e/d9ar/chart.spec.ts",
+        "src/ui/cockpit/replay/corridor-pnl.tsx",
+        "src/ui/cockpit/replay/corridor.test.tsx"
+      ]
+    }
+  ],
+  "session_id": "b002d5a6-f024-431f-b7d3-247880e533d6",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "b002d5a6-f024-431f-b7d3-247880e533d6",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "cf7ce65b",
+      "requested_head": "83089351",
+      "resolved_base": "cf7ce65beeed0c5874d4b9f3d37396b196579b47",
+      "resolved_head": "83089351c486532444c3aad8c59dd764a283b511",
+      "exact_range": "cf7ce65beeed0c5874d4b9f3d37396b196579b47..83089351c486532444c3aad8c59dd764a283b511",
+      "source_artifact_sha256": "6ee16cb5850138491fd4adb4a654f65eb3c9d38819313fb6186c3a8a21a9067c"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "d8835c0d0815da151f4d78ae5d9208a4684f3f6551ac0510501571681c315ab2",
+          "path": "src/ui/cockpit/replay/corridor-pnl.tsx",
+          "fingerprint": "65049dccda7780892cefbf169201ac1258f1ca77f3cd7982e6912ceaa0af44e3"
+        },
+        {
+          "item_id": "f16b10bf3e13de7d3a70534f7bcf4d5affdae4bb70ab671a2b91a7ba1b948579",
+          "path": "src/ui/cockpit/replay/corridor.test.tsx",
+          "fingerprint": "a4897d757820bb36d485aab4770f7add262d25be4f6853731cba1d80d240d8d0"
+        },
+        {
+          "item_id": "f29e81c73f1f29a685757ce194909f6690dbd33074294256066040f12aa0915d",
+          "path": "e2e/d9ar/chart.spec.ts",
+          "fingerprint": "e0a113e29c4c5645e1dd8b91fcaa55f8011b4491925912eef2c142242fc74cc1"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "d8835c0d0815da151f4d78ae5d9208a4684f3f6551ac0510501571681c315ab2",
+          "path": "src/ui/cockpit/replay/corridor-pnl.tsx",
+          "fingerprint": "65049dccda7780892cefbf169201ac1258f1ca77f3cd7982e6912ceaa0af44e3"
+        },
+        {
+          "item_id": "f16b10bf3e13de7d3a70534f7bcf4d5affdae4bb70ab671a2b91a7ba1b948579",
+          "path": "src/ui/cockpit/replay/corridor.test.tsx",
+          "fingerprint": "a4897d757820bb36d485aab4770f7add262d25be4f6853731cba1d80d240d8d0"
+        },
+        {
+          "item_id": "f29e81c73f1f29a685757ce194909f6690dbd33074294256066040f12aa0915d",
+          "path": "e2e/d9ar/chart.spec.ts",
+          "fingerprint": "e0a113e29c4c5645e1dd8b91fcaa55f8011b4491925912eef2c142242fc74cc1"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "0f4584ea99dc417ec2ca830338386ccaca4e7a55b0b51a96bbcd02adf8d0778d",
+          "path": "evidence/D09AR/tdd-log/T9AR.24-B7-part2.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "13d4f54e3fb344d205927e1e91321261a7ba03b850e658d8c211988e57c10bca",
+          "path": "evidence/D09AR/tdd-log/T9AR.24-B7-B1.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "2e8d6c36bc83e1192a9ad3bcaf2ddea17b19c361cc9d5f5825f06f7a830562b1",
+          "path": "evidence/D09AR/suite-runs/T9AR.24-B7-fixes-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "612022b1ef68fd7b88843ec4748358f7ba7c0781e3f9ae670fb26951b2e59c8b",
+          "path": "evidence/D09AR/suite-runs/T9AR.24-B7-fixes-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "c8ba1cdde611e29e931c043302142f0c43e491da7d8771eb7e5d244712a6269c",
+          "path": "evidence/D09AR/suite-runs/T9AR.24-B7-fixes-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "da643c5380587645ab8ee84bcedaeeaf2ef513dbfcdc6ac33aecb05a7335b0f4",
+          "path": "evidence/D09AR/suite-runs/T9AR.24-B7-fixes-integration.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 83030
+  }
+}

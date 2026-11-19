@@ -772,6 +772,85 @@ Lane BR (`d09ar/br`), base `70ce0f74`.
         - Earlier sessions' hatches are unlabelled areas, and the key names them. A280 speaks of lines.
         - The three key words are hardcoded in `corridor.tsx`'s `DRAWN_AREAS`, not in `plot.props.ts` like the other key entries.
     - **Merged** by fast-forward. Lane PL's base `14982570` was main's head.
+  - **T9AR.24-B7** `cf7ce65b` (lane PL, from `efdc5c28`):
+    - **Cause:** a placement failure in `drawPnl`, not in the domain or in B6.
+      - The flag's four label spots collide from Tue Nov 10 on with the never-dropped "Realized −$440" banked label from the Mon Nov 9 sale.
+      - With no spot, the flag and its key entry are dropped together.
+      - CORV and DALE-hold have no sale label beside their flags.
+    - **Fix:** two more spots below the pole, at `top + 26`. A flag with no room is still not drawn (A280).
+      - Four spots lower down were tried first. They broke the existing case "name in the key only the flags that are drawn", so they were reverted.
+    - **Cases:**
+      - E2e "keep AXIO's Stop breached flag on the P&L chart and in the key on every session from Mon Nov 9 to Mon Nov 16, and none before": red ("Tue Nov 10 … the flag is still on the chart"), then green.
+      - Unit "keep the Stop breached flag drawn, clear of every other label, on each AXIO session after Mon 11-09": five invalid reds that passed while the fixture lacked the real geometry, recorded in the log; then a genuine red; then green.
+      - No first-run passes. No expected values changed.
+    - **Agent's note:** the `top + 26` row is tuned just inside what the long-banked-label key case allows.
+    - Browser: 73 passed, with the 320 fit holding. Lane tier `T9AR.24-B7`: unit 2471, integration 286, checks 14 of 14.
+    - **ocr** on `cf7ce65b` (`ocr/T9AR.24-B7-cf7ce65b.json`): 3 files, 1 comment.
+      - **T9AR.24-B7-B1** (Valid, test, `corridor.test.tsx:855`): the overlap helper's `LABELS` selector omits `text.crossing-label`, so the case never checks the flag. Briefed in lane PL.
+      - Reviewer's notes:
+        - The e2e runs at 1280 only.
+        - On real AXIO, rebuilt from `reference-trade.ts`, the flag holds at frame widths 640 to 1800 on every session. Phones keep it by construction.
+        - A sweep of 1,260 synthetic charts still dropped the flag in 154. The fix is tuned to one row's pixels.
+        - B7's fixture differs from the real AXIO, and its comment on placement order is wrong.
+        - The reviewer recommends placing the flag with priority.
+        - A pre-existing case: a never-dropped banked label can overlap the axis's cursor text.
+    - **Sent back as B7 part 2** by the main session, with B7-B1. This is not a bug task from the notes. B7 did not yet meet its own expected behaviour in general (T9AR.19, "keep the flag on later sessions"). The brief:
+      - make persistence structural, not one pixel row;
+      - add hard geometries from the sweep;
+      - match the fixture to the real series;
+      - run the e2e at 1440 and 1920 too.
+    - **T9AR.24-B7-B1** `ab7e8d3d`:
+      - `LABELS` now includes `text.crossing-label`.
+      - It is a first-run pass, flagged. Mutation: the flag was put at the banked label's spot, and the case failed ("Realized −$440" over "Stop breached"). Restored.
+    - **B7 part 2**, fixture `354ef6f5`: the AXIO unit fixture now uses R-AXIO-D's real series, and its comment is corrected. Expected values are unchanged.
+    - **Part 2 stopped on an existing case.**
+      - The hard-geometry case went red (−600 realized against a −740 Stop, at 640, slider 6).
+      - Variant 1 searches rows down to the plot floor on both sides. It turns that case green, but turns "name in the key only the flags that are drawn, each by its own words" red. That case drops a Target flag by crowding only three rows.
+      - Variant 2 places the flag before the stake tags. It keeps that case green, but the hard geometries still drop the flag.
+    - **Main session's call: Option A.**
+      - That case tests the rule that the key names only drawn flags. Its crowding is only the means of dropping a flag. So its setup may change, provided the title and the key assertions stay. This is not a spec deviation: T9AR.19, A280 and W66 all hold.
+      - Variant 1 goes in, and the e2e extends to 1440 and 1920.
+    - **B7 part 2 fix** `83089351`:
+      - The flag's label tries every row from `TOP + 8` to the plot floor on both sides: the old three rows first, then a 6 px grid, nearest first. It never goes below the floor, so it never reaches the cursor text.
+      - Case "keep the Stop breached flag drawn, in the key and clear of every label and the axis cursor, on every later session of hard geometries" covers 6 geometries, at widths 837, 1000, 1300 and 1700, on sessions 6 to 10. Red ("-600/-740/760/-860 at 837, slider 6"), then green.
+      - The existing case's setup changed: the flag's label is now too wide for any row. Before and after are in the tdd-log.
+      - The e2e AXIO case now runs at 1280, 1440 and 1920.
+      - A flag can now be dropped on a wide layout only when no row holds its label, which real figures cannot reach.
+      - Browser: 73 passed, with the 320 fit holding. Lane tier `T9AR.24-B7-fixes`: unit 2472, integration 286, checks 14 of 14. It ran on `354ef6f5` plus the uncommitted fix, the same content as committed.
+    - **ocr** on `cf7ce65b..83089351` (`ocr/T9AR.24-B7-fixes-83089351.json`, round 2 of B7's chain): 3 comments. All are briefed in lane PL:
+      - **T9AR.24-B7-B2** (Valid, `corridor-pnl.tsx:242`): the label can land up to the floor, about 168 px from an 18 px pole, with nothing tying it to its flag.
+      - **T9AR.24-B7-B3** (Valid, `corridor-pnl.tsx:243-246`): the search avoids only text. In a browser probe on AXIO at 1280, 1440 and 1920, the label sits on the Stop line, hatches and the Mark dot from Tue Nov 10. On the slider's session it also sits on the stake bar, and at 1440 on the cursor line.
+      - **T9AR.24-B7-F1** (Doubtful, style, `corridor.test.tsx:887`): a nested ternary in a test fixture.
+    - Reviewer's notes:
+      - The search cost is negligible.
+      - The changed existing case still proves the key rule. Its drop now comes from "too wide", so the crowded-out path has no case of its own.
+    - A third round still leaving findings goes to the user.
+    - **T9AR.24-B7-F1** `9cb979c7`: the fixture uses `pnlAt(i)` with early returns. The case is unchanged and green.
+    - **T9AR.24-B7-B2 and B3** `a0673948`, one change:
+      - **The tie:** a pole segment (`path.flag-pole.tie`) runs from the pole's foot or top to the label's row, so the label is always joined to its flag. There is no distance cap.
+      - **Legibility:** it relies on the chart's existing 3 px `paint-order: stroke` halo, with the label drawn last. The label can still sit on a result line, a hatch or the Mark dot.
+      - **The cursor line:** spots crossing it are tried last.
+      - **Cases:**
+        - Unit, "join the Stop breached label to its pole, paint it above every drawn shape and keep it off the cursor line, on AXIO and the hard geometries": red ("crosses the cursor line"), then a failing first fix (labels above the pole were not tied), then green.
+        - E2e: the AXIO case extended at 1280, 1440 and 1920 with checks for the halo, the tie, DOM order and the cursor line. Red ("the pole runs to the label" false), then green.
+        - No first-run passes. The halo and order checks passed on the old code, since they assert existing CSS and DOM.
+    - Lane tier `T9AR.24-B7-round2` (`657d33c7`): unit 2473, integration 286, checks 14 of 14. Browser: 73 passed, with the 320 fit holding.
+    - **ocr** round 3 (`ocr/T9AR.24-B7-round3-657d33c7.json`): 2 comments, both Valid, low, style.
+      - The comments:
+        - the `tie` is a nested ternary (`corridor-pnl.tsx:257`);
+        - the new fixture repeats the ternary F1 removed (`corridor.test.tsx:949`).
+      - Reviewer's notes, for the final report:
+        - The tie reads as the pole. On AXIO it runs along the sale marker's line, and the cursor hides it on its own session.
+        - Every label relies on the same halo, and none is kept off lines.
+        - The tie is not reserved in the placer, so it can pass under a banked label's text.
+        - The e2e's "nothing after the label" check assumes one flag.
+        - The cursor check is unconditional, while the code only tries that spot last.
+      - A third round still leaving findings is a pending decision, so the user was asked. **Answer: fix both, then merge.** Briefed in lane PL as **T9AR.24-B7-D1**.
+    - **T9AR.24-B7-D1** `cf0d6c86` (evidence `83de060c`):
+      - The `tie` uses `if / else if`, and the fixture uses a local `pnlAt(i)`. The output is identical.
+      - Replay tests: 241. Lane tier `T9AR.24-B7-D1`: unit 2473, integration 286, checks 14 of 14.
+      - ocr (`ocr/T9AR.24-B7-D1-cf0d6c86.json`): **no findings**.
+    - **Merged** B7's whole chain by fast-forward. Lane PL's base `efdc5c28` was main's head. The chain is B7, B1, part 2's fixture, part 2's fix, F1, B2 and B3, D1, and the evidence commits.
         - Reviewer's notes:
           - `isMarkLacking` is exactly MarkMissing or AcknowledgedUnavailable.
           - The Trade P&L row's figure is the contract's own, so the Underlying's Mark cannot reach it.

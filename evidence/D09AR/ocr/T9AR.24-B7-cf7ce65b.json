@@ -1,0 +1,143 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 1,
+    "total_tokens": 116735,
+    "input_tokens": 116065,
+    "output_tokens": 670,
+    "cache_read_tokens": 14720,
+    "elapsed": "42s"
+  },
+  "tool_calls": {
+    "total": 10,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 2,
+      "file_read": 7
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/replay/corridor.test.tsx",
+      "content": "This assertion does not check collisions involving the Stop breached label: the `LABELS` selector used by `clashes()` omits `text.crossing-label`. Consequently, the regression test can pass even if the newly placed flag label overlaps the banked, stake, or hatch label. Include `text.crossing-label` in the collision helper's selector so this assertion actually verifies the flag's clearance.",
+      "existing_code": "      expect(clashes(pnl(container)), `slider ${slider}`).toEqual([]);",
+      "start_line": 855,
+      "end_line": 855,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "e2e/d9ar/chart.spec.ts",
+        "src/ui/cockpit/replay/corridor-pnl.tsx",
+        "src/ui/cockpit/replay/corridor.test.tsx"
+      ]
+    }
+  ],
+  "session_id": "a94894be-3d66-4f8e-ac40-70ed8067766c",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "a94894be-3d66-4f8e-ac40-70ed8067766c",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "cf7ce65b",
+      "resolved_base": "efdc5c285524ab00c51896f73c6498a0760395bc",
+      "resolved_head": "cf7ce65beeed0c5874d4b9f3d37396b196579b47",
+      "exact_range": "efdc5c285524ab00c51896f73c6498a0760395bc..cf7ce65beeed0c5874d4b9f3d37396b196579b47",
+      "source_artifact_sha256": "352857267bdee97af5e479ece5760543523f013c07514efb82084ae8b18ad71d"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "18de86b152c71edf7b69e5ef56c77c1958afecdf4524893fdc802e9700a6dfe1",
+          "path": "src/ui/cockpit/replay/corridor-pnl.tsx",
+          "fingerprint": "e06b69c92a8ea033419b6489023633f5aa63f1f857bbb0246c6c5ba206cf535c"
+        },
+        {
+          "item_id": "ba578f97f7698c0e6bcb181e747f8c8ef3dafb90b6f8eef6f25b35b639e1dd2c",
+          "path": "src/ui/cockpit/replay/corridor.test.tsx",
+          "fingerprint": "dc2af472a2c49eb89ede18a7af0b4fadf1fe3b6c5d7b0ec0ad71b28eb6fb4ef2"
+        },
+        {
+          "item_id": "ebc9d1c2c701d17b6b1d061b466cab052ef9bc2b403b5d98ee1865f679a05db8",
+          "path": "e2e/d9ar/chart.spec.ts",
+          "fingerprint": "e3a46e244471371c8e3089812069bb7ed363b1b6db90a87960275a204984b3c9"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "18de86b152c71edf7b69e5ef56c77c1958afecdf4524893fdc802e9700a6dfe1",
+          "path": "src/ui/cockpit/replay/corridor-pnl.tsx",
+          "fingerprint": "e06b69c92a8ea033419b6489023633f5aa63f1f857bbb0246c6c5ba206cf535c"
+        },
+        {
+          "item_id": "ba578f97f7698c0e6bcb181e747f8c8ef3dafb90b6f8eef6f25b35b639e1dd2c",
+          "path": "src/ui/cockpit/replay/corridor.test.tsx",
+          "fingerprint": "dc2af472a2c49eb89ede18a7af0b4fadf1fe3b6c5d7b0ec0ad71b28eb6fb4ef2"
+        },
+        {
+          "item_id": "ebc9d1c2c701d17b6b1d061b466cab052ef9bc2b403b5d98ee1865f679a05db8",
+          "path": "e2e/d9ar/chart.spec.ts",
+          "fingerprint": "e3a46e244471371c8e3089812069bb7ed363b1b6db90a87960275a204984b3c9"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "101031266ade5aa486b8974e7f47e3dc1b62092f4499c98165769852c043f9cc",
+          "path": "evidence/D09AR/suite-runs/T9AR.24-B7-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "178950bb5bfb1849abb55f02b472aa3f5db71857f66f727b8a4c6906129156f1",
+          "path": "evidence/D09AR/suite-runs/T9AR.24-B7-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "296097a83faaebe84dd29e5efbec327a0d6f3bec32128c1d2390647e9b8320ee",
+          "path": "evidence/D09AR/tdd-log/T9AR.24-B7.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "383d4cd85cb3e44bd09494ac31618fc1c7aa06ab1e8930068fc7394661753b12",
+          "path": "evidence/D09AR/suite-runs/T9AR.24-B7-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "65ee764f32bf337576c80744daa706e0213e7bcffd52798b9f91857a3d261e83",
+          "path": "evidence/D09AR/suite-runs/T9AR.24-B7-lane.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 41628
+  }
+}

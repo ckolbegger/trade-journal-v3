@@ -1,0 +1,158 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 2,
+    "total_tokens": 171008,
+    "input_tokens": 168945,
+    "output_tokens": 2063,
+    "cache_read_tokens": 13312,
+    "elapsed": "1m18s"
+  },
+  "tool_calls": {
+    "total": 16,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 3,
+      "file_read": 11
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/replay/corridor.test.tsx",
+      "content": "This introduces a nested ternary, which the review checklist explicitly prohibits. Reuse the `pnlAt` helper pattern used in the preceding test (with separate `if` branches for before, on, and after the sale) to keep the fixture logic consistent and readable.",
+      "existing_code": "              tradePnl: i \u003c 5 ? -100 : i === 5 ? realized : late,",
+      "start_line": 949,
+      "end_line": 949,
+      "category": "maintainability",
+      "severity": "low"
+    },
+    {
+      "path": "src/ui/cockpit/replay/corridor-pnl.tsx",
+      "content": "This is another newly introduced nested ternary, which the review checklist explicitly prohibits. Initialize `tie` as an optional `{ from: number; to: number }` value and assign it in separate `if (row \u003e y)` / `else if (row \u003c top)` branches.",
+      "existing_code": "      const tie = row \u003e y ? { from: y, to: row } : row \u003c top ? { from: top, to: row } : undefined;",
+      "start_line": 257,
+      "end_line": 257,
+      "category": "style",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "e2e/d9ar/chart.spec.ts",
+        "src/ui/cockpit/replay/corridor-pnl.tsx",
+        "src/ui/cockpit/replay/corridor.test.tsx"
+      ]
+    }
+  ],
+  "session_id": "0c22a232-8493-4542-8cf0-6817645b0cea",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "0c22a232-8493-4542-8cf0-6817645b0cea",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "83089351",
+      "requested_head": "657d33c7",
+      "resolved_base": "83089351c486532444c3aad8c59dd764a283b511",
+      "resolved_head": "657d33c7165785539ab1026f37d54c3d8f9db716",
+      "exact_range": "83089351c486532444c3aad8c59dd764a283b511..657d33c7165785539ab1026f37d54c3d8f9db716",
+      "source_artifact_sha256": "7c6492931ad785d747f61645bd59f20e40c2d5422d5d93892a35d2b603937247"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "d8835c0d0815da151f4d78ae5d9208a4684f3f6551ac0510501571681c315ab2",
+          "path": "src/ui/cockpit/replay/corridor-pnl.tsx",
+          "fingerprint": "249a43949e68cd41c0b01df7cd005e63549ff9ab4d96120bc7060aba6f53505f"
+        },
+        {
+          "item_id": "f16b10bf3e13de7d3a70534f7bcf4d5affdae4bb70ab671a2b91a7ba1b948579",
+          "path": "src/ui/cockpit/replay/corridor.test.tsx",
+          "fingerprint": "1c31bb870143175bd77fe97fa62a7b0f44ae712aaa33ced7fad5a680eb0702bd"
+        },
+        {
+          "item_id": "f29e81c73f1f29a685757ce194909f6690dbd33074294256066040f12aa0915d",
+          "path": "e2e/d9ar/chart.spec.ts",
+          "fingerprint": "a1f0e4e475771c6fd39ba753d602edc6c0980190340c62e31de218b9e3920b61"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "d8835c0d0815da151f4d78ae5d9208a4684f3f6551ac0510501571681c315ab2",
+          "path": "src/ui/cockpit/replay/corridor-pnl.tsx",
+          "fingerprint": "249a43949e68cd41c0b01df7cd005e63549ff9ab4d96120bc7060aba6f53505f"
+        },
+        {
+          "item_id": "f16b10bf3e13de7d3a70534f7bcf4d5affdae4bb70ab671a2b91a7ba1b948579",
+          "path": "src/ui/cockpit/replay/corridor.test.tsx",
+          "fingerprint": "1c31bb870143175bd77fe97fa62a7b0f44ae712aaa33ced7fad5a680eb0702bd"
+        },
+        {
+          "item_id": "f29e81c73f1f29a685757ce194909f6690dbd33074294256066040f12aa0915d",
+          "path": "e2e/d9ar/chart.spec.ts",
+          "fingerprint": "a1f0e4e475771c6fd39ba753d602edc6c0980190340c62e31de218b9e3920b61"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "27fb0827fb300e29b1771a1a8f2c3bc8dd6b1fd27e4675240b766419839d47cf",
+          "path": "evidence/D09AR/tdd-log/T9AR.24-B7-B3.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "4a245ffa895013f0c3ddbe7f1f8573c68eee4737c77d79e82fd2bc77dd6af00d",
+          "path": "evidence/D09AR/suite-runs/T9AR.24-B7-round2-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "4b186d5d16bffc28113b70e955e2b354e25fab62b733d89132f8605556f47551",
+          "path": "evidence/D09AR/suite-runs/T9AR.24-B7-round2-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "5503eae6a04a40823e46be45e2525bc44a99304478333e81e4323d15ae9aa9d3",
+          "path": "evidence/D09AR/suite-runs/T9AR.24-B7-round2-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ac557b46d747a59d63ce9e287cc35b9cd243d60d2330bcc07536bcf24065207c",
+          "path": "evidence/D09AR/tdd-log/T9AR.24-B7-B2.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "f65067472823d1fd562172fdd10012d6226d8da720c1cec92be74d25de723047",
+          "path": "evidence/D09AR/suite-runs/T9AR.24-B7-round2-unit.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 77647
+  }
+}

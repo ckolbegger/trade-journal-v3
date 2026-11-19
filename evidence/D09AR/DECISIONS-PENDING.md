@@ -6,6 +6,16 @@ None pending.
 
 ## Answered
 
+### T9AR.24-B7: a third ocr round still leaves findings (answered 2026-11-19)
+
+**Answer: fix both, then merge.** Done in lane PL as **T9AR.24-B7-D1** (D, since it carries out the user's answer), a structural task.
+
+ocr's third round on B7's chain (`83089351..657d33c7`, `ocr/T9AR.24-B7-round3-657d33c7.json`) leaves two low findings, both Valid and both about style; behaviour is unchanged:
+1. `corridor-pnl.tsx:257`: the tie's `row > y ? … : row < top ? … : undefined` is a nested ternary.
+2. `corridor.test.tsx:949`: the new fixture repeats the nested ternary that B7-F1 just rewrote as `pnlAt(i)`.
+
+Options: fix both as one more structural task and merge after its ocr (recommended); merge B7's chain now and record both as tech debt; something else.
+
 ### T9AR.18: the first-crossing sentence does not fit one phone screen at 320 by 667 (answered 2026-11-19)
 
 **Answer: below the charts on a phone (option 1).** On a phone only, the sentence follows the charts, above the readout; wide screens are unchanged and the words are unchanged. Done in lane SC as **T9AR.18-D1**.
