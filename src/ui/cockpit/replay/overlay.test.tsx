@@ -105,6 +105,26 @@ describe('Replay overlay (decision 3)', () => {
     expect(document.activeElement).toBe(copy);
   });
 
+  it('should not count a summary with tabIndex=-1 as a Tab edge', async () => {
+    render(
+      <ReplayOverlay name="Replay, BREN" header="BREN · Trade P&L +$988.00" onClose={vi.fn()}>
+        <button type="button">Inside button</button>
+        <details>
+          <summary tabIndex={-1}>Table</summary>
+          <div>Body</div>
+        </details>
+      </ReplayOverlay>,
+    );
+    const user = userEvent.setup();
+    const close = screen.getByRole('button', { name: 'Close' });
+    const inside = screen.getByRole('button', { name: 'Inside button' });
+    inside.focus();
+    await user.tab();
+    expect(document.activeElement).toBe(close);
+    await user.tab({ shift: true });
+    expect(document.activeElement).toBe(inside);
+  });
+
   it('should call onClose from the Close button and from Escape', async () => {
     const { onClose } = open();
     const user = userEvent.setup();
