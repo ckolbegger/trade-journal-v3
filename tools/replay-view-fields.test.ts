@@ -17,4 +17,14 @@ describe('replay view field builders', () => {
     expect(column.atTarget?.equals(Rational.of(39n, 2n))).toBe(true);
     expect(againstPlanOf('Entry', 'Above', 0.5).distance.equals(Rational.of(1n, 2n))).toBe(true);
   });
+
+  it('it should build the Plan column from prices whose differences are not exact in floating point', () => {
+    const column = planColumnWithTerms(xyz, 100.1, 90, 120, 2);
+    expect(column.atStop?.equals(Rational.of(-101n, 5n))).toBe(true);
+    expect(column.atTarget?.equals(Rational.of(199n, 5n))).toBe(true);
+    expect(column.rewardRisk?.equals(Rational.of(199n, 101n))).toBe(true);
+    const [stop, target] = column.terms?.conditions ?? [];
+    expect(stop?.pnlIfHit?.equals(Rational.of(-101n, 5n))).toBe(true);
+    expect(target?.pnlIfHit?.equals(Rational.of(199n, 5n))).toBe(true);
+  });
 });

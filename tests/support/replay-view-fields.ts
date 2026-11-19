@@ -35,14 +35,20 @@ export function figuresWithOdds(targetPercent: number, extremes: 'Main' | 'Remot
 
 // A Plan column with its terms: one Long leg and a Stop and a Target, priced on the Underlying.
 export function planColumnWithTerms(instrument: Instrument, entry: number, stop: number, target: number, quantity = 1): ReplayPlanColumn {
+  // Each price is made exact first, then the differences are taken exactly (a float difference such as 90 - 100.1 is not a decimal).
+  const [entryX, stopX, targetX, quantityX] = [exact(entry), exact(stop), exact(target), exact(quantity)];
+  const stopDistance = entryX.sub(stopX);
+  const targetDistance = targetX.sub(entryX);
+  const atStop = stopX.sub(entryX).mul(quantityX);
+  const atTarget = targetDistance.mul(quantityX);
   const terms: Terms = {
-    legs: [{ instrument, side: 'Long', quantity: r(quantity), entryPrice: r(entry) }],
+    legs: [{ instrument, side: 'Long', quantity: quantityX, entryPrice: entryX }],
     conditions: [
-      { role: 'Stop', priceOf: 'Underlying', price: r(stop), pnlIfHit: r((stop - entry) * quantity) },
-      { role: 'Target', priceOf: 'Underlying', price: r(target), pnlIfHit: r((target - entry) * quantity) },
+      { role: 'Stop', priceOf: 'Underlying', price: stopX, pnlIfHit: atStop },
+      { role: 'Target', priceOf: 'Underlying', price: targetX, pnlIfHit: atTarget },
     ],
   };
-  return { atStop: r((stop - entry) * quantity), atTarget: r((target - entry) * quantity), rewardRisk: r(target - entry, entry - stop), odds: domainOddsOf(r(entry - stop), r(target - entry)), terms };
+  return { atStop, atTarget, rewardRisk: targetDistance.div(stopDistance), odds: domainOddsOf(stopDistance, targetDistance), terms };
 }
 
 // A fill's `againstPlan`: the line, where the price lies against it, and the distance in price.
