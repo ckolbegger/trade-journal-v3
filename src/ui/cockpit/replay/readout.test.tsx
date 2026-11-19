@@ -9,6 +9,32 @@ afterEach(cleanup);
 const text = (el: Element) => el.textContent ?? '';
 const attr = (el: Element, name: string) => el.getAttribute(name);
 
+const fig = (text: string) => ({ kind: 'Figure', text }) as const;
+// R-BREN-U Wed 11-11 in the Stage A gate's figures (A278).
+const stakeGroup: ReplayFrameSession['readout'][number] = {
+  title: 'At stake from here, whole Position',
+  rows: [],
+  grid: {
+    columns: ['From here', 'R', 'P&L if hit'],
+    groups: [
+      {
+        heading: 'Current Risk',
+        rows: [
+          { label: 'At Stop', term: 'Ongoing Risk to Stop', fromHere: fig('$844.00'), r: fig('2.60R'), pnlIfHit: fig('−$324.00') },
+          { label: 'At Worst case', term: 'Worst-Case Ongoing Risk', fromHere: fig('$1,164.00'), r: fig('3.59R'), pnlIfHit: fig('−$644.00') },
+        ],
+      },
+      {
+        heading: 'Remaining Reward',
+        rows: [
+          { label: 'At Target', term: 'Incremental Reward to Target', fromHere: fig('$436.00'), r: fig('1.35R'), pnlIfHit: fig('+$956.00') },
+          { label: 'At Max reward', term: 'Maximum Incremental Reward', fromHere: { kind: 'Unbounded', text: 'No cap above' } },
+        ],
+      },
+    ],
+  },
+};
+
 // The readout takes the slider session's finished groups; the frame passes them (its own reveal case stays in frame.test.tsx).
 describe('Replay frame: the readout (W43)', () => {
   const groups: ReplayFrameSession['readout'] = [
@@ -46,35 +72,15 @@ describe('Replay frame: the readout (W43)', () => {
     expect(new Set(['At Max reward', 'At Stop', 'Stop Overrun'].map((l) => attr(cell(l), 'data-kind'))).size).toBe(3);
   });
 
-  it('should show a row heading above its row and the P&L beside the amount from here (T9.19-B4)', () => {
-    const rows: ReplayFrameSession['readout'] = [
-      {
-        title: 'At stake from here, whole Position',
-        rows: [
-          { label: 'At Worst case', heading: 'Current Risk', value: { kind: 'Figure', text: '$832.00 · 2.57R' }, pnl: { kind: 'Figure', text: '+$156.00' } },
-          { label: 'At Max reward', heading: 'Remaining Reward', value: { kind: 'Unbounded', text: 'No cap above' } },
-        ],
-      },
-    ];
-    render(<Readout groups={rows} />);
-    const readout = screen.getByTestId('readout');
-    expect(within(readout).getAllByRole('heading', { level: 4 }).map(text)).toEqual(['Current Risk', 'Remaining Reward']);
-    const worst = readout.querySelector('[data-row="At Worst case"]')!;
-    expect(text(worst.querySelector('.replay-value')!)).toBe('$832.00 · 2.57R');
-    expect(text(worst.querySelector('dd')!)).toBe('$832.00 · 2.57R · P&L +$156.00');
-    expect(readout.querySelector('[data-row="At Max reward"] .replay-pnl')).toBeNull();
-  });
-
-  it('should put the P&L right after the amount and before the change on a row with both (T9.19-B14)', () => {
-    const rows: ReplayFrameSession['readout'] = [
-      {
-        title: 'At stake from here, whole Position',
-        rows: [{ label: 'At Stop', value: { kind: 'Figure', text: '$832.00 · 2.57R' }, pnl: { kind: 'Figure', text: '+$156.00' }, change: 'down $150.00 since Fri Nov 13' }],
-      },
-    ];
-    render(<Readout groups={rows} />);
-    const dd = screen.getByTestId('readout').querySelector('[data-row="At Stop"] dd')!;
-    expect(text(dd)).toBe('$832.00 · 2.57R · P&L +$156.00 down $150.00 since Fri Nov 13');
+  it('should set the grid under its column headings and its two row-group headings, one figure to a cell (T9.19-B4, A278)', () => {
+    render(<Readout groups={[stakeGroup]} />);
+    const table = screen.getByRole('table');
+    expect(within(table).getAllByRole('columnheader').map(text)).toEqual(['Stake', 'From here', 'R', 'P&L if hit']);
+    expect([...table.querySelectorAll('th[scope="rowgroup"]')].map(text)).toEqual(['Current Risk', 'Remaining Reward']);
+    const worst = within(table).getByRole('row', { description: 'Worst-Case Ongoing Risk' });
+    expect(within(worst).getAllByRole('cell').map(text)).toEqual(['$1,164.00', '3.59R', '−$644.00']);
+    // An unbounded Max reward reads across its row: one cell, no R, no P&L.
+    expect(within(within(table).getByRole('row', { description: 'Maximum Incremental Reward' })).getAllByRole('cell').map(text)).toEqual(['No cap above']);
   });
 
   it('should give each figure its change since the session it is measured from', () => {
@@ -93,6 +99,48 @@ describe('Replay frame: the readout (W43)', () => {
     expect(text(row('Trade P&L'))).toContain('down $150.00 since Fri Nov 13');
     expect(text(row('Banked'))).toContain('up $60.00 since Fri Nov 13');
     expect(text(row('Open'))).not.toContain('since');
+  });
+
+  it('should mark every figure cell as unbreakable, sign included', () => {
+    render(<Readout groups={[stakeGroup]} />);
+    const table = screen.getByRole('table');
+    const cells = within(table).getAllByRole('cell');
+    expect(cells.length).toBeGreaterThan(0);
+    for (const cell of cells) expect(window.getComputedStyle(cell).whiteSpace).toBe('nowrap');
+    // The sign and the amount are one piece of text, so no line break can fall between them.
+    expect(within(table).getByText('−$644.00').getAttribute('data-kind')).toBe('Figure');
+  });
+
+  it('should give each stake row its canonical term as accessible text, with nothing added to see', () => {
+    render(<Readout groups={[stakeGroup]} />);
+    const table = screen.getByRole('table');
+    for (const [label, term] of [['At Stop', 'Ongoing Risk to Stop'], ['At Worst case', 'Worst-Case Ongoing Risk'], ['At Target', 'Incremental Reward to Target'], ['At Max reward', 'Maximum Incremental Reward']] as const) {
+      const row = within(table).getByRole('row', { description: term });
+      expect(within(row).getByRole('rowheader').textContent).toBe(label);
+      expect(row.getAttribute('title')).toBe(term);
+      expect(text(row)).not.toContain(term);
+    }
+    // The row past a line carries "Stop Overrun" or "Target Overrun" the same way.
+    cleanup();
+    const past = { ...stakeGroup, grid: { ...stakeGroup.grid!, pastLine: { text: 'Past the Stop by $300.00 (0.50R) · at Stop −$740.00', term: 'Stop Overrun' } } };
+    render(<Readout groups={[past]} />);
+    const row = screen.getByRole('row', { description: 'Stop Overrun' });
+    expect(text(row)).toBe('Past the Stop by $300.00 (0.50R) · at Stop −$740.00');
+  });
+
+  it('should show a dash named No Mark in each cell that needs the Mark, in the grid and in a Marks row', () => {
+    const none = { kind: 'Unavailable', text: 'No Mark' } as const;
+    const gap: ReplayFrameSession['readout'] = [
+      { title: 'At stake from here, whole Position', rows: [], grid: { ...stakeGroup.grid!, groups: [{ heading: 'Current Risk', rows: [{ label: 'At Stop', term: 'Ongoing Risk to Stop', fromHere: none, r: none, pnlIfHit: fig('−$318.00') }] }] } },
+      { title: 'Marks', rows: [{ label: 'Call Mark', value: none }] },
+    ];
+    render(<Readout groups={gap} />);
+    const readout = screen.getByTestId('readout');
+    const stop = readout.querySelector('[data-row="At Stop"]')!;
+    expect(within(stop as HTMLElement).getAllByRole('img', { name: 'No Mark' }).map(text)).toEqual(['—', '—']);
+    expect(text(readout.querySelector('[data-row="At Stop"] .replay-pnl-value')!)).toBe('−$318.00');
+    expect(within(readout.querySelector('[data-row="Call Mark"]') as HTMLElement).getByRole('img', { name: 'No Mark' }).textContent).toBe('—');
+    expect(text(readout)).not.toContain('No Mark');
   });
 
   it('should show Final result in place of the first two groups on a final session', () => {

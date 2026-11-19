@@ -1,5 +1,5 @@
 import {
-  BREN, build, chartText, closeOf, expect, going, headline, hits, openDrawer, openTable, pnlChart, priceStrip, readoutPnl, readoutValue, replay, seek, sessionLabels, slider, sliderValue, stake, tableRow, test,
+  BREN, build, chartText, closeOf, expect, going, headline, hits, openDrawer, openTable, pastLine, pnlChart, priceStrip, readoutPnl, readoutR, readoutValue, replay, seek, sessionLabels, slider, sliderValue, stake, tableRow, test,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
@@ -40,12 +40,13 @@ test.describe('B9.1 Replay in Trade Detail', () => {
     await expect(readoutValue(scope, 'Trade P&L')).toHaveText('+$988.00 · 3.05R');
     await expect(readoutValue(scope, 'Banked')).toHaveText('+$478.00');
     await expect(readoutValue(scope, 'Open')).toHaveText('+$510.00');
-    await expect(readoutValue(scope, 'At Stop')).toHaveText('$672.00 · 2.07R');
+    await expect(readoutValue(scope, 'At Stop')).toHaveText('$672.00');
+    await expect(readoutR(scope, 'At Stop')).toHaveText('2.07R');
     await expect(readoutPnl(scope, 'At Stop')).toHaveText('+$316.00');
-    await expect(readoutPnl(scope, 'Target Overrun')).toHaveText('+$956.00');
-    await expect(readoutValue(scope, 'Target Overrun')).toHaveText('$32.00 · 0.10R');
+    await expect(pastLine(scope)).toHaveText('Past the Target by $32.00 (0.10R) · at Target +$956.00');
+    await expect(scope.locator('.replay-readout [data-row="At Target"]')).toHaveCount(0);
     await expect(readoutValue(scope, 'At Max reward')).toHaveText('No cap above');
-    await expect(readoutValue(scope, 'Reward to risk')).toHaveText('Target reached');
+    await expect(scope.locator('.replay-readout [data-row="Reward to risk"]')).toHaveCount(0);
     await context.close();
   });
 
@@ -104,7 +105,7 @@ test.describe('B9.1 Replay in Trade Detail', () => {
     expect(label).toBe('Worst case +$156');
     const figure = `${label!.slice('Worst case '.length)}.00`;
     await expect(readoutPnl(scope, 'At Worst case')).toHaveText(figure);
-    await expect(scope.locator('.replay-readout-row[data-row="At Worst case"]')).toContainText(`P&L ${figure}`);
+    await expect(scope.locator('.replay-readout [data-row="At Worst case"]')).toContainText(figure);
     const table = await openTable(scope);
     const headers = await table.locator('thead th').allTextContents();
     await expect(tableRow(table, 'Thu Nov 12').locator('td').nth(headers.indexOf('P&L at Worst case') - 1)).toHaveText(figure);

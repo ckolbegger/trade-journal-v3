@@ -26,12 +26,73 @@
   border-bottom: 1px solid var(--line);
 }
 
-/* "Current Risk" / "Remaining Reward": a heading line above the row that opens its part of the group. */
-.replay-readout-heading {
-  flex: 0 0 100%;
-  margin: 4px 0 0;
+/* A278: the stake grid takes the readout's full width; its figures are right-aligned tabular numerals, and no cell breaks across lines. */
+.replay-readout-group-stake {
+  grid-column: 1 / -1;
+}
+
+.replay-stake-grid {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.replay-stake-grid th,
+.replay-stake-grid td {
+  padding: 2px 0;
+  border-bottom: 1px solid var(--line);
+  font-weight: normal;
+  white-space: nowrap;
+}
+
+.replay-stake-grid td,
+.replay-stake-grid thead th + th {
+  padding-left: 12px;
+  text-align: right;
+}
+
+.replay-stake-grid thead th,
+.replay-stake-grid th[scope='rowgroup'] {
   font-size: 0.85rem;
   color: var(--muted);
+}
+
+.replay-stake-grid th[scope='row'],
+.replay-stake-grid th[scope='rowgroup'] {
+  text-align: left;
+}
+
+.replay-stake-grid th[scope='rowgroup'] {
+  padding-top: 6px;
+}
+
+.replay-stake-grid th[scope='row'] {
+  color: var(--muted);
+  padding-right: 8px;
+}
+
+/* Phone: the unbreakable figures must still fit in 320px, so the type is smaller, the gaps tighter, and the row's name (not a figure) may wrap. */
+@media (max-width: 480px) {
+  .replay-stake-grid {
+    font-size: 0.8rem;
+  }
+
+  .replay-stake-grid td,
+  .replay-stake-grid thead th + th {
+    padding-left: 6px;
+  }
+
+  .replay-stake-grid th[scope='row'] {
+    padding-right: 4px;
+    white-space: normal;
+  }
+}
+
+/* A Trade past a line: one row above the two headings, in the figures' own ink. */
+.replay-stake-grid .replay-past-line td {
+  padding-left: 0;
+  text-align: left;
+  white-space: normal;
 }
 
 .replay-readout dt {

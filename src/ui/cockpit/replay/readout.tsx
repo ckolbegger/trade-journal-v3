@@ -1,14 +1,72 @@
-import { Fragment } from 'react';
-import type { ReadoutProps, ReadoutRow } from './replay.types.ts';
+import type { ReadoutProps, ReadoutValue, StakeGrid } from './replay.types.ts';
 
-// A group's rows in runs, a new run beginning at each row that carries a heading.
-function rowsUnderHeadings(rows: readonly ReadoutRow[]): ReadoutRow[][] {
-  const runs: ReadoutRow[][] = [];
-  for (const row of rows) {
-    if (row.heading || runs.length === 0) runs.push([row]);
-    else runs[runs.length - 1]!.push(row);
-  }
-  return runs;
+// W61: a cell or value that needs a Mark it does not have is a dash named "No Mark", as in Price History.
+function shown(value: ReadoutValue) {
+  return value.kind === 'Unavailable' && value.text === 'No Mark' ? (
+    <span role="img" aria-label="No Mark">
+      —
+    </span>
+  ) : (
+    value.text
+  );
+}
+
+// A278: a cell is one figure and never breaks across lines, its sign included.
+const UNBREAKABLE = { whiteSpace: 'nowrap' } as const;
+
+function StakeGridTable({ grid }: { grid: StakeGrid }) {
+  return (
+    <table className="replay-stake-grid">
+      <thead>
+        <tr>
+          <th scope="col">
+            <span className="visually-hidden">Stake</span>
+          </th>
+          {grid.columns.map((column) => (
+            <th key={column} scope="col">
+              {column}
+            </th>
+          ))}
+        </tr>
+      </thead>
+      {grid.pastLine && (
+        <tbody>
+          <tr className="replay-past-line" title={grid.pastLine.term}>
+            <td colSpan={4}>
+              {grid.pastLine.text}
+            </td>
+          </tr>
+        </tbody>
+      )}
+      {grid.groups.map((group) => (
+        <tbody key={group.heading}>
+          <tr>
+            <th scope="rowgroup" colSpan={4}>
+              {group.heading}
+            </th>
+          </tr>
+          {group.rows.map((row) => (
+            <tr key={row.label} data-row={row.label} title={row.term}>
+              <th scope="row">{row.label}</th>
+              <td className="replay-value" data-kind={row.fromHere.kind} style={UNBREAKABLE} colSpan={row.r ? 1 : 3}>
+                {shown(row.fromHere)}
+              </td>
+              {row.r && (
+                <td className="replay-r" data-kind={row.r.kind} style={UNBREAKABLE}>
+                  {shown(row.r)}
+                </td>
+              )}
+              {row.pnlIfHit && (
+                <td className="replay-pnl-value" data-kind={row.pnlIfHit.kind} style={UNBREAKABLE}>
+                  {shown(row.pnlIfHit)}
+                </td>
+              )}
+            </tr>
+          ))}
+        </tbody>
+      ))}
+    </table>
+  );
 }
 
 // W43: the slider's session as text, every figure the charts draw; the rows are finished, nothing is added up here.
@@ -16,37 +74,26 @@ export function Readout({ groups }: ReadoutProps) {
   return (
     <div className="replay-readout" data-testid="readout">
       {groups.map((group) => (
-        <section key={group.title} className="replay-readout-group">
+        <section key={group.title} className={group.grid ? 'replay-readout-group replay-readout-group-stake' : 'replay-readout-group'}>
           <h3>{group.title}</h3>
-          {/* A row with a heading opens a new list under that heading ("Current Risk", "Remaining Reward"); a list holds only its terms. */}
-          {rowsUnderHeadings(group.rows).map((part) => (
-          <Fragment key={part[0]!.label}>
-          {part[0]!.heading && <h4 className="replay-readout-heading">{part[0]!.heading}</h4>}
-          <dl>
-            {part.map((row) => (
-              <div key={row.label} className="replay-readout-row" data-row={row.label}>
-                <dt>{row.label}</dt>
-                <dd>
-                  {/* The kind is for the styling: an Unavailable figure reads in italics, a Not applicable one muted, apart from a Figure. */}
-                  <span className="replay-value" data-kind={row.value.kind}>
-                    {row.value.text}
-                  </span>
-                  {/* Where the Trade would end, beside the amount from here; the change line (a block) follows, below both. */}
-                  {row.pnl && (
-                    <span className="replay-pnl">
-                      {' · P&L '}
-                      <span className="replay-pnl-value" data-kind={row.pnl.kind}>
-                        {row.pnl.text}
-                      </span>
+          {group.grid && <StakeGridTable grid={group.grid} />}
+          {group.rows.length > 0 && (
+            <dl>
+              {group.rows.map((row) => (
+                <div key={row.label} className="replay-readout-row" data-row={row.label}>
+                  <dt>{row.label}</dt>
+                  <dd>
+                    {/* The kind is for the styling: an Unavailable figure reads in italics, a Not applicable one muted, apart from a Figure. */}
+                    <span className="replay-value" data-kind={row.value.kind}>
+                      {shown(row.value)}
                     </span>
-                  )}
-                  {row.change && <span className="replay-change"> {row.change}</span>}
-                </dd>
-              </div>
-            ))}
-          </dl>
-          </Fragment>
-          ))}
+                    {/* The change line (decision 8) is a block under the figure, on the Trade P&L and each Mark only. */}
+                    {row.change && <span className="replay-change"> {row.change}</span>}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          )}
         </section>
       ))}
     </div>

@@ -194,10 +194,16 @@ export const hits = (scope: Locator): Locator => scope.locator('div.replay-hits[
 export const priceStrip = (scope: Locator): Locator => scope.locator('svg.price-strip');
 export const pnlChart = (scope: Locator): Locator => scope.locator('svg.pnl-chart');
 export const chartText = (chart: Locator): Promise<string[]> => chart.locator('text').allTextContents();
-// A readout row's value, by its name ("Trade P&L", "Banked", "Open", "Stop Overrun" ...).
-export const readoutValue = (scope: Locator, row: string): Locator => scope.locator(`.replay-readout-row[data-row="${row}"] .replay-value`);
-// The Trade's result beside a stake row's amount ("At Stop", "At Worst case", "At Target", "At Max reward"): the "P&L" figure.
-export const readoutPnl = (scope: Locator, row: string): Locator => scope.locator(`.replay-readout-row[data-row="${row}"] .replay-pnl-value`);
+// A readout row's value, by its name ("Trade P&L", "Banked", "Open", "At Stop" ...): a list row's value, or the "From here" cell of a stake grid row.
+export const readoutValue = (scope: Locator, row: string): Locator => scope.locator(`.replay-readout [data-row="${row}"] .replay-value`);
+// A stake grid row's "R" cell ("At Stop", "At Worst case", "At Target", "At Max reward").
+export const readoutR = (scope: Locator, row: string): Locator => scope.locator(`.replay-readout [data-row="${row}"] .replay-r`);
+// A stake grid row's "P&L if hit" cell: where the Trade would end there.
+export const readoutPnl = (scope: Locator, row: string): Locator => scope.locator(`.replay-readout [data-row="${row}"] .replay-pnl-value`);
+// The one row above the grid's two headings when the Trade is past a line ("Past the Stop by $300.00 (0.50R) · at Stop −$740.00").
+export const pastLine = (scope: Locator): Locator => scope.locator('.replay-readout .replay-past-line');
+// A dash named "No Mark" inside a readout value or grid cell (W61).
+export const noMarkDash = (cell: Locator): Locator => cell.getByRole('img', { name: 'No Mark' });
 // The folded "Session by session" table: opened on first use, then a row's cells (every column after the Session) by its date.
 export async function openTable(scope: Locator): Promise<Locator> {
   const details = scope.locator('details.replay-table');

@@ -3,7 +3,7 @@ import type { Rational } from '../../../domain/values/index.ts';
 import { replayProps } from './replay.props.ts';
 import { sessionWords } from './session-words.props.ts';
 import {
-  AXIO, BREN, BREN_STOCK, brenMon1102, brenThu1112, brenWed1111, condition, DALE, frac, fullView, markOf, Plot, PLAN, rowNamed, rowsOfGroup, session, usd, value, view, withMarks, type Figures,
+  AXIO, BREN, BREN_STOCK, brenMon1102, brenThu1112, brenWed1111, condition, DALE, frac, fullView, markOf, Plot, PLAN, rowsOfGroup, session, usd, value, view, withMarks, type Figures,
 } from './view-doubles.props.ts';
 
 // The adapter's own cases are split by what they test (A286): the session's words in session-words.props.test.ts, the stake sentence in
@@ -44,7 +44,7 @@ describe('replay.props: the words follow the condition status (T9.14-F2)', () =>
     expect(words.howItIsGoing).toBe('Stop breached: DALE $0.30 past $54.00.');
     expect(words.headline).toEqual({ figure: '−$900.00 · −0.59R', tone: 'Loss' });
     const stake = replayProps(view([daleFri1113]), { Plot: () => null }).sessions[0]!.readout.find((g) => g.title === 'At stake from here, whole Position');
-    expect(stake?.rows.find((r) => r.label === 'Reward to risk')?.value.text).toBe('Stop breached');
+    expect(stake?.rows.find((r) => r.label === 'Reward to risk')).toBeUndefined();
     // The dollars past the line as well: W37's words stand.
     const both = session({ ...{ date: '2026-11-13', instrument: DALE, held: -3, pnl: -1700 }, standing: value({ zone: 'PastStop', pastBy: { dollars: usd(180), r: frac(3, 10), crossed: true } }), figures: { conditions: [reading('Stop', '54.00', 'Breached', frac(30, 100))] } });
     expect(sessionWords(view([both]), 0).howItIsGoing).toBe('Past the Stop by $180.00 (0.30R).');
@@ -78,10 +78,10 @@ describe('replay.props: the words follow the condition status (T9.14-F2)', () =>
     });
     expect(sessionWords(view([brenTarget]), 0).howItIsGoing).toBe('Target reached.');
     const stake = replayProps(view([brenTarget]), { Plot: () => null }).sessions[0]!.readout.find((g) => g.title === 'At stake from here, whole Position');
-    expect(stake?.rows.find((r) => r.label === 'Reward to risk')?.value.text).toBe('Target reached');
+    expect(stake?.rows.find((r) => r.label === 'Reward to risk')).toBeUndefined();
   });
 
-  it('should end the readout Stop breached when the Stop is crossed though the dollars are past the Target', () => {
+  it('should leave out the readout ratio when the Stop is crossed though the dollars are past the Target', () => {
     const crossedPastTarget = session({
       date: '2026-11-16',
       pnl: 1138,
@@ -92,7 +92,7 @@ describe('replay.props: the words follow the condition status (T9.14-F2)', () =>
     const headline = sessionWords(v, 0).howItIsGoing;
     const stake = replayProps(v, { Plot: () => null }).sessions[0]!.readout.find((g) => g.title === 'At stake from here, whole Position');
     expect(headline).toBe('Stop breached: BREN $0.30 past $54.00.');
-    expect(stake?.rows.find((r) => r.label === 'Reward to risk')?.value.text).toBe('Stop breached');
+    expect(stake?.rows.find((r) => r.label === 'Reward to risk')).toBeUndefined();
   });
 
   it('should read Target reached when the Target is crossed though the dollars are past the Stop planned amount', () => {
@@ -105,7 +105,7 @@ describe('replay.props: the words follow the condition status (T9.14-F2)', () =>
     const v = view([targetPastStopAmount]);
     const stake = replayProps(v, { Plot: () => null }).sessions[0]!.readout.find((g) => g.title === 'At stake from here, whole Position');
     expect(sessionWords(v, 0).howItIsGoing).toBe('Target reached.');
-    expect(stake?.rows.find((r) => r.label === 'Reward to risk')?.value.text).toBe('Target reached');
+    expect(stake?.rows.find((r) => r.label === 'Reward to risk')).toBeUndefined();
   });
 });
 
@@ -170,14 +170,12 @@ describe('replay.props: the readout of a session in flight (W43)', () => {
     const none = withMarks(session({ date: '2026-11-10', pnl: null, outcomes: { atStop: value(usd(-324)), atTarget: value(usd(956)) } }), [markOf(BREN_STOCK, '100.20'), markOf(BREN)]);
     const props = replayProps(fullView([none], PLAN), { Plot });
     expect(props.sessions[0]!.readout.map((group) => group.title)).toEqual(['How it is going', 'At stake from here, whole Position', 'Marks', 'Position', 'The Plan']);
-    expect(rowsOfGroup(props, 0, 'At stake from here, whole Position')).toMatchObject({
-      'At Stop': 'No Mark',
-      'At Target': 'No Mark',
-      'Reward to risk': 'No Mark',
-    });
-    // What the Trade would end at needs no Mark, so it stands beside the "No Mark".
-    expect(rowNamed(props, 0, 'At Stop')!.pnl).toMatchObject({ text: '−$324.00' });
-    expect(rowNamed(props, 0, 'At Target')!.pnl).toMatchObject({ text: '+$956.00' });
+    expect(rowsOfGroup(props, 0, 'At stake from here, whole Position')).toEqual({ 'Reward to risk': 'No Mark' });
+    // What the Trade would end at needs no Mark, so it stands beside the dash named "No Mark" in the grid's From here and R cells.
+    const gridRows = props.sessions[0]!.readout.find((group) => group.title === 'At stake from here, whole Position')!.grid!.groups.flatMap((g) => g.rows);
+    const noMark = { kind: 'Unavailable', text: 'No Mark' };
+    expect(gridRows.find((r) => r.label === 'At Stop')).toMatchObject({ fromHere: noMark, r: noMark, pnlIfHit: { text: '−$324.00' } });
+    expect(gridRows.find((r) => r.label === 'At Target')).toMatchObject({ fromHere: noMark, r: noMark, pnlIfHit: { text: '+$956.00' } });
     const cells = props.sessions[0]!.tableRow.cells;
     expect([cells[props.tableColumns.indexOf('Current Risk at Stop')], cells[props.tableColumns.indexOf('P&L at Stop')], cells[props.tableColumns.indexOf('Remaining Reward at Target')], cells[props.tableColumns.indexOf('P&L at Target')]]).toEqual(['No Mark', '−$324.00', 'No Mark', '+$956.00']);
   });
