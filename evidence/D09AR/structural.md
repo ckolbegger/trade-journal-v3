@@ -911,6 +911,22 @@ Lane BR (`d09ar/br`), base `70ce0f74`.
       - the Back address after Close;
       - P153 was not checked.
     - The bug tasks run one at a time, starting with B10.
+  - **T9AR.24-B10** `3605eb43` (lane PL, from `1f6f35aa`; lane-tier evidence `ca069704`):
+    - **Cause:** the label placer held only the title as occupied, never the y-axis gutter. At 1440 (a 997 px frame and 58 px columns), the stake tag's left spot started at x 3, over "$500" at x 19 to 45. B6 and B7 did not open this.
+    - **Fix:** `placer.reserveColumn(0, time.left)` right after the title, so it covers all labels. `must` labels keep the existing rule.
+    - **Cases:**
+      - Unit, "not draw a stake tag over a y-axis figure on the entry session at the 1440 frame width": red, then green.
+      - E2e for BREN and CORV, Mon Nov 2, at 1280, 1366, 1440, 1536 and 1920: no label over a y-axis figure or another label. Red with the fix reverted ("Remaining Reward $834" over "$500"), then green.
+      - No first-run passes. No existing lines changed.
+    - Browser: 82 passed, run before a lint-only edit to the new case. Lane tier `T9AR.24-B10`: unit 2476, integration 286, checks 14 of 14.
+    - Agent's question: `price-strip.tsx` has its own placer and may have the same gap over the price axis. ocr was asked to check.
+    - **ocr** on `3605eb43` (`ocr/T9AR.24-B10-3605eb43.json`): **no findings**.
+      - Reviewer's notes, for the final report:
+        - A sweep of chart widths from 461 to 1500 px found no label in the gutter, none over an axis figure and no clashes. `must` labels cannot reach the gutter at wide widths.
+        - One low loss: at a 461 to 521 px chart, session 3 of 15, the Remaining Reward tag is now dropped, and its bar with it (A280).
+        - The phone path is unchanged.
+        - The price strip has the same structural gap but cannot show it at 461 px or more. The new e2e covers only the P&L chart.
+    - **Merged** by fast-forward. Lane PL's base `1f6f35aa` was main's head.
         - Reviewer's notes:
           - `isMarkLacking` is exactly MarkMissing or AcknowledgedUnavailable.
           - The Trade P&L row's figure is the contract's own, so the Underlying's Mark cannot reach it.
