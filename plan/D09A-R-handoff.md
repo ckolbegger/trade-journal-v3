@@ -34,7 +34,7 @@ The repository hosts several independent implementations of the same spec, each 
 | Worktree path | `/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5` |
 | Branch | `claude-opus-5.5` (the deliverable branch every lane merges into) |
 | Ports | `5175`, from the gitignored `.env.local`; `4175` is the benchmark's, and D9A-R runs no benchmark (A285) |
-| Frozen plan | tag `claude-opus-5.5-plan-r107` (decision 118, commit `594feccf`) |
+| Frozen plan | tag `claude-opus-5.5-plan-r107` (decision 118). Agreed at `594feccf`; the tag was moved, as r106's was, to take in the breakdown's section 1.8 (critic-2's carried defects, `6df5c226`, `06e343b2`) and this handoff |
 | Code D9A-R builds on | `claude-opus-5.5-d9a` |
 
 Run these checks. Each one must match:
@@ -45,18 +45,19 @@ Run these checks. Each one must match:
 | `git rev-parse --show-toplevel` | `/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5` |
 | `git branch --show-current` | `claude-opus-5.5` |
 | `git status -sb` | `## claude-opus-5.5...origin/claude-opus-5.5`, possibly followed by `[ahead N]`. No uncommitted changes. |
-| `git rev-parse --short 'claude-opus-5.5-plan-r107^{commit}'` | `594feccf` |
+| `git log -1 --format=%s claude-opus-5.5-plan-r107` | `plan(D09A-R): handoff checked; frozen plan tag moved` |
+| `git merge-base --is-ancestor claude-opus-5.5-plan-r107 HEAD && echo ok` | `ok` |
 | `git rev-parse --verify 'claude-opus-5.5-d9a^{commit}'` | Resolves. |
-| `git log --oneline claude-opus-5.5-d9a..HEAD` | Empty at the first session, or only stage A's report and this handoff. Afterwards: only D9A-R task and merge commits, their evidence and Progress updates, handoff updates, and approved plan revisions. |
+| `git log --oneline claude-opus-5.5-plan-r107..HEAD` | Empty at the first session. Afterwards: only D9A-R task and merge commits, their evidence and Progress updates, handoff updates, and approved plan revisions. |
 | `ls .claude/worktrees 2>/dev/null` | Empty, absent, or only this implementation's lane worktrees (D9's `d09-<lane>`, this deliverable's `d09ar-<lane>`). |
 | `git rev-parse --git-path hooks` | `.githooks` (the pre-commit typecheck and lint hook; the setup commands are at the top of `.githooks/pre-commit`) |
 | `ocr llm test` | Prints `✓ Connection test successful`. If it fails on authentication, ask the user to run `ocr auth login`. If it reports the usage limit, wait as `.claude/agents/ocr-review.md` says. |
 | `grep DEV_PORT .env.local` | `DEV_PORT=5175` |
 | `lsof -nP -iTCP:5175 -iTCP:9341 -iTCP:9342 -sTCP:LISTEN` | Nothing listening. |
 | `node --version` | `v26.x`, at or above `v26.12.0` (decision 43) |
-| `npm ci && npx vitest run src && npx vitest run tests/integration` | Every test passes. Record the file and test counts in `evidence/D09AR/provenance.md`. |
+| `npm ci && npx vitest run src && npx vitest run tests/integration` | Every test passes (at stage A's close: unit 198 files, 2,289 tests; integration 130 files, 280 tests). |
 
-Record the exact Node version in `evidence/D09AR/provenance.md`.
+Once every check matches, create `evidence/D09AR/` (section 3, "Setup before wave 0") and record the exact Node version and the two test counts in its `provenance.md`.
 
 If any check fails, **stop and ask the user**:
 - Don't edit files, create branches or `cd` into another worktree to fix things.
@@ -180,8 +181,8 @@ Stage A closed without fixing these, by the user's decision. Each is a planned c
 
 1. Run the full tier with `suite-runner` until it passes.
 2. Run `.claude/scripts/acceptance-commands.sh plan/D09A-R-stage-a-refactor.md`. All seven of its commands must pass; a failure is a defect.
-3. Brief a **fresh** `general-purpose` critic (effort medium) from `.claude/docs/critic-brief.md`, with flows C9AR.1, C9AR.2, C9AR.3, C9AR.4, C9AR.5, C9AR.6 and C9AR.7, what section 8 of the breakdown says it receives (`evidence/D09/coach-review-1.md`, whose 15 points it looks at again, and the future-capability list), critic-2's five carried defects and its four minor observations not covered (the breakdown's section 1.8), the 375 and 320 px checks, port 5175 under the lock, and no reading of the rest of `evidence/` or of another worktree.
-4. Reports go to `test-results/critic-d09ar-<n>/report.md`. Copy each to `evidence/D09AR/critic-<n>.md`, and its cost (tokens, tool calls, time) to `structural.md`'s critic table.
+3. Brief a **fresh** `general-purpose` critic (effort medium) from `.claude/docs/critic-brief.md`, with flows C9AR.1, C9AR.2, C9AR.3, C9AR.4, C9AR.5, C9AR.6 and C9AR.7, what section 8 of the breakdown says it receives (`evidence/D09/coach-review-1.md`, whose 15 points it looks at again, and the future-capability list), critic-2's five carried defects and its four minor observations not covered (the breakdown's section 1.8), the 375 and 320 px checks, port 5175 under the lock, a fresh browser profile for every build (the app's service worker serves a profile's cached build, so a reused or copied profile shows stale code unless its `Default/Service Worker` folder is deleted), its scratch in `test-results/critic-d09ar-<n>/`, and no reading of the rest of `evidence/` or of another worktree.
+4. Save each report with `node tools/agent-report.ts "# D09AR critic-<n> report" > evidence/D09AR/critic-<n>.md` as soon as the critic hands back, never by retyping it (`critic-brief.md`), and copy its cost (tokens, tool calls, time, from the completion notice) to `structural.md`'s critic table.
 5. **Critic rules.** Fix every defect: each is first reproduced by a failing test, then fixed as a bug task in a fresh `tdd-task`. After the last fix, one full run. A fresh critic repeats all seven flows whenever any high or moderate defect was found. At most three critics; if the third still leaves defects, **stop and ask the user** (P151 allows closing on moderate or lower defects as tech debt items, but the user decides; a high defect or a FAIL always stops).
 
 ## 4. What is in place
@@ -236,7 +237,7 @@ Everything else continues without the user. Make implementation-level decisions 
 
 ### When the gate closes
 
-1. Mark section 13's rows covered where D9A-R completes them, and tag **`claude-opus-5.5-d9ar`** locally.
+1. Mark section 13's rows covered where D9A-R completes them, mark the "D9A-R" row of D9's Progress section (`plan/D09-trade-replay.md`) Done with the gate's commit, and tag **`claude-opus-5.5-d9ar`** locally.
 2. Write `evidence/D09AR/report.md`: tasks and commits, each task's fix rounds, flaky tests with the run they flaked in, decisions (answered and pending), critics with their cost, any defects moved to tech debt, the new words awaiting approval, every text shortened under P137 with its before and after, and the wall-clock time against the breakdown's estimate (about 9 hours, section 3).
 3. Write **stage B's handoff, `plan/D09B-handoff.md`**, in this note's form, for T9.20, T9.21, T9.22, T9.23, T9.24, T9.25, T9.26, T9.27 and T9.28, run one task at a time (decision 100). Stage B's tasks were amended for D9A-R (the breakdown's section 10: the odds decision row before T9.20's brief; the chips and the "since" line rendered in the overlay; table columns become session-card rows), so this handoff is written only now. Carry the "Starting a session" paragraph, these stop conditions, and the notes below that name stage B's tasks.
 4. Remove `.claude/session.lock`. Never push.
