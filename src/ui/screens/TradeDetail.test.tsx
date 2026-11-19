@@ -590,6 +590,15 @@ describe('Trade Detail: the Replay overlay (decision 3)', () => {
     await browserBack();
     expect(addressNow()).toBe('/trades/trade-1');
   });
+
+  it('should put focus on the Replay button when an overlay opened from the address closes', async () => {
+    const user = userEvent.setup();
+    renderWith(facadeOf(), '/trades/trade-1?replay=open');
+    const dialog = await screen.findByRole('dialog', { name: 'Replay, XYZ' });
+    await user.click(within(dialog).getByRole('button', { name: 'Close' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Replay' }));
+  });
 });
 
 // Four sessions with Marks: Monday holds the Position Change pc-1 (a purchase of 60) and the owed reflection, Tuesday has neither.

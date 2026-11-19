@@ -100,6 +100,14 @@ export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange, i
     onReplayClose?.();
     requestDrawer(drawer, target);
   };
+  // A273: when the overlay closes, focus is on the Replay button, also for an overlay opened from the address (its opener was the body). This
+  // runs before the request below is answered, so a drawer request still has the last word.
+  const replayButton = useRef<HTMLButtonElement>(null);
+  const wasOpen = useRef(false);
+  useEffect(() => {
+    if (wasOpen.current && !replayOpen) replayButton.current?.focus();
+    wasOpen.current = replayOpen === true;
+  }, [replayOpen]);
   const answered = useRef<DrawerFocus | undefined>(undefined);
   useEffect(() => {
     if (!focusing || replayOpen || answered.current === focusing) return;
@@ -200,7 +208,7 @@ export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange, i
         </div>
         {/* P143: Replay opens an overlay, so it is a button after the tabs and not one of them. */}
         {replayable && (
-          <button type="button" className="pill secondary cockpit-replay-button" onClick={onReplayOpen}>
+          <button ref={replayButton} type="button" className="pill secondary cockpit-replay-button" onClick={onReplayOpen}>
             Replay
           </button>
         )}
