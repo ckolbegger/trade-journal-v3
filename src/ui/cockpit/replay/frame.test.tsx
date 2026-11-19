@@ -2,6 +2,7 @@
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ComponentType } from 'react';
+import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ReplayFrame } from './frame.tsx';
 import type { PlotSession, ReplayFrameSession, ReplayPlotProps, ReplayProps } from './replay.types.ts';
@@ -101,6 +102,18 @@ describe('Replay: a session with no Mark (suggestion 12)', () => {
     expect(text(container).split('No Mark for the put').length).toBe(2);
     expect(container.querySelector('.replay-going')).toBeNull();
     expect(screen.getByTestId('session-date').nextElementSibling).toBe(headline);
+  });
+
+  it('should offer Add the Mark after the headline as a link to the Review row, and no link when the session has none', () => {
+    const to = '/review?trade=T-1&instrument=BREN';
+    const { unmount } = render(<MemoryRouter><ReplayFrame {...noMark({ addMarkTo: to })} /></MemoryRouter>);
+    const link = screen.getByRole('link', { name: 'Add the Mark' });
+    expect(attr(link, 'href')).toBe(to);
+    expect(screen.getByTestId('headline').compareDocumentPosition(link) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(link.parentElement).toBe(screen.getByTestId('headline').parentElement);
+    unmount();
+    render(<MemoryRouter><ReplayFrame {...noMark()} /></MemoryRouter>);
+    expect(screen.queryByRole('link', { name: 'Add the Mark' })).toBeNull();
   });
 });
 

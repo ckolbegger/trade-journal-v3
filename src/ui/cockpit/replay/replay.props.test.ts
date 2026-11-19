@@ -199,3 +199,17 @@ describe('replay.props: the readout separates what is at stake from where the Tr
     expect(props.sessions[0]!.plot.worstCase!.label).toBe(`Worst case ${cell('P&L at Worst case')!.replace(/\.00$/, '')}`);
   });
 });
+
+describe('replay.props: the link to add a missing Mark (A281, T9AR.16)', () => {
+  const gap = session({ date: '2026-11-12', pnl: null });
+  const acknowledged = { ...gap, tradePnl: { kind: 'Unavailable', reason: 'AcknowledgedUnavailable', instrument: BREN, date: '2026-11-12' } } as typeof gap;
+  const open = (sessions: (typeof gap)[]) => ({ ...view(sessions), pending: { date: '2026-11-13', journal: [] } });
+
+  it('should link a session with a missing or acknowledged Mark to the Review row of its Instrument on an Open Trade, and nowhere on a Trade that has ended', () => {
+    const marked = replayProps(open([brenWed1111, gap]), { Plot }).sessions.map((s) => s.addMarkTo);
+    expect(marked).toEqual([undefined, '/review?trade=T-1&instrument=BREN']);
+    expect(replayProps(open([acknowledged]), { Plot }).sessions[0]!.addMarkTo).toBe('/review?trade=T-1&instrument=BREN');
+    const ended = replayProps(view([brenWed1111, gap]), { Plot }).sessions;
+    expect(ended.every((s) => !('addMarkTo' in s))).toBe(true);
+  });
+});

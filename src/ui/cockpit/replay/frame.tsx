@@ -1,4 +1,5 @@
 import { useState, type KeyboardEvent } from 'react';
+import { Link } from 'react-router';
 import { Readout } from './readout.tsx';
 import type { ReplayProps } from './replay.types.ts';
 
@@ -55,6 +56,8 @@ export function ReplayFrame({ tradeKey, sessions, initialSession, sliderLabel, p
             {headline}
           </p>
         )}
+        {/* A281: a Mark still to add, while the Trade is Open; the link goes to the Review's Marks row. */}
+        {session.addMarkTo && <Link to={session.addMarkTo}>Add the Mark</Link>}
       </div>
       {session.howItIsGoing && <p className="replay-going">{session.howItIsGoing}</p>}
       {session.stake && <p className="replay-stake">{session.stake}</p>}

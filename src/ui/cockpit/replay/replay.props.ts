@@ -1,6 +1,7 @@
 import type { TradeReplayView } from '../../../app/types.ts';
 import type { CalculationResult } from '../../../domain/calculation-result/index.ts';
 import { Rational } from '../../../domain/values/index.ts';
+import { isMarkLacking } from '../../calculation-words.ts';
 import { calculation, signed } from '../../figures.ts';
 import { decimalMoney, decimalUnderlyingPrice, money, shortDate } from '../../format.ts';
 import { instrumentsOf, plotBaseOf, plotSessionOf } from './plot.props.ts';
@@ -69,6 +70,14 @@ function hoverOf(session: ViewSession, marks: ReadoutGroup, pnl: string | undefi
   return [shortDate(session.date), ...marks.rows.map((r) => `${r.label}: ${r.value.text}`), ...(session.markers ?? []).map(markerWords), `Trade P&L: ${pnl ?? 'No Mark'}`];
 }
 
+// A281: "Add the Mark" links to the Review's Marks row for the Instrument whose Mark is missing or acknowledged unavailable, as Needs you's
+// link does, and only while the Trade is Open (a Trade that has ended has no pending session).
+function addMarkLinkOf(view: TradeReplayView, session: ViewSession): Pick<ReplayFrameSession, 'addMarkTo'> {
+  const { tradePnl } = session;
+  if (view.pending === null || tradePnl.kind !== 'Unavailable' || !isMarkLacking(tradePnl)) return {};
+  return { addMarkTo: `/review?trade=${encodeURIComponent(view.tradeId)}&instrument=${encodeURIComponent(tradePnl.instrument.symbol)}` };
+}
+
 function frameSessionOf(view: TradeReplayView, index: number): ReplayFrameSession {
   const session = view.sessions[index]!;
   const dateLabel = shortDate(session.date);
@@ -79,6 +88,7 @@ function frameSessionOf(view: TradeReplayView, index: number): ReplayFrameSessio
     dateLabel,
     sliderValue: `${dateLabel} · ${index + 1} of ${view.sessions.length}`,
     ...words,
+    ...addMarkLinkOf(view, session),
     isFinal: session.final !== undefined,
     readout: readoutOf(view, session),
     tableRow: tableRowOf(view, session, marks),
