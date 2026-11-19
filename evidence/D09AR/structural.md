@@ -174,6 +174,16 @@ Lane RO (`d09ar/ro`), base `9a40b95a`, commit `5f395db7`.
     - The mirror keeps W60's Target-first order and needs the user's approval (in `new-words.md`).
     - `extremes ?? 'Main'` is right (A268).
     - With no current odds, the Plan side shows its ratio alone.
+  - **B1** `bed934e8`: "should speak the current ratio and the odds in full to a screen reader in the Reward to risk row".
+    - Red: `expected <span role="img" …(1)></span> to be null`; then green.
+    - The ratio is now plain text, split from the value at " · ", and only the odds sit in the labelled span. Visible text is unchanged.
+    - One assertion in T9AR.15's own odds-note case changed: the labelled image's text was the whole value and is now the odds part only. Its other assertions, including the whole row text, are unchanged. Accepted as forced by the fix.
+    - Browser: `e2e/d9/replay.spec.ts` 5 of 5. Lane tier `T9AR.15-B1`: unit 2389, integration 280, checks 14 of 14. Sent to ocr, including whether splitting the formatted string belongs in the adapter.
+    - ocr on `bed934e8` (`ocr/T9AR.15-B1-bed934e8.json`): 2 files (5 excluded), 0 comments, **no findings**.
+      - Reviewer's note, not a finding: the split at " · " does no arithmetic and is safe with today's adapter, but it is fragile. The suggestion is for `ratioWords` to hand over `ratioText` and `marks` separately. This is recorded for the final report as a suggested hardening.
+    - Lane RO is ready; it merges after lanes PL and IN.
+- **T9AR.15-D1** briefed in lane SC at `4179346d`: fill `stakeSpoken` from `ratioWords(...).odds.spoken`.
+  - It stopped with no change: `ratioWords` is lane RO's and is not merged yet (the main session's brief was premature). Parked until lane RO merges, then re-briefed on lane SC rebased onto it.
 
 ## T9AR.19 Chart: a first crossing
 
@@ -207,6 +217,15 @@ Lane PL (`d09ar/pl`), base `c2882ae0`, commit `e11d5fb9`. Case 1 in two files un
       - Existing lines changed shape only: 2 in `plot.props.test.ts` and 4 doubles in `corridor.test.tsx`, each wrapped in an array.
       - Lane tier `T9AR.19-B1`: unit 2386, integration 280, checks 14 of 14.
       - ocr on `728d3279` (`ocr/T9AR.19-B1-728d3279.json`): 5 files (5 excluded), 0 comments, **no findings**. Lane PL is ready; it merges after `merge4` finishes.
+- **Merged.** Rebased onto `4179346d`:
+  - `fdbfba3f` (T9AR.19);
+  - `d8721c93` (the checks log);
+  - `c406aab9` (B2);
+  - `92933bb9` (B3);
+  - `0cd03ba5` (the B lane tier);
+  - `bd746e92` (B1).
+
+  Lane tier rerun `T9AR.19-rebased`: unit 2403, integration 280, checks 14 of 14; `run-complete.sh`: run complete. Fast-forwarded to `bd746e92`. Lane IN was then rebased onto it and its tier rerun as `T9AR.22-rebased`.
 
 ## T9AR.22 Node integration suite
 
@@ -472,6 +491,9 @@ Lane SC (`d09ar/sc`), base `b75e4597`, commit `0ba39920` (four of five planned c
     - B1 changed one expected value: the earlier "Add the Mark" adapter case (same task, `3447ef61`) used an option double (BREN call), so its `instrument=BREN` encoded the bug. It now expects the contract key. Accepted.
     - Lane tier `T9AR.16-B`: unit 2387, integration 280, checks 14 of 14.
     - ocr on `86b33a7d` (`ocr/T9AR.16-B1-86b33a7d.json`): 2 files (5 excluded), 0 comments, **no findings**. Lane SC is ready; it merges after `merge4` finishes, since that run uses the main checkout.
+- **Merged.** Rebased onto `a959e862`: `f1188678` (first four cases), `c04fb5d0` (Add the Mark), `4179346d` (B1). Lane tier rerun `T9AR.16-rebased`: unit 2396, integration 280, checks 14 of 14; `run-complete.sh`: run complete. Fast-forwarded to `4179346d`.
+- **Overlay grid check (from T9AR.16's report), confirmed by reading the code.** `replay-overlay.css:64` places `.replay-overlay .replay-plot-frame` in column 1. Since T9AR.16 the card's grid child is `div.replay-chart-box` (`frame.tsx:79`), which wraps the plot frame, so the rule matches no grid item. The chart box spans both columns, and the readout takes column 2 on a row of its own, so A275's "readout beside the charts at 1280" likely no longer holds.
+  - This came from a task report, not an ocr finding, so it is not a bug task. It is a stated check of B9AR.1 (T9AR.23), so T9AR.23's brief names it, and a failure there becomes an S task for lane OV (`replay-overlay.css`).
     - **B2: no change.** Link and button labels live in the components: `ReviewCard.tsx:343` and `Cockpit.tsx:250` ("Price History"); "Add the Mark" matches them.
   - Reviewer's note, not a finding: `needs-you.props.ts:58` and `TradeList.tsx:294` use the same `.symbol` for their Marks links. That is outside D9A-R, so it is recorded for the final report.
 - **T9AR.2-B1** (lane TY) done: `7f6618fc`, `replay.types.ts` only: `ReplayFrameSession.addMarkTo?` after `headline`, naming A281. typecheck, tsc6, lint exit 0; `src/ui/cockpit/replay` 156 passed. Lane TY rebased onto `df012a47`: B1 is now `d88001ac`. ocr on `7f6618fc` (`ocr/T9AR.2-B1-7f6618fc.json`): 0 comments, **no findings**.
