@@ -1,0 +1,112 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 1,
+    "total_tokens": 38881,
+    "input_tokens": 38315,
+    "output_tokens": 566,
+    "cache_read_tokens": 8320,
+    "elapsed": "31s"
+  },
+  "tool_calls": {
+    "total": 9,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 2,
+      "file_read": 6
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "tests/support/replay-view-fields.ts",
+      "content": "Decimal prices still fail when the builder computes differences before calling this parser. For example, `planColumnWithTerms(xyz, 100.1, 90, 120)` passes `-10.099999999999994` from `stop - entry` to `r`; `parseDecimal` only accepts six fractional digits, so the builder throws. Convert the input prices and quantity to Rational before performing subtraction/multiplication/division, and add a regression case using a non-binary-exact decimal such as `100.1` (the new `100.5` case avoids this problem).",
+      "existing_code": "  const parsed = parseDecimal(String(n));",
+      "start_line": 11,
+      "end_line": 11,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "tests/support/replay-view-fields.ts",
+        "tools/replay-view-fields.test.ts"
+      ]
+    }
+  ],
+  "session_id": "8546521b-e471-487a-a1c2-e7d792bc0105",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "8546521b-e471-487a-a1c2-e7d792bc0105",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "88b9ba80",
+      "resolved_base": "db6f7f7561c86a5b0846515dc4d52f8324aabec3",
+      "resolved_head": "88b9ba8040a72a58d02410485b52ac5593bda78f",
+      "exact_range": "db6f7f7561c86a5b0846515dc4d52f8324aabec3..88b9ba8040a72a58d02410485b52ac5593bda78f",
+      "source_artifact_sha256": "e7c2d600e1defbb5673802a5d8366698501444fbfb12fbf9e8e1274a30b9cdd1"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "7e5cc5541866aa677477b35f49ce3b816af6601769068e770b21ccfedbf5d822",
+          "path": "tools/replay-view-fields.test.ts",
+          "fingerprint": "a21b23c0cae175395d0c87ce79b63bb012ae38eb0f7b7d6a93fa195760c0177f"
+        },
+        {
+          "item_id": "8629b81b00832c2b4ce200dc817a42574bb176db9767bf4c779a60f1e9d82e49",
+          "path": "tests/support/replay-view-fields.ts",
+          "fingerprint": "9a8e7e1d6d005e67607f4513889e1bdbb284f3d604ad115f448c3b76d630e407"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "7e5cc5541866aa677477b35f49ce3b816af6601769068e770b21ccfedbf5d822",
+          "path": "tools/replay-view-fields.test.ts",
+          "fingerprint": "a21b23c0cae175395d0c87ce79b63bb012ae38eb0f7b7d6a93fa195760c0177f"
+        },
+        {
+          "item_id": "8629b81b00832c2b4ce200dc817a42574bb176db9767bf4c779a60f1e9d82e49",
+          "path": "tests/support/replay-view-fields.ts",
+          "fingerprint": "9a8e7e1d6d005e67607f4513889e1bdbb284f3d604ad115f448c3b76d630e407"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "b15888e059e90744a7cd967f7d6129e5d2e4d1aba1b8d9879927379f8dd1c398",
+          "path": "evidence/D09AR/tdd-log/T9AR.6-B2.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 31172
+  }
+}

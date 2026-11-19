@@ -1,0 +1,101 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 0,
+    "total_tokens": 30642,
+    "input_tokens": 30454,
+    "output_tokens": 188,
+    "cache_read_tokens": 4992,
+    "elapsed": "12s"
+  },
+  "tool_calls": {
+    "total": 4,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/screens/TradeDetail.test.tsx",
+        "src/ui/screens/trade-detail/Cockpit.tsx"
+      ]
+    }
+  ],
+  "session_id": "80693c72-e174-4220-955f-2b784cb0f58a",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "80693c72-e174-4220-955f-2b784cb0f58a",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "3d066dc6",
+      "resolved_base": "c61485c728953a2f164548a3edcb9019e33b8d85",
+      "resolved_head": "3d066dc6a9dd4ebc5a74baa0873366d759bd331a",
+      "exact_range": "c61485c728953a2f164548a3edcb9019e33b8d85..3d066dc6a9dd4ebc5a74baa0873366d759bd331a",
+      "source_artifact_sha256": "38c2babe37025d9d407823fde3bd8adf02b20d1fe1f80eb36786829b44406d9c"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "87638b8e40a8471b5a00443528a3c98bf4752f964c11c4b564b6258d593b8716",
+          "path": "src/ui/screens/TradeDetail.test.tsx",
+          "fingerprint": "fa3eda6257082079d9c35243e49694fee4419c42caf87120810c1f1e7a86de6e"
+        },
+        {
+          "item_id": "bad5c69b3d1e03bf54bd2b1b2b13ff5e5a0dabd158881300fc1e86a4a591bb75",
+          "path": "src/ui/screens/trade-detail/Cockpit.tsx",
+          "fingerprint": "86ea06c64b89f29b752795230543644afac5b58144fefd7969246aa8c1c2084e"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "87638b8e40a8471b5a00443528a3c98bf4752f964c11c4b564b6258d593b8716",
+          "path": "src/ui/screens/TradeDetail.test.tsx",
+          "fingerprint": "fa3eda6257082079d9c35243e49694fee4419c42caf87120810c1f1e7a86de6e"
+        },
+        {
+          "item_id": "bad5c69b3d1e03bf54bd2b1b2b13ff5e5a0dabd158881300fc1e86a4a591bb75",
+          "path": "src/ui/screens/trade-detail/Cockpit.tsx",
+          "fingerprint": "86ea06c64b89f29b752795230543644afac5b58144fefd7969246aa8c1c2084e"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "568eb4bfc69320208698161bd3416d10954a7e2ba912ef187eed44212abc9049",
+          "path": "evidence/D09AR/tdd-log/T9AR.8-B3.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 12004
+  }
+}

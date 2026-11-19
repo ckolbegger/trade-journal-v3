@@ -107,6 +107,32 @@ Lane DM (`d09ar/dm`), base `523a8a0e`, commit `27e47d5a`. 7 cases: 6 red then gr
   - Done: `95fe73b2`; red `expected [ '2026-10-12', '2026-10-14' ] to deeply equal [ '2026-10-12', '2026-10-12' ]`, green; no first-run pass. The test builds a copy of O-S2 (MNO 43.20 on Mon 10-12, Tue 10-13, Wed 10-14; the put 3.70, missing, 3.70), since O-S2's own Marks give no such sequence. `verify:fixtures` exit 0. Lane tier `T9AR.5-B1`: unit 2313, integration 280, checks 14 of 14. ocr on `95fe73b2` (`ocr/T9AR.5-B1-95fe73b2.json`): 2 files, 0 comments. **No findings.**
 - Rebased onto `72ece0c8`. The rebase brought in lanes OV's and PL's code, which lane DM does not own, so the lane tier was rerun: `T9AR.5-rebased` on `6855e7d3`, unit 2340, integration 280, checks 14 of 14. Merge held until the `merge2` run finished; then merged by fast-forward: `60e4bd32` (T9AR.5), `6855e7d3` (B1).
 
+## T9AR.6 Facade and manifest
+
+Lane DM (`d09ar/dm`), base `ada81477`, commit `6ff96d06`. Verification, each exit 0: `npm run verify:capabilities` (24 operations, 12 variant-qualified, 10 routes); `npx vitest run src/coordinators/workspace` (131 passed); `npm run typecheck`; `npx tsc6 --noEmit`; `npm run lint` (2 existing warnings in `OwedDebtItem.tsx`); `npm run verify:fixtures` (workspace-v1 to v7 equal their snapshots). Changed: `capabilities.ts` (`replayTrade` variants `ConditionStatus`, `Markers`, `PlanComparison`, `Odds`; `getTrade` gains `Odds`), `routes.ts` (Trade Detail and Review require them), `workspace.test.ts` (the manifest); new `tests/support/replay-view-fields.ts` (`oddsOf`, `figuresWithOdds`, `planColumnWithTerms`, `againstPlanOf`, `crossingsOf`). No view type gap; no coordinator change (A272). Lane tier `T9AR.6`: unit 2340, checks 14 of 14, **integration 1 failed of 280**: `tests/integration/d9/capabilities.test.ts` (I9.7) asserted the old exact `replayTrade` list (a file outside the task's list).
+
+- ocr on `6ff96d06` (`ocr/T9AR.6-6ff96d06.json`): 4 files (5 excluded), 2 comments.
+
+| Severity | Location | Finding | Verdict |
+|---|---|---|---|
+| medium | `tests/support/replay-view-fields.ts:38` | `planColumnWithTerms` always gives the Plan 50/50 odds, whatever its Stop and Target (entry 100, Stop 90, Target 120 should be 1/3, 33%) | Valid: T9AR.6-B1 |
+| medium | `tests/support/replay-view-fields.ts:8` | The helper `r` throws a `RangeError` on a decimal price (`BigInt(0.5)`), though the builders promise plain numbers | Valid: T9AR.6-B2 |
+
+- **T9AR.6-B1** Case: it should give the Plan column the odds its own Stop and Target imply.
+- **T9AR.6-B2** Case: it should build the Plan column and a fill's distance from a decimal price.
+  - Done, one commit each, no first-run pass, in the new `tools/replay-view-fields.test.ts` (the unit project takes only `src` and `tools`):
+    - B1 `db6f7f75`: red `expected false to be true` (50%, not 1/3), green. The builder uses the domain's `oddsOf(entry - stop, target - entry)`.
+    - B2 `88b9ba80`: red `RangeError: The number 100.5 cannot be converted to a BigInt`, green. `r` goes through `parseDecimal`; entry 100.5 gives `atTarget` 39/2, a 0.5 distance gives 1/2.
+  - Lane tier `T9AR.6-B`: unit 2342 (208 files), integration 280, checks 14 of 14.
+  - ocr on `db6f7f75` (`ocr/T9AR.6-B1-db6f7f75.json`): 0 comments, **no findings**. ocr on `88b9ba80` (`ocr/T9AR.6-B2-88b9ba80.json`): 1 comment.
+
+| Severity | Location | Finding | Verdict |
+|---|---|---|---|
+| medium | `tests/support/replay-view-fields.ts:11` | The builders subtract prices as floats before converting, so `planColumnWithTerms(…, 100.1, 90, 120)` hands `r` `-10.099999999999994`, which `parseDecimal` rejects (at most six decimal places) | Valid: T9AR.6-B3 |
+
+- **T9AR.6-B3** Case: it should build the Plan column from prices whose differences are not exact in floating point (entry 100.1, Stop 90, Target 120).
+- **T9AR.6-S1** fix: `8435e52d`. Reproduced: `expected [ 'ConditionStatus', 'Markers', …(2) ] to deeply equal [ 'ConditionStatus', 'Markers' ]`. Changed expected values, a consequence of T9AR.6's planned variants: line 15 (the manifest's `replayTrade`) and line 20 (the Trade Detail route's required `replayTrade` variants), each before `['ConditionStatus', 'Markers']`, after `['ConditionStatus', 'Markers', 'PlanComparison', 'Odds']`. Line 20's change matches the plan row ("the Trade Detail and Review routes require them"). After: 1 of 1. Lane tier `T9AR.6-S1`: unit 2340, integration 280. ocr on `8435e52d` (`ocr/T9AR.6-S1-8435e52d.json`): 1 file, 0 comments. **No findings.** (The reviewer's note that I9.7 checks `getTrade` only with `toContain('Replay')` is not an ocr finding; the manifest test `workspace.test.ts` lists `getTrade`'s `Odds`.)
+
 ## T9AR.7 The Replay overlay
 
 Lane OV (`d09ar/ov`), base `8245f6c6`, commit `14ff2e7d`. 9 cases; 7 red then green, 2 first-run passes with mutation checks (the finished-Trade and symbol-alone header: heading rendered `header.slice(0, 4)` failed on the heading text; the shell banner: cleanup set `aria-hidden` in place of removing `inert` failed with the banner still inert). Lane tier `T9AR.7`: unit 2298 (204 files), integration 280, checks 14 of 14.
@@ -172,6 +198,14 @@ Lane OV (`d09ar/ov`), base `e7f9f474`, commit `44e50ef1`. 8 planned cases, all g
 - **T9AR.8-B2** Case: it should go back one entry on Close after Back then Forward brought the overlay back.
 - **T9AR.8-B3** Case: it should put focus on the Replay button when an overlay opened from the address closes.
 - **T9AR.8-F1** Structural: explicit branches in place of the nested ternary.
+  - Done, one commit each, no first-run pass:
+    - B1 `9b471f99`: red `expected 'Thu Oct 15 · 4 of 4. +$250.00' to be 'Wed Oct 14 · 3 of 4. +$100.00'`, green (two earlier failures were the task's own fixture, not counted). `initialSession` is the slider's `session` state.
+    - B2 `c61485c7`: red `expected 'REPLACE' to be 'POP'`, green. The effect clearing `pushed` on close removed. (The case's last step, one more Back, is weak; the `POP` assertion is the check.)
+    - B3 `3d066dc6`: red `expected <body> to be <button>`, green. A ref on the Replay button and an open-to-closed focus effect, before the drawer-request focus effect.
+    - F1 `8488f9d4`: `overlayBody` chosen by if and else. `TradeDetail.test.tsx` with `trade-detail`: 123 passed; typecheck, tsc6, lint, `lint:deps` exit 0.
+  - No browser run (no `e2e` spec affected). Lane tier `T9AR.8-B`: unit 2327, integration 280, checks 14 of 14.
+  - ocr, one run per commit: `9b471f99`, `c61485c7`, `3d066dc6`, `8488f9d4` (`ocr/T9AR.8-B1-9b471f99.json`, `ocr/T9AR.8-B2-c61485c7.json`, `ocr/T9AR.8-B3-3d066dc6.json`, `ocr/T9AR.8-F1-8488f9d4.json`): 0 comments each. **No findings.**
+- Lane OV rebased onto `d74afb24` (it brought in T9AR.5's domain files and lane PL's chart files): `39d876a0` (T9AR.8), `a76254b5` (B1), `3325fb9f` (B2), `ebbcdab4` (B3), `ca634afb` (F1). Lane tier rerun as `T9AR.8-rebased`: unit 2357, integration 280, checks exit 0; `run-complete.sh`: run complete. Merged by fast-forward to `ca634afb`.
 
 ## T9AR.10 Chart: the key, the dates, every line labelled
 
