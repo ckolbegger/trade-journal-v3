@@ -303,6 +303,16 @@ describe('Replay: session cards (decision 5)', () => {
     await user.click(screen.getByRole('button', { name: 'Next session' }));
     expect(visible()).toEqual(['Fri Nov 13', 'Thu Nov 12']);
   });
+
+  it('should turn the cards back to the first page when another Trade is handed to the frame with the same slider date', async () => {
+    vi.spyOn(Element.prototype, 'clientWidth', 'get').mockReturnValue(700);
+    const user = userEvent.setup();
+    const { rerender } = render(<ReplayFrame {...props({ initialSession: '2026-11-12' })} />);
+    await user.click(screen.getByRole('button', { name: 'Earlier sessions' }));
+    expect(screen.getAllByRole('article').map(headingOf)).toEqual(['Tue Nov 10', 'Mon Nov 9']);
+    rerender(<ReplayFrame {...props({ tradeKey: 'trade-other', initialSession: '2026-11-12' })} />);
+    expect(screen.getAllByRole('article').map(headingOf)).toEqual(['Thu Nov 12', 'Wed Nov 11']);
+  });
 });
 
 describe('Replay frame: hover and tap', () => {

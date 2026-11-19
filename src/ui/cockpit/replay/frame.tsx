@@ -103,7 +103,7 @@ export function ReplayFrame({ tradeKey, sessions, initialSession, sliderLabel, p
       {/* W46: the screen's links for the slider's session, under the readout. */}
       {renderLinks?.(session)}
       {/* A277: the charts' text equivalent; the plot is described by its list, which holds the revealed sessions only (P118), newest first. */}
-      <SessionCards {...cardsWords} id={plotBase.describedBy} cards={sessions.slice(0, current + 1).reverse().map((s) => ({ ...s.card, id: s.date, isCurrent: s.date === session.date }))} onSelectSession={(id) => move(sessions.findIndex((s) => s.date === id))} />
+      <SessionCards key={tradeKey} {...cardsWords} id={plotBase.describedBy} cards={sessions.slice(0, current + 1).reverse().map((s) => ({ ...s.card, id: s.date, isCurrent: s.date === session.date }))} onSelectSession={(id) => move(sessions.findIndex((s) => s.date === id))} />
     </section>
   );
 }
