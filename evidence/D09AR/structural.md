@@ -278,6 +278,9 @@ Lane PL (`d09ar/pl`), base `d74afb24`, commit `933ffabf`. 4 planned cases: three
 
 - **T9AR.12-D1** Case: it should fit the replay on one screen at 320 by 667 with the P&L chart 200 high, the price chart giving up the 12 px.
 - **T9AR.12-B1** Case: it should keep the slider's value inside the phone drawing at the last session.
+  - D1 done: `b5412945`; red `expected 136 to be 124`, green. **12 px was half a pixel short** in the browser (the Review card replay at 320: 589.42 against 588.92), so the phone price chart takes the least more: 123 high, 13 px shorter than 136 (the brief allowed the least more needed; the P&L chart stays 200; the wide price chart stays 136). The case's expected value moved from 124 to 123 before its commit; its title still says "12 px" (a nit, left). No existing case pinned the phone height. `e2e/d9/responsive-a11y.spec.ts`: 6 of 6 (4 and 2 failed at 124).
+  - B1 done: `d4324a1b`; red `slider 14, right edge: expected 345.2 to be less than or equal to 340`, green. Four more spots (start- and end-anchored at the cursor ± 6, above and below the dot) after the two centred ones. The spec 6 of 6 again.
+  - No first-run pass. Lane tier `T9AR.12-DB`: unit 2355, integration 280, checks 14 of 14.
 
 ## T9AR.9 Review card: the Replay button
 
@@ -313,6 +316,7 @@ Lane RO (`d09ar/ro`), base `e526637e`, commit `aa047c46`. Planned cases red then
 | low | `readout.tsx:51` | A static `style={UNBREAKABLE}` duplicates the stylesheet's `nowrap`, and the unit test checks the inline copy | Doubtful (readability): T9AR.13-F1 |
 
 - **T9AR.13-F1** Structural: the stylesheet rule is the one source; the case checks the rule.
+  - Done: `06741b51`. `UNBREAKABLE` and the three inline styles removed from `readout.tsx`; the "unbreakable cells" case reads `replay-readout.css` with postcss (as `corridor.test.tsx` does) and checks each figure cell is a `td` in `.replay-stake-grid`. `readout.test.tsx` 8 of 8; typecheck, lint exit 0. Mutation (the `nowrap` line deleted): `expected undefined to be 'nowrap'`, restored. Lane tier `T9AR.13-F1`: unit 2370, integration 280, checks 14 of 14.
 
 ## Suite runs
 
