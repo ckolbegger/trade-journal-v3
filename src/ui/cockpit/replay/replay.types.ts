@@ -101,7 +101,7 @@ export interface ReplayPlotProps {
   readonly priceShortTitle?: string;
   // The P&L chart's title.
   readonly pnlTitle: string;
-  // The accessible name of the charts, which are described by the table (its element id).
+  // The accessible name of the charts, which are described by the session cards (their list's element id).
   readonly accessibleName: string;
   readonly describedBy: string;
   // Revealed sessions only, oldest first: the plot never sees a later one.
@@ -218,12 +218,16 @@ export interface ReadoutProps {
 // A277: one row of a session card, top to bottom: the Marks, Trade P&L, Banked, the stake rows, Events.
 export interface SessionCardRow {
   readonly label: string;
+  // A figure, or for a stake row the amount from here: "$672.00".
   readonly value: ReadoutValue;
-  // Where the Trade would end, beside the amount from here, as `ReadoutRow.pnl`.
+  // A stake row's R and where the Trade would end ("P&L if hit"), beside the amount from here: "$672.00 · 2.07R · P&L if hit +$316.00".
+  readonly r?: ReadoutValue;
   readonly pnl?: ReadoutValue;
   // A287: the canonical term as accessible text.
   readonly term?: string;
   readonly weight?: ExtremesWeight;
+  // A267: the Reward to risk row's odds in full for a screen reader, when its value holds them.
+  readonly spoken?: string;
 }
 
 // A277: what the adapter builds for one session; the frame adds `id` and `isCurrent`.
@@ -231,6 +235,10 @@ export interface SessionCardBody {
   // "Mon Nov 16".
   readonly heading: string;
   readonly rows: readonly SessionCardRow[];
+  // W56: a Trade past a line, in one row above the stake rows, in place of the row whose amount would be zero.
+  readonly pastLine?: StakePastLineRow;
+  // The session's events, one text each ("Sold 2 at $4.00"); none when it had none.
+  readonly events: readonly string[];
 }
 
 // A277: one card as `SessionCards` draws it.
@@ -268,23 +276,13 @@ export interface ReplayOverlayProps {
   readonly children: ReactNode;
 }
 
-// A row of "Session by session" (W45): cells line up with `ReplayProps.tableColumns` after "Session" and before "Events".
-export interface TableRow {
-  // "Mon Nov 16".
-  readonly dateLabel: string;
-  // Finished text; "No Mark" for a session without a Mark, never a carried value.
-  readonly cells: readonly string[];
-  // The session's events, one text each ("Sold 2 at $4.00").
-  readonly events: readonly string[];
-}
-
 // Everything the frame shows for one session. The frame reveals sessions up to the slider's and drops the rest from
 // the page, so nothing here is read for a later one.
 export interface ReplayFrameSession {
   // The session's trading date, "2026-11-16": the key the address and the slider's state use.
   readonly date: string;
   // A277: this session's card, shown newest first for the revealed sessions; the frame adds the id and the current mark.
-  readonly card?: SessionCardBody;
+  readonly card: SessionCardBody;
   // A267: the stake sentence's odds in full for a screen reader, when the sentence holds them.
   readonly stakeSpoken?: string;
   // The slider's spoken value, "Mon Nov 16 · 11 of 15"; the headline follows it.
@@ -302,7 +300,6 @@ export interface ReplayFrameSession {
   readonly isFinal: boolean;
   // The readout, in the order shown.
   readonly readout: readonly ReadoutGroup[];
-  readonly tableRow: TableRow;
   // This session's drawing data; the plot's `sessions` are these, for the revealed ones.
   readonly plot: PlotSession;
   // Shown on hover and focus: "Tue Nov 3", then Marks and result, as lines.
@@ -311,7 +308,7 @@ export interface ReplayFrameSession {
   readonly hasMarker: boolean;
 }
 
-// What `ReplayFrame` takes (A255): the headline, stake sentence, slider, readout, table, plot and the slots.
+// What `ReplayFrame` takes (A255): the headline, stake sentence, slider, readout, session cards, plot and the slots.
 export interface ReplayProps {
   // The Trade's id: the slider's session is kept while the same Trade's replay is passed in again (A257).
   readonly tradeKey: string;
@@ -323,12 +320,8 @@ export interface ReplayProps {
   readonly sliderLabel: string;
   readonly previousLabel: string;
   readonly nextLabel: string;
-  // The table's title ("Session by session") and its middle columns, after "Session" and before "Events":
-  // "BREN Mark", "Trade P&L", "Banked", ...
-  readonly tableTitle: string;
-  readonly tableColumns: readonly string[];
-  // A277: the cards' fixed words; when present with each session's `card`, the cards replace the table.
-  readonly cardsWords?: SessionCardsWords;
+  // A277: the cards' fixed words ("Session by session", the pager's buttons); each session's `card` is its own.
+  readonly cardsWords: SessionCardsWords;
   // The plot's fixed parts (titles, anchors, axis), to which the frame adds the revealed sessions.
   readonly plotBase: Omit<ReplayPlotProps, 'sessions' | 'sliderIndex' | 'onSelectSession' | 'onHoverSession' | 'hoverIndex' | 'compact' | 'cursorLabel'>;
   // The plot component: Corridor in the app, a double in tests; a Ribbon plot later.

@@ -35,7 +35,7 @@ type Row = ReadoutGroup['rows'][number];
 const row = (label: string, value: ReadoutValue, change?: string): Row => ({ label, value, ...(change !== undefined && { change }) });
 type Figures = NonNullable<ViewSession['figures']>;
 // A dash named "No Mark" stands in a cell that needs the Mark (W61).
-const NO_MARK: ReadoutValue = { kind: 'Unavailable', text: 'No Mark' };
+export const NO_MARK: ReadoutValue = { kind: 'Unavailable', text: 'No Mark' };
 const EMPTY: ReadoutValue = { kind: 'NotApplicable', text: '' };
 
 // One grid row (A278): the amount from here, its R and the Trade's result there, one figure to a cell. A figure without a value says why in its

@@ -49,7 +49,7 @@ function props(over: Partial<ReplayPlotProps> = {}): ReplayPlotProps {
     priceShortTitle: 'BREN price',
     pnlTitle: 'Trade P&L',
     accessibleName: 'BREN Marks and Trade P&L by session',
-    describedBy: 'replay-table',
+    describedBy: 'replay-cards',
     sessions: DAYS.map((_, i) => bren(i)),
     anchors: {
       entryPrice: 97,

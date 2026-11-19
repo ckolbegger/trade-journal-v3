@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test';
 import {
-  BREN, BREN_SOLD_OUT, build, buildPlanned, chartText, closeOf, DALE, detail, expect, going, headline, MON_1123_1700, openDrawer, openDetailAt, openTable, pnlChart, PRICE_HISTORY, READY,
-  readoutValue, recordExpiration, replay, seek, sliderValue, stake, tableRow, test,
+  BREN, BREN_SOLD_OUT, build, buildPlanned, cardRows, chartText, closeOf, DALE, detail, expect, going, headline, MON_1123_1700, openDrawer, openDetailAt, pnlChart, PRICE_HISTORY, READY,
+  readoutValue, recordExpiration, replay, seek, sessionCard, sliderValue, stake, test,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
@@ -60,8 +60,8 @@ test.describe('B9.4 How a replay ends', () => {
     await expect(readoutValue(scope, 'Trade P&L')).toHaveText('+$1,138.00');
     await expect(readoutValue(scope, 'Banked')).toHaveText('+$1,138.00');
     expect(await chartText(pnlChart(scope))).toEqual(expect.arrayContaining(['Banked +$478', 'Banked +$1,138', 'Sold 2 at $4.00']));
-    const table = await openTable(scope);
-    await expect(tableRow(table, 'Fri Nov 13').locator('td')).toHaveText(['$104.60', '$4.91', '+$1,138.00', '+$1,138.00', ...Array<string>(8).fill('Not applicable: no open position'), '$0.80', '$4.00', 'Sold 2 at $4.91']);
+    // The final session's card has nothing at stake to show: its Marks, the result, the banked total, the Stop and Target prices and its sale.
+    await expect(cardRows(await sessionCard(scope, 'Fri Nov 13'))).toHaveText(['BREN Mark$104.60', 'Call Mark$4.91', 'Trade P&L+$1,138.00', 'Banked+$1,138.00', 'Stop$0.80', 'Target$4.00', 'EventsSold 2 at $4.91']);
     // The session before the last is not final: it keeps its own headline and what is still at stake.
     await seek(page, scope, 'ArrowLeft');
     await expect(sliderValue(scope)).toHaveText('Thu Nov 12 · 9 of 10');
@@ -110,8 +110,7 @@ test.describe('B9.4 How a replay ends', () => {
     await expect(stake(scope)).toHaveText('Nothing is at risk and nothing is left to gain.');
     await expect(scope.locator('.replay-readout-group h3')).toHaveText(['Final result', 'Marks', 'Position', 'The Plan']);
     expect(await chartText(pnlChart(scope))).toContain('Expired');
-    const table = await openTable(scope);
-    await expect(tableRow(table, 'Fri Nov 20').locator('td').last()).toHaveText('Expired');
+    await expect(cardRows(await sessionCard(scope, 'Fri Nov 20')).last()).toHaveText('EventsExpired');
     await expectNoPayoffOrTheory(page);
     await context.close();
   });

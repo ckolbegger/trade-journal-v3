@@ -135,7 +135,7 @@ export function plotBaseOf(view: TradeReplayView): ReplayProps['plotBase'] {
     priceShortTitle: `${underlying} price`,
     pnlTitle: 'Trade P&L',
     accessibleName: `${underlying} Marks and Trade P&L by session`,
-    describedBy: `replay-table-${view.tradeId}`,
+    describedBy: `replay-cards-${view.tradeId}`,
     anchors: {
       ...(entry !== undefined && { entryPrice: asNumber(entry) }),
       priceLines: priceLinesOf(view, contract),

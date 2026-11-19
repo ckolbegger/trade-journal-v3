@@ -33,7 +33,7 @@ function props(over: Partial<ReplayPlotProps> = {}): ReplayPlotProps {
     priceShortTitle: 'BREN price',
     pnlTitle: 'Trade P&L',
     accessibleName: 'BREN Marks and Trade P&L by session',
-    describedBy: 'replay-table',
+    describedBy: 'replay-cards',
     sessions,
     anchors: { entryPrice: 97, priceLines: [{ kind: 'Strike', price: 100, label: 'Strike $100' }], planAtStop: null, planAtTarget: null },
     axis: { slots: 15, endLabel: 'Fri Nov 20' },
@@ -180,11 +180,11 @@ describe("Corridor: the Underlying's price (W39)", () => {
     const { container } = render(
       <>
         <CorridorPlot {...props()} />
-        <table id="replay-table" />
+        <ol id="replay-cards" />
       </>,
     );
     const chart = screen.getByRole('img', { name: 'BREN Marks and Trade P&L by session' });
-    expect(chart.getAttribute('aria-describedby')).toBe('replay-table');
+    expect(chart.getAttribute('aria-describedby')).toBe('replay-cards');
     expect(container.querySelector(`#${chart.getAttribute('aria-describedby')}`)).toBeTruthy();
     // The price chart's title (W39), and its phone form.
     expect(screen.getByText('BREN price · one Mark per session')).toBeTruthy();

@@ -2,15 +2,15 @@ import { useState, type KeyboardEvent } from 'react';
 import { Link } from 'react-router';
 import { Readout } from './readout.tsx';
 import type { ReplayProps } from './replay.types.ts';
+import { SessionCards } from './session-cards.tsx';
 
 // A255: the frame owns the headline, the slider and the reveal rule. It selects finished values; it works out none.
-export function ReplayFrame({ tradeKey, sessions, initialSession, sliderLabel, previousLabel, nextLabel, tableTitle, tableColumns, plotBase, Plot, renderSince, renderChips, renderLinks, onSessionChange }: ReplayProps) {
+export function ReplayFrame({ tradeKey, sessions, initialSession, sliderLabel, previousLabel, nextLabel, cardsWords, plotBase, Plot, renderSince, renderChips, renderLinks, onSessionChange }: ReplayProps) {
   const last = sessions.length - 1;
   // A257: the slider's session is a date held with the Trade it belongs to, so a longer replay of the same Trade keeps it and another Trade starts afresh.
   const [held, setHeld] = useState({ tradeKey, date: initialSession });
   // The session under the pointer or the keyboard's focus, which the plot reports and the frame shows.
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
-  const [tableOpen, setTableOpen] = useState(false);
   if (held.tradeKey !== tradeKey) {
     setHeld({ tradeKey, date: initialSession });
     // Another Trade's sessions are not the ones the pointer was over.
@@ -102,40 +102,8 @@ export function ReplayFrame({ tradeKey, sessions, initialSession, sliderLabel, p
       <Readout groups={session.readout} />
       {/* W46: the screen's links for the slider's session, under the readout. */}
       {renderLinks?.(session)}
-      {/* W45: the charts' text equivalent, folded; the plot is described by this table, so it holds the revealed sessions only (P118). */}
-      <details className="replay-table" onToggle={(e) => setTableOpen(e.currentTarget.open)}>
-        <summary>
-          <span className="replay-table-cue" aria-hidden="true">
-            {tableOpen ? '▾' : '▸'}
-          </span>
-          {tableTitle}
-        </summary>
-        {/* The table scrolls sideways inside its own region, a focusable one so the keyboard can reach it. */}
-        <div className="replay-table-scroll" role="region" aria-label={tableTitle} tabIndex={0}>
-          <table id={plotBase.describedBy}>
-            <thead>
-              <tr>
-                {['Session', ...tableColumns, 'Events'].map((column) => (
-                  <th key={column} scope="col">
-                    {column}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {sessions.slice(0, current + 1).map((s) => (
-                <tr key={s.date}>
-                  <th scope="row">{s.tableRow.dateLabel}</th>
-                  {s.tableRow.cells.map((cell, i) => (
-                    <td key={i}>{cell}</td>
-                  ))}
-                  <td>{s.tableRow.events.join('; ')}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </details>
+      {/* A277: the charts' text equivalent; the plot is described by its list, which holds the revealed sessions only (P118), newest first. */}
+      <SessionCards {...cardsWords} id={plotBase.describedBy} cards={sessions.slice(0, current + 1).reverse().map((s) => ({ ...s.card, id: s.date, isCurrent: s.date === session.date }))} onSelectSession={(id) => move(sessions.findIndex((s) => s.date === id))} />
     </section>
   );
 }

@@ -30,7 +30,7 @@ function frameSession(index: number): ReplayFrameSession {
     stake: null,
     isFinal: false,
     readout: [],
-    tableRow: { dateLabel: DAYS[index] ?? '', cells: [], events: [] },
+    card: { heading: DAYS[index] ?? `Day ${index}`, rows: [{ label: 'BREN Mark', value: { kind: 'Figure', text: `$${100 + index}.00` } }, { label: 'Trade P&L', value: { kind: 'Figure', text: FIGURES[index] ?? '' } }], events: [] },
     plot: plotSession(index),
     hover: [],
     hasMarker: false,
@@ -58,9 +58,8 @@ function props(over: Partial<ReplayProps> = {}, count = 11): ReplayProps {
     sliderLabel: 'Session',
     previousLabel: 'Previous session',
     nextLabel: 'Next session',
-    tableTitle: 'Session by session',
-    tableColumns: [],
-    plotBase: { priceTitle: 'BREN price', pnlTitle: 'Trade P&L', accessibleName: 'BREN Marks and Trade P&L by session', describedBy: 'replay-table', anchors: { priceLines: [], planAtStop: null, planAtTarget: null }, axis: { slots: 15, endLabel: 'Fri Nov 20' } },
+    cardsWords: { title: 'Session by session', newerLabel: 'Newer sessions', earlierLabel: 'Earlier sessions' },
+    plotBase: { priceTitle: 'BREN price', pnlTitle: 'Trade P&L', accessibleName: 'BREN Marks and Trade P&L by session', describedBy: 'replay-cards', anchors: { priceLines: [], planAtStop: null, planAtTarget: null }, axis: { slots: 15, endLabel: 'Fri Nov 20' } },
     Plot: PlotDouble,
     ...over,
   };
@@ -248,67 +247,61 @@ describe('Replay frame: the stake sentence (W38, A267)', () => {
   });
 });
 
-describe('Replay frame: the text equivalent (W45)', () => {
-  // Each session's table row, finished: a Mark, the Trade P&L and the events.
-  const withTable = (count = 11, initialSession?: string): ReplayProps => {
-    const base = props({ tableColumns: ['BREN Mark', 'Trade P&L'], initialSession }, count);
-    return { ...base, sessions: base.sessions.map((s, i) => ({ ...s, tableRow: { dateLabel: DAYS[i] ?? '', cells: [`$${100 + i}.00`, FIGURES[i]?.split(' · ')[0] ?? ''], events: i === 3 ? ['Sold 2 at $4.00', 'Stop moved'] : [] } })) };
-  };
+// A277, decision 5: the cards replace the table that was the charts' text equivalent (W45). Each card's own contents are the adapter's
+// (cards.props.test.ts); the frame shows the cards of the revealed sessions and keeps them and the slider together.
+describe('Replay: session cards (decision 5)', () => {
+  afterEach(() => vi.restoreAllMocks());
+  const cardsOf = () => screen.getAllByRole('article', { hidden: true });
+  const headingOf = (card: HTMLElement) => text(within(card).getByRole('heading', { hidden: true }));
 
-  it('should fold a table titled Session by session under the charts, one row per revealed session', () => {
-    const { container } = render(<ReplayFrame {...withTable(11, '2026-11-04')} />);
-    const fold = container.querySelector('details')!;
-    expect(fold.hasAttribute('open')).toBe(false);
-    expect(text(fold.querySelector('summary')!).replace(text(fold.querySelector('.replay-table-cue')!), '')).toBe('Session by session');
-    expect(within(fold).getAllByRole('columnheader', { hidden: true }).map(text)).toEqual(['Session', 'BREN Mark', 'Trade P&L', 'Events']);
-    const rows = within(fold).getAllByRole('row', { hidden: true }).slice(1);
-    expect(rows.map((r) => text(r))).toEqual(['Mon Nov 2$100.00-$40.00', 'Tue Nov 3$101.00-$120.00', 'Wed Nov 4$102.00+$60.00']);
-    expect(attr(fold.querySelector('table')!, 'id')).toBe('replay-table');
+  it('should show one card for each session up to the slider, newest first, each headed by its date, under Session by session, and no table', () => {
+    const { container } = render(<ReplayFrame {...props({ initialSession: '2026-11-04' })} />);
+    expect(screen.getByRole('heading', { name: 'Session by session', hidden: true })).toBeTruthy();
+    expect(cardsOf().map(headingOf)).toEqual(['Wed Nov 4', 'Tue Nov 3', 'Mon Nov 2']);
+    expect(container.querySelector('table, details')).toBeNull();
   });
 
-  it('should keep the replay table inside a scroll container', () => {
-    const { container } = render(<ReplayFrame {...withTable(11, '2026-11-04')} />);
-    const region = container.querySelector('details table')!.parentElement!;
-    expect(region.className).toBe('replay-table-scroll');
-    expect(region.getAttribute('role')).toBe('region');
-    expect(region.getAttribute('aria-label')).toBe('Session by session');
-    expect(region.getAttribute('tabindex')).toBe('0');
+  it('should mark the slider session card current', async () => {
+    render(<ReplayFrame {...props({ initialSession: '2026-11-04' })} />);
+    const current = () => cardsOf().filter((card) => card.getAttribute('aria-current') === 'true').map(headingOf);
+    expect(current()).toEqual(['Wed Nov 4']);
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Previous session' }));
+    expect(current()).toEqual(['Tue Nov 3']);
   });
 
-  it('should show whether the table is folded or open', () => {
-    const { container } = render(<ReplayFrame {...withTable(11, '2026-11-04')} />);
-    const fold = container.querySelector('details')!;
-    const cue = () => text(fold.querySelector('summary .replay-table-cue')!);
-    const folded = cue();
-    fold.setAttribute('open', '');
-    fireEvent(fold, new Event('toggle'));
-    const open = cue();
-    expect(folded).not.toBe(open);
-    expect(text(fold.querySelector('summary')!)).toBe(`${open}Session by session`);
+  it('should move the slider to a card session when the card heading is pressed', async () => {
+    const onSessionChange = vi.fn();
+    render(<ReplayFrame {...props({ initialSession: '2026-11-04' })} onSessionChange={onSessionChange} />);
+    // The plot double has a button for each session too, so the card's own heading is found inside the cards.
+    const heading = within(cardsOf().at(-1)!).getByRole('button', { name: 'Mon Nov 2', hidden: true });
+    await userEvent.setup().click(heading);
+    expect(value()).toBe('0');
+    expect(onSessionChange).toHaveBeenLastCalledWith('2026-11-02');
+    // The later cards go with the slider: nothing after Mon Nov 2 is left (P145).
+    expect(cardsOf().map(headingOf)).toEqual(['Mon Nov 2']);
   });
 
-  it('should give the plot the table id to describe it', () => {
-    const base = withTable(11, '2026-11-04');
-    const { container } = render(<ReplayFrame {...base} plotBase={{ ...base.plotBase, describedBy: 'bren-table' }} />);
-    const tableId = attr(container.querySelector('details table')!, 'id');
-    expect(tableId).toBe('bren-table');
-    expect(attr(screen.getByTestId('plot'), 'aria-describedby')).toBe(tableId);
+  it('should name the cards list as the charts description', () => {
+    const base = props({ initialSession: '2026-11-04' });
+    const { container } = render(<ReplayFrame {...base} plotBase={{ ...base.plotBase, describedBy: 'bren-cards' }} />);
+    const list = container.querySelector('ol')!;
+    expect(attr(list, 'id')).toBe('bren-cards');
+    expect(attr(screen.getByTestId('plot'), 'aria-describedby')).toBe(attr(list, 'id'));
+    expect(within(list).getAllByRole('article', { hidden: true })).toHaveLength(3);
   });
 
-  it('should read a session without a Mark as No Mark in its cells, never a carried value', () => {
-    const base = withTable(11, '2026-11-04');
-    const gap = { ...base, sessions: base.sessions.map((s, i) => (i === 1 ? { ...s, tableRow: { ...s.tableRow, cells: ['No Mark', 'No Mark'] } } : s)) };
-    render(<ReplayFrame {...gap} />);
-    const row = within(screen.getByRole('table', { hidden: true })).getByText('Tue Nov 3').closest('tr')!;
-    expect(within(row).getAllByRole('cell', { hidden: true }).map(text)).toEqual(['No Mark', 'No Mark', '']);
-    expect(text(row)).not.toContain('$100.00');
-  });
-
-  it('should name each session events in the Events column', () => {
-    render(<ReplayFrame {...withTable()} />);
-    const row = within(screen.getByRole('table', { hidden: true })).getByText('Thu Nov 5').closest('tr')!;
-    const cells = within(row).getAllByRole('cell', { hidden: true });
-    expect(text(cells[cells.length - 1]!)).toBe('Sold 2 at $4.00; Stop moved');
+  it('should turn back to the page holding the slider card when the slider moves', async () => {
+    // 700px holds two cards side by side.
+    vi.spyOn(Element.prototype, 'clientWidth', 'get').mockReturnValue(700);
+    const user = userEvent.setup();
+    render(<ReplayFrame {...props({ initialSession: '2026-11-12' })} />);
+    const visible = () => screen.getAllByRole('article').map(headingOf);
+    expect(visible()).toEqual(['Thu Nov 12', 'Wed Nov 11']);
+    await user.click(screen.getByRole('button', { name: 'Earlier sessions' }));
+    expect(visible()).toEqual(['Tue Nov 10', 'Mon Nov 9']);
+    // The slider moves forward, and the cards turn back to its card, the newest.
+    await user.click(screen.getByRole('button', { name: 'Next session' }));
+    expect(visible()).toEqual(['Fri Nov 13', 'Thu Nov 12']);
   });
 });
 

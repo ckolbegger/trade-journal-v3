@@ -126,7 +126,7 @@ describe('replay.props: the plot titles, anchors and time axis (W39, W40, A256)'
       priceShortTitle: 'BREN price',
       pnlTitle: 'Trade P&L',
       accessibleName: 'BREN Marks and Trade P&L by session',
-      describedBy: 'replay-table-T-1',
+      describedBy: 'replay-cards-T-1',
       anchors: {
         priceLines: [
           { kind: 'Strike', price: 100, label: 'Strike $100' },

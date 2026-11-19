@@ -110,31 +110,26 @@ describe('replay.props: the words follow the condition status (T9.14-F2)', () =>
   });
 });
 
-describe('replay.props: the frame, the slider and the table columns (W42, W45)', () => {
-  it('should give the frame its fixed words, one slider step per session, and the table columns for the Underlying and the contract', () => {
+describe('replay.props: the frame, the slider and the session cards (W42, W65)', () => {
+  it('should give the frame its fixed words, one slider step per session, and the cards the Mark rows for the Underlying and the contract', () => {
     const tue = session({ date: '2026-11-03', pnl: -12, pnlR: frac(-12, 324), standing: value({ zone: 'Between', share: frac(12, 324) }) });
     const props = replayProps(fullView([brenMon1102, tue]), { Plot, initialSession: '2026-11-02' });
-    expect(props).toMatchObject({ tradeKey: 'T-1', initialSession: '2026-11-02', sliderLabel: 'Session', previousLabel: 'Previous session', nextLabel: 'Next session', tableTitle: 'Session by session', Plot });
-    expect(props.tableColumns).toEqual([
-      'BREN Mark', 'Call Mark', 'Trade P&L', 'Banked',
-      'Current Risk at Stop', 'P&L at Stop', 'Current Risk at Worst case', 'P&L at Worst case',
-      'Remaining Reward at Target', 'P&L at Target', 'Remaining Reward at Max reward', 'P&L at Max reward',
-      'Stop', 'Target',
-    ]);
+    expect(props).toMatchObject({ tradeKey: 'T-1', initialSession: '2026-11-02', sliderLabel: 'Session', previousLabel: 'Previous session', nextLabel: 'Next session', cardsWords: { title: 'Session by session', newerLabel: 'Newer sessions', earlierLabel: 'Earlier sessions' }, Plot });
+    expect(props.sessions.map((s) => s.card.rows.slice(0, 2).map((r) => r.label))).toEqual([['BREN Mark', 'Call Mark'], ['BREN Mark', 'Call Mark']]);
     expect(props.sessions.map((s) => [s.date, s.dateLabel, s.sliderValue])).toEqual([
       ['2026-11-02', 'Mon Nov 2', 'Mon Nov 2 · 1 of 2'],
       ['2026-11-03', 'Tue Nov 3', 'Tue Nov 3 · 2 of 2'],
     ]);
     // The headline, how it is going and the stake are the words of `sessionWords`.
     expect(props.sessions[0]).toMatchObject({ ...sessionWords(fullView([brenMon1102, tue]), 0), isFinal: false });
-    // A stock Trade has the one Mark column.
+    // A stock Trade has the one Mark row.
     const axio = session({ date: '2026-11-06', instrument: AXIO, held: 200, pnl: -380 });
-    expect(replayProps({ ...view([axio]), instruments: [AXIO] }, { Plot }).tableColumns.slice(0, 2)).toEqual(['AXIO Mark', 'Trade P&L']);
+    expect(replayProps({ ...view([axio]), instruments: [AXIO] }, { Plot }).sessions[0]!.card.rows.slice(0, 2).map((r) => r.label)).toEqual(['AXIO Mark', 'Trade P&L']);
   });
 });
 
-describe('replay.props: Session by session (W45)', () => {
-  it('should give each session a row of finished cells, its Events, and No Mark in the cells of a session without a Mark', () => {
+describe('replay.props: Session by session (W65)', () => {
+  it('should give each session a card of finished rows, its events, and No Mark in the rows of a session without a Mark', () => {
     const sale = { id: 'x2', kind: 'Execution', effect: 'Reduced', fills: [{ instrument: BREN, action: 'Sell', quantity: usd(2), price: usd(4) }] } as const;
     const wed = {
       ...brenWed1111,
@@ -144,12 +139,25 @@ describe('replay.props: Session by session (W45)', () => {
     };
     const none = withMarks(session({ date: '2026-11-12', pnl: null }), [markOf(BREN_STOCK, '100.20'), markOf(BREN)]);
     const props = replayProps(fullView([wed, none]), { Plot });
-    expect(props.sessions.map((s) => s.tableRow)).toEqual([
-      { dateLabel: 'Wed Nov 11', cells: ['$101.80', '$3.20', '+$520.00', '+$478.00', '$352.00', '−$324.00', '$644.00', 'Not applicable: no open position', '$928.00', '+$956.00', 'No cap above', '', '96.00', '104.00'], events: ['Sold 2 at $4.00'] },
-      { dateLabel: 'Thu Nov 12', cells: ['$100.20', 'No Mark', 'No Mark', '', ...Array<string>(8).fill('No Mark'), '', ''], events: [] },
+    const said = (s: (typeof props.sessions)[number]) => s.card.rows.map((r) => [r.label, r.value.text, r.r?.text, r.pnl?.text]);
+    expect(props.sessions.map((s) => [s.card.heading, s.card.events])).toEqual([['Wed Nov 11', ['Sold 2 at $4.00']], ['Thu Nov 12', []]]);
+    expect(said(props.sessions[0]!)).toEqual([
+      ['BREN Mark', '$101.80', undefined, undefined],
+      ['Call Mark', '$3.20', undefined, undefined],
+      ['Trade P&L', '+$520.00 · 1.60R', undefined, undefined],
+      ['Banked', '+$478.00', undefined, undefined],
+      ['Held', '4 contracts', undefined, undefined],
+      ['At Stop', '$352.00', '1.09R', '−$324.00'],
+      ['At Worst case', '$644.00', '1.99R', 'Not applicable: no open position'],
+      ['At Target', '$928.00', '2.86R', '+$956.00'],
+      ['At Max reward', 'No cap above', undefined, undefined],
+      ['Reward to risk', '2.64 to 1 · about 28% : 72%', undefined, undefined],
+      ['Stop', '96.00', undefined, undefined],
+      ['Target', '104.00', undefined, undefined],
     ]);
-    // One cell for each column after "Session" and before "Events".
-    expect(props.sessions.every((s) => s.tableRow.cells.length === props.tableColumns.length)).toBe(true);
+    // No Mark: the dash in each row that needs the Mark, never a value of another session; the Trade P&L is no sentence.
+    const noMark = { kind: 'Unavailable', text: 'No Mark' };
+    expect(props.sessions[1]!.card.rows.filter((r) => r.label === 'Call Mark' || r.label === 'Trade P&L').map((r) => r.value)).toEqual([noMark, noMark]);
   });
 });
 
@@ -177,27 +185,22 @@ describe('replay.props: the readout of a session in flight (W43)', () => {
     const noMark = { kind: 'Unavailable', text: 'No Mark' };
     expect(gridRows.find((r) => r.label === 'At Stop')).toMatchObject({ fromHere: noMark, r: noMark, pnlIfHit: { text: '−$324.00' } });
     expect(gridRows.find((r) => r.label === 'At Target')).toMatchObject({ fromHere: noMark, r: noMark, pnlIfHit: { text: '+$956.00' } });
-    const cells = props.sessions[0]!.tableRow.cells;
-    expect([cells[props.tableColumns.indexOf('Current Risk at Stop')], cells[props.tableColumns.indexOf('P&L at Stop')], cells[props.tableColumns.indexOf('Remaining Reward at Target')], cells[props.tableColumns.indexOf('P&L at Target')]]).toEqual(['No Mark', '−$324.00', 'No Mark', '+$956.00']);
+    // The card holds the same rows: the dash where the Mark is needed, the results beside it.
+    const card = props.sessions[0]!.card.rows;
+    expect(card.find((r) => r.label === 'At Stop')).toMatchObject({ value: noMark, r: noMark, pnl: { text: '−$324.00' } });
+    expect(card.find((r) => r.label === 'At Target')).toMatchObject({ value: noMark, r: noMark, pnl: { text: '+$956.00' } });
   });
 });
 
 describe('replay.props: the readout separates what is at stake from where the Trade ends (T9.19-B4)', () => {
-  it('should name the table columns for each condition with its from-here column and its P&L column, and match the Worst case P&L cell to the chart label', () => {
+  it('should give each stake row on the card its from-here amount and its P&L if hit, and match the Worst case P&L to the chart label', () => {
     const props = replayProps(fullView([brenThu1112], PLAN), { Plot });
-    expect(props.tableColumns).toEqual([
-      'BREN Mark', 'Call Mark', 'Trade P&L', 'Banked',
-      'Current Risk at Stop', 'P&L at Stop', 'Current Risk at Worst case', 'P&L at Worst case',
-      'Remaining Reward at Target', 'P&L at Target', 'Remaining Reward at Max reward', 'P&L at Max reward',
-      'Stop', 'Target',
-    ]);
-    const cells = props.sessions[0]!.tableRow.cells;
-    const cell = (name: string) => cells[props.tableColumns.indexOf(name)];
-    expect(cell('Current Risk at Worst case')).toBe('$832.00');
-    expect(cell('P&L at Worst case')).toBe('+$156.00');
-    expect(cell('P&L at Stop')).toBe('+$316.00');
-    // The chart's label figure is the table's P&L at the Worst case.
-    expect(props.sessions[0]!.plot.worstCase!.label).toBe(`Worst case ${cell('P&L at Worst case')!.replace(/\.00$/, '')}`);
+    const row = (label: string) => props.sessions[0]!.card.rows.find((r) => r.label === label)!;
+    expect(row('At Worst case').value.text).toBe('$832.00');
+    expect(row('At Worst case').pnl?.text).toBe('+$156.00');
+    expect(row('At Stop').pnl?.text).toBe('+$316.00');
+    // The chart's label figure is the card's P&L if hit at the Worst case.
+    expect(props.sessions[0]!.plot.worstCase!.label).toBe(`Worst case ${row('At Worst case').pnl!.text.replace(/\.00$/, '')}`);
   });
 });
 

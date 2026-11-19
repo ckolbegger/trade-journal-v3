@@ -209,13 +209,17 @@ export const readoutPnl = (scope: Locator, row: string): Locator => scope.locato
 export const pastLine = (scope: Locator): Locator => scope.locator('.replay-readout .replay-past-line');
 // A dash named "No Mark" inside a readout value or grid cell (W61).
 export const noMarkDash = (cell: Locator): Locator => cell.getByRole('img', { name: 'No Mark' });
-// The folded "Session by session" table: opened on first use, then a row's cells (every column after the Session) by its date.
-export async function openTable(scope: Locator): Promise<Locator> {
-  const details = scope.locator('details.replay-table');
-  if ((await details.getAttribute('open')) === null) await details.locator('summary').click();
-  return details.locator('table');
+// T9AR.17: the session cards under "Session by session", newest first; every card is in the page, and a page shows the ones that fit side by side.
+export const sessionCards = (scope: Locator): Locator => scope.locator('article.replay-session-card');
+// A card by its date ("Thu Nov 12"), turned to by "Earlier sessions" when it is not on the page shown.
+export async function sessionCard(scope: Locator, date: string): Promise<Locator> {
+  const card = sessionCards(scope).filter({ has: scope.page().getByRole('button', { name: date, exact: true }) });
+  const earlier = scope.getByRole('button', { name: 'Earlier sessions', exact: true });
+  while (!(await card.isVisible()) && (await earlier.isEnabled())) await earlier.click();
+  return card;
 }
-export const tableRow = (table: Locator, date: string): Locator => table.locator('tbody tr').filter({ has: table.page().getByRole('rowheader', { name: date, exact: true }) });
+// A card's rows as "label" then "value", top to bottom: "At Stop$672.00 · 2.07R · P&L if hit +$316.00"; the one row for a Trade past a line is `pastLine`'s.
+export const cardRows = (card: Locator): Locator => card.locator('.replay-card-row');
 
 // The slider's keys, from its focus: one session per arrow, the first or the last by Home and End.
 export async function seek(page: Page, scope: Locator, key: 'ArrowLeft' | 'ArrowRight' | 'Home' | 'End', times = 1): Promise<void> {

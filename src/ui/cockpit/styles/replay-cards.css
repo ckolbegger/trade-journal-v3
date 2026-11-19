@@ -1,1 +1,99 @@
-/* The replay's session cards (A277): empty until T9AR.17 adds its rules. */
+/* The replay's session cards (A277): as many side by side as the carousel's width holds (`--cards-per-page`, set from the measured width),
+   newest first, the slider's card marked current. Cards outside the page are `hidden`. */
+.replay-cards {
+  margin-top: 12px;
+}
+
+.replay-cards-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.replay-cards-head h3 {
+  margin: 0 auto 0 0;
+}
+
+.replay-cards-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(var(--cards-per-page, 1), minmax(0, 1fr));
+  gap: 12px;
+}
+
+.replay-cards-list > li[hidden] {
+  display: none;
+}
+
+.replay-session-card {
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.replay-session-card[aria-current='true'] {
+  border-color: var(--ink);
+}
+
+/* The heading is a button named by its session (it moves the slider), drawn as the heading it is. */
+.replay-session-card h4 {
+  margin: 0 0 0.5rem;
+}
+
+.replay-session-card h4 button {
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.replay-session-card h4 button:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.replay-session-card dl {
+  margin: 0;
+}
+
+.replay-card-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0 8px;
+  padding: 2px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.replay-card-row dt {
+  color: var(--muted);
+}
+
+.replay-card-row dd {
+  margin: 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+/* A268: the extremes carry less weight, as in the readout's grid. */
+.replay-card-row[data-weight='Remote'] {
+  font-size: 0.85em;
+}
+
+.replay-card-row[data-weight='Remote'] dt,
+.replay-card-row[data-weight='Remote'] dd {
+  color: var(--muted);
+}
+
+/* W56: a Trade past a line, in one row above the stake rows. */
+.replay-session-card .replay-past-line {
+  margin: 0 0 4px;
+}
