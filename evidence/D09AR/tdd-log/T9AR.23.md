@@ -52,4 +52,13 @@ Test-only. Each case now names the price-line labels its trade draws (AXIO: Stop
 |---|---|---|
 | Bite, lines | AXIO's expected lines given a "Strike" | `npx playwright test e2e/d9ar/cards.spec.ts -g "R-AXIO-D"` under the lock: failed, `AXIO first session: the price chart draws its Strike line`, expected true, received false; restored |
 | Bite, Mark | the Mark row's label changed to "<symbol> Position" | failed, `the price chart's Mark "$49.70" is on the AXIO Mark row of the readout`, expected 49.7, received []; restored |
-| After | `.claude/scripts/with-browser-lock.sh npx playwright test e2e/d9ar/cards.spec.ts` | see the B3 section's run (same file state apart from B3's loop) |
+| After | `.claude/scripts/with-browser-lock.sh npx playwright test e2e/d9ar/cards.spec.ts` | 3 passed (10.3s) |
+
+## T9AR.23-B3 (cards.spec.ts: R-BREN-U stepped through every session)
+
+Test-only. R-BREN-U was checked at sessions 1 and 9 only; it now steps from the first session to Mon Nov 16 (sessions 2 to 11 by ArrowRight), checking the cards and every drawn figure at each, as the AXIO and CORV cases do. The sale's "Target first reached Thu Nov 12." is still checked at session 9. New screenshots `B9AR.4-BREN-session-2.png` to `-11.png` replace `B9AR.4-BREN-Thu-11-12.png` (left in place, no longer written).
+
+| Run | Command | Result |
+|---|---|---|
+| Bite | the BREN loop's expected index changed to 4 at session 6 | `npx playwright test e2e/d9ar/cards.spec.ts -g "R-BREN-U"` under the lock: failed, expected "Fri Nov 6 · 5 of 11", received "Mon Nov 9 · 6 of 11"; restored |
+| After | `.claude/scripts/with-browser-lock.sh npx playwright test e2e/d9ar --workers=1` (after `npm run build:faults` and `npm run build:releases`) | 45 passed (2.0m); none of the strengthened checks needed `test.fail` |

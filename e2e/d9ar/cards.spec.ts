@@ -169,12 +169,14 @@ test.describe('B9AR.4 The Plan block and the cards', () => {
     ]);
     await expect(cardRows(await sessionCard(scope, 'Mon Nov 2')).last()).toHaveText("EventsBought 4 at $1.61, at the Plan's entry");
     await expect(cardRows(await sessionCard(scope, 'Thu Nov 12')).last()).toHaveText('EventsSold 2 at $4.00, at the Target; Target first reached');
-    // Stepping to the first session and to the sale keeps every card and every drawn figure in step.
+    // Stepping from the first session to the last (Mon Nov 16) keeps every card and every drawn figure in step; the sale is the ninth session.
     await seek(page, scope, 'Home');
     await expectCardsAt(page, scope, 0, 11, 'BREN first session', OPTION_LINES);
-    await seek(page, scope, 'ArrowRight', 8);
-    await expectCardsAt(page, scope, 8, 11, 'BREN Thu 11-12', OPTION_LINES);
-    await expect(scope.getByTestId('crossing')).toHaveText('Target first reached Thu Nov 12.');
+    for (let index = 1; index <= 10; index += 1) {
+      await page.keyboard.press('ArrowRight');
+      await expectCardsAt(page, scope, index, 11, `BREN session ${index + 1}`, OPTION_LINES);
+      if (index === 8) await expect(scope.getByTestId('crossing')).toHaveText('Target first reached Thu Nov 12.');
+    }
     await context.close();
   });
 
