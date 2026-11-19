@@ -105,7 +105,15 @@ Reviewer's notes (not findings): `overlay.tsx` line 16 lacks a space (`||sibling
   - **T9AR.7-B5** Case: it should not count a `summary` with `tabIndex=-1` as a Tab edge.
 - **T9AR.7-B2** No wide layout. Case: it should place the charts on the left and the readout on the right inside the overlay at 1280 wide, and one column at 375 (A275).
   - Done: `9a34b48a`. First red row was a fixture error (reading the CSS through `import.meta.url`), logged as not valid; valid red "expected undefined to be 'grid'", then green; no first-run pass. The test parses `replay-overlay.css` with `postcss` (jsdom computes no layout). Under `.replay-overlay`, `.replay-card` is a grid of `minmax(0,3fr) minmax(0,2fr)` with dense row flow; every child spans the full width but `.replay-plot-frame` (column 1) and `.replay-readout` (column 2); one column under `@media (max-width: 860px)`, the shell's phone breakpoint. `frame.tsx` unchanged. Lane tier `T9AR.7-B2`: unit 2300, integration 280, checks 14 of 14.
+  - ocr on `9a34b48a` (`ocr/T9AR.7-B2-9a34b48a.json`), round 2: 2 files, 1 comment.
+
+| Severity | Location | Finding | Verdict |
+|---|---|---|---|
+| medium | `replay-overlay.css:46-48` | In the two-column grid the plot frame stretches to a taller readout's height, so the hit layer (`inset: 0`) and its session buttons reach into the empty space under the charts, where a click selects a session | Valid: T9AR.7-B6 |
+
+  - **T9AR.7-B6** Case: it should keep the plot frame at its own height in the wide grid (`align-self: start`), so no session button lies below the charts.
 - **T9AR.7-B3** The Tab case can pass with Tab swallowed. Case: the existing Tab case asserts the order (Close, the inside button, Close; and the reverse with Shift+Tab). A test-only change: it must fail against a trap that always refocuses Close.
+  - Done: `22a2baca` (test only; `overlay.tsx` unchanged). Mutation check: the trap changed to always refocus Close failed the tightened case with an assertion failure (Close focused where the inside button was expected), which the old assertion would have passed; restored, green. Lane tier `T9AR.7-B3`: unit 2300, integration 280, checks 14 of 14.
 
 ## T9AR.10 Chart: the key, the dates, every line labelled
 
@@ -127,6 +135,7 @@ Lane PL (`d09ar/pl`), base `8245f6c6`, commits `07916b2e` (the task), `80c143ad`
 
   **Bug tasks** (lane PL, one at a time):
   - **T9AR.10-B1** The expiry label vanishes near the end. Case: it should keep "Expires Fri Nov 20" on an option's axis at the last session, with the cursor's date beside it, never on top of it (W67).
+    - Done: `daddc978`. Red: TypeError reading the absent label's `textContent` (a runtime exception), then green; no first-run pass. The "Expires …" label no longer goes through the cursor-overlap filter; the cursor's date is clamped to end 4 px left of it; the start label is still hidden under a same-date cursor. Lane tier `T9AR.10-B1`: unit 2300, integration 280, checks 14 of 14. ocr on `daddc978` (`ocr/T9AR.10-B1-daddc978.json`): 2 files, 0 comments. **No findings.**
   - **T9AR.10-B2** The key's swatches don't match the drawing. Case: it should give each key entry the swatch of what it names: Open profit and Open loss their areas' colours, Banked and Realized loss their bands' colours.
   - **T9AR.10-B3** Worst case and Max reward labels can sit in the cursor's column. Case: it should keep the Worst case and Max reward labels out of the cursor's column at the last session (A280). T9AR.11's planned case covers the other level labels.
   - **T9AR.10-F1** (structural) The nested ternary in `span` replaced by explicit branches; verified by the same cases passing before and after.
@@ -136,6 +145,7 @@ Lane PL (`d09ar/pl`), base `8245f6c6`, commits `07916b2e` (the task), `80c143ad`
 
 | Run | Commit | Tier | Result |
 |---|---|---|---|
+| `merge1` (after T9AR.3 with T9AR.3-B1, T9AR.3-B2) | `79b900d3` | task (`browser-auto 1018d618`: no changed path is on the full-tier list) | unit 2297 (204 files), integration 280 (130 files), browser `@every-task` 5, checks 14 of 14; all exit 0; `run-complete.sh`: run complete |
 | `wave0` (merge run after T9AR.1, T9AR.2) | `1018d618` | full (`browser-auto 1cc612ea`: first matching path `src/ui/cockpit/index.css`) | unit 2289 (203 files), integration 280 (130 files), browser-1 126, browser-2 79, browser-3 77, checks 14 of 14; all exit 0; `run-complete.sh`: run complete |
 
 ## Critics

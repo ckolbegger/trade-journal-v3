@@ -1,0 +1,134 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 1,
+    "total_tokens": 150384,
+    "input_tokens": 148657,
+    "output_tokens": 1727,
+    "cache_read_tokens": 22912,
+    "elapsed": "1m4s"
+  },
+  "tool_calls": {
+    "total": 29,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 7,
+      "file_find": 1,
+      "file_read": 20
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/styles/replay-overlay.css",
+      "content": "Grid items stretch vertically by default. When the readout is taller than the charts, this stretches `.replay-plot-frame` beyond the SVGs. Its `.replay-hits` layer uses `position: absolute; inset: 0`, so session buttons then extend into the empty space below the charts and hovering/clicking that space unexpectedly selects a session. Set `align-self: start` on the plot frame so its hit layer remains bounded by the actual charts.",
+      "suggestion_code": ".replay-overlay .replay-plot-frame {\n  grid-column: 1;\n  align-self: start;\n}",
+      "existing_code": ".replay-overlay .replay-plot-frame {\n  grid-column: 1;\n}",
+      "start_line": 46,
+      "end_line": 48,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/cockpit/replay/overlay.test.tsx",
+        "src/ui/cockpit/styles/replay-overlay.css"
+      ]
+    }
+  ],
+  "session_id": "dcf1c666-23ed-4d98-b8a2-a493629d0817",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "dcf1c666-23ed-4d98-b8a2-a493629d0817",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "9a34b48a",
+      "resolved_base": "6ec275692ba854b5f549d5275158add3ce76ae6b",
+      "resolved_head": "9a34b48a683f35f4e24702d46fcb522454ece221",
+      "exact_range": "6ec275692ba854b5f549d5275158add3ce76ae6b..9a34b48a683f35f4e24702d46fcb522454ece221",
+      "source_artifact_sha256": "5893993d6bf653ff28cfd07eb09db0bc7845f18bfc3e536e2feecc1500d8c549"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "de31a9170a08b375f51fa298e4e0c932e4a8816c12b5758d5e764a9f0591eeb3",
+          "path": "src/ui/cockpit/styles/replay-overlay.css",
+          "fingerprint": "eaf46f4ea9609c7a2a63eecab895741991bb9039b0a3bf62a2bf8466cd5a3d74"
+        },
+        {
+          "item_id": "e1f92202f07a1fca0a590345d20829a25e1a08332816189a8bbcb90cd7573047",
+          "path": "src/ui/cockpit/replay/overlay.test.tsx",
+          "fingerprint": "cc78d18f92ca3622c410352475ebec50f8ae6acf6ddbc5a953050ad3041fd9d3"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "de31a9170a08b375f51fa298e4e0c932e4a8816c12b5758d5e764a9f0591eeb3",
+          "path": "src/ui/cockpit/styles/replay-overlay.css",
+          "fingerprint": "eaf46f4ea9609c7a2a63eecab895741991bb9039b0a3bf62a2bf8466cd5a3d74"
+        },
+        {
+          "item_id": "e1f92202f07a1fca0a590345d20829a25e1a08332816189a8bbcb90cd7573047",
+          "path": "src/ui/cockpit/replay/overlay.test.tsx",
+          "fingerprint": "cc78d18f92ca3622c410352475ebec50f8ae6acf6ddbc5a953050ad3041fd9d3"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "0f9673c218a9fcd005fff83efaa415676a234f4d5b36e7ee182590d7708adac1",
+          "path": "evidence/D09AR/tdd-log/T9AR.7-B2.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "900ce8acef68cf94fe71f7319e82595ccf0dd1809e204477c6282f9f5f991a89",
+          "path": "evidence/D09AR/suite-runs/T9AR.7-B2-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "90250d3772958bb5eadbff7a4bf5a5d17a09d682ed2b3516b2b9736a61b9549a",
+          "path": "evidence/D09AR/suite-runs/T9AR.7-B2-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "cbb091d4538161613222c5f84f7414bac65f224031aa788638ca39524c421795",
+          "path": "evidence/D09AR/suite-runs/T9AR.7-B2-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "f5e6a966518ec734cffa476e8d2d87124524f064c8cadd2ecaa707934d0f23da",
+          "path": "evidence/D09AR/suite-runs/T9AR.7-B2-lane.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 63902
+  }
+}
