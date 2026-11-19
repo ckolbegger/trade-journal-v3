@@ -16,18 +16,43 @@ const FIGURE = /[−+]?\$[\d,]+(?:\.\d+)?/g;
 const numberOf = (text: string): number => Number(text.replace('−', '-').replace(/[$,+]/g, ''));
 const figuresIn = (text: string): number[] => (text.match(FIGURE) ?? []).map(numberOf);
 
-async function expectChartFiguresInReadoutAndCard(page: Page, scope: Locator, where: string): Promise<void> {
-  const drawn = await scope.locator('svg.pnl-chart text').evaluateAll((texts) =>
-    texts.filter((t) => /\b(result-label|stake-tag|worst-case-tag|worst-case-label|banked-label|past-label)\b/.test(t.getAttribute('class') ?? '')).map((t) => t.textContent ?? ''),
-  );
+// The row a drawn P&L label's figure is on, in the readout and on the slider's card alike (the readout's table and the card write the same row label and figure, the Past line "at Stop"/"at Target" too).
+// Each rule gives the row's label as a pattern; the figures are those after it up to the next word.
+type RowRule = { cls: RegExp; row: (text: string) => RegExp };
+const ROW_RULES: RowRule[] = [
+  { cls: /\bresult-label stop\b|\bstake-tag risk\b/, row: () => /at Stop/gi },
+  { cls: /\bresult-label target\b|\bstake-tag reward\b/, row: () => /at Target/gi },
+  { cls: /\bworst-case-(tag|label)\b/, row: () => /at Worst case/gi },
+  { cls: /\bbanked-label\b/, row: (text) => new RegExp(`${text.split(' ')[0]}`, 'gi') }, // "Realized" or "Banked"
+  { cls: /\bpast-label\b/, row: (text) => new RegExp(`Past the ${/Stop|Target/.exec(text)![0]} by`, 'gi') },
+];
+// The figures that follow each match of `row` in `text`, up to the next word (the R multiples and "P&L if hit" are skipped).
+function figuresAfter(text: string, row: RegExp): number[] {
+  const flat = text.replace(/\s+/g, ' ');
+  return [...flat.matchAll(row)].flatMap((m) => {
+    const rest = flat.slice(m.index + m[0].length).replace(/P&L if hit/g, '').replace(/\d[\d,.]*R\b/g, '');
+    return figuresIn(rest.split(/[A-Za-z]/)[0]!);
+  });
+}
+
+// B9AR.4: every figure the P&L chart draws is on its row in the readout AND on the slider's card (both are checked, each by row label and figure).
+async function expectChartFigures(page: Page, scope: Locator, where: string): Promise<void> {
+  const textsOf = (selector: string): Promise<{ cls: string; text: string }[]> => scope.locator(selector).evaluateAll((texts) => texts.map((t) => ({ cls: t.getAttribute('class') ?? '', text: t.textContent ?? '' })));
+  const pnl = await textsOf('svg.pnl-chart text');
+  const strip = await textsOf('svg.price-strip text');
   const readout = await scope.locator('.replay-readout').innerText();
   const card = await sessionCards(scope).first().innerText();
-  const there = new Set([...figuresIn(readout), ...figuresIn(card)]);
+  const drawn = pnl.filter((t) => ROW_RULES.some((r) => r.cls.test(t.cls)));
   expect(drawn.length, `${where}: the P&L chart draws labelled figures`).toBeGreaterThan(0);
-  for (const text of drawn) for (const figure of figuresIn(text)) expect(there.has(figure), `${where}: the chart's "${text}" is in the readout and on the slider's card`).toBe(true);
-  // The price chart's own Mark is in the readout, and its Stop and Target lines are the Plan's (shown above the cards).
+  for (const { cls, text } of drawn) {
+    const rule = ROW_RULES.find((r) => r.cls.test(cls))!;
+    for (const [surface, shown] of [['readout', readout], ['slider’s card', card]] as const) {
+      for (const figure of figuresIn(text)) expect(figuresAfter(shown, rule.row(text)), `${where}: the chart's "${text}" is on its row in the ${surface}`).toContain(figure);
+    }
+  }
+  // The price chart's Stop and Target lines are the Plan's (shown above the cards).
   const plan = figuresIn((await PLAN(scope).innerText()).replace(/\n/g, ' '));
-  const lines = await scope.locator('svg.price-strip text').evaluateAll((texts) => texts.map((t) => t.textContent ?? '').filter((t) => /^(Stop|Target) \$/.test(t)));
+  const lines = strip.map((t) => t.text).filter((t) => /^(Stop|Target) \$/.test(t));
   for (const text of lines) for (const figure of figuresIn(text)) expect(plan.includes(figure), `${where}: the price chart's "${text}" is in the Plan block`).toBe(true);
   await page.screenshot({ path: `evidence/D09AR/screenshots/B9AR.4-${where.replace(/[^\w]+/g, '-')}.png` });
 }
@@ -44,7 +69,7 @@ async function expectCardsAt(page: Page, scope: Locator, index: number, total: n
   await expect(sessionCards(scope).locator('xpath=self::*[@aria-current]')).toHaveCount(1);
   await expect(current, `${where}: the slider's card is on the shown page`).toBeVisible();
   await expect(current.getByRole('button', { name: dateAt(index), exact: true })).toBeVisible();
-  await expectChartFiguresInReadoutAndCard(page, scope, where);
+  await expectChartFigures(page, scope, where);
 }
 
 const openReplay = async (page: Page): Promise<Locator> => {

@@ -34,3 +34,12 @@ Structural, tests only; lane BR, from `9b908473` (includes T9AR.18). No product 
 | Stage `browser-3` | not run whole | last recorded 5.0m (79 tests) before `e2e/d9ar`; `e2e/d9ar` is now 2.0m, so about 7.0m: under 8, no `browser-4` yet, about one minute of room |
 
 New cases: cards.spec.ts (3: R-AXIO-D stepped through all 11 sessions, paged, and an earlier card pressed; R-BREN-U's Plan block and W63; R-CORV-D's W64), states.spec.ts (4: K-sale; R-DALE-U Settlement Due then Expired; Planned Trade; R-CORV-D Tue 11-10 then acknowledged), readout.spec.ts (2: Position-group Execution words for AXIO and BREN). Screenshots: `evidence/D09AR/screenshots/B9AR.4-*.png`, `B9AR.6-*.png`.
+
+## T9AR.23-B1 (cards.spec.ts: each drawn figure checked on its own row)
+
+Test-only. The P&L chart's figures were merged into one set of numbers across the readout and the card; each is now checked by row label and figure on the readout and again on the slider's card (At Stop, At Target, At Worst case, Realized or Banked, Past the Stop or Target by). B9AR.4 says "in the readout and on the slider's card", so both surfaces are required.
+
+| Run | Command | Result |
+|---|---|---|
+| Bite | the Stop result's row changed to "at Worst case" | `.claude/scripts/with-browser-lock.sh npx playwright test e2e/d9ar/cards.spec.ts -g "R-AXIO-D"`: failed, `AXIO first session: the chart's "Stop −$600" is on its row in the readout`, expected -600, received [9940, -10000]; restored |
+| After | `.claude/scripts/with-browser-lock.sh npx playwright test e2e/d9ar/cards.spec.ts` | 3 passed (9.1s) |
