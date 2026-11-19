@@ -68,6 +68,7 @@ The main session applies these in the revision that agrees the breakdown. Nothin
   - `evaluate`'s list gains: "the No-Edge Odds from here and the Plan's own, and whether the structural extremes are the Trade's main risk (plan decision 118)".
   - `replay`'s paragraph gains: "It also returns the Plan's terms as confirmed, each fill's price measured against the Plan's entry, Stop or Target, and each Stop's and Target's first crossing, marked first seen after a gap (plan decision 118)."
 - **`specs/design/trade-views-and-reporting.md`**, the last invariant gains: "The No-Edge Odds are arithmetic on the reward-to-risk ratio, labelled an estimate, and not a prediction about a Trade."
+- **The UI contract**, beside its sentence that the UI "keeps a visible warning" when storage is not Protected: "A read-only overlay, such as the Replay, may cover the shell's warnings and banners while it is open; they stay in place, unchanged, and are not dismissed (plan decision 118, open question 5)."
 - **Spec map.** The glossary's and Trade Analysis's line ranges and character counts are recalculated, as revision 106 did, and the reading lists regenerated with `.claude/scripts/spec-reading-lists.py`. No tag is added (A284).
 - **Acceptance matrix.** The rows of section 13.
 - **D9's breakdown.** The edits of section 10.
