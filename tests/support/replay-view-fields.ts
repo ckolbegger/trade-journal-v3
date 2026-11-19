@@ -3,6 +3,7 @@
 // view's own shape, so integration and screen tests can lay them over a replay session or the Plan column.
 import type { Instrument } from '../../src/domain/instrument/index.ts';
 import type { ReplayCrossings, ReplayFigures, ReplayPlanColumn } from '../../src/coordinators/trade-views/replay-view.ts';
+import { oddsOf as domainOddsOf } from '../../src/domain/trade-analysis/evaluate.ts';
 import { Rational } from '../../src/domain/values/index.ts';
 
 const r = (n: number, d = 1) => Rational.of(BigInt(n), BigInt(d));
@@ -35,7 +36,7 @@ export function planColumnWithTerms(instrument: Instrument, entry: number, stop:
       { role: 'Target', priceOf: 'Underlying', price: r(target), pnlIfHit: r((target - entry) * quantity) },
     ],
   };
-  return { atStop: r((stop - entry) * quantity), atTarget: r((target - entry) * quantity), rewardRisk: r(target - entry, entry - stop), odds: oddsOf(50), terms };
+  return { atStop: r((stop - entry) * quantity), atTarget: r((target - entry) * quantity), rewardRisk: r(target - entry, entry - stop), odds: domainOddsOf(r(entry - stop), r(target - entry)), terms };
 }
 
 // A fill's `againstPlan`: the line, where the price lies against it, and the distance in price.
