@@ -461,6 +461,30 @@ Lane BR (`d09ar/br`), base `70ce0f74`.
   - **ocr** on `8ef228d8` (`ocr/T9AR.23-S7-B1-8ef228d8.json`): 2 files, 1 comment.
     - **T9AR.23-S7-B2** (Valid, latent; `corridor-pnl.tsx:310`): the unanchored weekday regex turns an `endLabel` of another shape ("Fri Nov 20") into "Fri 20". Deriving words in the component also goes against ADR 0001. Briefed in lane PL: `plot.props.ts` supplies the three finished forms and the component only picks one.
     - Reviewer's notes: the narrowest form clears down to about 185 px (the minimum is 200), and the shortened label is visual only (the chart's accessible name carries no expiry).
+- **T9AR.23-S7-B2** `443fe39c` (lane PL):
+  - Fix: `plot.props.ts`'s new `expiresLabels` builds `axis.endLabels` (the three finished forms) from the date. `corridor-pnl.tsx` has no regex; it draws the first form that clears the start label, and none if none clears, so a label is never drawn over another (A280).
+  - The type: `ReplayPlotProps['axis']` drops `endLabel` and gains `endLabels`.
+  - Cases:
+    - "supply the option end label as three finished forms, longest first": red `expected undefined to deeply equal …`, then green.
+    - "draw the first end label form that clears the first date, unchanged, whatever shape": red TypeError, then green.
+    - **First-run passes, flagged:**
+      - "no end label forms on a stock Trade". Mutation: `endLabels: []` failed.
+      - "no end label when even the shortest cannot clear". Mutation: fall back to the last form failed.
+  - Existing lines changed (input or prop name only): `corridor.test.tsx` 8; `plot.props.test.ts` 2 expected `axis` values; `price-strip.test.tsx` 4; `frame.test.tsx` 1. The last two files were outside the brief but built the old prop.
+  - Browser: `e2e/d9ar`, `e2e/d9/responsive-a11y.spec.ts` and `replay.spec.ts` 47 passed. Lane tier `T9AR.23-S7-B2`: unit 2455, integration 286, checks 14 of 14.
+- **Lanes OV and PL** were rebased together onto `d93d6de8`:
+  - S1 `d80b9f00`, S3 `91d99766`, S2 `30f73488`, test `a4ed6c9d`;
+  - S7 `c7fd6f2c`, S7-B1 `998ee90f`, S7-B2 `206c4e0c`.
+  - Lane tier rerun `T9AR.23-OVPL-r`.
+  - **ocr** on `206c4e0c` (`ocr/T9AR.23-S7-B2-206c4e0c.json`): 7 files, **no findings**.
+    - Reviewer's notes:
+      - The date formatting matches `shortDate`, in UTC.
+      - No reader of the old `endLabel` is left.
+      - "No end label" cannot happen at 200 px or wider.
+      - The "trading days" comment in `plot.props.ts` now sits above `expiresLabels`.
+    - The frozen plan's lookup rows (the time-axis row in section 1.5, and the index) still name `endLabel`. That is a lookup miss to record, not a revision.
+  - Lane tier rerun `T9AR.23-OVPL-r`: unit 2455, integration 286, checks 14 of 14. Run complete.
+  - **Merged** by fast-forward; main is at `206c4e0c`. **T9AR.23 is Done.** Next: the merge run `merge6`, then `acceptance-commands.sh` (T9AR.22's four browser rows now have their specs), then the full tier and the gate T9AR.24.
 - **Part 1 notes:**
   - The Detail overlay's slider session does not survive a reload (the address holds only `replay=open`; the plan does not ask that it survive).
   - The Review card reopens on its last session.

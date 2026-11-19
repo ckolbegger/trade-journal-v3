@@ -888,7 +888,7 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T9AR.20 | 2 | RW | Done (from `3cb51638`) | `c20b4c28`; F1 `cc983980` |
 | T9AR.21 | 2 | DM | Done (from `bcab74c4`) | `cf79c748` |
 | T9AR.22 | 3 | IN | Done (from `7f095ba3`) | `eac257eb`; B1 `fc179b08`; B2 `b9eb87f9` |
-| T9AR.23 | 3 | BR | In progress from `70ce0f74` (part 1: B9AR.1, B9AR.2, B9AR.3, B9AR.5, B9AR.7) | |
+| T9AR.23 | 3 | BR | Done (from `70ce0f74`) | `9bce9630`, `9618d87b`; B1 `f7e72247`; B2 `e843b82b`; B3 `c2b50bb6`; S1 `d80b9f00`; S2 `30f73488`; S3 `91d99766`; S4 `6a8d7f0e`; S5 `54bc7766`, its B1 `7f62fec6`; S6 `85ef2c57`; S7 `c7fd6f2c`, its B1 `998ee90f`, B2 `206c4e0c` |
 | T9AR.24 | 3 | — | Not started | |
 
 ---

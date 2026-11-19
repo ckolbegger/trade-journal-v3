@@ -1,0 +1,176 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 7 selected item(s).",
+  "summary": {
+    "files_reviewed": 7,
+    "comments": 0,
+    "total_tokens": 59489,
+    "input_tokens": 59154,
+    "output_tokens": 335,
+    "cache_read_tokens": 17920,
+    "elapsed": "25s"
+  },
+  "tool_calls": {
+    "total": 5,
+    "by_tool": {
+      "code_search": 2,
+      "file_read": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Replay UI types, plot properties, and component updates",
+      "files": [
+        "src/ui/cockpit/replay/corridor-pnl.tsx",
+        "src/ui/cockpit/replay/corridor.test.tsx",
+        "src/ui/cockpit/replay/frame.test.tsx",
+        "src/ui/cockpit/replay/plot.props.test.ts",
+        "src/ui/cockpit/replay/plot.props.ts",
+        "src/ui/cockpit/replay/price-strip.test.tsx",
+        "src/ui/cockpit/replay/replay.types.ts"
+      ]
+    }
+  ],
+  "session_id": "9880fffc-840e-44e0-8a73-597721f15c3e",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "9880fffc-840e-44e0-8a73-597721f15c3e",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "206c4e0c",
+      "resolved_base": "998ee90f710655d97c8aa756d7e037100d9a687b",
+      "resolved_head": "206c4e0c6d3490f7a2ec2132ee0bb2a84af0ad46",
+      "exact_range": "998ee90f710655d97c8aa756d7e037100d9a687b..206c4e0c6d3490f7a2ec2132ee0bb2a84af0ad46",
+      "source_artifact_sha256": "9c5e08d9bd036f40112a1a4c7e74257aad4ea2552767583f45e7cab899a59234"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "07d6ddb61a627b6e3202a0c5e3f9547cfb10f6fad784c8ca12a580a08252b174",
+          "path": "src/ui/cockpit/replay/frame.test.tsx",
+          "fingerprint": "f1581f0ef24aca5e5ff3955a36aaedd2bdfe357f7b3746882a82adb169b2812c"
+        },
+        {
+          "item_id": "18de86b152c71edf7b69e5ef56c77c1958afecdf4524893fdc802e9700a6dfe1",
+          "path": "src/ui/cockpit/replay/corridor-pnl.tsx",
+          "fingerprint": "1e842fd985ded2010a5d0f4b512b1a0680a91fa8779a21b5620a24ca812c97fd"
+        },
+        {
+          "item_id": "3c9a7cc1262b7d0ad636414c60005031bb565c86e552422f341c6235b5459dcf",
+          "path": "src/ui/cockpit/replay/plot.props.ts",
+          "fingerprint": "21bf862dc20a79d2b88fa32c2bfe9dc6495255a47ea1f04e2358cdce5e44866b"
+        },
+        {
+          "item_id": "4d061a48434c6088fc28388241ae61f9c345d2f278e56b2b7f845f542f3b4e61",
+          "path": "src/ui/cockpit/replay/replay.types.ts",
+          "fingerprint": "bcd32a949907ea6124ecc9f8ee8e9d10e42edc2ea88ea635539900238def871a"
+        },
+        {
+          "item_id": "5d73acbebf781c477d11b1dab2cf1e4652c24b5ff821e19aff81ce44093f310a",
+          "path": "src/ui/cockpit/replay/plot.props.test.ts",
+          "fingerprint": "64bf68dfaf80804c546f6f33d9d3f18dab2e3a0f0d8986c7f610a369144c098d"
+        },
+        {
+          "item_id": "91ab23b784d7e960047b11faf7807d7e6026043efe45af28c94574cf4bbcd741",
+          "path": "src/ui/cockpit/replay/price-strip.test.tsx",
+          "fingerprint": "b5a21d084fd26687ed03d5748a1df5a2e55541912ffdab826b78bc67a76a598b"
+        },
+        {
+          "item_id": "ba578f97f7698c0e6bcb181e747f8c8ef3dafb90b6f8eef6f25b35b639e1dd2c",
+          "path": "src/ui/cockpit/replay/corridor.test.tsx",
+          "fingerprint": "465f14935c461cdfeeb05d321a27efa616f66154593f6577772f052745009840"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "07d6ddb61a627b6e3202a0c5e3f9547cfb10f6fad784c8ca12a580a08252b174",
+          "path": "src/ui/cockpit/replay/frame.test.tsx",
+          "fingerprint": "f1581f0ef24aca5e5ff3955a36aaedd2bdfe357f7b3746882a82adb169b2812c"
+        },
+        {
+          "item_id": "18de86b152c71edf7b69e5ef56c77c1958afecdf4524893fdc802e9700a6dfe1",
+          "path": "src/ui/cockpit/replay/corridor-pnl.tsx",
+          "fingerprint": "1e842fd985ded2010a5d0f4b512b1a0680a91fa8779a21b5620a24ca812c97fd"
+        },
+        {
+          "item_id": "3c9a7cc1262b7d0ad636414c60005031bb565c86e552422f341c6235b5459dcf",
+          "path": "src/ui/cockpit/replay/plot.props.ts",
+          "fingerprint": "21bf862dc20a79d2b88fa32c2bfe9dc6495255a47ea1f04e2358cdce5e44866b"
+        },
+        {
+          "item_id": "4d061a48434c6088fc28388241ae61f9c345d2f278e56b2b7f845f542f3b4e61",
+          "path": "src/ui/cockpit/replay/replay.types.ts",
+          "fingerprint": "bcd32a949907ea6124ecc9f8ee8e9d10e42edc2ea88ea635539900238def871a"
+        },
+        {
+          "item_id": "5d73acbebf781c477d11b1dab2cf1e4652c24b5ff821e19aff81ce44093f310a",
+          "path": "src/ui/cockpit/replay/plot.props.test.ts",
+          "fingerprint": "64bf68dfaf80804c546f6f33d9d3f18dab2e3a0f0d8986c7f610a369144c098d"
+        },
+        {
+          "item_id": "91ab23b784d7e960047b11faf7807d7e6026043efe45af28c94574cf4bbcd741",
+          "path": "src/ui/cockpit/replay/price-strip.test.tsx",
+          "fingerprint": "b5a21d084fd26687ed03d5748a1df5a2e55541912ffdab826b78bc67a76a598b"
+        },
+        {
+          "item_id": "ba578f97f7698c0e6bcb181e747f8c8ef3dafb90b6f8eef6f25b35b639e1dd2c",
+          "path": "src/ui/cockpit/replay/corridor.test.tsx",
+          "fingerprint": "465f14935c461cdfeeb05d321a27efa616f66154593f6577772f052745009840"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "3159f041fedf3d5a563afb3aefd18dc353661cbc0487e34c4c6f07c10a05f4c6",
+          "path": "evidence/D09AR/suite-runs/T9AR.23-S7-B2-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "a2ff1225adf14782bfe8c4cdccadf58ab7f90113a351263ccf1b1342be9b84fb",
+          "path": "evidence/D09AR/suite-runs/T9AR.23-S7-B2-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "e40703ba4129e7e6db55a60b83eeedf517c16efe3c230abb437c7f6599df2a4d",
+          "path": "evidence/D09AR/suite-runs/T9AR.23-S7-B2-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "eb5749c7a1facc6529a251135848767d3ce7923fc7938aec865f2dcd9ef23eef",
+          "path": "evidence/D09AR/tdd-log/T9AR.23-S7-B2.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ee9a3d70de7754ad2e8c6e8f8571f9f478af3b6351138dd97d670249972d36ac",
+          "path": "evidence/D09AR/suite-runs/T9AR.23-S7-B2-integration.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 24941
+  }
+}
