@@ -553,6 +553,22 @@ describe('Trade Detail: the Replay overlay (decision 3)', () => {
     expect(screen.getByRole('tab', { selected: true, hidden: true }).getAttribute('aria-label')).toBe('Today');
     expect((await within(dialog).findByRole('slider', { name: 'Session' })).getAttribute('aria-valuetext')).toBe('Tue Oct 13 · 2 of 4. +$100.00');
   });
+
+  it('should reopen the overlay on the session the slider was on when it closed', async () => {
+    const user = userEvent.setup();
+    show({ replayResult: { kind: 'Ready', view: replay([debt], true), binding: BINDING } });
+    await user.click(await screen.findByRole('button', { name: 'Replay' }));
+    let dialog = await screen.findByRole('dialog', { name: 'Replay, XYZ' });
+    await user.click(within(dialog).getByRole('button', { name: 'Previous session' }));
+    const moved = within(dialog).getByRole('slider', { name: 'Session' }).getAttribute('aria-valuetext');
+    expect(moved).toBe('Wed Oct 14 · 3 of 4. +$100.00');
+    await user.click(within(dialog).getByRole('button', { name: 'Close' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    await user.click(screen.getByRole('button', { name: 'Replay' }));
+    dialog = await screen.findByRole('dialog', { name: 'Replay, XYZ' });
+    expect(within(dialog).getByRole('slider', { name: 'Session' }).getAttribute('aria-valuetext')).toBe(moved);
+  });
+
 });
 
 // Four sessions with Marks: Monday holds the Position Change pc-1 (a purchase of 60) and the owed reflection, Tuesday has neither.

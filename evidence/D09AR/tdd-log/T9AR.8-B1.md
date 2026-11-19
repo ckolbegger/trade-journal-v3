@@ -1,0 +1,8 @@
+# D09AR TDD log, T9AR.8-B1
+
+One file per task (decision 111), so parallel lanes never edit one file. Each row is one single-case run; see `../tdd-log.md` for the rules.
+
+| T9AR.8-B1 | should reopen the overlay on the session the slider was on when it closed | red | `npx vitest run src/ui/screens/TradeDetail.test.tsx -t "should reopen the overlay on the session the slider was on when it closed"` | exit 1; Tests  1 failed, 27 skipped (28) | AssertionError: expected 'Wed Oct 14 · 3 of 4. Mark missing: XY…' to be 'Wed Oct 14 · 3 of 4. +$200.00' // Object.is equality Expected: "Wed Oct 14 · 3 of 4. +$200.00"  |
+| T9AR.8-B1 | should reopen the overlay on the session the slider was on when it closed | red | `npx vitest run src/ui/screens/TradeDetail.test.tsx -t "should reopen the overlay on the session the slider was on when it closed"` | exit 1; Tests  1 failed, 27 skipped (28) | AssertionError: expected 'Wed Oct 14 · 3 of 4. +$100.00' to be 'Wed Oct 14 · 3 of 4. +$200.00' // Object.is equality Expected: "Wed Oct 14 · 3 of 4. +$200.00"  |
+| T9AR.8-B1 | should reopen the overlay on the session the slider was on when it closed | red | `npx vitest run src/ui/screens/TradeDetail.test.tsx -t "should reopen the overlay on the session the slider was on when it closed"` | exit 1; Tests  1 failed, 27 skipped (28) | AssertionError: expected 'Thu Oct 15 · 4 of 4. +$250.00' to be 'Wed Oct 14 · 3 of 4. +$100.00' // Object.is equality Expected: "Wed Oct 14 · 3 of 4. +$100.00"  |
+| T9AR.8-B1 | should reopen the overlay on the session the slider was on when it closed | green | `npx vitest run src/ui/screens/TradeDetail.test.tsx -t "should reopen the overlay on the session the slider was on when it closed"` | exit 0; Tests  1 passed, 27 skipped (28) |  |

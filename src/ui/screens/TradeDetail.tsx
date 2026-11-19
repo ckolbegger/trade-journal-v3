@@ -188,7 +188,7 @@ function TradeDetailOf({ facade, timeZone, onDirtyChange }: TradeDetailProps) {
         replay={state.replay}
         timeZone={timeZone}
         {...(address.drawer && { initialDrawer: address.drawer })}
-        {...(address.session && { initialSession: address.session })}
+        {...(session && { initialSession: session })}
         onSessionChange={setSession}
         replayOpen={replayOpen}
         onReplayOpen={openReplay}
