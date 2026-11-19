@@ -124,6 +124,8 @@ Lane DM (`d09ar/dm`), base `ada81477`, commit `6ff96d06`. Verification, each exi
     - B1 `db6f7f75`: red `expected false to be true` (50%, not 1/3), green. The builder uses the domain's `oddsOf(entry - stop, target - entry)`.
     - B2 `88b9ba80`: red `RangeError: The number 100.5 cannot be converted to a BigInt`, green. `r` goes through `parseDecimal`; entry 100.5 gives `atTarget` 39/2, a 0.5 distance gives 1/2.
   - Lane tier `T9AR.6-B`: unit 2342 (208 files), integration 280, checks 14 of 14.
+  - T9AR.6-B3 done: `15acec47`; red `Error: Not a decimal: -20.19999999999999`, green; prices and quantity made exact first, distances by `sub`, `mul`, `div` (atStop −101/5, atTarget 199/5, rewardRisk 199/101); `againstPlanOf` unchanged (no subtraction). Lane tier `T9AR.6-B3`: unit 2343, integration 280, checks 14 of 14. ocr on `15acec47` (`ocr/T9AR.6-B3-15acec47.json`): 0 comments, **no findings**.
+  - Lane DM rebased onto `b75e4597` (the task's own short note in `structural.md` merged into this section): `f40f46e3` (T9AR.6), `f327db49` (S1), `d2a9c2f5` (B1), `4d79df81` (B2), `36fc3d54` (B3). Lane tier rerun as `T9AR.6-rebased`: unit 2360, integration 280, checks 14 of 14; `run-complete.sh`: run complete. Merged by fast-forward to `36fc3d54`.
   - ocr on `db6f7f75` (`ocr/T9AR.6-B1-db6f7f75.json`): 0 comments, **no findings**. ocr on `88b9ba80` (`ocr/T9AR.6-B2-88b9ba80.json`): 1 comment.
 
 | Severity | Location | Finding | Verdict |
@@ -277,6 +279,41 @@ Lane PL (`d09ar/pl`), base `d74afb24`, commit `933ffabf`. 4 planned cases: three
 - **T9AR.12-D1** Case: it should fit the replay on one screen at 320 by 667 with the P&L chart 200 high, the price chart giving up the 12 px.
 - **T9AR.12-B1** Case: it should keep the slider's value inside the phone drawing at the last session.
 
+## T9AR.9 Review card: the Replay button
+
+Lane OV (`d09ar/ov`), base `e526637e`, commit `52838a3a`. 8 planned cases: 3 red then green, 5 first-run passes, each mutation-checked (the unsaved choice and Intent: `key={String(replayOpen)}` on `ActionForm`, "expected radio to have property checked true"; Save Marks: a replay captured at first mount, "expected 'Thu Oct 8 · 1 of 1. $0.00' to be 'Mon Oct 12 · 2 of 2. +$582.00'"; Price History: `from=trades`, 1 failed; reopen on the named session: `sessionX`, "expected 'Mon Oct 12 …' to be 'Thu Oct 8 · 1 of 2. $0.00'"; no button: the `trade.replay &&` guard dropped, 1 failed). Lane tier `T9AR.9`: unit 2358, integration 280, checks 14 of 14. Browser: `e2e/d9/review.spec.ts` with `e2e/d5r/durability.spec.ts` 5 passed; `e2e/d9/responsive-a11y.spec.ts` 6 passed.
+
+- Lines changed (section 1.5's "The Review card's inline replay" row): `ReviewCard.test.tsx` (the 7 inline-replay cases replaced by the 8 planned); `e2e/d9/support.ts` (`cardReplay` replaced by `cardReplayButton` and `openCardReplay`); `e2e/d9/review.spec.ts` (two cases open the overlay; the address now names the card and `replay=open`); `e2e/d9/responsive-a11y.spec.ts` (three Review-card cases open the overlay; the bottom-navigation focus case tabs from Close, "hidden" now means covered at the control's centre); `e2e/d5r/durability.spec.ts:98` (`input, textarea`, count still 0); `app.css` (the `h5` rule removed).
+- **Outside `linkedCard` in `ReviewView.tsx`:** the search-change effect compares the search without `replay` and `session` (`searchOf`), and `CardBody` skips the panel focus while `replay=open`, so opening the overlay is not read as a new card link. Accepted as implementation-level (the same file, needed by A274).
+- No words shortened; none uncovered.
+- ocr on `52838a3a` (`ocr/T9AR.9-52838a3a.json`): 8 files (5 excluded), 3 comments.
+
+| Severity | Location | Finding | Verdict |
+|---|---|---|---|
+| medium | `ReviewCard.tsx:273-275` | Opening copies the query, which can still hold `instrument`, so `linkedCard` opens Marks under the overlay and the Replay button is hidden after Close | Valid: T9AR.9-B1 |
+| medium | `ReviewView.tsx:476-477` | `searchOf` strips only `replay` and `session`, so closing back to an older address swaps the card the trader opened by its header | Valid: T9AR.9-B2 |
+| medium | `ReviewCard.tsx:282-283` | `closeReplay` clears `pushed` before going back, so Replay, Close, Forward, Close replaces instead of going back; `TradeDetail.tsx:73-74` has the same pattern | Valid: T9AR.9-B3, and T9AR.8-B4 for Trade Detail |
+
+- **T9AR.9-B1** Case: it should open the overlay over the Action panel even when the address still names an Instrument.
+- **T9AR.9-B2** Case: it should keep the card the trader opened by its header when the overlay closes back to an older address.
+- **T9AR.9-B3** Case: it should go back one entry on the second Close after Replay, Close, Forward (Review card).
+- **T9AR.8-B4** Case: the same on Trade Detail.
+
+## T9AR.13 Readout: the stake grid, a Trade past a line, the change line
+
+Lane RO (`d09ar/ro`), base `e526637e`, commit `aa047c46`. Planned cases red then green, except 3 first-run passes, each mutation-checked: the change line (a change line attached to the Reward to risk row: `expected '{"title":"At stake from here, whole P…' not to contain 'since'`); the critic-2 carry's unit half (a "P&L " prefix in the cell: `expected 'P&L −$543.00' not to match /\s/`); the canonical terms' props half (a term renamed: `expected [ [ 'At Stop', …(1) ], …(3) ] to deeply equal …`). Code written ahead of red (the unbounded branch, the "'s amount" branch, the no-ratio omission) was backed out for real reds. Lane tier `T9AR.13`: unit 2370, integration 280, checks 14 of 14. Browser: `gaps.spec.ts` with `replay.spec.ts` 10 passed; `states.spec.ts` 4 passed.
+
+- Lines changed, by section 1.5 row: `readout.props.test.ts` and `readout.test.tsx` (the readout's own seam: the overrun and planned-amount cases now assert the past-a-line row; the No Mark, Worst case, Max reward and T9.19-B4 cases read grid cells; the change line no longer under a stake row; T9.19-B4 and B14 replaced by one grid case); `replay.props.test.ts` (Reward to risk values: four assertions now "no Reward to risk row", one case renamed; No Mark as a readout value); `e2e/d9/support.ts` (`readoutValue`, `readoutPnl` find `[data-row=…]`; new `readoutR`, `pastLine`, `noMarkDash`); `e2e/d9/gaps.spec.ts` (Tue 11-10 dashes; Mon 11-09 past-a-line; two new width cases for critic-2's defect 2); `e2e/d9/replay.spec.ts` (Mon 11-16). `frame.test.tsx`, `states.spec.ts` and `format.ts` unchanged. Phone CSS added after the 320 width case found the grid overflowing.
+- Words shortened (P137) and uncovered: recorded in `words-changed.md` and `new-words.md` by the task.
+- For later tasks: `riskChange` and `rewardChange` now have no reader (T9AR.21; `view-doubles.props.ts` still sets them); `responsive-a11y.spec.ts:48` reads `.replay-readout-row .replay-value`, which no longer includes the stake values (B9AR.3 should read the grid's cells); `stakeRow`, `maxRewardRow`, `pastLineRow` in `readout.props.ts` are module-private (export when T9AR.17 needs them).
+- ocr on `aa047c46` (`ocr/T9AR.13-aa047c46.json`): 9 files (7 excluded), 1 comment.
+
+| Severity | Location | Finding | Verdict |
+|---|---|---|---|
+| low | `readout.tsx:51` | A static `style={UNBREAKABLE}` duplicates the stylesheet's `nowrap`, and the unit test checks the inline copy | Doubtful (readability): T9AR.13-F1 |
+
+- **T9AR.13-F1** Structural: the stylesheet rule is the one source; the case checks the rule.
+
 ## Suite runs
 
 | Run | Commit | Tier | Result |
@@ -296,12 +333,3 @@ Lane PL (`d09ar/pl`), base `d74afb24`, commit `933ffabf`. 4 planned cases: three
 
 | Critic | Result | Tokens | Tool calls | Time |
 |---|---|---|---|---|
-
-## T9AR.6 Facade and manifest (lane DM)
-
-`replayTrade` gains PlanComparison and Odds; `DailyReview.getTrade` gains Odds; Trade Detail and Review routes and the manifest test list them; `tests/support/replay-view-fields.ts` builds the new view fields.
-
-- `npm run verify:capabilities`: exit 0 (24 operations, 12 variant-qualified, 10 routes)
-- `npx vitest run src/coordinators/workspace`: exit 0, 131 passed
-- `npm run typecheck`: exit 0; `npx tsc6 --noEmit`: exit 0; `npm run lint`: exit 0 (2 existing warnings); `npm run verify:fixtures`: exit 0
-- Lane tier: unit 2340 passed (207 files); integration 1 failed of 280: `tests/integration/d9/capabilities.test.ts` I9.7 asserts the old exact replayTrade list (not an owned file); checks 14 of 14 exit 0.

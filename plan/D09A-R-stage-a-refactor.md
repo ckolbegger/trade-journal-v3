@@ -871,7 +871,7 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T9AR.3 | 1 | DM | Done (from `8245f6c6`) | `5187512d`; B1 `02b4f51c`; B2 `499751ed` |
 | T9AR.4 | 1 | DM | Done (from `79b900d3`) | `955e3568`; F1 `70ddec48` |
 | T9AR.5 | 1 | DM | Done (from `523a8a0e`) | `60e4bd32`; B1 `6855e7d3` |
-| T9AR.6 | 1 | DM | In progress from `6855e7d3` | |
+| T9AR.6 | 1 | DM | Done (from `ada81477`) | `f40f46e3`; S1 `f327db49`; B1 `d2a9c2f5`; B2 `4d79df81`; B3 `36fc3d54` |
 | T9AR.7 | 1 | OV | Done (from `8245f6c6`) | `4fd70538`; B1 `6a0cb594`; B2 `e45bd7a5`; B3 `6ffc25fb`; B4 `4ac0f109`; B5 `59714fa3`; B6 `ddc5e849` |
 | T9AR.8 | 1 | OV | Done (from `ddc5e849`) | `39d876a0`; B1 `a76254b5`; B2 `3325fb9f`; B3 `ebbcdab4`; F1 `ca634afb` |
 | T9AR.9 | 1 | OV | In progress from `e526637e` | |
@@ -881,7 +881,7 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T9AR.13 | 2 | RO | In progress from `e526637e` | |
 | T9AR.14 | 2 | RO | Not started | |
 | T9AR.15 | 2 | RO | Not started | |
-| T9AR.16 | 2 | SC | Not started | |
+| T9AR.16 | 2 | SC | In progress from `b75e4597` | |
 | T9AR.17 | 2 | SC | Not started | |
 | T9AR.18 | 2 | SC | Not started | |
 | T9AR.19 | 2 | PL | Not started | |

@@ -1,0 +1,222 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 8 selected item(s).",
+  "summary": {
+    "files_reviewed": 8,
+    "comments": 3,
+    "total_tokens": 283100,
+    "input_tokens": 280115,
+    "output_tokens": 2985,
+    "cache_read_tokens": 21632,
+    "elapsed": "1m39s"
+  },
+  "tool_calls": {
+    "total": 26,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 5,
+      "file_read": 18,
+      "file_read_diff": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/ReviewCard.tsx",
+      "content": "Clearing `pushed.current` loses ownership of the overlay history entry even though `navigate(-1)` leaves that entry available to Forward. Reproduce with Replay → Close → browser Forward → Close: the second Close replaces the overlay URL rather than going back, leaving two Review entries, so the next Back appears to do nothing. Track ownership on the history entry (or preserve it across this round trip) and add a Forward-then-Close/Escape test.",
+      "existing_code": "      pushed.current = false;\n      void navigate(-1);",
+      "start_line": 282,
+      "end_line": 283,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/ReviewView.tsx",
+      "content": "Overlay navigation also changes `trade` and `panel`, so stripping only these two parameters still treats opening/closing Replay as a fresh card link. For example, load `/review?trade=t1\u0026panel=Action`, manually open t2, then open and close its Replay. Back restores `trade=t1`, this effect selects t1 (and reads it again), and t2 closes instead of remaining on its Action panel. Distinguish overlay-owned history changes from actual incoming card links, and add a test starting from a URL naming a different card.",
+      "existing_code": "    link.delete('replay');\n    link.delete('session');",
+      "start_line": 476,
+      "end_line": 477,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/ReviewCard.tsx",
+      "content": "The copied query retains `instrument`. If Review was entered through an instrument link, then the user switches to Action and clicks Replay, `linkedCard` gives that retained instrument precedence over `panel=Action`. The resulting URL change reopens Marks under the overlay; after Close the Replay button is hidden and cannot receive focus. Remove the instrument selector from the overlay URL and ensure restoring the previous URL on Close does not reapply the old instrument link. Cover this instrument-link entry path in the tests.",
+      "existing_code": "      next.set('trade', trade.tradeId);\n      next.set('panel', 'Action');\n      next.set('replay', 'open');",
+      "start_line": 273,
+      "end_line": 275,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Review UI behavior, styling, and unit tests",
+      "files": [
+        "src/ui/app.css",
+        "src/ui/screens/ReviewCard.test.tsx",
+        "src/ui/screens/ReviewCard.tsx",
+        "src/ui/screens/ReviewView.tsx"
+      ]
+    },
+    {
+      "label": "End-to-end review, accessibility, and durability coverage",
+      "files": [
+        "e2e/d5r/durability.spec.ts",
+        "e2e/d9/responsive-a11y.spec.ts",
+        "e2e/d9/review.spec.ts",
+        "e2e/d9/support.ts"
+      ]
+    }
+  ],
+  "session_id": "af0aaf25-9fe0-4a1f-93f2-5703b8ba72b1",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "af0aaf25-9fe0-4a1f-93f2-5703b8ba72b1",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "52838a3a",
+      "resolved_base": "e526637e10b307e6ae0c1f1741f34a22f9785a39",
+      "resolved_head": "52838a3a62b2d6586d443190bcc71ba695552fa0",
+      "exact_range": "e526637e10b307e6ae0c1f1741f34a22f9785a39..52838a3a62b2d6586d443190bcc71ba695552fa0",
+      "source_artifact_sha256": "b5398318479c61e3b0b65b8197f8d9c6d82f9530ef928cf1e978fe146968eb6e"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "9ba593f0683fb5d1f015b97a9f0918501efe241c0ae1e62a8d9fe69d9af3b439"
+        },
+        {
+          "item_id": "347917e3fc99ea10df3899c14b251305db47c31ef851de4417dcd15cdba0c770",
+          "path": "e2e/d9/review.spec.ts",
+          "fingerprint": "06fb033183d6bbedaa1f9daacae61b1a00e64d4f1435323bf3d6b4724b505f15"
+        },
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "4feca440f748912f6991299d35c141a5f57d885ae3f53f0078904b05fe49f14d"
+        },
+        {
+          "item_id": "a83706f3444e16c14ac613c874f7293d7adce6354226bde7d7b9b892fce05701",
+          "path": "src/ui/screens/ReviewCard.test.tsx",
+          "fingerprint": "b407e433c920f7098e19a5ffff28bf701166f8b49a07eb3ee0fcf71adef90154"
+        },
+        {
+          "item_id": "b6c384b7587d1b65ac5792148e7e8c421811373d53aa2bdd93b3c7790c3895b2",
+          "path": "e2e/d9/responsive-a11y.spec.ts",
+          "fingerprint": "1656351f0a142bddcb6814955ab9f1b9aff4dbecd87923ab550e2b4af7b15bd2"
+        },
+        {
+          "item_id": "d0126439061216e58eb2b1a6bab019f2d20601558a9531d4100a29b4b9c5c3f9",
+          "path": "e2e/d9/support.ts",
+          "fingerprint": "c66a6cf175801ac5b21d881f25cb9b696d98babee3254557cd622325bf2b6fd8"
+        },
+        {
+          "item_id": "f293e207e9d62bb3a1147b0c02824d6e01749fe2220ab94a9c11d82317c664b9",
+          "path": "e2e/d5r/durability.spec.ts",
+          "fingerprint": "61ba82e3a8493fbba1dcde8f50078ec71d073479e02f9cf31881e1bf4a853d0e"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "e4199a780cdede13f8d657bf408e3cb8ebd16b245889acbc88e6b1321aad10ce"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "9ba593f0683fb5d1f015b97a9f0918501efe241c0ae1e62a8d9fe69d9af3b439"
+        },
+        {
+          "item_id": "347917e3fc99ea10df3899c14b251305db47c31ef851de4417dcd15cdba0c770",
+          "path": "e2e/d9/review.spec.ts",
+          "fingerprint": "06fb033183d6bbedaa1f9daacae61b1a00e64d4f1435323bf3d6b4724b505f15"
+        },
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "4feca440f748912f6991299d35c141a5f57d885ae3f53f0078904b05fe49f14d"
+        },
+        {
+          "item_id": "a83706f3444e16c14ac613c874f7293d7adce6354226bde7d7b9b892fce05701",
+          "path": "src/ui/screens/ReviewCard.test.tsx",
+          "fingerprint": "b407e433c920f7098e19a5ffff28bf701166f8b49a07eb3ee0fcf71adef90154"
+        },
+        {
+          "item_id": "b6c384b7587d1b65ac5792148e7e8c421811373d53aa2bdd93b3c7790c3895b2",
+          "path": "e2e/d9/responsive-a11y.spec.ts",
+          "fingerprint": "1656351f0a142bddcb6814955ab9f1b9aff4dbecd87923ab550e2b4af7b15bd2"
+        },
+        {
+          "item_id": "d0126439061216e58eb2b1a6bab019f2d20601558a9531d4100a29b4b9c5c3f9",
+          "path": "e2e/d9/support.ts",
+          "fingerprint": "c66a6cf175801ac5b21d881f25cb9b696d98babee3254557cd622325bf2b6fd8"
+        },
+        {
+          "item_id": "f293e207e9d62bb3a1147b0c02824d6e01749fe2220ab94a9c11d82317c664b9",
+          "path": "e2e/d5r/durability.spec.ts",
+          "fingerprint": "61ba82e3a8493fbba1dcde8f50078ec71d073479e02f9cf31881e1bf4a853d0e"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "e4199a780cdede13f8d657bf408e3cb8ebd16b245889acbc88e6b1321aad10ce"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "4796be20905fcef769091f70726863c3922f2be39d18e173e989e11dcfe8c62d",
+          "path": "evidence/D09AR/suite-runs/T9AR.9-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "61598f53409be76eb4b8f3493e6bedb0ad26a000b252fa05221427923be23397",
+          "path": "evidence/D09AR/suite-runs/T9AR.9-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "71e2610afb9220be5905243ff0474611b3e12f1070085f3de51988a2f6f54113",
+          "path": "evidence/D09AR/suite-runs/T9AR.9-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "9e86108e6ab696ff1b8665dcad78333c5be729a3afa3a2847054b6b04314d718",
+          "path": "evidence/D09AR/tdd-log/T9AR.9.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "de88dec855909d4936615ef33e750241713e04300c0a2f62f7199a2e0cddb9e9",
+          "path": "evidence/D09AR/suite-runs/T9AR.9-checks.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 99161
+  }
+}

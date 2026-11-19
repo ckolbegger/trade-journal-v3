@@ -1,0 +1,225 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 9 selected item(s).",
+  "summary": {
+    "files_reviewed": 9,
+    "comments": 1,
+    "total_tokens": 404033,
+    "input_tokens": 401359,
+    "output_tokens": 2674,
+    "cache_read_tokens": 23296,
+    "elapsed": "1m35s"
+  },
+  "tool_calls": {
+    "total": 23,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 4,
+      "file_read": 17,
+      "file_read_diff": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/replay/readout.tsx",
+      "content": "The static `style={UNBREAKABLE}` attributes duplicate `.replay-stake-grid td { white-space: nowrap; }` and violate the requested restriction on static inline styles. Keep this rule in the stylesheet and remove the inline styles from all three cell types. Update the computed-style test to load the stylesheet (or rely on the browser layout tests), so it verifies the production CSS rather than a duplicate inline rule.",
+      "existing_code": "              \u003ctd className=\"replay-value\" data-kind={row.fromHere.kind} style={UNBREAKABLE} colSpan={row.r ? 1 : 3}\u003e",
+      "start_line": 51,
+      "end_line": 51,
+      "category": "maintainability",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Replay readout behavior, styling, and unit tests",
+      "files": [
+        "src/ui/cockpit/replay/readout.props.test.ts",
+        "src/ui/cockpit/replay/readout.props.ts",
+        "src/ui/cockpit/replay/readout.test.tsx",
+        "src/ui/cockpit/replay/readout.tsx",
+        "src/ui/cockpit/replay/replay.props.test.ts",
+        "src/ui/cockpit/styles/replay-readout.css"
+      ]
+    },
+    {
+      "label": "Replay and gap end-to-end tests and shared support",
+      "files": [
+        "e2e/d9/gaps.spec.ts",
+        "e2e/d9/replay.spec.ts",
+        "e2e/d9/support.ts"
+      ]
+    }
+  ],
+  "session_id": "b8f811bd-7c4b-485e-8277-051d9bd27500",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "b8f811bd-7c4b-485e-8277-051d9bd27500",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "aa047c46",
+      "resolved_base": "e526637e10b307e6ae0c1f1741f34a22f9785a39",
+      "resolved_head": "aa047c46666ab6ed32479efe91c3d9879cded854",
+      "exact_range": "e526637e10b307e6ae0c1f1741f34a22f9785a39..aa047c46666ab6ed32479efe91c3d9879cded854",
+      "source_artifact_sha256": "453c9244661c3e3e288f4b2d9ac3ee2f403e392ae5e333cb7b53abaa17e0166c"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0060ea44ecacab2865c5d4dceb1c75627a3c3566a4f16698d1c3465ec458b6cf",
+          "path": "src/ui/cockpit/replay/replay.props.test.ts",
+          "fingerprint": "9b9be7e9d27bcc776a98dee770108585aa616dfd2916c5dc8d4a852df013ee5b"
+        },
+        {
+          "item_id": "02ef688178a59e01b4d1904319b272eae02b0d93eac4650ab9dc734486689b0d",
+          "path": "e2e/d9/gaps.spec.ts",
+          "fingerprint": "44cd9d9ca0dd9e3dd46ffc077d4c35de7f1ee6cc1b5fd5ed3aaeb4493e12ee93"
+        },
+        {
+          "item_id": "63c0d43b245d37c2fa601fdd5364ad0a5b7bdede1e576259fe71f3d4f2783723",
+          "path": "src/ui/cockpit/replay/readout.props.test.ts",
+          "fingerprint": "084017f843fd93b515082b65a90fd6f7c813da959fa33b57143e7c60662f9853"
+        },
+        {
+          "item_id": "6d86b77abf8fdc8225b334a55d2bb3f62131271add4d139cb41a499b1d9c9a07",
+          "path": "src/ui/cockpit/replay/readout.tsx",
+          "fingerprint": "8ddafb37d8b8bbf82167d8cc34a6562e49ed5ccc41ced3e11e8ad694801f7e1c"
+        },
+        {
+          "item_id": "97f9f0e3c683f597aee7b0503f4803e42d85c73c0fcec512065b995b7820da16",
+          "path": "src/ui/cockpit/replay/readout.props.ts",
+          "fingerprint": "18c7723a660a162cfad91c39d265f0ecc0514eb9a82c36b7ffc300ee919a5898"
+        },
+        {
+          "item_id": "9d9fa217e129811e2651c02ebf53a158c6611c1aa867b6abb12f116117d9379c",
+          "path": "src/ui/cockpit/replay/readout.test.tsx",
+          "fingerprint": "7368f8053cd0b028f557ebbfcc25685111a0ad0bf20db9b3fe6081b41459295c"
+        },
+        {
+          "item_id": "a50e78b43d9da674ed99eaeeda80fea2f24b5f39189d6f4650878a33f631ea72",
+          "path": "e2e/d9/replay.spec.ts",
+          "fingerprint": "fb5ce66666f096d08b394ca2d4ce90d386f9a34a8b61283a4ba7fafb50ddc19c"
+        },
+        {
+          "item_id": "c227943fa1533d9c2d4f1b82b596c384bb84f3c6c07964958d0c39ddb35fa702",
+          "path": "src/ui/cockpit/styles/replay-readout.css",
+          "fingerprint": "c4beeae06681ed2cb9502b91e44061443b2498cbc7a5658920b945367e113e45"
+        },
+        {
+          "item_id": "d0126439061216e58eb2b1a6bab019f2d20601558a9531d4100a29b4b9c5c3f9",
+          "path": "e2e/d9/support.ts",
+          "fingerprint": "4291260983aac42841957c246a24c222f442f677c8b45d73c2e73f48332cfc68"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0060ea44ecacab2865c5d4dceb1c75627a3c3566a4f16698d1c3465ec458b6cf",
+          "path": "src/ui/cockpit/replay/replay.props.test.ts",
+          "fingerprint": "9b9be7e9d27bcc776a98dee770108585aa616dfd2916c5dc8d4a852df013ee5b"
+        },
+        {
+          "item_id": "02ef688178a59e01b4d1904319b272eae02b0d93eac4650ab9dc734486689b0d",
+          "path": "e2e/d9/gaps.spec.ts",
+          "fingerprint": "44cd9d9ca0dd9e3dd46ffc077d4c35de7f1ee6cc1b5fd5ed3aaeb4493e12ee93"
+        },
+        {
+          "item_id": "63c0d43b245d37c2fa601fdd5364ad0a5b7bdede1e576259fe71f3d4f2783723",
+          "path": "src/ui/cockpit/replay/readout.props.test.ts",
+          "fingerprint": "084017f843fd93b515082b65a90fd6f7c813da959fa33b57143e7c60662f9853"
+        },
+        {
+          "item_id": "6d86b77abf8fdc8225b334a55d2bb3f62131271add4d139cb41a499b1d9c9a07",
+          "path": "src/ui/cockpit/replay/readout.tsx",
+          "fingerprint": "8ddafb37d8b8bbf82167d8cc34a6562e49ed5ccc41ced3e11e8ad694801f7e1c"
+        },
+        {
+          "item_id": "97f9f0e3c683f597aee7b0503f4803e42d85c73c0fcec512065b995b7820da16",
+          "path": "src/ui/cockpit/replay/readout.props.ts",
+          "fingerprint": "18c7723a660a162cfad91c39d265f0ecc0514eb9a82c36b7ffc300ee919a5898"
+        },
+        {
+          "item_id": "9d9fa217e129811e2651c02ebf53a158c6611c1aa867b6abb12f116117d9379c",
+          "path": "src/ui/cockpit/replay/readout.test.tsx",
+          "fingerprint": "7368f8053cd0b028f557ebbfcc25685111a0ad0bf20db9b3fe6081b41459295c"
+        },
+        {
+          "item_id": "a50e78b43d9da674ed99eaeeda80fea2f24b5f39189d6f4650878a33f631ea72",
+          "path": "e2e/d9/replay.spec.ts",
+          "fingerprint": "fb5ce66666f096d08b394ca2d4ce90d386f9a34a8b61283a4ba7fafb50ddc19c"
+        },
+        {
+          "item_id": "c227943fa1533d9c2d4f1b82b596c384bb84f3c6c07964958d0c39ddb35fa702",
+          "path": "src/ui/cockpit/styles/replay-readout.css",
+          "fingerprint": "c4beeae06681ed2cb9502b91e44061443b2498cbc7a5658920b945367e113e45"
+        },
+        {
+          "item_id": "d0126439061216e58eb2b1a6bab019f2d20601558a9531d4100a29b4b9c5c3f9",
+          "path": "e2e/d9/support.ts",
+          "fingerprint": "4291260983aac42841957c246a24c222f442f677c8b45d73c2e73f48332cfc68"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "09794a3e6500ea189d11d84f5e30214f797460890572738079ffaecc44688c22",
+          "path": "evidence/D09AR/suite-runs/T9AR.13-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "324ac54947ab855aadf6462386ea4942b837fd18963501f9b095799d4ce49fc7",
+          "path": "evidence/D09AR/new-words.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "476061f8302678d799eb29df0687290e5f3430b072467e9e5eb4ec0362c7cc9a",
+          "path": "evidence/D09AR/suite-runs/T9AR.13-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "59199bfad1e98082915550998c3d38da4338058f54a407534473c69c2551d94b",
+          "path": "evidence/D09AR/words-changed.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "6dffbe06d7e2d957c4a324442767f2e6db6c69078f39ebacc78431fd236150a8",
+          "path": "evidence/D09AR/tdd-log/T9AR.13.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "cbf7d58159c96914d4636920963176f94c3fda47f667e6a2242afe979d3493bd",
+          "path": "evidence/D09AR/suite-runs/T9AR.13-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "e9152f6a20d9131cbfc96ef7dc0bae5c429670ceeaadc6e2f1aa6247ad9240ba",
+          "path": "evidence/D09AR/suite-runs/T9AR.13-integration.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 95096
+  }
+}
