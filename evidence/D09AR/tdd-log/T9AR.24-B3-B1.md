@@ -1,0 +1,7 @@
+# D09AR TDD log, T9AR.24-B3-B1
+
+One file per task (decision 111), so parallel lanes never edit one file. Each row is one single-case run; see `../tdd-log.md` for the rules.
+
+| T9AR.24-B3-B1 | should show the saved Action, not an earlier draft, after a Ctrl click on Price History, a Save, and a switch to another card and back | red | `npx vitest run src/ui/screens/ReviewCard.test.tsx -t "should show the saved Action, not an earlier draft, after a Ctrl click on Price History, a Save, and a switch to another card and back"` | exit 1; Tests  1 failed, 71 skipped (72) | TestingLibraryElementError: Unable to find an accessible element with the role "button" and name "Change"  |
+| T9AR.24-B3-B1 | should show the saved Action, not an earlier draft, after a Ctrl click on Price History, a Save, and a switch to another card and back | red | `npx vitest run src/ui/screens/ReviewCard.test.tsx -t "should show the saved Action, not an earlier draft, after a Ctrl click on Price History, a Save, and a switch to another card and back"` | exit 1; Tests  1 failed, 71 skipped (72) | AssertionError: expected <textarea id="_r_h_-intent"></textarea> to be null  |
+| T9AR.24-B3-B1 | should show the saved Action, not an earlier draft, after a Ctrl click on Price History, a Save, and a switch to another card and back | green | `npx vitest run src/ui/screens/ReviewCard.test.tsx -t "should show the saved Action, not an earlier draft, after a Ctrl click on Price History, a Save, and a switch to another card and back"` | exit 0; Tests  1 passed, 71 skipped (72) |  |

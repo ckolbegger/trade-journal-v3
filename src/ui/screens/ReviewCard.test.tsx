@@ -3,7 +3,8 @@ import { act, cleanup, render, screen, waitFor, within } from '@testing-library/
 import { useEffect, useState, type ReactNode } from 'react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, useLocation, useNavigate, useNavigationType } from 'react-router';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { resetDrafts } from './action-draft.ts';
 import { facadeDouble } from '../../../tests/support/facade-double.ts';
 import { optionOpenDetail } from '../../../tests/support/option-detail-fixtures.ts';
 import { OS2_S1 } from '../../../tests/support/option-trade-fixtures.ts';
@@ -17,6 +18,7 @@ import { ReviewView } from './ReviewView.tsx';
 import { cardProgress, reflectionsOwedProgress } from '../../../tests/support/card-progress.ts';
 
 afterEach(cleanup);
+beforeEach(resetDrafts);
 
 type Ready = Extract<OpenDailyReviewResult, { kind: 'Ready' }>;
 type Evaluation = NonNullable<DailyTradeReview['evaluation']>;
@@ -1839,6 +1841,37 @@ describe('Review card: the Replay button (decision 3)', () => {
     expect(within(back).getByRole('textbox', { name: `${INTENT_PROMPT} (required)` })).toHaveProperty('value', 'Take the profit.');
     // The trip itself recorded nothing.
     expect(save).not.toHaveBeenCalled();
+  });
+
+  it('should show the saved Action, not an earlier draft, after a Ctrl click on Price History, a Save, and a switch to another card and back', async () => {
+    const user = userEvent.setup();
+    const first = tradeReview('t1', 'XYZ', { replay: THURSDAY_AND_MONDAY });
+    const next = tradeReview('t2', 'DEF');
+    const again = tradeReview('t1', 'XYZ', { form: { kind: 'Saved', action: savedAction('Exit', 'Take it all.', 2) }, saveBinding: savedBinding({ expectedEntryRevision: 2 }) });
+    const facade = walkFacade(ready([item('t1', 'XYZ'), item('t2', 'DEF')]), first, again);
+    vi.mocked(facade.DailyReview.save).mockResolvedValue({
+      kind: 'Saved',
+      action: savedAction('Exit', 'Take it all.', 2),
+      review: { kind: 'Ready', cards: [savedCard('t1')], progress: { tradesWithAction: 1, tradesEligible: 2 }, completion: { kind: 'Incomplete', reasons: [{ code: 'ActionMissing', tradeId: 't2' }] }, nextStep: { kind: 'Trade', trade: next }, binding },
+    });
+    renderWalk(facade);
+    const card = await openTrade(user, 'XYZ');
+    await user.click(within(card).getByRole('radio', { name: 'Exit' }));
+    await user.type(within(card).getByRole('textbox', { name: `${INTENT_PROMPT} (required)` }), 'Take the profit.');
+    await user.click(within(card).getByRole('button', { name: 'Replay' }));
+    const link = within(await screen.findByRole('dialog', { name: 'Replay, XYZ' })).getByRole('link', { name: 'Price History' });
+    // A Ctrl click leaves the Review on screen.
+    await user.keyboard('{Control>}');
+    await user.click(link);
+    await user.keyboard('{/Control}');
+    await user.click(within(screen.getByRole('dialog', { name: 'Replay, XYZ' })).getByRole('button', { name: 'Close' }));
+    await user.click(within(card).getByRole('button', { name: 'Save' }));
+    await screen.findByRole('region', { name: 'DEF review' });
+    const back = await openTrade(user, 'XYZ');
+    // The Action shows as saved; the earlier draft is not on the card as an unsaved change.
+    expect(within(back).getByText(`${INTENT_PROMPT} Take it all.`)).toBeTruthy();
+    expect(within(back).queryByRole('textbox', { name: INTENT_LABEL })).toBeNull();
+    expect(within(back).queryByRole('button', { name: 'Save' })).toBeNull();
   });
 
   it('should not bring a started Action back when the Review was left some other way', async () => {

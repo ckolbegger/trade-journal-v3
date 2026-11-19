@@ -112,6 +112,30 @@ test.describe('B9AR.2 The overlay in the Review, and the summary', () => {
     await context.close();
   });
 
+  // T9AR.24-B3-B2 (C9AR.5): the browser's Forward to Price History and Back again, after one round trip, keep the started Action too.
+  test('should keep a started Action when the browser goes Forward to Price History and Back again after a round trip', async ({ profile }) => {
+    test.setTimeout(420_000);
+    const { context, page, trades } = await buildReview(profile);
+    const bren = trades[0]!;
+    await reachCard(page, bren);
+    await startAction(page, bren);
+    await openCardReplay(page, bren);
+    await replay(page).getByRole('link', { name: 'Price History' }).click();
+    await expect(detail.heading(page, 'BREN')).toBeVisible(READY);
+    await page.getByRole('link', { name: 'Back to the Review' }).click();
+    await expect(replay(page)).toBeVisible(READY);
+    await expectActionStarted(page, bren, 'after the round trip');
+    // Back to Price History by the browser, and Back to the Review again.
+    await page.goBack();
+    await expect(detail.heading(page, 'BREN')).toBeVisible(READY);
+    await page.goForward();
+    await expect(replay(page)).toBeVisible(READY);
+    await closeButton(replay(page)).click();
+    await expectActionStarted(page, bren, 'after Forward and Back');
+    expect(await actions(page), 'the browser trips record nothing').toBe(0);
+    await context.close();
+  });
+
   test('should read each card’s summary in the replay’s words, with no zero Overrun', async ({ profile }) => {
     test.setTimeout(420_000);
     const { context, page, trades } = await buildReview(profile);

@@ -1,8 +1,9 @@
-import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
+import { useContext, useEffect, useId, useRef, useState, type FormEvent } from 'react';
+import { UNSAFE_NavigationContext } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
 import { DAILY_TRADE_REVIEW_PROMPTS } from '../../domain/daily-trade-review-prompts.ts';
 import { useRuntime } from '../runtime.tsx';
-import { draftKey, draftSetAside, dropDraftSetAside, holdDraft } from './action-draft.ts';
+import { draftKey, draftSetAside, dropDraftSetAside, holdDraft, isWayBack, setDraftAsideOnTrip } from './action-draft.ts';
 import { fieldIssues } from './form-issues.tsx';
 import type { FieldIssue } from './plan-issues.ts';
 import type { ActionChoice, ActionForm as ActionFormState, SaveDailyReviewResult, TradeSaveBinding } from '../../app/types.ts';
@@ -89,8 +90,12 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
   const returned = returnedValues(form);
   // A form opened on the way back from Price History starts from the Action the trader had started there (C9AR.5).
   const key = draftKey(binding.reviewDate, binding.tradeId);
-  const [started] = useState(() => draftSetAside(key));
+  // The address now, read from the router's history: a form going away sees the page it is leaving for, which no render has yet.
+  const history = useContext(UNSAFE_NavigationContext).navigator as { location?: { search: string } };
+  const [started] = useState(() => (isWayBack(history.location?.search ?? '') ? draftSetAside(key) : undefined));
   useEffect(() => dropDraftSetAside(key), [key]);
+  // Leaving for Price History (by the link, or the browser's Forward) sets the draft aside; this cleanup runs before the one below clears it.
+  useEffect(() => () => setDraftAsideOnTrip(key, history.location?.search ?? ''), [key, history]);
   const [action, setAction] = useState((started?.action as ActionChoice | undefined) ?? returned.action);
   // A saved Action is shown as it is until the trader chooses to change it.
   const [changing, setChanging] = useState(false);

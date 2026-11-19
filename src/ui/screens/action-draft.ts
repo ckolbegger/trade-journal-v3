@@ -20,10 +20,21 @@ export function holdDraft(key: string, draft: ActionDraft | undefined): void {
   else live.delete(key);
 }
 
-// The trader presses Price History: every draft held now waits for the way back.
-export function setDraftsAside(): void {
+// A form that goes away while the address is the Review's own Price History page takes what it holds along with it, to wait for the way
+// back, whichever way the trader leaves (the link, or the browser's Forward). Any other address (a Save, a card switch) keeps nothing.
+export function setDraftAsideOnTrip(key: string, search: string): void {
+  const params = new URLSearchParams(search);
+  const draft = live.get(key);
+  if (draft && params.get('drawer') === 'price-history' && params.get('from') === 'review') setAside.set(key, draft);
+}
+
+// The address of a Review read again on the way back from Price History: only that one picks up what waited.
+export const isWayBack = (search: string): boolean => new URLSearchParams(search).get('replay') === 'open';
+
+// Test reset: no draft held or set aside.
+export function resetDrafts(): void {
+  live.clear();
   setAside.clear();
-  for (const [key, draft] of live) setAside.set(key, draft);
 }
 
 // A Review that is not the way back from Price History (its address does not reopen the overlay) takes up nothing that waited.

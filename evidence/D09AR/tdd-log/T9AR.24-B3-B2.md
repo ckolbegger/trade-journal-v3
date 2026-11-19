@@ -1,0 +1,3 @@
+# D09AR TDD log, T9AR.24-B3-B2
+
+| T9AR.24-B3-B2 | should keep a started Action when the browser goes Forward to Price History and Back again after a round trip | note | `npx playwright test e2e/d9ar/review.spec.ts -g "Forward to Price History"` | 1 passed | First-run pass, flagged for the user. The B1 fix (the form sets its draft aside when it unmounts on the Review's own Price History address, in place of the link click) already covers the browser's Forward and Back. Mutation: the address test `from === 'review'` changed to `'nope'` in `src/ui/screens/action-draft.ts` (after `npm run build:faults` and `build:releases`); same command; first failure line: `Error: after the round trip: Exit` then `expect(locator).toBeChecked() failed`. Restored, rebuilt, 1 passed. |
