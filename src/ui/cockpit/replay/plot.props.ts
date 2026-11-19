@@ -62,7 +62,9 @@ export function plotSessionOf(view: TradeReplayView, index: number): PlotSession
     ...(session.crossings?.target.first?.date === session.date ? [{ line: 'Target' as const, label: 'Target reached' }] : []),
   ];
   const keyEntries: PlotKeyEntry[] = [
-    ...(price === undefined ? [{ kind: 'NoMark' as const, label: 'No Mark' }] : [{ kind: 'Mark' as const, label: 'Mark' }]),
+    // W66: the key lists what is drawn; either chart draws a No Mark column (the strip's gap, or the P&L chart's missing result).
+    ...(price === undefined ? [] : [{ kind: 'Mark' as const, label: 'Mark' }]),
+    ...(price === undefined || tradePnl === undefined ? [{ kind: 'NoMark' as const, label: 'No Mark' }] : []),
     ...(tradePnl && tradePnl.compare(ZERO) !== 0 ? [{ kind: 'TradePnl' as const, label: tradePnl.compare(ZERO) > 0 ? 'Open profit' : 'Open loss' }] : []),
     ...(banked ? [{ kind: 'Banked' as const, label: session.realizedPnl.compare(ZERO) > 0 ? 'Banked' : 'Realized loss' }] : []),
     { kind: 'BreakEven', label: 'Break-even' },

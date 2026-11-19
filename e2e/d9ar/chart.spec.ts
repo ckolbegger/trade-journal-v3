@@ -122,7 +122,6 @@ test.describe('B9AR.5 The chart', () => {
   // Mark is missing (the price strip's gap), so the key leaves out the column the P&L chart shades (reported to the main session as a reading of W66).
   test('should name the shaded No Mark column in the key on R-CORV-D', async ({ profile }) => {
     test.setTimeout(240_000);
-    test.fail(true, 'the key does not list the No Mark column the P&L chart draws');
     const { context, page } = await build(profile, CORV, closeOf('2026-11-11'), 7);
     const scope = await open(page, 0);
     await expect(pnlChart(scope).locator('rect.no-mark')).toHaveCount(1);

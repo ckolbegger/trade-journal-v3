@@ -48,6 +48,13 @@ describe('replay.props: what the plot draws of a session (W39 to W41, W44)', () 
     });
   });
 
+  it('should list No Mark in the key for a session whose result is missing though the Underlying has a Mark (W66)', () => {
+    const noResult = withMarks(session({ date: '2026-11-16', pnl: null }), [markOf(BREN_STOCK, '100.20')]);
+    const labels = (spec: ReturnType<typeof session>) => replayProps(fullView([spec], PLAN), { Plot }).sessions[0]!.plot.keyEntries!.map((e) => e.label);
+    expect(labels(noResult)).toContain('No Mark');
+    expect(labels(withMarks(session({ date: '2026-11-16', pnl: 10 }), [markOf(BREN_STOCK, '100.20')]))).not.toContain('No Mark');
+  });
+
   it('should label the Worst case and the Max reward, what is past a line, a realized loss and each marker, and draw a session without a Mark as a break', () => {
     const past = withMarks(
       {
