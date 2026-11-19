@@ -103,13 +103,20 @@ function howItIsGoingOf(session: ViewSession): string {
 function crossingWordsOf(session: ViewSession): Pick<ReplayFrameSession, 'crossingWords'> {
   const { stop, target } = session.crossings ?? {};
   // After a session with no Mark the earlier date is not known, so the words say "first seen" and name only the date it was seen.
-  const stopWords = stop?.since
-    ? stop.since.afterGap ? `Past the Stop, first seen ${shortDate(stop.since.date)}.` : `Past the Stop since ${shortDate(stop.since.date)}.`
-    : stop?.first
-      ? stop.first.afterGap ? `Stop breached, first seen ${shortDate(stop.first.date)}.` : `Stop first breached ${shortDate(stop.first.date)}.`
-      : undefined;
-  const targetWords = target?.first ? (target.first.afterGap ? `Target reached, first seen ${shortDate(target.first.date)}.` : `Target first reached ${shortDate(target.first.date)}.`) : undefined;
-  const words = [stopWords, targetWords].filter((w) => w !== undefined).join(' ');
+  const sentences: string[] = [];
+  // A Stop still crossed says since when; one crossed earlier and no longer says when it first was.
+  if (stop?.since) {
+    const { date, afterGap } = stop.since;
+    sentences.push(afterGap ? `Past the Stop, first seen ${shortDate(date)}.` : `Past the Stop since ${shortDate(date)}.`);
+  } else if (stop?.first) {
+    const { date, afterGap } = stop.first;
+    sentences.push(afterGap ? `Stop breached, first seen ${shortDate(date)}.` : `Stop first breached ${shortDate(date)}.`);
+  }
+  if (target?.first) {
+    const { date, afterGap } = target.first;
+    sentences.push(afterGap ? `Target reached, first seen ${shortDate(date)}.` : `Target first reached ${shortDate(date)}.`);
+  }
+  const words = sentences.join(' ');
   return words ? { crossingWords: words } : {};
 }
 
