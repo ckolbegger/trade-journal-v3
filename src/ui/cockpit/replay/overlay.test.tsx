@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { readFileSync } from 'node:fs';
+import postcss from 'postcss';
 import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ReplayOverlay } from './overlay.tsx';
@@ -174,5 +176,36 @@ describe('Replay overlay (decision 3)', () => {
     expect(screen.getByText('Update available')).toBe(banner);
     expect(banner.closest('[inert]')).toBeNull();
     expect(screen.getByRole('status').textContent).toBe('Update available');
+  });
+});
+
+// Layout is not computed in jsdom, so this reads the overlay's stylesheet itself and asserts the rules (the browser suite measures the real placement).
+describe('Replay overlay layout (A275)', () => {
+  const css = postcss.parse(readFileSync('src/ui/cockpit/styles/replay-overlay.css', 'utf8'));
+  const decls = (atMedia: string | null, selector: string) => {
+    const out: Record<string, string> = {};
+    css.walkRules((rule) => {
+      const parent = rule.parent;
+      const media = parent && parent.type === 'atrule' && (parent as postcss.AtRule).name === 'media' ? (parent as postcss.AtRule).params : null;
+      if (media !== atMedia || !rule.selectors.includes(selector)) return;
+      rule.walkDecls((d) => {
+        out[d.prop] = d.value;
+      });
+    });
+    return out;
+  };
+  const frame = '.replay-overlay .replay-card';
+  const plot = '.replay-overlay .replay-plot-frame';
+  const readout = '.replay-overlay .replay-readout';
+
+  it('should place the charts on the left and the readout on the right inside the overlay at a wide width, and one column on a phone', () => {
+    const wide = decls(null, frame);
+    expect(wide.display).toBe('grid');
+    expect(wide['grid-template-columns']?.split(/\s+(?![^(]*\))/).length).toBe(2);
+    expect(decls(null, plot)['grid-column']).toBe('1');
+    expect(decls(null, readout)['grid-column']).toBe('2');
+    expect(decls('(max-width: 860px)', frame)['grid-template-columns']).toBe('minmax(0, 1fr)');
+    expect(decls('(max-width: 860px)', plot)['grid-column']).toBe('1');
+    expect(decls('(max-width: 860px)', readout)['grid-column']).toBe('1');
   });
 });
