@@ -16,7 +16,7 @@ export interface FigurePart {
   readonly text: string;
   readonly figure?: true;
 }
-const FIGURE = /[−+]?\$[\d,]+(?:\.\d+)?|[−+]?\d[\d,]*(?:\.\d+)?R\b|\d+(?:\.\d+)? to \d+|\d+% : \d+%/g;
+const FIGURE = /[−+]?\$[\d,]+(?:\.\d+)?|[−+]?\d[\d,]*(?:\.\d+)?R\b|\d+(?:\.\d+)? to \d+|under 1% : over 99%|over 99% : under 1%|\d+% : \d+%/g;
 export function figureParts(text: string): FigurePart[] {
   const parts: FigurePart[] = [];
   let at = 0;

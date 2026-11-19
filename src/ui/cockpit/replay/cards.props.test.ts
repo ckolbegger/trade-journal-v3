@@ -37,6 +37,13 @@ describe('Replay: session cards, figures as unbreakable parts (T9AR.24-B1)', () 
   });
 });
 
+describe('Replay: session cards, edge odds as unbreakable parts (T9AR.24-B1-B1)', () => {
+  it('should keep each edge odds pair, under 1% : over 99% and over 99% : under 1%, as one figure part', () => {
+    expect(figureParts('11.69 to 1 · under 1% : over 99%')).toEqual([{ text: '11.69 to 1', figure: true }, { text: ' · ' }, { text: 'under 1% : over 99%', figure: true }]);
+    expect(figureParts('0.29 to 1 · over 99% : under 1% (Plan 0.29 to 1 · 78% : 22%)').filter((p) => p.figure).map((p) => p.text)).toEqual(['0.29 to 1', 'over 99% : under 1%', '0.29 to 1', '78% : 22%']);
+  });
+});
+
 describe('Replay: session cards, empty parts', () => {
   it('should leave out the R and the P&L if hit of a stake row that has none, never carry an empty part onto the card', () => {
     // The worst case has no amount and no ending on this session: the readout's R and ending cells are empty there.

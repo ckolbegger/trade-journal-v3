@@ -209,44 +209,31 @@ test.describe('B9AR.4 The Plan block and the cards', () => {
   });
 });
 
-// T9AR.24-B1 (critic-1 defect 1, C9AR.2, A278): no figure on a session card breaks across lines and no sign parts from its number. Measured by the figure's own text, whatever the markup: a signed amount, an R multiple,
-// the odds "11.69 to 1" and a percentage pair each lie in one line box on every visible card, at every width, on the Trades whose figures are four-digit or signed.
-const FIGURES = String.raw`[−+]?\$[\d,]+(?:\.\d+)?|[−+]?\d[\d,]*(?:\.\d+)?R\b|\d+(?:\.\d+)? to \d+|\d+% : \d+%`;
+// T9AR.24-B1 (critic-1 defect 1, C9AR.2, A278) and T9AR.24-B1-B1: no figure on a session card breaks across lines and no sign parts from its number. The check shares no pattern with the code that marks the figures: it
+// measures every element the page marks as a figure (.card-figure), and asserts that the words left around them hold no figure mark of any kind ("$", "%", an R multiple, "to 1" odds, a lone sign), so a figure the
+// code failed to mark, such as the edge odds "under 1% : over 99%", is found as stray words.
+const STRAY = String.raw`\$|%|\dR\b|\d to \d|[−+]\s*$`;
 async function brokenFigures(scope: Locator): Promise<string[]> {
-  return sessionCards(scope).evaluateAll((cards, source) => {
+  return sessionCards(scope).evaluateAll((cards, stray) => {
     const broken: string[] = [];
     for (const card of cards) {
       if (!(card as HTMLElement).offsetParent) continue;
-      // A figure may be split by markup (a span round the sign), so the card's text is matched as one string and each match is measured over the text nodes it spans.
+      const heading = (card.querySelector('h4')?.textContent ?? '').trim();
+      const font = parseFloat(getComputedStyle(card).fontSize);
+      for (const figure of card.querySelectorAll('.card-figure')) {
+        const rects = [...figure.getClientRects()].filter((r) => r.width > 0 && r.height > 0);
+        if (rects.length && Math.max(...rects.map((r) => r.bottom)) - Math.min(...rects.map((r) => r.top)) > font * 1.6) broken.push(`${heading}: broken "${figure.textContent}"`);
+      }
+      // The words outside every figure: the card's text nodes not inside a .card-figure.
       const walker = document.createTreeWalker(card, NodeFilter.SHOW_TEXT);
-      const nodes: Text[] = [];
-      for (let n = walker.nextNode(); n; n = walker.nextNode()) nodes.push(n as Text);
-      const whole = nodes.map((n) => n.data).join('');
-      for (const m of whole.matchAll(new RegExp(source, 'g'))) {
-        const from = m.index;
-        const to = from + m[0].length;
-        const range = document.createRange();
-        let at = 0;
-        let started = false;
-        for (const n of nodes) {
-          const end = at + n.data.length;
-          if (!started && from < end) {
-            range.setStart(n, from - at);
-            started = true;
-          }
-          if (started && to <= end) {
-            range.setEnd(n, to - at);
-            break;
-          }
-          at = end;
-        }
-        const rects = [...range.getClientRects()].filter((r) => r.width > 0 && r.height > 0);
-        const font = parseFloat(getComputedStyle(card).fontSize);
-        if (rects.length && Math.max(...rects.map((r) => r.bottom)) - Math.min(...rects.map((r) => r.top)) > font * 1.6) broken.push(`${(card.querySelector('h4')?.textContent ?? '').trim()}: "${m[0]}"`);
+      for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+        if ((n.parentElement as HTMLElement).closest('.card-figure')) continue;
+        const words = (n as Text).data;
+        if (new RegExp(stray).test(words)) broken.push(`${heading}: unmarked figure in "${words.trim()}"`);
       }
     }
     return broken;
-  }, FIGURES);
+  }, STRAY);
 }
 
 test.describe('T9AR.24-B1 Figures on the session cards', () => {
