@@ -78,12 +78,20 @@ function keyOf(sessions: readonly PlotSession[], drawn: ReadonlySet<PlotKeyEntry
     .filter((e) => (!LINE_KINDS.has(e.kind) || drawn.has(e.kind)) && !seen.has(`${e.kind}|${e.label}`) && seen.add(`${e.kind}|${e.label}`));
 }
 
+// The swatch of what an area or a band is drawn in: the Target's colour for a gain, the Stop's for a loss.
+function swatchOf(e: PlotKeyEntry): string | undefined {
+  const loss = e.label === 'Open loss' || e.label === 'Realized loss';
+  if (e.kind === 'TradePnl') return loss ? 'area-loss' : 'area-profit';
+  if (e.kind === 'Banked') return loss ? 'banked-loss' : 'banked-gain';
+  return undefined;
+}
+
 function Key({ entries }: { entries: readonly PlotKeyEntry[] }) {
   if (entries.length === 0) return null;
   return (
     <ul className="replay-key">
       {entries.map((e) => (
-        <li key={`${e.kind}|${e.label}`} className={`key-${e.kind}`}>
+        <li key={`${e.kind}|${e.label}`} className={`key-${e.kind}`} data-swatch={swatchOf(e)}>
           {e.label}
         </li>
       ))}

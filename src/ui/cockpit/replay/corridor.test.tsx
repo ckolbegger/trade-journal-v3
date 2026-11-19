@@ -1,5 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { readFileSync } from 'node:fs';
+import postcss from 'postcss';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CorridorPlot } from './corridor.tsx';
 import { timeAxis } from './geometry.ts';
@@ -788,6 +790,50 @@ describe('Corridor: the key, the dates and the lines (suggestion 3)', () => {
     cleanup();
     const thu = render(<CorridorPlot {...props({ sessions: DAYS.slice(0, SALE + 1).map((_, i) => keyed(i)), sliderIndex: SALE })} />);
     expect(keyOf(thu.container)).toEqual(['Mark', 'Open profit', 'Break-even', 'At Stop', 'At Target', 'Banked']);
+  });
+
+  it('should give each key entry the swatch of what it names', () => {
+    const entry = (kind: 'TradePnl' | 'Banked', label: string): PlotSession => bren(0, { keyEntries: [{ kind, label }] });
+    const swatches = (labels: [('TradePnl' | 'Banked'), string][]) => {
+      const out: Record<string, string | null> = {};
+      for (const [kind, label] of labels) {
+        const { container } = render(<CorridorPlot {...props({ sessions: [entry(kind, label)], sliderIndex: 0 })} />);
+        out[label] = container.querySelector('.replay-key li')!.getAttribute('data-swatch');
+        cleanup();
+      }
+      return out;
+    };
+    expect(
+      swatches([
+        ['TradePnl', 'Open profit'],
+        ['TradePnl', 'Open loss'],
+        ['Banked', 'Banked'],
+        ['Banked', 'Realized loss'],
+      ]),
+    ).toEqual({ 'Open profit': 'area-profit', 'Open loss': 'area-loss', Banked: 'banked-gain', 'Realized loss': 'banked-loss' });
+
+    // Each swatch takes the colour variable and opacity of the thing it names in the drawing.
+    const rules = new Map<string, Record<string, string>>();
+    postcss.parse(readFileSync('src/ui/cockpit/styles/replay-plot.css', 'utf8')).walkRules((rule) => {
+      const decls: Record<string, string> = {};
+      rule.walkDecls((d) => {
+        decls[d.prop] = d.value;
+      });
+      for (const sel of rule.selectors) rules.set(sel.replace(/\s+/g, ' '), { ...rules.get(sel.replace(/\s+/g, ' ')), ...decls });
+    });
+    const swatch = (variant: string) => rules.get(`.replay-key li[data-swatch='${variant}']::before`);
+    const drawn = (sel: string) => rules.get(sel)!;
+    for (const [variant, drawing] of [
+      ['area-profit', '.replay-plot .area.profit'],
+      ['area-loss', '.replay-plot .area.loss'],
+      ['banked-gain', '.replay-plot .banked-band.gain'],
+      ['banked-loss', '.replay-plot .banked-band.loss'],
+    ] as const) {
+      const s = swatch(variant)!;
+      expect(s, variant).toBeDefined();
+      expect(s['background'] ?? s['background-color'], variant).toBe(drawn(drawing)['fill']);
+      expect(s['opacity'], variant).toBe(drawn(drawing)['fill-opacity']);
+    }
   });
 
   it('should draw at its box own width on a wide screen, the text the same size at 860 and at 1400', () => {

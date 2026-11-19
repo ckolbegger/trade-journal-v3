@@ -303,6 +303,32 @@
   border-top-color: var(--ink);
 }
 
+/* The areas and bands are filled, so their entries get a filled swatch in the same colour and opacity as the drawing. */
+.replay-key li[data-swatch]::before {
+  height: 8px;
+  border-top: 0;
+}
+
+.replay-key li[data-swatch='area-profit']::before {
+  background: var(--target);
+  opacity: 0.18;
+}
+
+.replay-key li[data-swatch='area-loss']::before {
+  background: var(--stop);
+  opacity: 0.18;
+}
+
+.replay-key li[data-swatch='banked-gain']::before {
+  background: var(--target);
+  opacity: 0.85;
+}
+
+.replay-key li[data-swatch='banked-loss']::before {
+  background: var(--stop);
+  opacity: 0.85;
+}
+
 .replay-plot .cursor-label {
   fill: var(--ink);
   font-weight: 600;
