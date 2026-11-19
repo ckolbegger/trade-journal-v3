@@ -212,10 +212,12 @@ export const pastLine = (scope: Locator): Locator => scope.locator('.replay-read
 export const noMarkDash = (cell: Locator): Locator => cell.getByRole('img', { name: 'No Mark' });
 // T9AR.17: the session cards under "Session by session", newest first; every card is in the page, and a page shows the ones that fit side by side.
 export const sessionCards = (scope: Locator): Locator => scope.locator('article.replay-session-card');
-// A card by its date ("Thu Nov 12"), turned to by "Earlier sessions" when it is not on the page shown.
+// A card by its date ("Thu Nov 12"), on whichever page holds it: back to the first page by "Newer sessions", then on by "Earlier sessions".
 export async function sessionCard(scope: Locator, date: string): Promise<Locator> {
   const card = sessionCards(scope).filter({ has: scope.page().getByRole('button', { name: date, exact: true }) });
+  const newer = scope.getByRole('button', { name: 'Newer sessions', exact: true });
   const earlier = scope.getByRole('button', { name: 'Earlier sessions', exact: true });
+  while (!(await card.isVisible()) && (await newer.isEnabled())) await newer.click();
   while (!(await card.isVisible()) && (await earlier.isEnabled())) await earlier.click();
   return card;
 }
