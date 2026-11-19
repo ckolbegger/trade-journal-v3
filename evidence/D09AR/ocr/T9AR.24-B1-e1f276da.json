@@ -1,0 +1,176 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 6 selected item(s).",
+  "summary": {
+    "files_reviewed": 6,
+    "comments": 1,
+    "total_tokens": 263219,
+    "input_tokens": 260811,
+    "output_tokens": 2408,
+    "cache_read_tokens": 43008,
+    "elapsed": "1m27s"
+  },
+  "tool_calls": {
+    "total": 29,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 9,
+      "file_read": 19
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/replay/cards.props.ts",
+      "content": "The percentage matcher misses supported edge-odds text. `oddsPair()` in `stake-words.props.ts` emits `under 1% : over 99%` and `over 99% : under 1%` when either probability is below 1%; neither matches this regex, so those pairs remain ordinary wrapping text instead of an unbreakable figure. Extend the matcher to include these qualified pairs and add unit coverage for both directions. Update the browser check as well, since its identical regex currently skips these cases.",
+      "existing_code": "const FIGURE = /[−+]?\\$[\\d,]+(?:\\.\\d+)?|[−+]?\\d[\\d,]*(?:\\.\\d+)?R\\b|\\d+(?:\\.\\d+)? to \\d+|\\d+% : \\d+%/g;",
+      "start_line": 19,
+      "end_line": 19,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Replay session cards behavior, props, styling, and tests",
+      "files": [
+        "e2e/d9ar/cards.spec.ts",
+        "src/ui/cockpit/replay/cards.props.test.ts",
+        "src/ui/cockpit/replay/cards.props.ts",
+        "src/ui/cockpit/replay/session-cards.test.tsx",
+        "src/ui/cockpit/replay/session-cards.tsx",
+        "src/ui/cockpit/styles/replay-cards.css"
+      ]
+    }
+  ],
+  "session_id": "f09b9520-f0ba-4a87-9a4a-8224f29bb3ab",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "f09b9520-f0ba-4a87-9a4a-8224f29bb3ab",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "e1f276da",
+      "resolved_base": "69cb436035ace088ef694802ea76cd4501c61ab6",
+      "resolved_head": "e1f276da8da927e3ff2f7adbfefc30724ecbd0c9",
+      "exact_range": "69cb436035ace088ef694802ea76cd4501c61ab6..e1f276da8da927e3ff2f7adbfefc30724ecbd0c9",
+      "source_artifact_sha256": "304f5cbe91d5536c67d81c3781703d2e640ee64865b4b8e052194ef23f6773ea"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "043c18224e1363aae52e830f5a8d7ca6804934be44af6999409659137216bf89",
+          "path": "src/ui/cockpit/replay/session-cards.tsx",
+          "fingerprint": "28f01a08d8d7312484d58812056fa154fb248c16abf7079ff90e059e268534c8"
+        },
+        {
+          "item_id": "0c354e084fbb8319ef6fe9cd7bf63353b7300b38a2554e2291b86aba45e7409d",
+          "path": "src/ui/cockpit/replay/cards.props.test.ts",
+          "fingerprint": "8f0b23d7186a8a74faefe242a4a0ef4b4e8e12a2eeaea7d2d7fb012e755f0c4b"
+        },
+        {
+          "item_id": "1de8fed67f607b0be507730f908872b3f8f30f8f306122ecd3148a9f45f3bdd1",
+          "path": "e2e/d9ar/cards.spec.ts",
+          "fingerprint": "bd0e5703e923b69119403c72c9a6853e5f49b4f62da5da4e63b7e765aeceac22"
+        },
+        {
+          "item_id": "22c31039993eb9c636876dd88bc26bd2b069aa0a030d44e5115ffacae90e39b2",
+          "path": "src/ui/cockpit/styles/replay-cards.css",
+          "fingerprint": "9f074e34b01fa0e6ac10fb77cbb2f0e5d3071e58d1a37ca19f86a474b30d08fa"
+        },
+        {
+          "item_id": "4bff47699e89dd1fa74ea24a7ec2ab9e5b3419e9791e79fd1108b630c332a950",
+          "path": "src/ui/cockpit/replay/cards.props.ts",
+          "fingerprint": "288e139ffac36e163afeba9463fc0f4b0cef48f3741ee4f6551e07853e5f56b2"
+        },
+        {
+          "item_id": "a909f3d11a15eca20628f8fdfa56e2c176a9d104ebeb689ff69e173b5c46b4a6",
+          "path": "src/ui/cockpit/replay/session-cards.test.tsx",
+          "fingerprint": "f8b2b7ee7c97cd444fd77a2f564671d9ee1c098c9766bc5a68bd6ecf6e0a8e1d"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "043c18224e1363aae52e830f5a8d7ca6804934be44af6999409659137216bf89",
+          "path": "src/ui/cockpit/replay/session-cards.tsx",
+          "fingerprint": "28f01a08d8d7312484d58812056fa154fb248c16abf7079ff90e059e268534c8"
+        },
+        {
+          "item_id": "0c354e084fbb8319ef6fe9cd7bf63353b7300b38a2554e2291b86aba45e7409d",
+          "path": "src/ui/cockpit/replay/cards.props.test.ts",
+          "fingerprint": "8f0b23d7186a8a74faefe242a4a0ef4b4e8e12a2eeaea7d2d7fb012e755f0c4b"
+        },
+        {
+          "item_id": "1de8fed67f607b0be507730f908872b3f8f30f8f306122ecd3148a9f45f3bdd1",
+          "path": "e2e/d9ar/cards.spec.ts",
+          "fingerprint": "bd0e5703e923b69119403c72c9a6853e5f49b4f62da5da4e63b7e765aeceac22"
+        },
+        {
+          "item_id": "22c31039993eb9c636876dd88bc26bd2b069aa0a030d44e5115ffacae90e39b2",
+          "path": "src/ui/cockpit/styles/replay-cards.css",
+          "fingerprint": "9f074e34b01fa0e6ac10fb77cbb2f0e5d3071e58d1a37ca19f86a474b30d08fa"
+        },
+        {
+          "item_id": "4bff47699e89dd1fa74ea24a7ec2ab9e5b3419e9791e79fd1108b630c332a950",
+          "path": "src/ui/cockpit/replay/cards.props.ts",
+          "fingerprint": "288e139ffac36e163afeba9463fc0f4b0cef48f3741ee4f6551e07853e5f56b2"
+        },
+        {
+          "item_id": "a909f3d11a15eca20628f8fdfa56e2c176a9d104ebeb689ff69e173b5c46b4a6",
+          "path": "src/ui/cockpit/replay/session-cards.test.tsx",
+          "fingerprint": "f8b2b7ee7c97cd444fd77a2f564671d9ee1c098c9766bc5a68bd6ecf6e0a8e1d"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "816ca37ad913f3425dafa1de7d77c9daa68803ff6c8a105c51fecfab6231ba3a",
+          "path": "evidence/D09AR/suite-runs/T9AR.24-B1-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "872fff0d8cb57d599fdbb822e2761d3bd5461066a8dfeeefe727f680618df791",
+          "path": "evidence/D09AR/suite-runs/T9AR.24-B1-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "99a19edce72d30a405ef2a445f7712d9122004f28df8e6010eb90fed8cd034de",
+          "path": "evidence/D09AR/tdd-log/T9AR.24-B1.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "b22c2949215c4ad6345347f45558fae2c6c0414b0722fa4f11e1164dbdd1f245",
+          "path": "evidence/D09AR/suite-runs/T9AR.24-B1-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "c7f28ee2b7c1027929afd56ab91de43849262bd1dc6344d6a9aa7b0696793930",
+          "path": "evidence/D09AR/suite-runs/T9AR.24-B1-unit.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 86942
+  }
+}

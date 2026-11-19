@@ -561,6 +561,34 @@ Lane BR (`d09ar/br`), base `70ce0f74`.
     - **T9AR.24-B7** (moderate): AXIO's "Stop breached" flag shows only on Mon Nov 9, not on later sessions (T9AR.19's case, W64).
     - **T9AR.24-B8** (low): the key wraps at 1280 on BREN. "No Mark" has a line swatch for a shaded column. DALE-U after expiry lists "Execution" where only "Expired" is drawn.
     - **T9AR.24-B9** (low): the Review overlay's "Price History" link is 23 px high on a phone; Trade Detail's is a 46 px button.
+  - **T9AR.24-B1** `e1f276da` (lane SC, from `69cb4360`). Two causes:
+    - a minus sign broke from its `$`;
+    - the app-wide `dl` grid put each card's rows in two columns of about 87 px. The cards themselves were 265 px at 1280.
+    - Fix:
+      - `figureParts(text)` in `cards.props.ts` splits the worded text into word and figure parts;
+      - `session-cards.tsx` draws each figure in a nowrap `card-figure` span;
+      - `.replay-session-card dl { display: block }`.
+    - Unit case "split a card text into words and figures …". The first red was a TypeError, which is not valid, so a stub gave the red `expected [ Array(1) ] to deeply equal …`; then green.
+    - E2e "keep every figure on a session card on one line … at 1280, 1440, 375 and 320", run for DALE-hold, AXIO and BREN: red, 3 failed; green, 3 passed.
+    - Line changed: `session-cards.test.tsx:136` reads the Past line's `textContent`, with the same expected text.
+    - Browser: 62 passed. Lane tier `T9AR.24-B1`: unit 2456, integration 286, checks 14 of 14. Sent to ocr.
+    - Agent's note: the readout and the Plan block still use breakable text. That is B2's part for the readout.
+    - **ocr** on `e1f276da` (`ocr/T9AR.24-B1-e1f276da.json`): 6 files, 1 comment.
+      - **T9AR.24-B1-B1** (Valid, `cards.props.ts:19`): the percentage pattern misses W60's edge odds, "under 1% : over 99%". The e2e check copies the same pattern, so it cannot catch the miss. Briefed in lane SC.
+      - Reviewer's notes:
+        - A screen reader still reads each row as one sentence.
+        - The `dl` override is scoped to the cards.
+        - Re-parsing finished text has to mirror every formatter (typed parts, or glue in the formatters, would hold longer).
+        - 1920 and CORV are not covered by the e2e case.
+    - **T9AR.24-B1-B1** `a916ebc1` (lane SC):
+      - Case "keep each edge odds pair … as one figure part": red, then green. Fix: the edge pairs are added to `figureParts`'s pattern; reading the formatters found no other form missed.
+      - The e2e check no longer copies the code's pattern. It measures every `.card-figure`, and flags text outside one that holds a stray figure mark (its own loose pattern). Bite: breaking the percent-pair pattern failed 3 of 3 ("unmarked figure in "about 8% : 92%"").
+      - No fixture shows edge odds in the browser, so the unit case is the proof for them.
+      - Browser: 7 passed. Lane tier `T9AR.24-B1-B1`: unit 2457, integration 286, checks 14 of 14.
+      - **ocr** on `a916ebc1` (`ocr/T9AR.24-B1-B1-a916ebc1.json`): **no findings**.
+        - Reviewer's notes: the loose pattern gave no false failures on card words and catches a parted sign; a plain pair cannot swallow the edge pair.
+        - Watch item: "63% of the way" in the status line would fail the check if it ever reached a card.
+      - **Merged** B1 and B1-B1 by fast-forward (lane SC's base `69cb4360` was main's head). The quick run is folded into the full run after the last fix, since each fix's lane tier and browser files already ran.
   - Minor observations, for the final report:
     - A final session's headline has no R.
     - "up $0.00 since Thu Nov 19" on the expired DALE-U.
