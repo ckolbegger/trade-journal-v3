@@ -1,0 +1,132 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 0,
+    "total_tokens": 61717,
+    "input_tokens": 61261,
+    "output_tokens": 456,
+    "cache_read_tokens": 6656,
+    "elapsed": "19s"
+  },
+  "tool_calls": {
+    "total": 7,
+    "by_tool": {
+      "code_search": 2,
+      "file_read": 5
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/screens/ReviewCard.test.tsx",
+        "src/ui/screens/ReviewCard.tsx",
+        "src/ui/screens/ReviewView.tsx"
+      ]
+    }
+  ],
+  "session_id": "1421f55a-bbe2-4d47-8c6f-914e7f8b4542",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "1421f55a-bbe2-4d47-8c6f-914e7f8b4542",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "4944f049",
+      "resolved_base": "5946c86c529218af5e564d245c1ff57a433aa4c5",
+      "resolved_head": "4944f049a197938ffc5e1599c11d31c361f6b8cd",
+      "exact_range": "5946c86c529218af5e564d245c1ff57a433aa4c5..4944f049a197938ffc5e1599c11d31c361f6b8cd",
+      "source_artifact_sha256": "b85ba056e54f018893f7589868a45991d647702efda0929c71ab6ece44de09b4"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "7448b558b8bd13a9f189e968e07787f0a4e6993c8106d597cda5e5147c717bc9"
+        },
+        {
+          "item_id": "a83706f3444e16c14ac613c874f7293d7adce6354226bde7d7b9b892fce05701",
+          "path": "src/ui/screens/ReviewCard.test.tsx",
+          "fingerprint": "31a08a2117bab0b539d717a7b28d71e9fec64f28ace09bc99f9db1f98669fcb3"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "92bd5ea6e47fdecc91d96ab2a2ad5aedbbe8a4d815c2baea48a032e792bad231"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "7448b558b8bd13a9f189e968e07787f0a4e6993c8106d597cda5e5147c717bc9"
+        },
+        {
+          "item_id": "a83706f3444e16c14ac613c874f7293d7adce6354226bde7d7b9b892fce05701",
+          "path": "src/ui/screens/ReviewCard.test.tsx",
+          "fingerprint": "31a08a2117bab0b539d717a7b28d71e9fec64f28ace09bc99f9db1f98669fcb3"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "92bd5ea6e47fdecc91d96ab2a2ad5aedbbe8a4d815c2baea48a032e792bad231"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "702fc2043a78f8562738771edb469f9efc526329216ab45495e03a3ce24ece82",
+          "path": "evidence/D09AR/suite-runs/T9AR.9-B4-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "a3d9880764696c0379c1a49127ed9ceb7d7ae930e9bb37094bf74c8ede273cee",
+          "path": "evidence/D09AR/tdd-log/T9AR.9-B4.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "c42fb9a27528aed3935924529b38939189e98fae763fe930ae1ab5276cefaa88",
+          "path": "evidence/D09AR/suite-runs/T9AR.9-B4-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "d29eb180ea531bef04793f828e3f64718d2927724c7b8a3f3bf6b8f8185aaab7",
+          "path": "evidence/D09AR/suite-runs/T9AR.9-B4-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "fc6f85be1ad2e0ec290ce95821a211f0ce4397bb69197f5797dc68e6583d8726",
+          "path": "evidence/D09AR/suite-runs/T9AR.9-B4-checks.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 19487
+  }
+}

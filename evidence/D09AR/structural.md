@@ -144,6 +144,15 @@ Lane RO (`d09ar/ro`), base `bcab74c4`, commit `064729f0`. 4 planned cases plus 1
 - Left for other tasks: the table's Stop and Target trigger cells' bare Underlying price (`triggerOf` in `replay.props.ts`; section 1.5's T9AR.18 row); the table's "Banked" heading (T9AR.17).
 - API: `ratioToOne(value)` in `src/ui/format.ts` (`formatDecimal(value, 2) + " to 1"`); the shared `ratio` unchanged (P152). T9AR.15 and T9AR.17 use `ratioToOne` and the Realized/Banked rule.
 - ocr on `064729f0` (`ocr/T9AR.14-064729f0.json`): 9 files (5 excluded), 0 comments. **No findings.** Merge after lane DM's (rerun in progress).
+- Rebased onto `cf79c748`; lane tier rerun `T9AR.14-rebased`: unit 2382, integration 280, checks 14 of 14; `run-complete.sh`: run complete. Rebased again over the evidence-only `7f095ba3` (no code between): `9a40b95a`. Merged by fast-forward. Lane OV then rebased onto it: `182b2f55` (T9AR.9), `f8e25291` (B1), `a5949701` (B2), `0587caeb` (B3), `67e462eb` (T9AR.8-B4), `a3946e98` (B4); lane tier rerun as `T9AR.9-rebased`: unit 2388, integration 280, checks 14 of 14; `run-complete.sh`: run complete. Merged by fast-forward to `a3946e98`.
+
+## T9AR.19 Chart: a first crossing
+
+Lane PL (`d09ar/pl`), base `c2882ae0`, commit `e11d5fb9`. Case 1 in two files under its planned name: `corridor.test.tsx` (red `slider 4: expected [] to have a length of 1 but got +0`) and `plot.props.test.ts` (red `expected [ undefined, undefined, undefined ] to deeply equal [ undefined, …(2) ]`); case 2 red `expected [ 'Target reached' ] to deeply equal []` (the key named a flag not drawn). All green; no first-run pass.
+
+- The flag's session is the view's `crossings.<role>.first.date` (ADR 0001); a pole and pennant on the P&L chart at that session's At Stop or At Target level; it shows from its session on (P145). The key names it only when drawn; on a phone its words go to the strip through `put()`. W64's and W66's words; none shortened or uncovered. A session whose Stop and Target are both first crossed would get only the Stop flag (judged impossible for one Position). The price chart draws no flag.
+- No existing test or `e2e` line changed; no browser run (no spec changed). The flag can add one line to the phone strip on a flagged session: B9.5's fit check and the strip lines of `e2e/d9/responsive-a11y.spec.ts` are for the next merge run.
+- Lane tier `T9AR.19`: integration 280, checks 14 of 14, **unit 1 failed of 2382**: `src/ui/screens/TradeList.test.tsx` (the Open list's Ready state, `marks('tj:open-list-ready')` expected 2, got 1), tech debt item 11's **known flaky case** (P138); it passed alone (36 of 36). Logged as a flake in this run; the lane's rerun at merge is the tier of record.
 
 ## T9AR.21 Remove the stake rows' change fields
 
@@ -340,6 +349,7 @@ Lane OV (`d09ar/ov`), base `e526637e`, commit `52838a3a`. 8 planned cases: 3 red
   - **T9AR.9-B4** Case: it should open the card the address names when a history move changes both the card and the overlay.
     - First attempt stopped, no commit: red (`Unable to find role=dialog name 'Replay, XYZ'` at the forward step); removing `overlayMoved` turned it green but failed B1 and B2, because a card opened by its header writes no address, so the overlay's older entry names another card, indistinguishable from a genuine move. Reverted.
     - **Implementation-level decision (main session):** on Replay, first replace the current entry with the card actually open (`trade=<card>&panel=Action`, `instrument` dropped), then push `replay=open`; the entry Close returns to then names the open card, and a history move that changes `trade` resolves through `linkedCard`. Header opening is unchanged. Second attempt briefed.
+    - Done: `4944f049`; red `Unable to find role="region" and name "ABC review"`, green; `ReviewCard.test.tsx` 69 of 69 (B1, B2, B3 unchanged). `overlayMoved` and `appliedReplay` removed. **Narrowed from the decision:** the replace happens only when the current entry names something other than this card (another card, an Instrument or another panel); an unconditional replace broke two existing cases that open the card by its header at a bare `/review` and expect `/review` after Close. Accepted (it keeps their expected values). `e2e/d9/review.spec.ts` 2 of 2. Lane tier `T9AR.9-B4`: unit 2363, integration 280, checks 14 of 14. ocr on `4944f049` (`ocr/T9AR.9-B4-4944f049.json`): 3 files (5 excluded), 0 comments, **no findings**. Merge after lane RO's (rerun in progress).
 
 ## T9AR.13 Readout: the stake grid, a Trade past a line, the change line
 
