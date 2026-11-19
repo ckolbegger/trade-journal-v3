@@ -1,0 +1,295 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 15 selected item(s).",
+  "summary": {
+    "files_reviewed": 15,
+    "comments": 2,
+    "total_tokens": 305787,
+    "input_tokens": 302911,
+    "output_tokens": 2876,
+    "cache_read_tokens": 50816,
+    "elapsed": "1m17s"
+  },
+  "tool_calls": {
+    "total": 33,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 10,
+      "file_read": 20,
+      "file_read_diff": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/replay/readout.props.ts",
+      "content": "`ReplayPlanColumn.terms` is still optional, but this guard now hides the entire Plan for a valid column without terms. Since `readoutOf` also removes the old Plan group unconditionally, its `atStop` and `atTarget` figures are no longer available off-chart (particularly on final sessions). Preserve a fallback showing the existing planned results when terms are absent, or make terms required throughout the view contract and its producers.",
+      "existing_code": "  if (!plan?.terms || !leg) return undefined;",
+      "start_line": 149,
+      "end_line": 149,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/cockpit/replay/session-words.props.ts",
+      "content": "These nested ternaries violate the requested no-nested-ternaries rule and make the active-run, historical-crossing, and after-gap cases difficult to follow. Use explicit branches or a small formatting helper for the crossing variants; the Target expression below should be flattened as well.",
+      "existing_code": "  const stopWords = stop?.since\n    ? stop.since.afterGap ? `Past the Stop, first seen ${shortDate(stop.since.date)}.` : `Past the Stop since ${shortDate(stop.since.date)}.`\n    : stop?.first\n      ? stop.first.afterGap ? `Stop breached, first seen ${shortDate(stop.first.date)}.` : `Stop first breached ${shortDate(stop.first.date)}.`\n      : undefined;",
+      "start_line": 106,
+      "end_line": 110,
+      "category": "maintainability",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Replay cards, props integration, and shared types",
+      "files": [
+        "src/ui/cockpit/replay/cards.props.test.ts",
+        "src/ui/cockpit/replay/cards.props.ts",
+        "src/ui/cockpit/replay/replay.props.test.ts",
+        "src/ui/cockpit/replay/replay.props.ts",
+        "src/ui/cockpit/replay/replay.types.ts"
+      ]
+    },
+    {
+      "label": "Replay readout, plan blocks, and session wording",
+      "files": [
+        "src/ui/cockpit/replay/plan-block.props.test.ts",
+        "src/ui/cockpit/replay/readout.props.test.ts",
+        "src/ui/cockpit/replay/readout.props.ts",
+        "src/ui/cockpit/replay/session-words.props.ts"
+      ]
+    },
+    {
+      "label": "Replay frame presentation, styles, and end-to-end coverage",
+      "files": [
+        "e2e/d9/gaps.spec.ts",
+        "e2e/d9/replay.spec.ts",
+        "e2e/d9/states.spec.ts",
+        "src/ui/cockpit/replay/frame.test.tsx",
+        "src/ui/cockpit/replay/frame.tsx",
+        "src/ui/cockpit/styles/replay-frame.css"
+      ]
+    }
+  ],
+  "session_id": "fef2d9f0-e8e7-4701-80a4-980c7edc7a16",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "fef2d9f0-e8e7-4701-80a4-980c7edc7a16",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "cd2e813f",
+      "resolved_base": "445aa9d99cd03c9d37020afd1b9918e276407109",
+      "resolved_head": "cd2e813fb4a1ff31b40d53dcb0bd02c04f694be0",
+      "exact_range": "445aa9d99cd03c9d37020afd1b9918e276407109..cd2e813fb4a1ff31b40d53dcb0bd02c04f694be0",
+      "source_artifact_sha256": "410d34ac8ca4fae2c9be75f0f87dd8fe49d79050717f336c81844acca6b1923b"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "001642d35c9cff107e49edc93a963642e592ca6c0fe7ac6604c26b7f2b539427",
+          "path": "e2e/d9/states.spec.ts",
+          "fingerprint": "e34135acbe9fda69ac0e8158e36b2b28d5fa896c6d200a97417950cc4d6a4708"
+        },
+        {
+          "item_id": "0060ea44ecacab2865c5d4dceb1c75627a3c3566a4f16698d1c3465ec458b6cf",
+          "path": "src/ui/cockpit/replay/replay.props.test.ts",
+          "fingerprint": "3d51f9ee4bea1b576139f5f958311dfff07d4d8df96fd0b40fa6b1216898915a"
+        },
+        {
+          "item_id": "02ef688178a59e01b4d1904319b272eae02b0d93eac4650ab9dc734486689b0d",
+          "path": "e2e/d9/gaps.spec.ts",
+          "fingerprint": "5c79cbaf524a2237b2ae5654106121a14d276e8f7d20d04ba67f73ae51a56f80"
+        },
+        {
+          "item_id": "07d6ddb61a627b6e3202a0c5e3f9547cfb10f6fad784c8ca12a580a08252b174",
+          "path": "src/ui/cockpit/replay/frame.test.tsx",
+          "fingerprint": "96710fb1c3b519f31b04468afe94900dffac61bdaa5e162b1137704324f6d7ff"
+        },
+        {
+          "item_id": "0c354e084fbb8319ef6fe9cd7bf63353b7300b38a2554e2291b86aba45e7409d",
+          "path": "src/ui/cockpit/replay/cards.props.test.ts",
+          "fingerprint": "f3fd6a57cc05ead393b4a728b282b1790f8b6c00425c5c28723cd3179199fb83"
+        },
+        {
+          "item_id": "1e9818d41ff29d7730ea06bdd1d154959f0a952a460b3d5f13d2bde01ff86492",
+          "path": "src/ui/cockpit/replay/frame.tsx",
+          "fingerprint": "584e5c33ac14165242aff515105519b16adddaa97134d35a7ae977276c47470d"
+        },
+        {
+          "item_id": "4bff47699e89dd1fa74ea24a7ec2ab9e5b3419e9791e79fd1108b630c332a950",
+          "path": "src/ui/cockpit/replay/cards.props.ts",
+          "fingerprint": "e54e833c80bb680d1667112cb29cd90ac4a699b75e8ed0a80a866e23866872a6"
+        },
+        {
+          "item_id": "4d061a48434c6088fc28388241ae61f9c345d2f278e56b2b7f845f542f3b4e61",
+          "path": "src/ui/cockpit/replay/replay.types.ts",
+          "fingerprint": "b83887902116d3fb390a050ffa91a2b7755af1183b9e4056dab3cc1662582bc2"
+        },
+        {
+          "item_id": "63c0d43b245d37c2fa601fdd5364ad0a5b7bdede1e576259fe71f3d4f2783723",
+          "path": "src/ui/cockpit/replay/readout.props.test.ts",
+          "fingerprint": "5be1ce048f478e96a1c9785a925012dba24a78f92647a069a438743f87db2e04"
+        },
+        {
+          "item_id": "8303bd665d3dd32df6f3f063e4691f5ac45a3c8b7df30b0004df8234dc2fed2a",
+          "path": "src/ui/cockpit/styles/replay-frame.css",
+          "fingerprint": "61b6148fadf431ce846272928353f500a77fb3f8047a07c13e6d7dd64444ff45"
+        },
+        {
+          "item_id": "97f9f0e3c683f597aee7b0503f4803e42d85c73c0fcec512065b995b7820da16",
+          "path": "src/ui/cockpit/replay/readout.props.ts",
+          "fingerprint": "d918a5ab1957b7ab0c3e9f4c9a4e3f541c1e29726c9287ccba3d5a5d2673d2f3"
+        },
+        {
+          "item_id": "a50e78b43d9da674ed99eaeeda80fea2f24b5f39189d6f4650878a33f631ea72",
+          "path": "e2e/d9/replay.spec.ts",
+          "fingerprint": "633eee88f5735693aae2cdf38a59a0e08acb3de4645f9dbdf8d40427adb43853"
+        },
+        {
+          "item_id": "cf69e28cef47012edde1f34cec6146d0b1301e8d74ca1d2c534620545e1e87b2",
+          "path": "src/ui/cockpit/replay/plan-block.props.test.ts",
+          "fingerprint": "bdd89fbd4f4d395ea1db58465052679f90992d26bd7aeea485c311f2c3ced593"
+        },
+        {
+          "item_id": "ea03ecbf36e42899eb18f897fb8983e3c8efff8a23ee606ee3aa718ee2111f66",
+          "path": "src/ui/cockpit/replay/replay.props.ts",
+          "fingerprint": "1441c593cdbab22d84754f5f631ed9c12b16d8b2f5b8cf5b15425237d2948087"
+        },
+        {
+          "item_id": "ee7e147832c5a7d3d16b81393835049e14ef595334d5858de78f216b61060a0e",
+          "path": "src/ui/cockpit/replay/session-words.props.ts",
+          "fingerprint": "f02f9a844db9cc5c479014aa746b6b09441b68553043def29dae0116ec40087a"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "001642d35c9cff107e49edc93a963642e592ca6c0fe7ac6604c26b7f2b539427",
+          "path": "e2e/d9/states.spec.ts",
+          "fingerprint": "e34135acbe9fda69ac0e8158e36b2b28d5fa896c6d200a97417950cc4d6a4708"
+        },
+        {
+          "item_id": "0060ea44ecacab2865c5d4dceb1c75627a3c3566a4f16698d1c3465ec458b6cf",
+          "path": "src/ui/cockpit/replay/replay.props.test.ts",
+          "fingerprint": "3d51f9ee4bea1b576139f5f958311dfff07d4d8df96fd0b40fa6b1216898915a"
+        },
+        {
+          "item_id": "02ef688178a59e01b4d1904319b272eae02b0d93eac4650ab9dc734486689b0d",
+          "path": "e2e/d9/gaps.spec.ts",
+          "fingerprint": "5c79cbaf524a2237b2ae5654106121a14d276e8f7d20d04ba67f73ae51a56f80"
+        },
+        {
+          "item_id": "07d6ddb61a627b6e3202a0c5e3f9547cfb10f6fad784c8ca12a580a08252b174",
+          "path": "src/ui/cockpit/replay/frame.test.tsx",
+          "fingerprint": "96710fb1c3b519f31b04468afe94900dffac61bdaa5e162b1137704324f6d7ff"
+        },
+        {
+          "item_id": "0c354e084fbb8319ef6fe9cd7bf63353b7300b38a2554e2291b86aba45e7409d",
+          "path": "src/ui/cockpit/replay/cards.props.test.ts",
+          "fingerprint": "f3fd6a57cc05ead393b4a728b282b1790f8b6c00425c5c28723cd3179199fb83"
+        },
+        {
+          "item_id": "1e9818d41ff29d7730ea06bdd1d154959f0a952a460b3d5f13d2bde01ff86492",
+          "path": "src/ui/cockpit/replay/frame.tsx",
+          "fingerprint": "584e5c33ac14165242aff515105519b16adddaa97134d35a7ae977276c47470d"
+        },
+        {
+          "item_id": "4bff47699e89dd1fa74ea24a7ec2ab9e5b3419e9791e79fd1108b630c332a950",
+          "path": "src/ui/cockpit/replay/cards.props.ts",
+          "fingerprint": "e54e833c80bb680d1667112cb29cd90ac4a699b75e8ed0a80a866e23866872a6"
+        },
+        {
+          "item_id": "4d061a48434c6088fc28388241ae61f9c345d2f278e56b2b7f845f542f3b4e61",
+          "path": "src/ui/cockpit/replay/replay.types.ts",
+          "fingerprint": "b83887902116d3fb390a050ffa91a2b7755af1183b9e4056dab3cc1662582bc2"
+        },
+        {
+          "item_id": "63c0d43b245d37c2fa601fdd5364ad0a5b7bdede1e576259fe71f3d4f2783723",
+          "path": "src/ui/cockpit/replay/readout.props.test.ts",
+          "fingerprint": "5be1ce048f478e96a1c9785a925012dba24a78f92647a069a438743f87db2e04"
+        },
+        {
+          "item_id": "8303bd665d3dd32df6f3f063e4691f5ac45a3c8b7df30b0004df8234dc2fed2a",
+          "path": "src/ui/cockpit/styles/replay-frame.css",
+          "fingerprint": "61b6148fadf431ce846272928353f500a77fb3f8047a07c13e6d7dd64444ff45"
+        },
+        {
+          "item_id": "97f9f0e3c683f597aee7b0503f4803e42d85c73c0fcec512065b995b7820da16",
+          "path": "src/ui/cockpit/replay/readout.props.ts",
+          "fingerprint": "d918a5ab1957b7ab0c3e9f4c9a4e3f541c1e29726c9287ccba3d5a5d2673d2f3"
+        },
+        {
+          "item_id": "a50e78b43d9da674ed99eaeeda80fea2f24b5f39189d6f4650878a33f631ea72",
+          "path": "e2e/d9/replay.spec.ts",
+          "fingerprint": "633eee88f5735693aae2cdf38a59a0e08acb3de4645f9dbdf8d40427adb43853"
+        },
+        {
+          "item_id": "cf69e28cef47012edde1f34cec6146d0b1301e8d74ca1d2c534620545e1e87b2",
+          "path": "src/ui/cockpit/replay/plan-block.props.test.ts",
+          "fingerprint": "bdd89fbd4f4d395ea1db58465052679f90992d26bd7aeea485c311f2c3ced593"
+        },
+        {
+          "item_id": "ea03ecbf36e42899eb18f897fb8983e3c8efff8a23ee606ee3aa718ee2111f66",
+          "path": "src/ui/cockpit/replay/replay.props.ts",
+          "fingerprint": "1441c593cdbab22d84754f5f631ed9c12b16d8b2f5b8cf5b15425237d2948087"
+        },
+        {
+          "item_id": "ee7e147832c5a7d3d16b81393835049e14ef595334d5858de78f216b61060a0e",
+          "path": "src/ui/cockpit/replay/session-words.props.ts",
+          "fingerprint": "f02f9a844db9cc5c479014aa746b6b09441b68553043def29dae0116ec40087a"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "2fa1967d428c2b86573483151e026602281bef68281ef6ecea85a7f8c80ba3ec",
+          "path": "evidence/D09AR/suite-runs/T9AR.18-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "3f032fda1d7e9293c75f7909befad39f20929a437f0d3a8ba4dfa4a43cf87fd1",
+          "path": "evidence/D09AR/suite-runs/T9AR.18-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "5d54bf380bfa731f4b7c24bc9500487b9a7cd6afbe4dbcf85424a94ff1e3906a",
+          "path": "evidence/D09AR/suite-runs/T9AR.18-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "682a0ff0cfbb72526b9eb6cbeb796cf49d8a20877683ee9acaf192ecead5174a",
+          "path": "evidence/D09AR/tdd-log/T9AR.18.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "dc071b7d50ee1ba32b611d1f740457925c4139022f8666c6ca18a876dda233e1",
+          "path": "evidence/D09AR/suite-runs/T9AR.18-integration.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 76998
+  }
+}

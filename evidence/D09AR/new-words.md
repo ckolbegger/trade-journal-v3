@@ -4,6 +4,7 @@ Screen words no approved row covers, used as the session would have recommended,
 
 | Task | Screen | Words | Nearest approved row |
 |---|---|---|---|
+| T9AR.18 | Replay top and card Events, a first crossing | "Stop breached, first seen Mon Nov 9." (a Stop first seen after a gap and no longer crossed); a session with both crossings joins the two sentences, Stop first | W64 |
 | T9AR.20 | Review card summary, the row for a Trade past a line | Its label: the group heading alone, "Current Risk" (past the Stop) or "Remaining Reward" (past the Target), titled "Stop Overrun" / "Target Overrun"; value "Past the Stop by $300.00 (0.50R)" | W56 (the value); decision 7's names |
 | T9AR.20 | Review card summary, Reward to risk with no current ratio | The reason followed by the Plan's ratio, e.g. "Mark missing: DEF, Mon Oct 12 (Plan 2.40 to 1)" | W59 ("(Plan 2.40 to 1)" after a ratio) |
 | T9AR.15 | Readout and stake sentence, the odds | The mirror of W60's edge when the Stop side is under one percent: "over 99% : under 1%"; spoken "over 99% chance of the Target first, under 1% of the Stop first" | W60 ("under 1% : over 99%" for the Target side) |

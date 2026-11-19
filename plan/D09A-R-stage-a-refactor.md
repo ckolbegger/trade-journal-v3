@@ -867,7 +867,7 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | Task | Wave | Lane | Status | Commits |
 |---|---|---|---|---|
 | T9AR.1 | 0 | TL | Done (from `90658cdf`) | `b271d709` |
-| T9AR.2 | 0 | TY | Done (from `90658cdf`) | `a8fcaf67` |
+| T9AR.2 | 0 | TY | Done (from `90658cdf`) | `a8fcaf67`; B1 `d88001ac`; F1 `c2882ae0` |
 | T9AR.3 | 1 | DM | Done (from `8245f6c6`) | `5187512d`; B1 `02b4f51c`; B2 `499751ed` |
 | T9AR.4 | 1 | DM | Done (from `79b900d3`) | `955e3568`; F1 `70ddec48` |
 | T9AR.5 | 1 | DM | Done (from `523a8a0e`) | `60e4bd32`; B1 `6855e7d3` |
@@ -888,7 +888,7 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T9AR.20 | 2 | RW | Done (from `3cb51638`) | `c20b4c28` |
 | T9AR.21 | 2 | DM | Done (from `bcab74c4`) | `cf79c748` |
 | T9AR.22 | 3 | IN | Done (from `7f095ba3`) | `eac257eb`; B1 `fc179b08`; B2 `b9eb87f9` |
-| T9AR.23 | 3 | BR | Not started | |
+| T9AR.23 | 3 | BR | In progress from `70ce0f74` (part 1: B9AR.1, B9AR.2, B9AR.3, B9AR.5, B9AR.7) | |
 | T9AR.24 | 3 | — | Not started | |
 
 ---

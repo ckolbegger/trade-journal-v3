@@ -268,6 +268,64 @@ Lane SC (`d09ar/sc`), from `3fa682b6`.
   - `gapStakeGroup` gives no stake rows when neither Stop nor Target is a Value (doubtful P148).
   - The charts are described by the shown page of cards only, since off-page cards are hidden. That is A277's design, but narrower than the old table.
 
+## T9AR.18 The Plan beside what happened
+
+Lane SC (`d09ar/sc`), from `445aa9d9`, commit `cd2e813f`; rebased onto `9bce9630`, now `bb3ac29a`.
+
+- **Cases:** 14 cases, all red then green.
+  - **First-run passes:** "name what each price is a price of" (mutation: always the option's right, failed) and "two Stops with their own rows" (mutation: first condition only, failed).
+  - The Strike row and the Entry and At wording had been written ahead of their cases; they were backed out for genuine reds.
+- **Lines changed:**
+  - `readout.props.test.ts`, `replay.props.test.ts` and `cards.props.test.ts`: the Plan group and the cards' Stop and Target rows removed (section 1.5's row).
+  - `e2e/d9/states.spec.ts`, `gaps.spec.ts` and `replay.spec.ts`: the `h3` lists drop "The Plan"; the cards drop their Stop and Target rows; the Events gain W63's and W64's words.
+- **Words** (W62, W63, W64, W40's "Strike $100"; none shortened). Uncovered:
+  - "Stop breached, first seen Mon Nov 9." (a Stop first seen after a gap, no longer crossed);
+  - no "since" form for a Target;
+  - both crossings on one session join Stop then Target.
+- **Types:**
+  - `PlanBlock`, `ReplayProps.plan?`, `ReplayFrameSession.crossingWords?`;
+  - `planBlockOf(view)` and `markerPlanWords(marker)` exported;
+  - `cardOf` lost its `view` parameter;
+  - `planGroup` deleted.
+- **Browser:** `gaps`, `replay`, `states` and `session-cards` pass. **B9.5's 320 fit fails** (616 of 588.9 px), caused by the crossing sentence. This was asked as a pending decision; the user chose **the sentence below the charts on a phone** (`DECISIONS-PENDING.md`), routed as **T9AR.18-D1**.
+- **Lane tier `T9AR.18`:** unit 2440, integration 286, checks 14 of 14.
+- **ocr** on `cd2e813f` (`ocr/T9AR.18-cd2e813f.json`): 15 files, 2 comments, made tasks:
+  - **T9AR.18-B1** (Doubtful, `readout.props.ts:149`): with no `terms`, the Plan block is empty while the old group is gone. The fix is to make `terms` required.
+  - **T9AR.18-F1** (Valid, readability, `session-words.props.ts:106`): nested ternaries.
+- **Reviewer's notes, not findings (for the final report):**
+  - `planBlockOf` words every condition by the first Planned Leg, which is latent for multi-leg Plans.
+  - With two conditions of a role, the chart's headline At Stop and At Target need not equal a row.
+  - A re-crossed Stop says only "Past the Stop since".
+  - A card's Events say "first breached" even after a gap.
+- **Next, briefed in lane SC in order:** T9AR.18-D1, T9AR.18-B1, T9AR.18-F1, T9AR.23-S4, T9AR.20-F1.
+
+## T9AR.23 Browser suite
+
+Lane BR (`d09ar/br`), base `70ce0f74`.
+
+- **Part 1** (B9AR.1, B9AR.2, B9AR.3, B9AR.5, B9AR.7) was started before T9AR.18 finished, as a scheduling choice: it is tests only and does not depend on the Plan block, and it surfaces layout defects early. B9AR.4, B9AR.6 and B9AR.3's Position-group words come in part 2, after T9AR.18 merges.
+- The brief names the suspected overlay grid defect (B9AR.1, "readout beside the charts at 1280").
+- A case the product fails is kept as written and reported, not weakened.
+- **Part 1** `9bce9630`, tests only.
+  - `e2e/d9ar/support.ts`, plus `overlay.spec.ts`, `review.spec.ts`, `readout.spec.ts`, `chart.spec.ts` and `responsive-a11y.spec.ts`.
+  - `e2e/d1/support.ts` gains a `touch` option.
+  - `package.json`'s `test:e2e:3` adds `e2e/d9ar`. Part 1 takes 1.6m, so browser-3 should take about 6.6m, under 8.
+  - `npx playwright test e2e/d9ar`: 35 passed, **9 of them `test.fail()`** where the product disagrees with the plan.
+  - Lane tier `T9AR.23-1`: unit 2426, integration 286, checks 14 of 14.
+  - Merged by fast-forward (main had not moved).
+- **The disagreements, routed as suite-failure tasks.** Each task removes its own `test.fail` line, which is its red.
+  - **T9AR.23-S1** (lane OV; `overlay.spec.ts:79` and `readout.spec.ts:179`): at 1280 the readout sits below the charts. `replay-overlay.css` places `.replay-plot-frame`, but the grid child is `.replay-chart-box`; figures also wrap onto two lines in the narrow column. This confirms the main session's earlier check.
+  - **T9AR.23-S2** (lane OV; `responsive-a11y.spec.ts:112`): at 320 by 667 the overlay's header, headline and charts span 708 px (measured before T9AR.18). Fit the overlay's own chrome, or report options.
+  - **T9AR.23-S3** (lane OV; `responsive-a11y.spec.ts:229`): the Close button is 21 px high on a phone, under the 44 px minimum.
+  - **T9AR.23-S4** (lane SC; `readout.spec.ts:77`): the "From here" sentence is muted grey, not the status line's colour.
+  - **T9AR.23-S5** (lane PL; `responsive-a11y.spec.ts:264`): a tap leaves the hover box.
+  - **T9AR.23-S6** (lane PL; `chart.spec.ts:125`): the key does not list "No Mark" when the P&L chart shades the put's missing Mark. This rests on W66, "lists what is drawn".
+- **Part 1 notes:**
+  - The Detail overlay's slider session does not survive a reload (the address holds only `replay=open`; the plan does not ask that it survive).
+  - The Review card reopens on its last session.
+  - `expectClearOfCursor` leaves out the cursor's own labels.
+  - The card's Trade P&L reads "+$988.00 · +3.05R".
+
 ## T9AR.20 Review card: the summary in the replay's words
 
 Lane RW (`d09ar/rw`), base `3cb51638`, commit `50ef6d4a`.
