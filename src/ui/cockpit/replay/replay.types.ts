@@ -98,9 +98,8 @@ export interface ReplayPlotProps {
   // The price chart's title and its phone form: "BREN price · one Mark per session", "BREN price".
   readonly priceTitle: string;
   readonly priceShortTitle?: string;
-  // The P&L chart's title and its phone form.
+  // The P&L chart's title.
   readonly pnlTitle: string;
-  readonly pnlShortTitle?: string;
   // The accessible name of the charts, which are described by the table (its element id).
   readonly accessibleName: string;
   readonly describedBy: string;

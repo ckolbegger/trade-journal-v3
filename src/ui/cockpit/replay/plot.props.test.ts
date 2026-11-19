@@ -181,7 +181,6 @@ describe('replay.props: the plot titles, anchors and time axis (W39, W40, A256)'
   it('should title the P&L chart Trade P&L at every width', () => {
     const { plotBase } = replayProps(fullView([brenMon1102], PLAN), { Plot });
     expect(plotBase.pnlTitle).toBe('Trade P&L');
-    expect(plotBase.pnlShortTitle).toBeUndefined();
   });
 
   it('should end a stock Trade axis on its last session, and anchor it at the price it was bought at', () => {
