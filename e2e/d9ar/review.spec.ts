@@ -125,10 +125,15 @@ test.describe('B9AR.2 The overlay in the Review, and the summary', () => {
     await page.getByRole('link', { name: 'Back to the Review' }).click();
     await expect(replay(page)).toBeVisible(READY);
     await expectActionStarted(page, bren, 'after the round trip');
-    // Back to Price History by the browser, and Back to the Review again.
+    // The link back pushed a new entry, so Forward is only possible after Back: Back to Price History, Back to the first Review entry,
+    // then the browser's Forward to Price History and its Back to the Review.
     await page.goBack();
     await expect(detail.heading(page, 'BREN')).toBeVisible(READY);
+    await page.goBack();
+    await expect(replay(page)).toBeVisible(READY);
     await page.goForward();
+    await expect(detail.heading(page, 'BREN')).toBeVisible(READY);
+    await page.goBack();
     await expect(replay(page)).toBeVisible(READY);
     await closeButton(replay(page)).click();
     await expectActionStarted(page, bren, 'after Forward and Back');
