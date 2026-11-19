@@ -135,6 +135,26 @@ Lane DM (`d09ar/dm`), base `ada81477`, commit `6ff96d06`. Verification, each exi
 - **T9AR.6-B3** Case: it should build the Plan column from prices whose differences are not exact in floating point (entry 100.1, Stop 90, Target 120).
 - **T9AR.6-S1** fix: `8435e52d`. Reproduced: `expected [ 'ConditionStatus', 'Markers', …(2) ] to deeply equal [ 'ConditionStatus', 'Markers' ]`. Changed expected values, a consequence of T9AR.6's planned variants: line 15 (the manifest's `replayTrade`) and line 20 (the Trade Detail route's required `replayTrade` variants), each before `['ConditionStatus', 'Markers']`, after `['ConditionStatus', 'Markers', 'PlanComparison', 'Odds']`. Line 20's change matches the plan row ("the Trade Detail and Review routes require them"). After: 1 of 1. Lane tier `T9AR.6-S1`: unit 2340, integration 280. ocr on `8435e52d` (`ocr/T9AR.6-S1-8435e52d.json`): 1 file, 0 comments. **No findings.** (The reviewer's note that I9.7 checks `getTrade` only with `toContain('Replay')` is not an ocr finding; the manifest test `workspace.test.ts` lists `getTrade`'s `Odds`.)
 
+## T9AR.14 One name per figure in the replay
+
+Lane RO (`d09ar/ro`), base `bcab74c4`, commit `064729f0`. 4 planned cases plus 1 added (`format.test.ts`'s `ratioToOne`), all red then green; `ratioToOne` had been written ahead and was backed out for genuine reds. No first-run pass. Titles changed for `-t` ("$" and "+" dropped; the quoted words kept in the assertions). Lane tier `T9AR.14`: unit 2378, integration 280, checks 14 of 14. Browser: `replay.spec.ts`, `gaps.spec.ts`, `states.spec.ts`: 14 passed.
+
+- Lines changed: `readout.props.test.ts` (3: the Marks rows and change line with "$"); `replay.props.test.ts` (section 1.5's Underlying-Mark row: 2 table cells, 2 hover lines); `e2e/d9/gaps.spec.ts` (line 61 reads `Realized`, section 1.5's "Banked for a loss" row; line 38 and table cells 46, 47, 48 with "$"); `e2e/d9/replay.spec.ts` (table cells 75, 76); `e2e/d9/states.spec.ts` (table cell 64). The table cells in `states.spec.ts` and the extra `gaps.spec.ts` and `replay.spec.ts` cells are not in section 1.5's lists; they follow from W58 (the table reads the Marks rows) and T9AR.17 replaces the table. Accepted as consequences of a planned case. Not changed: `corridor.test.tsx`, `frame.test.tsx`, `price-strip.test.tsx` (hand-written doubles); no "2 to 1" lines were left in `replay.spec.ts`.
+- Words are the plan's W57, W58, W59, not P137 shortenings: "Realized −$440.00" for a realized loss ("Banked" kept for a gain); "… of the result was realized before the end."; "BREN Mark $104.00", hover "BREN Mark: $101.80", "up $1.60 since …"; "2.00 to 1", "0.10 to 1". None uncovered.
+- Left for other tasks: the table's Stop and Target trigger cells' bare Underlying price (`triggerOf` in `replay.props.ts`; section 1.5's T9AR.18 row); the table's "Banked" heading (T9AR.17).
+- API: `ratioToOne(value)` in `src/ui/format.ts` (`formatDecimal(value, 2) + " to 1"`); the shared `ratio` unchanged (P152). T9AR.15 and T9AR.17 use `ratioToOne` and the Realized/Banked rule.
+- ocr on `064729f0` (`ocr/T9AR.14-064729f0.json`): 9 files (5 excluded), 0 comments. **No findings.** Merge after lane DM's (rerun in progress).
+
+## T9AR.21 Remove the stake rows' change fields
+
+Lane DM (`d09ar/dm`), base `bcab74c4`, commit `c414265f`. Verification: `grep -rnE "riskChange|rewardChange" tools src e2e tests .claude`: nothing; typecheck, tsc6, `lint:deps` exit 0, lint 0 errors (2 existing warnings); `npx vitest run src/domain/trade-analysis src/coordinators src/ui/cockpit/replay`: 876 passed (the query-count proofs included, no request list changed); `npm run test:integration -- d9/gaps`: 1 passed; `npm run verify:fixtures`: exit 0. Lane tier `T9AR.21`: unit 2371, integration 280, checks 14 of 14.
+
+- Removed: the two fields, their last-figure trackers and `changeOf` with `LastFigure` (`replay-series.ts`); the two view-type fields (`replay-view.ts`).
+- **Deleted cases** (`replay-series.test.ts`): "should give the change in Risk to stop since the previous session with the figure (R-BREN-U Mon 11-16: down 150.00 since 11-13)"; "should measure a change across a gap from the last session that had the figure (R-CORV-D Wed 11-11: since 11-09)".
+- **Changed cases:** `replay-trade.test.ts` (the Bren replay's session figures case: two lines reading `sessions[10].riskChange` dropped, no new expected value); `tests/integration/d9/gaps.test.ts` (the gap case: the lines reading either field removed; Wednesday from Monday still asserted through `change`, 11-09, 261; two comments reworded); outside the listed hits, line-only: `view-doubles.props.ts` (two lines in `brenWed1111`), `readout.props.test.ts:245` (the two fields dropped from a spread object).
+- ocr on `c414265f` (`ocr/T9AR.21-c414265f.json`): 7 files, 0 comments. **No findings.** Merge waits for lane TY's (its lane tier is running), then lane DM rebases once.
+- Rebased onto `c2882ae0`: `cf79c748`. Lane tier rerun `T9AR.21-rebased`: unit 2377, integration 280, checks 14 of 14; `run-complete.sh`: run complete. Merged by fast-forward to `cf79c748`. Lane RO then rebased onto it (T9AR.14 cleanly; rerun as `T9AR.14-rebased`).
+
 ## T9AR.7 The Replay overlay
 
 Lane OV (`d09ar/ov`), base `8245f6c6`, commit `14ff2e7d`. 9 cases; 7 red then green, 2 first-run passes with mutation checks (the finished-Trade and symbol-alone header: heading rendered `header.slice(0, 4)` failed on the heading text; the shell banner: cleanup set `aria-hidden` in place of removing `inert` failed with the banner still inert). Lane tier `T9AR.7`: unit 2298 (204 files), integration 280, checks 14 of 14.
@@ -311,6 +331,15 @@ Lane OV (`d09ar/ov`), base `e526637e`, commit `52838a3a`. 8 planned cases: 3 red
 - **T9AR.8-B4** Case: the same on Trade Detail.
   - Done, one commit each: B1 `04ebce05` (red: the Action panel's `aria-expanded` 'false'; a first fix deleting `instrument` was not enough and was reverted, one extra `green exit=1` row in the log; the fix is in `ReviewView.tsx`'s search-change effect: a change of the `replay` param is recorded as applied and opens no card); B2 `595ee9d3` (test only; first-run pass, B1's fix covers it; mutation, the check made inert, failed with `Unable to find an accessible element with the role "region" and name "ABC review"`); B3 `15e2891f` (red `expected '/review?trade=t1&panel=Action' to be '/review'`); T9AR.8-B4 `5946c86c` (red `expected 'REPLACE' to be 'POP'`). typecheck, tsc6, lint, `lint:deps` exit 0.
   - Lane tier `T9AR.9-B`: integration 280, checks 14 of 14, **unit 2 failed of 2362**: `src/app/bench-generator.test.ts` and `tools/wording-rules.test.ts`, each at about 5.4 s against the 5 s timeout while two lane tiers ran at once. Reproduced alone by the main session (`npx vitest run --project unit src/app/bench-generator.test.ts tools/wording-rules.test.ts`): 62 of 62 passed. Not reproduced: load timeouts, not a defect; the lane's rerun after its rebase is the tier of record.
+  - ocr, one run per commit: `595ee9d3`, `15e2891f`, `5946c86c` (`ocr/T9AR.9-B2-595ee9d3.json`, `ocr/T9AR.9-B3-15e2891f.json`, `ocr/T9AR.8-B4-5946c86c.json`): 0 comments each, **no findings**. `04ebce05` (`ocr/T9AR.9-B1-04ebce05.json`): 1 comment.
+
+| Severity | Location | Finding | Verdict |
+|---|---|---|---|
+| medium | `ReviewView.tsx:488` | `overlayMoved` swallows any address change that also changes `replay`: a history jump that changes both `trade` and `replay` (from `trade=t1&replay=open` back past the overlay's entry to a `trade=t2` entry) leaves the old card showing | Valid (narrow; a plain Back from the overlay is fine): T9AR.9-B4 |
+
+  - **T9AR.9-B4** Case: it should open the card the address names when a history move changes both the card and the overlay.
+    - First attempt stopped, no commit: red (`Unable to find role=dialog name 'Replay, XYZ'` at the forward step); removing `overlayMoved` turned it green but failed B1 and B2, because a card opened by its header writes no address, so the overlay's older entry names another card, indistinguishable from a genuine move. Reverted.
+    - **Implementation-level decision (main session):** on Replay, first replace the current entry with the card actually open (`trade=<card>&panel=Action`, `instrument` dropped), then push `replay=open`; the entry Close returns to then names the open card, and a history move that changes `trade` resolves through `linkedCard`. Header opening is unchanged. Second attempt briefed.
 
 ## T9AR.13 Readout: the stake grid, a Trade past a line, the change line
 
@@ -340,7 +369,9 @@ Lane SC (`d09ar/sc`), base `b75e4597`, commit `0ba39920` (four of five planned c
 - Types: `WordLength` gains `'line'`; `topLineOf` added beside `headlineOf`.
 - **Layout note:** the frame now wraps the plot and the hover box in `div.replay-chart-box` (the overlay grid's child). The task reports that `.replay-overlay .replay-plot-frame` (column 1, T9AR.7-B2) never matched the plot, which was `.replay-corridor`. To check at T9AR.16's merge, and route to lane OV if the overlay's two columns are not in effect.
 - ocr on `0ba39920` (`ocr/T9AR.16-0ba39920.json`): 9 files (5 excluded), 0 comments. **No findings.**
-- **T9AR.2-B1** (lane TY) done: `7f6618fc`, `replay.types.ts` only: `ReplayFrameSession.addMarkTo?` after `headline`, naming A281. typecheck, tsc6, lint exit 0; `src/ui/cockpit/replay` 156 passed.
+- **T9AR.2-B1** (lane TY) done: `7f6618fc`, `replay.types.ts` only: `ReplayFrameSession.addMarkTo?` after `headline`, naming A281. typecheck, tsc6, lint exit 0; `src/ui/cockpit/replay` 156 passed. Lane TY rebased onto `df012a47`: B1 is now `d88001ac`. ocr on `7f6618fc` (`ocr/T9AR.2-B1-7f6618fc.json`): 0 comments, **no findings**.
+- **T9AR.2-F1** (lane TY, held until lane PL was idle) done: `c2882ae0`: `pnlShortTitle?` removed from `replay.types.ts` (comment now "The P&L chart's title."), and its one assertion from `plot.props.test.ts`'s "should title the P&L chart Trade P&L at every width" (the case stays). `grep -rn pnlShortTitle src e2e tests tools`: nothing; typecheck, tsc6, lint exit 0; `src/ui/cockpit/replay` 162 passed. ocr on `c2882ae0` (`ocr/T9AR.2-F1-c2882ae0.json`): 0 comments, **no findings**. Lane tier run by the main session as `T9AR.2-BF`: unit 2379, integration 280, checks 14 of 14; `run-complete.sh`: run complete. Merged by fast-forward: `d88001ac` (B1), `c2882ae0` (F1).
+- Lane SC rebased onto `c2882ae0`: T9AR.16's first part is now `1ce8e839`; its last case briefed. Lane DM rebased onto `c2882ae0`: T9AR.21 is now `cf79c748`, lane tier rerun as `T9AR.21-rebased`.
 
 ## Suite runs
 

@@ -884,10 +884,10 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T9AR.16 | 2 | SC | In progress from `b75e4597` | |
 | T9AR.17 | 2 | SC | Not started | |
 | T9AR.18 | 2 | SC | Not started | |
-| T9AR.19 | 2 | PL | Not started | |
+| T9AR.19 | 2 | PL | In progress from `c2882ae0` | |
 | T9AR.20 | 2 | RW | Not started | |
-| T9AR.21 | 2 | DM | In progress from `a086218b` | |
-| T9AR.22 | 3 | IN | Not started | |
+| T9AR.21 | 2 | DM | Done (from `bcab74c4`) | `cf79c748` |
+| T9AR.22 | 3 | IN | In progress from `cf79c748` | |
 | T9AR.23 | 3 | BR | Not started | |
 | T9AR.24 | 3 | — | Not started | |
 

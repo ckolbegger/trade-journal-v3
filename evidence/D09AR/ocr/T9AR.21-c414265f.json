@@ -1,0 +1,150 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 7 selected item(s).",
+  "summary": {
+    "files_reviewed": 7,
+    "comments": 0,
+    "total_tokens": 25032,
+    "input_tokens": 24739,
+    "output_tokens": 293,
+    "cache_read_tokens": 4992,
+    "elapsed": "14s"
+  },
+  "tool_calls": {
+    "total": 4,
+    "by_tool": {
+      "code_search": 2,
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Replay series and view updates with UI and integration coverage",
+      "files": [
+        "src/coordinators/trade-views/replay-trade.test.ts",
+        "src/coordinators/trade-views/replay-view.ts",
+        "src/domain/trade-analysis/replay-series.test.ts",
+        "src/domain/trade-analysis/replay-series.ts",
+        "src/ui/cockpit/replay/readout.props.test.ts",
+        "src/ui/cockpit/replay/view-doubles.props.ts",
+        "tests/integration/d9/gaps.test.ts"
+      ]
+    }
+  ],
+  "session_id": "795f1538-2de0-4121-9401-16d89eac035f",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "795f1538-2de0-4121-9401-16d89eac035f",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "c414265f",
+      "resolved_base": "bcab74c4b7d3125bd8bd83e1cbbf2c4afa6f6cbf",
+      "resolved_head": "c414265f18542f369db4720860a20d5d25c55c79",
+      "exact_range": "bcab74c4b7d3125bd8bd83e1cbbf2c4afa6f6cbf..c414265f18542f369db4720860a20d5d25c55c79",
+      "source_artifact_sha256": "0cfff8046b49d2162721ee9874a8ee0a5c4ed928a44a25d87b35898f2149f882"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "1262bc9d298ee0b805f201fd99dc5185012d5c9789c15052cef0c24c8f10f9e8",
+          "path": "tests/integration/d9/gaps.test.ts",
+          "fingerprint": "d6275f4b90de8be230c8f3001eb9b1f15af04947fbdedd9fadd001a8492a78ce"
+        },
+        {
+          "item_id": "1d45db421e94e4694f6f3250c8a059de25ae8ed03b5c669cf5f50e18144d7d03",
+          "path": "src/coordinators/trade-views/replay-trade.test.ts",
+          "fingerprint": "943c2985c6342e9e73fa88f8c41013433212682f8dfdf77bb05eb32b89bf3822"
+        },
+        {
+          "item_id": "4562bdb1160e110b50237bb7a6ca22e50c401b935fae7067ae817999bccf63e2",
+          "path": "src/domain/trade-analysis/replay-series.test.ts",
+          "fingerprint": "d14f9a0391babc2d6566a8194aa67501fc3306575b5cf099502f2b9a446c1692"
+        },
+        {
+          "item_id": "63c0d43b245d37c2fa601fdd5364ad0a5b7bdede1e576259fe71f3d4f2783723",
+          "path": "src/ui/cockpit/replay/readout.props.test.ts",
+          "fingerprint": "e93bd159f21ebfe766a0c322b1f08861f8fe3c79ccce9bab89288f9a82aaf7e9"
+        },
+        {
+          "item_id": "8b513a4dc3f3a0bb37e210f170b1865c12ce5abe33a89f05ed01739058197e3f",
+          "path": "src/ui/cockpit/replay/view-doubles.props.ts",
+          "fingerprint": "521953c9fffd63b514d1fb9e2d980280a57bfaf0fa807bffd6081431420f96bd"
+        },
+        {
+          "item_id": "93d04e7e222932950b3c4a67d3e43488fa370fb9d3fb3f1786e0dabaaf197e6a",
+          "path": "src/coordinators/trade-views/replay-view.ts",
+          "fingerprint": "ca1df61d938c4580c84ccac01ba915af3e25163995b7ec3c860379bb6e1dd91e"
+        },
+        {
+          "item_id": "dfdfcb18f28569b5071aabb67f85b536832edb984e2c85f887674cad403f13cd",
+          "path": "src/domain/trade-analysis/replay-series.ts",
+          "fingerprint": "1c7bc1ff7181ae20dc5e16ed70fa5354b036232a06b0176e84c8330d9b679fc5"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "1262bc9d298ee0b805f201fd99dc5185012d5c9789c15052cef0c24c8f10f9e8",
+          "path": "tests/integration/d9/gaps.test.ts",
+          "fingerprint": "d6275f4b90de8be230c8f3001eb9b1f15af04947fbdedd9fadd001a8492a78ce"
+        },
+        {
+          "item_id": "1d45db421e94e4694f6f3250c8a059de25ae8ed03b5c669cf5f50e18144d7d03",
+          "path": "src/coordinators/trade-views/replay-trade.test.ts",
+          "fingerprint": "943c2985c6342e9e73fa88f8c41013433212682f8dfdf77bb05eb32b89bf3822"
+        },
+        {
+          "item_id": "4562bdb1160e110b50237bb7a6ca22e50c401b935fae7067ae817999bccf63e2",
+          "path": "src/domain/trade-analysis/replay-series.test.ts",
+          "fingerprint": "d14f9a0391babc2d6566a8194aa67501fc3306575b5cf099502f2b9a446c1692"
+        },
+        {
+          "item_id": "63c0d43b245d37c2fa601fdd5364ad0a5b7bdede1e576259fe71f3d4f2783723",
+          "path": "src/ui/cockpit/replay/readout.props.test.ts",
+          "fingerprint": "e93bd159f21ebfe766a0c322b1f08861f8fe3c79ccce9bab89288f9a82aaf7e9"
+        },
+        {
+          "item_id": "8b513a4dc3f3a0bb37e210f170b1865c12ce5abe33a89f05ed01739058197e3f",
+          "path": "src/ui/cockpit/replay/view-doubles.props.ts",
+          "fingerprint": "521953c9fffd63b514d1fb9e2d980280a57bfaf0fa807bffd6081431420f96bd"
+        },
+        {
+          "item_id": "93d04e7e222932950b3c4a67d3e43488fa370fb9d3fb3f1786e0dabaaf197e6a",
+          "path": "src/coordinators/trade-views/replay-view.ts",
+          "fingerprint": "ca1df61d938c4580c84ccac01ba915af3e25163995b7ec3c860379bb6e1dd91e"
+        },
+        {
+          "item_id": "dfdfcb18f28569b5071aabb67f85b536832edb984e2c85f887674cad403f13cd",
+          "path": "src/domain/trade-analysis/replay-series.ts",
+          "fingerprint": "1c7bc1ff7181ae20dc5e16ed70fa5354b036232a06b0176e84c8330d9b679fc5"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": []
+    },
+    "elapsed_ms": 14185
+  }
+}

@@ -1,0 +1,204 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 9 selected item(s).",
+  "summary": {
+    "files_reviewed": 9,
+    "comments": 0,
+    "total_tokens": 62224,
+    "input_tokens": 61801,
+    "output_tokens": 423,
+    "cache_read_tokens": 9984,
+    "elapsed": "18s"
+  },
+  "tool_calls": {
+    "total": 6,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 4,
+      "file_read_diff": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Replay readout, stake wording, and end-to-end expectations",
+      "files": [
+        "e2e/d9/gaps.spec.ts",
+        "e2e/d9/replay.spec.ts",
+        "e2e/d9/states.spec.ts",
+        "src/ui/cockpit/replay/readout.props.test.ts",
+        "src/ui/cockpit/replay/readout.props.ts",
+        "src/ui/cockpit/replay/replay.props.test.ts",
+        "src/ui/cockpit/replay/stake-words.props.ts"
+      ]
+    },
+    {
+      "label": "UI formatting utilities and tests",
+      "files": [
+        "src/ui/format.test.ts",
+        "src/ui/format.ts"
+      ]
+    }
+  ],
+  "session_id": "0ca7e776-b022-4082-9b66-6456fea0a691",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "0ca7e776-b022-4082-9b66-6456fea0a691",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "064729f0",
+      "resolved_base": "bcab74c4b7d3125bd8bd83e1cbbf2c4afa6f6cbf",
+      "resolved_head": "064729f0e6563537dad016ae48914a28f85c17ef",
+      "exact_range": "bcab74c4b7d3125bd8bd83e1cbbf2c4afa6f6cbf..064729f0e6563537dad016ae48914a28f85c17ef",
+      "source_artifact_sha256": "806b83c84946899a7b4d02d471a391b6b09e73a89047e48b132df1eeb18b3346"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "001642d35c9cff107e49edc93a963642e592ca6c0fe7ac6604c26b7f2b539427",
+          "path": "e2e/d9/states.spec.ts",
+          "fingerprint": "3a9b2f7d6a498ab90dc0ddab19019523479aec9182e2ddb8185461983ab256f7"
+        },
+        {
+          "item_id": "0060ea44ecacab2865c5d4dceb1c75627a3c3566a4f16698d1c3465ec458b6cf",
+          "path": "src/ui/cockpit/replay/replay.props.test.ts",
+          "fingerprint": "e8903857026350ab2dd0e50dcaf57679f6015ecb51afa1ccabf647eac8447c7e"
+        },
+        {
+          "item_id": "02ef688178a59e01b4d1904319b272eae02b0d93eac4650ab9dc734486689b0d",
+          "path": "e2e/d9/gaps.spec.ts",
+          "fingerprint": "00b83f16b432823f840a0c23ee8dd115bf1bb08e2c9a3a015efe6c8449c227da"
+        },
+        {
+          "item_id": "1408b9ec5a414d262bd9dca6cacbb1ddcce76440bff0774009eca7c8694a94c2",
+          "path": "src/ui/format.test.ts",
+          "fingerprint": "bce4b46feaba0bc2a73b8b02866548cb244e32f54f57f4129b3a1771144df0cf"
+        },
+        {
+          "item_id": "63c0d43b245d37c2fa601fdd5364ad0a5b7bdede1e576259fe71f3d4f2783723",
+          "path": "src/ui/cockpit/replay/readout.props.test.ts",
+          "fingerprint": "40213d64c495c069fd712f0d3810b15f4703af264e2fbf36a30ff80464d8dcb4"
+        },
+        {
+          "item_id": "8c66adbcab958299167661bda6e7b87a185ee6d5f3802d58253a87fde25e374e",
+          "path": "src/ui/cockpit/replay/stake-words.props.ts",
+          "fingerprint": "9cb96df7300514b26f798fbac15b3e0a1007d624d8e081375b8ac440cbe44a80"
+        },
+        {
+          "item_id": "97f9f0e3c683f597aee7b0503f4803e42d85c73c0fcec512065b995b7820da16",
+          "path": "src/ui/cockpit/replay/readout.props.ts",
+          "fingerprint": "554fff1eb63164cde6a63314086524fb5eda54e484dcbf27e43ce93b726440ea"
+        },
+        {
+          "item_id": "a50e78b43d9da674ed99eaeeda80fea2f24b5f39189d6f4650878a33f631ea72",
+          "path": "e2e/d9/replay.spec.ts",
+          "fingerprint": "e4350345e5bf02a6ac757be4437c905d2d45d3451ffc1ad9f258b6ea2ca7dc5f"
+        },
+        {
+          "item_id": "ba5fbb04fca03ff1953f3df04141a6756ee49b97455790da564dbc547ad53e17",
+          "path": "src/ui/format.ts",
+          "fingerprint": "1eb2636cd6fa9f064b21a88d29c543effe4b1476bd5c5c9eb6b3dbc81b0a5420"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "001642d35c9cff107e49edc93a963642e592ca6c0fe7ac6604c26b7f2b539427",
+          "path": "e2e/d9/states.spec.ts",
+          "fingerprint": "3a9b2f7d6a498ab90dc0ddab19019523479aec9182e2ddb8185461983ab256f7"
+        },
+        {
+          "item_id": "0060ea44ecacab2865c5d4dceb1c75627a3c3566a4f16698d1c3465ec458b6cf",
+          "path": "src/ui/cockpit/replay/replay.props.test.ts",
+          "fingerprint": "e8903857026350ab2dd0e50dcaf57679f6015ecb51afa1ccabf647eac8447c7e"
+        },
+        {
+          "item_id": "02ef688178a59e01b4d1904319b272eae02b0d93eac4650ab9dc734486689b0d",
+          "path": "e2e/d9/gaps.spec.ts",
+          "fingerprint": "00b83f16b432823f840a0c23ee8dd115bf1bb08e2c9a3a015efe6c8449c227da"
+        },
+        {
+          "item_id": "1408b9ec5a414d262bd9dca6cacbb1ddcce76440bff0774009eca7c8694a94c2",
+          "path": "src/ui/format.test.ts",
+          "fingerprint": "bce4b46feaba0bc2a73b8b02866548cb244e32f54f57f4129b3a1771144df0cf"
+        },
+        {
+          "item_id": "63c0d43b245d37c2fa601fdd5364ad0a5b7bdede1e576259fe71f3d4f2783723",
+          "path": "src/ui/cockpit/replay/readout.props.test.ts",
+          "fingerprint": "40213d64c495c069fd712f0d3810b15f4703af264e2fbf36a30ff80464d8dcb4"
+        },
+        {
+          "item_id": "8c66adbcab958299167661bda6e7b87a185ee6d5f3802d58253a87fde25e374e",
+          "path": "src/ui/cockpit/replay/stake-words.props.ts",
+          "fingerprint": "9cb96df7300514b26f798fbac15b3e0a1007d624d8e081375b8ac440cbe44a80"
+        },
+        {
+          "item_id": "97f9f0e3c683f597aee7b0503f4803e42d85c73c0fcec512065b995b7820da16",
+          "path": "src/ui/cockpit/replay/readout.props.ts",
+          "fingerprint": "554fff1eb63164cde6a63314086524fb5eda54e484dcbf27e43ce93b726440ea"
+        },
+        {
+          "item_id": "a50e78b43d9da674ed99eaeeda80fea2f24b5f39189d6f4650878a33f631ea72",
+          "path": "e2e/d9/replay.spec.ts",
+          "fingerprint": "e4350345e5bf02a6ac757be4437c905d2d45d3451ffc1ad9f258b6ea2ca7dc5f"
+        },
+        {
+          "item_id": "ba5fbb04fca03ff1953f3df04141a6756ee49b97455790da564dbc547ad53e17",
+          "path": "src/ui/format.ts",
+          "fingerprint": "1eb2636cd6fa9f064b21a88d29c543effe4b1476bd5c5c9eb6b3dbc81b0a5420"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "01f191939a262674c40d1caa5f9f6aad1d13495dbdfacbd767ca2642a4ec0f28",
+          "path": "evidence/D09AR/suite-runs/T9AR.14-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "552ddb7562b1f6d8e12b03a69274f756d970a4b808de916cc21e6de17b804a97",
+          "path": "evidence/D09AR/tdd-log/T9AR.14.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ae23ad3bfe53e16bca11b4693eb6313b3b327118b41c4844cda0bbd27f904d32",
+          "path": "evidence/D09AR/suite-runs/T9AR.14-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "d0c5f8a51ec778a982a416a87b5cf4c94ec052dbebba4cb7baf32527797c020d",
+          "path": "evidence/D09AR/suite-runs/T9AR.14-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "dc7e7663086295860b4574793dc78dbc3951a2984a50ba8f45da99d610183f2e",
+          "path": "evidence/D09AR/suite-runs/T9AR.14-integration.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 18193
+  }
+}

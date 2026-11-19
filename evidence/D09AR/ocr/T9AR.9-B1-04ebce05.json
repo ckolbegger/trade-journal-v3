@@ -1,0 +1,112 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 1,
+    "total_tokens": 95040,
+    "input_tokens": 94234,
+    "output_tokens": 806,
+    "cache_read_tokens": 9984,
+    "elapsed": "43s"
+  },
+  "tool_calls": {
+    "total": 11,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 4,
+      "file_read": 6
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/ReviewView.tsx",
+      "content": "A change to `replay` does not necessarily mean navigation stayed on the same card. For example, browser history can move from `/review?trade=t1\u0026panel=Action\u0026replay=open` to `/review?trade=t2\u0026panel=Action` while this Review remains mounted. This assignment consumes the changed search before `linkedCard` runs, leaving t1 displayed even though the address names t2 (and the reverse navigation can open t1's replay instead of t2's). Only suppress link handling for an overlay transition belonging to the same card; continue resolving genuine card changes. Add a mounted-navigation/history regression test covering simultaneous trade and replay changes.",
+      "existing_code": "    if (overlayMoved) appliedSearch.current = search;",
+      "start_line": 488,
+      "end_line": 488,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/screens/ReviewCard.test.tsx",
+        "src/ui/screens/ReviewView.tsx"
+      ]
+    }
+  ],
+  "session_id": "200ed48c-7000-47d1-b601-968d4c50da6d",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "200ed48c-7000-47d1-b601-968d4c50da6d",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "04ebce05",
+      "resolved_base": "52838a3a62b2d6586d443190bcc71ba695552fa0",
+      "resolved_head": "04ebce054b82a66e60d0903d0e4143ca1e530c5e",
+      "exact_range": "52838a3a62b2d6586d443190bcc71ba695552fa0..04ebce054b82a66e60d0903d0e4143ca1e530c5e",
+      "source_artifact_sha256": "c609d5038d48bd0caab7eea0569018538886497f4a487d9441c582950a9fc46e"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "b838867e66604ebb57cd08fba27c34cb96bc0c611d764522669dbf099b6035a9"
+        },
+        {
+          "item_id": "a83706f3444e16c14ac613c874f7293d7adce6354226bde7d7b9b892fce05701",
+          "path": "src/ui/screens/ReviewCard.test.tsx",
+          "fingerprint": "a2948647ae6222064e63607096b5a250d4e7db59d90271f674824a0818c51252"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "b838867e66604ebb57cd08fba27c34cb96bc0c611d764522669dbf099b6035a9"
+        },
+        {
+          "item_id": "a83706f3444e16c14ac613c874f7293d7adce6354226bde7d7b9b892fce05701",
+          "path": "src/ui/screens/ReviewCard.test.tsx",
+          "fingerprint": "a2948647ae6222064e63607096b5a250d4e7db59d90271f674824a0818c51252"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "22c7adb5bf4dcb0d2bf21d94f47d053a20adbed5d32fafae10c2624f808cd9e4",
+          "path": "evidence/D09AR/tdd-log/T9AR.9-B1.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 42743
+  }
+}
