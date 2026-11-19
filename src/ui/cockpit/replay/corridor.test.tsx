@@ -1120,6 +1120,18 @@ describe('Corridor on a phone (suggestion 9)', () => {
     expect(num(pnl(container), 'height')).toBeGreaterThanOrEqual(200);
   });
 
+  it('should draw the phone price chart 12 px shorter, so the replay fits one screen at 320 by 667 with the PnL chart 200 high', () => {
+    frameWidth(340);
+    const phone = render(<CorridorPlot {...thursday()} />);
+    expect(num(phone.container.querySelector('svg.price-strip')!, 'height')).toBe(123);
+    expect(num(pnl(phone.container), 'height')).toBe(200);
+    cleanup();
+    vi.restoreAllMocks();
+    frameWidth(900);
+    const wide = render(<CorridorPlot {...thursday()} />);
+    expect(num(wide.container.querySelector('svg.price-strip')!, 'height')).toBe(136);
+  });
+
   // R-BREN-U Thu 11-12: "Stop +$316 · Banked +$478 · Target +$956 · Sold 2".
   it('should take the line labels off the phone drawing and list them in a strip under it', () => {
     frameWidth(340);

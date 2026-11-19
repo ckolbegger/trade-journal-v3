@@ -1,9 +1,11 @@
 import { axisMoney, type DrawnChart, LabelPlacer, priceRange, tickFits, ticks, timeAxis, valueAxis, type Spot } from './geometry.ts';
 import type { PlotKeyEntry, ReplayPlotProps } from './replay.types.ts';
 
-const HEIGHT = 136;
+// A phone's chart is shorter (13 px: 12 to fit, 1 more for the half pixel the page's own spacing rounds to), so the replay
+// fits one screen at 320 by 667 with the P&L chart 200 high.
+const HEIGHT_FULL = 136;
+const HEIGHT_PHONE = 123;
 const TOP = 18;
-const FLOOR = HEIGHT - 20;
 
 const f1 = (n: number): string => String(Math.round(n * 10) / 10);
 
@@ -15,6 +17,8 @@ export function PriceStrip({ props, width }: { props: ReplayPlotProps; width: nu
 // The strip and what it drew, so the key names only what is on the page.
 export function drawStrip(props: ReplayPlotProps, width: number): DrawnChart {
   const { sessions, anchors, axis } = props;
+  const HEIGHT = props.compact ? HEIGHT_PHONE : HEIGHT_FULL;
+  const FLOOR = HEIGHT - 20;
   const time = timeAxis(width, axis.slots);
   const anchorPrices = [...(anchors.entryPrice === undefined ? [] : [anchors.entryPrice]), ...anchors.priceLines.map((l) => l.price)];
   const marks = sessions.flatMap((s) => (s.underlyingMark === null ? [] : [s.underlyingMark]));
