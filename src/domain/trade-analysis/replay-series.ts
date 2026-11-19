@@ -269,7 +269,8 @@ const readingOf = (condition: ConditionStatus): 'crossed' | 'active' | undefined
   return status === 'Active' ? 'active' : 'crossed';
 };
 
-// A271: a role is crossed in this session when any of its conditions is, by its own reading.
+// A271: a role is crossed in this session when any of its conditions is, by its own reading; not crossed only when every one has a
+// reading and none is crossed; with one unreadable and none crossed it has no reading (AC-RPT-004: gaps cannot prove no episode).
 function crossingsOf(conditions: readonly ConditionStatus[], role: 'Stop' | 'Target', date: string, state: RoleCrossingState): ReplayRoleCrossings {
   const own = conditions.filter((c) => c.role === role);
   const readings = own.map(readingOf);
@@ -277,7 +278,7 @@ function crossingsOf(conditions: readonly ConditionStatus[], role: 'Stop' | 'Tar
   const perCondition = [...state.conditions].map(([id, s]) => ({ id, ...advance(s, readings[own.findIndex((c) => c.id === id)], date) }));
   let reading: 'crossed' | 'active' | undefined;
   if (readings.includes('crossed')) reading = 'crossed';
-  else if (readings.includes('active')) reading = 'active';
+  else if (readings.length > 0 && !readings.includes(undefined)) reading = 'active';
   return { ...advance(state, reading, date), conditions: perCondition };
 }
 

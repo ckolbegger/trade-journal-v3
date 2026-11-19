@@ -108,5 +108,30 @@ describe("replay: a condition's first crossing (A271)", () => {
     ]);
     expect(datesOf(crossingsOn(result.sessions, '2026-10-13', 'stop'))).toEqual([null, null]);
   });
+
+  it("should hold the role's run through a session where its crossed condition has no reading and another condition reads Active, and mark nothing after a gap when it is crossed again", () => {
+    // A copy of O-S2 with the put at 3.70 (option Stop crossed) on 10-12, no put Mark on 10-13 (MNO 43.20 reads Active), 3.70 again on 10-14.
+    const put = ['3.70', null, '3.70'];
+    const dates = ['2026-10-12', '2026-10-13', '2026-10-14'];
+    const frame = (instrument: Instrument, date: string, price: string | null): ReplaySessionInput['frames'][number] => ({
+      instrument,
+      tradingDate: date,
+      closeInstant: `${date}T20:00:00Z`,
+      resolution: price === null ? { kind: 'Missing' } : { kind: 'Available', mark: { revisionId: `rev-${date}`, revisionNumber: 1, price } },
+    });
+    const sessions = dates.map((date, i): ReplaySessionInput => ({
+      tradingDate: date,
+      closeInstant: `${date}T20:00:00Z`,
+      frames: [frame({ kind: 'Stock', symbol: 'MNO' }, date, '43.20'), frame(OS2_CONTRACT, date, put[i]!)],
+    }));
+    const result = replay({ record: os2Record([OS2_S1]), sessions });
+    if (result.kind !== 'Replayed') throw new Error('expected Replayed');
+    const stop = crossingsOn(result.sessions, '2026-10-14', 'stop');
+    expect(datesOf(stop)).toEqual(['2026-10-12', '2026-10-12']);
+    expect(stop.conditions.map((c) => [c.id, ...datesOf(c)])).toEqual([
+      ['stop-1', null, null],
+      ['stop-2', '2026-10-12', '2026-10-12'],
+    ]);
+  });
 });
 
