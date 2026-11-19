@@ -540,6 +540,20 @@ describe('Corridor: the Trade P&L (W40, W41)', () => {
     expect(seen).toEqual([2]);
   });
 
+  it('should report keyboard focus after a tap that gave no focus, a tap on the focused button or a touch that became a scroll',() => {
+    const seen: (number | null)[] = [];
+    render(<CorridorPlot {...props({ sessions: DAYS.slice(0, 4).map((_, i) => bren(i)), onHoverSession: (i) => seen.push(i) })} />);
+    fireEvent.pointerDown(hits()[1]!, { pointerType: 'touch' });
+    fireEvent.pointerUp(hits()[1]!, { pointerType: 'touch' });
+    fireEvent.click(hits()[1]!);
+    fireEvent.focus(hits()[2]!);
+    expect(seen).toEqual([2]);
+    fireEvent.pointerDown(hits()[1]!, { pointerType: 'touch' });
+    fireEvent.pointerCancel(hits()[1]!, { pointerType: 'touch' });
+    fireEvent.focus(hits()[3]!);
+    expect(seen).toEqual([2, 3]);
+  });
+
   it('should keep a focused session marked when the pointer leaves, and return to it when the pointer leaves another', () => {
     const seen: (number | null)[] = [];
     render(<CorridorPlot {...props({ sessions: DAYS.slice(0, 4).map((_, i) => bren(i)), onHoverSession: (i) => seen.push(i) })} />);

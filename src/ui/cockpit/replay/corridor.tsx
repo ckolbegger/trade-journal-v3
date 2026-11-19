@@ -40,6 +40,14 @@ function SessionHits({ props, width }: { props: ReplayPlotProps; width: number }
           onPointerDown={(e) => {
             tapped.current = e.pointerType === 'touch' || e.pointerType === 'pen';
           }}
+          // A touch's focus comes after its pointerup but before its click: a tap that gave none (the button was focused already,
+          // cleared by the click) or became a scroll (pointercancel) must not mark the next keyboard focus as a tap's.
+          onPointerCancel={() => {
+            tapped.current = false;
+          }}
+          onKeyDown={() => {
+            tapped.current = false;
+          }}
           // The focus a tap gives the button is not keyboard focus: it shows no hover box.
           onFocus={() => {
             const viaTap = tapped.current;
@@ -47,7 +55,10 @@ function SessionHits({ props, width }: { props: ReplayPlotProps; width: number }
             if (!viaTap) hold('focus', i);
           }}
           onBlur={() => hold('focus', null)}
-          onClick={() => props.onSelectSession?.(i)}
+          onClick={() => {
+            tapped.current = false;
+            props.onSelectSession?.(i);
+          }}
         />
       ))}
     </div>
