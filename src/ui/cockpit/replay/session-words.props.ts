@@ -5,14 +5,14 @@ import { calculation, signed } from '../../figures.ts';
 import { decimalMoney, money, quantity, rMultiple, shortDate } from '../../format.ts';
 import { conditionDirection } from '../../screens/option-words.ts';
 import type { ReplayFrameSession, ReplayTone } from './replay.types.ts';
-import { stakeOf } from './stake-words.props.ts';
+import { ratioWords, stakeOf } from './stake-words.props.ts';
 
 // The session's words: the headline, how it is going, and what is at stake (W36 to W38). The adapter selects and formats finished
 // values from the view; it works out no figure (ADR 0001, A256).
 type ViewSession = TradeReplayView['sessions'][number];
 
 // The part of `ReplayFrameSession` this module builds: the headline, how it is going, and what is at stake (W36 to W38).
-export type SessionWords = Pick<ReplayFrameSession, 'headline' | 'howItIsGoing' | 'stake'>;
+export type SessionWords = Pick<ReplayFrameSession, 'headline' | 'howItIsGoing' | 'stake' | 'stakeSpoken'>;
 
 const ZERO = Rational.of(0n);
 const HUNDRED = Rational.of(100n);
@@ -102,7 +102,17 @@ function howItIsGoingOf(session: ViewSession): string {
 export function sessionWords(view: TradeReplayView, index: number): SessionWords {
   const session = view.sessions[index];
   if (!session) throw new Error(`No session at ${index}`);
-  return { headline: topLineOf(session), howItIsGoing: howItIsGoingOf(session), stake: stakeOf(view, index, session) };
+  const stake = stakeOf(view, index, session);
+  return { headline: topLineOf(session), howItIsGoing: howItIsGoingOf(session), stake, ...stakeSpokenOf(view, session, stake) };
+}
+
+// A267: the stake sentence with the odds said in full, "about 8% chance of the Target first, 92% of the Stop first", where the sentence holds them.
+// The Plan's own odds stay as their visible words: the view gives them no spoken form.
+function stakeSpokenOf(view: TradeReplayView, session: ViewSession, stake: string | null): Pick<ReplayFrameSession, 'stakeSpoken'> {
+  const words = ratioWords(view, session);
+  if (stake === null || !words?.odds || !stake.includes(words.text)) return {};
+  const ratio = words.text.slice(0, words.text.indexOf(' · '));
+  return { stakeSpoken: stake.replace(words.text, `${ratio} · ${words.odds.spoken}`) };
 }
 
 type Marker = NonNullable<ViewSession['markers']>[number];

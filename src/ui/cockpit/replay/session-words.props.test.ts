@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { sessionWords } from './session-words.props.ts';
-import { AXIO, BREN, brenMon1102, condition, DALE, frac, NOT_APPLICABLE, session, usd, value, view } from './view-doubles.props.ts';
+import { AXIO, BREN, brenMon1102, condition, DALE, DALE_PLAN, daleWed1111, frac, NOT_APPLICABLE, session, usd, value, view } from './view-doubles.props.ts';
 
 describe('replay.props: how it is going (W36, W37)', () => {
   it('should head R-BREN-U\'s Mon 11-02 "+$28.00 · 0.09R" and "Ahead: 3% of the way to the Target."', () => {
@@ -96,5 +96,13 @@ describe('replay.props: how it is going (W36, W37)', () => {
       figures: { conditions: [condition('Target', 'UnderlyingPrice', '56.00')] },
     });
     expect(sessionWords(view([axioTarget]), 0).howItIsGoing).toBe("Past the Target's planned amount by $40.00, though AXIO is still below $56.00.");
+  });
+});
+
+describe('replay.props: the stake sentence spoken (A267)', () => {
+  it('should speak the stake sentence with the odds in full to a screen reader', () => {
+    expect(sessionWords(view([daleWed1111], DALE_PLAN), 0).stakeSpoken).toBe(
+      'From here: $78.00 at risk to the Stop · $912.00 more to the Target · 11.69 to 1 · about 8% chance of the Target first, 92% of the Stop first (the Plan was 0.29 to 1 · 78% : 22%).',
+    );
   });
 });

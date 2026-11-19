@@ -233,6 +233,21 @@ describe('Replay frame: the readout (W43)', () => {
   });
 });
 
+describe('Replay frame: the stake sentence (W38, A267)', () => {
+  const stake = 'From here: $78.00 at risk to the Stop · $912.00 more to the Target · 11.69 to 1 · about 8% : 92% (the Plan was 0.29 to 1 · 78% : 22%).';
+  const spoken = 'From here: $78.00 at risk to the Stop · $912.00 more to the Target · 11.69 to 1 · about 8% chance of the Target first, 92% of the Stop first (the Plan was 0.29 to 1 · 78% : 22%).';
+
+  it('should speak the stake sentence with the odds in full to a screen reader', () => {
+    const base = props();
+    render(<ReplayFrame {...props({ sessions: base.sessions.map((s, i) => (i === 10 ? { ...s, stake, stakeSpoken: spoken } : s)) })} />);
+    // A screen reader hears the spoken sentence, and the visible one is hidden from it; the sighted text is unchanged.
+    expect(screen.getByText(spoken).className).toContain('visually-hidden');
+    const shown = screen.getByText(stake);
+    expect(attr(shown, 'aria-hidden')).toBe('true');
+    expect(shown.parentElement).toBe(screen.getByText(spoken).parentElement);
+  });
+});
+
 describe('Replay frame: the text equivalent (W45)', () => {
   // Each session's table row, finished: a Mark, the Trade P&L and the events.
   const withTable = (count = 11, initialSession?: string): ReplayProps => {

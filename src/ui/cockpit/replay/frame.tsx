@@ -60,7 +60,19 @@ export function ReplayFrame({ tradeKey, sessions, initialSession, sliderLabel, p
         {session.addMarkTo && <Link to={session.addMarkTo}>Add the Mark</Link>}
       </div>
       {session.howItIsGoing && <p className="replay-going">{session.howItIsGoing}</p>}
-      {session.stake && <p className="replay-stake">{session.stake}</p>}
+      {session.stake && (
+        <p className="replay-stake">
+          {/* A267: a screen reader hears the odds in full; the visible sentence stays as it is. */}
+          {session.stakeSpoken ? (
+            <>
+              <span aria-hidden="true">{session.stake}</span>
+              <span className="visually-hidden">{session.stakeSpoken}</span>
+            </>
+          ) : (
+            session.stake
+          )}
+        </p>
+      )}
       {renderSince?.(session)}
       {renderChips?.(session)}
       <div className="replay-slider">
