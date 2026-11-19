@@ -52,7 +52,7 @@
 /* A275, wide: the header across the top (above), under it the charts on the left and the readout on the right, everything else across the full width below. Dense packing lets the readout sit beside the charts whatever full-width lines come between them. */
 .replay-overlay .replay-card {
   display: grid;
-  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 340px);
   grid-auto-flow: row dense;
   column-gap: 16px;
 }
@@ -61,7 +61,7 @@
   grid-column: 1 / -1;
 }
 
-.replay-overlay .replay-plot-frame {
+.replay-overlay .replay-chart-box {
   grid-column: 1;
   align-self: start;
 }
@@ -70,14 +70,20 @@
   grid-column: 2;
 }
 
+/* Beside the charts the readout's column is narrow; the app's two-column term list would give each row half of a group, so a row takes the group's whole width and every figure stays on one line. */
+@media (min-width: 861px) {
+  .replay-overlay .replay-readout dl {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 /* A275, phone (the app's own phone breakpoint): one column, the overlay filling the screen. */
 @media (max-width: 860px) {
   .replay-overlay .replay-card {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .replay-overlay .replay-plot-frame,
+  .replay-overlay .replay-chart-box,
   .replay-overlay .replay-readout {
     grid-column: 1;
-  }
-}
+  }}

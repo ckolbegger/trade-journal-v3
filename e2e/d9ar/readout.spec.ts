@@ -205,7 +205,6 @@ test.describe('B9AR.3 The readout', () => {
   for (const { fixture, through, back, where } of situations) {
     test(`should keep every readout figure on one line for ${where}`, async ({ profile }) => {
       test.setTimeout(240_000);
-      test.fail(true, 'the readout breaks the Trade P&L figure across two lines (reported to the main session)');
       const { context, page } = await build(profile, fixture, closeOf(through === 5 ? '2026-11-09' : '2026-11-16'), through);
       const scope = await openAt(page, 'ArrowLeft', back);
       await expectOneLineEach(scope, where);

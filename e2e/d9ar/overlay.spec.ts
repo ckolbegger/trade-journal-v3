@@ -76,7 +76,6 @@ test.describe('B9AR.1 The overlay on Trade Detail', () => {
   test('should put the readout beside the charts at 1280', async ({ profile }) => {
     test.setTimeout(240_000);
     // Product disagrees with the plan (reported to the main session): `.replay-chart-box` is the grid child since T9AR.16 and spans both columns, so the readout sits below the charts, not beside them.
-    test.fail(true, 'replay-overlay.css places .replay-plot-frame in column 1, but the grid child is .replay-chart-box, which wraps it');
     const { context, page } = await build(profile, BREN, closeOf('2026-11-16'), 10);
     expect(page.viewportSize()!.width).toBe(1280);
     await detailReplayButton(page).click();
