@@ -59,6 +59,7 @@ Split of the code (A286): `replay.props.ts` keeps `replayProps`, the table row a
 
 | Run | Commit | Tier | Result |
 |---|---|---|---|
+| `wave0` (merge run after T9AR.1, T9AR.2) | `1018d618` | full (`browser-auto 1cc612ea`: first matching path `src/ui/cockpit/index.css`) | unit 2289 (203 files), integration 280 (130 files), browser-1 126, browser-2 79, browser-3 77, checks 14 of 14; all exit 0; `run-complete.sh`: run complete |
 
 ## Critics
 
