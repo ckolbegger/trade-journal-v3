@@ -4,7 +4,7 @@ Definition: [implementation plan, D8R](implementation-plan.md#d8r--the-trade-det
 
 Status: **breakdown agreed by the user on 2026-11-17** (plan revision 104, decision 115). The six open questions in section 12, and question 5's follow-up, were answered on 2026-11-15, one at a time, and the breakdown was updated to match before it was agreed. Revision 105 (decision 116, 2026-11-17) adds P117 and the run rules that answer the questions the implementing session would otherwise ask (its handoff, section 5). The next plan decision is 117. Numbering continues from D8: P108 and A230. The approved words continue from D08P's W20.
 
-**Amended by D9 (decision 117, revision 106).** [D09-trade-replay.md](D09-trade-replay.md): W1 (amended) gains the Replay drawer, second after Today (T9.14), and the rail's Conditions card gains the Stop-to-Target meter at its top (T9.35).
+**Amended by D9 (decision 117, revision 106).** [D09-trade-replay.md](D09-trade-replay.md): W1 (amended) gains the Replay drawer, second after Today (T9.14), and the rail's Conditions card gains the Stop-to-Target meter at its top (T9.35). D9A-R (decision 118): Replay is a button beside the drawers, not a drawer; the drawers are D8R's six again.
 
 **In the trader's words.** Each part of Trade Detail shows each thing once, in the place you'd look for it:
 - **Today** becomes one Marks table (Today, Yesterday, Change) on every Trade that holds or held a Position, including Settlement Due and Closed ones.

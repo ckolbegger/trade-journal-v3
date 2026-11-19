@@ -165,6 +165,6 @@ The UI saves through Market Data using the exact Save precondition. The successf
 - Audit history and corrected economic replay remain distinct.
 - Gaps and partial coverage survive presentation.
 - Report orchestration never duplicates Performance Analysis semantics.
-- Future Insights, coaching, predictive claims, and saved reports are absent from the MVP.
+- Future Insights, coaching, predictive claims, and saved reports are absent from the MVP. The No-Edge Odds are arithmetic on the reward-to-risk ratio, labelled an estimate, and not a prediction about a Trade.
 
 See [Performance Analysis](performance-analysis.md), [UI contract](ui-contract.md), and [overview](overview.md).

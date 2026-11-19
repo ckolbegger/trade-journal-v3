@@ -160,6 +160,7 @@ During an active Tuesday session, Monday's completed-session Mark is normally th
 | **Target Overrun** | The nonnegative distance beyond an already reached Target boundary, in dollars and Plan R where available. | Negative reward to target |
 | **Entry Quality** | The one derived comparison of actual initial-entry risk/reward, including allocated fees, against the Plan Baseline at the Entry Resolution Point. | Standing Accepted-Position Risk/Reward |
 | **Realized R** | A planned Closed Trade's final net realized P&L divided by its frozen 1R. | Current R:R |
+| **No-Edge Odds** | The chance of reaching the headline Target before the headline Stop if price moved with no edge and no time limit: Ongoing Risk to Stop divided by the sum of Ongoing Risk to Stop and Incremental Reward to Target. It is also the chance a trader would need for the trade-off from here to break even. It is always worded as an estimate, is exact arithmetic on two exact figures, and is never an input to another calculation. Added by plan decision 118. | Probability of profit, win rate, forecast |
 
 Underlying-price and structure-value Stops or Targets are independent OR conditions. Every condition remains visible. The headline distance uses the nearest monetary boundary, becomes zero when any condition is crossed, and never changes the Position or Lifecycle State by itself.
 
@@ -173,6 +174,12 @@ Permitted compact UI labels map exactly as follows; the full term remains availa
 | Reward to target | Incremental Reward to Target |
 | Max reward | Maximum Incremental Reward |
 | Original reward | Original Planned Reward |
+| Current Risk · At Stop | Ongoing Risk to Stop |
+| Current Risk · At Worst case | Worst-Case Ongoing Risk |
+| Remaining Reward · At Target | Incremental Reward to Target |
+| Remaining Reward · At Max reward | Maximum Incremental Reward |
+| Past the Stop by | Stop Overrun |
+| Past the Target by | Target Overrun |
 
 ## Review and reporting language
 

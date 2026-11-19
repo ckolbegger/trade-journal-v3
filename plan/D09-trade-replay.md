@@ -4,11 +4,13 @@ Definition: [implementation plan, D9](implementation-plan.md#d9--trade-replay), 
 
 Status: **breakdown agreed by the user on 2026-11-17** (plan revision 106, decision 117). The ten open questions in section 12 were answered that day, one at a time, and the breakdown was updated to match before it was agreed. The amendments in section 1.2 were applied in revision 106. The next plan decision is 118. Numbering continues from D8R: P118, A247 and W35.
 
+**Amended by D9A-R (decision 118).** [D09A-R-stage-a-refactor.md](D09A-R-stage-a-refactor.md) runs between stage A and stage B. The replay opens as an overlay; the table is session cards; the readout's stake is a grid; reward to risk carries estimated odds.
+
 **In the trader's words.**
 - **Replay** is one screen that says how a Trade is going. On top, the Underlying's price. Under it, the Trade's profit or loss as a green or red area, drawn between two lines: what the Trade would make at its Stop and at its Target. A sentence above them reads the trade-off: what you risk from here, and what is left to gain.
 - **A slider** steps back through the sessions, so you can watch the Trade unfold. It opens on the session you are reviewing, so it reads without touching anything.
 - **Buying more or selling part shows.** The two lines step, and profit you have banked becomes a solid band no later Mark can change.
-- **It is in two places:** in the Daily Review card, just before the Action, and in Trade Detail.
+- **It is in two places:** in the Daily Review card, just before the Action, and in Trade Detail. Both open the replay as an overlay (D9A-R).
 - **For options, three estimates** sit under the chart: implied volatility, how many shares the Position behaves like, and how much of the option's move came from the Underlying, from time passing and from volatility. They are labelled estimates. They help you catch a wrong Mark and learn how options move. They never change a P&L or a risk figure.
 - **A Stop-to-Target meter** shows where each Trade stands at a glance: on each Review card, on each row of the Open list, and on Trade Detail. The Open list goes into the Review's order, so the Trades that need you are at the top.
 
@@ -32,7 +34,7 @@ The user has already decided (handoff section 4): D9 builds Corridor; the result
 | P125 | **A Closed Trade's replay** (interview decision 11). | **The last session shows the final result and how the Trade ended** (sold, or expired). Nothing is at stake. No payoff line. | A payoff line on a Closed Trade: it needs the UI contract amended, and the user did not ask for it after round 2. |
 | P126 | **A moved Stop** (item 6). | **Nothing to build now.** The two lines are worked out for each session from the conditions in force that session, so a Management Revision will step them where it happens, as a sale does. D17 adds the revision's marker and its test, since no Trade can have one before D17. | Planning the marker now: it could not be tested through the UI. |
 | P127 | **Where the Review card's replay comes from.** `replayTrade` takes a Trade Detail's binding and ends at the latest session. The card needs the replay to end at the Review Date. | **`DailyReview.getTrade` returns the replay, ending at the Review Date**, as `specs/design/daily-review.md` already says it does. Both coordinators call one shared assembly, `src/coordinators/replay/`, as they share `valuation/` today. | The card calling `replayTrade`: a second read with a different end date and no Detail binding to give it. |
-| P128 | **Replay on Trade Detail.** | **A seventh drawer, "Replay", second after Today**, on every Detail that has Today (W1 amended, W35). | Inside Today: Today would no longer fit one screen. Replacing Price History: Price History holds each Mark's source and correction, which replay leaves out. |
+| P128 | **Replay on Trade Detail.** | **A seventh drawer, "Replay", second after Today**, on every Detail that has Today (W1 amended, W35). | Inside Today: Today would no longer fit one screen. Replacing Price History: Price History holds each Mark's source and correction, which replay leaves out. Superseded by D9A-R's decision 3: Replay is an overlay opened by a button. |
 | P129 | **Leaving the Review and coming back.** | **The address carries it.** The card's "Price History" link opens Trade Detail with the drawer, the session and `from=review` in the address; "Back to the Review" returns to that Trade's card, its Action panel and the slider's session (A257). The Review Date needs nothing: the Review opens the latest completed session, the only one installed. | Held state in memory: lost on reload. |
 | P130 | **The meter on Trade Detail** (item 7). (Open question 6; **answered 2026-11-17: as recommended**.) | **At the top of the rail's Conditions card.** That card already holds each condition's distance. | In the P&L card: beside the figure it describes, but away from the Stop and Target it runs between. |
 | P131 | **The Open list in attention order** (item 8; the user's lean). (Open question 7; **answered 2026-11-17: attention order for now, built so that sorting and filtering can be added to the Trades list later**.) | **Do it, with one spec sentence** (section 1.2). The cost is small: the Open list is already read and valued in full, so the order is a sort in Trade Views with no extra read (section 1.5, "The Open list's order"). A262 says how it stays open to later sorting and filtering. | Keep Last Activity order: no spec change, and the meter is then only a status cue. |
@@ -81,9 +83,9 @@ These are implementation-level choices. They stand unless you object.
 | A252 | **The Plan column** (`replay`, T9.5). The result gains `plan: { atStop, atTarget, rewardRisk }`: minus 1R, plus the Original Planned Reward, and the Plan Baseline's ratio. Later fills never change it. |
 | A253 | **A final session.** When the Trade is Closed, the view's last session carries `final`, with how the Trade ended: `Sold`, or `Expired` with the contract. Its Trade P&L is the realized result and its figures are Not Applicable, No remaining Position. A Settlement Due Trade has no final session (P124). |
 | A254 | **The Review's replay** (T9.7; P127). `DailyTradeReview` gains `replay?`, the same view type as `replayTrade`'s, ending at the Review Date. It is absent when the Trade's facts can't be replayed. `open` does not read it. The card a Save Marks result returns is built as `getTrade` builds it, so it carries the replay with the new Mark and the screen reads nothing again; the implementing session confirms this in `daily-review.ts` before T9.7's brief. |
-| A255 | **The chart's parts** (the seam for Ribbon). Everything lives in `src/ui/cockpit/replay/` as presentational components with plain props (A216). `replay.props.ts` turns the view into `ReplayProps`. `ReplayFrame` owns the headline, the slider, the reveal rule, the hover, the readout, the table and the slots for the chips and the "since" line. `geometry.ts` owns the time axis. `CorridorPlot` is the only plot. **Ribbon is a second plot component taking the same `ReplayPlotProps`**, with a control in the frame to choose between them; nothing else changes. |
-| A256 | **Geometry is presentation** (A215). Turning a finished dollar figure or price into an SVG coordinate is drawing, not calculating. The time axis runs from the first session to the contract's expiration (to the last session for stock), with later sessions blank. Each vertical axis is sized from the Plan's anchors (entry, Stop, Target, strike; the Plan column's two results) and the sessions revealed so far, never from a later session. A label with no free spot is left out; every figure is still in the readout and the table. |
-| A257 | **The address.** Trade Detail reads `drawer`, `session` and `from` from the address once, on load: `/trades/<id>?drawer=price-history&session=2026-11-12&from=review`. The Review reads `trade`, `panel` and `session` beside the parameters `linkedCard` reads today. The slider's session is otherwise component state, kept while the same Trade's replay is read again. |
+| A255 | **The chart's parts** (the seam for Ribbon). Everything lives in `src/ui/cockpit/replay/` as presentational components with plain props (A216). `replay.props.ts` turns the view into `ReplayProps`. `ReplayFrame` owns the headline, the slider, the reveal rule, the hover, the readout, the session cards and the slots for the chips and the "since" line. `geometry.ts` owns the time axis. `CorridorPlot` is the only plot. **Ribbon is a second plot component taking the same `ReplayPlotProps`**, with a control in the frame to choose between them; nothing else changes. |
+| A256 | **Geometry is presentation** (A215). Turning a finished dollar figure or price into an SVG coordinate is drawing, not calculating. The time axis runs from the first session to the contract's expiration (to the last session for stock), with later sessions blank. Each vertical axis is sized from the Plan's anchors (entry, Stop, Target, strike; the Plan column's two results) and the sessions revealed so far, never from a later session. A label with no free spot is left out; every figure is still in the readout and the session cards. |
+| A257 | **The address.** Trade Detail reads `drawer`, `session` and `from` from the address once, on load: `/trades/<id>?drawer=price-history&session=2026-11-12&from=review`. The Review reads `trade`, `panel` and `session` beside the parameters `linkedCard` reads today. The slider's session is otherwise component state, kept while the same Trade's replay is read again. D9A-R's A274 adds `replay=open`. |
 | A258 | **The estimates** (stage B). `option-pricing` exports the price of a European option without dividends, its implied volatility by bisection between 0.01% and 500%, and its sensitivity to the Underlying. Time is `daysToExpiration` (the Instrument module's existing count of calendar days) over 365. `replay-estimates.ts` turns the exact inputs into numbers, one way, and returns for each session: `impliedVolatility`, `shareEquivalent` and `split`, each an `Estimate` holding a number, or Unavailable with one of `MarkMissing`, `ExpirationSession`, `AtOrBelowExerciseValue`, `NoVolatilityFits`, `InsensitiveToVolatility` or `NoEarlierFigure`, or Not Applicable for stock. A stock Position's share equivalent is its shares, marked exact. The rate and the days used come back with them. The reasons and thresholds are the prototype's (`prototypes/replay/checks/model.js`): half a cent above the floor, and half a cent of price per volatility point. |
 | A259 | **The split.** It is worked out per share in the order Underlying, then time, then volatility, from the earlier session's implied volatility. The remainder is the real change less the three parts, so the four always add up. When the later session has no implied volatility, time and volatility are returned as one part. When the earlier session has none, or either Mark is missing, the move is not split and the reason says why. The change is measured from the last session that had a Mark. |
 | A260 | **The meter reading** (stage C, T9.30). One finished value: the two rails (`outcomes.atStop` and `outcomes.atTarget`, which need no Mark); `banked`, the realized P&L to date; `now`, a Calculation Result holding the Trade P&L with `standing`'s zone and `pastBy`; and `previous`, the Trade P&L at the session before with its date, or absent. With no Mark, `now` is Unavailable and the rails and `previous` still come back, so the track can be drawn empty. Placing these on a track is presentation (A215): the track always includes break-even, and stretches by a third at most past a rail. |
@@ -162,24 +164,24 @@ Approved by the user on 2026-11-17 (open question 10), as the starting point: a 
 
 | # | Where | Words |
 |---|---|---|
-| W1 (amended) | Drawers per state | Open, Settlement Due and Closed: Today, **Replay**, Position, Plan and Risk, Price History, Journal, Payoff. Planned and records-disagree are unchanged. |
-| W35 | The drawer, and the Review card's section | "Replay". |
+| W1 (amended) | Drawers per state | Open, Settlement Due and Closed: Today, **Replay**, Position, Plan and Risk, Price History, Journal, Payoff. Planned and records-disagree are unchanged. See D9A-R's W54 and W53. |
+| W35 | The drawer, and the Review card's section | "Replay". See D9A-R's W54 and W53. |
 | W36 | Headline figure | "+$988.00 · 3.05R", green above break-even and red below. With no Mark: the reason at the `figure` length, and no figure. |
 | W37 | How it is going | "Ahead: 85% of the way to the Target." "Behind: 63% of the way to the Stop." "At break-even." "Target reached, $32.00 past it." "Target reached." "Past the Stop by $180.00 (0.30R)." "Past the Stop's planned amount by $9.00, though DALE is still above $54.00." "Past the Target's planned amount by $40.00, though XYZ is still below $60.00." "Final result: sold out Thu Nov 12." "Final result: the put expired Fri Nov 20." |
-| W38 | What is at stake | "From here: $352.00 at risk to the Stop · $928.00 more to the Target · 2.64 to 1 (the Plan was 2.95 to 1)." After the Target: "From here: $672.00 at risk back to the Stop ($510.00 of it open profit) · no cap above." or "… · at most $90.00 more." Past the Stop: "From here: Worst case $4,520.00 more · $1,080.00 back up to the Target." Then, when true: "Even at the Stop this Trade would end $316.00 ahead." Final: "Nothing is at risk and nothing is left to gain. +$478.00 of the result was banked before the end." |
-| W39 | Chart titles | "BREN price · one Mark per session". "Trade P&L · dollars for the whole Position, between the result at the Stop and at the Target". On a phone: "BREN price", "Trade P&L". |
+| W38 | What is at stake | "From here: $352.00 at risk to the Stop · $928.00 more to the Target · 2.64 to 1 (the Plan was 2.95 to 1)." After the Target: "From here: $672.00 at risk back to the Stop ($510.00 of it open profit) · no cap above." or "… · at most $90.00 more." Past the Stop: "From here: Worst case $4,520.00 more · $1,080.00 back up to the Target." Then, when true: "Even at the Stop this Trade would end $316.00 ahead." Final: "Nothing is at risk and nothing is left to gain. +$478.00 of the result was banked before the end." Reward to risk: with the estimated odds (D9A-R, decision 4). |
+| W39 | Chart titles | "BREN price · one Mark per session". "Trade P&L · dollars for the whole Position, between the result at the Stop and at the Target". On a phone: "BREN price", "Trade P&L". D9A-R (decision 6): the P&L title is "Trade P&L" at every width. |
 | W40 | Labels in the P&L chart | "Stop −$324", "Target +$956", "Break-even", "Banked +$478", "Realized −$495", "Worst case +$156", "Max reward +$564", "$32 past the Target", "$180 past the Stop", "Risk to stop $672", "Reward to target $928" ("Risk $672", "Reward $928" on a phone). In the price chart: "Strike $100", "Stop $54.00", "Target $56.00". |
 | W41 | Markers | "Bought 100 at $50.00", "Bought 100 at $51.40", "Sold 2 at $4.00", "Sold 6 at $0.94", "Bought 3 at $2.59", "Expired". On a phone: "Sold 2". |
 | W42 | The slider | Its label "Session". Its value: "Mon Nov 16 · 11 of 15". Buttons "Previous session", "Next session". A screen reader hears the value and then the headline. |
-| W43 | The readout | Groups "How it is going", "At stake from here, whole Position", "Marks", "Position", "The Plan"; "Final result" on a final session. Rows "Trade P&L", "Banked", "Open", "Risk to stop", "Result at the Stop", "Worst case", "Reward to target", "Stop Overrun", "Target Overrun", "Result at the Target", "Max reward" ("No cap above"), "Reward to risk" ("Target reached", "Stop breached", "Plan 2.95 to 1"). Changes: "down $150.00 since Fri Nov 13", "up $60.00 since Fri Nov 13". |
-| W44 | The key | "Mark", "Open profit", "Open loss", "Banked", "Realized loss", "Past the Stop", "Past the Target", "Result at the Stop", "Result at the Target", "At stake from here", "Execution". A session without a Mark: "No Mark". |
-| W45 | The table | Folded, titled "Session by session". Columns "Session", "<Underlying> Mark", "<Contract> Mark", "Trade P&L", "Banked", "Risk to stop", "Reward to target", "Result at the Stop", "Result at the Target", "Stop", "Target", "Events". |
+| W43 | The readout | Groups "How it is going", "At stake from here, whole Position", "Marks", "Position", "The Plan"; "Final result" on a final session. Rows "Trade P&L", "Banked", "Open", "Risk to stop", "Result at the Stop", "Worst case", "Reward to target", "Stop Overrun", "Target Overrun", "Result at the Target", "Max reward" ("No cap above"), "Reward to risk" ("Target reached", "Stop breached", "Plan 2.95 to 1"), with the estimated odds (D9A-R, decision 4). Changes: "down $150.00 since Fri Nov 13", "up $60.00 since Fri Nov 13". |
+| W44 | The key | "Mark", "Open profit", "Open loss", "Banked", "Realized loss", "Past the Stop", "Past the Target", "Result at the Stop", "Result at the Target", "At stake from here", "Execution". A session without a Mark: "No Mark". See D9A-R's W66. |
+| W45 | The table | Folded, titled "Session by session". Columns "Session", "<Underlying> Mark", "<Contract> Mark", "Trade P&L", "Banked", "Risk to stop", "Reward to target", "Result at the Stop", "Result at the Target", "Stop", "Target", "Events". Replaced by session cards (D9A-R's W65). |
 | W46 | Links | "Price History", "Position", "Journal", "Back to the Review". |
 | W47 | Stage B: chips | "Implied volatility 27.7%", "Implied volatility Unavailable", "Behaves like ≈ 183 shares", "Behaves like ≈ short 122 shares", "Behaves like 200 shares" (stock, exact), "4 days to expiration", "Expiration session", "Long 2 contracts", "Short 3 contracts". The tag: "estimate". |
 | W48 | Stage B: the line under the charts | "Since Fri Nov 13: Trade P&L −$150.00. The call moved −$0.75 a share: BREN's move −$0.52 · time −$0.22 · volatility −$0.01". Together: "BREN's move +$1.13 · time and volatility together −$0.04". Not split: "The put's move is not split: no implied volatility for Tue Nov 10. Its Mark changed +$0.87 since Mon Nov 9." Stock: "Since Fri Nov 13: Trade P&L +$280.00. AXIO moved +$1.40 a share." |
 | W49 | Stage B: why an estimate is Unavailable | "A Mark is missing." "On the expiration session the price no longer depends on volatility." "The Mark is at or below the option's exercise value, so no volatility fits." "No volatility fits this Mark." "This far from the strike, or this close to expiration, the price barely depends on volatility." |
 | W50 | Stage B: the About page, under a heading "Option estimates" | "Implied volatility, the share equivalent and the split of an option's move are estimates. They use the textbook option formula (Black-Scholes): no dividends, and exercise only at expiration. Interest rate: 4% for a contract with up to 365 days to expiration, 5.25% beyond. The option's Mark and the Underlying's Mark may not be from the same moment. An estimate never changes a P&L or a risk figure." Nothing of this shows beside the chart (open question 3). |
-| W51 | Stage C: the meter's name and hover | "P&L +$990.00, 62% of the way to the Target. Banked +$400.00. Stop −$600.00, Target +$1,600.00. Up from +$850.00 on Thu Nov 12." "P&L −$920.00, past the Stop by $180.00. …" With no Mark: the reason, then the rails. The meter shows no visible words. |
+| W51 | Stage C: the meter's name and hover | "P&L +$990.00, 62% of the way to the Target. Banked +$400.00. Stop −$600.00, Target +$1,600.00. Up from +$850.00 on Thu Nov 12." "P&L −$920.00, past the Stop by $180.00. …" With no Mark: the reason, then the rails. The meter shows no visible words. D9A-R: "Banked +$400.00" reads "Realized −$440.00" when what was realized is a loss, as everywhere else (D9A-R's W57). |
 | W52 | Stage C: the Open list | The heading "Open Trades" gains the line "In the Review's order". |
 
 ---
@@ -250,7 +252,7 @@ Kind: **B** = behavioral (TDD, red then green per case), **S** = structural (exa
 | T9.22 | The share equivalent and the split | B, serial | B | T9.21 | `replay-estimates` | **Trade Analysis:** A258, A259 |
 | T9.23 | `replay` and both views carry each session's estimates | B, serial | B | T9.22 | `TradeAnalysis.replay`; `replayTrade`; `getTrade` | **Trade Analysis; replay assembly** |
 | T9.24 | Chips: implied volatility and the share equivalent | B, serial | B | T9.23 | `ReplayFrame` | none |
-| T9.25 | The "since the session before" line, and the estimates in the readout and table | B, serial | B | T9.24 | `ReplayFrame`, `replay.props` | none |
+| T9.25 | The "since the session before" line, and the estimates in the readout and the session cards | B, serial | B | T9.24 | `ReplayFrame`, `replay.props` | none |
 | T9.26 | Stage B: Node integration suite | B, serial | S | T9.23 | `test:integration` | none (tests only) |
 | T9.27 | Stage B: browser suite | B, serial | S | T9.25 | `test:e2e` | none (tests only) |
 | T9.28 | Stage B gate: fresh browser critic | B, serial | S | T9.26, T9.27 | critic report | none |
@@ -287,7 +289,7 @@ In stage A, a lane is one git worktree (`.claude/worktrees/d09-<lane>`) on one b
 | DW | T9.14, T9.16 | `src/ui/screens/trade-detail/Cockpit.tsx`, `drawer-request.ts`, `Cockpit.test.tsx`; `src/ui/screens/TradeDetail.tsx` and its test; `e2e/support/detail/index.ts`; the drawer lines of the specs in section 1.5. For T9.16 only: `linkedCard` in `src/ui/screens/ReviewView.tsx`, after RW has merged. |
 | RW | T9.15 | `src/ui/screens/ReviewCard.tsx`, `ReviewCard.test.tsx`, `ReviewCards.test.tsx`; the card's styles |
 | B | T9.20, T9.21, T9.22, T9.23 | `eslint.estimates.config.js`, `eslint.config.js` (one merge line), `tools/estimate-rules.test.ts`; `src/domain/option-pricing/` (new); `src/domain/trade-analysis/replay-estimates.ts` (new) and `replay-series.ts`; `src/coordinators/replay/` (the pass-through) |
-| B | T9.24, T9.25 | `src/ui/screens/AboutView.tsx` and its test (T9.24); `src/ui/cockpit/replay/chips*`, `since-line*`; the estimate rows of `replay.props*`, `readout*` and `table*`; `styles/replay-estimates.css` |
+| B | T9.24, T9.25 | `src/ui/screens/AboutView.tsx` and its test (T9.24); `src/ui/cockpit/replay/chips*`, `since-line*`; the estimate rows of `readout.props*`, `readout*`, `cards.props*` and `session-cards*` (D9A-R's A286 and A277); `styles/replay-estimates.css` |
 | C | T9.29 | `src/ui/cockpit/meter/` (new); `src/ui/cockpit/styles/meter.css` |
 | C | T9.30, T9.31, T9.32 | `src/coordinators/valuation/attention.ts` (moved) and `meter.ts` (new); `src/coordinators/daily-review/` (`open`, `save`, types, the re-exports); `browseTrades` and the Open item types in `src/coordinators/trade-views/trade-views.ts`; the positional reads listed in section 1.5 |
 | C | T9.33 | `src/ui/screens/ReviewCard.tsx` (its header); `StopTargetSlider.tsx` and its test (deleted); `e2e/d5r/sliders.spec.ts`, `review.spec.ts`, `marks.spec.ts`, `responsive-a11y.spec.ts`, `support.ts`; `e2e/d7p/layout.spec.ts` (its slider lines) |
@@ -569,6 +571,8 @@ describe("Replay: the round trip from the Review (P129)")
 
 Seams: the rule's cases in `tools/estimate-rules.test.ts`, run against small source samples as `tools/cockpit-rules.test.ts` does; `npm run typecheck` for the types. P121, A258.
 
+**Decision for stage B's session to settle before T9.20's brief (D9A-R, decision 118).** Decision 4's odds are worded as an estimate but are exact arithmetic (D9A-R's A267), held as fractions in Trade Analysis. Either they stay outside the `Estimate` type and the estimates rule, with a comment saying why, or they move under it. The planner's lean: they stay outside, since no pricing formula or assumed rate is behind them.
+
 ```text
 describe("the estimates rule (P121)")
   it should reject an import of `domain/option-pricing` from any file but `trade-analysis/replay-estimates.ts`
@@ -617,7 +621,7 @@ describe("the Mark Change Split (A259)")
 
 ### T9.23 `replay` and both views carry each session's estimates
 
-Seams: `TradeAnalysis.replay`, `TradeViews.replayTrade`, `DailyReview.getTrade`. A258.
+Seams: `TradeAnalysis.replay`, `TradeViews.replayTrade`, `DailyReview.getTrade`. A258. The Review card (D9A-R): the card reads the replay in `getTrade` as before and shows it only in the overlay.
 
 ```text
 describe("replay: estimates per session (A258)")
@@ -631,12 +635,12 @@ describe("the views: estimates passed through")
 
 ### T9.24 Chips: implied volatility and the share equivalent
 
-Seams: `ReplayFrame` (`chips.test.tsx`) and `AboutView`. W47, W49, W50.
+Seams: `ReplayFrame` (`chips.test.tsx`) and `AboutView`. W47, W49, W50. The seam is unchanged by D9A-R; the chips render in the overlay, and D9A-R's T9AR.7 already leaves Escape to an inner control.
 
 ```text
 describe("Replay: chips (W47)")
   it should show "Implied volatility 27.7%" tagged "estimate" for R-BREN-U on Mon 11-16
-  it should open a small chart of the revealed sessions' implied volatility on click, on Enter and on focus, and close it with Escape
+  it should open a small chart of the revealed sessions' implied volatility on click, on Enter and on focus, and close the small chart with Escape, leaving the overlay open; a second Escape closes the overlay
   it should draw an Unavailable session in that chart as a gap, and say why under the chip (W49)
   it should show "Behaves like ≈ 183 shares", "≈ short 122 shares" for a long Put, and "Behaves like 200 shares" with no tag for stock
   it should show "4 days to expiration" and "Long 2 contracts", and "Expiration session" at 0 days
@@ -646,9 +650,9 @@ describe("About: option estimates (W50)")
   it should state both rates and the 365-day line, read from the constants the estimates use
 ```
 
-### T9.25 The "since the session before" line, and the estimates in the readout and table
+### T9.25 The "since the session before" line, and the estimates in the readout and the session cards
 
-Seams: `ReplayFrame` and `replay.props`. W48.
+Seams: `ReplayFrame` and `replay.props`. W48. Amended by D9A-R: the sentence builds on the Trade P&L's "since" line, the one place that line still stands on a figure (decision 8); W48's "the line under the charts" is placed under the charts' column of the overlay.
 
 ```text
 describe("Replay: since the session before (W48)")
@@ -659,7 +663,7 @@ describe("Replay: since the session before (W48)")
   it should read "AXIO moved +$1.40 a share" for stock, with no tag
 describe("Replay: estimates in the readout and the table")
   it should add "Implied volatility" under Marks and the share equivalent under Position, each tagged "estimate"
-  it should add both as columns of the table, with "Unavailable" where there is none
+  it should add both as rows of each session card, with "Unavailable" where there is none
 ```
 
 ### T9.29 The meter
@@ -676,6 +680,7 @@ describe("Meter (W51)")
   it should draw the Stop's line to the right of break-even when profit is banked beyond it
   it should draw a dashed, empty track with no pointer when there is no Mark, keeping the faint mark
   it should show no visible words, and carry its name and its hover text
+  it should name a realized loss "Realized −$440.00", not "Banked" (D9A-R's W57)
   it should draw the same parts at each of its three sizes
 ```
 
@@ -720,7 +725,7 @@ describe("browseTrades: the Open list's default order (A262)")
 
 ### T9.33 Review card: the meter replaces the slider
 
-Seam: `ReviewCard`. W51. Replaces D5R's slider cases; section 1.5 lists the specs that change.
+Seam: `ReviewCard`. W51. Replaces D5R's slider cases; section 1.5 lists the specs that change. Re-read against D9A-R's decision 3: "the slider" here is the Stop-to-Target slider in the card's header (`StopTargetSlider`), not the replay's, and the four cases stand. The card's body now holds a "Replay" button and no chart, so the meter is the only drawing on the card while the Action is written; and `e2e/d5r/review.spec.ts` is also changed by D9A-R's T9AR.20 (line 28, the summary), on different lines from T9.33's five.
 
 ```text
 describe("Review card: the meter (W51)")
@@ -767,8 +772,8 @@ describe("Conditions card: the meter (P130)")
 | T9.18 Stage A: browser suite | `npm run test:e2e`; the acceptance script | B9.1, B9.2, B9.3, B9.4 and B9.5 pass; the script exits 0 for stage A's rows. | Adds `e2e/d9` to `test:e2e:3`. |
 | T9.19 Stage A gate | A fresh critic per section 8, flows C9.1, C9.2, C9.3 and C9.4, after a full-tier run | Every flow passes. Tag `claude-opus-5.5-d9a`. | A light gate: no benchmark. |
 | T9.26 Stage B: Node integration suite | `npm run test:integration`; the acceptance script | I9.8 and I9.9 pass. | |
-| T9.27 Stage B: browser suite | `npm run test:e2e`; the acceptance script | B9.6 and B9.7 pass. | |
-| T9.28 Stage B gate | A fresh critic, flows C9.5 and C9.6, after a full-tier run | Every flow passes. Tag `claude-opus-5.5-d9b`. | |
+| T9.27 Stage B: browser suite | `npm run test:e2e`; the acceptance script | B9.6 and B9.7 pass. | D9A-R: B9.6 and B9.7 each open the replay through the overlay; B9.7's chips at 375 and 320 are measured inside the full-screen overlay. |
+| T9.28 Stage B gate | A fresh critic, flows C9.5 and C9.6, after a full-tier run | Every flow passes. Tag `claude-opus-5.5-d9b`. | D9A-R: no change to C9.5's and C9.6's pass conditions; the critic opens the replay through the overlay. |
 | T9.40 Remove the range position | `npm run typecheck`; `npx vitest run src/coordinators src/ui`; `npm run verify:capabilities`; `npm run verify:fixtures`; `npm run test:integration`; `git diff --stat tests/fixtures` and `git diff -U0 tests/fixtures`; `grep -rn "rangePosition\|RangePosition\|RangePlacement" src tests tools e2e` | `rangePosition`, `RangePlacement`, `RangePositionResult` and `rangePositionOf` are gone, and the grep finds nothing. The fixture diff deletes exactly the 84 `rangePosition` entries (and the comma each leaves) in the eight files and nothing else. `DailyReview.open`'s `RangePosition` variant becomes `Meter`, and `browseTrades` gains `AttentionOrder` and `Meter`. `verify:fixtures` and the D8 round trip pass. | P132. After T9.33 removed the only reader. Each D5R case that asserts the range position is re-pointed at the meter reading for the same Trades, or deleted where T9.30 or T9.31 already asserts the same fact; `evidence/D09/structural.md` lists each one and which it was. |
 | T9.36 Expected Open rows | `npm run bench:expected`; `git diff --stat bench/`; a sorted comparison of the old and new rows | `bench/expected-open-rows.json` holds the same rows in attention order, with the same headers; any change to a row's text is only the meter's name, if the comparison reads it. | If the generator orders the rows itself, its sort changes here too; the task's file list comes from `grep -rn "expected-open-rows" tools`. |
 | T9.37 Stage C: Node integration suite | `npm run test:integration`; `npm run verify:fixtures`; the acceptance script | I9.10 and I9.11 pass; every frozen fixture's views still compare. | |
@@ -806,8 +811,8 @@ D1 to D8R's disclosed substitutes still apply. D9 adds none.
 | B9.3 Replay in the Review, and the round trip | `review.spec.ts` | R-BREN-U; open the Review card; move the slider; press Price History; press Back to the Review. | The section sits above the Action form; Price History opens on that session; the return lands on the same card, panel and session. |
 | B9.4 How a replay ends | `states.spec.ts` | K-sale; R-DALE-U Settlement Due, then with its Expiration recorded; a Planned Trade. | W1 (amended) per state; the "Final result" headline; no Replay drawer on the Planned Trade. |
 | B9.5 Responsive, accessible and offline (AC-UI-001, AC-UI-002, AC-DEL-001) | `responsive-a11y.spec.ts` | Replay in Detail and in the Review card at 1280, 375 and 320 px; resize with the slider moved; axe on each; reload with the server stopped. | The headline and both charts fit one screen (800 px high at 1280; 667 px at 375 and 320); no sideways scroll; the slider's session survives the resize; no WCAG 2.1 AA violation; the replay reads offline. |
-| B9.6 The estimates | `estimates.spec.ts` | R-BREN-U and R-CORV-D; open each chip by keyboard; read the line under the charts at Mon 11-09 and Wed 11-11. | W47, W48 and W49; every estimate tagged; the not-split sentence after the gap; no rate beside the chart; W50 on the About page. |
-| B9.7 The estimates, accessible | `estimates-a11y.spec.ts` | The chips' small charts at 375 and 320 px; axe with a chart open; Escape. | No sideways scroll; focus returns to the chip; no violation. |
+| B9.6 The estimates | `estimates.spec.ts` | R-BREN-U and R-CORV-D; open the replay through the overlay (D9A-R); open each chip by keyboard; read the line under the charts at Mon 11-09 and Wed 11-11. | W47, W48 and W49; every estimate tagged; the not-split sentence after the gap; no rate beside the chart; W50 on the About page. |
+| B9.7 The estimates, accessible | `estimates-a11y.spec.ts` | The chips' small charts at 375 and 320 px, measured inside the full-screen overlay (D9A-R); axe with a chart open; Escape. | No sideways scroll; focus returns to the chip; no violation. |
 | B9.8 The meter on Review cards | `meter-review.spec.ts` | D5R's card fixture; the Review at its date; save a Mark. | W51 on each card; the dashed track on the card without a Mark; the meter follows the save. |
 | B9.9 The Open list | `open-list.spec.ts` | The four Trades at Fri 11-13; open the list; compare with the Review's order. | The rows in the Review's order under "In the Review's order"; each row's meter named per W51. |
 | B9.10 The meter on Trade Detail | `meter-detail.spec.ts` | R-BREN-U at Mon 11-16; a day with a missing Mark. | The meter at the top of the Conditions card; the dashed track. |
@@ -828,8 +833,8 @@ It runs `npm run build && npm run preview` (port 5175, under the lock) itself an
 | Flow | Stage | Actions | Pass condition |
 |---|---|---|---|
 | C9.1 The ten-second read | A | Open Replay on a winning and a losing option Trade and a stock Trade, without touching the slider. | The headline says how the Trade is going and what is at stake; a winner reads green and a loser red, whatever its Reward to target; price and P&L are on screen together. |
-| C9.2 Watching it unfold | A | Slide from the first session to the last on a Trade with a second lot, one with a partial sale and one with a missing Mark. | Nothing later shows early; the two lines step at each Position Change; banked profit is a solid band; a gap is a gap; every figure in the charts is in the readout and the table. |
-| C9.3 In the Review | A | Walk a Review with three Trades; use the replay before each Action; go to Price History and back. | The replay rests on the Review Date; the return restores the card, the panel and the session; the Action still saves in one press. |
+| C9.2 Watching it unfold | A | Slide from the first session to the last on a Trade with a second lot, one with a partial sale and one with a missing Mark. | Nothing later shows early; the two lines step at each Position Change; banked profit is a solid band; a gap is a gap; every figure in the charts is in the readout and the session cards. |
+| C9.3 In the Review | A | Walk a Review with three Trades; open the replay from the card's Replay button before each Action; go to Price History and back. | The replay rests on the Review Date; the return restores the card, the panel and the session; the Action still saves in one press. |
 | C9.4 Narrow, keyboard and offline | A | Replay at 375 and 320 px; drive it by keyboard only; stop the server and reload. | One screen; no sideways scroll; every control reachable and named; works offline. |
 | C9.5 The estimates explain | B | An option Trade over a session where the Underlying barely moves and the option does; a session with a missing Mark; the last sessions before expiration. | Implied volatility, the share equivalent and the split are labelled estimates and drawn unlike Marks; no interest rate shows beside them, and the About page states the rates and the formula's limits; each is Unavailable with a reason where it can't be worked out; no P&L or risk figure changes when one is Unavailable. |
 | C9.6 A wrong Mark shows | B | Correct one option Mark to a plausible but wrong price, then back. | The implied volatility jumps on that session and settles when corrected; the exact figures follow the Mark alone. |
@@ -857,6 +862,7 @@ It runs `npm run build && npm run preview` (port 5175, under the lock) itself an
 - **Stop Discipline episodes** as markers (D12), **a moved Stop's marker** (D17), **correction markers** (D15).
 - **Sorting and filtering on the Trades list** (the user, 2026-11-17; filters are D22's). Attention stays the default order, and a sort choice is added to the request (A262).
 - **A Review for an earlier date**, which the round trip's address would then carry.
+- Refining the estimated odds with the chance that neither the Stop nor the Target is reached before expiration (D9A-R's decision 4). A new task with its own words, for the user to commission.
 
 ---
 
@@ -951,6 +957,7 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T9.17 | A | 3 | IN | Done | `416d52df`; B1 `749aff06`; B2 `d2732e30`; B3 `e216f70a` |
 | T9.18 | A | 3 | BR | Done | `2266321b`; F2 `561635ef`; B1 `de7818ac`; F1 `7a653e1b`; F3 `7ed4d0ff`; B2 `a58f0858`; B3 `e00066ac`; F4 `8773200f` |
 | T9.19 | A | 3 | — | In progress from `e718be57` | |
+| D9A-R | — | — | — | Runs here, after T9.19 and before T9.20: see [D09A-R-stage-a-refactor.md](D09A-R-stage-a-refactor.md), section 15 | |
 | T9.20 | B | — | — | Not started | |
 | T9.21 | B | — | — | Not started | |
 | T9.22 | B | — | — | Not started | |

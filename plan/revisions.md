@@ -2,6 +2,14 @@
 
 Every revision of the frozen plan, newest first, one entry each. Each revision is a commit tagged `claude-opus-5.5-plan-r<n>`. The freeze record in `implementation-plan.md` ("Immutable revision") names only the current revision. A new revision adds its entry at the top of this list and replaces the freeze record's entry. Edits to a breakdown's Progress section alone are not revisions (decision 100).
 
+- Revision 107: the commit tagged `claude-opus-5.5-plan-r107` (revision 106 plus decision 118), 2026-11-18. The user agreed D9A-R's breakdown, [D09A-R-stage-a-refactor.md](D09A-R-stage-a-refactor.md), after answering its five questions one at a time and approving the words W53–W70:
+  - 24 tasks in one deliverable, run after D9's stage A gate and before its stage B, in lanes with an agent cap of 4, with its own critic and no benchmark;
+  - the replay opens as an overlay of the whole page, from a button beside Trade Detail's drawers and from a "Replay" button on the Review card; the address carries `replay=open`, so Back, Close and Escape close it;
+  - `evaluate` gains the No-Edge Odds, the Plan's odds and the extremes' weight; `replay` gains the Plan's terms, each fill against the Plan and each condition's first crossing;
+  - the readout's stake is a grid, session cards replace the table, and the replay uses one name per figure;
+  - the answers: the spec text as written (a); no bridge across a session with no Mark (a); cards only up to the slider's session (a); the words approved, W55's third heading "P&L if hit"; the shell's warnings and banners stay in place under the overlay (b).
+
+  It amends `specs/`: the glossary (No-Edge Odds and six compact labels), Trade Analysis's `evaluate` and `replay`, Trade Views' invariants, and a note in the UI contract. The spec map's line ranges and character counts were recalculated and the reading lists regenerated; no tag was added. The acceptance matrix gains D9A-R's cumulative entries in nine rows; no scenario is added. D9's breakdown is amended for stage A's wording and stage B's and stage C's tasks, and D08P's and D8R's W1 notes name the change. No schema, store, seed, migration, fixture or backup-version change. The next decision is 119.
 - Revision 106: the commit tagged `claude-opus-5.5-plan-r106` (revision 105 plus decision 117), 2026-11-17. The user agreed D9's breakdown, [D09-trade-replay.md](D09-trade-replay.md), after answering its ten questions one at a time:
   - 40 tasks in one deliverable, run as three stages, each with its own session, suites and fresh critic: the replay chart (a swarm), then the option estimates and the meter (each one task at a time);
   - replay is Corridor, in a Trade Detail drawer and in the Review card; `evaluate` gains the Trade's result at each boundary, and `DailyReview.getTrade` returns the replay to the Review Date;

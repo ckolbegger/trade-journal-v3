@@ -26,40 +26,45 @@ This table is the source of truth. After changing a tag or class here, regenerat
 - **D9 tags added:** S052 (AC-CALC-003), S090 (the Review's ordering), S092 (`getTrade`), S167 (`evaluate`), S188 (`browseTrades`) and S260.
 - All 260 entries' line ranges and character counts were checked against `specs/` by script. The reading lists and the table below were regenerated.
 
+**Revision 107** (2026-11-18, D9A-R's decision 118) amended four specs. No tag changed (D9A-R's A284).
+- **Lines moved:** `trade-analysis.md` gained one line in `evaluate` (S167, 1,381 to 1,513), so S168 through S173 moved down one. `glossary.md` gained the term No-Edge Odds and six compact labels in S252 (2,728 to 3,560), so S253 through S256 moved down seven.
+- **Character counts only:** S169 (`replay`, 1,061 to 1,273), S194 (Trade Views' invariants, 540 to 659) and S209 (the UI contract's Installation and Runtime Readiness, 2,412 to 2,605).
+- All 260 entries' line ranges and character counts were checked against `specs/` by script. The reading lists and the table below were regenerated.
+
 ## Reading cost per deliverable
 
-Characters of spec text a session reads (core plus tagged), and an estimate in tokens at about 2.4 characters per token. All of `specs/` is 320,557 bytes (every `.md` file, as of 2026-11-17).
+Characters of spec text a session reads (core plus tagged), and an estimate in tokens at about 2.4 characters per token. All of `specs/` is 322,049 bytes (every `.md` file, as of 2026-11-18).
 
 | Deliverable | Core | Tagged (non-core) | Total characters | ≈ Tokens |
 |---|---|---|---|---|
-| D1 | 153,337 | 43,194 | 196,531 | 82K |
-| D2 | 153,337 | 49,231 | 202,568 | 84K |
-| D4 | 153,337 | 67,419 | 220,756 | 92K |
-| D5 | 153,337 | 67,480 | 220,817 | 92K |
-| D6 | 153,337 | 73,619 | 226,956 | 95K |
-| D7 | 153,337 | 74,506 | 227,843 | 95K |
-| D8 | 153,337 | 57,856 | 211,193 | 88K |
-| D9 | 153,337 | 15,625 | 168,962 | 70K |
-| D10 (provisional) | 153,337 | 42,087 | 195,424 | 81K |
-| D11 (provisional) | 153,337 | 21,883 | 175,220 | 73K |
-| D12 (provisional) | 153,337 | 33,314 | 186,651 | 78K |
-| D13 (provisional) | 153,337 | 28,578 | 181,915 | 76K |
-| D14 (provisional) | 153,337 | 16,868 | 170,205 | 71K |
-| D15 (provisional) | 153,337 | 32,488 | 185,825 | 77K |
-| D16 (provisional) | 153,337 | 18,638 | 171,975 | 72K |
-| D17 (provisional) | 153,337 | 22,951 | 176,288 | 73K |
-| D18 (provisional) | 153,337 | 8,307 | 161,644 | 67K |
-| D19 (provisional) | 153,337 | 12,306 | 165,643 | 69K |
-| D20 (provisional) | 153,337 | 45,101 | 198,438 | 83K |
-| D21 (provisional) | 153,337 | 40,188 | 193,525 | 81K |
-| D22 (provisional) | 153,337 | 29,437 | 182,774 | 76K |
-| D23 (provisional) | 153,337 | 7,514 | 160,851 | 67K |
-| D24 (provisional) | 153,337 | 17,656 | 170,993 | 71K |
-| D25 (provisional) | 153,337 | 16,444 | 169,781 | 71K |
-| D26 (provisional) | 153,337 | 10,291 | 163,628 | 68K |
-| D27 (provisional) | 153,337 | 19,613 | 172,950 | 72K |
-| D28 (provisional) | 153,337 | 6,314 | 159,651 | 67K |
-| RC (provisional) | 153,337 | 5,112 | 158,449 | 66K |
+| D1 | 154,481 | 43,194 | 197,675 | 82K |
+| D2 | 154,481 | 49,231 | 203,712 | 85K |
+| D4 | 154,481 | 67,763 | 222,244 | 93K |
+| D5 | 154,481 | 67,824 | 222,305 | 93K |
+| D6 | 154,481 | 73,751 | 228,232 | 95K |
+| D7 | 154,481 | 74,638 | 229,119 | 95K |
+| D8 | 154,481 | 57,856 | 212,337 | 88K |
+| D9 | 154,481 | 15,969 | 170,450 | 71K |
+| D10 (provisional) | 154,481 | 42,431 | 196,912 | 82K |
+| D11 (provisional) | 154,481 | 21,883 | 176,364 | 73K |
+| D12 (provisional) | 154,481 | 33,658 | 188,139 | 78K |
+| D13 (provisional) | 154,481 | 28,578 | 183,059 | 76K |
+| D14 (provisional) | 154,481 | 16,868 | 171,349 | 71K |
+| D15 (provisional) | 154,481 | 32,488 | 186,969 | 78K |
+| D16 (provisional) | 154,481 | 18,770 | 173,251 | 72K |
+| D17 (provisional) | 154,481 | 23,295 | 177,776 | 74K |
+| D18 (provisional) | 154,481 | 8,307 | 162,788 | 68K |
+| D19 (provisional) | 154,481 | 12,306 | 166,787 | 69K |
+| D20 (provisional) | 154,481 | 45,101 | 199,582 | 83K |
+| D21 (provisional) | 154,481 | 40,188 | 194,669 | 81K |
+| D22 (provisional) | 154,481 | 29,437 | 183,918 | 77K |
+| D23 (provisional) | 154,481 | 7,514 | 161,995 | 67K |
+| D24 (provisional) | 154,481 | 17,656 | 172,137 | 72K |
+| D25 (provisional) | 154,481 | 16,444 | 170,925 | 71K |
+| D26 (provisional) | 154,481 | 10,291 | 164,772 | 69K |
+| D27 (provisional) | 154,481 | 19,613 | 174,094 | 73K |
+| D28 (provisional) | 154,481 | 6,314 | 160,795 | 67K |
+| RC (provisional) | 154,481 | 5,112 | 159,593 | 66K |
 
 ## Entries
 
@@ -335,13 +340,13 @@ Characters of spec text a session reads (core plus tagged), and an estimate in t
 | S164 | 21–48 | Shared values | 1,015 | core — Shared result vocabulary used by every calculating and displaying deliverable. | D1, D2, D4, D6, D7, D8 | D9, D10, D16 | CalculationResult states, FactOrder, DerivedTradeState contents; no substitution of fabricated values. |
 | S165 | 51–58 | Operation contracts › `assessPlan` | 1,109 | tagged | D1, D2, D4, D7 | D10, D20, D21 | assessPlan: Plan validation, Plan Baseline and 1R, option underlying-price Stop monetary boundary, typed rejection. |
 | S166 | 59–72 | Operation contracts › `derive` | 2,251 | tagged | D1, D2, D4, D5, D6, D7, D8 | D10, D14, D15, D20, D24 | derive: replay effective facts, Positions, Lots, fees, lifecycle, Entry window, leg fulfillment, Scaling, Disposition Timing; contract status at a valuation date (decision 101). |
-| S167 | 73–87 | Operation contracts › `evaluate` | 1,381 | tagged | D4, D5, D6, D7 | D9, D10, D12, D16, D17 | evaluate: valuation, ongoing risk/reward, condition status, Overrun, independent P&L components and coverage. |
-| S168 | 88–93 | Operation contracts › `expirationPayoff` | 866 | tagged | D1, D7, D8 | D10 | expirationPayoff: Planned and Current piecewise payoff, zero sets, extrema; Not Applicable and multi-expiration Unavailable. |
-| S169 | 94–99 | Operation contracts › `replay` | 1,061 | tagged | D4, D5 | D9, D10, D12, D17 | replay: per-frame corrected tracks with gaps; Stop Discipline episodes and stable fingerprints. |
-| S170 | 100–103 | Operation contracts › `assessChange` | 390 | tagged |  | D15, D18, D19, D20, D21 | assessChange: validates before/candidate records, returns reconciliation and Correction Footprint; never writes. |
-| S171 | 104–117 | Normative analytical rules | 2,200 | tagged | D1, D2, D4, D6, D7, D8 | D10, D12, D14, D17, D20, D21 | Normative rules: Execution ownership, FIFO, lot-aware fees, settlement basis, lifecycle, 1R, Deviation categories. |
-| S172 | 118–134 | Staged evaluation | 622 | tagged | D1, D2, D4, D5, D6, D7 | D9, D16 | Staged evaluation data dependency: derive, obtain one observation frame, evaluate, expirationPayoff. |
-| S173 | 135–139 | Failures and integrity | 704 | core — Module failures section. | D1, D2, D4, D5, D6, D7, D8 | D10, D20 | Typed rejections versus calculation states; callers never convert either into a plausible number. |
+| S167 | 73–88 | Operation contracts › `evaluate` | 1,513 | tagged | D4, D5, D6, D7 | D9, D10, D12, D16, D17 | evaluate: valuation, ongoing risk/reward, condition status, Overrun, independent P&L components and coverage. |
+| S168 | 89–94 | Operation contracts › `expirationPayoff` | 866 | tagged | D1, D7, D8 | D10 | expirationPayoff: Planned and Current piecewise payoff, zero sets, extrema; Not Applicable and multi-expiration Unavailable. |
+| S169 | 95–100 | Operation contracts › `replay` | 1,273 | tagged | D4, D5 | D9, D10, D12, D17 | replay: per-frame corrected tracks with gaps; Stop Discipline episodes and stable fingerprints. |
+| S170 | 101–104 | Operation contracts › `assessChange` | 390 | tagged |  | D15, D18, D19, D20, D21 | assessChange: validates before/candidate records, returns reconciliation and Correction Footprint; never writes. |
+| S171 | 105–118 | Normative analytical rules | 2,200 | tagged | D1, D2, D4, D6, D7, D8 | D10, D12, D14, D17, D20, D21 | Normative rules: Execution ownership, FIFO, lot-aware fees, settlement basis, lifecycle, 1R, Deviation categories. |
+| S172 | 119–135 | Staged evaluation | 622 | tagged | D1, D2, D4, D5, D6, D7 | D9, D16 | Staged evaluation data dependency: derive, obtain one observation frame, evaluate, expirationPayoff. |
+| S173 | 136–140 | Failures and integrity | 704 | core — Module failures section. | D1, D2, D4, D5, D6, D7, D8 | D10, D20 | Typed rejections versus calculation states; callers never convert either into a plausible number. |
 
 ### `specs/design/trade-record.md`
 
@@ -372,7 +377,7 @@ Characters of spec text a session reads (core plus tagged), and an estimate in t
 | S191 | 93–96 | `runReport` | 436 | tagged |  | D16, D22, D24, D25, D27 | runReport: four families; coordinator exhausts population, derives data, delegates meaning to Performance Analysis. |
 | S192 | 97–135 | `runReport` › Report Periods | 1,854 | tagged |  | D16, D24, D25, D27 | Report Period presets and calendar resolution in Workspace time zone; one breakdown; report assembly sequence. |
 | S193 | 136–160 | `previewMarkChange` | 1,492 | tagged |  | D19 | previewMarkChange: nonmutating impact preview of a Manual Mark change with exact Save precondition. |
-| S194 | 161–170 | Invariants | 540 | core — Module invariants section. | D1, D2, D4, D5, D6, D7, D8 | D9, D16 | Read invariants: coherent snapshot, UI-independent interfaces, gaps survive, no Insights or saved reports. |
+| S194 | 161–170 | Invariants | 659 | core — Module invariants section. | D1, D2, D4, D5, D6, D7, D8 | D9, D16 | Read invariants: coherent snapshot, UI-independent interfaces, gaps survive, no Insights or saved reports. |
 
 ### `specs/design/trade-workflows.md`
 
@@ -397,7 +402,7 @@ Characters of spec text a session reads (core plus tagged), and an estimate in t
 | S206 | 26–38 | Responsive behavior | 921 | core — Shared responsive layout rule. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | Live-width responsive layout: narrow bottom nav, wide sidebar, state-preserving resize, parity across widths. |
 | S207 | 39–46 | Navigation and context | 1,151 | core — Shared navigation and form outcome rules. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | Navigation reaches installed capabilities with domain language; contextual forms preserve state; clear Save/Cancel/conflict. |
 | S208 | 47–57 | View states | 825 | core — Shared UI state rules. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | Loading, Ready, Empty, Error view states distinguished from domain status values. |
-| S209 | 58–69 | Installation and Runtime Readiness | 2,412 | core — Runtime Readiness UI gating applies to every mutating control. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28, RC | UI for readiness pending, install affordance, protection warning, Unsupported, Recovery Only, Integrity Blocked, backup claims. |
+| S209 | 58–69 | Installation and Runtime Readiness | 2,605 | core — Runtime Readiness UI gating applies to every mutating control. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28, RC | UI for readiness pending, install affordance, protection warning, Unsupported, Recovery Only, Integrity Blocked, backup claims. |
 | S210 | 70–81 | Forms and evidence capture | 1,053 | core — Form rules apply to every form-bearing deliverable. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | Accessible forms, chip semantics, exact definition rendering, no implicit evidence, Save as boundary, Hold preselect. |
 | S211 | 82–89 | Trade and Journal presentation | 1,396 | core — Trade Detail and Journal presentation is extended by most deliverables. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | Distinguish Plan, Leg, Position Change, Execution, Position, Lot; Trade Detail concepts; Journal timeline display. |
 | S212 | 90–99 | Numbers, availability, and graphs | 1,300 | core — Calculation-availability rendering is used by every figure-showing deliverable. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | Unrounded values, distinct availability rendering, Missing evidence display, replay candles/points/gaps, accessible graphs. |
@@ -465,11 +470,11 @@ Characters of spec text a session reads (core plus tagged), and an estimate in t
 | S249 | 82–92 | Planning and trading facts › Deviation taxonomy | 607 | core — The glossary is core. | D2, D4, D5, D6, D7, D8 | D10, D12, D15, D17, D18, D20, D21, D25 | Fixed Deviation types: Planned-Leg Terms, Entry Size, Unplanned Exposure, Stop Discipline; non-Deviation facts. |
 | S250 | 93–120 | Journal language | 3,865 | core — The glossary is core. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | Terms: Journal, Entry, Entry Type/Definition, Prompt, Option, Anchor, Source, Edit, Addendum, Void, Debt, Due Classification (decision 69), Decline, Action; seven types. |
 | S251 | 121–146 | Market observations and valuation | 3,896 | core — The glossary is core. | D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D15, D16, D17, D19, D20, D21, D24, D25 | Terms: Mark, Manual Mark, Daily Bar, Expected Mark Date/Status, acknowledgment, Stale, Calculation Result, valuation, payoff sets. |
-| S252 | 147–176 | Risk, reward, and outcome language | 2,728 | core — The glossary is core. | D1, D2, D4, D5, D6, D7 | D9, D10, D12, D16, D17, D20, D21, D24, D25 | Terms: Plan Baseline, 1R, original and ongoing risk/reward, Overrun, Entry Quality, Realized R; OR conditions; compact labels. |
-| S253 | 177–192 | Review and reporting language | 1,671 | core — The glossary is core. | D4, D5, D6, D7 | D11, D12, D13, D15, D16, D20, D21, D22, D23, D24, D25, D27 | Terms: Daily Review, Review Date/Cutoff, Report Period presets, Break Down By dimensions, Coverage, Future Insights. |
-| S254 | 193–205 | Key relationships and invariants | 1,316 | core — The glossary is core. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | Key relationships and invariants among Trade, Account, Plan, Position Change, Execution, Lots, Entries, Marks, Review. |
-| S255 | 206–219 | Example dialogue | 850 | core — The glossary is core. | D2, D5, D6, D7 | D10, D20 | Example dialogue: fills in one Position Change, explicit Expiration without Close Reason, deferral as Debt. |
-| S256 | 220–229 | Flagged ambiguities and canonical resolutions | 964 | core — The glossary is core. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | Canonical resolutions for Position, Fill, Actual Leg, Closed via, Idea Source, Unavailable, Review complete, Insight. |
+| S252 | 147–183 | Risk, reward, and outcome language | 3,560 | core — The glossary is core. | D1, D2, D4, D5, D6, D7 | D9, D10, D12, D16, D17, D20, D21, D24, D25 | Terms: Plan Baseline, 1R, original and ongoing risk/reward, Overrun, Entry Quality, Realized R; OR conditions; compact labels. |
+| S253 | 184–199 | Review and reporting language | 1,671 | core — The glossary is core. | D4, D5, D6, D7 | D11, D12, D13, D15, D16, D20, D21, D22, D23, D24, D25, D27 | Terms: Daily Review, Review Date/Cutoff, Report Period presets, Break Down By dimensions, Coverage, Future Insights. |
+| S254 | 200–212 | Key relationships and invariants | 1,316 | core — The glossary is core. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | Key relationships and invariants among Trade, Account, Plan, Position Change, Execution, Lots, Entries, Marks, Review. |
+| S255 | 213–226 | Example dialogue | 850 | core — The glossary is core. | D2, D5, D6, D7 | D10, D20 | Example dialogue: fills in one Position Change, explicit Expiration without Close Reason, deferral as Debt. |
+| S256 | 227–236 | Flagged ambiguities and canonical resolutions | 964 | core — The glossary is core. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | Canonical resolutions for Position, Fill, Actual Leg, Closed via, Idea Source, Unavailable, Review complete, Insight. |
 
 ### `specs/reference/ui-screenshots/index.md`
 
@@ -494,8 +499,8 @@ Core is read by every deliverable, so it sets the floor of every reading list. T
 - S250 (3,222 chars) `specs/glossary.md` Journal language
 - S251 (3,896 chars) `specs/glossary.md` Market observations and valuation
 - S130 (2,790 chars) `specs/design/overview.md` Load-bearing rules
-- S252 (2,728 chars) `specs/glossary.md` Risk, reward, and outcome language
-- S209 (2,412 chars) `specs/design/ui-contract.md` Installation and Runtime Readiness
+- S252 (3,560 chars) `specs/glossary.md` Risk, reward, and outcome language
+- S209 (2,605 chars) `specs/design/ui-contract.md` Installation and Runtime Readiness
 - S217 (2,188 chars) `specs/design/workspace.md` Status and capabilities
 - S087 (1,870 chars) `specs/adr/0009-advisory-storage-protection.md` (opening)
 - S007 (1,772 chars) `specs/README.md` Conformance rules
