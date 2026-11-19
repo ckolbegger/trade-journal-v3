@@ -59,6 +59,8 @@ export function priceRange(anchors: readonly number[], marks: readonly number[])
 export interface DrawnChart {
   readonly svg: ReactElement;
   readonly drawn: ReadonlySet<PlotKeyEntry['kind']>;
+  // A phone's labels, which the drawing leaves to the strip under it (A280), in the order the strip lists them.
+  readonly strip?: readonly string[];
 }
 
 export interface Spot {
@@ -132,6 +134,11 @@ export function ticks(min: number, max: number, want: number): number[] {
 // Whether an axis figure, right-aligned 5 px left of the plot area, lies inside the drawing; one that doesn't is left out, never cut (A256).
 export function tickFits(text: string, left: number): boolean {
   return left - 5 - (text.length * 6 + 2) >= 0;
+}
+
+// A figure with its sign: "+$982", "−$324", "$0".
+export function signedAxisMoney(value: number): string {
+  return value === 0 ? axisMoney(0) : `${value > 0 ? '+' : ''}${axisMoney(value)}`;
 }
 
 // An axis label: "$100", "$54.50".

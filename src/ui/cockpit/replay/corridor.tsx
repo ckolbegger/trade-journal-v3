@@ -119,6 +119,7 @@ export function CorridorPlot(props: ReplayPlotProps) {
         </div>
         <SessionHits props={props} width={width} />
       </div>
+      {pnl.strip && pnl.strip.length > 0 && <p className="replay-strip-labels">{pnl.strip.join(' · ')}</p>}
       <Key entries={keyOf(props.sessions, new Set([...strip.drawn, ...pnl.drawn]))} />
     </div>
   );

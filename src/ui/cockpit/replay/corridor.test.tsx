@@ -312,9 +312,9 @@ describe('Corridor: the Trade P&L (W40, W41)', () => {
     expect(later.container.querySelectorAll('path.stake-beam')).toHaveLength(1);
     cleanup();
     // The phone wording.
-    render(<CorridorPlot {...props({ sessions: sessions.slice(0, 1), sliderIndex: 0, compact: true })} />);
-    expect(screen.getByText('Risk $352')).toBeTruthy();
-    expect(screen.getByText('Reward $928')).toBeTruthy();
+    // (T9AR.12: on the phone the tags are in the strip under the drawing.)
+    const phone = render(<CorridorPlot {...props({ sessions: sessions.slice(0, 1), sliderIndex: 0, compact: true })} />);
+    expect(phone.container.querySelector('.replay-strip-labels')!.textContent).toContain('Risk $352 · Reward $928');
   });
 
   it('should draw a dashed line through both charts at each Position Change after the entry, labelled "Sold 2 at $4.00"', () => {
@@ -331,8 +331,9 @@ describe('Corridor: the Trade P&L (W40, W41)', () => {
     expect(screen.getAllByText('Sold 2 at $4.00')).toHaveLength(1);
     expect(screen.queryByText('Bought 4 at $1.68')).toBeNull();
     cleanup();
-    render(<CorridorPlot {...props({ compact: true })} />);
-    expect(screen.getByText('Sold 2')).toBeTruthy();
+    // (T9AR.12: on the phone the sale is named in the strip under the drawing.)
+    const phone = render(<CorridorPlot {...props({ compact: true })} />);
+    expect(phone.container.querySelector('.replay-strip-labels')!.textContent).toContain('Sold 2');
     expect(screen.queryByText('Sold 2 at $4.00')).toBeNull();
     cleanup();
     // Before the sale is revealed there is no line.
@@ -584,16 +585,16 @@ describe('Corridor: drawn at a phone\'s real width (W39, W40, W41)', () => {
     expect(pnl(container).getAttribute('width')).toBe('280');
     expect(screen.getByText('BREN price')).toBeTruthy();
     expect(screen.queryByText('BREN price · one Mark per session')).toBeNull();
-    // A stake tag drawn at this width (where it has a free spot; otherwise it is left out) uses the phone words.
+    // The stake tags use the phone words (T9AR.12: they are in the strip under the drawing).
     expect(screen.queryByText(/^(Risk|Reward) to /)).toBeNull();
     expect(screen.queryByText('Sold 2 at $4.00')).toBeNull();
     cleanup();
     vi.restoreAllMocks();
     frameWidth(340);
     const phone = render(<CorridorPlot {...props({ sessions })} />);
-    expect(phone.container.querySelectorAll('text.stake-tag').length, 'a stake tag fits at 340').toBeGreaterThan(0);
+    expect(phone.container.querySelectorAll('text.stake-tag'), 'no stake tag on the drawing at 340').toHaveLength(0);
     expect(screen.queryByText(/^(Risk|Reward) to /)).toBeNull();
-    expect(screen.queryAllByText(/^(Risk|Reward) \$/).length).toBeGreaterThan(0);
+    expect(phone.container.querySelector('.replay-strip-labels')!.textContent).toContain('Risk $672 · Reward $928');
     cleanup();
     // A wide box keeps the long words at the full drawing.
     vi.restoreAllMocks();
@@ -629,16 +630,10 @@ describe('Corridor: drawn at a phone\'s real width (W39, W40, W41)', () => {
       frameWidth(width);
       const { container } = render(<CorridorPlot {...props()} />);
       expect(pnl(container).getAttribute('width')).toBe(String(width));
+      // T9AR.12: the two results and the banked label are in the strip under the drawing, none on it.
       const text = [...pnl(container).querySelectorAll('text')].map((t) => t.textContent);
-      expect(text, `${width}: ${text.join(' | ')}`).toEqual(expect.arrayContaining(['Stop +$316', 'Target +$956', 'Banked +$478']));
-      // Each of them sits inside the drawing, so none is cut off at the edge.
-      for (const t of pnl(container).querySelectorAll('text.result-label, text.banked-label')) {
-        const x = num(t, 'x');
-        const w = t.textContent.length * 6;
-        const start = t.getAttribute('text-anchor') === 'end' ? x - w : t.getAttribute('text-anchor') === 'middle' ? x - w / 2 : x;
-        expect(start).toBeGreaterThanOrEqual(0);
-        expect(start + w).toBeLessThanOrEqual(width);
-      }
+      for (const label of ['Stop +$316', 'Target +$956', 'Banked +$478']) expect(text, `${width}: ${text.join(' | ')}`).not.toContain(label);
+      expect(container.querySelector('.replay-strip-labels')!.textContent).toBe('Stop +$316 · Banked +$478 · Target +$956 · Sold 2');
       cleanup();
       vi.restoreAllMocks();
     }
@@ -652,13 +647,9 @@ describe('Corridor: drawn at a phone\'s real width (W39, W40, W41)', () => {
         bren(Math.min(i, 10), { slot: i, banked: i === 14 ? 478 : 0, bankedLabel: i === 14 ? 'Banked +$478' : undefined, markers: [] }),
       );
       const { container } = render(<CorridorPlot {...props({ sessions, sliderIndex: 14 })} />);
-      const t = [...pnl(container).querySelectorAll('text.banked-label')].find((e) => e.textContent === 'Banked +$478')!;
-      expect(t, `${width}: the banked label is kept`).toBeTruthy();
-      const x = num(t, 'x');
-      const w = t.textContent.length * 6;
-      const start = t.getAttribute('text-anchor') === 'end' ? x - w : x;
-      expect(start, `${width}: left edge`).toBeGreaterThanOrEqual(0);
-      expect(start + w, `${width}: right edge`).toBeLessThanOrEqual(width);
+      // T9AR.12: drawn narrow the label is in the strip, not on the drawing, so nothing of it can run past the edge.
+      expect(container.querySelector('.replay-strip-labels')!.textContent, `${width}: the banked label is kept`).toContain('Banked +$478');
+      expect(pnl(container).querySelectorAll('text.banked-label'), `${width}: none on the drawing`).toHaveLength(0);
       cleanup();
       vi.restoreAllMocks();
     }
@@ -767,7 +758,9 @@ describe('Corridor: labels apart (T9.19-B2)', () => {
       frameWidth(width === 640 ? 900 : width);
       const { container } = render(<CorridorPlot {...props(over)} />);
       const svg = pnl(container);
-      expect([...svg.querySelectorAll('text.banked-label')].length, `${width}`).toBe(3);
+      // T9AR.12: drawn narrow the three labels are in the strip, not on the drawing.
+      const listed = container.querySelector('.replay-strip-labels')?.textContent?.split(' · ').filter((l) => l.startsWith('Banked')) ?? [];
+      expect(width === 640 ? svg.querySelectorAll('text.banked-label').length : listed.length, `${width}`).toBe(3);
       expect(clashes(svg), `${width}`).toEqual([]);
       cleanup();
       vi.restoreAllMocks();
@@ -1108,5 +1101,66 @@ describe('Corridor: a session with no Mark (suggestion 12)', () => {
     expect(after![1]).toEqual({ x: Math.round(gapRight * 10) / 10, y: cy(4) });
     // Nothing is drawn inside the gap's column.
     expect([...before!, ...after!].some((p) => p.x > gapLeft + 0.1 && p.x < gapRight - 0.1)).toBe(false);
+  });
+});
+
+describe('Corridor on a phone (suggestion 9)', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+  // R-BREN-U Thu 11-12: the slider on the sale's session.
+  const thursday = () => props({ sessions: DAYS.slice(0, 9).map((_, i) => bren(i)), sliderIndex: 8 });
+  const strip = (c: HTMLElement) => c.querySelector('.replay-strip-labels');
+  const drawingText = (c: HTMLElement) => [...pnl(c).querySelectorAll('text')].map((t) => t.textContent);
+
+  it('should draw the phone P&L chart at least 200 high', () => {
+    frameWidth(340);
+    const { container } = render(<CorridorPlot {...thursday()} />);
+    expect(num(pnl(container), 'height')).toBeGreaterThanOrEqual(200);
+  });
+
+  // R-BREN-U Thu 11-12: "Stop +$316 · Banked +$478 · Target +$956 · Sold 2".
+  it('should take the line labels off the phone drawing and list them in a strip under it', () => {
+    frameWidth(340);
+    const { container } = render(<CorridorPlot {...thursday()} />);
+    expect(strip(container)!.textContent).toBe('Stop +$316 · Banked +$478 · Target +$956 · Sold 2');
+    const text = drawingText(container);
+    for (const label of ['Stop +$316', 'Banked +$478', 'Target +$956', 'Sold 2', 'Break-even']) expect(text).not.toContain(label);
+    // Under the drawing, outside it.
+    expect(pnl(container).contains(strip(container))).toBe(false);
+    expect(pnl(container).compareDocumentPosition(strip(container)!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  // The slider's value is "+$982".
+  it('should keep the slider value on the drawing with the title and the axis figures', () => {
+    frameWidth(340);
+    const { container } = render(<CorridorPlot {...thursday()} />);
+    const text = drawingText(container);
+    expect(text).toContain('+$982');
+    expect(text).toContain('Trade P&L');
+    expect(text.filter((t) => /^[−]?\$[\d,]+$/.test(t ?? '')).length, text.join(' | ')).toBeGreaterThan(0);
+    // The wide drawing carries its labels on the lines and no strip.
+    cleanup();
+    vi.restoreAllMocks();
+    frameWidth(900);
+    const wide = render(<CorridorPlot {...thursday()} />);
+    expect(strip(wide.container)).toBeNull();
+    expect(drawingText(wide.container)).toEqual(expect.arrayContaining(['Stop +$316', 'Target +$956']));
+  });
+
+  it('should list in the strip a label the wide drawing would leave out for lack of room', () => {
+    const crowd: PlotMarker[] = Array.from({ length: 9 }, (_, n) => ({ id: `s${n}`, kind: 'Execution', effect: 'Reduced', label: `Sold ${n + 1} at $4.00`, shortLabel: `Sold ${n + 1}`, isEntry: false }));
+    const sessions = DAYS.slice(0, 9).map((_, i) => bren(i, i === 8 ? { markers: crowd } : {}));
+    frameWidth(900);
+    const wide = render(<CorridorPlot {...props({ sessions, sliderIndex: 8 })} />);
+    const drawn = [...pnl(wide.container).querySelectorAll('text.marker-label')].length;
+    expect(drawn, 'the wide drawing has no room for every sale').toBeLessThan(9);
+    cleanup();
+    vi.restoreAllMocks();
+    frameWidth(340);
+    const phone = render(<CorridorPlot {...props({ sessions, sliderIndex: 8 })} />);
+    const listed = strip(phone.container)!.textContent;
+    for (let n = 1; n <= 9; n += 1) expect(listed, `Sold ${n}`).toContain(`Sold ${n}`);
   });
 });

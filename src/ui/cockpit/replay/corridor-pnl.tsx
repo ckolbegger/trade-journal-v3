@@ -1,9 +1,9 @@
-import { axisMoney, type DrawnChart, LabelPlacer, pnlRange, tickFits, ticks, timeAxis, valueAxis, type Spot } from './geometry.ts';
+import { axisMoney, type DrawnChart, LabelPlacer, pnlRange, signedAxisMoney, tickFits, ticks, timeAxis, valueAxis, type Spot } from './geometry.ts';
 import type { LabelledFigure, PlotSession, ReplayPlotProps } from './replay.types.ts';
 
-// Drawn at a phone's real width the chart is no longer shrunk with the screen, so it is shorter, to keep the headline and both charts on one screen.
+// A phone's chart is at least 200 high: its labels are in the strip under it, so the drawing keeps its room.
 const HEIGHT_FULL = 210;
-const HEIGHT_PHONE = 170;
+const HEIGHT_PHONE = 200;
 const TOP = 20;
 
 const TITLE_Y = 12;
@@ -129,11 +129,33 @@ export function drawPnl(props: ReplayPlotProps, width: number): DrawnChart {
   const title = props.pnlTitle;
   placer.reserve(title, TITLE_SPOT(time.left));
   const labels: { key: string; cls: string; text: string; spot: Spot }[] = [];
-  const put = (key: string, cls: string, text: string, spots: Spot[], must = false) => {
+  // On a phone (A280) no label is drawn on a line: each goes to the strip under the drawing, whether or not the wide drawing had room
+  // for it. The labels of a level (a result, banked, a limit) are listed from the lowest figure up, the rest after them in the order placed.
+  const stripped: { text: string; level?: number }[] = [];
+  const kept = new Set<string>();
+  const put = (key: string, cls: string, text: string, spots: Spot[], must = false, level?: number) => {
+    if (props.compact) {
+      kept.add(key);
+      // The key names Break-even (A280): it is no label for the strip.
+      if (key !== 'break-even') stripped.push({ text, ...(level !== undefined && { level }) });
+      return;
+    }
     const spot = placer.place(text, spots, must);
-    if (spot) labels.push({ key, cls, text, spot });
+    if (spot) {
+      kept.add(key);
+      labels.push({ key, cls, text, spot });
+    }
   };
   const xc = current ? time.x(current.slot) : 0;
+  // A phone's drawing keeps the slider's value beside its dot, above it or below.
+  if (props.compact && current && current.tradePnl !== null) {
+    const y = value.y(current.tradePnl);
+    const spot = placer.place(signedAxisMoney(current.tradePnl), [
+      { x: xc, y: y - 9, anchor: 'middle' },
+      { x: xc, y: y + 17, anchor: 'middle' },
+    ], true);
+    if (spot) labels.push({ key: 'slider-value', cls: 'slider-value', text: signedAxisMoney(current.tradePnl), spot });
+  }
   const right = xc + time.column / 2;
   if (current) {
     for (const [kind, f] of [
@@ -150,7 +172,7 @@ export function drawPnl(props: ReplayPlotProps, width: number): DrawnChart {
         { x: right + 4, y: y + 15, anchor: 'start' },
         { x: xc - time.column / 2 - 4, y: y - 16, anchor: 'end' },
         { x: xc - time.column / 2 - 4, y: y + 24, anchor: 'end' },
-      ], true);
+      ], true, f.value);
     }
   }
   // One label for each level a band steps through, that level's own finished text, at its first session. It is placed
@@ -169,7 +191,7 @@ export function drawPnl(props: ReplayPlotProps, width: number): DrawnChart {
       const rightEdge = time.x(s.slot) + time.column / 2 - 3;
       const anchored: Spot[] = rows.map((dy): Spot => (runsPast ? { x: rightEdge, y: dy, anchor: 'end' } : { x: left, y: dy, anchor: 'start' }));
       // The banked label is never left out; the stake tags, "Break-even" and "Sold 2" labels give way to it.
-      put(`banked-${s.slot}`, 'banked-label', text, anchored, true);
+      put(`banked-${s.slot}`, 'banked-label', text, anchored, true, s.banked);
     });
   }
   if (current?.stake && current.tradePnl !== null) {
@@ -227,7 +249,7 @@ export function drawPnl(props: ReplayPlotProps, width: number): DrawnChart {
     put(kind, `${kind}-label`, words(limit.label, limit.shortLabel), [
       { x: time.right - 4, y: value.y(limit.value) + dy, anchor: 'end' },
       { x: time.left + 4, y: value.y(limit.value) + dy, anchor: 'start' },
-    ]);
+    ], false, limit.value);
   }
   // The line itself steps with each revealed session's own figure; a session without one, or outside the range, leaves a break.
   const limitPath = (pick: (s: PlotSession) => LabelledFigure | null): string =>
@@ -269,7 +291,6 @@ export function drawPnl(props: ReplayPlotProps, width: number): DrawnChart {
   });
   if (cursorText) axisText.push({ cls: 'cursor-label', text: cursorText, x: cursorX, anchor: 'middle' });
   // A line is drawn only with its label (A280): one whose label found no room is not drawn at all.
-  const placed = new Set(labels.map((l) => l.key));
   const limitLines = (
     [
       ['worst-case', 'WorstCase', (s: PlotSession) => s.worstCase],
@@ -277,7 +298,7 @@ export function drawPnl(props: ReplayPlotProps, width: number): DrawnChart {
     ] as const
   ).flatMap(([css, keyKind, pick]) => {
     const d = limitPath(pick);
-    return d && placed.has(css) ? [{ css, keyKind, d }] : [];
+    return d && kept.has(css) ? [{ css, keyKind, d }] : [];
   });
   const drawn = new Set(limitLines.map((l) => l.keyKind));
   const svg = (
@@ -376,5 +397,6 @@ export function drawPnl(props: ReplayPlotProps, width: number): DrawnChart {
       ))}
     </svg>
   );
-  return { svg, drawn };
+  const levels = stripped.filter((l) => l.level !== undefined).sort((a, b) => a.level! - b.level!);
+  return { svg, drawn, strip: [...levels, ...stripped.filter((l) => l.level === undefined)].map((l) => l.text) };
 }

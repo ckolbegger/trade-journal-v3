@@ -67,8 +67,12 @@ async function expectPhoneWords(scope: Locator, where: string): Promise<void> {
   expect(pnl, `${where}: P&L title`).toContain('Trade P&L');
   expect(price.join('|'), `${where}: no long price title`).not.toContain('one Mark per session');
   expect(pnl.join('|'), `${where}: no long P&L title`).not.toContain('dollars for the whole Position');
-  for (const text of pnl.filter((t) => /^Sold/.test(t))) expect(text, `${where}: marker`).toBe('Sold 2');
-  expect(pnl.filter((t) => /^(Risk|Reward)\b/.test(t)).every((t) => /^(Risk|Reward) \$/.test(t)), `${where}: stake tags ${pnl.join(' | ')}`).toBe(true);
+  // T9AR.12: the line labels are in the strip under the P&L drawing, in the phone words, and none is on the drawing.
+  const strip = (((await scope.locator('.replay-strip-labels').textContent()) ?? '').split(' · '));
+  expect(pnl.filter((t) => /^(Sold|Stop|Target|Banked|Risk|Reward)\b/.test(t)), `${where}: no line label on the drawing`).toEqual([]);
+  for (const text of strip.filter((t) => /^Sold/.test(t))) expect(text, `${where}: marker`).toBe('Sold 2');
+  expect(strip.filter((t) => /^(Risk|Reward)\b/.test(t)).every((t) => /^(Risk|Reward) \$/.test(t)), `${where}: stake tags ${strip.join(' | ')}`).toBe(true);
+  expect(strip, `${where}: the Thu 11-12 labels`).toEqual(expect.arrayContaining(['Stop +$316', 'Banked +$478', 'Target +$956', 'Sold 2']));
   // The text is drawn at its real size, not shrunk with a scaled-down drawing: its size on the screen is its font size times the drawing's scale.
   for (const chart of [priceStrip(scope), pnlChart(scope)]) {
     const smallest = await chart.evaluate((svg: SVGSVGElement) => {
@@ -115,8 +119,10 @@ async function throughSizes(page: Page, scope: () => Locator, surface: string, s
     if (size.width < 460) await expectChartTextInside(scope(), where);
     // T9.19-B8: the phone words and the real-size text (at least 10 px) on the Review card too, not on the Detail alone.
     if (size.width < 460) await expectPhoneWords(scope(), where);
-    // The labels no phone chart may lose: the two results at the lines (the "Break-even" and "Sold 2" labels may be dropped on a tight chart).
-    expect(await chartText(pnlChart(scope())), where).toEqual(expect.arrayContaining(['Stop +$316', 'Target +$956']));
+    // The labels no phone chart may lose: the two results at the lines, which a phone lists in the strip under the drawing (T9AR.12) and a wide drawing keeps on the lines.
+    const strip = scope().locator('.replay-strip-labels');
+    const results = (await strip.count()) > 0 ? ((await strip.textContent()) ?? '').split(' · ') : await chartText(pnlChart(scope()));
+    expect(results, where).toEqual(expect.arrayContaining(['Stop +$316', 'Target +$956']));
     await expectNoSidewaysScroll(page, where);
     await expectAccessible(page, where);
   }

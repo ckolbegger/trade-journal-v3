@@ -140,6 +140,7 @@
   opacity: 0.55;
 }
 
+.replay-plot .slider-value,
 .replay-plot .result-label,
 .replay-plot .stake-tag,
 .replay-plot .banked-label,
@@ -271,6 +272,14 @@
 .replay-hit:focus-visible {
   outline: 2px solid var(--focus);
   outline-offset: -2px;
+}
+
+/* A phone's labels (A280), listed in one line of text under the P&L drawing; it wraps rather than scrolls. */
+.replay-strip-labels {
+  margin: 4px 0 0;
+  font-size: 11px;
+  font-weight: 650;
+  color: var(--ink);
 }
 
 /* The key (A280): one line under the charts naming what is drawn so far; it wraps rather than scrolls on a narrow box. */
