@@ -144,7 +144,7 @@ describe('replay.props: the plot titles, anchors and time axis (W39, W40, A256)'
         planAtTarget: { value: 956, label: 'Target +$956' },
       },
       // Mon Nov 9 to Fri Nov 20: ten trading days, the later ones left blank until the slider reaches them.
-      axis: { slots: 10, startLabel: 'Mon Nov 9', endLabel: 'Expires Fri Nov 20' },
+      axis: { slots: 10, startLabel: 'Mon Nov 9', endLabels: ['Expires Fri Nov 20', 'Expires Nov 20', 'Exp Nov 20'] },
     });
   });
 
@@ -172,7 +172,19 @@ describe('replay.props: the plot titles, anchors and time axis (W39, W40, A256)'
   it('should label the time axis with the first session date at the left and Expires Fri Nov 20 at the right on an option: the props', () => {
     const wed = { ...brenWed1111, figures: { ...brenWed1111.figures!, conditions: [] } };
     const mon = withMarks(session({ date: '2026-11-09', pnl: 28 }), [markOf(BREN_STOCK, '97.20'), markOf(BREN, '1.61')]);
-    expect(replayProps(fullView([mon, wed], PLAN), { Plot }).plotBase.axis).toEqual({ slots: 10, startLabel: 'Mon Nov 9', endLabel: 'Expires Fri Nov 20' });
+    expect(replayProps(fullView([mon, wed], PLAN), { Plot }).plotBase.axis).toEqual({ slots: 10, startLabel: 'Mon Nov 9', endLabels: ['Expires Fri Nov 20', 'Expires Nov 20', 'Exp Nov 20'] });
+  });
+
+  it('should supply the option end label as three finished forms, longest first', () => {
+    const wed = { ...brenWed1111, figures: { ...brenWed1111.figures!, conditions: [] } };
+    const mon = withMarks(session({ date: '2026-11-09', pnl: 28 }), [markOf(BREN_STOCK, '97.20'), markOf(BREN, '1.61')]);
+    expect(replayProps(fullView([mon, wed], PLAN), { Plot }).plotBase.axis.endLabels).toEqual(['Expires Fri Nov 20', 'Expires Nov 20', 'Exp Nov 20']);
+  });
+
+  it('should supply no end label forms on a stock Trade', () => {
+    const sessions = ['2026-11-02', '2026-11-03'].map((date) => session({ date, instrument: AXIO, held: 200, pnl: 10 }));
+    const axis = replayProps({ ...view(sessions), instruments: [AXIO] }, { Plot }).plotBase.axis;
+    expect('endLabels' in axis).toBe(false);
   });
 
   it('should show nothing at the right end of a stock Trade time axis at any session', () => {

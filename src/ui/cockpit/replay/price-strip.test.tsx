@@ -36,7 +36,7 @@ function props(over: Partial<ReplayPlotProps> = {}): ReplayPlotProps {
     describedBy: 'replay-cards',
     sessions,
     anchors: { entryPrice: 97, priceLines: [{ kind: 'Strike', price: 100, label: 'Strike $100' }], planAtStop: null, planAtTarget: null },
-    axis: { slots: 15, endLabel: 'Fri Nov 20' },
+    axis: { slots: 15, endLabels: ['Fri Nov 20'] },
     sliderIndex: 10,
     ...over,
   };
@@ -124,7 +124,7 @@ describe("Corridor: the Underlying's price (W39)", () => {
     expect(screen.getByText('Fri Nov 20')).toBeTruthy();
     cleanup();
     // A stock Trade's axis ends on its last session, which then sits at the right edge.
-    const stock = render(<CorridorPlot {...props({ sessions, sliderIndex: 4, axis: { slots: 5, endLabel: 'Fri Nov 6' } })} />);
+    const stock = render(<CorridorPlot {...props({ sessions, sliderIndex: 4, axis: { slots: 5, endLabels: ['Fri Nov 6'] } })} />);
     const last = points(stock.container).map((p) => num(p, 'cx')).at(-1)!;
     expect(last).toBeGreaterThan(640 * 0.9);
   });
@@ -168,7 +168,7 @@ describe("Corridor: the Underlying's price (W39)", () => {
 
   it('should draw the Mark label with the anchor of the spot it was placed in', () => {
     // The slider's session is the last column, so the label overflows the right edge above and below the dot: it is placed left of it.
-    const { container } = render(<CorridorPlot {...props({ compact: true, axis: { slots: 11, endLabel: 'Tue Nov 17' } })} />);
+    const { container } = render(<CorridorPlot {...props({ compact: true, axis: { slots: 11, endLabels: ['Tue Nov 17'] } })} />);
     const label = strip(container).querySelector('text.mark-label')!;
     const dot = strip(container).querySelector('circle.mark.current')!;
     expect(label.getAttribute('text-anchor')).toBe('end');
@@ -207,7 +207,7 @@ describe('Corridor: price labels stay inside the chart (B6)', () => {
       vi.stubGlobal('ResizeObserver', class { observe() {} unobserve() {} disconnect() {} });
       // The slider's Mark is on the last column (slot 10 of 11 slots; the first column is the Plan's). It is drawn bold and larger, about 7 px a character, so its box is estimated at that.
       const sessions = BREN_MARKS.map((m, i) => session(i, m, i === 10 ? '$44.00' : undefined));
-      const { container } = render(<CorridorPlot {...props({ sessions, axis: { slots: 11, endLabel: 'Fri Nov 20' } })} />);
+      const { container } = render(<CorridorPlot {...props({ sessions, axis: { slots: 11, endLabels: ['Fri Nov 20'] } })} />);
       const label = strip(container).querySelector('text.mark-label')!;
       expect(label.textContent).toBe('$44.00');
       const w = label.textContent.length * 7 + 2;

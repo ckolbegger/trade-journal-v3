@@ -107,6 +107,12 @@ export function plotSessionOf(view: TradeReplayView, index: number): PlotSession
 
 // The trading days from the first date to the last, both counted: the weekdays. The time axis is drawing (A256); the UI holds no holiday
 // calendar, so a holiday leaves one slot blank.
+// The option's end words, longest first, so the chart can pick the first that fits (P137): with the weekday, without it, then "Exp".
+function expiresLabels(expiration: string): readonly string[] {
+  const parts = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' }).format(new Date(`${expiration}T00:00:00Z`));
+  return [`Expires ${shortDate(expiration)}`, `Expires ${parts}`, `Exp ${parts}`];
+}
+
 function weekdaysThrough(first: string, last: string): number {
   let count = 0;
   for (let at = Date.parse(`${first}T00:00:00Z`); at <= Date.parse(`${last}T00:00:00Z`); at += 86_400_000) {
@@ -145,6 +151,6 @@ export function plotBaseOf(view: TradeReplayView): ReplayProps['plotBase'] {
       planAtTarget: plan ? labelledValue(plan.atTarget, 'Target') : null,
     },
     // To the contract's expiration; a stock Trade's axis ends at its last session.
-    axis: contract && first ? { slots: weekdaysThrough(first, contract.expiration), startLabel: shortDate(first), endLabel: `Expires ${shortDate(contract.expiration)}` } : { slots: last ? weekdaysThrough(first!, last) : 0, ...(first && { startLabel: shortDate(first) }) },
+    axis: contract && first ? { slots: weekdaysThrough(first, contract.expiration), startLabel: shortDate(first), endLabels: expiresLabels(contract.expiration) } : { slots: last ? weekdaysThrough(first!, last) : 0, ...(first && { startLabel: shortDate(first) }) },
   };
 }

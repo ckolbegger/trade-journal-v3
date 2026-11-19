@@ -59,7 +59,7 @@ function props(over: Partial<ReplayProps> = {}, count = 11): ReplayProps {
     previousLabel: 'Previous session',
     nextLabel: 'Next session',
     cardsWords: { title: 'Session by session', newerLabel: 'Newer sessions', earlierLabel: 'Earlier sessions' },
-    plotBase: { priceTitle: 'BREN price', pnlTitle: 'Trade P&L', accessibleName: 'BREN Marks and Trade P&L by session', describedBy: 'replay-cards', anchors: { priceLines: [], planAtStop: null, planAtTarget: null }, axis: { slots: 15, endLabel: 'Fri Nov 20' } },
+    plotBase: { priceTitle: 'BREN price', pnlTitle: 'Trade P&L', accessibleName: 'BREN Marks and Trade P&L by session', describedBy: 'replay-cards', anchors: { priceLines: [], planAtStop: null, planAtTarget: null }, axis: { slots: 15, endLabels: ['Fri Nov 20'] } },
     Plot: PlotDouble,
     ...over,
   };

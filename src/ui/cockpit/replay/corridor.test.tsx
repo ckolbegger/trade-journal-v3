@@ -57,7 +57,7 @@ function props(over: Partial<ReplayPlotProps> = {}): ReplayPlotProps {
       planAtStop: fig(-324, 'Stop −$324'),
       planAtTarget: fig(956, 'Target +$956'),
     },
-    axis: { slots: 15, endLabel: 'Fri Nov 20' },
+    axis: { slots: 15, endLabels: ['Fri Nov 20'] },
     sliderIndex: 10,
     ...over,
   };
@@ -971,12 +971,12 @@ describe('Corridor: the key, the dates and the lines (suggestion 3)', () => {
     expect([under.textContent, under.getAttribute('text-anchor'), num(under, 'x')]).toEqual(['Thu Nov 5', 'middle', Math.round(time.x(3) * 10) / 10]);
     // On an option the name sits under the cursor as well, and the first session's own date is not drawn twice.
     cleanup();
-    const first = render(<CorridorPlot {...props({ axis: { slots: 15, startLabel: 'Mon Nov 2', endLabel: 'Expires Fri Nov 20' }, sliderIndex: 0, sessions: [bren(0)] })} />);
+    const first = render(<CorridorPlot {...props({ axis: { slots: 15, startLabel: 'Mon Nov 2', endLabels: ['Expires Fri Nov 20', 'Expires Nov 20', 'Exp Nov 20'] }, sliderIndex: 0, sessions: [bren(0)] })} />);
     expect([...pnl(first.container).querySelectorAll('text')].filter((t) => t.textContent === 'Mon Nov 2')).toHaveLength(1);
   });
 
   it('should label the time axis with the first session date at the left and Expires Fri Nov 20 at the right on an option: the drawing', () => {
-    const { container } = render(<CorridorPlot {...props({ axis: { slots: 15, startLabel: 'Mon Nov 2', endLabel: 'Expires Fri Nov 20' }, sliderIndex: 5, sessions: DAYS.slice(0, 6).map((_, i) => bren(i)) })} />);
+    const { container } = render(<CorridorPlot {...props({ axis: { slots: 15, startLabel: 'Mon Nov 2', endLabels: ['Expires Fri Nov 20', 'Expires Nov 20', 'Exp Nov 20'] }, sliderIndex: 5, sessions: DAYS.slice(0, 6).map((_, i) => bren(i)) })} />);
     const time = timeAxis(640, 15);
     const start = pnl(container).querySelector('text.axis-start')!;
     const end = pnl(container).querySelector('text.axis-end')!;
@@ -985,7 +985,7 @@ describe('Corridor: the key, the dates and the lines (suggestion 3)', () => {
   });
 
   it('should keep Expires Fri Nov 20 on an option time axis at the last session, with the cursor date beside it and not overlapping it', () => {
-    const { container } = render(<CorridorPlot {...props({ axis: { slots: 11, startLabel: 'Mon Nov 2', endLabel: 'Expires Fri Nov 20' }, sliderIndex: 10, sessions: DAYS.map((_, i) => bren(i)) })} />);
+    const { container } = render(<CorridorPlot {...props({ axis: { slots: 11, startLabel: 'Mon Nov 2', endLabels: ['Expires Fri Nov 20', 'Expires Nov 20', 'Exp Nov 20'] }, sliderIndex: 10, sessions: DAYS.map((_, i) => bren(i)) })} />);
     const end = pnl(container).querySelector('text.axis-end')!;
     const cursor = pnl(container).querySelector('text.cursor-label')!;
     expect([end.textContent, cursor.textContent]).toEqual(['Expires Fri Nov 20', 'Mon Nov 16']);
@@ -999,7 +999,7 @@ describe('Corridor: the key, the dates and the lines (suggestion 3)', () => {
 // T9AR.11 (A280, A256, P146): the entry session, an off-scale Worst case, a session with no Mark.
 describe('Corridor: labels clear of the cursor (suggestion 10)', () => {
   // The cursor's column on a 640-wide drawing of an 11-slot option axis, and a label's box by the placer's own estimate.
-  const AXIS = { slots: 11, startLabel: 'Mon Nov 2', endLabel: 'Expires Fri Nov 20' };
+  const AXIS = { slots: 11, startLabel: 'Mon Nov 2', endLabels: ['Expires Fri Nov 20', 'Expires Nov 20', 'Exp Nov 20'] };
   const LINES = [
     { kind: 'Strike' as const, price: 100, label: 'Strike $100' },
     { kind: 'Stop' as const, price: 94, label: 'Stop $94.00' },
@@ -1174,7 +1174,7 @@ describe('Corridor on a phone (suggestion 9)', () => {
       props({
         sessions: Array.from({ length: slider + 1 }, (_, i) => bren(i, { tradePnl: 1138, markers: [], resultAtStop: null, resultAtTarget: null })),
         sliderIndex: slider,
-        axis: { slots: 15, endLabel: 'Fri Nov 20' },
+        axis: { slots: 15, endLabels: ['Fri Nov 20'] },
       });
     // The label's extent by the same 6 px a character the placer uses, from its anchor.
     const extent = (c: HTMLElement) => {
@@ -1355,7 +1355,7 @@ describe('Corridor: the time axis keeps its first date (T9AR.23-S7)', () => {
   afterEach(() => {
     vi.restoreAllMocks();
   });
-  const AXIS = { slots: 15, startLabel: 'Mon Nov 2', endLabel: 'Expires Fri Nov 20' };
+  const AXIS = { slots: 15, startLabel: 'Mon Nov 2', endLabels: ['Expires Fri Nov 20', 'Expires Nov 20', 'Exp Nov 20'] };
   const box = (t: Element) => {
     const w = t.textContent.length * 6 + 2;
     const x = num(t, 'x');
@@ -1385,6 +1385,26 @@ describe('Corridor: the time axis keeps its first date (T9AR.23-S7)', () => {
     expect(pnl(container).querySelector('text.axis-start')).not.toBeNull();
     expect(pnl(container).querySelector('text.axis-end')).not.toBeNull();
     expect(pnl(container).querySelector('text.cursor-label')).toBeNull();
+  });
+
+  it('should draw the first end label form that clears the first date, unchanged, whatever shape the forms take', () => {
+    const forms = ['Closes on Friday November 20 2026', 'Fri Nov 20', 'Nov 20'];
+    frameWidth(640);
+    const wide = render(<CorridorPlot {...props({ axis: { slots: 11, startLabel: 'Mon Nov 2', endLabels: forms }, sliderIndex: 0, sessions: [bren(0)] })} />);
+    expect(pnl(wide.container).querySelector('text.axis-end')!.textContent).toBe(forms[0]);
+    cleanup();
+    frameWidth(200);
+    const { container } = render(<CorridorPlot {...props({ axis: { slots: 11, startLabel: 'Mon Nov 2', endLabels: forms }, sliderIndex: 0, sessions: [bren(0)] })} />);
+    const start = pnl(container).querySelector('text.axis-start')!;
+    const end = pnl(container).querySelector('text.axis-end')!;
+    expect(forms.indexOf(end.textContent)).toBeGreaterThan(0);
+    expect(box(start)[1] + 4).toBeLessThanOrEqual(box(end)[0]);
+  });
+
+  it('should draw no end label when even the shortest form cannot clear the first date', () => {
+    frameWidth(200);
+    const { container } = render(<CorridorPlot {...props({ axis: { slots: 11, startLabel: 'Mon Nov 2', endLabels: ['Closes on Friday November 20 2026', 'Closes on Friday Nov 20'] }, sliderIndex: 0, sessions: [bren(0)] })} />);
+    expect(pnl(container).querySelector('text.axis-end')).toBeNull();
   });
 
   it.each([200, 215, 223, 240])('should draw both edge labels without overlap at width %i on an option Trade', (w) => {

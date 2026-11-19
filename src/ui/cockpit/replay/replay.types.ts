@@ -109,8 +109,8 @@ export interface ReplayPlotProps {
   readonly anchors: PlotAnchors;
   // The time axis: `slots` trading sessions from the first session to the contract's expiration (to the last session
   // for stock), and the end's label ("Expires Fri Nov 20"); later sessions stay blank. A280: `startLabel` is the first
-  // session's date at the left; `endLabel` is absent on a stock Trade, which has nothing to say at the right.
-  readonly axis: { readonly slots: number; readonly startLabel?: string; readonly endLabel?: string };
+  // session's date at the left; `endLabels` are the finished words for the right, longest first (the chart draws the first that fits); absent on a stock Trade, which has nothing to say at the right.
+  readonly axis: { readonly slots: number; readonly startLabel?: string; readonly endLabels?: readonly string[] };
   // A280: the name of the slider's session, shown under the cursor ("Mon Nov 16").
   readonly cursorLabel?: string;
   // The slider's session, as an index into `sessions`.

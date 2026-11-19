@@ -305,10 +305,9 @@ export function drawPnl(props: ReplayPlotProps, width: number): DrawnChart {
   // Both edge labels always stay (the first date and the expiry are different facts); the cursor's name steps right of the first date and
   // left of the end label instead. On a chart too narrow for all three it is left out, and the two edge labels still do not overlap it.
   const startRight = axis.startLabel ? span(axis.startLabel, time.left, 'start').x1 + 4 : 0;
-  // On the narrowest charts the full end label would run into the first date: it drops its weekday, then shortens "Expires" (P137).
-  const endText = axis.endLabel
-    ? [axis.endLabel, axis.endLabel.replace(/ \w{3} /, ' '), axis.endLabel.replace(/^Expires \w{3} /, 'Exp ')].find((t) => span(t, time.right, 'end').x0 >= startRight) ?? axis.endLabel.replace(/^Expires \w{3} /, 'Exp ')
-    : undefined;
+  // The end label's finished forms arrive longest first (P137); the first that clears the first date is drawn as it is. When none clears,
+  // none is drawn: a label that overlaps is worse than a missing one (A280).
+  const endText = axis.endLabels?.find((t) => span(t, time.right, 'end').x0 >= startRight);
   const endLeft = endText ? span(endText, time.right, 'end').x0 - 4 : width;
   const lowest = Math.max(half, startRight + half);
   const highest = Math.min(width - half, endLeft - half);
