@@ -1,0 +1,145 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 6 selected item(s).",
+  "summary": {
+    "files_reviewed": 6,
+    "comments": 0,
+    "total_tokens": 51080,
+    "input_tokens": 49965,
+    "output_tokens": 1115,
+    "cache_read_tokens": 4992,
+    "elapsed": "38s"
+  },
+  "tool_calls": {
+    "total": 10,
+    "by_tool": {
+      "code_search": 3,
+      "file_read": 7
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Replay chart rendering, corridor behavior, plot properties, and styling with tests",
+      "files": [
+        "e2e/d9ar/chart.spec.ts",
+        "src/ui/cockpit/replay/corridor.test.tsx",
+        "src/ui/cockpit/replay/corridor.tsx",
+        "src/ui/cockpit/replay/plot.props.test.ts",
+        "src/ui/cockpit/replay/plot.props.ts",
+        "src/ui/cockpit/styles/replay-plot.css"
+      ]
+    }
+  ],
+  "session_id": "4ac37748-b97e-49cd-9dbe-4c8c50a8471a",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "4ac37748-b97e-49cd-9dbe-4c8c50a8471a",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "f309edab",
+      "resolved_base": "143150e2855dfcc9803540e90434798d044cfac0",
+      "resolved_head": "f309edabd65bb990596e802f4a4897e387cbcb2e",
+      "exact_range": "143150e2855dfcc9803540e90434798d044cfac0..f309edabd65bb990596e802f4a4897e387cbcb2e",
+      "source_artifact_sha256": "5a46419358b811f2df1f718879058015cfd6ba3c6249f8e7796fd231448f08bd"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "3c9a7cc1262b7d0ad636414c60005031bb565c86e552422f341c6235b5459dcf",
+          "path": "src/ui/cockpit/replay/plot.props.ts",
+          "fingerprint": "4deb5d35fb9462de4dd18a0f1c8145010ae29f8934b15ae01538e1cdcdbf3986"
+        },
+        {
+          "item_id": "5d73acbebf781c477d11b1dab2cf1e4652c24b5ff821e19aff81ce44093f310a",
+          "path": "src/ui/cockpit/replay/plot.props.test.ts",
+          "fingerprint": "ea629394fb09fd13c06a259cfc3270b6f3ae646e874318e9f968e48be89345c0"
+        },
+        {
+          "item_id": "67c8b9c55df4db1a19bdc33843dfc7b544ae3cacc462c048b5f3913d82cd7b19",
+          "path": "src/ui/cockpit/styles/replay-plot.css",
+          "fingerprint": "8d7dba393bfe3b0dcf2db80c2171a8c0481f48cb37719156f2c19331e3074819"
+        },
+        {
+          "item_id": "b9ff77485ea8c227fe111b6e6915407572768e86debadd842eefda14f4e4bcf1",
+          "path": "src/ui/cockpit/replay/corridor.tsx",
+          "fingerprint": "5a2c3af45cbfd93b5ae99a6880f37f85966de646715049c386ac60066d98ba7a"
+        },
+        {
+          "item_id": "ba578f97f7698c0e6bcb181e747f8c8ef3dafb90b6f8eef6f25b35b639e1dd2c",
+          "path": "src/ui/cockpit/replay/corridor.test.tsx",
+          "fingerprint": "d2328130e9930d76ed1817cdf65ea20469e0687d5a202125b6f98d467d5f1d38"
+        },
+        {
+          "item_id": "ebc9d1c2c701d17b6b1d061b466cab052ef9bc2b403b5d98ee1865f679a05db8",
+          "path": "e2e/d9ar/chart.spec.ts",
+          "fingerprint": "e9f2d4dbd7d146c9c427a53884145b66b9a054c60b1e3d967c2793e7cde71254"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "3c9a7cc1262b7d0ad636414c60005031bb565c86e552422f341c6235b5459dcf",
+          "path": "src/ui/cockpit/replay/plot.props.ts",
+          "fingerprint": "4deb5d35fb9462de4dd18a0f1c8145010ae29f8934b15ae01538e1cdcdbf3986"
+        },
+        {
+          "item_id": "5d73acbebf781c477d11b1dab2cf1e4652c24b5ff821e19aff81ce44093f310a",
+          "path": "src/ui/cockpit/replay/plot.props.test.ts",
+          "fingerprint": "ea629394fb09fd13c06a259cfc3270b6f3ae646e874318e9f968e48be89345c0"
+        },
+        {
+          "item_id": "67c8b9c55df4db1a19bdc33843dfc7b544ae3cacc462c048b5f3913d82cd7b19",
+          "path": "src/ui/cockpit/styles/replay-plot.css",
+          "fingerprint": "8d7dba393bfe3b0dcf2db80c2171a8c0481f48cb37719156f2c19331e3074819"
+        },
+        {
+          "item_id": "b9ff77485ea8c227fe111b6e6915407572768e86debadd842eefda14f4e4bcf1",
+          "path": "src/ui/cockpit/replay/corridor.tsx",
+          "fingerprint": "5a2c3af45cbfd93b5ae99a6880f37f85966de646715049c386ac60066d98ba7a"
+        },
+        {
+          "item_id": "ba578f97f7698c0e6bcb181e747f8c8ef3dafb90b6f8eef6f25b35b639e1dd2c",
+          "path": "src/ui/cockpit/replay/corridor.test.tsx",
+          "fingerprint": "d2328130e9930d76ed1817cdf65ea20469e0687d5a202125b6f98d467d5f1d38"
+        },
+        {
+          "item_id": "ebc9d1c2c701d17b6b1d061b466cab052ef9bc2b403b5d98ee1865f679a05db8",
+          "path": "e2e/d9ar/chart.spec.ts",
+          "fingerprint": "e9f2d4dbd7d146c9c427a53884145b66b9a054c60b1e3d967c2793e7cde71254"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "06423eaec9b9644510643fcdaecb399f4c87fd59451bc2b2b98dfcb493dbc37b",
+          "path": "evidence/D09AR/tdd-log/T9AR.24-B8.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 38126
+  }
+}

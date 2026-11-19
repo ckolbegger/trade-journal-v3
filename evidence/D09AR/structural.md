@@ -851,6 +851,29 @@ Lane BR (`d09ar/br`), base `70ce0f74`.
       - Replay tests: 241. Lane tier `T9AR.24-B7-D1`: unit 2473, integration 286, checks 14 of 14.
       - ocr (`ocr/T9AR.24-B7-D1-cf0d6c86.json`): **no findings**.
     - **Merged** B7's whole chain by fast-forward. Lane PL's base `efdc5c28` was main's head. The chain is B7, B1, part 2's fixture, part 2's fix, F1, B2 and B3, D1, and the evidence commits.
+  - **T9AR.24-B8** `f309edab` (lane PL, from `143150e2`; lane-tier evidence `9c2bd0cf`):
+    - **Causes:**
+      - The key's gaps and its 11 px text were too wide: BREN Fri Nov 13 needs about 874 px against an 837 px box.
+      - `swatchOf` gave "No Mark" no block.
+      - `plot.props.ts` named "Execution" for any non-opening marker, the Expiration included.
+    - **Fix:**
+      - From 861 px up, the key's gap goes from 14 to 6 px, the swatch from 10 to 8 px, the swatch gap from 5 to 2 px, and the font from 11 to 10 px. The phone is untouched.
+      - "No Mark" gets a block in `var(--tint)`.
+      - "Execution" is named only for an Execution. W66 has no "Expired" entry, so the Expiration marker has none either; its line is still drawn.
+    - **Cases:**
+      - Unit, no Execution for an Expiration-only session: red, then green.
+      - Unit, No Mark's block swatch: red, then green.
+      - E2e, BREN's key on one line at 1280, 1440 and 1920 on every session: red (Thu Nov 12 at 1280), then green.
+      - E2e for AXIO, DALE-hold, CORV and R-DALE-U: **first-run passes, flagged**, because their keys already fitted. Mutation: a 60 px gap failed all 5. Restored.
+    - **No words changed.** BREN's busiest session has about 16 px to spare at 1280. The 861 to 1279 range was not tested.
+    - Browser: 78 passed, with the phone cases and the 320 fit holding. Lane tier `T9AR.24-B8`: unit 2475, integration 286, checks 14 of 14.
+    - **ocr** on `f309edab` (`ocr/T9AR.24-B8-f309edab.json`): **no findings**.
+      - Reviewer's notes, for the final report:
+        - From 861 to 1279 the chart column shrinks to about 460 px, so the busiest key likely wraps there. T9AR.10 and W66 name no width, and the CSS comment says the key wraps on a narrow box.
+        - The margin at 1280 is thin.
+        - At 10 px with a 2 px swatch gap, each swatch still reads as its own word's.
+        - An Expiration line is drawn but unnamed in the key, because W66 has no entry for it. That is a plan question, not a defect.
+    - **Merged** by fast-forward. Lane PL's base `143150e2` was main's head.
         - Reviewer's notes:
           - `isMarkLacking` is exactly MarkMissing or AcknowledgedUnavailable.
           - The Trade P&L row's figure is the contract's own, so the Underlying's Mark cannot reach it.

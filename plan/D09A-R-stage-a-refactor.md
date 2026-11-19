@@ -889,7 +889,7 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T9AR.21 | 2 | DM | Done (from `bcab74c4`) | `cf79c748` |
 | T9AR.22 | 3 | IN | Done (from `7f095ba3`) | `eac257eb`; B1 `fc179b08`; B2 `b9eb87f9` |
 | T9AR.23 | 3 | BR | Done (from `70ce0f74`) | `9bce9630`, `9618d87b`; B1 `f7e72247`; B2 `e843b82b`; B3 `c2b50bb6`; S1 `d80b9f00`; S2 `30f73488`; S3 `91d99766`; S4 `6a8d7f0e`; S5 `54bc7766`, its B1 `7f62fec6`; S6 `85ef2c57`; S7 `c7fd6f2c`, its B1 `998ee90f`, B2 `206c4e0c` |
-| T9AR.24 | 3 | — | In progress from `3e92c98f` | B1 `e1f276da`, its B1 `a916ebc1`; B2 `825dd738`, its F1 `c354ff33`; B3 `53ba488a`, its B1 and B2 `3fc56da6`, F1 `c0b48dad`, B3 `50ba4feb`; B4 `a7fe9d08`, its B1 `a242cc63`, its F1 `bcc2a893`; B5 `da8dcb7e`, `0f1f4935`; B6 `74294bbe`; B7 `cf7ce65b`, `354ef6f5`, `83089351`, its B1 `ab7e8d3d`, F1 `9cb979c7`, B2 and B3 `a0673948`, D1 `cf0d6c86` |
+| T9AR.24 | 3 | — | In progress from `3e92c98f` | B1 `e1f276da`, its B1 `a916ebc1`; B2 `825dd738`, its F1 `c354ff33`; B3 `53ba488a`, its B1 and B2 `3fc56da6`, F1 `c0b48dad`, B3 `50ba4feb`; B4 `a7fe9d08`, its B1 `a242cc63`, its F1 `bcc2a893`; B5 `da8dcb7e`, `0f1f4935`; B6 `74294bbe`; B7 `cf7ce65b`, `354ef6f5`, `83089351`, its B1 `ab7e8d3d`, F1 `9cb979c7`, B2 and B3 `a0673948`, D1 `cf0d6c86`; B8 `f309edab` |
 
 ---
 
