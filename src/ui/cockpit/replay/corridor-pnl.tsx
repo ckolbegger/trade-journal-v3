@@ -218,6 +218,9 @@ export function drawPnl(props: ReplayPlotProps, width: number): DrawnChart {
     put('past', 'past-label', words(current.past.label, current.past.shortLabel), [
       { x: xc, y: first, anchor: 'middle' },
       { x: xc, y: second, anchor: 'middle' },
+      // At the last session the centred spots run past the edge: the label then ends at the cursor, above or below the hatch.
+      { x: xc + 6, y: first, anchor: 'end' },
+      { x: xc + 6, y: second, anchor: 'end' },
     ]);
   }
   // A first crossing (A271, W64): a flag at the session, on the line it crossed (the Trade P&L where that line has no figure); the plot is
@@ -328,7 +331,26 @@ export function drawPnl(props: ReplayPlotProps, width: number): DrawnChart {
     const d = limitPath(pick);
     return d && kept.has(css) ? [{ css, keyKind, d }] : [];
   });
-  const drawn = new Set<PlotKeyEntry['kind']>([...limitLines.map((l) => l.keyKind), ...(flags.length > 0 ? ['FirstCrossing' as const] : [])]);
+  // A hatch or a stake bar at the slider's session is drawn only with its label (A280); an earlier session's hatch has none to need.
+  const hatches = sessions.flatMap((s) => {
+    const line = s.past && (s.past.line === 'Stop' ? s.resultAtStop : s.resultAtTarget);
+    if (!s.past || !line || s.tradePnl === null || (s === current && !kept.has('past'))) return [];
+    return [{ s, line, tradePnl: s.tradePnl, kind: s.past.line === 'Stop' ? ('stop' as const) : ('target' as const) }];
+  });
+  const beams = current?.stake && current.tradePnl !== null
+    ? (
+        [
+          ['risk', current.resultAtStop, current.stake.riskLabel],
+          ['reward', current.resultAtTarget, current.stake.rewardLabel],
+        ] as const
+      ).flatMap(([kind, end, label]) => (end && label && kept.has(`stake-${kind}`) ? [{ kind, end, tradePnl: current.tradePnl! }] : []))
+    : [];
+  const drawn = new Set<PlotKeyEntry['kind']>([
+    ...limitLines.map((l) => l.keyKind),
+    ...(flags.length > 0 ? ['FirstCrossing' as const] : []),
+    ...hatches.map((h) => (h.kind === 'stop' ? ('PastStop' as const) : ('PastTarget' as const))),
+    ...(beams.length > 0 ? ['Stake' as const] : []),
+  ]);
   const svg = (
     <svg className="pnl-chart" viewBox={`0 0 ${width} ${HEIGHT}`} width={width} height={HEIGHT}>
       <defs>
@@ -363,11 +385,8 @@ export function drawPnl(props: ReplayPlotProps, width: number): DrawnChart {
         ))}
       <path className="area profit" d={areaPath(Math.max)} />
       <path className="area loss" d={areaPath(Math.min)} />
-      {sessions.map((s) => {
-        const line = s.past && (s.past.line === 'Stop' ? s.resultAtStop : s.resultAtTarget);
-        if (!s.past || !line || s.tradePnl === null) return null;
-        const kind = s.past.line === 'Stop' ? 'stop' : 'target';
-        const [a, b] = [value.y(line.value), value.y(s.tradePnl)];
+      {hatches.map(({ s, line, tradePnl, kind }) => {
+        const [a, b] = [value.y(line.value), value.y(tradePnl)];
         return (
           <rect key={s.slot} className={`hatch ${kind}`} fill={`url(#replay-hatch-${kind})`} x={f1(time.x(s.slot) - time.column / 2)} y={f1(Math.min(a, b))} width={f1(time.column)} height={f1(Math.abs(a - b))} />
         );
@@ -398,17 +417,11 @@ export function drawPnl(props: ReplayPlotProps, width: number): DrawnChart {
         </g>
       ))}
       {current && <path className="cursor" d={`M${f1(xc)} ${TOP}V${FLOOR}`} />}
-      {current?.stake && current.tradePnl !== null && (
+      {beams.length > 0 && (
         <g className="stake">
-          {(
-            [
-              ['risk', current.resultAtStop],
-              ['reward', current.resultAtTarget],
-            ] as const
-          ).map(([kind, end]) => {
-            const label = kind === 'risk' ? current.stake?.riskLabel : current.stake?.rewardLabel;
-            return end && label ? <path key={kind} className={`stake-beam ${kind}`} d={`M${f1(xc)} ${f1(value.y(current.tradePnl!))}V${f1(value.y(end.value))}`} /> : null;
-          })}
+          {beams.map(({ kind, end, tradePnl }) => (
+            <path key={kind} className={`stake-beam ${kind}`} d={`M${f1(xc)} ${f1(value.y(tradePnl))}V${f1(value.y(end.value))}`} />
+          ))}
         </g>
       )}
       {sessions.map((s) =>

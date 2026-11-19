@@ -35,7 +35,7 @@ export type ExtremesWeight = 'Main' | 'Remote';
 
 // A280: one thing the chart draws, as the one-line key names it. `kind` picks the swatch; `label` is the key's words.
 export interface PlotKeyEntry {
-  readonly kind: 'Mark' | 'TradePnl' | 'Banked' | 'Stop' | 'Target' | 'WorstCase' | 'MaxReward' | 'BreakEven' | 'Strike' | 'Execution' | 'FirstCrossing' | 'NoMark';
+  readonly kind: 'Mark' | 'TradePnl' | 'Banked' | 'Stop' | 'Target' | 'WorstCase' | 'MaxReward' | 'BreakEven' | 'Strike' | 'Execution' | 'FirstCrossing' | 'NoMark' | 'PastStop' | 'PastTarget' | 'Stake';
   readonly label: string;
 }
 

@@ -343,6 +343,26 @@
   background: var(--ink);
 }
 
+/* The hatch's and the bar's swatches: a hatched square, and a short upright bar in the drawing's ink. */
+.replay-key .key-PastStop::before,
+.replay-key .key-PastTarget::before {
+  width: 8px;
+  height: 8px;
+  border-top: 0;
+  background: repeating-linear-gradient(45deg, var(--stop) 0 1px, transparent 1px 3px);
+}
+
+.replay-key .key-PastTarget::before {
+  background: repeating-linear-gradient(45deg, var(--target) 0 1px, transparent 1px 3px);
+}
+
+.replay-key .key-Stake::before {
+  width: 2px;
+  height: 9px;
+  border-top: 0;
+  background: var(--ink);
+}
+
 .replay-key .key-BreakEven::before {
   border-top-color: var(--ink);
 }

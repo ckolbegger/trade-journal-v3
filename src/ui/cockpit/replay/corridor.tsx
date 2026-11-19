@@ -99,10 +99,19 @@ function drawingWidth(measured: number, compact: boolean | undefined): number {
 const LINE_KINDS: ReadonlySet<PlotKeyEntry['kind']> = new Set(['WorstCase', 'MaxReward', 'Strike', 'FirstCrossing']);
 function keyOf(sessions: readonly PlotSession[], drawn: ReadonlySet<PlotKeyEntry['kind']>, crossingLabels: ReadonlySet<string> = new Set()): PlotKeyEntry[] {
   const seen = new Set<string>();
-  return sessions
+  const listed = sessions
     .flatMap((s) => s.keyEntries ?? [])
     .filter((e) => (!LINE_KINDS.has(e.kind) || drawn.has(e.kind)) && (e.kind !== 'FirstCrossing' || crossingLabels.has(e.label)) && !seen.has(`${e.kind}|${e.label}`) && seen.add(`${e.kind}|${e.label}`));
+  return [...listed, ...DRAWN_AREAS.filter((e) => drawn.has(e.kind))];
 }
+
+// W66's "Past the Stop", "Past the Target" and "At stake": the plot names them from what it drew (a hatch, the bar at the cursor), so each is
+// in the key exactly while it is on the page.
+const DRAWN_AREAS: readonly PlotKeyEntry[] = [
+  { kind: 'PastStop', label: 'Past the Stop' },
+  { kind: 'PastTarget', label: 'Past the Target' },
+  { kind: 'Stake', label: 'At stake' },
+];
 
 // The swatch of what an area or a band is drawn in: the Target's colour for a gain, the Stop's for a loss.
 function swatchOf(e: PlotKeyEntry): string | undefined {

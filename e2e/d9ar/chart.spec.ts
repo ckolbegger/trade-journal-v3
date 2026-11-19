@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import {
-  AXIO, BREN, build, chartText, closeOf, CORV, DALE_HOLD, expect, expectClearOfCursor, hits, openDrawer, pnlChart, priceStrip, replay, seek, sliderValue, test,
+  AXIO, BREN, build, chartText, closeOf, CORV, DALE_HOLD, expect, expectClearOfCursor, hits, openDrawer, pnlChart, priceStrip, replay, seek, setViewport, sliderValue, test,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
@@ -129,6 +129,59 @@ test.describe('B9AR.5 The chart', () => {
       if (back > 0) await seek(page, scope, 'ArrowLeft');
       expect(await key(scope), `the key on ${await sliderValue(scope).textContent()}`).toContain('No Mark');
     }
+    await context.close();
+  });
+
+  // T9AR.24-B6 (critic-1 defect 6; A280, W66): a bar or hatch is drawn with its label or not at all, no label over another, and the key names
+  // "Past the Stop" and "At stake" while they are drawn.
+  test('should draw each stake bar and hatch on AXIO Mon Nov 16 with its label and no label over another, and name both in the key, at 1280 and 1440', async ({ profile }) => {
+    test.setTimeout(240_000);
+    const { context, page } = await build(profile, AXIO, closeOf('2026-11-16'), 10);
+    let scope = await open(page, 0);
+    await expect(sliderValue(scope)).toHaveText('Mon Nov 16 · 11 of 11');
+    for (const width of [1280, 1440]) {
+      await setViewport(page, width, 900);
+      scope = replay(page);
+      const chart = pnlChart(scope);
+      const drawn = await chart.evaluate((svg: SVGSVGElement) => {
+        const cursor = Number(/^M([\d.]+)/.exec(svg.querySelector('path.cursor')!.getAttribute('d')!)![1]);
+        const boxes = [...svg.querySelectorAll('text')].map((t) => {
+          const r = t.getBoundingClientRect();
+          return { text: t.textContent ?? '', l: r.left, r: r.right, t: r.top, b: r.bottom };
+        });
+        const clashes = boxes.flatMap((a, i) => boxes.slice(i + 1).filter((b) => a.l < b.r && b.l < a.r && a.t < b.b && b.t < a.b).map((b) => `"${a.text}" over "${b.text}"`));
+        const hatches = [...svg.querySelectorAll('rect.hatch')].filter((h) => Number(h.getAttribute('x')) < cursor && cursor < Number(h.getAttribute('x')) + Number(h.getAttribute('width')));
+        return {
+          clashes,
+          hatchAtCursor: hatches.length,
+          pastLabels: svg.querySelectorAll('text.past-label').length,
+          risk: [svg.querySelectorAll('path.stake-beam.risk').length, svg.querySelectorAll('text.stake-tag.risk').length],
+          reward: [svg.querySelectorAll('path.stake-beam.reward').length, svg.querySelectorAll('text.stake-tag.reward').length],
+        };
+      });
+      expect(drawn.clashes, `${width}: no label over another`).toEqual([]);
+      expect(drawn.pastLabels, `${width}: the hatch at the cursor has its label`).toBe(drawn.hatchAtCursor);
+      expect(drawn.risk[1], `${width}: a risk bar has its tag`).toBe(drawn.risk[0]);
+      expect(drawn.reward[1], `${width}: a reward bar has its tag`).toBe(drawn.reward[0]);
+      const listed = await key(scope);
+      if (drawn.hatchAtCursor > 0) expect(listed, `${width}: the hatch is named`).toContain('Past the Stop');
+      if (drawn.risk[0]! + drawn.reward[0]! > 0) expect(listed, `${width}: the bar is named`).toContain('At stake');
+      // P148: a figure left off the drawing is still on the page, in the readout.
+      await expect(scope.getByTestId('readout')).toContainText('Past the Stop by $300.00');
+      await expect(scope.getByTestId('readout')).toContainText('$1,200');
+    }
+    await context.close();
+  });
+
+  test('should name the hatch and the stake bar in the key on BREN, where both are drawn with their labels', async ({ profile }) => {
+    test.setTimeout(240_000);
+    const { context, page } = await build(profile, BREN, closeOf('2026-11-16'), 10);
+    const scope = await open(page, 0);
+    await expect(sliderValue(scope)).toHaveText('Mon Nov 16 · 11 of 11');
+    await expect(pnlChart(scope).locator('text.past-label')).toHaveText(/past the Target$/);
+    const listed = await key(scope);
+    expect(listed).toContain('Past the Target');
+    expect(listed).toContain('At stake');
     await context.close();
   });
 

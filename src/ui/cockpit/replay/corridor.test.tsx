@@ -980,6 +980,52 @@ describe('Corridor: the key, the dates and the lines (suggestion 3)', () => {
     expect(crowded.container.querySelector('.key-MaxReward')).toBeNull();
   });
 
+  // T9AR.24-B6 (A280, W66): a hatch or a stake bar is drawn with its label or not at all, and the key names each while it is drawn.
+  it('should draw a hatch or a stake bar only with its label, and name each in the key only while it is drawn', () => {
+    const at = (over: Partial<PlotSession>) => DAYS.map((_, i) => bren(i, i === 10 ? over : {}));
+    const stake = { riskLabel: 'Risk to stop $672', riskShortLabel: 'Risk $672', rewardLabel: 'Reward to target $928', rewardShortLabel: 'Reward $928' };
+    const past = { line: 'Target' as const, label: '$32 past the Target', shortLabel: '$32 past' };
+    const sessions = at({ past, stake });
+    const keyed = (c: HTMLElement) => [...c.querySelectorAll('.replay-key li')].map((li) => li.textContent);
+    // With room: the bar and the hatch have their labels, and the key says "At stake" and "Past the Target".
+    const roomy = render(<CorridorPlot {...props({ sessions })} />);
+    expect(roomy.container.querySelectorAll('path.stake-beam')).toHaveLength(2);
+    expect(roomy.container.querySelectorAll('rect.hatch')).toHaveLength(1);
+    expect(keyed(roomy.container)).toEqual(expect.arrayContaining(['At stake', 'Past the Target']));
+    cleanup();
+    // No room for the labels (a title that takes the width): neither the bars nor the hatch, and the key names neither.
+    const crowded = render(<CorridorPlot {...props({ sessions: at({ past: { ...past, label: 'p'.repeat(120) }, stake: { ...stake, riskLabel: 'r'.repeat(120), rewardLabel: 'w'.repeat(120) } }) })} />);
+    expect(crowded.container.querySelectorAll('path.stake-beam')).toHaveLength(0);
+    expect(crowded.container.querySelectorAll('rect.hatch')).toHaveLength(0);
+    expect(keyed(crowded.container)).not.toContain('At stake');
+    expect(keyed(crowded.container)).not.toContain('Past the Target');
+    cleanup();
+    // On a phone the labels are in the strip, so the bars and the hatch stay and the key names them.
+    const phone = render(<CorridorPlot {...props({ sessions, compact: true })} />);
+    expect(phone.container.querySelectorAll('path.stake-beam')).toHaveLength(2);
+    expect(phone.container.querySelectorAll('rect.hatch')).toHaveLength(1);
+    expect(keyed(phone.container)).toEqual(expect.arrayContaining(['At stake', 'Past the Target']));
+  });
+
+  it('should end the past label at the cursor when the slider is on the last session, so the hatch keeps its label at the right edge', () => {
+    const sessions = DAYS.map((_, i) => bren(i, i === 10 ? { past: { line: 'Stop', label: '$300 past the Stop', shortLabel: '$300 past' } } : {}));
+    const { container } = render(<CorridorPlot {...props({ sessions, axis: { slots: 11 } })} />);
+    const label = pnl(container).querySelector('text.past-label')!;
+    expect(label.textContent).toBe('$300 past the Stop');
+    expect(label.getAttribute('text-anchor')).toBe('end');
+    expect(pnl(container).querySelectorAll('rect.hatch')).toHaveLength(1);
+    expect(outsideDrawing(pnl(container))).toEqual([]);
+  });
+
+  it('should name a hatch past the Stop in the key as "Past the Stop"', () => {
+    const sessions = DAYS.map((_, i) => bren(i, i === 10 ? { past: { line: 'Stop', label: '$300 past the Stop', shortLabel: '$300 past' } } : {}));
+    const { container } = render(<CorridorPlot {...props({ sessions })} />);
+    const listed = [...container.querySelectorAll('.replay-key li')].map((li) => li.textContent);
+    expect(listed).toContain('Past the Stop');
+    expect(listed).not.toContain('Past the Target');
+    expect(listed).not.toContain('At stake');
+  });
+
   it('should draw a Worst case, Max reward or price line only with its label: the price chart', () => {
     const lines = [
       { kind: 'Strike' as const, price: 100, label: 'Strike $100' },
