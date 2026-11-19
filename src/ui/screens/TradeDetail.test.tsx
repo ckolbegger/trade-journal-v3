@@ -591,6 +591,25 @@ describe('Trade Detail: the Replay overlay (decision 3)', () => {
     expect(addressNow()).toBe('/trades/trade-1');
   });
 
+  it('should go back one entry on the second Close after Replay, Close, Forward', async () => {
+    const user = userEvent.setup();
+    show();
+    await user.click(await screen.findByRole('button', { name: 'Replay' }));
+    await user.click(within(await screen.findByRole('dialog', { name: 'Replay, XYZ' })).getByRole('button', { name: 'Close' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    await act(() => {
+      here.go?.(1);
+      return Promise.resolve();
+    });
+    await user.click(within(await screen.findByRole('dialog', { name: 'Replay, XYZ' })).getByRole('button', { name: 'Close' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(addressNow()).toBe('/trades/trade-1');
+    expect(lastMove()).toBe('POP');
+    // No extra closed Detail entry is left: one more Back stays where it was.
+    await browserBack();
+    expect(addressNow()).toBe('/trades/trade-1');
+  });
+
   it('should put focus on the Replay button when an overlay opened from the address closes', async () => {
     const user = userEvent.setup();
     renderWith(facadeOf(), '/trades/trade-1?replay=open');

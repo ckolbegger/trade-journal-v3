@@ -71,7 +71,7 @@ function TradeDetailOf({ facade, timeZone, onDirtyChange }: TradeDetailProps) {
   };
   const closeReplay = () => {
     if (pushed.current) {
-      pushed.current = false;
+      // It stays set: the entry is still in history after this Back, and Forward brings the overlay back on it.
       void navigate(-1);
       return;
     }
