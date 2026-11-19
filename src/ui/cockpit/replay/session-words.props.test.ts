@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { sessionWords } from './session-words.props.ts';
-import { AXIO, brenMon1102, condition, DALE, frac, NOT_APPLICABLE, session, usd, value, view } from './view-doubles.props.ts';
+import { AXIO, BREN, brenMon1102, condition, DALE, frac, NOT_APPLICABLE, session, usd, value, view } from './view-doubles.props.ts';
 
 describe('replay.props: how it is going (W36, W37)', () => {
   it('should head R-BREN-U\'s Mon 11-02 "+$28.00 · 0.09R" and "Ahead: 3% of the way to the Target."', () => {
@@ -46,14 +46,25 @@ describe('replay.props: how it is going (W36, W37)', () => {
     expect(sessionWords(view([atTarget]), 0).howItIsGoing).toBe('Target reached.');
   });
 
-  it('should head a session without a Mark with the reason at the figure length, and no figure of another session', () => {
+  it('should head a session without a Mark with the line No Mark for the call on Tue Nov 10 said once, and no figure of another session', () => {
     const corvMon1109 = session({ date: '2026-11-09', pnl: 642, pnlR: frac(642, 318), standing: value({ zone: 'Between', share: frac(642, 867) }) });
     const corvTue1110 = session({ date: '2026-11-10', pnl: null });
     const words = sessionWords(view([corvMon1109, corvTue1110]), 1);
-    expect(words.headline).toEqual({ reason: 'Mark missing: BREN Nov 20 $100 Call, Tue Nov 10', tone: 'None' });
+    expect(words.headline).toEqual({ reason: 'No Mark for the call on Tue Nov 10.', tone: 'None' });
     expect(words.headline).not.toHaveProperty('figure');
-    expect(words.howItIsGoing).toBe('No Mark.');
+    // Said once: the sentence under the headline no longer repeats it.
+    expect(words.howItIsGoing).toBe('');
     expect(words.stake).toBeNull();
+  });
+
+  it('should keep the acknowledgment own words on a session whose Mark the trader acknowledged as unavailable, and never say No Mark for there', () => {
+    const date = '2026-11-10';
+    const gap = session({ date, pnl: null });
+    const acknowledged = { ...gap, tradePnl: { kind: 'Unavailable', reason: 'AcknowledgedUnavailable', instrument: BREN, date } } as typeof gap;
+    const words = sessionWords(view([acknowledged]), 0);
+    expect(words.headline).toEqual({ reason: 'Acknowledged unavailable: BREN Nov 20 $100 Call, Tue Nov 10', tone: 'None' });
+    expect(words.headline.reason).not.toContain('No Mark for');
+    expect(words.howItIsGoing).toBe('');
   });
 
   it('should head a final session "Final result: sold out Fri Nov 13." or "Final result: the put expired Fri Nov 20."', () => {

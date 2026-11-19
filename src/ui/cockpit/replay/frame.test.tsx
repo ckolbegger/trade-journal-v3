@@ -70,6 +70,40 @@ const value = () => (slider() as HTMLInputElement).value;
 const text = (el: Element) => el.textContent ?? '';
 const attr = (el: Element, name: string) => el.getAttribute(name);
 
+describe('Replay: the top (suggestion 14)', () => {
+  it('should show the session date beside the headline figure: Mon Nov 16, then +$988.00 · 3.05R', () => {
+    render(<ReplayFrame {...props()} />);
+    const date = screen.getByTestId('session-date');
+    expect(text(date)).toBe('Mon Nov 16');
+    // The date comes first, in the same row as the headline.
+    const headline = screen.getByTestId('headline');
+    expect(date.parentElement).toBe(headline.parentElement);
+    expect(date.compareDocumentPosition(headline) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(text(headline)).toBe('+$988.00 · 3.05R');
+  });
+});
+
+describe('Replay: a session with no Mark (suggestion 12)', () => {
+  const noMark = (over: Partial<ReplayFrameSession> = {}): ReplayProps => {
+    const base = props();
+    const sessions = base.sessions.map((s, i) => (i === 10 ? { ...s, headline: { reason: 'No Mark for the put on Tue Nov 10.', tone: 'None' as const }, howItIsGoing: '', ...over } : s));
+    return { ...base, sessions };
+  };
+
+  it('should say No Mark for the put on Tue Nov 10 once, at normal size, where the headline figure would be', () => {
+    const { container } = render(<ReplayFrame {...noMark()} />);
+    const headline = screen.getByTestId('headline');
+    expect(text(headline)).toBe('No Mark for the put on Tue Nov 10.');
+    // Normal size: the reason is not the figure's large, unbreakable span.
+    expect(headline.classList.contains('replay-reason')).toBe(true);
+    expect(headline.querySelector('.replay-figure')).toBeNull();
+    // Once: nothing else on the page repeats it, and no empty sentence is left under it.
+    expect(text(container).split('No Mark for the put').length).toBe(2);
+    expect(container.querySelector('.replay-going')).toBeNull();
+    expect(screen.getByTestId('session-date').nextElementSibling).toBe(headline);
+  });
+});
+
 describe('Replay frame: the slider (W42)', () => {
   it('should open resting on the last session, with its headline', () => {
     render(<ReplayFrame {...props()} />);
@@ -269,6 +303,21 @@ describe('Replay frame: hover and tap', () => {
     expect(text(screen.getByTestId('hover'))).toBe('Fri Nov 6BREN Mark $104.00Trade P&L +$210.00');
     act(() => point('Fri Nov 6').blur());
     expect(screen.queryByTestId('hover')).toBeNull();
+  });
+
+  it('should show the hovered session lines in a box over the chart, with nothing between the chart and the readout', async () => {
+    const user = userEvent.setup();
+    render(<ReplayFrame {...withHover()} />);
+    await user.hover(point('Tue Nov 3'));
+    const hover = screen.getByTestId('hover');
+    const chart = screen.getByTestId('plot').parentElement!;
+    // Over the chart: the box lives inside the chart's own box, which also holds the plot.
+    expect(chart.contains(hover)).toBe(true);
+    expect(hover.parentElement).toBe(chart);
+    // Nothing between the chart and the readout, hovered or not.
+    expect(chart.nextElementSibling).toBe(screen.getByTestId('readout'));
+    await user.unhover(point('Tue Nov 3'));
+    expect(chart.nextElementSibling).toBe(screen.getByTestId('readout'));
   });
 
   it('should move the slider to a session when it is clicked or tapped', async () => {

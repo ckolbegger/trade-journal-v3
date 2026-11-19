@@ -15,6 +15,20 @@
   border-left-color: var(--stop);
 }
 
+/* Suggestion 14: the date sits beside the headline and is the quietest thing on the top line. */
+.replay-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 12px;
+}
+
+.replay-date {
+  color: var(--muted);
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
 .replay-headline {
   margin: 0;
   font-size: 1.6rem;
@@ -25,6 +39,14 @@
 
 .replay-figure {
   white-space: nowrap;
+}
+
+/* A281: the reason that stands where the figure would be reads at normal size, in the ink of the status line below it. */
+.replay-headline.replay-reason,
+.replay-card[data-tone] .replay-headline.replay-reason {
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--ink);
 }
 
 .replay-card[data-tone='Profit'] .replay-headline {
@@ -106,8 +128,18 @@
 }
 
 /* The hover and focus lines. */
+.replay-chart-box {
+  position: relative;
+}
+
+/* Suggestion 14: the box floats over the chart's top right corner, so showing it moves nothing; the pointer passes through it to the chart. */
 .replay-hover {
-  margin-top: 8px;
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  max-width: calc(100% - 16px);
+  pointer-events: none;
   padding: 6px 10px;
   border: 1px solid var(--line);
   border-radius: 6px;

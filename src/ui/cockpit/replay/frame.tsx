@@ -40,11 +40,23 @@ export function ReplayFrame({ tradeKey, sessions, initialSession, sliderLabel, p
   return (
     // The card's edge takes the headline's finished tone; the words below say the result too, so colour is never the only cue (W37).
     <section className="replay-card" data-testid="replay-card" data-tone={session.headline.tone}>
-      <p className="replay-headline" data-testid="headline">
-        {/* A figure stays on one line (the reason standing in for it may wrap). */}
-        {session.headline.figure ? <span className="replay-figure">{headline}</span> : headline}
-      </p>
-      <p className="replay-going">{session.howItIsGoing}</p>
+      <div className="replay-top">
+        {/* Suggestion 14: the session's date, quiet, beside the headline. */}
+        <span className="replay-date" data-testid="session-date">
+          {session.dateLabel}
+        </span>
+        {/* A figure stays on one line in the large type; the reason standing in for it is a sentence at normal size (A281). */}
+        {session.headline.figure ? (
+          <p className="replay-headline" data-testid="headline">
+            <span className="replay-figure">{headline}</span>
+          </p>
+        ) : (
+          <p className="replay-headline replay-reason" data-testid="headline">
+            {headline}
+          </p>
+        )}
+      </div>
+      {session.howItIsGoing && <p className="replay-going">{session.howItIsGoing}</p>}
       {session.stake && <p className="replay-stake">{session.stake}</p>}
       {renderSince?.(session)}
       {renderChips?.(session)}
@@ -61,15 +73,17 @@ export function ReplayFrame({ tradeKey, sessions, initialSession, sliderLabel, p
         </span>
       </div>
       {/* P118: only the sessions up to the slider's reach the plot; a later one is never in the page. */}
-      <Plot {...plotBase} sessions={sessions.slice(0, current + 1).map((s) => s.plot)} sliderIndex={current} hoverIndex={hoverIndex} onHoverSession={setHoverIndex} onSelectSession={(index) => index <= current && move(index)} />
-      {/* Hover and focus show the session's own lines, finished in the props. */}
-      {hovered && (
-        <div className="replay-hover" data-testid="hover">
-          {hovered.hover.map((line, i) => (
-            <div key={i}>{line}</div>
-          ))}
-        </div>
-      )}
+      <div className="replay-chart-box">
+        <Plot {...plotBase} sessions={sessions.slice(0, current + 1).map((s) => s.plot)} sliderIndex={current} hoverIndex={hoverIndex} onHoverSession={setHoverIndex} onSelectSession={(index) => index <= current && move(index)} />
+        {/* Hover and focus show the session's own lines, finished in the props, in a box over the chart: nothing moves (suggestion 14). */}
+        {hovered && (
+          <div className="replay-hover" data-testid="hover">
+            {hovered.hover.map((line, i) => (
+              <div key={i}>{line}</div>
+            ))}
+          </div>
+        )}
+      </div>
       <Readout groups={session.readout} />
       {/* W46: the screen's links for the slider's session, under the readout. */}
       {renderLinks?.(session)}

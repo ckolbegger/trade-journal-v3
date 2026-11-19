@@ -5,7 +5,8 @@ import { toWorkspaceLocal } from '../domain/time/index.ts';
 import { parseDecimal } from '../domain/values/index.ts';
 import { quantity, shortDate, summaryExpiration, summaryStrike } from './format.ts';
 
-export type WordLength = 'label' | 'figure' | 'sentence';
+// 'line' is the replay's top line (A281): only a missing Mark has a form of its own; every other reason keeps its figure words.
+export type WordLength = 'label' | 'figure' | 'sentence' | 'line';
 export type Part =
   | { readonly kind: 'text'; readonly text: string }
   | { readonly kind: 'instrument'; readonly instrument: Instrument }
@@ -39,8 +40,11 @@ const datePart = (date: string): Part => ({ kind: 'date', date });
 export const ACKNOWLEDGED_UNAVAILABLE_COUNT_LABEL = 'Marks acknowledged unavailable';
 
 export const unavailableWords = (reason: UnavailableReason, length: WordLength, timeZone: string): Parts => {
+  if (length === 'line' && reason.reason !== 'MarkMissing') return unavailableWords(reason, 'figure', timeZone);
   switch (reason.reason) {
     case 'MarkMissing':
+      // "No Mark for the put on Tue Nov 10.", "No Mark for AXIO on Tue Nov 10.": the contract is named by its right, the replay's title names the rest.
+      if (length === 'line') return [t('No Mark for '), reason.instrument.kind === 'Option' ? t(`the ${reason.instrument.right.toLowerCase()}`) : instrumentPart(reason.instrument), t(' on '), datePart(reason.date), t('.')];
       if (length === 'label') return [t('Mark missing')];
       if (length === 'figure') return [t('Mark missing: '), instrumentPart(reason.instrument), t(', '), datePart(reason.date)];
       return [t('Mark missing for '), instrumentPart(reason.instrument), t(' on '), datePart(reason.date)];

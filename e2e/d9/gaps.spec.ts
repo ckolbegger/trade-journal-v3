@@ -23,8 +23,9 @@ test.describe('B9.2 A gap, a breach and a sale below the Stop', () => {
     // Tue 11-10: "No Mark", no figure, the Marks that exist, and the Plan's two results kept.
     await seek(page, scope, 'ArrowLeft');
     await expect(sliderValue(scope)).toHaveText('Tue Nov 10 · 7 of 8');
-    await expect(headline(scope)).toHaveText('Mark missing: CORV Nov 20 $80 Put, Tue Nov 10');
-    await expect(going(scope)).toHaveText('No Mark.');
+    await expect(headline(scope)).toHaveText('No Mark for the put on Tue Nov 10.');
+    // Said once: no second line repeats it.
+    await expect(going(scope)).toHaveCount(0);
     await expect(stake(scope)).toHaveCount(0);
     await expect(noMarkDash(readoutValue(scope, 'Put Mark'))).toBeVisible();
     await expect(readoutPnl(scope, 'At Stop')).toHaveText('−$318.00');

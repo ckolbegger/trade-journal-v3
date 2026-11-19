@@ -84,8 +84,8 @@ test.describe('B9.4 How a replay ends', () => {
     let scope = replay(page);
     // Settlement Due ends at the expiration session, valued by nothing (no Mark that day), and nothing is final.
     await expect(sliderValue(scope)).toHaveText('Fri Nov 20 · 15 of 15');
-    await expect(headline(scope)).toHaveText('Mark missing: DALE Nov 20 $57.50 Put, Fri Nov 20');
-    await expect(going(scope)).toHaveText('No Mark.');
+    await expect(headline(scope)).toHaveText('No Mark for the put on Fri Nov 20.');
+    await expect(going(scope)).toHaveCount(0);
     await expect(scope).not.toContainText('Final result');
     await expect(scope.locator('.replay-readout-group h3')).toHaveText(['How it is going', 'At stake from here, whole Position', 'Marks', 'Position', 'The Plan']);
     await expectNoPayoffOrTheory(page);

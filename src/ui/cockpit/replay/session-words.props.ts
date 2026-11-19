@@ -1,5 +1,6 @@
 import type { TradeReplayView } from '../../../app/types.ts';
 import { formatDecimal, Rational } from '../../../domain/values/index.ts';
+import { text, unavailableWords } from '../../calculation-words.ts';
 import { calculation, signed } from '../../figures.ts';
 import { decimalMoney, money, quantity, rMultiple, shortDate } from '../../format.ts';
 import { conditionDirection } from '../../screens/option-words.ts';
@@ -32,6 +33,13 @@ export function headlineOf(session: ViewSession): SessionWords['headline'] {
   const inR = session.figures?.currentMarkedPnlInPlanR;
   const figure = inR?.kind === 'Value' ? `${signed(money)(tradePnl.value)} · ${rMultiple(inR.value)}` : signed(money)(tradePnl.value);
   return { figure, tone: toneOf(tradePnl.value) };
+}
+
+// A281: the replay's top line. A missing Mark is the one reason with a line of its own; every other reason keeps its words. (The readout's
+// row still reads `headlineOf`, whose reason is the figure-length words, until the readout's own task changes it.)
+function topLineOf(session: ViewSession): SessionWords['headline'] {
+  const { tradePnl } = session;
+  return tradePnl.kind === 'Unavailable' ? { reason: text(unavailableWords(tradePnl, 'line', 'UTC')), tone: 'None' } : headlineOf(session);
 }
 
 // "Past the Stop's planned amount by $9.00, though DALE is still above $54.00.": the dollars are passed, the condition's price
@@ -73,7 +81,9 @@ function howItIsGoingOf(session: ViewSession): string {
     return `Final result: ${ending} ${shortDate(session.date)}.`;
   }
   const standing = session.figures?.standing;
-  if (tradePnl.kind !== 'Value' || standing?.kind !== 'Value') return 'No Mark.';
+  // A281: with no Mark the headline already says so, once; nothing repeats it.
+  if (tradePnl.kind !== 'Value') return '';
+  if (standing?.kind !== 'Value') return 'No Mark.';
   const { zone, pastBy, share } = standing.value;
   const stopCrossed = crossedCondition(session, 'Stop');
   if (zone === 'PastStop' && pastBy?.crossed) return `Past the Stop by ${money(pastBy.dollars)} (${rMultiple(pastBy.r)}).`;
@@ -92,7 +102,7 @@ function howItIsGoingOf(session: ViewSession): string {
 export function sessionWords(view: TradeReplayView, index: number): SessionWords {
   const session = view.sessions[index];
   if (!session) throw new Error(`No session at ${index}`);
-  return { headline: headlineOf(session), howItIsGoing: howItIsGoingOf(session), stake: stakeOf(view, index, session) };
+  return { headline: topLineOf(session), howItIsGoing: howItIsGoingOf(session), stake: stakeOf(view, index, session) };
 }
 
 type Marker = NonNullable<ViewSession['markers']>[number];

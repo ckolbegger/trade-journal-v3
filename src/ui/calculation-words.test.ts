@@ -24,6 +24,15 @@ describe('calculation words (P70, P71, section 1.4)', () => {
     expect(words(reason, 'sentence')).toBe('Mark missing for XYZ on Mon Oct 12');
   });
 
+  it('should say No Mark for the put on Tue Nov 10 at the line length, and keep every other reason at its figure words', () => {
+    const put = instrumentOf('CORV261120P00080000');
+    const line = (reason: Parameters<typeof unavailableWords>[0]) => text(unavailableWords(reason, 'line', ZONE));
+    expect(line({ reason: 'MarkMissing', instrument: put, date: '2026-11-10' })).toBe('No Mark for the put on Tue Nov 10.');
+    expect(line({ reason: 'MarkMissing', instrument: instrumentOf('AXIO'), date: '2026-11-10' })).toBe('No Mark for AXIO on Tue Nov 10.');
+    const acknowledged = { reason: 'AcknowledgedUnavailable', instrument: XYZ, date: '2026-10-12' } as const;
+    expect(line(acknowledged)).toBe(words(acknowledged, 'figure'));
+  });
+
   it('should word AcknowledgedUnavailable with acknowledged at every length', () => {
     const reason = { reason: 'AcknowledgedUnavailable', instrument: XYZ, date: '2026-10-12' } as const;
     expect(words(reason, 'label')).toBe('Acknowledged unavailable');
