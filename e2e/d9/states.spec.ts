@@ -39,7 +39,7 @@ test.describe('B9.4 How a replay ends', () => {
     await expectDrawers(page, SEVEN, [], 'Today');
     await openDrawer(page, 'Replay');
     await expect(headline(replay(page))).toHaveText('+$988.00 · 3.05R');
-    await expect(replay(page).locator('.replay-readout-group h3')).toHaveText(['How it is going', 'At stake from here, whole Position', 'Marks', 'Position', 'The Plan']);
+    await expect(replay(page).locator('.replay-readout-group h3')).toHaveText(['How it is going', 'At stake from here, whole Position', 'Marks', 'Position']);
     await expectNoPayoffOrTheory(page);
     await context.close();
   });
@@ -56,12 +56,12 @@ test.describe('B9.4 How a replay ends', () => {
     await expect(going(scope)).toHaveText('Final result: sold out Fri Nov 13.');
     await expect(stake(scope)).toHaveText('Nothing is at risk and nothing is left to gain. +$478.00 of the result was banked before the end.');
     // "Final result" stands in place of the first two groups.
-    await expect(scope.locator('.replay-readout-group h3')).toHaveText(['Final result', 'Marks', 'Position', 'The Plan']);
+    await expect(scope.locator('.replay-readout-group h3')).toHaveText(['Final result', 'Marks', 'Position']);
     await expect(readoutValue(scope, 'Trade P&L')).toHaveText('+$1,138.00');
     await expect(readoutValue(scope, 'Banked')).toHaveText('+$1,138.00');
     expect(await chartText(pnlChart(scope))).toEqual(expect.arrayContaining(['Banked +$478', 'Banked +$1,138', 'Sold 2 at $4.00']));
     // The final session's card has nothing at stake to show: its Marks, the result, the banked total, the Stop and Target prices and its sale.
-    await expect(cardRows(await sessionCard(scope, 'Fri Nov 13'))).toHaveText(['BREN Mark$104.60', 'Call Mark$4.91', 'Trade P&L+$1,138.00', 'Banked+$1,138.00', 'Stop$0.80', 'Target$4.00', 'EventsSold 2 at $4.91']);
+    await expect(cardRows(await sessionCard(scope, 'Fri Nov 13'))).toHaveText(['BREN Mark$104.60', 'Call Mark$4.91', 'Trade P&L+$1,138.00', 'Banked+$1,138.00', 'EventsSold 2 at $4.91, $0.91 above the Target']);
     // The session before the last is not final: it keeps its own headline and what is still at stake.
     await seek(page, scope, 'ArrowLeft');
     await expect(sliderValue(scope)).toHaveText('Thu Nov 12 · 9 of 10');
@@ -87,7 +87,7 @@ test.describe('B9.4 How a replay ends', () => {
     await expect(headline(scope)).toHaveText('No Mark for the put on Fri Nov 20.');
     await expect(going(scope)).toHaveCount(0);
     await expect(scope).not.toContainText('Final result');
-    await expect(scope.locator('.replay-readout-group h3')).toHaveText(['How it is going', 'At stake from here, whole Position', 'Marks', 'Position', 'The Plan']);
+    await expect(scope.locator('.replay-readout-group h3')).toHaveText(['How it is going', 'At stake from here, whole Position', 'Marks', 'Position']);
     await expectNoPayoffOrTheory(page);
     // Thu 11-19, the last session with a Mark: the put is worth $0.00 and the Trade is ahead, with the Stop and Target as the Plan set them.
     await seek(page, scope, 'ArrowLeft');
@@ -108,7 +108,7 @@ test.describe('B9.4 How a replay ends', () => {
     await expect(headline(scope)).toHaveText('+$564.00');
     await expect(going(scope)).toHaveText('Final result: the put expired Fri Nov 20.');
     await expect(stake(scope)).toHaveText('Nothing is at risk and nothing is left to gain.');
-    await expect(scope.locator('.replay-readout-group h3')).toHaveText(['Final result', 'Marks', 'Position', 'The Plan']);
+    await expect(scope.locator('.replay-readout-group h3')).toHaveText(['Final result', 'Marks', 'Position']);
     expect(await chartText(pnlChart(scope))).toContain('Expired');
     await expect(cardRows(await sessionCard(scope, 'Fri Nov 20')).last()).toHaveText('EventsExpired');
     await expectNoPayoffOrTheory(page);

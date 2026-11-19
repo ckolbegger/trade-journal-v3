@@ -31,7 +31,7 @@ describe('Replay: session cards, empty parts', () => {
 });
 
 describe('Replay: session cards (decision 5)', () => {
-  it('should hold every per-session figure on a card, top to bottom: the Marks, Trade P&L, Banked or Realized, Open, Held, the stake rows with their R and endings, Reward to risk, Stop, Target and Events', () => {
+  it('should hold every per-session figure on a card, top to bottom: the Marks, Trade P&L, Banked or Realized, Open, Held, the stake rows with their R and endings, Reward to risk and Events, with no Stop and Target price (the Plan block holds them)', () => {
     const props = replayProps(fullView([wed1111, thu1112], PLAN), { Plot });
     const thu = props.sessions[1]!.card;
     expect(thu.heading).toBe('Thu Nov 12');
@@ -45,15 +45,13 @@ describe('Replay: session cards (decision 5)', () => {
       ['At Stop', '$672.00 · 2.07R · P&L if hit +$316.00'],
       ['At Worst case', '$832.00 · 2.57R · P&L if hit +$156.00'],
       ['At Max reward', 'No cap above'],
-      ['Stop', '96.00'],
-      ['Target', '104.00'],
     ]);
     // Past the Target: its one row stands above the stake rows, and the Events close the card.
     expect(thu.pastLine).toEqual({ text: 'Past the Target by $26.00 (0.08R) · at Target +$956.00', term: 'Target Overrun' });
     expect(thu.events).toEqual(['Sold 2 at $4.00']);
     // Reward to risk follows the stake rows.
     const wed = props.sessions[0]!.card;
-    expect(wed.rows.map((r) => r.label)).toEqual(['BREN Mark', 'Call Mark', 'Trade P&L', 'Held', 'At Stop', 'At Worst case', 'At Target', 'At Max reward', 'Reward to risk', 'Stop', 'Target']);
+    expect(wed.rows.map((r) => r.label)).toEqual(['BREN Mark', 'Call Mark', 'Trade P&L', 'Held', 'At Stop', 'At Worst case', 'At Target', 'At Max reward', 'Reward to risk']);
     expect(said(wed.rows.find((r) => r.label === 'Reward to risk')!)).toEqual(['Reward to risk', '2.64 to 1 · about 28% : 72%']);
   });
 });

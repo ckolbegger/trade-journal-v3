@@ -203,11 +203,19 @@ export interface StakeGrid {
 }
 
 export interface ReadoutGroup {
-  // "How it is going", "At stake from here, whole Position", "Marks", "Position", "The Plan", "Final result".
+  // "How it is going", "At stake from here, whole Position", "Marks", "Position", "Final result".
   readonly title: string;
   readonly rows: readonly ReadoutRow[];
   // A278: the stake group's grid, which the readout draws in place of `rows` when present.
   readonly grid?: StakeGrid;
+}
+
+// A269, decision 5: the Plan's own terms, fixed above the cards. Each row is finished words, one line:
+// "Entry: 4 contracts at $1.61", "Strike $100", "Stop: call at or below $0.80 · P&L if hit −$324.00", "Reward to risk: 2.95 to 1 · 25% : 75%".
+export interface PlanBlock {
+  // "The Plan".
+  readonly title: string;
+  readonly rows: readonly string[];
 }
 
 // What the readout takes: the slider session's groups.
@@ -294,6 +302,9 @@ export interface ReplayFrameSession {
   readonly addMarkTo?: string;
   // W37: "Ahead: 85% of the way to the Target."; "Final result: sold out Thu Nov 12." on a final session.
   readonly howItIsGoing: string;
+  // W64: when a Stop or Target was first crossed, one sentence after the status line, from the session it happened in on;
+  // absent when neither has been.
+  readonly crossingWords?: string;
   // W38: the stake sentence; null when the session has none to say.
   readonly stake: string | null;
   // True for a Closed Trade's last session: the readout shows "Final result" in place of the first two groups.
@@ -322,6 +333,8 @@ export interface ReplayProps {
   readonly nextLabel: string;
   // A277: the cards' fixed words ("Session by session", the pager's buttons); each session's `card` is its own.
   readonly cardsWords: SessionCardsWords;
+  // Decision 5: the Plan block above the cards; absent for a view that carries no Plan terms.
+  readonly plan?: PlanBlock;
   // The plot's fixed parts (titles, anchors, axis), to which the frame adds the revealed sessions.
   readonly plotBase: Omit<ReplayPlotProps, 'sessions' | 'sliderIndex' | 'onSelectSession' | 'onHoverSession' | 'hoverIndex' | 'compact' | 'cursorLabel'>;
   // The plot component: Corridor in the app, a double in tests; a Ribbon plot later.

@@ -315,6 +315,30 @@ describe('Replay: session cards (decision 5)', () => {
   });
 });
 
+describe('Replay: the Plan block (decision 5)', () => {
+  it('should show The Plan with its rows above the session cards, whichever session the slider is on', () => {
+    const plan = { title: 'The Plan', rows: ['Entry: 4 contracts at $1.61', 'Stop: call at or below $0.80 · P&L if hit −$324.00'] };
+    const { container } = render(<ReplayFrame {...props({ plan, initialSession: '2026-11-04' })} />);
+    const block = screen.getByRole('region', { name: 'The Plan' });
+    expect(within(block).getAllByRole('listitem').map(text)).toEqual(plan.rows);
+    // Above the cards in the page.
+    expect(block.compareDocumentPosition(container.querySelector('ol')!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    fireEvent.change(slider(), { target: { value: '0' } });
+    expect(within(screen.getByRole('region', { name: 'The Plan' })).getAllByRole('listitem').map(text)).toEqual(plan.rows);
+  });
+});
+
+describe('Replay: a first crossing after the status line (decision 2)', () => {
+  it('should show the crossing sentence right after the status line, and only for the slider session', () => {
+    const sessions = Array.from({ length: 11 }, (_, i) => ({ ...frameSession(i), ...(i >= 4 && { crossingWords: 'Target first reached Fri Nov 6.' }) }));
+    render(<ReplayFrame {...props({ sessions, initialSession: '2026-11-06' })} />);
+    const going = document.querySelector('.replay-going')!;
+    expect(text(going.nextElementSibling!)).toBe('Target first reached Fri Nov 6.');
+    fireEvent.change(slider(), { target: { value: '3' } });
+    expect(document.body.textContent).not.toContain('Target first reached');
+  });
+});
+
 describe('Replay frame: hover and tap', () => {
   const withHover = (initialSession?: string): ReplayProps => {
     const base = props({ initialSession });

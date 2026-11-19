@@ -58,13 +58,13 @@ describe('replay.props: the readout of a session in flight (W43)', () => {
     const sale = { id: 'x2', kind: 'Execution', effect: 'Closed', fills: [{ instrument: BREN, action: 'Sell', quantity: usd(2), price: usd(4) }] } as const;
     const final = { ...withMarks(session({ date: '2026-11-13', held: 0, pnl: 1260, realized: 1260, standing: NOT_APPLICABLE, final: { kind: 'Sold' } }), [markOf(BREN_STOCK, '104.60'), markOf(BREN)]), markers: [sale] };
     const props = replayProps(fullView([final], PLAN), { Plot });
-    expect(props.sessions[0]!.readout.map((group) => group.title)).toEqual(['Final result', 'Marks', 'Position', 'The Plan']);
+    expect(props.sessions[0]!.readout.map((group) => group.title)).toEqual(['Final result', 'Marks', 'Position']);
     expect(rowsOfGroup(props, 0, 'Final result')).toEqual({ 'Trade P&L': '+$1,260.00', Banked: '+$1,260.00' });
     expect(rowsOfGroup(props, 0, 'Position')).toEqual({ 'Execution, Fri Nov 13': 'Sold 2 at $4.00' });
     // A Mark that was never saved reads "No Mark"; nothing is carried over.
     const none = withMarks(session({ date: '2026-11-10', pnl: null }), [markOf(BREN_STOCK, '100.20'), markOf(BREN)]);
     const gap = replayProps(fullView([none], PLAN), { Plot });
-    expect(gap.sessions[0]!.readout.map((group) => group.title)).toEqual(['How it is going', 'Marks', 'Position', 'The Plan']);
+    expect(gap.sessions[0]!.readout.map((group) => group.title)).toEqual(['How it is going', 'Marks', 'Position']);
     expect(rowsOfGroup(gap, 0, 'Marks')).toEqual({ 'BREN Mark': '$100.20', 'Call Mark': 'No Mark' });
     expect(rowsOfGroup(gap, 0, 'How it is going')).toEqual({ 'Trade P&L': 'Mark missing: BREN Nov 20 $100 Call, Tue Nov 10' });
   });
@@ -97,7 +97,7 @@ describe('replay.props: the readout of a session in flight (W43)', () => {
     expect(unbounded.pnlIfHit).toBeUndefined();
   });
 
-  it('should group How it is going, At stake from here, Marks, Position and The Plan, each figure finished, with its change since the earlier session', () => {
+  it('should group How it is going, At stake from here, Marks and Position, each figure finished, with its change since the earlier session', () => {
     const props = replayProps(fullView([brenWed1111], PLAN), { Plot });
     expect(readoutOf(props, 0)).toEqual([
       ['How it is going', [['Trade P&L', 'Figure', '+$520.00 · 1.60R', 'up $190.00 since Tue Nov 10']]],
@@ -111,14 +111,6 @@ describe('replay.props: the readout of a session in flight (W43)', () => {
         ],
       ],
       ['Position', [['Held', 'Figure', '4 contracts', undefined]]],
-      [
-        'The Plan',
-        [
-          // Named apart from the session's own results above, so each label stands once in the drawer.
-          ['At the Stop', 'Figure', '−$324.00', undefined],
-          ['At the Target', 'Figure', '+$956.00', undefined],
-        ],
-      ],
     ]);
   });
 });

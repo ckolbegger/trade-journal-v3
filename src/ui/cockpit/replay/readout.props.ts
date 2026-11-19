@@ -3,10 +3,11 @@ import type { CalculationResult } from '../../../domain/calculation-result/index
 import { instrumentKey, type Instrument } from '../../../domain/instrument/index.ts';
 import { Rational } from '../../../domain/values/index.ts';
 import { calculation, signed } from '../../figures.ts';
-import { decimalMoney, money, quantity, rMultiple, shortDate } from '../../format.ts';
-import type { ReadoutGroup, ReadoutValue, StakeGrid, StakePastLineRow, StakeRow } from './replay.types.ts';
-import { crossedCondition, headlineOf, markerWords } from './session-words.props.ts';
-import { ratioWords } from './stake-words.props.ts';
+import { decimalMoney, money, quantity, rMultiple, shortDate, summaryStrike } from '../../format.ts';
+import { conditionDirection } from '../../screens/option-words.ts';
+import type { PlanBlock, ReadoutGroup, ReadoutValue, StakeGrid, StakePastLineRow, StakeRow } from './replay.types.ts';
+import { crossedCondition, headlineOf, markerPlanWords } from './session-words.props.ts';
+import { ratioWords, ratioWordsOf } from './stake-words.props.ts';
 
 // The readout's rows (W43): finished values selected and formatted from the view; no figure is worked out here (ADR 0001, A256).
 type ViewSession = TradeReplayView['sessions'][number];
@@ -120,25 +121,49 @@ export function marksGroup(view: TradeReplayView, session: ViewSession): Readout
   };
 }
 
-// "4 contracts", "short 2 contracts", "100 shares".
-function heldWords(session: ViewSession): string {
-  const unit = session.positions[0]?.instrument.kind === 'Option' ? 'contract' : 'share';
-  const held = unsigned(session.heldQuantity);
-  return `${session.heldQuantity.numerator < 0n ? 'short ' : ''}${quantity(held)} ${unit}${held.equals(Rational.of(1n)) ? '' : 's'}`;
+// "4 contracts", "short 2 contracts", "100 shares": a quantity (without its sign) of an Instrument's units.
+function countWords(short: boolean, count: Rational, instrument: Instrument | undefined): string {
+  return `${short ? 'short ' : ''}${quantity(count)} ${instrument?.kind === 'Option' ? 'contract' : 'share'}${count.equals(Rational.of(1n)) ? '' : 's'}`;
 }
 
-// The Plan (W43): the results at the Stop and at the Target as planned, which the charts draw in the Plan column. The Plan's reward to risk
-// stands in the session's own Reward to risk row.
-function planGroup(view: TradeReplayView): ReadoutGroup | undefined {
+const heldWords = (session: ViewSession): string => countWords(session.heldQuantity.numerator < 0n, unsigned(session.heldQuantity), session.positions[0]?.instrument);
+
+type PlanTerms = NonNullable<NonNullable<TradeReplayView['planColumn']>['terms']>;
+
+// "4 contracts", "short 6 contracts", "200 shares": a Planned Leg's quantity as the Plan confirmed it.
+const legWords = (leg: PlanTerms['legs'][number]): string => countWords(leg.side === 'Short', leg.quantity, leg.instrument);
+
+// "Stop: call at or below $0.80 · P&L if hit −$324.00": what the price is a price of (the option, or the Underlying), its side, and the
+// Trade's own result there as the view finished it (A269).
+function conditionWords(condition: PlanTerms['conditions'][number], leg: PlanTerms['legs'][number]): string {
+  const right = leg.instrument.kind === 'Option' ? leg.instrument.right : 'Call';
+  const direction = conditionDirection(condition.role, condition.priceOf === 'Option' ? 'StructureValue' : 'UnderlyingPrice', { right, side: leg.side });
+  const of = condition.priceOf === 'Option' ? right.toLowerCase() : leg.instrument.symbol;
+  return `${condition.role}: ${of} at or ${direction} ${money(condition.price)} · P&L if hit ${signedMoney(condition.pnlIfHit)}`;
+}
+
+// The Plan block (decision 5, W62): the Plan's entry, the contract's strike, every Stop and Target, and the Plan's reward to risk.
+export function planBlockOf(view: TradeReplayView): PlanBlock | undefined {
   const plan = view.planColumn;
-  if (!plan) return undefined;
-  return { title: 'The Plan', rows: [row('At the Stop', figure(signedMoney(plan.atStop))), row('At the Target', figure(signedMoney(plan.atTarget)))] };
+  const leg = plan?.terms?.legs[0];
+  if (!plan?.terms || !leg) return undefined;
+  const contract = view.instruments.find((i) => i.kind === 'Option');
+  return {
+    title: 'The Plan',
+    rows: [
+      ...plan.terms.legs.map((l) => `Entry: ${legWords(l)} at ${money(l.entryPrice)}`),
+      // W40's words, as the price chart's line names it: the chart's figures are all off the chart too.
+      ...(contract?.kind === 'Option' ? [`Strike ${summaryStrike(contract.strike)}`] : []),
+      ...plan.terms.conditions.map((c) => conditionWords(c, leg)),
+      `Reward to risk: ${ratioWordsOf(plan.rewardRisk, plan.odds, plan).plan}`,
+    ],
+  };
 }
 
 // The Position (W43): what is held, and each Execution of the session.
 function positionGroup(session: ViewSession): ReadoutGroup {
   const held = session.heldQuantity.compare(ZERO) !== 0 ? [row('Held', figure(heldWords(session)))] : [];
-  return { title: 'Position', rows: [...held, ...(session.markers ?? []).map((marker) => row(`Execution, ${shortDate(session.date)}`, figure(markerWords(marker))))] };
+  return { title: 'Position', rows: [...held, ...(session.markers ?? []).map((marker) => row(`${marker.kind}, ${shortDate(session.date)}`, figure(markerPlanWords(marker))))] };
 }
 
 // A session without a Mark (A248): the results at the Stop and the Target, the Worst case and the Max reward read no Mark, so they stand; what needs the Mark reads "No Mark".
@@ -162,6 +187,6 @@ export function readoutOf(view: TradeReplayView, session: ViewSession): ReadoutG
   if (session.final) staked = undefined;
   else if (session.tradePnl.kind === 'Value') staked = stakeGroup(view, session);
   else staked = gapStakeGroup(session);
-  const groups = [goingGroup(session), staked, marksGroup(view, session), positionGroup(session), planGroup(view)];
+  const groups = [goingGroup(session), staked, marksGroup(view, session), positionGroup(session)];
   return groups.filter((group): group is ReadoutGroup => group !== undefined && (group.rows.length > 0 || group.grid !== undefined));
 }

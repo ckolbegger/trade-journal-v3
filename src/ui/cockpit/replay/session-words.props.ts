@@ -12,7 +12,7 @@ import { ratioWords, stakeOf } from './stake-words.props.ts';
 type ViewSession = TradeReplayView['sessions'][number];
 
 // The part of `ReplayFrameSession` this module builds: the headline, how it is going, and what is at stake (W36 to W38).
-export type SessionWords = Pick<ReplayFrameSession, 'headline' | 'howItIsGoing' | 'stake' | 'stakeSpoken'>;
+export type SessionWords = Pick<ReplayFrameSession, 'headline' | 'howItIsGoing' | 'stake' | 'stakeSpoken' | 'crossingWords'>;
 
 const ZERO = Rational.of(0n);
 const HUNDRED = Rational.of(100n);
@@ -99,11 +99,25 @@ function howItIsGoingOf(session: ViewSession): string {
   return `Behind: ${percent(share)} of the way to the Stop.`;
 }
 
+// W64: when a condition was first crossed, said from that session on, after the status line. The dates are the view's (A271).
+function crossingWordsOf(session: ViewSession): Pick<ReplayFrameSession, 'crossingWords'> {
+  const { stop, target } = session.crossings ?? {};
+  // After a session with no Mark the earlier date is not known, so the words say "first seen" and name only the date it was seen.
+  const stopWords = stop?.since
+    ? stop.since.afterGap ? `Past the Stop, first seen ${shortDate(stop.since.date)}.` : `Past the Stop since ${shortDate(stop.since.date)}.`
+    : stop?.first
+      ? stop.first.afterGap ? `Stop breached, first seen ${shortDate(stop.first.date)}.` : `Stop first breached ${shortDate(stop.first.date)}.`
+      : undefined;
+  const targetWords = target?.first ? (target.first.afterGap ? `Target reached, first seen ${shortDate(target.first.date)}.` : `Target first reached ${shortDate(target.first.date)}.`) : undefined;
+  const words = [stopWords, targetWords].filter((w) => w !== undefined).join(' ');
+  return words ? { crossingWords: words } : {};
+}
+
 export function sessionWords(view: TradeReplayView, index: number): SessionWords {
   const session = view.sessions[index];
   if (!session) throw new Error(`No session at ${index}`);
   const stake = stakeOf(view, index, session);
-  return { headline: topLineOf(session), howItIsGoing: howItIsGoingOf(session), stake, ...stakeSpokenOf(view, session, stake) };
+  return { headline: topLineOf(session), howItIsGoing: howItIsGoingOf(session), stake, ...stakeSpokenOf(view, session, stake), ...crossingWordsOf(session) };
 }
 
 // A267: the stake sentence with the odds said in full, "about 8% chance of the Target first, 92% of the Stop first", where the sentence holds them.
@@ -121,3 +135,16 @@ export const FILL_VERBS = { Buy: 'Bought', Sell: 'Sold', Expire: 'Expired' } as 
 // W41: "Sold 2 at $4.00", "Bought 100 at $50.00", "Expired"; each fill of a Position Change in turn.
 export const markerWords = (marker: Marker): string =>
   marker.fills.map((fill) => (fill.price ? `${FILL_VERBS[fill.action]} ${quantity(fill.quantity)} at ${money(fill.price)}` : FILL_VERBS[fill.action])).join(', ');
+
+// W63: the same words with where each fill's price lies against the Plan's line, as the view measured it (A270): "Sold 100 at $45.60,
+// $1.40 below the Stop", "Sold 2 at $4.00, at the Target". A fill with no line to be measured against keeps W41's words.
+export const markerPlanWords = (marker: Marker): string =>
+  marker.fills
+    .map((fill) => {
+      const words = markerWords({ ...marker, fills: [fill] });
+      const against = fill.againstPlan;
+      if (!against) return words;
+      const line = against.line === 'Entry' ? "the Plan's entry" : `the ${against.line}`;
+      return `${words}, ${against.side === 'At' ? `at ${line}` : `${money(against.distance)} ${against.side === 'Above' ? 'above' : 'below'} ${line}`}`;
+    })
+    .join(', ');

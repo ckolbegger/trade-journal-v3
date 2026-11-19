@@ -152,8 +152,6 @@ describe('replay.props: Session by session (W65)', () => {
       ['At Target', '$928.00', '2.86R', '+$956.00'],
       ['At Max reward', 'No cap above', undefined, undefined],
       ['Reward to risk', '2.64 to 1 · about 28% : 72%', undefined, undefined],
-      ['Stop', '96.00', undefined, undefined],
-      ['Target', '104.00', undefined, undefined],
     ]);
     // No Mark: the dash in each row that needs the Mark, never a value of another session; the Trade P&L is no sentence.
     const noMark = { kind: 'Unavailable', text: 'No Mark' };
@@ -178,7 +176,7 @@ describe('replay.props: the readout of a session in flight (W43)', () => {
   it('should show the results at the Stop and the Target on a session without a Mark', () => {
     const none = withMarks(session({ date: '2026-11-10', pnl: null, outcomes: { atStop: value(usd(-324)), atTarget: value(usd(956)) } }), [markOf(BREN_STOCK, '100.20'), markOf(BREN)]);
     const props = replayProps(fullView([none], PLAN), { Plot });
-    expect(props.sessions[0]!.readout.map((group) => group.title)).toEqual(['How it is going', 'At stake from here, whole Position', 'Marks', 'Position', 'The Plan']);
+    expect(props.sessions[0]!.readout.map((group) => group.title)).toEqual(['How it is going', 'At stake from here, whole Position', 'Marks', 'Position']);
     expect(rowsOfGroup(props, 0, 'At stake from here, whole Position')).toEqual({ 'Reward to risk': 'No Mark' });
     // What the Trade would end at needs no Mark, so it stands beside the dash named "No Mark" in the grid's From here and R cells.
     const gridRows = props.sessions[0]!.readout.find((group) => group.title === 'At stake from here, whole Position')!.grid!.groups.flatMap((g) => g.rows);

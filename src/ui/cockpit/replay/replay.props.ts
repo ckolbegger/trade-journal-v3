@@ -4,7 +4,7 @@ import { isMarkLacking } from '../../calculation-words.ts';
 import { shortDate } from '../../format.ts';
 import { cardOf } from './cards.props.ts';
 import { plotBaseOf, plotSessionOf } from './plot.props.ts';
-import { marksGroup, readoutOf } from './readout.props.ts';
+import { marksGroup, planBlockOf, readoutOf } from './readout.props.ts';
 import type { ReadoutGroup, ReplayFrameSession, ReplayProps } from './replay.types.ts';
 import { markerWords, sessionWords } from './session-words.props.ts';
 
@@ -50,7 +50,7 @@ function frameSessionOf(view: TradeReplayView, index: number): ReplayFrameSessio
     ...addMarkLinkOf(view, session),
     isFinal: session.final !== undefined,
     readout,
-    card: cardOf(view, session, readout),
+    card: cardOf(session, readout),
     plot: plotSessionOf(view, index),
     hover: hoverOf(session, marks, words.headline.figure),
     hasMarker: (session.markers ?? []).length > 0,
@@ -59,6 +59,7 @@ function frameSessionOf(view: TradeReplayView, index: number): ReplayFrameSessio
 
 // A255: the whole view as the frame's props, from finished values only; no figure is worked out here (ADR 0001, A256).
 export function replayProps(view: TradeReplayView, { Plot, initialSession, onSessionChange }: ReplayOptions): ReplayProps {
+  const plan = planBlockOf(view);
   return {
     tradeKey: view.tradeId,
     sessions: view.sessions.map((_, index) => frameSessionOf(view, index)),
@@ -67,6 +68,7 @@ export function replayProps(view: TradeReplayView, { Plot, initialSession, onSes
     previousLabel: 'Previous session',
     nextLabel: 'Next session',
     cardsWords: { title: 'Session by session', newerLabel: 'Newer sessions', earlierLabel: 'Earlier sessions' },
+    ...(plan && { plan }),
     plotBase: plotBaseOf(view),
     Plot,
     ...(onSessionChange && { onSessionChange }),

@@ -5,7 +5,7 @@ import type { ReplayProps } from './replay.types.ts';
 import { SessionCards } from './session-cards.tsx';
 
 // A255: the frame owns the headline, the slider and the reveal rule. It selects finished values; it works out none.
-export function ReplayFrame({ tradeKey, sessions, initialSession, sliderLabel, previousLabel, nextLabel, cardsWords, plotBase, Plot, renderSince, renderChips, renderLinks, onSessionChange }: ReplayProps) {
+export function ReplayFrame({ tradeKey, sessions, initialSession, sliderLabel, previousLabel, nextLabel, cardsWords, plan, plotBase, Plot, renderSince, renderChips, renderLinks, onSessionChange }: ReplayProps) {
   const last = sessions.length - 1;
   // A257: the slider's session is a date held with the Trade it belongs to, so a longer replay of the same Trade keeps it and another Trade starts afresh.
   const [held, setHeld] = useState({ tradeKey, date: initialSession });
@@ -60,6 +60,8 @@ export function ReplayFrame({ tradeKey, sessions, initialSession, sliderLabel, p
         {session.addMarkTo && <Link to={session.addMarkTo}>Add the Mark</Link>}
       </div>
       {session.howItIsGoing && <p className="replay-going">{session.howItIsGoing}</p>}
+      {/* W64: when a Stop or Target was first crossed, from that session on. */}
+      {session.crossingWords && <p className="replay-crossing" data-testid="crossing">{session.crossingWords}</p>}
       {session.stake && (
         <p className="replay-stake">
           {/* A267: a screen reader hears the odds in full; the visible sentence stays as it is. */}
@@ -102,6 +104,17 @@ export function ReplayFrame({ tradeKey, sessions, initialSession, sliderLabel, p
       <Readout groups={session.readout} />
       {/* W46: the screen's links for the slider's session, under the readout. */}
       {renderLinks?.(session)}
+      {/* Decision 5: the Plan's own terms, fixed above the cards whichever session the slider is on. */}
+      {plan && (
+        <section className="replay-plan" aria-labelledby="replay-plan-title">
+          <h3 id="replay-plan-title">{plan.title}</h3>
+          <ul>
+            {plan.rows.map((row) => (
+              <li key={row}>{row}</li>
+            ))}
+          </ul>
+        </section>
+      )}
       {/* A277: the charts' text equivalent; the plot is described by its list, which holds the revealed sessions only (P118), newest first. */}
       <SessionCards key={tradeKey} {...cardsWords} id={plotBase.describedBy} cards={sessions.slice(0, current + 1).reverse().map((s) => ({ ...s.card, id: s.date, isCurrent: s.date === session.date }))} onSelectSession={(id) => move(sessions.findIndex((s) => s.date === id))} />
     </section>

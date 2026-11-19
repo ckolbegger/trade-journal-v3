@@ -58,6 +58,7 @@
 }
 
 .replay-going,
+.replay-crossing,
 .replay-stake {
   margin: 4px 0 0;
   color: var(--ink);
@@ -65,6 +66,29 @@
 
 .replay-stake {
   color: var(--muted);
+}
+
+/* Decision 5: the Plan block above the cards; one line to a row, the figures tabular. */
+.replay-plan {
+  margin-top: 12px;
+}
+
+.replay-plan h3 {
+  margin: 0 0 4px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.replay-plan ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.replay-plan li {
+  padding: 2px 0;
+  border-bottom: 1px solid var(--line);
 }
 
 .replay-slider {
