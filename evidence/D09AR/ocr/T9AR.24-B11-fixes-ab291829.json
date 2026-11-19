@@ -1,0 +1,137 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 2,
+    "total_tokens": 84331,
+    "input_tokens": 83325,
+    "output_tokens": 1006,
+    "cache_read_tokens": 25344,
+    "elapsed": "38s"
+  },
+  "tool_calls": {
+    "total": 8,
+    "by_tool": {
+      "code_comment": 2,
+      "file_read": 6
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/trade-detail/Cockpit.tsx",
+      "content": "JavaScript's `$` also matches before a final line terminator, so `session=2026-10-12%0A` passes this validation. The decoded newline then enters `th[data-session=\"...\"]`, where a literal newline makes the CSS string invalid and `querySelector` throws. Require an exact-length date (for example, also check `initialSession.length === 10`) or escape the value with `CSS.escape` before constructing the selector, and add a trailing-newline regression case.",
+      "existing_code": "  const arrival = useRef({ wanted: initialDrawer === 'Price History' \u0026\u0026 !replayOpen \u0026\u0026 /^\\d{4}-\\d{2}-\\d{2}$/.test(initialSession ?? '') ? initialSession : undefined });",
+      "start_line": 96,
+      "end_line": 96,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/trade-detail/Cockpit.tsx",
+      "content": "Correction: please disregard my preceding trailing-newline finding. In JavaScript, without the multiline flag, `$` requires the end of the input, so this validation rejects that case. The preceding finding is withdrawn; no change is requested.",
+      "existing_code": "  const arrival = useRef({ wanted: initialDrawer === 'Price History' \u0026\u0026 !replayOpen \u0026\u0026 /^\\d{4}-\\d{2}-\\d{2}$/.test(initialSession ?? '') ? initialSession : undefined });",
+      "start_line": 96,
+      "end_line": 96,
+      "category": "other",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "e2e/d9ar/review.spec.ts",
+        "src/ui/screens/TradeDetail.test.tsx",
+        "src/ui/screens/trade-detail/Cockpit.tsx"
+      ]
+    }
+  ],
+  "session_id": "696cbc34-790e-4526-9d8b-d1791db1104e",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "696cbc34-790e-4526-9d8b-d1791db1104e",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "a194d2cf",
+      "requested_head": "ab291829",
+      "resolved_base": "a194d2cfdcedc3af401730e181d1dd85ac2dd18d",
+      "resolved_head": "ab291829bc87b7704770ea11fad3bf52613a430e",
+      "exact_range": "a194d2cfdcedc3af401730e181d1dd85ac2dd18d..ab291829bc87b7704770ea11fad3bf52613a430e",
+      "source_artifact_sha256": "3405e5251d2db616496317bfd527a4b23c457521063984ee7b18ac880769827b"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "1dbde88c6725d05650fb2063254f42ad12a901f378aa609cfe3a4c2c69f6ba94",
+          "path": "e2e/d9ar/review.spec.ts",
+          "fingerprint": "59534d626b1fdc9cfee5241b3b8e36d309ed332515d2b47e8d271a7ce012c726"
+        },
+        {
+          "item_id": "52fc9e0f740af4668e49bfd2e1199ec69a0393f16df133159ee993f5599d280c",
+          "path": "src/ui/screens/trade-detail/Cockpit.tsx",
+          "fingerprint": "a9e23186d765b6d8e05f8824328ca358952d518db898aab2b5e17abaab40aa87"
+        },
+        {
+          "item_id": "7a6b66edcfdf4d351178b4026545647c2c6148a04069f6f4fb265dbe12a39b41",
+          "path": "src/ui/screens/TradeDetail.test.tsx",
+          "fingerprint": "73b9fc43c151e5402cdb6192448d9eb3a9c21620df64c9db9216a1c22bafd628"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "1dbde88c6725d05650fb2063254f42ad12a901f378aa609cfe3a4c2c69f6ba94",
+          "path": "e2e/d9ar/review.spec.ts",
+          "fingerprint": "59534d626b1fdc9cfee5241b3b8e36d309ed332515d2b47e8d271a7ce012c726"
+        },
+        {
+          "item_id": "52fc9e0f740af4668e49bfd2e1199ec69a0393f16df133159ee993f5599d280c",
+          "path": "src/ui/screens/trade-detail/Cockpit.tsx",
+          "fingerprint": "a9e23186d765b6d8e05f8824328ca358952d518db898aab2b5e17abaab40aa87"
+        },
+        {
+          "item_id": "7a6b66edcfdf4d351178b4026545647c2c6148a04069f6f4fb265dbe12a39b41",
+          "path": "src/ui/screens/TradeDetail.test.tsx",
+          "fingerprint": "73b9fc43c151e5402cdb6192448d9eb3a9c21620df64c9db9216a1c22bafd628"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "89ee4199c8fe930831880e6eec4479d5f378c6c12702afd175357e537803887d",
+          "path": "evidence/D09AR/tdd-log/T9AR.24-B11-B1.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "b0bc73ffc8ee92871fd8b284f609204d7679f8af43be17ea495edd0ff3f8e354",
+          "path": "evidence/D09AR/tdd-log/T9AR.24-B11-B2.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 37713
+  }
+}

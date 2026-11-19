@@ -927,6 +927,60 @@ Lane BR (`d09ar/br`), base `70ce0f74`.
         - The phone path is unchanged.
         - The price strip has the same structural gap but cannot show it at 461 px or more. The new e2e covers only the P&L chart.
     - **Merged** by fast-forward. Lane PL's base `1f6f35aa` was main's head.
+  - **T9AR.24-B11** `2de56279` (lane RW, from `d9a15cb8`; lane-tier evidence `a194d2cf`):
+    - **Cause:** an arrival by address selected the drawer but never ran Trade Detail's focus step. Focus alone left the column at x 1299, outside the scroller.
+    - **Fix (`Cockpit.tsx`):** an arrival with Price History and a session makes the existing drawer request for that column header, once, after the replay loads and with no overlay showing. The shared focus step also calls `scrollIntoView` (nearest) for every drawer request.
+    - **Cases:**
+      - Unit, "arrive from an address naming Price History and a session with that session column in focus": red, then green.
+      - E2e, "arrive at Price History from the Review with the slider session column header focused and inside its scroller": red ("inactive"), then red after a focus-only fix (1299 > 1215), then green.
+      - No 375 case: the scroller is the same element on a phone.
+      - No first-run passes. No existing lines changed.
+    - **Browser:** 92 passed, across `e2e/d9ar`, the d9 `review`, `replay` and `responsive-a11y` specs, d8p `cockpit`, `settlement-due-replay` and `history`, d8r `history` and d4 `correct-mark`. B3's cases pass.
+    - **Lane tier** `T9AR.24-B11`: unit 2477, integration 286, checks 14 of 14.
+    - **ocr** on `2de56279` (`ocr/T9AR.24-B11-2de56279.json`): 2 comments. Both are briefed in lane RW:
+      - **T9AR.24-B11-B1** (Valid, `Cockpit.tsx:116-118`): with `replay=open` also in the address, the arrival waits until Close. It then overrides a Position or Journal link, and Close lands on the column header, not Replay (A273). This is reachable by arriving from the Review, opening Replay and reloading.
+      - **T9AR.24-B11-B2** (Valid, `Cockpit.tsx:118`): the URL's `session` goes unescaped into a selector. A quote or backslash throws and blanks the Detail.
+    - Reviewer's notes:
+      - No re-fire on re-render.
+      - A session with no column leaves focus on `<body>`.
+      - `scrollIntoView` runs only with the overlay closed and adds no vertical jump. A column scrolled off to the left would park under the sticky label column, since there is no `scroll-padding-left`.
+      - B3's path is untouched.
+    - **T9AR.24-B11-B1** `ce288d91`:
+      - The arrival is armed only when the page loads without the overlay. `requestDrawer` clears a pending arrival.
+      - Cases, red then green:
+        - unit, "leave focus on the Replay button when the overlay opened from an address naming Price History and a session is closed";
+        - unit, "answer a Position link from an overlay opened from an address naming Price History and a session, not the Price History arrival";
+        - e2e, "return focus to Replay on Close after a reload of the Price History address with Replay open".
+    - **T9AR.24-B11-B2** `ab291829`:
+      - The arrival requires `^\d{4}-\d{2}-\d{2}$`, so URL text never reaches `querySelector`.
+      - Cases:
+        - unit, "render the Detail and throw nothing when the address names a session with a quote or a backslash": red (SyntaxError), then green;
+        - unit, "select Price History and throw nothing when the session is well formed but has no column": a **first-run pass, flagged**. Mutation: a throw on a missing target made it fail. Restored.
+    - Browser: 87 passed. Lane tier `T9AR.24-B11-fixes` (`3ea2dfac`): unit 2481, integration 286, checks 14 of 14.
+    - **ocr** on `a194d2cf..ab291829` (`ocr/T9AR.24-B11-fixes-ab291829.json`, round 2 of B11's chain): 2 comments, both **Wrong** and dismissed. ocr withdrew its trailing-newline claim itself; `$` without the `m` flag rejects it.
+      - Reviewer's notes:
+        - StrictMode, a reload and `2026-13-45` are all safe.
+        - A273 holds for Close, Escape and Back.
+        - The guards' tests bite.
+        - Gaps:
+          - opening the overlay while the replay loads leaves the arrival armed, and after Close it takes focus from Replay;
+          - a tab click, arrow keys or "Reflect now" while it loads is overridden;
+          - no test covers `requestDrawer`'s clearing line.
+    - **Sent back as B11-B1 part 2** by the main session. This is not a bug task from the notes. B11-B1 did not yet meet its own brief ("any explicit drawer request, or the overlay being open, clears it"), and the gaps are the same class.
+    - **B11-B1 part 2** `a9247d05` (lane-tier evidence `73623b2f`):
+      - **Change:** a helper `choose(drawer)` clears the arrival, then selects. `requestDrawer`, the arrow keys, the tab click and "Reflect now" use it. A new `openReplay` clears the arrival before `onReplayOpen`.
+      - **Cases**, with the replay Pending:
+        - "leave focus on the Replay button when the overlay was opened while the replay was loading and is closed after it loaded": red, then green.
+        - "keep the tab chosen while the replay was loading, with focus where it was, when the replay arrives": an invalid red (a query fault), then a real red, then green.
+        - "not override a drawer request made from the overlay …": a **first-run pass, flagged**. Mutation: the clearing lines were removed from both `choose` and `openReplay`, and it failed. Restored. No UI path calls `requestDrawer` while Pending.
+      - Browser: 9 passed. Lane tier `T9AR.24-B11-B1-part2`: unit 2484, integration 286, checks 14 of 14.
+      - **ocr** round 3 (`ocr/T9AR.24-B11-B1-part2-a9247d05.json`): **no findings**.
+        - Reviewer's notes, for the final report:
+          - `setSelected` and `onReplayOpen` are now reached only through `choose` and `openReplay`.
+          - There is no recursion.
+          - One edge remains: browser Back or Forward onto a `replay=open` entry while the replay loads sets the overlay open without `openReplay`, so the arrival could later take focus from Replay. It is narrow and Doubtful.
+          - The arrow keys and "Reflect now" have no case of their own.
+    - **Merged** B11, B11-B1, B11-B2 and B11-B1 part 2 by fast-forward. Lane RW's base `d9a15cb8` was main's head.
         - Reviewer's notes:
           - `isMarkLacking` is exactly MarkMissing or AcknowledgedUnavailable.
           - The Trade P&L row's figure is the contract's own, so the Underlying's Mark cannot reach it.

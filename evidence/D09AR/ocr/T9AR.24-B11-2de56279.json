@@ -1,0 +1,132 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 2,
+    "total_tokens": 138340,
+    "input_tokens": 137235,
+    "output_tokens": 1105,
+    "cache_read_tokens": 17920,
+    "elapsed": "49s"
+  },
+  "tool_calls": {
+    "total": 14,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 2,
+      "file_read": 11
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/trade-detail/Cockpit.tsx",
+      "content": "A visit with `drawer=price-history\u0026session=...\u0026replay=open` leaves this arrival pending until the overlay closes. If the user chooses Position or Journal in that overlay, this effect then issues a second Price History request, overriding the user's drawer selection and focus on the next render. Cancel the pending arrival when an explicit drawer request is made (and add a test starting with all three address parameters).",
+      "existing_code": "    if (!date || !replay || replayOpen || !shown.includes('Price History')) return;\n    arrival.current.wanted = undefined;\n    requestDrawer('Price History', { selector: `th[data-session=\"${date}\"]` });",
+      "start_line": 116,
+      "end_line": 118,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/trade-detail/Cockpit.tsx",
+      "content": "`initialSession` comes directly from the URL without validation. Interpolating it into a CSS selector means a pasted address with a quote or backslash in `session` can cause `querySelector` in the focus effect to throw a SyntaxError, rather than gracefully handling a session with no column. Validate the date or escape the attribute value with `CSS.escape` before constructing the selector.",
+      "existing_code": "    requestDrawer('Price History', { selector: `th[data-session=\"${date}\"]` });",
+      "start_line": 118,
+      "end_line": 118,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "e2e/d9ar/review.spec.ts",
+        "src/ui/screens/TradeDetail.test.tsx",
+        "src/ui/screens/trade-detail/Cockpit.tsx"
+      ]
+    }
+  ],
+  "session_id": "f5c4923e-bbe4-46c8-86bb-9cf25fefa8bd",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "f5c4923e-bbe4-46c8-86bb-9cf25fefa8bd",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "2de56279",
+      "resolved_base": "d9a15cb80352079b7f284f1f44ccf031b8ea2013",
+      "resolved_head": "2de562799a1af3cfc97fe7c39544fe88d4a12f6d",
+      "exact_range": "d9a15cb80352079b7f284f1f44ccf031b8ea2013..2de562799a1af3cfc97fe7c39544fe88d4a12f6d",
+      "source_artifact_sha256": "57a94aa124d2ef49ac6207f84d26ffe993ff90e0ef9d20a5a9c8b9dfe44be9d9"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "87638b8e40a8471b5a00443528a3c98bf4752f964c11c4b564b6258d593b8716",
+          "path": "src/ui/screens/TradeDetail.test.tsx",
+          "fingerprint": "7496259209a76e38eed75b2c689efd5a31fbbde6693f6db1490f7de61ec7f917"
+        },
+        {
+          "item_id": "bad5c69b3d1e03bf54bd2b1b2b13ff5e5a0dabd158881300fc1e86a4a591bb75",
+          "path": "src/ui/screens/trade-detail/Cockpit.tsx",
+          "fingerprint": "72423ced14cd6692bb8be44b6a06a9f2e0cccae7c4288b853bca77a3fe162eea"
+        },
+        {
+          "item_id": "f7406ef2881011b62532c827cd87807e71f1ffb772c241794158f993a5a0fd38",
+          "path": "e2e/d9ar/review.spec.ts",
+          "fingerprint": "ef96c27d91f30c93c3eb615b82beafd98eb589c5414c44210d78bbdb0cbf0acc"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "87638b8e40a8471b5a00443528a3c98bf4752f964c11c4b564b6258d593b8716",
+          "path": "src/ui/screens/TradeDetail.test.tsx",
+          "fingerprint": "7496259209a76e38eed75b2c689efd5a31fbbde6693f6db1490f7de61ec7f917"
+        },
+        {
+          "item_id": "bad5c69b3d1e03bf54bd2b1b2b13ff5e5a0dabd158881300fc1e86a4a591bb75",
+          "path": "src/ui/screens/trade-detail/Cockpit.tsx",
+          "fingerprint": "72423ced14cd6692bb8be44b6a06a9f2e0cccae7c4288b853bca77a3fe162eea"
+        },
+        {
+          "item_id": "f7406ef2881011b62532c827cd87807e71f1ffb772c241794158f993a5a0fd38",
+          "path": "e2e/d9ar/review.spec.ts",
+          "fingerprint": "ef96c27d91f30c93c3eb615b82beafd98eb589c5414c44210d78bbdb0cbf0acc"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "90e5a06f90a8cb039e77be0460c646921d2a4cd07a46d00200e39fd84dc7d70b",
+          "path": "evidence/D09AR/tdd-log/T9AR.24-B11.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 48978
+  }
+}
