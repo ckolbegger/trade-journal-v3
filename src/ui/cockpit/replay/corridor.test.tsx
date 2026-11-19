@@ -1273,4 +1273,33 @@ describe('Corridor: a first crossing (decision 2)', () => {
     expect(words(container)).toEqual(['Stop breached']);
     expect([...container.querySelectorAll('.replay-key li')].map((li) => li.textContent)).toEqual(['Stop breached']);
   });
+
+  it('should still flag a first crossing on a session with no Trade P&L, at the line\'s own level or at the top of the plot, and name it in the key and the phone\'s strip', () => {
+    const noPnl = (withStop: boolean): PlotSession[] =>
+      DAYS.slice(0, 7).map((_, i) =>
+        bren(i, i === 4 ? { tradePnl: null, underlyingMark: null, resultAtStop: withStop ? stopAt(4) : null, firstCrossing: { line: 'Stop', label: 'Stop breached', shortLabel: 'Stop breached' }, keyEntries: [{ kind: 'FirstCrossing', label: 'Stop breached' }] } : {}),
+      );
+    const poleY = (c: HTMLElement) => Number(/^M[\d.]+ ([\d.]+)V([\d.]+)$/.exec(flags(c)[0]!.querySelector('path.flag-pole')!.getAttribute('d')!)![1]);
+    const keyNames = (c: HTMLElement) => [...c.querySelectorAll('.replay-key li')].map((li) => li.textContent);
+    // On the Stop line's own level while the session has the line.
+    const on = render(<CorridorPlot {...props({ sessions: noPnl(true), sliderIndex: 6 })} />);
+    expect(flags(on.container)).toHaveLength(1);
+    expect(words(on.container)).toEqual(['Stop breached']);
+    expect(keyNames(on.container)).toEqual(['Stop breached']);
+    const lineY = Number(/^M[\d.]+ ([\d.]+)/.exec([...pnl(on.container).querySelectorAll('path.result-line.stop')].map((p) => p.getAttribute('d'))[0]!)![1]);
+    expect(lineY).toBeGreaterThan(0);
+    const levelY = poleY(on.container);
+    cleanup();
+    // With no figure to stand on, the flag is at the top of the plot, clear of the title row.
+    const off = render(<CorridorPlot {...props({ sessions: noPnl(false), sliderIndex: 6 })} />);
+    expect(flags(off.container)).toHaveLength(1);
+    expect(words(off.container)).toEqual(['Stop breached']);
+    expect(keyNames(off.container)).toEqual(['Stop breached']);
+    expect(poleY(off.container)).toBeLessThan(levelY);
+    cleanup();
+    frameWidth(340);
+    const phone = render(<CorridorPlot {...props({ sessions: noPnl(false), sliderIndex: 6 })} />);
+    expect(flags(phone.container)).toHaveLength(1);
+    expect(phone.container.querySelector('.replay-strip-labels')!.textContent).toContain('Stop breached');
+  });
 });

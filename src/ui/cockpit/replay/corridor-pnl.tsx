@@ -226,9 +226,10 @@ export function drawPnl(props: ReplayPlotProps, width: number): DrawnChart {
     const crossing = s.firstCrossing;
     const at = crossing && (crossing.line === 'Stop' ? s.resultAtStop : s.resultAtTarget)?.value;
     const level = at ?? s.tradePnl;
-    if (!crossing || level === null) return [];
+    if (!crossing) return [];
     const x = time.x(s.slot);
-    const y = value.y(level);
+    // A session with no figure to stand on (no Mark column) keeps the flag, at the top of the plot; nothing is joined across it (P146).
+    const y = level === null ? TOP + 18 : value.y(level);
     const top = Math.max(TOP, y - 18);
     const key = `crossing-${s.slot}`;
     put(key, `crossing-label ${crossing.line.toLowerCase()}`, words(crossing.label, crossing.shortLabel), [
