@@ -547,6 +547,7 @@ Lane BR (`d09ar/br`), base `70ce0f74`.
 | Critic | Brief | Tokens | Tool calls | Duration | Defects |
 |---|---|---|---|---|---|
 | critic-1 | `critic-brief.md`, section 8's flows, coach review 1's 15 points to recheck, `words-changed.md` and `new-words.md` named | 284,147 | 98 | 16 min 21 s | yes (5 high, 2 moderate, 2 low) |
+| critic-2 | the same brief, with the flows listed by ID, the support exports named and the port rule, and without critic-1's report | 279,440 | 118 | 26 min 45 s | yes (1 high, 3 moderate) |
 
 - **critic-1** (`critic-1.md`), at `38978773`: **FAIL**.
   - Passed: C9AR.1, C9AR.4 and C9AR.6. Failed: C9AR.2, C9AR.3, C9AR.5 and C9AR.7.
@@ -887,6 +888,29 @@ Lane BR (`d09ar/br`), base `70ce0f74`.
         - B3's draft set-aside is unaffected.
     - **Merged** by fast-forward. Lane RW's base `0c501bfd` was main's head.
     - **Every critic-1 defect has its bug task merged.** Next: one full run, then critic-2.
+  - **Full run `gate2`** (`a2c87929`, full tier):
+    - unit 2475; integration 286; browser-1 126; browser-2 79; browser-3 149; checks 14 of 14. All passed, with no reruns and no flaky cases.
+    - Browser-3 took 8.2 min, over the 8-minute limit. The runner advises a browser-4 stage. That goes to the final report and the D9B handoff.
+  - **Critic-2** briefed per `critic-brief.md`: a fresh general-purpose agent at medium effort, on flows C9AR.1, C9AR.2, C9AR.3, C9AR.4, C9AR.5, C9AR.6 and C9AR.7, plus the coach's 15 points.
+  - **Critic-2's report** (`critic-2.md`): FAIL, with 1 high and 3 moderate defects.
+    - **Flows:** C9AR.2 failed; the other six flows passed. All of critic-1's defects were seen fixed, and each of the coach's points is fixed or carried below.
+    - **Defects:**
+      1. **High:** at 1440 and 1536 on the entry session, BREN's and CORV's "Remaining Reward" stake tag is drawn over the axis figure "$500". This becomes **T9AR.24-B10**.
+      2. **Moderate:** on a phone the first-crossing line sits below the charts and the key, not after the status line (W64). **Not a bug task.** It is exactly the user's answer to the T9AR.18 pending decision ("below the charts on a phone"), carried out as T9AR.18-D1, recorded in `DECISIONS-PENDING.md` and noted for the final report.
+      3. **Moderate, accessibility:** after the Review overlay's "Price History", focus is on `<body>` and the session's column is off screen. From Trade Detail the column header gets focus. This becomes **T9AR.24-B11**.
+      4. **Moderate:** on a phone the Plan block lets a minus sign wrap away from its amount (BREN "P&L if hit –" / "$324.00"), and at 320 the odds pairs split. This becomes **T9AR.24-B12**.
+    - **Minor observations**, for the final report, with no tasks:
+      - a reload loses the session;
+      - the final result has no R;
+      - the Review's "+3.05R" against the replay's "3.05R";
+      - the key's flag swatches are black;
+      - the flag label sits on the hatch;
+      - "up $0.00";
+      - many tab stops;
+      - "Add the Mark" focuses the first "Correct" button;
+      - the Back address after Close;
+      - P153 was not checked.
+    - The bug tasks run one at a time, starting with B10.
         - Reviewer's notes:
           - `isMarkLacking` is exactly MarkMissing or AcknowledgedUnavailable.
           - The Trade P&L row's figure is the contract's own, so the Underlying's Mark cannot reach it.
