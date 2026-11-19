@@ -238,7 +238,7 @@ describe('Replay overlay layout (A275)', () => {
     return out;
   };
   const frame = '.replay-overlay .replay-card';
-  const plot = '.replay-overlay .replay-plot-frame';
+  const plot = '.replay-overlay .replay-chart-box';
   const readout = '.replay-overlay .replay-readout';
 
   it('should place the charts on the left and the readout on the right inside the overlay at a wide width, and one column on a phone', () => {
