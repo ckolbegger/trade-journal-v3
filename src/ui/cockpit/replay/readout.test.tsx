@@ -139,6 +139,15 @@ describe('Replay frame: the readout (W43)', () => {
     expect(text(row)).toBe('Past the Stop by $300.00 (0.50R) · at Stop −$740.00');
   });
 
+  it('should draw every figure of the past-a-line row, the rows and the change line as one unbreakable piece with its sign', () => {
+    const past = { ...stakeGroup, grid: { ...stakeGroup.grid!, pastLine: { text: 'Past the Stop by $552.00 (0.36R) · at Stop −$1,536.00', term: 'Stop Overrun' } } };
+    render(<Readout groups={[past, { title: 'How it is going', rows: [{ label: 'Trade P&L', value: fig('−$2,088.00 · −1.36R'), change: 'down $261.00 since Mon Nov 9' }] }]} />);
+    const readout = screen.getByTestId('readout');
+    const pieces = [...readout.querySelectorAll('.card-figure')].map(text);
+    for (const figure of ['$552.00', '0.36R', '−$1,536.00', '−$2,088.00', '−1.36R', '$261.00']) expect(pieces, figure).toContain(figure);
+    expect(text(screen.getByRole('row', { description: 'Stop Overrun' }))).toBe('Past the Stop by $552.00 (0.36R) · at Stop −$1,536.00');
+  });
+
   it('should show a dash named No Mark in each cell that needs the Mark, in the grid and in a Marks row', () => {
     const none = { kind: 'Unavailable', text: 'No Mark' } as const;
     const gap: ReplayFrameSession['readout'] = [

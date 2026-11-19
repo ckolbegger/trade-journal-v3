@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { Words } from './figure-words.tsx';
 import type { ReplayOverlayProps } from './replay.types.ts';
 
 const FOCUSABLE = 'summary:not([tabindex="-1"]), a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -52,7 +53,9 @@ export function ReplayOverlay({ name, header, onClose, children }: ReplayOverlay
   return createPortal(
     <div className="replay-overlay" role="dialog" aria-modal="true" aria-label={name} ref={dialogRef} onKeyDown={onKeyDown}>
       <header className="replay-overlay-header">
-        <h2>{header}</h2>
+        <h2>
+          <Words text={header} />
+        </h2>
         <button type="button" data-close onClick={onClose}>
           Close
         </button>

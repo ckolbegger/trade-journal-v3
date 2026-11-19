@@ -1,11 +1,15 @@
+import { Words } from './figure-words.tsx';
 import type { ReadoutProps, ReadoutValue, StakeGrid } from './replay.types.ts';
 
 // W61: a cell or value that needs a Mark it does not have is a dash named "No Mark", as in Price History.
-function shown(value: ReadoutValue) {
+// A grid cell is one figure and does not wrap (its stylesheet); a row's value may hold several (C9AR.2), so it is drawn by `Words`.
+function shown(value: ReadoutValue, inRow = false) {
   return value.kind === 'Unavailable' && value.text === 'No Mark' ? (
     <span role="img" aria-label="No Mark">
       —
     </span>
+  ) : inRow ? (
+    <Words text={value.text} />
   ) : (
     value.text
   );
@@ -30,7 +34,7 @@ function StakeGridTable({ grid }: { grid: StakeGrid }) {
         <tbody>
           <tr className="replay-past-line" title={grid.pastLine.term}>
             <td colSpan={4}>
-              {grid.pastLine.text}
+              <Words text={grid.pastLine.text} />
             </td>
           </tr>
         </tbody>
@@ -91,16 +95,16 @@ export function Readout({ groups }: ReadoutProps) {
                           const [ratio, ...oddsMarks] = row.value.text.split(' · ');
                           return (
                             <>
-                              {ratio} · <span role="img" aria-label={group.grid.odds.spoken}>{oddsMarks.join(' · ')}</span>
+                              <Words text={ratio!} /> · <span role="img" aria-label={group.grid.odds.spoken}><Words text={oddsMarks.join(' · ')} /></span>
                             </>
                           );
                         })()
                       ) : (
-                        shown(row.value)
+                        shown(row.value, true)
                       )}
                     </span>
                     {/* The change line (decision 8) is a block under the figure, on the Trade P&L and each Mark only. */}
-                    {row.change && <span className="replay-change"> {row.change}</span>}
+                    {row.change && <span className="replay-change"> <Words text={row.change} /></span>}
                   </dd>
                 </div>
               ))}

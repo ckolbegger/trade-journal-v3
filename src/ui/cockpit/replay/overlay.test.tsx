@@ -36,6 +36,13 @@ describe('Replay overlay (decision 3)', () => {
     expect(dialog.closest('[inert]')).toBeNull();
   });
 
+  it('should keep the header\'s figure as one unbreakable piece with its sign', () => {
+    open({ header: 'DALE · Trade P&L −$2,088.00' });
+    const heading = within(screen.getByRole('dialog', { name: 'Replay, BREN' })).getByRole('heading');
+    expect([...heading.querySelectorAll('.card-figure')].map((el) => el.textContent)).toEqual(['−$2,088.00']);
+    expect(heading.textContent).toBe('DALE · Trade P&L −$2,088.00');
+  });
+
   it('should head it "BREN · Trade P&L +$988.00" with a Close button', () => {
     open();
     const dialog = screen.getByRole('dialog', { name: 'Replay, BREN' });

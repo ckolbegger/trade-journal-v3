@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import {
-  AXIO, BREN, build, closeOf, CORV, DALE_HOLD, expect, expectAccessible, expectOneLine, going, openDrawer, pastLine, positionGroup, readoutPnl, readoutR, readoutValue, replay, seek, sliderValue, stake, test,
+  AXIO, BREN, build, closeOf, CORV, DALE_HOLD, expect, expectAccessible, expectOneLine, going, openDrawer, pastLine, positionGroup, readoutPnl, readoutR, readoutValue, replay, seek, setViewport, sliderValue, stake, test,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
@@ -208,6 +208,56 @@ test.describe('B9AR.3 The readout', () => {
       const { context, page } = await build(profile, fixture, closeOf(through === 5 ? '2026-11-09' : '2026-11-16'), through);
       const scope = await openAt(page, 'ArrowLeft', back);
       await expectOneLineEach(scope, where);
+      await context.close();
+    });
+  }
+});
+
+// T9AR.24-B2 (critic-1 defect 2, C9AR.2, A278): no figure in the readout or the overlay's header breaks across lines, and no sign parts from its number ("at Stop –" over "$1,536.00"). The check shares no pattern with the
+// code that marks the figures: it measures every element the page marks as a figure (.card-figure) and each grid cell, and asserts the words left around them hold no figure mark of any kind ("$", "%", an R
+// multiple, "to 1" odds, a lone sign), so a figure the code failed to mark is found as stray words. A row may wrap between figures, never inside one.
+const STRAY = String.raw`\$|%|\dR\b|\d to \d|[−+–]\s*$`;
+async function brokenReadoutFigures(scope: Locator): Promise<string[]> {
+  return scope.evaluate((dialog, stray) => {
+    const broken: string[] = [];
+    const roots = [dialog.querySelector('h2'), dialog.querySelector('.replay-readout')].filter((r): r is Element => r !== null);
+    const gridCell = '.replay-stake-grid tr:not(.replay-past-line) td';
+    for (const root of roots) {
+      const where = root.tagName === 'H2' ? 'header' : 'readout';
+      const font = parseFloat(getComputedStyle(root).fontSize);
+      for (const figure of root.querySelectorAll(`.card-figure, ${gridCell}`)) {
+        // The text's own line boxes (a cell's padding is not a line).
+        const range = document.createRange();
+        range.selectNodeContents(figure);
+        const rects = [...range.getClientRects()].filter((r) => r.width > 0 && r.height > 0);
+        if (rects.length && Math.max(...rects.map((r) => r.bottom)) - Math.min(...rects.map((r) => r.top)) > font * 1.6) broken.push(`${where}: broken "${figure.textContent}"`);
+      }
+      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+      for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+        const parent = n.parentElement as HTMLElement;
+        if (parent.closest('.card-figure') || parent.closest(gridCell)) continue;
+        if (new RegExp(stray).test((n as Text).data)) broken.push(`${where}: unmarked figure in "${(n as Text).data.trim()}"`);
+      }
+    }
+    return broken;
+  }, STRAY);
+}
+
+test.describe('T9AR.24-B2 Figures in the readout and the overlay header', () => {
+  const places = [
+    { fixture: DALE_HOLD, back: 0, where: 'DALE-hold Mon Nov 16' },
+    { fixture: AXIO, back: 0, where: 'AXIO Mon Nov 16' },
+    { fixture: DALE_HOLD, back: 2, where: 'DALE-hold Thu Nov 12' },
+  ] as const;
+  for (const { fixture, back, where } of places) {
+    test(`should keep every figure in the readout and the header on one line, sign with its number, at 1280, 1440, 1920, 375 and 320, ${where}`, async ({ profile }) => {
+      test.setTimeout(300_000);
+      const { context, page } = await build(profile, fixture, closeOf('2026-11-16'), 10);
+      const scope = await openAt(page, 'ArrowLeft', back);
+      for (const width of [1280, 1440, 1920, 375, 320]) {
+        await setViewport(page, width, 800);
+        expect(await brokenReadoutFigures(scope), `${where} at ${width}`).toEqual([]);
+      }
       await context.close();
     });
   }

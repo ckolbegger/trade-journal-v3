@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { CardPager, useCardsPerPage } from '../card-pager.tsx';
-import { figureParts } from './cards.props.ts';
+import { Words } from './figure-words.tsx';
 import type { ReadoutValue, SessionCard, SessionCardsProps } from './replay.types.ts';
 
 // A card's least width and the gap between cards, in px: the carousel's width over these is how many fit.
@@ -15,23 +15,6 @@ function shown(value: ReadoutValue) {
     </span>
   ) : (
     <Words text={value.text} />
-  );
-}
-
-// C9AR.2, A278: a card's words may wrap between figures, never inside one and never between a sign and its number.
-function Words({ text }: { readonly text: string }) {
-  return (
-    <>
-      {figureParts(text).map((part, at) =>
-        part.figure ? (
-          <span key={at} className="card-figure">
-            {part.text}
-          </span>
-        ) : (
-          part.text
-        ),
-      )}
-    </>
   );
 }
 
