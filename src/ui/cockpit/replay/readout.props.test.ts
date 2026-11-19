@@ -3,7 +3,7 @@ import type { Instrument } from '../../../domain/instrument/index.ts';
 import { replayProps } from './replay.props.ts';
 import { sessionWords } from './session-words.props.ts';
 import {
-  AXIO, BREN, BREN_STOCK, brenThu1112, brenWed1111, DALE, DALE_PLAN, daleWed1111, frac, fullView, markOf, NOT_APPLICABLE, odds, Plot, PLAN, readoutOf, rowNamed, rowsOfGroup, session, STAKE, UNBOUNDED, usd, value, view, withMarks,
+  AXIO, BREN, BREN_STOCK, brenThu1112, brenWed1111, DALE, DALE_PLAN, daleWed1111, frac, fullView, markOf, NO_TERMS, NOT_APPLICABLE, odds, Plot, PLAN, readoutOf, rowNamed, rowsOfGroup, session, STAKE, UNBOUNDED, usd, value, view, withMarks,
 } from './view-doubles.props.ts';
 
 describe('replay.props: the readout of a session in flight (W43)', () => {
@@ -403,7 +403,7 @@ describe('Replay: one name per figure (suggestion 8)', () => {
       standing: value({ zone: 'Between', share: frac(1, 10) }),
       figures: { ongoingRiskToStop: value(usd(400)), incrementalRewardToTarget: value(usd(40)), rewardRiskNow: value(frac(1, 10)), rewardRiskOdds: value(odds(400, 40, 91)) },
     });
-    const planned = view([mon], { atStop: usd(-300), atTarget: usd(600), rewardRisk: frac(2, 1), odds: odds(300, 600, 33) });
+    const planned = view([mon], { atStop: usd(-300), atTarget: usd(600), rewardRisk: frac(2, 1), odds: odds(300, 600, 33), terms: NO_TERMS });
     const reward = replayProps(planned, { Plot }).sessions[0]!.readout.find((g) => g.title === STAKE)!.rows.find((r) => r.label === 'Reward to risk')!;
     expect(reward.value.text).toBe('0.10 to 1 · about 91% : 9%');
     expect(reward.change).toBe('(Plan 2.00 to 1 · 33% : 67%)');

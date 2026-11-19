@@ -94,7 +94,7 @@ export interface ReplayPlan {
   // A267: the Plan's own odds beside its ratio. Not filled until T9AR.4.
   readonly odds?: RewardRiskOdds;
   // A269: the confirmed Plan's facts. Not filled until T9AR.4.
-  readonly terms?: ReplayPlanTerms;
+  readonly terms: ReplayPlanTerms;
 }
 
 // A269: what a Plan Stop's or Target's price is a price of: the Underlying, or the option contract itself.

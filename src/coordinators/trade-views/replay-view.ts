@@ -58,7 +58,7 @@ export interface ReplayPlanColumn {
   // A267: the Plan's own odds beside its ratio (the domain's own shape, as a session's figures carry it).
   readonly odds?: Extract<NonNullable<ReplayFigures['rewardRiskOdds']>, { kind: 'Value' }>['value'];
   // A269: each Planned Leg and every original Stop and Target (the domain's own shape).
-  readonly terms?: NonNullable<Extract<ReplayResult, { kind: 'Replayed' }>['plan']>['terms'];
+  readonly terms: NonNullable<Extract<ReplayResult, { kind: 'Replayed' }>['plan']>['terms'];
 }
 // A271: a session's first crossings, per role and per condition.
 export type ReplayCrossings = NonNullable<ReplayedSession['crossings']>;

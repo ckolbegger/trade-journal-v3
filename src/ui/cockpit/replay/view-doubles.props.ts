@@ -93,7 +93,10 @@ export function session(spec: Spec): Session {
   };
 }
 
-export const view = (sessions: readonly Session[], planColumn: TradeReplayView['planColumn'] = { atStop: usd(-324), atTarget: usd(956), rewardRisk: frac(956, 324), odds: odds(324, 956, 25) }): TradeReplayView => ({
+// The Plan's terms are the view's own (A269); a double that is not about the Plan block holds none, so the Plan block stays out of its readout.
+export const NO_TERMS = { legs: [], conditions: [] } as const;
+
+export const view = (sessions: readonly Session[], planColumn: TradeReplayView['planColumn'] = { atStop: usd(-324), atTarget: usd(956), rewardRisk: frac(956, 324), odds: odds(324, 956, 25), terms: NO_TERMS }): TradeReplayView => ({
   tradeId: 'T-1',
   instruments: [BREN],
   sessions,
@@ -118,7 +121,7 @@ export const brenMon1102 = session({
 });
 
 // R-DALE-D on Wed 11-11: the short puts, $78 at risk to the Stop and $912 more to the Target, 11.69 to 1 and about 8% : 92%; the Plan was 0.29 to 1, 78% : 22%.
-export const DALE_PLAN = { atStop: usd(-1536), atTarget: usd(444), rewardRisk: frac(444, 1536), odds: odds(1536, 444, 78) } as const;
+export const DALE_PLAN = { atStop: usd(-1536), atTarget: usd(444), rewardRisk: frac(444, 1536), odds: odds(1536, 444, 78), terms: NO_TERMS } as const;
 export const daleWed1111 = session({
   date: '2026-11-11',
   instrument: DALE,
@@ -173,7 +176,7 @@ export const brenWed1111 = withMarks(
   },
   [markOf(BREN_STOCK, '101.80', { since: '2026-11-10', dollars: usd(1.6) }), markOf(BREN, '3.20', { since: '2026-11-10', dollars: usd(-0.4) })],
 );
-export const PLAN = { atStop: usd(-324), atTarget: usd(956), rewardRisk: frac(956, 324), odds: odds(324, 956, 25) } as const;
+export const PLAN = { atStop: usd(-324), atTarget: usd(956), rewardRisk: frac(956, 324), odds: odds(324, 956, 25), terms: NO_TERMS } as const;
 
 type Props = ReturnType<typeof replayProps>;
 

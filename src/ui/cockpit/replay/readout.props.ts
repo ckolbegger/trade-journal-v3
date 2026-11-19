@@ -145,8 +145,8 @@ function conditionWords(condition: PlanTerms['conditions'][number], leg: PlanTer
 // The Plan block (decision 5, W62): the Plan's entry, the contract's strike, every Stop and Target, and the Plan's reward to risk.
 export function planBlockOf(view: TradeReplayView): PlanBlock | undefined {
   const plan = view.planColumn;
-  const leg = plan?.terms?.legs[0];
-  if (!plan?.terms || !leg) return undefined;
+  const leg = plan?.terms.legs[0];
+  if (!plan || !leg) return undefined;
   const contract = view.instruments.find((i) => i.kind === 'Option');
   return {
     title: 'The Plan',
