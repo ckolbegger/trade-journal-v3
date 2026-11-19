@@ -321,6 +321,22 @@ describe('Readout: a session with no Mark (suggestion 12)', () => {
     expect(pnl.value).toEqual({ kind: 'Unavailable', text: 'No Mark' });
     expect(JSON.stringify(readout)).not.toContain('Mark missing');
   });
+
+  it('should keep the reason words, not the dash named No Mark, in the Trade P&L row when the reason is not a Mark, AwaitingClose', () => {
+    const awaiting = { ...session({ date: '2026-11-10', instrument: DALE, held: -3, pnl: null }), tradePnl: { kind: 'Unavailable', reason: 'AwaitingClose', after: '2026-11-10' } } as ReturnType<typeof session>;
+    const readout = replayProps(view([awaiting]), { Plot }).sessions[0]!.readout;
+    const pnl = readout.find((group) => group.title === 'How it is going')!.rows.find((r) => r.label === 'Trade P&L')!;
+    expect(pnl.value).not.toEqual({ kind: 'Unavailable', text: 'No Mark' });
+    expect(pnl.value.kind).toBe('Unavailable');
+    expect(pnl.value.text).not.toBe('');
+  });
+
+  it('should show the dash named No Mark in the Trade P&L row when the Mark is Acknowledged unavailable', () => {
+    const acknowledged = { ...session({ date: '2026-11-10', instrument: DALE, held: -3, pnl: null }), tradePnl: { kind: 'Unavailable', reason: 'AcknowledgedUnavailable', instrument: DALE, date: '2026-11-10' } } as ReturnType<typeof session>;
+    const readout = replayProps(view([acknowledged]), { Plot }).sessions[0]!.readout;
+    const pnl = readout.find((group) => group.title === 'How it is going')!.rows.find((r) => r.label === 'Trade P&L')!;
+    expect(pnl.value).toEqual({ kind: 'Unavailable', text: 'No Mark' });
+  });
 });
 
 describe("Readout: carried from D9's Stage A gate (critic-2, section 1.8)", () => {

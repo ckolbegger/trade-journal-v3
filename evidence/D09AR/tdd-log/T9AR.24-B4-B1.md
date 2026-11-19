@@ -1,0 +1,11 @@
+# D09AR TDD log, T9AR.24-B4-B1
+
+One file per task (decision 111), so parallel lanes never edit one file. Each row is one single-case run; see `../tdd-log.md` for the rules.
+
+| T9AR.24-B4-B1 | should keep the reason words, not the dash named No Mark, in the Trade P&L row when the reason is not a Mark, AwaitingClose | red | `npx vitest run src/ui/cockpit/replay/readout.props.test.ts -t "should keep the reason words, not the dash named No Mark, in the Trade P&L row when the reason is not a Mark, AwaitingClose"` | exit 1; Tests  1 failed, 29 skipped (30) | AssertionError: expected { Object (kind, text) } to not deeply equal { Object (kind, text) }  |
+| T9AR.24-B4-B1 | should show the dash named No Mark in the Trade P&L row when the Mark is Acknowledged unavailable | red | `npx vitest run src/ui/cockpit/replay/readout.props.test.ts -t "should show the dash named No Mark in the Trade P&L row when the Mark is Acknowledged unavailable"` | exit 0; Tests  1 passed, 29 skipped (30) |  |
+| T9AR.24-B4-B1 | should keep the reason words, not the dash named No Mark, in the Trade P&L row when the reason is not a Mark, AwaitingClose | green | `npx vitest run src/ui/cockpit/replay/readout.props.test.ts -t "should keep the reason words, not the dash named No Mark, in the Trade P&L row when the reason is not a Mark, AwaitingClose"` | exit 0; Tests  1 passed, 29 skipped (30) |  |
+| T9AR.24-B4-B1 | should show the dash named No Mark in the Trade P&L row when the Mark is Acknowledged unavailable | green | `npx vitest run src/ui/cockpit/replay/readout.props.test.ts -t "should show the dash named No Mark in the Trade P&L row when the Mark is Acknowledged unavailable"` | exit 0; Tests  1 passed, 29 skipped (30) |  |
+
+| note | First-run pass, flagged for the user. Case "should show the dash named No Mark in the Trade P&L row when the Mark is Acknowledged unavailable" passed before the fix: T9AR.24-B4 already gave the row No Mark for every non-value reason. Mutation: dropped the AcknowledgedUnavailable clause from the no-Mark test in goingGroup. Command: `npx vitest run src/ui/cockpit/replay/readout.props.test.ts -t "...Acknowledged unavailable"`. First failure line: `AssertionError: expected { kind: 'Unavailable', …(1) } to deeply equal { Object (kind, text) }`. Restored. |
+| refactor | Reviewed; no change. Replay folder tests (233) green. |
