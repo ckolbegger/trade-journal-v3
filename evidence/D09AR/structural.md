@@ -996,6 +996,18 @@ Lane BR (`d09ar/br`), base `70ce0f74`.
         - The e2e's stray-mark scan bites. It does not assert that each odds pair and signed amount is marked per fixture.
     - **Merged** by fast-forward. Lane RO's base `02c6fc1e` was main's head.
     - **Every critic-2 defect that became a bug task is merged.** Next: one full run, then critic-3, the last under the cap.
+  - **Full run `gate3`** (`24a6a513`, full tier):
+    - unit 2485; integration 286; browser-1 126; browser-2 79; browser-3 156; checks 14 of 14. All passed, with no reruns.
+    - Browser-3 took 8.7 min, over the limit again, so a browser-4 stage is advised. This goes to the final report and the D9B handoff.
+  - **Critic-3** was briefed as for critic-2, with these additions:
+    - the wide widths 1366 and 1536;
+    - the user's answered decisions named as not defects;
+    - P153's banners with the releases build.
+  - **The user's rule, 2026-11-19, made while critic-3 ran:**
+    - From now on, style-only ocr findings and low critic defects go to `tech-debt.md`, not to tasks.
+    - The open tech debt is reviewed with the user after the gate passes.
+    - The main session also stops sending tasks back for a "part 2" on the strength of reviewer notes. B5, B7 and B11-B1 had been sent back that way.
+    - So a critic-3 with only low defects closes the gate on the `gate3` full run.
         - Reviewer's notes:
           - `isMarkLacking` is exactly MarkMissing or AcknowledgedUnavailable.
           - The Trade P&L row's figure is the contract's own, so the Underlying's Mark cannot reach it.
