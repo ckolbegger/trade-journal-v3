@@ -1,5 +1,5 @@
 import type { Instrument, OptionInstrument } from '../../domain/instrument/index.ts';
-import type { CalculationResult, IncoherentFact, ReplayedSession } from '../../domain/trade-analysis/index.ts';
+import type { CalculationResult, IncoherentFact, ReplayedSession, ReplayResult } from '../../domain/trade-analysis/index.ts';
 import type { Rational } from '../../domain/values/index.ts';
 import type { AcknowledgmentVersion } from '../../modules/market-data/index.ts';
 import type { ReadViewResult, TradeDetailNarrativeItem, ViewBinding } from './view-types.ts';
@@ -55,7 +55,13 @@ export interface ReplayPlanColumn {
   readonly atStop: Rational;
   readonly atTarget: Rational;
   readonly rewardRisk: Rational;
+  // A267: the Plan's own odds beside its ratio (the domain's own shape, as a session's figures carry it).
+  readonly odds?: Extract<NonNullable<ReplayFigures['rewardRiskOdds']>, { kind: 'Value' }>['value'];
+  // A269: each Planned Leg and every original Stop and Target (the domain's own shape).
+  readonly terms?: NonNullable<Extract<ReplayResult, { kind: 'Replayed' }>['plan']>['terms'];
 }
+// A271: a session's first crossings, per role and per condition.
+export type ReplayCrossings = NonNullable<ReplayedSession['crossings']>;
 // A253: how a Closed Trade ended.
 export type ReplayFinal = { readonly kind: 'Sold' } | { readonly kind: 'Expired'; readonly contract: OptionInstrument };
 
@@ -81,6 +87,8 @@ export interface ReplaySession {
   readonly rewardChange?: ReplayChange;
   // A251: the Position Changes in this session.
   readonly markers?: readonly ReplayMarker[];
+  // A271: each role's first crossing and current run.
+  readonly crossings?: ReplayCrossings;
   // A253: set on a Closed Trade's last session only, with how the Trade ended.
   readonly final?: ReplayFinal;
 }

@@ -11,3 +11,6 @@
 @import './styles/journal.css';
 @import './styles/replay-plot.css';
 @import './styles/replay-frame.css';
+@import './styles/replay-readout.css';
+@import './styles/replay-overlay.css';
+@import './styles/replay-cards.css';

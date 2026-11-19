@@ -105,67 +105,6 @@
   }
 }
 
-/* The readout (W43): groups side by side where there is room, one under another on a phone. */
-.replay-readout {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
-  gap: 12px 24px;
-  margin-top: 12px;
-}
-
-.replay-readout h3 {
-  margin: 0 0 4px;
-  font-size: 0.85rem;
-  color: var(--muted);
-}
-
-.replay-readout dl {
-  margin: 0;
-}
-
-.replay-readout-row {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 0 8px;
-  padding: 2px 0;
-  border-bottom: 1px solid var(--line);
-}
-
-/* "Current Risk" / "Remaining Reward": a heading line above the row that opens its part of the group. */
-.replay-readout-heading {
-  flex: 0 0 100%;
-  margin: 4px 0 0;
-  font-size: 0.85rem;
-  color: var(--muted);
-}
-
-.replay-readout dt {
-  color: var(--muted);
-}
-
-.replay-readout dd {
-  margin: 0;
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-  color: var(--ink);
-}
-
-/* An Unavailable figure reads in italics and a Not applicable one muted, so neither passes for a Figure by colour alone. */
-.replay-value[data-kind='Unavailable'] {
-  font-style: italic;
-}
-
-.replay-value[data-kind='NotApplicable'] {
-  color: var(--muted);
-}
-
-.replay-change {
-  display: block;
-  font-size: 0.8rem;
-  color: var(--muted);
-}
-
 /* The hover and focus lines. */
 .replay-hover {
   margin-top: 8px;

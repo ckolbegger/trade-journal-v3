@@ -30,8 +30,28 @@ export interface PlotMarker {
   readonly isEntry: boolean;
 }
 
+// A268, A280: how much weight the extremes (the Worst case and the Max reward) carry. A view without the field is `Main`.
+export type ExtremesWeight = 'Main' | 'Remote';
+
+// A280: one thing the chart draws, as the one-line key names it. `kind` picks the swatch; `label` is the key's words.
+export interface PlotKeyEntry {
+  readonly kind: 'Mark' | 'TradePnl' | 'Banked' | 'Stop' | 'Target' | 'WorstCase' | 'MaxReward' | 'BreakEven' | 'Strike' | 'Execution' | 'FirstCrossing' | 'NoMark';
+  readonly label: string;
+}
+
 // One revealed session as the plot draws it (A255). The frame passes revealed sessions only.
 export interface PlotSession {
+  // A280: what this session itself newly draws, for the key; the plot names the union over the revealed sessions and nothing else.
+  readonly keyEntries?: readonly PlotKeyEntry[];
+  // A280: the Worst case's tag at the bottom edge ("Worst case −$33,936 ↓"), drawn only when its line is below the chart's range;
+  // `weight` says how strongly (grey for `Remote`).
+  readonly worstCaseTag?: { readonly label: string; readonly weight: ExtremesWeight };
+  // A280, phone: this session's labels in the order the strip lists them ("Stop +$316", "Banked +$478", "Sold 2"); the plot adds
+  // any label the drawing left out.
+  readonly stripLabels?: readonly string[];
+  // A271, A280: set on the session where a condition's role was first crossed ("Target reached", "Stop breached"); the flag stays on
+  // later sessions because the plot is given every revealed session.
+  readonly firstCrossing?: { readonly line: 'Stop' | 'Target'; readonly label: string; readonly shortLabel?: string };
   // Position on the time axis: 0 for the first session, counting every trading session up to `axis.slots - 1`.
   readonly slot: number;
   // "Mon Nov 16": the label for hover and the slider's mark.
@@ -88,8 +108,11 @@ export interface ReplayPlotProps {
   readonly sessions: readonly PlotSession[];
   readonly anchors: PlotAnchors;
   // The time axis: `slots` trading sessions from the first session to the contract's expiration (to the last session
-  // for stock), and the end's label ("Fri Nov 20"); later sessions stay blank.
-  readonly axis: { readonly slots: number; readonly endLabel: string };
+  // for stock), and the end's label ("Expires Fri Nov 20"); later sessions stay blank. A280: `startLabel` is the first
+  // session's date at the left; `endLabel` is absent on a stock Trade, which has nothing to say at the right.
+  readonly axis: { readonly slots: number; readonly startLabel?: string; readonly endLabel?: string };
+  // A280: the name of the slider's session, shown under the cursor ("Mon Nov 16").
+  readonly cursorLabel?: string;
   // The slider's session, as an index into `sessions`.
   readonly sliderIndex: number;
   // Phone layout: use the short labels and fewer of them.
@@ -122,12 +145,127 @@ export interface ReadoutRow {
   readonly change?: string;
   // Set for a figure the charts draw, which the readout must hold too.
   readonly drawn?: boolean;
+  // A287: the row's canonical term, as its accessible description and hover title; nothing is added to see.
+  readonly term?: string;
+  // A268: the extremes' weight mark, on the Worst case and Max reward rows.
+  readonly weight?: ExtremesWeight;
+}
+
+// A278: one row of the stake grid. One figure to a cell; each cell is unbreakable, sign included.
+export interface StakeRow {
+  // "At Stop", "At Worst case", "At Target", "At Max reward".
+  readonly label: string;
+  // A287: "Ongoing Risk to Stop", "Worst-Case Ongoing Risk", "Incremental Reward to Target", "Maximum Incremental Reward".
+  readonly term: string;
+  // The "From here" cell: the amount at stake.
+  readonly fromHere: ReadoutValue;
+  // The "R" cell and the "P&L if hit" cell; both absent on an Unbounded Max reward, which reads "No cap above" across its row.
+  readonly r?: ReadoutValue;
+  readonly pnlIfHit?: ReadoutValue;
+  // A268: the extremes' weight mark, on At Worst case and At Max reward.
+  readonly weight?: ExtremesWeight;
+}
+
+// A278: a row group of the grid under its heading.
+export interface StakeRowGroup {
+  readonly heading: 'Current Risk' | 'Remaining Reward';
+  readonly rows: readonly StakeRow[];
+}
+
+// A278: past a line, the one row that stands above the two headings in place of the row whose amount would be zero.
+export interface StakePastLineRow {
+  // "Past the Stop by $300.00 (0.50R) · at Stop −$740.00"; "Past the Stop's amount by $9.00 (0.01R) · at Stop −$1,263.00".
+  readonly text: string;
+  // A287: "Stop Overrun" or "Target Overrun".
+  readonly term: string;
+}
+
+// A267, A278: the odds as the readout says them.
+export interface StakeOdds {
+  // "11.69 to 1 · about 8% : 92%".
+  readonly text: string;
+  // "(Plan 0.29 to 1 · 78% : 22%)", beside it.
+  readonly planText?: string;
+  // The odds in full for a screen reader: "about 8% chance of the Target first, 92% of the Stop first".
+  readonly spoken: string;
+  // "Odds: Target first : Stop first, estimated with no edge and no time limit.", shown once, under the grid.
+  readonly note: string;
+}
+
+// A278: the "At stake from here, whole Position" group as a real table. The columns are fixed: "From here", "R", "P&L if hit".
+export interface StakeGrid {
+  readonly columns: readonly ['From here', 'R', 'P&L if hit'];
+  readonly pastLine?: StakePastLineRow;
+  // "Current Risk" then "Remaining Reward".
+  readonly groups: readonly StakeRowGroup[];
+  // Absent when there is no ratio (a Trade past a line).
+  readonly odds?: StakeOdds;
 }
 
 export interface ReadoutGroup {
   // "How it is going", "At stake from here, whole Position", "Marks", "Position", "The Plan", "Final result".
   readonly title: string;
   readonly rows: readonly ReadoutRow[];
+  // A278: the stake group's grid, which the readout draws in place of `rows` when present.
+  readonly grid?: StakeGrid;
+}
+
+// What the readout takes: the slider session's groups.
+export interface ReadoutProps {
+  readonly groups: readonly ReadoutGroup[];
+}
+
+// A277: one row of a session card, top to bottom: the Marks, Trade P&L, Banked, the stake rows, Events.
+export interface SessionCardRow {
+  readonly label: string;
+  readonly value: ReadoutValue;
+  // Where the Trade would end, beside the amount from here, as `ReadoutRow.pnl`.
+  readonly pnl?: ReadoutValue;
+  // A287: the canonical term as accessible text.
+  readonly term?: string;
+  readonly weight?: ExtremesWeight;
+}
+
+// A277: what the adapter builds for one session; the frame adds `id` and `isCurrent`.
+export interface SessionCardBody {
+  // "Mon Nov 16".
+  readonly heading: string;
+  readonly rows: readonly SessionCardRow[];
+}
+
+// A277: one card as `SessionCards` draws it.
+export interface SessionCard extends SessionCardBody {
+  // The session's date, which names the card and moves the slider when its heading is pressed.
+  readonly id: string;
+  // The slider's session: the card carries `aria-current`.
+  readonly isCurrent: boolean;
+}
+
+// A277: the adapter's fixed words for the cards; the cards themselves come from the sessions' `card`.
+export interface SessionCardsWords {
+  // "Session by session".
+  readonly title: string;
+  // "Newer sessions" and "Earlier sessions": the pager's buttons.
+  readonly newerLabel: string;
+  readonly earlierLabel: string;
+}
+
+// A277: what `SessionCards` takes. `cards` are the revealed sessions, newest first.
+export interface SessionCardsProps extends SessionCardsWords {
+  readonly cards: readonly SessionCard[];
+  // The element id the charts name in `aria-describedby`.
+  readonly id: string;
+  readonly onSelectSession: (id: string) => void;
+}
+
+// A273: what `ReplayOverlay` takes: a modal dialog over the whole viewport.
+export interface ReplayOverlayProps {
+  // The dialog's accessible name: "Replay, BREN".
+  readonly name: string;
+  // The header's text: "BREN · Trade P&L +$988.00", "BREN · Final result +$1,138.00", or the symbol alone.
+  readonly header: string;
+  readonly onClose: () => void;
+  readonly children: ReactNode;
 }
 
 // A row of "Session by session" (W45): cells line up with `ReplayProps.tableColumns` after "Session" and before "Events".
@@ -145,6 +283,10 @@ export interface TableRow {
 export interface ReplayFrameSession {
   // The session's trading date, "2026-11-16": the key the address and the slider's state use.
   readonly date: string;
+  // A277: this session's card, shown newest first for the revealed sessions; the frame adds the id and the current mark.
+  readonly card?: SessionCardBody;
+  // A267: the stake sentence's odds in full for a screen reader, when the sentence holds them.
+  readonly stakeSpoken?: string;
   // The slider's spoken value, "Mon Nov 16 · 11 of 15"; the headline follows it.
   readonly sliderValue: string;
   readonly dateLabel: string;
@@ -183,8 +325,10 @@ export interface ReplayProps {
   // "BREN Mark", "Trade P&L", "Banked", ...
   readonly tableTitle: string;
   readonly tableColumns: readonly string[];
+  // A277: the cards' fixed words; when present with each session's `card`, the cards replace the table.
+  readonly cardsWords?: SessionCardsWords;
   // The plot's fixed parts (titles, anchors, axis), to which the frame adds the revealed sessions.
-  readonly plotBase: Omit<ReplayPlotProps, 'sessions' | 'sliderIndex' | 'onSelectSession' | 'onHoverSession' | 'hoverIndex' | 'compact'>;
+  readonly plotBase: Omit<ReplayPlotProps, 'sessions' | 'sliderIndex' | 'onSelectSession' | 'onHoverSession' | 'hoverIndex' | 'compact' | 'cursorLabel'>;
   // The plot component: Corridor in the app, a double in tests; a Ribbon plot later.
   readonly Plot: ComponentType<ReplayPlotProps>;
   // Slots the screen fills in (A255): the links under the readout, and the "since" line and chips.

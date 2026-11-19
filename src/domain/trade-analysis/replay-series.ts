@@ -3,7 +3,7 @@ import { instrumentKey, type Instrument } from '../instrument/index.ts';
 import type { Instant } from '../time/index.ts';
 import type { CalculationResult } from '../calculation-result/index.ts';
 import { parseDecimal, Rational } from '../values/index.ts';
-import { evaluate, type ObservationFrame, type TradeEvaluation } from './evaluate.ts';
+import { evaluate, type ObservationFrame, type RewardRiskOdds, type TradeEvaluation } from './evaluate.ts';
 import { derive, type DerivedTradeState, type IncoherentFact, type TradeAnalysisRecord } from './derive.ts';
 
 // A211: one completed session's Mark points, one frame per Instrument (Available, Missing or AcknowledgedUnavailable,
@@ -53,6 +53,9 @@ export type ReplayFigures = {
   | 'conditions'
   | 'outcomes'
   | 'standing'
+  // A267, A268: the estimated odds from here, and the extremes' weight.
+  | 'rewardRiskOdds'
+  | 'extremes'
 >;
 
 // A251: one fill of a Position Change.
@@ -63,6 +66,13 @@ export interface ReplayMarkerFill {
   readonly quantity: Rational;
   // Absent for an Expiration.
   readonly price?: Rational;
+  // A270: the line this fill is measured against, where its price lies against it, and the distance in price. Absent for an
+  // Expiration and when the Plan has no such condition. Never a verdict on the fill. Not filled until T9AR.4.
+  readonly againstPlan?: {
+    readonly line: 'Entry' | 'Stop' | 'Target';
+    readonly side: 'At' | 'Above' | 'Below';
+    readonly distance: Rational;
+  };
 }
 
 // A251: a Position Change in the session, in fact order.
@@ -80,6 +90,60 @@ export interface ReplayPlan {
   readonly atStop: Rational;
   readonly atTarget: Rational;
   readonly rewardRisk: Rational;
+  // A267: the Plan's own odds beside its ratio. Not filled until T9AR.4.
+  readonly odds?: RewardRiskOdds;
+  // A269: the confirmed Plan's facts. Not filled until T9AR.4.
+  readonly terms?: ReplayPlanTerms;
+}
+
+// A269: what a Plan Stop's or Target's price is a price of: the Underlying, or the option contract itself.
+export type ReplayPriceOf = 'Underlying' | 'Option';
+
+// A269: a Planned Leg as confirmed: its Instrument, side, quantity (unsigned) and intended entry price.
+export interface ReplayPlanLeg {
+  readonly instrument: Instrument;
+  readonly side: 'Long' | 'Short';
+  readonly quantity: Rational;
+  readonly entryPrice: Rational;
+}
+
+// A269: one original Stop or Target, with what its price is a price of, the price, and its own planned result (the Trade's
+// result if it is hit, from the Plan Baseline's per-condition basis).
+export interface ReplayPlanCondition {
+  readonly role: 'Stop' | 'Target';
+  readonly priceOf: ReplayPriceOf;
+  readonly price: Rational;
+  readonly pnlIfHit: Rational;
+}
+
+// A269: every Planned Leg and every Stop and Target, not only the headline one.
+export interface ReplayPlanTerms {
+  readonly legs: readonly ReplayPlanLeg[];
+  readonly conditions: readonly ReplayPlanCondition[];
+}
+
+// A271: a date a role or condition was crossed. `afterGap` is true when the session before it had no reading, so a screen says
+// "first seen" and never names an earlier date.
+export interface ReplayCrossingDate {
+  readonly date: string;
+  readonly afterGap: boolean;
+}
+
+// A271: `first` is the earliest session crossed, kept on every later session; `since` is the start of the unbroken crossed run that
+// holds this session, absent when it is not crossed now.
+export interface ReplayCrossingDates {
+  readonly first?: ReplayCrossingDate;
+  readonly since?: ReplayCrossingDate;
+}
+
+// A271: a role's dates, and the same for each of its conditions (by `ConditionStatus.id`), since each keeps its own status.
+export interface ReplayRoleCrossings extends ReplayCrossingDates {
+  readonly conditions: readonly (ReplayCrossingDates & { readonly id: string })[];
+}
+
+export interface ReplayCrossings {
+  readonly stop: ReplayRoleCrossings;
+  readonly target: ReplayRoleCrossings;
 }
 
 export interface ReplayedSession {
@@ -98,6 +162,8 @@ export interface ReplayedSession {
   readonly rewardChange?: ReplayChange;
   // A251: the Position Changes in this session.
   readonly markers?: readonly ReplayMarker[];
+  // A271: each role's first crossing and current run. Not filled until T9AR.5.
+  readonly crossings?: ReplayCrossings;
 }
 
 export type ReplayResult =

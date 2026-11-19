@@ -136,6 +136,18 @@ export interface TradeStandingReading {
   readonly openProfitAtRisk?: Rational;
 }
 
+// A267: the estimated odds, read from the Risk to stop and the Reward to target. Both are exact: what is estimated is reading them
+// as a chance (no edge, no time limit), so screens say "about". `targetFirst` is Risk over (Risk + Reward) and `stopFirst` the rest;
+// `percent` is the same pair as whole percents (exact whole numbers), the Target's half-up and the Stop's the remainder to 100.
+export interface RewardRiskOdds {
+  readonly targetFirst: Rational;
+  readonly stopFirst: Rational;
+  readonly percent: { readonly targetFirst: Rational; readonly stopFirst: Rational };
+}
+
+// A268: `Main` when the Plan holds a short option leg (the Worst case is the main risk), `Remote` for stock and long options.
+export type ExtremesWeight = 'Main' | 'Remote';
+
 export interface TradeEvaluation {
   readonly kind: 'Evaluated';
   readonly valuationDate: string;
@@ -195,6 +207,12 @@ export interface TradeEvaluation {
   readonly outcomes?: TradeOutcomes;
   // A249: where the result stands; Unavailable with the evaluation's own reason when there is no Mark.
   readonly standing?: CalculationResult<TradeStandingReading>;
+  // A267: the estimated odds from here: a Value exactly when `rewardRiskNow` is one, else that result's own reason. Not filled until T9AR.3.
+  readonly rewardRiskOdds?: CalculationResult<RewardRiskOdds>;
+  // A267: the Plan's own odds, from 1R and the Original Planned Reward; never changes.
+  readonly planOdds?: CalculationResult<RewardRiskOdds>;
+  // A268: fixed for the Trade's life; a screen shown an evaluation without it treats it as `Main`.
+  readonly extremes?: ExtremesWeight;
 }
 
 const ZERO = Rational.of(0n);
