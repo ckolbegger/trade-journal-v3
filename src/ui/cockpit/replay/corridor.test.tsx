@@ -730,7 +730,7 @@ describe('Corridor: labels apart (T9.19-B2)', () => {
     vi.unstubAllGlobals();
   });
 
-  const LABELS = 'text.plot-title, text.result-label, text.banked-label, text.stake-tag, text.past-label, text.marker-label, text.worst-case-label, text.max-reward-label, text.break-even-label, text.price-line-label, text.mark-label';
+  const LABELS = 'text.plot-title, text.result-label, text.banked-label, text.stake-tag, text.past-label, text.marker-label, text.worst-case-label, text.max-reward-label, text.break-even-label, text.price-line-label, text.mark-label, text.crossing-label';
   type Box = { name: string; x0: number; x1: number; y0: number; y1: number };
   const boxesOf = (svg: Element): Box[] =>
     [...svg.querySelectorAll(LABELS)].map((t) => {
