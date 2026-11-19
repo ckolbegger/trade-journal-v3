@@ -266,9 +266,10 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
   const [params] = useSearchParams();
   const [link] = useState(() => linkedCard(heldReview, params));
   // Only the way back from Price History (it reopens the overlay) gives a started Action back to its card (C9AR.5).
-  useState(() => {
-    if (params.get('replay') !== 'open') discardDraftsSetAside();
-  });
+  const [openedOnWayBack] = useState(() => params.get('replay') === 'open');
+  useEffect(() => {
+    if (!openedOnWayBack) discardDraftsSetAside();
+  }, [openedOnWayBack]);
   // The first card not done, in walk order and then group order (A90), opens when nothing else is named.
   const [firstId] = useState(() => link?.tradeId ?? [...walkedTrades(initial), ...initial.owed].find((t) => !t.progress.done)?.tradeId);
   // The link the open card is to answer, and the card it is for.
