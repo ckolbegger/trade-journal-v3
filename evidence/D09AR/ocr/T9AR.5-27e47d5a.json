@@ -1,0 +1,133 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 1,
+    "total_tokens": 158756,
+    "input_tokens": 157374,
+    "output_tokens": 1382,
+    "cache_read_tokens": 14976,
+    "elapsed": "56s"
+  },
+  "tool_calls": {
+    "total": 12,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 5,
+      "file_read": 6
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/domain/trade-analysis/replay-series.ts",
+      "content": "A role is only provably active when all of its conditions read Active. With O-S2, let the option Stop cross at $3.70, then omit the option Mark while MNO remains $43.20, then restore the option at $3.70. The middle session produces [active, undefined], so this branch clears the role's run even though the crossed option condition has no recovery reading. The final session incorrectly starts a new role run (without afterGap), while the individual option condition correctly retains its original run. Treat a mix of Active and unreadable conditions as no role reading unless another condition is crossed; add a partial-reading regression alongside the full-reading two-condition test.",
+      "suggestion_code": "  else if (readings.length \u003e 0 \u0026\u0026 readings.every((r) =\u003e r === 'active')) reading = 'active';",
+      "existing_code": "  else if (readings.includes('active')) reading = 'active';",
+      "start_line": 280,
+      "end_line": 280,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/domain/trade-analysis/replay-crossings.test.ts",
+        "src/domain/trade-analysis/replay-series.ts"
+      ]
+    }
+  ],
+  "session_id": "e44eff30-bfea-41c3-b2ee-24ab323a2edb",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "e44eff30-bfea-41c3-b2ee-24ab323a2edb",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "27e47d5a",
+      "resolved_base": "523a8a0e84919a9c1927ed9335165de774909b20",
+      "resolved_head": "27e47d5ab50c36296be7dac1d5e55c5ef90702cc",
+      "exact_range": "523a8a0e84919a9c1927ed9335165de774909b20..27e47d5ab50c36296be7dac1d5e55c5ef90702cc",
+      "source_artifact_sha256": "7a3b746452111147ccec05fe8af11ec2a6a31412b528182f9246afae27e98d83"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "de1beaa60a06296193805786659604179172ba3bd041ed973d569a327558927e",
+          "path": "src/domain/trade-analysis/replay-crossings.test.ts",
+          "fingerprint": "cc80374f80bb5194533f84fe976c448e98a276018bea362c760b48f70db08a9a"
+        },
+        {
+          "item_id": "dfdfcb18f28569b5071aabb67f85b536832edb984e2c85f887674cad403f13cd",
+          "path": "src/domain/trade-analysis/replay-series.ts",
+          "fingerprint": "621e2d5f76ab68d1d528c9debf1e0ec3d2fb4f35f7c1c83230a380dedba9958b"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "de1beaa60a06296193805786659604179172ba3bd041ed973d569a327558927e",
+          "path": "src/domain/trade-analysis/replay-crossings.test.ts",
+          "fingerprint": "cc80374f80bb5194533f84fe976c448e98a276018bea362c760b48f70db08a9a"
+        },
+        {
+          "item_id": "dfdfcb18f28569b5071aabb67f85b536832edb984e2c85f887674cad403f13cd",
+          "path": "src/domain/trade-analysis/replay-series.ts",
+          "fingerprint": "621e2d5f76ab68d1d528c9debf1e0ec3d2fb4f35f7c1c83230a380dedba9958b"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "658d3260ccfa72505b136acd27b0bfa408aa8a4c43a55045df8863456b1b95ce",
+          "path": "evidence/D09AR/suite-runs/T9AR.5-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "7368152d6acfc7f073dee76ee23c57490d75bfff3290edb10990f6654c59521b",
+          "path": "evidence/D09AR/tdd-log/T9AR.5.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "73a292d6ff16ac7b417550647831764c2393527a6062b31018d1c100379e9592",
+          "path": "evidence/D09AR/suite-runs/T9AR.5-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "d4ede4cca4d65f0dd416999b2d5872e8e9514a4dcf2cd2cb0a833d13f2f17a37",
+          "path": "evidence/D09AR/suite-runs/T9AR.5-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "f67782ec5e3427b09acec6a249e7b182fa5787255c78474ccbf6d67d49fd5f34",
+          "path": "evidence/D09AR/suite-runs/T9AR.5-checks.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 56405
+  }
+}

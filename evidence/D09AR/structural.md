@@ -91,6 +91,20 @@ Lane DM (`d09ar/dm`), base `79b900d3`, commit `62acd165`. 8 cases: 5 red then gr
   - Done: `24de6a9c`. `npx vitest run src/domain/trade-analysis`: 24 files, 255 tests passing before and after; no test changed; typecheck, tsc6, lint exit 0. Lane tier `T9AR.4-F1`: unit 2305, integration 280, checks 14 of 14. ocr on `24de6a9c` (`ocr/T9AR.4-F1-24de6a9c.json`): 1 file, 0 comments. **No findings.**
 - Rebased onto `13f6a618` (only evidence and plan files had changed, none of lane DM's; no rerun). Merged by fast-forward: `955e3568` (T9AR.4), `70ddec48` (F1).
 
+## T9AR.5 Trade Analysis: a condition's first crossing
+
+Lane DM (`d09ar/dm`), base `523a8a0e`, commit `27e47d5a`. 7 cases: 6 red then green; 1 first-run pass (case 2, the first kept and the run dropped when Active again), mutation check: `since` given on every session once a first exists failed with `expected [ '2026-11-06', '2026-11-06' ] to deeply equal [ '2026-11-06', null ]`. `verify:fixtures` exit 0. Lane tier `T9AR.5`: unit 2312, integration 280, checks 14 of 14.
+
+- Implementation-level choices the plan left open (from the task's summary; accepted): on a session with no reading `since` is absent, while the run is held so the next crossed session keeps its start ("absent when not crossed now"); the first session's `afterGap` is false; the role's `afterGap` comes from the role's own reading; a condition is listed under `conditions` from the session it first appears; `crossings` is filled on every session, `conditions: []` for a role with none. Code: `advance`, `crossingsOf`, `statusOf` in `replay-series.ts`. `crossedCondition` in `session-words.props.ts` untouched (T9AR.18).
+- ocr on `27e47d5a` (`ocr/T9AR.5-27e47d5a.json`): 2 files, 1 comment.
+
+| Severity | Location | Finding | Verdict |
+|---|---|---|---|
+| medium | `replay-series.ts:280` | The role reads Active when any one condition is Active, so a session where a crossed condition is unreadable and another is Active ends the role's run; the role then restarts with no `afterGap` while the condition keeps its run | Valid: T9AR.5-B1 |
+
+- **Implementation-level decision (main session) for the fix:** a role reads crossed when any of its conditions reads crossed; it reads not crossed only when every condition has a reading and none is crossed; otherwise (a condition unreadable and none crossed) the role has no reading for the session. This follows A271 ("a session with no reading neither starts nor ends a run") and AC-RPT-004 ("gaps cannot prove no episode").
+- **T9AR.5-B1** Case: it should hold the role's run through a session where its crossed condition has no reading and another condition reads Active, and mark nothing after a gap when it is crossed again (O-S2: the option Stop crossed, then the option's Mark missing while MNO is Active, then the option crossed again; the role's `since` keeps the first run's start, as the option condition's does).
+
 ## T9AR.7 The Replay overlay
 
 Lane OV (`d09ar/ov`), base `8245f6c6`, commit `14ff2e7d`. 9 cases; 7 red then green, 2 first-run passes with mutation checks (the finished-Trade and symbol-alone header: heading rendered `header.slice(0, 4)` failed on the heading text; the shell banner: cleanup set `aria-hidden` in place of removing `inert` failed with the banner still inert). Lane tier `T9AR.7`: unit 2298 (204 files), integration 280, checks 14 of 14.
@@ -161,7 +175,10 @@ Lane PL (`d09ar/pl`), base `8245f6c6`, commits `07916b2e` (the task), `80c143ad`
   - **T9AR.10-B3** Worst case and Max reward labels can sit in the cursor's column. Case: it should keep the Worst case and Max reward labels out of the cursor's column at the last session (A280). T9AR.11's planned case covers the other level labels.
     - Done: `9505eb16`. Two early runs passed because the test's cursor sat off the axis (logged as invalid); with the cursor in the last column, red "expected false to be true", then green; no first-run pass. New `LabelPlacer.reserveColumn(x0, x1)` in `geometry.ts`; `corridor-pnl.tsx` reserves the cursor's column just before the Worst case and Max reward labels. Each has one spot, so at the last session both labels, and so both lines, are not drawn (A280). The reservation also precedes Break-even, which T9AR.11 owns. Lane tier `T9AR.10-B3`: unit 2302, integration 280, checks 14 of 14. ocr on `9505eb16` (`ocr/T9AR.10-B3-9505eb16.json`): 3 files, 0 comments. **No findings.**
   - **T9AR.10-F1** (structural) The nested ternary in `span` replaced by explicit branches; verified by the same cases passing before and after.
+    - Done: `731c9a74`. `npx vitest run src/ui/cockpit/replay`: 9 files, 117 tests passing before and after; typecheck, tsc6, lint, lint:deps exit 0. Lane tier `T9AR.10-F1`: unit 2302, integration 280, checks 14 of 14. ocr on `731c9a74` (`ocr/T9AR.10-F1-731c9a74.json`): 1 file, 0 comments. **No findings.**
   - `drawPnl` and `drawStrip` return `{ svg, drawn }` (`DrawnChart` in `geometry.ts`), so the key names Worst case, Max reward and Strike only when drawn. The key sits beside the hit-area frame in a new `div.replay-corridor`. An axis end label is hidden when it would sit under the cursor's date. `corridor.tsx` uses `props.cursorLabel ?? current.dateLabel`; nothing sets `cursorLabel` yet.
+
+- T9AR.10 rebased onto `e7f9f474`. The rebase brought in lane DM's and lane OV's code, which lane PL does not own, so the lane tier was rerun: `T9AR.10-rebased` on `8ef41e51`, unit 2332, integration 280, checks 14 of 14; `run-complete.sh`: run complete. Merged by fast-forward: `170970f4` (T9AR.10), `611d3453` (its lane tier files), `61c562e6` (B1), `3235985a` (B2), `c7c01655` (B3), `8ef41e51` (F1).
 
 ## Suite runs
 
