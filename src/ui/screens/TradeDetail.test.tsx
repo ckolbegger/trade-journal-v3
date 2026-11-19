@@ -569,6 +569,27 @@ describe('Trade Detail: the Replay overlay (decision 3)', () => {
     expect(within(dialog).getByRole('slider', { name: 'Session' }).getAttribute('aria-valuetext')).toBe(moved);
   });
 
+  it('should go back one entry on Close after Back then Forward brought the overlay back', async () => {
+    const user = userEvent.setup();
+    show();
+    await user.click(await screen.findByRole('button', { name: 'Replay' }));
+    await screen.findByRole('dialog', { name: 'Replay, XYZ' });
+    await browserBack();
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    await act(() => {
+      here.go?.(1);
+      return Promise.resolve();
+    });
+    const dialog = await screen.findByRole('dialog', { name: 'Replay, XYZ' });
+    expect(addressNow()).toBe('/trades/trade-1?replay=open');
+    await user.click(within(dialog).getByRole('button', { name: 'Close' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(addressNow()).toBe('/trades/trade-1');
+    expect(lastMove()).toBe('POP');
+    // No second closed Detail entry is left: one more Back leaves the Trade's history (the router stays on the first entry).
+    await browserBack();
+    expect(addressNow()).toBe('/trades/trade-1');
+  });
 });
 
 // Four sessions with Marks: Monday holds the Position Change pc-1 (a purchase of 60) and the owed reflection, Tuesday has neither.

@@ -58,10 +58,8 @@ function TradeDetailOf({ facade, timeZone, onDirtyChange }: TradeDetailProps) {
   // A274: the overlay is open while the address holds `replay=open`. Opening pushes one history entry, so Back closes it; Close and Escape go
   // back that entry when this visit pushed it, and otherwise (a reload, a link straight in) replace the address without `replay`.
   const replayOpen = params.get('replay') === 'open';
+  // It stays set when the browser's Back closes the overlay: the entry is still in history, and Forward brings the overlay back on it.
   const pushed = useRef(false);
-  useEffect(() => {
-    if (!replayOpen) pushed.current = false;
-  }, [replayOpen]);
   const openReplay = () => {
     pushed.current = true;
     setParams((now) => {
