@@ -8,7 +8,7 @@ test.use({ actionTimeout: 15_000 });
 
 // B9.4 (plan section 7.2, AC-CALC-004): how a replay ends. K-sale (Closed by sale), R-DALE-U Settlement Due and then with its Expiration recorded, and a Planned Trade. W1 (amended) per state,
 // the "Final result" headline of a final session, no Replay drawer on the Planned Trade, and (AC-CALC-004) no payoff line or theoretical price in the replay.
-type TabName = 'Today' | 'Replay' | 'Position' | 'Plan and Risk' | 'Price History' | 'Journal' | 'Payoff';
+type TabName = 'Today' | 'Position' | 'Plan and Risk' | 'Price History' | 'Journal' | 'Payoff';
 const PANEL = (name: TabName): string => `#drawer-panel-${name.toLowerCase().replaceAll(' ', '-')}`;
 const JOURNAL = /^Journal( \d+ owed)?$/;
 
@@ -30,7 +30,7 @@ async function expectNoPayoffOrTheory(page: Page): Promise<void> {
   await expect(scope).not.toContainText(/payoff|theoretical|fair value|model price/i);
 }
 
-const SEVEN = ['Today', 'Replay', 'Position', 'Plan and Risk', PRICE_HISTORY, JOURNAL, 'Payoff'] as const;
+const SEVEN = ['Today', 'Position', 'Plan and Risk', PRICE_HISTORY, JOURNAL, 'Payoff'] as const;
 
 test.describe('B9.4 How a replay ends', () => {
   test('should show the Replay drawer second on an Open Trade, with Today selected and no payoff line in the replay', async ({ profile }) => {
@@ -94,7 +94,9 @@ test.describe('B9.4 How a replay ends', () => {
     await expect(sliderValue(scope)).toHaveText('Thu Nov 19 · 14 of 15');
     await expect(headline(scope)).toHaveText('+$564.00 · 0.37R');
 
-    // Recording the Expiration closes the Trade by expiration: the replay now ends on a final session, Expired.
+    // Recording the Expiration closes the Trade by expiration: the replay now ends on a final session, Expired. The page under the overlay is
+    // inert, so the overlay is closed first.
+    await scope.getByRole('button', { name: 'Close' }).click();
     await detail.recordExpirationLink(page).click();
     await recordExpiration(page);
     await page.getByRole('link', { name: 'Back to the Trade' }).click();
@@ -117,8 +119,8 @@ test.describe('B9.4 How a replay ends', () => {
   test('should show no Replay drawer on a Planned Trade, and Plan and Risk selected', async ({ profile }) => {
     test.setTimeout(240_000);
     const { context, page } = await buildPlanned(profile, BREN, closeOf('2026-11-02'));
-    await expectDrawers(page, ['Plan and Risk', 'Journal', 'Payoff'], ['Today', 'Replay', 'Position', 'Price History'], 'Plan and Risk');
-    await expect(page.locator('#drawer-panel-replay')).toHaveCount(0);
+    await expectDrawers(page, ['Plan and Risk', 'Journal', 'Payoff'], ['Today', 'Position', 'Price History'], 'Plan and Risk');
+    await expect(page.getByRole('button', { name: 'Replay', exact: true })).toHaveCount(0);
     await expect(page.locator('.replay-card')).toHaveCount(0);
     await context.close();
   });

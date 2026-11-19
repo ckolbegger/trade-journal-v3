@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 import { BackIcon } from '../icons.tsx';
 import type { UiFacade } from '../../app/compose.ts';
 import type { TradeDetailView, ViewBinding } from '../../app/types.ts';
@@ -50,10 +50,42 @@ export function TradeDetail(props: TradeDetailProps) {
 function TradeDetailOf({ facade, timeZone, onDirtyChange }: TradeDetailProps) {
   const { tradeId = '' } = useParams();
   // A257: the drawer and the Replay session the address names are read once, on load; the slider and the tabs are state after that.
-  const [params] = useSearchParams();
+  const [params, setParams] = useSearchParams();
+  const navigate = useNavigate();
   const [address] = useState(() => ({ drawer: drawerNamed(params.get('drawer')), session: params.get('session'), from: params.get('from') }));
   // The Replay slider's session, for the way back to the Review (P129): the address's until the slider moves.
   const [session, setSession] = useState(address.session);
+  // A274: the overlay is open while the address holds `replay=open`. Opening pushes one history entry, so Back closes it; Close and Escape go
+  // back that entry when this visit pushed it, and otherwise (a reload, a link straight in) replace the address without `replay`.
+  const replayOpen = params.get('replay') === 'open';
+  const pushed = useRef(false);
+  useEffect(() => {
+    if (!replayOpen) pushed.current = false;
+  }, [replayOpen]);
+  const openReplay = () => {
+    pushed.current = true;
+    setParams((now) => {
+      const next = new URLSearchParams(now);
+      next.set('replay', 'open');
+      if (session) next.set('session', session);
+      return next;
+    });
+  };
+  const closeReplay = () => {
+    if (pushed.current) {
+      pushed.current = false;
+      void navigate(-1);
+      return;
+    }
+    setParams(
+      (now) => {
+        const next = new URLSearchParams(now);
+        next.delete('replay');
+        return next;
+      },
+      { replace: true },
+    );
+  };
   // A Plan just confirmed arrives with its post-commit view, so it is shown without a read.
   // It is handed over in memory (not in history state, which the browser structured-clones and strips the Rational
   // values of), taken once; a reload, a back/forward or a later visit takes the normal read.
@@ -145,7 +177,7 @@ function TradeDetailOf({ facade, timeZone, onDirtyChange }: TradeDetailProps) {
   return (
     <article className="trade-detail">
       {address.from === 'review' && (
-        <Link className="back-link" to={`/review?trade=${tradeId}&panel=Action${session ? `&session=${session}` : ''}`}>
+        <Link className="back-link" to={`/review?trade=${tradeId}&panel=Action&replay=open${session ? `&session=${session}` : ''}`}>
           <BackIcon />
           Back to the Review
         </Link>
@@ -158,6 +190,9 @@ function TradeDetailOf({ facade, timeZone, onDirtyChange }: TradeDetailProps) {
         {...(address.drawer && { initialDrawer: address.drawer })}
         {...(address.session && { initialSession: address.session })}
         onSessionChange={setSession}
+        replayOpen={replayOpen}
+        onReplayOpen={openReplay}
+        onReplayClose={closeReplay}
         {...(onDirtyChange && { onDirtyChange })}
       />
     </article>

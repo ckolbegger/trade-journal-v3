@@ -1,4 +1,4 @@
-import { useEffect, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import type { UiFacade } from '../../../app/compose.ts';
 import type { TradeDetailView, TradeReplayView } from '../../../app/types.ts';
 import { ConditionsCard } from '../../cockpit/rail/conditions.tsx';
@@ -14,6 +14,8 @@ import { priceHistoryTabCount } from '../../cockpit/drawers/price-history.props.
 import { PriceHistory } from '../../cockpit/drawers/price-history.tsx';
 import { ReplayDrawer, type SessionLinks } from '../../cockpit/drawers/replay.tsx';
 import { TodayDrawer } from '../../cockpit/drawers/today.tsx';
+import { overlayWordsOf } from '../../cockpit/replay/overlay.props.ts';
+import { ReplayOverlay } from '../../cockpit/replay/overlay.tsx';
 import { ReflectRequestContext } from '../OwedDebtItem.tsx';
 import { IncoherentPanel, IntegrityPanel } from './Banner.tsx';
 import { DRAWERS, DrawerFocusContext, DrawerRequestContext, useDrawerRequest, type Drawer, type DrawerFocus, type DrawerRequest } from './drawer-request.ts';
@@ -42,6 +44,10 @@ export interface CockpitProps {
   readonly initialSession?: string;
   // Called when the Replay slider moves to another session.
   readonly onSessionChange?: (date: string) => void;
+  // A274: whether the address holds `replay=open`, and the calls that open and close the overlay by changing it.
+  readonly replayOpen?: boolean;
+  readonly onReplayOpen?: () => void;
+  readonly onReplayClose?: () => void;
   // Content placed inside the drawer request's reach, for a test's probe.
   readonly children?: ReactNode;
 }
@@ -53,13 +59,15 @@ export type ReplayRead = { readonly kind: 'None' } | { readonly kind: 'Pending' 
 // The words a drawer shows while its content is still being read (W20): the Detail's own.
 const Loading = () => <p role="status">Loading the Trade…</p>;
 
-export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange, initialDrawer, initialSession, onSessionChange, children }: CockpitProps) {
+export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange, initialDrawer, initialSession, onSessionChange, replayOpen, onReplayOpen, onReplayClose, children }: CockpitProps) {
   const replay = read.kind === 'Ready' ? read.replay : undefined;
   const pending = read.kind === 'Pending';
   // What the Journal's session cards take as their replay: the replay itself, 'Incoherent' for a Detail whose facts cannot be replayed, or
   // 'Planned' for a Detail that has no Position to replay.
   const cardsReplay = replay ?? cardsReplayOf(view);
   const { shown, initial } = drawersOf(view);
+  // Only an Open, Settlement Due or Closed Detail has a history to replay.
+  const replayable = 'positionChanges' in view;
   const [selected, setSelected] = useState<Drawer | undefined>(initialDrawer);
   const current = selected && shown.includes(selected) ? selected : initial;
   const shell = { view, timeZone };
@@ -86,8 +94,16 @@ export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange, i
     setSelected(drawer);
     setFocusing({ drawer, target });
   };
+  // A link inside the overlay (W46) closes it, then the drawer takes focus: the page is inert until the overlay is gone, and the overlay's
+  // own close returns focus to the Replay button first, so the request is answered once it is closed, and once.
+  const requestFromOverlay: DrawerRequest = (drawer, target) => {
+    onReplayClose?.();
+    requestDrawer(drawer, target);
+  };
+  const answered = useRef<DrawerFocus | undefined>(undefined);
   useEffect(() => {
-    if (!focusing) return;
+    if (!focusing || replayOpen || answered.current === focusing) return;
+    answered.current = focusing;
     const panel = document.getElementById(`drawer-panel-${tabId(focusing.drawer)}`);
     const { target: wanted } = focusing;
     const target =
@@ -97,7 +113,7 @@ export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange, i
     if (!target) return;
     if (!target.hasAttribute('tabindex')) target.tabIndex = -1;
     target.focus();
-  }, [focusing]);
+  }, [focusing, replayOpen]);
   const [reflecting, setReflecting] = useState<string>();
   const reflectNow = (debtId: string) => {
     setSelected('Journal');
@@ -123,9 +139,6 @@ export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange, i
     switch (drawer) {
       case 'Today':
         return <TodayDrawer {...replayed} />;
-      case 'Replay':
-        if (pending) return <Loading />;
-        return replay ? <ReplayDrawer replay={replay} links={(at) => <ReplayLinks at={at} request={requestDrawer} />} {...(initialSession !== undefined && { initialSession })} {...(onSessionChange && { onSessionChange })} /> : <p>No replay.</p>;
       case 'Position':
         return <PositionDrawer {...shell} />;
       case 'Plan and Risk':
@@ -157,6 +170,7 @@ export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange, i
         <NeedsYou view={owedView} timeZone={timeZone} onReflectNow={reflectNow} />
       </section>
       <div className="cockpit-drawers">
+        <div className="cockpit-tab-row">
         <div role="tablist" aria-label="Detail" className="tabs" onKeyDown={move}>
           {shown.map((name) => (
             <button
@@ -184,6 +198,13 @@ export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange, i
             </button>
           ))}
         </div>
+        {/* P143: Replay opens an overlay, so it is a button after the tabs and not one of them. */}
+        {replayable && (
+          <button type="button" className="pill secondary cockpit-replay-button" onClick={onReplayOpen}>
+            Replay
+          </button>
+        )}
+        </div>
         {/* Every shown drawer stays mounted and the others carry `hidden`, so an unsaved reflection and a saved one survive a change of drawer. */}
         {shown.map((name) => (
           <div key={name} role="tabpanel" id={`drawer-panel-${tabId(name)}`} aria-labelledby={`drawer-tab-${tabId(name)}`} hidden={name !== current} tabIndex={0}>
@@ -191,6 +212,17 @@ export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange, i
           </div>
         ))}
       </div>
+      {replayable && replayOpen && (
+        <ReplayOverlay {...overlayWordsOf(view.plan.underlying, replay)} onClose={onReplayClose ?? (() => undefined)}>
+          {pending ? (
+            <Loading />
+          ) : replay ? (
+            <ReplayDrawer replay={replay} links={(at) => <ReplayLinks at={at} request={requestFromOverlay} />} {...(initialSession !== undefined && { initialSession })} {...(onSessionChange && { onSessionChange })} />
+          ) : (
+            <p>No replay.</p>
+          )}
+        </ReplayOverlay>
+      )}
       </DrawerFocusContext.Provider>
       </DrawerRequestContext.Provider>
     </ReflectRequestContext.Provider>

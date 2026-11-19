@@ -18,7 +18,7 @@ export const SATURDAY_1000 = '2026-10-17T14:00:00Z';
 export const MONDAY_NOV_1005 = '2026-11-09T15:05:00Z';
 export const FRIDAY_NOV_1105 = '2026-11-13T16:05:00Z';
 export const PRICE_HISTORY = /^Price History( \d+)?$/;
-export const ALL_DRAWERS = ['Today', 'Replay', 'Position', 'Plan and Risk', PRICE_HISTORY, 'Journal', 'Payoff'] as const;
+export const ALL_DRAWERS = ['Today', 'Position', 'Plan and Risk', PRICE_HISTORY, 'Journal', 'Payoff'] as const;
 
 // O-C3+ (plan section 5): O-C3, then one more contract bought Fri 10-16 11:00 at $3.30 (fee $0.65). Every browser is closed on return.
 export async function buildOc3Plus(profile: Profile): Promise<TradeRef> {

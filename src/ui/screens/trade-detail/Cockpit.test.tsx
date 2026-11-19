@@ -27,7 +27,7 @@ const selectedTab = () => nameOf(screen.getByRole('tab', { selected: true }));
 const FRIDAY: OptionFrames = { tradingDate: '2026-11-20', closeInstant: '2026-11-20T21:00:00Z', contractMark: '0.80', underlyingMark: '52.00' };
 
 describe('Trade Detail cockpit (W1, A217)', () => {
-  it("should show an Open Trade's rail with the identity, P&L, Conditions and Needs you cards beside a Detail tab list of Today, Replay, Position, Plan and Risk, Price History, Journal and Payoff in that order, with Today selected", async () => {
+  it("should show an Open Trade's rail with the identity, P&L, Conditions and Needs you cards beside a Detail tab list of Today, Position, Plan and Risk, Price History, Journal and Payoff in that order, with Today selected", async () => {
     renderView(openDetailOf([PC1, PC2]));
     const rail = await screen.findByRole('region', { name: 'State of play' });
     // The identity card is the rail's first card; the Summary card is retired (T8P.22), so the Trade P&L card follows Needs you.
@@ -37,7 +37,7 @@ describe('Trade Detail cockpit (W1, A217)', () => {
     // The tab list sits beside the rail, not in it.
     const tablist = screen.getByRole('tablist', { name: 'Detail' });
     expect(rail.contains(tablist)).toBe(false);
-    expect(tabNames()).toEqual(['Today', 'Replay', 'Position', 'Plan and Risk', 'Price History', 'Journal', 'Payoff']);
+    expect(tabNames()).toEqual(['Today', 'Position', 'Plan and Risk', 'Price History', 'Journal', 'Payoff']);
     expect(selectedTab()).toBe('Today');
     // Every shown drawer is mounted and the unselected ones are hidden (T8P.5-B1): Position's content is present in its own hidden panel, where
     // an accessible query without `hidden: true` cannot see it. The Valuation section is retired (T8P.22).
@@ -86,7 +86,7 @@ describe('Trade Detail cockpit (W1, A217)', () => {
     it('should show Today first and select it on a Settlement Due Detail', async () => {
       renderView(settlementDue());
       await screen.findByRole('region', { name: 'State of play' });
-      expect(tabNames()).toEqual(['Today', 'Replay', 'Position', 'Plan and Risk', 'Price History', 'Journal', 'Payoff']);
+      expect(tabNames()).toEqual(['Today', 'Position', 'Plan and Risk', 'Price History', 'Journal', 'Payoff']);
       expect(selectedTab()).toBe('Today');
       expect(screen.getByRole('tabpanel', { name: 'Today' })).toBeTruthy();
       // The Position drawer is still mounted, hidden, with its content; the legacy blocks stay retired (T8P.22).
@@ -101,7 +101,7 @@ describe('Trade Detail cockpit (W1, A217)', () => {
     it('should show Today first and select it on a Closed Detail', async () => {
       renderView(closedDetailOf([PC1, PC2, X1, X2]));
       await screen.findByRole('region', { name: 'State of play' });
-      expect(tabNames()).toEqual(['Today', 'Replay', 'Position', 'Plan and Risk', 'Price History', 'Journal', 'Payoff']);
+      expect(tabNames()).toEqual(['Today', 'Position', 'Plan and Risk', 'Price History', 'Journal', 'Payoff']);
       expect(selectedTab()).toBe('Today');
       expect(screen.getByRole('tabpanel', { name: 'Today' })).toBeTruthy();
       // The Result is the rail's P&L card (W4), and the Position drawer keeps its Lot Matches.
@@ -160,15 +160,13 @@ describe('Trade Detail cockpit (W1, A217)', () => {
     expect(selectedTab()).toBe('Position');
   });
 
-  it('should say so in the Replay drawer when the replay could not be read', async () => {
-    const user = userEvent.setup();
+  it('should say so in the Replay overlay when the replay could not be read', () => {
     render(
       <MemoryRouter>
-        <Cockpit facade={facadeDouble()} view={openDetailOf([PC1, PC2])} replay={{ kind: 'None' }} timeZone="America/New_York" />
+        <Cockpit facade={facadeDouble()} view={openDetailOf([PC1, PC2])} replay={{ kind: 'None' }} timeZone="America/New_York" replayOpen />
       </MemoryRouter>,
     );
-    await user.click(screen.getByRole('tab', { name: 'Replay' }));
-    expect(within(screen.getByRole('tabpanel', { name: 'Replay' })).getByText('No replay.')).toBeTruthy();
+    expect(within(screen.getByRole('dialog', { name: 'Replay, XYZ' })).getByText('No replay.')).toBeTruthy();
   });
 
   it('should move between the shown drawers with the arrow keys, Home and End, and keep focus on the selected tab', async () => {
@@ -182,7 +180,7 @@ describe('Trade Detail cockpit (W1, A217)', () => {
       expect(screen.getByRole('tabpanel', { name })).toBeTruthy();
     };
     await user.keyboard('{ArrowRight}');
-    expectOn('Replay');
+    expectOn('Position');
     await user.keyboard('{End}');
     expectOn('Payoff');
     await user.keyboard('{ArrowRight}');

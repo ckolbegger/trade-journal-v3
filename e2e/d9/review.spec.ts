@@ -1,5 +1,5 @@
 import {
-  actionFormOf, BREN, build, cardReplay, closeOf, detail, expect, going, headline, openReview, readoutValue, reachCard, READY, replay, seek, slider, sliderValue, test, tradeCard,
+  actionFormOf, BREN, build, cardReplay, closeOf, detail, expect, going, headline, openDrawer, openReview, readoutValue, reachCard, READY, replay, seek, slider, sliderValue, test, tradeCard,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
@@ -58,12 +58,13 @@ test.describe('B9.3 Replay in the Review, and the round trip', () => {
     // Price History is the selected drawer (with its Thu Nov 12 column), and the address names that session for the Replay drawer too (A257).
     await expect(page.getByRole('tablist', { name: 'Detail' }).getByRole('tab', { selected: true })).toHaveText(/^Price History/);
     await expect(page.locator('#drawer-panel-price-history th[data-session="2026-11-12"]')).toHaveText('ThuNov 12');
-    // The Replay drawer, opened here, is on the same session.
-    await page.getByRole('tablist', { name: 'Detail' }).getByRole('tab', { name: 'Replay' }).click();
+    // The Replay overlay, opened here, is on the same session; the page under it is inert, so it is closed before the link is used.
+    await openDrawer(page, 'Replay');
     await expect(sliderValue(replay(page))).toHaveText('Thu Nov 12 · 9 of 11');
+    await replay(page).getByRole('button', { name: 'Close' }).click();
 
     await page.getByRole('link', { name: 'Back to the Review' }).click();
-    await expect(page).toHaveURL(new RegExp(`/review\\?trade=${trade.tradeId}&panel=Action&session=2026-11-12$`));
+    await expect(page).toHaveURL(new RegExp(`/review\\?trade=${trade.tradeId}&panel=Action&replay=open&session=2026-11-12$`));
     await expect(page.getByRole('heading', { name: 'Review', level: 1 })).toBeVisible(READY);
     const returned = cardReplay(page, trade);
     await expect(returned).toBeVisible(READY);

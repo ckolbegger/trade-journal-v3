@@ -8,7 +8,7 @@ test.use({ actionTimeout: 15_000 });
 // B8P.5 (plan section 7.2, AC-UI-001 and AC-UI-002): O-C3 as in B8P.1, every drawer at 1280, 375 and 320 px, axe (WCAG 2.1 A and AA tags, as the earlier
 // responsive-a11y specs use) on the rail and each drawer, and the cockpit by keyboard.
 const WIDTHS = [1280, 375, 320] as const;
-const DRAWERS: readonly DrawerName[] = ['Today', 'Replay', 'Position', 'Plan and Risk', 'Price History', 'Journal', 'Payoff'];
+const DRAWERS: readonly DrawerName[] = ['Today', 'Position', 'Plan and Risk', 'Price History', 'Journal', 'Payoff'];
 
 // The three Summary-card checks of e2e/d2/ui-alignment.spec.ts that T8P.22 retired (evidence/D08P/T8P.22-retired.md), each replaced here by a check on the
 // cockpit element that now holds those figures:
@@ -130,12 +130,14 @@ test.describe('B8P.5 Responsive and accessible', () => {
     // Tab reaches the selected tab (every stop on the way shows a focus ring, as D2's tabTo checks); the arrows select and focus the others.
     await tabTo(page, tab('Today'));
     await page.keyboard.press('ArrowRight');
-    await expect(tab('Replay')).toBeFocused();
-    await expect(tab('Replay')).toHaveAttribute('aria-selected', 'true');
+    await expect(tab('Position')).toBeFocused();
+    await expect(tab('Position')).toHaveAttribute('aria-selected', 'true');
     await expect(tab('Today')).toHaveAttribute('tabindex', '-1');
     await page.keyboard.press('End');
     await expect(tab('Payoff')).toBeFocused();
-    // The next Tab stop is the selected drawer's panel, with a focus ring.
+    // The next Tab stop is the Replay button that ends the tab row (P143), and the one after it is the selected drawer's panel, with a focus ring.
+    await page.keyboard.press('Tab');
+    await expect(page.getByRole('button', { name: 'Replay', exact: true })).toBeFocused();
     await page.keyboard.press('Tab');
     await expect(page.locator('#drawer-panel-payoff')).toBeFocused();
     const ring = await page.evaluate(() => {

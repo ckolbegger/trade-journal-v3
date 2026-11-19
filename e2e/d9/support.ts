@@ -7,7 +7,7 @@ import type { Locator, Page } from '@playwright/test';
 import { K_SALE, R_BREN_U, R_CORV_D, R_DALE_U } from '../../src/domain/trade-analysis/option-trade.ts';
 import { R_AXIO_D, REPLAY_SESSION_DATES } from '../../src/domain/trade-analysis/reference-trade.ts';
 import {
-  answerIn, closeTheTrade, currentTradeId, detail, exitReflection, expect, fillOptionPlan, fillPlan, fillOptionRows, fillRows, onboardedAt, openDrawer, openExitForm, openReview, READY, reachPanel,
+  answerIn, closeTheTrade, currentTradeId, detail, exitReflection, expect, fillOptionPlan, fillPlan, fillOptionRows, fillRows, onboardedAt, openDrawer as openDetailDrawer, openExitForm, openReview, READY, reachPanel,
   recordExpiration, recordOptionEntry, recordEntry, test, tradeCard, type OptionPlanValues, type PlanValues, type Row, type TradeRef,
 } from '../d8r/support.ts';
 import type { BrowserContext } from '@playwright/test';
@@ -175,7 +175,14 @@ async function saveMarks(page: Page, trade: TradeRef, fixture: Fixture, through:
 
 // ---- Reads of the replay (the Detail's Replay drawer; the Review card's section reads the same, given its own scope) -------------------------------
 
-export const replay = (page: Page): Locator => page.locator('#drawer-panel-replay');
+// T9AR.8: the replay is an overlay over the whole page, named "Replay, BREN"; the Detail's "Replay" button opens it.
+export const replay = (page: Page): Locator => page.getByRole('dialog', { name: /^Replay, / });
+// A drawer by its tab; "Replay" is the button beside the tabs, which opens the overlay (and does nothing when it is already open).
+export async function openDrawer(page: Page, name: Parameters<typeof openDetailDrawer>[1] | 'Replay'): Promise<void> {
+  if (name !== 'Replay') return openDetailDrawer(page, name);
+  if ((await replay(page).count()) === 0) await page.locator('.trade-detail').getByRole('button', { name: 'Replay', exact: true }).click();
+  await replay(page).waitFor();
+}
 // The replay inside the Review card's Action panel, which holds the same `replay-card`.
 export const cardReplay = (page: Page, card: TradeRef): Locator => tradeCard(page, card).locator('section.review-card-replay');
 export const headline = (scope: Locator): Locator => scope.getByTestId('headline');
@@ -214,4 +221,4 @@ export async function setViewport(page: Page, width: number, height: number): Pr
   await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
 }
 
-export { openDrawer, test };
+export { test };

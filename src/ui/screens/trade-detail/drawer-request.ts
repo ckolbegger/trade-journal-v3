@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react';
 
-export const DRAWERS = ['Today', 'Replay', 'Position', 'Plan and Risk', 'Price History', 'Journal', 'Payoff'] as const;
+export const DRAWERS = ['Today', 'Position', 'Plan and Risk', 'Price History', 'Journal', 'Payoff'] as const;
 export type Drawer = (typeof DRAWERS)[number];
 
 // A drawer's name in the address ("price-history" for Price History, A257); undefined for a name no drawer has.

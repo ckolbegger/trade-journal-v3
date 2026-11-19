@@ -1,8 +1,9 @@
 // @vitest-environment jsdom
 // Trade Detail's replay read (P95, W20) and the rail following the Journal (revision 95), through `TradeDetail` against the facade double.
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { useEffect } from 'react';
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { Link, MemoryRouter, Route, Routes } from 'react-router';
+import { Link, MemoryRouter, Route, Routes, useLocation, useNavigate, useNavigationType } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { UiFacade } from '../../app/compose.ts';
 import { closedDetailOf } from '../../../tests/support/closed-detail-fixtures.ts';
@@ -15,7 +16,7 @@ import { plannedDetail } from '../../../tests/support/views-fixtures.ts';
 import type { TradeDetailDebt, TradeDetailView, TradeReplayView } from '../../app/types.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { RuntimeContext } from '../runtime.tsx';
-import { available, openDrawer, useFixedClock } from './trade-detail/test-support.ts';
+import { available, useFixedClock } from './trade-detail/test-support.ts';
 import { TradeDetail } from './TradeDetail.tsx';
 
 afterEach(cleanup);
@@ -103,10 +104,31 @@ function facadeOf({ view = thursday(), replayResult = { kind: 'Ready', view: rep
   return facade;
 }
 
+// The address the page is at now, and how the router got there (A274: opening pushes an entry; Close goes back one, or replaces the address).
+const here = { address: '', how: 'POP' as string, go: undefined as ((delta: number) => void) | undefined };
+function Where() {
+  const location = useLocation();
+  const how = useNavigationType();
+  const navigate = useNavigate();
+  useEffect(() => {
+    Object.assign(here, { address: location.pathname + location.search, how, go: (delta: number) => void navigate(delta) });
+  });
+  return null;
+}
+const addressNow = () => here.address;
+// The browser's Back button, and how the router last got to the address (A274).
+const browserBack = () =>
+  act(() => {
+    here.go?.(-1);
+    return Promise.resolve();
+  });
+const lastMove = () => here.how;
+
 function renderWith(facade: UiFacade, address = '/trades/trade-1') {
   render(
     <RuntimeContext.Provider value={{ writable: true, report: () => undefined, timeZone: 'America/New_York' }}>
       <MemoryRouter initialEntries={[address]}>
+        <Where />
         <Routes>
           <Route path="/trades/:tradeId" element={<TradeDetail facade={facade} timeZone="America/New_York" />} />
         </Routes>
@@ -367,79 +389,148 @@ describe('Trade Detail: Needs you follows the Journal (revision 95)', () => {
   });
 });
 
-// W1 (amended), P128: a seventh drawer, Replay, second after Today.
+// W54, P143: Replay is a button beside the drawers, not a drawer; it opens the overlay (decision 3, A274).
 const tabNames = () => within(screen.getByRole('tablist', { name: 'Detail' })).getAllByRole('tab').map((tab) => tab.getAttribute('aria-label'));
 // Friday 2026-11-20 after the close: the expiration date, whose contracts are due for settlement.
 const FRIDAY: OptionFrames = { tradingDate: '2026-11-20', closeInstant: '2026-11-20T21:00:00Z', contractMark: '0.80', underlyingMark: '52.00' };
 
-describe('Trade Detail: the Replay drawer (W1 amended)', () => {
+describe('Trade Detail: the Replay overlay (decision 3)', () => {
   useFixedClock();
 
-  it('should show Replay second, after Today, on an Open, a Settlement Due and a Closed Detail', async () => {
+  it('should show six drawers on an Open, a Settlement Due and a Closed Detail and a Replay button beside them', async () => {
     for (const view of [thursday(), optionOpenDetail('O-S', [OS_S1], FRIDAY), closedDetailOf([PC1, PC2, X1, X2])]) {
       show({ view });
       await screen.findByRole('region', { name: 'State of play' });
-      expect(tabNames().slice(0, 3)).toEqual(['Today', 'Replay', 'Position']);
-      cleanup();
-    }
-  });
-
-  it('should show no Replay drawer on a Planned Detail or one whose records disagree', async () => {
-    const findings = [{ factId: 'pc-9', kind: 'PositionChange', economicTime: '2026-10-14T14:30:00Z', reason: 'DuplicateFactId' }] as const;
-    for (const view of [plannedDetail, incoherentDetailOf([PC1, PC2], findings, [pc1Reflection])]) {
-      show({ view });
-      await screen.findByRole('region', { name: 'State of play' });
-      expect(tabNames()).not.toContain('Replay');
-      // No panel for it either, hidden or not.
+      expect(tabNames()).toEqual(['Today', 'Position', 'Plan and Risk', 'Price History', 'Journal', 'Payoff']);
+      // The button ends the tab row and is not one of the tabs.
+      const tablist = screen.getByRole('tablist', { name: 'Detail' });
+      const button = screen.getByRole('button', { name: 'Replay' });
+      expect(tablist.contains(button)).toBe(false);
+      expect(button.parentElement).toBe(tablist.parentElement);
+      expect(button.previousElementSibling).toBe(tablist);
       expect(document.getElementById('drawer-panel-replay')).toBeNull();
       cleanup();
     }
   });
 
-  it('should draw the chart from the replay the Detail already read, with no second read', async () => {
+  it('should show no Replay button on a Planned Detail or one whose records disagree', async () => {
+    const findings = [{ factId: 'pc-9', kind: 'PositionChange', economicTime: '2026-10-14T14:30:00Z', reason: 'DuplicateFactId' }] as const;
+    for (const view of [plannedDetail, incoherentDetailOf([PC1, PC2], findings, [pc1Reflection])]) {
+      show({ view });
+      await screen.findByRole('region', { name: 'State of play' });
+      expect(screen.queryByRole('button', { name: 'Replay' })).toBeNull();
+      expect(tabNames()).not.toContain('Replay');
+      cleanup();
+    }
+  });
+
+  it('should open the overlay from the button with the replay the Detail already read, with no second read, and put replay=open in the address', async () => {
     const user = userEvent.setup();
     const facade = show();
-    await openDrawer(user, 'Replay');
-    const panel = screen.getByRole('tabpanel', { name: 'Replay' });
+    await user.click(await screen.findByRole('button', { name: 'Replay' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Replay, XYZ' });
     // The newest session is shown: Thursday's Trade P&L, the slider on it, and the Corridor's charts with their text equivalent.
-    expect(within(panel).getByTestId('headline').textContent).toBe('+$250.00');
-    expect(within(panel).getByRole('slider', { name: 'Session' }).getAttribute('aria-valuetext')).toBe('Thu Oct 15 · 4 of 4. +$250.00');
-    expect(within(panel).getByRole('img', { name: 'XYZ Marks and Trade P&L by session' })).toBeTruthy();
-    expect(within(panel).getByRole('group', { name: 'Sessions' })).toBeTruthy();
+    expect(within(dialog).getByRole('heading', { name: 'XYZ · Trade P&L +$250.00' })).toBeTruthy();
+    expect(await within(dialog).findByTestId('headline')).toBeTruthy();
+    expect(within(dialog).getByTestId('headline').textContent).toBe('+$250.00');
+    expect(within(dialog).getByRole('slider', { name: 'Session' }).getAttribute('aria-valuetext')).toBe('Thu Oct 15 · 4 of 4. +$250.00');
+    expect(within(dialog).getByRole('img', { name: 'XYZ Marks and Trade P&L by session' })).toBeTruthy();
+    expect(within(dialog).getByRole('group', { name: 'Sessions' })).toBeTruthy();
     expect(facade.TradeViewsAndReporting.replayTrade).toHaveBeenCalledTimes(1);
+    expect(addressNow()).toBe('/trades/trade-1?replay=open');
   });
 
-  it('should show Loading the Trade… in the drawer while the replay is pending', async () => {
+  it('should close it on Close, on Escape and on the browser\'s Back, staying on the Trade, with focus back on the Replay button', async () => {
     const user = userEvent.setup();
-    let arrive: (result: unknown) => void = () => undefined;
-    const facade = facadeOf();
-    vi.mocked(facade.TradeViewsAndReporting.replayTrade).mockReturnValue(new Promise((resolve) => (arrive = resolve)) as never);
-    renderWith(facade);
-    await openDrawer(user, 'Replay');
-    const panel = screen.getByRole('tabpanel', { name: 'Replay' });
-    expect(within(panel).getByText('Loading the Trade…')).toBeTruthy();
-    expect(within(panel).queryByTestId('headline')).toBeNull();
-    arrive({ kind: 'Ready', view: replay(), binding: BINDING });
-    expect(await within(panel).findByTestId('headline')).toBeTruthy();
-    expect(within(panel).queryByText('Loading the Trade…')).toBeNull();
+    show();
+    const button = await screen.findByRole('button', { name: 'Replay' });
+    const closers = [
+      () => user.click(screen.getByRole('button', { name: 'Close' })),
+      () => user.keyboard('{Escape}'),
+      () => browserBack(),
+    ];
+    for (const close of closers) {
+      await user.click(button);
+      await screen.findByRole('dialog', { name: 'Replay, XYZ' });
+      await close();
+      await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+      // Still on the Trade, with the address as it was, and the opener holds focus. Close went back the entry that opening pushed.
+      expect(addressNow()).toBe('/trades/trade-1');
+      expect(lastMove()).toBe('POP');
+      expect(screen.getByRole('region', { name: 'State of play' })).toBeTruthy();
+      expect(document.activeElement).toBe(button);
+    }
   });
 
-  it('should select the drawer and the session named in the address on load', async () => {
+  it('should open in the overlay on load when the address holds replay=open, on the session it names, and close by replacing the address', async () => {
+    const user = userEvent.setup();
     const facade = facadeOf({ replayResult: { kind: 'Ready', view: replay([debt], true), binding: BINDING } });
-    renderWith(facade, '/trades/trade-1?drawer=replay&session=2026-10-13&from=review');
+    renderWith(facade, '/trades/trade-1?replay=open&session=2026-10-13');
+    const dialog = await screen.findByRole('dialog', { name: 'Replay, XYZ' });
+    expect((await within(dialog).findByRole('slider', { name: 'Session' })).getAttribute('aria-valuetext')).toBe('Tue Oct 13 · 2 of 4. +$100.00');
+    // This visit pushed nothing, so Close replaces the address without `replay` and the Trade stays.
+    await user.click(within(dialog).getByRole('button', { name: 'Close' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(addressNow()).toBe('/trades/trade-1?session=2026-10-13');
+    expect(lastMove()).toBe('REPLACE');
+    expect(screen.getByRole('region', { name: 'State of play' })).toBeTruthy();
+    // `drawer=replay` names no drawer any more: the default one is selected and no overlay opens. A drawer named by its address form
+    // ("price-history") opens, and the overlay is not offered on a Detail that has none.
+    cleanup();
+    renderWith(facadeOf(), '/trades/trade-1?drawer=replay');
     await screen.findByRole('region', { name: 'State of play' });
-    expect(screen.getByRole('tab', { selected: true }).getAttribute('aria-label')).toBe('Replay');
-    const panel = await screen.findByRole('tabpanel', { name: 'Replay' });
-    expect((await within(panel).findByRole('slider', { name: 'Session' })).getAttribute('aria-valuetext')).toBe('Tue Oct 13 · 2 of 4. +$100.00');
-    // A drawer named by its address form ("price-history") opens too, and one this Detail does not show leaves the default.
+    expect(screen.getByRole('tab', { selected: true }).getAttribute('aria-label')).toBe('Today');
+    expect(screen.queryByRole('dialog')).toBeNull();
     cleanup();
     renderWith(facadeOf(), '/trades/trade-1?drawer=price-history');
     await screen.findByRole('region', { name: 'State of play' });
     expect(screen.getByRole('tab', { selected: true }).getAttribute('aria-label')).toBe('Price History');
     cleanup();
-    renderWith(facadeOf({ view: plannedDetail }), '/trades/trade-1?drawer=replay');
+    renderWith(facadeOf({ view: plannedDetail }), '/trades/trade-1?replay=open');
     await screen.findByRole('region', { name: 'State of play' });
-    expect(screen.getByRole('tab', { selected: true }).getAttribute('aria-label')).toBe('Plan and Risk');
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('should show Loading the Trade… in the overlay while the replay is pending, and No replay. when it could not be read', async () => {
+    let arrive: (result: unknown) => void = () => undefined;
+    const facade = facadeOf();
+    vi.mocked(facade.TradeViewsAndReporting.replayTrade).mockReturnValue(new Promise((resolve) => (arrive = resolve)) as never);
+    renderWith(facade, '/trades/trade-1?replay=open');
+    // The dialog is there at once, headed by the symbol alone until the latest session's figure is read.
+    const dialog = await screen.findByRole('dialog', { name: 'Replay, XYZ' });
+    expect(within(dialog).getByText('Loading the Trade…')).toBeTruthy();
+    expect(within(dialog).getByRole('heading').textContent).toBe('XYZ');
+    expect(within(dialog).queryByTestId('headline')).toBeNull();
+    await act(() => {
+      arrive({ kind: 'Ready', view: replay(), binding: BINDING });
+      return Promise.resolve();
+    });
+    expect(await within(dialog).findByTestId('headline')).toBeTruthy();
+    expect(within(dialog).queryByText('Loading the Trade…')).toBeNull();
+    expect(within(dialog).getByRole('heading', { level: 2, name: 'XYZ · Trade P&L +$250.00' })).toBeTruthy();
+    cleanup();
+    renderWith(facadeOf({ replayResult: { kind: 'Unavailable' } }), '/trades/trade-1?replay=open');
+    expect(within(await screen.findByRole('dialog', { name: 'Replay, XYZ' })).getByText('No replay.')).toBeTruthy();
+  });
+
+  it('should close the overlay and select the drawer when Price History, Position or Journal is pressed, with focus on that session place in it', async () => {
+    const user = userEvent.setup();
+    // Monday holds the Position Change pc-1 and the owed reflection, so all three links are offered on it.
+    const links: readonly (readonly [string, string, () => boolean])[] = [
+      ['Price History', 'Price History', () => document.activeElement?.textContent === 'MonOct 12'],
+      ['Position', 'Position', () => document.activeElement?.closest('li')?.textContent?.includes('Buy 60 XYZ') === true && document.activeElement.tagName === 'BUTTON'],
+      ['Journal', 'Journal', () => document.activeElement?.id === 'journal-card-2026-10-12'],
+    ];
+    renderWith(facadeOf({ replayResult: { kind: 'Ready', view: withMonday(), binding: BINDING } }), '/trades/trade-1?replay=open&session=2026-10-12');
+    for (const [index, [link, drawer, focused]] of links.entries()) {
+      // The first pass finds the overlay open from the address; the others open it again from the button.
+      if (index > 0) await user.click(await screen.findByRole('button', { name: 'Replay' }));
+      const dialog = await screen.findByRole('dialog', { name: 'Replay, XYZ' });
+      await user.click(await within(dialog).findByRole('button', { name: link }));
+      await waitFor(() => expect(screen.queryByRole('dialog'), `${link} closes it`).toBeNull());
+      expect(screen.getByRole('tab', { selected: true }).getAttribute('aria-label')).toBe(drawer);
+      await waitFor(() => expect(focused(), `${link} holds focus`).toBe(true));
+    }
   });
 
   it('should read the drawer and session again when the address names another Trade', async () => {
@@ -448,7 +539,7 @@ describe('Trade Detail: the Replay drawer (W1 amended)', () => {
     render(
       <RuntimeContext.Provider value={{ writable: true, report: () => undefined, timeZone: 'America/New_York' }}>
         <MemoryRouter initialEntries={['/trades/trade-1?drawer=price-history']}>
-          <Link to="/trades/trade-2?drawer=replay&session=2026-10-13">Other</Link>
+          <Link to="/trades/trade-2?replay=open&session=2026-10-13">Other</Link>
           <Routes>
             <Route path="/trades/:tradeId" element={<TradeDetail facade={facade} timeZone="America/New_York" />} />
           </Routes>
@@ -458,9 +549,9 @@ describe('Trade Detail: the Replay drawer (W1 amended)', () => {
     await screen.findByRole('region', { name: 'State of play' });
     expect(screen.getByRole('tab', { selected: true }).getAttribute('aria-label')).toBe('Price History');
     await user.click(screen.getByRole('link', { name: 'Other' }));
-    const panel = await screen.findByRole('tabpanel', { name: 'Replay' });
-    expect(screen.getByRole('tab', { selected: true }).getAttribute('aria-label')).toBe('Replay');
-    expect((await within(panel).findByRole('slider', { name: 'Session' })).getAttribute('aria-valuetext')).toBe('Tue Oct 13 · 2 of 4. +$100.00');
+    const dialog = await screen.findByRole('dialog', { name: 'Replay, XYZ' });
+    expect(screen.getByRole('tab', { selected: true, hidden: true }).getAttribute('aria-label')).toBe('Today');
+    expect((await within(dialog).findByRole('slider', { name: 'Session' })).getAttribute('aria-valuetext')).toBe('Tue Oct 13 · 2 of 4. +$100.00');
   });
 });
 
@@ -488,22 +579,22 @@ describe('Replay: the round trip from the Review (P129)', () => {
     }
   });
 
-  it('should return to that Trade card with its Action panel open and the slider on the same session, by the address Back to the Review holds', async () => {
+  it('should send Back to the Review to the card with replay=open and the slider session', async () => {
     const user = userEvent.setup();
-    renderWith(facadeOf({ replayResult: { kind: 'Ready', view: replay([debt], true), binding: BINDING } }), '/trades/trade-1?drawer=replay&session=2026-10-13&from=review');
-    const panel = within(await screen.findByRole('tabpanel', { name: 'Replay' }));
-    expect(screen.getByRole('link', { name: 'Back to the Review' }).getAttribute('href')).toBe('/review?trade=trade-1&panel=Action&session=2026-10-13');
+    renderWith(facadeOf({ replayResult: { kind: 'Ready', view: replay([debt], true), binding: BINDING } }), '/trades/trade-1?replay=open&session=2026-10-13&from=review');
+    const dialog = within(await screen.findByRole('dialog', { name: 'Replay, XYZ' }));
+    expect(screen.getByRole('link', { name: 'Back to the Review' }).getAttribute('href')).toBe('/review?trade=trade-1&panel=Action&replay=open&session=2026-10-13');
     // The session is the slider's now: moved on the Detail, it is the one the Review is told.
-    await user.click(await panel.findByRole('button', { name: 'Next session' }));
-    expect(screen.getByRole('link', { name: 'Back to the Review' }).getAttribute('href')).toBe('/review?trade=trade-1&panel=Action&session=2026-10-14');
+    await user.click(await dialog.findByRole('button', { name: 'Next session' }));
+    expect(screen.getByRole('link', { name: 'Back to the Review' }).getAttribute('href')).toBe('/review?trade=trade-1&panel=Action&replay=open&session=2026-10-14');
   });
 });
 
 describe('Replay: audit navigation (W46)', () => {
   useFixedClock();
   const open = async (session: string) => {
-    renderWith(facadeOf({ replayResult: { kind: 'Ready', view: withMonday(), binding: BINDING } }), `/trades/trade-1?drawer=replay&session=${session}`);
-    return within(await screen.findByRole('tabpanel', { name: 'Replay' }));
+    renderWith(facadeOf({ replayResult: { kind: 'Ready', view: withMonday(), binding: BINDING } }), `/trades/trade-1?replay=open&session=${session}`);
+    return within(await screen.findByRole('dialog', { name: 'Replay, XYZ' }));
   };
 
   it('should offer Price History for the slider session, selecting that drawer with the session column in focus', async () => {
@@ -513,9 +604,9 @@ describe('Replay: audit navigation (W46)', () => {
     expect(screen.getByRole('tab', { selected: true }).getAttribute('aria-label')).toBe('Price History');
     expect(document.activeElement?.textContent).toBe('TueOct 13');
     // The link follows the slider.
-    await user.click(screen.getByRole('tab', { name: 'Replay' }));
-    await user.click(within(screen.getByRole('tabpanel', { name: 'Replay' })).getByRole('button', { name: 'Previous session' }));
-    await user.click(within(screen.getByRole('tabpanel', { name: 'Replay' })).getByRole('button', { name: 'Price History' }));
+    await user.click(screen.getByRole('button', { name: 'Replay' }));
+    await user.click(within(await screen.findByRole('dialog', { name: 'Replay, XYZ' })).getByRole('button', { name: 'Previous session' }));
+    await user.click(within(screen.getByRole('dialog', { name: 'Replay, XYZ' })).getByRole('button', { name: 'Price History' }));
     expect(document.activeElement?.textContent).toBe('MonOct 12');
   });
 
@@ -542,8 +633,8 @@ describe('Replay: audit navigation (W46)', () => {
     const base = withMonday();
     const marker = { id: 'pc-exp', kind: 'Expiration', effect: 'Closed', fills: [{ instrument: STOCK, action: 'Expire', quantity: Rational.of(1n) }] };
     const replayView = { ...base, sessions: [{ ...base.sessions[0]!, markers: [marker] }, ...base.sessions.slice(1)] } as unknown as TradeReplayView;
-    renderWith(facadeOf({ view, replayResult: { kind: 'Ready', view: replayView, binding: BINDING } }), '/trades/trade-1?drawer=replay&session=2026-10-12');
-    const panel = within(await screen.findByRole('tabpanel', { name: 'Replay' }));
+    renderWith(facadeOf({ view, replayResult: { kind: 'Ready', view: replayView, binding: BINDING } }), '/trades/trade-1?replay=open&session=2026-10-12');
+    const panel = within(await screen.findByRole('dialog', { name: 'Replay, XYZ' }));
     await user.click(await panel.findByRole('button', { name: 'Position' }));
     expect(screen.getByRole('tab', { selected: true }).getAttribute('aria-label')).toBe('Position');
     // The Expiration's own toggle holds focus, inside its row.
@@ -571,8 +662,8 @@ describe('Replay: audit navigation (W46)', () => {
     const base = replay([debt]);
     const [monday, tuesday, wednesday, ...rest] = base.sessions;
     const view = { ...base, sessions: [{ ...monday!, journal: [] }, tuesday!, { ...wednesday!, journal: monday!.journal }, ...rest] } as unknown as TradeReplayView;
-    renderWith(facadeOf({ replayResult: { kind: 'Ready', view, binding: BINDING } }), '/trades/trade-1?drawer=replay&session=2026-10-14');
-    const panel = within(await screen.findByRole('tabpanel', { name: 'Replay' }));
+    renderWith(facadeOf({ replayResult: { kind: 'Ready', view, binding: BINDING } }), '/trades/trade-1?replay=open&session=2026-10-14');
+    const panel = within(await screen.findByRole('dialog', { name: 'Replay, XYZ' }));
     await user.click(await panel.findByRole('button', { name: 'Journal' }));
     expect(screen.getByRole('tab', { selected: true }).getAttribute('aria-label')).toBe('Journal');
     expect(document.activeElement?.id).toBe('journal-card-2026-10-13');
