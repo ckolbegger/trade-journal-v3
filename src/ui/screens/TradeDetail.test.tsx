@@ -701,6 +701,21 @@ describe('Replay: audit navigation (W46)', () => {
     expect(document.activeElement?.closest('li')?.textContent).toContain('Buy 60 XYZ');
   });
 
+  it('should render the Detail and throw nothing when the address names a session with a quote or a backslash', async () => {
+    for (const session of ['a"b', 'x\\']) {
+      renderWith(facadeOf({ replayResult: { kind: 'Ready', view: withMonday(), binding: BINDING } }), `/trades/trade-1?drawer=price-history&session=${encodeURIComponent(session)}`);
+      await screen.findByRole('region', { name: 'State of play' });
+      await waitFor(() => expect(screen.getByRole('tab', { selected: true }).getAttribute('aria-label')).toBe('Price History'));
+      cleanup();
+    }
+  });
+
+  it('should select Price History and throw nothing when the session is well formed but has no column', async () => {
+    renderWith(facadeOf({ replayResult: { kind: 'Ready', view: withMonday(), binding: BINDING } }), '/trades/trade-1?drawer=price-history&session=2020-01-01');
+    await screen.findByRole('region', { name: 'State of play' });
+    await waitFor(() => expect(screen.getByRole('tab', { selected: true }).getAttribute('aria-label')).toBe('Price History'));
+  });
+
   it('should offer Position on a session with a marker, with the Execution row in focus', async () => {
     const user = userEvent.setup();
     // Tuesday has no marker, so no link.

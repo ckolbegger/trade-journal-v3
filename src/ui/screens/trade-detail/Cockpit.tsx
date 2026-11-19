@@ -92,7 +92,8 @@ export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange, i
   const [focusing, setFocusing] = useState<DrawerFocus>();
   // An arrival from the address (below) is pending until the first request: any explicit drawer request has the last word over it.
   // A page that loads with the overlay already open does not arrive: the overlay's own links and Close answer instead (A273).
-  const arrival = useRef({ wanted: initialDrawer === 'Price History' && !replayOpen ? initialSession : undefined });
+  // A session is a calendar date; anything else in the address is no session, and is never put into a selector.
+  const arrival = useRef({ wanted: initialDrawer === 'Price History' && !replayOpen && /^\d{4}-\d{2}-\d{2}$/.test(initialSession ?? '') ? initialSession : undefined });
   const requestDrawer: DrawerRequest = (drawer, target) => {
     arrival.current.wanted = undefined;
     setSelected(drawer);
