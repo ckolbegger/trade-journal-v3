@@ -268,6 +268,8 @@ The main session saves the reports itself (`implementing.md`, "Final report"). A
 
 ### Open questions
 
+- SC-Q2 (when to regenerate the benchmark's expected Open rows) answered 2026-11-20: (a), T9.36 runs after the gate as the benchmark's first steps.
+
 - SC-Q1 (the older Review-open request lists) answered 2026-11-20: (a), carried out by T9.31-D1.
 - First-run passes, flagged in `structural.md`: T9.29 (two), T9.30 (two), T9.31 (two).
 - Flakes: the known `TradeList.test.tsx` Ready-state case failed once in run `t9.34` and passed alone (P138).

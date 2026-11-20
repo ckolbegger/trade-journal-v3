@@ -41,7 +41,7 @@ Paused: T9.31, T9.32, T9.33, T9.34, T9.40, T9.36, T9.37, T9.38. Continuing: T9.2
 
 The user, 2026-11-20: "a". The six lists gain exactly the meter's one date-wide read, each change recorded with its old and new list; any other difference stays a defect. Carried out as T9.31-D1. No plan text changes (P133 and I9.11 already say the Review open reads one more date), so no decision number or revision. T9.31, T9.32, T9.33, T9.34, T9.40, T9.36, T9.37 and T9.38 resume.
 
-### SC-Q2 (T9.36): when to regenerate the benchmark's expected Open rows — asked 2026-11-20
+### SC-Q2 (T9.36): when to regenerate the benchmark's expected Open rows — asked 2026-11-20; **answered 2026-11-20: (a)**
 
 T9.36 regenerates `bench/expected-open-rows.json` with `npm run bench:expected`. The generator has no sort of its own (it records the order the Open Trades table renders), so no tool change is needed. But `bench:expected` serves on `BENCH_PORT = 4175`, fixed in `tools/bench/profile.ts`, a port the handoff reserves for the benchmark after the gate. And the benchmark's cached browser profile (built Nov 15) now opens on the time-zone picker, so it must be rebuilt (`bench:setup`), which is the benchmark's own first step. Tried on 5175 with a temporary port change (reverted): timed out waiting for the 200th Open row.
 
@@ -51,3 +51,7 @@ Options:
 - (c) Make `BENCH_PORT` configurable and run both on 5175 now: a tools change nobody asked for.
 
 Paused: T9.36. Continuing: T9.37, T9.38; the gate (T9.39) waits for the answer only if (b) or (c) is chosen.
+
+#### SC-Q2 answer
+
+The user, 2026-11-20: "a". T9.36 runs right after the gate as the benchmark's first steps, alone, on port 4175: `bench:setup`, `bench:expected`, the sorted old-versus-new comparison, `git diff --stat bench/`, commit; then the benchmark. Only the run order changes (the Progress section), so no decision number or revision. The gate (T9.39) does not wait for it.

@@ -981,7 +981,7 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T9.34 | C | — | — | Done | `12ed0a9f`; B1 `ffa14452`; B2 `4026dfd1` |
 | T9.35 | C | — | — | Done (raised to Full; its run's only failures are SC-Q1's six) | `6c31fc93`; B1 `930e2f73` |
 | T9.40 | C | — | — | Done | `ae057f91` |
-| T9.36 | C | — | — | Paused: decision pending (SC-Q2) | |
+| T9.36 | C | — | — | Not started: runs after the gate, as the benchmark's first steps (the user's SC-Q2 answer (a)) | |
 | T9.37 | C | — | — | Done (Light) | `17f05074` |
-| T9.38 | C | — | — | In progress from `1aa51039` | |
+| T9.38 | C | — | — | Done in code; its run is the gate's full run `gate-c1` | `94be7273`; B1 `89b9fd44` |
 | T9.39 | C | — | — | Not started | |
