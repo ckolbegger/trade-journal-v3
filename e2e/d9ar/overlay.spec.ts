@@ -1,5 +1,5 @@
 import {
-  boxOf, BREN, build, closeButton, closeOf, detail, detailReplayButton, expect, headline, PRICE_HISTORY, READY, replay, seek, slider, sliderValue, test,
+  boxOf, BREN, build, closeButton, closeOf, detail, detailReplayButton, expect, headline, PRICE_HISTORY, READY, replay, seek, slider, sliderValue, SCREENSHOTS, test,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
@@ -84,7 +84,7 @@ test.describe('B9AR.1 The overlay on Trade Detail', () => {
     // Geometry, not the stylesheet: the readout's box is to the right of the charts' box, and the two overlap vertically.
     const charts = await boxOf(scope.locator('.replay-chart-box'));
     const readout = await boxOf(scope.getByTestId('readout'));
-    await page.screenshot({ path: 'evidence/D09AR/screenshots/B9AR.1-overlay-1280.png' });
+    await page.screenshot({ path: `${SCREENSHOTS}/B9AR.1-overlay-1280.png` });
     expect(readout.x, `the readout (x ${Math.round(readout.x)}) starts at or right of the charts' right edge (${Math.round(charts.x + charts.width)})`).toBeGreaterThanOrEqual(charts.x + charts.width - 1);
     const overlap = Math.min(charts.y + charts.height, readout.y + readout.height) - Math.max(charts.y, readout.y);
     expect(overlap, `the readout (y ${Math.round(readout.y)} to ${Math.round(readout.y + readout.height)}) overlaps the charts (y ${Math.round(charts.y)} to ${Math.round(charts.y + charts.height)}) vertically`).toBeGreaterThan(0);

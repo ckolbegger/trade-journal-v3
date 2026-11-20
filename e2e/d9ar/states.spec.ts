@@ -1,6 +1,6 @@
 import {
   BREN, BREN_SOLD_OUT, build, buildPlanned, cardRows, closeOf, CORV, DALE, detail, detailReplayButton, expect, going, headline, MON_1123_1700, noMarkDash, openDetailAt, openDrawer, positionGroup,
-  reachPanel, READY, readoutPnl, readoutR, readoutValue, recordExpiration, replay, seek, sessionCard, sessionCards, sliderValue, stake, tradeCard, test,
+  reachPanel, READY, readoutPnl, readoutR, readoutValue, recordExpiration, replay, seek, sessionCard, sessionCards, sliderValue, SCREENSHOTS, stake, tradeCard, test,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
@@ -28,7 +28,7 @@ test.describe('B9AR.6 How a replay ends, and a session with no Mark', () => {
     const last = await sessionCard(scope, 'Fri Nov 13');
     await expect(last).toHaveAttribute('aria-current', 'true');
     await expect(cardRows(last)).toHaveText(['BREN Mark$104.60', 'Call Mark$4.91', 'Trade P&L+$1,138.00', 'Banked+$1,138.00', 'EventsSold 2 at $4.91, $0.91 above the Target']);
-    await page.screenshot({ path: 'evidence/D09AR/screenshots/B9AR.6-k-sale-final-result.png' });
+    await page.screenshot({ path: `${SCREENSHOTS}/B9AR.6-k-sale-final-result.png` });
     await context.close();
   });
 
@@ -46,7 +46,7 @@ test.describe('B9AR.6 How a replay ends, and a session with no Mark', () => {
     await expect(scope.getByRole('heading', { level: 2 })).not.toContainText('Final result');
     await expect(scope.locator('.replay-readout-group h3')).toHaveText(['How it is going', 'At stake from here, whole Position', 'Marks', 'Position']);
     await expect(sessionCards(scope)).toHaveCount(15);
-    await page.screenshot({ path: 'evidence/D09AR/screenshots/B9AR.6-dale-settlement-due.png' });
+    await page.screenshot({ path: `${SCREENSHOTS}/B9AR.6-dale-settlement-due.png` });
     await scope.getByRole('button', { name: 'Close' }).click();
     await detail.recordExpirationLink(page).click();
     await recordExpiration(page);
@@ -65,7 +65,7 @@ test.describe('B9AR.6 How a replay ends, and a session with no Mark', () => {
     await expect(position.locator('[data-row="Expiration, Fri Nov 20"]')).toHaveText('Expiration, Fri Nov 20Expired');
     await expect(position).not.toContainText('Execution');
     await expect(cardRows(await sessionCard(scope, 'Fri Nov 20')).last()).toHaveText('EventsExpired');
-    await page.screenshot({ path: 'evidence/D09AR/screenshots/B9AR.6-dale-expired.png' });
+    await page.screenshot({ path: `${SCREENSHOTS}/B9AR.6-dale-expired.png` });
     await context.close();
   });
 
@@ -97,13 +97,13 @@ test.describe('B9AR.6 How a replay ends, and a session with no Mark', () => {
     }
     // Where the Trade would end at the Stop needs no Mark, so it stands.
     await expect(readoutPnl(scope, 'At Stop')).toHaveText('−$318.00');
-    await page.screenshot({ path: 'evidence/D09AR/screenshots/B9AR.6-corv-no-mark.png' });
+    await page.screenshot({ path: `${SCREENSHOTS}/B9AR.6-corv-no-mark.png` });
     // "Add the Mark" opens the Review's Marks row for the put.
     await scope.getByRole('link', { name: 'Add the Mark' }).click();
     await expect(page).toHaveURL(/\/review\?.*trade=/);
     const row = page.getByRole('region', { name: 'CORV Nov 20 $80 Put Mark, Tue Nov 10', exact: true });
     await expect(row).toBeVisible(READY);
-    await page.screenshot({ path: 'evidence/D09AR/screenshots/B9AR.6-corv-add-the-mark.png' });
+    await page.screenshot({ path: `${SCREENSHOTS}/B9AR.6-corv-add-the-mark.png` });
     // Acknowledge it as unavailable, then back to the replay on Tue 11-10.
     await row.getByRole('button', { name: "Can't get a price" }).click();
     await row.getByLabel('Reason (required)').fill('No quote available.');
@@ -131,7 +131,7 @@ test.describe('B9AR.6 How a replay ends, and a session with no Mark', () => {
     await expect(cardRows(tuesday).filter({ hasText: /^(Put Mark|Trade P&L)/ })).toHaveText(['Put Mark—', 'Trade P&L—']);
     // "Add the Mark" still shows: an acknowledged key stays open to a later Mark.
     await expect(scope.getByRole('link', { name: 'Add the Mark' })).toBeVisible();
-    await page.screenshot({ path: 'evidence/D09AR/screenshots/B9AR.6-corv-acknowledged.png' });
+    await page.screenshot({ path: `${SCREENSHOTS}/B9AR.6-corv-acknowledged.png` });
     await context.close();
   });
 });

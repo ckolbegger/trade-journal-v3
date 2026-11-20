@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import {
-  AXIO, BREN, build, closeOf, CORV, DALE_HOLD, expect, expectAccessible, expectOneLine, going, openDrawer, pastLine, positionGroup, readoutPnl, readoutR, readoutValue, replay, seek, setViewport, sliderValue, stake, test,
+  AXIO, BREN, build, closeOf, CORV, DALE_HOLD, expect, expectAccessible, expectOneLine, going, openDrawer, pastLine, positionGroup, readoutPnl, readoutR, readoutValue, replay, seek, setViewport, SCREENSHOTS, sliderValue, stake, test,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
@@ -14,7 +14,7 @@ const css = (locator: Locator, property: string): Promise<string> => locator.eva
 async function expectOneLineEach(scope: Locator, where: string): Promise<void> {
   const figures = scope.locator(FIGURES);
   const count = await figures.count();
-  await scope.page().screenshot({ path: `evidence/D09AR/screenshots/B9AR.3-${where.replace(/[^\w]+/g, '-')}.png` });
+  await scope.page().screenshot({ path: `${SCREENSHOTS}/B9AR.3-${where.replace(/[^\w]+/g, '-')}.png` });
   expect(count, `${where}: figures`).toBeGreaterThan(0);
   for (let i = 0; i < count; i += 1) await expectOneLine(figures.nth(i), `${where}: figure ${i + 1}`);
 }
@@ -77,7 +77,7 @@ test.describe('B9AR.3 The readout', () => {
     const { context, page } = await build(profile, BREN, closeOf('2026-11-16'), 10);
     const scope = await openAt(page, 'ArrowLeft', 3);
     await expect(sliderValue(scope)).toHaveText('Wed Nov 11 · 8 of 11');
-    await scope.page().screenshot({ path: 'evidence/D09AR/screenshots/B9AR.3-from-here-colour.png' });
+    await scope.page().screenshot({ path: `${SCREENSHOTS}/B9AR.3-from-here-colour.png` });
     expect(await css(stake(scope), 'color')).toBe(await css(going(scope), 'color'));
     await context.close();
   });
@@ -205,7 +205,7 @@ test.describe('B9AR.3 The readout', () => {
     await context.close();
   });
 
-  // The plan's `expectOneLine` on every figure. The Trade P&L figure ("+$642.00 · 2.02R") breaks onto a second line in the readout's narrow column (screenshots in evidence/D09AR/screenshots/B9AR.3-*.png),
+  // The plan's `expectOneLine` on every figure. The Trade P&L figure ("+$642.00 · 2.02R") breaks onto a second line in the readout's narrow column (the committed screenshots in D9A-R's evidence, B9AR.3-*.png),
   // so the case is expected to fail until the product fits it; kept as the plan writes it.
   const situations = [
     { fixture: BREN, through: 10, back: 0, where: 'BREN Mon 11-16' },

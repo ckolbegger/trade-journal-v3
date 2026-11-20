@@ -3,7 +3,7 @@ import { expectNoSidewaysScroll } from '../d7p/support.ts';
 import {
   actionFormOf, AXIO, BREN, build, buildReview, cardReplayButton, cardRows, chartText, checkForUpdate, closeButton, closeOf, detailReplayButton, expect, expectAccessible, expectChartTextInside, expectFitsOneScreen,
   expectReadoutShownInFull, expectSmallestChartTextAtLeast, expectWideLayoutAtEverySession, CORV, DALE, DALE_HOLD, firstPage, headline, hits, launchAt, launchTouchAt, notice, openCardReplay, openDrawer, openReview, pnlChart, priceStrip, reachCard, READY, replay, seek,
-  sessionCard, sessionCards, setViewport, slider, sliderValue, smallestChartText, test, type TradeRef,
+  SCREENSHOTS, sessionCard, sessionCards, setViewport, slider, sliderValue, smallestChartText, test, type TradeRef,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
@@ -115,7 +115,7 @@ test.describe('B9AR.7 Responsive, touch, accessible and offline', () => {
         const { context, page } = await build(profile, BREN, closeOf('2026-11-16'), 10);
         await setViewport(page, 320, 667);
         await openDrawer(page, 'Replay');
-        await page.screenshot({ path: 'evidence/D09AR/screenshots/B9AR.7-detail-320.png' });
+        await page.screenshot({ path: `${SCREENSHOTS}/B9AR.7-detail-320.png` });
         await expectFitsOneScreen(replay(page), SIZES[4], 'Detail overlay at 320 px');
         await context.close();
       } else {
@@ -248,7 +248,7 @@ test.describe('B9AR.7 Responsive, touch, accessible and offline', () => {
     const { context, page } = await build(profile, BREN, closeOf('2026-11-16'), 10);
     await setViewport(page, 375, 667);
     await openDrawer(page, 'Replay');
-    await page.screenshot({ path: 'evidence/D09AR/screenshots/B9AR.7-phone-close-button.png' });
+    await page.screenshot({ path: `${SCREENSHOTS}/B9AR.7-phone-close-button.png` });
     await expectTall(closeButton(replay(page)), 'Close');
     await context.close();
   });
@@ -290,7 +290,7 @@ test.describe('B9AR.7 Responsive, touch, accessible and offline', () => {
     const scope = replay(page);
     await hits(scope).getByRole('button', { name: 'Wed Nov 11', exact: true }).tap();
     await expect(sliderValue(scope)).toHaveText('Wed Nov 11 · 8 of 11');
-    await page.screenshot({ path: 'evidence/D09AR/screenshots/B9AR.7-tap-hover-box.png' });
+    await page.screenshot({ path: `${SCREENSHOTS}/B9AR.7-tap-hover-box.png` });
     await expect(scope.getByTestId('hover'), 'a tap leaves no hover box').toHaveCount(0);
     await expect(scope.locator('rect.hover-column'), 'a tap leaves no hover column').toHaveCount(0);
     await context.close();

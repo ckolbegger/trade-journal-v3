@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import { REPLAY_SESSION_DATES } from '../../src/domain/trade-analysis/reference-trade.ts';
-import { AXIO, BREN, build, cardRows, closeOf, CORV, DALE_HOLD, expect, label, openDrawer, replay, seek, sessionCard, sessionCards, setViewport, sliderValue, test } from './support.ts';
+import { AXIO, BREN, build, cardRows, closeOf, CORV, DALE_HOLD, expect, label, openDrawer, replay, seek, sessionCard, sessionCards, setViewport, SCREENSHOTS, sliderValue, test } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -78,7 +78,7 @@ async function expectChartFigures(page: Page, scope: Locator, where: string, lin
     expect(row, `${where}: the Plan block has the row of the price chart's "${text}"`).toBeDefined();
     expect(figuresIn(row!)[0], `${where}: the price chart's "${text}" is the figure of the Plan block's "${row}"`).toBe(figuresIn(text)[0]);
   }
-  await page.screenshot({ path: `evidence/D09AR/screenshots/B9AR.4-${where.replace(/[^\w]+/g, '-')}.png` });
+  await page.screenshot({ path: `${SCREENSHOTS}/B9AR.4-${where.replace(/[^\w]+/g, '-')}.png` });
 }
 
 // The slider's session is `index`: one card per revealed session newest first, none for a later one, the slider's the current card and on the shown page.

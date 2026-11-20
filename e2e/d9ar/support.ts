@@ -11,6 +11,9 @@ import {
 
 export * from '../d9/support.ts';
 
+// Where the specs write their screenshots: the git-ignored test-results, so a run never rewrites D9A-R's committed evidence/D09AR/screenshots.
+export const SCREENSHOTS = 'test-results/d9ar-screenshots';
+
 // R-DALE-D's Marks with the six short held to the end: no buyback on Tue 11-10 (the Stop's line is crossed Thu 11-12 and stays crossed).
 export const DALE_HOLD: Fixture = { ...DALE, changes: [], series: R_DALE_D };
 
