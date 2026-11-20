@@ -334,7 +334,7 @@ describe('Today drawer: Settlement Due and Closed (W25, W26, W30)', () => {
   const MNO_STOCK: Instrument = { kind: 'Stock', symbol: 'MNO' };
   const XYZ_STOCK: Instrument = { kind: 'Stock', symbol: 'XYZ' };
   const columns = { today: { date: '2026-11-23', next: false }, yesterday: '2026-11-20' };
-  const point = (tradingDate: string, price: string) => ({ kind: 'Available' as const, tradingDate, closeInstant: `${tradingDate}T21:00:00Z`, price, revisionNumber: 1, source: 'Manual' as const, savedAt: `${tradingDate}T21:30:00Z` });
+  const point = (tradingDate: string, price: string) => ({ kind: 'Available' as const, tradingDate, closeInstant: `${tradingDate}T21:00:00Z`, price, revisionNumber: 1, resolutionRevision: 1, source: 'Manual' as const, savedAt: `${tradingDate}T21:30:00Z` });
   const tableCells = () => {
     const table = screen.getByRole('table');
     return {

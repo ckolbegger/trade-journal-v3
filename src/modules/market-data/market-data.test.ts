@@ -643,7 +643,7 @@ describe('ReadSeries (A210, AC-MARK-004)', () => {
       ['2026-10-09', 'AcknowledgedUnavailable'],
       ['2026-10-12', 'Available'],
     ]);
-    expect(points[0]).toEqual({ kind: 'Available', tradingDate: '2026-10-07', closeInstant: '2026-10-07T20:00:00Z', price: '10.5', revisionNumber: 1, source: 'Manual', savedAt: TUESDAY_NOON });
+    expect(points[0]).toEqual({ kind: 'Available', tradingDate: '2026-10-07', closeInstant: '2026-10-07T20:00:00Z', price: '10.5', revisionNumber: 1, resolutionRevision: 1, source: 'Manual', savedAt: TUESDAY_NOON });
     expect(points[1]).toEqual({ kind: 'Missing', tradingDate: '2026-10-08', closeInstant: '2026-10-08T20:00:00Z' });
     expect(points[2]).toMatchObject({ kind: 'AcknowledgedUnavailable', acknowledgment: { kind: 'Asserted', reason: 'no quote' } });
     expect(points[3]).toMatchObject({ kind: 'Available', price: '11', closeInstant: '2026-10-12T20:00:00Z' });
@@ -691,13 +691,35 @@ describe('ReadSeries (A210, AC-MARK-004)', () => {
     expect(points).toHaveLength(3);
   });
 
+  it("should give an Available series point the stored record's resolution revision", async () => {
+    const { marketData } = await setup();
+    // 2026-10-08 is a scanned session; 2026-10-12 is the session's own date, read as a frame.
+    await marketData.save(initial({ instrumentKey: 'MNO', tradingDate: '2026-10-08', price: '10' }));
+    await marketData.save(initial({ instrumentKey: 'MNO', tradingDate: '2026-10-12', price: '11' }));
+    await marketData.save(correct({ instrumentKey: 'MNO', tradingDate: '2026-10-12', price: '11.5', expectedResolutionRevision: 1 }));
+    const points = await seriesOf(marketData, '2026-10-08', '2026-10-12');
+    expect(points[0]).toMatchObject({ kind: 'Available', resolutionRevision: 1 });
+    expect(points[2]).toMatchObject({ kind: 'Available', resolutionRevision: 2 });
+  });
+
+  it('should give a Mark saved over an acknowledgment its resolution revision (2), not its revision number (1)', async () => {
+    const { marketData } = await setup();
+    for (const tradingDate of ['2026-10-08', '2026-10-12']) {
+      await marketData.save({ intention: 'AssertUnavailable', instrumentKey: 'MNO', tradingDate, reason: 'no quote', expectedResolutionRevision: 'None' });
+      await marketData.save(initial({ instrumentKey: 'MNO', tradingDate, price: '10', expectedResolutionRevision: 1 }));
+    }
+    const points = await seriesOf(marketData, '2026-10-08', '2026-10-12');
+    expect(points[0]).toMatchObject({ kind: 'Available', revisionNumber: 1, resolutionRevision: 2 });
+    expect(points[2]).toMatchObject({ kind: 'Available', revisionNumber: 1, resolutionRevision: 2 });
+  });
+
   it('should give the series on the first covered session without a previous session', async () => {
     const { marketData } = await setup();
     // 2024-01-02 is the first covered session: it has no previous session, so no frame is framed for it.
     const first = { kind: 'Historical' as const, tradingDate: '2024-01-02' };
     await marketData.save(initial({ instrumentKey: 'MNO', tradingDate: '2024-01-02', price: '9' }));
     const session = await marketData.openReadSession(first);
-    expect(await session.series('MNO', '2024-01-02', '2024-01-05')).toEqual([{ kind: 'Available', tradingDate: '2024-01-02', closeInstant: '2024-01-02T21:00:00Z', price: '9', revisionNumber: 1, source: 'Manual', savedAt: TUESDAY_NOON }]);
+    expect(await session.series('MNO', '2024-01-02', '2024-01-05')).toEqual([{ kind: 'Available', tradingDate: '2024-01-02', closeInstant: '2024-01-02T21:00:00Z', price: '9', revisionNumber: 1, resolutionRevision: 1, source: 'Manual', savedAt: TUESDAY_NOON }]);
     const missing = await marketData.openReadSession(first);
     expect(await missing.series('NONE', '2024-01-02', '2024-01-02')).toEqual([{ kind: 'Missing', tradingDate: '2024-01-02', closeInstant: '2024-01-02T21:00:00Z' }]);
   });

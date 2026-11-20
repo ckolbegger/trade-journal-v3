@@ -190,7 +190,7 @@ export type MarketDataQuery = ResolveFramesQuery | ResolveSessionQuery | ReadSer
 
 // One completed session of a series: the effective Mark, or an explicit gap. Nothing is carried forward (A210).
 export type SeriesPoint =
-  | { readonly kind: 'Available'; readonly tradingDate: string; readonly closeInstant: string; readonly price: string; readonly revisionNumber: number; readonly source: 'Manual'; readonly savedAt: string; readonly reason?: string }
+  | { readonly kind: 'Available'; readonly tradingDate: string; readonly closeInstant: string; readonly price: string; readonly revisionNumber: number; readonly resolutionRevision: number; readonly source: 'Manual'; readonly savedAt: string; readonly reason?: string }
   | { readonly kind: 'Missing'; readonly tradingDate: string; readonly closeInstant: string }
   | { readonly kind: 'AcknowledgedUnavailable'; readonly tradingDate: string; readonly closeInstant: string; readonly acknowledgment: AcknowledgmentVersion };
 
@@ -508,10 +508,11 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
   }
 
   // A session's resolution as a series point: the effective Mark, or an explicit gap with no price (A210).
-  function seriesPoint(tradingDate: string, closeInstant: string, resolution: MarkResolution): SeriesPoint {
+  // An Available point carries the stored record's resolutionRevision, the binding a Correct of it presents (A290).
+  function seriesPoint(tradingDate: string, closeInstant: string, resolution: MarkResolution, resolutionRevision: number): SeriesPoint {
     if (resolution.kind === 'Available') {
       const { price, revisionNumber, source, savedAt, correctionReason } = resolution.mark;
-      return { kind: 'Available', tradingDate, closeInstant, price, revisionNumber, source, savedAt, ...(correctionReason !== undefined && { reason: correctionReason }) };
+      return { kind: 'Available', tradingDate, closeInstant, price, revisionNumber, resolutionRevision, source, savedAt, ...(correctionReason !== undefined && { reason: correctionReason }) };
     }
     if (resolution.kind === 'AcknowledgedUnavailable') return { kind: 'AcknowledgedUnavailable', tradingDate, closeInstant, acknowledgment: resolution.acknowledgment };
     return { kind: 'Missing', tradingDate, closeInstant };
@@ -554,7 +555,7 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
               closes: Object.fromEntries(relevant.filter((s) => resolutionOf.get(s.date)?.kind !== 'Available').map((s) => [s.date, s.close])),
             };
             // The same read, as a series: every relevant session, an Available one with its effective Mark (A210).
-            const points = relevant.map((s) => seriesPoint(s.date, s.close, resolutionOf.get(s.date) ?? { kind: 'Missing' }));
+            const points = relevant.map((s) => seriesPoint(s.date, s.close, resolutionOf.get(s.date) ?? { kind: 'Missing' }, storedOn.get(s.date)?.['resolutionRevision'] as number));
             return { gaps, beforeCoverage, points };
           }),
     );
@@ -967,7 +968,7 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
           const [scan, evidence] = await Promise.all([scanning, reading]);
           const scanned = scan === undefined ? [] : scan.points.filter((p) => p.tradingDate >= from && p.tradingDate <= end);
           const [read] = evidence ?? [];
-          return read === undefined ? scanned : [...scanned, seriesPoint(day.date, day.close, resolve(read.record, read.stale))];
+          return read === undefined ? scanned : [...scanned, seriesPoint(day.date, day.close, resolve(read.record, read.stale), read.record?.resolutionRevision ?? 0)];
         },
         gaps(instruments) {
           const earliest = new Map<string, string>();
