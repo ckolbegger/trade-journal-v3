@@ -746,3 +746,6 @@ ocr `52b83cb5` (`ocr/T9.29-52b83cb5.json`):
 
 - **T9.29-B1.** Defect: with banked profit beyond a Stop's line right of break-even and the pointer past it, the hatch is invisible. Case: *it should draw the hatch over the banked fill where the two overlap*.
 - **T9.29-B2.** Defect: a reading whose rails are both at break-even draws `NaN%` positions. Case: *it should draw a finite track when the results at the Stop and the Target are both break-even*.
+
+- T9.29-B1 `934fd967`: red (`expected +0 to be truthy`, banked after the hatch), green with the banked fill drawn first; the three-sizes case's part list swapped `meter-past` and `meter-banked` (page order only, no expected value). ocr `934fd967`: No findings (`ocr/T9.29-B1-934fd967.json`).
+- T9.29-B2 `d9a75703`: red (positions NaN), green with a zero span drawn as a unit span. ocr `d9a75703`: No findings (`ocr/T9.29-B2-d9a75703.json`).
