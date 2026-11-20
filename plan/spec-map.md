@@ -115,14 +115,14 @@ Characters of spec text a session reads (core plus tagged), and an estimate in t
 | S036 | 208–214 | Journal and behavioral evidence › AC-JOUR-006 — workflow-routed Debt cannot be settled with prose | 478 | tagged | D5 | D17, D20 | AC-JOUR-006: management-coverage Debt resolves only via Management Revision workflow, never Journal prose. |
 | S037 | 215–221 | Journal and behavioral evidence › AC-JOUR-007 — fixed types, runtime forms, and defaults | 681 | tagged | D1, D2, D4, D5, D6 | D13, D17, D26 | AC-JOUR-007: seven fixed Entry Types and Sources seeded with exact definitions; idempotent repeat seeding. |
 | S038 | 224–230 | Daily Review › AC-REV-001 — exact-date corrected eligibility | 509 | tagged | D4, D5, D6 | D15 | AC-REV-001: Review eligibility uses Open-at-cutoff corrected facts; corrections restate membership. |
-| S039 | 231–237 | Daily Review › AC-REV-002 — task ordering and bounded resumption | 587 | tagged | D4, D5, D6, D7 | D11, D20 | AC-REV-002: Review task order Mark, Debt, settlement, Trade; shared Mark once; resumption from facts, no session. |
+| S039 | 231–237 | Daily Review › AC-REV-002 — task ordering and bounded resumption | 587 | tagged | D4, D5, D6, D7 | D9, D11, D20 | AC-REV-002: Review task order Mark, Debt, settlement, Trade; shared Mark once; resumption from facts, no session. |
 | S040 | 238–244 | Daily Review › AC-REV-003 — one-click Hold still requires Save | 534 | tagged | D4, D5, D6 | D21 | AC-REV-003: preselected Hold needs explicit Save; Exit/Roll/Adjust need Intent and create no Trade fact. |
 | S041 | 245–251 | Daily Review › AC-REV-004 — Action and Stop Deviation reconcile atomically | 483 | tagged | D5 | D12 | AC-REV-004: Action save and Stop-Discipline Deviation reconciliation commit atomically, one episode. |
-| S042 | 252–258 | Daily Review › AC-REV-005 — changed evidence prevents stale Save | 406 | tagged | D4, D5 | D11, D15, D19 | AC-REV-005: changed Mark/Bar/acknowledgment/correction/Action before Save returns conflict with no write. |
-| S043 | 259–265 | Daily Review › AC-REV-006 — completion states are honest and reversible | 615 | tagged | D4, D5, D6, D7 | D12, D13, D15 | AC-REV-006: Review completion Complete / With Unavailable Marks / Incomplete, derived and reversible. |
+| S042 | 252–258 | Daily Review › AC-REV-005 — changed evidence prevents stale Save | 406 | tagged | D4, D5 | D9, D11, D15, D19 | AC-REV-005: changed Mark/Bar/acknowledgment/correction/Action before Save returns conflict with no write. |
+| S043 | 259–265 | Daily Review › AC-REV-006 — completion states are honest and reversible | 615 | tagged | D4, D5, D6, D7 | D9, D12, D13, D15 | AC-REV-006: Review completion Complete / With Unavailable Marks / Incomplete, derived and reversible. |
 | S044 | 268–274 | Market evidence › AC-MARK-001 — prior completed session is normal evidence | 422 | tagged | D4, D5, D7 | D11 | AC-MARK-001: prior completed session Mark is Expected and Available, not Stale. |
 | S045 | 275–281 | Market evidence › AC-MARK-002 — Manual Mark is sticky | 442 | tagged |  | D11, D19 | AC-MARK-002: Manual Mark stays effective over later provider closes; Bars may refresh; history shows override. |
-| S046 | 282–288 | Market evidence › AC-MARK-003 — acknowledgment never becomes a price | 523 | tagged | D4 | D11 | AC-MARK-003: unavailability acknowledgment never supplies a price; later exact Mark makes it Available. |
+| S046 | 282–288 | Market evidence › AC-MARK-003 — acknowledgment never becomes a price | 523 | tagged | D4 | D9, D11 | AC-MARK-003: unavailability acknowledgment never supplies a price; later exact Mark makes it Available. |
 | S047 | 289–295 | Market evidence › AC-MARK-004 — series preserve gaps | 456 | tagged | D4 | D9, D11 | AC-MARK-004: Mark/Bar series show explicit gaps, points, candles; no interpolation or fabricated candles. |
 | S048 | 296–302 | Market evidence › AC-MARK-005 — provider recovery is partial and nonbehavioral | 578 | tagged | D4 | D11 | AC-MARK-005: provider recovery appends only valid observations, skips Manual keys, failures transient. |
 | S049 | 303–309 | Market evidence › AC-MARK-006 — Daily Bar range evidence is honest | 690 | tagged |  | D11, D12 | AC-MARK-006: trailing Stop/Target uses same-date highs/lows for single-Instrument, synchronized Marks for multi. |
@@ -229,12 +229,12 @@ Characters of spec text a session reads (core plus tagged), and an estimate in t
 |---|---|---|---|---|---|---|---|
 | S089 | 3–16 | Contract | 764 | core — Module contract/purpose section. | D4, D5, D6, D7, D8 | D11, D12, D13, D15, D20, D21 | Daily Review contract: coordinates after-close ritual for one session; owns no Review state; four operations. |
 | S090 | 17–33 | Date, eligibility, and ordering | 2,598 | tagged | D4, D5, D6, D7, D8 | D9, D12, D15, D20 | Review Date selection, Open-at-cutoff eligibility, normative task-family order, attention bands and ranking rules. |
-| S091 | 34–65 | `open` | 1,718 | tagged | D4, D5, D6, D7, D8 | D11, D12, D15, D20 | open: resolves date, queries cutoff-eligible Trades, derives, recovers Marks, assembles one coherent Review read. |
+| S091 | 34–65 | `open` | 1,718 | tagged | D4, D5, D6, D7, D8 | D9, D11, D12, D15, D20 | open: resolves date, queries cutoff-eligible Trades, derives, recovers Marks, assembles one coherent Review read. |
 | S092 | 66–71 | `getTrade` | 670 | tagged | D4, D5, D6, D7 | D9, D10, D12, D20, D21 | getTrade: one bound eligible Trade view, ReviewChanged on incoherence, Hold preselection, Action Intent rules. |
 | S093 | 72–77 | `getDebt` | 531 | tagged | D4, D5, D6, D7 | D20 | getDebt: pages global due Debt; workflow-routed Debt first; routes rather than settles management Debt. |
-| S094 | 78–126 | `save` | 2,731 | tagged | D4, D5, D6, D7 | D12, D13, D15, D20, D21 | save: SaveTradeAction with exact bindings and atomic Deviation reconciliation, or ResolveReviewDebt; uniqueness and retries. |
+| S094 | 78–126 | `save` | 2,731 | tagged | D4, D5, D6, D7 | D9, D12, D13, D15, D20, D21 | save: SaveTradeAction with exact bindings and atomic Deviation reconciliation, or ResolveReviewDebt; uniqueness and retries. |
 | S095 | 127–145 | Settlement Due | 981 | tagged | D5, D7 | D15, D20 | Settlement Due keeps Review incomplete until Trade Workflows records explicit settlement; calendar never manufactures Expiration. |
-| S096 | 146–157 | Completion and resumption | 969 | tagged | D4, D5, D6, D7, D8 | D11, D12, D13, D15, D20 | Derived completion: Incomplete, Complete, CompleteWithUnavailableMarks; no finish gesture; resumption from facts. |
+| S096 | 146–157 | Completion and resumption | 969 | tagged | D4, D5, D6, D7, D8 | D9, D11, D12, D13, D15, D20 | Derived completion: Incomplete, Complete, CompleteWithUnavailableMarks; no finish gesture; resumption from facts. |
 | S097 | 158–162 | Default Action definition | 418 | tagged | D4, D5, D6, D7 | D13, D21, D26 | Default Daily Trade Review Action options Hold, Exit, Roll, Adjust and their Intent requirements. |
 
 ### `specs/design/delivery-contract.md`
@@ -276,7 +276,7 @@ Characters of spec text a session reads (core plus tagged), and an estimate in t
 |---|---|---|---|---|---|---|---|
 | S121 | 3–24 | Contract | 1,346 | core — Module contract/purpose section. | D4, D5, D6, D7, D8 | D9, D10, D11, D12, D19 | Market Data contract: owns closing evidence, acknowledgments, precedence, recovery, provider config; Pricing Provider port. |
 | S122 | 25–53 | Observation model | 1,456 | tagged | D4, D5, D6, D7, D8 | D9, D10, D11, D12, D16, D19 | Observation keys and sources, Mark/Daily Bar resolution precedence, Stale context, Expected Mark Date semantics. |
-| S123 | 54–86 | Manual writes and precedence | 2,296 | tagged | D4, D5, D7, D8 | D10, D11, D19 | save intentions: Manual Mark, override, correction, assert/withdraw unavailable; Manual stickiness; provider refresh rules. |
+| S123 | 54–86 | Manual writes and precedence | 2,296 | tagged | D4, D5, D7, D8 | D9, D10, D11, D19 | save intentions: Manual Mark, override, correction, assert/withdraw unavailable; Manual stickiness; provider refresh rules. |
 | S124 | 87–116 | Query contract | 2,776 | tagged | D4, D5, D6, D7, D8 | D9, D10, D11, D12, D15, D19 | query family ResolveFrames, InspectObservations, ReadSeries; MarketDataSnapshotId, ExpectedSnapshot; gaps never interpolated; read session (`openReadSession`, decision 101). |
 | S125 | 117–139 | Automatic recovery | 1,974 | tagged | D4, D5, D6, D7, D8 | D11 | recover: enumerate sessions, find gaps, bounded provider fetch, Manual preserved, diagnostics only; NotConfigured without provider. |
 | S126 | 140–150 | Daily Bar use | 537 | tagged | D4, D7 | D9, D11, D12 | Daily Bar evidence rules for condition checks (high/low, synchronized Marks); Bars never alter valuation. |
