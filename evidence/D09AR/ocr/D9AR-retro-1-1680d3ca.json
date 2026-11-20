@@ -1,0 +1,195 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 10 selected item(s).",
+  "summary": {
+    "files_reviewed": 10,
+    "comments": 0,
+    "total_tokens": 126777,
+    "input_tokens": 124603,
+    "output_tokens": 2174,
+    "cache_read_tokens": 9984,
+    "elapsed": "1m4s"
+  },
+  "tool_calls": {
+    "total": 21,
+    "by_tool": {
+      "code_search": 6,
+      "file_read": 14,
+      "file_read_diff": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "D9AR end-to-end tests and shared support",
+      "files": [
+        "e2e/d9ar/cards.spec.ts",
+        "e2e/d9ar/readout.spec.ts",
+        "e2e/d9ar/support.ts",
+        "e2e/d9ar/sweep.spec.ts"
+      ]
+    },
+    {
+      "label": "Replay corridor, figure parts, and frame components with tests",
+      "files": [
+        "src/ui/cockpit/replay/corridor.test.tsx",
+        "src/ui/cockpit/replay/corridor.tsx",
+        "src/ui/cockpit/replay/figure-parts.test.ts",
+        "src/ui/cockpit/replay/figure-parts.ts",
+        "src/ui/cockpit/replay/frame.test.tsx",
+        "src/ui/cockpit/replay/frame.tsx"
+      ]
+    }
+  ],
+  "session_id": "2094796b-6f2f-48ee-b40e-2d049053445e",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "2094796b-6f2f-48ee-b40e-2d049053445e",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "1680d3ca",
+      "resolved_base": "2ad1c68e06918720b33e9e47f9e546bd33624e47",
+      "resolved_head": "1680d3ca6421867261e89276ae6e20ea4e9a14b8",
+      "exact_range": "2ad1c68e06918720b33e9e47f9e546bd33624e47..1680d3ca6421867261e89276ae6e20ea4e9a14b8",
+      "source_artifact_sha256": "992e85d38e10874943f97f5f24aae60ce8f154258dc4cd9f97f22800bd237e34"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "07d6ddb61a627b6e3202a0c5e3f9547cfb10f6fad784c8ca12a580a08252b174",
+          "path": "src/ui/cockpit/replay/frame.test.tsx",
+          "fingerprint": "3b9888899770efea81d7dbad118d2846bdf73c0f9359cd1d3d5301a73d0fafdf"
+        },
+        {
+          "item_id": "1de8fed67f607b0be507730f908872b3f8f30f8f306122ecd3148a9f45f3bdd1",
+          "path": "e2e/d9ar/cards.spec.ts",
+          "fingerprint": "8f781b828f26ef784d1fc1d5d3383c5c9427ded6a1270e1254b506943556871d"
+        },
+        {
+          "item_id": "1e9818d41ff29d7730ea06bdd1d154959f0a952a460b3d5f13d2bde01ff86492",
+          "path": "src/ui/cockpit/replay/frame.tsx",
+          "fingerprint": "710c2b10d2aa7ef4b4783b90675ce199b86f0bc7b6490400153bab8cf478cfec"
+        },
+        {
+          "item_id": "1f1cde75c007ef44b7a42884ebbefdadc6bd52a3556903ee28f2f353ead37e61",
+          "path": "e2e/d9ar/readout.spec.ts",
+          "fingerprint": "934d9245bb0e89ab193f83b3544a0ddf4dd7a5079125863e344f478424a601be"
+        },
+        {
+          "item_id": "40e532c485d36ff93b0b2d9c4484480c51906d67b1ca219dcb3425dc15fe41f0",
+          "path": "src/ui/cockpit/replay/figure-parts.ts",
+          "fingerprint": "60db7d9e224267ba22e86be7e564ec971a332836a62ef4f1defbb26fdfd8c93f"
+        },
+        {
+          "item_id": "839b5d74be9dab57ce22d8164cf43a870716504e404925773518309e596f49ef",
+          "path": "e2e/d9ar/support.ts",
+          "fingerprint": "c882d2a56200a865eb47db3bce97fbf443de41e8d490b9a80a8e195f070e7a82"
+        },
+        {
+          "item_id": "8fd8c6345f74f8e8504d8a5fce6a83d685763d595752d5e0a97af00b018408a9",
+          "path": "src/ui/cockpit/replay/figure-parts.test.ts",
+          "fingerprint": "a3961bf778aa9bcb1db45ce97d3ef007634d53b6a99a4d7357fb17592d66b04c"
+        },
+        {
+          "item_id": "b9ff77485ea8c227fe111b6e6915407572768e86debadd842eefda14f4e4bcf1",
+          "path": "src/ui/cockpit/replay/corridor.tsx",
+          "fingerprint": "8c7cd19cc12feb4dff9613c45d25669c3c8e239f4c9054e7f67ea05ccf5d3bcb"
+        },
+        {
+          "item_id": "ba578f97f7698c0e6bcb181e747f8c8ef3dafb90b6f8eef6f25b35b639e1dd2c",
+          "path": "src/ui/cockpit/replay/corridor.test.tsx",
+          "fingerprint": "c48e346c457c9dfa3c90bf72f53e35993186a791c6610ab5c9e824a6d2b42cff"
+        },
+        {
+          "item_id": "e9bc98813f9dd506558dd677bd3a7485ff7bdf1d4139df90c77dabe0c2da7c16",
+          "path": "e2e/d9ar/sweep.spec.ts",
+          "fingerprint": "516363af68cbce42e21738efa305e077ff75c08635af72a4414618ca75e13cbf"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "07d6ddb61a627b6e3202a0c5e3f9547cfb10f6fad784c8ca12a580a08252b174",
+          "path": "src/ui/cockpit/replay/frame.test.tsx",
+          "fingerprint": "3b9888899770efea81d7dbad118d2846bdf73c0f9359cd1d3d5301a73d0fafdf"
+        },
+        {
+          "item_id": "1de8fed67f607b0be507730f908872b3f8f30f8f306122ecd3148a9f45f3bdd1",
+          "path": "e2e/d9ar/cards.spec.ts",
+          "fingerprint": "8f781b828f26ef784d1fc1d5d3383c5c9427ded6a1270e1254b506943556871d"
+        },
+        {
+          "item_id": "1e9818d41ff29d7730ea06bdd1d154959f0a952a460b3d5f13d2bde01ff86492",
+          "path": "src/ui/cockpit/replay/frame.tsx",
+          "fingerprint": "710c2b10d2aa7ef4b4783b90675ce199b86f0bc7b6490400153bab8cf478cfec"
+        },
+        {
+          "item_id": "1f1cde75c007ef44b7a42884ebbefdadc6bd52a3556903ee28f2f353ead37e61",
+          "path": "e2e/d9ar/readout.spec.ts",
+          "fingerprint": "934d9245bb0e89ab193f83b3544a0ddf4dd7a5079125863e344f478424a601be"
+        },
+        {
+          "item_id": "40e532c485d36ff93b0b2d9c4484480c51906d67b1ca219dcb3425dc15fe41f0",
+          "path": "src/ui/cockpit/replay/figure-parts.ts",
+          "fingerprint": "60db7d9e224267ba22e86be7e564ec971a332836a62ef4f1defbb26fdfd8c93f"
+        },
+        {
+          "item_id": "839b5d74be9dab57ce22d8164cf43a870716504e404925773518309e596f49ef",
+          "path": "e2e/d9ar/support.ts",
+          "fingerprint": "c882d2a56200a865eb47db3bce97fbf443de41e8d490b9a80a8e195f070e7a82"
+        },
+        {
+          "item_id": "8fd8c6345f74f8e8504d8a5fce6a83d685763d595752d5e0a97af00b018408a9",
+          "path": "src/ui/cockpit/replay/figure-parts.test.ts",
+          "fingerprint": "a3961bf778aa9bcb1db45ce97d3ef007634d53b6a99a4d7357fb17592d66b04c"
+        },
+        {
+          "item_id": "b9ff77485ea8c227fe111b6e6915407572768e86debadd842eefda14f4e4bcf1",
+          "path": "src/ui/cockpit/replay/corridor.tsx",
+          "fingerprint": "8c7cd19cc12feb4dff9613c45d25669c3c8e239f4c9054e7f67ea05ccf5d3bcb"
+        },
+        {
+          "item_id": "ba578f97f7698c0e6bcb181e747f8c8ef3dafb90b6f8eef6f25b35b639e1dd2c",
+          "path": "src/ui/cockpit/replay/corridor.test.tsx",
+          "fingerprint": "c48e346c457c9dfa3c90bf72f53e35993186a791c6610ab5c9e824a6d2b42cff"
+        },
+        {
+          "item_id": "e9bc98813f9dd506558dd677bd3a7485ff7bdf1d4139df90c77dabe0c2da7c16",
+          "path": "e2e/d9ar/sweep.spec.ts",
+          "fingerprint": "516363af68cbce42e21738efa305e077ff75c08635af72a4414618ca75e13cbf"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "df22232c583a55e14e8881e015f4298e3ac84385eff5120c9828c618c84bde59",
+          "path": "evidence/D09AR/tdd-log/D9AR-retro-1.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 63873
+  }
+}
