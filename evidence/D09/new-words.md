@@ -15,3 +15,10 @@ Screen words no approved row covers, used as the session would have recommended,
 | T9.14-B3 | Readout, "At stake from here", a session past a line by its planned amount with the condition not triggered | Rows "Past Stop's amount", "Past Target's amount" (for "Stop Overrun", "Target Overrun"); Reward to risk ending "Not triggered" (for "Stop breached", "Target reached") | W43 |
 | T9.14-B4 (decided) | Replay drawer when the replay could not be read | "No replay." | none; W35 |
 | T9.14 | P&L chart labels | "Banked +$478", "Realized −$495" with cents dropped only when zero | W40 |
+
+## Stage B
+
+- T9.24, the replay overlay, the implied volatility chip's small chart: accessible name "Implied volatility by session" (nearest W47).
+- T9.24, the same small chart's visually hidden list: "Fri Nov 13: Unavailable", "Fri Nov 13: 30.1%" (the session's date as the label; nearest W47).
+- T9.24, the About page under "Option estimates": W50's rate sentence set as its own paragraph, "Interest rate: 4% for a contract with up to 365 days to expiration, 5.25% beyond." (W50's words, split out).
+- T9.24, singular forms of W47: "1 share", "1 day to expiration", "Short 1 contract" (nearest W47).
