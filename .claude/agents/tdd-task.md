@@ -94,3 +94,4 @@ Return only this, concisely:
 3. First-run passes, each with its mutation and failure line.
 4. Deviations, questions, and anything a later task must change (such as a temporary rule a later task replaces).
 5. Public types added or changed: names and shapes, briefly, for later briefs.
+6. Browser: "ran" with each spec file and its result, or "not run" with the reason (the command refused, or no browser spec covers the task's screens). A UI task runs the browser specs its brief names.

@@ -6,7 +6,9 @@
       "Bash(npm run build:releases)",
       "Bash(npm run build:faults)",
       "Bash(npm run test:e2e)",
-      "Bash(npm run test:e2e *)"
+      "Bash(npm run test:e2e *)",
+      "Bash(npm run test:e2e:*)",
+      "Bash(.claude/scripts/with-browser-lock.sh *)"
     ]
   },
   "hooks": {
