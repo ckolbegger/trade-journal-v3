@@ -969,8 +969,8 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T9.26 | B | — | — | Done | `7d0c3c08`; B1 `48aa665f`; B2 `d7f2b65e` |
 | T9.27 | B | — | — | Done | `ad16f6b7`; B1 `855ad380` |
 | T9.28 | B | — | — | Done | critic-b1 (1 moderate, 1 low); B1 `db89563a`; critic-b2 PASS, no defects |
-| T9.28-D1 | B | — | — | In progress from `5caf9c5d` | Decision 120: "Realized" for a gain and a loss |
-| T9.28-D2 | B | — | — | Not started | The user's word review, item B7: the not-split sentence shortened (P137) |
+| T9.28-D1 | B | — | — | Done (`224043dd`) | Decision 120: "Realized" for a gain and a loss |
+| T9.28-D2 | B | — | — | In progress from `224043dd` | The user's word review, item B7: the not-split sentence shortened (P137) |
 | T9.29 | C | — | — | Not started | |
 | T9.30 | C | — | — | Not started | |
 | T9.31 | C | — | — | Not started | |
