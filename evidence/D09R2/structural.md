@@ -63,3 +63,27 @@ D9R2 runs one task at a time (P162; decision 100). Each task's heading holds its
 - Types: `SeriesPoint`'s Available kind gains `readonly resolutionRevision: number`; the internal `seriesPoint` takes it as a fourth parameter (from the stored record in `historicalGaps`, from the session date's read record in `series`).
 - ocr (`ocr/T9R2.5-5212dedb.json`): **No findings.** 3 files reviewed.
 - Run `T9R2.5` (browser-auto 7b1d9eed): tier **task**, reason "no changed path since 7b1d9eed is on the full-tier list". Unit 224 files, 2601 tests; integration 137 files, 294 tests; browser task tier 5 passed; checks 14 of 14. Ports free before and after. No flaky case failed. `run-complete.sh`: run complete.
+
+## T9R2.6 The Review open's earlier Marks
+
+- Base `5212dedb`, commit `460f1594`; bug task T9R2.6-B1 `d5e48854`. Full (decision 122).
+- Cases: 8 (`tdd-log/T9R2.6.md`); names drop apostrophes for `-t` filtering. Red then green: 1, 3, 4, 7. **First-run passes, each mutation-checked by assertion (flagged):** case 2 (mutation: always carry `previousSession`, falling back to the Review Date), case 5 (keep every series point), case 6 (every Trade's `from` is the previous session), case 8 (the `series` call starts at 2026-10-01, before the cached scan: 28 requests against 25, an added `observations.getAll`). Case 2's first two logged runs were a fixture error and a pass with nothing built, neither a valid red.
+- **Changed existing case** (anticipated by case 8's "counted as `daily-review.test.ts` 1316 counts series reads"): `daily-review.test.ts` 1310, "should read no series in open: the replay is read by getTrade alone" → "should read series in open only to the previous session for the earlier Marks: the replay is read by getTrade alone". Before: `expect(read).toEqual([])` after the open, then `toHaveLength(2)` after `getTrade`. After: the open's calls equal `['BREN to 2026-11-13', '<call key> to 2026-11-13']`; `read` is reset; `getTrade` adds 2 calls ending `to 2026-11-16`. The store request lists are unchanged.
+- No other existing case or fixture changed. Every request-list proof passes unchanged: `tests/integration/d4`, `d5`, `d5r`, `d6`, `d7`, `d9`, `d9ar` `query-count.test.ts`, `d7sp/review-query-count.test.ts`, and `meter.test.ts`. `verify:fixtures` OK; no file under `tests/fixtures` changed.
+- Implementation-level decisions (recorded, not asked):
+  - `from` per Trade is `firstRelevantGapDate` over a per-Trade session map: the previous session (with `recovered.previousCloseInstant`) plus every date the gap groups of that Trade's Instruments list, each with the gap groups' own close. A literal `firstRelevantGapDate(g.closes, …) ?? reviewDate` would give a fully marked Trade `from = reviewDate` (dropping its previous-session Mark) and never fetch the session on which only the Call is Missing. No added read.
+  - `earlierMarks` is optional in the type (`earlierMarks?`) though `open` always sets it, because making it required breaks typecheck in 10 UI test builders. The main session gives T9R2.7 the change to required, with `earlierMarks: []` in those builders (type-only).
+- Types: the Marks family gains `previousSession?: string` and `earlierMarks?: readonly EarlierMarksGroup[]`; `EarlierMarksGroup = { instrumentKey, instrument, trades: { tradeId, from }[], marks: Record<date, EarlierMark> }`; `EarlierMark = { resolution (Available), resolutionRevision }`; sorted by `instrumentKey`; not exported from `daily-review/index.ts`.
+- Subagent note (not a bug task): a Trade whose Review Date is the first covered session (2024-01-02) appears to crash `valueTrade` in `observationFrame` ("Cannot read properties of undefined (reading 'instrumentKey')"). Existing behaviour, not touched; for the final report.
+- ocr (`ocr/T9R2.6-460f1594.json`): 1 finding.
+
+| Severity | Category | Location | Claim | Verdict |
+|---|---|---|---|---|
+| medium | test | `daily-review.test.ts:1474` | The "leave out an Instrument whose Trades all opened on the Review Date" case checks only its absence from `earlierMarks`, not that `series` is never called for it (A289); the no-request case's fixture has no such Instrument. | Valid: the code is correct (`assemble` returns early), but a regression calling `series` then dropping the group would pass. Bug task **T9R2.6-B1**. |
+
+### T9R2.6-B1 No series call for a Review-Date-only Instrument
+
+- The defect: A289's "no call" for an Instrument whose Trades all opened on the Review Date was untested, so a call that starts a scan could return unnoticed.
+- Case: "it should make no series call for an Instrument whose Trades all opened on the Review Date". Commit `d5e48854` (test only). **First-run pass** (the behaviour was built by T9R2.6), mutation-checked: `assemble` calling `read.series(key, reviewDate, previousSession)` for that Instrument then dropping the group failed with "expected [ 'CORV', 'CORV261120P00080000', …(1) ] to not include 'NEWX'"; restored. `daily-review.test.ts` 83 of 83; query-count integration 20 of 20 in 10 files.
+- ocr (`ocr/T9R2.6-B1-d5e48854.json`): **No findings.**
+- Run `T9R2.6` (browser-auto 5212dedb; after the bug task's clean ocr): tier **task**, reason "no changed path since 5212dedb is on the full-tier list". Unit 224 files, 2610 tests; integration 137 files, 294 tests; browser task tier 5 passed (12.0 s); checks 14 of 14. Ports free before and after. No flaky case failed. `run-complete.sh`: run complete.

@@ -1,0 +1,134 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 1,
+    "total_tokens": 223426,
+    "input_tokens": 221460,
+    "output_tokens": 1966,
+    "cache_read_tokens": 33152,
+    "elapsed": "42s"
+  },
+  "tool_calls": {
+    "total": 21,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 7,
+      "file_read": 9,
+      "file_read_diff": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/coordinators/daily-review/daily-review.test.ts",
+      "content": "This verifies that NEWX is omitted from the result, but not A289's requirement that `series` is never called for it. An implementation that reads NEWX and then discards the group would still pass; the request-count test also cannot catch this because its fixture has no review-date-only Instrument. Wrap the read session to record series calls and assert that NEWX receives none (or include NEWX in the counted fixture).",
+      "existing_code": "    expect(family.earlierMarks.map((group) =\u003e group.instrumentKey)).toEqual(['CORV', instrumentKey(CORV_PUT)].sort());",
+      "start_line": 1474,
+      "end_line": 1474,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "src/coordinators/daily-review/daily-review.test.ts",
+      "files": [
+        "src/coordinators/daily-review/daily-review.test.ts"
+      ]
+    },
+    {
+      "label": "src/coordinators/daily-review/daily-review.ts",
+      "files": [
+        "src/coordinators/daily-review/daily-review.ts"
+      ]
+    },
+    {
+      "label": "src/coordinators/daily-review/types.ts",
+      "files": [
+        "src/coordinators/daily-review/types.ts"
+      ]
+    }
+  ],
+  "session_id": "b052817a-5a72-46b8-85e7-b29f3bbdfe06",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "b052817a-5a72-46b8-85e7-b29f3bbdfe06",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "460f1594",
+      "resolved_base": "67b7a124060b7f95646c4f1557507f8ce1705afe",
+      "resolved_head": "460f159405235cd9394a3c9819030e68e0419190",
+      "exact_range": "67b7a124060b7f95646c4f1557507f8ce1705afe..460f159405235cd9394a3c9819030e68e0419190",
+      "source_artifact_sha256": "3ea95dfa8604388fbb6784f0fc0282eef201d2d7e56aeba6ee225402b523b041"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "7e426962f107205ccb873548a1f99485a44fdb6670d7b162171a0f57ef282b54"
+        },
+        {
+          "item_id": "835fe238986a14f50aa73feeedba69e298a0728d45c05d35543575d749816715",
+          "path": "src/coordinators/daily-review/daily-review.test.ts",
+          "fingerprint": "d809de6a9fce05b65cc91d0bde33653e8f632253eb3984e4cc31e3b3d5cb7881"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "ff49cd24b7bf4243f311510cdfcad12849d3a50ac421b8f71f7df60403de1e4c"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "7e426962f107205ccb873548a1f99485a44fdb6670d7b162171a0f57ef282b54"
+        },
+        {
+          "item_id": "835fe238986a14f50aa73feeedba69e298a0728d45c05d35543575d749816715",
+          "path": "src/coordinators/daily-review/daily-review.test.ts",
+          "fingerprint": "d809de6a9fce05b65cc91d0bde33653e8f632253eb3984e4cc31e3b3d5cb7881"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "ff49cd24b7bf4243f311510cdfcad12849d3a50ac421b8f71f7df60403de1e4c"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "b628f832bb597bea217a78e77cef69770b59e97cbcfb45fa0bb184391c5c2765",
+          "path": "evidence/D09R2/tdd-log/T9R2.6.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 41562
+  }
+}
