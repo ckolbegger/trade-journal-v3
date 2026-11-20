@@ -812,3 +812,14 @@ ocr `6c31fc93` (`ocr/T9.35-6c31fc93.json`):
 
 - **T9.35-B1.** Defect: an Open Detail awaiting its first Marks shows no meter, where T9.35's cases and A260 call for the dashed track with the rails. Case: *it should show the dashed track at the top of the card on an Open Detail awaiting its first Marks*.
 - T9.35-B1 `930e2f73`: red (`Unable to find … role "img"`), green with the waiting branch keeping the meter above the rows and the note, which are unchanged. `e2e/d8p`, `e2e/d8r` 35 passed under the lock. ocr `930e2f73`: No findings (`ocr/T9.35-B1-930e2f73.json`).
+
+Complete run `t9.35`, shared by T9.29-D1 and T9.35 (`browser-auto 098e6ccd` chose the full tier: first matching path `src/ui/cockpit/meter/meter.tsx`; on `9a76d053`; run complete):
+
+| Suite | Result |
+|---|---|
+| Unit | 223 files, 2,581 tests, passed |
+| Integration | 136 files, 292 tests: 6 failed, the six SC-Q1 cases only (d4 T4.31, d5 T5.22, d7 T7.29, d7sp three cases), each one request more in the Review open |
+| browser-1, browser-2, browser-3, browser-4 | 126 (5.1 min), 79 (5.0 min), 57 (4.2 min), 109 passed and 4 skipped (5.0 min) |
+| Checks | 14 of 14 |
+
+No other failure; no known flaky case failed.
