@@ -82,6 +82,7 @@ None. `evidence/D09/words-changed.md` has no stage B entry.
 - Four tdd-task subagents wrote code before a case's red (T9.20-B1, T9.21, T9.22, T9.23); each backed it out and redid the case red first. First-run passes were flagged and mutation-checked: T9.20 case 5; T9.21 cases 2 and 4; T9.22's Put signs, parts adding up, weekend; T9.23's three; T9.24's no-rate case; T9.25's final-session case and T9.25-B1's second case; every case of T9.26 and T9.27 (tests over built code).
 - T9.25's subagent could not run the browser (its sandbox refused the build and the lock), which is how three stage A card cases reached run `t9.25` failing.
 - T9.23-B1: no lint rule requires `.ts` on relative imports, which the Node-loaded checks need. Not made a task.
+- The main session started each task's ocr review and its complete run at the same time, against `implementing.md`'s step 3 (the run starts once ocr, and any bug tasks' ocr, is clean). For T9.26 that let ocr's fixes land while run `t9.26` was going, and the run was repeated as `t9.26-r1`. Stage C's handoff restates step 3.
 - `browser-4` kept every stage under the 8-minute limit (largest 5.2 min).
 
 ## Time
