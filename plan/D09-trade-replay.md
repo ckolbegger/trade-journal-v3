@@ -966,8 +966,8 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T9.23 | B | — | — | Done | `4bf2c557`; B1 (suite failure) `9c2a0b35` |
 | T9.24 | B | — | — | Done | `d96f7ae8` |
 | T9.25 | B | — | — | Done | `4e30a157`; B1 `119880de`; B2 (suite failure) `5268e5ac` |
-| T9.26 | B | — | — | In progress from `5268e5ac` | |
-| T9.27 | B | — | — | Not started | |
+| T9.26 | B | — | — | Done | `7d0c3c08`; B1 `48aa665f`; B2 `d7f2b65e` |
+| T9.27 | B | — | — | In progress from `d7f2b65e` | |
 | T9.28 | B | — | — | Not started | |
 | T9.29 | C | — | — | Not started | |
 | T9.30 | C | — | — | Not started | |

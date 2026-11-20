@@ -1,0 +1,111 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 2,
+    "total_tokens": 96787,
+    "input_tokens": 95467,
+    "output_tokens": 1320,
+    "cache_read_tokens": 11648,
+    "elapsed": "44s"
+  },
+  "tool_calls": {
+    "total": 9,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 1,
+      "file_find": 1,
+      "file_read": 6
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "tests/integration/d9/estimates.test.ts",
+      "content": "This skips every unexpected Unavailable/NotApplicable split and only requires one successful split per trade, so losing split estimates on most eligible sessions would still pass. For these fixture ranges, require Split on every session after the first except CORV's Nov 10 and Nov 11 (expected split counts: BREN 10, CORV 5, DALE 9), then reconcile each required split against the Mark change.",
+      "existing_code": "        if (found.kind !== 'Split') continue;",
+      "start_line": 100,
+      "end_line": 100,
+      "category": "test",
+      "severity": "medium"
+    },
+    {
+      "path": "tests/integration/d9/estimates.test.ts",
+      "content": "The one-session allowance applies to all three trades, although only CORV intentionally lacks a Mark (Nov 10). An unexpected missing option or underlying Mark in BREN or DALE would therefore skip price-back verification and still pass. Assert the exact skipped dates per fixture—only CORV Nov 10—and require price-back coverage for every other session.",
+      "existing_code": "      expect(priced, series.id).toBeGreaterThanOrEqual(view.sessions.length - 1);",
+      "start_line": 87,
+      "end_line": 87,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "tests/integration/d9/estimates.test.ts",
+      "files": [
+        "tests/integration/d9/estimates.test.ts"
+      ]
+    }
+  ],
+  "session_id": "0871d5ff-eeec-46c8-8675-1e7705f0ef2d",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "0871d5ff-eeec-46c8-8675-1e7705f0ef2d",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "7d0c3c08",
+      "resolved_base": "bcf38b6b37e593b7e085d26c47adfea400cfbb78",
+      "resolved_head": "7d0c3c08e013c8adb9b5d3de4e45b69d0e09519c",
+      "exact_range": "bcf38b6b37e593b7e085d26c47adfea400cfbb78..7d0c3c08e013c8adb9b5d3de4e45b69d0e09519c",
+      "source_artifact_sha256": "d6c291c28e406c64f00e84b9c0980e3dd5202c531c20ba9a67a73f344f795d40"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "682623198ad153bf0b9f8e00fa69fd1bc770d4a8e60443ed9a1d810fce7d567f",
+          "path": "tests/integration/d9/estimates.test.ts",
+          "fingerprint": "3237f5a62bf3825359d307f287ed95cd0dbf1d1db7444640003e803679d0c54c"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "682623198ad153bf0b9f8e00fa69fd1bc770d4a8e60443ed9a1d810fce7d567f",
+          "path": "tests/integration/d9/estimates.test.ts",
+          "fingerprint": "3237f5a62bf3825359d307f287ed95cd0dbf1d1db7444640003e803679d0c54c"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "e7e11590fb2e53c162c66c1a3130387a5153362a7cb2d852919a2090ff5801fb",
+          "path": "evidence/D09/structural.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 43737
+  }
+}
