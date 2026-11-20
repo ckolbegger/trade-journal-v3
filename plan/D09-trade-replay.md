@@ -982,6 +982,6 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T9.35 | C | — | — | Done (raised to Full; its run's only failures are SC-Q1's six) | `6c31fc93`; B1 `930e2f73` |
 | T9.40 | C | — | — | Done | `ae057f91` |
 | T9.36 | C | — | — | Paused: decision pending (SC-Q2) | |
-| T9.37 | C | — | — | In progress from `a93664bd` | |
+| T9.37 | C | — | — | Done (Light) | `17f05074` |
 | T9.38 | C | — | — | Not started | |
 | T9.39 | C | — | — | Not started | |

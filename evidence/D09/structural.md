@@ -916,3 +916,7 @@ Complete run `t9.40` (`browser-auto 2870791d` chose the full tier: first matchin
 ### T9.36 The benchmark's expected Open rows (Light)
 
 Stopped with no change (worktree clean): `tools/bench-expected-rows.ts` has no sort (it records the rendered order); `bench:expected` serves on `BENCH_PORT = 4175` (`tools/bench/profile.ts`); the cached benchmark profile (Nov 15) opens on the time-zone picker, so it needs `bench:setup` first. A trial on 5175 with the port changed temporarily (reverted) timed out waiting for the 200th row. Pending decision SC-Q2.
+
+### T9.37 Stage C: Node integration suite (Light)
+
+Light (decision 122): no ocr, no suite run. Commit `17f05074` (tests and test support only: `tests/integration/d9/meter.test.ts` new; `query-count.test.ts`; `support.ts`; `tests/support/replay-series-app.ts` gains `seriesBook`). Subagent's checks: `npm run test:integration` 137 files, 294 tests passed; `npm run verify:fixtures` OK; typecheck, tsc6, lint, lint:deps exit 0; the acceptance script 9 rows, all pass except AC-REV-002 (`e2e/d9/meter-review.spec.ts`, T9.38's). **First-run passes, flagged:** I9.10 (mutation: the attention sort made a no-op; failed on the order) and I9.11 (mutation: `browseTrades` opens the session-before read session per Trade; failed on the request list). "The four Trades" read as R-BREN-U, R-CORV-D, R-DALE-D and R-AXIO-U (R-AXIO-U sits between the rails at Fri 11-13). I9.11 shows "nothing per Trade" by comparing a two-Trade and a four-Trade book.
