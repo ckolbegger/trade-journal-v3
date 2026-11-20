@@ -912,3 +912,7 @@ Cases touched (re-pointed = now asserts the meter reading's `now` for the same T
 T9.40 (main session's check): `git diff -U0 ae057f91^ ae057f91 -- tests/fixtures` has 84 deleted `"rangePosition"` keys and no added or changed line (numstat: 0 added; 42, 42, 90, 118, 134, 90, 118, 134 deleted). Subagent note: the first `npx vitest run src/coordinators src/ui` had one unnamed failure that two reruns did not repeat (presumably tech debt item 11's flake). ocr `ae057f91`: No findings (`ocr/T9.40-ae057f91.json`).
 
 Complete run `t9.40` (`browser-auto 2870791d` chose the full tier: first matching path `src/app/routes.ts`; on `f5c7f083`; run complete): unit 224 files, 2,592 tests; integration 136 files, 292 tests; browser-1 126 (5.2 min), browser-2 79 (5.0 min), browser-3 57 (4.2 min), browser-4 109 passed and 4 skipped (4.9 min); checks 14 of 14. All passed.
+
+### T9.36 The benchmark's expected Open rows (Light)
+
+Stopped with no change (worktree clean): `tools/bench-expected-rows.ts` has no sort (it records the rendered order); `bench:expected` serves on `BENCH_PORT = 4175` (`tools/bench/profile.ts`); the cached benchmark profile (Nov 15) opens on the time-zone picker, so it needs `bench:setup` first. A trial on 5175 with the port changed temporarily (reverted) timed out waiting for the 200th row. Pending decision SC-Q2.
