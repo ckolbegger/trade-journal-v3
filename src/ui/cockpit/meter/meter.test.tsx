@@ -91,6 +91,13 @@ describe('Meter (W51)', () => {
     expect(attr('pointer', 'data-shape')).toBe('round');
   });
 
+  it('should draw the hatch over the banked fill where the two overlap', () => {
+    // Stop +$150, banked +$450, P&L +$60: the hatch (60 to 150) lies inside the banked fill (0 to 450).
+    meter({ stop: fig(150), target: fig(1350), banked: fig(450), now: now(60, { zone: 'PastStop', pastBy: '$90.00' }) });
+    // Later in the document paints on top of an earlier sibling at the same stacking level.
+    expect(part('banked')!.compareDocumentPosition(part('past')!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   it('should draw the Stop line to the right of break-even when profit is banked beyond it', () => {
     // GALT: half sold, so the Stop now locks in +$150. Break-even is the track's left end and the Stop is right of it.
     meter({ stop: fig(150), target: fig(1350), banked: fig(450), now: now(990) });
@@ -160,7 +167,7 @@ describe('Meter (W51)', () => {
     const card = partsAt('card');
     const row = partsAt('row');
     const detail = partsAt('detail');
-    expect(card.parts).toEqual(['meter-track', 'meter-open', 'meter-past', 'meter-banked', 'meter-previous', 'meter-stop', 'meter-target', 'meter-even', 'meter-pointer']);
+    expect(card.parts).toEqual(['meter-track', 'meter-open', 'meter-banked', 'meter-past', 'meter-previous', 'meter-stop', 'meter-target', 'meter-even', 'meter-pointer']);
     expect(row.parts).toEqual(card.parts);
     expect(detail.parts).toEqual(card.parts);
     expect([card.size, row.size, detail.size]).toEqual(['card', 'row', 'detail']);

@@ -52,6 +52,9 @@ export function Meter(props: MeterProps) {
         {now && now.value !== 0 && (
           <span className={`m-open ${now.value > 0 ? 'up' : 'dn'}`} data-testid="meter-open" data-tone={now.value > 0 ? 'profit' : 'loss'} data-fill="outline" style={between(at, 0, now.value)} />
         )}
+        {now && props.banked && props.banked.value !== 0 && (
+          <span className={`m-bank ${props.banked.value > 0 ? 'up' : 'dn'}`} data-testid="meter-banked" data-tone={props.banked.value > 0 ? 'profit' : 'loss'} data-fill="solid" style={between(at, 0, props.banked.value)} />
+        )}
         {now && now.zone !== 'Within' && (
           <span
             className={`m-over ${now.zone === 'PastStop' ? 's' : 't'}`}
@@ -59,9 +62,6 @@ export function Meter(props: MeterProps) {
             data-tone={now.zone === 'PastStop' ? 'loss' : 'profit'}
             style={between(at, now.value, now.zone === 'PastStop' ? props.stop.value : props.target.value)}
           />
-        )}
-        {now && props.banked && props.banked.value !== 0 && (
-          <span className={`m-bank ${props.banked.value > 0 ? 'up' : 'dn'}`} data-testid="meter-banked" data-tone={props.banked.value > 0 ? 'profit' : 'loss'} data-fill="solid" style={between(at, 0, props.banked.value)} />
         )}
         {props.previous && <span className="m-prev" data-testid="meter-previous" style={{ left: percent(at(props.previous.value)) }} />}
         <span className="m-stop" data-testid="meter-stop" style={{ left: percent(at(props.stop.value)) }} />
