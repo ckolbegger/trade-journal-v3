@@ -2,6 +2,8 @@
 
 The user's rule, 2026-11-19: from now on, style-only ocr findings and low critic defects are recorded here as tech debt, not fixed as tasks. Once the gate has passed, this list is reviewed with the user. Earlier items of this kind were already fixed as tasks; they are not listed.
 
+**Reviewed with the user, 2026-11-19, after the gate:** all three items stay as standing tech debt, with no fix before stage B.
+
 | Source | Kind | Item |
 |---|---|---|
 | critic-3, defect 1 | moderate defect, moved here by the user's decision | On the Review card (`CardFigures.tsx`), the past-a-line row sits under a heading: "Current Risk · Past the Stop by $300.00 (0.50R)" (AXIO, DALE), "Remaining Reward · Past the Target by $32.00 (0.10R)" (BREN). The replay sets it above both headings (W56, decision 7, coach point 6). Fix: drop the heading from that row, in both the card's groups. |
