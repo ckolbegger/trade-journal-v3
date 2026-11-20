@@ -202,7 +202,7 @@ describe('Trade in the walk', () => {
     expect(figure2(second, 'Trade P&L')).toBe('Mark missing: XYZ, Mon Oct 12');
     expect(figure2(second, 'Current Risk · At Stop')).toBe('Mark missing: XYZ, Mon Oct 12');
     expect(within(second).queryByText('Mark $52.00 for XYZ, Mon Oct 12')).toBeNull();
-    const dated = within(second).getByRole('group', { name: 'Fri Oct 9 close' });
+    const dated = within(second).getByRole('group', { name: 'At the Fri Oct 9 Marks' });
     expect(figure2(dated, 'Trade P&L')).toBe('−$50.00 · −0.20R');
     expect(figure2(dated, 'Current Risk · At Stop')).toBe('$300.00 · 1.20R');
     expect(figure2(dated, 'Current Risk · At Worst case')).toBe('$2,600.00 · 10.40R');

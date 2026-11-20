@@ -152,9 +152,6 @@
   "src/ui/screens/CardFigures.tsx": {
     "no-nested-ternary": {
       "count": 1
-    },
-    "no-restricted-syntax": {
-      "count": 1
     }
   },
   "src/ui/screens/ExpirationReceipt.tsx": {

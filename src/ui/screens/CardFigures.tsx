@@ -150,7 +150,7 @@ export function CardFigures({ trade }: CardFiguresProps) {
       )}
       {datedLastClose && (
         <div role="group" aria-labelledby={`${uid}-dated`}>
-          <h4 id={`${uid}-dated`}>{shortDate(datedLastClose.tradingDate)} close</h4>
+          <h4 id={`${uid}-dated`}>At the {shortDate(datedLastClose.tradingDate)} Marks</h4>
           <Figures evaluation={datedLastClose.evaluation} />
         </div>
       )}

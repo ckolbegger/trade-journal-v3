@@ -66,12 +66,20 @@ describe('figures (A158)', () => {
     expect(figure(b.container,'Reward to risk')).toBe('Not applicable: entry at or beyond the Stop (Plan 2.40 to 1)');
   });
 
+  it('should head the card dated figures At the Fri Oct 9 Marks and name their group the same', () => {
+    const dated = evaluation({ currentMarkedPnl: value(-50n), currentMarkedPnlInPlanR: value(-1n, 5n) });
+    const { container: root } = render(<CardFigures trade={trade({ datedLastClose: { tradingDate: '2026-10-09', evaluation: dated } })} />);
+    const group = within(root).getByRole('group', { name: 'At the Fri Oct 9 Marks' });
+    expect(within(group).getByRole('heading', { name: 'At the Fri Oct 9 Marks' })).toBeTruthy();
+    expect(within(root).queryByText('Fri Oct 9 close')).toBeNull();
+  });
+
   it('should keep the dated last-close group beside the figures when the Review-date Mark is missing', () => {
     const gone = missing('XYZ', '2026-10-12');
     const dated = evaluation({ currentMarkedPnl: value(-50n), currentMarkedPnlInPlanR: value(-1n, 5n) });
     const { container: root } = render(<CardFigures trade={trade({ evaluation: evaluation({ currentMarkedPnl: gone, currentMarkedPnlInPlanR: gone, observation: { instrument: symbol, tradingDate: '2026-10-12', mark: null } }), datedLastClose: { tradingDate: '2026-10-09', evaluation: dated } })} />);
     expect(figure(root, 'Trade P&L')).toBe('Mark missing: XYZ, Mon Oct 12');
-    const group = within(root).getByRole('group', { name: 'Fri Oct 9 close' });
+    const group = within(root).getByRole('group', { name: 'At the Fri Oct 9 Marks' });
     expect(figure(group, 'Trade P&L')).toBe('−$50.00 · −0.20R');
     expect(figure(group, 'Current Risk · At Stop')).toBe('$450.00 · 1.80R');
   });
@@ -112,7 +120,7 @@ describe("Review card: the summary in the replay's words (decision 7)", () => {
   it('should name the figures Current Risk At Stop, Current Risk At Worst case and Remaining Reward At Target, with their amounts as before, in the Review-date group and the dated group alike', () => {
     const dated = evaluation({ currentMarkedPnl: value(-50n), currentMarkedPnlInPlanR: value(-1n, 5n) });
     const { container: root } = render(<CardFigures trade={trade({ datedLastClose: { tradingDate: '2026-10-09', evaluation: dated } })} />);
-    for (const scope of [root, within(root).getByRole('group', { name: 'Fri Oct 9 close' })]) {
+    for (const scope of [root, within(root).getByRole('group', { name: 'At the Fri Oct 9 Marks' })]) {
       expect(figure(scope, 'Current Risk · At Stop')).toBe('$450.00 · 1.80R');
       expect(figure(scope, 'Current Risk · At Worst case')).toBe('$5,200.00 · 20.80R');
       expect(figure(scope, 'Remaining Reward · At Target')).toBe('$400.00 · 1.60R');
@@ -147,7 +155,7 @@ describe("Review card: the summary in the replay's words (decision 7)", () => {
   it('should name the marked result Trade P&L, in the Review-date group and the dated group alike', () => {
     const { container: root } = render(<CardFigures trade={trade({ datedLastClose: { tradingDate: '2026-10-09', evaluation: evaluation({ currentMarkedPnl: value(-50n), currentMarkedPnlInPlanR: value(-1n, 5n) }) } })} />);
     expect(figure(root, 'Trade P&L')).toBe('+$180.00 · +0.72R');
-    expect(figure(within(root).getByRole('group', { name: 'Fri Oct 9 close' }), 'Trade P&L')).toBe('−$50.00 · −0.20R');
+    expect(figure(within(root).getByRole('group', { name: 'At the Fri Oct 9 Marks' }), 'Trade P&L')).toBe('−$50.00 · −0.20R');
     expect(root.textContent).not.toContain('Current Marked Trade P&L');
   });
 

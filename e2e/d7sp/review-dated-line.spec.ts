@@ -28,7 +28,7 @@ test.describe('B7SP.11 The option dated line in the Review', () => {
     for (const width of [320, 1280]) {
       await setWidth(page, width);
       await reachCard(page, oc);
-      const group = tradeCard(page, oc).getByRole('group', { name: 'Mon Oct 12 close' });
+      const group = tradeCard(page, oc).getByRole('group', { name: 'At the Mon Oct 12 Marks' });
       await expect(group, `${width} px`).toBeVisible();
       await expect(group.locator('dt'), `${width} px figures`).toHaveText(['Trade P&L', 'Current Risk · At Stop', 'Current Risk · At Worst case', 'Remaining Reward · At Target']);
       // Contract-only figures are values; the Underlying-dependent ones read as unavailable (XYZ has no Monday Mark).
