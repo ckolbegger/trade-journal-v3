@@ -65,6 +65,12 @@ const OPTION_TRADES: readonly (readonly [ReplayTestSeries, string, string, numbe
   [R_DALE_D, 'strategy.cash-secured-put', FRI_1113_1700, 9],
 ];
 
+const NOT_SPLIT: Record<string, [string, string][]> = {
+  'R-BREN-U': [['2026-11-02', 'NoEarlierFigure']],
+  'R-CORV-D': [['2026-11-02', 'NoEarlierFigure'], ['2026-11-10', 'MarkMissing'], ['2026-11-11', 'MarkMissing']],
+  'R-DALE-D': [['2026-11-02', 'NoEarlierFigure']],
+};
+
 describe('I9.8 Estimates explain and never value (AC-CALC-005)', () => {
   it('I9.8 should price each session implied volatility back to its Mark within half a cent, with the estimate rate and days', { timeout: 120_000 }, async () => {
     for (const [series, strategy, now, marksThrough] of OPTION_TRADES) {
@@ -94,15 +100,18 @@ describe('I9.8 Estimates explain and never value (AC-CALC-005)', () => {
 
       const view = await readyReplay(app, tradeId);
 
-      let split = 0;
+      const notSplit: [string, string][] = [];
       for (const s of view.sessions) {
         const found = estimatesOf(s).split;
-        if (found.kind !== 'Split') continue;
+        if (found.kind !== 'Split') {
+          notSplit.push([s.date, found.kind === 'Unavailable' ? found.reason : found.kind]);
+          continue;
+        }
         const parts = 'time' in found ? found.underlying + found.time + found.volatility + found.remainder : found.underlying + found.timeAndVolatility + found.remainder;
         expect(parts, `${series.id} ${s.date}`).toBeCloseTo(optionChange(s), 9);
-        split += 1;
       }
-      expect(split, series.id).toBeGreaterThan(0);
+      // Every session is split except these: the first (nothing earlier) and R-CORV-D's two sessions around its missing Mark.
+      expect(notSplit, series.id).toEqual(NOT_SPLIT[series.id]);
     }
   });
 
