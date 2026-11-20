@@ -24,3 +24,15 @@ Decision 113 as amended by decision 115: one question asked at a time; the other
 - **SB-Q3 answered 2026-11-19: leave all three as tech debt** (as recommended); reviewed with stage B's tech debt after the gate. No task.
 - **SB-Q3 (asked 2026-11-19): D9A-R's tech debt review** (`evidence/D09AR/tech-debt.md`): critic-3's moderate defect (the Review card's past-a-line row placement, `CardFigures.tsx`), and two low defects (unlabelled At Stop and At Target lines on finished Trades; labels drawn over away from the entry session). None is in a file stage B changes. Recommended: leave all three as tech debt; any the user makes a task runs before T9.20 as `T9AR.24-D<n>`.
 
+## Stage C
+
+### SC-Q1 (T9.31): the older Review-open request lists — asked 2026-11-20
+
+T9.31 gives each walked Trade its meter, whose faint mark needs the P&L at the session before, so a Review open reads one more date's Marks for the whole Review (P133, accepted 2026-11-17; I9.11: "one more date's observations than in stage A, and nothing per Trade"). Six existing cases pin the Review open's exact request list and now see that one read (a date-wide `observations.getAll` and the second snapshot's `meta.get`): d4 T4.31, d5 T5.22, d7 T7.29, and three d7sp cases. The breakdown's lookups did not list them; T9.31 already updated the d5r, d9 and d9ar lists the same way.
+
+Options:
+- **(a) Update the six lists by exactly that read**, each change listed with its old and new list; any other difference stays a defect. Keeps P133 as agreed. *Recommended.*
+- (b) Keep the lists as they are by taking the faint mark off the Review cards (P133's fallback), keeping it on the Open list and Detail. Changes an agreed design.
+- (c) Read the session before lazily, per card, in `getTrade`. Keeps `open`'s lists, but the collapsed cards would have no faint mark and `getTrade`'s lists change instead.
+
+Paused: T9.31, T9.32, T9.33, T9.34, T9.40, T9.36, T9.37, T9.38. Continuing: T9.29-D1, then T9.35.

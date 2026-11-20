@@ -784,3 +784,14 @@ Subagent notes (not bug tasks): the second valuation opens a second read session
 ocr `7b73e835`: No findings (`ocr/T9.31-7b73e835.json`).
 
 - **T9.31-B1 (suite failure)** `479c7635`. T9.31 left both d5r cases "should save %i Marks … then assemble as a Trade Action save does" failing: the valuation at the session before did the earlier-Mark lookup (one `openCursor` per Instrument missing that date), which the Marks save's data removed. Main session's decision: the meter's `previous` needs only that date's P&L, so the fix is in code, not in the test. `MarketData.openReadSession` gains `{ withoutStale }`, passed only by the second session. Case: *it should value the session before from that date's Marks alone, with no earlier-Mark lookup for an Instrument missing on that date*; the fix had been written first, so it was reverted for a genuine red (`expected [ { on: 'index', … } ] to have a length of +0 but got 1`), then restored. The d5r Review-open list loses T9.31's added cursor: now the stage B list plus one date-wide `observations.getAll`. Both d5r Marks-save cases pass unchanged. ocr `479c7635`: No findings (`ocr/T9.31-B1-479c7635.json`).
+
+Complete run `t9.31` (`browser-auto 09506977` chose the full tier: first matching path `src/app/types.ts`; unit on `50b8858a`, the rest on `098e6ccd`, one evidence commit apart; run complete):
+
+| Suite | Result |
+|---|---|
+| Unit | 223 files, 2,575 tests, passed |
+| Integration | 136 files, 292 tests: **6 failed** in 4 files |
+| browser-1, browser-2, browser-3, browser-4 | 126 (5.5 min), 79 (5.1 min), 57 (4.2 min), 109 passed and 4 skipped (5.0 min) |
+| Checks | 14 of 14 |
+
+The six failures are older exact request lists for a Review open, which T9.31's one more date's read (P133, I9.11) changes: `tests/integration/d4/query-count.test.ts` T4.31 (9 requests where 8 were expected, one more `getAll`); `d5/query-count.test.ts` T5.22; `d7/query-count.test.ts` T7.29 (`meta.get` 14 where 13); `d7sp/review-query-count.test.ts`, three cases. Pending decision SC-Q1 (`DECISIONS-PENDING.md`).
