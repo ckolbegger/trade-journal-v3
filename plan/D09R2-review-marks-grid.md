@@ -1,8 +1,8 @@
 # D09R2 — The Review's Marks grid: task breakdown
 
-Definition: not yet in the implementation plan; section 1.2 holds the decisions to record when this breakdown is agreed. Source: the research page `research/review-page-style.html` (its sections 4 to 12), the D08P breakdown's follow-on in its section 10.2, and the user's decisions in `plan/D09R2-drafting-handoff.md` (2026-11-20). Drafted on `claude-opus-5.5` at `5bce5a85`, after D9 closed (tag `claude-opus-5.5-d9`, `10a4689e`).
+Definition: `plan/implementation-plan.md`, "D9R2 — The Review's Marks grid" (decision 123). Source: the research page `research/review-page-style.html` (its sections 4 to 12), the D08P breakdown's follow-on in its section 10.2, and the user's decisions in `plan/D09R2-drafting-handoff.md` (2026-11-20). Drafted on `claude-opus-5.5` at `5bce5a85`, after D9 closed (tag `claude-opus-5.5-d9`, `10a4689e`).
 
-Status: **Draft, not agreed.** Numbering continues from D9A-R: P154, A288 and W71. When agreed it is plan revision 112 with decision 123. Runs after D9, before the coach review of the Review page (`evidence/D09/coach-review-2-prompt.md`).
+Status: **agreed by the user, 2026-11-20** (plan decision 123, revision 112). The three open questions in section 11 are answered and the words W71, W72, W73, W74, W75, W76, W77, W78, W79, W80 and W81 approved. Numbering continued from D9A-R: P154, A288 and W71; the next are P163, A300 and W82. Runs after D9, before the coach review of the Review page (`evidence/D09/coach-review-2-prompt.md`).
 
 **Checked against all of `specs/`, 2026-11-20.** The design specs for the Daily Review, Market Data and the UI contract were read in full, and the rest of `specs/` was swept for constraints on the Review's Marks; what bears on D9R2 is cited where it applies (the delivery contract on unsaved work, AC-JOUR-001 on stored drafts, ADR 0011 on bound keys, AC-PERF-001 on reads). The spec map is retagged: D9 now also reads S039, S042, S043, S046, S091, S094, S096 and S123 (D9R2 has no tag of its own, as D8R and D9A-R had none, so it reads D9's list).
 
@@ -30,7 +30,7 @@ Status: **Draft, not agreed.** Numbering continues from D9A-R: P154, A288 and W7
 
 ### 1.2 Decisions for this breakdown
 
-To record as decision 123 when agreed.
+Recorded as decision 123 (revision 112).
 
 **P154 — The three small fixes are D9R2's first four tasks** (T9R2.1, T9R2.2, T9R2.3, T9R2.4), not a deliverable of their own. Why: they are small (two Light, two Standard), they need no gate of their own, and T9R2.8 extracts Price History's frame into the shared grid while proving Price History looks the same: doing the fixes first means the extraction's before-and-after compare is taken once, on the fixed Price History, instead of moving twice. Running them alone first would cost a second gate, critic and benchmark for four tasks. The Review card's heading fix (T9R2.1) is the same family as tech debt item 11 but touches only the Review card; item 11 stays tech debt (U5).
 
@@ -76,7 +76,7 @@ Each is written into its decision's breakdown when D9R2 is agreed, in the decide
 - **A214 (Journal cards' session lines, D08P), W9 and W1.** Amended: an acknowledged session shows "Acknowledged Unavailable", not "—" named "No Mark"; Price History's tab count counts Missing sessions only, and its line under the table names the Missing and the acknowledged counts (W81).
 - **A216 (cockpit components take plain props).** Clarified: the shared session grid is a cockpit component; the Review's adapter lives in `src/ui/screens/` and imports only its props type and component.
 - **W19 (D08P).** Extended to the Review card: "At the Fri Oct 9 Marks" replaces the heading "Fri Oct 9 close".
-- **The Daily Review design spec** (`specs/design/daily-review.md`, the open result). One sentence added by T9R2.6: the Marks family carries the previous session and each listed Instrument's Marks on the sessions the grid shows, read in the open's read session.
+- **`specs/` is unchanged.** The open result's new fields are additive view fields, as D08P's were (decision 110); no spec sentence is added.
 
 ### 1.4 Working assumptions
 
@@ -206,7 +206,7 @@ Level per decision 122. "Outside `src/ui/`" names what a task changes there.
 | T9R2.3 | Journal cards: an acknowledged Mark, and no "without Marks" merge for it (fix 2) | Standard | No | — |
 | T9R2.4 | Price History's gain and loss colours (fix 3) | Light | No | — |
 | T9R2.5 | Market Data: an Available series point carries its resolution revision | Full | Yes: `src/modules/market-data/market-data.ts` and its test | — |
-| T9R2.6 | Daily Review open: `previousSession` and `earlierMarks`, with no added read | Full | Yes: `src/coordinators/daily-review/` (`types.ts`, `daily-review.ts`, tests); one sentence in `specs/design/daily-review.md` | T9R2.5 |
+| T9R2.6 | Daily Review open: `previousSession` and `earlierMarks`, with no added read | Full | Yes: `src/coordinators/daily-review/` (`types.ts`, `daily-review.ts`, tests) | T9R2.5 |
 | T9R2.7 | The held Review reads earlier Marks; the drafts module | Full | No | T9R2.6 |
 | T9R2.8 | Structural: the shared session grid from Price History's table; Price History unchanged | Standard | No | T9R2.2, T9R2.4 |
 | T9R2.9 | The shared grid's editable cells and its turned layout | Standard | No | T9R2.8 |
@@ -260,7 +260,7 @@ The strict expectations at `market-data.test.ts` 648 and 700 get exactly the new
 
 ### T9R2.6 — The Review open's earlier Marks (Full)
 
-Files: `src/coordinators/daily-review/types.ts`, `daily-review.ts` (`assemble`), `daily-review.test.ts`, `specs/design/daily-review.md` (one sentence).
+Files: `src/coordinators/daily-review/types.ts`, `daily-review.ts` (`assemble`), `daily-review.test.ts`.
 1. it should give the Marks family the previous session's date
 2. it should leave the previous session out when the Review Date has none
 3. it should list an Instrument's Mark on the previous session with its resolution revision
