@@ -221,4 +221,4 @@ The main session saves the reports itself (`implementing.md`, "Final report"). A
 
 ### Open questions
 
-- None yet.
+- The location checks found 2 unit failures in `tools/wording-rules.test.ts` from the D9 stage C retro commit (`78a10e66`). The user chose a tools-only fix before T9R2.1 (2026-11-20): commit `ceefd574` (`chore(retro-D09C)`). The section 1 check `git diff --stat 78a10e66 HEAD -- …` therefore also lists `tools/wording-rules.test.ts` from that commit.

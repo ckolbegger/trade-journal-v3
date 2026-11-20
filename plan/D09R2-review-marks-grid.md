@@ -470,7 +470,7 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 
 | Task | Level | Status | Commits |
 |---|---|---|---|
-| T9R2.1 | Light | Not started | |
+| T9R2.1 | Light | In progress from `ceefd574` | |
 | T9R2.2 | Standard | Not started | |
 | T9R2.3 | Standard | Not started | |
 | T9R2.4 | Light | Not started | |
