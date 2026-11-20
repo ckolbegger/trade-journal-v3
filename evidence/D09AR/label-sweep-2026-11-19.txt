@@ -1,0 +1,155 @@
+BREN	1280	Mon Nov 9 · 6 of 11	P&L chart	stake-tag risk	Current Risk $244	drawn over by circle pnl-dot
+BREN	1280	Tue Nov 10 · 7 of 11	P&L chart	stake-tag risk	Current Risk $508	drawn over by circle pnl-dot
+BREN	1280	Thu Nov 12 · 9 of 11	P&L chart	banked-label	Banked +$478	drawn over by path marker-line
+BREN	1280	Thu Nov 12 · 9 of 11	P&L chart	banked-label	Banked +$478	drawn over by path cursor
+BREN	1280	Thu Nov 12 · 9 of 11	P&L chart	past-label	$26 past the Target	drawn over by path marker-line
+BREN	1280	Thu Nov 12 · 9 of 11	P&L chart	past-label	$26 past the Target	drawn over by path flag-pole
+BREN	1280	Thu Nov 12 · 9 of 11	P&L chart	past-label	$26 past the Target	drawn over by path flag-pennant
+BREN	1280	Thu Nov 12 · 9 of 11	P&L chart	crossing-label target	Target reached	drawn over by path result-line target
+BREN	1280	Thu Nov 12 · 9 of 11	P&L chart	crossing-label target	Target reached	drawn over by rect hatch target
+BREN	1280	Fri Nov 13 · 10 of 11	P&L chart	banked-label	Banked +$478	drawn over by path marker-line
+BREN	1280	Fri Nov 13 · 10 of 11	P&L chart	banked-label	Banked +$478	drawn over by path cursor
+BREN	1280	Fri Nov 13 · 10 of 11	P&L chart	banked-label	Banked +$478	drawn over by path stake-beam risk
+BREN	1280	Fri Nov 13 · 10 of 11	P&L chart	stake-tag risk	Current Risk $822	drawn over by path marker-line
+BREN	1280	Fri Nov 13 · 10 of 11	P&L chart	past-label	$182 past the Target	drawn over by path marker-line
+BREN	1280	Mon Nov 16 · 11 of 11	P&L chart	banked-label	Banked +$478	drawn over by path marker-line
+BREN	1280	Mon Nov 16 · 11 of 11	P&L chart	past-label	$32 past the Target	drawn over by rect hatch target
+BREN	1280	Mon Nov 16 · 11 of 11	P&L chart	past-label	$32 past the Target	drawn over by circle pnl-dot
+BREN	1280	Mon Nov 16 · 11 of 11	P&L chart	marker-label	Sold 2 at $4.00	drawn over by path result-line target
+BREN	1280	Mon Nov 16 · 11 of 11	P&L chart	marker-label	Sold 2 at $4.00	drawn over by rect hatch target
+BREN	320	Tue Nov 3 · 2 of 11	P&L chart	slider-value	−$48	drawn over by circle pnl-dot
+BREN	320	Thu Nov 5 · 4 of 11	P&L chart	slider-value	−$124	drawn over by path break-even
+BREN	320	Thu Nov 5 · 4 of 11	P&L chart	slider-value	−$124	drawn over by circle pnl-dot
+BREN	320	Fri Nov 6 · 5 of 11	P&L chart	slider-value	−$156	drawn over by path break-even
+BREN	320	Thu Nov 12 · 9 of 11	P&L chart	slider-value	+$982	drawn over by path flag-pennant
+BREN	320	Fri Nov 13 · 10 of 11	P&L chart	slider-value	+$1,138	drawn over by path marker-line
+BREN	320	Mon Nov 16 · 11 of 11	P&L chart	slider-value	+$988	drawn over by rect hatch target
+BREN	320	Mon Nov 16 · 11 of 11	P&L chart	slider-value	+$988	drawn over by circle pnl-dot
+AXIO	1280	Mon Nov 9 · 6 of 11	price strip	mark-label	$45.20	drawn over by path price-line stop
+AXIO	1280	Mon Nov 9 · 6 of 11	P&L chart	banked-label	Realized −$440	drawn over by path marker-line
+AXIO	1280	Mon Nov 9 · 6 of 11	P&L chart	banked-label	Realized −$440	drawn over by path cursor
+AXIO	1280	Mon Nov 9 · 6 of 11	P&L chart	past-label	$180 past the Stop	drawn over by path marker-line
+AXIO	1280	Tue Nov 10 · 7 of 11	P&L chart	banked-label	Realized −$440	drawn over by path marker-line
+AXIO	1280	Tue Nov 10 · 7 of 11	P&L chart	banked-label	Realized −$440	drawn over by path flag-pole
+AXIO	1280	Tue Nov 10 · 7 of 11	P&L chart	banked-label	Realized −$440	drawn over by path flag-pennant
+AXIO	1280	Tue Nov 10 · 7 of 11	P&L chart	stake-tag reward	Remaining Reward $1,020	drawn over by path marker-line
+AXIO	1280	Tue Nov 10 · 7 of 11	P&L chart	stake-tag reward	Remaining Reward $1,020	drawn over by circle pnl-dot
+AXIO	1280	Tue Nov 10 · 7 of 11	P&L chart	crossing-label stop	Stop breached	drawn over by rect hatch stop
+AXIO	1280	Tue Nov 10 · 7 of 11	P&L chart	marker-label	Sold 100 at $45.60	drawn over by path cursor
+AXIO	1280	Wed Nov 11 · 8 of 11	price strip	mark-label	$44.90	drawn over by path price-line stop
+AXIO	1280	Wed Nov 11 · 8 of 11	P&L chart	banked-label	Realized −$440	drawn over by path marker-line
+AXIO	1280	Wed Nov 11 · 8 of 11	P&L chart	banked-label	Realized −$440	drawn over by path flag-pole
+AXIO	1280	Wed Nov 11 · 8 of 11	P&L chart	banked-label	Realized −$440	drawn over by path flag-pennant
+AXIO	1280	Wed Nov 11 · 8 of 11	P&L chart	crossing-label stop	Stop breached	drawn over by rect hatch stop
+AXIO	1280	Wed Nov 11 · 8 of 11	P&L chart	crossing-label stop	Stop breached	drawn over by circle pnl-dot
+AXIO	1280	Thu Nov 12 · 9 of 11	P&L chart	banked-label	Realized −$440	drawn over by path marker-line
+AXIO	1280	Thu Nov 12 · 9 of 11	P&L chart	banked-label	Realized −$440	drawn over by path flag-pole
+AXIO	1280	Thu Nov 12 · 9 of 11	P&L chart	banked-label	Realized −$440	drawn over by path flag-pennant
+AXIO	1280	Thu Nov 12 · 9 of 11	P&L chart	crossing-label stop	Stop breached	drawn over by rect hatch stop
+AXIO	1280	Thu Nov 12 · 9 of 11	P&L chart	crossing-label stop	Stop breached	drawn over by circle pnl-dot
+AXIO	1280	Fri Nov 13 · 10 of 11	price strip	mark-label	$45.10	drawn over by path price-line stop
+AXIO	1280	Fri Nov 13 · 10 of 11	P&L chart	banked-label	Realized −$440	drawn over by path marker-line
+AXIO	1280	Fri Nov 13 · 10 of 11	P&L chart	banked-label	Realized −$440	drawn over by path flag-pole
+AXIO	1280	Fri Nov 13 · 10 of 11	P&L chart	banked-label	Realized −$440	drawn over by path flag-pennant
+AXIO	1280	Fri Nov 13 · 10 of 11	P&L chart	crossing-label stop	Stop breached	drawn over by rect hatch stop
+AXIO	1280	Fri Nov 13 · 10 of 11	P&L chart	crossing-label stop	Stop breached	drawn over by circle pnl-dot
+AXIO	1280	Mon Nov 16 · 11 of 11	P&L chart	banked-label	Realized −$440	drawn over by path marker-line
+AXIO	1280	Mon Nov 16 · 11 of 11	P&L chart	banked-label	Realized −$440	drawn over by path flag-pole
+AXIO	1280	Mon Nov 16 · 11 of 11	P&L chart	banked-label	Realized −$440	drawn over by path flag-pennant
+AXIO	1280	Mon Nov 16 · 11 of 11	P&L chart	crossing-label stop	Stop breached	drawn over by rect hatch stop
+AXIO	1280	Mon Nov 16 · 11 of 11	P&L chart	crossing-label stop	Stop breached	drawn over by circle pnl-dot
+AXIO	320	Wed Nov 4 · 3 of 11	P&L chart	slider-value	−$160	drawn over by path break-even
+AXIO	320	Wed Nov 4 · 3 of 11	P&L chart	slider-value	−$160	drawn over by circle pnl-dot
+AXIO	320	Thu Nov 5 · 4 of 11	P&L chart	slider-value	−$280	drawn over by circle pnl-dot
+AXIO	320	Fri Nov 6 · 5 of 11	P&L chart	slider-value	−$380	drawn over by circle pnl-dot
+AXIO	320	Mon Nov 9 · 6 of 11	price strip	mark-label	$45.20	drawn over by path price-line stop
+AXIO	320	Mon Nov 9 · 6 of 11	price strip	mark-label	$45.20	drawn over by circle mark
+AXIO	320	Mon Nov 9 · 6 of 11	P&L chart	slider-value	−$920	drawn over by path result-line stop
+AXIO	320	Mon Nov 9 · 6 of 11	P&L chart	slider-value	−$920	drawn over by path flag-pole
+AXIO	320	Mon Nov 9 · 6 of 11	P&L chart	slider-value	−$920	drawn over by rect hatch stop
+AXIO	320	Tue Nov 10 · 7 of 11	price strip	mark-label	$45.80	drawn over by path marker-line
+AXIO	320	Tue Nov 10 · 7 of 11	P&L chart	slider-value	−$860	drawn over by path marker-line
+AXIO	320	Tue Nov 10 · 7 of 11	P&L chart	slider-value	−$860	drawn over by path flag-pole
+AXIO	320	Wed Nov 11 · 8 of 11	price strip	mark-label	$44.90	drawn over by path price-line stop
+AXIO	320	Wed Nov 11 · 8 of 11	P&L chart	slider-value	−$950	drawn over by path result-line stop
+AXIO	320	Wed Nov 11 · 8 of 11	P&L chart	slider-value	−$950	drawn over by rect hatch stop
+AXIO	320	Thu Nov 12 · 9 of 11	price strip	mark-label	$44.30	drawn over by path price-line stop
+AXIO	320	Thu Nov 12 · 9 of 11	P&L chart	slider-value	−$1,010	drawn over by path result-line stop
+AXIO	320	Thu Nov 12 · 9 of 11	P&L chart	slider-value	−$1,010	drawn over by rect hatch stop
+AXIO	320	Fri Nov 13 · 10 of 11	price strip	mark-label	$45.10	drawn over by path price-line stop
+AXIO	320	Fri Nov 13 · 10 of 11	P&L chart	slider-value	−$930	drawn over by path result-line stop
+AXIO	320	Fri Nov 13 · 10 of 11	P&L chart	slider-value	−$930	drawn over by rect hatch stop
+AXIO	320	Mon Nov 16 · 11 of 11	price strip	mark-label	$44.00	drawn over by circle mark
+AXIO	320	Mon Nov 16 · 11 of 11	P&L chart	slider-value	−$1,040	drawn over by rect hatch stop
+DALE_HOLD	1280	Wed Nov 4 · 3 of 11	P&L chart	stake-tag reward	Remaining Reward $822	drawn over by path break-even
+DALE_HOLD	1280	Mon Nov 9 · 6 of 11	P&L chart	stake-tag reward	Remaining Reward $1,164	drawn over by circle pnl-dot
+DALE_HOLD	1280	Mon Nov 16 · 11 of 11	price strip	mark-label	$53.20	drawn over by path price-line stop
+DALE_HOLD	320	Tue Nov 3 · 2 of 11	P&L chart	slider-value	−$216	drawn over by path break-even
+DALE_HOLD	320	Tue Nov 3 · 2 of 11	P&L chart	slider-value	−$216	drawn over by circle pnl-dot
+DALE_HOLD	320	Wed Nov 4 · 3 of 11	price strip	mark-label	$58.40	drawn over by circle mark
+DALE_HOLD	320	Wed Nov 4 · 3 of 11	P&L chart	slider-value	−$378	drawn over by circle pnl-dot
+DALE_HOLD	320	Thu Nov 5 · 4 of 11	price strip	mark-label	$58.80	drawn over by path price-line strike
+DALE_HOLD	320	Thu Nov 5 · 4 of 11	P&L chart	slider-value	−$222	drawn over by path break-even
+DALE_HOLD	320	Fri Nov 6 · 5 of 11	price strip	mark-label	$57.60	drawn over by circle mark
+DALE_HOLD	320	Mon Nov 9 · 6 of 11	price strip	mark-label	$56.90	drawn over by circle mark
+DALE_HOLD	320	Mon Nov 9 · 6 of 11	P&L chart	slider-value	−$720	drawn over by circle pnl-dot
+DALE_HOLD	320	Tue Nov 10 · 7 of 11	price strip	price-line-label strike	Strike $57.50	drawn over by path mark-line
+DALE_HOLD	320	Tue Nov 10 · 7 of 11	price strip	price-line-label strike	Strike $57.50	drawn over by circle mark
+DALE_HOLD	320	Tue Nov 10 · 7 of 11	price strip	mark-label	$55.80	drawn over by circle mark
+DALE_HOLD	320	Wed Nov 11 · 8 of 11	price strip	price-line-label strike	Strike $57.50	drawn over by path mark-line
+DALE_HOLD	320	Wed Nov 11 · 8 of 11	price strip	price-line-label strike	Strike $57.50	drawn over by circle mark
+DALE_HOLD	320	Wed Nov 11 · 8 of 11	price strip	mark-label	$55.10	drawn over by circle mark
+DALE_HOLD	320	Wed Nov 11 · 8 of 11	P&L chart	slider-value	−$1,380	drawn over by circle pnl-dot
+DALE_HOLD	320	Thu Nov 12 · 9 of 11	price strip	price-line-label strike	Strike $57.50	drawn over by path mark-line
+DALE_HOLD	320	Thu Nov 12 · 9 of 11	price strip	price-line-label strike	Strike $57.50	drawn over by circle mark
+DALE_HOLD	320	Thu Nov 12 · 9 of 11	P&L chart	slider-value	−$1,554	drawn over by circle pnl-dot
+DALE_HOLD	320	Fri Nov 13 · 10 of 11	price strip	price-line-label strike	Strike $57.50	drawn over by path mark-line
+DALE_HOLD	320	Fri Nov 13 · 10 of 11	price strip	price-line-label strike	Strike $57.50	drawn over by circle mark
+DALE_HOLD	320	Fri Nov 13 · 10 of 11	price strip	mark-label	$53.70	drawn over by circle mark
+DALE_HOLD	320	Fri Nov 13 · 10 of 11	P&L chart	slider-value	−$1,962	drawn over by rect hatch stop
+DALE_HOLD	320	Mon Nov 16 · 11 of 11	price strip	price-line-label strike	Strike $57.50	drawn over by path mark-line
+DALE_HOLD	320	Mon Nov 16 · 11 of 11	price strip	price-line-label strike	Strike $57.50	drawn over by circle mark
+DALE_HOLD	320	Mon Nov 16 · 11 of 11	P&L chart	slider-value	−$2,088	drawn over by rect hatch stop
+DALE_HOLD	320	Mon Nov 16 · 11 of 11	P&L chart	slider-value	−$2,088	drawn over by circle pnl-dot
+CORV	1280	Wed Nov 4 · 3 of 11	price strip	mark-label	$79.40	drawn over by path price-line strike
+CORV	1280	Wed Nov 4 · 3 of 11	P&L chart	stake-tag risk	Current Risk $612	drawn over by path break-even
+CORV	1280	Wed Nov 4 · 3 of 11	P&L chart	stake-tag risk	Current Risk $612	drawn over by circle pnl-dot
+CORV	1280	Thu Nov 5 · 4 of 11	P&L chart	stake-tag risk	Current Risk $945	drawn over by circle pnl-dot
+CORV	1280	Fri Nov 6 · 5 of 11	P&L chart	stake-tag risk	Current Risk $1,245	drawn over by circle pnl-dot
+CORV	1280	Fri Nov 6 · 5 of 11	P&L chart	past-label	$60 past the Target	drawn over by path flag-pole
+CORV	1280	Fri Nov 6 · 5 of 11	P&L chart	past-label	$60 past the Target	drawn over by path flag-pennant
+CORV	1280	Fri Nov 6 · 5 of 11	P&L chart	crossing-label target	Target reached	drawn over by path result-line target
+CORV	1280	Fri Nov 6 · 5 of 11	P&L chart	crossing-label target	Target reached	drawn over by rect hatch target
+CORV	1280	Tue Nov 10 · 7 of 11	P&L chart	no-mark-label	No Mark	drawn over by path result-line stop
+CORV	1280	Wed Nov 11 · 8 of 11	P&L chart	no-mark-label	No Mark	drawn over by path result-line stop
+CORV	1280	Thu Nov 12 · 9 of 11	P&L chart	no-mark-label	No Mark	drawn over by path result-line stop
+CORV	1280	Fri Nov 13 · 10 of 11	P&L chart	no-mark-label	No Mark	drawn over by path result-line stop
+CORV	1280	Fri Nov 13 · 10 of 11	P&L chart	past-label	$90 past the Target	drawn over by rect hatch target
+CORV	1280	Fri Nov 13 · 10 of 11	P&L chart	past-label	$90 past the Target	drawn over by circle pnl-dot
+CORV	1280	Mon Nov 16 · 11 of 11	P&L chart	no-mark-label	No Mark	drawn over by path result-line stop
+CORV	320	Tue Nov 3 · 2 of 11	price strip	mark-label	$80.60	drawn over by circle mark
+CORV	320	Wed Nov 4 · 3 of 11	price strip	mark-label	$79.40	drawn over by path price-line strike
+CORV	320	Fri Nov 6 · 5 of 11	price strip	mark-label	$76.50	drawn over by circle mark
+CORV	320	Mon Nov 9 · 6 of 11	price strip	price-line-label strike	Strike $80	drawn over by path mark-line
+CORV	320	Mon Nov 9 · 6 of 11	price strip	price-line-label strike	Strike $80	drawn over by circle mark
+CORV	320	Tue Nov 10 · 7 of 11	price strip	price-line-label strike	Strike $80	drawn over by path mark-line
+CORV	320	Tue Nov 10 · 7 of 11	price strip	price-line-label strike	Strike $80	drawn over by circle mark
+CORV	320	Tue Nov 10 · 7 of 11	price strip	mark-label	$76.20	drawn over by circle mark
+CORV	320	Tue Nov 10 · 7 of 11	P&L chart	no-mark-label	No Mark	drawn over by path result-line stop
+CORV	320	Wed Nov 11 · 8 of 11	price strip	price-line-label strike	Strike $80	drawn over by path mark-line
+CORV	320	Wed Nov 11 · 8 of 11	price strip	price-line-label strike	Strike $80	drawn over by circle mark
+CORV	320	Wed Nov 11 · 8 of 11	price strip	mark-label	$75.40	drawn over by circle mark
+CORV	320	Wed Nov 11 · 8 of 11	P&L chart	no-mark-label	No Mark	drawn over by path result-line stop
+CORV	320	Thu Nov 12 · 9 of 11	price strip	price-line-label strike	Strike $80	drawn over by path mark-line
+CORV	320	Thu Nov 12 · 9 of 11	price strip	price-line-label strike	Strike $80	drawn over by circle mark
+CORV	320	Thu Nov 12 · 9 of 11	price strip	mark-label	$74.60	drawn over by circle mark
+CORV	320	Thu Nov 12 · 9 of 11	P&L chart	no-mark-label	No Mark	drawn over by path result-line stop
+CORV	320	Fri Nov 13 · 10 of 11	price strip	price-line-label strike	Strike $80	drawn over by path mark-line
+CORV	320	Fri Nov 13 · 10 of 11	price strip	price-line-label strike	Strike $80	drawn over by circle mark
+CORV	320	Fri Nov 13 · 10 of 11	P&L chart	no-mark-label	No Mark	drawn over by path result-line stop
+CORV	320	Fri Nov 13 · 10 of 11	P&L chart	slider-value	+$957	drawn over by rect hatch target
+CORV	320	Fri Nov 13 · 10 of 11	P&L chart	slider-value	+$957	drawn over by circle pnl-dot
+CORV	320	Mon Nov 16 · 11 of 11	price strip	price-line-label strike	Strike $80	drawn over by path mark-line
+CORV	320	Mon Nov 16 · 11 of 11	price strip	price-line-label strike	Strike $80	drawn over by circle mark
+CORV	320	Mon Nov 16 · 11 of 11	price strip	mark-label	$74.20	drawn over by circle mark
+CORV	320	Mon Nov 16 · 11 of 11	P&L chart	no-mark-label	No Mark	drawn over by path result-line stop
