@@ -107,7 +107,7 @@ Read [.claude/docs/implementing.md](../.claude/docs/implementing.md) first, all 
 - **The design:** `prototypes/replay/round-2.html`'s chips and the line under the charts, and `prototypes/replay/checks/model.js` (A258's reasons and thresholds). The prototype is a picture, not code to port: where it and the breakdown differ, the breakdown wins.
 - **Evidence from D9A-R:** `evidence/D09AR/report.md`, `evidence/D09AR/critic-3.md` (its "Minor observations"), and `evidence/D09AR/tech-debt.md`.
 
-`specs/` and the frozen plan are read-only. A deviation, or a question the specs and plan leave to the user, is a pending decision (decision 113 as amended): ask in an ordinary message, one question at a time, queue any other in `evidence/D09/DECISIONS-PENDING.md`, and pause only the tasks it blocks. An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`. The next revision is r108, the next decision 119, and the breakdown's numbering continues at P154, A288 and W71. Editing the Progress section alone is not a revision.
+`specs/` and the frozen plan are read-only. A deviation, or a question the specs and plan leave to the user, is a pending decision (decision 113 as amended): ask in an ordinary message, one question at a time, queue any other in `evidence/D09/DECISIONS-PENDING.md`, and pause only the tasks it blocks. An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`. Revision 108 (decision 119, the user's SB-Q2 answer) is the frozen plan from T9.20-D1 on. The next revision is r109, the next decision 120, and the breakdown's numbering continues at P154, A288 and W71. Editing the Progress section alone is not a revision.
 
 ## 3. Stage B specifics
 
