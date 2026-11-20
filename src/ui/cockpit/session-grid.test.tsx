@@ -132,6 +132,16 @@ describe('Session grid: editable cells and the turned layout (P158 to P161)', ()
     expect(rule).toMatch(/(min-)?height:\s*44px/);
   });
 
+  // T9R2.4 (T9R2.9-B2): a pressable cell keeps the gain or loss colour its cell carries.
+  it('should keep a pressable cell gain or loss colour', () => {
+    const { container } = grid({ columns: [column('2026-10-08', 'Thu', 'Oct 8', [{ text: '+1.20', tone: 'gain', label: 'NVDA Mark, Thu Oct 8', id: 'nvda-1008' }])] });
+    const cell = within(container).getByRole('button', { name: 'NVDA Mark, Thu Oct 8' }).closest('td');
+    expect(cell?.classList.contains('gain')).toBe(true);
+    const css = readFileSync('src/ui/cockpit/styles/session-grid.css', 'utf8');
+    const rule = /button\.session-grid-press\s*\{([^}]*)\}/.exec(css)?.[1] ?? '';
+    expect(rule).toMatch(/color:\s*inherit/);
+  });
+
   // P161.
   it('should render sessions as rows and Instruments as columns when turned, keeping every cell name', () => {
     const columns = [

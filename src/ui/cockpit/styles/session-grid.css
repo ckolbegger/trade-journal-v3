@@ -23,6 +23,7 @@ button.session-grid-press {
   width: auto;
   border-color: transparent;
   background: transparent;
+  color: inherit;
   cursor: pointer;
 }
 button.session-grid-draft {
