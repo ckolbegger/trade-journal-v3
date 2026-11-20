@@ -938,3 +938,15 @@ Decisions recorded:
 - The Open list's order for the four Trades at Fri 11-13 is DALE (past its Stop), BREN, CORV (past the Target), AXIO (between the lines), the same as the Review's walk.
 - The Settlement Due row (R-DALE-U read at Mon 11-23) shows the dashed track, named "Settlement Due: DALE Nov 20 $57.50 Put Stop −$1,536.00, Target +$444.00." (B9.9's second case; T9.34's unit case had the only cover before).
 - Not mutation-tested: the axe scans of B9.11.
+
+### T9.38 Stage C: browser suite (main session's record)
+
+Commit `94be7273` (the subagent's own subsection above holds its cases and mutations). 8 cases, all first-run passes with mutations; `test:e2e:4` 117 passed, 4 skipped in 5.7 min; the acceptance script 9 of 9. Subagent notes: `tdd.sh` wraps vitest only, so rows were logged by hand; the Review walk re-sorts after a Mark is saved (existing behaviour); list reads are polled until whole; B9.11's axe scans have no mutation check.
+
+ocr `94be7273` (`ocr/T9.38-94be7273.json`):
+
+| Severity | Location | Claim | Verdict | Action |
+|---|---|---|---|---|
+| medium | `e2e/d9/meter-a11y.spec.ts:101` | "Shape and words as well as colour" checks only `data-shape`, `data-fill`, `data-tone` and the `meter-past` count, never the rendered shape, hatch or outline; deleting the CSS rules in `meter.css` would leave it green | Valid (test strength) | T9.38-B1 |
+
+- **T9.38-B1.** Defect: the case would pass with the meter's non-colour cues gone. Case: *it should show the square pointer, the hatch and the outlined open fill in the rendered styles, not only in attributes*.

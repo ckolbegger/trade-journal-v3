@@ -1,0 +1,161 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 1,
+    "total_tokens": 217341,
+    "input_tokens": 215348,
+    "output_tokens": 1993,
+    "cache_read_tokens": 18304,
+    "elapsed": "1m21s"
+  },
+  "tool_calls": {
+    "total": 23,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 10,
+      "file_find": 1,
+      "file_read": 11
+    },
+    "failure": 1,
+    "failure_by_tool": {
+      "file_read": 1
+    },
+    "failure_details": [
+      {
+        "tool_call_number": 20,
+        "tool_name": "file_read",
+        "file_path": "e2e/d9/meter-a11y.spec.ts,e2e/d9/meter-detail.spec.ts,e2e/d9/meter-review.spec.ts,e2e/d9/open-list.spec.ts,e2e/d9/support.ts",
+        "arguments": "{\"file_path\": \"src/ui/screens/Review.tsx\", \"start_line\": 1, \"end_line\": 160}",
+        "error": "file \"src/ui/screens/Review.tsx\" not found: git show 94be72735c195e61181724f852206d3c50e02099:src/ui/screens/Review.tsx: exit status 128: fatal: path 'src/ui/screens/Review.tsx' does not exist in '94be72735c195e61181724f852206d3c50e02099'\n"
+      }
+    ]
+  },
+  "comments": [
+    {
+      "path": "e2e/d9/meter-a11y.spec.ts",
+      "content": "These assertions verify presentation metadata rather than the rendered colour-independent cues. The pointer's round/square distinction is implemented by border-radius, hatching by a repeating gradient, and the open/realized distinction by background and box-shadow rules in meter.css. Removing those CSS rules would leave these assertions passing (and axe cannot detect the lost meaning). Add computed-style checks or visual assertions for the pointer geometry, hatching, and outlined versus solid portions so this accessibility regression is actually caught.",
+      "existing_code": "      await expect(meterOf(symbol).getByTestId('meter-pointer'), symbol).toHaveAttribute('data-shape', shape);\n      await expect(meterOf(symbol).getByTestId('meter-past'), symbol).toHaveCount(1);",
+      "start_line": 101,
+      "end_line": 102,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "D9 meter and open-list end-to-end tests with shared support",
+      "files": [
+        "e2e/d9/meter-a11y.spec.ts",
+        "e2e/d9/meter-detail.spec.ts",
+        "e2e/d9/meter-review.spec.ts",
+        "e2e/d9/open-list.spec.ts",
+        "e2e/d9/support.ts"
+      ]
+    }
+  ],
+  "session_id": "5a375428-1306-4d8c-952f-a87a16075ea8",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "5a375428-1306-4d8c-952f-a87a16075ea8",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "94be7273",
+      "resolved_base": "51d81fd503f05c9c307999d29946e80c68e9854d",
+      "resolved_head": "94be72735c195e61181724f852206d3c50e02099",
+      "exact_range": "51d81fd503f05c9c307999d29946e80c68e9854d..94be72735c195e61181724f852206d3c50e02099",
+      "source_artifact_sha256": "f9316c7b3a7f5684163f1b42c68f2eb51c602ef152c6172b650b26bc1c7c250e"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "369ac85f9dd63031ba62f4ed3dde5347e4f21f38f96f2f74cba90666800120aa",
+          "path": "e2e/d9/meter-detail.spec.ts",
+          "fingerprint": "2187c9eaef55e974151c93fac70acd7ac7186119ec5d991128cdba061d140ea4"
+        },
+        {
+          "item_id": "91f3e756f66540ad5a5e6954235dea0c39b76c19a957b44c0a56a7fdb96188d1",
+          "path": "e2e/d9/meter-review.spec.ts",
+          "fingerprint": "a69c7e516cc0a828a8cb04410d09a106aded585b577dcf287d2116f3851d7934"
+        },
+        {
+          "item_id": "d0126439061216e58eb2b1a6bab019f2d20601558a9531d4100a29b4b9c5c3f9",
+          "path": "e2e/d9/support.ts",
+          "fingerprint": "875c8bfd14f348bd984b4623e13c74f06873ce1c6277366ac5f20482bc88c3d9"
+        },
+        {
+          "item_id": "d73e074139f828bd2c8773ff2f12ef9b990d7b617b6f0fc7fda120b1be6591a8",
+          "path": "e2e/d9/open-list.spec.ts",
+          "fingerprint": "44b7cdd876bc336bbe7dfb0be433ce8cf89030dabbbb190fd6c578cca9d6ff60"
+        },
+        {
+          "item_id": "fb5049ab86c884db384c1c2dd8b31d070c143c24ab67a3419eec49a392048dd4",
+          "path": "e2e/d9/meter-a11y.spec.ts",
+          "fingerprint": "e9f6ce0addd8a27fd0c44e9d87634f37f2f4e0036cca83376083ccf3b16e3826"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "369ac85f9dd63031ba62f4ed3dde5347e4f21f38f96f2f74cba90666800120aa",
+          "path": "e2e/d9/meter-detail.spec.ts",
+          "fingerprint": "2187c9eaef55e974151c93fac70acd7ac7186119ec5d991128cdba061d140ea4"
+        },
+        {
+          "item_id": "91f3e756f66540ad5a5e6954235dea0c39b76c19a957b44c0a56a7fdb96188d1",
+          "path": "e2e/d9/meter-review.spec.ts",
+          "fingerprint": "a69c7e516cc0a828a8cb04410d09a106aded585b577dcf287d2116f3851d7934"
+        },
+        {
+          "item_id": "d0126439061216e58eb2b1a6bab019f2d20601558a9531d4100a29b4b9c5c3f9",
+          "path": "e2e/d9/support.ts",
+          "fingerprint": "875c8bfd14f348bd984b4623e13c74f06873ce1c6277366ac5f20482bc88c3d9"
+        },
+        {
+          "item_id": "d73e074139f828bd2c8773ff2f12ef9b990d7b617b6f0fc7fda120b1be6591a8",
+          "path": "e2e/d9/open-list.spec.ts",
+          "fingerprint": "44b7cdd876bc336bbe7dfb0be433ce8cf89030dabbbb190fd6c578cca9d6ff60"
+        },
+        {
+          "item_id": "fb5049ab86c884db384c1c2dd8b31d070c143c24ab67a3419eec49a392048dd4",
+          "path": "e2e/d9/meter-a11y.spec.ts",
+          "fingerprint": "e9f6ce0addd8a27fd0c44e9d87634f37f2f4e0036cca83376083ccf3b16e3826"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "59c3fae54b4c879a962e6279adeb28d1ff0d7cadaf2a4ff5b74d90d22e502683",
+          "path": "evidence/D09/tdd-log/T9.38.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "e7e11590fb2e53c162c66c1a3130387a5153362a7cb2d852919a2090ff5801fb",
+          "path": "evidence/D09/structural.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 81180
+  }
+}
