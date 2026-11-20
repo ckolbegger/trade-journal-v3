@@ -6,12 +6,12 @@ import type { ChipsProps, VolatilityPoint } from './chips.tsx';
 // W47: the chips of each session, selected and formatted from the view's estimates (T9.23). A fraction is shown as a percentage and a share
 // count as a whole number; nothing is worked out here (ADR 0001).
 type ViewSession = TradeReplayView['sessions'][number];
-type Estimate = NonNullable<ViewSession['estimates']>['impliedVolatility'];
+export type Estimate = NonNullable<ViewSession['estimates']>['impliedVolatility'];
 
-const TAG = 'estimate';
+export const TAG = 'estimate';
 
 // W49: why an estimate is Unavailable, as the screen words it.
-const REASONS: Partial<Record<Extract<Estimate, { kind: 'Unavailable' }>['reason'], string>> = {
+export const REASONS: Partial<Record<Extract<Estimate, { kind: 'Unavailable' }>['reason'], string>> = {
   MarkMissing: 'A Mark is missing.',
   ExpirationSession: 'On the expiration session the price no longer depends on volatility.',
   AtOrBelowExerciseValue: "The Mark is at or below the option's exercise value, so no volatility fits.",
@@ -23,17 +23,22 @@ const REASONS: Partial<Record<Extract<Estimate, { kind: 'Unavailable' }>['reason
 const percent = (fraction: number): string => `${(fraction * 100).toFixed(1)}%`;
 
 // The words of a volatility: its percentage, "Unavailable", or none where it does not apply (stock).
-function volatilityWords(estimate: Estimate): string | undefined {
+export function volatilityWords(estimate: Estimate): string | undefined {
   if (estimate.kind === 'Estimate') return percent(estimate.value);
   return estimate.kind === 'Unavailable' ? 'Unavailable' : undefined;
 }
 
 // "Behaves like ≈ 183 shares", "Behaves like ≈ short 122 shares" (a long Put), "Behaves like 200 shares" (stock, exact): the share count as a whole number.
-function sharesOf(estimate: Estimate): ChipsProps['shares'] {
+export function shareWords(estimate: Estimate): { readonly text: string; readonly estimate: boolean } | undefined {
   if (estimate.kind !== 'Estimate') return undefined;
   const whole = Math.round(Math.abs(estimate.value));
   const short = estimate.value < 0 && whole > 0 ? 'short ' : '';
-  return { text: `Behaves like ${estimate.exact ? '' : '≈ '}${short}${plural(whole, 'share', 'shares')}`, estimate: estimate.exact !== true };
+  return { text: `${estimate.exact ? '' : '≈ '}${short}${plural(whole, 'share', 'shares')}`, estimate: estimate.exact !== true };
+}
+
+function sharesOf(estimate: Estimate): ChipsProps['shares'] {
+  const found = shareWords(estimate);
+  return found && { text: `Behaves like ${found.text}`, estimate: found.estimate };
 }
 
 // "4 days to expiration", "Expiration session" at 0 days; "Long 2 contracts", "Short 3 contracts": the contracts held come from the view, and a sign becomes the word.

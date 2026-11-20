@@ -7,6 +7,7 @@ import { calculation, signed } from '../../figures.ts';
 import { decimalMoney, money, quantity, rMultiple, shortDate, summaryStrike } from '../../format.ts';
 import { conditionDirection } from '../../screens/option-words.ts';
 import type { PlanBlock, ReadoutGroup, ReadoutValue, StakeGrid, StakePastLineRow, StakeRow } from './replay.types.ts';
+import { REASONS, shareWords, TAG, volatilityWords, type Estimate } from './chips.props.ts';
 import { crossedCondition, headlineOf, markerPlanWords } from './session-words.props.ts';
 import { pastLineWords, ratioWords, ratioWordsOf } from './stake-words.props.ts';
 
@@ -195,12 +196,34 @@ function gapStakeGroup(session: ViewSession): ReadoutGroup | undefined {
   return { title: 'At stake from here, whole Position', rows: [row('Reward to risk', NO_MARK)], grid };
 }
 
+// P121, W47: an estimate's row, tagged "estimate" where it holds a figure (a stock's share count is exact and has no tag); where there is none it reads
+// "Unavailable" with the reason as its hover text (W49); none at all where the estimate does not apply (stock's implied volatility).
+function estimateRow(label: string, estimate: Estimate, words: (found: Estimate) => { readonly text: string; readonly estimate: boolean } | undefined): Row | undefined {
+  if (estimate.kind === 'NotApplicable') return undefined;
+  const found = words(estimate);
+  if (found) return { label, value: figure(found.text), ...(found.estimate && { tag: TAG }) };
+  return { label, value: { kind: 'Unavailable', text: 'Unavailable' }, ...(estimate.kind === 'Unavailable' && REASONS[estimate.reason] && { term: REASONS[estimate.reason]! }) };
+}
+
+// The implied volatility closes the Marks group and the share equivalent the Position group; a session that holds nothing has no estimates.
+function withEstimates(groups: ReadoutGroup[], session: ViewSession): ReadoutGroup[] {
+  const estimates = session.estimates;
+  if (!estimates) return groups;
+  const volatility = estimateRow('Implied volatility', estimates.impliedVolatility, (found) => (found.kind === 'Estimate' ? { text: volatilityWords(found)!, estimate: true } : undefined));
+  const shares = estimateRow('Behaves like', estimates.shareEquivalent, shareWords);
+  const added: Record<string, Row | undefined> = { Marks: volatility, Position: shares };
+  return groups.map((group) => {
+    const extra = added[group.title];
+    return extra ? { ...group, rows: [...group.rows, extra] } : group;
+  });
+}
+
 export function readoutOf(view: TradeReplayView, session: ViewSession): ReadoutGroup[] {
   // A final session has nothing at stake; a session without a Mark keeps only the figures that need none.
   let staked: ReadoutGroup | undefined;
   if (session.final) staked = undefined;
   else if (session.tradePnl.kind === 'Value') staked = stakeGroup(view, session);
   else staked = gapStakeGroup(session);
-  const groups = [goingGroup(session), staked, marksGroup(view, session), positionGroup(session)];
-  return groups.filter((group): group is ReadoutGroup => group !== undefined && (group.rows.length > 0 || group.grid !== undefined));
+  const groups = withEstimates([goingGroup(session), staked, marksGroup(view, session), positionGroup(session)].filter((group): group is ReadoutGroup => group !== undefined), session);
+  return groups.filter((group) => group.rows.length > 0 || group.grid !== undefined);
 }

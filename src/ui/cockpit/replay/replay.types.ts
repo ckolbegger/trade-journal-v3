@@ -149,6 +149,8 @@ export interface ReadoutRow {
   readonly term?: string;
   // A268: the extremes' weight mark, on the Worst case and Max reward rows.
   readonly weight?: ExtremesWeight;
+  // P121: "estimate", on a figure that is an estimate and never a Mark; absent on an exact figure.
+  readonly tag?: string;
 }
 
 // A278: one row of the stake grid. One figure to a cell; each cell is unbreakable, sign included.
@@ -236,6 +238,8 @@ export interface SessionCardRow {
   readonly weight?: ExtremesWeight;
   // A267: the Reward to risk row's odds in full for a screen reader, when its value holds them.
   readonly spoken?: string;
+  // P121: "estimate", on a figure that is an estimate.
+  readonly tag?: string;
 }
 
 // A277: what the adapter builds for one session; the frame adds `id` and `isCurrent`.

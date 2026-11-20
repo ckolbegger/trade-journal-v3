@@ -15,7 +15,8 @@ export { figureParts, type FigurePart } from './figure-parts.ts';
 
 export function cardOf(session: ViewSession, readout: readonly ReadoutGroup[]): SessionCardBody {
   const group = (title: string) => readout.find((g) => g.title === title);
-  const plain = (rows: readonly { label: string; value: ReadoutValue }[] | undefined, only?: readonly string[]): SessionCardRow[] => (rows ?? []).filter((r) => !only || only.includes(r.label)).map(({ label, value }) => ({ label, value }));
+  const plain = (rows: readonly { label: string; value: ReadoutValue; term?: string; tag?: string }[] | undefined, only?: readonly string[]): SessionCardRow[] =>
+    (rows ?? []).filter((r) => !only || only.includes(r.label)).map(({ label, value, term, tag }) => ({ label, value, ...(term && { term }), ...(tag && { tag }) }));
   // The first group is "How it is going" (or "Final result"); the stake group is the one with a grid.
   const going = readout[0];
   const stake = readout.find((g) => g.grid);
@@ -25,7 +26,7 @@ export function cardOf(session: ViewSession, readout: readonly ReadoutGroup[]): 
       ...plain(group('Marks')?.rows),
       // The Trade P&L needs the Mark: a session without one reads the dash, not the reason the readout words (A281).
       ...plain(going?.rows).map((row) => (row.label === 'Trade P&L' && session.tradePnl.kind !== 'Value' ? { ...row, value: NO_MARK } : row)),
-      ...plain(group('Position')?.rows, ['Held']),
+      ...plain(group('Position')?.rows, ['Held', 'Behaves like']),
       ...(stake?.grid?.groups.flatMap((g) => g.rows).map(stakeCardRow) ?? []),
       ...plain(stake?.rows).map((row) => (stake?.grid?.odds ? { ...row, spoken: stake.grid.odds.spoken } : row)),
     ],

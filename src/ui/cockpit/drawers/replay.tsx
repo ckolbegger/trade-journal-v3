@@ -4,6 +4,8 @@ import { chipsOf } from '../replay/chips.props.ts';
 import { CorridorPlot } from '../replay/corridor.tsx';
 import { ReplayFrame } from '../replay/frame.tsx';
 import { replayProps, type ReplayView } from '../replay/replay.props.ts';
+import { SinceLine } from '../replay/since-line.tsx';
+import { sinceOf } from '../replay/since-line.props.ts';
 
 // What a screen's links to the slider's session need to know of it (W46): its date and the Position Change in it (the first, when several).
 export interface SessionLinks {
@@ -35,6 +37,12 @@ export function ReplayDrawer({ replay, links, initialSession, onSessionChange }:
     const found = chips(date);
     return found && <Chips {...found} />;
   };
+  // W48: the "since the session before" line, under the charts.
+  const since = useMemo(() => sinceOf(replay), [replay]);
+  const renderSince = ({ date }: { readonly date: string }) => {
+    const found = since(date);
+    return found && <SinceLine {...found} />;
+  };
   const renderLinks = links
     ? ({ date }: { readonly date: string }) => {
         const session = replay.sessions.find((s) => s.date === date);
@@ -42,5 +50,5 @@ export function ReplayDrawer({ replay, links, initialSession, onSessionChange }:
         return links({ date, ...(changeId !== undefined && { changeId }), hasJournal: (session?.journal.length ?? 0) > 0 });
       }
     : undefined;
-  return <ReplayFrame {...props} renderChips={renderChips} {...(renderLinks && { renderLinks })} />;
+  return <ReplayFrame {...props} renderChips={renderChips} renderSince={renderSince} {...(renderLinks && { renderLinks })} />;
 }

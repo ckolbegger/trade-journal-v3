@@ -77,9 +77,37 @@ button.replay-chip {
   fill: var(--card, #fff);
 }
 
-/* A275: under the charts' column on a wide screen, below the charts on a phone (the grid is one column there). */
-.replay-overlay .replay-card > .replay-chips {
+/* A275: under the charts' column on a wide screen, below the charts on a phone (the grid is one column there). The "since" line (W48) follows the chips. */
+.replay-overlay .replay-card > .replay-chips,
+.replay-overlay .replay-card > .replay-since {
   grid-column: 1;
+}
+
+/* W48: the line under the charts, with the small bar of the parts below it; the bar is a picture and an estimate, so it is dashed like the chips. */
+.replay-since {
+  margin: 6px 0 0;
+  font-size: 0.85rem;
+}
+
+.replay-since .replay-chip-tag,
+.replay-readout-row .replay-chip-tag,
+.replay-card-row .replay-chip-tag {
+  margin-left: 6px;
+}
+
+.replay-since-bar {
+  display: block;
+  width: 160px;
+  max-width: 100%;
+  height: 10px;
+  margin-top: 4px;
+}
+
+.replay-since-bar rect {
+  fill: var(--tint, #ddd);
+  stroke: var(--muted, #777);
+  stroke-dasharray: 3 2;
+  stroke-width: 1;
 }
 
 /* Wide: the readout stands beside every row of the charts' column, so what sits under the charts (the chips, then the "since" line) stays close to them instead of falling below a tall readout. The rows are empty ones, which share out the readout's extra height. */

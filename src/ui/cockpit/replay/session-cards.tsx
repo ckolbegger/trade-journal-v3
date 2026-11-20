@@ -35,6 +35,7 @@ function Row({ row }: { readonly row: SessionCard['rows'][number] }) {
           )}
         </span>
         {row.r && <> · <span data-kind={row.r.kind}>{shown(row.r)}</span></>}
+        {row.tag && <span className="replay-chip-tag">{row.tag}</span>}
         {row.pnl && <> · P&L if hit <span data-kind={row.pnl.kind}>{shown(row.pnl)}</span></>}
       </dd>
     </div>

@@ -85,7 +85,7 @@ export function Readout({ groups }: ReadoutProps) {
           {group.rows.length > 0 && (
             <dl>
               {group.rows.map((row) => (
-                <div key={row.label} className="replay-readout-row" data-row={row.label}>
+                <div key={row.label} className="replay-readout-row" data-row={row.label} title={row.term}>
                   <dt>{row.label}</dt>
                   <dd>
                     {/* The kind is for the styling: an Unavailable figure reads in italics, a Not applicable one muted, apart from a Figure. */}
@@ -105,6 +105,7 @@ export function Readout({ groups }: ReadoutProps) {
                         shown(row.value, true)
                       )}
                     </span>
+                    {row.tag && <span className="replay-chip-tag">{row.tag}</span>}
                     {/* The change line (decision 8) is a block under the figure, on the Trade P&L and each Mark only. */}
                     {row.change && <span className="replay-change"> <Words text={row.change} /></span>}
                   </dd>

@@ -618,3 +618,12 @@ browser-4 stage for `e2e/d9` (which also matches `e2e/d9ar`), from `f7fb30d3` (p
 - P137: no changes. New words: four, in `new-words.md`, "Stage B".
 - ocr (`evidence/D09/ocr/T9.24-d96f7ae8.json`): **No findings.**
 - **Complete run `t9.24`** (on `d96f7ae8`, 2026-11-19: browser tier full (`first matching path since 9c2a0b35: src/ui/cockpit/drawers/replay.tsx`). Unit 217 files, 2,532 tests; integration 135 files, 286 tests; browser-1 126 (5.1 min); browser-2 79 (4.9 min); browser-3 56 passed, **1 failed** (4.4 min): `e2e/d8/responsive-a11y.spec.ts:299` "B8.16 … should complete a Restore with the keyboard only, every focused control showing a focus ring", `TimeoutError: page.waitForEvent … "filechooser"`; browser-4 101 passed, 4 skipped (4.6 min); checks 14 of 14. Not a P138 case. One targeted run alone passed (3.7 s); the whole browser-3 stage rerun once (`t9.24-browser-3-rerun.txt`): 57 passed (4.2 min). Recorded as a flake, not on the known list (tech debt item 3); not a T9.24 regression). `run-complete.sh`: run complete.
+
+### T9.25
+
+- Not committed with a browser run: `npm run build:faults` and the e2e run of `e2e/d9` and `e2e/d9ar` were refused by the sandbox's permission check in this session, so the 320 by 667 fit, the sweep and the one-line checks were not run here; the suite runner's browser tier must cover them.
+- The second `describe` reads "Replay: estimates in the readout and the session cards", following D9A-R's section 10 (the planned wording said "the table"); this is not a P137 change.
+- Titles shortened only for vitest's `-t`: the quotes, dollar signs, plus signs and apostrophes of the quoted sentences are left out of the case titles; the assertions quote the sentences in full.
+- P137: no changes. New words: listed in `new-words.md`, "Stage B".
+- The line sits after the chips in the charts' column (`grid-column: 1` in the overlay); `renderSince` moved in `frame.tsx` from before the slider to just after `renderChips`.
+- The Trade P&L's figure and "since" date are the session's `change`; the call's (or stock's) move is the option's (or Underlying's) own Mark `change` from the view's `marks`; the parts and "Its Mark changed" figure come from the split. No figure is worked out in `src/ui/` (parts rounded to the cent for the screen; bar widths are drawing).
