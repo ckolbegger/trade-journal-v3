@@ -358,6 +358,7 @@ Stage A runs as a swarm (decision 111, agent cap 4). Each task's heading holds i
 | critic-2 | `critic-brief.md`, stage A flows as before D9A-R's amendment, D9A-R named as not built, earlier reviews withheld | 191,064 | 74 | 11 min 6 s | yes (1 high, 1 moderate, 2 low) |
 | critic-b1 | `critic-brief.md`, stage B flows C9.5 and C9.6 through the overlay, 375 and 320, D9A-R's decisions and tech debt and critic-3's minor observations named as known | 131,578 | 167 | 10 min 44 s | yes (1 moderate, 1 low) |
 | critic-b2 | as critic-b1, with T9.25-B1's recorded cause phrase named as known | 166,629 | 157 | 9 min 35 s | no (PASS, no defects) |
+| critic-c1 | `critic-brief.md`, stage C flows C9.7, C9.8 and C9.9, 375 and 320, stage B's minor observations and tech debt named as known, three implementer choices named for judgement | 155,523 | 98 | 5 min 35 s | no (PASS, no defects; two low observations) |
 | coach review 1 (not a gate critic; the user's intervention, Fable 5.2 at high effort) | a trading coach scoring the replay for students, all four test Trades, the user's concerns withheld (seen by accident in a commit note, disclosed in its report) | 217,821 | 83 | 10 min 34 s | 15 suggestions, score 6 of 10 → D9A-R |
 
 - (Moved from the critic table, where it had been pasted: T9.18-F3 (the charts) waited for F1 (lane PL edits `geometry.ts` and `corridor-pnl.tsx`) to merge, then ran in lane BR.)
@@ -980,3 +981,5 @@ AC-DEL-001 (cumulative: the replay reads after a stopped, offline restart) | npx
 AC-REV-002 (cumulative: the Review's order and resumption unchanged by the meter) | npx playwright test e2e/d9/meter-review.spec.ts | 2 tests
 summary: 9 commands checked, 0 failed, 0 rows are procedures, not checked
 ```
+
+Critic-c1 (`critic-c1.md`, at `f70d7a19`): **PASS, no defects**; C9.7, C9.8 and C9.9 pass. Its two observations marked low (the no-Mark name runs the reason into the rails with no full stop; the mark for the session before is faint over a hatched part) go to tech debt items 8 and 9, and its two observations of earlier work (the Open list's sideways scroll at 1280 px from a no-Mark row; the list's "Thu Nov 12 close" wording) to items 10 and 11. By `critic-brief.md`'s rule (PASS with no high or moderate defect), the gate closes on critic-c1 and `gate-c1` stands as its full run. **T9.39 done.**
