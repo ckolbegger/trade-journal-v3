@@ -51,3 +51,4 @@ D9R2 runs one task at a time (P162; decision 100). Each task's heading holds its
 - `.claude/scripts/with-browser-lock.sh npm run test:e2e:specs -- e2e/d8p/history.spec.ts` (with a scratch spec, since deleted): history.spec.ts 3 passed.
 - Computed style, scratch spec: Trade P&L gain cell "$218.05" is rgb(29, 107, 52) = --target #1d6b34; a cell given the loss class is rgb(163, 38, 27) = --stop #a3261b. Both are the existing tokens used on the pnl card; contrast against the card background was not re-measured here (B9R2.1 later).
 - `npm run lint`: 0 errors, 2 pre-existing warnings in OwedDebtItem.tsx.
+- Base `4f3d6a76`, commit `7b1d9eed` (the subagent wrote the lines above into this file in its own commit). Light (decision 122): no ocr, no suite run. The pre-commit hook ran typecheck and lint; `tsc6` and `lint:deps` were not run by the subagent and are covered by the next run (T9R2.5's). First-run passes: none (no case). Words: none.
