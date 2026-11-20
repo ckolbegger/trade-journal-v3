@@ -6,6 +6,7 @@ import type { TradeDetailNarrativeItem, TradeDetailView } from '../../../app/typ
 import type { CalculationResult } from '../../../domain/calculation-result/index.ts';
 import type { Instrument } from '../../../domain/instrument/index.ts';
 import { Rational } from '../../../domain/values/index.ts';
+import { acknowledgedUnavailableStatusLabel } from '../../calculation-words.ts';
 import { calculation, signed } from '../../figures.ts';
 import { decimalMoney, decimalUnderlyingPrice, localTime, money, shortDate } from '../../format.ts';
 import { OwedDebtItem } from '../../screens/OwedDebtItem.tsx';
@@ -66,8 +67,8 @@ const DAY = 24 * 60 * 60 * 1000;
 // A session whose close held no Position (a Closed Trade's final session) was owed no Mark (A211's Position held).
 const heldNothing = (session: JournalReplaySession): boolean => session.positions.every((p) => p.quantity.numerator === 0n);
 
-// A session without a Mark: Marks were due, and no Instrument has one that day.
-const withoutMarks = (session: JournalReplaySession): boolean => !heldNothing(session) && session.marks.every((mark) => mark.resolution.kind !== 'Available');
+// A session without a Mark: Marks were due, and every Instrument is Missing that day. A session whose Marks are acknowledged keeps its own card (A214, W78).
+const withoutMarks = (session: JournalReplaySession): boolean => !heldNothing(session) && session.marks.every((mark) => mark.resolution.kind === 'Missing');
 
 function itemOf(item: TradeDetailNarrativeItem, timeZone: string, facade: UiFacade, onDirtyChange?: (dirty: boolean) => void): JournalCardItem {
   if (item.kind === 'Debt') {
@@ -148,6 +149,11 @@ function cardsOf(input: Extract<JournalCardsInput, { readonly replay: object | s
     if (date === today) return `Today, ${shortDate(date)}`;
     return date === yesterday ? `Yesterday, ${shortDate(date)}` : shortDate(date);
   };
+  // The series point's kind decides the words: a price, "Acknowledged Unavailable" (W78), or a dash for a Missing Mark.
+  const valueOf = (instrument: Instrument, resolution: JournalReplaySession['marks'][number]['resolution']): string => {
+    if (resolution.kind === 'Available') return priceOf(instrument, resolution.mark.price);
+    return resolution.kind === 'AcknowledgedUnavailable' ? acknowledgedUnavailableStatusLabel() : '—';
+  };
   const last = replay.sessions.length - 1;
   // Back-to-back sessions without a Mark are one run, oldest first; every other session is a run of its own.
   const runs: JournalReplaySession[][] = [];
@@ -176,8 +182,8 @@ function cardsOf(input: Extract<JournalCardsInput, { readonly replay: object | s
       ...changeOf(tradePnl, change, !heldNothing(session)),
       marks: session.marks.map(({ instrument, resolution }) => ({
         label: instrument.kind === 'Option' ? `${instrument.right} Mark` : `${instrument.symbol} Mark`,
-        value: resolution.kind === 'Available' ? priceOf(instrument, resolution.mark.price) : '—',
-        ...(resolution.kind !== 'Available' && !heldNothing(session) && { gap: true as const }),
+        value: valueOf(instrument, resolution),
+        ...(resolution.kind === 'Missing' && !heldNothing(session) && { gap: true as const }),
       })),
       items: items(session.journal),
     };

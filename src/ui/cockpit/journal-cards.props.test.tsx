@@ -279,6 +279,20 @@ describe('Journal session cards (W10–W13, A214)', () => {
     expect(termValue(screen.getAllByRole('article')[1]!, 'Call Mark')).toBe('$2.90');
   });
 
+  it('should show Acknowledged Unavailable as an acknowledged Instrument Mark on a session card, not a dash named No Mark', () => {
+    const marks = [markOf('52.30'), { instrument: { kind: 'Stock', symbol: 'MNO' }, resolution: { kind: 'AcknowledgedUnavailable' } }];
+    show(replayOf([{ ...session('2026-11-09', 10n, '0', null), marks }]));
+    const card = screen.getByRole('article');
+    expect(termValue(card, 'MNO Mark')).toBe('Acknowledged Unavailable');
+    expect(within(card).queryByRole('img', { name: 'No Mark' })).toBeNull();
+  });
+
+  it('should keep a session whose Marks are all acknowledged as its own session card, not merged into a without Marks card', () => {
+    const acknowledged = (date: string) => ({ ...withoutMarks(date), marks: [{ instrument: stock, resolution: { kind: 'AcknowledgedUnavailable' } }] });
+    show(replayOf([withoutMarks('2026-11-09'), acknowledged('2026-11-10'), withoutMarks('2026-11-11'), withoutMarks('2026-11-12')]));
+    expect(screen.getAllByRole('article', { hidden: true }).map(headingOf)).toEqual(['Wed Nov 11 to Thu Nov 12 without Marks', 'Tue Nov 10', 'Mon Nov 9 without Marks']);
+  });
+
   it('should give a session with some Marks and no Trade P&L its reason and no change line', () => {
     show(replayOf([{ ...withoutMarks('2026-11-09'), marks: [markOf('52.30'), { instrument: { kind: 'Stock', symbol: 'MNO' }, resolution: { kind: 'Missing' } }] }]));
     const card = screen.getByRole('article');
