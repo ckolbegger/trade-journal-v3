@@ -1,13 +1,14 @@
 #!/bin/bash
-# status.sh <Dnn>: read-only status of a deliverable. Prints the breakdown's Progress rows that are not
-# Done or Withdrawn (task, wave, lane, status, and how many follow-up F and bug B tasks the Commits cell
-# names), then every question in evidence/<Dnn>/DECISIONS-PENDING.md without an answer, then the counts.
+# status.sh <Dnn> [--all]: read-only status of a deliverable. Prints the breakdown's Progress rows that are
+# not Done or Withdrawn, or every row with --all (task, wave, lane, status, and how many follow-up F and bug
+# B tasks the Commits cell names; "—" for a Wave or Lane column the table lacks), then every question in evidence/<Dnn>/DECISIONS-PENDING.md without an answer, then the counts.
 # For a name with a hyphen (D09A-R) the folder without it (evidence/D09AR) is read when the named one is absent.
 # A "**Answer" line answers the question whose section it sits in; a "**Qn answer" line answers Qn.
 # STATUS_ROOT overrides the repository root (used by the tests). Writes no file.
 # A missing breakdown or Progress table exits 1 naming the file; a missing decisions file prints
 # "no decisions file" and carries on (exit 0).
-d=${1:?usage: status.sh <Dnn>}
+d=${1:?usage: status.sh <Dnn> [--all]}
+all=0; [[ ${2:-} == --all ]] && all=1
 root=${STATUS_ROOT:-$(cd "$(dirname "$0")/../.." && pwd)}
 
 shopt -s nullglob
@@ -19,16 +20,17 @@ for f in "$root"/plan/"$d"-*.md; do
 done
 if [[ -z $plan ]]; then echo "status.sh: no breakdown plan/$d-*.md in $root" >&2; exit 1; fi
 
-rows=$(awk -F'|' '
+rows=$(awk -F'|' -v all="$all" '
   function trim(s) { gsub(/^[ \t]+|[ \t]+$/, "", s); return s }
+  function cell(name) { return (name in col) ? trim($(col[name])) : "—" }
   /^## .*Progress/ { n++; inprog = 1; intable = 0; hdr = 0; delete col; next }
   /^#/ { inprog = 0; next }
   inprog && /^\|/ {
     if (!hdr) { for (i = 2; i < NF; i++) col[trim($i)] = i; hdr = 1; next }
     if ($0 ~ /^\|[ \t]*-/) next
-    task = trim($(col["Task"])); wave = trim($(col["Wave"])); lane = trim($(col["Lane"]))
-    status = trim($(col["Status"])); commits = trim($(col["Commits"]))
-    if (status ~ /^(Done|Withdrawn)/) next
+    task = cell("Task"); wave = cell("Wave"); lane = cell("Lane")
+    status = cell("Status"); commits = cell("Commits")
+    if (!all && status ~ /^(Done|Withdrawn)/) next
     gsub(/`[^`]*`/, " ", commits)
     f = 0; b = 0; delete seen
     s = commits
@@ -51,7 +53,7 @@ rows=$(awk -F'|' '
 if [[ $rc == 3 ]]; then echo "status.sh: no Progress table in $plan" >&2; exit 1; fi
 
 nrows=0
-echo "Open tasks ($d):"
+if [[ $all == 1 ]]; then echo "All tasks ($d):"; else echo "Open tasks ($d):"; fi
 if [[ -n $rows ]]; then
   nrows=$(printf '%s\n' "$rows" | wc -l | tr -d ' ')
   printf '%s\n' "$rows" | sed 's/^/  /'
@@ -78,6 +80,6 @@ else
   else echo "  none"; fi
 fi
 
-echo "$nrows open task(s), $nq open question(s)"
-if [[ $nrows == 0 && $nq == 0 ]]; then echo "nothing open"; fi
+if [[ $all == 1 ]]; then echo "$nrows task(s), $nq open question(s)"; else echo "$nrows open task(s), $nq open question(s)"; fi
+if [[ $all == 0 && $nrows == 0 && $nq == 0 ]]; then echo "nothing open"; fi
 exit 0

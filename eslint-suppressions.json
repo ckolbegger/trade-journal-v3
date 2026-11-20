@@ -134,6 +134,11 @@
       "count": 5
     }
   },
+  "src/ui/cockpit/drawers/today.props.ts": {
+    "no-restricted-syntax": {
+      "count": 1
+    }
+  },
   "src/ui/cockpit/replay/corridor.test.tsx": {
     "no-nested-ternary": {
       "count": 4
@@ -146,6 +151,9 @@
   },
   "src/ui/screens/CardFigures.tsx": {
     "no-nested-ternary": {
+      "count": 1
+    },
+    "no-restricted-syntax": {
       "count": 1
     }
   },
@@ -192,6 +200,9 @@
   "src/ui/screens/TradeList.tsx": {
     "no-nested-ternary": {
       "count": 4
+    },
+    "no-restricted-syntax": {
+      "count": 1
     }
   },
   "src/ui/screens/option-disposition.ts": {

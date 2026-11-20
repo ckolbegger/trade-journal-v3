@@ -29,7 +29,7 @@ Also before the first task, run `ocr llm test`. It must print `✓ Connection te
 Delegate every implementation task to its own fresh `tdd-task` subagent (`.claude/agents/tdd-task.md`). This covers every behavioral and structural task. The only exceptions are the cumulative runs, which go to `suite-runner`, and the browser-critic gate, which has its own fresh-critic rules; brief each critic from `.claude/docs/critic-brief.md`.
 
 - Use one subagent per task, never one per case. Run tasks one at a time, in the order of the breakdown's Progress section (decision 100). The next task is the first row not marked "Done". In a swarm deliverable, the Progress table also has Wave and Lane columns. Tasks run wave by wave. Within a wave, every lane runs at once, up to the breakdown's agent cap, and each lane runs its own rows one at a time in order. A task starts when every task it is blocked by is merged into the deliverable branch. The next task of a lane is its first row not marked "Done". Only the main session edits the table. Before its brief, mark that row "In progress from `<commit>`", using `git rev-parse --short HEAD`; that commit is A180's base. Editing the Progress section is not a plan revision.
-- When the user asks for the task table or what the session is waiting for, run `.claude/scripts/status.sh <Dnn>` and show its output (open rows with their follow-up and bug counts, and unanswered questions). Show the full Progress table only when asked, with every row and column; when a table you show leaves any out, say which.
+- When the user asks for the task table or what the session is waiting for, run `.claude/scripts/status.sh <Dnn>` and show its output (open rows with their follow-up and bug counts, and unanswered questions). When asked for every task, run it with `--all`, which lists every row, Done and Withdrawn included; when a table you show leaves any rows or columns out, say which.
 - When listing tasks, follow-up tasks or bug tasks, in a record or a message to the user, name each one: "B5, B6, B7", never "B5 to B7". A range hides sub-tasks such as B6-B1, and `status.sh` counts only the IDs it sees. Existing records keep their ranges.
 - Write each brief from the reading, without opening the task's code. The brief gives:
   - the task ID, its title, and its kind (behavioral or structural);
@@ -109,6 +109,8 @@ If any step fails or misses a budget or limit:
 - the user chooses a fix now (bug tasks, then one more benchmark run) or a tech debt item, and the tag waits for that choice.
 
 Never run `measure:capacity:reset-baseline` unless the user says so.
+
+`bench:generate` writes the expected Open rows itself, through the app's own code, so a change to the Open list's rows needs no task of its own. `bench:expected` checks the rows in the browser; rows it writes make the next `bench:generate` rebuild the whole dataset (about 15 minutes).
 
 ## Final report
 

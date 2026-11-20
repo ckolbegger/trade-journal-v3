@@ -25,6 +25,7 @@ These hold for every task; briefs don't repeat them.
   - one foreground Bash call each, with `timeout` 600000;
   - when the harness moves a long call to the background, wait for its completion notice;
   - run every browser command through `.claude/scripts/with-browser-lock.sh`, which serializes all users of port 5175. In a lane, run only the spec files your task changes;
+  - run spec files with `.claude/scripts/with-browser-lock.sh npm run test:e2e:specs -- <spec files>` (add `-g "<case>"` for one case): one call that rebuilds `dist`, `dist-faults` and `dist-releases` and then runs the files, so they always serve your latest code. The permission rules allow it as a single call; a build joined to a run with `&&` is refused;
   - before and after each run, confirm nothing listens on 5175 (every test server) or on 9341 and 9342 (the Chromium that the D5 and D5R kill tests spawn; one left over makes their next launch fail). Use `lsof -nP -iTCP:<port> -sTCP:LISTEN`, and leave other processes alone.
 - **Mutations of served CSS or code** take effect only after rebuilding the folder the test serves. That is `npm run build:faults` for `dist-faults`, or `npm run build:releases` for a `dist-releases/` folder; `npm run build:all` rebuilds `dist`, `dist-faults` and `dist-releases` in one command. Rebuild again after restoring.
 - **Staging:** stage your task's files by name. `.claude/settings.json` and `.claude/settings.local.json` (the user's) and `plan/*handoff.md` (the main session's) stay unedited and unstaged.

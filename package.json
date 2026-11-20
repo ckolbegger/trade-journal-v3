@@ -43,6 +43,7 @@
     "test:e2e:3": "npm run build:faults && npm run build:releases && playwright test e2e/d8p e2e/d8 --grep-invert @release-history",
     "test:e2e:4": "npm run build:faults && npm run build:releases && playwright test e2e/d9 --grep-invert @release-history",
     "report:labels": "npm run build:faults && npm run build:releases && LABEL_SWEEP=1 playwright test e2e/d9ar/label-sweep.spec.ts",
+    "test:e2e:specs": "npm run build:all && playwright test --grep-invert @release-history",
     "test:e2e:release-history": "npm run build:faults && npm run build:releases && playwright test e2e/d1 e2e/d2 e2e/d4 e2e/d5 e2e/d5r e2e/d6 e2e/d7p e2e/d7 --grep @release-history",
     "fixtures:freeze": "node tools/fixtures-freeze.ts",
     "fixtures:freeze-backup": "node tools/fixtures-freeze-backup.ts",

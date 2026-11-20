@@ -11,7 +11,9 @@
 # still prints "no decisions file"; 11 the breakdown is the file whose Progress section holds a table, not
 # one with a Progress heading and only prose (and with no such file the script exits 1 naming a file);
 # 12 IDs after any task-ID prefix count; 13 each ID counts once when text precedes a chained ID;
-# 14 a deliverable named with a hyphen (D98-R) reads the evidence folder named without it (D98R).
+# 14 a deliverable named with a hyphen (D98-R) reads the evidence folder named without it (D98R);
+# 15 --all lists every row, Done and Withdrawn included, under "All tasks"; 16 a Progress table without
+# Wave and Lane columns prints "—" for them.
 here=$(cd "$(dirname "$0")" && pwd)
 st="$here/status.sh"
 t=$(mktemp -d)
@@ -159,6 +161,22 @@ if want 14; then
   rm -r "$d/evidence/D98R"
   out=$(STATUS_ROOT="$d" "$st" D98-R 2>&1); code=$?
   [[ $code == 0 && "$out" == *"no decisions file"* ]] || bad "neither folder present changed behavior (exit $code): $out"
+fi
+
+if want 15; then
+  mkfix all '| T9.1 | 1 | A | Done | `abc` |' '| T9.2 | 1 | A | Withdrawn (decision 1) | |' '| T9.3 | 2 | B | Not started | |'
+  out=$(STATUS_ROOT="$t/all" "$st" D99 --all 2>&1); code=$?
+  [[ $code == 0 && "$out" == *"All tasks (D99):"* && "$out" == *"T9.1 | wave 1 | lane A | Done"* && "$out" == *"T9.2 |"* && "$out" == *"T9.3 |"* && "$out" == *"3 task(s)"* ]] || bad "--all did not list every row (exit $code): $out"
+  out=$(STATUS_ROOT="$t/all" "$st" D99 2>&1)
+  [[ "$out" == *"Open tasks (D99):"* && "$out" != *"T9.1 |"* && "$out" == *"1 open task(s)"* ]] || bad "without --all, Done rows were listed: $out"
+fi
+
+if want 16; then
+  d="$t/nolane"; mkdir -p "$d/plan" "$d/evidence/D99"
+  printf '# D99\n\n## 14. Progress\n\n| Task | Level | Status | Commits |\n|---|---|---|---|\n| T99.1 | Full | Not started | |\n' >"$d/plan/D99-fixture.md"
+  : >"$d/evidence/D99/DECISIONS-PENDING.md"
+  out=$(STATUS_ROOT="$d" "$st" D99 2>&1); code=$?
+  [[ $code == 0 && "$out" == *"T99.1 | wave — | lane — | Not started | F 0, B 0"* ]] || bad "a table without Wave and Lane did not print — for them (exit $code): $out"
 fi
 
 [[ $fail == 0 ]] && echo "status.test.sh: all requested cases passed"

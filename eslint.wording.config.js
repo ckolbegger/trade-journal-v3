@@ -114,6 +114,15 @@ const notKind = (side) =>
     .map((c) => `:not(${c})`)
     .join('');
 
+// (c) A price is a Mark, never a "close" (D9 stage C retro): text " close" right after an interpolated date, or a
+// literal "Fri Oct 9 close". "Awaiting the <date> close" names the session's end and lives in calculation-words.ts.
+const closeMessage = 'A price is a Mark, never a "close": write "At the Fri Oct 9 Marks" or "the Fri Oct 9 Mark". "The close" names only the session\'s end.';
+export const CLOSE_SELECTORS = [
+  'JSXExpressionContainer + JSXText[value=/^\\s*close\\b/]',
+  'TemplateElement[value.raw=/^ close\\b/]',
+  'Literal[value=/(Mon|Tue|Wed|Thu|Fri) [A-Z][a-z]{2} \\d{1,2} close\\b/]',
+];
+
 const equality = '[operator=/^[!=]==?$/]';
 const selectors = [
   [`Literal[value=/${phraseRe}/i]`, wordsMessage],
@@ -125,6 +134,7 @@ const selectors = [
   ...wrapperPaths('test').flatMap((p) => codeAt(p).map((c) => [`SwitchCase${c}`, codeMessage])),
   ...wrapperPaths('right').flatMap((p) => codeAt(p).map((c) => [`BinaryExpression${equality}${c}${notKind('left')}`, codeMessage])),
   ...wrapperPaths('left').flatMap((p) => codeAt(p).map((c) => [`BinaryExpression${equality}${c}${notKind('right')}`, codeMessage])),
+  ...CLOSE_SELECTORS.map((s) => [s, closeMessage]),
 ];
 
 export const wordingRules = {
