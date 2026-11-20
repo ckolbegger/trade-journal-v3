@@ -17,7 +17,7 @@ Where things stand:
 - **The last complete cumulative run** is `t9.28-b1` (`evidence/D09/suite-runs/t9.28-b1-*.txt`, on `dbf207c2`, full tier). It passed: unit 218 files, 2,544 tests; integration 136 files, 292 tests; browser-1 126 (5.1 min), browser-2 79 (4.9 min), browser-3 57 (4.2 min), browser-4 109 passed and 4 skipped (4.9 min); checks 14 of 14.
 - **The acceptance script** fails only AC-REV-002 (`e2e/d9/meter-review.spec.ts`, stage C's file, which T9.38 writes).
 - **No stage C code exists yet.** `StopTargetSlider` and `rangePosition` are as stage A and D9A-R left them; the Open list is still in Last Activity order.
-- **Waiting on the user, not blocking stage C:** stage B's tech debt (`evidence/D09/tech-debt.md`, four items) and its new words, listed in the stage B report.
+- **Waiting on the user, not blocking stage C:** stage B's tech debt (`evidence/D09/tech-debt.md`, five items) and its new words, listed in the stage B report.
 
 **Starting a session.** The user starts a session with one prompt: *"Read plan/D09C-handoff.md and follow it."*
 1. Take the session lock (`implementing.md`, "Start-of-deliverable reading").
@@ -249,4 +249,4 @@ The main session saves the reports itself (`implementing.md`, "Final report"). A
 
 ### Open questions
 
-- Stage B's tech debt (`evidence/D09/tech-debt.md`, items 1, 2, 3 and 4) and new words (`evidence/D09/new-words.md`, "Stage B") await the user's review; stage A's and D9A-R's words and P137 changes too. None blocks stage C.
+- Stage B's tech debt (`evidence/D09/tech-debt.md`, items 1, 2, 3, 4 and 5) and new words (`evidence/D09/new-words.md`, "Stage B") await the user's review; stage A's and D9A-R's words and P137 changes too. None blocks stage C.
