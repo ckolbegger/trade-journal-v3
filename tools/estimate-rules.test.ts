@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest';
 import mergedConfig from '../eslint.config.js';
 
 // Lints a planted source string with the merged repository configuration, keeping only the entries that set the
-// estimates rule (type-aware rules need a project service a string lacks), so a plant is never a committed file.
+// estimates rule, and any fatal diagnostic such as a parse error (ruleId null), so an unparsed file is never clean (type-aware rules need a project service a string lacks), so a plant is never a committed file.
 const ruleId = '@typescript-eslint/no-restricted-imports';
 const dynamicRuleId = 'estimates/no-dynamic-import';
 const ruleIds = [ruleId, dynamicRuleId];
@@ -19,7 +19,7 @@ const config: Linter.Config[] = [
 const hits = (path: string, source: string) =>
   linter
     .verify(source, config, { filename: path })
-    .filter((m) => m.ruleId !== null && ruleIds.includes(m.ruleId))
+    .filter((m) => m.fatal === true || (m.ruleId !== null && ruleIds.includes(m.ruleId)))
     .map((m) => ({ line: m.line, message: m.message }));
 
 describe('the estimates rule (P121)', () => {
@@ -111,6 +111,12 @@ describe('the estimates rule (P121)', () => {
     expect(hits('src/domain/trade-analysis/replay-series.ts', "const m = await import('./replay-estimates.ts');")).toEqual([]);
     // Other modules stay importable dynamically.
     expect(hits('src/main.tsx', "const m = await import('./App.tsx');")).toEqual([]);
+  });
+
+  it('should count a file that fails to parse as a failure, not as clean', () => {
+    const found = hits('src/domain/trade-analysis/evaluate.ts', 'const = ;');
+    expect(found).toHaveLength(1);
+    expect(found[0]?.message).toContain('Parsing error');
   });
 
   it('should pass every file of the current tree', () => {
