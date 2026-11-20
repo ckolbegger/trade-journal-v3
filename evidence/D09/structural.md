@@ -770,3 +770,5 @@ Commit `349ad6ec`. Refactor step first: `attention.ts`, `attention.test.ts` and 
 Notes for later tasks (subagent's): T9.31 supplies the evaluation at the session before; `direction` is absent when `now` is Unavailable, so the adapters (T9.33, T9.34, T9.35) must handle a `previous` without one (the meter's `MeterPrevious.direction` is required); the domain zone `'Between'` maps to the meter's `'Within'`.
 
 ocr `349ad6ec`: No findings (`ocr/T9.30-349ad6ec.json`).
+
+Complete run `t9.30` (`browser-auto fbd021fb` chose the task tier: "no changed path since fbd021fb is on the full-tier list"; on `8326c4bb`; run complete): unit 222 files, 2,571 tests; integration 136 files, 292 tests; browser `@every-task` 5 and `e2e/d9` 109 passed, 4 skipped (5.8 min); checks 14 of 14. All passed.
