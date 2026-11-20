@@ -5,6 +5,7 @@ import type { CalculationResult } from '../calculation-result/index.ts';
 import { parseDecimal, Rational } from '../values/index.ts';
 import { evaluate, oddsOf, type ConditionReading, type ConditionStatus, type ObservationFrame, type RewardRiskOdds, type TradeEvaluation } from './evaluate.ts';
 import type { ConditionBasis, PlanBaseline } from './plan.ts';
+import type { ReplayEstimates } from './estimate.ts';
 import { derive, type DerivedTradeState, type IncoherentFact, type TradeAnalysisRecord } from './derive.ts';
 
 // A211: one completed session's Mark points, one frame per Instrument (Available, Missing or AcknowledgedUnavailable,
@@ -162,6 +163,8 @@ export interface ReplayedSession {
   readonly markers?: readonly ReplayMarker[];
   // A271: each role's first crossing and current run. Not filled until T9AR.5.
   readonly crossings?: ReplayCrossings;
+  // A258: this session's estimates. Not filled until T9.23.
+  readonly estimates?: ReplayEstimates;
 }
 
 export type ReplayResult =

@@ -136,6 +136,9 @@ export interface TradeStandingReading {
   readonly openProfitAtRisk?: Rational;
 }
 
+// Not an Estimate (P121, answered 2026-11-19): these odds are exact arithmetic on the headline risk and reward, held as fractions,
+// with no pricing formula or assumed rate behind them; the glossary names them "No-Edge Odds", apart from "Estimate", so the
+// estimates rule (eslint.estimates.config.js) does not cover them.
 // A267: the estimated odds, read from the Risk to stop and the Reward to target. Both are exact: what is estimated is reading them
 // as a chance (no edge, no time limit), so screens say "about". `targetFirst` is Risk over (Risk + Reward) and `stopFirst` the rest;
 // `percent` is the same pair as whole percents (exact whole numbers), the Target's half-up and the Stop's the remainder to 100.

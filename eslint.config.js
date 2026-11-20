@@ -4,6 +4,7 @@ import reactHooks from 'eslint-plugin-react-hooks';
 import tseslint from 'typescript-eslint';
 import { cockpitImportRules } from './eslint.cockpit.config.js';
 import { conditionIndexSelectors } from './eslint.conditions.config.js';
+import { estimatesImportRules } from './eslint.estimates.config.js';
 import { domainPurityRules, expirationComparisonSelectors, expirationExemptRules, noIdentityRules } from './eslint.deps.config.js';
 import { wordingRules } from './eslint.wording.config.js';
 
@@ -34,6 +35,7 @@ export default defineConfig(
   ...expirationExemptRules,
   wordingWithExpirationRules,
   cockpitImportRules,
+  ...estimatesImportRules,
   { rules: { 'no-nested-ternary': 'error' } },
   {
     files: ['**/*.js'],
