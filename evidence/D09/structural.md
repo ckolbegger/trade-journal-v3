@@ -811,3 +811,4 @@ ocr `6c31fc93` (`ocr/T9.35-6c31fc93.json`):
 | medium | `conditions.props.ts:136` | `openProps` returns early for an Open Trade awaiting its first Marks, dropping the meter, so the dashed track never shows | Doubtful | T9.35-B1 |
 
 - **T9.35-B1.** Defect: an Open Detail awaiting its first Marks shows no meter, where T9.35's cases and A260 call for the dashed track with the rails. Case: *it should show the dashed track at the top of the card on an Open Detail awaiting its first Marks*.
+- T9.35-B1 `930e2f73`: red (`Unable to find … role "img"`), green with the waiting branch keeping the meter above the rows and the note, which are unchanged. `e2e/d8p`, `e2e/d8r` 35 passed under the lock. ocr `930e2f73`: No findings (`ocr/T9.35-B1-930e2f73.json`).
