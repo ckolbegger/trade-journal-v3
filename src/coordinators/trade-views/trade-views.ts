@@ -36,7 +36,7 @@ import { payoffOf } from '../settlement.ts';
 import { assembleReplay } from '../replay/index.ts';
 import type { ReplayChange, ReplayNotApplicable, ReplayTradeRequest, ReplayTradeResult, TradeReplayView } from './replay-view.ts';
 import type { ReadViewResult, TradeDetailDebt, TradeDetailNarrativeItem, ViewBinding } from './view-types.ts';
-import { meterReadingOf, valueTrade, type DatedLine, type MeterReading, type SettlementItem } from '../valuation/index.ts';
+import { attentionOf, byAttention, meterReadingOf, valueTrade, type Attention, type DatedLine, type MeterReading, type SettlementItem } from '../valuation/index.ts';
 
 export interface TradeViewsDeps {
   readonly persistence: Persistence;
@@ -127,13 +127,17 @@ export interface OpenTradeItem {
   readonly current: OpenCurrentFigures;
   // The option contracts due for settlement, as Detail has them (A111); empty for stock and before the settlement time.
   readonly settlement: readonly SettlementItem[];
+  // The Trade's attention band and reasons at the Expected Mark Date, the figures the default order sorts by (A262).
+  readonly attention: Attention;
+  // The Stop-to-Target meter's reading, with the session before's result when it has one (A260).
+  readonly meter: MeterReading;
 }
 
 // An Open Trade whose recorded facts cannot be replayed (AC-LIFE-003): its Position and entry figures
 // are unavailable rather than shown as numbers, and its records disagree.
 export interface IncoherentOpenTradeItem extends Omit<
   OpenTradeItem,
-  'openQuantity' | 'averageOpenCost' | 'summary' | 'netCost' | 'incurredFees' | 'entryStatus' | 'integrity' | 'current' | 'settlement'
+  'openQuantity' | 'averageOpenCost' | 'summary' | 'netCost' | 'incurredFees' | 'entryStatus' | 'integrity' | 'current' | 'settlement' | 'meter'
 > {
   readonly integrity: 'Disagrees';
 }
@@ -530,7 +534,7 @@ function openLotsAverageOf(derived: DerivedTradeState): Rational | undefined {
   return openQuantity.compare(Rational.of(0n)) === 0 ? undefined : sum(lots.map((lot) => lot.quantity.mul(lot.price))).div(openQuantity);
 }
 
-function openItem(summary: RecordSummary, analysis: TradeAnalysisRecord, derived: DerivedTradeState, labels: Labels, expected: ExpectedMark, evaluation: TradeEvaluation, settlement: readonly SettlementItem[], datedLine: DatedLine | undefined): OpenTradeItem {
+function openItem(summary: RecordSummary, analysis: TradeAnalysisRecord, derived: DerivedTradeState, labels: Labels, expected: ExpectedMark, evaluation: TradeEvaluation, settlement: readonly SettlementItem[], datedLine: DatedLine | undefined): Omit<OpenTradeItem, 'attention' | 'meter'> {
   // The signed open quantity at the quantity-weighted Open Lot price.
   const lots = derived.positions.flatMap((p) => p.openLots);
   const openQuantity = sum(lots.map((lot) => lot.quantity));
@@ -569,8 +573,19 @@ function openItem(summary: RecordSummary, analysis: TradeAnalysisRecord, derived
   };
 }
 
-function incoherentItem(summary: RecordSummary, analysis: TradeAnalysisRecord, labels: Labels): IncoherentOpenTradeItem {
+// Facts that cannot be replayed make the Trade a Blocker with no mark-based figures to compare (as the Review's walk has it).
+function incoherentAttention(findings: readonly IncoherentFact[]): Attention {
+  const unavailable = { reason: 'FactsIncoherent', findings } as const;
+  return { band: 'Blocker', reasons: [{ code: 'Unavailable', ...unavailable }], basis: { kind: 'Unavailable', ...unavailable }, rangePosition: { kind: 'Unavailable', ...unavailable } };
+}
+
+// The Open list's default order: the Review's attention order at the current Expected Mark Date (A262).
+const byAttentionOrder = <T extends OpenTradeItem | IncoherentOpenTradeItem>(items: readonly T[]): T[] =>
+  [...items].sort((a, b) => byAttention({ ...a.attention, lastActivity: a.lastActivity, tradeId: a.tradeId }, { ...b.attention, lastActivity: b.lastActivity, tradeId: b.tradeId }));
+
+function incoherentItem(summary: RecordSummary, analysis: TradeAnalysisRecord, labels: Labels, findings: readonly IncoherentFact[]): IncoherentOpenTradeItem {
   return {
+    attention: incoherentAttention(findings),
     tradeId: summary.tradeId,
     underlying: summary.underlying,
     ...labels,
@@ -951,15 +966,24 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
         // The Open page values each Trade through the module in one read session, which reads each date and Instrument once
         // for every Trade on the page (A191); the Planned and Closed pages derive each Trade once and read no Market Data.
         const session = request.lifecycle === 'Open' ? await openSession() : undefined;
+        // The session before is read as a session of its own, with one date-wide read for the whole page and no earlier-Mark lookup (P133).
+        const beforeSession = session?.previousSessionDate ? await deps.marketData.openReadSession({ kind: 'Review', reviewDate: session.previousSessionDate }, { withoutStale: true }) : undefined;
         const valuations = session ? await Promise.all(records.map(({ analysis }) => valueTrade(session, analysis))) : [];
+        const earlier = beforeSession ? await Promise.all(records.map(async ({ analysis }, i) => (valuations[i]?.kind === 'Valued' ? valueTrade(beforeSession, analysis, { factsAtClose: true, skipDatedLine: true }) : undefined))) : [];
         // A Closed page reads no Market Data: Close Reason labels, and the Trades with an Outstanding reflection.
         const closeReasons = request.lifecycle === 'Closed' ? await closeReasonsOf(records.map((r) => r.analysis)) : new Map<string, CloseReasonLabel>();
         const owed = request.lifecycle === 'Closed' ? await tradesWithOutstandingDebt() : new Set<string>();
         const items = records.map(({ summary, analysis }, i) => {
           const valuation = valuations[i];
           if (session && valuation) {
-            if (valuation.kind !== 'Valued') return incoherentItem(summary, analysis, labelsOf(summary));
-            return openItem(summary, analysis, valuation.state, labelsOf(summary), expectedMarkOf(session, valuation.frame), valuation.evaluation, valuation.settlement, valuation.datedLine);
+            if (valuation.kind !== 'Valued') return incoherentItem(summary, analysis, labelsOf(summary), valuation.findings);
+            const earlierValuation = earlier[i];
+            const before = beforeSession && earlierValuation?.kind === 'Valued' ? { tradingDate: beforeSession.tradingDate, evaluation: earlierValuation.evaluation } : undefined;
+            return {
+              ...openItem(summary, analysis, valuation.state, labelsOf(summary), expectedMarkOf(session, valuation.frame), valuation.evaluation, valuation.settlement, valuation.datedLine),
+              attention: attentionOf(valuation.state, valuation.evaluation, valuation.state.findings),
+              meter: meterReadingOf(valuation.evaluation, before),
+            };
           }
           const derived = derive({ record: analysis });
           if (request.lifecycle === 'Closed') {
@@ -971,7 +995,9 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
           // A Planned item's Baseline needs a replay; facts that cannot be replayed are surfaced, never repaired.
           return derived.kind === 'Derived' ? plannedItem(summary, analysis, derived, labelsOf(summary)) : incoherentPlannedItem(summary, labelsOf(summary));
         }) as TradeBrowseItem<L>[];
-        return { view: { items, ...(page.nextCursor ? { nextCursor: page.nextCursor } : {}) }, binding: page.binding, ...optional('marketDataSnapshotId', session && snapshotIdOf(session)) };
+        // The Open page's default order, one step after the page is selected and valued (A262); Planned and Closed keep Trade Record's orders.
+        const ordered = request.lifecycle === 'Open' ? byAttentionOrder(items as readonly (OpenTradeItem | IncoherentOpenTradeItem)[]) as TradeBrowseItem<L>[] : items;
+        return { view: { items: ordered, ...(page.nextCursor ? { nextCursor: page.nextCursor } : {}) }, binding: page.binding, ...optional('marketDataSnapshotId', session && snapshotIdOf(session)) };
       });
     },
   };

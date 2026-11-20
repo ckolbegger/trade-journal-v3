@@ -147,7 +147,8 @@ describe('Trade Summary', () => {
       'account', 'entryReadiness', 'institution', 'oneR', 'originalPlannedReward', 'planTime', 'rewardRiskRatio', 'strategy', 'tradeId', 'underlying',
     ]);
     expect(without(await listed(views, 'Open'), 'summary', 'netCost')).toEqual([
-      'account', 'averageOpenCost', 'current', 'deviationCount', 'entryStatus', 'incurredFees', 'institution', 'integrity', 'lastActivity', 'openQuantity', 'plannedQuantity', 'settlement', 'strategy', 'tradeId', 'underlying',
+      // D9 T9.32: 'attention' and 'meter' are the Open item's new fields.
+      'account', 'attention', 'averageOpenCost', 'current', 'deviationCount', 'entryStatus', 'incurredFees', 'institution', 'integrity', 'lastActivity', 'meter', 'openQuantity', 'plannedQuantity', 'settlement', 'strategy', 'tradeId', 'underlying',
     ]);
     expect(without(await detailed(views, planned.tradeId), 'summary')).toEqual(['baseline', 'factRevision', 'journal', 'labels', 'lifecycle', 'payoff', 'plan', 'tradeId']);
     expect(without(await detailed(views, open.tradeId), 'summary', 'netCost')).toEqual([

@@ -135,6 +135,9 @@ describe('browseTrades: Open', () => {
       lastActivity: PC1,
       current: expect.any(Object) as unknown,
       settlement: [],
+      // D9 T9.32: the item gains its attention and meter reading.
+      attention: expect.any(Object) as unknown,
+      meter: expect.any(Object) as unknown,
     });
     expect(second?.openQuantity.equals(Rational.of(60n))).toBe(true);
     expect(second?.plannedQuantity.equals(Rational.of(100n))).toBe(true);
@@ -176,7 +179,8 @@ describe('browseTrades: Open', () => {
     const result = await views.browseTrades({ lifecycle: 'Open' });
     if (result.kind !== 'Ready') throw new Error(`expected Ready, got ${result.kind}`);
     // One derivation per listed Trade, from the page's own batch: no per-Trade record loads.
-    expect(vi.mocked(derive).mock.calls.map(([input]) => input.record.tradeId).sort()).toEqual([first.tradeId, second.tradeId].sort());
+    // D9 T9.32 (P133): each Trade's valuation at the session before derives once more, at that close; the page's own derivation has no cutoff.
+    expect(vi.mocked(derive).mock.calls.filter(([input]) => input.cutoff === undefined).map(([input]) => input.record.tradeId).sort()).toEqual([first.tradeId, second.tradeId].sort());
     expect(recordLoads).toBe(0);
     const current = await stack.persistence.readSnapshot(['meta'], async (tx) => ({
       catalog: await tx.get('meta', 'catalog'),

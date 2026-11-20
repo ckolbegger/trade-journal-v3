@@ -130,6 +130,8 @@ describe('T4.31 query count: the Open page and the Review open', () => {
       { on: 'index', store: 'trades', index: 'byLifecycleActivity', method: 'getAll', count: 201 },
       { on: 'store', store: 'observations', method: 'getAll' },
       ...MISSING.map(() => ({ on: 'index', store: 'observations', index: 'byInstrumentDate', method: 'openCursor' })),
+      // D9 T9.32 (P133): the meter's session before, one more date-wide getAll.
+      { on: 'store', store: 'observations', method: 'getAll' },
     ]);
     expect(on(large.page.requests, 'trades', 'observations')).toEqual(pageReads);
 

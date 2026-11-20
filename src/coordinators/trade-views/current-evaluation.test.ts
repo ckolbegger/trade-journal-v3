@@ -163,8 +163,10 @@ describe('browseTrades: Open with current evaluation', () => {
     const derivedAtCutoff = vi.mocked(derive).mock.calls.filter(([input]) => input.cutoff !== undefined);
     const derivedAll = vi.mocked(derive).mock.calls.filter(([input]) => input.cutoff === undefined);
     expect(derivedAll.map(([input]) => input.record.tradeId).sort()).toEqual(ids);
-    expect(derivedAtCutoff.map(([input]) => [input.record.tradeId, input.cutoff])).toEqual([[needy.tradeId, '2026-10-09T20:00:00Z']]);
-    expect(vi.mocked(evaluate).mock.calls.map(([input]) => input.state.tradeId).sort()).toEqual([...ids, needy.tradeId].sort());
+    // D9 T9.32 (P133): every Trade is valued once more at the session before, at Friday's close, besides the dated line's own for XYZ.
+    const friday = '2026-10-09T20:00:00Z';
+    expect(derivedAtCutoff.map(([input]) => [input.record.tradeId, input.cutoff]).sort()).toEqual([...ids, needy.tradeId].sort().map((id) => [id, friday]));
+    expect(vi.mocked(evaluate).mock.calls.map(([input]) => input.state.tradeId).sort()).toEqual([...ids, needy.tradeId, ...ids].sort());
   });
 
   it('should bind the Trade, Journal, and Catalog revisions and the MarketDataSnapshotId of one Workspace content revision, retrying when a write lands between phases and returning ChangedDuringAssembly after 3 retries', async () => {
@@ -192,10 +194,12 @@ describe('browseTrades: Open with current evaluation', () => {
     let queries = 0;
     const racing = {
       ...stack.marketData,
-      openReadSession: async (context: Parameters<typeof stack.marketData.openReadSession>[0]) => {
+      openReadSession: async (context: Parameters<typeof stack.marketData.openReadSession>[0], options?: Parameters<typeof stack.marketData.openReadSession>[1]) => {
+        // D9 T9.32: the session before the current one is opened too; only the page's own session counts as an attempt.
+        if (context.kind !== 'Current') return stack.marketData.openReadSession(context, options);
         queries++;
         if (queries === 1) await stack.confirm({ ...PLAN, symbol: 'ABC' });
-        return stack.marketData.openReadSession(context);
+        return stack.marketData.openReadSession(context, options);
       },
     };
     const retried = await createTradeViews({ ...stack, marketData: racing }).browseTrades({ lifecycle: 'Open' });
@@ -207,10 +211,11 @@ describe('browseTrades: Open with current evaluation', () => {
     let raced = 0;
     const always = {
       ...stack.marketData,
-      openReadSession: async (context: Parameters<typeof stack.marketData.openReadSession>[0]) => {
+      openReadSession: async (context: Parameters<typeof stack.marketData.openReadSession>[0], options?: Parameters<typeof stack.marketData.openReadSession>[1]) => {
+        if (context.kind !== 'Current') return stack.marketData.openReadSession(context, options);
         raced++;
         await stack.confirm({ ...PLAN, symbol: `R${raced}` });
-        return stack.marketData.openReadSession(context);
+        return stack.marketData.openReadSession(context, options);
       },
     };
     expect(await createTradeViews({ ...stack, marketData: always }).browseTrades({ lifecycle: 'Open' })).toEqual({ kind: 'ChangedDuringAssembly' });

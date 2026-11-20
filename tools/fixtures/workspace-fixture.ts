@@ -4,6 +4,7 @@
 // idb checks requests against the IndexedDB classes, which Node lacks; install fake-indexeddb's.
 import '../../tests/setup/idb-globals.ts';
 import { IDBFactory } from 'fake-indexeddb';
+import { Temporal } from 'temporal-polyfill';
 import { createApplication, type Application } from '../../src/app/compose.ts';
 import { fixedClock } from '../../src/domain/time/index.ts';
 import { createInProcessLifecycleLock } from '../../src/persistence/index.ts';
@@ -130,8 +131,10 @@ function normalize(value: unknown): unknown {
 export async function viewsOf(app: Pick<Application, 'TradeViewsAndReporting'> & Partial<Pick<Application, 'DailyReview' | 'Journal'>>, schemaVersion: number, asOf?: string): Promise<unknown> {
   const planned = await app.TradeViewsAndReporting.browseTrades({ lifecycle: 'Planned' });
   if (planned.kind !== 'Ready') throw new Error(`browseTrades Planned: ${planned.kind}`);
-  const open = schemaVersion >= 2 ? await app.TradeViewsAndReporting.browseTrades({ lifecycle: 'Open' }) : undefined;
-  if (open && open.kind !== 'Ready') throw new Error(`browseTrades Open: ${open.kind}`);
+  const opened = schemaVersion >= 2 ? await app.TradeViewsAndReporting.browseTrades({ lifecycle: 'Open' }) : undefined;
+  if (opened && opened.kind !== 'Ready') throw new Error(`browseTrades Open: ${opened.kind}`);
+  // D9 T9.32: the Open list now comes in attention order; the frozen snapshots hold it as the book's, by Last Activity then Trade, so each Trade is placed there.
+  const open = opened && { view: { items: [...opened.view.items].sort((a, b) => Temporal.Instant.compare(b.lastActivity, a.lastActivity) || a.tradeId.localeCompare(b.tradeId)) } };
   // From schema 5 (D6 T6.23) it adds the Closed list and each Closed Trade's Detail.
   const closed = schemaVersion >= 5 ? await app.TradeViewsAndReporting.browseTrades({ lifecycle: 'Closed' }) : undefined;
   if (closed && closed.kind !== 'Ready') throw new Error(`browseTrades Closed: ${closed.kind}`);

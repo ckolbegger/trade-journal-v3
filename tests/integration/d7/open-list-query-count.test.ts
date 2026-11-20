@@ -47,7 +47,8 @@ describe('T7.30-B3-R2 query count: the Open page with option Trades', () => {
     // their two Underlyings, all Missing at Tuesday's close); then one getAll per distinct dated close date, two here.
     const cursor = { on: 'index', store: 'observations', index: 'byInstrumentDate', method: 'openCursor' };
     const getAll = { on: 'store', store: 'observations', method: 'getAll' };
-    expect(on(page.requests, 'observations')).toEqual([getAll, cursor, cursor, cursor, cursor, getAll, getAll]);
+    // D9 T9.32 (P133): the meter's session before, one more date-wide getAll.
+    expect(on(page.requests, 'observations')).toEqual([getAll, cursor, cursor, cursor, cursor, getAll, getAll, getAll]);
   });
 
   it('should read observations once for two different Underlyings that need the same earlier date', { timeout: 120_000 }, async () => {
@@ -72,6 +73,7 @@ describe('T7.30-B3-R2 query count: the Open page with option Trades', () => {
     // for the one earlier date, which carries both Underlyings.
     const cursor = { on: 'index', store: 'observations', index: 'byInstrumentDate', method: 'openCursor' };
     const getAll = { on: 'store', store: 'observations', method: 'getAll' };
-    expect(on(page.requests, 'observations')).toEqual([getAll, cursor, cursor, cursor, cursor, getAll]);
+    // D9 T9.32 (P133): the meter's session before, one more date-wide getAll.
+    expect(on(page.requests, 'observations')).toEqual([getAll, cursor, cursor, cursor, cursor, getAll, getAll]);
   });
 });

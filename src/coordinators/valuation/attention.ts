@@ -40,8 +40,9 @@ export interface RangePlacement {
 }
 
 // Pressure is NotApplicable when the risk (Losing) or reward (Winning) at entry was not positive on the side the Trade moved toward.
-export type PressureResult = CalculationResult<Pressure, UnavailableReason, Extract<NotApplicableReason, { reason: 'NonPositiveAtEntry' }>>;
-export type RangePositionResult = CalculationResult<RangePlacement, UnavailableReason, never>;
+// A Trade stored Open whose facts hold no position (a lifecycle disagreement) has no figure to measure: the evaluation's NoRemainingPosition, unchanged.
+export type PressureResult = CalculationResult<Pressure, UnavailableReason, Extract<NotApplicableReason, { reason: 'NonPositiveAtEntry' | 'NoRemainingPosition' }>>;
+export type RangePositionResult = CalculationResult<RangePlacement, UnavailableReason, Extract<NotApplicableReason, { reason: 'NoRemainingPosition' }>>;
 
 // The groups of Mark-dependent calculations an unavailable Mark leaves without a Value.
 export type CalculationFamily = 'Valuation' | 'Risk' | 'Reward' | 'ConditionStatus';
@@ -83,13 +84,13 @@ interface RiskRewardFigures {
 }
 
 // Value, or the evaluation's own Unavailable, unchanged (P66): the figures have no other reason to be absent.
-type RiskReward = Extract<CalculationResult<RiskRewardFigures, UnavailableReason, never>, { kind: 'Value' | 'Unavailable' }>;
+type RiskReward = Extract<CalculationResult<RiskRewardFigures, UnavailableReason, Extract<NotApplicableReason, { reason: 'NoRemainingPosition' }>>, { kind: 'Value' | 'Unavailable' | 'NotApplicable' }>;
 
 function riskRewardOf(state: DerivedTradeState, evaluation: TradeEvaluation): RiskReward {
   const risk = evaluation.ongoingRiskToStop;
   const reward = evaluation.incrementalRewardToTarget;
-  if (risk.kind === 'Unavailable') return risk;
-  if (reward.kind === 'Unavailable') return reward;
+  if (risk.kind !== 'Value') return risk as RiskReward;
+  if (reward.kind !== 'Value') return reward as RiskReward;
   if (risk.kind !== 'Value' || reward.kind !== 'Value' || evaluation.observation.mark === null) throw new Error('A pressure input is neither a Value nor Unavailable');
   const lots = state.positions.flatMap((p) => p.openLots);
   // Each role's headline condition (A197), the one `evaluate`'s own headline measures.
@@ -112,7 +113,7 @@ function riskRewardOf(state: DerivedTradeState, evaluation: TradeEvaluation): Ri
 
 // The share of the planned range travelled since entry (P14): the larger consumed share that is positive.
 function pressureOf(result: RiskReward): PressureResult {
-  if (result.kind === 'Unavailable') return result;
+  if (result.kind !== 'Value') return result;
   const { riskNow, rewardNow, riskAtEntry, rewardAtEntry, move } = result.value;
   const losing = { side: 'Losing' as const, atEntry: riskAtEntry, now: riskNow };
   const winning = { side: 'Winning' as const, atEntry: rewardAtEntry, now: rewardNow };
@@ -129,7 +130,7 @@ function pressureOf(result: RiskReward): PressureResult {
 const shareOf = (risk: Rational, reward: Rational) => risk.div(risk.add(reward));
 
 function rangePositionOf(result: RiskReward): RangePositionResult {
-  if (result.kind === 'Unavailable') return result;
+  if (result.kind !== 'Value') return result;
   const { riskNow, rewardNow, riskAtEntry, rewardAtEntry } = result.value;
   const atEntry = shareOf(riskAtEntry, rewardAtEntry);
   if (riskNow.compare(ZERO) <= 0) return { kind: 'Value', value: { now: ZERO, atEntry, pinned: 'Stop' } };
