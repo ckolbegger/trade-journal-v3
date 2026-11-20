@@ -35,3 +35,4 @@ Screen words no approved row covers, used as the session would have recommended,
 | T9.29 | The meter's name and hover, no Mark | "Session before +$X on Thu Nov 12." | W51 ("With no Mark: the reason, then the rails.") |
 | T9.29 | The meter's name and hover, at break-even | "P&L +$X." (no share) | W51 |
 | T9.35 | The meter on the Conditions card, no Mark | The reason is the P&L card's own text for the same result, for example "No Mark for XYZ on Tue Oct 13" | W51 ("With no Mark: the reason, then the rails.") |
+**Reviewed by the user, 2026-11-20** (the D9 Stage C Words Review page): every stage C entry above is approved.
