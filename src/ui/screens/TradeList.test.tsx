@@ -7,6 +7,7 @@ import { openItem, plannedItem } from '../../../tests/support/views-fixtures.ts'
 import type { UiFacade } from '../../app/compose.ts';
 import type { MeterReading } from '../../app/types.ts';
 import { Rational } from '../../domain/values/index.ts';
+import { settlementDueFigure } from '../figures.ts';
 import { RuntimeContext } from '../runtime.tsx';
 import { openRowsOf, TradeList } from './TradeList.tsx';
 
@@ -884,6 +885,19 @@ describe('Open list: the meter (W51, W52)', () => {
     expect(meter(first!).getAttribute('aria-label')).toMatch(/^Mark missing: ABC.*Stop −\$600\.00, Target \+\$1,600\.00\.$/);
     expect(meter(second!).getAttribute('data-state')).toBe('empty');
     expect(within(second!).queryAllByTestId('meter-open')).toHaveLength(0);
+  });
+
+  it('should show the dashed track named by the Settlement Due reason on a Settlement Due contract row', async () => {
+    const put = { kind: 'Option', symbol: 'MNO', root: 'MNO', expiration: '2026-10-13', strike: '45', right: 'Put', multiplier: 100 } as const;
+    const due: MeterReading = { ...noMark, now: { kind: 'Unavailable', reason: 'SettlementDue', instrument: put, expiration: '2026-10-13' } };
+    const table = await openTable([withMeter('t1', 'MNO', due)]);
+    const [, row] = within(table).getAllByRole('row');
+    const meter = within(within(row!).getAllByRole('cell')[3]!).getByRole('img');
+    expect(meter.getAttribute('data-state')).toBe('empty');
+    const name = meter.getAttribute('aria-label')!;
+    expect(name.startsWith(settlementDueFigure({ instrument: put, expiration: '2026-10-13' }, 'America/New_York'))).toBe(true);
+    expect(name.endsWith('Stop −$600.00, Target +$1,600.00.')).toBe(true);
+    expect(within(row!).queryAllByTestId('meter-open')).toHaveLength(0);
   });
 
   it('should show no meter on the Planned and Closed lists', async () => {
