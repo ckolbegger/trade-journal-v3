@@ -50,18 +50,21 @@ export function optionShareEquivalent(option: OptionInstrument, session: Estimat
 // A259: the change in the Mark since the session before, per share, in the order Underlying, time, volatility, priced from the earlier
 // session's implied volatility. The change is measured from the last session that had a Mark.
 export function markChangeSplit(option: OptionInstrument, earlier: readonly EstimateSession[], later: EstimateSession): EstimateSplit {
-  const to = marksOf(later);
-  if (!to) return { kind: 'Unavailable', reason: 'MarkMissing', session: later.date };
+  if (!later.mark) return { kind: 'Unavailable', reason: 'MarkMissing', session: later.date };
   const before = earlier[earlier.length - 1];
   if (!before) return { kind: 'Unavailable', reason: 'NoEarlierFigure', session: later.date };
+  // The not-split change is the option's own Mark change, so a session without an Underlying Mark still counts as having a Mark.
+  const withChange = <T extends object>(unavailable: T) => {
+    const marked = [...earlier].reverse().find((session) => session.mark);
+    return marked?.mark ? { ...unavailable, since: marked.date, change: toNumber(later.mark!) - toNumber(marked.mark) } : unavailable;
+  };
+  const to = marksOf(later);
+  if (!to) return withChange({ kind: 'Unavailable', reason: 'MarkMissing', session: later.date } as const);
   const volatilityBefore = volatilityOf(option, before);
   const from = marksOf(before);
   if (volatilityBefore.kind !== 'Estimate' || !from) {
     const reason = volatilityBefore.kind === 'Unavailable' ? volatilityBefore.reason : 'MarkMissing';
-    const marked = [...earlier].reverse().find((session) => marksOf(session));
-    const last = marked && marksOf(marked);
-    const unavailable = { kind: 'Unavailable', reason, session: before.date } as const;
-    return marked && last ? { ...unavailable, since: marked.date, change: to.mark - last.mark } : unavailable;
+    return withChange({ kind: 'Unavailable', reason, session: before.date } as const);
   }
   const strike = Number(option.strike);
   const priceAt = (underlying: number, days: number, volatility: number) =>

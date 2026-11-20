@@ -89,6 +89,19 @@ describe('the Mark Change Split (A259)', () => {
     expect(split).toMatchObject({ kind: 'Unavailable', reason: 'MarkMissing', session: '2026-11-10', since: '2026-11-09' });
     expect(split.kind === 'Unavailable' && split.change).toBeCloseTo(5.12 - 4.25, 12);
   });
+  it("should measure the not-split change from the last earlier session that had the option's Mark, even when its Underlying Mark is missing", () => {
+    const earlier = before(R_CORV_D, CORV_PUT, '2026-11-11');
+    const marked = { ...earlier[earlier.length - 1]!, date: '2026-11-10', underlying: null, mark: rational('4.50') };
+    const split = markChangeSplit(CORV_PUT, [...earlier.slice(0, -1), marked], sessionOf(R_CORV_D, CORV_PUT, '2026-11-11'));
+    expect(split).toMatchObject({ kind: 'Unavailable', reason: 'MarkMissing', session: '2026-11-10', since: '2026-11-10' });
+    expect(split.kind === 'Unavailable' && split.change).toBeCloseTo(5.12 - 4.5, 12);
+  });
+  it("should give the option Mark's real change when the later session has the option's Mark but no Underlying Mark", () => {
+    const later = { ...sessionOf(R_CORV_D, CORV_PUT, '2026-11-11'), underlying: null };
+    const split = markChangeSplit(CORV_PUT, before(R_CORV_D, CORV_PUT, '2026-11-11'), later);
+    expect(split).toMatchObject({ kind: 'Unavailable', reason: 'MarkMissing', session: '2026-11-11', since: '2026-11-09' });
+    expect(split.kind === 'Unavailable' && split.change).toBeCloseTo(5.12 - 4.25, 12);
+  });
   it('should not split the first session, which has no earlier figure', () => {
     const split = markChangeSplit(CORV_PUT, [], sessionOf(R_CORV_D, CORV_PUT, '2026-11-02'));
     expect(split).toEqual({ kind: 'Unavailable', reason: 'NoEarlierFigure', session: '2026-11-02' });
