@@ -55,7 +55,7 @@ describe('Replay: since the session before (W48)', () => {
       estimates: estimates({ split: { kind: 'Unavailable', reason: 'NoVolatilityFits', session: '2026-11-10', since: '2026-11-09', change: 0.87 } }),
     };
     render(<ReplayDrawer replay={{ ...fullView([wed]), instruments: [{ kind: 'Stock', symbol: 'DALE' }, DALE] }} initialSession="2026-11-11" />);
-    expect(since().textContent).toBe("Since Mon Nov 9: Trade P&L +$174.00. The put's move is not split: no implied volatility for Tue Nov 10. Its Mark changed +$0.87 since Mon Nov 9.");
+    expect(since().textContent).toBe("Since Mon Nov 9: Trade P&L +$174.00. Not split: no implied volatility Tue Nov 10. The put moved +$0.87 since Mon Nov 9.");
     // Nothing is split, so nothing is tagged or drawn.
     expect(within(since()).queryByTestId('since-bar')).toBeNull();
     expect(within(since()).queryByText('estimate')).toBeNull();
@@ -68,11 +68,16 @@ describe('Replay: since the session before (W48)', () => {
   const openWed = (wed: Session) => render(<ReplayDrawer replay={{ ...fullView([wed]), instruments: [{ kind: 'Stock', symbol: 'DALE' }, DALE] }} initialSession="2026-11-11" />);
   it('should say a Mark is missing, with W49 words, when the move is not split for a missing Mark', () => {
     openWed(notSplitWed('MarkMissing'));
-    expect(since().textContent).toBe("Since Mon Nov 9: Trade P&L +$174.00. The put's move is not split: a Mark is missing for Tue Nov 10. Its Mark changed +$0.87 since Mon Nov 9.");
+    expect(since().textContent).toBe("Since Mon Nov 9: Trade P&L +$174.00. Not split: no Mark Tue Nov 10. The put moved +$0.87 since Mon Nov 9.");
   });
   it('should keep no implied volatility for the date when the earlier session has no implied volatility', () => {
     openWed(notSplitWed('NoVolatilityFits'));
-    expect(since().textContent).toBe("Since Mon Nov 9: Trade P&L +$174.00. The put's move is not split: no implied volatility for Tue Nov 10. Its Mark changed +$0.87 since Mon Nov 9.");
+    expect(since().textContent).toBe("Since Mon Nov 9: Trade P&L +$174.00. Not split: no implied volatility Tue Nov 10. The put moved +$0.87 since Mon Nov 9.");
+  });
+  it('should end the not-split sentence at the reason when there is no earlier Mark to compare', () => {
+    const wed = notSplitWed('MarkMissing');
+    openWed({ ...wed, estimates: estimates({ split: { kind: 'Unavailable', reason: 'MarkMissing', session: '2026-11-10' } }) });
+    expect(since().textContent).toBe('Since Mon Nov 9: Trade P&L +$174.00. Not split: no Mark Tue Nov 10.');
   });
   it('should read AXIO moved a share for stock, with no tag', () => {
     const stock: Session = {

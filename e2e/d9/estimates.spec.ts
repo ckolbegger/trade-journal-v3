@@ -96,7 +96,7 @@ test.describe('B9.6 The estimates', () => {
     const scope = replay(page);
     await expect(sliderValue(scope)).toHaveText('Wed Nov 11 · 8 of 8');
     // Wed 11-11: the put's move is not split, and the sentence says the real change since the last Mark.
-    await expect(since(scope)).toHaveText("Since Mon Nov 9: Trade P&L +$261.00. The put's move is not split: a Mark is missing for Tue Nov 10. Its Mark changed +$0.87 since Mon Nov 9.");
+    await expect(since(scope)).toHaveText("Since Mon Nov 9: Trade P&L +$261.00. Not split: no Mark Tue Nov 10. The put moved +$0.87 since Mon Nov 9.");
     await expect(since(scope).getByTestId('since-bar')).toHaveCount(0);
     await expect(volatilityChip(scope)).toHaveText('Implied volatility 44.0%estimate');
     await expect(scope.getByTestId('shares-chip')).toHaveText('Behaves like ≈ short 237 sharesestimate');

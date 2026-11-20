@@ -11,3 +11,9 @@ Each text a task shortened, by task, with its before and after, copied from the 
 | T9.19-B4 | The table "Session by session" (W45) | Columns "Risk to stop", "Reward to target", "Result at the Stop", "Result at the Target" | "Current Risk at Stop", "P&L at Stop", "Current Risk at Worst case", "P&L at Worst case", "Remaining Reward at Target", "P&L at Target", "Remaining Reward at Max reward", "P&L at Max reward" (an unbounded Max reward reads "No cap above" and an empty P&L cell) |
 | T9.19-B4 | The P&L chart's stake tags (W40), wide drawing | "Risk to stop $672", "Reward to target $928" | "Current Risk $672", "Remaining Reward $928" (phone "Risk $672", "Reward $928" unchanged; the chart's line labels "Stop …", "Worst case …", "Target …", "Max reward …" unchanged) |
 **Reviewed by the user, 2026-11-20** (the D9 Words Review page): every stage A change above is approved.
+
+## Stage B
+
+| Task | Where | Before | After |
+|---|---|---|---|
+| T9.28-D2 | The line under the charts, the not-split sentence | "The put's move is not split: a Mark is missing for Tue Nov 10. Its Mark changed +$0.87 since Mon Nov 9." (other reasons: "… not split: no implied volatility for Tue Nov 17. …") | "Not split: no Mark Tue Nov 10. The put moved +$0.87 since Mon Nov 9." (other reasons: "Not split: no implied volatility Tue Nov 17. The call moved −$0.42 since Tue Nov 17."; with no earlier Mark to compare, just "Not split: no Mark Tue Nov 10."). The lead "Since Mon Nov 9: Trade P&L +$261.00." is unchanged |

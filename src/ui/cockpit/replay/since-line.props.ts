@@ -12,7 +12,7 @@ const signedMoney = signed(money);
 const TAG = 'estimate';
 
 // W49's "A Mark is missing.", worded to fit the not-split sentence; every other reason is the earlier session's missing implied volatility.
-const CAUSES: Partial<Record<string, string>> = { MarkMissing: 'a Mark is missing for' };
+const CAUSES: Partial<Record<string, string>> = { MarkMissing: 'no Mark' };
 
 // A part of the split, a finished number of dollars a share, as "−$0.52".
 function partMoney(value: number): string {
@@ -48,9 +48,9 @@ export function sinceOf(view: TradeReplayView): (date: string) => SinceLineProps
       return move ? { lead, move: `${symbol} moved ${signedMoney(move.dollars)} a share.` } : { lead };
     }
     if (split.kind === 'Unavailable') {
-      const real = split.since !== undefined && split.change !== undefined ? ` Its Mark changed ${partMoney(split.change)} since ${shortDate(split.since)}.` : '';
-      const cause = CAUSES[split.reason] ?? 'no implied volatility for';
-      return { lead, move: `The ${rightOf(view)}'s move is not split: ${cause} ${shortDate(split.session)}.${real}` };
+      const real = split.since !== undefined && split.change !== undefined ? ` The ${rightOf(view)} moved ${partMoney(split.change)} since ${shortDate(split.since)}.` : '';
+      const cause = CAUSES[split.reason] ?? 'no implied volatility';
+      return { lead, move: `Not split: ${cause} ${shortDate(split.session)}.${real}` };
     }
     const change = optionChange(view, session);
     if (!change) return { lead };
