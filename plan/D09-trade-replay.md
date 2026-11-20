@@ -975,7 +975,7 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T9.29-D1 | C | — | — | Done (the user, 2026-11-20: fix the test that flaked in run `t9.29`, tech debt item 7) | `610fe293` |
 | T9.30 | C | — | — | Done | `349ad6ec` |
 | T9.31 | C | — | — | In progress (SC-Q1 answered: T9.31-D1, then its run) | `7b73e835`; B1 `479c7635` |
-| T9.31-D1 | C | — | — | In progress from `b69c1938` (the user's SC-Q1 answer (a): the six older Review-open request lists gain the one date's read) | |
+| T9.31-D1 | C | — | — | Done in code; T9.31's run `t9.31-d1` follows (the user's SC-Q1 answer (a): the six older Review-open request lists gain the one date's read) | `4d7e2f2d` |
 | T9.32 | C | — | — | Not started | |
 | T9.33 | C | — | — | Not started | |
 | T9.34 | C | — | — | Not started | |
