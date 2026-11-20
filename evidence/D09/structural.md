@@ -854,3 +854,5 @@ Request lists (the SC-Q1 rule): each gains exactly one `observations.getAll`: `t
 Other notes: `attentionOf` threw for a Trade stored Open whose facts hold no position (d6 I6.9, which the Review never walks); `riskRewardOf`, `pressureOf` and `rangePositionOf` now pass the evaluation's `NotApplicable` (`NoRemainingPosition`) through, so it lands in the Blocker band; the d6 case was the red. No positional test failed on order. `open-views.test.ts`'s first case is still named "ordered by Last Activity descending" (A262 condition 4); its expected order still holds, name left.
 
 ocr `7fe75de2`: No findings (`ocr/T9.32-7fe75de2.json`). ocr excluded `tools/fixtures/workspace-fixture.ts` (its configuration), so the fixture-order change was not reviewed by ocr; listed for the final report.
+
+Complete run `t9.32` (`browser-auto 2ae51b4b` chose the task tier: "no changed path since 2ae51b4b is on the full-tier list"; on `5f0325ec`; run complete): unit 224 files, 2,588 tests; integration 136 files, 292 tests; browser `@every-task` 5 and `e2e/d9` 109 passed, 4 skipped (5.4 min); checks 14 of 14. All passed.
