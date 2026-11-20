@@ -63,6 +63,7 @@ Critic-b2's minor observations, for the user (no task made):
 2. `replay-estimates.test.ts:22`'s `== null` (ocr, style only).
 3. The B8.16 Restore by keyboard flake (run `t9.24`).
 4. Critic-b1's low defect: the not-split sentence's cause phrase "a Mark is missing for Tue Nov 10" replaces W48's "no implied volatility for Tue Nov 10" (from T9.25-B1). Keep it and approve the phrase, or go back to W48's one wording.
+5. Critic-b2's minor observation 1, added by the user 2026-11-20: the implied volatility chip's small chart has no scale, dates or values on screen.
 
 D9A-R's three items (`evidence/D09AR/tech-debt.md`) stand as before (SB-Q3).
 
