@@ -725,3 +725,7 @@ browser-4 stage for `e2e/d9` (which also matches `e2e/d9ar`), from `f7fb30d3` (p
 - Checks: `npx vitest run src/ui/cockpit/replay src/domain/trade-analysis` 544 passed; `npm run lint` 0 errors (2 existing warnings); `npm run typecheck`, `npx tsc6 --noEmit`, `npm run verify:wording` exit 0.
 - T9.28-D1 ocr (`evidence/D09/ocr/T9.28-D1-224043dd.json`): **No findings.** T9.28-D2 ocr (`evidence/D09/ocr/T9.28-D2-bf3e10bd.json`): **No findings.** One complete run, `t9.28-d`, covers both (main session's choice, as for T9.20-D1 and T9.20-D2), started after both reviews (`implementing.md`, step 3).
 - Complete run `t9.28-d` (full tier, after both ocr reviews): unit 2552 passed; integration 292 passed; browser-1 126 passed (5.4m), browser-2 79 passed (4.9m), browser-3 57 passed (14.2m), browser-4 109 passed and 4 skipped (5.0m); 14 of 14 checks exit 0; no failures, no reruns. browser-3 ran the same 57 cases that took 4.3 to 4.4 minutes in earlier runs, so the 14.2 minutes is a one-off slowdown (most likely machine load), not growth; watch it on the next run.
+
+## Stage C
+
+Session started 2026-11-20 from `plan/D09C-handoff.md` on `9fedd87e`. Location checks matched; the diff since `claude-opus-5.5-d9b` holds only T9.28-D1, T9.28-D2 and the stage B retro commits (`provenance.md`, stage C row).
