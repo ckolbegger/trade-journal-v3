@@ -1,0 +1,143 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 0,
+    "total_tokens": 44527,
+    "input_tokens": 44264,
+    "output_tokens": 263,
+    "cache_read_tokens": 4992,
+    "elapsed": "31s"
+  },
+  "tool_calls": {
+    "total": 5,
+    "by_tool": {
+      "file_read": 5
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Test suite orchestration scripts, tests, and package commands",
+      "files": [
+        ".claude/scripts/acceptance-commands.sh",
+        ".claude/scripts/full-suite.sh",
+        ".claude/scripts/run-complete.sh",
+        ".claude/scripts/run-complete.test.sh",
+        "package.json"
+      ]
+    }
+  ],
+  "session_id": "75965f1c-39e2-4331-800a-12810ef01670",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "75965f1c-39e2-4331-800a-12810ef01670",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "8d8f37c2",
+      "resolved_base": "f7fb30d34cb22e3c3180062d7c0be05ae11d65a0",
+      "resolved_head": "8d8f37c2e7af2a84f02f5d32846bc37dff499aab",
+      "exact_range": "f7fb30d34cb22e3c3180062d7c0be05ae11d65a0..8d8f37c2e7af2a84f02f5d32846bc37dff499aab",
+      "source_artifact_sha256": "33ad8e0e24bb77b76029aa0cf89459b162ab2c6c0162969003c38f70e74b3a6a"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0f1386c58c2865675881f17f7828295cb39b10f89988ac675d4125689d2143b6",
+          "path": ".claude/scripts/run-complete.test.sh",
+          "fingerprint": "befa3b89d1d9b7ad88a393c01eda7a1e4f205c2fd4d98e24a4d85bda842a907f"
+        },
+        {
+          "item_id": "2d551ca3c40012e66cfafd685e4a9537a289001e49e24e17bcfb2e05ea1bd547",
+          "path": ".claude/scripts/run-complete.sh",
+          "fingerprint": "b5b0b1c4ef0ecbbde4e0f8c5b3ed01e341377c06a7798d4d198081c393cebea1"
+        },
+        {
+          "item_id": "5c39ed0244642be76c6610333408ab4d112b6e3e48622e17065a72d557ee72ce",
+          "path": ".claude/scripts/acceptance-commands.sh",
+          "fingerprint": "5e681133dfce87d217a6be5a75cf1fcb0485ed14bee8dbe0215b8f9f008b2cdd"
+        },
+        {
+          "item_id": "6805b966253a4ff25b9c1027cf96bb81fb371062cf552ec6b8b4ff969b0ad97f",
+          "path": ".claude/scripts/full-suite.sh",
+          "fingerprint": "499872205f201fbe62929b3dd040d94dfcb96b641813f6c218eec3d1d08eb45d"
+        },
+        {
+          "item_id": "de566e6284a31c2314451a985c1f7d6df2743b4e564b2caa20d17560bbad6f03",
+          "path": "package.json",
+          "fingerprint": "c69a75137b15600820df3309cdffb7f3a5799c48f3d2d24adbc79e4783de8ad1"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0f1386c58c2865675881f17f7828295cb39b10f89988ac675d4125689d2143b6",
+          "path": ".claude/scripts/run-complete.test.sh",
+          "fingerprint": "befa3b89d1d9b7ad88a393c01eda7a1e4f205c2fd4d98e24a4d85bda842a907f"
+        },
+        {
+          "item_id": "2d551ca3c40012e66cfafd685e4a9537a289001e49e24e17bcfb2e05ea1bd547",
+          "path": ".claude/scripts/run-complete.sh",
+          "fingerprint": "b5b0b1c4ef0ecbbde4e0f8c5b3ed01e341377c06a7798d4d198081c393cebea1"
+        },
+        {
+          "item_id": "5c39ed0244642be76c6610333408ab4d112b6e3e48622e17065a72d557ee72ce",
+          "path": ".claude/scripts/acceptance-commands.sh",
+          "fingerprint": "5e681133dfce87d217a6be5a75cf1fcb0485ed14bee8dbe0215b8f9f008b2cdd"
+        },
+        {
+          "item_id": "6805b966253a4ff25b9c1027cf96bb81fb371062cf552ec6b8b4ff969b0ad97f",
+          "path": ".claude/scripts/full-suite.sh",
+          "fingerprint": "499872205f201fbe62929b3dd040d94dfcb96b641813f6c218eec3d1d08eb45d"
+        },
+        {
+          "item_id": "de566e6284a31c2314451a985c1f7d6df2743b4e564b2caa20d17560bbad6f03",
+          "path": "package.json",
+          "fingerprint": "c69a75137b15600820df3309cdffb7f3a5799c48f3d2d24adbc79e4783de8ad1"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "04aa8a513087c90c3d0f38133cc47321fadbfe2ac4bb93d896d0eb114d84803e",
+          "path": ".claude/agents/suite-runner.md",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "16d08eec6858f9ff60e5913069254976778491fd8d8787243f4e7dbce27bc075",
+          "path": ".claude/docs/implementing.md",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "e7e11590fb2e53c162c66c1a3130387a5153362a7cb2d852919a2090ff5801fb",
+          "path": "evidence/D09/structural.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 31308
+  }
+}

@@ -959,9 +959,9 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T9.19 | A | 3 | — | Done (closed by the user's decision with critic-2's four defects carried into D9A-R, section 1.8) | B1 `ae55b7e6`; B2 `e718c280`; B5 `24473015`, `12d7c4a7`; B9 `ddcb01c7`; B10 `8a9a3c14`; B12 `c8aab4cb`; F1 `b0c1c0e3`; B6 `7a4f37b1`; B7 `c30e4da6`; B13 `dd84dec5`; B8 `806857e7`; F2 `c4187556`; B4 `4ea73e48`, `55388096`; B14 `e70946fe`; B3 `f84a9391`; B11 `1047b81a`; full run `2b9497c7`; critic-2 `946e2257` |
 | D9A-R | — | — | — | Done, after T9.19 and before T9.20: see [D09A-R-stage-a-refactor.md](D09A-R-stage-a-refactor.md), section 15. Tagged `claude-opus-5.5-d9ar` | gate critic-3 at `7a776e7e`; evidence `evidence/D09AR/report.md` |
 | T9.20 | B | — | — | Done | `aa5a5c79`; B1 `273df21d`; B2 `4228114d` |
-| T9.20-D1 | B | — | — | In progress from `4228114d` (the user's SB-Q2 answer: remove the `e2e/d9` cases `e2e/d9ar` duplicates) | |
-| T9.20-D2 | B | — | — | Not started (the user's SB-Q2 answer: a `browser-4` stage for `e2e/d9` and `e2e/d9ar`) | |
-| T9.21 | B | — | — | Not started | |
+| T9.20-D1 | B | — | — | Done (the user's SB-Q2 answer: remove the `e2e/d9` cases `e2e/d9ar` duplicates; one found; decision 119) | `f1209b94` |
+| T9.20-D2 | B | — | — | Done (the user's SB-Q2 answer: a `browser-4` stage for `e2e/d9` and `e2e/d9ar`) | `8d8f37c2` |
+| T9.21 | B | — | — | In progress from `8d8f37c2` | |
 | T9.22 | B | — | — | Not started | |
 | T9.23 | B | — | — | Not started | |
 | T9.24 | B | — | — | Not started | |

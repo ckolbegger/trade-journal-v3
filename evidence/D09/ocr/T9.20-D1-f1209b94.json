@@ -1,0 +1,133 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 0,
+    "total_tokens": 33446,
+    "input_tokens": 33176,
+    "output_tokens": 270,
+    "cache_read_tokens": 6656,
+    "elapsed": "23s"
+  },
+  "tool_calls": {
+    "total": 3,
+    "by_tool": {
+      "file_read": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "D9 end-to-end tests and shared support",
+      "files": [
+        "e2e/d9/replay.spec.ts",
+        "e2e/d9/responsive-a11y.spec.ts",
+        "e2e/d9/review.spec.ts",
+        "e2e/d9/states.spec.ts",
+        "e2e/d9/support.ts"
+      ]
+    }
+  ],
+  "session_id": "b3d302a0-c84f-4edf-b62f-67efee865658",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "b3d302a0-c84f-4edf-b62f-67efee865658",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "f1209b94",
+      "resolved_base": "adda1873a3df50e14a05966e45965f10a9c335d7",
+      "resolved_head": "f1209b94219ff1168b0b6d6e6027abfd413ae900",
+      "exact_range": "adda1873a3df50e14a05966e45965f10a9c335d7..f1209b94219ff1168b0b6d6e6027abfd413ae900",
+      "source_artifact_sha256": "0f0282db4193c140733980ce06d6c82aa162878bc451fc1b42cb6fbbd0e616b7"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "001642d35c9cff107e49edc93a963642e592ca6c0fe7ac6604c26b7f2b539427",
+          "path": "e2e/d9/states.spec.ts",
+          "fingerprint": "a9cf5109e8068e6736410c706114e6d6b2823b074e6c3db093785cd62b5a6208"
+        },
+        {
+          "item_id": "347917e3fc99ea10df3899c14b251305db47c31ef851de4417dcd15cdba0c770",
+          "path": "e2e/d9/review.spec.ts",
+          "fingerprint": "610e6a1c7c45769ae82bc33625c1c6d19e6f97aa68f96e22a3d680a1470c9562"
+        },
+        {
+          "item_id": "a50e78b43d9da674ed99eaeeda80fea2f24b5f39189d6f4650878a33f631ea72",
+          "path": "e2e/d9/replay.spec.ts",
+          "fingerprint": "5861d74c4bfd7e324b3fa66a40b7ab1936bc034e7de66f8836235ac79d20303e"
+        },
+        {
+          "item_id": "b6c384b7587d1b65ac5792148e7e8c421811373d53aa2bdd93b3c7790c3895b2",
+          "path": "e2e/d9/responsive-a11y.spec.ts",
+          "fingerprint": "b7602f2a6f329fbab1a7bddf38f6f2b88c58717d843fdaa465acd7c6df7ca392"
+        },
+        {
+          "item_id": "d0126439061216e58eb2b1a6bab019f2d20601558a9531d4100a29b4b9c5c3f9",
+          "path": "e2e/d9/support.ts",
+          "fingerprint": "a457676dfd2ff57d464781484fb898d304e9801d0c344a9ff57206af3eaf76df"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "001642d35c9cff107e49edc93a963642e592ca6c0fe7ac6604c26b7f2b539427",
+          "path": "e2e/d9/states.spec.ts",
+          "fingerprint": "a9cf5109e8068e6736410c706114e6d6b2823b074e6c3db093785cd62b5a6208"
+        },
+        {
+          "item_id": "347917e3fc99ea10df3899c14b251305db47c31ef851de4417dcd15cdba0c770",
+          "path": "e2e/d9/review.spec.ts",
+          "fingerprint": "610e6a1c7c45769ae82bc33625c1c6d19e6f97aa68f96e22a3d680a1470c9562"
+        },
+        {
+          "item_id": "a50e78b43d9da674ed99eaeeda80fea2f24b5f39189d6f4650878a33f631ea72",
+          "path": "e2e/d9/replay.spec.ts",
+          "fingerprint": "5861d74c4bfd7e324b3fa66a40b7ab1936bc034e7de66f8836235ac79d20303e"
+        },
+        {
+          "item_id": "b6c384b7587d1b65ac5792148e7e8c421811373d53aa2bdd93b3c7790c3895b2",
+          "path": "e2e/d9/responsive-a11y.spec.ts",
+          "fingerprint": "b7602f2a6f329fbab1a7bddf38f6f2b88c58717d843fdaa465acd7c6df7ca392"
+        },
+        {
+          "item_id": "d0126439061216e58eb2b1a6bab019f2d20601558a9531d4100a29b4b9c5c3f9",
+          "path": "e2e/d9/support.ts",
+          "fingerprint": "a457676dfd2ff57d464781484fb898d304e9801d0c344a9ff57206af3eaf76df"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "e7e11590fb2e53c162c66c1a3130387a5153362a7cb2d852919a2090ff5801fb",
+          "path": "evidence/D09/structural.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 22803
+  }
+}
