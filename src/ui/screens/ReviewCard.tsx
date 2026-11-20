@@ -318,17 +318,6 @@ function CardBody({ facade, trade, progress, name, advance, go, marks, held, onR
       if (!go.instrument && !replayOpen) setFocusPanel({ panel: go.panel });
     }
   }
-  // Focus goes to the row of the Instrument a link names.
-  const body = useRef<HTMLElement>(null);
-  const { count: linked, instrument } = go;
-  useEffect(() => {
-    if (linked === 0 || instrument === undefined) return;
-    // The row is found by the key it carries: its name is the Instrument's label, which a contract's key is not (K18).
-    const row = [...(body.current?.querySelectorAll<HTMLElement>('section[data-instrument-key]') ?? [])].find((section) => section.dataset.instrumentKey === instrument);
-    const control = row?.querySelector<HTMLElement>('input:not([disabled]), textarea:not([disabled]), button:not([disabled])');
-    if (row && !control) row.tabIndex = -1;
-    (control ?? row)?.focus();
-  }, [linked, instrument]);
   // A panel's work is finished: the next panel that is not done after that one opens and takes focus. A trader who has
   // since opened another panel that still has work stays on it.
   const moveOn = (from: PanelName) => {
@@ -355,7 +344,7 @@ function CardBody({ facade, trade, progress, name, advance, go, marks, held, onR
   const tradeId = trade.tradeId;
   const report = useCallback((dirty: boolean) => onEntryDirty(`action:${tradeId}`, dirty), [tradeId, onEntryDirty]);
   return (
-    <section aria-label={`${name} review`} ref={body}>
+    <section aria-label={`${name} review`}>
       <p>
         {trade.labels.strategy} · {trade.labels.account} · {trade.labels.institution}
       </p>
@@ -383,7 +372,7 @@ function CardBody({ facade, trade, progress, name, advance, go, marks, held, onR
             </button>
           </h4>
           <div id={`${uid}-${name}`} hidden={open !== name}>
-            {name === 'Marks' && <CardMarks facade={facade} tradeId={trade.tradeId} marks={marks} held={held} onResult={onResult} tradeLine={tradeLine} onEntryDirty={onEntryDirty} onMarkSaved={onMarkSaved} onSaveMarks={onSaveMarks} outOfDate={outOfDate} onRefresh={onRefresh} />}
+            {name === 'Marks' && <CardMarks link={go} facade={facade} tradeId={trade.tradeId} marks={marks} held={held} onResult={onResult} tradeLine={tradeLine} onEntryDirty={onEntryDirty} onMarkSaved={onMarkSaved} onSaveMarks={onSaveMarks} outOfDate={outOfDate} onRefresh={onRefresh} />}
             {name === 'Reflections' && <ReviewReflections facade={facade} reviewDate={trade.saveBinding.reviewDate} reflections={trade.reflections} onReview={onReflectionResolved} onNoneRemaining={finishPanel} onEntryDirty={onEntryDirty} />}
             {name === 'Settlement' && <SettlementPanel tradeId={trade.tradeId} items={trade.settlement} timeZone={timeZone ?? 'UTC'} />}
             {name === 'Action' && trade.replay && (

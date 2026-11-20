@@ -18,8 +18,8 @@ test.describe('B5R.3 Shared Mark', () => {
     await expect(remainsOf(page, tA)).toHaveText('1 reflection due · Action');
 
     // Opening T-A's card shows XYZ saved, and that T-F's card holds it too.
-    const marks = await reachPanel(page, tA, 'Marks');
-    const today = marks.getByRole('list', { name: "Today's Marks" }).getByRole('listitem').first();
+    await reachPanel(page, tA, 'Marks');
+    const today = await markRow(page, tA, MONDAY);
     // It names T-F by its Trade-list summary line (50 shares at 50.00), linked to it (decision 67).
     await expect(today).toContainText('also held by Long 50 shares @ $50.00');
     await expect(today.getByRole('link', { name: 'Long 50 shares @ $50.00' })).toHaveAttribute('href', /^\/trades\//);
@@ -53,7 +53,7 @@ test.describe('B5R.4 Invalid price saves nothing', () => {
 
     // The issue sits beside the invalid row with focus on it; every draft is kept; nothing is stored.
     await expect(friday.getByText(NOT_A_PRICE)).toBeVisible();
-    await expect(friday.getByLabel('Price')).toBeFocused();
+    await expect(tradeCard(page, tA).getByRole('textbox', { name: `XYZ Mark, ${FRIDAY}`, exact: true })).toBeFocused();
     await expect(await markCell(page, tA, MONDAY)).toHaveValue('52.00');
     await expect(await markCell(page, tA, FRIDAY)).toHaveValue('abc');
     await expect(await markCell(page, tA, THURSDAY)).toHaveValue('49.00');

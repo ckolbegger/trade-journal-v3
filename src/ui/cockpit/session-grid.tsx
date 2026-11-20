@@ -33,7 +33,13 @@ export function SessionGrid({ label, tableClass, rowLabels, columns, chosen, lay
     if (cell && 'input' in cell) {
       return (
         <td key={key}>
-          <input type="text" inputMode="decimal" className="session-grid-control" aria-label={cell.label} value={cell.input.value} onChange={(event) => cell.input.onChange(event.target.value)} />
+          <input type="text" inputMode="decimal" className="session-grid-control" id={cell.input.id} aria-label={cell.label} aria-invalid={cell.input.invalid || undefined} aria-describedby={cell.input.invalid && cell.input.id ? `${cell.input.id}-error` : undefined} value={cell.input.value} onFocus={cell.input.onFocus} onChange={(event) => cell.input.onChange(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key !== 'Enter' || !cell.input.onEnter) return;
+            event.preventDefault();
+            cell.input.onEnter(event.currentTarget);
+          }}
+        />
         </td>
       );
     }

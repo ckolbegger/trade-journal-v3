@@ -10,7 +10,17 @@ export interface SessionGridFrame {
 // A cell the reader types a price into (A291). Its accessible name is the cell's `label`.
 export interface GridInputCell {
   readonly label: string;
-  readonly input: { readonly value: string; readonly onChange: (value: string) => void };
+  // `onEnter` hears Enter pressed in the input (the Review moves on to the next price, A295).
+  readonly input: {
+    readonly value: string;
+    readonly onChange: (value: string) => void;
+    readonly onEnter?: (input: HTMLInputElement) => void;
+    // Focusing the input chooses the cell, as pressing any other cell does (P160).
+    readonly onFocus?: () => void;
+    // The element id the host finds the input by, and whether a refused save said something about it.
+    readonly id?: string;
+    readonly invalid?: boolean;
+  };
 }
 
 // A session before the Trade held the Instrument (A291, W77): nothing to enter and nothing missing.

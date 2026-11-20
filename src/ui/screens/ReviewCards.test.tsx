@@ -201,10 +201,17 @@ async function showPanel(user: ReturnType<typeof userEvent.setup>, card: HTMLEle
   const header = within(card).getByRole('button', { name: new RegExp(`^${name}\\b`) });
   if (header.getAttribute('aria-expanded') !== 'true') await user.click(header);
 }
+// A cell of the Marks grid by its name: its input while it is Missing, else its button (A161: a link focuses it).
+const cellNamed = (card: HTMLElement, name: string) => within(card).queryByRole('textbox', { name }) ?? within(card).getByRole('button', { name });
+// Choosing a cell (focusing its input, or pressing its button) opens its editor, a region named after it.
+async function chooseCell(user: ReturnType<typeof userEvent.setup>, card: HTMLElement, name: string) {
+  await user.click(within(card).queryByRole('textbox', { name }) ?? within(card).getByRole('button', { name }));
+  return within(card).getByRole('region', { name });
+}
 // Corrects the card's ABC Mark and saves it.
 async function correctAbc(user: ReturnType<typeof userEvent.setup>, card: HTMLElement) {
   await showPanel(user, card, 'Marks');
-  const entry = within(card).getByRole('region', { name: 'ABC Mark, Mon Oct 12' });
+  const entry = await chooseCell(user, card, 'ABC Mark, Mon Oct 12');
   await user.click(within(entry).getByRole('button', { name: 'Correct' }));
   await user.type(within(entry).getByLabelText('Price'), '28.00');
   await user.type(within(entry).getByLabelText('Reason (required)'), 'typo');
@@ -476,7 +483,7 @@ describe('card order follows the newest Review (A150, decision 64)', () => {
     const field = within(card).getAllByRole('textbox').find((box) => !box.closest('[aria-label="ABC Mark, Mon Oct 12"]'))!;
     await user.type(field, 'kept');
     await showPanel(user, card, 'Marks');
-    const entry = within(card).getByRole('region', { name: 'ABC Mark, Mon Oct 12' });
+    const entry = await chooseCell(user, card, 'ABC Mark, Mon Oct 12');
     await user.click(within(entry).getByRole('button', { name: 'Correct' }));
     await user.type(within(entry).getByLabelText('Price'), '28.00');
     await user.type(within(entry).getByLabelText('Reason (required)'), 'typo');
@@ -511,7 +518,7 @@ describe('a late Mark save', () => {
     await screen.findByRole('region', { name: 'ABC review' });
     await user.click(headers()[1]!);
     const card = await screen.findByRole('region', { name: 'DEF review' });
-    await user.click(within(within(card).getByRole('region', { name: 'DEF Mark, Mon Oct 12' })).getByRole('button', { name: 'Withdraw' }));
+    await user.click(within(await chooseCell(user, card, 'DEF Mark, Mon Oct 12')).getByRole('button', { name: 'Withdraw' }));
     await waitFor(() => expect(facade.MarketData.save).toHaveBeenCalledTimes(1));
 
     // Another card is opened while the save is in flight, and a value is typed into it.
@@ -577,7 +584,7 @@ describe('unsaved work (A156)', () => {
 
     // An entered Mark value holds the card.
     await showPanel(user, card, 'Marks');
-    const entry = within(card).getByRole('region', { name: 'ABC Mark, Mon Oct 12' });
+    const entry = await chooseCell(user, card, 'ABC Mark, Mon Oct 12');
     await user.click(within(entry).getByRole('button', { name: 'Correct' }));
     await user.type(within(entry).getByLabelText('Price'), '28.00');
     await waitFor(() => expect(onDirtyChange).toHaveBeenLastCalledWith(true));
@@ -639,7 +646,7 @@ describe('read only (A162)', () => {
     expect(within(first).getByText('Trade P&L')).toBeTruthy();
     expect(within(first).getByText('No Action saved.')).toBeTruthy();
     await showPanel(user, first, 'Marks');
-    expect(within(first).getByRole('region', { name: 'ABC Mark, Mon Oct 12' }).textContent).toContain('$27.50');
+    expect(within(first).getByRole('button', { name: 'ABC Mark, Mon Oct 12' }).textContent).toContain('$27.50');
     // The card with a reflection and a saved Action.
     await user.click(headers()[3]!);
     const card = await screen.findByRole('region', { name: 'XYZ review' });
@@ -668,7 +675,7 @@ describe('links (A161)', () => {
     expect(vi.mocked(facade.DailyReview.getTrade).mock.calls[0]![0]).toMatchObject({ tradeId: 't-f' });
     expect(within(card).getByRole('button', { name: /^Marks\b/ }).getAttribute('aria-expanded')).toBe('true');
     // Focus lands in a passive effect after the commit that shows the card, so the test waits for it.
-    await waitFor(() => expect(within(card).getByRole('region', { name: 'XYZ Mark, Mon Oct 12' }).contains(document.activeElement)).toBe(true));
+    await waitFor(() => expect(document.activeElement).toBe(cellNamed(card, 'XYZ Mark, Mon Oct 12')));
   });
 
   it('should open T-E card on its first panel that is not done for /review?trade=t-e', async () => {
@@ -692,7 +699,7 @@ describe('links (A161)', () => {
     expect(headers().map((h) => h.getAttribute('aria-expanded'))).toEqual(['false', 'false', 'false', 'true', 'false']);
     expect(vi.mocked(facade.DailyReview.getTrade).mock.calls[0]![0]).toMatchObject({ tradeId: 't-a' });
     expect(within(card).getByRole('button', { name: /^Marks\b/ }).getAttribute('aria-expanded')).toBe('true');
-    await waitFor(() => expect(within(card).getByRole('region', { name: 'XYZ Mark, Mon Oct 12' }).contains(document.activeElement)).toBe(true));
+    await waitFor(() => expect(document.activeElement).toBe(cellNamed(card, 'XYZ Mark, Mon Oct 12')));
   });
 
   const panelStates = (card: HTMLElement) => (['Marks', 'Reflections', 'Action'] as const).map((name) => within(card).getByRole('button', { name: new RegExp(`^${name}\\b`) }).getAttribute('aria-expanded'));
@@ -821,7 +828,7 @@ describe('header', () => {
     await user.click(within(blockers[0]!).getByRole('link', { name: 'DEF' }));
     const def = await screen.findByRole('region', { name: 'DEF review' });
     expect(within(def).getByRole('button', { name: /^Marks\b/ }).getAttribute('aria-expanded')).toBe('true');
-    await waitFor(() => expect(within(def).getByRole('region', { name: 'DEF Mark, Mon Oct 12' }).contains(document.activeElement)).toBe(true));
+    await waitFor(() => expect(document.activeElement).toBe(cellNamed(def, 'DEF Mark, Mon Oct 12')));
     // The reflection opens XYZ's card on its Reflections panel.
     await user.click(within(blockers[2]!).getByRole('link', { name: 'XYZ' }));
     const xyz = await screen.findByRole('region', { name: 'XYZ review' });
@@ -849,7 +856,7 @@ describe('card-top scroll once the body shows (T5R.15-B1-B1)', () => {
     renderReview(cardFacade(), { at: '/review?instrument=XYZ' });
     const card = await screen.findByRole('region', { name: 'XYZ review' });
 
-    await waitFor(() => expect(within(card).getByRole('region', { name: 'XYZ Mark, Mon Oct 12' }).contains(document.activeElement)).toBe(true));
+    await waitFor(() => expect(document.activeElement).toBe(cellNamed(card, 'XYZ Mark, Mon Oct 12')));
     expect(topScrolls(scrollIntoView, card.closest('li'))).toEqual([{ block: 'start' }]);
   });
 
@@ -884,7 +891,7 @@ describe('Action save whose next step is a Mark (T5R.12-B3)', () => {
     expect(screen.queryByRole('region', { name: 'ABC review' })).toBeNull();
     expect(headers().map((h) => h.getAttribute('aria-expanded'))).toEqual(['false', 'true', 'false', 'false', 'false']);
     expect(within(def).getByRole('button', { name: /^Marks\b/ }).getAttribute('aria-expanded')).toBe('true');
-    await waitFor(() => expect(within(def).getByRole('region', { name: 'DEF Mark, Mon Oct 12' }).contains(document.activeElement)).toBe(true));
+    await waitFor(() => expect(document.activeElement).toBe(cellNamed(def, 'DEF Mark, Mon Oct 12')));
     expect(screen.queryByRole('status')).toBeNull();
   });
 
@@ -894,7 +901,7 @@ describe('Action save whose next step is a Mark (T5R.12-B3)', () => {
     vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'Saved', action: {} as never, review: postWith(markStep(['t-e'])) });
     renderReview(facade, { at: '/review?trade=t-c' });
     const card = await screen.findByRole('region', { name: 'DEF review' });
-    await user.type(within(within(card).getByRole('region', { name: 'DEF Mark, Mon Oct 12' })).getByLabelText('Price'), '33.10');
+    await user.type(within(card).getByRole('textbox', { name: 'DEF Mark, Mon Oct 12' }), '33.10');
     await showPanel(user, card, 'Action');
 
     await user.click(within(card).getByRole('button', { name: 'Save' }));
@@ -913,7 +920,7 @@ describe('Action save while other forms hold values (A156)', () => {
     vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'Saved', action: {} as never, review: post });
     renderReview(facade, { at: '/review?trade=t-c' });
     const card = await screen.findByRole('region', { name: 'DEF review' });
-    await user.type(within(within(card).getByRole('region', { name: 'DEF Mark, Mon Oct 12' })).getByLabelText('Price'), '33.10');
+    await user.type(within(card).getByRole('textbox', { name: 'DEF Mark, Mon Oct 12' }), '33.10');
     await showPanel(user, card, 'Action');
 
     await user.click(within(card).getByRole('button', { name: 'Save' }));
@@ -923,7 +930,7 @@ describe('Action save while other forms hold values (A156)', () => {
     expect(screen.getByRole('region', { name: 'DEF review' })).toBe(card);
     expect(screen.queryByRole('region', { name: 'XYZ review' })).toBeNull();
     await showPanel(user, card, 'Marks');
-    expect(within(within(card).getByRole('region', { name: 'DEF Mark, Mon Oct 12' })).getByLabelText<HTMLInputElement>('Price').value).toBe('33.10');
+    expect(within(card).getByRole<HTMLInputElement>('textbox', { name: 'DEF Mark, Mon Oct 12' }).value).toBe('33.10');
   });
 });
 
@@ -1017,7 +1024,7 @@ describe('Trade names in messages and blockers (decision 68)', () => {
     const card = (await screen.findAllByRole('listitem')).find((li) => li.getAttribute('data-trade-id') === 't-f')!;
     // A Mark draft holds the card while its Action is saved.
     await showPanel(user, card, 'Marks');
-    const entry = within(card).getByRole('region', { name: 'XYZ Mark, Mon Oct 12' });
+    const entry = await chooseCell(user, card, 'XYZ Mark, Mon Oct 12');
     await user.click(within(entry).getByRole('button', { name: 'Correct' }));
     await user.type(within(entry).getByLabelText('Price'), '53.00');
     await showPanel(user, card, 'Action');
@@ -1038,7 +1045,7 @@ describe('Trade names in messages and blockers (decision 68)', () => {
     await waitFor(() => expect(facade.DailyReview.getTrade).toHaveBeenCalledTimes(1));
     const card = (await screen.findAllByRole('listitem')).find((li) => li.getAttribute('data-trade-id') === 't-f')!;
     await showPanel(user, card, 'Marks');
-    const entry = within(card).getByRole('region', { name: 'XYZ Mark, Mon Oct 12' });
+    const entry = await chooseCell(user, card, 'XYZ Mark, Mon Oct 12');
     await user.click(within(entry).getByRole('button', { name: 'Correct' }));
     await user.type(within(entry).getByLabelText('Price'), '53.00');
     await showPanel(user, card, 'Action');

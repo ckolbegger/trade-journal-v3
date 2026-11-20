@@ -277,14 +277,17 @@ export async function reachPanel(page: Page, card: CardRef, panel: Panel): Promi
 function gridCell(panel: Locator, name: string): Locator {
   return panel.getByRole('textbox', { name, exact: true }).or(panel.getByRole('button', { name, exact: true }));
 }
-// Chooses the Instrument's cell when the Marks panel has the grid and returns the cell editor's region; on the old layout
-// it returns the row. Pressing a cell only chooses it: it never saves (decision 65, rule 3).
-export async function markRow(page: Page, card: CardRef, date: string): Promise<Locator> {
+// Chooses the cell of that name when the Marks panel has the grid (pressing its button, or focusing its input) and returns the cell
+// editor's region; on the old layout it returns the row. Choosing a cell only opens its editor: it never saves (decision 65, rule 3).
+export async function chooseCell(page: Page, card: CardRef, name: string): Promise<Locator> {
   const panel = await reachPanel(page, card, 'Marks');
-  const name = `${symbolOf(card)} Mark, ${date}`;
   const cell = gridCell(panel, name);
-  if ((await cell.count()) > 0 && (await cell.evaluate((element) => element.tagName)) === 'BUTTON') await cell.click();
+  if ((await cell.count()) > 0) await cell.click();
   return panel.getByRole('region', { name, exact: true });
+}
+// The Instrument's cell on the date, chosen; the cell editor's region.
+export async function markRow(page: Page, card: CardRef, date: string): Promise<Locator> {
+  return chooseCell(page, card, `${symbolOf(card)} Mark, ${date}`);
 }
 // The cell's input: the grid's input named after the cell, or on the old layout the row's Price input.
 export async function markCell(page: Page, card: CardRef, date: string): Promise<Locator> {

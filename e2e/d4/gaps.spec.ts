@@ -3,7 +3,7 @@ import { completion, createTradeAt, enterMark, expect, FOUR_TRADES, markRow, MON
 const MNO = { ...FOUR_TRADES[0]!.plan, symbol: 'MNO' };
 const WEDNESDAY_1700 = '2026-10-07T21:00:00Z';
 const THURSDAY_1700 = '2026-10-08T21:00:00Z';
-const EARLIER = 'Earlier sessions without Marks — optional';
+const EARLIER = "Earlier sessions don't block the Review.";
 
 test.describe('B4.6 Skipped sessions', () => {
   test('should list Friday as optional, reach Complete without it, and show an empty list after Friday is entered', async ({ profile }) => {
@@ -18,12 +18,11 @@ test.describe('B4.6 Skipped sessions', () => {
     // Monday 17:00: Friday was skipped and is listed as an optional gap, beside Monday's task.
     await setClock(context, page, MONDAY_1700);
     await openReview(page);
-    await reachPanel(page, 'MNO', 'Marks');
-    const earlier = page.getByRole('group', { name: EARLIER });
-    await expect(earlier).toContainText('These sessions do not block the Review.');
+    const marks = await reachPanel(page, 'MNO', 'Marks');
+    await expect(marks).toContainText(EARLIER);
     await expect(await markRow(page, 'MNO', 'Fri Oct 9')).toBeVisible();
-    await expect(earlier).not.toContainText('Wed Oct 7');
-    await expect(earlier).not.toContainText('Thu Oct 8');
+    await expect(marks).not.toContainText('Wed Oct 7');
+    await expect(marks).not.toContainText('Thu Oct 8');
 
     // Monday's Mark and an Action complete the Review without Friday.
     await enterMark(page, 'MNO', 'Mon Oct 12', '52.00');
@@ -39,9 +38,9 @@ test.describe('B4.6 Skipped sessions', () => {
     await enterMark(page, 'MNO', 'Fri Oct 9', '51.50');
     await reloadReview(page);
     await expect(completion(page)).toHaveText('Complete');
-    await reachPanel(page, 'MNO', 'Marks');
-    await expect(page.getByRole('group', { name: EARLIER })).toHaveCount(0);
-    await expect(await markRow(page, 'MNO', 'Fri Oct 9')).toHaveCount(0);
+    await expect(await reachPanel(page, 'MNO', 'Marks')).not.toContainText(EARLIER);
+    // Friday stays as the Previous column, with its Mark.
+    await expect(await markRow(page, 'MNO', 'Fri Oct 9')).toContainText('Manual');
     expect(observationsOf(workspaceOf(await probe(page))!).map((o) => [o.tradingDate, o.marks[0]!.price])).toEqual([['2026-10-07', '50.5'], ['2026-10-08', '51'], ['2026-10-09', '51.5'], ['2026-10-12', '52']]);
     await context.close();
   });

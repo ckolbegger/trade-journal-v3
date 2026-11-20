@@ -157,7 +157,7 @@ describe('Review card: the meter (W51)', () => {
     expect(meterIn(cardOf('XYZ', 1)).getAttribute('data-state')).toBe('empty');
 
     const panel = await screen.findByRole('region', { name: 'Marks' });
-    await user.type(within(within(panel).getByRole('region', { name: 'XYZ Mark, Mon Oct 12' })).getByLabelText('Price'), '52.00');
+    await user.type(within(panel).getByRole('textbox', { name: 'XYZ Mark, Mon Oct 12' }), '52.00');
     await user.click(within(panel).getByRole('button', { name: 'Save Marks (1)' }));
 
     await waitFor(() => expect(meterIn(cardOf('XYZ', 1)).getAttribute('aria-label')).toContain('62% of the way to the Target'));

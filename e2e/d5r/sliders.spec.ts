@@ -19,7 +19,7 @@ test.describe('B5R.6 Missing-Mark link', () => {
     await expect(page.getByRole('heading', { name: 'Review', level: 1 })).toBeVisible(READY);
     await expect(cardHeader(page, tC)).toHaveAttribute('aria-expanded', 'true', READY);
     await expect(panelHeader(page, tC, 'Marks')).toHaveAttribute('aria-expanded', 'true');
-    await expect(tradeCard(page, 'DEF').getByRole('region', { name: `DEF Mark, ${MONDAY}`, exact: true }).getByLabel('Price')).toBeFocused();
+    await expect(tradeCard(page, 'DEF').getByRole('textbox', { name: `DEF Mark, ${MONDAY}`, exact: true })).toBeFocused();
     // No other card is open.
     await expect(page.locator('.review-card-head button[aria-expanded="true"]')).toHaveCount(1);
     await context.close();
@@ -42,7 +42,7 @@ test.describe('B5R.12 Missing-Mark link on a shared Instrument', () => {
     await expect(page.getByRole('heading', { name: 'Review', level: 1 })).toBeVisible(READY);
     await expect(cardHeader(page, tF)).toHaveAttribute('aria-expanded', 'true', READY);
     await expect(panelHeader(page, tF, 'Marks')).toHaveAttribute('aria-expanded', 'true');
-    await expect(tradeCard(page, tF).getByRole('region', { name: `XYZ Mark, ${MONDAY}`, exact: true }).getByLabel('Price')).toBeFocused();
+    await expect(tradeCard(page, tF).getByRole('textbox', { name: `XYZ Mark, ${MONDAY}`, exact: true })).toBeFocused();
     // The other XYZ card, and every other card, stays collapsed.
     await expect(cardHeader(page, tA)).toHaveAttribute('aria-expanded', 'false');
     await expect(page.locator('.review-card-head button[aria-expanded="true"]')).toHaveCount(1);

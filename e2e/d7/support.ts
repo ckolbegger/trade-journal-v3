@@ -2,7 +2,7 @@
 // build as the served build (the default for every case), and the option steps: the option Plan form and the option exit. Dates follow the breakdown's fixtures:
 // every contract expires Friday 2026-11-20 (EST, UTC-5).
 import type { Locator, Page } from '@playwright/test';
-import { answerCloseReviewIn, answerIn, closeReasonGroup, closingSection, closeReviewGroup, completeReflection, createTradeAt, currentTradeId, detail, executionRow, expect, openDrawer, openEntryForm, PLAN, reachCard, reachPanel, READY, tradeCard, type CardRef, type ProbedDatabase, type TradeRef, test as d1Test, type Row } from '../d6/support.ts'; // d6's test, whose automatic fixture serves current
+import { answerCloseReviewIn, answerIn, chooseCell, closeReasonGroup, closingSection, closeReviewGroup, completeReflection, createTradeAt, currentTradeId, detail, executionRow, expect, openDrawer, openEntryForm, PLAN, reachCard, reachPanel, READY, tradeCard, type CardRef, type ProbedDatabase, type TradeRef, test as d1Test, type Row } from '../d6/support.ts'; // d6's test, whose automatic fixture serves current
 
 export * from '../d6/support.ts';
 
@@ -112,14 +112,15 @@ export async function createSettlementFixture(page: Page): Promise<{ t1: TradeRe
   return { t1: { symbol: 'XYZ', tradeId: t1, label: 'T-1' }, t2: { symbol: 'XYZ', tradeId: t2, label: 'T-2' }, t3: { symbol: 'MNO', tradeId: t3, label: 'T-3' } };
 }
 
-// An option's Mark row in a card's Marks panel, named by the contract's label (convention C6).
+// An option's cell in a card's Marks panel, named by the contract's label (convention C6), chosen; its cell editor's region.
 export async function optionMarkRow(page: Page, card: CardRef, label: string, date: string): Promise<Locator> {
-  return (await reachPanel(page, card, 'Marks')).getByRole('region', { name: `${label} Mark, ${date}`, exact: true });
+  return chooseCell(page, card, `${label} Mark, ${date}`);
 }
 
-// Fills one Mark price in the open card's Marks panel and presses Save Marks (D5R, A153).
+// Fills one Mark price, in the cell the editor region is named after, in the open card's Marks panel and presses Save Marks (D5R, A153).
 export async function saveMarkPrice(page: Page, card: CardRef, row: Locator, price: string): Promise<void> {
-  await row.getByLabel('Price').fill(price);
+  const panel = await reachPanel(page, card, 'Marks');
+  await panel.getByRole('textbox', { name: (await row.getAttribute('aria-label')) ?? '', exact: true }).fill(price);
   await (await reachPanel(page, card, 'Marks')).getByRole('button', { name: /^Save Marks/ }).click();
 }
 

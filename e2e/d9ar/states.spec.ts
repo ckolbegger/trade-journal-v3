@@ -101,7 +101,11 @@ test.describe('B9AR.6 How a replay ends, and a session with no Mark', () => {
     // "Add the Mark" opens the Review's Marks row for the put.
     await scope.getByRole('link', { name: 'Add the Mark' }).click();
     await expect(page).toHaveURL(/\/review\?.*trade=/);
-    const row = page.getByRole('region', { name: 'CORV Nov 20 $80 Put Mark, Tue Nov 10', exact: true });
+    const cellName = 'CORV Nov 20 $80 Put Mark, Tue Nov 10';
+    await expect(page.getByRole('textbox', { name: cellName, exact: true })).toBeVisible(READY);
+    // Choosing the cell opens its editor.
+    await page.getByRole('textbox', { name: cellName, exact: true }).click();
+    const row = page.getByRole('region', { name: cellName, exact: true });
     await expect(row).toBeVisible(READY);
     await page.screenshot({ path: `${SCREENSHOTS}/B9AR.6-corv-add-the-mark.png` });
     // Acknowledge it as unavailable, then back to the replay on Tue 11-10.

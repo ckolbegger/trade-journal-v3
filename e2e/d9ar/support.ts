@@ -56,11 +56,11 @@ async function enterTrade(page: Page, fixture: Fixture, through: number): Promis
     const stock = fixture.series.underlying[i];
     const held = fixture.series.held[i];
     if (stock !== null && stock !== undefined) {
-      await panel.getByRole('region', { name: `${fixture.symbol} Mark, ${when}`, exact: true }).getByLabel('Price').fill(stock);
+      await panel.getByRole('textbox', { name: `${fixture.symbol} Mark, ${when}`, exact: true }).fill(stock);
       count += 1;
     }
     if (fixture.contract !== undefined && held !== null && held !== undefined) {
-      await panel.getByRole('region', { name: `${fixture.contract} Mark, ${when}`, exact: true }).getByLabel('Price').fill(held);
+      await panel.getByRole('textbox', { name: `${fixture.contract} Mark, ${when}`, exact: true }).fill(held);
       count += 1;
     }
   }

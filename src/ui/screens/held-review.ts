@@ -1,3 +1,4 @@
+import type { Instrument } from '../../domain/instrument/index.ts';
 import type { DailyTradeReview, ExpectedResolutionRevision, MarkResolution, ObservationKey, OpenDailyReviewResult, OwedReflectionsCard, PostMarksReview, PostSaveReview, ReviewNextStep, SavedMark, WalkedTrade } from '../../app/types.ts';
 
 export type Ready = Extract<OpenDailyReviewResult, { kind: 'Ready' }>;
@@ -71,6 +72,7 @@ function learn(held: Held, keys: readonly MovedKey[]): Held {
 
 export type MarkRows = Extract<Ready['families'][number], { family: 'Marks' }>;
 export type GapGroup = MarkRows['earlier'][number];
+type EarlierMarksGroup = MarkRows['earlierMarks'][number];
 
 // The Marks a card owns (A153): its Review-date rows, and its earlier sessions from the date each is relevant to the Trade.
 export interface CardMarkRows {
@@ -89,6 +91,23 @@ export function marksOf(held: Held, tradeId: string): CardMarkRows {
     return missing.length + acknowledged.length > 0 ? [{ ...group, missing, acknowledged }] : [];
   });
   return { today: family.today.filter((row) => row.trades.includes(tradeId)), earlier };
+}
+
+// What the Review holds of earlier sessions for one card's Trade (A288): the session before the Review Date, and each Instrument the
+// Trade held before it, with the session the Trade held it from and the Available Marks the Review lists.
+export interface CardEarlierMarks {
+  readonly previousSession?: string;
+  readonly instruments: readonly { readonly instrumentKey: string; readonly instrument: Instrument; readonly from: string; readonly marks: EarlierMarksGroup['marks'] }[];
+}
+
+export function earlierMarksOf(held: Held, tradeId: string): CardEarlierMarks {
+  const family = held.review.families.find((f) => f.family === 'Marks');
+  if (family?.family !== 'Marks') return { instruments: [] };
+  const instruments = family.earlierMarks.flatMap((group) => {
+    const from = group.trades.find((t) => t.tradeId === tradeId)?.from;
+    return from === undefined ? [] : [{ instrumentKey: group.instrumentKey, instrument: group.instrument, from, marks: group.marks }];
+  });
+  return { ...(family.previousSession !== undefined && { previousSession: family.previousSession }), instruments };
 }
 
 // The card to open after an Action save (P50).

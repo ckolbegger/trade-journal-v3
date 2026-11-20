@@ -111,6 +111,11 @@ function renderReview(facade: UiFacade, at = '/review') {
 }
 
 const markRegion = (card: HTMLElement, label: string) => within(card).getByRole('region', { name: `${label} Mark, Fri Nov 20` });
+// Choosing a cell by its input opens its editor, a region named after it.
+async function chooseCell(user: ReturnType<typeof userEvent.setup>, card: HTMLElement, label: string) {
+  await user.click(within(card).getByRole('textbox', { name: `${label} Mark, Fri Nov 20` }));
+  return markRegion(card, label);
+}
 
 describe('option Marks (A115)', () => {
   it('should accept 0 for a contract with its explanatory note, and show Needed only while settlement is due on a task needed only by Settlement Due Trades', async () => {
@@ -120,24 +125,25 @@ describe('option Marks (A115)', () => {
     renderReview(facade);
 
     const card = await screen.findByRole('region', { name: 'MNO review' });
-    // The contract is named by its label in the row heading and the row's region (convention C6), never by its OCC key.
+    // The contract is named by its label in its cell and the cell's editor (convention C6), never by its OCC key; its row is headed Put Mark.
     const marks = within(card).getByRole('region', { name: 'Marks' });
-    expect(within(marks).getAllByRole('heading', { level: 4 }).map((h) => h.textContent)).toEqual(['MNO Nov 20 $45 Put', 'MNO', 'XYZ']);
-    const contract = markRegion(card, 'MNO Nov 20 $45 Put');
+    expect(within(marks).getAllByRole('rowheader').map((h) => h.textContent)).toEqual(['Put Mark', 'MNO Mark', 'XYZ Mark']);
+    const contractInput = within(marks).getByRole('textbox', { name: 'MNO Nov 20 $45 Put Mark, Fri Nov 20' });
 
     // 0 is an honest closing value, with the note saying so, for every Instrument.
-    await user.type(within(contract).getByLabelText('Price'), '0');
+    await user.type(contractInput, '0');
+    const contract = markRegion(card, 'MNO Nov 20 $45 Put');
     expect(within(contract).getByText('0 means it closed with no value')).toBeTruthy();
-    expect(within(markRegion(card, 'MNO')).getByText('0 means it closed with no value')).toBeTruthy();
+    // A task only the Settlement Due Trade needs says so; one a Trade without a due settlement also needs does not.
+    expect(within(contract).getByText('Needed only while settlement is due')).toBeTruthy();
+    const mno = await chooseCell(user, card, 'MNO');
+    expect(within(mno).getByText('0 means it closed with no value')).toBeTruthy();
+    expect(within(mno).getByText('Needed only while settlement is due')).toBeTruthy();
+    expect(within(await chooseCell(user, card, 'XYZ')).queryByText('Needed only while settlement is due')).toBeNull();
     await user.click(within(marks).getByRole('button', { name: /^Save Marks/ }));
     expect(facade.DailyReview.save).toHaveBeenCalledWith(
       expect.objectContaining({ kind: 'SaveReviewMarks', entries: [{ key: { instrumentKey: PUT_KEY, tradingDate: DATE }, expectedRevision: 'None', intention: { kind: 'RecordInitialManualMark', price: '0' } }] }),
     );
-
-    // A task only the Settlement Due Trade needs says so; one a Trade without a due settlement also needs does not.
-    expect(within(contract).getByText('Needed only while settlement is due')).toBeTruthy();
-    expect(within(markRegion(card, 'MNO')).getByText('Needed only while settlement is due')).toBeTruthy();
-    expect(within(markRegion(card, 'XYZ')).queryByText('Needed only while settlement is due')).toBeNull();
   });
 });
 
@@ -185,7 +191,7 @@ describe('a contract named by its label (conflict K18) and the card payoff summa
     expect(within(blockers).getByText(/^Mark missing for/).textContent).toBe('Mark missing for MNO Nov 20 $45 Put on Fri Nov 20');
     await user.click(within(blockers).getByRole('link', { name: 'MNO Nov 20 $45 Put' }));
 
-    expect(markRegion(card, 'MNO Nov 20 $45 Put').contains(document.activeElement)).toBe(true);
+    expect(document.activeElement).toBe(within(card).getByRole('textbox', { name: 'MNO Nov 20 $45 Put Mark, Fri Nov 20' }));
   });
 
   it('should word Market Datas AfterExpiration beside the contract row with the expiration date', async () => {
@@ -195,7 +201,7 @@ describe('a contract named by its label (conflict K18) and the card payoff summa
     renderReview(facade);
     const card = await screen.findByRole('region', { name: 'MNO review' });
 
-    await user.type(within(markRegion(card, 'MNO Nov 20 $45 Put')).getByLabelText('Price'), '0.10');
+    await user.type(within(card).getByRole('textbox', { name: 'MNO Nov 20 $45 Put Mark, Fri Nov 20' }), '0.10');
     await user.click(within(card).getByRole('button', { name: /^Save Marks/ }));
 
     expect(within(markRegion(card, 'MNO Nov 20 $45 Put')).getByText('This contract expired on Fri Nov 20, so it has no Mark for a later date.')).toBeTruthy();

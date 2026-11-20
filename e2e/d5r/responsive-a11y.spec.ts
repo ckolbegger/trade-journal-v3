@@ -24,7 +24,6 @@ test.describe('B5R.11 Responsive and accessible', () => {
     expect(wide.meter.y).toBeLessThan(wide.button.y + wide.button.height);
 
     // Half-fill drafts at 1280 px: a price and a half-written "Can't get a price" in the Marks panel, an Exit and a half-written Intent in the Action panel.
-    const monday = await markRow(page, tA, MONDAY);
     await (await markCell(page, tA, MONDAY)).fill('52.00');
     const friday = await markRow(page, tA, FRIDAY);
     await friday.getByRole('button', { name: "Can't get a price" }).click();
@@ -33,8 +32,8 @@ test.describe('B5R.11 Responsive and accessible', () => {
     await expect(cardItem(page, tA)).toContainText('Evidence limited');
     await expect(remainsOf(page, tA)).toHaveText('1 Mark · 1 reflection due · Action');
     await expect(status(page)).toContainText('Incomplete');
-    await expect(monday.getByText('Unsaved')).toBeVisible();
     await expect(friday.getByText('Unsaved')).toBeVisible();
+    await expect((await markRow(page, tA, MONDAY)).getByText('Unsaved')).toBeVisible();
     await expect(panelHeader(page, tA, 'Marks')).toContainText('1 needed');
     const action = await actionFormOf(page, tA);
     await action.getByRole('radio', { name: 'Exit', exact: true }).check();
@@ -80,7 +79,7 @@ test.describe('B5R.11 Responsive and accessible', () => {
     await expect(cardHeader(page, tB)).toBeFocused();
     // Keyboard and focus steps assert navigation itself (section 6.4, rule 4): raw locators, no reaches.
     const abc = tradeCard(page, 'ABC');
-    const price = abc.getByRole('region', { name: `ABC Mark, ${MONDAY}`, exact: true }).getByLabel('Price');
+    const price = abc.getByRole('textbox', { name: `ABC Mark, ${MONDAY}`, exact: true });
     await tabTo(page, price);
     await page.keyboard.type('27.50');
     await page.keyboard.press('Enter');

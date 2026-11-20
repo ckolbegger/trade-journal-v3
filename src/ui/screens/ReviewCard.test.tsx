@@ -1434,7 +1434,7 @@ describe('moving on', () => {
     expect(opened()).toEqual(['Marks']);
 
     // Save Marks finishes the Marks panel: the reflection due is the next panel that is not done.
-    await user.type(within(card).getByLabelText('Price'), '52.00');
+    await user.type(within(card).getByRole('textbox', { name: /Mark, / }), '52.00');
     await user.click(within(card).getByRole('button', { name: 'Save Marks (1)' }));
     await vi.waitFor(() => expect(opened()).toEqual(['Reflections']));
 
@@ -1489,7 +1489,7 @@ describe('moving on from the panel that finished', () => {
     const card = await openTrade(user, 'XYZ');
     const opened = () => (['Marks', 'Reflections', 'Action'] as const).filter((name) => panelHeader(card, name).getAttribute('aria-expanded') === 'true');
 
-    await user.type(within(card).getByLabelText('Price'), '52.00');
+    await user.type(within(card).getByRole('textbox', { name: /Mark, / }), '52.00');
     await user.click(within(card).getByRole('button', { name: 'Save Marks (1)' }));
     await user.click(panelHeader(card, 'Reflections'));
     held.resolve({
@@ -1548,13 +1548,13 @@ describe('panel headers from progress (A169)', () => {
     expect(within(marks).getByText('2 needed')).toBeTruthy();
 
     await user.click(marks);
-    await user.type(within(within(card).getByRole('region', { name: /^XYZ Mark, / })).getByLabelText('Price'), '52.00');
+    await user.type(within(card).getByRole('textbox', { name: /^XYZ Mark, / }), '52.00');
     await user.click(within(card).getByRole('button', { name: 'Save Marks (1)' }));
     await vi.waitFor(() => expect(within(panelHeader(card, 'Marks')).getByText('1 of 2 for Mon Oct 12')).toBeTruthy());
     expect(within(panelHeader(card, 'Marks')).getByText('1 needed')).toBeTruthy();
 
     await user.click(panelHeader(card, 'Marks'));
-    await user.type(within(within(card).getByRole('region', { name: /^ABC Mark, / })).getByLabelText('Price'), '52.00');
+    await user.type(within(card).getByRole('textbox', { name: /^ABC Mark, / }), '52.00');
     await user.click(within(card).getByRole('button', { name: 'Save Marks (1)' }));
     await vi.waitFor(() => expect(within(panelHeader(card, 'Marks')).getByText('2 of 2 for Mon Oct 12')).toBeTruthy());
     expect(within(panelHeader(card, 'Marks')).getByText('Saved')).toBeTruthy();
@@ -1780,7 +1780,7 @@ describe('Review card: the Replay button (decision 3)', () => {
     });
     renderWalk(facade);
     const card = await openTrade(user, 'XYZ');
-    await user.type(within(card).getByLabelText('Price'), '52.00');
+    await user.type(within(card).getByRole('textbox', { name: /Mark, / }), '52.00');
     await user.click(within(card).getByRole('button', { name: 'Save Marks (1)' }));
     await user.click(await within(card).findByRole('button', { name: 'Replay' }));
     const dialog = await screen.findByRole('dialog', { name: 'Replay, XYZ' });

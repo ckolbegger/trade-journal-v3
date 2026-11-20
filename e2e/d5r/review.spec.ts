@@ -93,9 +93,9 @@ test.describe('B5R.2 Opening far down the list', () => {
     await expect(header).toHaveAttribute('aria-expanded', 'true');
     await expect(cardHeader(page, tA)).toHaveAttribute('aria-expanded', 'false');
     await expect(cardList(page).locator(OPEN_HEADERS)).toHaveCount(1);
-    await expect(eighteenth.getByLabel('Price').first()).toBeVisible();
+    await expect(eighteenth.getByRole('textbox', { name: / Mark, / }).first()).toBeVisible();
     await expect(header).toBeInViewport();
-    await expect(eighteenth.getByLabel('Price').first()).toBeInViewport();
+    await expect(eighteenth.getByRole('textbox', { name: / Mark, / }).first()).toBeInViewport();
     await expect(panelHeader(page, tA, 'Marks')).toHaveCount(0);
     await context.close();
   });

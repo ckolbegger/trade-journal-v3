@@ -1,16 +1,19 @@
-import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
-import type { ExpectedResolutionRevision, MarkResolution, MarkRow, MarketDataPrepareEntry, ObservationKey, SaveReviewMarksResult } from '../../app/types.ts';
+import type { MarkResolution, MarkRow, ObservationKey, MarketDataPrepareEntry, SaveReviewMarksResult } from '../../app/types.ts';
 import type { Instrument } from '../../domain/instrument/index.ts';
 import { instrumentLabel } from '../calculation-words.ts';
 import { shortDate } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
 import { fieldIssues } from './form-issues.tsx';
-import { standing as heldStanding, type CardMarkRows, type GapGroup, type Held, type HeldResult, type Standing } from './held-review.ts';
+import { earlierMarksOf, standing as heldStanding, type CardMarkRows, type Held, type HeldResult, type Standing } from './held-review.ts';
+import { CANT_GET_A_PRICE, gridModel, NOT_HELD } from './marks-grid.ts';
 import { MarkEntry, type MarkEntryProps } from './MarkEntry.tsx';
+import { MarksGrid } from './MarksGrid.tsx';
 import { describeMarkIssues, ZERO_MARK_NOTE } from './mark-issues.ts';
 import type { FieldIssue } from './plan-issues.ts';
+import { clearDraft, discardAll, draftAt, emptyDrafts, saveEntries, setDraft as setDraftAt, type Drafts, type DraftValue } from './review-drafts.ts';
 
 export type EntryDirty = (id: string, dirty: boolean) => void;
 
@@ -22,37 +25,27 @@ function ReviewMarkEntry({ instrumentKey, tradingDate, onEntryDirty, onMarkSaved
 }
 
 // A typed price, or "Can't get a price" with its reason, held in the panel until Save Marks (A153).
-interface Draft {
-  readonly price: string;
-  readonly unavailable: boolean;
-  readonly reason: string;
-}
-const NO_DRAFT: Draft = { price: '', unavailable: false, reason: '' };
-const isDraft = (draft: Draft | undefined): draft is Draft => draft !== undefined && (draft.price !== '' || draft.unavailable);
-const CANT_GET_A_PRICE = "Can't get a price";
 // A Mark task only a Trade with a due settlement needs (A112, T7.24): recording the expiration removes it.
 const SETTLEMENT_ONLY_NOTE = 'Needed only while settlement is due';
 
-// What every row of the panel shares: the drafts and the controls over them.
+// What the cell editor under the grid shares: the drafts and the controls over them.
 interface Panel {
   readonly facade: UiFacade;
   readonly writable: boolean;
   readonly uid: string;
-  readonly drafts: Readonly<Record<string, Draft>>;
-  // What a refused save said about each row's key, shown beside it.
+  readonly draftOf: (key: ObservationKey) => DraftValue | undefined;
+  readonly hold: (key: ObservationKey, value: DraftValue | undefined) => void;
+  // What a refused save said about each key, shown in its editor.
   readonly issues: Readonly<Record<string, readonly FieldIssue[]>>;
-  // What a Conflict said about a row's key: nothing was saved, and the Mark shown is the current one.
+  // What a Conflict said about a key: nothing was saved, and the Mark shown is the current one.
   readonly notices: Readonly<Record<string, string>>;
-  readonly setDraft: (id: string, draft: Draft) => void;
-  // A key's standing, from the held Review; the row's listed values when the Review knows nothing of the key (A172).
+  // A key's standing, from the held Review; the cell's listed values when the Review knows nothing of the key (A172).
   readonly standing: (key: ObservationKey, listed: Standing) => Standing;
   // A per-row save reaches the held Review through the fold (P51).
   readonly onResult: (result: HeldResult) => void;
   readonly onEntryDirty: EntryDirty;
   // The saved Mark's draft id: once saved it is no longer an unsaved draft.
   readonly onMarkSaved: (draftId: string) => void;
-  // Enter in a price moves on to the next price, and from the last to Save Marks (A153).
-  readonly onPriceEnter: (price: HTMLInputElement) => void;
   // The walked Trades whose settlement is due: a Mark only they need goes away once the expiration is recorded (A112).
   readonly settlementTrades: ReadonlySet<string>;
 }
@@ -60,21 +53,22 @@ interface Panel {
 const rowId = (instrumentKey: string, tradingDate: string): string => `${instrumentKey}:${tradingDate}`;
 const without = <T,>(record: Readonly<Record<string, T>>, id: string): Record<string, T> => Object.fromEntries(Object.entries(record).filter(([key]) => key !== id));
 
-// The element ids of a row's fields, under the panel's own prefix since several panels share a page.
+// The element ids of a key's fields, under the panel's own prefix since several panels share a page.
 const fieldIds = (uid: string, id: string) => ({ price: `${uid}-${id}-price`, reason: `${uid}-${id}-reason`, key: `${uid}-${id}-key` });
 
-// The controls of a key that can still take a Mark: its price, or why no price can be had. Both stay drafts until Save Marks.
-function DraftFields({ panel, id, resolution }: { readonly panel: Panel; readonly id: string; readonly resolution: MarkResolution }) {
-  const draft = panel.drafts[id] ?? NO_DRAFT;
-  const held = isDraft(draft);
+// What the editor holds of a key that can still take a Mark: why no price can be had, and a price over an acknowledgment. A price for a
+// Missing key is typed in its cell. Both stay drafts until Save Marks.
+function DraftFields({ panel, tradeKey, resolution }: { readonly panel: Panel; readonly tradeKey: ObservationKey; readonly resolution: MarkResolution }) {
+  const id = rowId(tradeKey.instrumentKey, tradeKey.tradingDate);
+  const draft = panel.draftOf(tradeKey);
   const { fieldError, describedBy } = fieldIssues(panel.issues[id] ?? []);
   const field = fieldIds(panel.uid, id);
   // An issue about the Mark as a whole has no field to sit beside.
   const keyIssue = (panel.issues[id] ?? []).find((issue) => issue.field === field.key);
-  if (resolution.kind === 'Available' && !held) return null;
+  if (resolution.kind === 'Available' && draft === undefined) return null;
   return (
     <>
-      {held && (
+      {draft !== undefined && (
         <p>
           <strong>Unsaved</strong>
         </p>
@@ -89,39 +83,29 @@ function DraftFields({ panel, id, resolution }: { readonly panel: Panel; readonl
           {keyIssue.message}
         </p>
       )}
-      {draft.unavailable ? (
+      {draft?.kind === 'CantGetPrice' ? (
         <div className="field">
           <label>
             Reason (required)
-            <textarea id={field.reason} value={draft.reason} onChange={(e) => panel.setDraft(id, { ...draft, reason: e.target.value })} {...describedBy(field.reason)} />
+            <textarea id={field.reason} value={draft.reason} onChange={(e) => panel.hold(tradeKey, { kind: 'CantGetPrice', reason: e.target.value })} {...describedBy(field.reason)} />
           </label>
           {fieldError(field.reason)}
-          <button type="button" className="pill secondary" onClick={() => panel.setDraft(id, NO_DRAFT)}>
+          <button type="button" className="pill secondary" onClick={() => panel.hold(tradeKey, undefined)}>
             Cancel
           </button>
         </div>
       ) : (
         <div className="field">
-          <label>
-            Price
-            <input
-              id={field.price}
-              data-mark-price
-              inputMode="decimal"
-              value={draft.price}
-              onChange={(e) => panel.setDraft(id, { ...draft, price: e.target.value })}
-              onKeyDown={(e) => {
-                if (e.key !== 'Enter') return;
-                e.preventDefault();
-                panel.onPriceEnter(e.currentTarget);
-              }}
-              {...describedBy(field.price)}
-            />
-          </label>
+          {resolution.kind !== 'Missing' && (
+            <label>
+              Price
+              <input id={field.price} inputMode="decimal" value={draft?.kind === 'Price' ? draft.price : ''} onChange={(e) => panel.hold(tradeKey, { kind: 'Price', price: e.target.value })} {...describedBy(field.price)} />
+            </label>
+          )}
           {fieldError(field.price)}
           <p className="hint">{ZERO_MARK_NOTE}</p>
           {resolution.kind === 'Missing' && (
-            <button type="button" className="pill secondary" onClick={() => panel.setDraft(id, { price: '', unavailable: true, reason: '' })}>
+            <button type="button" className="pill secondary" onClick={() => panel.hold(tradeKey, { kind: 'CantGetPrice', reason: '' })}>
               {CANT_GET_A_PRICE}
             </button>
           )}
@@ -131,129 +115,22 @@ function DraftFields({ panel, id, resolution }: { readonly panel: Panel; readonl
   );
 }
 
-// One key's row: its Mark status and the actions on a saved one (Correct, Withdraw), then the draft fields.
-function KeyRow({ panel, instrumentKey, instrument, tradingDate, resolution, resolutionRevision, withdraw, settlementOnly = false }: { readonly panel: Panel; readonly instrumentKey: string; readonly instrument: Instrument; readonly tradingDate: string; readonly resolution: MarkResolution; readonly resolutionRevision: ExpectedResolutionRevision; readonly withdraw: boolean; readonly settlementOnly?: boolean }) {
+// The chosen cell's editor, in the place T9R2.12's cell editor will take: its Mark status and the actions on a saved one (Correct, Withdraw),
+// then the draft fields. Its region is named after the cell, as the cell is.
+function CellEditor({ panel, instrumentKey, instrument, tradingDate, listed, withdraw, children }: { readonly panel: Panel; readonly instrumentKey: string; readonly instrument: Instrument; readonly tradingDate: string; readonly listed: Standing; readonly withdraw: boolean; readonly children?: ReactNode }) {
+  const key = { instrumentKey, tradingDate };
   const id = rowId(instrumentKey, tradingDate);
-  const now = panel.standing({ instrumentKey, tradingDate }, { resolution, revision: resolutionRevision });
+  const now = panel.standing(key, listed);
   const saved: MarkEntryProps['onSaved'] = ({ resolution: next, resolutionRevision: revision }) => {
-    panel.onResult({ kind: 'MarkSaved', key: { instrumentKey, tradingDate }, resolution: next, resolutionRevision: revision });
+    panel.onResult({ kind: 'MarkSaved', key, resolution: next, resolutionRevision: revision });
     panel.onMarkSaved(id);
   };
   return (
     <ReviewMarkEntry facade={panel.facade} instrumentKey={instrumentKey} instrument={instrument} tradingDate={tradingDate} resolution={now.resolution} resolutionRevision={now.revision} withdraw={withdraw} offerEntry={false} onEntryDirty={panel.onEntryDirty} onMarkSaved={saved}>
-      {settlementOnly && <p>{SETTLEMENT_ONLY_NOTE}</p>}
-      {panel.writable && <DraftFields panel={panel} id={id} resolution={now.resolution} />}
+      {children}
+      {panel.writable && <DraftFields panel={panel} tradeKey={key} resolution={now.resolution} />}
     </ReviewMarkEntry>
   );
-}
-
-// Today's Mark tasks: one row per Instrument with the eligible Trades that hold it.
-function TodayRow({ panel, row, cardTradeId, tradeLine }: { readonly panel: Panel; readonly row: MarkRow; readonly cardTradeId: string; readonly tradeLine: (tradeId: string) => string }) {
-  // A shared Instrument names the other Trades that hold it, by their summary line (A153, decision 67).
-  const others = row.trades.filter((tradeId) => tradeId !== cardTradeId);
-  const { timeZone } = useRuntime();
-  return (
-    <li>
-      <h4>{instrumentLabel(row.instrument, timeZone)}</h4>
-      {others.length > 0 && (
-        <p>
-          also held by{' '}
-          {others.map((tradeId, i) => (
-            <span key={tradeId}>
-              {i > 0 && ', '}
-              <Link to={`/trades/${tradeId}`}>{tradeLine(tradeId)}</Link>
-            </span>
-          ))}
-        </p>
-      )}
-      <KeyRow panel={panel} instrumentKey={row.instrumentKey} instrument={row.instrument} tradingDate={row.tradingDate} resolution={row.resolution} resolutionRevision={row.resolutionRevision} withdraw settlementOnly={row.task === 'Manual' && row.trades.every((tradeId) => panel.settlementTrades.has(tradeId))} />
-    </li>
-  );
-}
-
-const GAPS_PER_PAGE = 20;
-// A gap row has no effective Mark; one constant keeps the prop stable across renders.
-const MISSING: MarkResolution = { kind: 'Missing' };
-// The resolution an earlier-session row starts from: acknowledged when its date holds an acknowledgment.
-function resolutionOf(group: GapGroup, date: string): MarkResolution {
-  const acknowledgment = group.acknowledgments[date];
-  return acknowledgment ? { kind: 'AcknowledgedUnavailable', acknowledgment } : MISSING;
-}
-const EARLIER_HEADING = 'Earlier sessions without Marks — optional';
-// An Instrument's earlier sessions, newest first.
-const sessionsOf = (group: GapGroup): string[] => [...group.missing, ...group.acknowledged].sort((a, b) => (a < b ? 1 : -1));
-
-// One Instrument's earlier sessions without an effective Mark, newest first, a page at a time.
-function GapList({ panel: shared, group }: { readonly panel: Panel; readonly group: GapGroup }) {
-  const [page, setPage] = useState(0);
-  // Paging would unmount the rows and drop what was typed, so it waits while any row holds a value: a correction in
-  // progress, reported by its entry, or a draft of this Instrument's.
-  const [dirtyIds, setDirtyIds] = useState<ReadonlySet<string>>(new Set());
-  const reportDirty = shared.onEntryDirty;
-  const onEntryDirty = useCallback<EntryDirty>(
-    (id, dirty) => {
-      setDirtyIds((prev) => {
-        if (prev.has(id) === dirty) return prev;
-        const next = new Set(prev);
-        if (dirty) next.add(id);
-        else next.delete(id);
-        return next;
-      });
-      reportDirty(id, dirty);
-    },
-    [reportDirty],
-  );
-  const panel = { ...shared, onEntryDirty };
-  const blocked = dirtyIds.size > 0 || Object.entries(shared.drafts).some(([id, draft]) => id.startsWith(`${group.instrumentKey}:`) && isDraft(draft));
-  const holdId = useId();
-  const { timeZone } = useRuntime();
-  const sessions = sessionsOf(group);
-  const first = page * GAPS_PER_PAGE;
-  const shown = sessions.slice(first, first + GAPS_PER_PAGE);
-  return (
-    <section aria-label={`${instrumentLabel(group.instrument, timeZone)} earlier sessions`}>
-      <h4>{instrumentLabel(group.instrument, timeZone)}</h4>
-      <ul className="review-rows">
-        {shown.map((date) => (
-          <li key={date}>
-            <p>{shortDate(date)}</p>
-            <KeyRow panel={panel} instrumentKey={group.instrumentKey} instrument={group.instrument} tradingDate={date} resolution={resolutionOf(group, date)} resolutionRevision={group.revisions[date] ?? 'None'} withdraw={false} />
-          </li>
-        ))}
-      </ul>
-      {sessions.length > GAPS_PER_PAGE && (
-        <p>
-          Sessions {first + 1} to {first + shown.length} of {sessions.length}
-          {blocked && <span id={holdId}> Save or clear the value you entered on this page to change pages.</span>}
-          {page > 0 && (
-            <button type="button" className="pill secondary" disabled={blocked} aria-describedby={blocked ? holdId : undefined} onClick={() => setPage(page - 1)}>
-              Previous page
-            </button>
-          )}
-          {first + GAPS_PER_PAGE < sessions.length && (
-            <button type="button" className="pill secondary" disabled={blocked} aria-describedby={blocked ? holdId : undefined} onClick={() => setPage(page + 1)}>
-              Next page
-            </button>
-          )}
-        </p>
-      )}
-    </section>
-  );
-}
-
-// The sessions the card opened with, each read from the newest Review that still lists it: a session another tab
-// resolved stays listed, at its new resolution and revision, and one the Review no longer lists keeps its snapshot.
-function withNewest(opened: GapGroup, newest: GapGroup | undefined): GapGroup {
-  const listed = (group: GapGroup | undefined, date: string) => group !== undefined && (group.missing.includes(date) || group.acknowledged.includes(date));
-  const sessions = sessionsOf(opened);
-  const source = (date: string) => (listed(newest, date) ? newest! : opened);
-  const from = (list: (group: GapGroup) => readonly string[]) => sessions.filter((date) => list(source(date)).includes(date));
-  const pick = <T,>(table: (group: GapGroup) => Readonly<Record<string, T>>): Record<string, T> =>
-    Object.fromEntries(sessions.flatMap((date) => {
-      const value = table(source(date))[date];
-      return value === undefined ? [] : [[date, value]];
-    }));
-  return { ...opened, missing: from((group) => group.missing), acknowledged: from((group) => group.acknowledged), revisions: pick((group) => group.revisions), acknowledgments: pick((group) => group.acknowledgments) };
 }
 
 export interface CardMarksProps {
@@ -274,69 +151,99 @@ export interface CardMarksProps {
   readonly outOfDate: boolean;
   // Reads the Review and the card again; false when that could not be done.
   readonly onRefresh: () => Promise<boolean>;
+  // A link to an Instrument's Mark (A161): its Review Date cell's editor opens and takes focus.
+  readonly link?: { readonly count: number; readonly instrument?: string };
 }
 
-// The Marks panel of an open card (A153): its Review-date rows, then its earlier sessions. A typed price or a
-// "Can't get a price" is a draft until Save Marks; a row with a Mark keeps its own Correct and Withdraw.
-export function CardMarks({ facade, tradeId, marks, held: heldReview, onResult, tradeLine, onEntryDirty, onMarkSaved, onSaveMarks, outOfDate, onRefresh }: CardMarksProps) {
+// The Marks panel of an open card (A153, P158): the Trade's Marks grid. A typed price or a "Can't get a price" is a draft until
+// Save Marks; the chosen cell's editor keeps the per-key Correct and Withdraw of a Mark.
+export function CardMarks({ facade, tradeId, marks, held: heldReview, onResult, tradeLine, onEntryDirty, onMarkSaved, onSaveMarks, outOfDate, onRefresh, link }: CardMarksProps) {
   const uid = useId();
-  const { writable, report } = useRuntime();
-  // The earlier sessions as the card opened: a session filled meanwhile stays listed with its saved Mark until the card is closed.
+  const { writable, report, timeZone } = useRuntime();
+  // The earlier sessions as the card opened: a session filled meanwhile stays a column, with its saved Mark, until the card is closed.
   const [opened] = useState(marks.earlier);
-  const earlier = opened.map((group) => withNewest(group, marks.earlier.find((now) => now.instrumentKey === group.instrumentKey)));
-  const [drafts, setDrafts] = useState<Readonly<Record<string, Draft>>>({});
+  const [drafts, setDrafts] = useState<Drafts>(emptyDrafts);
+  const [chosen, setChosen] = useState<ObservationKey>();
   const [issues, setIssues] = useState<Readonly<Record<string, readonly FieldIssue[]>>>({});
   const [notices, setNotices] = useState<Readonly<Record<string, string>>>({});
   const [refreshFailed, setRefreshFailed] = useState(false);
-  // Why nothing was saved when no row can say it: the Review changed since it was read, or the write failed.
+  // Why nothing was saved when no cell can say it: the Review changed since it was read, or the write failed.
   const [failure, setFailure] = useState<'changed' | 'failed'>();
   const [saving, setSaving] = useState(false);
-  // Changing a draft answers what a refused save said about its row.
-  const setDraft = useCallback((id: string, draft: Draft) => {
-    setDrafts((current) => ({ ...current, [id]: draft }));
-    setIssues((current) => without(current, id));
-    setNotices((current) => without(current, id));
-  }, []);
+  // A correction in progress holds paging (A296); the editor's entries report it.
+  const [dirtyIds, setDirtyIds] = useState<ReadonlySet<string>>(new Set());
+  const reportDirty = onEntryDirty;
+  const entryDirty = useCallback<EntryDirty>(
+    (id, dirty) => {
+      setDirtyIds((prev) => {
+        if (prev.has(id) === dirty) return prev;
+        const next = new Set(prev);
+        if (dirty) next.add(id);
+        else next.delete(id);
+        return next;
+      });
+      reportDirty(id, dirty);
+    },
+    [reportDirty],
+  );
+  // Changing a draft answers what a refused save said about its key. An empty price is no draft.
+  const hold = useCallback(
+    (key: ObservationKey, value: DraftValue | undefined) => {
+      const id = rowId(key.instrumentKey, key.tradingDate);
+      setDrafts((current) => (value === undefined || (value.kind === 'Price' && value.price === '') ? clearDraft(current, key) : setDraftAt(current, key, value, tradeId)));
+      setIssues((current) => without(current, id));
+      setNotices((current) => without(current, id));
+    },
+    [tradeId],
+  );
   // A refused save takes focus to its first issue.
   const [focusField, setFocusField] = useState<{ readonly field: string }>();
   useEffect(() => {
     if (focusField) document.getElementById(focusField.field)?.focus();
   }, [focusField]);
+  const section = useRef<HTMLElement>(null);
+  const reviewDate = heldReview.review.reviewDate;
+  const model = gridModel({ reviewDate, tradeId, today: marks.today, earlier: opened, earlierMarks: earlierMarksOf(heldReview, tradeId), standing: (key) => heldStanding(heldReview, key) });
+  // A link names the Instrument: its Review Date cell is chosen, and its editor's first control takes focus.
+  const { count: linked, instrument: linkedInstrument } = link ?? { count: 0 };
+  const [handledLink, setHandledLink] = useState(0);
+  if (linked !== handledLink) {
+    setHandledLink(linked);
+    if (linkedInstrument !== undefined) setChosen({ instrumentKey: linkedInstrument, tradingDate: reviewDate });
+  }
+  // The cell is found by its name: the Instrument's label, which a contract's key is not (K18).
+  const linkedInstrumentLabel = model.instruments.find((i) => i.instrumentKey === linkedInstrument)?.instrument;
+  const linkedCell = linkedInstrumentLabel && `${instrumentLabel(linkedInstrumentLabel, timeZone)} Mark, ${shortDate(reviewDate)}`;
+  useEffect(() => {
+    if (handledLink === 0 || linkedCell === undefined) return;
+    [...(section.current?.querySelectorAll<HTMLElement>('table input, table button') ?? [])].find((control) => control.getAttribute('aria-label') === linkedCell)?.focus();
+  }, [handledLink, linkedCell]);
   const standing = (key: ObservationKey, listed: Standing): Standing => heldStanding(heldReview, key) ?? listed;
-  const count = Object.values(drafts).filter(isDraft).length;
+  const count = Object.keys(drafts).length;
   // The card holds while any draft does (A156); leaving the panel abandons them. A read-only card shows no draft
   // fields and no Discard, so it holds nothing: the drafts stay unsaved in state, but they cannot keep the card open.
   const held = writable && count > 0;
   useEffect(() => onEntryDirty('marks', held), [held, onEntryDirty]);
   useEffect(() => () => onEntryDirty('marks', false), [onEntryDirty]);
-  const section = useRef<HTMLElement>(null);
   const saveButton = useRef<HTMLButtonElement>(null);
-  const onPriceEnter = (price: HTMLInputElement) => {
-    const prices = [...(section.current?.querySelectorAll<HTMLInputElement>('input[data-mark-price]') ?? [])];
-    (prices[prices.indexOf(price) + 1] ?? saveButton.current)?.focus();
-  };
-  // The walked Trades with a due settlement, from their card progress: a Mark only they need is said so in its row (A112).
+  // The walked Trades with a due settlement, from their card progress: a Mark only they need is said so in its editor (A112).
   const walkedTrades = heldReview.review.families.flatMap((family) => (family.family === 'Trades' ? family.trades : []));
   const settlementTrades = new Set(walkedTrades.filter((trade) => trade.progress.panels.some((p) => p.panel === 'Settlement' && !p.done)).map((trade) => trade.tradeId));
-  const panel: Panel = { facade, writable, uid, drafts, issues, notices, setDraft, standing, onResult, onEntryDirty, onMarkSaved, onPriceEnter, settlementTrades };
-  // Every drafted key becomes an entry, in the order the rows are shown, bound to the revision it stands at.
-  const keys = [
-    ...marks.today.map((row) => ({ instrumentKey: row.instrumentKey, instrument: row.instrument, tradingDate: row.tradingDate, listed: { resolution: row.resolution, revision: row.resolutionRevision } })),
-    ...earlier.flatMap((group) => sessionsOf(group).map((date) => ({ instrumentKey: group.instrumentKey, instrument: group.instrument, tradingDate: date, listed: { resolution: resolutionOf(group, date), revision: group.revisions[date] ?? ('None' as const) } }))),
-  ];
+  const panel: Panel = { facade, writable, uid, draftOf: (key) => draftAt(drafts, key)?.value, hold, issues, notices, standing, onResult, onEntryDirty: entryDirty, onMarkSaved, settlementTrades };
+  const instrumentOf = (instrumentKey: string): Instrument => model.instruments.find((i) => i.instrumentKey === instrumentKey)!.instrument;
+  const revisionOf = (key: ObservationKey) => {
+    const cell = model.cellAt(key.instrumentKey, key.tradingDate);
+    return cell === undefined || cell === NOT_HELD ? undefined : cell.revision;
+  };
   const save = async () => {
-    const sent = keys.flatMap(({ instrumentKey, instrument, tradingDate, listed }) => {
-      const id = rowId(instrumentKey, tradingDate);
-      const draft = drafts[id];
-      if (!isDraft(draft)) return [];
-      const intention = draft.unavailable ? ({ kind: 'AssertUnavailable', reason: draft.reason } as const) : ({ kind: 'RecordInitialManualMark', price: draft.price.trim() } as const);
-      const entry: MarketDataPrepareEntry = { key: { instrumentKey, tradingDate }, expectedRevision: standing({ instrumentKey, tradingDate }, listed).revision, intention };
-      return [{ id, entry, instrument }];
-    });
+    const sent = Object.values(drafts);
+    const prepared = saveEntries(drafts, revisionOf);
+    // Market Data takes 100 entries at once: the words for more are T9R2.13's.
+    if (prepared.kind === 'TooMany') return;
     setSaving(true);
     let result: SaveReviewMarksResult | undefined;
     try {
-      result = await onSaveMarks(sent.map((s) => s.entry));
+      result = await onSaveMarks(prepared.entries);
     } catch {
       result = undefined;
     } finally {
@@ -351,41 +258,50 @@ export function CardMarks({ facade, tradeId, marks, held: heldReview, onResult, 
     else if (result.kind === 'Conflict' && result.keys) {
       // Each key that moved shows what it is now, so the retry binds to it; the drafts stay.
       const moved = result.keys.flatMap((conflicted) => {
-        const row = sent[conflicted.entryIndex];
-        return row ? [{ id: row.id, key: row.entry.key, conflicted }] : [];
+        const draft = sent[conflicted.entryIndex];
+        return draft ? [{ id: rowId(draft.key.instrumentKey, draft.key.tradingDate), key: draft.key, conflicted }] : [];
       });
       onResult({ kind: 'MarksConflict', moved: moved.map(({ key, conflicted }) => ({ key, resolution: conflicted.resolution, resolutionRevision: conflicted.resolutionRevision })) });
       setNotices(Object.fromEntries(moved.map(({ id, conflicted }) => [id, conflicted.code === 'MarkExists' ? 'A Mark already exists for this date, so it cannot be marked unavailable. Nothing was saved.' : 'This Mark changed after you opened it. Nothing was saved. The current Mark is shown above, and your values are kept.'])));
+      if (moved[0]) setChosen(moved[0].key);
     } else if (result.kind === 'MarksSaved') {
       // A draft typed or changed while the save was pending is not what was sent, so it stays.
-      const unchanged = (id: string, current: Draft | undefined) => {
-        const was = drafts[id];
-        return current !== undefined && was !== undefined && current.price === was.price && current.unavailable === was.unavailable && current.reason === was.reason;
-      };
-      const sentIds = new Set(sent.map((s) => s.id));
-      setDrafts((current) => Object.fromEntries(Object.entries(current).filter(([id, draft]) => !(sentIds.has(id) && unchanged(id, draft)))));
+      setDrafts((current) =>
+        sent.reduce((rest, draft) => {
+          const now = draftAt(rest, draft.key);
+          return now && JSON.stringify(now.value) === JSON.stringify(draft.value) ? clearDraft(rest, draft.key) : rest;
+        }, current),
+      );
     } else if (result.kind === 'Rejected') {
-      // Each entry's issues sit beside its row, in the row order the entries were sent in.
+      // Each entry's issues sit with its key, in the order the entries were sent in.
       const found = result.issues.flatMap((issue) => {
-        const row = 'entryIndex' in issue && issue.entryIndex !== undefined ? sent[issue.entryIndex] : undefined;
-        if (!row || !('field' in issue)) return [];
-        const draft = drafts[row.id]!;
-        return describeMarkIssues([issue], `${uid}-${row.id}`, row.instrument).map((described) => ({ id: row.id, issue: draft.unavailable && described.code === 'ReasonRequired' ? { ...described, message: "Enter why you can't get a price." } : described }));
+        const draft = 'entryIndex' in issue && issue.entryIndex !== undefined ? sent[issue.entryIndex] : undefined;
+        if (!draft || !('field' in issue)) return [];
+        const id = rowId(draft.key.instrumentKey, draft.key.tradingDate);
+        return describeMarkIssues([issue], `${uid}-${id}`, instrumentOf(draft.key.instrumentKey)).map((described) => ({ id, key: draft.key, issue: draft.value.kind === 'CantGetPrice' && described.code === 'ReasonRequired' ? { ...described, message: "Enter why you can't get a price." } : described }));
       });
       setIssues(Object.fromEntries([...new Set(found.map((f) => f.id))].map((id) => [id, found.filter((f) => f.id === id).map((f) => f.issue)])));
       const first = found[0];
-      if (first) setFocusField({ field: first.issue.field });
-      else setFailure('failed');
+      if (first) {
+        // The first refused key opens its editor and takes focus (A294); the others show on their cells.
+        setChosen(first.key);
+        setFocusField({ field: first.issue.field });
+      } else setFailure('failed');
     } else setFailure(result.kind === 'ReviewChanged' ? 'changed' : 'failed');
   };
   // Discard drops every draft, and with them what a refused save said about them.
   const discard = () => {
-    setDrafts({});
+    setDrafts(discardAll());
     setIssues({});
     setNotices({});
     setFailure(undefined);
   };
-  if (marks.today.length === 0 && earlier.length === 0) return null;
+  if (marks.today.length === 0 && opened.length === 0) return null;
+  // The chosen cell's editor, when the cell holds a Mark or can take one.
+  const chosenCell = chosen && model.cellAt(chosen.instrumentKey, chosen.tradingDate);
+  const todayRow: MarkRow | undefined = chosen && chosen.tradingDate === heldReview.review.reviewDate ? marks.today.find((row) => row.instrumentKey === chosen.instrumentKey) : undefined;
+  // A shared Instrument names the other Trades that hold it, by their summary line (A153, decision 67).
+  const others = todayRow?.trades.filter((id) => id !== tradeId) ?? [];
   return (
     <section aria-label="Marks" ref={section}>
       {outOfDate && (
@@ -398,20 +314,33 @@ export function CardMarks({ facade, tradeId, marks, held: heldReview, onResult, 
           </button>
         </div>
       )}
-      <h3>Today's Marks</h3>
-      <ul aria-label="Today's Marks" className="review-rows">
-        {marks.today.map((row) => (
-          <TodayRow key={rowId(row.instrumentKey, row.tradingDate)} panel={panel} row={row} cardTradeId={tradeId} tradeLine={tradeLine} />
-        ))}
-      </ul>
-      {earlier.length > 0 && (
-        <div role="group" aria-labelledby={`${uid}-earlier`}>
-          <h3 id={`${uid}-earlier`}>{EARLIER_HEADING}</h3>
-          <p>These sessions do not block the Review.</p>
-          {earlier.map((group) => (
-            <GapList key={group.instrumentKey} panel={panel} group={group} />
-          ))}
-        </div>
+      <MarksGrid
+        model={model}
+        writable={writable}
+        draftOf={panel.draftOf}
+        onPrice={(key, price) => hold(key, { kind: 'Price', price })}
+        fieldOf={(key) => ({ id: fieldIds(uid, rowId(key.instrumentKey, key.tradingDate)).price, invalid: (issues[rowId(key.instrumentKey, key.tradingDate)] ?? []).some((issue) => issue.field === fieldIds(uid, rowId(key.instrumentKey, key.tradingDate)).price) })}
+        chosen={chosen}
+        onChoose={setChosen}
+        onLastEnter={() => saveButton.current?.focus()}
+        pagingHeld={dirtyIds.size > 0}
+      />
+      {opened.length > 0 && <p>Earlier sessions don't block the Review.</p>}
+      {chosen && chosenCell && chosenCell !== NOT_HELD && (
+        <CellEditor key={rowId(chosen.instrumentKey, chosen.tradingDate)} panel={panel} instrumentKey={chosen.instrumentKey} instrument={instrumentOf(chosen.instrumentKey)} tradingDate={chosen.tradingDate} listed={chosenCell} withdraw={todayRow !== undefined}>
+          {todayRow?.task === 'Manual' && todayRow.trades.every((id) => settlementTrades.has(id)) && <p>{SETTLEMENT_ONLY_NOTE}</p>}
+          {others.length > 0 && (
+            <p>
+              also held by{' '}
+              {others.map((id, i) => (
+                <span key={id}>
+                  {i > 0 && ', '}
+                  <Link to={`/trades/${id}`}>{tradeLine(id)}</Link>
+                </span>
+              ))}
+            </p>
+          )}
+        </CellEditor>
       )}
       {failure && (
         <div role="alert" className="banner warning">

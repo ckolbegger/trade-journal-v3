@@ -266,8 +266,9 @@ test.describe('B4.13 Responsive and accessible', () => {
     // Keyboard and focus steps assert navigation itself (section 6.4, rule 4): raw locators, no reaches.
     const xyz = tradeCard(page, 'XYZ');
     const entry = xyz.getByRole('region', { name: `XYZ Mark, ${DATE}`, exact: true });
+    const price = xyz.getByRole('textbox', { name: `XYZ Mark, ${DATE}`, exact: true });
     const actionForm = xyz.getByRole('form', { name: 'Action' });
-    await tabTo(page, entry.getByLabel('Price'));
+    await tabTo(page, price);
     await page.keyboard.type('52.00');
     // Enter in the last price moves on to Save Marks (A153).
     await page.keyboard.press('Enter');
