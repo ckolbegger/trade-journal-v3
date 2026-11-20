@@ -1,12 +1,12 @@
 import {
   actionEntriesOf, answerDebt, cardHeader, cardList, completion, createCardFixture, createRoutineTrades, enterMark, entriesWithSettledDebt, expect, fillDebtAnswers, firstPage, launchAt, MONDAY, MONDAY_1700, observationsOf,
-  onboardedAt, openReview, panelHeader, probe, reflectionsOf, remainsOf, saveAction, sliderOf, test, tradeCard, workspaceOf,
+  onboardedAt, openReview, panelHeader, probe, reflectionsOf, remainsOf, saveAction, meterOf, test, tradeCard, workspaceOf,
 } from './support.ts';
 
 const OPEN_HEADERS = '.review-card-head button[aria-expanded="true"]';
 
 test.describe('B5R.1 Review end to end on cards', () => {
-  test('should open the first card not Done on load, update the figures and sliders from Save Marks, open the next card in place after each Action, and read Done and Complete after relaunch with the Marks, the settled Entry and five Action Entries stored', async ({ profile }) => {
+  test('should open the first card not Done on load, update the figures and meters from Save Marks, open the next card in place after each Action, and read Done and Complete after relaunch with the Marks, the settled Entry and five Action Entries stored', async ({ profile }) => {
     test.setTimeout(240_000);
     const { context, page } = await onboardedAt(profile, MONDAY_1700);
     const { 'T-A': tA, 'T-B': tB, 'T-C': tC, 'T-E': tE, 'T-F': tF } = await createCardFixture(page);
@@ -18,16 +18,16 @@ test.describe('B5R.1 Review end to end on cards', () => {
     await expect(cards.first()).toHaveAttribute('data-trade-id', tA.tradeId);
     await expect(cardHeader(page, tA)).toHaveAttribute('aria-expanded', 'true');
     await expect(cardList(page).locator(OPEN_HEADERS)).toHaveCount(1);
-    await expect(sliderOf(page, tA)).toHaveAccessibleName('Mark missing: XYZ, Mon Oct 12');
-    await expect(sliderOf(page, tF)).toHaveAccessibleName('Mark missing: XYZ, Mon Oct 12');
+    await expect(meterOf(page, tA)).toHaveAccessibleName('Mark missing: XYZ, Mon Oct 12 Stop −$270.00, Target +$580.00.');
+    await expect(meterOf(page, tF)).toHaveAccessibleName('Mark missing: XYZ, Mon Oct 12 Stop −$101.00, Target +$249.00.');
 
-    // Type the first card's Mark and press Save Marks: its figures and both XYZ sliders follow the result.
+    // Type the first card's Mark and press Save Marks: its figures and both XYZ meters follow the result.
     await enterMark(page, tA, MONDAY, '52.00');
     const figure = (term: string) => tradeCard(page, 'XYZ').locator('dt', { hasText: new RegExp(`^${term}$`) }).locator('xpath=following-sibling::dd[1]');
     await expect(figure('Trade P&L')).toHaveText('+$180.00 · +0.72R');
     await expect(figure('Current Risk · At Stop')).toHaveText('$450.00 · 1.80R');
-    await expect(sliderOf(page, tA)).toHaveAccessibleName(/^53% of the way from the Stop to the Target, entry at 32%\. Risk to stop \$450\.00, P&L \+\$180\.00, Reward : risk 0\.89\.$/);
-    await expect(sliderOf(page, tF)).toHaveAccessibleName(/^57% of the way from the Stop to the Target, entry at 29%\. Risk to stop \$200\.00, P&L \+\$99\.00, Reward : risk 0\.75\.$/);
+    await expect(meterOf(page, tA)).toHaveAccessibleName(/^P&L \+\$180\.00, 31% of the way to the Target\. Stop −\$270\.00, Target \+\$580\.00\.$/);
+    await expect(meterOf(page, tF)).toHaveAccessibleName(/^P&L \+\$99\.00, 40% of the way to the Target\. Stop −\$101\.00, Target \+\$249\.00\.$/);
 
     // D-1 is due in this Review: resolve it in T-A's card.
     await (await reflectionsOf(page, tA)).getByRole('button', { name: /^Reflect on 2026-10-09/ }).click();

@@ -1,7 +1,7 @@
 import type { BrowserContext, Page } from '@playwright/test';
 import {
   acknowledgeMark, answerIn, cardItem, createTrades, detail, enterMark, exitReflection, expect, expectInsideCell, expectNoSidewaysScroll, expectShownInFull, firstPage, FOUR_TRADES, launchAt, MONDAY_1700, onboardedAt,
-  openDrawer, openExitForm, openReview, openTradeFromOpenList, READY, reachCard, recordEntry, fillRows, sell, setClock, setWidth, sliderOf, test, tradeCard, TUESDAY_NOON, WIDTHS, writeSellQuantities,
+  openDrawer, openExitForm, openReview, openTradeFromOpenList, READY, reachCard, recordEntry, fillRows, sell, setClock, setWidth, meterOf, test, tradeCard, TUESDAY_NOON, WIDTHS, writeSellQuantities,
   type Profile,
 } from './support.ts';
 
@@ -117,7 +117,7 @@ test.describe('T7P.11 Layout of the worded reasons', () => {
     await context.close();
   });
 
-  test('should show the attention sentences, slider figures and blockers in full in the Review at 320 and 375 px', async ({ server, profile }) => {
+  test('should show the attention sentences, meter names and blockers in full in the Review at 320 and 375 px', async ({ server, profile }) => {
     test.setTimeout(240_000);
     server.use('dist-faults');
     const { context, page } = await launchScenario(profile);
@@ -134,11 +134,11 @@ test.describe('T7P.11 Layout of the worded reasons', () => {
       await expectShownInFull(items.filter({ hasText: 'Mark missing for ABC' }).getByRole('link', { name: 'ABC', exact: true }), 'ABC', `card link at ${width}`);
       await expectShownInFull(items.filter({ hasText: 'XYZ:' }).getByRole('link', { name: 'XYZ', exact: true }), 'XYZ', `Detail link at ${width}`);
     }
-    // The cards: the attention sentence of each open card, and the slider's figure text.
+    // The cards: the attention sentence of each open card, and the meter's name (the incoherent Trade has no meter).
     const sentences = [
       ['ABC', `Mark missing for ABC on ${DATE}`, MARK_MISSING_ABC],
       ['DEF', `Mark acknowledged unavailable for DEF on ${DATE}`, `Acknowledged unavailable: DEF, ${DATE}`],
-      ['XYZ', `${TWO_FINDINGS[0]} and 1 more`, 'Not available'],
+      ['XYZ', `${TWO_FINDINGS[0]} and 1 more`, undefined],
     ] as const;
     for (const [symbol, sentence, figure] of sentences) {
       await reachCard(page, symbol);
@@ -146,10 +146,13 @@ test.describe('T7P.11 Layout of the worded reasons', () => {
         await setWidth(page, width);
         await expectNoSidewaysScroll(page, `${symbol} card at ${width}`);
         await expectShownInFull(tradeCard(page, symbol).locator('p', { hasText: sentence }).first(), sentence, `${symbol} attention sentence at ${width}`);
-        const slider = sliderOf(page, symbol);
-        await expect(slider).toHaveAccessibleName(new RegExp(figure.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
-        const box = await slider.boundingBox();
-        expect(box!.x + box!.width, `${symbol} slider inside the viewport at ${width}`).toBeLessThanOrEqual(width);
+        const meter = meterOf(page, symbol);
+        if (figure === undefined) await expect(meter).toHaveCount(0);
+        else {
+          await expect(meter).toHaveAccessibleName(new RegExp(figure.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+          const box = await meter.boundingBox();
+          expect(box!.x + box!.width, `${symbol} meter inside the viewport at ${width}`).toBeLessThanOrEqual(width);
+        }
       }
       await cardItem(page, symbol).getByRole('button', { name: new RegExp(`^Review ${symbol}`) }).click();
     }

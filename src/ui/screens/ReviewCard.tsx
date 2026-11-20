@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
-import type { CardProgress, DailyTradeReview, PanelProgress, PostSaveReview, SliderEvaluation, WalkedTrade } from '../../app/types.ts';
+import type { CardProgress, DailyTradeReview, PanelProgress, PostSaveReview, WalkedTrade } from '../../app/types.ts';
 import { Badge } from '../Badge.tsx';
-import { money, plural, ratio, shortDate, tradeName, tradeSummary } from '../format.ts';
-import { calculation, FACTS_INCOHERENT_FIGURE, signed } from '../figures.ts';
+import { plural, shortDate, tradeName, tradeSummary } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
 import type { UiFacade } from '../../app/compose.ts';
 import { ActionForm, type SavedAction } from './ActionForm.tsx';
@@ -16,7 +15,8 @@ import type { CardMarkRows } from './held-review.ts';
 import { ReviewReflections } from './ReviewReflections.tsx';
 import { SettlementPanel, settlementSummary } from './ReviewSettlement.tsx';
 import { BAND_TEXT, reasonText } from './review-attention.ts';
-import { StopTargetSlider } from './StopTargetSlider.tsx';
+import { Meter } from '../cockpit/meter/meter.tsx';
+import { meterProps } from '../cockpit/meter/meter.props.ts';
 
 export { plural };
 
@@ -36,12 +36,6 @@ function remainsText(progress: CardProgress): string {
   const settlement = settlementOf(progress);
   const parts = [...(needed > 0 ? [plural(needed, 'Mark', 'Marks')] : []), ...(dueNow > 0 ? [plural(dueNow, 'reflection', 'reflections') + ' due'] : []), ...(settlement?.done === false ? ['Settlement'] : []), ...(owed ? ['Action'] : [])];
   return parts.length > 0 ? parts.join(' · ') : 'Done · Action saved';
-}
-
-// The slider's description speaks these figures in the app's own words (figures.ts), never as zero when missing.
-function sliderFigures(figures: SliderEvaluation | undefined, timeZone: string | undefined): { readonly riskToStop: string; readonly pnl: string; readonly rewardToRisk: string } {
-  if (!figures) return { riskToStop: FACTS_INCOHERENT_FIGURE, pnl: FACTS_INCOHERENT_FIGURE, rewardToRisk: FACTS_INCOHERENT_FIGURE };
-  return { riskToStop: calculation(figures.riskToStop, money, timeZone), pnl: calculation(figures.pnl, signed(money), timeZone), rewardToRisk: calculation(figures.rewardRiskNow, ratio, timeZone) };
 }
 
 export const PANELS = ['Marks', 'Reflections', 'Settlement', 'Action'] as const;
@@ -90,11 +84,13 @@ export interface ReviewCardProps {
   readonly onEntryDirty: EntryDirty;
 }
 
-// One position of the Review: a collapsed header (Underlying, what remains, band, slider) over its content.
+// One position of the Review: a collapsed header (Underlying, what remains, band, meter) over its content.
 export function ReviewCard({ facade, trade, expanded, detail, reveal, advance, go, marks, held, onResult, tradeLine, onToggle, onSaved, onReflectionResolved, onRefresh, onMarkSaved, onSaveMarks, outOfDate, holdMessage, pending, onEntryDirty }: ReviewCardProps) {
   const item = useRef<HTMLLIElement>(null);
   const header = useRef<HTMLButtonElement>(null);
   const { timeZone } = useRuntime();
+  // A Trade whose facts cannot be replayed has no reading, so its header draws no meter.
+  const meter = trade.meter && meterProps(trade.meter, 'card', timeZone);
   useEffect(() => {
     if (reveal === 0) return;
     item.current?.scrollIntoView?.({ block: 'start' });
@@ -127,7 +123,7 @@ export function ReviewCard({ facade, trade, expanded, detail, reveal, advance, g
             <Badge tone="neutral">{BAND_TEXT[trade.band]}</Badge>
           </button>
         </h3>
-        <StopTargetSlider position={trade.rangePosition} figures={sliderFigures(trade.figures, timeZone)} />
+        {meter && <Meter {...meter} />}
       </div>
       {expanded && holdMessage && <p role="status">Save or discard what you entered for {tradeName(trade)} to leave it.</p>}
       {expanded && detail === 'Loading' && <p role="status">Loading the Trade…</p>}

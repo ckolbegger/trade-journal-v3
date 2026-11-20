@@ -1,27 +1,27 @@
 import {
-  actionFormOf, cardHeader, cardItem, completion, createCardFixture, createRoutineTrades, createTrades, expect, expectAccessible, FRIDAY, markRow, MONDAY, MONDAY_1700, onboardedAt, openReview, panelHeader, reachPanel, READY, remainsOf, sliderOf, status, tabTo,
+  actionFormOf, cardHeader, cardItem, completion, createCardFixture, createRoutineTrades, createTrades, expect, expectAccessible, FRIDAY, markRow, MONDAY, MONDAY_1700, onboardedAt, openReview, panelHeader, reachPanel, READY, remainsOf, meterOf, status, tabTo,
   test, tradeCard, type TradeRef,
 } from './support.ts';
 
 const INTENT = /^Why are you taking this action\?/;
 
 test.describe('B5R.11 Responsive and accessible', () => {
-  test('should keep drafts and the open panel through 390 px and back, put the slider on its own row at narrow width, report no WCAG 2.1 AA violations, say band, status and Unsaved in text, and complete a card by keyboard with visible focus', async ({ profile }) => {
+  test('should keep drafts and the open panel through 390 px and back, put the meter on its own row at narrow width, report no WCAG 2.1 AA violations, say band, status and Unsaved in text, and complete a card by keyboard with visible focus', async ({ profile }) => {
     test.setTimeout(300_000);
     const { context, page } = await onboardedAt(profile, MONDAY_1700);
     const { 'T-A': tA, 'T-B': tB, 'T-C': tC, 'T-E': tE, 'T-F': tF } = await createCardFixture(page);
     await openReview(page);
 
-    // Wide: the slider sits beside the header, in the same row.
+    // Wide: the meter sits beside the header, in the same row.
     const rowOf = async (trade: TradeRef) => {
       const head = (await cardItem(page, trade).locator('.review-card-head').boundingBox())!;
       const button = (await cardHeader(page, trade).boundingBox())!;
-      const slider = (await sliderOf(page, trade).boundingBox())!;
-      return { head, button, slider };
+      const meter = (await meterOf(page, trade).boundingBox())!;
+      return { head, button, meter };
     };
     const wide = await rowOf(tB);
-    expect(wide.slider.x).toBeGreaterThanOrEqual(wide.button.x + wide.button.width - 1);
-    expect(wide.slider.y).toBeLessThan(wide.button.y + wide.button.height);
+    expect(wide.meter.x).toBeGreaterThanOrEqual(wide.button.x + wide.button.width - 1);
+    expect(wide.meter.y).toBeLessThan(wide.button.y + wide.button.height);
 
     // Half-fill drafts at 1280 px: a price and a half-written "Can't get a price" in the Marks panel, an Exit and a half-written Intent in the Action panel.
     const monday = await markRow(page, tA, MONDAY);
@@ -40,28 +40,28 @@ test.describe('B5R.11 Responsive and accessible', () => {
     await action.getByRole('radio', { name: 'Exit', exact: true }).check();
     await action.getByLabel(INTENT).fill('Half written');
 
-    // Axe on the card list, then on the open card with each panel open, with the drafts held; the sliders are in every state.
-    for (const trade of [tA, tB, tC, tE, tF]) await expect(sliderOf(page, trade)).toHaveAttribute('role', 'img');
+    // Axe on the card list, then on the open card with each panel open, with the drafts held; the meters are in every state.
+    for (const trade of [tA, tB, tC, tE, tF]) await expect(meterOf(page, trade)).toHaveAttribute('role', 'img');
     for (const panel of ['Marks', 'Reflections', 'Action'] as const) {
       await reachPanel(page, tA, panel);
       await expectAccessible(page, `T-A's card with the ${panel} panel open, drafts held`);
     }
     await expectAccessible(page, 'Card list, drafts held');
 
-    // Resize to 390 px: the slider moves to its own full-width row; the open panel and the drafts stay.
+    // Resize to 390 px: the meter moves to its own full-width row; the open panel and the drafts stay.
     await page.setViewportSize({ width: 390, height: 844 });
     await expect(panelHeader(page, tA, 'Action')).toHaveAttribute('aria-expanded', 'true');
     await expect(async () => {
       const narrow = await rowOf(tB);
-      expect(narrow.slider.y).toBeGreaterThanOrEqual(narrow.button.y + narrow.button.height - 1);
-      expect(narrow.slider.width).toBeGreaterThanOrEqual(narrow.head.width - 2);
+      expect(narrow.meter.y).toBeGreaterThanOrEqual(narrow.button.y + narrow.button.height - 1);
+      expect(narrow.meter.width).toBeGreaterThanOrEqual(narrow.head.width - 2);
     }).toPass({ timeout: 5000 });
     await expectAccessible(page, 'Card list and open card, narrow');
     await page.setViewportSize({ width: 1280, height: 900 });
     await expect(panelHeader(page, tA, 'Action')).toHaveAttribute('aria-expanded', 'true');
     await expect(async () => {
       const back = await rowOf(tB);
-      expect(back.slider.x).toBeGreaterThanOrEqual(back.button.x + back.button.width - 1);
+      expect(back.meter.x).toBeGreaterThanOrEqual(back.button.x + back.button.width - 1);
     }).toPass({ timeout: 5000 });
     await expect((await actionFormOf(page, tA)).getByRole('radio', { name: 'Exit', exact: true })).toBeChecked();
     await expect((await actionFormOf(page, tA)).getByLabel(INTENT)).toHaveValue('Half written');
@@ -94,21 +94,21 @@ test.describe('B5R.11 Responsive and accessible', () => {
     await page.keyboard.press('Enter');
     await expect(remainsOf(page, tB)).toHaveText('Done · Action saved', READY);
     await expect(completion(page)).toHaveText('Incomplete');
-    // A Done card, a pinned slider and a grey one are in the list: the page is still accessible.
-    await expectAccessible(page, 'Card list with a Done card and a pinned slider');
+    // A Done card, a pinned meter and a grey one are in the list: the page is still accessible.
+    await expectAccessible(page, 'Card list with a Done card and a pinned meter');
     await context.close();
   });
 
-  test('should keep the slider beside the header while the card\'s header is at least 40rem wide, with T-A\'s header text on at most two lines, and put it on its own full-width row below the text when narrower: beside at 1280, 960 and 760 px, below at 700 and 390 px', async ({ profile }) => {
+  test('should keep the meter beside the header while the card\'s header is at least 40rem wide, with T-A\'s header text on at most two lines, and put it on its own full-width row below the text when narrower: beside at 1280, 960 and 760 px, below at 700 and 390 px', async ({ profile }) => {
     test.setTimeout(120_000);
     const { context, page } = await onboardedAt(profile, MONDAY_1700);
     const { 'T-A': tA } = await createCardFixture(page);
     await openReview(page);
 
-    // T-A's header: the head row (the card's header width), the visible text pieces' line boxes, and the slider.
+    // T-A's header: the head row (the card's header width), the visible text pieces' line boxes, and the meter.
     const measure = async () => {
       const head = (await cardItem(page, tA).locator('.review-card-head').boundingBox())!;
-      const slider = (await sliderOf(page, tA).boundingBox())!;
+      const meter = (await meterOf(page, tA).boundingBox())!;
       const lines = await cardHeader(page, tA).evaluate((button) => {
         const tops: number[] = [];
         let top = Infinity;
@@ -125,7 +125,7 @@ test.describe('B5R.11 Responsive and accessible', () => {
         }
         return { count: tops.length, top, bottom, right };
       });
-      return { head, slider, lines };
+      return { head, meter, lines };
     };
 
     const cases: ReadonlyArray<{ width: number; height: number; beside: boolean }> = [
@@ -138,20 +138,21 @@ test.describe('B5R.11 Responsive and accessible', () => {
     for (const { width, height, beside } of cases) {
       await page.setViewportSize({ width, height });
       await expect(async () => {
-        const { head, slider, lines } = await measure();
+        const { head, meter, lines } = await measure();
         const at = `at ${width} px`;
         if (beside) {
           expect(head.width, `header width ${at}`).toBeGreaterThanOrEqual(640);
-          expect(slider.x, `slider left of the text ${at}`).toBeGreaterThanOrEqual(lines.right - 1);
-          expect(slider.y, `slider top above the text's bottom ${at}`).toBeLessThan(lines.bottom);
-          expect(slider.y + slider.height, `slider bottom below the text's top ${at}`).toBeGreaterThan(lines.top);
+          expect(meter.x, `meter left of the text ${at}`).toBeGreaterThanOrEqual(lines.right - 1);
+          expect(meter.y, `meter top above the text's bottom ${at}`).toBeLessThan(lines.bottom);
+          expect(meter.y + meter.height, `meter bottom below the text's top ${at}`).toBeGreaterThan(lines.top);
           expect(lines.count, `lines of header text ${at}`).toBeLessThanOrEqual(2);
         } else {
           expect(head.width, `header width ${at}`).toBeLessThan(640);
-          expect(slider.y, `slider below the text ${at}`).toBeGreaterThanOrEqual(lines.bottom - 1);
-          expect(slider.width, `slider width ${at}`).toBeGreaterThanOrEqual(head.width - 2);
+          expect(meter.y, `meter below the text ${at}`).toBeGreaterThanOrEqual(lines.bottom - 1);
+          // The card meter is at most 22rem wide (meter.css), so on a wide stacked row it fills that, not the whole row.
+          expect(meter.width, `meter width ${at}`).toBeGreaterThanOrEqual(Math.min(head.width, 22 * 16) - 2);
         }
-      }, `slider placement at ${width} px`).toPass({ timeout: 5000 });
+      }, `meter placement at ${width} px`).toPass({ timeout: 5000 });
     }
     await context.close();
   });

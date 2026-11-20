@@ -5,7 +5,7 @@ import { MemoryRouter, useNavigate } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { facadeDouble } from '../../../tests/support/facade-double.ts';
 import type { UiFacade } from '../../app/compose.ts';
-import type { DailyTradeReview, IncompleteReason, MarkResolution, MarkRow, OpenDailyReviewResult, OwedReflection, OwedReflectionsCard, OwedReflectionsTrade, ReviewBinding, ReviewCompletion, WalkedTrade } from '../../app/types.ts';
+import type { DailyTradeReview, IncompleteReason, MarkResolution, MarkRow, MeterReading, OpenDailyReviewResult, OwedReflection, OwedReflectionsCard, OwedReflectionsTrade, ReviewBinding, ReviewCompletion, WalkedTrade } from '../../app/types.ts';
 import { reflectionDefinition } from '../../../tests/support/position-change-form-facade.ts';
 import type { IncoherentFact } from '../../domain/calculation-result/index.ts';
 import { Rational } from '../../domain/values/index.ts';
@@ -51,14 +51,18 @@ const trade = (tradeId: string, underlying: string, over: Partial<WalkedTrade>):
   progress: cardProgress(),
   ...over,
 });
+// The meter readings the Review gives: T-A between its rails, T-B past the Stop, T-C with no Mark.
+const meterOf = (now: MeterReading['now'], stop: bigint, target: bigint): MeterReading => ({ stop: value(stop), target: value(target), banked: value(0n), now });
 const TB = trade('t-b', 'ABC', {
   band: 'BoundaryReached',
+  meter: meterOf({ kind: 'Value', value: { pnl: rational(-200n), zone: 'PastStop', pastBy: { dollars: rational(50n) } as never } }, -150n, 300n),
   reasons: [{ code: 'StopBreached', conditionId: 'c', overrun: rational(1n) }],
   rangePosition: { kind: 'Value', value: { now: rational(0n), atEntry: rational(1n, 4n), pinned: 'Stop' } },
   figures: { riskToStop: value(0n), pnl: value(-200n), rewardRiskNow: { kind: 'NotApplicable' } as never },
 });
 const TC = trade('t-c', 'DEF', {
   band: 'EvidenceLimited',
+  meter: meterOf({ kind: 'Unavailable', reason: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'DEF' }, date: '2026-10-12' }, -200n, 400n),
   reasons: [{ code: 'Unavailable', reason: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'DEF' }, date: '2026-10-12' }],
   rangePosition: { kind: 'Unavailable', reason: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'DEF' }, date: '2026-10-12' },
   progress: cardProgress(0, 0, { needed: 1, resolved: 0 }),
@@ -74,6 +78,7 @@ const TA = trade('t-a', 'XYZ', {
   reasons: [{ code: 'PressureTowardTarget' }],
   rangePosition: { kind: 'Value', value: { now: rational(9n, 17n), atEntry: rational(134n, 425n) } },
   progress: cardProgress(1, 1),
+  meter: meterOf({ kind: 'Value', value: { pnl: rational(180n), zone: 'Between', share: { fraction: rational(2n, 5n), percent: rational(40n), toward: 'Target' } } }, -450n, 450n),
   figures: { riskToStop: value(450n), pnl: value(180n), rewardRiskNow: value(8n, 9n) },
 });
 const TE = trade('t-e', 'JKL', {
@@ -213,7 +218,7 @@ async function correctAbc(user: ReturnType<typeof userEvent.setup>, card: HTMLEl
 }
 
 describe('card list (A150)', () => {
-  it('should render one card per walked Trade in attention order, each a heading button showing the Underlying, what remains, its band as text, and its slider, with a Stop Target legend above the list and no Continue to Trades', async () => {
+  it('should render one card per walked Trade in attention order, each a heading button showing the Underlying, what remains, its band as text, and its meter, with a Stop Target legend above the list and no Continue to Trades', async () => {
     renderReview(cardFacade());
     await screen.findAllByRole('button', { name: /^Review / });
 
@@ -241,10 +246,10 @@ describe('card list (A150)', () => {
     expect(head(bCard)).toContain('Boundary reached');
     expect(head(cCard)).toContain('Evidence limited');
     expect(head(aCard)).toContain('Quantified pressure');
-    // The slider, described: a placed one with its figures, and the unplaced one in words.
-    expect(a.getByRole('img', { name: '53% of the way from the Stop to the Target, entry at 32%. Risk to stop $450.00, P&L +$180.00, Reward : risk 0.89.' })).toBeTruthy();
-    expect(b.getByRole('img', { name: /^Past the Stop/ })).toBeTruthy();
-    expect(c.getByRole('img', { name: 'Mark missing: DEF, Mon Oct 12' })).toBeTruthy();
+    // The meter, named by its figures: one between its rails, one past the Stop, and the one with no Mark by its reason.
+    expect(a.getByRole('img', { name: 'P&L +$180.00, 40% of the way to the Target. Stop −$450.00, Target +$450.00.' })).toBeTruthy();
+    expect(b.getByRole('img', { name: 'P&L −$200.00, past the Stop by $50.00. Stop −$150.00, Target +$300.00.' })).toBeTruthy();
+    expect(c.getByRole('img', { name: 'Mark missing: DEF, Mon Oct 12 Stop −$200.00, Target +$400.00.' })).toBeTruthy();
     // The legend sits above the list; there is no Continue to Trades.
     const legend = screen.getByText(/Stop ◂ ▸ Target/);
     expect(legend.compareDocumentPosition(screen.getByRole('list', { name: 'Positions' })) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
@@ -1180,11 +1185,11 @@ describe('Review words (P72)', () => {
     expect(within(blocker!).getByRole('link', { name: 'ABC' }).getAttribute('href')).toBe('/trades/t-b');
   });
 
-  it('should show the slider figures of a Trade whose facts cannot be replayed as Not available, from the module', async () => {
+  it('should show no meter on a Trade whose facts cannot be replayed', async () => {
     const incoherent = { ...TF, figures: undefined };
     renderReview(cardFacade(review({ families: [review().families[0]!, { family: 'Trades', trades: [incoherent] }] })));
     await screen.findAllByRole('button', { name: /^Review / });
 
-    expect(screen.getByRole('img').getAttribute('aria-label')).toBe('57% of the way from the Stop to the Target, entry at 29%. Risk to stop Not available, P&L Not available, Reward : risk Not available.');
+    expect(screen.queryByRole('img')).toBeNull();
   });
 });

@@ -1,20 +1,20 @@
 import {
-  cardHeader, createCardFixture, enterMark, expect, FRIDAY, markRow, MONDAY, MONDAY_1700, observationsOf, onboardedAt, openReview, probe, remainsOf, reachPanel, saveMarksOf, sliderOf, test, THURSDAY, tradeCard, workspaceOf,
+  cardHeader, createCardFixture, enterMark, expect, FRIDAY, markRow, MONDAY, MONDAY_1700, observationsOf, onboardedAt, openReview, probe, remainsOf, reachPanel, saveMarksOf, meterOf, test, THURSDAY, tradeCard, workspaceOf,
 } from './support.ts';
 
 const NOT_A_PRICE = 'Enter a price as a number, with at most 6 decimal places.';
 
 test.describe('B5R.3 Shared Mark', () => {
-  test('should move T-A’s collapsed slider at once when XYZ is saved in T-F’s card, show XYZ saved there as also held, and store one observation', async ({ profile }) => {
+  test('should move T-A’s collapsed meter at once when XYZ is saved in T-F’s card, show XYZ saved there as also held, and store one observation', async ({ profile }) => {
     const { context, page } = await onboardedAt(profile, MONDAY_1700);
     const { 'T-A': tA, 'T-F': tF } = await createCardFixture(page);
     await openReview(page);
-    await expect(sliderOf(page, tA)).toHaveAccessibleName('Mark missing: XYZ, Mon Oct 12');
+    await expect(meterOf(page, tA)).toHaveAccessibleName('Mark missing: XYZ, Mon Oct 12 Stop −$270.00, Target +$580.00.');
 
     // Enter XYZ in T-F's card and press Save Marks; that closes T-A's card (it held no draft).
     await enterMark(page, tF, MONDAY, '52.00');
     await expect(cardHeader(page, tA)).toHaveAttribute('aria-expanded', 'false');
-    await expect(sliderOf(page, tA)).toHaveAccessibleName(/^53% of the way from the Stop to the Target, entry at 32%\. Risk to stop \$450\.00, P&L \+\$180\.00, Reward : risk 0\.89\.$/);
+    await expect(meterOf(page, tA)).toHaveAccessibleName(/^P&L \+\$180\.00, 31% of the way to the Target\. Stop −\$270\.00, Target \+\$580\.00\.$/);
     await expect(remainsOf(page, tA)).toHaveText('1 reflection due · Action');
 
     // Opening T-A's card shows XYZ saved, and that T-F's card holds it too.

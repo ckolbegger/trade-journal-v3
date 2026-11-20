@@ -832,52 +832,7 @@ ul.rows > li {
   border-top: 1px solid var(--line);
 }
 
-/* Stop-to-Target slider (P39): red at the Stop, green at the Target; the dot is the Mark, the tick is entry. Fluid in width. */
-.slider {
-  position: relative;
-  display: block;
-  width: 100%;
-  min-width: 6rem;
-  height: 18px;
-}
-.slider-track {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 5px;
-  height: 8px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, var(--stop), #d9a441 50%, var(--target));
-}
-.slider-none .slider-track {
-  background: var(--neutral-ground);
-  border: 1px dashed var(--muted);
-}
-.slider-entry {
-  position: absolute;
-  top: 1px;
-  width: 2px;
-  height: 16px;
-  margin-left: -1px;
-  border-radius: 1px;
-  background: var(--ink);
-}
-.slider-now {
-  position: absolute;
-  top: 2px;
-  width: 14px;
-  height: 14px;
-  margin-left: -7px;
-  border-radius: 50%;
-  border: 3px solid var(--ink);
-  background: var(--card);
-  box-shadow: 0 0 0 2px var(--card);
-}
-.slider-now.slider-pinned {
-  border-radius: 3px;
-}
-
-/* The Review's position cards (A150, A151): a header button with the slider in a fixed-width side column, so sliders line up. */
+/* The Review's position cards (A150, A151): a header button with the meter in a fixed-width side column, so meters line up. */
 .review-cards {
   list-style: none;
   padding: 0;
@@ -955,7 +910,7 @@ ul.rows > li {
 .review-panel-summary {
   color: var(--muted);
 }
-/* The slider takes its own full-width row under the header's text only when the card's header is under 40rem wide, whatever the viewport (A162). */
+/* The meter takes its own full-width row under the header's text only when the card's header is under 40rem wide, whatever the viewport (A162). */
 @container (max-width: 39.99rem) {
   .review-card-head {
     grid-template-columns: minmax(0, 1fr);

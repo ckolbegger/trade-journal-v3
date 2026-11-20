@@ -1,6 +1,6 @@
 // Shared support for the D5R browser suite (plan section 6.2): D5's helpers, which re-export D4's card helpers (decision 65,
 // section 6.4; decision 68), plus what the card cases need: the card fixture created through the UI, which returns each Trade
-// as a Trade reference the shared helpers take, and the slider and Save Marks locators.
+// as a Trade reference the shared helpers take, and the meter and Save Marks locators.
 import type { Locator, Page } from '@playwright/test';
 import {
   backToTrade, cardItem, confirmReference, createTradeAt, createTrades, currentTradeId, deferEntry, FOUR_TRADES, PLAN, recordEntry,
@@ -50,8 +50,8 @@ export async function createRoutineTrades(page: Page, count: number): Promise<vo
 
 // ---- Locators for a fixture Trade's card, reached by its Trade (decision 68) -------------------------------------------------
 
-// The Stop-to-Target slider of a card's header (a collapsed card shows it too), and its parts.
-export const sliderOf = (page: Page, card: CardRef): Locator => cardItem(page, card).locator('.review-card-head').getByRole('img');
+// The meter of a card's header (a collapsed card shows it too).
+export const meterOf = (page: Page, card: CardRef): Locator => cardItem(page, card).locator('.review-card-head').getByRole('img');
 export const saveMarksOf = (page: Page, card: CardRef): Locator => cardItem(page, card).getByRole('button', { name: /^Save Marks/ });
 // What the collapsed header says remains.
 export const remainsOf = (page: Page, card: CardRef): Locator => cardItem(page, card).locator('.review-card-remains');

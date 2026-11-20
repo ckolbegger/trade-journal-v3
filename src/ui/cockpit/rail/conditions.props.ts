@@ -1,9 +1,8 @@
 import type { MeterReading, OpenTradeDetail, PlannedTradeDetail, TradeDetailView } from '../../../app/types.ts';
-import type { Rational } from '../../../domain/values/index.ts';
-import { calculation, signed, unavailableLabel } from '../../figures.ts';
+import { unavailableLabel } from '../../figures.ts';
 import { decimalMoney, decimalUnderlyingPrice, money, shortDate, underlyingPrice } from '../../format.ts';
 import { conditionDirection } from '../../screens/option-words.ts';
-import type { MeterFigure, MeterProps } from '../meter/meter.types.ts';
+import { meterProps } from '../meter/meter.props.ts';
 import type { ShellProps } from '../placeholder.ts';
 import type { ConditionItem, ConditionsCardProps } from './conditions.types.ts';
 
@@ -94,35 +93,6 @@ export interface MeterReplay {
   readonly meter?: MeterReading;
 }
 
-// A finished dollar figure, as drawn and as worded. Turning a Rational into a position is drawing (A215), not working out a figure.
-const figure = (value: Rational): MeterFigure => ({ value: Number(value.numerator) / Number(value.denominator), text: signed(money)(value) });
-
-// The meter's props from a finished reading (A260): mapping and formatting only; the zone, the share, the amount past a rail and the
-// direction against the session before are the domain's.
-function meterProps(reading: MeterReading, timeZone: string | undefined): MeterProps | undefined {
-  const { stop, target, banked, now, previous } = reading;
-  if (stop.kind !== 'Value' || target.kind !== 'Value') return undefined;
-  const nowProps: MeterProps['now'] =
-    now.kind === 'Value'
-      ? {
-          kind: 'Value',
-          ...figure(now.value.pnl),
-          zone: now.value.zone === 'Between' ? 'Within' : now.value.zone,
-          ...(now.value.share && { share: { percent: `${now.value.share.percent.numerator}%`, toward: now.value.share.toward } }),
-          ...(now.value.pastBy && { pastBy: money(now.value.pastBy.dollars) }),
-        }
-      : // With no Mark the reason stands in the result's place, in the same words as the P&L card's figure.
-        { kind: 'Unavailable', reason: calculation(now, money, timeZone) };
-  return {
-    size: 'detail',
-    stop: figure(stop.value),
-    target: figure(target.value),
-    ...(banked.kind === 'Value' && { banked: figure(banked.value) }),
-    now: nowProps,
-    ...(previous && { previous: { ...figure(previous.pnl), dateLabel: shortDate(previous.tradingDate), ...(previous.direction && { direction: previous.direction }) } }),
-  };
-}
-
 function openProps(view: OpenTradeDetail, replay: MeterReplay | undefined, timeZone: string | undefined): ConditionsCardProps {
   const { plan } = view;
   const { evaluation } = view.current;
@@ -131,7 +101,7 @@ function openProps(view: OpenTradeDetail, replay: MeterReplay | undefined, timeZ
   // Trade Views states when no Mark has valued the Trade yet (revision 90); the card infers nothing from the waiting figures.
   const waiting = view.current.firstMarksDue !== undefined;
   const conditions = evaluation.conditions.map((condition) => measuredItem(plan, condition, waiting, view.current.datedLine));
-  const meter = replay?.meter && meterProps(replay.meter, timeZone);
+  const meter = replay?.meter && meterProps(replay.meter, 'detail', timeZone);
   // Awaiting its first Marks the card still carries the meter, its track dashed, above the rows and the note.
   if (waiting) return { ...(meter && { meter }), conditions, summary: [{ text: BEFORE_MARKS }] };
   // Nothing beneath the conditions: the worst case and the maximum reward live in Plan and Risk (W31).

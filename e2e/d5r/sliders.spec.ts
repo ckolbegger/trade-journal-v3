@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import {
-  cardHeader, createCardFixture, enterMark, expect, MONDAY, MONDAY_1700, onboardedAt, openReview, panelHeader, READY, sliderOf, test, tradeCard, type CardTrade,
+  cardHeader, createCardFixture, enterMark, expect, MONDAY, MONDAY_1700, onboardedAt, openReview, panelHeader, READY, meterOf, test, tradeCard, type CardTrade,
 } from './support.ts';
 
 const nav = (page: Page) => page.getByRole('navigation', { name: 'Primary' });
@@ -56,8 +56,8 @@ const centre = async (locator: Locator): Promise<number> => {
 };
 const radiusOf = (dot: Locator): Promise<string> => dot.evaluate((el) => getComputedStyle(el).borderRadius);
 
-test.describe('B5R.7 Slider states', () => {
-  test('should draw T-A’s dot right of its entry tick, T-B’s dot pinned at the Stop end in the pinned shape, T-C’s track grey with no dot, each with the description T5R.7 states', async ({ profile }) => {
+test.describe('B5R.7 Meter states', () => {
+  test('should draw T-A’s pointer right of break-even, T-B’s pointer pinned at the Stop end in the square shape, T-C’s track dashed with no pointer, each named by its figures', async ({ profile }) => {
     const { context, page } = await onboardedAt(profile, MONDAY_1700);
     const trades = await createCardFixture(page);
     const { 'T-A': tA, 'T-B': tB, 'T-C': tC, 'T-E': tE, 'T-F': tF } = trades;
@@ -67,35 +67,34 @@ test.describe('B5R.7 Slider states', () => {
     await enterMark(page, tB, MONDAY, '27.50');
     await enterMark(page, tE, MONDAY, '21.00');
 
-    const dot = (trade: CardTrade) => sliderOf(page, trades[trade]).locator('.slider-now');
-    const tick = (trade: CardTrade) => sliderOf(page, trades[trade]).locator('.slider-entry');
+    const dot = (trade: CardTrade) => meterOf(page, trades[trade]).getByTestId('meter-pointer');
+    const even = (trade: CardTrade) => meterOf(page, trades[trade]).getByTestId('meter-even');
 
-    // T-A: placed at 53% with entry at 32%, so the dot sits right of the tick, in the round shape.
-    await expect(sliderOf(page, tA)).toHaveAccessibleName('53% of the way from the Stop to the Target, entry at 32%. Risk to stop $450.00, P&L +$180.00, Reward : risk 0.89.');
-    expect(await centre(dot('T-A'))).toBeGreaterThan(await centre(tick('T-A')));
-    await expect(dot('T-A')).not.toHaveClass(/slider-pinned/);
+    // T-A: between its rails and above break-even, so the pointer sits right of the break-even tick, in the round shape.
+    await expect(meterOf(page, tA)).toHaveAccessibleName('P&L +$180.00, 31% of the way to the Target. Stop −$270.00, Target +$580.00.');
+    expect(await centre(dot('T-A'))).toBeGreaterThan(await centre(even('T-A')));
+    await expect(dot('T-A')).toHaveAttribute('data-shape', 'round');
     const round = await radiusOf(dot('T-A'));
 
-    // T-B: past the Stop, so the dot is pinned at the Stop end (the slider's left edge) in a different shape.
-    await expect(sliderOf(page, tB)).toHaveAccessibleName('Past the Stop, entry at 25%. Risk to stop $0.00, P&L −$251.00, Reward : risk Not applicable: no risk to the Stop.');
-    await expect(dot('T-B')).toHaveClass(/slider-pinned/);
+    // T-B: past the Stop, so the pointer rests at the Stop end (the meter's left edge) in a different shape.
+    await expect(meterOf(page, tB)).toHaveAccessibleName('P&L −$251.00, past the Stop by $50.00. Stop −$201.00, Target +$599.00.');
+    await expect(dot('T-B')).toHaveAttribute('data-shape', 'square');
     expect(await radiusOf(dot('T-B'))).not.toBe(round);
-    const track = (await sliderOf(page, tB).boundingBox())!;
+    const track = (await meterOf(page, tB).getByTestId('meter-track').boundingBox())!;
     expect(Math.abs((await centre(dot('T-B'))) - track.x)).toBeLessThanOrEqual(1);
-    expect(await centre(tick('T-B'))).toBeGreaterThan(track.x + 1);
+    expect(await centre(even('T-B'))).toBeGreaterThan(track.x + 1);
 
-    // T-C: no Mark, so the track is grey (no red-to-green gradient) and there is no dot.
-    await expect(sliderOf(page, tC)).toHaveAccessibleName('Mark missing: DEF, Mon Oct 12');
-    await expect(sliderOf(page, tC)).toHaveClass(/slider-none/);
+    // T-C: no Mark, so the track is dashed and named by the reason, and there is no pointer.
+    await expect(meterOf(page, tC)).toHaveAccessibleName('Mark missing: DEF, Mon Oct 12 Stop −$201.00, Target +$599.00.');
+    await expect(meterOf(page, tC)).toHaveAttribute('data-state', 'empty');
     await expect(dot('T-C')).toHaveCount(0);
-    await expect(tick('T-C')).toHaveCount(0);
-    expect(await sliderOf(page, tC).locator('.slider-track').evaluate((el) => getComputedStyle(el).backgroundImage)).toBe('none');
-    expect(await sliderOf(page, tA).locator('.slider-track').evaluate((el) => getComputedStyle(el).backgroundImage)).toContain('linear-gradient');
+    expect(await meterOf(page, tC).getByTestId('meter-track').evaluate((el) => getComputedStyle(el).borderStyle)).toBe('dashed');
+    expect(await meterOf(page, tA).getByTestId('meter-track').evaluate((el) => getComputedStyle(el).borderStyle)).not.toBe('dashed');
 
-    // The placed sliders of the other Trades, and no number in any slider's visible text.
-    await expect(sliderOf(page, tF)).toHaveAccessibleName('57% of the way from the Stop to the Target, entry at 29%. Risk to stop $200.00, P&L +$99.00, Reward : risk 0.75.');
-    await expect(sliderOf(page, tE)).toHaveAccessibleName('18% of the way from the Stop to the Target, entry at 9%. Risk to stop $200.00, P&L +$99.00, Reward : risk 4.5.');
-    for (const trade of [tA, tB, tC, tE, tF]) await expect(sliderOf(page, trade)).toHaveText('');
+    // The placed meters of the other Trades, and no number in any meter's visible text.
+    await expect(meterOf(page, tF)).toHaveAccessibleName('P&L +$99.00, 40% of the way to the Target. Stop −$101.00, Target +$249.00.');
+    await expect(meterOf(page, tE)).toHaveAccessibleName('P&L +$99.00, 10% of the way to the Target. Stop −$101.00, Target +$999.00.');
+    for (const trade of [tA, tB, tC, tE, tF]) await expect(meterOf(page, trade)).toHaveText('');
     await context.close();
   });
 });

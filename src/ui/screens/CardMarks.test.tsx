@@ -6,7 +6,7 @@ import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { facadeDouble } from '../../../tests/support/facade-double.ts';
 import type { UiFacade } from '../../app/compose.ts';
-import type { DailyTradeReview, IncompleteReason, MarkResolution, MarkRow, OpenDailyReviewResult, ReviewBinding, ReviewCompletion, WalkedTrade } from '../../app/types.ts';
+import type { DailyTradeReview, IncompleteReason, MarkResolution, MarkRow, MeterReading, OpenDailyReviewResult, ReviewBinding, ReviewCompletion, WalkedTrade } from '../../app/types.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { tradeSummary } from '../format.ts';
 import { RuntimeContext } from '../runtime.tsx';
@@ -250,15 +250,16 @@ const EVALUATED = {
   planBaseline: { kind: 'Value' as const, value: { rewardRiskRatio: Rational.of(12n, 5n) } },
   atEntry: null,
 } as unknown as DailyTradeReview['evaluation'];
-// T-F shares XYZ: once the Mark is saved its slider is placed.
-const TF_PLACED = walked('t-f', 'XYZ', { summary: TF.summary, rangePosition: { kind: 'Value', value: { now: rational(1n, 2n), atEntry: rational(1n, 4n) } }, figures: { riskToStop: value(200n), pnl: value(100n), rewardRiskNow: value(3n, 4n) } });
+// T-F shares XYZ: once the Mark is saved its meter is placed.
+const TF_METER: MeterReading = { stop: value(-400n), target: value(400n), banked: value(0n), now: { kind: 'Value', value: { pnl: rational(200n), zone: 'Between', share: { fraction: rational(1n, 2n), percent: rational(50n), toward: 'Target' } } } };
+const TF_PLACED = walked('t-f', 'XYZ', { summary: TF.summary, meter: TF_METER, rangePosition: { kind: 'Value', value: { now: rational(1n, 2n), atEntry: rational(1n, 4n) } }, figures: { riskToStop: value(200n), pnl: value(100n), rewardRiskNow: value(3n, 4n) } });
 // T-F's collapsed card, picked by its header's name: the two XYZ cards read alike but for the summary line (decision 68).
 const escaped = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const tfHeader = () => screen.getByRole('button', { name: new RegExp(`^Review XYZ ${escaped(tradeSummary(TF.summary!))}\\b`) });
 const AFTER_XYZ: ReviewCompletion = { kind: 'Incomplete', reasons: [markMissing('DEF', 't-c'), ...actionMissing('t-a', 't-f', 't-c')] };
 
 describe('Save Marks (P37, A155) rendering', () => {
-  it('should render every row, the card figures, and every collapsed card summary and slider from the MarksSaved result, with no open or getTrade call, and open the next panel that is not done', async () => {
+  it('should render every row, the card figures, and every collapsed card summary and meter from the MarksSaved result, with no open or getTrade call, and open the next panel that is not done', async () => {
     const facade = cardFacade();
     const trade = tradeReview(TA, { evaluation: EVALUATED });
     vi.mocked(facade.DailyReview.save).mockResolvedValue(
@@ -285,10 +286,10 @@ describe('Save Marks (P37, A155) rendering', () => {
     // The card's figures come from the result.
     const card = screen.getByRole('region', { name: 'XYZ review' });
     expect(within(card).getByText('Trade P&L')).toBeTruthy();
-    // The other XYZ card's summary and slider follow the shared Mark.
+    // The other XYZ card's summary and meter follow the shared Mark.
     const sharedHeader = tfHeader();
     expect(sharedHeader.textContent).not.toContain('1 Mark');
-    expect(within(sharedHeader.closest('li')!).getByRole('img').getAttribute('aria-label')).toContain('50% of the way');
+    expect(within(sharedHeader.closest('li')!).getByRole('img').getAttribute('aria-label')).toContain('50% of the way to the Target');
     // No read followed the save.
     expect(facade.DailyReview.open).toHaveBeenCalledTimes(1);
     expect(facade.DailyReview.getTrade).toHaveBeenCalledTimes(1);
