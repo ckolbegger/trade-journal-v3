@@ -9,3 +9,4 @@ Each text a task shortened, by task, with its before and after, copied from the 
 | T9AR.13 | Readout, a session with no Mark | The words "No Mark" in each cell | A dash named "No Mark" (W61, as Price History) |
 | T9AR.23-S7-B1 | P&L chart, an option's right-hand time-axis label, on a narrow drawing only (so it clears "Mon Nov 2") | "Expires Fri Nov 20" | "Expires Nov 20" below about 227 px wide; "Exp Nov 20" below about 214 px (the Review card at 320) |
 | T9AR.10 | P&L chart title | "Trade P&L · dollars for the whole Position, between the result at the Stop and at the Target" (phone: "Trade P&L") | "Trade P&L" at every width (decision 6, approved) |
+**Reviewed by the user, 2026-11-20** (the D9 Words Review page): every change above is approved.
