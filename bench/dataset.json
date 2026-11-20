@@ -5070,7 +5070,7 @@
       "journalDebts": 24365
     }
   },
-  "generationMs": 1029736,
+  "generationMs": 853206,
   "engine": "node v26.12.0",
   "host": {
     "platform": "darwin",
