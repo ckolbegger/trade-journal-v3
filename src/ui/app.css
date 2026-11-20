@@ -479,6 +479,13 @@ label.chip:focus-within {
   background-attachment: local, local, scroll, scroll;
 }
 
+/* The Open list's heading line (W52): the order the rows come in. */
+p.list-order {
+  margin: 0 0 0.25rem;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
 table.trades {
   width: 100%;
   border-collapse: collapse;

@@ -8,6 +8,8 @@ import { TradeText } from '../TradeText.tsx';
 import { isMarkLacking, isMarkMissing } from '../calculation-words.ts';
 import { calculation, FACTS_INCOHERENT_FIGURE, FACTS_INCOHERENT_LABEL, pnlText, signed, unavailableLabel } from '../figures.ts';
 import { localTime, money, netCost, quantity, ratio, rMultiple, shortDate, tradeSummary } from '../format.ts';
+import { Meter } from '../cockpit/meter/meter.tsx';
+import { meterProps } from '../cockpit/meter/meter.props.ts';
 import { useRuntime } from '../runtime.tsx';
 import { closedByExpiration, closedViaOptionShort, timingLabel } from './option-disposition.ts';
 
@@ -205,7 +207,9 @@ function OpenList({
     );
   }
   return (
-    // The columns scroll inside their own focusable region on a narrow screen (Underlying pinned), never the page.
+    <>
+      <p className="list-order">In the Review's order</p>
+      {/* The columns scroll inside their own focusable region on a narrow screen (Underlying pinned), never the page. */}
     <div className="table-scroll" role="region" aria-label="Open Trades" tabIndex={0}>
       <table className="trades">
         <caption>Open Trades</caption>
@@ -227,6 +231,8 @@ function OpenList({
           {items.map((item) => {
             // Facts that cannot be replayed leave the Position and entry figures unavailable, never a number.
             const derived = 'openQuantity' in item ? item : undefined;
+            // The read's finished meter reading (A260); a Trade whose facts cannot be replayed has none, so no meter.
+            const meter = derived?.meter && meterProps(derived.meter, 'row', timeZone);
             return (
               <tr key={item.tradeId}>
                 <td>
@@ -251,7 +257,10 @@ function OpenList({
                   />
                 </td>
                 <td className="number wide-only">{derived && derived.netCost.kind === 'Value' ? netCost(derived.netCost.value) : NOT_AVAILABLE}</td>
-                <td className="number wide-only">{derived ? <Pnl current={derived.current} tradeId={item.tradeId} /> : NOT_AVAILABLE}</td>
+                <td className="number wide-only">
+                  {derived ? <Pnl current={derived.current} tradeId={item.tradeId} /> : NOT_AVAILABLE}
+                  {meter && <Meter {...meter} />}
+                </td>
                 <td>{derived ? `${derived.entryStatus} · ${quantity(derived.openQuantity)} of ${quantity(item.plannedQuantity)}` : NOT_AVAILABLE}</td>
                 <td>{`${item.institution} — ${item.account}`}</td>
               </tr>
@@ -260,6 +269,7 @@ function OpenList({
         </tbody>
       </table>
     </div>
+    </>
   );
 }
 

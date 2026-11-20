@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { facadeDouble } from '../../../tests/support/facade-double.ts';
 import { openItem, plannedItem } from '../../../tests/support/views-fixtures.ts';
 import type { UiFacade } from '../../app/compose.ts';
+import type { MeterReading } from '../../app/types.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { RuntimeContext } from '../runtime.tsx';
 import { openRowsOf, TradeList } from './TradeList.tsx';
@@ -814,5 +815,79 @@ describe('Open rows as text', () => {
     const { headers, rows } = openRowsOf(items as never, undefined);
     expect({ headers, rows }).toEqual(rendered);
     expect(rows).toHaveLength(5);
+  });
+});
+
+// The meter on each Open row (T9.34, W51, W52): the read's finished reading, drawn under the P&L figure.
+describe('Open list: the meter (W51, W52)', () => {
+  const rail = (n: bigint) => ({ kind: 'Value' as const, value: Rational.of(n) });
+  const within62: MeterReading = {
+    stop: rail(-600n),
+    target: rail(1600n),
+    banked: rail(400n),
+    now: { kind: 'Value', value: { pnl: Rational.of(990n), zone: 'Between', share: { fraction: Rational.of(31n, 50n), percent: Rational.of(62n), toward: 'Target' } } },
+    previous: { tradingDate: '2026-10-09', pnl: Rational.of(850n), direction: 'Up' },
+  };
+  const noMark: MeterReading = {
+    stop: rail(-600n),
+    target: rail(1600n),
+    banked: rail(0n),
+    now: { kind: 'Unavailable', reason: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'ABC' }, date: '2026-10-13' },
+  };
+  const withMeter = (tradeId: string, underlying: string, meter: MeterReading | undefined) => ({ ...valued(), tradeId, underlying, meter });
+
+  async function openTable(items: readonly unknown[]) {
+    const facade = facadeDouble();
+    vi.mocked(facade.TradeViewsAndReporting.browseTrades).mockResolvedValue(readyPage(items));
+    renderOpen(facade);
+    return screen.findByRole('table', { name: 'Open Trades' });
+  }
+
+  it('should show each Open row meter under its P&L figure, with no new column', async () => {
+    const table = await openTable([withMeter('t1', 'AAA', within62)]);
+    expect(within(table).getAllByRole('columnheader').map((h) => h.textContent)).toEqual(['Underlying', 'Trade', 'Net cost', 'P&L', 'Entry', 'Account']);
+    const [, row] = within(table).getAllByRole('row');
+    const pnlCell = within(row!).getAllByRole('cell')[3]!;
+    const meter = within(pnlCell).getByRole('img');
+    expect(meter.getAttribute('data-size')).toBe('row');
+    expect(meter.getAttribute('aria-label')).toBe('P&L +$990.00, 62% of the way to the Target. Realized +$400.00. Stop −$600.00, Target +$1,600.00. Up from +$850.00 on Fri Oct 9.');
+    // The figure comes first, the meter after it.
+    expect(pnlCell.firstChild?.textContent).toBe('+$582.00 · +2.33R');
+    expect(within(row!).getAllByRole('img')).toHaveLength(1);
+  });
+
+  it('should show the rows in the order the read returns them, under In the Review order', async () => {
+    const table = await openTable([withMeter('t1', 'ZZZ', noMark), withMeter('t2', 'AAA', within62), withMeter('t3', 'MMM', within62)]);
+    // The screen never sorts: the read's default order stands, whatever the Underlyings or the P&L.
+    expect(within(table).getAllByRole('row').slice(1).map((r) => within(r).getAllByRole('cell')[0]!.textContent)).toEqual(['ZZZ', 'AAA', 'MMM']);
+    expect(screen.getByText("In the Review's order")).toBeTruthy();
+  });
+
+  it('should show the dashed track on a row with no Mark or a Settlement Due contract', async () => {
+    const table = await openTable([withMeter('t1', 'AAA', noMark), withMeter('t2', 'BBB', { ...noMark, now: { kind: 'Unavailable', reason: 'SettlementDue', instrument: { kind: 'Stock', symbol: 'BBB' }, date: '2026-10-13' } as never })]);
+    const [, first, second] = within(table).getAllByRole('row');
+    const meter = (row: HTMLElement) => within(row).getByRole('img');
+    expect(meter(first!).getAttribute('data-state')).toBe('empty');
+    expect(meter(first!).getAttribute('aria-label')).toMatch(/^Mark missing: ABC.*Stop −\$600\.00, Target \+\$1,600\.00\.$/);
+    expect(meter(second!).getAttribute('data-state')).toBe('empty');
+    expect(within(second!).queryAllByTestId('meter-open')).toHaveLength(0);
+  });
+
+  it('should show no meter on the Planned and Closed lists', async () => {
+    for (const [lifecycle, item] of [['Planned', { ...plannedItem, meter: within62 }], ['Closed', { ...closedItem, meter: within62 }]] as const) {
+      const facade = facadeDouble();
+      vi.mocked(facade.TradeViewsAndReporting.browseTrades).mockResolvedValue(readyPage([item]));
+      render(
+        <RuntimeContext.Provider value={{ writable: true, timeZone: 'America/New_York', report: () => undefined }}>
+          <MemoryRouter initialEntries={[`/?lifecycle=${lifecycle}`]}>
+            <TradeList facade={facade} />
+          </MemoryRouter>
+        </RuntimeContext.Provider>,
+      );
+      await screen.findByRole('table', { name: new RegExp(lifecycle) });
+      expect(screen.queryAllByRole('img')).toHaveLength(0);
+      expect(screen.queryByText("In the Review's order")).toBeNull();
+      cleanup();
+    }
   });
 });
