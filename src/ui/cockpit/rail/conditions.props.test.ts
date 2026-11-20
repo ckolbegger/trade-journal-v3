@@ -258,6 +258,26 @@ describe('Conditions card: the meter (P130)', () => {
     expect(meter.getAttribute('aria-label')).toMatch(/^[^]*Mark[^]*Stop −\$600.00, Target \+\$1,600.00. Session before \+\$850.00 on Mon Oct 12.$/);
   });
 
+  it('should show the dashed track at the top of the card on an Open Detail awaiting its first Marks', () => {
+    const waiting = os2(TUESDAY);
+    const beforeMarks: OpenTradeDetail = {
+      ...waiting,
+      current: {
+        ...waiting.current,
+        firstMarksDue: '2026-10-12',
+        evaluation: { ...waiting.current.evaluation, conditions: waiting.current.evaluation.conditions.map((c) => ({ ...c, result: { kind: 'Unavailable' as const, reason: 'AwaitingClose' as const, after: '2026-10-12' } })) },
+      },
+    };
+    const missing = { kind: 'Unavailable' as const, reason: 'MarkMissing' as const, instrument: { kind: 'Stock' as const, symbol: 'XYZ' }, date: '2026-10-13' };
+    const container = renderWith(beforeMarks, reading({ now: missing }));
+    const card = container.querySelector('.conditions-card')!;
+    const meter = within(card as HTMLElement).getByRole('img');
+    expect(meter.getAttribute('data-state')).toBe('empty');
+    const list = within(card as HTMLElement).getByRole('list', { name: 'Conditions' });
+    expect(meter.compareDocumentPosition(list) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(card.textContent).toContain('Distances to each condition arrive with the first Marks.');
+  });
+
   it('should show no meter on a Planned or a Closed Detail', () => {
     // Even when a reading is passed beside the view, as a Closed Trade's replay never carries one.
     const closed = renderWith(optionClosedDetail('O-C', [OC_PC1, OC_PC2, OC_X1, OC_E1]), reading());

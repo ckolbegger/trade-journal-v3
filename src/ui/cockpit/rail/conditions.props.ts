@@ -131,9 +131,10 @@ function openProps(view: OpenTradeDetail, replay: MeterReplay | undefined, timeZ
   // Trade Views states when no Mark has valued the Trade yet (revision 90); the card infers nothing from the waiting figures.
   const waiting = view.current.firstMarksDue !== undefined;
   const conditions = evaluation.conditions.map((condition) => measuredItem(plan, condition, waiting, view.current.datedLine));
-  if (waiting) return { conditions, summary: [{ text: BEFORE_MARKS }] };
-  // Nothing beneath the conditions: the worst case and the maximum reward live in Plan and Risk (W31).
   const meter = replay?.meter && meterProps(replay.meter, timeZone);
+  // Awaiting its first Marks the card still carries the meter, its track dashed, above the rows and the note.
+  if (waiting) return { ...(meter && { meter }), conditions, summary: [{ text: BEFORE_MARKS }] };
+  // Nothing beneath the conditions: the worst case and the maximum reward live in Plan and Risk (W31).
   return { ...(meter && { meter }), conditions, summary: [] };
 }
 
