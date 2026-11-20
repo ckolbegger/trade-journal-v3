@@ -113,4 +113,47 @@ test.describe('B9.11 The meter, responsive and accessible', () => {
     for (const symbol of ['BREN', 'CORV', 'DALE', 'AXIO']) await expect(meterOf(symbol), symbol).toHaveText('');
     await context.close();
   });
+
+  // T9.38-B1: the shapes above are attributes; this case reads what the stylesheet paints from them.
+  test('should show the square pointer, the hatch and the outlined open fill in the rendered styles, not only in attributes', async ({ profile }) => {
+    test.setTimeout(480_000);
+    const { context, page } = await onboardedAt(profile, closeOf('2026-11-13'));
+    for (const fixture of [BREN, CORV, DALE_D, AXIO_U] satisfies Fixture[]) await buildOn(page, fixture, 9);
+    await setViewport(page, 375, 667);
+    await page.goto('/');
+    await openOpenList(page);
+    const meterOf = (symbol: string): Locator => page.getByRole('table', { name: 'Open Trades' }).getByRole('row', { name: new RegExp(symbol) }).getByRole('img');
+    // A list that re-renders hands a detached element (every property empty) for a moment: repeat the read until the element is attached.
+    const style = async (locator: Locator, properties: string[]): Promise<Record<string, string>> => {
+      let read: Record<string, string> = {};
+      await expect
+        .poll(async () => {
+          read = await locator.evaluate((el, names) => {
+            const computed = getComputedStyle(el);
+            return Object.fromEntries(names.map((name) => [name, computed.getPropertyValue(name)]));
+          }, properties);
+          return el_attached(read);
+        })
+        .toBe(true);
+      return read;
+    };
+    const el_attached = (read: Record<string, string>): boolean => Object.values(read).some((value) => value !== '');
+    // The pointer: square (a 3 px corner) past a line, round (half its width) between the lines.
+    for (const symbol of ['DALE', 'BREN', 'CORV']) {
+      expect((await style(meterOf(symbol).getByTestId('meter-pointer'), ['border-top-left-radius']))['border-top-left-radius'], `${symbol}: square pointer`).toBe('3px');
+    }
+    expect((await style(meterOf('AXIO').getByTestId('meter-pointer'), ['border-top-left-radius']))['border-top-left-radius'], 'AXIO: round pointer').toBe('50%');
+    // The part past a line is hatched (a repeating gradient), past the Stop and past the Target.
+    for (const symbol of ['DALE', 'BREN']) {
+      expect((await style(meterOf(symbol).getByTestId('meter-past'), ['background-image']))['background-image'], `${symbol}: hatched past part`).toContain('repeating-linear-gradient');
+    }
+    // What is open is outlined (an inset ring over a light fill) and what was realized is solid (a plain fill, no ring), so the two differ without colour.
+    const open = await style(meterOf('BREN').getByTestId('meter-open'), ['box-shadow', 'background-image']);
+    const banked = await style(meterOf('BREN').getByTestId('meter-banked'), ['box-shadow', 'background-color']);
+    expect(open['box-shadow'], 'open fill is outlined').toContain('inset');
+    expect(banked['box-shadow'], 'banked fill has no outline').toBe('none');
+    expect(banked['background-color'], 'banked fill is solid').not.toBe('rgba(0, 0, 0, 0)');
+    expect((await style(meterOf('BREN').getByTestId('meter-open'), ['background-color']))['background-color'], 'open fill is lighter than the banked fill').not.toBe(banked['background-color']);
+    await context.close();
+  });
 });
