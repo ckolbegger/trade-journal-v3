@@ -557,6 +557,10 @@ table.trades .badge {
   margin-left: 0.25rem;
 }
 
+.trade-meter {
+  display: block;
+}
+
 .trade-line {
   display: block;
   color: var(--muted);
@@ -576,7 +580,8 @@ table.trades .badge {
 }
 
 @media (min-width: 960px) {
-  .trade-line {
+  .trade-line,
+  .trade-meter {
     display: none;
   }
 

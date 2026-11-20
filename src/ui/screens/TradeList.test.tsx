@@ -853,7 +853,20 @@ describe('Open list: the meter (W51, W52)', () => {
     expect(meter.getAttribute('aria-label')).toBe('P&L +$990.00, 62% of the way to the Target. Realized +$400.00. Stop −$600.00, Target +$1,600.00. Up from +$850.00 on Fri Oct 9.');
     // The figure comes first, the meter after it.
     expect(pnlCell.firstChild?.textContent).toBe('+$582.00 · +2.33R');
-    expect(within(row!).getAllByRole('img')).toHaveLength(1);
+    expect(within(pnlCell).getAllByRole('img')).toHaveLength(1);
+  });
+
+  it('should show each Open row meter under the figures line when the P&L column is hidden on a narrow screen', async () => {
+    const table = await openTable([withMeter('t1', 'AAA', within62)]);
+    const [, row] = within(table).getAllByRole('row');
+    // The Trade cell's figures line is the one a narrow screen shows; the meter sits under it.
+    const line = row!.querySelector('.trade-line')!;
+    const meter = within(line.parentElement as HTMLElement).getByRole('img');
+    expect(meter.getAttribute('data-size')).toBe('row');
+    expect(meter.getAttribute('aria-label')).toBe('P&L +$990.00, 62% of the way to the Target. Realized +$400.00. Stop −$600.00, Target +$1,600.00. Up from +$850.00 on Fri Oct 9.');
+    expect(line.compareDocumentPosition(meter) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    // The wide cell's copy is the other one; CSS shows exactly one at any width.
+    expect(within(row!).getAllByRole('img')).toHaveLength(2);
   });
 
   it('should show the rows in the order the read returns them, under In the Review order', async () => {
@@ -866,7 +879,7 @@ describe('Open list: the meter (W51, W52)', () => {
   it('should show the dashed track on a row with no Mark or a Settlement Due contract', async () => {
     const table = await openTable([withMeter('t1', 'AAA', noMark), withMeter('t2', 'BBB', { ...noMark, now: { kind: 'Unavailable', reason: 'SettlementDue', instrument: { kind: 'Stock', symbol: 'BBB' }, date: '2026-10-13' } as never })]);
     const [, first, second] = within(table).getAllByRole('row');
-    const meter = (row: HTMLElement) => within(row).getByRole('img');
+    const meter = (row: HTMLElement) => within(within(row).getAllByRole('cell')[3]!).getByRole('img');
     expect(meter(first!).getAttribute('data-state')).toBe('empty');
     expect(meter(first!).getAttribute('aria-label')).toMatch(/^Mark missing: ABC.*Stop −\$600\.00, Target \+\$1,600\.00\.$/);
     expect(meter(second!).getAttribute('data-state')).toBe('empty');

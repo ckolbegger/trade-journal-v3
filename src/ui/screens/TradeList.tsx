@@ -254,6 +254,7 @@ function OpenList({
                       </>
                     }
                     badges={derived && <StatusBadges current={derived.current} settlement={derived.settlement} />}
+                    meter={meter && <Meter {...meter} />}
                   />
                 </td>
                 <td className="number wide-only">{derived && derived.netCost.kind === 'Value' ? netCost(derived.netCost.value) : NOT_AVAILABLE}</td>
@@ -341,6 +342,7 @@ function TradeCell({
   line,
   badges,
   indicators,
+  meter,
 }: {
   readonly text: string;
   // The badge's words when the row's records disagree or its facts cannot be replayed; absent when they agree.
@@ -349,6 +351,8 @@ function TradeCell({
   readonly badges?: ReactNode;
   // Badges that belong to the first line, with the summary text.
   readonly indicators?: ReactNode;
+  // The Open row's meter under the figures line; like the line, only a narrow screen shows it (the P&L column has its own).
+  readonly meter?: ReactNode;
 }) {
   return (
     <>
@@ -369,6 +373,7 @@ function TradeCell({
         </>
       )}
       {badges}
+      {meter && <span className="trade-meter">{meter}</span>}
     </>
   );
 }
