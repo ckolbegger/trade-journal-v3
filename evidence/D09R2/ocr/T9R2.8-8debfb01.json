@@ -1,0 +1,140 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 0,
+    "total_tokens": 10906,
+    "input_tokens": 10667,
+    "output_tokens": 239,
+    "cache_read_tokens": 1664,
+    "elapsed": "13s"
+  },
+  "tool_calls": {
+    "total": 0,
+    "by_tool": {},
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Extract reusable session grid from price history drawer",
+      "files": [
+        "src/ui/cockpit/drawers/price-history.tsx",
+        "src/ui/cockpit/drawers/price-history.types.ts",
+        "src/ui/cockpit/session-grid.tsx",
+        "src/ui/cockpit/session-grid.types.ts"
+      ]
+    }
+  ],
+  "session_id": "4dbb848a-7f3b-4b56-bf23-ba49bdc3dc8e",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "4dbb848a-7f3b-4b56-bf23-ba49bdc3dc8e",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "8debfb01",
+      "resolved_base": "bb0c018fda6a8fdf8cd6ba97fb530c13aa3fbf03",
+      "resolved_head": "8debfb01cd364b4c9944a84973593e361b836e76",
+      "exact_range": "bb0c018fda6a8fdf8cd6ba97fb530c13aa3fbf03..8debfb01cd364b4c9944a84973593e361b836e76",
+      "source_artifact_sha256": "213ff249548542907da6cd147f81401532c9bac17a4a4ce797602450cd8b3aeb"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "8676b5afcb634bceb0b3456759a23b2bc4466a318b637ab4f4e37539b7f0aba1",
+          "path": "src/ui/cockpit/drawers/price-history.tsx",
+          "fingerprint": "5ad2372757eacebfc2cd27672a15ac76fa1cb7a7d7f45c2c1a18ce4a72e6b1ca"
+        },
+        {
+          "item_id": "9a97d51f4167aa99616017e5736b744bd7a0a6f598407577182f558d8b606903",
+          "path": "src/ui/cockpit/session-grid.tsx",
+          "fingerprint": "a15067177b5a5ae9cb01e836c86363a4b8092cf2c6db55c8200fd23d15c91f4d"
+        },
+        {
+          "item_id": "aab1b646ddc36ea4923c7d69927fa85c9dd351c75788347685eb4f4a69cb5fae",
+          "path": "src/ui/cockpit/session-grid.types.ts",
+          "fingerprint": "937308850c84c5f621542b3a9ab81ae1bd0ab5914ebf4045141453600a7e65e8"
+        },
+        {
+          "item_id": "c86bede55e682a60063ef80cbeae2ab273f7fe4e803c557b0515a5f8aae21104",
+          "path": "src/ui/cockpit/drawers/price-history.types.ts",
+          "fingerprint": "88c50c8fb4e71b29c30cedf89110e3592f8444be09df8f90bd08629d5b8717bd"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "8676b5afcb634bceb0b3456759a23b2bc4466a318b637ab4f4e37539b7f0aba1",
+          "path": "src/ui/cockpit/drawers/price-history.tsx",
+          "fingerprint": "5ad2372757eacebfc2cd27672a15ac76fa1cb7a7d7f45c2c1a18ce4a72e6b1ca"
+        },
+        {
+          "item_id": "9a97d51f4167aa99616017e5736b744bd7a0a6f598407577182f558d8b606903",
+          "path": "src/ui/cockpit/session-grid.tsx",
+          "fingerprint": "a15067177b5a5ae9cb01e836c86363a4b8092cf2c6db55c8200fd23d15c91f4d"
+        },
+        {
+          "item_id": "aab1b646ddc36ea4923c7d69927fa85c9dd351c75788347685eb4f4a69cb5fae",
+          "path": "src/ui/cockpit/session-grid.types.ts",
+          "fingerprint": "937308850c84c5f621542b3a9ab81ae1bd0ab5914ebf4045141453600a7e65e8"
+        },
+        {
+          "item_id": "c86bede55e682a60063ef80cbeae2ab273f7fe4e803c557b0515a5f8aae21104",
+          "path": "src/ui/cockpit/drawers/price-history.types.ts",
+          "fingerprint": "88c50c8fb4e71b29c30cedf89110e3592f8444be09df8f90bd08629d5b8717bd"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "38816a3667eb38d9e4680806c16d34ee213cd050331d715034e9aff51fba3c88",
+          "path": "evidence/D09R2/screenshots/T9R2.8/after-1280.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "3d83c14c0ddbef3c307d796c37537ae114e6436c177a6117e32fbbfdf3a43579",
+          "path": "evidence/D09R2/screenshots/T9R2.8/after-390.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "5d820a5a971a46a392b2b25f0561209ea817fc42f6ec7a62d1e43356aac091ac",
+          "path": "evidence/D09R2/screenshots/T9R2.8/before-1280.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "b3a3340d6b990095f5994e0d3e655eecb7c87330f29032c71c8782cba2c2850c",
+          "path": "evidence/D09R2/screenshots/T9R2.8/before-390.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "f045204067133e5075df1bf6016272c43c5cd01e9ac6f9c82215604cb74e2622",
+          "path": "evidence/D09R2/structural.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 13187
+  }
+}
