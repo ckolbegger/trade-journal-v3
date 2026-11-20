@@ -34,3 +34,13 @@ D9R2 runs one task at a time (P162; decision 100). Each task's heading holds its
 - Words: W78 and W81 as approved; no P137 change; no new words.
 - ocr (`ocr/T9R2.2-8d3e8c0d.json`): **No findings.** 4 files reviewed.
 - Run `T9R2.2` (browser-task): unit 224 files, 2597 tests; integration 137 files, 294 tests; browser task tier 5 passed (12.9 s); checks 14 of 14. Ports free before and after. No flaky case failed. `run-complete.sh`: run complete.
+
+## T9R2.3 Journal cards: acknowledged sessions
+
+- Base `8d3e8c0d`, commit `4f3d6a76`. Standard (decision 122).
+- Cases: 2, each red by assertion, then green (`tdd-log/T9R2.3.md`); names rephrased without quotes or the dash for `tdd.sh`'s filter, meaning unchanged. `src/ui/cockpit` 437 tests pass; `journal-cards.props.test.tsx` 138 and 277 unchanged. First-run passes: none.
+- Implementation-level assumption (subagent, recorded rather than asked): the merge rule lives in `journal.props.ts` (`withoutMarks`; `journal-cards.ts` does not exist) and now merges a session only when every Mark is Missing, so a session mixing Missing and acknowledged Marks keeps its own card. This follows A214's amendment ("a session whose Marks are acknowledged is not merged"). The Mark wording moved into a `valueOf` helper (a nested ternary failed lint) and uses `acknowledgedUnavailableStatusLabel()`.
+- Browser: 7 `e2e/d8p` spec files (cockpit, history, journal-final-session, states, settlement-due-replay, planned, responsive-a11y), 14 tests, all passed under the lock; no spec edited.
+- Words: W78 as approved; no P137 change; no new words.
+- ocr (`ocr/T9R2.3-4f3d6a76.json`): **No findings.** 2 files reviewed.
+- Run `T9R2.3` (browser-task): unit 224 files, 2599 tests; integration 137 files, 294 tests; browser task tier 5 passed (13.1 s); checks 14 of 14. Ports free before and after. No flaky case failed. `run-complete.sh`: run complete.

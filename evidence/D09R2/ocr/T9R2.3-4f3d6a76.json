@@ -1,0 +1,101 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 0,
+    "total_tokens": 20076,
+    "input_tokens": 19929,
+    "output_tokens": 147,
+    "cache_read_tokens": 3328,
+    "elapsed": "9s"
+  },
+  "tool_calls": {
+    "total": 3,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/cockpit/drawers/journal.props.ts",
+        "src/ui/cockpit/journal-cards.props.test.tsx"
+      ]
+    }
+  ],
+  "session_id": "5c9db2e0-5ad7-4fc5-9733-9dc53abe308f",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "5c9db2e0-5ad7-4fc5-9733-9dc53abe308f",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "4f3d6a76",
+      "resolved_base": "41a447f68ea2dab4bac2c2c09fecee10d51bb0a5",
+      "resolved_head": "4f3d6a766997c7fc8a5d8bab0238868d2caf0789",
+      "exact_range": "41a447f68ea2dab4bac2c2c09fecee10d51bb0a5..4f3d6a766997c7fc8a5d8bab0238868d2caf0789",
+      "source_artifact_sha256": "50694f24a1c5d1ad54ae5809374df28f1831c61a7a35118011c0cc71f6d83900"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "1dc18f003e74eb83072928bc9264026066fa6de757834fea465e0a10ab39e477",
+          "path": "src/ui/cockpit/journal-cards.props.test.tsx",
+          "fingerprint": "93f6e35b007ce42ea9037cfd6d775168e738f4e17c01d5c8343f29acefd60094"
+        },
+        {
+          "item_id": "adea4cb067ea760f59c6416d1d6e39c53028b95a6e7ecbecf206c6fde24296a0",
+          "path": "src/ui/cockpit/drawers/journal.props.ts",
+          "fingerprint": "419b72824ad02cca92059fc9dae489f56a0df0da06e098f29d529fd8d318631b"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "1dc18f003e74eb83072928bc9264026066fa6de757834fea465e0a10ab39e477",
+          "path": "src/ui/cockpit/journal-cards.props.test.tsx",
+          "fingerprint": "93f6e35b007ce42ea9037cfd6d775168e738f4e17c01d5c8343f29acefd60094"
+        },
+        {
+          "item_id": "adea4cb067ea760f59c6416d1d6e39c53028b95a6e7ecbecf206c6fde24296a0",
+          "path": "src/ui/cockpit/drawers/journal.props.ts",
+          "fingerprint": "419b72824ad02cca92059fc9dae489f56a0df0da06e098f29d529fd8d318631b"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "e1a799411f3bc2f17e6b5bd432af59f5872bc36057f9fd6b30476526a6194cc9",
+          "path": "evidence/D09R2/tdd-log/T9R2.3.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 8561
+  }
+}
