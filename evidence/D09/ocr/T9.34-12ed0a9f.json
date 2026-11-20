@@ -1,0 +1,132 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 2,
+    "total_tokens": 176456,
+    "input_tokens": 174541,
+    "output_tokens": 1915,
+    "cache_read_tokens": 16640,
+    "elapsed": "1m10s"
+  },
+  "tool_calls": {
+    "total": 27,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 13,
+      "file_read": 13
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/TradeList.tsx",
+      "content": "The meter disappears below 960px: `table.trades .wide-only` is set to `display: none`, and the narrow-screen P\u0026L in `TradeCell` has no corresponding meter. Render the row-sized meter beneath that narrow-screen P\u0026L as well (with mutually exclusive responsive visibility), so each Open row still exposes its meter on mobile.",
+      "existing_code": "                  {meter \u0026\u0026 \u003cMeter {...meter} /\u003e}",
+      "start_line": 262,
+      "end_line": 262,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/TradeList.test.tsx",
+      "content": "The Settlement Due fixture is not a valid reading: this reason requires an Option instrument and an `expiration`, not a Stock instrument and `date`. Casting it to `never` suppresses that contract error, so the test exercises an impossible production input and does not cover option-specific formatting. Use a correctly typed Settlement Due reading without the cast, and assert its Settlement Due accessible label as well as the empty track.",
+      "existing_code": "    const table = await openTable([withMeter('t1', 'AAA', noMark), withMeter('t2', 'BBB', { ...noMark, now: { kind: 'Unavailable', reason: 'SettlementDue', instrument: { kind: 'Stock', symbol: 'BBB' }, date: '2026-10-13' } as never })]);",
+      "start_line": 867,
+      "end_line": 867,
+      "category": "test",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/app.css",
+        "src/ui/screens/TradeList.test.tsx",
+        "src/ui/screens/TradeList.tsx"
+      ]
+    }
+  ],
+  "session_id": "eedc7e7d-46d1-4f76-a9bc-cf1eda9e68c1",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "eedc7e7d-46d1-4f76-a9bc-cf1eda9e68c1",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "12ed0a9f",
+      "resolved_base": "d7afe61cbf52387ca04de57d4a19972acfa1aa44",
+      "resolved_head": "12ed0a9f30341cdd39e5a669e7b795935a311c5a",
+      "exact_range": "d7afe61cbf52387ca04de57d4a19972acfa1aa44..12ed0a9f30341cdd39e5a669e7b795935a311c5a",
+      "source_artifact_sha256": "52dc96f1ba5c5904b7c08983afab86adc7c57f379923a3c083c61d92f821b235"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "6015b9221cd73015c0b0444d741ecc6efdd24c9a65719effcf65dee8fd54f517"
+        },
+        {
+          "item_id": "21528fdea1f786ee58019fc622e43786a82d341175e8a059f5ae72ed67e96e01",
+          "path": "src/ui/screens/TradeList.test.tsx",
+          "fingerprint": "f5376a954be79526ebff08adb8ee38e093f2bf3518e794c2d51d0499889390e4"
+        },
+        {
+          "item_id": "bd89945794b582a5dc4c1bd60d9b38e3f6b1c7c01eebcd61eec907922b0a0a0f",
+          "path": "src/ui/screens/TradeList.tsx",
+          "fingerprint": "b2bc189277219fa9892d3439207e503ac00e4eefe24144f375d61265d77ce5b7"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "6015b9221cd73015c0b0444d741ecc6efdd24c9a65719effcf65dee8fd54f517"
+        },
+        {
+          "item_id": "21528fdea1f786ee58019fc622e43786a82d341175e8a059f5ae72ed67e96e01",
+          "path": "src/ui/screens/TradeList.test.tsx",
+          "fingerprint": "f5376a954be79526ebff08adb8ee38e093f2bf3518e794c2d51d0499889390e4"
+        },
+        {
+          "item_id": "bd89945794b582a5dc4c1bd60d9b38e3f6b1c7c01eebcd61eec907922b0a0a0f",
+          "path": "src/ui/screens/TradeList.tsx",
+          "fingerprint": "b2bc189277219fa9892d3439207e503ac00e4eefe24144f375d61265d77ce5b7"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "f6c3ffaea34f4fe255a5664e758d66488e941a1e057b59682c168924487b5c8f",
+          "path": "evidence/D09/tdd-log/T9.34.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 70037
+  }
+}

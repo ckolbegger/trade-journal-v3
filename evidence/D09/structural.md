@@ -877,3 +877,13 @@ Complete run `t9.33` (full tier, on `8e6bc0d3`; run complete): unit 224 files, 2
 ### T9.34 Open list: the meter under the P&L (Standard)
 
 Commit `12ed0a9f` (`TradeList.tsx`, `TradeList.test.tsx`, `app.css`'s `p.list-order`). 4 cases. **First-run passes, flagged:** "show the dashed track on a row with no Mark or a Settlement Due contract" (mutation: meter built only when `now` is a Value; failed `Unable to find … role "img"`) and "show no meter on the Planned and Closed lists" (mutation: the order line added to the Planned list; failed `expected <p class="list-order"></p> to be null`). W52's line "In the Review's order" sits above the table, so the table's accessible name stays "Open Trades". An unreplayable row shows no meter. No words shortened; no new phrase. Subagent notes: the Settlement Due case uses an Unavailable `now` with reason `SettlementDue` (cast); T9.38 should check it against a real read. It ran an unneeded lane tier, whose four untracked output files the main session deleted. Browser (under the lock, after `build:faults`): 69 passed across `e2e/d2`, `e2e/d4`, `e2e/d5r`, `e2e/d6` responsive and list specs and `e2e/d7p/layout`. No e2e spec read Open rows by position.
+
+ocr `12ed0a9f` (`ocr/T9.34-12ed0a9f.json`):
+
+| Severity | Location | Claim | Verdict | Action |
+|---|---|---|---|---|
+| medium | `TradeList.tsx:262` | The meter is only in the P&L cell, which is `wide-only` (hidden below 960 px, `app.css:568`); the narrow figures line in `TradeCell` has none, so phones lose it (B9.11: "the meter under the figures line on a phone") | Valid | T9.34-B1 |
+| low | `TradeList.test.tsx:867` | The Settlement Due fixture is a Stock instrument with `date`, cast `as never`, where production builds the reason with an option's `expiration` (`src/ui/figures.ts:25`); the case never asserts the Settlement Due wording | Valid (test strength) | T9.34-B2 |
+
+- **T9.34-B1.** Defect: below 960 px no Open row shows its meter. Case: *it should show each Open row's meter under the figures line when the P&L column is hidden on a narrow screen*.
+- **T9.34-B2.** Defect: the Settlement Due case would pass a wrong reason. Case: *it should show the dashed track named by the Settlement Due reason on a Settlement Due contract's row*, with a fixture production can build.
