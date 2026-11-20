@@ -644,3 +644,20 @@ browser-4 stage for `e2e/d9` (which also matches `e2e/d9ar`), from `f7fb30d3` (p
 - **T9.25-B2** done at `5268e5ac` (test only): the three cases' card row lists, and four later lists in the same cases that the first failures hid (CORV Tue Nov 10, CORV Wed Nov 11, AXIO Mon Nov 9, BREN Thu Nov 12), gain exactly the estimate rows, in the card's order ("Implied volatility" after the option Mark row; "Behaves like" after "Held"). Red 3 failed, green 3 passed; `e2e/d9` and `e2e/d9ar` 101 passed, 4 skipped.
 - T9.25-B2 ocr (`evidence/D09/ocr/T9.25-B2-5268e5ac.json`): **No findings.**
 - **Complete run `t9.25-r1`** (on `5268e5ac`, after T9.25-B1 and T9.25-B2, 2026-11-19 to 11-20: browser tier full. Unit 218 files, 2,542 tests; integration 135 files, 286 tests; browser-1 126 (5.1 min); browser-2 79 (4.9 min); browser-3 57 (4.2 min); browser-4 101 passed, 4 skipped (4.6 min); checks 14 of 14. No failures, no flakes). `run-complete.sh`: run complete.
+
+### T9.26
+
+- New `tests/integration/d9/estimates.test.ts` (tests only, six cases). I9.8 is five cases (price-back, the split's sum, R-CORV-D Tuesday, stable reasons, a stock Trade), I9.9 one case; every planned assertion is kept.
+- The estimates lint rule (`eslint.estimates.config.js`) lets only `replay-estimates.ts` import `src/domain/option-pricing`, and its file groups cover `tests/` too. So the price-back check prices with a small Black-Scholes written in the test, from the estimate's own rate (4%) and days; it does not import the production formula (and so is independent of it).
+- The call's Mark is saved at 4.00 with RecordInitialManualMark and corrected to 4.16 with CorrectMark, expected revision read from the replay's own Mark resolution.
+- `npm run test:integration -- d9/estimates`: exit 0, 6 passed. Each case passed on its first run (new tests over built code, as expected).
+- Mutation checks (one per case; run with `npx vitest run --project integration tests/integration/d9/estimates.test.ts -t "<case>"`; each restored, `git diff -- src` empty after):
+  - price-back: `replay-estimates.ts` fed the volatility search `marks.mark + 0.02`: "R-BREN-U 2026-11-02: expected 0.02000193919083393 to be less than or equal to 0.005".
+  - split's sum: remainder `+ 0.01`: "expected -0.17999999999999994 to be close to -0.19".
+  - Tuesday: missing-Mark reason `NoEarlierFigure` for the volatility: "expected { kind: 'Unavailable', reason: 'NoEarlierFigure' } to deeply equal ... 'MarkMissing'".
+  - stable reasons: the first session's split reason changed to `MarkMissing`: "expected [ 'MarkMissing', … ] to include 'NoEarlierFigure'".
+  - stock Trade: `exact: true` dropped: "expected { kind: 'Estimate', value: 100 } to deeply equal { kind: 'Estimate', value: 100, …(1) }".
+  - I9.9: an Unavailable volatility replaced with an Estimate of 0.3: "expected { kind: 'Estimate', value: 0.3 } to deeply equal { kind: 'Unavailable', …(1) }".
+- `.claude/scripts/acceptance-commands.sh plan/D09-trade-replay.md`: exit 1 by design; 9 commands checked, 1 failed. AC-CALC-005 now reads "npm run test:integration -- d9/estimates | 6 tests" (passes). The one failure is AC-REV-002 (`e2e/d9/meter-review.spec.ts`, stage C's): "playwright --list exited 1, no tests".
+- `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`: all exit 0.
+
