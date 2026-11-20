@@ -54,12 +54,13 @@ The brief now points the critic at the browser suite's support modules **for set
 
 - Save the critic's report with `node tools/agent-report.ts "# D<nn> critic-<n> report" > evidence/D<nn>/critic-<n>.md`, never by retyping it (D7 retro, finding 4). Subagents can't write report files, so the script takes the critic's final message from the session transcript (D08P retro, finding 2).
 - Add a row to the deliverable's critic-cost table in `evidence/D<nn>/structural.md`. Take the token, tool-call and duration figures from the completion notice, and give the brief version and whether the critic found defects.
-- **Fix every defect, whatever its severity, before the gate closes** (D7 retro, finding 1; the user's rule, 2026-11-08). Each defect is its own bug task, `<gate task>-B<n>`, run one at a time:
+- **A low defect goes to `evidence/D<nn>/tech-debt.md`**, reviewed with the user once the gate passes (the user's rule, 2026-11-19, replacing the rule of 2026-11-08 for low defects).
+- **Fix every high or moderate defect before the gate closes.** Each is its own bug task, `<gate task>-B<n>`, run one at a time:
   1. A fresh `tdd-task` subagent writes the failing test first, then the fix. Its brief names the browser spec files that cover the screens the defect touches, and the subagent runs them after its green.
   2. `ocr-review` runs on the fix's commit, as for any bug task.
   3. `suite-runner` makes the quick run with the browser stage `browser-task`: unit, integration, the static and verify checks, and the task tier.
 - **After the last fix**, one full run (`browser-full`), then by the worst severity the critic reported:
-  - **PASS with only low defects:** the full run closes the gate. No new critic.
+  - **PASS with only low defects:** they go to tech debt, and the full run before that critic closes the gate. No fixes, no new critic.
   - **FAIL, or any high or moderate defect:** spawn a fresh critic after the full run.
   - **PASS with no defects:** the gate closes on that critic, since the full run before it stands. No fixes are needed.
 - **Cap:** if the third critic still reports a high or moderate defect, stop and ask the user.

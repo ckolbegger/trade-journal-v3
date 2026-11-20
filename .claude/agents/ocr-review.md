@@ -33,7 +33,7 @@ The task prompt gives you:
    - Then rerun the whole review from step 3 with a fresh output file (`$D/ocr2.json`, and so on), and report from the complete run only. Mention the wait in one line (when it started and when usage came back).
    If `ocr llm test` works, the failures were not the usage limit: report them as they are.
 4. Get the session ID, model, and reviewed-file count from `ocr session list` (newest row for that range) and `ocr session show <id>`, or from `ocr.json` when the list doesn't show it.
-5. Read `$D/ocr.json`. For each finding, read the cited lines (and enough around them) to judge it: **Valid** (the defect is real), **Doubtful** (possible but not shown by the code), or **Wrong** (the code already handles it, or the claim misreads it). Ground every judgment in code you read.
+5. Read `$D/ocr.json`. For each finding, read the cited lines (and enough around them) to judge it: **Valid** (the defect is real), **Doubtful** (possible but not shown by the code), or **Wrong** (the code already handles it, or the claim misreads it). Ground every judgment in code you read. Then mark a Valid or Doubtful finding **Style only** when fixing it would change no behaviour: readability, naming, nesting, duplication, comments. The assessment then reads "Style only: <one sentence why>".
 6. Confirm the worktree's branch and `git status --short` match what you noted in step 1. Report any difference.
 
 Report the excluded files only as a count.
