@@ -23,6 +23,8 @@ export function SessionGrid({ label, tableClass, rowLabels, columns, chosen, lay
     observer.observe(region.current);
     return () => observer.disconnect();
   }, [layout]);
+  // P161: a grid with any cell to type in or press holds every cell to the touch height (a read-only grid, Price History, stays as it was).
+  const editable = columns.some((column) => column.cells.some((cell) => cell !== null && ('input' in cell || ('id' in cell && cell.id !== undefined))));
   const turned = layout === 'turned' || (layout === 'auto' && narrow);
   // A cell that can be chosen is a button that reports its id and shows as pressed while it is the chosen one (P160).
   const pressProps = (id: string | undefined) =>
@@ -87,7 +89,7 @@ export function SessionGrid({ label, tableClass, rowLabels, columns, chosen, lay
   );
   // Turned (P161): the same cells and names, sessions down the side and one column per label.
   const turnedTable = (
-    <table className={tableClass} data-layout="turned">
+    <table className={tableClass} data-layout="turned" data-editable={editable || undefined}>
       <thead>
         <tr>
           <th scope="col">Session</th>
@@ -107,7 +109,7 @@ export function SessionGrid({ label, tableClass, rowLabels, columns, chosen, lay
     </table>
   );
   const wideTable = (
-    <table className={tableClass}>
+    <table className={tableClass} data-editable={editable || undefined}>
       <thead>
         <tr>
           <th scope="col">Session</th>

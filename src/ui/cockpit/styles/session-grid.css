@@ -51,6 +51,10 @@ button.session-grid-draft {
   .session-grid-control {
     min-height: 44px;
   }
+  /* A cell with no control (Not held, a plain value) is as tall as its neighbours; a table cell's height is its minimum. */
+  .price-history[data-editable] td {
+    height: 44px;
+  }
 }
 @media (forced-colors: active) {
   .session-grid-control {

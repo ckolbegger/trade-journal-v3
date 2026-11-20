@@ -117,6 +117,21 @@ describe('Session grid: editable cells and the turned layout (P158 to P161)', ()
     expect(rule).toMatch(/min-height:\s*44px/);
   });
 
+  // P161 (T9R2.9-B1): a cell with no control, such as Not held, is as tall as its neighbours.
+  it('should give every cell of an editable grid, including a Not held cell in a row with no control, at least 44 px of height on a touch screen', () => {
+    const editable = [column('2026-10-08', 'Thu', 'Oct 8', [{ label: 'NVDA Mark, Thu Oct 8', input: { value: '', onChange: vi.fn() } }, { notHeld: true }])];
+    const { container, unmount } = grid({ columns: editable }, ['NVDA Mark', 'AMD Mark']);
+    expect(container.querySelector('table')?.hasAttribute('data-editable')).toBe(true);
+    expect(within(container).getByRole('img', { name: 'Not held' }).closest('td')).not.toBeNull();
+    unmount();
+    const readOnly = grid({ columns: [column('2026-10-08', 'Thu', 'Oct 8', [{ text: '151.10', label: 'NVDA Mark, Thu Oct 8' }])] });
+    expect(readOnly.container.querySelector('table')?.hasAttribute('data-editable')).toBe(false);
+    const css = readFileSync('src/ui/cockpit/styles/session-grid.css', 'utf8');
+    const touch = /@media \(pointer: coarse\)\s*\{([\s\S]*?\})\s*\}/.exec(css)?.[1] ?? '';
+    const rule = /\[data-editable\]\s+td\s*\{([^}]*)\}/.exec(touch)?.[1] ?? '';
+    expect(rule).toMatch(/(min-)?height:\s*44px/);
+  });
+
   // P161.
   it('should render sessions as rows and Instruments as columns when turned, keeping every cell name', () => {
     const columns = [
