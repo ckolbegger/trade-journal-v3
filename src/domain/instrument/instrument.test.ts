@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { expiredOn, instrumentKey, instrumentOf, multiplierOf, settlementDueOn, validateOptionContract, type Instrument } from './index'
+import { expiredOn, instrumentKey, instrumentOf, multiplierOf, settlementDueOn, validateOptionContract, type Instrument } from './index.ts'
 
 describe('Instrument keys (P68)', () => {
   it('should give a stock key as its symbol', () => {

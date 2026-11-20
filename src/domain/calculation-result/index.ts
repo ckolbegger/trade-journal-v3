@@ -1,4 +1,4 @@
-import type { Instrument, OptionInstrument } from '../instrument'
+import type { Instrument, OptionInstrument } from '../instrument/index.ts'
 import type { Instant } from '../time/index.ts'
 import type { Rational } from '../values/index.ts'
 

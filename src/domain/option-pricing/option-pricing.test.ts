@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { impliedVolatility, optionDelta, optionPrice, rateForDays } from './index'
+import { impliedVolatility, optionDelta, optionPrice, rateForDays } from './index.ts'
 
 // R-BREN-U: BREN, a $100 call expiring Fri 11-20, sessions Mon 11-02 (18 days), Wed 11-11 (9), Tue 11-17 (3).
 const BREN = { strike: 100, rate: 0.04 }

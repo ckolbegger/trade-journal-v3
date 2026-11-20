@@ -3,7 +3,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { expect, test, type BrowserContext, type BrowserType, type Page } from '@playwright/test';
-import { startProbeServer, type ProbeServer } from './probe-server';
+import { startProbeServer, type ProbeServer } from './probe-server.ts';
 
 // D1 T1.2: every browser capability the D1 design depends on, in one engine.
 // Any false value stops work for a discussion before T1.8.

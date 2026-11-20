@@ -7,6 +7,7 @@ import { conditionIndexSelectors } from './eslint.conditions.config.js';
 import { estimatesImportRules } from './eslint.estimates.config.js';
 import { domainPurityRules, expirationComparisonSelectors, expirationExemptRules, noIdentityRules } from './eslint.deps.config.js';
 import { wordingRules } from './eslint.wording.config.js';
+import { importExtensionRules } from './eslint.imports.config.js';
 
 // wordingRules sets no-restricted-syntax for non-test src/ui files, which replaces the options of the entries
 // above, so the expiration (P82) and condition-index selectors are repeated here after its identity and wording selectors.
@@ -36,6 +37,7 @@ export default defineConfig(
   wordingWithExpirationRules,
   cockpitImportRules,
   ...estimatesImportRules,
+  importExtensionRules,
   { rules: { 'no-nested-ternary': 'error' } },
   {
     files: ['**/*.js'],
