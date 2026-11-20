@@ -668,7 +668,8 @@ describe('links (A161)', () => {
     expect(facade.DailyReview.getTrade).toHaveBeenCalledTimes(1);
     expect(vi.mocked(facade.DailyReview.getTrade).mock.calls[0]![0]).toMatchObject({ tradeId: 't-f' });
     expect(within(card).getByRole('button', { name: /^Marks\b/ }).getAttribute('aria-expanded')).toBe('true');
-    expect(within(card).getByRole('region', { name: 'XYZ Mark, Mon Oct 12' }).contains(document.activeElement)).toBe(true);
+    // Focus lands in a passive effect after the commit that shows the card, so the test waits for it.
+    await waitFor(() => expect(within(card).getByRole('region', { name: 'XYZ Mark, Mon Oct 12' }).contains(document.activeElement)).toBe(true));
   });
 
   it('should open T-E card on its first panel that is not done for /review?trade=t-e', async () => {
@@ -692,7 +693,7 @@ describe('links (A161)', () => {
     expect(headers().map((h) => h.getAttribute('aria-expanded'))).toEqual(['false', 'false', 'false', 'true', 'false']);
     expect(vi.mocked(facade.DailyReview.getTrade).mock.calls[0]![0]).toMatchObject({ tradeId: 't-a' });
     expect(within(card).getByRole('button', { name: /^Marks\b/ }).getAttribute('aria-expanded')).toBe('true');
-    expect(within(card).getByRole('region', { name: 'XYZ Mark, Mon Oct 12' }).contains(document.activeElement)).toBe(true);
+    await waitFor(() => expect(within(card).getByRole('region', { name: 'XYZ Mark, Mon Oct 12' }).contains(document.activeElement)).toBe(true));
   });
 
   const panelStates = (card: HTMLElement) => (['Marks', 'Reflections', 'Action'] as const).map((name) => within(card).getByRole('button', { name: new RegExp(`^${name}\\b`) }).getAttribute('aria-expanded'));
@@ -821,7 +822,7 @@ describe('header', () => {
     await user.click(within(blockers[0]!).getByRole('link', { name: 'DEF' }));
     const def = await screen.findByRole('region', { name: 'DEF review' });
     expect(within(def).getByRole('button', { name: /^Marks\b/ }).getAttribute('aria-expanded')).toBe('true');
-    expect(within(def).getByRole('region', { name: 'DEF Mark, Mon Oct 12' }).contains(document.activeElement)).toBe(true);
+    await waitFor(() => expect(within(def).getByRole('region', { name: 'DEF Mark, Mon Oct 12' }).contains(document.activeElement)).toBe(true));
     // The reflection opens XYZ's card on its Reflections panel.
     await user.click(within(blockers[2]!).getByRole('link', { name: 'XYZ' }));
     const xyz = await screen.findByRole('region', { name: 'XYZ review' });
