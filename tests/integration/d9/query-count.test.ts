@@ -3,10 +3,11 @@
 // request counter, each read on a fresh launch so no read warms another.
 import { describe, expect, it } from 'vitest';
 import type { Application } from '../../../src/app/compose.ts';
-import { R_BREN_U } from '../../../src/domain/trade-analysis/option-trade.ts';
+import { R_BREN_U, R_CORV_D, R_DALE_D } from '../../../src/domain/trade-analysis/option-trade.ts';
+import { R_AXIO_U } from '../../../src/domain/trade-analysis/reference-trade.ts';
 import { countRequests, type CountedRequest } from '../../support/request-counter.ts';
 import { restart } from '../d7s/support.ts';
-import { MON_1116_1700, seriesApp } from './support.ts';
+import { MON_1116_1700, seriesApp, seriesBook } from './support.ts';
 
 type Tally = Record<string, number>;
 const tallyOf = (requests: readonly CountedRequest[]): Tally => {
@@ -63,5 +64,45 @@ describe('I9.6 Query counts (AC-PERF-001, cumulative)', () => {
     expect(observations(card.requests).filter((r) => r.on === 'index' && r.index === 'byInstrumentDate' && r.method === 'getAll')).toEqual([SERIES, SERIES]);
     expect(tallyOf(card.requests)).toEqual(CARD);
     expect(card.requests.some((r) => r.store === 'journalEntries' || r.store === 'journalDeclines')).toBe(false);
+  });
+});
+
+// I9.11 Query counts with the meter (AC-PERF-001): the four test Trades open at Fri 11-13, against the first two of them. The Review Date's
+// date-wide read and the session before's are the only date reads, whatever the number of Trades.
+const FRI_1113_1700 = '2026-11-13T22:00:00Z';
+const BOOK = [
+  [R_BREN_U, 'strategy.long-call', { marksThrough: 9 }],
+  [R_DALE_D, 'strategy.cash-secured-put', { marksThrough: 9 }],
+  [R_CORV_D, 'strategy.long-put', { marksThrough: 9 }],
+  [R_AXIO_U, 'strategy.long-stock', { marksThrough: 9 }],
+] as const;
+const withoutObservations = (tally: Tally): Tally => Object.fromEntries(Object.entries(tally).filter(([key]) => !key.startsWith('observations.')));
+
+async function countedReads(trades: number) {
+  const { d, app } = await seriesBook(FRI_1113_1700, BOOK.slice(0, trades));
+  const browse = await countRequests(() => app.TradeViewsAndReporting.browseTrades({ lifecycle: 'Open' }));
+  if (browse.result.kind !== 'Ready') throw new Error(`browseTrades: ${browse.result.kind}`);
+  const openApp = await restart(app, d);
+  const open = await countRequests(() => openApp.DailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: FRI_1113_1700 }));
+  if (open.result.kind !== 'Ready') throw new Error(`open: ${open.result.kind}`);
+  return { browse: browse.requests, open: open.requests };
+}
+
+describe('I9.11 Query counts with the meter (AC-PERF-001)', () => {
+  it('I9.11 should read one more date of observations for browseTrades and open and nothing per Trade', { timeout: 180_000 }, async () => {
+    const two = await countedReads(2);
+    const four = await countedReads(4);
+
+    // browseTrades: the Expected Mark Date's date-wide read and the session before's, and no other read of observations; the same
+    // requests for four Trades as for two.
+    expect(observations(four.browse)).toEqual([DATE_WIDE, DATE_WIDE]);
+    expect(tallyOf(four.browse)).toEqual(tallyOf(two.browse));
+    // open: the same two date-wide reads, then D6's gap scan, one series read per Instrument (four for two Trades, seven for four).
+    expect(observations(two.open).filter((r) => r.on === 'store')).toEqual([DATE_WIDE, DATE_WIDE]);
+    expect(observations(four.open).filter((r) => r.on === 'store')).toEqual([DATE_WIDE, DATE_WIDE]);
+    expect(observations(two.open).filter((r) => r.on === 'index')).toEqual([SERIES, SERIES, SERIES, SERIES]);
+    expect(observations(four.open).filter((r) => r.on === 'index')).toEqual(Array(7).fill(SERIES));
+    // Every other request is the same however many Trades there are.
+    expect(withoutObservations(tallyOf(four.open))).toEqual(withoutObservations(tallyOf(two.open)));
   });
 });

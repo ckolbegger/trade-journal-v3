@@ -30,9 +30,8 @@ async function firstCloseReasonId(app: Application): Promise<string> {
   return page.items[0]!.id;
 }
 
-export async function seriesApp(series: ReplayTestSeries, strategyKey: string, now: string, options: SeriesOptions): Promise<SeriesApp> {
-  const d = await device(undefined, now);
-  let app = await onboarded(d);
+// One series entered into a Workspace that is already onboarded; the caller restarts the app when every series is in.
+async function addSeries(app: Application, series: ReplayTestSeries, strategyKey: string, options: SeriesOptions): Promise<string> {
   const { plan } = series.record;
   const leg = plan.legs[0]!;
   const base = await planCommand(app, { underlying: plan.underlying, economicTime: plan.economicTime });
@@ -80,9 +79,31 @@ export async function seriesApp(series: ReplayTestSeries, strategyKey: string, n
     if (held !== null && held !== undefined && leg.instrument.kind === 'Option' && !(options.skipHeldOn ?? []).includes(date)) await saveMark(app, instrumentKey(leg.instrument), date, held);
   }
   for (const { instrument, date, price } of options.extraMarks ?? []) await saveMark(app, instrumentKey(instrument), date, price);
+  return tradeId;
+}
+
+export async function seriesApp(series: ReplayTestSeries, strategyKey: string, now: string, options: SeriesOptions): Promise<SeriesApp> {
+  const d = await device(undefined, now);
+  const entered = await onboarded(d);
+  const tradeId = await addSeries(entered, series, strategyKey, options);
   // A fresh launch, so no read is warmed by the writes.
-  app = await restart(app, d);
-  return { d, app, tradeId };
+  return { d, app: await restart(entered, d), tradeId };
+}
+
+export interface SeriesBook {
+  readonly d: Device;
+  readonly app: Application;
+  // Each series' Trade, in the order the series were given.
+  readonly tradeIds: readonly string[];
+}
+
+// Several series entered into one Workspace, then one fresh launch.
+export async function seriesBook(now: string, entries: readonly (readonly [ReplayTestSeries, string, SeriesOptions])[]): Promise<SeriesBook> {
+  const d = await device(undefined, now);
+  const entered = await onboarded(d);
+  const tradeIds: string[] = [];
+  for (const [series, strategyKey, options] of entries) tradeIds.push(await addSeries(entered, series, strategyKey, options));
+  return { d, app: await restart(entered, d), tradeIds };
 }
 
 // The Detail's binding, then the replay with it, as the cockpit asks.

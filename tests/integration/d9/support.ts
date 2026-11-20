@@ -4,7 +4,7 @@ import type { CalculationResult } from '../../../src/domain/trade-analysis/index
 import type { ReplaySession } from '../../../src/coordinators/trade-views/index.ts';
 import { Rational } from '../../../src/domain/values/index.ts';
 
-export { readyReplay, replayView, seriesApp } from '../../support/replay-series-app.ts';
+export { readyReplay, replayView, seriesApp, seriesBook } from '../../support/replay-series-app.ts';
 
 export const MON_1116_1700 = '2026-11-16T22:00:00Z';
 export const MON_1123_1800 = '2026-11-23T23:00:00Z';
