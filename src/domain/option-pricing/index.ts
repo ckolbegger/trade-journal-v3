@@ -66,9 +66,11 @@ const HALF_A_CENT = 0.005
 // Implied volatility: the volatility at which the price equals the Mark, found by bisection. It explains a price; it predicts nothing.
 export function impliedVolatility(kind: OptionKind, mark: number, underlying: number, strike: number, days: number, rate: number): ImpliedVolatility {
   if (days <= 0) return { kind: 'Unavailable', reason: 'ExpirationSession' }
-  // Half a cent above the exercise value (the price at the lowest volatility), the Mark leaves no volatility to read.
-  if (mark <= optionPrice(kind, underlying, strike, days, LOWEST_VOLATILITY, rate) + HALF_A_CENT) return { kind: 'Unavailable', reason: 'AtOrBelowExerciseValue' }
-  if (optionPrice(kind, underlying, strike, days, HIGHEST_VOLATILITY, rate) < mark) return { kind: 'Unavailable', reason: 'NoVolatilityFits' }
+  // Half a cent above the plain exercise value (W49), the Mark leaves no volatility to read.
+  const exerciseValue = Math.max(0, kind === 'Call' ? underlying - strike : strike - underlying)
+  if (mark <= exerciseValue + HALF_A_CENT) return { kind: 'Unavailable', reason: 'AtOrBelowExerciseValue' }
+  // Above the exercise value, yet outside the prices the range of volatilities reaches (the discounted strike lifts the lowest price above it).
+  if (mark < optionPrice(kind, underlying, strike, days, LOWEST_VOLATILITY, rate) || optionPrice(kind, underlying, strike, days, HIGHEST_VOLATILITY, rate) < mark) return { kind: 'Unavailable', reason: 'NoVolatilityFits' }
   let low = LOWEST_VOLATILITY
   let high = HIGHEST_VOLATILITY
   for (let step = 0; step < BISECTION_STEPS; step += 1) {

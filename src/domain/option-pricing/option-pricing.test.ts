@@ -48,6 +48,12 @@ describe('implied volatility (A258)', () => {
     expect(impliedVolatility('Call', 5.003, 105, 100, 18, 0.04)).toEqual({ kind: 'Unavailable', reason: 'AtOrBelowExerciseValue' })
     expect(impliedVolatility('Put', 4.803, 95, 100, 18, 0.04)).toEqual({ kind: 'Unavailable', reason: 'AtOrBelowExerciseValue' })
   })
+  it('should not call a Mark above the plain exercise value at or below it, R-BREN-U Thu 11-19: BREN 106.00, the call 6.01, 1 day', () => {
+    expect(impliedVolatility('Call', 6.01, 106, BREN.strike, 1, BREN.rate)).toEqual({ kind: 'Unavailable', reason: 'NoVolatilityFits' })
+  })
+  it('should be Unavailable, at or below exercise value, when the Mark equals the plain exercise value, R-DALE-D Wed 11-18: DALE 52.80, the put 4.70, 2 days', () => {
+    expect(impliedVolatility('Put', 4.7, 52.8, 57.5, 2, 0.04)).toEqual({ kind: 'Unavailable', reason: 'AtOrBelowExerciseValue' })
+  })
   it('should be Unavailable, no volatility fits, when the Mark is above the price at 500%', () => {
     expect(optionPrice('Call', 100, 100, 18, 5, 0.04)).toBeLessThan(60)
     expect(impliedVolatility('Call', 60, 100, 100, 18, 0.04)).toEqual({ kind: 'Unavailable', reason: 'NoVolatilityFits' })
