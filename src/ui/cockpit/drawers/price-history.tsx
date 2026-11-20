@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router';
 import { ROUTES } from '../../../app/routes.ts';
+import { acknowledgedUnavailableStatusLabel } from '../../calculation-words.ts';
 import { plural } from '../../format.ts';
 import { Badge } from '../../Badge.tsx';
 import type { ShellProps } from '../placeholder.ts';
@@ -10,7 +11,7 @@ import type { PriceHistoryProps } from './price-history.types.ts';
 const REVIEW_PATH = ROUTES.find((route) => route.id === 'review')!.path;
 
 // W9, P99: every session in one table, newest on the left, with no paging.
-export function PriceHistoryTable({ rowLabels, columns, missingCount, onOpenReview }: PriceHistoryProps) {
+export function PriceHistoryTable({ rowLabels, columns, missingCount, acknowledgedCount, onOpenReview }: PriceHistoryProps) {
   if (columns.length === 0) return <p>No sessions yet: the first ends once the Trade's first session ends.</p>;
   return (
     <>
@@ -50,18 +51,21 @@ export function PriceHistoryTable({ rowLabels, columns, missingCount, onOpenRevi
       </tbody>
     </table>
     </div>
-    {missingCount > 0 && (
+    {(missingCount > 0 || acknowledgedCount > 0) && (
       <p className="price-history-gaps">
-        {plural(missingCount, 'session', 'sessions')} without Marks.{' '}
-        <a
-          href={REVIEW_PATH}
-          onClick={(event) => {
-            event.preventDefault();
-            onOpenReview();
-          }}
-        >
-          Enter Marks in the Review
-        </a>
+        {missingCount > 0 && `${plural(missingCount, 'session', 'sessions')} without Marks. `}
+        {acknowledgedCount > 0 && `${plural(acknowledgedCount, 'session', 'sessions')} ${acknowledgedUnavailableStatusLabel().toLowerCase()}.${missingCount > 0 ? ' ' : ''}`}
+        {missingCount > 0 && (
+          <a
+            href={REVIEW_PATH}
+            onClick={(event) => {
+              event.preventDefault();
+              onOpenReview();
+            }}
+          >
+            Enter Marks in the Review
+          </a>
+        )}
       </p>
     )}
     </>

@@ -1,5 +1,6 @@
 import { instrumentKey, type Instrument } from '../../../domain/instrument/index.ts';
 import type { Rational } from '../../../domain/values/index.ts';
+import { acknowledgedUnavailableStatusLabel } from '../../calculation-words.ts';
 import { decimalMoney, decimalUnderlyingPrice, localTime, money, shortDate } from '../../format.ts';
 import type { PriceHistoryProps } from './price-history.types.ts';
 
@@ -30,7 +31,9 @@ function markCell(session: Session, instrument: Instrument, optionTrade: boolean
   const mark = session.marks.find((m) => instrumentKey(m.instrument) === instrumentKey(instrument));
   if (mark?.resolution.kind !== 'Available') {
     // Nothing held at the close: no Mark was due, so the cell is not a gap (plain "—", not "No Mark").
-    return heldNothing(session) ? { text: '—' } : null;
+    if (heldNothing(session)) return { text: '—' };
+    // An acknowledged Mark is neither a price nor a gap (W78).
+    return mark?.resolution.kind === 'AcknowledgedUnavailable' ? { text: acknowledgedUnavailableStatusLabel() } : null;
   }
   const { price, source, savedAt, correctionReason } = mark.resolution.mark;
   // An Underlying's price has no "$" on an option Trade (C3); a stock Trade's Mark is money (C1), as in Today and the Journal.
@@ -48,9 +51,12 @@ function pnlCell(session: Session): Cell {
 
 // A session whose close held no Position (a Closed Trade's final session) was owed no Mark (A211's Position held).
 const heldNothing = (session: Session): boolean => session.positions.every((p) => p.quantity.numerator === 0n);
-const lacksMarks = (session: Session): boolean => !heldNothing(session) && session.marks.some((m) => m.resolution.kind !== 'Available');
+// Still owed: a Missing Mark. An acknowledged one is not owed (T9R2.2).
+const lacksMarks = (session: Session): boolean => !heldNothing(session) && session.marks.some((m) => m.resolution.kind === 'Missing');
+// Acknowledged, with nothing else still owed: a session with a Missing Mark counts as Missing only.
+const acknowledgedSession = (session: Session): boolean => !heldNothing(session) && !lacksMarks(session) && session.marks.some((m) => m.resolution.kind === 'AcknowledgedUnavailable');
 
-// W1: the Price History tab's count, the sessions without Marks (T8P.22 shows it on the tab).
+// W1: the Price History tab's count, the sessions without Marks (Missing only) (T8P.22 shows it on the tab).
 export function priceHistoryTabCount(replay: TradeReplayView): number {
   return replay.sessions.filter(lacksMarks).length;
 }
@@ -66,6 +72,7 @@ export function priceHistoryProps(replay: TradeReplayView, onOpenReview: () => v
       return { session: session.date, weekday, date: date.join(' '), cells: [...replay.instruments.map((i) => markCell(session, i, optionTrade, timeZone)), pnlCell(session)] };
     }),
     missingCount: priceHistoryTabCount(replay),
+    acknowledgedCount: replay.sessions.filter(acknowledgedSession).length,
     onOpenReview,
   };
 }

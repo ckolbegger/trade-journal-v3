@@ -21,6 +21,7 @@ const available = (instrument: Instrument, price: string, correctionReason?: str
   resolution: { kind: 'Available', mark: { price, source: 'Manual', savedAt: '2026-10-14T21:00:00.000Z', ...(correctionReason !== undefined && { correctionReason }) } },
 });
 const missing = (instrument: Instrument): ReplaySession['marks'][number] => ({ instrument, resolution: { kind: 'Missing' } });
+const acknowledged = (instrument: Instrument): ReplaySession['marks'][number] => ({ instrument, resolution: { kind: 'AcknowledgedUnavailable' } });
 const cents = (n: number) => Rational.of(BigInt(n), 100n);
 
 // O-C3's sessions (plan section 5): the date, XYZ and call Marks (null for a gap), and the Trade P&L in cents (null when unavailable).
@@ -145,6 +146,34 @@ describe('Price History (W9, P99)', () => {
     expect(whole.container.textContent).not.toContain('without Marks');
     expect(within(whole.container).queryByRole('link', { hidden: true })).toBeNull();
     expect(priceHistoryTabCount(replay([MON, WED, THU]))).toBe(0);
+  });
+
+  // T9R2.2 (W78, W81): an acknowledged session is neither a price nor a gap, and it is not still owed.
+  const ACK: ReplaySession = { ...session('2026-10-16', null, null, 100), marks: [acknowledged(STOCK), acknowledged(CALL)] };
+
+  it('should show an acknowledged session\'s cell as "Acknowledged Unavailable", not "—" named "No Mark" (W78)', () => {
+    const { container } = render(<PriceHistoryTable {...priceHistoryProps(replay([MON, ACK]), () => undefined, ZONE)} />);
+    const newest = within(container.querySelector('tbody') as HTMLElement).getAllByRole('row').map((row) => (row.children[1] as HTMLElement).textContent);
+    expect(newest).toEqual(['Acknowledged Unavailable', 'Acknowledged Unavailable', '$1.00']);
+    expect(within(container).queryAllByRole('img', { name: 'No Mark', hidden: true })).toHaveLength(0);
+  });
+
+  it('should count only Missing sessions in the line under the table when another session is acknowledged', () => {
+    const { container } = render(<PriceHistoryTable {...priceHistoryProps(replay([MON, TUE, ACK]), () => undefined, ZONE)} />);
+    expect(container.querySelector('.price-history-gaps')?.textContent).toContain('1 session without Marks.');
+  });
+
+  it('should count only Missing sessions on the Price History tab', () => {
+    expect(priceHistoryTabCount(replay([MON, TUE, ACK]))).toBe(1);
+    expect(priceHistoryTabCount(replay([MON, ACK]))).toBe(0);
+  });
+
+  it('should say how many sessions are acknowledged under the table, without the link when none is Missing (W81)', () => {
+    const both = render(<PriceHistoryTable {...priceHistoryProps(replay([MON, TUE, ACK]), () => undefined, ZONE)} />);
+    expect(both.container.querySelector('.price-history-gaps')?.textContent).toBe('1 session without Marks. 1 session acknowledged unavailable. Enter Marks in the Review');
+    const ackOnly = render(<PriceHistoryTable {...priceHistoryProps(replay([MON, ACK, { ...ACK, date: '2026-10-19' }]), () => undefined, ZONE)} />);
+    expect(ackOnly.container.querySelector('.price-history-gaps')?.textContent).toBe('2 sessions acknowledged unavailable.');
+    expect(within(ackOnly.container).queryByRole('link', { hidden: true })).toBeNull();
   });
 
   // T8P.23-B11 (critic-2 defect 5): a session that closed flat was owed no Mark, so it is no gap.
