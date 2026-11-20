@@ -12776,20 +12776,6 @@
               },
               "date": "2026-11-20"
             },
-            "rangePosition": {
-              "kind": "Unavailable",
-              "reason": "MarkMissing",
-              "instrument": {
-                "kind": "Option",
-                "symbol": "XYZ",
-                "root": "XYZ",
-                "expiration": "2026-11-20",
-                "strike": "55",
-                "right": "Call",
-                "multiplier": 100
-              },
-              "date": "2026-11-20"
-            },
             "progress": {
               "kind": "Walked",
               "panels": [
@@ -12901,14 +12887,6 @@
                 "share": "1/1"
               }
             },
-            "rangePosition": {
-              "kind": "Value",
-              "value": {
-                "now": "0/1",
-                "atEntry": "47/62",
-                "pinned": "Stop"
-              }
-            },
             "progress": {
               "kind": "Walked",
               "panels": [
@@ -12974,15 +12952,6 @@
               }
             ],
             "basis": {
-              "kind": "Unavailable",
-              "reason": "MarkMissing",
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "CSCO"
-              },
-              "date": "2026-11-20"
-            },
-            "rangePosition": {
               "kind": "Unavailable",
               "reason": "MarkMissing",
               "instrument": {
@@ -13079,15 +13048,6 @@
               },
               "date": "2026-11-20"
             },
-            "rangePosition": {
-              "kind": "Unavailable",
-              "reason": "MarkMissing",
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "XYZ"
-              },
-              "date": "2026-11-20"
-            },
             "progress": {
               "kind": "Walked",
               "panels": [
@@ -13168,15 +13128,6 @@
               }
             ],
             "basis": {
-              "kind": "Unavailable",
-              "reason": "MarkMissing",
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "QRS"
-              },
-              "date": "2026-11-20"
-            },
-            "rangePosition": {
               "kind": "Unavailable",
               "reason": "MarkMissing",
               "instrument": {
@@ -13273,15 +13224,6 @@
               },
               "date": "2026-11-20"
             },
-            "rangePosition": {
-              "kind": "Unavailable",
-              "reason": "MarkMissing",
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "KO"
-              },
-              "date": "2026-11-20"
-            },
             "progress": {
               "kind": "Walked",
               "panels": [
@@ -13362,15 +13304,6 @@
               }
             ],
             "basis": {
-              "kind": "Unavailable",
-              "reason": "MarkMissing",
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "PFE"
-              },
-              "date": "2026-11-20"
-            },
-            "rangePosition": {
               "kind": "Unavailable",
               "reason": "MarkMissing",
               "instrument": {
@@ -13666,20 +13599,6 @@
           }
         ],
         "basis": {
-          "kind": "Unavailable",
-          "reason": "MarkMissing",
-          "instrument": {
-            "kind": "Option",
-            "symbol": "XYZ",
-            "root": "XYZ",
-            "expiration": "2026-11-20",
-            "strike": "55",
-            "right": "Call",
-            "multiplier": 100
-          },
-          "date": "2026-11-20"
-        },
-        "rangePosition": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
           "instrument": {
@@ -14265,14 +14184,6 @@
             "now": "0/1",
             "share": "1/1"
           }
-        },
-        "rangePosition": {
-          "kind": "Value",
-          "value": {
-            "now": "0/1",
-            "atEntry": "47/62",
-            "pinned": "Stop"
-          }
         }
       },
       "labels": {
@@ -14841,15 +14752,6 @@
           }
         ],
         "basis": {
-          "kind": "Unavailable",
-          "reason": "MarkMissing",
-          "instrument": {
-            "kind": "Stock",
-            "symbol": "CSCO"
-          },
-          "date": "2026-11-20"
-        },
-        "rangePosition": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
           "instrument": {
@@ -15719,15 +15621,6 @@
             "symbol": "XYZ"
           },
           "date": "2026-11-20"
-        },
-        "rangePosition": {
-          "kind": "Unavailable",
-          "reason": "MarkMissing",
-          "instrument": {
-            "kind": "Stock",
-            "symbol": "XYZ"
-          },
-          "date": "2026-11-20"
         }
       },
       "labels": {
@@ -16098,15 +15991,6 @@
             "symbol": "QRS"
           },
           "date": "2026-11-20"
-        },
-        "rangePosition": {
-          "kind": "Unavailable",
-          "reason": "MarkMissing",
-          "instrument": {
-            "kind": "Stock",
-            "symbol": "QRS"
-          },
-          "date": "2026-11-20"
         }
       },
       "labels": {
@@ -16470,15 +16354,6 @@
           }
         ],
         "basis": {
-          "kind": "Unavailable",
-          "reason": "MarkMissing",
-          "instrument": {
-            "kind": "Stock",
-            "symbol": "KO"
-          },
-          "date": "2026-11-20"
-        },
-        "rangePosition": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
           "instrument": {
@@ -17100,15 +16975,6 @@
           }
         ],
         "basis": {
-          "kind": "Unavailable",
-          "reason": "MarkMissing",
-          "instrument": {
-            "kind": "Stock",
-            "symbol": "PFE"
-          },
-          "date": "2026-11-20"
-        },
-        "rangePosition": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
           "instrument": {

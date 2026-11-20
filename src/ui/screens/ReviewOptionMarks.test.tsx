@@ -44,7 +44,6 @@ const walked = (tradeId: string, underlying: string, over: Partial<WalkedTrade>)
   band: 'Routine',
   reasons: [{ code: 'NoPressure' }],
   basis: { kind: 'Value', value: { side: 'None', share: Rational.of(0n, 1n) } },
-  rangePosition: { kind: 'Value', value: { now: Rational.of(1n, 2n), atEntry: Rational.of(1n, 2n) } },
   progress: cardProgress(),
   ...over,
 });

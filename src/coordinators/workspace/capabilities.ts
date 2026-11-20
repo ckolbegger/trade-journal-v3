@@ -82,7 +82,7 @@ const OPERATIONS: Readonly<Record<string, readonly string[]>> = {
   ],
   // D4: the Open list and Detail carry the current evaluation. D5: Detail carries Debt status and actions.
   // D6: the Closed list and Detail, which need no Mark.
-  'TradeViewsAndReporting.browseTrades': ['Planned', 'Open', 'Closed', 'CurrentEvaluation', 'Option'],
+  'TradeViewsAndReporting.browseTrades': ['Planned', 'Open', 'Closed', 'CurrentEvaluation', 'Option', 'AttentionOrder', 'Meter'],
   // D7: the payoff at the single expiration, and the Settlement Due item.
   'TradeViewsAndReporting.getTradeDetail': ['Planned', 'Open', 'Closed', 'CurrentEvaluation', 'Debt', 'ExpirationPayoff', 'SettlementDue'],
   // D08P A212: a Trade's replay by session, its own read (P95).
@@ -96,13 +96,13 @@ const OPERATIONS: Readonly<Record<string, readonly string[]>> = {
   'MarketData.query': ['ResolveFrames', 'ResolveSession', 'Current', 'Review', 'Historical', 'PreviousClose', 'Option', 'ReadSeries'],
   'MarketData.recover': [],
   // D5 P17: owed reflections inside the walk; there is no DailyReview.getDebt.
-  // D5R: the walk carries each Trade's range position and the gap groups' Trades; a card carries the Plan
+  // D5R: the walk carries each Trade's meter reading (D9) and the gap groups' Trades; a card carries the Plan
   // baseline and Reward : risk now (only the Review presents it, P40, A158); SaveReviewMarks saves one
   // card's Marks in one commit. Market Data's prepare and apply pair is an internal seam of that save and
   // is not an operation (P37).
   // D6 P20: the Trades outside the walk with a reflection owed form a group after it, whose cards are the
   // ReflectionsOwed kind; there is still no DailyReview.getDebt.
-  'DailyReview.open': ['LatestCompleted', 'OwedReflections', 'RangePosition', 'GapTrades', 'OwedReflectionGroup', 'SettlementFamily'],
+  'DailyReview.open': ['LatestCompleted', 'OwedReflections', 'Meter', 'GapTrades', 'OwedReflectionGroup', 'SettlementFamily'],
   // D9 A263: the card carries the Trade's Replay. D9A-R A272: and the estimated odds.
   'DailyReview.getTrade': ['OwedReflections', 'PlanBaseline', 'RewardRiskNow', 'ReflectionsOwed', 'ExpirationPayoff', 'SettlementDue', 'Replay', 'Odds'],
   'DailyReview.save': ['SaveTradeAction', 'ResolveReviewDebt', 'SaveReviewMarks'],

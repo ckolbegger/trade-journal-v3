@@ -47,7 +47,6 @@ const trade = (tradeId: string, underlying: string, over: Partial<WalkedTrade>):
   band: 'Routine',
   reasons: [{ code: 'NoPressure' }],
   basis: { kind: 'Value', value: { side: 'None', share: rational(0n) } },
-  rangePosition: { kind: 'Value', value: { now: rational(1n, 2n), atEntry: rational(1n, 2n) } },
   progress: cardProgress(),
   ...over,
 });
@@ -57,32 +56,27 @@ const TB = trade('t-b', 'ABC', {
   band: 'BoundaryReached',
   meter: meterOf({ kind: 'Value', value: { pnl: rational(-200n), zone: 'PastStop', pastBy: { dollars: rational(50n) } as never } }, -150n, 300n),
   reasons: [{ code: 'StopBreached', conditionId: 'c', overrun: rational(1n) }],
-  rangePosition: { kind: 'Value', value: { now: rational(0n), atEntry: rational(1n, 4n), pinned: 'Stop' } },
   figures: { riskToStop: value(0n), pnl: value(-200n), rewardRiskNow: { kind: 'NotApplicable' } as never },
 });
 const TC = trade('t-c', 'DEF', {
   band: 'EvidenceLimited',
   meter: meterOf({ kind: 'Unavailable', reason: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'DEF' }, date: '2026-10-12' }, -200n, 400n),
   reasons: [{ code: 'Unavailable', reason: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'DEF' }, date: '2026-10-12' }],
-  rangePosition: { kind: 'Unavailable', reason: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'DEF' }, date: '2026-10-12' },
   progress: cardProgress(0, 0, { needed: 1, resolved: 0 }),
 });
 const TF = trade('t-f', 'XYZ', {
   band: 'QuantifiedPressure',
   reasons: [{ code: 'PressureTowardTarget' }],
-  rangePosition: { kind: 'Value', value: { now: rational(4n, 7n), atEntry: rational(2n, 7n) } },
   figures: { riskToStop: value(200n), pnl: value(100n), rewardRiskNow: value(3n, 4n) },
 });
 const TA = trade('t-a', 'XYZ', {
   band: 'QuantifiedPressure',
   reasons: [{ code: 'PressureTowardTarget' }],
-  rangePosition: { kind: 'Value', value: { now: rational(9n, 17n), atEntry: rational(134n, 425n) } },
   progress: cardProgress(1, 1),
   meter: meterOf({ kind: 'Value', value: { pnl: rational(180n), zone: 'Between', share: { fraction: rational(2n, 5n), percent: rational(40n), toward: 'Target' } } }, -450n, 450n),
   figures: { riskToStop: value(450n), pnl: value(180n), rewardRiskNow: value(8n, 9n) },
 });
 const TE = trade('t-e', 'JKL', {
-  rangePosition: { kind: 'Value', value: { now: rational(2n, 11n), atEntry: rational(1n, 11n) } },
   figures: { riskToStop: value(200n), pnl: value(-100n), rewardRiskNow: value(9n, 2n) },
 });
 const WALK = [TB, TC, TF, TA, TE] as const;

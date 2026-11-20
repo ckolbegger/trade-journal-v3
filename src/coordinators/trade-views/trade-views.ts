@@ -576,7 +576,7 @@ function openItem(summary: RecordSummary, analysis: TradeAnalysisRecord, derived
 // Facts that cannot be replayed make the Trade a Blocker with no mark-based figures to compare (as the Review's walk has it).
 function incoherentAttention(findings: readonly IncoherentFact[]): Attention {
   const unavailable = { reason: 'FactsIncoherent', findings } as const;
-  return { band: 'Blocker', reasons: [{ code: 'Unavailable', ...unavailable }], basis: { kind: 'Unavailable', ...unavailable }, rangePosition: { kind: 'Unavailable', ...unavailable } };
+  return { band: 'Blocker', reasons: [{ code: 'Unavailable', ...unavailable }], basis: { kind: 'Unavailable', ...unavailable } };
 }
 
 // The Open list's default order: the Review's attention order at the current Expected Mark Date (A262).

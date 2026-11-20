@@ -56,7 +56,6 @@ const walked = (tradeId: string, underlying: string, over: Partial<WalkedTrade> 
   band: 'Routine',
   reasons: [{ code: 'NoPressure' }],
   basis: { kind: 'Value', value: { side: 'None', share: rational(0n) } },
-  rangePosition: { kind: 'Unavailable', reason: 'MarkMissing', instrument: { kind: 'Stock', symbol: underlying }, date: MONDAY },
   progress: cardProgress(0, 0, { needed: 1, resolved: 0 }),
   ...over,
 });

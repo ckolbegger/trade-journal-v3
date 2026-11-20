@@ -23,7 +23,7 @@ export const ROUTES = [
     label: 'Trades',
     // The Open (default), Planned (D2 A32) and Closed (D6 A95) tabs.
     requires: ['TradeViewsAndReporting.browseTrades'],
-    variants: { 'TradeViewsAndReporting.browseTrades': ['Open', 'Planned', 'Closed', 'CurrentEvaluation', 'Option'] },
+    variants: { 'TradeViewsAndReporting.browseTrades': ['Open', 'Planned', 'Closed', 'CurrentEvaluation', 'Option', 'AttentionOrder', 'Meter'] },
     navigation: true,
     readOnly: true,
   },
@@ -44,7 +44,7 @@ export const ROUTES = [
     variants: {
       // D5 P17: each Trade's card lists its owed reflections and resolves them (no Debt family).
       // D6 P20, A89, A90: the group of Trades outside the walk with a reflection owed, and its cards.
-      'DailyReview.open': ['LatestCompleted', 'OwedReflections', 'RangePosition', 'GapTrades', 'OwedReflectionGroup', 'SettlementFamily'],
+      'DailyReview.open': ['LatestCompleted', 'OwedReflections', 'Meter', 'GapTrades', 'OwedReflectionGroup', 'SettlementFamily'],
       'DailyReview.getTrade': ['OwedReflections', 'PlanBaseline', 'RewardRiskNow', 'ReflectionsOwed', 'ExpirationPayoff', 'SettlementDue', 'Replay', 'Odds'],
       'DailyReview.save': ['SaveTradeAction', 'ResolveReviewDebt', 'SaveReviewMarks'],
       'MarketData.save': ['RecordInitialManualMark', 'CorrectMark', 'AssertUnavailable', 'WithdrawAcknowledgment', 'Stock', 'Option'],

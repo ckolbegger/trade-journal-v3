@@ -8267,15 +8267,6 @@
               },
               "date": "2026-10-20"
             },
-            "rangePosition": {
-              "kind": "Unavailable",
-              "reason": "MarkMissing",
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "CSCO"
-              },
-              "date": "2026-10-20"
-            },
             "progress": {
               "kind": "Walked",
               "panels": [
@@ -8356,15 +8347,6 @@
               }
             ],
             "basis": {
-              "kind": "Unavailable",
-              "reason": "MarkMissing",
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "XYZ"
-              },
-              "date": "2026-10-20"
-            },
-            "rangePosition": {
               "kind": "Unavailable",
               "reason": "MarkMissing",
               "instrument": {
@@ -8461,15 +8443,6 @@
               },
               "date": "2026-10-20"
             },
-            "rangePosition": {
-              "kind": "Unavailable",
-              "reason": "MarkMissing",
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "QRS"
-              },
-              "date": "2026-10-20"
-            },
             "progress": {
               "kind": "Walked",
               "panels": [
@@ -8558,15 +8531,6 @@
               },
               "date": "2026-10-20"
             },
-            "rangePosition": {
-              "kind": "Unavailable",
-              "reason": "MarkMissing",
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "KO"
-              },
-              "date": "2026-10-20"
-            },
             "progress": {
               "kind": "Walked",
               "panels": [
@@ -8647,15 +8611,6 @@
               }
             ],
             "basis": {
-              "kind": "Unavailable",
-              "reason": "MarkMissing",
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "PFE"
-              },
-              "date": "2026-10-20"
-            },
-            "rangePosition": {
               "kind": "Unavailable",
               "reason": "MarkMissing",
               "instrument": {
@@ -8867,15 +8822,6 @@
           }
         ],
         "basis": {
-          "kind": "Unavailable",
-          "reason": "MarkMissing",
-          "instrument": {
-            "kind": "Stock",
-            "symbol": "CSCO"
-          },
-          "date": "2026-10-20"
-        },
-        "rangePosition": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
           "instrument": {
@@ -9745,15 +9691,6 @@
             "symbol": "XYZ"
           },
           "date": "2026-10-20"
-        },
-        "rangePosition": {
-          "kind": "Unavailable",
-          "reason": "MarkMissing",
-          "instrument": {
-            "kind": "Stock",
-            "symbol": "XYZ"
-          },
-          "date": "2026-10-20"
         }
       },
       "labels": {
@@ -10124,15 +10061,6 @@
             "symbol": "QRS"
           },
           "date": "2026-10-20"
-        },
-        "rangePosition": {
-          "kind": "Unavailable",
-          "reason": "MarkMissing",
-          "instrument": {
-            "kind": "Stock",
-            "symbol": "QRS"
-          },
-          "date": "2026-10-20"
         }
       },
       "labels": {
@@ -10496,15 +10424,6 @@
           }
         ],
         "basis": {
-          "kind": "Unavailable",
-          "reason": "MarkMissing",
-          "instrument": {
-            "kind": "Stock",
-            "symbol": "KO"
-          },
-          "date": "2026-10-20"
-        },
-        "rangePosition": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
           "instrument": {
@@ -11126,15 +11045,6 @@
           }
         ],
         "basis": {
-          "kind": "Unavailable",
-          "reason": "MarkMissing",
-          "instrument": {
-            "kind": "Stock",
-            "symbol": "PFE"
-          },
-          "date": "2026-10-20"
-        },
-        "rangePosition": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
           "instrument": {

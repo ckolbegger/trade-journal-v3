@@ -30,19 +30,9 @@ export type Pressure =
   // Marked at its average open cost: no distance travelled toward either boundary (pressure 0).
   | { readonly side: 'None'; readonly share: Rational };
 
-// Where the Review-date Mark sits in the Trade's Stop-to-Target range (P39): risk ÷ (risk + reward), with the
-// same risk and reward the pressure uses, now and at entry. `pinned` names the end the Mark is at or past:
-// risk is zero at the Stop (share 0), reward is zero at the Target (share 1).
-export interface RangePlacement {
-  readonly now: Rational;
-  readonly atEntry: Rational;
-  readonly pinned?: 'Stop' | 'Target';
-}
-
 // Pressure is NotApplicable when the risk (Losing) or reward (Winning) at entry was not positive on the side the Trade moved toward.
 // A Trade stored Open whose facts hold no position (a lifecycle disagreement) has no figure to measure: the evaluation's NoRemainingPosition, unchanged.
 export type PressureResult = CalculationResult<Pressure, UnavailableReason, Extract<NotApplicableReason, { reason: 'NonPositiveAtEntry' | 'NoRemainingPosition' }>>;
-export type RangePositionResult = CalculationResult<RangePlacement, UnavailableReason, Extract<NotApplicableReason, { reason: 'NoRemainingPosition' }>>;
 
 // The groups of Mark-dependent calculations an unavailable Mark leaves without a Value.
 export type CalculationFamily = 'Valuation' | 'Risk' | 'Reward' | 'ConditionStatus';
@@ -57,7 +47,6 @@ export interface Attention {
   readonly band: AttentionBand;
   readonly reasons: readonly AttentionReason[];
   readonly basis: PressureResult;
-  readonly rangePosition: RangePositionResult;
 }
 
 const ZERO = Rational.of(0n);
@@ -70,7 +59,7 @@ function decimal(text: string): Rational {
 }
 
 // The risk (toward the Stop) and reward (toward the Target) at the Review-date Mark and at entry: the
-// figures both the pressure and the range position use. The at-entry figures use each open Lot's
+// figures the pressure uses. The at-entry figures use each open Lot's
 // open cost, without fees, in place of the Mark; "now" is the evaluation's Value. Both are measured the
 // way `evaluate` measures its own: signed quantity x multiplier x price against the condition's
 // measurement value, which for an option is the contract's value at expiration at its trigger (P24).
@@ -126,18 +115,6 @@ function pressureOf(result: RiskReward): PressureResult {
   return { kind: 'Value', value: { side: 'None', share: ZERO } };
 }
 
-// Risk ÷ (risk + reward) (P39).
-const shareOf = (risk: Rational, reward: Rational) => risk.div(risk.add(reward));
-
-function rangePositionOf(result: RiskReward): RangePositionResult {
-  if (result.kind !== 'Value') return result;
-  const { riskNow, rewardNow, riskAtEntry, rewardAtEntry } = result.value;
-  const atEntry = shareOf(riskAtEntry, rewardAtEntry);
-  if (riskNow.compare(ZERO) <= 0) return { kind: 'Value', value: { now: ZERO, atEntry, pinned: 'Stop' } };
-  if (rewardNow.compare(ZERO) <= 0) return { kind: 'Value', value: { now: Rational.of(1n), atEntry, pinned: 'Target' } };
-  return { kind: 'Value', value: { now: shareOf(riskNow, rewardNow), atEntry } };
-}
-
 // The evaluation's Unavailable reason, unchanged, as an attention reason (P67).
 function unavailableReason(unavailable: Extract<TradeEvaluation['ongoingRiskToStop'], { kind: 'Unavailable' }>): AttentionReason {
   switch (unavailable.reason) {
@@ -157,25 +134,24 @@ function unavailableReason(unavailable: Extract<TradeEvaluation['ongoingRiskToSt
 export function attentionOf(state: DerivedTradeState, evaluation: TradeEvaluation, findings: readonly IntegrityFinding[]): Attention {
   const figures = riskRewardOf(state, evaluation);
   const basis = pressureOf(figures);
-  const rangePosition = rangePositionOf(figures);
   // A due settlement is a factual blocker, whatever the figures (A112).
   const due = evaluation.settlement.filter((s) => s.status === 'Due').map((s): AttentionReason => ({ code: 'SettlementDue', instrument: s.instrument, quantity: s.quantity, expiration: s.expiration }));
   const blockers: AttentionReason[] = [...(findings.length > 0 ? [{ code: 'IntegrityDisagreement' as const, findings }] : []), ...due];
-  if (blockers.length > 0) return { band: 'Blocker', reasons: blockers, basis, rangePosition };
+  if (blockers.length > 0) return { band: 'Blocker', reasons: blockers, basis };
   const crossed = evaluation.conditions.flatMap((c) =>
     c.result.kind === 'Value' && c.result.value.status !== 'Active' && c.result.value.overrun
       ? [{ code: c.role === 'Stop' ? ('StopBreached' as const) : ('TargetReached' as const), conditionId: c.id, overrun: c.result.value.overrun.dollars }]
       : [],
   );
-  if (crossed.length > 0) return { band: 'BoundaryReached', reasons: crossed, basis, rangePosition };
+  if (crossed.length > 0) return { band: 'BoundaryReached', reasons: crossed, basis };
   const unavailable = evaluation.ongoingRiskToStop;
   if (unavailable.kind === 'Unavailable') {
-    return { band: 'EvidenceLimited', reasons: [unavailableReason(unavailable)], basis, rangePosition };
+    return { band: 'EvidenceLimited', reasons: [unavailableReason(unavailable)], basis };
   }
   if (basis.kind === 'Value' && basis.value.side !== 'None') {
-    return { band: 'QuantifiedPressure', reasons: [{ code: basis.value.side === 'Losing' ? 'PressureTowardStop' : 'PressureTowardTarget' }], basis, rangePosition };
+    return { band: 'QuantifiedPressure', reasons: [{ code: basis.value.side === 'Losing' ? 'PressureTowardStop' : 'PressureTowardTarget' }], basis };
   }
-  return { band: 'Routine', reasons: [{ code: 'NoPressure' }], basis, rangePosition };
+  return { band: 'Routine', reasons: [{ code: 'NoPressure' }], basis };
 }
 
 const BAND_RANK: Record<AttentionBand, number> = { Blocker: 0, BoundaryReached: 1, EvidenceLimited: 2, QuantifiedPressure: 3, Routine: 4 };

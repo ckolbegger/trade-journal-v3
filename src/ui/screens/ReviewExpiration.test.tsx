@@ -38,7 +38,6 @@ const walked: WalkedTrade = {
   band: 'Blocker',
   reasons: [{ code: 'SettlementDue', instrument: OC_CONTRACT, quantity: item.quantity, expiration: item.expiration }],
   basis: { kind: 'Value', value: { side: 'None', share: Rational.of(0n, 1n) } },
-  rangePosition: { kind: 'Value', value: { now: Rational.of(1n, 2n), atEntry: Rational.of(1n, 2n) } },
   progress: cardProgress(0, 0, { settlement: true }),
 };
 const duringReview: Ready = {

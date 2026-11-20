@@ -400,7 +400,7 @@ describe('Installed Capability Manifest', () => {
           'BuyToClose',
           'Expiration',
         ],
-        'TradeViewsAndReporting.browseTrades': ['Planned', 'Open', 'Closed', 'CurrentEvaluation', 'Option'],
+        'TradeViewsAndReporting.browseTrades': ['Planned', 'Open', 'Closed', 'CurrentEvaluation', 'Option', 'AttentionOrder', 'Meter'],
         'TradeViewsAndReporting.getTradeDetail': [
           'Planned',
           'Open',
@@ -414,7 +414,7 @@ describe('Installed Capability Manifest', () => {
         'MarketData.save': ['RecordInitialManualMark', 'CorrectMark', 'AssertUnavailable', 'WithdrawAcknowledgment', 'Stock', 'Option'],
         'MarketData.query': ['ResolveFrames', 'ResolveSession', 'Current', 'Review', 'Historical', 'PreviousClose', 'Option', 'ReadSeries'],
         'MarketData.recover': [],
-        'DailyReview.open': ['LatestCompleted', 'OwedReflections', 'RangePosition', 'GapTrades', 'OwedReflectionGroup', 'SettlementFamily'],
+        'DailyReview.open': ['LatestCompleted', 'OwedReflections', 'Meter', 'GapTrades', 'OwedReflectionGroup', 'SettlementFamily'],
         'DailyReview.getTrade': ['OwedReflections', 'PlanBaseline', 'RewardRiskNow', 'ReflectionsOwed', 'ExpirationPayoff', 'SettlementDue', 'Replay', 'Odds'],
         'DailyReview.save': ['SaveTradeAction', 'ResolveReviewDebt', 'SaveReviewMarks'],
         'Workspace.exportBackup': ['Normal', 'BlockedDatabase'],

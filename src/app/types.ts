@@ -215,8 +215,6 @@ export type {
   OwedTradeSummary,
   // The meter's reading on a walked Trade (A260, T9.31).
   MeterReading,
-  RangePlacement,
-  RangePositionResult,
   // The walked Trade's slider figures, unformatted; the slider's own props type is also called SliderFigures.
   SliderFigures as SliderEvaluation,
   CardProgress,

@@ -44,7 +44,6 @@ const tradeItem = (tradeId: string, underlying: string, over: Partial<ReviewTrad
   band: 'Routine',
   reasons: [{ code: 'NoPressure' }],
   basis: { kind: 'Value', value: { side: 'None', share: Rational.of(0n, 1n) } },
-  rangePosition: { kind: 'Value', value: { now: Rational.of(1n, 2n), atEntry: Rational.of(1n, 2n) } },
   ...over,
 });
 type Earlier = Extract<Ready['families'][number], { family: 'Marks' }>['earlier'];

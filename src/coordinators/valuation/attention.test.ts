@@ -9,7 +9,6 @@ const item = (tradeId: string, lastActivity: string) => ({
   band: 'QuantifiedPressure',
   reasons: [],
   basis: { kind: 'Value', value: { side: 'Losing', share: Rational.of(1n), atEntry: Rational.of(0n), now: Rational.of(0n) } },
-  rangePosition: { kind: 'Value', value: { now: Rational.of(0n), atEntry: Rational.of(0n) } },
   tradeId,
   lastActivity,
 }) as Attention & { tradeId: string; lastActivity: string };
@@ -44,12 +43,11 @@ const earlyClose = frame({ kind: 'Available', mark: { revisionId: 'm1', revision
 const attentionFor = (observation: ObservationFrame | UncoveredObservation) => attentionOf(state(), evaluate({ state: state(), frame: observation }), []);
 
 describe('risk and reward as Calculation Results (P66)', () => {
-  it('should return the close not yet in as Unavailable AwaitingClose in both', () => {
+  it('should return the close not yet in as Unavailable AwaitingClose in the pressure', () => {
     const attention = attentionFor(earlyClose);
 
     const awaiting = { kind: 'Unavailable', reason: 'AwaitingClose', after: '2026-10-12' };
     expect(attention.basis).toEqual(awaiting);
-    expect(attention.rangePosition).toEqual(awaiting);
   });
 });
 
@@ -69,7 +67,6 @@ describe('attention reasons carry the reason unchanged (P67)', () => {
     const notCovered = { kind: 'Unavailable', reason: 'SessionPolicyNotCovered', instrument: XYZ, date: '2026-10-12' };
     expect(attention.reasons).toEqual([{ code: 'Unavailable', reason: 'SessionPolicyNotCovered', instrument: XYZ, date: '2026-10-12' }]);
     expect(attention.basis).toEqual(notCovered);
-    expect(attention.rangePosition).toEqual(notCovered);
   });
 
   it('should rank a Value pressure ahead of a pressure without one in the same band, as today', () => {

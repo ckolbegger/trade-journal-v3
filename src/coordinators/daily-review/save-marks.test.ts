@@ -63,7 +63,7 @@ describe('SaveReviewMarks (P37, P38, A155)', () => {
     expect(frames.kind === 'Frames' && frames.frames[0]!.resolution).toEqual(marks[0]!.resolution);
   }, 30_000);
 
-  it('should return, in the same result, the revised completion and progress, T-A card evaluated with XYZ 52.00 (range position 9/17, Reward : risk now 8/9), and T-F revised walked item, which shares XYZ, without the caller calling open or getTrade', async () => {
+  it('should return, in the same result, the revised completion and progress, T-A card evaluated with XYZ 52.00 (Reward : risk now 8/9), and T-F revised walked item, which shares XYZ, without the caller calling open or getTrade', async () => {
     const stack = await reviewStack(MONDAY_1700);
     const { a, f } = await cardFixture(stack, { withoutMarks: true });
 
@@ -73,9 +73,8 @@ describe('SaveReviewMarks (P37, P38, A155)', () => {
     const missing = review.completion.kind === 'Incomplete' ? review.completion.reasons.filter((r) => r.code === 'MarkMissing').map((r) => (r.code === 'MarkMissing' ? r.instrument.symbol : '')) : [];
     expect(missing.sort()).toEqual(['ABC', 'DEF', 'JKL']);
     expect(review.trade.tradeId).toBe(a);
-    expect(review.trade.attention.rangePosition).toEqual({ kind: 'Value', value: { now: Rational.of(9n, 17n), atEntry: Rational.of(134n, 425n) } });
     expect(review.trade.evaluation?.rewardRiskNow).toEqual({ kind: 'Value', value: Rational.of(8n, 9n) });
-    expect(review.trades.find((t) => t.tradeId === f)!.rangePosition).toEqual({ kind: 'Value', value: { now: Rational.of(4n, 7n), atEntry: Rational.of(2n, 7n) } });
+    expect(review.trades.find((t) => t.tradeId === f)!.meter!.now).toMatchObject({ kind: 'Value', value: { pnl: Rational.of(99n) } });
     // The binding is the one a fresh open gives.
     const reopened = await stack.dailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: MONDAY_1700 });
     expect(reopened.kind === 'Ready' && reopened.binding).toEqual(review.binding);
@@ -110,7 +109,7 @@ describe('SaveReviewMarks (P37, P38, A155)', () => {
     expect(review.nextStep.trade.tradeId).toBe(c);
   }, 30_000);
 
-  it('should carry the acknowledged reason in the range position of T-C after DEF is saved unavailable, in its card and its walked item, where a Missing Mark stays Unavailable with the MarkMissing reason', async () => {
+  it('should carry the acknowledged reason in the pressure and the meter result of T-C after DEF is saved unavailable, in its card and its walked item, where a Missing Mark stays Unavailable with the MarkMissing reason', async () => {
     const stack = await reviewStack(MONDAY_1700);
     const { c } = await cardFixture(stack, { withoutMarks: true });
     const unavailable: MarketDataPrepareEntry = { key: { instrumentKey: 'DEF', tradingDate: REVIEW_DATE }, expectedRevision: 'None', intention: { kind: 'AssertUnavailable', reason: 'No quote available.' } };
@@ -118,8 +117,8 @@ describe('SaveReviewMarks (P37, P38, A155)', () => {
     const review = ready(await saveMarks(stack, c, [unavailable]));
 
     const acknowledged = { kind: 'Unavailable', reason: 'AcknowledgedUnavailable', instrument: { kind: 'Stock', symbol: 'DEF' }, date: REVIEW_DATE };
-    expect(review.trade.attention.rangePosition).toMatchObject(acknowledged);
-    expect(review.trades.find((t) => t.tradeId === c)!.rangePosition).toMatchObject(acknowledged);
+    expect(review.trade.attention.basis).toMatchObject(acknowledged);
+    expect(review.trades.find((t) => t.tradeId === c)!.meter!.now).toMatchObject(acknowledged);
   }, 30_000);
 
   it('should pass Market Data Rejected issues and Conflict back unchanged and write nothing', async () => {

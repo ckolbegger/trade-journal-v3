@@ -82,14 +82,14 @@ async function figures(stack: ReviewStack, tradeId: string) {
   if (!walked) throw new Error('Trade not walked');
   const card = await stack.dailyReview.getTrade({ reviewDate: review.reviewDate, tradeId, binding: review.binding });
   if (card.kind !== 'Ready') throw new Error(`expected Ready, got ${card.kind}`);
-  return { basis: walked.basis, walkedRange: walked.rangePosition, cardRange: card.trade.attention.rangePosition };
+  return { basis: walked.basis, cardBasis: card.trade.attention.basis, meter: walked.meter };
 }
 
 const r = (n: bigint, d: bigint) => Rational.of(n, d);
 
 // D7S section 4's O-S2 (MNO 18 Dec 2026 45 Put, short, both condition kinds) after S1', on Tuesday 10-13.
 describe('pressure with several conditions (A197)', () => {
-  it('should give O-S2 in Tuesday 10-13 Review a pressure toward the Stop of 11/47, from S-o at-entry risk $470 and its current $360, with the range position measured between S-o and T-u', async () => {
+  it('should give O-S2 in Tuesday 10-13 Review a pressure toward the Stop of 11/47, from S-o at-entry risk $470 and its current $360, with the meter result $-111.30, 371/1571 of the way to the Stop line', async () => {
     const { stack, confirm, fill } = await fixture();
     const tradeId = await confirm('strategy.cash-secured-put', {
       underlying: 'MNO',
@@ -101,48 +101,44 @@ describe('pressure with several conditions (A197)', () => {
     await stack.saveMark(instrumentKey(MNO_PUT_DEC), '1.80', TUESDAY);
     await stack.saveMark('MNO', '44.00', TUESDAY);
 
-    const { basis, walkedRange, cardRange } = await figures(stack, tradeId);
+    const { basis, cardBasis, meter } = await figures(stack, tradeId);
 
     // At entry: risk -2 x 100 x (1.25 - 3.60) = 470, reward -2 x 100 x (0.50 - 1.25) = 150. Now: risk 360, reward 260.
     // Pressure: (470 - 360) / 470 = 11/47. Range position: now 360 / 620 = 18/31, at entry 470 / 620 = 47/62.
     expect(basis).toEqual({ kind: 'Value', value: { side: 'Losing', share: r(11n, 47n), atEntry: r(470n, 1n), now: r(360n, 1n) } });
-    for (const range of [walkedRange, cardRange]) {
-      expect(range).toEqual({ kind: 'Value', value: { now: r(18n, 31n), atEntry: r(47n, 62n) } });
-    }
+    expect(cardBasis).toEqual(basis);
+    expect(meter!.now).toMatchObject({ kind: 'Value', value: { pnl: r(-1113n, 10n), zone: 'Between', share: { fraction: r(371n, 1571n), toward: 'Stop' } } });
   }, 60_000);
 });
 
-describe('pressure and range position for options (decision 88)', () => {
-  it('should give O-C after PC1 and PC2, with the call at 2.40 and XYZ 52.00, pressure 2/15 on its winning side and range position 12/25 now, 2/5 at entry', async () => {
+describe('pressure and meter reading for options (decision 88)', () => {
+  it('should give O-C after PC1 and PC2, with the call at 2.40 and XYZ 52.00, pressure 2/15 on its winning side and the meter result $78.70, 787/5987 of the way to the Target line', async () => {
     const { stack, tradeId } = await longCall('2.40', '52.00');
 
-    const { basis, walkedRange, cardRange } = await figures(stack, tradeId);
+    const { basis, cardBasis, meter } = await figures(stack, tradeId);
 
     expect(basis).toEqual({ kind: 'Value', value: { side: 'Winning', share: r(2n, 15n), atEntry: r(600n, 1n), now: r(520n, 1n) } });
-    for (const range of [walkedRange, cardRange]) {
-      expect(range).toEqual({ kind: 'Value', value: { now: r(12n, 25n), atEntry: r(2n, 5n) } });
-    }
+    expect(cardBasis).toEqual(basis);
+    expect(meter!.now).toMatchObject({ kind: 'Value', value: { pnl: r(787n, 10n), zone: 'Between', share: { fraction: r(787n, 5987n), toward: 'Target' } } });
   }, 60_000);
 
-  it('should give O-C with the call at 1.60 and XYZ 50.00 pressure 1/5 on its losing side and range position 8/25 now, 2/5 at entry', async () => {
+  it('should give O-C with the call at 1.60 and XYZ 50.00 pressure 1/5 on its losing side and the meter result $-81.30, 813/4013 of the way to the Stop line', async () => {
     const { stack, tradeId } = await longCall('1.60', '50.00');
 
-    const { basis, walkedRange, cardRange } = await figures(stack, tradeId);
+    const { basis, cardBasis, meter } = await figures(stack, tradeId);
 
     expect(basis).toEqual({ kind: 'Value', value: { side: 'Losing', share: r(1n, 5n), atEntry: r(400n, 1n), now: r(320n, 1n) } });
-    for (const range of [walkedRange, cardRange]) {
-      expect(range).toEqual({ kind: 'Value', value: { now: r(8n, 25n), atEntry: r(2n, 5n) } });
-    }
+    expect(cardBasis).toEqual(basis);
+    expect(meter!.now).toMatchObject({ kind: 'Value', value: { pnl: r(-813n, 10n), zone: 'Between', share: { fraction: r(813n, 4013n), toward: 'Stop' } } });
   }, 60_000);
 
-  it('should give O-S after S1, with the put at 0.80 and MNO 47.00, pressure 9/25 on its winning side and range position 11/15 now, 7/12 at entry', async () => {
+  it('should give O-S after S1, with the put at 0.80 and MNO 47.00, pressure 9/25 on its winning side and the meter result $88.70, 887/2487 of the way to the Target line', async () => {
     const { stack, tradeId } = await shortPut();
 
-    const { basis, walkedRange, cardRange } = await figures(stack, tradeId);
+    const { basis, cardBasis, meter } = await figures(stack, tradeId);
 
     expect(basis).toEqual({ kind: 'Value', value: { side: 'Winning', share: r(9n, 25n), atEntry: r(250n, 1n), now: r(160n, 1n) } });
-    for (const range of [walkedRange, cardRange]) {
-      expect(range).toEqual({ kind: 'Value', value: { now: r(11n, 15n), atEntry: r(7n, 12n) } });
-    }
+    expect(cardBasis).toEqual(basis);
+    expect(meter!.now).toMatchObject({ kind: 'Value', value: { pnl: r(887n, 10n), zone: 'Between', share: { fraction: r(887n, 2487n), toward: 'Target' } } });
   }, 60_000);
 });

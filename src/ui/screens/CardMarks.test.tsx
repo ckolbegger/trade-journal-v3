@@ -41,7 +41,6 @@ const walked = (tradeId: string, underlying: string, over: Partial<WalkedTrade> 
   band: 'Routine',
   reasons: [{ code: 'NoPressure' }],
   basis: { kind: 'Value', value: { side: 'None', share: rational(0n) } },
-  rangePosition: { kind: 'Unavailable', reason: 'MarkMissing', instrument: { kind: 'Stock', symbol: underlying }, date: MONDAY },
   progress: cardProgress(),
   ...over,
 });
@@ -252,7 +251,7 @@ const EVALUATED = {
 } as unknown as DailyTradeReview['evaluation'];
 // T-F shares XYZ: once the Mark is saved its meter is placed.
 const TF_METER: MeterReading = { stop: value(-400n), target: value(400n), banked: value(0n), now: { kind: 'Value', value: { pnl: rational(200n), zone: 'Between', share: { fraction: rational(1n, 2n), percent: rational(50n), toward: 'Target' } } } };
-const TF_PLACED = walked('t-f', 'XYZ', { summary: TF.summary, meter: TF_METER, rangePosition: { kind: 'Value', value: { now: rational(1n, 2n), atEntry: rational(1n, 4n) } }, figures: { riskToStop: value(200n), pnl: value(100n), rewardRiskNow: value(3n, 4n) } });
+const TF_PLACED = walked('t-f', 'XYZ', { summary: TF.summary, meter: TF_METER, figures: { riskToStop: value(200n), pnl: value(100n), rewardRiskNow: value(3n, 4n) } });
 // T-F's collapsed card, picked by its header's name: the two XYZ cards read alike but for the summary line (decision 68).
 const escaped = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const tfHeader = () => screen.getByRole('button', { name: new RegExp(`^Review XYZ ${escaped(tradeSummary(TF.summary!))}\\b`) });

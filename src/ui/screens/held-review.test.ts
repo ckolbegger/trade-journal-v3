@@ -30,7 +30,6 @@ const walked = (tradeId: string, underlying: string): WalkedTrade => ({
   band: 'Routine',
   reasons: [{ code: 'NoPressure' }],
   basis: { kind: 'Value', value: { side: 'None', share: Rational.of(0n, 1n) } },
-  rangePosition: { kind: 'Unavailable', reason: 'MarkMissing', instrument: { kind: 'Stock', symbol: underlying }, date: MONDAY },
   progress: cardProgress(),
 });
 const TA = walked('t-a', 'XYZ');

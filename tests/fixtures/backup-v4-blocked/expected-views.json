@@ -4132,13 +4132,6 @@
                 "share": "57/67"
               }
             },
-            "rangePosition": {
-              "kind": "Value",
-              "value": {
-                "now": "4/85",
-                "atEntry": "134/425"
-              }
-            },
             "progress": {
               "kind": "Walked",
               "panels": [
@@ -4206,13 +4199,6 @@
                 "share": "49/169"
               }
             },
-            "rangePosition": {
-              "kind": "Value",
-              "value": {
-                "now": "4/17",
-                "atEntry": "169/510"
-              }
-            },
             "progress": {
               "kind": "Walked",
               "panels": [
@@ -4278,13 +4264,6 @@
                 "atEntry": "730/1",
                 "now": "572/1",
                 "share": "79/365"
-              }
-            },
-            "rangePosition": {
-              "kind": "Value",
-              "value": {
-                "now": "41/85",
-                "atEntry": "75/221"
               }
             },
             "progress": {
@@ -4378,13 +4357,6 @@
             "atEntry": "268/1",
             "now": "40/1",
             "share": "57/67"
-          }
-        },
-        "rangePosition": {
-          "kind": "Value",
-          "value": {
-            "now": "4/85",
-            "atEntry": "134/425"
           }
         }
       },
@@ -4733,13 +4705,6 @@
             "atEntry": "338/1",
             "now": "240/1",
             "share": "49/169"
-          }
-        },
-        "rangePosition": {
-          "kind": "Value",
-          "value": {
-            "now": "4/17",
-            "atEntry": "169/510"
           }
         }
       },
@@ -5140,13 +5105,6 @@
             "atEntry": "730/1",
             "now": "572/1",
             "share": "79/365"
-          }
-        },
-        "rangePosition": {
-          "kind": "Value",
-          "value": {
-            "now": "41/85",
-            "atEntry": "75/221"
           }
         }
       },

@@ -13,9 +13,9 @@ describe('I5R.3 Shared Mark through either card', () => {
     const review = saved.review;
     if (review.kind !== 'Ready') throw new Error(review.kind);
     const walked = (id: string) => review.trades.find((t) => t.tradeId === id)!;
-    // Both items are placed from XYZ 52.00: T-A 9/17 and T-F 4/7 (section 4's table).
-    expect(walked(trades.a).rangePosition).toEqual({ kind: 'Value', value: { now: Rational.of(9n, 17n), atEntry: Rational.of(134n, 425n) } });
-    expect(walked(trades.f).rangePosition).toEqual({ kind: 'Value', value: { now: Rational.of(4n, 7n), atEntry: Rational.of(2n, 7n) } });
+    // Both items are read from XYZ 52.00: T-A $180.00 and T-F $99.00.
+    expect(walked(trades.a).meter!.now).toMatchObject({ kind: 'Value', value: { pnl: Rational.of(180n) } });
+    expect(walked(trades.f).meter!.now).toMatchObject({ kind: 'Value', value: { pnl: Rational.of(99n) } });
     expect(walked(trades.a).figures?.rewardRiskNow).toEqual({ kind: 'Value', value: Rational.of(8n, 9n) });
     expect(walked(trades.f).figures?.rewardRiskNow).toEqual({ kind: 'Value', value: Rational.of(3n, 4n) });
     // No Mark-missing blocker for XYZ remains; the others do.

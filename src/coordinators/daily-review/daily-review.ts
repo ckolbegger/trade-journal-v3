@@ -74,7 +74,6 @@ function incoherentItem(identity: Pick<ReviewTradeItem, 'tradeId' | 'underlying'
     band: 'Blocker',
     reasons: [{ code: 'Unavailable', ...unavailable }],
     basis: { kind: 'Unavailable', ...unavailable },
-    rangePosition: { kind: 'Unavailable', ...unavailable },
   };
 }
 

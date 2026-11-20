@@ -3320,13 +3320,6 @@
                 "share": "11/13"
               }
             },
-            "rangePosition": {
-              "kind": "Value",
-              "value": {
-                "now": "4/85",
-                "atEntry": "26/85"
-              }
-            },
             "progress": {
               "kind": "Walked",
               "panels": [
@@ -3394,13 +3387,6 @@
                 "share": "17/67"
               }
             },
-            "rangePosition": {
-              "kind": "Value",
-              "value": {
-                "now": "4/17",
-                "atEntry": "134/425"
-              }
-            },
             "progress": {
               "kind": "Walked",
               "panels": [
@@ -3466,13 +3452,6 @@
                 "atEntry": "682/1",
                 "now": "528/1",
                 "share": "7/31"
-              }
-            },
-            "rangePosition": {
-              "kind": "Value",
-              "value": {
-                "now": "41/85",
-                "atEntry": "169/510"
               }
             },
             "progress": {
@@ -3559,13 +3538,6 @@
             "atEntry": "156/1",
             "now": "24/1",
             "share": "11/13"
-          }
-        },
-        "rangePosition": {
-          "kind": "Value",
-          "value": {
-            "now": "4/85",
-            "atEntry": "26/85"
           }
         }
       },
@@ -3872,13 +3844,6 @@
             "atEntry": "268/1",
             "now": "200/1",
             "share": "17/67"
-          }
-        },
-        "rangePosition": {
-          "kind": "Value",
-          "value": {
-            "now": "4/17",
-            "atEntry": "134/425"
           }
         }
       },
@@ -4279,13 +4244,6 @@
             "atEntry": "682/1",
             "now": "528/1",
             "share": "7/31"
-          }
-        },
-        "rangePosition": {
-          "kind": "Value",
-          "value": {
-            "now": "41/85",
-            "atEntry": "169/510"
           }
         }
       },

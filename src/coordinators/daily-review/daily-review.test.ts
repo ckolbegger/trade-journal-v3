@@ -842,21 +842,21 @@ describe('getTrade', () => {
   }, 30_000);
 });
 
-describe('range position per walked Trade (P39)', () => {
-  it('should return each walked Trade share of its Stop-to-Target range now and at entry, from the same risk and reward its pressure basis selects: T-A 9/17 and 134/425, T-E 2/11 and 1/11', async () => {
+describe('meter reading per walked Trade (A260)', () => {
+  it('should return each walked Trade result as a share of the way to its Target at the Review Date: T-A $180.00 and 9/29, T-E $99.00 and 11/111, T-F $99.00 and 33/83', async () => {
     const stack = await reviewStack(MONDAY_1700);
     const { a, b, c, e, f } = await cardFixture(stack);
 
     const trades = walk(await open(stack, MONDAY_1700));
 
     expect(trades.map((t) => t.tradeId)).toEqual([b, c, f, a, e]);
-    const positionOf = (tradeId: string) => trades.find((t) => t.tradeId === tradeId)!.rangePosition;
-    expect(positionOf(a)).toEqual({ kind: 'Value', value: { now: Rational.of(9n, 17n), atEntry: Rational.of(134n, 425n) } });
-    expect(positionOf(e)).toEqual({ kind: 'Value', value: { now: Rational.of(2n, 11n), atEntry: Rational.of(1n, 11n) } });
-    expect(positionOf(f)).toEqual({ kind: 'Value', value: { now: Rational.of(4n, 7n), atEntry: Rational.of(2n, 7n) } });
+    const nowOf = (tradeId: string) => trades.find((t) => t.tradeId === tradeId)!.meter!.now;
+    expect(nowOf(a)).toMatchObject({ kind: 'Value', value: { pnl: Rational.of(180n), zone: 'Between', share: { fraction: Rational.of(9n, 29n), toward: 'Target' } } });
+    expect(nowOf(e)).toMatchObject({ kind: 'Value', value: { pnl: Rational.of(99n), zone: 'Between', share: { fraction: Rational.of(11n, 111n), toward: 'Target' } } });
+    expect(nowOf(f)).toMatchObject({ kind: 'Value', value: { pnl: Rational.of(99n), zone: 'Between', share: { fraction: Rational.of(33n, 83n), toward: 'Target' } } });
   }, 30_000);
 
-  it('should return T-B share now as 0 with its StopBreached reason, and T-C as not placed with the missing Instrument and date', async () => {
+  it('should return T-B past its Stop by $50.00 with its StopBreached reason, and T-C unread with the missing Instrument and date', async () => {
     const stack = await reviewStack(MONDAY_1700);
     const { b, c } = await cardFixture(stack);
 
@@ -864,12 +864,12 @@ describe('range position per walked Trade (P39)', () => {
 
     const tb = trades.find((t) => t.tradeId === b)!;
     expect(tb.reasons).toEqual([expect.objectContaining({ code: 'StopBreached' })]);
-    expect(tb.rangePosition).toEqual({ kind: 'Value', value: { now: Rational.of(0n), atEntry: Rational.of(1n, 4n), pinned: 'Stop' } });
-    expect(trades.find((t) => t.tradeId === c)!.rangePosition).toEqual({ kind: 'Unavailable', reason: 'MarkMissing', instrument: stock('DEF'), date: '2026-10-12' });
+    expect(tb.meter!.now).toMatchObject({ kind: 'Value', value: { zone: 'PastStop', pastBy: { dollars: Rational.of(50n) } } });
+    expect(trades.find((t) => t.tradeId === c)!.meter!.now).toEqual({ kind: 'Unavailable', reason: 'MarkMissing', instrument: stock('DEF'), date: '2026-10-12' });
   }, 30_000);
 
-  // Added beyond the planned cases: the Target end of the pin rule (reward zero gives share 1).
-  it('should return the share 1 pinned at the Target when the Mark is past the Target', async () => {
+  // Added beyond the planned cases: the Target end of the meter's zones.
+  it('should return the result past the Target by $100.00 when the Mark is past the Target', async () => {
     const stack = await reviewStack(MONDAY_1700);
     const trade = await stack.confirm({ symbol: 'XYZ', shares: '100', entry: '50.00', stop: '47.50', target: '51.00' });
     await stack.fill(trade, TEN_AM, '100', '50.00');
@@ -878,7 +878,7 @@ describe('range position per walked Trade (P39)', () => {
     const [item] = walk(await open(stack, MONDAY_1700));
 
     expect(item!.reasons).toEqual([expect.objectContaining({ code: 'TargetReached' })]);
-    expect(item!.rangePosition).toEqual({ kind: 'Value', value: { now: Rational.of(1n), atEntry: Rational.of(250n, 350n), pinned: 'Target' } });
+    expect(item!.meter!.now).toMatchObject({ kind: 'Value', value: { zone: 'PastTarget', pastBy: { dollars: Rational.of(100n) } } });
   }, 30_000);
 });
 
@@ -1123,8 +1123,8 @@ describe('card progress in save results (A165, Q12)', () => {
   }, 60_000);
 });
 
-describe('pressure and range position (P66, P67)', () => {
-  it('should return pressure and range position as Values with todays figures for XYZ, ABC and JKL', async () => {
+describe('pressure and meter reading (P66, P67)', () => {
+  it('should return pressure and the meter result as Values with todays figures for XYZ, ABC and JKL', async () => {
     const stack = await reviewStack(MONDAY_1700);
     const { a, b, e } = await cardFixture(stack);
 
@@ -1132,14 +1132,14 @@ describe('pressure and range position (P66, P67)', () => {
 
     const of = (id: string) => trades.find((t) => t.tradeId === id)!;
     expect(of(a).basis).toEqual({ kind: 'Value', value: { side: 'Winning', share: Rational.of(91n, 291n), atEntry: Rational.of(582n), now: Rational.of(400n) } });
-    expect(of(a).rangePosition).toEqual({ kind: 'Value', value: { now: Rational.of(9n, 17n), atEntry: Rational.of(134n, 425n) } });
+    expect(of(a).meter!.now).toMatchObject({ kind: 'Value', value: { pnl: Rational.of(180n), zone: 'Between' } });
     expect(of(b).basis).toEqual({ kind: 'Value', value: { side: 'Losing', share: Rational.of(1n), atEntry: Rational.of(200n), now: Rational.of(0n) } });
-    expect(of(b).rangePosition).toEqual({ kind: 'Value', value: { now: Rational.of(0n), atEntry: Rational.of(1n, 4n), pinned: 'Stop' } });
+    expect(of(b).meter!.now).toMatchObject({ kind: 'Value', value: { pnl: Rational.of(-251n), zone: 'PastStop' } });
     expect(of(e).basis).toEqual({ kind: 'Value', value: { side: 'Winning', share: Rational.of(1n, 10n), atEntry: Rational.of(1000n), now: Rational.of(900n) } });
-    expect(of(e).rangePosition).toEqual({ kind: 'Value', value: { now: Rational.of(2n, 11n), atEntry: Rational.of(1n, 11n) } });
+    expect(of(e).meter!.now).toMatchObject({ kind: 'Value', value: { pnl: Rational.of(99n), zone: 'Between' } });
   }, 30_000);
 
-  it('should return DEFs pressure and range position as the same Unavailable MarkMissing DEF Mon Oct 12 its evaluation returns', async () => {
+  it('should return DEFs pressure and meter result as the same Unavailable MarkMissing DEF Mon Oct 12 its evaluation returns', async () => {
     const stack = await reviewStack(MONDAY_1700);
     const { c } = await cardFixture(stack);
 
@@ -1147,10 +1147,10 @@ describe('pressure and range position (P66, P67)', () => {
 
     const missing = { kind: 'Unavailable', reason: 'MarkMissing', instrument: stock('DEF'), date: '2026-10-12' };
     expect(item.basis).toEqual(missing);
-    expect(item.rangePosition).toEqual(missing);
+    expect(item.meter!.now).toEqual(missing);
   }, 30_000);
 
-  it('should return an acknowledged DEF Mark as Unavailable AcknowledgedUnavailable in both, no longer merged with a missing Mark in the pressure', async () => {
+  it('should return an acknowledged DEF Mark as Unavailable AcknowledgedUnavailable in the pressure and the meter result, no longer merged with a missing Mark in the pressure', async () => {
     const stack = await reviewStack(MONDAY_1700);
     const { c } = await cardFixture(stack);
     await stack.acknowledge('DEF');
@@ -1159,10 +1159,10 @@ describe('pressure and range position (P66, P67)', () => {
 
     const acknowledged = { kind: 'Unavailable', reason: 'AcknowledgedUnavailable', instrument: stock('DEF'), date: '2026-10-12' };
     expect(item.basis).toEqual(acknowledged);
-    expect(item.rangePosition).toEqual(acknowledged);
+    expect(item.meter!.now).toEqual(acknowledged);
   }, 30_000);
 
-  it('should return pressure NotApplicable NonPositiveAtEntry Losing with range position still a Value, for a Trade whose risk at entry is not positive', async () => {
+  it('should return pressure NotApplicable NonPositiveAtEntry Losing with the meter result still a Value, for a Trade whose risk at entry is not positive', async () => {
     const stack = await reviewStack(MONDAY_1700);
     // Filled at its Stop and marked below it: no risk was taken at entry.
     const atStop = await stack.confirm({ symbol: 'LOW', shares: '100', entry: '30.00', stop: '28.00', target: '36.00' });
@@ -1172,10 +1172,10 @@ describe('pressure and range position (P66, P67)', () => {
     const [item] = walk(await open(stack, MONDAY_1700));
 
     expect(item!.basis).toEqual({ kind: 'NotApplicable', reason: 'NonPositiveAtEntry', side: 'Losing' });
-    expect(item!.rangePosition).toEqual({ kind: 'Value', value: { now: Rational.of(0n), atEntry: Rational.of(0n), pinned: 'Stop' } });
+    expect(item!.meter!.now).toMatchObject({ kind: 'Value', value: { pnl: Rational.of(-101n), zone: 'PastStop' } });
   }, 30_000);
 
-  it('should return a Trade whose facts cannot be replayed with both as Unavailable FactsIncoherent carrying its findings', async () => {
+  it('should return a Trade whose facts cannot be replayed with its pressure as Unavailable FactsIncoherent carrying its findings and no meter reading', async () => {
     const stack = await reviewStack(MONDAY_1700);
     const trade = await stack.confirm({ symbol: 'XYZ', shares: '100', entry: '50.00', stop: '47.50', target: '56.00' });
     await stack.fill(trade, TEN_AM, '100', '50.00');
@@ -1186,7 +1186,7 @@ describe('pressure and range position (P66, P67)', () => {
 
     const incoherent = { kind: 'Unavailable', reason: 'FactsIncoherent', findings: [expect.objectContaining({ reason: 'UnknownPlannedLeg', kind: 'Execution', instrument: stock('XYZ') })] };
     expect(item!.basis).toEqual(incoherent);
-    expect(item!.rangePosition).toEqual(incoherent);
+    expect(item!.meter).toBeUndefined();
   }, 30_000);
 });
 

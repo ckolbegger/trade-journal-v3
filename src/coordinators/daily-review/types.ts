@@ -7,7 +7,7 @@ import type { TradeSummary } from '../../domain/trade-summary.ts';
 import type { Rational } from '../../domain/values/index.ts';
 import type { WorkspaceSnapshotBinding } from '../../persistence/index.ts';
 import type { StorageFailure } from '../mutation-guard.ts';
-import type { AttentionBand, AttentionReason, CalculationFamily, Pressure, MeterReading, PressureResult, RangePlacement, RangePositionResult, SettlementItem } from '../valuation/index.ts';
+import type { AttentionBand, AttentionReason, CalculationFamily, Pressure, MeterReading, PressureResult, SettlementItem } from '../valuation/index.ts';
 import type { TradeReplayView } from '../trade-views/index.ts';
 import type { AnswerInput, DailyAction, DebtProjection, DeclineProjection, EntryDefinitionRecord, EntryProjection, JournalIssue, JournalObligationKey, ObligationOutcome } from '../../modules/journal/index.ts';
 import type { AcknowledgmentVersion, ExpectedResolutionRevision, MarkFrame, MarketDataConflictedKey, MarketDataIssue, MarketDataPrepareEntry, MarketDataPrepareIssue, MarkResolution, ObservationKey, PreparedMarketDataEntry } from '../../modules/market-data/index.ts';
@@ -31,7 +31,6 @@ export interface ReviewTradeItem {
   readonly band: AttentionBand;
   readonly reasons: readonly AttentionReason[];
   readonly basis: PressureResult;
-  readonly rangePosition: RangePositionResult;
 }
 
 // A card's panels in work order, as counts and flags (A164). Words are the screen's.
@@ -120,7 +119,7 @@ export interface HistoricalGapGroup {
 }
 
 // Shared with Trade Views, which shows the same item on Trade Detail.
-export type { AttentionBand, AttentionReason, CalculationFamily, MeterReading, Pressure, PressureResult, RangePlacement, RangePositionResult, SettlementItem };
+export type { AttentionBand, AttentionReason, CalculationFamily, MeterReading, Pressure, PressureResult, SettlementItem };
 
 // The task families in their normative order (Daily Review, "Date, eligibility, and ordering").
 // D4 has Marks and Trades; Debt and settlement arrive in D5 and D7.
@@ -391,7 +390,7 @@ export type PostMarksReview =
       readonly progress: ReviewProgress;
       readonly completion: ReviewCompletion;
       readonly binding: ReviewBinding;
-      // Every walked Trade in attention order, with its revised band, reasons and range position.
+      // Every walked Trade in attention order, with its revised band, reasons and meter reading.
       readonly trades: readonly WalkedTrade[];
       // The card the Marks were saved from, evaluated with them.
       readonly trade: DailyTradeReview;

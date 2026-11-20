@@ -1,5 +1,5 @@
 // T5R.13 query-count proof (AC-PERF-001, P38): the revised Review reads only what D5's did. A Review `open`
-// issues exactly D5's request counts, with the range position and gap Trades adding no request; a
+// issues exactly D5's request counts, with the gap Trades adding no request; a
 // `SaveReviewMarks` of n entries is one read-only snapshot with n record reads, one read-write commit with
 // n checks and n writes, then the post-save assembly a `SaveTradeAction` does, with no recovery and no gap
 // scan. Counted as D5's T5.22 does: the real facade on fake-indexeddb behind the disclosed request counter
@@ -152,7 +152,7 @@ function parts(requests: readonly CountedRequest[]) {
 }
 
 describe('T5R.13 query count: the Review open and the Marks save', () => {
-  it('should issue D5 counts for a Review open, with the range position and the gap Trades adding no request', { timeout: 600_000 }, async () => {
+  it('should issue D5 counts for a Review open, with the gap Trades adding no request', { timeout: 600_000 }, async () => {
     const { app } = await setup();
     const review = await countRequests(() => app.DailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: AS_OF }));
     if (review.result.kind !== 'Ready') throw new Error(review.result.kind);
@@ -171,10 +171,10 @@ describe('T5R.13 query count: the Review open and the Marks save', () => {
     ]);
     expect(on(review.requests, 'journalDebts')).toEqual([{ on: 'index', store: 'journalDebts', index: 'byOutstandingDue', method: 'getAll' }]);
 
-    // The data does exercise the additions: a placed range position, and the Missing Instrument's earlier gap.
+    // The data does exercise the additions: a Value meter reading, and the Missing Instrument's earlier gap.
     const families = review.result.families;
     const walked = families.flatMap((f) => (f.family === 'Trades' ? f.trades : []));
-    expect(walked.some((t) => t.rangePosition.kind === 'Value')).toBe(true);
+    expect(walked.some((t) => t.meter?.now.kind === 'Value')).toBe(true);
     const gaps = families.flatMap((f) => (f.family === 'Marks' ? f.earlier : []));
     expect(gaps.map((g) => ({ instrumentKey: g.instrumentKey, missing: g.missing.length }))).toEqual([{ instrumentKey: 'MIS', missing: GAP_SESSIONS - 1 }]);
   });

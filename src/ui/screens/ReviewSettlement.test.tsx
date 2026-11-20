@@ -51,7 +51,6 @@ function walked(item: SettlementItem, underlying: string, progress: WalkedTrade[
     band: 'Blocker',
     reasons: [{ code: 'SettlementDue', instrument: item.instrument, quantity: item.quantity, expiration: item.expiration }],
     basis: { kind: 'Value', value: { side: 'None', share: Rational.of(0n, 1n) } },
-    rangePosition: { kind: 'Value', value: { now: Rational.of(1n, 2n), atEntry: Rational.of(1n, 2n) } },
     progress,
   };
 }
