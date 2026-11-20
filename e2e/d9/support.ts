@@ -173,7 +173,7 @@ async function saveMarks(page: Page, trade: TradeRef, fixture: Fixture, through:
   await expect(tradeCard(page, trade).locator('section[aria-label="Marks"] button', { hasText: /^Save Marks/ })).toHaveText('Save Marks (0)', READY);
 }
 
-// ---- Reads of the replay (the Detail's Replay drawer; the Review card's section reads the same, given its own scope) -------------------------------
+// ---- Reads of the replay (the Detail's Replay overlay; the Review card's section reads the same, given its own scope) -------------------------------
 
 // T9AR.8: the replay is an overlay over the whole page, named "Replay, BREN"; the Detail's "Replay" button opens it.
 export const replay = (page: Page): Locator => page.getByRole('dialog', { name: /^Replay, / });
@@ -230,7 +230,7 @@ export async function seek(page: Page, scope: Locator, key: 'ArrowLeft' | 'Arrow
   for (let i = 0; i < times; i += 1) await page.keyboard.press(key);
 }
 
-// The Replay drawer's own session labels from the first to `through` (an index of REPLAY_SESSION_DATES).
+// The Replay overlay's own session labels from the first to `through` (an index of REPLAY_SESSION_DATES).
 export const sessionLabels = (through: number): string[] => REPLAY_SESSION_DATES.slice(0, through + 1).map(label);
 
 // A resize to a viewport of the given size, then two frames, so no measure reads the old layout.

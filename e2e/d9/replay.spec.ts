@@ -4,11 +4,11 @@ import {
 
 test.use({ actionTimeout: 15_000 });
 
-// B9.1 (plan section 7.2): R-BREN-U through the UI to Mon 11-16, the Replay drawer opened, the slider moved back by keyboard to Thu 11-12 and to Mon 11-02. Every figure and word is plan
+// B9.1 (plan section 7.2): R-BREN-U through the UI to Mon 11-16, the Replay overlay opened, the slider moved back by keyboard to Thu 11-12 and to Mon 11-02. Every figure and word is plan
 // section 5's or W36 to W43's: the headline, how it is going and what is at stake for each session, the two lines stepping at the sale, the banked band from Thu 11-12, and nothing of a
-// later session in the drawer. R-BREN-U's 1R is $324, its Plan 2.95 to 1.
+// later session in the overlay. R-BREN-U's 1R is $324, its Plan 2.95 to 1.
 const LATER = {
-  // The Marks of the sessions after the one shown, which the drawer must not carry.
+  // The Marks of the sessions after the one shown, which the overlay must not carry.
   'Thu Nov 12': ['Fri Nov 13', 'Mon Nov 16', '$4.91', '104.60', '$4.16'],
   'Mon Nov 2': ['Tue Nov 3', 'Thu Nov 12', 'Mon Nov 16', '$2.91', '103.60', 'Banked +$478', 'Sold 2 at $4.00'],
 } as const;
@@ -80,7 +80,7 @@ test.describe('B9.1 Replay in Trade Detail', () => {
     expect(await chartText(pnlChart(scope))).toEqual(expect.arrayContaining(['Stop −$324', 'Target +$956']));
     expect(await pnlChart(scope).locator('path.result-line.stop').getAttribute('d')).not.toContain('V');
     await expect(pnlChart(scope).locator('path.banked-band')).toHaveCount(0);
-    // Back on Thu 11-12: nothing of Fri 11-13 or Mon 11-16 anywhere in the drawer.
+    // Back on Thu 11-12: nothing of Fri 11-13 or Mon 11-16 anywhere in the overlay.
     await seek(page, scope, 'ArrowRight');
     await expect(sliderValue(scope)).toHaveText('Thu Nov 12 · 9 of 11');
     for (const later of LATER['Thu Nov 12']) await expect(scope).not.toContainText(later);

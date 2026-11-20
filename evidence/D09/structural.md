@@ -525,3 +525,39 @@ Dropped the 375 instance of the T9AR.24-B5 case (it never detected its defect); 
 - **T9.20-B1** done at `273df21d`: a local rule `estimates/no-dynamic-import` with the static rule's four file groups and allowances; literal specifiers only (a computed specifier is out of scope, commented). Both cases red then green; T9.20's five cases still pass. Process slip, recorded: the subagent first wrote the fix with its tests, then reverted the code to get genuine reds before restoring it. ocr (`evidence/D09/ocr/T9.20-B1-273df21d.json`): **No findings.** Reviewer's note (not a finding): case 3's exact-value ban has no dynamic counterpart, so `import()` of `values` inside `option-pricing` or `replay-estimates.ts` is not caught; outside B1's two cases.
 - **T9.20-B2** done at `4228114d`: the helper keeps fatal (parse) diagnostics; one case red then green; all 8 cases green. ocr (`evidence/D09/ocr/T9.20-B2-4228114d.json`): **No findings.** Reviewer's note (not a finding): the comment above `ruleId` (line 10) now reads as one run-on sentence.
 - **Complete run `t9.20`** (on `4228114d`, 2026-11-19): browser tier task (no changed path since `3618dcb0` on the full-tier list). Unit 214 files, 2,495 tests; integration 135 files, 286 tests; browser 107 passed, 4 skipped (`@every-task` 5 in 12.6 s; `e2e/d9` 102 in 4.9 min); checks 14 of 14. `run-complete.sh`: run complete. No failures, no flakes.
+
+
+### T9.20-D1
+
+Carries out SB-Q2, option c (2026-11-19): drop the e2e/d9 browser cases that an e2e/d9ar case already covers, and fix stale names. Test code only.
+
+Each candidate was read against its e2e/d9ar counterparts. A case is dropped only when every assertion it makes is made by d9ar for the same Trade and situation.
+
+| d9 case | d9ar case(s) examined | Verdict | Assertion d9ar lacks |
+|---|---|---|---|
+| states: K-sale's final result | states.spec.ts:12 | kept | the six-drawer tab list with Today selected; the chart's Banked and Sold labels; the Banked and Trade P&L readout values; stepping back to Thu Nov 12 (headline, "Target reached"); no payoff or theoretical price |
+| states: R-DALE-U Settlement Due then Expired | states.spec.ts:35 | kept | the six-drawer tab list; no "How it is going" line at Settlement Due; Thu Nov 19 headline; the stake sentence after the Expiration; the chart's "Expired" label; no payoff or theoretical price |
+| states: no replay on a Planned Trade | states.spec.ts:72 | kept | the Planned Trade's three tabs (Plan and Risk, Journal, Payoff), the three missing tabs and Plan and Risk selected; no `.replay-card` |
+| states: Open Trade (not a candidate) | none | kept | not in the candidate list; no d9ar case checks BREN's drawers or readout group headings on an Open Trade |
+| responsive-a11y: Detail fit across a resize | responsive-a11y.spec.ts:93 | kept | at 1280, the two result labels ("Stop +$316", "Target +$956") on the chart; at 375 and 320, the chart titles ("BREN price", "Trade P&L", no long titles) and the Risk and Reward tags; the height at 320 is checked in d9ar by a separate case |
+| responsive-a11y: Review card fit at 1280 and 375 | responsive-a11y.spec.ts:101 | kept | the same title and tag checks at 375, and the wide result labels at 1280 |
+| responsive-a11y: Review card at 320 | responsive-a11y.spec.ts:111 | kept | the opening headline "+$988.00 · 3.05R" at 320; the headline scrolled to the top and the fit measured there; the 320 chart titles and tags |
+| responsive-a11y: offline cold restart | responsive-a11y.spec.ts:368 | **deleted** | none: same Trade (BREN to Mon 11-16), same steps (stop the server, launch offline, open the overlay), same four checks (headline, session, step back two, banked band), and d9ar adds the price chart check |
+| review: round trip, both cases | review.spec.ts:28, :76, :116, :145, :166, :185 | kept | the Replay button sits before the Action form; "Target reached, $32.00 past it."; the only link is Price History and no Position or Journal button; the address parameters at each step; Price History's selected tab; the Banked readout at Thu Nov 12; the card's Action tab expanded after the return |
+| gaps: No Mark on Tue 11-10 | states.spec.ts:81, readout.spec.ts:196, chart.spec.ts:105, cards.spec.ts | kept | Wed 11-11's headline, "Target reached, $36.00 past it." and the "since Mon Nov 9" changes; the At Stop, At Target and At Worst case figures; the chart's two result labels; the Mon, Tue and Wed card rows in full |
+| gaps: signed amount on one line (two Trades) | cards.spec.ts T9AR.24-B1, readout.spec.ts T9AR.24-B2 | kept | the stake grid cells at R-DALE-D Fri 11-13 and R-BREN-U Mon 11-02 (d9ar measures other sessions and the card figures); the grid ending inside the viewport; the At Worst case amount as one signed piece |
+| gaps: Past the Stop on Mon 11-09; Realized label in the chart | readout.spec.ts:85, :149 | kept | not in the candidate list; the AXIO Mon 11-09 figures, chart labels and cards are not checked at that session |
+
+The other d9 cases (replay.spec.ts, session-cards.spec.ts) were not candidates and are unchanged apart from names.
+
+**Result: one case deleted** (responsive-a11y: offline cold restart). No spec file is empty. AC-DEL-001's command names `e2e/d9/responsive-a11y.spec.ts`, which no longer holds the offline case; e2e/d9ar/responsive-a11y.spec.ts:368 holds it, so the main session may want to repoint that command (plan revision r108). AC-UI-001 and AC-CALC-004 and AC-MARK-004 still have cases in their d9 files.
+
+Renames (words only, no assertion changed): "Replay drawer" to the Replay button or overlay in e2e/d9 titles and comments (states.spec.ts, replay.spec.ts, review.spec.ts, responsive-a11y.spec.ts, support.ts); the states.spec.ts title "an Events row" to "an Events card row"; `SEVEN` (six drawers) to `SIX_DRAWERS`. Two comments that say the old "table" read a figure (gaps.spec.ts, replay.spec.ts) describe the old behavior and were left. Unused imports (`firstPage`, `launchAt`, `READY`) removed from responsive-a11y.spec.ts. support.ts helpers: none removed (none became unused).
+
+Commands and outcomes:
+- `npx playwright test e2e/d9 --list` before: 106 tests (e2e/d9/ folder 23, e2e/d9ar/ folder 83). After: 105 (d9 22, d9ar 83).
+- `npx playwright test e2e/d9/` before: 23 passed, 1.0 min. After: 22 passed, 55.5 s (72 s with start-up) under `.claude/scripts/with-browser-lock.sh`.
+- `npx playwright test e2e/d9` (both folders) after: 101 passed, 4 skipped (the skips are existing d9ar cases), 4.6 min.
+- Ports 5175, 9341, 9342 had no listener before or after.
+- `npm run typecheck`: exit 0. `npm run lint`: exit 0 (two existing warnings in src/ui/screens/OwedDebtItem.tsx).
+- `git diff --stat`: e2e/d9 files and this file only.

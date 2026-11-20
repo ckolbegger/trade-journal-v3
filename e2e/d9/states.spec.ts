@@ -7,7 +7,7 @@ import {
 test.use({ actionTimeout: 15_000 });
 
 // B9.4 (plan section 7.2, AC-CALC-004): how a replay ends. K-sale (Closed by sale), R-DALE-U Settlement Due and then with its Expiration recorded, and a Planned Trade. W1 (amended) per state,
-// the "Final result" headline of a final session, no Replay drawer on the Planned Trade, and (AC-CALC-004) no payoff line or theoretical price in the replay.
+// the "Final result" headline of a final session, no Replay button on the Planned Trade, and (AC-CALC-004) no payoff line or theoretical price in the replay.
 type TabName = 'Today' | 'Position' | 'Plan and Risk' | 'Price History' | 'Journal' | 'Payoff';
 const PANEL = (name: TabName): string => `#drawer-panel-${name.toLowerCase().replaceAll(' ', '-')}`;
 const JOURNAL = /^Journal( \d+ owed)?$/;
@@ -30,13 +30,13 @@ async function expectNoPayoffOrTheory(page: Page): Promise<void> {
   await expect(scope).not.toContainText(/payoff|theoretical|fair value|model price/i);
 }
 
-const SEVEN = ['Today', 'Position', 'Plan and Risk', PRICE_HISTORY, JOURNAL, 'Payoff'] as const;
+const SIX_DRAWERS = ['Today', 'Position', 'Plan and Risk', PRICE_HISTORY, JOURNAL, 'Payoff'] as const;
 
 test.describe('B9.4 How a replay ends', () => {
-  test('should show the Replay drawer second on an Open Trade, with Today selected and no payoff line in the replay', async ({ profile }) => {
+  test('should show the Replay button beside the six drawers on an Open Trade, with Today selected and no payoff line in the replay', async ({ profile }) => {
     test.setTimeout(240_000);
     const { context, page } = await build(profile, BREN, closeOf('2026-11-16'), 10);
-    await expectDrawers(page, SEVEN, [], 'Today');
+    await expectDrawers(page, SIX_DRAWERS, [], 'Today');
     await openDrawer(page, 'Replay');
     await expect(headline(replay(page))).toHaveText('+$988.00 · 3.05R');
     await expect(replay(page).locator('.replay-readout-group h3')).toHaveText(['How it is going', 'At stake from here, whole Position', 'Marks', 'Position']);
@@ -44,11 +44,11 @@ test.describe('B9.4 How a replay ends', () => {
     await context.close();
   });
 
-  test('should end K-sale on its sale with a Final result headline, the banked total and an Events row, and show every drawer', async ({ profile }) => {
+  test('should end K-sale on its sale with a Final result headline, the banked total and an Events card row, and show every drawer', async ({ profile }) => {
     test.setTimeout(240_000);
     const { context, page } = await build(profile, BREN_SOLD_OUT, closeOf('2026-11-13'), 9);
     await expect(detail.lifecycleBadge(page)).toHaveText('Long Call, Closed');
-    await expectDrawers(page, SEVEN, [], 'Today');
+    await expectDrawers(page, SIX_DRAWERS, [], 'Today');
     await openDrawer(page, 'Replay');
     const scope = replay(page);
     await expect(sliderValue(scope)).toHaveText('Fri Nov 13 · 10 of 10');
@@ -79,7 +79,7 @@ test.describe('B9.4 How a replay ends', () => {
     await built.context.close();
     const { context, page } = await openDetailAt(profile, MON_1123_1700, built.trade);
     await expect(detail.settlementDueHeading(page)).toBeVisible(READY);
-    await expectDrawers(page, SEVEN, [], 'Today');
+    await expectDrawers(page, SIX_DRAWERS, [], 'Today');
     await openDrawer(page, 'Replay');
     let scope = replay(page);
     // Settlement Due ends at the expiration session, valued by nothing (no Mark that day), and nothing is final.
@@ -101,7 +101,7 @@ test.describe('B9.4 How a replay ends', () => {
     await recordExpiration(page);
     await page.getByRole('link', { name: 'Back to the Trade' }).click();
     await expect(detail.heading(page, 'DALE')).toBeVisible(READY);
-    await expectDrawers(page, SEVEN, [], 'Today');
+    await expectDrawers(page, SIX_DRAWERS, [], 'Today');
     await openDrawer(page, 'Replay');
     scope = replay(page);
     await expect(sliderValue(scope)).toHaveText('Fri Nov 20 · 15 of 15');
@@ -115,7 +115,7 @@ test.describe('B9.4 How a replay ends', () => {
     await context.close();
   });
 
-  test('should show no Replay drawer on a Planned Trade, and Plan and Risk selected', async ({ profile }) => {
+  test('should show no Replay button on a Planned Trade, and Plan and Risk selected', async ({ profile }) => {
     test.setTimeout(240_000);
     const { context, page } = await buildPlanned(profile, BREN, closeOf('2026-11-02'));
     await expectDrawers(page, ['Plan and Risk', 'Journal', 'Payoff'], ['Today', 'Position', 'Price History'], 'Plan and Risk');

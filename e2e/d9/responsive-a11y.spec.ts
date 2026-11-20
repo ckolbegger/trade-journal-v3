@@ -1,15 +1,14 @@
 import type { Locator, Page } from '@playwright/test';
 import { expectNoSidewaysScroll, expectShownInFull } from '../d7p/support.ts';
 import {
-  BREN, build, chartText, closeOf, expect, expectAccessible, firstPage, headline, hits, launchAt, openCardReplay, openDrawer, openReview, pnlChart, priceStrip, reachCard, READY, replay, seek, setViewport,
+  BREN, build, chartText, closeOf, expect, expectAccessible, headline, hits, openCardReplay, openDrawer, openReview, pnlChart, priceStrip, reachCard, replay, seek, setViewport,
   slider, sliderValue, test,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
-// B9.5 (plan section 7.2, AC-UI-001, AC-UI-002, AC-DEL-001): R-BREN-U's replay in the Detail's Replay drawer and in the Review card, at 1280 x 800 and at 375 and 320 px wide (667 high). At each
-// size the headline and both charts fit one screen, the page has no sideways scroll, and axe finds no WCAG 2.1 A or AA violation; the slider's session survives each resize; and the replay
-// reads on a cold start with the server stopped and the browser offline.
+// B9.5 (plan section 7.2, AC-UI-001, AC-UI-002): R-BREN-U's replay in the Detail's Replay overlay and in the Review card, at 1280 x 800 and at 375 and 320 px wide (667 high). At each
+// size the headline and both charts fit one screen, the page has no sideways scroll, and axe finds no WCAG 2.1 A or AA violation; and the slider's session survives each resize.
 const SIZES = [
   { width: 1280, height: 800 },
   { width: 375, height: 667 },
@@ -215,24 +214,5 @@ test.describe('B9.5 Responsive, accessible and offline', () => {
       await expectPhoneWords(replay(page), `Detail Replay at ${size.width} px`);
     }
     await context.close();
-  });
-
-  test('should read the replay offline after a cold restart with the server stopped (AC-DEL-001)', async ({ server, profile }) => {
-    test.setTimeout(420_000);
-    const { context, trade } = await build(profile, BREN, closeOf('2026-11-16'), 10);
-    await context.close();
-    // Network disabled: offline emulation plus no server for the origin at all.
-    await server.close();
-    const offline = await launchAt(profile, closeOf('2026-11-16'), { offline: true });
-    const page = await firstPage(offline);
-    await page.goto(`/trades/${trade.tradeId}`);
-    await openDrawer(page, 'Replay');
-    const scope = replay(page);
-    await expect(headline(scope)).toHaveText('+$988.00 · 3.05R');
-    await expect(sliderValue(scope)).toHaveText('Mon Nov 16 · 11 of 11');
-    await seek(page, scope, 'ArrowLeft', 2);
-    await expect(headline(scope)).toHaveText('+$982.00 · 3.03R');
-    await expect(pnlChart(scope).locator('path.banked-band')).toHaveCount(1, READY);
-    await offline.close();
   });
 });
