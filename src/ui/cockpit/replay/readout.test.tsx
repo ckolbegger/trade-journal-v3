@@ -40,7 +40,7 @@ const stakeGroup: ReplayFrameSession['readout'][number] = {
 // The readout takes the slider session's finished groups; the frame passes them (its own reveal case stays in frame.test.tsx).
 describe('Replay frame: the readout (W43)', () => {
   const groups: ReplayFrameSession['readout'] = [
-    { title: 'How it is going', rows: [{ label: 'Trade P&L', value: { kind: 'Figure', text: '+$988.00' }, drawn: true }, { label: 'Banked', value: { kind: 'Figure', text: '+$478.00' }, drawn: true }] },
+    { title: 'How it is going', rows: [{ label: 'Trade P&L', value: { kind: 'Figure', text: '+$988.00' }, drawn: true }, { label: 'Realized', value: { kind: 'Figure', text: '+$478.00' }, drawn: true }] },
     { title: 'At stake from here, whole Position', rows: [{ label: 'At Stop', value: { kind: 'Figure', text: '$672.00' }, drawn: true }, { label: 'At Max reward', value: { kind: 'Unbounded', text: 'No cap above' } }] },
     { title: 'Marks', rows: [{ label: 'BREN Mark', value: { kind: 'Figure', text: '$110.00' }, drawn: true }] },
     { title: 'Position', rows: [{ label: 'Open', value: { kind: 'Figure', text: '+$510.00' }, drawn: true }] },
@@ -91,7 +91,7 @@ describe('Replay frame: the readout (W43)', () => {
         title: 'How it is going',
         rows: [
           { label: 'Trade P&L', value: { kind: 'Figure', text: '+$688.00' }, change: 'down $150.00 since Fri Nov 13' },
-          { label: 'Banked', value: { kind: 'Figure', text: '+$478.00' }, change: 'up $60.00 since Fri Nov 13' },
+          { label: 'Realized', value: { kind: 'Figure', text: '+$478.00' }, change: 'up $60.00 since Fri Nov 13' },
           { label: 'Open', value: { kind: 'Figure', text: '+$210.00' } },
         ],
       },
@@ -99,7 +99,7 @@ describe('Replay frame: the readout (W43)', () => {
     render(<Readout groups={rows} />);
     const row = (label: string) => screen.getByText(label).closest('[data-row]')!;
     expect(text(row('Trade P&L'))).toContain('down $150.00 since Fri Nov 13');
-    expect(text(row('Banked'))).toContain('up $60.00 since Fri Nov 13');
+    expect(text(row('Realized'))).toContain('up $60.00 since Fri Nov 13');
     expect(text(row('Open'))).not.toContain('since');
   });
 

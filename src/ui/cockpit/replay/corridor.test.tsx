@@ -33,7 +33,7 @@ function bren(i: number, over: Partial<PlotSession> = {}): PlotSession {
     underlyingMark: MARKS[i]!,
     tradePnl: PNL[i]!,
     banked: banked ? 478 : 0,
-    bankedLabel: banked ? 'Banked +$478' : undefined,
+    bankedLabel: banked ? 'Realized +$478' : undefined,
     resultAtStop: stopAt(i),
     resultAtTarget: target(),
     worstCase: null,
@@ -218,7 +218,7 @@ describe('Corridor: the Trade P&L (W40, W41)', () => {
     expect(Number(first[2])).toBeGreaterThan(Number(first[4]));
   });
 
-  it('should draw what is banked as a solid band from the sale’s session, labelled "Banked +$478", and a realized loss as "Realized −$495"', () => {
+  it('should draw what is banked as a solid band from the sale’s session, labelled "Realized +$478", and a realized loss as "Realized −$495"', () => {
     const { container } = render(<CorridorPlot {...props()} />);
     const band = pnl(container).querySelector('path.banked-band.gain')!;
     const d = band.getAttribute('d')!;
@@ -229,7 +229,7 @@ describe('Corridor: the Trade P&L (W40, W41)', () => {
     expect(Math.max(...ys(d))).toBeLessThanOrEqual(z);
     expect(Math.min(...ys(d))).toBeLessThan(z);
     expect(pnl(container).querySelectorAll('path.banked-band')).toHaveLength(1);
-    expect(screen.getByText('Banked +$478')).toBeTruthy();
+    expect(screen.getByText('Realized +$478')).toBeTruthy();
     expect(pnl(container).querySelector('path.banked-band.loss')).toBeNull();
     cleanup();
     // R-DALE-D buys back 3 at $2.59 on Tue 11-10 (slot 1): a realized loss of -$495, drawn below break-even.
@@ -253,7 +253,7 @@ describe('Corridor: the Trade P&L (W40, W41)', () => {
     expect(screen.getByText('Realized −$495')).toBeTruthy();
     // A negative axis label reads with the minus sign.
     expect(screen.getByText('−$1,000')).toBeTruthy();
-    expect(screen.queryByText(/^Banked/)).toBeNull();
+    expect(screen.queryByText(/^Realized \+/)).toBeNull();
   });
 
   it('should hatch the area past a line and label it "$32 past the Target"', () => {
@@ -475,10 +475,10 @@ describe('Corridor: the Trade P&L (W40, W41)', () => {
 
   it('should label each banked level with its own figure, at that level, when a later sale changes it', () => {
     // A second sale on Mon 11-16 (slot 10) takes what is banked from +$478 to +$700: one run, two levels.
-    const sessions = DAYS.map((_, i) => bren(i, i === 10 ? { banked: 700, bankedLabel: 'Banked +$700' } : {}));
+    const sessions = DAYS.map((_, i) => bren(i, i === 10 ? { banked: 700, bankedLabel: 'Realized +$700' } : {}));
     const { container } = render(<CorridorPlot {...props({ sessions })} />);
-    const first = screen.getByText('Banked +$478');
-    const second = screen.getByText('Banked +$700');
+    const first = screen.getByText('Realized +$478');
+    const second = screen.getByText('Realized +$700');
     // Each label sits at its own level: the lower figure lower on the chart, in an earlier column.
     expect(num(first, 'y')).toBeGreaterThan(num(second, 'y'));
     expect(num(first, 'x')).toBeLessThan(num(second, 'x'));
@@ -698,8 +698,8 @@ describe('Corridor: drawn at a phone\'s real width (W39, W40, W41)', () => {
       expect(pnl(container).getAttribute('width')).toBe(String(width));
       // T9AR.12: the two results and the banked label are in the strip under the drawing, none on it.
       const text = [...pnl(container).querySelectorAll('text')].map((t) => t.textContent);
-      for (const label of ['Stop +$316', 'Target +$956', 'Banked +$478']) expect(text, `${width}: ${text.join(' | ')}`).not.toContain(label);
-      expect(container.querySelector('.replay-strip-labels')!.textContent).toBe('Stop +$316 · Banked +$478 · Target +$956 · Sold 2');
+      for (const label of ['Stop +$316', 'Target +$956', 'Realized +$478']) expect(text, `${width}: ${text.join(' | ')}`).not.toContain(label);
+      expect(container.querySelector('.replay-strip-labels')!.textContent).toBe('Stop +$316 · Realized +$478 · Target +$956 · Sold 2');
       expect([...container.querySelectorAll('.replay-strip-labels .card-figure')].map((f) => f.textContent), 'each figure of the strip is one figure').toEqual(['+$316', '+$478', '+$956']);
       cleanup();
       vi.restoreAllMocks();
@@ -711,11 +711,11 @@ describe('Corridor: drawn at a phone\'s real width (W39, W40, W41)', () => {
       frameWidth(width);
       // Fifteen sessions, the sale on the last slot (14); the plan's doubles stop at slot 10, so the rest are filler.
       const sessions = Array.from({ length: 15 }, (_, i) =>
-        bren(Math.min(i, 10), { slot: i, banked: i === 14 ? 478 : 0, bankedLabel: i === 14 ? 'Banked +$478' : undefined, markers: [] }),
+        bren(Math.min(i, 10), { slot: i, banked: i === 14 ? 478 : 0, bankedLabel: i === 14 ? 'Realized +$478' : undefined, markers: [] }),
       );
       const { container } = render(<CorridorPlot {...props({ sessions, sliderIndex: 14 })} />);
       // T9AR.12: drawn narrow the label is in the strip, not on the drawing, so nothing of it can run past the edge.
-      expect(container.querySelector('.replay-strip-labels')!.textContent, `${width}: the banked label is kept`).toContain('Banked +$478');
+      expect(container.querySelector('.replay-strip-labels')!.textContent, `${width}: the banked label is kept`).toContain('Realized +$478');
       expect(pnl(container).querySelectorAll('text.banked-label'), `${width}: none on the drawing`).toHaveLength(0);
       cleanup();
       vi.restoreAllMocks();
@@ -818,7 +818,7 @@ describe('Corridor: labels apart (T9.19-B2)', () => {
   it('should keep three banked labels apart when sales fall on consecutive sessions at nearly the same level', () => {
     const levels = [0, 0, 0, 0, 0, 478, 480, 482, 482, 482, 482];
     const over: Partial<ReplayPlotProps> = {
-      sessions: DAYS.map((_, i) => bren(i, { banked: levels[i]!, bankedLabel: levels[i]! > 0 ? `Banked +$${levels[i]}` : undefined, markers: [] })),
+      sessions: DAYS.map((_, i) => bren(i, { banked: levels[i]!, bankedLabel: levels[i]! > 0 ? `Realized +$${levels[i]}` : undefined, markers: [] })),
       sliderIndex: 10,
     };
     for (const width of [640, 340]) {
@@ -826,7 +826,7 @@ describe('Corridor: labels apart (T9.19-B2)', () => {
       const { container } = render(<CorridorPlot {...props(over)} />);
       const svg = pnl(container);
       // T9AR.12: drawn narrow the three labels are in the strip, not on the drawing.
-      const listed = container.querySelector('.replay-strip-labels')?.textContent?.split(' · ').filter((l) => l.startsWith('Banked')) ?? [];
+      const listed = container.querySelector('.replay-strip-labels')?.textContent?.split(' · ').filter((l) => l.startsWith('Realized')) ?? [];
       expect(width === 640 ? svg.querySelectorAll('text.banked-label').length : listed.length, `${width}`).toBe(3);
       expect(clashes(svg), `${width}`).toEqual([]);
       cleanup();
@@ -1049,39 +1049,41 @@ describe('Corridor: the key, the dates and the lines (suggestion 3)', () => {
               { kind: 'WorstCase', label: 'At Worst case' },
             ] as const)
           : []),
-        ...(i === SALE ? ([{ kind: 'Banked', label: 'Banked' }] as const) : []),
+        ...(i === SALE ? ([{ kind: 'Banked', label: 'Realized', tone: 'gain' }] as const) : []),
       ],
     });
   const keyOf = (c: HTMLElement) => [...c.querySelectorAll('.replay-key li')].map((li) => li.textContent);
 
   it('should show a one-line key under the charts naming each thing drawn so far and nothing else', () => {
     const early = render(<CorridorPlot {...props({ sessions: [keyed(0)], sliderIndex: 0 })} />);
-    // No Banked on Mon 11-02; the Worst case is named by a session but its line is not drawn (no figure), so it is not in the key.
+    // No Realized on Mon 11-02; the Worst case is named by a session but its line is not drawn (no figure), so it is not in the key.
     expect(keyOf(early.container)).toEqual(['Mark', 'Open profit', 'Break-even', 'At Stop', 'At Target']);
     cleanup();
     const thu = render(<CorridorPlot {...props({ sessions: DAYS.slice(0, SALE + 1).map((_, i) => keyed(i)), sliderIndex: SALE })} />);
-    expect(keyOf(thu.container)).toEqual(['Mark', 'Open profit', 'Break-even', 'At Stop', 'At Target', 'Banked']);
+    expect(keyOf(thu.container)).toEqual(['Mark', 'Open profit', 'Break-even', 'At Stop', 'At Target', 'Realized']);
   });
 
   it('should give each key entry the swatch of what it names', () => {
-    const entry = (kind: 'TradePnl' | 'Banked', label: string): PlotSession => bren(0, { keyEntries: [{ kind, label }] });
-    const swatches = (labels: [('TradePnl' | 'Banked'), string][]) => {
-      const out: Record<string, string | null> = {};
-      for (const [kind, label] of labels) {
-        const { container } = render(<CorridorPlot {...props({ sessions: [entry(kind, label)], sliderIndex: 0 })} />);
-        out[label] = container.querySelector('.replay-key li')!.getAttribute('data-swatch');
-        cleanup();
-      }
-      return out;
-    };
-    expect(
-      swatches([
-        ['TradePnl', 'Open profit'],
-        ['TradePnl', 'Open loss'],
-        ['Banked', 'Banked'],
-        ['Banked', 'Realized loss'],
-      ]),
-    ).toEqual({ 'Open profit': 'area-profit', 'Open loss': 'area-loss', Banked: 'banked-gain', 'Realized loss': 'banked-loss' });
+    // Decision 121: a gain and a loss are both named "Realized"; the swatch's colour tells them apart, so a Trade that has drawn both lists it twice.
+    const { container } = render(
+      <CorridorPlot
+        {...props({
+          sessions: [
+            bren(0, { keyEntries: [{ kind: 'TradePnl', label: 'Open profit' }, { kind: 'TradePnl', label: 'Open loss' }, { kind: 'Banked', label: 'Realized', tone: 'gain' }] }),
+            bren(1, { keyEntries: [{ kind: 'Banked', label: 'Realized', tone: 'loss' }] }),
+          ],
+          sliderIndex: 1,
+        })}
+      />,
+    );
+    const items = [...container.querySelectorAll('.replay-key li')];
+    expect(items.map((li) => [li.textContent, li.getAttribute('data-swatch')])).toEqual([
+      ['Open profit', 'area-profit'],
+      ['Open loss', 'area-loss'],
+      ['Realized', 'banked-gain'],
+      ['Realized', 'banked-loss'],
+    ]);
+    cleanup();
 
     // Each swatch takes the colour variable and opacity of the thing it names in the drawing.
     const rules = new Map<string, Record<string, string>>();
@@ -1456,13 +1458,13 @@ describe('Corridor on a phone (suggestion 9)', () => {
     }
   });
 
-  // R-BREN-U Thu 11-12: "Stop +$316 · Banked +$478 · Target +$956 · Sold 2".
+  // R-BREN-U Thu 11-12: "Stop +$316 · Realized +$478 · Target +$956 · Sold 2".
   it('should take the line labels off the phone drawing and list them in a strip under it', () => {
     frameWidth(340);
     const { container } = render(<CorridorPlot {...thursday()} />);
-    expect(strip(container)!.textContent).toBe('Stop +$316 · Banked +$478 · Target +$956 · Sold 2');
+    expect(strip(container)!.textContent).toBe('Stop +$316 · Realized +$478 · Target +$956 · Sold 2');
     const text = drawingText(container);
-    for (const label of ['Stop +$316', 'Banked +$478', 'Target +$956', 'Sold 2', 'Break-even']) expect(text).not.toContain(label);
+    for (const label of ['Stop +$316', 'Realized +$478', 'Target +$956', 'Sold 2', 'Break-even']) expect(text).not.toContain(label);
     // Under the drawing, outside it.
     expect(pnl(container).contains(strip(container))).toBe(false);
     expect(pnl(container).compareDocumentPosition(strip(container)!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
@@ -1567,7 +1569,7 @@ describe('Corridor: a first crossing (decision 2)', () => {
     const wide = `Target reached ${'on a session whose label is wider than the drawing '.repeat(3)}`;
     const sessions = DAYS.slice(0, 7).map((_, i) =>
       bren(i, {
-        ...(i === 4 && { resultAtTarget: null, tradePnl: 300, banked: 300, bankedLabel: 'Banked +$300 from a very long sale that takes the room', firstCrossing: [{ line: 'Target' as const, label: wide }], keyEntries: [{ kind: 'FirstCrossing' as const, label: wide }] }),
+        ...(i === 4 && { resultAtTarget: null, tradePnl: 300, banked: 300, bankedLabel: 'Realized +$300 from a very long sale that takes the room', firstCrossing: [{ line: 'Target' as const, label: wide }], keyEntries: [{ kind: 'FirstCrossing' as const, label: wide }] }),
         ...(i === 5 && { firstCrossing: [{ line: 'Stop' as const, label: 'Stop breached' }], keyEntries: [{ kind: 'FirstCrossing' as const, label: 'Stop breached' }] }),
       }),
     );

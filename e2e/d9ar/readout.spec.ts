@@ -90,7 +90,7 @@ test.describe('B9AR.3 The readout', () => {
     await expect(pastLine(scope)).toHaveText('Past the Stop by $300.00 (0.50R) · at Stop −$740.00');
     await expect(scope.locator('.replay-readout [data-row="Reward to risk"]')).toHaveCount(0);
     await expect(scope.locator('.replay-readout [data-row="At Stop"]')).toHaveCount(0);
-    // W57: a realized loss reads "Realized", where a gain reads "Banked".
+    // W57 (decision 120): a realized loss reads "Realized", as a gain does; no row is ever "Banked".
     await expect(scope.locator('.replay-readout-row[data-row="Realized"]')).toHaveText('Realized−$440.00');
     await expect(scope.locator('.replay-readout [data-row="Banked"]')).toHaveCount(0);
     await expect(readoutValue(scope, 'AXIO Mark')).toHaveText(/^\$\d/);

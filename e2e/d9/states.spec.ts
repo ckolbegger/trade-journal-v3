@@ -58,10 +58,10 @@ test.describe('B9.4 How a replay ends', () => {
     // "Final result" stands in place of the first two groups.
     await expect(scope.locator('.replay-readout-group h3')).toHaveText(['Final result', 'Marks', 'Position']);
     await expect(readoutValue(scope, 'Trade P&L')).toHaveText('+$1,138.00');
-    await expect(readoutValue(scope, 'Banked')).toHaveText('+$1,138.00');
-    expect(await chartText(pnlChart(scope))).toEqual(expect.arrayContaining(['Banked +$478', 'Banked +$1,138', 'Sold 2 at $4.00']));
+    await expect(readoutValue(scope, 'Realized')).toHaveText('+$1,138.00');
+    expect(await chartText(pnlChart(scope))).toEqual(expect.arrayContaining(['Realized +$478', 'Realized +$1,138', 'Sold 2 at $4.00']));
     // The final session's card has nothing at stake to show: its Marks, the result, the banked total, the Stop and Target prices and its sale.
-    await expect(cardRows(await sessionCard(scope, 'Fri Nov 13'))).toHaveText(['BREN Mark$104.60', 'Call Mark$4.91', 'Trade P&L+$1,138.00', 'Banked+$1,138.00', 'EventsSold 2 at $4.91, $0.91 above the Target']);
+    await expect(cardRows(await sessionCard(scope, 'Fri Nov 13'))).toHaveText(['BREN Mark$104.60', 'Call Mark$4.91', 'Trade P&L+$1,138.00', 'Realized+$1,138.00', 'EventsSold 2 at $4.91, $0.91 above the Target']);
     // The session before the last is not final: it keeps its own headline and what is still at stake.
     await seek(page, scope, 'ArrowLeft');
     await expect(sliderValue(scope)).toHaveText('Thu Nov 12 · 9 of 10');

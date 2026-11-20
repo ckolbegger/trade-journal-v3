@@ -28,10 +28,10 @@ const INTENT ='The Target is reached; take the profit.';
 // W69: the drawing's labels as one line of text under the P&L chart, and none of them on the drawing.
 async function expectPhoneLabels(scope: Locator, where: string): Promise<void> {
   const drawn = await chartText(pnlChart(scope));
-  expect(drawn.filter((t) => /^(Sold|Stop|Target|Banked|Risk|Reward)\b/.test(t)), `${where}: no line label on the drawing`).toEqual([]);
+  expect(drawn.filter((t) => /^(Sold|Stop|Target|Realized|Risk|Reward)\b/.test(t)), `${where}: no line label on the drawing`).toEqual([]);
   // The strip lists every label the drawing left out, so it holds at least the four W69 names for Thu 11-12.
   const strip = ((await scope.locator('.replay-strip-labels').textContent()) ?? '').split(' · ');
-  expect(strip, `${where}: the strip`).toEqual(expect.arrayContaining(['Stop +$316', 'Banked +$478', 'Target +$956', 'Sold 2']));
+  expect(strip, `${where}: the strip`).toEqual(expect.arrayContaining(['Stop +$316', 'Realized +$478', 'Target +$956', 'Sold 2']));
 }
 
 // Every match is at least 44 pixels high (the UI contract's touch target).

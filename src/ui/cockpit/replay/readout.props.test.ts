@@ -34,13 +34,13 @@ describe('replay.props: the readout of a session in flight (W43)', () => {
     expect(targetGrid.pastLine?.text).toMatch(/^Past the Target by \$182\.00 \(0\.56R\)/);
     expect(cellsOf(targetGrid, 'At Stop')[0]).toBe('$672.00');
     expect(labelsOf(targetGrid).flat()).not.toContain('At Target');
-    expect(rowsOfGroup(props, 0, 'How it is going')).toEqual({ 'Trade P&L': '+$1,138.00', Banked: '+$478.00' });
+    expect(rowsOfGroup(props, 0, 'How it is going')).toEqual({ 'Trade P&L': '+$1,138.00', Realized: '+$478.00' });
   });
 
   it('should show the open part of the Trade P&L in the readout', () => {
     // 2 of 4 contracts sold for +$478 banked; the 2 held are open +$660 of the +$1,138.
     const props = replayProps(view([session({ date: '2026-11-13', held: 2, pnl: 1138, realized: 478, open: 660 })]), { Plot });
-    expect(rowsOfGroup(props, 0, 'How it is going')).toEqual({ 'Trade P&L': '+$1,138.00', Banked: '+$478.00', Open: '+$660.00' });
+    expect(rowsOfGroup(props, 0, 'How it is going')).toEqual({ 'Trade P&L': '+$1,138.00', Realized: '+$478.00', Open: '+$660.00' });
   });
 
   it('should call a planned-amount overrun by its words, not a breach, when the condition has not triggered', () => {
@@ -59,7 +59,7 @@ describe('replay.props: the readout of a session in flight (W43)', () => {
     const final = { ...withMarks(session({ date: '2026-11-13', held: 0, pnl: 1260, realized: 1260, standing: NOT_APPLICABLE, final: { kind: 'Sold' } }), [markOf(BREN_STOCK, '104.60'), markOf(BREN)]), markers: [sale] };
     const props = replayProps(fullView([final], PLAN), { Plot });
     expect(props.sessions[0]!.readout.map((group) => group.title)).toEqual(['Final result', 'Marks', 'Position']);
-    expect(rowsOfGroup(props, 0, 'Final result')).toEqual({ 'Trade P&L': '+$1,260.00', Banked: '+$1,260.00' });
+    expect(rowsOfGroup(props, 0, 'Final result')).toEqual({ 'Trade P&L': '+$1,260.00', Realized: '+$1,260.00' });
     expect(rowsOfGroup(props, 0, 'Position')).toEqual({ 'Execution, Fri Nov 13': 'Sold 2 at $4.00' });
     // A Mark that was never saved reads "No Mark"; nothing is carried over.
     const none = withMarks(session({ date: '2026-11-10', pnl: null }), [markOf(BREN_STOCK, '100.20'), markOf(BREN)]);
@@ -396,11 +396,11 @@ describe('Readout: the stake grid (suggestion 1)', () => {
 });
 
 describe('Replay: one name per figure (suggestion 8)', () => {
-  it('should name a realized loss Realized -440.00 (R-AXIO-D Mon 11-09) and keep Banked +478.00 for a gain', () => {
+  it('should name a realized loss Realized -440.00 (R-AXIO-D Mon 11-09) and name a gain Realized +478.00 too', () => {
     const loss = session({ date: '2026-11-09', instrument: AXIO, held: 50, pnl: -520, realized: -440, standing: value({ zone: 'Between', share: frac(1, 10) }) });
     expect(rowsOfGroup(replayProps(view([loss]), { Plot }), 0, 'How it is going')).toEqual({ 'Trade P&L': '−$520.00', Realized: '−$440.00' });
     const gain = session({ date: '2026-11-13', held: 2, pnl: 1138, realized: 478 });
-    expect(rowsOfGroup(replayProps(view([gain]), { Plot }), 0, 'How it is going')).toEqual({ 'Trade P&L': '+$1,138.00', Banked: '+$478.00' });
+    expect(rowsOfGroup(replayProps(view([gain]), { Plot }), 0, 'How it is going')).toEqual({ 'Trade P&L': '+$1,138.00', Realized: '+$478.00' });
   });
 
   it('should say -440.00 of the result was realized before the end. on a final session that follows a realized loss', () => {

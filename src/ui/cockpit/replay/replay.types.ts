@@ -7,7 +7,7 @@ import type { ComponentType, ReactNode } from 'react';
 // A signed result's tone, for the card's edge colour and the area's fill. The words always say it too (W37).
 export type ReplayTone = 'Profit' | 'Loss' | 'Even' | 'None';
 
-// A finished figure with the label the plot draws beside it ("Stop +$316", "Banked +$478").
+// A finished figure with the label the plot draws beside it ("Stop +$316", "Realized +$478").
 export interface LabelledFigure {
   // Dollars (P&L chart) or price (price chart), as drawn.
   readonly value: number;
@@ -37,6 +37,8 @@ export type ExtremesWeight = 'Main' | 'Remote';
 export interface PlotKeyEntry {
   readonly kind: 'Mark' | 'TradePnl' | 'Banked' | 'Stop' | 'Target' | 'WorstCase' | 'MaxReward' | 'BreakEven' | 'Strike' | 'Execution' | 'FirstCrossing' | 'NoMark' | 'PastStop' | 'PastTarget' | 'Stake';
   readonly label: string;
+  // Decision 121: a Banked entry is named "Realized" for a gain and a loss alike; its swatch's colour says which.
+  readonly tone?: 'gain' | 'loss';
 }
 
 // One revealed session as the plot draws it (A255). The frame passes revealed sessions only.
@@ -46,7 +48,7 @@ export interface PlotSession {
   // A280: the Worst case's tag at the bottom edge ("Worst case −$33,936 ↓"), drawn only when its line is below the chart's range;
   // `weight` says how strongly (grey for `Remote`).
   readonly worstCaseTag?: { readonly label: string; readonly weight: ExtremesWeight };
-  // A280, phone: this session's labels in the order the strip lists them ("Stop +$316", "Banked +$478", "Sold 2"); the plot adds
+  // A280, phone: this session's labels in the order the strip lists them ("Stop +$316", "Realized +$478", "Sold 2"); the plot adds
   // any label the drawing left out.
   readonly stripLabels?: readonly string[];
   // A271, A280: set on the session where a condition's role was first crossed ("Target reached", "Stop breached"); the flag stays on
@@ -65,7 +67,7 @@ export interface PlotSession {
   readonly tradePnl: number | null;
   // What the Trade has banked (its realized result so far); negative for a realized loss.
   readonly banked: number;
-  // Its label, drawn on the session of the sale: "Banked +$478" or "Realized −$495".
+  // Its label, drawn on the session of the sale: "Realized +$478" or "Realized −$495".
   readonly bankedLabel?: LabelledFigure['label'];
   // The result at the Stop and at the Target as of this session, with their labels; null when Not Applicable.
   readonly resultAtStop: LabelledFigure | null;
@@ -225,7 +227,7 @@ export interface ReadoutProps {
   readonly groups: readonly ReadoutGroup[];
 }
 
-// A277: one row of a session card, top to bottom: the Marks, Trade P&L, Banked, the stake rows, Events.
+// A277: one row of a session card, top to bottom: the Marks, Trade P&L, Realized, the stake rows, Events.
 export interface SessionCardRow {
   readonly label: string;
   // A figure, or for a stake row the amount from here: "$672.00".

@@ -27,7 +27,7 @@ const ROW_RULES: RowRule[] = [
   { cls: /\bresult-label stop\b|\bstake-tag risk\b/, row: () => /at Stop/gi },
   { cls: /\bresult-label target\b|\bstake-tag reward\b/, row: () => /at Target/gi },
   { cls: /\bworst-case-(tag|label)\b/, row: () => /at Worst case/gi },
-  { cls: /\bbanked-label\b/, row: (text) => new RegExp(`${text.split(' ')[0]}`, 'gi') }, // "Realized" or "Banked"
+  { cls: /\bbanked-label\b/, row: (text) => new RegExp(`${text.split(' ')[0]}`, 'gi') }, // "Realized"
   { cls: /\bpast-label\b/, row: (text) => new RegExp(`Past the ${/Stop|Target/.exec(text)![0]} by`, 'gi') },
 ];
 // The figures that follow each match of `row` in `text`, up to the next word (the R multiples and "P&L if hit" are skipped).

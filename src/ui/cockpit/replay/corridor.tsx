@@ -102,7 +102,7 @@ function keyOf(sessions: readonly PlotSession[], drawn: ReadonlySet<PlotKeyEntry
   const seen = new Set<string>();
   const listed = sessions
     .flatMap((s) => s.keyEntries ?? [])
-    .filter((e) => (!LINE_KINDS.has(e.kind) || drawn.has(e.kind)) && (e.kind !== 'FirstCrossing' || crossingLabels.has(e.label)) && !seen.has(`${e.kind}|${e.label}`) && seen.add(`${e.kind}|${e.label}`));
+    .filter((e) => (!LINE_KINDS.has(e.kind) || drawn.has(e.kind)) && (e.kind !== 'FirstCrossing' || crossingLabels.has(e.label)) && !seen.has(`${e.kind}|${e.label}|${e.tone}`) && seen.add(`${e.kind}|${e.label}|${e.tone}`));
   return [...listed, ...DRAWN_AREAS.filter((e) => drawn.has(e.kind))];
 }
 
@@ -116,9 +116,8 @@ const DRAWN_AREAS: readonly PlotKeyEntry[] = [
 
 // The swatch of what an area or a band is drawn in: the Target's colour for a gain, the Stop's for a loss.
 function swatchOf(e: PlotKeyEntry): string | undefined {
-  const loss = e.label === 'Open loss' || e.label === 'Realized loss';
-  if (e.kind === 'TradePnl') return loss ? 'area-loss' : 'area-profit';
-  if (e.kind === 'Banked') return loss ? 'banked-loss' : 'banked-gain';
+  if (e.kind === 'TradePnl') return e.label === 'Open loss' ? 'area-loss' : 'area-profit';
+  if (e.kind === 'Banked') return e.tone === 'loss' ? 'banked-loss' : 'banked-gain';
   if (e.kind === 'NoMark') return 'no-mark';
   return undefined;
 }
@@ -128,7 +127,7 @@ function Key({ entries }: { entries: readonly PlotKeyEntry[] }) {
   return (
     <ul className="replay-key">
       {entries.map((e) => (
-        <li key={`${e.kind}|${e.label}`} className={`key-${e.kind}`} data-swatch={swatchOf(e)}>
+        <li key={`${e.kind}|${e.label}|${e.tone}`} className={`key-${e.kind}`} data-swatch={swatchOf(e)}>
           {e.label}
         </li>
       ))}

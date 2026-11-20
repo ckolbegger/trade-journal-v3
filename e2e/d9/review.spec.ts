@@ -46,7 +46,7 @@ test.describe('B9.3 Replay in the Review, and the round trip', () => {
     await seek(page, section, 'ArrowLeft', 2);
     await expect(sliderValue(section)).toHaveText('Thu Nov 12 · 9 of 11');
     await expect(headline(section)).toHaveText('+$982.00 · 3.03R');
-    await expect(readoutValue(section, 'Banked')).toHaveText('+$478.00');
+    await expect(readoutValue(section, 'Realized')).toHaveText('+$478.00');
     // Moving the slider writes nothing and does not leave the Review; the address names only the open overlay.
     expect(new URL(page.url()).pathname).toBe('/review');
     expect(Object.fromEntries(new URL(page.url()).searchParams)).toEqual({ trade: trade.tradeId, panel: 'Action', replay: 'open' });

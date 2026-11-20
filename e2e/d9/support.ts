@@ -200,7 +200,7 @@ export const hits = (scope: Locator): Locator => scope.locator('div.replay-hits[
 export const priceStrip = (scope: Locator): Locator => scope.locator('svg.price-strip');
 export const pnlChart = (scope: Locator): Locator => scope.locator('svg.pnl-chart');
 export const chartText = (chart: Locator): Promise<string[]> => chart.locator('text').allTextContents();
-// A readout row's value, by its name ("Trade P&L", "Banked", "Open", "At Stop" ...): a list row's value, or the "From here" cell of a stake grid row.
+// A readout row's value, by its name ("Trade P&L", "Realized", "Open", "At Stop" ...): a list row's value, or the "From here" cell of a stake grid row.
 export const readoutValue = (scope: Locator, row: string): Locator => scope.locator(`.replay-readout [data-row="${row}"] .replay-value`);
 // A stake grid row's "R" cell ("At Stop", "At Worst case", "At Target", "At Max reward").
 export const readoutR = (scope: Locator, row: string): Locator => scope.locator(`.replay-readout [data-row="${row}"] .replay-r`);

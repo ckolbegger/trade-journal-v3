@@ -67,10 +67,10 @@ async function expectPhoneWords(scope: Locator, where: string): Promise<void> {
   expect(pnl.join('|'), `${where}: no long P&L title`).not.toContain('dollars for the whole Position');
   // T9AR.12: the line labels are in the strip under the P&L drawing, in the phone words, and none is on the drawing.
   const strip = (((await scope.locator('.replay-strip-labels').textContent()) ?? '').split(' · '));
-  expect(pnl.filter((t) => /^(Sold|Stop|Target|Banked|Risk|Reward)\b/.test(t)), `${where}: no line label on the drawing`).toEqual([]);
+  expect(pnl.filter((t) => /^(Sold|Stop|Target|Realized|Risk|Reward)\b/.test(t)), `${where}: no line label on the drawing`).toEqual([]);
   for (const text of strip.filter((t) => /^Sold/.test(t))) expect(text, `${where}: marker`).toBe('Sold 2');
   expect(strip.filter((t) => /^(Risk|Reward)\b/.test(t)).every((t) => /^(Risk|Reward) \$/.test(t)), `${where}: stake tags ${strip.join(' | ')}`).toBe(true);
-  expect(strip, `${where}: the Thu 11-12 labels`).toEqual(expect.arrayContaining(['Stop +$316', 'Banked +$478', 'Target +$956', 'Sold 2']));
+  expect(strip, `${where}: the Thu 11-12 labels`).toEqual(expect.arrayContaining(['Stop +$316', 'Realized +$478', 'Target +$956', 'Sold 2']));
   // The text is drawn at its real size, not shrunk with a scaled-down drawing: its size on the screen is its font size times the drawing's scale.
   for (const chart of [priceStrip(scope), pnlChart(scope)]) {
     const smallest = await chart.evaluate((svg: SVGSVGElement) => {
@@ -146,7 +146,7 @@ test.describe('B9.5 Responsive, accessible and offline', () => {
     await context.close();
   });
 
-  // At 320 px the Review card's readout reaches past the screen: "+$478.00" (Banked) ends at x = 328 and "+$316.00" (Result at the Stop) at 324, so the page scrolls sideways (scrollWidth
+  // At 320 px the Review card's readout reaches past the screen: "+$478.00" (Realized) ends at x = 328 and "+$316.00" (Result at the Stop) at 324, so the page scrolls sideways (scrollWidth
   // 328 over 320). Reported to the main session as a UI defect; T9.18-F2 fixed it and this case now runs.
   test('should fit the Review card replay at 320 px with no sideways scroll', async ({ profile }) => {
     test.setTimeout(420_000);

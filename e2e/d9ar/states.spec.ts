@@ -27,7 +27,7 @@ test.describe('B9AR.6 How a replay ends, and a session with no Mark', () => {
     await expect(sessionCards(scope)).toHaveCount(10);
     const last = await sessionCard(scope, 'Fri Nov 13');
     await expect(last).toHaveAttribute('aria-current', 'true');
-    await expect(cardRows(last)).toHaveText(['BREN Mark$104.60', 'Call Mark$4.91', 'Trade P&L+$1,138.00', 'Banked+$1,138.00', 'EventsSold 2 at $4.91, $0.91 above the Target']);
+    await expect(cardRows(last)).toHaveText(['BREN Mark$104.60', 'Call Mark$4.91', 'Trade P&L+$1,138.00', 'Realized+$1,138.00', 'EventsSold 2 at $4.91, $0.91 above the Target']);
     await page.screenshot({ path: `${SCREENSHOTS}/B9AR.6-k-sale-final-result.png` });
     await context.close();
   });

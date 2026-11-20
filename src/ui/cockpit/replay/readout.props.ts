@@ -79,9 +79,9 @@ function goingGroup(session: ViewSession): ReadoutGroup {
   }
   const rows = [row('Trade P&L', tradePnlValue(), changeWords(session.change))];
   if (session.realizedPnl.compare(ZERO) !== 0) {
-    // W57: a loss that was realized is "Realized"; a gain keeps "Banked".
-    rows.push(row(session.realizedPnl.compare(ZERO) < 0 ? 'Realized' : 'Banked', figure(signedMoney(session.realizedPnl))));
-    // Open is the rest of the Trade P&L: shown beside Banked, never on a final session, which holds nothing open.
+    // W57 (decision 120): what was realized is "Realized", for a gain as for a loss.
+    rows.push(row('Realized', figure(signedMoney(session.realizedPnl))));
+    // Open is the rest of the Trade P&L: shown beside Realized, never on a final session, which holds nothing open.
     const open = session.figures?.openPnl;
     if (open?.kind === 'Value' && !session.final) rows.push(row('Open', figure(signedMoney(open.value))));
   }

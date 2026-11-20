@@ -145,7 +145,7 @@ describe('replay.props: Session by session (W65)', () => {
       ['BREN Mark', '$101.80', undefined, undefined],
       ['Call Mark', '$3.20', undefined, undefined],
       ['Trade P&L', '+$520.00 · 1.60R', undefined, undefined],
-      ['Banked', '+$478.00', undefined, undefined],
+      ['Realized', '+$478.00', undefined, undefined],
       ['Held', '4 contracts', undefined, undefined],
       ['At Stop', '$352.00', '1.09R', '−$324.00'],
       ['At Worst case', '$644.00', '1.99R', 'Not applicable: no open position'],

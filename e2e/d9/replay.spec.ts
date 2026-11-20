@@ -10,7 +10,7 @@ test.use({ actionTimeout: 15_000 });
 const LATER = {
   // The Marks of the sessions after the one shown, which the overlay must not carry.
   'Thu Nov 12': ['Fri Nov 13', 'Mon Nov 16', '$4.91', '104.60', '$4.16'],
-  'Mon Nov 2': ['Tue Nov 3', 'Thu Nov 12', 'Mon Nov 16', '$2.91', '103.60', 'Banked +$478', 'Sold 2 at $4.00'],
+  'Mon Nov 2': ['Tue Nov 3', 'Thu Nov 12', 'Mon Nov 16', '$2.91', '103.60', 'Realized +$478', 'Sold 2 at $4.00'],
 } as const;
 
 test.describe('B9.1 Replay in Trade Detail', () => {
@@ -33,12 +33,12 @@ test.describe('B9.1 Replay in Trade Detail', () => {
     expect(await chartText(pnlChart(scope))).toEqual(
       expect.arrayContaining([
         'Trade P&L',
-        'Stop +$316', 'Target +$956', 'Break-even', 'Banked +$478', 'Worst case +$156', '$32 past the Target', 'Current Risk $672', 'Sold 2 at $4.00',
+        'Stop +$316', 'Target +$956', 'Break-even', 'Realized +$478', 'Worst case +$156', '$32 past the Target', 'Current Risk $672', 'Sold 2 at $4.00',
       ]),
     );
-    // W43: the readout's rows, with the Open row beside Banked.
+    // W43: the readout's rows, with the Open row beside Realized.
     await expect(readoutValue(scope, 'Trade P&L')).toHaveText('+$988.00 · 3.05R');
-    await expect(readoutValue(scope, 'Banked')).toHaveText('+$478.00');
+    await expect(readoutValue(scope, 'Realized')).toHaveText('+$478.00');
     await expect(readoutValue(scope, 'Open')).toHaveText('+$510.00');
     await expect(readoutValue(scope, 'At Stop')).toHaveText('$672.00');
     await expect(readoutR(scope, 'At Stop')).toHaveText('2.07R');
@@ -60,7 +60,7 @@ test.describe('B9.1 Replay in Trade Detail', () => {
     await expect(headline(scope)).toHaveText('+$982.00 · 3.03R');
     await expect(going(scope)).toHaveText('Target reached, $26.00 past it.');
     await expect(stake(scope)).toHaveText('From here: $666.00 at risk back to the Stop ($504.00 of it open profit) · no cap above. Even at the Stop this Trade would end $316.00 ahead.');
-    await expect(readoutValue(scope, 'Banked')).toHaveText('+$478.00');
+    await expect(readoutValue(scope, 'Realized')).toHaveText('+$478.00');
     await expect(readoutValue(scope, 'Open')).toHaveText('+$504.00');
     expect(await chartText(pnlChart(scope))).toEqual(expect.arrayContaining(['Stop +$316', 'Target +$956', '$26 past the Target', 'Sold 2 at $4.00']));
     // The two lines step at the sale: the Stop line's result is −$324 until Wed 11-11 and +$316 from Thu 11-12; the Target line does not move.
@@ -68,7 +68,7 @@ test.describe('B9.1 Replay in Trade Detail', () => {
     // Thu 11-12 is past the Target: the card holds the one row for that, and no "$0.00" at the Target the table read.
     const thursday = await sessionCard(scope, 'Thu Nov 12');
     await expect(thursday.locator('.replay-past-line')).toHaveText('Past the Target by $26.00 (0.08R) · at Target +$956.00');
-    await expect(cardRows(thursday)).toHaveText(['BREN Mark$103.60', 'Call Mark$4.13', 'Implied volatility28.0%estimate', 'Trade P&L+$982.00 · 3.03R', 'Banked+$478.00', 'Open+$504.00', 'Held2 contracts', 'Behaves like≈ 163 sharesestimate', 'At Stop$666.00 · 2.06R · P&L if hit +$316.00', 'At Worst case$826.00 · 2.55R · P&L if hit +$156.00', 'At Max rewardNo cap above', 'EventsSold 2 at $4.00, at the Target; Target first reached']);
+    await expect(cardRows(thursday)).toHaveText(['BREN Mark$103.60', 'Call Mark$4.13', 'Implied volatility28.0%estimate', 'Trade P&L+$982.00 · 3.03R', 'Realized+$478.00', 'Open+$504.00', 'Held2 contracts', 'Behaves like≈ 163 sharesestimate', 'At Stop$666.00 · 2.06R · P&L if hit +$316.00', 'At Worst case$826.00 · 2.55R · P&L if hit +$156.00', 'At Max rewardNo cap above', 'EventsSold 2 at $4.00, at the Target; Target first reached']);
     // In the chart the Stop line has one vertical step (at the sale) and the Target line has none; the banked band is drawn.
     await expect(pnlChart(scope).locator('path.result-line.stop')).toHaveAttribute('d', /V[\d.]+H[\d.]+$/);
     expect(await pnlChart(scope).locator('path.result-line.stop').getAttribute('d')).toMatch(/^[^V]*V[^V]*$/);

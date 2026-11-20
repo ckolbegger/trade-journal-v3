@@ -25,7 +25,7 @@ describe('replay.props: what the plot draws of a session (W39 to W41, W44)', () 
       keyEntries: [
         { kind: 'Mark', label: 'Mark' },
         { kind: 'TradePnl', label: 'Open profit' },
-        { kind: 'Banked', label: 'Banked' },
+        { kind: 'Banked', label: 'Realized', tone: 'gain' },
         { kind: 'BreakEven', label: 'Break-even' },
         { kind: 'Stop', label: 'At Stop' },
         { kind: 'Target', label: 'At Target' },
@@ -38,7 +38,7 @@ describe('replay.props: what the plot draws of a session (W39 to W41, W44)', () 
       underlyingLabel: '$101.80',
       tradePnl: 520,
       banked: 478,
-      bankedLabel: 'Banked +$478',
+      bankedLabel: 'Realized +$478',
       resultAtStop: { value: -324, label: 'Stop −$324' },
       resultAtTarget: { value: 956, label: 'Target +$956' },
       worstCase: null,
@@ -161,13 +161,13 @@ describe('replay.props: the plot titles, anchors and time axis (W39, W40, A256)'
     const wed = { ...brenWed1111, realizedPnl: usd(478), markers: [sale] };
     const mon = brenMon1102;
     const props = replayProps(fullView([mon, wed], PLAN), { Plot });
-    // Quiet Mon 11-02: no Banked and no Execution. Wed 11-11 has both; each entry is named on the session where it first appears.
-    expect(props.sessions[0]!.plot.keyEntries!.map((e) => e.label)).not.toContain('Banked');
+    // Quiet Mon 11-02: no Realized and no Execution. Wed 11-11 has both; each entry is named on the session where it first appears.
+    expect(props.sessions[0]!.plot.keyEntries!.map((e) => e.label)).not.toContain('Realized');
     expect(props.sessions[1]!.plot.keyEntries).toEqual(
       expect.arrayContaining([
         { kind: 'Mark', label: 'Mark' },
         { kind: 'TradePnl', label: 'Open profit' },
-        { kind: 'Banked', label: 'Banked' },
+        { kind: 'Banked', label: 'Realized', tone: 'gain' },
         { kind: 'BreakEven', label: 'Break-even' },
         { kind: 'Stop', label: 'At Stop' },
         { kind: 'Target', label: 'At Target' },

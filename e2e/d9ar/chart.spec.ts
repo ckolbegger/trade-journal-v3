@@ -20,8 +20,7 @@ async function open(page: Page, back: number): Promise<Locator> {
 
 // What each key entry stands for in the drawing: the entry is listed exactly when its mark is in the P&L chart.
 const DRAWN: Readonly<Record<string, string>> = {
-  Banked: 'path.banked-band.gain',
-  'Realized loss': 'path.banked-band.loss',
+  Realized: 'path.banked-band',
   'Break-even': 'path.break-even',
   'At Stop': 'path.result-line.stop',
   'At Target': 'path.result-line.target',
@@ -47,7 +46,7 @@ test.describe('B9AR.5 The chart', () => {
     await expect(sliderValue(scope)).toHaveText('Mon Nov 2 · 1 of 11');
     let listed = await expectKeyMatchesDrawing(scope, 'BREN Mon 11-02');
     expect(listed).toEqual(expect.arrayContaining(['Mark', 'At Stop', 'At Target']));
-    for (const absent of ['Banked', 'Execution', 'Realized loss', 'Past the Stop', 'Past the Target', 'No Mark', 'Stop breached', 'Target reached']) expect(listed, `Mon 11-02 has no ${absent}`).not.toContain(absent);
+    for (const absent of ['Realized', 'Execution', 'Past the Stop', 'Past the Target', 'No Mark', 'Stop breached', 'Target reached']) expect(listed, `Mon 11-02 has no ${absent}`).not.toContain(absent);
     // W67: the first session's date at the left; an option's expiration at the right.
     // (The time axis is the P&L chart's; the price strip above it shares its columns.)
     await expect(pnlChart(scope).locator('text.axis-start')).toHaveText('Mon Nov 2');
@@ -59,7 +58,7 @@ test.describe('B9AR.5 The chart', () => {
     scope = replay(page);
     await expect(sliderValue(scope)).toHaveText('Thu Nov 12 · 9 of 11');
     listed = await expectKeyMatchesDrawing(scope, 'BREN Thu 11-12');
-    expect(listed).toEqual(expect.arrayContaining(['Banked', 'Execution']));
+    expect(listed).toEqual(expect.arrayContaining(['Realized', 'Execution']));
     await context.close();
   });
 

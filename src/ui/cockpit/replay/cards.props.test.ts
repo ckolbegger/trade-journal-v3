@@ -56,7 +56,7 @@ describe('Replay: session cards, empty parts', () => {
 });
 
 describe('Replay: session cards (decision 5)', () => {
-  it('should hold every per-session figure on a card, top to bottom: the Marks, Trade P&L, Banked or Realized, Open, Held, the stake rows with their R and endings, Reward to risk and Events, with no Stop and Target price (the Plan block holds them)', () => {
+  it('should hold every per-session figure on a card, top to bottom: the Marks, Trade P&L, Realized, Open, Held, the stake rows with their R and endings, Reward to risk and Events, with no Stop and Target price (the Plan block holds them)', () => {
     const props = replayProps(fullView([wed1111, thu1112], PLAN), { Plot });
     const thu = props.sessions[1]!.card;
     expect(thu.heading).toBe('Thu Nov 12');
@@ -64,7 +64,7 @@ describe('Replay: session cards (decision 5)', () => {
       ['BREN Mark', '$103.60'],
       ['Call Mark', '$4.13'],
       ['Trade P&L', '+$982.00'],
-      ['Banked', '+$478.00'],
+      ['Realized', '+$478.00'],
       ['Open', '+$504.00'],
       ['Held', '2 contracts'],
       ['At Stop', '$672.00 · 2.07R · P&L if hit +$316.00'],
