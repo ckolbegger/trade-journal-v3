@@ -1474,6 +1474,26 @@ describe('open: the previous session and earlier Marks (A288, P155)', () => {
     expect(family.earlierMarks.map((group) => group.instrumentKey)).toEqual(['CORV', instrumentKey(CORV_PUT)].sort());
   }, 60_000);
 
+  it('should make no series call for an Instrument whose Trades all opened on the Review Date', async () => {
+    const { stack } = await seriesStack(R_CORV_D, 'strategy.long-put', MON_1116_1700, { marksThrough: 9 });
+    const fresh = await stack.confirm({ symbol: 'NEWX', shares: '100', entry: '20.00', stop: '18.00', target: '26.00', planTime: '2026-11-16T13:00:00Z' });
+    await stack.fill(fresh, '2026-11-16T15:00:00Z', '100', '20.00');
+    const seriesCalls: string[] = [];
+    const spied = {
+      ...stack.marketData,
+      openReadSession: async (context: Parameters<typeof stack.marketData.openReadSession>[0], options?: Parameters<typeof stack.marketData.openReadSession>[1]) => {
+        const session = await stack.marketData.openReadSession(context, options);
+        return { ...session, series: (key: string, from: string, through: string) => (seriesCalls.push(key), session.series(key, from, through)) };
+      },
+    };
+
+    const family = marksFamily(await createDailyReview({ ...stack, marketData: spied }).open({ date: { kind: 'LatestCompleted' }, asOf: MON_1116_1700 }));
+
+    expect(family.today.map((row) => row.instrumentKey)).toContain('NEWX');
+    expect(seriesCalls.length).toBeGreaterThan(0);
+    expect(seriesCalls).not.toContain('NEWX');
+  }, 60_000);
+
   it('should add no store request to the open', async () => {
     // The open's requests equal those of an open whose read session answers every series with no points: its series reads share the
     // scans the open's gaps already made (A289), so they issue none of their own.
