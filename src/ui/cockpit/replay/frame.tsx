@@ -87,7 +87,6 @@ export function ReplayFrame({ tradeKey, sessions, initialSession, sliderLabel, p
         </p>
       )}
       {renderSince?.(session)}
-      {renderChips?.(session)}
       <div className="replay-slider">
         <button type="button" aria-label={previousLabel} disabled={current === 0} onClick={() => move(current - 1)}>
           ‹
@@ -112,6 +111,8 @@ export function ReplayFrame({ tradeKey, sessions, initialSession, sliderLabel, p
           </div>
         )}
       </div>
+      {/* W47: the chips sit under the charts (the overlay's stylesheet puts them in the charts' column on a wide screen). */}
+      {renderChips?.(session)}
       <Readout groups={session.readout} />
       {/* W46: the screen's links for the slider's session, under the readout. */}
       {renderLinks?.(session)}

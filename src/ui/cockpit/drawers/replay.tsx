@@ -1,4 +1,6 @@
 import { useMemo, type ReactNode } from 'react';
+import { Chips } from '../replay/chips.tsx';
+import { chipsOf } from '../replay/chips.props.ts';
 import { CorridorPlot } from '../replay/corridor.tsx';
 import { ReplayFrame } from '../replay/frame.tsx';
 import { replayProps, type ReplayView } from '../replay/replay.props.ts';
@@ -27,6 +29,12 @@ export function ReplayDrawer({ replay, links, initialSession, onSessionChange }:
     () => replayProps(replay, { Plot: CorridorPlot, ...(initialSession !== undefined && { initialSession }), ...(onSessionChange && { onSessionChange }) }),
     [replay, initialSession, onSessionChange],
   );
+  // W47: the chips under the charts, from the estimates the view carries.
+  const chips = useMemo(() => chipsOf(replay), [replay]);
+  const renderChips = ({ date }: { readonly date: string }) => {
+    const found = chips(date);
+    return found && <Chips {...found} />;
+  };
   const renderLinks = links
     ? ({ date }: { readonly date: string }) => {
         const session = replay.sessions.find((s) => s.date === date);
@@ -34,5 +42,5 @@ export function ReplayDrawer({ replay, links, initialSession, onSessionChange }:
         return links({ date, ...(changeId !== undefined && { changeId }), hasJournal: (session?.journal.length ?? 0) > 0 });
       }
     : undefined;
-  return <ReplayFrame {...props} {...(renderLinks && { renderLinks })} />;
+  return <ReplayFrame {...props} renderChips={renderChips} {...(renderLinks && { renderLinks })} />;
 }

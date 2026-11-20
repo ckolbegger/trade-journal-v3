@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
 import { APP_NAME, MANIFEST_ID } from '../../app/identity.ts';
+import { LONG_TERM_RATE, SHORT_TERM_LAST_DAY, SHORT_TERM_RATE } from '../../domain/option-pricing/assumptions.ts';
 import { useWide } from '../AppShell.tsx';
 import { PageTitle } from '../PageTitle.tsx';
 import { useRuntime } from '../runtime.tsx';
@@ -24,6 +25,9 @@ const CHECK_LABELS = {
 } as const;
 
 const PROTECTION = { Protected: 'Protected', BestEffort: 'Best effort', Unavailable: 'Unavailable' } as const;
+
+// A rate (a fraction) as the percentage the page states: 0.0525 reads "5.25%".
+const percent = (rate: number) => `${Number((rate * 100).toFixed(4))}%`;
 
 const gb = (bytes: number) => `${(bytes / 1024 ** 3).toFixed(2)} GB`;
 
@@ -117,6 +121,15 @@ export function AboutView({ facade, updates }: AboutViewProps) {
         </p>
         <p>Strategies: {capabilities.strategies.join(', ')}</p>
         <p>Entry Types: {capabilities.entryTypes.join(', ')}</p>
+      </section>
+      {/* W50: the estimates' limits are stated here once; nothing of this shows beside the replay's chart (P122). */}
+      <section className="card" aria-labelledby="estimates-heading">
+        <h2 id="estimates-heading">Option estimates</h2>
+        <p>Implied volatility, the share equivalent and the split of an option's move are estimates. They use the textbook option formula (Black-Scholes): no dividends, and exercise only at expiration.</p>
+        <p>
+          Interest rate: {percent(SHORT_TERM_RATE)} for a contract with up to {SHORT_TERM_LAST_DAY} days to expiration, {percent(LONG_TERM_RATE)} beyond.
+        </p>
+        <p>The option's Mark and the Underlying's Mark may not be from the same moment. An estimate never changes a P&amp;L or a risk figure.</p>
       </section>
     </article>
   );

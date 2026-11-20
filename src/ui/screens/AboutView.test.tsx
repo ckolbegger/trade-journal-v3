@@ -1,13 +1,27 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { facadeDouble, readyStatus } from '../../../tests/support/facade-double.ts';
 import { createReleaseUpdateController } from '../update/controller.ts';
 import { ChannelNetwork, FakeContainer, FakeRegistration } from '../update/doubles.ts';
 import { AboutView } from './AboutView.tsx';
 
 afterEach(cleanup);
+
+// The About page reads the estimates' own constants; a test can move them to see the page follow.
+const assumed = vi.hoisted(() => ({ short: 0.04, long: 0.0525, lastDay: 365 }));
+vi.mock('../../domain/option-pricing/assumptions.ts', () => ({
+  get SHORT_TERM_RATE() {
+    return assumed.short;
+  },
+  get LONG_TERM_RATE() {
+    return assumed.long;
+  },
+  get SHORT_TERM_LAST_DAY() {
+    return assumed.lastDay;
+  },
+}));
 
 const GB = 1024 ** 3;
 const status = readyStatus({
@@ -104,5 +118,30 @@ describe('session-policy coverage', () => {
     expect(value('Session policy')).toBe('nyse');
     expect(value('Session policy revision')).toBe('1');
     expect(value('Calendar coverage')).toBe('2024-01-01 to 2028-12-31');
+  });
+});
+
+describe('About: option estimates (W50)', () => {
+  const estimates = async () => {
+    render(<AboutView facade={facadeDouble({ status })} updates={controller()} />);
+    return within(await screen.findByRole('region', { name: 'Option estimates' }));
+  };
+
+  it('should state the formula limits under Option estimates', async () => {
+    const section = await estimates();
+    expect(section.getByText("Implied volatility, the share equivalent and the split of an option's move are estimates. They use the textbook option formula (Black-Scholes): no dividends, and exercise only at expiration.")).toBeTruthy();
+    expect(section.getByText("The option's Mark and the Underlying's Mark may not be from the same moment. An estimate never changes a P&L or a risk figure.")).toBeTruthy();
+  });
+  it('should state both rates and the 365-day line, read from the constants the estimates use', async () => {
+    const section = await estimates();
+    expect(section.getByText('Interest rate: 4% for a contract with up to 365 days to expiration, 5.25% beyond.')).toBeTruthy();
+    cleanup();
+    Object.assign(assumed, { short: 0.05, long: 0.0625, lastDay: 400 });
+    try {
+      const moved = await estimates();
+      expect(moved.getByText('Interest rate: 5% for a contract with up to 400 days to expiration, 6.25% beyond.')).toBeTruthy();
+    } finally {
+      Object.assign(assumed, { short: 0.04, long: 0.0525, lastDay: 365 });
+    }
   });
 });

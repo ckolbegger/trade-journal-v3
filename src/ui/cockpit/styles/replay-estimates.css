@@ -1,0 +1,97 @@
+/* The replay's chips (W47). An estimate is drawn unlike a Mark: a dashed edge, a dashed line and hollow points (P121). */
+.replay-chips {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 4px 8px;
+  margin-top: 6px;
+}
+
+.replay-chip-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.replay-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+  padding: 2px 10px;
+  border: 1px dashed var(--muted, #777);
+  border-radius: 999px;
+  background: var(--tint, transparent);
+  color: inherit;
+  font: inherit;
+  font-size: 0.82rem;
+}
+
+button.replay-chip {
+  cursor: pointer;
+}
+
+.replay-chip-tag {
+  color: var(--muted, #555);
+  font-size: 0.72rem;
+  font-style: italic;
+}
+
+/* W49: why a figure is Unavailable, under its chip. */
+.replay-chip-reason {
+  max-width: 34ch;
+  margin: 2px 0 0 10px;
+  color: var(--muted, #555);
+  font-size: 0.78rem;
+}
+
+/* The small chart floats over the content above the chips, so opening it moves nothing. */
+.replay-chip-pop {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 6px);
+  z-index: 6;
+  width: min(340px, 100%);
+  padding: 8px;
+  border: 1px solid var(--muted, #777);
+  border-radius: 10px;
+  background: var(--card, #fff);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+}
+
+.replay-chip-chart {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.replay-chip-chart polyline {
+  stroke: var(--ink, #222);
+  stroke-width: 1.5;
+}
+
+.replay-chip-chart circle {
+  stroke: var(--ink, #222);
+  stroke-width: 1.5;
+  fill: var(--card, #fff);
+}
+
+/* A275: under the charts' column on a wide screen, below the charts on a phone (the grid is one column there). */
+.replay-overlay .replay-card > .replay-chips {
+  grid-column: 1;
+}
+
+/* Wide: the readout stands beside every row of the charts' column, so what sits under the charts (the chips, then the "since" line) stays close to them instead of falling below a tall readout. The rows are empty ones, which share out the readout's extra height. */
+@media (min-width: 861px) {
+  .replay-overlay .replay-card > .replay-readout {
+    grid-row: span 12;
+  }
+}
+
+/* A phone's controls are at least 44 px high. */
+@media (max-width: 860px) {
+  button.replay-chip {
+    min-height: 44px;
+  }
+}
