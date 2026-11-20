@@ -903,8 +903,8 @@ Status values: `planned`, `covered`, `intentionally not advertised`.
 |---|---|---|---|---|---|---|---|
 | AC-MARK-004 (partial: points and gaps in the chart and its table; Daily Bar candles in D11) | D9 | T9.4, T9.11, T9.12, T9.13 | I9.2; B9.2 | C9.2 | `npx playwright test e2e/d9/gaps.spec.ts` | A session without a Mark is a gap in both charts and "No Mark" in the table; nothing is carried or joined across it | planned |
 | AC-CALC-003 (re-proven per session: each condition's status, the risk and reward, and the Overrun) | D9 | T9.3, T9.4 | I9.1; B9.1 | C9.2 | `npm run test:integration -- d9/replay` | Each session's conditions keep their own status; a crossing shows its Overrun | planned |
-| AC-CALC-005 (new: Estimates explain and never value) | D9 | T9.20, T9.21, T9.22, T9.23, T9.24, T9.25 | I9.8, I9.9; B9.6 | C9.5, C9.6 | `npm run test:integration -- d9/estimates` | Estimates labelled, Unavailable with reasons, and read by no exact figure | planned |
-| AC-CALC-004 (cumulative: no payoff line in replay; no theoretical price shown as a value) | D9 | T9.13, T9.23 | I9.9; B9.4 | C9.5 | `npx playwright test e2e/d9/states.spec.ts` | Replay draws no Expiration Payoff; an estimate is never shown as a price | planned |
+| AC-CALC-005 (new: Estimates explain and never value) | D9 | T9.20, T9.21, T9.22, T9.23, T9.24, T9.25 | I9.8, I9.9; B9.6 | C9.5, C9.6 | `npm run test:integration -- d9/estimates` | Estimates labelled, Unavailable with reasons, and read by no exact figure | covered (stage B, T9.28) |
+| AC-CALC-004 (cumulative: no payoff line in replay; no theoretical price shown as a value) | D9 | T9.13, T9.23 | I9.9; B9.4 | C9.5 | `npx playwright test e2e/d9/states.spec.ts` | Replay draws no Expiration Payoff; an estimate is never shown as a price | covered (stage B, T9.28) |
 | AC-CAP-001 (cumulative) | D9 | T9.8 | I9.7 | — | `npm run test:integration -- d9/capabilities` | The manifest lists what is reachable | planned |
 | AC-PERF-001 (cumulative: reads counted; the benchmark after stage C) | D9 | T9.6, T9.7, T9.31, T9.32 | I9.6, I9.11 | — | `npm run test:integration -- d9/query-count`; then decision 114's benchmark | Reads grow by dates and Instruments, never by Trades; both latency budgets hold | planned |
 | AC-UI-001, AC-UI-002 (cumulative: the chart's gaps, its text equivalent, live resize, keyboard) | D9 | T9.10, T9.11, T9.12, T9.13, T9.14, T9.15, T9.24, T9.29, T9.34 | B9.5, B9.7, B9.11 | C9.4, C9.9 | `npx playwright test e2e/d9/responsive-a11y.spec.ts` | No sideways scroll; axe clean; every graphed number in text | planned |
@@ -968,7 +968,7 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T9.25 | B | — | — | Done | `4e30a157`; B1 `119880de`; B2 (suite failure) `5268e5ac` |
 | T9.26 | B | — | — | Done | `7d0c3c08`; B1 `48aa665f`; B2 `d7f2b65e` |
 | T9.27 | B | — | — | Done | `ad16f6b7`; B1 `855ad380` |
-| T9.28 | B | — | — | In progress from `855ad380` | |
+| T9.28 | B | — | — | Done | critic-b1 (1 moderate, 1 low); B1 `db89563a`; critic-b2 PASS, no defects |
 | T9.29 | C | — | — | Not started | |
 | T9.30 | C | — | — | Not started | |
 | T9.31 | C | — | — | Not started | |
