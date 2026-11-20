@@ -772,3 +772,15 @@ Notes for later tasks (subagent's): T9.31 supplies the evaluation at the session
 ocr `349ad6ec`: No findings (`ocr/T9.30-349ad6ec.json`).
 
 Complete run `t9.30` (`browser-auto fbd021fb` chose the task tier: "no changed path since fbd021fb is on the full-tier list"; on `8326c4bb`; run complete): unit 222 files, 2,571 tests; integration 136 files, 292 tests; browser `@every-task` 5 and `e2e/d9` 109 passed, 4 skipped (5.8 min); checks 14 of 14. All passed.
+
+### T9.31 Daily Review: each walked Trade's meter reading (Full)
+
+Commit `7b73e835`. `WalkedTrade` gains `meter?: MeterReading` (set whenever `figures` is), re-exported from `daily-review/index.ts` and `src/app/types.ts`. 3 cases in `daily-review/meter.test.ts`. **First-run passes, flagged:** "read one more date's Marks for the whole Review and none per Trade" (fixture rebuilt with three Trades held at the session before, since one Trade could not fail a per-Trade mutation; mutation: each Trade opens its own read session for the session before; failed `expected […] to have a length of 2 but got 4`) and "refresh the reading of every card that shares a saved Mark's Instrument" (mutation: meter left off when the gap scan is skipped; failed `TypeError … reading 'now'`).
+
+Request lists changed by the one more date's read (I9.11): d5r "should issue D5 counts for a Review open" (one more date-wide `observations.getAll`); `tests/integration/d9/query-count.test.ts` I9.6 and `tests/integration/d9ar/query-count.test.ts` I9AR.4, `OPEN` tally `meta.get` 13 → 14 and `observations.getAll` 3 → 4 (the second read session's snapshot and its date-wide read). One existing unit comparison (`daily-review.test.ts`, card versus overview) also leaves out `meter`, as it already left out `figures`; no expected value changed.
+
+Subagent notes (not bug tasks): the second valuation opens a second read session at the session before rather than reusing the first's frames (neither read-session API values at another date); `save` also reads the session before once per Save Marks result.
+
+ocr `7b73e835`: No findings (`ocr/T9.31-7b73e835.json`).
+
+- **T9.31-B1 (suite failure)** `479c7635`. T9.31 left both d5r cases "should save %i Marks … then assemble as a Trade Action save does" failing: the valuation at the session before did the earlier-Mark lookup (one `openCursor` per Instrument missing that date), which the Marks save's data removed. Main session's decision: the meter's `previous` needs only that date's P&L, so the fix is in code, not in the test. `MarketData.openReadSession` gains `{ withoutStale }`, passed only by the second session. Case: *it should value the session before from that date's Marks alone, with no earlier-Mark lookup for an Instrument missing on that date*; the fix had been written first, so it was reverted for a genuine red (`expected [ { on: 'index', … } ] to have a length of +0 but got 1`), then restored. The d5r Review-open list loses T9.31's added cursor: now the stage B list plus one date-wide `observations.getAll`. Both d5r Marks-save cases pass unchanged. ocr `479c7635`: No findings (`ocr/T9.31-B1-479c7635.json`).

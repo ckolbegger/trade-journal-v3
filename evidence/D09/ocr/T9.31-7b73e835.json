@@ -1,0 +1,179 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 9 selected item(s).",
+  "summary": {
+    "files_reviewed": 9,
+    "comments": 0,
+    "total_tokens": 101662,
+    "input_tokens": 100121,
+    "output_tokens": 1541,
+    "cache_read_tokens": 8320,
+    "elapsed": "46s"
+  },
+  "tool_calls": {
+    "total": 15,
+    "by_tool": {
+      "code_search": 5,
+      "file_find": 1,
+      "file_read": 9
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Daily review metering, shared types, and query-count verification",
+      "files": [
+        "src/app/types.ts",
+        "src/coordinators/daily-review/daily-review.test.ts",
+        "src/coordinators/daily-review/daily-review.ts",
+        "src/coordinators/daily-review/index.ts",
+        "src/coordinators/daily-review/meter.test.ts",
+        "src/coordinators/daily-review/types.ts",
+        "tests/integration/d5r/query-count.test.ts",
+        "tests/integration/d9/query-count.test.ts",
+        "tests/integration/d9ar/query-count.test.ts"
+      ]
+    }
+  ],
+  "session_id": "729ba9e1-2ecf-47c4-95a3-446dbf2b70bc",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "729ba9e1-2ecf-47c4-95a3-446dbf2b70bc",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "7b73e835",
+      "resolved_base": "d45c8ba3e29498f3d86a2374086c9b5588e1f451",
+      "resolved_head": "7b73e83578ad61664c5a69636856ad22fe5819da",
+      "exact_range": "d45c8ba3e29498f3d86a2374086c9b5588e1f451..7b73e83578ad61664c5a69636856ad22fe5819da",
+      "source_artifact_sha256": "e82f6368a39b5c281b8f75e5055bdab23dbcb017b027ac504353bdeddec1b379"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "feda48bada0b425c687af96980dd44cc1e79c778efa068f65f7103903d81e66b"
+        },
+        {
+          "item_id": "41e5b5fd9120773618275de28795e788717356305ec8adf32df169ba69aacacb",
+          "path": "src/app/types.ts",
+          "fingerprint": "c88a884ab663d767f1e405ab1cf0ab1a65c4d349517b76304c35d87c18bb3d5d"
+        },
+        {
+          "item_id": "45b8cde153848222749bfb983162f844946a42754cb63e613315558d71dfea51",
+          "path": "tests/integration/d9/query-count.test.ts",
+          "fingerprint": "cac4e873df9da6cd63b51547a933250aa8ee52f0747a3dcb32752846125c6e45"
+        },
+        {
+          "item_id": "835fe238986a14f50aa73feeedba69e298a0728d45c05d35543575d749816715",
+          "path": "src/coordinators/daily-review/daily-review.test.ts",
+          "fingerprint": "4f42fe64ec0125096928a9db76a86de8d0651bae49d063b2589a2f81fea06bee"
+        },
+        {
+          "item_id": "83a31b542892b7f8a72429bc87baf0b740a35b8d400eaddeef9080e0584f755b",
+          "path": "tests/integration/d5r/query-count.test.ts",
+          "fingerprint": "2a1aba2407090cd8b2411a3846909b36970d9ed203b9f49d3750b5cca48aa9dd"
+        },
+        {
+          "item_id": "8633dface08223127116d7f8e5028d52b81d9130753f225b9613ac7d4ed1f3ba",
+          "path": "src/coordinators/daily-review/meter.test.ts",
+          "fingerprint": "2613d62339415898d0d455759705a3e03c592bc020e2455707ba34e15a4cf9d0"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "4705598b34e8c4237f241da2e7b83b4db678f504b251acb57fc9d932f7c74d75"
+        },
+        {
+          "item_id": "9d20a796225851b81f880f1d146ba251d198e8aa712f6f6be090422a42ed8150",
+          "path": "src/coordinators/daily-review/index.ts",
+          "fingerprint": "ba7ce8e8ef02d81a0d030661d90d95a27eb024768295db6794d4b4627ecf1082"
+        },
+        {
+          "item_id": "b0be774881b4250372519f75981a0693f72a69a9657063573dffd2e8a4c07126",
+          "path": "tests/integration/d9ar/query-count.test.ts",
+          "fingerprint": "b8a143aab7b28a0fa45b043c4034ef33e48ed823bd610d4a90a706b5fc20d61d"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "feda48bada0b425c687af96980dd44cc1e79c778efa068f65f7103903d81e66b"
+        },
+        {
+          "item_id": "41e5b5fd9120773618275de28795e788717356305ec8adf32df169ba69aacacb",
+          "path": "src/app/types.ts",
+          "fingerprint": "c88a884ab663d767f1e405ab1cf0ab1a65c4d349517b76304c35d87c18bb3d5d"
+        },
+        {
+          "item_id": "45b8cde153848222749bfb983162f844946a42754cb63e613315558d71dfea51",
+          "path": "tests/integration/d9/query-count.test.ts",
+          "fingerprint": "cac4e873df9da6cd63b51547a933250aa8ee52f0747a3dcb32752846125c6e45"
+        },
+        {
+          "item_id": "835fe238986a14f50aa73feeedba69e298a0728d45c05d35543575d749816715",
+          "path": "src/coordinators/daily-review/daily-review.test.ts",
+          "fingerprint": "4f42fe64ec0125096928a9db76a86de8d0651bae49d063b2589a2f81fea06bee"
+        },
+        {
+          "item_id": "83a31b542892b7f8a72429bc87baf0b740a35b8d400eaddeef9080e0584f755b",
+          "path": "tests/integration/d5r/query-count.test.ts",
+          "fingerprint": "2a1aba2407090cd8b2411a3846909b36970d9ed203b9f49d3750b5cca48aa9dd"
+        },
+        {
+          "item_id": "8633dface08223127116d7f8e5028d52b81d9130753f225b9613ac7d4ed1f3ba",
+          "path": "src/coordinators/daily-review/meter.test.ts",
+          "fingerprint": "2613d62339415898d0d455759705a3e03c592bc020e2455707ba34e15a4cf9d0"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "4705598b34e8c4237f241da2e7b83b4db678f504b251acb57fc9d932f7c74d75"
+        },
+        {
+          "item_id": "9d20a796225851b81f880f1d146ba251d198e8aa712f6f6be090422a42ed8150",
+          "path": "src/coordinators/daily-review/index.ts",
+          "fingerprint": "ba7ce8e8ef02d81a0d030661d90d95a27eb024768295db6794d4b4627ecf1082"
+        },
+        {
+          "item_id": "b0be774881b4250372519f75981a0693f72a69a9657063573dffd2e8a4c07126",
+          "path": "tests/integration/d9ar/query-count.test.ts",
+          "fingerprint": "b8a143aab7b28a0fa45b043c4034ef33e48ed823bd610d4a90a706b5fc20d61d"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "42077e617087367d2d33d514d778e8832e5338849d84c54c2906e3540041f6c5",
+          "path": "evidence/D09/tdd-log/T9.31.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 46063
+  }
+}

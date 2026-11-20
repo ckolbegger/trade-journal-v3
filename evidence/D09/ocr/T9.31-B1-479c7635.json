@@ -1,0 +1,129 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 0,
+    "total_tokens": 51010,
+    "input_tokens": 50444,
+    "output_tokens": 566,
+    "cache_read_tokens": 8320,
+    "elapsed": "17s"
+  },
+  "tool_calls": {
+    "total": 8,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 5,
+      "file_read_diff": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Daily review coordination and query-count tests",
+      "files": [
+        "src/coordinators/daily-review/daily-review.ts",
+        "src/coordinators/daily-review/meter.test.ts",
+        "tests/integration/d5r/query-count.test.ts"
+      ]
+    },
+    {
+      "label": "Market data module updates",
+      "files": [
+        "src/modules/market-data/market-data.ts"
+      ]
+    }
+  ],
+  "session_id": "84d56e54-4313-4a7a-bc94-a949ca1d6b6e",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "84d56e54-4313-4a7a-bc94-a949ca1d6b6e",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "479c7635",
+      "resolved_base": "7b73e83578ad61664c5a69636856ad22fe5819da",
+      "resolved_head": "479c7635efc4503b4e02afcc0d4d5ecf8a7572de",
+      "exact_range": "7b73e83578ad61664c5a69636856ad22fe5819da..479c7635efc4503b4e02afcc0d4d5ecf8a7572de",
+      "source_artifact_sha256": "7ed0702197fde6a66ab6f1f07cef53434cd02342e3ad2f8a54609cc4287b4a69"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "50687b6128230316ae055a70d52b7fec9fb189fd9996e33b46404f66751adf78"
+        },
+        {
+          "item_id": "70c9d5b6c3936c08c792eaf13450c0216fd2c8094414ca3361baf96d37547c3e",
+          "path": "src/modules/market-data/market-data.ts",
+          "fingerprint": "f3f572dcf8460f9f1e6cab1ed1fc5a5bec5e04c48d129084cb417a95b403a95f"
+        },
+        {
+          "item_id": "83a31b542892b7f8a72429bc87baf0b740a35b8d400eaddeef9080e0584f755b",
+          "path": "tests/integration/d5r/query-count.test.ts",
+          "fingerprint": "4ba2e7f9625491dd8c3d40b95757566f0ca7ef9a663736c8bc791ff4592970e2"
+        },
+        {
+          "item_id": "8633dface08223127116d7f8e5028d52b81d9130753f225b9613ac7d4ed1f3ba",
+          "path": "src/coordinators/daily-review/meter.test.ts",
+          "fingerprint": "5af5364885944a7dd1623705f0b54df23bb5c024401e19eb4b48a8620a87fe6c"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "50687b6128230316ae055a70d52b7fec9fb189fd9996e33b46404f66751adf78"
+        },
+        {
+          "item_id": "70c9d5b6c3936c08c792eaf13450c0216fd2c8094414ca3361baf96d37547c3e",
+          "path": "src/modules/market-data/market-data.ts",
+          "fingerprint": "f3f572dcf8460f9f1e6cab1ed1fc5a5bec5e04c48d129084cb417a95b403a95f"
+        },
+        {
+          "item_id": "83a31b542892b7f8a72429bc87baf0b740a35b8d400eaddeef9080e0584f755b",
+          "path": "tests/integration/d5r/query-count.test.ts",
+          "fingerprint": "4ba2e7f9625491dd8c3d40b95757566f0ca7ef9a663736c8bc791ff4592970e2"
+        },
+        {
+          "item_id": "8633dface08223127116d7f8e5028d52b81d9130753f225b9613ac7d4ed1f3ba",
+          "path": "src/coordinators/daily-review/meter.test.ts",
+          "fingerprint": "5af5364885944a7dd1623705f0b54df23bb5c024401e19eb4b48a8620a87fe6c"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "e63095aa9d9077098bf63d449d65fd559d386348d67be109c42140893ac1dda4",
+          "path": "evidence/D09/tdd-log/T9.31-B1.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 17375
+  }
+}
