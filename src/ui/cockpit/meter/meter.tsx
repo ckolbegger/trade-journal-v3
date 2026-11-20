@@ -10,7 +10,9 @@ function trackOf(props: MeterProps): (value: number) => number {
   const now = props.now.kind === 'Value' ? props.now : undefined;
   const lo = now?.zone === 'PastStop' ? Math.max(Math.min(lo0, now.value), lo0 - room) : lo0;
   const hi = now?.zone === 'PastTarget' ? Math.min(Math.max(hi0, now.value), hi0 + room) : hi0;
-  const at = (value: number) => Math.max(0, Math.min(1, (value - lo) / (hi - lo))) * 100;
+  // With the Stop and the Target both at break-even the track has no length; draw a unit span so every position stays finite.
+  const span = hi - lo || 1;
+  const at = (value: number) => Math.max(0, Math.min(1, (value - lo) / span)) * 100;
   return at;
 }
 

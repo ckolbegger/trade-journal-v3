@@ -174,4 +174,11 @@ describe('Meter (W51)', () => {
     expect(row.name).toBe(card.name);
     expect(detail.name).toBe(card.name);
   });
+
+  it('should draw a finite track when the results at the Stop and the Target are both break-even', () => {
+    meter({ stop: fig(0), target: fig(0), now: now(0) });
+    for (const name of ['stop', 'target', 'even', 'pointer']) {
+      expect(Number.isFinite(left(name))).toBe(true);
+    }
+  });
 });
