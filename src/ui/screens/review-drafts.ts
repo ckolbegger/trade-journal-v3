@@ -22,6 +22,12 @@ export const draftAt = (drafts: Drafts, key: ObservationKey): Draft | undefined 
 // Discard empties every draft on the page (P156).
 export const discardAll = (): Drafts => emptyDrafts;
 
+// Clears what was entered for one key; the other drafts stay (W76: clear some, then save). A key with no draft changes nothing.
+export function clearDraft(drafts: Drafts, key: ObservationKey): Drafts {
+  if (!draftAt(drafts, key)) return drafts;
+  return Object.fromEntries(Object.entries(drafts).filter(([id]) => id !== idOf(key)));
+}
+
 // A refreshed Review keeps the drafts whose keys it still lists, whichever Trade they were typed in; the rest are returned, with their
 // Trades, for the "not kept" notice (P156).
 export function keepOnly(drafts: Drafts, isListed: (key: ObservationKey) => boolean): { readonly kept: Drafts; readonly dropped: readonly Draft[] } {

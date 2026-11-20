@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ExpectedResolutionRevision, ObservationKey } from '../../app/types.ts';
-import { draftAt, emptyDrafts, discardAll, keepOnly, moveDraft, saveEntries, setDraft } from './review-drafts.ts';
+import { draftAt, emptyDrafts, discardAll, keepOnly, moveDraft, saveEntries, setDraft, clearDraft } from './review-drafts.ts';
 
 const THURSDAY = { instrumentKey: 'XYZ', tradingDate: '2026-10-08' };
 const MONDAY = { instrumentKey: 'XYZ', tradingDate: '2026-10-12' };
@@ -57,6 +57,18 @@ describe('drafts by observation key (A292)', () => {
     expect(draftAt(discarded, THURSDAY)).toBeUndefined();
     expect(draftAt(discarded, CALL_MONDAY)).toBeUndefined();
     expect(saveEntries(discarded, revisionOf)).toEqual({ kind: 'Entries', entries: [] });
+    expect(draftAt(drafts, THURSDAY)).toBeDefined();
+  });
+
+  it('should clear one key draft, leaving the others, and build no save entry for it', () => {
+    const drafts = setDraft(setDraft(emptyDrafts, THURSDAY, { kind: 'Price', price: '9.00' }, 't-a'), CALL_MONDAY, { kind: 'CantGetPrice', reason: 'Halted' }, 't-f');
+
+    const cleared = clearDraft(drafts, THURSDAY);
+
+    expect(draftAt(cleared, THURSDAY)).toBeUndefined();
+    expect(draftAt(cleared, CALL_MONDAY)).toEqual(draftAt(drafts, CALL_MONDAY));
+    const saved = saveEntries(cleared, revisionOf);
+    expect(saved.kind === 'Entries' && saved.entries.map((e) => e.key)).toEqual([CALL_MONDAY]);
     expect(draftAt(drafts, THURSDAY)).toBeDefined();
   });
 
