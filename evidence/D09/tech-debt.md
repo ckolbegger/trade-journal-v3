@@ -22,3 +22,5 @@ Stage B's items, reviewed with the user after the gate (the user's rule, 2026-11
 | 9 | critic-c1, minor observation 5 (low) | Readability | The meter's faint mark for the session before is barely visible when it falls inside a hatched part of the track (DALE at 13.82%, BREN at 86.29%). Its figure is still in the name. |
 | 10 | critic-c1, minor observation 3 (earlier work, not stage C) | Layout | At 1280 px the Open list's table (1,303 px in a 928 px region) scrolls sideways and cuts off the P&L figure: a no-Mark row's text ("Mark missing: NOMK, Fri Nov 13 Thu Nov 12 close +$100.00 · +0.50R") does not wrap and makes the P&L column 544 px wide; without that row it is still 3 px over. In that wide column the meter sits far left of its figure. |
 | 11 | critic-c1, minor observation 4 (earlier work, not stage C) | Words | The Open list's P&L cell says "Thu Nov 12 close +$100.00" where Trade Detail says "+$100.00 at the Thu Nov 12 Mark": a price called a "close". |
+
+**Reviewed by the user, 2026-11-20, after the gate:** items 1, 2, 3, 5, 6, 8, 9, 10 and 11 stay as tech debt for now. Item 4 was decided (T9.28-D2) and item 7 fixed (T9.29-D1).

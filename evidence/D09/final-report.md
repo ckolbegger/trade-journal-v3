@@ -43,7 +43,7 @@ D9A-R's critics are in its own report.
 
 ## For the user's review
 
-- **Tech debt** (`evidence/D09/tech-debt.md`): items 1, 2, 3, 5, 6, 8, 9, 10 and 11 stand; item 4 was decided (T9.28-D2) and item 7 fixed (T9.29-D1).
+- **Tech debt** (`evidence/D09/tech-debt.md`): items 1, 2, 3, 5, 6, 8, 9, 10 and 11 stay as tech debt (the user, 2026-11-20); item 4 was decided (T9.28-D2) and item 7 fixed (T9.29-D1).
 - **New words:** stages A and B were reviewed on 2026-11-20 (approved, with the two changes carried out as T9.28-D1 and T9.28-D2). Stage C's four entries were approved on 2026-11-20 (the D9 Stage C Words Review page). No new words await approval.
 - **Text shortened under P137** (`words-changed.md`): stage A's six entries (T9.14, T9.10, T9.19-B2, three under T9.19-B4), approved 2026-11-20; stage B's T9.28-D2; none in stage C.
 
