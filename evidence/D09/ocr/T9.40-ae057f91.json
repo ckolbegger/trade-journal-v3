@@ -1,0 +1,443 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 28 selected item(s).",
+  "summary": {
+    "files_reviewed": 28,
+    "comments": 0,
+    "total_tokens": 154395,
+    "input_tokens": 152291,
+    "output_tokens": 2104,
+    "cache_read_tokens": 19968,
+    "elapsed": "43s"
+  },
+  "tool_calls": {
+    "total": 24,
+    "by_tool": {
+      "code_search": 6,
+      "file_read": 17,
+      "file_read_diff": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Application routing, shared types, and workspace capabilities",
+      "files": [
+        "src/app/routes.ts",
+        "src/app/types.ts",
+        "src/coordinators/trade-views/trade-views.ts",
+        "src/coordinators/workspace/capabilities.ts",
+        "src/coordinators/workspace/workspace.test.ts"
+      ]
+    },
+    {
+      "label": "Daily review coordinator and integration coverage",
+      "files": [
+        "src/coordinators/daily-review/daily-review.test.ts",
+        "src/coordinators/daily-review/daily-review.ts",
+        "src/coordinators/daily-review/index.ts",
+        "src/coordinators/daily-review/save-marks.test.ts",
+        "src/coordinators/daily-review/types.ts",
+        "tests/integration/d5r/query-count.test.ts",
+        "tests/integration/d5r/range-and-baseline.test.ts",
+        "tests/integration/d5r/save-marks.test.ts",
+        "tests/integration/d5r/shared-mark.test.ts"
+      ]
+    },
+    {
+      "label": "Valuation attention logic and tests",
+      "files": [
+        "src/coordinators/valuation/attention.test.ts",
+        "src/coordinators/valuation/attention.ts",
+        "src/coordinators/valuation/index.ts",
+        "src/coordinators/valuation/option-attention.test.ts"
+      ]
+    },
+    {
+      "label": "Review screen and held-review tests",
+      "files": [
+        "src/ui/screens/CardMarks.test.tsx",
+        "src/ui/screens/ReviewCard.test.tsx",
+        "src/ui/screens/ReviewCardMeter.test.tsx",
+        "src/ui/screens/ReviewCards.test.tsx",
+        "src/ui/screens/ReviewExpiration.test.tsx",
+        "src/ui/screens/ReviewOptionMarks.test.tsx",
+        "src/ui/screens/ReviewOwed.test.tsx",
+        "src/ui/screens/ReviewSettlement.test.tsx",
+        "src/ui/screens/ReviewView.test.tsx",
+        "src/ui/screens/held-review.test.ts"
+      ]
+    }
+  ],
+  "session_id": "5e9826af-a2ee-4597-8105-81c680979789",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "5e9826af-a2ee-4597-8105-81c680979789",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "ae057f91",
+      "resolved_base": "a46e5b6363dfdc3013a96585e4215aa93d3c87d1",
+      "resolved_head": "ae057f9139e2a0a983075115fb8e3652f5032ce3",
+      "exact_range": "a46e5b6363dfdc3013a96585e4215aa93d3c87d1..ae057f9139e2a0a983075115fb8e3652f5032ce3",
+      "source_artifact_sha256": "f551237f04c5904397d9679316907b49579a9c1718aafb4778f8b73627f292ed"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "06129f7bc0959665459bced5dd2b2fe42e6eefa20b943b5bcb22e15d914c46d2",
+          "path": "src/ui/screens/ReviewCards.test.tsx",
+          "fingerprint": "125df52b14a5863d38b09361d0f59e8fc6954e26f0dd35ce59a60e0b2002f4f3"
+        },
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "458f494040ab92b32161d3232d6fd0e09e3ab9c6e37595e55b94d9369de8161c"
+        },
+        {
+          "item_id": "0f41d19ccbb61d1a664235ee5301f06784615cdc8ddb16035e108900527ee722",
+          "path": "src/app/routes.ts",
+          "fingerprint": "a8262907648d5a3053cb9f51ab56e67945cd021b4b962c4e155c77d5028c5621"
+        },
+        {
+          "item_id": "0fd701e170b57a6485c092b664d7902b2162d8503a77796b5fe7b087d4d19316",
+          "path": "src/ui/screens/CardMarks.test.tsx",
+          "fingerprint": "08231308e5c51dae810319a6346c4221b4b5cdb27e1956c9320a3c860012ccdc"
+        },
+        {
+          "item_id": "26f3b7a0d185848ee422f3d31c4b47aada1fa5fe6694a8b92c4c1fe2be218bdf",
+          "path": "src/coordinators/valuation/option-attention.test.ts",
+          "fingerprint": "45f5ffae3397adaa4cad4d2b9b4e4fa0b13c1ba24fd561a3c7bd37a6b1199768"
+        },
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "d894a80cd6ad728a4abc03bad121e65269dfe64aa9bd272e3424a9a2893caecf"
+        },
+        {
+          "item_id": "3e4245827895cbedf0709bde213f51bef6a4df44d68dcc9eff3dece2e7066f52",
+          "path": "src/ui/screens/ReviewCardMeter.test.tsx",
+          "fingerprint": "d13da98f7ed17543182c8da32e5ee5f35a21c84fc2280e802f8a6ffb7a2012d3"
+        },
+        {
+          "item_id": "3f548f1ae81ab4049dfea9d702e6a61b509722ca36f81ecd61e08037be77aa16",
+          "path": "src/coordinators/workspace/capabilities.ts",
+          "fingerprint": "97fee62fc57cacfbb53ab641981d5170339028557f6a8b2a5483c6bced008084"
+        },
+        {
+          "item_id": "41e5b5fd9120773618275de28795e788717356305ec8adf32df169ba69aacacb",
+          "path": "src/app/types.ts",
+          "fingerprint": "6bdbcd893b59586ccdb4d7864ccfa0e16a75c437d0e4264da875f39331ca55fb"
+        },
+        {
+          "item_id": "448dd1dd8908b1dc6ba0204b05c85098923a944bb87d447e69adc111c76e7ea5",
+          "path": "tests/integration/d5r/shared-mark.test.ts",
+          "fingerprint": "65d5afba173b3fb4b5a66ed6364b7508d748dbb818f7e67d26a15f68204a0a76"
+        },
+        {
+          "item_id": "494f8919d11ab524cb6351d54d8c41a3901491f922fb407ba96c15b7e8bf40db",
+          "path": "tests/integration/d5r/range-and-baseline.test.ts",
+          "fingerprint": "9c7d418e79d19659ed42ef168194b06879c9b2e8c89801573b612b27d33ae018"
+        },
+        {
+          "item_id": "65bccfc98e101dd12c3c3c7d1e445313eab5ae6feae6a2b9a027d8ea4143e4db",
+          "path": "src/ui/screens/ReviewExpiration.test.tsx",
+          "fingerprint": "2003ef7a3b4f84e58debe675ac2c4da8f94a7f2be3ae1fe1f1edaea41465c320"
+        },
+        {
+          "item_id": "6c0a9060a31bf3ba57c05369b276def7b239838a93c46585ef412fe0536e8181",
+          "path": "src/coordinators/workspace/workspace.test.ts",
+          "fingerprint": "2053d0f5ff9de1f2b6d979e06291d95cacd775d7136ee3b899c87397f6ae56fb"
+        },
+        {
+          "item_id": "753b83ca5a903e8d14ea3e457c9530bd2d7b2bc497a4b3ee29b26852ef9eb3ab",
+          "path": "src/ui/screens/ReviewView.test.tsx",
+          "fingerprint": "0b4029576929b51d1f9e272d4d8789528b2fb4b9a21d8761c346406ad199c29a"
+        },
+        {
+          "item_id": "75d9dac12b8948bb596c7513ee0b9fb7b374b030f92a9b1cb8d0da0b48259d99",
+          "path": "src/coordinators/daily-review/save-marks.test.ts",
+          "fingerprint": "dd3d71dadc68c6324922d3ae3e20c8ac7ac14f9ea35396e06af31c0724f4b1d0"
+        },
+        {
+          "item_id": "835fe238986a14f50aa73feeedba69e298a0728d45c05d35543575d749816715",
+          "path": "src/coordinators/daily-review/daily-review.test.ts",
+          "fingerprint": "a37b343b841c827f209428a774520d4d5685d93b31be94136733855453ae023c"
+        },
+        {
+          "item_id": "83a31b542892b7f8a72429bc87baf0b740a35b8d400eaddeef9080e0584f755b",
+          "path": "tests/integration/d5r/query-count.test.ts",
+          "fingerprint": "11e168625b078bf312d4b3d17fa300239bc1be1376787745fc14ea8d62466b8b"
+        },
+        {
+          "item_id": "9034ab22766968e1b5addc66277401296a7360fc83ca7dd7a428874bc79c1e88",
+          "path": "src/coordinators/valuation/attention.ts",
+          "fingerprint": "5f0d82638f29f5eccc6b60a2796f404125795c7016264ddd69f1fe3ff5362b91"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "7fa0affe26a80787d4b008f23bce78b35111d33b3a965a4cb8ef3c3f642a6709"
+        },
+        {
+          "item_id": "9d20a796225851b81f880f1d146ba251d198e8aa712f6f6be090422a42ed8150",
+          "path": "src/coordinators/daily-review/index.ts",
+          "fingerprint": "41f13a6e495c7d9e89dd4bed7b9d8dcd31a8c7bcae0a0c34a929c3d54bc4493f"
+        },
+        {
+          "item_id": "a6f9534f70c6611fa7de4f9ba8e489174bf89c952fb64176c4a9affa1ccd0890",
+          "path": "src/coordinators/valuation/attention.test.ts",
+          "fingerprint": "4ad785a1e0b720e866e971988932e9e88d18d22997c39c88b40dd2374a52bd1f"
+        },
+        {
+          "item_id": "a83706f3444e16c14ac613c874f7293d7adce6354226bde7d7b9b892fce05701",
+          "path": "src/ui/screens/ReviewCard.test.tsx",
+          "fingerprint": "36b75ebe17fc868bf95063cbe456c3a7046f2c5376d63070236496d09ab2204a"
+        },
+        {
+          "item_id": "ad13d00cdea5a32ed4df94074d0ca5dcb24d5eda97ae7e238a4c75dd844a7c59",
+          "path": "src/ui/screens/ReviewOptionMarks.test.tsx",
+          "fingerprint": "aa38be8dc83c9794087f1203f28211af8c8567322430c89636b7bc7f21b3997f"
+        },
+        {
+          "item_id": "b19ec1bcad75098482125b4592ab045a1607bdf7c921462a97a75c2821f330a5",
+          "path": "src/coordinators/valuation/index.ts",
+          "fingerprint": "38ce21d497213458b486b3787e70ea3a7f9ec6092e5cdfd0fca2dfc678039acf"
+        },
+        {
+          "item_id": "ca830210571b3c1c130132730f3b5ff5e6224fd42856b0400a111e121dfb1fc8",
+          "path": "src/ui/screens/ReviewSettlement.test.tsx",
+          "fingerprint": "b5d23e248e41d2af45eaed7b9e5a1784e54b86d82acae696132866852fbd12a8"
+        },
+        {
+          "item_id": "cb9c540330da03d961ca2434e4463a522e5d53136d141221f3f85a53d693e744",
+          "path": "tests/integration/d5r/save-marks.test.ts",
+          "fingerprint": "0677b8a64aeab47c439cf9fce51cd4fba7bc0ae96b5ae5cc6b58c3ff46acbcf3"
+        },
+        {
+          "item_id": "edd64ad5884262ad099f5ae1dce3e8aa444d4c7814ae9e2f384e2f8d68b11336",
+          "path": "src/ui/screens/held-review.test.ts",
+          "fingerprint": "c74d4c836d940dc7bfd61839fc82f28cda05dc120e7008c1aefe4f35873b5969"
+        },
+        {
+          "item_id": "f60d40a2fcf211e72668946f9d6c2357941e916774d36dd5cb14b2a35255d3a9",
+          "path": "src/ui/screens/ReviewOwed.test.tsx",
+          "fingerprint": "a2e62fb7e66dd3be95cf432b061241279d05c7f91de70b7be0acecbb7960bf92"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "06129f7bc0959665459bced5dd2b2fe42e6eefa20b943b5bcb22e15d914c46d2",
+          "path": "src/ui/screens/ReviewCards.test.tsx",
+          "fingerprint": "125df52b14a5863d38b09361d0f59e8fc6954e26f0dd35ce59a60e0b2002f4f3"
+        },
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "458f494040ab92b32161d3232d6fd0e09e3ab9c6e37595e55b94d9369de8161c"
+        },
+        {
+          "item_id": "0f41d19ccbb61d1a664235ee5301f06784615cdc8ddb16035e108900527ee722",
+          "path": "src/app/routes.ts",
+          "fingerprint": "a8262907648d5a3053cb9f51ab56e67945cd021b4b962c4e155c77d5028c5621"
+        },
+        {
+          "item_id": "0fd701e170b57a6485c092b664d7902b2162d8503a77796b5fe7b087d4d19316",
+          "path": "src/ui/screens/CardMarks.test.tsx",
+          "fingerprint": "08231308e5c51dae810319a6346c4221b4b5cdb27e1956c9320a3c860012ccdc"
+        },
+        {
+          "item_id": "26f3b7a0d185848ee422f3d31c4b47aada1fa5fe6694a8b92c4c1fe2be218bdf",
+          "path": "src/coordinators/valuation/option-attention.test.ts",
+          "fingerprint": "45f5ffae3397adaa4cad4d2b9b4e4fa0b13c1ba24fd561a3c7bd37a6b1199768"
+        },
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "d894a80cd6ad728a4abc03bad121e65269dfe64aa9bd272e3424a9a2893caecf"
+        },
+        {
+          "item_id": "3e4245827895cbedf0709bde213f51bef6a4df44d68dcc9eff3dece2e7066f52",
+          "path": "src/ui/screens/ReviewCardMeter.test.tsx",
+          "fingerprint": "d13da98f7ed17543182c8da32e5ee5f35a21c84fc2280e802f8a6ffb7a2012d3"
+        },
+        {
+          "item_id": "3f548f1ae81ab4049dfea9d702e6a61b509722ca36f81ecd61e08037be77aa16",
+          "path": "src/coordinators/workspace/capabilities.ts",
+          "fingerprint": "97fee62fc57cacfbb53ab641981d5170339028557f6a8b2a5483c6bced008084"
+        },
+        {
+          "item_id": "41e5b5fd9120773618275de28795e788717356305ec8adf32df169ba69aacacb",
+          "path": "src/app/types.ts",
+          "fingerprint": "6bdbcd893b59586ccdb4d7864ccfa0e16a75c437d0e4264da875f39331ca55fb"
+        },
+        {
+          "item_id": "448dd1dd8908b1dc6ba0204b05c85098923a944bb87d447e69adc111c76e7ea5",
+          "path": "tests/integration/d5r/shared-mark.test.ts",
+          "fingerprint": "65d5afba173b3fb4b5a66ed6364b7508d748dbb818f7e67d26a15f68204a0a76"
+        },
+        {
+          "item_id": "494f8919d11ab524cb6351d54d8c41a3901491f922fb407ba96c15b7e8bf40db",
+          "path": "tests/integration/d5r/range-and-baseline.test.ts",
+          "fingerprint": "9c7d418e79d19659ed42ef168194b06879c9b2e8c89801573b612b27d33ae018"
+        },
+        {
+          "item_id": "65bccfc98e101dd12c3c3c7d1e445313eab5ae6feae6a2b9a027d8ea4143e4db",
+          "path": "src/ui/screens/ReviewExpiration.test.tsx",
+          "fingerprint": "2003ef7a3b4f84e58debe675ac2c4da8f94a7f2be3ae1fe1f1edaea41465c320"
+        },
+        {
+          "item_id": "6c0a9060a31bf3ba57c05369b276def7b239838a93c46585ef412fe0536e8181",
+          "path": "src/coordinators/workspace/workspace.test.ts",
+          "fingerprint": "2053d0f5ff9de1f2b6d979e06291d95cacd775d7136ee3b899c87397f6ae56fb"
+        },
+        {
+          "item_id": "753b83ca5a903e8d14ea3e457c9530bd2d7b2bc497a4b3ee29b26852ef9eb3ab",
+          "path": "src/ui/screens/ReviewView.test.tsx",
+          "fingerprint": "0b4029576929b51d1f9e272d4d8789528b2fb4b9a21d8761c346406ad199c29a"
+        },
+        {
+          "item_id": "75d9dac12b8948bb596c7513ee0b9fb7b374b030f92a9b1cb8d0da0b48259d99",
+          "path": "src/coordinators/daily-review/save-marks.test.ts",
+          "fingerprint": "dd3d71dadc68c6324922d3ae3e20c8ac7ac14f9ea35396e06af31c0724f4b1d0"
+        },
+        {
+          "item_id": "835fe238986a14f50aa73feeedba69e298a0728d45c05d35543575d749816715",
+          "path": "src/coordinators/daily-review/daily-review.test.ts",
+          "fingerprint": "a37b343b841c827f209428a774520d4d5685d93b31be94136733855453ae023c"
+        },
+        {
+          "item_id": "83a31b542892b7f8a72429bc87baf0b740a35b8d400eaddeef9080e0584f755b",
+          "path": "tests/integration/d5r/query-count.test.ts",
+          "fingerprint": "11e168625b078bf312d4b3d17fa300239bc1be1376787745fc14ea8d62466b8b"
+        },
+        {
+          "item_id": "9034ab22766968e1b5addc66277401296a7360fc83ca7dd7a428874bc79c1e88",
+          "path": "src/coordinators/valuation/attention.ts",
+          "fingerprint": "5f0d82638f29f5eccc6b60a2796f404125795c7016264ddd69f1fe3ff5362b91"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "7fa0affe26a80787d4b008f23bce78b35111d33b3a965a4cb8ef3c3f642a6709"
+        },
+        {
+          "item_id": "9d20a796225851b81f880f1d146ba251d198e8aa712f6f6be090422a42ed8150",
+          "path": "src/coordinators/daily-review/index.ts",
+          "fingerprint": "41f13a6e495c7d9e89dd4bed7b9d8dcd31a8c7bcae0a0c34a929c3d54bc4493f"
+        },
+        {
+          "item_id": "a6f9534f70c6611fa7de4f9ba8e489174bf89c952fb64176c4a9affa1ccd0890",
+          "path": "src/coordinators/valuation/attention.test.ts",
+          "fingerprint": "4ad785a1e0b720e866e971988932e9e88d18d22997c39c88b40dd2374a52bd1f"
+        },
+        {
+          "item_id": "a83706f3444e16c14ac613c874f7293d7adce6354226bde7d7b9b892fce05701",
+          "path": "src/ui/screens/ReviewCard.test.tsx",
+          "fingerprint": "36b75ebe17fc868bf95063cbe456c3a7046f2c5376d63070236496d09ab2204a"
+        },
+        {
+          "item_id": "ad13d00cdea5a32ed4df94074d0ca5dcb24d5eda97ae7e238a4c75dd844a7c59",
+          "path": "src/ui/screens/ReviewOptionMarks.test.tsx",
+          "fingerprint": "aa38be8dc83c9794087f1203f28211af8c8567322430c89636b7bc7f21b3997f"
+        },
+        {
+          "item_id": "b19ec1bcad75098482125b4592ab045a1607bdf7c921462a97a75c2821f330a5",
+          "path": "src/coordinators/valuation/index.ts",
+          "fingerprint": "38ce21d497213458b486b3787e70ea3a7f9ec6092e5cdfd0fca2dfc678039acf"
+        },
+        {
+          "item_id": "ca830210571b3c1c130132730f3b5ff5e6224fd42856b0400a111e121dfb1fc8",
+          "path": "src/ui/screens/ReviewSettlement.test.tsx",
+          "fingerprint": "b5d23e248e41d2af45eaed7b9e5a1784e54b86d82acae696132866852fbd12a8"
+        },
+        {
+          "item_id": "cb9c540330da03d961ca2434e4463a522e5d53136d141221f3f85a53d693e744",
+          "path": "tests/integration/d5r/save-marks.test.ts",
+          "fingerprint": "0677b8a64aeab47c439cf9fce51cd4fba7bc0ae96b5ae5cc6b58c3ff46acbcf3"
+        },
+        {
+          "item_id": "edd64ad5884262ad099f5ae1dce3e8aa444d4c7814ae9e2f384e2f8d68b11336",
+          "path": "src/ui/screens/held-review.test.ts",
+          "fingerprint": "c74d4c836d940dc7bfd61839fc82f28cda05dc120e7008c1aefe4f35873b5969"
+        },
+        {
+          "item_id": "f60d40a2fcf211e72668946f9d6c2357941e916774d36dd5cb14b2a35255d3a9",
+          "path": "src/ui/screens/ReviewOwed.test.tsx",
+          "fingerprint": "a2e62fb7e66dd3be95cf432b061241279d05c7f91de70b7be0acecbb7960bf92"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "075ced8951c74b37c572b59ce44735c33280079b0cfcd7b756af7bc692343e65",
+          "path": "tests/fixtures/backup-v7/expected-views.json",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "2bb53e8ac585b73e3918e0b02ff693505b94d8b8aa2d83f8accd8d4d60498594",
+          "path": "tests/fixtures/workspace-v6/expected-views.json",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "2d680b50685bb4f7b8564114d1d2fa5711c6899fda34c764d9da4a7b74382458",
+          "path": "tests/fixtures/backup-v3-blocked/expected-views.json",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "3266428fd20c81d9f082d29ac94bc2dcb009f74adbf87a0a1608bc974cd5781c",
+          "path": "tests/fixtures/workspace-v5/expected-views.json",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "529e6aafb3d9abe130486c91fc456c4d478863c4b40210a0ee6d90dcf4451742",
+          "path": "tests/fixtures/workspace-v7/expected-views.json",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "64f1af1b61046022ca9ca809b993559c375c074d26b17ccc7528ed883732d90a",
+          "path": "tests/fixtures/backup-v4-blocked/expected-views.json",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "a5a34b4da63afcc0456118a1d0132bc6ef1523579aad2494f9db97e28f0e42e2",
+          "path": "tests/fixtures/backup-v5-blocked/expected-views.json",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "bfd7bfb7c23f9db27c8d7ba6b484e7e35a3149a728c3bfe95968624829b9261b",
+          "path": "tests/fixtures/backup-v6-blocked/expected-views.json",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "e7e11590fb2e53c162c66c1a3130387a5153362a7cb2d852919a2090ff5801fb",
+          "path": "evidence/D09/structural.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 42524
+  }
+}
