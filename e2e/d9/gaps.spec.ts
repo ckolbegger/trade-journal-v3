@@ -43,13 +43,13 @@ test.describe('B9.2 A gap, a breach and a sale below the Stop', () => {
     // The cards say the same: Tuesday's card reads a dash named "No Mark" in every row that needs the Put's Mark, never a carried value (the chart keeps the two result lines, above); Monday's and
     // Wednesday's cards are whole.
     await seek(page, scope, 'End');
-    await expect(cardRows(await sessionCard(scope, 'Mon Nov 9'))).toHaveText(['CORV Mark$76.80', 'Put Mark$4.25', 'Trade P&L+$642.00 · 2.02R', 'Held3 contracts', 'At Stop$960.00 · 3.02R · P&L if hit −$318.00', 'At Worst case$1,275.00 · 4.01R · P&L if hit −$633.00', 'At Target$225.00 · 0.71R · P&L if hit +$867.00', 'At Max reward$22,725.00 · 71.46R · P&L if hit +$23,367.00', 'Reward to risk0.23 to 1 · about 81% : 19%']);
+    await expect(cardRows(await sessionCard(scope, 'Mon Nov 9'))).toHaveText(['CORV Mark$76.80', 'Put Mark$4.25', 'Implied volatility43.9%estimate', 'Trade P&L+$642.00 · 2.02R', 'Held3 contracts', 'Behaves like≈ short 205 sharesestimate', 'At Stop$960.00 · 3.02R · P&L if hit −$318.00', 'At Worst case$1,275.00 · 4.01R · P&L if hit −$633.00', 'At Target$225.00 · 0.71R · P&L if hit +$867.00', 'At Max reward$22,725.00 · 71.46R · P&L if hit +$23,367.00', 'Reward to risk0.23 to 1 · about 81% : 19%']);
     const tuesday = await sessionCard(scope, 'Tue Nov 10');
-    await expect(cardRows(tuesday)).toHaveText(['CORV Mark$76.20', 'Put Mark—', 'Trade P&L—', 'Held3 contracts', 'At Stop— · — · P&L if hit −$318.00', 'At Worst case— · — · P&L if hit −$633.00', 'At Target— · — · P&L if hit +$867.00', 'At Max reward— · — · P&L if hit +$23,367.00', 'Reward to risk—']);
+    await expect(cardRows(tuesday)).toHaveText(['CORV Mark$76.20', 'Put Mark—', 'Implied volatilityUnavailable', 'Trade P&L—', 'Held3 contracts', 'Behaves likeUnavailable', 'At Stop— · — · P&L if hit −$318.00', 'At Worst case— · — · P&L if hit −$633.00', 'At Target— · — · P&L if hit +$867.00', 'At Max reward— · — · P&L if hit +$23,367.00', 'Reward to risk—']);
     await expect(noMarkDash(tuesday)).toHaveCount(11);
     // Wednesday is past the Target: the one row for that stands in place of the "$0.00" At Target row the table read.
     await expect((await sessionCard(scope, 'Wed Nov 11')).locator('.replay-past-line')).toContainText('Past the Target by');
-    await expect(cardRows(await sessionCard(scope, 'Wed Nov 11'))).toHaveText(['CORV Mark$75.40', 'Put Mark$5.12', 'Trade P&L+$903.00 · 2.84R', 'Held3 contracts', 'At Stop$1,221.00 · 3.84R · P&L if hit −$318.00', 'At Worst case$1,536.00 · 4.83R · P&L if hit −$633.00', 'At Max reward$22,464.00 · 70.64R · P&L if hit +$23,367.00']);
+    await expect(cardRows(await sessionCard(scope, 'Wed Nov 11'))).toHaveText(['CORV Mark$75.40', 'Put Mark$5.12', 'Implied volatility44.0%estimate', 'Trade P&L+$903.00 · 2.84R', 'Held3 contracts', 'Behaves like≈ short 237 sharesestimate', 'At Stop$1,221.00 · 3.84R · P&L if hit −$318.00', 'At Worst case$1,536.00 · 4.83R · P&L if hit −$633.00', 'At Max reward$22,464.00 · 70.64R · P&L if hit +$23,367.00']);
     await context.close();
   });
 
@@ -72,11 +72,11 @@ test.describe('B9.2 A gap, a breach and a sale below the Stop', () => {
     expect(await chartText(pnlChart(scope))).toEqual(expect.arrayContaining(['Stop −$740', 'Target +$160', 'Sold 100 at $45.60']));
     expect(await chartText(priceStrip(scope))).toEqual(expect.arrayContaining(['Stop $47.00', 'Target $56.00']));
     await expect(pnlChart(scope).locator('path.banked-band.loss')).toHaveCount(1);
-    await expect(cardRows(await sessionCard(scope, 'Fri Nov 6'))).toHaveText(['AXIO Mark$48.10', 'Trade P&L−$380.00 · −0.63R', 'Held200 shares', 'At Stop$220.00 · 0.37R · P&L if hit −$600.00', 'At Worst case$9,620.00 · 16.03R · P&L if hit −$10,000.00', 'At Target$1,580.00 · 2.63R · P&L if hit +$1,200.00', 'At Max rewardNo cap above', 'Reward to risk7.18 to 1 · about 12% : 88%']);
+    await expect(cardRows(await sessionCard(scope, 'Fri Nov 6'))).toHaveText(['AXIO Mark$48.10', 'Trade P&L−$380.00 · −0.63R', 'Held200 shares', 'Behaves like200 shares', 'At Stop$220.00 · 0.37R · P&L if hit −$600.00', 'At Worst case$9,620.00 · 16.03R · P&L if hit −$10,000.00', 'At Target$1,580.00 · 2.63R · P&L if hit +$1,200.00', 'At Max rewardNo cap above', 'Reward to risk7.18 to 1 · about 12% : 88%']);
     // Mon 11-09's card holds the one row for a Trade past its Stop, in place of the "$0.00" at risk the table read (defect 1a).
     const monday = await sessionCard(scope, 'Mon Nov 9');
     await expect(monday.locator('.replay-past-line')).toHaveText('Past the Stop by $180.00 (0.30R) · at Stop −$740.00');
-    await expect(cardRows(monday)).toHaveText(['AXIO Mark$45.20', 'Trade P&L−$920.00 · −1.53R', 'Realized−$440.00', 'Open−$480.00', 'Held100 shares', 'At Worst case$4,520.00 · 7.53R · P&L if hit −$5,440.00', 'At Target$1,080.00 · 1.80R · P&L if hit +$160.00', 'At Max rewardNo cap above', 'EventsSold 100 at $45.60, $1.40 below the Stop; Stop first breached']);
+    await expect(cardRows(monday)).toHaveText(['AXIO Mark$45.20', 'Trade P&L−$920.00 · −1.53R', 'Realized−$440.00', 'Open−$480.00', 'Held100 shares', 'Behaves like100 shares', 'At Worst case$4,520.00 · 7.53R · P&L if hit −$5,440.00', 'At Target$1,080.00 · 1.80R · P&L if hit +$160.00', 'At Max rewardNo cap above', 'EventsSold 100 at $45.60, $1.40 below the Stop; Stop first breached']);
     await expect(monday).not.toContainText('$0.00');
     await context.close();
   });

@@ -64,11 +64,11 @@ test.describe('B9.1 Replay in Trade Detail', () => {
     await expect(readoutValue(scope, 'Open')).toHaveText('+$504.00');
     expect(await chartText(pnlChart(scope))).toEqual(expect.arrayContaining(['Stop +$316', 'Target +$956', '$26 past the Target', 'Sold 2 at $4.00']));
     // The two lines step at the sale: the Stop line's result is −$324 until Wed 11-11 and +$316 from Thu 11-12; the Target line does not move.
-    await expect(cardRows(await sessionCard(scope, 'Wed Nov 11'))).toHaveText(['BREN Mark$101.80', 'Call Mark$2.91', 'Trade P&L+$520.00 · 1.60R', 'Held4 contracts', 'At Stop$844.00 · 2.60R · P&L if hit −$324.00', 'At Worst case$1,164.00 · 3.59R · P&L if hit −$644.00', 'At Target$436.00 · 1.35R · P&L if hit +$956.00', 'At Max rewardNo cap above', 'Reward to risk0.52 to 1 · about 66% : 34%']);
+    await expect(cardRows(await sessionCard(scope, 'Wed Nov 11'))).toHaveText(['BREN Mark$101.80', 'Call Mark$2.91', 'Implied volatility28.6%estimate', 'Trade P&L+$520.00 · 1.60R', 'Held4 contracts', 'Behaves like≈ 268 sharesestimate', 'At Stop$844.00 · 2.60R · P&L if hit −$324.00', 'At Worst case$1,164.00 · 3.59R · P&L if hit −$644.00', 'At Target$436.00 · 1.35R · P&L if hit +$956.00', 'At Max rewardNo cap above', 'Reward to risk0.52 to 1 · about 66% : 34%']);
     // Thu 11-12 is past the Target: the card holds the one row for that, and no "$0.00" at the Target the table read.
     const thursday = await sessionCard(scope, 'Thu Nov 12');
     await expect(thursday.locator('.replay-past-line')).toHaveText('Past the Target by $26.00 (0.08R) · at Target +$956.00');
-    await expect(cardRows(thursday)).toHaveText(['BREN Mark$103.60', 'Call Mark$4.13', 'Trade P&L+$982.00 · 3.03R', 'Banked+$478.00', 'Open+$504.00', 'Held2 contracts', 'At Stop$666.00 · 2.06R · P&L if hit +$316.00', 'At Worst case$826.00 · 2.55R · P&L if hit +$156.00', 'At Max rewardNo cap above', 'EventsSold 2 at $4.00, at the Target; Target first reached']);
+    await expect(cardRows(thursday)).toHaveText(['BREN Mark$103.60', 'Call Mark$4.13', 'Implied volatility28.0%estimate', 'Trade P&L+$982.00 · 3.03R', 'Banked+$478.00', 'Open+$504.00', 'Held2 contracts', 'Behaves like≈ 163 sharesestimate', 'At Stop$666.00 · 2.06R · P&L if hit +$316.00', 'At Worst case$826.00 · 2.55R · P&L if hit +$156.00', 'At Max rewardNo cap above', 'EventsSold 2 at $4.00, at the Target; Target first reached']);
     // In the chart the Stop line has one vertical step (at the sale) and the Target line has none; the banked band is drawn.
     await expect(pnlChart(scope).locator('path.result-line.stop')).toHaveAttribute('d', /V[\d.]+H[\d.]+$/);
     expect(await pnlChart(scope).locator('path.result-line.stop').getAttribute('d')).toMatch(/^[^V]*V[^V]*$/);
