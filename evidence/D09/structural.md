@@ -823,3 +823,18 @@ Complete run `t9.35`, shared by T9.29-D1 and T9.35 (`browser-auto 098e6ccd` chos
 | Checks | 14 of 14 |
 
 No other failure; no known flaky case failed.
+
+### T9.31-D1 The older Review-open request lists (the user's SC-Q1 answer (a); Full, from T9.31)
+
+Commit `4d7e2f2d`, test-only. Each case red on the received/expected diff, then green; in each the only difference was the session before's date-wide `observations.getAll` and/or its snapshot's `meta.get`:
+
+| Case | Old | New |
+|---|---|---|
+| d4 T4.31 | Review-open list, 8 requests | 9 (a second date-wide `getAll` after the first) |
+| d5 T5.22 | 8 | 9 (the same) |
+| d7 T7.29 | tally `meta.get` 13, `observations.getAll` 1; last assertion `[GET_ALL]` | 14, 2; `[GET_ALL, GET_ALL]` |
+| d7sp "no request for option Trades dated lines" | `[GET_ALL, CURSOR, CURSOR, SCAN, SCAN]` | `[GET_ALL, GET_ALL, CURSOR, CURSOR, SCAN, SCAN]` |
+| d7sp "keep D6 requests exactly" | `[GET_ALL, SCAN]` | `[GET_ALL, GET_ALL, SCAN]` |
+| d7sp "at most one observations read … in getTrade" | expected length derived from the open's count + 1 | the open's count − 1 (the session before's read, which the card does not make) + 1; the explicit list unchanged |
+
+Also: d7sp's two `recoverReads` comparisons now compare with the open's list without the session before's read (index 1). **Main session's decision:** in d7 T7.29 three due-run-versus-baseline comparisons then failed on request order alone (same requests, interleaved); they now sort before comparing, so a missing or extra request still fails them. Kept, because the case's claim is about counts (no read per Trade or per due date), not order. Integration 136 files, 292 tests passed. ocr `4d7e2f2d`: No findings (`ocr/T9.31-D1-4d7e2f2d.json`).
