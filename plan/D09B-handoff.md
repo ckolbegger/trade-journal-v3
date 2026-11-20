@@ -246,6 +246,8 @@ Everything else continues without the user. Make implementation-level decisions 
 3. Write **stage C's handoff, `plan/D09C-handoff.md`**, in this note's form, for T9.29, T9.30, T9.31, T9.32, T9.33, T9.34, T9.35, T9.40, T9.36, T9.37, T9.38 and T9.39, run one task at a time (decision 100). Carry the "Starting a session" paragraph, these stop conditions, the notes below that name stage C's tasks, and D9A-R's section 10 amendments to T9.29 and T9.33. Stage C ends with the benchmark (decision 114) before the `claude-opus-5.5-d9` tag.
 4. Remove `.claude/session.lock`. Never push.
 
+The main session saves the report and the handoff itself (`implementing.md`, "Final report"). A subagent that drafts one returns it as text.
+
 ## 6. Out of scope
 
 - **Stage C** (the meter and the Open list's order: T9.29, T9.30, T9.31, T9.32, T9.33, T9.34, T9.35, T9.40, T9.36, T9.37, T9.38, T9.39).

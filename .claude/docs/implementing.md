@@ -99,6 +99,8 @@ Never run `measure:capacity:reset-baseline` unless the user says so.
 
 At the gate, or at a full stop, report: the deliverable's result; each task's fix rounds (ocr bug-task rounds and suite-failure fixes); every flaky test seen, with the run it flaked in; every decision still pending; and the handoff's open questions. Then remove `.claude/session.lock`.
 
+The main session writes the report file and the next handoff itself. A subagent may draft either one, but the harness refuses a subagent's report-file write, so the draft comes back as text and the main session saves it with the Write tool after reading it.
+
 ## Writing the next deliverable's handoff
 
 Give its reading list in the form above, naming the sections to read, and name this file in it. Carry over two parts of the current handoff:
