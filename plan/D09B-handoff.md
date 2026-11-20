@@ -124,11 +124,10 @@ Neither question blocks reading or the location checks.
 ### Run order
 
 **First, before T9.20: D9AR-retro-7**, the user's direction of 2026-11-19 from the D9A-R retrospective. It is a structural task, briefed to a fresh `tdd-task`, and it changes test code only.
-- **What to delete.** Two browser cases T9AR.24-B5 added both passed before its fix and still passed with the fix disabled, so they never detected the defect they were written for (`evidence/D09AR/tdd-log/T9AR.24-B5.md`, the "First-run pass" note). Delete them from `e2e/d9ar/responsive-a11y.spec.ts`:
-  - the **375** instance of "should show no hover box or band from the Review card's Replay tap and after two taps on sessions at ${width}". Make its `for (const width of [375, 320])` loop run at 320 only, and keep the 320 instance, which did fail without the fix;
-  - "should leave the slider's value uncovered by any chart element for DALE from Trade Detail at 320".
+- **What to delete.** A browser case T9AR.24-B5 added passed before its fix and still passed with the fix disabled, so it never detected the defect it was written for (`evidence/D09AR/tdd-log/T9AR.24-B5.md`, the "First-run pass" note). In `e2e/d9ar/responsive-a11y.spec.ts`, delete the **375** instance of "should show no hover box or band from the Review card's Replay tap and after two taps on sessions at ${width}": make its `for (const width of [375, 320])` loop run at 320 only. Keep the 320 instance, which did fail without the fix.
+- **Keep** "should leave the slider's value uncovered by any chart element for DALE from Trade Detail at 320". It also never detected B5's defect, but B5 part 2 renamed it to say what it does check, and the user chose to keep it.
 - **Verify:**
-  - `npx playwright test e2e/d9ar/responsive-a11y.spec.ts` passes with two fewer cases than before.
+  - `npx playwright test e2e/d9ar/responsive-a11y.spec.ts` passes with one fewer case than before.
   - `npx vitest run src/ui/cockpit/replay/corridor.test.tsx` passes unchanged (B5's unit cases stay).
   - `git diff --stat` shows only that spec.
 - **Record:** the commit in `evidence/D09/structural.md` under "Stage B", and in this note's section 7.
