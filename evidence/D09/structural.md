@@ -869,3 +869,5 @@ Spec lines re-pointed from the slider to the meter (the slider's assertions only
 Words: the card's name now speaks W51 ("P&L +$180.00, 31% of the way to the Target. Stop −$270.00, Target +$580.00." where the slider read "53% of the way from the Stop to the Target, entry at 32%. Risk to stop $450.00, …"); with no Mark, the reason then the rails (W51). These are W51's approved words, not P137 shortenings. No new phrase.
 
 Browser (subagent, under the lock): 18 passed (`e2e/d5r` sliders 3, marks 4, review 2, responsive-a11y 3; `e2e/d7p/layout` 4; `e2e/d9/review` 2), served from `dist-faults` because `npm run build:releases` was refused by the permission classifier; `dist-releases/current` is rebuilt by the suite run.
+
+ocr `e2b082c8`: No findings (`ocr/T9.33-e2b082c8.json`). Its run uses the full tier (`browser-full`) in place of `browser-task`: the edited `e2e/d5r` and `e2e/d7p` specs ran only against a stale `dist-releases` build in the subagent, and the task tier would not run them.
