@@ -213,6 +213,8 @@ export type {
   // The card of one such Trade (D6 A90).
   OwedReflectionsCard,
   OwedTradeSummary,
+  // The meter's reading on a walked Trade (A260, T9.31).
+  MeterReading,
   RangePlacement,
   RangePositionResult,
   // The walked Trade's slider figures, unformatted; the slider's own props type is also called SliderFigures.

@@ -7,7 +7,7 @@ import type { TradeSummary } from '../../domain/trade-summary.ts';
 import type { Rational } from '../../domain/values/index.ts';
 import type { WorkspaceSnapshotBinding } from '../../persistence/index.ts';
 import type { StorageFailure } from '../mutation-guard.ts';
-import type { AttentionBand, AttentionReason, CalculationFamily, Pressure, PressureResult, RangePlacement, RangePositionResult, SettlementItem } from '../valuation/index.ts';
+import type { AttentionBand, AttentionReason, CalculationFamily, Pressure, MeterReading, PressureResult, RangePlacement, RangePositionResult, SettlementItem } from '../valuation/index.ts';
 import type { TradeReplayView } from '../trade-views/index.ts';
 import type { AnswerInput, DailyAction, DebtProjection, DeclineProjection, EntryDefinitionRecord, EntryProjection, JournalIssue, JournalObligationKey, ObligationOutcome } from '../../modules/journal/index.ts';
 import type { AcknowledgmentVersion, ExpectedResolutionRevision, MarkFrame, MarketDataConflictedKey, MarketDataIssue, MarketDataPrepareEntry, MarketDataPrepareIssue, MarkResolution, ObservationKey, PreparedMarketDataEntry } from '../../modules/market-data/index.ts';
@@ -62,6 +62,8 @@ export interface WalkedTrade extends ReviewTradeItem {
   // The figures the card's slider describes (P39, A150): the same evaluation results `getTrade` returns, unformatted.
   // Absent when the Trade's facts cannot be replayed.
   readonly figures?: SliderFigures;
+  // The meter's reading at the Review Date, with the session before as its earlier result (A260). Absent with the figures.
+  readonly meter?: MeterReading;
 }
 
 // One Outstanding reflection of a Trade outside the walk: which obligation it answers (the Debt's Entry Type) and how
@@ -118,7 +120,7 @@ export interface HistoricalGapGroup {
 }
 
 // Shared with Trade Views, which shows the same item on Trade Detail.
-export type { AttentionBand, AttentionReason, CalculationFamily, Pressure, PressureResult, RangePlacement, RangePositionResult, SettlementItem };
+export type { AttentionBand, AttentionReason, CalculationFamily, MeterReading, Pressure, PressureResult, RangePlacement, RangePositionResult, SettlementItem };
 
 // The task families in their normative order (Daily Review, "Date, eligibility, and ordering").
 // D4 has Marks and Trades; Debt and settlement arrive in D5 and D7.

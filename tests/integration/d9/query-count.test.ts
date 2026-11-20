@@ -23,7 +23,7 @@ const SERIES = { on: 'index', store: 'observations', index: 'byInstrumentDate', 
 const REPLAY = { 'journalDebts.getAll': 1, 'journalDeclines.getAll': 1, 'journalDefinitions.getAll': 1, 'journalEntries.getAll': 1, 'journalTypes.getAll': 1, 'meta.get': 8, 'observations.getAll': 3, 'trades.get': 1 };
 
 // The Review's open for a Workspace holding the one Trade: no Journal narrative and no series read of the replay.
-const OPEN = { 'journalDebts.getAll': 1, 'journalDefinitions.getAll': 1, 'journalObligations.getAll': 1, 'journalTypes.getAll': 1, 'meta.get': 13, 'observations.getAll': 3, 'trades.getAll': 2 };
+const OPEN = { 'journalDebts.getAll': 1, 'journalDefinitions.getAll': 1, 'journalObligations.getAll': 1, 'journalTypes.getAll': 1, 'meta.get': 14, 'observations.getAll': 4, 'trades.getAll': 2 };
 // getTrade's card of that Trade: its own reads, with 'observations.getAll' 3 being the date-wide read plus one series read per Instrument
 // of the Trade (the Underlying and the call), the replay's only addition; no Journal narrative read.
 const CARD = { 'catalog.getAll': 1, 'journalDebts.getAll': 1, 'journalDefinitions.getAll': 2, 'journalObligations.getAll': 1, 'journalTypes.getAll': 1, 'meta.get': 17, 'observations.getAll': 3, 'trades.getAll': 2 };
@@ -48,8 +48,9 @@ describe('I9.6 Query counts (AC-PERF-001, cumulative)', () => {
     const open = await countRequests(() => openApp.DailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: MON_1116_1700 }));
     if (open.result.kind !== 'Ready') throw new Error(`open: ${open.result.kind}`);
     expect(tallyOf(open.requests)).toEqual(OPEN);
-    // Its three reads of observations are D6's: Monday's date-wide read and the recovery's gap scan of each of the Trade's Instruments.
-    expect(observations(open.requests)).toEqual([DATE_WIDE, SERIES, SERIES]);
+    // Its reads of observations are D6's, Monday's date-wide read and the recovery's gap scan of each of the Trade's Instruments, and one more
+    // date's: the session before's date-wide read, for the meter's earlier result (T9.31, P133).
+    expect(observations(open.requests)).toEqual([DATE_WIDE, DATE_WIDE, SERIES, SERIES]);
 
     // getTrade: the same requests as before the replay, plus one series read per Instrument (the Underlying and the call), and no
     // Journal narrative read for it: the card's replay places no Journal items.

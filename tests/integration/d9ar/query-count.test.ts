@@ -18,7 +18,7 @@ const tallyOf = (requests: readonly CountedRequest[]): Tally => {
 
 // I9.6's counts (tests/integration/d9/query-count.test.ts), unchanged by D9A-R.
 const REPLAY = { 'journalDebts.getAll': 1, 'journalDeclines.getAll': 1, 'journalDefinitions.getAll': 1, 'journalEntries.getAll': 1, 'journalTypes.getAll': 1, 'meta.get': 8, 'observations.getAll': 3, 'trades.get': 1 };
-const OPEN = { 'journalDebts.getAll': 1, 'journalDefinitions.getAll': 1, 'journalObligations.getAll': 1, 'journalTypes.getAll': 1, 'meta.get': 13, 'observations.getAll': 3, 'trades.getAll': 2 };
+const OPEN = { 'journalDebts.getAll': 1, 'journalDefinitions.getAll': 1, 'journalObligations.getAll': 1, 'journalTypes.getAll': 1, 'meta.get': 14, 'observations.getAll': 4, 'trades.getAll': 2 };
 const CARD = { 'catalog.getAll': 1, 'journalDebts.getAll': 1, 'journalDefinitions.getAll': 2, 'journalObligations.getAll': 1, 'journalTypes.getAll': 1, 'meta.get': 17, 'observations.getAll': 3, 'trades.getAll': 2 };
 
 describe('I9AR.4 Query counts (AC-PERF-001, cumulative)', () => {

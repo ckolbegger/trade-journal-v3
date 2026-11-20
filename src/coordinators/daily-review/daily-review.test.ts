@@ -825,8 +825,8 @@ describe('getTrade', () => {
     await breakFirstExecution(stack, e);
     const review = await overview(stack);
     const { reviewDate, binding } = review;
-    // The Trade card's attention is the overview item without its reflection counts, card progress and slider figures (T5.8, T5R.3-B3, T5R2.4).
-    const items = walk(review).map((t) => Object.fromEntries(Object.entries(t).filter(([key]) => key !== 'reflections' && key !== 'progress' && key !== 'figures')));
+    // The Trade card's attention is the overview item without its reflection counts, card progress, slider figures and meter reading (T5.8, T5R.3-B3, T5R2.4, T9.31).
+    const items = walk(review).map((t) => Object.fromEntries(Object.entries(t).filter(([key]) => key !== 'reflections' && key !== 'progress' && key !== 'figures' && key !== 'meter')));
 
     // A disagreement between stored records and facts keeps its Blocker reason, with the figures still evaluated.
     const disagreeing = await stack.dailyReview.getTrade({ reviewDate, tradeId: d, binding });

@@ -1,7 +1,7 @@
 import { Temporal } from 'temporal-polyfill';
 import { instrumentKey, type Instrument } from '../../domain/instrument/index.ts';
 import { openTradeSummary } from '../../domain/trade-summary.ts';
-import { derive, type DerivedTradeState, type IncoherentFacts, type LifecycleState, type TradeAnalysisRecord } from '../../domain/trade-analysis/index.ts';
+import { derive, type DerivedTradeState, type IncoherentFacts, type LifecycleState, type TradeAnalysisRecord, type TradeEvaluation } from '../../domain/trade-analysis/index.ts';
 import { classifyDue, compareDueAnchors, compareOwed, owedStandingOf, type SessionCloses } from '../../domain/journal-debt/index.ts';
 import type { DebtProjection, Journal, ObligationOutcome } from '../../modules/journal/index.ts';
 import type { EvidenceBinding, FrameContext, HistoricalGaps, MarketData, MarketDataIssue, MarketDataReadSession } from '../../modules/market-data/index.ts';
@@ -11,7 +11,7 @@ import { beginSemanticTransaction, type Persistence, type WorkspaceSnapshotBindi
 import type { MutationGuard } from '../mutation-guard.ts';
 import { payoffOf } from '../settlement.ts';
 import { assembleReplay } from '../replay/index.ts';
-import { attentionOf, byAttention, unavailableFamilies, valueTrade, type TradeValuation } from '../valuation/index.ts';
+import { attentionOf, byAttention, meterReadingOf, unavailableFamilies, valueTrade, type TradeValuation } from '../valuation/index.ts';
 import type {
   ActionForm,
   DailyTradeReview,
@@ -90,6 +90,8 @@ interface EligibleTrade {
   readonly integrity: Derivation;
   // The Trade valued at the Review's close through Mark-to-Market Valuation, once its facts replay under both derivations.
   readonly valuation?: ValuedTrade;
+  // The same Trade valued at the session before the Review Date, for the meter's earlier result (A260); absent when it cannot be.
+  readonly before?: { readonly tradingDate: string; readonly evaluation: TradeEvaluation };
 }
 
 // The Marks the eligible Trades require: each Instrument once, at its earliest relevant date.
@@ -203,15 +205,15 @@ export interface DailyReview {
 }
 
 // The Trade's place in the walk and, when its facts replay, its evaluation at the Review date, as the module valued it.
-function reviewItem({ summary, analysis, derivation, integrity, valuation }: EligibleTrade) {
+function reviewItem({ summary, analysis, derivation, integrity, valuation, before }: EligibleTrade) {
   const identity = { tradeId: summary.tradeId, underlying: summary.underlying, lastActivity: summary.lastActivity ?? summary.planTime };
   // Facts that cannot be replayed at any time make the Trade incoherent, whichever derivation finds them.
-  if (derivation.kind === 'IncoherentFacts') return { item: incoherentItem(identity, derivation), valuation: undefined };
-  if (integrity.kind === 'IncoherentFacts') return { item: incoherentItem(identity, integrity), valuation: undefined };
+  if (derivation.kind === 'IncoherentFacts') return { item: incoherentItem(identity, derivation), valuation: undefined, before: undefined };
+  if (integrity.kind === 'IncoherentFacts') return { item: incoherentItem(identity, integrity), valuation: undefined, before: undefined };
   if (!valuation) throw new Error(`Trade ${summary.tradeId} was not valued`);
   const held = openTradeSummary(analysis.plan.legs[0]!.instrument, derivation);
   const item: ReviewTradeItem = { ...identity, ...(held && { summary: held }), ...attentionOf(derivation, valuation.evaluation, integrity.findings) };
-  return { item, valuation };
+  return { item, valuation, before };
 }
 
 // The Trade's summary on an owed-reflection card, from all its facts: Closed with its realized figures and Close Reason,
@@ -282,16 +284,21 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
   // derivation is made here, for a read that only needs the Trades' requirements.
   // The open takes no dated line (decision 104) and, with `withGaps`, the gaps of each Trade's Instruments; every Trade is
   // valued in one synchronous run, so their frames and gap scans share the Review date's read snapshot.
-  async function eligibleTrades(cutoff: string, reviewDate: string, read?: { readonly session: MarketDataReadSession; readonly withGaps: boolean }): Promise<EligibleTrade[] | undefined> {
+  async function eligibleTrades(cutoff: string, reviewDate: string, read?: { readonly session: MarketDataReadSession; readonly beforeSession?: MarketDataReadSession; readonly withGaps: boolean }): Promise<EligibleTrade[] | undefined> {
     const records = await eligibleRecords(cutoff);
     if (!records) return undefined;
     const entries = await Promise.all(
       records.map(async ({ summary, analysis }): Promise<EligibleTrade> => {
         const integrity = derive({ record: analysis });
         if (!read || integrity.kind !== 'Derived') return { summary, analysis, integrity, derivation: derive({ record: analysis, cutoff, valuationDate: reviewDate }) };
-        const valuation = await valueTrade(read.session, analysis, { factsAtClose: true, skipDatedLine: true, withGaps: read.withGaps });
+        // Both valuations are asked in this one run, so the session before's Marks are read once for every Trade (P133).
+        const [valuation, earlier] = await Promise.all([
+          valueTrade(read.session, analysis, { factsAtClose: true, skipDatedLine: true, withGaps: read.withGaps }),
+          read.beforeSession && valueTrade(read.beforeSession, analysis, { factsAtClose: true, skipDatedLine: true }),
+        ]);
         if (valuation.kind === 'Unavailable') return { summary, analysis, integrity, derivation: { kind: 'IncoherentFacts', findings: valuation.findings } };
-        return { summary, analysis, integrity, derivation: valuation.state, valuation };
+        const before = read.beforeSession && earlier?.kind === 'Valued' ? { tradingDate: read.beforeSession.tradingDate, evaluation: earlier.evaluation } : undefined;
+        return { summary, analysis, integrity, derivation: valuation.state, valuation, ...(before && { before }) };
       }),
     );
     return entries.filter(({ derivation }) => derivation.kind !== 'Derived' || derivation.expectedLifecycle === 'Open');
@@ -387,7 +394,9 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     const { tradingDate: reviewDate, closeInstant: cutoff } = session;
     // One read session for the whole pass: each Trade is valued through the module, and each date and Instrument is read once.
     const read = await deps.marketData.openReadSession({ kind: 'Review', reviewDate });
-    const derivations = await eligibleTrades(cutoff, reviewDate, { session: read, withGaps });
+    // The session before the Review Date, read as a session of its own so the Review's binding holds only the Review date's Marks.
+    const beforeSession = read.previousSessionDate ? await deps.marketData.openReadSession({ kind: 'Review', reviewDate: read.previousSessionDate }) : undefined;
+    const derivations = await eligibleTrades(cutoff, reviewDate, { session: read, ...(beforeSession && { beforeSession }), withGaps });
     if (!derivations) return { kind: 'Expired' };
     const { requirements, earliest } = observationNeeds(derivations);
     // The frames the valuations read, in one answer; with no walked Trade there is no Instrument to scan for gaps, and the
@@ -458,10 +467,10 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
       return cardProgress({ resolved: rows.length - needed, needed }, reflectionsOf(tradeId), !(tradeId in actions.actions), settlementDue);
     };
     const walked = ranked.map(
-      ({ item, valuation }): WalkedTrade => ({
+      ({ item, valuation, before }): WalkedTrade => ({
         ...item,
         progress: progressOf(item.tradeId, settlement.some((s) => s.tradeId === item.tradeId)),
-        ...(valuation && { figures: { riskToStop: valuation.evaluation.ongoingRiskToStop, pnl: valuation.evaluation.currentMarkedPnl, rewardRiskNow: valuation.evaluation.rewardRiskNow } }),
+        ...(valuation && { meter: meterReadingOf(valuation.evaluation, before), figures: { riskToStop: valuation.evaluation.ongoingRiskToStop, pnl: valuation.evaluation.currentMarkedPnl, rewardRiskNow: valuation.evaluation.rewardRiskNow } }),
       }),
     );
     const families: ReviewFamily[] = [
