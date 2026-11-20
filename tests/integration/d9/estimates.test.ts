@@ -65,6 +65,7 @@ const OPTION_TRADES: readonly (readonly [ReplayTestSeries, string, string, numbe
   [R_DALE_D, 'strategy.cash-secured-put', FRI_1113_1700, 9],
 ];
 
+const UNPRICED: Record<string, string[]> = { 'R-BREN-U': [], 'R-CORV-D': ['2026-11-10'], 'R-DALE-D': [] };
 const NOT_SPLIT: Record<string, [string, string][]> = {
   'R-BREN-U': [['2026-11-02', 'NoEarlierFigure']],
   'R-CORV-D': [['2026-11-02', 'NoEarlierFigure'], ['2026-11-10', 'MarkMissing'], ['2026-11-11', 'MarkMissing']],
@@ -78,19 +79,22 @@ describe('I9.8 Estimates explain and never value (AC-CALC-005)', () => {
 
       const view = await readyReplay(app, tradeId);
 
-      let priced = 0;
+      const unpriced: string[] = [];
       for (const s of view.sessions) {
         const volatility = estimatesOf(s).impliedVolatility;
         const inputs = inputsOf(s);
-        if (!inputs) continue;
+        if (!inputs) {
+          unpriced.push(s.date);
+          continue;
+        }
         if (volatility.kind !== 'Estimate') throw new Error(`${series.id} ${s.date}: ${JSON.stringify(volatility)}`);
         const { rate, days } = estimatesOf(s);
         expect(rate).toBe(0.04);
         expect(days).toBeGreaterThan(0);
         expect(Math.abs(priceOf(inputs.right, inputs.underlying, inputs.strike, days!, volatility.value, rate!) - inputs.mark), `${series.id} ${s.date}`).toBeLessThanOrEqual(0.005);
-        priced += 1;
       }
-      expect(priced, series.id).toBeGreaterThanOrEqual(view.sessions.length - 1);
+      // Only R-CORV-D Tue 11-10 lacks a Mark; any other missing input fails here instead of passing silently.
+      expect(unpriced, series.id).toEqual(UNPRICED[series.id]);
     }
   });
 
