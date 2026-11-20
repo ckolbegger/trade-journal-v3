@@ -12,6 +12,10 @@ const scanSource = (path: string, source: string) => {
   return messages.map((m) => ({ line: m.line, message: m.message }));
 };
 const lines = (hits: { line: number }[]) => hits.map((h) => h.line);
+// The close rule (a price is a Mark, never a "close") reports through no-restricted-syntax with its own message.
+const isClose = (h: { message: string }) => h.message.startsWith('A price is a Mark, never a "close"');
+const closeHits = (hits: { line: number; message: string }[]) => hits.filter(isClose);
+const otherHits = (hits: { line: number; message: string }[]) => hits.filter((h) => !isClose(h));
 
 const uiDir = new URL('../src/ui/', import.meta.url);
 const uiSources = (dir: URL): URL[] =>
@@ -54,8 +58,13 @@ describe('verify:wording rules', () => {
   });
 
   it('fails on the dated before-Marks words, whole or split around the date, W34', () => {
-    expect(lines(scanSource('src/ui/T1.tsx', "const a = 'Awaiting the Mon Oct 12 close';"))).toEqual([1]);
-    expect(lines(scanSource('src/ui/T2.tsx', 'const a = `Awaiting the ${date} close`;'))).toEqual([1]);
+    // The dated literal is also a price called a close, so the close rule adds its own hit on the same line.
+    const t1 = scanSource('src/ui/T1.tsx', "const a = 'Awaiting the Mon Oct 12 close';");
+    expect(lines(otherHits(t1))).toEqual([1]);
+    expect(lines(closeHits(t1))).toEqual([1]);
+    const t2 = scanSource('src/ui/T2.tsx', 'const a = `Awaiting the ${date} close`;');
+    expect(lines(otherHits(t2))).toEqual([1]);
+    expect(lines(closeHits(t2))).toEqual([1]);
     expect(lines(scanSource('src/ui/T3.tsx', "const a = 'Awaiting close';"))).toEqual([1]);
     expect(lines(scanSource('src/ui/calculation-words.ts', "const a = 'Awaiting the Mon Oct 12 close';"))).toEqual([]);
   });
@@ -186,8 +195,20 @@ describe('verify:wording rules', () => {
     expect(scanSource('src/ui/T.tsx', '<p>This Trade has no open Position to exit.</p>; const a = "not closed yet, so wait";')).toEqual([]);
     const files = uiSources(uiDir).filter((f) => !f.pathname.endsWith('/src/ui/calculation-words.ts'));
     expect(files.length).toBeGreaterThan(0);
-    const hits = files.flatMap((f) => scanSource(`src/ui/${f.pathname.split('/src/ui/')[1]!}`, readFileSync(f, 'utf8')));
-    expect(hits).toEqual([]);
+    const scanned = files.map((f) => {
+      const path = `src/ui/${f.pathname.split('/src/ui/')[1]!}`;
+      return { path, hits: scanSource(path, readFileSync(f, 'utf8')) };
+    });
+    // No wording hit anywhere, except close-rule hits that eslint-suppressions.json covers, per file, up to its count.
+    expect(scanned.flatMap((s) => otherHits(s.hits).map((h) => ({ path: s.path, ...h })))).toEqual([]);
+    const suppressions = JSON.parse(readFileSync(new URL('../eslint-suppressions.json', import.meta.url), 'utf8')) as Record<
+      string,
+      Record<string, { count: number } | undefined> | undefined
+    >;
+    const overSuppressed = scanned
+      .map((s) => ({ path: s.path, closeHits: closeHits(s.hits).length, allowed: suppressions[s.path]?.['no-restricted-syntax']?.count ?? 0 }))
+      .filter((s) => s.closeHits > s.allowed);
+    expect(overSuppressed).toEqual([]);
   });
 
   it('fails on a reason code compared with a computed member named kind but passes on the kind property', () => {
