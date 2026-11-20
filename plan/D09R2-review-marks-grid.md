@@ -73,7 +73,7 @@ Each is written into its decision's breakdown when D9R2 is agreed, in the decide
 - **A171, A172 (the held Review, D5R2).** Amended: an earlier session's cell takes its standing through the same fold; `listedStanding` also reads `earlierMarks` (A291). Learned revisions still never move backward.
 - **D5R section 6.4 (browser helpers) and decision 65.** Amended: `markRow(page, card, date)` selects the Instrument's cell and returns the cell editor's region (same name as today's row); a new `markCell` returns the cell's input. The migration rule (mechanical only) applies (T9R2.10).
 - **A210 (ReadSeries, D08P).** Amended: an Available series point also carries `resolutionRevision` (A290).
-- **A214 (Journal cards' session lines, D08P), W9 and W1.** Amended: an acknowledged session shows "Acknowledged Unavailable", not "—" named "No Mark"; Price History's count line and tab count count Missing sessions only.
+- **A214 (Journal cards' session lines, D08P), W9 and W1.** Amended: an acknowledged session shows "Acknowledged Unavailable", not "—" named "No Mark"; Price History's tab count counts Missing sessions only, and its line under the table names the Missing and the acknowledged counts (W81).
 - **A216 (cockpit components take plain props).** Clarified: the shared session grid is a cockpit component; the Review's adapter lives in `src/ui/screens/` and imports only its props type and component.
 - **W19 (D08P).** Extended to the Review card: "At the Fri Oct 9 Marks" replaces the heading "Fri Oct 9 close".
 - **The Daily Review design spec** (`specs/design/daily-review.md`, the open result). One sentence added by T9R2.6: the Marks family carries the previous session and each listed Instrument's Marks on the sessions the grid shows, read in the open's read session.
@@ -114,7 +114,7 @@ Every cell's standing goes through `held-review.ts`'s `standing()`, so a revisio
 
 ### 1.5 Size check
 
-The graph has **17 tasks** and **three open questions** raised; two are answered (the prototype and the words), so one is left. There is no schema change: the open result gains two additive fields and a series point one (P155). None of the guide's three limits is met, so **no split is proposed** and no checkpoint critic is added.
+The graph has **17 tasks** and **three open questions** raised, all answered. There is no schema change: the open result gains two additive fields and a series point one (P155). None of the guide's three limits is met, so **no split is proposed** and no checkpoint critic is added.
 
 Worth knowing before agreeing: the natural pause for a look is after T9R2.11 (the grid shows in the card, with Save Marks still per card). Drafts across Trades (T9R2.13) are the riskiest step, as the handoff says; if the user would rather see the grid before drafts move, that is the pause. It is a look, not a gate.
 
@@ -157,7 +157,7 @@ Run on `5bce5a85`, excluding `node_modules`, suite-run logs and the lane worktre
 
 ### 1.7 Words
 
-**Approved as proposed by the user, 2026-11-20** (open question 2). Words a task adds beyond these are used provisionally and recorded in `evidence/D09R2/new-words.md`.
+**W71, W72, W73, W74, W75, W76, W77, W78, W79 and W80 approved as proposed by the user, 2026-11-20** (open question 2); W81 follows the wording the user agreed in open question 3. Words a task adds beyond these are used provisionally and recorded in `evidence/D09R2/new-words.md`.
 
 | # | Where | Proposed | Nearest approved row |
 |---|---|---|---|
@@ -169,6 +169,7 @@ Run on `5bce5a85`, excluding `node_modules`, suite-run logs and the lane worktre
 | W76 | Save Marks with more than 100 drafts | "Save Marks takes up to 100 at once; 112 are entered. Clear 12, then save." | A154's limit has no screen words today. |
 | W77 | A cell for a session before the Trade held the Instrument | "—" with the accessible name "Not held". | W9: "—" named "No Mark". |
 | W78 | Price History's and the Journal cards' acknowledged session | "Acknowledged Unavailable" in the cell (Price History) and as the Mark's value (Journal card). The count line and tab count count Missing sessions only; their words do not change. | The Mark status "Acknowledged Unavailable" (D4). |
+| W81 | Price History's line under the table, when any session is acknowledged (open question 3) | "1 session acknowledged unavailable." ("2 sessions …"), after the Missing count and before the link: "2 sessions without Marks. 1 session acknowledged unavailable. Enter Marks in the Review". With no Missing session the line is the acknowledged count alone, with no link. | W9's count line. |
 | W79 | The Review card's dated figures heading | "At the Fri Oct 9 Marks" (replaces "Fri Oct 9 close"). | W19, Trade Detail's Today drawer. |
 | W80 | Paging while a Correct is in progress | "Save or cancel the correction to change pages." | D5R's "Save or clear the value you entered on this page to change pages." |
 
@@ -237,6 +238,7 @@ Files: `src/ui/cockpit/drawers/price-history.props.ts` (`markCell`, `lacksMarks`
 1. it should show an acknowledged session's cell as "Acknowledged Unavailable", not "—" named "No Mark" (W78)
 2. it should count only Missing sessions in the line under the table when another session is acknowledged
 3. it should count only Missing sessions on the Price History tab
+4. it should say how many sessions are acknowledged under the table, without the link when none is Missing (W81)
 
 ### T9R2.3 — Journal cards: acknowledged sessions (Standard)
 
@@ -383,7 +385,7 @@ The full cumulative run, then the browser critic over section 8's flows (P138's 
 
 | ID | File | What it proves |
 |---|---|---|
-| B9R2.1 | `history.spec.ts` | Price History shows an acknowledged session as "Acknowledged Unavailable" and counts only Missing sessions on the line and the tab; its gain and loss figures take the Target and Stop colours (computed); a Journal card shows the acknowledged Mark; the Review card's heading reads "At the … Marks". |
+| B9R2.1 | `history.spec.ts` | Price History shows an acknowledged session as "Acknowledged Unavailable", counts only Missing sessions on the tab, and names both counts on the line under the table (W81); its gain and loss figures take the Target and Stop colours (computed); a Journal card shows the acknowledged Mark; the Review card's heading reads "At the … Marks". |
 | B9R2.2 | `grid.spec.ts` | The grid's rows, columns and tags; Not held; a mixed column; 20 sessions a page with the fixed columns; Enter's order; W72; a Missing-Mark link focuses the Review Date cell. |
 | B9R2.3 | `drafts.spec.ts` | A price typed in T-A shows "Unsaved" in T-F (both hold XYZ); moving between cards and pages keeps drafts; the header's count; one Save Marks saves every draft (one `savedAt` in `observationsOf`); Discard empties all; leaving the page asks; a reload stores nothing (AC-JOUR-001). |
 | B9R2.4 | `editor.spec.ts` | "Can't get a price" with a reason; Correct an earlier Mark; Withdraw on the Review Date only; a conflict's message; a refused save opens the first refused cell with focus in it; completion is Complete With Unavailable Marks after a Review Date acknowledgment and unchanged by earlier sessions. |
@@ -428,7 +430,7 @@ The full cumulative run, then the browser critic over section 8's flows (P138's 
 |---|---|---|
 | 1 | Are the research page's static mockups enough to sign off the grid's look, or does a clickable prototype come first (D08P's section 10.1)? Recommended: the mockups. | **The mockups are enough** (the user, 2026-11-20). |
 | 2 | Approve the new words W71, W72, W73, W74, W75, W76, W77, W78, W79 and W80 (section 1.7)? | **Approved as proposed** (the user, 2026-11-20). |
-| 3 | Should Price History also say how many sessions are acknowledged ("1 session acknowledged unavailable"), now that the count line counts Missing only? Recommended: no; the cells show it and the line stays about what is still owed. | Open. |
+| 3 | Should Price History also say how many sessions are acknowledged ("1 session acknowledged unavailable"), now that the count line counts Missing only? Recommended: no; the cells show it and the line stays about what is still owed. | **Yes, it should** (the user, 2026-11-20). W81: the line under the table names both counts; the tab's count stays Missing only, since it says what is still owed (an assumption from the recommendation's wording; the Journal is unchanged). T9R2.2 case 4, B9R2.1. |
 
 Proposals that stand unless the user objects: no Trade P&L row in the Review's grid; the "Review Date" and "Previous" tags; a mixed column shows the other Instruments' Marks; Save Marks also in the status header; Discard empties every draft on the page; no legend.
 
@@ -444,7 +446,7 @@ Status values: `planned`, `covered`, `intentionally not advertised`.
 | AC-REV-002 (cumulative: a shared Mark resolves once for every Trade holding it, typed in any of them) | D9R2 | T9R2.7, T9R2.13 | I9R2.1; B9R2.3 | C9R2.2 | `npx playwright test e2e/d9r2/drafts.spec.ts` | One draft per key, shown in every Trade; one save | planned |
 | AC-RESP-001 (cumulative: one Save Marks across Trades and sessions returns the refreshed Review, rendered without a readback) | D9R2 | T9R2.13 | I9R2.2; B9R2.3 | C9R2.1 | `npm run test:integration -- d9r2/save-many` | One commit; every saved key in the response | planned |
 | AC-REV-005, ADR 0011 (cumulative: a stale binding on any key saves nothing) | D9R2 | T9R2.12, T9R2.13 | I9R2.2, I9R2.3; B9R2.4 | C9R2.3 | `npm run test:integration -- d9r2/correct-earlier` | Conflict; no write; entered values kept | planned |
-| AC-MARK-003 (cumulative: an acknowledgment is never shown as a price or a gap in Price History and the Journal) | D9R2 | T9R2.2, T9R2.3 | B9R2.1 | C9R2.6 | `npx playwright test e2e/d9r2/history.spec.ts` | "Acknowledged Unavailable"; counts of Missing only | planned |
+| AC-MARK-003 (cumulative: an acknowledgment is never shown as a price or a gap in Price History and the Journal) | D9R2 | T9R2.2, T9R2.3 | B9R2.1 | C9R2.6 | `npx playwright test e2e/d9r2/history.spec.ts` | "Acknowledged Unavailable"; the tab counts Missing only; the line names both counts | planned |
 | AC-REV-006 (cumulative: completion from the Review Date's keys only) | D9R2 | T9R2.12 | B9R2.4 | C9R2.3 | `npx playwright test e2e/d9r2/editor.spec.ts` | Complete With Unavailable Marks after an acknowledgment; earlier sessions change nothing | planned |
 | AC-JOUR-001 (cumulative: drafts are view state only) | D9R2 | T9R2.7, T9R2.13 | B9R2.3 | C9R2.5 | `npx playwright test e2e/d9r2/drafts.spec.ts` | A reload stores nothing; leaving asks first | planned |
 | AC-UI-001, AC-UI-002 (cumulative: the grid turns live; keyboard, names and axe in every cell state) | D9R2 | T9R2.9, T9R2.14 | B9R2.5 | C9R2.4 | `npx playwright test e2e/d9r2/responsive-a11y.spec.ts` | Drafts and the chosen cell survive the turn; axe clean | planned |
