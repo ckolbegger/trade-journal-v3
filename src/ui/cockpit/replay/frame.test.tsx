@@ -69,6 +69,8 @@ const slider = () => screen.getByRole('slider', { name: 'Session' });
 const value = () => (slider() as HTMLInputElement).value;
 const text = (el: Element) => el.textContent ?? '';
 const attr = (el: Element, name: string) => el.getAttribute(name);
+// A figure is its own span (D9AR-retro-1), so a sentence is found by all of its text, not by the text nodes of one element.
+const whole = (words: string) => (_content: string, el: Element | null) => el !== null && el.children.length > 0 && text(el) === words;
 
 describe('Replay: the top (suggestion 14)', () => {
   it('should show the session date beside the headline figure: Mon Nov 16, then +$988.00 · 3.05R', () => {
@@ -128,7 +130,7 @@ describe('Replay frame: the slider (W42)', () => {
     render(<ReplayFrame {...props()} />);
     await user.click(screen.getByRole('button', { name: 'Previous session' }));
     expect(text(screen.getByTestId('headline'))).toContain('+$838.00 · 1.25R');
-    expect(screen.queryByText('Ahead: 72% of the way to the Target.')).not.toBeNull();
+    expect(screen.queryByText(whole('Ahead: 72% of the way to the Target.'))).not.toBeNull();
   });
 
   it('should keep every later session out of the DOM: no figure, date or point of a session after the slider\'s', async () => {
@@ -212,11 +214,11 @@ describe('Replay frame: the slider (W42)', () => {
     const user = userEvent.setup();
     render(<ReplayFrame {...props()} />);
     expect(attr(screen.getByTestId('replay-card'), 'data-tone')).toBe('Profit');
-    expect(screen.queryByText('Ahead: 80% of the way to the Target.')).not.toBeNull();
+    expect(screen.queryByText(whole('Ahead: 80% of the way to the Target.'))).not.toBeNull();
     slider().focus();
     await user.keyboard('{Home}');
     expect(attr(screen.getByTestId('replay-card'), 'data-tone')).toBe('Loss');
-    expect(screen.queryByText('Behind: 12% of the way to the Stop.')).not.toBeNull();
+    expect(screen.queryByText(whole('Behind: 12% of the way to the Stop.'))).not.toBeNull();
   });
 });
 
@@ -241,9 +243,28 @@ describe('Replay frame: the stake sentence (W38, A267)', () => {
     render(<ReplayFrame {...props({ sessions: base.sessions.map((s, i) => (i === 10 ? { ...s, stake, stakeSpoken: spoken } : s)) })} />);
     // A screen reader hears the spoken sentence, and the visible one is hidden from it; the sighted text is unchanged.
     expect(screen.getByText(spoken).className).toContain('visually-hidden');
-    const shown = screen.getByText(stake);
+    const shown = screen.getByText(whole(stake));
     expect(attr(shown, 'aria-hidden')).toBe('true');
     expect(shown.parentElement).toBe(screen.getByText(spoken).parentElement);
+  });
+});
+
+describe('Replay frame: every figure in the text is one figure (D9AR-retro-1)', () => {
+  const figuresIn = (el: Element) => [...el.querySelectorAll('.card-figure')].map(text);
+  const stake = 'From here: $352.00 at risk to the Stop · $928.00 more to the Target · 2.64 to 1 · about 27% : 73%.';
+  it('should draw the figures of the going, crossing and stake sentences as card-figure spans, with the same words', () => {
+    const base = props();
+    const sessions = base.sessions.map((s, i) => (i === 10 ? { ...s, howItIsGoing: 'Behind: 15% of the way to the Stop.', crossingWords: 'Target reached, $32.00 past it.', stake } : s));
+    const { container } = render(<ReplayFrame {...props({ sessions })} />);
+    const going = container.querySelector('.replay-going')!;
+    const crossing = container.querySelector('.replay-crossing')!;
+    const shown = container.querySelector('.replay-stake')!;
+    expect(text(going)).toBe('Behind: 15% of the way to the Stop.');
+    expect(figuresIn(going)).toEqual(['15%']);
+    expect(text(crossing)).toBe('Target reached, $32.00 past it.');
+    expect(figuresIn(crossing)).toEqual(['$32.00']);
+    expect(text(shown)).toBe(stake);
+    expect(figuresIn(shown)).toEqual(['$352.00', '$928.00', '2.64 to 1', '27% : 73%']);
   });
 });
 

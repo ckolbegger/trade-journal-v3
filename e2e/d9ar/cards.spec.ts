@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import { REPLAY_SESSION_DATES } from '../../src/domain/trade-analysis/reference-trade.ts';
-import { AXIO, BREN, build, cardRows, closeOf, CORV, DALE_HOLD, expect, label, openDrawer, replay, seek, sessionCard, sessionCards, setViewport, SCREENSHOTS, sliderValue, test } from './support.ts';
+import { AXIO, BREN, build, cardRows, closeOf, CORV, DALE_HOLD, expect, label, openDrawer, replay, seek, sessionCard, sessionCards, setViewport, SCREENSHOTS, sliderValue, STRAY, test } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -212,7 +212,6 @@ test.describe('B9AR.4 The Plan block and the cards', () => {
 // T9AR.24-B1 (critic-1 defect 1, C9AR.2, A278) and T9AR.24-B1-B1: no figure on a session card breaks across lines and no sign parts from its number. The check shares no pattern with the code that marks the figures: it
 // measures every element the page marks as a figure (.card-figure), and asserts that the words left around them hold no figure mark of any kind ("$", "%", an R multiple, "to 1" odds, a lone sign), so a figure the
 // code failed to mark, such as the edge odds "under 1% : over 99%", is found as stray words.
-const STRAY = String.raw`\$|%|\dR\b|\d to \d|[−+]\s*$`;
 async function brokenFigures(scope: Locator): Promise<string[]> {
   return sessionCards(scope).evaluateAll((cards, stray) => {
     const broken: string[] = [];

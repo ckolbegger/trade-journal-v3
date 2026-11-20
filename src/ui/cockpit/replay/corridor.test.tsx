@@ -700,6 +700,7 @@ describe('Corridor: drawn at a phone\'s real width (W39, W40, W41)', () => {
       const text = [...pnl(container).querySelectorAll('text')].map((t) => t.textContent);
       for (const label of ['Stop +$316', 'Target +$956', 'Banked +$478']) expect(text, `${width}: ${text.join(' | ')}`).not.toContain(label);
       expect(container.querySelector('.replay-strip-labels')!.textContent).toBe('Stop +$316 · Banked +$478 · Target +$956 · Sold 2');
+      expect([...container.querySelectorAll('.replay-strip-labels .card-figure')].map((f) => f.textContent), 'each figure of the strip is one figure').toEqual(['+$316', '+$478', '+$956']);
       cleanup();
       vi.restoreAllMocks();
     }

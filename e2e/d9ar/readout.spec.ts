@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import {
-  AXIO, BREN, build, closeOf, CORV, DALE_HOLD, expect, expectAccessible, expectOneLine, going, openDrawer, pastLine, positionGroup, readoutPnl, readoutR, readoutValue, replay, seek, setViewport, SCREENSHOTS, sliderValue, stake, test,
+  AXIO, BREN, build, closeOf, CORV, DALE_HOLD, expect, expectAccessible, expectOneLine, going, openDrawer, pastLine, positionGroup, readoutPnl, readoutR, readoutValue, replay, seek, setViewport, SCREENSHOTS, sliderValue, STRAY, stake, test,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
@@ -228,7 +228,6 @@ test.describe('B9AR.3 The readout', () => {
 // T9AR.24-B2 (critic-1 defect 2, C9AR.2, A278): no figure in the readout or the overlay's header breaks across lines, and no sign parts from its number ("at Stop –" over "$1,536.00"). The check shares no pattern with the
 // code that marks the figures: it measures every element the page marks as a figure (.card-figure) and each grid cell, and asserts the words left around them hold no figure mark of any kind ("$", "%", an R
 // multiple, "to 1" odds, a lone sign), so a figure the code failed to mark is found as stray words. A row may wrap between figures, never inside one.
-const STRAY = String.raw`\$|%|\dR\b|\d to \d|[−+–]\s*$`;
 async function brokenReadoutFigures(scope: Locator): Promise<string[]> {
   return scope.evaluate((dialog, stray) => {
     const broken: string[] = [];

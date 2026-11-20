@@ -60,19 +60,29 @@ export function ReplayFrame({ tradeKey, sessions, initialSession, sliderLabel, p
         {/* A281: a Mark still to add, while the Trade is Open; the link goes to the Review's Marks row. */}
         {session.addMarkTo && <Link to={session.addMarkTo}>Add the Mark</Link>}
       </div>
-      {session.howItIsGoing && <p className="replay-going">{session.howItIsGoing}</p>}
+      {session.howItIsGoing && (
+        <p className="replay-going">
+          <Words text={session.howItIsGoing} />
+        </p>
+      )}
       {/* W64: when a Stop or Target was first crossed, from that session on. */}
-      {session.crossingWords && <p className="replay-crossing" data-testid="crossing">{session.crossingWords}</p>}
+      {session.crossingWords && (
+        <p className="replay-crossing" data-testid="crossing">
+          <Words text={session.crossingWords} />
+        </p>
+      )}
       {session.stake && (
         <p className="replay-stake">
           {/* A267: a screen reader hears the odds in full; the visible sentence stays as it is. */}
           {session.stakeSpoken ? (
             <>
-              <span aria-hidden="true">{session.stake}</span>
+              <span aria-hidden="true">
+                <Words text={session.stake} />
+              </span>
               <span className="visually-hidden">{session.stakeSpoken}</span>
             </>
           ) : (
-            session.stake
+            <Words text={session.stake} />
           )}
         </p>
       )}

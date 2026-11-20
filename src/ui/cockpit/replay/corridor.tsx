@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { flushSync } from 'react-dom';
 import { drawPnl } from './corridor-pnl.tsx';
+import { Words } from './figure-words.tsx';
 import { timeAxis } from './geometry.ts';
 import { drawStrip } from './price-strip.tsx';
 import type { PlotKeyEntry, PlotSession, ReplayPlotProps } from './replay.types.ts';
@@ -155,7 +156,7 @@ export function CorridorPlot(props: ReplayPlotProps) {
         </div>
         <SessionHits props={props} width={width} />
       </div>
-      {pnl.strip && pnl.strip.length > 0 && <p className="replay-strip-labels">{pnl.strip.join(' · ')}</p>}
+      {pnl.strip && pnl.strip.length > 0 && <p className="replay-strip-labels"><Words text={pnl.strip.join(' · ')} /></p>}
       <Key entries={keyOf(props.sessions, new Set([...strip.drawn, ...pnl.drawn]), pnl.crossingLabels)} />
     </div>
   );

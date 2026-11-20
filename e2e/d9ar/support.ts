@@ -134,6 +134,122 @@ export async function expectClearOfCursor(chart: Locator, where: string): Promis
   expect(overlapping, `${where}: chart text on the cursor`).toEqual([]);
 }
 
+// ---- Sweeps over every session of the open overlay (D9AR-retro-1) -------------------------------------------------------------------------------------------
+
+// The loose figure pattern of T9AR.24-B1, -B2 and -B12: a "$", a "%", an R multiple, "to 1" odds, a lone sign at a line's end. Words outside every .card-figure must hold none of these.
+export const STRAY = String.raw`\$|%|\dR\b|\d to \d|[−+–]\s*$`;
+
+// Every figure in the whole dialog: each .card-figure is one line box, and no text node outside a .card-figure holds a figure mark. Left out, because they are not figures by design and the charts own their
+// checks: the text of the two charts' svgs (axis ticks and labels are drawn, not wrapped), and text that is not shown (no client rectangles). A hit names its region (the nearest of the header, the
+// headline, the Plan block, the readout, a session card, or the dialog's other parts) and the words.
+export async function brokenFiguresInDialog(scope: Locator): Promise<string[]> {
+  return scope.evaluate((dialog, stray) => {
+    const region = (el: Element): string => {
+      const named = el.closest('h2, [data-testid="headline"], section.replay-plan, .replay-readout, article.replay-session-card');
+      if (!named) return 'dialog';
+      if (named.tagName === 'H2') return 'header';
+      if (named.tagName === 'ARTICLE') return `card ${named.querySelector('h4')?.textContent?.trim() ?? ''}`;
+      return named.getAttribute('data-testid') ?? named.className.split(' ')[0]!;
+    };
+    const broken: string[] = [];
+    // The elements the page marks as one figure: .card-figure (Words), the headline's .replay-figure (one line by its CSS) and the stake grid's cells (T9AR.24-B2 measures the same cells).
+    const MARKED = '.card-figure, .replay-figure, .replay-stake-grid tr:not(.replay-past-line) td';
+    for (const figure of dialog.querySelectorAll(MARKED)) {
+      const range = document.createRange();
+      range.selectNodeContents(figure);
+      const rects = [...range.getClientRects()].filter((r) => r.width > 0 && r.height > 0);
+      const font = parseFloat(getComputedStyle(figure).fontSize);
+      if (rects.length && Math.max(...rects.map((r) => r.bottom)) - Math.min(...rects.map((r) => r.top)) > font * 1.6) broken.push(`${region(figure)}: broken "${figure.textContent}"`);
+    }
+    const walker = document.createTreeWalker(dialog, NodeFilter.SHOW_TEXT);
+    for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+      const parent = n.parentElement as Element;
+      if (parent.closest(MARKED) || parent.closest('svg') || parent.closest('.visually-hidden')) continue;
+      const range = document.createRange();
+      range.selectNodeContents(n);
+      if (range.getClientRects().length === 0) continue;
+      if (new RegExp(stray).test((n as Text).data)) broken.push(`${region(parent)}: unmarked figure in "${(n as Text).data.trim()}"`);
+    }
+    return broken;
+  }, STRAY);
+}
+
+// One chart label drawn over, as found: the chart, the label's class and words, and what is drawn through it.
+export type DrawnOver = { chart: 'price strip' | 'P&L chart'; label: string; text: string; over: string };
+
+// The chart texts that are labels: every text with a class (the axis ticks have none), in either chart.
+// An obstacle is a thing drawn that a label must stay off: a stroke (the lines, the Mark line, the cursor, the flags' poles, the stake beams), a marker or dot, a hatch, a flag's pennant. Left out: the grid lines and the
+// hover column and the area fills (a label sits on those by design), the banked band, the "No Mark" column (the cursor rule covers its label) and the axis ticks.
+// The cursor is checked as expectClearOfCursor checks it: the labels that belong to it (its session's name, the slider value, the current Mark's label, the stake tags, the "past" label) are exempt.
+export async function labelsDrawnOver(scope: Locator): Promise<DrawnOver[]> {
+  return scope.evaluate((dialog) => {
+    const found: { chart: 'price strip' | 'P&L chart'; label: string; text: string; over: string }[] = [];
+    const OWN_CURSOR = /\b(cursor-label|slider-value|mark-label|stake-tag|past-label)\b/;
+    // A text's box is the font's (ascent to descent); the ink is the middle of it, so a line grazing the empty top or bottom is not through the words.
+    const inked = (r: DOMRect) => ({ left: r.left + 1, right: r.right - 1, top: r.top + r.height * 0.2, bottom: r.bottom - r.height * 0.2 });
+    for (const svg of dialog.querySelectorAll<SVGSVGElement>('svg.price-strip, svg.pnl-chart')) {
+      const chart = svg.classList.contains('price-strip') ? 'price strip' : 'P&L chart';
+      const labels = [...svg.querySelectorAll<SVGTextElement>('text[class]')].map((t) => ({ t, cls: t.getAttribute('class')!, r: inked(t.getBoundingClientRect()), text: (t.textContent ?? '').trim() }));
+      const boxes: { name: string; cls: string; left: number; right: number; top: number; bottom: number }[] = [];
+      const points: { name: string; cls: string; x: number; y: number; own: boolean }[] = [];
+      // The cursor's own session: its dot (the current Mark's, or the current P&L dot). A line through that dot is the session's own line (its marker line, the Mark line, the price line the Mark sits on, the
+      // break-even line at a P&L of nothing, the Target line at the Target), and the Mark label and the slider value may touch it.
+      const dot = svg.querySelector('circle.current')?.getBoundingClientRect();
+      const dotAt = dot ? { x: (dot.left + dot.right) / 2, y: (dot.top + dot.bottom) / 2 } : null;
+      for (const el of svg.querySelectorAll<SVGElement>('path[class], rect.hatch, circle')) {
+        const cls = el.getAttribute('class') ?? '';
+        const name = `${el.tagName} ${cls}`.trim();
+        if (/\b(grid|area|banked-band|hover-column|no-mark)\b/.test(cls)) continue;
+        if (el.tagName === 'rect' || el.tagName === 'circle' || /flag-pennant/.test(cls)) {
+          const r = el.getBoundingClientRect();
+          boxes.push({ name, cls, left: r.left, right: r.right, top: r.top, bottom: r.bottom });
+          continue;
+        }
+        const path = el as unknown as SVGPathElement;
+        const m = path.getScreenCTM()!;
+        const length = path.getTotalLength();
+        const drawn: { x: number; y: number }[] = [];
+        for (let at = 0; at <= length; at += 1.5) {
+          const p = path.getPointAtLength(at);
+          drawn.push({ x: m.a * p.x + m.c * p.y + m.e, y: m.b * p.x + m.d * p.y + m.f });
+        }
+        const own = dotAt !== null && drawn.some((p) => Math.hypot(p.x - dotAt.x, p.y - dotAt.y) <= 2);
+        for (const p of drawn) points.push({ name, cls, ...p, own });
+      }
+      for (const a of labels) {
+        const inside = (x: number, y: number): boolean => x >= a.r.left - 0.5 && x <= a.r.right + 0.5 && y >= a.r.top && y <= a.r.bottom;
+        const hit = new Set<string>();
+        const ownLines = /\b(mark-label|slider-value)\b/.test(a.cls);
+        for (const p of points) if (inside(p.x, p.y) && !(/\b(cursor|stake-beam)\b/.test(p.cls) && OWN_CURSOR.test(a.cls)) && !(p.own && ownLines)) hit.add(p.name);
+        for (const b of boxes) if (a.r.right > b.left && a.r.left < b.right && a.r.bottom > b.top && a.r.top < b.bottom) {
+          // The current Mark's dot, and the current P&L dot, are what their own labels are drawn beside.
+          const own = (/\bmark current\b/.test(b.cls) && /\bmark-label\b/.test(a.cls)) || (/\bpnl-dot current\b/.test(b.cls) && /\b(slider-value|stake-tag|past-label)\b/.test(a.cls));          if (!own) hit.add(b.name);
+        }
+        for (const name of hit) found.push({ chart, label: a.cls, text: a.text, over: name });
+      }
+      for (const [i, a] of labels.entries()) {
+        for (const b of labels.slice(i + 1)) {
+          if (a.r.right > b.r.left && a.r.left < b.r.right && a.r.bottom > b.r.top && a.r.top < b.r.bottom) found.push({ chart, label: a.cls, text: a.text, over: `text ${b.cls} "${b.text}"` });
+        }
+      }
+    }
+    return found;
+  });
+}
+
+// At each session of the open overlay (Home, then ArrowRight to the end), `visit` is run with the session's name and index, after the charts are redrawn.
+export async function atEverySession(page: Page, scope: Locator, visit: (at: string, index: number) => Promise<void>): Promise<number> {
+  await seek(page, scope, 'Home');
+  const count = Number(await slider(scope).getAttribute('max')) + 1;
+  for (let index = 0; index < count; index += 1) {
+    if (index > 0) await seek(page, scope, 'ArrowRight');
+    await expect(slider(scope)).toHaveValue(String(index));
+    await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
+    await visit((((await sliderValue(scope).textContent()) ?? '').trim()), index);
+  }
+  return count;
+}
+
 type Size = { width: number; height: number };
 
 // The overlay's header, the headline and both charts fit one screen, and everything lies inside the viewport's width.
