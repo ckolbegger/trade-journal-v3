@@ -9,15 +9,17 @@ import mergedConfig from '../eslint.config.js';
 // Lints a planted source string with the merged repository configuration, keeping only the entries that set the
 // estimates rule (type-aware rules need a project service a string lacks), so a plant is never a committed file.
 const ruleId = '@typescript-eslint/no-restricted-imports';
+const dynamicRuleId = 'estimates/no-dynamic-import';
+const ruleIds = [ruleId, dynamicRuleId];
 const linter = new Linter({ configType: 'flat' });
 const config: Linter.Config[] = [
   { files: ['**/*.{ts,tsx}'], languageOptions: { parser: tseslint.parser } },
-  ...(mergedConfig as Linter.Config[]).filter((entry) => entry.rules?.[ruleId] !== undefined),
+  ...(mergedConfig as Linter.Config[]).filter((entry) => ruleIds.some((id) => entry.rules?.[id] !== undefined)),
 ];
 const hits = (path: string, source: string) =>
   linter
     .verify(source, config, { filename: path })
-    .filter((m) => m.ruleId === ruleId)
+    .filter((m) => m.ruleId !== null && ruleIds.includes(m.ruleId))
     .map((m) => ({ line: m.line, message: m.message }));
 
 describe('the estimates rule (P121)', () => {
@@ -79,6 +81,36 @@ describe('the estimates rule (P121)', () => {
       expect(hits(about, source)).toHaveLength(1);
     }
     expect(hits('src/ui/screens/TradeDetail.tsx', "import { shortRate } from '../../domain/option-pricing/assumptions.ts';")).toHaveLength(1);
+  });
+
+  // A computed specifier is out of scope; only a string literal is read.
+  it('should reject a dynamic import of domain/option-pricing from any file but trade-analysis/replay-estimates.ts, the About page may still import() assumptions.ts only', () => {
+    const source = "const m = await import('../option-pricing/price.ts');";
+    for (const path of ['src/domain/trade-analysis/replay-series.ts', 'src/domain/trade-analysis/evaluate.ts', 'src/coordinators/replay/replay.ts', 'src/ui/cockpit/replay/frame.tsx', 'tools/anything.ts']) {
+      const found = hits(path, source);
+      expect(found).toHaveLength(1);
+      expect(found[0]?.message).toContain('estimates-rule:');
+    }
+    expect(hits('src/domain/trade-analysis/replay-estimates.ts', source)).toEqual([]);
+    const about = 'src/ui/screens/AboutView.tsx';
+    expect(hits(about, "const m = await import('../../domain/option-pricing/assumptions.ts');")).toEqual([]);
+    expect(hits(about, "const m = await import('../../domain/option-pricing/price.ts');")).toHaveLength(1);
+    expect(hits('src/ui/screens/TradeDetail.tsx', "const m = await import('../../domain/option-pricing/assumptions.ts');")).toHaveLength(1);
+  });
+
+  it('should reject a dynamic import of replay-estimates from any file but replay-series.ts', () => {
+    for (const [path, source] of [
+      ['src/domain/trade-analysis/evaluate.ts', "const m = await import('./replay-estimates.ts');"],
+      ['src/coordinators/replay/replay.ts', "const m = await import('../../domain/trade-analysis/replay-estimates.ts');"],
+      ['src/domain/option-pricing/price.ts', "const m = await import('../trade-analysis/replay-estimates.ts');"],
+    ] as const) {
+      const found = hits(path, source);
+      expect(found).toHaveLength(1);
+      expect(found[0]?.message).toContain('estimates-rule:');
+    }
+    expect(hits('src/domain/trade-analysis/replay-series.ts', "const m = await import('./replay-estimates.ts');")).toEqual([]);
+    // Other modules stay importable dynamically.
+    expect(hits('src/main.tsx', "const m = await import('./App.tsx');")).toEqual([]);
   });
 
   it('should pass every file of the current tree', () => {
