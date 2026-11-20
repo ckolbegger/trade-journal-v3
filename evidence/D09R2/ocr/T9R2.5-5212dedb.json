@@ -1,0 +1,112 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 0,
+    "total_tokens": 57106,
+    "input_tokens": 56782,
+    "output_tokens": 324,
+    "cache_read_tokens": 8320,
+    "elapsed": "19s"
+  },
+  "tool_calls": {
+    "total": 6,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 5
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/modules/market-data/market-data.test.ts",
+        "src/modules/market-data/market-data.ts",
+        "src/ui/cockpit/drawers/today.props.test.ts"
+      ]
+    }
+  ],
+  "session_id": "0b6ea3ed-01fa-4a78-ab6a-589ac19ca457",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "0b6ea3ed-01fa-4a78-ab6a-589ac19ca457",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "5212dedb",
+      "resolved_base": "c814d54be754c8bd6ff38e1180e2e34c138d63a8",
+      "resolved_head": "5212dedb5caf9f6691364c040f84eee4e25531ae",
+      "exact_range": "c814d54be754c8bd6ff38e1180e2e34c138d63a8..5212dedb5caf9f6691364c040f84eee4e25531ae",
+      "source_artifact_sha256": "63af90ba884ccfe4a3861acf681e42183474ad0a0bc42d5a7bc4f38b34e61f29"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "3d0115b251110086341f7337a4cc51124dc1674e1a25fa485322476ed661a31e",
+          "path": "src/ui/cockpit/drawers/today.props.test.ts",
+          "fingerprint": "6c0e34835607445c149d3ce71965870c7a8ff3876f4bf7dd6d2c2dccc6d695a1"
+        },
+        {
+          "item_id": "70c9d5b6c3936c08c792eaf13450c0216fd2c8094414ca3361baf96d37547c3e",
+          "path": "src/modules/market-data/market-data.ts",
+          "fingerprint": "81fac4772caa2b69d9687f39a0f2bbd7d84a8767e0414c967eaa2cae95c5c92c"
+        },
+        {
+          "item_id": "cebc4e57f51469e8b3f54198fd5c82c8ce03505b9cfb7cb6445698d314c0f6c5",
+          "path": "src/modules/market-data/market-data.test.ts",
+          "fingerprint": "a7641f3d5358b381b9e12ee7289498881198332f0385bd1c71ad52847df871d4"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "3d0115b251110086341f7337a4cc51124dc1674e1a25fa485322476ed661a31e",
+          "path": "src/ui/cockpit/drawers/today.props.test.ts",
+          "fingerprint": "6c0e34835607445c149d3ce71965870c7a8ff3876f4bf7dd6d2c2dccc6d695a1"
+        },
+        {
+          "item_id": "70c9d5b6c3936c08c792eaf13450c0216fd2c8094414ca3361baf96d37547c3e",
+          "path": "src/modules/market-data/market-data.ts",
+          "fingerprint": "81fac4772caa2b69d9687f39a0f2bbd7d84a8767e0414c967eaa2cae95c5c92c"
+        },
+        {
+          "item_id": "cebc4e57f51469e8b3f54198fd5c82c8ce03505b9cfb7cb6445698d314c0f6c5",
+          "path": "src/modules/market-data/market-data.test.ts",
+          "fingerprint": "a7641f3d5358b381b9e12ee7289498881198332f0385bd1c71ad52847df871d4"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "1048f9791f4471511300c9a322d97f09bfb45da533ff18c3554174ec2ef6f14d",
+          "path": "evidence/D09R2/tdd-log/T9R2.5.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 18642
+  }
+}

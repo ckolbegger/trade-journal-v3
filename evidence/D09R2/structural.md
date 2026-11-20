@@ -52,3 +52,14 @@ D9R2 runs one task at a time (P162; decision 100). Each task's heading holds its
 - Computed style, scratch spec: Trade P&L gain cell "$218.05" is rgb(29, 107, 52) = --target #1d6b34; a cell given the loss class is rgb(163, 38, 27) = --stop #a3261b. Both are the existing tokens used on the pnl card; contrast against the card background was not re-measured here (B9R2.1 later).
 - `npm run lint`: 0 errors, 2 pre-existing warnings in OwedDebtItem.tsx.
 - Base `4f3d6a76`, commit `7b1d9eed` (the subagent wrote the lines above into this file in its own commit). Light (decision 122): no ocr, no suite run. The pre-commit hook ran typecheck and lint; `tsc6` and `lint:deps` were not run by the subagent and are covered by the next run (T9R2.5's). First-run passes: none (no case). Words: none.
+
+## T9R2.5 Series points carry the resolution revision
+
+- Base `7b1d9eed`, commit `5212dedb`. Full (decision 122).
+- Cases: 2, each red by assertion (no `resolutionRevision` on the point) before any production code, then green (`tdd-log/T9R2.5.md`); 40 market-data cases pass. First-run passes: none.
+- Strict expectations given exactly the new field (A290): `market-data.test.ts` 646 (`price: '10.5', revisionNumber: 1, source: 'Manual'` → adds `resolutionRevision: 1`; listed as 648 in section 1.6) and 722 (`price: '9', revisionNumber: 1, source: 'Manual'` → adds `resolutionRevision: 1`; listed as 700). Nothing else changed in them.
+- Deviation (subagent, recorded): `src/ui/cockpit/drawers/today.props.test.ts` 337, a `point` builder feeding `settlementUnderlying` (not an expectation, missed by section 1.6's consumer list), gained `resolutionRevision: 1` because typecheck failed once the field was required; its 28 cases pass.
+- No fixture view changed; `trade-views.ts`, `assemble-replay.ts`, `daily-review.test.ts` and `replay-trade.test.ts` needed no edit. Every query-count proof passes with its request list unchanged.
+- Types: `SeriesPoint`'s Available kind gains `readonly resolutionRevision: number`; the internal `seriesPoint` takes it as a fourth parameter (from the stored record in `historicalGaps`, from the session date's read record in `series`).
+- ocr (`ocr/T9R2.5-5212dedb.json`): **No findings.** 3 files reviewed.
+- Run `T9R2.5` (browser-auto 7b1d9eed): tier **task**, reason "no changed path since 7b1d9eed is on the full-tier list". Unit 224 files, 2601 tests; integration 137 files, 294 tests; browser task tier 5 passed; checks 14 of 14. Ports free before and after. No flaky case failed. `run-complete.sh`: run complete.
