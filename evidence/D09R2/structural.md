@@ -44,3 +44,10 @@ D9R2 runs one task at a time (P162; decision 100). Each task's heading holds its
 - Words: W78 as approved; no P137 change; no new words.
 - ocr (`ocr/T9R2.3-4f3d6a76.json`): **No findings.** 2 files reviewed.
 - Run `T9R2.3` (browser-task): unit 224 files, 2599 tests; integration 137 files, 294 tests; browser task tier 5 passed (13.1 s); checks 14 of 14. Ports free before and after. No flaky case failed. `run-complete.sh`: run complete.
+
+## T9R2.4 Price History gain and loss colours
+
+- Light (decision 122); styles only, no case. `src/ui/cockpit/styles/history.css` gains `.price-history td.gain { color: var(--target) }` and `.price-history td.loss { color: var(--stop) }`. `price-history.tsx` (in `drawers/`) already puts `cell.tone` ('gain' or 'loss') on the td, so its markup is unchanged. The sign stays in the text.
+- `.claude/scripts/with-browser-lock.sh npm run test:e2e:specs -- e2e/d8p/history.spec.ts` (with a scratch spec, since deleted): history.spec.ts 3 passed.
+- Computed style, scratch spec: Trade P&L gain cell "$218.05" is rgb(29, 107, 52) = --target #1d6b34; a cell given the loss class is rgb(163, 38, 27) = --stop #a3261b. Both are the existing tokens used on the pnl card; contrast against the card background was not re-measured here (B9R2.1 later).
+- `npm run lint`: 0 errors, 2 pre-existing warnings in OwedDebtItem.tsx.

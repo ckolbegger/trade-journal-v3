@@ -29,6 +29,13 @@
   display: block;
   font-size: 0.75rem;
 }
+/* Signed results take the colours used everywhere else; the sign stays in the text. */
+.price-history td.gain {
+  color: var(--target);
+}
+.price-history td.loss {
+  color: var(--stop);
+}
 .price-history-gaps {
   color: var(--muted);
 }
