@@ -113,6 +113,18 @@ test.describe('B9.6 The estimates', () => {
     await expect(smallChart(scope).locator('li').nth(8)).toHaveCount(0);
     await expect(smallChart(scope).locator('li').last()).toHaveText('Tue Nov 10: Unavailable');
     await expect(smallChart(scope).getByTestId('iv-point')).toHaveCount(6);
+    // Wed 11-11: the first session after the gap. The line breaks at Tue 11-10: no run joins the Mon 11-09 point to the Wed 11-11 point.
+    await page.keyboard.press('Escape');
+    await seek(page, scope, 'ArrowRight');
+    await expect(sliderValue(scope)).toHaveText('Wed Nov 11 · 8 of 8');
+    await tabToVolatilityChip(page, scope);
+    await expect(smallChart(scope).getByTestId('iv-point')).toHaveCount(7);
+    const dots = await smallChart(scope).getByTestId('iv-point').evaluateAll((els) => els.map((el) => el.getAttribute('cx')));
+    const runs = await smallChart(scope).getByTestId('iv-line').evaluateAll((els) => els.map((el) => (el.getAttribute('points') ?? '').split(' ').map((pair) => pair.split(',')[0])));
+    // Mon 11-02 to Mon 11-09 are six points in one run; Wed 11-11 stands alone (a run of one draws no line).
+    expect(runs, 'one run, the six points before the gap').toHaveLength(1);
+    expect(runs[0], 'the run holds Mon Nov 2 to Mon Nov 9').toEqual(dots.slice(0, 6));
+    expect(runs.flat(), 'no run reaches the Wed Nov 11 point').not.toContain(dots[6]);
     // Mon 11-02: a Put behaves like short stock (W47).
     await page.keyboard.press('Escape');
     await seek(page, scope, 'Home');
