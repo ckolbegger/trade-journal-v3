@@ -561,3 +561,14 @@ Commands and outcomes:
 - Ports 5175, 9341, 9342 had no listener before or after.
 - `npm run typecheck`: exit 0. `npm run lint`: exit 0 (two existing warnings in src/ui/screens/OwedDebtItem.tsx).
 - `git diff --stat`: e2e/d9 files and this file only.
+- **T9.20-D1 ocr** (`evidence/D09/ocr/T9.20-D1-f1209b94.json`, the retry after a transient "servers are currently overloaded" failure): **No findings.** Plan revision 108 (decision 119) repoints AC-DEL-001's D9 command to `e2e/d9ar/responsive-a11y.spec.ts` (`f7fb30d3`, tagged `claude-opus-5.5-plan-r108`); `acceptance-commands.sh plan/D09-trade-replay.md` then fails only AC-CALC-005 (T9.26 not yet built) and AC-REV-002 (stage C), as expected.
+- Implementation-level decision (main session): T9.20-D1's complete run is the one after T9.20-D2, which re-splits the browser stages and is verified by a full-tier run; one full run covers both (about 20 minutes saved).
+
+### T9.20-D2
+
+browser-4 stage for `e2e/d9` (which also matches `e2e/d9ar`), from `f7fb30d3` (plan decision 119, revision 108; SB-Q2 option c).
+
+- Changed: `package.json` (`test:e2e:3` = `e2e/d8p e2e/d8`; new `test:e2e:4` = `e2e/d9`; `test:e2e` runs all four), `.claude/scripts/full-suite.sh` (stage `browser-4`, usage, header, the `browser-task` folder list reads `:4` too, the `browser-auto` hint), `run-complete.sh` (full tier is seven files; any of the four browser files marks it), `run-complete.test.sh`, `acceptance-commands.sh` (`test:e2e:4` accepted; bare `test:e2e` sums four), `.claude/agents/suite-runner.md` (four foreground calls, `browser-4` with the 600000 ms limit), `.claude/docs/implementing.md` (browser tier paragraph; new deliverables join `browser-4`; next split would be `browser-5`). `status.sh`, `with-browser-lock.sh` and `tools` name no stage: not changed. `.claude/hooks` name none either.
+- `.claude/scripts/run-complete.test.sh`: exit 0 (cases now: seven files complete; missing browser-2 named; no browser-4 named; browser-4 alone names browser-1, browser-2 and browser-3).
+- `npx playwright test --list <script folders> --grep-invert @release-history`: `test:e2e:1` 126 tests (37 files); `:2` 79 (42); `:3` 57 (26); `:4` 105 (16; `e2e/d9` alone 22 in 6 files, `e2e/d9ar` 83 in 10). 126 + 79 + 57 + 105 = 367 = one `--list` over all folders together (367 tests, 121 files; 37 + 42 + 26 + 16 = 121, so no file in two stages and none left out). browser-3 before: 57 + 105 = 162 listed (156 passed at D9A-R's gate3, plus skips).
+- `npm run typecheck`: exit 0. `npm run lint`: exit 0 (two existing warnings). Ports 5175, 9341, 9342 had no listener. Full suite not run (the main session sends it to suite-runner).
