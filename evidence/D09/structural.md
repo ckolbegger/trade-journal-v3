@@ -760,3 +760,13 @@ Complete run `t9.29` (browser `browser-task`, on `a2b2a8f9`; `run-complete.sh`: 
 | Checks | 14 of 14 |
 
 The unit failure did not reproduce: 3 of 3 alone and 3 of 3 with its file, in the main session. Recorded as a flake (tech debt item 7), as stage B did for B8.16 (item 3); T9.29 changed no file it reads.
+
+### T9.30 Attention shared, and the meter's reading (Full)
+
+Commit `349ad6ec`. Refactor step first: `attention.ts`, `attention.test.ts` and `option-attention.test.ts` moved to `src/coordinators/valuation/` with `git mv`; also moved `unavailableFamilies`, `CalculationFamily`, `AttentionBand`, `AttentionReason`, `Pressure`, `PressureResult`, `RangePlacement`, `RangePositionResult`, re-exported from `daily-review/types.ts`; one import path changed in `option-attention.test.ts`, no expected value. New `meterReadingOf` in `valuation/meter.ts`: `{stop, target, banked, now: CalculationResult<{pnl, zone, pastBy?, share?: {fraction, percent, toward}}>, previous?: {tradingDate, pnl, direction?}}`.
+
+5 planned cases plus two the brief asked for (the share toward a rail; Up, Down or Level from the session before), each red then green. **First-run passes, flagged:** "keep the lines and the earlier result when today's Mark is missing" (mutation: `previous` dropped when `now` is not a Value; failed `expected undefined to be '2026-11-09'`) and "R-DALE-D past the Stop's line by $9.00" (mutation: zone fixed to `'Between'`; failed `expected 'Between' to be 'PastStop'`). The subagent wrote one guard ahead of its case, reverted it for a genuine red, and restored it.
+
+Notes for later tasks (subagent's): T9.31 supplies the evaluation at the session before; `direction` is absent when `now` is Unavailable, so the adapters (T9.33, T9.34, T9.35) must handle a `previous` without one (the meter's `MeterPrevious.direction` is required); the domain zone `'Between'` maps to the meter's `'Within'`.
+
+ocr `349ad6ec`: No findings (`ocr/T9.30-349ad6ec.json`).

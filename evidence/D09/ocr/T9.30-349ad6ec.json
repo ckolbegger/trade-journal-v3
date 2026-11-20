@@ -1,0 +1,179 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 8 selected item(s).",
+  "summary": {
+    "files_reviewed": 8,
+    "comments": 0,
+    "total_tokens": 113124,
+    "input_tokens": 111216,
+    "output_tokens": 1908,
+    "cache_read_tokens": 13312,
+    "elapsed": "36s"
+  },
+  "tool_calls": {
+    "total": 13,
+    "by_tool": {
+      "code_search": 3,
+      "file_read": 8,
+      "file_read_diff": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Daily review coordinator and type updates",
+      "files": [
+        "src/coordinators/daily-review/daily-review.ts",
+        "src/coordinators/daily-review/types.ts"
+      ]
+    },
+    {
+      "label": "Valuation attention logic, meter, exports, and tests",
+      "files": [
+        "src/coordinators/valuation/attention.test.ts",
+        "src/coordinators/valuation/attention.ts",
+        "src/coordinators/valuation/index.ts",
+        "src/coordinators/valuation/meter.test.ts",
+        "src/coordinators/valuation/meter.ts",
+        "src/coordinators/valuation/option-attention.test.ts"
+      ]
+    }
+  ],
+  "session_id": "4da424b9-1df6-41c1-9e0c-7bdafcb091f0",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "4da424b9-1df6-41c1-9e0c-7bdafcb091f0",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "349ad6ec",
+      "resolved_base": "7949b0e244da0804c2462fd6fb5c738599897b0d",
+      "resolved_head": "349ad6ec0d8dce7ee090d127f3360ed42fd2ebb9",
+      "exact_range": "7949b0e244da0804c2462fd6fb5c738599897b0d..349ad6ec0d8dce7ee090d127f3360ed42fd2ebb9",
+      "source_artifact_sha256": "dc53425e44a5cb4e5c7f921c51d4be6b3d4b4125bd4ed6eef8c19df35e50fca0"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "281f5b5f26aecbf87507cb9163eda5c8a9ca47301fb6d0bec13b00e52eabadd3"
+        },
+        {
+          "item_id": "424e138d5647900dc7031d14e5889c1d48a7bb1c9b5bc511f588515d752fe710",
+          "path": "src/coordinators/valuation/meter.test.ts",
+          "fingerprint": "ad70d31a9a5dac7a99e402ba71d0765f439796fc7ce27a9af934464b6ab0ada5"
+        },
+        {
+          "item_id": "5c3780cf0149998f0ef8030ae78019fdb844121273965b0a6fd1514db4e134d0",
+          "path": "src/coordinators/valuation/meter.ts",
+          "fingerprint": "0a474187deda617829d0b279020eb780359634d6ca7284109ac9319f5b116c47"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "08bdeb2f916fb66ead223f4fd11b696a2e5dec7d6792c65469245d6f06e32bf2"
+        },
+        {
+          "item_id": "9bd32b4397b91c39e46890ee71a269c04773bdf96606d60b8e26efdc47a1ac05",
+          "path": "src/coordinators/valuation/attention.ts",
+          "old_path": "src/coordinators/daily-review/attention.ts",
+          "fingerprint": "55c499549f4e7f0410fc50f67e4891599e60faf0f10d8aede0d101d2c2cab169"
+        },
+        {
+          "item_id": "b19ec1bcad75098482125b4592ab045a1607bdf7c921462a97a75c2821f330a5",
+          "path": "src/coordinators/valuation/index.ts",
+          "fingerprint": "59d6d7a1bbfeca789aa5b40ba6f9d06c0c4604e5f591c74356efebdde171f660"
+        },
+        {
+          "item_id": "c733c6eddbe8b22be739b9c81f78eb3fb29cd47b7457a80fc6921df3b07ce8c5",
+          "path": "src/coordinators/valuation/attention.test.ts",
+          "old_path": "src/coordinators/daily-review/attention.test.ts",
+          "fingerprint": "0c66b50e16e85d60237ce85805212f1e009d5e911d7f23bb64e37f83146394db"
+        },
+        {
+          "item_id": "f4cf4a4f4a7415ddd04e5e03ef86583ed1ad806b11055695895f444bc9276f38",
+          "path": "src/coordinators/valuation/option-attention.test.ts",
+          "old_path": "src/coordinators/daily-review/option-attention.test.ts",
+          "fingerprint": "4b75b7ff2a699c3ecee3d73bcdf4ff498d3f6bf4701770b0bec3fba99b8e9c0e"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "281f5b5f26aecbf87507cb9163eda5c8a9ca47301fb6d0bec13b00e52eabadd3"
+        },
+        {
+          "item_id": "424e138d5647900dc7031d14e5889c1d48a7bb1c9b5bc511f588515d752fe710",
+          "path": "src/coordinators/valuation/meter.test.ts",
+          "fingerprint": "ad70d31a9a5dac7a99e402ba71d0765f439796fc7ce27a9af934464b6ab0ada5"
+        },
+        {
+          "item_id": "5c3780cf0149998f0ef8030ae78019fdb844121273965b0a6fd1514db4e134d0",
+          "path": "src/coordinators/valuation/meter.ts",
+          "fingerprint": "0a474187deda617829d0b279020eb780359634d6ca7284109ac9319f5b116c47"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "08bdeb2f916fb66ead223f4fd11b696a2e5dec7d6792c65469245d6f06e32bf2"
+        },
+        {
+          "item_id": "9bd32b4397b91c39e46890ee71a269c04773bdf96606d60b8e26efdc47a1ac05",
+          "path": "src/coordinators/valuation/attention.ts",
+          "old_path": "src/coordinators/daily-review/attention.ts",
+          "fingerprint": "55c499549f4e7f0410fc50f67e4891599e60faf0f10d8aede0d101d2c2cab169"
+        },
+        {
+          "item_id": "b19ec1bcad75098482125b4592ab045a1607bdf7c921462a97a75c2821f330a5",
+          "path": "src/coordinators/valuation/index.ts",
+          "fingerprint": "59d6d7a1bbfeca789aa5b40ba6f9d06c0c4604e5f591c74356efebdde171f660"
+        },
+        {
+          "item_id": "c733c6eddbe8b22be739b9c81f78eb3fb29cd47b7457a80fc6921df3b07ce8c5",
+          "path": "src/coordinators/valuation/attention.test.ts",
+          "old_path": "src/coordinators/daily-review/attention.test.ts",
+          "fingerprint": "0c66b50e16e85d60237ce85805212f1e009d5e911d7f23bb64e37f83146394db"
+        },
+        {
+          "item_id": "f4cf4a4f4a7415ddd04e5e03ef86583ed1ad806b11055695895f444bc9276f38",
+          "path": "src/coordinators/valuation/option-attention.test.ts",
+          "old_path": "src/coordinators/daily-review/option-attention.test.ts",
+          "fingerprint": "4b75b7ff2a699c3ecee3d73bcdf4ff498d3f6bf4701770b0bec3fba99b8e9c0e"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "5c02f0b668efb9d2c89a523c3ecfdf37ad5bf6c9157e940234f495b26304936e",
+          "path": "evidence/D09/tdd-log/T9.30.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 36237
+  }
+}
