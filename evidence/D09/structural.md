@@ -729,3 +729,20 @@ browser-4 stage for `e2e/d9` (which also matches `e2e/d9ar`), from `f7fb30d3` (p
 ## Stage C
 
 Session started 2026-11-20 from `plan/D09C-handoff.md` on `9fedd87e`. Location checks matched; the diff since `claude-opus-5.5-d9b` holds only T9.28-D1, T9.28-D2 and the stage B retro commits (`provenance.md`, stage C row).
+
+### T9.29 The meter (Standard)
+
+Commit `52b83cb5` (`src/ui/cockpit/meter/`, `styles/meter.css`, one `@import` line in `src/ui/cockpit/index.css`, outside the brief's two paths but the only place cockpit styles are imported). 10 cases red then green. **First-run passes, flagged:** "the Stop's line to the right of break-even" (mutation: the track's low end ignored break-even; failed `expected +0 to be close to 11.11`) and "the same parts at each of its three sizes" (mutation: the faint mark left out for size `row`; failed on the part list). No words shortened.
+
+Subagent notes (not bug tasks): the adapters in T9.33, T9.34 and T9.35 must supply `share` (percent and the rail it runs toward), `pastBy` and `direction` (Up, Down, Level) finished, so T9.30's reading must carry them; the size `max-width`s (22rem, 11rem, 28rem) are guesses for T9.33, T9.34 and T9.35 to check.
+
+ocr `52b83cb5` (`ocr/T9.29-52b83cb5.json`):
+
+| Severity | Location | Claim | Verdict | Action |
+|---|---|---|---|---|
+| medium | `meter.tsx:64` | The solid banked fill is drawn after the past-rail hatch with no z-index, so it covers the hatch where they overlap | Valid | T9.29-B1 |
+| medium | `meter.tsx:13` | Stop and Target both 0 give a zero-length track; `at()` divides by zero and writes `NaN%` | Doubtful | T9.29-B2 |
+| medium | `meter.types.ts:20` | `pastBy` optional, but the name always interpolates it for the past zones | Style only (reviewer) | tech debt |
+
+- **T9.29-B1.** Defect: with banked profit beyond a Stop's line right of break-even and the pointer past it, the hatch is invisible. Case: *it should draw the hatch over the banked fill where the two overlap*.
+- **T9.29-B2.** Defect: a reading whose rails are both at break-even draws `NaN%` positions. Case: *it should draw a finite track when the results at the Stop and the Target are both break-even*.

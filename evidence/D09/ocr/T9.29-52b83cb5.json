@@ -1,0 +1,164 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 3,
+    "total_tokens": 136017,
+    "input_tokens": 133939,
+    "output_tokens": 2078,
+    "cache_read_tokens": 11648,
+    "elapsed": "1m6s"
+  },
+  "tool_calls": {
+    "total": 15,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 9,
+      "file_find": 2,
+      "file_read": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/meter/meter.tsx",
+      "content": "Handle a zero-length track before dividing. With stop.value and target.value both 0, lo and hi are both 0, so at(0) returns NaN and the rail, break-even, and pointer positions become invalid `NaN%` CSS. The plain-props contract does not exclude this input. Define a finite fallback position/domain and add a zero-span regression test.",
+      "existing_code": "  const at = (value: number) =\u003e Math.max(0, Math.min(1, (value - lo) / (hi - lo))) * 100;",
+      "start_line": 13,
+      "end_line": 13,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/cockpit/meter/meter.tsx",
+      "content": "The banked fill paints over the past-rail hatch because it comes later in DOM order and neither span has a z-index. For example, stop=150, target=1350, banked=450, and now=60/PastStop makes the solid banked segment cover the entire 60–150 hatch. Render the hatch after both fills (as the prototype does), or establish explicit layering that keeps it visible below the markers.",
+      "existing_code": "          \u003cspan className={`m-bank ${props.banked.value \u003e 0 ? 'up' : 'dn'}`} data-testid=\"meter-banked\" data-tone={props.banked.value \u003e 0 ? 'profit' : 'loss'} data-fill=\"solid\" style={between(at, 0, props.banked.value)} /\u003e",
+      "start_line": 64,
+      "end_line": 64,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/cockpit/meter/meter.types.ts",
+      "content": "`pastBy` is optional for all zones, but nameOf unconditionally interpolates it for PastStop/PastTarget. A type-valid reading without this property produces an accessible name and tooltip containing “past the Stop by undefined.” Use a discriminated union requiring pastBy for past-rail zones, or omit the amount clause when it is absent; cover that contract in tests.",
+      "existing_code": "  readonly pastBy?: string;",
+      "start_line": 20,
+      "end_line": 20,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Cockpit meter component, types, styles, and tests",
+      "files": [
+        "src/ui/cockpit/index.css",
+        "src/ui/cockpit/meter/meter.test.tsx",
+        "src/ui/cockpit/meter/meter.tsx",
+        "src/ui/cockpit/meter/meter.types.ts",
+        "src/ui/cockpit/styles/meter.css"
+      ]
+    }
+  ],
+  "session_id": "6ad8fe31-69fe-4684-9a4d-aeb1767ea724",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "6ad8fe31-69fe-4684-9a4d-aeb1767ea724",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "52b83cb5",
+      "resolved_base": "88773d60acbbb1ae2d1f201fd72d8771f72a5980",
+      "resolved_head": "52b83cb5579bae7b11e9a099635b3c52931ac9cc",
+      "exact_range": "88773d60acbbb1ae2d1f201fd72d8771f72a5980..52b83cb5579bae7b11e9a099635b3c52931ac9cc",
+      "source_artifact_sha256": "fea0176e261bb6b266cf5cfcbbe23d3612797aeca5e5d665a4dd69ffbdba0d63"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "245cd268cbc797c8fea8dd4d026c877470552851c42d91b62b3f53ad0767a8c3",
+          "path": "src/ui/cockpit/meter/meter.test.tsx",
+          "fingerprint": "f1e7b159e73b85d5d49bae1fdd099db465bfc921d3ecae1279d2797d41201f8d"
+        },
+        {
+          "item_id": "31d44f685aa4a2c24e316e1f051e995cfa50e50ecf25310e8e9017d7f35d5147",
+          "path": "src/ui/cockpit/index.css",
+          "fingerprint": "b8577d66a2c52cd636866c8f2c3f45b97a14be2190417b5d7b3a1f6baa7f1efd"
+        },
+        {
+          "item_id": "8b254b271075d73620ba34b180a9fb209145910c94ddb95ece8f962d79a11022",
+          "path": "src/ui/cockpit/meter/meter.tsx",
+          "fingerprint": "17b6e9fcf512b579a85bc49359f0aab1e7389951e9a31b1bf01ef4e95ebd56f2"
+        },
+        {
+          "item_id": "94ec89b2364cb712db2dab3bf99eae87e7d473f7e007b171350ac3814d18bf1a",
+          "path": "src/ui/cockpit/meter/meter.types.ts",
+          "fingerprint": "0b107e7dccfff02ee84a127b03977910d361e568a8fcdb3bd7d3c3110aa52902"
+        },
+        {
+          "item_id": "d981cbe48a2cd6b82bc3e6ab9bae9401aadfb6cc8e3227b4b6e18989f998da82",
+          "path": "src/ui/cockpit/styles/meter.css",
+          "fingerprint": "503ade6dd6758213950b4f2884906b58d15295500a63c26a067deda054256254"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "245cd268cbc797c8fea8dd4d026c877470552851c42d91b62b3f53ad0767a8c3",
+          "path": "src/ui/cockpit/meter/meter.test.tsx",
+          "fingerprint": "f1e7b159e73b85d5d49bae1fdd099db465bfc921d3ecae1279d2797d41201f8d"
+        },
+        {
+          "item_id": "31d44f685aa4a2c24e316e1f051e995cfa50e50ecf25310e8e9017d7f35d5147",
+          "path": "src/ui/cockpit/index.css",
+          "fingerprint": "b8577d66a2c52cd636866c8f2c3f45b97a14be2190417b5d7b3a1f6baa7f1efd"
+        },
+        {
+          "item_id": "8b254b271075d73620ba34b180a9fb209145910c94ddb95ece8f962d79a11022",
+          "path": "src/ui/cockpit/meter/meter.tsx",
+          "fingerprint": "17b6e9fcf512b579a85bc49359f0aab1e7389951e9a31b1bf01ef4e95ebd56f2"
+        },
+        {
+          "item_id": "94ec89b2364cb712db2dab3bf99eae87e7d473f7e007b171350ac3814d18bf1a",
+          "path": "src/ui/cockpit/meter/meter.types.ts",
+          "fingerprint": "0b107e7dccfff02ee84a127b03977910d361e568a8fcdb3bd7d3c3110aa52902"
+        },
+        {
+          "item_id": "d981cbe48a2cd6b82bc3e6ab9bae9401aadfb6cc8e3227b4b6e18989f998da82",
+          "path": "src/ui/cockpit/styles/meter.css",
+          "fingerprint": "503ade6dd6758213950b4f2884906b58d15295500a63c26a067deda054256254"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "2643dfc4291c393c200fdde1199359a3ab7e2d8a59d46a739977f37b4d677d81",
+          "path": "evidence/D09/tdd-log/T9.29.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 66480
+  }
+}
