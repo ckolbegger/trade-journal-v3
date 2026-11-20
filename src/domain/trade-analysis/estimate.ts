@@ -22,7 +22,9 @@ export type Estimate =
 export type EstimateSplit =
   | { readonly kind: 'Split'; readonly underlying: number; readonly time: number; readonly volatility: number; readonly remainder: number }
   | { readonly kind: 'Split'; readonly underlying: number; readonly timeAndVolatility: number; readonly remainder: number }
-  | { readonly kind: 'Unavailable'; readonly reason: EstimateUnavailableReason }
+  // `session` names the session whose figure is missing (the earlier one, or the later one when its own Mark is missing). `change` is
+  // the Mark's real change per share since `since`, the last session that had a Mark, where both ends have one (W48's not-split sentence).
+  | { readonly kind: 'Unavailable'; readonly reason: EstimateUnavailableReason; readonly session: string; readonly since?: string; readonly change?: number }
   | { readonly kind: 'NotApplicable' };
 
 // A session's estimates, with the rate and the days to expiration used (null where none applies, as for stock).
