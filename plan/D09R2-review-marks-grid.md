@@ -478,8 +478,8 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T9R2.6 | Full | Done | `460f1594`; B1 `d5e48854` |
 | T9R2.7 | Full | Done | `a5886612`; B1 `bbf1fb26` |
 | T9R2.8 | Standard | Done | `8debfb01` |
-| T9R2.9 | Standard | In progress from `8debfb01` | |
-| T9R2.10 | Light | Not started | |
+| T9R2.9 | Standard | Done | `7363ed21`; B1 `64cc2033`; B2 `d45f5fab` |
+| T9R2.10 | Light | In progress from `d45f5fab` | |
 | T9R2.11 | Standard | Not started | |
 | T9R2.12 | Standard | Not started | |
 | T9R2.13 | Standard | Not started | |

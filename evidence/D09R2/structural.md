@@ -123,3 +123,29 @@ D9R2 runs one task at a time (P162; decision 100). Each task's heading holds its
 - (main session) Base `bbf1fb26`, commit `8debfb01`. Standard (decision 122). New `SessionGrid({ rowLabels, columns })` (`src/ui/cockpit/session-grid.tsx`, `session-grid.types.ts`); `PriceHistoryProps` = `SessionGridProps` plus `missingCount`, `acknowledgedCount`, `onOpenReview`. The grid still renders `table.price-history` in a region labelled "Price History"; T9R2.9 makes the label and class props. The screenshots don't include an acknowledged cell (the seeded Trade has none).
 - ocr (`ocr/T9R2.8-8debfb01.json`): **No findings.** 4 files reviewed.
 - Run `T9R2.8` (browser-task): unit 225 files, 2620 tests; integration 137 files, 294 tests; browser task tier 5 passed (12.9 s); checks 14 of 14. Ports free before and after. No flaky case failed. `run-complete.sh`: run complete.
+
+## T9R2.9 The shared grid's editable cells and turned layout
+
+- Base `8debfb01`, commit `7363ed21`. Standard (decision 122).
+- Cases: 8, each red then green (`tdd-log/T9R2.9.md`); case 5's first green run failed on the test (no `afterEach(cleanup)`), fixed in the test. Cockpit unit tests 445 pass; `typecheck`, `tsc6`, `lint`, `lint:deps`, `verify:wording` pass. First-run passes: none.
+- Browser: `e2e/d8p/history.spec.ts` 3 passed; a deleted scratch spec proved the 44 px floor on touch (controls 29.6 and 42.6 px with a mouse). The measured turn under 40rem is proved only with a stubbed `ResizeObserver` (case 7); T9R2.11 checks it in a real browser (handoff note).
+- Words: W71, W73, W74, W77 as approved, literal in the component (`verify:wording` accepts them); no P137 change; no new words.
+- Types: `SessionGridFrame { label, tableClass }` (Price History passes "Price History", "price-history"); `SessionGridProps` gains `chosen?`, `layout?`, `onPressCell?`; column `role?`; `GridCell = GridValueCell | GridInputCell | GridNotHeldCell`.
+- Subagent notes (to the handoff's notes, not bug tasks): no "needed" look on the Review Date's inputs; choosing an input cell not wired; Enter order left to T9R2.11.
+- ocr (`ocr/T9R2.9-7363ed21.json`): 2 findings.
+
+| Severity | Category | Location | Claim | Verdict |
+|---|---|---|---|---|
+| medium | bug | `session-grid.css:51` | The 44 px touch floor applies only to `.session-grid-control`, so cells with no control (Not held, plain values) can stay shorter on touch. | Valid (case 8 says cells). Bug task **T9R2.9-B1**; scoped by the main session to grids with interactive cells, so Price History (read-only, T9R2.8) is unchanged. |
+| medium | bug | `session-grid.css:22` | A pressable cell with a gain or loss tone loses its colour (the button sets `color: var(--ink)`). | Valid, latent (nothing sets both today). Bug task **T9R2.9-B2**. |
+
+### T9R2.9-B1 44 px for every cell of an editable grid on touch
+
+- Case: "it should give every cell of an editable grid, including a Not held cell in a row with no control, at least 44 px of height on a touch screen". Commit `64cc2033`: red ("expected false to be true": no editable marker), then green. The grid sets `data-editable` on its table (both layouts) when any cell is an input or pressable; `@media (pointer: coarse)` gives `.price-history[data-editable] td { height: 44px }`; the case also asserts a read-only grid has no `data-editable`. `src/ui/cockpit` 35 files, 446 tests; `e2e/d8p/history.spec.ts` 3 passed. First-run passes: none. Proved by the CSS text and the attribute, as case 8 is (no touch measurement in a browser).
+- ocr (`ocr/T9R2.9-B1-64cc2033.json`): **No findings.**
+
+### T9R2.9-B2 A pressable cell keeps its gain or loss colour
+
+- Case: "it should keep a pressable cell's gain or loss colour". Commit `d45f5fab`: red (no `color: inherit` on the press button), then green (`button.session-grid-press { color: inherit }`, more specific than `.session-grid-control`'s ink); the draft chip keeps its own ink. `src/ui/cockpit` 35 files, 447 tests; `e2e/d8p/history.spec.ts` 3 passed. First-run passes: none.
+- ocr (`ocr/T9R2.9-B2-d45f5fab.json`): **No findings.**
+- Run `T9R2.9` (browser-task; after both bug tasks' clean ocr): unit 226 files, 2630 tests; integration 137 files, 294 tests; browser task tier 5 passed (13.0 s); checks 14 of 14. Ports free before and after. No flaky case failed. `run-complete.sh`: run complete.
