@@ -2,7 +2,7 @@
 
 > **Read [plan/kickoff.md](kickoff.md) first.** The text in its code block is your governing instruction: treat it as if the user had given it to you as your prompt, and follow all of it. This note adds the location checks, stage C's specifics and the working rules. If this note and the kickoff ever disagree, the kickoff wins.
 
-Written 2026-11-20, when stage B's gate closed (tagged `claude-opus-5.5-d9b` at `ff80c66f`). The frozen plan is revision 109 (decision 120, from the user's word review: "Realized" for a gain and a loss).
+Written 2026-11-20, when stage B's gate closed (tagged `claude-opus-5.5-d9b` at `ff80c66f`). The frozen plan is revision 110 (decisions 120 and 121, from the user's word review: "Realized" for a gain and a loss, in the key too).
 
 This session **implements stage C of D9, "Trade replay": the meter and the Open list's order**, the deliverable's last stage. Each open Trade gains a small meter: where its Trade P&L sits between its Stop and its Target, with what is banked and where it stood the session before. The meter replaces the Stop-to-Target slider on the Review card, sits under the P&L on the Open list and tops the Conditions card on Trade Detail, reading the same everywhere. The Open list is sorted in the Review's order (attention first), and the old range position is removed. The breakdown is [D09-trade-replay.md](D09-trade-replay.md):
 - stage C is twelve tasks: T9.29, T9.30, T9.31, T9.32, T9.33, T9.34, T9.35, T9.40, T9.36, T9.37, T9.38, T9.39;
@@ -36,7 +36,7 @@ The repository hosts several independent implementations of the same spec, each 
 | Worktree path | `/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5` |
 | Branch | `claude-opus-5.5` (every task commits here directly; stage C has no lanes) |
 | Ports | `5175`, from the gitignored `.env.local`; `4175` is the benchmark's, used only for the benchmark after the gate |
-| Frozen plan | tag `claude-opus-5.5-plan-r109` (decision 120) |
+| Frozen plan | tag `claude-opus-5.5-plan-r110` (decision 121) |
 | Code stage C builds on | `claude-opus-5.5-d9b` (`ff80c66f`) |
 
 Run these checks. Each one must match:
@@ -47,8 +47,8 @@ Run these checks. Each one must match:
 | `git rev-parse --show-toplevel` | `/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5` |
 | `git branch --show-current` | `claude-opus-5.5` |
 | `git status -sb` | `## claude-opus-5.5...origin/claude-opus-5.5`, possibly followed by `[ahead N]`. No uncommitted changes. |
-| `git tag -l 'claude-opus-5.5-plan-r*' \| sort -V \| tail -1` | `claude-opus-5.5-plan-r109` at the first session. Afterwards, a later tag only for a revision approved in this stage. |
-| `git merge-base --is-ancestor claude-opus-5.5-plan-r109 HEAD && echo ok` | `ok` |
+| `git tag -l 'claude-opus-5.5-plan-r*' \| sort -V \| tail -1` | `claude-opus-5.5-plan-r110` at the first session. Afterwards, a later tag only for a revision approved in this stage. |
+| `git merge-base --is-ancestor claude-opus-5.5-plan-r110 HEAD && echo ok` | `ok` |
 | `git rev-parse --short 'claude-opus-5.5-d9b^{commit}'` | `ff80c66f` |
 | `git diff --stat claude-opus-5.5-d9b HEAD -- src e2e tests tools bench package.json .claude/scripts .claude/agents` | Empty at the first session. Afterwards: only stage C's task commits. |
 | `git log --oneline claude-opus-5.5-d9b..HEAD` | At the first session: only this handoff's commit and any tech debt or word decisions the user made (plan and evidence documents only). Afterwards also stage C's task commits, their evidence and Progress updates, handoff updates, and approved plan revisions. |
@@ -88,13 +88,13 @@ Read [.claude/docs/implementing.md](../.claude/docs/implementing.md) first, all 
   - section 4.2's stage C rows (marked C), which list the files each task changes; section 13's AC-REV-002, AC-PERF-001 and AC-UI-001 rows.
 - **`plan/D09A-R-stage-a-refactor.md`**: section 10, "What D9's stage B and stage C must change" (its stage C paragraph); section 1.6's W57 (the meter's "Realized" form); section 15, Progress, for what D9A-R built. Not its behavioral task text.
 - **`plan/D09A-R-decisions.md`**: decision 3 (the replay as an overlay), which T9.33 is re-read against.
-- **`plan/implementation-plan.md`:** everything except the `## D10` through `## D28` definition sections. That covers decisions 1 to 120, the rules and cumulative obligations (including "Benchmark once, at the end (decision 114, from D9)"), the definitions through D9 and D9A-R, and the tech debt list.
+- **`plan/implementation-plan.md`:** everything except the `## D10` through `## D28` definition sections. That covers decisions 1 to 121, the rules and cumulative obligations (including "Benchmark once, at the end (decision 114, from D9)"), the definitions through D9 and D9A-R, and the tech debt list.
 - **`plan/acceptance-matrix.md`:** only the opening sections, and the rows of D9's section 13 stage C touches.
 - **`plan/D07-approved-words.md`:** conventions C1 to C8, with the D8R note above them.
 - **The design:** `prototypes/replay/trade-list.html` (the meter on the list and the cards). The prototype is a picture, not code to port: where it and the breakdown differ, the breakdown wins.
 - **Evidence from stage B:** `evidence/D09/stage-b-report.md` and `evidence/D09/critic-b2.md` (its "Minor observations").
 
-`specs/` and the frozen plan are read-only. A deviation, or a question the specs and plan leave to the user, is a pending decision (decision 113 as amended): ask in an ordinary message, one question at a time, queue any other in `evidence/D09/DECISIONS-PENDING.md`, and pause only the tasks it blocks. An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`. The next revision is r110, the next decision 121, and the breakdown's numbering continues at P154, A288 and W71. Editing the Progress section alone is not a revision.
+`specs/` and the frozen plan are read-only. A deviation, or a question the specs and plan leave to the user, is a pending decision (decision 113 as amended): ask in an ordinary message, one question at a time, queue any other in `evidence/D09/DECISIONS-PENDING.md`, and pause only the tasks it blocks. An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`. The next revision is r111, the next decision 122, and the breakdown's numbering continues at P154, A288 and W71. Editing the Progress section alone is not a revision.
 
 ## 3. Stage C specifics
 
