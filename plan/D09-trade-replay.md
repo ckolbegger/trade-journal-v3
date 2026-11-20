@@ -980,7 +980,7 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T9.33 | C | — | — | Done | `e2b082c8` |
 | T9.34 | C | — | — | Done | `12ed0a9f`; B1 `ffa14452`; B2 `4026dfd1` |
 | T9.35 | C | — | — | Done (raised to Full; its run's only failures are SC-Q1's six) | `6c31fc93`; B1 `930e2f73` |
-| T9.40 | C | — | — | In progress from `2870791d` | |
+| T9.40 | C | — | — | Done | `ae057f91` |
 | T9.36 | C | — | — | Not started | |
 | T9.37 | C | — | — | Not started | |
 | T9.38 | C | — | — | Not started | |

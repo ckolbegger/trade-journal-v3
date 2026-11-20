@@ -260,7 +260,6 @@ The main session saves the reports itself (`implementing.md`, "Final report"). A
 
 ### Notes for later tasks
 
-- For T9.40: stages A and B and D9A-R leave `rangePosition` exactly as it is; T9.33 removed `StopTargetSlider`, its only screen reader.
 - For T9.38: stage B's session cards and readout rows assert exact row lists in `e2e/d9/gaps.spec.ts` and `replay.spec.ts` (T9.25-B2); stage C adds nothing to the replay, so those lists should not change. If a stage C task changes one, that is a defect.
 - For T9.38: `meter-review.spec.ts` is AC-REV-002's command; the acceptance script fails on it until T9.38 writes it.
 

@@ -910,3 +910,5 @@ Cases touched (re-pointed = now asserts the meter reading's `now` for the same T
 - No case deleted outright. Stale comments naming the range position changed in `capabilities.ts`, `daily-review/types.ts`, `attention.ts` and `query-count.test.ts`.
 
 T9.40 (main session's check): `git diff -U0 ae057f91^ ae057f91 -- tests/fixtures` has 84 deleted `"rangePosition"` keys and no added or changed line (numstat: 0 added; 42, 42, 90, 118, 134, 90, 118, 134 deleted). Subagent note: the first `npx vitest run src/coordinators src/ui` had one unnamed failure that two reruns did not repeat (presumably tech debt item 11's flake). ocr `ae057f91`: No findings (`ocr/T9.40-ae057f91.json`).
+
+Complete run `t9.40` (`browser-auto 2870791d` chose the full tier: first matching path `src/app/routes.ts`; on `f5c7f083`; run complete): unit 224 files, 2,592 tests; integration 136 files, 292 tests; browser-1 126 (5.2 min), browser-2 79 (5.0 min), browser-3 57 (4.2 min), browser-4 109 passed and 4 skipped (4.9 min); checks 14 of 14. All passed.
