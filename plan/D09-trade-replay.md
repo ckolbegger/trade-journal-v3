@@ -962,8 +962,8 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T9.20-D1 | B | — | — | Done (the user's SB-Q2 answer: remove the `e2e/d9` cases `e2e/d9ar` duplicates; one found; decision 119) | `f1209b94` |
 | T9.20-D2 | B | — | — | Done (the user's SB-Q2 answer: a `browser-4` stage for `e2e/d9` and `e2e/d9ar`) | `8d8f37c2` |
 | T9.21 | B | — | — | Done | `0ac934d0` |
-| T9.22 | B | — | — | In progress from `0ac934d0` | |
-| T9.23 | B | — | — | Not started | |
+| T9.22 | B | — | — | Done | `7291900a`; B1 `5f08db60` |
+| T9.23 | B | — | — | In progress from `5f08db60` | |
 | T9.24 | B | — | — | Not started | |
 | T9.25 | B | — | — | Not started | |
 | T9.26 | B | — | — | Not started | |
