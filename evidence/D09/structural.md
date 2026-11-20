@@ -920,3 +920,21 @@ Stopped with no change (worktree clean): `tools/bench-expected-rows.ts` has no s
 ### T9.37 Stage C: Node integration suite (Light)
 
 Light (decision 122): no ocr, no suite run. Commit `17f05074` (tests and test support only: `tests/integration/d9/meter.test.ts` new; `query-count.test.ts`; `support.ts`; `tests/support/replay-series-app.ts` gains `seriesBook`). Subagent's checks: `npm run test:integration` 137 files, 294 tests passed; `npm run verify:fixtures` OK; typecheck, tsc6, lint, lint:deps exit 0; the acceptance script 9 rows, all pass except AC-REV-002 (`e2e/d9/meter-review.spec.ts`, T9.38's). **First-run passes, flagged:** I9.10 (mutation: the attention sort made a no-op; failed on the order) and I9.11 (mutation: `browseTrades` opens the session-before read session per Trade; failed on the request list). "The four Trades" read as R-BREN-U, R-CORV-D, R-DALE-D and R-AXIO-U (R-AXIO-U sits between the rails at Fri 11-13). I9.11 shows "nothing per Trade" by comparing a two-Trade and a four-Trade book.
+
+### T9.38 Stage C: browser suite (structural)
+
+Four new files in `e2e/d9/` (they join `browser-4`, which `npm run test:e2e:4` runs as `e2e/d9`, matching `e2e/d9ar` too): `meter-review.spec.ts` (B9.8, 2 cases), `open-list.spec.ts` (B9.9, 2), `meter-detail.spec.ts` (B9.10, 2), `meter-a11y.spec.ts` (B9.11, 2); `support.ts` gains `buildOn` (the old `build` on a page already onboarded, so several Trades share one Workspace), `Fixture.moreEntry`, the fixtures `DALE_D` and `AXIO_U`, and the readers `reviewMeters`, `listMeters`, `openOpenList`, `expectTrackDashed`. Nothing under `src/` changed. The cases' first runs and mutation checks are in `tdd-log/T9.38.md`.
+
+Commands and results (each in `.claude/scripts/with-browser-lock.sh`, port 5175, nothing on 5175, 9341 or 9342 before or after):
+
+- `npx playwright test e2e/d9/meter-review.spec.ts e2e/d9/open-list.spec.ts e2e/d9/meter-detail.spec.ts e2e/d9/meter-a11y.spec.ts` (repeated 3 or 4 times each while the reads were made steady): 8 of 8 pass.
+- `npm run test:e2e:4` (builds `dist-faults` and `dist-releases`, then `playwright test e2e/d9 --grep-invert @release-history`): **117 passed, 4 skipped, 5.7 minutes** wall, builds included, under the 8-minute limit, so no fifth stage is needed yet. The 4 skipped are the earlier `test.fixme` cases.
+- `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint` (2 existing warnings, 0 errors) and `npm run lint:deps`: exit 0.
+- `.claude/scripts/acceptance-commands.sh plan/D09-trade-replay.md`: **9 commands checked, 0 failed.** AC-MARK-004 (gaps, 5 tests), AC-CALC-003 (replay, 1), AC-CALC-005 (estimates, 6), AC-CALC-004 (states, 4), AC-CAP-001 (capabilities, 1), AC-PERF-001 (query-count, 2), AC-UI-001 and AC-UI-002 (responsive-a11y, 5), AC-DEL-001 (d9ar responsive-a11y, 19) and AC-REV-002 (`meter-review.spec.ts`, 2) all name real tests.
+
+Decisions recorded:
+
+- The Review's order is by attention and the walk re-sorts after a saved Mark (the two XYZ cards go last once their Mark is saved), as D5R's walk did; B9.8 pins that, with T-B, T-C and T-E tied among themselves, because their order is not fixed. Stage B's replay lists (`gaps.spec.ts`, `replay.spec.ts`) did not change.
+- The Open list's order for the four Trades at Fri 11-13 is DALE (past its Stop), BREN, CORV (past the Target), AXIO (between the lines), the same as the Review's walk.
+- The Settlement Due row (R-DALE-U read at Mon 11-23) shows the dashed track, named "Settlement Due: DALE Nov 20 $57.50 Put Stop −$1,536.00, Target +$444.00." (B9.9's second case; T9.34's unit case had the only cover before).
+- Not mutation-tested: the axe scans of B9.11.

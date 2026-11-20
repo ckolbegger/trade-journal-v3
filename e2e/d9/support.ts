@@ -4,8 +4,8 @@
 // recorded with its own Economic Time. The prices are the series' observed Marks (the same arrays the Node suite replays); every figure and
 // word a spec asserts is plan section 5's or a W row's. All dates are 2026 and fall in EST (UTC-5).
 import type { Locator, Page } from '@playwright/test';
-import { K_SALE, R_BREN_U, R_CORV_D, R_DALE_U } from '../../src/domain/trade-analysis/option-trade.ts';
-import { R_AXIO_D, REPLAY_SESSION_DATES } from '../../src/domain/trade-analysis/reference-trade.ts';
+import { K_SALE, R_BREN_U, R_CORV_D, R_DALE_D, R_DALE_U } from '../../src/domain/trade-analysis/option-trade.ts';
+import { R_AXIO_D, R_AXIO_U, REPLAY_SESSION_DATES } from '../../src/domain/trade-analysis/reference-trade.ts';
 import {
   answerIn, closeTheTrade, currentTradeId, detail, exitReflection, expect, fillOptionPlan, fillPlan, fillOptionRows, fillRows, onboardedAt, openDrawer as openDetailDrawer, openExitForm, openReview, READY, reachPanel,
   recordExpiration, recordOptionEntry, recordEntry, test, tradeCard, type OptionPlanValues, type PlanValues, type Row, type TradeRef,
@@ -37,6 +37,7 @@ export interface Fixture {
   readonly contract?: string; // the option's label in the Review, such as "BREN Nov 20 $100 Call"
   readonly plan: { readonly option: OptionPlanValues; readonly stopOption?: string; readonly targetOption?: string } | { readonly stock: PlanValues };
   readonly entry: Row;
+  readonly moreEntry?: readonly Row[]; // further Executions of the same entry
   // Position Changes after the entry, in order: a partial sale, or a final sale that closes the Trade, or the Expiration.
   readonly changes: readonly ({ readonly kind: 'sell'; readonly row: Row; readonly closes?: true } | { readonly kind: 'expiration' })[];
   readonly series: Series;
@@ -84,6 +85,15 @@ export const DALE: Fixture = {
   series: R_DALE_U,
 };
 export const DALE_HOLD: Fixture = { ...DALE, changes: [] };
+// Stage C's four Trades at Fri 11-13 (I9.10): R-BREN-U (BREN, with its sale), R-CORV-D (CORV), R-DALE-D (3 of the 6 puts bought back Tue 11-10) and R-AXIO-U (100 shares Mon 11-02 and 100 more Fri 11-06).
+export const DALE_D: Fixture = { ...DALE, changes: [{ kind: 'sell', row: at10('2026-11-10', '3', '2.59') }], series: R_DALE_D };
+export const AXIO_U: Fixture = {
+  ...AXIO,
+  entry: at10('2026-11-02', '100', '50.00'),
+  moreEntry: [at10('2026-11-06', '100', '51.40')],
+  changes: [],
+  series: R_AXIO_U,
+};
 
 // Fills and confirms the Trade's Plan (dated Mon 11-02 09:00), ending on its Trade Detail.
 async function confirmPlan(page: Page, fixture: Fixture): Promise<TradeRef> {
@@ -118,9 +128,15 @@ export async function build(
   recorded: number = fixture.changes.length,
 ): Promise<{ context: BrowserContext; page: Page; trade: TradeRef }> {
   const { context, page } = await onboardedAt(profile, clock);
+  return { context, page, trade: await buildOn(page, fixture, through, recorded) };
+}
+
+// The same on a page that is already onboarded, so that several Trades can share one Workspace.
+export async function buildOn(page: Page, fixture: Fixture, through: number, recorded: number = fixture.changes.length): Promise<TradeRef> {
   const trade = await confirmPlan(page, fixture);
-  if ('stock' in fixture.plan) await recordEntry(page, [{ ...fixture.entry, fee: '0.00' }]);
-  else await recordOptionEntry(page, [fixture.entry]);
+  const entryRows = [fixture.entry, ...(fixture.moreEntry ?? [])];
+  if ('stock' in fixture.plan) await recordEntry(page, entryRows.map((row) => ({ ...row, fee: '0.00' })));
+  else await recordOptionEntry(page, entryRows);
   // The Review lists only an Open Trade's missed sessions, so the Marks are saved before a closing sale or an Expiration is recorded.
   const wanted = fixture.changes.slice(0, recorded);
   const closing = (change: Fixture['changes'][number]): boolean => change.kind === 'expiration' || change.closes === true;
@@ -146,7 +162,7 @@ export async function build(
   }
   await page.goto(`/trades/${trade.tradeId}`);
   await expect(detail.heading(page, fixture.symbol)).toBeVisible(READY);
-  return { context, page, trade };
+  return trade;
 }
 
 // Fills each Mark row of sessions 0..through in the Review's Marks panel, then presses Save Marks once.
@@ -238,5 +254,41 @@ export async function setViewport(page: Page, width: number, height: number): Pr
   await page.setViewportSize({ width, height });
   await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
 }
+
+// ---- Stage C: the meter's names, in the Review's cards and in the Open list's rows ------------------------------------------------------------
+
+// The Review's cards in their order: each Trade's id, and the name of the meter in its header.
+export const reviewMeters = (page: Page): Promise<{ id: string; name: string | null }[]> =>
+  page.locator('li.review-card').evaluateAll((cards) =>
+    cards.map((card) => ({ id: card.getAttribute('data-trade-id')!, name: card.querySelector('.review-card-head [role="img"]')?.getAttribute('aria-label') ?? null })));
+
+// The Open list's rows in their order: each Trade's id, and the name of every meter a row shows (a hidden copy is not shown).
+// A list that re-renders under the read gives no rows, or rows without their meter, for a moment, so the read is repeated until every row has one.
+export async function listMeters(page: Page): Promise<{ id: string; names: string[] }[]> {
+  let rows: { id: string; names: string[] }[] = [];
+  await expect
+    .poll(async () => {
+      rows = await page.getByRole('table', { name: 'Open Trades' }).locator('tbody tr').evaluateAll((trs) =>
+        trs.map((row) => ({
+          id: row.querySelector('a')!.getAttribute('href')!.replace('/trades/', ''),
+          names: [...row.querySelectorAll('[role="img"].meter')].filter((m) => (m as HTMLElement).offsetParent !== null).map((m) => m.getAttribute('aria-label')!),
+        })));
+      return rows.length > 0 && rows.every((row) => row.names.length > 0);
+    }, { message: 'the Open list has rows, each with a meter shown' })
+    .toBe(true);
+  return rows;
+}
+
+// The Open list: the primary navigation's Trades link, then the table once it has rows.
+export async function openOpenList(page: Page): Promise<void> {
+  await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Trades', exact: true }).click();
+  await expect(page.getByRole('table', { name: 'Open Trades' })).toBeVisible(READY);
+}
+
+// A meter's track is dashed when there is no Mark. Polled: a list that re-renders leaves a detached track, whose computed style is empty and says nothing.
+export const expectTrackDashed = (meter: Locator, dashed: boolean): Promise<void> =>
+  expect
+    .poll(() => meter.getByTestId('meter-track').evaluate((el) => getComputedStyle(el).borderStyle), { message: dashed ? 'the track is dashed' : 'the track is not dashed' })
+    .toEqual(dashed ? 'dashed' : expect.not.stringMatching(/^(dashed|)$/));
 
 export { test };
