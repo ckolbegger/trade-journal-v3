@@ -2,7 +2,7 @@
 
 > **Read [plan/kickoff.md](kickoff.md) first.** The text in its code block is your governing instruction: treat it as if the user had given it to you as your prompt, and follow all of it. This note adds the location checks, stage B's specifics and the working rules. If this note and the kickoff ever disagree, the kickoff wins.
 
-Written 2026-11-19, when D9A-R's gate closed (`c2431d50`, tagged `claude-opus-5.5-d9ar`). The breakdown is unchanged since revision 107.
+Written 2026-11-19, when D9A-R's gate closed (`c2431d50`, tagged `claude-opus-5.5-d9ar`), and updated after the D9A-R retrospective (`a574d196`, tagged `claude-opus-5.5-d9ar-post-retro`). The breakdown is unchanged since revision 107.
 
 This session **implements stage B of D9, "Trade replay": the option estimates**. For an option Trade, the replay gains three figures, each labelled "estimate": the option's implied volatility, how many shares the Position behaves like, and how the option's Mark change splits between the Underlying's move, time passing and volatility. They help the trader catch a wrong Mark and learn how options move. They never change a P&L, a risk figure or a condition's status. The breakdown is [D09-trade-replay.md](D09-trade-replay.md):
 - stage B is nine tasks: T9.20, T9.21, T9.22, T9.23, T9.24, T9.25, T9.26, T9.27, T9.28;
@@ -14,6 +14,12 @@ Task status lives in the breakdown's Progress section (section 15). Stage B's ro
 
 Where things stand:
 - **D9A-R: closed 2026-11-19 by the user's decision**, tagged `claude-opus-5.5-d9ar` at `c2431d50`. Critic-3 passed every flow. Its one moderate defect and two low defects were moved to tech debt (`evidence/D09AR/tech-debt.md`), which the user reviews before this stage starts (section 7, "Open questions").
+- **The D9A-R retrospective** changed the code after the gate, up to `claude-opus-5.5-d9ar-post-retro`:
+  - lint now rejects a new nested ternary; the 76 existing ones are recorded in `eslint-suppressions.json`;
+  - `e2e/d9ar` writes its screenshots to `test-results/d9ar-screenshots/`, so a run leaves `evidence/` untouched;
+  - the replay's progress line, crossing line, stake sentence and phone label strip now draw through `Words`, and a new strict spec, `e2e/d9ar/sweep.spec.ts`, checks the whole overlay at every session for figure text outside a `card-figure`;
+  - `npm run report:labels` (`e2e/d9ar/label-sweep.spec.ts`, skipped in normal runs) reports chart labels drawn over; it is the tool for label work, and its 155 findings are one tech-debt item;
+  - the agent rules changed. `ocr-review` marks "Style only" findings, which go to tech debt. Low critic defects go to tech debt (`critic-brief.md`). There are no "part 2" send-backs (`implementing.md`). A case that passes under its mutation is fixed or deleted (`tdd-task.md`). The main session saves the closing report and handoff.
 - **The last complete cumulative run** is D9A-R's `gate3` (`evidence/D09AR/suite-runs/gate3-*.txt`, on `24a6a513`, full tier). It passed: unit 212 files, 2,485 tests; integration 135 files, 286 tests; browser 126 in `browser-1` (5.1 min), 79 in `browser-2` (4.8 min), 156 in `browser-3` (8.7 min); checks 14 of 14.
 - **`browser-3` is over its 8-minute limit**: 8.2 minutes at `gate2` (before critic-2), and 8.7 at `gate3`. Stage B adds two more specs to it (B9.6, B9.7). This is the session's second question (section 3, "Two questions before T9.20").
 - **No stage B code exists yet.** `src/domain/option-pricing/`, `replay-estimates.ts` and `eslint.estimates.config.js` are absent, and a replayed session carries no `estimates`. The frame's `renderSince` and `renderChips` slots exist (`replay.types.ts`, `frame.tsx`) and nothing fills them.
@@ -37,7 +43,7 @@ The repository hosts several independent implementations of the same spec, each 
 | Branch | `claude-opus-5.5` (every task commits here directly; stage B has no lanes) |
 | Ports | `5175`, from the gitignored `.env.local`; `4175` is the benchmark's, and stage B runs no benchmark (A265) |
 | Frozen plan | tag `claude-opus-5.5-plan-r107` (decision 118). Stage B adds no revision of its own; D9A-R's handoff and this one are committed after it |
-| Code stage B builds on | `claude-opus-5.5-d9ar` (`c2431d50`) |
+| Code stage B builds on | `claude-opus-5.5-d9ar-post-retro` (`a574d196`): D9A-R's gate, `claude-opus-5.5-d9ar` (`c2431d50`), plus the retrospective's changes |
 
 Run these checks. Each one must match:
 
@@ -51,8 +57,9 @@ Run these checks. Each one must match:
 | `git log -1 --format=%s claude-opus-5.5-plan-r107` | `plan(D09A-R): handoff checked; frozen plan tag moved` |
 | `git merge-base --is-ancestor claude-opus-5.5-plan-r107 HEAD && echo ok` | `ok` |
 | `git rev-parse --short 'claude-opus-5.5-d9ar^{commit}'` | `c2431d50` |
-| `git diff --stat claude-opus-5.5-d9ar HEAD -- src e2e tests tools package.json .claude/scripts .claude/agents` | Empty at the first session. Afterwards: only stage B's task commits. |
-| `git log --oneline claude-opus-5.5-d9ar..HEAD` | At the first session: only D9A-R's report, this handoff, and any tech debt decision the user made before stage B (plan and evidence documents only). Afterwards also stage B's task commits, their evidence and Progress updates, handoff updates, and approved plan revisions. |
+| `git rev-parse --short 'claude-opus-5.5-d9ar-post-retro^{commit}'` | `a574d196` |
+| `git diff --stat claude-opus-5.5-d9ar-post-retro HEAD -- src e2e tests tools package.json .claude/scripts .claude/agents` | Empty at the first session. Afterwards: only stage B's task commits. |
+| `git log --oneline claude-opus-5.5-d9ar-post-retro..HEAD` | At the first session: only this handoff's updates (plan documents only). Afterwards also stage B's task commits, their evidence and Progress updates, handoff updates, and approved plan revisions. |
 | `git tag -l 'claude-opus-5.5-d9b'` | Empty until stage B's gate closes. |
 | `ls .claude/worktrees 2>/dev/null` | Empty, absent, or only this implementation's old lane worktrees (D9's `d09-<lane>`, D9A-R's `d09ar-<lane>`). Stage B creates none. |
 | `git rev-parse --git-path hooks` | `.githooks` (the pre-commit typecheck and lint hook; the setup commands are at the top of `.githooks/pre-commit`) |
@@ -60,7 +67,7 @@ Run these checks. Each one must match:
 | `grep DEV_PORT .env.local` | `DEV_PORT=5175` |
 | `lsof -nP -iTCP:5175 -iTCP:9341 -iTCP:9342 -sTCP:LISTEN` | Nothing listening. |
 | `node --version` | `v26.x`, at or above `v26.12.0` (decision 43) |
-| `npm ci && npx vitest run src && npx vitest run tests/integration` | Every test passes. For reference, `gate3`'s integration stage was 135 files, 286 tests; its unit stage was 212 files, 2,485 tests, but it also takes in the tooling tests, so `npx vitest run src` counts fewer. |
+| `npm ci && npx vitest run src && npx vitest run tests/integration` | Every test passes. For reference, after the retrospective the unit stage (`npx vitest run --project unit`) was 2,487 tests and the integration stage 135 files, 286 tests. The unit stage also takes in the tooling tests, so `npx vitest run src` counts fewer. |
 
 Once every check matches, record the exact Node version and the two test counts in `evidence/D09/provenance.md`, as a new row for stage B.
 
@@ -186,7 +193,7 @@ Then T9.20, T9.21, T9.22, T9.23, T9.24, T9.25, T9.26, T9.27, T9.28, one at a tim
 
 ## 4. What is in place
 
-Build on these. Read the code before extending it. Paths are on `c2431d50`.
+Build on these. Read the code before extending it. Paths are on `a574d196` (`claude-opus-5.5-d9ar-post-retro`).
 
 | Piece | Where | Notes for stage B |
 |---|---|---|
@@ -199,7 +206,7 @@ Build on these. Read the code before extending it. Paths are on `c2431d50`.
 | The adapters | `src/ui/cockpit/replay/replay.props.ts`, `session-words.props.ts`, `stake-words.props.ts`, `readout.props.ts`, `plot.props.ts`, `cards.props.ts`, `overlay.props.ts` | T9.25 owns the estimate rows of `readout.props*` and `cards.props*` (section 4.2). |
 | The readout | `src/ui/cockpit/replay/readout.tsx`; `src/ui/cockpit/styles/replay-readout.css` | T9.25: "Implied volatility" under Marks, the share equivalent under Position. |
 | The session cards | `src/ui/cockpit/replay/session-cards.tsx` (`SessionCards`), `src/ui/cockpit/card-pager.tsx` (`CardPager`); `src/ui/cockpit/styles/replay-cards.css` | T9.25 adds both estimates as rows of each card. |
-| Figures that never break | `src/ui/cockpit/replay/figure-parts.ts` (`figureParts`), `figure-words.tsx` (`Words`) | Use `Words` for any text holding a figure, so a sign never wraps away from its amount. |
+| Figures that never break | `src/ui/cockpit/replay/figure-parts.ts` (`figureParts`), `figure-words.tsx` (`Words`) | Use `Words` for any text holding a figure, so a sign never wraps away from its amount. `e2e/d9ar/sweep.spec.ts` fails on any figure text in the overlay outside `Words`, so T9.24's chips and T9.25's rows must use it. |
 | The chart | `src/ui/cockpit/replay/corridor.tsx`, `corridor-pnl.tsx`, `price-strip.tsx`, `geometry.ts` (`LabelPlacer`, with `reserveColumn`; `timeAxis`) | Unchanged by stage B. |
 | Review card | `src/ui/screens/ReviewCard.tsx` (the "Replay" button), `CardFigures.tsx` (the summary in the replay's words) | Unchanged by stage B. Critic-3's moderate defect is in `CardFigures.tsx` (section 7). |
 | About page | `src/ui/screens/AboutView.tsx` | T9.24 adds "Option estimates" (W50). |
