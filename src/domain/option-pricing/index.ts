@@ -1,6 +1,6 @@
 // D9 A258, P121, P122: the price of a European option without dividends, its implied volatility and its delta.
 // Floating point throughout; imports nothing from the exact values and nothing from trade-analysis (T9.20's estimates rule).
-import { LONG_TERM_RATE, SHORT_TERM_LAST_DAY, SHORT_TERM_RATE } from './assumptions'
+import { LONG_TERM_RATE, SHORT_TERM_LAST_DAY, SHORT_TERM_RATE } from './assumptions.ts'
 
 export type OptionKind = 'Call' | 'Put'
 export type ImpliedVolatilityReason = 'ExpirationSession' | 'AtOrBelowExerciseValue' | 'NoVolatilityFits' | 'InsensitiveToVolatility'
