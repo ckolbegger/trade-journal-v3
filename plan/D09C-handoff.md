@@ -260,13 +260,11 @@ The main session saves the reports itself (`implementing.md`, "Final report"). A
 
 ### Notes for later tasks
 
-- For T9.33: the card's body now holds a "Replay" button and no chart; `e2e/d5r/review.spec.ts` line 28 was changed by T9AR.20, on different lines from T9.33's five.
-- For T9.33, T9.40: stages A and B and D9A-R leave `StopTargetSlider` and `rangePosition` exactly as they are.
-- For T9.33, T9.34, T9.35, T9.38: stage B's session cards and readout rows assert exact row lists in `e2e/d9/gaps.spec.ts` and `replay.spec.ts` (T9.25-B2); stage C adds nothing to the replay, so those lists should not change. If a stage C task changes one, that is a defect.
+- For T9.40: stages A and B and D9A-R leave `rangePosition` exactly as it is; T9.33 removed `StopTargetSlider`, its only screen reader.
+- For T9.34, T9.38: stage B's session cards and readout rows assert exact row lists in `e2e/d9/gaps.spec.ts` and `replay.spec.ts` (T9.25-B2); stage C adds nothing to the replay, so those lists should not change. If a stage C task changes one, that is a defect.
 - For T9.38: `meter-review.spec.ts` is AC-REV-002's command; the acceptance script fails on it until T9.38 writes it.
 
-- For T9.33, T9.34: the meter reading is `MeterReading` from `src/coordinators/valuation/meter.ts`; the walked Trade carries `meter` (T9.31) and the Detail's replay carries `meter` (T9.35). Follow T9.35's adapter (`src/ui/cockpit/rail/conditions.props.ts`): `'Between'` maps to the meter's `'Within'`, `previous.direction` may be absent (now optional on the meter), and the no-Mark reason is the P&L figure's own text.
-- For T9.32: T9.31 values the session before through a second read session opened with `{ withoutStale }` (T9.31-B1), so the meter adds one date-wide read and nothing per Trade; follow it.
+- For T9.34: the meter reading is `MeterReading` from `src/coordinators/valuation/meter.ts`; the walked Trade carries `meter` (T9.31) and the Detail's replay carries `meter` (T9.35). Follow T9.35's adapter (`src/ui/cockpit/rail/conditions.props.ts`): `'Between'` maps to the meter's `'Within'`, `previous.direction` may be absent (now optional on the meter), and the no-Mark reason is the P&L figure's own text.
 
 ### Open questions
 
