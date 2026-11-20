@@ -1,0 +1,147 @@
+/* The meter (A215, W51): the Trade's result from the Stop to the Target, on a track that always holds break-even.
+   Outlined = open, solid = realized, hatched = past a line, square pointer = past a line, dashed = no Mark: each is a shape as well as a colour.
+   The meter has no visible words; it carries its name and hover text. Built from prototypes/replay/trade-list.html. */
+.meter {
+  --meter-height: 22px;
+  --up-light: #c2e2c9;
+  --dn-light: #f2c6c0;
+  --ghost: #8f8a7e;
+  position: relative;
+  display: block;
+  height: var(--meter-height);
+  margin-top: 5px;
+  padding: 0 9px;
+  cursor: default;
+}
+
+/* The three places it appears: the Review card's header, under the P&L on an Open-list row, the top of Trade Detail's Conditions card. */
+.meter[data-size='card'] {
+  max-width: 22rem;
+}
+
+.meter[data-size='row'] {
+  max-width: 11rem;
+}
+
+.meter[data-size='detail'] {
+  max-width: 28rem;
+  margin-bottom: 0.5rem;
+}
+
+.meter .m-in {
+  position: relative;
+  display: block;
+  height: 100%;
+}
+
+.meter .m-in > span {
+  position: absolute;
+}
+
+.meter .m-track {
+  left: 0;
+  right: 0;
+  top: 6px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--tint);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.meter[data-state='empty'] .m-track {
+  background: var(--neutral-ground);
+  box-shadow: none;
+  border: 1px dashed var(--muted);
+}
+
+.meter .m-open,
+.meter .m-bank,
+.meter .m-over {
+  top: 6px;
+  height: 10px;
+  min-width: 2px;
+}
+
+.meter .m-open.up {
+  background: var(--up-light);
+  box-shadow: inset 0 0 0 1.5px var(--target);
+}
+
+.meter .m-open.dn {
+  background: var(--dn-light);
+  box-shadow: inset 0 0 0 1.5px var(--stop);
+}
+
+.meter .m-bank.up {
+  background: var(--target);
+}
+
+.meter .m-bank.dn {
+  background: var(--stop);
+}
+
+.meter .m-over.s {
+  background:
+    repeating-linear-gradient(45deg, var(--stop) 0 1.5px, transparent 1.5px 4px),
+    repeating-linear-gradient(-45deg, var(--stop) 0 1.5px, transparent 1.5px 4px),
+    var(--dn-light);
+  box-shadow: inset 0 0 0 1px var(--stop);
+}
+
+.meter .m-over.t {
+  background: repeating-linear-gradient(45deg, var(--target) 0 1.5px, transparent 1.5px 4px), var(--up-light);
+  box-shadow: inset 0 0 0 1px var(--target);
+}
+
+.meter .m-stop,
+.meter .m-target {
+  top: 2px;
+  width: 3px;
+  height: 18px;
+  margin-left: -1.5px;
+  border-radius: 1px;
+  box-shadow: 0 0 0 1.5px var(--card);
+}
+
+.meter .m-stop {
+  background: var(--stop);
+}
+
+.meter .m-target {
+  background: var(--target);
+}
+
+.meter .m-even {
+  top: 3px;
+  width: 2px;
+  height: 16px;
+  margin-left: -1px;
+  background: var(--ink);
+  box-shadow: 0 0 0 1px var(--card);
+}
+
+/* The session before: faint and small. */
+.meter .m-prev {
+  top: 7px;
+  width: 8px;
+  height: 8px;
+  margin-left: -4px;
+  border-radius: 50%;
+  background: var(--card);
+  border: 2px solid var(--ghost);
+}
+
+.meter .m-now {
+  top: 4px;
+  width: 14px;
+  height: 14px;
+  margin-left: -7px;
+  border-radius: 50%;
+  border: 3px solid var(--ink);
+  background: var(--card);
+  box-shadow: 0 0 0 2px var(--card);
+}
+
+.meter .m-now[data-shape='square'] {
+  border-radius: 3px;
+}
