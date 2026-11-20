@@ -1281,6 +1281,21 @@ describe("getTrade: the card's replay (A254)", () => {
     expect(replay).toEqual(unplaced);
   }, 60_000);
 
+  it("should carry each session's estimates in replayTrade and in the Review card's replay, unchanged", async () => {
+    const { stack, tradeId, replay: replayTrade } = await seriesStack(R_BREN_U, 'strategy.long-call', MON_1116_1700, { marksThrough: 10 });
+
+    const { replay } = await replayCard(stack, tradeId, MON_1116_1700);
+
+    const detail = await replayTrade();
+    if (detail.kind !== 'Ready' || !('sessions' in detail.view)) throw new Error('expected a replay');
+    const estimates = detail.view.sessions.map((s) => s.estimates);
+    const monday = estimates[0];
+    expect(monday?.shareEquivalent.kind === 'Estimate' && Math.round(monday.shareEquivalent.value)).toBe(147);
+    expect([monday?.rate, monday?.days]).toEqual([0.04, 18]);
+    expect(estimates.every((e) => e !== undefined)).toBe(true);
+    expect(replay?.sessions.map((s) => s.estimates)).toEqual(estimates);
+  }, 60_000);
+
   it("should leave out the replay when the Trade's facts cannot be replayed", async () => {
     const { stack, tradeId } = await seriesStack(R_BREN_U, 'strategy.long-call', MON_1116_1700, { marksThrough: 10 });
     await breakFirstExecution(stack, tradeId);

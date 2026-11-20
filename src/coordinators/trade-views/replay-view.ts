@@ -62,6 +62,8 @@ export interface ReplayPlanColumn {
 }
 // A271: a session's first crossings, per role and per condition.
 export type ReplayCrossings = NonNullable<ReplayedSession['crossings']>;
+// A258: a session's estimates.
+export type ReplayEstimates = NonNullable<ReplayedSession['estimates']>;
 // A253: how a Closed Trade ended.
 export type ReplayFinal = { readonly kind: 'Sold' } | { readonly kind: 'Expired'; readonly contract: OptionInstrument };
 
@@ -87,6 +89,9 @@ export interface ReplaySession {
   readonly markers?: readonly ReplayMarker[];
   // A271: each role's first crossing and current run.
   readonly crossings?: ReplayCrossings;
+  // A258: this session's estimates (implied volatility, share equivalent, split, with the rate and days used), the domain's own shape,
+  // passed through unchanged. Absent when the session holds nothing of the Trade's Instrument.
+  readonly estimates?: ReplayEstimates;
   // A253: set on a Closed Trade's last session only, with how the Trade ended.
   readonly final?: ReplayFinal;
 }

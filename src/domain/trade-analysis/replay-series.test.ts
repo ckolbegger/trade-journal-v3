@@ -343,3 +343,54 @@ describe('replay: the Plan column (A252)', () => {
     expect(beforeSecondLot).toMatchObject({ plan });
   });
 });
+
+const cents = (value: number) => Math.round(value * 100) / 100;
+
+describe('replay: estimates per session (A258)', () => {
+  it("should give each of R-BREN-U's sessions its implied volatility, share equivalent and split, with the rate and the days used", () => {
+    const first = sessionAt(R_BREN_U, '2026-11-02').estimates!;
+    expect(first.impliedVolatility.kind).toBe('Estimate');
+    expect(first.shareEquivalent.kind === 'Estimate' && Math.round(first.shareEquivalent.value)).toBe(147);
+    expect(first.split).toMatchObject({ kind: 'Unavailable', reason: 'NoEarlierFigure' });
+    expect([first.rate, first.days]).toEqual([0.04, 18]);
+    const monday = sessionAt(R_BREN_U, '2026-11-09').estimates!;
+    expect(monday.split.kind === 'Split' && 'time' in monday.split && cents(monday.split.time)).toBe(-0.27);
+    expect(monday.days).toBe(11);
+    const tuesday = sessionAt(R_BREN_U, '2026-11-17').estimates!;
+    expect(tuesday.impliedVolatility).toEqual({ kind: 'Unavailable', reason: 'InsensitiveToVolatility' });
+    expect(tuesday.split.kind === 'Split' && 'timeAndVolatility' in tuesday.split && cents(tuesday.split.timeAndVolatility)).toBe(-0.04);
+  });
+});
+
+describe('replay: estimates of a stock Trade (A258)', () => {
+  it("should give a stock Trade an implied volatility that is Not applicable and a share equivalent equal to its shares, marked exact", () => {
+    const estimates = sessionAt(R_AXIO_U, '2026-11-02').estimates!;
+    expect(estimates).toEqual({ impliedVolatility: { kind: 'NotApplicable' }, shareEquivalent: { kind: 'Estimate', value: 100, exact: true }, split: { kind: 'NotApplicable' }, rate: null, days: null });
+    expect(sessionAt(R_AXIO_U, '2026-11-09').estimates!.shareEquivalent).toEqual({ kind: 'Estimate', value: 200, exact: true });
+  });
+});
+
+describe('replay: estimates with a Mark missing (A258)', () => {
+  it("should give R-CORV-D's Tue 11-10 an implied volatility Unavailable, Mark missing", () => {
+    const estimates = sessionAt(R_CORV_D, '2026-11-10').estimates!;
+    expect(estimates.impliedVolatility).toEqual({ kind: 'Unavailable', reason: 'MarkMissing' });
+    expect(estimates.shareEquivalent).toEqual({ kind: 'Unavailable', reason: 'MarkMissing' });
+    expect(estimates.split).toMatchObject({ kind: 'Unavailable', reason: 'MarkMissing', session: '2026-11-10' });
+  });
+});
+
+describe('replay: estimates change no figure (P121)', () => {
+  it("should give the same Trade P&L, risk, reward and condition status for a session whether or not its estimates can be worked out", () => {
+    // Without the Underlying's Marks no estimate can be worked out; R-BREN-U's Stop and Target are on the call itself.
+    const withoutUnderlying: ReplayTestSeries = { ...R_BREN_U, underlying: R_BREN_U.underlying.map(() => null) };
+    const sameFigures = (series: ReplayTestSeries, date: string) => {
+      const s = sessionAt(series, date);
+      const f = s.figures!;
+      return { tradePnl: s.tradePnl, change: s.change, risk: f.ongoingRiskToStop, reward: f.incrementalRewardToTarget, conditions: f.conditions.map((c) => [c.role, c.result]) };
+    };
+    for (const date of ['2026-11-02', '2026-11-09', '2026-11-17']) {
+      expect(sessionAt(withoutUnderlying, date).estimates!.impliedVolatility).toEqual({ kind: 'Unavailable', reason: 'MarkMissing' });
+      expect(sameFigures(withoutUnderlying, date)).toEqual(sameFigures(R_BREN_U, date));
+    }
+  });
+});

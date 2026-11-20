@@ -1,11 +1,12 @@
 import { Temporal } from 'temporal-polyfill';
-import { instrumentKey, type Instrument } from '../instrument/index.ts';
+import { daysToExpiration, instrumentKey, type Instrument, type OptionInstrument } from '../instrument/index.ts';
 import type { Instant } from '../time/index.ts';
 import type { CalculationResult } from '../calculation-result/index.ts';
 import { parseDecimal, Rational } from '../values/index.ts';
 import { evaluate, oddsOf, type ConditionReading, type ConditionStatus, type ObservationFrame, type RewardRiskOdds, type TradeEvaluation } from './evaluate.ts';
 import type { ConditionBasis, PlanBaseline } from './plan.ts';
 import type { ReplayEstimates } from './estimate.ts';
+import { markChangeSplit, optionShareEquivalent, rateAndDays, stockShareEquivalent, volatilityOf, type EstimateSession } from './replay-estimates.ts';
 import { derive, type DerivedTradeState, type IncoherentFact, type TradeAnalysisRecord } from './derive.ts';
 
 // A211: one completed session's Mark points, one frame per Instrument (Available, Missing or AcknowledgedUnavailable,
@@ -188,6 +189,7 @@ export function replay(input: ReplayInput): ReplayResult {
   // Each role's crossings so far (A271); the first session has no session before it, so no gap.
   const stopCrossings: RoleCrossingState = { previousRead: true, conditions: new Map() };
   const targetCrossings: RoleCrossingState = { previousRead: true, conditions: new Map() };
+  const estimable = estimableOf(input.record, input.sessions);
   const sessions = input.sessions.map((session, index): ReplayedSession => {
     // The Position at the session's close, valued with that session's own Marks (A211).
     const state = derive({ record: input.record, cutoff: session.closeInstant, valuationDate: session.tradingDate });
@@ -215,6 +217,7 @@ export function replay(input: ReplayInput): ReplayResult {
       marks: session.frames.map((frame) => markOf(frame, lastMark)),
       positionChangeIds,
       figures: figuresOf(evaluation, openPnlOf(tradePnl, state.realizedToDate)),
+      ...estimatesFor(estimable, index, positions),
       crossings: {
         stop: crossingsOf(evaluation.conditions, 'Stop', session.tradingDate, stopCrossings),
         target: crossingsOf(evaluation.conditions, 'Target', session.tradingDate, targetCrossings),
@@ -223,6 +226,48 @@ export function replay(input: ReplayInput): ReplayResult {
   });
   const { oneR, originalPlannedReward, rewardRiskRatio } = whole.baseline;
   return { kind: 'Replayed', sessions, plan: { atStop: ZERO.sub(oneR), atTarget: originalPlannedReward, rewardRisk: rewardRiskRatio, odds: oddsOf(oneR, originalPlannedReward), terms } };
+}
+
+// A258: the Trade's headline Instrument (its first Planned Leg) and, for an option, each session's exact inputs. Estimates are worked
+// out from the Marks the replay already reads and enter nothing else (P121).
+type Estimable = { readonly instrument: Instrument; readonly option?: { readonly contract: OptionInstrument; readonly sessions: readonly EstimateSession[] } };
+
+function estimableOf(record: TradeAnalysisRecord, inputs: readonly ReplaySessionInput[]): Estimable | undefined {
+  const instrument = record.plan.legs[0]?.instrument;
+  if (!instrument) return undefined;
+  if (instrument.kind !== 'Option') return { instrument };
+  const priceOn = (session: ReplaySessionInput, wanted: Instrument): Rational | null => {
+    const frame = session.frames.find((f) => instrumentKey(f.instrument) === instrumentKey(wanted));
+    if (frame?.resolution.kind !== 'Available') return null;
+    const price = parseDecimal(frame.resolution.mark.price);
+    return price.ok ? price.value : null;
+  };
+  const underlying: Instrument = { kind: 'Stock', symbol: instrument.symbol };
+  return {
+    instrument,
+    option: {
+      contract: instrument,
+      sessions: inputs.map((s) => ({ date: s.tradingDate, days: daysToExpiration(instrument, s.closeInstant), underlying: priceOn(s, underlying), mark: priceOn(s, instrument) })),
+    },
+  };
+}
+
+// A258: a session's estimates for the headline Instrument as held at its close; none when it holds none (Not Applicable is for stock's
+// volatility and split, not for a session with nothing held, including the final session of a Closed Trade).
+function estimatesFor(estimable: Estimable | undefined, index: number, positions: readonly { readonly instrument: Instrument; readonly quantity: Rational }[]): { readonly estimates?: ReplayEstimates } {
+  const held = estimable && positions.find((p) => instrumentKey(p.instrument) === instrumentKey(estimable.instrument));
+  if (!estimable || !held) return {};
+  const { option } = estimable;
+  if (!option) return { estimates: { impliedVolatility: { kind: 'NotApplicable' }, shareEquivalent: stockShareEquivalent(held.quantity), split: { kind: 'NotApplicable' }, rate: null, days: null } };
+  const session = option.sessions[index]!;
+  return {
+    estimates: {
+      impliedVolatility: volatilityOf(option.contract, session),
+      shareEquivalent: optionShareEquivalent(option.contract, session, held.quantity),
+      split: markChangeSplit(option.contract, option.sessions.slice(0, index), session),
+      ...rateAndDays(session),
+    },
+  };
 }
 
 // A271: what a role's crossings remember between sessions: its first crossing, the run it is in, and whether the session before had
