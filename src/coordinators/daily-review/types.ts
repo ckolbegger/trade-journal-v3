@@ -1,13 +1,13 @@
 import type { RuntimeNotWritable } from '../../delivery/runtime-not-writable.ts';
 import type { DueClassification } from '../../domain/journal-debt/index.ts';
-import type { Instrument, OptionInstrument } from '../../domain/instrument/index.ts';
+import type { Instrument } from '../../domain/instrument/index.ts';
 import type { Instant } from '../../domain/time/index.ts';
-import type { CalculationResult, EntryResolution, ExecutionFact, ExpirationFact, ExpirationPayoffs, IncoherentFacts, IntegrityFinding, LifecycleState, NotApplicableReason, TerminalDisposition, TradeEvaluation, UnavailableReason } from '../../domain/trade-analysis/index.ts';
+import type { CalculationResult, EntryResolution, ExecutionFact, ExpirationFact, ExpirationPayoffs, IncoherentFacts, IntegrityFinding, LifecycleState, NotApplicableReason, TerminalDisposition, TradeEvaluation } from '../../domain/trade-analysis/index.ts';
 import type { TradeSummary } from '../../domain/trade-summary.ts';
 import type { Rational } from '../../domain/values/index.ts';
 import type { WorkspaceSnapshotBinding } from '../../persistence/index.ts';
 import type { StorageFailure } from '../mutation-guard.ts';
-import type { SettlementItem } from '../valuation/index.ts';
+import type { AttentionBand, AttentionReason, CalculationFamily, Pressure, PressureResult, RangePlacement, RangePositionResult, SettlementItem } from '../valuation/index.ts';
 import type { TradeReplayView } from '../trade-views/index.ts';
 import type { AnswerInput, DailyAction, DebtProjection, DeclineProjection, EntryDefinitionRecord, EntryProjection, JournalIssue, JournalObligationKey, ObligationOutcome } from '../../modules/journal/index.ts';
 import type { AcknowledgmentVersion, ExpectedResolutionRevision, MarkFrame, MarketDataConflictedKey, MarketDataIssue, MarketDataPrepareEntry, MarketDataPrepareIssue, MarkResolution, ObservationKey, PreparedMarketDataEntry } from '../../modules/market-data/index.ts';
@@ -19,45 +19,6 @@ export interface OpenDailyReviewRequest {
   readonly asOf: Instant;
 }
 
-// The attention bands, highest first (Daily Review, "Date, eligibility, and ordering"): factual or
-// management blocker, boundary reached, evidence limited, quantified pressure, routine.
-export type AttentionBand = 'Blocker' | 'BoundaryReached' | 'EvidenceLimited' | 'QuantifiedPressure' | 'Routine';
-
-// Why a Trade is in its band; figures are in the basis. A Trade limited by evidence, or blocked because its
-// facts cannot be replayed, carries its evaluation's own Unavailable reason, unchanged (P67).
-export type AttentionReason =
-  | { readonly code: 'IntegrityDisagreement'; readonly findings: readonly IntegrityFinding[] }
-  | ({ readonly code: 'Unavailable' } & UnavailableReason)
-  | { readonly code: 'StopBreached' | 'TargetReached'; readonly conditionId: string; readonly overrun: Rational }
-  | { readonly code: 'PressureTowardStop' | 'PressureTowardTarget' }
-  // An option contract held at or past its expiration date with no settlement fact (A112); a blocker.
-  | { readonly code: 'SettlementDue'; readonly instrument: OptionInstrument; readonly quantity: Rational; readonly expiration: string }
-  | { readonly code: 'NoPressure' };
-
-// The pressure a Trade is ranked by: the share of its planned range travelled since entry, with the
-// risk (toward the Stop) or reward (toward the Target) at entry and now.
-export type Pressure =
-  | {
-      readonly side: 'Losing' | 'Winning';
-      readonly share: Rational;
-      readonly atEntry: Rational;
-      readonly now: Rational;
-    }
-  // Marked at its average open cost: no distance travelled toward either boundary (pressure 0).
-  | { readonly side: 'None'; readonly share: Rational };
-
-// Where the Review-date Mark sits in the Trade's Stop-to-Target range (P39): risk ÷ (risk + reward), with the
-// same risk and reward the pressure uses, now and at entry. `pinned` names the end the Mark is at or past:
-// risk is zero at the Stop (share 0), reward is zero at the Target (share 1).
-export interface RangePlacement {
-  readonly now: Rational;
-  readonly atEntry: Rational;
-  readonly pinned?: 'Stop' | 'Target';
-}
-
-// Pressure is NotApplicable when the risk (Losing) or reward (Winning) at entry was not positive on the side the Trade moved toward.
-export type PressureResult = CalculationResult<Pressure, UnavailableReason, Extract<NotApplicableReason, { reason: 'NonPositiveAtEntry' }>>;
-export type RangePositionResult = CalculationResult<RangePlacement, UnavailableReason, never>;
 
 // One eligible Trade in the walk.
 export interface ReviewTradeItem {
@@ -157,7 +118,7 @@ export interface HistoricalGapGroup {
 }
 
 // Shared with Trade Views, which shows the same item on Trade Detail.
-export type { SettlementItem };
+export type { AttentionBand, AttentionReason, CalculationFamily, Pressure, PressureResult, RangePlacement, RangePositionResult, SettlementItem };
 
 // The task families in their normative order (Daily Review, "Date, eligibility, and ordering").
 // D4 has Marks and Trades; Debt and settlement arrive in D5 and D7.
@@ -177,9 +138,6 @@ export type IncompleteReason =
   // An Action can be saved, but completion waits until a Trade mutation repairs the disagreement (A59).
   | { readonly code: 'IntegrityDisagreement'; readonly tradeId: string; readonly findings: readonly IntegrityFinding[] }
   | { readonly code: 'IncoherentFacts'; readonly tradeId: string; readonly findings: IncoherentFacts['findings'] };
-
-// The groups of Mark-dependent calculations an unavailable Mark leaves without a Value.
-export type CalculationFamily = 'Valuation' | 'Risk' | 'Reward' | 'ConditionStatus';
 
 // Derived from facts each time; nothing about it is stored (Daily Review, "Completion and resumption").
 export type ReviewCompletion = { readonly kind: 'Incomplete'; readonly reasons: readonly IncompleteReason[] } | { readonly kind: 'Complete' }

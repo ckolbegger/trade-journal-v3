@@ -4,7 +4,7 @@ import { Rational } from '../../domain/values/index.ts';
 import { D7_CATALOG_MANIFEST, type StrategyRecord } from '../../modules/reference-catalog/index.ts';
 import { reviewStack, type ReviewStack } from '../../../tests/support/review-fixture.ts';
 import type { ConfirmPlanCommand, PositionChangeMember } from '../trade-workflows/index.ts';
-import type { OpenDailyReviewResult } from './index.ts';
+import type { OpenDailyReviewResult } from '../daily-review/index.ts';
 
 // D7 section 4's O-C (PC1, PC2) and O-S (S1) on Tuesday 10-13, 17:00 New York (daylight time, 21:00Z).
 const TUESDAY_1700 = '2026-10-13T21:00:00Z';

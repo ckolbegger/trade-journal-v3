@@ -11,8 +11,7 @@ import { beginSemanticTransaction, type Persistence, type WorkspaceSnapshotBindi
 import type { MutationGuard } from '../mutation-guard.ts';
 import { payoffOf } from '../settlement.ts';
 import { assembleReplay } from '../replay/index.ts';
-import { valueTrade, type TradeValuation } from '../valuation/index.ts';
-import { attentionOf, byAttention, unavailableFamilies } from './attention.ts';
+import { attentionOf, byAttention, unavailableFamilies, valueTrade, type TradeValuation } from '../valuation/index.ts';
 import type {
   ActionForm,
   DailyTradeReview,
