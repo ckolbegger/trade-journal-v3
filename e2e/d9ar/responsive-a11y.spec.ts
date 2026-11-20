@@ -297,7 +297,7 @@ test.describe('B9AR.7 Responsive, touch, accessible and offline', () => {
   });
 
   // T9AR.24-B5 (critic-1 defect 5): on a phone the tap on the Review card's Replay button must start no hover box or band, and two taps on sessions leave none.
-  for (const width of [375, 320]) {
+  for (const width of [320]) {
     test(`should show no hover box or band from the Review card's Replay tap and after two taps on sessions at ${width}`, async ({ profile }) => {
       test.setTimeout(420_000);
       const built = await buildReview(profile, [BREN]);

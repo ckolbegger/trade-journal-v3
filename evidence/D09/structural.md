@@ -496,3 +496,14 @@ Stage A runs as a swarm (decision 111, agent cap 4). Each task's heading holds i
 - Source at `468a5256` throughout (HEAD moved to `7af1df86` during the run; `git diff 468a5256 7af1df86` touches only `evidence/`). 2026-11-18, 08:23 to 08:41.
 - Browser tier: full (`first matching path since c183e890: src/ui/cockpit/replay/frame.tsx`).
 - Unit 197 files, 2223 tests; integration 123 files, 269 tests; browser-1 126 passed (5.5 min); browser-2 79 passed (5.1 min); browser-3 57 passed (4.4 min); checks 14 of 14. `run-complete.sh evidence/D09`: run complete. **No failures.**
+
+## Stage B
+
+### D9AR-retro-7
+
+Dropped the 375 instance of the T9AR.24-B5 case (it never detected its defect); the loop at line 300 of `e2e/d9ar/responsive-a11y.spec.ts` is now `[320]`, title unchanged.
+
+- `npx playwright test e2e/d9ar/responsive-a11y.spec.ts --list` before: Total: 20 tests. After: Total: 19 tests.
+- `.claude/scripts/with-browser-lock.sh npx playwright test e2e/d9ar/responsive-a11y.spec.ts`: 19 passed (1.1m). Ports 5175, 9341, 9342 free before and after.
+- `npx vitest run src/ui/cockpit/replay/corridor.test.tsx`: 1 file, 80 tests passed, unchanged.
+- `git diff --stat`: only the spec (1 line) and this file; `DECISIONS-PENDING.md` and `provenance.md` were already modified by the main session and are left unstaged.
