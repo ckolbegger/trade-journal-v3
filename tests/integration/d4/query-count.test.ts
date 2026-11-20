@@ -141,6 +141,8 @@ describe('T4.31 query count: the Open page and the Review open', () => {
       // D6 A88: the Trades closed after the cutoff, one getAll over the terminal times after it.
       { on: 'index', store: 'trades', index: 'byLifecycleTerminal', method: 'getAll' },
       { on: 'store', store: 'observations', method: 'getAll' },
+      // D9 T9.31 (P133): the meter's session before, one more date-wide getAll.
+      { on: 'store', store: 'observations', method: 'getAll' },
       ...MISSING.map(() => ({ on: 'index', store: 'observations', index: 'byInstrumentDate', method: 'openCursor' })),
       ...Array.from({ length: instruments }, () => ({ on: 'index', store: 'observations', index: 'byInstrumentDate', method: 'getAll' })),
       { on: 'store', store: 'journalObligations', method: 'getAll' },

@@ -56,10 +56,11 @@ describe('the Review requests with option dated lines (P84, decision 104)', () =
     if (openOne.result.kind !== 'Ready' || openTwo.result.kind !== 'Ready') throw new Error('open: not Ready');
     // Tuesday's date-wide read, the Stale lookups of the two Instruments missing on Tuesday, then their gap scans: D6's recovery,
     // and no read of Monday's date for a dated line. Nothing per Trade.
-    expect(on(openOne.requests, 'observations')).toEqual([GET_ALL, CURSOR, CURSOR, SCAN, SCAN]);
+    // D9 T9.31 (P133): the meter's session before adds a second date-wide read, right after Tuesday's.
+    expect(on(openOne.requests, 'observations')).toEqual([GET_ALL, GET_ALL, CURSOR, CURSOR, SCAN, SCAN]);
     expect(openTwo.requests).toEqual(openOne.requests);
     const exposure = OC_PC1.economicTime;
-    expect(await recoverReads(one.app, [{ instrumentKey: 'XYZ', earliestExposure: exposure }, { instrumentKey: instrumentKey(XYZ_CALL), earliestExposure: exposure }])).toEqual(on(openOne.requests, 'observations'));
+    expect(await recoverReads(one.app, [{ instrumentKey: 'XYZ', earliestExposure: exposure }, { instrumentKey: instrumentKey(XYZ_CALL), earliestExposure: exposure }])).toEqual(on(openOne.requests, 'observations').filter((_, i) => i !== 1));
   });
 
   it('should add at most one observations read for the Trade dated line in getTrade', { timeout: 120_000 }, async () => {
@@ -76,7 +77,8 @@ describe('the Review requests with option dated lines (P84, decision 104)', () =
       // Tuesday's date-wide read and the Stale lookups of the open's Instruments, then one read of Monday's date for the line,
       // then the card's replay: one series read per Instrument (I9.6), the Underlying and the call.
       expect(on(card.requests, 'observations')).toEqual([GET_ALL, CURSOR, CURSOR, GET_ALL, SCAN, SCAN]);
-      expect(on(card.requests, 'observations').filter((r) => r.on === 'store' && r.method === 'getAll')).toHaveLength(on(open.requests, 'observations').filter((r) => r.on === 'store' && r.method === 'getAll').length + 1);
+      // The open's date-wide reads less the meter's session before (D9 T9.31, P133), which getTrade does not make, plus the one for the line.
+      expect(on(card.requests, 'observations').filter((r) => r.on === 'store' && r.method === 'getAll')).toHaveLength(on(open.requests, 'observations').filter((r) => r.on === 'store' && r.method === 'getAll').length - 1 + 1);
     }
   });
 
@@ -90,7 +92,8 @@ describe('the Review requests with option dated lines (P84, decision 104)', () =
 
     if (open.result.kind !== 'Ready') throw new Error('open: not Ready');
     // One date-wide read and one scan of XYZ's history: the requests `recover` makes for the same Review.
-    expect(on(open.requests, 'observations')).toEqual([GET_ALL, SCAN]);
-    expect(await recoverReads(app, [{ instrumentKey: 'XYZ', earliestExposure: PC1_TIME }])).toEqual(on(open.requests, 'observations'));
+    // D9 T9.31 (P133): the meter's session before adds a second date-wide read.
+    expect(on(open.requests, 'observations')).toEqual([GET_ALL, GET_ALL, SCAN]);
+    expect(await recoverReads(app, [{ instrumentKey: 'XYZ', earliestExposure: PC1_TIME }])).toEqual(on(open.requests, 'observations').filter((_, i) => i !== 1));
   });
 });

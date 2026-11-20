@@ -83,15 +83,21 @@ describe('T7.29 query count: the Review open and Trade Detail with Settlement Du
     // No test measures that claim, and no D6 build can open option Trades, so D6 never measured this count.
     const tally: Record<string, number> = {};
     for (const r of twoTrades.requests) tally[`${r.store}.${r.method}`] = (tally[`${r.store}.${r.method}`] ?? 0) + 1;
-    expect(tally).toEqual({ 'meta.get': 13, 'trades.getAll': 2, 'observations.getAll': 1, 'journalDebts.getAll': 1, 'journalDefinitions.getAll': 1, 'journalObligations.getAll': 1, 'journalTypes.getAll': 1 });
-    expect(twoTrades.requests).toEqual(withoutMarkReads(baselineTwo.requests));
-    expect(fourTrades.requests).toEqual(withoutMarkReads(baselineFour.requests));
-    expect(twoDates.requests).toEqual(withoutMarkReads(baselineTwoDates.requests));
+    // D9 T9.31 (P133): the meter's session before adds one date-wide observations.getAll and its snapshot's meta.get (13 and 1 before).
+    expect(tally).toEqual({ 'meta.get': 14, 'trades.getAll': 2, 'observations.getAll': 2, 'journalDebts.getAll': 1, 'journalDefinitions.getAll': 1, 'journalObligations.getAll': 1, 'journalTypes.getAll': 1 });
+    // D9 T9.31 (P133): the meter's session before reads its date-wide getAll and that snapshot's meta.get in both runs, but the baseline's
+    // Instruments make the two meta.get run ahead of the two getAll, the due runs interleave them. So these three compare the same
+    // requests (any extra or missing one still fails), not their order.
+    const unordered = (requests: readonly CountedRequest[]) => requests.map((r) => JSON.stringify(r)).sort();
+    expect(unordered(twoTrades.requests)).toEqual(unordered(withoutMarkReads(baselineTwo.requests)));
+    expect(unordered(fourTrades.requests)).toEqual(unordered(withoutMarkReads(baselineFour.requests)));
+    expect(unordered(twoDates.requests)).toEqual(unordered(withoutMarkReads(baselineTwoDates.requests)));
     // Nothing per Trade: twice the due Trades on the one date issue the same requests.
     expect(fourTrades.requests).toEqual(twoTrades.requests);
     // Nothing per distinct date: a second due date issues the same requests too, and D6's one getAll on observations is all there is.
     expect(twoDates.requests).toEqual(twoTrades.requests);
-    expect(on(twoDates.requests, 'observations')).toEqual([GET_ALL]);
+    // D9 T9.31 (P133): plus the meter's session before, one more date-wide getAll.
+    expect(on(twoDates.requests, 'observations')).toEqual([GET_ALL, GET_ALL]);
   });
 
   it('should issue the same Trade Detail requests, bar the frame reads and the Underlying series read, for an expired and a live contract at one clock', { timeout: 120_000 }, async () => {
