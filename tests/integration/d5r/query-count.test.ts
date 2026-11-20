@@ -162,10 +162,9 @@ describe('T5R.13 query count: the Review open and the Marks save', () => {
     expect(on(review.requests, 'trades', 'observations', 'journalObligations')).toEqual([
       { on: 'index', store: 'trades', index: 'byLifecycleActivity', method: 'getAll', count: 201 },
       { on: 'index', store: 'trades', index: 'byLifecycleTerminal', method: 'getAll' },
-      // The Review date's read, then the session before's (T9.31): each date-wide, with a Stale lookup per Missing Instrument.
+      // The Review date's read, then the session before's (T9.31), date-wide with no Stale lookup; the lookup per Missing Instrument is the Review date's.
       { on: 'store', store: 'observations', method: 'getAll' },
       { on: 'store', store: 'observations', method: 'getAll' },
-      ...MISSING.map(() => ({ on: 'index', store: 'observations', index: 'byInstrumentDate', method: 'openCursor' })),
       ...MISSING.map(() => ({ on: 'index', store: 'observations', index: 'byInstrumentDate', method: 'openCursor' })),
       ...Array.from({ length: instruments }, () => ({ on: 'index', store: 'observations', index: 'byInstrumentDate', method: 'getAll' })),
       { on: 'store', store: 'journalObligations', method: 'getAll' },

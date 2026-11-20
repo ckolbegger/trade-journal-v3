@@ -50,6 +50,19 @@ describe('open: the meter reading (A260)', () => {
     // Monday's date-wide read and Friday's, whatever the number of Trades.
     expect(dateWide).toHaveLength(2);
   }, 60_000);
+
+  it('should value the session before from that date\'s Marks alone, with no earlier-Mark lookup for an Instrument missing on that date', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const trade = await stack.confirm({ symbol: 'XYZ', shares: '100', entry: '50.00', stop: '25.00', target: '70.00', planTime: '2026-10-09T13:00:00Z' });
+    await stack.fill(trade, '2026-10-09T14:00:00Z', '100', '50.00');
+    // Monday has a Mark; Friday, the session before, has none.
+    await stack.saveMark('XYZ', '52.00');
+
+    const { result, requests } = await countRequests(() => stack.dailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: MONDAY_1700 }));
+
+    expect(walk(result)[0]!.meter!.previous).toBeUndefined();
+    expect(requests.filter((r) => r.store === 'observations' && r.method === 'openCursor')).toHaveLength(0);
+  }, 60_000);
 });
 
 describe('save: the meter reading after Save Marks (A260)', () => {

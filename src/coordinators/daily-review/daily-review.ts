@@ -395,7 +395,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     // One read session for the whole pass: each Trade is valued through the module, and each date and Instrument is read once.
     const read = await deps.marketData.openReadSession({ kind: 'Review', reviewDate });
     // The session before the Review Date, read as a session of its own so the Review's binding holds only the Review date's Marks.
-    const beforeSession = read.previousSessionDate ? await deps.marketData.openReadSession({ kind: 'Review', reviewDate: read.previousSessionDate }) : undefined;
+    const beforeSession = read.previousSessionDate ? await deps.marketData.openReadSession({ kind: 'Review', reviewDate: read.previousSessionDate }, { withoutStale: true }) : undefined;
     const derivations = await eligibleTrades(cutoff, reviewDate, { session: read, ...(beforeSession && { beforeSession }), withGaps });
     if (!derivations) return { kind: 'Expired' };
     const { requirements, earliest } = observationNeeds(derivations);

@@ -328,7 +328,8 @@ export interface MarketData {
   // `mark:<instrument>@<date>`, in the coordinator's semantic transaction (A176). Internal: not a facade operation.
   bindEvidence(tx: SemanticTransaction, evidenceBinding: EvidenceBinding): void;
   query(query: MarketDataQuery): Promise<MarketDataQueryResult>;
-  openReadSession(context: FrameContext): Promise<MarketDataReadSession>;
+  // `withoutStale` reads each Instrument's date alone, with no earlier-Mark lookup for one missing on it: a Missing frame has no Stale context.
+  openReadSession(context: FrameContext, options?: { readonly withoutStale?: boolean }): Promise<MarketDataReadSession>;
   recover(request: RecoverRequest): Promise<RecoverResult>;
 }
 
@@ -603,9 +604,9 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
   }
 
   // One Instrument's evidence at a date from the date's observations; the Stale context is a read only when it has no effective Mark.
-  async function instrumentEvidence(tx: ReadTransaction, date: string, onDate: Awaited<ReturnType<typeof observationsOn>>, instrumentKey: string) {
+  async function instrumentEvidence(tx: ReadTransaction, date: string, onDate: Awaited<ReturnType<typeof observationsOn>>, instrumentKey: string, withoutStale = false) {
     const record = recordOf(onDate, instrumentKey);
-    return evidenceOf(date, instrumentKey, record, record?.effectiveMarkId ? undefined : await staleSourceOf(tx, deps.sessionPolicy, { instrumentKey, tradingDate: date }));
+    return evidenceOf(date, instrumentKey, record, record?.effectiveMarkId || withoutStale ? undefined : await staleSourceOf(tx, deps.sessionPolicy, { instrumentKey, tradingDate: date }));
   }
 
   const recordOf = (onDate: Awaited<ReturnType<typeof observationsOn>>, instrumentKey: string) => stripRevision(onDate.find((r) => r['instrumentKey'] === instrumentKey));
@@ -806,7 +807,7 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
       const { value: evidence } = await deps.persistence.readSnapshot(['observations'], (tx) => frameEvidence(tx, resolved.day.date, instruments));
       return frameResult(query, resolved.day, instruments, evidence);
     },
-    openReadSession(context) {
+    openReadSession(context, options) {
       // Opening reads nothing, so a context that names no day is a rejected promise rather than a throw.
       return Promise.resolve().then((): MarketDataReadSession => {
       const resolved = resolveDay(context);
@@ -840,7 +841,7 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
         const scanned = [...batch.scans.keys()].sort();
         const known = observed.get(date);
         // With the date's observations in hand, a snapshot is needed only for a Stale lookup or a scan.
-        const staleNeeded = known !== undefined && keys.some((key) => !recordOf(known, key)?.effectiveMarkId);
+        const staleNeeded = !options?.withoutStale && known !== undefined && keys.some((key) => !recordOf(known, key)?.effectiveMarkId);
         if (known !== undefined && !staleNeeded && scanned.length === 0) {
           keys.forEach((key) => batch.evidence.get(key)!.resolve(evidenceOf(date, key, recordOf(known, key), undefined)));
           return;
@@ -848,7 +849,7 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
         const { value } = await deps.persistence.readSnapshot(['observations'], async (tx) => {
           // A scan alone reads no frame, so it reads none of the date's observations.
           const onDate = known ?? (keys.length > 0 ? await observationsOn(tx, date) : undefined);
-          const evidence = onDate ? await Promise.all(keys.map((key) => instrumentEvidence(tx, date, onDate, key))) : [];
+          const evidence = onDate ? await Promise.all(keys.map((key) => instrumentEvidence(tx, date, onDate, key, options?.withoutStale))) : [];
           const gaps = await Promise.all(scanned.map((instrumentKey) => historicalGaps(tx, [{ instrumentKey, earliestExposure: batch.scans.get(instrumentKey)!.exposure }], date).then(({ gaps, points }): Scanned => ({ ...gaps[0]!, points: points[0]! }))));
           return { onDate, evidence, gaps };
         });
