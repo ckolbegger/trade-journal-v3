@@ -60,6 +60,20 @@ describe('Replay: since the session before (W48)', () => {
     expect(within(since()).queryByTestId('since-bar')).toBeNull();
     expect(within(since()).queryByText('estimate')).toBeNull();
   });
+  const notSplitWed = (reason: 'MarkMissing' | 'NoVolatilityFits'): Session => ({
+    ...withMarks(session({ date: '2026-11-11', instrument: DALE, held: 2, pnl: 640 }), [markOf({ kind: 'Stock', symbol: 'DALE' }, '55.00'), markOf(DALE, '2.10', { since: '2026-11-09', dollars: usd(0.87) })]),
+    change: { since: '2026-11-09', dollars: usd(174) },
+    estimates: estimates({ split: { kind: 'Unavailable', reason, session: '2026-11-10', since: '2026-11-09', change: 0.87 } }),
+  });
+  const openWed = (wed: Session) => render(<ReplayDrawer replay={{ ...fullView([wed]), instruments: [{ kind: 'Stock', symbol: 'DALE' }, DALE] }} initialSession="2026-11-11" />);
+  it('should say a Mark is missing, with W49 words, when the move is not split for a missing Mark', () => {
+    openWed(notSplitWed('MarkMissing'));
+    expect(since().textContent).toBe("Since Mon Nov 9: Trade P&L +$174.00. The put's move is not split: a Mark is missing for Tue Nov 10. Its Mark changed +$0.87 since Mon Nov 9.");
+  });
+  it('should keep no implied volatility for the date when the earlier session has no implied volatility', () => {
+    openWed(notSplitWed('NoVolatilityFits'));
+    expect(since().textContent).toBe("Since Mon Nov 9: Trade P&L +$174.00. The put's move is not split: no implied volatility for Tue Nov 10. Its Mark changed +$0.87 since Mon Nov 9.");
+  });
   it('should read AXIO moved a share for stock, with no tag', () => {
     const stock: Session = {
       ...withMarks(session({ date: '2026-11-16', instrument: AXIO, held: 200, pnl: 340 }), [markOf(AXIO, '61.40', { since: '2026-11-13', dollars: usd(1.4) })]),

@@ -11,6 +11,9 @@ type ViewSession = TradeReplayView['sessions'][number];
 const signedMoney = signed(money);
 const TAG = 'estimate';
 
+// W49's "A Mark is missing.", worded to fit the not-split sentence; every other reason is the earlier session's missing implied volatility.
+const CAUSES: Partial<Record<string, string>> = { MarkMissing: 'a Mark is missing for' };
+
 // A part of the split, a finished number of dollars a share, as "−$0.52".
 function partMoney(value: number): string {
   const cents = Math.round(value * 100);
@@ -46,7 +49,8 @@ export function sinceOf(view: TradeReplayView): (date: string) => SinceLineProps
     }
     if (split.kind === 'Unavailable') {
       const real = split.since !== undefined && split.change !== undefined ? ` Its Mark changed ${partMoney(split.change)} since ${shortDate(split.since)}.` : '';
-      return { lead, move: `The ${rightOf(view)}'s move is not split: no implied volatility for ${shortDate(split.session)}.${real}` };
+      const cause = CAUSES[split.reason] ?? 'no implied volatility for';
+      return { lead, move: `The ${rightOf(view)}'s move is not split: ${cause} ${shortDate(split.session)}.${real}` };
     }
     const change = optionChange(view, session);
     if (!change) return { lead };
