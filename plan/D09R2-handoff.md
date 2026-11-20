@@ -13,7 +13,7 @@ Task status lives in the breakdown's Progress section (section 14).
 
 Where things stand:
 - **D9 closed 2026-11-20**, tagged `claude-opus-5.5-d9` (`10a4689e`). Its final report is `evidence/D09/final-report.md`; its tech debt (`evidence/D09/tech-debt.md`, items 1 to 11) was reviewed with the user, and all open items stay tech debt.
-- **No D9R2 code exists yet.** Since the D9 tag, only plan and evidence documents changed.
+- **No D9R2 code exists yet.** Since the D9 tag, only plan and evidence documents changed, plus the D9 stage C retro's tooling commit (`78a10e66`): `npm run test:e2e:specs` for subagents' browser runs, a lint rule for a price called a "close", a Reads lookup in the drafting guide, a benchmark note, and `status.sh --all`.
 - **Waiting for later, not for this session:** the coach review of the Review page (`evidence/D09/coach-review-2-prompt.md`, untracked, the user's; leave it alone) runs after D9R2.
 
 **Starting a session.** The user starts a session with one prompt: *"Read plan/D09R2-handoff.md and follow it."*
@@ -47,8 +47,8 @@ Run these checks. Each one must match:
 | `git tag -l 'claude-opus-5.5-plan-r*' \| sort -V \| tail -1` | `claude-opus-5.5-plan-r112` at the first session. Afterwards, a later tag only for a revision approved in D9R2. |
 | `git merge-base --is-ancestor claude-opus-5.5-plan-r112 HEAD && echo ok` | `ok` |
 | `git rev-parse --short 'claude-opus-5.5-d9^{commit}'` | `10a4689e` |
-| `git diff --stat claude-opus-5.5-d9 HEAD -- src e2e tests tools bench package.json .claude/scripts .claude/agents` | Empty at the first session. Afterwards: only D9R2's task commits. |
-| `git log --oneline claude-opus-5.5-d9..HEAD` | At the first session: only plan and evidence commits (the D9R2 drafting handoff, the breakdown's drafts, revision 112, this handoff, the D9 evidence the user reviewed). Afterwards also D9R2's task commits, their evidence and Progress updates, handoff updates, and approved plan revisions. |
+| `git diff --stat 78a10e66 HEAD -- src e2e tests tools bench package.json .claude/scripts .claude/agents` | Empty at the first session. Afterwards: only D9R2's task commits. (`78a10e66` is the D9 stage C retro's commit, after the D9 tag: `package.json`'s `test:e2e:specs`, `.claude/scripts/status.sh` and its test, `.claude/agents/tdd-task.md`, the wording lint rule and its suppressions.) |
+| `git log --oneline claude-opus-5.5-d9..HEAD` | At the first session: only plan and evidence commits (the D9R2 drafting handoff, the breakdown's drafts, revision 112, this handoff, the D9 evidence the user reviewed) and the D9 stage C retro's commit `78a10e66`. Afterwards also D9R2's task commits, their evidence and Progress updates, handoff updates, and approved plan revisions. |
 | `git tag -l 'claude-opus-5.5-d9r2'` | Empty until the benchmark passes after the gate. |
 | `ls .claude/worktrees 2>/dev/null` | Empty, absent, or only this implementation's old lane worktrees (D9's `d09-<lane>`, D9A-R's `d09ar-<lane>`). D9R2 creates none. |
 | `git rev-parse --git-path hooks` | `.githooks` (the pre-commit typecheck and lint hook; the setup commands are at the top of `.githooks/pre-commit`) |
@@ -115,7 +115,7 @@ The breakdown's section 4 and Progress section: T9R2.1, T9R2.2, T9R2.3, T9R2.4, 
 
     For D9R2 the record is `evidence/D09R2/words-changed.md` and the approved wording is the breakdown's section 1.7. The main session copies each change from the task's summary into it, by task.
 - **TDD discipline.** Run each case red, then green. Never write a test after its code, and back out code written before its red. A first-run pass gets the mutation check (an assertion failure or runtime exception, not a compile error) and is flagged in section 7's open questions. Pinned browser cases use `launchAt`, `pinClock` and `setClock` from `e2e/d4/support.ts`.
-- **Browser access in subagents.** Tell every UI task's subagent to run the browser specs that cover its screens under `.claude/scripts/with-browser-lock.sh` on port 5175, and to say so in its summary if it can't.
+- **Browser access in subagents.** Tell every UI task's subagent to run the browser specs that cover its screens with `.claude/scripts/with-browser-lock.sh npm run test:e2e:specs -- <spec files>` on port 5175 (one call that rebuilds every served folder, then runs them; `.claude/agents/tdd-task.md`), and to say so in its summary if it can't. In stage C, builds joined to a run with `&&` were refused, so subagents tested old builds.
 - **Known flaky cases (P138).** Tech debt item 11's case (`TradeList.test.tsx`, the Ready state), the `PositionChangeForm` focus case ("should move focus to the Record entry heading when the form finishes loading"), and B8.16 (`e2e/d8/responsive-a11y.spec.ts:299`, tech debt item 3). If one fails a run, have the runner rerun it alone once. A pass is logged as a flake, with the run, and the run continues; two failures in a row are a pending decision. Any other failing test is a failure: reproduce it with one targeted run and fix it in a fresh subagent. `ReviewCards.test.tsx`'s links case (D9's tech debt item 7) was fixed by T9.29-D1; T9R2.14 changes the links, so a failure there is a failure, not a flake.
 - **Tech debt.** Don't fix the tech debt list's items unasked (`evidence/D09/tech-debt.md`, `evidence/D09AR/tech-debt.md`). Item 11 (the Open list's "close") and the stale-context note's "close" (the breakdown's section 10) are not D9R2's.
 
@@ -216,6 +216,8 @@ The main session saves the reports itself (`implementing.md`, "Final report"). A
 
 - For T9R2.8: take the Price History screenshots at 1280 and 390 px **after** T9R2.2 and T9R2.4 have landed and before the extraction, so the compare's baseline is the fixed Price History.
 - For T9R2.15 and T9R2.16: the acceptance script fails on every D9R2 row until those tasks write their files; that is expected until then.
+- For T9R2.1: a lint rule (D9 stage C retro) flags a price called a "close"; `CardFigures.tsx`'s heading is recorded in `eslint-suppressions.json` until T9R2.1 fixes it. T9R2.1 then runs `npx eslint . --prune-suppressions` and commits the file, or lint fails on the unused entry. The Open list's and the stale-context note's entries stay (tech debt).
+- For T9R2.6 (A289): the tests that pin the Review open's request lists are `tests/integration/d4/query-count.test.ts`, `d5/query-count.test.ts`, `d5r/query-count.test.ts`, `d6/query-count.test.ts`, `d7/query-count.test.ts`, `d7sp/review-query-count.test.ts`, `d9/query-count.test.ts` and `d9ar/query-count.test.ts`, with `src/coordinators/daily-review/meter.test.ts` and `daily-review.test.ts` (1316). T9R2.6 runs them all; each must keep its list exactly. A changed list is a pending decision, naming the files.
 
 ### Open questions
 
