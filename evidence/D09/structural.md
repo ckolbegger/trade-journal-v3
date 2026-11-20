@@ -795,3 +795,7 @@ Complete run `t9.31` (`browser-auto 09506977` chose the full tier: first matchin
 | Checks | 14 of 14 |
 
 The six failures are older exact request lists for a Review open, which T9.31's one more date's read (P133, I9.11) changes: `tests/integration/d4/query-count.test.ts` T4.31 (9 requests where 8 were expected, one more `getAll`); `d5/query-count.test.ts` T5.22; `d7/query-count.test.ts` T7.29 (`meta.get` 14 where 13); `d7sp/review-query-count.test.ts`, three cases. Pending decision SC-Q1 (`DECISIONS-PENDING.md`).
+
+### T9.29-D1 The flaky ReviewCards focus case (the user's request; Standard, from T9.29)
+
+Commit `610fe293`, test-only. Cause: the Review moves focus to the Marks row in a React effect after the commit that shows the card; `findByRole` could return before it, and the case checked focus at once. Red produced by a temporary `setTimeout(0)` around the row focus in `ReviewCard.tsx` (failed `expected false to be true`, the flake's message), then reverted; eight runs under CPU load had not reproduced it. Fix: the assertion waits (`waitFor`) for the same check. The same pattern fixed in two sibling cases of the file ("open the card that the trade param names, with the row the instrument param names" and the DEF Mark blocker link case). 20 of 20 runs of the file passed; full unit project 223 files, 2,575 tests passed. ocr `610fe293`: No findings (`ocr/T9.29-D1-610fe293.json`). Its complete run is shared with T9.35's.

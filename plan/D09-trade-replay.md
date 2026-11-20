@@ -972,13 +972,13 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T9.28-D1 | B | — | — | Done (`224043dd`) | Decision 120: "Realized" for a gain and a loss |
 | T9.28-D2 | B | — | — | Done (`bf3e10bd`) | The user's word review, item B7: the not-split sentence shortened (P137) |
 | T9.29 | C | — | — | Done | `52b83cb5`; B1 `934fd967`; B2 `d9a75703` |
-| T9.29-D1 | C | — | — | In progress from `098e6ccd` (the user, 2026-11-20: fix the test that flaked in run `t9.29`, tech debt item 7) | |
+| T9.29-D1 | C | — | — | Done in code; run shared with T9.35 (the user, 2026-11-20: fix the test that flaked in run `t9.29`, tech debt item 7) | `610fe293` |
 | T9.30 | C | — | — | Done | `349ad6ec` |
 | T9.31 | C | — | — | Paused: decision pending (SC-Q1) | `7b73e835`; B1 `479c7635` |
 | T9.32 | C | — | — | Paused: decision pending (SC-Q1) | |
 | T9.33 | C | — | — | Paused: decision pending (SC-Q1) | |
 | T9.34 | C | — | — | Paused: decision pending (SC-Q1) | |
-| T9.35 | C | — | — | Not started | |
+| T9.35 | C | — | — | In progress from `610fe293` | |
 | T9.40 | C | — | — | Paused: decision pending (SC-Q1) | |
 | T9.36 | C | — | — | Paused: decision pending (SC-Q1) | |
 | T9.37 | C | — | — | Paused: decision pending (SC-Q1) | |
