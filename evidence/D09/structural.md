@@ -799,3 +799,15 @@ The six failures are older exact request lists for a Review open, which T9.31's 
 ### T9.29-D1 The flaky ReviewCards focus case (the user's request; Standard, from T9.29)
 
 Commit `610fe293`, test-only. Cause: the Review moves focus to the Marks row in a React effect after the commit that shows the card; `findByRole` could return before it, and the case checked focus at once. Red produced by a temporary `setTimeout(0)` around the row focus in `ReviewCard.tsx` (failed `expected false to be true`, the flake's message), then reverted; eight runs under CPU load had not reproduced it. Fix: the assertion waits (`waitFor`) for the same check. The same pattern fixed in two sibling cases of the file ("open the card that the trade param names, with the row the instrument param names" and the DEF Mark blocker link case). 20 of 20 runs of the file passed; full unit project 223 files, 2,575 tests passed. ocr `610fe293`: No findings (`ocr/T9.29-D1-610fe293.json`). Its complete run is shared with T9.35's.
+
+### T9.35 Trade Detail: the meter on the Conditions card (Standard, raised to Full)
+
+Commit `6c31fc93`. **Level raised to Full** (decision 122): no Detail view carried a meter reading, so the task added `TradeReplayView.meter?: MeterReading` in Trade Views (`meterOf` in `trade-views.ts`: `now` from `valueTrade` on the same read session, `previous` from the replay's second-to-last session; none on a Closed Trade or a Settlement Due contract). `meterReadingOf`'s `before.evaluation` narrowed to `Pick<TradeEvaluation, 'currentMarkedPnl'>`; `MeterPrevious.direction` made optional; `ConditionsCard` takes `replay`, passed by `Cockpit`. 4 planned cases plus one coordinator case ("carry the meter reading on an Open Trade's replay … none on a Closed Trade's"), each red then green; the subagent took out branches written ahead of cases 2 and 3 and re-added each on its own red. No first-run passes. One existing case changed outside its files: `daily-review.test.ts` "should give the same sessions as replayTrade when the Review Date is the Expected Mark Date" sets `meter: undefined` on the Detail's replay before comparing (the Review card's replay carries none); no expected value changed. The `gaps.spec.ts` and `replay.spec.ts` row lists are untouched. Browser: `e2e/d8p`, `e2e/d8r`, `e2e/d9ar` under the lock, 114 passed, 4 skipped (existing `dist-faults` and `dist-releases` builds). Subagent note: the meter appears when the replay arrives, after the card's first paint.
+
+ocr `6c31fc93` (`ocr/T9.35-6c31fc93.json`):
+
+| Severity | Location | Claim | Verdict | Action |
+|---|---|---|---|---|
+| medium | `conditions.props.ts:136` | `openProps` returns early for an Open Trade awaiting its first Marks, dropping the meter, so the dashed track never shows | Doubtful | T9.35-B1 |
+
+- **T9.35-B1.** Defect: an Open Detail awaiting its first Marks shows no meter, where T9.35's cases and A260 call for the dashed track with the rails. Case: *it should show the dashed track at the top of the card on an Open Detail awaiting its first Marks*.

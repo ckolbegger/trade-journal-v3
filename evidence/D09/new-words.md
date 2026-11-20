@@ -26,3 +26,12 @@ Screen words no approved row covers, used as the session would have recommended,
 - T9.25, the readout and the session cards: the row "Implied volatility" (value "27.7%", tag "estimate") and the row "Behaves like" (value "≈ 183 shares", tag "estimate"; "200 shares" with no tag for stock); "Unavailable" with the reason of W49 as the hover text where there is none, and no tag on it (nearest W47).
 - T9.25-B1, the line under the charts, the not-split sentence for a missing Mark: "The put's move is not split: a Mark is missing for Tue Nov 10. Its Mark changed +$0.87 since Mon Nov 9." (the cause phrase "a Mark is missing for <date>" is new; nearest W48, W49).
 **Reviewed by the user, 2026-11-20** (the D9 Words Review page): every stage A and stage B entry above is approved, except: stage A's P&L chart labels (T9.14), where "Banked" becomes "Realized" for a gain as for a loss (decision 120, T9.28-D1); and T9.25-B1's not-split sentence (B7), which is shortened (T9.28-D2). T9.14's readout Marks rows ("BREN Mark", "Call Mark") are approved by name; their "no $ on an Underlying's price" part was already replaced by D9A-R's W58.
+
+## Stage C
+
+| Task | Screen | Words | Nearest approved row |
+|---|---|---|---|
+| T9.29 | The meter's name and hover (every meter) | "Level with +$X on Thu Nov 12." | W51 ("Up from +$850.00 on Thu Nov 12.") |
+| T9.29 | The meter's name and hover, no Mark | "Session before +$X on Thu Nov 12." | W51 ("With no Mark: the reason, then the rails.") |
+| T9.29 | The meter's name and hover, at break-even | "P&L +$X." (no share) | W51 |
+| T9.35 | The meter on the Conditions card, no Mark | The reason is the P&L card's own text for the same result, for example "No Mark for XYZ on Tue Oct 13" | W51 ("With no Mark: the reason, then the rails.") |
