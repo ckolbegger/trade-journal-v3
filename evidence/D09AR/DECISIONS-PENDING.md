@@ -2,11 +2,15 @@
 
 Decision 113 as amended by decision 115: one question asked at a time; the others queued here.
 
-### T9AR.24: critic-3, the third gate critic, leaves one moderate defect (asked 2026-11-19)
-
-Critic-3 passes every flow. One moderate defect remains. On the Review card's summary, the past-a-line row sits under a heading that contradicts it: AXIO and DALE read "Current Risk · Past the Stop by $300.00 (0.50R)", and BREN reads "Remaining Reward · Past the Target by $32.00 (0.10R)". The replay itself sets this row above both headings (W56, decision 7, coach point 6). Under the cap, this needs the user's decision. Options: fix it as one bug task with no further critic, then close (recommended); record it as tech debt and close now; fix it and run a fourth critic.
+None pending.
 
 ## Answered
+
+### T9AR.24: critic-3, the third gate critic, leaves one moderate defect (answered 2026-11-19)
+
+**Answer: record it as tech debt and close the gate now.** Recorded in `tech-debt.md`; the gate closed on the `gate3` full run and critic-3.
+
+Critic-3 passes every flow. One moderate defect remains. On the Review card's summary, the past-a-line row sits under a heading that contradicts it: AXIO and DALE read "Current Risk · Past the Stop by $300.00 (0.50R)", and BREN reads "Remaining Reward · Past the Target by $32.00 (0.10R)". The replay itself sets this row above both headings (W56, decision 7, coach point 6). Under the cap, this needs the user's decision. Options: fix it as one bug task with no further critic, then close (recommended); record it as tech debt and close now; fix it and run a fourth critic.
 
 ### T9AR.24-B7: a third ocr round still leaves findings (answered 2026-11-19)
 

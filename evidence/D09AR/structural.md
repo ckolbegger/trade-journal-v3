@@ -1013,6 +1013,12 @@ Lane BR (`d09ar/br`), base `70ce0f74`.
     1. **Moderate.** The Review card summary files the past-a-line row under "Current Risk" or "Remaining Reward" (AXIO and DALE "Current Risk · Past the Stop by …", BREN "Remaining Reward · Past the Target by $32.00"). W56, decision 7 and coach point 6 say this row belongs above both headings. **The cap applies: put to the user.**
     2. **Low.** Finished Trades draw the Stop and Target lines with no label (A280). Recorded in `tech-debt.md`.
     3. **Low.** Some labels are drawn over on sessions other than the entry, and at 320. Recorded in `tech-debt.md`.
+  - **The user's decision** on defect 1: "Record it as tech debt and close the gate now." Recorded in `tech-debt.md`.
+  - **The gate is closed.**
+    - T9AR.24 is Done.
+    - Section 13's seven rows are marked covered: `acceptance-commands.sh` passed 7 of 7 after T9AR.23, and the gate's full run `gate3` passed.
+    - D9's Progress row for D9A-R is Done.
+    - Tagged `claude-opus-5.5-d9ar`.
         - Reviewer's notes:
           - `isMarkLacking` is exactly MarkMissing or AcknowledgedUnavailable.
           - The Trade P&L row's figure is the contract's own, so the Underlying's Mark cannot reach it.
