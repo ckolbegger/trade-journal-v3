@@ -15,7 +15,7 @@ export function PriceHistoryTable({ rowLabels, columns, missingCount, acknowledg
   if (columns.length === 0) return <p>No sessions yet: the first ends once the Trade's first session ends.</p>;
   return (
     <>
-    <SessionGrid rowLabels={rowLabels} columns={columns} />
+    <SessionGrid label="Price History" tableClass="price-history" rowLabels={rowLabels} columns={columns} />
     {(missingCount > 0 || acknowledgedCount > 0) && (
       <p className="price-history-gaps">
         {missingCount > 0 && `${plural(missingCount, 'session', 'sessions')} without Marks. `}

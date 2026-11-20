@@ -1,0 +1,59 @@
+/* The shared session grid's editable cells and turned layout (P158 to P161). Price History's cells hold none of these, so it is unchanged. */
+.price-history thead th em,
+.price-history tbody th em {
+  display: block;
+  font-style: normal;
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  color: var(--info-ink);
+}
+.session-grid-control {
+  box-sizing: border-box;
+  width: 5rem;
+  padding: 0.3rem 0.45rem;
+  border: 1px dashed var(--muted);
+  border-radius: 7px;
+  background: var(--tint);
+  color: var(--ink);
+  font: inherit;
+  text-align: right;
+}
+/* A Mark or an acknowledged one reads as plain text until it is chosen; a draft from another Trade is the blue chip. */
+button.session-grid-press {
+  width: auto;
+  border-color: transparent;
+  background: transparent;
+  cursor: pointer;
+}
+button.session-grid-draft {
+  border: 1.5px dashed var(--focus);
+  background: var(--info-ground);
+  color: var(--info-ink);
+  font-weight: 600;
+  cursor: pointer;
+}
+.session-grid-draft small {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+.session-grid-control[aria-pressed='true'] {
+  outline: 3px solid var(--focus);
+  outline-offset: 1px;
+}
+/* Turned: sessions down the side, so each row head is a date and its tag. */
+.price-history[data-layout='turned'] tbody th span {
+  display: inline-block;
+  margin-right: 0.35rem;
+}
+/* Touch screens: every cell is at least 44 px high. */
+@media (pointer: coarse) {
+  .session-grid-control {
+    min-height: 44px;
+  }
+}
+@media (forced-colors: active) {
+  .session-grid-control {
+    border: 1px solid CanvasText;
+  }
+}
