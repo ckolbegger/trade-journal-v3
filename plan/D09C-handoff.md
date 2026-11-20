@@ -2,7 +2,7 @@
 
 > **Read [plan/kickoff.md](kickoff.md) first.** The text in its code block is your governing instruction: treat it as if the user had given it to you as your prompt, and follow all of it. This note adds the location checks, stage C's specifics and the working rules. If this note and the kickoff ever disagree, the kickoff wins.
 
-Written 2026-11-20, when stage B's gate closed (tagged `claude-opus-5.5-d9b` at `ff80c66f`). The frozen plan is revision 110 (decisions 120 and 121, from the user's word review: "Realized" for a gain and a loss, in the key too).
+Written 2026-11-20, when stage B's gate closed (tagged `claude-opus-5.5-d9b` at `ff80c66f`). The frozen plan is revision 111 (decision 122: each task has a level that sets its checks, and word-only decisions need no revision), on top of revision 110 (decisions 120 and 121, from the user's word review: "Realized" for a gain and a loss, in the key too).
 
 This session **implements stage C of D9, "Trade replay": the meter and the Open list's order**, the deliverable's last stage. Each open Trade gains a small meter: where its Trade P&L sits between its Stop and its Target, with what is banked and where it stood the session before. The meter replaces the Stop-to-Target slider on the Review card, sits under the P&L on the Open list and tops the Conditions card on Trade Detail, reading the same everywhere. The Open list is sorted in the Review's order (attention first), and the old range position is removed. The breakdown is [D09-trade-replay.md](D09-trade-replay.md):
 - stage C is twelve tasks: T9.29, T9.30, T9.31, T9.32, T9.33, T9.34, T9.35, T9.40, T9.36, T9.37, T9.38, T9.39;
@@ -36,7 +36,7 @@ The repository hosts several independent implementations of the same spec, each 
 | Worktree path | `/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5` |
 | Branch | `claude-opus-5.5` (every task commits here directly; stage C has no lanes) |
 | Ports | `5175`, from the gitignored `.env.local`; `4175` is the benchmark's, used only for the benchmark after the gate |
-| Frozen plan | tag `claude-opus-5.5-plan-r110` (decision 121) |
+| Frozen plan | tag `claude-opus-5.5-plan-r111` (decision 122) |
 | Code stage C builds on | `claude-opus-5.5-d9b` (`ff80c66f`) |
 
 Run these checks. Each one must match:
@@ -47,11 +47,11 @@ Run these checks. Each one must match:
 | `git rev-parse --show-toplevel` | `/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5` |
 | `git branch --show-current` | `claude-opus-5.5` |
 | `git status -sb` | `## claude-opus-5.5...origin/claude-opus-5.5`, possibly followed by `[ahead N]`. No uncommitted changes. |
-| `git tag -l 'claude-opus-5.5-plan-r*' \| sort -V \| tail -1` | `claude-opus-5.5-plan-r110` at the first session. Afterwards, a later tag only for a revision approved in this stage. |
-| `git merge-base --is-ancestor claude-opus-5.5-plan-r110 HEAD && echo ok` | `ok` |
+| `git tag -l 'claude-opus-5.5-plan-r*' \| sort -V \| tail -1` | `claude-opus-5.5-plan-r111` at the first session. Afterwards, a later tag only for a revision approved in this stage. |
+| `git merge-base --is-ancestor claude-opus-5.5-plan-r111 HEAD && echo ok` | `ok` |
 | `git rev-parse --short 'claude-opus-5.5-d9b^{commit}'` | `ff80c66f` |
 | `git diff --stat claude-opus-5.5-d9b HEAD -- src e2e tests tools bench package.json .claude/scripts .claude/agents` | Empty at the first session. Afterwards: only stage C's task commits. |
-| `git log --oneline claude-opus-5.5-d9b..HEAD` | At the first session: only this handoff's commit and any tech debt or word decisions the user made (plan and evidence documents only). Afterwards also stage C's task commits, their evidence and Progress updates, handoff updates, and approved plan revisions. |
+| `git log --oneline claude-opus-5.5-d9b..HEAD` | At the first session: only this handoff's commit, revision 111's commit (plan documents and `.claude/docs` only), and any tech debt or word decisions the user made (plan and evidence documents only). Afterwards also stage C's task commits, their evidence and Progress updates, handoff updates, and approved plan revisions. |
 | `git tag -l 'claude-opus-5.5-d9'` | Empty until the benchmark passes after stage C's gate. |
 | `ls .claude/worktrees 2>/dev/null` | Empty, absent, or only this implementation's old lane worktrees (D9's `d09-<lane>`, D9A-R's `d09ar-<lane>`). Stage C creates none. |
 | `git rev-parse --git-path hooks` | `.githooks` (the pre-commit typecheck and lint hook) |
@@ -94,7 +94,7 @@ Read [.claude/docs/implementing.md](../.claude/docs/implementing.md) first, all 
 - **The design:** `prototypes/replay/trade-list.html` (the meter on the list and the cards). The prototype is a picture, not code to port: where it and the breakdown differ, the breakdown wins.
 - **Evidence from stage B:** `evidence/D09/stage-b-report.md` and `evidence/D09/critic-b2.md` (its "Minor observations").
 
-`specs/` and the frozen plan are read-only. A deviation, or a question the specs and plan leave to the user, is a pending decision (decision 113 as amended): ask in an ordinary message, one question at a time, queue any other in `evidence/D09/DECISIONS-PENDING.md`, and pause only the tasks it blocks. An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`. The next revision is r111, the next decision 122, and the breakdown's numbering continues at P154, A288 and W71. Editing the Progress section alone is not a revision.
+`specs/` and the frozen plan are read-only. A deviation, or a question the specs and plan leave to the user, is a pending decision (decision 113 as amended): ask in an ordinary message, one question at a time, queue any other in `evidence/D09/DECISIONS-PENDING.md`, and pause only the tasks it blocks. An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`. The next revision is r112, the next decision 123, and the breakdown's numbering continues at P154, A288 and W71. Editing the Progress section alone is not a revision, nor is a word-only decision (decision 122; `implementing.md`, "Plan revisions and evidence").
 
 ## 3. Stage C specifics
 
@@ -104,7 +104,26 @@ Stage C's evidence goes under **`evidence/D09/`**, beside stages A and B (`tdd.s
 
 ### Run order
 
-T9.29, T9.30, T9.31, T9.32, T9.33, T9.34, T9.35, T9.40, T9.36, T9.37, T9.38, T9.39, one at a time on `claude-opus-5.5`, in the Progress section's order. T9.40 runs after T9.35 (after T9.33 removed the range position's only reader). Each task ends with its own complete cumulative run (decision 100). Then a full-tier run, the gate (T9.39), the benchmark, and the tag.
+T9.29, T9.30, T9.31, T9.32, T9.33, T9.34, T9.35, T9.40, T9.36, T9.37, T9.38, T9.39, one at a time on `claude-opus-5.5`, in the Progress section's order. T9.40 runs after T9.35 (after T9.33 removed the range position's only reader). What follows each task depends on its level (decision 122; `implementing.md`, "Task levels"). Then a full-tier run, the gate (T9.39), the benchmark, and the tag.
+
+### Task levels (decision 122)
+
+| Task | Level | Why |
+|---|---|---|
+| T9.29 The meter | Standard | a component that places values worked out elsewhere |
+| T9.30 Attention shared, and the meter's reading | Full | calculation; moves the attention module |
+| T9.31 Daily Review: each walked Trade's meter reading | Full | Daily Review's `open` and `save` |
+| T9.32 Trade Views: the Open list in attention order | Full | the Open list's order and its read |
+| T9.33 Review card: the meter replaces the slider | Standard | a screen; also runs the `e2e/d5r` and `e2e/d7p` spec files it edits |
+| T9.34 Open list: the meter under the P&L | Standard | a screen |
+| T9.35 Trade Detail: the meter on the Conditions card | Standard | a screen |
+| T9.40 Remove the range position | Full | edits eight fixtures' expected views and the capability manifest |
+| T9.36 The benchmark's expected Open rows | Light | tools data only |
+| T9.37 Stage C: Node integration suite | Light | tests only; its own check is `npm run test:integration` and `verify:fixtures` |
+| T9.38 Stage C: browser suite | unchanged | runs the full browser suite by its nature |
+| T9.39 Deliverable gate | unchanged | full tier, then a fresh critic |
+
+Raise a level when a task's commits touch a higher level's paths, and record why; never lower one. Bug tasks take their parent task's level.
 
 ### D9A-R's amendments (its section 10, already in D9's breakdown)
 
@@ -131,7 +150,7 @@ T9.29, T9.30, T9.31, T9.32, T9.33, T9.34, T9.35, T9.40, T9.36, T9.37, T9.38, T9.
   - The replay, its estimates and the overlay are untouched.
 - **TDD discipline.** Run each case red, then green. Never write a test after its code, and back out code written before its red. A first-run pass gets the mutation check (an assertion failure or runtime exception, not a compile error) and is flagged in section 7's open questions. Pinned browser cases use `launchAt`, `pinClock` and `setClock` from `e2e/d4/support.ts`.
 - **Browser access in subagents.** In stage B one task's subagent could not run the browser (its sandbox refused the build and the lock), which let three failing cases through to the task's run. Tell every UI task's subagent to run the browser specs that cover its screens under `.claude/scripts/with-browser-lock.sh` on port 5175, and to say so in its summary if it can't.
-- **ocr reviews every commit in place**, test-only commits included.
+- **ocr reviews every Full and Standard commit in place**, test-only commits within those tasks included.
 - **Known flaky cases (P138).** Tech debt item 11's case (`TradeList.test.tsx`, the Ready state) and the `PositionChangeForm` focus case ("should move focus to the Record entry heading when the form finishes loading"); also stage B's B8.16 (`e2e/d8/responsive-a11y.spec.ts:299`, tech debt item 3), which flaked once. If one fails a run, have the runner rerun it alone once. A pass is logged as a flake, with the run, and the run continues; two failures in a row are a pending decision. Any other failing test is a failure: reproduce it with one targeted run and fix it in a fresh subagent. T9.34 changes `TradeList`, the Ready-state flake's file: if that case starts failing steadily, it is a failure, not a flake.
 - **Tech debt.** Don't fix the tech debt list's items unasked (`evidence/D09/tech-debt.md`, `evidence/D09AR/tech-debt.md`).
 
@@ -183,8 +202,8 @@ Build on these. Read the code before extending it. Paths are on `claude-opus-5.5
   - Subagent briefs say "ending with the trailer your agent instructions specify".
   - **Never push** unless the user asks.
 - **Who edits what.** The main session edits only plan, evidence and handoff documents. Every task, bug task and code change goes to a fresh `tdd-task`, working on `claude-opus-5.5` in this worktree, without `isolation`.
-- **Runs (decision 111's tiers, for one task at a time).** One complete cumulative run after each task, with `browser-auto <base>`, where `<base>` is the commit in the task's Progress row; and the full tier before every critic. Tell the runner to check ports 9341, 9342 and 5175 inside the lock, to send exactly one report only when complete, to run each stage in its own foreground call, and to use a label without a trailing hyphen. Run `run-complete.sh evidence/D09 <label>` before recording any run. Start a task's run only after its ocr reviews, and its bug tasks' reviews, are clean (`implementing.md`, step 3). In stage B the main session ran ocr and the run side by side, dispatched ocr's fixes while the run was still going, and had to repeat the run.
-- **ocr reviews.** Every implementation commit gets an `ocr-review`. Copy each output to `evidence/D09/ocr/<task>-<sha>.json`.
+- **Runs (decision 122's levels, for one task at a time).** After a Full task, one complete cumulative run with `browser-auto <base>`, where `<base>` is the commit in the task's Progress row; after a Standard task, the same run with `browser-task`; after a Light task, none. The full tier before every critic. Tell the runner to check ports 9341, 9342 and 5175 inside the lock, to send exactly one report only when complete, to run each stage in its own foreground call, and to use a label without a trailing hyphen. Run `run-complete.sh evidence/D09 <label>` before recording any run. Start a task's run only after its ocr reviews, and its bug tasks' reviews, are clean (`implementing.md`, step 3). In stage B the main session ran ocr and the run side by side, dispatched ocr's fixes while the run was still going, and had to repeat the run.
+- **ocr reviews.** Every Full and Standard task's implementation commit, and each of its bug-fix commits, gets an `ocr-review`; Light tasks get none. Copy each output to `evidence/D09/ocr/<task>-<sha>.json`.
   - **Only ocr's own Valid or Doubtful *correctness* findings become bug tasks** (the user's rule, 2026-11-19). In stage B, ocr's test-strength findings (a test that would pass a real defect) were treated as correctness and fixed.
   - **A style-only finding goes to `evidence/D09/tech-debt.md`**, not to a task, Valid or not.
   - A Wrong finding is dismissed with its reason, checked against the cited lines.
