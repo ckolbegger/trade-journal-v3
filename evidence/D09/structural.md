@@ -951,3 +951,32 @@ ocr `94be7273` (`ocr/T9.38-94be7273.json`):
 
 - **T9.38-B1.** Defect: the case would pass with the meter's non-colour cues gone. Case: *it should show the square pointer, the hatch and the outlined open fill in the rendered styles, not only in attributes*.
 - T9.38-B1 `89b9fd44`, test-only: a new computed-style case at 375 px (square pointer `border-top-left-radius` 3px vs round 50%; the past part's `repeating-linear-gradient`; the open fill's inset `box-shadow` vs the banked fill's solid colour). Red under three `meter.css` mutations (each rebuilt), green restored; `meter-a11y.spec.ts` 3 passed. Not mutated individually: the past-the-Stop hatch, the banked colour, the open fill's lighter background. ocr `89b9fd44`: No findings (`ocr/T9.38-B1-89b9fd44.json`).
+
+### T9.39 Stage C gate
+
+Run `gate-c1` (`browser-full`), the complete run for T9.38 and T9.38-B1 and the full tier before stage C's critic. Unit and integration at `37e046a8`; browser and checks at `dccc6f61` (an evidence-only commit landed mid-run). `run-complete.sh`: complete.
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 224 files, 2,592 tests passed | `suite-runs/gate-c1-unit.txt` |
+| Node integration | 137 files, 294 tests passed | `suite-runs/gate-c1-integration.txt` |
+| browser-1 | 126 passed (5.5 min) | `suite-runs/gate-c1-browser-1.txt` |
+| browser-2 | 79 passed (5.2 min) | `suite-runs/gate-c1-browser-2.txt` |
+| browser-3 | 57 passed (4.6 min) | `suite-runs/gate-c1-browser-3.txt` |
+| browser-4 | 118 passed, 4 skipped (6.1 min) | `suite-runs/gate-c1-browser-4.txt` |
+| Static and verify checks | 14 of 14 exit 0 | `suite-runs/gate-c1-checks.txt` |
+
+No failures; no P138 flake fired. Acceptance commands (`acceptance-commands.sh plan/D09-trade-replay.md`), exit 0:
+
+```
+AC-MARK-004 (partial: points and gaps in the chart and its table; Daily Bar candles in D11) | npx playwright test e2e/d9/gaps.spec.ts | 5 tests
+AC-CALC-003 (re-proven per session: each condition's status, the risk and reward, and the Overrun) | npm run test:integration -- d9/replay | 1 tests
+AC-CALC-005 (new: Estimates explain and never value) | npm run test:integration -- d9/estimates | 6 tests
+AC-CALC-004 (cumulative: no payoff line in replay; no theoretical price shown as a value) | npx playwright test e2e/d9/states.spec.ts | 4 tests
+AC-CAP-001 (cumulative) | npm run test:integration -- d9/capabilities | 1 tests
+AC-PERF-001 (cumulative: reads counted; the benchmark after stage C) | npm run test:integration -- d9/query-count | 2 tests
+AC-UI-001, AC-UI-002 (cumulative: the chart's gaps, its text equivalent, live resize, keyboard) | npx playwright test e2e/d9/responsive-a11y.spec.ts | 5 tests
+AC-DEL-001 (cumulative: the replay reads after a stopped, offline restart) | npx playwright test e2e/d9ar/responsive-a11y.spec.ts | 19 tests
+AC-REV-002 (cumulative: the Review's order and resumption unchanged by the meter) | npx playwright test e2e/d9/meter-review.spec.ts | 2 tests
+summary: 9 commands checked, 0 failed, 0 rows are procedures, not checked
+```

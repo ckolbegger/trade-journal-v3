@@ -983,5 +983,5 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T9.40 | C | — | — | Done | `ae057f91` |
 | T9.36 | C | — | — | Not started: runs after the gate, as the benchmark's first steps (the user's SC-Q2 answer (a)) | |
 | T9.37 | C | — | — | Done (Light) | `17f05074` |
-| T9.38 | C | — | — | Done in code; its run is the gate's full run `gate-c1` | `94be7273`; B1 `89b9fd44` |
-| T9.39 | C | — | — | Not started | |
+| T9.38 | C | — | — | Done | `94be7273`; B1 `89b9fd44` |
+| T9.39 | C | — | — | In progress: `gate-c1` passed; critic-c1 running | |
