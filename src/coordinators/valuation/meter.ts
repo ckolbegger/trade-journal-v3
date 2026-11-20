@@ -35,7 +35,7 @@ function shareOf(pnl: Rational, fraction: Rational): NonNullable<MeterNowReading
 
 const directionOf = (now: Rational, then: Rational): 'Up' | 'Down' | 'Level' => ['Down' as const, 'Level' as const, 'Up' as const][now.compare(then) + 1]!;
 
-export function meterReadingOf(evaluation: TradeEvaluation, before?: { readonly tradingDate: string; readonly evaluation: TradeEvaluation }): MeterReading {
+export function meterReadingOf(evaluation: TradeEvaluation, before?: { readonly tradingDate: string; readonly evaluation: Pick<TradeEvaluation, 'currentMarkedPnl'> }): MeterReading {
   const { outcomes, standing } = evaluation;
   if (!outcomes || !standing) throw new Error('meterReadingOf: the evaluation carries no outcomes or standing');
   const now: MeterReading['now'] =

@@ -1,4 +1,9 @@
 /* Rail lane R2 (D08P T8P.14, T8P.15): the Conditions card and the Needs you card. Colour only reinforces the words, which always show. */
+/* P130: the meter sits between the heading and the first condition. */
+.conditions-card > .meter {
+  margin: 4px 0 8px;
+}
+
 .conditions-list {
   list-style: none;
   margin: 0;

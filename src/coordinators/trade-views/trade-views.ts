@@ -36,7 +36,7 @@ import { payoffOf } from '../settlement.ts';
 import { assembleReplay } from '../replay/index.ts';
 import type { ReplayChange, ReplayNotApplicable, ReplayTradeRequest, ReplayTradeResult, TradeReplayView } from './replay-view.ts';
 import type { ReadViewResult, TradeDetailDebt, TradeDetailNarrativeItem, ViewBinding } from './view-types.ts';
-import { valueTrade, type DatedLine, type SettlementItem } from '../valuation/index.ts';
+import { meterReadingOf, valueTrade, type DatedLine, type MeterReading, type SettlementItem } from '../valuation/index.ts';
 
 export interface TradeViewsDeps {
   readonly persistence: Persistence;
@@ -437,6 +437,16 @@ const activeDeviations = (analysis: TradeAnalysisRecord) =>
 const entryStatusOf = (derived: DerivedTradeState) => (derived.entryResolution.kind === 'Resolved' ? 'Resolved' : 'Entering');
 
 const optional = <K extends string, V>(key: K, value: V | undefined) => (value === undefined ? {} : ({ [key]: value } as Record<K, V>));
+
+// P130: the meter's reading of an Open Trade valued at the Expected Mark Date, as the Review's and the Open list's are (A260), with the replay's session
+// before its latest as the earlier result. A Closed Trade and a contract due for settlement have none.
+async function meterOf(session: MarketDataReadSession, analysis: TradeAnalysisRecord, whole: DerivedTradeState, replay: TradeReplayView): Promise<MeterReading | undefined> {
+  if (whole.expectedLifecycle === 'Closed') return undefined;
+  const valuation = await valueTrade(session, analysis);
+  if (valuation.kind !== 'Valued' || valuation.settlement.length > 0 || !valuation.evaluation.outcomes || !valuation.evaluation.standing) return undefined;
+  const before = replay.sessions.at(-2);
+  return meterReadingOf(valuation.evaluation, before && { tradingDate: before.date, evaluation: { currentMarkedPnl: before.tradePnl } });
+}
 
 // What the Trade holds, by the contract its Plan names: Long Stock, or an option's direction and contracts.
 const optionContractOf = (analysis: TradeAnalysisRecord) => {
@@ -902,7 +912,12 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
         const whole = derive({ record: analysis });
         if (whole.kind !== 'Derived') return { binding, view: { kind: 'NotApplicable' as const, reason: 'FactsIncoherent' as const, findings: whole.findings } };
         if (analysis.positionChanges.length === 0) return { binding, view: { kind: 'NotApplicable' as const, reason: 'NeverExposed' as const } };
-        return { binding, view: await assembleReplay(deps, analysis, whole, await openSession()) };
+        const session = await openSession();
+        const view = await assembleReplay(deps, analysis, whole, session);
+        if ('kind' in view) return { binding, view };
+        // P130: an Open Trade's meter reading at its latest session; the session before is that session's neighbour in this replay (no extra read).
+        const meter = await meterOf(session, analysis, whole, view);
+        return { binding, view: { ...view, ...optional('meter', meter) } };
       });
       return result.kind === 'Ready' && 'kind' in result.view ? result.view : (result as ReadViewResult<TradeReplayView>);
     },

@@ -8,7 +8,8 @@ import { incoherentDetailOf, openDetailAt, PC1, PC2 } from '../../../../tests/su
 import { available, tuesday } from '../../screens/trade-detail/test-support.ts';
 import { optionClosedDetail, optionOpenDetail, optionPlannedDetail, type OptionFrames } from '../../../../tests/support/option-detail-fixtures.ts';
 import { OC_E1, OC_PC1, OC_PC2, OC_X1, OS2_S1 } from '../../../../tests/support/option-trade-fixtures.ts';
-import type { OpenTradeDetail, TradeDetailView } from '../../../app/types.ts';
+import type { MeterReading, OpenTradeDetail, TradeDetailView } from '../../../app/types.ts';
+import { Rational } from '../../../domain/values/index.ts';
 import { ConditionsCard } from './conditions.tsx';
 
 afterEach(cleanup);
@@ -221,5 +222,57 @@ describe('Conditions card: first Marks pending (revision 90)', () => {
     }
     expect(container.querySelector('.conditions-summary')).toBeNull();
     expect(container.textContent).not.toContain('arrive with the first Marks');
+  });
+});
+
+// A260: the meter reading Trade Views hands the card with the replay, as the domain gives it (T9.30). The card only maps and formats it.
+const whole = (n: bigint) => Rational.of(n);
+const value = <T,>(v: T) => ({ kind: 'Value' as const, value: v });
+const reading = (over: Partial<MeterReading> = {}): MeterReading => ({
+  stop: value(whole(-600n)),
+  target: value(whole(1600n)),
+  banked: value(whole(400n)),
+  now: value({ pnl: whole(990n), zone: 'Between' as const, share: { fraction: Rational.of(99n, 160n), percent: whole(62n), toward: 'Target' as const } }),
+  ...over,
+});
+const renderWith = (view: TradeDetailView, meter: MeterReading) => render(createElement(ConditionsCard, { view, replay: { meter }, timeZone: TIME_ZONE })).container;
+
+describe('Conditions card: the meter (P130)', () => {
+  it('should show the meter at the top of the card on an Open Detail, above the conditions', () => {
+    const container = renderWith(os2(TUESDAY), reading());
+    const card = container.querySelector('.conditions-card')!;
+    const meter = within(card as HTMLElement).getByRole('img', { name: 'P&L +$990.00, 62% of the way to the Target. Realized +$400.00. Stop −$600.00, Target +$1,600.00.' });
+    expect(meter.getAttribute('data-size')).toBe('detail');
+    // After the heading, before the list of conditions.
+    const list = within(card as HTMLElement).getByRole('list', { name: 'Conditions' });
+    expect(meter.compareDocumentPosition(list) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(card.querySelector('h2')!.compareDocumentPosition(meter) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("should show the dashed track when today's Mark is missing", () => {
+    const missing = { kind: 'Unavailable' as const, reason: 'MarkMissing' as const, instrument: { kind: 'Stock' as const, symbol: 'XYZ' }, date: '2026-10-13' };
+    const container = renderWith(os2(TUESDAY), reading({ now: missing, previous: { tradingDate: '2026-10-12', pnl: whole(850n) } }));
+    const meter = within(container).getByRole('img');
+    expect(meter.getAttribute('data-state')).toBe('empty');
+    // The reason first, then the rails and the session before, which the dashed track still names.
+    expect(meter.getAttribute('aria-label')).toMatch(/^[^]*Mark[^]*Stop −\$600.00, Target \+\$1,600.00. Session before \+\$850.00 on Mon Oct 12.$/);
+  });
+
+  it('should show no meter on a Planned or a Closed Detail', () => {
+    // Even when a reading is passed beside the view, as a Closed Trade's replay never carries one.
+    const closed = renderWith(optionClosedDetail('O-C', [OC_PC1, OC_PC2, OC_X1, OC_E1]), reading());
+    expect(within(closed).queryByRole('img')).toBeNull();
+    cleanup();
+    const planned = renderWith(optionPlannedDetail('O-S2'), reading());
+    expect(within(planned).queryByRole('img')).toBeNull();
+  });
+
+  it("should take the session before's result from the replay", () => {
+    // The replay's session before gives the earlier result and the domain's reading of the result now against it.
+    const up = renderWith(os2(TUESDAY), reading({ previous: { tradingDate: '2026-10-12', pnl: whole(850n), direction: 'Up' } }));
+    expect(within(up).getByRole('img').getAttribute('aria-label')).toBe('P&L +$990.00, 62% of the way to the Target. Realized +$400.00. Stop −$600.00, Target +$1,600.00. Up from +$850.00 on Mon Oct 12.');
+    cleanup();
+    const down = renderWith(os2(TUESDAY), reading({ previous: { tradingDate: '2026-10-12', pnl: whole(1200n), direction: 'Down' } }));
+    expect(within(down).getByRole('img').getAttribute('aria-label')).toContain('Down from +$1,200.00 on Mon Oct 12.');
   });
 });

@@ -26,11 +26,12 @@ export interface MeterUnavailable {
   readonly reason: string;
 }
 
-// The Trade P&L at the session before. The direction is the domain's reading of now against it; the meter does not compare.
+// The Trade P&L at the session before. The direction is the domain's reading of now against it; the meter does not compare. It is absent
+// when there is no result now to read it against.
 export interface MeterPrevious extends MeterFigure {
   // "Thu Nov 12".
   readonly dateLabel: string;
-  readonly direction: 'Up' | 'Down' | 'Level';
+  readonly direction?: 'Up' | 'Down' | 'Level';
 }
 
 export type MeterSize = 'card' | 'row' | 'detail';

@@ -1,7 +1,9 @@
-import type { OpenTradeDetail, PlannedTradeDetail, TradeDetailView } from '../../../app/types.ts';
-import { unavailableLabel } from '../../figures.ts';
+import type { MeterReading, OpenTradeDetail, PlannedTradeDetail, TradeDetailView } from '../../../app/types.ts';
+import type { Rational } from '../../../domain/values/index.ts';
+import { calculation, signed, unavailableLabel } from '../../figures.ts';
 import { decimalMoney, decimalUnderlyingPrice, money, shortDate, underlyingPrice } from '../../format.ts';
 import { conditionDirection } from '../../screens/option-words.ts';
+import type { MeterFigure, MeterProps } from '../meter/meter.types.ts';
 import type { ShellProps } from '../placeholder.ts';
 import type { ConditionItem, ConditionsCardProps } from './conditions.types.ts';
 
@@ -86,7 +88,42 @@ const BEFORE_MARKS = 'Distances to each condition arrive with the first Marks.';
 const PLANNED = 'Distances to each condition arrive with the first Marks after entry.';
 const EXPIRED = 'The contract expired, so its conditions are no longer measured.';
 
-function openProps(view: OpenTradeDetail): ConditionsCardProps {
+// The slice of the replay this card reads (P130): the finished meter reading Trade Views holds with it. Declared here because a UI file may not
+// import the coordinator's type; `TradeReplayView` is assignable to it.
+export interface MeterReplay {
+  readonly meter?: MeterReading;
+}
+
+// A finished dollar figure, as drawn and as worded. Turning a Rational into a position is drawing (A215), not working out a figure.
+const figure = (value: Rational): MeterFigure => ({ value: Number(value.numerator) / Number(value.denominator), text: signed(money)(value) });
+
+// The meter's props from a finished reading (A260): mapping and formatting only; the zone, the share, the amount past a rail and the
+// direction against the session before are the domain's.
+function meterProps(reading: MeterReading, timeZone: string | undefined): MeterProps | undefined {
+  const { stop, target, banked, now, previous } = reading;
+  if (stop.kind !== 'Value' || target.kind !== 'Value') return undefined;
+  const nowProps: MeterProps['now'] =
+    now.kind === 'Value'
+      ? {
+          kind: 'Value',
+          ...figure(now.value.pnl),
+          zone: now.value.zone === 'Between' ? 'Within' : now.value.zone,
+          ...(now.value.share && { share: { percent: `${now.value.share.percent.numerator}%`, toward: now.value.share.toward } }),
+          ...(now.value.pastBy && { pastBy: money(now.value.pastBy.dollars) }),
+        }
+      : // With no Mark the reason stands in the result's place, in the same words as the P&L card's figure.
+        { kind: 'Unavailable', reason: calculation(now, money, timeZone) };
+  return {
+    size: 'detail',
+    stop: figure(stop.value),
+    target: figure(target.value),
+    ...(banked.kind === 'Value' && { banked: figure(banked.value) }),
+    now: nowProps,
+    ...(previous && { previous: { ...figure(previous.pnl), dateLabel: shortDate(previous.tradingDate), ...(previous.direction && { direction: previous.direction }) } }),
+  };
+}
+
+function openProps(view: OpenTradeDetail, replay: MeterReplay | undefined, timeZone: string | undefined): ConditionsCardProps {
   const { plan } = view;
   const { evaluation } = view.current;
   // Once the contract expired its conditions are no longer measured (W6).
@@ -96,15 +133,18 @@ function openProps(view: OpenTradeDetail): ConditionsCardProps {
   const conditions = evaluation.conditions.map((condition) => measuredItem(plan, condition, waiting, view.current.datedLine));
   if (waiting) return { conditions, summary: [{ text: BEFORE_MARKS }] };
   // Nothing beneath the conditions: the worst case and the maximum reward live in Plan and Risk (W31).
-  return { conditions, summary: [] };
+  const meter = replay?.meter && meterProps(replay.meter, timeZone);
+  return { ...(meter && { meter }), conditions, summary: [] };
 }
 
-export function conditionsProps(view: TradeDetailView): ConditionsCardProps | undefined {
-  if ('current' in view) return openProps(view);
+export function conditionsProps(view: TradeDetailView, replay?: MeterReplay, timeZone?: string): ConditionsCardProps | undefined {
+  // A Closed Detail reads no Marks, so it has no meter (P130).
+  if ('current' in view) return openProps(view, 'terminalDisposition' in view ? undefined : replay, timeZone);
   // An incoherent Detail has no replay to measure against, so its card lists the Plan's conditions, rows 1 and 2 only, and says nothing beneath (W5).
   if ('recordedPositionChanges' in view) return { conditions: unmeasured(view.plan), summary: [] };
   return { conditions: unmeasured(view.plan), summary: [{ text: PLANNED }] };
 }
 
 // The shell hands a card its view as `unknown` (ShellProps), since a component may not name `app/types`.
-export const conditionsPropsOf = ({ view }: ShellProps): ConditionsCardProps | undefined => (view === undefined ? undefined : conditionsProps(view as TradeDetailView));
+export const conditionsPropsOf = ({ view, replay, timeZone }: ShellProps & { readonly replay?: unknown }): ConditionsCardProps | undefined =>
+  view === undefined ? undefined : conditionsProps(view as TradeDetailView, replay as MeterReplay | undefined, timeZone);

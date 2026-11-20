@@ -1,3 +1,5 @@
+import type { MeterProps } from '../meter/meter.types.ts';
+
 // W5, W6, A206, A207. Finished display values only (A216).
 export interface ConditionItem {
   readonly id: string;
@@ -11,6 +13,8 @@ export interface ConditionItem {
 }
 
 export interface ConditionsCardProps {
+  // P130: the meter at the top of the card, above the conditions; absent where the Detail shows none (Planned, Closed, no reading yet).
+  readonly meter?: MeterProps;
   // In Plan order.
   readonly conditions: readonly ConditionItem[];
   // Beneath: a single `text` note ("Distances to each condition arrive with the first Marks."), or nothing.

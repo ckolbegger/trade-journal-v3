@@ -208,7 +208,7 @@ export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange, i
       <section className="cockpit-rail" aria-label="State of play">
         <IdentityCard {...shell} />
         <PnlCard {...replayed} />
-        <ConditionsCard {...shell} />
+        <ConditionsCard {...replayed} />
         <NeedsYou view={owedView} timeZone={timeZone} onReflectNow={reflectNow} />
       </section>
       <div className="cockpit-drawers">

@@ -37,7 +37,7 @@ function nameOf(props: MeterProps): string {
   if (props.banked && props.banked.value !== 0) sentences.push(`Realized ${props.banked.text}.`);
   sentences.push(`Stop ${props.stop.text}, Target ${props.target.text}.`);
   if (previous) {
-    const lead = now.kind === 'Unavailable' ? 'Session before' : DIRECTION_WORDS[previous.direction];
+    const lead = now.kind === 'Unavailable' || !previous.direction ? 'Session before' : DIRECTION_WORDS[previous.direction];
     sentences.push(`${lead} ${previous.text} on ${previous.dateLabel}.`);
   }
   return sentences.join(' ');

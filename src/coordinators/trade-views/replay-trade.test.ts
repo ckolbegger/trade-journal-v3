@@ -393,6 +393,23 @@ describe('replayTrade: the D9 fields (A250 to A253)', () => {
     expect(view.sessions.every((s) => s.final === undefined)).toBe(true);
   });
 
+  it("should carry the meter reading on an Open Trade's replay, with the session before's result taken from the replay, and none on a Closed Trade's", async () => {
+    const { replay } = await bren();
+    const view = ready(await replay());
+
+    const before = view.sessions.at(-2)!;
+    const last = view.sessions.at(-1)!;
+    const { meter } = view;
+    expect(meter?.previous?.tradingDate).toBe(before.date);
+    expect(meter?.previous?.pnl && frac(meter.previous.pnl)).toBe(before.tradePnl.kind === 'Value' && frac(before.tradePnl.value));
+    expect(meter?.now.kind === 'Value' && frac(meter.now.value.pnl)).toBe(last.tradePnl.kind === 'Value' && frac(last.tradePnl.value));
+    expect(meter?.previous?.direction).toBeDefined();
+    expect(meter?.stop).toEqual(last.figures!.outcomes!.atStop);
+    expect(meter?.target).toEqual(last.figures!.outcomes!.atTarget);
+    const closed = ready(await (await seriesStack(K_SALE, 'strategy.long-call', MON_1700, { marksThrough: 10, closes: true })).replay());
+    expect(closed.meter).toBeUndefined();
+  });
+
   it('should carry the Plan column', async () => {
     const { replay } = await bren();
     const { planColumn } = ready(await replay());

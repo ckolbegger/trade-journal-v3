@@ -1275,8 +1275,8 @@ describe("getTrade: the card's replay (A254)", () => {
 
     const detail = await replayTrade();
     if (detail.kind !== 'Ready' || !('sessions' in detail.view)) throw new Error('expected a replay');
-    // The card places no Journal items: the same view with every placed item removed.
-    const unplaced = { ...detail.view, plan: [], sessions: detail.view.sessions.map((s) => ({ ...s, journal: [] })), ...(detail.view.pending && { pending: { ...detail.view.pending, journal: [] } }) };
+    // The card places no Journal items: the same view with every placed item removed. Nor does it carry the Detail's meter (P130): its card's meter is the walked Trade's.
+    const unplaced = { ...detail.view, meter: undefined, plan: [], sessions: detail.view.sessions.map((s) => ({ ...s, journal: [] })), ...(detail.view.pending && { pending: { ...detail.view.pending, journal: [] } }) };
     expect(replay?.sessions).toEqual(unplaced.sessions);
     expect(replay).toEqual(unplaced);
   }, 60_000);

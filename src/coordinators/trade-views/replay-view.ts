@@ -2,6 +2,7 @@ import type { Instrument, OptionInstrument } from '../../domain/instrument/index
 import type { CalculationResult, IncoherentFact, ReplayedSession, ReplayResult } from '../../domain/trade-analysis/index.ts';
 import type { Rational } from '../../domain/values/index.ts';
 import type { AcknowledgmentVersion } from '../../modules/market-data/index.ts';
+import type { MeterReading } from '../valuation/index.ts';
 import type { ReadViewResult, TradeDetailNarrativeItem, ViewBinding } from './view-types.ts';
 
 // D08P's slice of `replayTrade` (P94, P95, A211 to A213): per completed session, the Position held, the realized
@@ -110,6 +111,9 @@ export interface TradeReplayView {
   readonly pending: { readonly date: string; readonly journal: readonly TradeDetailNarrativeItem[] } | null;
   // A252: the Plan column. Named `planColumn` because `plan` above already holds the pre-exposure Journal items.
   readonly planColumn?: ReplayPlanColumn;
+  // A260: the meter's reading of an Open Trade at its latest session, with the session before's result from this replay (P130). Absent for a
+  // Closed Trade and for one with a contract due for settlement. Additive.
+  readonly meter?: MeterReading;
 }
 
 export type ReplayNotApplicable =
