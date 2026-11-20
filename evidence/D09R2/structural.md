@@ -23,3 +23,14 @@ D9R2 runs one task at a time (P162; decision 100). Each task's heading holds its
 - Expectations changed: `CardFigures.test.tsx` 74, 115, 150; `ReviewCard.test.tsx` 205; `e2e/d7sp/review-dated-line.spec.ts` 31, as section 1.6 lists. `eslint-suppressions.json` pruned of `CardFigures.tsx`'s `no-restricted-syntax` entry.
 - First-run passes: none. Words: W79 as approved; no P137 shortening; no new words.
 - Note (subagent): the spec's title at line 11 reads "a Mon Oct 12 close group", not "Monday Mark" as section 1.6 says; left as is (titles are not screen words, and section 1.6 says the title stays).
+
+## T9R2.2 Price History: acknowledged sessions
+
+- Base `ebe553a6`, commit `8d3e8c0d`. Standard (decision 122).
+- Cases: 4, each red by assertion, then green (`tdd-log/T9R2.2.md`); case 1's first green run failed on the subagent's own fixture (an unavailable Trade P&L kept "No Mark" in the P&L cell), fixed in the fixture. `price-history.props.test.tsx` 18 of 18; the listed existing expectations unchanged. First-run passes: none.
+- Browser: `e2e/d8p/history.spec.ts` 3 of 3 under the lock (no spec edited).
+- Assumptions (subagent): a session with both a Missing and an acknowledged Mark counts as Missing only; the acknowledged count covers sessions holding a Position with no Missing Mark and at least one acknowledged Mark; a session that held nothing keeps its plain "—". `verify:wording` refused the literals, so the cell and the line use `acknowledgedUnavailableStatusLabel()` from `calculation-words.ts` (lowercased in the line); the text matches W78 and W81.
+- Public types: `PriceHistoryProps` gains `acknowledgedCount`; `missingCount` and `priceHistoryTabCount` count Missing only. T9R2.8 carries both.
+- Words: W78 and W81 as approved; no P137 change; no new words.
+- ocr (`ocr/T9R2.2-8d3e8c0d.json`): **No findings.** 4 files reviewed.
+- Run `T9R2.2` (browser-task): unit 224 files, 2597 tests; integration 137 files, 294 tests; browser task tier 5 passed (12.9 s); checks 14 of 14. Ports free before and after. No flaky case failed. `run-complete.sh`: run complete.

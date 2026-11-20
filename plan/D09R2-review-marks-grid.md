@@ -471,8 +471,8 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | Task | Level | Status | Commits |
 |---|---|---|---|
 | T9R2.1 | Light | Done | `ebe553a6` |
-| T9R2.2 | Standard | In progress from `ebe553a6` | |
-| T9R2.3 | Standard | Not started | |
+| T9R2.2 | Standard | Done | `8d3e8c0d` |
+| T9R2.3 | Standard | In progress from `8d3e8c0d` | |
 | T9R2.4 | Light | Not started | |
 | T9R2.5 | Full | Not started | |
 | T9R2.6 | Full | Not started | |
