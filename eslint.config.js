@@ -34,6 +34,7 @@ export default defineConfig(
   ...expirationExemptRules,
   wordingWithExpirationRules,
   cockpitImportRules,
+  { rules: { 'no-nested-ternary': 'error' } },
   {
     files: ['**/*.js'],
     extends: [tseslint.configs.disableTypeChecked],

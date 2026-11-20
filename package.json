@@ -46,7 +46,7 @@
     "fixtures:freeze-backup": "node tools/fixtures-freeze-backup.ts",
     "verify:fixtures": "node tools/verify-fixtures.ts",
     "verify:session-policy": "node tools/verify-session-policy.ts",
-    "verify:wording": "eslint --no-config-lookup -c eslint.wording.config.js src/ui",
+    "verify:wording": "eslint --no-config-lookup --pass-on-unpruned-suppressions -c eslint.wording.config.js src/ui",
     "ui:screenshots": "node tools/ui-screenshots.ts"
   },
   "dependencies": {

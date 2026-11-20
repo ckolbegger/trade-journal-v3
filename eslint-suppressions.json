@@ -1,0 +1,227 @@
+{
+  "e2e/d1/no-save.spec.ts": {
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "e2e/d2/no-save.spec.ts": {
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "e2e/d2/ui-alignment.spec.ts": {
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "e2e/d4/no-save.spec.ts": {
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "e2e/d5/no-save.spec.ts": {
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "e2e/d6/no-save.spec.ts": {
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "e2e/d7/no-save.spec.ts": {
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "src/app/bench-generator.ts": {
+    "no-nested-ternary": {
+      "count": 2
+    }
+  },
+  "src/backup/format/canonical-json.ts": {
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "src/coordinators/daily-review/daily-review.ts": {
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "src/coordinators/trade-views/trade-views.ts": {
+    "no-nested-ternary": {
+      "count": 2
+    }
+  },
+  "src/coordinators/trade-workflows/record-position-change-options.test.ts": {
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "src/coordinators/trade-workflows/record-position-change.test.ts": {
+    "no-nested-ternary": {
+      "count": 2
+    }
+  },
+  "src/coordinators/workspace/backup.test.ts": {
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "src/coordinators/workspace/restore-test-support.ts": {
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "src/coordinators/workspace/restore.ts": {
+    "no-nested-ternary": {
+      "count": 3
+    }
+  },
+  "src/delivery/inventory.ts": {
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "src/domain/trade-analysis/derive.ts": {
+    "no-nested-ternary": {
+      "count": 4
+    }
+  },
+  "src/domain/trade-analysis/evaluate.ts": {
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "src/domain/trade-analysis/payoff.ts": {
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "src/domain/values/rational.ts": {
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "src/modules/journal/journal.ts": {
+    "no-nested-ternary": {
+      "count": 2
+    }
+  },
+  "src/modules/market-data/market-data.ts": {
+    "no-nested-ternary": {
+      "count": 2
+    }
+  },
+  "src/modules/trade-record/canonical.ts": {
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "src/modules/trade-record/close.test.ts": {
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "src/modules/trade-record/option-section.test.ts": {
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "src/modules/trade-record/trade-record.ts": {
+    "no-nested-ternary": {
+      "count": 5
+    }
+  },
+  "src/ui/cockpit/replay/corridor.test.tsx": {
+    "no-nested-ternary": {
+      "count": 4
+    }
+  },
+  "src/ui/cockpit/replay/price-strip.test.tsx": {
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "src/ui/screens/CardFigures.tsx": {
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "src/ui/screens/ExpirationReceipt.tsx": {
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "src/ui/screens/MarkEntry.tsx": {
+    "no-nested-ternary": {
+      "count": 2
+    }
+  },
+  "src/ui/screens/PayoffView.test.tsx": {
+    "no-nested-ternary": {
+      "count": 2
+    }
+  },
+  "src/ui/screens/PayoffView.tsx": {
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "src/ui/screens/PositionChangeForm.test.tsx": {
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "src/ui/screens/ReflectionPrompts.tsx": {
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "src/ui/screens/ReviewView.test.tsx": {
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "src/ui/screens/ReviewView.tsx": {
+    "no-nested-ternary": {
+      "count": 3
+    }
+  },
+  "src/ui/screens/TradeList.tsx": {
+    "no-nested-ternary": {
+      "count": 4
+    }
+  },
+  "src/ui/screens/option-disposition.ts": {
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "tests/integration/d4/eligibility.test.ts": {
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "tests/integration/d7/query-count.test.ts": {
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "tests/support/option-detail-fixtures.ts": {
+    "no-nested-ternary": {
+      "count": 2
+    }
+  },
+  "tools/capacity/measure-page.ts": {
+    "no-nested-ternary": {
+      "count": 7
+    }
+  },
+  "tools/wording-rules.test.ts": {
+    "no-nested-ternary": {
+      "count": 1
+    }
+  }
+}
