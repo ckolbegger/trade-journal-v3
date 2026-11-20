@@ -87,3 +87,24 @@ D9R2 runs one task at a time (P162; decision 100). Each task's heading holds its
 - Case: "it should make no series call for an Instrument whose Trades all opened on the Review Date". Commit `d5e48854` (test only). **First-run pass** (the behaviour was built by T9R2.6), mutation-checked: `assemble` calling `read.series(key, reviewDate, previousSession)` for that Instrument then dropping the group failed with "expected [ 'CORV', 'CORV261120P00080000', …(1) ] to not include 'NEWX'"; restored. `daily-review.test.ts` 83 of 83; query-count integration 20 of 20 in 10 files.
 - ocr (`ocr/T9R2.6-B1-d5e48854.json`): **No findings.**
 - Run `T9R2.6` (browser-auto 5212dedb; after the bug task's clean ocr): tier **task**, reason "no changed path since 5212dedb is on the full-tier list". Unit 224 files, 2610 tests; integration 137 files, 294 tests; browser task tier 5 passed (12.0 s); checks 14 of 14. Ports free before and after. No flaky case failed. `run-complete.sh`: run complete.
+
+## T9R2.7 The held Review's earlier Marks, and the drafts module
+
+- Base `d5e48854`, commit `a5886612`. Full (decision 122).
+- Cases: 9 (`tdd-log/T9R2.7.md`); names drop parentheses and the apostrophe. Red then green: 1 (`listedStanding` also reads `earlierMarks`), 3, 5, 6, 7, 8, 9 (each a runtime TypeError for the missing function, or an assertion). **First-run passes, mutation-checked by assertion (flagged):** case 2 (A172; mutation: `standing()` always returns the listed standing → "expected … revision: 2 to deeply equal … revision: 3"), case 4 (`setDraft` already replaces; mutation: the existing draft wins). The two task files: 24 tests; `src/ui` and `src/coordinators/daily-review`: 96 files, 1354 tests.
+- `earlierMarks` made required in `daily-review/types.ts` (the main session's decision after T9R2.6); `earlierMarks: []` added, type-only, to `CardMarks`, `ReviewCard`, `ReviewCardMeter`, `ReviewCards`, `ReviewExpiration`, `ReviewOptionMarks`, `ReviewOwed`, `ReviewSettlement` and `ReviewView` tests; `held-review.test.ts`'s builder gains an optional override. No expectation changed.
+- Types (`review-drafts.ts`): `DraftValue` (`Price` with `price`, or `CantGetPrice` with `reason`), `Draft = { key, value, tradeId }`, `Drafts` keyed `instrumentKey:tradingDate`, `SaveEntries` (`Entries` with `MarketDataPrepareEntry[]`, or `TooMany` with `entered`, `limit`, `over`); `emptyDrafts`, `draftAt`, `setDraft`, `moveDraft`, `saveEntries(drafts, revisionOf)`, `keepOnly(drafts, isListed)` → `{ kept, dropped }`, `discardAll`. W76's words stay in the view.
+- Subagent notes (not bug tasks; carried to the handoff's notes for T9R2.11, T9R2.13, T9R2.14): no draft list or count, no "newest draft's Trade", no exported "listed in the Review" helper; entries in first-entered order; an unknown standing binds at `'None'`.
+- ocr (`ocr/T9R2.7-a5886612.json`): 1 finding.
+
+| Severity | Category | Location | Claim | Verdict |
+|---|---|---|---|---|
+| medium | bug | `src/ui/screens/review-drafts.ts:60` | A292 names a per-key clear, but the module has only `setDraft` and `discardAll`; an empty price would stay a draft and `saveEntries` would send it. | Valid (A292 lists "set, clear, discard all"; W76 says "Clear 12, then save"); nothing imports the module yet. Bug task **T9R2.7-B1**. |
+
+### T9R2.7-B1 Clear one draft
+
+- The defect: no per-key clear in the drafts module (A292), so a cleared cell could only become an empty-price draft that Save Marks would send.
+- Case: "it should clear one key's draft, leaving the others, and build no save entry for it".
+- Commit `bbf1fb26`: red `TypeError: clearDraft is not a function`, then green; adds an immutable `clearDraft(drafts, key)` (returns the same object when the key has no draft). `review-drafts.test.ts` and `held-review.test.ts`: 25 tests. First-run passes: none.
+- ocr (`ocr/T9R2.7-B1-bbf1fb26.json`): **No findings.**
+- Run `T9R2.7` (browser-auto d5e48854; after the bug task's clean ocr): tier **full** (the task's commits touch `src/ui/`). Unit 225 files, 2620 tests; integration 137 files, 294 tests; `browser-1` 126 passed (5.2 min), `browser-2` 79 (5.1 min), `browser-3` 57 (4.2 min), `browser-4` 118 (6.0 min); checks 14 of 14. No flaky case failed. The runner's first hand-back was a "placeholder" sent while `browser-1` ran (`run-complete.sh`: INCOMPLETE); the main session asked it to finish and read the stage files once `run-complete.sh` printed "run complete".

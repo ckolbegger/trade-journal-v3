@@ -217,6 +217,8 @@ The main session saves the reports itself (`implementing.md`, "Final report"). A
 - For T9R2.8: take the Price History screenshots at 1280 and 390 px **after** T9R2.2 and T9R2.4 have landed and before the extraction, so the compare's baseline is the fixed Price History.
 - For T9R2.15 and T9R2.16: the acceptance script fails on every D9R2 row until those tasks write their files; that is expected until then.
 
+- For T9R2.11, T9R2.13, T9R2.14: `review-drafts.ts` (T9R2.7) has no draft list or count and no "newest draft's Trade" (P157's `tradeId` with no card open); `held-review.ts` exports no "is this key listed in the Review" helper for `keepOnly`'s predicate (`standing(held, key) !== undefined` would also keep a key learned only from a save; use `listedStanding(...) !== undefined`). The task that first needs each adds it, with a case. `saveEntries` returns entries in first-entered order and binds a key with no known standing at `'None'`.
+
 ### Open questions
 
 - The location checks found 2 unit failures in `tools/wording-rules.test.ts` from the D9 stage C retro commit (`78a10e66`). The user chose a tools-only fix before T9R2.1 (2026-11-20): commit `ceefd574` (`chore(retro-D09C)`). The section 1 check `git diff --stat 78a10e66 HEAD -- …` therefore also lists `tools/wording-rules.test.ts` from that commit.

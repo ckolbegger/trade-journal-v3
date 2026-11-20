@@ -476,8 +476,8 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T9R2.4 | Light | Done | `7b1d9eed` |
 | T9R2.5 | Full | Done | `5212dedb` |
 | T9R2.6 | Full | Done | `460f1594`; B1 `d5e48854` |
-| T9R2.7 | Full | In progress from `d5e48854` | |
-| T9R2.8 | Standard | Not started | |
+| T9R2.7 | Full | Done | `a5886612`; B1 `bbf1fb26` |
+| T9R2.8 | Standard | In progress from `bbf1fb26` | |
 | T9R2.9 | Standard | Not started | |
 | T9R2.10 | Light | Not started | |
 | T9R2.11 | Standard | Not started | |
