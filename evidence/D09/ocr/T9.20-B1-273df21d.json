@@ -1,0 +1,100 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 0,
+    "total_tokens": 21961,
+    "input_tokens": 21757,
+    "output_tokens": 204,
+    "cache_read_tokens": 3328,
+    "elapsed": "15s"
+  },
+  "tool_calls": {
+    "total": 4,
+    "by_tool": {
+      "file_read": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "eslint.estimates.config.js",
+        "tools/estimate-rules.test.ts"
+      ]
+    }
+  ],
+  "session_id": "53cc3462-2609-4f5a-8525-34cbb34f6333",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "53cc3462-2609-4f5a-8525-34cbb34f6333",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "273df21d",
+      "resolved_base": "aa5a5c79dace38bababc84727aeceeb9dc5d2185",
+      "resolved_head": "273df21db3526dd2918c3bc6a7de7a564b7d1b36",
+      "exact_range": "aa5a5c79dace38bababc84727aeceeb9dc5d2185..273df21db3526dd2918c3bc6a7de7a564b7d1b36",
+      "source_artifact_sha256": "b1876ddcf73307621b4710b18483675369d6a791ec1e3df9d518493c9fa4f9d0"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "8b36165a3ad66e4042f516201a9c4f05fe3b25b6dcb773b54cfe640ccb9c3ec0",
+          "path": "eslint.estimates.config.js",
+          "fingerprint": "42c08d4f4413a7b006bccbace9f888a06a8e7b4804878f403c6645473f0057cc"
+        },
+        {
+          "item_id": "d6a09815f2f3b308176f1d5501d4f592047d03a4711be75c152c90583c53b9a0",
+          "path": "tools/estimate-rules.test.ts",
+          "fingerprint": "7ed47a5a262ddafd59b0aca2e82b778dd1cc1a2be5018fcb738b95196d394bd3"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "8b36165a3ad66e4042f516201a9c4f05fe3b25b6dcb773b54cfe640ccb9c3ec0",
+          "path": "eslint.estimates.config.js",
+          "fingerprint": "42c08d4f4413a7b006bccbace9f888a06a8e7b4804878f403c6645473f0057cc"
+        },
+        {
+          "item_id": "d6a09815f2f3b308176f1d5501d4f592047d03a4711be75c152c90583c53b9a0",
+          "path": "tools/estimate-rules.test.ts",
+          "fingerprint": "7ed47a5a262ddafd59b0aca2e82b778dd1cc1a2be5018fcb738b95196d394bd3"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "aa4e1713687d8b5b3cf10c226e19d556581a14526fa4fdaf537eda16cd17c07f",
+          "path": "evidence/D09/tdd-log/T9.20-B1.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 14878
+  }
+}

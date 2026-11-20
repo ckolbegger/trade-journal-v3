@@ -1,0 +1,180 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 6 selected item(s).",
+  "summary": {
+    "files_reviewed": 6,
+    "comments": 3,
+    "total_tokens": 101510,
+    "input_tokens": 99369,
+    "output_tokens": 2141,
+    "cache_read_tokens": 20352,
+    "elapsed": "1m23s"
+  },
+  "tool_calls": {
+    "total": 20,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 2,
+      "file_find": 3,
+      "file_read": 13
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "eslint.estimates.config.js",
+      "content": "`replay-estimates.test.ts` is excluded from the catch-all entry via `estimatesFiles`, but this replacement entry covers only the production file. The test consequently receives no estimates restrictions at all, including the prohibition on value imports of `parseDecimal` and `Rational`. Apply the appropriate replacement restrictions to the test as well (while allowing it to import the module under test), and add a planted-import assertion for that filename.",
+      "existing_code": "  entry(['**/src/domain/trade-analysis/replay-estimates.ts'], [], noExactBuilt),",
+      "start_line": 51,
+      "end_line": 51,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "tools/estimate-rules.test.ts",
+      "content": "This discards fatal parsing diagnostics, which have a null `ruleId`. If a file contains a forbidden import plus a syntax error, ESLint cannot run the rule, yet `hits` returns `[]` and the repository-wide check reports that file as passing. Assert that linting produced no fatal/configuration diagnostics before filtering for boundary violations, so an unlinted file cannot be treated as clean.",
+      "existing_code": "    .filter((m) =\u003e m.ruleId === ruleId)",
+      "start_line": 20,
+      "end_line": 20,
+      "category": "test",
+      "severity": "medium"
+    },
+    {
+      "path": "eslint.estimates.config.js",
+      "content": "`@typescript-eslint/no-restricted-imports` checks static imports/re-exports, but not dynamic `import()` expressions. For example, `await import('../option-pricing/price.ts')` in `trade-analysis/evaluate.ts` passes this configuration and can call the pricing implementation outside the permitted boundary; the same bypass applies to replay-estimates. Add restrictions for literal dynamic imports with the same file exceptions, and negative tests for both protected modules.",
+      "existing_code": "  rules: { '@typescript-eslint/no-restricted-imports': ['error', { patterns }] },",
+      "start_line": 40,
+      "end_line": 40,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Estimate lint rules and rule tests",
+      "files": [
+        "eslint.config.js",
+        "eslint.estimates.config.js",
+        "tools/estimate-rules.test.ts"
+      ]
+    },
+    {
+      "label": "Trade analysis estimate model and integration",
+      "files": [
+        "src/domain/trade-analysis/estimate.ts",
+        "src/domain/trade-analysis/evaluate.ts",
+        "src/domain/trade-analysis/replay-series.ts"
+      ]
+    }
+  ],
+  "session_id": "2b4a5c18-8858-4086-a3f9-43fbd8957eef",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "2b4a5c18-8858-4086-a3f9-43fbd8957eef",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "aa5a5c79",
+      "resolved_base": "122b9d0d6567077c8927dcc1df7c72e2118d169e",
+      "resolved_head": "aa5a5c79dace38bababc84727aeceeb9dc5d2185",
+      "exact_range": "122b9d0d6567077c8927dcc1df7c72e2118d169e..aa5a5c79dace38bababc84727aeceeb9dc5d2185",
+      "source_artifact_sha256": "969796b7ef1884645eeb89ba70f1901dc8994fa7f5778e5cfe4350304bf5f06a"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "2cdfac52e8ab493575d7f44a1a39167101fcd433edd529507860ca0fdba1d8b0",
+          "path": "src/domain/trade-analysis/evaluate.ts",
+          "fingerprint": "be7a945039b2aeedb673a07ca39e63baee0c395ebd0d836baead911964195f66"
+        },
+        {
+          "item_id": "74c0138701226058c218dc8bcbdd5f266ab1df3771fd649cf767b63271fe3087",
+          "path": "eslint.config.js",
+          "fingerprint": "a39db01da33d60091eea4366f2ce67502819ce60b4590cfa41393ded74cd2112"
+        },
+        {
+          "item_id": "8b36165a3ad66e4042f516201a9c4f05fe3b25b6dcb773b54cfe640ccb9c3ec0",
+          "path": "eslint.estimates.config.js",
+          "fingerprint": "ec17ce3f57fc7d824ab9b12c790e2ee319b4ae024bb26d6e7bdb6f4b3b29122b"
+        },
+        {
+          "item_id": "91d43d7efc36acc1b0061dfc7e2099f83dd2ebded0e244a6e86d4c19aeebb048",
+          "path": "src/domain/trade-analysis/estimate.ts",
+          "fingerprint": "50e45c9e0a9a1ce67d1363fb2a4bca6dd00d0c1f707e1bc3f107c2e62e4e6569"
+        },
+        {
+          "item_id": "d6a09815f2f3b308176f1d5501d4f592047d03a4711be75c152c90583c53b9a0",
+          "path": "tools/estimate-rules.test.ts",
+          "fingerprint": "ec1be15d720b9c2d9cf49e2c7c181d930171becf9ea92736f4503fbddf517e71"
+        },
+        {
+          "item_id": "dfdfcb18f28569b5071aabb67f85b536832edb984e2c85f887674cad403f13cd",
+          "path": "src/domain/trade-analysis/replay-series.ts",
+          "fingerprint": "c5c5456c984cce516cb981b581a5ef00cfbb85fc298948baa683356847781a50"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "2cdfac52e8ab493575d7f44a1a39167101fcd433edd529507860ca0fdba1d8b0",
+          "path": "src/domain/trade-analysis/evaluate.ts",
+          "fingerprint": "be7a945039b2aeedb673a07ca39e63baee0c395ebd0d836baead911964195f66"
+        },
+        {
+          "item_id": "74c0138701226058c218dc8bcbdd5f266ab1df3771fd649cf767b63271fe3087",
+          "path": "eslint.config.js",
+          "fingerprint": "a39db01da33d60091eea4366f2ce67502819ce60b4590cfa41393ded74cd2112"
+        },
+        {
+          "item_id": "8b36165a3ad66e4042f516201a9c4f05fe3b25b6dcb773b54cfe640ccb9c3ec0",
+          "path": "eslint.estimates.config.js",
+          "fingerprint": "ec17ce3f57fc7d824ab9b12c790e2ee319b4ae024bb26d6e7bdb6f4b3b29122b"
+        },
+        {
+          "item_id": "91d43d7efc36acc1b0061dfc7e2099f83dd2ebded0e244a6e86d4c19aeebb048",
+          "path": "src/domain/trade-analysis/estimate.ts",
+          "fingerprint": "50e45c9e0a9a1ce67d1363fb2a4bca6dd00d0c1f707e1bc3f107c2e62e4e6569"
+        },
+        {
+          "item_id": "d6a09815f2f3b308176f1d5501d4f592047d03a4711be75c152c90583c53b9a0",
+          "path": "tools/estimate-rules.test.ts",
+          "fingerprint": "ec1be15d720b9c2d9cf49e2c7c181d930171becf9ea92736f4503fbddf517e71"
+        },
+        {
+          "item_id": "dfdfcb18f28569b5071aabb67f85b536832edb984e2c85f887674cad403f13cd",
+          "path": "src/domain/trade-analysis/replay-series.ts",
+          "fingerprint": "c5c5456c984cce516cb981b581a5ef00cfbb85fc298948baa683356847781a50"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "b4ee36d43a50539c00b2c2b0ce1fed3cb696193c3b2c7deb392d9cb3f7c70500",
+          "path": "evidence/D09/tdd-log/T9.20.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 82767
+  }
+}

@@ -280,7 +280,6 @@ Task status and commits are in D9's breakdown, Progress section. This section ho
 
 ### Notes for later tasks
 
-- For T9.20: settle the odds question (section 3, question 1) before the brief. Copy the answer into the brief, and into a comment beside the odds in Trade Analysis if they stay outside the `Estimate` type.
 - For T9.23: `replay-series.ts` was lane DM's in D9A-R and is now T9.23's. Stage B adds `estimates` to the same session shape; keep `figures` free of any number type. `riskChange` and `rewardChange` were removed by T9AR.21; the "since" figures come from the session's `change`.
 - For T9.24, T9.25, T9.27: inside the overlay, `.replay-card` is a grid (`replay-overlay.css`): `minmax(0, 1fr)` and `372px` columns, `.replay-chart-box` in column 1, `.replay-readout` in column 2, every other child full width below. The frame renders `renderSince` and `renderChips` as plain children of the card, so they land full width by default. W48 puts the "since" line under the charts' column, so T9.25 must place it in column 1.
 - For T9.24, T9.25, T9.27: the phone fit is tight. At 320 by 667 the headline and both charts already use almost all of the 588.9 px B9.5 allows; the price chart gave up 13 px for it (T9AR.12-D1), and W64's crossing sentence moved below the charts on a phone (T9AR.18-D1). Chips and the "since" line must sit below the charts on a phone, or B9.5's fit check fails at 320.
@@ -296,6 +295,9 @@ Task status and commits are in D9's breakdown, Progress section. This section ho
 ### Open questions
 
 - D9AR-retro-7 done 2026-11-19 at `3618dcb0`: T9AR.24-B5's 375 instance deleted from `e2e/d9ar/responsive-a11y.spec.ts` (20 cases listed before, 19 after; the spec passed, 19 in 1.1 min; `corridor.test.tsx` 80 passed, unchanged). Recorded in `evidence/D09/structural.md`, "Stage B". No ocr review (test-only deletion).
+- T9.20 done (`aa5a5c79`; B1 `273df21d`; B2 `4228114d`). First-run pass, flagged: case 5 "should pass every file of the current tree", mutation-checked (1 failed under the mutation). One ocr finding dismissed as Wrong (the `replay-estimates.test.ts` exclusion; reason in `structural.md`). Process slip in T9.20-B1, corrected by the subagent: fix written with its tests, then backed out for genuine reds.
+- SB-Q2 answered (c): T9.20-D1 (remove `e2e/d9`'s duplicates of `e2e/d9ar`, rename stale titles; r108 if an acceptance command's file is emptied) and T9.20-D2 (`browser-4`), after T9.20 and before T9.21. SB-Q3 answered: D9A-R's three tech debt items stay tech debt.
+- Tech debt item 1 (`evidence/D09/tech-debt.md`): the 76 suppressed nested ternaries, added by the user 2026-11-19.
 - SB-Q1, the odds, answered 2026-11-19: option (a), they stay outside the `Estimate` type and the rule, with a comment (`DECISIONS-PENDING.md`).
 
 - **D9A-R's tech debt, for the user to review before stage B starts** (`evidence/D09AR/tech-debt.md`). None is in a file stage B changes. If the user makes any of them a task, it runs before T9.20, with the ID the user's answer gives it (`T9AR.24-D<n>`).
