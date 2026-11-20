@@ -114,7 +114,7 @@ Every cell's standing goes through `held-review.ts`'s `standing()`, so a revisio
 
 ### 1.5 Size check
 
-The graph has **17 tasks** and **three open questions** raised, one answered (the prototype), so two are left. There is no schema change: the open result gains two additive fields and a series point one (P155). None of the guide's three limits is met, so **no split is proposed** and no checkpoint critic is added.
+The graph has **17 tasks** and **three open questions** raised; two are answered (the prototype and the words), so one is left. There is no schema change: the open result gains two additive fields and a series point one (P155). None of the guide's three limits is met, so **no split is proposed** and no checkpoint critic is added.
 
 Worth knowing before agreeing: the natural pause for a look is after T9R2.11 (the grid shows in the card, with Save Marks still per card). Drafts across Trades (T9R2.13) are the riskiest step, as the handoff says; if the user would rather see the grid before drafts move, that is the pause. It is a look, not a gate.
 
@@ -157,7 +157,7 @@ Run on `5bce5a85`, excluding `node_modules`, suite-run logs and the lane worktre
 
 ### 1.7 Words
 
-New words, for one approval batch. Used provisionally until approved and recorded in `evidence/D09R2/new-words.md`.
+**Approved as proposed by the user, 2026-11-20** (open question 2). Words a task adds beyond these are used provisionally and recorded in `evidence/D09R2/new-words.md`.
 
 | # | Where | Proposed | Nearest approved row |
 |---|---|---|---|
@@ -427,7 +427,7 @@ The full cumulative run, then the browser critic over section 8's flows (P138's 
 | # | Question | Answer |
 |---|---|---|
 | 1 | Are the research page's static mockups enough to sign off the grid's look, or does a clickable prototype come first (D08P's section 10.1)? Recommended: the mockups. | **The mockups are enough** (the user, 2026-11-20). |
-| 2 | Approve the new words W71, W72, W73, W74, W75, W76, W77, W78, W79 and W80 (section 1.7)? | Open. |
+| 2 | Approve the new words W71, W72, W73, W74, W75, W76, W77, W78, W79 and W80 (section 1.7)? | **Approved as proposed** (the user, 2026-11-20). |
 | 3 | Should Price History also say how many sessions are acknowledged ("1 session acknowledged unavailable"), now that the count line counts Missing only? Recommended: no; the cells show it and the line stays about what is still owed. | Open. |
 
 Proposals that stand unless the user objects: no Trade P&L row in the Review's grid; the "Review Date" and "Previous" tags; a mixed column shows the other Instruments' Marks; Save Marks also in the status header; Discard empties every draft on the page; no legend.
