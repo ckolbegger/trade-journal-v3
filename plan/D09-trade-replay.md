@@ -971,7 +971,7 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T9.28 | B | — | — | Done | critic-b1 (1 moderate, 1 low); B1 `db89563a`; critic-b2 PASS, no defects |
 | T9.28-D1 | B | — | — | Done (`224043dd`) | Decision 120: "Realized" for a gain and a loss |
 | T9.28-D2 | B | — | — | Done (`bf3e10bd`) | The user's word review, item B7: the not-split sentence shortened (P137) |
-| T9.29 | C | — | — | In progress from `9fedd87e` | |
+| T9.29 | C | — | — | Done | `52b83cb5`; B1 `934fd967`; B2 `d9a75703` |
 | T9.30 | C | — | — | Not started | |
 | T9.31 | C | — | — | Not started | |
 | T9.32 | C | — | — | Not started | |

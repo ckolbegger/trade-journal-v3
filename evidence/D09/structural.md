@@ -749,3 +749,14 @@ ocr `52b83cb5` (`ocr/T9.29-52b83cb5.json`):
 
 - T9.29-B1 `934fd967`: red (`expected +0 to be truthy`, banked after the hatch), green with the banked fill drawn first; the three-sizes case's part list swapped `meter-past` and `meter-banked` (page order only, no expected value). ocr `934fd967`: No findings (`ocr/T9.29-B1-934fd967.json`).
 - T9.29-B2 `d9a75703`: red (positions NaN), green with a zero span drawn as a unit span. ocr `d9a75703`: No findings (`ocr/T9.29-B2-d9a75703.json`).
+
+Complete run `t9.29` (browser `browser-task`, on `a2b2a8f9`; `run-complete.sh`: run complete):
+
+| Suite | Result |
+|---|---|
+| Unit | 221 files, 2,564 tests: 1 failed (`ReviewCards.test.tsx:671`, a focus check), 2,563 passed |
+| Integration | 136 files, 292 tests, passed |
+| Browser, task tier | `@every-task` 5 passed (14.6 s); `e2e/d9` 114 passed, 4 skipped (5.5 min) |
+| Checks | 14 of 14 |
+
+The unit failure did not reproduce: 3 of 3 alone and 3 of 3 with its file, in the main session. Recorded as a flake (tech debt item 7), as stage B did for B8.16 (item 3); T9.29 changed no file it reads.

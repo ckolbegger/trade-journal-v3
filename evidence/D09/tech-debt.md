@@ -17,3 +17,4 @@ Stage B's items, reviewed with the user after the gate (the user's rule, 2026-11
 | # | Source | Kind | Item |
 |---|---|---|---|
 | 6 | ocr `52b83cb5` (T9.29), finding 3 | Style only | `MeterNow.pastBy` (`src/ui/cockpit/meter/meter.types.ts:20`) is optional, but the meter's name interpolates it for the PastStop and PastTarget zones; a union requiring `pastBy` for those zones would make the type say so. No valid reading omits it. |
+| 7 | Complete run `t9.29` | Flaky test | `src/ui/screens/ReviewCards.test.tsx:671` "links (A161) > should open the first card holding XYZ in attention order on its Marks panel, with focus on XYZ row" failed once in the full unit stage (`expected false to be true` on the focus check of the "XYZ Mark, Mon Oct 12" region, 33 ms). Passed 3 of 3 alone and 3 of 3 with its file in the main session. Not on P138's known list; T9.29 touched no file it reads. Treated like item 3. If it fails again, it is a failure. |
