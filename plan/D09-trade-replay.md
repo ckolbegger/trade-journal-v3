@@ -972,6 +972,7 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T9.28-D1 | B | — | — | Done (`224043dd`) | Decision 120: "Realized" for a gain and a loss |
 | T9.28-D2 | B | — | — | Done (`bf3e10bd`) | The user's word review, item B7: the not-split sentence shortened (P137) |
 | T9.29 | C | — | — | Done | `52b83cb5`; B1 `934fd967`; B2 `d9a75703` |
+| T9.29-D1 | C | — | — | Not started (the user, 2026-11-20: fix the test that flaked in run `t9.29`, tech debt item 7) | |
 | T9.30 | C | — | — | Done | `349ad6ec` |
 | T9.31 | C | — | — | In progress from `09506977` | |
 | T9.32 | C | — | — | Not started | |
