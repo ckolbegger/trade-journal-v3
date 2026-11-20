@@ -1,0 +1,118 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 1,
+    "total_tokens": 225898,
+    "input_tokens": 223409,
+    "output_tokens": 2489,
+    "cache_read_tokens": 21632,
+    "elapsed": "57s"
+  },
+  "tool_calls": {
+    "total": 25,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 9,
+      "file_read": 13,
+      "file_read_diff": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "e2e/d9/estimates.spec.ts",
+      "content": "These assertions do not verify that the SVG line breaks at the missing Mark: a renderer that filters out missing values and connects all remaining points would still pass. At Tue Nov 10 the gap is also the final revealed session, so there is no subsequent point to expose a bridge. Open the chart at Wed Nov 11 as well and inspect `iv-line` polyline coordinates to ensure the Nov 9 and Nov 11 points are not connected across Nov 10.",
+      "existing_code": "    await expect(smallChart(scope).locator('li').last()).toHaveText('Tue Nov 10: Unavailable');\n    await expect(smallChart(scope).getByTestId('iv-point')).toHaveCount(6);",
+      "start_line": 114,
+      "end_line": 115,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "e2e/d9/estimates-a11y.spec.ts",
+      "files": [
+        "e2e/d9/estimates-a11y.spec.ts"
+      ]
+    },
+    {
+      "label": "e2e/d9/estimates.spec.ts",
+      "files": [
+        "e2e/d9/estimates.spec.ts"
+      ]
+    }
+  ],
+  "session_id": "06fdae79-dffc-46e1-9f17-b71dddb794f5",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "06fdae79-dffc-46e1-9f17-b71dddb794f5",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "ad16f6b7",
+      "resolved_base": "73cc15cc15949536eb54eec1c15b3c09d77ace81",
+      "resolved_head": "ad16f6b781885d70b432cefdf61ddcc8a7a2e201",
+      "exact_range": "73cc15cc15949536eb54eec1c15b3c09d77ace81..ad16f6b781885d70b432cefdf61ddcc8a7a2e201",
+      "source_artifact_sha256": "718a81a3e8b1f25bea0f8d6327a569c7343db8526aef3f8141c53d1d547f42b1"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "4627e95448f2f2508354acd45a78a7f0ff01de14df2463d4618751195af35de6",
+          "path": "e2e/d9/estimates.spec.ts",
+          "fingerprint": "7980b9fa0c9fce7a7e20da352cb2193c148b81ad8b9a361eb863cbea0e710443"
+        },
+        {
+          "item_id": "838312c3b9a2ffc210fdad510a629aee6fde3182e843a80bdb39802b178ea292",
+          "path": "e2e/d9/estimates-a11y.spec.ts",
+          "fingerprint": "9202f0559a20316d14368c8cad23c338aa8b5b2f514f475bb8aa3ffa2f86b379"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "4627e95448f2f2508354acd45a78a7f0ff01de14df2463d4618751195af35de6",
+          "path": "e2e/d9/estimates.spec.ts",
+          "fingerprint": "7980b9fa0c9fce7a7e20da352cb2193c148b81ad8b9a361eb863cbea0e710443"
+        },
+        {
+          "item_id": "838312c3b9a2ffc210fdad510a629aee6fde3182e843a80bdb39802b178ea292",
+          "path": "e2e/d9/estimates-a11y.spec.ts",
+          "fingerprint": "9202f0559a20316d14368c8cad23c338aa8b5b2f514f475bb8aa3ffa2f86b379"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "e7e11590fb2e53c162c66c1a3130387a5153362a7cb2d852919a2090ff5801fb",
+          "path": "evidence/D09/structural.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 56945
+  }
+}
