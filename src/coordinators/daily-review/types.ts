@@ -141,9 +141,8 @@ export type { AttentionBand, AttentionReason, CalculationFamily, MeterReading, P
 // D4 has Marks and Trades; Debt and settlement arrive in D5 and D7.
 export type ReviewFamily =
   // `previousSession` is the session before the Review Date, absent when there is none; `earlierMarks` lists, per Instrument with
-  // exposure before the Review Date, the Available Marks the Marks grid shows beside the gaps (A288). `open` always sets it; it is optional
-  // in the type only so the screens' fixtures, which build this family by hand, keep compiling until T9R2.7 reads it.
-  | { readonly family: 'Marks'; readonly today: readonly MarkRow[]; readonly earlier: readonly HistoricalGapGroup[]; readonly previousSession?: string; readonly earlierMarks?: readonly EarlierMarksGroup[] }
+  // exposure before the Review Date, the Available Marks the Marks grid shows beside the gaps (A288). `open` always sets it.
+  | { readonly family: 'Marks'; readonly today: readonly MarkRow[]; readonly earlier: readonly HistoricalGapGroup[]; readonly previousSession?: string; readonly earlierMarks: readonly EarlierMarksGroup[] }
   // Between Marks and the walk; present only when a settlement is due, ordered by expiration date then Trade identity.
   | { readonly family: 'Settlement'; readonly items: readonly SettlementItem[] }
   | { readonly family: 'Trades'; readonly trades: readonly WalkedTrade[] };

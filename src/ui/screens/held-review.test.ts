@@ -6,6 +6,7 @@ import { fold, marksOf, nextCard, standing, type Held, type Standing } from './h
 
 type Ready = Extract<OpenDailyReviewResult, { kind: 'Ready' }>;
 type Earlier = Extract<Ready['families'][number], { family: 'Marks' }>['earlier'];
+type EarlierMarks = Extract<Ready['families'][number], { family: 'Marks' }>['earlierMarks'];
 
 // The card fixture in miniature (D5R2 section 4): T-A and T-F both hold XYZ, T-A from Friday 2026-10-09 and T-F from Monday;
 // T-C holds DEF. XYZ has an earlier session without a Mark, Friday. The Reviews are built on the facade double's UI shapes.
@@ -53,13 +54,13 @@ const xyzGap: Earlier[number] = {
   blocking: false,
 };
 
-function review(over: { readonly trades?: readonly WalkedTrade[]; readonly earlier?: Earlier; readonly today?: readonly MarkRow[]; readonly completion?: ReviewCompletion; readonly binding?: ReviewBinding } = {}): Ready {
+function review(over: { readonly trades?: readonly WalkedTrade[]; readonly earlier?: Earlier; readonly today?: readonly MarkRow[]; readonly completion?: ReviewCompletion; readonly binding?: ReviewBinding; readonly earlierMarks?: EarlierMarks } = {}): Ready {
   return {
     kind: 'Ready',
     reviewDate: MONDAY,
     cutoff: CUTOFF,
     families: [
-      { family: 'Marks', today: over.today ?? [missingRow('XYZ', ['t-a', 't-f']), missingRow('DEF', ['t-c'])], earlier: over.earlier ?? [xyzGap] },
+      { family: 'Marks', earlierMarks: over.earlierMarks ?? [], today: over.today ?? [missingRow('XYZ', ['t-a', 't-f']), missingRow('DEF', ['t-c'])], earlier: over.earlier ?? [xyzGap] },
       { family: 'Trades', trades: over.trades ?? [TA, TF, TC] },
     ],
     owed: [],
@@ -257,6 +258,33 @@ describe('standing (A172)', () => {
     expect(standing(same, k)).toEqual({ resolution: at(3), revision: 2 });
     const higher = fold(newer, { kind: 'MarkSaved', key: k, resolution: at(3), resolutionRevision: 3 });
     expect(standing(higher, k)).toEqual({ resolution: at(3), revision: 3 });
+  });
+});
+
+describe('standing of an earlier session Mark (A291, decision 123)', () => {
+  const key = (instrumentKey: string, tradingDate: string) => ({ instrumentKey, tradingDate });
+  const THURSDAY = '2026-10-08';
+  const listedAt = (price: string, revision: number): EarlierMarks => {
+    const resolution = available(price, revision) as Extract<MarkResolution, { kind: 'Available' }>;
+    return [{ instrumentKey: 'XYZ', instrument: { kind: 'Stock', symbol: 'XYZ' }, trades: [{ tradeId: 't-a', from: THURSDAY }], marks: { [THURSDAY]: { resolution, resolutionRevision: revision } } }];
+  };
+
+  it('should give an earlier session Mark its standing from the Review earlier Marks', () => {
+    const opened = held({ earlierMarks: listedAt('9.00', 2) });
+
+    expect(standing(opened, key('XYZ', THURSDAY))).toEqual({ resolution: available('9.00', 2), revision: 2 });
+    expect(standing(opened, key('DEF', THURSDAY))).toBeUndefined();
+  });
+
+  it('should keep a revision learned from a save when a later Review lists that earlier Mark at an older revision (A172)', () => {
+    const k = key('XYZ', THURSDAY);
+    const learned = fold(held({ earlierMarks: listedAt('9.00', 2) }), { kind: 'MarkSaved', key: k, resolution: available('11.00', 3), resolutionRevision: 3 });
+
+    const older = fold(learned, { kind: 'Opened', review: review({ earlierMarks: listedAt('9.00', 2) }) });
+    expect(standing(older, k)).toEqual({ resolution: available('11.00', 3), revision: 3 });
+
+    const newer = fold(learned, { kind: 'Opened', review: review({ earlierMarks: listedAt('12.00', 4) }) });
+    expect(standing(newer, k)).toEqual({ resolution: available('12.00', 4), revision: 4 });
   });
 });
 

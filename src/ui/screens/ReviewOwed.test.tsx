@@ -100,7 +100,7 @@ function ready(over: Partial<Ready> = {}): Ready {
     reviewDate: DATE,
     cutoff: CUTOFF,
     families: [
-      { family: 'Marks', today: [], earlier: [] },
+      { family: 'Marks', earlierMarks: [], today: [], earlier: [] },
       { family: 'Trades', trades: [walkedTrade('t-w', 'XYZ')] },
     ],
     owed: OWED,
@@ -253,7 +253,7 @@ describe('owed-reflection group (P19, P20)', () => {
   it('should open the owed card, from the save result, when an Action save names an owed Trade as the next step', async () => {
     const user = userEvent.setup();
     // The walked Trade still owes its Action; the saved Action leaves the owed group next (T6.13).
-    const overview = ready({ families: [{ family: 'Marks', today: [], earlier: [] }, { family: 'Trades', trades: [{ ...walkedTrade('t-w', 'XYZ'), progress: cardProgress() }] }] });
+    const overview = ready({ families: [{ family: 'Marks', earlierMarks: [], today: [], earlier: [] }, { family: 'Trades', trades: [{ ...walkedTrade('t-w', 'XYZ'), progress: cardProgress() }] }] });
     const facade = reviewFacade(overview);
     const incomplete = ready().completion;
     vi.mocked(facade.DailyReview.save).mockResolvedValue({
@@ -371,7 +371,7 @@ describe('Exit Action records intent only (decision 72)', () => {
     } as never;
     // The Trade still holds its 100 shares: the Review offers no way to exit them (decision 72).
     const trade = walkedReview(walked, { form: { kind: 'Saved', action: savedExit } });
-    const facade = reviewFacade(ready({ owed: [], completion: { kind: 'Complete' }, families: [{ family: 'Marks', today: [], earlier: [] }, { family: 'Trades', trades: [walked] }] }));
+    const facade = reviewFacade(ready({ owed: [], completion: { kind: 'Complete' }, families: [{ family: 'Marks', earlierMarks: [], today: [], earlier: [] }, { family: 'Trades', trades: [walked] }] }));
     vi.mocked(facade.DailyReview.getTrade).mockImplementation(({ reviewDate }) => Promise.resolve({ kind: 'Ready', reviewDate, cutoff: CUTOFF, trade }));
     renderReview(facade);
     await user.click(await screen.findByRole('button', { name: /^Review XYZ/ }));

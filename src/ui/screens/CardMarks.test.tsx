@@ -76,7 +76,7 @@ function review(over: Partial<Ready> = {}): Ready {
     reviewDate: MONDAY,
     cutoff: CUTOFF,
     families: [
-      { family: 'Marks', today: [missingRow('XYZ', ['t-a', 't-f']), missingRow('DEF', ['t-c'])], earlier: [xyzGap] },
+      { family: 'Marks', earlierMarks: [], today: [missingRow('XYZ', ['t-a', 't-f']), missingRow('DEF', ['t-c'])], earlier: [xyzGap] },
       { family: 'Trades', trades: WALK },
     ],
     owed: [],
@@ -462,7 +462,7 @@ describe('rows with a Mark', () => {
       { instrumentKey: 'XYZ', instrument: { kind: 'Stock', symbol: 'XYZ' }, tradingDate: MONDAY, trades: ['t-a', 't-f'], resolution: available('52.00', 3), resolutionRevision: 3, task: null },
       { instrumentKey: 'ABC', instrument: { kind: 'Stock', symbol: 'ABC' }, tradingDate: MONDAY, trades: ['t-a'], resolution: acknowledged, resolutionRevision: 2, task: null },
     ];
-    const facade = cardFacade(review({ families: [{ family: 'Marks', today: rows, earlier: [] }, { family: 'Trades', trades: WALK }] }));
+    const facade = cardFacade(review({ families: [{ family: 'Marks', earlierMarks: [], today: rows, earlier: [] }, { family: 'Trades', trades: WALK }] }));
     vi.mocked(facade.MarketData.save).mockResolvedValue({ kind: 'Conflict', key: { instrumentKey: 'XYZ', tradingDate: MONDAY }, resolution: available('52.00', 3), resolutionRevision: 3 });
     renderReview(facade);
     const user = userEvent.setup();
@@ -491,7 +491,7 @@ describe('two quick row saves', () => {
       { instrumentKey: 'XYZ', instrument: { kind: 'Stock', symbol: 'XYZ' }, tradingDate: MONDAY, trades: ['t-a', 't-f'], resolution: available('52.00', 1), resolutionRevision: 1, task: null },
       { instrumentKey: 'ABC', instrument: { kind: 'Stock', symbol: 'ABC' }, tradingDate: MONDAY, trades: ['t-a'], resolution: available('27.50', 1), resolutionRevision: 1, task: null },
     ];
-    const overview = review({ families: [{ family: 'Marks', today: rows, earlier: [] }, { family: 'Trades', trades: WALK }] });
+    const overview = review({ families: [{ family: 'Marks', earlierMarks: [], today: rows, earlier: [] }, { family: 'Trades', trades: WALK }] });
     const facade = cardFacade(overview);
     // The first read at mount answers; the refresh after the first save waits to be released.
     let release: (result: Ready) => void = () => undefined;
@@ -527,7 +527,7 @@ describe('earlier sessions after a save', () => {
     const missing = Array.from({ length: 25 }, (_, i) => day(i + 1));
     const gap: Earlier[number] = { ...xyzGap, trades: [{ tradeId: 't-a', from: day(1) }], missing, revisions: Object.fromEntries(missing.map((d) => [d, 'None'])) };
     const rows: MarkRow[] = [{ instrumentKey: 'XYZ', instrument: { kind: 'Stock', symbol: 'XYZ' }, tradingDate: MONDAY, trades: ['t-a', 't-f'], resolution: available('52.00', 1), resolutionRevision: 1, task: null }];
-    const facade = cardFacade(review({ families: [{ family: 'Marks', today: rows, earlier: [gap] }, { family: 'Trades', trades: WALK }] }));
+    const facade = cardFacade(review({ families: [{ family: 'Marks', earlierMarks: [], today: rows, earlier: [gap] }, { family: 'Trades', trades: WALK }] }));
     vi.mocked(facade.DailyReview.save).mockResolvedValue(marksSavedResult([savedKey('XYZ', day(25), '9')]));
     renderReview(facade);
     const user = userEvent.setup();
@@ -550,7 +550,7 @@ describe('earlier sessions after Refresh', () => {
   it('should send an earlier-session draft with the resolution and revision of the newest Review after Refresh, not those of the first snapshot', async () => {
     const acknowledgment = { versionId: 'a1', kind: 'Asserted' as const, reason: 'no quote', savedAt: '2026-10-12T21:00:00Z' };
     const changedGap: Earlier[number] = { ...xyzGap, missing: [], acknowledged: [FRIDAY], revisions: { [FRIDAY]: 4 }, acknowledgments: { [FRIDAY]: acknowledgment } };
-    const changed = review({ families: [{ family: 'Marks', today: [missingRow('XYZ', ['t-a', 't-f']), missingRow('DEF', ['t-c'])], earlier: [changedGap] }, { family: 'Trades', trades: WALK }] });
+    const changed = review({ families: [{ family: 'Marks', earlierMarks: [], today: [missingRow('XYZ', ['t-a', 't-f']), missingRow('DEF', ['t-c'])], earlier: [changedGap] }, { family: 'Trades', trades: WALK }] });
     const facade = cardFacade();
     vi.mocked(facade.DailyReview.save).mockResolvedValueOnce({ kind: 'ReviewChanged', evidence: { marketDataSnapshotId: 'mds1:2:def', frames: [] } }).mockResolvedValueOnce(marksSavedResult([savedKey('XYZ', FRIDAY, '51.00')]));
     renderReview(facade);

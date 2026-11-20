@@ -56,7 +56,7 @@ function review(over: Partial<Ready> = {}): Ready {
     reviewDate: DATE,
     cutoff: CUTOFF,
     families: [
-      { family: 'Marks', today: [markRow(MNO_PUT, PUT_KEY, ['t3']), markRow(MNO, 'MNO', ['t3']), markRow(XYZ, 'XYZ', ['t3', 't2'])], earlier: [] },
+      { family: 'Marks', earlierMarks: [], today: [markRow(MNO_PUT, PUT_KEY, ['t3']), markRow(MNO, 'MNO', ['t3']), markRow(XYZ, 'XYZ', ['t3', 't2'])], earlier: [] },
       { family: 'Settlement', items: [SETTLEMENT] },
       { family: 'Trades', trades: [T3, T2] },
     ],

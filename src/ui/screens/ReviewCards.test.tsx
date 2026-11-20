@@ -95,7 +95,7 @@ function review(over: Partial<Ready> = {}): Ready {
     reviewDate: '2026-10-12',
     cutoff: CUTOFF,
     families: [
-      { family: 'Marks', today: [markRow('ABC', ['t-b'], available('27.50')), markRow('DEF', ['t-c']), markRow('XYZ', ['t-f', 't-a'], available('52.00')), markRow('JKL', ['t-e'], available('21.00'))], earlier: [] },
+      { family: 'Marks', earlierMarks: [], today: [markRow('ABC', ['t-b'], available('27.50')), markRow('DEF', ['t-c']), markRow('XYZ', ['t-f', 't-a'], available('52.00')), markRow('JKL', ['t-e'], available('21.00'))], earlier: [] },
       { family: 'Trades', trades: WALK },
     ],
     owed: [],
@@ -257,7 +257,7 @@ describe('card header from progress (A169)', () => {
     // The completion reasons disagree with the progress on purpose: they name an Action for T-E and no Marks or reflection for T-C.
     // T-C owes 2 Marks and a reflection by its progress; T-E owes nothing by its progress.
     const walk = [TB, { ...TC, progress: cardProgress(1, 0, { needed: 2 }) }, TF, TA, { ...TE, progress: cardProgress(0, 0, { owed: false }) }];
-    renderReview(cardFacade(review({ families: [{ family: 'Marks', today: [], earlier: [] }, { family: 'Trades', trades: walk }], completion: incomplete(...actionMissing('t-b', 't-c', 't-f', 't-a', 't-e')) })));
+    renderReview(cardFacade(review({ families: [{ family: 'Marks', earlierMarks: [], today: [], earlier: [] }, { family: 'Trades', trades: walk }], completion: incomplete(...actionMissing('t-b', 't-c', 't-f', 't-a', 't-e')) })));
     await screen.findAllByRole('button', { name: /^Review / });
 
     const def = headers().find((h) => h.textContent?.includes('DEF'))!;
@@ -272,7 +272,7 @@ describe('card header from progress (A169)', () => {
   it('should open on load the first card whose progress is not done', async () => {
     // The first two cards are done by their progress, though the completion reasons name an Action for T-B; T-F is the first not done.
     const walk = [{ ...TB, progress: cardProgress(0, 0, { owed: false }) }, { ...TC, progress: cardProgress(0, 0, { owed: false }) }, TF, TA, TE];
-    const facade = cardFacade(review({ families: [{ family: 'Marks', today: [], earlier: [] }, { family: 'Trades', trades: walk }], completion: incomplete(...actionMissing('t-b')) }));
+    const facade = cardFacade(review({ families: [{ family: 'Marks', earlierMarks: [], today: [], earlier: [] }, { family: 'Trades', trades: walk }], completion: incomplete(...actionMissing('t-b')) }));
     renderReview(facade);
     await screen.findByRole('region', { name: 'XYZ review' });
 
@@ -298,7 +298,7 @@ describe('card identity (decision 68)', () => {
       { ...TA, summary: { kind: 'Stock' as const, direction: 'Long' as const, quantity: rational(50n), price: rational(61n) } },
       TE,
     ];
-    renderReview(cardFacade(review({ families: [{ family: 'Marks', today: [], earlier: [] }, { family: 'Trades', trades: summarised }] })));
+    renderReview(cardFacade(review({ families: [{ family: 'Marks', earlierMarks: [], today: [], earlier: [] }, { family: 'Trades', trades: summarised }] })));
     await screen.findAllByRole('button', { name: /^Review / });
 
     const [b, , f, a] = headers() as [HTMLElement, HTMLElement, HTMLElement, HTMLElement, HTMLElement];
@@ -333,7 +333,7 @@ describe('opening in place (A151)', () => {
     // With every card Done, none opens and nothing is read.
     cleanup();
     const everyCardDone = WALK.map((t) => ({ ...t, progress: cardProgress(0, 0, { owed: false }) }));
-    const done = cardFacade(review({ completion: { kind: 'Complete' }, families: [{ family: 'Marks', today: [], earlier: [] }, { family: 'Trades', trades: everyCardDone }] }));
+    const done = cardFacade(review({ completion: { kind: 'Complete' }, families: [{ family: 'Marks', earlierMarks: [], today: [], earlier: [] }, { family: 'Trades', trades: everyCardDone }] }));
     renderReview(done);
     await screen.findAllByRole('button', { name: /^Review / });
     expect(headers().every((h) => h.getAttribute('aria-expanded') === 'false')).toBe(true);
@@ -382,7 +382,7 @@ describe('after a per-row Mark save', () => {
     const moved: ReviewBinding = { ...binding, marketDataSnapshotId: 'mds1:2:def' };
     // The refreshed Review's DEF card has its Mark: its progress no longer needs one.
     const walked = [TB, { ...TC, progress: cardProgress() }, TF, TA, TE];
-    const afterMark = review({ binding: moved, completion: incomplete(...actionMissing('t-b', 't-c', 't-f', 't-a', 't-e')), families: [{ family: 'Marks', today: [], earlier: [] }, { family: 'Trades', trades: walked }] });
+    const afterMark = review({ binding: moved, completion: incomplete(...actionMissing('t-b', 't-c', 't-f', 't-a', 't-e')), families: [{ family: 'Marks', earlierMarks: [], today: [], earlier: [] }, { family: 'Trades', trades: walked }] });
     vi.mocked(facade.DailyReview.open).mockResolvedValueOnce(review()).mockResolvedValue(afterMark);
     vi.mocked(facade.MarketData.save).mockResolvedValue(correctedAbc);
     renderReview(facade);
@@ -401,7 +401,7 @@ describe('after a per-row Mark save', () => {
   });
 
   // T6.20-B3, items 1 and 2: a saved Mark removes its Trade from the walk. Only what is still unsaved was lost.
-  const withoutB = () => review({ completion: incomplete(...actionMissing('t-c', 't-f', 't-a', 't-e')), families: [{ family: 'Marks', today: [], earlier: [] }, { family: 'Trades', trades: [TC, TF, TA, TE] }] });
+  const withoutB = () => review({ completion: incomplete(...actionMissing('t-c', 't-f', 't-a', 't-e')), families: [{ family: 'Marks', earlierMarks: [], today: [], earlier: [] }, { family: 'Trades', trades: [TC, TF, TA, TE] }] });
   const NOT_KEPT = /is no longer in this Review, so what you entered for it was not kept\./;
 
   it('should not say a Mark was not kept when the Mark just saved is all the removed card held', async () => {
@@ -441,7 +441,7 @@ describe('card order follows the newest Review (A150, decision 64)', () => {
     const facade = cardFacade();
     const reordered = review({
       families: [
-        { family: 'Marks', today: [], earlier: [] },
+        { family: 'Marks', earlierMarks: [], today: [], earlier: [] },
         { family: 'Trades', trades: [...WALK].reverse() },
       ],
     });
@@ -464,7 +464,7 @@ describe('card order follows the newest Review (A150, decision 64)', () => {
     const facade = cardFacade();
     const reordered = review({
       families: [
-        { family: 'Marks', today: [], earlier: [] },
+        { family: 'Marks', earlierMarks: [], today: [], earlier: [] },
         { family: 'Trades', trades: [...WALK].reverse() },
       ],
     });
@@ -500,7 +500,7 @@ describe('a late Mark save', () => {
     const acknowledged: MarkResolution = { kind: 'AcknowledgedUnavailable', acknowledgment: { versionId: 'a1', kind: 'Asserted', savedAt: CUTOFF } };
     const overview = review({
       families: [
-        { family: 'Marks', today: [markRow('ABC', ['t-b'], available('27.50')), { ...markRow('DEF', ['t-c'], acknowledged), task: null }, markRow('JKL', ['t-e'], available('21.00'))], earlier: [] },
+        { family: 'Marks', earlierMarks: [], today: [markRow('ABC', ['t-b'], available('27.50')), { ...markRow('DEF', ['t-c'], acknowledged), task: null }, markRow('JKL', ['t-e'], available('21.00'))], earlier: [] },
         { family: 'Trades', trades: WALK },
       ],
     });

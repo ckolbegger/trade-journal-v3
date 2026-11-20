@@ -46,7 +46,7 @@ function ready(trades: readonly ReviewTradeItem[], missing: readonly string[] = 
     reviewDate: '2026-10-12',
     cutoff: '2026-10-12T20:00:00Z',
     families: [
-      { family: 'Marks', today: [], earlier: [] },
+      { family: 'Marks', earlierMarks: [], today: [], earlier: [] },
       { family: 'Trades', trades: trades.map((t) => ({ ...t, progress: cardProgress(0, 0, { resolved: 0, owed: missing.includes(t.tradeId) }) })) },
     ],
     owed: [],
@@ -1244,6 +1244,7 @@ const owingReview = (): Ready =>
     families: [
       {
         family: 'Marks',
+        earlierMarks: [],
         today: [markRow('XYZ'), markRow('ABC')],
         earlier: [{ instrumentKey: 'XYZ', instrument: { kind: 'Stock', symbol: 'XYZ' }, trades: [{ tradeId: 't1', from: '2026-10-09' }], missing: ['2026-10-09'], acknowledged: [], revisions: { '2026-10-09': 'None' }, acknowledgments: {}, blocking: false }],
       },
@@ -1255,7 +1256,7 @@ const owedPair = [owed('d1', 'Due', '2026-10-09T14:30:00Z', [{}]), owed('d2', 'D
 const dueReview = (): Ready =>
   ready([item('t1', 'XYZ')], [], {
     completion: { kind: 'Incomplete', reasons: [{ code: 'ReflectionDue', tradeId: 't1', debtIds: ['d1'] }, { code: 'ActionMissing', tradeId: 't1' }] },
-    families: [{ family: 'Marks', today: [], earlier: [] }, { family: 'Trades', trades: [{ ...item('t1', 'XYZ'), progress: cardProgress(1, 1, { resolved: 0 }) }] }],
+    families: [{ family: 'Marks', earlierMarks: [], today: [], earlier: [] }, { family: 'Trades', trades: [{ ...item('t1', 'XYZ'), progress: cardProgress(1, 1, { resolved: 0 }) }] }],
   });
 // The card's progress once its due reflection is answered: the later one is still owed.
 const afterDue = [{ tradeId: 't1', progress: cardProgress(0, 1, { resolved: 0 }) }];
@@ -1296,7 +1297,7 @@ describe('reflections', () => {
 describe('progress from save results (A165, P46)', () => {
   it('should show the progress the Debt resolution result carries, None owed and None once the card last reflection is answered, with no reload', async () => {
     const user = userEvent.setup();
-    const review = ready([item('t1', 'XYZ')], [], { families: [{ family: 'Marks', today: [], earlier: [] }, { family: 'Trades', trades: [{ ...item('t1', 'XYZ'), progress: cardProgress(1, 1) }] }] });
+    const review = ready([item('t1', 'XYZ')], [], { families: [{ family: 'Marks', earlierMarks: [], today: [], earlier: [] }, { family: 'Trades', trades: [{ ...item('t1', 'XYZ'), progress: cardProgress(1, 1) }] }] });
     const facade = walkFacade(review, tradeReview('t1', 'XYZ', { reflections: owedPair, progress: cardProgress(1, 1) }));
     const post = (progress: ReturnType<typeof cardProgress>) =>
       ({ kind: 'Ready', cards: [{ tradeId: 't1', progress }], progress: { tradesWithAction: 0, tradesEligible: 1 }, completion: { kind: 'Incomplete', reasons: [{ code: 'ActionMissing', tradeId: 't1' }] }, nextStep: { kind: 'Done' }, binding }) as const;
@@ -1410,7 +1411,7 @@ describe('moving on', () => {
       kind: 'Incomplete',
       reasons: [{ code: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'XYZ' }, tradingDate: '2026-10-12', trades: ['t1'] }, { code: 'ReflectionDue', tradeId: 't1', debtIds: ['d1'] }, { code: 'ActionMissing', tradeId: 't1' }, { code: 'ActionMissing', tradeId: 't2' }],
     };
-    const review = ready([item('t1', 'XYZ'), item('t2', 'DEF')], [], { completion: owing, families: [{ family: 'Marks', today: [markRow('XYZ')], earlier: [] }, { family: 'Trades', trades: walkedTrades }] });
+    const review = ready([item('t1', 'XYZ'), item('t2', 'DEF')], [], { completion: owing, families: [{ family: 'Marks', earlierMarks: [], today: [markRow('XYZ')], earlier: [] }, { family: 'Trades', trades: walkedTrades }] });
     const first = tradeReview('t1', 'XYZ', { reflections: [owed('d1', 'Due', '2026-10-09T14:30:00Z', [{}])] });
     const next = tradeReview('t2', 'DEF');
     const facade = walkFacade(review, first);
@@ -1477,7 +1478,7 @@ describe('moving on from the panel that finished', () => {
     // T-1 owes a Mark, a reflection due and its Action.
     const walkedTrades = [item('t1', 'XYZ')].map((t) => ({ ...t, progress: cardProgress(1, 0, { needed: 1, resolved: 0 }) }));
     const owing: ReviewCompletion = { kind: 'Incomplete', reasons: [{ code: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'XYZ' }, tradingDate: '2026-10-12', trades: ['t1'] }, { code: 'ReflectionDue', tradeId: 't1', debtIds: ['d1'] }, { code: 'ActionMissing', tradeId: 't1' }] };
-    const review = ready([item('t1', 'XYZ')], [], { completion: owing, families: [{ family: 'Marks', today: [markRow('XYZ')], earlier: [] }, { family: 'Trades', trades: walkedTrades }] });
+    const review = ready([item('t1', 'XYZ')], [], { completion: owing, families: [{ family: 'Marks', earlierMarks: [], today: [markRow('XYZ')], earlier: [] }, { family: 'Trades', trades: walkedTrades }] });
     const trade = tradeReview('t1', 'XYZ', { reflections: owedPair });
     const facade = walkFacade(review, trade);
     const afterMarks: ReviewCompletion = { kind: 'Incomplete', reasons: owing.kind === 'Incomplete' ? owing.reasons.filter((r) => r.code !== 'MarkMissing') : [] };
@@ -1530,7 +1531,7 @@ describe('panel headers from progress (A169)', () => {
     const user = userEvent.setup();
     // The completion reasons name no Mark, so only the progress can say what the Marks panel owes: 0 of 2, then 1 of 2, then 2 of 2.
     const walkedWith = (resolved: number, needed: number) => [{ ...item('t1', 'XYZ'), progress: cardProgress(0, 0, { resolved, needed }) }];
-    const review = ready([item('t1', 'XYZ')], ['t1'], { families: [{ family: 'Marks', today: [markRow('XYZ'), markRow('ABC')], earlier: [] }, { family: 'Trades', trades: walkedWith(0, 2) }] });
+    const review = ready([item('t1', 'XYZ')], ['t1'], { families: [{ family: 'Marks', earlierMarks: [], today: [markRow('XYZ'), markRow('ABC')], earlier: [] }, { family: 'Trades', trades: walkedWith(0, 2) }] });
     const trade = tradeReview('t1', 'XYZ', { progress: walkedWith(0, 2)[0]!.progress });
     const facade = walkFacade(review, trade);
     const mark = { revisionId: 'r1', revisionNumber: 1, price: '52.00', source: 'Manual', savedAt: '2026-10-12T21:00:00Z' } as const;
@@ -1567,7 +1568,7 @@ describe('panel headers from progress (A169)', () => {
       [0, 1, '1 owed, 0 due now', 'Not due'],
       [0, 0, 'None owed', 'None'],
     ] as const) {
-      const review = ready([item('t1', 'XYZ')], ['t1'], { families: [{ family: 'Marks', today: [], earlier: [] }, { family: 'Trades', trades: [{ ...item('t1', 'XYZ'), progress: cardProgress(dueNow, later) }] }] });
+      const review = ready([item('t1', 'XYZ')], ['t1'], { families: [{ family: 'Marks', earlierMarks: [], today: [], earlier: [] }, { family: 'Trades', trades: [{ ...item('t1', 'XYZ'), progress: cardProgress(dueNow, later) }] }] });
       renderWalk(walkFacade(review, tradeReview('t1', 'XYZ')));
       const card = await openTrade(user, 'XYZ');
 
@@ -1585,7 +1586,7 @@ describe('panel headers from progress (A169)', () => {
       [true, 'Needed'],
       [false, 'Saved'],
     ] as const) {
-      const review = ready([item('t1', 'XYZ')], [], { families: [{ family: 'Marks', today: [], earlier: [] }, { family: 'Trades', trades: [{ ...item('t1', 'XYZ'), progress: cardProgress(0, 0, { owed }) }] }] });
+      const review = ready([item('t1', 'XYZ')], [], { families: [{ family: 'Marks', earlierMarks: [], today: [], earlier: [] }, { family: 'Trades', trades: [{ ...item('t1', 'XYZ'), progress: cardProgress(0, 0, { owed }) }] }] });
       renderWalk(walkFacade(review, tradeReview('t1', 'XYZ', { form: saved })));
       const card = await openTrade(user, 'XYZ');
 
@@ -1605,7 +1606,7 @@ describe('panel headers from progress (A169)', () => {
     ] as const) {
       const review = ready([item('t1', 'XYZ')], [], {
         completion: { kind: 'Incomplete', reasons: [{ code: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'XYZ' }, tradingDate: '2026-10-12', trades: ['t1'] }] },
-        families: [{ family: 'Marks', today: [markRow('XYZ')], earlier: [] }, { family: 'Trades', trades: [{ ...item('t1', 'XYZ'), progress }] }],
+        families: [{ family: 'Marks', earlierMarks: [], today: [markRow('XYZ')], earlier: [] }, { family: 'Trades', trades: [{ ...item('t1', 'XYZ'), progress }] }],
       });
       renderWalk(walkFacade(review, tradeReview('t1', 'XYZ', { reflections: [], progress })));
       const card = await openTrade(user, 'XYZ');
@@ -1767,7 +1768,7 @@ describe('Review card: the Replay button (decision 3)', () => {
   it('should show the new Mark session in the overlay after Save Marks, from the save result, without reading again', async () => {
     const user = userEvent.setup();
     const walked = { ...item('t1', 'XYZ'), progress: cardProgress(0, 0, { needed: 1, resolved: 0 }) };
-    const review = ready([walked], [], { families: [{ family: 'Marks', today: [markRow('XYZ')], earlier: [] }, { family: 'Trades', trades: [walked] }] });
+    const review = ready([walked], [], { families: [{ family: 'Marks', earlierMarks: [], today: [markRow('XYZ')], earlier: [] }, { family: 'Trades', trades: [walked] }] });
     const before = tradeReview('t1', 'XYZ', { progress: walked.progress, replay: replayTo(replaySession('2026-10-08', '50.00', 0n)) });
     const after = tradeReview('t1', 'XYZ', { replay: THURSDAY_AND_MONDAY });
     const facade = walkFacade(review, before);
@@ -1889,7 +1890,7 @@ describe('Review card: the Replay button (decision 3)', () => {
   it('should open the overlay over the Action panel even when the address still names an Instrument', async () => {
     const user = userEvent.setup();
     const walked = { ...item('t1', 'XYZ'), progress: cardProgress(0, 0, { needed: 1, resolved: 0 }) };
-    const review = ready([walked], ['t1'], { families: [{ family: 'Marks', today: [markRow('XYZ')], earlier: [] }, { family: 'Trades', trades: [walked] }] });
+    const review = ready([walked], ['t1'], { families: [{ family: 'Marks', earlierMarks: [], today: [markRow('XYZ')], earlier: [] }, { family: 'Trades', trades: [walked] }] });
     renderWalk(walkFacade(review, tradeReview('t1', 'XYZ', { progress: walked.progress, replay: THURSDAY_AND_MONDAY })), { address: '/review?trade=t1&instrument=XYZ' });
     const card = await screen.findByRole('region', { name: 'XYZ review' });
     await user.click(within(card).getByRole('button', { name: /^Action\b/ }));

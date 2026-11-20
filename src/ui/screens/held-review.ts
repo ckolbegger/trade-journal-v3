@@ -113,14 +113,18 @@ export function nextCard(held: Held, next: ReviewNextStep): NextCard {
 
 const rank =(revision: ExpectedResolutionRevision): number => (revision === 'None' ? 0 : revision);
 
-// What the held Review lists for a key: its Review-date row, or its earlier session in an Instrument's gap group.
+// What the held Review lists for a key: its Review-date row, its earlier session in an Instrument's gap group, or an
+// earlier session's Available Mark from the open's earlier Marks (A288).
 function listedStanding(review: Ready, key: ObservationKey): Standing | undefined {
   const family = review.families.find((f) => f.family === 'Marks');
   if (family?.family !== 'Marks') return undefined;
   const row = family.today.find((r) => r.instrumentKey === key.instrumentKey && r.tradingDate === key.tradingDate);
   if (row) return { resolution: row.resolution, revision: row.resolutionRevision };
   const group = family.earlier.find((g) => g.instrumentKey === key.instrumentKey && [...g.missing, ...g.acknowledged].includes(key.tradingDate));
-  if (!group) return undefined;
+  if (!group) {
+    const mark = family.earlierMarks.find((g) => g.instrumentKey === key.instrumentKey)?.marks[key.tradingDate];
+    return mark && { resolution: mark.resolution, revision: mark.resolutionRevision };
+  }
   const acknowledgment = group.acknowledgments[key.tradingDate];
   return { resolution: acknowledgment ? { kind: 'AcknowledgedUnavailable', acknowledgment } : { kind: 'Missing' }, revision: group.revisions[key.tradingDate] ?? 'None' };
 }

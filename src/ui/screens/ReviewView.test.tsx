@@ -59,7 +59,7 @@ function ready(over: { today?: readonly MarkRow[]; earlier?: Earlier; trades?: r
     reviewDate: over.reviewDate ?? '2026-10-12',
     cutoff: CUTOFF,
     families: [
-      { family: 'Marks', today: over.today ?? [], earlier: over.earlier ?? [] },
+      { family: 'Marks', earlierMarks: [], today: over.today ?? [], earlier: over.earlier ?? [] },
       // The double's progress follows its Review-date rows and its completion reasons (D5R2 section 6.3): a row without a Mark is
       // needed, one with a Mark resolved; a reflection reason is due now, and the Action is owed while the completion names it.
       {

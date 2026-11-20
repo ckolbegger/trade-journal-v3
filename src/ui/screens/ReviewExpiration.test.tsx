@@ -45,7 +45,7 @@ const duringReview: Ready = {
   reviewDate: DATE,
   cutoff: CUTOFF,
   families: [
-    { family: 'Marks', today: [], earlier: [] },
+    { family: 'Marks', earlierMarks: [], today: [], earlier: [] },
     { family: 'Settlement', items: [item] },
     { family: 'Trades', trades: [walked] },
   ],
@@ -100,7 +100,7 @@ const afterReview: Ready = {
   reviewDate: DATE,
   cutoff: CUTOFF,
   families: [
-    { family: 'Marks', today: [], earlier: [] },
+    { family: 'Marks', earlierMarks: [], today: [], earlier: [] },
     { family: 'Trades', trades: [] },
   ],
   owed: [{ tradeId: 'trade-1', underlying: 'XYZ', lifecycle: 'Closed', owed: [{ debtId: 'd-1', entryTypeKey: 'entry-type.position-change-reflection', dueAnchor: SETTLEMENT_TIME, classification: 'Due' }], progress: owedCard.progress }],

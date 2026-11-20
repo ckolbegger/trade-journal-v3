@@ -70,7 +70,7 @@ const reviewOf = (trades: readonly WalkedTrade[] = WALK): Ready => ({
   reviewDate: MONDAY,
   cutoff: CUTOFF,
   families: [
-    { family: 'Marks', today: [missingRow('XYZ', ['t-a', 't-f']), missingRow('DEF', ['t-c'])], earlier: [] },
+    { family: 'Marks', earlierMarks: [], today: [missingRow('XYZ', ['t-a', 't-f']), missingRow('DEF', ['t-c'])], earlier: [] },
     { family: 'Trades', trades },
   ],
   owed: [],

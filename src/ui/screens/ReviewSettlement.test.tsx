@@ -63,7 +63,7 @@ function review(over: Partial<Ready> = {}): Ready {
     reviewDate: DATE,
     cutoff: CUTOFF,
     families: [
-      { family: 'Marks', today: [{ instrumentKey: 'MNO', instrument: { kind: 'Stock', symbol: 'MNO' }, tradingDate: DATE, trades: ['t3'], resolution: { kind: 'Missing' }, resolutionRevision: 'None', task: 'Manual' }], earlier: [] },
+      { family: 'Marks', earlierMarks: [], today: [{ instrumentKey: 'MNO', instrument: { kind: 'Stock', symbol: 'MNO' }, tradingDate: DATE, trades: ['t3'], resolution: { kind: 'Missing' }, resolutionRevision: 'None', task: 'Manual' }], earlier: [] },
       { family: 'Settlement', items: [XYZ_ITEM, MNO_ITEM] },
       { family: 'Trades', trades: [T3, T1] },
     ],
@@ -178,7 +178,7 @@ describe('settlement family (A112)', () => {
 describe('the Settlement panel around its items', () => {
   const open = async (item: SettlementItem, underlying: string, progress: WalkedTrade['progress'], options: { writable?: boolean } = {}) => {
     const trade = walked(item, underlying, progress);
-    renderReview(walkFacade(review({ families: [{ family: 'Marks', today: [], earlier: [] }, { family: 'Trades', trades: [trade] }] }), tradeReview(trade, item)), options);
+    renderReview(walkFacade(review({ families: [{ family: 'Marks', earlierMarks: [], today: [], earlier: [] }, { family: 'Trades', trades: [trade] }] }), tradeReview(trade, item)), options);
     const card = await screen.findByRole('region', { name: `${underlying} review` });
     return { card, trade };
   };
@@ -211,7 +211,7 @@ describe('the Settlement panel around its items', () => {
   it('should show a recorded settlement as Recorded and leave it out of what remains', async () => {
     // Every panel is done, so no card opens by itself.
     const trade = walked(MNO_ITEM, 'MNO', cardProgress(0, 0, { settlement: false, owed: false }));
-    renderReview(walkFacade(review({ families: [{ family: 'Marks', today: [], earlier: [] }, { family: 'Trades', trades: [trade] }] }), tradeReview(trade, MNO_ITEM)));
+    renderReview(walkFacade(review({ families: [{ family: 'Marks', earlierMarks: [], today: [], earlier: [] }, { family: 'Trades', trades: [trade] }] }), tradeReview(trade, MNO_ITEM)));
     await userEvent.setup().click(await screen.findByRole('button', { name: /Review MNO/ }));
     const card = await screen.findByRole('region', { name: 'MNO review' });
 
