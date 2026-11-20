@@ -295,6 +295,9 @@ Task status and commits are in D9's breakdown, Progress section. This section ho
 
 ### Open questions
 
+- D9AR-retro-7 done 2026-11-19 at `3618dcb0`: T9AR.24-B5's 375 instance deleted from `e2e/d9ar/responsive-a11y.spec.ts` (20 cases listed before, 19 after; the spec passed, 19 in 1.1 min; `corridor.test.tsx` 80 passed, unchanged). Recorded in `evidence/D09/structural.md`, "Stage B". No ocr review (test-only deletion).
+- SB-Q1, the odds, answered 2026-11-19: option (a), they stay outside the `Estimate` type and the rule, with a comment (`DECISIONS-PENDING.md`).
+
 - **D9A-R's tech debt, for the user to review before stage B starts** (`evidence/D09AR/tech-debt.md`). None is in a file stage B changes. If the user makes any of them a task, it runs before T9.20, with the ID the user's answer gives it (`T9AR.24-D<n>`).
   1. Critic-3's moderate defect: on the Review card (`CardFigures.tsx`), the past-a-line row sits under "Current Risk" or "Remaining Reward" ("Remaining Reward · Past the Target by $32.00 (0.10R)"), where the replay sets it above both headings (W56, decision 7).
   2. Low: finished Trades draw the At Stop and At Target lines with no label (A280).
