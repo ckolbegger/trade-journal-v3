@@ -270,7 +270,7 @@ The main session saves the reports itself (`implementing.md`, "Final report"). A
 
 ### Open questions
 
-- **SC-Q1, asked 2026-11-20, awaiting the user** (`evidence/D09/DECISIONS-PENDING.md`): six older Review-open request lists see the meter's one more date's read. T9.31, T9.32, T9.33, T9.34, T9.40, T9.36, T9.37 and T9.38 are paused on it; T9.31's and T9.35's runs fail only on those six.
+- SC-Q1 (the older Review-open request lists) answered 2026-11-20: (a), carried out by T9.31-D1.
 - First-run passes, flagged in `structural.md`: T9.29 (two), T9.30 (two), T9.31 (two).
 - Tech debt item 7 (a ReviewCards focus flake in run `t9.29`) fixed by T9.29-D1 at the user's request.
 
