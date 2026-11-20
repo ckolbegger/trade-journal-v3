@@ -978,7 +978,7 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T9.31-D1 | C | — | — | Done (the user's SC-Q1 answer (a): the six older Review-open request lists gain the one date's read) | `4d7e2f2d` |
 | T9.32 | C | — | — | Done | `7fe75de2` |
 | T9.33 | C | — | — | Done | `e2b082c8` |
-| T9.34 | C | — | — | In progress from `ca9faf3f` | |
+| T9.34 | C | — | — | Done | `12ed0a9f`; B1 `ffa14452`; B2 `4026dfd1` |
 | T9.35 | C | — | — | Done (raised to Full; its run's only failures are SC-Q1's six) | `6c31fc93`; B1 `930e2f73` |
 | T9.40 | C | — | — | Not started | |
 | T9.36 | C | — | — | Not started | |
