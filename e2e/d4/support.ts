@@ -272,8 +272,25 @@ export async function reachPanel(page: Page, card: CardRef, panel: Panel): Promi
   await expect(header).toHaveAttribute('aria-expanded', 'true');
   return page.locator(`[id="${await header.getAttribute('aria-controls')}"]`);
 }
+// The Marks grid's cell for the Instrument on the date: an input (or, once it holds a Mark, a button) named after the cell
+// ("NVDA Mark, Thu Oct 8", P160). A Review without the grid has no such input or button; its rows are regions of that name.
+function gridCell(panel: Locator, name: string): Locator {
+  return panel.getByRole('textbox', { name, exact: true }).or(panel.getByRole('button', { name, exact: true }));
+}
+// Chooses the Instrument's cell when the Marks panel has the grid and returns the cell editor's region; on the old layout
+// it returns the row. Pressing a cell only chooses it: it never saves (decision 65, rule 3).
 export async function markRow(page: Page, card: CardRef, date: string): Promise<Locator> {
-  return (await reachPanel(page, card, 'Marks')).getByRole('region', { name: `${symbolOf(card)} Mark, ${date}`, exact: true });
+  const panel = await reachPanel(page, card, 'Marks');
+  const name = `${symbolOf(card)} Mark, ${date}`;
+  const cell = gridCell(panel, name);
+  if ((await cell.count()) > 0 && (await cell.evaluate((element) => element.tagName)) === 'BUTTON') await cell.click();
+  return panel.getByRole('region', { name, exact: true });
+}
+// The cell's input: the grid's input named after the cell, or on the old layout the row's Price input.
+export async function markCell(page: Page, card: CardRef, date: string): Promise<Locator> {
+  const row = await markRow(page, card, date);
+  const input = (await reachPanel(page, card, 'Marks')).getByRole('textbox', { name: `${symbolOf(card)} Mark, ${date}`, exact: true });
+  return (await input.count()) > 0 ? input : row.getByLabel('Price');
 }
 export async function actionFormOf(page: Page, card: CardRef): Promise<Locator> {
   return (await reachPanel(page, card, 'Action')).getByRole('form', { name: 'Action' });
@@ -300,7 +317,7 @@ export async function enterMark(page: Page, card: CardRef, date: string, price: 
   const cards = await hasCards(page);
   const entry = await markRow(page, card, date);
   if (cards) {
-    await entry.getByLabel('Price').fill(price);
+    await (await markCell(page, card, date)).fill(price);
     await (await reachPanel(page, card, 'Marks')).getByRole('button', { name: /^Save Marks/ }).click();
   } else {
     await entry.getByRole('button', { name: 'Enter', exact: true }).click();

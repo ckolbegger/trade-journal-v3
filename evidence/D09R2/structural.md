@@ -149,3 +149,26 @@ D9R2 runs one task at a time (P162; decision 100). Each task's heading holds its
 - Case: "it should keep a pressable cell's gain or loss colour". Commit `d45f5fab`: red (no `color: inherit` on the press button), then green (`button.session-grid-press { color: inherit }`, more specific than `.session-grid-control`'s ink); the draft chip keeps its own ink. `src/ui/cockpit` 35 files, 447 tests; `e2e/d8p/history.spec.ts` 3 passed. First-run passes: none.
 - ocr (`ocr/T9R2.9-B2-d45f5fab.json`): **No findings.**
 - Run `T9R2.9` (browser-task; after both bug tasks' clean ocr): unit 226 files, 2630 tests; integration 137 files, 294 tests; browser task tier 5 passed (13.0 s); checks 14 of 14. Ports free before and after. No flaky case failed. `run-complete.sh`: run complete.
+
+
+## T9R2.10 The browser helpers move first (markRow, markCell)
+
+- Structural, Light (decision 122): tests only, `e2e/`. `markRow(page, card, date)` (`e2e/d4/support.ts`) reaches the Marks panel, and when it holds the grid's cell named "<symbol> Mark, <date>" (an input or a button; a button is pressed to choose it) it chooses it; it returns the region of that name (the cell editor, or on the old layout the row). New `markCell(page, card, date)` returns the grid's input of that name, else the row's Price input. The grid is not on the Review until T9R2.11, so only the old-layout path ran. `enterMark` uses `markCell` on cards.
+- Verification, `.claude/scripts/with-browser-lock.sh npm run test:e2e:specs -- <folder>`, one call per folder, exit 0 each, no expectation changed: d4 26 passed; d5r 15 passed; d7 33 passed; d8p 20 passed; d9ar 79 passed, 4 skipped (as before). Ports 5175, 9341, 9342 free before and after. `typecheck`, `tsc6`, `lint` (no errors), `lint:deps` exit 0.
+- Helper-only diffs (file, line in the new file, old call, new call):
+
+| File | Line | Old | New |
+|---|---|---|---|
+| e2e/d4/support.ts | 282 | `markRow` returned the row region | `markRow` (grid-aware, same signature); `gridCell` and `markCell` added |
+| e2e/d4/support.ts | enterMark | `entry.getByLabel('Price').fill(price)` | `(await markCell(page, card, date)).fill(price)` |
+| e2e/d4/responsive-a11y.spec.ts | 133 | `(await markRow(page, 'XYZ', DATE)).getByLabel('Price').fill('1')` | `(await markCell(page, 'XYZ', DATE)).fill('1')` |
+| e2e/d4/card-helpers.spec.ts | 65-66, 74 | `row = markRow(XYZ)`; `row.getByLabel('Price')` | `markCell(page, 'XYZ', DATE)` |
+| e2e/d4/card-helpers.spec.ts | 83, 86 | `row = markRow(XYZ)`; `row.getByLabel('Price')` | `markCell(page, 'XYZ', DATE)` |
+| e2e/d4/card-helpers.spec.ts | 146, 155 | `row = markRow(tA)`; `row.getByLabel('Price')` | `markCell(page, tA, DATE)` |
+| e2e/d5r/marks.spec.ts | 47-49 | `monday/friday/thursday.getByLabel('Price').fill` | `(await markCell(page, tA, MONDAY/FRIDAY/THURSDAY)).fill` (the unused `thursday` row dropped) |
+| e2e/d5r/marks.spec.ts | 57-59, 65 | `monday/friday/thursday.getByLabel('Price')` (value checks, fix) | `markCell(...)` |
+| e2e/d5r/marks.spec.ts | 81 | `(await markRow(page, tA, MONDAY)).getByLabel('Price').fill` | `(await markCell(page, tA, MONDAY)).fill` |
+| e2e/d5r/marks.spec.ts | 110, 115 | `row.getByLabel('Price')` | `(await markCell(page, tA, MONDAY))` |
+| e2e/d5r/responsive-a11y.spec.ts | 27, 66 | `monday.getByLabel('Price').fill`; `(await markRow(...)).getByLabel('Price')` | `markCell(page, tA, MONDAY)` |
+
+- Kept on `markRow` or raw (decided per line): `e2e/d4/no-save.spec.ts` 51, 62 and `e2e/d4/correct-mark.spec.ts` 14, `e2e/d8p/support.ts` 100 (the Correct form's Price inside the editor); `e2e/d4/responsive-a11y.spec.ts` 144 (Cancel of the Correct form); `e2e/d5r/marks.spec.ts` 56 (`toBeFocused`, rule 4); `e2e/d4/responsive-a11y.spec.ts` 270, `e2e/d5r/responsive-a11y.spec.ts` 83, `e2e/d5r/sliders.spec.ts` 22, 45 (keyboard and focus steps, raw locators, rule 4); `e2e/d4/runtime-failure.spec.ts` 33, `e2e/d5r/review.spec.ts` 96-98 (card-wide `getByLabel('Price')` counts, not a row's); `e2e/d7/support.ts` 122 (`saveMarkPrice` takes a row Locator from its callers); `e2e/d9ar/support.ts` 59, 63 (regions named by option contract, not by the card's symbol: `markCell` takes the card's symbol). T9R2.11 must move or re-point these when the old row goes.

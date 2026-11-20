@@ -1,5 +1,5 @@
 import {
-  actionFormOf, cardHeader, cardItem, completion, createCardFixture, createRoutineTrades, createTrades, expect, expectAccessible, FRIDAY, markRow, MONDAY, MONDAY_1700, onboardedAt, openReview, panelHeader, reachPanel, READY, remainsOf, meterOf, status, tabTo,
+  actionFormOf, cardHeader, cardItem, completion, createCardFixture, createRoutineTrades, createTrades, expect, expectAccessible, FRIDAY, markCell, markRow, MONDAY, MONDAY_1700, onboardedAt, openReview, panelHeader, reachPanel, READY, remainsOf, meterOf, status, tabTo,
   test, tradeCard, type TradeRef,
 } from './support.ts';
 
@@ -25,7 +25,7 @@ test.describe('B5R.11 Responsive and accessible', () => {
 
     // Half-fill drafts at 1280 px: a price and a half-written "Can't get a price" in the Marks panel, an Exit and a half-written Intent in the Action panel.
     const monday = await markRow(page, tA, MONDAY);
-    await monday.getByLabel('Price').fill('52.00');
+    await (await markCell(page, tA, MONDAY)).fill('52.00');
     const friday = await markRow(page, tA, FRIDAY);
     await friday.getByRole('button', { name: "Can't get a price" }).click();
     await friday.getByLabel('Reason (required)').fill('No quo');
@@ -65,7 +65,7 @@ test.describe('B5R.11 Responsive and accessible', () => {
     }).toPass({ timeout: 5000 });
     await expect((await actionFormOf(page, tA)).getByRole('radio', { name: 'Exit', exact: true })).toBeChecked();
     await expect((await actionFormOf(page, tA)).getByLabel(INTENT)).toHaveValue('Half written');
-    await expect((await markRow(page, tA, MONDAY)).getByLabel('Price')).toHaveValue('52.00');
+    await expect(await markCell(page, tA, MONDAY)).toHaveValue('52.00');
     await expect((await markRow(page, tA, FRIDAY)).getByLabel('Reason (required)')).toHaveValue('No quo');
 
     // Put the drafts away (mouse), then complete T-B's card with the keyboard only.

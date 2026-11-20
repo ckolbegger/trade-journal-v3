@@ -1,5 +1,5 @@
 import {
-  actionFormOf, cardHeader, cardList, createTrades, enterMark, expect, FOUR_TRADES, marksFamily, markRow, MONDAY_1700, onboardedAt, openPanelOf, openReview, panelHeader, PLAN, reachCard, reloadReview, status, test,
+  actionFormOf, cardHeader, cardList, createTrades, enterMark, expect, FOUR_TRADES, marksFamily, markCell, markRow, MONDAY_1700, onboardedAt, openPanelOf, openReview, panelHeader, PLAN, reachCard, reloadReview, status, test,
   tradeCard,
   type FixtureTrade, type TradeRef,
 } from './support.ts';
@@ -62,8 +62,7 @@ test.describe('reach (decision 65)', () => {
     await createTrades(page);
     await openReview(page);
 
-    const row = await markRow(page, 'XYZ', DATE);
-    await row.getByLabel('Price').fill('52.00');
+    await (await markCell(page, 'XYZ', DATE)).fill('52.00');
     const message = await reachCard(page, 'ABC').then(
       () => undefined,
       (error: unknown) => (error as Error).message,
@@ -72,7 +71,7 @@ test.describe('reach (decision 65)', () => {
     expect(message).toMatch(/ABC/);
     await expect(cardHeader(page, 'XYZ')).toHaveAttribute('aria-expanded', 'true');
     await expect(cardHeader(page, 'ABC')).toHaveAttribute('aria-expanded', 'false');
-    await expect(row.getByLabel('Price')).toHaveValue('52.00');
+    await expect(await markCell(page, 'XYZ', DATE)).toHaveValue('52.00');
     await context.close();
   });
 
@@ -81,11 +80,10 @@ test.describe('reach (decision 65)', () => {
     await createTrades(page);
     await openReview(page);
 
-    const row = await markRow(page, 'XYZ', DATE);
-    await row.getByLabel('Price').fill('52.00');
+    await (await markCell(page, 'XYZ', DATE)).fill('52.00');
     await expect(reachCard(page, 'ABC')).rejects.toThrow(/XYZ/);
     await expect(page.getByRole('status').filter({ hasText: /^Save or discard what you entered for / })).toBeVisible();
-    await row.getByLabel('Price').fill('');
+    await (await markCell(page, 'XYZ', DATE)).fill('');
 
     const card = await reachCard(page, 'ABC');
     await expect(card).toBeVisible();
@@ -145,8 +143,7 @@ test.describe('reach by Trade (decision 68)', () => {
     const { context, page } = await onboardedAt(profile, MONDAY_1700);
     const { tA, tF } = await twoXyzReview(page);
 
-    const row = await markRow(page, tA, DATE);
-    await row.getByLabel('Price').fill('52.00');
+    await (await markCell(page, tA, DATE)).fill('52.00');
     const message = await reachCard(page, tF).then(
       () => undefined,
       (error: unknown) => (error as Error).message,
@@ -155,7 +152,7 @@ test.describe('reach by Trade (decision 68)', () => {
     expect(message).toMatch(/Cannot reach T-F's card: T-A's card holds unsaved work/);
     await expect(cardHeader(page, tA)).toHaveAttribute('aria-expanded', 'true');
     await expect(cardHeader(page, tF)).toHaveAttribute('aria-expanded', 'false');
-    await expect(row.getByLabel('Price')).toHaveValue('52.00');
+    await expect(await markCell(page, tA, DATE)).toHaveValue('52.00');
     await context.close();
   });
 

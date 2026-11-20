@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import {
-  acknowledgeMark, actionFormOf, cardHeader, cardList, completion, createTradeAt, createTrades, detail, enterMark, expect, expectAccessible, firstPage, FOUR_TRADES, holdTradesStore, launchAt, markRow, MONDAY_1700, onboardedAt, onboardedPage,
+  acknowledgeMark, actionFormOf, cardHeader, cardList, completion, createTradeAt, createTrades, detail, enterMark, expect, expectAccessible, firstPage, FOUR_TRADES, holdTradesStore, launchAt, markCell, markRow, MONDAY_1700, onboardedAt, onboardedPage,
   openDrawer, openReview, panelHeader, openTradeFromOpenList, reachCard, reachPanel, READY, recordEntry, releaseTradesStore, reloadReview, saveAction, setClock, status, tabTo, test, tradeCard, TUESDAY_NOON, writeIntegrityFixture,
 } from './support.ts';
 
@@ -130,7 +130,7 @@ test.describe('B4.13 Responsive and accessible', () => {
     await expectAccessible(page, 'Review Incomplete, narrow');
     await page.setViewportSize({ width: 1280, height: 900 });
     await reachCard(page, 'XYZ');
-    await (await markRow(page, 'XYZ', DATE)).getByLabel('Price').fill('1');
+    await (await markCell(page, 'XYZ', DATE)).fill('1');
     await expectAccessible(page, 'Mark entry form');
     await (await reachPanel(page, 'XYZ', 'Marks')).getByRole('button', { name: 'Discard' }).click();
 

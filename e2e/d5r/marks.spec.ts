@@ -1,5 +1,5 @@
 import {
-  cardHeader, createCardFixture, enterMark, expect, FRIDAY, markRow, MONDAY, MONDAY_1700, observationsOf, onboardedAt, openReview, probe, remainsOf, reachPanel, saveMarksOf, meterOf, test, THURSDAY, tradeCard, workspaceOf,
+  cardHeader, createCardFixture, enterMark, expect, FRIDAY, markCell, markRow, MONDAY, MONDAY_1700, observationsOf, onboardedAt, openReview, probe, remainsOf, reachPanel, saveMarksOf, meterOf, test, THURSDAY, tradeCard, workspaceOf,
 } from './support.ts';
 
 const NOT_A_PRICE = 'Enter a price as a number, with at most 6 decimal places.';
@@ -45,25 +45,24 @@ test.describe('B5R.4 Invalid price saves nothing', () => {
 
     const monday = await markRow(page, tA, MONDAY);
     const friday = await markRow(page, tA, FRIDAY);
-    const thursday = await markRow(page, tA, THURSDAY);
-    await monday.getByLabel('Price').fill('52.00');
-    await friday.getByLabel('Price').fill('abc');
-    await thursday.getByLabel('Price').fill('49.00');
+    await (await markCell(page, tA, MONDAY)).fill('52.00');
+    await (await markCell(page, tA, FRIDAY)).fill('abc');
+    await (await markCell(page, tA, THURSDAY)).fill('49.00');
     await expect(saveMarksOf(page, tA)).toHaveText('Save Marks (3)');
     await saveMarksOf(page, tA).click();
 
     // The issue sits beside the invalid row with focus on it; every draft is kept; nothing is stored.
     await expect(friday.getByText(NOT_A_PRICE)).toBeVisible();
     await expect(friday.getByLabel('Price')).toBeFocused();
-    await expect(monday.getByLabel('Price')).toHaveValue('52.00');
-    await expect(friday.getByLabel('Price')).toHaveValue('abc');
-    await expect(thursday.getByLabel('Price')).toHaveValue('49.00');
+    await expect(await markCell(page, tA, MONDAY)).toHaveValue('52.00');
+    await expect(await markCell(page, tA, FRIDAY)).toHaveValue('abc');
+    await expect(await markCell(page, tA, THURSDAY)).toHaveValue('49.00');
     await expect(monday.getByText(NOT_A_PRICE)).toHaveCount(0);
     await expect(saveMarksOf(page, tA)).toHaveText('Save Marks (3)');
     expect(observationsOf(workspaceOf(await probe(page))!)).toEqual([]);
 
     // Fixing the price and pressing Save Marks again saves all three.
-    await friday.getByLabel('Price').fill('51.00');
+    await (await markCell(page, tA, FRIDAY)).fill('51.00');
     await saveMarksOf(page, tA).click();
     await expect(tradeCard(page, 'XYZ').locator('section[aria-label="Marks"] button', { hasText: /^Save Marks/ })).toHaveText('Save Marks (0)');
     const stored = observationsOf(workspaceOf(await probe(page))!);
@@ -79,7 +78,7 @@ test.describe('B5R.5 Unsaved work holds the card', () => {
     await openReview(page);
     const before = await probe(page);
 
-    await (await markRow(page, tA, MONDAY)).getByLabel('Price').fill('52.00');
+    await (await markCell(page, tA, MONDAY)).fill('52.00');
     // Press another card's header (navigation: raw locators).
     await cardHeader(page, tB).click();
     await expect(page.getByRole('status').filter({ hasText: 'Save or discard what you entered for XYZ (Long 100 shares @ $50.18) to leave it.' })).toBeVisible();
@@ -109,12 +108,12 @@ test.describe('B5R.8 Changed evidence', () => {
     await enterMark(second, tA, MONDAY, '51.00');
 
     const row = await markRow(page, tA, MONDAY);
-    await row.getByLabel('Price').fill('52.00');
+    await (await markCell(page, tA, MONDAY)).fill('52.00');
     await saveMarksOf(page, tA).click();
 
     await expect(tradeCard(page, 'XYZ').getByRole('alert').filter({ hasText: 'This Mark changed after you opened it. Nothing was saved.' })).toBeVisible();
     await expect(row).toContainText('51');
-    await expect(row.getByLabel('Price')).toHaveValue('52.00');
+    await expect(await markCell(page, tA, MONDAY)).toHaveValue('52.00');
     await expect(saveMarksOf(page, tA)).toHaveText('Save Marks (1)');
     const observations = observationsOf(workspaceOf(await probe(page))!);
     expect(observations).toHaveLength(1);
