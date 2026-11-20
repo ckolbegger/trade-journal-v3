@@ -2,9 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { breakFirstExecution, cardFixture, fiveTradeFixture, rawEditTrade, MONDAY_1615, MONDAY_1700, MONDAY_CUTOFF, reviewStack, ELEVEN_AM, TEN_AM, type ReviewStack } from '../../../tests/support/review-fixture.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { dumpAll } from '../../../tests/support/stack.ts';
+import { countRequests } from '../../../tests/support/request-counter.ts';
 import { createDailyReview, type OpenDailyReviewResult, type ReflectionSaveBinding, type SaveDailyReviewResult } from './index.ts';
 import { seriesStack } from '../../../tests/support/replay-series-stack.ts';
-import { BREN_CALL, K_SALE, R_BREN_U } from '../../domain/trade-analysis/option-trade.ts';
+import { BREN_CALL, CORV_PUT, K_SALE, R_BREN_U, R_CORV_D } from '../../domain/trade-analysis/option-trade.ts';
 import { instrumentKey } from '../../domain/instrument/index.ts';
 import { REPLAY_SESSION_DATES } from '../../domain/trade-analysis/reference-trade.ts';
 
@@ -1306,25 +1307,27 @@ describe("getTrade: the card's replay (A254)", () => {
     expect(trade).not.toHaveProperty('replay');
   }, 60_000);
 
-  it('should read no series in open: the replay is read by getTrade alone', async () => {
+  it('should read series in open only to the previous session for the earlier Marks: the replay is read by getTrade alone', async () => {
     const { stack, tradeId } = await seriesStack(R_BREN_U, 'strategy.long-call', MON_1116_1700, { marksThrough: 10 });
     const read: string[] = [];
     const counted = {
       ...stack.marketData,
       openReadSession: async (context: Parameters<typeof stack.marketData.openReadSession>[0]) => {
         const session = await stack.marketData.openReadSession(context);
-        return { ...session, series: (key: string, from: string, to: string) => (read.push(key), session.series(key, from, to)) };
+        return { ...session, series: (key: string, from: string, to: string) => (read.push(`${key} to ${to}`), session.series(key, from, to)) };
       },
     };
     const counting = createDailyReview({ ...stack, marketData: counted });
 
     const opened = await counting.open({ date: { kind: 'LatestCompleted' }, asOf: MON_1116_1700 });
     if (opened.kind !== 'Ready') throw new Error(`expected Ready, got ${opened.kind}`);
-    expect(read).toEqual([]);
+    expect(read.toSorted()).toEqual(['BREN to 2026-11-13', `${instrumentKey(BREN_CALL)} to 2026-11-13`].toSorted());
+    read.length = 0;
     const card = await counting.getTrade({ reviewDate: opened.reviewDate, tradeId, binding: opened.binding });
 
     expect(card.kind === 'Ready' && card.trade.replay).toBeTruthy();
     expect(read).toHaveLength(2);
+    expect(read.every((call) => call.endsWith('to 2026-11-16'))).toBe(true);
   }, 60_000);
 
   it('should build the card replay without reading the Trade narrative', async () => {
@@ -1369,5 +1372,125 @@ describe("getTrade: the card's replay (A254)", () => {
     const monday = saved.review.trade.replay!.sessions.at(-1)!;
     expect(monday.date).toBe('2026-11-16');
     expect(monday.marks.map((m) => m.resolution.kind === 'Available' && m.resolution.mark.price)).toEqual(['74.2', '5.84']);
+  }, 60_000);
+});
+
+// A288: the open's Marks family also lists the previous session and each Instrument's earlier Marks.
+function marksFamily(result: OpenDailyReviewResult) {
+  const family = ready(result).families.find((f) => f.family === 'Marks');
+  if (family?.family !== 'Marks') throw new Error('no Marks family');
+  if (family.earlierMarks === undefined) throw new Error('no earlier Marks');
+  return { ...family, earlierMarks: family.earlierMarks };
+}
+
+describe('open: the previous session and earlier Marks (A288, P155)', () => {
+  it("should give the Marks family the previous session's date", async () => {
+    const { stack } = await seriesStack(R_CORV_D, 'strategy.long-put', MON_1116_1700, { marksThrough: 9 });
+
+    const family = marksFamily(await open(stack, MON_1116_1700));
+
+    expect(family.previousSession).toBe('2026-11-13');
+  }, 60_000);
+
+  it('should leave the previous session out when the Review Date has none', async () => {
+    // The read session names no session before the Review Date, as when the Review Date is the first of the policy's coverage.
+    const { stack } = await seriesStack(R_CORV_D, 'strategy.long-put', MON_1116_1700, { marksThrough: 9 });
+    const withoutPrevious = {
+      ...stack.marketData,
+      openReadSession: async (context: Parameters<typeof stack.marketData.openReadSession>[0], options?: Parameters<typeof stack.marketData.openReadSession>[1]) => {
+        const session = await stack.marketData.openReadSession(context, options);
+        return Object.fromEntries(Object.entries(session).filter(([key]) => key !== 'previousSessionDate')) as typeof session;
+      },
+    };
+    const family = marksFamily(await createDailyReview({ ...stack, marketData: withoutPrevious }).open({ date: { kind: 'LatestCompleted' }, asOf: MON_1116_1700 }));
+
+    expect(family).not.toHaveProperty('previousSession');
+  }, 60_000);
+
+  it('should list an Instrument Mark on the previous session with its resolution revision', async () => {
+    // The put's Fri 11-13 Mark is saved over an acknowledgment: its revision number is 1, its resolution revision 2.
+    const { stack } = await seriesStack(R_CORV_D, 'strategy.long-put', MON_1116_1700, { marksThrough: 8 });
+    const putKey = instrumentKey(CORV_PUT);
+    await stack.acknowledge(putKey, '2026-11-13');
+    await stack.marketData.save({ intention: 'RecordInitialManualMark', instrumentKey: putKey, tradingDate: '2026-11-13', price: '5.30', expectedResolutionRevision: 1 });
+    await stack.saveMark('CORV', '75.00', '2026-11-13');
+
+    const family = marksFamily(await open(stack, MON_1116_1700));
+
+    const put = family.earlierMarks.find((group) => group.instrumentKey === putKey);
+    expect(put?.marks['2026-11-13']).toEqual({ resolution: { kind: 'Available', mark: expect.objectContaining({ price: '5.3', revisionNumber: 1 }) as unknown }, resolutionRevision: 2 });
+    expect(family.earlierMarks.find((group) => group.instrumentKey === 'CORV')?.marks['2026-11-13']?.resolutionRevision).toBe(1);
+  }, 60_000);
+
+  it('should list an Instrument Mark on an earlier session its Trade other Instrument lacks', async () => {
+    // R-CORV-D has no put Mark on Tue 11-10; the Underlying does.
+    const { stack } = await seriesStack(R_CORV_D, 'strategy.long-put', MON_1116_1700, { marksThrough: 9 });
+
+    const family = marksFamily(await open(stack, MON_1116_1700));
+
+    const byKey = (key: string) => family.earlierMarks.find((group) => group.instrumentKey === key);
+    expect(Object.keys(byKey('CORV')?.marks ?? {})).toEqual(['2026-11-10', '2026-11-13']);
+    expect(Object.keys(byKey(instrumentKey(CORV_PUT))?.marks ?? {})).toEqual(['2026-11-13']);
+    expect(byKey('CORV')?.marks['2026-11-10']?.resolution).toEqual({ kind: 'Available', mark: expect.objectContaining({ price: '76.2' }) as unknown });
+  }, 60_000);
+
+  it('should list no Missing or acknowledged session among an Instrument earlier Marks', async () => {
+    const { stack } = await seriesStack(R_CORV_D, 'strategy.long-put', MON_1116_1700, { marksThrough: 9 });
+    const putKey = instrumentKey(CORV_PUT);
+    const putOf = (family: ReturnType<typeof marksFamily>) => family.earlierMarks.find((group) => group.instrumentKey === putKey);
+
+    const missing = marksFamily(await open(stack, MON_1116_1700));
+    expect(missing.earlier).toEqual([expect.objectContaining({ instrumentKey: putKey, missing: ['2026-11-10'], acknowledged: [] })]);
+    expect(Object.keys(putOf(missing)?.marks ?? {})).toEqual(['2026-11-13']);
+
+    await stack.acknowledge(putKey, '2026-11-10');
+    const acknowledged = marksFamily(await open(stack, MON_1116_1700));
+    expect(acknowledged.earlier).toEqual([expect.objectContaining({ instrumentKey: putKey, missing: [], acknowledged: ['2026-11-10'] })]);
+    expect(Object.keys(putOf(acknowledged)?.marks ?? {})).toEqual(['2026-11-13']);
+  }, 60_000);
+
+  it('should name each Trade holding the Instrument with its first relevant session', async () => {
+    // The put Trade is exposed from Mon 11-02; a second Trade on the Underlying opens Thu 11-12, so it is relevant from Fri 11-13.
+    const { stack, tradeId } = await seriesStack(R_CORV_D, 'strategy.long-put', MON_1116_1700, { marksThrough: 9 });
+    const later = await stack.confirm({ symbol: 'CORV', shares: '100', entry: '74.00', stop: '70.00', target: '80.00', planTime: '2026-11-12T13:00:00Z' });
+    await stack.fill(later, '2026-11-12T15:00:00Z', '100', '74.00');
+
+    const family = marksFamily(await open(stack, MON_1116_1700));
+
+    const byKey = (key: string) => family.earlierMarks.find((group) => group.instrumentKey === key);
+    expect(byKey('CORV')?.trades).toHaveLength(2);
+    expect(byKey('CORV')?.trades).toEqual(expect.arrayContaining([{ tradeId, from: '2026-11-10' }, { tradeId: later.tradeId, from: '2026-11-13' }]));
+    expect(byKey(instrumentKey(CORV_PUT))?.trades).toEqual([{ tradeId, from: '2026-11-10' }]);
+  }, 60_000);
+
+  it('should leave out an Instrument whose Trades all opened on the Review Date', async () => {
+    const { stack } = await seriesStack(R_CORV_D, 'strategy.long-put', MON_1116_1700, { marksThrough: 9 });
+    const fresh = await stack.confirm({ symbol: 'NEWX', shares: '100', entry: '20.00', stop: '18.00', target: '26.00', planTime: '2026-11-16T13:00:00Z' });
+    await stack.fill(fresh, '2026-11-16T15:00:00Z', '100', '20.00');
+
+    const family = marksFamily(await open(stack, MON_1116_1700));
+
+    expect(family.today.map((row) => row.instrumentKey)).toContain('NEWX');
+    expect(family.earlierMarks.map((group) => group.instrumentKey)).toEqual(['CORV', instrumentKey(CORV_PUT)].sort());
+  }, 60_000);
+
+  it('should add no store request to the open', async () => {
+    // The open's requests equal those of an open whose read session answers every series with no points: its series reads share the
+    // scans the open's gaps already made (A289), so they issue none of their own.
+    const { stack } = await seriesStack(R_CORV_D, 'strategy.long-put', MON_1116_1700, { marksThrough: 9 });
+    const seriesCalls: string[] = [];
+    const emptySeries = {
+      ...stack.marketData,
+      openReadSession: async (context: Parameters<typeof stack.marketData.openReadSession>[0], options?: Parameters<typeof stack.marketData.openReadSession>[1]) => ({
+        ...(await stack.marketData.openReadSession(context, options)),
+        series: (key: string) => (seriesCalls.push(key), Promise.resolve([])),
+      }),
+    };
+    const without = await countRequests(() => createDailyReview({ ...stack, marketData: emptySeries }).open({ date: { kind: 'LatestCompleted' }, asOf: MON_1116_1700 }));
+    const withMarks = await countRequests(() => open(stack, MON_1116_1700));
+
+    expect(seriesCalls.length).toBeGreaterThan(0);
+    expect(marksFamily(withMarks.result).earlierMarks.length).toBeGreaterThan(0);
+    expect(withMarks.requests).toEqual(without.requests);
   }, 60_000);
 });

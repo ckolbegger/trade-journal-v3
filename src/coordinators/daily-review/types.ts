@@ -118,13 +118,32 @@ export interface HistoricalGapGroup {
   readonly blocking: false;
 }
 
+// One Instrument with exposure before the Review Date and its Available Marks on the previous session and on each session a Trade's gap
+// groups list (A288). Missing and acknowledged sessions travel in `earlier`, so `marks` holds Available ones only.
+export interface EarlierMarksGroup {
+  readonly instrumentKey: string;
+  readonly instrument: Instrument;
+  // The eligible Trades that hold the Instrument, in the walk's order, with the first session each is relevant from.
+  readonly trades: readonly { readonly tradeId: string; readonly from: string }[];
+  readonly marks: Readonly<Record<string, EarlierMark>>;
+}
+
+export interface EarlierMark {
+  readonly resolution: Extract<MarkResolution, { readonly kind: 'Available' }>;
+  // The stored record's resolution revision, the binding a Correct of the Mark presents (A290).
+  readonly resolutionRevision: number;
+}
+
 // Shared with Trade Views, which shows the same item on Trade Detail.
 export type { AttentionBand, AttentionReason, CalculationFamily, MeterReading, Pressure, PressureResult, SettlementItem };
 
 // The task families in their normative order (Daily Review, "Date, eligibility, and ordering").
 // D4 has Marks and Trades; Debt and settlement arrive in D5 and D7.
 export type ReviewFamily =
-  | { readonly family: 'Marks'; readonly today: readonly MarkRow[]; readonly earlier: readonly HistoricalGapGroup[] }
+  // `previousSession` is the session before the Review Date, absent when there is none; `earlierMarks` lists, per Instrument with
+  // exposure before the Review Date, the Available Marks the Marks grid shows beside the gaps (A288). `open` always sets it; it is optional
+  // in the type only so the screens' fixtures, which build this family by hand, keep compiling until T9R2.7 reads it.
+  | { readonly family: 'Marks'; readonly today: readonly MarkRow[]; readonly earlier: readonly HistoricalGapGroup[]; readonly previousSession?: string; readonly earlierMarks?: readonly EarlierMarksGroup[] }
   // Between Marks and the walk; present only when a settlement is due, ordered by expiration date then Trade identity.
   | { readonly family: 'Settlement'; readonly items: readonly SettlementItem[] }
   | { readonly family: 'Trades'; readonly trades: readonly WalkedTrade[] };

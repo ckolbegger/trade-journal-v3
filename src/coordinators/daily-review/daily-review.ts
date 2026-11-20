@@ -4,7 +4,7 @@ import { openTradeSummary } from '../../domain/trade-summary.ts';
 import { derive, type DerivedTradeState, type IncoherentFacts, type LifecycleState, type TradeAnalysisRecord, type TradeEvaluation } from '../../domain/trade-analysis/index.ts';
 import { classifyDue, compareDueAnchors, compareOwed, owedStandingOf, type SessionCloses } from '../../domain/journal-debt/index.ts';
 import type { DebtProjection, Journal, ObligationOutcome } from '../../modules/journal/index.ts';
-import type { EvidenceBinding, FrameContext, HistoricalGaps, MarketData, MarketDataIssue, MarketDataReadSession } from '../../modules/market-data/index.ts';
+import type { EvidenceBinding, FrameContext, HistoricalGaps, MarketData, MarketDataIssue, MarketDataReadSession, SeriesPoint } from '../../modules/market-data/index.ts';
 import type { ReferenceCatalog } from '../../modules/reference-catalog/index.ts';
 import type { BrowseRecord, TradeRecord } from '../../modules/trade-record/index.ts';
 import { beginSemanticTransaction, type Persistence, type WorkspaceSnapshotBinding } from '../../persistence/index.ts';
@@ -15,6 +15,8 @@ import { attentionOf, byAttention, meterReadingOf, unavailableFamilies, valueTra
 import type {
   ActionForm,
   DailyTradeReview,
+  EarlierMark,
+  EarlierMarksGroup,
   GetDailyTradeReviewRequest,
   GetDailyTradeReviewResult,
   HistoricalGapGroup,
@@ -65,6 +67,12 @@ const firstRelevantGapDate = (closes: Readonly<Record<string, string>>, exposure
   Object.entries(closes)
     .sort(([a], [b]) => (a < b ? -1 : 1))
     .find(([, close]) => Temporal.Instant.compare(Temporal.Instant.from(close), Temporal.Instant.from(exposure)) >= 0)?.[0];
+
+// A series point's Available Mark as a resolution, as the Review's rows carry it.
+function availableOf(key: string, point: Extract<SeriesPoint, { readonly kind: 'Available' }>): EarlierMark['resolution'] {
+  const { tradingDate, revisionNumber, price, source, savedAt, reason } = point;
+  return { kind: 'Available', mark: { revisionId: `${key}@${tradingDate}#${revisionNumber}`, revisionNumber, price, source, savedAt, ...(reason !== undefined && { correctionReason: reason }) } };
+}
 
 // Facts that cannot be replayed make the Trade a Blocker with no mark-based figures to compare.
 function incoherentItem(identity: Pick<ReviewTradeItem, 'tradeId' | 'underlying' | 'lastActivity'>, incoherent: IncoherentFacts): ReviewTradeItem {
@@ -440,6 +448,43 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
           blocking: false,
         }),
       );
+    const previousSession = read.previousSessionDate;
+    // The sessions a Trade's grid can show beyond the Review Date, with their closes: the previous session and each date a gap group of the
+    // Trade's Instruments lists. A Trade's Instruments that have no gap there still show their Mark on those dates.
+    const sessionsOf = (tradeId: string): Readonly<Record<string, string>> => ({
+      ...(Object.assign({}, ...gaps.filter((g) => requirements.some((r) => r.tradeId === tradeId && instrumentKey(r.instrument) === g.instrumentKey)).map((g) => g.closes)) as HistoricalGaps['closes']),
+      ...(previousSession !== undefined && { [previousSession]: recovered.previousCloseInstant }),
+    });
+    const earlierMarks = (
+      previousSession === undefined
+        ? []
+        : await Promise.all(
+            gaps.map(async ({ instrumentKey: key }): Promise<EarlierMarksGroup | undefined> => {
+              const trades = ranked.flatMap(({ item }) =>
+                requirements
+                  .filter((r) => r.tradeId === item.tradeId && instrumentKey(r.instrument) === key)
+                  .map((r) => ({ tradeId: r.tradeId, from: firstRelevantGapDate(sessionsOf(r.tradeId), r.earliestRelevance) ?? reviewDate })),
+              );
+              // An Instrument its Trades all opened on the Review Date with has no earlier session, so no call is made for it.
+              const from = trades.map((trade) => trade.from).filter((date) => date < reviewDate).sort()[0];
+              if (from === undefined) return undefined;
+              const dates = new Set(trades.flatMap(({ tradeId }) => Object.keys(sessionsOf(tradeId))));
+              const points = await read.series(key, from, previousSession);
+              return {
+                instrumentKey: key,
+                instrument: instrumentOfKey(key),
+                trades,
+                marks: Object.fromEntries(
+                  points.flatMap((point) =>
+                    point.kind === 'Available' && dates.has(point.tradingDate)
+                      ? [[point.tradingDate, { resolution: availableOf(key, point), resolutionRevision: point.resolutionRevision }]]
+                      : [],
+                  ),
+                ),
+              };
+            }),
+          )
+    ).filter((group) => group !== undefined);
     // Outstanding Debt, read once (A63), classified against the close of the session before the Review Date (A75).
     const previousClose = recovered.previousCloseInstant;
     const outstanding = (await deps.journal.query({ scope: 'OutstandingDebt' })).debts;
@@ -473,7 +518,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
       }),
     );
     const families: ReviewFamily[] = [
-      { family: 'Marks', today, earlier },
+      { family: 'Marks', today, earlier, ...(previousSession !== undefined && { previousSession }), earlierMarks },
       ...(settlement.length > 0 ? [{ family: 'Settlement' as const, items: settlement }] : []),
       { family: 'Trades', trades: walked },
     ];
