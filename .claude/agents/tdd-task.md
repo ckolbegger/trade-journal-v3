@@ -63,7 +63,7 @@ Take the cases in the breakdown's order. For each:
    4. Restore the code exactly, and confirm with `git diff -- src` that it equals its pre-mutation state.
    5. Run `tdd.sh green …` for the case.
    6. Append a `note` row to the task's file in `tdd-log/`: "First-run pass, flagged for the user"; which earlier case or task built the behavior; the mutation in one sentence; its command; and the first line of its failure.
-3. When the mutated case still passes, the test checks the wrong thing: fix the test (not the production code) and treat its next run as a new first run.
+3. When the mutated case still passes, the test checks the wrong thing: fix the test (not the production code) and treat its next run as a new first run. If no change makes it fail under the mutation, for example because the test harness cannot reproduce the defect, delete the case and log a `note` row saying why. Every case you commit fails without the behavior its name claims; a case that passes either way is never kept as a guard.
 
 Done when every case in the task has a red and green row, or a flagged first-run note with its mutation, in the task's file in `tdd-log/`.
 
