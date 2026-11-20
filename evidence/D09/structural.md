@@ -983,3 +983,10 @@ summary: 9 commands checked, 0 failed, 0 rows are procedures, not checked
 ```
 
 Critic-c1 (`critic-c1.md`, at `f70d7a19`): **PASS, no defects**; C9.7, C9.8 and C9.9 pass. Its two observations marked low (the no-Mark name runs the reason into the rails with no full stop; the mark for the session before is faint over a hatched part) go to tech debt items 8 and 9, and its two observations of earlier work (the Open list's sideways scroll at 1280 px from a no-Mark row; the list's "Thu Nov 12 close" wording) to items 10 and 11. By `critic-brief.md`'s rule (PASS with no high or moderate defect), the gate closes on critic-c1 and `gate-c1` stands as its full run. **T9.39 done.**
+
+### T9.36 The benchmark's expected Open rows (after the gate, SC-Q2 (a))
+
+Commit `7b78c083`: `bench/expected-open-rows.json` only (541 insertions, 541 deletions). After `build`, `build:bench` and `bench:setup` ("0 issues, 0 repairs"), `bench:expected` rendered 200 rows; old and new hold the same 200 rows and headers (Underlying, Trade, Net cost, P&L, Entry, Account), identical when sorted, so only the order changed (now AMZN, NVDA, MSFT first). No `tools/` change (the generator has no sort). Port 4175 free before and after.
+
+- **No ocr:** the commit is one generated data file and the log, no code (ocr leaves generated data out, as with the fixtures in T9.40).
+- **Its run is the benchmark** that follows: `bench:run` compares the Open list against these rows. The file's `writer` is now `bench:expected`, so by T8.18-F2-B2's rule the benchmark's `bench:generate` step will not reuse the dataset; it regenerates it and rewrites this file from the application's own Node read (the attention order too). The benchmark's evidence compares that rewrite with `7b78c083`.
