@@ -856,3 +856,16 @@ Other notes: `attentionOf` threw for a Trade stored Open whose facts hold no pos
 ocr `7fe75de2`: No findings (`ocr/T9.32-7fe75de2.json`). ocr excluded `tools/fixtures/workspace-fixture.ts` (its configuration), so the fixture-order change was not reviewed by ocr; listed for the final report.
 
 Complete run `t9.32` (`browser-auto 2ae51b4b` chose the task tier: "no changed path since 2ae51b4b is on the full-tier list"; on `5f0325ec`; run complete): unit 224 files, 2,588 tests; integration 136 files, 292 tests; browser `@every-task` 5 and `e2e/d9` 109 passed, 4 skipped (5.4 min); checks 14 of 14. All passed.
+
+### T9.33 Review card: the meter replaces the slider (Standard)
+
+Commit `e2b082c8`. The meter (size `card`) replaces `StopTargetSlider` (component and test deleted; orphaned `.slider*` rules removed from `src/ui/app.css`); `meterProps` moved from `conditions.props.ts` to the shared `src/ui/cockpit/meter/meter.props.ts` (`meterProps(reading, size, timeZone?)`). 4 cases in `ReviewCardMeter.test.tsx`. **First-run passes, flagged** (built by T9.29, T9.31, T9.35): "show the dashed track named by the reason" (mutation: the reason replaced by 'No Mark'; failed on the name), "follow a Save Marks result without reading again" (mutation: the first reading kept in a `useRef`; failed `… to contain '62% of the way to the Target'`), "keep the header's other parts and their order" (mutation: Badge moved; failed on the part list). One mislabelled `tdd.sh red` row after the change is noted in the log.
+
+Spec lines re-pointed from the slider to the meter (the slider's assertions only): `sliderOf` → `meterOf` in `e2e/d5r/support.ts` and its readers; `e2e/d5r/sliders.spec.ts` B5R.7 now "Meter states" (break-even tick, square pointer past the Stop, dashed track, the five names); `review.spec.ts` lines 21, 22, 29, 30; `marks.spec.ts` lines 12, 17; `responsive-a11y.spec.ts` titles and variables. **Main session's decisions, recorded:**
+- `responsive-a11y.spec.ts` line 152's width assertion (the slider spanned the stacked row) becomes `Math.min(head.width, 22 * 16) - 2`: the meter is capped at 22rem. A slider assertion re-pointed at the meter, as the task's scope says; accepted.
+- `e2e/d7p/layout.spec.ts` (lines 120 and 149 area): the incoherent Trade XYZ now shows no meter (count 0) where the slider read 'Not available'; a Trade whose facts can't be replayed has no reading (A260 needs its rails), and the card keeps its blocker. Accepted; named for the critic.
+- The "Stop ◂ ▸ Target" legend above the Review list (`ReviewView.tsx` line 543) stays: the meter's track also runs from the Stop to the Target.
+
+Words: the card's name now speaks W51 ("P&L +$180.00, 31% of the way to the Target. Stop −$270.00, Target +$580.00." where the slider read "53% of the way from the Stop to the Target, entry at 32%. Risk to stop $450.00, …"); with no Mark, the reason then the rails (W51). These are W51's approved words, not P137 shortenings. No new phrase.
+
+Browser (subagent, under the lock): 18 passed (`e2e/d5r` sliders 3, marks 4, review 2, responsive-a11y 3; `e2e/d7p/layout` 4; `e2e/d9/review` 2), served from `dist-faults` because `npm run build:releases` was refused by the permission classifier; `dist-releases/current` is rebuilt by the suite run.
