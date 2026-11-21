@@ -5,11 +5,11 @@ import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { facadeDouble } from '../../../tests/support/facade-double.ts';
 import type { UiFacade } from '../../app/compose.ts';
-import type { DailyTradeReview, ExpectedResolutionRevision, IncompleteReason, MarkRow, MarkResolution, MarketDataSaveResult, OpenDailyReviewResult, ReviewBinding, ReviewCompletion, ReviewTradeItem, SaveReviewMarksResult } from '../../app/types.ts';
+import type { DailyTradeReview, ExpectedResolutionRevision, IncompleteReason, MarkRow, MarkResolution, MarketDataSaveResult, OpenDailyReviewResult, OwedReflectionsCard, OwedReflectionsTrade, ReviewBinding, ReviewCompletion, ReviewTradeItem, SaveReviewMarksResult } from '../../app/types.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { RuntimeContext } from '../runtime.tsx';
 import { ReviewView } from './ReviewView.tsx';
-import { cardProgress } from '../../../tests/support/card-progress.ts';
+import { cardProgress, reflectionsOwedProgress } from '../../../tests/support/card-progress.ts';
 
 afterEach(cleanup);
 
@@ -645,16 +645,37 @@ describe('A card opened after another tab saved a Mark (T9R2.17-B8)', () => {
     const newBinding: ReviewBinding = { ...binding, marketDataSnapshotId: 'mds1:2:def' };
     const facade = reviewFacade(first);
     const asBefore = vi.mocked(facade.DailyReview.getTrade).getMockImplementation()!;
-    // Another tab saved a Mark: the held binding no longer reads any card, the new one does.
-    vi.mocked(facade.DailyReview.open).mockResolvedValueOnce(first).mockResolvedValue({ ...first, binding: newBinding });
-    vi.mocked(facade.DailyReview.getTrade).mockImplementation((request) => (request.binding === newBinding ? asBefore(request) : Promise.resolve({ kind: 'ReviewChanged' })));
     renderReview(facade);
-    await screen.findByRole('region', { name: 'Review status' });
+    await screen.findByRole('region', { name: 'XYZ review' });
+    // Another tab saved a Mark after the page opened: the held binding no longer reads any card, the new one does. Only the read
+    // made when the card is pressed is refused; the mount read has been answered.
+    vi.mocked(facade.DailyReview.open).mockResolvedValue({ ...first, binding: newBinding });
+    vi.mocked(facade.DailyReview.getTrade).mockImplementation((request) => (request.binding === newBinding ? asBefore(request) : Promise.resolve({ kind: 'ReviewChanged' })));
     await user_open();
 
     expect(await screen.findByRole('region', { name: 'DEF review' })).toBeTruthy();
     expect(screen.queryByText('We couldn’t load this Trade. Nothing was changed.')).toBeNull();
     expect(vi.mocked(facade.DailyReview.getTrade)).toHaveBeenLastCalledWith({ reviewDate: '2026-10-12', tradeId: 't2', binding: newBinding });
+  });
+});
+describe('An owed card opened after another tab closed the last walked Trade (T9R2.17-B10)', () => {
+  it('should read the Review again and show the owed card when the reopened Review is Empty', async () => {
+    const owedT2: OwedReflectionsTrade = { tradeId: 't2', underlying: 'DEF', lifecycle: 'Closed', owed: [], progress: reflectionsOwedProgress(1, 0) };
+    const owedCard: OwedReflectionsCard = { tradeId: 't2', underlying: 'DEF', lifecycle: 'Closed', labels: { strategy: 'Long Stock', account: 'Main', institution: 'Broker' }, reflections: [], progress: owedT2.progress };
+    const first = { ...ready({ trades: [tradeItem('t1', 'XYZ')], completion: incomplete(...actionMissing('t1')) }), owed: [owedT2] };
+    const newBinding: ReviewBinding = { ...binding, marketDataSnapshotId: 'mds1:2:def' };
+    const facade = reviewFacade(first);
+    renderReview(facade);
+    await screen.findByRole('region', { name: 'XYZ review' });
+    // Another tab closed the last walked Trade: the Review is now Empty, holding only the owed Trade, under a new binding.
+    vi.mocked(facade.DailyReview.open).mockResolvedValue({ kind: 'Empty', reviewDate: '2026-10-12', cutoff: CUTOFF, owed: [owedT2], binding: newBinding });
+    vi.mocked(facade.DailyReview.getTrade).mockImplementation((request) =>
+      Promise.resolve(request.binding === newBinding ? { kind: 'ReflectionsOwed', reviewDate: request.reviewDate, cutoff: CUTOFF, card: owedCard } : { kind: 'ReviewChanged' }),
+    );
+    await userEvent.setup().click(await screen.findByRole('button', { name: /^Review DEF\b/ }));
+
+    expect(await screen.findByRole('region', { name: 'DEF review' })).toBeTruthy();
+    expect(screen.queryByText('We couldn’t load this Trade. Nothing was changed.')).toBeNull();
   });
 });
 async function user_open() {

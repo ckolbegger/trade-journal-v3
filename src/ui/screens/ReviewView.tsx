@@ -328,7 +328,7 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
       const readUnder = (from: Ready) => facade.DailyReview.getTrade({ reviewDate: from.reviewDate, tradeId, binding: from.binding }).catch(() => undefined);
       let result = await readUnder(latest.current.review);
       // Another tab's save leaves the held binding behind, and every card read under it is refused: the Review is read again, and the card with it.
-      if (result?.kind === 'ReviewChanged' && (await reopenApplied.current?.())?.kind === 'Ready') result = await readUnder(latest.current.review);
+      if (result?.kind === 'ReviewChanged' && (await reopenApplied.current?.())) result = await readUnder(latest.current.review);
       const detail = result?.kind === 'Ready' ? { trade: result.trade } : result?.kind === 'ReflectionsOwed' ? { card: result.card } : 'Unavailable';
       if (selection.current === request) setShown({ tradeId, opening: request, detail });
     },
