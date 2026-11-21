@@ -305,3 +305,12 @@ D9R2 runs one task at a time (P162; decision 100). Each task's heading holds its
 
 - Run `T9R2.17` (browser-full, before critic-1; base `31d78fe4`): unit 226 files, 2669 tests; integration 141 files, 300 tests; browser-1 126 passed (5.4 m), browser-2 80 (5.2 m), browser-3 57 (4.5 m), browser-4 130 passed, 4 skipped (6.7 m); checks 14 of 14. Ports free before and after. No flaky case failed. `run-complete.sh`: run complete.
 - `acceptance-commands.sh plan/D09R2-review-marks-grid.md`: exit 0.
+
+### Critics
+
+| Critic | Brief | Tokens | Tool calls | Time | Result |
+|---|---|---|---|---|---|
+| critic-1 (`critic-1.md`) | `critic-brief.md` template, D9R2 flows C9R2.1 to C9R2.6 | 185,462 | 178 | 11 min 53 s | FAIL: 1 high, 4 moderate, 1 low |
+
+- critic-1 defects: 1 high (the cell editor unreachable by keyboard except the page's last cell) → **T9R2.17-B1**; 2 moderate (no focus after a conflict-refused save, A294) → **T9R2.17-B2**; 3 moderate (focus falls to the body when the pressed control disappears: "Can't get a price", Correct, Withdraw, Next page) → **T9R2.17-B3**; 4 moderate (a one-leg Trade's turned grid scrolls sideways and clips at 390, 375, 320 px; a 35 px chosen cell at 320; P161) → **T9R2.17-B4**; 5 moderate (the editor has no title or box naming its cell, and an off-page cell's editor stays open after paging) → **T9R2.17-B5**; 6 low → tech debt item 1. It confirms T9R2.16's note on the 390 px overflow (defect 4); the refused-save order was not tested.
+- Scope decision for B1 (main session, recorded): each cell stays one tab stop (research page, section 6, option B); Tab from a chosen cell goes into its editor's controls, and Tab past the editor's last control goes to the next cell; Enter keeps A295's order. Recorded here for the user's review.
