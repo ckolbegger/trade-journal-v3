@@ -93,8 +93,8 @@ The tools: `.claude/scripts/lane-setup.sh` (run first inside the lane worktree: 
 
 Stop and ask stays in force: never decide a question the specs or the plan leave to the user, and never change a plan test to get past one. When one arises, from a subagent's report, an ocr fix, or your own reading:
 
-1. Ask the user in an ordinary message, not a question dialog, since a dialog blocks the session. **One question at a time:** ask only when no earlier question is waiting for its answer. Otherwise the new question is queued: record it (step 2) and leave it out of progress updates. When the user answers, ask the next queued question in its own message. A question's message holds that question alone: plain words first, the context needed to decide without opening a file, the options with their tradeoffs, and your recommendation. When the user asks what you are waiting for, name the question being asked and how many are queued.
-2. Record it in `evidence/D<nn>/DECISIONS-PENDING.md`: the task, the question, the options with their tradeoffs, your recommendation, and whether it is asked or queued.
+1. Ask the user in an ordinary message, not a question dialog, since a dialog blocks the session. **One question at a time:** ask only when no earlier question is waiting for its answer. Otherwise the new question is queued: record it (step 2) and leave it out of progress updates. When the user answers, ask the next queued question in its own message. A question's message holds that question alone: plain words first, the context needed to decide without opening a file, the options with their tradeoffs, and your recommendation. Write it as the trader meets it: what the screen does today, then what each option changes on screen, in the app's own terms. Name code (files, props, IDs) only after that, and say what a code value does rather than borrowing a domain phrase for it (a `tradeId` that picks which card refreshes, not "the save goes under the Trade"). Each time the question is asked again, show it in full. When the user asks what you are waiting for, name the question being asked and how many are queued.
+2. Record it in `evidence/D<nn>/DECISIONS-PENDING.md`, in the same plain words as the message: the task, the question, the options with their tradeoffs, your recommendation, and whether it is asked or queued.
 3. Pause that task, every task blocked by it, and the later tasks in its lane. Mark them "Paused: decision pending" in Progress.
 4. Keep working on every other unblocked task. When nothing unblocked remains, stop and wait.
 5. On the user's answer, record it under that question's own heading, record the decision (with a plan revision when the plan changes), mark the entry answered with the date, and resume the paused tasks. Then ask the next queued question.
@@ -117,6 +117,12 @@ Never run `measure:capacity:reset-baseline` unless the user says so.
 At the gate, or at a full stop, report: the deliverable's result; each task's fix rounds (ocr bug-task rounds and suite-failure fixes); every flaky test seen, with the run it flaked in; every decision still pending; and the handoff's open questions. Then remove `.claude/session.lock`.
 
 The main session writes the report file and the next handoff itself. A subagent may draft either one, but the harness refuses a subagent's report-file write, so the draft comes back as text and the main session saves it with the Write tool after reading it.
+
+## Agent-done and user review
+
+A deliverable is **agent-done** when the gate is closed, the benchmark has passed (or the user has answered its failure), the tag is made and the final report is committed. **User review** follows: the pending decisions, the tech debt list, new words, and the main-session decisions recorded for review, asked one at a time. Only the user can finish user review.
+
+When a session goal or a Stop hook asks for more than agent-done, it can't be met alone. Ask the current question once, in full, and say plainly that the goal now waits on the user and that `/goal clear` ends it. Suggest wording a goal as "until D<nn> is agent-done".
 
 ## Writing the next deliverable's handoff
 

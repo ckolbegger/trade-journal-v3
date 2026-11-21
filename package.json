@@ -9,7 +9,7 @@
   "scripts": {
     "prepare": "sh tools/install-hooks.sh",
     "verify:hooks": "sh tools/verify-hooks.sh",
-    "dev": "vite",
+    "dev": "vite build && vite preview",
     "build": "vite build",
     "preview": "vite preview",
     "typecheck": "tsc",
