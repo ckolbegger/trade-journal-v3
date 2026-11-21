@@ -1024,4 +1024,25 @@ describe('the cell editor (P160)', () => {
     expect(within(await choose(user, panel, 'XYZ', MONDAY_LABEL)).getByText('Missing')).toBeTruthy();
     expect(within(panel).getByRole<HTMLButtonElement>('button', { name: 'Next page' }).disabled).toBe(false);
   });
+
+  it('should refuse a link to another Instrument of the open card while a Correct is in progress', async () => {
+    const paged = pagedReview();
+    const marks = paged.families[0] as MarksFamily;
+    const abc = { ...markRowOf('ABC', { kind: 'Missing' }, 'None', 'Manual'), trades: ['t-a'] };
+    const facade = cardFacade(review({ completion: { kind: 'Incomplete', reasons: [markMissing('ABC', 't-a')] }, families: [{ ...marks, today: [...marks.today, abc] }, paged.families[1]!] }));
+    renderReview(facade);
+    const user = userEvent.setup();
+    const panel = await marksPanel();
+    const friday = await choose(user, panel, 'XYZ', FRIDAY_LABEL);
+    await user.click(within(friday).getByRole('button', { name: 'Correct' }));
+    await user.type(within(friday).getByLabelText('Price'), '51.5');
+    await user.type(within(friday).getByLabelText('Reason (required)'), 'typo');
+
+    await user.click(screen.getByRole('link', { name: 'ABC' }));
+    expect(editors(panel).map((editor) => editor.getAttribute('aria-label'))).toEqual(['XYZ Mark, Fri Oct 9']);
+    expect(within(friday).getByLabelText<HTMLInputElement>('Price').value).toBe('51.5');
+    expect(within(friday).getByLabelText<HTMLTextAreaElement>('Reason (required)').value).toBe('typo');
+    expect(document.activeElement).toBe(within(friday).getByLabelText('Price'));
+    expect(within(panel).getByText('Save or cancel the correction to choose another cell.')).toBeTruthy();
+  });
 });

@@ -206,10 +206,12 @@ export function CardMarks({ facade, tradeId, marks, held: heldReview, onResult, 
   }, [focusField]);
   const section = useRef<HTMLElement>(null);
   // A correction in progress holds the editor: another cell is not chosen, and the correction takes the focus back (A297).
+  const correctionHolds = (key: ObservationKey) => dirtyIds.size > 0 && (chosen?.instrumentKey !== key.instrumentKey || chosen.tradingDate !== key.tradingDate);
+  const focusCorrection = () => section.current?.querySelector<HTMLElement>('form input, form textarea')?.focus();
   const choose = (key: ObservationKey) => {
-    if (dirtyIds.size > 0 && (chosen?.instrumentKey !== key.instrumentKey || chosen.tradingDate !== key.tradingDate)) {
+    if (correctionHolds(key)) {
       setRefused(true);
-      section.current?.querySelector<HTMLElement>('form input, form textarea')?.focus();
+      focusCorrection();
       return;
     }
     setChosen(key);
@@ -219,17 +221,28 @@ export function CardMarks({ facade, tradeId, marks, held: heldReview, onResult, 
   // A link names the Instrument: its Review Date cell is chosen, and its editor's first control takes focus.
   const { count: linked, instrument: linkedInstrument } = link ?? { count: 0 };
   const [handledLink, setHandledLink] = useState(0);
+  // A link is refused as a press is, and the correction keeps the focus.
+  const [linkRefused, setLinkRefused] = useState(false);
   if (linked !== handledLink) {
     setHandledLink(linked);
-    if (linkedInstrument !== undefined) setChosen({ instrumentKey: linkedInstrument, tradingDate: reviewDate });
+    const key = linkedInstrument === undefined ? undefined : { instrumentKey: linkedInstrument, tradingDate: reviewDate };
+    setLinkRefused(key !== undefined && correctionHolds(key));
+    if (key !== undefined) {
+      if (correctionHolds(key)) setRefused(true);
+      else setChosen(key);
+    }
   }
   // The cell is found by its name: the Instrument's label, which a contract's key is not (K18).
   const linkedInstrumentLabel = model.instruments.find((i) => i.instrumentKey === linkedInstrument)?.instrument;
   const linkedCell = linkedInstrumentLabel && `${instrumentLabel(linkedInstrumentLabel, timeZone)} Mark, ${shortDate(reviewDate)}`;
   useEffect(() => {
     if (handledLink === 0 || linkedCell === undefined) return;
+    if (linkRefused) {
+      focusCorrection();
+      return;
+    }
     [...(section.current?.querySelectorAll<HTMLElement>('table input, table button') ?? [])].find((control) => control.getAttribute('aria-label') === linkedCell)?.focus();
-  }, [handledLink, linkedCell]);
+  }, [handledLink, linkedCell, linkRefused]);
   const standing = (key: ObservationKey, listed: Standing): Standing => heldStanding(heldReview, key) ?? listed;
   const count = Object.keys(drafts).length;
   // The card holds while any draft does (A156); leaving the panel abandons them. A read-only card shows no draft
