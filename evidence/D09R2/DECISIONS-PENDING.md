@@ -16,6 +16,6 @@
 - Blocks: nothing (B2 is in).
 - Answer: (waiting; asked after Q1)
 
-## Q3 (asked 2026-11-21): the benchmark's Save Marks step uses the old Marks list
+## Q3 (answered 2026-11-21: fix the script, task T9R2.17-D1, then one more benchmark run): the benchmark's Save Marks step uses the old Marks list
 
 `npm run bench:run` failed: `tools/bench-run.ts:458` still looks for the "Today's Marks" list, which D9R2 replaced with the grid. Every capacity check passed, and the timings measured before the failure look normal. The rule says a benchmark failure is the user's choice: (a) a bug task to move `bench-run.ts`'s Save Marks timing to the grid (the cell "ADBE Mark, <date>" and the header's Save Marks), then one more benchmark run, then the tag; or (b) a tech debt item, and tag now. Recommendation: (a). The fix is small, and without it AC-PERF-001's Save Marks timing goes unmeasured.
