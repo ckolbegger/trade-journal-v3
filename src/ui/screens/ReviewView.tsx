@@ -356,6 +356,20 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
     inFlight.current = asking;
     return asking;
   };
+  // The Review asked for and applied. A card opened while it is pending waits for it, so it is read under the binding it returns.
+  const reopenAndApply = async (): Promise<Ready | OpenEmpty | undefined> => {
+    const asking = reopen().then((next) => {
+      if (next) {
+        apply({ kind: 'Opened', review: next.kind === 'Ready' ? next : heldEmpty(next) });
+        setEmpty(next.kind === 'Empty');
+      }
+      return next;
+    });
+    refreshing.current = asking;
+    const result = await asking;
+    if (refreshing.current === asking) refreshing.current = undefined;
+    return result;
+  };
   // The Review and one Trade again, under the new binding. The Trade replaces the shown one without a loading state, so the form keeps its values.
   // The opening the refresh belongs to: the one the save was entered under, or the one shown when it is asked for.
   // Every valid result is followed as the first opening follows it: an Empty or a different Review replaces the held one, and a Trade
@@ -367,17 +381,7 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
     const label = name(tradeId);
     const drafted = [...dirty.current].some((id) => !savedDrafts.includes(id));
     const wasOwed = latest.current.review.owed.some((t) => t.tradeId === tradeId);
-    // A card opened while the Review is being asked for waits for it, so it is read under the binding it returns.
-    const asking = reopen().then((next) => {
-      if (next) {
-        apply({ kind: 'Opened', review: next.kind === 'Ready' ? next : heldEmpty(next) });
-        setEmpty(next.kind === 'Empty');
-      }
-      return next;
-    });
-    refreshing.current = asking;
-    const result = await asking;
-    if (refreshing.current === asking) refreshing.current = undefined;
+    const result = await reopenAndApply();
     if (!result) return false;
     const held = latest.current.review;
     if (!walkedTrades(held).some((t) => t.tradeId === tradeId) && !held.owed.some((t) => t.tradeId === tradeId)) {
@@ -582,11 +586,7 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
   // Refresh from the header: the open (owed) card's refresh, else the Review alone.
   const refreshHeld = async (): Promise<boolean> => {
     if (openId !== undefined) return refreshTrade(openId);
-    const next = await reopen();
-    if (!next) return false;
-    apply({ kind: 'Opened', review: next.kind === 'Ready' ? next : heldEmpty(next) });
-    setEmpty(next.kind === 'Empty');
-    return true;
+    return (await reopenAndApply()) !== undefined;
   };
   // Only the card open on load is read here; later presses call select themselves.
   useEffect(() => {

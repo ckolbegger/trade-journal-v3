@@ -607,3 +607,33 @@ describe('A failed Save Marks with no walked card open (T9R2.13-B3)', () => {
     expect(within(status).getByText('1 unsaved Mark')).toBeTruthy();
   });
 });
+
+describe('A card opened during the status header Refresh (T9R2.13-B4)', () => {
+  it('should let a card opened during the status header Refresh read its Trade from the refreshed Review', async () => {
+    const trades = [tradeItem('t1', 'DEF')];
+    const first = ready({ today: [markRow('DEF', ['t1'])], trades, completion: incomplete(...actionMissing('t1')) });
+    const newBinding: ReviewBinding = { ...binding, journalRevision: 2 };
+    const refreshed: Ready = { ...first, binding: newBinding };
+    const facade = reviewFacade(first);
+    vi.mocked(facade.DailyReview.save).mockResolvedValueOnce({ kind: 'ReviewChanged', evidence: { marketDataSnapshotId: 'mds1:2:def', frames: [] } });
+    renderReview(facade);
+    const user = userEvent.setup();
+    await openMarks(user);
+    await user.type(await screen.findByRole('textbox', { name: 'DEF Mark, Mon Oct 12' }), '12');
+    await user.click(screen.getByRole('button', { name: /^Review DEF\b/ }));
+    const status = screen.getByRole('region', { name: 'Review status' });
+    await user.click(within(status).getByRole('button', { name: 'Save Marks (1)' }));
+    await within(status).findByRole('alert');
+
+    // The Refresh's Review is slow: the card is opened while it is pending.
+    let release: (review: Ready) => void = () => undefined;
+    vi.mocked(facade.DailyReview.open).mockReturnValueOnce(new Promise((resolve) => { release = resolve; }));
+    await user.click(within(status).getByRole('button', { name: 'Refresh' }));
+    await waitFor(() => expect(facade.DailyReview.open).toHaveBeenCalledTimes(2));
+    vi.mocked(facade.DailyReview.getTrade).mockClear();
+    await user.click(screen.getByRole('button', { name: /^Review DEF\b/ }));
+    expect(facade.DailyReview.getTrade).not.toHaveBeenCalled();
+    release(refreshed);
+    await waitFor(() => expect(facade.DailyReview.getTrade).toHaveBeenCalledWith({ reviewDate: '2026-10-12', tradeId: 't1', binding: newBinding }));
+  });
+});
