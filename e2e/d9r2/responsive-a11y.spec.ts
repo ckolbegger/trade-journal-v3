@@ -164,4 +164,39 @@ test.describe('B9R2.5 Responsive and accessible', () => {
     expect(saved.map((o) => o.tradingDate).sort()).toEqual(['2026-10-09', '2026-10-12']);
     await context.close();
   });
+
+  // T9R2.17-B7 (C9R2.1): fill, page once, save once, all by keyboard. The pager is a Tab stop after the last cell's editor, and Shift+Tab returns to it.
+  test('should fill, page once and save once by keyboard, reaching Next page by Tab through the cells and Save Marks by Tab from the last cell on the page', async ({ profile }) => {
+    test.setTimeout(300_000);
+    const { context, page, tA } = await createGapFixture(profile);
+    await cardHeader(page, tA).focus();
+    await page.keyboard.press('Enter');
+    await expect(cardHeader(page, tA)).toHaveAttribute('aria-expanded', 'true', READY);
+    const marks = tradeCard(page, tA);
+    await expect(marks).toBeVisible(READY);
+
+    await tabTo(page, input(marks, OCT_12));
+    await page.keyboard.type('51.20');
+    // Tab on through every cell and its editor: the pager is reached before Save Marks.
+    const next = marks.getByRole('button', { name: 'Next page' });
+    await tabTo(page, next);
+    await page.keyboard.press('Enter');
+    // The last page has no Next page, so focus goes to Previous page; Shift+Tab goes back to the last cell, the oldest session.
+    await expect(marks.getByRole('button', { name: 'Previous page' })).toBeFocused();
+    await page.keyboard.press('Shift+Tab');
+    await expect(input(marks, 'Mon Aug 31')).toBeFocused();
+    await page.keyboard.type('50.10');
+    // Tab from the last cell goes through its editor to Previous page, and on to Save Marks; Shift+Tab from Save Marks returns to Previous page.
+    await tabTo(page, marks.getByRole('button', { name: 'Previous page' }));
+    await page.keyboard.press('Tab');
+    await expect(marks.getByRole('button', { name: 'Save Marks (2)' })).toBeFocused();
+    await page.keyboard.press('Shift+Tab');
+    await expect(marks.getByRole('button', { name: 'Previous page' })).toBeFocused();
+    await page.keyboard.press('Tab');
+    await page.keyboard.press('Enter');
+    await expect(tradeCard(page, tA).locator('section[aria-label="Marks"] button', { hasText: /^Save Marks/ })).toHaveText('Save Marks (0)', READY);
+    const saved = observationsOf(workspaceOf(await probe(page))!).filter((o) => o.marks.some((m) => m.price === '51.2' || m.price === '50.1'));
+    expect(saved.map((o) => o.tradingDate).sort()).toEqual(['2026-08-31', '2026-10-12']);
+    await context.close();
+  });
 });

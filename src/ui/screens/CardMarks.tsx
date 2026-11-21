@@ -329,16 +329,30 @@ export function CardMarks({ facade, tradeId, marks, held: heldReview, onResult, 
     const cell = cells.find((control) => control.getAttribute('aria-label') === chosenLabel);
     const controls = [...editor.querySelectorAll<HTMLElement>('a[href], button, input, textarea, select')].filter((control) => !(control as HTMLButtonElement).disabled);
     const target = event.target as HTMLElement;
-    const go = (to: HTMLElement | undefined) => {
-      if (!to) return;
+    const move = (to: HTMLElement | undefined) => {
+      if (!to) return false;
       event.preventDefault();
       to.focus();
-      // A button cell chooses on press, not on focus: choose it here too, or Tab would come back to this editor and its last control to this cell.
-      if (to.tagName === 'BUTTON' && !event.shiftKey && target !== cell) to.click();
+      return true;
     };
+    const go = (to: HTMLElement | undefined) => {
+      // A button cell chooses on press, not on focus: choose it here too, or Tab would come back to this editor and its last control to this cell.
+      if (move(to) && to!.tagName === 'BUTTON' && !event.shiftKey && target !== cell) to!.click();
+    };
+    // The pager sits between the grid and the editor in the page. The editor is reached from its cell, so the pager is reached from the last
+    // cell's editor, and leaves for whatever follows the editor (Save Marks); Shift+Tab from there returns to the pager's last button.
+    const pager = [...(section.current?.querySelectorAll<HTMLElement>('[data-pager] button') ?? [])].filter((button) => !(button as HTMLButtonElement).disabled);
+    const lastControl = controls[controls.length - 1];
+    const tabbable = [...document.querySelectorAll<HTMLElement>('a[href], button, input, select, textarea, [tabindex]')].filter((el) => !(el as HTMLButtonElement).disabled && el.getAttribute('tabindex') !== '-1');
+    const afterEditor = lastControl && tabbable[tabbable.indexOf(lastControl) + 1];
     if (!event.shiftKey && target === cell) go(controls[0]);
-    else if (!event.shiftKey && target === controls[controls.length - 1]) go(cells[cells.indexOf(cell as HTMLElement) + 1]);
+    else if (!event.shiftKey && target === lastControl) {
+      const nextCell = cells[cells.indexOf(cell as HTMLElement) + 1];
+      if (nextCell) go(nextCell);
+      else move(pager[0]);
+    } else if (!event.shiftKey && pager.length > 0 && target === pager[pager.length - 1]) move(afterEditor || undefined);
     else if (event.shiftKey && target === controls[0]) go(cell);
+    else if (event.shiftKey && pager.length > 0 && afterEditor && target === afterEditor) move(pager[pager.length - 1]);
   };
   // The chosen cell's editor, when the cell holds a Mark or can take one.
   const chosenCell = chosen && model.cellAt(chosen.instrumentKey, chosen.tradingDate);

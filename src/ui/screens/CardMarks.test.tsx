@@ -442,6 +442,26 @@ describe('the Marks grid, one tab stop per cell with its editor in between (P160
     expect(stops).toContain(within(monday).getByRole('button', { name: 'Withdraw' }));
     expect(next).toBe(cellOf(panel, 'ABC', FRIDAY_LABEL));
   });
+
+  // T9R2.17-B7: the pager sits between the grid and the editor in the page, and Tab reaches it from the last cell's editor and Shift+Tab from Save Marks.
+  it('should reach Previous page and Next page by Tab from the editor of the last cell and by Shift Tab from Save Marks', async () => {
+    renderReview(cardFacade(pagedReview()));
+    const user = userEvent.setup();
+    const panel = await marksPanel();
+    await user.type(inputOf(panel, 'XYZ', 'Mon Oct 12'), '52.00');
+    const last = await choose(user, panel, 'XYZ', 'Sun Sep 6');
+    const next = within(panel).getByRole('button', { name: 'Next page' });
+    const save = within(panel).getByRole('button', { name: 'Save Marks (1)' });
+
+    const { next: left } = await tabThrough(user, last);
+    expect(left).toBe(next);
+    // The pager's last button goes on to Save Marks, not back into the editor.
+    await user.tab();
+    expect(document.activeElement).toBe(save);
+    // And Shift+Tab from Save Marks reaches the pager again.
+    await user.tab({ shift: true });
+    expect(document.activeElement).toBe(next);
+  });
 });
 
 describe('the Marks grid, earlier sessions note (W72)', () => {

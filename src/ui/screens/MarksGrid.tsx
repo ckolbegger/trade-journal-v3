@@ -125,7 +125,7 @@ export function MarksGrid({ model, writable, draftOf, typedIn, onPrice, fieldOf,
         }}
       />
       {earlier.length > SESSIONS_PER_PAGE && (
-        <p>
+        <p data-pager>
           Sessions {first + 1} to {first + shown.length} of {earlier.length}
           {pagingHeld && <span id={holdId}> Save or cancel the correction to change pages.</span>}
           {page > 0 && (
