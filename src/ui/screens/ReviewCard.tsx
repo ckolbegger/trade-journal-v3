@@ -48,6 +48,8 @@ export interface Go {
   readonly instrument?: string;
   // The Replay session the card's overlay opens on, from a way back from Trade Detail (A257, A274).
   readonly session?: string;
+  // A refused save's key takes the focus itself: the panel's button does not (A294).
+  readonly keepFocus?: boolean;
   readonly count: number;
 }
 export const NO_GO: Go = { count: 0 };
@@ -318,7 +320,7 @@ function CardBody({ facade, trade, progress, name, advance, go, marks, held, onR
     if (go.panel && panels.includes(go.panel)) {
       setOpen(go.panel);
       // The Replay button's own address (trade and panel) asks for this card again while its overlay is open: focus stays in the overlay.
-      if (!go.instrument && !replayOpen) setFocusPanel({ panel: go.panel });
+      if (!go.instrument && !go.keepFocus && !replayOpen) setFocusPanel({ panel: go.panel });
     }
   }
   // A panel's work is finished: the next panel that is not done after that one opens and takes focus. A trader who has

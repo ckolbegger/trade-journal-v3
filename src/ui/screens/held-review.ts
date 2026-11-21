@@ -142,7 +142,7 @@ const rank =(revision: ExpectedResolutionRevision): number => (revision === 'Non
 
 // What the held Review lists for a key: its Review-date row, its earlier session in an Instrument's gap group, or an
 // earlier session's Available Mark from the open's earlier Marks (A288).
-function listedStanding(review: Ready, key: ObservationKey): Standing | undefined {
+export function listedStanding(review: Ready, key: ObservationKey): Standing | undefined {
   const family = review.families.find((f) => f.family === 'Marks');
   if (family?.family !== 'Marks') return undefined;
   const row = family.today.find((r) => r.instrumentKey === key.instrumentKey && r.tradingDate === key.tradingDate);
@@ -154,6 +154,24 @@ function listedStanding(review: Ready, key: ObservationKey): Standing | undefine
   }
   const acknowledgment = group.acknowledgments[key.tradingDate];
   return { resolution: acknowledgment ? { kind: 'AcknowledgedUnavailable', acknowledgment } : { kind: 'Missing' }, revision: group.revisions[key.tradingDate] ?? 'None' };
+}
+
+// The walked Trades the Review lists a key for, in walk order: the Trades of its Review-date row, or of the gap group or earlier Marks that
+// list the session from the date each Trade first held the Instrument. A draft whose Trade is not among them moves to the first (P156).
+export function holdersOf(review: Ready, key: ObservationKey): readonly string[] {
+  const family = review.families.find((f) => f.family === 'Marks');
+  if (family?.family !== 'Marks') return [];
+  const heldFrom = (trades: readonly { readonly tradeId: string; readonly from: string }[]) => trades.filter((t) => t.from <= key.tradingDate).map((t) => t.tradeId);
+  const row = family.today.find((r) => r.instrumentKey === key.instrumentKey && r.tradingDate === key.tradingDate);
+  const holders = new Set(
+    row
+      ? row.trades
+      : [
+          ...family.earlier.filter((g) => g.instrumentKey === key.instrumentKey && [...g.missing, ...g.acknowledged].includes(key.tradingDate)).flatMap((g) => heldFrom(g.trades)),
+          ...family.earlierMarks.filter((g) => g.instrumentKey === key.instrumentKey && g.marks[key.tradingDate] !== undefined).flatMap((g) => heldFrom(g.trades)),
+        ],
+  );
+  return walkedOf(review).filter((t) => holders.has(t.tradeId)).map((t) => t.tradeId);
 }
 
 // A key's current resolution and revision (A172): what was learned from results, unless the Review lists the key at a

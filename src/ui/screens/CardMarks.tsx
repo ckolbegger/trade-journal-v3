@@ -215,7 +215,7 @@ export function CardMarks({ facade, tradeId, marks, held: heldReview, onResult, 
     [reportDirty],
   );
   // The drafts are the Review's: a draft typed here is typed in this card's Trade. An empty price is no draft.
-  const { drafts, count, rejections, notices, failure, tooMany, saving, reveal } = markDrafts;
+  const { drafts, count, rejections, notices, failure, tooMany, saving, reveal, settleReveal } = markDrafts;
   const holdDraft = markDrafts.hold;
   const hold = useCallback((key: ObservationKey, value: DraftValue | undefined) => holdDraft(key, value, tradeId), [holdDraft, tradeId]);
   // What a refused save said about each key, worded under this card's field ids.
@@ -250,20 +250,26 @@ export function CardMarks({ facade, tradeId, marks, held: heldReview, onResult, 
     }
     setChosen(key);
   };
-  // A refused save, or a Conflict, shows its first key's cell here when the key is in this grid (A294).
-  const [handledReveal, setHandledReveal] = useState(reveal?.count ?? 0);
+  // A refused save, or a Conflict, shows its first key's cell in the card of the Trade its draft was typed in (A294). A card that opens
+  // for it answers it as it mounts; once answered, it goes.
+  const mine = reveal?.tradeId === tradeId ? reveal : undefined;
+  const [handledReveal, setHandledReveal] = useState(0);
   const [revealHeld, setRevealHeld] = useState(false);
-  if (reveal !== undefined && reveal.count !== handledReveal) {
-    setHandledReveal(reveal.count);
+  if (mine !== undefined && mine.count !== handledReveal) {
+    setHandledReveal(mine.count);
     // A correction in progress holds the editor as it holds a press (A297): the key stays reported by its cell, and the correction keeps the focus.
-    const held = correctionHolds(reveal.key);
+    const held = correctionHolds(mine.key);
     setRevealHeld(held);
     if (!held) {
-      setChosen(reveal.key);
-      const field = issues[rowId(reveal.key.instrumentKey, reveal.key.tradingDate)]?.[0]?.field;
-      if (reveal.focus && field !== undefined) setFocusField({ field });
+      setChosen({ ...mine.key });
+      const field = issues[rowId(mine.key.instrumentKey, mine.key.tradingDate)]?.[0]?.field;
+      if (mine.focus && field !== undefined) setFocusField({ field });
     }
   }
+  const answered = mine?.count === handledReveal ? mine.count : undefined;
+  useEffect(() => {
+    if (answered !== undefined) settleReveal(answered);
+  }, [answered, settleReveal]);
   useEffect(() => {
     if (revealHeld) focusCorrection();
   }, [handledReveal, revealHeld]);

@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { Badge } from '../Badge.tsx';
 import type { GridCell, SessionGridFrame, SessionGridProps } from './session-grid.types.ts';
 
@@ -14,10 +14,14 @@ export function SessionGrid({ label, tableClass, rowLabels, columns, chosen, lay
   // The card's width decides the turn (P161). A container query cannot transpose a table, so the grid measures its own region.
   const region = useRef<HTMLDivElement>(null);
   const [narrow, setNarrow] = useState(false);
+  // The turn swaps the table, and the control that held the focus goes with it: it is named here before the swap and gets the focus back.
+  const focused = useRef<string | undefined>(undefined);
   useEffect(() => {
     if (layout !== 'auto' || !region.current || typeof ResizeObserver === 'undefined') return undefined;
     const observer = new ResizeObserver(([entry]) => {
       const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+      const active = document.activeElement;
+      focused.current = active && region.current?.contains(active) ? (active.getAttribute('aria-label') ?? undefined) : undefined;
       if (entry) setNarrow(entry.contentRect.width < TURN_BELOW_REM * rem);
     });
     observer.observe(region.current);
@@ -26,6 +30,11 @@ export function SessionGrid({ label, tableClass, rowLabels, columns, chosen, lay
   // P161: a grid with any cell to type in or press holds every cell to the touch height (a read-only grid, Price History, stays as it was).
   const editable = columns.some((column) => column.cells.some((cell) => cell !== null && ('input' in cell || ('id' in cell && cell.id !== undefined))));
   const turned = layout === 'turned' || (layout === 'auto' && narrow);
+  useLayoutEffect(() => {
+    const label = focused.current;
+    focused.current = undefined;
+    if (label !== undefined) [...(region.current?.querySelectorAll<HTMLElement>('input, button') ?? [])].find((control) => control.getAttribute('aria-label') === label)?.focus();
+  }, [turned]);
   // A cell that can be chosen is a button that reports its id and shows as pressed while it is the chosen one (P160).
   const pressProps = (id: string | undefined) =>
     id === undefined ? {} : { 'aria-pressed': id === chosen, onClick: () => onPressCell?.(id) };

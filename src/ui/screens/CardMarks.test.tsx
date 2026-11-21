@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
 import { MemoryRouter } from 'react-router';
@@ -122,10 +122,10 @@ function cardFacade(overview: Ready = review()): UiFacade {
   return facade;
 }
 
-function renderReview(facade: UiFacade, options: { writable?: boolean; onDirtyChange?: (dirty: boolean) => void } = {}) {
+function renderReview(facade: UiFacade, options: { writable?: boolean; onDirtyChange?: (dirty: boolean) => void; at?: string } = {}) {
   render(
     <RuntimeContext.Provider value={{ writable: options.writable ?? true, timeZone: 'America/New_York', report: () => undefined }}>
-      <MemoryRouter initialEntries={['/review']}>
+      <MemoryRouter initialEntries={[options.at ?? '/review']}>
         <ReviewView facade={facade} now={() => '2026-10-12T21:00:00Z'} onDirtyChange={options.onDirtyChange ?? (() => undefined)} />
       </MemoryRouter>
     </RuntimeContext.Provider>,
@@ -1282,5 +1282,181 @@ describe('drafts belong to the Review (P156)', () => {
     await user.click(within(friday).getByRole('button', { name: 'Cancel' }));
     expect(next().disabled).toBe(false);
     expect(within(panel).queryByText('Save or cancel the correction to change pages.')).toBeNull();
+  });
+});
+
+describe('links, refused saves, kept drafts and the turn (T9R2.14)', () => {
+  it('should open the card on its Marks panel with focus on the Instrument Review Date cell from a Missing-Mark link', async () => {
+    renderReview(cardFacade(), { at: '/review?trade=t-a&instrument=XYZ' });
+    const panel = await marksPanel();
+
+    // T-A also lacks Friday's Mark, but the link names the Review Date cell.
+    await waitFor(() => expect(document.activeElement).toBe(inputOf(panel, 'XYZ', MONDAY_LABEL)));
+    expect(within(panel).getByRole('region', { name: 'XYZ Mark, Mon Oct 12' })).toBeTruthy();
+    expect(document.activeElement).not.toBe(inputOf(panel, 'XYZ', FRIDAY_LABEL));
+  });
+
+  const headerOf = (symbol: string) => screen.getByRole('button', { name: new RegExp(`^Review ${symbol}\\b`) });
+  const statusOf = () => screen.getByRole('region', { name: 'Review status' });
+
+  it('should open the first refused key card, page and editor after a refused save, with focus on its input', async () => {
+    const facade = cardFacade(pagedReview());
+    vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'Rejected', issues: [{ entryIndex: 0, field: 'price', code: 'InvalidPrice' }] });
+    renderReview(facade);
+    const user = userEvent.setup();
+    const panel = await marksPanel();
+    // The draft is typed on the card's second page, in T-A; the card is then closed for another and the first page is back.
+    await user.click(within(panel).getByRole('button', { name: 'Next page' }));
+    await user.type(within(panel).getByRole('textbox', { name: 'XYZ Mark, Tue Sep 1' }), 'abc');
+    await user.click(headerOf('DEF'));
+    await screen.findByRole('region', { name: 'DEF review' });
+    expect(screen.queryByRole('region', { name: 'XYZ review' })).toBeNull();
+
+    await user.click(within(statusOf()).getByRole('button', { name: 'Save Marks (1)' }));
+
+    const again = await marksPanel();
+    expect(screen.getByRole('region', { name: 'XYZ review' })).toBeTruthy();
+    expect(screen.queryByRole('region', { name: 'DEF review' })).toBeNull();
+    const editor = within(again).getByRole('region', { name: 'XYZ Mark, Tue Sep 1' });
+    expect(within(editor).getByText('Enter a price as a number, with at most 6 decimal places.')).toBeTruthy();
+    expect(within(again).getByText('Sessions 21 to 25 of 25')).toBeTruthy();
+    await waitFor(() => expect(document.activeElement).toBe(within(again).getByRole('textbox', { name: 'XYZ Mark, Tue Sep 1' })));
+  });
+
+  it('should take the refused key from a mirrored Unsaved cell to the card its draft was typed in, with focus on its input', async () => {
+    const facade = cardFacade();
+    vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'Rejected', issues: [{ entryIndex: 0, field: 'price', code: 'InvalidPrice' }] });
+    renderReview(facade);
+    const user = userEvent.setup();
+    await user.type(inputOf(await marksPanel(), 'XYZ', MONDAY_LABEL), 'abc');
+    await user.click(tfHeader());
+    const other = within(await screen.findByRole('region', { name: /^XYZ \(Long 100 shares/ })).getByRole('region', { name: 'Marks' });
+    expect(cellOf(other, 'XYZ', MONDAY_LABEL).textContent).toContain('Unsaved');
+
+    await user.click(within(statusOf()).getByRole('button', { name: 'Save Marks (1)' }));
+
+    const first = await screen.findByRole('region', { name: 'XYZ review' });
+    const input = within(within(first).getByRole('region', { name: 'Marks' })).getByRole('textbox', { name: 'XYZ Mark, Mon Oct 12' });
+    await waitFor(() => expect(document.activeElement).toBe(input));
+    expect(input.getAttribute('aria-invalid')).toBe('true');
+  });
+
+  it('should keep a draft whose key is still in the refreshed Review through another Trade, moving it to that Trade', async () => {
+    const facade = cardFacade();
+    vi.mocked(facade.DailyReview.save).mockResolvedValueOnce({ kind: 'ReviewChanged', evidence: { marketDataSnapshotId: 'mds1:2:def', frames: [] } });
+    renderReview(facade);
+    const user = userEvent.setup();
+    const panel = await marksPanel();
+    await user.type(inputOf(panel, 'XYZ', MONDAY_LABEL), '52.00');
+    await user.click(within(panel).getByRole('button', { name: 'Save Marks (1)' }));
+    await within(panel).findByRole('alert');
+    // T-A no longer holds XYZ; T-F still does.
+    const moved = review({ families: [{ family: 'Marks', earlierMarks: [], today: [missingRow('XYZ', ['t-f']), missingRow('DEF', ['t-c'])], earlier: [] }, { family: 'Trades', trades: WALK }] });
+    vi.mocked(facade.DailyReview.open).mockResolvedValue(moved);
+    await user.click(within(panel).getByRole('button', { name: 'Refresh' }));
+    await waitFor(() => expect(facade.DailyReview.open).toHaveBeenCalledTimes(2));
+
+    expect(await within(statusOf()).findByText('1 unsaved Mark')).toBeTruthy();
+    await user.click(tfHeader());
+    const other = within(await screen.findByRole('region', { name: /^XYZ \(Long 100 shares/ })).getByRole('region', { name: 'Marks' });
+    expect(inputOf(other, 'XYZ', MONDAY_LABEL).value).toBe('52.00');
+  });
+
+  it('should name the Trade a dropped draft was typed in, in the not kept notice', async () => {
+    const facade = cardFacade();
+    vi.mocked(facade.DailyReview.save).mockResolvedValueOnce({ kind: 'ReviewChanged', evidence: { marketDataSnapshotId: 'mds1:2:def', frames: [] } });
+    renderReview(facade);
+    const user = userEvent.setup();
+    await marksPanel();
+    await user.click(tfHeader());
+    const panel = within(await screen.findByRole('region', { name: /^XYZ \(Long 100 shares/ })).getByRole('region', { name: 'Marks' });
+    await user.type(inputOf(panel, 'XYZ', MONDAY_LABEL), '52.00');
+    await user.click(within(panel).getByRole('button', { name: 'Save Marks (1)' }));
+    await within(panel).findByRole('alert');
+    // The Review no longer holds T-F, nor XYZ.
+    const gone = review({ families: [{ family: 'Marks', earlierMarks: [], today: [missingRow('DEF', ['t-c'])], earlier: [] }, { family: 'Trades', trades: [TA, TC] }] });
+    vi.mocked(facade.DailyReview.open).mockResolvedValue(gone);
+    await user.click(within(panel).getByRole('button', { name: 'Refresh' }));
+
+    expect((await screen.findByRole('status')).textContent).toBe('XYZ (Long 100 shares @ $50.00) is no longer in this Review, so what you entered for it was not kept.');
+    expect(screen.queryByText(/unsaved Marks?$/)).toBeNull();
+  });
+
+  it('should name a Trade that is still in the Review when a draft was dropped because its key left', async () => {
+    const facade = cardFacade();
+    vi.mocked(facade.DailyReview.save).mockResolvedValueOnce({ kind: 'ReviewChanged', evidence: { marketDataSnapshotId: 'mds1:2:def', frames: [] } });
+    renderReview(facade);
+    const user = userEvent.setup();
+    const panel = await marksPanel();
+    await user.type(inputOf(panel, 'XYZ', FRIDAY_LABEL), '49.00');
+    await user.click(within(panel).getByRole('button', { name: 'Save Marks (1)' }));
+    await within(panel).findByRole('alert');
+    // Friday is no longer listed, and T-A is still walked.
+    vi.mocked(facade.DailyReview.open).mockResolvedValue(review({ families: [{ family: 'Marks', earlierMarks: [], today: [missingRow('XYZ', ['t-a', 't-f']), missingRow('DEF', ['t-c'])], earlier: [] }, { family: 'Trades', trades: WALK }] }));
+    await user.click(within(panel).getByRole('button', { name: 'Refresh' }));
+
+    expect((await screen.findByRole('status')).textContent).toBe('What you entered for XYZ was not kept, because the Review no longer lists it.');
+    expect(screen.queryByText(/unsaved Marks?$/)).toBeNull();
+  });
+
+  it('should drop every draft and release the page when the Review refreshes to Empty', async () => {
+    const facade = cardFacade();
+    vi.mocked(facade.DailyReview.save).mockResolvedValueOnce({ kind: 'ReviewChanged', evidence: { marketDataSnapshotId: 'mds1:2:def', frames: [] } });
+    const onDirtyChange = vi.fn();
+    renderReview(facade, { onDirtyChange });
+    const user = userEvent.setup();
+    const panel = await marksPanel();
+    await user.type(inputOf(panel, 'XYZ', MONDAY_LABEL), '52.00');
+    await user.click(within(panel).getByRole('button', { name: 'Save Marks (1)' }));
+    await within(panel).findByRole('alert');
+    expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+    vi.mocked(facade.DailyReview.open).mockResolvedValue({ kind: 'Empty', reviewDate: MONDAY, cutoff: CUTOFF, owed: [], binding: newBinding });
+    await user.click(within(panel).getByRole('button', { name: 'Refresh' }));
+
+    await waitFor(() => expect(screen.queryByRole('region', { name: 'Review status' })).toBeNull());
+    expect(screen.queryByRole('button', { name: /^Save Marks/ })).toBeNull();
+    await waitFor(() => expect(onDirtyChange).toHaveBeenLastCalledWith(false));
+  });
+
+  it('should keep every draft and the chosen cell when the grid turns', async () => {
+    let report: (width: number) => void = () => undefined;
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        constructor(callback: ResizeObserverCallback) {
+          report = (width) => callback([{ contentRect: { width } } as ResizeObserverEntry], undefined as never);
+        }
+        observe = () => undefined;
+        disconnect = () => undefined;
+        unobserve = () => undefined;
+      },
+    );
+    try {
+      renderReview(cardFacade(pagedReview()));
+      const user = userEvent.setup();
+      const panel = await marksPanel();
+      await user.type(inputOf(panel, 'XYZ', MONDAY_LABEL), '52.00');
+      await user.click(within(panel).getByRole('button', { name: 'Next page' }));
+      await user.type(within(panel).getByRole('textbox', { name: 'XYZ Mark, Tue Sep 1' }), '49.00');
+      expect(gridOf(panel).getAttribute('data-layout')).toBeNull();
+
+      expect(document.activeElement).toBe(within(panel).getByRole('textbox', { name: 'XYZ Mark, Tue Sep 1' }));
+
+      act(() => report(500));
+
+      expect(gridOf(panel).getAttribute('data-layout')).toBe('turned');
+      // The turn swaps the table: the input that held the focus gets it back.
+      expect(document.activeElement).toBe(inputOf(panel, 'XYZ', 'Tue Sep 1'));
+      expect(inputOf(panel, 'XYZ', MONDAY_LABEL).value).toBe('52.00');
+      expect(inputOf(panel, 'XYZ', 'Tue Sep 1').value).toBe('49.00');
+      expect(within(panel).getByRole('button', { name: 'Save Marks (2)' })).toBeTruthy();
+      expect(within(panel).getByText('Sessions 21 to 25 of 25')).toBeTruthy();
+      expect(editors(panel).map((editor) => editor.getAttribute('aria-label'))).toEqual(['XYZ Mark, Tue Sep 1']);
+      act(() => report(700));
+      expect(inputOf(panel, 'XYZ', 'Tue Sep 1').value).toBe('49.00');
+      expect(document.activeElement).toBe(inputOf(panel, 'XYZ', 'Tue Sep 1'));
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });

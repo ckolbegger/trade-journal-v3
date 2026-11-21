@@ -54,6 +54,13 @@ export function MarksGrid({ model, writable, draftOf, typedIn, onPrice, fieldOf,
   };
   const fixed = model.sessions.filter(({ role }) => role !== undefined);
   const earlier = model.sessions.filter(({ role }) => role === undefined);
+  // A cell chosen on another page (a refused save's key) brings its page up.
+  const [shownFor, setShownFor] = useState<ObservationKey>();
+  if (chosen !== shownFor) {
+    setShownFor(chosen);
+    const at = chosen === undefined ? -1 : earlier.findIndex(({ date }) => date === chosen.tradingDate);
+    if (at >= 0) setPage(Math.floor(at / SESSIONS_PER_PAGE));
+  }
   const first = page * SESSIONS_PER_PAGE;
   const shown = earlier.slice(first, first + SESSIONS_PER_PAGE);
   const optionTrade = model.instruments.some(({ instrument }) => instrument.kind === 'Option');

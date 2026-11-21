@@ -12,6 +12,7 @@ import { discardDraftsSetAside } from './action-draft.ts';
 import type { SavedAction } from './ActionForm.tsx';
 import { SaveFailure, tooManyWords, type EntryDirty } from './CardMarks.tsx';
 import { fold, marksOf, nextCard, type Held, type HeldResult } from './held-review.ts';
+import type { Draft } from './review-drafts.ts';
 import { NO_GO, PANELS, ReviewCard, type CardDetail, type Go, type PanelName } from './ReviewCard.tsx';
 import { OwedCard, type OwedDetail } from './ReviewOwedCard.tsx';
 import { useMarkDrafts, type MarkDrafts } from './useMarkDrafts.ts';
@@ -282,7 +283,7 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
     setHeldReview(latest.current);
   };
   // The Mark drafts belong to the Review, not to a card (P156); one Save Marks sends them all (P157).
-  const markDrafts = useMarkDrafts({ latest: () => latest.current, onResult: apply, onSave: (entries, newest) => saveMarks(entries, newest) });
+  const markDrafts = useMarkDrafts({ latest: () => latest.current, onResult: apply, onReveal: (tradeId) => revealCard(tradeId), onSave: (entries, newest) => saveMarks(entries, newest) });
   // The cards follow the newest Review the screen holds (A150, decision 64): a refreshed Review re-sorts them.
   const trades = walkedTrades(review);
   const { name, line: tradeLine } = tradeLabels(trades, review.owed);
@@ -331,7 +332,10 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
   );
   // `keepNotice`: Retry opens the card again without clearing the notice that said what the refresh did not keep.
   const select = async (tradeId: string, pressed = false, keepNotice = false) => {
-    if (!keepNotice) setAfterSave(undefined);
+    if (!keepNotice) {
+      setAfterSave(undefined);
+      setNotKeptNotice(undefined);
+    }
     if (pressed) setReveal((current) => ({ tradeId, count: current.count + 1 }));
     await read(tradeId, show(tradeId, 'Loading'));
   };
@@ -356,12 +360,22 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
     inFlight.current = asking;
     return asking;
   };
+  // The drafts a Review read again no longer lists are dropped, and the notice names the Trade each was typed in (A150). A Trade the Review
+  // no longer holds says so, in the approved words; one it still holds says its draft's key left.
+  const [notKeptNotice, setNotKeptNotice] = useState<string>();
+  const notKept = (dropped: readonly Draft[]) => {
+    if (dropped.length === 0) return;
+    const held = latest.current.review;
+    const stillHeld = (tradeId: string) => walkedTrades(held).some((t) => t.tradeId === tradeId) || held.owed.some((t) => t.tradeId === tradeId);
+    setNotKeptNotice([...new Set(dropped.map((draft) => draft.tradeId))].map((tradeId) => (stillHeld(tradeId) ? `What you entered for ${name(tradeId)} was not kept, because the Review no longer lists it.` : `${name(tradeId)} is no longer in this Review, so what you entered for it was not kept.`)).join(' '));
+  };
   // The Review asked for and applied. A card opened while it is pending waits for it, so it is read under the binding it returns.
   const reopenAndApply = async (): Promise<Ready | OpenEmpty | undefined> => {
     const asking = reopen().then((next) => {
       if (next) {
         apply({ kind: 'Opened', review: next.kind === 'Ready' ? next : heldEmpty(next) });
         setEmpty(next.kind === 'Empty');
+        notKept(markDrafts.reconcile(latest.current));
       }
       return next;
     });
@@ -418,6 +432,30 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
     setShown({ tradeId, opening: request, detail: { trade: trade.trade } });
     return true;
   };
+  // Opens a card on its Marks panel with focus in its body: a row (A161), or a refused save's key (A294). The card is shown before it is
+  // read: the read's result would otherwise batch into the same render, and the card's header, revealed after its body mounts, would take
+  // the focus.
+  const openOnMarks = (tradeId: string, instrument?: string) => {
+    let request = 0;
+    flushSync(() => {
+      setAfterSave(undefined);
+      setReveal((current) => ({ tradeId, count: current.count + 1 }));
+      setGo((current) => ({ tradeId, go: { panel: 'Marks', instrument, keepFocus: instrument === undefined, count: current.go.count + 1 } }));
+      request = show(tradeId, 'Loading');
+    });
+    void read(tradeId, request);
+  };
+  // A refused save, or a Conflict, opens the card of the Trade its first key's draft was typed in, on its Marks panel (A294). A Correct or a
+  // form with entered values holds the open card, as it holds a press.
+  const revealCard = (tradeId: string) => {
+    if (!walkedTrades(latest.current.review).some((t) => t.tradeId === tradeId)) return;
+    if (tradeId !== openId) {
+      if (held) setRefused(true);
+      else openOnMarks(tradeId);
+      return;
+    }
+    setGo((current) => ({ tradeId, go: { panel: 'Marks', keepFocus: true, count: current.go.count + 1 } }));
+  };
   // The save's result is the Review from here on: its completion and binding replace the overview's, and its next step is the Trade shown.
   // Only a save for the opening still shown moves the card; the Review it returned applies whatever is open.
   const saved = ({ review: post }: SavedAction, opening: number) => {
@@ -443,16 +481,7 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
     setGo({ tradeId: undefined, go: NO_GO });
     // A Mark is the next step: the first card holding it opens on its Marks panel with focus in the row, as a Mark blocker's link does.
     if (next.kind === 'Mark') {
-      // The card is shown before it is read: the read's result would otherwise batch into the same render, and the card's header,
-      // revealed after its body mounts, would take the focus from the row.
-      let request = 0;
-      flushSync(() => {
-        setAfterSave(undefined);
-        setReveal((current) => ({ tradeId: next.tradeId, count: current.count + 1 }));
-        setGo((current) => ({ tradeId: next.tradeId, go: { panel: 'Marks', instrument: next.instrumentKey, count: current.go.count + 1 } }));
-        request = show(next.tradeId, 'Loading');
-      });
-      void read(next.tradeId, request);
+      openOnMarks(next.tradeId, next.instrumentKey);
       return;
     }
     if (next.kind === 'Trade') {
@@ -659,6 +688,7 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
         </section>
       )}
       {afterSave && <p role="status">{afterSave}</p>}
+      {notKeptNotice && <p role="status">{notKeptNotice}</p>}
     </>
   );
 }

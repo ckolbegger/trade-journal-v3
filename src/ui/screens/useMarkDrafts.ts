@@ -1,8 +1,8 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { MarketDataPrepareEntry, ObservationKey, SaveReviewMarksResult } from '../../app/types.ts';
 import { useRuntime } from '../runtime.tsx';
-import { standing, type Held, type HeldResult } from './held-review.ts';
-import { clearDraft, discardAll, draftAt, draftCount, emptyDrafts, moveDraft, newestTrade, saveEntries, setDraft, type Drafts, type DraftValue } from './review-drafts.ts';
+import { holdersOf, listedStanding, standing, type Held, type HeldResult } from './held-review.ts';
+import { clearDraft, discardAll, draftAt, draftCount, emptyDrafts, keepOnly, moveDraft, newestTrade, saveEntries, setDraft, type Draft, type Drafts, type DraftValue } from './review-drafts.ts';
 
 const idOf = (key: ObservationKey): string => `${key.instrumentKey}:${key.tradingDate}`;
 const without = <T,>(record: Readonly<Record<string, T>>, id: string): Record<string, T> => Object.fromEntries(Object.entries(record).filter(([key]) => key !== id));
@@ -14,9 +14,11 @@ export interface Rejection {
   readonly draft: DraftValue['kind'];
 }
 
-// A card's grid shows this key's cell: its editor opens, and focus goes to the issue when there is one (A294).
+// The card of the Trade the key's draft was typed in shows this key's cell: its page and editor open, and focus goes to the issue when
+// there is one (A294).
 export interface Reveal {
   readonly key: ObservationKey;
+  readonly tradeId: string;
   readonly count: number;
   readonly focus: boolean;
 }
@@ -39,6 +41,11 @@ export interface MarkDrafts {
   readonly tooMany: { readonly entered: number; readonly limit: number; readonly over: number } | undefined;
   readonly saving: boolean;
   readonly reveal: Reveal | undefined;
+  // The card that showed the reveal says so, and it goes: a card opened later does not answer it again.
+  readonly settleReveal: (count: number) => void;
+  // A Review read again: the drafts whose keys it still lists stay (a draft whose Trade no longer holds its key moves to one that does); the
+  // rest are dropped and returned, with the Trades they were typed in (P156).
+  readonly reconcile: (held: Held) => readonly Draft[];
   readonly save: () => Promise<void>;
   readonly discard: () => void;
 }
@@ -47,13 +54,21 @@ interface Options {
   // The newest Review the screen holds, so each draft is bound at its key's current standing (A172).
   readonly latest: () => Held;
   readonly onResult: (result: HeldResult) => void;
+  // A refused save or a Conflict names the Trade whose card is to show its first key (A294).
+  readonly onReveal: (tradeId: string) => void;
   // Saves the entries as one command, for the open card's Trade or, with none open, the one given (P157).
   readonly onSave: (entries: readonly MarketDataPrepareEntry[], tradeId: string | undefined) => Promise<SaveReviewMarksResult>;
 }
 
-export function useMarkDrafts({ latest, onResult, onSave }: Options): MarkDrafts {
+export function useMarkDrafts({ latest, onResult, onReveal, onSave }: Options): MarkDrafts {
   const { report } = useRuntime();
   const [drafts, setDrafts] = useState<Drafts>(emptyDrafts);
+  // The drafts as of the last change, for what runs between renders (a refreshed Review's reconciling).
+  const live = useRef<Drafts>(emptyDrafts);
+  const change = useCallback((next: (current: Drafts) => Drafts) => {
+    live.current = next(live.current);
+    setDrafts(live.current);
+  }, []);
   const [rejections, setRejections] = useState<Readonly<Record<string, Rejection>>>({});
   const [notices, setNotices] = useState<Readonly<Record<string, string>>>({});
   const [failure, setFailure] = useState<'changed' | 'failed'>();
@@ -61,17 +76,44 @@ export function useMarkDrafts({ latest, onResult, onSave }: Options): MarkDrafts
   const [overLimit, setOverLimit] = useState(false);
   const [saving, setSaving] = useState(false);
   const [reveal, setReveal] = useState<Reveal>();
-  const show = (key: ObservationKey, focus: boolean) => setReveal((current) => ({ key, focus, count: (current?.count ?? 0) + 1 }));
+  const revealed = useRef(0);
+  // The result of a save arrives after the screen may have moved on: the newest render's way of showing a card is the one called.
+  const reveals = useRef(onReveal);
+  useEffect(() => {
+    reveals.current = onReveal;
+  });
+  const show = (key: ObservationKey, focus: boolean) => {
+    const draft = draftAt(live.current, key);
+    if (draft === undefined) return;
+    revealed.current += 1;
+    setReveal({ key, tradeId: draft.tradeId, focus, count: revealed.current });
+    reveals.current(draft.tradeId);
+  };
+  const settleReveal = useCallback((count: number) => setReveal((current) => (current?.count === count ? undefined : current)), []);
   // Changing a draft answers what a refused save said about its key.
   const answer = (key: ObservationKey) => {
     setRejections((current) => without(current, idOf(key)));
     setNotices((current) => without(current, idOf(key)));
   };
   const hold = useCallback((key: ObservationKey, value: DraftValue | undefined, tradeId: string) => {
-    setDrafts((current) => (value === undefined || (value.kind === 'Price' && value.price === '') ? clearDraft(current, key) : setDraft(current, key, value, tradeId)));
+    change((current) => (value === undefined || (value.kind === 'Price' && value.price === '') ? clearDraft(current, key) : setDraft(current, key, value, tradeId)));
     answer(key);
-  }, []);
-  const move = useCallback((key: ObservationKey, tradeId: string) => setDrafts((current) => moveDraft(current, key, tradeId)), []);
+  }, [change]);
+  const move = useCallback((key: ObservationKey, tradeId: string) => change((current) => moveDraft(current, key, tradeId)), [change]);
+  const reconcile = (held: Held): readonly Draft[] => {
+    const { kept, dropped } = keepOnly(live.current, (key) => listedStanding(held.review, key) !== undefined);
+    let changed = dropped.length > 0;
+    const moved = Object.values(kept).reduce((rest, draft) => {
+      const holders = holdersOf(held.review, draft.key);
+      if (holders.length === 0 || holders.includes(draft.tradeId)) return rest;
+      changed = true;
+      return moveDraft(rest, draft.key, holders[0]!);
+    }, kept);
+    if (!changed) return dropped;
+    change(() => moved);
+    for (const draft of dropped) answer(draft.key);
+    return dropped;
+  };
   const save = async () => {
     const sent = Object.values(drafts);
     const prepared = saveEntries(drafts, (key) => standing(latest(), key)?.revision);
@@ -107,7 +149,7 @@ export function useMarkDrafts({ latest, onResult, onSave }: Options): MarkDrafts
       if (moved[0]) show(moved[0].key, false);
     } else if (result.kind === 'MarksSaved') {
       // A draft typed or changed while the save was pending is not what was sent, so it stays.
-      setDrafts((current) =>
+      change((current) =>
         sent.reduce((rest, draft) => {
           const now = draftAt(rest, draft.key);
           return now && JSON.stringify(now.value) === JSON.stringify(draft.value) ? clearDraft(rest, draft.key) : rest;
@@ -128,12 +170,12 @@ export function useMarkDrafts({ latest, onResult, onSave }: Options): MarkDrafts
   };
   // Discard drops every draft on the page, and with them what a refused save said about them.
   const discard = () => {
-    setDrafts(discardAll());
+    change(discardAll);
     setRejections({});
     setNotices({});
     setFailure(undefined);
     setOverLimit(false);
   };
   const tooMany = overLimit ? saveEntries(drafts, () => undefined) : undefined;
-  return { drafts, count: draftCount(drafts), hold, move, rejections, notices, failure, setFailure, tooMany: tooMany?.kind === 'TooMany' ? tooMany : undefined, saving, reveal, save, discard };
+  return { drafts, count: draftCount(drafts), hold, move, rejections, notices, failure, setFailure, tooMany: tooMany?.kind === 'TooMany' ? tooMany : undefined, saving, reveal, settleReveal, reconcile, save, discard };
 }
