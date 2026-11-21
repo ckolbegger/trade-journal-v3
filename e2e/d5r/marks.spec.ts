@@ -1,5 +1,5 @@
 import {
-  cardHeader, createCardFixture, enterMark, expect, FRIDAY, markCell, markRow, MONDAY, MONDAY_1700, observationsOf, onboardedAt, openReview, probe, remainsOf, reachPanel, saveMarksOf, meterOf, test, THURSDAY, tradeCard, workspaceOf,
+  actionFormOf, cardHeader, createCardFixture, enterMark, expect, FRIDAY, markCell, markRow, MONDAY, MONDAY_1700, observationsOf, onboardedAt, openReview, probe, remainsOf, reachPanel, saveMarksOf, meterOf, test, THURSDAY, tradeCard, workspaceOf,
 } from './support.ts';
 
 const NOT_A_PRICE = 'Enter a price as a number, with at most 6 decimal places.';
@@ -72,24 +72,38 @@ test.describe('B5R.4 Invalid price saves nothing', () => {
 });
 
 test.describe('B5R.5 Unsaved work holds the card', () => {
-  test('should keep the card open with the message while a price is typed, open the other card after Discard, and write nothing', async ({ profile }) => {
+  test('should keep the card open with the message while an Action value is entered, and write nothing', async ({ profile }) => {
+    const { context, page } = await onboardedAt(profile, MONDAY_1700);
+    const { 'T-A': tA, 'T-B': tB } = await createCardFixture(page);
+    await openReview(page);
+    const before = await probe(page);
+
+    await (await actionFormOf(page, tA)).getByRole('radio', { name: 'Exit', exact: true }).check();
+    // Press another card's header (navigation: raw locators).
+    await cardHeader(page, tB).click();
+    await expect(page.getByRole('status').filter({ hasText: 'Save or discard what you entered for XYZ (Long 100 shares @ $50.18) to leave it.' })).toBeVisible();
+    await expect(cardHeader(page, tA)).toHaveAttribute('aria-expanded', 'true');
+    await expect(cardHeader(page, tB)).toHaveAttribute('aria-expanded', 'false');
+    expect(await probe(page)).toEqual(before);
+    await context.close();
+  });
+
+  test('should open the other card with no message while a price is typed, keep the draft, empty it with Discard, and write nothing', async ({ profile }) => {
     const { context, page } = await onboardedAt(profile, MONDAY_1700);
     const { 'T-A': tA, 'T-B': tB } = await createCardFixture(page);
     await openReview(page);
     const before = await probe(page);
 
     await (await markCell(page, tA, MONDAY)).fill('52.00');
-    // Press another card's header (navigation: raw locators).
-    await cardHeader(page, tB).click();
-    await expect(page.getByRole('status').filter({ hasText: 'Save or discard what you entered for XYZ (Long 100 shares @ $50.18) to leave it.' })).toBeVisible();
-    await expect(cardHeader(page, tA)).toHaveAttribute('aria-expanded', 'true');
-    await expect(cardHeader(page, tB)).toHaveAttribute('aria-expanded', 'false');
-
-    await tradeCard(page, 'XYZ').getByRole('button', { name: 'Discard' }).click();
     await cardHeader(page, tB).click();
     await expect(cardHeader(page, tB)).toHaveAttribute('aria-expanded', 'true');
     await expect(cardHeader(page, tA)).toHaveAttribute('aria-expanded', 'false');
     await expect(page.getByText('Save or discard what you entered for')).toHaveCount(0);
+    // The draft stays with the Review: its status header counts it, and Discard there empties it.
+    const header = page.getByRole('region', { name: 'Review status' });
+    await expect(header).toContainText('1 unsaved Mark');
+    await header.getByRole('button', { name: 'Discard' }).click();
+    await expect(header).not.toContainText('unsaved Mark');
     expect(await probe(page)).toEqual(before);
     await context.close();
   });

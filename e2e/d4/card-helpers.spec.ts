@@ -57,12 +57,13 @@ test.describe('reach (decision 65)', () => {
     await context.close();
   });
 
-  test('should fail naming XYZ’s and ABC’s cards when reaching ABC’s card is refused while XYZ’s card holds a Mark draft, and leave XYZ’s card open with its draft', async ({ profile }) => {
+  test('should fail naming XYZ’s and ABC’s cards when reaching ABC’s card is refused while XYZ’s card holds an Action value, and leave XYZ’s card open with its value', async ({ profile }) => {
     const { context, page } = await onboardedAt(profile, MONDAY_1700);
     await createTrades(page);
     await openReview(page);
 
-    await (await markCell(page, 'XYZ', DATE)).fill('52.00');
+    const form = await actionFormOf(page, 'XYZ');
+    await form.getByRole('radio', { name: 'Exit', exact: true }).check();
     const message = await reachCard(page, 'ABC').then(
       () => undefined,
       (error: unknown) => (error as Error).message,
@@ -71,23 +72,22 @@ test.describe('reach (decision 65)', () => {
     expect(message).toMatch(/ABC/);
     await expect(cardHeader(page, 'XYZ')).toHaveAttribute('aria-expanded', 'true');
     await expect(cardHeader(page, 'ABC')).toHaveAttribute('aria-expanded', 'false');
-    await expect(await markCell(page, 'XYZ', DATE)).toHaveValue('52.00');
+    await expect(form.getByRole('radio', { name: 'Exit', exact: true })).toBeChecked();
     await context.close();
   });
 
-  test('should reach ABC’s card after an earlier refusal once XYZ’s draft is discarded, though the earlier hold message was shown', async ({ profile }) => {
+  test('should reach ABC’s card with no hold message while XYZ’s card holds only a Mark draft, and keep the draft', async ({ profile }) => {
     const { context, page } = await onboardedAt(profile, MONDAY_1700);
     await createTrades(page);
     await openReview(page);
 
     await (await markCell(page, 'XYZ', DATE)).fill('52.00');
-    await expect(reachCard(page, 'ABC')).rejects.toThrow(/XYZ/);
-    await expect(page.getByRole('status').filter({ hasText: /^Save or discard what you entered for / })).toBeVisible();
-    await (await markCell(page, 'XYZ', DATE)).fill('');
-
     const card = await reachCard(page, 'ABC');
+
     await expect(card).toBeVisible();
     await expect(cardHeader(page, 'ABC')).toHaveAttribute('aria-expanded', 'true');
+    await expect(page.getByText(/^Save or discard what you entered for/)).toHaveCount(0);
+    await expect(status(page)).toContainText('1 unsaved Mark');
     await context.close();
   });
 
@@ -139,11 +139,12 @@ test.describe('reach by Trade (decision 68)', () => {
     await context.close();
   });
 
-  test('should fail naming both XYZ cards, the holder found by its list item’s Trade id, when reaching the second is refused while the first holds a Mark draft', async ({ profile }) => {
+  test('should fail naming both XYZ cards, the holder found by its list item’s Trade id, when reaching the second is refused while the first holds an Action value', async ({ profile }) => {
     const { context, page } = await onboardedAt(profile, MONDAY_1700);
     const { tA, tF } = await twoXyzReview(page);
 
-    await (await markCell(page, tA, DATE)).fill('52.00');
+    const form = await actionFormOf(page, tA);
+    await form.getByRole('radio', { name: 'Exit', exact: true }).check();
     const message = await reachCard(page, tF).then(
       () => undefined,
       (error: unknown) => (error as Error).message,
@@ -152,7 +153,7 @@ test.describe('reach by Trade (decision 68)', () => {
     expect(message).toMatch(/Cannot reach T-F's card: T-A's card holds unsaved work/);
     await expect(cardHeader(page, tA)).toHaveAttribute('aria-expanded', 'true');
     await expect(cardHeader(page, tF)).toHaveAttribute('aria-expanded', 'false');
-    await expect(await markCell(page, tA, DATE)).toHaveValue('52.00');
+    await expect(form.getByRole('radio', { name: 'Exit', exact: true })).toBeChecked();
     await context.close();
   });
 

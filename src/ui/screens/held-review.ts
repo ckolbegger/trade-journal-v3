@@ -110,6 +110,14 @@ export function earlierMarksOf(held: Held, tradeId: string): CardEarlierMarks {
   return { ...(family.previousSession !== undefined && { previousSession: family.previousSession }), instruments };
 }
 
+// The Instrument a key names, from whichever list of the Review holds it: today's rows, the gap groups or the earlier Marks. A draft typed in
+// another Trade's grid names an Instrument this card may not hold (P156).
+export function instrumentOf(held: Held, instrumentKey: string): Instrument | undefined {
+  const family = held.review.families.find((f) => f.family === 'Marks');
+  if (family?.family !== 'Marks') return undefined;
+  return [...family.today, ...family.earlier, ...family.earlierMarks].find((entry) => entry.instrumentKey === instrumentKey)?.instrument;
+}
+
 // The card to open after an Action save (P50).
 export type NextCard =
   | { readonly kind: 'Mark'; readonly tradeId: string; readonly instrumentKey: string }

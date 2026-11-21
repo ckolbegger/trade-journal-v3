@@ -575,14 +575,15 @@ describe('Save while the Review is read again', () => {
 describe('unsaved work (A156)', () => {
   const MESSAGE = 'Save or discard what you entered for ABC to leave it';
 
-  it('should keep the open card open, make no call, and say to save or discard what was entered when another header is pressed while a draft Mark or an entered form value is held, and report unsaved through onDirtyChange', async () => {
+  it('should still hold the card while a Correct, an Action, a Debt or a reflection form has entered values', async () => {
     const user = userEvent.setup();
     const onDirtyChange = vi.fn();
     const facade = cardFacade();
     renderReview(facade, { onDirtyChange });
     const card = await screen.findByRole('region', { name: 'ABC review' });
 
-    // An entered Mark value holds the card.
+    // A Correct in progress holds the card, and reports unsaved through onDirtyChange. An Action form holds it the same way below, and a reflection form
+    // does in ReviewCard.test.tsx (Leaving an unsaved reflection).
     await showPanel(user, card, 'Marks');
     const entry = await chooseCell(user, card, 'ABC Mark, Mon Oct 12');
     await user.click(within(entry).getByRole('button', { name: 'Correct' }));
@@ -895,7 +896,7 @@ describe('Action save whose next step is a Mark (T5R.12-B3)', () => {
     expect(screen.queryByRole('status')).toBeNull();
   });
 
-  it('should stay on the card and say to save or discard when the card holds a Mark draft and the next step is a Mark', async () => {
+  it('should open the next card after an Action save with no Save or discard message when only Mark drafts exist', async () => {
     const user = userEvent.setup();
     const facade = cardFacade();
     vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'Saved', action: {} as never, review: postWith(markStep(['t-e'])) });
@@ -906,14 +907,17 @@ describe('Action save whose next step is a Mark (T5R.12-B3)', () => {
 
     await user.click(within(card).getByRole('button', { name: 'Save' }));
 
-    expect((await screen.findByRole('status')).textContent).toContain('Save or discard what you entered for DEF');
-    expect(screen.getByRole('region', { name: 'DEF review' })).toBe(card);
-    expect(screen.queryByRole('region', { name: 'JKL review' })).toBeNull();
+    // The next card opens, and the draft stays with the Review.
+    expect(await screen.findByRole('region', { name: 'JKL review' })).toBeTruthy();
+    expect(screen.queryByText(/Save or discard what you entered/)).toBeNull();
+    expect(screen.queryByRole('region', { name: 'DEF review' })).toBeNull();
+    await user.click(headers()[1]!);
+    expect(within(await screen.findByRole('region', { name: 'DEF review' })).getByRole<HTMLInputElement>('textbox', { name: 'DEF Mark, Mon Oct 12' }).value).toBe('33.10');
   });
 });
 
 describe('Action save while other forms hold values (A156)', () => {
-  it('should stay on the card, keep the entered Mark, and say why when an Action save names another card as the next step', async () => {
+  it('should open the next Trade card, keeping the entered Mark, when an Action save names another card as the next step and only Mark drafts exist', async () => {
     const user = userEvent.setup();
     const facade = cardFacade();
     const post = { kind: 'Ready', cards: [], progress: { tradesWithAction: 1, tradesEligible: 5 }, completion: MONDAY_COMPLETION, nextStep: { kind: 'Trade', trade: tradeReview(TF) }, binding } as const;
@@ -926,11 +930,11 @@ describe('Action save while other forms hold values (A156)', () => {
     await user.click(within(card).getByRole('button', { name: 'Save' }));
 
     await waitFor(() => expect(facade.DailyReview.save).toHaveBeenCalledTimes(1));
-    expect((await screen.findByRole('status')).textContent).toContain('Save or discard what you entered for DEF');
-    expect(screen.getByRole('region', { name: 'DEF review' })).toBe(card);
-    expect(screen.queryByRole('region', { name: 'XYZ review' })).toBeNull();
-    await showPanel(user, card, 'Marks');
-    expect(within(card).getByRole<HTMLInputElement>('textbox', { name: 'DEF Mark, Mon Oct 12' }).value).toBe('33.10');
+    expect(await screen.findByRole('region', { name: 'XYZ review' })).toBeTruthy();
+    expect(screen.queryByText(/Save or discard what you entered/)).toBeNull();
+    expect(screen.queryByRole('region', { name: 'DEF review' })).toBeNull();
+    await user.click(headers()[1]!);
+    expect(within(await screen.findByRole('region', { name: 'DEF review' })).getByRole<HTMLInputElement>('textbox', { name: 'DEF Mark, Mon Oct 12' }).value).toBe('33.10');
   });
 });
 

@@ -10,10 +10,11 @@ import { useRuntime } from '../runtime.tsx';
 import { shortDate, tradeName, tradeSummary } from '../format.ts';
 import { discardDraftsSetAside } from './action-draft.ts';
 import type { SavedAction } from './ActionForm.tsx';
-import type { EntryDirty } from './CardMarks.tsx';
+import { tooManyWords, type EntryDirty } from './CardMarks.tsx';
 import { fold, marksOf, nextCard, type Held, type HeldResult } from './held-review.ts';
 import { NO_GO, PANELS, ReviewCard, type CardDetail, type Go, type PanelName } from './ReviewCard.tsx';
 import { OwedCard, type OwedDetail } from './ReviewOwedCard.tsx';
+import { useMarkDrafts, type MarkDrafts } from './useMarkDrafts.ts';
 
 export interface ReviewViewProps {
   readonly facade: UiFacade;
@@ -151,14 +152,35 @@ function tradeLabels(trades: readonly WalkedTrade[], owed: readonly OwedReflecti
   };
 }
 
-function Status({ review, completion, name, openCard }: { readonly review: Ready; readonly completion: ReviewCompletion; readonly name: (tradeId: string) => string; readonly openCard: OpenCard }) {
-  const { timeZone } = useRuntime();
+// The Mark drafts on the page, with the one Save Marks and Discard over all of them (W75, W76).
+function UnsavedMarks({ drafts }: { readonly drafts: MarkDrafts }) {
+  return (
+    <div role="group" aria-label="Unsaved Marks">
+      <p>
+        <strong>
+          {drafts.count} unsaved {drafts.count === 1 ? 'Mark' : 'Marks'}
+        </strong>{' '}
+        <button type="button" className="pill primary" disabled={drafts.saving} onClick={() => void drafts.save()}>
+          Save Marks ({drafts.count})
+        </button>{' '}
+        <button type="button" className="pill secondary" onClick={drafts.discard}>
+          Discard
+        </button>
+      </p>
+      {drafts.tooMany && <p role="status">{tooManyWords(drafts.tooMany)}</p>}
+    </div>
+  );
+}
+
+function Status({ review, completion, name, openCard, drafts }: { readonly review: Ready; readonly completion: ReviewCompletion; readonly name: (tradeId: string) => string; readonly openCard: OpenCard; readonly drafts: MarkDrafts }) {
+  const { timeZone, writable } = useRuntime();
   return (
     <section className="card" aria-label="Review status">
       <ReviewDate date={review.reviewDate} />
       <p>
         <strong>{COMPLETION_TEXT[completion.kind]}</strong>
       </p>
+      {writable && drafts.count > 0 && <UnsavedMarks drafts={drafts} />}
       {completion.kind === 'CompleteWithUnavailableMarks' && (
         <div role="group" aria-label="Unavailable Marks">
           <p>Instruments: {completion.instruments.map((instrument) => instrumentLabel(instrument, timeZone)).join(', ')}</p>
@@ -258,6 +280,8 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
     latest.current = fold(latest.current, result);
     setHeldReview(latest.current);
   };
+  // The Mark drafts belong to the Review, not to a card (P156); one Save Marks sends them all (P157).
+  const markDrafts = useMarkDrafts({ latest: () => latest.current, onResult: apply, onSave: (entries, newest) => saveMarks(entries, newest) });
   // The cards follow the newest Review the screen holds (A150, decision 64): a refreshed Review re-sorts them.
   const trades = walkedTrades(review);
   const { name, line: tradeLine } = tradeLabels(trades, review.owed);
@@ -438,9 +462,30 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
   };
   // A resolved reflection leaves the card open to show it resolved, so only the overview's completion and binding follow the result.
   const reflectionResolved = (post: PostSaveReview) => apply({ kind: 'DebtResolved', review: post });
-  // The entries holding a value (Mark drafts, Action and reflection forms); the page is unsaved while any does (A156).
+  // The entries holding a value (a Correct, Action, Debt and reflection forms) hold the open card (A156); the page is unsaved while
+  // any does, or while any Mark draft exists (P156).
   const dirty = useRef(new Set<string>());
   const [held, setHeld] = useState(false);
+  const { writable } = useRuntime();
+  // A read-only shell shows no draft fields and no Discard, so its drafts hold nothing: they stay unsaved in state.
+  const draftsHeld = writable && markDrafts.count > 0;
+  const draftsReported = useRef(draftsHeld);
+  const reportDirty = useRef(onDirtyChange);
+  useEffect(() => {
+    reportDirty.current = onDirtyChange;
+  }, [onDirtyChange]);
+  useEffect(() => {
+    if (draftsReported.current === draftsHeld) return;
+    draftsReported.current = draftsHeld;
+    reportDirty.current(dirty.current.size > 0 || draftsHeld);
+  }, [draftsHeld]);
+  // The page is no longer unsaved once the Review is gone.
+  useEffect(
+    () => () => {
+      if (draftsReported.current) reportDirty.current(false);
+    },
+    [],
+  );
   // The trader asked to leave while something was held: the card says why it stays.
   const [refused, setRefused] = useState(false);
   const onEntryDirty = useCallback<EntryDirty>(
@@ -450,7 +495,7 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
       const any = dirty.current.size > 0;
       setHeld(any);
       if (!any) setRefused(false);
-      onDirtyChange(any);
+      onDirtyChange(any || draftsReported.current);
     },
     [onDirtyChange],
   );
@@ -519,11 +564,13 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
     setShown({ tradeId: post.trade.tradeId, opening, detail: { trade: post.trade } });
     setAdvance((current) => ({ tradeId: post.trade.tradeId, count: current.count + 1 }));
   };
-  const saveMarks = async (entries: readonly MarketDataPrepareEntry[]): Promise<SaveReviewMarksResult> => {
+  // Its Trade chooses the card the saved Review refreshes: the open card's, or, with none open, the Trade the newest draft was typed in.
+  const saveMarks = async (entries: readonly MarketDataPrepareEntry[], newest: string | undefined): Promise<SaveReviewMarksResult> => {
     const from = latest.current.review;
     const opening = shown?.opening ?? -1;
-    const result = await facade.DailyReview.save({ kind: 'SaveReviewMarks', reviewDate: from.reviewDate, tradeId: openId ?? '', binding: from.binding, entries });
-    if (result.kind === 'MarksSaved') marksSaved(result, opening, openId ?? '');
+    const tradeId = openId ?? newest ?? '';
+    const result = await facade.DailyReview.save({ kind: 'SaveReviewMarks', reviewDate: from.reviewDate, tradeId, binding: from.binding, entries });
+    if (result.kind === 'MarksSaved') marksSaved(result, opening, tradeId);
     return result;
   };
   // Only the card open on load is read here; later presses call select themselves.
@@ -532,7 +579,7 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
   }, [firstId, read]);
   return (
     <>
-      {empty ? <EmptyReview date={review.reviewDate} /> : <Status review={review} completion={review.completion} name={name} openCard={openCard} />}
+      {empty ? <EmptyReview date={review.reviewDate} /> : <Status review={review} completion={review.completion} name={name} openCard={openCard} drafts={markDrafts} />}
       {failed && (
         <div role="alert" className="banner warning">
           <p>We couldn’t refresh the Review. Nothing was changed.</p>
@@ -561,7 +608,8 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
                 onReflectionResolved={reflectionResolved}
                 onRefresh={() => refreshTrade(trade.tradeId)}
                 onMarkSaved={markSaved}
-                onSaveMarks={saveMarks}
+                markDrafts={markDrafts}
+                nameOf={name}
                 outOfDate={stale === trade.tradeId}
                 holdMessage={refused && trade.tradeId === openId}
                 pending={rereading}

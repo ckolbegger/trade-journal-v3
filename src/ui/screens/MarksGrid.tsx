@@ -21,6 +21,8 @@ export interface MarksGridProps {
   readonly writable: boolean;
   // What was entered for a key, or nothing.
   readonly draftOf: (key: ObservationKey) => DraftValue | undefined;
+  // The name of the Trade a key's draft was typed in, when that is not this grid's Trade: the cell shows it as Unsaved text (A293).
+  readonly typedIn: (key: ObservationKey) => string | undefined;
   readonly onPrice: (key: ObservationKey, price: string) => void;
   // The key's price input: its element id, and whether a refused save said something about it.
   readonly fieldOf: (key: ObservationKey) => { readonly id: string; readonly invalid: boolean };
@@ -38,7 +40,7 @@ type Cell = SessionGridProps['columns'][number]['cells'][number];
 const idOf = (key: ObservationKey): string => `${key.instrumentKey}:${key.tradingDate}`;
 
 // The Review's Marks grid (P158): the shared session grid with the Review's cells. Rows are the Trade's Instruments, columns its sessions.
-export function MarksGrid({ model, writable, draftOf, onPrice, fieldOf, chosen, onChoose, onLastEnter, pagingHeld }: MarksGridProps) {
+export function MarksGrid({ model, writable, draftOf, typedIn, onPrice, fieldOf, chosen, onChoose, onLastEnter, pagingHeld }: MarksGridProps) {
   const { timeZone } = useRuntime();
   const [page, setPage] = useState(0);
   const holdId = useId();
@@ -67,6 +69,8 @@ export function MarksGrid({ model, writable, draftOf, onPrice, fieldOf, chosen, 
       const id = idOf(key);
       keys.set(id, key);
       const draft = draftOf(key);
+      const elsewhere = typedIn(key);
+      if (draft !== undefined && elsewhere !== undefined && writable) return { text: draft.kind === 'Price' ? draft.price : CANT_GET_A_PRICE, label, id, unsaved: { typedIn: elsewhere } };
       if (state.resolution.kind === 'Missing' && !writable) return { text: 'Missing', label, id };
       if (state.resolution.kind === 'Missing') {
         if (draft?.kind === 'CantGetPrice') return { text: CANT_GET_A_PRICE, label, id };

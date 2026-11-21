@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { cardProgress, reflectionsOwedProgress } from '../../../tests/support/card-progress.ts';
 import type { DailyTradeReview, IncompleteReason, MarkResolution, MarkRow, OpenDailyReviewResult, OwedReflectionsTrade, PostMarksReview, PostSaveReview, ReviewBinding, ReviewCompletion, ReviewNextStep, SavedMark, WalkedTrade } from '../../app/types.ts';
 import { Rational } from '../../domain/values/index.ts';
-import { fold, marksOf, nextCard, standing, type Held, type Standing } from './held-review.ts';
+import { fold, instrumentOf, marksOf, nextCard, standing, type Held, type Standing } from './held-review.ts';
 
 type Ready = Extract<OpenDailyReviewResult, { kind: 'Ready' }>;
 type Earlier = Extract<Ready['families'][number], { family: 'Marks' }>['earlier'];
@@ -315,5 +315,13 @@ describe('marksOf (A153)', () => {
     expect(marksOf(held(), 't-a')).toEqual({ today: [xyz], earlier: [xyzGap] });
     expect(marksOf(held(), 't-f')).toEqual({ today: [xyz], earlier: [] });
     expect(marksOf(held(), 't-c')).toEqual({ today: [missingRow('DEF', ['t-c'])], earlier: [] });
+  });
+});
+
+describe('instrumentOf (P156)', () => {
+  it('should name the Instrument of a key from any list the Review holds, and nothing for a key it does not hold', () => {
+    expect(instrumentOf(held(), 'XYZ')).toEqual({ kind: 'Stock', symbol: 'XYZ' });
+    expect(instrumentOf(held(), 'DEF')).toEqual({ kind: 'Stock', symbol: 'DEF' });
+    expect(instrumentOf(held(), 'NOPE')).toBeUndefined();
   });
 });

@@ -74,7 +74,8 @@ export interface ReviewCardProps {
   readonly onReflectionResolved: (review: PostSaveReview) => void;
   readonly onRefresh: () => Promise<boolean>;
   readonly onMarkSaved: (draftId: string) => void;
-  readonly onSaveMarks: CardMarksProps['onSaveMarks'];
+  readonly markDrafts: CardMarksProps['markDrafts'];
+  readonly nameOf: CardMarksProps['tradeName'];
   // The Marks were saved but the figures were not read under them: the card says so and offers Refresh.
   readonly outOfDate: boolean;
   // The trader tried to leave while the card holds an entered value (A156).
@@ -85,7 +86,7 @@ export interface ReviewCardProps {
 }
 
 // One position of the Review: a collapsed header (Underlying, what remains, band, meter) over its content.
-export function ReviewCard({ facade, trade, expanded, detail, reveal, advance, go, marks, held, onResult, tradeLine, onToggle, onSaved, onReflectionResolved, onRefresh, onMarkSaved, onSaveMarks, outOfDate, holdMessage, pending, onEntryDirty }: ReviewCardProps) {
+export function ReviewCard({ facade, trade, expanded, detail, reveal, advance, go, marks, held, onResult, tradeLine, onToggle, onSaved, onReflectionResolved, onRefresh, onMarkSaved, markDrafts, nameOf, outOfDate, holdMessage, pending, onEntryDirty }: ReviewCardProps) {
   const item = useRef<HTMLLIElement>(null);
   const header = useRef<HTMLButtonElement>(null);
   const { timeZone } = useRuntime();
@@ -149,7 +150,8 @@ export function ReviewCard({ facade, trade, expanded, detail, reveal, advance, g
           onReflectionResolved={onReflectionResolved}
           onRefresh={onRefresh}
           onMarkSaved={onMarkSaved}
-          onSaveMarks={onSaveMarks}
+          markDrafts={markDrafts}
+          nameOf={nameOf}
           outOfDate={outOfDate}
           pending={pending}
           onEntryDirty={onEntryDirty}
@@ -176,7 +178,8 @@ interface CardBodyProps {
   readonly onReflectionResolved: (review: PostSaveReview) => void;
   readonly onRefresh: () => Promise<boolean>;
   readonly onMarkSaved: (draftId: string) => void;
-  readonly onSaveMarks: CardMarksProps['onSaveMarks'];
+  readonly markDrafts: CardMarksProps['markDrafts'];
+  readonly nameOf: CardMarksProps['tradeName'];
   readonly outOfDate: boolean;
   readonly pending: boolean;
   readonly onEntryDirty: EntryDirty;
@@ -238,7 +241,7 @@ function panelHeaders(trade: DailyTradeReview, progress: CardProgress, marks: Ca
 }
 
 // The open card: its figures, then the three panels in the spec's work order (P36, A152), one open at a time.
-function CardBody({ facade, trade, progress, name, advance, go, marks, held, onResult, tradeLine, onSaved, onReflectionResolved, onRefresh, onMarkSaved, onSaveMarks, outOfDate, pending, onEntryDirty }: CardBodyProps) {
+function CardBody({ facade, trade, progress, name, advance, go, marks, held, onResult, tradeLine, onSaved, onReflectionResolved, onRefresh, onMarkSaved, markDrafts, nameOf, outOfDate, pending, onEntryDirty }: CardBodyProps) {
   const uid = useId();
   const headers = panelHeaders(trade, progress, marks);
   // The card's panels in work order: the Settlement panel is there only while a contract's settlement is due (decision 81).
@@ -372,7 +375,7 @@ function CardBody({ facade, trade, progress, name, advance, go, marks, held, onR
             </button>
           </h4>
           <div id={`${uid}-${name}`} hidden={open !== name}>
-            {name === 'Marks' && <CardMarks link={go} facade={facade} tradeId={trade.tradeId} marks={marks} held={held} onResult={onResult} tradeLine={tradeLine} onEntryDirty={onEntryDirty} onMarkSaved={onMarkSaved} onSaveMarks={onSaveMarks} outOfDate={outOfDate} onRefresh={onRefresh} />}
+            {name === 'Marks' && <CardMarks link={go} facade={facade} tradeId={trade.tradeId} marks={marks} held={held} onResult={onResult} tradeLine={tradeLine} onEntryDirty={onEntryDirty} onMarkSaved={onMarkSaved} markDrafts={markDrafts} tradeName={nameOf} outOfDate={outOfDate} onRefresh={onRefresh} />}
             {name === 'Reflections' && <ReviewReflections facade={facade} reviewDate={trade.saveBinding.reviewDate} reflections={trade.reflections} onReview={onReflectionResolved} onNoneRemaining={finishPanel} onEntryDirty={onEntryDirty} />}
             {name === 'Settlement' && <SettlementPanel tradeId={trade.tradeId} items={trade.settlement} timeZone={timeZone ?? 'UTC'} />}
             {name === 'Action' && trade.replay && (

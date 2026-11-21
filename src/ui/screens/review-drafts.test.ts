@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ExpectedResolutionRevision, ObservationKey } from '../../app/types.ts';
-import { draftAt, emptyDrafts, discardAll, keepOnly, moveDraft, saveEntries, setDraft, clearDraft } from './review-drafts.ts';
+import { draftAt, draftCount, emptyDrafts, discardAll, newestTrade, keepOnly, moveDraft, saveEntries, setDraft, clearDraft } from './review-drafts.ts';
 
 const THURSDAY = { instrumentKey: 'XYZ', tradingDate: '2026-10-08' };
 const MONDAY = { instrumentKey: 'XYZ', tradingDate: '2026-10-12' };
@@ -93,5 +93,16 @@ describe('drafts by observation key (A292)', () => {
         { key: CALL_MONDAY, expectedRevision: 5, intention: { kind: 'RecordInitialManualMark', price: '0.35' } },
       ],
     });
+  });
+
+  it('should count the drafts on the page and name the Trade the newest was typed in', () => {
+    const typed = setDraft(setDraft(emptyDrafts, THURSDAY, { kind: 'Price', price: '9.00' }, 't-a'), MONDAY, { kind: 'Price', price: '9.50' }, 't-f');
+
+    expect(draftCount(emptyDrafts)).toBe(0);
+    expect(newestTrade(emptyDrafts)).toBeUndefined();
+    expect(draftCount(typed)).toBe(2);
+    expect(newestTrade(typed)).toBe('t-f');
+    // A key typed again keeps its place, so the newest key is still the last entered; moving a draft to a Trade makes that Trade its owner.
+    expect(newestTrade(moveDraft(typed, MONDAY, 't-a'))).toBe('t-a');
   });
 });

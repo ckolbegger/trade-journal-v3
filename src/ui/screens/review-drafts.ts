@@ -19,6 +19,11 @@ const idOf = (key: ObservationKey): string => `${key.instrumentKey}:${key.tradin
 
 export const draftAt = (drafts: Drafts, key: ObservationKey): Draft | undefined => drafts[idOf(key)];
 
+export const draftCount = (drafts: Drafts): number => Object.keys(drafts).length;
+
+// The Trade the newest draft was typed in: the Trade a Save Marks with no card open refreshes (P157).
+export const newestTrade = (drafts: Drafts): string | undefined => Object.values(drafts).at(-1)?.tradeId;
+
 // Discard empties every draft on the page (P156).
 export const discardAll = (): Drafts => emptyDrafts;
 

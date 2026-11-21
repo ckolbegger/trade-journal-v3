@@ -324,7 +324,7 @@ describe('Marks in the card (P11, P15)', () => {
     // Held by this card's Trade alone, it names no other Trade.
     expect(within(await chooseCell(user, 'DEF Mark, Mon Oct 12')).queryByRole('link')).toBeNull();
     await user.type(within(other).getByRole('textbox', { name: 'DEF Mark, Mon Oct 12' }), '12');
-    await user.click(screen.getByRole('button', { name: 'Save Marks (1)' }));
+    await user.click(within(other).getByRole('button', { name: 'Save Marks (1)' }));
     expect(facade.DailyReview.save).toHaveBeenLastCalledWith(
       expect.objectContaining({ kind: 'SaveReviewMarks', tradeId: 't3', entries: [{ key: { instrumentKey: 'DEF', tradingDate: '2026-10-12' }, expectedRevision: 'None', intention: { kind: 'RecordInitialManualMark', price: '12' } }] }),
     );
@@ -368,7 +368,7 @@ describe('Marks in the card (P11, P15)', () => {
 
     // Each cell's draft is bound to its own date and revision.
     await user.type(within(marks).getByRole('textbox', { name: 'MNO Mark, Thu Sep 24' }), '9');
-    await user.click(screen.getByRole('button', { name: 'Save Marks (1)' }));
+    await user.click(within(marks).getByRole('button', { name: 'Save Marks (1)' }));
     expect(facade.DailyReview.save).toHaveBeenLastCalledWith(
       expect.objectContaining({ entries: [{ key: { instrumentKey: 'MNO', tradingDate: day(24) }, expectedRevision: 4, intention: { kind: 'RecordInitialManualMark', price: '9' } }] }),
     );
@@ -407,7 +407,7 @@ describe('Marks in the card (P11, P15)', () => {
     // An acknowledged date can take a price, but not another acknowledgment.
     expect(within(row).queryByRole('button', { name: "Can't get a price" })).toBeNull();
     await user.type(within(row).getByLabelText('Price'), '9.5');
-    await user.click(screen.getByRole('button', { name: 'Save Marks (1)' }));
+    await user.click(within(screen.getByRole('region', { name: 'Marks' })).getByRole('button', { name: 'Save Marks (1)' }));
     expect(facade.DailyReview.save).toHaveBeenCalledWith(
       expect.objectContaining({ entries: [{ key: { instrumentKey: 'DEF', tradingDate: '2026-10-09' }, expectedRevision: 2, intention: { kind: 'RecordInitialManualMark', price: '9.5' } }] }),
     );
@@ -444,7 +444,7 @@ describe('Marks in the card (P11, P15)', () => {
     const user = userEvent.setup();
     await openMarks(user);
     await user.type(await screen.findByRole('textbox', { name: 'DEF Mark, Fri Oct 9' }), '9');
-    await user.click(screen.getByRole('button', { name: 'Save Marks (1)' }));
+    await user.click(within(screen.getByRole('region', { name: 'Marks' })).getByRole('button', { name: 'Save Marks (1)' }));
     await user.click(await screen.findByRole('button', { name: 'Refresh' }));
     await waitFor(() => expect(facade.DailyReview.open).toHaveBeenCalledTimes(2));
     await waitFor(() => expect(facade.DailyReview.getTrade).toHaveBeenCalledTimes(2));
@@ -540,7 +540,7 @@ describe('Marks in the card (P11, P15)', () => {
     await user.clear(todayEntry);
     // One draft still holds a value.
     expect(dirty).toHaveBeenLastCalledWith(true);
-    await user.click(screen.getByRole('button', { name: 'Discard' }));
+    await user.click(within(screen.getByRole('region', { name: 'Marks' })).getByRole('button', { name: 'Discard' }));
     expect(dirty).toHaveBeenLastCalledWith(false);
   });
 
