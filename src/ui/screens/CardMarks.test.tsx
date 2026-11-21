@@ -327,6 +327,50 @@ describe('the Marks grid, keyboard (A295)', () => {
   });
 });
 
+describe('the cell editor shows its cell and goes when its page does (P160)', () => {
+  it('should title the editor box with its cell name and status', async () => {
+    renderReview(cardFacade(pagedReview()));
+    const user = userEvent.setup();
+    const panel = await marksPanel();
+    const monday = await choose(user, panel, 'XYZ', MONDAY_LABEL);
+    expect(within(monday).getByText('XYZ Mark, Mon Oct 12 · Missing')).toBeTruthy();
+
+    await user.click(within(monday).getByRole('button', { name: "Can't get a price" }));
+    expect(within(monday).getByText("XYZ Mark, Mon Oct 12 · Can't get a price")).toBeTruthy();
+  });
+
+  it('should close an editor whose cell is not on the shown page, keeping its draft', async () => {
+    renderReview(cardFacade(pagedReview()));
+    const user = userEvent.setup();
+    const panel = await marksPanel();
+    await user.type(inputOf(panel, 'XYZ', 'Fri Sep 25'), '49.00');
+    expect(editors(panel).map((editor) => editor.getAttribute('aria-label'))).toEqual(['XYZ Mark, Fri Sep 25']);
+
+    await user.click(within(panel).getByRole('button', { name: 'Next page' }));
+    expect(editors(panel)).toEqual([]);
+    expect(within(panel).getByRole('button', { name: 'Save Marks (1)' })).toBeTruthy();
+
+    await user.click(within(panel).getByRole('button', { name: 'Previous page' }));
+    expect(editors(panel)).toEqual([]);
+    expect(inputOf(panel, 'XYZ', 'Fri Sep 25').value).toBe('49.00');
+  });
+
+  it('should not send Tab to the first grid cell after paging away from the chosen cell', async () => {
+    renderReview(cardFacade(pagedReview()));
+    const user = userEvent.setup();
+    const panel = await marksPanel();
+    await choose(user, panel, 'XYZ', 'Fri Sep 25');
+    await user.click(within(panel).getByRole('button', { name: 'Next page' }));
+    // The editor went with its page, so there is no last control for Tab to leave from.
+    expect(editors(panel)).toEqual([]);
+
+    await user.tab();
+    await user.tab();
+    const grid = gridOf(panel);
+    expect(grid.contains(document.activeElement)).toBe(false);
+  });
+});
+
 describe('the Marks grid, one tab stop per cell with its editor in between (P160)', () => {
   const laterCells = () => {
     const thursday: Earlier[number] = { ...xyzGap, trades: [{ tradeId: 't-a', from: THURSDAY }], missing: [THURSDAY], revisions: { [THURSDAY]: 'None' } };

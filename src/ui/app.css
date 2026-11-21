@@ -171,6 +171,19 @@ html:has(.shell:not([data-layout='wide'])) {
   margin-inline: 0;
 }
 
+/* The Marks grid's cell editor: a bordered box titled with its cell and status (P160). */
+[data-cell-editor] {
+  border: 1px solid var(--focus);
+  border-radius: 10px;
+  padding: 0.6rem 0.75rem;
+  margin-top: 0.5rem;
+}
+
+[data-cell-editor] .cell-editor-title {
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
 .banner.warning {
   background: var(--warning-ground);
   border-color: var(--warning-line);

@@ -28,6 +28,9 @@ export interface MarkEntryProps {
   readonly offerEntry?: boolean;
   // Shown under the key's status, inside its region: the host's own controls for the key.
   readonly children?: ReactNode;
+  // The grid's cell editor is a box titled with its cell and status (P160); `draftStatus` is the status of a draft held over the key.
+  readonly titled?: boolean;
+  readonly draftStatus?: string;
 }
 
 // The plan's and the acceptance rows' exact label, with a straight apostrophe.
@@ -43,8 +46,15 @@ const FITS: Record<'Enter' | 'Correct' | 'Acknowledge', readonly MarkResolution[
   Acknowledge: ['Missing'],
 };
 
+// The status words of a key's resolution, as its editor's status line has them.
+// An Available key's figure is in its status line below, so its title says only the source.
+function statusWords(resolution: MarkResolution): string {
+  if (resolution.kind === 'Available') return resolution.mark.source;
+  return resolution.kind === 'Missing' ? 'Missing' : acknowledgedUnavailableStatusLabel();
+}
+
 // One Instrument's Mark for one session: its resolution and the actions that change it.
-export function MarkEntry({ facade, instrumentKey, instrument, tradingDate, resolution: initial, resolutionRevision: initialRevision, withdraw = true, onDirtyChange, onSaved, offerEntry = true, children }: MarkEntryProps) {
+export function MarkEntry({ facade, instrumentKey, instrument, tradingDate, resolution: initial, resolutionRevision: initialRevision, withdraw = true, onDirtyChange, onSaved, offerEntry = true, children, titled = false, draftStatus }: MarkEntryProps) {
   const { writable, report, timeZone } = useRuntime();
   const [resolution, setResolution] = useState(initial);
   const [revision, setRevision] = useState(initialRevision);
@@ -158,6 +168,7 @@ export function MarkEntry({ facade, instrumentKey, instrument, tradingDate, reso
 
   return (
     <section aria-label={`${instrumentLabel(instrument, timeZone)} Mark, ${shortDate(tradingDate)}`} data-instrument-key={instrumentKey}>
+      {titled && <div className="cell-editor-title" aria-hidden="true">{`${instrumentLabel(instrument, timeZone)} Mark, ${shortDate(tradingDate)} · ${draftStatus ?? statusWords(resolution)}`}</div>}
       {resolution.kind === 'Available' && (
         <p>
           <span className="number">{decimalMoney(resolution.mark.price)}</span> · {resolution.mark.source}

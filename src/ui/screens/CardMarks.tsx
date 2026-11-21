@@ -136,7 +136,7 @@ function CellEditor({ panel, instrumentKey, instrument, tradingDate, listed, wit
     if (now.resolution.kind === 'AcknowledgedUnavailable' && next.kind === 'Missing') panel.focus(fieldIds(panel.uid, id).price);
   };
   return (
-    <ReviewMarkEntry facade={panel.facade} instrumentKey={instrumentKey} instrument={instrument} tradingDate={tradingDate} resolution={now.resolution} resolutionRevision={now.revision} withdraw={withdraw} offerEntry={false} onEntryDirty={panel.onEntryDirty} onMarkSaved={saved}>
+    <ReviewMarkEntry facade={panel.facade} instrumentKey={instrumentKey} instrument={instrument} tradingDate={tradingDate} resolution={now.resolution} resolutionRevision={now.revision} withdraw={withdraw} offerEntry={false} titled draftStatus={panel.draftOf(key)?.kind === 'CantGetPrice' ? CANT_GET_A_PRICE : undefined} onEntryDirty={panel.onEntryDirty} onMarkSaved={saved}>
       {children}
       {panel.writable && <DraftFields panel={panel} tradeKey={key} resolution={now.resolution} />}
     </ReviewMarkEntry>
@@ -369,6 +369,10 @@ export function CardMarks({ facade, tradeId, marks, held: heldReview, onResult, 
         onChoose={choose}
         onLastEnter={() => saveButton.current?.focus()}
         pagingHeld={dirtyIds.size > 0}
+        onPage={(visible) => {
+          // An editor whose cell is not on the shown page closes; a draft in it stays (P160).
+          if (chosen !== undefined && !visible.includes(chosen.tradingDate)) setChosen(undefined);
+        }}
       />
       {opened.length > 0 && <p>Earlier sessions don't block the Review.</p>}
       {refused && dirtyIds.size > 0 && <p role="status">Save or cancel the correction to choose another cell.</p>}

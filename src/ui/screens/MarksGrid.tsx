@@ -33,6 +33,8 @@ export interface MarksGridProps {
   readonly onLastEnter: () => void;
   // Paging waits while a correction is in progress (A296, W80).
   readonly pagingHeld: boolean;
+  // Paging shows these sessions (the Review Date, the previous one and the page's earlier ones).
+  readonly onPage: (visible: readonly string[]) => void;
 }
 
 type Cell = SessionGridProps['columns'][number]['cells'][number];
@@ -40,7 +42,7 @@ type Cell = SessionGridProps['columns'][number]['cells'][number];
 const idOf = (key: ObservationKey): string => `${key.instrumentKey}:${key.tradingDate}`;
 
 // The Review's Marks grid (P158): the shared session grid with the Review's cells. Rows are the Trade's Instruments, columns its sessions.
-export function MarksGrid({ model, writable, draftOf, typedIn, onPrice, fieldOf, chosen, onChoose, onLastEnter, pagingHeld }: MarksGridProps) {
+export function MarksGrid({ model, writable, draftOf, typedIn, onPrice, fieldOf, chosen, onChoose, onLastEnter, pagingHeld, onPage }: MarksGridProps) {
   const { timeZone } = useRuntime();
   const [page, setPage] = useState(0);
   const holdId = useId();
@@ -103,6 +105,10 @@ export function MarksGrid({ model, writable, draftOf, typedIn, onPrice, fieldOf,
     });
     return { session: date, weekday, date: rest.join(' '), ...(role && { role }), cells };
   });
+  const goTo = (to: number) => {
+    setPage(to);
+    onPage([...fixed, ...earlier.slice(to * SESSIONS_PER_PAGE, (to + 1) * SESSIONS_PER_PAGE)].map(({ date }) => date));
+  };
   const paging = { disabled: pagingHeld, 'aria-describedby': pagingHeld ? holdId : undefined };
   return (
     <div>
@@ -125,7 +131,7 @@ export function MarksGrid({ model, writable, draftOf, typedIn, onPrice, fieldOf,
           {page > 0 && (
             <button type="button" ref={previousButton} className="pill secondary" {...paging} onClick={() => {
                 pressed.current = 'previous';
-                setPage(page - 1);
+                goTo(page - 1);
               }}>
               Previous page
             </button>
@@ -133,7 +139,7 @@ export function MarksGrid({ model, writable, draftOf, typedIn, onPrice, fieldOf,
           {first + SESSIONS_PER_PAGE < earlier.length && (
             <button type="button" ref={nextButton} className="pill secondary" {...paging} onClick={() => {
                 pressed.current = 'next';
-                setPage(page + 1);
+                goTo(page + 1);
               }}>
               Next page
             </button>
