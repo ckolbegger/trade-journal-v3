@@ -369,3 +369,32 @@ D9R2 runs one task at a time (P162; decision 100). Each task's heading holds its
 - critic-2 defects: 1 high (the grid's Previous page and Next page can't be reached by keyboard; B1's Tab route skips the pager) → **T9R2.17-B7**; 2 high (after another tab saves a Mark, a card that wasn't open fails to load, "We couldn't load this Trade"; breaks A294 with the refused key's card closed; the critic thinks the cause predates D9R2) → **T9R2.17-B8**; 3 moderate (leaving the page by route or reload with Mark drafts doesn't ask, against P156's row; probably app-wide and earlier) → **T9R2.17-B9**; 4 low → tech debt item 3.
 - Confirmed fixed from critic-1: keyboard into the editor (B1), conflict focus (B2), the phone widths at 375 and 320 (B4, including a one-leg Trade), the editor's title (B5). The B3 subagent's note on Cancel focus was not reported.
 - Minor observations (not defects; for the final report): the header's "28 earlier optional" against the pager's "of 27"; at 1280 px the pager text touches Next page; the "also held by" link omits the symbol; on a phone the editor sits about 1,100 px below the top cells; two status messages at once when opening another card during a Correct; grid row names repeat the label; a collapsed panel measures turned (tech debt item 1); Withdraw has no confirmation; Trade Detail's Journal lists a "Session not ended yet" card (earlier work).
+
+### T9R2.17-B7 The pager by keyboard (critic-2 defect 1, high)
+
+- Commit 41b348cf. Unit case "should reach Previous page and Next page by Tab from the editor of the last cell and by Shift Tab from Save Marks": red (Tab from the last cell's editor passed the pager), then green; one invalid first red (a "+" in the name broke `-t` filtering) was deleted and the case renamed. Order: each cell one tab stop; the pager after the last cell (after its editor when the last cell is chosen); Tab from the pager goes on to Save Marks, not back into the editor; Shift+Tab from the control after the editor reaches the pager; a held (disabled) pager is skipped. Browser case in `e2e/d9r2/responsive-a11y.spec.ts` fills, pages once and saves once by keyboard (written after the fix; the subagent reasons it would fail on the old code, not run against it: flagged). First-run passes: none. e2e d9r2, d5r, d4 review, d4 gaps: 34 passed.
+- ocr (`ocr/T9R2.17-B7-41b348cf.json`): no findings.
+
+### T9R2.17-B8 A card loads after another tab saves a Mark (critic-2 defect 2, high)
+
+- Commit 8c40e8b7. Root cause: `ReviewView.read` (from D5R) read each card on the held binding; another tab's Mark save moves the market-data snapshot, so `DailyReview.getTrade` answered `ReviewChanged`, shown as "We couldn't load this Trade". Fix: on `ReviewChanged`, `read` reopens the Review once through the existing `reopenAndApply` (drafts reconciled as usual) and reads again; a second refusal shows Unavailable as before. Unit case in `ReviewView.test.tsx`: red (no "DEF review" region), then green. Browser case in `e2e/d9r2/editor.spec.ts`: the critic's short steps and the C9R2.3 refused save with the card closed (focus in the refused cell's Price); red with the fix switched off, green with it. First-run passes: none. e2e d9r2, d5r, d4 review, d4 gaps: 35 passed.
+- ocr (`ocr/T9R2.17-B8-8c40e8b7.json`): 2 findings.
+
+| Severity | Category | Location | Claim | Verdict |
+|---|---|---|---|---|
+| medium | bug | `ReviewView.tsx:331` | The retry runs only when the reopened Review is Ready; an Empty Review that still holds owed cards gets no retry, so the card shows "We couldn't load this Trade". | Valid. Bug task **T9R2.17-B10**. |
+| medium | test | `ReviewView.test.tsx:650` | The refusal mock is set before render, so the mount read is refused and reopens first; the case covers the mount read, not the card-press retry. | Valid. Carried by **T9R2.17-B10** (a case that refuses only the card press's read). |
+
+### T9R2.17-B9 Leaving the page asks while work is unsaved (critic-2 defect 3, moderate)
+
+- Commit e5da194d. New `src/ui/leave-guard.tsx` wraps the shell in `src/main.tsx` and reads `updates.state().unsavedHere` (the flag the update deferral uses): pressing an in-app link to another path asks "Leave without saving?" (`window.confirm`; Cancel stays); a reload or tab close is held by `beforeunload`. Three unit cases (one invalid first red fixed by an added assertion, then red), each green; browser case in `drafts.spec.ts` red with the guard forced off, green with it (a dispatched `beforeunload`, not a real reload; a Mark draft only). First-run passes: none. e2e d9r2, d5r, d4 review, d4 gaps: 36 passed.
+- **Scope, recorded for the user's review:** the flag is app-wide, so every screen with unsaved work (Plan, Entry, Expiration, Trade detail, the Review) now asks on a link press, not only the Review. Not covered: browser Back and Forward, programmatic navigation, and links within the same path. A first version guarding the router also asked on a save's own move to the next screen and was dropped. New phrase in `new-words.md`.
+- ocr (`ocr/T9R2.17-B9-e5da194d.json`): 1 finding.
+
+| Severity | Category | Location | Claim | Verdict |
+|---|---|---|---|---|
+| medium | test | `e2e/d9r2/drafts.spec.ts:180` | The browser case only dispatches a synthetic `beforeunload`; it never drives a real reload or tab close with a dialog handler, and the earlier draft-reload case doesn't meet the new prompt. | Doubtful (the reviewer: the synthetic event checks what the code owns). Under the rule, a Doubtful finding becomes a bug task: **T9R2.17-B11**. |
+
+### T9R2.17-B10 The read retry on an Empty Review; the card-press retry tested (ocr on T9R2.17-B8)
+
+- Commit f37a9a7a. The retry in `read` now runs for any reopened Review, Ready or Empty. New case "should read the Review again and show the owed card when the reopened Review is Empty": red, then green. B8's case reshaped to wait for the mount read, then refuse only the card press's read: red with the retry switched off, green restored (named change). First-run passes: none. e2e d9r2, d5r, d4 review, d4 gaps: 36 passed.

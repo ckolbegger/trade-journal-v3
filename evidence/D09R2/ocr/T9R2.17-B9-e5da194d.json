@@ -1,0 +1,135 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 1,
+    "total_tokens": 153231,
+    "input_tokens": 151060,
+    "output_tokens": 2171,
+    "cache_read_tokens": 14976,
+    "elapsed": "1m10s"
+  },
+  "tool_calls": {
+    "total": 23,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 10,
+      "file_find": 1,
+      "file_read": 11
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "e2e/d9r2/drafts.spec.ts",
+      "content": "This synthetic event only verifies that a listener calls preventDefault(); it never exercises the browser's unload prompt or verifies that cancelling a reload preserves the draft. Please exercise an actual reload with a `beforeunload` dialog handler, dismiss it and assert the typed value remains, then accept a subsequent reload and assert navigation completes. Also update the existing draft-reload test above to explicitly accept the new prompt rather than relying on Playwright's automatic dialog dismissal.",
+      "existing_code": "    expect(await page.evaluate(() =\u003e !window.dispatchEvent(new Event('beforeunload', { cancelable: true })))).toBe(true);",
+      "start_line": 180,
+      "end_line": 180,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Leave guard implementation, app integration, and draft navigation tests",
+      "files": [
+        "e2e/d9r2/drafts.spec.ts",
+        "src/main.tsx",
+        "src/ui/leave-guard.test.tsx",
+        "src/ui/leave-guard.tsx"
+      ]
+    }
+  ],
+  "session_id": "c3ae9979-c524-4f12-8f2e-d751faab2c18",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "c3ae9979-c524-4f12-8f2e-d751faab2c18",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "e5da194d",
+      "resolved_base": "8c40e8b74cfed7007d11de363c098d45163841f3",
+      "resolved_head": "e5da194db16ab3f30b1989e1bd137676fadafebd",
+      "exact_range": "8c40e8b74cfed7007d11de363c098d45163841f3..e5da194db16ab3f30b1989e1bd137676fadafebd",
+      "source_artifact_sha256": "41da40e0afd7445d4ca029c35426bb800ef550f44034fbb7d8a1490ed436f6e7"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "2cea7a8f0a615fab36f0772e4ab911b1ac0ac370d3fd3b63456d0f119394ed5e",
+          "path": "src/main.tsx",
+          "fingerprint": "a01b3b9f79c56f5087c82d3c77a3116cc905dd5a624bf3310a639492e856869f"
+        },
+        {
+          "item_id": "9ab16b36df4392ded415a0391edc5285bdb9f1d7a13703293ca956461454f74e",
+          "path": "src/ui/leave-guard.test.tsx",
+          "fingerprint": "2a12a75c3e03ee2724e6ddeebd64ed485f45dc249f083cd11cb4561f109f34df"
+        },
+        {
+          "item_id": "a8a0cb5e0fe5c170291e7988915f6301f09fccd32525f71b8852663635f1bf0e",
+          "path": "src/ui/leave-guard.tsx",
+          "fingerprint": "333c28165f94a48ef5611ef4d95beb43f84b6ee779e9abd6ac4d16f840b3519d"
+        },
+        {
+          "item_id": "fed5682a5207a921ed47d1f9665bb3fd2982f5974f6ec6ead8ef25d207dbe648",
+          "path": "e2e/d9r2/drafts.spec.ts",
+          "fingerprint": "b14a14f98a196dc65559a27197cb58f0cc0babc53b42be94ca3746c9a1bfbe67"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "2cea7a8f0a615fab36f0772e4ab911b1ac0ac370d3fd3b63456d0f119394ed5e",
+          "path": "src/main.tsx",
+          "fingerprint": "a01b3b9f79c56f5087c82d3c77a3116cc905dd5a624bf3310a639492e856869f"
+        },
+        {
+          "item_id": "9ab16b36df4392ded415a0391edc5285bdb9f1d7a13703293ca956461454f74e",
+          "path": "src/ui/leave-guard.test.tsx",
+          "fingerprint": "2a12a75c3e03ee2724e6ddeebd64ed485f45dc249f083cd11cb4561f109f34df"
+        },
+        {
+          "item_id": "a8a0cb5e0fe5c170291e7988915f6301f09fccd32525f71b8852663635f1bf0e",
+          "path": "src/ui/leave-guard.tsx",
+          "fingerprint": "333c28165f94a48ef5611ef4d95beb43f84b6ee779e9abd6ac4d16f840b3519d"
+        },
+        {
+          "item_id": "fed5682a5207a921ed47d1f9665bb3fd2982f5974f6ec6ead8ef25d207dbe648",
+          "path": "e2e/d9r2/drafts.spec.ts",
+          "fingerprint": "b14a14f98a196dc65559a27197cb58f0cc0babc53b42be94ca3746c9a1bfbe67"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "5bb7aabbd0c50610b7dacd04c0e78f3d73a01319ee1a4bff9c8cef9ac80c2679",
+          "path": "evidence/D09R2/tdd-log/T9R2.17-B9.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 69816
+  }
+}

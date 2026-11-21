@@ -1,0 +1,132 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 2,
+    "total_tokens": 108694,
+    "input_tokens": 107648,
+    "output_tokens": 1046,
+    "cache_read_tokens": 13696,
+    "elapsed": "42s"
+  },
+  "tool_calls": {
+    "total": 10,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 1,
+      "file_read": 8
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/ReviewView.tsx",
+      "content": "Retry the card read for a successfully reopened Empty Review as well, if it still lists this Trade in `owed`. Empty Reviews can contain owed-reflection cards (as `heldEmpty` and `refreshTrade` already handle). If another tab closes the last walked Trade while leaving reflections owed, this branch applies the Empty Review but skips the retry, so the surviving owed card displays “We couldn’t load this Trade” instead of its reflections.",
+      "existing_code": "      if (result?.kind === 'ReviewChanged' \u0026\u0026 (await reopenApplied.current?.())?.kind === 'Ready') result = await readUnder(latest.current.review);",
+      "start_line": 331,
+      "end_line": 331,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/ReviewView.test.tsx",
+      "content": "Make the binding become stale only after the initial card has loaded. This mock refuses the automatic initial read of t1 as well, which can reopen the Review before DEF is clicked. The test can therefore pass without exercising recovery for the card press it is meant to cover. Wait for the initial XYZ card, then install the refusal/new-open mocks and assert that DEF was requested under both bindings.",
+      "existing_code": "    vi.mocked(facade.DailyReview.getTrade).mockImplementation((request) =\u003e (request.binding === newBinding ? asBefore(request) : Promise.resolve({ kind: 'ReviewChanged' })));",
+      "start_line": 650,
+      "end_line": 650,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "e2e/d9r2/editor.spec.ts",
+        "src/ui/screens/ReviewView.test.tsx",
+        "src/ui/screens/ReviewView.tsx"
+      ]
+    }
+  ],
+  "session_id": "6fe56086-7682-4fda-a6a9-7965a5fcd8b1",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "6fe56086-7682-4fda-a6a9-7965a5fcd8b1",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "8c40e8b7",
+      "resolved_base": "41b348cf218e9eb6544867e7a0b50f5f914a3587",
+      "resolved_head": "8c40e8b74cfed7007d11de363c098d45163841f3",
+      "exact_range": "41b348cf218e9eb6544867e7a0b50f5f914a3587..8c40e8b74cfed7007d11de363c098d45163841f3",
+      "source_artifact_sha256": "ec63c79c8eeb9692bee3b462546ba728d2e34b949b318f1a67a382ec1d739d9b"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "3cf9414b1e71d6bf75ed43c10434c52fcf2ab85f6f24794f8b11e5e93d4905c8"
+        },
+        {
+          "item_id": "753b83ca5a903e8d14ea3e457c9530bd2d7b2bc497a4b3ee29b26852ef9eb3ab",
+          "path": "src/ui/screens/ReviewView.test.tsx",
+          "fingerprint": "55b2a9c348b79112520eb386acf2e41696e3ab00921b897e2eb761728996e92b"
+        },
+        {
+          "item_id": "d9dd7525e9f2bac9d493f5adb8147da945c3e6d6982ba0063b9952c2aa4148eb",
+          "path": "e2e/d9r2/editor.spec.ts",
+          "fingerprint": "1948106a49f1bae89f8686cddcfcaa88d3d15616ed27f6f8104090e001e615d5"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "3cf9414b1e71d6bf75ed43c10434c52fcf2ab85f6f24794f8b11e5e93d4905c8"
+        },
+        {
+          "item_id": "753b83ca5a903e8d14ea3e457c9530bd2d7b2bc497a4b3ee29b26852ef9eb3ab",
+          "path": "src/ui/screens/ReviewView.test.tsx",
+          "fingerprint": "55b2a9c348b79112520eb386acf2e41696e3ab00921b897e2eb761728996e92b"
+        },
+        {
+          "item_id": "d9dd7525e9f2bac9d493f5adb8147da945c3e6d6982ba0063b9952c2aa4148eb",
+          "path": "e2e/d9r2/editor.spec.ts",
+          "fingerprint": "1948106a49f1bae89f8686cddcfcaa88d3d15616ed27f6f8104090e001e615d5"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "426e65590887066d3a5abcfcf73d5ee5ffc95cf373cceee4d9b8543ad95f18f8",
+          "path": "evidence/D09R2/tdd-log/T9R2.17-B8.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 42006
+  }
+}
