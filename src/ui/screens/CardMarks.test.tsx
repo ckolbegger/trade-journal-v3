@@ -405,6 +405,21 @@ describe('the Marks grid, one tab stop per cell with its editor in between (P160
     expect(document.activeElement).toBe(inputOf(panel, 'XYZ', MONDAY_LABEL));
   });
 
+  it('should reach Save Marks by Tab past a saved cell that follows the chosen cell', async () => {
+    renderReview(cardFacade(gridReview({ today: [missingRow('XYZ', ['t-a', 't-f'])], earlier: [], earlierMarks: [xyzMarks({ [FRIDAY]: markAt('51', 3) })] })));
+    const user = userEvent.setup();
+    const panel = await marksPanel();
+    await choose(user, panel, 'XYZ', MONDAY_LABEL);
+    await user.type(inputOf(panel, 'XYZ', MONDAY_LABEL), '52.00');
+
+    let reached = false;
+    for (let i = 0; i < 25 && !reached; i++) {
+      await user.tab();
+      reached = document.activeElement === within(panel).getByRole('button', { name: 'Save Marks (1)' });
+    }
+    expect(reached).toBe(true);
+  });
+
   it('should take Tab from a chosen earlier cell to Correct in its editor while later cells exist', async () => {
     renderReview(laterCells());
     const user = userEvent.setup();

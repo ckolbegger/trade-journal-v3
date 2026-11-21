@@ -333,6 +333,8 @@ export function CardMarks({ facade, tradeId, marks, held: heldReview, onResult, 
       if (!to) return;
       event.preventDefault();
       to.focus();
+      // A button cell chooses on press, not on focus: choose it here too, or Tab would come back to this editor and its last control to this cell.
+      if (to.tagName === 'BUTTON' && !event.shiftKey && target !== cell) to.click();
     };
     if (!event.shiftKey && target === cell) go(controls[0]);
     else if (!event.shiftKey && target === controls[controls.length - 1]) go(cells[cells.indexOf(cell as HTMLElement) + 1]);
