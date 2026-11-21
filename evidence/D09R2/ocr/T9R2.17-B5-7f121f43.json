@@ -1,0 +1,134 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 0,
+    "total_tokens": 49478,
+    "input_tokens": 49202,
+    "output_tokens": 276,
+    "cache_read_tokens": 1664,
+    "elapsed": "14s"
+  },
+  "tool_calls": {
+    "total": 6,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 5
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Marks UI styling, screen updates, and regression tests",
+      "files": [
+        "src/ui/app.css",
+        "src/ui/screens/CardMarks.test.tsx",
+        "src/ui/screens/CardMarks.tsx",
+        "src/ui/screens/MarkEntry.tsx",
+        "src/ui/screens/MarksGrid.tsx"
+      ]
+    }
+  ],
+  "session_id": "1f59490c-135d-4bd0-93d4-4ed9dfcaf63e",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "1f59490c-135d-4bd0-93d4-4ed9dfcaf63e",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "7f121f43",
+      "resolved_base": "51a0367279997a9302347a325d1048d047e51767",
+      "resolved_head": "7f121f43a484a07ccc2de0a174f77ae85e8f76f4",
+      "exact_range": "51a0367279997a9302347a325d1048d047e51767..7f121f43a484a07ccc2de0a174f77ae85e8f76f4",
+      "source_artifact_sha256": "62f5a786904a43dfa2b565e0875041689e8eac6cfa29479967e330965fa5d455"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "d78dc2f8291592069d2f0d6625d076075aa44a8b255c1f86f1178fb7355997ee"
+        },
+        {
+          "item_id": "0fd701e170b57a6485c092b664d7902b2162d8503a77796b5fe7b087d4d19316",
+          "path": "src/ui/screens/CardMarks.test.tsx",
+          "fingerprint": "bca24a49872398244dfff8e2456096818595048dae00d33f1e6c78b4b1aab072"
+        },
+        {
+          "item_id": "6b3ea2ff8de74765e3af18e89799b9b10bb04a902bac37f58df69f7eda81b1bd",
+          "path": "src/ui/screens/MarksGrid.tsx",
+          "fingerprint": "dea415f9175b15ffdec7f6feb44435fa11937ceb49d0f99a45bd16999b43b82e"
+        },
+        {
+          "item_id": "8cafdf7056bcd91e91f1079e2cc3ad454d495596823efca5c67a82a9a5d41102",
+          "path": "src/ui/screens/CardMarks.tsx",
+          "fingerprint": "6a9afe58d32fee7afa195868c807086221f5b76116f2cf5b468882a3187e6d04"
+        },
+        {
+          "item_id": "c986f208cd94f9f07b0ebb3c169ef0911febddecd602ee0263ec1950274b1035",
+          "path": "src/ui/screens/MarkEntry.tsx",
+          "fingerprint": "551d5798d5b8473b7e9b0099828442c02e73dae97bd0e644dd236f2591e8ddcf"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "d78dc2f8291592069d2f0d6625d076075aa44a8b255c1f86f1178fb7355997ee"
+        },
+        {
+          "item_id": "0fd701e170b57a6485c092b664d7902b2162d8503a77796b5fe7b087d4d19316",
+          "path": "src/ui/screens/CardMarks.test.tsx",
+          "fingerprint": "bca24a49872398244dfff8e2456096818595048dae00d33f1e6c78b4b1aab072"
+        },
+        {
+          "item_id": "6b3ea2ff8de74765e3af18e89799b9b10bb04a902bac37f58df69f7eda81b1bd",
+          "path": "src/ui/screens/MarksGrid.tsx",
+          "fingerprint": "dea415f9175b15ffdec7f6feb44435fa11937ceb49d0f99a45bd16999b43b82e"
+        },
+        {
+          "item_id": "8cafdf7056bcd91e91f1079e2cc3ad454d495596823efca5c67a82a9a5d41102",
+          "path": "src/ui/screens/CardMarks.tsx",
+          "fingerprint": "6a9afe58d32fee7afa195868c807086221f5b76116f2cf5b468882a3187e6d04"
+        },
+        {
+          "item_id": "c986f208cd94f9f07b0ebb3c169ef0911febddecd602ee0263ec1950274b1035",
+          "path": "src/ui/screens/MarkEntry.tsx",
+          "fingerprint": "551d5798d5b8473b7e9b0099828442c02e73dae97bd0e644dd236f2591e8ddcf"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "4891df529cd3709cf86d742f610d12ea2575d0c7c824e6825d16c76038acca8a",
+          "path": "evidence/D09R2/tdd-log/T9R2.17-B5.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 14005
+  }
+}

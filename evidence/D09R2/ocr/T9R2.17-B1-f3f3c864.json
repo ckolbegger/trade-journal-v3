@@ -1,0 +1,150 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 2,
+    "total_tokens": 161186,
+    "input_tokens": 158961,
+    "output_tokens": 2225,
+    "cache_read_tokens": 24192,
+    "elapsed": "1m21s"
+  },
+  "tool_calls": {
+    "total": 11,
+    "by_tool": {
+      "code_comment": 2,
+      "file_read": 9
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/CardMarks.tsx",
+      "content": "Focusing the next cell does not select it when that cell is a button: SessionGrid only calls onChoose for button clicks, whereas inputs select on focus. This can create a keyboard focus loop in the normal two-column case: Tab from Monday's input enters its editor, Tab from the editor focuses Friday's saved-Mark button, and Tab from Friday falls through to the still-mounted Monday editor below the table, whose last control sends focus back to Friday indefinitely. Select the destination observation when advancing to a button cell (or otherwise ensure the old editor is not revisited), and add a regression test that continues tabbing after reaching the next saved-Mark cell, including when it is the last grid cell.",
+      "existing_code": "    else if (!event.shiftKey \u0026\u0026 target === controls[controls.length - 1]) go(cells[cells.indexOf(cell as HTMLElement) + 1]);",
+      "start_line": 327,
+      "end_line": 327,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/CardMarks.tsx",
+      "content": "The chosen cell can be absent from the displayed table after changing the earlier-sessions page: paging leaves `chosen` and its editor intact. In that case `cell` is undefined, so `indexOf` returns -1 and Tab from the editor's last control unexpectedly focuses the first grid cell (and can replace the editor), rather than continuing past the editor. Only redirect to a successor when the chosen cell was actually found; otherwise allow normal Tab navigation. Add coverage for tabbing through an editor after paging its cell out of view.",
+      "existing_code": "else if (!event.shiftKey \u0026\u0026 target === controls[controls.length - 1]) go(cells[cells.indexOf(cell as HTMLElement) + 1]);",
+      "start_line": 327,
+      "end_line": 327,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/screens/CardMarks.test.tsx",
+        "src/ui/screens/CardMarks.tsx"
+      ]
+    }
+  ],
+  "session_id": "2966758c-0ad5-48c3-997f-ad60822b4565",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "2966758c-0ad5-48c3-997f-ad60822b4565",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "f3f3c864",
+      "resolved_base": "a4667a4ec046a42120a6232a917715d613ef3a26",
+      "resolved_head": "f3f3c864fe4e8088e6ca0543cdee034478d7b4f8",
+      "exact_range": "a4667a4ec046a42120a6232a917715d613ef3a26..f3f3c864fe4e8088e6ca0543cdee034478d7b4f8",
+      "source_artifact_sha256": "93b04a6d62c2eed1d95ca03bf29324ded7dab3088835ab993e6044806c4795dc"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0fd701e170b57a6485c092b664d7902b2162d8503a77796b5fe7b087d4d19316",
+          "path": "src/ui/screens/CardMarks.test.tsx",
+          "fingerprint": "4df075f58982620b102ad45660e71ea7a070caf77c2f2325e97c01093f85e61e"
+        },
+        {
+          "item_id": "8cafdf7056bcd91e91f1079e2cc3ad454d495596823efca5c67a82a9a5d41102",
+          "path": "src/ui/screens/CardMarks.tsx",
+          "fingerprint": "649eddf1828355cf00fe2538c9d2d2296d9e08ceb561ced1b326baaab34b4bee"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0fd701e170b57a6485c092b664d7902b2162d8503a77796b5fe7b087d4d19316",
+          "path": "src/ui/screens/CardMarks.test.tsx",
+          "fingerprint": "4df075f58982620b102ad45660e71ea7a070caf77c2f2325e97c01093f85e61e"
+        },
+        {
+          "item_id": "8cafdf7056bcd91e91f1079e2cc3ad454d495596823efca5c67a82a9a5d41102",
+          "path": "src/ui/screens/CardMarks.tsx",
+          "fingerprint": "649eddf1828355cf00fe2538c9d2d2296d9e08ceb561ced1b326baaab34b4bee"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "e3dade31fbcd9b0379b5489d2fe64967eaf2975015ad89096a53b99954fc0b18",
+          "path": "evidence/D09R2/tdd-log/T9R2.17-B1.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 80970
+  },
+  "retry_report": {
+    "schema_version": "ocr.llm-retry-report/v1",
+    "total_requests": 12,
+    "retried_requests": 0,
+    "total_retries": 0,
+    "recovered_requests": 0,
+    "failed_requests": 1,
+    "cancelled_requests": 0,
+    "requests": [
+      {
+        "logical_request_id": "1989e38555e0a6c36fcb96b3c86f22eb1b73125bf44182f28df76d03ee19d389",
+        "provider": "chatgpt",
+        "model": "gpt-6.1-sol",
+        "file_path": "src/ui/screens/CardMarks.test.tsx,src/ui/screens/CardMarks.tsx",
+        "task_type": "review_filter_task",
+        "request_no": 2,
+        "outcome": "failed",
+        "attempts": [
+          {
+            "attempt": 1,
+            "outcome": "error",
+            "error_class": "provider",
+            "failure_phase": "stream",
+            "status_code": 200,
+            "duration_to_headers_ms": 962
+          }
+        ]
+      }
+    ]
+  }
+}

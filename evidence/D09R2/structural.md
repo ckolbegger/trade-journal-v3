@@ -325,7 +325,32 @@ D9R2 runs one task at a time (P162; decision 100). Each task's heading holds its
 | medium | bug | `CardMarks.tsx:327` | Tab from the editor's last control focuses the next cell, but a button cell isn't chosen on focus, so Tab loops between the old editor and that button. | Valid. Bug task **T9R2.17-B6**. |
 | medium | bug | `CardMarks.tsx:327` | After paging away from the chosen cell, Tab from its editor's last control jumps to the first grid cell (`indexOf` -1). | Valid. Carried by **T9R2.17-B5** (an off-page cell's editor closes after paging, which removes the case); B5's brief asks for a Tab-after-paging check. |
 
-### Gate fixes still queued, with the bug cases each must cover
+### T9R2.17-B2 Focus after a conflict-refused save (critic-1 defect 2, moderate)
 
-- **T9R2.17-B5** (critic-1 defect 5) must also cover ocr's finding on T9R2.17-B1 (`f3f3c864`, `CardMarks.tsx:327`): after paging away from the chosen cell, Tab from its editor's last control jumps to the first grid cell. B5 adds a case that pages away from a chosen earlier cell and then presses Tab, and its summary says how the finding is closed. The main session checks that case is in B5's commit before recording B5 done.
-- **T9R2.17-B6** (ocr's finding on T9R2.17-B1, `f3f3c864`, `CardMarks.tsx:327`) must cover the keyboard trap: when the cell after the chosen one is a saved or acknowledged button, Tab from the editor's last control must not loop back to the old editor. B6's case reaches Save Marks by Tab past such a button. The main session checks that case is in B6's commit before recording B6 done.
+- Commit 91d98afb. The conflict reveal now focuses the first conflicted key's input (`show(moved[0].key, true)` in `useMarkDrafts.ts`, with a draft-input fallback in `CardMarks.tsx`).
+- ocr (`ocr/T9R2.17-B2-91d98afb.json`): 1 finding, low, style only (a nested ternary at `CardMarks.tsx:268`) → tech debt item 2. The first two ocr runs stalled on ocr's usage limit (00:12 to 00:40) and were stopped by the user; the third run is complete.
+
+### T9R2.17-B3 Focus when the pressed control disappears (critic-1 defect 3, moderate)
+
+- Commit 0ed456f4. Four cases in `CardMarks.test.tsx` ("focus when the pressed control goes"): "Can't get a price" to Reason, Correct to the correction's Price, Withdraw to the cell, and Next page or Previous page going to the other page button. Each red (focus on the body), then green. `MarkEntry` focuses its first field when any of its forms opens; `CellEditor` focuses the cell after a Withdraw. First-run passes: none. e2e d9r2, d5r, d4 review, d4 gaps: 30 passed.
+- Subagent note (not a bug task): Cancel on the draft reason form and on the Correct form also removes the pressed button, and focus still falls to the body there. Not in critic-1's report; left for critic-2 to confirm or not.
+- ocr (`ocr/T9R2.17-B3-0ed456f4.json`): no findings (rerun after the usage limit).
+
+### T9R2.17-B4 A one-leg Trade's grid at phone widths (critic-1 defect 4, moderate)
+
+- Commit 51a03672. Browser case in `e2e/d9r2/responsive-a11y.spec.ts` at 390, 375 and 320 px (T-A, touch, the acknowledged cell chosen): no region overflow, nothing clipped, body cells at least 44 px. Red at 35, 50 and 105 px overflow (the critic's numbers), then green. The fix is CSS in `session-grid.css`, limited to the turned layout (text wraps; controls fill their cell). This also covers T9R2.16's 390 px note. First-run passes: none. e2e d9r2 33 passed; the run exited 0.
+- ocr (`ocr/T9R2.17-B4-51a03672.json`): no findings.
+
+### T9R2.17-B5 The editor's title and box; an off-page editor closes (critic-1 defect 5, moderate)
+
+- Commit 7f121f43. Three cases in `CardMarks.test.tsx`: the editor's title "XYZ Mark, Mon Oct 12 · Missing" (and "· Can't get a price" once held); paging away closes the editor and keeps its draft (Save Marks (1) stays; the value is back after Previous page); and the ocr case on B1, Tab after paging away no longer goes to the first grid cell. Each red, then green. Paging now clears the chosen cell when its date isn't on the shown page, and `throughEditor` returns early with no editor, which closes ocr's finding on B1 (checked: the case is in the commit). The title is `aria-hidden`, so the region keeps its accessible name. Wording: an Available cell's title leaves out the price (`words-changed.md`). First-run passes: none. e2e d9r2, d5r, d4 review, d4 gaps: 33 passed.
+- ocr (`ocr/T9R2.17-B5-7f121f43.json`): no findings.
+
+### T9R2.17-B6 No Tab loop at a saved or acknowledged cell (ocr on T9R2.17-B1)
+
+- Commit 6303688a. Case "should reach Save Marks by Tab past a saved cell that follows the chosen cell" (checked: the case is in the commit). Red (Tab never reached Save Marks in 25 presses), then green. Two earlier drafts of the case passed without the fix and were not counted as red. Fix: Tab from the editor's last control to a button cell focuses and presses it, so it becomes the chosen cell and the editor follows. First-run passes: none. e2e d9r2, d5r, d4 review, d4 gaps: 33 passed.
+- ocr (`ocr/T9R2.17-B6-6303688a.json`): no findings.
+
+### Runs after the gate fixes
+
+- Main-session decision (recorded): the `browser-task` run each bug task would have is folded into one `browser-full` run after B6, since the full tier covers every browser-task spec and each subagent ran the Review's browser specs. That run then serves as the one full run before critic-2.

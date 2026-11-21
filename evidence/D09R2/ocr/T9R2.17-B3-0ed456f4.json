@@ -1,0 +1,122 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 0,
+    "total_tokens": 25096,
+    "input_tokens": 24905,
+    "output_tokens": 191,
+    "cache_read_tokens": 3328,
+    "elapsed": "10s"
+  },
+  "tool_calls": {
+    "total": 3,
+    "by_tool": {
+      "file_read": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Card marks UI flow and tests",
+      "files": [
+        "src/ui/screens/CardMarks.test.tsx",
+        "src/ui/screens/CardMarks.tsx",
+        "src/ui/screens/MarkEntry.tsx",
+        "src/ui/screens/MarksGrid.tsx"
+      ]
+    }
+  ],
+  "session_id": "f4451ffb-64ee-4ed1-92d5-ef46b7ff7611",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "f4451ffb-64ee-4ed1-92d5-ef46b7ff7611",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "0ed456f4",
+      "resolved_base": "d10cc8cb0cd2705772b7571871a9358487c7282b",
+      "resolved_head": "0ed456f4876a947122e3207903601ce93b67fbe3",
+      "exact_range": "d10cc8cb0cd2705772b7571871a9358487c7282b..0ed456f4876a947122e3207903601ce93b67fbe3",
+      "source_artifact_sha256": "91aef2ea7655c14063379f2ed91a0c48ca27949e2beaf003815b8375b9b8d52a"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0fd701e170b57a6485c092b664d7902b2162d8503a77796b5fe7b087d4d19316",
+          "path": "src/ui/screens/CardMarks.test.tsx",
+          "fingerprint": "0b2122ca3f42a7c621bdd4054bafd4f07e5c89f03b5791ca71c545e067bf237f"
+        },
+        {
+          "item_id": "6b3ea2ff8de74765e3af18e89799b9b10bb04a902bac37f58df69f7eda81b1bd",
+          "path": "src/ui/screens/MarksGrid.tsx",
+          "fingerprint": "2978a82c69a0d4dd6bb20a8bda77e16b4c4020981161bf386a53d0421f19328a"
+        },
+        {
+          "item_id": "8cafdf7056bcd91e91f1079e2cc3ad454d495596823efca5c67a82a9a5d41102",
+          "path": "src/ui/screens/CardMarks.tsx",
+          "fingerprint": "a61d2733f83d6861ab7604e1c68be3bdd89a1c4d6bb7b9517c94a108abc68410"
+        },
+        {
+          "item_id": "c986f208cd94f9f07b0ebb3c169ef0911febddecd602ee0263ec1950274b1035",
+          "path": "src/ui/screens/MarkEntry.tsx",
+          "fingerprint": "949b0bcb967d31d4c4603dfdec960cffb22a916f2666ce559b9216222aaa6170"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0fd701e170b57a6485c092b664d7902b2162d8503a77796b5fe7b087d4d19316",
+          "path": "src/ui/screens/CardMarks.test.tsx",
+          "fingerprint": "0b2122ca3f42a7c621bdd4054bafd4f07e5c89f03b5791ca71c545e067bf237f"
+        },
+        {
+          "item_id": "6b3ea2ff8de74765e3af18e89799b9b10bb04a902bac37f58df69f7eda81b1bd",
+          "path": "src/ui/screens/MarksGrid.tsx",
+          "fingerprint": "2978a82c69a0d4dd6bb20a8bda77e16b4c4020981161bf386a53d0421f19328a"
+        },
+        {
+          "item_id": "8cafdf7056bcd91e91f1079e2cc3ad454d495596823efca5c67a82a9a5d41102",
+          "path": "src/ui/screens/CardMarks.tsx",
+          "fingerprint": "a61d2733f83d6861ab7604e1c68be3bdd89a1c4d6bb7b9517c94a108abc68410"
+        },
+        {
+          "item_id": "c986f208cd94f9f07b0ebb3c169ef0911febddecd602ee0263ec1950274b1035",
+          "path": "src/ui/screens/MarkEntry.tsx",
+          "fingerprint": "949b0bcb967d31d4c4603dfdec960cffb22a916f2666ce559b9216222aaa6170"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "bc24ad4b6a979e836b07874d15b8154b461789bc0984319ea33b601ee8594c67",
+          "path": "evidence/D09R2/tdd-log/T9R2.17-B3.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 10490
+  }
+}
