@@ -72,3 +72,4 @@ If the user asks a question, answer it and stop. Do not start implementing until
 - **Implementing a deliverable** (main session): before the start-of-deliverable reading, read `.claude/docs/implementing.md`. It covers scoped reading, delegating each task to the `tdd-task` subagent, briefs, `suite-runner`, and the handoff.
 - **Drafting a breakdown**: read `.claude/docs/drafting-breakdowns.md` first.
 - A PreToolUse hook (`.claude/hooks/filter-test-output.sh`) cuts single-case test output to failures and the summary and saves the full log; put `CLAUDE_FULL_OUTPUT=1` in a command to see everything.
+- The domain glossary is `specs/glossary.md` and the decision records are `specs/adr/`. Skills that name `GLOSSARY.md` or `docs/adr/` mean these files; never create either.

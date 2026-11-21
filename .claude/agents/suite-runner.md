@@ -62,4 +62,4 @@ Completeness: run complete (`run-complete.sh`).
 Failures: none
 ```
 
-Copy the counts exactly as the tool printed them. For the task tier, the count is the sum the script printed for its two calls. If any browser stage reports more than 8 minutes, add a line after the table: "Browser stage <name> took <time>, near the limit; add a browser-4 stage." If anything failed, replace "Failures: none" with one line per failing test or check: the suite, the test name or command, the file and line if shown, and the first line of the error. Never paste raw logs, stack traces, or passing test names.
+Copy the counts exactly as the tool printed them. For the task tier, the count is the sum the script printed for its two calls. If any browser stage reports more than 8 minutes, add a line after the table: "Browser stage <name> took <time>, near the limit; add a browser-5 stage." If anything failed, replace "Failures: none" with one line per failing test or check: the suite, the test name or command, the file and line if shown, and the first line of the error. Never paste raw logs, stack traces, or passing test names.
