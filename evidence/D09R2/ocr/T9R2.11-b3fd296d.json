@@ -1,0 +1,402 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 24 selected item(s).",
+  "summary": {
+    "files_reviewed": 24,
+    "comments": 3,
+    "total_tokens": 695130,
+    "input_tokens": 689318,
+    "output_tokens": 5812,
+    "cache_read_tokens": 107008,
+    "elapsed": "1m39s"
+  },
+  "tool_calls": {
+    "total": 58,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 11,
+      "file_read": 46
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/CardMarks.tsx",
+      "content": "Selecting another cell while a correction is dirty silently discards its price and reason. Changing `chosen` replaces the keyed `CellEditor`, while `MarkEntry` stores those values locally and clears its dirty report on unmount. `pagingHeld` only blocks page buttons, not cell selection. Preserve editors' correction state by key, or prevent/confirm selection changes until the correction is saved or cancelled. Add a test that enters a correction, selects another cell, and returns.",
+      "existing_code": "        onChoose={setChosen}",
+      "start_line": 324,
+      "end_line": 324,
+      "category": "bug",
+      "severity": "high"
+    },
+    {
+      "path": "src/ui/screens/CardMarks.tsx",
+      "content": "A rejected price draft can be on a different page from the one currently displayed, since drafts persist across paging. Selecting its key opens the editor but does not change `MarksGrid`'s private page state; Missing prices exist only in the grid, so the requested input is absent and the focus effect does nothing. Reveal the rejected key's page before focusing its input, and cover rejection after navigating away from a drafted page.",
+      "existing_code": "        setChosen(first.key);\n        setFocusField({ field: first.issue.field });",
+      "start_line": 287,
+      "end_line": 288,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/CardMarks.tsx",
+      "content": "With persistent drafts across pages, users can enter more than 100 prices. In that case Save Marks remains enabled but this branch silently does nothing, with no explanation or recovery guidance. Display the limit and how many drafts must be cleared, or provide a supported way to save within the limit instead of silently returning.",
+      "existing_code": "    if (prepared.kind === 'TooMany') return;",
+      "start_line": 242,
+      "end_line": 242,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Marks grid extraction and session-grid integration",
+      "files": [
+        "src/ui/cockpit/session-grid.tsx",
+        "src/ui/cockpit/session-grid.types.ts",
+        "src/ui/screens/CardMarks.test.tsx",
+        "src/ui/screens/CardMarks.tsx",
+        "src/ui/screens/MarksGrid.tsx",
+        "src/ui/screens/marks-grid.ts"
+      ]
+    },
+    {
+      "label": "Review cards, held-review behavior, and component tests",
+      "files": [
+        "src/ui/screens/ReviewCard.test.tsx",
+        "src/ui/screens/ReviewCard.tsx",
+        "src/ui/screens/ReviewCardMeter.test.tsx",
+        "src/ui/screens/ReviewCards.test.tsx",
+        "src/ui/screens/ReviewOptionMarks.test.tsx",
+        "src/ui/screens/ReviewView.test.tsx",
+        "src/ui/screens/held-review.ts"
+      ]
+    },
+    {
+      "label": "D4 gap and responsive accessibility end-to-end tests",
+      "files": [
+        "e2e/d4/gaps.spec.ts",
+        "e2e/d4/responsive-a11y.spec.ts",
+        "e2e/d4/support.ts"
+      ]
+    },
+    {
+      "label": "D5R marks, review, sliders, and accessibility end-to-end tests",
+      "files": [
+        "e2e/d5r/marks.spec.ts",
+        "e2e/d5r/responsive-a11y.spec.ts",
+        "e2e/d5r/review.spec.ts",
+        "e2e/d5r/sliders.spec.ts"
+      ]
+    },
+    {
+      "label": "D7 end-to-end test support",
+      "files": [
+        "e2e/d7/support.ts"
+      ]
+    },
+    {
+      "label": "D9 end-to-end test support",
+      "files": [
+        "e2e/d9/support.ts"
+      ]
+    },
+    {
+      "label": "D9AR state end-to-end tests and support",
+      "files": [
+        "e2e/d9ar/states.spec.ts",
+        "e2e/d9ar/support.ts"
+      ]
+    }
+  ],
+  "session_id": "0f0d9bba-264b-486e-8216-f363d07728d4",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "0f0d9bba-264b-486e-8216-f363d07728d4",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "b3fd296d",
+      "resolved_base": "12820ad0fd0897d3eed7bb6a552036d380634121",
+      "resolved_head": "b3fd296de8db7fc5620078c9694a8d85331ccccf",
+      "exact_range": "12820ad0fd0897d3eed7bb6a552036d380634121..b3fd296de8db7fc5620078c9694a8d85331ccccf",
+      "source_artifact_sha256": "1e415f84b5e6ea361dccfe4de8221ec95d43af28cc36257d6caf6b8503506ae7"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "06129f7bc0959665459bced5dd2b2fe42e6eefa20b943b5bcb22e15d914c46d2",
+          "path": "src/ui/screens/ReviewCards.test.tsx",
+          "fingerprint": "93f7e9d36a3ea1d668df083ed59259ff79fd7d363d9f87ddcb38c9e969d9ae5e"
+        },
+        {
+          "item_id": "0912656ffbb7e6b5a379af71813d84a2286b259536675ea03a3c357426bb8cba",
+          "path": "e2e/d5r/marks.spec.ts",
+          "fingerprint": "593761894e5d517d897223f014b4594d6836cfcdf2b550139c9b990c5ed020ff"
+        },
+        {
+          "item_id": "0f4aa84758c10defc83e15772fff0753dc16e94eaf609bc7de67c6ee942fd4ba",
+          "path": "e2e/d5r/responsive-a11y.spec.ts",
+          "fingerprint": "e0912666ae1b25dbc31815e1e3e279c7f152a41fee3051ab86477eb435f2f297"
+        },
+        {
+          "item_id": "0fd701e170b57a6485c092b664d7902b2162d8503a77796b5fe7b087d4d19316",
+          "path": "src/ui/screens/CardMarks.test.tsx",
+          "fingerprint": "14968f0f15670816dffde5dd98c101984307155863cd6c646f901744acab8605"
+        },
+        {
+          "item_id": "3a1d51c546f198194e29938724010614a81fde20b920785efc853fdd201a9e30",
+          "path": "e2e/d4/gaps.spec.ts",
+          "fingerprint": "0e91448bb5c301723edbc99367e676f62c07e4208ee81b8d60a157e8a0f1e1df"
+        },
+        {
+          "item_id": "3e4245827895cbedf0709bde213f51bef6a4df44d68dcc9eff3dece2e7066f52",
+          "path": "src/ui/screens/ReviewCardMeter.test.tsx",
+          "fingerprint": "fdfd022c92b1e71cd599faabe7c537a8ceab545ce3fbdda5979a7d8dc4b7ffbe"
+        },
+        {
+          "item_id": "49ad97a3c181c65873b9cdb94f891e8568a88a72186d154fb0b4930f1edf79a7",
+          "path": "e2e/d9ar/states.spec.ts",
+          "fingerprint": "36b4ded3429bcdbdad67853dd3a559f6c5e4beba0c7bd6d78ec8b921486a45d0"
+        },
+        {
+          "item_id": "5a7479061290e878cd699b58fd728ca81cd25fa2b215e151727c95f8558dc27e",
+          "path": "e2e/d5r/review.spec.ts",
+          "fingerprint": "f1006bc2fb2c531ad2dc696413362e96fd38f330b9ec014ededd86ef1454b20b"
+        },
+        {
+          "item_id": "6b3ea2ff8de74765e3af18e89799b9b10bb04a902bac37f58df69f7eda81b1bd",
+          "path": "src/ui/screens/MarksGrid.tsx",
+          "fingerprint": "9bcd66aba4557682cb51a0279f57a8b718c5ace5187b9775e96354b20ece4b54"
+        },
+        {
+          "item_id": "753b83ca5a903e8d14ea3e457c9530bd2d7b2bc497a4b3ee29b26852ef9eb3ab",
+          "path": "src/ui/screens/ReviewView.test.tsx",
+          "fingerprint": "958060ab7a03cdb14fcd217f7e45ea08188af582b96621679762ab52089f391d"
+        },
+        {
+          "item_id": "77a09965bbc16832a6776b36503973c81fdfb4c349ef52771fbc221627efe7c5",
+          "path": "e2e/d4/support.ts",
+          "fingerprint": "a963c486ab84ad9dfc8dffa9fe3b53c21fb55a5e3273632d7d3b4c924d0c1300"
+        },
+        {
+          "item_id": "839b5d74be9dab57ce22d8164cf43a870716504e404925773518309e596f49ef",
+          "path": "e2e/d9ar/support.ts",
+          "fingerprint": "7aedf6694b6bdad1f815789231a8a2b62dfda878f27e21f6d23b25c83d41c8f0"
+        },
+        {
+          "item_id": "8cafdf7056bcd91e91f1079e2cc3ad454d495596823efca5c67a82a9a5d41102",
+          "path": "src/ui/screens/CardMarks.tsx",
+          "fingerprint": "1b1b11c9e623214ed6d6f81835db9da3befc5f50abd7286a349cd023d288e7a6"
+        },
+        {
+          "item_id": "96c7c6472e6933bb71f4cab0181de2c6d68c2ad2d66131a372b8004c149c310f",
+          "path": "src/ui/screens/marks-grid.ts",
+          "fingerprint": "b44e32ced4aec6aacdac1a1c4ad07396a2c10988dcc6fe1d3fe341a768c7d5a2"
+        },
+        {
+          "item_id": "99c596ee1732c530a194c9499667a3a11331103a4114e4c1d962b6235c95f741",
+          "path": "e2e/d7/support.ts",
+          "fingerprint": "4935bfd623e3e28f260028acb99f08b8aa6d812283092c93eabcb51942a50df0"
+        },
+        {
+          "item_id": "9a97d51f4167aa99616017e5736b744bd7a0a6f598407577182f558d8b606903",
+          "path": "src/ui/cockpit/session-grid.tsx",
+          "fingerprint": "259da1b5fbfb06b5c466fba17a744e00416b0b07f48901dbbb037090586a9018"
+        },
+        {
+          "item_id": "9fc2814396ca8fdc4b4a786543b42eb524301cfcaa0ad2260221dc91be7ee063",
+          "path": "e2e/d4/responsive-a11y.spec.ts",
+          "fingerprint": "59425a4b49253ab565cccd8892f1ce439bd65e43070fd26d386dfbc3d2f69d21"
+        },
+        {
+          "item_id": "a83706f3444e16c14ac613c874f7293d7adce6354226bde7d7b9b892fce05701",
+          "path": "src/ui/screens/ReviewCard.test.tsx",
+          "fingerprint": "2e68f374a47339ce0d8bb7a26d7ff51196ed0025ef93a89c9aaf90224547f8f7"
+        },
+        {
+          "item_id": "aab1b646ddc36ea4923c7d69927fa85c9dd351c75788347685eb4f4a69cb5fae",
+          "path": "src/ui/cockpit/session-grid.types.ts",
+          "fingerprint": "364e8d964b3d6a94a33694a766693dfc602b0a97f72ff04d64ab097207053468"
+        },
+        {
+          "item_id": "ad13d00cdea5a32ed4df94074d0ca5dcb24d5eda97ae7e238a4c75dd844a7c59",
+          "path": "src/ui/screens/ReviewOptionMarks.test.tsx",
+          "fingerprint": "bdfff7521ef14072b5304e069d0a3cf8706aca164bfa38ebae0d29d24b9a0d1b"
+        },
+        {
+          "item_id": "d0126439061216e58eb2b1a6bab019f2d20601558a9531d4100a29b4b9c5c3f9",
+          "path": "e2e/d9/support.ts",
+          "fingerprint": "d383f5410c1a9059b6a9bd172824cffeb58a807a9ce1755b43aa0541afa2f5dd"
+        },
+        {
+          "item_id": "e4585caac4b0577b3e56fe1675a2cf27c444828f875d4864090c87449d13094a",
+          "path": "src/ui/screens/held-review.ts",
+          "fingerprint": "e94055e9dcd54b7a2877c4b21ebc2ee7ef384daaad90b00d0e6476f0eda53213"
+        },
+        {
+          "item_id": "f3eb411db7a53d699b2e2af6f79dd5ac9367b88b215ca32d7c9b2e270c770dfc",
+          "path": "e2e/d5r/sliders.spec.ts",
+          "fingerprint": "17a33efda59b490d8edd5a5d9d0733d67f0cdff6ed080707a0dce9948f3068d3"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "c9dffb5ec91ebbef4f0f324635df219eae0c8c7b9c76a16275750a5a32656240"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "06129f7bc0959665459bced5dd2b2fe42e6eefa20b943b5bcb22e15d914c46d2",
+          "path": "src/ui/screens/ReviewCards.test.tsx",
+          "fingerprint": "93f7e9d36a3ea1d668df083ed59259ff79fd7d363d9f87ddcb38c9e969d9ae5e"
+        },
+        {
+          "item_id": "0912656ffbb7e6b5a379af71813d84a2286b259536675ea03a3c357426bb8cba",
+          "path": "e2e/d5r/marks.spec.ts",
+          "fingerprint": "593761894e5d517d897223f014b4594d6836cfcdf2b550139c9b990c5ed020ff"
+        },
+        {
+          "item_id": "0f4aa84758c10defc83e15772fff0753dc16e94eaf609bc7de67c6ee942fd4ba",
+          "path": "e2e/d5r/responsive-a11y.spec.ts",
+          "fingerprint": "e0912666ae1b25dbc31815e1e3e279c7f152a41fee3051ab86477eb435f2f297"
+        },
+        {
+          "item_id": "0fd701e170b57a6485c092b664d7902b2162d8503a77796b5fe7b087d4d19316",
+          "path": "src/ui/screens/CardMarks.test.tsx",
+          "fingerprint": "14968f0f15670816dffde5dd98c101984307155863cd6c646f901744acab8605"
+        },
+        {
+          "item_id": "3a1d51c546f198194e29938724010614a81fde20b920785efc853fdd201a9e30",
+          "path": "e2e/d4/gaps.spec.ts",
+          "fingerprint": "0e91448bb5c301723edbc99367e676f62c07e4208ee81b8d60a157e8a0f1e1df"
+        },
+        {
+          "item_id": "3e4245827895cbedf0709bde213f51bef6a4df44d68dcc9eff3dece2e7066f52",
+          "path": "src/ui/screens/ReviewCardMeter.test.tsx",
+          "fingerprint": "fdfd022c92b1e71cd599faabe7c537a8ceab545ce3fbdda5979a7d8dc4b7ffbe"
+        },
+        {
+          "item_id": "49ad97a3c181c65873b9cdb94f891e8568a88a72186d154fb0b4930f1edf79a7",
+          "path": "e2e/d9ar/states.spec.ts",
+          "fingerprint": "36b4ded3429bcdbdad67853dd3a559f6c5e4beba0c7bd6d78ec8b921486a45d0"
+        },
+        {
+          "item_id": "5a7479061290e878cd699b58fd728ca81cd25fa2b215e151727c95f8558dc27e",
+          "path": "e2e/d5r/review.spec.ts",
+          "fingerprint": "f1006bc2fb2c531ad2dc696413362e96fd38f330b9ec014ededd86ef1454b20b"
+        },
+        {
+          "item_id": "6b3ea2ff8de74765e3af18e89799b9b10bb04a902bac37f58df69f7eda81b1bd",
+          "path": "src/ui/screens/MarksGrid.tsx",
+          "fingerprint": "9bcd66aba4557682cb51a0279f57a8b718c5ace5187b9775e96354b20ece4b54"
+        },
+        {
+          "item_id": "753b83ca5a903e8d14ea3e457c9530bd2d7b2bc497a4b3ee29b26852ef9eb3ab",
+          "path": "src/ui/screens/ReviewView.test.tsx",
+          "fingerprint": "958060ab7a03cdb14fcd217f7e45ea08188af582b96621679762ab52089f391d"
+        },
+        {
+          "item_id": "77a09965bbc16832a6776b36503973c81fdfb4c349ef52771fbc221627efe7c5",
+          "path": "e2e/d4/support.ts",
+          "fingerprint": "a963c486ab84ad9dfc8dffa9fe3b53c21fb55a5e3273632d7d3b4c924d0c1300"
+        },
+        {
+          "item_id": "839b5d74be9dab57ce22d8164cf43a870716504e404925773518309e596f49ef",
+          "path": "e2e/d9ar/support.ts",
+          "fingerprint": "7aedf6694b6bdad1f815789231a8a2b62dfda878f27e21f6d23b25c83d41c8f0"
+        },
+        {
+          "item_id": "8cafdf7056bcd91e91f1079e2cc3ad454d495596823efca5c67a82a9a5d41102",
+          "path": "src/ui/screens/CardMarks.tsx",
+          "fingerprint": "1b1b11c9e623214ed6d6f81835db9da3befc5f50abd7286a349cd023d288e7a6"
+        },
+        {
+          "item_id": "96c7c6472e6933bb71f4cab0181de2c6d68c2ad2d66131a372b8004c149c310f",
+          "path": "src/ui/screens/marks-grid.ts",
+          "fingerprint": "b44e32ced4aec6aacdac1a1c4ad07396a2c10988dcc6fe1d3fe341a768c7d5a2"
+        },
+        {
+          "item_id": "99c596ee1732c530a194c9499667a3a11331103a4114e4c1d962b6235c95f741",
+          "path": "e2e/d7/support.ts",
+          "fingerprint": "4935bfd623e3e28f260028acb99f08b8aa6d812283092c93eabcb51942a50df0"
+        },
+        {
+          "item_id": "9a97d51f4167aa99616017e5736b744bd7a0a6f598407577182f558d8b606903",
+          "path": "src/ui/cockpit/session-grid.tsx",
+          "fingerprint": "259da1b5fbfb06b5c466fba17a744e00416b0b07f48901dbbb037090586a9018"
+        },
+        {
+          "item_id": "9fc2814396ca8fdc4b4a786543b42eb524301cfcaa0ad2260221dc91be7ee063",
+          "path": "e2e/d4/responsive-a11y.spec.ts",
+          "fingerprint": "59425a4b49253ab565cccd8892f1ce439bd65e43070fd26d386dfbc3d2f69d21"
+        },
+        {
+          "item_id": "a83706f3444e16c14ac613c874f7293d7adce6354226bde7d7b9b892fce05701",
+          "path": "src/ui/screens/ReviewCard.test.tsx",
+          "fingerprint": "2e68f374a47339ce0d8bb7a26d7ff51196ed0025ef93a89c9aaf90224547f8f7"
+        },
+        {
+          "item_id": "aab1b646ddc36ea4923c7d69927fa85c9dd351c75788347685eb4f4a69cb5fae",
+          "path": "src/ui/cockpit/session-grid.types.ts",
+          "fingerprint": "364e8d964b3d6a94a33694a766693dfc602b0a97f72ff04d64ab097207053468"
+        },
+        {
+          "item_id": "ad13d00cdea5a32ed4df94074d0ca5dcb24d5eda97ae7e238a4c75dd844a7c59",
+          "path": "src/ui/screens/ReviewOptionMarks.test.tsx",
+          "fingerprint": "bdfff7521ef14072b5304e069d0a3cf8706aca164bfa38ebae0d29d24b9a0d1b"
+        },
+        {
+          "item_id": "d0126439061216e58eb2b1a6bab019f2d20601558a9531d4100a29b4b9c5c3f9",
+          "path": "e2e/d9/support.ts",
+          "fingerprint": "d383f5410c1a9059b6a9bd172824cffeb58a807a9ce1755b43aa0541afa2f5dd"
+        },
+        {
+          "item_id": "e4585caac4b0577b3e56fe1675a2cf27c444828f875d4864090c87449d13094a",
+          "path": "src/ui/screens/held-review.ts",
+          "fingerprint": "e94055e9dcd54b7a2877c4b21ebc2ee7ef384daaad90b00d0e6476f0eda53213"
+        },
+        {
+          "item_id": "f3eb411db7a53d699b2e2af6f79dd5ac9367b88b215ca32d7c9b2e270c770dfc",
+          "path": "e2e/d5r/sliders.spec.ts",
+          "fingerprint": "17a33efda59b490d8edd5a5d9d0733d67f0cdff6ed080707a0dce9948f3068d3"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "c9dffb5ec91ebbef4f0f324635df219eae0c8c7b9c76a16275750a5a32656240"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "fc979feb6685cd5f4ad6a902b0e5c8cea0f2f223f6a63465c1fde8c39e8c96ef",
+          "path": "evidence/D09R2/tdd-log/T9R2.11.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 98524
+  }
+}
