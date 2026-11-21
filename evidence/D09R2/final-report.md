@@ -85,3 +85,12 @@ First run FAIL: `bench:run` stopped at `tools/bench-run.ts:458`, which still loo
 - `ceefd574`: the tools-only fix to `tools/wording-rules.test.ts` you chose before T9R2.1.
 - From T9R2.6's subagent: a Trade whose Review Date is the first covered session (2024-01-02) appears to crash `valueTrade` in `observationFrame`. This is existing behaviour, not fixed.
 - Working-rule slips by subagents, recorded: code written before its red in T9R2.13 (genuine reds were obtained afterwards); `write()` used instead of an edit in T9R2.13-B3 and T9R2.16.
+
+## Closed with the user (2026-11-21)
+
+- Q1: keep (the T9R2.12 ocr finding dismissed). Q2: keep T9R2.13-B2; P157 amended.
+- Tech debt items 1 to 5: all stay tech debt; items 3 and 5 merged and, with item 4, go to the coach review.
+- Words approved as is: "Leave without saving?" and "Save or cancel the correction to choose another cell."
+- The three main-session decisions: accepted.
+
+Nothing in D9R2 is open with the user.

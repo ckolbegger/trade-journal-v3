@@ -419,3 +419,7 @@ D9R2 runs one task at a time (P162; decision 100). Each task's heading holds its
 
 - critic-3: PASS, every flow (C9R2.1, C9R2.2, C9R2.3, C9R2.4, C9R2.5, C9R2.6). Defects: 2 low → tech debt items 4 and 5. A critic with only low defects closes the gate. **The gate is closed.**
 - Minor observations (for the final report): a save refused by a conflict keeps sending the kept price as a first Mark, so pressing Save Marks again conflicts again and holds every other draft until the Price box is cleared (probably older than D9R2, widened by one Save Marks); on a phone the editor sits about 1,250 px below a chosen cell (P160); a one-frame turned flash (tech debt item 1); the summary's "28 earlier optional" against the pager's "of 27"; the editor names its status twice; "Save or cancel the correction to choose another cell." is not among W71 to W81; W76 (over 100 drafts) not exercised; older: axe `heading-order`, and the Journal's "Session not ended yet" card. The critic's report opens with a note on the user's mid-turn message, which reached it; no effect on the run.
+
+## Main-session decisions reviewed (2026-11-21)
+
+The user accepted all three: B1's Tab route; folding the per-fix browser-task runs into one full run per batch of gate fixes; F2's narrowing of the leave guard to the Review's Mark drafts.
