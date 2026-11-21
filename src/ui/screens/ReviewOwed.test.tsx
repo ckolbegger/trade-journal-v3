@@ -348,6 +348,41 @@ describe('owed-reflection group (P19, P20)', () => {
   });
 });
 
+describe('Save Marks from the status header while an owed card is open (T9R2.13-B2)', () => {
+  it('should save Marks from the status header while an owed card is open and refresh the Review', async () => {
+    const row = { instrumentKey: 'XYZ', instrument: symbol, tradingDate: DATE, trades: ['t-w'], resolution: { kind: 'Missing' }, resolutionRevision: 'None', task: 'Manual' } as const;
+    const overview = ready();
+    const withRow = { ...overview, families: [{ family: 'Marks' as const, earlierMarks: [], today: [row], earlier: [] }, overview.families[1]!] };
+    const facade = reviewFacade(withRow);
+    // The Review under the Marks reads only for a walked Trade; an owed Trade's read is not a Ready one (ChangedDuringAssembly).
+    vi.mocked(facade.DailyReview.save).mockImplementation((request) => {
+      const marks = [{ key: { instrumentKey: 'XYZ', tradingDate: DATE }, resolution: { kind: 'Available', mark: { revisionId: 'r9', revisionNumber: 1, price: '12', source: 'Manual', savedAt: CUTOFF } }, resolutionRevision: 1, classification: 'InitialManual' }] as const;
+      if (request.kind !== 'SaveReviewMarks') throw new Error('unexpected save');
+      const walked = withRow.families[1]!.family === 'Trades' ? withRow.families[1]!.trades : [];
+      const trade = walked.find((t) => t.tradeId === request.tradeId);
+      if (!trade) return Promise.resolve({ kind: 'MarksSaved', marks, review: { kind: 'ChangedDuringAssembly' } });
+      return Promise.resolve({ kind: 'MarksSaved', marks, review: { kind: 'Ready', progress: { tradesWithAction: 1, tradesEligible: 1 }, completion: { kind: 'Complete' }, binding, trades: walked, trade: walkedReview(trade), nextStep: { kind: 'Done' } } } as never);
+    });
+    const user = userEvent.setup();
+    renderReview(facade);
+    await screen.findByRole('region', { name: 'ABC review' });
+
+    // A draft typed in the walked card stays when another card opens; here the owed card is the open one.
+    await user.click(within(screen.getByRole('list', { name: 'Positions' })).getByRole('button', { name: /^Review XYZ/ }));
+    const marks = await screen.findByRole('button', { name: /^Marks\b/ });
+    if (marks.getAttribute('aria-expanded') !== 'true') await user.click(marks);
+    await user.type(await screen.findByRole('textbox', { name: 'XYZ Mark, Tue Oct 13' }), '12');
+    await user.click(within(screen.getByRole('list', { name: GROUP })).getAllByRole('button', { name: /^Review / })[0]!);
+    await screen.findByRole('region', { name: 'ABC review' });
+    await user.click(within(screen.getByRole('region', { name: 'Review status' })).getByRole('button', { name: 'Save Marks (1)' }));
+
+    expect(facade.DailyReview.save).toHaveBeenCalledWith(expect.objectContaining({ kind: 'SaveReviewMarks', tradeId: 't-w' }));
+    // The Review the save returned is the screen's: its completion replaces the held one, and the owed card stays open.
+    await waitFor(() => expect(within(screen.getByRole('region', { name: 'Review status' })).getByText('Complete')).toBeTruthy());
+    expect(screen.getByRole('region', { name: 'ABC review' })).toBeTruthy();
+  });
+});
+
 describe('Exit Action records intent only (decision 72)', () => {
   it('should show a saved Exit Action with its Intent in the Action panel of the card, with no Record the exit, no exit form and no Refresh Review for an exit', async () => {
     const user = userEvent.setup();

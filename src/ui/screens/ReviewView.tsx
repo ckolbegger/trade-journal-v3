@@ -564,11 +564,14 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
     setShown({ tradeId: post.trade.tradeId, opening, detail: { trade: post.trade } });
     setAdvance((current) => ({ tradeId: post.trade.tradeId, count: current.count + 1 }));
   };
-  // Its Trade chooses the card the saved Review refreshes: the open card's, or, with none open, the Trade the newest draft was typed in.
+  // Its Trade chooses the card the saved Review refreshes: the open walked card's, or, with none open or an owed card open (which the Marks
+  // save cannot read), the Trade the newest draft was typed in.
   const saveMarks = async (entries: readonly MarketDataPrepareEntry[], newest: string | undefined): Promise<SaveReviewMarksResult> => {
     const from = latest.current.review;
-    const opening = shown?.opening ?? -1;
-    const tradeId = openId ?? newest ?? '';
+    const walkedOpen = openId !== undefined && walkedTrades(from).some((t) => t.tradeId === openId);
+    // The card shown is replaced by the refreshed one only when it is the Trade saved from.
+    const opening = walkedOpen ? (shown?.opening ?? -1) : -1;
+    const tradeId = (walkedOpen ? openId : newest) ?? openId ?? '';
     const result = await facade.DailyReview.save({ kind: 'SaveReviewMarks', reviewDate: from.reviewDate, tradeId, binding: from.binding, entries });
     if (result.kind === 'MarksSaved') marksSaved(result, opening, tradeId);
     return result;
