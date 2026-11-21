@@ -450,12 +450,20 @@ async function showPanel(card: ReturnType<typeof cardOf>, panel: 'Marks' | 'Acti
   await card.getByRole('button', { name, expanded: true }).waitFor({ timeout: WAIT_MS });
 }
 
+// A date as the Marks grid names its cells: weekday, month, day (2023-12-29 is "Fri Dec 29").
+function gridDate(iso: string): string {
+  const [y, m, d] = iso.split('-').map(Number) as [number, number, number];
+  const day = new Date(Date.UTC(y, m - 1, d));
+  const part = (o: Intl.DateTimeFormatOptions) => day.toLocaleDateString('en-US', { ...o, timeZone: 'UTC' });
+  return `${part({ weekday: 'short' })} ${part({ month: 'short' })} ${d}`;
+}
+
 // A Save Marks of the Missing Instrument's Review-date price, from the press on Save Marks.
 async function timeSaveMarks(page: Page, symbol: string): Promise<number> {
   const card = await reachCard(page, symbol);
   await showPanel(card, 'Marks');
-  // The row's name carries the date as the Review shows it (Fri Dec 29), so it is found by the Instrument.
-  await card.getByRole('list', { name: "Today's Marks" }).getByRole('region', { name: new RegExp(`^${symbol} Mark, `) }).getByLabel('Price').fill('51.00');
+  // The Marks grid's cell for the Instrument on the Review Date is an input named after it ("ABBV Mark, Fri Dec 29", P160).
+  await card.locator('section[aria-label="Marks"]').getByRole('textbox', { name: `${symbol} Mark, ${gridDate(String(dataset['reviewDate']))}`, exact: true }).fill('51.00');
   const save = card.locator('section[aria-label="Marks"]').getByRole('button', { name: /^Save Marks/ });
   return pressToRendered(page, { kind: 'marksSaved', symbol }, () => save.click());
 }
