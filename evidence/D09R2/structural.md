@@ -311,6 +311,7 @@ D9R2 runs one task at a time (P162; decision 100). Each task's heading holds its
 | Critic | Brief | Tokens | Tool calls | Time | Result |
 |---|---|---|---|---|---|
 | critic-1 (`critic-1.md`) | `critic-brief.md` template, D9R2 flows C9R2.1 to C9R2.6 | 185,462 | 178 | 11 min 53 s | FAIL: 1 high, 4 moderate, 1 low |
+| critic-2 (`critic-2.md`) | the same, fresh, every flow repeated | 248,540 | 258 | 22 min 26 s | FAIL: 2 high, 1 moderate, 1 low |
 
 - critic-1 defects: 1 high (the cell editor unreachable by keyboard except the page's last cell) → **T9R2.17-B1**; 2 moderate (no focus after a conflict-refused save, A294) → **T9R2.17-B2**; 3 moderate (focus falls to the body when the pressed control disappears: "Can't get a price", Correct, Withdraw, Next page) → **T9R2.17-B3**; 4 moderate (a one-leg Trade's turned grid scrolls sideways and clips at 390, 375, 320 px; a 35 px chosen cell at 320; P161) → **T9R2.17-B4**; 5 moderate (the editor has no title or box naming its cell, and an off-page cell's editor stays open after paging) → **T9R2.17-B5**; 6 low → tech debt item 1. It confirms T9R2.16's note on the 390 px overflow (defect 4); the refused-save order was not tested.
 - Scope decision for B1 (main session, recorded): each cell stays one tab stop (research page, section 6, option B); Tab from a chosen cell goes into its editor's controls, and Tab past the editor's last control goes to the next cell; Enter keeps A295's order. Recorded here for the user's review.
@@ -362,3 +363,9 @@ D9R2 runs one task at a time (P162; decision 100). Each task's heading holds its
 - ocr (`ocr/T9R2.17-F1-66c370f5.json`): no findings. Reviewer note: the unit case checks `data-title`, not that the title renders; the critic's look at the editor covers that.
 - Run `T9R2.17-fixes2` (browser-full, HEAD f4620535, the one full run after the last fix): unit 226 files, 2681 tests; integration 141 files, 300 tests; browser-1 126 passed (5.3 m), browser-2 80 (5.2 m), browser-3 57 (4.6 m), browser-4 133 passed, 4 skipped (6.9 m); checks 14 of 14. No flaky case failed; B9.11 passed. Ports free before and after. `run-complete.sh`: run complete.
 - `acceptance-commands.sh plan/D09R2-review-marks-grid.md`: 9 commands, 0 failed, exit 0.
+
+### Critic-2
+
+- critic-2 defects: 1 high (the grid's Previous page and Next page can't be reached by keyboard; B1's Tab route skips the pager) → **T9R2.17-B7**; 2 high (after another tab saves a Mark, a card that wasn't open fails to load, "We couldn't load this Trade"; breaks A294 with the refused key's card closed; the critic thinks the cause predates D9R2) → **T9R2.17-B8**; 3 moderate (leaving the page by route or reload with Mark drafts doesn't ask, against P156's row; probably app-wide and earlier) → **T9R2.17-B9**; 4 low → tech debt item 3.
+- Confirmed fixed from critic-1: keyboard into the editor (B1), conflict focus (B2), the phone widths at 375 and 320 (B4, including a one-leg Trade), the editor's title (B5). The B3 subagent's note on Cancel focus was not reported.
+- Minor observations (not defects; for the final report): the header's "28 earlier optional" against the pager's "of 27"; at 1280 px the pager text touches Next page; the "also held by" link omits the symbol; on a phone the editor sits about 1,100 px below the top cells; two status messages at once when opening another card during a Correct; grid row names repeat the label; a collapsed panel measures turned (tech debt item 1); Withdraw has no confirmation; Trade Detail's Journal lists a "Session not ended yet" card (earlier work).
