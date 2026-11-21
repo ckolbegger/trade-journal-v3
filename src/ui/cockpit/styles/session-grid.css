@@ -47,6 +47,21 @@ button.session-grid-draft {
   display: inline-block;
   margin-right: 0.35rem;
 }
+/* P161: a turned grid wraps its header and cell text rather than scrolling or clipping, so a one-leg Trade fits at 320 px. The control fills its cell. */
+.price-history[data-layout='turned'] {
+  width: 100%;
+}
+.price-history[data-layout='turned'] th,
+.price-history[data-layout='turned'] td {
+  padding: 0.25rem 0.4rem;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.price-history[data-layout='turned'] .session-grid-control {
+  width: 100%;
+  min-width: 0;
+  white-space: normal;
+}
 /* Touch screens: every cell is at least 44 px high. */
 @media (pointer: coarse) {
   .session-grid-control {

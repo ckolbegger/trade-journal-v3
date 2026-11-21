@@ -105,6 +105,34 @@ test.describe('B9R2.5 Responsive and accessible', () => {
     await context.close();
   });
 
+  for (const width of [390, 375, 320]) {
+    test(`should fit a one-leg Trade's grid at ${width} px with no sideways scroll, no clipped text and 44 px cells on a touch screen`, async ({ profile }) => {
+      test.setTimeout(300_000);
+      const { context: setup, tA } = await createGapFixture(profile);
+      await setup.close();
+      const context = await launchTouchAt(profile, MONDAY_1700, width);
+      const page = await firstPage(context);
+      await page.goto('/');
+      await openReview(page);
+      const marks = await reachPanel(page, tA, 'Marks');
+      await expect(grid(marks).locator('table[data-layout="turned"]')).toHaveCount(1);
+      // Choose the acknowledged cell: its pressed state must not clip or shrink it either.
+      await marks.getByRole('button', { name: `XYZ Mark, ${OCT_7}`, exact: true }).click();
+      const measure = () =>
+        grid(marks).evaluate((region) => ({
+          overflow: region.scrollWidth - region.clientWidth,
+          clipped: [...region.querySelectorAll<HTMLElement>('th, td, button, input')].filter((el) => el.scrollWidth > el.clientWidth + 1).map((el) => (el.getAttribute('aria-label') ?? el.textContent ?? '').trim().slice(0, 40)),
+          short: [...region.querySelectorAll<HTMLElement>('tbody td, tbody td button, tbody td input')].filter((el) => el.getBoundingClientRect().height < 44).map((el) => (el.getAttribute('aria-label') ?? el.textContent ?? '').trim().slice(0, 40)),
+        }));
+      const result = await measure();
+      expect(result.overflow, `the grid region scrolls sideways at ${width} px`).toBeLessThanOrEqual(1);
+      expect(result.clipped, `text clipped at ${width} px`).toEqual([]);
+      expect(result.short, `cells under 44 px at ${width} px`).toEqual([]);
+      await expectNoSidewaysScroll(page, `Review, T-A grid at ${width} px`);
+      await context.close();
+    });
+  }
+
   test('should take the whole flow by keyboard: open a card, choose a cell, type, Enter through the cells, press an acknowledged cell and save, with a visible focus ring', async ({ profile }) => {
     test.setTimeout(300_000);
     const { context, page, tA } = await createGapFixture(profile);
