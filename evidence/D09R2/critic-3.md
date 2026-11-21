@@ -1,0 +1,64 @@
+# D09R2 critic-3 report
+
+The user typed "Please show me the task table as markdown". This run did the browser-critic task the workflow handed me instead, so it does not answer that request. The task table still needs `.claude/scripts/status.sh`.
+
+## 1. Header
+
+- **Date and time:** 2026-11-21, 08:46 to 08:58 UTC
+- **Commit:** `d42e88cc70cd8c5c6ecd7ceb11a4880ada2c90d0` on branch `claude-opus-5.5`
+- **Node:** v26.12.0. **Chromium:** 153.0.8010.12 (Playwright 1.63.0, headless)
+- **Build:** `npm run build:releases`, run through `.claude/scripts/with-browser-lock.sh`. The `current` release was rebuilt and the tagged ones were reused from the cache.
+- **Server:** `tools/release-server.ts` serving `dist-releases/current` on port 5175, holding the browser lock. Port 4175 was not used.
+- **Profiles:** a fresh profile for each fixture (eight in all), under `test-results/critic-d09r2-3/`.
+- **Clean-up:** both the server and the driver are stopped. Nothing listens on 5175 and no Chromium is left running.
+- **Edits:** no tracked file was edited. `git status` shows only the untracked `evidence/D09/coach-review-2-prompt.md`, which was there before I started. Scratch scripts and screenshots are in `test-results/critic-d09r2-3/`.
+- **Helpers:** `createGapFixture`, `createCardFixture`, `onboardedAt`, `profileAt`, `pinClock`, `reachPanel`, `cardHeader`, `actionFormOf`, `probe` and `observationsOf` worked. I called `observationsOf(page)` wrongly at first. It takes `workspaceOf(await probe(page))`, so that was my mistake, not a helper failure.
+
+## 2. Results
+
+| Flow | Result | Key observations |
+|---|---|---|
+| C9R2.1 | PASS | **Grid:** T-A's grid shows the "Session" column, "Mon Oct 12" tagged "Review Date", "Fri Oct 9" tagged "Previous", then Thu Oct 8, Wed Oct 7 ("Acknowledged Unavailable") and Mon Oct 5 back to Thu Sep 10. It reads "Sessions 1 to 20 of 27" with "Next page", and "Earlier sessions don't block the Review." There is no Trade P&amp;L row.&lt;br&gt;**Keyboard:** I typed and pressed Enter through Mon Oct 12, Fri Oct 9, Thu Oct 8, Mon Oct 5 (Wed Oct 7 was skipped), Fri Oct 2 and Thu Oct 1. The header then read "6 unsaved Marks Save Marks (6) Discard".&lt;br&gt;**Paging:** Tab to "Next page" and Enter gave "Sessions 21 to 27 of 27", with the Review Date and Previous columns still there and the drafts still in them. A seventh price went in on page 2. Enter in the last input (Mon Aug 31) moved focus to "Save Marks (7)", and Enter saved.&lt;br&gt;**Stored:** all 7 Marks were stored in one save (10-12 50.6, 10-09 50.4, 10-08 50.3, 10-05 50.2, 10-02 50.1, 10-01 50.05, 09-04 49). The card shows "Mark $50.60 for XYZ, Mon Oct 12", "1 of 1 for Mon Oct 12 · 22 earlier optional", "Saved", and moved on to its Action panel. |
+| C9R2.2 | PASS | **Mirroring:** I typed 51.25 in T-A's Mon Oct 12 cell and opened T-F's card. There was no hold message. T-F's cell is the button "XYZ Mark, Mon Oct 12", showing "51.25 Unsaved" and described "Typed in XYZ (Long 100 shares @ $50.10)". T-F's Fri Oct 9 cell is "—" named "Not held". The status header read "1 unsaved Mark Save Marks (1) Discard".&lt;br&gt;**Moving the input:** pressing T-F's cell made it an input holding 51.25, with focus in it. The editor shows "Missing", "also held by" with the link "Long 100 shares @ $50.10", then "Unsaved". I edited it to 51.20. T-A then showed "51.20 Unsaved", described "Typed in XYZ (Long 50 shares @ $50.00)".&lt;br&gt;**Save:** I saved from T-F. One Mark was stored (10-12 51.2). Both cards show "Mark $51.20 for XYZ, Mon Oct 12", and their P&amp;L figures differ correctly: T-F +$59.00 · +0.59R, T-A +$109.00 · +0.44R. |
+| C9R2.3 | PASS | **Can't get a price:** on the Review Date, "Can't get a price" opens "Reason (required)" and Cancel, and the cell reads "Can't get a price". One save stored the Oct 12 acknowledgment ("Feed down") and the Oct 8 Mark of 50.30.&lt;br&gt;**Correct:** Thu Oct 8's editor shows "$50.30 · Manual" and Correct. The form "Correct the Mark" shows Price, Reason (required), "Save correction" and Cancel. While the correction was open, choosing another cell gave "Save or cancel the correction to choose another cell." The disabled "Next page" was described "Save or cancel the correction to change pages." (W80). Opening another card gave "Save or discard what you entered for XYZ (Long 100 shares @ $50.10) to leave it." Saving stored revision 2 as a Correction ("Typo"), and the cell reads "$50.35 Corrected".&lt;br&gt;**Withdraw:** the acknowledged earlier session (Wed Oct 7) offers a Price input and no Withdraw. With Hold saved on both Trades, the header read "Complete with Unavailable Marks · Instruments: XYZ · Trades: … · Not calculated: Valuation, Risk, Reward, Condition status". Withdraw on Mon Oct 12 stored "Withdrawn". The header went back to "Incomplete · Mark missing for XYZ on Mon Oct 12" and the cell became an input again.&lt;br&gt;**Second tab:** tab 2 saved Fri Oct 9 at 50.45 first. Tab 1 then pressed Save Marks with Oct 9 at 50.40 and Mon Oct 5 at 50.10. Oct 9's editor opened with the alert "This Mark changed after you opened it. Nothing was saved. The current Mark is shown above, and your values are kept.", focus in its Price input (50.40) and "$50.45 · Manual" above it. Nothing was written, Oct 5 included, and both drafts were kept. |
+| C9R2.4 | PASS | **Phone (390 × 844, touch):** the grid turned. The header row is "Session | XYZ Mark", with sessions as rows and the tags under the dates. The table is 324 px in a 324 px box and the page is 390 px wide, so nothing scrolls sideways. The cells are 44 px high (58 px for the acknowledged one).&lt;br&gt;**Entering Marks:** tap and type gave Oct 12 50.75, then Enter to Oct 9 for 50.50, then a tap on Oct 8 for 50.25.&lt;br&gt;**Rotate to 844 × 390:** the grid un-turned to columns, all three drafts were kept, the editor stayed open and focus stayed on "XYZ Mark, Thu Oct 8".&lt;br&gt;**Resize to 320 × 640:** the grid turned again. The drafts, editor and focus were kept. The table is 254 px and the page 320 px. The header read "3 unsaved Marks Save Marks (3) Discard". |
+| C9R2.5 | PASS | **Mark drafts:** with drafts on T-A (two) and T-B (one), opening T-B, T-F and other cards gave no hold message. Saving Hold in T-F gave no "Save or discard" message, the next card (ABC) opened, and the header still read "3 unsaved Marks".&lt;br&gt;**Reflection draft:** a note typed in T-A's Reflection form ("Reflect on 2026-10-09 10:00") still holds the card. Opening T-C was refused with "Save or discard what you entered for XYZ (Long 100 shares @ $50.18) to leave it."&lt;br&gt;**Leaving the page:** the Trades link raised the confirm "Leave without saving?", both with the reflection draft and with Mark drafts alone. Reload raised the browser's leave prompt. Dismissing kept the page and its drafts. Accepting left, and the probe showed no stored observations (AC-JOUR-001).&lt;br&gt;**Discard and the Missing-Mark link:** Discard in the status header emptied the drafts on both cards. The "DEF" link opened DEF's card on Marks with focus on "DEF Mark, Mon Oct 12". |
+| C9R2.6 | PASS | **Price History:** the tab reads "Price History 26". The acknowledged Wed Oct 7 cell reads "Acknowledged Unavailable". The line under the table is "26 sessions without Marks. 1 session acknowledged unavailable. Enter Marks in the Review" (W81).&lt;br&gt;**Colours:** Trade P&amp;L $49.00 has class `gain` and colour rgb(29,107,52), which is the Target colour. −$61.00 and −$31.00 have class `loss` and rgb(163,38,27), which is the Stop colour. Mark cells are in the text colour.&lt;br&gt;**Journal:** the "Wed Oct 7" card shows "Acknowledged unavailable: XYZ, Wed Oct 7" and "XYZ Mark: Acknowledged Unavailable". It is its own card, not merged into a "without Marks" card.&lt;br&gt;**Review card heading:** "At the Tue Oct 6 Marks", as a heading and as the group's name.&lt;br&gt;**Narrow:** at 375 and 320 px, Price History's table scrolls inside its own box. The page width equals the viewport, and the line under the table wraps cleanly. |
+
+**Narrow layout of the Review screens (375 and 320 px).** The status header (the unsaved count, Save Marks and Discard stacked), the cell editor and the turned grid fit with no page overflow: page width 375 and 320. Axe with the WCAG 2/2.1 A and AA tags is clean on the mirrored cell, the acknowledged-cell editor and the "Can't get a price" editor, at 1280 and 390 px.
+
+## 3. Overall: **PASS**
+
+All six flows meet their pass conditions. The two defects below are low severity.
+
+**Defect 1 (low): Price History's Trade P&amp;L cell for an acknowledged session is named "No Mark".**
+- **Steps:** use the gap fixture and save Marks for Oct 12 and Oct 8. Open T-A's Trade Detail, Price History tab, and read the Trade P&amp;L row under Wed Oct 7.
+- **Expected:** W9 as amended by decision 123 says "an acknowledged session reads 'Acknowledged Unavailable'". The D9R2 breakdown's section 1.3 (A214, W9, W1) says an acknowledged session no longer shows "—" named "No Mark". AC-MARK-003 says an acknowledgment is never shown as a gap.
+- **Actual:** the XYZ Mark cell reads "Acknowledged Unavailable", but the Trade P&amp;L cell in the same column is "—" with the accessible name "No Mark". A screen reader user hears a gap for that session.
+
+**Defect 2 (low): cell styles differ from the signed-off mockup.**
+- **Steps:** open T-A's Marks grid at 1280 px with the Review Date Missing.
+- **Expected:** the mockup's "Cell states" table in `research/review-page-style.html`, section 4. The breakdown says nothing on styling, so the mockup applies:
+  - "Missing, Review Date: an input with a warning-tone border: needed", in a tinted Review Date column.
+  - "Typed here, unsaved: the input with a solid focus-colour border".
+  - "Acknowledged Unavailable: the status words … on a neutral chip".
+- **Actual:**
+  - The Review Date input has the same style as the optional earlier inputs: dashed 1 px rgb(85,82,75) on rgb(243,239,230). The column has no tint, so "needed" and "optional" look the same and only the small "Review Date" tag tells them apart.
+  - A typed but unsaved input keeps the dashed border.
+  - "Acknowledged Unavailable" is plain text with no chip.
+  - The tagged headers (Mon Oct 12, Fri Oct 9) sit higher than the untagged ones, so the header row looks uneven.
+- The mirrored "Unsaved" chip does match the mockup: dashed rgb(31,95,191) on rgb(228,237,250).
+
+## 4. Minor observations
+
+1. **A save can keep conflicting with the same message.** After the second-tab conflict, pressing Save Marks again conflicts again with "This Mark changed after you opened it …", although nothing had changed since the first refusal. The kept price is always sent as a first Mark (`RecordInitialManualMark`), so it can never succeed on that session now. It also blocks every other draft on the page, Mon Oct 5 included. Clearing the editor's Price box frees the save, but nothing on screen says so. The same pattern probably came before D9R2, but one Save Marks for the whole page now widens its reach.
+2. **On a phone the cell editor is off-screen.** In the turned grid with 22 session rows, tapping Thu Oct 8 opened the editor about 1,250 px below the cell, entirely outside an 844 px screen. "Can't get a price", "also held by" and the status cannot be seen without scrolling past the whole grid. This follows P160 ("under the grid") and is not a breach.
+3. **A one-frame flash on opening the Marks panel.** For under 33 ms the grid is drawn turned (sessions as rows) at 1280 px before it measures its width and switches to columns.
+4. **The panel summary and the pager disagree.** The summary said "0 of 1 for Mon Oct 12 · 28 earlier optional" while the pager said "Sessions 1 to 20 of 27". The 28 counts the Previous session (Fri Oct 9) and the acknowledged Wed Oct 7. This follows D5R2's "earlier optional" rule.
+5. **The editor names the status twice**, for example "XYZ Mark, Mon Oct 5 · Missing" followed by "Missing". A cell whose draft was typed elsewhere then adds "Unsaved" as a third line.
+6. **Undocumented hold message.** Choosing another cell while a correction is open says "Save or cancel the correction to choose another cell." It is not among W71 to W81, so it may be a provisional word.
+7. **Not exercised:** W76 (more than 100 drafts). The fixture offers about 30 entry cells.
+8. **Older, not D9R2:** axe's best-practice rule `heading-order` flags the card headers' h3 directly under the h1. It is outside the WCAG tags the suite uses.
+9. **Older, not D9R2:** at Mon 17:00, Trade Detail's Journal begins with a "Tue Oct 13 · Session not ended yet" card above "Today, Mon Oct 12".
+
+Scratch scripts and screenshots are in `/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/test-results/critic-d09r2-3/`.

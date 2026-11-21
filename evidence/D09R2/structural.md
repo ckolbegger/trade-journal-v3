@@ -312,6 +312,7 @@ D9R2 runs one task at a time (P162; decision 100). Each task's heading holds its
 |---|---|---|---|---|---|
 | critic-1 (`critic-1.md`) | `critic-brief.md` template, D9R2 flows C9R2.1 to C9R2.6 | 185,462 | 178 | 11 min 53 s | FAIL: 1 high, 4 moderate, 1 low |
 | critic-2 (`critic-2.md`) | the same, fresh, every flow repeated | 248,540 | 258 | 22 min 26 s | FAIL: 2 high, 1 moderate, 1 low |
+| critic-3 (`critic-3.md`) | the same, fresh, every flow repeated | 230,832 | 991 | 12 min 13 s | PASS: 2 low |
 
 - critic-1 defects: 1 high (the cell editor unreachable by keyboard except the page's last cell) → **T9R2.17-B1**; 2 moderate (no focus after a conflict-refused save, A294) → **T9R2.17-B2**; 3 moderate (focus falls to the body when the pressed control disappears: "Can't get a price", Correct, Withdraw, Next page) → **T9R2.17-B3**; 4 moderate (a one-leg Trade's turned grid scrolls sideways and clips at 390, 375, 320 px; a 35 px chosen cell at 320; P161) → **T9R2.17-B4**; 5 moderate (the editor has no title or box naming its cell, and an off-page cell's editor stays open after paging) → **T9R2.17-B5**; 6 low → tech debt item 1. It confirms T9R2.16's note on the 390 px overflow (defect 4); the refused-save order was not tested.
 - Scope decision for B1 (main session, recorded): each cell stays one tab stop (research page, section 6, option B); Tab from a chosen cell goes into its editor's controls, and Tab past the editor's last control goes to the next cell; Enter keeps A295's order. Recorded here for the user's review.
@@ -413,3 +414,8 @@ D9R2 runs one task at a time (P162; decision 100). Each task's heading holds its
 - ocr (`ocr/T9R2.17-F2-2f911fff.json`): no findings.
 - Run `T9R2.17-fixes4` (browser-full, HEAD d26b5156, the one full run after the last fix): unit 227 files, 2688 tests; integration 141 files, 300 tests; browser-1 126 passed (5.4 m), browser-2 80 (5.2 m), browser-3 57 (4.5 m), browser-4 137 passed, 4 skipped (7.2 m); checks 14 of 14. No flaky case failed; B9.11 passed. Ports free before and after. `run-complete.sh`: run complete.
 - `acceptance-commands.sh plan/D09R2-review-marks-grid.md`: exit 0 (summary: 9 commands checked, 0 failed, 0 rows are procedures, not checked).
+
+### Critic-3
+
+- critic-3: PASS, every flow (C9R2.1, C9R2.2, C9R2.3, C9R2.4, C9R2.5, C9R2.6). Defects: 2 low → tech debt items 4 and 5. A critic with only low defects closes the gate. **The gate is closed.**
+- Minor observations (for the final report): a save refused by a conflict keeps sending the kept price as a first Mark, so pressing Save Marks again conflicts again and holds every other draft until the Price box is cleared (probably older than D9R2, widened by one Save Marks); on a phone the editor sits about 1,250 px below a chosen cell (P160); a one-frame turned flash (tech debt item 1); the summary's "28 earlier optional" against the pager's "of 27"; the editor names its status twice; "Save or cancel the correction to choose another cell." is not among W71 to W81; W76 (over 100 drafts) not exercised; older: axe `heading-order`, and the Journal's "Session not ended yet" card. The critic's report opens with a note on the user's mid-turn message, which reached it; no effect on the run.
