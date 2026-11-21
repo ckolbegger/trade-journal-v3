@@ -185,4 +185,53 @@ test.describe('B9R2.3 Drafts belong to the Review', () => {
     await expect.poll(() => new URL(page.url()).pathname).toBe('/');
     await context.close();
   });
+
+  test('should raise the browser leave prompt on a real page close while a draft exists, keep the page on dismiss, close on accept, and raise none without a draft (T9R2.17-B11)', async ({ profile }) => {
+    test.setTimeout(300_000);
+    const { context, page, tA } = await createGapFixture(profile);
+    await type(page, tA, OCT_12, '53.17');
+    await expect(status(page)).toContainText('1 unsaved Mark');
+    const reviewUrl = page.url();
+    const prompts: string[] = [];
+    let accept = false;
+    page.on('dialog', (dialog) => {
+      prompts.push(dialog.type());
+      void (accept ? dialog.accept() : dialog.dismiss());
+    });
+
+    // Dismissing the browser's prompt keeps the page and the typed draft.
+    await page.close({ runBeforeUnload: true });
+    await expect.poll(() => prompts).toEqual(['beforeunload']);
+    expect(page.isClosed()).toBe(false);
+    await expect(status(page)).toContainText('1 unsaved Mark');
+    await expect(input(await reachPanel(page, tA, 'Marks'), OCT_12)).toHaveValue('53.17');
+
+    // A real reload meets the same prompt; accepting it drops the draft.
+    accept = true;
+    await page.reload();
+    expect(prompts).toEqual(['beforeunload', 'beforeunload']);
+    await expect(status(page)).not.toContainText('unsaved Mark');
+
+    // Typed again, a page close accepted at the prompt leaves.
+    await type(page, tA, OCT_12, '53.17');
+    await expect(status(page)).toContainText('1 unsaved Mark');
+    await page.close({ runBeforeUnload: true });
+    await expect.poll(() => page.isClosed()).toBe(true);
+    expect(prompts).toEqual(['beforeunload', 'beforeunload', 'beforeunload']);
+
+    // With nothing unsaved there is no prompt.
+    const clean = await context.newPage();
+    const cleanPrompts: string[] = [];
+    clean.on('dialog', (dialog) => {
+      cleanPrompts.push(dialog.type());
+      void dialog.dismiss();
+    });
+    await clean.goto(reviewUrl);
+    await expect(status(clean)).toBeVisible();
+    await clean.click('body');
+    await clean.close({ runBeforeUnload: true });
+    await expect.poll(() => clean.isClosed()).toBe(true);
+    expect(cleanPrompts).toEqual([]);
+    await context.close();
+  });
 });
