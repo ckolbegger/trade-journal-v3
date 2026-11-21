@@ -1536,3 +1536,52 @@ describe('links, refused saves, kept drafts and the turn (T9R2.14)', () => {
     }
   });
 });
+
+describe('focus when the pressed control goes (T9R2.17-B3)', () => {
+  it('should move focus to Reason required when Cant get a price is pressed', async () => {
+    renderReview(cardFacade());
+    const user = userEvent.setup();
+    const panel = await marksPanel();
+    const friday = await choose(user, panel, 'XYZ', FRIDAY_LABEL);
+
+    await user.click(within(friday).getByRole('button', { name: "Can't get a price" }));
+
+    expect(document.activeElement).toBe(within(friday).getByLabelText('Reason (required)'));
+  });
+
+  it('should move focus to the correction Price when Correct is pressed', async () => {
+    renderReview(cardFacade(gridReview({ earlierMarks: [xyzMarks({ [FRIDAY]: markAt('51', 3) })] })));
+    const user = userEvent.setup();
+    const panel = await marksPanel();
+    const friday = await choose(user, panel, 'XYZ', FRIDAY_LABEL);
+
+    await user.click(within(friday).getByRole('button', { name: 'Correct' }));
+
+    expect(document.activeElement).toBe(within(friday).getByLabelText('Price'));
+  });
+
+  it('should move focus to the cell when Withdraw is pressed and the cell turns into a price input', async () => {
+    const facade = cardFacade(gridReview({ today: [markRowOf('ABC', ACK, 2)], earlierMarks: [abcMarks({ [FRIDAY]: markAt('27.5') })] }));
+    vi.mocked(facade.MarketData.save).mockResolvedValue({ kind: 'Saved', resolution: { kind: 'Missing' }, resolutionRevision: 3, classification: 'Withdrawal' } as never);
+    renderReview(facade);
+    const user = userEvent.setup();
+    const panel = await marksPanel();
+    const monday = await choose(user, panel, 'ABC', MONDAY_LABEL);
+
+    await user.click(within(monday).getByRole('button', { name: 'Withdraw' }));
+
+    await waitFor(() => expect(document.activeElement).toBe(inputOf(panel, 'ABC', MONDAY_LABEL)));
+  });
+
+  it('should move focus to Previous page when Next page goes on the last page, and back to Next page when Previous page goes', async () => {
+    renderReview(cardFacade(pagedReview()));
+    const user = userEvent.setup();
+    const panel = await marksPanel();
+
+    await user.click(within(panel).getByRole('button', { name: 'Next page' }));
+    expect(document.activeElement).toBe(within(panel).getByRole('button', { name: 'Previous page' }));
+
+    await user.click(within(panel).getByRole('button', { name: 'Previous page' }));
+    expect(document.activeElement).toBe(within(panel).getByRole('button', { name: 'Next page' }));
+  });
+});

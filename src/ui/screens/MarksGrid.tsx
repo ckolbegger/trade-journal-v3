@@ -1,4 +1,4 @@
-import { useId, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import type { ObservationKey } from '../../app/types.ts';
 import type { Instrument } from '../../domain/instrument/index.ts';
 import { SessionGrid } from '../cockpit/session-grid.tsx';
@@ -44,6 +44,15 @@ export function MarksGrid({ model, writable, draftOf, typedIn, onPrice, fieldOf,
   const { timeZone } = useRuntime();
   const [page, setPage] = useState(0);
   const holdId = useId();
+  // A page button that goes when pressed (the last page's Next, the first page's Previous) hands focus to the other one.
+  const previousButton = useRef<HTMLButtonElement>(null);
+  const nextButton = useRef<HTMLButtonElement>(null);
+  const pressed = useRef<'previous' | 'next' | undefined>(undefined);
+  useEffect(() => {
+    if (pressed.current === 'next' && !nextButton.current) previousButton.current?.focus();
+    if (pressed.current === 'previous' && !previousButton.current) nextButton.current?.focus();
+    pressed.current = undefined;
+  }, [page]);
   // The prices on the page in Enter order: down a session's column, then the next session's (A295).
   const inputs: string[] = [];
   const enterFrom = (label: string, from: HTMLInputElement) => {
@@ -114,12 +123,18 @@ export function MarksGrid({ model, writable, draftOf, typedIn, onPrice, fieldOf,
           Sessions {first + 1} to {first + shown.length} of {earlier.length}
           {pagingHeld && <span id={holdId}> Save or cancel the correction to change pages.</span>}
           {page > 0 && (
-            <button type="button" className="pill secondary" {...paging} onClick={() => setPage(page - 1)}>
+            <button type="button" ref={previousButton} className="pill secondary" {...paging} onClick={() => {
+                pressed.current = 'previous';
+                setPage(page - 1);
+              }}>
               Previous page
             </button>
           )}
           {first + SESSIONS_PER_PAGE < earlier.length && (
-            <button type="button" className="pill secondary" {...paging} onClick={() => setPage(page + 1)}>
+            <button type="button" ref={nextButton} className="pill secondary" {...paging} onClick={() => {
+                pressed.current = 'next';
+                setPage(page + 1);
+              }}>
               Next page
             </button>
           )}

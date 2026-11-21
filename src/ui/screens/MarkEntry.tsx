@@ -60,6 +60,7 @@ export function MarkEntry({ facade, instrumentKey, instrument, tradingDate, reso
   // The open form, if any: entering the first Mark, correcting the effective one, or saying no price can be had.
   const [mode, setMode] = useState<'Enter' | 'Correct' | 'Acknowledge' | undefined>();
   const [price, setPrice] = useState('');
+  const form = useRef<HTMLFormElement>(null);
   const [reason, setReason] = useState('');
   // Unsaved while a value has been entered; opening a form enters nothing.
   const dirty = price !== '' || reason !== '';
@@ -77,6 +78,10 @@ export function MarkEntry({ facade, instrumentKey, instrument, tradingDate, reso
   // The write failed in storage: nothing was saved, and the values stay for a retry.
   // Which save could not write: a Withdraw has no entered values to keep, so its notice differs.
   const [storageFailed, setStorageFailed] = useState<false | 'form' | 'withdraw'>(false);
+  // The pressed Enter, Correct or "Can't get a price" is replaced by its form: focus goes to the form's first field.
+  useEffect(() => {
+    if (mode) form.current?.querySelector<HTMLElement>('input, textarea')?.focus();
+  }, [mode]);
   const noticeRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (conflict || storageFailed) noticeRef.current?.focus();
@@ -199,7 +204,7 @@ export function MarkEntry({ facade, instrumentKey, instrument, tradingDate, reso
         </p>
       )}
       {showForm && mode && (
-        <form aria-label={FORM_LABEL[mode]} noValidate onSubmit={submit}>
+        <form ref={form} aria-label={FORM_LABEL[mode]} noValidate onSubmit={submit}>
           {mode === 'Correct' && resolution.kind === 'Available' && <p>{`Current price ${decimalMoney(resolution.mark.price)}`}</p>}
           {mode !== 'Acknowledge' && (
             <div className="field">

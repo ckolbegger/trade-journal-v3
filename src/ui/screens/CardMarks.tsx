@@ -45,6 +45,8 @@ interface Panel {
   // A per-row save reaches the held Review through the fold (P51).
   readonly onResult: (result: HeldResult) => void;
   readonly onEntryDirty: EntryDirty;
+  // Takes focus to a field by its element id, once it has rendered: a pressed control that goes hands focus on.
+  readonly focus: (field: string) => void;
   // The saved Mark's draft id: once saved it is no longer an unsaved draft.
   readonly onMarkSaved: (draftId: string) => void;
   // The walked Trades whose settlement is due: a Mark only they need goes away once the expiration is recorded (A112).
@@ -108,7 +110,10 @@ function DraftFields({ panel, tradeKey, resolution }: { readonly panel: Panel; r
           {fieldError(field.price)}
           <p className="hint">{ZERO_MARK_NOTE}</p>
           {resolution.kind === 'Missing' && (
-            <button type="button" className="pill secondary" onClick={() => panel.hold(tradeKey, { kind: 'CantGetPrice', reason: '' })}>
+            <button type="button" className="pill secondary" onClick={() => {
+                panel.hold(tradeKey, { kind: 'CantGetPrice', reason: '' });
+                panel.focus(field.reason);
+              }}>
               {CANT_GET_A_PRICE}
             </button>
           )}
@@ -127,6 +132,8 @@ function CellEditor({ panel, instrumentKey, instrument, tradingDate, listed, wit
   const saved: MarkEntryProps['onSaved'] = ({ resolution: next, resolutionRevision: revision }) => {
     panel.onResult({ kind: 'MarkSaved', key, resolution: next, resolutionRevision: revision });
     panel.onMarkSaved(id);
+    // A withdrawn acknowledgment leaves the cell a price input, and the pressed Withdraw is gone: focus goes to the cell.
+    if (now.resolution.kind === 'AcknowledgedUnavailable' && next.kind === 'Missing') panel.focus(fieldIds(panel.uid, id).price);
   };
   return (
     <ReviewMarkEntry facade={panel.facade} instrumentKey={instrumentKey} instrument={instrument} tradingDate={tradingDate} resolution={now.resolution} resolutionRevision={now.revision} withdraw={withdraw} offerEntry={false} onEntryDirty={panel.onEntryDirty} onMarkSaved={saved}>
@@ -232,6 +239,7 @@ export function CardMarks({ facade, tradeId, marks, held: heldReview, onResult, 
   useEffect(() => {
     if (focusField) document.getElementById(focusField.field)?.focus();
   }, [focusField]);
+  const focus = useCallback((field: string) => setFocusField({ field }), []);
   const section = useRef<HTMLElement>(null);
   // A correction in progress holds the editor: another cell is not chosen, and the correction takes the focus back (A297).
   const correctionHolds = (key: ObservationKey) => dirtyIds.size > 0 && (chosen?.instrumentKey !== key.instrumentKey || chosen.tradingDate !== key.tradingDate);
@@ -308,7 +316,7 @@ export function CardMarks({ facade, tradeId, marks, held: heldReview, onResult, 
   // The walked Trades with a due settlement, from their card progress: a Mark only they need is said so in its editor (A112).
   const walkedTrades = heldReview.review.families.flatMap((family) => (family.family === 'Trades' ? family.trades : []));
   const settlementTrades = new Set(walkedTrades.filter((trade) => trade.progress.panels.some((p) => p.panel === 'Settlement' && !p.done)).map((trade) => trade.tradeId));
-  const panel: Panel = { facade, writable, uid, draftOf: (key) => draftAt(drafts, key)?.value, hold, issues, notices, standing, onResult, onEntryDirty: entryDirty, onMarkSaved, settlementTrades };
+  const panel: Panel = { facade, writable, uid, draftOf: (key) => draftAt(drafts, key)?.value, hold, issues, notices, standing, onResult, onEntryDirty: entryDirty, focus, onMarkSaved, settlementTrades };
   const instrumentOf = (instrumentKey: string): Instrument => model.instruments.find((i) => i.instrumentKey === instrumentKey)!.instrument;
   if (marks.today.length === 0 && opened.length === 0) return null;
   // Each cell is one tab stop and the one editor sits under the grid, so Tab goes from the chosen cell into the editor's controls and on from
