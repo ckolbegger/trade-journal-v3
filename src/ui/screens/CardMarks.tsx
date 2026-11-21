@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
 import type { MarkResolution, MarkRow, ObservationKey } from '../../app/types.ts';
@@ -308,13 +308,32 @@ export function CardMarks({ facade, tradeId, marks, held: heldReview, onResult, 
   const panel: Panel = { facade, writable, uid, draftOf: (key) => draftAt(drafts, key)?.value, hold, issues, notices, standing, onResult, onEntryDirty: entryDirty, onMarkSaved, settlementTrades };
   const instrumentOf = (instrumentKey: string): Instrument => model.instruments.find((i) => i.instrumentKey === instrumentKey)!.instrument;
   if (marks.today.length === 0 && opened.length === 0) return null;
+  // Each cell is one tab stop and the one editor sits under the grid, so Tab goes from the chosen cell into the editor's controls and on from
+  // its last control to the next cell; Shift+Tab goes back from the editor's first control to its cell (P160).
+  const chosenLabel = chosen && model.instruments.some((i) => i.instrumentKey === chosen.instrumentKey) ? `${instrumentLabel(instrumentOf(chosen.instrumentKey), timeZone)} Mark, ${shortDate(chosen.tradingDate)}` : undefined;
+  const throughEditor = (event: KeyboardEvent<HTMLElement>) => {
+    const editor = section.current?.querySelector<HTMLElement>('[data-cell-editor]');
+    if (event.key !== 'Tab' || event.ctrlKey || event.altKey || event.metaKey || !editor || chosenLabel === undefined) return;
+    const cells = [...(section.current?.querySelectorAll<HTMLElement>('table input, table button') ?? [])];
+    const cell = cells.find((control) => control.getAttribute('aria-label') === chosenLabel);
+    const controls = [...editor.querySelectorAll<HTMLElement>('a[href], button, input, textarea, select')].filter((control) => !(control as HTMLButtonElement).disabled);
+    const target = event.target as HTMLElement;
+    const go = (to: HTMLElement | undefined) => {
+      if (!to) return;
+      event.preventDefault();
+      to.focus();
+    };
+    if (!event.shiftKey && target === cell) go(controls[0]);
+    else if (!event.shiftKey && target === controls[controls.length - 1]) go(cells[cells.indexOf(cell as HTMLElement) + 1]);
+    else if (event.shiftKey && target === controls[0]) go(cell);
+  };
   // The chosen cell's editor, when the cell holds a Mark or can take one.
   const chosenCell = chosen && model.cellAt(chosen.instrumentKey, chosen.tradingDate);
   const todayRow: MarkRow | undefined = chosen && chosen.tradingDate === heldReview.review.reviewDate ? marks.today.find((row) => row.instrumentKey === chosen.instrumentKey) : undefined;
   // A shared Instrument names the other Trades that hold it, by their summary line (A153, decision 67).
   const others = todayRow?.trades.filter((id) => id !== tradeId) ?? [];
   return (
-    <section aria-label="Marks" ref={section}>
+    <section aria-label="Marks" ref={section} onKeyDown={throughEditor}>
       {outOfDate && (
         <div role="alert" className="banner warning">
           <p>
@@ -343,6 +362,7 @@ export function CardMarks({ facade, tradeId, marks, held: heldReview, onResult, 
       {opened.length > 0 && <p>Earlier sessions don't block the Review.</p>}
       {refused && dirtyIds.size > 0 && <p role="status">Save or cancel the correction to choose another cell.</p>}
       {chosen && chosenCell && chosenCell !== NOT_HELD && (
+        <div data-cell-editor>
         <CellEditor key={rowId(chosen.instrumentKey, chosen.tradingDate)} panel={panel} instrumentKey={chosen.instrumentKey} instrument={instrumentOf(chosen.instrumentKey)} tradingDate={chosen.tradingDate} listed={chosenCell} withdraw={todayRow !== undefined}>
           {todayRow?.task === 'Manual' && todayRow.trades.every((id) => settlementTrades.has(id)) && <p>{SETTLEMENT_ONLY_NOTE}</p>}
           {others.length > 0 && (
@@ -357,6 +377,7 @@ export function CardMarks({ facade, tradeId, marks, held: heldReview, onResult, 
             </p>
           )}
         </CellEditor>
+        </div>
       )}
       {failure && <SaveFailure drafts={markDrafts} onRefresh={onRefresh} />}
       {writable && (

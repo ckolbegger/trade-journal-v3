@@ -327,6 +327,64 @@ describe('the Marks grid, keyboard (A295)', () => {
   });
 });
 
+describe('the Marks grid, one tab stop per cell with its editor in between (P160)', () => {
+  const laterCells = () => {
+    const thursday: Earlier[number] = { ...xyzGap, trades: [{ tradeId: 't-a', from: THURSDAY }], missing: [THURSDAY], revisions: { [THURSDAY]: 'None' } };
+    return cardFacade(gridReview({ today: [missingRow('XYZ', ['t-a', 't-f'])], earlier: [thursday], earlierMarks: [xyzMarks({ [FRIDAY]: markAt('51', 3) }, THURSDAY)] }));
+  };
+
+  // Tabs on from the chosen cell while the focus stays in its editor; returns what took the focus in it, with the control Tab left it for.
+  async function tabThrough(user: ReturnType<typeof userEvent.setup>, editor: HTMLElement) {
+    const stops: Element[] = [];
+    for (let i = 0; i < 10; i++) {
+      await user.tab();
+      if (!editor.contains(document.activeElement)) return { stops, next: document.activeElement };
+      stops.push(document.activeElement!);
+    }
+    throw new Error('Tab never left the editor');
+  }
+
+  it('should take Tab from a chosen Review Date cell to Cant get a price in its editor, then to the next cell, and Shift+Tab back', async () => {
+    renderReview(laterCells());
+    const user = userEvent.setup();
+    const panel = await marksPanel();
+    const monday = await choose(user, panel, 'XYZ', MONDAY_LABEL);
+    expect(document.activeElement).toBe(inputOf(panel, 'XYZ', MONDAY_LABEL));
+
+    const { stops, next } = await tabThrough(user, monday);
+    expect(stops).toContain(within(monday).getByRole('button', { name: "Can't get a price" }));
+    expect(next).toBe(cellOf(panel, 'XYZ', FRIDAY_LABEL));
+    // Shift+Tab from the editor's first control returns to its cell, not to the last cell of the grid.
+    await user.click(inputOf(panel, 'XYZ', MONDAY_LABEL));
+    await user.tab();
+    await user.tab({ shift: true });
+    expect(document.activeElement).toBe(inputOf(panel, 'XYZ', MONDAY_LABEL));
+  });
+
+  it('should take Tab from a chosen earlier cell to Correct in its editor while later cells exist', async () => {
+    renderReview(laterCells());
+    const user = userEvent.setup();
+    const panel = await marksPanel();
+    const friday = await choose(user, panel, 'XYZ', FRIDAY_LABEL);
+
+    const { stops, next } = await tabThrough(user, friday);
+    expect(stops).toContain(within(friday).getByRole('button', { name: 'Correct' }));
+    expect(next).toBe(inputOf(panel, 'XYZ', 'Thu Oct 8'));
+  });
+
+  it('should take Tab from a chosen acknowledged Review Date cell to Withdraw in its editor while later cells exist', async () => {
+    const thursday: Earlier[number] = { ...xyzGap, trades: [{ tradeId: 't-a', from: THURSDAY }], missing: [], acknowledged: [THURSDAY], revisions: { [THURSDAY]: 2 }, acknowledgments: { [THURSDAY]: ACK.acknowledgment } };
+    renderReview(cardFacade(gridReview({ today: [markRowOf('ABC', ACK, 2)], earlier: [thursday], earlierMarks: [xyzMarks({ [FRIDAY]: markAt('51') }, THURSDAY), abcMarks({ [FRIDAY]: markAt('27.5') })] })));
+    const user = userEvent.setup();
+    const panel = await marksPanel();
+    const monday = await choose(user, panel, 'ABC', MONDAY_LABEL);
+
+    const { stops, next } = await tabThrough(user, monday);
+    expect(stops).toContain(within(monday).getByRole('button', { name: 'Withdraw' }));
+    expect(next).toBe(cellOf(panel, 'ABC', FRIDAY_LABEL));
+  });
+});
+
 describe('the Marks grid, earlier sessions note (W72)', () => {
   it('should say Earlier sessions do not block the Review only while earlier columns show', async () => {
     const note = "Earlier sessions don't block the Review.";
