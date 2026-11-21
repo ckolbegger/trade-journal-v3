@@ -288,3 +288,4 @@ D9R2 runs one task at a time (P162; decision 100). Each task's heading holds its
 - `npm run test:integration -- d9r2`: 4 files, 6 tests passed.
 - `acceptance-commands.sh`: the three integration rows (AC-RESP-001, AC-REV-005 with ADR 0011, AC-PERF-001) pass; the six rows for `e2e/d9r2` specs fail until T9R2.16 ("no tests").
 - Checks: typecheck, tsc6, lint:deps exit 0; lint 0 errors (2 existing warnings in OwedDebtItem.tsx).
+- (main session) Base `50b411d1`, commit `90e3605d`. Light (decision 122): no ocr, no suite run. `npm run test:integration -- d9r2`: 4 files, 6 tests pass, no production change. Acceptance: the three integration rows pass (AC-RESP-001, AC-REV-005 with ADR 0011, AC-PERF-001); the six e2e rows wait for T9R2.16.
