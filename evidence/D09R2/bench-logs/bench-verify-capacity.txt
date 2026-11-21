@@ -1,0 +1,9 @@
+
+> trade-journal-v3@0.0.0 bench:verify-capacity
+> node tools/bench-verify-capacity.ts
+
+verify:capacity OK: required quota 2737548396 = 3 × 912516132, schema 7
+bench:verify-capacity: restored usage 190579335 = 0.244 × the projection 781961664 (limit 1.10)
+bench:verify-capacity: second Restore peak 455272088 = 0.499 × M 912516132 (limit below 3)
+bench:verify-capacity: restored usage 190579335 = 0.923 × the baseline 206540122 (limit 1.50)
+bench:verify-capacity OK

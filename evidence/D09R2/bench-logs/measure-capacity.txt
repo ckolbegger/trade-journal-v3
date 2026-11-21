@@ -1,0 +1,27 @@
+
+> trade-journal-v3@0.0.0 measure:capacity
+> node tools/measure-capacity.ts
+
+
+> trade-journal-v3@0.0.0 build
+> vite build
+
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 377 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                            0.50 kB │ gzip:   0.30 kB
+dist/assets/backup-export-DhEtWtBN.js    192.69 kB
+dist/assets/index-CWpwZMwS.css            40.85 kB │ gzip:   8.50 kB
+dist/assets/index-CFjVknnU.js          1,036.62 kB │ gzip: 309.45 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 199ms
+measure:capacity: restored Workspace usage 190579335 bytes, projection for the same counts 781961664 bytes
+measure:capacity: second Restore prepare 101.5 s, apply 8.9 s, peak usage 455272088 bytes in 434 samples
+measure:capacity OK: usage 0.244 of the projection, peak 0.499 × M; run npm run bench:verify-capacity for the verdicts

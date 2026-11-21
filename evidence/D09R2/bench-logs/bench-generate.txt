@@ -1,0 +1,5 @@
+
+> trade-journal-v3@0.0.0 bench:generate
+> node tools/bench-generate.ts
+
+bench:generate OK: reusing .cache/bench/benchmark.tjbackup (generator 8, schema 7, 20869684 bytes)
