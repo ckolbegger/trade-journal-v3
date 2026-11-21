@@ -637,3 +637,26 @@ describe('A card opened during the status header Refresh (T9R2.13-B4)', () => {
     await waitFor(() => expect(facade.DailyReview.getTrade).toHaveBeenCalledWith({ reviewDate: '2026-10-12', tradeId: 't1', binding: newBinding }));
   });
 });
+
+describe('A card opened after another tab saved a Mark (T9R2.17-B8)', () => {
+  it('should read the Review again and show the Trade when its read is refused on the held binding', async () => {
+    const trades = [tradeItem('t1', 'XYZ'), tradeItem('t2', 'DEF')];
+    const first = ready({ trades, completion: incomplete(...actionMissing('t1', 't2')) });
+    const newBinding: ReviewBinding = { ...binding, marketDataSnapshotId: 'mds1:2:def' };
+    const facade = reviewFacade(first);
+    const asBefore = vi.mocked(facade.DailyReview.getTrade).getMockImplementation()!;
+    // Another tab saved a Mark: the held binding no longer reads any card, the new one does.
+    vi.mocked(facade.DailyReview.open).mockResolvedValueOnce(first).mockResolvedValue({ ...first, binding: newBinding });
+    vi.mocked(facade.DailyReview.getTrade).mockImplementation((request) => (request.binding === newBinding ? asBefore(request) : Promise.resolve({ kind: 'ReviewChanged' })));
+    renderReview(facade);
+    await screen.findByRole('region', { name: 'Review status' });
+    await user_open();
+
+    expect(await screen.findByRole('region', { name: 'DEF review' })).toBeTruthy();
+    expect(screen.queryByText('We couldn’t load this Trade. Nothing was changed.')).toBeNull();
+    expect(vi.mocked(facade.DailyReview.getTrade)).toHaveBeenLastCalledWith({ reviewDate: '2026-10-12', tradeId: 't2', binding: newBinding });
+  });
+});
+async function user_open() {
+  await userEvent.setup().click(await screen.findByRole('button', { name: /^Review DEF\b/ }));
+}

@@ -319,12 +319,16 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
   const [failed, setFailed] = useState(false);
   // A refresh of the open card in flight: a card opened meanwhile waits for it, so it is read under the new binding.
   const refreshing = useRef<Promise<unknown> | undefined>(undefined);
+  // The Review asked for again and applied (set below, where it is made): the stable `read` calls it through this.
+  const reopenApplied = useRef<() => Promise<Ready | OpenEmpty | undefined>>(undefined);
   // Reads the Trade for an opening, once any refresh in flight has settled; a result for an earlier opening is dropped.
   const read = useCallback(
     async (tradeId: string, request: number) => {
       await refreshing.current;
-      const from = latest.current.review;
-      const result = await facade.DailyReview.getTrade({ reviewDate: from.reviewDate, tradeId, binding: from.binding }).catch(() => undefined);
+      const readUnder = (from: Ready) => facade.DailyReview.getTrade({ reviewDate: from.reviewDate, tradeId, binding: from.binding }).catch(() => undefined);
+      let result = await readUnder(latest.current.review);
+      // Another tab's save leaves the held binding behind, and every card read under it is refused: the Review is read again, and the card with it.
+      if (result?.kind === 'ReviewChanged' && (await reopenApplied.current?.())?.kind === 'Ready') result = await readUnder(latest.current.review);
       const detail = result?.kind === 'Ready' ? { trade: result.trade } : result?.kind === 'ReflectionsOwed' ? { card: result.card } : 'Unavailable';
       if (selection.current === request) setShown({ tradeId, opening: request, detail });
     },
@@ -384,6 +388,9 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
     if (refreshing.current === asking) refreshing.current = undefined;
     return result;
   };
+  useEffect(() => {
+    reopenApplied.current = reopenAndApply;
+  });
   // The Review and one Trade again, under the new binding. The Trade replaces the shown one without a loading state, so the form keeps its values.
   // The opening the refresh belongs to: the one the save was entered under, or the one shown when it is asked for.
   // Every valid result is followed as the first opening follows it: an Empty or a different Review replaces the held one, and a Trade

@@ -1,4 +1,4 @@
-import { acknowledgeMark, completion, createGapFixture, enterMark, expect, markRow, OCT_12, OCT_7, OCT_8, OCT_9, openReview, reachPanel, READY, reloadReview, saveAction, saveMarksOf, status, test, tradeCard } from './support.ts';
+import { acknowledgeMark, completion, createGapFixture, enterMark, expect, markRow, OCT_12, OCT_7, OCT_8, OCT_9, openReview, reachCard, reachPanel, READY, reloadReview, saveAction, saveMarksOf, status, test, tradeCard } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -82,6 +82,38 @@ test.describe('B9R2.4 The cell editor', () => {
       await expect(saveMarksOf(page, tA)).toHaveText('Save Marks (1)');
       // The conflicted cell's editor takes focus in its input (A294).
       await expect(marks.getByRole('region', { name: `XYZ Mark, ${OCT_9}`, exact: true }).getByLabel('Price')).toBeFocused();
+    });
+    await context.close();
+  });
+
+  test('should read a card that was not open after another tab saved a Mark, and open the refused cell of a closed card with focus in its input (T9R2.17-B8)', async ({ profile }) => {
+    test.setTimeout(300_000);
+    const { context, page, tA, tF } = await createGapFixture(profile);
+
+    await test.step('another tab saves a Mark while T-F is open here: opening T-A still reads its card', async () => {
+      await reachPanel(page, tF, 'Marks');
+      const second = await context.newPage();
+      await second.goto('/');
+      await openReview(second);
+      await enterMark(second, tA, OCT_8, '50.85');
+      await second.close();
+      const marks = await reachPanel(page, tA, 'Marks');
+      await expect(marks.getByRole('textbox', { name: `XYZ Mark, ${OCT_12}`, exact: true })).toBeVisible(READY);
+      await expect(page.getByText('We couldn’t load this Trade. Nothing was changed.')).toHaveCount(0);
+    });
+
+    await test.step('a refused save opens the closed card of its first refused key, with focus in the input', async () => {
+      await page.getByRole('textbox', { name: `XYZ Mark, ${OCT_12}`, exact: true }).fill('51.00');
+      await page.getByRole('textbox', { name: `XYZ Mark, ${OCT_9}`, exact: true }).fill('50.80');
+      await reachCard(page, tF);
+      const second = await context.newPage();
+      await second.goto('/');
+      await openReview(second);
+      await enterMark(second, tA, OCT_9, '50.85');
+      await second.close();
+      await status(page).getByRole('button', { name: 'Save Marks (2)' }).click();
+      await expect(page.getByRole('region', { name: `XYZ Mark, ${OCT_9}`, exact: true }).getByLabel('Price')).toBeFocused(READY);
+      await expect(page.getByText('We couldn’t load this Trade. Nothing was changed.')).toHaveCount(0);
     });
     await context.close();
   });
