@@ -168,7 +168,7 @@ export function MarkEntry({ facade, instrumentKey, instrument, tradingDate, reso
 
   return (
     <section aria-label={`${instrumentLabel(instrument, timeZone)} Mark, ${shortDate(tradingDate)}`} data-instrument-key={instrumentKey}>
-      {titled && <div className="cell-editor-title" aria-hidden="true">{`${instrumentLabel(instrument, timeZone)} Mark, ${shortDate(tradingDate)} · ${draftStatus ?? statusWords(resolution)}`}</div>}
+      {titled && <div className="cell-editor-title" data-title={`${instrumentLabel(instrument, timeZone)} Mark, ${shortDate(tradingDate)} · ${draftStatus ?? statusWords(resolution)}`} />}
       {resolution.kind === 'Available' && (
         <p>
           <span className="number">{decimalMoney(resolution.mark.price)}</span> · {resolution.mark.source}

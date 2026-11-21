@@ -333,10 +333,10 @@ describe('the cell editor shows its cell and goes when its page does (P160)', ()
     const user = userEvent.setup();
     const panel = await marksPanel();
     const monday = await choose(user, panel, 'XYZ', MONDAY_LABEL);
-    expect(within(monday).getByText('XYZ Mark, Mon Oct 12 · Missing')).toBeTruthy();
+    expect(monday.querySelector('.cell-editor-title')?.getAttribute('data-title')).toBe('XYZ Mark, Mon Oct 12 · Missing');
 
     await user.click(within(monday).getByRole('button', { name: "Can't get a price" }));
-    expect(within(monday).getByText("XYZ Mark, Mon Oct 12 · Can't get a price")).toBeTruthy();
+    expect(monday.querySelector('.cell-editor-title')?.getAttribute('data-title')).toBe("XYZ Mark, Mon Oct 12 · Can't get a price");
   });
 
   it('should close an editor whose cell is not on the shown page, keeping its draft', async () => {

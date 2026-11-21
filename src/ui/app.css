@@ -179,9 +179,14 @@ html:has(.shell:not([data-layout='wide'])) {
   margin-top: 0.5rem;
 }
 
+/* The title is generated text, so it is seen but is not page text that a reader or a text query finds twice. */
 [data-cell-editor] .cell-editor-title {
   font-weight: 700;
   margin-bottom: 0.25rem;
+}
+
+[data-cell-editor] .cell-editor-title::before {
+  content: attr(data-title) / '';
 }
 
 .banner.warning {
