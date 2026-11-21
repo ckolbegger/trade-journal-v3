@@ -8,6 +8,7 @@ import { randomIds, systemClock } from './app/system.ts';
 import { browserDownload, browserExportPort, browserFileSelection, browserHost } from './delivery/browser-host.ts';
 import { CAPACITY_REQUIREMENT } from './delivery/capacity.ts';
 import { RELEASE_ID } from './delivery/release-identity.ts';
+import { LeaveGuard } from './ui/leave-guard.tsx';
 import { AppShell, type Screens } from './ui/AppShell.tsx';
 import { useRuntime } from './ui/runtime.tsx';
 import type { WorkspaceReplaced } from './app/types.ts';
@@ -157,7 +158,9 @@ async function start(container: HTMLElement) {
   createRoot(container).render(
     <StrictMode>
       <BrowserRouter>
-        <Shell />
+        <LeaveGuard unsaved={() => updates.state().unsavedHere}>
+          <Shell />
+        </LeaveGuard>
       </BrowserRouter>
     </StrictMode>,
   );

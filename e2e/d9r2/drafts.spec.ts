@@ -157,4 +157,32 @@ test.describe('B9R2.3 Drafts belong to the Review', () => {
     for (const typed of ['53.17', '52.83']) expect(webStorage).not.toContain(typed);
     await context.close();
   });
+
+  test('should ask before a route change while a draft exists, stay on Cancel, leave on OK, and mark the page for the browser prompt (T9R2.17-B9)', async ({ profile }) => {
+    test.setTimeout(300_000);
+    const { context, page, tA } = await createGapFixture(profile);
+    await type(page, tA, OCT_12, '53.17');
+    await expect(status(page)).toContainText('1 unsaved Mark');
+    const asked: string[] = [];
+    let answer = false;
+    page.on('dialog', (dialog) => {
+      asked.push(dialog.message());
+      void (answer ? dialog.accept() : dialog.dismiss());
+    });
+    const trades = page.getByRole('navigation').getByRole('link', { name: 'Trades' });
+
+    await trades.click();
+    await expect.poll(() => asked.length).toBe(1);
+    await expect(status(page)).toContainText('1 unsaved Mark');
+    expect(new URL(page.url()).pathname).not.toBe('/');
+
+    // A reload or tab close shows the browser's own prompt: the page cancels the unload event.
+    expect(await page.evaluate(() => !window.dispatchEvent(new Event('beforeunload', { cancelable: true })))).toBe(true);
+
+    answer = true;
+    await trades.click();
+    await expect.poll(() => asked.length).toBe(2);
+    await expect.poll(() => new URL(page.url()).pathname).toBe('/');
+    await context.close();
+  });
 });
