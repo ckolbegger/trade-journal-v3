@@ -1045,6 +1045,29 @@ describe('the cell editor (P160)', () => {
     expect(document.activeElement).toBe(within(friday).getByLabelText('Price'));
     expect(within(panel).getByText('Save or cancel the correction to choose another cell.')).toBeTruthy();
   });
+
+  it('should keep a Correct in progress when a Save Marks result reveals another cell', async () => {
+    const facade = cardFacade(gridReview({ earlierMarks: [xyzMarks({ [FRIDAY]: markAt('51', 3) })] }));
+    vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'Rejected', issues: [{ entryIndex: 0, field: 'price', code: 'InvalidPrice' }] });
+    renderReview(facade);
+    const user = userEvent.setup();
+    const panel = await marksPanel();
+    const monday = inputOf(panel, 'XYZ', MONDAY_LABEL);
+    await user.type(monday, 'abc');
+    const friday = await choose(user, panel, 'XYZ', FRIDAY_LABEL);
+    await user.click(within(friday).getByRole('button', { name: 'Correct' }));
+    await user.type(within(friday).getByLabelText('Price'), '51.5');
+    await user.type(within(friday).getByLabelText('Reason (required)'), 'typo');
+
+    await user.click(within(panel).getByRole('button', { name: 'Save Marks (1)' }));
+
+    await waitFor(() => expect(monday.getAttribute('aria-invalid')).toBe('true'));
+    expect(editors(panel).map((editor) => editor.getAttribute('aria-label'))).toEqual(['XYZ Mark, Fri Oct 9']);
+    expect(within(friday).getByLabelText<HTMLInputElement>('Price').value).toBe('51.5');
+    expect(within(friday).getByLabelText<HTMLTextAreaElement>('Reason (required)').value).toBe('typo');
+    expect(document.activeElement).toBe(within(friday).getByLabelText('Price'));
+    expect(monday.value).toBe('abc');
+  });
 });
 
 describe('drafts belong to the Review (P156)', () => {

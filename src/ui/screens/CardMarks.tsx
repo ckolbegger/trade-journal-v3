@@ -226,12 +226,21 @@ export function CardMarks({ facade, tradeId, marks, held: heldReview, onResult, 
   };
   // A refused save, or a Conflict, shows its first key's cell here when the key is in this grid (A294).
   const [handledReveal, setHandledReveal] = useState(reveal?.count ?? 0);
+  const [revealHeld, setRevealHeld] = useState(false);
   if (reveal !== undefined && reveal.count !== handledReveal) {
     setHandledReveal(reveal.count);
-    setChosen(reveal.key);
-    const field = issues[rowId(reveal.key.instrumentKey, reveal.key.tradingDate)]?.[0]?.field;
-    if (reveal.focus && field !== undefined) setFocusField({ field });
+    // A correction in progress holds the editor as it holds a press (A297): the key stays reported by its cell, and the correction keeps the focus.
+    const held = correctionHolds(reveal.key);
+    setRevealHeld(held);
+    if (!held) {
+      setChosen(reveal.key);
+      const field = issues[rowId(reveal.key.instrumentKey, reveal.key.tradingDate)]?.[0]?.field;
+      if (reveal.focus && field !== undefined) setFocusField({ field });
+    }
   }
+  useEffect(() => {
+    if (revealHeld) focusCorrection();
+  }, [handledReveal, revealHeld]);
   const reviewDate = heldReview.review.reviewDate;
   const model = gridModel({ reviewDate, tradeId, today: marks.today, earlier: opened, earlierMarks: earlierMarksOf(heldReview, tradeId), standing: (key) => heldStanding(heldReview, key) });
   // A link names the Instrument: its Review Date cell is chosen, and its editor's first control takes focus.
