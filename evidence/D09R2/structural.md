@@ -214,3 +214,53 @@ D9R2 runs one task at a time (P162; decision 100). Each task's heading holds its
 - Case: "it should refuse a link to another Instrument of the open card while a Correct is in progress". Commit `451b95b0`: red (the link replaced the correction's editor), then green; a focus assertion added and re-run green. `correctionHolds` and `focusCorrection` pulled out of `choose`; the link branch uses them (state flag `linkRefused`). Refused and conflicted saves' `setChosen` untouched (T9R2.14). First-run passes: none. `src/ui` 87 files, 1221 tests; `d5r/marks`, `d5r/sliders`, `d4/review` 8 passed.
 - ocr (`ocr/T9R2.12-B1-451b95b0.json`): **No findings.**
 - Run `T9R2.12` (browser-task; after B1's clean ocr): unit 226 files, 2646 tests; integration 137 files, 294 tests; browser task tier 5 passed (13.1 s); checks 14 of 14. Ports free before and after. No flaky case failed. `run-complete.sh`: run complete.
+
+## T9R2.13 Drafts belong to the Review
+
+- Base `451b95b0`, commit `2fabe68c`. Standard (decision 122). 11 cases plus helper unit cases (`draftCount`, `newestTrade` in `review-drafts.ts`; `instrumentOf` in `held-review.ts`), each red then green (`tdd-log/T9R2.13.md`). Case 3 ran before case 1 (case 1 needs a second card open while a draft exists).
+- Coded ahead of red (the subagent's own report): the production code for cases 2, 6, 7, 8 and 9 was written with the first lift of the drafts; for each it removed only that code, got a genuine red, and restored it. Recorded against the "never code ahead of red" rule; the reds are genuine.
+- First-run passes, mutation-checked: case 4 (the old unsaved-work case renamed; mutation `if (false && held)`), case 5 and its next-Trade variant (mutation: the after-Action hold counts Mark drafts), case 10 (`draftsHeld` false), case 11 (`pagingHeld` with `|| count > 0`).
+- Closes T9R2.11's ocr finding (`CardMarks.tsx:242`): the silent TooMany return is gone; `useMarkDrafts` remembers a Save pressed over the limit and shows W76 ("Save Marks takes up to 100 at once; 112 are entered. Clear 12, then save.") in the status header and under the open card's grid, following the live count.
+- New: `src/ui/screens/useMarkDrafts.ts` (`useMarkDrafts({ latest, onResult, onSave })` returning `MarkDrafts`). `CardMarksProps`: `onSaveMarks` replaced by `markDrafts`, `tradeName` added; `ReviewCard`: `markDrafts`, `nameOf`; `MarksGrid` gains required `typedIn(key)`. Save Marks' Trade: the open card's, else the newest draft's (P157).
+- Changed beyond the listed lines: `e2e/d4/card-helpers.spec.ts` 142 moved to an Action value (it held with a Mark draft), like 56 and 87; five `ReviewView.test.tsx` cases and one `CardMarks.test.tsx` case look inside the Marks panel (the header adds a second Save Marks and Discard). Dirty reporting: forms report synchronously; drafts from an effect that skips the first run (an effect-only version made a ReviewCard case flaky).
+- For T9R2.14 (the subagent's note): drafts of a Trade a refresh removes are no longer dropped and no "not kept" notice fires (nothing calls `keepOnly`); the first refused key is revealed only if it is in the open card's grid.
+- Words: W75 as approved; "Unsaved Marks" (group name), "Save Marks (n)", "Discard" in the header (existing words). No P137 change.
+- Checks: typecheck, `tsc6`, lint, `lint:deps` pass; `src/ui` and `src/app` green. Browser: d4 card-helpers and d5r 25 (one failure, line 142, fixed); d4 card-helpers, review, no-save, gaps 12; d7 (with d7p, d7s, d7sp) and d9ar 112; after the dirty-reporting change d5r/marks, d4 card-helpers, update, no-save 15.
+- ocr (`ocr/T9R2.13-2fabe68c.json`): 8 findings (rows 4 and 5 are one defect, rows 7 and 8 one defect).
+
+| Severity | Category | Location | Claim | Verdict |
+|---|---|---|---|---|
+| high | bug | `CardMarks.tsx:231` | The reveal after a refused save or Conflict skips `correctionHolds`, so a Correct in progress loses its values. | Valid. Bug task **T9R2.13-B1**. |
+| medium | bug | `ReviewView.tsx:571` | Header Save Marks with an owed card open passes that Trade to `postMarksReview` (ChangedDuringAssembly); Marks commit but the Review never refreshes. | Valid. Bug task **T9R2.13-B2** (scope: an owed card is not P157's open card; use the newest draft's Trade). |
+| medium | bug | `ReviewView.tsx:170` | With no walked card open, a failed header save shows nothing and offers no Refresh. | Valid. Bug task **T9R2.13-B3**. |
+| medium | bug | `ReviewView.tsx:284` | A refused key in a closed Trade isn't revealed (the owning card isn't opened). | Valid, planned: T9R2.14 case 2 (A294). Not a bug task. |
+| medium | bug | `CardMarks.tsx:228` | A card that mounts after the reveal skips it. | Same defect as the row above; T9R2.14 case 2. |
+| medium | bug | `CardMarks.tsx:232` | A refused key shown here as a mirrored chip can't take focus (the draft belongs to another Trade). | Valid, planned: T9R2.14 case 2. |
+| medium | bug | `useMarkDrafts.ts:56` | Drafts aren't reconciled on refresh (`keepOnly` uncalled): orphan keys stay in the count, the hold and Save Marks. | Valid, planned: T9R2.14 cases 3 and 4 (the gap predates this commit). |
+| medium | bug | `ReviewView.tsx:284` | An Empty refresh removes the status header, leaving orphan drafts holding the page with no Save or Discard. | Same defect; T9R2.14 cases 3 and 4. T9R2.14's brief asks for the Empty-refresh scenario. |
+
+### T9R2.13-B1 A Save Marks reveal keeps a Correct in progress
+
+- Commit 3cee0320. Case "it should keep a Correct in progress when a Save Marks result reveals another cell": red (the editor moved to the rejected key), then green. The reveal asks `correctionHolds(reveal.key)` first; when it holds, it doesn't choose the key or move focus, and a `revealHeld` state with an effect returns focus to the correction (`focusCorrection`, as `choose()` does). The trader sees: the Correct keeps its price, reason and cursor; the editor stays; the refused cell stays marked invalid with its draft kept; its issue shows once chosen. Conflict goes through the same reveal (not run separately). First-run passes: none. `src/ui` 87 files, 1233 tests; `d5r/marks`, `d4/review` 6 passed.
+- ocr (`ocr/T9R2.13-B1-3cee0320.json`): **No findings.**
+
+### T9R2.13-B2 Header Save Marks with an owed card open
+
+- Commit 5159ff2a. Case "it should save Marks from the status header while an owed card is open and refresh the Review" (`ReviewOwed.test.tsx`): red (`DailyReview.save` got the owed card's Trade `t-x`, not the newest draft's `t-w`), then green. `saveMarks` in `ReviewView.tsx` uses the open card's Trade only for a walked card, else `newestTrade`. With an owed card open, the saved Review no longer swaps the open card or advances a panel; the held Review refreshes through `apply`. First-run passes: none. `src/ui` 87 files, 1234 tests; `e2e/d5r` and `d4/review` 17 passed.
+- ocr (`ocr/T9R2.13-B2-5159ff2a.json`): 2 findings, both **Wrong** (dismissed): they read the fix backwards, expecting the owed card's Trade (`t-x`); that Trade returns ChangedDuringAssembly from `postMarksReview` (`daily-review.ts` 924 to 933), which is the defect B2 fixes.
+- Reviewer note: P157's text still says "the open card's Trade"; this fix reads an owed card as not P157's open card. That reading is the main session's, queued for the user as Q2 in `DECISIONS-PENDING.md`. Also noted: with no newest draft the fallback is `openId`, unreachable since the header shows only while a draft exists.
+
+### T9R2.13-B3 A failed header Save Marks shows with no walked card open
+
+- Commit 8264ab91. Case "it should show a failed Save Marks and its Refresh in the status header when no walked card is open": red (no alert), then green. The failure shows in the open walked card's Marks panel as before, and in the status header only when no walked card is open (none, or an owed card); never both. Header Refresh: with an owed card open, `refreshTrade`; with none, `reopen` then `apply`. `SaveFailure({ drafts, onRefresh })` exported from `CardMarks.tsx`; `Status` and `UnsavedMarks` take `failureHere`, `onRefresh`. No new words. First-run passes: none. Not covered (subagent's note): a walked card open with its Marks panel collapsed shows the failure only in the hidden panel. The subagent added the case with `write()` instead of `edit()` (a working-rule slip, reported by it). `src/ui` 87 files, 1235 tests; `e2e/d5r` and `d4/review` 17 passed.
+- ocr (`ocr/T9R2.13-B3-8264ab91.json`): 1 finding.
+
+| Severity | Category | Location | Claim | Verdict |
+|---|---|---|---|---|
+| medium | bug | `ReviewView.tsx:585-587` | The header's no-card Refresh (`refreshHeld`) calls `reopen()` without the `refreshing` barrier `refreshTrade` uses, so a card opened while it is pending reads its Trade under the old binding (shown as Unavailable with Retry). | Valid. Bug task **T9R2.13-B4**. |
+
+### T9R2.13-B4 The header's Refresh uses the refreshing barrier
+
+- Commit 6580102d. Case "it should let a card opened during the status header's Refresh read its Trade from the refreshed Review": red (`getTrade` ran under the old binding while the header's Refresh was pending), then green. `reopenAndApply` extracted from `refreshTrade` (reopen, apply, registered in the `refreshing` barrier); `refreshTrade` and `refreshHeld` both call it (one barrier). First-run passes: none. `src/ui` 87 files, 1236 tests; `e2e/d5r` and `d4/review` 17 passed.
+- ocr (`ocr/T9R2.13-B4-6580102d.json`): **No findings.**
+- Run `T9R2.13` (browser-task; after B1, B2, B3 and B4): unit 226 files, 2661 tests; integration 137 files, 294 tests; browser task tier 5 passed (12.1 s); checks 14 of 14. Ports free before and after. No flaky case failed. `run-complete.sh`: run complete.

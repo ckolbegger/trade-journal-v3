@@ -1,0 +1,121 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 2,
+    "total_tokens": 72501,
+    "input_tokens": 71902,
+    "output_tokens": 599,
+    "cache_read_tokens": 6656,
+    "elapsed": "30s"
+  },
+  "tool_calls": {
+    "total": 6,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 1,
+      "file_read": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/ReviewView.tsx",
+      "content": "This selects the newest draft's Trade whenever an owed-reflections card is open, contrary to the explicit B2 requirement that Save Marks use the open owed card's Trade. In the added scenario the command sends `t-w` instead of `t-x`. Preserve `openId ?? newest` for command selection; the inability of the current post-save reader to refresh an owed card needs to be handled in the post-save contract rather than by substituting a different Trade.",
+      "existing_code": "    const tradeId = (walkedOpen ? openId : newest) ?? openId ?? '';",
+      "start_line": 574,
+      "end_line": 574,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/ReviewOwed.test.tsx",
+      "content": "The B2 regression test asserts the opposite of the requested behavior: ABC's owed card (`t-x`) is open, but this expects the draft owner's `t-w`. The mock also only returns a refreshed Review for walked Trades, so it rewards that substitution. Assert `tradeId: 't-x'` and model the required post-save refresh for that request, while retaining the assertions that the held Review updates and the owed card stays open.",
+      "existing_code": "    expect(facade.DailyReview.save).toHaveBeenCalledWith(expect.objectContaining({ kind: 'SaveReviewMarks', tradeId: 't-w' }));",
+      "start_line": 379,
+      "end_line": 379,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/screens/ReviewOwed.test.tsx",
+        "src/ui/screens/ReviewView.tsx"
+      ]
+    }
+  ],
+  "session_id": "2da73813-5120-42e2-9bad-7c75cff5104b",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "2da73813-5120-42e2-9bad-7c75cff5104b",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "5159ff2a",
+      "resolved_base": "3cee032037a02db1196f7ccae6e81eb8afa84ea9",
+      "resolved_head": "5159ff2a493a9ade5ac36a75b84ba855d944b21f",
+      "exact_range": "3cee032037a02db1196f7ccae6e81eb8afa84ea9..5159ff2a493a9ade5ac36a75b84ba855d944b21f",
+      "source_artifact_sha256": "9837b64cba6e785db6c91b3b647b540f6a315584d73627b3e96d606da8b13535"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "55166132576860ece0c4088e547efc1b792816f0611205e87917f1eeea3e64ca"
+        },
+        {
+          "item_id": "f60d40a2fcf211e72668946f9d6c2357941e916774d36dd5cb14b2a35255d3a9",
+          "path": "src/ui/screens/ReviewOwed.test.tsx",
+          "fingerprint": "750490025c073ed0d3d45b62f3b9a1bf43f2e181cd974d1003dd02e6cd992c4c"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "55166132576860ece0c4088e547efc1b792816f0611205e87917f1eeea3e64ca"
+        },
+        {
+          "item_id": "f60d40a2fcf211e72668946f9d6c2357941e916774d36dd5cb14b2a35255d3a9",
+          "path": "src/ui/screens/ReviewOwed.test.tsx",
+          "fingerprint": "750490025c073ed0d3d45b62f3b9a1bf43f2e181cd974d1003dd02e6cd992c4c"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "f955730b83ffa779691f80b38b8f37ff8ed4316089a5528fef9031c3b195adb4",
+          "path": "evidence/D09R2/tdd-log/T9R2.13-B2.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 29718
+  }
+}

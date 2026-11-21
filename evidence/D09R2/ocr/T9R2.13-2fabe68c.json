@@ -1,0 +1,313 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 8 finding(s) across 14 selected item(s).",
+  "summary": {
+    "files_reviewed": 14,
+    "comments": 8,
+    "total_tokens": 794615,
+    "input_tokens": 787791,
+    "output_tokens": 6824,
+    "cache_read_tokens": 92032,
+    "elapsed": "1m56s"
+  },
+  "tool_calls": {
+    "total": 52,
+    "by_tool": {
+      "code_comment": 4,
+      "code_search": 11,
+      "file_read": 35,
+      "file_read_diff": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/CardMarks.tsx",
+      "content": "A Review-wide save can reject a draft belonging to a closed card, but this reveal only selects the key in the currently mounted grid; it never opens the owning card. For example, enter an invalid XYZ price, switch to DEF, and save from the status header: DEF cannot render that key, so no issue or focused field is shown. Opening XYZ afterwards also skips the reveal because handledReveal initializes to its current count. Route the reveal to a card that contains the key and consume it only once that card can display and focus the affected field.",
+      "existing_code": "  const [handledReveal, setHandledReveal] = useState(reveal?.count ?? 0);\n  if (reveal !== undefined \u0026\u0026 reveal.count !== handledReveal) {\n    setHandledReveal(reveal.count);\n    setChosen(reveal.key);",
+      "start_line": 228,
+      "end_line": 231,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/CardMarks.tsx",
+      "content": "This bypasses the correction hold enforced by choose(). With an unsaved correction open, Save Marks is still enabled in both the panel and status header. If a different draft is rejected or conflicts, setChosen replaces the keyed CellEditor and unmounts the correction form, losing its entered values. Apply the same correctionHolds guard used for manual selection and links, or defer the reveal until the correction is saved or canceled.",
+      "existing_code": "    setChosen(reveal.key);\n    const field = issues[rowId(reveal.key.instrumentKey, reveal.key.tradingDate)]?.[0]?.field;\n    if (reveal.focus \u0026\u0026 field !== undefined) setFocusField({ field });",
+      "start_line": 231,
+      "end_line": 233,
+      "category": "bug",
+      "severity": "high"
+    },
+    {
+      "path": "src/ui/screens/ReviewView.tsx",
+      "content": "The new header Save Marks can be used with every card collapsed, but UnsavedMarks renders only the count and the over-limit message. A thrown save or ReviewChanged sets drafts.failure, whose message and Refresh action exist only inside CardMarks, so in this supported state the save fails silently with no recovery control. Render the shared save failure (and the appropriate retry/Refresh action) alongside the header controls.",
+      "existing_code": "      {drafts.tooMany \u0026\u0026 \u003cp role=\"status\"\u003e{tooManyWords(drafts.tooMany)}\u003c/p\u003e}",
+      "start_line": 170,
+      "end_line": 170,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/ReviewView.tsx",
+      "content": "Saving all drafts can reject a key belonging to a collapsed Trade while a different Trade (or no card) is open. The controller sets markDrafts.reveal, but ReviewView never uses it to open the card containing that key; CardMarks can only choose/focus cells in its own grid. Consequently the first refused field remains hidden and never receives focus, contrary to A294. Handle the shared reveal at Review level by opening the appropriate card/Marks panel before focusing the rejected field, and cover rejection of a draft outside the current card.",
+      "existing_code": "  const markDrafts = useMarkDrafts({ latest: () =\u003e latest.current, onResult: apply, onSave: (entries, newest) =\u003e saveMarks(entries, newest) });",
+      "start_line": 284,
+      "end_line": 284,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/useMarkDrafts.ts",
+      "content": "Drafts are never reconciled when the held Review is refreshed. If Refresh removes a draft's key (for example, its Trade is no longer in the Review), that draft still contributes to the count, page hold, and subsequent Save Marks commands despite no longer having an editable cell. An Empty refresh is worse: the status header disappears, leaving no way to discard the orphan draft. Reconcile drafts against the refreshed Review's listed keys (using keepOnly), preserve the still-listed drafts, and report which entries were not kept.",
+      "existing_code": "  const [drafts, setDrafts] = useState\u003cDrafts\u003e(emptyDrafts);",
+      "start_line": 56,
+      "end_line": 56,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/CardMarks.tsx",
+      "content": "A rejected price cannot receive focus when the open card shows that key as a mirrored draft. For example, type an invalid XYZ price in one Trade, open another Trade holding XYZ, then Save Marks. The key exists in this grid, but its cell remains an Unsaved chip because the draft still belongs to the first Trade; the price input ID targeted here does not exist. Move the revealed draft to this Trade before focusing it, as choose() does for a pressed mirrored cell (while respecting the correction hold).",
+      "existing_code": "    const field = issues[rowId(reveal.key.instrumentKey, reveal.key.tradingDate)]?.[0]?.field;\n    if (reveal.focus \u0026\u0026 field !== undefined) setFocusField({ field });",
+      "start_line": 232,
+      "end_line": 233,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/ReviewView.tsx",
+      "content": "Reconcile the Review-owned drafts when a refreshed Review replaces the held one. Neither this integration nor useMarkDrafts calls keepOnly, so drafts whose keys disappear remain in the count and are still submitted by Save Marks, even though no grid can edit them. If refresh returns Empty, the status header is also removed, leaving these drafts holding page departure without any Save or Discard control. Retain only keys listed by the refreshed Review and surface the dropped-draft notice.",
+      "existing_code": "  const markDrafts = useMarkDrafts({ latest: () =\u003e latest.current, onResult: apply, onSave: (entries, newest) =\u003e saveMarks(entries, newest) });",
+      "start_line": 284,
+      "end_line": 284,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/ReviewView.tsx",
+      "content": "The open card can now be an owed-reflections card: enter a Mark draft, open an owed card, then use Save Marks in the status header. Passing that owed Trade ID makes postMarksReview return ChangedDuringAssembly because it only accepts readTrade's Ready result, not ReflectionsOwed. The Marks are committed, but the overview is not refreshed, and setStale targets an OwedCard that has no out-of-date/Refresh UI. Use an eligible walked Trade for this case, or extend the post-save result and UI to support an owed card.",
+      "existing_code": "    const tradeId = openId ?? newest ?? '';",
+      "start_line": 571,
+      "end_line": 571,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Card marks editing, grid, and draft state",
+      "files": [
+        "e2e/d5r/marks.spec.ts",
+        "src/ui/screens/CardMarks.test.tsx",
+        "src/ui/screens/CardMarks.tsx",
+        "src/ui/screens/MarksGrid.tsx",
+        "src/ui/screens/useMarkDrafts.ts"
+      ]
+    },
+    {
+      "label": "Review flow, held reviews, and review draft persistence",
+      "files": [
+        "e2e/d4/card-helpers.spec.ts",
+        "src/ui/screens/ReviewCard.tsx",
+        "src/ui/screens/ReviewCards.test.tsx",
+        "src/ui/screens/ReviewView.test.tsx",
+        "src/ui/screens/ReviewView.tsx",
+        "src/ui/screens/held-review.test.ts",
+        "src/ui/screens/held-review.ts",
+        "src/ui/screens/review-drafts.test.ts",
+        "src/ui/screens/review-drafts.ts"
+      ]
+    }
+  ],
+  "session_id": "9163ac74-c998-427d-8850-ea2c5d3165c9",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "9163ac74-c998-427d-8850-ea2c5d3165c9",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "2fabe68c",
+      "resolved_base": "169c3ab714257adb9095994670cab23667bbd416",
+      "resolved_head": "2fabe68ceb82773bd2e9edc173c4e9c0abf17dd1",
+      "exact_range": "169c3ab714257adb9095994670cab23667bbd416..2fabe68ceb82773bd2e9edc173c4e9c0abf17dd1",
+      "source_artifact_sha256": "1ef8f581ca82788e99b5ccd4c675ee6672b6545fc5d80bde36d489185540d318"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "06129f7bc0959665459bced5dd2b2fe42e6eefa20b943b5bcb22e15d914c46d2",
+          "path": "src/ui/screens/ReviewCards.test.tsx",
+          "fingerprint": "ff72d9976892455d671fb6ae3bd82a71a57be0c2dddb1d73c52f2a780c8dda06"
+        },
+        {
+          "item_id": "0912656ffbb7e6b5a379af71813d84a2286b259536675ea03a3c357426bb8cba",
+          "path": "e2e/d5r/marks.spec.ts",
+          "fingerprint": "c978016d016184e9cc783cd7e941d43c3a58d26105cab58dfc20ea9cffe5788c"
+        },
+        {
+          "item_id": "0fd701e170b57a6485c092b664d7902b2162d8503a77796b5fe7b087d4d19316",
+          "path": "src/ui/screens/CardMarks.test.tsx",
+          "fingerprint": "ab9f7a823dc07cbfab081ea080fb81f5396cdc7c10db3ab8b6b5a82edaa47ebe"
+        },
+        {
+          "item_id": "12319d33c547d3bcaf4e14a648f805c09846ce77b4a6f34879bc95a365e84b87",
+          "path": "src/ui/screens/review-drafts.test.ts",
+          "fingerprint": "da334c631b66e8dc49d1a1f725735664cc985e748f5e612285ef676dc31158f8"
+        },
+        {
+          "item_id": "1bfbdedbd684bd327b64502c5d12df456d1a1b61696650ccf7bc88e9450bf57c",
+          "path": "e2e/d4/card-helpers.spec.ts",
+          "fingerprint": "242c1ec92a30b78d56d31884cd26848f4f6fe3805760f54e11a35cfbf2538cc9"
+        },
+        {
+          "item_id": "54b1fd7afd4f98d42f436fc52a547112c9d5ff9c1fdb76fbdc6e7864b1be9e18",
+          "path": "src/ui/screens/review-drafts.ts",
+          "fingerprint": "c5abbe1c8080725d4a224df30de02248eae4bbb7b2347f73f51754fbd7f35f6c"
+        },
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "921a363a997187f364c824dde384ec7d3c2df313421226e7b3a62172c4054a3d"
+        },
+        {
+          "item_id": "6b3ea2ff8de74765e3af18e89799b9b10bb04a902bac37f58df69f7eda81b1bd",
+          "path": "src/ui/screens/MarksGrid.tsx",
+          "fingerprint": "613fa8cd4cd95db2f77900aa2cd19a05899be2101e8edf9d41e03203402b9f49"
+        },
+        {
+          "item_id": "753b83ca5a903e8d14ea3e457c9530bd2d7b2bc497a4b3ee29b26852ef9eb3ab",
+          "path": "src/ui/screens/ReviewView.test.tsx",
+          "fingerprint": "99f12977e0ef5944c9f857957c226b9ed77443c9759a290fe4f53972219a7cd3"
+        },
+        {
+          "item_id": "8cafdf7056bcd91e91f1079e2cc3ad454d495596823efca5c67a82a9a5d41102",
+          "path": "src/ui/screens/CardMarks.tsx",
+          "fingerprint": "61fdf03620711801a7f6a64f0a09b43694a5dec361df0e1bb3dd422f97f6ff06"
+        },
+        {
+          "item_id": "bda3437c3bc9b98f7537a91c07696598ce01f573b70fd20936a3a455525c851a",
+          "path": "src/ui/screens/useMarkDrafts.ts",
+          "fingerprint": "bc78e92cbe7b408954070c64ab5256bd0a0264c1a93ae9cf46e5341e1292b58b"
+        },
+        {
+          "item_id": "e4585caac4b0577b3e56fe1675a2cf27c444828f875d4864090c87449d13094a",
+          "path": "src/ui/screens/held-review.ts",
+          "fingerprint": "437e5b3864ec738e967059d523993ffc252dc14c09fb05c6234d0981ac9d9ec1"
+        },
+        {
+          "item_id": "edd64ad5884262ad099f5ae1dce3e8aa444d4c7814ae9e2f384e2f8d68b11336",
+          "path": "src/ui/screens/held-review.test.ts",
+          "fingerprint": "717baee1a114a71b2db20a94f1d68eba97985e0ea81f912a1161a9f0486f6057"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "346017b15602979fa16ec10b419fb81732e8fdaaf893d1f89ed6d2216ffb80d0"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "06129f7bc0959665459bced5dd2b2fe42e6eefa20b943b5bcb22e15d914c46d2",
+          "path": "src/ui/screens/ReviewCards.test.tsx",
+          "fingerprint": "ff72d9976892455d671fb6ae3bd82a71a57be0c2dddb1d73c52f2a780c8dda06"
+        },
+        {
+          "item_id": "0912656ffbb7e6b5a379af71813d84a2286b259536675ea03a3c357426bb8cba",
+          "path": "e2e/d5r/marks.spec.ts",
+          "fingerprint": "c978016d016184e9cc783cd7e941d43c3a58d26105cab58dfc20ea9cffe5788c"
+        },
+        {
+          "item_id": "0fd701e170b57a6485c092b664d7902b2162d8503a77796b5fe7b087d4d19316",
+          "path": "src/ui/screens/CardMarks.test.tsx",
+          "fingerprint": "ab9f7a823dc07cbfab081ea080fb81f5396cdc7c10db3ab8b6b5a82edaa47ebe"
+        },
+        {
+          "item_id": "12319d33c547d3bcaf4e14a648f805c09846ce77b4a6f34879bc95a365e84b87",
+          "path": "src/ui/screens/review-drafts.test.ts",
+          "fingerprint": "da334c631b66e8dc49d1a1f725735664cc985e748f5e612285ef676dc31158f8"
+        },
+        {
+          "item_id": "1bfbdedbd684bd327b64502c5d12df456d1a1b61696650ccf7bc88e9450bf57c",
+          "path": "e2e/d4/card-helpers.spec.ts",
+          "fingerprint": "242c1ec92a30b78d56d31884cd26848f4f6fe3805760f54e11a35cfbf2538cc9"
+        },
+        {
+          "item_id": "54b1fd7afd4f98d42f436fc52a547112c9d5ff9c1fdb76fbdc6e7864b1be9e18",
+          "path": "src/ui/screens/review-drafts.ts",
+          "fingerprint": "c5abbe1c8080725d4a224df30de02248eae4bbb7b2347f73f51754fbd7f35f6c"
+        },
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "921a363a997187f364c824dde384ec7d3c2df313421226e7b3a62172c4054a3d"
+        },
+        {
+          "item_id": "6b3ea2ff8de74765e3af18e89799b9b10bb04a902bac37f58df69f7eda81b1bd",
+          "path": "src/ui/screens/MarksGrid.tsx",
+          "fingerprint": "613fa8cd4cd95db2f77900aa2cd19a05899be2101e8edf9d41e03203402b9f49"
+        },
+        {
+          "item_id": "753b83ca5a903e8d14ea3e457c9530bd2d7b2bc497a4b3ee29b26852ef9eb3ab",
+          "path": "src/ui/screens/ReviewView.test.tsx",
+          "fingerprint": "99f12977e0ef5944c9f857957c226b9ed77443c9759a290fe4f53972219a7cd3"
+        },
+        {
+          "item_id": "8cafdf7056bcd91e91f1079e2cc3ad454d495596823efca5c67a82a9a5d41102",
+          "path": "src/ui/screens/CardMarks.tsx",
+          "fingerprint": "61fdf03620711801a7f6a64f0a09b43694a5dec361df0e1bb3dd422f97f6ff06"
+        },
+        {
+          "item_id": "bda3437c3bc9b98f7537a91c07696598ce01f573b70fd20936a3a455525c851a",
+          "path": "src/ui/screens/useMarkDrafts.ts",
+          "fingerprint": "bc78e92cbe7b408954070c64ab5256bd0a0264c1a93ae9cf46e5341e1292b58b"
+        },
+        {
+          "item_id": "e4585caac4b0577b3e56fe1675a2cf27c444828f875d4864090c87449d13094a",
+          "path": "src/ui/screens/held-review.ts",
+          "fingerprint": "437e5b3864ec738e967059d523993ffc252dc14c09fb05c6234d0981ac9d9ec1"
+        },
+        {
+          "item_id": "edd64ad5884262ad099f5ae1dce3e8aa444d4c7814ae9e2f384e2f8d68b11336",
+          "path": "src/ui/screens/held-review.test.ts",
+          "fingerprint": "717baee1a114a71b2db20a94f1d68eba97985e0ea81f912a1161a9f0486f6057"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "346017b15602979fa16ec10b419fb81732e8fdaaf893d1f89ed6d2216ffb80d0"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "cb599126acef7ceae6e12910373a1108a85b8731b98b964a5cc453e21269fe48",
+          "path": "evidence/D09R2/tdd-log/T9R2.13.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 115850
+  }
+}

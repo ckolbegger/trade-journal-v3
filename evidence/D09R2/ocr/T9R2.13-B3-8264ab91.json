@@ -1,0 +1,134 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 1,
+    "total_tokens": 148452,
+    "input_tokens": 147612,
+    "output_tokens": 840,
+    "cache_read_tokens": 23424,
+    "elapsed": "41s"
+  },
+  "tool_calls": {
+    "total": 13,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 1,
+      "file_find": 2,
+      "file_read": 9
+    },
+    "failure": 1,
+    "failure_by_tool": {
+      "file_read": 1
+    },
+    "failure_details": [
+      {
+        "tool_call_number": 7,
+        "tool_name": "file_read",
+        "file_path": "src/ui/screens/CardMarks.tsx,src/ui/screens/ReviewView.test.tsx,src/ui/screens/ReviewView.tsx",
+        "arguments": "{\"file_path\": \"src/ui/screens/mark-drafts.ts\", \"start_line\": 1, \"end_line\": 300}",
+        "error": "file \"src/ui/screens/mark-drafts.ts\" not found: git show 8264ab91c8a7fa2f2d40c7528b81db99e09b836d:src/ui/screens/mark-drafts.ts: exit status 128: fatal: path 'src/ui/screens/mark-drafts.ts' does not exist in '8264ab91c8a7fa2f2d40c7528b81db99e09b836d'\n"
+      }
+    ]
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/ReviewView.tsx",
+      "content": "The no-card refresh bypasses `refreshing.current`, which `read()` uses to wait for the new Review binding. If the user opens a card while this Refresh is pending, `getTrade` runs with the old binding; its response can then remain displayed under the newly refreshed overview, and the failure banner is cleared despite the stale card. Register this refresh in the same in-flight barrier used by `refreshTrade`, applying the new Review before releasing waiting reads. Add a deferred-refresh test that opens a card before `DailyReview.open` resolves.",
+      "existing_code": "    const next = await reopen();\n    if (!next) return false;\n    apply({ kind: 'Opened', review: next.kind === 'Ready' ? next : heldEmpty(next) });",
+      "start_line": 585,
+      "end_line": 587,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/screens/CardMarks.tsx",
+        "src/ui/screens/ReviewView.test.tsx",
+        "src/ui/screens/ReviewView.tsx"
+      ]
+    }
+  ],
+  "session_id": "ddafd9d5-1b20-4f83-a4f2-586f1145393c",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "ddafd9d5-1b20-4f83-a4f2-586f1145393c",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "8264ab91",
+      "resolved_base": "5159ff2a493a9ade5ac36a75b84ba855d944b21f",
+      "resolved_head": "8264ab91c8a7fa2f2d40c7528b81db99e09b836d",
+      "exact_range": "5159ff2a493a9ade5ac36a75b84ba855d944b21f..8264ab91c8a7fa2f2d40c7528b81db99e09b836d",
+      "source_artifact_sha256": "77077fd9752f91ae8751f17bdb105f9b99616a5b160814b5510561fccbb88f95"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "083489954395d21aaa160682bcb8f3528b693ca4d563bfe2add73823a81b8beb"
+        },
+        {
+          "item_id": "753b83ca5a903e8d14ea3e457c9530bd2d7b2bc497a4b3ee29b26852ef9eb3ab",
+          "path": "src/ui/screens/ReviewView.test.tsx",
+          "fingerprint": "dd79e53db80b018611841401407ee2e4a6ffc9887fefea7e9395cd1b09653c51"
+        },
+        {
+          "item_id": "8cafdf7056bcd91e91f1079e2cc3ad454d495596823efca5c67a82a9a5d41102",
+          "path": "src/ui/screens/CardMarks.tsx",
+          "fingerprint": "f4f289ef9ba785ff881b55b10b3ae5d70ec8cdaa6a6ab872c9dc3b8f6e83167d"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "083489954395d21aaa160682bcb8f3528b693ca4d563bfe2add73823a81b8beb"
+        },
+        {
+          "item_id": "753b83ca5a903e8d14ea3e457c9530bd2d7b2bc497a4b3ee29b26852ef9eb3ab",
+          "path": "src/ui/screens/ReviewView.test.tsx",
+          "fingerprint": "dd79e53db80b018611841401407ee2e4a6ffc9887fefea7e9395cd1b09653c51"
+        },
+        {
+          "item_id": "8cafdf7056bcd91e91f1079e2cc3ad454d495596823efca5c67a82a9a5d41102",
+          "path": "src/ui/screens/CardMarks.tsx",
+          "fingerprint": "f4f289ef9ba785ff881b55b10b3ae5d70ec8cdaa6a6ab872c9dc3b8f6e83167d"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "ad9a59335ee17add92a0859dcdd86e13ca2d5cd1275e4940408e44c30d745b34",
+          "path": "evidence/D09R2/tdd-log/T9R2.13-B3.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 41193
+  }
+}
