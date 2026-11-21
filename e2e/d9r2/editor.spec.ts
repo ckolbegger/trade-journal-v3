@@ -80,6 +80,8 @@ test.describe('B9R2.4 The cell editor', () => {
       await expect(page.getByRole('alert').filter({ hasText: 'This Mark changed after you opened it. Nothing was saved.' })).toBeVisible(READY);
       // Nothing was written from this tab: the other tab's Mark stands.
       await expect(saveMarksOf(page, tA)).toHaveText('Save Marks (1)');
+      // The conflicted cell's editor takes focus in its input (A294).
+      await expect(marks.getByRole('region', { name: `XYZ Mark, ${OCT_9}`, exact: true }).getByLabel('Price')).toBeFocused();
     });
     await context.close();
   });

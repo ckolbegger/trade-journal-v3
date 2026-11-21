@@ -670,6 +670,24 @@ describe('Save Marks (P37, A155) conflicted', () => {
   });
 });
 
+describe('Save Marks (A294) conflicted, focus', () => {
+  it('should take focus to the first conflicted key input when a save is refused by a Conflict', async () => {
+    const facade = cardFacade();
+    vi.mocked(facade.DailyReview.save).mockResolvedValueOnce({
+      kind: 'Conflict',
+      keys: [{ entryIndex: 0, key: { instrumentKey: 'XYZ', tradingDate: MONDAY }, code: 'StaleRevision', resolution: available('51.50', 2), resolutionRevision: 2 }],
+    });
+    renderReview(facade);
+    const user = userEvent.setup();
+    const panel = await marksPanel();
+    await user.type(inputOf(panel, 'XYZ', MONDAY_LABEL), '52.00');
+    await user.click(within(panel).getByRole('button', { name: 'Save Marks (1)' }));
+    const monday = await within(panel).findByRole('region', { name: 'XYZ Mark, Mon Oct 12' });
+    expect(within(monday).getByRole('alert').textContent).toContain('Nothing was saved');
+    await waitFor(() => expect(document.activeElement).toBe(within(monday).getByLabelText('Price')));
+  });
+});
+
 describe('Save Marks (P37, A155) with the Review changed during assembly', () => {
   it('should render the saved rows and offer Refresh, which calls open and getTrade, when the result Review part is ChangedDuringAssembly', async () => {
     const facade = cardFacade();

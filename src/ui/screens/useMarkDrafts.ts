@@ -146,7 +146,7 @@ export function useMarkDrafts({ latest, onResult, onReveal, onSave }: Options): 
       });
       onResult({ kind: 'MarksConflict', moved: moved.map(({ key, conflicted }) => ({ key, resolution: conflicted.resolution, resolutionRevision: conflicted.resolutionRevision })) });
       setNotices(Object.fromEntries(moved.map(({ key, conflicted }) => [idOf(key), conflicted.code === 'MarkExists' ? 'A Mark already exists for this date, so it cannot be marked unavailable. Nothing was saved.' : 'This Mark changed after you opened it. Nothing was saved. The current Mark is shown above, and your values are kept.'])));
-      if (moved[0]) show(moved[0].key, false);
+      if (moved[0]) show(moved[0].key, true);
     } else if (result.kind === 'MarksSaved') {
       // A draft typed or changed while the save was pending is not what was sent, so it stays.
       change((current) =>

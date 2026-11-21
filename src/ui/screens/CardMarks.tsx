@@ -262,7 +262,10 @@ export function CardMarks({ facade, tradeId, marks, held: heldReview, onResult, 
     setRevealHeld(held);
     if (!held) {
       setChosen({ ...mine.key });
-      const field = issues[rowId(mine.key.instrumentKey, mine.key.tradingDate)]?.[0]?.field;
+      // A key with no issue (a Conflict) takes focus in its draft's input.
+      const row = rowId(mine.key.instrumentKey, mine.key.tradingDate);
+      const draftKind = draftAt(drafts, mine.key)?.value.kind;
+      const field = issues[row]?.[0]?.field ?? (draftKind === undefined ? undefined : fieldIds(uid, row)[draftKind === 'Price' ? 'price' : 'reason']);
       if (mine.focus && field !== undefined) setFocusField({ field });
     }
   }
