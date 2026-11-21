@@ -1,7 +1,7 @@
 import { useEffect, type ReactNode } from 'react';
 import { useLocation } from 'react-router';
 
-// P156: leaving the page is held while anything is unsaved. A link that goes to another page of the app asks first and the
+// P156: leaving the page is held while the caller says something is unsaved (main.tsx: a Mark draft in the Review). A link that goes to another page of the app asks first and the
 // trader can cancel; a reload or tab close gets the browser's own prompt. A save that moves on by itself, a link within the
 // page and going back or forward do not ask.
 export const LEAVE_QUESTION = 'Leave without saving?';

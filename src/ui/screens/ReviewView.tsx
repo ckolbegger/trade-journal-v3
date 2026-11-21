@@ -22,6 +22,8 @@ export interface ReviewViewProps {
   readonly now: () => string;
   // Reports whether a Mark value has been entered anywhere on the page (update deferral, D1 A5).
   readonly onDirtyChange: (dirty: boolean) => void;
+  // Reports whether the Review holds a Mark draft: the only unsaved work that holds leaving the page (P156).
+  readonly onMarkDraftsChange?: (held: boolean) => void;
 }
 
 type Ready = Extract<OpenDailyReviewResult, { kind: 'Ready' }>;
@@ -271,7 +273,7 @@ const heldEmpty = ({ reviewDate, cutoff, owed, binding }: Extract<OpenDailyRevie
 
 // A Ready Review: its status, then one card per walked Trade in the overview's attention order (A150), then the owed-reflection
 // group (P20). An Empty Review shows its message in place of the status and the walk.
-function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDirtyChange }: { readonly facade: UiFacade; readonly now: () => string; readonly initial: Ready; readonly empty?: boolean; readonly onDirtyChange: (dirty: boolean) => void }) {
+function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDirtyChange, onMarkDraftsChange }: { readonly facade: UiFacade; readonly now: () => string; readonly initial: Ready; readonly empty?: boolean; readonly onDirtyChange: (dirty: boolean) => void; readonly onMarkDraftsChange?: (held: boolean) => void }) {
   // The held Review (A171): each result is folded into it; the ref holds the latest, so a read never uses an older binding.
   const [heldReview, setHeldReview] = useState<Held>({ review: initial, standings: {} });
   // Whether the Review held is an Empty one: a Review read again can be either.
@@ -520,10 +522,18 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
     draftsReported.current = draftsHeld;
     reportDirty.current(dirty.current.size > 0 || draftsHeld);
   }, [draftsHeld]);
+  const reportMarks = useRef(onMarkDraftsChange);
+  useEffect(() => {
+    reportMarks.current = onMarkDraftsChange;
+  }, [onMarkDraftsChange]);
+  useEffect(() => {
+    reportMarks.current?.(draftsHeld);
+  }, [draftsHeld]);
   // The page is no longer unsaved once the Review is gone.
   useEffect(
     () => () => {
       if (draftsReported.current) reportDirty.current(false);
+      reportMarks.current?.(false);
     },
     [],
   );
@@ -702,7 +712,7 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
 
 // The Daily Review of the latest completed session: its status, then the position cards. Loading,
 // Ready, Empty, and Error stay distinct, so a failure or a wait is never shown as an empty Review.
-export function ReviewView({ facade, now, onDirtyChange }: ReviewViewProps) {
+export function ReviewView({ facade, now, onDirtyChange, onMarkDraftsChange }: ReviewViewProps) {
   const [attempt, setAttempt] = useState(0);
   const [settled, setSettled] = useState<{ readonly attempt: number; readonly state: ViewState }>();
   useEffect(() => {
@@ -732,8 +742,8 @@ export function ReviewView({ facade, now, onDirtyChange }: ReviewViewProps) {
           </button>
         </section>
       )}
-      {state.kind === 'Empty' && (state.review.owed.length === 0 ? <EmptyReview date={state.review.reviewDate} /> : <ReadyReview facade={facade} now={now} initial={heldEmpty(state.review)} empty onDirtyChange={onDirtyChange} />)}
-      {state.kind === 'Ready' && <ReadyReview facade={facade} now={now} initial={state.review} onDirtyChange={onDirtyChange} />}
+      {state.kind === 'Empty' && (state.review.owed.length === 0 ? <EmptyReview date={state.review.reviewDate} /> : <ReadyReview facade={facade} now={now} initial={heldEmpty(state.review)} empty onDirtyChange={onDirtyChange} onMarkDraftsChange={onMarkDraftsChange} />)}
+      {state.kind === 'Ready' && <ReadyReview facade={facade} now={now} initial={state.review} onDirtyChange={onDirtyChange} onMarkDraftsChange={onMarkDraftsChange} />}
     </section>
   );
 }

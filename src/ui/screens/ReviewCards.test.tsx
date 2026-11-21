@@ -172,12 +172,12 @@ function NavigateTo({ to }: { readonly to: string }) {
   );
 }
 
-function renderReview(facade: UiFacade, options: { writable?: boolean; onDirtyChange?: (dirty: boolean) => void; at?: string; navigateTo?: string } = {}) {
+function renderReview(facade: UiFacade, options: { writable?: boolean; onDirtyChange?: (dirty: boolean) => void; onMarkDraftsChange?: (held: boolean) => void; at?: string; navigateTo?: string } = {}) {
   render(
     <RuntimeContext.Provider value={{ writable: options.writable ?? true, timeZone: 'America/New_York', report: () => undefined }}>
       <MemoryRouter initialEntries={[options.at ?? '/review']}>
         {options.navigateTo !== undefined && <NavigateTo to={options.navigateTo} />}
-        <ReviewView facade={facade} now={() => '2026-10-12T21:00:00Z'} onDirtyChange={options.onDirtyChange ?? (() => undefined)} />
+        <ReviewView facade={facade} now={() => '2026-10-12T21:00:00Z'} onDirtyChange={options.onDirtyChange ?? (() => undefined)} onMarkDraftsChange={options.onMarkDraftsChange} />
       </MemoryRouter>
     </RuntimeContext.Provider>,
   );
@@ -607,6 +607,21 @@ describe('unsaved work (A156)', () => {
     await user.click(headers()[2]!);
     expect(screen.getByText(new RegExp(MESSAGE))).toBeTruthy();
     expect(second.DailyReview.getTrade).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('leaving the page holds only Mark drafts (P156)', () => {
+  it('should report no Mark draft held for an unsaved Action form, and report one while a Mark draft exists', async () => {
+    const user = userEvent.setup();
+    const onMarkDraftsChange = vi.fn();
+    renderReview(cardFacade(), { onMarkDraftsChange, at: '/review?trade=t-c' });
+    const card = await screen.findByRole('region', { name: 'DEF review' });
+    await showPanel(user, card, 'Action');
+    await user.click(within(within(card).getByRole('form', { name: 'Action' })).getByRole('radio', { name: 'Exit' }));
+    expect(onMarkDraftsChange).not.toHaveBeenCalledWith(true);
+    await showPanel(user, card, 'Marks');
+    await user.type(within(card).getByRole('textbox', { name: 'DEF Mark, Mon Oct 12' }), '33.10');
+    await waitFor(() => expect(onMarkDraftsChange).toHaveBeenLastCalledWith(true));
   });
 });
 

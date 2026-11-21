@@ -109,6 +109,8 @@ async function start(container: HTMLElement) {
   const useZone = () => useRuntime().timeZone ?? 'UTC';
   const now = () => clock.now();
   const setUnsaved = (unsaved: boolean) => updates.setUnsaved(unsaved);
+  // Leaving the page asks only while the Review holds a Mark draft (P156); other unsaved work still defers an update, not a link.
+  let marksHeld = false;
   const screens: Screens = {
     trades: function Trades() {
       return <TradeList facade={facade} />;
@@ -126,7 +128,7 @@ async function start(container: HTMLElement) {
       return <PlanForm facade={facade} timeZone={useZone()} now={now} onDirtyChange={setUnsaved} />;
     },
     review: function Review() {
-      return <ReviewView facade={facade} now={now} onDirtyChange={setUnsaved} />;
+      return <ReviewView facade={facade} now={now} onDirtyChange={setUnsaved} onMarkDraftsChange={(held) => (marksHeld = held)} />;
     },
     accounts: () => <AccountsView facade={facade} />,
     about: () => <AboutView facade={facade} updates={updates} />,
@@ -158,7 +160,7 @@ async function start(container: HTMLElement) {
   createRoot(container).render(
     <StrictMode>
       <BrowserRouter>
-        <LeaveGuard unsaved={() => updates.state().unsavedHere}>
+        <LeaveGuard unsaved={() => marksHeld}>
           <Shell />
         </LeaveGuard>
       </BrowserRouter>
