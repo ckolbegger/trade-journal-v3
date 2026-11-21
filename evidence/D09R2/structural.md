@@ -281,3 +281,10 @@ D9R2 runs one task at a time (P162; decision 100). Each task's heading holds its
 |---|---|---|---|---|
 | medium | bug | `ReviewView.tsx:370` | After a refresh moves a draft from Trade A to B, a later drop's notice names B, not A where it was typed. | Wrong (dismissed, main session): the plan moves the draft to the other Trade (T9R2.14 case 3, "moving it to that Trade"; T9R2.13 case 2 moves the input on a press), after which it shows and is typed in B's grid; naming B matches where the trader sees it. |
 - Run `T9R2.14` (browser-task): unit 226 files, 2669 tests; integration 137 files, 294 tests; browser task tier 5 passed (13.1 s); checks 14 of 14. Ports free before and after. No flaky case failed. `run-complete.sh`: run complete.
+
+## T9R2.15 Node integration suite
+
+- `tests/integration/d9r2/`: `open.test.ts` (I9R2.1), `save-many.test.ts` (I9R2.2, 3 cases), `correct-earlier.test.ts` (I9R2.3), `query-count.test.ts` (I9R2.4), `support.ts` (the shared book: R-CORV-D, a CORV stock Trade opened Thu 11-12 and a NEWX Trade opened on the Review Date, cloned from R-AXIO-U). Light: tests only, first-run passes, no mutation check required; each test's comments say what it would catch.
+- `npm run test:integration -- d9r2`: 4 files, 6 tests passed.
+- `acceptance-commands.sh`: the three integration rows (AC-RESP-001, AC-REV-005 with ADR 0011, AC-PERF-001) pass; the six rows for `e2e/d9r2` specs fail until T9R2.16 ("no tests").
+- Checks: typecheck, tsc6, lint:deps exit 0; lint 0 errors (2 existing warnings in OwedDebtItem.tsx).
