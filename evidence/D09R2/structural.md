@@ -398,3 +398,8 @@ D9R2 runs one task at a time (P162; decision 100). Each task's heading holds its
 ### T9R2.17-B10 The read retry on an Empty Review; the card-press retry tested (ocr on T9R2.17-B8)
 
 - Commit f37a9a7a. The retry in `read` now runs for any reopened Review, Ready or Empty. New case "should read the Review again and show the owed card when the reopened Review is Empty": red, then green. B8's case reshaped to wait for the mount read, then refuse only the card press's read: red with the retry switched off, green restored (named change). First-run passes: none. e2e d9r2, d5r, d4 review, d4 gaps: 36 passed.
+- ocr (`ocr/T9R2.17-B10-f37a9a7a.json`): no findings.
+
+### T9R2.17-B11 A real page leave raises the prompt (ocr on T9R2.17-B9)
+
+- Commit 7e1ec271 (tests only). Browser case in `e2e/d9r2/drafts.spec.ts`: with a Mark draft held, `page.close({ runBeforeUnload: true })` and a real `page.reload()` raise a `beforeunload` dialog; dismiss keeps the page and the draft, accept leaves; a clean page raises none. Red with the guard's handler switched off (no dialog), green restored. The case at line 147 is unchanged: Playwright accepts an unhandled beforeunload dialog, so its reload goes through (the subagent's belief, not tested directly). First-run passes: none. e2e d9r2, d5r, d4 review, d4 gaps: 37 passed.
