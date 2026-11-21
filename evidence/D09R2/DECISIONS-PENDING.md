@@ -6,7 +6,7 @@
 - Today: after Correct is pressed with nothing typed (or both fields cleared), choosing another cell closes the empty form. Nothing typed is lost. This matches the card hold, which also ignores an empty Correct (`MarkEntry` is dirty only when Price or Reason holds text).
 - Recommendation: keep it (no refusal for an empty form); dismiss the finding by this decision.
 - Blocks: only this finding's bug task. Everything else carries on.
-- Answer: (waiting)
+- Answer (2026-11-21): keep. No refusal for an empty Correct form; the T9R2.12 ocr finding is dismissed by this decision.
 
 ## Q2 (queued): With an owed-reflections card open, which Trade does Save Marks report?
 
