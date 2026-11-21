@@ -442,15 +442,15 @@ Status values: `planned`, `covered`, `intentionally not advertised`.
 
 | Scenario | Deliverable | Tasks | Integration / browser | Critic | Command or procedure | Expected | Status |
 |---|---|---|---|---|---|---|---|
-| AC-MARK-004 (cumulative: an earlier session with no Mark is an empty cell or an acknowledged one; nothing carried; earlier sessions do not block the Review) | D9R2 | T9R2.6, T9R2.9, T9R2.11 | I9R2.1; B9R2.2 | C9R2.1 | `npx playwright test e2e/d9r2/grid.spec.ts` | Gaps show as gaps; the Review Date alone blocks | planned |
-| AC-REV-002 (cumulative: a shared Mark resolves once for every Trade holding it, typed in any of them) | D9R2 | T9R2.7, T9R2.13 | I9R2.1; B9R2.3 | C9R2.2 | `npx playwright test e2e/d9r2/drafts.spec.ts` | One draft per key, shown in every Trade; one save | planned |
-| AC-RESP-001 (cumulative: one Save Marks across Trades and sessions returns the refreshed Review, rendered without a readback) | D9R2 | T9R2.13 | I9R2.2; B9R2.3 | C9R2.1 | `npm run test:integration -- d9r2/save-many` | One commit; every saved key in the response | planned |
-| AC-REV-005, ADR 0011 (cumulative: a stale binding on any key saves nothing) | D9R2 | T9R2.12, T9R2.13 | I9R2.2, I9R2.3; B9R2.4 | C9R2.3 | `npm run test:integration -- d9r2/correct-earlier` | Conflict; no write; entered values kept | planned |
-| AC-MARK-003 (cumulative: an acknowledgment is never shown as a price or a gap in Price History and the Journal) | D9R2 | T9R2.2, T9R2.3 | B9R2.1 | C9R2.6 | `npx playwright test e2e/d9r2/history.spec.ts` | "Acknowledged Unavailable"; the tab counts Missing only; the line names both counts | planned |
-| AC-REV-006 (cumulative: completion from the Review Date's keys only) | D9R2 | T9R2.12 | B9R2.4 | C9R2.3 | `npx playwright test e2e/d9r2/editor.spec.ts` | Complete With Unavailable Marks after an acknowledgment; earlier sessions change nothing | planned |
-| AC-JOUR-001 (cumulative: drafts are view state only) | D9R2 | T9R2.7, T9R2.13 | B9R2.3 | C9R2.5 | `npx playwright test e2e/d9r2/drafts.spec.ts` | A reload stores nothing; leaving asks first | planned |
-| AC-UI-001, AC-UI-002 (cumulative: the grid turns live; keyboard, names and axe in every cell state) | D9R2 | T9R2.9, T9R2.14 | B9R2.5 | C9R2.4 | `npx playwright test e2e/d9r2/responsive-a11y.spec.ts` | Drafts and the chosen cell survive the turn; axe clean | planned |
-| AC-PERF-001 (cumulative: the Review open's reads counted) | D9R2 | T9R2.6 | I9R2.4 | — | `npm run test:integration -- d9r2/query-count` | No store request added; the benchmark re-measures after the gate | planned |
+| AC-MARK-004 (cumulative: an earlier session with no Mark is an empty cell or an acknowledged one; nothing carried; earlier sessions do not block the Review) | D9R2 | T9R2.6, T9R2.9, T9R2.11 | I9R2.1; B9R2.2 | C9R2.1 | `npx playwright test e2e/d9r2/grid.spec.ts` | Gaps show as gaps; the Review Date alone blocks | covered |
+| AC-REV-002 (cumulative: a shared Mark resolves once for every Trade holding it, typed in any of them) | D9R2 | T9R2.7, T9R2.13 | I9R2.1; B9R2.3 | C9R2.2 | `npx playwright test e2e/d9r2/drafts.spec.ts` | One draft per key, shown in every Trade; one save | covered |
+| AC-RESP-001 (cumulative: one Save Marks across Trades and sessions returns the refreshed Review, rendered without a readback) | D9R2 | T9R2.13 | I9R2.2; B9R2.3 | C9R2.1 | `npm run test:integration -- d9r2/save-many` | One commit; every saved key in the response | covered |
+| AC-REV-005, ADR 0011 (cumulative: a stale binding on any key saves nothing) | D9R2 | T9R2.12, T9R2.13 | I9R2.2, I9R2.3; B9R2.4 | C9R2.3 | `npm run test:integration -- d9r2/correct-earlier` | Conflict; no write; entered values kept | covered |
+| AC-MARK-003 (cumulative: an acknowledgment is never shown as a price or a gap in Price History and the Journal) | D9R2 | T9R2.2, T9R2.3 | B9R2.1 | C9R2.6 | `npx playwright test e2e/d9r2/history.spec.ts` | "Acknowledged Unavailable"; the tab counts Missing only; the line names both counts | covered |
+| AC-REV-006 (cumulative: completion from the Review Date's keys only) | D9R2 | T9R2.12 | B9R2.4 | C9R2.3 | `npx playwright test e2e/d9r2/editor.spec.ts` | Complete With Unavailable Marks after an acknowledgment; earlier sessions change nothing | covered |
+| AC-JOUR-001 (cumulative: drafts are view state only) | D9R2 | T9R2.7, T9R2.13 | B9R2.3 | C9R2.5 | `npx playwright test e2e/d9r2/drafts.spec.ts` | A reload stores nothing; leaving asks first | covered |
+| AC-UI-001, AC-UI-002 (cumulative: the grid turns live; keyboard, names and axe in every cell state) | D9R2 | T9R2.9, T9R2.14 | B9R2.5 | C9R2.4 | `npx playwright test e2e/d9r2/responsive-a11y.spec.ts` | Drafts and the chosen cell survive the turn; axe clean | covered |
+| AC-PERF-001 (cumulative: the Review open's reads counted) | D9R2 | T9R2.6 | I9R2.4 | — | `npm run test:integration -- d9r2/query-count` | No store request added; the benchmark re-measures after the gate | covered |
 
 ---
 
@@ -486,7 +486,7 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T9R2.14 | Standard | Done | `50b411d1` |
 | T9R2.15 | Light | Done | `90e3605d` |
 | T9R2.16 | Light | Done | `51ac08cd` |
-| T9R2.17 | — | In progress from `51ac08cd` | |
+| T9R2.17 | Gate | Done: critic-1 FAIL, critic-2 FAIL, critic-3 PASS; benchmark PASS on its second run | B1 `f3f3c864`; B2 `91d98afb`; B3 `0ed456f4`; B4 `51a03672`; B5 `7f121f43`; B6 `6303688a`; F1 `66c370f5`; B7 `41b348cf`; B8 `8c40e8b7`; B9 `e5da194d`; B10 `f37a9a7a`; B11 `7e1ec271`; F2 `2f911fff`; D1 `3e4b2635` |
 
 ---
 

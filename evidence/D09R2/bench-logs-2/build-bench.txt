@@ -1,0 +1,21 @@
+
+> trade-journal-v3@0.0.0 build:bench
+> vite build --mode bench --outDir dist-bench
+
+vite v8.3.4 building client environment for bench...
+transforming...
+✓ 379 modules transformed.
+rendering chunks...
+computing gzip size...
+dist-bench/index.html                              0.50 kB │ gzip:   0.30 kB
+dist-bench/assets/backup-export-DhEtWtBN.js      192.69 kB
+dist-bench/assets/index-CWpwZMwS.css              40.85 kB │ gzip:   8.50 kB
+dist-bench/assets/bench-generator-B7p9vb3v.js      0.44 kB │ gzip:   0.35 kB
+dist-bench/assets/index-EeAJjuha.js            1,036.78 kB │ gzip: 309.51 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 203ms
