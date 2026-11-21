@@ -1,0 +1,122 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 0,
+    "total_tokens": 28415,
+    "input_tokens": 28130,
+    "output_tokens": 285,
+    "cache_read_tokens": 4992,
+    "elapsed": "17s"
+  },
+  "tool_calls": {
+    "total": 5,
+    "by_tool": {
+      "file_read": 5
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Review screen integration, navigation guard, and tests",
+      "files": [
+        "src/main.tsx",
+        "src/ui/leave-guard.tsx",
+        "src/ui/screens/ReviewCards.test.tsx",
+        "src/ui/screens/ReviewView.tsx"
+      ]
+    }
+  ],
+  "session_id": "3abd60c2-badc-44fc-9c73-521924bd79ca",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "3abd60c2-badc-44fc-9c73-521924bd79ca",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "2f911fff",
+      "resolved_base": "e690e33994c7a0a5e0b99b12fbab9e55e2a8f75b",
+      "resolved_head": "2f911fff1093b37d7c493c92945787470af26fda",
+      "exact_range": "e690e33994c7a0a5e0b99b12fbab9e55e2a8f75b..2f911fff1093b37d7c493c92945787470af26fda",
+      "source_artifact_sha256": "1c1656382ed6b610c496c729d020d1976d6e634339f1d9168cb9655997e314cb"
+    },
+    "execution": {
+      "ocr_version": "v1.14.0",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "06129f7bc0959665459bced5dd2b2fe42e6eefa20b943b5bcb22e15d914c46d2",
+          "path": "src/ui/screens/ReviewCards.test.tsx",
+          "fingerprint": "a58dfcd8c59d6f7ce91a3cf322af054b0e08cd6366ad8f79d4f15b5e031b5cf2"
+        },
+        {
+          "item_id": "2cea7a8f0a615fab36f0772e4ab911b1ac0ac370d3fd3b63456d0f119394ed5e",
+          "path": "src/main.tsx",
+          "fingerprint": "db17f1bd40b7df0a9a240c2c2f3ab1fd58788ec5272b6c07839aa42e3e6642cb"
+        },
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "48ad8d1ca9027c93573d6c57a68ba565926c2e67f0f225b7ce0000f2427a0919"
+        },
+        {
+          "item_id": "a8a0cb5e0fe5c170291e7988915f6301f09fccd32525f71b8852663635f1bf0e",
+          "path": "src/ui/leave-guard.tsx",
+          "fingerprint": "bc2c2ab2f730f3d064501acf7e2470d92c1acc0b8b10f6d4526fa49f8e6f749d"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "06129f7bc0959665459bced5dd2b2fe42e6eefa20b943b5bcb22e15d914c46d2",
+          "path": "src/ui/screens/ReviewCards.test.tsx",
+          "fingerprint": "a58dfcd8c59d6f7ce91a3cf322af054b0e08cd6366ad8f79d4f15b5e031b5cf2"
+        },
+        {
+          "item_id": "2cea7a8f0a615fab36f0772e4ab911b1ac0ac370d3fd3b63456d0f119394ed5e",
+          "path": "src/main.tsx",
+          "fingerprint": "db17f1bd40b7df0a9a240c2c2f3ab1fd58788ec5272b6c07839aa42e3e6642cb"
+        },
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "48ad8d1ca9027c93573d6c57a68ba565926c2e67f0f225b7ce0000f2427a0919"
+        },
+        {
+          "item_id": "a8a0cb5e0fe5c170291e7988915f6301f09fccd32525f71b8852663635f1bf0e",
+          "path": "src/ui/leave-guard.tsx",
+          "fingerprint": "bc2c2ab2f730f3d064501acf7e2470d92c1acc0b8b10f6d4526fa49f8e6f749d"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "45e3cc4734b2b8e6751add68b6d268b728c3bece0470d5f817267b69a3740b07",
+          "path": "evidence/D09R2/tdd-log/T9R2.17-F2.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 16502
+  }
+}

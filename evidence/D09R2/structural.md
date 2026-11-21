@@ -410,3 +410,6 @@ D9R2 runs one task at a time (P162; decision 100). Each task's heading holds its
 ### T9R2.17-F2 The leave guard asks only for Mark drafts (follow-on from run T9R2.17-fixes3)
 
 - Commit 2f911fff. `ReviewView` takes `onMarkDraftsChange(held)`; `ReadyReview` reports holding or dropping a Mark draft (false on unmount); `main.tsx` keeps a `marksHeld` flag that `LeaveGuard` reads. `onDirtyChange` and the update deferral are unchanged; no added store read (A289). Browser red on the old code: the 7 files gave the same 9 failures; unit case "should report no Mark draft held for an unsaved Action form, and report one while a Mark draft exists": red, then green. B9's and B11's cases unchanged. First-run passes: none. Browser: the 7 files 13 passed; e2e d9r2, d5r, d4 review, d4 gaps 37 passed.
+- ocr (`ocr/T9R2.17-F2-2f911fff.json`): no findings.
+- Run `T9R2.17-fixes4` (browser-full, HEAD d26b5156, the one full run after the last fix): unit 227 files, 2688 tests; integration 141 files, 300 tests; browser-1 126 passed (5.4 m), browser-2 80 (5.2 m), browser-3 57 (4.5 m), browser-4 137 passed, 4 skipped (7.2 m); checks 14 of 14. No flaky case failed; B9.11 passed. Ports free before and after. `run-complete.sh`: run complete.
+- `acceptance-commands.sh plan/D09R2-review-marks-grid.md`: exit 0 (summary: 9 commands checked, 0 failed, 0 rows are procedures, not checked).
