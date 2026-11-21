@@ -193,3 +193,24 @@ D9R2 runs one task at a time (P162; decision 100). Each task's heading holds its
 | medium | bug | `CardMarks.tsx:287` | A refused draft on another page is chosen but the grid's page doesn't move, so focus does nothing. | Valid. Carried by T9R2.14 case 2 ("open the first refused key's card, page and editor after a refused save"); its brief names this finding. |
 | medium | bug | `CardMarks.tsx:242` | Over 100 drafts: Save Marks does nothing and says nothing. | Doubtful (interim). Carried by T9R2.13 case 9 (W76); its brief names this finding. |
 - Run `T9R2.11` (browser-task): unit 226 files, 2636 tests; integration 137 files, 294 tests; browser task tier 5 passed (12.9 s); checks 14 of 14. Ports free before and after. No flaky case failed. `run-complete.sh`: run complete.
+
+## T9R2.12 The cell editor
+
+- Base `b3fd296d`, commit `7bc99e1a`. Standard (decision 122). 9 cases in `CardMarks.test.tsx` under "the cell editor (P160)" (`tdd-log/T9R2.12.md`). Case names drop apostrophes for `-t` filtering.
+- Case 9 ("refuse another cell while a Correct is in progress"): real red, then green. It closes T9R2.11's ocr finding (`CardMarks.tsx:324`): `CardMarks` has its own `choose` (passed to `MarksGrid` as `onChoose`); while a Correct holds typed values it refuses another cell, keeps focus in the correction and says "Save or cancel the correction to choose another cell." until the correction ends. Covered routes: focusing an input cell, pressing a button cell, paging (already held with W80). Price and Reason survive; Cancel frees the grid.
+- First-run passes, cases 1 to 8, each mutation-checked: case 1 (editor never opens), 2 (Cancel does nothing), 3 (saves bind at 'None'), 4 (Withdraw on every cell), 5 (own Trade not filtered from "also held by"), 6 (settlement note on any cell), 7 (`MarkEntry` never sets its conflict), 8 (choosing discards every draft). Reason: T9R2.11's stand-in `CellEditor` already was the planned editor; only its comment changed. Case 7's first run failed on the test (two "$52.25" texts); assertion fixed.
+- Not built: the "needed" look on the Review Date's inputs (no case in T9R2.12 or section 1.2 calls for it).
+- New words not in an approved row: "Save or cancel the correction to choose another cell." (Marks grid; nearest W80). No P137 change.
+- Checks: typecheck, `tsc6`, lint, `lint:deps` pass; `src/ui` 87 files, 1220 tests. Browser: `e2e/d4/gaps`, `d4/review`, `d5r/marks`, `d5r/responsive-a11y` 9 passed; d7 and d4 folders 59; d9ar 79 (4 skipped). No spec edited.
+- ocr (`ocr/T9R2.12-7bc99e1a.json`): 2 findings.
+
+| Severity | Category | Location | Claim | Verdict |
+|---|---|---|---|---|
+| medium | bug | `CardMarks.tsx:336` | The Instrument-link branch calls `setChosen` directly, so a link into the open card during a Correct loses the typed price and reason. | Valid. Bug task **T9R2.12-B1**. |
+| medium | bug | `CardMarks.tsx:210` | An open Correct with nothing typed doesn't refuse another cell; the empty form closes. | Doubtful (a product call; matches the card hold). Asked as Q1 in `DECISIONS-PENDING.md`; parks only this finding. |
+
+### T9R2.12-B1 A link is refused while a Correct is in progress
+
+- Case: "it should refuse a link to another Instrument of the open card while a Correct is in progress". Commit `451b95b0`: red (the link replaced the correction's editor), then green; a focus assertion added and re-run green. `correctionHolds` and `focusCorrection` pulled out of `choose`; the link branch uses them (state flag `linkRefused`). Refused and conflicted saves' `setChosen` untouched (T9R2.14). First-run passes: none. `src/ui` 87 files, 1221 tests; `d5r/marks`, `d5r/sliders`, `d4/review` 8 passed.
+- ocr (`ocr/T9R2.12-B1-451b95b0.json`): **No findings.**
+- Run `T9R2.12` (browser-task; after B1's clean ocr): unit 226 files, 2646 tests; integration 137 files, 294 tests; browser task tier 5 passed (13.1 s); checks 14 of 14. Ports free before and after. No flaky case failed. `run-complete.sh`: run complete.

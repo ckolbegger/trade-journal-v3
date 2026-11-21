@@ -1,0 +1,121 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 2,
+    "total_tokens": 245764,
+    "input_tokens": 244013,
+    "output_tokens": 1751,
+    "cache_read_tokens": 38016,
+    "elapsed": "1m7s"
+  },
+  "tool_calls": {
+    "total": 15,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 4,
+      "file_read": 9
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/CardMarks.tsx",
+      "content": "The correction guard only protects grid selection. The Instrument-link handler still calls `setChosen` directly (line 224), and `ReviewView.openCard` explicitly allows links within the currently open card while it is dirty. Following a blocker link to a different Instrument during a correction therefore unmounts the correction editor and loses its entered price/reason despite this new restriction. Route link-driven selection through the same guard (and avoid moving focus to the refused target); add a test for that path.",
+      "existing_code": "        onChoose={choose}",
+      "start_line": 336,
+      "end_line": 336,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/CardMarks.tsx",
+      "content": "This only refuses selection after text has been entered, not while a correction form is open. `MarkEntry` reports dirty only when price or reason is nonempty, so clicking Correct and then another cell (or clearing both fields before switching) still unmounts the correction without Save or Cancel. Track whether correction mode is active separately from whether it contains unsaved values, and add a test for switching immediately after clicking Correct.",
+      "existing_code": "    if (dirtyIds.size \u003e 0 \u0026\u0026 (chosen?.instrumentKey !== key.instrumentKey || chosen.tradingDate !== key.tradingDate)) {",
+      "start_line": 210,
+      "end_line": 210,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/screens/CardMarks.test.tsx",
+        "src/ui/screens/CardMarks.tsx"
+      ]
+    }
+  ],
+  "session_id": "0215a7d5-b051-4c8d-9400-05fb88e0a9d0",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "0215a7d5-b051-4c8d-9400-05fb88e0a9d0",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "7bc99e1a",
+      "resolved_base": "b68ded53b598fefc962b057813dd3ec389f14d63",
+      "resolved_head": "7bc99e1a36c3ec644e069f9dc1673c4a8fdb86d5",
+      "exact_range": "b68ded53b598fefc962b057813dd3ec389f14d63..7bc99e1a36c3ec644e069f9dc1673c4a8fdb86d5",
+      "source_artifact_sha256": "e65bcfe5524669f5ccd3fe60b944548a362c049b0240d2e89252680c5b71545f"
+    },
+    "execution": {
+      "ocr_version": "v1.13.13",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0fd701e170b57a6485c092b664d7902b2162d8503a77796b5fe7b087d4d19316",
+          "path": "src/ui/screens/CardMarks.test.tsx",
+          "fingerprint": "10afa0790a33b8e2e1009d7da5c606fa72f22a02167c4a432d386b4fe5025f82"
+        },
+        {
+          "item_id": "8cafdf7056bcd91e91f1079e2cc3ad454d495596823efca5c67a82a9a5d41102",
+          "path": "src/ui/screens/CardMarks.tsx",
+          "fingerprint": "9c316edc3fa9b9bd2c3ad59865d174d4cc6a2895b22a585c15683c2360ef3458"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0fd701e170b57a6485c092b664d7902b2162d8503a77796b5fe7b087d4d19316",
+          "path": "src/ui/screens/CardMarks.test.tsx",
+          "fingerprint": "10afa0790a33b8e2e1009d7da5c606fa72f22a02167c4a432d386b4fe5025f82"
+        },
+        {
+          "item_id": "8cafdf7056bcd91e91f1079e2cc3ad454d495596823efca5c67a82a9a5d41102",
+          "path": "src/ui/screens/CardMarks.tsx",
+          "fingerprint": "9c316edc3fa9b9bd2c3ad59865d174d4cc6a2895b22a585c15683c2360ef3458"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "8fcfbb474cbacdd1fe88ad0e4ae187578c4e5047a6aab46bab7254df11b9a383",
+          "path": "evidence/D09R2/tdd-log/T9R2.12.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 66580
+  }
+}

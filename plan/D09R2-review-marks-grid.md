@@ -481,8 +481,8 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T9R2.9 | Standard | Done | `7363ed21`; B1 `64cc2033`; B2 `d45f5fab` |
 | T9R2.10 | Light | Done | `4051e4d1` |
 | T9R2.11 | Standard | Done | `b3fd296d` |
-| T9R2.12 | Standard | In progress from `b3fd296d` | |
-| T9R2.13 | Standard | Not started | |
+| T9R2.12 | Standard | Done (Q1 open on one ocr finding) | `7bc99e1a`; B1 `451b95b0` |
+| T9R2.13 | Standard | In progress from `451b95b0` | |
 | T9R2.14 | Standard | Not started | |
 | T9R2.15 | Light | Not started | |
 | T9R2.16 | Light | Not started | |
