@@ -584,3 +584,26 @@ describe('Marks in the card (P11, P15)', () => {
     expect(facade.DailyReview.open).toHaveBeenCalledTimes(4);
   });
 });
+
+describe('A failed Save Marks with no walked card open (T9R2.13-B3)', () => {
+  it('should show a failed Save Marks and its Refresh in the status header when no walked card is open', async () => {
+    const trades = [tradeItem('t1', 'DEF')];
+    const first = ready({ today: [markRow('DEF', ['t1'])], trades, completion: incomplete(...actionMissing('t1')) });
+    const facade = reviewFacade(first);
+    vi.mocked(facade.DailyReview.save).mockResolvedValueOnce({ kind: 'ReviewChanged', evidence: { marketDataSnapshotId: 'mds1:2:def', frames: [] } });
+    renderReview(facade);
+    const user = userEvent.setup();
+    await openMarks(user);
+    await user.type(await screen.findByRole('textbox', { name: 'DEF Mark, Mon Oct 12' }), '12');
+    // Collapsing the card leaves the draft on the Review, and no walked card open.
+    await user.click(screen.getByRole('button', { name: /^Review DEF\b/ }));
+    const status = screen.getByRole('region', { name: 'Review status' });
+    await user.click(within(status).getByRole('button', { name: 'Save Marks (1)' }));
+
+    expect((await within(status).findByRole('alert')).textContent).toContain('The Review changed after you opened it.');
+    await user.click(within(status).getByRole('button', { name: 'Refresh' }));
+    await waitFor(() => expect(facade.DailyReview.open).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(within(status).queryByRole('alert')).toBeNull());
+    expect(within(status).getByText('1 unsaved Mark')).toBeTruthy();
+  });
+});

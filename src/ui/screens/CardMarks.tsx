@@ -162,6 +162,32 @@ export interface CardMarksProps {
 
 // The Marks panel of an open card (A153, P158): the Trade's Marks grid. A typed price or a "Can't get a price" is a draft until
 // Save Marks; the chosen cell's editor keeps the per-key Correct and Withdraw of a Mark.
+// What a failed Save Marks says, with Refresh when the Review changed: in the open walked card, or in the status header when none is open.
+export function SaveFailure({ drafts, onRefresh }: { readonly drafts: MarkDrafts; readonly onRefresh: () => Promise<boolean> }) {
+  const { failure, setFailure } = drafts;
+  if (!failure) return null;
+  return (
+    <div role="alert" className="banner warning">
+      <p>
+        {failure === 'changed' ? (
+          <>
+            <strong>The Review changed after you opened it.</strong> Nothing was saved, and your values are kept. Refresh to read it again.
+          </>
+        ) : (
+          <>
+            <strong>These Marks could not be saved.</strong> Nothing was saved, and your values are kept, so you can try again.
+          </>
+        )}
+      </p>
+      {failure === 'changed' && (
+        <button type="button" className="pill secondary" onClick={() => void onRefresh().then((ok) => setFailure(ok ? undefined : 'changed'))}>
+          Refresh
+        </button>
+      )}
+    </div>
+  );
+}
+
 export function CardMarks({ facade, tradeId, marks, held: heldReview, onResult, tradeLine, tradeName, onEntryDirty, onMarkSaved, markDrafts, outOfDate, onRefresh, link }: CardMarksProps) {
   const uid = useId();
   const { writable, timeZone } = useRuntime();
@@ -326,26 +352,7 @@ export function CardMarks({ facade, tradeId, marks, held: heldReview, onResult, 
           )}
         </CellEditor>
       )}
-      {failure && (
-        <div role="alert" className="banner warning">
-          <p>
-            {failure === 'changed' ? (
-              <>
-                <strong>The Review changed after you opened it.</strong> Nothing was saved, and your values are kept. Refresh to read it again.
-              </>
-            ) : (
-              <>
-                <strong>These Marks could not be saved.</strong> Nothing was saved, and your values are kept, so you can try again.
-              </>
-            )}
-          </p>
-          {failure === 'changed' && (
-            <button type="button" className="pill secondary" onClick={() => void onRefresh().then((ok) => markDrafts.setFailure(ok ? undefined : 'changed'))}>
-              Refresh
-            </button>
-          )}
-        </div>
-      )}
+      {failure && <SaveFailure drafts={markDrafts} onRefresh={onRefresh} />}
       {writable && (
         <p>
           <button type="button" ref={saveButton} className="pill primary" disabled={count === 0 || saving} onClick={() => void markDrafts.save()}>

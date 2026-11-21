@@ -10,7 +10,7 @@ import { useRuntime } from '../runtime.tsx';
 import { shortDate, tradeName, tradeSummary } from '../format.ts';
 import { discardDraftsSetAside } from './action-draft.ts';
 import type { SavedAction } from './ActionForm.tsx';
-import { tooManyWords, type EntryDirty } from './CardMarks.tsx';
+import { SaveFailure, tooManyWords, type EntryDirty } from './CardMarks.tsx';
 import { fold, marksOf, nextCard, type Held, type HeldResult } from './held-review.ts';
 import { NO_GO, PANELS, ReviewCard, type CardDetail, type Go, type PanelName } from './ReviewCard.tsx';
 import { OwedCard, type OwedDetail } from './ReviewOwedCard.tsx';
@@ -153,7 +153,7 @@ function tradeLabels(trades: readonly WalkedTrade[], owed: readonly OwedReflecti
 }
 
 // The Mark drafts on the page, with the one Save Marks and Discard over all of them (W75, W76).
-function UnsavedMarks({ drafts }: { readonly drafts: MarkDrafts }) {
+function UnsavedMarks({ drafts, showFailure, onRefresh }: { readonly drafts: MarkDrafts; readonly showFailure: boolean; readonly onRefresh: () => Promise<boolean> }) {
   return (
     <div role="group" aria-label="Unsaved Marks">
       <p>
@@ -168,11 +168,12 @@ function UnsavedMarks({ drafts }: { readonly drafts: MarkDrafts }) {
         </button>
       </p>
       {drafts.tooMany && <p role="status">{tooManyWords(drafts.tooMany)}</p>}
+      {showFailure && <SaveFailure drafts={drafts} onRefresh={onRefresh} />}
     </div>
   );
 }
 
-function Status({ review, completion, name, openCard, drafts }: { readonly review: Ready; readonly completion: ReviewCompletion; readonly name: (tradeId: string) => string; readonly openCard: OpenCard; readonly drafts: MarkDrafts }) {
+function Status({ review, completion, name, openCard, drafts, failureHere, onRefresh }: { readonly review: Ready; readonly completion: ReviewCompletion; readonly name: (tradeId: string) => string; readonly openCard: OpenCard; readonly drafts: MarkDrafts; readonly failureHere: boolean; readonly onRefresh: () => Promise<boolean> }) {
   const { timeZone, writable } = useRuntime();
   return (
     <section className="card" aria-label="Review status">
@@ -180,7 +181,7 @@ function Status({ review, completion, name, openCard, drafts }: { readonly revie
       <p>
         <strong>{COMPLETION_TEXT[completion.kind]}</strong>
       </p>
-      {writable && drafts.count > 0 && <UnsavedMarks drafts={drafts} />}
+      {writable && drafts.count > 0 && <UnsavedMarks drafts={drafts} showFailure={failureHere} onRefresh={onRefresh} />}
       {completion.kind === 'CompleteWithUnavailableMarks' && (
         <div role="group" aria-label="Unavailable Marks">
           <p>Instruments: {completion.instruments.map((instrument) => instrumentLabel(instrument, timeZone)).join(', ')}</p>
@@ -576,13 +577,24 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
     if (result.kind === 'MarksSaved') marksSaved(result, opening, tradeId);
     return result;
   };
+  // A failed Save Marks shows in the open walked card's Marks panel, and in the status header when no walked card is open (owed card open, or none).
+  const walkedOpen = openId !== undefined && walkedTrades(review).some((t) => t.tradeId === openId);
+  // Refresh from the header: the open (owed) card's refresh, else the Review alone.
+  const refreshHeld = async (): Promise<boolean> => {
+    if (openId !== undefined) return refreshTrade(openId);
+    const next = await reopen();
+    if (!next) return false;
+    apply({ kind: 'Opened', review: next.kind === 'Ready' ? next : heldEmpty(next) });
+    setEmpty(next.kind === 'Empty');
+    return true;
+  };
   // Only the card open on load is read here; later presses call select themselves.
   useEffect(() => {
     if (firstId !== undefined) void read(firstId, 0);
   }, [firstId, read]);
   return (
     <>
-      {empty ? <EmptyReview date={review.reviewDate} /> : <Status review={review} completion={review.completion} name={name} openCard={openCard} drafts={markDrafts} />}
+      {empty ? <EmptyReview date={review.reviewDate} /> : <Status review={review} completion={review.completion} name={name} openCard={openCard} drafts={markDrafts} failureHere={!walkedOpen} onRefresh={refreshHeld} />}
       {failed && (
         <div role="alert" className="banner warning">
           <p>We couldn’t refresh the Review. Nothing was changed.</p>
