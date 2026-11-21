@@ -115,8 +115,8 @@ function DraftFields({ panel, tradeKey, resolution }: { readonly panel: Panel; r
   );
 }
 
-// The chosen cell's editor, in the place T9R2.12's cell editor will take: its Mark status and the actions on a saved one (Correct, Withdraw),
-// then the draft fields. Its region is named after the cell, as the cell is.
+// The chosen cell's editor (P160), under the grid: its Mark status and the actions on a saved one (Correct, Withdraw), then the draft
+// fields. Its region is named after the cell, as the cell is.
 function CellEditor({ panel, instrumentKey, instrument, tradingDate, listed, withdraw, children }: { readonly panel: Panel; readonly instrumentKey: string; readonly instrument: Instrument; readonly tradingDate: string; readonly listed: Standing; readonly withdraw: boolean; readonly children?: ReactNode }) {
   const key = { instrumentKey, tradingDate };
   const id = rowId(instrumentKey, tradingDate);
@@ -173,8 +173,11 @@ export function CardMarks({ facade, tradeId, marks, held: heldReview, onResult, 
   // A correction in progress holds paging (A296); the editor's entries report it.
   const [dirtyIds, setDirtyIds] = useState<ReadonlySet<string>>(new Set());
   const reportDirty = onEntryDirty;
+  // Choosing another cell was refused because a correction is in progress (A297); the words show until it ends.
+  const [refused, setRefused] = useState(false);
   const entryDirty = useCallback<EntryDirty>(
     (id, dirty) => {
+      if (!dirty) setRefused(false);
       setDirtyIds((prev) => {
         if (prev.has(id) === dirty) return prev;
         const next = new Set(prev);
@@ -202,6 +205,15 @@ export function CardMarks({ facade, tradeId, marks, held: heldReview, onResult, 
     if (focusField) document.getElementById(focusField.field)?.focus();
   }, [focusField]);
   const section = useRef<HTMLElement>(null);
+  // A correction in progress holds the editor: another cell is not chosen, and the correction takes the focus back (A297).
+  const choose = (key: ObservationKey) => {
+    if (dirtyIds.size > 0 && (chosen?.instrumentKey !== key.instrumentKey || chosen.tradingDate !== key.tradingDate)) {
+      setRefused(true);
+      section.current?.querySelector<HTMLElement>('form input, form textarea')?.focus();
+      return;
+    }
+    setChosen(key);
+  };
   const reviewDate = heldReview.review.reviewDate;
   const model = gridModel({ reviewDate, tradeId, today: marks.today, earlier: opened, earlierMarks: earlierMarksOf(heldReview, tradeId), standing: (key) => heldStanding(heldReview, key) });
   // A link names the Instrument: its Review Date cell is chosen, and its editor's first control takes focus.
@@ -321,11 +333,12 @@ export function CardMarks({ facade, tradeId, marks, held: heldReview, onResult, 
         onPrice={(key, price) => hold(key, { kind: 'Price', price })}
         fieldOf={(key) => ({ id: fieldIds(uid, rowId(key.instrumentKey, key.tradingDate)).price, invalid: (issues[rowId(key.instrumentKey, key.tradingDate)] ?? []).some((issue) => issue.field === fieldIds(uid, rowId(key.instrumentKey, key.tradingDate)).price) })}
         chosen={chosen}
-        onChoose={setChosen}
+        onChoose={choose}
         onLastEnter={() => saveButton.current?.focus()}
         pagingHeld={dirtyIds.size > 0}
       />
       {opened.length > 0 && <p>Earlier sessions don't block the Review.</p>}
+      {refused && dirtyIds.size > 0 && <p role="status">Save or cancel the correction to choose another cell.</p>}
       {chosen && chosenCell && chosenCell !== NOT_HELD && (
         <CellEditor key={rowId(chosen.instrumentKey, chosen.tradingDate)} panel={panel} instrumentKey={chosen.instrumentKey} instrument={instrumentOf(chosen.instrumentKey)} tradingDate={chosen.tradingDate} listed={chosenCell} withdraw={todayRow !== undefined}>
           {todayRow?.task === 'Manual' && todayRow.trades.every((id) => settlementTrades.has(id)) && <p>{SETTLEMENT_ONLY_NOTE}</p>}

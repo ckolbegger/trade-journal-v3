@@ -845,3 +845,183 @@ describe('the cell editor (A153)', () => {
     expect(within(other).queryByText("Earlier sessions don't block the Review.")).toBeNull();
   });
 });
+
+// The cell editor (P160): one region under the grid, named after the chosen cell.
+const ACK: Extract<MarkResolution, { kind: 'AcknowledgedUnavailable' }> = { kind: 'AcknowledgedUnavailable', acknowledgment: { versionId: 'a1', kind: 'Asserted', reason: 'no quote', savedAt: '2026-10-12T21:00:00Z' } };
+const editors = (panel: HTMLElement) => within(panel).queryAllByRole('region', { name: /Mark, / });
+const markRowOf = (instrumentKey: string, resolution: MarkResolution, revision: number | 'None', task: MarkRow['task'] = null): MarkRow => ({ instrumentKey, instrument: { kind: 'Stock', symbol: instrumentKey }, tradingDate: MONDAY, trades: ['t-a'], resolution, resolutionRevision: revision, task });
+
+describe('the cell editor (P160)', () => {
+  it('should open one editor under the grid when a cell is chosen, named after the cell, with the cell status', async () => {
+    renderReview(cardFacade());
+    const user = userEvent.setup();
+    const panel = await marksPanel();
+    expect(editors(panel)).toHaveLength(0);
+
+    const friday = await choose(user, panel, 'XYZ', FRIDAY_LABEL);
+    expect(editors(panel)).toEqual([friday]);
+    expect(within(friday).getByText('Missing')).toBeTruthy();
+    // It sits under the grid, not inside it.
+    expect(gridOf(panel).contains(friday)).toBe(false);
+    expect(gridOf(panel).compareDocumentPosition(friday) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+
+    // Choosing another cell leaves one editor, named after that cell.
+    const monday = await choose(user, panel, 'XYZ', MONDAY_LABEL);
+    expect(editors(panel)).toEqual([monday]);
+  });
+
+  it('should offer Cant get a price with Reason required and Cancel for a Missing cell, keeping the reason as a draft', async () => {
+    renderReview(cardFacade());
+    const user = userEvent.setup();
+    const panel = await marksPanel();
+    const friday = await choose(user, panel, 'XYZ', FRIDAY_LABEL);
+    expect(within(friday).queryByLabelText('Reason (required)')).toBeNull();
+
+    await user.click(within(friday).getByRole('button', { name: "Can't get a price" }));
+    await user.type(within(friday).getByLabelText('Reason (required)'), 'no quote');
+    // Cancel gives the draft up.
+    await user.click(within(friday).getByRole('button', { name: 'Cancel' }));
+    expect(within(friday).queryByLabelText('Reason (required)')).toBeNull();
+    expect(within(panel).getByRole('button', { name: 'Save Marks (0)' })).toBeTruthy();
+
+    await user.click(within(friday).getByRole('button', { name: "Can't get a price" }));
+    await user.type(within(friday).getByLabelText('Reason (required)'), 'no quote');
+    // The reason is a draft: it survives choosing another cell and coming back.
+    await choose(user, panel, 'XYZ', MONDAY_LABEL);
+    expect(within(panel).getByRole('button', { name: 'Save Marks (1)' })).toBeTruthy();
+    const back = await choose(user, panel, 'XYZ', FRIDAY_LABEL);
+    expect(within(back).getByLabelText<HTMLTextAreaElement>('Reason (required)').value).toBe('no quote');
+  });
+
+  it('should correct an earlier session Mark at once with its reason, bound at the revision the open listed', async () => {
+    const facade = cardFacade(gridReview({ earlierMarks: [xyzMarks({ [FRIDAY]: markAt('51', 3) })] }));
+    vi.mocked(facade.MarketData.save).mockResolvedValue({ kind: 'Saved', resolution: available('51.50', 4), resolutionRevision: 4, classification: 'Correction' } as never);
+    renderReview(facade);
+    const user = userEvent.setup();
+    const panel = await marksPanel();
+
+    const friday = await choose(user, panel, 'XYZ', FRIDAY_LABEL);
+    await user.click(within(friday).getByRole('button', { name: 'Correct' }));
+    await user.type(within(friday).getByLabelText('Price'), '51.5');
+    await user.type(within(friday).getByLabelText('Reason (required)'), 'typo');
+    await user.click(within(friday).getByRole('button', { name: 'Save correction' }));
+
+    expect(facade.MarketData.save).toHaveBeenCalledWith({ intention: 'CorrectMark', instrumentKey: 'XYZ', tradingDate: FRIDAY, price: '51.5', reason: 'typo', expectedResolutionRevision: 3 });
+    expect(facade.DailyReview.save).not.toHaveBeenCalled();
+  });
+
+  it('should offer Withdraw on an acknowledged Review Date cell and not on an earlier session', async () => {
+    const thursday: Earlier[number] = { ...xyzGap, trades: [{ tradeId: 't-a', from: THURSDAY }], missing: [], acknowledged: [THURSDAY], revisions: { [THURSDAY]: 2 }, acknowledgments: { [THURSDAY]: ACK.acknowledgment } };
+    renderReview(cardFacade(gridReview({ today: [markRowOf('ABC', ACK, 2)], earlier: [thursday], earlierMarks: [xyzMarks({ [FRIDAY]: markAt('51') }, THURSDAY), abcMarks({ [FRIDAY]: markAt('27.5') })] })));
+    const user = userEvent.setup();
+    const panel = await marksPanel();
+
+    const monday = await choose(user, panel, 'ABC', MONDAY_LABEL);
+    expect(within(monday).getByText('Acknowledged Unavailable')).toBeTruthy();
+    expect(within(monday).getByRole('button', { name: 'Withdraw' })).toBeTruthy();
+    // An earlier session offers a price over the acknowledgment, but no Withdraw (A57).
+    const earlier = await choose(user, panel, 'XYZ', 'Thu Oct 8');
+    expect(within(earlier).getByText('Acknowledged Unavailable')).toBeTruthy();
+    expect(within(earlier).getByLabelText('Price')).toBeTruthy();
+    expect(within(earlier).queryByRole('button', { name: 'Withdraw' })).toBeNull();
+  });
+
+  it('should say which other Trades hold the Instrument', async () => {
+    renderReview(cardFacade(gridReview({ today: [missingRow('XYZ', ['t-a', 't-f']), abcRow], earlierMarks: [xyzMarks({ [FRIDAY]: markAt('51') }), abcMarks({ [FRIDAY]: markAt('27.5') })] })));
+    const user = userEvent.setup();
+    const panel = await marksPanel();
+
+    const xyz = await choose(user, panel, 'XYZ', MONDAY_LABEL);
+    expect(within(xyz).getByText(/also held by/)).toBeTruthy();
+    expect(within(xyz).getAllByRole('link').map((link) => link.getAttribute('href'))).toEqual(['/trades/t-f']);
+    // ABC is held by this Trade alone, and the Trade is not named as another.
+    expect(within(await choose(user, panel, 'ABC', MONDAY_LABEL)).queryByText(/also held by/)).toBeNull();
+  });
+
+  it('should show the zero hint and Needed only while settlement is due where the row showed them', async () => {
+    const settling = walked('t-a', 'XYZ', { progress: cardProgress(0, 0, { needed: 1, resolved: 0, settlement: true }) });
+    const marks = gridReview({ today: [markRowOf('XYZ', { kind: 'Missing' }, 'None', 'Manual')], earlier: [{ ...xyzGap, trades: [{ tradeId: 't-a', from: FRIDAY }] }], earlierMarks: [xyzMarks({}, FRIDAY)] });
+    renderReview(cardFacade(review({ families: [marks.families[0]!, { family: 'Trades', trades: [settling, TF, TC] }] })));
+    const user = userEvent.setup();
+    const panel = await marksPanel();
+
+    const monday = await choose(user, panel, 'XYZ', MONDAY_LABEL);
+    expect(within(monday).getByText('0 means it closed with no value')).toBeTruthy();
+    expect(within(monday).getByText('Needed only while settlement is due')).toBeTruthy();
+    // An earlier session's Mark is not a settlement task: the zero hint only.
+    const friday = await choose(user, panel, 'XYZ', FRIDAY_LABEL);
+    expect(within(friday).getByText('0 means it closed with no value')).toBeTruthy();
+    expect(within(friday).queryByText('Needed only while settlement is due')).toBeNull();
+  });
+
+  it('should show a Correct conflict in the editor and keep what was entered', async () => {
+    const facade = cardFacade(gridReview({ earlierMarks: [xyzMarks({ [FRIDAY]: markAt('51', 3) })] }));
+    vi.mocked(facade.MarketData.save).mockResolvedValue({ kind: 'Conflict', key: { instrumentKey: 'XYZ', tradingDate: FRIDAY }, resolution: available('52.25', 4), resolutionRevision: 4 });
+    renderReview(facade);
+    const user = userEvent.setup();
+    const panel = await marksPanel();
+
+    const friday = await choose(user, panel, 'XYZ', FRIDAY_LABEL);
+    await user.click(within(friday).getByRole('button', { name: 'Correct' }));
+    await user.type(within(friday).getByLabelText('Price'), '51.5');
+    await user.type(within(friday).getByLabelText('Reason (required)'), 'typo');
+    await user.click(within(friday).getByRole('button', { name: 'Save correction' }));
+
+    expect(within(friday).getByRole('alert').textContent).toContain('Nothing was saved');
+    expect(within(friday).getByText('Current price $52.25')).toBeTruthy();
+    expect(within(friday).getByLabelText<HTMLInputElement>('Price').value).toBe('51.5');
+    expect(within(friday).getByLabelText<HTMLTextAreaElement>('Reason (required)').value).toBe('typo');
+  });
+
+  it('should close the editor without saving when another cell is chosen, keeping a typed price as a draft', async () => {
+    const facade = cardFacade();
+    renderReview(facade);
+    const user = userEvent.setup();
+    const panel = await marksPanel();
+    await user.type(inputOf(panel, 'XYZ', FRIDAY_LABEL), '49.00');
+    expect(editors(panel).map((editor) => editor.getAttribute('aria-label'))).toEqual(['XYZ Mark, Fri Oct 9']);
+
+    await choose(user, panel, 'XYZ', MONDAY_LABEL);
+    expect(editors(panel).map((editor) => editor.getAttribute('aria-label'))).toEqual(['XYZ Mark, Mon Oct 12']);
+    expect(inputOf(panel, 'XYZ', FRIDAY_LABEL).value).toBe('49.00');
+    expect(within(panel).getByRole('button', { name: 'Save Marks (1)' })).toBeTruthy();
+    expect(facade.MarketData.save).not.toHaveBeenCalled();
+    expect(facade.DailyReview.save).not.toHaveBeenCalled();
+  });
+
+  it('should refuse another cell while a Correct is in progress', async () => {
+    const paged = pagedReview();
+    const marks = paged.families[0] as MarksFamily;
+    const facade = cardFacade(review({ families: [{ ...marks, today: [...marks.today, markRowOf('ABC', available('27.50', 2), 2)] }, paged.families[1]!] }));
+    renderReview(facade);
+    const user = userEvent.setup();
+    const panel = await marksPanel();
+    const friday = await choose(user, panel, 'XYZ', FRIDAY_LABEL);
+    await user.click(within(friday).getByRole('button', { name: 'Correct' }));
+    await user.type(within(friday).getByLabelText('Price'), '51.5');
+    await user.type(within(friday).getByLabelText('Reason (required)'), 'typo');
+    const stays = () => {
+      expect(editors(panel).map((editor) => editor.getAttribute('aria-label'))).toEqual(['XYZ Mark, Fri Oct 9']);
+      expect(within(friday).getByLabelText<HTMLInputElement>('Price').value).toBe('51.5');
+      expect(within(friday).getByLabelText<HTMLTextAreaElement>('Reason (required)').value).toBe('typo');
+    };
+
+    // Focusing an input cell chooses it, and is refused: the correction keeps the focus.
+    await user.click(inputOf(panel, 'XYZ', MONDAY_LABEL));
+    stays();
+    expect(document.activeElement).toBe(within(friday).getByLabelText('Price'));
+    expect(within(panel).getByText('Save or cancel the correction to choose another cell.')).toBeTruthy();
+    // So is pressing a cell.
+    await user.click(cellOf(panel, 'ABC', MONDAY_LABEL));
+    stays();
+    // So is paging.
+    expect(within(panel).getByRole<HTMLButtonElement>('button', { name: 'Next page' }).disabled).toBe(true);
+    expect(within(panel).getByText('Save or cancel the correction to change pages.')).toBeTruthy();
+
+    // Cancelling the correction frees the grid.
+    await user.click(within(friday).getByRole('button', { name: 'Cancel' }));
+    expect(within(panel).queryByText('Save or cancel the correction to choose another cell.')).toBeNull();
+    expect(within(await choose(user, panel, 'XYZ', MONDAY_LABEL)).getByText('Missing')).toBeTruthy();
+    expect(within(panel).getByRole<HTMLButtonElement>('button', { name: 'Next page' }).disabled).toBe(false);
+  });
+});
