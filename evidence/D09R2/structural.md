@@ -314,3 +314,18 @@ D9R2 runs one task at a time (P162; decision 100). Each task's heading holds its
 
 - critic-1 defects: 1 high (the cell editor unreachable by keyboard except the page's last cell) → **T9R2.17-B1**; 2 moderate (no focus after a conflict-refused save, A294) → **T9R2.17-B2**; 3 moderate (focus falls to the body when the pressed control disappears: "Can't get a price", Correct, Withdraw, Next page) → **T9R2.17-B3**; 4 moderate (a one-leg Trade's turned grid scrolls sideways and clips at 390, 375, 320 px; a 35 px chosen cell at 320; P161) → **T9R2.17-B4**; 5 moderate (the editor has no title or box naming its cell, and an off-page cell's editor stays open after paging) → **T9R2.17-B5**; 6 low → tech debt item 1. It confirms T9R2.16's note on the 390 px overflow (defect 4); the refused-save order was not tested.
 - Scope decision for B1 (main session, recorded): each cell stays one tab stop (research page, section 6, option B); Tab from a chosen cell goes into its editor's controls, and Tab past the editor's last control goes to the next cell; Enter keeps A295's order. Recorded here for the user's review.
+
+### T9R2.17-B1 The cell editor by keyboard (critic-1 defect 1, high)
+
+- Commit f3f3c864. Three cases in `CardMarks.test.tsx` (Tab from a chosen Review Date cell to "Can't get a price", then the next cell, Shift+Tab back; Tab from a chosen earlier cell to Correct while later cells exist; Tab from a chosen acknowledged Review Date cell to Withdraw), each red then green; two first green runs failed on the tests' assumption about the editor's first control (a Trade link, or Price before Withdraw), fixed in the tests. A Tab handler on the Marks section sends Tab from the chosen cell into the editor (`data-cell-editor` wrapper) and from its last control to the next cell; Shift+Tab from the editor's first control returns to its cell. A saved (button) cell is chosen by pressing it, as before; Tab enters the editor only from the chosen cell. First-run passes: none. `src/ui/screens` 632 tests; e2e d9r2 12, d5r 15, d4 review 1, gaps 1.
+- ocr (`ocr/T9R2.17-B1-f3f3c864.json`): 2 findings.
+
+| Severity | Category | Location | Claim | Verdict |
+|---|---|---|---|---|
+| medium | bug | `CardMarks.tsx:327` | Tab from the editor's last control focuses the next cell, but a button cell isn't chosen on focus, so Tab loops between the old editor and that button. | Valid. Bug task **T9R2.17-B6**. |
+| medium | bug | `CardMarks.tsx:327` | After paging away from the chosen cell, Tab from its editor's last control jumps to the first grid cell (`indexOf` -1). | Valid. Carried by **T9R2.17-B5** (an off-page cell's editor closes after paging, which removes the case); B5's brief asks for a Tab-after-paging check. |
+
+### Gate fixes still queued, with the bug cases each must cover
+
+- **T9R2.17-B5** (critic-1 defect 5) must also cover ocr's finding on T9R2.17-B1 (`f3f3c864`, `CardMarks.tsx:327`): after paging away from the chosen cell, Tab from its editor's last control jumps to the first grid cell. B5 adds a case that pages away from a chosen earlier cell and then presses Tab, and its summary says how the finding is closed. The main session checks that case is in B5's commit before recording B5 done.
+- **T9R2.17-B6** (ocr's finding on T9R2.17-B1, `f3f3c864`, `CardMarks.tsx:327`) must cover the keyboard trap: when the cell after the chosen one is a saved or acknowledged button, Tab from the editor's last control must not loop back to the old editor. B6's case reaches Save Marks by Tab past such a button. The main session checks that case is in B6's commit before recording B6 done.

@@ -221,6 +221,10 @@ The main session saves the reports itself (`implementing.md`, "Final report"). A
 
 - For the final report (from T9R2.16's subagent, not bug tasks): the refused-save reveal follows first-entered order, where A294 says grid order; a 390 px grid with an "Acknowledged Unavailable" cell scrolls sideways inside its region. Report whether the critic confirmed either.
 
+- For the gate's queued fixes (from ocr on T9R2.17-B1):
+  **T9R2.17-B5** (critic-1 defect 5) must also cover ocr's finding on T9R2.17-B1 (`f3f3c864`, `CardMarks.tsx:327`): after paging away from the chosen cell, Tab from its editor's last control jumps to the first grid cell. B5 adds a case that pages away from a chosen earlier cell and then presses Tab, and its summary says how the finding is closed. The main session checks that case is in B5's commit before recording B5 done.
+  **T9R2.17-B6** (ocr's finding on T9R2.17-B1, `f3f3c864`, `CardMarks.tsx:327`) must cover the keyboard trap: when the cell after the chosen one is a saved or acknowledged button, Tab from the editor's last control must not loop back to the old editor. B6's case reaches Save Marks by Tab past such a button. The main session checks that case is in B6's commit before recording B6 done.
+
 ### Open questions
 
 - The location checks found 2 unit failures in `tools/wording-rules.test.ts` from the D9 stage C retro commit (`78a10e66`). The user chose a tools-only fix before T9R2.1 (2026-11-20): commit `ceefd574` (`chore(retro-D09C)`). The section 1 check `git diff --stat 78a10e66 HEAD -- …` therefore also lists `tools/wording-rules.test.ts` from that commit.
