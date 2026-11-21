@@ -14,7 +14,7 @@
 - P157 says the save goes under "the open card's Trade, or, with no card open, the Trade the newest draft was typed in". An owed card's Trade can't take a Marks save (the save returns "changed during assembly" and the Review never refreshes), so B2 uses the newest draft's Trade when the open card is an owed card.
 - Recommendation: keep B2; amend P157 to read "the open walked card's Trade, or else the Trade the newest draft was typed in" (a revision at the gate).
 - Blocks: nothing (B2 is in).
-- Answer: (waiting; asked after Q1)
+- Answer (2026-11-21): keep T9R2.13-B2; P157 amended to "the open walked card's Trade, or else the Trade the newest draft was typed in".
 
 ## Q3 (answered 2026-11-21: fix the script, task T9R2.17-D1, then one more benchmark run): the benchmark's Save Marks step uses the old Marks list
 
