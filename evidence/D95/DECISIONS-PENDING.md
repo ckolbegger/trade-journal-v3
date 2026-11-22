@@ -40,3 +40,15 @@
 **Answer (2026-11-22):** (a). Recorded as decision 128, plan revision 117, the breakdown's P175. **Status:** answered 2026-11-22; T95.4 resumes after T95.6-B2.
 
 **Previous status:** asked. Parked: T95.4 (and the tasks that need it, starting with T95.10).
+
+## Q4 (T95.7-B1): two Price History specs whose Tuesday gap can no longer exist as built — asked 2026-11-22
+
+**Plain words.** `e2e/d8p/history.spec.ts:17` and `:151` check how a session with no Marks shows (a gap: "—" in the Marks row, "No Mark" images, "Tue Oct 13 without Marks", "1 session without Marks"). Their setup (`buildOc3`) saves a Hold at Wed 08:00, which is the Review of Tuesday. Since T95.7 (A304), that Hold is refused until Tuesday's Marks are saved or acknowledged Unavailable, so as built Tuesday cannot stay a gap. T95.7-B1 (partial, `0a14caae`) acknowledges Tuesday's Marks in `buildOc3`, which fixes 15 of the 17 specs, but these two then read "Acknowledged Unavailable" where they expect "—", and "Tue Oct 13" where they expect "Tue Oct 13 without Marks".
+
+**Options.**
+- (a) Update the two specs to the acknowledged reading (as integration test I8P.1 changed in T95.7). They would then no longer test the gap display.
+- (b) Keep Tuesday a true gap for these two specs: give them a setup without a Review of Tuesday (no Hold saved for Tuesday; the next Review is Wednesday's), so the gap display stays tested; their other expectations change only where that Hold appeared.
+
+**Recommendation:** (b) — a session with no Review and no Marks is still a real state the app must show; (a) would leave the gap display untested in the browser.
+
+**Status:** asked. Parked: T95.7-B1's two specs (T95.7's run waits on them). Other work continues.
