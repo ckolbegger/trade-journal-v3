@@ -82,7 +82,7 @@ async function sellOneAndDefer(page: Page): Promise<void> {
 // at the final clock itself.
 // With `correctedWednesdayXyz` (T8R.27, B8R.6) Wednesday's XYZ Mark is corrected to that price straight after it is saved, with a reason.
 export const CORRECTION_REASON = 'Misread the closing quote.';
-export async function buildOc3(profile: Profile, options: { readonly thursdayHold?: boolean; readonly correctedWednesdayXyz?: string } = {}): Promise<TradeRef> {
+export async function buildOc3(profile: Profile, options: { readonly thursdayHold?: boolean; readonly correctedWednesdayXyz?: string; readonly noTuesdayReview?: boolean } = {}): Promise<TradeRef> {
   const { context: setup, page: setupPage } = await onboardedAt(profile, MONDAY_0900);
   const trade: TradeRef = { symbol: 'XYZ', tradeId: await confirmOc3(setupPage), label: 'O-C3' };
   await setup.close();
@@ -93,13 +93,15 @@ export async function buildOc3(profile: Profile, options: { readonly thursdayHol
     await recordOptionEntry(page, [{ quantity: '2', price: '2.00', fee: '1.30', time: '2026-10-12T10:00' }]);
   });
   await at(profile, MONDAY_1700, (page) => saveOc3Marks(page, trade, MONDAY, '56.00', '2.10'));
-  await at(profile, WEDNESDAY_0800, async (page) => {
-    await page.goto('/');
-    await openReview(page);
-    await reachCard(page, trade);
-    await acknowledgeTuesday(page, trade);
-    await saveAction(page, 'Hold', undefined, trade);
-  });
+  // With `noTuesdayReview` (Q4) Tuesday has no Review: no Action saved and Tuesday's Marks neither saved nor acknowledged, so it stays a true gap.
+  if (options.noTuesdayReview !== true)
+    await at(profile, WEDNESDAY_0800, async (page) => {
+      await page.goto('/');
+      await openReview(page);
+      await reachCard(page, trade);
+      await acknowledgeTuesday(page, trade);
+      await saveAction(page, 'Hold', undefined, trade);
+    });
   await at(profile, WEDNESDAY_1105, async (page) => {
     await page.goto(`/trades/${trade.tradeId}`);
     await expect(detail.heading(page, 'XYZ')).toBeVisible(READY);

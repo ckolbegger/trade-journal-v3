@@ -78,7 +78,7 @@ test.describe('B8P.1 The cockpit', () => {
 
     await test.step('the tabs follow W1 and the arrow keys move between them', async () => {
       const tabs = page.getByRole('tablist', { name: 'Detail' });
-      await expect(tabs.getByRole('tab')).toHaveText(['Today', 'Position', 'Plan and Risk', 'Price History 1', 'Journal 1 owed', 'Payoff']);
+      await expect(tabs.getByRole('tab')).toHaveText(['Today', 'Position', 'Plan and Risk', 'Price History', 'Journal 1 owed', 'Payoff']);
       const tab = (name: DrawerName) => tabs.getByRole('tab', { name, exact: true });
       await expect(tab('Today')).toHaveAttribute('aria-selected', 'true');
       await tab('Today').focus();

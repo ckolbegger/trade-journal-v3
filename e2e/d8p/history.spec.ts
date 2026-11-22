@@ -16,7 +16,7 @@ const WEDNESDAY = /^\s*Yesterday, Wed Oct 14/;
 test.describe('B8P.2 Price History and Journal', () => {
   test('should show sessions newest left with Tuesday as a gap and the Review link, the cards newest first and paged with the arrows, Wednesday owed reflection answered on its card, and the answer still shown after a reload', async ({ profile }) => {
     test.setTimeout(420_000);
-    const trade = await buildOc3(profile, { thursdayHold: true });
+    const trade = await buildOc3(profile, { thursdayHold: true, noTuesdayReview: true });
     const { context, page } = await openDetailAt(profile, THURSDAY_1800, trade);
 
     await test.step('Price History (W9, P99): newest on the left, Tuesday "—" with the accessible name No Mark', async () => {
@@ -78,11 +78,11 @@ test.describe('B8P.2 Price History and Journal', () => {
       await expect(shownHeadings(page)).toHaveText(['Tue Oct 13 without Marks', 'Mon Oct 12', 'Plan']);
       await expect(earlier(page)).toBeDisabled();
       await expect(newer(page)).toBeEnabled();
-      // Tuesday: no Marks of its own (gone from the DOM) but its Hold, by Review Date. Monday: the first Mark. The Plan card: the Plan Reflection.
+      // Tuesday: no Marks of its own (gone from the DOM) and no Review of its own (Q4). Monday: the first Mark. The Plan card: the Plan Reflection.
       const tuesday = card(page, /^\s*Tue Oct 13 without Marks/);
       await expect(tuesday.locator('.journal-card-marks')).toHaveCount(0);
       await expect(tuesday.locator('.journal-card-change')).toHaveCount(0);
-      await expect(tuesday).toContainText('Daily Review · Tue Oct 13');
+      await expect(tuesday).not.toContainText('Daily Review');
       // The rows the one dated line replaced are gone from the whole drawer, hidden cards included (W27).
       for (const word of ['Review Date', 'Anchor', 'Moment', 'Authored', 'Not answered']) await expect(journal(page).getByText(word, { exact: true })).toHaveCount(0);
       await expect(card(page, /^\s*Mon Oct 12/)).toContainText('$18.70');
@@ -150,7 +150,7 @@ test.describe('B8P.2 Price History and Journal', () => {
 
   test('should select the Journal drawer from Reflect now in Needs you and open the form on Wednesday card, from any page of cards', async ({ profile }) => {
     test.setTimeout(420_000);
-    const trade = await buildOc3(profile, { thursdayHold: true });
+    const trade = await buildOc3(profile, { thursdayHold: true, noTuesdayReview: true });
     const { context, page } = await openDetailAt(profile, THURSDAY_1800, trade);
     // Start on the second page of the Journal, so that the request has to bring the page back to Wednesday's card.
     await openDrawer(page, 'Journal');
