@@ -23,3 +23,18 @@
 **Answer (2026-11-22):** (a), plus a standing direction: anywhere the Review redesign requires updating a snapshot, as long as the numbers and computations haven't changed, the update is authorized. Recorded as an amendment to decision 127 within revision 116 (tag moved). **Status:** answered 2026-11-22; T95.3-D1 resumes.
 
 **Previous status:** asked. Paused: T95.3-D1 and T95.3's suite run, and the tasks blocked by T95.3.
+
+## Q3 (T95.4): how the day summary counts "sessions left" before an expiration — asked 2026-11-22
+
+**Plain words.** T95.4's case 8 lists each contract's expiration "with the sessions left" (W-row: "DALE, CORV, BREN expire Fri Nov 20: 4 sessions left."). Counting future trading sessions needs the session calendar, and Daily Review is deliberately kept away from it (decision 62); Market Data's read session gives only the next and previous session, and the breakdown keeps Market Data unchanged. No figure exists today that counts sessions to expiration (`daysToExpiration` counts calendar days).
+
+**Options.**
+- (a) Add one calendar-only call to Market Data's read session, `sessionDatesBetween(from, to)`, built on the existing session policy; no store read, so no request-count pin moves. Needs a sentence in `specs/design/market-data.md` and a plan revision (precedent: `nextSessionDate`, revision 92).
+- (b) Give Daily Review the session policy directly. Reverses decision 62.
+- (c) Drop the count: list the expiration dates only ("expire Fri Nov 20").
+
+**Recommendation:** (a).
+
+**Main-session readings recorded with this question (not asked):** case 6's "sessions since the crossing" counts the current run past the line, inclusive of the Review Date, as the mockup's "(6 sessions)" does (A318's `first` governs only where the Replay opens). Case 8 lists each contract, as the breakdown says, grouped by date as in the mockup's words.
+
+**Status:** asked. Parked: T95.4 (and the tasks that need it, starting with T95.10). Other tasks continue.
