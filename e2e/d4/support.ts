@@ -306,7 +306,8 @@ export async function debtFormOf(page: Page, card: CardRef): Promise<Locator> {
 }
 
 // What the app shows when it refuses a save: a field's error line or an alert banner (Action form, reflection form, Marks panel).
-const REFUSAL = '.field-error, [role="alert"]';
+// The Marks panel's batch-limit refusal is a status line, matched by its words so the panel's other status text is not read as a refusal.
+const REFUSAL = '.field-error, [role="alert"], p[role="status"]:has-text("Save Marks takes up to")';
 // The Marks panel's "saved, but the figures are out of date" banner is an alert that comes with a saved result, not a refusal.
 const SAVED_NOTICE = /are saved, but the figures are out of date/;
 
