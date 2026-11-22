@@ -53,3 +53,4 @@ Commit `34d79930`. `checkMarkSlip({instrument, entry, lastMark?}, limits = MARK_
 **T95.5-B1.** Case: "it should offer a ten or hundred times reading only when the price it shows lies within the limits".
 *T95.5-B1 done:* commit `b92f956c`; the scaled reading is rounded to the shown candidate and that value is tested against the band (red: `expected 'Scaled' to be 'Moved'`, stock 0.000115 vs 0.000011). ocr (session 78e32c6b, 2 files, 0 comments): No findings. Raw: `ocr/T95.5-B1-b92f956c.json`.
 **T95.5-B2.** Case: "it should apply a fractional limit, such as 5.5%, without throwing".
+*T95.5-B2 done:* commit `6ec0a2ab`; limits are read as exact decimals (red: `RangeError: The number 5.5 cannot be converted to a BigInt`). ocr (session 9dfad8a8, 2 files, 0 comments): No findings. Raw: `ocr/T95.5-B2-6ec0a2ab.json`.
