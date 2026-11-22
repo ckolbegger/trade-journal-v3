@@ -212,7 +212,7 @@ describe('the order across saves (A301)', () => {
     expect(reopened[0]!.band).toBe('ExitNotCarriedOut');
     const entry: MarketDataPrepareEntry = { key: { instrumentKey: 'DEF', tradingDate: opened.reviewDate }, expectedRevision: 'None', intention: { kind: 'RecordInitialManualMark', price: '36.00' } };
 
-    const savedMarks = await stack.dailyReview.save({ kind: 'SaveReviewMarks', reviewDate: opened.reviewDate, tradeId: unpriced, binding: savedAction.review.binding, entries: [entry] });
+    const savedMarks = await stack.dailyReview.save({ kind: 'SaveReviewMarks', reviewDate: opened.reviewDate, binding: savedAction.review.binding, entries: [entry] });
 
     if (savedMarks.kind !== 'MarksSaved' || savedMarks.review.kind !== 'Ready') throw new Error(`expected a Ready review, got ${savedMarks.kind}`);
     // DEF is past its Stop by 1R, ahead of ABC's 0.25R.

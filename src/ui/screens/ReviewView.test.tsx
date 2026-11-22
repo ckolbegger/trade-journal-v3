@@ -326,7 +326,7 @@ describe('Marks in the card (P11, P15)', () => {
     await user.type(within(other).getByRole('textbox', { name: 'DEF Mark, Mon Oct 12' }), '12');
     await user.click(within(other).getByRole('button', { name: 'Save Marks (1)' }));
     expect(facade.DailyReview.save).toHaveBeenLastCalledWith(
-      expect.objectContaining({ kind: 'SaveReviewMarks', tradeId: 't3', entries: [{ key: { instrumentKey: 'DEF', tradingDate: '2026-10-12' }, expectedRevision: 'None', intention: { kind: 'RecordInitialManualMark', price: '12' } }] }),
+      expect.objectContaining({ kind: 'SaveReviewMarks', entries: [{ key: { instrumentKey: 'DEF', tradingDate: '2026-10-12' }, expectedRevision: 'None', intention: { kind: 'RecordInitialManualMark', price: '12' } }] }),
     );
   });
 

@@ -67,5 +67,5 @@ export function marksSaved<T extends { readonly kind: string }>(result: T): Extr
 // `SaveReviewMarks` from one card, against a fresh `open`'s binding.
 export async function saveMarksFrom(app: Application, d: Device, tradeId: string, entries: readonly MarketDataPrepareEntry[]) {
   const opened = await openReview(app, d);
-  return app.DailyReview.save({ kind: 'SaveReviewMarks', reviewDate: opened.reviewDate, tradeId, binding: opened.binding, entries });
+  return app.DailyReview.save({ kind: 'SaveReviewMarks', reviewDate: opened.reviewDate, binding: opened.binding, entries });
 }

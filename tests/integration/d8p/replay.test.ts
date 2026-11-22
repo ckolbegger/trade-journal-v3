@@ -107,7 +107,7 @@ describe('I8P.3 Coherence', () => {
     const row = marks?.family === 'Marks' ? marks.today.find((r) => r.instrumentKey === CALL_KEY) : undefined;
     if (!row) throw new Error('the Review has no Thursday row for the call');
     const entries = [{ key: { instrumentKey: CALL_KEY, tradingDate: DATES.thu }, expectedRevision: row.resolutionRevision, intention: { kind: 'CorrectMark' as const, price: '3.25', reason: 'A better quote.' } }];
-    const saved = await app.DailyReview.save({ kind: 'SaveReviewMarks', reviewDate: opened.reviewDate, tradeId, binding: opened.binding, entries });
+    const saved = await app.DailyReview.save({ kind: 'SaveReviewMarks', reviewDate: opened.reviewDate, binding: opened.binding, entries });
     if (saved.kind !== 'MarksSaved') throw new Error(`SaveReviewMarks: ${saved.kind}`);
 
     expect(await app.TradeViewsAndReporting.replayTrade({ tradeId, binding: before.binding })).toEqual({ kind: 'ChangedDuringAssembly' });

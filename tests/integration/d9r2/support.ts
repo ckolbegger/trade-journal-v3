@@ -56,5 +56,5 @@ export const correctMark = (instrumentKey: string, tradingDate: string, price: s
 // `SaveReviewMarks` against a fresh open's binding.
 export async function saveMarks(app: Application, tradeId: string, entries: readonly MarketDataPrepareEntry[]) {
   const opened = await openReady(app);
-  return app.DailyReview.save({ kind: 'SaveReviewMarks', reviewDate: opened.reviewDate, tradeId, binding: opened.binding, entries });
+  return app.DailyReview.save({ kind: 'SaveReviewMarks', reviewDate: opened.reviewDate, binding: opened.binding, entries });
 }

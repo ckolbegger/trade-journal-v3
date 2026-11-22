@@ -359,7 +359,8 @@ describe('Save Marks from the status header while an owed card is open (T9R2.13-
       const marks = [{ key: { instrumentKey: 'XYZ', tradingDate: DATE }, resolution: { kind: 'Available', mark: { revisionId: 'r9', revisionNumber: 1, price: '12', source: 'Manual', savedAt: CUTOFF } }, resolutionRevision: 1, classification: 'InitialManual' }] as const;
       if (request.kind !== 'SaveReviewMarks') throw new Error('unexpected save');
       const walked = withRow.families[1]!.family === 'Trades' ? withRow.families[1]!.trades : [];
-      const trade = walked.find((t) => t.tradeId === request.tradeId);
+      // The saved Review carries the card of the first walked Trade (A303).
+      const trade = walked[0];
       if (!trade) return Promise.resolve({ kind: 'MarksSaved', marks, review: { kind: 'ChangedDuringAssembly' } });
       return Promise.resolve({ kind: 'MarksSaved', marks, review: { kind: 'Ready', progress: { tradesWithAction: 1, tradesEligible: 1 }, completion: { kind: 'Complete' }, binding, trades: walked, trade: walkedReview(trade), nextStep: { kind: 'Done' } } } as never);
     });
@@ -376,7 +377,7 @@ describe('Save Marks from the status header while an owed card is open (T9R2.13-
     await screen.findByRole('region', { name: 'ABC review' });
     await user.click(within(screen.getByRole('region', { name: 'Review status' })).getByRole('button', { name: 'Save Marks (1)' }));
 
-    expect(facade.DailyReview.save).toHaveBeenCalledWith(expect.objectContaining({ kind: 'SaveReviewMarks', tradeId: 't-w' }));
+    expect(facade.DailyReview.save).toHaveBeenCalledWith(expect.objectContaining({ kind: 'SaveReviewMarks' }));
     // The Review the save returned is the screen's: its completion replaces the held one, and the owed card stays open.
     await waitFor(() => expect(within(screen.getByRole('region', { name: 'Review status' })).getByText('Complete')).toBeTruthy());
     expect(screen.getByRole('region', { name: 'ABC review' })).toBeTruthy();

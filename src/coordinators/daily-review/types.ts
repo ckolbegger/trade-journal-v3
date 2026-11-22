@@ -350,12 +350,13 @@ export interface ResolveReviewDebtRequest {
     | { readonly kind: 'Decline'; readonly reason?: string };
 }
 
-// SaveReviewMarks: one card's Marks saved in one commit, every Mark or none (P37, A155). `tradeId` is the card
-// they were saved from; `binding` is the overview's. Market Data validates and checks every entry.
+// SaveReviewMarks: the page's Marks saved in one commit, every Mark or none (P37, A155, A303). No Trade is named:
+// entries may name any Instrument and session the page shows, up to 100. `binding` is the overview's. Market Data
+// validates and checks every entry. A CorrectMark entry for the Review Date that replaces a typed Mark is saved with
+// the reason "Fixed in the same Review", whatever reason it carries.
 export interface SaveReviewMarksRequest {
   readonly kind: 'SaveReviewMarks';
   readonly reviewDate: string;
-  readonly tradeId: string;
   readonly binding: ReviewBinding;
   readonly entries: readonly MarketDataPrepareEntry[];
 }
@@ -417,7 +418,7 @@ export type PostMarksReview =
       readonly binding: ReviewBinding;
       // Every walked Trade in attention order, with its revised band, reasons and meter reading.
       readonly trades: readonly WalkedTrade[];
-      // The card the Marks were saved from, evaluated with them.
+      // The card of the first Trade in the new order, evaluated with the Marks.
       readonly trade: DailyTradeReview;
       readonly nextStep: MarksNextStep;
     }

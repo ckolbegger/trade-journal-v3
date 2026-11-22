@@ -34,7 +34,7 @@ describe('I9R2.2 One Save Marks across Trades, sessions and Instruments (AC-RESP
     const opened = await openReady(app);
 
     const saved = await countRequests(
-      () => app.DailyReview.save({ kind: 'SaveReviewMarks', reviewDate: opened.reviewDate, tradeId: tradeIds[0]!, binding: opened.binding, entries }),
+      () => app.DailyReview.save({ kind: 'SaveReviewMarks', reviewDate: opened.reviewDate, binding: opened.binding, entries }),
       { transactions: true },
     );
 

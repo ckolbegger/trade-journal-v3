@@ -508,7 +508,6 @@ describe('the Marks grid, Save Marks (P37)', () => {
     expect(facade.DailyReview.save).toHaveBeenCalledWith({
       kind: 'SaveReviewMarks',
       reviewDate: MONDAY,
-      tradeId: 't-a',
       binding,
       entries: [
         { key: { instrumentKey: 'XYZ', tradingDate: MONDAY }, expectedRevision: 'None', intention: { kind: 'RecordInitialManualMark', price: '52.00' } },
@@ -566,7 +565,6 @@ describe('Save Marks (P37, A155)', () => {
     expect(facade.DailyReview.save).toHaveBeenCalledWith({
       kind: 'SaveReviewMarks',
       reviewDate: MONDAY,
-      tradeId: 't-a',
       binding,
       entries: [
         { key: { instrumentKey: 'XYZ', tradingDate: MONDAY }, expectedRevision: 'None', intention: { kind: 'RecordInitialManualMark', price: '52.00' } },
@@ -1320,8 +1318,6 @@ describe('drafts belong to the Review (P156)', () => {
     expect(facade.DailyReview.save).toHaveBeenCalledWith({
       kind: 'SaveReviewMarks',
       reviewDate: MONDAY,
-      // The open card's Trade only chooses the card the saved Review refreshes.
-      tradeId: 't-c',
       binding,
       entries: [
         { key: { instrumentKey: 'XYZ', tradingDate: MONDAY }, expectedRevision: 'None', intention: { kind: 'RecordInitialManualMark', price: '52.00' } },

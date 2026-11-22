@@ -623,7 +623,7 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
     // The card shown is replaced by the refreshed one only when it is the Trade saved from.
     const opening = walkedOpen ? (shown?.opening ?? -1) : -1;
     const tradeId = (walkedOpen ? openId : newest) ?? openId ?? '';
-    const result = await facade.DailyReview.save({ kind: 'SaveReviewMarks', reviewDate: from.reviewDate, tradeId, binding: from.binding, entries });
+    const result = await facade.DailyReview.save({ kind: 'SaveReviewMarks', reviewDate: from.reviewDate, binding: from.binding, entries });
     if (result.kind === 'MarksSaved') marksSaved(result, opening, tradeId);
     return result;
   };

@@ -4,7 +4,7 @@ import { openTradeSummary } from '../../domain/trade-summary.ts';
 import { derive, type DerivedTradeState, type IncoherentFacts, type LifecycleState, type TradeAnalysisRecord, type TradeEvaluation } from '../../domain/trade-analysis/index.ts';
 import { classifyDue, compareDueAnchors, compareOwed, owedStandingOf, type SessionCloses } from '../../domain/journal-debt/index.ts';
 import type { DebtProjection, HistoryAction, Journal, ObligationOutcome } from '../../modules/journal/index.ts';
-import type { EvidenceBinding, FrameContext, HistoricalGaps, MarketData, MarketDataIssue, MarketDataReadSession, SeriesPoint } from '../../modules/market-data/index.ts';
+import type { EvidenceBinding, FrameContext, HistoricalGaps, MarketData, MarketDataPrepareEntry, MarketDataIssue, MarketDataReadSession, SeriesPoint } from '../../modules/market-data/index.ts';
 import type { ReferenceCatalog } from '../../modules/reference-catalog/index.ts';
 import type { BrowseRecord, TradeRecord } from '../../modules/trade-record/index.ts';
 import { beginSemanticTransaction, type Persistence, type WorkspaceSnapshotBinding } from '../../persistence/index.ts';
@@ -61,6 +61,9 @@ export interface DailyReviewDeps {
 }
 
 const ASSEMBLY_ATTEMPTS = 3;
+
+// The reason Daily Review gives a correction of a Mark typed in this Review (A303).
+const SAME_REVIEW_FIX = 'Fixed in the same Review';
 
 // The first listed gap date whose session close, as Market Data returns it, is at or after the exposure: the
 // session the exposure is relevant from. Daily Review does not see the session policy (D4 A39; decision 62).
@@ -941,11 +944,14 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     });
   }
 
-  // The Review under the Marks a save left, with the card they were saved from (P38, A155).
-  function postMarksReview(reviewDate: string, tradeId: string): Promise<PostMarksReview> {
+  // The Review under the Marks a save left, in its new order, with the card of its first Trade (P38, A155, A303).
+  function postMarksReview(reviewDate: string): Promise<PostMarksReview> {
     return atOneRevision<PostMarksReview>(async () => {
-      const read = await readAfterSave(reviewDate, tradeId);
+      const read = await readAfterSave(reviewDate);
       if (read.kind !== 'Ready') return read;
+      // Nothing is walked: there is no card to refresh, and the caller reads the Review again.
+      const tradeId = read.trades[0]?.tradeId;
+      if (tradeId === undefined) return { kind: 'ChangedDuringAssembly' };
       const revision = read.binding.workspace.contentRevision;
       const card = await readTrade({ reviewDate, tradeId, binding: read.binding }, revision);
       if (card.kind === 'Moved') return undefined;
@@ -993,6 +999,21 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     return { kind: 'ChangedDuringAssembly' };
   }
 
+  // A correction of a Mark typed for the Review Date is a fix in the same Review: it carries the fixed reason, never one asked of the trader (A303).
+  // The Review Date's frames are read only when such a correction is in the request.
+  async function withSameReviewFixes(reviewDate: string, entries: readonly MarketDataPrepareEntry[]): Promise<readonly MarketDataPrepareEntry[]> {
+    const corrections = entries.filter(({ key, intention }) => intention.kind === 'CorrectMark' && key.tradingDate === reviewDate);
+    if (corrections.length === 0) return entries;
+    const found = await deps.marketData.query({ kind: 'ResolveFrames', context: { kind: 'Review', reviewDate }, instruments: corrections.map(({ key }) => key.instrumentKey) });
+    if (found.kind !== 'Frames') return entries;
+    const typed = new Set(found.frames.filter(({ resolution }) => resolution.kind === 'Available' && resolution.mark.source === 'Manual').map(({ instrumentKey }) => instrumentKey));
+    return entries.map((entry) =>
+      entry.intention.kind === 'CorrectMark' && entry.key.tradingDate === reviewDate && typed.has(entry.key.instrumentKey)
+        ? { ...entry, intention: { ...entry.intention, reason: SAME_REVIEW_FIX } }
+        : entry,
+    );
+  }
+
   // The Marks are prepared by Market Data and staged in this coordinator's own commit (A155). A Conflict is
   // reported, never retried: Market Data has no shared counter to wait out (ADR 0011).
   async function saveReviewMarks(request: SaveReviewMarksRequest): Promise<SaveReviewMarksResult> {
@@ -1000,7 +1021,8 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     // content revision are not compared, since Market Data's per-key revision checks own them.
     const { workspace } = await currentBinding();
     if (workspace.databaseName !== request.binding.workspace.databaseName) return { kind: 'ReviewChanged' };
-    const prepared = await deps.marketData.prepareEffects({ entries: request.entries });
+    const entries = await withSameReviewFixes(request.reviewDate, request.entries);
+    const prepared = await deps.marketData.prepareEffects({ entries });
     if (prepared.kind !== 'Prepared') return prepared;
     const tx = beginSemanticTransaction();
     deps.marketData.applyPreparedEffects(tx, prepared);
@@ -1008,13 +1030,13 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     if (committed.kind === 'RuntimeNotWritable') return committed;
     if (committed.kind === 'Conflict') {
       // A key moved after preparation: prepare again to name which.
-      const again = await deps.marketData.prepareEffects({ entries: request.entries });
+      const again = await deps.marketData.prepareEffects({ entries });
       return again.kind === 'Prepared' ? { kind: 'Conflict', keys: [] } : again;
     }
     if (committed.kind !== 'Committed') throw new Error(`unexpected commit result: ${committed.kind}`);
     const marks = prepared.entries.map(({ key, resolution, resolutionRevision, classification }): SavedMark => ({ key, resolution, resolutionRevision, classification }));
     // The Marks are committed; a read that fails from here on only costs the refreshed Review, never the save.
-    const review = await postMarksReview(request.reviewDate, request.tradeId).catch((): PostMarksReview => ({ kind: 'ChangedDuringAssembly' }));
+    const review = await postMarksReview(request.reviewDate).catch((): PostMarksReview => ({ kind: 'ChangedDuringAssembly' }));
     return { kind: 'MarksSaved', marks, review };
   }
 

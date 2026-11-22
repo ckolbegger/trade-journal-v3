@@ -37,9 +37,11 @@ describe('I5R.1 Save Marks together', () => {
     expect(first.review.trades).toEqual(walkedAfterFirst);
     expect(first.review.completion).toEqual(afterFirst.completion);
     expect(first.review.binding).toEqual(afterFirst.binding);
-    const freshA = await app.DailyReview.getTrade({ reviewDate: afterFirst.reviewDate, tradeId: trades.a, binding: afterFirst.binding });
-    if (freshA.kind !== 'Ready') throw new Error(freshA.kind);
-    expect(first.review.trade).toEqual(freshA.trade);
+    // The card is the first Trade's in the new order.
+    expect(first.review.trade.tradeId).toBe(walkedAfterFirst[0]!.tradeId);
+    const fresh = await app.DailyReview.getTrade({ reviewDate: afterFirst.reviewDate, tradeId: first.review.trade.tradeId, binding: afterFirst.binding });
+    if (fresh.kind !== 'Ready') throw new Error(fresh.kind);
+    expect(first.review.trade).toEqual(fresh.trade);
 
     // T-C's card: DEF unavailable with a reason.
     const second = marksSaved(await saveMarksFrom(app, d, trades.c, [unavailable('DEF', MONDAY, 'No quote available.')]));

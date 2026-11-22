@@ -60,9 +60,9 @@ describe('I5R.2 Nothing or everything', () => {
   }, 60_000);
 
   it('should return Conflict naming every key for a second command from the same binding, and keep one revision per key', async () => {
-    const { d, app, trades } = await cardApp({ withMarks: false });
+    const { d, app } = await cardApp({ withMarks: false });
     const opened = await openReview(app, d);
-    const command = { kind: 'SaveReviewMarks', reviewDate: opened.reviewDate, tradeId: trades.a, binding: opened.binding, entries: fourEntries('40.50') } as const;
+    const command = { kind: 'SaveReviewMarks', reviewDate: opened.reviewDate, binding: opened.binding, entries: fourEntries('40.50') } as const;
 
     expect(marksSaved(await app.DailyReview.save(command)).marks).toHaveLength(4);
     const afterFirst = await dumpAll(d.factory);

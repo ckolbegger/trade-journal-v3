@@ -76,7 +76,7 @@ describe('save: the meter reading after Save Marks (A260)', () => {
     expect(meterOf(walk(opened), f).now).toMatchObject({ kind: 'Unavailable', reason: 'MarkMissing' });
     const entry = (tradingDate: string, price: string): MarketDataPrepareEntry => ({ key: { instrumentKey: 'XYZ', tradingDate }, expectedRevision: 'None', intention: { kind: 'RecordInitialManualMark', price } });
 
-    const saved = await stack.dailyReview.save({ kind: 'SaveReviewMarks', reviewDate: opened.reviewDate, tradeId: a, binding: opened.binding, entries: [entry(REVIEW_DATE, '52.00'), entry(FRIDAY_DATE, '51.00')] });
+    const saved = await stack.dailyReview.save({ kind: 'SaveReviewMarks', reviewDate: opened.reviewDate, binding: opened.binding, entries: [entry(REVIEW_DATE, '52.00'), entry(FRIDAY_DATE, '51.00')] });
 
     if (saved.kind !== 'MarksSaved' || saved.review.kind !== 'Ready') throw new Error(`expected a Ready review, got ${saved.kind}`);
     const { trades } = saved.review;

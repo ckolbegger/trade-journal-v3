@@ -1109,18 +1109,18 @@ describe('card progress in save results (A165, Q12)', () => {
     expect(panelsOf(card.progress)[1]).toEqual({ panel: 'Reflections', done: true, dueNow: 0, later: 0 });
   }, 60_000);
 
-  it('should return, after SaveReviewMarks saves XYZ from T-A card without Marks, T-A and T-F each with 1 resolved and 0 needed among the review trades, and T-A card progress equal to its walked item', async () => {
+  it('should return, after SaveReviewMarks saves XYZ without Marks, T-A and T-F each with 1 resolved and 0 needed among the review trades, and the card progress equal to its walked item', async () => {
     const stack = await reviewStack(MONDAY_1700);
     const { a, f } = await cardFixture(stack, { withoutMarks: true });
     const { reviewDate, binding } = await openedBinding(stack);
     const entries = [{ key: { instrumentKey: 'XYZ', tradingDate: reviewDate }, expectedRevision: 'None' as const, intention: { kind: 'RecordInitialManualMark' as const, price: '52.00' } }];
 
-    const result = await stack.dailyReview.save({ kind: 'SaveReviewMarks', reviewDate, tradeId: a, binding, entries });
+    const result = await stack.dailyReview.save({ kind: 'SaveReviewMarks', reviewDate, binding, entries });
 
     if (result.kind !== 'MarksSaved' || result.review.kind !== 'Ready') throw new Error('expected a Ready marks review');
     const { trades, trade } = result.review;
     for (const tradeId of [a, f]) expect(panelsOf(trades.find((t) => t.tradeId === tradeId)!.progress)[0]).toEqual({ panel: 'Marks', done: true, resolved: 1, needed: 0 });
-    expect(trade.progress).toEqual(trades.find((t) => t.tradeId === a)!.progress);
+    expect(trade.progress).toEqual(trades.find((t) => t.tradeId === trade.tradeId)!.progress);
   }, 60_000);
 });
 
@@ -1366,7 +1366,7 @@ describe("getTrade: the card's replay (A254)", () => {
     expect(before.kind === 'Ready' && before.trade.replay?.sessions.at(-1)?.marks.map((m) => m.resolution.kind)).toEqual(['Missing', 'Missing']);
 
     const entry = (instrument: string, price: string) => ({ key: { instrumentKey: instrument, tradingDate: opened.reviewDate }, expectedRevision: 'None' as const, intention: { kind: 'RecordInitialManualMark' as const, price } });
-    const saved = await stack.dailyReview.save({ kind: 'SaveReviewMarks', reviewDate: opened.reviewDate, tradeId, binding: opened.binding, entries: [entry('BREN', '74.20'), entry(instrumentKey(BREN_CALL), '5.84')] });
+    const saved = await stack.dailyReview.save({ kind: 'SaveReviewMarks', reviewDate: opened.reviewDate, binding: opened.binding, entries: [entry('BREN', '74.20'), entry(instrumentKey(BREN_CALL), '5.84')] });
 
     if (saved.kind !== 'MarksSaved' || saved.review.kind !== 'Ready') throw new Error(`expected a Ready review, got ${saved.kind}`);
     const monday = saved.review.trade.replay!.sessions.at(-1)!;

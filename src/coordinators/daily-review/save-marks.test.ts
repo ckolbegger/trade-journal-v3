@@ -4,7 +4,7 @@ import { cardFixture, FRIDAY_DATE, MONDAY_1700, REVIEW_DATE, reviewStack, type R
 import { dumpAll } from '../../../tests/support/stack.ts';
 import type { MarketDataPrepareEntry } from '../../modules/market-data/index.ts';
 import { createDailyReview } from './index.ts';
-import type { ReviewBinding, SaveReviewMarksResult } from './index.ts';
+import type { PostMarksReview, ReviewBinding, SaveReviewMarksResult } from './index.ts';
 
 // T5R.5: DailyReview.save (SaveReviewMarks), against the card fixture at Monday 17:00 with no Monday Marks.
 
@@ -23,9 +23,9 @@ const initial = (instrumentKey: string, tradingDate: string, price: string): Mar
 // T-A's card: its Friday and Monday XYZ Marks.
 const xyzEntries = [initial('XYZ', REVIEW_DATE, '52.00'), initial('XYZ', FRIDAY_DATE, '51.00')];
 
-async function saveMarks(stack: ReviewStack, tradeId: string, entries: readonly MarketDataPrepareEntry[]): Promise<SaveReviewMarksResult> {
+async function saveMarks(stack: ReviewStack, entries: readonly MarketDataPrepareEntry[]): Promise<SaveReviewMarksResult> {
   const { reviewDate, ...binding } = await overview(stack);
-  return stack.dailyReview.save({ kind: 'SaveReviewMarks', reviewDate, tradeId, binding, entries });
+  return stack.dailyReview.save({ kind: 'SaveReviewMarks', reviewDate, binding, entries });
 }
 
 function marksSaved(result: SaveReviewMarksResult) {
@@ -39,12 +39,19 @@ function ready(result: SaveReviewMarksResult) {
   return review;
 }
 
+// A Trade's card under the Review a save returned; the save's own card is the first Trade's in the new order (A303).
+async function cardOf(stack: ReviewStack, review: Extract<PostMarksReview, { kind: 'Ready' }>, tradeId: string) {
+  const card = await stack.dailyReview.getTrade({ reviewDate: REVIEW_DATE, tradeId, binding: review.binding });
+  if (card.kind !== 'Ready') throw new Error(`expected a Ready card, got ${card.kind}`);
+  return card.trade;
+}
+
 describe('SaveReviewMarks (P37, P38, A155)', () => {
   it('should save XYZ for Monday and for Friday from T-A card in one commit, and return MarksSaved with each key resolution, revision, and classification, equal to the stored records', async () => {
     const stack = await reviewStack(MONDAY_1700);
-    const { a } = await cardFixture(stack, { withoutMarks: true });
+    await cardFixture(stack, { withoutMarks: true });
 
-    const { marks } = marksSaved(await saveMarks(stack, a, xyzEntries));
+    const { marks } = marksSaved(await saveMarks(stack, xyzEntries));
 
     const stored = await stack.persistence.readSnapshot(['observations'], async (tx) => [
       await tx.get('observations', [REVIEW_DATE, 'XYZ']),
@@ -67,13 +74,12 @@ describe('SaveReviewMarks (P37, P38, A155)', () => {
     const stack = await reviewStack(MONDAY_1700);
     const { a, f } = await cardFixture(stack, { withoutMarks: true });
 
-    const review = ready(await saveMarks(stack, a, xyzEntries));
+    const review = ready(await saveMarks(stack, xyzEntries));
 
     expect(review.progress).toEqual({ tradesWithAction: 0, tradesEligible: 5 });
     const missing = review.completion.kind === 'Incomplete' ? review.completion.reasons.filter((r) => r.code === 'MarkMissing').map((r) => (r.code === 'MarkMissing' ? r.instrument.symbol : '')) : [];
     expect(missing.sort()).toEqual(['ABC', 'DEF', 'JKL']);
-    expect(review.trade.tradeId).toBe(a);
-    expect(review.trade.evaluation?.rewardRiskNow).toEqual({ kind: 'Value', value: Rational.of(8n, 9n) });
+    expect((await cardOf(stack, review, a)).evaluation?.rewardRiskNow).toEqual({ kind: 'Value', value: Rational.of(8n, 9n) });
     expect(review.trades.find((t) => t.tradeId === f)!.meter!.now).toMatchObject({ kind: 'Value', value: { pnl: Rational.of(99n) } });
     // The binding is the one a fresh open gives.
     const reopened = await stack.dailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: MONDAY_1700 });
@@ -84,25 +90,26 @@ describe('SaveReviewMarks (P37, P38, A155)', () => {
     const stack = await reviewStack(MONDAY_1700);
     const { a } = await cardFixture(stack, { withoutMarks: true });
 
-    const review = ready(await saveMarks(stack, a, xyzEntries));
+    const review = ready(await saveMarks(stack, xyzEntries));
 
     const walked = review.trades.find((t) => t.tradeId === a)!;
     expect(walked.figures?.rewardRiskNow).toEqual({ kind: 'Value', value: Rational.of(8n, 9n) });
+    const card = await cardOf(stack, review, a);
     expect(walked.figures).toEqual({
-      riskToStop: review.trade.evaluation?.ongoingRiskToStop,
-      pnl: review.trade.evaluation?.currentMarkedPnl,
-      rewardRiskNow: review.trade.evaluation?.rewardRiskNow,
+      riskToStop: card.evaluation?.ongoingRiskToStop,
+      pnl: card.evaluation?.currentMarkedPnl,
+      rewardRiskNow: card.evaluation?.rewardRiskNow,
     });
   }, 30_000);
 
   it('should return the next step, preferring a card with a Missing Review-date Mark, T-C, for DEF', async () => {
     const stack = await reviewStack(MONDAY_1700);
-    const { a, c } = await cardFixture(stack, { withoutMarks: true });
+    const { c } = await cardFixture(stack, { withoutMarks: true });
     // ABC and JKL are marked already, so DEF is the only Missing Review-date Mark.
     await stack.saveMark('ABC', '27.50');
     await stack.saveMark('JKL', '21.00');
 
-    const review = ready(await saveMarks(stack, a, xyzEntries));
+    const review = ready(await saveMarks(stack, xyzEntries));
 
     if (review.nextStep.kind !== 'Mark') throw new Error(`expected a Mark next step, got ${review.nextStep.kind}`);
     expect(review.nextStep.row).toEqual(expect.objectContaining({ instrumentKey: 'DEF', task: 'Manual', trades: [c] }));
@@ -114,19 +121,19 @@ describe('SaveReviewMarks (P37, P38, A155)', () => {
     const { c } = await cardFixture(stack, { withoutMarks: true });
     const unavailable: MarketDataPrepareEntry = { key: { instrumentKey: 'DEF', tradingDate: REVIEW_DATE }, expectedRevision: 'None', intention: { kind: 'AssertUnavailable', reason: 'No quote available.' } };
 
-    const review = ready(await saveMarks(stack, c, [unavailable]));
+    const review = ready(await saveMarks(stack, [unavailable]));
 
     const acknowledged = { kind: 'Unavailable', reason: 'AcknowledgedUnavailable', instrument: { kind: 'Stock', symbol: 'DEF' }, date: REVIEW_DATE };
-    expect(review.trade.attention.basis).toMatchObject(acknowledged);
+    expect((await cardOf(stack, review, c)).attention.basis).toMatchObject(acknowledged);
     expect(review.trades.find((t) => t.tradeId === c)!.meter!.now).toMatchObject(acknowledged);
   }, 30_000);
 
   it('should pass Market Data Rejected issues and Conflict back unchanged and write nothing', async () => {
     const stack = await reviewStack(MONDAY_1700);
-    const { a } = await cardFixture(stack, { withoutMarks: true });
+    await cardFixture(stack, { withoutMarks: true });
     const before = await dumpAll(stack.factory);
 
-    const rejected = await saveMarks(stack, a, [initial('XYZ', REVIEW_DATE, '52.00'), initial('ABC', REVIEW_DATE, 'abc')]);
+    const rejected = await saveMarks(stack, [initial('XYZ', REVIEW_DATE, '52.00'), initial('ABC', REVIEW_DATE, 'abc')]);
     const direct = await stack.marketData.prepareEffects({ entries: [initial('XYZ', REVIEW_DATE, '52.00'), initial('ABC', REVIEW_DATE, 'abc')] });
     expect(rejected).toEqual(direct);
     expect(rejected.kind).toBe('Rejected');
@@ -135,7 +142,7 @@ describe('SaveReviewMarks (P37, P38, A155)', () => {
     // A key that already has a Mark is a Conflict; the Marks beside it are not written either.
     await stack.saveMark('XYZ', '51.50');
     const afterMark = await dumpAll(stack.factory);
-    const conflict = await saveMarks(stack, a, [initial('XYZ', REVIEW_DATE, '52.00'), initial('ABC', REVIEW_DATE, '27.50')]);
+    const conflict = await saveMarks(stack, [initial('XYZ', REVIEW_DATE, '52.00'), initial('ABC', REVIEW_DATE, '27.50')]);
     const directConflict = await stack.marketData.prepareEffects({ entries: [initial('XYZ', REVIEW_DATE, '52.00'), initial('ABC', REVIEW_DATE, '27.50')] });
     expect(conflict).toEqual(directConflict);
     expect(conflict.kind).toBe('Conflict');
@@ -144,7 +151,7 @@ describe('SaveReviewMarks (P37, P38, A155)', () => {
 
   it('should report the saved Marks with the Review part as ChangedDuringAssembly when another write lands between the commit and the assembly', async () => {
     const stack = await reviewStack(MONDAY_1700);
-    const { a } = await cardFixture(stack, { withoutMarks: true });
+    await cardFixture(stack, { withoutMarks: true });
     const { reviewDate, ...binding } = await overview(stack);
     let committed = false;
     const commit = (async (...args: Parameters<typeof stack.persistence.commit>) => {
@@ -160,7 +167,7 @@ describe('SaveReviewMarks (P37, P38, A155)', () => {
     }) as typeof stack.marketData.query;
     const review = createDailyReview({ ...stack, persistence: { ...stack.persistence, commit }, marketData: { ...stack.marketData, query } });
 
-    const result = marksSaved(await review.save({ kind: 'SaveReviewMarks', reviewDate, tradeId: a, binding, entries: xyzEntries }));
+    const result = marksSaved(await review.save({ kind: 'SaveReviewMarks', reviewDate, binding, entries: xyzEntries }));
 
     expect(result.review).toEqual({ kind: 'ChangedDuringAssembly' });
     expect(result.marks).toHaveLength(2);
@@ -170,7 +177,7 @@ describe('SaveReviewMarks (P37, P38, A155)', () => {
 
   it('should not return a MarksSaved card read at a later Workspace revision than its overview', async () => {
     const stack = await reviewStack(MONDAY_1700);
-    const { a } = await cardFixture(stack, { withoutMarks: true });
+    await cardFixture(stack, { withoutMarks: true });
     const { reviewDate, ...binding } = await overview(stack);
     let committed = false;
     const commit = (async (...args: Parameters<typeof stack.persistence.commit>) => {
@@ -186,7 +193,7 @@ describe('SaveReviewMarks (P37, P38, A155)', () => {
     }) as typeof stack.marketData.query;
     const review = createDailyReview({ ...stack, persistence: { ...stack.persistence, commit }, marketData: { ...stack.marketData, query } });
 
-    const result = marksSaved(await review.save({ kind: 'SaveReviewMarks', reviewDate, tradeId: a, binding, entries: xyzEntries }));
+    const result = marksSaved(await review.save({ kind: 'SaveReviewMarks', reviewDate, binding, entries: xyzEntries }));
 
     expect(result.marks).toHaveLength(2);
     if (result.review.kind === 'Ready') {
@@ -199,12 +206,12 @@ describe('SaveReviewMarks (P37, P38, A155)', () => {
 
   it('should return ReviewChanged and write nothing when the binding Workspace database is not the active one', async () => {
     const stack = await reviewStack(MONDAY_1700);
-    const { a } = await cardFixture(stack, { withoutMarks: true });
+    await cardFixture(stack, { withoutMarks: true });
     const { reviewDate, ...binding } = await overview(stack);
     const other = { ...binding, workspace: { ...binding.workspace, databaseName: `${binding.workspace.databaseName}-other` } };
     const before = await dumpAll(stack.factory);
 
-    const result = await stack.dailyReview.save({ kind: 'SaveReviewMarks', reviewDate, tradeId: a, binding: other, entries: xyzEntries });
+    const result = await stack.dailyReview.save({ kind: 'SaveReviewMarks', reviewDate, binding: other, entries: xyzEntries });
 
     expect(result).toEqual({ kind: 'ReviewChanged' });
     expect(await dumpAll(stack.factory)).toEqual(before);
@@ -214,12 +221,12 @@ describe('SaveReviewMarks (P37, P38, A155)', () => {
 describe('write gate', () => {
   it('should return RuntimeNotWritable and write nothing when the mutation-boundary readiness recheck fails', async () => {
     const stack = await reviewStack(MONDAY_1700);
-    const { a } = await cardFixture(stack, { withoutMarks: true });
+    await cardFixture(stack, { withoutMarks: true });
     const { reviewDate, ...binding } = await overview(stack);
     stack.testHost.fail(['inventory']);
     const before = await dumpAll(stack.factory);
 
-    expect(await stack.dailyReview.save({ kind: 'SaveReviewMarks', reviewDate, tradeId: a, binding, entries: xyzEntries })).toEqual(
+    expect(await stack.dailyReview.save({ kind: 'SaveReviewMarks', reviewDate, binding, entries: xyzEntries })).toEqual(
       expect.objectContaining({ kind: 'RuntimeNotWritable', runtimeReadiness: 'RecoveryOnly', failedChecks: [{ check: 'inventory', reason: 'InventoryMissing' }] }),
     );
     expect(await dumpAll(stack.factory)).toEqual(before);

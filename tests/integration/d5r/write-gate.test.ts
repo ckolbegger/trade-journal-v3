@@ -25,10 +25,10 @@ async function failedHost() {
 
 describe('I5R.6 Write gate', () => {
   it('should return RuntimeNotWritable from SaveReviewMarks for a Mark and for an acknowledgment, leave the dump unchanged, and still open the Review', async () => {
-    const { d, recovery, trades, opened, before } = await failedHost();
+    const { d, recovery, opened, before } = await failedHost();
 
-    const marks = await recovery.DailyReview.save({ kind: 'SaveReviewMarks', reviewDate: opened.reviewDate, tradeId: trades.a, binding: opened.binding, entries: [initialMark('XYZ', MONDAY, '52.00')] });
-    const acknowledgment = await recovery.DailyReview.save({ kind: 'SaveReviewMarks', reviewDate: opened.reviewDate, tradeId: trades.c, binding: opened.binding, entries: [unavailable('DEF', MONDAY, 'No quote available.')] });
+    const marks = await recovery.DailyReview.save({ kind: 'SaveReviewMarks', reviewDate: opened.reviewDate, binding: opened.binding, entries: [initialMark('XYZ', MONDAY, '52.00')] });
+    const acknowledgment = await recovery.DailyReview.save({ kind: 'SaveReviewMarks', reviewDate: opened.reviewDate, binding: opened.binding, entries: [unavailable('DEF', MONDAY, 'No quote available.')] });
 
     expect(marks).toEqual(notWritable);
     expect(acknowledgment).toEqual(notWritable);

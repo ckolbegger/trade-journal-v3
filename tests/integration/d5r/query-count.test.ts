@@ -192,7 +192,7 @@ describe('T5R.13 query count: the Review open and the Marks save', () => {
       intention: { kind: 'RecordInitialManualMark', price: '51' },
     });
     // The Missing Review-date Mark first, so the Action save below reaches a Trade as its next step.
-    const filled = await app.DailyReview.save({ kind: 'SaveReviewMarks', reviewDate: REVIEW_DATE, tradeId: tradeIds[2]!, binding: (await open()).binding, entries: [initial(REVIEW_DATE)] });
+    const filled = await app.DailyReview.save({ kind: 'SaveReviewMarks', reviewDate: REVIEW_DATE, binding: (await open()).binding, entries: [initial(REVIEW_DATE)] });
     expect(filled.kind).toBe('MarksSaved');
     // A Trade Action save, counted; the Review now holds an Action, as it does for the Marks save after it. It is saved on
     // the Trade with the Outstanding Debt, so the next Trade it reads back has none, as the Marks card has none: a Debt
@@ -205,7 +205,7 @@ describe('T5R.13 query count: the Review open and the Marks save', () => {
     // n earlier sessions of the Missing Instrument, saved from its Trade's card.
     const entries = missingDates.slice(1, 1 + n).map(initial);
     const { binding } = await open();
-    const marks = await countRequests(() => app.DailyReview.save({ kind: 'SaveReviewMarks', reviewDate: REVIEW_DATE, tradeId: tradeIds[2]!, binding, entries }), { transactions: true });
+    const marks = await countRequests(() => app.DailyReview.save({ kind: 'SaveReviewMarks', reviewDate: REVIEW_DATE, binding, entries }), { transactions: true });
     expect(marks.result.kind).toBe('MarksSaved');
     const saved = parts(marks.requests);
 

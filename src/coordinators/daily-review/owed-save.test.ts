@@ -118,14 +118,14 @@ describe('ResolveReviewDebt on an owed-reflection card', () => {
 describe('SaveReviewMarks across the walk and the group', () => {
   it('should return the T-M card as the next step after a Marks save when the walk is done and its Close Review is still due', async () => {
     const fixture = await closedTradeReviewFixture();
-    const { stack, trades } = fixture;
+    const { stack } = fixture;
     const review = await openTuesday(fixture);
     const marks = review.families.find((family) => family.family === 'Marks');
     const row = marks?.family === 'Marks' ? marks.today.find((candidate) => candidate.instrumentKey === 'XYZ') : undefined;
     if (!row) throw new Error('no XYZ row');
     const entries = [{ key: { instrumentKey: 'XYZ', tradingDate: row.tradingDate }, expectedRevision: row.resolutionRevision, intention: { kind: 'CorrectMark' as const, price: '52.50', reason: 'A better quote.' } }];
 
-    const result = await stack.dailyReview.save({ kind: 'SaveReviewMarks', reviewDate: review.reviewDate, tradeId: trades.A!, binding: review.binding, entries });
+    const result = await stack.dailyReview.save({ kind: 'SaveReviewMarks', reviewDate: review.reviewDate, binding: review.binding, entries });
 
     if (result.kind !== 'MarksSaved' || result.review.kind !== 'Ready') throw new Error(`expected a Ready MarksSaved, got ${result.kind}`);
     const { card } = await owedCardOf(fixture, 'M');
