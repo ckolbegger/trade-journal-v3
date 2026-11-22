@@ -715,7 +715,9 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     const labels = await labelsOf(summary);
     const valued = found.derivation.kind === 'Derived' && found.integrity.kind === 'Derived' ? await valueTrade(read, analysis, { factsAtClose: true }) : undefined;
     const entry: EligibleTrade = valued?.kind === 'Valued' ? { ...found, valuation: valued } : found;
-    const { item, valuation } = reviewItem(entry);
+    // The Review Date's Actions and, in the same snapshot, this Trade's earlier ones: its most recent is the overview's last Action (P168).
+    const actions = await deps.journal.queryActions({ reviewDate, tradeId: analysis.tradeId });
+    const { item, valuation } = reviewItem(entry, lastActionsOf(actions.earlier ?? []).get(analysis.tradeId));
     // Facts that cannot be replayed have no figures.
     const figures = valuation ? figuresOf(analysis, valuation) : {};
     const settlement = settlementItems([{ valuation }]);
@@ -723,7 +725,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     // A254: the Trade's replay to the Review Date, the read session's date; the whole-lifetime derivation is the integrity one.
     const replayed = found.integrity.kind === 'Derived' && analysis.positionChanges.length > 0 ? await assembleReplay(deps, analysis, found.integrity, read, { withJournal: false }) : undefined;
     const replay = replayed && !('kind' in replayed) ? replayed : undefined;
-    const saved = (await deps.journal.queryActions({ reviewDate })).actions[analysis.tradeId];
+    const saved = actions.actions[analysis.tradeId];
     // The Trade's Outstanding Debt, each classified against the closes around the Review Date (A63).
     const outstanding = await boundDebts(analysis.tradeId, request.binding);
     if (!outstanding) return { kind: 'ReviewChanged' };

@@ -240,3 +240,41 @@ describe('open: the Journal read (P168)', () => {
     expect(four).toEqual(two);
   }, 60_000);
 });
+
+describe('getTrade: the card attention (P168, A305)', () => {
+  async function exitingTrade() {
+    const stack = await reviewStack(MONDAY_1700);
+    const planned = await stack.confirm({ symbol: 'ABC', shares: '100', entry: '30.00', stop: '28.00', target: '36.00', planTime: '2026-10-05T13:00:00Z' });
+    await stack.fill(planned, '2026-10-05T14:00:00Z', '100', '30.00');
+    await stack.saveMark('ABC', '31.00');
+    await stack.saveAction(planned.tradeId, 'Hold', '2026-10-08');
+    await stack.saveAction(planned.tradeId, 'Exit', '2026-10-09');
+    // Saved after the Review Date, so it is not an earlier Action.
+    await stack.saveAction(planned.tradeId, 'Hold', '2026-10-13');
+    const opened = await open(stack);
+    if (opened.kind !== 'Ready') throw new Error(`expected Ready, got ${opened.kind}`);
+    return { stack, opened, tradeId: planned.tradeId };
+  }
+
+  it('should give the card the same ExitNotCarriedOut band and last Action as the overview', async () => {
+    const { stack, opened, tradeId } = await exitingTrade();
+    const overview = walk(opened).find((t) => t.tradeId === tradeId)!;
+
+    const card = await stack.dailyReview.getTrade({ reviewDate: opened.reviewDate, tradeId, binding: opened.binding });
+
+    if (card.kind !== 'Ready') throw new Error(`expected Ready, got ${card.kind}`);
+    expect(overview.band).toBe('ExitNotCarriedOut');
+    expect(card.trade.attention.band).toBe('ExitNotCarriedOut');
+    expect(card.trade.attention.lastAction).toEqual(overview.lastAction);
+    expect(card.trade.attention.lastAction).toMatchObject({ reviewDate: '2026-10-09', action: 'Exit' });
+  }, 60_000);
+
+  it('should read the Trade earlier Actions in one journalEntries read through byAnchorTrade', async () => {
+    const { stack, opened, tradeId } = await exitingTrade();
+
+    const { result, requests } = await countRequests(() => stack.dailyReview.getTrade({ reviewDate: opened.reviewDate, tradeId, binding: opened.binding }));
+
+    expect(result.kind).toBe('Ready');
+    expect(requests.filter((r) => r.store === 'journalEntries')).toEqual([{ on: 'index', store: 'journalEntries', index: 'byAnchorTrade', method: 'getAll' }]);
+  }, 60_000);
+});

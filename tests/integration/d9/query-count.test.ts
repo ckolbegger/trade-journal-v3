@@ -27,7 +27,7 @@ const REPLAY = { 'journalDebts.getAll': 1, 'journalDeclines.getAll': 1, 'journal
 const OPEN = { 'journalDebts.getAll': 1, 'journalDefinitions.getAll': 1, 'journalEntries.getAll': 1, 'journalObligations.getAll': 1, 'journalTypes.getAll': 1, 'meta.get': 14, 'observations.getAll': 4, 'trades.getAll': 2 };
 // getTrade's card of that Trade: its own reads, with 'observations.getAll' 3 being the date-wide read plus one series read per Instrument
 // of the Trade (the Underlying and the call), the replay's only addition; no Journal narrative read.
-const CARD = { 'catalog.getAll': 1, 'journalDebts.getAll': 1, 'journalDefinitions.getAll': 2, 'journalObligations.getAll': 1, 'journalTypes.getAll': 1, 'meta.get': 17, 'observations.getAll': 3, 'trades.getAll': 2 };
+const CARD = { 'catalog.getAll': 1, 'journalDebts.getAll': 1, 'journalDefinitions.getAll': 2, 'journalEntries.getAll': 1, 'journalObligations.getAll': 1, 'journalTypes.getAll': 1, 'meta.get': 17, 'observations.getAll': 3, 'trades.getAll': 2 };
 
 describe('I9.6 Query counts (AC-PERF-001, cumulative)', () => {
   it('I9.6 should keep replayTrade at D8R requests, add one series read per Instrument to getTrade and leave open unchanged', { timeout: 120_000 }, async () => {
@@ -54,7 +54,7 @@ describe('I9.6 Query counts (AC-PERF-001, cumulative)', () => {
     expect(observations(open.requests)).toEqual([DATE_WIDE, DATE_WIDE, SERIES, SERIES]);
 
     // getTrade: the same requests as before the replay, plus one series read per Instrument (the Underlying and the call), and no
-    // Journal narrative read for it: the card's replay places no Journal items.
+    // Journal narrative read for it: the card's replay places no Journal items. The one journalEntries read is the Trade's earlier Actions (P168, R2).
     const cardApp = await fresh(openApp);
     const opened = await cardApp.DailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: MON_1116_1700 });
     if (opened.kind !== 'Ready') throw new Error(`open: ${opened.kind}`);
@@ -63,7 +63,7 @@ describe('I9.6 Query counts (AC-PERF-001, cumulative)', () => {
     expect(card.result.trade.replay).toBeTruthy();
     expect(observations(card.requests).filter((r) => r.on === 'index' && r.index === 'byInstrumentDate' && r.method === 'getAll')).toEqual([SERIES, SERIES]);
     expect(tallyOf(card.requests)).toEqual(CARD);
-    expect(card.requests.some((r) => r.store === 'journalEntries' || r.store === 'journalDeclines')).toBe(false);
+    expect(card.requests.filter((r) => r.store === 'journalEntries' || r.store === 'journalDeclines')).toEqual([{ on: 'index', store: 'journalEntries', index: 'byAnchorTrade', method: 'getAll' }]);
   });
 });
 

@@ -291,10 +291,12 @@ export type OutstandingDebtPage = {
 };
 
 // Every Daily Trade Review Action saved for one Review Date; with `since`, also the Actions of the Review Dates from `since`
-// to the day before it, read in the same snapshot.
+// to the day before it, read in the same snapshot. With `tradeId`, the same snapshot instead reads that Trade's Entries through
+// its own index and returns its Actions before the Review Date.
 export interface ReviewDateQuery {
   readonly reviewDate: string;
   readonly since?: string;
+  readonly tradeId?: string;
 }
 
 // An answer as saved, with the option label from the Entry's own definition snapshot.

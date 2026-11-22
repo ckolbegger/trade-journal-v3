@@ -534,19 +534,22 @@ export function createJournal(deps: JournalDeps): Journal {
 
   // One range read over the obligation keys of the Review Date finds every Action (D4 A38). With `since`, the same snapshot also
   // reads, through the obligation index, the Actions of the Review Dates from `since` to the day before (D9.5 P168).
-  async function queryActions(reviewDate: string, since?: string): Promise<ReviewDateActions> {
+  async function queryActions(reviewDate: string, since?: string, tradeId?: string): Promise<ReviewDateActions> {
     const dayBefore = new Date(Date.parse(`${reviewDate}T00:00:00Z`) - 86_400_000).toISOString().slice(0, 10);
     const range = IDBKeyRange.bound(['DailyTradeReview', reviewDate, ''], ['DailyTradeReview', reviewDate, '\uffff']);
+    // The earlier Entries: one Trade's through its index, or a span of Review Dates through the obligation index.
+    const earlierEntries = async (tx: { getAllFromIndex(store: 'journalEntries', index: string, query: IDBValidKey | IDBKeyRange): Promise<unknown[]> }) => {
+      if (tradeId !== undefined) return tx.getAllFromIndex('journalEntries', 'byAnchorTrade', tradeId);
+      if (since === undefined) return undefined;
+      return tx.getAllFromIndex('journalEntries', 'byObligation', IDBKeyRange.bound(['DailyTradeReview', since < dayBefore ? since : dayBefore, ''], ['DailyTradeReview', dayBefore, HIGH_KEY]));
+    };
     const { value } = await deps.persistence.readSnapshot(
       ['journalObligations', 'journalEntries', 'journalDefinitions', 'journalTypes', 'meta'],
       async (tx) => {
         const obligations = (await tx.getAllInRange('journalObligations', range)) as unknown as { obligationKey: string[]; outcome: { id: string } }[];
         return {
           entries: (await Promise.all(obligations.map((o) => tx.get('journalEntries', o.outcome.id)))) as unknown as StoredEntry[],
-          earlier:
-            since === undefined
-              ? undefined
-              : ((await tx.getAllFromIndex('journalEntries', 'byObligation', IDBKeyRange.bound(['DailyTradeReview', since < dayBefore ? since : dayBefore, ''], ['DailyTradeReview', dayBefore, HIGH_KEY]))) as unknown as StoredEntry[]),
+          earlier: (await earlierEntries(tx)) as unknown as StoredEntry[] | undefined,
           definitions: (await tx.getAll('journalDefinitions')) as unknown as EntryDefinitionRecord[],
           types: (await tx.getAll('journalTypes')) as unknown as JournalTypeRecord[],
           meta: (await tx.get('meta', 'journal')) as JournalMeta | undefined,
@@ -557,7 +560,11 @@ export function createJournal(deps: JournalDeps): Journal {
     const labels = new Map(value.types.map((t) => [t.productKey, t.label]));
     const actions: Record<string, DailyAction> = {};
     for (const entry of value.entries) actions[entry.anchor.tradeId] = dailyAction(entry, definitions, labels);
-    const earlier = value.earlier?.filter((entry) => entry.entryTypeKey === 'entry-type.daily-trade-review').map((entry) => historyActionOf(entry, definitions, labels)).sort(byDateThenTrade);
+    const earlier = value.earlier
+      ?.filter((entry) => entry.entryTypeKey === 'entry-type.daily-trade-review')
+      .map((entry) => historyActionOf(entry, definitions, labels))
+      .filter((action) => tradeId === undefined || action.reviewDate < reviewDate)
+      .sort(byDateThenTrade);
     return { kind: 'Actions', reviewDate, actions, ...(earlier && { earlier }), snapshot: { journalRevision: value.meta?.journalRevision ?? 0 } };
   }
 
@@ -670,7 +677,7 @@ export function createJournal(deps: JournalDeps): Journal {
   }
 
   const journal: Journal = {
-    queryActions: ({ reviewDate, since }) => queryActions(reviewDate, since),
+    queryActions: ({ reviewDate, since, tradeId }) => queryActions(reviewDate, since, tradeId),
     queryActionHistory,
 
     async save(command) {
