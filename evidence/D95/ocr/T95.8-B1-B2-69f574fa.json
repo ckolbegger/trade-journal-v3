@@ -1,0 +1,118 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 0,
+    "total_tokens": 53901,
+    "input_tokens": 52924,
+    "output_tokens": 977,
+    "cache_read_tokens": 4992,
+    "elapsed": "29s"
+  },
+  "tool_calls": {
+    "total": 8,
+    "by_tool": {
+      "code_search": 2,
+      "file_read": 6
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/coordinators/daily-review/daily-review.ts",
+        "src/coordinators/daily-review/decisions.test.ts",
+        "src/coordinators/daily-review/decisions.ts"
+      ]
+    }
+  ],
+  "session_id": "b38d819c-0978-4cb4-b93d-98102e2c1e08",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "b38d819c-0978-4cb4-b93d-98102e2c1e08",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "edaa9cc6^",
+      "requested_head": "69f574fa",
+      "resolved_base": "9d25ddef8930ab50c3341b0e4550b15db1ed67ab",
+      "resolved_head": "69f574fa16a7551474f011eeb972e1759ae19eea",
+      "exact_range": "9d25ddef8930ab50c3341b0e4550b15db1ed67ab..69f574fa16a7551474f011eeb972e1759ae19eea",
+      "source_artifact_sha256": "ace33ba4179cbc7dd1382247bae1d3f8ee67385a8df1b0661bf69e2394b3661c"
+    },
+    "execution": {
+      "ocr_version": "v1.14.1",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "7c35fcec1a48c206aa7f9c67cd648e8bc4e4336db7c31bbf3b49d32678364eaf",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "f7483fbbbb98995bfe91db4386bd66065c5aa7c81cc0f7342f2e4bdcd54b71b5"
+        },
+        {
+          "item_id": "8bbf733188311e938d511cd65adf3da92c62c00d73e1f6d46619cb9bcb40ab2c",
+          "path": "src/coordinators/daily-review/decisions.test.ts",
+          "fingerprint": "b6149b145de1f32e912822bf47685b06f48a6121e95e20e7d9dec269988041ef"
+        },
+        {
+          "item_id": "acac23e6436518e951857eb06c5356c02711071fee78621c410c155cb364774c",
+          "path": "src/coordinators/daily-review/decisions.ts",
+          "fingerprint": "e299f5263bfb274be810028d1465cabade178c34b3df98c72a8fc5f95fb77090"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "7c35fcec1a48c206aa7f9c67cd648e8bc4e4336db7c31bbf3b49d32678364eaf",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "f7483fbbbb98995bfe91db4386bd66065c5aa7c81cc0f7342f2e4bdcd54b71b5"
+        },
+        {
+          "item_id": "8bbf733188311e938d511cd65adf3da92c62c00d73e1f6d46619cb9bcb40ab2c",
+          "path": "src/coordinators/daily-review/decisions.test.ts",
+          "fingerprint": "b6149b145de1f32e912822bf47685b06f48a6121e95e20e7d9dec269988041ef"
+        },
+        {
+          "item_id": "acac23e6436518e951857eb06c5356c02711071fee78621c410c155cb364774c",
+          "path": "src/coordinators/daily-review/decisions.ts",
+          "fingerprint": "e299f5263bfb274be810028d1465cabade178c34b3df98c72a8fc5f95fb77090"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "75c07de7a4b5fac2efa96950643945def65718f01488d8874de9bb2ccf71f996",
+          "path": "evidence/D95/tdd-log/T95.8-B1.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "d4f221df39c01246d4b81803be3b7eb1457084edddb571ac8bd0a5a3d4ccdb36",
+          "path": "evidence/D95/tdd-log/T95.8-B2.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 28534
+  }
+}
