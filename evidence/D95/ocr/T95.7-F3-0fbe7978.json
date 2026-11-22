@@ -1,0 +1,1041 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 81 selected item(s).",
+  "summary": {
+    "files_reviewed": 81,
+    "comments": 0,
+    "total_tokens": 695626,
+    "input_tokens": 689702,
+    "output_tokens": 5924,
+    "cache_read_tokens": 123008,
+    "elapsed": "57s"
+  },
+  "tool_calls": {
+    "total": 87,
+    "by_tool": {
+      "code_search": 25,
+      "file_find": 5,
+      "file_read": 55,
+      "file_read_diff": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "D1 end-to-end tests and support",
+      "files": [
+        "e2e/d1/integrity-blocked.spec.ts",
+        "e2e/d1/no-save.spec.ts",
+        "e2e/d1/offline.spec.ts",
+        "e2e/d1/onboarding.spec.ts",
+        "e2e/d1/plan.spec.ts",
+        "e2e/d1/readiness.spec.ts",
+        "e2e/d1/recovery-only.spec.ts",
+        "e2e/d1/responsive-a11y.spec.ts",
+        "e2e/d1/support.ts",
+        "e2e/d1/update.spec.ts"
+      ]
+    },
+    {
+      "label": "D2 end-to-end tests and support",
+      "files": [
+        "e2e/d2/after-save.spec.ts",
+        "e2e/d2/cockpit-layout.spec.ts",
+        "e2e/d2/integrity.spec.ts",
+        "e2e/d2/migration.spec.ts",
+        "e2e/d2/narrow.spec.ts",
+        "e2e/d2/no-save.spec.ts",
+        "e2e/d2/responsive-a11y.spec.ts",
+        "e2e/d2/runtime-failure.spec.ts",
+        "e2e/d2/support.ts",
+        "e2e/d2/ui-alignment.spec.ts"
+      ]
+    },
+    {
+      "label": "D4 end-to-end tests and support",
+      "files": [
+        "e2e/d4/no-save.spec.ts",
+        "e2e/d4/responsive-a11y.spec.ts",
+        "e2e/d4/runtime-failure.spec.ts",
+        "e2e/d4/support.ts",
+        "e2e/d4/update.spec.ts"
+      ]
+    },
+    {
+      "label": "D5 end-to-end tests and support",
+      "files": [
+        "e2e/d5/faults.spec.ts",
+        "e2e/d5/no-save.spec.ts",
+        "e2e/d5/responsive.spec.ts",
+        "e2e/d5/support.ts",
+        "e2e/d5/update.spec.ts"
+      ]
+    },
+    {
+      "label": "D5R durability, responsive UI, and slider tests",
+      "files": [
+        "e2e/d5r/durability.spec.ts",
+        "e2e/d5r/responsive-a11y.spec.ts",
+        "e2e/d5r/sliders.spec.ts"
+      ]
+    },
+    {
+      "label": "D6 end-to-end tests and support",
+      "files": [
+        "e2e/d6/no-save.spec.ts",
+        "e2e/d6/responsive-a11y.spec.ts",
+        "e2e/d6/runtime-failure.spec.ts",
+        "e2e/d6/support.ts"
+      ]
+    },
+    {
+      "label": "D7 end-to-end tests and support",
+      "files": [
+        "e2e/d7/no-save.spec.ts",
+        "e2e/d7/payoff-chart-layout.spec.ts",
+        "e2e/d7/responsive-a11y.spec.ts",
+        "e2e/d7/runtime-failure.spec.ts",
+        "e2e/d7/support.ts"
+      ]
+    },
+    {
+      "label": "D7P layout tests",
+      "files": [
+        "e2e/d7p/layout.spec.ts"
+      ]
+    },
+    {
+      "label": "D7S end-to-end tests and support",
+      "files": [
+        "e2e/d7s/conditions.spec.ts",
+        "e2e/d7s/entry-beyond-stop.spec.ts",
+        "e2e/d7s/responsive-a11y.spec.ts",
+        "e2e/d7s/support.ts"
+      ]
+    },
+    {
+      "label": "D8 backup, restore, and shell tests",
+      "files": [
+        "e2e/d8/after-restore.spec.ts",
+        "e2e/d8/backup.spec.ts",
+        "e2e/d8/offline.spec.ts",
+        "e2e/d8/recovery-only.spec.ts",
+        "e2e/d8/responsive-a11y.spec.ts",
+        "e2e/d8/restore.spec.ts",
+        "e2e/d8/shell.spec.ts",
+        "e2e/d8/support.ts"
+      ]
+    },
+    {
+      "label": "D8P history and journal tests",
+      "files": [
+        "e2e/d8p/history.spec.ts",
+        "e2e/d8p/journal-final-session.spec.ts",
+        "e2e/d8p/lot-matches-fit.spec.ts",
+        "e2e/d8p/responsive-a11y.spec.ts",
+        "e2e/d8p/states.spec.ts",
+        "e2e/d8p/support.ts"
+      ]
+    },
+    {
+      "label": "D8R naming and state tests",
+      "files": [
+        "e2e/d8r/names.spec.ts",
+        "e2e/d8r/responsive-a11y.spec.ts",
+        "e2e/d8r/states.spec.ts",
+        "e2e/d8r/support.ts"
+      ]
+    },
+    {
+      "label": "D9 meter and review tests",
+      "files": [
+        "e2e/d9/meter-a11y.spec.ts",
+        "e2e/d9/meter-detail.spec.ts",
+        "e2e/d9/review.spec.ts",
+        "e2e/d9/states.spec.ts",
+        "e2e/d9/support.ts"
+      ]
+    },
+    {
+      "label": "D9AR chart, overlay, and review tests",
+      "files": [
+        "e2e/d9ar/chart.spec.ts",
+        "e2e/d9ar/overlay.spec.ts",
+        "e2e/d9ar/responsive-a11y.spec.ts",
+        "e2e/d9ar/review.spec.ts",
+        "e2e/d9ar/states.spec.ts",
+        "e2e/d9ar/support.ts"
+      ]
+    },
+    {
+      "label": "D9R2 draft, editor, and history tests",
+      "files": [
+        "e2e/d9r2/drafts.spec.ts",
+        "e2e/d9r2/editor.spec.ts",
+        "e2e/d9r2/history.spec.ts",
+        "e2e/d9r2/responsive-a11y.spec.ts"
+      ]
+    },
+    {
+      "label": "UI screenshot tooling",
+      "files": [
+        "tools/ui-screenshots.ts"
+      ]
+    }
+  ],
+  "session_id": "20207bfe-6269-41bc-b28f-ce15def37ef9",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "20207bfe-6269-41bc-b28f-ce15def37ef9",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "0fbe7978",
+      "resolved_base": "895399f842a1d1dcd1213477db8e10dabbf509d6",
+      "resolved_head": "0fbe797823725db9dde3393bc77159498d095816",
+      "exact_range": "895399f842a1d1dcd1213477db8e10dabbf509d6..0fbe797823725db9dde3393bc77159498d095816",
+      "source_artifact_sha256": "bd8e1f7ad5b3caae7ea9840fea5cc88b59414f13e7032c9407562bcc93e10e77"
+    },
+    "execution": {
+      "ocr_version": "v1.14.1",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "001642d35c9cff107e49edc93a963642e592ca6c0fe7ac6604c26b7f2b539427",
+          "path": "e2e/d9/states.spec.ts",
+          "fingerprint": "4c2fb7f5b881e174d96c00d193217103a53ead837cbb8813f809c7a28b5f73a6"
+        },
+        {
+          "item_id": "03305087f493c43c473009ae76919a3f1406cbe14fff7737a0abf254ad6a9f4b",
+          "path": "e2e/d2/support.ts",
+          "fingerprint": "638a39264ee934eed659fff14ccc8830f1f6c34b3fce87be75141127cbdf762d"
+        },
+        {
+          "item_id": "0cdf0f0f9227071e919b0f5f893505270dc662b1cc230de3ed911ed1ddbfe33b",
+          "path": "e2e/d1/recovery-only.spec.ts",
+          "fingerprint": "5f4425070053adf316d1b7bcfc34bdc676931e366df550c50a1785bf121e8b7a"
+        },
+        {
+          "item_id": "0cf6f8c81d90b1b214f198a17ea555ace5105abe5cc4bd17cda5135f20f9c102",
+          "path": "e2e/d8r/states.spec.ts",
+          "fingerprint": "118b28fb7d259a1a73ed014871fcaa120b5cba5c77945d24cb3ec3ed83bf66fc"
+        },
+        {
+          "item_id": "0f4aa84758c10defc83e15772fff0753dc16e94eaf609bc7de67c6ee942fd4ba",
+          "path": "e2e/d5r/responsive-a11y.spec.ts",
+          "fingerprint": "44a178830317f3fd4f16969262fba8cf98f8237b511e42c97fc206f9927551e6"
+        },
+        {
+          "item_id": "12bcbda6c6541668cfc0ce11d0f3859f3f1fe4edcc1f35ca8c0f0eec4542281e",
+          "path": "e2e/d8/recovery-only.spec.ts",
+          "fingerprint": "1bbf204ebd3d247fac7312be94052b4376f89d44a9d7c71a7e3a610d53894e10"
+        },
+        {
+          "item_id": "1afde35a58e3e0e9a9f6507d22fcbd3f3e2aca36a344bf1896873e07fec7ad17",
+          "path": "e2e/d8p/support.ts",
+          "fingerprint": "2da47995f8c304dbe30104b57e078272d6645cf8810c063f368269c2e0100924"
+        },
+        {
+          "item_id": "249b128cca1756f41aa5a1ca7b58e3ca2a8ca2b7d9585e7a4e2cd167c3424a9d",
+          "path": "e2e/d1/integrity-blocked.spec.ts",
+          "fingerprint": "4c881681dde410ba6da1be6d937bf509db1abe2403ed1ec682978d4a59291d71"
+        },
+        {
+          "item_id": "253edd2e4c9379ff0f7bf8091b38385efcbb33a7d8ab63540d9b8cc5be719edc",
+          "path": "e2e/d2/no-save.spec.ts",
+          "fingerprint": "9f6c54680cc2a05755347f894d243444ffb3d767ae91b73011836c683c3f20f5"
+        },
+        {
+          "item_id": "27f3390061b6cdb3600498737bc1271a6f24a4d4872dd9dc35279bf2d8dbf5d4",
+          "path": "e2e/d5/responsive.spec.ts",
+          "fingerprint": "322c0de6aa6584551c465baccb0d0d615e077d64bd52d919cfb32f868bb74d61"
+        },
+        {
+          "item_id": "2adcb3c7b02dfb0f11a29d0aea7dec7ea0c3d1d28b92bd3eb0dddee5cf39f6eb",
+          "path": "e2e/d8r/names.spec.ts",
+          "fingerprint": "3ab2403383a57627c1b521c0f176c74ab65004432f1b5b9c3b95bbbce56459e5"
+        },
+        {
+          "item_id": "2b006169545fee1d4cde7e693d87fa94c8d3466dbaba4d54af4f6dff14f6ff20",
+          "path": "e2e/d4/no-save.spec.ts",
+          "fingerprint": "3e61163313b941314409d0002761d43adff861ef6cfbbde0acdd56bedebe0b48"
+        },
+        {
+          "item_id": "2d9979a6c45d98c7a2326a03ec92b58665fbd6582020f6e78b52fba13850add7",
+          "path": "e2e/d4/update.spec.ts",
+          "fingerprint": "293489fd95cabdee961ebe403f64412a2edd33e9977e46c906607bbc4e71fd16"
+        },
+        {
+          "item_id": "30273611721b694304fcba1e627fe765af668fd478e0661a0cc14f1ce1b4a3ab",
+          "path": "e2e/d8p/states.spec.ts",
+          "fingerprint": "532ff5a8782ac1729e16c92e600c86f77918db496680b655a3ce658bd00de50d"
+        },
+        {
+          "item_id": "347917e3fc99ea10df3899c14b251305db47c31ef851de4417dcd15cdba0c770",
+          "path": "e2e/d9/review.spec.ts",
+          "fingerprint": "4bafae83e1362ecdaffe12a8d7e98d8a6b3679a450dcd64fecb7fe602e6fa30d"
+        },
+        {
+          "item_id": "35f705e28b89183ef7a49c76b0290a9fcaf1e10bd9454be251c3ff8cd0154be7",
+          "path": "e2e/d5/no-save.spec.ts",
+          "fingerprint": "9bd35003f12cb2c1529a552588687b454eac0a38784d5c9f22619e4aadcd189f"
+        },
+        {
+          "item_id": "369ac85f9dd63031ba62f4ed3dde5347e4f21f38f96f2f74cba90666800120aa",
+          "path": "e2e/d9/meter-detail.spec.ts",
+          "fingerprint": "e987dfd98ded16f88404c15a56cd10f7f312e7a0f50133d9eae5858a3bc9a45a"
+        },
+        {
+          "item_id": "3df9978f80fb8df171ba8e17242db730208f672e38c000fe3710ec250b5cf2b3",
+          "path": "e2e/d5/support.ts",
+          "fingerprint": "9e28df818c964893654ccd939f413bc7d3f2b470a572906d8173f0ab89863518"
+        },
+        {
+          "item_id": "42b58eea0e5f000f63b6a9c3c24ac44a84b91196ca48804afea34e6a7d81e1e1",
+          "path": "e2e/d6/support.ts",
+          "fingerprint": "92afb9ab732c30693ad75ed0525cc2d932644863b5fa6e20ee4ae23d1967e644"
+        },
+        {
+          "item_id": "4488926fcb35a097b0cfd1244ead419750c5db705f05986ef2142be7cff83cc2",
+          "path": "e2e/d8/support.ts",
+          "fingerprint": "7c17f44afc4fb2771fde540ab3f613f80b4c5186a1ffd1df2b8a89c94898f68b"
+        },
+        {
+          "item_id": "49ad97a3c181c65873b9cdb94f891e8568a88a72186d154fb0b4930f1edf79a7",
+          "path": "e2e/d9ar/states.spec.ts",
+          "fingerprint": "aec758b32fc786fe4201be25daaaa6ca0ebeefe9341ebfb54b5983b23e16ad4b"
+        },
+        {
+          "item_id": "4cf80cd4f93db1111cad9410f18fcd4baae047865e777e269c718c3d5a3e6005",
+          "path": "e2e/d6/runtime-failure.spec.ts",
+          "fingerprint": "daaf4833ef9e42f426fbefd17a57d81ccde1aeea1f0cb93fb1bd17a9cb3dd388"
+        },
+        {
+          "item_id": "4d17d3d9a06ea9416958779174ef4cd22dbe730d43adc4473f621fdc3d1c2bbc",
+          "path": "e2e/d7/payoff-chart-layout.spec.ts",
+          "fingerprint": "e5f49e686feb1a9559c652ad8e41340a06e40574ad27ba7a60ff49c2e4b618c7"
+        },
+        {
+          "item_id": "4e995098d3a2739c27d7614956fdc9064c2736a0d40ad8a2991a03a83a3e6552",
+          "path": "e2e/d7/responsive-a11y.spec.ts",
+          "fingerprint": "9f50c199cf3f3cd4a3e9d828208ac6944d14838ecff495a8a060beada446a39b"
+        },
+        {
+          "item_id": "4eedd2cab2d119b3ea18b8f8f749ef0005ce4fc073d8b544da64e947fd8793a7",
+          "path": "e2e/d1/update.spec.ts",
+          "fingerprint": "4e4647515992ce8caa38b40719585713808c59432e9b88f2e96b0f38992ba68b"
+        },
+        {
+          "item_id": "5048aafddb13eccfd888c2aba8d52f5bff8550dde9bb24bf6b96eadc98b3a401",
+          "path": "e2e/d2/responsive-a11y.spec.ts",
+          "fingerprint": "4899c369657fefaea9e7d8d95b5c9ef54de45fe19f09f35a79f9db2c9c143485"
+        },
+        {
+          "item_id": "50d7538e00a272561ee77fda78c8cd431428935a1ccf6993defe88e1d6d67840",
+          "path": "e2e/d4/runtime-failure.spec.ts",
+          "fingerprint": "5828cf46a5816920c8f909214496bd5b74912fe63acd5dfe22e7d8f2a0e46cea"
+        },
+        {
+          "item_id": "531fac20f57110b8eb97760ac5b65e45fd295847ee0311e652b1709ffcf71625",
+          "path": "e2e/d8/offline.spec.ts",
+          "fingerprint": "cc0faa1e73de0114353e612072a3ebde5ef0a232210aaa9a98827be6ba9ebaad"
+        },
+        {
+          "item_id": "5464fc06edea169d1df80a83ea381f976f426fe99c87e4f12c1a20ff6bfdfad9",
+          "path": "e2e/d1/no-save.spec.ts",
+          "fingerprint": "47321bb92f9d4df5a914c8a712ff04ac3a1676b7a9ea228118417dda91de9551"
+        },
+        {
+          "item_id": "5aa3b7437fca46e1cfc6cec523929e224123a1800fa77dca6b850d1197f4656b",
+          "path": "e2e/d8r/responsive-a11y.spec.ts",
+          "fingerprint": "8ef6f0d2c559ed4151aff99dccd20cad69a3b7a2bbf62475f55b11a827f09d6b"
+        },
+        {
+          "item_id": "5f209135c8e20762ca05f3afecf629ca879d158200b573a4ca90f62414adc521",
+          "path": "e2e/d8/shell.spec.ts",
+          "fingerprint": "eb7a106dee2038386dce4e692ccb242976cbe3038378eebea5bab47fb5e01a1a"
+        },
+        {
+          "item_id": "68be4ef5204e10eb9dfebc518cbaf530a5d876f922947494c35445f2d60a5668",
+          "path": "e2e/d7s/entry-beyond-stop.spec.ts",
+          "fingerprint": "a160dc7568ce267e802707d7afa187033e184af08d4c23c0c60353b6dcf57176"
+        },
+        {
+          "item_id": "74e3cac69171dd6619db0d464c6813ce431b829e93f8c1b0497b2594d5192b46",
+          "path": "e2e/d1/responsive-a11y.spec.ts",
+          "fingerprint": "040c7db13ff5510e68478337ec07ad976ae137ab0cfa4259a0abfa6e8b27e1e4"
+        },
+        {
+          "item_id": "76c34d67f3ed116276490f0b5b40cf8207a6503b0ed300b65c8ba78438933203",
+          "path": "e2e/d2/runtime-failure.spec.ts",
+          "fingerprint": "4ea8dd2a7273a777229794f06b7e44daab5a869f6a26288489c200bd23bb6192"
+        },
+        {
+          "item_id": "77a09965bbc16832a6776b36503973c81fdfb4c349ef52771fbc221627efe7c5",
+          "path": "e2e/d4/support.ts",
+          "fingerprint": "45ae4611bdc456b42e15d5b4c0a3fe27e57bab75441c7c985d0eb5d97e7761ac"
+        },
+        {
+          "item_id": "784c67bce55440aeccd0e1951c397d2e1434a06a397d4bd161ecdc0aa800c042",
+          "path": "e2e/d9r2/history.spec.ts",
+          "fingerprint": "73085dfbeec505a36e4a9134c1b47b03f5870a420b0b06020680410cf32067e1"
+        },
+        {
+          "item_id": "7da074be733e6e3dcb060936f47561a3f43f6170367b45dffd798a785bd40a03",
+          "path": "e2e/d7s/support.ts",
+          "fingerprint": "d41214d87f3fbdafc84c722e3ce68801554e60e3ff28336b715aabb02ccc1bbf"
+        },
+        {
+          "item_id": "8332ef1442450b9997aabfe40988b41aa84c07aec277d347537800aad865d572",
+          "path": "e2e/d7s/conditions.spec.ts",
+          "fingerprint": "f5ea94d1dcd7517c04c6ac3879c1a80c6ee66860338fe200f0911618a1a3b1cc"
+        },
+        {
+          "item_id": "839b5d74be9dab57ce22d8164cf43a870716504e404925773518309e596f49ef",
+          "path": "e2e/d9ar/support.ts",
+          "fingerprint": "a3742584d80d756c0dd87a08267b068d55071a04a8ea88de712a3289ecb76636"
+        },
+        {
+          "item_id": "856d01bbd2e134c577d38a43ff27eb1f42ac3b5352ac113ab0dc7f3d80cc1286",
+          "path": "e2e/d7p/layout.spec.ts",
+          "fingerprint": "28ad95010c175b3e970ccc92d1abae58c74d8a43c0a31e265c2a3da55a319b6b"
+        },
+        {
+          "item_id": "8d8e421361e27cc7e23bcfbbea7f77a2b983a66b6a05fef3cea850c187cfafe3",
+          "path": "e2e/d9ar/overlay.spec.ts",
+          "fingerprint": "d831ba1e411ecc9d5f298fb31ee15e181adb69338920d10964eef854a5b5d09f"
+        },
+        {
+          "item_id": "8f03783a683fbec34a8ba6e705a726f6419576c0dba0cecbaafeceef9e8e9f76",
+          "path": "e2e/d7s/responsive-a11y.spec.ts",
+          "fingerprint": "50de2d3e2290f09521a42c193c322192617c6266cfd0f3bcce0af0df3a42fba8"
+        },
+        {
+          "item_id": "95a31d5c38b214d9a6768082236010958b34effd123344327c90142eafe1da19",
+          "path": "e2e/d2/after-save.spec.ts",
+          "fingerprint": "dcfb6290510ca344d87ce0d5497de6e4ce89f5c39a31a40ccd1fe0baa508e320"
+        },
+        {
+          "item_id": "9655575f610d6149cfe411ca43e1a5abf7ee774b9079c5428edae3d96fd2e0a1",
+          "path": "e2e/d8p/lot-matches-fit.spec.ts",
+          "fingerprint": "2aea18e3064f52f5d6dfe52f8d6e60e8571e5c08baa4e8e6e3bf70dfd1ddc4af"
+        },
+        {
+          "item_id": "999cbcdc259d3b0d415d98465318db429172f22b929bc0f50abd1a6bc1868d4a",
+          "path": "e2e/d8/responsive-a11y.spec.ts",
+          "fingerprint": "09066cedfb2b35112354f6f5098d76562ce4060d6ee19179ceec8266ec16ed55"
+        },
+        {
+          "item_id": "99c596ee1732c530a194c9499667a3a11331103a4114e4c1d962b6235c95f741",
+          "path": "e2e/d7/support.ts",
+          "fingerprint": "6c320bf10fc22b6f197253ecb55005a933d4accee86eafddf0ea601daaedfee4"
+        },
+        {
+          "item_id": "9cc5106d1828ba03cef1ef29861e251e8370bba7c94fbfd12d22e50406a4b0f1",
+          "path": "e2e/d1/onboarding.spec.ts",
+          "fingerprint": "8132cf9f71459bd699118093c3f8a21f41cd8d3662d2b855afa7902ca09e3f9b"
+        },
+        {
+          "item_id": "9e888db941aaa026b03ee9ea52c8deac995d9f8bc522c19b2caf8ec3de412ae5",
+          "path": "e2e/d7/runtime-failure.spec.ts",
+          "fingerprint": "7d0f99acb0f322ecf23180186df49e97bfb55af1956864abff8194ce1673d83d"
+        },
+        {
+          "item_id": "9ed3b8864ddb503a11ac274ee506d00c15beb42dc070cfeadfbbaa52f59fc8a2",
+          "path": "e2e/d8p/journal-final-session.spec.ts",
+          "fingerprint": "425d1e6f1951111a833280df84dbdfbce6495fedabcf7f805d8f17e39f600a16"
+        },
+        {
+          "item_id": "9ed52a747f55a25287d216a300c7b79f4473959fec25da5980f2088e892a9f62",
+          "path": "e2e/d1/plan.spec.ts",
+          "fingerprint": "aea17593ebc6654a0dee0e7a11e3cdea72a47c87c98a54998c66cab334be1a68"
+        },
+        {
+          "item_id": "9f7af3c06eb197acffdab622fd5fd97caa7a3dfc83bdfd399fecf6bbf95cd101",
+          "path": "e2e/d8p/history.spec.ts",
+          "fingerprint": "fe562ff8b1ae256fa2df801d7ab43a24ff8fb138766ec91f348c193c7149a8ec"
+        },
+        {
+          "item_id": "9fc2814396ca8fdc4b4a786543b42eb524301cfcaa0ad2260221dc91be7ee063",
+          "path": "e2e/d4/responsive-a11y.spec.ts",
+          "fingerprint": "5c15445bddc698d03cccef44e1cad083ce39f38b0e5cba9c7a6bd45a23d09b66"
+        },
+        {
+          "item_id": "a1bf924a0ca62ecd3ac021a9b4a12c4b19ea6553a58423265f42c7bef67b813d",
+          "path": "e2e/d2/integrity.spec.ts",
+          "fingerprint": "950d502b35e31013572b84f62d98a5d6ef80d07ab08914e87fcae9c5f2d919ef"
+        },
+        {
+          "item_id": "b194ba36fc8d3d6f6152cfb8ca3afe4573944cb85df750e137ded5f77d41a6c9",
+          "path": "e2e/d1/support.ts",
+          "fingerprint": "9320fe50205811d35b1ddcbe7ab8760c8efe8476169830ff3a323567a1a72df1"
+        },
+        {
+          "item_id": "b1ef12f4a657e1557835ec46386a2dd9ca533b0d816b746bf02b3f49bd31bea4",
+          "path": "e2e/d2/migration.spec.ts",
+          "fingerprint": "6b0fdfc0bdbde9e39334806032f811b0762bba0a81f1f340e9640454ae24d7b8"
+        },
+        {
+          "item_id": "b4b23da14f50682f0085169cb46d3e32bfe0a967c952d1c1bd0aea6f799fd2a2",
+          "path": "e2e/d1/offline.spec.ts",
+          "fingerprint": "64133603ed685d862a2b8fdd82a9a51f0f3d157ad0db396a3eb5e557ec173488"
+        },
+        {
+          "item_id": "b943067c61329605e5f0398305aa1254229546ede6c112e391c13ac04352d98b",
+          "path": "tools/ui-screenshots.ts",
+          "fingerprint": "657222d999ff31020a5578ffd1a20bbfb5b41bd84c42cd890800045a2882ce74"
+        },
+        {
+          "item_id": "c0d45d1b4697e441120d906b3ea33b73f9bfd5cd11afb42fb6df6e791c6c2426",
+          "path": "e2e/d2/cockpit-layout.spec.ts",
+          "fingerprint": "be83e199ecd140e83f52e3d7b81441ad5690d28dc0a1b3de4798fc3116a26054"
+        },
+        {
+          "item_id": "c2fd486111638d00f0d387a09d3b1d932d274fd2e5443262caf354d5c4d2756f",
+          "path": "e2e/d6/responsive-a11y.spec.ts",
+          "fingerprint": "7242f0b5b3e14c811b339e95159fdfa98194130644bc762b483c04524b858192"
+        },
+        {
+          "item_id": "c8a977827112ca535ecd13efd853bf945a7bc2bbe2d551b4120f8b35e136cd96",
+          "path": "e2e/d8/after-restore.spec.ts",
+          "fingerprint": "7464f63a89d8b6fef98869d9fca9d8ded38219ba4323b7c0103431bb09be0c91"
+        },
+        {
+          "item_id": "ceb6a0a7475d5fae8b65f77a60dafe24c3b2295fb0053a87dc8271232d06cbe3",
+          "path": "e2e/d5/faults.spec.ts",
+          "fingerprint": "8aa7d3ead75e1fe368e466ed9c7ceb6b7593ac302bb4f62921d06ab1c0e8cc47"
+        },
+        {
+          "item_id": "cfb5607e5664c176cf826e45eb9599e5f0b01795cc8ee6340fbbb4484a1fe5b7",
+          "path": "e2e/d8/restore.spec.ts",
+          "fingerprint": "fc5ba209b7a36a55304a1e2435487b09df206ea4463479f87d49b7b6e8e1d6bf"
+        },
+        {
+          "item_id": "d0126439061216e58eb2b1a6bab019f2d20601558a9531d4100a29b4b9c5c3f9",
+          "path": "e2e/d9/support.ts",
+          "fingerprint": "840153737e4da4bf9fcdab945681781c93ecf495b4e0aa6ef44e158e7ef81331"
+        },
+        {
+          "item_id": "d1434e10472e028ec1b56ac102f5389f58fbb8f330adf8feb83e0158d93452d5",
+          "path": "e2e/d2/narrow.spec.ts",
+          "fingerprint": "98a7e301e2f02b7e0269cad9724b6583170b04c72f95f52b8ecf61254508796c"
+        },
+        {
+          "item_id": "d325864092b7e2e39c3e315e11e806fe5ab0dd8516854e568f631ed34bd9591a",
+          "path": "e2e/d1/readiness.spec.ts",
+          "fingerprint": "1f94a2eda0c511aaab6f4c9621908c4ab65654042e0e79a111d8356b6820029c"
+        },
+        {
+          "item_id": "d3eb99946b5bb7f90658427e630f7c2515168d299467467f8bbc8ee72641f7e3",
+          "path": "e2e/d8r/support.ts",
+          "fingerprint": "8df7b2ed397ea592b521edd988579ce6de29a5771f562da288ad138a54324dbe"
+        },
+        {
+          "item_id": "d9dd7525e9f2bac9d493f5adb8147da945c3e6d6982ba0063b9952c2aa4148eb",
+          "path": "e2e/d9r2/editor.spec.ts",
+          "fingerprint": "4f5ab42a8c0b748529de75717aa7d29b2e30f153ea0a8500213d6485688e377e"
+        },
+        {
+          "item_id": "dcef9a7bd13925632483e0cc5267cb2e13cf1e8bfcd926e9f964b207a259b600",
+          "path": "e2e/d5/update.spec.ts",
+          "fingerprint": "35bd4f8a8a4e45114b5eb85621861aa5912c0def2421801579d980f5b73954bc"
+        },
+        {
+          "item_id": "e4c49e0ed402290ed042b475b5dd4de4bac2ab7a55132a63d4678f4c5b9cb1a7",
+          "path": "e2e/d8/backup.spec.ts",
+          "fingerprint": "bbae35ab68baf86bf342be970847d301284435a24e09a5f963a86fe2687fcbb7"
+        },
+        {
+          "item_id": "e630dd00330887432bb10e4974e4b1787c75858db07df4ad1ab592adab06f1eb",
+          "path": "e2e/d2/ui-alignment.spec.ts",
+          "fingerprint": "e10259bf8ff2d878a531d979be093ed3569ca13e82800e990f458cd88d8f117f"
+        },
+        {
+          "item_id": "eb2f90084ca8f9d51cd269a87f84fbb33b6d83aa289846271826d54c07ee472e",
+          "path": "e2e/d9r2/responsive-a11y.spec.ts",
+          "fingerprint": "612c6e16c7ffef27fe15f81799b46a6a7e8d44941096ada06d7b8480c9c3cfc0"
+        },
+        {
+          "item_id": "ebc9d1c2c701d17b6b1d061b466cab052ef9bc2b403b5d98ee1865f679a05db8",
+          "path": "e2e/d9ar/chart.spec.ts",
+          "fingerprint": "18056334ba0d9504ec96ffe97f3134083e0de980d4d4e0905f6a351206b343c9"
+        },
+        {
+          "item_id": "efe807094ca709ea98548a6a284f2e579157551da75e12941da6d413bd8797a6",
+          "path": "e2e/d8p/responsive-a11y.spec.ts",
+          "fingerprint": "9a08ea282cf35a533968e69214cdfcfa93df64fba6763832f2ee964b324f93d0"
+        },
+        {
+          "item_id": "f1a58c2ac82e96acd4231fa5075ffe7bd94eeb6c5d0d4069288ed6d7e6faa433",
+          "path": "e2e/d9ar/responsive-a11y.spec.ts",
+          "fingerprint": "7a81cab40a6b1dda189cf21bf0e4243ad6c46fff0aecd1e4c566366dd10b0a1f"
+        },
+        {
+          "item_id": "f1e1f9f2f6e2ce0e03d8c208ae60ff108aac95baa6e4276f2b3e97a9a6496a6a",
+          "path": "e2e/d6/no-save.spec.ts",
+          "fingerprint": "9317b62c3db9c04a9c56a1cc3c6e9376d11510219e5dd419720bc1d224de07b7"
+        },
+        {
+          "item_id": "f293e207e9d62bb3a1147b0c02824d6e01749fe2220ab94a9c11d82317c664b9",
+          "path": "e2e/d5r/durability.spec.ts",
+          "fingerprint": "54e8270a6018284f9195ed87b2ca6740fee2c5296fd46b7cae7bc8761b06191c"
+        },
+        {
+          "item_id": "f3eb411db7a53d699b2e2af6f79dd5ac9367b88b215ca32d7c9b2e270c770dfc",
+          "path": "e2e/d5r/sliders.spec.ts",
+          "fingerprint": "c7bc966654311163ad7c16828840f9ade53818fbb2036bcd2380e46e1d4ca07f"
+        },
+        {
+          "item_id": "f7406ef2881011b62532c827cd87807e71f1ffb772c241794158f993a5a0fd38",
+          "path": "e2e/d9ar/review.spec.ts",
+          "fingerprint": "3f4e1e4d4c93ab516fbb9eb8fdf38f92c91e1a8993d915045a1632102049f2cf"
+        },
+        {
+          "item_id": "fb5049ab86c884db384c1c2dd8b31d070c143c24ab67a3419eec49a392048dd4",
+          "path": "e2e/d9/meter-a11y.spec.ts",
+          "fingerprint": "ebce3da8a26492d0f72cd34d1e0656a39b85d920ca204a4796d98edc5b659943"
+        },
+        {
+          "item_id": "fed5682a5207a921ed47d1f9665bb3fd2982f5974f6ec6ead8ef25d207dbe648",
+          "path": "e2e/d9r2/drafts.spec.ts",
+          "fingerprint": "f1bc09761db208d16e12480418ca8041e0ccb86cc61b3cb44325680c59836d4a"
+        },
+        {
+          "item_id": "fffa17a0269737f7ac983fd806652d889f71f03d56012e43d61220a30d4cbf71",
+          "path": "e2e/d7/no-save.spec.ts",
+          "fingerprint": "30816a0af486a209b919afdfb702281fff545fa57efa667fd16118f671a786ba"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "001642d35c9cff107e49edc93a963642e592ca6c0fe7ac6604c26b7f2b539427",
+          "path": "e2e/d9/states.spec.ts",
+          "fingerprint": "4c2fb7f5b881e174d96c00d193217103a53ead837cbb8813f809c7a28b5f73a6"
+        },
+        {
+          "item_id": "03305087f493c43c473009ae76919a3f1406cbe14fff7737a0abf254ad6a9f4b",
+          "path": "e2e/d2/support.ts",
+          "fingerprint": "638a39264ee934eed659fff14ccc8830f1f6c34b3fce87be75141127cbdf762d"
+        },
+        {
+          "item_id": "0cdf0f0f9227071e919b0f5f893505270dc662b1cc230de3ed911ed1ddbfe33b",
+          "path": "e2e/d1/recovery-only.spec.ts",
+          "fingerprint": "5f4425070053adf316d1b7bcfc34bdc676931e366df550c50a1785bf121e8b7a"
+        },
+        {
+          "item_id": "0cf6f8c81d90b1b214f198a17ea555ace5105abe5cc4bd17cda5135f20f9c102",
+          "path": "e2e/d8r/states.spec.ts",
+          "fingerprint": "118b28fb7d259a1a73ed014871fcaa120b5cba5c77945d24cb3ec3ed83bf66fc"
+        },
+        {
+          "item_id": "0f4aa84758c10defc83e15772fff0753dc16e94eaf609bc7de67c6ee942fd4ba",
+          "path": "e2e/d5r/responsive-a11y.spec.ts",
+          "fingerprint": "44a178830317f3fd4f16969262fba8cf98f8237b511e42c97fc206f9927551e6"
+        },
+        {
+          "item_id": "12bcbda6c6541668cfc0ce11d0f3859f3f1fe4edcc1f35ca8c0f0eec4542281e",
+          "path": "e2e/d8/recovery-only.spec.ts",
+          "fingerprint": "1bbf204ebd3d247fac7312be94052b4376f89d44a9d7c71a7e3a610d53894e10"
+        },
+        {
+          "item_id": "1afde35a58e3e0e9a9f6507d22fcbd3f3e2aca36a344bf1896873e07fec7ad17",
+          "path": "e2e/d8p/support.ts",
+          "fingerprint": "2da47995f8c304dbe30104b57e078272d6645cf8810c063f368269c2e0100924"
+        },
+        {
+          "item_id": "249b128cca1756f41aa5a1ca7b58e3ca2a8ca2b7d9585e7a4e2cd167c3424a9d",
+          "path": "e2e/d1/integrity-blocked.spec.ts",
+          "fingerprint": "4c881681dde410ba6da1be6d937bf509db1abe2403ed1ec682978d4a59291d71"
+        },
+        {
+          "item_id": "253edd2e4c9379ff0f7bf8091b38385efcbb33a7d8ab63540d9b8cc5be719edc",
+          "path": "e2e/d2/no-save.spec.ts",
+          "fingerprint": "9f6c54680cc2a05755347f894d243444ffb3d767ae91b73011836c683c3f20f5"
+        },
+        {
+          "item_id": "27f3390061b6cdb3600498737bc1271a6f24a4d4872dd9dc35279bf2d8dbf5d4",
+          "path": "e2e/d5/responsive.spec.ts",
+          "fingerprint": "322c0de6aa6584551c465baccb0d0d615e077d64bd52d919cfb32f868bb74d61"
+        },
+        {
+          "item_id": "2adcb3c7b02dfb0f11a29d0aea7dec7ea0c3d1d28b92bd3eb0dddee5cf39f6eb",
+          "path": "e2e/d8r/names.spec.ts",
+          "fingerprint": "3ab2403383a57627c1b521c0f176c74ab65004432f1b5b9c3b95bbbce56459e5"
+        },
+        {
+          "item_id": "2b006169545fee1d4cde7e693d87fa94c8d3466dbaba4d54af4f6dff14f6ff20",
+          "path": "e2e/d4/no-save.spec.ts",
+          "fingerprint": "3e61163313b941314409d0002761d43adff861ef6cfbbde0acdd56bedebe0b48"
+        },
+        {
+          "item_id": "2d9979a6c45d98c7a2326a03ec92b58665fbd6582020f6e78b52fba13850add7",
+          "path": "e2e/d4/update.spec.ts",
+          "fingerprint": "293489fd95cabdee961ebe403f64412a2edd33e9977e46c906607bbc4e71fd16"
+        },
+        {
+          "item_id": "30273611721b694304fcba1e627fe765af668fd478e0661a0cc14f1ce1b4a3ab",
+          "path": "e2e/d8p/states.spec.ts",
+          "fingerprint": "532ff5a8782ac1729e16c92e600c86f77918db496680b655a3ce658bd00de50d"
+        },
+        {
+          "item_id": "347917e3fc99ea10df3899c14b251305db47c31ef851de4417dcd15cdba0c770",
+          "path": "e2e/d9/review.spec.ts",
+          "fingerprint": "4bafae83e1362ecdaffe12a8d7e98d8a6b3679a450dcd64fecb7fe602e6fa30d"
+        },
+        {
+          "item_id": "35f705e28b89183ef7a49c76b0290a9fcaf1e10bd9454be251c3ff8cd0154be7",
+          "path": "e2e/d5/no-save.spec.ts",
+          "fingerprint": "9bd35003f12cb2c1529a552588687b454eac0a38784d5c9f22619e4aadcd189f"
+        },
+        {
+          "item_id": "369ac85f9dd63031ba62f4ed3dde5347e4f21f38f96f2f74cba90666800120aa",
+          "path": "e2e/d9/meter-detail.spec.ts",
+          "fingerprint": "e987dfd98ded16f88404c15a56cd10f7f312e7a0f50133d9eae5858a3bc9a45a"
+        },
+        {
+          "item_id": "3df9978f80fb8df171ba8e17242db730208f672e38c000fe3710ec250b5cf2b3",
+          "path": "e2e/d5/support.ts",
+          "fingerprint": "9e28df818c964893654ccd939f413bc7d3f2b470a572906d8173f0ab89863518"
+        },
+        {
+          "item_id": "42b58eea0e5f000f63b6a9c3c24ac44a84b91196ca48804afea34e6a7d81e1e1",
+          "path": "e2e/d6/support.ts",
+          "fingerprint": "92afb9ab732c30693ad75ed0525cc2d932644863b5fa6e20ee4ae23d1967e644"
+        },
+        {
+          "item_id": "4488926fcb35a097b0cfd1244ead419750c5db705f05986ef2142be7cff83cc2",
+          "path": "e2e/d8/support.ts",
+          "fingerprint": "7c17f44afc4fb2771fde540ab3f613f80b4c5186a1ffd1df2b8a89c94898f68b"
+        },
+        {
+          "item_id": "49ad97a3c181c65873b9cdb94f891e8568a88a72186d154fb0b4930f1edf79a7",
+          "path": "e2e/d9ar/states.spec.ts",
+          "fingerprint": "aec758b32fc786fe4201be25daaaa6ca0ebeefe9341ebfb54b5983b23e16ad4b"
+        },
+        {
+          "item_id": "4cf80cd4f93db1111cad9410f18fcd4baae047865e777e269c718c3d5a3e6005",
+          "path": "e2e/d6/runtime-failure.spec.ts",
+          "fingerprint": "daaf4833ef9e42f426fbefd17a57d81ccde1aeea1f0cb93fb1bd17a9cb3dd388"
+        },
+        {
+          "item_id": "4d17d3d9a06ea9416958779174ef4cd22dbe730d43adc4473f621fdc3d1c2bbc",
+          "path": "e2e/d7/payoff-chart-layout.spec.ts",
+          "fingerprint": "e5f49e686feb1a9559c652ad8e41340a06e40574ad27ba7a60ff49c2e4b618c7"
+        },
+        {
+          "item_id": "4e995098d3a2739c27d7614956fdc9064c2736a0d40ad8a2991a03a83a3e6552",
+          "path": "e2e/d7/responsive-a11y.spec.ts",
+          "fingerprint": "9f50c199cf3f3cd4a3e9d828208ac6944d14838ecff495a8a060beada446a39b"
+        },
+        {
+          "item_id": "4eedd2cab2d119b3ea18b8f8f749ef0005ce4fc073d8b544da64e947fd8793a7",
+          "path": "e2e/d1/update.spec.ts",
+          "fingerprint": "4e4647515992ce8caa38b40719585713808c59432e9b88f2e96b0f38992ba68b"
+        },
+        {
+          "item_id": "5048aafddb13eccfd888c2aba8d52f5bff8550dde9bb24bf6b96eadc98b3a401",
+          "path": "e2e/d2/responsive-a11y.spec.ts",
+          "fingerprint": "4899c369657fefaea9e7d8d95b5c9ef54de45fe19f09f35a79f9db2c9c143485"
+        },
+        {
+          "item_id": "50d7538e00a272561ee77fda78c8cd431428935a1ccf6993defe88e1d6d67840",
+          "path": "e2e/d4/runtime-failure.spec.ts",
+          "fingerprint": "5828cf46a5816920c8f909214496bd5b74912fe63acd5dfe22e7d8f2a0e46cea"
+        },
+        {
+          "item_id": "531fac20f57110b8eb97760ac5b65e45fd295847ee0311e652b1709ffcf71625",
+          "path": "e2e/d8/offline.spec.ts",
+          "fingerprint": "cc0faa1e73de0114353e612072a3ebde5ef0a232210aaa9a98827be6ba9ebaad"
+        },
+        {
+          "item_id": "5464fc06edea169d1df80a83ea381f976f426fe99c87e4f12c1a20ff6bfdfad9",
+          "path": "e2e/d1/no-save.spec.ts",
+          "fingerprint": "47321bb92f9d4df5a914c8a712ff04ac3a1676b7a9ea228118417dda91de9551"
+        },
+        {
+          "item_id": "5aa3b7437fca46e1cfc6cec523929e224123a1800fa77dca6b850d1197f4656b",
+          "path": "e2e/d8r/responsive-a11y.spec.ts",
+          "fingerprint": "8ef6f0d2c559ed4151aff99dccd20cad69a3b7a2bbf62475f55b11a827f09d6b"
+        },
+        {
+          "item_id": "5f209135c8e20762ca05f3afecf629ca879d158200b573a4ca90f62414adc521",
+          "path": "e2e/d8/shell.spec.ts",
+          "fingerprint": "eb7a106dee2038386dce4e692ccb242976cbe3038378eebea5bab47fb5e01a1a"
+        },
+        {
+          "item_id": "68be4ef5204e10eb9dfebc518cbaf530a5d876f922947494c35445f2d60a5668",
+          "path": "e2e/d7s/entry-beyond-stop.spec.ts",
+          "fingerprint": "a160dc7568ce267e802707d7afa187033e184af08d4c23c0c60353b6dcf57176"
+        },
+        {
+          "item_id": "74e3cac69171dd6619db0d464c6813ce431b829e93f8c1b0497b2594d5192b46",
+          "path": "e2e/d1/responsive-a11y.spec.ts",
+          "fingerprint": "040c7db13ff5510e68478337ec07ad976ae137ab0cfa4259a0abfa6e8b27e1e4"
+        },
+        {
+          "item_id": "76c34d67f3ed116276490f0b5b40cf8207a6503b0ed300b65c8ba78438933203",
+          "path": "e2e/d2/runtime-failure.spec.ts",
+          "fingerprint": "4ea8dd2a7273a777229794f06b7e44daab5a869f6a26288489c200bd23bb6192"
+        },
+        {
+          "item_id": "77a09965bbc16832a6776b36503973c81fdfb4c349ef52771fbc221627efe7c5",
+          "path": "e2e/d4/support.ts",
+          "fingerprint": "45ae4611bdc456b42e15d5b4c0a3fe27e57bab75441c7c985d0eb5d97e7761ac"
+        },
+        {
+          "item_id": "784c67bce55440aeccd0e1951c397d2e1434a06a397d4bd161ecdc0aa800c042",
+          "path": "e2e/d9r2/history.spec.ts",
+          "fingerprint": "73085dfbeec505a36e4a9134c1b47b03f5870a420b0b06020680410cf32067e1"
+        },
+        {
+          "item_id": "7da074be733e6e3dcb060936f47561a3f43f6170367b45dffd798a785bd40a03",
+          "path": "e2e/d7s/support.ts",
+          "fingerprint": "d41214d87f3fbdafc84c722e3ce68801554e60e3ff28336b715aabb02ccc1bbf"
+        },
+        {
+          "item_id": "8332ef1442450b9997aabfe40988b41aa84c07aec277d347537800aad865d572",
+          "path": "e2e/d7s/conditions.spec.ts",
+          "fingerprint": "f5ea94d1dcd7517c04c6ac3879c1a80c6ee66860338fe200f0911618a1a3b1cc"
+        },
+        {
+          "item_id": "839b5d74be9dab57ce22d8164cf43a870716504e404925773518309e596f49ef",
+          "path": "e2e/d9ar/support.ts",
+          "fingerprint": "a3742584d80d756c0dd87a08267b068d55071a04a8ea88de712a3289ecb76636"
+        },
+        {
+          "item_id": "856d01bbd2e134c577d38a43ff27eb1f42ac3b5352ac113ab0dc7f3d80cc1286",
+          "path": "e2e/d7p/layout.spec.ts",
+          "fingerprint": "28ad95010c175b3e970ccc92d1abae58c74d8a43c0a31e265c2a3da55a319b6b"
+        },
+        {
+          "item_id": "8d8e421361e27cc7e23bcfbbea7f77a2b983a66b6a05fef3cea850c187cfafe3",
+          "path": "e2e/d9ar/overlay.spec.ts",
+          "fingerprint": "d831ba1e411ecc9d5f298fb31ee15e181adb69338920d10964eef854a5b5d09f"
+        },
+        {
+          "item_id": "8f03783a683fbec34a8ba6e705a726f6419576c0dba0cecbaafeceef9e8e9f76",
+          "path": "e2e/d7s/responsive-a11y.spec.ts",
+          "fingerprint": "50de2d3e2290f09521a42c193c322192617c6266cfd0f3bcce0af0df3a42fba8"
+        },
+        {
+          "item_id": "95a31d5c38b214d9a6768082236010958b34effd123344327c90142eafe1da19",
+          "path": "e2e/d2/after-save.spec.ts",
+          "fingerprint": "dcfb6290510ca344d87ce0d5497de6e4ce89f5c39a31a40ccd1fe0baa508e320"
+        },
+        {
+          "item_id": "9655575f610d6149cfe411ca43e1a5abf7ee774b9079c5428edae3d96fd2e0a1",
+          "path": "e2e/d8p/lot-matches-fit.spec.ts",
+          "fingerprint": "2aea18e3064f52f5d6dfe52f8d6e60e8571e5c08baa4e8e6e3bf70dfd1ddc4af"
+        },
+        {
+          "item_id": "999cbcdc259d3b0d415d98465318db429172f22b929bc0f50abd1a6bc1868d4a",
+          "path": "e2e/d8/responsive-a11y.spec.ts",
+          "fingerprint": "09066cedfb2b35112354f6f5098d76562ce4060d6ee19179ceec8266ec16ed55"
+        },
+        {
+          "item_id": "99c596ee1732c530a194c9499667a3a11331103a4114e4c1d962b6235c95f741",
+          "path": "e2e/d7/support.ts",
+          "fingerprint": "6c320bf10fc22b6f197253ecb55005a933d4accee86eafddf0ea601daaedfee4"
+        },
+        {
+          "item_id": "9cc5106d1828ba03cef1ef29861e251e8370bba7c94fbfd12d22e50406a4b0f1",
+          "path": "e2e/d1/onboarding.spec.ts",
+          "fingerprint": "8132cf9f71459bd699118093c3f8a21f41cd8d3662d2b855afa7902ca09e3f9b"
+        },
+        {
+          "item_id": "9e888db941aaa026b03ee9ea52c8deac995d9f8bc522c19b2caf8ec3de412ae5",
+          "path": "e2e/d7/runtime-failure.spec.ts",
+          "fingerprint": "7d0f99acb0f322ecf23180186df49e97bfb55af1956864abff8194ce1673d83d"
+        },
+        {
+          "item_id": "9ed3b8864ddb503a11ac274ee506d00c15beb42dc070cfeadfbbaa52f59fc8a2",
+          "path": "e2e/d8p/journal-final-session.spec.ts",
+          "fingerprint": "425d1e6f1951111a833280df84dbdfbce6495fedabcf7f805d8f17e39f600a16"
+        },
+        {
+          "item_id": "9ed52a747f55a25287d216a300c7b79f4473959fec25da5980f2088e892a9f62",
+          "path": "e2e/d1/plan.spec.ts",
+          "fingerprint": "aea17593ebc6654a0dee0e7a11e3cdea72a47c87c98a54998c66cab334be1a68"
+        },
+        {
+          "item_id": "9f7af3c06eb197acffdab622fd5fd97caa7a3dfc83bdfd399fecf6bbf95cd101",
+          "path": "e2e/d8p/history.spec.ts",
+          "fingerprint": "fe562ff8b1ae256fa2df801d7ab43a24ff8fb138766ec91f348c193c7149a8ec"
+        },
+        {
+          "item_id": "9fc2814396ca8fdc4b4a786543b42eb524301cfcaa0ad2260221dc91be7ee063",
+          "path": "e2e/d4/responsive-a11y.spec.ts",
+          "fingerprint": "5c15445bddc698d03cccef44e1cad083ce39f38b0e5cba9c7a6bd45a23d09b66"
+        },
+        {
+          "item_id": "a1bf924a0ca62ecd3ac021a9b4a12c4b19ea6553a58423265f42c7bef67b813d",
+          "path": "e2e/d2/integrity.spec.ts",
+          "fingerprint": "950d502b35e31013572b84f62d98a5d6ef80d07ab08914e87fcae9c5f2d919ef"
+        },
+        {
+          "item_id": "b194ba36fc8d3d6f6152cfb8ca3afe4573944cb85df750e137ded5f77d41a6c9",
+          "path": "e2e/d1/support.ts",
+          "fingerprint": "9320fe50205811d35b1ddcbe7ab8760c8efe8476169830ff3a323567a1a72df1"
+        },
+        {
+          "item_id": "b1ef12f4a657e1557835ec46386a2dd9ca533b0d816b746bf02b3f49bd31bea4",
+          "path": "e2e/d2/migration.spec.ts",
+          "fingerprint": "6b0fdfc0bdbde9e39334806032f811b0762bba0a81f1f340e9640454ae24d7b8"
+        },
+        {
+          "item_id": "b4b23da14f50682f0085169cb46d3e32bfe0a967c952d1c1bd0aea6f799fd2a2",
+          "path": "e2e/d1/offline.spec.ts",
+          "fingerprint": "64133603ed685d862a2b8fdd82a9a51f0f3d157ad0db396a3eb5e557ec173488"
+        },
+        {
+          "item_id": "b943067c61329605e5f0398305aa1254229546ede6c112e391c13ac04352d98b",
+          "path": "tools/ui-screenshots.ts",
+          "fingerprint": "657222d999ff31020a5578ffd1a20bbfb5b41bd84c42cd890800045a2882ce74"
+        },
+        {
+          "item_id": "c0d45d1b4697e441120d906b3ea33b73f9bfd5cd11afb42fb6df6e791c6c2426",
+          "path": "e2e/d2/cockpit-layout.spec.ts",
+          "fingerprint": "be83e199ecd140e83f52e3d7b81441ad5690d28dc0a1b3de4798fc3116a26054"
+        },
+        {
+          "item_id": "c2fd486111638d00f0d387a09d3b1d932d274fd2e5443262caf354d5c4d2756f",
+          "path": "e2e/d6/responsive-a11y.spec.ts",
+          "fingerprint": "7242f0b5b3e14c811b339e95159fdfa98194130644bc762b483c04524b858192"
+        },
+        {
+          "item_id": "c8a977827112ca535ecd13efd853bf945a7bc2bbe2d551b4120f8b35e136cd96",
+          "path": "e2e/d8/after-restore.spec.ts",
+          "fingerprint": "7464f63a89d8b6fef98869d9fca9d8ded38219ba4323b7c0103431bb09be0c91"
+        },
+        {
+          "item_id": "ceb6a0a7475d5fae8b65f77a60dafe24c3b2295fb0053a87dc8271232d06cbe3",
+          "path": "e2e/d5/faults.spec.ts",
+          "fingerprint": "8aa7d3ead75e1fe368e466ed9c7ceb6b7593ac302bb4f62921d06ab1c0e8cc47"
+        },
+        {
+          "item_id": "cfb5607e5664c176cf826e45eb9599e5f0b01795cc8ee6340fbbb4484a1fe5b7",
+          "path": "e2e/d8/restore.spec.ts",
+          "fingerprint": "fc5ba209b7a36a55304a1e2435487b09df206ea4463479f87d49b7b6e8e1d6bf"
+        },
+        {
+          "item_id": "d0126439061216e58eb2b1a6bab019f2d20601558a9531d4100a29b4b9c5c3f9",
+          "path": "e2e/d9/support.ts",
+          "fingerprint": "840153737e4da4bf9fcdab945681781c93ecf495b4e0aa6ef44e158e7ef81331"
+        },
+        {
+          "item_id": "d1434e10472e028ec1b56ac102f5389f58fbb8f330adf8feb83e0158d93452d5",
+          "path": "e2e/d2/narrow.spec.ts",
+          "fingerprint": "98a7e301e2f02b7e0269cad9724b6583170b04c72f95f52b8ecf61254508796c"
+        },
+        {
+          "item_id": "d325864092b7e2e39c3e315e11e806fe5ab0dd8516854e568f631ed34bd9591a",
+          "path": "e2e/d1/readiness.spec.ts",
+          "fingerprint": "1f94a2eda0c511aaab6f4c9621908c4ab65654042e0e79a111d8356b6820029c"
+        },
+        {
+          "item_id": "d3eb99946b5bb7f90658427e630f7c2515168d299467467f8bbc8ee72641f7e3",
+          "path": "e2e/d8r/support.ts",
+          "fingerprint": "8df7b2ed397ea592b521edd988579ce6de29a5771f562da288ad138a54324dbe"
+        },
+        {
+          "item_id": "d9dd7525e9f2bac9d493f5adb8147da945c3e6d6982ba0063b9952c2aa4148eb",
+          "path": "e2e/d9r2/editor.spec.ts",
+          "fingerprint": "4f5ab42a8c0b748529de75717aa7d29b2e30f153ea0a8500213d6485688e377e"
+        },
+        {
+          "item_id": "dcef9a7bd13925632483e0cc5267cb2e13cf1e8bfcd926e9f964b207a259b600",
+          "path": "e2e/d5/update.spec.ts",
+          "fingerprint": "35bd4f8a8a4e45114b5eb85621861aa5912c0def2421801579d980f5b73954bc"
+        },
+        {
+          "item_id": "e4c49e0ed402290ed042b475b5dd4de4bac2ab7a55132a63d4678f4c5b9cb1a7",
+          "path": "e2e/d8/backup.spec.ts",
+          "fingerprint": "bbae35ab68baf86bf342be970847d301284435a24e09a5f963a86fe2687fcbb7"
+        },
+        {
+          "item_id": "e630dd00330887432bb10e4974e4b1787c75858db07df4ad1ab592adab06f1eb",
+          "path": "e2e/d2/ui-alignment.spec.ts",
+          "fingerprint": "e10259bf8ff2d878a531d979be093ed3569ca13e82800e990f458cd88d8f117f"
+        },
+        {
+          "item_id": "eb2f90084ca8f9d51cd269a87f84fbb33b6d83aa289846271826d54c07ee472e",
+          "path": "e2e/d9r2/responsive-a11y.spec.ts",
+          "fingerprint": "612c6e16c7ffef27fe15f81799b46a6a7e8d44941096ada06d7b8480c9c3cfc0"
+        },
+        {
+          "item_id": "ebc9d1c2c701d17b6b1d061b466cab052ef9bc2b403b5d98ee1865f679a05db8",
+          "path": "e2e/d9ar/chart.spec.ts",
+          "fingerprint": "18056334ba0d9504ec96ffe97f3134083e0de980d4d4e0905f6a351206b343c9"
+        },
+        {
+          "item_id": "efe807094ca709ea98548a6a284f2e579157551da75e12941da6d413bd8797a6",
+          "path": "e2e/d8p/responsive-a11y.spec.ts",
+          "fingerprint": "9a08ea282cf35a533968e69214cdfcfa93df64fba6763832f2ee964b324f93d0"
+        },
+        {
+          "item_id": "f1a58c2ac82e96acd4231fa5075ffe7bd94eeb6c5d0d4069288ed6d7e6faa433",
+          "path": "e2e/d9ar/responsive-a11y.spec.ts",
+          "fingerprint": "7a81cab40a6b1dda189cf21bf0e4243ad6c46fff0aecd1e4c566366dd10b0a1f"
+        },
+        {
+          "item_id": "f1e1f9f2f6e2ce0e03d8c208ae60ff108aac95baa6e4276f2b3e97a9a6496a6a",
+          "path": "e2e/d6/no-save.spec.ts",
+          "fingerprint": "9317b62c3db9c04a9c56a1cc3c6e9376d11510219e5dd419720bc1d224de07b7"
+        },
+        {
+          "item_id": "f293e207e9d62bb3a1147b0c02824d6e01749fe2220ab94a9c11d82317c664b9",
+          "path": "e2e/d5r/durability.spec.ts",
+          "fingerprint": "54e8270a6018284f9195ed87b2ca6740fee2c5296fd46b7cae7bc8761b06191c"
+        },
+        {
+          "item_id": "f3eb411db7a53d699b2e2af6f79dd5ac9367b88b215ca32d7c9b2e270c770dfc",
+          "path": "e2e/d5r/sliders.spec.ts",
+          "fingerprint": "c7bc966654311163ad7c16828840f9ade53818fbb2036bcd2380e46e1d4ca07f"
+        },
+        {
+          "item_id": "f7406ef2881011b62532c827cd87807e71f1ffb772c241794158f993a5a0fd38",
+          "path": "e2e/d9ar/review.spec.ts",
+          "fingerprint": "3f4e1e4d4c93ab516fbb9eb8fdf38f92c91e1a8993d915045a1632102049f2cf"
+        },
+        {
+          "item_id": "fb5049ab86c884db384c1c2dd8b31d070c143c24ab67a3419eec49a392048dd4",
+          "path": "e2e/d9/meter-a11y.spec.ts",
+          "fingerprint": "ebce3da8a26492d0f72cd34d1e0656a39b85d920ca204a4796d98edc5b659943"
+        },
+        {
+          "item_id": "fed5682a5207a921ed47d1f9665bb3fd2982f5974f6ec6ead8ef25d207dbe648",
+          "path": "e2e/d9r2/drafts.spec.ts",
+          "fingerprint": "f1bc09761db208d16e12480418ca8041e0ccb86cc61b3cb44325680c59836d4a"
+        },
+        {
+          "item_id": "fffa17a0269737f7ac983fd806652d889f71f03d56012e43d61220a30d4cbf71",
+          "path": "e2e/d7/no-save.spec.ts",
+          "fingerprint": "30816a0af486a209b919afdfb702281fff545fa57efa667fd16118f671a786ba"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": []
+    },
+    "elapsed_ms": 57136
+  }
+}

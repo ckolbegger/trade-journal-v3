@@ -1,0 +1,154 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 2,
+    "total_tokens": 273259,
+    "input_tokens": 270478,
+    "output_tokens": 2781,
+    "cache_read_tokens": 23296,
+    "elapsed": "1m38s"
+  },
+  "tool_calls": {
+    "total": 33,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 13,
+      "file_find": 2,
+      "file_read": 16
+    },
+    "failure": 1,
+    "failure_by_tool": {
+      "file_read": 1
+    },
+    "failure_details": [
+      {
+        "tool_call_number": 28,
+        "tool_name": "file_read",
+        "file_path": "src/coordinators/daily-review/daily-review.ts,src/coordinators/daily-review/decisions.test.ts,src/coordinators/daily-review/decisions.ts,src/coordinators/daily-review/types.ts",
+        "arguments": "{\"file_path\": \"src/coordinators/replay/assemble.ts\", \"start_line\": 1, \"end_line\": 30}",
+        "error": "file \"src/coordinators/replay/assemble.ts\" not found: git show 859120964fb70c5208b55cb020a50bed307d6d8c:src/coordinators/replay/assemble.ts: exit status 128: fatal: path 'src/coordinators/replay/assemble.ts' does not exist in '859120964fb70c5208b55cb020a50bed307d6d8c'\n"
+      }
+    ]
+  },
+  "comments": [
+    {
+      "path": "src/coordinators/daily-review/decisions.ts",
+      "content": "Check that the replay reaches the immediately preceding Review session before counting this streak. `assembleReplay` truncates a Settlement Due option trade at its expiration session, even though the trade can remain Open and eligible for later Reviews. Here the loop starts at that old expiration session, so Holds beyond a line there can still produce `heldPast` after subsequent sessions with no Review. Use the Review calendar to anchor the run and stop on missing sessions, and add a regression test for a still-unsettled trade reviewed several sessions after expiration.",
+      "existing_code": "  for (const session of [...(replay?.sessions ?? [])].reverse()) {\n    if (session.date \u003e= reviewDate) continue;",
+      "start_line": 12,
+      "end_line": 13,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/coordinators/daily-review/daily-review.ts",
+      "content": "Resolve the first exposure to its trading session instead of taking its UTC calendar date. For example, a first fill on Friday 2026-10-09 at 21:00Z is after the close, so the Trade first becomes reviewable on Monday. On Monday this code nevertheless lists Friday in `sessionsWithoutReview`, even though no Friday Review was owed. The existing after-close fixture in daily-review.test.ts covers this session boundary for mark gaps; use the same session-aware boundary here and add a decisions regression test.",
+      "existing_code": "  return Temporal.Instant.from(exposureStart).toZonedDateTimeISO('UTC').toPlainDate().toString();",
+      "start_line": 189,
+      "end_line": 189,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Daily review decision logic, integration, types, and tests",
+      "files": [
+        "src/coordinators/daily-review/daily-review.ts",
+        "src/coordinators/daily-review/decisions.test.ts",
+        "src/coordinators/daily-review/decisions.ts",
+        "src/coordinators/daily-review/types.ts"
+      ]
+    }
+  ],
+  "session_id": "75999355-6476-4d99-b787-78f84b9191ca",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "75999355-6476-4d99-b787-78f84b9191ca",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "85912096",
+      "resolved_base": "ef8777959b9a485db9cb76d398213819cda0fdaf",
+      "resolved_head": "859120964fb70c5208b55cb020a50bed307d6d8c",
+      "exact_range": "ef8777959b9a485db9cb76d398213819cda0fdaf..859120964fb70c5208b55cb020a50bed307d6d8c",
+      "source_artifact_sha256": "e61f7934d1e5805cbff739c8952e17ab3fd7ffe86cb666b7fafbfe947e08d73d"
+    },
+    "execution": {
+      "ocr_version": "v1.14.1",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "f14ef1019f8ccd3275276f3a7213b98947c1cecc12bdd20e34eae0e355f1be15"
+        },
+        {
+          "item_id": "212187ccce04f6225b4f46ed67418a23786b88d80bf1a16931f4c7433e798e38",
+          "path": "src/coordinators/daily-review/decisions.ts",
+          "fingerprint": "1342d2ef95ef3c29b911b3f40aee1c68897b7f66b0a09a32a017ffe8db9f0ed6"
+        },
+        {
+          "item_id": "95fadb9dbd27389c4f7aa927b5e7326f85ee5ae2c012476bfa4482458fff55c4",
+          "path": "src/coordinators/daily-review/decisions.test.ts",
+          "fingerprint": "f553ca35d78bc1595ac4932094ddd02e060ed4582d1f40eecf0d7c01b3f948bc"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "e305c6825e336e29f646d6a053550eb13b5d6413b3952283ae1789f43de73b9d"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "f14ef1019f8ccd3275276f3a7213b98947c1cecc12bdd20e34eae0e355f1be15"
+        },
+        {
+          "item_id": "212187ccce04f6225b4f46ed67418a23786b88d80bf1a16931f4c7433e798e38",
+          "path": "src/coordinators/daily-review/decisions.ts",
+          "fingerprint": "1342d2ef95ef3c29b911b3f40aee1c68897b7f66b0a09a32a017ffe8db9f0ed6"
+        },
+        {
+          "item_id": "95fadb9dbd27389c4f7aa927b5e7326f85ee5ae2c012476bfa4482458fff55c4",
+          "path": "src/coordinators/daily-review/decisions.test.ts",
+          "fingerprint": "f553ca35d78bc1595ac4932094ddd02e060ed4582d1f40eecf0d7c01b3f948bc"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "e305c6825e336e29f646d6a053550eb13b5d6413b3952283ae1789f43de73b9d"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "3f702e6ed93dda7003106260a588ebb8de15e195ba7bc7e0e868c841c65aa770",
+          "path": "evidence/D95/tdd-log/T95.8.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 98042
+  }
+}

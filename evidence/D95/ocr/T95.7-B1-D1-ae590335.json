@@ -1,0 +1,90 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 33290,
+    "input_tokens": 33138,
+    "output_tokens": 152,
+    "cache_read_tokens": 4992,
+    "elapsed": "11s"
+  },
+  "tool_calls": {
+    "total": 3,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "e2e/d8p/cockpit.spec.ts",
+      "files": [
+        "e2e/d8p/cockpit.spec.ts"
+      ]
+    }
+  ],
+  "session_id": "31bf44fb-57aa-4305-b154-9a21aa2ecf38",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "31bf44fb-57aa-4305-b154-9a21aa2ecf38",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "ae590335",
+      "resolved_base": "14258e401c7cc7475e3f6e84ccf19093b9e9f944",
+      "resolved_head": "ae59033559017508a96a1dd21659c584ac02d8ab",
+      "exact_range": "14258e401c7cc7475e3f6e84ccf19093b9e9f944..ae59033559017508a96a1dd21659c584ac02d8ab",
+      "source_artifact_sha256": "50f8cd73729d4d9cec8d04dcd7925805ec0eae35b2fcf9fda120cbf68bf41239"
+    },
+    "execution": {
+      "ocr_version": "v1.14.1",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "4e8c9fded9c24bb922049c410df7d1152836a705500c2ae0b2bd9662c565f721",
+          "path": "e2e/d8p/cockpit.spec.ts",
+          "fingerprint": "408c9d5ba990741c9186262e94db33a55464435718a5f0ceb7ff054f3720b0d1"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "4e8c9fded9c24bb922049c410df7d1152836a705500c2ae0b2bd9662c565f721",
+          "path": "e2e/d8p/cockpit.spec.ts",
+          "fingerprint": "408c9d5ba990741c9186262e94db33a55464435718a5f0ceb7ff054f3720b0d1"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "9cb1a797774d02950cc071d8d999024e890e80edbfdf05f415f708917949c2e7",
+          "path": "evidence/D95/structural.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 10920
+  }
+}

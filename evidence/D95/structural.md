@@ -170,6 +170,17 @@ Success path: e2e/d4, d5, d7, d9, d9ar 225 passed, 4 skipped, 1 failed (the know
 
 **T95.7-F3** `0fbe7978` (81 files under e2e/ and tools/): `READY` (20 s) replaced by `LAUNCH = { timeout: 10_000 }` (271 uses: shared helpers, first readiness after open, restore, update and migration notices; 11 in tools/ui-screenshots.ts) and `STEP = { timeout: 5_000 }` (2 explicit: a click and `pressSave`'s waitForElementState); 151 mid-test waits drop the option (Playwright's 5 s default); none at 20 s. Step 1 timings (instrumentation removed): 2,500 expect waits over the release-history tests, d1/update, d5r, d6, d7 family: p99 196 ms, max 1,289 ms (d1/update.spec.ts:145, a launch wait); clicks max 212 ms. Every changed line pair is identical with the wait token stripped. Whole browser suite: stage 1 126 (334 s), stage 2 80 (314 s), stage 3 57 (287 s), stage 4 137, 4 skipped (446 s), release-history 4 (19 s); no failures. Classification is the study's scan plus rules, not read line by line (a wrong STEP still has 4× headroom).
 
+**ocr, the T95.7 follow-ons:** T95.7-B1 (`0a14caae^..8f1e5f0a`, `ocr/T95.7-B1-8f1e5f0a.json`), T95.7-B1-D1 (`ocr/T95.7-B1-D1-ae590335.json`) and T95.7-F3 (81 files, `ocr/T95.7-F3-0fbe7978.json`; the subagent checked the diff: 151 waits drop the option for Playwright's 5 s default, 345 lines use LAUNCH, 6 STEP lines): **No findings** each.
+
+**T95.8 ocr** (session 75999355, 4 files, 2 comments; `ocr/T95.8-85912096.json`):
+
+| Severity | Location | Claim | Assessment | Outcome |
+|---|---|---|---|---|
+| medium bug | `decisions.ts:12-13` | The Hold-past-line streak starts at the replay's last session, but the replay stops at a Settlement Due option's expiration, so for a Trade reviewed sessions after expiration the unreviewed sessions are skipped and a Hold on the expiration session still counts (breaks case 5) | Valid (narrow) | bug task T95.8-B1 |
+| medium bug | `daily-review.ts:189` | `unreviewedSince` takes the first exposure's UTC date as the first Review Date, so a fill after the close lists that day in `sessionsWithoutReview`; the page-level `missed` (`earliestExposureDate`, ~694) does the same | Valid | bug task T95.8-B2 |
+
+**T95.8-B1.** Case: "it should end the Hold count at a session with no Review after a Settlement Due expiration". **T95.8-B2.** Case: "it should not list the day of a first fill after the close as a session with no Review", on the card and the page (`missed`) alike.
+
 ## Trial: complete runs overlapped with the next task (the user, 2026-11-22, for 5 or 6 tasks)
 
 Each task's complete run runs in a detached scratch copy (`.claude/worktrees/run-<label>`, set up by `lane-setup.sh`) at the task's commit, while the next task's subagent starts in this worktree. The run's files are copied back to `evidence/D95/suite-runs/`. A failure becomes a bug task as before; the next task restarts only if it built on the broken code. Times are recorded per run to measure the saving.
