@@ -5,7 +5,7 @@ import { Rational } from '../../domain/values/index.ts';
 import { instrumentKey } from '../../domain/instrument/index.ts';
 import { reviewStack, REVIEW_DATE, MONDAY_1700, TEN_AM, type ReviewStack } from '../../../tests/support/review-fixture.ts';
 import { D7_CATALOG_MANIFEST, type StrategyRecord } from '../../modules/reference-catalog/index.ts';
-import type { OpenDailyReviewResult } from './index.ts';
+import { createDailyReview, type OpenDailyReviewResult } from './index.ts';
 
 // T95.4: the day summary `open` returns (A300, P175).
 
@@ -147,6 +147,38 @@ describe('open: the change in Trade P&L (A300)', () => {
     await gap.saveMark('JKL', '29.00');
 
     expect((await open(gap)).day.change).toEqual({ kind: 'Unavailable' });
+  }, 60_000);
+});
+
+// The `open` of a stack whose calendar names no session before the Review Date, as at the start of the session policy's coverage.
+async function openWithoutPrevious(stack: ReviewStack) {
+  const marketData = {
+    ...stack.marketData,
+    openReadSession: async (context: Parameters<typeof stack.marketData.openReadSession>[0], options?: Parameters<typeof stack.marketData.openReadSession>[1]) => {
+      const session = await stack.marketData.openReadSession(context, options);
+      return Object.fromEntries(Object.entries(session).filter(([key]) => key !== 'previousSessionDate')) as typeof session;
+    },
+  };
+  return ready(await createDailyReview({ ...stack, marketData }).open({ date: { kind: 'LatestCompleted' }, asOf: MONDAY_1700 }));
+}
+
+describe('open: the change in Trade P&L with no session before the Review Date (A300)', () => {
+  it('should make the day change Unavailable when the calendar has no session before the Review Date for a Trade open before it', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    // Held since Thursday: its figure then is unknown, so its whole P&L is not the day's change.
+    await heldStock(stack, 'ABC', '30.00', '28.00', '36.00');
+    await stack.saveMark('ABC', '29.00');
+
+    expect((await openWithoutPrevious(stack)).day.change).toEqual({ kind: 'Unavailable' });
+
+    // A Trade bought on the Review Date was not open before it: its change is from nothing.
+    const fresh = await reviewStack(MONDAY_1700);
+    const bought = await fresh.confirm({ symbol: 'DEF', shares: '100', entry: '40.00', stop: '38.00', target: '46.00' });
+    await fresh.fill(bought, TEN_AM, '100', '40.00');
+    await fresh.saveMark('DEF', '41.00');
+    const freshOpen = await openWithoutPrevious(fresh);
+
+    expect(freshOpen.day.change).toEqual({ kind: 'Value', dollars: Rational.of(99n) });
   }, 60_000);
 });
 

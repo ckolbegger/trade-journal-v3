@@ -132,14 +132,17 @@ function earliestExposureDate(eligible: readonly EligibleTrade[]): string {
 
 // The day's change in Trade P&L over the walked Trades: each Trade's figure at the Review Date less its figure at the session before, a Trade
 // with no valuation then (not yet open) counting from nothing. Unavailable when a Review Date Mark is Missing, a Trade's facts cannot be
-// replayed, or either figure is Unavailable for any other reason, such as the earlier session's own Mark being Missing.
-function dayChangeOf(ranked: readonly { readonly valuation: ValuedTrade | undefined; readonly before: EligibleTrade['before'] }[], markMissing: boolean): DayChange {
+// replayed, or either figure is Unavailable for any other reason, such as the earlier session's own Mark being Missing. When the calendar
+// names no session before the Review Date, a Trade open before that date has no earlier figure either, so it is Unavailable too.
+function dayChangeOf(ranked: readonly { readonly valuation: ValuedTrade | undefined; readonly before: EligibleTrade['before'] }[], markMissing: boolean, reviewDate: string, hasPreviousSession: boolean): DayChange {
   if (markMissing) return { kind: 'Unavailable' };
   let change = Rational.of(0n);
   for (const { valuation, before } of ranked) {
     const now = valuation?.evaluation.currentMarkedPnl;
     if (now?.kind !== 'Value') return { kind: 'Unavailable' };
     const earlier = before?.evaluation.currentMarkedPnl;
+    const exposureStart = valuation?.state.exposureStart;
+    if (!hasPreviousSession && exposureStart && Temporal.Instant.from(exposureStart).toZonedDateTimeISO('UTC').toPlainDate().toString() < reviewDate) return { kind: 'Unavailable' };
     if (earlier === undefined || earlier.kind === 'NotApplicable') change = change.add(now.value);
     else if (earlier.kind === 'Value') change = change.add(now.value.sub(earlier.value));
     else return { kind: 'Unavailable' };
@@ -679,7 +682,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
       ...(read.nextSessionDate !== undefined && { nextReviewDate: read.nextSessionDate }),
       missed: derivations.length === 0 ? [] : missedSessions(read, lastReviewed === undefined ? earliestExposureDate(derivations) : dayAfter(lastReviewed), dayBefore(reviewDate)),
       trades: walked.length,
-      change: dayChangeOf(ranked, marksToGo > 0),
+      change: dayChangeOf(ranked, marksToGo > 0, reviewDate, read.previousSessionDate !== undefined),
       toGo: {
         marks: marksToGo,
         actions: walked.filter((item) => !(item.tradeId in actions.actions) && !settlementTrades.has(item.tradeId)).length,
