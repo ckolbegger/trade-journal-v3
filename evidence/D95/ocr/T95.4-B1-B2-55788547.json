@@ -1,0 +1,128 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 0,
+    "total_tokens": 51766,
+    "input_tokens": 51302,
+    "output_tokens": 464,
+    "cache_read_tokens": 6656,
+    "elapsed": "19s"
+  },
+  "tool_calls": {
+    "total": 11,
+    "by_tool": {
+      "code_search": 6,
+      "file_read": 5
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/coordinators/daily-review/daily-review.ts",
+        "src/coordinators/daily-review/day.test.ts",
+        "src/modules/market-data/market-data.ts"
+      ]
+    }
+  ],
+  "session_id": "78f98004-575d-4b40-bbb4-734c99bc4e29",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "78f98004-575d-4b40-bbb4-734c99bc4e29",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "f5db240e^",
+      "requested_head": "55788547",
+      "resolved_base": "be824791666715cfc7184e33b59ceafc2e63589c",
+      "resolved_head": "55788547e61a31628280e262d84acb8af755fa76",
+      "exact_range": "be824791666715cfc7184e33b59ceafc2e63589c..55788547e61a31628280e262d84acb8af755fa76",
+      "source_artifact_sha256": "0f4fb9a878d41df9673c2306c018586b0607ebdb907e161f0e0b74628c85272a"
+    },
+    "execution": {
+      "ocr_version": "v1.14.1",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "3f21880fe5e6cb236cf8d119eba04014db42fb805d44968f47b47dce2f6111c1",
+          "path": "src/modules/market-data/market-data.ts",
+          "fingerprint": "d010d7aac2e694deb97da9b646cf4c08305f0bf967ec15513b751ee578706acb"
+        },
+        {
+          "item_id": "57c4cac29ac6ac44e54676b920e7a40186ea5a48b23f67bc1fdf98db713be24c",
+          "path": "src/coordinators/daily-review/day.test.ts",
+          "fingerprint": "cd0da66f747a65db94d4199724b09ff21310e8251e116bbd38ffaae9a3209629"
+        },
+        {
+          "item_id": "7c35fcec1a48c206aa7f9c67cd648e8bc4e4336db7c31bbf3b49d32678364eaf",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "752f718b8349101f59e10fbd1dc3630cfadc6727d2882ffe83afba560b5d7c75"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "3f21880fe5e6cb236cf8d119eba04014db42fb805d44968f47b47dce2f6111c1",
+          "path": "src/modules/market-data/market-data.ts",
+          "fingerprint": "d010d7aac2e694deb97da9b646cf4c08305f0bf967ec15513b751ee578706acb"
+        },
+        {
+          "item_id": "57c4cac29ac6ac44e54676b920e7a40186ea5a48b23f67bc1fdf98db713be24c",
+          "path": "src/coordinators/daily-review/day.test.ts",
+          "fingerprint": "cd0da66f747a65db94d4199724b09ff21310e8251e116bbd38ffaae9a3209629"
+        },
+        {
+          "item_id": "7c35fcec1a48c206aa7f9c67cd648e8bc4e4336db7c31bbf3b49d32678364eaf",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "752f718b8349101f59e10fbd1dc3630cfadc6727d2882ffe83afba560b5d7c75"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "35795b61035b63418b35eced14344b19a9d2fc4a997ccb2b9f77b5f759780a1d",
+          "path": "evidence/D95/tdd-log/T95.4-B1.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "467b9c154a58bfea89b79b96a68dc1a17eb85758815b2081303cf100f370e148",
+          "path": "evidence/D95/tech-debt.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ab47bc811f23c17f4c6317a43b1bf19eff8f2b20af07649acc55f19159f8bebc",
+          "path": "evidence/D95/structural.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "bfe444cc5d207e41c11399e7ede952d5433da83b3965a65bb23757cddf79fc10",
+          "path": "evidence/D95/tdd-log/T95.4-B2.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 18581
+  }
+}
