@@ -166,6 +166,8 @@ Success path: e2e/d4, d5, d7, d9, d9ar 225 passed, 4 skipped, 1 failed (the know
 
 **T95.7-B1-D1** (the user, 2026-11-22): d8p/cockpit.spec.ts:37 uses `noTuesdayReview` too, restoring its `'Price History 1'` expectation so the gap count stays tested. Queued after T95.7-F3.
 
+**T95.7-F3** `0fbe7978` (81 files under e2e/ and tools/): `READY` (20 s) replaced by `LAUNCH = { timeout: 10_000 }` (271 uses: shared helpers, first readiness after open, restore, update and migration notices; 11 in tools/ui-screenshots.ts) and `STEP = { timeout: 5_000 }` (2 explicit: a click and `pressSave`'s waitForElementState); 151 mid-test waits drop the option (Playwright's 5 s default); none at 20 s. Step 1 timings (instrumentation removed): 2,500 expect waits over the release-history tests, d1/update, d5r, d6, d7 family: p99 196 ms, max 1,289 ms (d1/update.spec.ts:145, a launch wait); clicks max 212 ms. Every changed line pair is identical with the wait token stripped. Whole browser suite: stage 1 126 (334 s), stage 2 80 (314 s), stage 3 57 (287 s), stage 4 137, 4 skipped (446 s), release-history 4 (19 s); no failures. Classification is the study's scan plus rules, not read line by line (a wrong STEP still has 4× headroom).
+
 ## Trial: complete runs overlapped with the next task (the user, 2026-11-22, for 5 or 6 tasks)
 
 Each task's complete run runs in a detached scratch copy (`.claude/worktrees/run-<label>`, set up by `lane-setup.sh`) at the task's commit, while the next task's subagent starts in this worktree. The run's files are copied back to `evidence/D95/suite-runs/`. A failure becomes a bug task as before; the next task restarts only if it built on the broken code. Times are recorded per run to measure the saving.
