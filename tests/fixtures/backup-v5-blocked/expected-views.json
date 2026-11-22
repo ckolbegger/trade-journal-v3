@@ -8237,6 +8237,88 @@
         "family": "Trades",
         "trades": [
           {
+            "tradeId": "fx-0072",
+            "underlying": "KO",
+            "lastActivity": "2026-10-12T18:00:00Z",
+            "summary": {
+              "kind": "Stock",
+              "direction": "Long",
+              "quantity": "120/1",
+              "price": "3019/60"
+            },
+            "band": "ExitNotCarriedOut",
+            "reasons": [
+              {
+                "code": "ExitNotCarriedOut"
+              }
+            ],
+            "basis": {
+              "kind": "Unavailable",
+              "reason": "MarkMissing",
+              "instrument": {
+                "kind": "Stock",
+                "symbol": "KO"
+              },
+              "date": "2026-10-20"
+            },
+            "progress": {
+              "kind": "Walked",
+              "panels": [
+                {
+                  "panel": "Marks",
+                  "done": false,
+                  "resolved": 0,
+                  "needed": 1
+                },
+                {
+                  "panel": "Reflections",
+                  "done": true,
+                  "dueNow": 0,
+                  "later": 0
+                },
+                {
+                  "panel": "Action",
+                  "done": false,
+                  "owed": true
+                }
+              ],
+              "done": false
+            },
+            "figures": {
+              "riskToStop": {
+                "kind": "Unavailable",
+                "reason": "MarkMissing",
+                "instrument": {
+                  "kind": "Stock",
+                  "symbol": "KO"
+                },
+                "date": "2026-10-20"
+              },
+              "pnl": {
+                "kind": "Unavailable",
+                "reason": "MarkMissing",
+                "instrument": {
+                  "kind": "Stock",
+                  "symbol": "KO"
+                },
+                "date": "2026-10-20"
+              },
+              "rewardRiskNow": {
+                "kind": "Unavailable",
+                "reason": "MarkMissing",
+                "instrument": {
+                  "kind": "Stock",
+                  "symbol": "KO"
+                },
+                "date": "2026-10-20"
+              }
+            },
+            "reflections": {
+              "due": 0,
+              "later": 0
+            }
+          },
+          {
             "tradeId": "fx-0046",
             "underlying": "CSCO",
             "lastActivity": "2026-10-19T20:05:00Z",
@@ -8501,94 +8583,6 @@
             }
           },
           {
-            "tradeId": "fx-0072",
-            "underlying": "KO",
-            "lastActivity": "2026-10-12T18:00:00Z",
-            "summary": {
-              "kind": "Stock",
-              "direction": "Long",
-              "quantity": "120/1",
-              "price": "3019/60"
-            },
-            "band": "EvidenceLimited",
-            "reasons": [
-              {
-                "code": "Unavailable",
-                "reason": "MarkMissing",
-                "instrument": {
-                  "kind": "Stock",
-                  "symbol": "KO"
-                },
-                "date": "2026-10-20"
-              }
-            ],
-            "basis": {
-              "kind": "Unavailable",
-              "reason": "MarkMissing",
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "KO"
-              },
-              "date": "2026-10-20"
-            },
-            "progress": {
-              "kind": "Walked",
-              "panels": [
-                {
-                  "panel": "Marks",
-                  "done": false,
-                  "resolved": 0,
-                  "needed": 1
-                },
-                {
-                  "panel": "Reflections",
-                  "done": true,
-                  "dueNow": 0,
-                  "later": 0
-                },
-                {
-                  "panel": "Action",
-                  "done": false,
-                  "owed": true
-                }
-              ],
-              "done": false
-            },
-            "figures": {
-              "riskToStop": {
-                "kind": "Unavailable",
-                "reason": "MarkMissing",
-                "instrument": {
-                  "kind": "Stock",
-                  "symbol": "KO"
-                },
-                "date": "2026-10-20"
-              },
-              "pnl": {
-                "kind": "Unavailable",
-                "reason": "MarkMissing",
-                "instrument": {
-                  "kind": "Stock",
-                  "symbol": "KO"
-                },
-                "date": "2026-10-20"
-              },
-              "rewardRiskNow": {
-                "kind": "Unavailable",
-                "reason": "MarkMissing",
-                "instrument": {
-                  "kind": "Stock",
-                  "symbol": "KO"
-                },
-                "date": "2026-10-20"
-              }
-            },
-            "reflections": {
-              "due": 0,
-              "later": 0
-            }
-          },
-          {
             "tradeId": "fx-0089",
             "underlying": "PFE",
             "lastActivity": "2026-10-12T15:00:00Z",
@@ -8766,6 +8760,10 @@
         },
         {
           "code": "ActionMissing",
+          "tradeId": "fx-0072"
+        },
+        {
+          "code": "ActionMissing",
           "tradeId": "fx-0046"
         },
         {
@@ -8785,16 +8783,627 @@
         },
         {
           "code": "ActionMissing",
-          "tradeId": "fx-0072"
-        },
-        {
-          "code": "ActionMissing",
           "tradeId": "fx-0089"
         }
       ]
     }
   },
   "reviewTrades": [
+    {
+      "tradeId": "fx-0072",
+      "underlying": "KO",
+      "lifecycle": "Open",
+      "attention": {
+        "tradeId": "fx-0072",
+        "underlying": "KO",
+        "lastActivity": "2026-10-12T18:00:00Z",
+        "summary": {
+          "kind": "Stock",
+          "direction": "Long",
+          "quantity": "120/1",
+          "price": "3019/60"
+        },
+        "band": "ExitNotCarriedOut",
+        "reasons": [
+          {
+            "code": "ExitNotCarriedOut"
+          }
+        ],
+        "basis": {
+          "kind": "Unavailable",
+          "reason": "MarkMissing",
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "KO"
+          },
+          "date": "2026-10-20"
+        }
+      },
+      "labels": {
+        "strategy": "Long Stock",
+        "account": "Individual",
+        "institution": "Fidelity"
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": "120/1",
+        "price": "3019/60"
+      },
+      "frame": {
+        "instrumentKey": "KO",
+        "tradingDate": "2026-10-20",
+        "closeInstant": "2026-10-20T20:00:00Z",
+        "previousCloseInstant": "2026-10-19T20:00:00Z",
+        "resolution": {
+          "kind": "Missing",
+          "stale": {
+            "tradingDate": "2026-10-19",
+            "price": "49.5",
+            "revisionId": "fx-0105",
+            "revisionNumber": 2,
+            "closeInstant": "2026-10-19T20:00:00Z"
+          }
+        }
+      },
+      "evaluation": {
+        "kind": "Evaluated",
+        "valuationDate": "2026-10-20",
+        "coverage": {
+          "kind": "Missing"
+        },
+        "openQuantity": {
+          "kind": "Value",
+          "value": "120/1"
+        },
+        "openCost": {
+          "kind": "Value",
+          "value": "6038/1"
+        },
+        "unconsumedOpeningFees": {
+          "kind": "Value",
+          "value": "3/1"
+        },
+        "marketValue": {
+          "kind": "Unavailable",
+          "reason": "MarkMissing",
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "KO"
+          },
+          "date": "2026-10-20"
+        },
+        "remainingOpenPnl": {
+          "kind": "Unavailable",
+          "reason": "MarkMissing",
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "KO"
+          },
+          "date": "2026-10-20"
+        },
+        "realizedToDate": {
+          "kind": "Value",
+          "value": "0/1"
+        },
+        "currentMarkedPnl": {
+          "kind": "Unavailable",
+          "reason": "MarkMissing",
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "KO"
+          },
+          "date": "2026-10-20"
+        },
+        "currentMarkedPnlInPlanR": {
+          "kind": "Unavailable",
+          "reason": "MarkMissing",
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "KO"
+          },
+          "date": "2026-10-20"
+        },
+        "incurredFees": {
+          "kind": "Value",
+          "value": "3/1"
+        },
+        "ongoingRiskToStop": {
+          "kind": "Unavailable",
+          "reason": "MarkMissing",
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "KO"
+          },
+          "date": "2026-10-20"
+        },
+        "worstCaseOngoingRisk": {
+          "kind": "Unavailable",
+          "reason": "MarkMissing",
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "KO"
+          },
+          "date": "2026-10-20"
+        },
+        "incrementalRewardToTarget": {
+          "kind": "Unavailable",
+          "reason": "MarkMissing",
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "KO"
+          },
+          "date": "2026-10-20"
+        },
+        "rewardRiskNow": {
+          "kind": "Unavailable",
+          "reason": "MarkMissing",
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "KO"
+          },
+          "date": "2026-10-20"
+        },
+        "ongoingRiskToStopInPlanR": {
+          "kind": "Unavailable",
+          "reason": "MarkMissing",
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "KO"
+          },
+          "date": "2026-10-20"
+        },
+        "worstCaseOngoingRiskInPlanR": {
+          "kind": "Unavailable",
+          "reason": "MarkMissing",
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "KO"
+          },
+          "date": "2026-10-20"
+        },
+        "incrementalRewardToTargetInPlanR": {
+          "kind": "Unavailable",
+          "reason": "MarkMissing",
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "KO"
+          },
+          "date": "2026-10-20"
+        },
+        "maximumIncrementalReward": {
+          "kind": "Unbounded",
+          "direction": "Above",
+          "explanation": "A long Stock Position has no price ceiling"
+        },
+        "maximumIncrementalRewardInPlanR": {
+          "kind": "Unbounded",
+          "direction": "Above",
+          "explanation": "A long Stock Position has no price ceiling"
+        },
+        "conditions": [
+          {
+            "id": "stop-1",
+            "role": "Stop",
+            "kind": "UnderlyingPrice",
+            "boundary": "47.5",
+            "result": {
+              "kind": "Unavailable",
+              "reason": "MarkMissing",
+              "instrument": {
+                "kind": "Stock",
+                "symbol": "KO"
+              },
+              "date": "2026-10-20"
+            }
+          },
+          {
+            "id": "target-1",
+            "role": "Target",
+            "kind": "UnderlyingPrice",
+            "boundary": "56",
+            "result": {
+              "kind": "Unavailable",
+              "reason": "MarkMissing",
+              "instrument": {
+                "kind": "Stock",
+                "symbol": "KO"
+              },
+              "date": "2026-10-20"
+            }
+          }
+        ],
+        "expirationValueAtUnderlyingClose": {
+          "kind": "NotApplicable",
+          "reason": "NoOptionExpirationAnchor"
+        },
+        "settlement": [],
+        "observation": {
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "KO"
+          },
+          "tradingDate": "2026-10-20",
+          "mark": null
+        },
+        "deviations": [],
+        "coveredSubtotal": null,
+        "atEntry": null,
+        "planBaseline": {
+          "kind": "Value",
+          "value": {
+            "originalPlannedRisk": "250/1",
+            "originalPlannedReward": "600/1",
+            "rewardRiskRatio": "12/5",
+            "oneR": "250/1",
+            "stopBasis": [
+              {
+                "condition": {
+                  "factId": "fx-0075",
+                  "kind": "UnderlyingPrice",
+                  "price": "47.5"
+                },
+                "distance": "250/1"
+              }
+            ],
+            "targetBasis": [
+              {
+                "condition": {
+                  "factId": "fx-0076",
+                  "kind": "UnderlyingPrice",
+                  "price": "56"
+                },
+                "distance": "600/1"
+              }
+            ]
+          }
+        },
+        "oneR": {
+          "kind": "Value",
+          "value": "250/1"
+        },
+        "entryQuality": {
+          "kind": "Value",
+          "value": {
+            "averageEntry": {
+              "kind": "Value",
+              "value": "2509/50"
+            },
+            "windowQuantity": {
+              "kind": "Value",
+              "value": "100/1"
+            },
+            "windowFees": {
+              "kind": "Value",
+              "value": "2/1"
+            },
+            "actualInitialRisk": {
+              "kind": "Value",
+              "value": "270/1"
+            },
+            "actualInitialReward": {
+              "kind": "Value",
+              "value": "580/1"
+            },
+            "riskInPlanR": {
+              "kind": "Value",
+              "value": "27/25"
+            },
+            "slippage": {
+              "kind": "Value",
+              "value": "18/1"
+            },
+            "sizeRatio": {
+              "kind": "Value",
+              "value": "1/1"
+            },
+            "plannedRewardRisk": {
+              "kind": "Value",
+              "value": "12/5"
+            },
+            "actualRewardRisk": {
+              "kind": "Value",
+              "value": "58/27"
+            },
+            "flags": []
+          }
+        },
+        "staleContext": {
+          "tradingDate": "2026-10-19",
+          "price": "49.5",
+          "revisionId": "fx-0105",
+          "revisionNumber": 2,
+          "closeInstant": "2026-10-19T20:00:00Z"
+        }
+      },
+      "datedLastClose": {
+        "tradingDate": "2026-10-19",
+        "evaluation": {
+          "kind": "Evaluated",
+          "valuationDate": "2026-10-19",
+          "coverage": {
+            "kind": "Available",
+            "revisionId": "fx-0105",
+            "revisionNumber": 2
+          },
+          "openQuantity": {
+            "kind": "Value",
+            "value": "120/1"
+          },
+          "openCost": {
+            "kind": "Value",
+            "value": "6038/1"
+          },
+          "unconsumedOpeningFees": {
+            "kind": "Value",
+            "value": "3/1"
+          },
+          "marketValue": {
+            "kind": "Value",
+            "value": "5940/1"
+          },
+          "remainingOpenPnl": {
+            "kind": "Value",
+            "value": "-101/1"
+          },
+          "realizedToDate": {
+            "kind": "Value",
+            "value": "0/1"
+          },
+          "currentMarkedPnl": {
+            "kind": "Value",
+            "value": "-101/1"
+          },
+          "currentMarkedPnlInPlanR": {
+            "kind": "Value",
+            "value": "-101/250"
+          },
+          "incurredFees": {
+            "kind": "Value",
+            "value": "3/1"
+          },
+          "ongoingRiskToStop": {
+            "kind": "Value",
+            "value": "240/1"
+          },
+          "worstCaseOngoingRisk": {
+            "kind": "Value",
+            "value": "5940/1"
+          },
+          "incrementalRewardToTarget": {
+            "kind": "Value",
+            "value": "780/1"
+          },
+          "rewardRiskNow": {
+            "kind": "Value",
+            "value": "13/4"
+          },
+          "ongoingRiskToStopInPlanR": {
+            "kind": "Value",
+            "value": "24/25"
+          },
+          "worstCaseOngoingRiskInPlanR": {
+            "kind": "Value",
+            "value": "594/25"
+          },
+          "incrementalRewardToTargetInPlanR": {
+            "kind": "Value",
+            "value": "78/25"
+          },
+          "maximumIncrementalReward": {
+            "kind": "Unbounded",
+            "direction": "Above",
+            "explanation": "A long Stock Position has no price ceiling"
+          },
+          "maximumIncrementalRewardInPlanR": {
+            "kind": "Unbounded",
+            "direction": "Above",
+            "explanation": "A long Stock Position has no price ceiling"
+          },
+          "conditions": [
+            {
+              "id": "stop-1",
+              "role": "Stop",
+              "kind": "UnderlyingPrice",
+              "boundary": "47.5",
+              "result": {
+                "kind": "Value",
+                "value": {
+                  "status": "Active",
+                  "distance": {
+                    "dollars": "240/1",
+                    "planR": "24/25"
+                  },
+                  "overrun": null,
+                  "evidence": {
+                    "instrument": {
+                      "kind": "Stock",
+                      "symbol": "KO"
+                    },
+                    "date": "2026-10-19",
+                    "mark": {
+                      "revisionId": "fx-0105",
+                      "revisionNumber": 2,
+                      "price": "49.5"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "id": "target-1",
+              "role": "Target",
+              "kind": "UnderlyingPrice",
+              "boundary": "56",
+              "result": {
+                "kind": "Value",
+                "value": {
+                  "status": "Active",
+                  "distance": {
+                    "dollars": "780/1",
+                    "planR": "78/25"
+                  },
+                  "overrun": null,
+                  "evidence": {
+                    "instrument": {
+                      "kind": "Stock",
+                      "symbol": "KO"
+                    },
+                    "date": "2026-10-19",
+                    "mark": {
+                      "revisionId": "fx-0105",
+                      "revisionNumber": 2,
+                      "price": "49.5"
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "expirationValueAtUnderlyingClose": {
+            "kind": "NotApplicable",
+            "reason": "NoOptionExpirationAnchor"
+          },
+          "settlement": [],
+          "observation": {
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "KO"
+            },
+            "tradingDate": "2026-10-19",
+            "mark": {
+              "revisionId": "fx-0105",
+              "revisionNumber": 2,
+              "price": "49.5"
+            }
+          },
+          "deviations": [],
+          "coveredSubtotal": null,
+          "atEntry": null,
+          "planBaseline": {
+            "kind": "Value",
+            "value": {
+              "originalPlannedRisk": "250/1",
+              "originalPlannedReward": "600/1",
+              "rewardRiskRatio": "12/5",
+              "oneR": "250/1",
+              "stopBasis": [
+                {
+                  "condition": {
+                    "factId": "fx-0075",
+                    "kind": "UnderlyingPrice",
+                    "price": "47.5"
+                  },
+                  "distance": "250/1"
+                }
+              ],
+              "targetBasis": [
+                {
+                  "condition": {
+                    "factId": "fx-0076",
+                    "kind": "UnderlyingPrice",
+                    "price": "56"
+                  },
+                  "distance": "600/1"
+                }
+              ]
+            }
+          },
+          "oneR": {
+            "kind": "Value",
+            "value": "250/1"
+          },
+          "entryQuality": {
+            "kind": "Value",
+            "value": {
+              "averageEntry": {
+                "kind": "Value",
+                "value": "2509/50"
+              },
+              "windowQuantity": {
+                "kind": "Value",
+                "value": "100/1"
+              },
+              "windowFees": {
+                "kind": "Value",
+                "value": "2/1"
+              },
+              "actualInitialRisk": {
+                "kind": "Value",
+                "value": "270/1"
+              },
+              "actualInitialReward": {
+                "kind": "Value",
+                "value": "580/1"
+              },
+              "riskInPlanR": {
+                "kind": "Value",
+                "value": "27/25"
+              },
+              "slippage": {
+                "kind": "Value",
+                "value": "18/1"
+              },
+              "sizeRatio": {
+                "kind": "Value",
+                "value": "1/1"
+              },
+              "plannedRewardRisk": {
+                "kind": "Value",
+                "value": "12/5"
+              },
+              "actualRewardRisk": {
+                "kind": "Value",
+                "value": "58/27"
+              },
+              "flags": []
+            }
+          }
+        }
+      },
+      "settlement": [],
+      "payoff": {
+        "planned": {
+          "kind": "NotApplicable",
+          "reason": "NoOptionExpirationAnchor"
+        },
+        "current": {
+          "kind": "NotApplicable",
+          "reason": "NoOptionExpirationAnchor"
+        }
+      },
+      "reflections": [],
+      "progress": {
+        "kind": "Walked",
+        "panels": [
+          {
+            "panel": "Marks",
+            "done": false,
+            "resolved": 0,
+            "needed": 1
+          },
+          {
+            "panel": "Reflections",
+            "done": true,
+            "dueNow": 0,
+            "later": 0
+          },
+          {
+            "panel": "Action",
+            "done": false,
+            "owed": true
+          }
+        ],
+        "done": false
+      },
+      "form": {
+        "kind": "New",
+        "viewState": {
+          "selectedAction": "Hold"
+        }
+      },
+      "definitionRevision": "fx-0008"
+    },
     {
       "tradeId": "fx-0046",
       "underlying": "CSCO",
@@ -9404,8 +10013,6 @@
               {
                 "id": "prompt.position-change-reflection.decision-mode",
                 "kind": "SingleSelect",
-                "text": "Decision mode",
-                "required": true,
                 "options": [
                   {
                     "id": "option.position-change-reflection.decision-mode.as-planned",
@@ -9423,13 +10030,13 @@
                     "id": "option.position-change-reflection.decision-mode.externally-imposed",
                     "label": "Externally Imposed"
                   }
-                ]
+                ],
+                "required": true,
+                "text": "Decision mode"
               },
               {
                 "id": "prompt.position-change-reflection.primary-emotion",
                 "kind": "SingleSelect",
-                "text": "Primary emotion",
-                "required": true,
                 "options": [
                   {
                     "id": "option.position-change-reflection.primary-emotion.calm",
@@ -9463,21 +10070,23 @@
                     "id": "option.position-change-reflection.primary-emotion.other",
                     "label": "Other"
                   }
-                ]
+                ],
+                "required": true,
+                "text": "Primary emotion"
               },
               {
                 "id": "prompt.position-change-reflection.decision-confidence",
                 "kind": "Scale",
-                "text": "Decision confidence",
-                "required": true,
+                "max": 5,
                 "min": 1,
-                "max": 5
+                "required": true,
+                "text": "Decision confidence"
               },
               {
                 "id": "prompt.position-change-reflection.note",
                 "kind": "Text",
-                "text": "Note",
-                "required": false
+                "required": false,
+                "text": "Note"
               }
             ]
           },
@@ -9520,8 +10129,6 @@
               {
                 "id": "prompt.position-change-reflection.decision-mode",
                 "kind": "SingleSelect",
-                "text": "Decision mode",
-                "required": true,
                 "options": [
                   {
                     "id": "option.position-change-reflection.decision-mode.as-planned",
@@ -9539,13 +10146,13 @@
                     "id": "option.position-change-reflection.decision-mode.externally-imposed",
                     "label": "Externally Imposed"
                   }
-                ]
+                ],
+                "required": true,
+                "text": "Decision mode"
               },
               {
                 "id": "prompt.position-change-reflection.primary-emotion",
                 "kind": "SingleSelect",
-                "text": "Primary emotion",
-                "required": true,
                 "options": [
                   {
                     "id": "option.position-change-reflection.primary-emotion.calm",
@@ -9579,21 +10186,23 @@
                     "id": "option.position-change-reflection.primary-emotion.other",
                     "label": "Other"
                   }
-                ]
+                ],
+                "required": true,
+                "text": "Primary emotion"
               },
               {
                 "id": "prompt.position-change-reflection.decision-confidence",
                 "kind": "Scale",
-                "text": "Decision confidence",
-                "required": true,
+                "max": 5,
                 "min": 1,
-                "max": 5
+                "required": true,
+                "text": "Decision confidence"
               },
               {
                 "id": "prompt.position-change-reflection.note",
                 "kind": "Text",
-                "text": "Note",
-                "required": false
+                "required": false,
+                "text": "Note"
               }
             ]
           },
@@ -10351,627 +10960,6 @@
               "value": "353/157"
             },
             "flags": []
-          }
-        }
-      },
-      "settlement": [],
-      "payoff": {
-        "planned": {
-          "kind": "NotApplicable",
-          "reason": "NoOptionExpirationAnchor"
-        },
-        "current": {
-          "kind": "NotApplicable",
-          "reason": "NoOptionExpirationAnchor"
-        }
-      },
-      "reflections": [],
-      "progress": {
-        "kind": "Walked",
-        "panels": [
-          {
-            "panel": "Marks",
-            "done": false,
-            "resolved": 0,
-            "needed": 1
-          },
-          {
-            "panel": "Reflections",
-            "done": true,
-            "dueNow": 0,
-            "later": 0
-          },
-          {
-            "panel": "Action",
-            "done": false,
-            "owed": true
-          }
-        ],
-        "done": false
-      },
-      "form": {
-        "kind": "New",
-        "viewState": {
-          "selectedAction": "Hold"
-        }
-      },
-      "definitionRevision": "fx-0008"
-    },
-    {
-      "tradeId": "fx-0072",
-      "underlying": "KO",
-      "lifecycle": "Open",
-      "attention": {
-        "tradeId": "fx-0072",
-        "underlying": "KO",
-        "lastActivity": "2026-10-12T18:00:00Z",
-        "summary": {
-          "kind": "Stock",
-          "direction": "Long",
-          "quantity": "120/1",
-          "price": "3019/60"
-        },
-        "band": "EvidenceLimited",
-        "reasons": [
-          {
-            "code": "Unavailable",
-            "reason": "MarkMissing",
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "KO"
-            },
-            "date": "2026-10-20"
-          }
-        ],
-        "basis": {
-          "kind": "Unavailable",
-          "reason": "MarkMissing",
-          "instrument": {
-            "kind": "Stock",
-            "symbol": "KO"
-          },
-          "date": "2026-10-20"
-        }
-      },
-      "labels": {
-        "strategy": "Long Stock",
-        "account": "Individual",
-        "institution": "Fidelity"
-      },
-      "summary": {
-        "kind": "Stock",
-        "direction": "Long",
-        "quantity": "120/1",
-        "price": "3019/60"
-      },
-      "frame": {
-        "instrumentKey": "KO",
-        "tradingDate": "2026-10-20",
-        "closeInstant": "2026-10-20T20:00:00Z",
-        "previousCloseInstant": "2026-10-19T20:00:00Z",
-        "resolution": {
-          "kind": "Missing",
-          "stale": {
-            "tradingDate": "2026-10-19",
-            "price": "49.5",
-            "revisionId": "fx-0105",
-            "revisionNumber": 2,
-            "closeInstant": "2026-10-19T20:00:00Z"
-          }
-        }
-      },
-      "evaluation": {
-        "kind": "Evaluated",
-        "valuationDate": "2026-10-20",
-        "coverage": {
-          "kind": "Missing"
-        },
-        "openQuantity": {
-          "kind": "Value",
-          "value": "120/1"
-        },
-        "openCost": {
-          "kind": "Value",
-          "value": "6038/1"
-        },
-        "unconsumedOpeningFees": {
-          "kind": "Value",
-          "value": "3/1"
-        },
-        "marketValue": {
-          "kind": "Unavailable",
-          "reason": "MarkMissing",
-          "instrument": {
-            "kind": "Stock",
-            "symbol": "KO"
-          },
-          "date": "2026-10-20"
-        },
-        "remainingOpenPnl": {
-          "kind": "Unavailable",
-          "reason": "MarkMissing",
-          "instrument": {
-            "kind": "Stock",
-            "symbol": "KO"
-          },
-          "date": "2026-10-20"
-        },
-        "realizedToDate": {
-          "kind": "Value",
-          "value": "0/1"
-        },
-        "currentMarkedPnl": {
-          "kind": "Unavailable",
-          "reason": "MarkMissing",
-          "instrument": {
-            "kind": "Stock",
-            "symbol": "KO"
-          },
-          "date": "2026-10-20"
-        },
-        "currentMarkedPnlInPlanR": {
-          "kind": "Unavailable",
-          "reason": "MarkMissing",
-          "instrument": {
-            "kind": "Stock",
-            "symbol": "KO"
-          },
-          "date": "2026-10-20"
-        },
-        "incurredFees": {
-          "kind": "Value",
-          "value": "3/1"
-        },
-        "ongoingRiskToStop": {
-          "kind": "Unavailable",
-          "reason": "MarkMissing",
-          "instrument": {
-            "kind": "Stock",
-            "symbol": "KO"
-          },
-          "date": "2026-10-20"
-        },
-        "worstCaseOngoingRisk": {
-          "kind": "Unavailable",
-          "reason": "MarkMissing",
-          "instrument": {
-            "kind": "Stock",
-            "symbol": "KO"
-          },
-          "date": "2026-10-20"
-        },
-        "incrementalRewardToTarget": {
-          "kind": "Unavailable",
-          "reason": "MarkMissing",
-          "instrument": {
-            "kind": "Stock",
-            "symbol": "KO"
-          },
-          "date": "2026-10-20"
-        },
-        "rewardRiskNow": {
-          "kind": "Unavailable",
-          "reason": "MarkMissing",
-          "instrument": {
-            "kind": "Stock",
-            "symbol": "KO"
-          },
-          "date": "2026-10-20"
-        },
-        "ongoingRiskToStopInPlanR": {
-          "kind": "Unavailable",
-          "reason": "MarkMissing",
-          "instrument": {
-            "kind": "Stock",
-            "symbol": "KO"
-          },
-          "date": "2026-10-20"
-        },
-        "worstCaseOngoingRiskInPlanR": {
-          "kind": "Unavailable",
-          "reason": "MarkMissing",
-          "instrument": {
-            "kind": "Stock",
-            "symbol": "KO"
-          },
-          "date": "2026-10-20"
-        },
-        "incrementalRewardToTargetInPlanR": {
-          "kind": "Unavailable",
-          "reason": "MarkMissing",
-          "instrument": {
-            "kind": "Stock",
-            "symbol": "KO"
-          },
-          "date": "2026-10-20"
-        },
-        "maximumIncrementalReward": {
-          "kind": "Unbounded",
-          "direction": "Above",
-          "explanation": "A long Stock Position has no price ceiling"
-        },
-        "maximumIncrementalRewardInPlanR": {
-          "kind": "Unbounded",
-          "direction": "Above",
-          "explanation": "A long Stock Position has no price ceiling"
-        },
-        "conditions": [
-          {
-            "id": "stop-1",
-            "role": "Stop",
-            "kind": "UnderlyingPrice",
-            "boundary": "47.5",
-            "result": {
-              "kind": "Unavailable",
-              "reason": "MarkMissing",
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "KO"
-              },
-              "date": "2026-10-20"
-            }
-          },
-          {
-            "id": "target-1",
-            "role": "Target",
-            "kind": "UnderlyingPrice",
-            "boundary": "56",
-            "result": {
-              "kind": "Unavailable",
-              "reason": "MarkMissing",
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "KO"
-              },
-              "date": "2026-10-20"
-            }
-          }
-        ],
-        "expirationValueAtUnderlyingClose": {
-          "kind": "NotApplicable",
-          "reason": "NoOptionExpirationAnchor"
-        },
-        "settlement": [],
-        "observation": {
-          "instrument": {
-            "kind": "Stock",
-            "symbol": "KO"
-          },
-          "tradingDate": "2026-10-20",
-          "mark": null
-        },
-        "deviations": [],
-        "coveredSubtotal": null,
-        "atEntry": null,
-        "planBaseline": {
-          "kind": "Value",
-          "value": {
-            "originalPlannedRisk": "250/1",
-            "originalPlannedReward": "600/1",
-            "rewardRiskRatio": "12/5",
-            "oneR": "250/1",
-            "stopBasis": [
-              {
-                "condition": {
-                  "factId": "fx-0075",
-                  "kind": "UnderlyingPrice",
-                  "price": "47.5"
-                },
-                "distance": "250/1"
-              }
-            ],
-            "targetBasis": [
-              {
-                "condition": {
-                  "factId": "fx-0076",
-                  "kind": "UnderlyingPrice",
-                  "price": "56"
-                },
-                "distance": "600/1"
-              }
-            ]
-          }
-        },
-        "oneR": {
-          "kind": "Value",
-          "value": "250/1"
-        },
-        "entryQuality": {
-          "kind": "Value",
-          "value": {
-            "averageEntry": {
-              "kind": "Value",
-              "value": "2509/50"
-            },
-            "windowQuantity": {
-              "kind": "Value",
-              "value": "100/1"
-            },
-            "windowFees": {
-              "kind": "Value",
-              "value": "2/1"
-            },
-            "actualInitialRisk": {
-              "kind": "Value",
-              "value": "270/1"
-            },
-            "actualInitialReward": {
-              "kind": "Value",
-              "value": "580/1"
-            },
-            "riskInPlanR": {
-              "kind": "Value",
-              "value": "27/25"
-            },
-            "slippage": {
-              "kind": "Value",
-              "value": "18/1"
-            },
-            "sizeRatio": {
-              "kind": "Value",
-              "value": "1/1"
-            },
-            "plannedRewardRisk": {
-              "kind": "Value",
-              "value": "12/5"
-            },
-            "actualRewardRisk": {
-              "kind": "Value",
-              "value": "58/27"
-            },
-            "flags": []
-          }
-        },
-        "staleContext": {
-          "tradingDate": "2026-10-19",
-          "price": "49.5",
-          "revisionId": "fx-0105",
-          "revisionNumber": 2,
-          "closeInstant": "2026-10-19T20:00:00Z"
-        }
-      },
-      "datedLastClose": {
-        "tradingDate": "2026-10-19",
-        "evaluation": {
-          "kind": "Evaluated",
-          "valuationDate": "2026-10-19",
-          "coverage": {
-            "kind": "Available",
-            "revisionId": "fx-0105",
-            "revisionNumber": 2
-          },
-          "openQuantity": {
-            "kind": "Value",
-            "value": "120/1"
-          },
-          "openCost": {
-            "kind": "Value",
-            "value": "6038/1"
-          },
-          "unconsumedOpeningFees": {
-            "kind": "Value",
-            "value": "3/1"
-          },
-          "marketValue": {
-            "kind": "Value",
-            "value": "5940/1"
-          },
-          "remainingOpenPnl": {
-            "kind": "Value",
-            "value": "-101/1"
-          },
-          "realizedToDate": {
-            "kind": "Value",
-            "value": "0/1"
-          },
-          "currentMarkedPnl": {
-            "kind": "Value",
-            "value": "-101/1"
-          },
-          "currentMarkedPnlInPlanR": {
-            "kind": "Value",
-            "value": "-101/250"
-          },
-          "incurredFees": {
-            "kind": "Value",
-            "value": "3/1"
-          },
-          "ongoingRiskToStop": {
-            "kind": "Value",
-            "value": "240/1"
-          },
-          "worstCaseOngoingRisk": {
-            "kind": "Value",
-            "value": "5940/1"
-          },
-          "incrementalRewardToTarget": {
-            "kind": "Value",
-            "value": "780/1"
-          },
-          "rewardRiskNow": {
-            "kind": "Value",
-            "value": "13/4"
-          },
-          "ongoingRiskToStopInPlanR": {
-            "kind": "Value",
-            "value": "24/25"
-          },
-          "worstCaseOngoingRiskInPlanR": {
-            "kind": "Value",
-            "value": "594/25"
-          },
-          "incrementalRewardToTargetInPlanR": {
-            "kind": "Value",
-            "value": "78/25"
-          },
-          "maximumIncrementalReward": {
-            "kind": "Unbounded",
-            "direction": "Above",
-            "explanation": "A long Stock Position has no price ceiling"
-          },
-          "maximumIncrementalRewardInPlanR": {
-            "kind": "Unbounded",
-            "direction": "Above",
-            "explanation": "A long Stock Position has no price ceiling"
-          },
-          "conditions": [
-            {
-              "id": "stop-1",
-              "role": "Stop",
-              "kind": "UnderlyingPrice",
-              "boundary": "47.5",
-              "result": {
-                "kind": "Value",
-                "value": {
-                  "status": "Active",
-                  "distance": {
-                    "dollars": "240/1",
-                    "planR": "24/25"
-                  },
-                  "overrun": null,
-                  "evidence": {
-                    "instrument": {
-                      "kind": "Stock",
-                      "symbol": "KO"
-                    },
-                    "date": "2026-10-19",
-                    "mark": {
-                      "revisionId": "fx-0105",
-                      "revisionNumber": 2,
-                      "price": "49.5"
-                    }
-                  }
-                }
-              }
-            },
-            {
-              "id": "target-1",
-              "role": "Target",
-              "kind": "UnderlyingPrice",
-              "boundary": "56",
-              "result": {
-                "kind": "Value",
-                "value": {
-                  "status": "Active",
-                  "distance": {
-                    "dollars": "780/1",
-                    "planR": "78/25"
-                  },
-                  "overrun": null,
-                  "evidence": {
-                    "instrument": {
-                      "kind": "Stock",
-                      "symbol": "KO"
-                    },
-                    "date": "2026-10-19",
-                    "mark": {
-                      "revisionId": "fx-0105",
-                      "revisionNumber": 2,
-                      "price": "49.5"
-                    }
-                  }
-                }
-              }
-            }
-          ],
-          "expirationValueAtUnderlyingClose": {
-            "kind": "NotApplicable",
-            "reason": "NoOptionExpirationAnchor"
-          },
-          "settlement": [],
-          "observation": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "KO"
-            },
-            "tradingDate": "2026-10-19",
-            "mark": {
-              "revisionId": "fx-0105",
-              "revisionNumber": 2,
-              "price": "49.5"
-            }
-          },
-          "deviations": [],
-          "coveredSubtotal": null,
-          "atEntry": null,
-          "planBaseline": {
-            "kind": "Value",
-            "value": {
-              "originalPlannedRisk": "250/1",
-              "originalPlannedReward": "600/1",
-              "rewardRiskRatio": "12/5",
-              "oneR": "250/1",
-              "stopBasis": [
-                {
-                  "condition": {
-                    "factId": "fx-0075",
-                    "kind": "UnderlyingPrice",
-                    "price": "47.5"
-                  },
-                  "distance": "250/1"
-                }
-              ],
-              "targetBasis": [
-                {
-                  "condition": {
-                    "factId": "fx-0076",
-                    "kind": "UnderlyingPrice",
-                    "price": "56"
-                  },
-                  "distance": "600/1"
-                }
-              ]
-            }
-          },
-          "oneR": {
-            "kind": "Value",
-            "value": "250/1"
-          },
-          "entryQuality": {
-            "kind": "Value",
-            "value": {
-              "averageEntry": {
-                "kind": "Value",
-                "value": "2509/50"
-              },
-              "windowQuantity": {
-                "kind": "Value",
-                "value": "100/1"
-              },
-              "windowFees": {
-                "kind": "Value",
-                "value": "2/1"
-              },
-              "actualInitialRisk": {
-                "kind": "Value",
-                "value": "270/1"
-              },
-              "actualInitialReward": {
-                "kind": "Value",
-                "value": "580/1"
-              },
-              "riskInPlanR": {
-                "kind": "Value",
-                "value": "27/25"
-              },
-              "slippage": {
-                "kind": "Value",
-                "value": "18/1"
-              },
-              "sizeRatio": {
-                "kind": "Value",
-                "value": "1/1"
-              },
-              "plannedRewardRisk": {
-                "kind": "Value",
-                "value": "12/5"
-              },
-              "actualRewardRisk": {
-                "kind": "Value",
-                "value": "58/27"
-              },
-              "flags": []
-            }
           }
         }
       },
