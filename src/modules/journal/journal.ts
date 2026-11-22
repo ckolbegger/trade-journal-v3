@@ -563,7 +563,7 @@ export function createJournal(deps: JournalDeps): Journal {
     const earlier = value.earlier
       ?.filter((entry) => entry.entryTypeKey === 'entry-type.daily-trade-review')
       .map((entry) => historyActionOf(entry, definitions, labels))
-      .filter((action) => tradeId === undefined || action.reviewDate < reviewDate)
+      .filter((action) => (tradeId === undefined ? action.reviewDate >= since! : action.reviewDate < reviewDate))
       .sort(byDateThenTrade);
     return { kind: 'Actions', reviewDate, actions, ...(earlier && { earlier }), snapshot: { journalRevision: value.meta?.journalRevision ?? 0 } };
   }

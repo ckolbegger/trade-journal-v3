@@ -36,6 +36,22 @@ async function fixture() {
   return { journal, save };
 }
 
+describe('queryActions: earlier Actions since a date', () => {
+  it('should return no earlier Actions when since is on or after the Review Date', async () => {
+    const { journal, save } = await fixture();
+    await save('trade-1', '2026-10-12', { [ACTION]: option('Exit'), [INTENT]: { kind: 'Text', text: 'Done.' } });
+    await save('trade-2', '2026-10-13', { [ACTION]: option('Hold') });
+
+    const onDate = await journal.queryActions({ reviewDate: '2026-10-13', since: '2026-10-13' });
+    const after = await journal.queryActions({ reviewDate: '2026-10-13', since: '2026-10-14' });
+    const before = await journal.queryActions({ reviewDate: '2026-10-13', since: '2026-10-12' });
+
+    expect(onDate.earlier).toEqual([]);
+    expect(after.earlier).toEqual([]);
+    expect(before.earlier).toEqual([{ tradeId: 'trade-1', reviewDate: '2026-10-12', action: 'Exit', reason: 'Done.' }]);
+  });
+});
+
 describe('queryActionHistory: Actions over a span of Review Dates', () => {
   it('should return the Actions saved between two Review Dates, each with its Trade, Review Date, Action and reason', async () => {
     const { journal, save } = await fixture();
