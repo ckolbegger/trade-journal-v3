@@ -1,6 +1,7 @@
 import { Temporal } from 'temporal-polyfill';
-import { instrumentKey, type Instrument } from '../../domain/instrument/index.ts';
+import { instrumentKey, settlementDueOn, type Instrument, type OptionInstrument } from '../../domain/instrument/index.ts';
 import { openTradeSummary } from '../../domain/trade-summary.ts';
+import { Rational } from '../../domain/values/index.ts';
 import { derive, type DerivedTradeState, type IncoherentFacts, type LifecycleState, type TradeAnalysisRecord, type TradeEvaluation } from '../../domain/trade-analysis/index.ts';
 import { classifyDue, compareDueAnchors, compareOwed, owedStandingOf, type SessionCloses } from '../../domain/journal-debt/index.ts';
 import type { DebtProjection, HistoryAction, Journal, ObligationOutcome } from '../../modules/journal/index.ts';
@@ -29,6 +30,10 @@ import type {
   OwedReflectionsTrade,
   OwedTradeSummary,
   CardProgress,
+  DayChange,
+  DayNeed,
+  DayPastLine,
+  DaySummary,
   PanelProgress,
   PostMarksReview,
   PostSaveReview,
@@ -123,6 +128,51 @@ function observationNeeds(eligible: readonly EligibleTrade[]) {
 function earliestExposureDate(eligible: readonly EligibleTrade[]): string {
   const starts = eligible.map(({ summary, derivation }) => (derivation.kind === 'Derived' ? derivation.exposureStart : null) ?? summary.planTime);
   return Temporal.Instant.from(starts.reduce((a, b) => (Temporal.Instant.compare(b, a) < 0 ? b : a))).toZonedDateTimeISO('UTC').toPlainDate().toString();
+}
+
+// The day's change in Trade P&L over the walked Trades: each Trade's figure at the Review Date less its figure at the session before, a Trade
+// with no valuation then (not yet open) counting from nothing. Unavailable when a Review Date Mark is Missing, a Trade's facts cannot be
+// replayed, or either figure is Unavailable for any other reason, such as the earlier session's own Mark being Missing.
+function dayChangeOf(ranked: readonly { readonly valuation: ValuedTrade | undefined; readonly before: EligibleTrade['before'] }[], markMissing: boolean): DayChange {
+  if (markMissing) return { kind: 'Unavailable' };
+  let change = Rational.of(0n);
+  for (const { valuation, before } of ranked) {
+    const now = valuation?.evaluation.currentMarkedPnl;
+    if (now?.kind !== 'Value') return { kind: 'Unavailable' };
+    const earlier = before?.evaluation.currentMarkedPnl;
+    if (earlier === undefined || earlier.kind === 'NotApplicable') change = change.add(now.value);
+    else if (earlier.kind === 'Value') change = change.add(now.value.sub(earlier.value));
+    else return { kind: 'Unavailable' };
+  }
+  return { kind: 'Value', dollars: change };
+}
+
+const shiftDay = (date: string, days: number): string => Temporal.PlainDate.from(date).add({ days }).toString();
+const dayAfter = (date: string) => shiftDay(date, 1);
+const dayBefore = (date: string) => shiftDay(date, -1);
+
+// The session dates from `from` to `to`, both included, as the Review's calendar names them; none when the calendar does not cover them.
+function missedSessions(read: MarketDataReadSession, from: string, to: string): readonly string[] {
+  if (from > to) return [];
+  const found = read.sessionDatesBetween(from, to);
+  return found.kind === 'Sessions' ? found.dates : [];
+}
+
+// The option contracts the walked Trades still hold that expire after the Review Date, by expiration date, each date with the sessions left.
+function expirationsAhead(ranked: readonly { readonly item: ReviewTradeItem; readonly valuation: ValuedTrade | undefined }[], read: MarketDataReadSession, reviewDate: string): NonNullable<DaySummary['finished']>['due']['expirations'] {
+  const byDate = new Map<string, { tradeId: string; instrument: OptionInstrument }[]>();
+  for (const { item, valuation } of ranked) {
+    for (const { instrument, openLots } of valuation?.state.positions ?? []) {
+      if (instrument.kind !== 'Option' || openLots.length === 0 || settlementDueOn(instrument, reviewDate)) continue;
+      byDate.set(instrument.expiration, [...(byDate.get(instrument.expiration) ?? []), { tradeId: item.tradeId, instrument }]);
+    }
+  }
+  return [...byDate]
+    .sort(([a], [b]) => (a < b ? -1 : 1))
+    .map(([expiration, contracts]) => {
+      const sessions = read.sessionDatesBetween(dayAfter(reviewDate), expiration);
+      return { expiration, ...(sessions.kind === 'Sessions' && { sessionsLeft: sessions.dates.length }), contracts };
+    });
 }
 
 // Each Trade's most recent Action of the history read, which is by Review Date.
@@ -409,10 +459,38 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
       }));
   }
 
+  // Each walked Trade past its Stop or Target at the Review Date, with the sessions of the current run (the replay's `since`) through the
+  // Review Date. Only Trades the Review Date's conditions read as crossed are replayed, all in one run so their series share the session's scans.
+  async function pastLineOf(ranked: readonly { readonly item: ReviewTradeItem; readonly valuation: ValuedTrade | undefined }[], eligible: readonly EligibleTrade[], read: MarketDataReadSession, reviewDate: string): Promise<DayPastLine> {
+    const byId = new Map(eligible.map((entry) => [entry.analysis.tradeId, entry]));
+    const crossedNow = (evaluation: TradeEvaluation, role: 'Stop' | 'Target') =>
+      evaluation.conditions.some((condition) => {
+        const status = condition.result.kind === 'Value' ? condition.result.value.status : condition.underlyingReading?.status;
+        return condition.role === role && status !== undefined && status !== 'Active';
+      });
+    const runs = await Promise.all(
+      ranked.map(async ({ item, valuation }) => {
+        const entry = byId.get(item.tradeId)!;
+        const roles = (['Stop', 'Target'] as const).filter((role) => valuation !== undefined && crossedNow(valuation.evaluation, role));
+        if (roles.length === 0 || entry.integrity.kind !== 'Derived' || entry.analysis.positionChanges.length === 0) return [];
+        const replayed = await assembleReplay(deps, entry.analysis, entry.integrity, read, { withJournal: false });
+        const last = 'kind' in replayed ? undefined : replayed.sessions.at(-1);
+        if (last?.date !== reviewDate) return [];
+        return roles.flatMap((role) => {
+          const since = last.crossings?.[role === 'Stop' ? 'stop' : 'target'].since?.date;
+          const dates = since === undefined ? undefined : read.sessionDatesBetween(since, reviewDate);
+          return dates?.kind === 'Sessions' ? [{ role, tradeId: item.tradeId, sessions: dates.dates.length }] : [];
+        });
+      }),
+    );
+    const listed = (role: 'Stop' | 'Target') => runs.flat().filter((run) => run.role === role).map(({ tradeId, sessions }) => ({ tradeId, sessions }));
+    return { stop: listed('Stop'), target: listed('Target') };
+  }
+
   // One pass over the module reads. Its Review carries what the pass itself learned of the binding.
   // `withGaps` false skips the historical Mark-gap scan: the frames and snapshot are the ones `recover` gives, the gaps are left empty.
   // `from` is the Trade a save just resolved: the next step is looked for from it.
-  async function assemble(context: FrameContext, withGaps = true, from?: string): Promise<Pass> {
+  async function assemble(context: FrameContext, withGaps = true, from?: string, withFinished = false): Promise<Pass> {
     const session = await deps.marketData.query({ kind: 'ResolveSession', context });
     if (session.kind === 'Rejected') return session;
     if (session.kind !== 'Session') throw new Error(`unexpected session result: ${session.kind}`);
@@ -579,10 +657,53 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
       };
     };
     const completion = completionOf();
+    const settlementTrades = new Set(settlement.map((item) => item.tradeId));
+    const dueDebts = outstanding.filter((debt) => classifyDue(debt.dueAnchor, closes) === 'Due');
+    const marksToGo = today.filter((row) => row.task === 'Manual').length;
+    // The finished day's lists are read once nothing is to go, and by `open` alone: the replays they need stay out of the save passes.
+    const finished =
+      withFinished && completion.kind !== 'Incomplete'
+        ? {
+            pastLine: await pastLineOf(ranked, derivations, read, reviewDate),
+            chosen: ranked.flatMap(({ item }) => (item.tradeId in actions.actions ? [{ tradeId: item.tradeId, action: actions.actions[item.tradeId]!.action }] : [])),
+            due: {
+              sales: ranked.filter(({ item }) => actions.actions[item.tradeId]?.action === 'Exit').map(({ item }) => item.tradeId),
+              expirations: expirationsAhead(ranked, read, reviewDate),
+            },
+          }
+        : undefined;
+    const lastReviewed = savedActions?.earlier?.at(-1)?.reviewDate;
+    // The count starts the day after the latest earlier Action, or with none at the first exposure's date; with nothing walked nothing is missed.
+    const day: DaySummary = {
+      ...(finished && { finished }),
+      ...(read.nextSessionDate !== undefined && { nextReviewDate: read.nextSessionDate }),
+      missed: derivations.length === 0 ? [] : missedSessions(read, lastReviewed === undefined ? earliestExposureDate(derivations) : dayAfter(lastReviewed), dayBefore(reviewDate)),
+      trades: walked.length,
+      change: dayChangeOf(ranked, marksToGo > 0),
+      toGo: {
+        marks: marksToGo,
+        actions: walked.filter((item) => !(item.tradeId in actions.actions) && !settlementTrades.has(item.tradeId)).length,
+        expirations: settlement.length,
+        closeReviews: dueDebts.filter((debt) => debt.entryTypeKey === 'entry-type.close-review').length,
+        reflections: dueDebts.filter((debt) => debt.entryTypeKey !== 'entry-type.close-review').length,
+      },
+      lines: [
+        ...walked.map(({ tradeId, progress }) => ({
+          tradeId,
+          needs: progress.panels.flatMap((panel): DayNeed[] => {
+            if (panel.panel === 'Marks') return panel.done ? [] : ['Marks'];
+            if (panel.panel === 'Reflections') return panel.done ? [] : ['Reflection'];
+            if (panel.panel === 'Settlement') return ['Settlement'];
+            return panel.done || settlementTrades.has(tradeId) ? [] : ['Action'];
+          }),
+        })),
+        ...group.trades.filter(({ progress }) => !progress.done).map(({ tradeId }) => ({ tradeId, needs: ['Reflection' as const] })),
+      ],
+    };
 
     return {
       kind: 'Ready',
-      review: { reviewDate, cutoff, families, owed: group.trades, completion },
+      review: { reviewDate, cutoff, families, owed: group.trades, completion, day },
       evidence,
       nextTask: nextTaskOf(today, ranked.map(({ item }) => item.tradeId), actions.actions, new Set(walked.filter((item) => dueDebtIds(item.tradeId).length > 0).map((item) => item.tradeId)), group.trades, from),
       progress: { tradesWithAction: ranked.filter(({ item }) => item.tradeId in actions.actions).length, tradesEligible: ranked.length },
@@ -1056,7 +1177,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     // A Review is accepted only if the Workspace is unchanged across its assembly (A46).
     open: (request) =>
       coherently<OpenDailyReviewResult>(async () => {
-        const pass = await assemble({ kind: 'Current', asOf: request.asOf });
+        const pass = await assemble({ kind: 'Current', asOf: request.asOf }, true, undefined, true);
         if (pass.kind === 'Expired') return { retry: true };
         if (pass.kind === 'Empty') {
           const { reviewDate, cutoff, owed, evidence } = pass;

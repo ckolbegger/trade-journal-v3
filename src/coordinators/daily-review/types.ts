@@ -1,6 +1,6 @@
 import type { RuntimeNotWritable } from '../../delivery/runtime-not-writable.ts';
 import type { DueClassification } from '../../domain/journal-debt/index.ts';
-import type { Instrument } from '../../domain/instrument/index.ts';
+import type { Instrument, OptionInstrument } from '../../domain/instrument/index.ts';
 import type { Instant } from '../../domain/time/index.ts';
 import type { CalculationResult, EntryResolution, ExecutionFact, ExpirationFact, ExpirationPayoffs, IncoherentFacts, IntegrityFinding, LifecycleState, NotApplicableReason, TerminalDisposition, TradeEvaluation } from '../../domain/trade-analysis/index.ts';
 import type { TradeSummary } from '../../domain/trade-summary.ts';
@@ -175,6 +175,62 @@ export type ReviewCompletion = { readonly kind: 'Incomplete'; readonly reasons: 
       readonly families: readonly CalculationFamily[];
     };
 
+// What is still to go on the day, counted from the same facts as the completion's reasons (A300). An expiration to settle owes no Action
+// (decision 125), so a Trade with Settlement Due is not counted in `actions`.
+// What a Trade still needs, in the order its card works through them (A164).
+export type DayNeed = 'Marks' | 'Reflection' | 'Settlement' | 'Action';
+
+export interface DayToGo {
+  readonly marks: number;
+  readonly actions: number;
+  readonly expirations: number;
+  // Due reflections that are a Close Review, and the other due reflections.
+  readonly closeReviews: number;
+  readonly reflections: number;
+}
+
+// The day's change in Trade P&L: Unavailable while any Review Date Mark it rests on is Missing or a figure cannot be worked out.
+export type DayChange = { readonly kind: 'Value'; readonly dollars: Rational } | { readonly kind: 'Unavailable' };
+
+// The Trades past a line at the Review Date and, for each, the sessions of its current run past it, counted from the replay's start of
+// that run through the Review Date (A300, P175).
+export interface DayPastLine {
+  readonly stop: readonly { readonly tradeId: string; readonly sessions: number }[];
+  readonly target: readonly { readonly tradeId: string; readonly sessions: number }[];
+}
+
+// What the finished day shows, present only once nothing is to go.
+export interface FinishedDay {
+  readonly pastLine: DayPastLine;
+  // The Action saved for each walked Trade on the Review Date, in the walk's order.
+  readonly chosen: readonly { readonly tradeId: string; readonly action: string }[];
+  // What comes due next: the Trades whose Action saved for the Review Date is Exit, which the trader still has to record (A313), and each
+  // option contract still held that expires after the Review Date, grouped by expiration date, soonest first, in the walk's order within a date.
+  // `sessionsLeft` counts the session dates after the Review Date through the expiration; absent where the calendar does not cover them.
+  readonly due: {
+    readonly sales: readonly string[];
+    readonly expirations: readonly { readonly expiration: string; readonly sessionsLeft?: number; readonly contracts: readonly { readonly tradeId: string; readonly instrument: OptionInstrument }[] }[];
+  };
+}
+
+// The day summary `open` returns beside the walk (A300): every figure comes from the coordinator, the screen only words it.
+export interface DaySummary {
+  // The Trades in the Review's walk.
+  readonly trades: number;
+  readonly toGo: DayToGo;
+  // The sum over the walk of each Trade's Trade P&L at the Review Date less its figure at the session before (A300).
+  readonly change: DayChange;
+  // The session after the Review Date, from the calendar alone; absent outside the calendar's coverage.
+  readonly nextReviewDate?: string;
+  // The sessions with no saved Action of any Trade, from the one after the latest earlier Action (or, with none, the first exposure's date)
+  // up to the one before the Review Date. A session the calendar does not cover is left out.
+  readonly missed: readonly string[];
+  // Present on `open` only, and only once nothing is to go (the Review is not Incomplete).
+  readonly finished?: FinishedDay;
+  // One line per Trade of the walk, in its order, then one for each Trade outside it that owes a due reflection.
+  readonly lines: readonly { readonly tradeId: string; readonly needs: readonly DayNeed[] }[];
+}
+
 // What one Review read represents; getTrade and save compare against it (A46, AC-REV-005).
 export interface ReviewBinding {
   readonly workspace: WorkspaceSnapshotBinding;
@@ -192,7 +248,7 @@ export type OpenDailyReviewResult =
   // binding their cards are opened against (A90).
   | { readonly kind: 'Empty'; readonly reviewDate: string; readonly cutoff: Instant; readonly owed: readonly OwedReflectionsTrade[]; readonly binding: ReviewBinding }
   // `owed` is the group after the walk: due-reflection Trades first, then oldest owed anchor, then Trade identity (A89).
-  | { readonly kind: 'Ready'; readonly reviewDate: string; readonly cutoff: Instant; readonly families: readonly ReviewFamily[]; readonly owed: readonly OwedReflectionsTrade[]; readonly completion: ReviewCompletion; readonly binding: ReviewBinding }
+  | { readonly kind: 'Ready'; readonly reviewDate: string; readonly cutoff: Instant; readonly families: readonly ReviewFamily[]; readonly owed: readonly OwedReflectionsTrade[]; readonly completion: ReviewCompletion; readonly day?: DaySummary; readonly binding: ReviewBinding }
   // Writes kept landing between the read phases; nothing incoherent is returned (A46).
   | { readonly kind: 'ChangedDuringAssembly' }
   | { readonly kind: 'Rejected'; readonly issues: readonly MarketDataIssue[] };

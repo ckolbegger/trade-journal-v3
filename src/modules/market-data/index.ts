@@ -10,6 +10,7 @@ export {
   type EvidenceBinding,
   type MarketDataReadSession,
   type SettlementTime as MarketDataSettlementTime,
+  type SessionDates,
   type MarketDataQuery,
   type MarketDataQueryResult,
   type MarketDataConflictedKey,

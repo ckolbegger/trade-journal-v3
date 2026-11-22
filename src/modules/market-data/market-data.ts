@@ -310,9 +310,14 @@ export interface MarketDataReadSession {
   series(instrumentKey: string, from: string, to: string): Promise<readonly SeriesPoint[]>;
   // The close of the session an expiration date names, or of the latest session before it: the calendar alone, no stored read (decision 99).
   settlementTime(contract: OptionInstrument): Promise<SettlementTime>;
+  // The session dates from `from` to `to`, both ends included: the calendar alone, no stored read (decision 128).
+  sessionDatesBetween(from: string, to: string): SessionDates;
   // Every key the frames read, for `bindEvidence`, and one snapshot id per date read. Call it after the reads have resolved.
   binding(): { readonly evidenceBinding: EvidenceBinding; readonly snapshotIds: Readonly<Record<string, string>> };
 }
+
+// The session dates of a span, from the calendar alone; NotCovered names the first date the calendar does not reach.
+export type SessionDates = { readonly kind: 'Sessions'; readonly dates: readonly string[] } | { readonly kind: 'NotCovered'; readonly date: string };
 
 export type SettlementTime = CalculationResult<Instant, Extract<UnavailableReason, { reason: 'SessionPolicyNotCovered' }>, never>;
 
@@ -598,6 +603,12 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
     return latest.ok ? { kind: 'Value', value: latest.value.close } : uncovered;
   }
 
+  // The session dates of a span, from the calendar alone (decision 128).
+  function calendarSessionDates(from: string, to: string): SessionDates {
+    const found = deps.sessionPolicy.sessionsBetween(from, to);
+    return found.ok ? { kind: 'Sessions', dates: found.value.map((session) => session.date) } : { kind: 'NotCovered', date: found.diagnostic.date };
+  }
+
   // The read half of a frame query, inside the caller's read transaction.
   // One range read of the valuation date, then one reverse-cursor request per Missing Instrument (A47).
   function observationsOn(tx: ReadTransaction, date: string) {
@@ -817,7 +828,7 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
         if (!resolved.issues.some((issue) => issue.code === 'SessionPolicyCoverage')) throw new Error(`no read session for ${JSON.stringify(context)}`);
         const tradingDate =
           context.kind === 'Current' ? Temporal.Instant.from(context.asOf).toZonedDateTimeISO('America/New_York').toPlainDate().toString() : context.kind === 'Review' ? context.reviewDate : context.tradingDate;
-        return { tradingDate, ...(context.kind === 'Current' && { exchangeDate: tradingDate }), covered: false, frames: () => Promise.resolve([]), historicalFrames: () => Promise.resolve([]), gaps: () => Promise.resolve([]), series: () => Promise.resolve([]), settlementTime: (contract) => Promise.resolve(calendarSettlementTime(contract)), binding: () => ({ evidenceBinding: [], snapshotIds: {} }) };
+        return { tradingDate, ...(context.kind === 'Current' && { exchangeDate: tradingDate }), covered: false, frames: () => Promise.resolve([]), historicalFrames: () => Promise.resolve([]), gaps: () => Promise.resolve([]), series: () => Promise.resolve([]), settlementTime: (contract) => Promise.resolve(calendarSettlementTime(contract)), sessionDatesBetween: calendarSessionDates, binding: () => ({ evidenceBinding: [], snapshotIds: {} }) };
       }
       const { day } = resolved;
       // The reads asked of a date in one synchronous run share one read snapshot, as `recover` reads a date's frames, Stale
@@ -955,6 +966,7 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
           };
         },
         settlementTime: (contract) => Promise.resolve(calendarSettlementTime(contract)),
+        sessionDatesBetween: calendarSessionDates,
         async series(instrumentKey, from, to) {
           // The series ends at the session's own date, the last completed session.
           const end = to < day.date ? to : day.date;
