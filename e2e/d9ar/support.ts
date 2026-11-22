@@ -6,7 +6,7 @@ import { R_DALE_D } from '../../src/domain/trade-analysis/option-trade.ts';
 import { expectShownInFull } from '../d7p/support.ts';
 import {
   AXIO, BREN, closeOf, currentTradeId, DALE, detail, expect, fillOptionPlan, fillOptionRows, fillPlan, fillRows, label, onboardedAt, openExitForm, openReview, pinClock, pnlChart, priceStrip, READY,
-  answerIn, exitReflection, reachPanel, recordEntry, recordOptionEntry, seek, slider, sliderValue, tradeCard, type Fixture, type Profile, type TradeRef,
+  answerIn, exitReflection, reachPanel, recordEntry, recordOptionEntry, savedUnlessRefused, seek, slider, sliderValue, tradeCard, type Fixture, type Profile, type TradeRef,
 } from '../d9/support.ts';
 
 export * from '../d9/support.ts';
@@ -65,7 +65,9 @@ async function enterTrade(page: Page, fixture: Fixture, through: number): Promis
     }
   }
   await panel.getByRole('button', { name: `Save Marks (${count})`, exact: true }).click();
-  await expect(tradeCard(page, trade).locator('section[aria-label="Marks"] button', { hasText: /^Save Marks/ })).toHaveText('Save Marks (0)', READY);
+  await savedUnlessRefused('enterTrade', tradeCard(page, trade).locator('section[aria-label="Marks"]'), () =>
+    expect(tradeCard(page, trade).locator('section[aria-label="Marks"] button', { hasText: /^Save Marks/ })).toHaveText('Save Marks (0)', READY),
+  );
   return trade;
 }
 

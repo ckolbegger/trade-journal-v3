@@ -8,7 +8,7 @@ import { K_SALE, R_BREN_U, R_CORV_D, R_DALE_D, R_DALE_U } from '../../src/domain
 import { R_AXIO_D, R_AXIO_U, REPLAY_SESSION_DATES } from '../../src/domain/trade-analysis/reference-trade.ts';
 import {
   answerIn, closeTheTrade, currentTradeId, detail, exitReflection, expect, fillOptionPlan, fillPlan, fillOptionRows, fillRows, onboardedAt, openDrawer as openDetailDrawer, openExitForm, openReview, READY, reachPanel,
-  recordExpiration, recordOptionEntry, recordEntry, test, tradeCard, type OptionPlanValues, type PlanValues, type Row, type TradeRef,
+  recordExpiration, recordOptionEntry, recordEntry, savedUnlessRefused, test, tradeCard, type OptionPlanValues, type PlanValues, type Row, type TradeRef,
 } from '../d8r/support.ts';
 import type { BrowserContext } from '@playwright/test';
 
@@ -186,7 +186,9 @@ async function saveMarks(page: Page, trade: TradeRef, fixture: Fixture, through:
   }
   await panel.getByRole('button', { name: `Save Marks (${count})`, exact: true }).click();
   // The card moves on to its next panel once the Marks are saved, so the Marks panel's own button is read inside the card.
-  await expect(tradeCard(page, trade).locator('section[aria-label="Marks"] button', { hasText: /^Save Marks/ })).toHaveText('Save Marks (0)', READY);
+  await savedUnlessRefused('saveMarks', tradeCard(page, trade).locator('section[aria-label="Marks"]'), () =>
+    expect(tradeCard(page, trade).locator('section[aria-label="Marks"] button', { hasText: /^Save Marks/ })).toHaveText('Save Marks (0)', READY),
+  );
 }
 
 // ---- Reads of the replay (the Detail's Replay overlay; the Review card's section reads the same, given its own scope) -------------------------------

@@ -2,7 +2,7 @@
 // also patches Temporal, the production build of the checked-out code as the default served build, the Review steps), plus
 // the deferred entry, the Debt form, the Review card's reflections, and the Debt records read through the probe.
 import type { Locator, Page } from '@playwright/test';
-import { debtFormOf, detail, expect, fillRows, openEntryForm, reachPanel, READY, reflectionSection, type CardRef, type ProbedDatabase, type Row } from '../d4/support.ts';
+import { debtFormOf, detail, expect, fillRows, openEntryForm, reachPanel, READY, reflectionSection, savedUnlessRefused, type CardRef, type ProbedDatabase, type Row } from '../d4/support.ts';
 
 export * from '../d4/support.ts';
 
@@ -52,7 +52,7 @@ async function expectSavedReflection(page: Page, form: Locator, card: CardRef | 
   const onDetail = card === undefined && where === 'Detail';
   let saved = onDetail ? detail.savedReflection(page) : page.getByRole('region', { name: 'Saved reflection' });
   if (card !== undefined) {
-    await expect(form).toBeHidden(READY);
+    await savedUnlessRefused('expectSavedReflection', form, () => expect(form).toBeHidden(READY));
     saved = (await reachPanel(page, card, 'Reflections')).getByRole('region', { name: 'Saved reflection' });
   }
   await expect(saved).toBeVisible();

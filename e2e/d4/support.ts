@@ -305,10 +305,44 @@ export async function debtFormOf(page: Page, card: CardRef): Promise<Locator> {
   return (await reachPanel(page, card, 'Reflections')).getByRole('form', { name: 'Reflection' });
 }
 
+// What the app shows when it refuses a save: a field's error line or an alert banner (Action form, reflection form, Marks panel).
+const REFUSAL = '.field-error, [role="alert"]';
+// The Marks panel's "saved, but the figures are out of date" banner is an alert that comes with a saved result, not a refusal.
+const SAVED_NOTICE = /are saved, but the figures are out of date/;
+
+// Waits for a save's success sign like `waitSaved` alone would, but throws at once, naming the helper and quoting what the app
+// shows, when the app refuses the save inside `scope` (the form or panel the save was pressed in), instead of waiting out READY.
+export async function savedUnlessRefused(helper: string, scope: Locator, waitSaved: () => Promise<unknown>): Promise<void> {
+  let settled = false;
+  const refusal = (async (): Promise<string | undefined> => {
+    while (!settled) {
+      const shown = (await scope.locator(REFUSAL).allTextContents().catch(() => [] as string[]))
+        .map((text) => text.replace(/\s+/g, ' ').trim())
+        .filter((text) => text !== '' && !SAVED_NOTICE.test(text));
+      if (shown.length > 0) return shown.join(' | ');
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+    return undefined;
+  })();
+  const saved = waitSaved().then(() => undefined);
+  saved.catch(() => undefined); // when the refusal wins, the success wait's own timeout is not reported
+  try {
+    const refused = await Promise.race([saved, refusal]);
+    if (refused !== undefined) throw new Error(`${helper}: the app refused the save and shows: "${refused}"`);
+  } finally {
+    settled = true;
+  }
+}
+
+// The Marks section of a card, which Save Marks leaves once the card moves on.
+export const marksSectionOf = (page: Page, card: CardRef): Locator => tradeCard(page, card).locator('section[aria-label="Marks"]');
+
 // Shows the saved row in the Marks panel, then puts back the panel Save Marks moved the card on to (A157).
 async function checkSavedRow(page: Page, card: CardRef, date: string, text: string): Promise<void> {
   // The drafts are cleared with the same result that moves the card on; the panel may already be hidden.
-  await expect(tradeCard(page, card).locator('section[aria-label="Marks"] button', { hasText: /^Save Marks/ })).toHaveText('Save Marks (0)', READY);
+  await savedUnlessRefused('checkSavedRow', marksSectionOf(page, card), () =>
+    expect(tradeCard(page, card).locator('section[aria-label="Marks"] button', { hasText: /^Save Marks/ })).toHaveText('Save Marks (0)', READY),
+  );
   const moved = await openPanelOf(page, card);
   await expect(await markRow(page, card, date)).toContainText(text);
   if (moved !== undefined && moved !== 'Marks') await reachPanel(page, card, moved);
@@ -356,7 +390,7 @@ export async function saveAction(page: Page, action: 'Hold' | 'Exit' | 'Roll' | 
 export async function pressSave(form: Locator): Promise<void> {
   const pressed = await form.elementHandle();
   await form.getByRole('button', { name: 'Save' }).click();
-  await pressed?.waitForElementState('hidden', READY);
+  await savedUnlessRefused('pressSave', form, async () => pressed?.waitForElementState('hidden', READY));
 }
 
 // ---- Stored records, read through the probe ---------------------------------------------------
