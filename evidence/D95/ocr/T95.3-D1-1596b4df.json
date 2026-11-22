@@ -1,0 +1,167 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 6 selected item(s).",
+  "summary": {
+    "files_reviewed": 6,
+    "comments": 0,
+    "total_tokens": 480837,
+    "input_tokens": 479799,
+    "output_tokens": 1038,
+    "cache_read_tokens": 14976,
+    "elapsed": "16s"
+  },
+  "tool_calls": {
+    "total": 0,
+    "by_tool": {},
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Expected view fixtures across backup and workspace versions (split: tests/fixtures/backup-v5-blocked/expected-views.json)",
+      "files": [
+        "tests/fixtures/backup-v5-blocked/expected-views.json"
+      ]
+    },
+    {
+      "label": "Expected view fixtures across backup and workspace versions (split: tests/fixtures/backup-v6-blocked/expected-views.json)",
+      "files": [
+        "tests/fixtures/backup-v6-blocked/expected-views.json"
+      ]
+    },
+    {
+      "label": "Expected view fixtures across backup and workspace versions (split: tests/fixtures/backup-v7/expected-views.json)",
+      "files": [
+        "tests/fixtures/backup-v7/expected-views.json"
+      ]
+    },
+    {
+      "label": "Expected view fixtures across backup and workspace versions (split: tests/fixtures/workspace-v5/expected-views.json)",
+      "files": [
+        "tests/fixtures/workspace-v5/expected-views.json"
+      ]
+    },
+    {
+      "label": "Expected view fixtures across backup and workspace versions (split: tests/fixtures/workspace-v6/expected-views.json)",
+      "files": [
+        "tests/fixtures/workspace-v6/expected-views.json"
+      ]
+    },
+    {
+      "label": "Expected view fixtures across backup and workspace versions (split: tests/fixtures/workspace-v7/expected-views.json)",
+      "files": [
+        "tests/fixtures/workspace-v7/expected-views.json"
+      ]
+    }
+  ],
+  "session_id": "67b45bb2-59c1-454d-b1e0-72ba241358ec",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "67b45bb2-59c1-454d-b1e0-72ba241358ec",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "1596b4df",
+      "resolved_base": "3c91c20cdd47eb5512df89b26f05767f24f5a8ce",
+      "resolved_head": "1596b4df43cbf25d710c15d6acf2050216838252",
+      "exact_range": "3c91c20cdd47eb5512df89b26f05767f24f5a8ce..1596b4df43cbf25d710c15d6acf2050216838252",
+      "source_artifact_sha256": "f8345fd94a789c84e9c6eed55d281038e3c82a00c23be2cbc925daaddb3b1ab6"
+    },
+    "execution": {
+      "ocr_version": "v1.14.1",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "23e0a170b60772e2653e80031c8d73c1c1355d768c50f92a4cd3afd0ab997862",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "075ced8951c74b37c572b59ce44735c33280079b0cfcd7b756af7bc692343e65",
+          "path": "tests/fixtures/backup-v7/expected-views.json",
+          "fingerprint": "5075d10a554c068257d2e833027cf7859b96389556bfd8e207b1c1acbb8119d1"
+        },
+        {
+          "item_id": "2bb53e8ac585b73e3918e0b02ff693505b94d8b8aa2d83f8accd8d4d60498594",
+          "path": "tests/fixtures/workspace-v6/expected-views.json",
+          "fingerprint": "3b1f69565eecc8ff2a0ea9b2bbadffb8b21ce5b8f876ab81f50f50607461933f"
+        },
+        {
+          "item_id": "3266428fd20c81d9f082d29ac94bc2dcb009f74adbf87a0a1608bc974cd5781c",
+          "path": "tests/fixtures/workspace-v5/expected-views.json",
+          "fingerprint": "d1a3fae7bdde07cb085b0ec0d9a1e1d795b0bb02d27b007487e4afba5e272562"
+        },
+        {
+          "item_id": "529e6aafb3d9abe130486c91fc456c4d478863c4b40210a0ee6d90dcf4451742",
+          "path": "tests/fixtures/workspace-v7/expected-views.json",
+          "fingerprint": "c9c6e74129b675564abdb7f4875fddc6e0b4382c5d207a0933068fa281141f21"
+        },
+        {
+          "item_id": "a5a34b4da63afcc0456118a1d0132bc6ef1523579aad2494f9db97e28f0e42e2",
+          "path": "tests/fixtures/backup-v5-blocked/expected-views.json",
+          "fingerprint": "4429af72e1dad5b4a83d0e58a3b0473be5fd2fddc982ba8246690f2b29ad64f8"
+        },
+        {
+          "item_id": "bfd7bfb7c23f9db27c8d7ba6b484e7e35a3149a728c3bfe95968624829b9261b",
+          "path": "tests/fixtures/backup-v6-blocked/expected-views.json",
+          "fingerprint": "4fa046753497308018817255b8ec31ee1f48367b9d75fd3e403f58a0a5c9085d"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "075ced8951c74b37c572b59ce44735c33280079b0cfcd7b756af7bc692343e65",
+          "path": "tests/fixtures/backup-v7/expected-views.json",
+          "fingerprint": "5075d10a554c068257d2e833027cf7859b96389556bfd8e207b1c1acbb8119d1"
+        },
+        {
+          "item_id": "2bb53e8ac585b73e3918e0b02ff693505b94d8b8aa2d83f8accd8d4d60498594",
+          "path": "tests/fixtures/workspace-v6/expected-views.json",
+          "fingerprint": "3b1f69565eecc8ff2a0ea9b2bbadffb8b21ce5b8f876ab81f50f50607461933f"
+        },
+        {
+          "item_id": "3266428fd20c81d9f082d29ac94bc2dcb009f74adbf87a0a1608bc974cd5781c",
+          "path": "tests/fixtures/workspace-v5/expected-views.json",
+          "fingerprint": "d1a3fae7bdde07cb085b0ec0d9a1e1d795b0bb02d27b007487e4afba5e272562"
+        },
+        {
+          "item_id": "529e6aafb3d9abe130486c91fc456c4d478863c4b40210a0ee6d90dcf4451742",
+          "path": "tests/fixtures/workspace-v7/expected-views.json",
+          "fingerprint": "c9c6e74129b675564abdb7f4875fddc6e0b4382c5d207a0933068fa281141f21"
+        },
+        {
+          "item_id": "a5a34b4da63afcc0456118a1d0132bc6ef1523579aad2494f9db97e28f0e42e2",
+          "path": "tests/fixtures/backup-v5-blocked/expected-views.json",
+          "fingerprint": "4429af72e1dad5b4a83d0e58a3b0473be5fd2fddc982ba8246690f2b29ad64f8"
+        },
+        {
+          "item_id": "bfd7bfb7c23f9db27c8d7ba6b484e7e35a3149a728c3bfe95968624829b9261b",
+          "path": "tests/fixtures/backup-v6-blocked/expected-views.json",
+          "fingerprint": "4fa046753497308018817255b8ec31ee1f48367b9d75fd3e403f58a0a5c9085d"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "9cb1a797774d02950cc071d8d999024e890e80edbfdf05f415f708917949c2e7",
+          "path": "evidence/D95/structural.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 15514
+  }
+}
