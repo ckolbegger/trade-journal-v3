@@ -7,7 +7,7 @@ import type { Locator, Page } from '@playwright/test';
 import { K_SALE, R_BREN_U, R_CORV_D, R_DALE_D, R_DALE_U } from '../../src/domain/trade-analysis/option-trade.ts';
 import { R_AXIO_D, R_AXIO_U, REPLAY_SESSION_DATES } from '../../src/domain/trade-analysis/reference-trade.ts';
 import {
-  answerIn, closeTheTrade, currentTradeId, detail, exitReflection, expect, fillOptionPlan, fillPlan, fillOptionRows, fillRows, onboardedAt, openDrawer as openDetailDrawer, openExitForm, openReview, READY, reachPanel,
+  answerIn, closeTheTrade, currentTradeId, detail, exitReflection, expect, fillOptionPlan, fillPlan, fillOptionRows, fillRows, onboardedAt, openDrawer as openDetailDrawer, openExitForm, openReview, LAUNCH, reachPanel,
   recordExpiration, recordOptionEntry, recordEntry, savedUnlessRefused, test, tradeCard, type OptionPlanValues, type PlanValues, type Row, type TradeRef,
 } from '../d8r/support.ts';
 import type { BrowserContext } from '@playwright/test';
@@ -108,7 +108,7 @@ async function confirmPlan(page: Page, fixture: Fixture): Promise<TradeRef> {
     if (fixture.plan.targetOption !== undefined) await page.getByLabel(/^Target \(option price at or/).fill(fixture.plan.targetOption);
     await page.getByRole('button', { name: 'Confirm Plan' }).click();
   }
-  await expect(detail.heading(page, fixture.symbol)).toBeVisible(READY);
+  await expect(detail.heading(page, fixture.symbol)).toBeVisible();
   return { symbol: fixture.symbol, tradeId: await currentTradeId(page), label: fixture.symbol };
 }
 
@@ -146,7 +146,7 @@ export async function buildOn(page: Page, fixture: Fixture, through: number, rec
       continue;
     }
     await page.goto(`/trades/${trade.tradeId}`);
-    await expect(detail.heading(page, fixture.symbol)).toBeVisible(READY);
+    await expect(detail.heading(page, fixture.symbol)).toBeVisible(LAUNCH);
     if (change.kind === 'expiration') {
       await detail.recordExpirationLink(page).click();
       await recordExpiration(page);
@@ -158,10 +158,10 @@ export async function buildOn(page: Page, fixture: Fixture, through: number, rec
     if (change.closes) await closeTheTrade(page, 'later');
     else await answerIn(exitReflection(page));
     await page.getByRole('button', { name: 'Save exit' }).click();
-    await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible(READY);
+    await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible();
   }
   await page.goto(`/trades/${trade.tradeId}`);
-  await expect(detail.heading(page, fixture.symbol)).toBeVisible(READY);
+  await expect(detail.heading(page, fixture.symbol)).toBeVisible(LAUNCH);
   return trade;
 }
 
@@ -187,7 +187,7 @@ async function saveMarks(page: Page, trade: TradeRef, fixture: Fixture, through:
   await panel.getByRole('button', { name: `Save Marks (${count})`, exact: true }).click();
   // The card moves on to its next panel once the Marks are saved, so the Marks panel's own button is read inside the card.
   await savedUnlessRefused('saveMarks', tradeCard(page, trade).locator('section[aria-label="Marks"]'), () =>
-    expect(tradeCard(page, trade).locator('section[aria-label="Marks"] button', { hasText: /^Save Marks/ })).toHaveText('Save Marks (0)', READY),
+    expect(tradeCard(page, trade).locator('section[aria-label="Marks"] button', { hasText: /^Save Marks/ })).toHaveText('Save Marks (0)', LAUNCH),
   );
 }
 
@@ -284,7 +284,7 @@ export async function listMeters(page: Page): Promise<{ id: string; names: strin
 // The Open list: the primary navigation's Trades link, then the table once it has rows.
 export async function openOpenList(page: Page): Promise<void> {
   await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Trades', exact: true }).click();
-  await expect(page.getByRole('table', { name: 'Open Trades' })).toBeVisible(READY);
+  await expect(page.getByRole('table', { name: 'Open Trades' })).toBeVisible(LAUNCH);
 }
 
 // A meter's track is dashed when there is no Mark. Polled: a list that re-renders leaves a detached track, whose computed style is empty and says nothing.

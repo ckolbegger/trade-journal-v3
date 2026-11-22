@@ -15,7 +15,7 @@ import {
   PC3,
   PLAN,
   PLAN_TIME,
-  READY,
+  LAUNCH,
   backToTrade,
   completeReflection,
   expect,
@@ -139,17 +139,17 @@ async function drive(context: BrowserContext): Promise<void> {
   }, FIXED_NOW);
   const page = context.pages()[0] ?? (await context.newPage());
   await page.goto(`${BASE_URL}/`);
-  await expect(page.getByRole('heading', { name: 'Start your journal' })).toBeVisible(READY);
+  await expect(page.getByRole('heading', { name: 'Start your journal' })).toBeVisible(LAUNCH);
   await shoot(page, '01-first-launch');
   await startJournal(page);
-  await expect(page.getByRole('heading', { name: 'Add your brokerage account' })).toBeVisible(READY);
+  await expect(page.getByRole('heading', { name: 'Add your brokerage account' })).toBeVisible(LAUNCH);
   await shoot(page, '02-onboarding');
   await onboard(page);
   await page.getByRole('tablist', { name: 'Trades by lifecycle' }).getByRole('tab', { name: 'Open' }).click();
   await shoot(page, '03-trades-empty');
 
   await nav(page).getByRole('link', { name: 'New Plan' }).click();
-  await expect(page.getByRole('heading', { name: 'New Plan' })).toBeVisible(READY);
+  await expect(page.getByRole('heading', { name: 'New Plan' })).toBeVisible(LAUNCH);
   await shoot(page, '04-new-plan');
   await page.getByRole('button', { name: 'Confirm Plan' }).click();
   await expect(page.getByRole('region', { name: 'This Plan can’t be confirmed yet' })).toBeVisible();
@@ -158,14 +158,14 @@ async function drive(context: BrowserContext): Promise<void> {
   await page.getByLabel('Plan time').fill(PLAN_TIME);
   await shoot(page, '06-new-plan-filled');
   await page.getByRole('button', { name: 'Confirm Plan' }).click();
-  await expect(page.getByRole('heading', { name: PLAN.symbol, level: 1 })).toBeVisible(READY);
+  await expect(page.getByRole('heading', { name: PLAN.symbol, level: 1 })).toBeVisible(LAUNCH);
   await shoot(page, '07-detail-planned');
   await nav(page).getByRole('link', { name: 'Trades' }).click();
   await page.getByRole('tablist', { name: 'Trades by lifecycle' }).getByRole('tab', { name: 'Planned' }).click();
-  await expect(page.getByRole('table', { name: 'Planned Trades' })).toBeVisible(READY);
+  await expect(page.getByRole('table', { name: 'Planned Trades' })).toBeVisible(LAUNCH);
   await shoot(page, '08-trades-planned');
   await page.getByRole('table', { name: 'Planned Trades' }).getByRole('link', { name: PLAN.symbol }).click();
-  await expect(page.getByRole('heading', { name: PLAN.symbol, level: 1 })).toBeVisible(READY);
+  await expect(page.getByRole('heading', { name: PLAN.symbol, level: 1 })).toBeVisible(LAUNCH);
 
   await openEntryForm(page);
   await shoot(page, '09-record-entry');
@@ -183,19 +183,19 @@ async function drive(context: BrowserContext): Promise<void> {
   await recordEntry(page, PC3);
   await nav(page).getByRole('link', { name: 'Trades' }).click();
   await page.getByRole('tablist', { name: 'Trades by lifecycle' }).getByRole('tab', { name: 'Open' }).click();
-  await expect(page.getByRole('table', { name: 'Open Trades' })).toBeVisible(READY);
+  await expect(page.getByRole('table', { name: 'Open Trades' })).toBeVisible(LAUNCH);
   await shoot(page, '13-trades-open');
   await openTradeFromOpenList(page);
   const journal = page.getByRole('region', { name: /^Journal \(\d+\)$/ });
-  await expect(journal).toBeVisible(READY);
+  await expect(journal).toBeVisible(LAUNCH);
   await shoot(page, '14-detail-open');
   await shoot(page, '15-journal', journal);
 
   await nav(page).getByRole('link', { name: 'Accounts' }).click();
-  await expect(page.getByRole('heading', { name: 'Accounts' })).toBeVisible(READY);
+  await expect(page.getByRole('heading', { name: 'Accounts' })).toBeVisible(LAUNCH);
   await shoot(page, '16-accounts');
-  await nav(page).getByRole('link', { name: 'About' }).click(READY);
-  await expect(page.getByRole('heading', { name: 'About' }).first()).toBeVisible(READY);
+  await nav(page).getByRole('link', { name: 'About' }).click(LAUNCH);
+  await expect(page.getByRole('heading', { name: 'About' }).first()).toBeVisible(LAUNCH);
   await shoot(page, '17-about');
 }
 

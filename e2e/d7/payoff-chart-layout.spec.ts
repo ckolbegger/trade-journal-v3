@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { confirmOptionPlan, detail, expect, expectPayoffChart, MONDAY_0900, OC, onboardedAt, openDrawer, OS, READY, test } from './support.ts';
+import { confirmOptionPlan, detail, expect, expectPayoffChart, MONDAY_0900, OC, onboardedAt, openDrawer, OS, LAUNCH, test } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -56,7 +56,7 @@ test.describe('T7.32-B2 Payoff chart layout', () => {
       await openDrawer(page, 'Payoff');
       for (const width of WIDTHS) {
         await page.setViewportSize({ width, height: 900 });
-        await expect(plannedChart(page)).toBeVisible(READY);
+        await expect(plannedChart(page)).toBeVisible(LAUNCH);
         const { boxes } = await chartTexts(plannedChart(page));
         expect(overlaps(boxes), `${url} at ${width}px`).toEqual([]);
       }
@@ -70,7 +70,7 @@ test.describe('T7.32-B2 Payoff chart layout', () => {
     for (const url of urls) {
       await page.goto(url);
       await openDrawer(page, 'Payoff');
-      await expect(plannedChart(page)).toBeVisible(READY);
+      await expect(plannedChart(page)).toBeVisible(LAUNCH);
       const { fontSizes } = await chartTexts(plannedChart(page));
       expect(Math.min(...fontSizes)).toBeGreaterThanOrEqual(10);
     }
@@ -83,7 +83,7 @@ test.describe('T7.32-B2 Payoff chart layout', () => {
     await page.goto(urls[0]!);
     await openDrawer(page, 'Payoff');
     const cells = detail.payoff(page, 'Planned').getByRole('table').getByRole('cell', { name: /^−\$/ });
-    await expect(cells.first()).toBeVisible(READY);
+    await expect(cells.first()).toBeVisible(LAUNCH);
     const lines = await cells.evaluateAll((tds) => tds.map((td) => {
       const range = document.createRange();
       range.selectNodeContents(td);

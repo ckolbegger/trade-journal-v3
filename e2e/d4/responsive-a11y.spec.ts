@@ -1,7 +1,7 @@
 import type { Locator, Page } from '@playwright/test';
 import {
   acknowledgeMark, actionFormOf, cardHeader, cardList, completion, createTradeAt, createTrades, detail, enterMark, expect, expectAccessible, firstPage, FOUR_TRADES, holdTradesStore, launchAt, markCell, markRow, MONDAY_1700, onboardedAt, onboardedPage,
-  openDrawer, openReview, panelHeader, openTradeFromOpenList, reachCard, reachPanel, READY, recordEntry, releaseTradesStore, reloadReview, saveAction, setClock, status, tabTo, test, tradeCard, TUESDAY_NOON, writeIntegrityFixture,
+  openDrawer, openReview, panelHeader, openTradeFromOpenList, reachCard, reachPanel, LAUNCH, recordEntry, releaseTradesStore, reloadReview, saveAction, setClock, status, tabTo, test, tradeCard, TUESDAY_NOON, writeIntegrityFixture,
 } from './support.ts';
 
 const DATE = 'Mon Oct 12';
@@ -12,7 +12,7 @@ const JKL = FOUR_TRADES[3]!.plan;
 const openList = (page: Page) => page.getByRole('table', { name: 'Open Trades' });
 async function toOpenList(page: Page): Promise<void> {
   await nav(page).getByRole('link', { name: 'Trades' }).click();
-  await expect(openList(page)).toBeVisible(READY);
+  await expect(openList(page)).toBeVisible();
 }
 async function openDetail(page: Page, symbol: string): Promise<void> {
   await toOpenList(page);
@@ -117,7 +117,7 @@ test.describe('B4.13 Responsive and accessible', () => {
 
     // Review Empty.
     await nav(page).getByRole('link', { name: 'Review' }).click();
-    await expect(page.getByText("No Trades were open at this session's close")).toBeVisible(READY);
+    await expect(page.getByText("No Trades were open at this session's close")).toBeVisible(LAUNCH);
     await expectAccessible(page, 'Review Empty');
 
     // Review Incomplete: the Marks family with Missing rows, one Trade opened Thursday so earlier sessions are listed.
@@ -241,7 +241,7 @@ test.describe('B4.13 Responsive and accessible', () => {
     await expectAccessible(page, 'Review Loading');
     await expect(page.getByRole('status')).toHaveText('Loading the Review…');
     await releaseTradesStore(page);
-    await expect(status(page)).toBeVisible(READY);
+    await expect(status(page)).toBeVisible(LAUNCH);
     await context.close();
 
     // Review Error: a Position Change naming an Execution that does not exist, written before launch.
@@ -250,7 +250,7 @@ test.describe('B4.13 Responsive and accessible', () => {
     const errorPage = await firstPage(failing);
     await errorPage.goto('/');
     await nav(errorPage).getByRole('link', { name: 'Review' }).click();
-    await expect(errorPage.getByText('We couldn’t load the Review. Nothing was changed.')).toBeVisible(READY);
+    await expect(errorPage.getByText('We couldn’t load the Review. Nothing was changed.')).toBeVisible(LAUNCH);
     await expectAccessible(errorPage, 'Review Error');
     await failing.close();
   });
@@ -260,12 +260,12 @@ test.describe('B4.13 Responsive and accessible', () => {
     const page = await onboardedPage(context);
     await createTrades(page, [FOUR_TRADES[0]!]);
     await page.goto('/');
-    await expect(openList(page)).toBeVisible(READY);
+    await expect(openList(page)).toBeVisible(LAUNCH);
 
     await tabTo(page, nav(page).getByRole('link', { name: 'Review' }));
     await page.keyboard.press('Enter');
-    await expect(page.getByRole('heading', { name: 'Review', level: 1 })).toBeVisible(READY);
-    await expect(page.getByRole('region', { name: 'Review status' })).toBeVisible(READY);
+    await expect(page.getByRole('heading', { name: 'Review', level: 1 })).toBeVisible();
+    await expect(page.getByRole('region', { name: 'Review status' })).toBeVisible();
     // Keyboard and focus steps assert navigation itself (section 6.4, rule 4): raw locators, no reaches.
     const xyz = tradeCard(page, 'XYZ');
     const entry = xyz.getByRole('region', { name: `XYZ Mark, ${DATE}`, exact: true });
@@ -278,18 +278,18 @@ test.describe('B4.13 Responsive and accessible', () => {
     await expect(xyz.getByRole('region', { name: 'Marks', exact: true }).getByRole('button', { name: /^Save Marks/ })).toBeFocused();
     await page.keyboard.press('Enter');
     // Save Marks moved the card on to its Action panel (A157); the saved row is read in the Marks panel, then the Action panel is back.
-    await expect(panelHeader(page, 'XYZ', 'Action')).toHaveAttribute('aria-expanded', 'true', READY);
+    await expect(panelHeader(page, 'XYZ', 'Action')).toHaveAttribute('aria-expanded', 'true');
     await shiftTabTo(page, panelHeader(page, 'XYZ', 'Marks'));
     await page.keyboard.press('Enter');
-    await expect(panelHeader(page, 'XYZ', 'Marks')).toHaveAttribute('aria-expanded', 'true', READY);
+    await expect(panelHeader(page, 'XYZ', 'Marks')).toHaveAttribute('aria-expanded', 'true');
     await expect(entry.getByText('Manual')).toBeVisible();
     await tabTo(page, panelHeader(page, 'XYZ', 'Action'));
     await page.keyboard.press('Enter');
-    await expect(panelHeader(page, 'XYZ', 'Action')).toHaveAttribute('aria-expanded', 'true', READY);
+    await expect(panelHeader(page, 'XYZ', 'Action')).toHaveAttribute('aria-expanded', 'true');
     // The card is open from the start; Shift+Tab from the end of the card walks back to its header with a focus ring.
-    await expect(cardList(page)).toBeVisible(READY);
+    await expect(cardList(page)).toBeVisible();
     // The Review is read again after the Mark; Save waits for it.
-    await expect(actionForm.getByRole('button', { name: 'Save' })).toBeEnabled(READY);
+    await expect(actionForm.getByRole('button', { name: 'Save' })).toBeEnabled();
     await tabTo(page, actionForm.getByRole('button', { name: 'Save' }));
     await shiftTabTo(page, cardHeader(page, 'XYZ'));
     // Hold is preselected: Save alone records the Action.

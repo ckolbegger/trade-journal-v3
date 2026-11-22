@@ -12,8 +12,12 @@ export { detail, eachDrawer, openDrawer } from '../support/detail/index.ts';
 
 export const BASE_URL = 'http://localhost:5175';
 export const ZONE = 'America/New_York';
-// Readiness waits for the first release to claim the page, so first launches take a moment.
-export const READY = { timeout: 20_000 };
+// Two named waits. STEP is for a check in the middle of a test; it matches Playwright's own default of 5 s,
+// so a plain expect needs no option and the name is used only where the default differs (clicks, element states).
+// LAUNCH is the first sign of life after the app opens (launch, relaunch, reload, restore, an update or migration
+// notice), when a release must claim the page first. Measured worst cases sit far below both.
+export const STEP = { timeout: 5_000 };
+export const LAUNCH = { timeout: 10_000 };
 
 export interface Profile {
   readonly dir: string;
@@ -126,13 +130,13 @@ export function workspaceOf(probed: Record<string, ProbedDatabase>): ProbedDatab
 
 // First run: accept the proposed zone.
 export async function startJournal(page: Page): Promise<void> {
-  await expect(page.getByRole('heading', { name: 'Start your journal' })).toBeVisible(READY);
+  await expect(page.getByRole('heading', { name: 'Start your journal' })).toBeVisible(LAUNCH);
   await page.getByLabel('Time zone').selectOption(ZONE);
   await page.getByRole('button', { name: 'Start my journal' }).click();
 }
 
 export async function onboard(page: Page, institution = 'Fidelity', account = 'Roth IRA'): Promise<void> {
-  await expect(page.getByRole('heading', { name: 'Add your brokerage account' })).toBeVisible(READY);
+  await expect(page.getByRole('heading', { name: 'Add your brokerage account' })).toBeVisible();
   await page.getByLabel('Institution').fill(institution);
   await page.getByLabel('Account').fill(account);
   await page.getByRole('button', { name: 'Save and continue' }).click();
@@ -177,7 +181,7 @@ export const PLAN: PlanValues = {
 };
 
 export async function fillPlan(page: Page, values: PlanValues = PLAN): Promise<void> {
-  await expect(page.getByRole('heading', { name: 'New Plan' })).toBeVisible(READY);
+  await expect(page.getByRole('heading', { name: 'New Plan' })).toBeVisible(LAUNCH);
   await page.getByLabel('Symbol').fill(values.symbol);
   await page.getByLabel('Quantity').fill(values.quantity);
   await page.getByLabel('Intended entry').fill(values.entry);

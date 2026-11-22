@@ -15,7 +15,7 @@ import {
   PC1,
   PC2,
   PC3,
-  READY,
+  LAUNCH,
   recordEntry,
   startJournal,
   test,
@@ -58,7 +58,7 @@ test.describe('critic-1 defect 1 narrow reflow', () => {
     await confirmReference(page);
     await recordEntry(page, PC1);
     await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Trades' }).click();
-    await expect(page.getByRole('table', { name: 'Open Trades' })).toBeVisible(READY);
+    await expect(page.getByRole('table', { name: 'Open Trades' })).toBeVisible(LAUNCH);
     for (const width of WIDTHS) {
       await page.setViewportSize({ width, height: 800 });
       await expectReflowed(page, `Open list at ${width}`);
@@ -94,7 +94,7 @@ test.describe('critic-1 defect 1 narrow reflow', () => {
     const context = await profile.launch();
     const app = await firstPage(context);
     await app.goto('/?lifecycle=Planned');
-    await app.getByRole('row', { name: /XYZ/ }).getByRole('link', { name: 'XYZ', exact: true }).click(READY);
+    await app.getByRole('row', { name: /XYZ/ }).getByRole('link', { name: 'XYZ', exact: true }).click(LAUNCH);
     await expect(detail.storedVersusExpected(app)).toBeVisible();
     for (const width of WIDTHS) {
       await app.setViewportSize({ width, height: 800 });
@@ -112,7 +112,7 @@ test.describe('critic-2 defects narrow reflow', () => {
     await confirmReference(page);
     await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Trades' }).click();
     await openPlanned(page);
-    await expect(page.getByRole('table', { name: 'Planned Trades' })).toBeVisible(READY);
+    await expect(page.getByRole('table', { name: 'Planned Trades' })).toBeVisible(LAUNCH);
     for (const width of WIDTHS) {
       await page.setViewportSize({ width, height: 800 });
       await expectReflowed(page, `Planned list at ${width}`);
@@ -129,7 +129,7 @@ test.describe('critic-2 defects narrow reflow', () => {
     const context = await profile.launch();
     const page = await onboardedPage(context);
     await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'About' }).click();
-    await expect(page.getByRole('heading', { name: 'Installed capabilities' })).toBeVisible(READY);
+    await expect(page.getByRole('heading', { name: 'Installed capabilities' })).toBeVisible(LAUNCH);
     for (const width of WIDTHS) {
       await page.setViewportSize({ width, height: 800 });
       await expectReflowed(page, `About at ${width}`);
@@ -158,15 +158,15 @@ test.describe('critic-2 defects narrow reflow', () => {
       }
     };
     await page.goto(`${BASE_URL}/`);
-    await expect(page.getByRole('heading', { name: 'Start your journal' })).toBeVisible(READY);
+    await expect(page.getByRole('heading', { name: 'Start your journal' })).toBeVisible(LAUNCH);
     await expectPageWithin('first run');
     await startJournal(page);
-    await expect(page.getByRole('heading', { name: 'Add your brokerage account' })).toBeVisible(READY);
+    await expect(page.getByRole('heading', { name: 'Add your brokerage account' })).toBeVisible(LAUNCH);
     await expectPageWithin('onboarding');
     await onboard(page);
     const nav = page.getByRole('navigation', { name: 'Primary' });
     await nav.getByRole('link', { name: 'Accounts' }).click();
-    await expect(page.getByRole('heading', { name: 'Accounts', level: 1 })).toBeVisible(READY);
+    await expect(page.getByRole('heading', { name: 'Accounts', level: 1 })).toBeVisible();
     await expectEachWidth('Accounts');
     await nav.getByRole('link', { name: 'New Plan' }).click();
     await fillPlan(page);

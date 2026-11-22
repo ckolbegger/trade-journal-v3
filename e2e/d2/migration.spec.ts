@@ -14,7 +14,7 @@ import {
   PLAN,
   PLANNED,
   probe,
-  READY,
+  LAUNCH,
   NOW_ROW,
   recordEntry,
   reloadFromNotice,
@@ -36,7 +36,7 @@ const storesOf = (db: ProbedDatabase | undefined) => (db ? { stores: db.stores, 
 // Both Plans in the Planned list.
 async function expectBothPlans(page: Page): Promise<void> {
   await openPlanned(page);
-  await expect(page.getByRole('row', { name: /XYZ/ })).toBeVisible(READY);
+  await expect(page.getByRole('row', { name: /XYZ/ })).toBeVisible();
   await expect(page.getByRole('row', { name: /ABC/ })).toBeVisible();
 }
 
@@ -57,7 +57,7 @@ test.describe('B2.3 update from D1 with data', { tag: '@release-history' }, () =
     await confirmD1Plan(page, SECOND_PLAN);
     // The update's Reload reloads the page it is on: the Trades view.
     await page.goto('/');
-    await expect(page.getByRole('row', { name: /ABC/ })).toBeVisible(READY);
+    await expect(page.getByRole('row', { name: /ABC/ })).toBeVisible(LAUNCH);
     const before = await probe(page);
     const oldDatabase = rootOf(before).current;
 
@@ -96,14 +96,14 @@ test.describe('B2.4 Migration Blocked (faults build)', () => {
     // The D1 release ignores the parameter; the update's Reload keeps it, so the faults build
     // launches with it.
     await page.goto('/?faults=migration:validate');
-    await expect(page.getByRole('row', { name: /ABC/ })).toBeVisible(READY);
+    await expect(page.getByRole('row', { name: /ABC/ })).toBeVisible(LAUNCH);
     const before = await probe(page);
     const oldDatabase = rootOf(before).current;
 
     server.use('dist-faults');
     expect(await checkForUpdate(page)).toEqual({ waiting: 'installed' });
     await reloadFromNotice(page);
-    await expect(page.getByRole('heading', { name: 'Your journal could not be converted to this release' })).toBeVisible(READY);
+    await expect(page.getByRole('heading', { name: 'Your journal could not be converted to this release' })).toBeVisible(LAUNCH);
     await expect(page.getByText('Your data is unchanged.')).toBeVisible();
     await expect(page.getByRole('button')).toHaveText(['Retry', 'Download a copy', 'Verify']);
 
@@ -130,7 +130,7 @@ test.describe('B2.5 old tab during migration', { tag: '@release-history' }, () =
     await confirmD1Plan(tabA, PLAN);
     const tabB = await context.newPage();
     await tabB.goto('/');
-    await expect(tabB.getByRole('row', { name: /XYZ/ })).toBeVisible(READY);
+    await expect(tabB.getByRole('row', { name: /XYZ/ })).toBeVisible(LAUNCH);
     await tabA.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'New Plan' }).click();
     await fillPlan(tabA, SECOND_PLAN);
     const before = await probe(tabA);
@@ -145,7 +145,7 @@ test.describe('B2.5 old tab during migration', { tag: '@release-history' }, () =
     const reloaded = tabB.waitForEvent('load');
     await tabB.evaluate(async () => (await navigator.serviceWorker.getRegistration())!.waiting!.postMessage({ type: 'ApplyUpdate' }));
     await reloaded;
-    await expect(tabB.getByText('No open trades. Recording an entry on a Planned Trade opens it.')).toBeVisible(READY);
+    await expect(tabB.getByText('No open trades. Recording an entry on a Planned Trade opens it.')).toBeVisible(LAUNCH);
 
     await expect(notice(tabA)).toContainText('Updated in another tab: reload when ready');
     await expect(tabA.getByLabel('Symbol')).toHaveValue('ABC');
@@ -181,14 +181,14 @@ test.describe('B2.6 kill during migration (faults build)', () => {
       await confirmD1Plan(page, PLAN);
       await confirmD1Plan(page, SECOND_PLAN);
       await page.goto(`${BASE_URL}/?faults=migration:hold`);
-      await expect(page.getByRole('row', { name: /ABC/ })).toBeVisible(READY);
+      await expect(page.getByRole('row', { name: /ABC/ })).toBeVisible(LAUNCH);
       before = await probe(page);
 
       server.use('dist-faults');
       expect(await checkForUpdate(page)).toEqual({ waiting: 'installed' });
       await reloadFromNotice(page);
       // The migrator has copied and validated the candidate and now waits before activating.
-      await expect(page.getByRole('status')).toHaveText('Updating your journal to this release…', READY);
+      await expect(page.getByRole('status')).toHaveText('Updating your journal to this release…', LAUNCH);
     } finally {
       await killed.kill();
     }
@@ -198,7 +198,7 @@ test.describe('B2.6 kill during migration (faults build)', () => {
       const page = await firstPage(relaunched.context);
       expect(relaunched.context.pages().map((p) => p.url())).toEqual(['about:blank']);
       await page.goto(`${BASE_URL}${PLANNED}`);
-      await expect(page.getByRole('row', { name: /XYZ/ })).toBeVisible(READY);
+      await expect(page.getByRole('row', { name: /XYZ/ })).toBeVisible(LAUNCH);
       await expect(page.getByRole('row', { name: /ABC/ })).toBeVisible();
       const after = await probe(page);
       const { current, candidates } = rootOf(after);

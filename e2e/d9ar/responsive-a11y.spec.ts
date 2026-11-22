@@ -2,7 +2,7 @@ import type { Locator, Page } from '@playwright/test';
 import { expectNoSidewaysScroll } from '../d7p/support.ts';
 import {
   actionFormOf, AXIO, BREN, build, buildReview, cardReplayButton, cardRows, chartText, checkForUpdate, closeButton, closeOf, detailReplayButton, expect, expectAccessible, expectChartTextInside, expectFitsOneScreen,
-  expectReadoutShownInFull, expectSmallestChartTextAtLeast, expectWideLayoutAtEverySession, CORV, DALE, DALE_HOLD, firstPage, headline, hits, launchAt, launchTouchAt, notice, openCardReplay, openDrawer, openReview, pnlChart, priceStrip, reachCard, READY, replay, seek,
+  expectReadoutShownInFull, expectSmallestChartTextAtLeast, expectWideLayoutAtEverySession, CORV, DALE, DALE_HOLD, firstPage, headline, hits, launchAt, launchTouchAt, notice, openCardReplay, openDrawer, openReview, pnlChart, priceStrip, reachCard, LAUNCH, replay, seek,
   SCREENSHOTS, sessionCard, sessionCards, setViewport, slider, sliderValue, smallestChartText, test, type TradeRef,
 } from './support.ts';
 
@@ -237,7 +237,7 @@ test.describe('B9AR.7 Responsive, touch, accessible and offline', () => {
     await expectTall(sessionCards(replay(page)).locator('h4 button:visible'), 'the card headings');
     await closeButton(replay(page)).click();
     await page.goto(`/trades/${bren.tradeId}`);
-    await expect(detailReplayButton(page)).toBeVisible(READY);
+    await expect(detailReplayButton(page)).toBeVisible(LAUNCH);
     await expectTall(detailReplayButton(page), 'the Detail’s Replay button');
     await context.close();
   });
@@ -379,7 +379,7 @@ test.describe('B9AR.7 Responsive, touch, accessible and offline', () => {
     await expect(sliderValue(scope)).toHaveText('Mon Nov 16 · 11 of 11');
     await seek(page, scope, 'ArrowLeft', 2);
     await expect(headline(scope)).toHaveText('+$982.00 · 3.03R');
-    await expect(pnlChart(scope).locator('path.banked-band')).toHaveCount(1, READY);
+    await expect(pnlChart(scope).locator('path.banked-band')).toHaveCount(1, LAUNCH);
     await expect(priceStrip(scope)).toBeVisible();
     await offline.close();
   });
@@ -389,7 +389,7 @@ test.describe('B9AR.7 Responsive, touch, accessible and offline', () => {
     const { context, page } = await build(profile, BREN, closeOf('2026-11-16'), 10);
     server.use('dist-releases/v2');
     expect(await checkForUpdate(page)).toEqual({ waiting: 'installed' });
-    await expect(notice(page)).toContainText('An update is ready', READY);
+    await expect(notice(page)).toContainText('An update is ready', LAUNCH);
     const before = await notice(page).evaluate((el) => el.outerHTML);
     await openDrawer(page, 'Replay');
     // Under the overlay, not dismissed: still in the page, though the page behind is inert.

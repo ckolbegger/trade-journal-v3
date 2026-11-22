@@ -1,4 +1,4 @@
-import { completeLine, downloadBackup, expect, firstPage, launchAt, MONDAY_1005, openBackup, probe, READY, scratch, seedJournal, test, verifyWith } from './support.ts';
+import { completeLine, downloadBackup, expect, firstPage, launchAt, MONDAY_1005, openBackup, probe, LAUNCH, scratch, seedJournal, test, verifyWith } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -16,7 +16,7 @@ test.describe('B8.8 Recovery Only backup', () => {
     for (const faults of ['control', 'diagnostic,capacity']) {
       await page.goto(`/?faults=${faults}`);
       const banner = page.getByRole('region', READ_ONLY);
-      await expect(banner).toBeVisible(READY);
+      await expect(banner).toBeVisible(LAUNCH);
       await expect(banner).toContainText(SEPARATE_STORAGE);
       await openBackup(page);
       before ??= await probe(page);
@@ -24,7 +24,7 @@ test.describe('B8.8 Recovery Only backup', () => {
       const saved = scratch(`recovery-${faults.replace(',', '-')}.tjbackup`);
       await downloadBackup(page, saved);
       await verifyWith(page, saved);
-      await expect(completeLine(page)).toBeVisible(READY);
+      await expect(completeLine(page)).toBeVisible(LAUNCH);
       await expect(page.getByRole('heading', { name: 'Restore needs a browser that can save safely' })).toBeVisible();
       await expect(page.getByRole('button', { name: 'Choose backup file' })).toHaveCount(0);
       expect(await probe(page)).toEqual(before);

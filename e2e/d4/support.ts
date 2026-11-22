@@ -2,7 +2,7 @@
 // production build (the checked-out code) as the default served build, the Playwright clock that sets the date, the
 // four-Trade fixture (the five-Trade fixture without T-D) created through the UI, and the Review steps.
 import type { BrowserContext, Locator, Page } from '@playwright/test';
-import { backToTrade, confirmReference, detail, expect, fillPlan, firstPage, onboardedPage, PLAN, READY, recordEntry, test as d1Test, type PlanValues, type Profile, type ProbedDatabase } from '../d2/support.ts';
+import { backToTrade, confirmReference, detail, expect, fillPlan, firstPage, onboardedPage, PLAN, STEP, LAUNCH, recordEntry, test as d1Test, type PlanValues, type Profile, type ProbedDatabase } from '../d2/support.ts';
 
 export * from '../d2/support.ts';
 
@@ -77,7 +77,7 @@ export const FOUR_TRADES: readonly FixtureTrade[] = [
 
 // The id of the Trade whose page is open, read from its /trades/<id> URL (an id is stored data, so it holds across reloads).
 export async function currentTradeId(page: Page): Promise<string> {
-  await expect(page).toHaveURL(/\/trades\/[^/?#]+/, READY);
+  await expect(page).toHaveURL(/\/trades\/[^/?#]+/);
   return /\/trades\/([^/?#]+)/.exec(page.url())![1]!;
 }
 
@@ -129,8 +129,8 @@ export async function createTradeAt(page: Page, values: PlanValues, planTime: st
 
 export async function openReview(page: Page): Promise<void> {
   await nav(page).getByRole('link', { name: 'Review' }).click();
-  await expect(page.getByRole('heading', { name: 'Review', level: 1 })).toBeVisible(READY);
-  await expect(page.getByRole('region', { name: 'Review status' })).toBeVisible(READY);
+  await expect(page.getByRole('heading', { name: 'Review', level: 1 })).toBeVisible(LAUNCH);
+  await expect(page.getByRole('region', { name: 'Review status' })).toBeVisible(LAUNCH);
 }
 
 export const status = (page: Page): Locator => page.getByRole('region', { name: 'Review status' });
@@ -140,15 +140,15 @@ export const completion = (page: Page): Locator => status(page).locator('strong'
 // Reloads the Review (a full page load, so every figure is read back from stored facts).
 export async function reloadReview(page: Page): Promise<void> {
   await page.reload();
-  await expect(page.getByRole('heading', { name: 'Review', level: 1 })).toBeVisible(READY);
-  await expect(status(page)).toBeVisible(READY);
+  await expect(page.getByRole('heading', { name: 'Review', level: 1 })).toBeVisible(LAUNCH);
+  await expect(status(page)).toBeVisible();
 }
 // The Review is a list of position cards (D5R, A150); the open card holds its own Marks.
 export const cardList = (page: Page): Locator => page.getByRole('list', { name: 'Positions' });
 // The update cases first run a previous release, whose Review has the Marks family, Continue to Trades and the Trades family
 // instead of cards. The helpers follow whichever Review is on the page, once its status has rendered.
 async function hasCards(page: Page): Promise<boolean> {
-  await expect(page.getByRole('region', { name: 'Review status' })).toBeVisible(READY);
+  await expect(page.getByRole('region', { name: 'Review status' })).toBeVisible(LAUNCH);
   return (await cardList(page).count()) > 0;
 }
 // The Marks inside the open card.
@@ -169,7 +169,7 @@ export async function openPanel(page: Page): Promise<Panel | undefined> {
 // Opens a panel of the open card by its header, unless it is already open.
 export async function showPanel(page: Page, name: Panel): Promise<void> {
   const header = anyPanelHeader(page, name);
-  await expect(header).toBeVisible(READY);
+  await expect(header).toBeVisible();
   if ((await header.getAttribute('aria-expanded')) !== 'true') await header.click();
   await expect(header).toHaveAttribute('aria-expanded', 'true');
 }
@@ -224,10 +224,10 @@ export async function openPanelOf(page: Page, card: CardRef): Promise<Panel | un
 async function reachOldCard(page: Page, symbol: string): Promise<Locator> {
   if ((await tradeCard(page, symbol).count()) === 0) {
     if ((await tradesFamily(page).count()) === 0) await page.getByRole('button', { name: 'Continue to Trades' }).click();
-    await expect(tradesFamily(page)).toBeVisible(READY);
+    await expect(tradesFamily(page)).toBeVisible();
     await tradesFamily(page).getByRole('button', { name: `Review ${symbol}` }).click();
   }
-  await expect(tradeCard(page, symbol)).toBeVisible(READY);
+  await expect(tradeCard(page, symbol)).toBeVisible();
   return tradeCard(page, symbol);
 }
 
@@ -235,7 +235,7 @@ async function reachOldCard(page: Page, symbol: string): Promise<Locator> {
 export async function reachCard(page: Page, card: CardRef): Promise<Locator> {
   if (!(await hasCards(page))) return reachOldCard(page, symbolOf(card));
   const header = cardHeader(page, card);
-  await expect(header).toBeVisible(READY);
+  await expect(header).toBeVisible();
   if ((await header.getAttribute('aria-expanded')) !== 'true') {
     await header.click();
     // Opening is refused while the open card holds unsaved work (A156): it says so, and stays open.
@@ -244,11 +244,11 @@ export async function reachCard(page: Page, card: CardRef): Promise<Locator> {
       if ((await header.getAttribute('aria-expanded')) === 'true') return 'opened';
       return (await hold.count()) > 0 ? 'refused' : 'waiting';
     };
-    await expect.poll(outcome, READY).not.toBe('waiting');
+    await expect.poll(outcome).not.toBe('waiting');
     if ((await outcome()) === 'refused') throw await refusal(page, card, hold);
   }
   await expect(header).toHaveAttribute('aria-expanded', 'true');
-  await expect(tradeCard(page, card)).toBeVisible(READY);
+  await expect(tradeCard(page, card)).toBeVisible();
   return tradeCard(page, card);
 }
 // The failure for a refused reach: it names both cards, since two Trades on one Underlying both read "XYZ". The holder is the
@@ -267,7 +267,7 @@ export async function reachPanel(page: Page, card: CardRef, panel: Panel): Promi
   if (!(await hasCards(page))) return panel === 'Marks' ? marksFamily(page) : reachOldCard(page, symbolOf(card));
   await reachCard(page, card);
   const header = panelHeader(page, card, panel);
-  await expect(header).toBeVisible(READY);
+  await expect(header).toBeVisible();
   if ((await header.getAttribute('aria-expanded')) !== 'true') await header.click();
   await expect(header).toHaveAttribute('aria-expanded', 'true');
   return page.locator(`[id="${await header.getAttribute('aria-controls')}"]`);
@@ -312,7 +312,7 @@ const REFUSAL = '.field-error, [role="alert"], p[role="status"]:has-text("Save M
 const SAVED_NOTICE = /are saved, but the figures are out of date/;
 
 // Waits for a save's success sign like `waitSaved` alone would, but throws at once, naming the helper and quoting what the app
-// shows, when the app refuses the save inside `scope` (the form or panel the save was pressed in), instead of waiting out READY.
+// shows, when the app refuses the save inside `scope` (the form or panel the save was pressed in), instead of waiting out its time limit.
 export async function savedUnlessRefused(helper: string, scope: Locator, waitSaved: () => Promise<unknown>): Promise<void> {
   let settled = false;
   const refusal = (async (): Promise<string | undefined> => {
@@ -342,7 +342,7 @@ export const marksSectionOf = (page: Page, card: CardRef): Locator => tradeCard(
 async function checkSavedRow(page: Page, card: CardRef, date: string, text: string): Promise<void> {
   // The drafts are cleared with the same result that moves the card on; the panel may already be hidden.
   await savedUnlessRefused('checkSavedRow', marksSectionOf(page, card), () =>
-    expect(tradeCard(page, card).locator('section[aria-label="Marks"] button', { hasText: /^Save Marks/ })).toHaveText('Save Marks (0)', READY),
+    expect(tradeCard(page, card).locator('section[aria-label="Marks"] button', { hasText: /^Save Marks/ })).toHaveText('Save Marks (0)'),
   );
   const moved = await openPanelOf(page, card);
   await expect(await markRow(page, card, date)).toContainText(text);
@@ -391,7 +391,7 @@ export async function saveAction(page: Page, action: 'Hold' | 'Exit' | 'Roll' | 
 export async function pressSave(form: Locator): Promise<void> {
   const pressed = await form.elementHandle();
   await form.getByRole('button', { name: 'Save' }).click();
-  await savedUnlessRefused('pressSave', form, async () => pressed?.waitForElementState('hidden', READY));
+  await savedUnlessRefused('pressSave', form, async () => pressed?.waitForElementState('hidden', STEP));
 }
 
 // ---- Stored records, read through the probe ---------------------------------------------------

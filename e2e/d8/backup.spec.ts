@@ -1,6 +1,6 @@
 import {
   buildOc3, chooseFile, completeLine, downloadBackup, DOWNLOADED_NOT_VERIFIED, downloadSection, expect, firstPage, fullDigestOf, installDump, launchAt, MONDAY_1005, openBackup, primaryNav,
-  probe, profileAt, READY, readSaved, scratch, seedJournal, test, THURSDAY_1800, TUESDAY_NOON, verifyWith, writeTruncated,
+  probe, profileAt, LAUNCH, readSaved, scratch, seedJournal, test, THURSDAY_1800, TUESDAY_NOON, verifyWith, writeTruncated,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
@@ -52,7 +52,7 @@ test.describe('B8.2 Unverified and failed verification', () => {
     await downloadBackup(page, scratch('earlier.tjbackup'));
     await expect(section.getByText(DOWNLOADED_NOT_VERIFIED)).toBeVisible();
     await primaryNav(page).getByRole('link', { name: 'About' }).click();
-    await expect(page.getByRole('heading', { name: 'About', level: 1 })).toBeVisible(READY);
+    await expect(page.getByRole('heading', { name: 'About', level: 1 })).toBeVisible(LAUNCH);
     await openBackup(page);
     await expect(section.getByRole('button', { name: 'Download backup' })).toBeVisible();
     await expect(section.getByRole('button', { name: /^(Verify backup|Choose another file)$/ })).toHaveCount(0);
@@ -82,7 +82,7 @@ test.describe('B8.5 Read failure', () => {
     const context = await launchAt(profile, MONDAY_1005);
     const page = await firstPage(context);
     await page.goto('/backup?faults=backup:read');
-    await expect(page.getByRole('heading', { name: 'Backup', level: 1 })).toBeVisible(READY);
+    await expect(page.getByRole('heading', { name: 'Backup', level: 1 })).toBeVisible(LAUNCH);
     const before = await probe(page);
     let downloads = 0;
     page.on('download', () => (downloads += 1));
@@ -107,15 +107,15 @@ test.describe('B8.9 Blocked database copy', () => {
     const blocked = await profileAt(blockedDir).launch();
     const page = await firstPage(blocked);
     await page.goto('/');
-    await expect(page.getByRole('heading', { name: 'Your journal could not be converted to this release' })).toBeVisible(READY);
+    await expect(page.getByRole('heading', { name: 'Your journal could not be converted to this release' })).toBeVisible(LAUNCH);
     await expect(page.getByRole('button')).toHaveText(['Retry', 'Download a copy', 'Verify']);
     const before = await probe(page);
     const copy = scratch('blocked-copy.tjbackup');
     const [download] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'Download a copy' }).click()]);
     await download.saveAs(copy);
-    await expect(page.getByText(DOWNLOADED_NOT_VERIFIED)).toBeVisible(READY);
+    await expect(page.getByText(DOWNLOADED_NOT_VERIFIED)).toBeVisible();
     await chooseFile(page, () => page.getByRole('button', { name: 'Verify' }).click(), copy);
-    await expect(page.getByText('Backup complete', { exact: true })).toBeVisible(READY);
+    await expect(page.getByText('Backup complete', { exact: true })).toBeVisible();
     expect(readSaved(copy).header).toMatchObject({ exportKind: 'BlockedDatabase', schemaVersion: 5 });
     expect(await probe(page)).toEqual(before);
     await blocked.close();
@@ -125,13 +125,13 @@ test.describe('B8.9 Blocked database copy', () => {
     const waiting = await profileAt(waitingDir).launch();
     const held = await firstPage(waiting);
     await held.goto('/?faults=capacity');
-    await expect(held.getByRole('heading', { name: 'This release must convert your journal before you can use it' })).toBeVisible(READY);
+    await expect(held.getByRole('heading', { name: 'This release must convert your journal before you can use it' })).toBeVisible(LAUNCH);
     await expect(held.getByText("This release can't confirm the copy until your journal has been updated.")).toBeVisible();
     await expect(held.getByRole('button', { name: 'Verify' })).toHaveCount(0);
     const waitingBefore = await probe(held);
     const [offered] = await Promise.all([held.waitForEvent('download'), held.getByRole('button', { name: 'Download a copy' }).click()]);
     await offered.saveAs(scratch('waiting-copy.tjbackup'));
-    await expect(held.getByText(DOWNLOADED_NOT_VERIFIED)).toBeVisible(READY);
+    await expect(held.getByText(DOWNLOADED_NOT_VERIFIED)).toBeVisible();
     expect(await probe(held)).toEqual(waitingBefore);
     await waiting.close();
   });

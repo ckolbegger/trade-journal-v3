@@ -5,7 +5,7 @@ import { REPLAY_SESSION_DATES } from '../../src/domain/trade-analysis/reference-
 import { R_DALE_D } from '../../src/domain/trade-analysis/option-trade.ts';
 import { expectShownInFull } from '../d7p/support.ts';
 import {
-  AXIO, BREN, closeOf, currentTradeId, DALE, detail, expect, fillOptionPlan, fillOptionRows, fillPlan, fillRows, label, onboardedAt, openExitForm, openReview, pinClock, pnlChart, priceStrip, READY,
+  AXIO, BREN, closeOf, currentTradeId, DALE, detail, expect, fillOptionPlan, fillOptionRows, fillPlan, fillRows, label, onboardedAt, openExitForm, openReview, pinClock, pnlChart, priceStrip, LAUNCH,
   answerIn, exitReflection, reachPanel, recordEntry, recordOptionEntry, savedUnlessRefused, seek, slider, sliderValue, tradeCard, type Fixture, type Profile, type TradeRef,
 } from '../d9/support.ts';
 
@@ -32,20 +32,20 @@ async function enterTrade(page: Page, fixture: Fixture, through: number): Promis
     if (fixture.plan.targetOption !== undefined) await page.getByLabel(/^Target \(option price at or/).fill(fixture.plan.targetOption);
     await page.getByRole('button', { name: 'Confirm Plan' }).click();
   }
-  await expect(detail.heading(page, fixture.symbol)).toBeVisible(READY);
+  await expect(detail.heading(page, fixture.symbol)).toBeVisible();
   const trade: TradeRef = { symbol: fixture.symbol, tradeId: await currentTradeId(page), label: fixture.symbol };
   if ('stock' in fixture.plan) await recordEntry(page, [{ ...fixture.entry, fee: '0.00' }]);
   else await recordOptionEntry(page, [fixture.entry]);
   for (const change of fixture.changes) {
     if (change.kind !== 'sell') throw new Error('enterTrade records partial sales only');
     await page.goto(`/trades/${trade.tradeId}`);
-    await expect(detail.heading(page, fixture.symbol)).toBeVisible(READY);
+    await expect(detail.heading(page, fixture.symbol)).toBeVisible(LAUNCH);
     await openExitForm(page);
     if ('stock' in fixture.plan) await fillRows(page, [change.row]);
     else await fillOptionRows(page, [change.row]);
     await answerIn(exitReflection(page));
     await page.getByRole('button', { name: 'Save exit' }).click();
-    await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible(READY);
+    await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible();
   }
   await page.goto('/');
   await openReview(page);
@@ -66,7 +66,7 @@ async function enterTrade(page: Page, fixture: Fixture, through: number): Promis
   }
   await panel.getByRole('button', { name: `Save Marks (${count})`, exact: true }).click();
   await savedUnlessRefused('enterTrade', tradeCard(page, trade).locator('section[aria-label="Marks"]'), () =>
-    expect(tradeCard(page, trade).locator('section[aria-label="Marks"] button', { hasText: /^Save Marks/ })).toHaveText('Save Marks (0)', READY),
+    expect(tradeCard(page, trade).locator('section[aria-label="Marks"] button', { hasText: /^Save Marks/ })).toHaveText('Save Marks (0)', LAUNCH),
   );
   return trade;
 }

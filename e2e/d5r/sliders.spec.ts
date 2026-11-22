@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import {
-  cardHeader, createCardFixture, enterMark, expect, MONDAY, MONDAY_1700, onboardedAt, openReview, panelHeader, READY, meterOf, test, tradeCard, type CardTrade,
+  cardHeader, createCardFixture, enterMark, expect, MONDAY, MONDAY_1700, onboardedAt, openReview, panelHeader, LAUNCH, meterOf, test, tradeCard, type CardTrade,
 } from './support.ts';
 
 const nav = (page: Page) => page.getByRole('navigation', { name: 'Primary' });
@@ -12,12 +12,12 @@ test.describe('B5R.6 Missing-Mark link', () => {
 
     await nav(page).getByRole('link', { name: 'Trades' }).click();
     const list = page.getByRole('table', { name: 'Open Trades' });
-    await expect(list).toBeVisible(READY);
+    await expect(list).toBeVisible(LAUNCH);
     await list.getByRole('row', { name: /DEF/ }).getByRole('link', { name: /^Mark missing: DEF/ }).click();
 
     // Navigation and focus: raw locators.
-    await expect(page.getByRole('heading', { name: 'Review', level: 1 })).toBeVisible(READY);
-    await expect(cardHeader(page, tC)).toHaveAttribute('aria-expanded', 'true', READY);
+    await expect(page.getByRole('heading', { name: 'Review', level: 1 })).toBeVisible();
+    await expect(cardHeader(page, tC)).toHaveAttribute('aria-expanded', 'true');
     await expect(panelHeader(page, tC, 'Marks')).toHaveAttribute('aria-expanded', 'true');
     await expect(tradeCard(page, 'DEF').getByRole('textbox', { name: `DEF Mark, ${MONDAY}`, exact: true })).toBeFocused();
     // No other card is open.
@@ -33,14 +33,14 @@ test.describe('B5R.12 Missing-Mark link on a shared Instrument', () => {
 
     await nav(page).getByRole('link', { name: 'Trades' }).click();
     const list = page.getByRole('table', { name: 'Open Trades' });
-    await expect(list).toBeVisible(READY);
+    await expect(list).toBeVisible(LAUNCH);
     // With no Monday Marks, T-A's card (it also owes Friday's gap) comes before T-F's in attention order, so T-F is the second holder of XYZ.
     const rowOf = (trade: { readonly tradeId: string }) => list.getByRole('row').filter({ has: page.locator(`a[href$="/trades/${trade.tradeId}"]`) });
     await rowOf(tF).getByRole('link', { name: /^Mark missing: XYZ/ }).click();
 
     // Navigation and focus: raw locators.
-    await expect(page.getByRole('heading', { name: 'Review', level: 1 })).toBeVisible(READY);
-    await expect(cardHeader(page, tF)).toHaveAttribute('aria-expanded', 'true', READY);
+    await expect(page.getByRole('heading', { name: 'Review', level: 1 })).toBeVisible();
+    await expect(cardHeader(page, tF)).toHaveAttribute('aria-expanded', 'true');
     await expect(panelHeader(page, tF, 'Marks')).toHaveAttribute('aria-expanded', 'true');
     await expect(tradeCard(page, tF).getByRole('textbox', { name: `XYZ Mark, ${MONDAY}`, exact: true })).toBeFocused();
     // The other XYZ card, and every other card, stays collapsed.

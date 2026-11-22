@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { createGapFixture, detail, enterMark, expect, OCT_9, openDrawer, reachCard, READY, test, tradeCard } from './support.ts';
+import { createGapFixture, detail, enterMark, expect, OCT_9, openDrawer, reachCard, LAUNCH, test, tradeCard } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -31,7 +31,7 @@ test.describe('B9R2.1 Price History and Journal: acknowledged sessions', () => {
     });
 
     await page.goto(`/trades/${tA.tradeId}`);
-    await expect(detail.heading(page, 'XYZ')).toBeVisible(READY);
+    await expect(detail.heading(page, 'XYZ')).toBeVisible(LAUNCH);
 
     await test.step('Price History: the acknowledged session is words, not a gap (W78); the line names both counts (W81); the tab counts Missing only', async () => {
       await openDrawer(page, 'Price History');

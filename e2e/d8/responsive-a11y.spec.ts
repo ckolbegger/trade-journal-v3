@@ -2,7 +2,7 @@ import type { Locator } from '@playwright/test';
 import { expectNoSidewaysScroll, setWidth } from '../d7p/support.ts';
 import {
   chooseFile, chooseRestoreFile, completeLine, confirmStep, declineSafetyBackup, downloadBackup, downloadSection, expect, expectAccessible, firstPage, FIXTURE_BACKUP, installDump, launchAt, MONDAY_1005, openBackup,
-  primaryNav, profileAt, READY, replaceEntire, restoreComplete, restoreSection, safetyBackup, scratch, seedJournal, tabTo, test, understood, verifyWith, WARNING, writeFlipped, writeTruncated,
+  primaryNav, profileAt, LAUNCH, replaceEntire, restoreComplete, restoreSection, safetyBackup, scratch, seedJournal, tabTo, test, understood, verifyWith, WARNING, writeFlipped, writeTruncated,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
@@ -32,29 +32,29 @@ test.describe('B8.16 Responsive and accessible', () => {
     const truncated = scratch('truncated.tjbackup');
     writeTruncated(saved, truncated);
     await verifyWith(page, truncated);
-    await expect(downloadSection(page).getByRole('alert')).toBeVisible(READY);
+    await expect(downloadSection(page).getByRole('alert')).toBeVisible(LAUNCH);
     await expectAccessible(page, 'Backup page: not verified');
     await verifyWith(page, saved);
-    await expect(completeLine(page)).toBeVisible(READY);
+    await expect(completeLine(page)).toBeVisible(LAUNCH);
     await expectAccessible(page, 'Backup page: completed');
     await page.evaluate(() => window.__tjFaults?.set(['backup:read']));
     await downloadSection(page).getByRole('button', { name: 'Download backup' }).click();
-    await expect(downloadSection(page).getByRole('alert')).toContainText('The backup could not be made.', READY);
+    await expect(downloadSection(page).getByRole('alert')).toContainText('The backup could not be made.');
     await expectAccessible(page, 'Backup page: not completed');
     await page.evaluate(() => window.__tjFaults?.set([]));
 
     // Restore steps: choose, rejected, checking (held), preview, confirm with each safety choice.
     await expectAccessible(page, 'Restore: choose');
     await chooseFile(page, () => page.getByRole('button', { name: 'Choose backup file' }).click(), flipped);
-    await expect(restoreSection(page).getByRole('alert')).toContainText("This backup can't be restored.", READY);
+    await expect(restoreSection(page).getByRole('alert')).toContainText("This backup can't be restored.");
     await expectAccessible(page, 'Restore: rejected');
     await page.evaluate(() => window.__tjFaults?.set(['restore:hold-prepare']));
     await chooseFile(page, () => page.getByRole('button', { name: 'Check the backup again' }).click(), FIXTURE_BACKUP);
-    await expect(page.getByText('Checking the backup. Your current journal is not changed.')).toBeVisible(READY);
+    await expect(page.getByText('Checking the backup. Your current journal is not changed.')).toBeVisible(LAUNCH);
     await expectAccessible(page, 'Restore: checking');
     await page.evaluate(() => window.__tjFaults?.set([]));
     await page.evaluate(() => window.__tjFaults?.release());
-    await expect(page.getByRole('heading', { name: 'Restoring replaces your entire current journal' })).toBeVisible(READY);
+    await expect(page.getByRole('heading', { name: 'Restoring replaces your entire current journal' })).toBeVisible(LAUNCH);
     await expectAccessible(page, 'Restore: preview and confirmation');
 
     // The safety choice is a labelled radio group; its choices and warning are text.
@@ -91,7 +91,7 @@ test.describe('B8.16 Responsive and accessible', () => {
     await setWidth(page, 1280);
 
     await replaceEntire(page).click();
-    await expect(restoreComplete(page)).toBeVisible(READY);
+    await expect(restoreComplete(page)).toBeVisible(LAUNCH);
     await expectAccessible(page, 'Restore: complete');
     await context.close();
   });
@@ -110,14 +110,14 @@ test.describe('B8.16 Responsive and accessible', () => {
     await expectAccessible(page, 'Restore: preview of an older backup');
 
     await page.goto('/?faults=control');
-    await expect(page.getByRole('region', { name: "Read only: this browser can't save right now" })).toBeVisible(READY);
+    await expect(page.getByRole('region', { name: "Read only: this browser can't save right now" })).toBeVisible(LAUNCH);
     await openBackup(page);
     await expect(page.getByRole('heading', { name: 'Restore needs a browser that can save safely' })).toBeVisible();
     await expectAccessible(page, 'Backup page: Recovery Only');
     const saved = scratch('recovery.tjbackup');
     await downloadBackup(page, saved);
     await verifyWith(page, saved);
-    await expect(completeLine(page)).toBeVisible(READY);
+    await expect(completeLine(page)).toBeVisible(LAUNCH);
     await expectAccessible(page, 'Backup page: Recovery Only, completed');
     await context.close();
   });
@@ -127,7 +127,7 @@ test.describe('B8.16 Responsive and accessible', () => {
     const fresh = await profile.launch();
     const first = await firstPage(fresh);
     await first.goto('/');
-    await expect(first.getByRole('heading', { name: 'Start your journal' })).toBeVisible(READY);
+    await expect(first.getByRole('heading', { name: 'Start your journal' })).toBeVisible(LAUNCH);
     await expectAccessible(first, 'first run');
     await first.getByRole('button', { name: 'Restore from a backup' }).click();
     await expectAccessible(first, 'first run: Restore choose');
@@ -136,7 +136,7 @@ test.describe('B8.16 Responsive and accessible', () => {
     await expectAccessible(first, 'first run: Restore preview');
     await understood(first).check();
     await replaceEntire(first).click();
-    await expect(restoreComplete(first)).toBeVisible(READY);
+    await expect(restoreComplete(first)).toBeVisible(LAUNCH);
     await expectAccessible(first, 'first run: Restore complete');
     await fresh.close();
 
@@ -146,14 +146,14 @@ test.describe('B8.16 Responsive and accessible', () => {
     const blocked = await profileAt(blockedDir).launch();
     const view = await firstPage(blocked);
     await view.goto('/');
-    await expect(view.getByRole('heading', { name: 'Your journal could not be converted to this release' })).toBeVisible(READY);
+    await expect(view.getByRole('heading', { name: 'Your journal could not be converted to this release' })).toBeVisible(LAUNCH);
     await expectAccessible(view, 'Migration Blocked');
     const [download] = await Promise.all([view.waitForEvent('download'), view.getByRole('button', { name: 'Download a copy' }).click()]);
     await download.saveAs(scratch('blocked.tjbackup'));
-    await expect(view.getByText('Downloaded, not verified yet.')).toBeVisible(READY);
+    await expect(view.getByText('Downloaded, not verified yet.')).toBeVisible();
     await expectAccessible(view, 'Migration Blocked: copy downloaded');
     await chooseFile(view, () => view.getByRole('button', { name: 'Verify' }).click(), scratch('blocked.tjbackup'));
-    await expect(view.getByText('Backup complete', { exact: true })).toBeVisible(READY);
+    await expect(view.getByText('Backup complete', { exact: true })).toBeVisible();
     await expectAccessible(view, 'Migration Blocked: copy verified');
     await blocked.close();
 
@@ -163,7 +163,7 @@ test.describe('B8.16 Responsive and accessible', () => {
     const waiting = await profileAt(waitingDir).launch();
     const held = await firstPage(waiting);
     await held.goto('/?faults=capacity');
-    await expect(held.getByRole('heading', { name: 'This release must convert your journal before you can use it' })).toBeVisible(READY);
+    await expect(held.getByRole('heading', { name: 'This release must convert your journal before you can use it' })).toBeVisible(LAUNCH);
     await expectAccessible(held, 'AwaitingMigration');
     await waiting.close();
   });
@@ -189,7 +189,7 @@ test.describe('B8.16 Responsive and accessible', () => {
     const fresh = await profileAt(`${profile.dir}-first-run`).launch();
     const first = await firstPage(fresh);
     await first.goto('/');
-    await expect(first.getByRole('heading', { name: 'Start your journal' })).toBeVisible(READY);
+    await expect(first.getByRole('heading', { name: 'Start your journal' })).toBeVisible(LAUNCH);
     await first.getByRole('button', { name: 'Restore from a backup' }).click();
     await chooseRestoreFile(first, saved);
     for (const width of [375, 320]) {
@@ -286,7 +286,7 @@ test.describe('B8.16 Responsive and accessible', () => {
     const fresh = await profileAt(`${profile.dir}-first-run`).launch();
     const first = await firstPage(fresh);
     await first.goto('/');
-    await expect(first.getByRole('heading', { name: 'Start your journal' })).toBeVisible(READY);
+    await expect(first.getByRole('heading', { name: 'Start your journal' })).toBeVisible(LAUNCH);
     await first.getByRole('button', { name: 'Restore from a backup' }).click();
     await chooseRestoreFile(first, saved);
     for (const width of [1280, 320]) {
@@ -301,11 +301,11 @@ test.describe('B8.16 Responsive and accessible', () => {
     const context = await launchAt(profile, MONDAY_1005);
     const page = await firstPage(context);
     await page.goto('/backup');
-    await expect(page.getByRole('heading', { name: 'Backup', level: 1 })).toBeVisible(READY);
+    await expect(page.getByRole('heading', { name: 'Backup', level: 1 })).toBeVisible(LAUNCH);
 
     await tabTo(page, page.getByRole('button', { name: 'Choose backup file' }));
     await chooseFile(page, () => page.keyboard.press('Enter'), FIXTURE_BACKUP);
-    await expect(page.getByRole('heading', { name: 'Restoring replaces your entire current journal' })).toBeVisible(READY);
+    await expect(page.getByRole('heading', { name: 'Restoring replaces your entire current journal' })).toBeVisible(LAUNCH);
     await tabTo(page, understood(page));
     await page.keyboard.press('Space');
     await expect(understood(page)).toBeChecked();
@@ -318,10 +318,10 @@ test.describe('B8.16 Responsive and accessible', () => {
     await expect(page.getByRole('checkbox', { name: WARNING })).toBeChecked();
     await tabTo(page, replaceEntire(page));
     await page.keyboard.press('Enter');
-    await expect(restoreComplete(page)).toBeVisible(READY);
+    await expect(restoreComplete(page)).toBeVisible(LAUNCH);
     await tabTo(page, page.getByRole('link', { name: 'Go to Trades' }));
     await page.keyboard.press('Enter');
-    await expect(page.getByRole('tablist', { name: 'Trades by lifecycle' })).toBeVisible(READY);
+    await expect(page.getByRole('tablist', { name: 'Trades by lifecycle' })).toBeVisible(LAUNCH);
     await context.close();
   });
 });

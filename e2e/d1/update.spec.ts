@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import type { Page } from '@playwright/test';
 import type { OfflineReleaseInventory } from '../../src/delivery/inventory.ts';
-import { expect, fillPlan, onboardedPage, PLANNED, probe, READY, test, workspaceOf } from './support.ts';
+import { expect, fillPlan, onboardedPage, PLANNED, probe, LAUNCH, test, workspaceOf } from './support.ts';
 
 const identity = (release: string) =>
   (JSON.parse(readFileSync(`dist-releases/${release}/inventory.json`, 'utf8')) as OfflineReleaseInventory).releaseId;
@@ -59,7 +59,7 @@ test.describe('B1.10 update with unsaved work', () => {
     await expect(notice(page).getByRole('button', { name: 'Reload' })).toBeEnabled();
     await notice(page).getByRole('button', { name: 'Reload' }).click();
     await page.waitForEvent('load');
-    await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'About' }).click(READY);
+    await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'About' }).click(LAUNCH);
     await expect(page.locator('.identity')).toHaveText(identity('v2'));
     for (const check of ['Test save and read-back', 'Storage space', 'Offline component in control', 'Offline copy complete']) {
       await expect(page.getByRole('listitem').filter({ hasText: `${check}: passed` })).toBeVisible();
@@ -100,7 +100,7 @@ test.describe('B1.12 offline keeps the installed release', () => {
     expect(await checkForUpdate(page)).toEqual({ waiting: null });
     await expect(notice(page)).toHaveCount(0);
     await page.reload();
-    await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'About' }).click(READY);
+    await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'About' }).click(LAUNCH);
     await expect(page.locator('.identity')).toHaveText(identity('v1'));
     await expect(page.getByRole('region', { name: /Read only/ })).toHaveCount(0);
     await context.close();
@@ -114,7 +114,7 @@ test.describe('B1.13 two tabs, one unsaved', () => {
     const editing = await onboardedPage(context);
     const clean = await context.newPage();
     await clean.goto(PLANNED);
-    await expect(clean.getByRole('heading', { name: /Trades|Planned/ }).or(clean.getByText('No planned trades yet')).first()).toBeVisible(READY);
+    await expect(clean.getByRole('heading', { name: /Trades|Planned/ }).or(clean.getByText('No planned trades yet')).first()).toBeVisible(LAUNCH);
     await openNewPlan(editing);
     await fillPlan(editing);
 
@@ -139,10 +139,10 @@ test.describe('B1.13 two tabs, the clean one opened after the form became unsave
 
     const about = await context.newPage();
     await about.goto('/about');
-    await expect(about.locator('.identity')).toHaveText(identity('v1'), READY);
+    await expect(about.locator('.identity')).toHaveText(identity('v1'), LAUNCH);
     server.use('dist-releases/v2');
     await about.getByRole('button', { name: 'Check for updates' }).click();
-    await expect(notice(about)).toHaveCount(1, READY);
+    await expect(notice(about)).toHaveCount(1, LAUNCH);
     await expect(notice(about)).toContainText('The update waits because another tab has unsaved work.');
     await expect(notice(about).getByRole('button', { name: 'Reload' })).toBeDisabled();
     await expect(about.getByText('No update')).toHaveCount(0);

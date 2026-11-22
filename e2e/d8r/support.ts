@@ -5,7 +5,7 @@
 import type { Page } from '@playwright/test';
 import {
   at, buildOc3, closeTheTrade, confirmOc3, confirmOptionPlan, createTrades, currentTradeId, detail, enterMark, expect, FOUR_TRADES, fillOptionPlan, fillOptionRows, launchAt, MONDAY_0900,
-  MONDAY_1005, MONDAY_1105, MONDAY_1700, onboardedAt, openReview, openTradeFromOpenList, OS, READY, recordOptionEntry, type OptionPlanValues, type Profile, type TradeRef,
+  MONDAY_1005, MONDAY_1105, MONDAY_1700, onboardedAt, openReview, openTradeFromOpenList, OS, LAUNCH, recordOptionEntry, type OptionPlanValues, type Profile, type TradeRef,
 } from '../d8p/support.ts';
 
 export * from '../d8p/support.ts';
@@ -25,7 +25,7 @@ export async function buildOc3Plus(profile: Profile): Promise<TradeRef> {
   const trade = await buildOc3(profile, { thursdayHold: true });
   await at(profile, FRIDAY_1105, async (page) => {
     await page.goto(`/trades/${trade.tradeId}`);
-    await expect(detail.heading(page, 'XYZ')).toBeVisible(READY);
+    await expect(detail.heading(page, 'XYZ')).toBeVisible(LAUNCH);
     await recordOptionEntry(page, [{ quantity: '1', price: '3.30', fee: '0.65', time: '2026-10-16T11:00' }]);
   });
   return trade;
@@ -38,7 +38,7 @@ export async function buildOc3BeforeMarks(profile: Profile): Promise<TradeRef> {
   await setup.close();
   await at(profile, MONDAY_1005, async (entering) => {
     await entering.goto(`/trades/${trade.tradeId}`);
-    await expect(detail.heading(entering, 'XYZ')).toBeVisible(READY);
+    await expect(detail.heading(entering, 'XYZ')).toBeVisible(LAUNCH);
     await recordOptionEntry(entering, [{ quantity: '2', price: '2.00', fee: '1.30', time: '2026-10-12T10:00' }]);
   });
   return trade;
@@ -76,19 +76,19 @@ export async function addK1(profile: Profile): Promise<TradeRef> {
     await fillOptionPlan(page, K1_PLAN);
     await page.getByLabel('Stop (option price at or below)', { exact: true }).fill('6.00');
     await page.getByRole('button', { name: 'Confirm Plan' }).click();
-    await expect(detail.heading(page, 'NVDA')).toBeVisible(READY);
+    await expect(detail.heading(page, 'NVDA')).toBeVisible(LAUNCH);
     tradeId = await currentTradeId(page);
     await recordOptionEntry(page, [{ quantity: '2', price: '10.00', fee: '1.30', time: '2026-11-09T10:00' }]);
   });
   await at(profile, FRIDAY_NOV_1105, async (page) => {
     await page.goto(`/trades/${tradeId}`);
-    await expect(detail.heading(page, 'NVDA')).toBeVisible(READY);
+    await expect(detail.heading(page, 'NVDA')).toBeVisible(LAUNCH);
     await detail.recordExitLink(page).click();
-    await expect(page.getByRole('heading', { name: 'Record exit', level: 1 })).toBeVisible(READY);
+    await expect(page.getByRole('heading', { name: 'Record exit', level: 1 })).toBeVisible();
     await fillOptionRows(page, [{ quantity: '2', price: '12.40', fee: '1.30', time: '2026-11-13T11:00' }]);
     await closeTheTrade(page, 'later');
     await page.getByRole('button', { name: 'Save exit' }).click();
-    await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible(READY);
+    await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible();
   });
   return { symbol: 'NVDA', tradeId, label: 'K1' };
 }
@@ -101,6 +101,6 @@ export async function openBreachedStockTrade(profile: Profile): Promise<{ contex
   await enterMark(setupPage, 'XYZ', 'Mon Oct 12', '47.00');
   await setupPage.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Trades' }).click();
   await openTradeFromOpenList(setupPage, 'XYZ');
-  await expect(detail.heading(setupPage, 'XYZ')).toBeVisible(READY);
+  await expect(detail.heading(setupPage, 'XYZ')).toBeVisible(LAUNCH);
   return { context: setup, page: setupPage };
 }

@@ -1,7 +1,7 @@
 import type { BrowserContext, Page } from '@playwright/test';
 import {
   acknowledgeMark, answerIn, cardItem, createTrades, detail, enterMark, exitReflection, expect, expectInsideCell, expectNoSidewaysScroll, expectShownInFull, firstPage, FOUR_TRADES, launchAt, MONDAY_1700, onboardedAt,
-  openDrawer, openExitForm, openReview, openTradeFromOpenList, READY, reachCard, recordEntry, fillRows, sell, setClock, setWidth, meterOf, test, tradeCard, TUESDAY_NOON, WIDTHS, writeSellQuantities,
+  openDrawer, openExitForm, openReview, openTradeFromOpenList, LAUNCH, reachCard, recordEntry, fillRows, sell, setClock, setWidth, meterOf, test, tradeCard, TUESDAY_NOON, WIDTHS, writeSellQuantities,
   type Profile,
 } from './support.ts';
 
@@ -57,7 +57,7 @@ test.describe('T7P.11 Layout of the worded reasons', () => {
     const { context, page } = await launchScenario(profile);
     await openTradeFromOpenList(page, 'XYZ');
     const panel = detail.factsIncoherent(page);
-    await expect(panel).toBeVisible(READY);
+    await expect(panel).toBeVisible();
     for (const width of WIDTHS) {
       await setWidth(page, width);
       await expectNoSidewaysScroll(page, `Detail at ${width}`);
@@ -74,7 +74,7 @@ test.describe('T7P.11 Layout of the worded reasons', () => {
     const { context, page } = await launchScenario(profile);
     await nav(page).getByRole('link', { name: 'Trades' }).click();
     const list = page.getByRole('table', { name: 'Open Trades' });
-    await expect(list).toBeVisible(READY);
+    await expect(list).toBeVisible();
     for (const width of WIDTHS) {
       await setWidth(page, width);
       await expectNoSidewaysScroll(page, `Trades list at ${width}`);
@@ -97,7 +97,7 @@ test.describe('T7P.11 Layout of the worded reasons', () => {
     await recordEntry(page, [{ quantity: '40', price: '40.30', fee: '1.00', time: '2026-10-13T10:00' }]);
     await page.getByRole('link', { name: 'Back to the Trade' }).click();
     await openDrawer(page, 'Today');
-    await expect(detail.currentMarkedPnl(page)).toContainText(AWAITING_TUESDAY, READY);
+    await expect(detail.currentMarkedPnl(page)).toContainText(AWAITING_TUESDAY, LAUNCH);
     await openDrawer(page, 'Position');
     for (const width of WIDTHS) {
       await setWidth(page, width);
@@ -107,7 +107,7 @@ test.describe('T7P.11 Layout of the worded reasons', () => {
     await page.goto('/');
     await openTradeFromOpenList(page, 'ABC');
     await openDrawer(page, 'Today');
-    await expect(detail.pnlCard(page)).toBeVisible(READY);
+    await expect(detail.pnlCard(page)).toBeVisible(LAUNCH);
     await openDrawer(page, 'Position');
     for (const width of WIDTHS) {
       await setWidth(page, width);
@@ -123,7 +123,7 @@ test.describe('T7P.11 Layout of the worded reasons', () => {
     const { context, page } = await launchScenario(profile);
     await openReview(page);
     const blockers = page.getByRole('list', { name: 'Blockers' });
-    await expect(blockers).toBeVisible(READY);
+    await expect(blockers).toBeVisible();
     for (const width of WIDTHS) {
       await setWidth(page, width);
       await expectNoSidewaysScroll(page, `Review at ${width}`);

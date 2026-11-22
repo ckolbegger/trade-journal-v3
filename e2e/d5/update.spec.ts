@@ -1,5 +1,5 @@
 import {
-  actionEntriesOf, AT_10, cardHeader, checkForUpdate, completion, confirmReference, deferEntry, enterMark, expect, identity, launchAt, MONDAY, MONDAY_1700, onboardedPage, openReview, probe, reachCard, READY, recordEntry,
+  actionEntriesOf, AT_10, cardHeader, checkForUpdate, completion, confirmReference, deferEntry, enterMark, expect, identity, launchAt, MONDAY, MONDAY_1700, onboardedPage, openReview, probe, reachCard, LAUNCH, recordEntry,
   reflectionsOf, reloadFromNotice, rootOf, saveAction, SECOND_PLAN, setClock, test, tradeCard, TUESDAY, TUESDAY_1700, watchUpdatingAcrossDocuments, workspaceNames, workspaceOf,
 } from './support.ts';
 
@@ -25,7 +25,7 @@ test.describe('B5.6 Update from D4 with data', { tag: '@release-history' }, () =
     await expect(completion(page)).toHaveText('Complete');
     // The update's Reload reloads the page it is on.
     await page.goto('/');
-    await expect(page.getByRole('table', { name: 'Open Trades' }).getByRole('link', { name: 'ABC', exact: true })).toBeVisible(READY);
+    await expect(page.getByRole('table', { name: 'Open Trades' }).getByRole('link', { name: 'ABC', exact: true })).toBeVisible(LAUNCH);
     const before = await probe(page);
     const oldDatabase = rootOf(before).current;
     expect(workspaceNames(before)).toEqual([oldDatabase]);
@@ -37,8 +37,8 @@ test.describe('B5.6 Update from D4 with data', { tag: '@release-history' }, () =
     await expect.poll(() => updating.seen(), { timeout: 3000 }).toBe(true);
 
     // The earlier data is intact: both Trades are Open and Monday's Review is Complete with both Actions.
-    await expect(page.getByRole('table', { name: 'Open Trades' }).getByRole('link', { name: 'XYZ', exact: true })).toBeVisible(READY);
-    await expect(page.getByRole('table', { name: 'Open Trades' }).getByRole('link', { name: 'ABC', exact: true })).toBeVisible(READY);
+    await expect(page.getByRole('table', { name: 'Open Trades' }).getByRole('link', { name: 'XYZ', exact: true })).toBeVisible(LAUNCH);
+    await expect(page.getByRole('table', { name: 'Open Trades' }).getByRole('link', { name: 'ABC', exact: true })).toBeVisible();
     await openReview(page);
     await expect(completion(page)).toHaveText('Complete');
     for (const symbol of ['ABC', 'XYZ']) {

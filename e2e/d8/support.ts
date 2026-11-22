@@ -7,7 +7,7 @@ import { createHash } from 'node:crypto';
 import { readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { gunzipSync } from 'node:zlib';
-import { BASE_URL, confirmReference, expect, firstPage, MONDAY_1005, onboardedAt, PLAN, READY, test, type PlanValues, type ProbedDatabase, type Profile } from '../d8p/support.ts';
+import { BASE_URL, confirmReference, expect, firstPage, MONDAY_1005, onboardedAt, PLAN, LAUNCH, test, type PlanValues, type ProbedDatabase, type Profile } from '../d8p/support.ts';
 
 export * from '../d8p/support.ts';
 
@@ -23,7 +23,7 @@ export const primaryNav = (page: Page): Locator => page.getByRole('navigation', 
 // Opens the Backup page from the wide sidebar (A144) and waits for its heading.
 export async function openBackup(page: Page): Promise<void> {
   await primaryNav(page).getByRole('link', { name: 'Backup' }).click();
-  await expect(page.getByRole('heading', { name: 'Backup', level: 1 })).toBeVisible(READY);
+  await expect(page.getByRole('heading', { name: 'Backup', level: 1 })).toBeVisible(LAUNCH);
 }
 
 // The Backup page's two sections, and the Restore confirmation step's inline safety backup.
@@ -109,7 +109,7 @@ export const confirmStep = (page: Page): Locator => page.locator('.restore-confi
 
 export async function chooseRestoreFile(page: Page, file: string): Promise<void> {
   await chooseFile(page, () => page.getByRole('button', { name: 'Choose backup file' }).click(), file);
-  await expect(page.getByRole('heading', { name: 'Restoring replaces your entire current journal' })).toBeVisible(READY);
+  await expect(page.getByRole('heading', { name: 'Restoring replaces your entire current journal' })).toBeVisible(LAUNCH);
 }
 
 // Replace without a backup, with its warning acknowledged.
@@ -123,7 +123,7 @@ export async function backUpFirst(page: Page, saveTo: string): Promise<void> {
   await page.getByRole('radio', { name: 'Back up this journal first (recommended)' }).check();
   await downloadBackup(page, saveTo, confirmStep(page));
   await verifyWith(page, saveTo, confirmStep(page));
-  await expect(completeLine(confirmStep(page))).toBeVisible(READY);
+  await expect(completeLine(confirmStep(page))).toBeVisible(LAUNCH);
 }
 
 // A Restore of a file over a journal that holds data, without a safety backup, ending on the Restore complete summary.
@@ -132,7 +132,7 @@ export async function restoreWithoutBackup(page: Page, file: string): Promise<vo
   await understood(page).check();
   await declineSafetyBackup(page);
   await replaceEntire(page).click();
-  await expect(restoreComplete(page)).toBeVisible(READY);
+  await expect(restoreComplete(page)).toBeVisible(LAUNCH);
 }
 
 // The probe without the root's empty candidate list. A preparation lists its candidate in the root's `pointer` store and removes it again, which leaves

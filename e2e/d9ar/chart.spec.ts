@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import {
-  AXIO, BREN, build, chartText, closeOf, CORV, DALE, DALE_HOLD, detail, expect, expectClearOfCursor, hits, MON_1123_1700, openDetailAt, openDrawer, pnlChart, priceStrip, READY, recordExpiration, replay,
+  AXIO, BREN, build, chartText, closeOf, CORV, DALE, DALE_HOLD, detail, expect, expectClearOfCursor, hits, MON_1123_1700, openDetailAt, openDrawer, pnlChart, priceStrip, recordExpiration, replay,
   seek, setViewport, sliderValue, test,
 } from './support.ts';
 
@@ -327,11 +327,11 @@ test.describe('B9AR.5 The chart', () => {
     const built = await build(profile, DALE, closeOf('2026-11-19'), 13, 0);
     await built.context.close();
     const { context, page } = await openDetailAt(profile, MON_1123_1700, built.trade);
-    await expect(detail.settlementDueHeading(page)).toBeVisible(READY);
+    await expect(detail.settlementDueHeading(page)).toBeVisible();
     await detail.recordExpirationLink(page).click();
     await recordExpiration(page);
     await page.getByRole('link', { name: 'Back to the Trade' }).click();
-    await expect(detail.heading(page, 'DALE')).toBeVisible(READY);
+    await expect(detail.heading(page, 'DALE')).toBeVisible();
     const scope = await open(page, 0);
     await expect(sliderValue(scope)).toHaveText('Fri Nov 20 · 15 of 15');
     await expect(pnlChart(scope).locator('path.marker-line')).toHaveCount(1);

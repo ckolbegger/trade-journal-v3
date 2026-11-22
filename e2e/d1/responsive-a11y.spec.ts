@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import type { Locator, Page } from '@playwright/test';
-import { BASE_URL, detail, expect, firstPage, onboard, onboardedPage, openDrawer, openPlanned, PLAN, profileAt, READY, startJournal, test } from './support.ts';
+import { BASE_URL, detail, expect, firstPage, onboard, onboardedPage, openDrawer, openPlanned, PLAN, profileAt, LAUNCH, startJournal, test } from './support.ts';
 
 async function expectAccessible(page: Page, state: string): Promise<void> {
   // @axe-core/playwright types its page against its own playwright-core copy; the object is the same.
@@ -60,7 +60,7 @@ test.describe('B1.15 responsive and accessible', () => {
     const context = await profile.launch();
     const page = await firstPage(context);
     await page.goto('/');
-    await expect(page.getByRole('heading', { name: 'Start your journal' })).toBeVisible(READY);
+    await expect(page.getByRole('heading', { name: 'Start your journal' })).toBeVisible(LAUNCH);
     await expectAccessible(page, 'first run');
     await startJournal(page);
     await expect(page.getByRole('heading', { name: 'Add your brokerage account' })).toBeVisible();
@@ -100,14 +100,14 @@ test.describe('B1.15 responsive and accessible', () => {
     await expectAccessible(page, 'About, narrow');
 
     await page.goto('/?faults=inventory');
-    await expect(page.getByRole('region', { name: "Read only: this browser can't save right now" })).toBeVisible(READY);
+    await expect(page.getByRole('region', { name: "Read only: this browser can't save right now" })).toBeVisible(LAUNCH);
     await expectAccessible(page, 'Recovery Only');
     await context.close();
 
     const fresh = await profileAt(info.outputPath('unsupported')).launch();
     const unsupported = await firstPage(fresh);
     await unsupported.goto('/?faults=diagnostic,capacity');
-    await expect(unsupported.getByRole('heading', { name: "This browser can't safely store your journal" })).toBeVisible(READY);
+    await expect(unsupported.getByRole('heading', { name: "This browser can't safely store your journal" })).toBeVisible(LAUNCH);
     await expectAccessible(unsupported, 'Unsupported');
     await fresh.close();
 
@@ -127,7 +127,7 @@ test.describe('B1.15 responsive and accessible', () => {
     );
     await blocked.unroute(`${BASE_URL}/__fixture`);
     await blocked.goto('/');
-    await expect(blocked.getByRole('heading', { name: "Your journal data may already exist here, but it can't be read" })).toBeVisible(READY);
+    await expect(blocked.getByRole('heading', { name: "Your journal data may already exist here, but it can't be read" })).toBeVisible(LAUNCH);
     await expectAccessible(blocked, 'Integrity Blocked');
     await blockedContext.close();
   });
@@ -137,7 +137,7 @@ test.describe('B1.15 responsive and accessible', () => {
     const context = await profile.launch();
     const page = await firstPage(context);
     await page.goto('/');
-    await expect(page.getByRole('heading', { name: 'Start your journal' })).toBeVisible(READY);
+    await expect(page.getByRole('heading', { name: 'Start your journal' })).toBeVisible(LAUNCH);
     await tabTo(page, page.getByRole('button', { name: 'Start my journal' }));
     await page.keyboard.press('Enter');
 

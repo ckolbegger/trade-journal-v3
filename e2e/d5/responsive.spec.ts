@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 import {
-  AT_10, backToTrade, confirmReference, debtFormOf, declineDebt, deferEntry, detail, enterMark, expect, expectAccessible, fillRows, MONDAY, MONDAY_1100, onboardedAt, openDrawer, openEntryForm, openReview, openTradeFromOpenList, reachCard, READY,
+  AT_10, backToTrade, confirmReference, debtFormOf, declineDebt, deferEntry, detail, enterMark, expect, expectAccessible, fillRows, MONDAY, MONDAY_1100, onboardedAt, openDrawer, openEntryForm, openReview, openTradeFromOpenList, reachCard, LAUNCH,
   reflectionSection, reflectionsOf, setClock, tabTo, test, TUESDAY, TUESDAY_1230, TUESDAY_1700, type Row,
 } from './support.ts';
 
@@ -86,13 +86,13 @@ test.describe('B5.12 Responsive and accessible', () => {
     await expect(form.getByRole('radiogroup', { name: 'Decision confidence' }).getByLabel('4')).toBeChecked();
     await tabTo(page, form.getByRole('button', { name: 'Answer', exact: true }));
     await page.keyboard.press('Enter');
-    await expect(detail.savedReflection(page)).toBeVisible(READY);
+    await expect(detail.savedReflection(page)).toBeVisible(LAUNCH);
 
     // Decline the 10:45 reflection, then read Detail with Outstanding, answered, and declined reflections.
     await detail.owedItem(page, '2026-10-12 10:45').getByRole('button', { name: 'Decline', exact: true }).click();
     await declineDebt(page, 'No time to write it up.', undefined);
     await page.reload();
-    await expect(detail.heading(page, 'XYZ')).toBeVisible(READY);
+    await expect(detail.heading(page, 'XYZ')).toBeVisible(LAUNCH);
     await openDrawer(page, 'Journal');
     await expect(detail.settledItem(page, '2026-10-12 10:30')).toContainText('Deferred, answered');
     await expect(detail.settledItem(page, '2026-10-12 10:45')).toContainText('Declined later');

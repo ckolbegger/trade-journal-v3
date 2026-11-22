@@ -1,5 +1,5 @@
 import {
-  BASE_URL, createCardFixture, enterMark, expect, firstPage, launchAt, markRow, MONDAY, MONDAY_1700, observationsOf, onboardedAt, onboardedPage, openReview, pinClock, probe, reachCard, READY, spawnedBrowser, test, workspaceOf,
+  BASE_URL, createCardFixture, enterMark, expect, firstPage, launchAt, markRow, MONDAY, MONDAY_1700, observationsOf, onboardedAt, onboardedPage, openReview, pinClock, probe, reachCard, LAUNCH, spawnedBrowser, test, workspaceOf,
   type TradeRef,
 } from './support.ts';
 
@@ -87,7 +87,7 @@ test.describe('B5R.10 Offline and Recovery Only (faults build)', () => {
     const context = await launchAt(profile, MONDAY_1700);
     const page = await firstPage(context);
     await page.goto('/?faults=control');
-    await expect(page.getByRole('region', { name: READ_ONLY })).toBeVisible(READY);
+    await expect(page.getByRole('region', { name: READ_ONLY })).toBeVisible(LAUNCH);
 
     await openReview(page);
     for (const trade of [trades['T-A'], trades['T-F'], trades['T-B'], trades['T-C'], trades['T-E']]) {

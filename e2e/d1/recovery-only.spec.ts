@@ -1,4 +1,4 @@
-import { confirmPlan, detail, EXPLANATION, expect, FAULT_SETS, firstPage, onboardedPage, openDrawer, PLANNED, probe, READY, test } from './support.ts';
+import { confirmPlan, detail, EXPLANATION, expect, FAULT_SETS, firstPage, onboardedPage, openDrawer, PLANNED, probe, LAUNCH, test } from './support.ts';
 
 test.describe('B1.6 Recovery Only matrix (existing Workspace, faults build)', { tag: '@every-task' }, () => {
   test('should open Recovery Only with the failed checks for each fault set, keeping the Plan readable and the stores unchanged', async ({ server, profile }) => {
@@ -15,7 +15,7 @@ test.describe('B1.6 Recovery Only matrix (existing Workspace, faults build)', { 
       const page = await firstPage(context);
       await page.goto(`${PLANNED}&faults=${failing.join(',')}`);
       const banner = page.getByRole('region', { name: "Read only: this browser can't save right now" });
-      await expect(banner, failing.join(',')).toBeVisible(READY);
+      await expect(banner, failing.join(',')).toBeVisible(LAUNCH);
       await expect(banner.getByRole('listitem')).toHaveText(failing.map((check) => EXPLANATION[check]));
       await expect(banner.getByText('Another browser has its own separate storage')).toBeVisible();
       const nav = page.getByRole('navigation', { name: 'Primary' });

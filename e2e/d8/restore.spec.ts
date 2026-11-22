@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test';
 import {
   BASE_URL, backUpFirst, buildOc3, chooseFile, chooseRestoreFile, completeLine, confirmStep, declineSafetyBackup, detail, downloadBackup, expect, FIXTURE_BACKUP, fillPlan, firstPage,
-  launchAt, MONDAY_1005, onboardedPage, openBackup, openDrawer, pinClock, PLAN, probe, profileAt, READY, readSaved, replaceEntire, restoreComplete, restoreSection, restoreWithoutBackup, rootOf,
+  launchAt, MONDAY_1005, onboardedPage, openBackup, openDrawer, pinClock, PLAN, probe, profileAt, LAUNCH, readSaved, replaceEntire, restoreComplete, restoreSection, restoreWithoutBackup, rootOf,
   safetyBackup, scratch, seedJournal, spawnedBrowser, test, THURSDAY_1800, understood, verifyWith, watchOutgoing, withoutEmptyCandidateList, workspaceNames, workspaceOf, writeFlipped, writeNewer, type ProbedDatabase,
 } from './support.ts';
 
@@ -12,12 +12,12 @@ const FIXTURE_TRADES = readSaved(FIXTURE_BACKUP).manifest.counts['trades']!;
 // The Open list and four drawers of a Trade's Detail, as text: what a trader sees of the Trade (B8.3 compares them across a Restore).
 async function viewsOf(page: Page, tradeId: string): Promise<Record<string, string>> {
   await page.goto('/');
-  await expect(page.getByRole('row', { name: /XYZ/ })).toBeVisible(READY);
+  await expect(page.getByRole('row', { name: /XYZ/ })).toBeVisible(LAUNCH);
   const views: Record<string, string> = { list: await page.getByRole('table').first().innerText() };
   await page.goto(`/trades/${tradeId}`);
-  await expect(detail.heading(page, 'XYZ')).toBeVisible(READY);
+  await expect(detail.heading(page, 'XYZ')).toBeVisible(LAUNCH);
   // The Detail shows before its replay is read (W20); the Marks are built from the replay, so wait until no drawer still says it is loading.
-  await expect(page.locator('[role="status"]', { hasText: 'Loading the Trade' })).toHaveCount(0, READY);
+  await expect(page.locator('[role="status"]', { hasText: 'Loading the Trade' })).toHaveCount(0);
   for (const drawer of ['Today', 'Position', 'Plan and Risk', 'Journal'] as const) {
     await openDrawer(page, drawer);
     views[drawer] = await page.locator(`#drawer-panel-${drawer.toLowerCase().replaceAll(' ', '-')}`).innerText();
@@ -42,7 +42,7 @@ test.describe('B8.3 Restore with a safety backup', () => {
     await openBackup(pageA);
     await downloadBackup(pageA, fileA);
     await verifyWith(pageA, fileA);
-    await expect(completeLine(pageA)).toBeVisible(READY);
+    await expect(completeLine(pageA)).toBeVisible(LAUNCH);
     await contextA.close();
 
     await seedJournal(b, MONDAY_1005, { ...PLAN, symbol: 'ABC' });
@@ -72,11 +72,11 @@ test.describe('B8.3 Restore with a safety backup', () => {
     await downloadBackup(page, safety, confirmStep(page));
     await expect(replaceEntire(page)).toBeDisabled();
     await verifyWith(page, safety, confirmStep(page));
-    await expect(completeLine(confirmStep(page))).toBeVisible(READY);
+    await expect(completeLine(confirmStep(page))).toBeVisible(LAUNCH);
     await expect(replaceEntire(page)).toBeEnabled();
 
     await replaceEntire(page).click();
-    await expect(restoreComplete(page)).toBeVisible(READY);
+    await expect(restoreComplete(page)).toBeVisible(LAUNCH);
     await expect(section.getByText('Your journal now holds the restored backup.')).toBeVisible();
     await expect(section.getByRole('table').getByRole('row', { name: /^Open Trades/ }).getByRole('cell')).toHaveText(['1']);
     await context.close();
@@ -111,22 +111,22 @@ test.describe('B8.4 Decline and first run', () => {
     await declineSafetyBackup(page);
     await expect(replaceEntire(page)).toBeEnabled();
     await replaceEntire(page).click();
-    await expect(restoreComplete(page)).toBeVisible(READY);
+    await expect(restoreComplete(page)).toBeVisible(LAUNCH);
     await context.close();
 
     const fresh = await profileAt(`${profile.dir}-c`).launch();
     const first = await firstPage(fresh);
     await first.goto('/');
-    await expect(first.getByRole('heading', { name: 'Start your journal' })).toBeVisible(READY);
+    await expect(first.getByRole('heading', { name: 'Start your journal' })).toBeVisible(LAUNCH);
     await first.getByRole('button', { name: 'Restore from a backup' }).click();
     await chooseRestoreFile(first, FIXTURE_BACKUP);
     await expect(safetyBackup(first)).toHaveCount(0);
     await understood(first).check();
     await expect(replaceEntire(first)).toBeEnabled();
     await replaceEntire(first).click();
-    await expect(restoreComplete(first)).toBeVisible(READY);
+    await expect(restoreComplete(first)).toBeVisible(LAUNCH);
     await first.getByRole('link', { name: 'Go to Trades' }).click();
-    await expect(first.getByRole('tablist', { name: 'Trades by lifecycle' })).toBeVisible(READY).catch(async (error: unknown) => {
+    await expect(first.getByRole('tablist', { name: 'Trades by lifecycle' })).toBeVisible(LAUNCH).catch(async (error: unknown) => {
       // The screen a trader is left on, kept for the bug report.
       await first.screenshot({ path: scratch('after-go-to-trades.png') });
       throw error;
@@ -152,14 +152,14 @@ test.describe('B8.6 Rejected artifact', () => {
 
     await chooseFile(page, () => page.getByRole('button', { name: 'Choose backup file' }).click(), flipped);
     const alert = restoreSection(page).getByRole('alert');
-    await expect(alert).toBeVisible(READY);
+    await expect(alert).toBeVisible(LAUNCH);
     await expect(alert).toContainText("This backup can't be restored.");
     await expect(alert).toContainText('Your current journal is unchanged.');
     await expect(alert.getByRole('listitem')).toHaveText([/section doesn't match its checksum, so the file was changed or damaged\.$/]);
     expect(withoutEmptyCandidateList(await probe(page))).toEqual(before);
 
     await chooseFile(page, () => alert.getByRole('button', { name: 'Check the backup again' }).click(), newer);
-    await expect(alert.getByRole('listitem')).toHaveText(['This backup was made by a newer version of the app.'], READY);
+    await expect(alert.getByRole('listitem')).toHaveText(['This backup was made by a newer version of the app.'], LAUNCH);
     await expect(alert).toContainText('Your current journal is unchanged.');
 
     const after = await probe(page);
@@ -186,7 +186,7 @@ test.describe('B8.7 Apply failure', () => {
     await backUpFirst(page, scratch('safety-1.tjbackup'));
     await replaceEntire(page).click();
     const alert = restoreSection(page).getByRole('alert');
-    await expect(alert).toContainText('Your current journal is unchanged.', READY);
+    await expect(alert).toContainText('Your current journal is unchanged.', LAUNCH);
     await expect(alert.getByRole('button', { name: 'Check the backup again' })).toBeVisible();
     const refused = await probe(page);
     expect(rootOf(refused)).toEqual(rootOf(before));
@@ -195,11 +195,11 @@ test.describe('B8.7 Apply failure', () => {
 
     await page.evaluate(() => window.__tjFaults?.set([]));
     await chooseFile(page, () => alert.getByRole('button', { name: 'Check the backup again' }).click(), FIXTURE_BACKUP);
-    await expect(page.getByRole('heading', { name: 'Restoring replaces your entire current journal' })).toBeVisible(READY);
+    await expect(page.getByRole('heading', { name: 'Restoring replaces your entire current journal' })).toBeVisible(LAUNCH);
     await understood(page).check();
     await backUpFirst(page, scratch('safety-2.tjbackup'));
     await replaceEntire(page).click();
-    await expect(restoreComplete(page)).toBeVisible(READY);
+    await expect(restoreComplete(page)).toBeVisible(LAUNCH);
     const after = await probe(page);
     expect(rootOf(after).current).not.toBe(rootOf(before).current);
     expect(workspaceOf(after)!.stores['trades']).toHaveLength(FIXTURE_TRADES);
@@ -226,15 +226,15 @@ test.describe('B8.11 Other tab', () => {
     await understood(tab1).check();
     await declineSafetyBackup(tab1);
     await replaceEntire(tab1).click();
-    await expect(restoreComplete(tab1)).toBeVisible(READY);
+    await expect(restoreComplete(tab1)).toBeVisible(LAUNCH);
 
-    await expect(tab2.getByText('This journal was replaced by a Restore in another tab. Reload to continue.')).toBeVisible(READY);
+    await expect(tab2.getByText('This journal was replaced by a Restore in another tab. Reload to continue.')).toBeVisible(LAUNCH);
     await expect(tab2.getByLabel('Symbol')).toHaveValue('QQQ');
     await expect(tab2.getByLabel('Why this trade, why now?')).toHaveValue(PLAN.thesis);
     // The shell has already turned the form read only, so Confirm cannot even be pressed (the plan says its commit returns RuntimeNotWritable; reported with B8.11).
     await expect(tab2.getByRole('button', { name: 'Confirm Plan' })).toBeDisabled();
     // Nothing is recorded, the values stay, and the notice stays.
-    await expect(tab2.getByText('This journal was replaced by a Restore in another tab. Reload to continue.')).toBeVisible(READY);
+    await expect(tab2.getByText('This journal was replaced by a Restore in another tab. Reload to continue.')).toBeVisible(LAUNCH);
     await expect(tab2.getByLabel('Symbol')).toHaveValue('QQQ');
     await expect(tab2.getByRole('heading', { name: 'New Plan' })).toBeVisible();
     const after = await probe(tab1);
@@ -259,14 +259,14 @@ test.describe('B8.13 Kill during Restore', () => {
       await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'New Plan' }).click();
       await fillPlan(page);
       await page.getByRole('button', { name: 'Confirm Plan' }).click();
-      await expect(detail.heading(page, PLAN.symbol)).toBeVisible(READY);
+      await expect(detail.heading(page, PLAN.symbol)).toBeVisible(LAUNCH);
       await page.goto(`${BASE_URL}/backup?faults=restore:hold-prepare`);
-      await expect(page.getByRole('heading', { name: 'Backup', level: 1 })).toBeVisible(READY);
+      await expect(page.getByRole('heading', { name: 'Backup', level: 1 })).toBeVisible(LAUNCH);
       before = await probe(page);
       await chooseFile(page, () => page.getByRole('button', { name: 'Choose backup file' }).click(), FIXTURE_BACKUP);
-      await expect(page.getByText('Checking the backup. Your current journal is not changed.')).toBeVisible(READY);
+      await expect(page.getByText('Checking the backup. Your current journal is not changed.')).toBeVisible(LAUNCH);
       // The preparation has staged its candidate and waits.
-      await expect.poll(async () => workspaceNames(await probe(page)).length, READY).toBe(2);
+      await expect.poll(async () => workspaceNames(await probe(page)).length).toBe(2);
     } finally {
       await first.kill();
     }
@@ -276,7 +276,7 @@ test.describe('B8.13 Kill during Restore', () => {
       await pinClock(second.context, MONDAY_1005);
       const page = await firstPage(second.context);
       await page.goto(`${BASE_URL}/`);
-      await expect(page.getByRole('tablist', { name: 'Trades by lifecycle' })).toBeVisible(READY);
+      await expect(page.getByRole('tablist', { name: 'Trades by lifecycle' })).toBeVisible(LAUNCH);
       const after = await probe(page);
       const { current, candidates } = rootOf(after);
       expect(current).toBe(rootOf(before).current);
@@ -295,7 +295,7 @@ test.describe('B8.13 Kill during Restore', () => {
       await pinClock(third.context, MONDAY_1005);
       const page = await firstPage(third.context);
       await page.goto(`${BASE_URL}/`);
-      await expect(page.getByRole('tablist', { name: 'Trades by lifecycle' })).toBeVisible(READY);
+      await expect(page.getByRole('tablist', { name: 'Trades by lifecycle' })).toBeVisible(LAUNCH);
       await expect(page.getByRole('region', { name: /Read only/ })).toHaveCount(0);
       const after = await probe(page);
       const { current, candidates } = rootOf(after);

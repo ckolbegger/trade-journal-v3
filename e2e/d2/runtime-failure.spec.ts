@@ -9,7 +9,7 @@ import {
   openTradeFromOpenList,
   PC1,
   probe,
-  READY,
+  LAUNCH,
   recordEntry,
   reflectionEntriesOf,
   test,
@@ -30,7 +30,7 @@ test.describe('B2.9 Recovery Only (faults build)', () => {
     const context = await profile.launch();
     const page = await firstPage(context);
     await page.goto('/?faults=control');
-    await expect(page.getByRole('region', { name: "Read only: this browser can't save right now" })).toBeVisible(READY);
+    await expect(page.getByRole('region', { name: "Read only: this browser can't save right now" })).toBeVisible(LAUNCH);
     const row = page.getByRole('table', { name: 'Open Trades' }).getByRole('row', { name: /XYZ/ });
     await expect(row).toContainText('60 of 100');
     await openTradeFromOpenList(page);
@@ -56,7 +56,7 @@ test.describe('F6 direct entry-form link (faults build)', () => {
     const context = await profile.launch();
     const page = await firstPage(context);
     await page.goto(`/trades/${tradeId}/record-entry?faults=inventory`);
-    await expect(page.getByRole('region', { name: "Read only: this browser can't save right now" })).toBeVisible(READY);
+    await expect(page.getByRole('region', { name: "Read only: this browser can't save right now" })).toBeVisible(LAUNCH);
     await expect(page.getByRole('heading', { level: 1, name: "Record entry isn't available" })).toBeVisible();
     await expect(page.getByText("This browser can't save right now, so an entry can't be recorded.")).toBeVisible();
     await page.getByRole('link', { name: 'Back to the Trade' }).click();

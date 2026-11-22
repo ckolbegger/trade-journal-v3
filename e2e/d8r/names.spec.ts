@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test';
 import {
   completeReflection, detail, expect, executionRow, fillOptionExit, fillOptionPlan, fillOptionRows, MONDAY_1700, OC3, OC3_CALL, onboardedAt, openEntryForm, openReview,
-  READY, reachCard, test, type TradeRef,
+  LAUNCH, reachCard, test, type TradeRef,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
@@ -74,7 +74,7 @@ test.describe('B8R.5 Contract names', () => {
       await page.getByLabel('Stop (option price at or below)', { exact: true }).fill('1.00');
       await expectNamed(page, 'the Plan form', CURRENT_YEAR, false);
       await page.getByRole('button', { name: 'Confirm Plan' }).click();
-      await expect(detail.heading(page, 'XYZ')).toBeVisible(READY);
+      await expect(detail.heading(page, 'XYZ')).toBeVisible(LAUNCH);
       await expectNamed(page, 'Detail', CURRENT_YEAR, true);
     });
     const trade: TradeRef = { symbol: 'XYZ', tradeId: new URL(page.url()).pathname.split('/')[2]!, label: 'O-C3' };
@@ -85,7 +85,7 @@ test.describe('B8R.5 Contract names', () => {
       await expectNamed(page, 'the entry form', CURRENT_YEAR, true);
       await completeReflection(page);
       await page.getByRole('button', { name: 'Save entry' }).click();
-      await expect(page.getByRole('heading', { name: 'Entry recorded' })).toBeVisible(READY);
+      await expect(page.getByRole('heading', { name: 'Entry recorded' })).toBeVisible();
       await expectNamed(page, 'the entry receipt', CURRENT_YEAR, true);
     });
 
@@ -98,13 +98,13 @@ test.describe('B8R.5 Contract names', () => {
 
     await test.step('the exit form and its receipt', async () => {
       await page.goto(`/trades/${trade.tradeId}`);
-      await expect(detail.heading(page, 'XYZ')).toBeVisible(READY);
+      await expect(detail.heading(page, 'XYZ')).toBeVisible(LAUNCH);
       await fillOptionExit(page, [{ quantity: '1', price: '3.00', fee: '0.65', time: '2026-10-12T14:00' }]);
       await expect(executionRow(page, 1)).toBeVisible();
       await expectNamed(page, 'the exit form', CURRENT_YEAR, true);
       await page.getByRole('region', { name: 'Reflection on this exit' }).getByLabel('Reflect later').check();
       await page.getByRole('button', { name: 'Save exit' }).click();
-      await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible(READY);
+      await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible();
       await expectNamed(page, 'the exit receipt', CURRENT_YEAR, true);
       expect(await cellText(page)).not.toMatch(/Dec 18,? 2026|2026-12-18/);
     });
@@ -113,7 +113,7 @@ test.describe('B8R.5 Contract names', () => {
       await fillOptionPlan(page, { ...OC3, expiration: '2027-01-15' });
       await page.getByLabel('Stop (option price at or below)', { exact: true }).fill('1.00');
       await page.getByRole('button', { name: 'Confirm Plan' }).click();
-      await expect(detail.heading(page, 'XYZ')).toBeVisible(READY);
+      await expect(detail.heading(page, 'XYZ')).toBeVisible();
       await expectNamed(page, 'the 2027 Detail', LATER_YEAR, true);
       expect(await cellText(page)).not.toMatch(/Jan 15 \$55|'27/);
     });

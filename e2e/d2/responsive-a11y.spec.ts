@@ -21,7 +21,7 @@ import {
   PC3,
   PLAN,
   profileAt,
-  READY,
+  LAUNCH,
   recordEntry,
   reflectionSection,
   releaseTradesStore,
@@ -150,7 +150,7 @@ test.describe('B2.12 responsive and accessible', () => {
     const failing = await profile.launch();
     const errorPage = await firstPage(failing);
     await errorPage.goto('/');
-    await expect(errorPage.getByText('We couldn’t load your open trades. Nothing was changed.')).toBeVisible(READY);
+    await expect(errorPage.getByText('We couldn’t load your open trades. Nothing was changed.')).toBeVisible(LAUNCH);
     await expectAccessible(errorPage, 'Open list Error');
     await failing.close();
 
@@ -160,22 +160,22 @@ test.describe('B2.12 responsive and accessible', () => {
     const d1 = await onboardedD1Page(migrating);
     await confirmD1Plan(d1, PLAN);
     await d1.goto('/?faults=control');
-    await expect(d1.getByRole('row', { name: /XYZ/ })).toBeVisible(READY);
+    await expect(d1.getByRole('row', { name: /XYZ/ })).toBeVisible(LAUNCH);
     server.use('dist-faults');
     expect(await checkForUpdate(d1)).toEqual({ waiting: 'installed' });
     await reloadFromNotice(d1);
-    await expect(d1.getByRole('heading', { name: 'This release must convert your journal before you can use it' })).toBeVisible(READY);
+    await expect(d1.getByRole('heading', { name: 'This release must convert your journal before you can use it' })).toBeVisible(LAUNCH);
     await expectAccessible(d1, 'awaiting migration, not Writable');
 
     await d1.goto('/?faults=migration:validate');
-    await expect(d1.getByRole('heading', { name: 'Your journal could not be converted to this release' })).toBeVisible(READY);
+    await expect(d1.getByRole('heading', { name: 'Your journal could not be converted to this release' })).toBeVisible(LAUNCH);
     await expectAccessible(d1, 'Migration Blocked');
 
     await d1.goto('/?faults=migration:hold');
-    await expect(d1.getByRole('status')).toHaveText('Updating your journal to this release…', READY);
+    await expect(d1.getByRole('status')).toHaveText('Updating your journal to this release…', LAUNCH);
     await expectAccessible(d1, 'migrating');
     await d1.evaluate(() => window.__tjFaults?.release());
-    await expect(d1.getByText('No open trades. Recording an entry on a Planned Trade opens it.')).toBeVisible(READY);
+    await expect(d1.getByText('No open trades. Recording an entry on a Planned Trade opens it.')).toBeVisible(LAUNCH);
     await migrating.close();
   });
 
@@ -188,7 +188,7 @@ test.describe('B2.12 responsive and accessible', () => {
     await recordEntry(page, PC1);
 
     await page.goto('/trades/no-such-trade/record-entry');
-    await expect(page.getByRole('heading', { name: 'Trade not found', level: 1 })).toBeVisible(READY);
+    await expect(page.getByRole('heading', { name: 'Trade not found', level: 1 })).toBeVisible(LAUNCH);
     await expect(page.getByRole('link', { name: 'Back to Trades' })).toBeVisible();
     await expectAccessible(page, 'entry form Not Found');
     await context.close();
@@ -199,7 +199,7 @@ test.describe('B2.12 responsive and accessible', () => {
     const failing = await profile.launch();
     const errorPage = await firstPage(failing);
     await errorPage.goto(`${tradePath}/record-entry`);
-    await expect(errorPage.getByText('We couldn’t load this entry form. Nothing was changed.')).toBeVisible(READY);
+    await expect(errorPage.getByText('We couldn’t load this entry form. Nothing was changed.')).toBeVisible(LAUNCH);
     await expect(errorPage.getByRole('button', { name: 'Retry' })).toBeVisible();
     await expectAccessible(errorPage, 'entry form Error');
     await failing.close();

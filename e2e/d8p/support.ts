@@ -6,7 +6,7 @@
 // Tuesday has no Marks. Every figure and word the specs assert is plan section 5's, 1.6's or a W or A row's.
 import type { Page } from '@playwright/test';
 import {
-  acknowledgeMark, currentTradeId, detail, enterMark, executionRow, expect, fillOptionPlan, firstPage, launchAt, MONDAY, MONDAY_0900, MONDAY_1700, onboardedAt, openReview, optionMarkRow, READY, reachCard, reachPanel, recordOptionEntry,
+  acknowledgeMark, currentTradeId, detail, enterMark, executionRow, expect, fillOptionPlan, firstPage, launchAt, MONDAY, MONDAY_0900, MONDAY_1700, onboardedAt, openReview, optionMarkRow, LAUNCH, reachCard, reachPanel, recordOptionEntry,
   markRow, saveAction, saveMarkPrice, savedOptionMarkRow, THURSDAY, WEDNESDAY, WEDNESDAY_1700, type OptionPlanValues, type Profile, type TradeRef,
 } from '../d7s/support.ts';
 
@@ -30,7 +30,7 @@ export async function confirmOc3(page: Page): Promise<string> {
   await fillOptionPlan(page, OC3);
   await page.getByLabel('Stop (option price at or below)', { exact: true }).fill('1.00');
   await page.getByRole('button', { name: 'Confirm Plan' }).click();
-  await expect(detail.heading(page, 'XYZ')).toBeVisible(READY);
+  await expect(detail.heading(page, 'XYZ')).toBeVisible();
   return currentTradeId(page);
 }
 
@@ -66,7 +66,7 @@ export async function at(profile: Profile, instant: string, step: (page: Page) =
 // The Sell 1 @ 3.00 at Wed 11:00 (fee 0.65), with its Position Change Reflection deferred ("Reflect later"), so it stays owed.
 async function sellOneAndDefer(page: Page): Promise<void> {
   await detail.recordExitLink(page).click();
-  await expect(page.getByRole('heading', { name: 'Record exit', level: 1 })).toBeVisible(READY);
+  await expect(page.getByRole('heading', { name: 'Record exit', level: 1 })).toBeVisible();
   const row = executionRow(page, 1);
   await row.getByLabel('Contracts').fill('1');
   await row.getByLabel('Price (per share)').fill('3.00');
@@ -74,7 +74,7 @@ async function sellOneAndDefer(page: Page): Promise<void> {
   await row.getByLabel('Economic Time').fill('2026-10-14T11:00');
   await page.getByRole('region', { name: 'Reflection on this exit' }).getByLabel('Reflect later').check();
   await page.getByRole('button', { name: 'Save exit' }).click();
-  await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible(READY);
+  await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible();
 }
 
 // O-C3 with section 5's executions, Marks and Journal, created through the UI. With `thursdayHold` the Hold for Thu 10-15 is saved at Thu 18:00
@@ -89,7 +89,7 @@ export async function buildOc3(profile: Profile, options: { readonly thursdayHol
 
   await at(profile, MONDAY_1005, async (page) => {
     await page.goto(`/trades/${trade.tradeId}`);
-    await expect(detail.heading(page, 'XYZ')).toBeVisible(READY);
+    await expect(detail.heading(page, 'XYZ')).toBeVisible(LAUNCH);
     await recordOptionEntry(page, [{ quantity: '2', price: '2.00', fee: '1.30', time: '2026-10-12T10:00' }]);
   });
   await at(profile, MONDAY_1700, (page) => saveOc3Marks(page, trade, MONDAY, '56.00', '2.10'));
@@ -104,7 +104,7 @@ export async function buildOc3(profile: Profile, options: { readonly thursdayHol
     });
   await at(profile, WEDNESDAY_1105, async (page) => {
     await page.goto(`/trades/${trade.tradeId}`);
-    await expect(detail.heading(page, 'XYZ')).toBeVisible(READY);
+    await expect(detail.heading(page, 'XYZ')).toBeVisible(LAUNCH);
     await sellOneAndDefer(page);
   });
   await at(profile, WEDNESDAY_1700, async (page) => {
@@ -115,7 +115,7 @@ export async function buildOc3(profile: Profile, options: { readonly thursdayHol
     await entry.getByLabel('Price').fill(options.correctedWednesdayXyz);
     await entry.getByLabel('Reason (required)').fill(CORRECTION_REASON);
     await entry.getByRole('button', { name: 'Save correction' }).click();
-    await expect(entry).toContainText(`Corrected: ${CORRECTION_REASON}`, READY);
+    await expect(entry).toContainText(`Corrected: ${CORRECTION_REASON}`);
   });
   await at(profile, THURSDAY_1700, (page) => saveOc3Marks(page, trade, THURSDAY, '57.90', '3.20'));
   if (options.thursdayHold === true)
@@ -133,6 +133,6 @@ export async function openDetailAt(profile: Profile, instant: string, trade: Tra
   const context = await launchAt(profile, instant, width === undefined ? {} : { width });
   const page = await firstPage(context);
   await page.goto(`/trades/${trade.tradeId}`);
-  await expect(detail.heading(page, trade.symbol)).toBeVisible(READY);
+  await expect(detail.heading(page, trade.symbol)).toBeVisible(LAUNCH);
   return { context, page };
 }

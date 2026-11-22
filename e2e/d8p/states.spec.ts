@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test';
 import {
   closeTheTrade, confirmOptionPlan, confirmReference, createTrades, currentTradeId, detail, enterMark, expect, FOUR_TRADES, fillRows, firstPage, launchAt, MONDAY, MONDAY_0900, MONDAY_1105, MONDAY_1700, MONDAY_NOV_1700,
-  onboardedAt, onboardedPage, openDrawer, openExitForm, openReview, OS, PC1, READY, recordEntry, recordExpiration, recordOptionEntry, sell, test, writeIntegrityFixture,
+  onboardedAt, onboardedPage, openDrawer, openExitForm, openReview, OS, PC1, LAUNCH, recordEntry, recordExpiration, recordOptionEntry, sell, test, writeIntegrityFixture,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
@@ -35,14 +35,14 @@ test.describe('B8P.4 States', () => {
     const entering = await launchAt(profile, MONDAY_1105);
     const entryPage = await firstPage(entering);
     await entryPage.goto(`/trades/${tradeId}`);
-    await expect(detail.heading(entryPage, 'MNO')).toBeVisible(READY);
+    await expect(detail.heading(entryPage, 'MNO')).toBeVisible(LAUNCH);
     await recordOptionEntry(entryPage, [{ quantity: '2', price: '1.25', fee: '1.30', time: '2026-10-12T10:00' }]);
     await entering.close();
 
     const context = await launchAt(profile, MONDAY_NOV_1700);
     const page = await firstPage(context);
     await page.goto(`/trades/${tradeId}`);
-    await expect(detail.settlementDueHeading(page)).toBeVisible(READY);
+    await expect(detail.settlementDueHeading(page)).toBeVisible(LAUNCH);
     await expectDrawers(page, ['Today', 'Position', 'Plan and Risk', PRICE_HISTORY, 'Journal', 'Payoff'], [], 'Today');
     // T8R.7 (W25): the put expired on Fri Nov 20, so Today's cell for it reads "Expired" and a screen reader hears "Expired Fri Nov 20".
     await expect(detail.marksHeadings(page)).toHaveText(['Today, Mon Nov 23', 'Yesterday, Fri Nov 20', 'Change']);
@@ -63,7 +63,7 @@ test.describe('B8P.4 States', () => {
     await detail.recordExpirationLink(page).click();
     await recordExpiration(page);
     await page.getByRole('link', { name: 'Back to the Trade' }).click();
-    await expect(detail.heading(page, 'MNO')).toBeVisible(READY);
+    await expect(detail.heading(page, 'MNO')).toBeVisible();
     await expectDrawers(page, ['Today', 'Position', 'Plan and Risk', PRICE_HISTORY, 'Journal 1 owed', 'Payoff'], [], 'Today');
     await expect(detail.lifecycleBadge(page)).toHaveText('Cash-Secured Put, Closed');
     // T8R.7 (W26, W30): a Closed Trade's Today carries the "Closed" stamp, an empty Today column, and the expiration session's column.
@@ -96,7 +96,7 @@ test.describe('B8P.4 States', () => {
     await fillRows(setupPage, [sell('100', '44.00', '1.00', '2026-10-12T15:00')]);
     await closeTheTrade(setupPage, 'now');
     await setupPage.getByRole('button', { name: 'Save exit' }).click();
-    await expect(setupPage.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible(READY);
+    await expect(setupPage.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible(LAUNCH);
     await openReview(setupPage);
     await enterMark(setupPage, 'XYZ', MONDAY, '52.00');
     await enterMark(setupPage, 'ABC', MONDAY, '32.00');
@@ -107,7 +107,7 @@ test.describe('B8P.4 States', () => {
 
     await test.step('Closed by sale: Today selected, the realized P&L and its R, the Result rows, nothing to record', async () => {
       await page.goto(`/trades/${def}`);
-      await expect(detail.heading(page, 'DEF')).toBeVisible(READY);
+      await expect(detail.heading(page, 'DEF')).toBeVisible(LAUNCH);
       await expectDrawers(page, ['Today', 'Position', 'Plan and Risk', PRICE_HISTORY, 'Journal', 'Payoff'], [], 'Today');
       await expect(detail.lifecycleBadge(page)).toHaveText('Long Stock, Closed');
       // 100 x (44.00 - 40.00) - 1.00 - 1.00 = $398.00; 1R is (40.00 - 38.00) x 100 = $200.00.
@@ -128,7 +128,7 @@ test.describe('B8P.4 States', () => {
 
     await test.step('a stock Trade: Today selected, all six drawers, no strike or expiration line, "100 of 100 shares open"', async () => {
       await page.goto(`/trades/${abc}`);
-      await expect(detail.heading(page, 'ABC')).toBeVisible(READY);
+      await expect(detail.heading(page, 'ABC')).toBeVisible(LAUNCH);
       await expectDrawers(page, ['Today', 'Position', 'Plan and Risk', PRICE_HISTORY, 'Journal', 'Payoff'], [], 'Today');
       await expect(detail.lifecycleBadge(page)).toHaveText('Long Stock, Open');
       await expect(detail.identityCard(page).getByText(/^(Strike|Expires|Expired)/)).toHaveCount(0);
@@ -148,7 +148,7 @@ test.describe('B8P.4 States', () => {
 
     await test.step('a Trade with two open lots: the Position drawer lists both, and the P&L card counts the shares', async () => {
       await page.goto(`/trades/${xyz}`);
-      await expect(detail.heading(page, 'XYZ')).toBeVisible(READY);
+      await expect(detail.heading(page, 'XYZ')).toBeVisible(LAUNCH);
       await expectDrawers(page, ['Today', 'Position', 'Plan and Risk', PRICE_HISTORY, 'Journal', 'Payoff'], [], 'Today');
       await openDrawer(page, 'Position');
       await expect(detail.openLots(page).locator('tbody tr')).toHaveCount(2);
@@ -176,7 +176,7 @@ test.describe('B8P.4 States', () => {
     const page = await firstPage(context);
     await page.goto('/');
     await page.getByRole('row', { name: /XYZ/ }).getByRole('link', { name: 'XYZ', exact: true }).click();
-    await expect(detail.heading(page, 'XYZ')).toBeVisible(READY);
+    await expect(detail.heading(page, 'XYZ')).toBeVisible(LAUNCH);
     await expect(detail.factsIncoherent(page)).toBeVisible();
     await expectDrawers(page, ['Position', 'Plan and Risk', 'Journal'], ['Today', 'Price History', 'Payoff'], 'Position');
     // W4: "Not available", then "Trade P&L"; the card has no figure, no change line and no open line.

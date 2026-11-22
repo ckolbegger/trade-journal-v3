@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { buildOc3, detail, expect, fillDebtAnswers, openDetailAt, openDrawer, READY, test, THURSDAY_1800 } from './support.ts';
+import { buildOc3, detail, expect, fillDebtAnswers, openDetailAt, openDrawer, LAUNCH, test, THURSDAY_1800 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -49,10 +49,10 @@ test.describe('B8P.2 Price History and Journal', () => {
       const link = detail.root(page).getByRole('link', { name: 'Enter Marks in the Review' });
       await expect(link).toBeVisible();
       await link.click();
-      await expect(page).toHaveURL(/\/review/, READY);
-      await expect(page.getByRole('heading', { name: 'Review', level: 1 })).toBeVisible(READY);
+      await expect(page).toHaveURL(/\/review/);
+      await expect(page.getByRole('heading', { name: 'Review', level: 1 })).toBeVisible();
       await page.goto(`/trades/${trade.tradeId}`);
-      await expect(detail.heading(page, 'XYZ')).toBeVisible(READY);
+      await expect(detail.heading(page, 'XYZ')).toBeVisible(LAUNCH);
     });
 
     await test.step('Journal (W10 to W12): cards newest first, three to a screen, paged with the arrows', async () => {
@@ -115,7 +115,7 @@ test.describe('B8P.2 Price History and Journal', () => {
 
     await test.step('after a reload the reflection is still answered and shown on Wednesday card', async () => {
       await page.reload();
-      await expect(detail.heading(page, 'XYZ')).toBeVisible(READY);
+      await expect(detail.heading(page, 'XYZ')).toBeVisible(LAUNCH);
       await openDrawer(page, 'Journal');
       const wednesday = card(page, WEDNESDAY);
       await expect(wednesday).toBeVisible();
@@ -136,7 +136,7 @@ test.describe('B8P.2 Price History and Journal', () => {
     test.setTimeout(420_000);
     const trade = await buildOc3(profile, { thursdayHold: true });
     const { context, page } = await openDetailAt(profile, THURSDAY_1800, trade);
-    await expect(detail.heading(page, 'XYZ')).toBeVisible(READY);
+    await expect(detail.heading(page, 'XYZ')).toBeVisible();
     await openDrawer(page, 'Journal');
     await earlier(page).focus();
     await page.keyboard.press('Enter');

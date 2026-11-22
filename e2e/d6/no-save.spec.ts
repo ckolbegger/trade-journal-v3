@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test';
 import {
   answerCloseReviewIn, answerIn, closeReasonGroup, closeReviewGroup, closingSection, createTA, debtsOf, declinesOf, entriesWithSettledDebt, executionRow, exitReflection, expect, factsOf, fillRows,
-  firstPage, launchAt, MONDAY_1700, onboardedAt, openExitForm, openTradeFromOpenList, probe, READY, sell, test, tradesOf, TUESDAY_1405, TUESDAY_1405_LOCAL, workspaceOf,
+  firstPage, launchAt, MONDAY_1700, onboardedAt, openExitForm, openTradeFromOpenList, probe, LAUNCH, sell, test, tradesOf, TUESDAY_1405, TUESDAY_1405_LOCAL, workspaceOf,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
@@ -88,7 +88,7 @@ test.describe('B6.11 Nothing saved without Save (AC-JOUR-001)', () => {
 
     // Navigate away without saving, then restart the browser.
     await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Trades' }).click();
-    await expect(page.getByRole('table', { name: 'Open Trades' })).toBeVisible(READY);
+    await expect(page.getByRole('table', { name: 'Open Trades' })).toBeVisible(LAUNCH);
     expect(traces(await webStorage(page))).toEqual([]);
     expect(workspaceOf(await probe(page))).toEqual(before);
     await context.close();
@@ -96,7 +96,7 @@ test.describe('B6.11 Nothing saved without Save (AC-JOUR-001)', () => {
     const relaunched = await launchAt(profile, TUESDAY_1405);
     const again = await firstPage(relaunched);
     await again.goto('/');
-    await expect(again.getByRole('table', { name: 'Open Trades' })).toBeVisible(READY);
+    await expect(again.getByRole('table', { name: 'Open Trades' })).toBeVisible(LAUNCH);
     const probed = await probe(again);
     const workspace = workspaceOf(probed)!;
     expect(workspace).toEqual(before);

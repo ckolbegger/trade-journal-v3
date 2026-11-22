@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import { expectNoSidewaysScroll } from '../d7p/support.ts';
-import { AXIO_U, BREN, buildOn, closeOf, CORV, DALE_D, detail, expect, expectAccessible, listMeters, onboardedAt, openOpenList, openReview, READY, reviewMeters, setViewport, test, type Fixture, type TradeRef } from './support.ts';
+import { AXIO_U, BREN, buildOn, closeOf, CORV, DALE_D, detail, expect, expectAccessible, listMeters, onboardedAt, openOpenList, openReview, LAUNCH, reviewMeters, setViewport, test, type Fixture, type TradeRef } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -69,7 +69,7 @@ async function surfaces(page: Page, bren: TradeRef, size: (typeof SIZES)[number]
 
   // The rail: the Conditions card's meter on BREN's Detail.
   await page.goto(`/trades/${bren.tradeId}`);
-  await expect(detail.heading(page, 'BREN')).toBeVisible(READY);
+  await expect(detail.heading(page, 'BREN')).toBeVisible(LAUNCH);
   const rail = page.locator('.conditions-card').getByRole('img');
   await expect(rail).toHaveCount(1);
   await expectInside(rail, size.width, `${where} rail`);

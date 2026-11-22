@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test';
 import {
   answerCloseReviewIn, answerIn, closeReviewGroup, closingSection, createShortPutTrade, debtsOf, declinesOf, detail, entriesOf, entriesWithSettledDebt, expect, factsOf, fillOptionPlan, firstPage, FRIDAY_NOV_1700, launchAt,
-  OC, onboardedAt, probe, READY, test, tradesOf, workspaceOf,
+  OC, onboardedAt, probe, LAUNCH, test, tradesOf, workspaceOf,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
@@ -58,7 +58,7 @@ test.describe('B7.12 Nothing saved without Save (AC-JOUR-001)', () => {
     const context = await launchAt(profile, FRIDAY_NOV_1700);
     const page = await firstPage(context);
     await page.goto('/');
-    await expect(page.getByRole('table', { name: 'Open Trades' })).toBeVisible(READY);
+    await expect(page.getByRole('table', { name: 'Open Trades' })).toBeVisible(LAUNCH);
     const before = workspaceOf(await probe(page));
 
     // A full option Plan with its reflection, all unsaved, resized to 390 px and back.
@@ -76,7 +76,7 @@ test.describe('B7.12 Nothing saved without Save (AC-JOUR-001)', () => {
     await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Trades' }).click();
     await page.getByRole('table', { name: 'Open Trades' }).getByRole('link', { name: 'MNO', exact: true }).click();
     await detail.recordExpirationLink(page).click();
-    await expect(page.getByRole('heading', { name: 'Expiration', level: 1 })).toBeVisible(READY);
+    await expect(page.getByRole('heading', { name: 'Expiration', level: 1 })).toBeVisible();
     const reflection = page.getByRole('region', { name: 'Reflection on this expiration' });
     await answerIn(reflection);
     await reflection.getByLabel('Note').fill(TYPED.note);
@@ -97,7 +97,7 @@ test.describe('B7.12 Nothing saved without Save (AC-JOUR-001)', () => {
 
     // Navigate away without saving, then restart the browser.
     await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Trades' }).click();
-    await expect(page.getByRole('table', { name: 'Open Trades' })).toBeVisible(READY);
+    await expect(page.getByRole('table', { name: 'Open Trades' })).toBeVisible();
     expect(traces(await webStorage(page))).toEqual([]);
     expect(workspaceOf(await probe(page))).toEqual(before);
     await context.close();
@@ -105,7 +105,7 @@ test.describe('B7.12 Nothing saved without Save (AC-JOUR-001)', () => {
     const relaunched = await launchAt(profile, FRIDAY_NOV_1700);
     const again = await firstPage(relaunched);
     await again.goto('/');
-    await expect(again.getByRole('table', { name: 'Open Trades' })).toBeVisible(READY);
+    await expect(again.getByRole('table', { name: 'Open Trades' })).toBeVisible(LAUNCH);
     const probed = await probe(again);
     const workspace = workspaceOf(probed)!;
     expect(workspace).toEqual(before);

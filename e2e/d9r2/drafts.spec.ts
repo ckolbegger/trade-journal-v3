@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import { chooseRestoreFile, FIXTURE_BACKUP, openBackup, restoreSection } from '../d8/support.ts';
-import { createGapFixture, expect, observationsOf, OCT_12, OCT_8, OCT_9, probe, reachCard, reachPanel, READY, status, test, workspaceOf, type StoredObservation, type TradeRef } from './support.ts';
+import { createGapFixture, expect, observationsOf, OCT_12, OCT_8, OCT_9, probe, reachCard, reachPanel, status, test, workspaceOf, type StoredObservation, type TradeRef } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -105,7 +105,7 @@ test.describe('B9R2.3 Drafts belong to the Review', () => {
     await expect(status(page)).toContainText('4 unsaved Marks');
 
     await headerButton(page, /^Save Marks \(4\)$/).click();
-    await expect(status(page)).not.toContainText('unsaved Mark', READY);
+    await expect(status(page)).not.toContainText('unsaved Mark');
 
     const after = await storedOf(page);
     const changed = after.filter((o) => JSON.stringify(o) !== JSON.stringify(before.find((b) => b.tradingDate === o.tradingDate && b.instrumentKey === o.instrumentKey)));

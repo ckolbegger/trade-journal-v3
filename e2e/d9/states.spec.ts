@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 import {
-  BREN, BREN_SOLD_OUT, build, buildPlanned, cardRows, chartText, closeOf, DALE, detail, expect, going, headline, MON_1123_1700, openDrawer, openDetailAt, pnlChart, PRICE_HISTORY, READY,
+  BREN, BREN_SOLD_OUT, build, buildPlanned, cardRows, chartText, closeOf, DALE, detail, expect, going, headline, MON_1123_1700, openDrawer, openDetailAt, pnlChart, PRICE_HISTORY,
   readoutValue, recordExpiration, replay, seek, sessionCard, sliderValue, stake, test,
 } from './support.ts';
 
@@ -78,7 +78,7 @@ test.describe('B9.4 How a replay ends', () => {
     const built = await build(profile, DALE, closeOf('2026-11-19'), 13, 0);
     await built.context.close();
     const { context, page } = await openDetailAt(profile, MON_1123_1700, built.trade);
-    await expect(detail.settlementDueHeading(page)).toBeVisible(READY);
+    await expect(detail.settlementDueHeading(page)).toBeVisible();
     await expectDrawers(page, SIX_DRAWERS, [], 'Today');
     await openDrawer(page, 'Replay');
     let scope = replay(page);
@@ -100,7 +100,7 @@ test.describe('B9.4 How a replay ends', () => {
     await detail.recordExpirationLink(page).click();
     await recordExpiration(page);
     await page.getByRole('link', { name: 'Back to the Trade' }).click();
-    await expect(detail.heading(page, 'DALE')).toBeVisible(READY);
+    await expect(detail.heading(page, 'DALE')).toBeVisible();
     await expectDrawers(page, SIX_DRAWERS, [], 'Today');
     await openDrawer(page, 'Replay');
     scope = replay(page);

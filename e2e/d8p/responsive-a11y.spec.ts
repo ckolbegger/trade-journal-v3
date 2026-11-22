@@ -1,7 +1,7 @@
 import type { Locator, Page } from '@playwright/test';
 import { expectNoSidewaysScroll, setWidth } from '../d7p/support.ts';
 import type { DrawerName } from '../support/detail/index.ts';
-import { buildOc3, detail, expect, expectAccessible, openDetailAt, openDrawer, READY, tabTo, test, THURSDAY_1800 } from './support.ts';
+import { buildOc3, detail, expect, expectAccessible, openDetailAt, openDrawer, LAUNCH, tabTo, test, THURSDAY_1800 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -149,11 +149,11 @@ test.describe('B8P.5 Responsive and accessible', () => {
     // Reflect now, from the rail, by keyboard: the Journal drawer is selected and Wednesday's form is open.
     // The rail comes before the tabs in the Tab order, so start again from the top of the page.
     await page.reload();
-    await expect(detail.heading(page, 'XYZ')).toBeVisible(READY);
+    await expect(detail.heading(page, 'XYZ')).toBeVisible(LAUNCH);
     await tabTo(page, detail.reflectNowButton(page).first());
     await page.keyboard.press('Enter');
     await expect(tab('Journal')).toHaveAttribute('aria-selected', 'true');
-    await expect(page.locator('#drawer-panel-journal').getByRole('form', { name: 'Reflection' })).toBeVisible(READY);
+    await expect(page.locator('#drawer-panel-journal').getByRole('form', { name: 'Reflection' })).toBeVisible();
     await expectAccessible(page, 'Journal with its form open');
     await context.close();
   });

@@ -1,4 +1,4 @@
-import { actionEntriesOf, actionFormOf, completion, createTrades, detail, enterMark, expect, firstPage, FOUR_TRADES, launchAt, MONDAY_1700, onboardedAt, openDrawer, openReview, probe, reachCard, reachPanel, READY, saveAction, status, test, tradeCard, workspaceOf, markRow } from './support.ts';
+import { actionEntriesOf, actionFormOf, completion, createTrades, detail, enterMark, expect, firstPage, FOUR_TRADES, launchAt, MONDAY_1700, onboardedAt, openDrawer, openReview, probe, reachCard, reachPanel, LAUNCH, saveAction, status, test, tradeCard, workspaceOf, markRow } from './support.ts';
 
 const DATE = 'Mon Oct 12';
 const READ_ONLY = "Read only: this browser can't save right now";
@@ -20,7 +20,7 @@ test.describe('B4.10 Recovery Only (faults build)', () => {
     const context = await launchAt(profile, MONDAY_1700);
     const page = await firstPage(context);
     await page.goto('/?faults=control');
-    await expect(page.getByRole('region', { name: READ_ONLY })).toBeVisible(READY);
+    await expect(page.getByRole('region', { name: READ_ONLY })).toBeVisible(LAUNCH);
 
     // The Review is readable: its status, the Missing Mark with no way to enter it, and the saved Action.
     await openReview(page);
@@ -54,7 +54,7 @@ test.describe('B4.10 Recovery Only (faults build)', () => {
     const row = page.getByRole('table', { name: 'Open Trades' }).getByRole('row', { name: /ABC/ });
     await expect(row).toBeVisible();
     await row.getByRole('link', { name: 'ABC', exact: true }).click();
-    await expect(detail.heading(page, 'ABC')).toBeVisible(READY);
+    await expect(detail.heading(page, 'ABC')).toBeVisible();
     await openDrawer(page, 'Position');
     await expect(detail.position(page)).toContainText('100 shares of ABC');
     await openDrawer(page, 'Today');
@@ -83,7 +83,7 @@ test.describe('B4.11 Mid-session failure (faults build, AC-DEL-006)', () => {
     await form.getByRole('button', { name: 'Save' }).click();
 
     const banner = page.getByRole('region', { name: READ_ONLY });
-    await expect(banner).toBeVisible(READY);
+    await expect(banner).toBeVisible(LAUNCH);
     await expect(banner.getByRole('listitem')).toHaveText(["The app's offline copy is missing or damaged, so it could not reopen without a network."]);
     // The values are kept and nothing is recorded.
     await expect((await actionFormOf(page, 'XYZ')).getByRole('radio', { name: 'Exit', exact: true })).toBeChecked();

@@ -1,5 +1,5 @@
 import {
-  actionFormOf, cardHeader, cardItem, completion, createCardFixture, createRoutineTrades, createTrades, expect, expectAccessible, FRIDAY, markCell, markRow, MONDAY, MONDAY_1700, onboardedAt, openReview, panelHeader, reachPanel, READY, remainsOf, meterOf, status, tabTo,
+  actionFormOf, cardHeader, cardItem, completion, createCardFixture, createRoutineTrades, createTrades, expect, expectAccessible, FRIDAY, markCell, markRow, MONDAY, MONDAY_1700, onboardedAt, openReview, panelHeader, reachPanel, LAUNCH, remainsOf, meterOf, status, tabTo,
   test, tradeCard, type TradeRef,
 } from './support.ts';
 
@@ -75,7 +75,7 @@ test.describe('B5R.11 Responsive and accessible', () => {
     await cardHeader(page, tA).focus();
     await tabTo(page, cardHeader(page, tB));
     await page.keyboard.press('Enter');
-    await expect(cardHeader(page, tB)).toHaveAttribute('aria-expanded', 'true', READY);
+    await expect(cardHeader(page, tB)).toHaveAttribute('aria-expanded', 'true', LAUNCH);
     await expect(cardHeader(page, tB)).toBeFocused();
     // Keyboard and focus steps assert navigation itself (section 6.4, rule 4): raw locators, no reaches.
     const abc = tradeCard(page, 'ABC');
@@ -85,13 +85,13 @@ test.describe('B5R.11 Responsive and accessible', () => {
     await page.keyboard.press('Enter');
     await expect(abc.getByRole('button', { name: /^Save Marks/ })).toBeFocused();
     await page.keyboard.press('Enter');
-    await expect(panelHeader(page, tB, 'Action')).toHaveAttribute('aria-expanded', 'true', READY);
+    await expect(panelHeader(page, tB, 'Action')).toHaveAttribute('aria-expanded', 'true');
     const save = abc.getByRole('form', { name: 'Action' }).getByRole('button', { name: 'Save' });
-    await expect(save).toBeEnabled(READY);
+    await expect(save).toBeEnabled();
     await expect(abc.getByRole('radio', { name: 'Hold', exact: true })).toBeChecked();
     await tabTo(page, save);
     await page.keyboard.press('Enter');
-    await expect(remainsOf(page, tB)).toHaveText('Done · Action saved', READY);
+    await expect(remainsOf(page, tB)).toHaveText('Done · Action saved');
     await expect(completion(page)).toHaveText('Incomplete');
     // A Done card, a pinned meter and a grey one are in the list: the page is still accessible.
     await expectAccessible(page, 'Card list with a Done card and a pinned meter');
@@ -164,11 +164,11 @@ test.describe('B5R.11 Responsive and accessible', () => {
     const nav = page.getByRole('navigation', { name: 'Primary' });
     await nav.getByRole('link', { name: 'Trades' }).click();
     const list = page.getByRole('table', { name: 'Open Trades' });
-    await expect(list).toBeVisible(READY);
+    await expect(list).toBeVisible(LAUNCH);
 
     for (const width of [375, 320]) {
       await page.setViewportSize({ width, height: 640 });
-      await expect(list).toBeVisible(READY);
+      await expect(list).toBeVisible();
       const at = `at ${width} px`;
       // Scroll the page until a row's pinned Underlying cell sits behind the Trades link, near the top of the bottom navigation.
       const cells = list.locator('tbody td:first-child');
@@ -195,9 +195,9 @@ test.describe('B5R.11 Responsive and accessible', () => {
 
       // A real click on Review, without force, reaches the Review.
       await nav.getByRole('link', { name: 'Review' }).click({ timeout: 5000 });
-      await expect(page.getByRole('heading', { name: 'Review', level: 1 })).toBeVisible(READY);
+      await expect(page.getByRole('heading', { name: 'Review', level: 1 })).toBeVisible();
       await nav.getByRole('link', { name: 'Trades' }).click({ timeout: 5000 });
-      await expect(list).toBeVisible(READY);
+      await expect(list).toBeVisible();
     }
     await context.close();
   });

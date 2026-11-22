@@ -2,7 +2,7 @@
 // build as the served build (the default for every case), and the option steps: the option Plan form and the option exit. Dates follow the breakdown's fixtures:
 // every contract expires Friday 2026-11-20 (EST, UTC-5).
 import type { Locator, Page } from '@playwright/test';
-import { answerCloseReviewIn, answerIn, chooseCell, closeReasonGroup, closingSection, closeReviewGroup, completeReflection, createTradeAt, currentTradeId, detail, executionRow, expect, openDrawer, openEntryForm, PLAN, reachCard, reachPanel, READY, savedUnlessRefused, tradeCard, type CardRef, type ProbedDatabase, type TradeRef, test as d1Test, type Row } from '../d6/support.ts'; // d6's test, whose automatic fixture serves current
+import { answerCloseReviewIn, answerIn, chooseCell, closeReasonGroup, closingSection, closeReviewGroup, completeReflection, createTradeAt, currentTradeId, detail, executionRow, expect, openDrawer, openEntryForm, PLAN, reachCard, reachPanel, LAUNCH, savedUnlessRefused, tradeCard, type CardRef, type ProbedDatabase, type TradeRef, test as d1Test, type Row } from '../d6/support.ts'; // d6's test, whose automatic fixture serves current
 
 export * from '../d6/support.ts';
 
@@ -49,7 +49,7 @@ const primary = (page: Page): Locator => page.getByRole('navigation', { name: 'P
 // Fills the option Plan form and its reflection (Conviction 4, Calm).
 export async function fillOptionPlan(page: Page, values: OptionPlanValues): Promise<void> {
   await primary(page).getByRole('link', { name: 'New Plan' }).click();
-  await expect(page.getByRole('heading', { name: 'New Plan' })).toBeVisible(READY);
+  await expect(page.getByRole('heading', { name: 'New Plan' })).toBeVisible(LAUNCH);
   await page.getByLabel('Strategy').selectOption({ label: values.strategy });
   await page.getByLabel('Underlying', { exact: true }).fill(values.underlying);
   await page.getByLabel('Expiration date').fill(values.expiration);
@@ -69,7 +69,7 @@ export async function fillOptionPlan(page: Page, values: OptionPlanValues): Prom
 export async function confirmOptionPlan(page: Page, values: OptionPlanValues): Promise<void> {
   await fillOptionPlan(page, values);
   await page.getByRole('button', { name: 'Confirm Plan' }).click();
-  await expect(detail.heading(page, values.underlying)).toBeVisible(READY);
+  await expect(detail.heading(page, values.underlying)).toBeVisible();
 }
 
 // An option Execution form's rows (labelled Contracts and Price (per share)).
@@ -88,7 +88,7 @@ export async function fillOptionRows(page: Page, rows: readonly Row[]): Promise<
 export async function recordOptionExit(page: Page, rows: readonly Row[]): Promise<void> {
   await fillOptionExit(page, rows);
   await page.getByRole('button', { name: 'Save exit' }).click();
-  await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible(READY);
+  await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible();
 }
 
 export const FRIDAY_NOV = 'Fri Nov 20';
@@ -128,7 +128,7 @@ export async function saveMarkPrice(page: Page, card: CardRef, row: Locator, pri
 // opens the Marks panel again and returns the saved option row.
 export async function savedOptionMarkRow(page: Page, card: CardRef, label: string, date: string): Promise<Locator> {
   await savedUnlessRefused('savedOptionMarkRow', tradeCard(page, card).locator('section[aria-label="Marks"]'), () =>
-    expect(tradeCard(page, card).locator('section[aria-label="Marks"] button', { hasText: /^Save Marks/ })).toHaveText('Save Marks (0)', READY),
+    expect(tradeCard(page, card).locator('section[aria-label="Marks"] button', { hasText: /^Save Marks/ })).toHaveText('Save Marks (0)'),
   );
   return optionMarkRow(page, card, label, date);
 }
@@ -146,20 +146,20 @@ export async function openSettlement(page: Page, card: CardRef): Promise<Locator
 // On the expiration form: answers the expiration's own reflection, then either defers the Close Review (Reflect later, the
 // default) or answers it now, and saves. The Close Reason is never asked for an Expiration (row 21.16).
 export async function recordExpiration(page: Page, closeReview: 'later' | 'now' = 'later'): Promise<void> {
-  await expect(page.getByRole('heading', { name: 'Expiration', level: 1 })).toBeVisible(READY);
+  await expect(page.getByRole('heading', { name: 'Expiration', level: 1 })).toBeVisible();
   await answerIn(page.getByRole('region', { name: 'Reflection on this expiration' }));
   await expect(closeReasonGroup(page)).toHaveCount(0);
   if (closeReview === 'later') await closeReviewGroup(page).getByLabel('Reflect later').check();
   else await answerCloseReviewIn(closingSection(page));
   await page.getByRole('button', { name: 'Save expiration' }).click();
-  await expect(page.getByRole('heading', { name: 'Expiration recorded', level: 1 })).toBeVisible(READY);
+  await expect(page.getByRole('heading', { name: 'Expiration recorded', level: 1 })).toBeVisible();
 }
 
 // A payoff line with a value: the drawer's one chart (named by the captions of the tables it draws) and the table that is that line's text
 // equivalent.
 export async function expectPayoffChart(page: Page, kind: 'Planned' | 'Current'): Promise<void> {
   await openDrawer(page, 'Payoff');
-  await expect(detail.payoffChart(page).filter({ visible: true })).toHaveCount(1, READY);
+  await expect(detail.payoffChart(page).filter({ visible: true })).toHaveCount(1);
   await expect(detail.payoffChart(page)).toHaveAccessibleName(new RegExp(`${kind} payoff at expiration by `));
   const table = detail.payoff(page, kind).getByRole('table', { name: new RegExp(`^${kind} payoff at expiration by `) });
   await expect(table).toBeVisible();
@@ -171,7 +171,7 @@ export async function expectPayoffChart(page: Page, kind: 'Planned' | 'Current')
 // table for that line, so the state is not colour alone.
 export async function expectPayoffNotApplicable(page: Page, kind: 'Planned' | 'Current', reason: RegExp): Promise<void> {
   await openDrawer(page, 'Payoff');
-  await expect(detail.payoffDrawer(page).getByText(reason)).toBeVisible(READY);
+  await expect(detail.payoffDrawer(page).getByText(reason)).toBeVisible();
   await expect(detail.anywhere(() => detail.payoff(page, kind))).toHaveCount(0);
 }
 
@@ -185,7 +185,7 @@ export async function createShortPutTrade(page: Page): Promise<string> {
   const tradeId = await currentTradeId(page);
   await recordOptionEntry(page, [{ quantity: '2', price: '1.25', fee: '1.30', time: '2026-10-12T10:00' }]);
   await page.getByRole('link', { name: 'Back to the Trade' }).click();
-  await expect(detail.heading(page, 'MNO')).toBeVisible(READY);
+  await expect(detail.heading(page, 'MNO')).toBeVisible();
   return tradeId;
 }
 
@@ -201,7 +201,7 @@ export async function recordOptionEntry(page: Page, rows: readonly Row[]): Promi
 // From a Trade Detail, opens the exit form (a Buy to close or Sell to close), fills its rows and its reflection.
 export async function fillOptionExit(page: Page, rows: readonly Row[]): Promise<void> {
   await detail.recordExitLink(page).click();
-  await expect(page.getByRole('heading', { name: 'Record exit', level: 1 })).toBeVisible(READY);
+  await expect(page.getByRole('heading', { name: 'Record exit', level: 1 })).toBeVisible();
   await fillOptionRows(page, rows);
   const section = page.getByRole('region', { name: 'Reflection on this exit' });
   await section.getByRole('radiogroup', { name: 'Decision mode' }).getByLabel('As Planned').check();

@@ -2,7 +2,7 @@ import type { Locator, Page } from '@playwright/test';
 import { expectNoSidewaysScroll, setWidth } from '../d7p/support.ts';
 import type { DrawerName } from '../support/detail/index.ts';
 import {
-  addOs2x, buildOc3, buildOs2x, detail, expect, expectAccessible, launchAt, MONDAY_NOV_1700, openDetailAt, openDrawer, READY, recordExpiration, SATURDAY_1000, test, THURSDAY_1800, firstPage,
+  addOs2x, buildOc3, buildOs2x, detail, expect, expectAccessible, launchAt, MONDAY_NOV_1700, openDetailAt, openDrawer, LAUNCH, recordExpiration, SATURDAY_1000, test, THURSDAY_1800, firstPage,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
@@ -59,7 +59,7 @@ async function expectTodayTableFits(page: Page, state: string): Promise<void> {
   await setWidth(page, 1280);
   await openDrawer(page, 'Today');
   const table = detail.marksTable(page);
-  await expect(table).toBeVisible(READY);
+  await expect(table).toBeVisible();
   const measures = await table.evaluate((element) => {
     const box = element.closest('.table-scroll') as HTMLElement;
     const pinned = element.querySelector('tbody tr > :first-child')!.getBoundingClientRect();
@@ -94,7 +94,7 @@ test.describe('T8R.25-B7 Payoff at 320 px', () => {
     const context = await launchAt(profile, MONDAY_NOV_1700);
     const page = await firstPage(context);
     await page.goto(`/trades/${os2x.tradeId}`);
-    await expect(detail.settlementDueHeading(page)).toBeVisible(READY);
+    await expect(detail.settlementDueHeading(page)).toBeVisible(LAUNCH);
     await setWidth(page, 320);
     await openDrawer(page, 'Payoff');
     await expect(page.locator('#drawer-panel-payoff')).toBeVisible();
@@ -118,7 +118,7 @@ test.describe('B8R.7 Responsive and accessible', () => {
     const context = await launchAt(profile, MONDAY_NOV_1700);
     const page = await firstPage(context);
     await page.goto(`/trades/${os2x.tradeId}`);
-    await expect(detail.settlementDueHeading(page)).toBeVisible(READY);
+    await expect(detail.settlementDueHeading(page)).toBeVisible(LAUNCH);
     await test.step('Settlement Due: O-S2X at Mon 11-23', async () => {
       await checkDrawers(page, 'Settlement Due');
     });
@@ -128,7 +128,7 @@ test.describe('B8R.7 Responsive and accessible', () => {
       await detail.recordExpirationLink(page).click();
       await recordExpiration(page);
       await page.getByRole('link', { name: 'Back to the Trade' }).click();
-      await expect(detail.heading(page, 'MNO')).toBeVisible(READY);
+      await expect(detail.heading(page, 'MNO')).toBeVisible();
       await expect(detail.lifecycleBadge(page)).toHaveText('Cash-Secured Put, Closed');
       await checkDrawers(page, 'Closed');
       for (const width of WIDTHS) {

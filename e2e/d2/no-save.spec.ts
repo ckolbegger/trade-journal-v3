@@ -13,7 +13,7 @@ import {
   PC3,
   probe,
   recordEntry,
-  READY,
+  LAUNCH,
   reflectionEntriesOf,
   reflectionSection,
   test,
@@ -94,7 +94,7 @@ test.describe('B2.11 nothing saved without Save', () => {
     const relaunched = await profile.launch();
     const again = await firstPage(relaunched);
     await again.goto('/');
-    await expect(again.getByText('No open trades. Recording an entry on a Planned Trade opens it.')).toBeVisible(READY);
+    await expect(again.getByText('No open trades. Recording an entry on a Planned Trade opens it.')).toBeVisible(LAUNCH);
     const probed = await probe(again);
     const workspace = workspaceOf(probed)!;
     expect(factsOf(tradesOf(workspace)[0]!, 'PositionChange')).toEqual([]);
@@ -128,7 +128,7 @@ test.describe('F4 saving again after a Conflict', () => {
 
     await pageA.getByRole('button', { name: 'Save entry' }).click();
     const conflict = pageA.getByRole('region', { name: 'This Trade changed after you opened this form' });
-    await expect(conflict).toBeVisible(READY);
+    await expect(conflict).toBeVisible(LAUNCH);
     await conflict.getByRole('button', { name: 'Load the latest Trade' }).click();
     const latest = pageA.getByRole('region', { name: 'Latest Trade' });
     await expect(latest).toContainText('40 shares of XYZ');
@@ -139,7 +139,7 @@ test.describe('F4 saving again after a Conflict', () => {
     await expect(first.getByLabel('Economic Time')).toHaveValue(PC3[0]!.time);
 
     await pageA.getByRole('button', { name: 'Save entry' }).click();
-    await expect(pageA.getByRole('heading', { name: 'Entry recorded' })).toBeVisible(READY);
+    await expect(pageA.getByRole('heading', { name: 'Entry recorded' })).toBeVisible();
     const workspace = workspaceOf(await probe(pageA))!;
     const changes = factsOf(tradesOf(workspace)[0]!, 'PositionChange');
     expect(changes).toHaveLength(2);

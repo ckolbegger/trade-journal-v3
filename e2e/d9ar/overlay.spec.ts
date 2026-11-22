@@ -1,5 +1,5 @@
 import {
-  boxOf, BREN, build, closeButton, closeOf, detail, detailReplayButton, expect, headline, PRICE_HISTORY, READY, replay, seek, slider, sliderValue, SCREENSHOTS, test,
+  boxOf, BREN, build, closeButton, closeOf, detail, detailReplayButton, expect, headline, PRICE_HISTORY, LAUNCH, replay, seek, slider, sliderValue, SCREENSHOTS, test,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
@@ -58,7 +58,7 @@ test.describe('B9AR.1 The overlay on Trade Detail', () => {
     await seek(page, replay(page), 'ArrowLeft', 2);
     await expect(sliderValue(replay(page))).toHaveText('Thu Nov 12 · 9 of 11');
     await page.reload();
-    await expect(replay(page)).toBeVisible(READY);
+    await expect(replay(page)).toBeVisible(LAUNCH);
     // The address names the open overlay, not the slider's session, so the slider is put back on Thu 11-12 before Price History is used.
     await seek(page, replay(page), 'ArrowLeft', 2);
     await expect(sliderValue(replay(page))).toHaveText('Thu Nov 12 · 9 of 11');

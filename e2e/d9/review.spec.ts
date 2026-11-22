@@ -1,5 +1,5 @@
 import {
-  actionFormOf, BREN, build, closeOf, openCardReplay, detail, expect, going, headline, openDrawer, openReview, readoutValue, reachCard, READY, replay, seek, slider, sliderValue, test, tradeCard,
+  actionFormOf, BREN, build, closeOf, openCardReplay, detail, expect, going, headline, openDrawer, openReview, readoutValue, reachCard, LAUNCH, replay, seek, slider, sliderValue, test, tradeCard,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
@@ -52,7 +52,7 @@ test.describe('B9.3 Replay in the Review, and the round trip', () => {
     expect(Object.fromEntries(new URL(page.url()).searchParams)).toEqual({ trade: trade.tradeId, panel: 'Action', replay: 'open' });
 
     await section.getByRole('link', { name: 'Price History' }).click();
-    await expect(detail.heading(page, 'BREN')).toBeVisible(READY);
+    await expect(detail.heading(page, 'BREN')).toBeVisible(LAUNCH);
     const url = new URL(page.url());
     expect(url.pathname).toBe(`/trades/${trade.tradeId}`);
     expect(Object.fromEntries(url.searchParams)).toEqual({ drawer: 'price-history', session: '2026-11-12', from: 'review' });
@@ -66,9 +66,9 @@ test.describe('B9.3 Replay in the Review, and the round trip', () => {
 
     await page.getByRole('link', { name: 'Back to the Review' }).click();
     await expect(page).toHaveURL(new RegExp(`/review\\?trade=${trade.tradeId}&panel=Action&replay=open&session=2026-11-12$`));
-    await expect(page.getByRole('heading', { name: 'Review', level: 1 })).toBeVisible(READY);
+    await expect(page.getByRole('heading', { name: 'Review', level: 1 })).toBeVisible();
     const returned = replay(page);
-    await expect(returned).toBeVisible(READY);
+    await expect(returned).toBeVisible();
     await expect(tradeCard(page, trade).getByRole('button', { name: /^Action\b/ })).toHaveAttribute('aria-expanded', 'true');
     await expect(sliderValue(returned)).toHaveText('Thu Nov 12 · 9 of 11');
     await expect(slider(returned)).toHaveValue('8');

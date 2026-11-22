@@ -1,6 +1,6 @@
 import {
   actionFormOf, AT_10, completion, confirmReference, debtFormOf, debtsOf, deferEntry, detail, enterMark, entriesWithSettledDebt, expect, fillDebtAnswers, firstPage, launchAt, MONDAY, MONDAY_1005, onboardedAt,
-  openReview, openTradeFromOpenList, probe, reachCard, READY, reflectionsOf, setClock, test, tradeCard, TUESDAY, TUESDAY_1700, workspaceOf,
+  openReview, openTradeFromOpenList, probe, reachCard, LAUNCH, reflectionsOf, setClock, test, tradeCard, TUESDAY, TUESDAY_1700, workspaceOf,
 } from './support.ts';
 
 const READ_ONLY = "Read only: this browser can't save right now";
@@ -21,7 +21,7 @@ test.describe('B5.9 Recovery Only (faults build)', () => {
     const context = await launchAt(profile, TUESDAY_1700);
     const page = await firstPage(context);
     await page.goto('/?faults=control');
-    await expect(page.getByRole('region', { name: READ_ONLY })).toBeVisible(READY);
+    await expect(page.getByRole('region', { name: READ_ONLY })).toBeVisible(LAUNCH);
 
     // The Review lists the reflection as Due in the Trade's card, with no way to open it.
     await openReview(page);
@@ -74,7 +74,7 @@ test.describe('B5.10 Mid-session failure (faults build, AC-DEL-006)', () => {
     await (await debtFormOf(page, 'XYZ')).getByRole('button', { name: 'Answer', exact: true }).click();
 
     const banner = page.getByRole('region', { name: READ_ONLY });
-    await expect(banner).toBeVisible(READY);
+    await expect(banner).toBeVisible(LAUNCH);
     await expect(banner.getByRole('listitem')).toHaveText(["The app's offline copy is missing or damaged, so it could not reopen without a network."]);
     // The values are kept and nothing is recorded.
     const form = await debtFormOf(page, 'XYZ');

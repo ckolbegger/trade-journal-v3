@@ -1,4 +1,4 @@
-import { actionEntriesOf, checkForUpdate, completion, confirmReference, enterMark, expect, identity, launchAt, markRow, MONDAY_1700, onboardedPage, openReview, probe, reachCard, READY, recordEntry, reloadFromNotice, rootOf, SECOND_PLAN, test, tradesFamily, saveAction, watchUpdatingAcrossDocuments, workspaceNames, workspaceOf } from './support.ts';
+import { actionEntriesOf, checkForUpdate, completion, confirmReference, enterMark, expect, identity, launchAt, markRow, MONDAY_1700, onboardedPage, openReview, probe, reachCard, LAUNCH, recordEntry, reloadFromNotice, rootOf, SECOND_PLAN, test, tradesFamily, saveAction, watchUpdatingAcrossDocuments, workspaceNames, workspaceOf } from './support.ts';
 
 const AT_10 = { quantity: '100', price: '50.00', fee: '1.00', time: '2026-10-12T10:00' };
 
@@ -14,7 +14,7 @@ test.describe('B4.7 update from D2 with data', { tag: '@release-history' }, () =
     await recordEntry(page, [AT_10]);
     // The update's Reload reloads the page it is on.
     await page.goto('/');
-    await expect(page.getByRole('table', { name: 'Open Trades' }).getByRole('link', { name: 'ABC', exact: true })).toBeVisible(READY);
+    await expect(page.getByRole('table', { name: 'Open Trades' }).getByRole('link', { name: 'ABC', exact: true })).toBeVisible(LAUNCH);
     const before = await probe(page);
     const oldDatabase = rootOf(before).current;
     expect(workspaceNames(before)).toEqual([oldDatabase]);

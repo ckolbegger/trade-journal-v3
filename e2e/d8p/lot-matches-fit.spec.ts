@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import { expectNoSidewaysScroll, setWidth } from '../d7p/support.ts';
-import { buildOc3, closeTheTrade, createTrades, detail, expect, FOUR_TRADES, fillRows, firstPage, launchAt, MONDAY_1700, onboardedAt, openDrawer, openExitForm, READY, sell, test, THURSDAY_1800 } from './support.ts';
+import { buildOc3, closeTheTrade, createTrades, detail, expect, FOUR_TRADES, fillRows, firstPage, launchAt, MONDAY_1700, onboardedAt, openDrawer, openExitForm, LAUNCH, sell, test, THURSDAY_1800 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -61,13 +61,13 @@ test.describe('T8P.26-B2 the Lot Matches fit in the Position drawer', () => {
     await fillRows(setupPage, [sell('100', '44.00', '1.00', '2026-10-12T15:00')]);
     await closeTheTrade(setupPage, 'now');
     await setupPage.getByRole('button', { name: 'Save exit' }).click();
-    await expect(setupPage.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible(READY);
+    await expect(setupPage.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible(LAUNCH);
     await setup.close();
 
     const context = await launchAt(profile, MONDAY_1700, { width: 1280 });
     const page = await firstPage(context);
     await page.goto(`/trades/${def}`);
-    await expect(detail.heading(page, 'DEF')).toBeVisible(READY);
+    await expect(detail.heading(page, 'DEF')).toBeVisible(LAUNCH);
     await expectFitsAt1280(page, '+$398.00');
     await context.close();
   });
@@ -78,7 +78,7 @@ test.describe('T8P.26-B2 the Lot Matches fit in the Position drawer', () => {
     const context = await launchAt(profile, THURSDAY_1800, { width: 1280 });
     const page = await firstPage(context);
     await page.goto(`/trades/${trade.tradeId}`);
-    await expect(detail.heading(page, trade.symbol)).toBeVisible(READY);
+    await expect(detail.heading(page, trade.symbol)).toBeVisible(LAUNCH);
     await expectFitsAt1280(page, '+$98.70');
     await context.close();
   });

@@ -1,6 +1,6 @@
 import {
   BREN, BREN_SOLD_OUT, build, buildPlanned, cardRows, closeOf, CORV, DALE, detail, detailReplayButton, expect, going, headline, MON_1123_1700, noMarkDash, openDetailAt, openDrawer, positionGroup,
-  reachPanel, READY, readoutPnl, readoutR, readoutValue, recordExpiration, replay, seek, sessionCard, sessionCards, sliderValue, SCREENSHOTS, stake, tradeCard, test,
+  reachPanel, LAUNCH, readoutPnl, readoutR, readoutValue, recordExpiration, replay, seek, sessionCard, sessionCards, sliderValue, SCREENSHOTS, stake, tradeCard, test,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
@@ -37,7 +37,7 @@ test.describe('B9AR.6 How a replay ends, and a session with no Mark', () => {
     const built = await build(profile, DALE, closeOf('2026-11-19'), 13, 0);
     await built.context.close();
     const { context, page } = await openDetailAt(profile, MON_1123_1700, built.trade);
-    await expect(detail.settlementDueHeading(page)).toBeVisible(READY);
+    await expect(detail.settlementDueHeading(page)).toBeVisible();
     await openDrawer(page, 'Replay');
     let scope = replay(page);
     await expect(sliderValue(scope)).toHaveText('Fri Nov 20 · 15 of 15');
@@ -51,7 +51,7 @@ test.describe('B9AR.6 How a replay ends, and a session with no Mark', () => {
     await detail.recordExpirationLink(page).click();
     await recordExpiration(page);
     await page.getByRole('link', { name: 'Back to the Trade' }).click();
-    await expect(detail.heading(page, 'DALE')).toBeVisible(READY);
+    await expect(detail.heading(page, 'DALE')).toBeVisible();
     await openDrawer(page, 'Replay');
     scope = replay(page);
     await expect(sliderValue(scope)).toHaveText('Fri Nov 20 · 15 of 15');
@@ -102,22 +102,22 @@ test.describe('B9AR.6 How a replay ends, and a session with no Mark', () => {
     await scope.getByRole('link', { name: 'Add the Mark' }).click();
     await expect(page).toHaveURL(/\/review\?.*trade=/);
     const cellName = 'CORV Nov 20 $80 Put Mark, Tue Nov 10';
-    await expect(page.getByRole('textbox', { name: cellName, exact: true })).toBeVisible(READY);
+    await expect(page.getByRole('textbox', { name: cellName, exact: true })).toBeVisible();
     // Choosing the cell opens its editor.
     await page.getByRole('textbox', { name: cellName, exact: true }).click();
     const row = page.getByRole('region', { name: cellName, exact: true });
-    await expect(row).toBeVisible(READY);
+    await expect(row).toBeVisible();
     await page.screenshot({ path: `${SCREENSHOTS}/B9AR.6-corv-add-the-mark.png` });
     // Acknowledge it as unavailable, then back to the replay on Tue 11-10.
     await row.getByRole('button', { name: "Can't get a price" }).click();
     await row.getByLabel('Reason (required)').fill('No quote available.');
     await (await reachPanel(page, trade, 'Marks')).getByRole('button', { name: /^Save Marks/ }).click();
     // Saving moves the card on to another panel (A157), so the saved row is read again from the Marks panel.
-    await expect(tradeCard(page, trade).locator('section[aria-label="Marks"] button', { hasText: /^Save Marks/ })).toHaveText('Save Marks (0)', READY);
+    await expect(tradeCard(page, trade).locator('section[aria-label="Marks"] button', { hasText: /^Save Marks/ })).toHaveText('Save Marks (0)');
     await reachPanel(page, trade, 'Marks');
-    await expect(row).toContainText('Acknowledged Unavailable', READY);
+    await expect(row).toContainText('Acknowledged Unavailable');
     await page.goto(`/trades/${trade.tradeId}`);
-    await expect(detail.heading(page, 'CORV')).toBeVisible(READY);
+    await expect(detail.heading(page, 'CORV')).toBeVisible(LAUNCH);
     await openDrawer(page, 'Replay');
     scope = replay(page);
     await seek(page, scope, 'ArrowLeft');

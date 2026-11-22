@@ -1,6 +1,6 @@
 import {
   answerIn, closeReasonGroup, closeTheTrade, closingSection, createTrades, createTA, detail, executionRow, exitReflection, expect, factsOf, FOUR_TRADES, fillRows, firstPage, launchAt, MONDAY_1700,
-  onboardedAt, openDrawer, openExitForm, openTradeFromOpenList, probe, READY, receiptResult, sell, test, tradesOf, TUESDAY_1405, TUESDAY_1405_LOCAL, TUESDAY_1000_LOCAL, workspaceOf,
+  onboardedAt, openDrawer, openExitForm, openTradeFromOpenList, probe, LAUNCH, receiptResult, sell, test, tradesOf, TUESDAY_1405, TUESDAY_1405_LOCAL, TUESDAY_1000_LOCAL, workspaceOf,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
@@ -35,14 +35,14 @@ test.describe('B6.9 Recovery Only (faults build)', () => {
     const context = await launchAt(profile, TUESDAY_1405);
     const page = await firstPage(context);
     await page.goto('/?faults=control');
-    await expect(page.getByRole('region', { name: READ_ONLY })).toBeVisible(READY);
+    await expect(page.getByRole('region', { name: READ_ONLY })).toBeVisible(LAUNCH);
 
     // The Closed list and Closed Detail are readable; the owed Close Review has no Reflect now or Decline.
     await page.getByRole('tab', { name: 'Closed' }).click();
     const row = page.getByRole('table', { name: 'Closed Trades' }).locator('tbody tr', { hasText: 'XYZ' });
     await expect(row).toContainText('Target Reached');
     await row.getByRole('link', { name: 'XYZ', exact: true }).click();
-    await expect(detail.heading(page, 'XYZ')).toBeVisible(READY);
+    await expect(detail.heading(page, 'XYZ')).toBeVisible();
     await expect(detail.resultValue(page, 'Terminal Disposition')).toHaveText('Closed via sale of 100 shares');
     await expect(detail.resultValue(page, 'Close Reason')).toHaveText('Target Reached');
     await openDrawer(page, 'Position');
@@ -59,7 +59,7 @@ test.describe('B6.9 Recovery Only (faults build)', () => {
     // (Navigation stays inside the app: a new page load without ?faults=control would be Writable again.)
     await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Trades' }).click();
     await page.getByRole('tab', { name: 'Open' }).click();
-    await expect(page.getByRole('table', { name: 'Open Trades' })).toBeVisible(READY);
+    await expect(page.getByRole('table', { name: 'Open Trades' })).toBeVisible();
     await openTradeFromOpenList(page, 'ABC');
     await openDrawer(page, 'Position');
     await expect(detail.positionValue(page)).toHaveText('60 shares of ABC');
@@ -94,7 +94,7 @@ test.describe('B6.10 Mid-session failure (faults build, AC-DEL-006)', () => {
     await page.getByRole('button', { name: 'Save exit' }).click();
 
     const banner = page.getByRole('region', { name: READ_ONLY });
-    await expect(banner).toBeVisible(READY);
+    await expect(banner).toBeVisible(LAUNCH);
     await expect(banner.getByRole('listitem')).toHaveText(["The app's offline copy is missing or damaged, so it could not reopen without a network."]);
     // The exit form is still there with every value, and nothing was recorded.
     await expect(page.getByRole('heading', { name: 'Record exit', level: 1 })).toBeVisible();

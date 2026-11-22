@@ -1,6 +1,6 @@
 import type { BrowserContext, Page } from '@playwright/test';
 import {
-  cardHeader, createOs2Trade, detail, expect, firstPage, launchAt, onboardedAt, openDrawer, openReview, reachCard, READY, reloadReview, saveSessionMarks, test, tradeCard, TUESDAY, TUESDAY_1030, TUESDAY_1700, WEDNESDAY, WEDNESDAY_1700_NY,
+  cardHeader, createOs2Trade, detail, expect, firstPage, launchAt, onboardedAt, openDrawer, openReview, reachCard, LAUNCH, reloadReview, saveSessionMarks, test, tradeCard, TUESDAY, TUESDAY_1030, TUESDAY_1700, WEDNESDAY, WEDNESDAY_1700_NY,
   THURSDAY, THURSDAY_1700_NY, type TradeRef,
 } from './support.ts';
 
@@ -40,13 +40,13 @@ test.describe('B7S.3 Detail and list on Thursday', () => {
     await page.goto('/');
     await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Trades' }).click();
     const list = page.getByRole('table', { name: 'Open Trades' });
-    await expect(list).toBeVisible(READY);
+    await expect(list).toBeVisible(LAUNCH);
     const row = list.getByRole('row', { name: /MNO/ });
     await expect(row.getByText('Stop breached', { exact: true })).toHaveCount(1);
     await expect(row.getByText('Target reached', { exact: true })).toHaveCount(1);
 
     await page.goto(`/trades/${trade.tradeId}`);
-    await expect(detail.heading(page, 'MNO')).toBeVisible(READY);
+    await expect(detail.heading(page, 'MNO')).toBeVisible(LAUNCH);
     // The rail's Conditions card (W5, W21): each condition's figure is its distance, or Breached or Reached with how far past; a stock price carries no $.
     await expect(detail.conditionBlocks(page)).toHaveCount(4);
     await expect(detail.conditionBlock(page, 'MNO at or below 41.00').locator('.condition-figure')).toHaveText('3.60 away');

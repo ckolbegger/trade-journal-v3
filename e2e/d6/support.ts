@@ -1,7 +1,7 @@
 // Shared support for the D6 browser suite (plan section 6.2): D5R's helpers (the Playwright clock, the production build of the checked-out code as
 // the default served build, the card helpers) plus the exit form's steps, the Closed tab, and the stored records an exit leaves.
 import type { Locator, Page } from '@playwright/test';
-import { detail, executionRow, expect, FOUR_TRADES, createTrades, READY, type ProbedDatabase, type Row } from '../d5r/support.ts';
+import { detail, executionRow, expect, FOUR_TRADES, createTrades, LAUNCH, type ProbedDatabase, type Row } from '../d5r/support.ts';
 
 export * from '../d5r/support.ts';
 
@@ -24,7 +24,7 @@ export const sell = (quantity: string, price: string, fee: string, time: string)
 
 export async function openExitForm(page: Page): Promise<void> {
   await detail.recordExitLink(page).click();
-  await expect(page.getByRole('heading', { name: 'Record exit', level: 1 })).toBeVisible(READY);
+  await expect(page.getByRole('heading', { name: 'Record exit', level: 1 })).toBeVisible(LAUNCH);
   await expect(executionRow(page, 1)).toBeVisible();
 }
 
@@ -66,7 +66,7 @@ export const valueOf = (scope: Locator, term: string): Locator => scope.locator(
 export async function openClosedTab(page: Page): Promise<void> {
   await page.goto('/');
   await page.getByRole('tab', { name: 'Closed' }).click();
-  await expect(page.getByRole('table', { name: 'Closed Trades' })).toBeVisible(READY);
+  await expect(page.getByRole('table', { name: 'Closed Trades' })).toBeVisible(LAUNCH);
 }
 
 // ---- Stored records, read through the probe ----------------------------------------------------------------------------

@@ -9,7 +9,7 @@ import {
   openPlanned,
   PC1,
   probe,
-  READY,
+  LAUNCH,
   recordEntry,
   test,
   writeIntegrityFixture,
@@ -32,7 +32,7 @@ test.describe('B2.13 integrity surfaced', () => {
     const context = await profile.launch();
     const app = await firstPage(context);
     await app.goto('/');
-    await expect(app.getByRole('tablist', { name: 'Trades by lifecycle' })).toBeVisible(READY);
+    await expect(app.getByRole('tablist', { name: 'Trades by lifecycle' })).toBeVisible(LAUNCH);
     const before = await probe(app);
 
     // The stored lifecycle files the Trade under Planned; its row carries the disagreement badge.
@@ -70,7 +70,7 @@ test.describe('Planned list row for an incoherent Trade', () => {
     const context = await profile.launch();
     const app = await firstPage(context);
     await app.goto('/');
-    await expect(app.getByRole('tablist', { name: 'Trades by lifecycle' })).toBeVisible(READY);
+    await expect(app.getByRole('tablist', { name: 'Trades by lifecycle' })).toBeVisible(LAUNCH);
     const before = await probe(app);
     await expect(app.getByText('No open trades. Recording an entry on a Planned Trade opens it.')).toBeVisible();
     await openPlanned(app);
@@ -105,7 +105,7 @@ test.describe('incoherent Trade Detail', () => {
     const context = await profile.launch();
     const app = await firstPage(context);
     await app.goto('/');
-    await expect(app.getByRole('tablist', { name: 'Trades by lifecycle' })).toBeVisible(READY);
+    await expect(app.getByRole('tablist', { name: 'Trades by lifecycle' })).toBeVisible(LAUNCH);
     const before = await probe(app);
     await openTradeFromOpenList(app);
     const panel = detail.factsIncoherent(app);

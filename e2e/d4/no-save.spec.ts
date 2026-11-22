@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { actionEntriesOf, actionFormOf, createTrades, enterMark, expect, firstPage, FOUR_TRADES, launchAt, markRow, MONDAY_1700, observationsOf, onboardedAt, openReview, probe, reachCard, READY, test, workspaceOf } from './support.ts';
+import { actionEntriesOf, actionFormOf, createTrades, enterMark, expect, firstPage, FOUR_TRADES, launchAt, markRow, MONDAY_1700, observationsOf, onboardedAt, openReview, probe, reachCard, LAUNCH, test, workspaceOf } from './support.ts';
 
 const DATE = 'Mon Oct 12';
 // Distinctive values, so any trace of them in storage is unmistakable.
@@ -69,7 +69,7 @@ test.describe('B4.12 Nothing saved without Save (AC-JOUR-001)', () => {
 
     // Navigate away (the Open list), then restart the browser.
     await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Trades' }).click();
-    await expect(page.getByRole('table', { name: 'Open Trades' })).toBeVisible(READY);
+    await expect(page.getByRole('table', { name: 'Open Trades' })).toBeVisible(LAUNCH);
     expect(traces(await webStorage(page))).toEqual([]);
     await context.close();
 

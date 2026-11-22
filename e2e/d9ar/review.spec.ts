@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import {
-  actionEntriesOf, actionFormOf, boxOf, buildReview,cardReplayButton, closeButton, detail, expect, headline, openCardReplay, pressSave, probe, reachCard, READY, replay, seek, sliderValue, test, tradeCard, workspaceOf,
+  actionEntriesOf, actionFormOf, boxOf, buildReview,cardReplayButton, closeButton, detail, expect, headline, openCardReplay, pressSave, probe, reachCard, LAUNCH, replay, seek, sliderValue, test, tradeCard, workspaceOf,
   type TradeRef,
 } from './support.ts';
 
@@ -52,10 +52,10 @@ test.describe('B9AR.2 The overlay in the Review, and the summary', () => {
     await seek(page, replay(page), 'ArrowLeft', 2);
     await expect(sliderValue(replay(page))).toHaveText('Thu Nov 12 · 9 of 11');
     await replay(page).getByRole('link', { name: 'Price History' }).click();
-    await expect(detail.heading(page, 'BREN')).toBeVisible(READY);
+    await expect(detail.heading(page, 'BREN')).toBeVisible();
     await page.getByRole('link', { name: 'Back to the Review' }).click();
-    await expect(page.getByRole('heading', { name: 'Review', level: 1 })).toBeVisible(READY);
-    await expect(replay(page)).toBeVisible(READY);
+    await expect(page.getByRole('heading', { name: 'Review', level: 1 })).toBeVisible();
+    await expect(replay(page)).toBeVisible();
     await expect(sliderValue(replay(page))).toHaveText('Thu Nov 12 · 9 of 11');
     await expect(headline(replay(page))).toHaveText('+$982.00 · 3.03R');
     await closeButton(replay(page)).click();
@@ -87,10 +87,10 @@ test.describe('B9AR.2 The overlay in the Review, and the summary', () => {
       await seek(page, replay(page), 'ArrowLeft', 2);
       await expect(sliderValue(replay(page))).toHaveText('Thu Nov 12 · 9 of 11');
       await replay(page).getByRole('link', { name: 'Price History' }).click();
-      await expect(detail.heading(page, trade.symbol)).toBeVisible(READY);
+      await expect(detail.heading(page, trade.symbol)).toBeVisible();
       expect(await actions(page), `the trip away records nothing (${trade.symbol})`).toBe(saved);
       await page.getByRole('link', { name: 'Back to the Review' }).click();
-      await expect(replay(page)).toBeVisible(READY);
+      await expect(replay(page)).toBeVisible();
       await expect(sliderValue(replay(page))).toHaveText('Thu Nov 12 · 9 of 11');
       await closeButton(replay(page)).click();
       await expect(replay(page)).toHaveCount(0);
@@ -117,20 +117,20 @@ test.describe('B9AR.2 The overlay in the Review, and the summary', () => {
     await startAction(page, bren);
     await openCardReplay(page, bren);
     await replay(page).getByRole('link', { name: 'Price History' }).click();
-    await expect(detail.heading(page, 'BREN')).toBeVisible(READY);
+    await expect(detail.heading(page, 'BREN')).toBeVisible();
     await page.getByRole('link', { name: 'Back to the Review' }).click();
-    await expect(replay(page)).toBeVisible(READY);
+    await expect(replay(page)).toBeVisible();
     await expectActionStarted(page, bren, 'after the round trip');
     // The link back pushed a new entry, so Forward is only possible after Back: Back to Price History, Back to the first Review entry,
     // then the browser's Forward to Price History and its Back to the Review.
     await page.goBack();
-    await expect(detail.heading(page, 'BREN')).toBeVisible(READY);
+    await expect(detail.heading(page, 'BREN')).toBeVisible();
     await page.goBack();
-    await expect(replay(page)).toBeVisible(READY);
+    await expect(replay(page)).toBeVisible();
     await page.goForward();
-    await expect(detail.heading(page, 'BREN')).toBeVisible(READY);
+    await expect(detail.heading(page, 'BREN')).toBeVisible();
     await page.goBack();
-    await expect(replay(page)).toBeVisible(READY);
+    await expect(replay(page)).toBeVisible();
     await closeButton(replay(page)).click();
     await expectActionStarted(page, bren, 'after Forward and Back');
     expect(await actions(page), 'the browser trips record nothing').toBe(0);
@@ -147,10 +147,10 @@ test.describe('B9AR.2 The overlay in the Review, and the summary', () => {
     await seek(page, section, 'ArrowLeft', 5);
     await expect(sliderValue(section)).toHaveText(/^Mon Nov 9 · /);
     await section.getByRole('link', { name: 'Price History' }).click();
-    await expect(detail.heading(page, 'AXIO')).toBeVisible(READY);
+    await expect(detail.heading(page, 'AXIO')).toBeVisible();
     await expect(page).toHaveURL(/drawer=price-history&session=2026-11-09&from=review/);
     const header = page.getByRole('columnheader', { name: /Mon\s*Nov 9/ });
-    await expect(header).toBeFocused(READY);
+    await expect(header).toBeFocused();
     const scroller = page.getByRole('region', { name: 'Price History' });
     const [h, s] = [await boxOf(header), await boxOf(scroller)];
     expect(h.x, 'column starts inside the scroller').toBeGreaterThanOrEqual(s.x - 1);
@@ -166,15 +166,15 @@ test.describe('B9AR.2 The overlay in the Review, and the summary', () => {
     await reachCard(page, axio);
     const section = await openCardReplay(page, axio);
     await section.getByRole('link', { name: 'Price History' }).click();
-    await expect(detail.heading(page, 'AXIO')).toBeVisible(READY);
+    await expect(detail.heading(page, 'AXIO')).toBeVisible();
     await page.getByRole('button', { name: 'Replay' }).click();
     await expect(page).toHaveURL(/drawer=price-history&session=[\d-]+.*replay=open/);
     await page.reload();
     const dialog = page.getByRole('dialog', { name: /^Replay/ });
-    await expect(dialog).toBeVisible(READY);
+    await expect(dialog).toBeVisible(LAUNCH);
     await closeButton(dialog).click();
-    await expect(dialog).toBeHidden(READY);
-    await expect(page.getByRole('button', { name: 'Replay' })).toBeFocused(READY);
+    await expect(dialog).toBeHidden();
+    await expect(page.getByRole('button', { name: 'Replay' })).toBeFocused();
     await context.close();
   });
 

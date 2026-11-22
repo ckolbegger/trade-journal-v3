@@ -1,4 +1,4 @@
-import { acknowledgeMark, completion, createGapFixture, enterMark, expect, markRow, OCT_12, OCT_7, OCT_8, OCT_9, openReview, reachCard, reachPanel, READY, reloadReview, saveAction, saveMarksOf, status, test, tradeCard } from './support.ts';
+import { acknowledgeMark, completion, createGapFixture, enterMark, expect, markRow, OCT_12, OCT_7, OCT_8, OCT_9, openReview, reachCard, reachPanel, LAUNCH, reloadReview, saveAction, saveMarksOf, status, test, tradeCard } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -19,7 +19,7 @@ test.describe('B9R2.4 The cell editor', () => {
       await editor.getByLabel('Reason (required)').fill('No quote today');
       await saveMarksOf(page, tA).click();
       // A saved result moves the card on to its next panel (A157), so the panel's own button is read inside the card.
-      await expect(tradeCard(page, tA).locator('section[aria-label="Marks"] button', { hasText: /^Save Marks/ })).toHaveText('Save Marks (0)', READY);
+      await expect(tradeCard(page, tA).locator('section[aria-label="Marks"] button', { hasText: /^Save Marks/ })).toHaveText('Save Marks (0)');
       await expect(await markRow(page, tA, OCT_12)).toContainText('Acknowledged Unavailable');
     });
 
@@ -77,7 +77,7 @@ test.describe('B9R2.4 The cell editor', () => {
       const cell = marks.getByRole('textbox', { name: `XYZ Mark, ${OCT_9}`, exact: true });
       await cell.fill('50.60');
       await saveMarksOf(page, tA).click();
-      await expect(page.getByRole('alert').filter({ hasText: 'This Mark changed after you opened it. Nothing was saved.' })).toBeVisible(READY);
+      await expect(page.getByRole('alert').filter({ hasText: 'This Mark changed after you opened it. Nothing was saved.' })).toBeVisible(LAUNCH);
       // Nothing was written from this tab: the other tab's Mark stands.
       await expect(saveMarksOf(page, tA)).toHaveText('Save Marks (1)');
       // The conflicted cell's editor takes focus in its input (A294).
@@ -98,7 +98,7 @@ test.describe('B9R2.4 The cell editor', () => {
       await enterMark(second, tA, OCT_8, '50.85');
       await second.close();
       const marks = await reachPanel(page, tA, 'Marks');
-      await expect(marks.getByRole('textbox', { name: `XYZ Mark, ${OCT_12}`, exact: true })).toBeVisible(READY);
+      await expect(marks.getByRole('textbox', { name: `XYZ Mark, ${OCT_12}`, exact: true })).toBeVisible(LAUNCH);
       await expect(page.getByText('We couldn’t load this Trade. Nothing was changed.')).toHaveCount(0);
     });
 
@@ -112,7 +112,7 @@ test.describe('B9R2.4 The cell editor', () => {
       await enterMark(second, tA, OCT_9, '50.85');
       await second.close();
       await status(page).getByRole('button', { name: 'Save Marks (2)' }).click();
-      await expect(page.getByRole('region', { name: `XYZ Mark, ${OCT_9}`, exact: true }).getByLabel('Price')).toBeFocused(READY);
+      await expect(page.getByRole('region', { name: `XYZ Mark, ${OCT_9}`, exact: true }).getByLabel('Price')).toBeFocused(LAUNCH);
       await expect(page.getByText('We couldn’t load this Trade. Nothing was changed.')).toHaveCount(0);
     });
     await context.close();
@@ -130,7 +130,7 @@ test.describe('B9R2.4 The cell editor', () => {
       await marks.getByRole('button', { name: 'Previous page' }).click();
       await cell(OCT_9).fill('50.40');
       await saveMarksOf(page, tA).click();
-      await expect(marks.getByText('Sessions 21 to 27 of 27')).toBeVisible(READY);
+      await expect(marks.getByText('Sessions 21 to 27 of 27')).toBeVisible();
       await expect(marks.getByRole('region', { name: `XYZ Mark, ${AUG_31}`, exact: true }).getByText(NEGATIVE)).toBeVisible();
       await expect(cell(AUG_31)).toBeFocused();
       // Nothing was saved: the valid price stays a draft.
@@ -144,8 +144,8 @@ test.describe('B9R2.4 The cell editor', () => {
       await marks.getByRole('button', { name: 'Next page' }).click();
       await cell(AUG_31).fill('-1');
       await saveMarksOf(page, tA).click();
-      await expect(marks.getByText('Sessions 1 to 20 of 27')).toBeVisible(READY);
-      await expect(marks.getByRole('region', { name: `XYZ Mark, ${OCT_8}`, exact: true }).getByText(NEGATIVE)).toBeVisible(READY);
+      await expect(marks.getByText('Sessions 1 to 20 of 27')).toBeVisible();
+      await expect(marks.getByRole('region', { name: `XYZ Mark, ${OCT_8}`, exact: true }).getByText(NEGATIVE)).toBeVisible();
       await expect(cell(OCT_8)).toBeFocused();
     });
     await context.close();

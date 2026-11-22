@@ -1,4 +1,4 @@
-import { BASE_URL, expect, firstPage, onboardedPage, probe, READY, test } from './support.ts';
+import { BASE_URL, expect, firstPage, onboardedPage, probe, LAUNCH, test } from './support.ts';
 
 const BLOCKED = "Your journal data may already exist here, but it can't be read";
 
@@ -26,7 +26,7 @@ test.describe('B1.8 Integrity Blocked', () => {
     const before = await probe(page);
 
     await page.goto('/');
-    await expect(page.getByRole('heading', { name: BLOCKED })).toBeVisible(READY);
+    await expect(page.getByRole('heading', { name: BLOCKED })).toBeVisible(LAUNCH);
     await expect(page.getByRole('button')).toHaveText(['Retry']);
     await expect(page.getByRole('navigation')).toHaveCount(0);
     const after = await probe(page);
@@ -52,7 +52,7 @@ test.describe('B1.8 Integrity Blocked', () => {
     );
 
     await page.reload();
-    await expect(page.getByRole('heading', { name: BLOCKED })).toBeVisible(READY);
+    await expect(page.getByRole('heading', { name: BLOCKED })).toBeVisible(LAUNCH);
     await expect(page.getByRole('button')).toHaveText(['Retry']);
     const after = await probe(page);
     expect(after['tj-root']!.stores['pointer']).toEqual(pointer);

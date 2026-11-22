@@ -1,5 +1,5 @@
 import {
-  answerIn, closeReviewGroup, completion, createSettlementFixture, createShortPutTrade, detail, expect, factsOf, firstPage, FRIDAY_NOV_1700, launchAt, onboardedAt, openDrawer, openReview, openSettlement, probe, READY, test,
+  answerIn, closeReviewGroup, completion, createSettlementFixture, createShortPutTrade, detail, expect, factsOf, firstPage, FRIDAY_NOV_1700, launchAt, onboardedAt, openDrawer, openReview, openSettlement, probe, LAUNCH, test,
   tradesOf, TUESDAY_1030, workspaceOf,
 } from './support.ts';
 
@@ -18,15 +18,15 @@ test.describe('B7.10 Recovery Only (faults build)', () => {
     const context = await launchAt(profile, FRIDAY_NOV_1700);
     const page = await firstPage(context);
     await page.goto('/?faults=control');
-    await expect(page.getByRole('region', { name: READ_ONLY })).toBeVisible(READY);
+    await expect(page.getByRole('region', { name: READ_ONLY })).toBeVisible(LAUNCH);
 
     // The Open list names the option Trades; the Long Call's Detail shows both payoff views and its Settlement Due, with no write link.
     // (Navigation stays inside the app: a new page load without ?faults=control would be Writable again.)
     const openTrades = page.getByRole('table', { name: 'Open Trades' });
-    await expect(openTrades).toBeVisible(READY);
+    await expect(openTrades).toBeVisible();
     await expect(openTrades.locator('tbody tr', { hasText: 'MNO' })).toBeVisible();
     await openTrades.locator('tbody tr', { hasText: 'XYZ Nov 20 $55 Call' }).getByRole('link', { name: 'XYZ', exact: true }).click();
-    await expect(detail.heading(page, 'XYZ')).toBeVisible(READY);
+    await expect(detail.heading(page, 'XYZ')).toBeVisible();
     await openDrawer(page, 'Payoff');
     await expect(detail.payoff(page, 'Planned')).toContainText('Breakeven 57.00');
     await expect(detail.payoff(page, 'Current')).toBeVisible();
@@ -63,7 +63,7 @@ test.describe('B7.11 Mid-session failure (faults build, AC-DEL-006)', () => {
     await page.goto('/');
     await page.getByRole('table', { name: 'Open Trades' }).getByRole('link', { name: 'MNO', exact: true }).click();
     await detail.recordExpirationLink(page).click();
-    await expect(page.getByRole('heading', { name: 'Expiration', level: 1 })).toBeVisible(READY);
+    await expect(page.getByRole('heading', { name: 'Expiration', level: 1 })).toBeVisible(LAUNCH);
     const reflection = page.getByRole('region', { name: 'Reflection on this expiration' });
     await answerIn(reflection);
     await closeReviewGroup(page).getByLabel('Reflect later').check();
@@ -73,7 +73,7 @@ test.describe('B7.11 Mid-session failure (faults build, AC-DEL-006)', () => {
     await page.getByRole('button', { name: 'Save expiration' }).click();
 
     const banner = page.getByRole('region', { name: READ_ONLY });
-    await expect(banner).toBeVisible(READY);
+    await expect(banner).toBeVisible();
     await expect(banner.getByRole('listitem')).toHaveText(["The app's offline copy is missing or damaged, so it could not reopen without a network."]);
     // The form is still there with every answer, and nothing was recorded.
     await expect(page.getByRole('heading', { name: 'Expiration', level: 1 })).toBeVisible();

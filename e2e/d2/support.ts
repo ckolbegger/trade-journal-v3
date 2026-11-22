@@ -7,7 +7,7 @@ import { spawn } from 'node:child_process';
 import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import type { OfflineReleaseInventory } from '../../src/delivery/inventory.ts';
-import { BASE_URL, detail, expect, fillPlan, firstPage, PLAN, READY, startJournal, ZONE, type PlanValues, type ProbedDatabase } from '../d1/support.ts';
+import { BASE_URL, detail, expect, fillPlan, firstPage, PLAN, STEP, LAUNCH, startJournal, ZONE, type PlanValues, type ProbedDatabase } from '../d1/support.ts';
 
 export * from '../d1/support.ts';
 
@@ -50,7 +50,7 @@ export const reflectionSection = (page: Page): Locator => page.getByRole('region
 // From a Trade Detail, opens the entry form.
 export async function openEntryForm(page: Page): Promise<void> {
   await detail.recordEntryLink(page).click();
-  await expect(page.getByRole('heading', { name: 'Record entry', level: 1 })).toBeVisible(READY);
+  await expect(page.getByRole('heading', { name: 'Record entry', level: 1 })).toBeVisible(LAUNCH);
   await expect(executionRow(page, 1)).toBeVisible();
 }
 
@@ -96,7 +96,7 @@ export async function backToTrade(page: Page, symbol = PLAN.symbol): Promise<voi
 
 // Opens a Trade's Detail from the Open list.
 export async function openTradeFromOpenList(page: Page, symbol = PLAN.symbol): Promise<void> {
-  await page.getByRole('table', { name: 'Open Trades' }).getByRole('link', { name: symbol, exact: true }).click(READY);
+  await page.getByRole('table', { name: 'Open Trades' }).getByRole('link', { name: symbol, exact: true }).click(STEP);
   await expect(detail.heading(page, symbol)).toBeVisible();
 }
 
@@ -149,7 +149,7 @@ export async function onboardedD1Page(context: BrowserContext, query = ''): Prom
   const page = await firstPage(context);
   await page.goto(`${BASE_URL}/${query}`);
   await startJournal(page);
-  await expect(page.getByRole('heading', { name: 'Add your brokerage account' })).toBeVisible(READY);
+  await expect(page.getByRole('heading', { name: 'Add your brokerage account' })).toBeVisible(LAUNCH);
   await page.getByLabel('Institution').fill('Fidelity');
   await page.getByLabel('Account').fill('Roth IRA');
   await page.getByRole('button', { name: 'Save and continue' }).click();

@@ -1,4 +1,4 @@
-import { confirmPlan, EXPLANATION, expect, FAULT_SETS, firstPage, onboardedPage, probe, profileAt, READY, test } from './support.ts';
+import { confirmPlan, EXPLANATION, expect, FAULT_SETS, firstPage, onboardedPage, probe, profileAt, LAUNCH, test } from './support.ts';
 
 const B1_5_FAULT_SETS: typeof FAULT_SETS = [['diagnostic'], ['control', 'inventory']];
 
@@ -9,7 +9,7 @@ test.describe('B1.5 Unsupported matrix (faults build)', () => {
       const context = await profileAt(info.outputPath('profile')).launch();
       const page = await firstPage(context);
       await page.goto(`/?faults=${failing.join(',')}`);
-      await expect(page.getByRole('heading', { name: "This browser can't safely store your journal" })).toBeVisible(READY);
+      await expect(page.getByRole('heading', { name: "This browser can't safely store your journal" })).toBeVisible(LAUNCH);
       await expect(page.getByRole('listitem')).toHaveText(failing.map((check) => EXPLANATION[check]));
       await expect(page.getByRole('button', { name: 'Retry' })).toBeVisible();
       await expect(page.getByText('try another browser')).toBeVisible();
@@ -50,7 +50,7 @@ test.describe('B1.7 protection is advisory', () => {
         const after = await page.evaluate(() => navigator.storage.persisted());
         await expect(
           page.getByText(after ? 'The browser will now keep your journal data unless you clear it.' : 'The browser declined to promise it will keep your data.'),
-        ).toBeVisible(READY);
+        ).toBeVisible(LAUNCH);
       }
     }
     await context.close();

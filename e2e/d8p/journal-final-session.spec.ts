@@ -1,7 +1,7 @@
 import type { Locator, Page } from '@playwright/test';
 import {
   closeTheTrade, confirmOptionPlan, createTrades, currentTradeId, detail, enterMark, expect, FOUR_TRADES, fillRows, firstPage, launchAt, MONDAY, MONDAY_0900, MONDAY_1105, MONDAY_1700, MONDAY_NOV_1700,
-  onboardedAt, openDrawer, openExitForm, openReview, OS, READY, recordExpiration, recordOptionEntry, sell, test,
+  onboardedAt, openDrawer, openExitForm, openReview, OS, LAUNCH, recordExpiration, recordOptionEntry, sell, test,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
@@ -20,7 +20,7 @@ test.describe('T8P.26-B3 a Journal card whose session has no Mark has no change 
     await fillRows(setupPage, [sell('100', '44.00', '1.00', '2026-10-12T15:00')]);
     await closeTheTrade(setupPage, 'now');
     await setupPage.getByRole('button', { name: 'Save exit' }).click();
-    await expect(setupPage.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible(READY);
+    await expect(setupPage.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible(LAUNCH);
     await openReview(setupPage);
     await enterMark(setupPage, 'XYZ', MONDAY, '52.00');
     await setup.close();
@@ -28,7 +28,7 @@ test.describe('T8P.26-B3 a Journal card whose session has no Mark has no change 
     const context = await launchAt(profile, MONDAY_1700);
     const page = await firstPage(context);
     await page.goto(`/trades/${def}`);
-    await expect(detail.heading(page, 'DEF')).toBeVisible(READY);
+    await expect(detail.heading(page, 'DEF')).toBeVisible(LAUNCH);
     await openDrawer(page, 'Journal');
     const final = card(page, /Today, Mon Oct 12, final session/);
     await expect(final).toHaveCount(1);
@@ -37,7 +37,7 @@ test.describe('T8P.26-B3 a Journal card whose session has no Mark has no change 
     await expect(final).not.toContainText('First Mark');
 
     await page.goto(`/trades/${xyz}`);
-    await expect(detail.heading(page, 'XYZ')).toBeVisible(READY);
+    await expect(detail.heading(page, 'XYZ')).toBeVisible(LAUNCH);
     await openDrawer(page, 'Journal');
     await expect(card(page, /Today, Mon Oct 12/).locator('.journal-card-change')).toHaveText('First Mark');
     await context.close();
@@ -53,18 +53,18 @@ test.describe('T8P.26-B3 a Journal card whose session has no Mark has no change 
     const entering = await launchAt(profile, MONDAY_1105);
     const entryPage = await firstPage(entering);
     await entryPage.goto(`/trades/${tradeId}`);
-    await expect(detail.heading(entryPage, 'MNO')).toBeVisible(READY);
+    await expect(detail.heading(entryPage, 'MNO')).toBeVisible(LAUNCH);
     await recordOptionEntry(entryPage, [{ quantity: '2', price: '1.25', fee: '1.30', time: '2026-10-12T10:00' }]);
     await entering.close();
 
     const context = await launchAt(profile, MONDAY_NOV_1700);
     const page = await firstPage(context);
     await page.goto(`/trades/${tradeId}`);
-    await expect(detail.settlementDueHeading(page)).toBeVisible(READY);
+    await expect(detail.settlementDueHeading(page)).toBeVisible(LAUNCH);
     await detail.recordExpirationLink(page).click();
     await recordExpiration(page);
     await page.getByRole('link', { name: 'Back to the Trade' }).click();
-    await expect(detail.heading(page, 'MNO')).toBeVisible(READY);
+    await expect(detail.heading(page, 'MNO')).toBeVisible();
     await openDrawer(page, 'Journal');
     const final = card(page, /Fri Nov 20, final session/);
     await expect(final).toHaveCount(1);

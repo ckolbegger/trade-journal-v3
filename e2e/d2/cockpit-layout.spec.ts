@@ -8,7 +8,7 @@ import {
   onboardedPage,
   openPlanned,
   PC1,
-  READY,
+  LAUNCH,
   recordEntry,
   test,
   writeIntegrityFixture,
@@ -28,7 +28,7 @@ test.describe('T8P.5-B2 cockpit layout', () => {
     const context = await profile.launch({ width: 1280 });
     const page = await firstPage(context);
     await page.goto('/');
-    await expect(page.getByRole('tablist', { name: 'Trades by lifecycle' })).toBeVisible(READY);
+    await expect(page.getByRole('tablist', { name: 'Trades by lifecycle' })).toBeVisible(LAUNCH);
     await openPlanned(page);
     await page.getByRole('row', { name: /XYZ/ }).getByRole('link', { name: 'XYZ', exact: true }).click();
     await expect(detail.heading(page, 'XYZ')).toBeVisible();

@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { chooseRestoreFile, declineSafetyBackup, detail, EXPLANATION, expect, FIXTURE_BACKUP, firstPage, launchAt, MONDAY_1005, openBackup, primaryNav, probe, READY, replaceEntire, restoreComplete, rootOf, scratch, seedJournal, test, understood } from './support.ts';
+import { chooseRestoreFile, declineSafetyBackup, detail, EXPLANATION, expect, FIXTURE_BACKUP, firstPage, launchAt, MONDAY_1005, openBackup, primaryNav, probe, LAUNCH, replaceEntire, restoreComplete, rootOf, scratch, seedJournal, test, understood } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -29,13 +29,13 @@ test.describe('B8.10 Readiness after Restore', () => {
     await declineSafetyBackup(page);
     await replaceEntire(page).click();
     // The hold is reached once the pointer names the new database.
-    await expect.poll(async () => rootOf(await probe(page)).current, READY).not.toBe(oldDatabase);
+    await expect.poll(async () => rootOf(await probe(page)).current, LAUNCH).not.toBe(oldDatabase);
     await page.evaluate(() => window.__tjFaults?.set(['inventory']));
     await page.evaluate(() => window.__tjFaults?.release());
 
-    await expect(restoreComplete(page)).toBeVisible(READY);
+    await expect(restoreComplete(page)).toBeVisible(LAUNCH);
     const banner = page.getByRole('region', { name: "Read only: this browser can't save right now" });
-    await expect(banner).toBeVisible(READY).catch(async (error: unknown) => {
+    await expect(banner).toBeVisible().catch(async (error: unknown) => {
       // The summary screen a trader is left on, kept for the bug report.
       await page.screenshot({ path: scratch('summary-without-recovery-only.png') });
       throw error;
@@ -44,13 +44,13 @@ test.describe('B8.10 Readiness after Restore', () => {
     await expect(primaryNav(page).getByRole('link', { name: 'New Plan' })).toHaveCount(0);
     await expect(primaryNav(page).getByRole('link', { name: 'Backup' })).toBeVisible();
     await primaryNav(page).getByRole('link', { name: 'Trades' }).click();
-    await expect(page.getByRole('tablist', { name: 'Trades by lifecycle' })).toBeVisible(READY);
+    await expect(page.getByRole('tablist', { name: 'Trades by lifecycle' })).toBeVisible(LAUNCH);
     // The Trades list never offers these controls, so they are checked where a writable journal renders them: a Planned and an Open Trade's Detail (the
     // restored fixture's JKL and CSCO; Record entry and Record exit are links there) and the New Plan form (Confirm Plan is a button). No contract has
     // expired at this clock, so no Record expiration link would show even on a writable journal; it stays in the pattern for the check's completeness.
     for (const [tradeId, symbol] of [['fx-0217', 'JKL'], ['fx-0049', 'CSCO']] as const) {
       await goInApp(page, `/trades/${tradeId}`);
-      await expect(detail.heading(page, symbol)).toBeVisible(READY);
+      await expect(detail.heading(page, symbol)).toBeVisible();
       await expect(page.getByRole('link', { name: /Record (entry|exit|expiration)/ })).toHaveCount(0);
     }
     await goInApp(page, '/plans/new');

@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test';
 import {
   AT_10, confirmReference, debtFormOf, debtsOf, declinesOf, deferEntry, enterMark, entriesWithSettledDebt, expect, fillDebtAnswers, fillRows, firstPage, launchAt, MONDAY, MONDAY_1005, onboardedAt,
-  openEntryForm, openReview, openTradeFromOpenList, probe, reachCard, READY, reflectionSection, reflectionsOf, setClock, test, TUESDAY, TUESDAY_1700, tradesOf, workspaceOf, completeReflection, status,
+  openEntryForm, openReview, openTradeFromOpenList, probe, reachCard, LAUNCH, reflectionSection, reflectionsOf, setClock, test, TUESDAY, TUESDAY_1700, tradesOf, workspaceOf, completeReflection, status,
 } from './support.ts';
 
 // Distinctive values, so any trace of them in storage is unmistakable.
@@ -83,7 +83,7 @@ test.describe('B5.11 Nothing saved without Save (AC-JOUR-001)', () => {
 
     // Navigate away, then restart the browser.
     await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Trades' }).click();
-    await expect(page.getByRole('table', { name: 'Open Trades' })).toBeVisible(READY);
+    await expect(page.getByRole('table', { name: 'Open Trades' })).toBeVisible(LAUNCH);
     expect(traces(await webStorage(page))).toEqual([]);
     await context.close();
 

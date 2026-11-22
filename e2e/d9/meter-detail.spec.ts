@@ -1,4 +1,4 @@
-import { BREN, build, closeOf, detail, expect, expectTrackDashed, READY, setClock, test } from './support.ts';
+import { BREN, build, closeOf, detail, expect, expectTrackDashed, setClock, test } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -11,7 +11,7 @@ test.describe('B9.10 The meter on Trade Detail', () => {
     test.setTimeout(240_000);
     const { context, page } = await build(profile, BREN, closeOf('2026-11-16'), 10);
     const card = page.locator('.conditions-card');
-    await expect(card).toBeVisible(READY);
+    await expect(card).toBeVisible();
     const meter = card.getByRole('img');
     await expect(meter).toHaveCount(1);
     await expect(meter).toHaveAccessibleName(MON_1116);
@@ -34,7 +34,7 @@ test.describe('B9.10 The meter on Trade Detail', () => {
     const { context, page, trade } = await build(profile, BREN, closeOf('2026-11-16'), 10);
     // Tue 11-17 has no Mark yet.
     await setClock(context, page, closeOf('2026-11-17'), `/trades/${trade.tradeId}`);
-    await expect(detail.heading(page, 'BREN')).toBeVisible(READY);
+    await expect(detail.heading(page, 'BREN')).toBeVisible();
     const meter = page.locator('.conditions-card').getByRole('img');
     await expect(meter).toHaveCount(1);
     await expect(meter).toHaveAttribute('data-state', 'empty');

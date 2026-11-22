@@ -23,7 +23,7 @@ import {
   PC2,
   PLAN,
   profileAt,
-  READY,
+  LAUNCH,
   reflectionSection,
   recordEntry,
   reloadFromNotice,
@@ -286,7 +286,7 @@ test.describe('T2.60-B4 storage icon on the page title row', () => {
         Object.defineProperty(navigator.storage, 'persisted', { value: () => Promise.resolve(true) });
       });
       await page.reload();
-      await expect(page.locator('.shell')).toBeVisible(READY);
+      await expect(page.locator('.shell')).toBeVisible(LAUNCH);
       await expectLayout(page, width);
       for (const [view, open] of views) {
         if (view === 'Detail') {
@@ -374,7 +374,7 @@ test.describe('T2.38 one content column and side gutters', () => {
     expect(Object.keys(openDetail).sort(), 'Open Detail elements').toEqual(['card', 'h1']);
     for (const [name, x] of Object.entries(openDetail)) expect.soft(Math.abs(x - openDetail['h1']!), `Detail ${name} left ${JSON.stringify(openDetail)}`).toBeLessThanOrEqual(1);
     await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Trades' }).click();
-    await expect(page.getByRole('table', { name: 'Open Trades' })).toBeVisible(READY);
+    await expect(page.getByRole('table', { name: 'Open Trades' })).toBeVisible(LAUNCH);
     const trades = await lefts();
     expect(Object.keys(trades), 'Trades elements').toEqual(expect.arrayContaining(['h1', 'tablist', 'card']));
     for (const [name, x] of Object.entries(trades)) expect.soft(Math.abs(x - trades['h1']!), `Trades ${name} left ${JSON.stringify(trades)}`).toBeLessThanOrEqual(1);
@@ -388,10 +388,10 @@ test.describe('T2.38 one content column and side gutters', () => {
       const context = await profileAt(`${profile.dir}-${width}`).launch();
       const page = await firstPage(context);
       await page.goto(BASE_URL);
-      await expect(page.getByRole('heading', { name: 'Start your journal' })).toBeVisible(READY);
+      await expect(page.getByRole('heading', { name: 'Start your journal' })).toBeVisible(LAUNCH);
       await expectGutters(page, 'first run', width);
       await startJournal(page);
-      await expect(page.getByRole('heading', { name: 'Add your brokerage account' })).toBeVisible(READY);
+      await expect(page.getByRole('heading', { name: 'Add your brokerage account' })).toBeVisible(LAUNCH);
       await expectGutters(page, 'onboarding', width);
       await context.close();
     }
@@ -408,7 +408,7 @@ test.describe('T2.38 one content column and side gutters', () => {
       await backToTrade(page);
       await expectGutters(page, 'Open Detail', width, detail.CARDS);
       await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Trades' }).click();
-      await expect(page.getByRole('table', { name: 'Open Trades' })).toBeVisible(READY);
+      await expect(page.getByRole('table', { name: 'Open Trades' })).toBeVisible(LAUNCH);
       await expectGutters(page, 'Trades', width);
       await context.close();
     }
@@ -422,11 +422,11 @@ test.describe('T2.38 one content column and side gutters', () => {
     await confirmD1Plan(page, SECOND_PLAN);
     // The D1 release ignores the parameter; the update's Reload keeps it, so the faults build launches with it.
     await page.goto('/?faults=migration:validate');
-    await expect(page.getByRole('row', { name: /ABC/ })).toBeVisible(READY);
+    await expect(page.getByRole('row', { name: /ABC/ })).toBeVisible(LAUNCH);
     server.use('dist-faults');
     expect(await checkForUpdate(page)).toEqual({ waiting: 'installed' });
     await reloadFromNotice(page);
-    await expect(page.getByRole('heading', { name: 'Your journal could not be converted to this release' })).toBeVisible(READY);
+    await expect(page.getByRole('heading', { name: 'Your journal could not be converted to this release' })).toBeVisible(LAUNCH);
     for (const width of WIDTHS) await expectGutters(page, 'Migration Blocked', width);
     await context.close();
   });
@@ -454,7 +454,7 @@ async function seedTrades(page: Page): Promise<void> {
 // The Open tab of the Trades view, reached from wherever the page is.
 async function showOpenTrades(page: Page): Promise<void> {
   await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Trades' }).click();
-  await expect(page.getByRole('table', { name: 'Open Trades' })).toBeVisible(READY);
+  await expect(page.getByRole('table', { name: 'Open Trades' })).toBeVisible();
 }
 
 interface Measured {
@@ -519,7 +519,7 @@ async function expectTradesTables(page: Page, width: number): Promise<void> {
   const narrow = width < 960;
   for (const tab of TABS) {
     if (tab === 'Planned') await openPlanned(page);
-    await expect(page.getByRole('table', { name: `${tab} Trades` })).toBeVisible(READY);
+    await expect(page.getByRole('table', { name: `${tab} Trades` })).toBeVisible();
     const where = `${tab} at ${width}`;
     const unscrolled = await measure(page, tab);
     expect(unscrolled.rows.length, `${where} rows`).toBeGreaterThanOrEqual(2);
@@ -617,7 +617,7 @@ test.describe('T2.40 Trades tables', () => {
     for (const width of [390, 320]) {
       await app.setViewportSize({ width, height: 844 });
       await app.goto('/?lifecycle=Planned');
-      await expect(app.getByRole('table', { name: 'Planned Trades' })).toBeVisible(READY);
+      await expect(app.getByRole('table', { name: 'Planned Trades' })).toBeVisible(LAUNCH);
       const measured = await measure(app, 'Planned');
       expect(measured.rows.filter((r) => r.badgeRight !== undefined).length, `badges at ${width}`).toBe(2);
       for (const row of measured.rows) {
@@ -639,7 +639,7 @@ test.describe('T2.41 wide Trades table styling', () => {
     await page.setViewportSize({ width: 1280, height: 900 });
     for (const tab of TABS) {
       if (tab === 'Planned') await openPlanned(page);
-      await expect(page.getByRole('table', { name: `${tab} Trades` })).toBeVisible(READY);
+      await expect(page.getByRole('table', { name: `${tab} Trades` })).toBeVisible(LAUNCH);
       const styled = await page.getByRole('region', { name: `${tab} Trades` }).evaluate((region) => {
         const lineHeight = (el: Element) => {
           const s = getComputedStyle(el);
@@ -689,7 +689,7 @@ test.describe('T2.41 wide Trades table styling', () => {
     const app = await firstPage(context);
     await app.setViewportSize({ width: 1280, height: 900 });
     await app.goto('/?lifecycle=Planned');
-    await expect(app.getByRole('table', { name: 'Planned Trades' })).toBeVisible(READY);
+    await expect(app.getByRole('table', { name: 'Planned Trades' })).toBeVisible(LAUNCH);
     const badge = await app.getByRole('region', { name: 'Planned Trades' }).evaluate((region) => {
       const el = region.querySelector('.badge')!;
       const s = getComputedStyle(el);
@@ -828,7 +828,7 @@ test.describe('T2.43 prompt chip groups', () => {
     const context = await profile.launch();
     const page = await onboardedPage(context);
     await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'New Plan' }).click();
-    await expect(page.getByRole('heading', { name: 'New Plan', level: 1 })).toBeVisible(READY);
+    await expect(page.getByRole('heading', { name: 'New Plan', level: 1 })).toBeVisible(LAUNCH);
     await measureChips(page, 'New Plan');
     await confirmReference(page);
     await openEntryForm(page);
@@ -844,7 +844,7 @@ test.describe('T2.43-B1 prompt chips in forced colors', () => {
     const page = await onboardedPage(context);
     await page.emulateMedia({ forcedColors: 'active' });
     await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'New Plan' }).click();
-    await expect(page.getByRole('heading', { name: 'New Plan', level: 1 })).toBeVisible(READY);
+    await expect(page.getByRole('heading', { name: 'New Plan', level: 1 })).toBeVisible(LAUNCH);
     const group = page.getByRole('radiogroup').first();
     const radio = group.locator('input[type="radio"]').first();
     await radio.check();
@@ -942,7 +942,7 @@ test.describe('T2.45 New Plan grouped into cards', () => {
     const context = await profile.launch();
     const page = await onboardedPage(context);
     await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'New Plan' }).click();
-    await expect(page.getByRole('heading', { name: 'New Plan' })).toBeVisible(READY);
+    await expect(page.getByRole('heading', { name: 'New Plan' })).toBeVisible(LAUNCH);
     const controls = (name: string) =>
       page.getByRole('region', { name, exact: true }).evaluate((el) =>
         [...el.querySelectorAll('input, select, textarea')].map((c) => {
@@ -993,7 +993,7 @@ test.describe('T2.50 Executions as expandable rows', () => {
     await backToTrade(page);
     await openDrawer(page, 'Position');
     const section = detail.executions(page, 2);
-    await expect(section).toBeVisible(READY);
+    await expect(section).toBeVisible(LAUNCH);
     await section.getByRole('button', { name: /^Buy 30 XYZ @ .* 10:00 details$/ }).click();
     await expect(section.getByRole('button', { name: /^Buy 30 XYZ @ .* 10:00 details$/ })).toHaveAttribute('aria-expanded', 'true');
     const measure = () =>
@@ -1092,7 +1092,7 @@ async function openTradeWithJournal(page: Page): Promise<void> {
   await recordEntry(page, PC2, { decline: true });
   await backToTrade(page);
   await openDrawer(page, 'Plan and Risk');
-  await expect(detail.entryQuality(page)).toBeVisible(READY);
+  await expect(detail.entryQuality(page)).toBeVisible();
 }
 
 test.describe('T2.53 Detail, receipt and Accounts styling', () => {
@@ -1134,7 +1134,7 @@ test.describe('T2.53 Detail, receipt and Accounts styling', () => {
     await confirmReference(page);
     await openDrawer(page, 'Journal');
     const section = detail.planReflection(page);
-    await expect(section).toBeVisible(READY);
+    await expect(section).toBeVisible(LAUNCH);
     for (const width of [390, 1280]) {
       await page.setViewportSize({ width, height: 900 });
       await expectLayout(page, width);
@@ -1216,11 +1216,11 @@ test.describe('T2.53 Detail, receipt and Accounts styling', () => {
     const context = await profile.launch();
     const page = await onboardedPage(context);
     await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Accounts' }).click();
-    await expect(page.getByRole('heading', { name: 'Accounts', level: 1 })).toBeVisible(READY);
+    await expect(page.getByRole('heading', { name: 'Accounts', level: 1 })).toBeVisible(LAUNCH);
     await page.getByRole('button', { name: 'Add Account' }).click();
     await page.getByLabel('Account name').fill('Second account');
     await page.getByRole('button', { name: 'Save' }).click();
-    await expect(page.getByRole('listitem').filter({ hasText: 'Second account' })).toBeVisible(READY);
+    await expect(page.getByRole('listitem').filter({ hasText: 'Second account' })).toBeVisible();
     for (const width of [390, 1280]) {
       await page.setViewportSize({ width, height: 900 });
       await expectLayout(page, width);
@@ -1264,12 +1264,12 @@ test.describe('T2.53 Detail, receipt and Accounts styling', () => {
     await recordEntry(page, PC2, { decline: true });
     await backToTrade(page);
     await openDrawer(page, 'Journal');
-    await expect(detail.journalEntries(page)).toHaveCount(3, READY);
+    await expect(detail.journalEntries(page)).toHaveCount(3, LAUNCH);
     await openDrawer(page, 'Position');
     await detail.executions(page, 3).getByRole('button', { name: /^Buy 30 XYZ @ .* 10:00 details$/ }).click();
     await eachWidth('Detail');
     await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Accounts' }).click();
-    await expect(page.getByRole('heading', { name: 'Accounts', level: 1 })).toBeVisible(READY);
+    await expect(page.getByRole('heading', { name: 'Accounts', level: 1 })).toBeVisible();
     await eachWidth('Accounts');
     await context.close();
   });
@@ -1283,10 +1283,10 @@ test.describe('T2.55-B1 Planned Detail Trade Summary', () => {
     await confirmReference(page);
     // The Trade Summary leads the Plan and Risk drawer (the Summary card is retired), which a Planned Detail selects.
     const summary = detail.tradeSummary(page);
-    await expect(summary.getByText('Long 100 shares @ $50.00')).toBeVisible(READY);
+    await expect(summary.getByText('Long 100 shares @ $50.00')).toBeVisible(LAUNCH);
     expect(await detail.tradeSummary(page).locator('xpath=parent::*').locator(':scope > *').first().textContent(), 'first element of the drawer').toBe('Long 100 shares @ $50.00');
     await page.reload();
-    await expect(summary.getByText('Long 100 shares @ $50.00')).toBeVisible(READY);
+    await expect(summary.getByText('Long 100 shares @ $50.00')).toBeVisible(LAUNCH);
     await context.close();
   });
 });
@@ -1325,7 +1325,7 @@ test.describe('T2.55-B2 capped Detail label/value rows', () => {
     await recordEntry(page, PC1);
     await backToTrade(page);
     await openDrawer(page, 'Plan and Risk');
-    await expect(detail.entryQuality(page)).toBeVisible(READY);
+    await expect(detail.entryQuality(page)).toBeVisible(LAUNCH);
     await check('Open');
     await openDrawer(page, 'Position');
     await detail.executions(page, 2).getByRole('button', { name: /details$/ }).first().click();
@@ -1349,7 +1349,7 @@ test.describe('T2.55-B4 narrow Net cost on an incoherent Open row', () => {
       await app.setViewportSize({ width, height: 844 });
       await app.goto('/');
       await expectLayout(app, width);
-      await expect(app.getByRole('table', { name: 'Open Trades' })).toBeVisible(READY);
+      await expect(app.getByRole('table', { name: 'Open Trades' })).toBeVisible(LAUNCH);
       const row = app.getByRole('region', { name: 'Open Trades' }).locator('tbody tr').first();
       const tree = (await row.ariaSnapshot()).split('\n').slice(1).join('\n');
       if (width < WIDE_LAYOUT_MIN_WIDTH) expect(tree.match(/Net cost Not available/g)?.length, `Net cost line at ${width}`).toBe(1);
@@ -1371,7 +1371,7 @@ test.describe('T2.55-B5 price issues on the field that fails', () => {
       await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'New Plan' }).click();
       await fillPlan(page, { ...PLAN, [blank.toLowerCase()]: '' });
       await page.getByRole('button', { name: 'Confirm Plan' }).click();
-      await expect(page.getByRole('region', { name: 'This Plan can’t be confirmed yet' })).toBeVisible(READY);
+      await expect(page.getByRole('region', { name: 'This Plan can’t be confirmed yet' })).toBeVisible(LAUNCH);
       await expect(page.getByLabel(blank)).toHaveAttribute('aria-invalid', 'true');
       await expect(page.getByLabel(blank)).toHaveAccessibleDescription(/price greater than zero/);
       await expect(page.getByLabel('Intended entry')).not.toHaveAttribute('aria-invalid', 'true');
@@ -1397,7 +1397,7 @@ test.describe('T2.55-B6 narrow 1R and Reward : risk on an incoherent Planned row
       await app.setViewportSize({ width, height: 844 });
       await app.goto('/?lifecycle=Planned');
       await expectLayout(app, width);
-      await expect(app.getByRole('table', { name: 'Planned Trades' })).toBeVisible(READY);
+      await expect(app.getByRole('table', { name: 'Planned Trades' })).toBeVisible(LAUNCH);
       const row = app.getByRole('region', { name: 'Planned Trades' }).locator('tbody tr').first();
       const tree = (await row.ariaSnapshot()).split('\n').slice(1).join('\n');
       if (width < WIDE_LAYOUT_MIN_WIDTH) {
@@ -1486,7 +1486,7 @@ test.describe('T2.62 line breaks', () => {
       for (const tab of TABS) {
         if (tab === 'Planned') await openPlanned(page);
         const table = page.getByRole('table', { name: `${tab} Trades` });
-        await expect(table).toBeVisible(READY);
+        await expect(table).toBeVisible(LAUNCH);
         const header = await table.locator('thead th').first().evaluate((th) => {
           const range = document.createRange();
           range.selectNodeContents(th);
@@ -1529,7 +1529,7 @@ test.describe('T2.62 line breaks', () => {
       if (kind === 'Planned') {
         await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Trades' }).click();
         await openPlanned(page);
-        await page.getByRole('table', { name: 'Planned Trades' }).getByRole('link', { name: 'PLN' }).click(READY);
+        await page.getByRole('table', { name: 'Planned Trades' }).getByRole('link', { name: 'PLN' }).click(LAUNCH);
         await expect(detail.heading(page, 'PLN')).toBeVisible();
       }
       for (const width of [320, 340, 390]) {
@@ -1566,7 +1566,7 @@ test.describe('T2.62 line breaks', () => {
       await expectLayout(page, width);
       for (const tab of TABS) {
         if (tab === 'Planned') await openPlanned(page);
-        await expect(page.getByRole('table', { name: `${tab} Trades` })).toBeVisible(READY);
+        await expect(page.getByRole('table', { name: `${tab} Trades` })).toBeVisible(LAUNCH);
         for (const c of await insideRegion(page, tab)) expect(c.right, `${tab} ${c.cell} cell right edge at ${width}`).toBeLessThanOrEqual(c.limit + 0.5);
       }
     }
@@ -1586,7 +1586,7 @@ test.describe('T2.62 line breaks', () => {
     for (const width of [320, 390]) {
       await app.setViewportSize({ width, height: 844 });
       await app.goto('/?lifecycle=Planned');
-      await expect(app.getByRole('table', { name: 'Planned Trades' })).toBeVisible(READY);
+      await expect(app.getByRole('table', { name: 'Planned Trades' })).toBeVisible(LAUNCH);
       expect((await measure(app, 'Planned')).rows.filter((r) => r.badgeRight !== undefined).length, `badges at ${width}`).toBe(1);
       for (const c of await insideRegion(app, 'Planned')) expect(c.right, `Planned ${c.cell} cell right edge at ${width}`).toBeLessThanOrEqual(c.limit + 0.5);
     }
@@ -1605,7 +1605,7 @@ test.describe('T2.62 line breaks', () => {
       for (const tab of TABS) {
         if (tab === 'Planned') await openPlanned(page);
         const table = page.getByRole('table', { name: `${tab} Trades` });
-        await expect(table).toBeVisible(READY);
+        await expect(table).toBeVisible(LAUNCH);
         const h = await table.locator('thead tr').first().evaluate((tr) => {
           const first = tr.querySelectorAll('th')[0]!;
           const second = tr.querySelectorAll('th')[1]!;
@@ -1705,7 +1705,7 @@ test.describe('T2.63 R lines', () => {
     await backToTrade(page);
     await recordEntry(page, PC2, { decline: true });
     const receipt = page.getByRole('region', { name: 'Entry recorded', exact: true }).getByRole('region', { name: 'Entry Quality', exact: true });
-    await expect(receipt).toBeVisible(READY);
+    await expect(receipt).toBeVisible(LAUNCH);
     for (const width of [320, 1280]) {
       await page.setViewportSize({ width, height: 900 });
       await expectLayout(page, width);
@@ -1714,7 +1714,7 @@ test.describe('T2.63 R lines', () => {
     await backToTrade(page);
     await openDrawer(page, 'Plan and Risk');
     const quality = detail.entryQuality(page);
-    await expect(quality).toBeVisible(READY);
+    await expect(quality).toBeVisible();
     for (const width of [320, 1280]) {
       await page.setViewportSize({ width, height: 900 });
       await expectLayout(page, width);
@@ -1740,7 +1740,7 @@ test.describe('T2.64 Detail cards', () => {
     await expect(page.getByRole('heading', { name: 'Entry recorded' })).toBeVisible();
     await backToTrade(page);
     await openDrawer(page, 'Plan and Risk');
-    await expect(detail.entryQuality(page)).toBeVisible(READY);
+    await expect(detail.entryQuality(page)).toBeVisible(LAUNCH);
     const fulfillment = detail.fulfillment(page);
     await openDrawer(page, 'Journal');
     const journal = detail.journal(page);
@@ -1835,7 +1835,7 @@ test.describe('T2.67 leftovers', () => {
       await page.setViewportSize({ width, height: 900 });
       await expectLayout(page, width);
       const region = detail.openLotsRegion(page);
-      await expect(region).toBeVisible(READY);
+      await expect(region).toBeVisible(LAUNCH);
       const lots = await region.evaluate((el) => {
         const cells = [...el.querySelectorAll('tr')].flatMap((tr) => [...tr.children]);
         const style = getComputedStyle(el);
@@ -1879,7 +1879,7 @@ test.describe('T2.67 leftovers', () => {
       for (const tab of TABS) {
         if (tab === 'Planned') await openPlanned(page);
         const region = page.getByRole('region', { name: `${tab} Trades` });
-        await expect(page.getByRole('table', { name: `${tab} Trades` })).toBeVisible(READY);
+        await expect(page.getByRole('table', { name: `${tab} Trades` })).toBeVisible(LAUNCH);
         await region.evaluate((el) => {
           el.scrollLeft = el.scrollWidth;
         });

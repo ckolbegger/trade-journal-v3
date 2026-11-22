@@ -1,7 +1,7 @@
 import type { Locator, Page } from '@playwright/test';
 import {
   answerIn, closeReasonGroup, closeTheTrade, closingSection, createTrades, debtForm, detail, executionRow, expect, expectAccessible, exitReflection, FOUR_TRADES, fillRows, firstPage, holdTradesStore,
-  launchAt, MONDAY_1700, onboardedAt, openDrawer, openExitForm, openReview, openTradeFromOpenList, READY, receiptResult, releaseTradesStore, sell, setClock, tabTo, test, TUESDAY_1000_LOCAL, TUESDAY_1405,
+  launchAt, MONDAY_1700, onboardedAt, openDrawer, openExitForm, openReview, openTradeFromOpenList, LAUNCH, receiptResult, releaseTradesStore, sell, setClock, tabTo, test, TUESDAY_1000_LOCAL, TUESDAY_1405,
   TUESDAY_1405_LOCAL, TUESDAY_1700, valueOf, writeIntegrityFixture,
 } from './support.ts';
 
@@ -38,16 +38,16 @@ test.describe('B6.12 Responsive and accessible', () => {
 
     // The Closed list, Empty, then Loading while the trades store is held.
     await page.getByRole('tab', { name: 'Closed' }).click();
-    await expect(page.getByText('No closed trades yet')).toBeVisible(READY);
+    await expect(page.getByText('No closed trades yet')).toBeVisible(LAUNCH);
     await expectAccessible(page, 'Closed list, empty');
     await page.getByRole('tab', { name: 'Open' }).click();
-    await expect(page.getByRole('table', { name: 'Open Trades' })).toBeVisible(READY);
+    await expect(page.getByRole('table', { name: 'Open Trades' })).toBeVisible();
     await holdTradesStore(page);
     await page.getByRole('tab', { name: 'Closed' }).click();
     await expect(page.getByRole('status')).toHaveText('Loading closed trades…');
     await expectAccessible(page, 'Closed list, loading');
     await releaseTradesStore(page);
-    await expect(page.getByText('No closed trades yet')).toBeVisible(READY);
+    await expect(page.getByText('No closed trades yet')).toBeVisible();
 
     // Half-fill a full exit of XYZ at 1280 px: the quantity, price, fee, one answer, a Note, and the Close Reason.
     await page.getByRole('tab', { name: 'Open' }).click();
@@ -98,7 +98,7 @@ test.describe('B6.12 Responsive and accessible', () => {
     const recordExit = detail.recordExitLink(page);
     await tabTo(page, recordExit);
     await page.keyboard.press('Enter');
-    await expect(page.getByRole('heading', { name: 'Record exit', level: 1 })).toBeVisible(READY);
+    await expect(page.getByRole('heading', { name: 'Record exit', level: 1 })).toBeVisible(LAUNCH);
     const row = executionRow(page, 1);
     await tabTo(page, row.getByLabel('Quantity'));
     await page.keyboard.type('100');
@@ -124,7 +124,7 @@ test.describe('B6.12 Responsive and accessible', () => {
     await page.keyboard.press('Space');
     await tabTo(page, page.getByRole('button', { name: 'Save exit' }));
     await page.keyboard.press('Enter');
-    await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible(READY);
+    await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible();
     await expect(valueOf(receiptResult(page), 'Lifecycle')).toHaveText('Closed');
 
     // DEF is closed with the mouse and its Close Review deferred, so it owes one.
@@ -141,7 +141,7 @@ test.describe('B6.12 Responsive and accessible', () => {
     await page.goto('/');
     await page.getByRole('tab', { name: 'Closed' }).click();
     const list = page.getByRole('table', { name: 'Closed Trades' });
-    await expect(list).toBeVisible(READY);
+    await expect(list).toBeVisible(LAUNCH);
     const abc = list.locator('tbody tr', { hasText: 'ABC' });
     const def = list.locator('tbody tr', { hasText: 'DEF' });
     await expect(abc.locator('td.number').first()).toHaveText(LOSS);
@@ -160,7 +160,7 @@ test.describe('B6.12 Responsive and accessible', () => {
 
     // Closed Detail.
     await abc.getByRole('link', { name: 'ABC', exact: true }).click();
-    await expect(detail.heading(page, 'ABC')).toBeVisible(READY);
+    await expect(detail.heading(page, 'ABC')).toBeVisible();
     await expect(detail.pnlFigure(page)).toHaveText(LOSS);
     await expect(detail.resultValue(page, 'Terminal Disposition')).toHaveText('Closed via sale of 100 shares');
     await expect(detail.resultValue(page, 'Close Reason')).toHaveText('Stop Triggered');
@@ -178,7 +178,7 @@ test.describe('B6.12 Responsive and accessible', () => {
     await expect(header).toHaveAttribute('aria-expanded', 'true');
     await accessibleAtBothWidths(page, 'Review owed-reflection card, open');
     await card.getByRole('button', { name: /^Reflect on / }).click();
-    await expect(debtForm(page)).toBeVisible(READY);
+    await expect(debtForm(page)).toBeVisible();
     await accessibleAtBothWidths(page, 'Review owed-reflection card with the Close Review form');
     await context.close();
 
@@ -188,7 +188,7 @@ test.describe('B6.12 Responsive and accessible', () => {
     const errorPage = await firstPage(failing);
     await errorPage.goto('/');
     await errorPage.getByRole('tab', { name: 'Closed' }).click();
-    await expect(errorPage.getByText('We couldn’t load your closed trades. Nothing was changed.')).toBeVisible(READY);
+    await expect(errorPage.getByText('We couldn’t load your closed trades. Nothing was changed.')).toBeVisible(LAUNCH);
     await expectAccessible(errorPage, 'Closed list, error');
     await failing.close();
   });
@@ -206,7 +206,7 @@ test.describe('B6.12 Responsive and accessible', () => {
     await fillRows(page, [sell('30', '53.00', '0.50', TUESDAY_1000_LOCAL)]);
     await answerIn(exitReflection(page));
     await page.getByRole('button', { name: 'Save exit' }).click();
-    await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible(READY);
+    await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible(LAUNCH);
     await page.getByRole('link', { name: 'Back to the Trade' }).click();
     await openDrawer(page, 'Position');
     await expect(detail.lotMatches(page).locator('tbody tr')).toHaveCount(1);
@@ -234,9 +234,9 @@ test.describe('B6.12 Responsive and accessible', () => {
     await fillRows(page, [sell('70', '51.00', '1.00', TUESDAY_1405_LOCAL)]);
     await closeTheTrade(page, 'later');
     await page.getByRole('button', { name: 'Save exit' }).click();
-    await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible(READY);
+    await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible();
     await page.getByRole('link', { name: 'Back to the Trade' }).click();
-    await expect(detail.result(page)).toBeVisible(READY);
+    await expect(detail.result(page)).toBeVisible();
     await expect(detail.anywhere(() => detail.resultHeading(page))).toHaveCount(0);
     for (const width of [375, 320]) {
       await page.setViewportSize({ width, height: 844 });
@@ -258,7 +258,7 @@ test.describe('B6.12 Responsive and accessible', () => {
     await fillRows(page, [sell('30', '53.00', '0.50', TUESDAY_1000_LOCAL)]);
     await answerIn(exitReflection(page));
     await page.getByRole('button', { name: 'Save exit' }).click();
-    await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible(READY);
+    await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible(LAUNCH);
     await page.getByRole('link', { name: 'Back to the Trade' }).click();
     await openDrawer(page, 'Position');
     await expect(detail.lotMatches(page).locator('tbody tr')).toHaveCount(1);
@@ -304,7 +304,7 @@ test.describe('B6.12 Responsive and accessible', () => {
     await fillRows(page, [sell('30', '53.00', '0.50', TUESDAY_1000_LOCAL)]);
     await answerIn(exitReflection(page));
     await page.getByRole('button', { name: 'Save exit' }).click();
-    await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible(READY);
+    await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible(LAUNCH);
     await page.getByRole('link', { name: 'Back to the Trade' }).click();
     await openDrawer(page, 'Position');
     await expect(detail.lotMatches(page).locator('tbody tr')).toHaveCount(1);
@@ -383,7 +383,7 @@ test.describe('B6.12 Responsive and accessible', () => {
       await fillRows(page, [sell(quantity, '53.00', '0.50', time)]);
       await answerIn(exitReflection(page));
       await page.getByRole('button', { name: 'Save exit' }).click();
-      await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible(READY);
+      await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible(LAUNCH);
     };
 
     await recordExit('70', TUESDAY_1000_LOCAL);

@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import {
-  createOs2Trade, detail, expect, expectAccessible, firstPage, launchAt, MONDAY_0900, onboardedAt, openDrawer, openReview, reachCard, READY, saveSessionMarks, stopOptionLabel, tabTo, targetOptionLabel, test, TUESDAY,
+  createOs2Trade, detail, expect, expectAccessible, firstPage, launchAt, MONDAY_0900, onboardedAt, openDrawer, openReview, reachCard, LAUNCH, saveSessionMarks, stopOptionLabel, tabTo, targetOptionLabel, test, TUESDAY,
   TUESDAY_1030, TUESDAY_1700, OS2,
 } from './support.ts';
 
@@ -33,7 +33,7 @@ test.describe('B7S.5 Responsive and accessible', () => {
 
     // Half-fill the four price fields at 1280 px (one Underlying and one option price); resize to 390 px and back; the values stay.
     await nav(page).getByRole('link', { name: 'New Plan' }).click();
-    await expect(page.getByRole('heading', { name: 'New Plan' })).toBeVisible(READY);
+    await expect(page.getByRole('heading', { name: 'New Plan' })).toBeVisible(LAUNCH);
     await page.getByLabel('Strategy').selectOption({ label: 'Cash-Secured Put' });
     await page.getByLabel('Underlying', { exact: true }).fill('MNO');
     await page.getByLabel(UNDERLYING_STOP).fill('41.00');
@@ -51,9 +51,9 @@ test.describe('B7S.5 Responsive and accessible', () => {
 
     // Detail's conditions: every status is a word in its row.
     await page.goto(`/trades/${trade.tradeId}`);
-    await expect(detail.heading(page, 'MNO')).toBeVisible(READY);
+    await expect(detail.heading(page, 'MNO')).toBeVisible(LAUNCH);
     const conditions = detail.conditionBlocks(page);
-    await expect(conditions.first()).toBeVisible(READY);
+    await expect(conditions.first()).toBeVisible();
     await expect(conditions).toHaveCount(4);
     for (const condition of await conditions.all()) await expect(condition).toContainText(/(Stop|Target)[\s\S]*(−\$|\+\$|Breached|Reached|Mark missing)/);
     await accessibleAtBothWidths(page, 'Detail conditions');
@@ -74,7 +74,7 @@ test.describe('B7S.5 Responsive and accessible', () => {
     const { context, page } = await onboardedAt(profile, MONDAY_0900);
     await tabTo(page, nav(page).getByRole('link', { name: 'New Plan' }));
     await page.keyboard.press('Enter');
-    await expect(page.getByRole('heading', { name: 'New Plan' })).toBeVisible(READY);
+    await expect(page.getByRole('heading', { name: 'New Plan' })).toBeVisible(LAUNCH);
     await tabTo(page, page.getByLabel('Strategy'));
     await page.keyboard.type('Cash');
     await expect(page.getByLabel('Strategy').locator('option:checked')).toHaveText('Cash-Secured Put');
@@ -106,7 +106,7 @@ test.describe('B7S.5 Responsive and accessible', () => {
     await page.keyboard.press('Space');
     await tabTo(page, page.getByRole('button', { name: 'Confirm Plan' }));
     await page.keyboard.press('Enter');
-    await expect(detail.heading(page, 'MNO')).toBeVisible(READY);
+    await expect(detail.heading(page, 'MNO')).toBeVisible();
     await openDrawer(page, 'Plan and Risk');
     await expect(detail.oneR(page)).toHaveText('$480.00');
     await context.close();
