@@ -152,6 +152,82 @@ The verdict changes as the quantity and price are typed.
 10. **Seeing a key moment: sliding past it counts.** A moment is seen once its session and sentence have been on screen.
 11. **Leaving for Settings with unsaved Marks** asks "Leave without saving?" and then drops them, as any other page change would.
 
+## Phone (375 wide)
+
+Added after the desktop design was approved. The desktop page is the source for what is shown, the words, the order and the rules; the phone layout only rearranges it. Nothing is dropped.
+
+**How to see it.** The bar has a "Phone" toggle. On a desktop window it shows the app as a 375-wide framed column in the middle of the window; the Replay, the dialogs and the toast stay inside the frame. In a window under 700px wide the phone layout is on by itself, the toggle is shown pressed and cannot be turned off, and the bar is two lines with the days in a drop-down. With the toggle off the desktop page is as it was.
+
+**Navigation.** The side menu becomes a bar fixed to the bottom: Trades, Review, New Plan, Accounts, About. No Backup and no Settings: that is the app's narrow navigation.
+
+**Sizes.** Body text is 16px, secondary text 14px, and every field is 16px. Buttons, fields, drop-downs, the slider, the folded lines ("More figures", "Add more") and text links are at least 44px high; a link inside a sentence gets its 44px from padding that does not move the line. Still under 14px: the labels in pills ("Past Stop", 13px), the small capital headings ("PLAN", "NOW", 13px), the words drawn inside the meter and the Replay chart (10.5 to 12px), and the mockup's own tag and coach numbers.
+
+**Figures.** `.fig` stays unbroken. On the phone a printed sentence also keeps "−$2,016.00" whole: the mockup puts a no-break mark between the sign and the "$". The app would wrap those figures the way it wraps the others.
+
+### How each part is laid out
+
+| Part | On the phone |
+|---|---|
+| Day card, "to go" | Date, the count, the three steps, then the next-step button at full width and "Day so far". One line a Trade: symbol, label, and what is left to do at the far side; a long label pushes "To do" onto a second line. Notes ("You chose Exit…", "No Review for…") keep their buttons under the sentence. |
+| Day card, "The day" | The "Complete" label and the date, the steps, then each heading ("The day", "Past a line", "You chose", "Tomorrow", "Next Review") with its text under it. |
+| Marks | One block an Instrument (choice 1). "Can't get a price" opens a full-width reason field with "No price" and "Cancel" under it. A slip question ("$44.00 or $440.00?") takes its own line with its two buttons side by side. "Save Marks" and "Discard" share a line; the lines about saved Marks and the limits follow. With the skipped sessions added, each Instrument lists its dates oldest first, one labelled line each: the last Mark, "Wed Nov 18 · optional", "Thu Nov 19 · optional", then today. Folded: "Marks for Mon Nov 16 · 7 of 7 saved" with "Edit" beside it. The keyboard line (Enter, arrows, N) is kept, under the title. |
+| Trade card header | Three lines (choice 2). A pressed header's refusal shows under it: the sentence, then "Save it", "Discard it" and "Back to AXIO". |
+| "Plan" and "Now" | "Plan" above "Now", each the full width (choice 3 for the lines inside). "More figures" opens under "Now"; each of its figures sits under its label. |
+| Meter | Drawn again at phone width (choice 6): the Stop and Target labels are kept apart, the key wraps to three lines, the printed sentence and "From here" follow. |
+| Replay strip | The small picture and the "Replay" button on one line, the sentence under them. |
+| "Your last decisions" and the Action | "Your last decisions" comes first (choice 4), then the Action: the Plan's sentence, the four Actions across one line, the hint, the reason, Conviction's five buttons with "1 low · 5 high" under them, "Add more", then "Save" and "Discard". "Say why." shows under the reason. |
+| Saved Action | The saved line with its buttons ("Record the sale", "Change") leads; "Your last decisions" follows. |
+| Sale form | Two lines: "Sold [50] of 100 shares at" and "$ [44.00] on Mon Nov 16". "Against the Plan" follows as on desktop, then "Save" and "Cancel". |
+| Expiration | The heading, where it finished, the explanation, then the choices as full-width buttons one under the other ("Exercised: record later", "Sold before the close"), "It expired worthless" as a link under them, and the note. Worthless: the sentence, "Record expiration", and the link. |
+| Closed Trade | Header as above. "How it ended", then the Plan / What happened table as one small block a row (choice 5), the Replay strip, "Write the Close Review" at full width and "Decline…" under it at the far side. |
+| Replay and the Close Review | One column: the day's standing, "Key moments" (the drop-down at full width, then "Next moment" and "1 of 4 seen"), the moment's sentence, the date with the slider and its two step buttons under it, the chart drawn at phone width, its key, "What you did that day", "How it stood", then the Close Review's questions. |
+| "Leave without saving?" | The same dialog, inside the frame, with "Stay" and "Leave" side by side. |
+
+### Choices made, and what was rejected
+
+1. **Marks: one block an Instrument, not a table.** The name and today's cell share the first line; the last Mark with its date, and the change or "Can't get a price", share the second. The second line is always 44px high so the page does not jump as a price is typed. Rejected: keeping the table and scrolling it sideways (breaks the no-sideways-scroll rule), and a narrow three-column table (the change and the slip question do not fit beside the cell).
+2. **Trade card header: three lines.** Symbol, position and label; then Trade P&L, R and the day's change; then the small meter with "To do" at the far side. Rejected: one line with the position cut off by "…", and dropping the meter from the header.
+3. **A short figure sits beside its label; a sentence or free text goes under it.** Beside: Entry, Stop and Target in "Plan", Risk, Reward, Mark, Trade P&L, "Realized, open", Held. Under: Thesis, "No longer valid if", the two Marks of an option, the Stop and Target lines in "Now", Expiration, everything in "More figures". Rejected: putting every value under its label, which makes "Plan" and "Now" about twice as long for no gain.
+4. **"Your last decisions" above the Action, earlier ones folded.** The streak line and the latest decision stay in view; "3 earlier decisions" opens the rest. Once the Action is saved the saved line leads instead, because there is nothing left to decide. Rejected: the desktop order (the list after the form), where it would be read after choosing.
+5. **Closed Trade: the table becomes one block a row.** "Entry", then "Plan" and "What happened" one under the other, and so on for Stop, Target, Exit and Result, so the Plan stays next to what happened. Rejected: two lists (all of the Plan, then all that happened), which loses the row-by-row comparison, and a three-column table, where the Result figures do not fit.
+6. **The meter and the Replay chart are drawn again at phone width, not shrunk.** Shrinking the desktop drawings would put their labels at about 5px. Rejected: shrinking, and scrolling the chart sideways.
+
+Smaller ones: the bar is not kept at the top of a real phone screen (it would take 106px of 812), and the chart keeps its labels in a margin at the right, so the plotted path is about half the chart's width.
+
+### Words
+
+Nothing was shortened. New words, none approved yet:
+
+| Where | Words |
+|---|---|
+| The fold in "Your last decisions" | "3 earlier decisions" |
+| Bottom bar | "Trades", "Review", "New Plan", "Accounts", "About" |
+| Finished day with a settlement left | "Complete, settlement to record"; a first line "To record · CORV: the exercise of 3 contracts, expired Fri Nov 20." |
+| Monday's card, first line | "Fri Nov 20 you chose Exercised: record later. It is still to settle, so this Review asks again." |
+| Monday's card | "Expired Fri Nov 20: nothing left to decide, only how it settled." (Friday: "Expired today: …"); Expiration reads "Fri Nov 20 · expired" |
+| Replay, on the expiration session | "Expired. You chose Exercised: record later." |
+
+### The new day: "After record later" (Mon Nov 23)
+
+| Day in the bar | Review Date | What it shows |
+|---|---|---|
+| After record later | Mon Nov 23 | On Fri Nov 20 CORV's put expired $7.00 in the money and "Exercised: record later" was pressed. AXIO is open and inside its lines. |
+
+- The Review asks again, as if the button had never been pressed. CORV's label is "Expired: settle", its line reads "To do: Settle", and it ranks where an expired contract ranks on expiration day: after a decision not carried out, before a Trade past its Stop.
+- CORV needs no Marks on Monday (the grid holds AXIO only) and no Action. Whether it finished in the money is judged from Fri Nov 20's Underlying Mark; its figures are headed "At the Fri Nov 20 Marks".
+- The card says first "Fri Nov 20 you chose Exercised: record later. It is still to settle, so this Review asks again.", then offers what expiration day offered: "Exercised: record later", "Sold before the close", "It expired worthless".
+- "Sold before the close" and "It expired worthless" are dated Fri Nov 20, not Monday.
+- Pressing "record later" again lets Monday finish.
+- A day finished this way reads **"Complete, settlement to record"** (amber, not green) and names the Trade in a first line, "To record". Friday's finished day now reads the same; before, it read "Complete" and named CORV only under "Tomorrow". The line under "Tomorrow" is kept.
+- Made-up data: on this day AXIO never fell (200 shares, $52.90 on Friday, $53.30 on Monday) so that the day has one quiet Trade, and Wed Nov 18 and Thu Nov 19 were reviewed.
+
+### Two changes to the desktop page
+
+1. **No Settings page.** The limits for the Mark check are fixed in this release: 5% either way for a stock or an Underlying, 100% up or 50% down for an option. The Settings entry is gone from the menu and the link is gone from the line under the Marks grid; the line still states the limits. "Leave without saving?" shows when another menu entry is pressed with unsaved Marks or an unsaved note.
+2. **"Realized", not "banked"**, in the meter's key.
+
+Also in the bar: eight days do not fit one line of buttons at 1280, so under 1480px the "Scenario" label is hidden and the buttons are a little smaller, and under 1260px the days are a drop-down.
+
 ## Still open
 
 1. **The late Exit asks again.** A Trade held five sessions past its Stop has five Hold reasons already. The mockup still asks "Why did you leave the Plan?" once more at the Exit, looking back. The other way is to ask nothing and show the Hold reasons.
@@ -160,10 +236,10 @@ The verdict changes as the quantity and price are typed.
 4. **A line set on the Underlying, a sale priced in the option** (DALE's Stop). The sale's price cannot show whether the Stop was reached, so only the Marks decide.
 5. **The optional line "Anything different on the day?"** from the earlier design is gone: a sale that follows the Plan, or carries its answer, asks nothing at all.
 6. **Roll and Adjust** always ask for a reason. Whether a roll or a new Stop can ever "follow the Plan" is not considered.
-7. **Settings and D23.** The Settings page here holds one setting. D23 (Manage references and Workspace settings) covers Workspace settings; whether this page is D23's page, a part of it, or comes earlier on its own is to be settled when either is planned.
-8. **The next Review after "record later"** is described in words only: the mockup's data ends on Fri Nov 20.
+7. **Settings and D23.** Settled: there is no Settings page in this release. The Mark-check limits are fixed (5% either way for a stock or an Underlying; 100% up or 50% down for an option) and the mockup's Settings page and its links are removed. See "Phone (375 wide)", "Two changes to the desktop page".
+8. **The next Review after "record later".** Settled: drawn as the eighth day, "After record later" (Mon Nov 23). The Review asks again, the expired contract needs no Marks and no Action, and a day finished by pressing "record later" reads "Complete, settlement to record" and names the Trade. See "Phone (375 wide)", "The new day".
 9. **Trade Detail** needs the same wording (suggestion 12); not drawn here.
-10. **Phone** is not drawn.
+10. **Phone.** Settled: drawn at 375 wide, behind the bar's "Phone" toggle and by itself in a window under 700px. See "Phone (375 wide)".
 
 ## Made-up data to know about
 
@@ -173,3 +249,17 @@ The verdict changes as the quantity and price are typed.
 - Every figure is worked out from the typed Marks, so any price can be tried.
 - BREN's Monday Exit reason is reworded to answer the new question: "Let 2 run past the Target. Four sessions to the expiration: sell the last 2."
 - "Stop hit today" is the Quiet day with one made-up Mark: AXIO at $46.40 on Thu Nov 5, under its $47.00 Stop.
+
+## Open card, second pass (user's review, 2026-11-22)
+
+The user's rule: a figure is shown once on an open card.
+
+- The open card's header drops the small meter; the big one is in "Now".
+- The separate "Now" list is gone. The white meter box is the "Now" box: the Marks, the meter, then only what the header and the drawing do not already give (Worst case, Max reward, Reward to risk, Realized and open when there is a sale, Expiration).
+- Under the meter, a red arrow runs from now to the Stop and a green one to the Target; the dollars and the price distance are in small print under each. The bold "From here" sentence is gone from the card (the Replay still has it).
+- Worst case and Max reward are always shown, no longer behind "More figures" (which keeps only the option's expiration figures).
+- "It needs to work about N% of the time to break even" is removed everywhere; the ratio stays.
+- The last decision is said once, in "Your last decisions". The line at the top of the card stays only where that list is not shown (Marks still missing, an expiration, a "record later").
+- Dropped as repeats: Trade P&L and its change (header), Held (header and Plan), the meter's sentence (it stays as the drawing's spoken label), "ending at" on the Worst case.
+- Third pass (same day): each arrow's caption is one line, the move in price then what it does to the Trade: "−$4.80 to Stop (lose another −$1,314.00)" and "−$1.11 to Target (gain $666.00)"; past a line it reads "$3.00 past Stop (−$300.00 so far)". The caption no longer names whose price it is; the Plan box beside it does. In the Plan box, Thesis and "No longer valid if" sit beside the five facts, and field values are bold in "Plan" and "Now".
+- Fourth pass (same day): the "$0" label is gone from the big meter (the tick stays). When the two captions do not fit on one line they drop "to Stop", "to Target" and "lose": "−$0.50 (another −$200.00)" and "+$2.70 (gain $1,080.00)"; past a line, "$3.00 past (−$300.00 so far)". A third step drops the words in the brackets too: "−$0.50 (−$200.00)" and "+$2.70 (+$1,080.00)"; past a line, "$3.00 past (−$300.00)", no longer bold. At 375 wide every Trade in the mockup fits on one line at this step. A shortened caption shows its full words on hover or focus (a tap on a phone).

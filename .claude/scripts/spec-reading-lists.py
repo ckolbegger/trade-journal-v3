@@ -31,7 +31,7 @@ for line in map_path.read_text().splitlines():
 file_lines = {f: len((root / f).read_text().splitlines()) for f in {e['file'] for e in entries}}
 
 def dnum(d):
-    return 99 if d == 'RC' else int(d[1:])
+    return 99 if d == 'RC' else float(d[1:])
 
 out_dir.mkdir(exist_ok=True)
 for d in sorted({t for e in entries for t in e['tags']}, key=dnum):
@@ -40,7 +40,8 @@ for d in sorted({t for e in entries for t in e['tags']}, key=dnum):
     for e in chosen:
         by_file.setdefault(e['file'], []).append(e)
     total = sum(e['chars'] for e in chosen)
-    name = f'D{dnum(d):02d}' if d != 'RC' else 'RC'
+    n = dnum(d)
+    name = 'RC' if d == 'RC' else (f'D{int(n):02d}' if n == int(n) else f'D{n:04.1f}')
     out = [f'# Spec reading list: {d}', '',
            f'Generated from [plan/spec-map.md](../spec-map.md) by `.claude/scripts/spec-reading-lists.py`; do not edit by hand.', '',
            f'Read each range in full with the Read tool (`offset` = first line, `limit` = last − first + 1). '
