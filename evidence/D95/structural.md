@@ -164,6 +164,8 @@ Success path: e2e/d4, d5, d7, d9, d9ar 225 passed, 4 skipped, 1 failed (the know
 
 **T95.7-B1 (completion)** `8f1e5f0a`: `buildOc3` takes `noTuesdayReview: true` (skips the Wed 08:00 Review of Tuesday); d8p/history.spec.ts:17 and :151 use it, all gap assertions kept; history:17's Tue Oct 13 card `toContainText('Daily Review · Tue Oct 13')` → `not.toContainText('Daily Review')`. Also changed (outside the Q4 instruction): d8p/cockpit.spec.ts:37's tab `'Price History 1'` → `'Price History'` (the acknowledged Tuesday leaves no gap to count there). d4, d8, d8p, d8r together: 83 tests, 82 passed, 1 failed (cockpit:37, then fixed; alone passes); whole folders not rerun after that fix — the complete run will.
 
+**T95.7-B1-D1** (the user, 2026-11-22): d8p/cockpit.spec.ts:37 uses `noTuesdayReview` too, restoring its `'Price History 1'` expectation so the gap count stays tested. Queued after T95.7-F3.
+
 ## Trial: complete runs overlapped with the next task (the user, 2026-11-22, for 5 or 6 tasks)
 
 Each task's complete run runs in a detached scratch copy (`.claude/worktrees/run-<label>`, set up by `lane-setup.sh`) at the task's commit, while the next task's subagent starts in this worktree. The run's files are copied back to `evidence/D95/suite-runs/`. A failure becomes a bug task as before; the next task restarts only if it built on the broken code. Times are recorded per run to measure the saving.
