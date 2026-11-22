@@ -601,7 +601,7 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
   };
   // Save Marks (P37): one command for the open card, under the newest binding the screen holds.
   // The saved Marks and the Review under them are the screen's from here on, with no read (P38, A157): the Trades re-sort,
-  // and the open card shows its refreshed Trade in place, keeping what was entered in it.
+  // and the open card shows its refreshed Trade in place, keeping what was entered in it. The open card stays open even when it is no longer first.
   const marksSaved = ({ marks, review: post }: MarksSaved, opening: number, tradeId: string) => {
     apply({ kind: 'MarksSaved', marks, review: post });
     if (post.kind !== 'Ready') {
@@ -612,8 +612,10 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
     // A Review that read cleanly makes the figures current again, so an earlier out-of-date notice goes.
     setStale(undefined);
     if (selection.current !== opening) return;
-    setShown({ tradeId: post.trade.tradeId, opening, detail: { trade: post.trade } });
-    setAdvance((current) => ({ tradeId: post.trade.tradeId, count: current.count + 1 }));
+    // The returned card is the first Trade's, which is not always the one open: the open card stays open and is read under the new binding.
+    if (post.trade.tradeId === tradeId) setShown({ tradeId, opening, detail: { trade: post.trade } });
+    else void read(tradeId, opening);
+    setAdvance((current) => ({ tradeId, count: current.count + 1 }));
   };
   // Its Trade chooses the card the saved Review refreshes: the open walked card's, or, with none open or an owed card open (which the Marks
   // save cannot read), the Trade the newest draft was typed in.
