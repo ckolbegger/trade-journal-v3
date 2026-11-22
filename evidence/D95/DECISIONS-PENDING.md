@@ -37,4 +37,6 @@
 
 **Main-session readings recorded with this question (not asked):** case 6's "sessions since the crossing" counts the current run past the line, inclusive of the Review Date, as the mockup's "(6 sessions)" does (A318's `first` governs only where the Replay opens). Case 8 lists each contract, as the breakdown says, grouped by date as in the mockup's words.
 
-**Status:** asked. Parked: T95.4 (and the tasks that need it, starting with T95.10). Other tasks continue.
+**Answer (2026-11-22):** (a). Recorded as decision 128, plan revision 117, the breakdown's P175. **Status:** answered 2026-11-22; T95.4 resumes after T95.6-B2.
+
+**Previous status:** asked. Parked: T95.4 (and the tasks that need it, starting with T95.10).
