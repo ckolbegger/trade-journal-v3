@@ -6,7 +6,7 @@
 // Tuesday has no Marks. Every figure and word the specs assert is plan section 5's, 1.6's or a W or A row's.
 import type { Page } from '@playwright/test';
 import {
-  currentTradeId, detail, enterMark, executionRow, expect, fillOptionPlan, firstPage, launchAt, MONDAY, MONDAY_0900, MONDAY_1700, onboardedAt, openReview, optionMarkRow, READY, reachCard, recordOptionEntry,
+  acknowledgeMark, currentTradeId, detail, enterMark, executionRow, expect, fillOptionPlan, firstPage, launchAt, MONDAY, MONDAY_0900, MONDAY_1700, onboardedAt, openReview, optionMarkRow, READY, reachCard, reachPanel, recordOptionEntry,
   markRow, saveAction, saveMarkPrice, savedOptionMarkRow, THURSDAY, WEDNESDAY, WEDNESDAY_1700, type OptionPlanValues, type Profile, type TradeRef,
 } from '../d7s/support.ts';
 
@@ -41,6 +41,18 @@ async function saveOc3Marks(page: Page, trade: TradeRef, date: string, xyz: stri
   await saveMarkPrice(page, trade, await optionMarkRow(page, trade, OC3_CALL, date), call);
   await savedOptionMarkRow(page, trade, OC3_CALL, date);
   await enterMark(page, trade, date, xyz);
+}
+
+// Tuesday has no price, and an Action waits for its Trade's Marks (A304): both Tuesday Marks are acknowledged Unavailable first, so the gap stays a gap.
+async function acknowledgeTuesday(page: Page, trade: TradeRef): Promise<void> {
+  const TUESDAY = 'Tue Oct 13';
+  const reason = 'No quote available.';
+  await acknowledgeMark(page, trade, TUESDAY, reason);
+  const entry = await optionMarkRow(page, trade, OC3_CALL, TUESDAY);
+  await entry.getByRole('button', { name: "Can't get a price" }).click();
+  await entry.getByLabel('Reason (required)').fill(reason);
+  await (await reachPanel(page, trade, 'Marks')).getByRole('button', { name: /^Save Marks/ }).click();
+  await savedOptionMarkRow(page, trade, OC3_CALL, TUESDAY);
 }
 
 // A fresh launch at the instant, one step of the Trade's history, and a close.
@@ -85,6 +97,7 @@ export async function buildOc3(profile: Profile, options: { readonly thursdayHol
     await page.goto('/');
     await openReview(page);
     await reachCard(page, trade);
+    await acknowledgeTuesday(page, trade);
     await saveAction(page, 'Hold', undefined, trade);
   });
   await at(profile, WEDNESDAY_1105, async (page) => {

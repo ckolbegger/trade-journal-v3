@@ -199,13 +199,16 @@ test.describe('B4.13 Responsive and accessible', () => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await saveAction(page, 'Hold', undefined, 'XYZ');
     await expectAccessible(page, 'Review Trades family with a saved Action');
-    for (const symbol of ['ABC', 'DEF', 'JKL']) {
+    // An Action waits for its Trade's Review Date Mark (A304), so JKL's Hold follows its Mark and JKL's Mark stays missing until then.
+    for (const symbol of ['ABC', 'DEF']) {
       await reachCard(page, symbol);
       await saveAction(page, 'Hold', undefined, symbol);
     }
     await expect(completion(page)).toHaveText('Incomplete');
-    await expectAccessible(page, 'Review Incomplete with every Action saved and a Mark missing');
+    await expectAccessible(page, 'Review Incomplete with the other Actions saved and a Mark missing');
     await enterMark(page, 'JKL', DATE, '21.00');
+    await reachCard(page, 'JKL');
+    await saveAction(page, 'Hold', undefined, 'JKL');
     await reloadReview(page);
     await expect(completion(page)).toHaveText('Complete with Unavailable Marks');
     await expectAccessible(page, 'Review Complete with Unavailable Marks');
