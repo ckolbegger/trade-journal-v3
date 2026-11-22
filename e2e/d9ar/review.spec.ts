@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import {
-  actionEntriesOf, actionFormOf, boxOf, buildReview,cardReplayButton, closeButton, detail, expect, headline, openCardReplay, probe, reachCard, READY, replay, seek, sliderValue, test, tradeCard, workspaceOf,
+  actionEntriesOf, actionFormOf, boxOf, buildReview,cardReplayButton, closeButton, detail, expect, headline, openCardReplay, pressSave, probe, reachCard, READY, replay, seek, sliderValue, test, tradeCard, workspaceOf,
   type TradeRef,
 } from './support.ts';
 
@@ -65,9 +65,7 @@ test.describe('B9AR.2 The overlay in the Review, and the summary', () => {
     const form = await actionFormOf(page, bren);
     if (!(await form.getByRole('radio', { name: 'Exit', exact: true }).isChecked())) await startAction(page, bren);
     await expectActionStarted(page, bren, 'before Save');
-    const hidden = await form.elementHandle();
-    await form.getByRole('button', { name: 'Save' }).click();
-    await hidden.waitForElementState('hidden', READY);
+    await pressSave(form);
     expect(await actions(page), 'one press saves one Action').toBe(1);
     await context.close();
   });
@@ -99,9 +97,7 @@ test.describe('B9AR.2 The overlay in the Review, and the summary', () => {
       const back = await actionFormOf(page, trade);
       await expect(back.getByRole('radio', { name: 'Exit', exact: true }), `${trade.symbol}: Exit after the return`).toBeChecked();
       await expect(back.getByLabel(/^Why are you taking this action\?/), `${trade.symbol}: Intent after the return`).toHaveValue(intent);
-      const hidden = await back.elementHandle();
-      await back.getByRole('button', { name: 'Save' }).click();
-      await hidden.waitForElementState('hidden', READY);
+      await pressSave(back);
       saved += 1;
       expect(await actions(page), 'one press saves one Action').toBe(saved);
       const mine = actionEntriesOf(workspaceOf(await probe(page))!).find((entry) => entry.obligationKey?.[2] === trade.tradeId);

@@ -347,9 +347,14 @@ export async function acknowledgeMark(page: Page, card: CardRef, date: string, r
 // pressed is gone. Until then the Review's binding is the old one, and opening another Trade would use it.
 export async function saveAction(page: Page, action: 'Hold' | 'Exit' | 'Roll' | 'Adjust', intent: string | undefined, card: CardRef): Promise<void> {
   const form = await actionFormOf(page, card);
-  const pressed = await form.elementHandle();
   await form.getByRole('radio', { name: action, exact: true }).check();
   if (intent !== undefined) await form.getByLabel(/^Why are you taking this action\?/).fill(intent);
+  await pressSave(form);
+}
+
+// Presses Save on an Action form already filled in and waits for the pressed form to hide (see saveAction).
+export async function pressSave(form: Locator): Promise<void> {
+  const pressed = await form.elementHandle();
   await form.getByRole('button', { name: 'Save' }).click();
   await pressed?.waitForElementState('hidden', READY);
 }
