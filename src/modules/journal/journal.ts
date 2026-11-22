@@ -18,6 +18,9 @@ import type {
   JournalPage,
   JournalQuery,
   OutstandingDebtPage,
+  ActionHistory,
+  ActionHistoryQuery,
+  HistoryAction,
   ReviewDateActions,
   ReviewDateQuery,
   NarrativeAnswer,
@@ -130,6 +133,8 @@ export interface Journal {
   query<Q extends JournalQuery>(query: Q): Promise<Q extends { scope: 'OutstandingDebt' } ? OutstandingDebtPage : JournalPage>;
   // Every Daily Trade Review Action for a Review Date, keyed by Trade.
   queryActions(query: ReviewDateQuery): Promise<ReviewDateActions>;
+  // Daily Trade Review Actions over a span of Review Dates in one index read, or one Trade's in another (T95.2, P168).
+  queryActionHistory(query: ActionHistoryQuery): Promise<ActionHistory>;
 }
 
 interface StoredEntry {
@@ -533,6 +538,42 @@ export function createJournal(deps: JournalDeps): Journal {
     return { kind: 'Actions', reviewDate, actions, snapshot: { journalRevision: value.meta?.journalRevision ?? 0 } };
   }
 
+  async function queryActionHistory(query: ActionHistoryQuery): Promise<ActionHistory> {
+    const { value } = await deps.persistence.readSnapshot(
+      ['journalEntries', 'journalDefinitions', 'journalTypes', 'meta'],
+      async (tx) => ({
+        entries: (await ('tradeId' in query
+          ? tx.getAllFromIndex('journalEntries', 'byAnchorTrade', query.tradeId)
+          : tx.getAllFromIndex(
+              'journalEntries',
+              'byObligation',
+              IDBKeyRange.bound(['DailyTradeReview', query.from, ''], ['DailyTradeReview', query.through, HIGH_KEY]),
+            ))) as unknown as StoredEntry[],
+        definitions: (await tx.getAll('journalDefinitions')) as unknown as EntryDefinitionRecord[],
+        types: (await tx.getAll('journalTypes')) as unknown as JournalTypeRecord[],
+        meta: (await tx.get('meta', 'journal')) as JournalMeta | undefined,
+      }),
+    );
+    const definitions = new Map(value.definitions.map((d) => [d.id, d]));
+    const labels = new Map(value.types.map((t) => [t.productKey, t.label]));
+    const actions = value.entries
+      .filter((entry) => entry.entryTypeKey === 'entry-type.daily-trade-review')
+      .map((entry): HistoryAction => {
+        const saved = dailyAction(entry, definitions, labels);
+        const latest = entry.versions[entry.versions.length - 1]!;
+        const intentId = definitions.get(latest.definitionId)?.prompts.find((p) => p.kind === 'Text' && p.role === 'Intent')?.id;
+        const answer = latest.responses.find((r) => r.promptId === intentId)?.value;
+        return {
+          tradeId: entry.anchor.tradeId,
+          reviewDate: saved.reviewDate!,
+          action: saved.action,
+          ...(answer?.kind === 'Text' && answer.text !== '' ? { reason: answer.text } : {}),
+        };
+      })
+      .sort((a, b) => a.reviewDate.localeCompare(b.reviewDate) || a.tradeId.localeCompare(b.tradeId));
+    return { kind: 'ActionHistory', actions, snapshot: { journalRevision: value.meta?.journalRevision ?? 0 } };
+  }
+
   async function currentOutcome(obligationKey: string): Promise<ObligationOutcome> {
     const { value } = await deps.persistence.readSnapshot(['journalObligations'], (tx) => tx.get('journalObligations', obligationKey));
     return (value as unknown as { outcome: ObligationOutcome }).outcome;
@@ -618,6 +659,7 @@ export function createJournal(deps: JournalDeps): Journal {
 
   const journal: Journal = {
     queryActions: ({ reviewDate }) => queryActions(reviewDate),
+    queryActionHistory,
 
     async save(command) {
       for (let attempt = 1; ; attempt++) {

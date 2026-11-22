@@ -381,6 +381,24 @@ export type JournalPage = {
 // first version, which every edit is validated against.
 export type DailyAction = NarrativeEntry & { readonly entryRevision: number; readonly action: string; readonly definitionId: string };
 
+// One saved Action in a history read: its Trade, Review Date, chosen Action, and the reason when one was saved.
+export interface HistoryAction {
+  readonly tradeId: string;
+  readonly reviewDate: string;
+  readonly action: string;
+  readonly reason?: string;
+}
+
+// The Actions over a span of Review Dates (both ends included), or every Action of one Trade.
+export type ActionHistoryQuery = { readonly from: string; readonly through: string } | { readonly tradeId: string };
+
+// Ordered by Review Date, then Trade.
+export type ActionHistory = {
+  readonly kind: 'ActionHistory';
+  readonly actions: readonly HistoryAction[];
+  readonly snapshot: { readonly journalRevision: number };
+};
+
 export type ReviewDateActions = {
   readonly kind: 'Actions';
   readonly reviewDate: string;
