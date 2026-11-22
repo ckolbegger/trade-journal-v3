@@ -1,0 +1,112 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 1,
+    "total_tokens": 129099,
+    "input_tokens": 128203,
+    "output_tokens": 896,
+    "cache_read_tokens": 20096,
+    "elapsed": "46s"
+  },
+  "tool_calls": {
+    "total": 14,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 3,
+      "file_read": 10
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/ReviewView.tsx",
+      "content": "If this additional getTrade request rejects or returns a non-ready result, read() replaces the detail with 'Unavailable'. That unmounts CardBody and discards its unsaved Action/reflection drafts, even though Save Marks succeeded. This introduces draft loss specifically when the open card is not first in the refreshed order. Refresh the detail in place only on success; on failure retain the existing body/drafts and show an out-of-date notice with a retry option.",
+      "existing_code": "    else void read(tradeId, opening);",
+      "start_line": 617,
+      "end_line": 617,
+      "category": "bug",
+      "severity": "high"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/screens/ReviewCard.test.tsx",
+        "src/ui/screens/ReviewView.tsx"
+      ]
+    }
+  ],
+  "session_id": "2158ac06-abf8-4df3-88fb-c2213c4671fb",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "2158ac06-abf8-4df3-88fb-c2213c4671fb",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "f3038f3d",
+      "resolved_base": "1596b4df43cbf25d710c15d6acf2050216838252",
+      "resolved_head": "f3038f3dffcdd916a0e73cb141b11bf3145c5126",
+      "exact_range": "1596b4df43cbf25d710c15d6acf2050216838252..f3038f3dffcdd916a0e73cb141b11bf3145c5126",
+      "source_artifact_sha256": "8ca6030d3f5db76fd3092ba8138f39b9e0cdaf38dd1e785b95db5f5c9b78c0a9"
+    },
+    "execution": {
+      "ocr_version": "v1.14.1",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "14bae0d349fedfea45b13f9f15eb01cb39655b02048fc6b52252e52c101f3980"
+        },
+        {
+          "item_id": "a83706f3444e16c14ac613c874f7293d7adce6354226bde7d7b9b892fce05701",
+          "path": "src/ui/screens/ReviewCard.test.tsx",
+          "fingerprint": "8fdc7382769f65ef83aef2e2d7bff5d738d8e0b4a0a57a07a42a71474db4da41"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "14bae0d349fedfea45b13f9f15eb01cb39655b02048fc6b52252e52c101f3980"
+        },
+        {
+          "item_id": "a83706f3444e16c14ac613c874f7293d7adce6354226bde7d7b9b892fce05701",
+          "path": "src/ui/screens/ReviewCard.test.tsx",
+          "fingerprint": "8fdc7382769f65ef83aef2e2d7bff5d738d8e0b4a0a57a07a42a71474db4da41"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "17009bc172951838902691d3d1bd721d05896b11edcc20b77059a8d8d0ab6604",
+          "path": "evidence/D95/tdd-log/T95.6-B1.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 45510
+  }
+}
