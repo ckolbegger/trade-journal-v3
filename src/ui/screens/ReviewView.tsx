@@ -325,13 +325,15 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
   const reopenApplied = useRef<() => Promise<Ready | OpenEmpty | undefined>>(undefined);
   // Reads the Trade for an opening, once any refresh in flight has settled; a result for an earlier opening is dropped.
   const read = useCallback(
-    async (tradeId: string, request: number) => {
+    async (tradeId: string, request: number, keepShown = false) => {
       await refreshing.current;
       const readUnder = (from: Ready) => facade.DailyReview.getTrade({ reviewDate: from.reviewDate, tradeId, binding: from.binding }).catch(() => undefined);
       let result = await readUnder(latest.current.review);
       // Another tab's save leaves the held binding behind, and every card read under it is refused: the Review is read again, and the card with it.
       if (result?.kind === 'ReviewChanged' && (await reopenApplied.current?.())) result = await readUnder(latest.current.review);
       const detail = result?.kind === 'Ready' ? { trade: result.trade } : result?.kind === 'ReflectionsOwed' ? { card: result.card } : 'Unavailable';
+      // `keepShown`: a card already open stays as it is when it cannot be read again, as a refresh leaves it.
+      if (keepShown && detail === 'Unavailable') return;
       if (selection.current === request) setShown({ tradeId, opening: request, detail });
     },
     [facade],
@@ -614,7 +616,7 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
     if (selection.current !== opening) return;
     // The returned card is the first Trade's, which is not always the one open: the open card stays open and is read under the new binding.
     if (post.trade.tradeId === tradeId) setShown({ tradeId, opening, detail: { trade: post.trade } });
-    else void read(tradeId, opening);
+    else void read(tradeId, opening, true);
     setAdvance((current) => ({ tradeId, count: current.count + 1 }));
   };
   // Its Trade chooses the card the saved Review refreshes: the open walked card's, or, with none open or an owed card open (which the Marks

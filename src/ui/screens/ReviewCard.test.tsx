@@ -1502,6 +1502,39 @@ describe('Save Marks from a card that is not first in the new order', () => {
   });
 });
 
+describe('Save Marks from a card that is not first when reading it again fails', () => {
+  it('should keep the open card and its drafts when reading it again after Save Marks fails', async () => {
+    const user = userEvent.setup();
+    const walkedTrades = [item('t1', 'XYZ'), item('t2', 'DEF')].map((t) => ({ ...t, progress: t.tradeId === 't1' ? cardProgress(1, 0, { needed: 1, resolved: 0 }) : cardProgress(0, 0, { resolved: 0 }) }));
+    const owing: ReviewCompletion = { kind: 'Incomplete', reasons: [{ code: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'XYZ' }, tradingDate: '2026-10-12', trades: ['t1'] }, { code: 'ActionMissing', tradeId: 't1' }, { code: 'ActionMissing', tradeId: 't2' }] };
+    const review = ready([item('t1', 'XYZ'), item('t2', 'DEF')], [], { completion: owing, families: [{ family: 'Marks', earlierMarks: [], today: [markRow('XYZ')], earlier: [] }, { family: 'Trades', trades: walkedTrades }] });
+    const first = tradeReview('t1', 'XYZ');
+    const second = tradeReview('t2', 'DEF');
+    const facade = walkFacade(review, first);
+    vi.mocked(facade.DailyReview.getTrade).mockRejectedValueOnce(new Error('read failed'));
+    const mark = { revisionId: 'r1', revisionNumber: 1, price: '52.00', source: 'Manual', savedAt: '2026-10-12T21:00:00Z' } as const;
+    vi.mocked(facade.DailyReview.save).mockResolvedValueOnce({
+      kind: 'MarksSaved',
+      marks: [{ key: { instrumentKey: 'XYZ', tradingDate: '2026-10-12' }, resolution: { kind: 'Available', mark }, resolutionRevision: 1, classification: 'InitialManual' }],
+      review: { kind: 'Ready', progress: { tradesWithAction: 0, tradesEligible: 2 }, completion: { kind: 'Incomplete', reasons: [{ code: 'ActionMissing', tradeId: 't2' }, { code: 'ActionMissing', tradeId: 't1' }] }, binding, trades: [walkedTrades[1]!, { ...walkedTrades[0]!, progress: cardProgress(0, 0, { resolved: 0 }) }], trade: second, nextStep: { kind: 'Trade', trade: second } },
+    });
+    renderWalk(facade);
+    const card = await openTrade(user, 'XYZ');
+    await user.click(panelHeader(card, 'Action'));
+    await user.click(within(card).getByRole('radio', { name: 'Exit' }));
+    await user.click(panelHeader(card, 'Marks'));
+    await user.type(within(card).getByRole('textbox', { name: /Mark, / }), '52.00');
+    await user.click(within(card).getByRole('button', { name: 'Save Marks (1)' }));
+
+    await vi.waitFor(() => expect(screen.getAllByRole('button', { name: /^Review (DEF|XYZ)\b/ })[0]!.textContent).toMatch(/DEF/));
+    await vi.waitFor(() => expect(vi.mocked(facade.DailyReview.getTrade)).toHaveBeenCalledTimes(2));
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(screen.queryByText(/We couldn’t load this Trade/)).toBeNull();
+    const after = screen.getByRole('region', { name: 'XYZ review' });
+    expect(within(after).getByRole('radio', { name: 'Exit' })).toHaveProperty('checked', true);
+  });
+});
+
 describe('moving on from Reflections', () => {
   it('should open the next panel that is not done when the card last Due reflection is resolved, though a reflection due in the next Review remains', async () => {
     const user = userEvent.setup();
