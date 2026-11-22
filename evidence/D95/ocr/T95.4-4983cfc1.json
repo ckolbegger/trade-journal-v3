@@ -1,0 +1,165 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 2,
+    "total_tokens": 476135,
+    "input_tokens": 472328,
+    "output_tokens": 3807,
+    "cache_read_tokens": 82816,
+    "elapsed": "1m58s"
+  },
+  "tool_calls": {
+    "total": 47,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 19,
+      "file_read": 24,
+      "file_read_diff": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/coordinators/daily-review/daily-review.ts",
+      "content": "A partially covered range loses all of its covered sessions here. `sessionsBetween` returns `NotCovered` as soon as any date is outside coverage, so a still-open Trade whose first exposure predates the calendar (with no earlier saved Action) makes `day.missed` empty even when many sessions before the Review Date are covered and unreviewed. Skip only the uncovered portion or constrain the range to calendar coverage before enumerating it, and add a boundary regression test.",
+      "existing_code": "  const found = read.sessionDatesBetween(from, to);\n  return found.kind === 'Sessions' ? found.dates : [];",
+      "start_line": 157,
+      "end_line": 158,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/coordinators/daily-review/daily-review.ts",
+      "content": "An absent earlier valuation does not necessarily mean the Trade was not yet open. At the start of calendar coverage, `read.previousSessionDate` is absent, so `eligibleTrades` leaves `before` undefined even for Trades held before the Review Date. This branch then reports their entire lifetime P\u0026L as today's change. Distinguish a genuinely not-yet-open Trade from a missing previous session/valuation, and return `Unavailable` for the latter.",
+      "existing_code": "    if (earlier === undefined || earlier.kind === 'NotApplicable') change = change.add(now.value);",
+      "start_line": 143,
+      "end_line": 143,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Daily review coordination, types, and tests",
+      "files": [
+        "src/coordinators/daily-review/daily-review.ts",
+        "src/coordinators/daily-review/day.test.ts",
+        "src/coordinators/daily-review/types.ts"
+      ]
+    },
+    {
+      "label": "Market data implementation and exports",
+      "files": [
+        "src/modules/market-data/index.ts",
+        "src/modules/market-data/market-data.ts"
+      ]
+    }
+  ],
+  "session_id": "16c08040-908f-4665-8696-929574857685",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "16c08040-908f-4665-8696-929574857685",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "4983cfc1",
+      "resolved_base": "8a2cd19e954d92b638ddbc60f6596b46acdc5560",
+      "resolved_head": "4983cfc16bd3d7148e68f651ef0bc632aa65bb9a",
+      "exact_range": "8a2cd19e954d92b638ddbc60f6596b46acdc5560..4983cfc16bd3d7148e68f651ef0bc632aa65bb9a",
+      "source_artifact_sha256": "4f806bebe5100caf01147694d8c73f5a4ae618e0fcf3079e33782b5016218e8c"
+    },
+    "execution": {
+      "ocr_version": "v1.14.1",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "25fcc50b60db8e855d9473c531e3b26fbedcd62acc5fbe5632f6cda24e4969bd"
+        },
+        {
+          "item_id": "147a81e306619fbce4a136fbfc04358ee6e7d1bce5f10f68b6d371f18cadae16",
+          "path": "src/coordinators/daily-review/day.test.ts",
+          "fingerprint": "00c213e9903882dba0bb894812b4b7021ba1a5a780b4a84c102a6395cfa5c0c9"
+        },
+        {
+          "item_id": "6cccbb3f63f207ad23e39c4400bffe0e0c2e16fcfcc0ece9effa6c41a429fdc1",
+          "path": "src/modules/market-data/index.ts",
+          "fingerprint": "218a370f63ede5e0cb5e9c51ead1498c157e3bc5ee428a64f7bb695a18e83a2f"
+        },
+        {
+          "item_id": "70c9d5b6c3936c08c792eaf13450c0216fd2c8094414ca3361baf96d37547c3e",
+          "path": "src/modules/market-data/market-data.ts",
+          "fingerprint": "080cb648fb265babd5a098fae3ee71eb0f394870feeaf1ba6573f4cc96a749a2"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "8be708756c0265f49c3d5201517ac50ba95718085a60e0410ce94508f377b87b"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "25fcc50b60db8e855d9473c531e3b26fbedcd62acc5fbe5632f6cda24e4969bd"
+        },
+        {
+          "item_id": "147a81e306619fbce4a136fbfc04358ee6e7d1bce5f10f68b6d371f18cadae16",
+          "path": "src/coordinators/daily-review/day.test.ts",
+          "fingerprint": "00c213e9903882dba0bb894812b4b7021ba1a5a780b4a84c102a6395cfa5c0c9"
+        },
+        {
+          "item_id": "6cccbb3f63f207ad23e39c4400bffe0e0c2e16fcfcc0ece9effa6c41a429fdc1",
+          "path": "src/modules/market-data/index.ts",
+          "fingerprint": "218a370f63ede5e0cb5e9c51ead1498c157e3bc5ee428a64f7bb695a18e83a2f"
+        },
+        {
+          "item_id": "70c9d5b6c3936c08c792eaf13450c0216fd2c8094414ca3361baf96d37547c3e",
+          "path": "src/modules/market-data/market-data.ts",
+          "fingerprint": "080cb648fb265babd5a098fae3ee71eb0f394870feeaf1ba6573f4cc96a749a2"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "8be708756c0265f49c3d5201517ac50ba95718085a60e0410ce94508f377b87b"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "cc90efc6cf74a1d5172ced06c131e8545958f149182e0f4243cbb3e0ed249ede",
+          "path": "evidence/D95/tdd-log/T95.4.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "f362ce91ac8f061b1a077c5fdaff5372352f6f7bf76a0270fe1b86a9f50757be",
+          "path": "specs/design/market-data.md",
+          "exclude_reason": "unsupported_ext"
+        }
+      ]
+    },
+    "elapsed_ms": 117567
+  }
+}
