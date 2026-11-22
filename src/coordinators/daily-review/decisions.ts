@@ -24,8 +24,11 @@ export function lastDecisionsOf(history: readonly HistoryAction[], replay: Trade
     const tradePnl = pnlOn.get(reviewDate);
     return { date: reviewDate, action, ...(reason !== undefined && { reason }), ...(tradePnl && { tradePnl }) };
   });
-  const stop = heldPast(history, replay, reviewDate, 'stop');
-  const target = heldPast(history, replay, reviewDate, 'target');
+  // The run reaches back from the session before the Review Date, so a session with no Review there leaves none; the replay alone cannot say so
+  // once it ends at a Settlement Due option's expiration.
+  const unbroken = sessionsWithoutReview.length === 0;
+  const stop = unbroken ? heldPast(history, replay, reviewDate, 'stop') : 0;
+  const target = unbroken ? heldPast(history, replay, reviewDate, 'target') : 0;
   const held = stop >= target ? { line: 'Stop' as const, sessions: stop } : { line: 'Target' as const, sessions: target };
   return { recent, sessionsWithoutReview, earlier: Math.max(0, history.length - RECENT), ...(held.sessions > 0 && { heldPast: held }) };
 }
