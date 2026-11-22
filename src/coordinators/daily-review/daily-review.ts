@@ -126,10 +126,12 @@ function observationNeeds(eligible: readonly EligibleTrade[]) {
 
 // The Review Date of the earliest first exposure among the Trades, in UTC: a Trade's first Review Date is never before it, whatever the
 // Workspace's zone. A Trade whose facts cannot be replayed has none, so its Plan time stands in, which is never later.
-function earliestExposureDate(eligible: readonly EligibleTrade[]): string {
+function earliestExposure(eligible: readonly EligibleTrade[]): string {
   const starts = eligible.map(({ summary, derivation }) => (derivation.kind === 'Derived' ? derivation.exposureStart : null) ?? summary.planTime);
-  return Temporal.Instant.from(starts.reduce((a, b) => (Temporal.Instant.compare(b, a) < 0 ? b : a))).toZonedDateTimeISO('UTC').toPlainDate().toString();
+  return starts.reduce((a, b) => (Temporal.Instant.compare(b, a) < 0 ? b : a));
 }
+
+const earliestExposureDate = (eligible: readonly EligibleTrade[]): string => Temporal.Instant.from(earliestExposure(eligible)).toZonedDateTimeISO('UTC').toPlainDate().toString();
 
 // The day's change in Trade P&L over the walked Trades: each Trade's figure at the Review Date less its figure at the session before, a Trade
 // with no valuation then (not yet open) counting from nothing. Unavailable when a Review Date Mark is Missing, a Trade's facts cannot be
@@ -182,11 +184,20 @@ function expirationsAhead(ranked: readonly { readonly item: ReviewTradeItem; rea
     });
 }
 
-// The first date a Trade had no Review from: the day after its last Action, else its first exposure's date (A305).
-function unreviewedSince(lastReviewDate: string | undefined, exposureStart: string | null | undefined): string | undefined {
+// The date a first Review is counted from: the exposure's UTC date, or the day after when that day's session had closed by then, as the
+// replay starts at the first session closing at or after the exposure. A calendar that does not cover the date leaves the date itself.
+async function firstReviewDate(read: MarketDataReadSession, exposure: string): Promise<string> {
+  const date = Temporal.Instant.from(exposure).toZonedDateTimeISO('UTC').toPlainDate().toString();
+  // The calendar's close of that date's session, or of the latest one before it when it is no session: never at or after the exposure then.
+  const close = await read.settlementTime({ kind: 'Option', symbol: 'X', root: 'X', expiration: date, right: 'Call', strike: '0', multiplier: 100 });
+  return close.kind === 'Value' && Temporal.Instant.compare(Temporal.Instant.from(close.value), Temporal.Instant.from(exposure)) < 0 ? dayAfter(date) : date;
+}
+
+// The first date a Trade had no Review from: the day after its last Action, else the first Review Date its exposure allows (A305).
+async function unreviewedSince(read: MarketDataReadSession, lastReviewDate: string | undefined, exposureStart: string | null | undefined): Promise<string | undefined> {
   if (lastReviewDate !== undefined) return dayAfter(lastReviewDate);
   if (!exposureStart) return undefined;
-  return Temporal.Instant.from(exposureStart).toZonedDateTimeISO('UTC').toPlainDate().toString();
+  return firstReviewDate(read, exposureStart);
 }
 
 // Each Trade's most recent Action of the history read, which is by Review Date.
@@ -687,11 +698,13 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
           }
         : undefined;
     const lastReviewed = savedActions?.earlier?.at(-1)?.reviewDate;
-    // The count starts the day after the latest earlier Action, or with none at the first exposure's date; with nothing walked nothing is missed.
+    // The count starts the day after the latest earlier Action, or with none at the first Review Date the first exposure allows; with nothing walked nothing is missed.
+    let missedFrom = '';
+    if (derivations.length > 0) missedFrom = lastReviewed === undefined ? await firstReviewDate(read, earliestExposure(derivations)) : dayAfter(lastReviewed);
     const day: DaySummary = {
       ...(finished && { finished }),
       ...(read.nextSessionDate !== undefined && { nextReviewDate: read.nextSessionDate }),
-      missed: derivations.length === 0 ? [] : missedSessions(read, lastReviewed === undefined ? earliestExposureDate(derivations) : dayAfter(lastReviewed), dayBefore(reviewDate)),
+      missed: derivations.length === 0 ? [] : missedSessions(read, missedFrom, dayBefore(reviewDate)),
       trades: walked.length,
       change: dayChangeOf(ranked, marksToGo > 0, reviewDate, read.previousSessionDate !== undefined),
       toGo: {
@@ -864,7 +877,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     const replayed = found.integrity.kind === 'Derived' && analysis.positionChanges.length > 0 ? await assembleReplay(deps, analysis, found.integrity, read, { withJournal: false }) : undefined;
     const replay = replayed && !('kind' in replayed) ? replayed : undefined;
     const saved = actions.actions[analysis.tradeId];
-    const since = unreviewedSince(actions.earlier?.at(-1)?.reviewDate, valuation?.state.exposureStart);
+    const since = await unreviewedSince(read, actions.earlier?.at(-1)?.reviewDate, valuation?.state.exposureStart);
     const decisions = lastDecisionsOf(actions.earlier ?? [], replay, reviewDate, since === undefined ? [] : missedSessions(read, since, dayBefore(reviewDate)));
     // The Trade's Outstanding Debt, each classified against the closes around the Review Date (A63).
     const outstanding = await boundDebts(analysis.tradeId, request.binding);

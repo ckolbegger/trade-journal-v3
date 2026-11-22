@@ -182,3 +182,19 @@ describe('getTrade: the Hold count after a Settlement Due expiration (A305)', ()
     expect(decisions.heldPast).toBeUndefined();
   }, 60_000);
 });
+
+describe('the first Review Date of a Trade filled after the close (A305, A300)', () => {
+  it('should not list the day of a first fill after the close as a session with no Review', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const planned = await stack.confirm({ symbol: 'XYZ', shares: '100', entry: '50.00', stop: '47.50', target: '56.00', planTime: '2026-10-09T13:00:00Z' });
+    // Friday 10-09 21:00Z is 17:00 New York, an hour after that day's close: the first session it is held for is Monday.
+    await stack.fill(planned, '2026-10-09T21:00:00Z', '100', '50.00');
+
+    const { decisions } = await card(stack, planned.tradeId);
+    const opened = await stack.dailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: MONDAY_1700 });
+    if (opened.kind !== 'Ready') throw new Error(`expected Ready, got ${opened.kind}`);
+
+    expect(decisions.sessionsWithoutReview).toEqual([]);
+    expect(opened.day?.missed).toEqual([]);
+  }, 60_000);
+});
