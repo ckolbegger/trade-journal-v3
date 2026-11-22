@@ -20,7 +20,10 @@ export type MarkSlipLimits = typeof MARK_SLIP_LIMITS
 const HUNDRED = Rational.of(100n)
 
 function percentOf(limit: number): Rational {
-  return Rational.of(BigInt(limit)).div(HUNDRED)
+  // A limit is written as a decimal (5.5), so it is read exactly, never through a float.
+  const parsed = parseDecimal(String(limit))
+  if (!parsed.ok) throw new RangeError(`Mark slip limit ${limit} is not a plain decimal`)
+  return parsed.value.div(HUNDRED)
 }
 
 // At least two fractional digits, as many more as the price has (a Mark has at most six).

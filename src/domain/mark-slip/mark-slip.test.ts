@@ -52,6 +52,13 @@ describe('The Mark slip check (P167)', () => {
     expect(checkMarkSlip({ instrument: option, entry: '0' })).toEqual({ kind: 'Pass' })
     expect(checkMarkSlip({ instrument: option, entry: '12.00', lastMark: '0' })).toEqual({ kind: 'Pass' })
   })
+  it('should apply a fractional limit, such as 5.5 percent, without throwing', () => {
+    const fractional = { stock: { up: 5.5, down: 5.5 }, option: { up: 100, down: 50 } }
+    expect(checkMarkSlip({ instrument: stock, entry: '47.53', lastMark: '45.10' }, fractional)).toEqual({ kind: 'Pass' })
+    expect(checkMarkSlip({ instrument: stock, entry: '47.64', lastMark: '45.10' }, fractional)).toEqual({ kind: 'Moved', percent: '+5.6' })
+    expect(checkMarkSlip({ instrument: stock, entry: '42.62', lastMark: '45.10' }, fractional)).toEqual({ kind: 'Pass' })
+    expect(checkMarkSlip({ instrument: stock, entry: '42.60', lastMark: '45.10' }, fractional)).toEqual({ kind: 'Moved', percent: '−5.5' })
+  })
   it('should take every limit from one exported constant', () => {
     expect(MARK_SLIP_LIMITS).toEqual({ stock: { up: 5, down: 5 }, option: { up: 100, down: 50 } })
     const wide = { stock: { up: 10, down: 10 }, option: { up: 200, down: 80 } }
