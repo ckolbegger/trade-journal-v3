@@ -1,0 +1,334 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 19 selected item(s).",
+  "summary": {
+    "files_reviewed": 19,
+    "comments": 3,
+    "total_tokens": 478109,
+    "input_tokens": 473975,
+    "output_tokens": 4134,
+    "cache_read_tokens": 62848,
+    "elapsed": "1m34s"
+  },
+  "tool_calls": {
+    "total": 51,
+    "by_tool": {
+      "code_comment": 3,
+      "code_search": 16,
+      "file_read": 26,
+      "file_read_diff": 6
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/coordinators/daily-review/order.test.ts",
+      "content": "This fixture sets the mark above the 56.00 target, so it does not cover the required “at its Target” boundary. A regression that classifies only strictly crossed targets would still pass both new target-band tests. Set this mark to 56.00 to verify that equality also yields TargetReached.",
+      "suggestion_code": "    await stack.saveMark('XYZ', '56.00');",
+      "existing_code": "    await stack.saveMark('XYZ', '56.50');",
+      "start_line": 60,
+      "end_line": 60,
+      "category": "test",
+      "severity": "low"
+    },
+    {
+      "path": "src/modules/journal/journal.ts",
+      "content": "When `since` is equal to or later than `reviewDate`, the requested history interval is empty, but clamping the lower bound to `dayBefore` returns the previous day's Actions instead. This violates the new query contract and can expose Actions older than the caller's cutoff. Return an empty `earlier` array when `since \u003e dayBefore`; otherwise use `since` as the lower bound.",
+      "existing_code": "              : ((await tx.getAllFromIndex('journalEntries', 'byObligation', IDBKeyRange.bound(['DailyTradeReview', since \u003c dayBefore ? since : dayBefore, ''], ['DailyTradeReview', dayBefore, HIGH_KEY]))) as unknown as StoredEntry[]),",
+      "start_line": 549,
+      "end_line": 549,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/coordinators/daily-review/daily-review.ts",
+      "content": "The other `reviewItem` caller in `assembleTrade` still calls `reviewItem(entry)` without reading or passing the earlier Action. Consequently, a Trade shown as `ExitNotCarriedOut` in `open` loses that band (and its `lastAction`) when `getTrade` returns its `attention`, even with the same Review binding. Update the card assembly's Journal query to include history and pass the most recent earlier Action too; add an assertion comparing the overview and card attention for an earlier Exit.",
+      "existing_code": "function reviewItem({ summary, analysis, derivation, integrity, valuation, before }: EligibleTrade, lastAction?: LastAction) {",
+      "start_line": 230,
+      "end_line": 230,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Daily review order handling, settlement, and shared types",
+      "files": [
+        "src/coordinators/daily-review/daily-review.test.ts",
+        "src/coordinators/daily-review/daily-review.ts",
+        "src/coordinators/daily-review/order.test.ts",
+        "src/coordinators/daily-review/settlement.test.ts",
+        "src/coordinators/daily-review/types.ts",
+        "src/coordinators/trade-views/open-order.test.ts"
+      ]
+    },
+    {
+      "label": "Journal state and effects",
+      "files": [
+        "src/modules/journal/effects.ts",
+        "src/modules/journal/journal.ts"
+      ]
+    },
+    {
+      "label": "Valuation attention and review screen behavior",
+      "files": [
+        "src/coordinators/valuation/attention.ts",
+        "src/ui/screens/ReviewCards.test.tsx",
+        "src/ui/screens/held-review.test.ts",
+        "src/ui/screens/review-attention.ts"
+      ]
+    },
+    {
+      "label": "Review workflow integration and query-count expectations",
+      "files": [
+        "tests/integration/d7/query-count.test.ts",
+        "tests/integration/d7/review.test.ts",
+        "tests/integration/d7/settlement-due.test.ts",
+        "tests/integration/d7s/review.test.ts",
+        "tests/integration/d9/query-count.test.ts",
+        "tests/integration/d9ar/query-count.test.ts",
+        "tests/integration/d9r2/query-count.test.ts"
+      ]
+    }
+  ],
+  "session_id": "1d48252c-667b-48a0-a666-dc5481d9a354",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "1d48252c-667b-48a0-a666-dc5481d9a354",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "2f9575d9",
+      "resolved_base": "f72ff9f139f3463992c615350dfda31dbdd8aa80",
+      "resolved_head": "2f9575d9e07752254acdf49f235b27c85a3a1291",
+      "exact_range": "f72ff9f139f3463992c615350dfda31dbdd8aa80..2f9575d9e07752254acdf49f235b27c85a3a1291",
+      "source_artifact_sha256": "b97e7fdd0700c3ade039b28ab157f3faa83a9b9fa055841354b1a88fa2f606e5"
+    },
+    "execution": {
+      "ocr_version": "v1.14.1",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "06129f7bc0959665459bced5dd2b2fe42e6eefa20b943b5bcb22e15d914c46d2",
+          "path": "src/ui/screens/ReviewCards.test.tsx",
+          "fingerprint": "c432ac402ea3cc697632154bcd1029668d39fcf2c6bd053e920697d2f20dd73a"
+        },
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "1e96b877217aa348731f257f6615293089f89a83cf2ee24b737dd8df78efee40"
+        },
+        {
+          "item_id": "18b6b01ed98f6d00b64a2e2fe8392a7b542a29a5e4bd0cb775cefb4bbb11a1ab",
+          "path": "src/coordinators/daily-review/settlement.test.ts",
+          "fingerprint": "53553beba43ffbd4b1dfcbf001942beb5678f6698c82fd2be802d7fb054be048"
+        },
+        {
+          "item_id": "315d8eb7d47b43eb390fc5d22be7931af4a88d40a6e9e90a25c765c184fbefaa",
+          "path": "src/coordinators/daily-review/order.test.ts",
+          "fingerprint": "3bc4121fee75ef07a40bda75cb8d2ce98226f8f65aba5655abdb106c74ca6fcb"
+        },
+        {
+          "item_id": "39a326886738a0dc0bdca817f05f43abda353be747a46325b49f8a06f69dec6a",
+          "path": "src/coordinators/trade-views/open-order.test.ts",
+          "fingerprint": "931e58bb7818d5b0a28f9c0621d7d2bd5eb3aad672a722c873fe06777af8bf5b"
+        },
+        {
+          "item_id": "45b8cde153848222749bfb983162f844946a42754cb63e613315558d71dfea51",
+          "path": "tests/integration/d9/query-count.test.ts",
+          "fingerprint": "405a681791db9cc86ad791e69aac065e7023fc7341e14a02576a422e1a3013df"
+        },
+        {
+          "item_id": "61e43bd8e48acd4959e9fd119f2b8443b589b06f0842f96fcb6c10cc21c56361",
+          "path": "tests/integration/d7/review.test.ts",
+          "fingerprint": "b1860226ce6a8441099058ef569efd20071812c046e3e6e7b5f77bc34d572e73"
+        },
+        {
+          "item_id": "6c4cc8015b3f916d6301b317630fa7d30fddbf47de85645f85b2f3b1830b15fe",
+          "path": "src/ui/screens/review-attention.ts",
+          "fingerprint": "462269d86481d2f9449e43acc21cad0273a84ae3ea3bf6ad36217ee7aad5ecf0"
+        },
+        {
+          "item_id": "723567e5a302ad9eb7d8af62d290e13f3b520a68185568784622c46201a4c790",
+          "path": "tests/integration/d7/query-count.test.ts",
+          "fingerprint": "89359c5ddb56d08d7bd296e49c9a39f4a3981fb3227e15d7f1cfe78077067650"
+        },
+        {
+          "item_id": "835fe238986a14f50aa73feeedba69e298a0728d45c05d35543575d749816715",
+          "path": "src/coordinators/daily-review/daily-review.test.ts",
+          "fingerprint": "2608a2f82b9d1189f2e58c7e56c87c825be7f3cd9fe7715d800a9e55c024615a"
+        },
+        {
+          "item_id": "9034ab22766968e1b5addc66277401296a7360fc83ca7dd7a428874bc79c1e88",
+          "path": "src/coordinators/valuation/attention.ts",
+          "fingerprint": "954e0cd61878176c4bfa38edac89ebbf94a9dbc949ad43995f66245464dd3d47"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "adbd932251df9d0f3c60930a7ea69c60d3d47fb05460c7b32d5df273b7a43d2c"
+        },
+        {
+          "item_id": "9a4b7bc587cd0acfdb53a272e2e366e09ec9a2243a4d65b0fb4c47bc40230317",
+          "path": "tests/integration/d7s/review.test.ts",
+          "fingerprint": "0e1f317c6abb254e565523cfc90de0dd40824b65adee3c3aec1e0e201b555a1c"
+        },
+        {
+          "item_id": "b0be774881b4250372519f75981a0693f72a69a9657063573dffd2e8a4c07126",
+          "path": "tests/integration/d9ar/query-count.test.ts",
+          "fingerprint": "5a7105d84f254aa0fcbf83ecb1357cc8ee829b2b71ffbc1a88360ed859aac3d0"
+        },
+        {
+          "item_id": "cb3c995a8557b830c73ccb6f1aeb114e161a5b755768692aab293d17899b23d8",
+          "path": "tests/integration/d7/settlement-due.test.ts",
+          "fingerprint": "98b1d09e9e11baeb01b7d032c20901fda3b6cd014ffc6295fad4060a66006cbe"
+        },
+        {
+          "item_id": "ced08feb7b70d0d1c0f4926fc7950f6317560f0e7a1df4c303e27bd1b9a8cd05",
+          "path": "tests/integration/d9r2/query-count.test.ts",
+          "fingerprint": "cfe5d98d007b28aa4dad769d14d363d802dde3408af24229f50eb057191ffb88"
+        },
+        {
+          "item_id": "d5ca0db109bd5eca3585475c4cd3739bada34094523b44a916a4118276e691b6",
+          "path": "src/modules/journal/journal.ts",
+          "fingerprint": "9fed8049c006e4250161d0ccc946984c34206210bccacb0aaed440a40abc1531"
+        },
+        {
+          "item_id": "edd64ad5884262ad099f5ae1dce3e8aa444d4c7814ae9e2f384e2f8d68b11336",
+          "path": "src/ui/screens/held-review.test.ts",
+          "fingerprint": "91a1809082ff36da548b4612f360071b79274eca90f2e73ef501e80094cc7496"
+        },
+        {
+          "item_id": "fd1c910f754a206e66b4e66d854fe19ed7ac30adb9c39111b3b1ccc9e7046634",
+          "path": "src/modules/journal/effects.ts",
+          "fingerprint": "6820c8af491c2d6315f34dfd4388806e4c8a5a236019dbe23a6a6506b577cc7c"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "06129f7bc0959665459bced5dd2b2fe42e6eefa20b943b5bcb22e15d914c46d2",
+          "path": "src/ui/screens/ReviewCards.test.tsx",
+          "fingerprint": "c432ac402ea3cc697632154bcd1029668d39fcf2c6bd053e920697d2f20dd73a"
+        },
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "1e96b877217aa348731f257f6615293089f89a83cf2ee24b737dd8df78efee40"
+        },
+        {
+          "item_id": "18b6b01ed98f6d00b64a2e2fe8392a7b542a29a5e4bd0cb775cefb4bbb11a1ab",
+          "path": "src/coordinators/daily-review/settlement.test.ts",
+          "fingerprint": "53553beba43ffbd4b1dfcbf001942beb5678f6698c82fd2be802d7fb054be048"
+        },
+        {
+          "item_id": "315d8eb7d47b43eb390fc5d22be7931af4a88d40a6e9e90a25c765c184fbefaa",
+          "path": "src/coordinators/daily-review/order.test.ts",
+          "fingerprint": "3bc4121fee75ef07a40bda75cb8d2ce98226f8f65aba5655abdb106c74ca6fcb"
+        },
+        {
+          "item_id": "39a326886738a0dc0bdca817f05f43abda353be747a46325b49f8a06f69dec6a",
+          "path": "src/coordinators/trade-views/open-order.test.ts",
+          "fingerprint": "931e58bb7818d5b0a28f9c0621d7d2bd5eb3aad672a722c873fe06777af8bf5b"
+        },
+        {
+          "item_id": "45b8cde153848222749bfb983162f844946a42754cb63e613315558d71dfea51",
+          "path": "tests/integration/d9/query-count.test.ts",
+          "fingerprint": "405a681791db9cc86ad791e69aac065e7023fc7341e14a02576a422e1a3013df"
+        },
+        {
+          "item_id": "61e43bd8e48acd4959e9fd119f2b8443b589b06f0842f96fcb6c10cc21c56361",
+          "path": "tests/integration/d7/review.test.ts",
+          "fingerprint": "b1860226ce6a8441099058ef569efd20071812c046e3e6e7b5f77bc34d572e73"
+        },
+        {
+          "item_id": "6c4cc8015b3f916d6301b317630fa7d30fddbf47de85645f85b2f3b1830b15fe",
+          "path": "src/ui/screens/review-attention.ts",
+          "fingerprint": "462269d86481d2f9449e43acc21cad0273a84ae3ea3bf6ad36217ee7aad5ecf0"
+        },
+        {
+          "item_id": "723567e5a302ad9eb7d8af62d290e13f3b520a68185568784622c46201a4c790",
+          "path": "tests/integration/d7/query-count.test.ts",
+          "fingerprint": "89359c5ddb56d08d7bd296e49c9a39f4a3981fb3227e15d7f1cfe78077067650"
+        },
+        {
+          "item_id": "835fe238986a14f50aa73feeedba69e298a0728d45c05d35543575d749816715",
+          "path": "src/coordinators/daily-review/daily-review.test.ts",
+          "fingerprint": "2608a2f82b9d1189f2e58c7e56c87c825be7f3cd9fe7715d800a9e55c024615a"
+        },
+        {
+          "item_id": "9034ab22766968e1b5addc66277401296a7360fc83ca7dd7a428874bc79c1e88",
+          "path": "src/coordinators/valuation/attention.ts",
+          "fingerprint": "954e0cd61878176c4bfa38edac89ebbf94a9dbc949ad43995f66245464dd3d47"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "adbd932251df9d0f3c60930a7ea69c60d3d47fb05460c7b32d5df273b7a43d2c"
+        },
+        {
+          "item_id": "9a4b7bc587cd0acfdb53a272e2e366e09ec9a2243a4d65b0fb4c47bc40230317",
+          "path": "tests/integration/d7s/review.test.ts",
+          "fingerprint": "0e1f317c6abb254e565523cfc90de0dd40824b65adee3c3aec1e0e201b555a1c"
+        },
+        {
+          "item_id": "b0be774881b4250372519f75981a0693f72a69a9657063573dffd2e8a4c07126",
+          "path": "tests/integration/d9ar/query-count.test.ts",
+          "fingerprint": "5a7105d84f254aa0fcbf83ecb1357cc8ee829b2b71ffbc1a88360ed859aac3d0"
+        },
+        {
+          "item_id": "cb3c995a8557b830c73ccb6f1aeb114e161a5b755768692aab293d17899b23d8",
+          "path": "tests/integration/d7/settlement-due.test.ts",
+          "fingerprint": "98b1d09e9e11baeb01b7d032c20901fda3b6cd014ffc6295fad4060a66006cbe"
+        },
+        {
+          "item_id": "ced08feb7b70d0d1c0f4926fc7950f6317560f0e7a1df4c303e27bd1b9a8cd05",
+          "path": "tests/integration/d9r2/query-count.test.ts",
+          "fingerprint": "cfe5d98d007b28aa4dad769d14d363d802dde3408af24229f50eb057191ffb88"
+        },
+        {
+          "item_id": "d5ca0db109bd5eca3585475c4cd3739bada34094523b44a916a4118276e691b6",
+          "path": "src/modules/journal/journal.ts",
+          "fingerprint": "9fed8049c006e4250161d0ccc946984c34206210bccacb0aaed440a40abc1531"
+        },
+        {
+          "item_id": "edd64ad5884262ad099f5ae1dce3e8aa444d4c7814ae9e2f384e2f8d68b11336",
+          "path": "src/ui/screens/held-review.test.ts",
+          "fingerprint": "91a1809082ff36da548b4612f360071b79274eca90f2e73ef501e80094cc7496"
+        },
+        {
+          "item_id": "fd1c910f754a206e66b4e66d854fe19ed7ac30adb9c39111b3b1ccc9e7046634",
+          "path": "src/modules/journal/effects.ts",
+          "fingerprint": "6820c8af491c2d6315f34dfd4388806e4c8a5a236019dbe23a6a6506b577cc7c"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "b9494f99617e892076c98f3d61708bfd9a21e3fddfc3ffdffb866818ed07c86f",
+          "path": "evidence/D95/tdd-log/T95.3.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 94197
+  }
+}
