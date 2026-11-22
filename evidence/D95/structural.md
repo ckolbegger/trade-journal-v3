@@ -148,6 +148,13 @@ Commit `85912096` (from `55788547`). New `decisions.ts` (`lastDecisionsOf`); `Da
 
 Success path: e2e/d4, d5, d7, d9, d9ar 225 passed, 4 skipped, 1 failed (the known `d4/responsive-a11y.spec.ts:114`, T95.7) before (13.7 min) and after (13.6 min). Note: a `ReviewMarksUnresolved` refusal shows the generic "This Action could not be saved. Reopen the Trade and try again." until the screen handles the code (later task).
 
+**T95.7-F2 ocr** (session c272d095, 5 files, 2 comments; `ocr/T95.7-F2-38d61e16.json`):
+
+| Severity | Location | Claim | Assessment | Outcome |
+|---|---|---|---|---|
+| medium bug | `e2e/d5/support.ts:55` | `expectSavedReflection` watches for a refusal only when `card` is set; Trade Detail and the Review owed list still wait out READY | Valid | bug task T95.7-F2-B1 |
+| medium bug | `e2e/d4/support.ts:309` | `REFUSAL` misses the Marks batch-limit refusal ("Save Marks takes up to N at once…", `<p role="status">`, CardMarks.tsx:424) | Valid (over 100 drafts only) | bug task T95.7-F2-B2 |
+
 ## Trial: complete runs overlapped with the next task (the user, 2026-11-22, for 5 or 6 tasks)
 
 Each task's complete run runs in a detached scratch copy (`.claude/worktrees/run-<label>`, set up by `lane-setup.sh`) at the task's commit, while the next task's subagent starts in this worktree. The run's files are copied back to `evidence/D95/suite-runs/`. A failure becomes a bug task as before; the next task restarts only if it built on the broken code. Times are recorded per run to measure the saving.

@@ -1,0 +1,149 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 2,
+    "total_tokens": 201985,
+    "input_tokens": 200597,
+    "output_tokens": 1388,
+    "cache_read_tokens": 24320,
+    "elapsed": "1m1s"
+  },
+  "tool_calls": {
+    "total": 25,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 4,
+      "file_find": 1,
+      "file_read": 18
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "e2e/d5/support.ts",
+      "content": "The refusal watcher only runs when `card` is defined. `answerDebt` also calls this helper for Trade Detail and the Review owed list, and `declineDebt` calls it for Trade Detail. In those cases a rejected save still waits for `expect(saved).toBeVisible()` to time out without quoting the displayed refusal. Wrap the saved-result wait for the non-card paths with `savedUnlessRefused` as well, using the supplied form as its scope.",
+      "existing_code": "    await savedUnlessRefused('expectSavedReflection', form, () =\u003e expect(form).toBeHidden(READY));",
+      "start_line": 55,
+      "end_line": 55,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "e2e/d4/support.ts",
+      "content": "This misses the Marks batch-limit refusal. When more than 100 drafts are submitted, `useMarkDrafts.save` returns without saving and `CardMarks` displays “Save Marks takes up to …” in a `p[role=\"status\"]`, not an alert or field error. The watcher therefore leaves the Marks helpers waiting out READY instead of quoting this refusal. Include that specific refusal status in the detection (without treating unrelated status messages as errors).",
+      "existing_code": "const REFUSAL = '.field-error, [role=\"alert\"]';",
+      "start_line": 309,
+      "end_line": 309,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "End-to-end support updates across variants",
+      "files": [
+        "e2e/d4/support.ts",
+        "e2e/d5/support.ts",
+        "e2e/d7/support.ts",
+        "e2e/d9/support.ts",
+        "e2e/d9ar/support.ts"
+      ]
+    }
+  ],
+  "session_id": "c272d095-a46c-4db5-855c-e928ea767e2a",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "c272d095-a46c-4db5-855c-e928ea767e2a",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "38d61e16",
+      "resolved_base": "45cbc6e7d4a489f29110da9f3b529f74a9140e07",
+      "resolved_head": "38d61e169d9d120084117eafad1bfcef8aa577d2",
+      "exact_range": "45cbc6e7d4a489f29110da9f3b529f74a9140e07..38d61e169d9d120084117eafad1bfcef8aa577d2",
+      "source_artifact_sha256": "ccad0e34701639947a15940b4e739f3f5b5f55d7b320b19be0fb12ad1e3eab50"
+    },
+    "execution": {
+      "ocr_version": "v1.14.1",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "3df9978f80fb8df171ba8e17242db730208f672e38c000fe3710ec250b5cf2b3",
+          "path": "e2e/d5/support.ts",
+          "fingerprint": "9f4634cfa58dce3982f175a7b83ae13253bb106bc8308ffb97f9062f1004686f"
+        },
+        {
+          "item_id": "77a09965bbc16832a6776b36503973c81fdfb4c349ef52771fbc221627efe7c5",
+          "path": "e2e/d4/support.ts",
+          "fingerprint": "dd8e651c3485cf727187e35b322a86383ae5e23247095fece6deac49c0fd9d4f"
+        },
+        {
+          "item_id": "839b5d74be9dab57ce22d8164cf43a870716504e404925773518309e596f49ef",
+          "path": "e2e/d9ar/support.ts",
+          "fingerprint": "e6b3bf8df79223c344a6b07680f8c40f1212b48003857b550ad585a83093260c"
+        },
+        {
+          "item_id": "99c596ee1732c530a194c9499667a3a11331103a4114e4c1d962b6235c95f741",
+          "path": "e2e/d7/support.ts",
+          "fingerprint": "d457ec69c3b3c5de981bdb39e33d880fd7c020f5a498c7f698686a5906b19623"
+        },
+        {
+          "item_id": "d0126439061216e58eb2b1a6bab019f2d20601558a9531d4100a29b4b9c5c3f9",
+          "path": "e2e/d9/support.ts",
+          "fingerprint": "52e60f5a48dba0dc3ca2e5e19dabf04172469b907f15e548f33cb067f6ac7637"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "3df9978f80fb8df171ba8e17242db730208f672e38c000fe3710ec250b5cf2b3",
+          "path": "e2e/d5/support.ts",
+          "fingerprint": "9f4634cfa58dce3982f175a7b83ae13253bb106bc8308ffb97f9062f1004686f"
+        },
+        {
+          "item_id": "77a09965bbc16832a6776b36503973c81fdfb4c349ef52771fbc221627efe7c5",
+          "path": "e2e/d4/support.ts",
+          "fingerprint": "dd8e651c3485cf727187e35b322a86383ae5e23247095fece6deac49c0fd9d4f"
+        },
+        {
+          "item_id": "839b5d74be9dab57ce22d8164cf43a870716504e404925773518309e596f49ef",
+          "path": "e2e/d9ar/support.ts",
+          "fingerprint": "e6b3bf8df79223c344a6b07680f8c40f1212b48003857b550ad585a83093260c"
+        },
+        {
+          "item_id": "99c596ee1732c530a194c9499667a3a11331103a4114e4c1d962b6235c95f741",
+          "path": "e2e/d7/support.ts",
+          "fingerprint": "d457ec69c3b3c5de981bdb39e33d880fd7c020f5a498c7f698686a5906b19623"
+        },
+        {
+          "item_id": "d0126439061216e58eb2b1a6bab019f2d20601558a9531d4100a29b4b9c5c3f9",
+          "path": "e2e/d9/support.ts",
+          "fingerprint": "52e60f5a48dba0dc3ca2e5e19dabf04172469b907f15e548f33cb067f6ac7637"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": []
+    },
+    "elapsed_ms": 60683
+  }
+}
