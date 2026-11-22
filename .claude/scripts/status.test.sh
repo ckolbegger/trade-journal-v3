@@ -13,7 +13,8 @@
 # 12 IDs after any task-ID prefix count; 13 each ID counts once when text precedes a chained ID;
 # 14 a deliverable named with a hyphen (D98-R) reads the evidence folder named without it (D98R);
 # 15 --all lists every row, Done and Withdrawn included, under "All tasks"; 16 a Progress table without
-# Wave and Lane columns prints "—" for them.
+# Wave and Lane columns prints "—" for them; 17 a deliverable named with a dot (D99.5) reads the evidence
+# folder named by its digits without the leading zero and the dot (D995), when the named one is absent.
 here=$(cd "$(dirname "$0")" && pwd)
 st="$here/status.sh"
 t=$(mktemp -d)
@@ -177,6 +178,20 @@ if want 16; then
   : >"$d/evidence/D99/DECISIONS-PENDING.md"
   out=$(STATUS_ROOT="$d" "$st" D99 2>&1); code=$?
   [[ $code == 0 && "$out" == *"T99.1 | wave — | lane — | Not started | F 0, B 0"* ]] || bad "a table without Wave and Lane did not print — for them (exit $code): $out"
+fi
+
+if want 17; then
+  d="$t/dot"; mkdir -p "$d/plan" "$d/evidence/D995"
+  printf '# D99.5\n\n## 14. Progress\n\n| Task | Wave | Lane | Status | Commits |\n|---|---|---|---|---|\n| T995.1 | 1 | A | Paused | `x` |\n' >"$d/plan/D99.5-fixture.md"
+  printf '## Q1. One — open\n\nText.\n' >"$d/evidence/D995/DECISIONS-PENDING.md"
+  out=$(STATUS_ROOT="$d" "$st" D99.5 2>&1); code=$?
+  [[ $code == 0 && "$out" == *"Q1."* && "$out" == *"1 open question"* && "$out" != *"no decisions file"* ]] || bad "dotted deliverable did not read the evidence folder named by its digits (exit $code): $out"
+  rm -r "$d/evidence/D995"
+  out=$(STATUS_ROOT="$d" "$st" D99.5 2>&1); code=$?
+  [[ $code == 0 && "$out" == *"no decisions file"* ]] || bad "neither folder present changed behavior (exit $code): $out"
+  mkdir -p "$d/evidence/D99.5"; printf '## Q2. Two — open\n\nText.\n' >"$d/evidence/D99.5/DECISIONS-PENDING.md"
+  out=$(STATUS_ROOT="$d" "$st" D99.5 2>&1)
+  [[ "$out" == *"Q2."* ]] || bad "the named folder (D99.5) was not preferred when present: $out"
 fi
 
 [[ $fail == 0 ]] && echo "status.test.sh: all requested cases passed"

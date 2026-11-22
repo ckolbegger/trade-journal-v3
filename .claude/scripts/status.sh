@@ -3,6 +3,8 @@
 # not Done or Withdrawn, or every row with --all (task, wave, lane, status, and how many follow-up F and bug
 # B tasks the Commits cell names; "—" for a Wave or Lane column the table lacks), then every question in evidence/<Dnn>/DECISIONS-PENDING.md without an answer, then the counts.
 # For a name with a hyphen (D09A-R) the folder without it (evidence/D09AR) is read when the named one is absent.
+# For a name with a dot (D09.5) the folder of its digits without the leading zero and the dot (evidence/D95) is read
+# when the named one is absent.
 # A "**Answer" line answers the question whose section it sits in; a "**Qn answer" line answers Qn.
 # STATUS_ROOT overrides the repository root (used by the tests). Writes no file.
 # A missing breakdown or Progress table exits 1 naming the file; a missing decisions file prints
@@ -62,6 +64,8 @@ else echo "  none"; fi
 dec="$root/evidence/$d/DECISIONS-PENDING.md"
 # A deliverable named with a hyphen (D09A-R) keeps its evidence in the folder without it (D09AR).
 [[ -f $dec || $d != *-* ]] || { alt="$root/evidence/${d//-/}/DECISIONS-PENDING.md"; [[ -f $alt ]] && dec=$alt; }
+# A deliverable named with a dot (D09.5) keeps its evidence in the folder of its digits, no leading zero (D95).
+if [[ ! -f $dec && $d == *.* ]]; then alt=${d//./}; alt="$root/evidence/${alt/#D0/D}/DECISIONS-PENDING.md"; [[ -f $alt ]] && dec=$alt; fi
 nq=0
 echo "Open questions:"
 if [[ ! -f $dec ]]; then
