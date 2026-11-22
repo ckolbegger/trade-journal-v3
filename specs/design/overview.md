@@ -233,10 +233,10 @@ sequenceDiagram
 ### Open and save Daily Review
 
 1. Daily Review resolves one completed session and queries Trades that were Open at its cutoff under corrected facts.
-2. It derives observation requirements, invokes automatic Market Data recovery, evaluates/replays Trades, loads due Debt and existing Action outcomes, and returns one stable attention order.
-3. The page preselects Hold in unsaved view state. Opening or selecting records nothing.
+2. It derives observation requirements, invokes automatic Market Data recovery, evaluates/replays Trades, loads due Debt and existing Action outcomes, and returns the attention order, which stays stable within a Review view until a fresh open or a Marks save.
+3. The page preselects Hold in unsaved view state only when the Plan Call is `Hold`. Opening or selecting records nothing.
 4. Save verifies the exact facts and Market Data snapshot, reconciles deterministic Stop-Discipline occurrences when needed, and writes the one dated Action atomically.
-5. Completion is rederived as Complete, Complete with Unavailable Marks, or Incomplete.
+5. Completion is rederived as Complete, Complete with Unavailable Marks, Complete with Settlement To Record, or Incomplete.
 
 ### Run a deterministic report
 

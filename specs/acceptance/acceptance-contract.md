@@ -281,7 +281,7 @@ A workflow scenario needs evidence at its public boundary and durable after-stat
 
 - **Given:** an Open Trade with a saved Exit Action, in four cases: the whole Position sold with its Stop reached and never held past; the whole Position sold before either condition is reached, with Intent on the Exit Action; the same with no Intent; and part of the Position sold.
 - **When:** the sale is recorded from Daily Review and from Trade Detail.
-- **Then:** each sale is one Position Change recorded by Trade Workflows with a completed Position Change Reflection and no reflection Debt. The first and second cases ask for no reason; the third and fourth reject without a Plan Departure Reason. A terminal sale requires its Close Reason and leaves one Outstanding Close Review Debt. The measure is stored nowhere and creates no Deviation.
+- **Then:** each sale is one Position Change recorded by Trade Workflows. The first and second cases ask for no reason and save a completed Position Change Reflection with no reflection Debt. The third and fourth save either with a Plan Departure Reason in a completed reflection, or with the reflection deferred, which leaves one Outstanding reflection Debt that cannot be answered without the reason. A completed reflection without the reason rejects, and Decline rejects for every sale. A terminal sale requires its Close Reason and leaves one Outstanding Close Review Debt. The measure is stored nowhere and creates no Deviation.
 - **Evidence:** command validation, Trade receipts, Journal effects, and the same outcomes from both entry points.
 
 ## Market evidence

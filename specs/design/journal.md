@@ -136,7 +136,7 @@ For a directly authored Entry, Edit may correct an erroneous Anchor or moment ti
 
 One `JournalObligationKey` has exactly one current outcome: completed Entry, explicit decline, one Outstanding Debt, or valid retirement. Position Change Reflection and Close Review use different keys. A Daily Trade Review key includes Trade and Review Date.
 
-`Defer` creates Debt with its trigger-time definition snapshot, Anchor, origin, due semantics, and settlement route. It does not create an incomplete Entry. Later definition changes do not alter what is owed. Answering creates an Entry; declining creates a distinct `JournalDecline`. Retirement requires owning-workflow evidence such as a Voided origin, Abandoned Plan, flat exposure, or management completed elsewhere.
+`Defer` creates Debt with its trigger-time definition snapshot, Anchor, origin, due semantics, and settlement route. It does not create an incomplete Entry. Later definition changes do not alter what is owed. Answering creates an Entry; declining creates a distinct `JournalDecline`. Retirement requires owning-workflow evidence such as a Voided origin, Abandoned Plan, flat exposure, or management completed elsewhere. A Debt may name prompts, by role, that its answer must include. Resolving it without them is rejected; declining it stays possible. Trade Workflows names the Plan Departure Reason this way when a change that leaves the Plan Exit defers its reflection.
 
 If correction leaves a Position Change with no effective real members, its Outstanding reflection Debt retires as Underlying Fact Voided. A completed reflection is never removed: it remains visible and is marked as associated with a Voided origin so ordinary event-based counts exclude it. If any effective member remains, the reflection outcome remains valid.
 
@@ -229,7 +229,7 @@ sequenceDiagram
     participant UI
     participant DR as Daily Review
     participant J as Journal
-    UI->>UI: Display Hold preselected as unsaved view state
+    UI->>UI: Display Hold preselected as unsaved view state when the Plan Call is Hold
     UI->>DR: save(Daily Trade Review with Hold)
     DR->>J: prepareEffects(CompleteNow for Trade and Review Date)
     J-->>DR: One uniquely keyed Action Entry
@@ -238,6 +238,6 @@ sequenceDiagram
     DR-->>UI: Saved result
 ```
 
-Hold needs no Intent. Exit, Roll, Adjust, and any future change-intent Action require Intent. Selection alone is not evidence.
+Roll, Adjust, and any future change-intent Action require Intent. Hold and Exit require it as Daily Review's "Following the Plan" states, enforced by Daily Review's save. Selection alone is not evidence.
 
 See [ADR 0005](../adr/0005-journal-entry-and-journal-debt-are-separate.md) and [Daily Review](daily-review.md).

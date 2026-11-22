@@ -27,7 +27,7 @@ Required now:
 - Derived Positions, FIFO Lot Matches, lot-aware fees, P&L, Plan conformance, ongoing risk/reward, and Expiration Payoff.
 - Immutable and transparently versioned Journal history, runtime-configurable prompts, and separate Journal Debt.
 - Context-aware after-close Marks, optional provider recovery, Daily Bars, explicit gaps, and honest unavailable-observation handling.
-- A guided, resumable Daily Review with an explicit saved Action for every eligible Trade.
+- A guided, resumable Daily Review with an explicit saved Action for every eligible Trade that owes one.
 - Deterministic Outcomes, Current Exposure, Process Scorecard, and categorical Journal Field reports.
 - Standards-based PWA delivery with capability-gated Runtime Readiness, device-local offline use, safe updates, full backup, and validated atomic replace-only Restore.
 

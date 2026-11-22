@@ -38,40 +38,46 @@ This table is the source of truth. After changing a tag or class here, regenerat
 - **Grew in place:** S039, S040, S043, S090, S092, S094, S095, S096, S097, S112, S199 and S253. Thirteen summaries were reworded to match.
 - All 264 entries' line ranges and character counts were checked against `specs/` by script. The reading lists and the table below were regenerated.
 
+**Revision 115** (2026-11-22, D9.5's decision 126) amended five specs in place and made D9.5's tags final.
+- **Character counts only:** S003 (the spec index's product boundaries, 1,775 to 1,789), S114 (the Journal's Debt semantics, 1,870 to 2,122), S120 (One-click Hold, 702 to 806), S143 (the overview's Daily Review walkthrough, 688 to 827), S199 (`recordPositionChange`, 6,067 to 6,283) and S263 (AC-REV-008, 924 to 1,166). No line moved. Five summaries were reworded to match (S114, S120, S143, S199, S263).
+- **D9.5 tags:** added to 44 entries when its breakdown was drafted (the breakdown's header lists them), no longer provisional. `plan/spec-reading/D09.5.md` is generated from them, and the table below gains a D9.5 row.
+- All 264 entries' line ranges and character counts were checked against `specs/` by script. The reading lists and the table below were regenerated.
+
 ## Reading cost per deliverable
 
-Characters of spec text a session reads (core plus tagged), and an estimate in tokens at about 2.4 characters per token. All of `specs/` is 330,799 bytes (every `.md` file, as of 2026-11-22).
+Characters of spec text a session reads (core plus tagged), and an estimate in tokens at about 2.4 characters per token. All of `specs/` is 331,766 bytes (every `.md` file, as of 2026-11-22).
 
 | Deliverable | Core | Tagged (non-core) | Total characters | ≈ Tokens |
 |---|---|---|---|---|
-| D1 | 155,452 | 43,808 | 199,260 | 83K |
-| D2 | 155,452 | 50,940 | 206,392 | 86K |
-| D4 | 155,452 | 71,402 | 226,854 | 95K |
-| D5 | 155,452 | 72,091 | 227,543 | 95K |
-| D6 | 155,452 | 77,390 | 232,842 | 97K |
-| D7 | 155,452 | 78,936 | 234,388 | 98K |
-| D8 | 155,452 | 60,583 | 216,035 | 90K |
-| D9 | 155,452 | 27,503 | 182,955 | 76K |
-| D10 (provisional) | 155,452 | 46,547 | 201,999 | 84K |
-| D11 (provisional) | 155,452 | 22,321 | 177,773 | 74K |
-| D12 (provisional) | 155,452 | 37,672 | 193,124 | 80K |
-| D13 (provisional) | 155,452 | 30,034 | 185,486 | 77K |
-| D14 (provisional) | 155,452 | 16,868 | 172,320 | 72K |
-| D15 (provisional) | 155,452 | 34,419 | 189,871 | 79K |
-| D16 (provisional) | 155,452 | 18,770 | 174,222 | 73K |
-| D17 (provisional) | 155,452 | 25,779 | 181,231 | 76K |
-| D18 (provisional) | 155,452 | 8,307 | 163,759 | 68K |
-| D19 (provisional) | 155,452 | 12,306 | 167,758 | 70K |
-| D20 (provisional) | 155,452 | 50,663 | 206,115 | 86K |
-| D21 (provisional) | 155,452 | 44,507 | 199,959 | 83K |
-| D22 (provisional) | 155,452 | 30,051 | 185,503 | 77K |
-| D23 (provisional) | 155,452 | 7,514 | 162,966 | 68K |
-| D24 (provisional) | 155,452 | 17,656 | 173,108 | 72K |
-| D25 (provisional) | 155,452 | 16,444 | 171,896 | 72K |
-| D26 (provisional) | 155,452 | 11,080 | 166,532 | 69K |
-| D27 (provisional) | 155,452 | 20,227 | 175,679 | 73K |
-| D28 (provisional) | 155,452 | 6,314 | 161,766 | 67K |
-| RC (provisional) | 155,452 | 5,112 | 160,564 | 67K |
+| D1 | 155,466 | 44,060 | 199,526 | 83K |
+| D2 | 155,466 | 51,408 | 206,874 | 86K |
+| D4 | 155,466 | 72,113 | 227,579 | 95K |
+| D5 | 155,466 | 72,802 | 228,268 | 95K |
+| D6 | 155,466 | 77,997 | 233,463 | 97K |
+| D7 | 155,466 | 79,647 | 235,113 | 98K |
+| D8 | 155,466 | 61,051 | 216,517 | 90K |
+| D9 | 155,466 | 27,503 | 182,969 | 76K |
+| D9.5 | 155,466 | 58,989 | 214,455 | 89K |
+| D10 (provisional) | 155,466 | 47,005 | 202,471 | 84K |
+| D11 (provisional) | 155,466 | 22,460 | 177,926 | 74K |
+| D12 (provisional) | 155,466 | 37,915 | 193,381 | 81K |
+| D13 (provisional) | 155,466 | 30,529 | 185,995 | 77K |
+| D14 (provisional) | 155,466 | 17,120 | 172,586 | 72K |
+| D15 (provisional) | 155,466 | 34,810 | 190,276 | 79K |
+| D16 (provisional) | 155,466 | 18,770 | 174,236 | 73K |
+| D17 (provisional) | 155,466 | 26,273 | 181,739 | 76K |
+| D18 (provisional) | 155,466 | 8,307 | 163,773 | 68K |
+| D19 (provisional) | 155,466 | 12,306 | 167,772 | 70K |
+| D20 (provisional) | 155,466 | 51,270 | 206,736 | 86K |
+| D21 (provisional) | 155,466 | 45,217 | 200,683 | 84K |
+| D22 (provisional) | 155,466 | 30,051 | 185,517 | 77K |
+| D23 (provisional) | 155,466 | 7,514 | 162,980 | 68K |
+| D24 (provisional) | 155,466 | 17,656 | 173,122 | 72K |
+| D25 (provisional) | 155,466 | 16,696 | 172,162 | 72K |
+| D26 (provisional) | 155,466 | 11,080 | 166,546 | 69K |
+| D27 (provisional) | 155,466 | 20,227 | 175,693 | 73K |
+| D28 (provisional) | 155,466 | 6,314 | 161,780 | 67K |
+| RC (provisional) | 155,466 | 5,112 | 160,578 | 67K |
 
 ## Entries
 
@@ -81,7 +87,7 @@ Characters of spec text a session reads (core plus tagged), and an estimate in t
 |---|---|---|---|---|---|---|---|
 | S001 | 1–6 | (opening) | 710 | core — Governs product boundaries. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | Spec scope: frozen stack-neutral spec; one-trader after-close journal for U.S. USD securities in one device-local Workspace. |
 | S002 | 7–20 | Authority and interpretation | 860 | core — Governs authority and interpretation. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | Normative wording and precedence order among glossary, ADRs, module contracts, acceptance, visuals; report contradictions. |
-| S003 | 21–41 | Product boundaries | 1,775 | core — Governs product boundaries. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | Required MVP capabilities and explicitly excluded features (live trading, sync, login, Insights, etc.). |
+| S003 | 21–41 | Product boundaries | 1,789 | core — Governs product boundaries. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | Required MVP capabilities and explicitly excluded features (live trading, sync, login, Insights, etc.). |
 | S004 | 44–58 | Canonical documents › Domain and decisions | 1,222 | core — Canonical-document index under authority rules; points every deliverable to glossary and ADRs. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | Index of glossary and the ten accepted ADRs. |
 | S005 | 59–76 | Canonical documents › Architecture and interfaces | 1,079 | core — States cross-cutting seam rules (Persistence never UI-callable, host capabilities not domain interfaces). | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | Index of design overview, module contracts with operation counts, UI/delivery contracts; Pricing Provider port, host capabilities, internal Persistence seam. |
 | S006 | 77–84 | Canonical documents › Acceptance and later evaluation | 400 | core — Small canonical-document index; part of the authority map every session uses. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | Index of acceptance contract, planning protocol, traceability, kickoff prompt, and screenshot index. |
@@ -129,7 +135,7 @@ Characters of spec text a session reads (core plus tagged), and an estimate in t
 | S042 | 259–265 | Daily Review › AC-REV-005 — changed evidence prevents stale Save | 406 | tagged | D4, D5 | D9, D9.5, D11, D15, D19 | AC-REV-005: changed Mark/Bar/acknowledgment/correction/Action before Save returns conflict with no write. |
 | S043 | 266–272 | Daily Review › AC-REV-006 — completion states are honest and reversible | 731 | tagged | D4, D5, D6, D7 | D9, D9.5, D12, D13, D15 | AC-REV-006: Review completion Complete / With Unavailable Marks / With Settlement To Record / Incomplete, derived and reversible. |
 | S262 | 273–279 | Daily Review › AC-REV-007 — the Action follows the Plan | 821 | tagged |  | D9.5, D10, D12 | AC-REV-007: Hold preselected only when the Plan Call is Hold; Hold without Intent rejects and Exit without Intent saves when the call is Out; no Action with a Missing Mark. Added by plan decision 125. |
-| S263 | 280–286 | Daily Review › AC-REV-008 — a sale is measured against the Plan Exit | 924 | tagged |  | D9.5, D10, D17, D21 | AC-REV-008: a sale from the Review or Trade Detail is one Position Change with a completed reflection; a sale that leaves the Plan Exit needs the Plan Departure Reason. Added by plan decision 125. |
+| S263 | 280–286 | Daily Review › AC-REV-008 — a sale is measured against the Plan Exit | 1,166 | tagged |  | D9.5, D10, D17, D21 | AC-REV-008: a sale from the Review or Trade Detail is one Position Change; a sale that leaves the Plan Exit gives the Plan Departure Reason or defers its reflection, leaving a Debt that requires it; Decline rejects. Added by plan decision 125, changed by decision 126. |
 | S044 | 289–295 | Market evidence › AC-MARK-001 — prior completed session is normal evidence | 422 | tagged | D4, D5, D7 | D11 | AC-MARK-001: prior completed session Mark is Expected and Available, not Stale. |
 | S045 | 296–302 | Market evidence › AC-MARK-002 — Manual Mark is sticky | 442 | tagged |  | D11, D19 | AC-MARK-002: Manual Mark stays effective over later provider closes; Bars may refresh; history shows override. |
 | S046 | 303–309 | Market evidence › AC-MARK-003 — acknowledgment never becomes a price | 523 | tagged | D4 | D9, D9.5, D11 | AC-MARK-003: unavailability acknowledgment never supplies a price; later exact Mark makes it Available. |
@@ -273,13 +279,13 @@ Characters of spec text a session reads (core plus tagged), and an estimate in t
 | S111 | 23–40 | Fixed identities and versioned definitions | 1,077 | tagged | D1, D2, D4, D5, D6, D7, D8 | D9.5, D13, D17, D20, D21, D22, D26, D27 | Seven fixed Entry Types, seven Sources, immutable versioned EntryDefinitions with stable Prompt/Option identities. |
 | S112 | 41–109 | Fixed identities and versioned definitions › Initial Entry Definitions | 4,745 | tagged | D1, D2, D4, D5, D6, D7, D8 | D9.5, D12, D13, D17, D20, D21, D22, D26, D27 | Exact initial Prompts, options, requiredness, roles, and conditional rules for each of the seven Entry Types. |
 | S113 | 110–134 | Entry semantics | 1,707 | tagged | D1, D2, D4, D5, D6, D7, D8 | D9.5, D13, D15, D17, D18, D20, D21, D27 | Anchor, Origin, Entry value shape; Edit, Addendum, Void semantics and immutable fields. |
-| S114 | 135–160 | Debt and obligation semantics | 1,870 | tagged | D1, D2, D4, D5, D6, D7, D8 | D9.5, D13, D14, D15, D17, D20, D21, D25 | One outcome per obligation key; Defer creates Debt with snapshot; decline, retirement, Void reopening, Review blocking. |
+| S114 | 135–160 | Debt and obligation semantics | 2,122 | tagged | D1, D2, D4, D5, D6, D7, D8 | D9.5, D13, D14, D15, D17, D20, D21, D25 | One outcome per obligation key; Defer creates Debt with snapshot; decline, retirement, prompts a Debt's answer must include, Void reopening, Review blocking. |
 | S115 | 163–185 | Mutation contracts › `save` | 1,204 | tagged | D1, D4, D5, D6, D7 | D13, D20, D22, D26 | Journal save: direct Create, Edit, Addendum, Void, Debt resolution; validation and complete outcome result. |
 | S116 | 186–191 | Mutation contracts › `prepareEffects` and `applyPreparedEffects` | 977 | tagged | D1, D2, D4, D5, D6, D7 | D9.5, D12, D14, D15, D17, D18, D20, D21 | Nonpersistent prepared workflow obligations with Complete/Defer/Decline/retire; staged in shared transaction; per-type requirements. |
 | S117 | 192–212 | Mutation contracts › Definition and seed operations | 1,098 | tagged | D1, D2, D4, D5, D6, D8 | D9.5, D13, D17, D26 | getDefinitions, reviseDefinition forward-only full replacement, and idempotent stable-keyed seedDefaults. |
 | S118 | 213–218 | Mutation contracts › Query | 592 | tagged | D1, D2, D4, D5, D6, D7, D8 | D9.5, D13, D22, D25, D27 | Journal query filters, scopes, and Timeline, Analysis, Full History projections; AND/OR filter rules. |
 | S119 | 219–224 | Mutation contracts › Backup and Restore | 681 | core — Backup/Restore compatibility: every Journal-data-adding deliverable extends this section. | D1, D2, D4, D5, D6, D7, D8 | D13, D17, D20, D26 | Journal backup section contents, restore preparation validation, and atomic identity-preserving apply. |
-| S120 | 225–243 | One-click Hold | 702 | tagged | D4, D5, D7 | D9.5, D12, D13 | Daily Review Hold flow: preselected unsaved Hold, prepared CompleteNow Action Entry; Intent required for others. |
+| S120 | 225–243 | One-click Hold | 806 | tagged | D4, D5, D7 | D9.5, D12, D13 | Daily Review Hold flow: unsaved Hold preselected when the Plan Call is Hold, prepared CompleteNow Action Entry; Intent for Roll and Adjust, and for Hold and Exit as "Following the Plan" states. |
 
 ### `specs/design/market-data.md`
 
@@ -312,7 +318,7 @@ Characters of spec text a session reads (core plus tagged), and an estimate in t
 | S140 | 192–214 | Shared value and result conventions › Mutation results | 1,555 | core — Shared result convention for every mutation. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28, RC | Accepted mutations return revision-bound command-specific post-commit results; no read-back required. |
 | S141 | 217–224 | Main workflow walkthroughs › Confirm a Plan | 513 | tagged | D1, D5, D7 | D10, D20, D21, D22 | Confirm a Plan walkthrough: resolve references, Plan Reflection, assess Plan, prepare Trade, one transaction. |
 | S142 | 225–232 | Main workflow walkthroughs › Record a Position Change | 618 | tagged | D2, D4, D5, D6, D7 | D9.5, D10, D15, D20, D21 | Record a Position Change walkthrough: grouped members, candidate Trades, analysis derivations, Journal effects, one commit. |
-| S143 | 233–240 | Main workflow walkthroughs › Open and save Daily Review | 688 | tagged | D4, D5, D6, D7 | D9.5, D11, D12, D13, D15, D20 | Daily Review walkthrough: eligibility, Mark recovery, attention order, Hold preselect, verified Save, derived completion. |
+| S143 | 233–240 | Main workflow walkthroughs › Open and save Daily Review | 827 | tagged | D4, D5, D6, D7 | D9.5, D11, D12, D13, D15, D20 | Daily Review walkthrough: eligibility, Mark recovery, attention order stable until a fresh open or a Marks save, Hold preselected when the Plan Call is Hold, verified Save, derived completion with four states. |
 | S144 | 241–247 | Main workflow walkthroughs › Run a deterministic report | 557 | tagged |  | D16, D22, D24, D25, D27 | Report walkthrough: period, filters, full population, per-Trade datum, fixed metric rules, contributor navigation. |
 | S145 | 248–255 | Main workflow walkthroughs › Restore a Workspace | 809 | tagged | D5, D6, D8 | D11, D12, D28, RC | Restore walkthrough: verify artifact, module prepare, analysis verification, preview, atomic apply, view invalidation. |
 | S146 | 256–265 | Incremental delivery contract | 1,508 | core — Incremental delivery rules govern every deliverable. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28, RC | Delivery as dependency-closed vertical slices with honest manifest; PWA foundation in first mutating slice; coverage disclosure. |
@@ -398,7 +404,7 @@ Characters of spec text a session reads (core plus tagged), and an estimate in t
 | S196 | 21–48 | Common command rules | 1,553 | core — Module common command rules. | D1, D2, D4, D5, D6, D7, D8 | D14, D15, D17, D18, D20, D21 | Common command rules: expected revisions, Economic Time, exact form revisions, ReflectionDisposition, TradeMutationSuccess. |
 | S197 | 51–79 | Operation contracts › `confirmPlan` | 1,484 | tagged | D1, D2, D5, D7, D8 | D10, D21, D22 | confirmPlan requirements, atomic Trade plus Plan Reflection commit, sequence. |
 | S198 | 80–83 | Operation contracts › `abandonPlan` | 366 | tagged |  | D14, D15 | abandonPlan: only without effective position facts, Abandonment Reason, retires Plan Debt. |
-| S199 | 84–149 | Operation contracts › `recordPositionChange` | 6,067 | tagged | D2, D4, D5, D6, D7, D8 | D9.5, D10, D20, D21 | recordPositionChange: grouped decision, reflections, the Plan Exit measure for a sale, Close Reason, Roll, Assignment/Exercise, settlement-origin Plan, Management Debt. |
+| S199 | 84–149 | Operation contracts › `recordPositionChange` | 6,283 | tagged | D2, D4, D5, D6, D7, D8 | D9.5, D10, D20, D21 | recordPositionChange: grouped decision, reflections, the Plan Exit measure for a sale and its reason given or deferred, Close Reason, Roll, Assignment/Exercise, settlement-origin Plan, Management Debt. |
 | S200 | 150–155 | Operation contracts › `reviseManagement` | 651 | tagged |  | D17, D20 | reviseManagement: rationale, effective conditions, immutable Entry, resolves Management Debt, never a Deviation. |
 | S201 | 156–161 | Operation contracts › `previewCorrection` | 793 | tagged |  | D15, D18, D20, D21 | previewCorrection: Replace, Void, Rebuild preview with Correction Footprint and acknowledgment requirement. |
 | S202 | 162–192 | Operation contracts › `commitCorrection` | 1,580 | tagged |  | D15, D18, D20, D21 | commitCorrection: exact preview binding, atomic corrected history, Replace/Void/Rebuild identity semantics. |
