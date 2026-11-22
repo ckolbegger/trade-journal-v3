@@ -4,6 +4,10 @@ A clickable picture of a Daily Review page that teaches, built from `evidence/D0
 
 The dark bar at the top is not part of the design. It switches between seven made-up days, and "Coach numbers" turns the small blue numbers on and off. Each number marks where that suggestion lands on the page.
 
+**Read this first (2026-11-22).** This file is in the order things were decided, and the user has agreed the mockup as it now stands, phone and desktop. Where sections disagree, the later one wins. Two later sections replace what the earlier ones say:
+- "Phone (375 wide)": the phone layout exists; there are eight made-up days; there is no Settings page; the meter's key says "Realized".
+- "Open card, second pass" and the passes listed under it: the open card has one "Now" box built on the meter, with arrows and one-line captions; the header of an open card has no small meter; the "From here" sentence, the meter's printed sentence and the break-even sentence are gone from the card; the last decision is said once.
+
 | Day in the bar | Review Date | What it shows |
 |---|---|---|
 | Work to do | Mon Nov 16 | Nothing entered. AXIO and DALE past their Stops, BREN and CORV at their Targets. |
