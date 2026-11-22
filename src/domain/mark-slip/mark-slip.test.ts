@@ -1,0 +1,58 @@
+import { describe, expect, it } from 'vitest'
+import { checkMarkSlip, MARK_SLIP_LIMITS } from './index.ts'
+import type { Instrument } from '../instrument/index.ts'
+
+const stock: Instrument = { kind: 'Stock', symbol: 'XYZ' }
+const option: Instrument = { kind: 'Option', symbol: 'XYZ', root: 'XYZ', expiration: '2026-11-20', strike: '55', right: 'Call', multiplier: 100 }
+
+describe('The Mark slip check (P167)', () => {
+  it('should pass a stock or Underlying Mark within 5% of the last Mark', () => {
+    expect(checkMarkSlip({ instrument: stock, entry: '47.35', lastMark: '45.10' })).toEqual({ kind: 'Pass' })
+    expect(checkMarkSlip({ instrument: stock, entry: '47.36', lastMark: '45.10' }).kind).toBe('Moved')
+    expect(checkMarkSlip({ instrument: stock, entry: '42.845', lastMark: '45.10' })).toEqual({ kind: 'Pass' })
+    expect(checkMarkSlip({ instrument: stock, entry: '45.10', lastMark: '45.10' })).toEqual({ kind: 'Pass' })
+  })
+  it('should ask about one more than 5% above or below, giving the move in percent', () => {
+    expect(checkMarkSlip({ instrument: stock, entry: '49.00', lastMark: '45.10' })).toEqual({ kind: 'Moved', percent: '+8.6' })
+    expect(checkMarkSlip({ instrument: stock, entry: '42.00', lastMark: '45.10' })).toEqual({ kind: 'Moved', percent: '−6.9' })
+  })
+  it('should pass an option Mark up to 100% above or 50% below the last, and ask beyond either', () => {
+    expect(checkMarkSlip({ instrument: option, entry: '90.00', lastMark: '45.00' })).toEqual({ kind: 'Pass' })
+    expect(checkMarkSlip({ instrument: option, entry: '22.50', lastMark: '45.00' })).toEqual({ kind: 'Pass' })
+    expect(checkMarkSlip({ instrument: option, entry: '100.00', lastMark: '45.00' })).toEqual({ kind: 'Moved', percent: '+122.2' })
+    expect(checkMarkSlip({ instrument: option, entry: '22.49', lastMark: '45.00' }).kind).toBe('Moved')
+  })
+  it('should offer the price ten times smaller or larger when that lands near the last Mark, and the same for a hundred times', () => {
+    expect(checkMarkSlip({ instrument: stock, entry: '440.00', lastMark: '45.10' })).toEqual({ kind: 'Scaled', factor: 10, candidate: '44.00' })
+    expect(checkMarkSlip({ instrument: stock, entry: '4.40', lastMark: '45.10' })).toEqual({ kind: 'Scaled', factor: 10, candidate: '44.00' })
+    expect(checkMarkSlip({ instrument: stock, entry: '4510.00', lastMark: '45.10' })).toEqual({ kind: 'Scaled', factor: 100, candidate: '45.10' })
+    expect(checkMarkSlip({ instrument: stock, entry: '0.451', lastMark: '45.10' })).toEqual({ kind: 'Scaled', factor: 100, candidate: '45.10' })
+    expect(checkMarkSlip({ instrument: option, entry: '0.44', lastMark: '4.50' })).toEqual({ kind: 'Scaled', factor: 10, candidate: '4.40' })
+    expect(checkMarkSlip({ instrument: stock, entry: '880.00', lastMark: '45.10' }).kind).toBe('Moved')
+  })
+  it('should ask whether an option is worth nothing at zero, and refuse a zero share price', () => {
+    expect(checkMarkSlip({ instrument: option, entry: '0', lastMark: '0.45' })).toEqual({ kind: 'WorthNothing' })
+    expect(checkMarkSlip({ instrument: option, entry: '0.00', lastMark: '0.45' })).toEqual({ kind: 'WorthNothing' })
+    expect(checkMarkSlip({ instrument: stock, entry: '0.00', lastMark: '45.10' })).toEqual({ kind: 'ZeroSharePrice' })
+    expect(checkMarkSlip({ instrument: stock, entry: '0' })).toEqual({ kind: 'ZeroSharePrice' })
+  })
+  it('should refuse an entry that is not a price', () => {
+    for (const entry of ['', 'abc', '45,10', '$45.10', '1e3', '-5', '45.1234567', ' 45.10']) {
+      expect(checkMarkSlip({ instrument: stock, entry, lastMark: '45.10' })).toEqual({ kind: 'NotAPrice' })
+    }
+    expect(checkMarkSlip({ instrument: option, entry: 'x' })).toEqual({ kind: 'NotAPrice' })
+  })
+  it('should pass any Mark when there is no last Mark', () => {
+    expect(checkMarkSlip({ instrument: stock, entry: '4500.00' })).toEqual({ kind: 'Pass' })
+    expect(checkMarkSlip({ instrument: option, entry: '0' })).toEqual({ kind: 'Pass' })
+    expect(checkMarkSlip({ instrument: option, entry: '12.00', lastMark: '0' })).toEqual({ kind: 'Pass' })
+  })
+  it('should take every limit from one exported constant', () => {
+    expect(MARK_SLIP_LIMITS).toEqual({ stock: { up: 5, down: 5 }, option: { up: 100, down: 50 } })
+    const wide = { stock: { up: 10, down: 10 }, option: { up: 200, down: 80 } }
+    expect(checkMarkSlip({ instrument: stock, entry: '48.00', lastMark: '45.10' }).kind).toBe('Moved')
+    expect(checkMarkSlip({ instrument: stock, entry: '48.00', lastMark: '45.10' }, wide)).toEqual({ kind: 'Pass' })
+    expect(checkMarkSlip({ instrument: option, entry: '130.00', lastMark: '45.00' }, wide)).toEqual({ kind: 'Pass' })
+    expect(checkMarkSlip({ instrument: option, entry: '10.00', lastMark: '45.00' }, wide)).toEqual({ kind: 'Pass' })
+  })
+})
