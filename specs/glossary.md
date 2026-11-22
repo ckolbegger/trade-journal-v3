@@ -192,6 +192,9 @@ Permitted compact UI labels map exactly as follows; the full term remains availa
 | **Break Down By** | The optional single grouping dimension applied while retaining the ungrouped Overall result. | Nested group builder |
 | **Coverage** | Explicit disclosure of applicable, evaluable, included, missing, unavailable, and excluded evidence or records. | Implied completeness |
 | **Future Insights** | A deferred optional capability for data-dependent coaching or interpretation that may consume deterministic evidence but cannot alter it. | MVP reporting, deterministic scorecard |
+| **Plan Exit** | The Plan's own exit: the whole open Position, when a headline Stop or Target is reached. An Action or a sale is measured against it; the result is derived and never stored. Added by plan decision 125. | Exit strategy, trailing plan |
+| **Plan Call** | What the Plan Exit calls for on one session's Marks: `Out` when a headline Stop is Breached or a headline Target is Reached, `Hold` when neither is, `Unknown` when they cannot be evaluated. Added by plan decision 125. | Advice, signal, recommendation |
+| **Settle Later** | The protected Daily Trade Review option by which the trader states that an Assignment or Exercise will be recorded later. It resolves Settlement Due for one Review Date only and is never a settlement fact. Added by plan decision 125. | Skip, snooze, inferred Expiration |
 
 The Report Period presets are **All Time**, **Year to Date**, **Quarter to Date**, **Month to Date**, **This Week**, and **Last Week**. This Week runs Monday through the current Workspace-local date. Last Week is the preceding Monday through Sunday. Current Exposure has no Report Period.
 

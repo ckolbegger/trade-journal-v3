@@ -77,7 +77,7 @@ When a known or possible existing root cannot be read, the UI pairs `Unsupported
 - Opening, focusing, typing, selecting, or abandoning a form is not saved evidence.
 - A successful explicit Save is the persistence boundary and returns clear confirmation plus the revision-bound post-commit state needed to render the saved outcome and continue that workflow without another read.
 
-Daily Review returns Hold preselected only as unsaved form state. Pressing the one visible Save completes the fast Hold path. Exit, Roll, and Adjust require Intent. Missing Action is visibly incomplete and never rendered as Hold.
+Daily Review returns Hold preselected only as unsaved form state, and only when the Plan Call is `Hold`. Pressing the one visible Save then completes the fast Hold path. Roll and Adjust require Intent; Hold requires it when the Plan Call is `Out`, and Exit requires it unless the Plan Call is `Out`. Missing Action is visibly incomplete and never rendered as Hold (plan decision 125).
 
 ## Trade and Journal presentation
 

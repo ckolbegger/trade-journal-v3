@@ -53,12 +53,14 @@ Thesis and Invalidation are entered once during Plan confirmation and supply bot
 
 **Position Change Reflection**
 
-1. “Decision mode” — required Single Select: As Planned, Deliberate Adjustment, Reactive, Externally Imposed.
-2. “Primary emotion” — required Single Select: Calm, Eager, Anxious, FOMO, Revenge, Relieved, Frustrated, Other.
-3. “Decision confidence” — required 1–5 Scale.
-4. “Note” — optional Text.
+1. “Why did you leave the Plan?” — optional Text with workflow-critical Plan Departure Reason role.
+2. “Why did it expire worthless?” — optional Text with workflow-critical Expiration Reason role.
+3. “Decision mode” — optional Single Select: As Planned, Deliberate Adjustment, Reactive, Externally Imposed.
+4. “Primary emotion” — optional Single Select: Calm, Eager, Anxious, FOMO, Revenge, Relieved, Frustrated, Other.
+5. “Decision confidence” — optional 1–5 Scale.
+6. “Note” — optional Text.
 
-The required reflection outcome may instead be explicitly declined or deferred where the workflow policy permits; requiredness governs a completed form, not whether those alternate outcomes exist.
+Every Prompt is optional, so a completed reflection may hold no answers. Trade Workflows requires Prompt 1 or Prompt 2 where its contract says so. The reflection outcome may instead be explicitly declined or deferred where the workflow policy permits (plan decision 125).
 
 **Management Revision**
 
@@ -74,19 +76,19 @@ Prompts 2 and 3 are `AllOrNone`: both blank retains the original Thesis; answeri
 
 1. “Would you take this Trade again under similar conditions?” — required Single Select: Yes, as planned; Yes, with changes; No; Unsure.
 2. “What worked, and what did not?” — optional Text.
-3. “What is the key lesson?” — optional Text.
+3. “What is the key lesson?” — required Text (plan decision 125).
 
 The answers neither create nor replace a Close Reason. The obligation may be completed, deferred as Debt, or explicitly declined without blocking factual closure.
 
 **Daily Trade Review**
 
-1. “Action” — required workflow-critical Single Select: Hold, Exit, Roll, Adjust.
-2. “Why are you taking this action?” — Intent Text, optional for Hold and required for Exit, Roll, or Adjust through `RequireWhenOption`.
+1. “Action” — required workflow-critical Single Select: Hold, Exit, Roll, Adjust, and the protected Settle Later.
+2. “Why?” — Intent Text, required for Roll or Adjust through `RequireWhenOption` and otherwise optional in the definition. Daily Review also requires it for Hold or Exit as its "Following the Plan" states.
 3. “Conviction now” — optional 1–5 Scale.
 4. “Anything you considered doing and decided against?” — optional Text.
 5. “Note” — optional Text.
 
-Hold is preselected only in returned unsaved view state. Primary emotion is deliberately not in this initial repeated checkpoint, though runtime configuration may add it later.
+Hold is preselected only in returned unsaved view state, and only when the Plan Call is `Hold`. Settle Later is protected: Daily Review alone saves it, it is never rendered among the Action choices, and it cannot be retired while its capability is installed. Primary emotion is deliberately not in this initial repeated checkpoint, though runtime configuration may add it later (plan decision 125).
 
 **Review Note**
 

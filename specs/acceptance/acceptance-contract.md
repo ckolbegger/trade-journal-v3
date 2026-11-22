@@ -107,7 +107,7 @@ A workflow scenario needs evidence at its public boundary and durable after-stat
 
 - **Given:** an option contract whose expiration date has passed but no settlement outcome exists.
 - **When:** Trade Detail and Daily Review are opened.
-- **Then:** no Expiration fact or Closed lifecycle is inferred; Settlement Due is shown and Review remains incomplete. Only an explicit Expiration/Assignment/Exercise/cash-settlement Position Change changes the facts.
+- **Then:** no Expiration fact or Closed lifecycle is inferred; Settlement Due is shown and Review remains incomplete until an explicit settlement Position Change or a Settle Later for that Review Date (AC-SET-005). Only an explicit Expiration/Assignment/Exercise/cash-settlement Position Change changes the facts.
 - **Evidence:** before/after facts, Review blocker, and explicit settlement receipt.
 
 ### AC-POS-004 — terminal agency requires one Close Reason
@@ -130,6 +130,13 @@ A workflow scenario needs evidence at its public boundary and durable after-stat
 - **When:** Assignment or Exercise is recorded.
 - **Then:** short-option underlying obligation is planned settlement; only explicit Exercise Intent is advance authorization for voluntary exercise; unplanned automatic exercise is still recorded truthfully with Exercise lineage; new Stock exposure atomically creates Management Debt until managed or removed; cash settlement creates no Stock successor.
 - **Evidence:** Plan intent, settlement/lineage/allocation facts, successor Plan context, Debt route, and atomic receipt.
+
+### AC-SET-005 — Settle Later finishes one Review only
+
+- **Given:** an in-the-money option past expiration with Settlement Due, on a release that cannot record its Assignment or Exercise, and every other obligation resolved.
+- **When:** the trader saves Settle Later, and the next Review Date is then opened.
+- **Then:** one Daily Trade Review Entry with Settle Later exists for that Trade and date and no Trade fact changes. That Review is Complete With Settlement To Record and names the Trade. The Trade owes no Hold, Exit, Roll, or Adjust on either date. The next Review reports Settlement Due again and is Incomplete.
+- **Evidence:** before/after facts, Entry snapshot, and both completion results.
 
 ## Corrections and audit
 
@@ -232,14 +239,14 @@ A workflow scenario needs evidence at its public boundary and durable after-stat
 
 - **Given:** a missed Review with shared current Missing Marks, global due Debt, Settlement Due, and several eligible Trades.
 - **When:** it opens, some tasks are resolved, the application stops, and the same exact date reopens.
-- **Then:** task families appear in Mark, Debt, settlement, Trade order; shared Mark resolves once for all affected Trades; saved outcomes resume from facts; no Review Session/finish flag/placeholders exist.
+- **Then:** Marks come first, once for every Trade; due Debt and Settlement Due appear with their Trade, in the attention order; shared Mark resolves once for all affected Trades; saved outcomes resume from facts; no Review Session/finish flag/placeholders exist.
 - **Evidence:** ordered view, saved identities, restart result, and storage/audit inspection.
 
 ### AC-REV-003 — one-click Hold still requires Save
 
-- **Given:** a new eligible Trade/date Action form.
+- **Given:** a new eligible Trade/date Action form for a Trade whose Plan Call is `Hold`.
 - **When:** it opens and the trader either leaves or presses Save without changing preselected Hold.
-- **Then:** leaving records no Action and Review remains incomplete; one Save creates exactly one Hold Daily Trade Review Entry. Exit/Roll/Adjust without Intent reject; with Intent they save intent only and create no Trade fact.
+- **Then:** leaving records no Action and Review remains incomplete; one Save creates exactly one Hold Daily Trade Review Entry. Roll/Adjust without Intent reject; with Intent they save intent only and create no Trade fact. Hold and Exit follow AC-REV-007.
 - **Evidence:** before/after Action query, validation, Entry snapshot, and unchanged Trade facts.
 
 ### AC-REV-004 — Action and Stop Deviation reconcile atomically
@@ -260,8 +267,22 @@ A workflow scenario needs evidence at its public boundary and durable after-stat
 
 - **Given:** every required Action/Debt/settlement/deviation task resolved, first with exact Marks and then with one explicit unavailable acknowledgment.
 - **When:** completion is derived.
-- **Then:** it is Complete in the first case and Complete With Unavailable Marks in the second, naming affected Instruments/Trades/calculations. A Missing current Mark stays Incomplete. Voiding an Action or correcting facts can make a past date Incomplete again without erasing history.
+- **Then:** it is Complete in the first case and Complete With Unavailable Marks in the second, naming affected Instruments/Trades/calculations. A Missing current Mark stays Incomplete. Settlement resolved only by Settle Later yields Complete With Settlement To Record, naming the Trades (AC-SET-005). Voiding an Action or correcting facts can make a past date Incomplete again without erasing history.
 - **Evidence:** completion/blocker structures and histories across changes.
+
+### AC-REV-007 — the Action follows the Plan
+
+- **Given:** three eligible Trades with current Marks, one past its Stop, one at its Target and one inside both, and a fourth with a Missing current Mark.
+- **When:** each Action form opens, and Hold and then Exit are saved with and without Intent.
+- **Then:** Hold is preselected only for the Trade inside both. For the two whose Plan Call is `Out`, nothing is preselected, Hold without Intent rejects and Exit without Intent saves. For the Trade inside both, Exit without Intent rejects. No Action saves for the fourth Trade until its Mark is entered or acknowledged Unavailable. Every saved Action records intent only; the rule creates no Deviation or other Trade fact.
+- **Evidence:** returned form state, validation results, Entry snapshots, and unchanged Trade facts.
+
+### AC-REV-008 — a sale is measured against the Plan Exit
+
+- **Given:** an Open Trade with a saved Exit Action, in four cases: the whole Position sold with its Stop reached and never held past; the whole Position sold before either condition is reached, with Intent on the Exit Action; the same with no Intent; and part of the Position sold.
+- **When:** the sale is recorded from Daily Review and from Trade Detail.
+- **Then:** each sale is one Position Change recorded by Trade Workflows with a completed Position Change Reflection and no reflection Debt. The first and second cases ask for no reason; the third and fourth reject without a Plan Departure Reason. A terminal sale requires its Close Reason and leaves one Outstanding Close Review Debt. The measure is stored nowhere and creates no Deviation.
+- **Evidence:** command validation, Trade receipts, Journal effects, and the same outcomes from both entry points.
 
 ## Market evidence
 

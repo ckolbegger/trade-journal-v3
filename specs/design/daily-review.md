@@ -25,9 +25,11 @@ The task-family order is normative:
 3. settlement facts still due;
 4. the attention-ranked eligible Trade walk.
 
+A Trade's due Journal Debt and its settlement still due may be presented with that Trade inside the walk, ahead of its Action; the walk then ranks a Trade with settlement due by the bands below (plan decisions 29, 61 and 125).
+
 Acknowledged Unavailable evidence is resolved but disclosed. Historical gaps are separately visible and do not block the current Review.
 
-Attention uses transparent bands: factual/management blocker, boundary reached, evidence limited, quantified pressure, then routine. It returns reasons and inputs, not a stored severity or discipline score. Within a Review view, order is stable. A fresh `open` may produce a new order.
+Attention uses transparent bands: factual/management blocker, an Exit not carried out, settlement due, Stop reached, Target reached, evidence limited, quantified pressure, then routine. An Exit is not carried out when the Trade's most recent Daily Trade Review Action before the Review Date is Exit. Within the Stop-reached band, Trades sort by Stop Overrun in R, deepest first, ahead of the within-band order below. It returns reasons and inputs, not a stored severity or discipline score. Within a Review view, order is stable: saving an Action or resolving Debt does not reorder it. A fresh `open`, or a Marks save that returns a refreshed view, may produce a new order (plan decision 125).
 
 Pressure is the share of its planned range that a Trade has travelled since entry, toward its Stop or toward its Target. Risk uses Monetary Ongoing Risk to Stop when it is a Value, otherwise evaluable Worst-Case Ongoing Risk; reward uses Incremental Reward to Target when it is a Value, otherwise evaluable Maximum Incremental Reward. Each is also evaluated at entry: the same calculation with each open Lot's open cost, without fees, in place of the Mark. The losing share is the risk consumed since entry (risk at entry less current risk) divided by risk at entry; the winning share is the reward consumed since entry divided by reward at entry. Pressure is the larger share that is positive, or 0 at entry. A Trade halfway from entry to its Stop and one halfway from entry to its Target both have pressure 1/2. Unbounded reward at entry makes the winning share Zero. Missing inputs, Unbounded risk at entry, and a risk or reward at entry that is not positive on the side the Trade has moved toward are Not Comparable. Comparable Trades with pressure above 0 are in the quantified-pressure band; Trades with pressure 0, and Not Comparable Trades that are not evidence limited, are routine. Boundary-reached status stays in its higher band even if risk distance has become zero. Within a band, comparable pressure sorts descending, then a Trade on its losing side before one on its winning side, then Last Activity descending, then stable Trade identity; Not Comparable Trades follow the comparable ones. Every reason and selected basis is returned: the side, the share, and the risk or reward at entry and now.
 
@@ -67,7 +69,15 @@ Provider absence/failure yields a Ready view with Manual Mark tasks and safe dia
 
 Returns one bound eligible Trade with factual summary, labels, exact Mark frame/Stale context, valuation/risk/payoff results, replay and Deviation comparison, due routes, and Action form state. If the overview binding is no longer coherent it returns `ReviewChanged`, never a hybrid.
 
-For a new Action, Hold is preselected only in returned view state. The visible Save button creates the one-click unchanged-Hold path. Opening, selecting, or navigating away records nothing. Exit, Roll, and Adjust require nonblank Intent. Saving any Action records intent only and may offer navigation to a Trade Workflow; it never executes or infers a Position Change.
+For a new Action, the returned view state follows the Plan Call (see "Following the Plan"): Hold is preselected only when the call is `Hold`, and nothing is preselected otherwise. With Hold preselected, the visible Save button creates the one-click unchanged-Hold path. Opening, selecting, or navigating away records nothing. Roll and Adjust require nonblank Intent; Hold and Exit require it as "Following the Plan" states. Saving any Action records intent only. The Review may then present the Trade Workflow's own form in place, or offer navigation to it; the Action itself never executes or infers a Position Change, and a Position Change is recorded only by Trade Workflows (plan decision 125).
+
+## Following the Plan
+
+The Plan Exit is the Plan's own exit: the whole open Position, when a headline Stop or Target is reached. The Plan Call for a Review Date is derived each time from `evaluate` at that date's Marks and is never stored: `Out` when a headline Stop is Breached or a headline Target is Reached; `Hold` when every stated headline condition is evaluable and none is reached; otherwise `Unknown`.
+
+Saving an Action is refused, with a typed no-write result, while a current Mark the Trade requires is Missing. An Unavailable acknowledgment resolves the Mark and leaves the call `Unknown`.
+
+Intent follows the call. Hold requires nonblank Intent when the call is `Out`. Exit requires it unless the call is `Out`. Roll and Adjust always require it. Daily Review enforces this at Save; the Entry Definition requires Intent only for Roll and Adjust. The rule records nothing but the Intent and creates no Deviation (plan decision 125).
 
 ## `getDebt`
 
@@ -81,7 +91,7 @@ The command is either `SaveTradeAction` or `ResolveReviewDebt`.
 
 Saving an Action requires the exact Review view, Trade/Fact revision, evidence snapshot, obligation key, and rendered form revision. The coordinator re-reads the Trade, re-resolves the normalized Market evidence, reruns derivation/replay, and compares recorded versus expected Stop-Discipline occurrences. It then atomically stages any narrow Deviation reconciliation and the dated Journal Action.
 
-The Action always has Source Daily Review, a Trade Anchor, and Daily Review origin `(Trade, Review Date)`. Its moment time is the Review cutoff while authored time is the actual Save time. A retry or revision updates the same obligation/Entry identity under expected revision rather than creating a duplicate.
+The Action always has Source Daily Review, a Trade Anchor, and Daily Review origin `(Trade, Review Date)`. Its moment time is the Review cutoff while authored time is the actual Save time. A retry or revision updates the same obligation/Entry identity under expected revision rather than creating a duplicate. For a Trade with Settlement Due, `SaveTradeAction` accepts only Settle Later (see "Settlement Due"), and it accepts Settle Later for no other Trade (plan decision 125).
 
 An accepted `DailyReviewSaveResult` returns the saved Action or Debt outcome, any reconciled Deviation occurrences, the revised progress/completion result, and the next step under the same post-commit facts. The caller continues the Review directly from this response without calling `open` or `getTrade` again.
 
@@ -126,7 +136,9 @@ Resolving Journal-only Debt creates an Entry and settles Debt together, or recor
 
 ## Settlement Due
 
-When an option reaches a factual settlement point without an explicit outcome, Review reports Settlement Due and remains incomplete. Only Trade Workflows may record Expiration, Assignment, Exercise, or cash settlement. The calendar never manufactures Expiration.
+When an option reaches a factual settlement point without an explicit outcome, Review reports Settlement Due and remains incomplete until the outcome is recorded or the trader saves Settle Later for that Trade and Review Date. Only Trade Workflows may record Expiration, Assignment, Exercise, or cash settlement; the Review may present that workflow's form in place. The calendar never manufactures Expiration.
+
+A Trade with Settlement Due owes no Hold, Exit, Roll, or Adjust for that Review Date. Settle Later is the trader's explicit statement that an Assignment or Exercise will be recorded later. It is available only while the installed release cannot record that outcome. It is saved as that date's Daily Trade Review Entry, creates no settlement fact, and resolves the settlement obligation for that Review Date only: the next Review reports Settlement Due again (plan decision 125).
 
 The Trade Workflow response is sufficient to present the committed settlement. Opening Daily Review afterward is a separate view request that resumes the ritual and rederives its broader task set; it is not a read-back required to complete the settlement command.
 
@@ -147,9 +159,10 @@ sequenceDiagram
 
 Completion is derived each time:
 
-- `Incomplete` while an eligible Trade lacks a saved Action, a required current Mark is Missing, due Debt remains, settlement/management is due, a deterministic Deviation awaits reconciliation, or integrity prevents a coherent result;
-- `Complete` when every obligation is resolved with exact current Marks;
-- `CompleteWithUnavailableMarks` when all obligations are resolved but at least one required Instrument has only an explicit unavailable acknowledgment. The result lists Instruments, Trades, and affected calculation families.
+- `Incomplete` while an eligible Trade that owes an Action lacks a saved one, a required current Mark is Missing, due Debt remains, settlement is due with neither a recorded outcome nor a Settle Later for that date, management is due, a deterministic Deviation awaits reconciliation, or integrity prevents a coherent result;
+- `Complete` when every obligation is resolved with exact current Marks and no Settle Later;
+- `CompleteWithUnavailableMarks` when all obligations are resolved but at least one required Instrument has only an explicit unavailable acknowledgment. The result lists Instruments, Trades, and affected calculation families;
+- `CompleteWithSettlementToRecord` when all obligations are resolved but at least one Trade's settlement is resolved only by Settle Later. The result lists those Trades. When unavailable acknowledgments also apply, the result carries both disclosures (plan decision 125).
 
 An older Mark cannot produce either completed state. Acknowledgment resolves evidence work but cannot make a calculation a Value.
 
@@ -157,6 +170,6 @@ There is no finish gesture. Closing and reopening finds saved Actions and Debt o
 
 ## Default Action definition
 
-The initial Daily Trade Review Action options are Hold, Exit, Roll, and Adjust. Hold must remain available while the one-click capability is installed. Hold has optional Intent; the other three require Intent. “Watch Closely” is not an Action. Missing Action is never inferred as Hold.
+The initial Daily Trade Review Action options are Hold, Exit, Roll, and Adjust, plus the protected option Settle Later, which is saved only as "Settlement Due" states and is never offered among the four. Hold must remain available while the one-click capability is installed. Roll and Adjust require Intent; Hold and Exit require it as "Following the Plan" states. “Watch Closely” is not an Action. Missing Action is never inferred as Hold (plan decision 125).
 
 See [Journal](journal.md), [Market Data](market-data.md), and [Trade Workflows](trade-workflows.md).

@@ -2,10 +2,10 @@
 
 Generated from [plan/spec-map.md](../spec-map.md) by `.claude/scripts/spec-reading-lists.py`; do not edit by hand.
 
-Read each range in full with the Read tool (`offset` = first line, `limit` = last − first + 1). 122 entries, 159,593 characters (≈66K tokens).
+Read each range in full with the Read tool (`offset` = first line, `limit` = last − first + 1). 122 entries, 160,564 characters (≈67K tokens).
 
 - `specs/README.md`: 1–100
-- `specs/acceptance/acceptance-contract.md`: 3–31, 173–179, 411–424, 439–527
+- `specs/acceptance/acceptance-contract.md`: 3–31, 180–186, 432–445, 460–548
 - `specs/adr/0001-domain-facts-pure-analysis-and-coordinators.md`: whole file
 - `specs/adr/0002-semantic-command-atomicity.md`: whole file
 - `specs/adr/0003-authoritative-lifecycle-and-derived-disposition.md`: whole file
@@ -19,7 +19,7 @@ Read each range in full with the Read tool (`offset` = first line, `limit` = las
 - `specs/adr/0011-optimistic-bindings-and-shared-counter-retry.md`: whole file
 - `specs/design/daily-review.md`: 3–16
 - `specs/design/delivery-contract.md`: whole file
-- `specs/design/journal.md`: 3–22, 217–222
+- `specs/design/journal.md`: 3–22, 219–224
 - `specs/design/market-data.md`: 3–24, 155–161
 - `specs/design/overview.md`: 3–214, 248–273
 - `specs/design/performance-analysis.md`: 3–16, 40–47
@@ -27,7 +27,7 @@ Read each range in full with the Read tool (`offset` = first line, `limit` = las
 - `specs/design/trade-analysis.md`: 3–48, 136–140
 - `specs/design/trade-record.md`: 3–90, 141–160
 - `specs/design/trade-views-and-reporting.md`: 3–23, 161–170
-- `specs/design/trade-workflows.md`: 3–48, 191–202
+- `specs/design/trade-workflows.md`: 3–48, 193–204
 - `specs/design/ui-contract.md`: 3–99, 108–127
 - `specs/design/workspace.md`: whole file
 - `specs/glossary.md`: whole file
