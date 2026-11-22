@@ -51,4 +51,5 @@ Commit `34d79930`. `checkMarkSlip({instrument, entry, lastMark?}, limits = MARK_
 | medium bug | `mark-slip.ts:23` | `BigInt(limit)` throws `RangeError` for a fractional limit | Valid (latent: today's limits are integers) | bug task T95.5-B2 |
 
 **T95.5-B1.** Case: "it should offer a ten or hundred times reading only when the price it shows lies within the limits".
+*T95.5-B1 done:* commit `b92f956c`; the scaled reading is rounded to the shown candidate and that value is tested against the band (red: `expected 'Scaled' to be 'Moved'`, stock 0.000115 vs 0.000011). ocr (session 78e32c6b, 2 files, 0 comments): No findings. Raw: `ocr/T95.5-B1-b92f956c.json`.
 **T95.5-B2.** Case: "it should apply a fractional limit, such as 5.5%, without throwing".
