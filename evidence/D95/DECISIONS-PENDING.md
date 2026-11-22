@@ -51,4 +51,6 @@
 
 **Recommendation:** (b) — a session with no Review and no Marks is still a real state the app must show; (a) would leave the gap display untested in the browser.
 
-**Status:** asked. Parked: T95.7-B1's two specs (T95.7's run waits on them). Other work continues.
+**Answer (2026-11-22):** (b). A test-setup choice within T95.7-B1 (no plan revision). **Status:** answered 2026-11-22; T95.7-B1 resumes.
+
+**Previous status:** asked. Parked: T95.7-B1's two specs (T95.7's run waits on them).
