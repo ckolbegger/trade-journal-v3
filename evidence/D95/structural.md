@@ -135,6 +135,19 @@ Commit `85912096` (from `55788547`). New `decisions.ts` (`lastDecisionsOf`); `Da
 
 **T95.7-F1** `8f0a419c`: `pressSave(form)` split out of `saveAction` (e2e/d4/support.ts) and exported; `saveAction` ends with it; both d9ar/review.spec.ts copies call it (calling `saveAction` whole would re-fill the draft the second case proves survived). d9ar/review and d4/review: 7 of 7 before (38.8 s) and after (39.8 s). ocr (`ocr/T95.7-F1-8f0a419c.json`): **No findings.**
 
+**T95.7-F2** `38d61e16` (five e2e support files): `savedUnlessRefused(helper, scope, waitSaved)` in e2e/d4/support.ts keeps each success wait and polls every 100 ms for a `.field-error` or `[role="alert"]` in the form or section (the Marks panel's saved-but-out-of-date alert ignored), throwing "<helper>: the app refused the save and shows: …". Forced refusals (temporary `src/` edits, reverted) for helpers 2–6:
+
+| Helper | Spec | Before | After |
+|---|---|---|---|
+| `pressSave` | e2e/d8r/today.spec.ts:8 (real) | 24.6 s, timeout | 3.9 s, "This Action could not be saved. Reopen the Trade and try again." |
+| `expectSavedReflection` | e2e/d5/review-debt.spec.ts:36 | 23.0 s | 2.8 s |
+| `checkSavedRow` | e2e/d4/review.spec.ts:6 | 23.7 s | 3.6 s |
+| `saveMarks` | e2e/d9/gaps.spec.ts:11 | 21.8 s | 1.9 s |
+| `savedOptionMarkRow` | e2e/d7/marks-zero.spec.ts:14 | 23.2 s | 3.2 s |
+| `enterTrade` | e2e/d9ar/review.spec.ts:28 | 22.2 s | 2.0 s |
+
+Success path: e2e/d4, d5, d7, d9, d9ar 225 passed, 4 skipped, 1 failed (the known `d4/responsive-a11y.spec.ts:114`, T95.7) before (13.7 min) and after (13.6 min). Note: a `ReviewMarksUnresolved` refusal shows the generic "This Action could not be saved. Reopen the Trade and try again." until the screen handles the code (later task).
+
 ## Trial: complete runs overlapped with the next task (the user, 2026-11-22, for 5 or 6 tasks)
 
 Each task's complete run runs in a detached scratch copy (`.claude/worktrees/run-<label>`, set up by `lane-setup.sh`) at the task's commit, while the next task's subagent starts in this worktree. The run's files are copied back to `evidence/D95/suite-runs/`. A failure becomes a bug task as before; the next task restarts only if it built on the broken code. Times are recorded per run to measure the saving.
