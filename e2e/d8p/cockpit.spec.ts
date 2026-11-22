@@ -36,7 +36,7 @@ const labelCounts = (page: Page) =>
 test.describe('B8P.1 The cockpit', () => {
   test('should show the rail with W2, W3, W5 and W7, the tabs in W1 order moved by the arrow keys, each drawer holding its content once, and every condition with its status', async ({ profile }) => {
     test.setTimeout(420_000);
-    const trade = await buildOc3(profile, { thursdayHold: true });
+    const trade = await buildOc3(profile, { thursdayHold: true, noTuesdayReview: true });
     const { context, page } = await openDetailAt(profile, THURSDAY_1800, trade);
 
     await test.step('the rail answers without opening a drawer (W2, W3, W5, W7)', async () => {
@@ -78,7 +78,7 @@ test.describe('B8P.1 The cockpit', () => {
 
     await test.step('the tabs follow W1 and the arrow keys move between them', async () => {
       const tabs = page.getByRole('tablist', { name: 'Detail' });
-      await expect(tabs.getByRole('tab')).toHaveText(['Today', 'Position', 'Plan and Risk', 'Price History', 'Journal 1 owed', 'Payoff']);
+      await expect(tabs.getByRole('tab')).toHaveText(['Today', 'Position', 'Plan and Risk', 'Price History 1', 'Journal 1 owed', 'Payoff']);
       const tab = (name: DrawerName) => tabs.getByRole('tab', { name, exact: true });
       await expect(tab('Today')).toHaveAttribute('aria-selected', 'true');
       await tab('Today').focus();
