@@ -44,8 +44,11 @@ export function checkMarkSlip(input: { instrument: Instrument; entry: string; la
   const within = (price: Rational) => price.compare(top) <= 0 && price.compare(bottom) >= 0
   if (within(entry.value)) return { kind: 'Pass' }
   for (const factor of [10n, 100n] as const) {
-    for (const price of [entry.value.div(Rational.of(factor)), entry.value.mul(Rational.of(factor))]) {
-      if (within(price) && price.numerator !== 0n) return { kind: 'Scaled', factor: Number(factor) as 10 | 100, candidate: priceText(price) }
+    for (const scaled of [entry.value.div(Rational.of(factor)), entry.value.mul(Rational.of(factor))]) {
+      // The band is tested on the price as shown, which is rounded to six decimals.
+      const candidate = priceText(scaled)
+      const shown = parseDecimal(candidate)
+      if (shown.ok && within(shown.value) && shown.value.numerator !== 0n) return { kind: 'Scaled', factor: Number(factor) as 10 | 100, candidate }
     }
   }
   const move = entry.value.sub(last.value).div(last.value).mul(HUNDRED)

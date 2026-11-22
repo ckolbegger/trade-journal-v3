@@ -30,6 +30,11 @@ describe('The Mark slip check (P167)', () => {
     expect(checkMarkSlip({ instrument: option, entry: '0.44', lastMark: '4.50' })).toEqual({ kind: 'Scaled', factor: 10, candidate: '4.40' })
     expect(checkMarkSlip({ instrument: stock, entry: '880.00', lastMark: '45.10' }).kind).toBe('Moved')
   })
+  it('should offer a ten or hundred times reading only when the price it shows lies within the limits', () => {
+    // 0.000115 / 10 = 0.0000115 is within 5% of 0.000011, but the shown 0.000012 is 9.1% above it.
+    expect(checkMarkSlip({ instrument: stock, entry: '0.000115', lastMark: '0.000011' }).kind).toBe('Moved')
+  })
+
   it('should ask whether an option is worth nothing at zero, and refuse a zero share price', () => {
     expect(checkMarkSlip({ instrument: option, entry: '0', lastMark: '0.45' })).toEqual({ kind: 'WorthNothing' })
     expect(checkMarkSlip({ instrument: option, entry: '0.00', lastMark: '0.45' })).toEqual({ kind: 'WorthNothing' })
