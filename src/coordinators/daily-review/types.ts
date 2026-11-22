@@ -304,6 +304,27 @@ export interface OwedReflection {
   readonly saveBinding: ReflectionSaveBinding;
 }
 
+// One saved Action of the card's last decisions: its Review Date, the Action, the reason when one was saved, and that session's Trade P&L
+// from the replay series (absent when the Trade cannot be replayed or has no session that date).
+export interface DecisionLine {
+  readonly date: string;
+  readonly action: string;
+  readonly reason?: string;
+  readonly tradePnl?: CalculationResult<Rational>;
+}
+
+// A305: what the Trade's saved Actions before the Review Date say.
+export interface LastDecisions {
+  // The four most recent, newest first.
+  readonly recent: readonly DecisionLine[];
+  // How many saved Actions are earlier than those.
+  readonly earlier: number;
+  // The sessions after the last Action and before the Review Date, which the Trade had no Review for; from its first exposure when it has none.
+  readonly sessionsWithoutReview: readonly string[];
+  // The line the Trade was past, and the consecutive earlier Review Dates on which Hold was saved while it was; absent with none.
+  readonly heldPast?: { readonly line: 'Stop' | 'Target'; readonly sessions: number };
+}
+
 export interface DailyTradeReview {
   readonly tradeId: string;
   readonly underlying: string;
@@ -333,6 +354,9 @@ export interface DailyTradeReview {
   readonly reflections: readonly OwedReflection[];
   // The card's progress, as `open` lists it on the Trade's walked item (A165).
   readonly progress: CardProgress;
+  // The Trade's last decisions before the Review Date (A305).
+  // `getTrade` always returns it; optional so a card built by hand needs none (the screen that shows it, T95.19, reads it).
+  readonly decisions?: LastDecisions;
   readonly form: ActionForm;
   // The Daily Trade Review definition revision the form was rendered from.
   readonly definitionRevision: string;

@@ -12,6 +12,7 @@ import { beginSemanticTransaction, type Persistence, type WorkspaceSnapshotBindi
 import type { MutationGuard } from '../mutation-guard.ts';
 import { payoffOf } from '../settlement.ts';
 import { assembleReplay } from '../replay/index.ts';
+import { lastDecisionsOf } from './decisions.ts';
 import { attentionOf, byAttention, meterReadingOf, unavailableFamilies, valueTrade, type TradeValuation } from '../valuation/index.ts';
 import type {
   ActionForm,
@@ -179,6 +180,13 @@ function expirationsAhead(ranked: readonly { readonly item: ReviewTradeItem; rea
       const sessions = read.sessionDatesBetween(dayAfter(reviewDate), expiration);
       return { expiration, ...(sessions.kind === 'Sessions' && { sessionsLeft: sessions.dates.length }), contracts };
     });
+}
+
+// The first date a Trade had no Review from: the day after its last Action, else its first exposure's date (A305).
+function unreviewedSince(lastReviewDate: string | undefined, exposureStart: string | null | undefined): string | undefined {
+  if (lastReviewDate !== undefined) return dayAfter(lastReviewDate);
+  if (!exposureStart) return undefined;
+  return Temporal.Instant.from(exposureStart).toZonedDateTimeISO('UTC').toPlainDate().toString();
 }
 
 // Each Trade's most recent Action of the history read, which is by Review Date.
@@ -856,6 +864,8 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     const replayed = found.integrity.kind === 'Derived' && analysis.positionChanges.length > 0 ? await assembleReplay(deps, analysis, found.integrity, read, { withJournal: false }) : undefined;
     const replay = replayed && !('kind' in replayed) ? replayed : undefined;
     const saved = actions.actions[analysis.tradeId];
+    const since = unreviewedSince(actions.earlier?.at(-1)?.reviewDate, valuation?.state.exposureStart);
+    const decisions = lastDecisionsOf(actions.earlier ?? [], replay, reviewDate, since === undefined ? [] : missedSessions(read, since, dayBefore(reviewDate)));
     // The Trade's Outstanding Debt, each classified against the closes around the Review Date (A63).
     const outstanding = await boundDebts(analysis.tradeId, request.binding);
     if (!outstanding) return { kind: 'ReviewChanged' };
@@ -891,6 +901,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
           ...(replay && { replay }),
           reflections,
           progress,
+          decisions,
           form,
           definitionRevision,
           saveBinding: {
