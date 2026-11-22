@@ -489,6 +489,9 @@ export interface RefreshedEvidence {
   readonly factRevision?: number;
 }
 
+// Daily Review's own issues (P166). The Action is not saved until each Instrument its figures require has its Review Date Mark saved or acknowledged Unavailable.
+export type DailyReviewIssue = { readonly code: 'ReviewMarksUnresolved'; readonly instruments: readonly Instrument[] };
+
 export type SaveDailyReviewResult =
   | { readonly kind: 'Saved'; readonly action: DailyAction; readonly review: PostSaveReview }
   // A reflection resolved: its Entry or decline, the Debt's transition, and the Review under the facts it left (A67).
@@ -501,7 +504,7 @@ export type SaveDailyReviewResult =
   // For Marks, `keys` names every key that moved or already has an exact Mark, as Market Data reports them; never retried.
   | { readonly kind: 'Conflict'; readonly currentOutcome?: ObligationOutcome; readonly keys?: readonly MarketDataConflictedKey[] }
   | { readonly kind: 'NotFound' }
-  | { readonly kind: 'Rejected'; readonly issues: readonly (JournalIssue | MarketDataIssue | MarketDataPrepareIssue)[] }
+  | { readonly kind: 'Rejected'; readonly issues: readonly (JournalIssue | MarketDataIssue | MarketDataPrepareIssue | DailyReviewIssue)[] }
   | { readonly kind: 'ChangedDuringAssembly' }
   | RuntimeNotWritable
   | StorageFailure;

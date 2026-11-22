@@ -46,10 +46,10 @@ describe('I8P.1 Replay with a gap (AC-MARK-004, partial)', () => {
     expect(view.instruments).toEqual([XYZ, XYZ_DEC_CALL]);
     expect(figures(view)).toEqual([
       { date: DATES.mon, held: q(2n), realized: q(0n), tradePnl: q(1870n, 100n), change: null, marks: [{ instrument: XYZ, price: '56', change: null }, { instrument: XYZ_DEC_CALL, price: '2.1', change: null }] },
-      // Tuesday: a gap for both Instruments, no value carried from Monday, and nothing to change from.
+      // Tuesday: no value for either Instrument (acknowledged Unavailable, so the Hold could be saved), none carried from Monday, and nothing to change from.
       {
-        date: DATES.tue, held: q(2n), realized: q(0n), tradePnl: { kind: 'Unavailable', reason: 'MarkMissing', instrument: XYZ_DEC_CALL, date: DATES.tue }, change: null,
-        marks: [{ instrument: XYZ, price: 'Missing', change: null }, { instrument: XYZ_DEC_CALL, price: 'Missing', change: null }],
+        date: DATES.tue, held: q(2n), realized: q(0n), tradePnl: { kind: 'Unavailable', reason: 'AcknowledgedUnavailable', instrument: XYZ_DEC_CALL, date: DATES.tue }, change: null,
+        marks: [{ instrument: XYZ, price: 'AcknowledgedUnavailable', change: null }, { instrument: XYZ_DEC_CALL, price: 'AcknowledgedUnavailable', change: null }],
       },
       {
         date: DATES.wed, held: q(1n), realized: q(9870n, 100n), tradePnl: q(18805n, 100n), change: { since: DATES.mon, dollars: q(16935n, 100n) },

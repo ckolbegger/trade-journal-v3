@@ -942,7 +942,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
   const optionalText = (promptId: string, text: string | undefined) => (text === undefined || text.trim() === '' ? {} : { [promptId]: { kind: 'Text' as const, text: text.trim() } });
 
   // The Trade's facts and the Review-date evidence as they are now, against what the form was rendered from.
-  type Checked = { readonly kind: 'Checked'; readonly cutoff: string; readonly evidenceBinding: EvidenceBinding } | Extract<SaveDailyReviewResult, { kind: 'ReviewChanged' | 'Rejected' }>;
+  type Checked = { readonly kind: 'Checked'; readonly cutoff: string; readonly evidenceBinding: EvidenceBinding; readonly unresolved: readonly Instrument[] } | Extract<SaveDailyReviewResult, { kind: 'ReviewChanged' | 'Rejected' }>;
   async function checkBinding(binding: TradeSaveBinding): Promise<Attempt<Checked>> {
     const session = await deps.marketData.query({ kind: 'ResolveSession', context: { kind: 'Review', reviewDate: binding.reviewDate } });
     if (session.kind === 'Rejected') return { done: session };
@@ -958,12 +958,16 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     if (frames.kind === 'Rejected') return { done: frames };
     const stale = entry?.analysis.factRevision !== binding.factRevision || frames.snapshotId !== binding.marketDataSnapshotId;
     const evidence = { marketDataSnapshotId: frames.snapshotId, frames: frames.frames, ...(entry && { factRevision: entry.analysis.factRevision }) };
+    // The Instruments this Trade's figures require whose Review Date Mark is neither saved nor acknowledged Unavailable (A304); no earlier session is read.
+    const missing = new Set(frames.frames.filter((frame) => frame.resolution.kind === 'Missing').map((frame) => frame.instrumentKey));
+    const unresolved = new Map<string, Instrument>();
+    for (const { instrument } of entry ? observationNeeds([entry]).requirements : []) if (missing.has(instrumentKey(instrument))) unresolved.set(instrumentKey(instrument), instrument);
     // Settled through `coherently`, so the Workspace is also the same before and after; the binding's Workspace is compared by database name.
     return {
       settle: ({ workspace }) =>
         stale || workspace.databaseName !== binding.databaseName
           ? { kind: 'ReviewChanged', evidence }
-          : { kind: 'Checked', cutoff: session.closeInstant, evidenceBinding: frames.evidenceBinding },
+          : { kind: 'Checked', cutoff: session.closeInstant, evidenceBinding: frames.evidenceBinding, unresolved: [...unresolved.values()] },
     };
   }
 
@@ -980,6 +984,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     const { binding } = request;
     const checked = await coherently(() => checkBinding(binding));
     if (checked.kind !== 'Checked') return checked;
+    if (checked.unresolved.length > 0) return { kind: 'Rejected', issues: [{ code: 'ReviewMarksUnresolved', instruments: checked.unresolved }] };
     const prepared = await deps.journal.prepareEffects({
       obligation: 'DailyTradeReview',
       disposition: {

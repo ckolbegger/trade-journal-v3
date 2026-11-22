@@ -124,6 +124,8 @@ describe('SaveTradeAction (AC-REV-003)', () => {
   it('should reject Exit, Roll, or Adjust without Intent, and save them with Intent while creating no Trade fact', async () => {
     const stack = await reviewStack(MONDAY_1700);
     const { a, b, c } = await fiveTradeFixture(stack);
+    // An Action waits for its Trade's Marks (A304): DEF's Review Date Mark is saved first.
+    await stack.saveMark('DEF', '40.50');
     const bindings = { a: await bindingFor(stack, a), b: await bindingFor(stack, b), c: await bindingFor(stack, c) };
     const before = await dumpAll(stack.factory);
 

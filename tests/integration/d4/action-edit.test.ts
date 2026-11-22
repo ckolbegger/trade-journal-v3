@@ -1,6 +1,6 @@
 // I4.16: Action retry and edit (AC-JOUR-005 partial).
 import { describe, expect, it } from 'vitest';
-import { bindingFor, dumpAll, device, fourTrades, MONDAY, MONDAY_1700, onboarded, restart, workspaceStores } from './support.ts';
+import { bindingFor, dumpAll, device, fourTrades, MONDAY, MONDAY_1700, onboarded, restart, saveMark, workspaceStores } from './support.ts';
 
 interface StoredEntry {
   readonly id: string;
@@ -14,6 +14,8 @@ describe('I4.16 Action retry and edit', () => {
     const d = await device(undefined, MONDAY_1700);
     const app = await onboarded(d);
     const { a } = await fourTrades(app);
+    // An Action waits for its Trade's Marks (A304).
+    await saveMark(app, 'XYZ', MONDAY, '52.00');
 
     const fresh = await bindingFor(app, d, a);
     expect(fresh.form.form).toEqual({ kind: 'New', viewState: { selectedAction: 'Hold' } });

@@ -63,6 +63,11 @@ export async function oc3(options: { readonly thursdayHold?: boolean } = {}): Pr
 
   d = at(d, WEDNESDAY_0800);
   app = await restart(app, d);
+  // Tuesday has no Marks, and an Action waits for its Trade's Marks (A304): they are acknowledged Unavailable, so the gap stays.
+  for (const key of ['XYZ', CALL_KEY]) {
+    const acknowledged = await app.MarketData.save({ intention: 'AssertUnavailable', instrumentKey: key, tradingDate: DATES.tue, reason: 'No quote available.', expectedResolutionRevision: 'None' });
+    if (acknowledged.kind !== 'Saved') throw new Error(`MarketData.save: ${acknowledged.kind}`);
+  }
   await saveAction(app, d, tradeId);
 
   d = at(d, WEDNESDAY_1105);
