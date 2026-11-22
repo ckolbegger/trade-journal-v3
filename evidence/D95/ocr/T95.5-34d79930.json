@@ -1,0 +1,133 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 2,
+    "total_tokens": 70619,
+    "input_tokens": 68978,
+    "output_tokens": 1641,
+    "cache_read_tokens": 9984,
+    "elapsed": "54s"
+  },
+  "tool_calls": {
+    "total": 13,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 2,
+      "file_find": 3,
+      "file_read": 7
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/domain/mark-slip/mark-slip.ts",
+      "content": "The band check uses the exact scaled price, but priceText rounds the returned candidate to six decimal places. For stock entry '0.000115' and lastMark '0.000011', the exact candidate 0.0000115 is within 5%, but the returned '0.000012' is about 9.1% above the last Mark. Thus accepting the suggestion can produce a price that fails the same check. Validate the representable candidate after formatting (and skip the suggestion if it is zero or outside the band), and add a precision-boundary regression test.",
+      "existing_code": "      if (within(price) \u0026\u0026 price.numerator !== 0n) return { kind: 'Scaled', factor: Number(factor) as 10 | 100, candidate: priceText(price) }",
+      "start_line": 48,
+      "end_line": 48,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/domain/mark-slip/mark-slip.ts",
+      "content": "MarkSlipLimits exposes unrestricted number-valued percentages, but BigInt(limit) throws a RangeError for fractional limits. For example, supplying stock: { up: 5.5, down: 5 } causes an ordinary positive-price check to throw rather than return a MarkSlipAnswer. Convert fractional percentages to an exact rational, or explicitly enforce and document an integer-only limits contract; add coverage for fractional custom limits.",
+      "existing_code": "  return Rational.of(BigInt(limit)).div(HUNDRED)",
+      "start_line": 23,
+      "end_line": 23,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/domain/mark-slip/index.ts",
+        "src/domain/mark-slip/mark-slip.test.ts",
+        "src/domain/mark-slip/mark-slip.ts"
+      ]
+    }
+  ],
+  "session_id": "68b69603-5bdf-4949-9617-1c41c8f544aa",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "68b69603-5bdf-4949-9617-1c41c8f544aa",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "34d79930",
+      "resolved_base": "2d7dc8708f6eb768d50deda57df1c57b74140539",
+      "resolved_head": "34d79930074aef43b07920631e3344dc041c4bc0",
+      "exact_range": "2d7dc8708f6eb768d50deda57df1c57b74140539..34d79930074aef43b07920631e3344dc041c4bc0",
+      "source_artifact_sha256": "824a7c2adb427d0ed850cee4ef58fb04cdc743169cf2d0d6ee23b4bd4bc89f2d"
+    },
+    "execution": {
+      "ocr_version": "v1.14.1",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0a95be8db311c51fd8f0917f84c6ed1ceb2a55eb1a56d33d21fd43c728873422",
+          "path": "src/domain/mark-slip/index.ts",
+          "fingerprint": "e9d14d22a2faba31eeaaede96dc5ba31b174a5262e8e6034abfbdc8b52836654"
+        },
+        {
+          "item_id": "7596493390acefdb75899f4c9a52fcbefbca64c3eb4e63e27ee859da0afb2b7a",
+          "path": "src/domain/mark-slip/mark-slip.test.ts",
+          "fingerprint": "5767147e52f82d5ae2a7457b520bb8868fa9b0beddaec8940a48a41297b3de54"
+        },
+        {
+          "item_id": "b4e85ff92924126b4b8a995047ff7db44b5c29e3d611e4b935dd6835506997ea",
+          "path": "src/domain/mark-slip/mark-slip.ts",
+          "fingerprint": "053fa430dc32d499769795ba4408a161109d85c4951ce2d205d47f1c0a0bc381"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0a95be8db311c51fd8f0917f84c6ed1ceb2a55eb1a56d33d21fd43c728873422",
+          "path": "src/domain/mark-slip/index.ts",
+          "fingerprint": "e9d14d22a2faba31eeaaede96dc5ba31b174a5262e8e6034abfbdc8b52836654"
+        },
+        {
+          "item_id": "7596493390acefdb75899f4c9a52fcbefbca64c3eb4e63e27ee859da0afb2b7a",
+          "path": "src/domain/mark-slip/mark-slip.test.ts",
+          "fingerprint": "5767147e52f82d5ae2a7457b520bb8868fa9b0beddaec8940a48a41297b3de54"
+        },
+        {
+          "item_id": "b4e85ff92924126b4b8a995047ff7db44b5c29e3d611e4b935dd6835506997ea",
+          "path": "src/domain/mark-slip/mark-slip.ts",
+          "fingerprint": "053fa430dc32d499769795ba4408a161109d85c4951ce2d205d47f1c0a0bc381"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "67014f222b2bfe9bcde20fc87ef8efe3bf390a1ab9a05aeb2c9176b4f89a4a20",
+          "path": "evidence/D95/tdd-log/T95.5.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 53781
+  }
+}
