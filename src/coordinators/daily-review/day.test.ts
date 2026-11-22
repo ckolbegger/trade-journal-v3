@@ -209,6 +209,21 @@ describe('open: the sessions with no Review (A300)', () => {
   }, 60_000);
 });
 
+describe("open: the sessions with no Review before the calendar's coverage (A300)", () => {
+  it('should name the covered sessions with no Review when the range starts before the calendar coverage', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    // First exposed Thu 2023-12-28, before the session policy's coverage begins (2024-01-01, a holiday).
+    const planned = await stack.confirm({ symbol: 'ABC', shares: '100', entry: '30.00', stop: '28.00', target: '36.00', planTime: '2023-12-28T13:00:00Z' });
+    await stack.fill(planned, '2023-12-28T14:00:00Z', '100', '30.00');
+
+    const { missed } = (await open(stack)).day;
+
+    expect(missed[0]).toBe('2024-01-02');
+    expect(missed.at(-1)).toBe('2026-10-09');
+    expect(missed.every((date) => date >= '2024-01-01')).toBe(true);
+  }, 60_000);
+});
+
 describe('open: the finished day (A300)', () => {
   // ABC is past its Stop on Thursday and again on Friday and Monday, after Wednesday's recovery; DEF is bought Monday and ends it at its Target.
   async function finishedDay() {

@@ -316,8 +316,8 @@ export interface MarketDataReadSession {
   binding(): { readonly evidenceBinding: EvidenceBinding; readonly snapshotIds: Readonly<Record<string, string>> };
 }
 
-// The session dates of a span, from the calendar alone; NotCovered names the first date the calendar does not reach.
-export type SessionDates = { readonly kind: 'Sessions'; readonly dates: readonly string[] } | { readonly kind: 'NotCovered'; readonly date: string };
+// The session dates of a span, from the calendar alone; NotCovered names the first date the calendar does not reach and the calendar's coverage.
+export type SessionDates = { readonly kind: 'Sessions'; readonly dates: readonly string[] } | { readonly kind: 'NotCovered'; readonly date: string; readonly coverage: CoverageRange };
 
 export type SettlementTime = CalculationResult<Instant, Extract<UnavailableReason, { reason: 'SessionPolicyNotCovered' }>, never>;
 
@@ -606,7 +606,7 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
   // The session dates of a span, from the calendar alone (decision 128).
   function calendarSessionDates(from: string, to: string): SessionDates {
     const found = deps.sessionPolicy.sessionsBetween(from, to);
-    return found.ok ? { kind: 'Sessions', dates: found.value.map((session) => session.date) } : { kind: 'NotCovered', date: found.diagnostic.date };
+    return found.ok ? { kind: 'Sessions', dates: found.value.map((session) => session.date) } : { kind: 'NotCovered', date: found.diagnostic.date, coverage: found.diagnostic.coverage };
   }
 
   // The read half of a frame query, inside the caller's read transaction.

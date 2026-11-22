@@ -154,11 +154,14 @@ const shiftDay = (date: string, days: number): string => Temporal.PlainDate.from
 const dayAfter = (date: string) => shiftDay(date, 1);
 const dayBefore = (date: string) => shiftDay(date, -1);
 
-// The session dates from `from` to `to`, both included, as the Review's calendar names them; none when the calendar does not cover them.
+// The session dates from `from` to `to`, both included, as the Review's calendar names them. A range that starts before the calendar's
+// coverage is counted from the first covered date (P8: never a guessed session); none when it ends before that, or past the coverage's end.
 function missedSessions(read: MarketDataReadSession, from: string, to: string): readonly string[] {
   if (from > to) return [];
   const found = read.sessionDatesBetween(from, to);
-  return found.kind === 'Sessions' ? found.dates : [];
+  if (found.kind === 'Sessions') return found.dates;
+  if (found.date >= found.coverage.first) return [];
+  return found.coverage.first > to ? [] : missedSessions(read, found.coverage.first, to);
 }
 
 // The option contracts the walked Trades still hold that expire after the Review Date, by expiration date, each date with the sessions left.
