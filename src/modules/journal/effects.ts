@@ -290,9 +290,11 @@ export type OutstandingDebtPage = {
   readonly snapshot: { readonly journalRevision: number };
 };
 
-// Every Daily Trade Review Action saved for one Review Date.
+// Every Daily Trade Review Action saved for one Review Date; with `since`, also the Actions of the Review Dates from `since`
+// to the day before it, read in the same snapshot.
 export interface ReviewDateQuery {
   readonly reviewDate: string;
+  readonly since?: string;
 }
 
 // An answer as saved, with the option label from the Entry's own definition snapshot.
@@ -404,5 +406,7 @@ export type ReviewDateActions = {
   readonly reviewDate: string;
   // Keyed by Trade identity; a Trade with no Action for the date is absent (never an implicit Hold).
   readonly actions: Readonly<Record<string, DailyAction>>;
+  // Present when the query gave `since`: the earlier Actions, by Review Date, then Trade.
+  readonly earlier?: readonly HistoryAction[];
   readonly snapshot: { readonly journalRevision: number };
 };

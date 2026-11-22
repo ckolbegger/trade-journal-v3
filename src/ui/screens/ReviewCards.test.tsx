@@ -53,7 +53,7 @@ const trade = (tradeId: string, underlying: string, over: Partial<WalkedTrade>):
 // The meter readings the Review gives: T-A between its rails, T-B past the Stop, T-C with no Mark.
 const meterOf = (now: MeterReading['now'], stop: bigint, target: bigint): MeterReading => ({ stop: value(stop), target: value(target), banked: value(0n), now });
 const TB = trade('t-b', 'ABC', {
-  band: 'BoundaryReached',
+  band: 'StopReached',
   meter: meterOf({ kind: 'Value', value: { pnl: rational(-200n), zone: 'PastStop', pastBy: { dollars: rational(50n) } as never } }, -150n, 300n),
   reasons: [{ code: 'StopBreached', conditionId: 'c', overrun: rational(1n) }],
   figures: { riskToStop: value(0n), pnl: value(-200n), rewardRiskNow: { kind: 'NotApplicable' } as never },

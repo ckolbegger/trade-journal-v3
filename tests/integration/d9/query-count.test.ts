@@ -24,7 +24,7 @@ const SERIES = { on: 'index', store: 'observations', index: 'byInstrumentDate', 
 const REPLAY = { 'journalDebts.getAll': 1, 'journalDeclines.getAll': 1, 'journalDefinitions.getAll': 1, 'journalEntries.getAll': 1, 'journalTypes.getAll': 1, 'meta.get': 8, 'observations.getAll': 3, 'trades.get': 1 };
 
 // The Review's open for a Workspace holding the one Trade: no Journal narrative and no series read of the replay.
-const OPEN = { 'journalDebts.getAll': 1, 'journalDefinitions.getAll': 1, 'journalObligations.getAll': 1, 'journalTypes.getAll': 1, 'meta.get': 14, 'observations.getAll': 4, 'trades.getAll': 2 };
+const OPEN = { 'journalDebts.getAll': 1, 'journalDefinitions.getAll': 1, 'journalEntries.getAll': 1, 'journalObligations.getAll': 1, 'journalTypes.getAll': 1, 'meta.get': 14, 'observations.getAll': 4, 'trades.getAll': 2 };
 // getTrade's card of that Trade: its own reads, with 'observations.getAll' 3 being the date-wide read plus one series read per Instrument
 // of the Trade (the Underlying and the call), the replay's only addition; no Journal narrative read.
 const CARD = { 'catalog.getAll': 1, 'journalDebts.getAll': 1, 'journalDefinitions.getAll': 2, 'journalObligations.getAll': 1, 'journalTypes.getAll': 1, 'meta.get': 17, 'observations.getAll': 3, 'trades.getAll': 2 };

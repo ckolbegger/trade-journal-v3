@@ -3,9 +3,9 @@ import { headlineBasisOf, measurementOf } from '../../domain/trade-analysis/inde
 import type { CalculationResult, DerivedTradeState, IntegrityFinding, NotApplicableReason, TradeEvaluation, UnavailableReason } from '../../domain/trade-analysis/index.ts';
 import { multiplierOf, type OptionInstrument } from '../../domain/instrument/index.ts';
 import { parseDecimal, Rational } from '../../domain/values/index.ts';
-// The attention bands, highest first (Daily Review, "Date, eligibility, and ordering"): factual or
-// management blocker, boundary reached, evidence limited, quantified pressure, routine.
-export type AttentionBand = 'Blocker' | 'BoundaryReached' | 'EvidenceLimited' | 'QuantifiedPressure' | 'Routine';
+// The attention bands, highest first (Daily Review, "Date, eligibility, and ordering"): factual or management blocker,
+// an Exit not carried out, settlement due, Stop reached, Target reached, evidence limited, quantified pressure, routine.
+export type AttentionBand = 'Blocker' | 'ExitNotCarriedOut' | 'SettlementDue' | 'StopReached' | 'TargetReached' | 'EvidenceLimited' | 'QuantifiedPressure' | 'Routine';
 
 // Why a Trade is in its band; figures are in the basis. A Trade limited by evidence, or blocked because its
 // facts cannot be replayed, carries its evaluation's own Unavailable reason, unchanged (P67).
@@ -14,6 +14,8 @@ export type AttentionReason =
   | ({ readonly code: 'Unavailable' } & UnavailableReason)
   | { readonly code: 'StopBreached' | 'TargetReached'; readonly conditionId: string; readonly overrun: Rational }
   | { readonly code: 'PressureTowardStop' | 'PressureTowardTarget' }
+  // The Trade's most recent Action before the Review Date is Exit and the Trade is still held (A313).
+  | { readonly code: 'ExitNotCarriedOut' }
   // An option contract held at or past its expiration date with no settlement fact (A112); a blocker.
   | { readonly code: 'SettlementDue'; readonly instrument: OptionInstrument; readonly quantity: Rational; readonly expiration: string }
   | { readonly code: 'NoPressure' };
@@ -47,6 +49,8 @@ export interface Attention {
   readonly band: AttentionBand;
   readonly reasons: readonly AttentionReason[];
   readonly basis: PressureResult;
+  // How far past its Stop the Trade is, in Plan R (the deepest of its Stop conditions); present only in the StopReached band.
+  readonly stopOverrunR?: Rational;
 }
 
 const ZERO = Rational.of(0n);
@@ -131,19 +135,26 @@ function unavailableReason(unavailable: Extract<TradeEvaluation['ongoingRiskToSt
   }
 }
 
-export function attentionOf(state: DerivedTradeState, evaluation: TradeEvaluation, findings: readonly IntegrityFinding[]): Attention {
+// `lastAction` is the Trade's most recent Daily Trade Review Action before the Review Date, when the caller read it.
+export function attentionOf(state: DerivedTradeState, evaluation: TradeEvaluation, findings: readonly IntegrityFinding[], lastAction?: { readonly action: string }): Attention {
   const figures = riskRewardOf(state, evaluation);
   const basis = pressureOf(figures);
-  // A due settlement is a factual blocker, whatever the figures (A112).
+  // A due settlement outranks the figures, whatever they are (A112); it is its own band, behind the factual blockers.
   const due = evaluation.settlement.filter((s) => s.status === 'Due').map((s): AttentionReason => ({ code: 'SettlementDue', instrument: s.instrument, quantity: s.quantity, expiration: s.expiration }));
-  const blockers: AttentionReason[] = [...(findings.length > 0 ? [{ code: 'IntegrityDisagreement' as const, findings }] : []), ...due];
-  if (blockers.length > 0) return { band: 'Blocker', reasons: blockers, basis };
+  if (findings.length > 0) return { band: 'Blocker', reasons: [{ code: 'IntegrityDisagreement', findings }, ...due], basis };
+  if (lastAction?.action === 'Exit') return { band: 'ExitNotCarriedOut', reasons: [{ code: 'ExitNotCarriedOut' }, ...due], basis };
+  if (due.length > 0) return { band: 'SettlementDue', reasons: due, basis };
   const crossed = evaluation.conditions.flatMap((c) =>
     c.result.kind === 'Value' && c.result.value.status !== 'Active' && c.result.value.overrun
       ? [{ code: c.role === 'Stop' ? ('StopBreached' as const) : ('TargetReached' as const), conditionId: c.id, overrun: c.result.value.overrun.dollars }]
       : [],
   );
-  if (crossed.length > 0) return { band: 'BoundaryReached', reasons: crossed, basis };
+  if (crossed.length > 0) {
+    // The deepest Stop passed, in Plan R, orders the Trades of the StopReached band.
+    const stopOverrunsR = evaluation.conditions.flatMap((c) => (c.role === 'Stop' && c.result.kind === 'Value' && c.result.value.status !== 'Active' && c.result.value.overrun ? [c.result.value.overrun.planR] : []));
+    if (stopOverrunsR.length === 0) return { band: 'TargetReached', reasons: crossed, basis };
+    return { band: 'StopReached', reasons: crossed, basis, stopOverrunR: stopOverrunsR.reduce((a, b) => (b.compare(a) > 0 ? b : a)) };
+  }
   const unavailable = evaluation.ongoingRiskToStop;
   if (unavailable.kind === 'Unavailable') {
     return { band: 'EvidenceLimited', reasons: [unavailableReason(unavailable)], basis };
@@ -154,12 +165,16 @@ export function attentionOf(state: DerivedTradeState, evaluation: TradeEvaluatio
   return { band: 'Routine', reasons: [{ code: 'NoPressure' }], basis };
 }
 
-const BAND_RANK: Record<AttentionBand, number> = { Blocker: 0, BoundaryReached: 1, EvidenceLimited: 2, QuantifiedPressure: 3, Routine: 4 };
+const BAND_RANK: Record<AttentionBand, number> = { Blocker: 0, ExitNotCarriedOut: 1, SettlementDue: 2, StopReached: 3, TargetReached: 4, EvidenceLimited: 5, QuantifiedPressure: 6, Routine: 7 };
 
 // Band first. Within a band, comparable pressure sorts descending, a losing side before a winning one,
 // then Last Activity descending, then Trade identity; a pressure that is not a Value follows the Values.
 export function byAttention(a: Attention & TieBreak, b: Attention & TieBreak): number {
   if (a.band !== b.band) return BAND_RANK[a.band] - BAND_RANK[b.band];
+  if (a.stopOverrunR && b.stopOverrunR) {
+    const byOverrun = b.stopOverrunR.compare(a.stopOverrunR);
+    if (byOverrun !== 0) return byOverrun;
+  }
   if (a.basis.kind === 'Value' && b.basis.kind === 'Value') {
     const [pa, pb] = [a.basis.value, b.basis.value];
     const byPressure = pb.share.compare(pa.share) || Number(pb.side === 'Losing') - Number(pa.side === 'Losing');

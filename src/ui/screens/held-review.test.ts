@@ -110,7 +110,7 @@ describe('fold (A171)', () => {
   it('should put each MarksSaved key resolution and revision on its Review-date row, clear the row Manual task, and replace the walked Trades, completion and binding', () => {
     const before = held();
     const completion: ReviewCompletion = { kind: 'Incomplete', reasons: [markMissing('DEF', 't-c'), ...actionMissing('t-a', 't-f', 't-c')] };
-    const reordered = [TC, { ...TA, band: 'BoundaryReached' as const }, TF];
+    const reordered = [TC, { ...TA, band: 'StopReached' as const }, TF];
 
     const next = fold(before, { kind: 'MarksSaved', marks: [saved('XYZ', MONDAY, available('52'))], review: postMarks({ completion, trades: reordered }) });
 

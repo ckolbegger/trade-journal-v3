@@ -21,7 +21,7 @@ async function reviewOf(app: Application, asOf: string, tradeId: string) {
 }
 
 describe('I7S.6 Review with option-price conditions', () => {
-  it('should give O-S2 pressure 11/47 toward the Stop on Tuesday and, on Wednesday, the band BoundaryReached naming stop-2 with Overrun 20, with MNO and the put each one Mark task', async () => {
+  it('should give O-S2 pressure 11/47 toward the Stop on Tuesday and, on Wednesday, the band StopReached naming stop-2 with Overrun 20, with MNO and the put each one Mark task', async () => {
     const { d, app: first } = await onboardedAt(TUESDAY_1700_NY);
     let app = first;
     const tradeId = await openOs2(app);
@@ -40,7 +40,7 @@ describe('I7S.6 Review with option-price conditions', () => {
     // Wednesday: S-o is crossed by 3.70 - 3.60 on 2 contracts, an Overrun of 20.
     const wednesday = await reviewOf(app, WEDNESDAY_1700_NY, tradeId);
     for (const attention of [wednesday.walked, wednesday.card.attention]) {
-      expect(attention).toEqual(expect.objectContaining({ band: 'BoundaryReached', reasons: [{ code: 'StopBreached', conditionId: 'stop-2', overrun: r(20n) }] }));
+      expect(attention).toEqual(expect.objectContaining({ band: 'StopReached', reasons: [{ code: 'StopBreached', conditionId: 'stop-2', overrun: r(20n) }] }));
     }
     expect(wednesday.tasks.filter((task) => task.instrumentKey === 'MNO').map((task) => task.trades)).toEqual([[tradeId]]);
     expect(wednesday.tasks.filter((task) => task.instrumentKey === instrumentKey(MNO_DEC_PUT)).map((task) => task.trades)).toEqual([[tradeId]]);

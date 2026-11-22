@@ -15,7 +15,7 @@ const DATE_WIDE = { on: 'store', store: 'observations', method: 'getAll' };
 const SERIES = { on: 'index', store: 'observations', index: 'byInstrumentDate', method: 'getAll' };
 
 // D9's recorded count of the open for a Workspace holding the one Trade (I9.6).
-const OPEN = { 'journalDebts.getAll': 1, 'journalDefinitions.getAll': 1, 'journalObligations.getAll': 1, 'journalTypes.getAll': 1, 'meta.get': 14, 'observations.getAll': 4, 'trades.getAll': 2 };
+const OPEN = { 'journalDebts.getAll': 1, 'journalDefinitions.getAll': 1, 'journalEntries.getAll': 1, 'journalObligations.getAll': 1, 'journalTypes.getAll': 1, 'meta.get': 14, 'observations.getAll': 4, 'trades.getAll': 2 };
 
 describe('I9R2.4 Query counts (AC-PERF-001, cumulative)', () => {
   it('I9R2.4 should issue the same store requests for the open as D9 while listing earlier Marks', { timeout: 120_000 }, async () => {

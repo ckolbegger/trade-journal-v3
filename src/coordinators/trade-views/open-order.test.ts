@@ -91,7 +91,7 @@ describe("browseTrades: the Open list's default order (A262)", () => {
     if (!('meter' in item)) throw new Error('expected a replayed Open item');
 
     // The Target is passed by $32.00 on Mon 11-16; the reading is the Review's own.
-    expect(item.attention).toMatchObject({ band: 'BoundaryReached', reasons: [{ code: 'TargetReached', overrun: Rational.of(32n) }] });
+    expect(item.attention).toMatchObject({ band: 'TargetReached', reasons: [{ code: 'TargetReached', overrun: Rational.of(32n) }] });
     expect(item).toHaveProperty('lastActivity');
     expect(item).toHaveProperty('current');
     expect(item.meter).toMatchObject({ stop: { kind: 'Value', value: Rational.of(316n) }, now: { kind: 'Value', value: { pnl: Rational.of(988n), zone: 'PastTarget' } }, previous: { tradingDate: '2026-11-13', pnl: Rational.of(1138n), direction: 'Down' } });

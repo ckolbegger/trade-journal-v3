@@ -200,7 +200,7 @@ describe('attention order', () => {
     const trades = walk(await open(stack, MONDAY_1700));
 
     expect(trades.map((t) => t.tradeId)).toEqual([d, b, c, a, e]);
-    expect(trades.map((t) => t.band)).toEqual(['Blocker', 'BoundaryReached', 'EvidenceLimited', 'QuantifiedPressure', 'QuantifiedPressure']);
+    expect(trades.map((t) => t.band)).toEqual(['Blocker', 'StopReached', 'EvidenceLimited', 'QuantifiedPressure', 'QuantifiedPressure']);
     const [blocker, boundary, limited, pressureA, pressureE] = trades;
     // T-D: its recorded Entry Size occurrence is gone while the facts still imply it.
     expect(blocker!.reasons).toEqual([{ code: 'IntegrityDisagreement', findings: [expect.objectContaining({ kind: 'DeviationMissing' })] }]);
@@ -226,7 +226,7 @@ describe('attention order', () => {
     expect(trades.find((t) => t.tradeId === b)!.summary).toEqual({ kind: 'Stock', direction: 'Long', quantity: Rational.of(100n), price: Rational.of(30n) });
   }, 30_000);
 
-  it('should keep T-B in boundary reached although its risk to stop is zero', async () => {
+  it('should keep T-B in StopReached although its risk to stop is zero', async () => {
     const stack = await reviewStack(MONDAY_1700);
     const b = await stack.confirm({ symbol: 'ABC', shares: '100', entry: '30.00', stop: '28.00', target: '36.00' });
     await stack.fill(b, TEN_AM, '100', '30.00');
@@ -234,7 +234,7 @@ describe('attention order', () => {
 
     const [item] = walk(await open(stack, MONDAY_1700));
 
-    expect(item).toEqual(expect.objectContaining({ tradeId: b.tradeId, band: 'BoundaryReached' }));
+    expect(item).toEqual(expect.objectContaining({ tradeId: b.tradeId, band: 'StopReached' }));
     expect(item!.basis).toMatchObject({ kind: 'Value', value: { now: Rational.of(0n) } });
   });
 
@@ -330,8 +330,8 @@ describe('pressure that cannot be compared', () => {
     const trades = walk(await open(stack, MONDAY_1700));
 
     expect(trades.map((t) => [t.tradeId, t.basis])).toEqual([
-      [pastTarget.tradeId, { kind: 'NotApplicable', reason: 'NonPositiveAtEntry', side: 'Winning' }],
       [atStop.tradeId, { kind: 'NotApplicable', reason: 'NonPositiveAtEntry', side: 'Losing' }],
+      [pastTarget.tradeId, { kind: 'NotApplicable', reason: 'NonPositiveAtEntry', side: 'Winning' }],
     ]);
   }, 30_000);
 });

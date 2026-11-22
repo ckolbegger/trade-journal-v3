@@ -9,7 +9,7 @@ import type { WorkspaceSnapshotBinding } from '../../persistence/index.ts';
 import type { StorageFailure } from '../mutation-guard.ts';
 import type { AttentionBand, AttentionReason, CalculationFamily, Pressure, MeterReading, PressureResult, SettlementItem } from '../valuation/index.ts';
 import type { TradeReplayView } from '../trade-views/index.ts';
-import type { AnswerInput, DailyAction, DebtProjection, DeclineProjection, EntryDefinitionRecord, EntryProjection, JournalIssue, JournalObligationKey, ObligationOutcome } from '../../modules/journal/index.ts';
+import type { AnswerInput, DailyAction, DebtProjection, HistoryAction, DeclineProjection, EntryDefinitionRecord, EntryProjection, JournalIssue, JournalObligationKey, ObligationOutcome } from '../../modules/journal/index.ts';
 import type { AcknowledgmentVersion, ExpectedResolutionRevision, MarkFrame, MarketDataConflictedKey, MarketDataIssue, MarketDataPrepareEntry, MarketDataPrepareIssue, MarkResolution, ObservationKey, PreparedMarketDataEntry } from '../../modules/market-data/index.ts';
 
 // The request names the date and the as-of instant (Daily Review, "Date, eligibility, and ordering").
@@ -31,7 +31,14 @@ export interface ReviewTradeItem {
   readonly band: AttentionBand;
   readonly reasons: readonly AttentionReason[];
   readonly basis: PressureResult;
+  // How far past its Stop the Trade is, in Plan R; present in the StopReached band only.
+  readonly stopOverrunR?: Rational;
+  // The Trade's most recent Daily Trade Review Action before the Review Date (A305); absent when it has none.
+  readonly lastAction?: LastAction;
 }
+
+// A saved Action as the page carries it: the Review Date it was saved for, the Action, and the reason when one was saved.
+export type LastAction = Pick<HistoryAction, 'reviewDate' | 'action' | 'reason'>;
 
 // A card's panels in work order, as counts and flags (A164). Words are the screen's.
 export type PanelProgress =

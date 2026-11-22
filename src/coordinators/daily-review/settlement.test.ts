@@ -120,7 +120,7 @@ describe('after the expiration session (P25, A110)', () => {
     const walked = family(result, 'Trades').trades;
     for (const id of [t1, t3]) {
       const trade = walked.find((candidate) => candidate.tradeId === id);
-      expect(trade?.band).toBe('Blocker');
+      expect(trade?.band).toBe('SettlementDue');
       expect(trade?.reasons).toEqual([expect.objectContaining({ code: 'SettlementDue' })]);
     }
     const rows = family(result, 'Marks').today;
@@ -161,7 +161,7 @@ describe('after the expiration session (P25, A110)', () => {
     expect(walk).toHaveLength(5);
     expect(walk.slice(0, 2).map((t) => t.tradeId).sort()).toEqual([t1, t3].sort());
     for (const trade of walk.slice(0, 2)) {
-      expect(trade.band).toBe('Blocker');
+      expect(trade.band).toBe('SettlementDue');
       expect(trade.reasons).toEqual([expect.objectContaining({ code: 'SettlementDue' })]);
     }
     expect(ready(result).owed).toEqual([]);

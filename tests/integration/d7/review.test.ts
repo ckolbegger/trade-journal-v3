@@ -50,7 +50,7 @@ describe('I7.7 Review end to end with settlement', () => {
     expect(first.families.map((f) => f.family)).toEqual(['Marks', 'Settlement', 'Trades']);
     expect(rowsOf(first).find((row) => row.instrumentKey === 'XYZ')).toEqual(expect.objectContaining({ trades: [t1, t2], task: 'Manual', resolution: { kind: 'Missing' } }));
     expect(settlementOf(first).map((item) => [item.tradeId, item.settlementTime])).toEqual([[t1, { kind: 'Value', value: FRIDAY_1600 }], [t3, { kind: 'Value', value: FRIDAY_1600 }]]);
-    expect(walkOf(first).filter((t) => t.band === 'Blocker').map((t) => t.tradeId).sort()).toEqual([t1, t3].sort());
+    expect(walkOf(first).filter((t) => t.band === 'SettlementDue').map((t) => t.tradeId).sort()).toEqual([t1, t3].sort());
     expect(first.owed).toEqual([]);
 
     // One Mark for XYZ resolves it for T-1 and T-2.

@@ -53,7 +53,7 @@ describe('I7.6 Settlement Due is never inferred', () => {
       const review = await reviewAt(current, asOf);
       if (review.kind !== 'Ready') throw new Error(`open: ${review.kind}`);
       expect(settlementFamily(review)).toEqual([{ family: 'Settlement', items: [expect.objectContaining({ tradeId, ...SETTLEMENT })] }]);
-      expect(walkedBands(review)).toEqual([[tradeId, 'Blocker', ['SettlementDue']]]);
+      expect(walkedBands(review)).toEqual([[tradeId, 'SettlementDue', ['SettlementDue']]]);
       expect(review.completion.kind).toBe('Incomplete');
       expect(review.completion.kind === 'Incomplete' && review.completion.reasons).toEqual(expect.arrayContaining([expect.objectContaining({ code: 'SettlementDue', tradeId })]));
       await expectUnchanged();

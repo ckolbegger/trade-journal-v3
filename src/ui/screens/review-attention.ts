@@ -4,7 +4,10 @@ import { isSettlementDueAttention, text, unavailableWords } from '../calculation
 
 export const BAND_TEXT: Record<ReviewTradeItem['band'], string> = {
   Blocker: 'Blocker',
-  BoundaryReached: 'Boundary reached',
+  ExitNotCarriedOut: 'Blocker',
+  SettlementDue: 'Blocker',
+  StopReached: 'Boundary reached',
+  TargetReached: 'Boundary reached',
   EvidenceLimited: 'Evidence limited',
   QuantifiedPressure: 'Quantified pressure',
   Routine: 'Routine',
@@ -31,6 +34,8 @@ export function reasonText(reason: ReviewTradeItem['reasons'][number], basis: Re
       const boundary = reason.code === 'PressureTowardStop' ? 'Stop' : 'Target';
       return basis.kind === 'Value' && basis.value.side !== 'None' ? `${percent(basis.value.share)}% of the way from entry to the ${boundary}` : `Pressure toward the ${boundary}`;
     }
+    case 'ExitNotCarriedOut':
+      return 'You chose Exit and it is not recorded';
     case 'NoPressure':
       return 'No pressure toward the Stop or the Target';
   }

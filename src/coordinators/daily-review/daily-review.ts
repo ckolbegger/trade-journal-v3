@@ -3,7 +3,7 @@ import { instrumentKey, type Instrument } from '../../domain/instrument/index.ts
 import { openTradeSummary } from '../../domain/trade-summary.ts';
 import { derive, type DerivedTradeState, type IncoherentFacts, type LifecycleState, type TradeAnalysisRecord, type TradeEvaluation } from '../../domain/trade-analysis/index.ts';
 import { classifyDue, compareDueAnchors, compareOwed, owedStandingOf, type SessionCloses } from '../../domain/journal-debt/index.ts';
-import type { DebtProjection, Journal, ObligationOutcome } from '../../modules/journal/index.ts';
+import type { DebtProjection, HistoryAction, Journal, ObligationOutcome } from '../../modules/journal/index.ts';
 import type { EvidenceBinding, FrameContext, HistoricalGaps, MarketData, MarketDataIssue, MarketDataReadSession, SeriesPoint } from '../../modules/market-data/index.ts';
 import type { ReferenceCatalog } from '../../modules/reference-catalog/index.ts';
 import type { BrowseRecord, TradeRecord } from '../../modules/trade-record/index.ts';
@@ -39,6 +39,7 @@ import type {
   ReviewProgress,
   ResolveReviewDebtRequest,
   ReviewTradeItem,
+  LastAction,
   WalkedTrade,
   SaveDailyReviewRequest,
   SaveDailyReviewResult,
@@ -112,6 +113,20 @@ function observationNeeds(eligible: readonly EligibleTrade[]) {
     if (known === undefined || earliestRelevance < known) earliest.set(key, earliestRelevance);
   }
   return { requirements, earliest };
+}
+
+// The Review Date of the earliest first exposure among the Trades, in UTC: a Trade's first Review Date is never before it, whatever the
+// Workspace's zone. A Trade whose facts cannot be replayed has none, so its Plan time stands in, which is never later.
+function earliestExposureDate(eligible: readonly EligibleTrade[]): string {
+  const starts = eligible.map(({ summary, derivation }) => (derivation.kind === 'Derived' ? derivation.exposureStart : null) ?? summary.planTime);
+  return Temporal.Instant.from(starts.reduce((a, b) => (Temporal.Instant.compare(b, a) < 0 ? b : a))).toZonedDateTimeISO('UTC').toPlainDate().toString();
+}
+
+// Each Trade's most recent Action of the history read, which is by Review Date.
+function lastActionsOf(history: readonly HistoryAction[]): Map<string, LastAction> {
+  const latest = new Map<string, LastAction>();
+  for (const { tradeId, ...action } of history) latest.set(tradeId, action);
+  return latest;
 }
 
 // The Debt ids of each of the Trades that has any, in the order given.
@@ -212,14 +227,14 @@ export interface DailyReview {
 }
 
 // The Trade's place in the walk and, when its facts replay, its evaluation at the Review date, as the module valued it.
-function reviewItem({ summary, analysis, derivation, integrity, valuation, before }: EligibleTrade) {
-  const identity = { tradeId: summary.tradeId, underlying: summary.underlying, lastActivity: summary.lastActivity ?? summary.planTime };
+function reviewItem({ summary, analysis, derivation, integrity, valuation, before }: EligibleTrade, lastAction?: LastAction) {
+  const identity = { tradeId: summary.tradeId, underlying: summary.underlying, lastActivity: summary.lastActivity ?? summary.planTime, ...(lastAction && { lastAction }) };
   // Facts that cannot be replayed at any time make the Trade incoherent, whichever derivation finds them.
   if (derivation.kind === 'IncoherentFacts') return { item: incoherentItem(identity, derivation), valuation: undefined, before: undefined };
   if (integrity.kind === 'IncoherentFacts') return { item: incoherentItem(identity, integrity), valuation: undefined, before: undefined };
   if (!valuation) throw new Error(`Trade ${summary.tradeId} was not valued`);
   const held = openTradeSummary(analysis.plan.legs[0]!.instrument, derivation);
-  const item: ReviewTradeItem = { ...identity, ...(held && { summary: held }), ...attentionOf(derivation, valuation.evaluation, integrity.findings) };
+  const item: ReviewTradeItem = { ...identity, ...(held && { summary: held }), ...attentionOf(derivation, valuation.evaluation, integrity.findings, lastAction) };
   return { item, valuation, before };
 }
 
@@ -426,7 +441,11 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
         task: resolution.kind === 'Missing' ? 'Manual' : null,
       }),
     );
-    const ranked = derivations.map(reviewItem).sort((a, b) => byAttention(a.item, b.item));
+    // One read of the Daily Trade Review Actions: the Review Date's, and each earlier one from the earliest first exposure on (P168).
+    // An empty walk has no Trade to place an Action on, so it reads them later, only when the Review is not Empty.
+    const savedActions = derivations.length === 0 ? undefined : await deps.journal.queryActions({ reviewDate, since: earliestExposureDate(derivations) });
+    const lastActions = lastActionsOf(savedActions?.earlier ?? []);
+    const ranked = derivations.map((entry) => reviewItem(entry, lastActions.get(entry.summary.tradeId))).sort((a, b) => byAttention(a.item, b.item));
     const settlement = settlementItems(ranked);
     const earlier = gaps
       .filter((g) => g.missing.length + g.acknowledged.length > 0)
@@ -504,7 +523,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
       const due = dueDebtIds(tradeId).length;
       return { due, later: outstanding.filter((debt) => debt.anchor.tradeId === tradeId).length - due };
     };
-    const actions = await deps.journal.queryActions({ reviewDate });
+    const actions = savedActions ?? (await deps.journal.queryActions({ reviewDate }));
     const progressOf = (tradeId: string, settlementDue: boolean): CardProgress => {
       const rows = today.filter((row) => row.trades.includes(tradeId));
       const needed = rows.filter((row) => row.task === 'Manual').length;
