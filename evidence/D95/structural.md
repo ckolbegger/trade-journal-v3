@@ -181,6 +181,8 @@ Success path: e2e/d4, d5, d7, d9, d9ar 225 passed, 4 skipped, 1 failed (the know
 
 **T95.8-B1.** Case: "it should end the Hold count at a session with no Review after a Settlement Due expiration". **T95.8-B2.** Case: "it should not list the day of a first fill after the close as a session with no Review", on the card and the page (`missed`) alike.
 
+**T95.8-B1** `edaa9cc6`: a Hold run exists only when `sessionsWithoutReview` is empty (no dependence on where the replay stops). Red `expected { line: 'Stop', sessions: 2 } to be undefined`, green. **T95.8-B2** `69f574fa`: `firstReviewDate(read, exposureInstant)`: the first session whose close is at or after the first exposure, for the card and the page `missed`; falls back to the UTC date outside calendar coverage. Red on the card, then on the day summary, then green. daily-review 205 passed; the 27 `countRequests` files 266 passed; `verify:fixtures` OK. Subagent note (maintainability, not a bug task): the close is found through `read.settlementTime` with a placeholder option contract expiring that date, since Market Data's read session has no session-close call; a `sessionCloseOn(date)` would be cleaner.
+
 ## Trial: complete runs overlapped with the next task (the user, 2026-11-22, for 5 or 6 tasks)
 
 Each task's complete run runs in a detached scratch copy (`.claude/worktrees/run-<label>`, set up by `lane-setup.sh`) at the task's commit, while the next task's subagent starts in this worktree. The run's files are copied back to `evidence/D95/suite-runs/`. A failure becomes a bug task as before; the next task restarts only if it built on the broken code. Times are recorded per run to measure the saving.
