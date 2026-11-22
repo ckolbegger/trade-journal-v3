@@ -51,11 +51,12 @@ export async function fillDebtAnswers(page: Page): Promise<void> {
 async function expectSavedReflection(page: Page, form: Locator, card: CardRef | undefined, where: DebtPlace): Promise<void> {
   const onDetail = card === undefined && where === 'Detail';
   let saved = onDetail ? detail.savedReflection(page) : page.getByRole('region', { name: 'Saved reflection' });
+  // Without a card the form's going is not awaited (Detail may already show an earlier Saved reflection), as before; a refusal still fails at once.
+  await savedUnlessRefused('expectSavedReflection', form, () => (card !== undefined ? expect(form).toBeHidden(READY) : expect(saved).toBeVisible()));
   if (card !== undefined) {
-    await savedUnlessRefused('expectSavedReflection', form, () => expect(form).toBeHidden(READY));
     saved = (await reachPanel(page, card, 'Reflections')).getByRole('region', { name: 'Saved reflection' });
+    await expect(saved).toBeVisible();
   }
-  await expect(saved).toBeVisible();
   await expect(onDetail ? detail.anywhere(() => detail.debtForm(page)) : debtForm(page)).toHaveCount(0);
 }
 
