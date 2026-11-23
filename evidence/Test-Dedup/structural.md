@@ -43,3 +43,15 @@ Cases kept: none (both confirmed after reading kept and dropped cases in full).
 Mutation checks of the moved checks: see evidence/Test-Dedup/tdd-log.md, TD.2.
 
 References (rule 10): rg of both titles and of the spec paths found living text only in the plan itself (and unrelated line mentions of d8p/history.spec.ts and d8r/states.spec.ts that do not name the removed cases). Nothing re-pointed in plan/acceptance-matrix.md, plan/spec-map.md or plan/bug-tasks.md. History, left as written: suite-run outputs naming d8p/history:135 (evidence/D95/suite-runs/t95.13-slip-questions-browser-*).
+
+## TD.2-F1 — checks the dropped TD.2 case had that TD.2 did not move
+
+Dropped case (already removed in TD.2, commit 0944322e): e2e/d8r/states.spec.ts "should show Today on O-S2X Settlement Due with "Expired Fri Nov 20", then Closed by expiration ...". Read in full with `git show 0944322e^:e2e/d8r/states.spec.ts`. No case removed in this task.
+
+Spec counts, `.claude/scripts/with-browser-lock.sh npm run test:e2e:specs -- e2e/d8p/states.spec.ts`: before 3 passed, after 3 passed (two assertions added to an existing case).
+
+Two unmoved checks, each searched with rg over e2e/ (Put Mark, MNO Mark, tbody th, Yesterday):
+1. Row labels ["MNO Mark", "Put Mark"] of the Marks table. No living case asserts the labels of a put Trade's Marks table: d8r/states.spec.ts and d8r/today.spec.ts assert ["NVDA Mark", "Call Mark"] and ["XYZ Mark", "Call Mark"] (calls on stock Trades); d9ar and d9 gaps use "Put Mark" only in the replay readout, a different component. Moved into the kept case "should show a Settlement Due Detail with Today selected ...", after the three Marks headings (Settlement Due state).
+2. The Yesterday cell's accessible name "Expired Fri Nov 20" after Closed. The kept case asserted only its text "Expired"; no other living case asserts this name in the Closed state (the Today-cell name is asserted while Settlement Due). Moved into the kept case, right after the Yesterday cell's text check.
+
+Cases kept: none. References (rule 10): rg of the dropped title found living text only in the plan itself; nothing re-pointed. Mutation checks: see evidence/Test-Dedup/tdd-log.md, TD.2-F1.

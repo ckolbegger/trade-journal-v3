@@ -27,3 +27,13 @@ Moved checks went into e2e/d8p/states.spec.ts "should show a Settlement Due Deta
 | all, restored | green | `... e2e/d8p/history.spec.ts e2e/d8p/states.spec.ts e2e/d8r/history.spec.ts e2e/d8r/states.spec.ts` | 9 passed |
 
 BD14 moved nothing, so it has no mutation row.
+
+## TD.2-F1
+
+Moved into e2e/d8p/states.spec.ts "should show a Settlement Due Detail with Today selected ...". Each mutation changed one expected value, ran the case, then was restored.
+
+| Moved check | Run | Command | Result |
+|---|---|---|---|
+| Marks row labels ["MNO Mark", "Put Mark"] | mutated ("MNO Mark X") | `.claude/scripts/with-browser-lock.sh npm run test:e2e:specs -- e2e/d8p/states.spec.ts -g "should show a Settlement Due Detail with Today selected"` | 1 failed, assertion: toHaveText (Expected - 1, Received + 1) |
+| Yesterday cell accessible name after Closed | mutated ("Expired Fri Nov 21") | same | 1 failed, assertion: toHaveAccessibleName, Expected "Expired Fri Nov 21", Received "Expired Fri Nov 20" |
+| both, restored | green | `... e2e/d8p/states.spec.ts` | 3 passed |

@@ -46,6 +46,7 @@ test.describe('B8P.4 States', () => {
     await expectDrawers(page, ['Today', 'Position', 'Plan and Risk', PRICE_HISTORY, 'Journal', 'Payoff'], [], 'Today');
     // T8R.7 (W25): the put expired on Fri Nov 20, so Today's cell for it reads "Expired" and a screen reader hears "Expired Fri Nov 20".
     await expect(detail.marksHeadings(page)).toHaveText(['Today, Mon Nov 23', 'Yesterday, Fri Nov 20', 'Change']);
+    await expect(detail.marksTable(page).locator('tbody th')).toHaveText(['MNO Mark', 'Put Mark']);
     await expect(detail.marksCell(page, 'Put Mark', 'Today')).toHaveText('Expired');
     await expect(detail.marksCell(page, 'Put Mark', 'Today')).toHaveAccessibleName('Expired Fri Nov 20');
     await expect(detail.marksCell(page, 'Put Mark', 'Change')).toHaveText('—');
@@ -81,6 +82,7 @@ test.describe('B8P.4 States', () => {
     await expect(detail.marksCell(page, 'MNO Mark', 'Today')).toHaveText('');
     await expect(detail.marksCell(page, 'Put Mark', 'Change')).toHaveText('—');
     await expect(detail.marksCell(page, 'Put Mark', 'Yesterday')).toHaveText('Expired');
+    await expect(detail.marksCell(page, 'Put Mark', 'Yesterday')).toHaveAccessibleName('Expired Fri Nov 20');
     await expect(detail.identityCard(page).getByText('Expired Fri 20 Nov 2026', { exact: true })).toBeVisible();
     await expect(detail.pnlFigure(page)).toHaveText('$248.70');
     await expect(detail.pnlLine(page)).toHaveText('+0.69R realized, final');
