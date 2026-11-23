@@ -64,6 +64,8 @@
 - (b) The screen calls `open` again after each save and takes only `day` from it. Quick, but it breaks the spec sentence and the request-count pins; needs a spec amendment.
 - (c) Refresh only when the day finishes; counts stale in between. Not recommended.
 
+**Added the same evening (T95.11 found the same kind of gap):** T95.11's labels need two figures the coordinator holds but doesn't return: the session before's zone, for "Marks needed" beside "Past Stop Fri" (it has `before.evaluation`, but `meter.previous` carries only date, P&L and direction), and whether a contract expires on the Review Date, for "Expires today · Marks needed". Under (a), T95.4-D1 also returns these two (fields only; no figure or computation changes; any snapshot that gains a field is updated under decision 127 as amended). Parked with T95.10: T95.11.
+
 **Recommendation:** (a).
 
 **Main-session readings recorded with this question (not asked):** the "Review status" block also holds the completion word, the Unavailable Marks disclosure, the integrity-disagreement and incoherent-facts lines, and the unsaved-Marks notice; T95.10 removes only the Blockers list and the block's heading and keeps those lines in the day card (the unsaved-Marks notice stays until T95.14). Case 4's "focus the Marks step" focuses the existing Marks section until T95.12 builds the grid. Case 10 is checked in the browser at 375 wide, not in jsdom.
