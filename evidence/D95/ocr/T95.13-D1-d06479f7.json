@@ -1,0 +1,134 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 1,
+    "total_tokens": 124873,
+    "input_tokens": 123892,
+    "output_tokens": 981,
+    "cache_read_tokens": 21888,
+    "elapsed": "41s"
+  },
+  "tool_calls": {
+    "total": 18,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 6,
+      "file_read": 11
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/MarksStep.tsx",
+      "content": "This checks expiration at the Trade level rather than for the option being marked. The coordinator sets `trade.expiresOnReviewDate` when *any* contract in that Trade is DueToday, so a Trade holding contracts with different expirations will also bypass “Worth nothing?” for its still-live options. Determine the exemption from this row's option expiration and `reviewDate` instead, and add a mixed-expiration regression case.",
+      "existing_code": "    const expiresOnReviewDate = holdersOf(heldReview.review, key).some((tradeId) =\u003e walkedTrades.some((trade) =\u003e trade.tradeId === tradeId \u0026\u0026 trade.expiresOnReviewDate));",
+      "start_line": 426,
+      "end_line": 426,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Mark slip behavior and MarksStep integration with tests",
+      "files": [
+        "src/domain/mark-slip/mark-slip.test.ts",
+        "src/domain/mark-slip/mark-slip.ts",
+        "src/ui/screens/MarksStep.test.tsx",
+        "src/ui/screens/MarksStep.tsx"
+      ]
+    }
+  ],
+  "session_id": "59104a52-386e-453b-9e5c-abcc903000c4",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "59104a52-386e-453b-9e5c-abcc903000c4",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "d06479f7",
+      "resolved_base": "2439350c602e1fdbb4fde52da437056baf541cc4",
+      "resolved_head": "d06479f7eeb622ffbfc6154adb9028fdc0add444",
+      "exact_range": "2439350c602e1fdbb4fde52da437056baf541cc4..d06479f7eeb622ffbfc6154adb9028fdc0add444",
+      "source_artifact_sha256": "e4ed8a3c506da1eed5b9e8193446d3d5574f7cedbb485091e6f60ba536446a7a"
+    },
+    "execution": {
+      "ocr_version": "v1.14.2",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "1a8b204813f2ba42444221ccf71dd5d66d82adae9a0ef7d191f74dc7f17e40e2",
+          "path": "src/ui/screens/MarksStep.test.tsx",
+          "fingerprint": "530c851f82cbcf513e2ac341f62ba60e80af71eb0d3ba61ae784c49d25aa5741"
+        },
+        {
+          "item_id": "3986a6a0a4abf89307704f3b17b626724059c9e58101376110817356339499eb",
+          "path": "src/ui/screens/MarksStep.tsx",
+          "fingerprint": "31dc441318c9788b69c9778979d6208490988cba14b18d62b15ef058088464d0"
+        },
+        {
+          "item_id": "7596493390acefdb75899f4c9a52fcbefbca64c3eb4e63e27ee859da0afb2b7a",
+          "path": "src/domain/mark-slip/mark-slip.test.ts",
+          "fingerprint": "afb3f9399fbda456c98a26ae52348f473372e7519df4d896ebeaccbfb380b030"
+        },
+        {
+          "item_id": "b4e85ff92924126b4b8a995047ff7db44b5c29e3d611e4b935dd6835506997ea",
+          "path": "src/domain/mark-slip/mark-slip.ts",
+          "fingerprint": "32ca005b032a010fa7a7665d179cbf6f9bd6f5135c6d75ae5f76bbd47372f135"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "1a8b204813f2ba42444221ccf71dd5d66d82adae9a0ef7d191f74dc7f17e40e2",
+          "path": "src/ui/screens/MarksStep.test.tsx",
+          "fingerprint": "530c851f82cbcf513e2ac341f62ba60e80af71eb0d3ba61ae784c49d25aa5741"
+        },
+        {
+          "item_id": "3986a6a0a4abf89307704f3b17b626724059c9e58101376110817356339499eb",
+          "path": "src/ui/screens/MarksStep.tsx",
+          "fingerprint": "31dc441318c9788b69c9778979d6208490988cba14b18d62b15ef058088464d0"
+        },
+        {
+          "item_id": "7596493390acefdb75899f4c9a52fcbefbca64c3eb4e63e27ee859da0afb2b7a",
+          "path": "src/domain/mark-slip/mark-slip.test.ts",
+          "fingerprint": "afb3f9399fbda456c98a26ae52348f473372e7519df4d896ebeaccbfb380b030"
+        },
+        {
+          "item_id": "b4e85ff92924126b4b8a995047ff7db44b5c29e3d611e4b935dd6835506997ea",
+          "path": "src/domain/mark-slip/mark-slip.ts",
+          "fingerprint": "32ca005b032a010fa7a7665d179cbf6f9bd6f5135c6d75ae5f76bbd47372f135"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "8fa08815148035ae5250c995354511e37f4ded77d06566558c1c4d2bacc13100",
+          "path": "evidence/D95/tdd-log/T95.13-D1.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 41174
+  }
+}
