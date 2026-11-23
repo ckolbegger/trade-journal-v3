@@ -46,6 +46,10 @@ describe('I95.6 The request pins of the Review (section 1.6)', () => {
     const without = await cardRequests(none);
     const with5 = await cardRequests(five);
 
+    // The measured reads are those of a card that was built, not of a refused one.
+    expect(without.result.kind).toBe('Ready');
+    expect(with5.result.kind).toBe('Ready');
+
     // Catches a read per Action, or a read that is not through byAnchorTrade.
     expect(entries(with5.requests)).toEqual([{ on: 'index', store: 'journalEntries', index: 'byAnchorTrade', method: 'getAll' }]);
     expect(entries(without.requests)).toEqual(entries(with5.requests));
