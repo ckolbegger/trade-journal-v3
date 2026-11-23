@@ -26,3 +26,14 @@ ST.3 (the six e2e/d9 files in one run, main lock held, Playwright's list reporte
 | ST.3 | e2e/d9/session-cards.spec.ts | 3.1 | 1.3 |
 
 In the full stage run the d9ar files that follow share the same built setup, so the build in the first test is paid once per stage.
+
+ST.4 (the six e2e/d9ar files in one run, main lock held, Playwright's list reporter; per-file figures are the sum of the tests' own times; one run each; "before" ran HEAD's versions from temporary copies, deleted). Whole run before 2.1 min, after 1.1 min (43 passed both times). Break check with the copy off: about 9 min (35 failures, each waiting out its first-screen check).
+
+| Task | File | Before (s) | After (s) |
+|---|---|---|---|
+| ST.4 | e2e/d9ar/cards.spec.ts | 21.4 | 17.2 (the first test pays the one build, 6.6) |
+| ST.4 | e2e/d9ar/chart.spec.ts | 41.7 | 22.3 |
+| ST.4 | e2e/d9ar/overlay.spec.ts | 10.7 | 3.1 |
+| ST.4 | e2e/d9ar/readout.spec.ts | 32.3 | 13.7 |
+| ST.4 | e2e/d9ar/sweep.spec.ts | 15.6 | 8.7 |
+| ST.4 | e2e/d9ar/crossing-position.spec.ts | 2.5 | 0.8 |

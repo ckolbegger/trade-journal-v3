@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import { REPLAY_SESSION_DATES } from '../../src/domain/trade-analysis/reference-trade.ts';
-import { AXIO, BREN, build, cardRows, closeOf, CORV, DALE_HOLD, expect, label, openDrawer, replay, seek, sessionCard, sessionCards, setViewport, SCREENSHOTS, sliderValue, STRAY, test } from './support.ts';
+import { AXIO, BREN, build, cardRows, closeOf, CORV, DALE_HOLD, expect, label, openDrawer, openStandardDetail, replay, seek, sessionCard, sessionCards, setViewport, SCREENSHOTS, sliderValue, STRAY, test } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -102,9 +102,9 @@ const openReplay = async (page: Page): Promise<Locator> => {
 };
 
 test.describe('B9AR.4 The Plan block and the cards', () => {
-  test('should step R-AXIO-D from the first session to the last with one card each, then page the cards and press an earlier card', async ({ profile }) => {
+  test('should step R-AXIO-D from the first session to the last with one card each, then page the cards and press an earlier card', async ({ profile, copySetup }) => {
     test.setTimeout(300_000);
-    const { context, page } = await build(profile, AXIO, closeOf('2026-11-16'), 10);
+    const { context, page } = await openStandardDetail(profile, copySetup, AXIO);
     const scope = await openReplay(page);
     // W62: the Plan block, titled "The Plan", above the cards, and the same on every session.
     const planWords = [
@@ -156,9 +156,9 @@ test.describe('B9AR.4 The Plan block and the cards', () => {
     await context.close();
   });
 
-  test('should show R-BREN-U’s Plan block and W63’s words on its entry and its sale', async ({ profile }) => {
+  test('should show R-BREN-U’s Plan block and W63’s words on its entry and its sale', async ({ profile, copySetup }) => {
     test.setTimeout(300_000);
-    const { context, page } = await build(profile, BREN, closeOf('2026-11-16'), 10);
+    const { context, page } = await openStandardDetail(profile, copySetup, BREN);
     const scope = await openReplay(page);
     expect(await planRows(scope)).toEqual([
       'Entry: 4 contracts at $1.61',
@@ -237,9 +237,9 @@ async function brokenFigures(scope: Locator): Promise<string[]> {
 
 test.describe('T9AR.24-B1 Figures on the session cards', () => {
   for (const [name, fixture] of [['DALE-hold', DALE_HOLD], ['AXIO', AXIO], ['BREN', BREN]] as const) {
-    test(`should keep every figure on a session card on one line, sign with its number, at 1280, 1440, 375 and 320, ${name}`, async ({ profile }) => {
+    test(`should keep every figure on a session card on one line, sign with its number, at 1280, 1440, 375 and 320, ${name}`, async ({ profile, copySetup }) => {
       test.setTimeout(300_000);
-      const { context, page } = await build(profile, fixture, closeOf('2026-11-16'), 10);
+      const { context, page } = await openStandardDetail(profile, copySetup, fixture);
       const scope = await openReplay(page);
       await seek(page, scope, 'End');
       for (const width of [1280, 1440, 375, 320]) {

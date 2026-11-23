@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import {
-  AXIO, BREN, build, chartText, closeOf, CORV, DALE, DALE_HOLD, detail, expect, expectClearOfCursor, hits, MON_1123_1700, openDetailAt, openDrawer, pnlChart, priceStrip, recordExpiration, replay,
+  AXIO, BREN, build, chartText, closeOf, CORV, DALE, DALE_HOLD, detail, expect, expectClearOfCursor, hits, MON_1123_1700, openDetailAt, openDrawer, openStandardDetail, pnlChart, priceStrip, recordExpiration, replay,
   seek, setViewport, sliderValue, test,
 } from './support.ts';
 
@@ -39,9 +39,9 @@ async function expectKeyMatchesDrawing(scope: Locator, where: string): Promise<s
 }
 
 test.describe('B9AR.5 The chart', () => {
-  test('should list in the key only what R-BREN-U has drawn, at Mon 11-02 and Thu 11-12', async ({ profile }) => {
+  test('should list in the key only what R-BREN-U has drawn, at Mon 11-02 and Thu 11-12', async ({ profile, copySetup }) => {
     test.setTimeout(240_000);
-    const { context, page } = await build(profile, BREN, closeOf('2026-11-16'), 10);
+    const { context, page } = await openStandardDetail(profile, copySetup, BREN);
     let scope = await open(page, 10);
     await expect(sliderValue(scope)).toHaveText('Mon Nov 2 · 1 of 11');
     let listed = await expectKeyMatchesDrawing(scope, 'BREN Mon 11-02');
@@ -62,9 +62,9 @@ test.describe('B9AR.5 The chart', () => {
     await context.close();
   });
 
-  test('should end a stock’s time axis with nothing at the right, and keep the cursor clear of text on its entry session', async ({ profile }) => {
+  test('should end a stock’s time axis with nothing at the right, and keep the cursor clear of text on its entry session', async ({ profile, copySetup }) => {
     test.setTimeout(240_000);
-    const { context, page } = await build(profile, AXIO, closeOf('2026-11-16'), 10);
+    const { context, page } = await openStandardDetail(profile, copySetup, AXIO);
     const scope = await open(page, 10);
     await expect(sliderValue(scope)).toHaveText('Mon Nov 2 · 1 of 11');
     await expect(pnlChart(scope).locator('text.axis-start')).toHaveText('Mon Nov 2');
@@ -75,9 +75,9 @@ test.describe('B9AR.5 The chart', () => {
     await context.close();
   });
 
-  test('should name DALE-hold’s Worst case at the bottom edge with an arrow, with every line labelled and the Stop breached flagged', async ({ profile }) => {
+  test('should name DALE-hold’s Worst case at the bottom edge with an arrow, with every line labelled and the Stop breached flagged', async ({ profile, copySetup }) => {
     test.setTimeout(240_000);
-    const { context, page } = await build(profile, DALE_HOLD, closeOf('2026-11-16'), 10);
+    const { context, page } = await openStandardDetail(profile, copySetup, DALE_HOLD);
     let scope = await open(page, 10);
     await expect(sliderValue(scope)).toHaveText('Mon Nov 2 · 1 of 11');
     expect(await chartText(pnlChart(scope))).toContain('Worst case −$33,936 ↓');
@@ -124,9 +124,9 @@ test.describe('B9AR.5 The chart', () => {
 
   // T9AR.24-B6 (critic-1 defect 6; A280, W66): a bar or hatch is drawn with its label or not at all, no label over another, and the key names
   // "Past the Stop" and "At stake" while they are drawn.
-  test('should draw each stake bar and hatch on AXIO Mon Nov 16 with its label and no label over another, and name both in the key, at 1280 and 1440', async ({ profile }) => {
+  test('should draw each stake bar and hatch on AXIO Mon Nov 16 with its label and no label over another, and name both in the key, at 1280 and 1440', async ({ profile, copySetup }) => {
     test.setTimeout(240_000);
-    const { context, page } = await build(profile, AXIO, closeOf('2026-11-16'), 10);
+    const { context, page } = await openStandardDetail(profile, copySetup, AXIO);
     let scope = await open(page, 0);
     await expect(sliderValue(scope)).toHaveText('Mon Nov 16 · 11 of 11');
     for (const width of [1280, 1440]) {
@@ -164,9 +164,9 @@ test.describe('B9AR.5 The chart', () => {
   });
 
   // T9AR.24-B7 (critic-1 defect 7; T9AR.19, W64): the Stop breached flag, once drawn, stays on every later session, in the chart and in the key; P145: no flag before it.
-  test('should keep AXIO’s Stop breached flag on the P&L chart and in the key on every session from Mon Nov 9 to Mon Nov 16, and none before', async ({ profile }) => {
+  test('should keep AXIO’s Stop breached flag on the P&L chart and in the key on every session from Mon Nov 9 to Mon Nov 16, and none before', async ({ profile, copySetup }) => {
     test.setTimeout(240_000);
-    const { context, page } = await build(profile, AXIO, closeOf('2026-11-16'), 10);
+    const { context, page } = await openStandardDetail(profile, copySetup, AXIO);
     let scope = await open(page, 0);
     await expect(sliderValue(scope)).toHaveText('Mon Nov 16 · 11 of 11');
     for (const width of [1280, 1440, 1920]) {
@@ -218,9 +218,9 @@ test.describe('B9AR.5 The chart', () => {
 
   // T9AR.24-B10 (gate critic-2 defect 1; C9AR.2, A280): on the entry session no label is drawn over a y-axis figure, nor over another label.
   for (const [name, fixture] of [['BREN', BREN], ['CORV', CORV]] as const) {
-    test(`should draw no label over a y-axis figure or another label on ${name} Mon Nov 2 at 1280, 1366, 1440, 1536 and 1920`, async ({ profile }) => {
+    test(`should draw no label over a y-axis figure or another label on ${name} Mon Nov 2 at 1280, 1366, 1440, 1536 and 1920`, async ({ profile, copySetup }) => {
       test.setTimeout(240_000);
-      const { context, page } = await build(profile, fixture, closeOf('2026-11-16'), 10);
+      const { context, page } = fixture === CORV ? await build(profile, fixture, closeOf('2026-11-16'), 10) : await openStandardDetail(profile, copySetup, fixture);
       await open(page, 0);
       for (const width of [1280, 1366, 1440, 1536, 1920]) {
         await setViewport(page, width, 800);
@@ -247,9 +247,9 @@ test.describe('B9AR.5 The chart', () => {
     });
   }
 
-  test('should name the hatch and the stake bar in the key on BREN, where both are drawn with their labels', async ({ profile }) => {
+  test('should name the hatch and the stake bar in the key on BREN, where both are drawn with their labels', async ({ profile, copySetup }) => {
     test.setTimeout(240_000);
-    const { context, page } = await build(profile, BREN, closeOf('2026-11-16'), 10);
+    const { context, page } = await openStandardDetail(profile, copySetup, BREN);
     const scope = await open(page, 0);
     await expect(sliderValue(scope)).toHaveText('Mon Nov 16 · 11 of 11');
     await expect(pnlChart(scope).locator('text.past-label')).toHaveText(/past the Target$/);
@@ -259,9 +259,9 @@ test.describe('B9AR.5 The chart', () => {
     await context.close();
   });
 
-  test('should leave the top of the readout where it is when a session is hovered', async ({ profile }) => {
+  test('should leave the top of the readout where it is when a session is hovered', async ({ profile, copySetup }) => {
     test.setTimeout(240_000);
-    const { context, page } = await build(profile, BREN, closeOf('2026-11-16'), 10);
+    const { context, page } = await openStandardDetail(profile, copySetup, BREN);
     const scope = await open(page, 0);
     const readout = scope.getByTestId('readout');
     const before = (await readout.boundingBox())!;
@@ -303,9 +303,9 @@ test.describe('B9AR.5 The chart', () => {
     ['DALE-hold', DALE_HOLD, 10, '2026-11-16', 11],
     ['CORV', CORV, 7, '2026-11-11', 8],
   ] as const) {
-    test(`should keep ${name}’s key on one line at 1280, 1440 and 1920 on every session`, async ({ profile }) => {
+    test(`should keep ${name}’s key on one line at 1280, 1440 and 1920 on every session`, async ({ profile, copySetup }) => {
       test.setTimeout(480_000);
-      const { context, page } = await build(profile, fixture, closeOf(close), through);
+      const { context, page } = fixture === CORV ? await build(profile, fixture, closeOf(close), through) : await openStandardDetail(profile, copySetup, fixture);
       await open(page, 0);
       await expectKeyOnOneLine(page, sessions, name);
       await context.close();

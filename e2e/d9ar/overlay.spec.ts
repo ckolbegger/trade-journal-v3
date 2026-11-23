@@ -1,5 +1,5 @@
 import {
-  boxOf, BREN, build, closeButton, closeOf, detail, detailReplayButton, expect, expectNoPayoffOrTheory, expectSixDrawers, headline, PRICE_HISTORY, LAUNCH, replay, seek, slider, sliderValue, SCREENSHOTS, test,
+  boxOf, BREN, closeButton, detail, detailReplayButton, expect, expectNoPayoffOrTheory, expectSixDrawers, headline, openStandardDetail, PRICE_HISTORY, LAUNCH, replay, seek, slider, sliderValue, SCREENSHOTS, test,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
@@ -8,9 +8,9 @@ test.use({ actionTimeout: 15_000 });
 // of closing it (Escape, Close, the browser's Back) leaves the Trade's page and puts focus on the button; a reload inside it reopens it; Price History closes it and focuses that session's column;
 // and at 1280 the readout is beside the charts.
 test.describe('B9AR.1 The overlay on Trade Detail', () => {
-  test('should open the overlay from the Replay button beside six drawers, named and headed as W53 says', async ({ profile }) => {
+  test('should open the overlay from the Replay button beside six drawers, named and headed as W53 says', async ({ profile, copySetup }) => {
     test.setTimeout(240_000);
-    const { context, page } = await build(profile, BREN, closeOf('2026-11-16'), 10);
+    const { context, page } = await openStandardDetail(profile, copySetup, BREN);
     await expectSixDrawers(page, 'Today');
     await expect(detailReplayButton(page)).toHaveCount(1);
     await expect(replay(page)).toHaveCount(0);
@@ -26,9 +26,9 @@ test.describe('B9AR.1 The overlay on Trade Detail', () => {
     await context.close();
   });
 
-  test('should close by Escape, by Close and by the browser’s Back, each leaving the Trade’s page with focus on the Replay button', async ({ profile }) => {
+  test('should close by Escape, by Close and by the browser’s Back, each leaving the Trade’s page with focus on the Replay button', async ({ profile, copySetup }) => {
     test.setTimeout(240_000);
-    const { context, page, trade } = await build(profile, BREN, closeOf('2026-11-16'), 10);
+    const { context, page, trade } = await openStandardDetail(profile, copySetup, BREN);
     const onTrade = async (how: string): Promise<void> => {
       await expect(replay(page), how).toHaveCount(0);
       expect(new URL(page.url()).pathname, `${how}: still the Trade's page`).toBe(`/trades/${trade.tradeId}`);
@@ -51,9 +51,9 @@ test.describe('B9AR.1 The overlay on Trade Detail', () => {
     await context.close();
   });
 
-  test('should reopen on a reload inside the overlay, and let Price History close it and focus that session’s column', async ({ profile }) => {
+  test('should reopen on a reload inside the overlay, and let Price History close it and focus that session’s column', async ({ profile, copySetup }) => {
     test.setTimeout(240_000);
-    const { context, page, trade } = await build(profile, BREN, closeOf('2026-11-16'), 10);
+    const { context, page, trade } = await openStandardDetail(profile, copySetup, BREN);
     await detailReplayButton(page).click();
     await seek(page, replay(page), 'ArrowLeft', 2);
     await expect(sliderValue(replay(page))).toHaveText('Thu Nov 12 · 9 of 11');
@@ -73,10 +73,10 @@ test.describe('B9AR.1 The overlay on Trade Detail', () => {
     await context.close();
   });
 
-  test('should put the readout beside the charts at 1280', async ({ profile }) => {
+  test('should put the readout beside the charts at 1280', async ({ profile, copySetup }) => {
     test.setTimeout(240_000);
     // Product disagrees with the plan (reported to the main session): `.replay-chart-box` is the grid child since T9AR.16 and spans both columns, so the readout sits below the charts, not beside them.
-    const { context, page } = await build(profile, BREN, closeOf('2026-11-16'), 10);
+    const { context, page } = await openStandardDetail(profile, copySetup, BREN);
     expect(page.viewportSize()!.width).toBe(1280);
     await detailReplayButton(page).click();
     const scope = replay(page);

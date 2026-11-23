@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import {
-  AXIO, BREN, build, closeOf, CORV, DALE_HOLD, expect, expectAccessible, going, openDrawer, pastLine, positionGroup, readoutPnl, readoutR, readoutValue, replay, seek, setViewport, SCREENSHOTS, sliderValue, STRAY, stake, test, type Fixture,
+  AXIO, BREN, build, closeOf, CORV, DALE_HOLD, expect, expectAccessible, going, openDrawer, openStandardDetail, pastLine, positionGroup, readoutPnl, readoutR, readoutValue, replay, seek, setViewport, SCREENSHOTS, sliderValue, STRAY, stake, test, type Fixture,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
@@ -26,9 +26,9 @@ const openAt = async (page: Page, key: 'ArrowLeft', times: number) => {
 };
 
 test.describe('B9AR.3 The readout', () => {
-  test('should show R-BREN-U’s grid at Wed 11-11 and its past-the-Target row, Marks and odds at Mon 11-16', async ({ profile }) => {
+  test('should show R-BREN-U’s grid at Wed 11-11 and its past-the-Target row, Marks and odds at Mon 11-16', async ({ profile, copySetup }) => {
     test.setTimeout(240_000);
-    const { context, page } = await build(profile, BREN, closeOf('2026-11-16'), 10);
+    const { context, page } = await openStandardDetail(profile, copySetup, BREN);
     // Mon 11-16 first: past the Target.
     const scope = await openAt(page, 'ArrowLeft', 0);
     await expect(pastLine(scope)).toHaveText('Past the Target by $32.00 (0.10R) · at Target +$956.00');
@@ -63,9 +63,9 @@ test.describe('B9AR.3 The readout', () => {
   });
 
   // T9AR.16: the "From here" sentence in normal ink, the status line's own colour. The product draws it in the muted grey (rgb 85, 82, 75 against the status line's 28, 27, 25).
-  test('should draw the From here sentence in the status line’s colour', async ({ profile }) => {
+  test('should draw the From here sentence in the status line’s colour', async ({ profile, copySetup }) => {
     test.setTimeout(240_000);
-    const { context, page } = await build(profile, BREN, closeOf('2026-11-16'), 10);
+    const { context, page } = await openStandardDetail(profile, copySetup, BREN);
     const scope = await openAt(page, 'ArrowLeft', 3);
     await expect(sliderValue(scope)).toHaveText('Wed Nov 11 · 8 of 11');
     await scope.page().screenshot({ path: `${SCREENSHOTS}/B9AR.3-from-here-colour.png` });
@@ -73,9 +73,9 @@ test.describe('B9AR.3 The readout', () => {
     await context.close();
   });
 
-  test('should show R-AXIO-D past the Stop on Mon 11-16 with a realized loss, a grey Worst case and axe clean; and Mon 11-09 as the first crossing', async ({ profile }) => {
+  test('should show R-AXIO-D past the Stop on Mon 11-16 with a realized loss, a grey Worst case and axe clean; and Mon 11-09 as the first crossing', async ({ profile, copySetup }) => {
     test.setTimeout(240_000);
-    const { context, page } = await build(profile, AXIO, closeOf('2026-11-16'), 10);
+    const { context, page } = await openStandardDetail(profile, copySetup, AXIO);
     const scope = await openAt(page, 'ArrowLeft', 0);
     await expect(sliderValue(scope)).toHaveText('Mon Nov 16 · 11 of 11');
     await expect(pastLine(scope)).toHaveText('Past the Stop by $300.00 (0.50R) · at Stop −$740.00');
@@ -111,9 +111,9 @@ test.describe('B9AR.3 The readout', () => {
     await context.close();
   });
 
-  test('should show DALE-hold at Wed 11-11 with full-strength extremes, the odds with the Plan’s, and the change line only under Trade P&L and the Marks', async ({ profile }) => {
+  test('should show DALE-hold at Wed 11-11 with full-strength extremes, the odds with the Plan’s, and the change line only under Trade P&L and the Marks', async ({ profile, copySetup }) => {
     test.setTimeout(240_000);
-    const { context, page } = await build(profile, DALE_HOLD, closeOf('2026-11-16'), 10);
+    const { context, page } = await openStandardDetail(profile, copySetup, DALE_HOLD);
     const scope = await openAt(page, 'ArrowLeft', 3);
     await expect(sliderValue(scope)).toHaveText('Wed Nov 11 · 8 of 11');
     // W59, W60: two decimals, the estimated odds, and the Plan's beside them.
@@ -137,9 +137,9 @@ test.describe('B9AR.3 The readout', () => {
   });
 
   // The Position group's Execution words (W63, T9AR.18): each Execution against the Plan. The Expiration's "Expiration, Fri Nov 20" with "Expired" is B9AR.6's R-DALE-U case, in states.spec.ts.
-  test('should word R-AXIO-D’s sale below the Stop against the Plan in the Position group', async ({ profile }) => {
+  test('should word R-AXIO-D’s sale below the Stop against the Plan in the Position group', async ({ profile, copySetup }) => {
     test.setTimeout(300_000);
-    const axio = await build(profile, AXIO, closeOf('2026-11-16'), 10);
+    const axio = await openStandardDetail(profile, copySetup, AXIO);
     await openDrawer(axio.page, 'Replay');
     const scope = replay(axio.page);
     await seek(axio.page, scope, 'ArrowLeft', 5);
@@ -149,9 +149,9 @@ test.describe('B9AR.3 The readout', () => {
     await axio.context.close();
   });
 
-  test('should word R-BREN-U’s entry and its sale at the Target against the Plan in the Position group', async ({ profile }) => {
+  test('should word R-BREN-U’s entry and its sale at the Target against the Plan in the Position group', async ({ profile, copySetup }) => {
     test.setTimeout(300_000);
-    const bren = await build(profile, BREN, closeOf('2026-11-16'), 10);
+    const bren = await openStandardDetail(profile, copySetup, BREN);
     await openDrawer(bren.page, 'Replay');
     const scope = replay(bren.page);
     await seek(bren.page, scope, 'Home');
@@ -236,9 +236,9 @@ test.describe('T9AR.24-B2 Figures in the readout and the overlay header', () => 
     { fixture: CORV, back: 0, where: 'CORV Mon 11-09', through: 5, date: '2026-11-09' },
   ];
   for (const { fixture, back, where, through = 10, date = '2026-11-16', signed } of places) {
-    test(`should keep every figure in the readout and the header on one line, sign with its number, at 1280, 1440, 1920, 375 and 320, ${where}`, async ({ profile }) => {
+    test(`should keep every figure in the readout and the header on one line, sign with its number, at 1280, 1440, 1920, 375 and 320, ${where}`, async ({ profile, copySetup }) => {
       test.setTimeout(300_000);
-      const { context, page } = await build(profile, fixture, closeOf(date), through);
+      const { context, page } = fixture === CORV ? await build(profile, fixture, closeOf(date), through) : await openStandardDetail(profile, copySetup, fixture);
       const scope = await openAt(page, 'ArrowLeft', back);
       for (const width of [1280, 1440, 1920, 375, 320]) {
         await setViewport(page, width, 800);

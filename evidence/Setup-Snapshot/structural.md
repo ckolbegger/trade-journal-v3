@@ -84,3 +84,23 @@ Watch points: d9/review lines 11 and 39 keep their body (page.goto('/'), openRev
 Break check (the six files, one run each): copy switched off (the cp call in e2e/d1/support.ts replaced by `execFileSync('true')`): 15 failed (toBeVisible on the first screen), 1 passed (the CORV test, own build); switched on: 16 passed (22.3 s). Switch made and restored by edits; git status shows e2e/d1/support.ts unchanged.
 
 Assumptions: none beyond the plan. First test of the file set (estimates-a11y at 375 px) pays the one build of the setup (6.7 s).
+
+## ST.4 Group 1, the d9ar files, on the shared Review
+
+What changed (test code only): cards, chart, overlay, readout, sweep and crossing-position specs in e2e/d9ar. No support file changed. Each converted test asks for `copySetup` and starts with `openStandardDetail(profile, copySetup, <fixture>)` (ST.2's helper in e2e/d9ar/support.ts) instead of `build(profile, <fixture>, closeOf('2026-11-16'), 10)`; bodies unchanged. The specs that loop over fixtures (cards line 240, chart lines 221 and 306, readout line 239, sweep) start with `fixture === CORV ? await build(...) : await openStandardDetail(...)` (sweep: its CORV branch builds and keeps the Trade's address, the others use copyStandardTrade for the address). Imports: openStandardDetail (sweep: copyStandardTrade) added; build and closeOf dropped where nothing uses them any more (overlay, crossing-position).
+
+Which tests start from which setup (all STANDARD_REVIEW, the three-Trade Review BREN, AXIO, DALE held, Mon 11-16): 35 of 43 cases.
+- cards: AXIO step case, BREN Plan block, figures on one line (DALE-hold, AXIO, BREN): 5.
+- chart: key list (BREN), time axis (AXIO), DALE-hold Worst case, AXIO stake bars, AXIO Stop breached, label overlap (BREN), hatch and stake bar key (BREN), readout top on hover (BREN), key on one line (BREN, AXIO, DALE-hold): 11.
+- overlay: all 4 (BREN); readout: BREN grid, From here colour, AXIO past the Stop, DALE-hold Wed 11-11, AXIO sale words, BREN entry and sale words, figures on one line (DALE-hold Mon Nov 16, AXIO, DALE-hold Thu Nov 12, DALE-hold Fri Nov 13, BREN Wed 11-11): 11.
+- sweep: BREN, AXIO, DALE_HOLD (copy only, then the test's own touch launch at the Trade's address): 3.
+- crossing-position: AXIO: 1.
+(Counts by file: 5 + 11 + 4 + 11 + 3 + 1 = 35 of 43.)
+
+Kept their own build (8 cases): CORV is not in the standard setup (its clock or Marks differ, and a CORV build is the whole build), and R-DALE-U cannot share: cards line 183 (CORV to Wed 11-11), chart line 104 (CORV to Wed 11-11), chart line 221 CORV case and line 306 CORV case (CORV to 11-16 and to 11-11), readout line 169 (CORV Mon 11-09), readout line 239 CORV case (Mon 11-09), sweep CORV case, and chart line 315 (R-DALE-U to Thu 11-19: Marks on the same contract as DALE held, a later clock, then its own Expiration).
+
+Watch point: overlay line 29 (browser Back) passes unchanged on the copy (the overlay adds its own history entry on top of the Trade Detail the copy opens on).
+
+Break check (the six files in one run): copy switched off (the cp call in e2e/d1/support.ts replaced by `execFileSync('true', ...)`): 35 failed (toBeVisible on the first screen), the 8 CORV and R-DALE-U cases passed (own builds); switched on: 43 passed (1.1 min). Switch made and restored by edits; git status shows e2e/d1/support.ts unchanged.
+
+Assumptions: none beyond the plan. Plan counted CORV cases as staying on their own build; the conditional start inside the looped tests keeps one test body per loop.

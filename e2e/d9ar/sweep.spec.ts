@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { atEverySession, AXIO, BREN, brokenFiguresInDialog, build, closeOf, CORV, DALE_HOLD, detailReplayButton, expect, firstPage, launchTouchAt, replay, setViewport, test, type Fixture } from './support.ts';
+import { atEverySession, AXIO, BREN, brokenFiguresInDialog, build, closeOf, copyStandardTrade, CORV, DALE_HOLD, detailReplayButton, expect, firstPage, launchTouchAt, replay, setViewport, test, type Fixture } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -21,11 +21,14 @@ async function sweepFigures(page: Page, where: string): Promise<string[]> {
 
 test.describe('D9AR-retro-1 Figure sweep over every session of the replay', () => {
   for (const [name, fixture] of fixtures) {
-    test(`should find no broken or unmarked figure anywhere in the replay at any session, ${name}`, async ({ profile }) => {
+    test(`should find no broken or unmarked figure anywhere in the replay at any session, ${name}`, async ({ profile, copySetup }) => {
       test.setTimeout(900_000);
-      const built = await build(profile, fixture, closeOf('2026-11-16'), 10);
-      const tradeUrl = built.page.url();
-      await built.context.close();
+      let tradeUrl: string;
+      if (fixture === CORV) {
+        const built = await build(profile, fixture, closeOf('2026-11-16'), 10);
+        tradeUrl = built.page.url();
+        await built.context.close();
+      } else tradeUrl = `/trades/${(await copyStandardTrade(copySetup, fixture)).tradeId}`;
       const context = await launchTouchAt(profile, closeOf('2026-11-16'), 375);
       const page = await firstPage(context);
       await page.goto(tradeUrl);

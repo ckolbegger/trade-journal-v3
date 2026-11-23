@@ -1,5 +1,5 @@
 import type { Locator } from '@playwright/test';
-import { AXIO, build, closeOf, expect, going, openDrawer, replay, setViewport, stake, test } from './support.ts';
+import { AXIO, expect, going, openDrawer, openStandardDetail, replay, setViewport, stake, test } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -7,9 +7,9 @@ test.use({ actionTimeout: 15_000 });
 const top = async (locator: Locator): Promise<number> => (await locator.boundingBox())!.y;
 
 test.describe('T9AR.18-D1 Where the first-crossing sentence sits', () => {
-  test('should put the first-crossing sentence after the charts on a phone and after the status line on a wide screen', async ({ profile }) => {
+  test('should put the first-crossing sentence after the charts on a phone and after the status line on a wide screen', async ({ profile, copySetup }) => {
     test.setTimeout(240_000);
-    const { context, page } = await build(profile, AXIO, closeOf('2026-11-16'), 10);
+    const { context, page } = await openStandardDetail(profile, copySetup, AXIO);
     await openDrawer(page, 'Replay');
     const scope = replay(page);
     const crossing = scope.getByTestId('crossing');
