@@ -1029,6 +1029,27 @@ ul.rows > li {
   min-height: 44px;
   border-top: 1px solid var(--line);
 }
+.day-rows {
+  margin: 0.5rem 0;
+}
+.day-rows > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  padding: 0.35rem 0;
+  border-top: 1px solid var(--line);
+}
+.day-rows dt {
+  min-width: 7rem;
+  font-weight: 650;
+}
+.day-rows dd {
+  margin: 0;
+  flex: 1 1 14rem;
+}
+.day-rows dd p {
+  margin: 0;
+}
 .day-lines li a {
   display: inline-flex;
   align-items: center;

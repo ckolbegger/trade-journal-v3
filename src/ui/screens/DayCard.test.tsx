@@ -63,6 +63,73 @@ function renderCard(ready: Ready) {
   return calls;
 }
 
+// A finished day (nothing to go): the lists the summary carries once the Review is not Incomplete (A300, P175).
+const none = { marks: 0, actions: 0, expirations: 0, closeReviews: 0, reflections: 0 };
+const finishedDay = (over: Partial<NonNullable<DaySummary['finished']>> = {}, rest: Partial<DaySummary> = {}): DaySummary =>
+  day({
+    toGo: none,
+    change: { kind: 'Value', dollars: Rational.of(-74n, 1n) },
+    nextReviewDate: '2026-11-17',
+    finished: { pastLine: { stop: [], target: [] }, chosen: [], due: { sales: [], expirations: [] }, ...over },
+    ...rest,
+  });
+const rows = () => Object.fromEntries([...document.querySelectorAll('.day-rows dt')].map((dt) => [dt.textContent, dt.nextElementSibling?.textContent]));
+
+describe('the day card on a finished day', () => {
+  it('should show Complete with the Review Date when nothing is to go', () => {
+    renderCard(review({ completion: { kind: 'Complete' }, day: finishedDay() }));
+    const card = screen.getByRole('region', { name: 'The day' });
+    expect(within(card).getByText('Complete').tagName).toBe('STRONG');
+    expect(within(card).getByText('Mon Nov 16').getAttribute('datetime')).toBe('2026-11-16');
+    expect(screen.queryByText('Incomplete')).toBeNull();
+  });
+
+  it('should show the rows The day, Past a line, You chose, Tomorrow and Next Review', () => {
+    const finished = {
+      pastLine: { stop: [{ tradeId: 't1', sessions: 6 }, { tradeId: 't2', sessions: 2 }], target: [{ tradeId: 't3', sessions: 1 }, { tradeId: 't4', sessions: 1 }] },
+      chosen: [{ tradeId: 't1', action: 'Hold' }, { tradeId: 't2', action: 'Hold' }, { tradeId: 't3', action: 'Hold' }, { tradeId: 't4', action: 'Exit' }],
+      due: { sales: ['t4'], expirations: [{ expiration: '2026-11-20', sessionsLeft: 4, contracts: [{ tradeId: 't2', instrument: { kind: 'Option' } as never }, { tradeId: 't3', instrument: { kind: 'Option' } as never }, { tradeId: 't4', instrument: { kind: 'Option' } as never }] }] },
+    };
+    renderCard(review({ completion: { kind: 'Complete' }, day: finishedDay(finished) }));
+    expect(rows()).toEqual({
+      'The day': '−$74.00',
+      'Past a line': 'Past Stop: AXIO (6 sessions), DALE (2 sessions) · At Target: CORV, BREN',
+      'You chose': 'Exit BREN · Hold AXIO, DALE, CORV',
+      Tomorrow: "Sell BREN, then record the sale.You held AXIO, DALE past the Stop. Tomorrow's Review asks again.You held CORV past the Target, with no new line.DALE, CORV, BREN expire Fri Nov 20: 4 sessions left.",
+      'Next Review': 'Tue Nov 17, after the close.',
+    });
+    // The change is shown once: "Day so far" gives way to the row.
+    expect(screen.queryByText(/Day so far/)).toBeNull();
+  });
+
+  it('should show Missed only when a session had no Review', () => {
+    renderCard(review({ completion: { kind: 'Complete' }, day: finishedDay({}, { missed: ['2026-11-18', '2026-11-19'] }) }));
+    expect(rows().Missed).toBe('Wed Nov 18, Thu Nov 19');
+    cleanup();
+
+    renderCard(review({ completion: { kind: 'Complete' }, day: finishedDay() }));
+    expect(Object.keys(rows())).not.toContain('Missed');
+  });
+
+  it('should still name the Instruments, Trades and figures not calculated on a day Complete with Unavailable Marks', () => {
+    const completion: ReviewCompletion = { kind: 'CompleteWithUnavailableMarks', instruments: [{ kind: 'Stock', symbol: 'AXIO' }], trades: ['t1'], families: ['Valuation', 'Risk'] };
+    renderCard(review({ completion, day: finishedDay() }));
+    const group = screen.getByRole('group', { name: 'Unavailable Marks' });
+    expect(within(group).getAllByText(/./).map((p) => p.textContent)).toEqual(['Instruments: AXIO', 'Trades: t1', 'Not calculated: Valuation, Risk']);
+    expect(screen.getByText('Complete with Unavailable Marks')).toBeTruthy();
+    expect(rows()['Next Review']).toBe('Tue Nov 17, after the close.');
+  });
+
+  it("should link record the sale to the Trade's card", async () => {
+    const user = userEvent.setup();
+    const { openCard } = renderCard(review({ completion: { kind: 'Complete' }, day: finishedDay({ chosen: [{ tradeId: 't4', action: 'Exit' }], due: { sales: ['t4'], expirations: [] } }) }));
+    const link = screen.getByRole('link', { name: 'record the sale' });
+    expect(link.getAttribute('href')).toBe('/review?trade=t4');
+    await user.click(link);
+    expect(openCard).toHaveBeenCalledExactlyOnceWith('t4');
+  });
+});
+
 const stepItems = () => within(screen.getByRole('list', { name: 'Steps' })).getAllByRole('listitem');
 const steps = () => stepItems().map((item) => item.textContent);
 const inHand = () => stepItems().filter((item) => item.getAttribute('aria-current') === 'step').map((item) => item.textContent);

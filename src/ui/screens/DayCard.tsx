@@ -80,6 +80,23 @@ const NEED_TEXT = { Marks: (marks: number) => (marks > 1 ? `${marks} Marks` : 'M
 // What a Trade still needs, in the order its card works through it (W101).
 const todoText = (line: DaySummary['lines'][number]): string => (line.needs.length > 0 ? `To do: ${line.needs.map((need) => NEED_TEXT[need](line.marks, line.closeReview)).join(', ')}` : 'Done');
 
+// The Actions in the order the "You chose" row lists them: an Exit first, since it is still to record.
+const ACTION_ORDER = ['Exit', 'Roll', 'Adjust', 'Hold'] as const;
+
+// The two lines a Trade can be past, with the words each row uses.
+const LINES = [
+  { key: 'stop', label: 'Past Stop', held: "past the Stop. Tomorrow's Review asks again." },
+  { key: 'target', label: 'At Target', held: 'past the Target, with no new line.' },
+] as const;
+
+// One sentence for each line that a Trade was held past: the Trades past it whose saved Action for the day is Hold.
+function heldPast({ pastLine, chosen }: NonNullable<DaySummary['finished']>, underlyingOf: (tradeId: string) => string): readonly string[] {
+  return LINES.flatMap(({ key, held }) => {
+    const names = pastLine[key].filter(({ tradeId }) => chosen.some((c) => c.tradeId === tradeId && c.action === 'Hold')).map(({ tradeId }) => underlyingOf(tradeId));
+    return names.length > 0 ? [`You held ${names.join(', ')} ${held}`] : [];
+  });
+}
+
 const STEPS = ['1 Marks', '2 Trades', '3 The day'] as const;
 
 // A Mark is entered in the Marks step, not in the card.
@@ -139,17 +156,17 @@ export function DayCard({ review, name, openCard, openMarks, openSkipped }: DayC
       <p>
         <strong>{COMPLETION_TEXT[completion.kind]}</strong>
       </p>
-      {(nextText || day?.change.kind === 'Value') && (
+      {(nextText || (day?.change.kind === 'Value' && !day.finished)) && (
         <div className="day-next">
           {nextText && (
             <button type="button" className="pill primary" onClick={() => next && open(next)}>
               {nextText}
             </button>
           )}
-          {day?.change.kind === 'Value' && <span>Day so far: {signed(money)(day.change.dollars)}</span>}
+          {day?.change.kind === 'Value' && !day.finished && <span>Day so far: {signed(money)(day.change.dollars)}</span>}
         </div>
       )}
-      {day && day.missed.length > 0 && (
+      {day && !day.finished && day.missed.length > 0 && (
         <p>
           <b>No Review for {day.missed.map(shortDate).join(', ')}.</b> Their Marks are optional.{' '}
           {gap && (
@@ -158,6 +175,85 @@ export function DayCard({ review, name, openCard, openMarks, openSkipped }: DayC
             </button>
           )}
         </p>
+      )}
+      {day?.finished && (
+        <dl className="day-rows">
+          {day.change.kind === 'Value' && (
+            <div>
+              <dt>The day</dt>
+              <dd>{signed(money)(day.change.dollars)}</dd>
+            </div>
+          )}
+          {(day.finished.pastLine.stop.length > 0 || day.finished.pastLine.target.length > 0) && (
+            <div>
+              <dt>Past a line</dt>
+              <dd>
+                {LINES.filter(({ key }) => day.finished!.pastLine[key].length > 0)
+                  .map(({ key, label }) => `${label}: ${day.finished!.pastLine[key].map(({ tradeId, sessions }) => underlyingOf(tradeId) + (sessions > 1 ? ` (${sessions} sessions)` : '')).join(', ')}`)
+                  .join(' · ')}
+              </dd>
+            </div>
+          )}
+          {day.finished.chosen.length > 0 && (
+            <div>
+              <dt>You chose</dt>
+              <dd>
+                {ACTION_ORDER.filter((action) => day.finished!.chosen.some((c) => c.action === action))
+                  .map((action) => `${action} ${day.finished!.chosen.filter((c) => c.action === action).map((c) => underlyingOf(c.tradeId)).join(', ')}`)
+                  .join(' · ')}
+              </dd>
+            </div>
+          )}
+          {(day.finished.due.sales.length > 0 || heldPast(day.finished, underlyingOf).length > 0 || day.finished.due.expirations.length > 0) && (
+            <div>
+              <dt>Tomorrow</dt>
+              <dd>
+                {day.finished.due.sales.length > 0 && (
+                  <p>
+                    Sell {day.finished.due.sales.map(underlyingOf).join(', ')}, then{' '}
+                    <CardLink tradeId={day.finished.due.sales[0]!} open={() => openCard(day.finished!.due.sales[0]!)}>
+                      record the sale
+                    </CardLink>
+                    .
+                  </p>
+                )}
+                {heldPast(day.finished, underlyingOf).map((sentence) => (
+                  <p key={sentence}>
+                    {sentence}
+                  </p>
+                ))}
+                {day.finished.due.expirations.map(({ expiration, sessionsLeft, contracts }) => (
+                  <p key={expiration}>
+                    {contracts.map((c) => underlyingOf(c.tradeId)).join(', ')} expire {shortDate(expiration)}
+                    {sessionsLeft !== undefined && `: ${plural(sessionsLeft, 'session', 'sessions')} left`}.
+                  </p>
+                ))}
+              </dd>
+            </div>
+          )}
+          {day.missed.length > 0 && (
+            <div>
+              <dt>Missed</dt>
+              <dd>
+                {day.missed.map(shortDate).join(', ')}
+                {gap && (
+                  <>
+                    {' '}
+                    <button type="button" className="pill secondary" onClick={openSkipped}>
+                      Add them
+                    </button>
+                  </>
+                )}
+              </dd>
+            </div>
+          )}
+          {day.nextReviewDate && (
+            <div>
+              <dt>Next Review</dt>
+              <dd>{shortDate(day.nextReviewDate)}, after the close.</dd>
+            </div>
+          )}
+        </dl>
       )}
       {day && (
         <>
