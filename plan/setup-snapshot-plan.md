@@ -102,7 +102,7 @@ Read the stage run outputs from the tasks' runs and confirm each stage builds ea
 | Task | Level | Status | Commits |
 |---|---|---|---|
 | ST.0 | — | Dropped | |
-| ST.1 | Standard | Not started | |
+| ST.1 | Standard | Done | 2ef488d0 |
 | ST.2 | Light | Not started | |
 | ST.3 | Light | Not started | |
 | ST.4 | Light | Not started | |
