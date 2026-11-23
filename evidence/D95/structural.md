@@ -325,3 +325,7 @@ Browser stages under with-browser-lock.sh, unchanged: `test:e2e:1` 126 passed; `
 ## T95.21 — "The day" on a finished day (Standard)
 
 Commit `d542bfe9` (from `2a0751e6`). DayCard.tsx, DayCard.test.tsx, app.css (`.day-rows`). Cases 2, 3 and 5 red then green (3 and 5 first written ahead of red, taken out, red seen, put back; logged). Cases 1 and 4 first-run passes (built in T95.10), mutation-checked (`COMPLETION_TEXT.Complete` → 'Done'; the Trades list emptied). ReviewView.tsx not touched: COMPLETION_TEXT and the Unavailable Marks group already live in DayCard.tsx. W119 shortened (words-changed.md). W119's held-past sentences match the Trade's past lines against the saved Hold in the UI (a set match, not arithmetic). No browser case; no snapshot changed. src/ui 1341 passed.
+
+ocr (gpt-6.1-sol, session 170d4202): 3 files, 2 findings, both Valid. `evidence/D95/ocr/T95.21-d542bfe9.json`.
+- **T95.21-B1** (`DayCard.tsx:214`): with several saved Exits, "Tomorrow" lists every Trade but the one "record the sale" link opens only the first Trade's card.
+- **T95.21-B2** (`DayCard.tsx:227`): the expiration reminder names one Instrument per option contract, so two contracts of one Trade expiring that day read "AXIO, AXIO expire …".
