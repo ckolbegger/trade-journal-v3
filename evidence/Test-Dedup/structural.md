@@ -166,3 +166,7 @@ Moved helpers (rule 2): `expectNoPayoffOrTheory` (AC-CALC-004) and `expectSixDra
 Cases kept: none; all five removed, every "confirm first" held. Nothing failed for a real reason.
 
 References (rule 10): `rg` of the five titles found living text only in the plan itself and unit and integration tests with similar words (src/ui/cockpit/replay/readout.props.test.ts, tests/integration/d9/lifetime.test.ts; not these titles). Re-pointed: plan/D09-trade-replay.md AC-CALC-004 row (command now `npx playwright test e2e/d9ar/states.spec.ts`, "(since TD.4)"). `.claude/scripts/acceptance-commands.sh plan/D09-trade-replay.md`: 9 commands checked, 0 failed (the AC-CALC-004 row lists 4 tests). Left as written: plan/D09-trade-replay.md line 812 (the B9.4 test-plan row, a record of what was planned), plan/D09.5-daily-review-redesign.md lines 1522, 1632, 1665 and 1902 (pasted grep counts naming `e2e/d9/states.spec.ts`, past records), and plan/D09A-R-handoff.md line 136 (a general rule), and suite-run, tdd-log and structural entries of finished tasks. package.json `test:e2e:4` runs the whole e2e/d9 folder, so the deletion needs no change there.
+
+### TD.4 ocr
+
+gpt-6.1-sol, session b5710bc6: 4 files reviewed (4 excluded), 0 findings. `evidence/Test-Dedup/ocr/TD.4-9f05e3de.json`.

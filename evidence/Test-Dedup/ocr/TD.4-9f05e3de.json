@@ -1,0 +1,138 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 0,
+    "total_tokens": 53079,
+    "input_tokens": 52628,
+    "output_tokens": 451,
+    "cache_read_tokens": 6656,
+    "elapsed": "19s"
+  },
+  "tool_calls": {
+    "total": 9,
+    "by_tool": {
+      "code_search": 4,
+      "file_read": 5
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "D9AR end-to-end tests and shared support",
+      "files": [
+        "e2e/d9ar/overlay.spec.ts",
+        "e2e/d9ar/readout.spec.ts",
+        "e2e/d9ar/states.spec.ts",
+        "e2e/d9ar/support.ts"
+      ]
+    }
+  ],
+  "session_id": "b5710bc6-cf96-487f-94b5-e5873c8c28af",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "b5710bc6-cf96-487f-94b5-e5873c8c28af",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "9f05e3de",
+      "resolved_base": "912c89a3906abaf885e4b4994a17f462e2cad2b6",
+      "resolved_head": "9f05e3de89296d446c45010e0fb3191207a80a62",
+      "exact_range": "912c89a3906abaf885e4b4994a17f462e2cad2b6..9f05e3de89296d446c45010e0fb3191207a80a62",
+      "source_artifact_sha256": "5a67171702773ab9dda5570bb31454d2cc5122637ab2d4c3ea725618e2bce965"
+    },
+    "execution": {
+      "ocr_version": "v1.14.2",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "1f1cde75c007ef44b7a42884ebbefdadc6bd52a3556903ee28f2f353ead37e61",
+          "path": "e2e/d9ar/readout.spec.ts",
+          "fingerprint": "ca743dfce355c72e6a4966d2bb95ace3755178e86345082e6affcffbcbf7c7fe"
+        },
+        {
+          "item_id": "49ad97a3c181c65873b9cdb94f891e8568a88a72186d154fb0b4930f1edf79a7",
+          "path": "e2e/d9ar/states.spec.ts",
+          "fingerprint": "250312611efe7f05fb90e2a58fa25be1b5a3e38766a0c595f47cf635cca1841a"
+        },
+        {
+          "item_id": "839b5d74be9dab57ce22d8164cf43a870716504e404925773518309e596f49ef",
+          "path": "e2e/d9ar/support.ts",
+          "fingerprint": "74acbfaf7cea8f913b5c76acc935d8d273f122fe3ed9ed0cddcacd31a733b7e4"
+        },
+        {
+          "item_id": "8d8e421361e27cc7e23bcfbbea7f77a2b983a66b6a05fef3cea850c187cfafe3",
+          "path": "e2e/d9ar/overlay.spec.ts",
+          "fingerprint": "c50810f81cb070adbc13cf3ae62c029c0a4be765e8b6e06692681b3bd3f2ac3c"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "1f1cde75c007ef44b7a42884ebbefdadc6bd52a3556903ee28f2f353ead37e61",
+          "path": "e2e/d9ar/readout.spec.ts",
+          "fingerprint": "ca743dfce355c72e6a4966d2bb95ace3755178e86345082e6affcffbcbf7c7fe"
+        },
+        {
+          "item_id": "49ad97a3c181c65873b9cdb94f891e8568a88a72186d154fb0b4930f1edf79a7",
+          "path": "e2e/d9ar/states.spec.ts",
+          "fingerprint": "250312611efe7f05fb90e2a58fa25be1b5a3e38766a0c595f47cf635cca1841a"
+        },
+        {
+          "item_id": "839b5d74be9dab57ce22d8164cf43a870716504e404925773518309e596f49ef",
+          "path": "e2e/d9ar/support.ts",
+          "fingerprint": "74acbfaf7cea8f913b5c76acc935d8d273f122fe3ed9ed0cddcacd31a733b7e4"
+        },
+        {
+          "item_id": "8d8e421361e27cc7e23bcfbbea7f77a2b983a66b6a05fef3cea850c187cfafe3",
+          "path": "e2e/d9ar/overlay.spec.ts",
+          "fingerprint": "c50810f81cb070adbc13cf3ae62c029c0a4be765e8b6e06692681b3bd3f2ac3c"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "2142c3967951616f13b17b28af2b6b2598b3c9aed74470cc7fd74ae7a9359448",
+          "path": "plan/D09-trade-replay.md",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "3cc5fca88d2aed3572b3e556568df6e8c0aad9a007a8ccc0c32d1cda5a9848ca",
+          "path": "evidence/Test-Dedup/tdd-log.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "a1407d8484b64c3d768e4290265274f4b7acb82f4f8e30192f880d072445b85f",
+          "path": "e2e/d9/states.spec.ts",
+          "exclude_reason": "deleted"
+        },
+        {
+          "item_id": "f7994bbf30e04d67b0955ab66b8a5a1dca7340e1fbbebe026ae61846ed5bce4c",
+          "path": "evidence/Test-Dedup/structural.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 19171
+  }
+}
