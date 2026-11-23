@@ -48,6 +48,9 @@ describe('Daily Review through Mark-to-Market Valuation (P83, P84)', () => {
 
     const detailLine = 'current' in detail && 'datedLine' in detail.current ? detail.current.datedLine : undefined;
     expect(detailLine).toBeTruthy();
-    expect(card.datedLastClose).toEqual(detailLine);
+    // The card's dated line also carries the dated close's meter (T95.17-D1), which Trade Views' line has not.
+    const { meter, ...shared } = card.datedLastClose!;
+    expect(shared).toEqual(detailLine);
+    expect(meter).toBeTruthy();
   });
 });

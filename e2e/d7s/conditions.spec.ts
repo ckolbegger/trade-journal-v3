@@ -78,15 +78,15 @@ test.describe('B7S.4 Review card conditions', () => {
     await reloadReview(page);
     await reachCard(page, trade);
     await expect(cardHeader(page, trade)).toContainText('Past Stop');
-    const heading = tradeCard(page, trade).getByRole('heading', { name: 'Conditions', level: 4 });
-    const lines = tradeCard(page, trade).getByRole('list', { name: 'Conditions' }).locator('li');
-    await expect(heading).toBeVisible();
-    await expect(lines).toHaveText([
-      'Stop on MNO at or below 41.00: Active',
-      'Stop on the option price at or above $3.60: Breached, $20.00 beyond',
-      'Target on MNO at or above 44.50: Active',
-      'Target on the option price at or below $0.30: Active',
-    ]);
+    // The card no longer lists conditions (T95.17); each status stays in Trade Detail, read there after the same reload.
+    await expect(tradeCard(page, trade).getByRole('heading', { name: 'Conditions' })).toHaveCount(0);
+    await page.goto(`/trades/${trade.tradeId}`);
+    await expect(detail.heading(page, 'MNO')).toBeVisible(LAUNCH);
+    await expect(detail.conditionBlocks(page)).toHaveCount(4);
+    await expect(detail.conditionBlock(page, 'MNO at or below 41.00').locator('.condition-figure')).toHaveText('2.20 away');
+    await expect(detail.conditionBlock(page, 'Option at or above $3.60').locator('.condition-figure')).toHaveText('Breached · $0.10 past');
+    await expect(detail.conditionBlock(page, 'MNO at or above 44.50').locator('.condition-figure')).toHaveText('1.30 away');
+    await expect(detail.conditionBlock(page, 'Option at or below $0.30').locator('.condition-figure')).toHaveText('$3.40 away');
     await context.close();
   });
 });
