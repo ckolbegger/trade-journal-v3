@@ -306,8 +306,11 @@ export function MarksStep({ facade, held: heldReview, onResult, tradeLine, onEnt
   if (linked !== handledLink) {
     setHandledLink(linked);
     const key = linkedInstrument === undefined ? undefined : { instrumentKey: linkedInstrument, tradingDate: reviewDate };
-    setLinkRefused(key !== undefined && correctionHolds(key));
-    if (skipped) {
+    // Adding the skipped sessions changes the page, which a correction in progress holds (A296).
+    const skippedHeld = skipped === true && dirtyIds.size > 0;
+    setLinkRefused((key !== undefined && correctionHolds(key)) || skippedHeld);
+    if (skippedHeld) setRefused(true);
+    else if (skipped) {
       setShowEarlier(true);
       setGapShown((count) => count + 1);
     }
@@ -438,6 +441,11 @@ export function MarksStep({ facade, held: heldReview, onResult, tradeLine, onEnt
       {!showEarlier && model.sessions.some(({ role }) => role === undefined) && (
         <p>
           <button type="button" className="pill secondary" onClick={() => {
+              if (dirtyIds.size > 0) {
+                setRefused(true);
+                focusCorrection();
+                return;
+              }
               focusAfterAdd.current = gapLabel;
               setGapShown((count) => count + 1);
               setShowEarlier(true);

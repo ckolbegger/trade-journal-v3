@@ -1780,6 +1780,39 @@ describe('the skipped sessions, and the Cant get a price field (T95.12-B2)', () 
       await waitFor(() => expect(document.activeElement).toBe(within(step).getByRole('textbox', { name: 'XYZ Mark, Sat Sep 5' })));
     });
 
+    const startCorrection = async (user: ReturnType<typeof userEvent.setup>, step: HTMLElement) => {
+      const friday = await choose(user, step, 'XYZ', FRIDAY_LABEL);
+      await user.click(within(friday).getByRole('button', { name: 'Correct' }));
+      await user.type(within(friday).getByLabelText('Price'), '51.5');
+      return friday;
+    };
+
+    it('should leave the page and the correction focus alone when Add the skipped sessions is pressed during a Correct', async () => {
+      renderReview(cardFacade(farGap()));
+      const user = userEvent.setup();
+      const step = await marksPanel();
+      const friday = await startCorrection(user, step);
+
+      await user.click(within(step).getByRole('button', { name: 'Add the skipped sessions' }));
+
+      expect(within(step).queryByRole('textbox', { name: 'XYZ Mark, Sat Sep 5' })).toBeNull();
+      expect(document.activeElement).toBe(within(friday).getByLabelText('Price'));
+      expect(within(step).getByText('Save or cancel the correction to choose another cell.')).toBeTruthy();
+    });
+
+    it('should leave the page and the correction focus alone when the missed-day link is pressed during a Correct', async () => {
+      const built = farGap();
+      renderReview(cardFacade({ ...built, day: { ...built.day!, missed: [THURSDAY] } }));
+      const user = userEvent.setup();
+      const step = await marksPanel();
+      const friday = await startCorrection(user, step);
+
+      await user.click(await screen.findByRole('button', { name: 'Add them' }));
+
+      expect(within(step).queryByRole('textbox', { name: 'XYZ Mark, Sat Sep 5' })).toBeNull();
+      await waitFor(() => expect(document.activeElement).toBe(within(friday).getByLabelText('Price')));
+    });
+
     it('should show the page of the first Missing cell and focus it from the missed-day link', async () => {
       const built = farGap();
       renderReview(cardFacade({ ...built, day: { ...built.day!, missed: [THURSDAY] } }));
