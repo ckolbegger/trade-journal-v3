@@ -299,13 +299,18 @@ export function MarksStep({ facade, held: heldReview, onResult, tradeLine, onEnt
   // A link names the Instrument: its Review Date cell is chosen and takes focus. Another way names the skipped sessions: their columns open.
   const { count: linked, instrument: linkedInstrument, skipped } = go ?? { count: 0 };
   const [handledLink, setHandledLink] = useState(0);
+  // The skipped sessions' first Missing cell is brought to its page each time a way to them is taken.
+  const [gapShown, setGapShown] = useState(0);
   // A link is refused as a press is, and the correction keeps the focus.
   const [linkRefused, setLinkRefused] = useState(false);
   if (linked !== handledLink) {
     setHandledLink(linked);
     const key = linkedInstrument === undefined ? undefined : { instrumentKey: linkedInstrument, tradingDate: reviewDate };
     setLinkRefused(key !== undefined && correctionHolds(key));
-    if (skipped) setShowEarlier(true);
+    if (skipped) {
+      setShowEarlier(true);
+      setGapShown((count) => count + 1);
+    }
     if (key !== undefined) {
       if (correctionHolds(key)) setRefused(true);
       else setChosen(key);
@@ -423,6 +428,8 @@ export function MarksStep({ facade, held: heldReview, onResult, tradeLine, onEnt
         onChoose={choose}
         onLastEnter={() => saveButton.current?.focus()}
         pagingHeld={dirtyIds.size > 0}
+        refusals={handledReveal}
+        showSession={gap && { date: gap.date, count: gapShown }}
         onPage={(visible) => {
           // An editor whose cell is not on the shown page closes; a draft in it stays (P160).
           if (chosen !== undefined && !visible.includes(chosen.tradingDate)) setChosen(undefined);
@@ -432,6 +439,7 @@ export function MarksStep({ facade, held: heldReview, onResult, tradeLine, onEnt
         <p>
           <button type="button" className="pill secondary" onClick={() => {
               focusAfterAdd.current = gapLabel;
+              setGapShown((count) => count + 1);
               setShowEarlier(true);
             }}>
             Add the skipped sessions

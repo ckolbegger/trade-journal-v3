@@ -44,13 +44,17 @@ export interface MarksGridProps {
   readonly pagingHeld: boolean;
   // Paging shows these sessions (the Review Date, the previous one and the page's earlier ones).
   readonly onPage: (visible: readonly string[]) => void;
+  // Counts the refused saves, so a repeat refusal of the same cell is a new one.
+  readonly refusals: number;
+  // A session to bring up: its page shows each time the count rises.
+  readonly showSession?: { readonly date: string; readonly count: number };
 }
 
 const idOf = (key: ObservationKey): string => `${key.instrumentKey}:${key.tradingDate}`;
 
 // The Marks step's grid: one row per Instrument on the page, the previous session's Mark, the Review Date's price and the change from the
 // previous Mark. The skipped sessions are optional columns, added on request.
-export function MarksGrid({ model, reviewDate, writable, showEarlier, draftOf, noteOf, onPrice, onNoPrice, onUndo, fieldOf, chosen, onChoose, onLastEnter, pagingHeld, onPage }: MarksGridProps) {
+export function MarksGrid({ model, reviewDate, writable, showEarlier, draftOf, noteOf, onPrice, onNoPrice, onUndo, fieldOf, chosen, onChoose, onLastEnter, pagingHeld, onPage, refusals, showSession }: MarksGridProps) {
   const { timeZone } = useRuntime();
   const [requestedPage, setPage] = useState(0);
   const holdId = useId();
@@ -87,17 +91,29 @@ export function MarksGrid({ model, reviewDate, writable, showEarlier, draftOf, n
     if (at >= 0) setPage(Math.floor(at / SESSIONS_PER_PAGE));
   }
   // A refused save of a "Can't get a price" opens its reason field again, with the words beside it.
-  const refusedNoPrice = JSON.stringify(
-    model.instruments.flatMap(({ instrumentKey }) => {
+  const refusedNoPrice = JSON.stringify([
+    refusals,
+    ...model.instruments.flatMap(({ instrumentKey }) => {
       const key = { instrumentKey, tradingDate: reviewDate };
       return draftOf(key)?.kind === 'CantGetPrice' && fieldOf(key).issues.length > 0 ? [idOf(key)] : [];
     }),
-  );
-  const [refusedSeen, setRefusedSeen] = useState('[]');
+  ]);
+  const [refusedSeen, setRefusedSeen] = useState('[0]');
   if (refusedNoPrice !== refusedSeen) {
     setRefusedSeen(refusedNoPrice);
-    const [id] = JSON.parse(refusedNoPrice) as string[];
+    const [, id] = JSON.parse(refusedNoPrice) as [number, string?];
     if (id !== undefined) setAsking({ id });
+  }
+  // A saved "Can't get a price" is a status, not a field to fill: its reason field closes.
+  const askedRow = asking && model.instruments.find(({ instrumentKey }) => idOf({ instrumentKey, tradingDate: reviewDate }) === asking.id);
+  const askedState = askedRow && model.cellAt(askedRow.instrumentKey, reviewDate);
+  if (asking && askedState && askedState !== NOT_HELD && askedState.resolution.kind !== 'Missing') setAsking(undefined);
+  // A session named by the step (the first Missing cell) brings its page up.
+  const [shownSession, setShownSession] = useState(0);
+  if (showSession && showSession.count !== shownSession) {
+    setShownSession(showSession.count);
+    const at = earlier.findIndex(({ date }) => date === showSession.date);
+    if (at >= 0) setPage(Math.floor(at / SESSIONS_PER_PAGE));
   }
   // A Refresh can leave fewer skipped sessions than the page held: the page is the last one that exists.
   const page = Math.min(requestedPage, Math.max(0, Math.ceil(earlier.length / SESSIONS_PER_PAGE) - 1));

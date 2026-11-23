@@ -1726,6 +1726,72 @@ describe('the skipped sessions, and the Cant get a price field (T95.12-B2)', () 
     expect(reasonField(step).value).toBe('no quote');
   });
 
+  it('should reopen and focus the reason field when the same Cant get a price is refused again', async () => {
+    const facade = cardFacade(gridReview());
+    vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'Rejected', issues: [{ entryIndex: 0, field: 'reason', code: 'ReasonTooLong' }] });
+    renderReview(facade);
+    const user = userEvent.setup();
+    const step = await marksPanel();
+    await user.click(within(step).getByRole('button', { name: "Can't get a price, XYZ" }));
+    await user.type(reasonField(step), 'no quote');
+    await user.click(within(step).getByRole('button', { name: 'No price' }));
+    await user.click(within(step).getByRole('button', { name: 'Save Marks (1)' }));
+    await waitFor(() => expect(document.activeElement).toBe(reasonField(step)));
+    await user.click(within(step).getByRole('button', { name: 'No price' }));
+    expect(within(step).queryByRole('textbox', { name: 'Why no price, XYZ' })).toBeNull();
+
+    await user.click(within(step).getByRole('button', { name: 'Save Marks (1)' }));
+
+    await waitFor(() => expect(document.activeElement).toBe(reasonField(step)));
+  });
+
+  it('should close the reason field when its Cant get a price is saved', async () => {
+    const facade = cardFacade(gridReview());
+    const acknowledged: Extract<SaveResult, { kind: 'MarksSaved' }>['marks'][number] = { ...savedKey('XYZ', MONDAY, '0'), resolution: ACK };
+    vi.mocked(facade.DailyReview.save).mockResolvedValue(marksSavedResult([acknowledged]));
+    renderReview(facade);
+    const user = userEvent.setup();
+    const step = await marksPanel();
+    await user.click(within(step).getByRole('button', { name: "Can't get a price, XYZ" }));
+    await user.type(reasonField(step), 'no quote');
+
+    await user.click(within(step).getByRole('button', { name: 'Save Marks (1)' }));
+
+    await waitFor(() => expect(within(step).getByRole('button', { name: 'XYZ Mark, Mon Oct 12' })).toBeTruthy());
+    expect(within(step).queryByRole('textbox', { name: 'Why no price, XYZ' })).toBeNull();
+  });
+
+  describe('a first Missing cell beyond the first page', () => {
+    // 20 newer skipped sessions hold an acknowledgment; the 5 oldest (Sep 1 to 5) are the first Missing cells, on the second page.
+    const held = Array.from({ length: 20 }, (_, i) => day(i + 6));
+    const lost = Array.from({ length: 5 }, (_, i) => day(i + 1));
+    const farGap = (): Ready => {
+      const gap: Earlier[number] = { ...xyzGap, trades: [{ tradeId: 't-a', from: day(1) }], missing: lost, acknowledged: held, revisions: { ...Object.fromEntries(lost.map((d) => [d, 'None'])), ...Object.fromEntries(held.map((d) => [d, 2])) }, acknowledgments: Object.fromEntries(held.map((d) => [d, ACK.acknowledgment])) };
+      return gridReview({ today: [missingRow('XYZ', ['t-a', 't-f'])], earlier: [gap], earlierMarks: [xyzMarks({ [FRIDAY]: markAt('51') }, day(1))] });
+    };
+
+    it('should show the page of the first Missing cell and focus it when the skipped sessions are added', async () => {
+      renderReview(cardFacade(farGap()));
+      const user = userEvent.setup();
+      const step = await marksPanel();
+
+      await user.click(within(step).getByRole('button', { name: 'Add the skipped sessions' }));
+
+      await waitFor(() => expect(document.activeElement).toBe(within(step).getByRole('textbox', { name: 'XYZ Mark, Sat Sep 5' })));
+    });
+
+    it('should show the page of the first Missing cell and focus it from the missed-day link', async () => {
+      const built = farGap();
+      renderReview(cardFacade({ ...built, day: { ...built.day!, missed: [THURSDAY] } }));
+      const user = userEvent.setup();
+      const step = await marksPanel();
+
+      await user.click(await screen.findByRole('button', { name: 'Add them' }));
+
+      await waitFor(() => expect(document.activeElement).toBe(within(step).getByRole('textbox', { name: 'XYZ Mark, Sat Sep 5' })));
+    });
+  });
+
   it('should hold the reason to 500 characters', async () => {
     renderReview(cardFacade(gridReview()));
     const user = userEvent.setup();
