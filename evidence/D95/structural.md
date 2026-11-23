@@ -249,6 +249,8 @@ ocr of B1, B2, B3 (`ocr/T95.12-B1-B3-8e409a71.json`, 7 files, 6 comments, all Va
 
 **T95.12-B1-B1** `f7d30832`: `refreshHeld` bumps `reads` whenever `refreshTrade(openId)` succeeds too; MarksGrid clamps the shown page to the last that exists (`requestedPage`). Two cases red then green. One existing ReviewView case asserted the defect (a column staying after a card-open Refresh) and was rewritten to expect it gone once the Refresh reads a Review that no longer lists it. Note: after a clamp `onPage` isn't called, so the visible-dates report comes only from `goTo` (nothing failed). src/ui 1,297; browser 7 of 7.
 
+**T95.12-B2-B1** `244c8ada`: MarksStep passes `refusals` so a repeat refusal of the same cell reopens and focuses the reason; the reason field closes once its cell is no longer Missing; the grid brings up the first Missing cell's page whenever `showSession.count` rises (on `requestedPage`). Four cases red then green (one red rerun after a wrong date label in the test). The page switch doesn't check `pagingHeld` (a Correct in progress keeps its editor and focus). src/ui 1,301; browser 8 of 8.
+
 ## Trial: complete runs overlapped with the next task (the user, 2026-11-22, for 5 or 6 tasks)
 
 Each task's complete run runs in a detached scratch copy (`.claude/worktrees/run-<label>`, set up by `lane-setup.sh`) at the task's commit, while the next task's subagent starts in this worktree. The run's files are copied back to `evidence/D95/suite-runs/`. A failure becomes a bug task as before; the next task restarts only if it built on the broken code. Times are recorded per run to measure the saving.
