@@ -353,3 +353,18 @@ Removed cases: none. Moved checks: none (reverted). Kept: d2/ui-alignment:1576, 
 Spec counts: e2e/d2/ui-alignment.spec.ts before 43 passed, after 43 passed (file unchanged), under with-browser-lock.sh on 5175.
 
 References (rule 10): nothing re-pointed; rg of both titles found only plan/browser-test-duplicates-plan.md and the spec itself.
+
+## TD.11 — one complete run and the comparison
+
+Run `td.11-dedup` (full browser tier), passed: unit 2832, integration 300, browser-1 127, browser-2 79, browser-3 55, browser-4 114 passed and 4 skipped, checks 14 of 14 exit 0. The checkout moved during the run (evidence and tech-debt commits only, ending at `f7ff17c5`); no test or product file changed after TD.10.
+
+| Stage | t95.14 | t95.15 | td.11 |
+|---|---|---|---|
+| browser-1 | 127, 5.6m | 127, 5.6m | 127, 5.5m |
+| browser-2 | 80, 5.3m | 80, 5.3m | 79, 5.2m |
+| browser-3 | 57, 4.6m | 57, 4.5m | 55, 4.4m |
+| browser-4 | 137 + 4 skipped, 7.6m | 138 + 4 skipped, 7.5m | 114 + 4 skipped, 6.3m |
+| Browser total | 401, 23.1m | 402, 22.9m | 375, 21.4m |
+| Run wall time | 26:13 | 26:07 | 24:31 |
+
+27 fewer browser cases than t95.15 (TD.1 4, TD.2 2, TD.3 6, TD.4 5, TD.5 2, TD.6 4 net, TD.7 1, TD.8 2, TD.9 1; TD.10 kept its case, tech debt item 1). The browser tier is about 1.5 min shorter and the whole run about 1.6 min. Timings: `evidence/Test-Dedup/suite-runs/td.11-dedup-timings.md`.
