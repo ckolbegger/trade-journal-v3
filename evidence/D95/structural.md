@@ -485,3 +485,5 @@ ocr (session 21ef97db): 5 files, 2 findings. Doubtful: **T95.19-B1** with anothe
 B1 `b00bec4a`: top line shows whenever the list isn't visible (`listVisible = listShown && open === 'Action'`). B2 `09f6f3d8`: new `--warning-text: #8a5200` (5.57:1 on `--tint`) for the two text rules; `--warning-line` unchanged; computed-contrast unit check. Both red then green.
 
 ocr of T95.19-B1, T95.19-B2 (session aea3e611): 4 files, 0 findings. `evidence/D95/ocr/T95.19-B1-B2-09f6f3d8.json`.
+
+Run `t95.19-last-decisions` (browser-task): unit 2886, integration 304, browser 13, checks 14 of 14. Passed. T95.19 Done.
