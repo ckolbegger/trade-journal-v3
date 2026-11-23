@@ -333,6 +333,6 @@ Confirm first held: both cases open the Position drawer at 1280 on a Trade with 
 
 Moved checks: 2 (the report's list; nothing beyond it). Both failed on an assertion when made wrong (tdd-log, TD.9). Kept cases: none (d6:293 dropped).
 
-Spec counts: before 9 passed (d6/responsive-a11y 4, d7/responsive-a11y 5); after 8 passed (d6 3, d7 5). Both under with-browser-lock.sh on 5175. typecheck and lint exit 0.
+Spec counts: before 9 passed (d6/responsive-a11y 5, d7/responsive-a11y 4); after 8 passed (d6 4, d7 4). Both under with-browser-lock.sh on 5175. typecheck and lint exit 0.
 
 References (rule 10): rg of both titles found plan/browser-test-duplicates-plan.md (this plan) and evidence/D08P/structural.md:1479, evidence/D08P/tdd-log/T8P.23-B4.md:7 (finished records, left as written; kept test d7 "should show the Position drawer tables of a Settlement Due option Trade spaced, ..." now also holds the moved checks). No acceptance-matrix, spec-map or bug-tasks entry.
