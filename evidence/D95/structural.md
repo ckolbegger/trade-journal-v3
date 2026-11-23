@@ -349,3 +349,5 @@ The marks-keys failure is not T95.21's: `e2e/d95/marks-keys.spec.ts` fails about
 ### T95.15-B1
 
 Commit `a5b4592a`: marks-keys reads the grid's row order (ABC and DEF y positions) and gives each Instrument its own price (ABC 31.00, DEF 40.50; 31.00 on DEF opened a large-move question). `--repeat-each=12`: 12 passed; e2e/d95 3 passed.
+
+Run `t95.21-finished-day-2` (browser-task, after T95.15-B1): unit 2839, integration 300, browser 8 passed, checks 14 of 14. Passed. T95.21 Done.
