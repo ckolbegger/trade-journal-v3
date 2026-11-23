@@ -8,8 +8,8 @@ import type { Locator, Page } from '@playwright/test';
 import { K_SALE, R_BREN_U, R_CORV_D, R_DALE_D, R_DALE_U } from '../../src/domain/trade-analysis/option-trade.ts';
 import { R_AXIO_D, R_AXIO_U, REPLAY_SESSION_DATES } from '../../src/domain/trade-analysis/reference-trade.ts';
 import {
-  answerIn, closeTheTrade, currentTradeId, detail, exitReflection, expect, fillOptionPlan, fillPlan, fillOptionRows, fillRows, onboardedAt, openDrawer as openDetailDrawer, openExitForm, openReview, LAUNCH, reachPanel,
-  recordExpiration, recordOptionEntry, recordEntry, savedUnlessRefused, test, tradeCard, type OptionPlanValues, type PlanValues, type Row, type TradeRef,
+  answerIn, closeTheTrade, currentTradeId, defineSetup, detail, exitReflection, expect, fillOptionPlan, fillPlan, fillOptionRows, fillRows, firstPage, launchAt, onboardedAt, openDrawer as openDetailDrawer, openExitForm, openReview, LAUNCH, reachPanel,
+  recordExpiration, recordOptionEntry, recordEntry, savedUnlessRefused, test, tradeCard, type OptionPlanValues, type PlanValues, type Profile, type Row, type Setup, type TradeRef,
 } from '../d8r/support.ts';
 import type { BrowserContext } from '@playwright/test';
 
@@ -164,6 +164,22 @@ export async function buildOn(page: Page, fixture: Fixture, through: number, rec
   await page.goto(`/trades/${trade.tradeId}`);
   await expect(detail.heading(page, fixture.symbol)).toBeVisible(LAUNCH);
   return trade;
+}
+
+// The saved setup of the four Trades of I9.10 at Fri 11-13 (BREN, CORV, DALE-D and AXIO-U, each Marked through session 9): built once per worker, and each test that asks starts on a
+// copy (setup-snapshot plan, group 6). Returns each Trade's reference by symbol.
+export const FOUR_TRADES_FRI = defineSetup('d9-four-trades-fri', async (profile) => {
+  const { context, page } = await onboardedAt(profile, closeOf('2026-11-13'));
+  const refs: Record<string, TradeRef> = {};
+  for (const fixture of [BREN, CORV, DALE_D, AXIO_U] satisfies Fixture[]) refs[fixture.symbol] = await buildOn(page, fixture, 9);
+  return { context, made: refs };
+});
+
+// In place of onboardedAt(closeOf('2026-11-13')) + buildOn of the four Trades: the copy launched at the instant the build used; the first page is not navigated (every test goes to '/' or a Trade itself).
+export async function openFourTradesFri(profile: Profile, copySetup: <T>(setup: Setup<T>) => Promise<T>): Promise<{ context: BrowserContext; page: Page; refs: Record<string, TradeRef> }> {
+  const refs = await copySetup(FOUR_TRADES_FRI);
+  const context = await launchAt(profile, closeOf('2026-11-13'));
+  return { context, page: await firstPage(context), refs };
 }
 
 // Fills each Mark row of sessions 0..through in the Review's Marks panel, then presses Save Marks once.

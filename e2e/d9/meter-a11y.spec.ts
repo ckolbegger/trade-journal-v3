@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import { expectNoSidewaysScroll } from '../d7p/support.ts';
-import { AXIO_U, BREN, buildOn, closeOf, CORV, DALE_D, detail, expect, expectAccessible, listMeters, onboardedAt, openOpenList, openReview, LAUNCH, reviewMeters, setViewport, test, type Fixture, type TradeRef } from './support.ts';
+import { detail, expect, expectAccessible, listMeters, openFourTradesFri, openOpenList, openReview, LAUNCH, reviewMeters, setViewport, test, type TradeRef } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -78,20 +78,16 @@ async function surfaces(page: Page, bren: TradeRef, size: (typeof SIZES)[number]
 }
 
 test.describe('B9.11 The meter, responsive and accessible', () => {
-  test('should keep one named meter per Open row, on a Review card and in the rail at 1280, 375 and 320 px, with no sideways scroll and no WCAG 2.1 AA violation', async ({ profile }) => {
+  test('should keep one named meter per Open row, on a Review card and in the rail at 1280, 375 and 320 px, with no sideways scroll and no WCAG 2.1 AA violation', async ({ profile, copySetup }) => {
     test.setTimeout(480_000);
-    const { context, page } = await onboardedAt(profile, closeOf('2026-11-13'));
-    const refs: Record<string, TradeRef> = {};
-    for (const fixture of [BREN, CORV, DALE_D, AXIO_U] satisfies Fixture[]) refs[fixture.symbol] = await buildOn(page, fixture, 9);
+    const { context, page, refs } = await openFourTradesFri(profile, copySetup);
     for (const size of [...SIZES, SIZES[0]]) await surfaces(page, refs.BREN!, size);
     await context.close();
   });
 
-  test('should say what each meter shows in shape and words as well as colour, at 375 px', async ({ profile }) => {
+  test('should say what each meter shows in shape and words as well as colour, at 375 px', async ({ profile, copySetup }) => {
     test.setTimeout(480_000);
-    const { context, page } = await onboardedAt(profile, closeOf('2026-11-13'));
-    const refs: Record<string, TradeRef> = {};
-    for (const fixture of [BREN, CORV, DALE_D, AXIO_U] satisfies Fixture[]) refs[fixture.symbol] = await buildOn(page, fixture, 9);
+    const { context, page } = await openFourTradesFri(profile, copySetup);
     await setViewport(page, 375, 667);
     await page.goto('/');
     await openOpenList(page);
@@ -115,10 +111,9 @@ test.describe('B9.11 The meter, responsive and accessible', () => {
   });
 
   // T9.38-B1: the shapes above are attributes; this case reads what the stylesheet paints from them.
-  test('should show the square pointer, the hatch and the outlined open fill in the rendered styles, not only in attributes', async ({ profile }) => {
+  test('should show the square pointer, the hatch and the outlined open fill in the rendered styles, not only in attributes', async ({ profile, copySetup }) => {
     test.setTimeout(480_000);
-    const { context, page } = await onboardedAt(profile, closeOf('2026-11-13'));
-    for (const fixture of [BREN, CORV, DALE_D, AXIO_U] satisfies Fixture[]) await buildOn(page, fixture, 9);
+    const { context, page } = await openFourTradesFri(profile, copySetup);
     await setViewport(page, 375, 667);
     await page.goto('/');
     await openOpenList(page);

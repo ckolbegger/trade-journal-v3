@@ -185,3 +185,18 @@ Kept their own build (1 of the plan's 10): d6/runtime-failure line 77 switches t
 Break check (two tests, one per kind of start, as the brief allows): copy switched off (the cp call in e2e/d1/support.ts replaced by `execFileSync('true', ...)`): exit-requirements line 9 (copyTA) and exit-action (openTA) both failed (TimeoutError on the first click); switched on: all seven files, 12 passed (40.4 s; before 53.2 s). Switch made and restored (git checkout of the one file); git status shows e2e/d1/support.ts unchanged.
 
 Assumptions: openTA opens the copy with page.goto('/') (Today) where the build left the page after the Trade's last step; exit-action then goes to the Review through its own openReview, as before. Checks: typecheck, tsc6, lint (0 errors) and lint:deps pass.
+
+## ST.9 Group 6, d9 four Trades at Fri 11-13, on the shared setup
+
+What changed (test code only):
+- e2e/d9/support.ts, beside buildOn: `FOUR_TRADES_FRI` (defineSetup 'd9-four-trades-fri': onboardedAt at Fri 11-13 close, then BREN, CORV, DALE-D and AXIO-U through buildOn to session 9; its open context handed to the helper to close; returns the Trade references by symbol) and `openFourTradesFri(profile, copySetup)` (the copy launched at the instant the build used, first page not navigated, returns { context, page, refs }).
+- e2e/d9/meter-a11y.spec.ts and e2e/d9/open-list.spec.ts: the converted tests ask for `copySetup` and start with openFourTradesFri in place of onboardedAt + four buildOn calls; bodies unchanged (open-list's fourTrades now wraps it and still builds symbolOf). Unused imports dropped.
+- Release check (ST.1-B1): d9 serves dist-faults; the setup is built and keyed on it; all pass, so no mismatch error.
+
+Which tests start from which setup (all FOUR_TRADES_FRI, 4 tests): meter-a11y (3: the sizes test, the shape-and-words test, the rendered-styles test); open-list line 25 (the Review's order, through fourTrades).
+
+Kept its own build: e2e/d9/open-list.spec.ts line 48 (R-DALE-U: Marks to Thu 11-19, read on Mon 11-23; a single Trade at another clock; not in the plan's list).
+
+Break check (two tests, one per test file, as the brief allows; all four start the same way): copy switched off (the cp call in e2e/d1/support.ts replaced by `execFileSync('true', ...)`): meter-a11y "say what each meter shows" and open-list "list the Open Trades" both failed (TimeoutError on the first click, the first-screen check); switched on: both files, 5 passed (19.8 s; before 34.8 s). Switch made and restored by edits; git status shows e2e/d1/support.ts unchanged.
+
+Assumptions: the copy's first page is not navigated (every test goes to '/' or a Trade itself first). Checks: typecheck, tsc6, eslint on e2e/d9 and lint:deps pass.

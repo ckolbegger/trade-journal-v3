@@ -83,3 +83,10 @@ ST.8 (the seven e2e/d6 files in one run, main lock held; per-file figures are th
 | ST.8 | e2e/d6/runtime-failure.spec.ts | 6.6 | 6.8 (unchanged: both tests keep their own build) |
 | ST.8 | e2e/d6/responsive-a11y.spec.ts | 26.5 | 21.4 |
 | ST.8 | e2e/d6/exit-action.spec.ts | 3.0 | 3.4 (the first test to ask pays the one build) |
+
+ST.9 (the two e2e/d9 files in one run, main lock held; per-file figures are the sum of the tests' own times; one run each; "before" is HEAD's versions). Whole run before 34.8 s (5 passed), after 19.8 s (5 passed). Break check with the copy off (two tests): both failed.
+
+| Task | File | Before (s) | After (s) |
+|---|---|---|---|
+| ST.9 | e2e/d9/meter-a11y.spec.ts | 26.0 | 16.1 (the first test pays the one build) |
+| ST.9 | e2e/d9/open-list.spec.ts | 8.3 | 3.3 (second test keeps its own build) |

@@ -1,6 +1,5 @@
 import {
-  AXIO_U, BREN, build, buildOn, closeOf, CORV, DALE, DALE_D, expect, firstPage, launchAt, expectTrackDashed, listMeters, MON_1123_1700, onboardedAt, openOpenList, openReview, reviewMeters, test,
-  type Fixture, type TradeRef,
+  build, closeOf, DALE, expect, firstPage, launchAt, expectTrackDashed, listMeters, MON_1123_1700, openFourTradesFri, openOpenList, openReview, reviewMeters, test,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
@@ -14,17 +13,15 @@ const NAMES: Record<string, string> = {
   AXIO: 'P&L +$620.00, 58% of the way to the Target. Stop −$740.00, Target +$1,060.00. Down from +$680.00 on Thu Nov 12.',
 };
 
-async function fourTrades(profile: Parameters<typeof onboardedAt>[0]) {
-  const { context, page } = await onboardedAt(profile, closeOf('2026-11-13'));
-  const trades: Record<string, TradeRef> = {};
-  for (const fixture of [BREN, CORV, DALE_D, AXIO_U] satisfies Fixture[]) trades[fixture.symbol] = await buildOn(page, fixture, 9);
+async function fourTrades(profile: Parameters<typeof openFourTradesFri>[0], copySetup: Parameters<typeof openFourTradesFri>[1]) {
+  const { context, page, refs: trades } = await openFourTradesFri(profile, copySetup);
   return { context, page, symbolOf: Object.fromEntries(Object.entries(trades).map(([symbol, trade]) => [trade.tradeId, symbol])) as Record<string, string> };
 }
 
 test.describe('B9.9 The Open list', () => {
-  test('should list the Open Trades in the Review’s order under the line In the Review’s order, each row’s meter named per W51', async ({ profile }) => {
+  test('should list the Open Trades in the Review’s order under the line In the Review’s order, each row’s meter named per W51', async ({ profile, copySetup }) => {
     test.setTimeout(420_000);
-    const { context, page, symbolOf } = await fourTrades(profile);
+    const { context, page, symbolOf } = await fourTrades(profile, copySetup);
     await page.goto('/');
     await openReview(page);
     const review = await reviewMeters(page);
