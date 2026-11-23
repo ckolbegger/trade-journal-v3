@@ -524,3 +524,5 @@ ocr (session a641c7b7): 7 files, 3 findings. Valid: **T95.24-B1** the R5 case us
 ### T95.24-B1, T95.24-B2
 
 B2 `d8c6ef5a`: both measured `getTrade` results asserted Ready. B1 `8593a801`: an O-C Long Call with 1 and 2 fills pins one extra date-wide `observations` read for its dated line, same for both. Test additions, first-run passes, each mutation-checked.
+
+ocr of T95.24-B1, T95.24-B2 (session 32247238): 1 file, 0 findings. `evidence/D95/ocr/T95.24-B1-B2-8593a801.json`.
