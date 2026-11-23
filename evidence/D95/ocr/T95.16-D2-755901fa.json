@@ -1,0 +1,144 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 0,
+    "total_tokens": 73964,
+    "input_tokens": 73057,
+    "output_tokens": 907,
+    "cache_read_tokens": 8320,
+    "elapsed": "34s"
+  },
+  "tool_calls": {
+    "total": 9,
+    "by_tool": {
+      "code_search": 2,
+      "file_read": 7
+    },
+    "failure": 1,
+    "failure_by_tool": {
+      "file_read": 1
+    },
+    "failure_details": [
+      {
+        "tool_call_number": 9,
+        "tool_name": "file_read",
+        "file_path": "src/coordinators/daily-review/daily-review.test.ts,src/coordinators/daily-review/daily-review.ts,src/coordinators/daily-review/pnl.test.ts,src/coordinators/daily-review/types.ts,tests/integration/d95/pnl.test.ts",
+        "arguments": "{\"file_path\": \"tests/integration/d9ar/reads.test.ts\", \"start_line\": 1, \"end_line\": 50}",
+        "error": "file \"tests/integration/d9ar/reads.test.ts\" not found: git show 755901faddd8dfaa65aa88a3280b67eb9ec5fad0:tests/integration/d9ar/reads.test.ts: exit status 128: fatal: path 'tests/integration/d9ar/reads.test.ts' does not exist in '755901faddd8dfaa65aa88a3280b67eb9ec5fad0'\n"
+      }
+    ]
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Daily review P\u0026L implementation, types, and tests",
+      "files": [
+        "src/coordinators/daily-review/daily-review.test.ts",
+        "src/coordinators/daily-review/daily-review.ts",
+        "src/coordinators/daily-review/pnl.test.ts",
+        "src/coordinators/daily-review/types.ts",
+        "tests/integration/d95/pnl.test.ts"
+      ]
+    }
+  ],
+  "session_id": "446d666e-78e4-4da3-b344-b0c92a643ff6",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "446d666e-78e4-4da3-b344-b0c92a643ff6",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "755901fa",
+      "resolved_base": "2072041f2650404cb642976af5e610f94bed90c8",
+      "resolved_head": "755901faddd8dfaa65aa88a3280b67eb9ec5fad0",
+      "exact_range": "2072041f2650404cb642976af5e610f94bed90c8..755901faddd8dfaa65aa88a3280b67eb9ec5fad0",
+      "source_artifact_sha256": "0457bb1968984dbda6294c3b7af9a41aa72685c10854f38243c772e7c6d1e8b8"
+    },
+    "execution": {
+      "ocr_version": "v1.14.2",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "1480a333b9d733929e13034f848a6bf606330c1415f052e68abd51071d119aaa"
+        },
+        {
+          "item_id": "37fe1e32a8d14f0d008ef7e5c087937ebda26f5474548a5f432da1974e941d03",
+          "path": "tests/integration/d95/pnl.test.ts",
+          "fingerprint": "2dbeca2fbda4913484b68678f1faf9c5b792991dc01310853b8fdc3f6107f584"
+        },
+        {
+          "item_id": "835fe238986a14f50aa73feeedba69e298a0728d45c05d35543575d749816715",
+          "path": "src/coordinators/daily-review/daily-review.test.ts",
+          "fingerprint": "4e873411ef122cf9689b18a2c5585996c96009e577688a9908133779ae9e524d"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "1b86d8f3b1125c7fced8a6ea9b628375da4e8566abfa32cb298d5961248a28b2"
+        },
+        {
+          "item_id": "fa73f2c053a68aecbdd6fb88bbf3afca274a52ca59fc8c8c5fb7bdab9501fafe",
+          "path": "src/coordinators/daily-review/pnl.test.ts",
+          "fingerprint": "3f24ac1e736ec1daa62c7b0723cd898845e14f41a19bdee99c4a023f162218e7"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "1480a333b9d733929e13034f848a6bf606330c1415f052e68abd51071d119aaa"
+        },
+        {
+          "item_id": "37fe1e32a8d14f0d008ef7e5c087937ebda26f5474548a5f432da1974e941d03",
+          "path": "tests/integration/d95/pnl.test.ts",
+          "fingerprint": "2dbeca2fbda4913484b68678f1faf9c5b792991dc01310853b8fdc3f6107f584"
+        },
+        {
+          "item_id": "835fe238986a14f50aa73feeedba69e298a0728d45c05d35543575d749816715",
+          "path": "src/coordinators/daily-review/daily-review.test.ts",
+          "fingerprint": "4e873411ef122cf9689b18a2c5585996c96009e577688a9908133779ae9e524d"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "1b86d8f3b1125c7fced8a6ea9b628375da4e8566abfa32cb298d5961248a28b2"
+        },
+        {
+          "item_id": "fa73f2c053a68aecbdd6fb88bbf3afca274a52ca59fc8c8c5fb7bdab9501fafe",
+          "path": "src/coordinators/daily-review/pnl.test.ts",
+          "fingerprint": "3f24ac1e736ec1daa62c7b0723cd898845e14f41a19bdee99c4a023f162218e7"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "b73a24099889fe9a2b7609b3a4a4d4221d47d13e2238c9879d0920e08863c683",
+          "path": "evidence/D95/tdd-log/T95.16-D2.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 34492
+  }
+}
