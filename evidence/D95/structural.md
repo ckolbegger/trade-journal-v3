@@ -355,3 +355,5 @@ Run `t95.21-finished-day-2` (browser-task, after T95.15-B1): unit 2839, integrat
 ## T95.16-D1 — Thesis and "No longer valid if" on the Review card's data (Full; decision 130)
 
 Commit `04ec189a` (from `467bb2c8`). `DailyTradeReview.plan?: { thesis, invalidation }`, set by `getTrade` from the Trade Analysis record it already reads (one line). Optional, like `decisions?`, because hand-built cards in five UI test files don't carry it; `getTrade` always returns it. Case 1 red then green; cases 2 and 3 first-run passes, mutation-checked (invalidation set to the thesis; one extra `journal.queryActions` read). Request counts equal I9AR.4's `CARD`. No snapshot changed.
+
+ocr (gpt-6.1-sol, session 14c44730): 4 files, 0 findings. `evidence/D95/ocr/T95.16-D1-04ec189a.json`.

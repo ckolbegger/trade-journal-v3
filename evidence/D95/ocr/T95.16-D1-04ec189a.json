@@ -1,0 +1,123 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 0,
+    "total_tokens": 33803,
+    "input_tokens": 33478,
+    "output_tokens": 325,
+    "cache_read_tokens": 6656,
+    "elapsed": "18s"
+  },
+  "tool_calls": {
+    "total": 6,
+    "by_tool": {
+      "code_search": 3,
+      "file_read": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Daily review plan terms implementation, types, and tests",
+      "files": [
+        "src/coordinators/daily-review/daily-review.ts",
+        "src/coordinators/daily-review/plan-terms.test.ts",
+        "src/coordinators/daily-review/types.ts",
+        "tests/integration/d95/plan-terms.test.ts"
+      ]
+    }
+  ],
+  "session_id": "14c44730-82c1-4444-bff9-de4b4923f50c",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "14c44730-82c1-4444-bff9-de4b4923f50c",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "04ec189a",
+      "resolved_base": "6d7189c1fca4a7a76198fd29409b59794f79e115",
+      "resolved_head": "04ec189a9722b8b1e2780e8bf5dd525e1aeeb161",
+      "exact_range": "6d7189c1fca4a7a76198fd29409b59794f79e115..04ec189a9722b8b1e2780e8bf5dd525e1aeeb161",
+      "source_artifact_sha256": "fe6c89e019a85f4a93bd615c74c8cc51b2c75c047553965894006caf9a792945"
+    },
+    "execution": {
+      "ocr_version": "v1.14.2",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "6150c4a2bef397d4fbad763076de2826edece905ac69316ce2406e756075650b"
+        },
+        {
+          "item_id": "596d86741b4176517f55875e30d024bc2e5d062a5c6ea1d353946f5a6c86682a",
+          "path": "tests/integration/d95/plan-terms.test.ts",
+          "fingerprint": "9bde8c9d07b107b862a09e48509f86d5ffeb2ea61c8346da2494d74c5c0ae965"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "58c673c8dfd9c438c698dc24b176f3957d0e2202c965ddae87169c9d37697153"
+        },
+        {
+          "item_id": "de2a7b803314953f6bbbe10ee54e3b53747a758159309ab460d00567d21485f4",
+          "path": "src/coordinators/daily-review/plan-terms.test.ts",
+          "fingerprint": "dcd0c49413020e8531385b920c32e8ada281c8b9cdedf620bf1b4f53841dc99b"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "6150c4a2bef397d4fbad763076de2826edece905ac69316ce2406e756075650b"
+        },
+        {
+          "item_id": "596d86741b4176517f55875e30d024bc2e5d062a5c6ea1d353946f5a6c86682a",
+          "path": "tests/integration/d95/plan-terms.test.ts",
+          "fingerprint": "9bde8c9d07b107b862a09e48509f86d5ffeb2ea61c8346da2494d74c5c0ae965"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "58c673c8dfd9c438c698dc24b176f3957d0e2202c965ddae87169c9d37697153"
+        },
+        {
+          "item_id": "de2a7b803314953f6bbbe10ee54e3b53747a758159309ab460d00567d21485f4",
+          "path": "src/coordinators/daily-review/plan-terms.test.ts",
+          "fingerprint": "dcd0c49413020e8531385b920c32e8ada281c8b9cdedf620bf1b4f53841dc99b"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "b6929b6015539a45cb4d6b6d4238562fe5383285b5a8934a5abf9aceb865e1b9",
+          "path": "evidence/D95/tdd-log/T95.16-D1.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 18333
+  }
+}
