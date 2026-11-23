@@ -13,7 +13,7 @@ probe() {
   dir=$(mktemp -d -t ocr-probe)
   out=$(ocr review --provider chatgpt --model gpt-6.1-sol -c eacad071 --rule .claude/ocr-rule.json --audience agent -f json --color never -o "$dir/p.json" 2>&1)
   status=$(jq -r '.status // empty' "$dir/p.json" 2>/dev/null)
-  if [ "$status" = "completed" ] || [ "$status" = "succeeded" ] || [ "$status" = "ok" ]; then
+  if [ "$status" = "complete" ]; then
     echo "$(TZ=America/New_York date +%H:%M) ChatGPT review worked ($status)"
     return 0
   fi
