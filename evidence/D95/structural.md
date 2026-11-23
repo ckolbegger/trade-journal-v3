@@ -502,3 +502,5 @@ Structural. `OPERATIONS` and the Review route gain: `DailyReview.open` DaySummar
 - `npx vitest run tests/integration/d95/capabilities.test.ts tests/integration/d9ar/capabilities.test.ts tests/integration/d9/capabilities.test.ts`: 3 passed.
 - `npm run verify:capabilities`: exit 0, "24 operations, 12 variant-qualified, 10 routes".
 - `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`: all exit 0.
+
+Main session on T95.23's note: keeping `SaveReviewMarks` beside `SaveReviewMarksPage` is right; the request kind is unchanged and still sent, and manifest names are labels only. No decision needed.
