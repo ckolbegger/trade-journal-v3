@@ -200,3 +200,22 @@ Kept its own build: e2e/d9/open-list.spec.ts line 48 (R-DALE-U: Marks to Thu 11-
 Break check (two tests, one per test file, as the brief allows; all four start the same way): copy switched off (the cp call in e2e/d1/support.ts replaced by `execFileSync('true', ...)`): meter-a11y "say what each meter shows" and open-list "list the Open Trades" both failed (TimeoutError on the first click, the first-screen check); switched on: both files, 5 passed (19.8 s; before 34.8 s). Switch made and restored by edits; git status shows e2e/d1/support.ts unchanged.
 
 Assumptions: the copy's first page is not navigated (every test goes to '/' or a Trade itself first). Checks: typecheck, tsc6, eslint on e2e/d9 and lint:deps pass.
+
+## ST.11 — one complete run
+
+Run `st.11-setup-snapshot` (full browser tier, branch setup-snapshot at `3017a0cf`), passed: unit 2832, integration 300, browser-1 127, browser-2 79, browser-3 55, browser-4 114 passed and 4 skipped, checks 14 of 14 exit 0. No change under src/, tools/, playwright.config.ts or package.json against claude-opus-5.5.
+
+| Stage | td.11 (after the dedup) | st.11 |
+|---|---|---|
+| browser-1 | 127, 5.5m | 127, 5.3m |
+| browser-2 | 79, 5.2m | 79, 4.2m |
+| browser-3 | 55, 4.4m | 55, 3.0m |
+| browser-4 | 114 + 4 skipped, 6.3m | 114 + 4 skipped, 3.1m |
+| Browser total | 375, 21.4m | 375, 15.6m |
+| Run wall time | 24:31 | 18:32 |
+
+Timings: `evidence/Setup-Snapshot/suite-runs/st.11-setup-snapshot-timings.md`.
+
+## ST.10 — builds per stage (done after ST.11, from its output)
+
+The helper logs nothing when it builds, so this is read from the stage times, not counted: each stage saved at least the survey's estimate for its groups (browser-2 about 60 s against about 47 s estimated for groups 3 and 5; browser-3 about 84 s against 50 to 70 s for group 2; browser-4 about 192 s against about 166 s for groups 1, 4 and 6). Repeated builds of a setup within a stage would have eaten into those savings, so each setup is built about once per stage. No code change.

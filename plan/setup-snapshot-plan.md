@@ -113,8 +113,8 @@ Read the stage run outputs from the tasks' runs and confirm each stage builds ea
 | ST.7 | Light | Done | 0d3425a5 |
 | ST.8 | Light | Done | 888d32d1 |
 | ST.9 | Light | Done | 79779b32 |
-| ST.10 | Light | Not started | |
-| ST.11 | Standard | Not started | |
+| ST.10 | Light | Done (from ST.11's run) | |
+| ST.11 | Standard | Done | run st.11-setup-snapshot |
 
 ## 6. Not in this plan
 
