@@ -203,6 +203,8 @@ Commit `8c2b0643` (from `4e217d99`; a first attempt from `b2400751` stopped befo
 
 ocr (`ocr/T95.10-8c2b0643.json`, 27 files): **No findings.**
 
+**Complete run `t95.10-day-card`** (on `befe8916`; `browser tier: full (first matching path since 4e217d99: e2e/d4/acknowledge.spec.ts)`; run complete): integration 141 files, 300 tests; browser 127 (5.9 min), 80 (5.6 min), 57 (5.2 min), 137 and 4 skipped (7.9 min); checks 14 of 14. Unit 2,768 of 2,769: `tools/estimate-rules.test.ts:122` timed out (5,407 ms against 5,000 ms) under the run's load; rerun alone it passed (8 of 8, 3.5 s). Not reproduced, so recorded as a flake (its second; tech debt already lists it). T95.10 Done.
+
 ## Trial: complete runs overlapped with the next task (the user, 2026-11-22, for 5 or 6 tasks)
 
 Each task's complete run runs in a detached scratch copy (`.claude/worktrees/run-<label>`, set up by `lane-setup.sh`) at the task's commit, while the next task's subagent starts in this worktree. The run's files are copied back to `evidence/D95/suite-runs/`. A failure becomes a bug task as before; the next task restarts only if it built on the broken code. Times are recorded per run to measure the saving.
