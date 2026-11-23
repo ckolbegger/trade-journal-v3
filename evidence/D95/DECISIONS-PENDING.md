@@ -106,3 +106,15 @@
 - The refusal wording when "Add the skipped sessions" is pressed during a Correct: **keep** "Save or cancel the correction to choose another cell."
 - ocr reviews always use gpt-6.1-sol (`--provider chatgpt --model gpt-6.1-sol`); the agent checks ChatGPT with `.claude/scripts/ocr-usage-wait.sh`, not `ocr llm test`.
 - The ChatGPT check loop is not restarted unless the user says so; the user said usage had reset at 2026-11-23 ~05:10 EST.
+
+## Q8 (T95.16): the open card has no Thesis or "No longer valid if" to show — asked 2026-11-23
+
+**Plain words.** T95.16's case 3 (W93, U7) puts the Plan's Thesis and "No longer valid if" in the card's Plan box. The Review's data for a card (`DailyTradeReview`, `src/coordinators/daily-review/types.ts`) doesn't carry either; only Trade Detail reads them (`PlannedTradeDetail.plan`). No D9.5 task adds them, and the UI may not fetch or work them out itself (ADR 0001). The task stopped before writing code.
+
+**Options.**
+- (a) A follow-on T95.16-D1 before T95.16: add `plan: { thesis, invalidation }` to `DailyTradeReview`, built in the Daily Review's `getTrade` from the Trade Analysis record it already reads (no new store read; the request-count checks hold). Cases: the field is there, it equals Trade Detail's, no read is added. T95.16 then shows it. Precedent: T95.4-D1 (decision 129) added `day` the same way.
+- (b) Drop Thesis and "No longer valid if" from the Plan box (changes W93 and U7).
+
+**Recommendation:** (a).
+
+**Parked meanwhile:** T95.16 and the tasks that wait on it (T95.17, T95.18, T95.19, T95.20, T95.25). T95.21, T95.22, T95.23 and T95.24 carry on.
