@@ -1,0 +1,266 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 4 finding(s) across 13 selected item(s).",
+  "summary": {
+    "files_reviewed": 13,
+    "comments": 4,
+    "total_tokens": 248022,
+    "input_tokens": 244564,
+    "output_tokens": 3458,
+    "cache_read_tokens": 21632,
+    "elapsed": "1m37s"
+  },
+  "tool_calls": {
+    "total": 39,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 5,
+      "file_read": 30,
+      "file_read_diff": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/DayCard.tsx",
+      "content": "The new plain labels in the day summary have no accessible descriptions: these badges omit `describedBy`, and the day lines render no associated reason text. This leaves labels such as “Marks needed” and “No price today” without the explanation required by requirement 7, even though the ReviewCard labels receive one. Retain the walked trade's reasons when building these labels and associate each badge with rendered reason text via a unique ID; add a DayCard accessibility assertion for that association.",
+      "existing_code": "                    \u003cBadge tone=\"neutral\"\u003e{label}\u003c/Badge\u003e{' '}",
+      "start_line": 171,
+      "end_line": 171,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/review-attention.ts",
+      "content": "Preserve a plain-language warning for Blocker and ExitNotCarriedOut before falling back to a percentage or no label. attentionOf returns these bands for incoherent/disagreeing facts and a previously chosen Exit that has not been recorded. With Marks complete, these trades now show either an ordinary percentage or no badge, losing the visible warning in both the collapsed card and the day line. Handle these actionable reasons explicitly without reintroducing the old band names.",
+      "existing_code": "  const now = trade.meter?.now;\n  if (now?.kind === 'Value' \u0026\u0026 now.value.share) return [`${formatDecimal(now.value.share.percent, 0)}% to ${now.value.share.toward}`];\n  return [];",
+      "start_line": 25,
+      "end_line": 27,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/ReviewCard.tsx",
+      "content": "Generate descriptions from the evidence for each label rather than assigning all current attention reasons to every label. For example, with missing Marks and a previous PastStop reading, both “Marks needed” and “Past Stop Fri” describe only the current missing Mark: trade.reasons does not contain the previous session's boundary evidence. Percentage labels can also disagree with this description because the label uses meter share while reasonText uses the different attention basis. Return label/description pairs and test historical and percentage cases.",
+      "existing_code": "          \u003cspan id={reasonId} className=\"visually-hidden\"\u003e\n            {trade.reasons.map((reason) =\u003e reasonText(reason, trade.basis, timeZone ?? 'UTC')).join('. ')}\n          \u003c/span\u003e",
+      "start_line": 135,
+      "end_line": 137,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/ReviewCard.tsx",
+      "content": "Expose the explanation on the focusable header button as well. Badge renders a non-focusable span inside a button, whose descendants are flattened in accessibility APIs; aria-describedby on that span does not become the button's accessible description. Keyboard screen-reader users focusing the review button therefore do not receive the reason. Reference the reason(s) from the button and add a test of its computed accessible description, rather than only checking that a badge attribute points to existing text.",
+      "existing_code": "              \u003cBadge key={label} tone=\"neutral\" describedBy={reasonId}\u003e",
+      "start_line": 129,
+      "end_line": 129,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Review cards, attention logic, and review flow tests",
+      "files": [
+        "e2e/d4/review.spec.ts",
+        "src/ui/screens/ReviewCard.tsx",
+        "src/ui/screens/ReviewCards.test.tsx",
+        "src/ui/screens/ReviewSettlement.test.tsx",
+        "src/ui/screens/ReviewView.test.tsx",
+        "src/ui/screens/review-attention.test.ts",
+        "src/ui/screens/review-attention.ts"
+      ]
+    },
+    {
+      "label": "Day card presentation, shared labels, and accessibility checks",
+      "files": [
+        "e2e/d5r/responsive-a11y.spec.ts",
+        "e2e/d7s/conditions.spec.ts",
+        "src/ui/Badge.tsx",
+        "src/ui/calculation-words.ts",
+        "src/ui/screens/DayCard.test.tsx",
+        "src/ui/screens/DayCard.tsx"
+      ]
+    }
+  ],
+  "session_id": "fda6b1d2-c0b6-4b30-adc5-300e4a8b3872",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "fda6b1d2-c0b6-4b30-adc5-300e4a8b3872",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "c823f8ba",
+      "resolved_base": "9291348a090dc489bc3b69643f086abcd82598d2",
+      "resolved_head": "c823f8baa8d54e71325a48dbbf02a54df0197969",
+      "exact_range": "9291348a090dc489bc3b69643f086abcd82598d2..c823f8baa8d54e71325a48dbbf02a54df0197969",
+      "source_artifact_sha256": "33304859c148f2894247a6e0fa56f4f41d69e47d8a07c310a07e737e9ef5b850"
+    },
+    "execution": {
+      "ocr_version": "v1.14.1",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "06129f7bc0959665459bced5dd2b2fe42e6eefa20b943b5bcb22e15d914c46d2",
+          "path": "src/ui/screens/ReviewCards.test.tsx",
+          "fingerprint": "6629ff23e456d01afa1d6c3af7fb2195677ebe30f85d69c077b3bd77a56178d2"
+        },
+        {
+          "item_id": "0f4aa84758c10defc83e15772fff0753dc16e94eaf609bc7de67c6ee942fd4ba",
+          "path": "e2e/d5r/responsive-a11y.spec.ts",
+          "fingerprint": "f86a0047c51bcbc939511ac11b59e2afd6254bcb94e97a1c78232d4125565563"
+        },
+        {
+          "item_id": "1b082253820cd8fbd78a8475f54342bfab29f8d4db9c540964aedc626dbb875f",
+          "path": "e2e/d4/review.spec.ts",
+          "fingerprint": "2cfbddf4dae523bd778c8db07c59516abac27f85393ac717c7689b3931071f9d"
+        },
+        {
+          "item_id": "291ff04d5b13885b7146bf8eb6539426032c6b8eefc18524ae85e4f8d55c3f0b",
+          "path": "src/ui/screens/DayCard.test.tsx",
+          "fingerprint": "515f24645c44f36edf3549438c8c09b8557d59c43057ec4fb9dd0a376bec6cc9"
+        },
+        {
+          "item_id": "360f0c0c6a08d59bdc50988ff729f8031fe5275eeb735bbc6c714ef5915fa7f8",
+          "path": "src/ui/screens/DayCard.tsx",
+          "fingerprint": "9abde8d8178ea0140ee861b1c84bb5abcb37b77db4a447b9bb73b49c96ea5fef"
+        },
+        {
+          "item_id": "426cbca5cd9775e523071e54ffd418bdb89335823d64829b92e3e9a1fa4f4ac5",
+          "path": "src/ui/screens/review-attention.test.ts",
+          "fingerprint": "dcc1e18ec019542cfd3e7dc835799849b5a19a2d41c6ae58ce27ed39d8311b54"
+        },
+        {
+          "item_id": "68a16328ed9d206d4a04e9880bc2e011cacd6688d0879382c3753a19ba04936d",
+          "path": "src/ui/Badge.tsx",
+          "fingerprint": "8f670a85850f8273d7e4e9d9165902447b1bf12ae27c52a9ce16200658ab50b9"
+        },
+        {
+          "item_id": "6c4cc8015b3f916d6301b317630fa7d30fddbf47de85645f85b2f3b1830b15fe",
+          "path": "src/ui/screens/review-attention.ts",
+          "fingerprint": "b300de62aaeb7c53e46566bb0748fc97a5952c8699503c0bc93d03ca02185272"
+        },
+        {
+          "item_id": "753b83ca5a903e8d14ea3e457c9530bd2d7b2bc497a4b3ee29b26852ef9eb3ab",
+          "path": "src/ui/screens/ReviewView.test.tsx",
+          "fingerprint": "f25c086b5e9e7487dd5f1f03fb1ba2818dd7b67566e331bd2672b195993c7466"
+        },
+        {
+          "item_id": "8332ef1442450b9997aabfe40988b41aa84c07aec277d347537800aad865d572",
+          "path": "e2e/d7s/conditions.spec.ts",
+          "fingerprint": "d92e919d3305810f00acbff162e78cceb464828178647929d0e4b4d48dcab6c9"
+        },
+        {
+          "item_id": "ca830210571b3c1c130132730f3b5ff5e6224fd42856b0400a111e121dfb1fc8",
+          "path": "src/ui/screens/ReviewSettlement.test.tsx",
+          "fingerprint": "4a46e70c4f31c9a7c980e5ade7187a9aa750da3784e2eae0a7439b1290910736"
+        },
+        {
+          "item_id": "e1d2a6e20fc363ca1e18ec79af181d72fdc859550c22cf63ad51fd75c7d7b877",
+          "path": "src/ui/calculation-words.ts",
+          "fingerprint": "6074961a7707157c02784ae13966ad9edfc9e6ea88c5cc0ce4f409c5f9ad285f"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "537c800a902537d802bfa2fcff31fd278e4b2b82b58574466de039ca183918a9"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "06129f7bc0959665459bced5dd2b2fe42e6eefa20b943b5bcb22e15d914c46d2",
+          "path": "src/ui/screens/ReviewCards.test.tsx",
+          "fingerprint": "6629ff23e456d01afa1d6c3af7fb2195677ebe30f85d69c077b3bd77a56178d2"
+        },
+        {
+          "item_id": "0f4aa84758c10defc83e15772fff0753dc16e94eaf609bc7de67c6ee942fd4ba",
+          "path": "e2e/d5r/responsive-a11y.spec.ts",
+          "fingerprint": "f86a0047c51bcbc939511ac11b59e2afd6254bcb94e97a1c78232d4125565563"
+        },
+        {
+          "item_id": "1b082253820cd8fbd78a8475f54342bfab29f8d4db9c540964aedc626dbb875f",
+          "path": "e2e/d4/review.spec.ts",
+          "fingerprint": "2cfbddf4dae523bd778c8db07c59516abac27f85393ac717c7689b3931071f9d"
+        },
+        {
+          "item_id": "291ff04d5b13885b7146bf8eb6539426032c6b8eefc18524ae85e4f8d55c3f0b",
+          "path": "src/ui/screens/DayCard.test.tsx",
+          "fingerprint": "515f24645c44f36edf3549438c8c09b8557d59c43057ec4fb9dd0a376bec6cc9"
+        },
+        {
+          "item_id": "360f0c0c6a08d59bdc50988ff729f8031fe5275eeb735bbc6c714ef5915fa7f8",
+          "path": "src/ui/screens/DayCard.tsx",
+          "fingerprint": "9abde8d8178ea0140ee861b1c84bb5abcb37b77db4a447b9bb73b49c96ea5fef"
+        },
+        {
+          "item_id": "426cbca5cd9775e523071e54ffd418bdb89335823d64829b92e3e9a1fa4f4ac5",
+          "path": "src/ui/screens/review-attention.test.ts",
+          "fingerprint": "dcc1e18ec019542cfd3e7dc835799849b5a19a2d41c6ae58ce27ed39d8311b54"
+        },
+        {
+          "item_id": "68a16328ed9d206d4a04e9880bc2e011cacd6688d0879382c3753a19ba04936d",
+          "path": "src/ui/Badge.tsx",
+          "fingerprint": "8f670a85850f8273d7e4e9d9165902447b1bf12ae27c52a9ce16200658ab50b9"
+        },
+        {
+          "item_id": "6c4cc8015b3f916d6301b317630fa7d30fddbf47de85645f85b2f3b1830b15fe",
+          "path": "src/ui/screens/review-attention.ts",
+          "fingerprint": "b300de62aaeb7c53e46566bb0748fc97a5952c8699503c0bc93d03ca02185272"
+        },
+        {
+          "item_id": "753b83ca5a903e8d14ea3e457c9530bd2d7b2bc497a4b3ee29b26852ef9eb3ab",
+          "path": "src/ui/screens/ReviewView.test.tsx",
+          "fingerprint": "f25c086b5e9e7487dd5f1f03fb1ba2818dd7b67566e331bd2672b195993c7466"
+        },
+        {
+          "item_id": "8332ef1442450b9997aabfe40988b41aa84c07aec277d347537800aad865d572",
+          "path": "e2e/d7s/conditions.spec.ts",
+          "fingerprint": "d92e919d3305810f00acbff162e78cceb464828178647929d0e4b4d48dcab6c9"
+        },
+        {
+          "item_id": "ca830210571b3c1c130132730f3b5ff5e6224fd42856b0400a111e121dfb1fc8",
+          "path": "src/ui/screens/ReviewSettlement.test.tsx",
+          "fingerprint": "4a46e70c4f31c9a7c980e5ade7187a9aa750da3784e2eae0a7439b1290910736"
+        },
+        {
+          "item_id": "e1d2a6e20fc363ca1e18ec79af181d72fdc859550c22cf63ad51fd75c7d7b877",
+          "path": "src/ui/calculation-words.ts",
+          "fingerprint": "6074961a7707157c02784ae13966ad9edfc9e6ea88c5cc0ce4f409c5f9ad285f"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "537c800a902537d802bfa2fcff31fd278e4b2b82b58574466de039ca183918a9"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "243299c99c97e09bfabefb420de084d718e901e0ca65ae4cc0fb8f3024d00291",
+          "path": "evidence/D95/tdd-log/T95.11.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 96906
+  }
+}
