@@ -5,3 +5,7 @@
 - Counts line: "N reflection(s)" (a reflection that is not a Close Review).
 - Line text: "To do: Reflection"; "Done" for a line with nothing to do (W101's "Done · Hold" needs the saved Action).
 - A hidden " done" on finished steps (screen readers).
+
+## T95.11-B1 (provisional; hidden, screen readers only)
+- "Past Stop at the close on Fri" / "At Target at the close on Thu" (the session before's label).
+- "63% of the way from entry to the Stop" / "…to the Target" (a share label; reuses `reasonText`'s wording).

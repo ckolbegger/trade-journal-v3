@@ -218,6 +218,8 @@ ocr (`ocr/T95.11-c823f8ba.json`, 13 files, 4 comments):
 - `DayCard.tsx:171` (Doubtful): day-line labels have no description. → **T95.11-B2**.
 - `review-attention.ts:25` (Doubtful): a Blocker or Exit-not-carried-out Trade loses its visible warning. Needs words A302 doesn't have; put to the user with the unlabelled bands (not a bug task until words exist).
 
+**T95.11-B1** `8c8cb60d`: `aria-describedby` moved to the header button, one hidden span per label with a reason; new `describedLabelsOf(trade, timeZone)` gives each label its own reason from returned figures (Marks needed: the MarkMissing reason; "Past Stop Fri": `meter.previous`; a share: its percent). Past Stop, At Target and Expired: settle get no description when the walk's `reasons` lacks the matching entry. `Badge`'s `describedBy` removed. Three cases red then green (one stub rerun for a TypeError red); src/ui 1,285; browser 6 of 6.
+
 ## Trial: complete runs overlapped with the next task (the user, 2026-11-22, for 5 or 6 tasks)
 
 Each task's complete run runs in a detached scratch copy (`.claude/worktrees/run-<label>`, set up by `lane-setup.sh`) at the task's commit, while the next task's subagent starts in this worktree. The run's files are copied back to `evidence/D95/suite-runs/`. A failure becomes a bug task as before; the next task restarts only if it built on the broken code. Times are recorded per run to measure the saving.
