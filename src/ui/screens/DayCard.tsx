@@ -241,7 +241,7 @@ export function DayCard({ review, name, openCard, openMarks, openSkipped }: DayC
                 ))}
                 {day.finished.due.expirations.map(({ expiration, sessionsLeft, contracts }) => (
                   <p key={expiration}>
-                    {contracts.map((c) => underlyingOf(c.tradeId)).join(', ')} expire {shortDate(expiration)}
+                    {[...new Set(contracts.map((c) => c.tradeId))].map(underlyingOf).join(', ')} expire {shortDate(expiration)}
                     {sessionsLeft !== undefined && `: ${plural(sessionsLeft, 'session', 'sessions')} left`}.
                   </p>
                 ))}

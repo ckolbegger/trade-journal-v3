@@ -102,6 +102,13 @@ describe('the day card on a finished day', () => {
     expect(screen.queryByText(/Day so far/)).toBeNull();
   });
 
+  it('should name a Trade once when two of its contracts expire the same day', () => {
+    const option = { kind: 'Option' } as never;
+    const due = { sales: [], expirations: [{ expiration: '2026-11-20', contracts: [{ tradeId: 't1', instrument: option }, { tradeId: 't1', instrument: option }] }] };
+    renderCard(review({ completion: { kind: 'Complete' }, day: finishedDay({ due }) }));
+    expect(rows().Tomorrow).toBe('AXIO expire Fri Nov 20.');
+  });
+
   it('should show Missed only when a session had no Review', () => {
     renderCard(review({ completion: { kind: 'Complete' }, day: finishedDay({}, { missed: ['2026-11-18', '2026-11-19'] }) }));
     expect(rows().Missed).toBe('Wed Nov 18, Thu Nov 19');
