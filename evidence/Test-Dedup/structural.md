@@ -226,3 +226,7 @@ Cases kept: none; both sets dropped. Nothing failed for a real reason.
 Spec counts (e2e/d9ar/readout.spec.ts, e2e/d9ar/sweep.spec.ts, e2e/d9/gaps.spec.ts): before 24 passed, after 20 passed (minus 5 and 2, plus 3 places).
 
 References (rule 10): rg of both titles: living text only in plan/D09A-R-stage-a-refactor.md lines 239 and 539 (defect 2). Line 239 now ends "(held by readout:264 and sweep:24 since TD.6)"; line 539 is the case-list wording of a past task and is left as written. Left as written: evidence/D09AR/tdd-log/T9AR.23.md (readout:218), evidence/D09AR/structural.md:493, evidence/D09AR/tdd-log/merge6-S1.md:5, and suite-run outputs.
+
+### TD.6 ocr
+
+gpt-6.1-sol, session 9fddc2c0: 2 files reviewed (3 excluded), 0 findings. `evidence/Test-Dedup/ocr/TD.6-af8dbae1.json`.
