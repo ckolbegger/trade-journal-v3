@@ -224,6 +224,8 @@ ocr (`ocr/T95.11-c823f8ba.json`, 13 files, 4 comments):
 
 ocr of B1 and B2 (`ocr/T95.11-B1-B2-beaaf5a3.json`): **No findings.**
 
+**Complete run `t95.11-labels`** (on `f1e30021`; browser-task; run complete): unit 236 files, 2,779 tests (including `estimate-rules.test.ts:122` under its new 10 s limit); integration 141 files, 300 tests; browser `@every-task` 5 (12.5 s); checks 14 of 14. No failures. T95.11 Done (`c823f8ba`; B1 `8c8cb60d`; B2 `beaaf5a3`).
+
 ## Trial: complete runs overlapped with the next task (the user, 2026-11-22, for 5 or 6 tasks)
 
 Each task's complete run runs in a detached scratch copy (`.claude/worktrees/run-<label>`, set up by `lane-setup.sh`) at the task's commit, while the next task's subagent starts in this worktree. The run's files are copied back to `evidence/D95/suite-runs/`. A failure becomes a bug task as before; the next task restarts only if it built on the broken code. Times are recorded per run to measure the saving.
