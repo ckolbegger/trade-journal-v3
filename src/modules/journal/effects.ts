@@ -297,6 +297,8 @@ export interface ReviewDateQuery {
   readonly reviewDate: string;
   readonly since?: string;
   readonly tradeId?: string;
+  // With `since`: the Review Date's own Actions are not read and `actions` is empty, for a caller that uses only `earlier`.
+  readonly earlierOnly?: boolean;
 }
 
 // An answer as saved, with the option label from the Entry's own definition snapshot.

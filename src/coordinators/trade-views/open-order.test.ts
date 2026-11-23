@@ -80,6 +80,27 @@ describe("browseTrades: the Open list follows the Review's order (T95.22, A301)"
     expect(two).toEqual([{ on: 'index', store: 'journalEntries', index: 'byObligation', method: 'getAll' }]);
     expect(four).toEqual(two);
   }, 60_000);
+
+  it('should make the same one Journal read when Actions are saved on the Review Date, none per Action', async () => {
+    const readsFor = async (symbols: readonly string[]) => {
+      const stack = await reviewStack(MONDAY_1700);
+      for (const symbol of symbols) {
+        const planned = await stack.confirm({ symbol, shares: '100', entry: '50.00', stop: '47.50', target: '56.00', planTime: '2026-10-08T13:00:00Z' });
+        await stack.fill(planned, '2026-10-08T14:00:00Z', '100', '50.00');
+        await stack.saveMark(symbol, '52.00');
+        await stack.saveAction(planned.tradeId);
+      }
+      const { result, requests } = await countRequests(() => createTradeViews(stack).browseTrades({ lifecycle: 'Open' }));
+      if (result.kind !== 'Ready') throw new Error(`expected Ready, got ${result.kind}`);
+      return requests.filter((r) => r.store === 'journalEntries');
+    };
+
+    const two = await readsFor(['AAA', 'BBB']);
+    const four = await readsFor(['AAA', 'BBB', 'CCC', 'DDD']);
+
+    expect(two).toEqual([{ on: 'index', store: 'journalEntries', index: 'byObligation', method: 'getAll' }]);
+    expect(four).toEqual(two);
+  }, 60_000);
 });
 
 describe("browseTrades: the Open list's default order (A262)", () => {

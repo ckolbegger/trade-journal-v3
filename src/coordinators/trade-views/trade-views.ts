@@ -973,7 +973,7 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
         // The Review's own read of the saved Actions (P168, A301): one range read through the existing index, whatever the number of Trades,
         // from the earliest Plan time on (never later than a first exposure) to the day before the Expected Mark Date. An Exit not carried out is placed first.
         const earliestPlan = records.map((r) => r.summary.planTime).reduce<string | undefined>((a, b) => (a === undefined || Temporal.Instant.compare(b, a) < 0 ? b : a), undefined);
-        const history = session && earliestPlan ? await deps.journal.queryActions({ reviewDate: session.tradingDate, since: Temporal.Instant.from(earliestPlan).toZonedDateTimeISO('UTC').toPlainDate().toString() }) : undefined;
+        const history = session && earliestPlan ? await deps.journal.queryActions({ reviewDate: session.tradingDate, since: Temporal.Instant.from(earliestPlan).toZonedDateTimeISO('UTC').toPlainDate().toString(), earlierOnly: true }) : undefined;
         const lastActions = new Map((history?.earlier ?? []).map((action) => [action.tradeId, action] as const));
         const earlier = beforeSession ? await Promise.all(records.map(async ({ analysis }, i) => (valuations[i]?.kind === 'Valued' ? valueTrade(beforeSession, analysis, { factsAtClose: true, skipDatedLine: true }) : undefined))) : [];
         // A Closed page reads no Market Data: Close Reason labels, and the Trades with an Outstanding reflection.
