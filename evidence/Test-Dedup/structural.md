@@ -269,3 +269,43 @@ Dropped, not carried: the "if the Exit is not checked, start it again" fallback,
 Spec counts (e2e/d9ar/review.spec.ts): before 6 passed, after 5 passed. Both runs under with-browser-lock.sh on 5175.
 
 References (rule 10): rg of the title and "review:28": living text only in plan/browser-test-duplicates-plan.md (this plan) and research/browser-test-duplicates.md (the report); no acceptance row, acceptance-matrix, spec-map or bug-tasks entry. Left as written: evidence/D95/structural.md:147 (review:28 as the timing sample for `enterTrade`, 22.2 s to 2.0 s; the case is gone now) and evidence/D09/structural.md:549 (line numbers of a past task). The other hits for "review.spec.ts:28" are d5r/review, another file.
+
+## TD.8 — Review meters and the walk's order (BD12, BD13)
+
+Removed: the whole file `e2e/d9/meter-review.spec.ts` (both cases), deleted with git rm.
+
+Helpers (rule 2): `reviewMeters` and `expectTrackDashed` moved into `e2e/d5r/support.ts` (it now imports `expect` from d5's support). `e2e/d9/support.ts` re-exports them from there, so `e2e/d9/open-list.spec.ts` and `e2e/d9/meter-a11y.spec.ts` keep importing them from D9's support unchanged.
+
+### BD12: d9/meter-review "should keep the walk’s order and what each Action saves, through a save and a relaunch" (line 46), kept: d5r/review "should open the first card not Done on load, ... five Action Entries stored"
+
+| Dropped assertion | Where |
+|---|---|
+| first order: T-A, T-F, then T-B, T-C, T-E in any order | moved into review (first-order block after the pre-Mark meter names) |
+| first card T-A open | living: review asserts header aria-expanded true on T-A and one open header |
+| order after T-A's Mark: T-B, T-C, T-E in any order, then T-F, T-A | moved into review |
+| D-1 resolved in T-A's card before its Action | living: review does the same steps |
+| Marks and a Hold Action on every card, each "Done · Action saved", Complete | living: review |
+| final order is the five cards | moved into review (sorted list of five; the original checked no more) |
+| after relaunch: Complete, five "Done · Action saved" | living: review |
+| after relaunch: same card order as before the relaunch | moved into review |
+| stored Marks (ABC, DEF, JKL, XYZ) and five Action Entries | living: review (and it adds the settled Entry and obligation keys) |
+
+### BD13: d9/meter-review "should name each card’s meter by W51, draw the dashed track on the card without a Mark and move the meter with the saved Mark" (line 11), kept: d5r/sliders "should draw T-A’s pointer right of break-even, ..."
+
+| Dropped assertion | Where |
+|---|---|
+| T-A's name before any Mark ("Mark missing: XYZ, ...") | living: review (same name, same fixture) |
+| T-A's track dashed before any Mark | moved into sliders |
+| the five names after the three Marks (T-A, T-B, T-C, T-F, T-E) | living: sliders asserts the same five |
+| T-A, T-B, T-E, T-F data-state filled and track not dashed | moved into sliders |
+| T-C data-state empty, track dashed, no pointer | living: sliders (it already asserts all three) |
+| no meter shows a word | living: sliders |
+| after T-C's Mark: data-state filled, name /^P&L .../ with Stop −$201.00 and Target +$599.00, track not dashed | moved into sliders (ends the case with T-C's Mark) |
+
+Moved checks that came from the report's list: order (four points), T-A dashed, data-state, T-C after its Mark. Beyond the list: none needed.
+
+Kept cases: none (both dropped). Every moved check failed on an assertion when made wrong (tdd-log, TD.8).
+
+Spec counts: before 7 passed (d9/meter-review 2, d5r/review 2, d5r/sliders 3); after 5 passed (d5r/review 2, d5r/sliders 3). Both under with-browser-lock.sh on 5175. `.claude/scripts/acceptance-commands.sh plan/D09-trade-replay.md`: 9 commands checked, 0 failed.
+
+References (rule 10): plan/D09-trade-replay.md AC-REV-002 command re-pointed to `npx playwright test e2e/d5r/review.spec.ts` (since TD.8). Other hits left as history: plan/D09B-handoff.md:177, plan/D09C-handoff.md:18, plan/D09-handoff.md:165 (finished handoffs), research/browser-test-duplicates.md (the report), the B9.8 comment of the dropped file (gone with it). rg of both titles found no acceptance-matrix, spec-map or bug-tasks entry.

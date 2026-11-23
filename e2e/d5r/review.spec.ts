@@ -1,6 +1,6 @@
 import {
   actionEntriesOf, answerDebt, cardHeader, cardList, completion, createCardFixture, createRoutineTrades, enterMark, entriesWithSettledDebt, expect, fillDebtAnswers, firstPage, launchAt, MONDAY, MONDAY_1700, observationsOf,
-  marksStepOf, onboardedAt, openReview, probe, reflectionsOf, remainsOf, saveAction, meterOf, test, tradeCard, workspaceOf,
+  marksStepOf, onboardedAt, openReview, probe, reflectionsOf, remainsOf, reviewMeters, saveAction, meterOf, test, tradeCard, workspaceOf,
 } from './support.ts';
 
 const OPEN_HEADERS = '.review-card-head button[aria-expanded="true"]';
@@ -21,6 +21,15 @@ test.describe('B5R.1 Review end to end on cards', () => {
     await expect(meterOf(page, tA)).toHaveAccessibleName('Mark missing: XYZ, Mon Oct 12 Stop −$270.00, Target +$580.00.');
     await expect(meterOf(page, tF)).toHaveAccessibleName('Mark missing: XYZ, Mon Oct 12 Stop −$101.00, Target +$249.00.');
 
+    // The walk is in attention order: the two XYZ Trades owe a Mark and more, so they come first. A saved Mark re-sorts it (the two XYZ cards go last).
+    // (T-B, T-C and T-E tie, and their order among themselves is not fixed.)
+    const names: Record<string, string> = { [tA.tradeId]: 'T-A', [tB.tradeId]: 'T-B', [tC.tradeId]: 'T-C', [tE.tradeId]: 'T-E', [tF.tradeId]: 'T-F' };
+    const orderOf = async (on: typeof page) => (await reviewMeters(on)).map((card) => names[card.id]!);
+    const tied = (order: string[], from: number, to: number) => [...order.slice(from, to)].sort();
+    const first = await orderOf(page);
+    expect(first.slice(0, 2)).toEqual(['T-A', 'T-F']);
+    expect(tied(first, 2, 5)).toEqual(['T-B', 'T-C', 'T-E']);
+
     // Type the first card's Mark and press Save Marks: its figures and both XYZ meters follow the result.
     await enterMark(page, tA, MONDAY, '52.00');
     const figure = (term: string) => tradeCard(page, 'XYZ').locator('dt', { hasText: new RegExp(`^${term}$`) }).locator('xpath=following-sibling::dd[1]');
@@ -28,6 +37,9 @@ test.describe('B5R.1 Review end to end on cards', () => {
     await expect(figure('Current Risk · At Stop')).toHaveText('$450.00 · 1.80R');
     await expect(meterOf(page, tA)).toHaveAccessibleName(/^P&L \+\$180\.00, 31% of the way to the Target\. Stop −\$270\.00, Target \+\$580\.00\.$/);
     await expect(meterOf(page, tF)).toHaveAccessibleName(/^P&L \+\$99\.00, 40% of the way to the Target\. Stop −\$101\.00, Target \+\$249\.00\.$/);
+    const second = await orderOf(page);
+    expect(tied(second, 0, 3)).toEqual(['T-B', 'T-C', 'T-E']);
+    expect(second.slice(3)).toEqual(['T-F', 'T-A']);
 
     // D-1 is due in this Review: resolve it in T-A's card.
     await (await reflectionsOf(page, tA)).getByRole('button', { name: /^Reflect on 2026-10-09/ }).click();
@@ -50,6 +62,8 @@ test.describe('B5R.1 Review end to end on cards', () => {
       await expect(remainsOf(page, trade)).toHaveText('Done · Action saved');
     }
     await expect(completion(page)).toHaveText('Complete');
+    const done = await orderOf(page);
+    expect([...done].sort()).toEqual(['T-A', 'T-B', 'T-C', 'T-E', 'T-F']);
     await context.close();
 
     // Relaunch: every card reads Done and the header Complete.
@@ -59,6 +73,7 @@ test.describe('B5R.1 Review end to end on cards', () => {
     await openReview(again);
     await expect(completion(again)).toHaveText('Complete');
     await expect(cardList(again).locator('.review-card-remains')).toHaveText(Array<string>(5).fill('Done · Action saved'));
+    expect((await reviewMeters(again)).map((card) => names[card.id]!)).toEqual(done);
 
     // Durable state: the Marks (one XYZ record for both Trades), the Entry that settled D-1, five Action Entries.
     const workspace = workspaceOf(await probe(again))!;

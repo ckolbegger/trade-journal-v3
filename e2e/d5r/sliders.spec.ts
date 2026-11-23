@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import {
-  cardHeader, createCardFixture, enterMark, expect, MONDAY, MONDAY_1700, marksStepOf, onboardedAt, openReview, LAUNCH, meterOf, test, type CardTrade,
+  cardHeader, createCardFixture, enterMark, expect, MONDAY, MONDAY_1700, marksStepOf, onboardedAt, openReview, LAUNCH, meterOf, expectTrackDashed, test, type CardTrade,
 } from './support.ts';
 
 const nav = (page: Page) => page.getByRole('navigation', { name: 'Primary' });
@@ -59,6 +59,8 @@ test.describe('B5R.7 Meter states', () => {
     const trades = await createCardFixture(page);
     const { 'T-A': tA, 'T-B': tB, 'T-C': tC, 'T-E': tE, 'T-F': tF } = trades;
     await openReview(page);
+    // Before any Mark, T-A's track is already dashed.
+    await expectTrackDashed(meterOf(page, tA), true);
     // Monday Marks for every Instrument but DEF.
     await enterMark(page, tA, MONDAY, '52.00');
     await enterMark(page, tB, MONDAY, '27.50');
@@ -92,6 +94,19 @@ test.describe('B5R.7 Meter states', () => {
     await expect(meterOf(page, tF)).toHaveAccessibleName('P&L +$99.00, 40% of the way to the Target. Stop −$101.00, Target +$249.00.');
     await expect(meterOf(page, tE)).toHaveAccessibleName('P&L +$99.00, 10% of the way to the Target. Stop −$101.00, Target +$999.00.');
     for (const trade of [tA, tB, tC, tE, tF]) await expect(meterOf(page, trade)).toHaveText('');
+
+    // Each Trade with a Mark is drawn, with its track not dashed; the Trade without one is empty, with its track dashed and no pointer.
+    for (const trade of [tA, tB, tE, tF]) {
+      await expect(meterOf(page, trade)).toHaveAttribute('data-state', 'filled');
+      await expectTrackDashed(meterOf(page, trade), false);
+    }
+    await expectTrackDashed(meterOf(page, tC), true);
+
+    // Saving DEF's Mark moves T-C's meter from dashed to drawn, with no reload.
+    await enterMark(page, tC, MONDAY, '40.50');
+    await expect(meterOf(page, tC)).toHaveAttribute('data-state', 'filled');
+    await expect(meterOf(page, tC)).toHaveAccessibleName(/^P&L [+−]\$[\d,]+\.\d\d, .*Stop −\$201\.00, Target \+\$599\.00\.$/);
+    await expectTrackDashed(meterOf(page, tC), false);
     await context.close();
   });
 });

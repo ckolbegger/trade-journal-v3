@@ -264,11 +264,8 @@ export async function setViewport(page: Page, width: number, height: number): Pr
 
 // ---- Stage C: the meter's names, in the Review's cards and in the Open list's rows ------------------------------------------------------------
 
-// The Review's cards in their order: each Trade's id, and the name of the meter in its header.
-export const reviewMeters = (page: Page): Promise<{ id: string; name: string | null }[]> =>
-  page.locator('li.review-card').evaluateAll((cards) =>
-    cards.map((card) => ({ id: card.getAttribute('data-trade-id')!, name: card.querySelector('.review-card-head [role="img"]')?.getAttribute('aria-label') ?? null })));
-
+// The Review's card order and the dashed-track check live in D5R's support (since TD.8); D9's specs reach them here.
+export { expectTrackDashed, reviewMeters } from '../d5r/support.ts';
 // The Open list's rows in their order: each Trade's id, and the name of every meter a row shows (a hidden copy is not shown).
 // A list that re-renders under the read gives no rows, or rows without their meter, for a moment, so the read is repeated until every row has one.
 export async function listMeters(page: Page): Promise<{ id: string; names: string[] }[]> {
@@ -291,11 +288,5 @@ export async function openOpenList(page: Page): Promise<void> {
   await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Trades', exact: true }).click();
   await expect(page.getByRole('table', { name: 'Open Trades' })).toBeVisible(LAUNCH);
 }
-
-// A meter's track is dashed when there is no Mark. Polled: a list that re-renders leaves a detached track, whose computed style is empty and says nothing.
-export const expectTrackDashed = (meter: Locator, dashed: boolean): Promise<void> =>
-  expect
-    .poll(() => meter.getByTestId('meter-track').evaluate((el) => getComputedStyle(el).borderStyle), { message: dashed ? 'the track is dashed' : 'the track is not dashed' })
-    .toEqual(dashed ? 'dashed' : expect.not.stringMatching(/^(dashed|)$/));
 
 export { test };

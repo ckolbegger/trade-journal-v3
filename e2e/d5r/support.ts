@@ -3,7 +3,7 @@
 // as a Trade reference the shared helpers take, and the meter and Save Marks locators.
 import type { Locator, Page } from '@playwright/test';
 import {
-  backToTrade, cardItem, confirmReference, createTradeAt, createTrades, currentTradeId, deferEntry, FOUR_TRADES, PLAN, recordEntry,
+  backToTrade, cardItem, confirmReference, createTradeAt, createTrades, currentTradeId, deferEntry, expect, FOUR_TRADES, PLAN, recordEntry,
   type CardRef, type FixtureTrade, type PlanValues, type TradeRef,
 } from '../d5/support.ts';
 
@@ -55,3 +55,13 @@ export const meterOf = (page: Page, card: CardRef): Locator => cardItem(page, ca
 // What the collapsed header says remains.
 export const remainsOf = (page: Page, card: CardRef): Locator => cardItem(page, card).locator('.review-card-remains');
 
+// The Review's cards in their order: each Trade's id, and the name of the meter in its header. (D9's open-list and meter-a11y specs read it too, through D9's support.)
+export const reviewMeters = (page: Page): Promise<{ id: string; name: string | null }[]> =>
+  page.locator('li.review-card').evaluateAll((cards) =>
+    cards.map((card) => ({ id: card.getAttribute('data-trade-id')!, name: card.querySelector('.review-card-head [role="img"]')?.getAttribute('aria-label') ?? null })));
+
+// A meter's track is dashed when there is no Mark. Polled: a list that re-renders leaves a detached track, whose computed style is empty and says nothing.
+export const expectTrackDashed = (meter: Locator, dashed: boolean): Promise<void> =>
+  expect
+    .poll(() => meter.getByTestId('meter-track').evaluate((el) => getComputedStyle(el).borderStyle), { message: dashed ? 'the track is dashed' : 'the track is not dashed' })
+    .toEqual(dashed ? 'dashed' : expect.not.stringMatching(/^(dashed|)$/));

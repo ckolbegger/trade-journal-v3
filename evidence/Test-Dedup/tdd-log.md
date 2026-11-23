@@ -120,3 +120,19 @@ Moved checks went into e2e/d9ar/review.spec.ts, the case "should restore a start
 | Action still started after Close (before the round trip) | mutated (Intent "wrong") | 1 failed, assertion: toHaveValue Expected "wrong" |
 | zero Action entries after open, move and close | mutated (toBe saved + 1) | 1 failed, assertion: Expected 1, Received 0 |
 | all, restored | green | `e2e/d9ar/review.spec.ts`: 5 passed |
+
+## TD.8
+
+Each moved check was made wrong, the spec run (under with-browser-lock.sh, port 5175), the assertion failure seen, the value restored, and the files run green again (5 passed).
+
+| Moved check | Run | Command | Result |
+|---|---|---|---|
+| review:9 first card order (T-A, T-F first) | red | `npm run test:e2e:specs -- e2e/d5r/review.spec.ts` with expected ['T-F', 'T-A'] | assertion failure, toEqual at the first-order line |
+| review:9 order after Marks saved (ends T-F, T-A) | red | same, expected ['T-A', 'T-F'] | assertion failure, toEqual |
+| review:9 final order (all five cards) | red | same, expected list without T-F | assertion failure, toEqual |
+| review:9 same order after relaunch | red | same, expected the reversed order | assertion failure, toEqual |
+| sliders:57 T-A track dashed before any Mark | red | `... e2e/d5r/sliders.spec.ts` with dashed false | "the track is not dashed": received "dashed" |
+| sliders:57 data-state filled on each Trade with a Mark | red | same, expected 'empty' | toHaveAttribute: expected "empty", received "filled" |
+| sliders:57 T-C track not dashed after its Mark | red | same, expected dashed | "the track is dashed": received "none" |
+| sliders:57 T-C name after its Mark | red | same, Stop −$202 in the pattern | toHaveAccessibleName: pattern mismatch against "P&L +$49.00, 8% ... Stop −$201.00" |
+| all of the above | green | `... e2e/d5r/review.spec.ts e2e/d5r/sliders.spec.ts` after restoring | 5 passed |
