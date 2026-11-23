@@ -26,7 +26,9 @@ export function SlipQuestion({ answer, entry, last, onChoose }: SlipQuestionProp
   let asked: { readonly text: string; readonly options: readonly { readonly label: string; readonly choice: SlipChoice }[] };
   if (answer.kind === 'Scaled') {
     const readings = [answer.candidate, entry];
-    asked = { text: `${readings.map(decimalMoney).join(' or ')}?`, options: readings.map((price) => keep(price, decimalMoney(price))) };
+    // Two readings that match to the cent are shown as typed, so the trader can tell them apart.
+    const shown = (price: string) => (readings.map(decimalMoney).every((text) => text === decimalMoney(price)) ? `$${price}` : decimalMoney(price));
+    asked = { text: `${readings.map(shown).join(' or ')}?`, options: readings.map((price) => keep(price, shown(price))) };
   } else if (answer.kind === 'Moved' && last !== undefined) {
     asked = { text: `${answer.percent}% from ${decimalMoney(last)}. Right?`, options: [keep(entry, `Yes, ${decimalMoney(entry)}`), retype] };
   } else if (answer.kind === 'WorthNothing') {
@@ -40,7 +42,7 @@ export function SlipQuestion({ answer, entry, last, onChoose }: SlipQuestionProp
     <div role="alert">
       <p>{asked.text}</p>
       {asked.options.map(({ label, choice }) => (
-        <button key={label} type="button" className="pill secondary" onClick={() => onChoose(choice)}>
+        <button key={label + (choice.kind === 'keep' ? choice.price : '')} type="button" className="pill secondary" onClick={() => onChoose(choice)}>
           {label}
         </button>
       ))}
