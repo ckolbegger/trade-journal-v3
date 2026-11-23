@@ -168,6 +168,12 @@ function cardFacade(overview: Ready = review()): UiFacade {
   return facade;
 }
 
+// The Review with one walked Trade's Marks in, so its card offers the Action (the Action waits for the Trade's Marks).
+const withMarksIn = (overview: Ready, tradeId: string): Ready => ({
+  ...overview,
+  families: overview.families.map((f) => (f.family === 'Trades' ? { ...f, trades: f.trades.map((t) => (t.tradeId === tradeId ? { ...t, progress: cardProgress(0, 0, { resolved: 0 }) } : t)) } : f)),
+});
+
 // A test-only control: a button that navigates the router to the address, as a history change would.
 function NavigateTo({ to }: { readonly to: string }) {
   const navigate = useNavigate();
@@ -792,7 +798,7 @@ describe('leaving the page holds only Mark drafts (P156)', () => {
   it('should report no Mark draft held for an unsaved Action form, and report one while a Mark draft exists', async () => {
     const user = userEvent.setup();
     const onMarkDraftsChange = vi.fn();
-    renderReview(cardFacade(), { onMarkDraftsChange, at: '/review?trade=t-c' });
+    renderReview(cardFacade(withMarksIn(review(), 't-c')), { onMarkDraftsChange, at: '/review?trade=t-c' });
     const card = await screen.findByRole('region', { name: 'DEF review' });
     await showPanel(user, card, 'Action');
     await user.click(within(within(card).getByRole('form', { name: 'Action' })).getByRole('radio', { name: 'Exit' }));
@@ -1093,7 +1099,7 @@ describe('Action save whose next step is a Mark (T5R.12-B3)', () => {
   });
   it('should keep a typed Mark and say nothing of saving or discarding after an Action save whose next step is a Mark', async () => {
     const user = userEvent.setup();
-    const facade = cardFacade();
+    const facade = cardFacade(withMarksIn(review(), 't-c'));
     vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'Saved', action: {} as never, review: postWith(markStep(['t-e'])) });
     renderReview(facade, { at: '/review?trade=t-c' });
     const card = await screen.findByRole('region', { name: 'DEF review' });
@@ -1112,7 +1118,7 @@ describe('Action save whose next step is a Mark (T5R.12-B3)', () => {
 describe('Action save while other forms hold values (A156)', () => {
   it('should open the next Trade card, keeping the entered Mark, when an Action save names another card as the next step and only Mark drafts exist', async () => {
     const user = userEvent.setup();
-    const facade = cardFacade();
+    const facade = cardFacade(withMarksIn(review(), 't-c'));
     const post = { kind: 'Ready', cards: [], progress: { tradesWithAction: 1, tradesEligible: 5 }, completion: MONDAY_COMPLETION, nextStep: { kind: 'Trade', trade: tradeReview(TF) }, binding } as const;
     vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'Saved', action: {} as never, review: post });
     renderReview(facade, { at: '/review?trade=t-c' });

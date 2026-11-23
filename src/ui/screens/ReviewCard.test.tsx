@@ -1223,28 +1223,6 @@ describe('reflections in the Trade card (A71)', () => {
 
 // A card that owes two Marks, a reflection due and a later one, and its Action.
 const markRow = (instrumentKey: string): MarkRow => ({ instrumentKey, instrument: { kind: 'Stock', symbol: instrumentKey }, tradingDate: '2026-10-12', trades: ['t1'], resolution: { kind: 'Missing' }, resolutionRevision: 'None', task: 'Manual' });
-const owingCompletion: ReviewCompletion = {
-  kind: 'Incomplete',
-  reasons: [
-    { code: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'XYZ' }, tradingDate: '2026-10-12', trades: ['t1'] },
-    { code: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'ABC' }, tradingDate: '2026-10-12', trades: ['t1'] },
-    { code: 'ReflectionDue', tradeId: 't1', debtIds: ['d1'] },
-    { code: 'ActionMissing', tradeId: 't1' },
-  ],
-};
-const owingReview = (): Ready =>
-  ready([item('t1', 'XYZ')], [], {
-    completion: owingCompletion,
-    families: [
-      {
-        family: 'Marks',
-        earlierMarks: [],
-        today: [markRow('XYZ'), markRow('ABC')],
-        earlier: [{ instrumentKey: 'XYZ', instrument: { kind: 'Stock', symbol: 'XYZ' }, trades: [{ tradeId: 't1', from: '2026-10-09' }], missing: ['2026-10-09'], acknowledged: [], revisions: { '2026-10-09': 'None' }, acknowledgments: {}, blocking: false }],
-      },
-      { family: 'Trades', trades: [{ ...item('t1', 'XYZ'), progress: cardProgress(1, 1, { needed: 2, resolved: 0 }) }] },
-    ],
-  });
 const owedPair = [owed('d1', 'Due', '2026-10-09T14:30:00Z', [{}]), owed('d2', 'DueInNextReview', '2026-10-12T14:30:00Z', [{}])];
 // A card that owes one reflection due now, one later, and its Action (the pair below).
 const dueReview = (): Ready =>
@@ -1378,12 +1356,12 @@ describe('reflections (continued)', () => {
 describe('Action (A159)', () => {
   it('should open the Action panel with Hold preselected and one visible Save, which records Hold with no other input', async () => {
     const user = userEvent.setup();
-    const facade = walkFacade(owingReview(), tradeReview('t1', 'XYZ', { reflections: owedPair }));
+    const facade = walkFacade(dueReview(), tradeReview('t1', 'XYZ', { reflections: owedPair }));
     vi.mocked(facade.DailyReview.save).mockResolvedValueOnce({ kind: 'Saved', action: savedAction('Hold'), review: { kind: 'Ready', cards: [], progress: { tradesWithAction: 1, tradesEligible: 1 }, completion: { kind: 'Complete' }, nextStep: { kind: 'Done' }, binding } });
     renderWalk(facade);
     const card = await openTrade(user, 'XYZ');
 
-    // The card owes Marks first; the Action panel opens when its header is pressed.
+    // The card owes a reflection first; the Action panel opens when its header is pressed.
     await user.click(panelHeader(card, 'Action'));
     expect(within(card).getByRole('radio', { name: 'Hold' })).toHaveProperty('checked', true);
     expect(within(card).getAllByRole('button', { name: /^Save/ }).map((b) => b.textContent)).toEqual(['Save']);
@@ -1457,7 +1435,7 @@ describe('moving on', () => {
 describe('Save Marks from a card that is not first in the new order', () => {
   async function savedFromSecondCard() {
     const user = userEvent.setup();
-    const walkedTrades = [item('t1', 'XYZ'), item('t2', 'DEF')].map((t) => ({ ...t, progress: t.tradeId === 't1' ? cardProgress(1, 0, { needed: 1, resolved: 0 }) : cardProgress(0, 0, { resolved: 0 }) }));
+    const walkedTrades = [item('t1', 'XYZ'), item('t2', 'DEF')].map((t) => ({ ...t, progress: t.tradeId === 't1' ? cardProgress(1, 0, { resolved: 0 }) : cardProgress(0, 0, { resolved: 0 }) }));
     const owing: ReviewCompletion = { kind: 'Incomplete', reasons: [{ code: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'XYZ' }, tradingDate: '2026-10-12', trades: ['t1'] }, { code: 'ActionMissing', tradeId: 't1' }, { code: 'ActionMissing', tradeId: 't2' }] };
     const review = ready([item('t1', 'XYZ'), item('t2', 'DEF')], [], { completion: owing, families: [{ family: 'Marks', earlierMarks: [], today: [markRow('XYZ')], earlier: [] }, { family: 'Trades', trades: walkedTrades }] });
     const first = tradeReview('t1', 'XYZ');
@@ -1504,7 +1482,7 @@ describe('Save Marks from a card that is not first in the new order', () => {
 describe('Save Marks from a card that is not first when reading it again fails', () => {
   it('should keep the open card and its drafts when reading it again after Save Marks fails', async () => {
     const user = userEvent.setup();
-    const walkedTrades = [item('t1', 'XYZ'), item('t2', 'DEF')].map((t) => ({ ...t, progress: t.tradeId === 't1' ? cardProgress(1, 0, { needed: 1, resolved: 0 }) : cardProgress(0, 0, { resolved: 0 }) }));
+    const walkedTrades = [item('t1', 'XYZ'), item('t2', 'DEF')].map((t) => ({ ...t, progress: t.tradeId === 't1' ? cardProgress(1, 0, { resolved: 0 }) : cardProgress(0, 0, { resolved: 0 }) }));
     const owing: ReviewCompletion = { kind: 'Incomplete', reasons: [{ code: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'XYZ' }, tradingDate: '2026-10-12', trades: ['t1'] }, { code: 'ActionMissing', tradeId: 't1' }, { code: 'ActionMissing', tradeId: 't2' }] };
     const review = ready([item('t1', 'XYZ'), item('t2', 'DEF')], [], { completion: owing, families: [{ family: 'Marks', earlierMarks: [], today: [markRow('XYZ')], earlier: [] }, { family: 'Trades', trades: walkedTrades }] });
     const first = tradeReview('t1', 'XYZ');
@@ -1638,7 +1616,7 @@ describe('panels (A152)', () => {
 
   it('should show Reflections and Action panels in that order and no Marks panel, with one open at a time, each header a button with its summary and status as text, and None on Reflections for a card that owes none', async () => {
     const user = userEvent.setup();
-    renderWalk(walkFacade(owingReview(), tradeReview('t1', 'XYZ', { reflections: owedPair })));
+    renderWalk(walkFacade(dueReview(), tradeReview('t1', 'XYZ', { reflections: owedPair })));
     const card = await openTrade(user, 'XYZ');
 
     const [reflections, action] = [panelHeader(card, 'Reflections'), panelHeader(card, 'Action')] as const;
@@ -2035,5 +2013,61 @@ describe('The last decision line', () => {
     await user.click(panelHeader(card, 'Action'));
     expect(within(card).getByRole('region', { name: 'Your last decisions' })).toBeTruthy();
     expect(within(card).queryByText(/you chose/)).toBeNull();
+  });
+});
+
+describe('The card before its Marks (T95.20)', () => {
+  const gone = { kind: 'Unavailable', reason: 'MarkMissing', instrument: symbol, date: '2026-10-12' };
+  // Marks still to enter for the Review Date: the walked card says one to go, and the Trade's figures are the session before's.
+  async function openWaiting(toGo = 1) {
+    const user = userEvent.setup();
+    const progress = cardProgress(0, 0, { needed: toGo, resolved: 0 });
+    const waiting = { ...item('t1', 'XYZ'), progress };
+    const review = ready([waiting], [], { families: [{ family: 'Marks', earlierMarks: [], today: [markRow('XYZ')], earlier: [] }, { family: 'Trades', trades: [waiting] }] });
+    const trade = tradeReview('t1', 'XYZ', {
+      progress,
+      evaluation: evaluation({ currentMarkedPnl: gone, observation: { instrument: symbol, tradingDate: '2026-10-12', mark: null } }),
+      datedLastClose: { tradingDate: '2026-10-09', evaluation: evaluation({ valuationDate: '2026-10-09' }) },
+    });
+    const facade = walkFacade(review, trade);
+    renderWalk(facade);
+    return { user, facade, card: await openTrade(user, 'XYZ') };
+  }
+
+  it('should say the figures wait for todays Marks and show the session before', async () => {
+    const { card } = await openWaiting();
+    expect(within(card).getByText("Figures wait for today's Marks. Below: at the Fri Oct 9 Marks.")).toBeTruthy();
+    expect(within(card).getByRole('heading', { name: 'At the Fri Oct 9 Marks' })).toBeTruthy();
+  });
+
+  it('should show the Action form once the Trades Marks are saved or marked Cant get a price', async () => {
+    // Nothing left to enter: saved Marks, or a Mark acknowledged as no price, both leave none to go. The figures may still be the session before's.
+    const { card } = await openWaiting(0);
+    expect(within(card).getByRole('form', { name: 'Action' })).toBeTruthy();
+    expect(within(card).queryByText(/No Action until/)).toBeNull();
+    expect(within(card).queryByText(/Figures wait/)).toBeNull();
+  });
+
+  it('should show the same words if a save comes back ReviewMarksUnresolved', async () => {
+    const { user, facade, card } = await openWaiting(0);
+    vi.mocked(facade.DailyReview.save).mockResolvedValueOnce({ kind: 'Rejected', issues: [{ code: 'ReviewMarksUnresolved', instruments: [symbol, { kind: 'Stock', symbol: 'ABC' }] }] });
+    await user.click(within(card).getByRole('button', { name: 'Save' }));
+    expect((await within(card).findByText("No Action until today's Marks are in.", { exact: false })).textContent).toBe("No Action until today's Marks are in. Enter them");
+    expect(within(card).queryByRole('form', { name: 'Action' })).toBeNull();
+    expect(within(card).queryByText(/could not be saved/)).toBeNull();
+  });
+
+  it('should show No Action until todays Marks are in in place of the Action form with a link to the Marks step', async () => {
+    const { user, card } = await openWaiting(2);
+    expect(within(card).getByText("No Action until today's Marks are in.", { exact: false }).textContent).toBe("No Action until today's Marks are in. Enter them");
+    expect(within(card).queryByRole('form', { name: 'Action' })).toBeNull();
+    expect(within(card).queryByRole('button', { name: 'Save' })).toBeNull();
+    await user.click(within(card).getByRole('link', { name: 'Enter them' }));
+    expect(here.address).toBe('/review?trade=t1&panel=Marks');
+    cleanup();
+
+    const one = await openWaiting(1);
+    expect(within(one.card).getByText("No Action until today's Mark is in.", { exact: false }).textContent).toBe("No Action until today's Mark is in. Enter it");
+    expect(within(one.card).getByRole('link', { name: 'Enter it' })).toBeTruthy();
   });
 });

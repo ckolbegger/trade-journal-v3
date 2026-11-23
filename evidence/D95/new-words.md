@@ -40,3 +40,5 @@
 - T95.18 (no W row): "−$0.50 (−$200.00 so far)" (dollar amount passed only, both shorter lengths); "To Stop (another −$200.00)" and "To Stop (−$200.00)" (no price distance; likewise Target); "Past Stop" with no overrun at every length.
 
 - T95.19 (no W row): top line without a reason ends ", no reason given." (W114's form); "1 earlier decision" (singular of W117).
+
+- T95.20 (no W row): "Figures wait for today's Marks." alone, when no session before's figures are shown (W94 without its second sentence); "No Action until today's Mark is in. Enter it" for one Mark (W95's own singular); the same words for a save refused as ReviewMarksUnresolved, with the count from the refusal's Instruments.

@@ -15,11 +15,12 @@ import { ReviewReflections } from './ReviewReflections.tsx';
 import { SettlementPanel, settlementSummary } from './ReviewSettlement.tsx';
 import { describedLabelsOf, reasonText } from './review-attention.ts';
 import { PlanBox } from './PlanBox.tsx';
+import { sessionOf } from './now-box.props.ts';
 import { LastDecisionLine, LastDecisions } from './LastDecisions.tsx';
 import { unsigned } from '../cockpit/replay/readout.props.ts';
 import { todoText, type DayLine } from './todo-text.ts';
 import { signed, pnlText } from '../figures.ts';
-import { money } from '../format.ts';
+import { money, shortDate } from '../format.ts';
 import { Meter } from '../cockpit/meter/meter.tsx';
 import { meterProps } from '../cockpit/meter/meter.props.ts';
 
@@ -336,6 +337,10 @@ function CardBody({ facade, trade, progress, name, go, onSaved, onReflectionReso
   // (Marks to enter, a contract to settle) or another panel is the open one.
   const listShown = panelOf(progress, 'Marks').needed === 0 && settlementOf(progress) === undefined;
   const listVisible = listShown && open === 'Action';
+  // Marks still to enter for the Review Date (A304): the figures are the session before's, as the "Now" box reads them.
+  const marksToGo = panelOf(progress, 'Marks').needed;
+  const waitingSession = sessionOf(trade, meter);
+  const waitingOn = waitingSession?.dated ? waitingSession.date : undefined;
   const atEntryShown = atEntry != null && !planBoxCarriesAtEntry ? atEntry : undefined;
   return (
     <section aria-label={`${name} review`}>
@@ -352,6 +357,11 @@ function CardBody({ facade, trade, progress, name, go, onSaved, onReflectionReso
         <p key={i}>{reasonText(reason, trade.attention.basis, timeZone ?? 'UTC')}</p>
       ))}
       {trade.decisions && !listVisible && <LastDecisionLine decisions={trade.decisions} />}
+      {marksToGo > 0 && (
+        <p className="card-waits">
+          Figures wait for today&apos;s Marks.{waitingOn && ` Below: at the ${shortDate(waitingOn)} Marks.`}
+        </p>
+      )}
       <div className="plan-now">
         <PlanBox plan={trade.plan} replay={trade.replay} />
         <NowBox trade={trade} meter={meter} />
@@ -393,7 +403,7 @@ function CardBody({ facade, trade, progress, name, go, onSaved, onReflectionReso
               </button>
             )}
             {name === 'Action' && trade.decisions && listShown && <LastDecisions decisions={trade.decisions} />}
-            {name === 'Action' && <ActionForm facade={facade} form={trade.form} binding={trade.saveBinding} onSaved={onSaved} onRefresh={onRefresh} onDirtyChange={report} pending={pending} />}
+            {name === 'Action' && <ActionForm facade={facade} form={trade.form} binding={trade.saveBinding} onSaved={onSaved} onRefresh={onRefresh} onDirtyChange={report} pending={pending} marksToGo={marksToGo} />}
           </div>
         </div>
       ))}

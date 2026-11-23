@@ -1,5 +1,5 @@
 import { useContext, useEffect, useId, useRef, useState, type FormEvent } from 'react';
-import { UNSAFE_NavigationContext } from 'react-router';
+import { Link, UNSAFE_NavigationContext } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
 import { DAILY_TRADE_REVIEW_PROMPTS } from '../../domain/daily-trade-review-prompts.ts';
 import { useRuntime } from '../runtime.tsx';
@@ -24,6 +24,17 @@ export interface ActionFormProps {
   readonly onDirtyChange: (dirty: boolean) => void;
   // The Review is being read again under a changed Mark: Save waits, so it never presents the old binding.
   readonly pending?: boolean;
+  // How many of the Trade's Marks for the Review Date are still to enter: while any are, no Action is offered (A304).
+  readonly marksToGo?: number;
+}
+
+// "No Action until today's Marks are in. Enter them" (W95), the link going to the Marks step.
+function MarksFirst({ tradeId, toGo }: { readonly tradeId: string; readonly toGo: number }) {
+  return (
+    <p className="marks-first">
+      No Action until today&apos;s {toGo === 1 ? 'Mark is' : 'Marks are'} in. <Link to={`/review?trade=${tradeId}&panel=Marks`}>{toGo === 1 ? 'Enter it' : 'Enter them'}</Link>
+    </p>
+  );
 }
 
 const NOTICE = {
@@ -85,7 +96,7 @@ function returnedValues(form: ActionFormState): Values {
 }
 
 // The Action for one Trade on the Review Date. Hold is preselected as view state only; nothing is recorded until Save.
-export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyChange, pending = false }: ActionFormProps) {
+export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyChange, pending = false, marksToGo = 0 }: ActionFormProps) {
   const { writable, report } = useRuntime();
   const returned = returnedValues(form);
   // A form opened on the way back from Price History starts from the Action the trader had started there (C9AR.5).
@@ -141,6 +152,8 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
       setRefreshing(false);
     }
   };
+  // A save refused for want of Marks (A304): the form's words are the card's own until the Review is read again under a new binding.
+  const [unresolved, setUnresolved] = useState<{ readonly binding: TradeSaveBinding; readonly count: number }>();
   const required = action !== 'Hold';
   const [saving, setSaving] = useState(false);
   const submit = async (event: FormEvent) => {
@@ -170,11 +183,15 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
     // A refusal to write switches the whole shell to read only; the form keeps its values.
     report(result);
     setNotice(result.kind === 'ReviewChanged' || result.kind === 'ChangedDuringAssembly' || result.kind === 'Conflict' || result.kind === 'StorageFailure' ? result.kind : undefined);
-    setIssues(result.kind === 'Rejected' ? result.issues.map((issue) => (issue.code === 'RequiredAnswerMissing' ? INTENT_REQUIRED(intentField, issue.code) : { field: wholeField, message: COULD_NOT_SAVE, code: issue.code })) : []);
+    const marks = result.kind === 'Rejected' ? result.issues.find((issue) => issue.code === 'ReviewMarksUnresolved') : undefined;
+    setUnresolved(marks && 'instruments' in marks ? { binding, count: marks.instruments.length } : undefined);
+    setIssues(result.kind === 'Rejected' && !marks ? result.issues.map((issue) => (issue.code === 'RequiredAnswerMissing' ? INTENT_REQUIRED(intentField, issue.code) : { field: wholeField, message: COULD_NOT_SAVE, code: issue.code })) : []);
     if (result.kind === 'Saved') onSaved(result);
   };
   // A form opened read only has no entry controls. One that held values when the shell turned read only stays, disabled, so the values are visibly kept.
   const readOnlyEmpty = !writable && !dirty;
+  const toGo = unresolved?.binding === binding ? unresolved.count : marksToGo;
+  if (toGo > 0) return <MarksFirst tradeId={binding.tradeId} toGo={toGo} />;
   if (readOnlyEmpty && form.kind === 'New') return <p>No Action saved.</p>;
   // Values held over a Conflict refresh differ from the saved Action it now shows: they stay open, as if Change were pressed.
   const savedLines = form.kind === 'Saved' && (

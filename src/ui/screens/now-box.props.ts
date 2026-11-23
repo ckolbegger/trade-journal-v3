@@ -176,7 +176,7 @@ function captionsOf(trade: DailyTradeReview, evaluation: Evaluation): readonly C
 }
 
 // The box reads one session. Before the Review Date's Marks are saved it is the dated close the card carries (W92), else the Review Date's own.
-function sessionOf(trade: DailyTradeReview, walked: MeterReading | undefined): { readonly date: string; readonly dated: boolean; readonly evaluation: Evaluation; readonly reading: MeterReading | undefined } | undefined {
+export function sessionOf(trade: DailyTradeReview, walked: MeterReading | undefined): { readonly date: string; readonly dated: boolean; readonly evaluation: Evaluation; readonly reading: MeterReading | undefined } | undefined {
   const { evaluation, datedLastClose } = trade;
   if (!evaluation) return undefined;
   const dated = datedLastClose !== undefined && evaluation.currentMarkedPnl.kind !== 'Value';
