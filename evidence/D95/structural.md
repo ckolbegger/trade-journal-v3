@@ -479,3 +479,7 @@ Run `t95.18-captions` (browser-task): unit 2877, integration 304, browser 13, ch
 Commit `f14e8e71` (from `539eed9d`). LastDecisions and LastDecisionLine. Seven cases red then green. Assumption (U6): the list shows in the Action panel; the top line shows only where Action isn't offered (Marks to enter, or a contract to settle); `listShown` in ReviewCard.tsx is where T95.20 and later tasks hook in. Nothing shown with no earlier Action (not the mockup's "First Review of this Trade."). "No Review …" once above the list. 375-wide fold by unit test with stubbed `matchMedia`; browser coverage left to B95.4 (T95.25).
 
 ocr (session 21ef97db): 5 files, 2 findings. Doubtful: **T95.19-B1** with another panel open (e.g. Reflections) and the Action panel closed, neither the list nor the top line shows the last decision. Valid: **T95.19-B2** `--warning-line` on `--tint` is about 3.66:1, below AA 4.5:1, for `.last-decisions-held[data-line='target']` and `.last-decisions-missed`. `evidence/D95/ocr/T95.19-f14e8e71.json`.
+
+### T95.19-B1, T95.19-B2
+
+B1 `b00bec4a`: top line shows whenever the list isn't visible (`listVisible = listShown && open === 'Action'`). B2 `09f6f3d8`: new `--warning-text: #8a5200` (5.57:1 on `--tint`) for the two text rules; `--warning-line` unchanged; computed-contrast unit check. Both red then green.
