@@ -1,26 +1,26 @@
+/* Exact design tokens from prototypes/trade-detail/index.html */
 :root {
-  --bg-page: #0b1120;
-  --bg-surface: #111827;
-  --bg-surface-alt: #1e293b;
-  --bg-input: #0f172a;
-  --border-subtle: #334155;
-  --border-strong: #475569;
-  --text-primary: #f8fafc;
-  --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
-  --accent: #38bdf8;
-  --accent-strong: #0284c7;
-  --accent-text: #082f49;
-  --success: #4ade80;
-  --success-bg: #052e16;
-  --warning: #fbbf24;
-  --warning-bg: #451a03;
-  --danger: #f87171;
-  --danger-bg: #450a0a;
-  --radius-sm: 6px;
+  --ground: #f7f3ea;
+  --card: #ffffff;
+  --ink: #1c1b19;
+  --muted: #55524b;
+  --line: #d9d3c5;
+  --focus: #1f5fbf;
+  --warning-ground: #fff4dd;
+  --warning-line: #b26b00;
+  --warning-ink: #7a4a00;
+  --stop: #a3261b;
+  --stop-ground: #f7e3e0;
+  --target: #1d6b34;
+  --target-ground: #e2f0e5;
+  --info-ground: #e4edfa;
+  --info-ink: #163b75;
+  --neutral-ground: #ece7da;
+  --tint: #f3efe6;
+  --radius-sm: 8px;
   --radius-md: 10px;
   --radius-lg: 14px;
-  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Inter, sans-serif;
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
@@ -35,25 +35,41 @@ body {
   margin: 0;
   padding: 0;
   min-height: 100%;
-  background: var(--bg-page);
-  color: var(--text-primary);
+  background: var(--ground);
+  color: var(--ink);
   font-family: var(--font-sans);
-  line-height: 1.5;
+  line-height: 1.45;
   -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  margin: 0;
+  line-height: 1.2;
 }
 
 button,
 input,
-select {
+select,
+textarea {
   font: inherit;
   color: inherit;
+}
+
+td,
+.num,
+.fig {
+  font-variant-numeric: tabular-nums;
 }
 
 button:focus-visible,
 input:focus-visible,
 select:focus-visible,
+textarea:focus-visible,
 a:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 3px solid var(--focus);
   outline-offset: 2px;
 }
 

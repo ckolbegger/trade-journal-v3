@@ -296,7 +296,7 @@ export function RecordEntryPanel({
 
         <fieldset
           style={{
-            border: '1px solid var(--border-subtle)',
+            border: '1px solid var(--line)',
             borderRadius: 'var(--radius-md)',
             padding: 14,
             marginBottom: 14,

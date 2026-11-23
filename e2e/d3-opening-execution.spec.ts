@@ -46,7 +46,7 @@ test.describe('D3 Opening Execution — Long Stock Open Lots, Entry Quality, & D
     // Verify Planned -> Open transition, Position drawer, Open Lots, and Deferred Debt badge
     await expect(page.getByText('60 of 100 shares open')).toBeVisible();
     await expect(page.getByText(/Needs you · 1 reflection deferred/)).toBeVisible();
-    await expect(page.getByText('No Marks yet')).toBeVisible();
+    await expect(page.getByText('No Marks yet', { exact: true })).toBeVisible();
     await expect(page.getByText('PartiallyFilled')).toBeVisible();
 
     // Scale in remaining 40 shares with Complete now (verifies Debt does not block execution)

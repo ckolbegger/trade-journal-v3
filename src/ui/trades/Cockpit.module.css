@@ -1,48 +1,101 @@
+/* C. Cockpit layout & components directly from prototypes/trade-detail/index.html */
 .cockpitGrid {
   display: grid;
-  grid-template-columns: 310px minmax(0, 1fr);
-  gap: 20px;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: 16px;
   align-items: start;
 }
 
 .rail {
   position: sticky;
   top: 20px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
+  display: grid;
+  gap: 12px;
+}
+
+.railCard {
+  background: var(--card);
+  border: 1px solid var(--line);
   border-radius: var(--radius-lg);
-  padding: 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+  padding: 14px 16px;
 }
 
 .railSymbol {
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   font-weight: 700;
   margin: 0;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
+}
+
+.railPnl {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.railActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
 }
 
 .conditionList {
   list-style: none;
   margin: 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  display: grid;
+  gap: 10px;
+  font-size: 0.86rem;
 }
 
 .conditionItem {
-  background: var(--bg-input);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
-  padding: 10px 12px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 3px 8px;
+  align-items: center;
+}
+
+.conditionItem + .conditionItem {
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.condWhat {
+  grid-column: 1 / -1;
+  font-weight: 600;
+}
+
+.condFig {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.extremes {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--line);
+  font-size: 0.84rem;
+  color: var(--muted);
+}
+
+.todoList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
+  flex-wrap: wrap;
   gap: 8px;
+}
+
+.todoDue {
+  padding: 7px 12px;
+  border-radius: 10px;
   font-size: 0.88rem;
+  border: 1px solid var(--warning-line);
+  background: var(--warning-ground);
+  color: var(--warning-ink);
 }
 
 .drawerColumn {
@@ -53,54 +106,130 @@
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  border-bottom: 1px solid var(--border-subtle);
-  padding-bottom: 10px;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .tabButton {
-  background: transparent;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
-  padding: 7px 14px;
-  color: var(--text-secondary);
+  border: 1px solid var(--muted);
+  background: var(--card);
+  border-radius: 999px;
+  padding: 6px 14px;
+  min-height: 38px;
+  color: var(--ink);
   cursor: pointer;
+  font-size: 0.9rem;
   font-weight: 500;
 }
 
+.tabButton:hover {
+  background: var(--tint);
+}
+
 .tabButtonActive {
-  background: rgba(56, 189, 248, 0.16);
-  border-color: var(--accent);
-  color: var(--text-primary);
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #ffffff;
   font-weight: 600;
+}
+
+.tabButtonActive:hover {
+  background: var(--ink);
+  color: #ffffff;
+}
+
+/* Prototype key-value definition lists (dl.kv + .kv-group) */
+.kvGroup + .kvGroup {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.kvGroupTitle {
+  font-size: 0.92rem;
+  font-weight: 650;
+  margin: 0 0 8px;
+  color: var(--ink);
+}
+
+.kv {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px 16px;
+  margin: 0;
+  font-size: 0.92rem;
+}
+
+.kv dt {
+  color: var(--muted);
+}
+
+.kv dd {
+  margin: 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+/* Prototype journal timeline (ol.journal) */
+.journalList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.journalList > li {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  gap: 2px 14px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.journalList > li:last-child {
+  border-bottom: 0;
+}
+
+.jWhen {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.jType {
+  font-weight: 650;
+  font-size: 0.92rem;
+  margin-bottom: 3px;
+}
+
+.jBody {
+  font-size: 0.9rem;
 }
 
 .metricGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: 10px;
+  margin-bottom: 14px;
 }
 
 .metricBox {
-  background: var(--bg-input);
-  border: 1px solid var(--border-subtle);
+  background: var(--tint);
+  border: 1px solid var(--line);
   border-radius: var(--radius-md);
-  padding: 12px 14px;
+  padding: 11px 13px;
 }
 
 .metricLabel {
   font-size: 0.78rem;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  margin-bottom: 4px;
+  color: var(--muted);
+  font-weight: 600;
+  margin-bottom: 3px;
 }
 
 .metricValue {
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   font-weight: 700;
-  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
 }
 
 .formGrid {
@@ -110,15 +239,23 @@
 }
 
 .textarea {
-  background: var(--bg-input);
-  border: 1px solid var(--border-strong);
+  background: var(--card);
+  border: 1px solid var(--muted);
   border-radius: var(--radius-sm);
-  padding: 9px 12px;
-  color: var(--text-primary);
+  padding: 8px 11px;
+  color: var(--ink);
   width: 100%;
   min-height: 78px;
   resize: vertical;
   font: inherit;
+}
+
+.up {
+  color: var(--target);
+}
+
+.down {
+  color: var(--stop);
 }
 
 @media (max-width: 860px) {
@@ -128,5 +265,9 @@
 
   .rail {
     position: static;
+  }
+
+  .journalList > li {
+    grid-template-columns: 1fr;
   }
 }

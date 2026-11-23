@@ -25,6 +25,17 @@ interface TradeDetailCockpitProps {
   readonly onDirtyChange: (dirty: boolean) => void;
 }
 
+function formatShortTimestamp(iso: string): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return iso;
+  return date.toLocaleString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+}
+
 export function TradeDetailCockpit({
   tradeId,
   views,
@@ -106,19 +117,10 @@ export function TradeDetailCockpit({
 
   return (
     <section aria-labelledby="cockpit-symbol-heading">
-      <div className={styles.spaceBetween} style={{ marginBottom: 14 }}>
+      <div style={{ marginBottom: 12 }}>
         <button type="button" className={styles.btnSecondary} onClick={onBack}>
           ← Back to Trades
         </button>
-        {canRecordEntry && !showRecordEntry && (
-          <button
-            type="button"
-            className={styles.btnPrimary}
-            onClick={() => setShowRecordEntry(true)}
-          >
-            Record entry
-          </button>
-        )}
       </div>
 
       {derived.integrityDisagreement && (
@@ -156,63 +158,95 @@ export function TradeDetailCockpit({
       )}
 
       <div className={cockpitStyles.cockpitGrid}>
-        {/* Sticky left State-of-Play rail (C. Cockpit — OV-01) */}
+        {/* Sticky left State-of-Play rail — stacked white cards matching prototypes/trade-detail/index.html C. Cockpit */}
         <aside className={cockpitStyles.rail} aria-label="Trade state of play">
-          <div className={styles.spaceBetween}>
-            <h1 id="cockpit-symbol-heading" className={cockpitStyles.railSymbol}>
-              {trade.symbol}
-            </h1>
-            <span
-              className={`${styles.pill} ${
-                trade.lifecycleState === 'Open' ? styles.pillSuccess : ''
-              }`}
-            >
-              {trade.lifecycleState}
-            </span>
+          {/* Card 1: Identity & Primary Actions */}
+          <div className={cockpitStyles.railCard}>
+            <div className={styles.spaceBetween}>
+              <h1 id="cockpit-symbol-heading" className={cockpitStyles.railSymbol}>
+                {trade.symbol}
+              </h1>
+              <span
+                className={`${styles.pill} ${
+                  trade.lifecycleState === 'Open' ? styles.pillInfo : ''
+                }`}
+              >
+                {trade.lifecycleState}
+              </span>
+            </div>
+            <div className={styles.muted} style={{ marginTop: 4 }}>
+              <div>
+                {detail.strategyLabel}, {trade.lifecycleState}
+              </div>
+              <div>
+                {detail.institutionLabel}, {detail.accountLabel}
+              </div>
+            </div>
+            {canRecordEntry && !showRecordEntry && (
+              <div className={cockpitStyles.railActions}>
+                <button
+                  type="button"
+                  className={styles.btnPrimary}
+                  onClick={() => setShowRecordEntry(true)}
+                >
+                  Record entry
+                </button>
+              </div>
+            )}
           </div>
 
-          <div className={styles.muted}>
-            <div>{detail.strategyLabel}</div>
-            <div>
-              {detail.institutionLabel} — {detail.accountLabel}
+          {/* Card 2: P&L & Open Shares */}
+          <div className={cockpitStyles.railCard}>
+            <div className={cockpitStyles.railPnl}>—</div>
+            <div className={styles.muted} style={{ marginTop: 4 }}>
+              {trade.lifecycleState === 'Planned'
+                ? 'Trade P&L once the entry is recorded and marked'
+                : 'No Marks yet — enter Marks in Review to compute P&L'}
+            </div>
+            <div className={styles.mono} style={{ marginTop: 8, fontWeight: 600 }}>
+              {derived.openSharesDisplay} of {detail.plannedQuantityDisplay} shares open
             </div>
           </div>
 
-          <div className={styles.mono}>
-            <strong>
-              {derived.openSharesDisplay} of {detail.plannedQuantityDisplay} shares open
-            </strong>
-          </div>
-
+          {/* Card 3: Needs you (only when Outstanding Debt exists) */}
           {outstandingDebt.length > 0 && (
-            <div className={`${styles.pill} ${styles.pillWarning}`}>
-              Needs you · {outstandingDebt.length} reflection deferred (due in next Review)
+            <div className={cockpitStyles.railCard}>
+              <h2 className={styles.cardTitle}>Needs you</h2>
+              <ul className={cockpitStyles.todoList}>
+                <li className={cockpitStyles.todoDue}>
+                  Needs you · {outstandingDebt.length} reflection deferred (due in next Review)
+                </li>
+              </ul>
             </div>
           )}
 
-          <div>
-            <div className={cockpitStyles.metricLabel} style={{ marginBottom: 6 }}>
-              Planned Conditions
-            </div>
+          {/* Card 4: Conditions */}
+          <div className={cockpitStyles.railCard}>
+            <h2 className={styles.cardTitle}>Conditions</h2>
             <ul className={cockpitStyles.conditionList}>
               <li className={cockpitStyles.conditionItem}>
-                <span>
-                  <strong>Stop</strong> · {detail.stopPriceDisplay}
-                </span>
-                <span className={styles.mono}>
+                <span className={`${styles.pill} ${styles.pillDanger}`}>Stop</span>
+                <span className={`${cockpitStyles.condFig} ${cockpitStyles.down}`}>
                   -{planFact.baseline.originalPlannedRiskDisplay} (-1.00R)
+                </span>
+                <span className={cockpitStyles.condWhat}>
+                  {trade.symbol} at or below {detail.stopPriceDisplay}
                 </span>
               </li>
               <li className={cockpitStyles.conditionItem}>
-                <span>
-                  <strong>Target</strong> · {detail.targetPriceDisplay}
-                </span>
-                <span className={styles.mono}>
+                <span className={`${styles.pill} ${styles.pillSuccess}`}>Target</span>
+                <span className={`${cockpitStyles.condFig} ${cockpitStyles.up}`}>
                   +{planFact.baseline.originalPlannedRewardDisplay} (+
                   {planFact.baseline.plannedRewardToRiskDisplay})
                 </span>
+                <span className={cockpitStyles.condWhat}>
+                  {trade.symbol} at or above {detail.targetPriceDisplay}
+                </span>
               </li>
             </ul>
+            <div className={cockpitStyles.extremes}>
+              Distances to each condition arrive with the first Marks after entry.
+            </div>
           </div>
         </aside>
 
@@ -265,40 +299,21 @@ export function TradeDetailCockpit({
                 <span className={styles.pill}>No Marks yet</span>
               </div>
 
-              <div className={cockpitStyles.metricGrid}>
-                <div className={cockpitStyles.metricBox}>
-                  <div className={cockpitStyles.metricLabel}>Avg Entry Fill</div>
-                  <div className={cockpitStyles.metricValue}>
-                    {derived.averageEntryPriceDisplay}
-                  </div>
-                </div>
-                <div className={cockpitStyles.metricBox}>
-                  <div className={cockpitStyles.metricLabel}>Opening Fees Paid</div>
-                  <div className={cockpitStyles.metricValue}>
-                    {derived.totalOpeningFeesDisplay}
-                  </div>
-                </div>
-                <div className={cockpitStyles.metricBox}>
-                  <div className={cockpitStyles.metricLabel}>Fulfillment</div>
-                  <div className={cockpitStyles.metricValue} style={{ fontSize: '0.95rem' }}>
-                    {derived.fulfillment}
-                  </div>
-                </div>
-              </div>
-
               <div style={{ overflowX: 'auto' }}>
                 <table className={styles.table} aria-label="Open lots">
                   <thead>
                     <tr>
+                      <th>Open lot</th>
                       <th>Shares</th>
-                      <th>Fill Price</th>
-                      <th>Opening Fee</th>
+                      <th>Price</th>
+                      <th>Fee left</th>
                       <th>Intent</th>
                     </tr>
                   </thead>
                   <tbody>
                     {derived.openLots.map((lot) => (
                       <tr key={lot.executionId}>
+                        <td className={styles.muted}>{formatShortTimestamp(lot.economicTime)}</td>
                         <td className={styles.mono}>{lot.quantityDisplay}</td>
                         <td className={styles.mono}>{lot.fillPriceDisplay}</td>
                         <td className={styles.mono}>{lot.unconsumedOpeningFeeDisplay}</td>
@@ -310,71 +325,66 @@ export function TradeDetailCockpit({
                   </tbody>
                 </table>
               </div>
+
+              <dl className={cockpitStyles.kv} style={{ marginTop: 14 }}>
+                <dt>Average entry fill</dt>
+                <dd>{derived.averageEntryPriceDisplay}</dd>
+                <dt>Opening fees paid</dt>
+                <dd>{derived.totalOpeningFeesDisplay}</dd>
+                <dt>Planned leg fulfillment</dt>
+                <dd>{derived.fulfillment}</dd>
+              </dl>
             </div>
           )}
 
           {activeDrawer === 'plan' && (
             <div className={styles.card} role="tabpanel" aria-label="Plan and Risk">
-              <h2 className={styles.cardTitle}>Frozen Plan Baseline</h2>
-              <div className={cockpitStyles.metricGrid}>
-                <div className={cockpitStyles.metricBox}>
-                  <div className={cockpitStyles.metricLabel}>Intended Entry</div>
-                  <div className={cockpitStyles.metricValue}>{detail.intendedEntryDisplay}</div>
-                </div>
-                <div className={cockpitStyles.metricBox}>
-                  <div className={cockpitStyles.metricLabel}>1R Planned Risk</div>
-                  <div className={cockpitStyles.metricValue}>
-                    {planFact.baseline.originalPlannedRiskDisplay}
-                  </div>
-                </div>
-                <div className={cockpitStyles.metricBox}>
-                  <div className={cockpitStyles.metricLabel}>Planned Reward</div>
-                  <div className={cockpitStyles.metricValue}>
-                    {planFact.baseline.originalPlannedRewardDisplay}
-                  </div>
-                </div>
-                <div className={cockpitStyles.metricBox}>
-                  <div className={cockpitStyles.metricLabel}>Planned R:R</div>
-                  <div className={cockpitStyles.metricValue}>
-                    {planFact.baseline.plannedRewardToRiskDisplay}
-                  </div>
-                </div>
+              <div className={cockpitStyles.kvGroup}>
+                <h2 className={cockpitStyles.kvGroupTitle}>Frozen Plan Baseline</h2>
+                <dl className={cockpitStyles.kv}>
+                  <dt>Intended entry</dt>
+                  <dd>
+                    {detail.plannedQuantityDisplay} shares @ {detail.intendedEntryDisplay}
+                  </dd>
+                  <dt>1R (original risk)</dt>
+                  <dd>{planFact.baseline.originalPlannedRiskDisplay}</dd>
+                  <dt>Original reward</dt>
+                  <dd>{planFact.baseline.originalPlannedRewardDisplay}</dd>
+                  <dt>Planned reward : risk</dt>
+                  <dd>{planFact.baseline.plannedRewardToRiskDisplay}</dd>
+                </dl>
               </div>
 
-              {derived.entryQuality && (
-                <div style={{ marginTop: 18 }}>
-                  <h3 className={styles.cardTitle}>Entry Quality vs. Plan</h3>
-                  <div className={cockpitStyles.metricGrid}>
-                    <div className={cockpitStyles.metricBox}>
-                      <div className={cockpitStyles.metricLabel}>Actual Avg Fill</div>
-                      <div className={cockpitStyles.metricValue}>
-                        {derived.entryQuality.averageEntryPriceDisplay}
-                      </div>
-                    </div>
-                    <div className={cockpitStyles.metricBox}>
-                      <div className={cockpitStyles.metricLabel}>Slippage / Share</div>
-                      <div className={cockpitStyles.metricValue}>
-                        {derived.entryQuality.slippagePerShareDisplay}
-                      </div>
-                    </div>
-                    <div className={cockpitStyles.metricBox}>
-                      <div className={cockpitStyles.metricLabel}>Actual Initial Risk</div>
-                      <div className={cockpitStyles.metricValue}>
-                        {derived.entryQuality.actualInitialRiskDisplay}
-                      </div>
-                    </div>
-                    <div className={cockpitStyles.metricBox}>
-                      <div className={cockpitStyles.metricLabel}>Size vs. Planned</div>
-                      <div className={cockpitStyles.metricValue} style={{ fontSize: '0.95rem' }}>
-                        {derived.entryQuality.sizeVsPlannedDisplay}
-                      </div>
-                    </div>
-                  </div>
+              {derived.entryQuality ? (
+                <div className={cockpitStyles.kvGroup}>
+                  <h3 className={cockpitStyles.kvGroupTitle}>Entry Quality vs. Plan</h3>
+                  <dl className={cockpitStyles.kv}>
+                    <dt>Average fill</dt>
+                    <dd>{derived.entryQuality.averageEntryPriceDisplay}</dd>
+                    <dt>Slippage / share</dt>
+                    <dd>{derived.entryQuality.slippagePerShareDisplay}</dd>
+                    <dt>Actual initial risk</dt>
+                    <dd>{derived.entryQuality.actualInitialRiskDisplay}</dd>
+                    <dt>Actual initial reward</dt>
+                    <dd>{derived.entryQuality.actualInitialRewardDisplay}</dd>
+                    <dt>Actual reward : risk</dt>
+                    <dd>{derived.entryQuality.actualInitialRRDisplay}</dd>
+                    <dt>Size vs. planned</dt>
+                    <dd>{derived.entryQuality.sizeVsPlannedDisplay}</dd>
+                  </dl>
+                </div>
+              ) : (
+                <div className={cockpitStyles.kvGroup}>
+                  <h3 className={cockpitStyles.kvGroupTitle}>Entry</h3>
+                  <dl className={cockpitStyles.kv}>
+                    <dt>Status</dt>
+                    <dd>Not entered</dd>
+                  </dl>
                 </div>
               )}
 
               {derived.deviations.length > 0 && (
-                <div className={styles.alertError} style={{ marginTop: 12 }}>
+                <div className={styles.alertError} style={{ marginTop: 14 }}>
                   <strong>Fact-Only Deviations:</strong>
                   <ul style={{ margin: '6px 0 0', paddingLeft: 18 }}>
                     {derived.deviations.map((dev, idx) => (
@@ -386,78 +396,96 @@ export function TradeDetailCockpit({
                 </div>
               )}
 
-              <div style={{ marginTop: 14 }}>
-                <div className={cockpitStyles.metricLabel}>Thesis</div>
-                <p style={{ margin: '4px 0 14px' }}>{planFact.thesis}</p>
+              <div className={cockpitStyles.kvGroup}>
+                <h3 className={cockpitStyles.kvGroupTitle}>Thesis &amp; Invalidation</h3>
+                <div className={styles.muted} style={{ fontWeight: 600 }}>
+                  Why this trade, why now?
+                </div>
+                <p style={{ margin: '3px 0 12px' }}>{planFact.thesis}</p>
 
-                <div className={cockpitStyles.metricLabel}>Invalidation</div>
-                <p style={{ margin: '4px 0 0' }}>{planFact.invalidation}</p>
+                <div className={styles.muted} style={{ fontWeight: 600 }}>
+                  What would invalidate the thesis?
+                </div>
+                <p style={{ margin: '3px 0 0' }}>{planFact.invalidation}</p>
               </div>
             </div>
           )}
 
           {activeDrawer === 'journal' && (
-            <div role="tabpanel" aria-label="Journal">
-              {outstandingDebt.map((debt) => (
-                <article key={debt.id} className={styles.card}>
-                  <div className={styles.spaceBetween}>
-                    <h2 className={styles.cardTitle} style={{ margin: 0 }}>
-                      {debt.definitionSnapshot.label}
-                    </h2>
-                    <span className={`${styles.pill} ${styles.pillWarning}`}>
-                      Deferred · Due in next Review
+            <div className={styles.card} role="tabpanel" aria-label="Journal">
+              <ol className={cockpitStyles.journalList}>
+                {outstandingDebt.map((debt) => (
+                  <li key={debt.id}>
+                    <span className={cockpitStyles.jWhen}>
+                      {formatShortTimestamp(debt.createdAt)}
                     </span>
-                  </div>
-                  <p className={styles.muted} style={{ marginBottom: 0 }}>
-                    Reflection was deferred during market-hours capture. Original trigger-time
-                    prompts are preserved for after-close Review.
-                  </p>
-                </article>
-              ))}
+                    <div className={cockpitStyles.jBody}>
+                      <div className={styles.spaceBetween}>
+                        <span className={cockpitStyles.jType}>{debt.definitionSnapshot.label}</span>
+                        <span className={`${styles.pill} ${styles.pillWarning}`}>
+                          Deferred · Due in next Review
+                        </span>
+                      </div>
+                      <p className={styles.muted} style={{ margin: '4px 0 0' }}>
+                        Reflection deferred during market hours; original trigger-time prompts are
+                        preserved for after-close Review.
+                      </p>
+                    </div>
+                  </li>
+                ))}
 
-              {journalDeclines.map((dec) => (
-                <article key={dec.id} className={styles.card}>
-                  <div className={styles.spaceBetween}>
-                    <h2 className={styles.cardTitle} style={{ margin: 0 }}>
-                      Position Change Reflection
-                    </h2>
-                    <span className={styles.pill}>Declined</span>
-                  </div>
-                  <p className={styles.muted} style={{ marginBottom: 0 }}>
-                    {dec.reason ? `Reason: ${dec.reason}` : 'Explicitly declined with no reason.'}
-                  </p>
-                </article>
-              ))}
+                {journalDeclines.map((dec) => (
+                  <li key={dec.id}>
+                    <span className={cockpitStyles.jWhen}>
+                      {formatShortTimestamp(dec.recordedAt)}
+                    </span>
+                    <div className={cockpitStyles.jBody}>
+                      <div className={styles.spaceBetween}>
+                        <span className={cockpitStyles.jType}>Position Change Reflection</span>
+                        <span className={styles.pill}>Declined</span>
+                      </div>
+                      <p className={styles.muted} style={{ margin: '4px 0 0' }}>
+                        {dec.reason
+                          ? `Reason: ${dec.reason}`
+                          : 'Explicitly declined with no reason.'}
+                      </p>
+                    </div>
+                  </li>
+                ))}
 
-              {journalEntries.map((entry) => (
-                <article key={entry.id} className={styles.card}>
-                  <div className={styles.spaceBetween} style={{ marginBottom: 10 }}>
-                    <h2 className={styles.cardTitle} style={{ margin: 0 }}>
-                      {entry.definitionSnapshot.label}
-                    </h2>
-                    <span className={styles.pill}>{entry.source}</span>
-                  </div>
-                  <dl style={{ margin: 0 }}>
-                    {entry.definitionSnapshot.prompts.map((prompt) => {
-                      const val = entry.responses[prompt.promptId];
-                      return (
-                        <div key={prompt.promptId} style={{ marginBottom: 10 }}>
-                          <dt className={styles.muted} style={{ fontWeight: 600 }}>
-                            {prompt.label}
-                          </dt>
-                          <dd style={{ margin: '2px 0 0' }}>
-                            {val === undefined || val === '' ? (
-                              <span className={styles.muted}>Unanswered</span>
-                            ) : (
-                              String(val)
-                            )}
-                          </dd>
-                        </div>
-                      );
-                    })}
-                  </dl>
-                </article>
-              ))}
+                {journalEntries.map((entry) => (
+                  <li key={entry.id}>
+                    <span className={cockpitStyles.jWhen}>
+                      {formatShortTimestamp(entry.recordedAt)}
+                    </span>
+                    <div className={cockpitStyles.jBody}>
+                      <div className={styles.spaceBetween} style={{ marginBottom: 6 }}>
+                        <span className={cockpitStyles.jType}>{entry.definitionSnapshot.label}</span>
+                        <span className={styles.pill}>{entry.source}</span>
+                      </div>
+                      <dl style={{ margin: 0 }}>
+                        {entry.definitionSnapshot.prompts.map((prompt) => {
+                          const val = entry.responses[prompt.promptId];
+                          return (
+                            <div key={prompt.promptId} style={{ marginBottom: 6 }}>
+                              <dt className={styles.muted} style={{ fontWeight: 600 }}>
+                                {prompt.label}
+                              </dt>
+                              <dd style={{ margin: '2px 0 0' }}>
+                                {val === undefined || val === '' ? (
+                                  <span className={styles.muted}>Unanswered</span>
+                                ) : (
+                                  String(val)
+                                )}
+                              </dd>
+                            </div>
+                          );
+                        })}
+                      </dl>
+                    </div>
+                  </li>
+                ))}
+              </ol>
             </div>
           )}
         </div>
