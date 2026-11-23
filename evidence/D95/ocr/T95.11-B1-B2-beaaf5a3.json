@@ -1,0 +1,172 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 7 selected item(s).",
+  "summary": {
+    "files_reviewed": 7,
+    "comments": 0,
+    "total_tokens": 53686,
+    "input_tokens": 52488,
+    "output_tokens": 1198,
+    "cache_read_tokens": 4992,
+    "elapsed": "41s"
+  },
+  "tool_calls": {
+    "total": 9,
+    "by_tool": {
+      "code_search": 4,
+      "file_read": 5
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Day and review card attention indicators, badges, and tests",
+      "files": [
+        "src/ui/Badge.tsx",
+        "src/ui/screens/DayCard.test.tsx",
+        "src/ui/screens/DayCard.tsx",
+        "src/ui/screens/ReviewCard.tsx",
+        "src/ui/screens/ReviewCards.test.tsx",
+        "src/ui/screens/review-attention.test.ts",
+        "src/ui/screens/review-attention.ts"
+      ]
+    }
+  ],
+  "session_id": "625904ea-8fa2-4f0f-91b9-db9228493486",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "625904ea-8fa2-4f0f-91b9-db9228493486",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "8c8cb60d^",
+      "requested_head": "beaaf5a3",
+      "resolved_base": "1962ea8245f573cb35bd9672ef2a7c37af4ed5d0",
+      "resolved_head": "beaaf5a39244ba35daec0e38d193d2e70372f17a",
+      "exact_range": "1962ea8245f573cb35bd9672ef2a7c37af4ed5d0..beaaf5a39244ba35daec0e38d193d2e70372f17a",
+      "source_artifact_sha256": "b6dc5d7b9f74f2e75f97e66842947608f63e419748c67d4afa246e55d6764ef7"
+    },
+    "execution": {
+      "ocr_version": "v1.14.1",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "02f31cbfa860e0ee31a10188563d0568e39651a82df393e66ab6e4b3d6301c57",
+          "path": "src/ui/screens/DayCard.test.tsx",
+          "fingerprint": "4f619dbd4d0f5a6e7570186896722de9555eb6489af7418dc860abe00401aa22"
+        },
+        {
+          "item_id": "263f31a81ae1033896139f0943dd0f7495a910b965652d619dce57e43c03a151",
+          "path": "src/ui/screens/DayCard.tsx",
+          "fingerprint": "9761a23e647f860886580cf8df8ebfc8c76806f05fbeff5c09ab59b35b1ef483"
+        },
+        {
+          "item_id": "38aeef0f163feea36a51abec7a5682a7d56670f177c89e58c49bb45f7f22563e",
+          "path": "src/ui/screens/ReviewCards.test.tsx",
+          "fingerprint": "3b42cc8d85612760223a1136c3cf524dc646ff88b88b7299cd428cee239f2fb2"
+        },
+        {
+          "item_id": "4a7a5f942411a413f7f34fa4ae5ea0936ee8d1c2faee0e15a62fc0f10fd8cad9",
+          "path": "src/ui/screens/review-attention.test.ts",
+          "fingerprint": "9a4fa70d69dd070e13efabd7a250dd3763bedfb3eae54e034d9b4c57d1ece534"
+        },
+        {
+          "item_id": "5b385c845542d6ccb7cd429923948b5ea16275e021991c866647b870c23c4c76",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "66833fb336cbef3cf06da7cc3075ad8601b5484421d99ef36379a252b51b896c"
+        },
+        {
+          "item_id": "ac5d0d7586db764db67da3fb087c52854660d639d03d4d43cc93beb8a307a163",
+          "path": "src/ui/screens/review-attention.ts",
+          "fingerprint": "30e3517a665bf1a63450df32dbfdac79c24bec1a9ab7a5ab0ca579d063a64254"
+        },
+        {
+          "item_id": "d519ea91caf22ba7cd2debfed840603203a35d6e8e47671537511b0b690ebf5e",
+          "path": "src/ui/Badge.tsx",
+          "fingerprint": "dcd7fb3c2a056af04caf6b22d9632850e50be8e087a9ec2285c19f77f6f9cb17"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "02f31cbfa860e0ee31a10188563d0568e39651a82df393e66ab6e4b3d6301c57",
+          "path": "src/ui/screens/DayCard.test.tsx",
+          "fingerprint": "4f619dbd4d0f5a6e7570186896722de9555eb6489af7418dc860abe00401aa22"
+        },
+        {
+          "item_id": "263f31a81ae1033896139f0943dd0f7495a910b965652d619dce57e43c03a151",
+          "path": "src/ui/screens/DayCard.tsx",
+          "fingerprint": "9761a23e647f860886580cf8df8ebfc8c76806f05fbeff5c09ab59b35b1ef483"
+        },
+        {
+          "item_id": "38aeef0f163feea36a51abec7a5682a7d56670f177c89e58c49bb45f7f22563e",
+          "path": "src/ui/screens/ReviewCards.test.tsx",
+          "fingerprint": "3b42cc8d85612760223a1136c3cf524dc646ff88b88b7299cd428cee239f2fb2"
+        },
+        {
+          "item_id": "4a7a5f942411a413f7f34fa4ae5ea0936ee8d1c2faee0e15a62fc0f10fd8cad9",
+          "path": "src/ui/screens/review-attention.test.ts",
+          "fingerprint": "9a4fa70d69dd070e13efabd7a250dd3763bedfb3eae54e034d9b4c57d1ece534"
+        },
+        {
+          "item_id": "5b385c845542d6ccb7cd429923948b5ea16275e021991c866647b870c23c4c76",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "66833fb336cbef3cf06da7cc3075ad8601b5484421d99ef36379a252b51b896c"
+        },
+        {
+          "item_id": "ac5d0d7586db764db67da3fb087c52854660d639d03d4d43cc93beb8a307a163",
+          "path": "src/ui/screens/review-attention.ts",
+          "fingerprint": "30e3517a665bf1a63450df32dbfdac79c24bec1a9ab7a5ab0ca579d063a64254"
+        },
+        {
+          "item_id": "d519ea91caf22ba7cd2debfed840603203a35d6e8e47671537511b0b690ebf5e",
+          "path": "src/ui/Badge.tsx",
+          "fingerprint": "dcd7fb3c2a056af04caf6b22d9632850e50be8e087a9ec2285c19f77f6f9cb17"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "8bc1726a3aca283a9c58660bdccd27c4472518403385d6fbd3b29444feaed097",
+          "path": "evidence/D95/tdd-log/T95.11-B1.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ab47bc811f23c17f4c6317a43b1bf19eff8f2b20af07649acc55f19159f8bebc",
+          "path": "evidence/D95/structural.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "b17e8c482e98f3a874dc0966091c48e55587c77f7153418221ccdccac8c6bb54",
+          "path": "evidence/D95/tdd-log/T95.11-B2.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "e3097bd05207ff2a77b5e56e5d5910ea07c8a667ee97dc2c7cb695026cd6f9f6",
+          "path": "evidence/D95/new-words.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 40527
+  }
+}

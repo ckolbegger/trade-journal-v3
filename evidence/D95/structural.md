@@ -222,6 +222,8 @@ ocr (`ocr/T95.11-c823f8ba.json`, 13 files, 4 comments):
 
 **T95.11-B2** `beaaf5a3`: each day-line link carries `aria-describedby` to one hidden element per label with a reason, placed after the Trade lines list so each line's text is unchanged; "Closed" has no reason. One case red then green; src/ui 1,286; browser 21 (8 specs).
 
+ocr of B1 and B2 (`ocr/T95.11-B1-B2-beaaf5a3.json`): **No findings.**
+
 ## Trial: complete runs overlapped with the next task (the user, 2026-11-22, for 5 or 6 tasks)
 
 Each task's complete run runs in a detached scratch copy (`.claude/worktrees/run-<label>`, set up by `lane-setup.sh`) at the task's commit, while the next task's subagent starts in this worktree. The run's files are copied back to `evidence/D95/suite-runs/`. A failure becomes a bug task as before; the next task restarts only if it built on the broken code. Times are recorded per run to measure the saving.
