@@ -14,7 +14,7 @@ import { CardMarks, type CardMarksProps, type EntryDirty } from './CardMarks.tsx
 import type { CardMarkRows } from './held-review.ts';
 import { ReviewReflections } from './ReviewReflections.tsx';
 import { SettlementPanel, settlementSummary } from './ReviewSettlement.tsx';
-import { BAND_TEXT, reasonText } from './review-attention.ts';
+import { labelsOf, reasonText } from './review-attention.ts';
 import { Meter } from '../cockpit/meter/meter.tsx';
 import { meterProps } from '../cockpit/meter/meter.props.ts';
 
@@ -94,6 +94,8 @@ export function ReviewCard({ facade, trade, expanded, detail, reveal, advance, g
   const { timeZone } = useRuntime();
   // A Trade whose facts cannot be replayed has no reading, so its header draws no meter.
   const meter = trade.meter && meterProps(trade.meter, 'card', timeZone);
+  const labels = labelsOf(trade);
+  const reasonId = useId();
   useEffect(() => {
     if (reveal === 0) return;
     item.current?.scrollIntoView?.({ block: 'start' });
@@ -123,8 +125,16 @@ export function ReviewCard({ facade, trade, expanded, detail, reveal, advance, g
               </>
             )}
             <span className="review-card-remains">{remainsText(trade.progress)}</span>{' '}
-            <Badge tone="neutral">{BAND_TEXT[trade.band]}</Badge>
+            {labels.map((label) => (
+              <Badge key={label} tone="neutral" describedBy={reasonId}>
+                {label}
+              </Badge>
+            ))}
           </button>
+          {/* Each label's reason, kept as its description outside the button so the button's name stays short. */}
+          <span id={reasonId} className="visually-hidden">
+            {trade.reasons.map((reason) => reasonText(reason, trade.basis, timeZone ?? 'UTC')).join('. ')}
+          </span>
         </h3>
         {meter && <Meter {...meter} />}
       </div>

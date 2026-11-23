@@ -7,7 +7,7 @@ import { signed } from '../figures.ts';
 import { money, plural, shortDate } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
 import type { PanelName } from './ReviewCard.tsx';
-import { BAND_TEXT } from './review-attention.ts';
+import { labelsOf } from './review-attention.ts';
 
 type Ready = Extract<OpenDailyReviewResult, { kind: 'Ready' }>;
 const COMPLETION_TEXT = { Incomplete: 'Incomplete', Complete: 'Complete', CompleteWithUnavailableMarks: 'Complete with Unavailable Marks' } as const;
@@ -105,10 +105,10 @@ export function DayCard({ review, name, openCard, unsaved }: DayCardProps) {
   const walkedIds = review.families.flatMap((f) => (f.family === 'Trades' ? f.trades.map((t) => t.tradeId) : []));
   const gap = marksFamily?.family === 'Marks' ? marksFamily.earlier[0] : undefined;
   const gapTrade = gap && walkedIds.find((id) => gap.trades.some((t) => t.tradeId === id));
-  const labelOf = (tradeId: string): string | undefined => {
+  const labelsFor = (tradeId: string): string[] => {
     const walkedTrade = review.families.flatMap((f) => (f.family === 'Trades' ? f.trades : [])).find((t) => t.tradeId === tradeId);
-    if (walkedTrade) return BAND_TEXT[walkedTrade.band];
-    return review.owed.find((t) => t.tradeId === tradeId)?.lifecycle === 'Closed' ? 'Closed' : undefined;
+    if (walkedTrade) return labelsOf(walkedTrade);
+    return review.owed.find((t) => t.tradeId === tradeId)?.lifecycle === 'Closed' ? ['Closed'] : [];
   };
   const next = day && (day.toGo.marks > 0 ? day.lines.find((line) => line.marks > 0) : nextLine(day));
   const nextText = day && day.toGo.marks > 0 ? 'Enter the Marks' : next && `Next: ${underlyingOf(next.tradeId)}${next.needs[0] === 'Reflection' && next.closeReview ? "'s Close Review" : ''}`;
@@ -160,17 +160,17 @@ export function DayCard({ review, name, openCard, unsaved }: DayCardProps) {
         <ul aria-label="Trade lines" className="day-lines">
           {day.lines.map((line) => {
             const { panel, instrument } = targetOf(line);
-            const label = labelOf(line.tradeId);
+            const labels = labelsFor(line.tradeId);
             return (
               <li key={line.tradeId}>
                 <CardLink tradeId={line.tradeId} open={openCard} panel={panel} instrument={instrument}>
                   {underlyingOf(line.tradeId)}
                 </CardLink>{' '}
-                {label && (
-                  <>
+                {labels.map((label) => (
+                  <span key={label}>
                     <Badge tone="neutral">{label}</Badge>{' '}
-                  </>
-                )}
+                  </span>
+                ))}
                 <span>{todoText(line)}</span>
               </li>
             );

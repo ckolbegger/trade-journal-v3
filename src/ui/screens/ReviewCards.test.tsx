@@ -220,6 +220,22 @@ async function correctAbc(user: ReturnType<typeof userEvent.setup>, card: HTMLEl
   await user.click(within(entry).getByRole('button', { name: 'Save correction' }));
 }
 
+describe('plain labels on the page (A302)', () => {
+  it('should show none of the five band names', async () => {
+    renderReview(cardFacade());
+    await screen.findAllByRole('button', { name: /^Review / });
+    for (const name of ['Blocker', 'Boundary reached', 'Evidence limited', 'Quantified pressure', 'Routine']) expect(document.body.textContent).not.toContain(name);
+  });
+
+  it('should keep each label reason as its accessible description', async () => {
+    renderReview(cardFacade());
+    await screen.findAllByRole('button', { name: /^Review / });
+    const describedBy = (label: string) => document.getElementById(within(headers().find((h) => h.textContent?.includes(label))!).getByText(label).getAttribute('aria-describedby') ?? '')?.textContent;
+    expect(describedBy('Marks needed')).toBe('Mark missing for DEF on Mon Oct 12');
+    expect(describedBy('Past Stop')).toBe('Stop breached');
+  });
+});
+
 describe('card list (A150)', () => {
   it('should render one card per walked Trade in attention order, each a heading button showing the Underlying, what remains, its band as text, and its meter, with no Stop Target legend and no Continue to Trades', async () => {
     renderReview(cardFacade());
@@ -245,10 +261,10 @@ describe('card list (A150)', () => {
     expect(head(bCard)).toContain('Review ABC Action');
     expect(head(cCard)).toContain('1 Mark · Action');
     expect(head(aCard)).toContain('1 reflection due · Action');
-    // The band as text.
-    expect(head(bCard)).toContain('Boundary reached');
-    expect(head(cCard)).toContain('Evidence limited');
-    expect(head(aCard)).toContain('Quantified pressure');
+    // The plain label.
+    expect(head(bCard)).toContain('Past Stop');
+    expect(head(cCard)).toContain('Marks needed');
+    expect(head(aCard)).toContain('40% to Target');
     // The meter, named by its figures: one between its rails, one past the Stop, and the one with no Mark by its reason.
     expect(a.getByRole('img', { name: 'P&L +$180.00, 40% of the way to the Target. Stop −$450.00, Target +$450.00.' })).toBeTruthy();
     expect(b.getByRole('img', { name: 'P&L −$200.00, past the Stop by $50.00. Stop −$150.00, Target +$300.00.' })).toBeTruthy();
@@ -829,11 +845,11 @@ describe('header', () => {
     expect(within(status).getByText('5 Trades · 1 Mark, 5 Actions and 1 reflection to go')).toBeTruthy();
     const lines = within(within(status).getByRole('list', { name: 'Trade lines' })).getAllByRole('listitem');
     expect(lines.map((line) => line.textContent)).toEqual([
-      'ABC Boundary reached To do: Action',
-      'DEF Evidence limited To do: Mark, Action',
-      'XYZ Quantified pressure To do: Action',
-      'XYZ Quantified pressure To do: Reflection, Action',
-      'JKL Routine To do: Action',
+      'ABC Past Stop To do: Action',
+      'DEF Marks needed To do: Mark, Action',
+      'XYZ To do: Action',
+      'XYZ 40% to Target To do: Reflection, Action',
+      'JKL To do: Action',
     ]);
     await screen.findByRole('region', { name: 'ABC review' });
 

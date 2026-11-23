@@ -133,7 +133,7 @@ describe('the day card', () => {
     const openCard = renderCard(review({ trades, owed: closed, today: [missingRow('AXIO', ['t1'])], day: day({ lines }) }));
 
     const items = within(screen.getByRole('list', { name: 'Trade lines' })).getAllByRole('listitem');
-    expect(items.map((item) => item.textContent)).toEqual(['AXIO Boundary reached To do: 2 Marks, Action', 'DALE Routine To do: Settle', 'CORV Boundary reached Done', 'EARL Closed To do: Close Review']);
+    expect(items.map((item) => item.textContent)).toEqual(['AXIO Past Stop To do: 2 Marks, Action', 'DALE To do: Settle', 'CORV At Target Done', 'EARL Closed To do: Close Review']);
     expect(within(items[0]!).getByRole('link', { name: 'AXIO' }).getAttribute('href')).toBe('/review?trade=t1&instrument=AXIO');
     expect(within(items[1]!).getByRole('link', { name: 'DALE' }).getAttribute('href')).toBe('/review?trade=t2&panel=Settlement');
     await user.click(within(items[3]!).getByRole('link', { name: 'EARL' }));

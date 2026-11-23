@@ -201,7 +201,7 @@ describe('overview', () => {
     expect(within(header).getByText('Incomplete')).toBeTruthy();
     expect(within(header).getByText('2 Trades · 1 Mark and 1 Action to go')).toBeTruthy();
     const lines = within(within(header).getByRole('list', { name: 'Trade lines' })).getAllByRole('listitem');
-    expect(lines.map((line) => line.textContent)).toEqual(['XYZ Routine To do: Action', 'DEF Routine To do: Mark']);
+    expect(lines.map((line) => line.textContent)).toEqual(['XYZ To do: Action', 'DEF Marks needed To do: Mark']);
     expect(within(within(header).getByRole('list', { name: 'Facts to check' })).getAllByRole('listitem').map((item) => item.textContent)).toEqual(['DEF: recorded facts disagree']);
   });
 
@@ -218,7 +218,7 @@ describe('overview', () => {
     const header = await screen.findByRole('region', { name: 'The day' });
     expect(within(header).getByText('2 Trades · 3 reflections to go')).toBeTruthy();
     const lines = within(within(header).getByRole('list', { name: 'Trade lines' })).getAllByRole('listitem');
-    expect(lines.map((line) => line.textContent)).toEqual(['XYZ Routine To do: Reflection', 'DEF Routine To do: Reflection']);
+    expect(lines.map((line) => line.textContent)).toEqual(['XYZ To do: Reflection', 'DEF To do: Reflection']);
     // The first Trade owing opens on load; the link for the other one opens its card.
     await screen.findByRole('region', { name: 'XYZ review' });
     expect(vi.mocked(facade.DailyReview.getTrade)).toHaveBeenCalledExactlyOnceWith({ reviewDate: '2026-10-12', tradeId: 't1', binding });
@@ -234,7 +234,7 @@ describe('overview', () => {
 
     const header = await screen.findByRole('region', { name: 'The day' });
     expect(within(header).getByText('Complete')).toBeTruthy();
-    expect(within(within(header).getByRole('list', { name: 'Trade lines' })).getAllByRole('listitem').map((line) => line.textContent)).toEqual(['XYZ Routine Done']);
+    expect(within(within(header).getByRole('list', { name: 'Trade lines' })).getAllByRole('listitem').map((line) => line.textContent)).toEqual(['XYZ Done']);
   });
 
   it('should no longer render the Blockers list, the Review status block or the Stop line', async () => {

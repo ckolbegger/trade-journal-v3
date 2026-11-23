@@ -27,8 +27,8 @@ test.describe('B4.1 Daily Review end to end', () => {
     const rows = cardList(page).getByRole('listitem').filter({ has: page.getByRole('button', { name: /^Review / }) });
     await expect(rows).toHaveCount(4);
     await expect(rows.nth(0)).toContainText('ABC');
-    await expect(rows.nth(0)).toContainText('Boundary reached');
-    for (const symbol of ['XYZ', 'JKL', 'DEF']) await expect(cardHeader(page, symbol)).toContainText('Quantified pressure');
+    await expect(rows.nth(0)).toContainText('Past Stop');
+    for (const symbol of ['XYZ', 'JKL', 'DEF']) await expect(cardHeader(page, symbol)).toContainText(/\d+% to (Stop|Target)/);
     await expect(rows.nth(1)).toContainText('XYZ');
     await expect(rows.nth(2)).toContainText('JKL');
     await expect(rows.nth(3)).toContainText('DEF');

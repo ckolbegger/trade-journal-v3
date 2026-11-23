@@ -77,7 +77,7 @@ test.describe('B7S.4 Review card conditions', () => {
     await saveSessionMarks(page, trade, WEDNESDAY, ...WEDNESDAY_MARKS);
     await reloadReview(page);
     await reachCard(page, trade);
-    await expect(cardHeader(page, trade)).toContainText('Boundary reached');
+    await expect(cardHeader(page, trade)).toContainText('Past Stop');
     const heading = tradeCard(page, trade).getByRole('heading', { name: 'Conditions', level: 4 });
     const lines = tradeCard(page, trade).getByRole('list', { name: 'Conditions' }).locator('li');
     await expect(heading).toBeVisible();

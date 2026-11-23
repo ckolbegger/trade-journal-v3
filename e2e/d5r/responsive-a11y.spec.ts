@@ -28,8 +28,8 @@ test.describe('B5R.11 Responsive and accessible', () => {
     const friday = await markEditorOf(page, tA, FRIDAY);
     await friday.getByRole('button', { name: "Can't get a price" }).click();
     await friday.getByLabel('Reason (required)').fill('No quo');
-    // Band, status and Unsaved are words.
-    await expect(cardItem(page, tA)).toContainText('Evidence limited');
+    // The label, status and Unsaved are words.
+    await expect(cardItem(page, tA)).toContainText('Marks needed');
     await expect(remainsOf(page, tA)).toHaveText('1 Mark · 1 reflection due · Action');
     await expect(status(page)).toContainText('Incomplete');
     await expect(friday.getByText('Unsaved')).toBeVisible();

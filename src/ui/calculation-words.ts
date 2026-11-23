@@ -180,6 +180,8 @@ export const isMarkLacking = <R extends UnavailableReason>(reason: R): reason is
 export const isMarkMissingBlocker = (blocker: IncompleteReason): blocker is Extract<IncompleteReason, { readonly code: 'MarkMissing' }> => blocker.code === 'MarkMissing';
 // A Review blocker for a contract whose settlement is due, and the same reason in a Trade's attention (row 24.5).
 export const isSettlementDueBlocker = (blocker: IncompleteReason): blocker is Extract<IncompleteReason, { readonly code: 'SettlementDue' }> => blocker.code === 'SettlementDue';
+// A Trade's attention reason: the trader acknowledged that no Mark can be had for the Review Date.
+export const isAcknowledgedUnavailableAttention = (reason: ReviewTradeItem['reasons'][number]): boolean => reason.code === 'Unavailable' && reason.reason === 'AcknowledgedUnavailable';
 export const isSettlementDueAttention = (reason: ReviewTradeItem['reasons'][number]): reason is Extract<ReviewTradeItem['reasons'][number], { readonly code: 'SettlementDue' }> => reason.code === 'SettlementDue';
 
 // Market Data's Expected-Mark Status as the Mark row shows it (section 1.1: unchanged text, its own casing).

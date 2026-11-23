@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { instrumentOf } from '../../domain/instrument/index.ts';
-import { reasonText } from './review-attention.ts';
+import { Rational } from '../../domain/values/index.ts';
+import { labelsOf, reasonText } from './review-attention.ts';
 
 afterEach(() => {
   vi.useRealTimers();
@@ -11,5 +12,42 @@ describe('contract names in the Workspace zone (A238)', () => {
     vi.useFakeTimers({ toFake: ['Date'], now: new Date('2027-01-01T03:00:00Z') });
     const reason = { code: 'Unavailable', reason: 'MarkMissing', instrument: instrumentOf('XYZ270115C00055000'), date: '2026-12-31' };
     expect(reasonText(reason as never, { kind: 'Unavailable' } as never, 'America/New_York')).toContain('XYZ Jan 15 2027');
+  });
+});
+
+// A Trade as the walk returns it, with only what a label reads.
+const marksPanel = (done: boolean) => ({ panels: [{ panel: 'Marks', done, resolved: done ? 1 : 0, needed: 1 }] });
+const trade = (over: Record<string, unknown>) => ({ band: 'Routine', reasons: [], progress: marksPanel(true), ...over }) as never;
+const between = (percent: bigint, toward: 'Stop' | 'Target') => ({ now: { kind: 'Value', value: { zone: 'Between', share: { percent: Rational.of(percent), toward } } } });
+
+const previous = (zone: string, tradingDate: string) => ({ now: { kind: 'Unavailable' }, previous: { tradingDate, zone } });
+
+describe('plain labels (A302)', () => {
+  it('should label a Trade past its Stop Past Stop and one at its Target At Target', () => {
+    expect(labelsOf(trade({ band: 'StopReached' }))).toEqual(['Past Stop']);
+    expect(labelsOf(trade({ band: 'TargetReached' }))).toEqual(['At Target']);
+  });
+
+  it('should label a Trade whose Marks are not saved Marks needed, beside the session before label with its day', () => {
+    const needed = { progress: marksPanel(false) };
+    expect(labelsOf(trade({ band: 'EvidenceLimited', ...needed }))).toEqual(['Marks needed']);
+    expect(labelsOf(trade({ band: 'EvidenceLimited', ...needed, meter: previous('PastStop', '2026-11-20') }))).toEqual(['Marks needed', 'Past Stop Fri']);
+    expect(labelsOf(trade({ band: 'EvidenceLimited', ...needed, meter: previous('PastTarget', '2026-11-19') }))).toEqual(['Marks needed', 'At Target Thu']);
+    expect(labelsOf(trade({ band: 'EvidenceLimited', ...needed, meter: previous('Between', '2026-11-19') }))).toEqual(['Marks needed']);
+  });
+
+  it('should label an expired contract Expired: settle and one expiring on the Review Date Expires today · Marks needed', () => {
+    expect(labelsOf(trade({ band: 'SettlementDue' }))).toEqual(['Expired: settle']);
+    expect(labelsOf(trade({ band: 'EvidenceLimited', expiresOnReviewDate: true, progress: marksPanel(false) }))).toEqual(['Expires today · Marks needed']);
+  });
+
+  it('should label a Trade with an acknowledged Unavailable Mark No price today', () => {
+    const reasons = [{ code: 'Unavailable', reason: 'AcknowledgedUnavailable' }];
+    expect(labelsOf(trade({ band: 'EvidenceLimited', reasons }))).toEqual(['No price today']);
+  });
+
+  it('should label a Trade inside its lines by its share of the way', () => {
+    expect(labelsOf(trade({ band: 'QuantifiedPressure', meter: between(63n, 'Stop') }))).toEqual(['63% to Stop']);
+    expect(labelsOf(trade({ band: 'QuantifiedPressure', meter: between(48n, 'Target') }))).toEqual(['48% to Target']);
   });
 });

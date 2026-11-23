@@ -49,7 +49,7 @@ function walked(item: SettlementItem, underlying: string, progress: WalkedTrade[
     tradeId: item.tradeId,
     underlying,
     lastActivity: '2026-10-12T14:00:00Z',
-    band: 'Blocker',
+    band: 'SettlementDue',
     reasons: [{ code: 'SettlementDue', instrument: item.instrument, quantity: item.quantity, expiration: item.expiration }],
     basis: { kind: 'Value', value: { side: 'None', share: Rational.of(0n, 1n) } },
     progress,
@@ -138,7 +138,7 @@ describe('settlement family (A112)', () => {
 
     // The day card lists each Trade with its settlement still to record, its link opening the card on the Settlement panel once its Marks are in.
     const dayLines = within(await screen.findByRole('region', { name: 'The day' })).getByRole('list', { name: 'Trade lines' });
-    expect(within(dayLines).getAllByRole('listitem').map((li) => li.textContent)).toEqual(['MNO Blocker To do: Mark, Settle', 'XYZ Blocker To do: Settle']);
+    expect(within(dayLines).getAllByRole('listitem').map((li) => li.textContent)).toEqual(['MNO Expired: settle To do: Mark, Settle', 'XYZ Expired: settle To do: Settle']);
     expect(within(dayLines).getByRole('link', { name: 'XYZ' }).getAttribute('href')).toBe('/review?trade=t1&panel=Settlement');
 
     // The collapsed card says what remains, with the settlement between the reflections and the Action (row 24.3).
