@@ -104,3 +104,19 @@ Moved checks went into e2e/d9ar/readout.spec.ts (helper `brokenReadoutFigures` a
 | all, restored | green | `... e2e/d9ar/readout.spec.ts e2e/d9ar/sweep.spec.ts e2e/d9/gaps.spec.ts`: 20 passed |
 
 First attempt: the whole-value check at every width failed the existing cases at 375 ("≈ 540 shares" wraps before its word on a phone). The dropped case ran at the default size only, so the check runs at 1280 and wider (an assumption, recorded in structural.md).
+
+## TD.7
+
+Moved checks went into e2e/d9ar/review.spec.ts, the case "should restore a started Action on each card after the Price History round trip, and save exactly it with one press". Each mutation changed one expected value and ran that case; command each time: `.claude/scripts/with-browser-lock.sh npm run test:e2e:specs -- e2e/d9ar/review.spec.ts -g "should restore a started Action"`.
+
+| Moved check | Run | Result |
+|---|---|---|
+| no .replay-card in the card before opening | mutated (toHaveCount 1) | 1 failed, assertion: toHaveCount Expected 1, Received 0 |
+| no overlay before opening | mutated (toHaveCount 1) | 1 failed, assertion: toHaveCount Expected 1, Received 0 |
+| no .replay-card in the card after opening | mutated (toHaveCount 1) | 1 failed, assertion: toHaveCount Expected 1, Received 0 |
+| BREN headline on open | mutated ("+$989.00 · 3.05R") | 1 failed, assertion: toHaveText Expected "+$989.00 · 3.05R", Received "+$988.00 · 3.05R" |
+| BREN headline after return | mutated ("+$983.00 · 3.03R") | 1 failed, assertion: toHaveText Expected "+$983.00 · 3.03R", Received "+$982.00 · 3.03R" |
+| focus on the card's Replay button after Close | mutated (not.toBeFocused) | 1 failed, assertion: Expected: not focused, Received: focused |
+| Action still started after Close (before the round trip) | mutated (Intent "wrong") | 1 failed, assertion: toHaveValue Expected "wrong" |
+| zero Action entries after open, move and close | mutated (toBe saved + 1) | 1 failed, assertion: Expected 1, Received 0 |
+| all, restored | green | `e2e/d9ar/review.spec.ts`: 5 passed |

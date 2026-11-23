@@ -230,3 +230,42 @@ References (rule 10): rg of both titles: living text only in plan/D09A-R-stage-a
 ### TD.6 ocr
 
 gpt-6.1-sol, session 9fddc2c0: 2 files reviewed (3 excluded), 0 findings. `evidence/Test-Dedup/ocr/TD.6-af8dbae1.json`.
+
+## TD.7
+
+Set BD6, file e2e/d9ar/review.spec.ts. Kept: "should restore a started Action on each card after the Price History round trip, and save exactly it with one press" (the moved checks went in) and "should keep a started Action when the browser goes Forward to Price History and Back again after a round trip" (unchanged).
+
+Removed (confirm first held: both cases read in full; the dropped one is the BREN half of the kept one, plus the checks below):
+- e2e/d9ar/review.spec.ts:28, "should keep a started Action across the overlay, return to the same session from Price History, and save with one press".
+
+Moved checks (in the kept case's loop; the headlines only on BREN, the only Trade whose figures :28 pinned; the rest on both BREN and AXIO):
+- No .replay-card in the card, and no overlay, before opening; no .replay-card in the card after opening.
+- Headline "+$988.00 · 3.05R" on open and "+$982.00 · 3.03R" after the return (BREN).
+- One open, move (two sessions back, "Thu Nov 12 · 9 of 11") and Close before the round trip; focus on the card's Replay button after that Close; the Action still started (Exit and its Intent) after it; no Action entries recorded by it. The kept case then reopens with the card's button and goes on as before.
+- `expectActionStarted` takes an optional Intent (default the shared one) so the loop can check each Trade's own.
+
+Every dropped assertion, and where it lives:
+
+| Dropped assertion | Where |
+|---|---|
+| reachCard BREN | L: kept case, loop |
+| no .replay-card in the card and no overlay before opening | M |
+| start an Exit with an Intent | L: kept case, loop (BREN and AXIO) |
+| open the overlay; no .replay-card in the card after opening | M |
+| headline "+$988.00 · 3.05R" on open | M (BREN) |
+| ArrowLeft x2 gives "Thu Nov 12 · 9 of 11" | M (before the trip) and L (after End, in the trip) |
+| Close removes the overlay | L: kept case; also M before the trip |
+| focus on the card's Replay button after Close | M |
+| Action started after Close | M |
+| zero Action entries after open, move, Close | M |
+| reopen, End, ArrowLeft x2, "Thu Nov 12 · 9 of 11" | L: kept case, loop |
+| Price History link, BREN heading, "Back to the Review", Review heading, overlay back on the same session | L: kept case (BREN heading and overlay back; the Review heading is implied by the overlay and the card form the next lines reach) |
+| headline "+$982.00 · 3.03R" after the return | M (BREN) |
+| Close; Action still started before Save | L: kept case (Exit and Intent checked on each card) |
+| one press of Save records one Action | L: kept case (count, and the saved choice and Intent) |
+
+Dropped, not carried: the "if the Exit is not checked, start it again" fallback, which hid a lost draft; the kept case asserts the draft instead.
+
+Spec counts (e2e/d9ar/review.spec.ts): before 6 passed, after 5 passed. Both runs under with-browser-lock.sh on 5175.
+
+References (rule 10): rg of the title and "review:28": living text only in plan/browser-test-duplicates-plan.md (this plan) and research/browser-test-duplicates.md (the report); no acceptance row, acceptance-matrix, spec-map or bug-tasks entry. Left as written: evidence/D95/structural.md:147 (review:28 as the timing sample for `enterTrade`, 22.2 s to 2.0 s; the case is gone now) and evidence/D09/structural.md:549 (line numbers of a past task). The other hits for "review.spec.ts:28" are d5r/review, another file.

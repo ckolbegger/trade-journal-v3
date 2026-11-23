@@ -18,58 +18,13 @@ async function startAction(page: Page, trade: TradeRef): Promise<void> {
   await form.getByRole('radio', { name: 'Exit', exact: true }).check();
   await form.getByLabel(/^Why are you taking this action\?/).fill(INTENT);
 }
-async function expectActionStarted(page: Page, trade: TradeRef, where: string): Promise<void> {
+async function expectActionStarted(page: Page, trade: TradeRef, where: string, intent: string = INTENT): Promise<void> {
   const form = await actionFormOf(page, trade);
   await expect(form.getByRole('radio', { name: 'Exit', exact: true }), `${where}: Exit`).toBeChecked();
-  await expect(form.getByLabel(/^Why are you taking this action\?/), `${where}: Intent`).toHaveValue(INTENT);
+  await expect(form.getByLabel(/^Why are you taking this action\?/), `${where}: Intent`).toHaveValue(intent);
 }
 
 test.describe('B9AR.2 The overlay in the Review, and the summary', () => {
-  test('should keep a started Action across the overlay, return to the same session from Price History, and save with one press', async ({ profile }) => {
-    test.setTimeout(420_000);
-    const { context, page, trades } = await buildReview(profile);
-    const bren = trades[0]!;
-    await reachCard(page, bren);
-    // No replay inside the card until the button is pressed.
-    await expect(tradeCard(page, bren).locator('.replay-card')).toHaveCount(0);
-    await expect(replay(page)).toHaveCount(0);
-    await startAction(page, bren);
-    const section = await openCardReplay(page, bren);
-    await expect(tradeCard(page, bren).locator('.replay-card')).toHaveCount(0);
-    await expect(headline(section)).toHaveText('+$988.00 · 3.05R');
-    await seek(page, section, 'ArrowLeft', 2);
-    await expect(sliderValue(section)).toHaveText('Thu Nov 12 · 9 of 11');
-    await closeButton(section).click();
-    await expect(replay(page)).toHaveCount(0);
-    await expect(cardReplayButton(page, bren)).toBeFocused();
-    await expectActionStarted(page, bren, 'after Close');
-    expect(await actions(page), 'opening, moving and closing the overlay records nothing').toBe(0);
-
-    // Price History, and the way back: the overlay returns on the same session.
-    await cardReplayButton(page, bren).click();
-    await expect(replay(page)).toBeVisible();
-    await seek(page, replay(page), 'End');
-    await seek(page, replay(page), 'ArrowLeft', 2);
-    await expect(sliderValue(replay(page))).toHaveText('Thu Nov 12 · 9 of 11');
-    await replay(page).getByRole('link', { name: 'Price History' }).click();
-    await expect(detail.heading(page, 'BREN')).toBeVisible();
-    await page.getByRole('link', { name: 'Back to the Review' }).click();
-    await expect(page.getByRole('heading', { name: 'Review', level: 1 })).toBeVisible();
-    await expect(replay(page)).toBeVisible();
-    await expect(sliderValue(replay(page))).toHaveText('Thu Nov 12 · 9 of 11');
-    await expect(headline(replay(page))).toHaveText('+$982.00 · 3.03R');
-    await closeButton(replay(page)).click();
-    await expect(replay(page)).toHaveCount(0);
-
-    // One press saves the Action (the draft is whatever the card holds: the Exit and its Intent, entered again only if the trip away dropped them).
-    const form = await actionFormOf(page, bren);
-    if (!(await form.getByRole('radio', { name: 'Exit', exact: true }).isChecked())) await startAction(page, bren);
-    await expectActionStarted(page, bren, 'before Save');
-    await pressSave(form);
-    expect(await actions(page), 'one press saves one Action').toBe(1);
-    await context.close();
-  });
-
   // T9AR.24-B3 (C9AR.5, AC-JOUR-001, AC-REV-003): the Review is left for Price History and read again on the way back, yet the started Action is still on the card, and one press saves it.
   test('should restore a started Action on each card after the Price History round trip, and save exactly it with one press', async ({ profile }) => {
     test.setTimeout(420_000);
@@ -79,10 +34,25 @@ test.describe('B9AR.2 The overlay in the Review, and the summary', () => {
     for (const trade of [bren, axio]) {
       const intent = `Why ${trade.symbol}: the Trade has run its course.`;
       await reachCard(page, trade);
+      // No replay inside the card and no overlay until the button is pressed.
+      await expect(tradeCard(page, trade).locator('.replay-card')).toHaveCount(0);
+      await expect(replay(page)).toHaveCount(0);
       const form = await actionFormOf(page, trade);
       await form.getByRole('radio', { name: 'Exit', exact: true }).check();
       await form.getByLabel(/^Why are you taking this action\?/).fill(intent);
-      await openCardReplay(page, trade);
+      // Moved from the dropped "keep a started Action across the overlay" case: open, move and Close once, before the round trip.
+      const section = await openCardReplay(page, trade);
+      await expect(tradeCard(page, trade).locator('.replay-card')).toHaveCount(0);
+      if (trade === bren) await expect(headline(section)).toHaveText('+$988.00 · 3.05R');
+      await seek(page, section, 'ArrowLeft', 2);
+      await expect(sliderValue(section)).toHaveText('Thu Nov 12 · 9 of 11');
+      await closeButton(section).click();
+      await expect(replay(page)).toHaveCount(0);
+      await expect(cardReplayButton(page, trade)).toBeFocused();
+      await expectActionStarted(page, trade, `${trade.symbol} after Close`, intent);
+      expect(await actions(page), `opening, moving and closing the overlay records nothing (${trade.symbol})`).toBe(saved);
+      await cardReplayButton(page, trade).click();
+      await expect(replay(page)).toBeVisible();
       await seek(page, replay(page), 'End');
       await seek(page, replay(page), 'ArrowLeft', 2);
       await expect(sliderValue(replay(page))).toHaveText('Thu Nov 12 · 9 of 11');
@@ -92,6 +62,7 @@ test.describe('B9AR.2 The overlay in the Review, and the summary', () => {
       await page.getByRole('link', { name: 'Back to the Review' }).click();
       await expect(replay(page)).toBeVisible();
       await expect(sliderValue(replay(page))).toHaveText('Thu Nov 12 · 9 of 11');
+      if (trade === bren) await expect(headline(replay(page))).toHaveText('+$982.00 · 3.03R');
       await closeButton(replay(page)).click();
       await expect(replay(page)).toHaveCount(0);
       const back = await actionFormOf(page, trade);
