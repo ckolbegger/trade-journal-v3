@@ -173,6 +173,28 @@ test.describe('B7.13 Responsive and accessible', () => {
     await openDrawer(page, 'Position');
     await expect(detail.lotMatches(page).locator('tbody tr')).toHaveCount(1);
 
+    // Adjacent cells keep a gap between their text boxes, in every table of the drawer.
+    const touching = await page.evaluate(() => {
+      const found: string[] = [];
+      for (const table of document.querySelectorAll('.cockpit-drawers table')) {
+        if (table.getClientRects().length === 0) continue;
+        for (const row of table.querySelectorAll('tr')) {
+          const boxes = [...row.children].map((cell) => {
+            const range = document.createRange();
+            range.selectNodeContents(cell);
+            return range.getBoundingClientRect();
+          });
+          for (let at = 1; at < boxes.length; at++) {
+            if (boxes[at - 1]!.width > 0 && boxes[at]!.width > 0 && boxes[at]!.left - boxes[at - 1]!.right < 8) {
+              found.push(`${row.textContent} (cells ${at} and ${at + 1})`);
+            }
+          }
+        }
+      }
+      return found;
+    });
+    expect(touching, 'Position drawer cells that touch').toEqual([]);
+
     // Open Lots: no sideways scroll, and every header and figure lies inside the region's box.
     const region = page.getByRole('region', { name: 'Open Lots' });
     const fit = await region.evaluate((el) => {
@@ -181,9 +203,10 @@ test.describe('B7.13 Responsive and accessible', () => {
         scrolls: el.scrollWidth > el.clientWidth,
         cut: [...el.querySelectorAll('th, td')].filter((cell) => cell.getBoundingClientRect().right > bounds.right + 0.5).map((cell) => cell.textContent),
         columns: el.querySelectorAll('thead th').length,
+        headerTruncated: [...el.querySelectorAll('th')].filter((th) => th.scrollWidth > th.clientWidth).map((th) => th.textContent),
       };
     });
-    expect(fit).toEqual({ scrolls: false, cut: [], columns: 5 });
+    expect(fit).toEqual({ scrolls: false, cut: [], columns: 5, headerTruncated: [] });
     await expect(region.getByText('$0.65')).toBeInViewport({ ratio: 1 });
 
     // The name Lot Matches is visible text once (the heading); the caption stays in the tree, hidden from the eye.

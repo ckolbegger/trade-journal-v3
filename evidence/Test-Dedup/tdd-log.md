@@ -136,3 +136,13 @@ Each moved check was made wrong, the spec run (under with-browser-lock.sh, port 
 | sliders:57 T-C track not dashed after its Mark | red | same, expected dashed | "the track is dashed": received "none" |
 | sliders:57 T-C name after its Mark | red | same, Stop −$202 in the pattern | toHaveAccessibleName: pattern mismatch against "P&L +$49.00, 8% ... Stop −$201.00" |
 | all of the above | green | `... e2e/d5r/review.spec.ts e2e/d5r/sliders.spec.ts` after restoring | 5 passed |
+
+## TD.9
+
+Moved checks went into e2e/d7/responsive-a11y.spec.ts, the case "should show the Position drawer tables of a Settlement Due option Trade spaced, ...". Each mutation changed one expected value and ran that case: `.claude/scripts/with-browser-lock.sh npm run test:e2e:specs -- e2e/d7/responsive-a11y.spec.ts -g "Position drawer tables"`.
+
+| Moved check | Run | Result |
+|---|---|---|
+| cells keep an 8 px gap (all drawer tables) | mutated (gap threshold 8 changed to 800) | 1 failed, assertion: "Position drawer cells that touch" toEqual, Received 18 entries |
+| Open Lots headers not truncated | mutated (headerTruncated expected ['x']) | 1 failed, assertion: toEqual, Received headerTruncated [] |
+| both, restored | green | 1 passed |

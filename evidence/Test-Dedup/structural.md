@@ -313,3 +313,26 @@ References (rule 10): plan/D09-trade-replay.md AC-REV-002 command re-pointed to 
 ### TD.8 ocr
 
 gpt-6.1-sol, session e1e8fbb4: 4 files reviewed (5 excluded), 0 findings. `evidence/Test-Dedup/ocr/TD.8-0a247665.json`.
+
+## TD.9
+
+### BD7: d6/responsive-a11y "should space the Position drawer tables, name Lot Matches once in visible text, and show every Open Lots column whole at 1280 px" (line 293), kept: d7/responsive-a11y "should show the Position drawer tables of a Settlement Due option Trade spaced, with Lot Matches named once and every Open Lots column and figure inside its region at 1280 px"
+
+Confirm first held: both cases open the Position drawer at 1280 on a Trade with one Lot Match; the d7 case ran the moved checks on the option fixture without a real failure.
+
+| Dropped assertion | Where |
+|---|---|
+| one Lot Matches row | living: d7 (same assertion, option Trade) |
+| no drawer cells touch (8 px gap, every drawer table) | moved into d7 |
+| Lot Matches visible text exactly once | living: d7 (same assertion) |
+| Lot Matches table visible | living: d7 (its row count of 1 is read through the same table) |
+| one Lot Matches caption in the tree | living: d7 (same assertion) |
+| Open Lots region does not scroll sideways | living: d7 (scrolls: false) |
+| last header and figure inside the region | living: d7 (it checks every th and td, a wider check) |
+| no Open Lots header truncated | moved into d7 |
+
+Moved checks: 2 (the report's list; nothing beyond it). Both failed on an assertion when made wrong (tdd-log, TD.9). Kept cases: none (d6:293 dropped).
+
+Spec counts: before 9 passed (d6/responsive-a11y 4, d7/responsive-a11y 5); after 8 passed (d6 3, d7 5). Both under with-browser-lock.sh on 5175. typecheck and lint exit 0.
+
+References (rule 10): rg of both titles found plan/browser-test-duplicates-plan.md (this plan) and evidence/D08P/structural.md:1479, evidence/D08P/tdd-log/T8P.23-B4.md:7 (finished records, left as written; kept test d7 "should show the Position drawer tables of a Settlement Due option Trade spaced, ..." now also holds the moved checks). No acceptance-matrix, spec-map or bug-tasks entry.
