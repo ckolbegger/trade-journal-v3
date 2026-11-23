@@ -85,3 +85,16 @@
 **Recommendation:** (a): the screen has just asked for 0, so asking again is noise, and the mockup agrees.
 
 **Status:** asked. Parks nothing (T95.13 continues; the follow-on would come after).
+
+## Q7 (T95.14 case 8): "keep the Price History link on the folded line" — asked 2026-11-23
+
+**Plain words.** Each Trade's card links to its Price History from inside its Replay (unchanged by the redesign). Case 8 and removal row X14 say "the link stays, on the folded Marks line". But the Marks are now one grid for the whole page, and its folded line ("Marks for Mon Nov 16 · 7 of 7 saved · 1 no price · Edit") belongs to no single Trade, so a link there has no Trade or Instrument to open. Neither the mockup's folded line nor the old Marks panel had one. The wording looks left over from when each card had its own Marks panel.
+
+**Options.**
+- (a) Read case 8 as "the card's Price History link stays" (it does, in each card's Replay) and add no link to the folded line; record the case as met by that, with a test.
+- (b) Put a Price History link on each Instrument's row of the grid (when open), to that Instrument's Trade; an Instrument held by two Trades would need two links or a choice.
+- (c) Something else you have in mind for the folded line.
+
+**Recommendation:** (a): it keeps the folded line short, matches the mockup, and every Trade keeps its link.
+
+**Status:** asked. Parks T95.14 case 8 only; T95.14's review goes ahead.

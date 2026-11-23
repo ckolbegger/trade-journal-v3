@@ -18,3 +18,6 @@
 
 ## T95.13 (provisional)
 - "1 Mark to check first." (W109's singular).
+
+## T95.14 (provisional)
+- "It is now $51.00. Your values are kept." (a conflict on a cell edited in place; replaces the tail "The current Mark is shown above…").
