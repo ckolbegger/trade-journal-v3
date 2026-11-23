@@ -3,10 +3,12 @@ import {
   ensureWorkspaceV2Stores,
   ensureWorkspaceV3Stores,
   ensureWorkspaceV4Stores,
+  ensureWorkspaceV5Stores,
   SCHEMA_VERSION_V1,
   SCHEMA_VERSION_V2,
   SCHEMA_VERSION_V3,
   SCHEMA_VERSION_V4,
+  SCHEMA_VERSION_V5,
   WORKSPACE_DB_PREFIX,
   type WorkspaceMetaRecord,
 } from './idb';
@@ -280,5 +282,16 @@ export function migrateWorkspaceV3ToV4(
     fromSchemaVersion: SCHEMA_VERSION_V3,
     toSchemaVersion: SCHEMA_VERSION_V4,
     ensureTargetStores: ensureWorkspaceV4Stores,
+  });
+}
+
+export function migrateWorkspaceV4ToV5(
+  options: WorkspaceMigrationOptions,
+): Promise<MigrationResult> {
+  return runCandidateCopyMigration({
+    ...options,
+    fromSchemaVersion: SCHEMA_VERSION_V4,
+    toSchemaVersion: SCHEMA_VERSION_V5,
+    ensureTargetStores: ensureWorkspaceV5Stores,
   });
 }

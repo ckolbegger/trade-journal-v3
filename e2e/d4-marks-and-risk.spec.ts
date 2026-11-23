@@ -73,16 +73,16 @@ test.describe('D4 After-Close Marks (in Review) & Ongoing Risk/Reward', () => {
     await page.getByRole('button', { name: 'Save Marks' }).click();
     await expect(page.getByText(/1 · Marks saved for/)).toBeVisible();
     await expect(page.getByText('NVDA $146.00')).toBeVisible();
-    const openTradesTable = page.getByRole('table', { name: 'Open trades marked summary' });
-    await expect(openTradesTable.getByText('+$600.00')).toBeVisible();
-    await expect(openTradesTable.getByText('+0.75R')).toBeVisible();
+    const openTradesRegion = page.getByRole('region', { name: 'Open trades to review' });
+    await expect(openTradesRegion.getByText('+$600.00 · +0.75R')).toBeVisible();
 
     // Check axe WCAG AA on Review screen
     const reviewAxe = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
     expect(reviewAxe.violations).toEqual([]);
 
-    // 5. Inspect NVDA -> C. Cockpit live rail, Today drawer + PriceTrack, Price History drawer
-    await page.getByRole('button', { name: 'Inspect' }).click();
+    // 5. Expand NVDA card and click Inspect -> C. Cockpit live rail, Today drawer + PriceTrack, Price History drawer
+    await openTradesRegion.getByRole('button', { name: /NVDA/ }).click();
+    await openTradesRegion.getByRole('button', { name: 'Inspect' }).click();
     await expect(page.getByRole('heading', { name: /NVDA/ })).toBeVisible();
 
     // Left rail live P&L, Plan-R, Stop/Target Conditions, Worst case, Max reward

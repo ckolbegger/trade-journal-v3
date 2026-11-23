@@ -7,6 +7,7 @@ import {
   BOOTSTRAP_DB_NAME,
   CURRENT_SCHEMA_VERSION,
   SCHEMA_VERSION_V3,
+  SCHEMA_VERSION_V4,
   WORKSPACE_DB_PREFIX,
   createPersistenceSeam,
   ensureWorkspaceV3Stores,
@@ -344,7 +345,7 @@ describe('D4 Integration — v3->v4 migration, MarketData + TradeViews, OV-04 fa
     expect(rootV4.status).toBe('Present');
     if (rootV4.status === 'Present') {
       expect(rootV4.activeGeneration).toBe(2);
-      expect(rootV4.schemaVersion).toBe(CURRENT_SCHEMA_VERSION);
+      expect(rootV4.schemaVersion).toBe(SCHEMA_VERSION_V4);
     }
 
     const { preservedTrade, projection, marks } = await persistence.runReadTransaction(

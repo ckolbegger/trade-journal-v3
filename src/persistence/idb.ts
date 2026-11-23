@@ -5,7 +5,8 @@ export const SCHEMA_VERSION_V1 = 1 as const;
 export const SCHEMA_VERSION_V2 = 2 as const;
 export const SCHEMA_VERSION_V3 = 3 as const;
 export const SCHEMA_VERSION_V4 = 4 as const;
-export const CURRENT_SCHEMA_VERSION = SCHEMA_VERSION_V4;
+export const SCHEMA_VERSION_V5 = 5 as const;
+export const CURRENT_SCHEMA_VERSION = SCHEMA_VERSION_V5;
 export const BOOTSTRAP_DB_NAME = 'tjv3_bootstrap';
 export const DIAGNOSTICS_DB_NAME = 'tjv3_diagnostics';
 export const WORKSPACE_DB_PREFIX = 'tjv3_ws_gen_';
@@ -133,16 +134,22 @@ export interface EntryDefinitionRecord {
   readonly createdAt: string;
 }
 
+export type JournalEntryOrigin =
+  | { readonly kind: 'Plan'; readonly factId: string }
+  | { readonly kind: 'PositionChange'; readonly factId: string }
+  | { readonly kind: 'DailyReview'; readonly reviewDate: string };
+
 export interface JournalEntryRecord {
   readonly id: string;
   readonly entryTypeId: string;
   readonly definitionId: string;
   readonly definitionRevision: number;
   readonly definitionSnapshot: EntryDefinitionRecord;
-  readonly source: 'PlanConfirmation' | 'PositionChange';
+  readonly source: 'PlanConfirmation' | 'PositionChange' | 'DailyReview';
   readonly anchor: { readonly kind: 'Trade'; readonly tradeId: string };
   readonly tradeId: string;
-  readonly origin: { readonly kind: 'Plan' | 'PositionChange'; readonly factId: string };
+  readonly origin: JournalEntryOrigin;
+  readonly obligationKey?: string;
   readonly responses: Record<string, string | number | undefined>;
   readonly recordedAt: string;
 }
@@ -494,12 +501,22 @@ export function ensureWorkspaceV4Stores(db: IDBDatabase): void {
   }
 }
 
-function isSupportedSchemaVersion(v: unknown): v is 1 | 2 | 3 | 4 {
+export function ensureWorkspaceV5Stores(db: IDBDatabase): void {
+  if (!db.objectStoreNames.contains('journal_entries')) {
+    const entries = db.createObjectStore('journal_entries', { keyPath: 'id' });
+    entries.createIndex('by_trade', 'tradeId', { unique: false });
+    entries.createIndex('by_obligation_key', 'obligationKey', { unique: true });
+  }
+  ensureWorkspaceV4Stores(db);
+}
+
+function isSupportedSchemaVersion(v: unknown): v is 1 | 2 | 3 | 4 | 5 {
   return (
     v === SCHEMA_VERSION_V1 ||
     v === SCHEMA_VERSION_V2 ||
     v === SCHEMA_VERSION_V3 ||
-    v === SCHEMA_VERSION_V4
+    v === SCHEMA_VERSION_V4 ||
+    v === SCHEMA_VERSION_V5
   );
 }
 
@@ -613,6 +630,9 @@ export function createPersistenceSeam(options: {
         break;
       case SCHEMA_VERSION_V4:
         ensureFn = ensureWorkspaceV4Stores;
+        break;
+      case SCHEMA_VERSION_V5:
+        ensureFn = ensureWorkspaceV5Stores;
         break;
       default:
         throw new Error(`Unsupported workspace schema version: ${schemaVersion}`);

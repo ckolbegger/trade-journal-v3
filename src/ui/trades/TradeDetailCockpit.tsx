@@ -757,7 +757,11 @@ export function TradeDetailCockpit({
                     <div className={cockpitStyles.jBody}>
                       <div className={styles.spaceBetween} style={{ marginBottom: 6 }}>
                         <span className={cockpitStyles.jType}>{entry.definitionSnapshot.label}</span>
-                        <span className={styles.pill}>{entry.source}</span>
+                        <span className={styles.pill}>
+                          {entry.origin.kind === 'DailyReview'
+                            ? `${entry.source} · ${formatSessionDateShort(entry.origin.reviewDate)}`
+                            : entry.source}
+                        </span>
                       </div>
                       <dl style={{ margin: 0 }}>
                         {entry.definitionSnapshot.prompts.map((prompt) => {

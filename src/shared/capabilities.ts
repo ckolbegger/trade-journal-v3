@@ -1,7 +1,7 @@
 export interface InstalledCapabilityManifest {
-  readonly manifestVersion: 4;
-  readonly releaseDeliverable: 'D4';
-  readonly schemaVersion: 4;
+  readonly manifestVersion: 5;
+  readonly releaseDeliverable: 'D5';
+  readonly schemaVersion: 5;
   readonly operations: readonly string[];
   readonly reportFamilies: readonly string[];
   readonly providerAdapters: readonly string[];
@@ -9,9 +9,9 @@ export interface InstalledCapabilityManifest {
 }
 
 export const INSTALLED_CAPABILITY_MANIFEST: InstalledCapabilityManifest = Object.freeze({
-  manifestVersion: 4,
-  releaseDeliverable: 'D4',
-  schemaVersion: 4,
+  manifestVersion: 5,
+  releaseDeliverable: 'D5',
+  schemaVersion: 5,
   operations: Object.freeze([
     'Workspace.initialize',
     'Workspace.getStatus',
@@ -35,6 +35,10 @@ export const INSTALLED_CAPABILITY_MANIFEST: InstalledCapabilityManifest = Object
     'MarketData.resolveFrames',
     'MarketData.readSeries',
     'MarketData.inspectObservations',
+    'DailyReview.open',
+    'DailyReview.getTrade',
+    'DailyReview.getDebt',
+    'DailyReview.save',
     'TradeViewsAndReporting.browseTrades',
     'TradeViewsAndReporting.getTradeDetail',
     'TradeViewsAndReporting.getReviewMarksView',

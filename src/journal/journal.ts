@@ -7,11 +7,16 @@ import type {
 import type { Clock } from '../shared/clock';
 import type { RuntimeNotWritableResult } from '../shared/result';
 
-export const JOURNAL_SEED_MANIFEST_VERSION = 2 as const;
+export const JOURNAL_SEED_MANIFEST_VERSION = 3 as const;
 export const PLAN_REFLECTION_TYPE_ID = 'entry_type_plan_reflection' as const;
 export const PLAN_REFLECTION_DEF_ID = 'def_plan_reflection_v1' as const;
 export const POSITION_CHANGE_REFLECTION_TYPE_ID = 'entry_type_position_change_reflection' as const;
 export const POSITION_CHANGE_REFLECTION_DEF_ID = 'def_position_change_reflection_v1' as const;
+export const DAILY_TRADE_REVIEW_TYPE_ID = 'entry_type_daily_trade_review' as const;
+export const DAILY_TRADE_REVIEW_DEF_ID = 'def_daily_trade_review_v1' as const;
+
+export const DAILY_REVIEW_ACTION_OPTIONS = ['Hold'] as const;
+export type DailyReviewAction = (typeof DAILY_REVIEW_ACTION_OPTIONS)[number];
 
 export const DECISION_MODE_OPTIONS = [
   'As Planned',
@@ -253,6 +258,51 @@ export function validatePositionChangeReflectionInput(
   return { ok: true, note: trimmedNote || undefined };
 }
 
+export function buildDailyTradeReviewDefinitionV1(createdAt: string): EntryDefinitionRecord {
+  return {
+    id: DAILY_TRADE_REVIEW_DEF_ID,
+    entryTypeId: DAILY_TRADE_REVIEW_TYPE_ID,
+    label: 'Daily Trade Review',
+    revision: 1,
+    createdAt,
+    prompts: [
+      {
+        promptId: 'action',
+        label: 'Action',
+        kind: 'SingleSelect',
+        required: true,
+        options: [...DAILY_REVIEW_ACTION_OPTIONS],
+      },
+      {
+        promptId: 'reason',
+        label: 'Why?',
+        kind: 'Text',
+        required: false,
+      },
+      {
+        promptId: 'conviction',
+        label: 'Conviction now',
+        kind: 'Scale',
+        required: false,
+        min: 1,
+        max: 5,
+      },
+      {
+        promptId: 'consideredAgainst',
+        label: 'Anything you considered and decided against?',
+        kind: 'Text',
+        required: false,
+      },
+      {
+        promptId: 'note',
+        label: 'Note',
+        kind: 'Text',
+        required: false,
+      },
+    ],
+  };
+}
+
 export function createJournal(options: {
   readonly persistence: PersistenceSeam;
   readonly clock: Clock;
@@ -282,6 +332,12 @@ export function createJournal(options: {
           if (!hasPcDef) {
             tx.put('journal_definitions', buildPositionChangeReflectionDefinitionV1(now));
             additions.push(POSITION_CHANGE_REFLECTION_DEF_ID);
+          }
+
+          const hasDtrDef = defs.some((d) => d.entryTypeId === DAILY_TRADE_REVIEW_TYPE_ID);
+          if (!hasDtrDef) {
+            tx.put('journal_definitions', buildDailyTradeReviewDefinitionV1(now));
+            additions.push(DAILY_TRADE_REVIEW_DEF_ID);
           }
 
           if (!meta || meta.seedManifestVersion < JOURNAL_SEED_MANIFEST_VERSION || additions.length > 0) {

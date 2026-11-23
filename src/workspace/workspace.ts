@@ -6,8 +6,10 @@ import {
   type ReferenceCatalog,
 } from '../catalog/reference-catalog';
 import {
+  buildDailyTradeReviewDefinitionV1,
   buildPlanReflectionDefinitionV1,
   buildPositionChangeReflectionDefinitionV1,
+  DAILY_TRADE_REVIEW_TYPE_ID,
   JOURNAL_SEED_MANIFEST_VERSION,
   PLAN_REFLECTION_TYPE_ID,
   POSITION_CHANGE_REFLECTION_TYPE_ID,
@@ -19,6 +21,7 @@ import {
   SCHEMA_VERSION_V2,
   SCHEMA_VERSION_V3,
   SCHEMA_VERSION_V4,
+  SCHEMA_VERSION_V5,
   type AccountRecord,
   type InstitutionRecord,
   type PersistenceSeam,
@@ -28,6 +31,7 @@ import {
   migrateWorkspaceV1ToV2,
   migrateWorkspaceV2ToV3,
   migrateWorkspaceV3ToV4,
+  migrateWorkspaceV4ToV5,
 } from '../persistence/migrations';
 import type {
   RuntimeReadinessController,
@@ -270,6 +274,7 @@ export function createWorkspace(options: {
           { from: SCHEMA_VERSION_V1, to: SCHEMA_VERSION_V2, run: migrateWorkspaceV1ToV2 },
           { from: SCHEMA_VERSION_V2, to: SCHEMA_VERSION_V3, run: migrateWorkspaceV2ToV3 },
           { from: SCHEMA_VERSION_V3, to: SCHEMA_VERSION_V4, run: migrateWorkspaceV3ToV4 },
+          { from: SCHEMA_VERSION_V4, to: SCHEMA_VERSION_V5, run: migrateWorkspaceV4ToV5 },
         ] as const;
 
         let migratedAny = false;
@@ -407,6 +412,9 @@ export function createWorkspace(options: {
           }
           if (!definitions.some((d) => d.entryTypeId === POSITION_CHANGE_REFLECTION_TYPE_ID)) {
             tx.put('journal_definitions', buildPositionChangeReflectionDefinitionV1(now));
+          }
+          if (!definitions.some((d) => d.entryTypeId === DAILY_TRADE_REVIEW_TYPE_ID)) {
+            tx.put('journal_definitions', buildDailyTradeReviewDefinitionV1(now));
           }
           tx.put('journal_meta', {
             key: 'singleton',

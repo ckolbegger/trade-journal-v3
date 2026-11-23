@@ -1,4 +1,5 @@
 import { createReferenceCatalog, type ReferenceCatalog } from '../catalog/reference-catalog';
+import { createDailyReview, type DailyReview } from '../daily-review/daily-review';
 import { createJournal, type Journal } from '../journal/journal';
 import { createMarketData, type MarketData } from '../market-data/market-data';
 import { createPersistenceSeam, type PersistenceSeam } from '../persistence/idb';
@@ -24,6 +25,7 @@ export interface AppRuntime {
   readonly catalog: ReferenceCatalog;
   readonly journal: Journal;
   readonly marketData: MarketData;
+  readonly dailyReview: DailyReview;
   readonly tradeRecord: TradeRecord;
   readonly workflows: TradeWorkflows;
   readonly views: TradeViewsAndReporting;
@@ -56,6 +58,7 @@ export function createBrowserAppRuntime(): AppRuntime {
   const catalog = createReferenceCatalog({ persistence, clock: systemClock });
   const journal = createJournal({ persistence, clock: systemClock });
   const marketData = createMarketData({ persistence, clock: systemClock });
+  const dailyReview = createDailyReview({ persistence, clock: systemClock });
   const tradeRecord = createTradeRecord({ persistence });
   const workflows = createTradeWorkflows({ persistence, clock: systemClock });
   const views = createTradeViews({ persistence, clock: systemClock });
@@ -75,6 +78,7 @@ export function createBrowserAppRuntime(): AppRuntime {
     catalog,
     journal,
     marketData,
+    dailyReview,
     tradeRecord,
     workflows,
     views,

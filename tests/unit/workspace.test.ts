@@ -129,7 +129,7 @@ describe('Workspace seam', () => {
     expect(opened.fresh).toBe(true);
     expect(opened.workspaceStatus.timeZone).toBe('America/New_York');
     expect(opened.workspaceStatus.onboardingState).toBe('NeedsInstitutionAndAccount');
-    expect(opened.workspaceStatus.capabilities.releaseDeliverable).toBe('D4');
+    expect(opened.workspaceStatus.capabilities.releaseDeliverable).toBe('D5');
 
     // Adding an Institution + Account transitions onboarding to ReadyForTradePlanning.
     const inst = await catalog.save({ kind: 'CreateInstitution', label: 'Fidelity' });
@@ -230,7 +230,7 @@ describe('Workspace seam', () => {
     expect(already.currentProtection.state).toBe('Protected');
   });
 
-  it('chains a genuine v1 workspace through v1->v2->v3->v4 on Workspace.initialize preserving catalog records', async () => {
+  it('chains a genuine v1 workspace through v1->v5 on Workspace.initialize preserving catalog records', async () => {
     const { idb, persistence, workspace, catalog } = createWorkspaceHarness();
 
     await new Promise<void>((resolve, reject) => {
@@ -312,7 +312,7 @@ describe('Workspace seam', () => {
     const root = await persistence.inspectRoot();
     expect(root.status).toBe('Present');
     if (root.status === 'Present') {
-      expect(root.activeGeneration).toBe(4);
+      expect(root.activeGeneration).toBe(5);
       expect(root.schemaVersion).toBe(CURRENT_SCHEMA_VERSION);
     }
 
@@ -323,7 +323,7 @@ describe('Workspace seam', () => {
     }
   });
 
-  it('upgrades a genuine v3 workspace to v4 on Workspace.initialize preserving trades and projections', async () => {
+  it('upgrades a genuine v3 workspace to v5 on Workspace.initialize preserving trades and projections', async () => {
     const { idb, persistence, workspace } = createWorkspaceHarness();
 
     await new Promise<void>((resolve, reject) => {
@@ -395,7 +395,7 @@ describe('Workspace seam', () => {
     const root = await persistence.inspectRoot();
     expect(root.status).toBe('Present');
     if (root.status === 'Present') {
-      expect(root.activeGeneration).toBe(2);
+      expect(root.activeGeneration).toBe(3);
       expect(root.schemaVersion).toBe(CURRENT_SCHEMA_VERSION);
     }
 

@@ -157,6 +157,17 @@ export function getCompletedSessionsBetween(fromYmd: string, toYmd: string): str
   return sessions;
 }
 
+export function getNextTradingDate(ymd: string): string {
+  let cursor = addDaysYmd(ymd, 1);
+  for (let i = 0; i < 14; i += 1) {
+    if (isUsTradingDay(cursor)) {
+      return cursor;
+    }
+    cursor = addDaysYmd(cursor, 1);
+  }
+  return cursor;
+}
+
 export function formatSessionDateShort(ymd: string): string {
   const { year, month, day } = parseYmd(ymd);
   const dt = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));

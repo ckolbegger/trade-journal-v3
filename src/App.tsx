@@ -4,7 +4,7 @@ import type { RuntimeReadinessSnapshot } from './runtime/readiness';
 import type { SwUpdateHandle } from './runtime/sw-client';
 import { AboutView } from './ui/about/AboutView';
 import { AccountsView } from './ui/accounts/AccountsView';
-import { ReviewMarksView } from './ui/review/ReviewMarksView';
+import { DailyReviewView } from './ui/review/DailyReviewView';
 import { AppShell, type NavTab } from './ui/shell/AppShell';
 import { OnboardingScreen } from './ui/shell/OnboardingScreen';
 import { ReadinessScreen } from './ui/shell/ReadinessScreen';
@@ -330,12 +330,12 @@ export function App() {
       </div>
 
       <div hidden={activeTab !== 'review'}>
-        <ReviewMarksView
-          views={runtime.views}
+        <DailyReviewView
+          dailyReview={runtime.dailyReview}
           marketData={runtime.marketData}
           refreshKey={tradesRefreshKey}
           writable={!screen.recoveryOnly}
-          onMarksChanged={() => setTradesRefreshKey((k) => k + 1)}
+          onReviewMutated={() => setTradesRefreshKey((k) => k + 1)}
           onInspectTrade={(tradeId) => {
             setSelectedTradeId(tradeId);
             setActiveTab('trades');
