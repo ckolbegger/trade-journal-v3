@@ -269,6 +269,8 @@ ocr (`ocr/T95.13-e8fbbc64.json`, 11 files, 3 comments, all Valid):
 
 **T95.13-B2** `0480e840`: when both readings show the same to the cent (only possible under a cent), each is shown as typed ("$0.0004 or $0.004?"); buttons keyed by label and price. One case red then green (new `SlipQuestion.test.tsx`). src/ui 1,316; browser 8 of 8.
 
+ocr of B1 and B2 (`ocr/T95.13-B1-B2-0480e840.json`): **No findings.**
+
 ## Trial: complete runs overlapped with the next task (the user, 2026-11-22, for 5 or 6 tasks)
 
 Each task's complete run runs in a detached scratch copy (`.claude/worktrees/run-<label>`, set up by `lane-setup.sh`) at the task's commit, while the next task's subagent starts in this worktree. The run's files are copied back to `evidence/D95/suite-runs/`. A failure becomes a bug task as before; the next task restarts only if it built on the broken code. Times are recorded per run to measure the saving.

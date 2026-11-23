@@ -1,0 +1,140 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 0,
+    "total_tokens": 61633,
+    "input_tokens": 61103,
+    "output_tokens": 530,
+    "cache_read_tokens": 11648,
+    "elapsed": "18s"
+  },
+  "tool_calls": {
+    "total": 9,
+    "by_tool": {
+      "code_search": 2,
+      "file_find": 1,
+      "file_read": 6
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "MarksStep screen and tests",
+      "files": [
+        "src/ui/screens/MarksStep.test.tsx",
+        "src/ui/screens/MarksStep.tsx"
+      ]
+    },
+    {
+      "label": "SlipQuestion screen and tests",
+      "files": [
+        "src/ui/screens/SlipQuestion.test.tsx",
+        "src/ui/screens/SlipQuestion.tsx"
+      ]
+    }
+  ],
+  "session_id": "8514ce50-4b04-4822-ae56-79047329ff3a",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "8514ce50-4b04-4822-ae56-79047329ff3a",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "e60318da^",
+      "requested_head": "0480e840",
+      "resolved_base": "ebe82f53362d2efa839cc18e45226ad874dbb332",
+      "resolved_head": "0480e8401c3439f954e7a6a0286ef22b25b21904",
+      "exact_range": "ebe82f53362d2efa839cc18e45226ad874dbb332..0480e8401c3439f954e7a6a0286ef22b25b21904",
+      "source_artifact_sha256": "d05c756f824e29c6d3822d686d8b9db14156cbc917899b4994bd6115019a2e28"
+    },
+    "execution": {
+      "ocr_version": "v1.14.2",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "1de9fb59a96f30dc853b334b27aaf78ed77e5f83bdeec49ec39aa6d89c94056d",
+          "path": "src/ui/screens/SlipQuestion.test.tsx",
+          "fingerprint": "a512afaf88a799a3ea5e7bc65685014117b891ca317cdbffa594581fef78c956"
+        },
+        {
+          "item_id": "4b21796a3b8337f5f458f478be4840734deaed42180342c61b1d769c747a9078",
+          "path": "src/ui/screens/SlipQuestion.tsx",
+          "fingerprint": "0f7f21da7c2c1ec59dbc242a05dd3489615c033266c41117165c76e86bc48ba4"
+        },
+        {
+          "item_id": "88b5b68545f1424b748f6415e66b42b1077a3cff3918af9cd90c1a49c00154de",
+          "path": "src/ui/screens/MarksStep.tsx",
+          "fingerprint": "3f14f0e99489f30405723cc56da047cc02aa80052724eaf17cde9c3c15512070"
+        },
+        {
+          "item_id": "f88b8489a05d22559cf942583fe7b073450ce3857d8b76cdd026cc548c128a83",
+          "path": "src/ui/screens/MarksStep.test.tsx",
+          "fingerprint": "af068c8a29757391aa8092fc7c2b951ebc7f610ee21bcd431212563ab38527cb"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "1de9fb59a96f30dc853b334b27aaf78ed77e5f83bdeec49ec39aa6d89c94056d",
+          "path": "src/ui/screens/SlipQuestion.test.tsx",
+          "fingerprint": "a512afaf88a799a3ea5e7bc65685014117b891ca317cdbffa594581fef78c956"
+        },
+        {
+          "item_id": "4b21796a3b8337f5f458f478be4840734deaed42180342c61b1d769c747a9078",
+          "path": "src/ui/screens/SlipQuestion.tsx",
+          "fingerprint": "0f7f21da7c2c1ec59dbc242a05dd3489615c033266c41117165c76e86bc48ba4"
+        },
+        {
+          "item_id": "88b5b68545f1424b748f6415e66b42b1077a3cff3918af9cd90c1a49c00154de",
+          "path": "src/ui/screens/MarksStep.tsx",
+          "fingerprint": "3f14f0e99489f30405723cc56da047cc02aa80052724eaf17cde9c3c15512070"
+        },
+        {
+          "item_id": "f88b8489a05d22559cf942583fe7b073450ce3857d8b76cdd026cc548c128a83",
+          "path": "src/ui/screens/MarksStep.test.tsx",
+          "fingerprint": "af068c8a29757391aa8092fc7c2b951ebc7f610ee21bcd431212563ab38527cb"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "70d36a849050423771db26f601b476e996b3312c19fb9101758cb06e82645474",
+          "path": "evidence/D95/tdd-log/T95.13-B1.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "77c7a1e22e80a8253b8f5dbdcda279809df149b6474e95080739e9cca81aa30e",
+          "path": "evidence/D95/tdd-log/T95.13-B2.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ab47bc811f23c17f4c6317a43b1bf19eff8f2b20af07649acc55f19159f8bebc",
+          "path": "evidence/D95/structural.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 18399
+  }
+}
