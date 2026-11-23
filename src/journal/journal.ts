@@ -7,9 +7,20 @@ import type {
 import type { Clock } from '../shared/clock';
 import type { RuntimeNotWritableResult } from '../shared/result';
 
-export const JOURNAL_SEED_MANIFEST_VERSION = 1 as const;
+export const JOURNAL_SEED_MANIFEST_VERSION = 2 as const;
 export const PLAN_REFLECTION_TYPE_ID = 'entry_type_plan_reflection' as const;
 export const PLAN_REFLECTION_DEF_ID = 'def_plan_reflection_v1' as const;
+export const POSITION_CHANGE_REFLECTION_TYPE_ID = 'entry_type_position_change_reflection' as const;
+export const POSITION_CHANGE_REFLECTION_DEF_ID = 'def_position_change_reflection_v1' as const;
+
+export const DECISION_MODE_OPTIONS = [
+  'As Planned',
+  'Deliberate Adjustment',
+  'Reactive',
+  'Externally Imposed',
+] as const;
+
+export type DecisionMode = (typeof DECISION_MODE_OPTIONS)[number];
 
 export const PRIMARY_EMOTION_OPTIONS = [
   'Calm',
@@ -155,6 +166,93 @@ export function validatePlanReflectionInput(
   return { ok: true, thesis, invalidation };
 }
 
+export interface PositionChangeReflectionInput {
+  readonly definitionId: string;
+  readonly definitionRevision: number;
+  readonly decisionMode: DecisionMode;
+  readonly primaryEmotion: PrimaryEmotion;
+  readonly decisionConfidence: number;
+  readonly note?: string;
+}
+
+export function buildPositionChangeReflectionDefinitionV1(createdAt: string): EntryDefinitionRecord {
+  return {
+    id: POSITION_CHANGE_REFLECTION_DEF_ID,
+    entryTypeId: POSITION_CHANGE_REFLECTION_TYPE_ID,
+    label: 'Position Change Reflection',
+    revision: 1,
+    createdAt,
+    prompts: [
+      {
+        promptId: 'decisionMode',
+        label: 'Decision mode',
+        kind: 'SingleSelect',
+        required: true,
+        options: [...DECISION_MODE_OPTIONS],
+      },
+      {
+        promptId: 'primaryEmotion',
+        label: 'Primary emotion',
+        kind: 'SingleSelect',
+        required: true,
+        options: [...PRIMARY_EMOTION_OPTIONS],
+      },
+      {
+        promptId: 'decisionConfidence',
+        label: 'Decision confidence',
+        kind: 'Scale',
+        required: true,
+        min: 1,
+        max: 5,
+      },
+      {
+        promptId: 'note',
+        label: 'Note',
+        kind: 'Text',
+        required: false,
+      },
+    ],
+  };
+}
+
+export function validatePositionChangeReflectionInput(
+  definition: EntryDefinitionRecord | undefined,
+  input: PositionChangeReflectionInput,
+): { ok: true; note?: string } | { ok: false; errors: { field: string; message: string }[] } {
+  const errors: { field: string; message: string }[] = [];
+  if (
+    !definition ||
+    definition.id !== input.definitionId ||
+    definition.revision !== input.definitionRevision
+  ) {
+    errors.push({
+      field: 'definition',
+      message: 'Position Change Reflection form definition is missing or stale.',
+    });
+  }
+  if (!(DECISION_MODE_OPTIONS as readonly string[]).includes(input.decisionMode)) {
+    errors.push({ field: 'decisionMode', message: 'Select a valid Decision mode.' });
+  }
+  if (!(PRIMARY_EMOTION_OPTIONS as readonly string[]).includes(input.primaryEmotion)) {
+    errors.push({ field: 'primaryEmotion', message: 'Select a valid Primary emotion.' });
+  }
+  if (
+    !Number.isInteger(input.decisionConfidence) ||
+    input.decisionConfidence < 1 ||
+    input.decisionConfidence > 5
+  ) {
+    errors.push({
+      field: 'decisionConfidence',
+      message: 'Decision confidence must be an integer between 1 and 5.',
+    });
+  }
+  if (errors.length > 0) {
+    return { ok: false, errors };
+  }
+  const trimmedNote = input.note?.trim();
+  return { ok: true, note: trimmedNote || undefined };
+}
+
 export function createJournal(options: {
   readonly persistence: PersistenceSeam;
   readonly clock: Clock;
@@ -178,6 +276,12 @@ export function createJournal(options: {
           if (!hasPlanDef) {
             tx.put('journal_definitions', buildPlanReflectionDefinitionV1(now));
             additions.push(PLAN_REFLECTION_DEF_ID);
+          }
+
+          const hasPcDef = defs.some((d) => d.entryTypeId === POSITION_CHANGE_REFLECTION_TYPE_ID);
+          if (!hasPcDef) {
+            tx.put('journal_definitions', buildPositionChangeReflectionDefinitionV1(now));
+            additions.push(POSITION_CHANGE_REFLECTION_DEF_ID);
           }
 
           if (!meta || meta.seedManifestVersion < JOURNAL_SEED_MANIFEST_VERSION || additions.length > 0) {

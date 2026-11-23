@@ -1,4 +1,7 @@
 import type {
+  ExecutionRecord,
+  JournalDebtRecord,
+  JournalDeclineRecord,
   JournalEntryRecord,
   PersistenceSeam,
   PlanVersionFactRecord,
@@ -6,6 +9,7 @@ import type {
   TradeRecordRow,
 } from '../persistence/idb';
 import { ExactNumber, toDecimalString, toMoneyString } from '../shared/exact-number';
+import { deriveLongStockPosition, type DerivedLongStockState } from '../trade-analysis/derive';
 
 export interface TradeBrowseItem {
   readonly id: string;
@@ -15,6 +19,7 @@ export interface TradeBrowseItem {
   readonly accountLabel: string;
   readonly institutionLabel: string;
   readonly plannedQuantityDisplay: string;
+  readonly openSharesDisplay: string;
   readonly intendedEntryDisplay: string;
   readonly oneRDisplay: string;
   readonly plannedRewardDisplay: string;
@@ -32,7 +37,11 @@ export interface TradeDetailCockpitViewModel {
   readonly stopPriceDisplay: string;
   readonly targetPriceDisplay: string;
   readonly planFact: PlanVersionFactRecord;
+  readonly executions: readonly ExecutionRecord[];
+  readonly derived: DerivedLongStockState;
   readonly journalEntries: readonly JournalEntryRecord[];
+  readonly journalDebt: readonly JournalDebtRecord[];
+  readonly journalDeclines: readonly JournalDeclineRecord[];
 }
 
 export interface TradeViewsAndReporting {
@@ -55,18 +64,26 @@ export function createTradeViews(options: {
   return {
     async browseTrades(filter = {}) {
       return persistence.runReadTransaction(
-        ['trades', 'catalog_institutions', 'catalog_accounts', 'catalog_strategies'],
+        [
+          'trades',
+          'catalog_institutions',
+          'catalog_accounts',
+          'catalog_strategies',
+          'proj_trade_analysis_input',
+        ],
         async (tx) => {
-          const [trades, institutions, accounts, strategies] = await Promise.all([
+          const [trades, institutions, accounts, strategies, projections] = await Promise.all([
             tx.getAll('trades'),
             tx.getAll('catalog_institutions'),
             tx.getAll('catalog_accounts'),
             tx.getAll('catalog_strategies'),
+            tx.getAll('proj_trade_analysis_input'),
           ]);
 
           const instMap = new Map(institutions.map((i) => [i.id, i.currentLabel]));
           const acctMap = new Map(accounts.map((a) => [a.id, a.currentLabel]));
           const stratMap = new Map(strategies.map((s) => [s.id, s.currentLabel]));
+          const projMap = new Map(projections.map((p) => [p.tradeId, p]));
 
           const items: TradeBrowseItem[] = trades
             .filter((t) => !filter.lifecycleState || t.lifecycleState === filter.lifecycleState)
@@ -79,6 +96,7 @@ export function createTradeViews(options: {
               accountLabel: acctMap.get(t.accountId) ?? 'Unknown Account',
               institutionLabel: instMap.get(t.institutionId) ?? 'Unknown Institution',
               plannedQuantityDisplay: formatShares(t.plannedQuantity),
+              openSharesDisplay: projMap.get(t.id)?.openSharesDisplay ?? '0',
               intendedEntryDisplay: toMoneyString(ExactNumber.fromJSON(t.intendedEntryPrice)),
               oneRDisplay: t.baseline.originalPlannedRiskDisplay,
               plannedRewardDisplay: t.baseline.originalPlannedRewardDisplay,
@@ -96,7 +114,10 @@ export function createTradeViews(options: {
         [
           'trades',
           'trade_facts',
+          'executions',
           'journal_entries',
+          'journal_debt',
+          'journal_declines',
           'catalog_institutions',
           'catalog_accounts',
           'catalog_strategies',
@@ -107,13 +128,17 @@ export function createTradeViews(options: {
             return null;
           }
 
-          const [facts, entries, institution, account, strategy] = await Promise.all([
-            tx.getAllByIndex('trade_facts', 'by_trade', tradeId),
-            tx.getAllByIndex('journal_entries', 'by_trade', tradeId),
-            tx.get('catalog_institutions', trade.institutionId),
-            tx.get('catalog_accounts', trade.accountId),
-            tx.get('catalog_strategies', trade.strategyId),
-          ]);
+          const [facts, executions, entries, debt, declines, institution, account, strategy] =
+            await Promise.all([
+              tx.getAllByIndex('trade_facts', 'by_trade', tradeId),
+              tx.getAllByIndex('executions', 'by_trade', tradeId),
+              tx.getAllByIndex('journal_entries', 'by_trade', tradeId),
+              tx.getAllByIndex('journal_debt', 'by_trade', tradeId),
+              tx.getAllByIndex('journal_declines', 'by_trade', tradeId),
+              tx.get('catalog_institutions', trade.institutionId),
+              tx.get('catalog_accounts', trade.accountId),
+              tx.get('catalog_strategies', trade.strategyId),
+            ]);
 
           const tradeFacts = [...facts].sort((a, b) => a.recordedSequence - b.recordedSequence);
           const planFact = tradeFacts.find((f) => f.kind === 'PlanVersion');
@@ -121,7 +146,27 @@ export function createTradeViews(options: {
             return null;
           }
 
+          const sortedExecs = [...executions].sort((a, b) => {
+            const byTime = a.economicTime.localeCompare(b.economicTime);
+            return byTime !== 0 ? byTime : a.recordedSequence - b.recordedSequence;
+          });
+
+          const derived = deriveLongStockPosition({
+            storedLifecycleState: trade.lifecycleState,
+            plan: {
+              plannedQuantity: trade.plannedQuantity,
+              intendedEntryPrice: trade.intendedEntryPrice,
+              stopPrice: trade.stopPrice,
+              targetPrice: trade.targetPrice,
+            },
+            executions: sortedExecs,
+          });
+
           const journalEntries = [...entries].sort((a, b) =>
+            b.recordedAt.localeCompare(a.recordedAt),
+          );
+          const journalDebt = [...debt].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+          const journalDeclines = [...declines].sort((a, b) =>
             b.recordedAt.localeCompare(a.recordedAt),
           );
 
@@ -135,7 +180,11 @@ export function createTradeViews(options: {
             stopPriceDisplay: toMoneyString(ExactNumber.fromJSON(trade.stopPrice)),
             targetPriceDisplay: toMoneyString(ExactNumber.fromJSON(trade.targetPrice)),
             planFact,
+            executions: sortedExecs,
+            derived,
             journalEntries,
+            journalDebt,
+            journalDeclines,
           };
         },
       );

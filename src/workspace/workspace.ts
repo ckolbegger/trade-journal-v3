@@ -7,19 +7,22 @@ import {
 } from '../catalog/reference-catalog';
 import {
   buildPlanReflectionDefinitionV1,
+  buildPositionChangeReflectionDefinitionV1,
   JOURNAL_SEED_MANIFEST_VERSION,
   PLAN_REFLECTION_TYPE_ID,
+  POSITION_CHANGE_REFLECTION_TYPE_ID,
   type Journal,
 } from '../journal/journal';
 import {
   CURRENT_SCHEMA_VERSION,
   SCHEMA_VERSION_V1,
+  SCHEMA_VERSION_V2,
   type AccountRecord,
   type InstitutionRecord,
   type PersistenceSeam,
   type WorkspaceMetaRecord,
 } from '../persistence/idb';
-import { migrateWorkspaceV1ToV2 } from '../persistence/migrations';
+import { migrateWorkspaceV1ToV2, migrateWorkspaceV2ToV3 } from '../persistence/migrations';
 import type {
   RuntimeReadinessController,
   RuntimeReadinessSnapshot,
@@ -254,9 +257,10 @@ export function createWorkspace(options: {
       if (root.status === 'Present') {
         let activeMeta = root.workspaceMeta;
         let activeSchemaVersion = root.schemaVersion;
+        let activeGeneration = root.activeGeneration;
         let activeReadiness = readinessSnapshot;
 
-        if (root.schemaVersion === SCHEMA_VERSION_V1) {
+        if (activeSchemaVersion === SCHEMA_VERSION_V1) {
           if (!persistence.indexedDB) {
             return {
               status: 'MigrationBlocked',
@@ -266,7 +270,7 @@ export function createWorkspace(options: {
           }
           const migrated = await migrateWorkspaceV1ToV2({
             indexedDB: persistence.indexedDB,
-            fromGeneration: root.activeGeneration,
+            fromGeneration: activeGeneration,
           });
           if (migrated.status === 'MigrationBlocked') {
             return {
@@ -275,19 +279,49 @@ export function createWorkspace(options: {
               readiness: readinessSnapshot,
             };
           }
-          const postMigrateRoot = await persistence.inspectRoot();
-          if (
-            postMigrateRoot.status !== 'Present' ||
-            postMigrateRoot.schemaVersion !== CURRENT_SCHEMA_VERSION
-          ) {
+          const postV2 = await persistence.inspectRoot();
+          if (postV2.status !== 'Present' || postV2.schemaVersion !== SCHEMA_VERSION_V2) {
             return {
               status: 'MigrationBlocked',
-              reason: 'Post-migration root verification failed schema version check.',
+              reason: 'Post-migration v2 root verification failed.',
               readiness: readinessSnapshot,
             };
           }
-          activeMeta = postMigrateRoot.workspaceMeta;
-          activeSchemaVersion = postMigrateRoot.schemaVersion;
+          activeMeta = postV2.workspaceMeta;
+          activeSchemaVersion = postV2.schemaVersion;
+          activeGeneration = postV2.activeGeneration;
+        }
+
+        if (activeSchemaVersion === SCHEMA_VERSION_V2) {
+          if (!persistence.indexedDB) {
+            return {
+              status: 'MigrationBlocked',
+              reason: 'IndexedDB factory is unavailable for v2 to v3 migration.',
+              readiness: readinessSnapshot,
+            };
+          }
+          const migrated = await migrateWorkspaceV2ToV3({
+            indexedDB: persistence.indexedDB,
+            fromGeneration: activeGeneration,
+          });
+          if (migrated.status === 'MigrationBlocked') {
+            return {
+              status: 'MigrationBlocked',
+              reason: migrated.reason,
+              readiness: readinessSnapshot,
+            };
+          }
+          const postV3 = await persistence.inspectRoot();
+          if (postV3.status !== 'Present' || postV3.schemaVersion !== CURRENT_SCHEMA_VERSION) {
+            return {
+              status: 'MigrationBlocked',
+              reason: 'Post-migration v3 root verification failed.',
+              readiness: readinessSnapshot,
+            };
+          }
+          activeMeta = postV3.workspaceMeta;
+          activeSchemaVersion = postV3.schemaVersion;
+          activeGeneration = postV3.activeGeneration;
           activeReadiness = await readiness.evaluate();
         }
 
@@ -385,6 +419,9 @@ export function createWorkspace(options: {
 
           if (!definitions.some((d) => d.entryTypeId === PLAN_REFLECTION_TYPE_ID)) {
             tx.put('journal_definitions', buildPlanReflectionDefinitionV1(now));
+          }
+          if (!definitions.some((d) => d.entryTypeId === POSITION_CHANGE_REFLECTION_TYPE_ID)) {
+            tx.put('journal_definitions', buildPositionChangeReflectionDefinitionV1(now));
           }
           tx.put('journal_meta', {
             key: 'singleton',

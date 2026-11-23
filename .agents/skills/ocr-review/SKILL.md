@@ -16,18 +16,18 @@ To keep the reviewer isolated from implementation context, run the review via a 
 ### Reviewer subagent steps
 
 1. Note the current branch (`git branch --show-current`) and `git status --short` so you can confirm at the end that neither changed.
-2. Create a scratch directory under `/tmp` (e.g., `/tmp/ocr-review-<tag>`). Put all scratch files there — never inside the repository.
-3. If a deliverable or task plan section is relevant, write a concise summary to `/tmp/ocr-review-<tag>/background.md` (**under 2,000 characters**): heading, scope/seams, and key checks. Trim prose before requirements. Skip `-B` if no background applies.
+2. Create a scratch directory under `.ocr/` inside the repository (gitignored and excluded by `.agents/ocr-rule.json`, e.g., `.ocr/<tag>`).
+3. If a deliverable or task plan section is relevant, write a concise summary to `.ocr/<tag>/background.md` (**under 2,000 characters**): heading, scope/seams, and key checks. Trim prose before requirements. Skip `-B` if no background applies.
 4. Run `ocr review` from the repository root with literal paths (avoid `$VAR` / `$(...)` in the `ocr review` command so prefix-based command approval stays intact; `ocr review` requires `BypassSandbox: true` for `api.anthropic.com` and git worktree metadata):
    - **Pre-commit working tree (default):**
      ```sh
-     ocr review --provider anthropic --model claude-opus-5-5 --effort medium --rule .agents/ocr-rule.json --audience agent --format json --color never --output /tmp/ocr-review-<tag>/ocr.json --background-file /tmp/ocr-review-<tag>/background.md
+     ocr review --provider anthropic --model claude-opus-5-5 --effort medium --rule .agents/ocr-rule.json --audience agent --format json --color never --output .ocr/<tag>/ocr.json --background-file .ocr/<tag>/background.md
      ```
      *(Omit `--background-file ...` if no background file was created.)*
    - **Explicit commit or range (only when requested):** add `--commit <sha>` or `--from <base> --to <head>`.
-   - `.agents/ocr-rule.json` brings test files (`**/*.test.ts`, `**/*.test.tsx`, `e2e/**/*.spec.ts`) into the review and excludes `evidence/**`.
+   - `.agents/ocr-rule.json` brings test files (`**/*.test.ts`, `**/*.test.tsx`, `e2e/**/*.spec.ts`) into the review and excludes `evidence/**`, `prototypes/**`, and `.ocr/**`.
    - If authentication fails, stop and report the exact error so the user can update `providers.anthropic.api_key` locally. Never try to read or print `~/.opencodereview/config.json`.
-5. Read `/tmp/ocr-review-<tag>/ocr.json`. Note `session_id`, model, reviewed/excluded file counts, and every comment in `comments[]`.
+5. Read `.ocr/<tag>/ocr.json`. Note `session_id`, model, reviewed/excluded file counts, and every comment in `comments[]`.
 6. **Ground every finding in code you read:** For each comment, read the cited lines (and surrounding context) and classify it:
    - **Valid:** real defect or missing test protecting a contract.
    - **Doubtful:** plausible issue, not conclusively shown by the code.

@@ -66,9 +66,10 @@ export function App() {
   const [accountsDirty, setAccountsDirty] = useState(false);
   const [aboutDirty, setAboutDirty] = useState(false);
   const [planDirty, setPlanDirty] = useState(false);
+  const [entryDirty, setEntryDirty] = useState(false);
   const [durabilityBusy, setDurabilityBusy] = useState(false);
 
-  const hasUnsavedChanges = accountsDirty || aboutDirty || planDirty;
+  const hasUnsavedChanges = accountsDirty || aboutDirty || planDirty || entryDirty;
 
   const bootOrRefresh = useCallback(async () => {
     const seq = ++bootSeqRef.current;
@@ -298,10 +299,16 @@ export function App() {
           <TradeDetailCockpit
             tradeId={selectedTradeId}
             views={runtime.views}
+            journal={runtime.journal}
+            workflows={runtime.workflows}
+            clock={runtime.clock}
+            writable={!screen.recoveryOnly}
             onBack={() => {
               setSelectedTradeId(null);
               setTradesRefreshKey((k) => k + 1);
             }}
+            onTradeMutated={() => setTradesRefreshKey((k) => k + 1)}
+            onDirtyChange={setEntryDirty}
           />
         ) : (
           <TradesView

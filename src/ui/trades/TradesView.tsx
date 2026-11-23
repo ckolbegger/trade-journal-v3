@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
+import type { TradeLifecycleState } from '../../persistence/idb';
 import type { TradeBrowseItem, TradeViewsAndReporting } from '../../trade-views/trade-views';
 import styles from '../shell/AppShell.module.css';
+
+type LifecycleFilter = 'All' | 'Planned' | 'Open';
 
 interface TradesViewProps {
   readonly views: TradeViewsAndReporting;
@@ -10,6 +13,7 @@ interface TradesViewProps {
 }
 
 export function TradesView({ views, refreshKey, onSelectTrade, onNewPlan }: TradesViewProps) {
+  const [filter, setFilter] = useState<LifecycleFilter>('All');
   const [items, setItems] = useState<readonly TradeBrowseItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -18,7 +22,9 @@ export function TradesView({ views, refreshKey, onSelectTrade, onNewPlan }: Trad
     let active = true;
     (async () => {
       try {
-        const res = await views.browseTrades({ lifecycleState: 'Planned' });
+        const lifecycleState: TradeLifecycleState | undefined =
+          filter === 'All' ? undefined : filter;
+        const res = await views.browseTrades({ lifecycleState });
         if (active) {
           setItems(res.items);
           setError(null);
@@ -34,7 +40,7 @@ export function TradesView({ views, refreshKey, onSelectTrade, onNewPlan }: Trad
     return () => {
       active = false;
     };
-  }, [views, refreshKey]);
+  }, [views, refreshKey, filter]);
 
   return (
     <section aria-labelledby="trades-heading">
@@ -44,12 +50,26 @@ export function TradesView({ views, refreshKey, onSelectTrade, onNewPlan }: Trad
             Trades
           </h1>
           <p className={styles.muted} style={{ margin: '4px 0 0' }}>
-            Planned Trades ready to review or open.
+            Browse Planned and Open Trades from your local journal.
           </p>
         </div>
         <button type="button" className={styles.btnPrimary} onClick={onNewPlan}>
           New Plan
         </button>
+      </div>
+
+      <div className={styles.row} style={{ marginBottom: 14 }} role="group" aria-label="Filter by lifecycle state">
+        {(['All', 'Open', 'Planned'] as const).map((option) => (
+          <button
+            key={option}
+            type="button"
+            className={filter === option ? styles.btnPrimary : styles.btnSecondary}
+            aria-pressed={filter === option}
+            onClick={() => setFilter(option)}
+          >
+            {option}
+          </button>
+        ))}
       </div>
 
       {error && (
@@ -65,19 +85,20 @@ export function TradesView({ views, refreshKey, onSelectTrade, onNewPlan }: Trad
       ) : items.length === 0 ? (
         <div className={styles.card}>
           <p className={styles.muted} style={{ margin: 0 }}>
-            No Planned Trades yet. Create your first Long Stock Plan to freeze your 1R baseline and
-            Thesis.
+            {filter === 'All'
+              ? 'No Trades yet. Create your first Long Stock Plan to freeze your 1R baseline and Thesis.'
+              : `No ${filter} Trades yet.`}
           </p>
         </div>
       ) : (
         <div className={styles.card} style={{ overflowX: 'auto' }}>
-          <table className={styles.table} aria-label="Planned trades">
+          <table className={styles.table} aria-label="Trades list">
             <thead>
               <tr>
                 <th>Symbol</th>
                 <th>State</th>
                 <th>Account</th>
-                <th>Planned</th>
+                <th>Position</th>
                 <th>1R Risk</th>
                 <th>Planned R:R</th>
                 <th>Open</th>
@@ -91,14 +112,21 @@ export function TradesView({ views, refreshKey, onSelectTrade, onNewPlan }: Trad
                     <div className={styles.muted}>{item.strategyLabel}</div>
                   </td>
                   <td>
-                    <span className={styles.pill}>{item.lifecycleState}</span>
+                    <span
+                      className={`${styles.pill} ${
+                        item.lifecycleState === 'Open' ? styles.pillSuccess : ''
+                      }`}
+                    >
+                      {item.lifecycleState}
+                    </span>
                   </td>
                   <td>
                     {item.accountLabel}
                     <div className={styles.muted}>{item.institutionLabel}</div>
                   </td>
                   <td className={styles.mono}>
-                    {item.plannedQuantityDisplay} sh @ {item.intendedEntryDisplay}
+                    {item.openSharesDisplay} / {item.plannedQuantityDisplay} sh @{' '}
+                    {item.intendedEntryDisplay}
                   </td>
                   <td className={styles.mono}>{item.oneRDisplay}</td>
                   <td className={styles.mono}>{item.plannedRRDisplay}</td>

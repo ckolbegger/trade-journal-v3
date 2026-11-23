@@ -3,7 +3,8 @@ import type { ReadinessCheckId, RuntimeNotWritableReason } from '../shared/resul
 
 export const SCHEMA_VERSION_V1 = 1 as const;
 export const SCHEMA_VERSION_V2 = 2 as const;
-export const CURRENT_SCHEMA_VERSION = SCHEMA_VERSION_V2;
+export const SCHEMA_VERSION_V3 = 3 as const;
+export const CURRENT_SCHEMA_VERSION = SCHEMA_VERSION_V3;
 export const BOOTSTRAP_DB_NAME = 'tjv3_bootstrap';
 export const DIAGNOSTICS_DB_NAME = 'tjv3_diagnostics';
 export const WORKSPACE_DB_PREFIX = 'tjv3_ws_gen_';
@@ -168,6 +169,69 @@ export interface CatalogMetaRecord {
   readonly seededAt: string;
 }
 
+export type PlannedLegIntent = 'PlannedLeg' | 'ExplicitlyUnplanned';
+
+export interface PositionChangeRecord {
+  readonly id: string;
+  readonly tradeId: string;
+  readonly recordedSequence: number;
+  readonly economicTime: string;
+  readonly executionIds: readonly string[];
+  readonly recordedAt: string;
+}
+
+export interface ExecutionRecord {
+  readonly id: string;
+  readonly tradeId: string;
+  readonly positionChangeId: string;
+  readonly side: 'Buy' | 'Sell';
+  readonly quantity: SerializedRational;
+  readonly fillPrice: SerializedRational;
+  readonly fee: SerializedRational;
+  readonly plannedLegIntent: PlannedLegIntent;
+  readonly economicTime: string;
+  readonly recordedSequence: number;
+  readonly recordedAt: string;
+}
+
+export interface DeviationRecord {
+  readonly id: string;
+  readonly tradeId: string;
+  readonly kind: 'EntrySize' | 'UnplannedExposure';
+  readonly message: string;
+  readonly recordedAt: string;
+}
+
+export interface JournalDebtRecord {
+  readonly id: string;
+  readonly tradeId: string;
+  readonly entryTypeId: string;
+  readonly definitionSnapshot: EntryDefinitionRecord;
+  readonly source: 'PositionChange';
+  readonly origin: { readonly kind: 'PositionChange'; readonly factId: string };
+  readonly status: 'Outstanding' | 'Settled' | 'Declined';
+  readonly createdAt: string;
+}
+
+export interface JournalDeclineRecord {
+  readonly id: string;
+  readonly tradeId: string;
+  readonly entryTypeId: string;
+  readonly source: 'PositionChange';
+  readonly origin: { readonly kind: 'PositionChange'; readonly factId: string };
+  readonly reason?: string;
+  readonly recordedAt: string;
+}
+
+export interface TradeAnalysisInputProjection {
+  readonly tradeId: string;
+  readonly factRevision: number;
+  readonly lifecycleState: TradeLifecycleState;
+  readonly openSharesDisplay: string;
+  readonly executionCount: number;
+  readonly updatedAt: string;
+}
+
 export interface StoreSchemaMap {
   workspace_meta: WorkspaceMetaRecord;
   catalog_meta: CatalogMetaRecord;
@@ -176,9 +240,15 @@ export interface StoreSchemaMap {
   catalog_strategies: StrategyRecord;
   trades: TradeRecordRow;
   trade_facts: TradeFactRecord;
+  position_changes: PositionChangeRecord;
+  executions: ExecutionRecord;
+  deviations: DeviationRecord;
   journal_meta: JournalMetaRecord;
   journal_definitions: EntryDefinitionRecord;
   journal_entries: JournalEntryRecord;
+  journal_debt: JournalDebtRecord;
+  journal_declines: JournalDeclineRecord;
+  proj_trade_analysis_input: TradeAnalysisInputProjection;
 }
 
 export type StoreName = keyof StoreSchemaMap;
@@ -347,8 +417,35 @@ export function ensureWorkspaceV2Stores(db: IDBDatabase): void {
   }
 }
 
-function isSupportedSchemaVersion(v: unknown): v is 1 | 2 {
-  return v === SCHEMA_VERSION_V1 || v === SCHEMA_VERSION_V2;
+export function ensureWorkspaceV3Stores(db: IDBDatabase): void {
+  ensureWorkspaceV2Stores(db);
+  if (!db.objectStoreNames.contains('position_changes')) {
+    const pc = db.createObjectStore('position_changes', { keyPath: 'id' });
+    pc.createIndex('by_trade', 'tradeId', { unique: false });
+  }
+  if (!db.objectStoreNames.contains('executions')) {
+    const execs = db.createObjectStore('executions', { keyPath: 'id' });
+    execs.createIndex('by_trade', 'tradeId', { unique: false });
+  }
+  if (!db.objectStoreNames.contains('deviations')) {
+    const devs = db.createObjectStore('deviations', { keyPath: 'id' });
+    devs.createIndex('by_trade', 'tradeId', { unique: false });
+  }
+  if (!db.objectStoreNames.contains('journal_debt')) {
+    const debt = db.createObjectStore('journal_debt', { keyPath: 'id' });
+    debt.createIndex('by_trade', 'tradeId', { unique: false });
+  }
+  if (!db.objectStoreNames.contains('journal_declines')) {
+    const dec = db.createObjectStore('journal_declines', { keyPath: 'id' });
+    dec.createIndex('by_trade', 'tradeId', { unique: false });
+  }
+  if (!db.objectStoreNames.contains('proj_trade_analysis_input')) {
+    db.createObjectStore('proj_trade_analysis_input', { keyPath: 'tradeId' });
+  }
+}
+
+function isSupportedSchemaVersion(v: unknown): v is 1 | 2 | 3 {
+  return v === SCHEMA_VERSION_V1 || v === SCHEMA_VERSION_V2 || v === SCHEMA_VERSION_V3;
 }
 
 function isValidPointer(raw: unknown): raw is BootstrapPointerRecord {
@@ -448,7 +545,20 @@ export function createPersistenceSeam(options: {
     if (!idb) {
       throw new Error('IndexedDB is unavailable.');
     }
-    const ensureFn = schemaVersion === SCHEMA_VERSION_V1 ? ensureWorkspaceV1Stores : ensureWorkspaceV2Stores;
+    let ensureFn: (db: IDBDatabase) => void;
+    switch (schemaVersion) {
+      case SCHEMA_VERSION_V1:
+        ensureFn = ensureWorkspaceV1Stores;
+        break;
+      case SCHEMA_VERSION_V2:
+        ensureFn = ensureWorkspaceV2Stores;
+        break;
+      case SCHEMA_VERSION_V3:
+        ensureFn = ensureWorkspaceV3Stores;
+        break;
+      default:
+        throw new Error(`Unsupported workspace schema version: ${schemaVersion}`);
+    }
     return openDatabase(idb, `${WORKSPACE_DB_PREFIX}${generation}`, schemaVersion, ensureFn);
   }
 
