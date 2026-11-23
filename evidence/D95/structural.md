@@ -512,3 +512,5 @@ Run `t95.23-capabilities` (browser-task): unit 1 failed (`src/coordinators/works
 ### T95.23-F1
 
 Commit `6dd789dc`: the workspace manifest pin gains the six variants. Red then green; workspace 131 and the other manifest pins (62) pass.
+
+Run `t95.23-capabilities-2` (browser-task): unit 2890, integration 305, browser 13, checks 14 of 14. Passed. T95.23 Done.
