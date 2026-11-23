@@ -146,3 +146,14 @@ Moved checks went into e2e/d7/responsive-a11y.spec.ts, the case "should show the
 | cells keep an 8 px gap (all drawer tables) | mutated (gap threshold 8 changed to 800) | 1 failed, assertion: "Position drawer cells that touch" toEqual, Received 18 entries |
 | Open Lots headers not truncated | mutated (headerTruncated expected ['x']) | 1 failed, assertion: toEqual, Received headerTruncated [] |
 | both, restored | green | 1 passed |
+
+## TD.10
+
+The moved check was added to e2e/d2/ui-alignment.spec.ts "should keep a Records disagree badge inside the viewport with the Trade cell at 390 and 320": each Underlying and Trade cell, with its descendants, ends inside the scroll region (`insideRegion`, hoisted to module level for the move).
+
+| Moved check | Run | Result |
+|---|---|---|
+| cell right edges inside the scroll region | mutated (limit + 0.5 changed to limit - 1000), `.claude/scripts/with-browser-lock.sh npm run test:e2e:specs -- e2e/d2/ui-alignment.spec.ts -g "Records disagree badge inside the viewport"` | 1 failed, assertion: "Planned Underlying cell right edge at 390", Expected <= -626, Received 120 |
+| same, restored (limit + 0.5) | same command | 1 failed, assertion: "Planned Trade cell 1 right edge at 320", Expected <= 304.5, Received 317.796875 |
+
+The restored run fails on the real bound, not on the test: the kept case's fixture has a second Planned row (XYZ, unreplayable, with its own badge) that the dropped case's one-row fixture lacks, and that row's Trade cell ends 13.3 px past the scroll region at 320. Rule 6: the move was reverted (git checkout of the spec file), :1576 is kept, product code is not touched.

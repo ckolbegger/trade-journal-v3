@@ -336,3 +336,20 @@ Moved checks: 2 (the report's list; nothing beyond it). Both failed on an assert
 Spec counts: before 9 passed (d6/responsive-a11y 5, d7/responsive-a11y 4); after 8 passed (d6 4, d7 4). Both under with-browser-lock.sh on 5175. typecheck and lint exit 0.
 
 References (rule 10): rg of both titles found plan/browser-test-duplicates-plan.md (this plan) and evidence/D08P/structural.md:1479, evidence/D08P/tdd-log/T8P.23-B4.md:7 (finished records, left as written; kept test d7 "should show the Position drawer tables of a Settlement Due option Trade spaced, ..." now also holds the moved checks). No acceptance-matrix, spec-map or bug-tasks entry.
+
+## TD.10
+
+### BD18: d2/ui-alignment "should keep a Records disagree badge inside the scroll region at 320 and 390" (kept)
+
+Confirm first: the report's reading does not hold in full. Dropped case: one Planned Trade (ABC) with a Records disagree badge. Kept case "should keep a Records disagree badge inside the viewport with the Trade cell at 390 and 320": two Planned Trades (ABC, and XYZ that cannot be replayed). The moved check (each Underlying and Trade cell, with descendants, ends inside the scroll region) fails on the kept case's fixture for a real reason: the second row's Trade cell right edge is 317.8 px at 320 wide, limit 304.5 (tdd-log, TD.10). Rule 6 applies.
+
+| Dropped assertion | Where |
+|---|---|
+| one badge on the Planned list at 320 and 390 | living: the kept case (it asserts two badges, ABC's included) |
+| Underlying and Trade cell right edges (with descendants) <= scroll region limit + 0.5 | not moved (fails on the XYZ row); the dropped case stays, so it is still asserted there |
+
+Removed cases: none. Moved checks: none (reverted). Kept: d2/ui-alignment:1576, because the stricter bound fails on the kept case's second row. A product question for the user: at 320 a Planned row that cannot be replayed (two badges) has its Trade cell 13 px outside the scroll region. The kept case checks only the viewport, where it passes.
+
+Spec counts: e2e/d2/ui-alignment.spec.ts before 43 passed, after 43 passed (file unchanged), under with-browser-lock.sh on 5175.
+
+References (rule 10): nothing re-pointed; rg of both titles found only plan/browser-test-duplicates-plan.md and the spec itself.
