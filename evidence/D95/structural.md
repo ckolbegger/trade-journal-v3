@@ -337,3 +337,5 @@ Commit `953cd3c0`. Each Trade to be sold links to its own card; red: no link nam
 ### T95.21-B2
 
 Commit `996d2ee5`. The expiration reminder names each Trade once (de-duplicated by tradeId in the UI before naming the underlying; not arithmetic). Red: "AXIO, AXIO expire Fri Nov 20."; green. DayCard.test.tsx 15 passed.
+
+ocr of T95.21-B1 and T95.21-B2 (gpt-6.1-sol, session cff735b4, d542bfe9..996d2ee5): 2 files, 0 findings. `evidence/D95/ocr/T95.21-B1-B2-996d2ee5.json`.

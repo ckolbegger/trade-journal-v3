@@ -1,0 +1,126 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 0,
+    "total_tokens": 16836,
+    "input_tokens": 16710,
+    "output_tokens": 126,
+    "cache_read_tokens": 3328,
+    "elapsed": "7s"
+  },
+  "tool_calls": {
+    "total": 2,
+    "by_tool": {
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/screens/DayCard.test.tsx",
+        "src/ui/screens/DayCard.tsx"
+      ]
+    }
+  ],
+  "session_id": "cff735b4-11f8-4cce-8eba-4c03ccf5908d",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "cff735b4-11f8-4cce-8eba-4c03ccf5908d",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "d542bfe9",
+      "requested_head": "996d2ee5",
+      "resolved_base": "d542bfe908afcf2a63e460d03bb7618516099adf",
+      "resolved_head": "996d2ee5f13ce87c3a7e384386708965b290a197",
+      "exact_range": "d542bfe908afcf2a63e460d03bb7618516099adf..996d2ee5f13ce87c3a7e384386708965b290a197",
+      "source_artifact_sha256": "a6e39822b46f23418b16233d80f646e83cac97c688e3b946d3a26f437286aad7"
+    },
+    "execution": {
+      "ocr_version": "v1.14.2",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "02f31cbfa860e0ee31a10188563d0568e39651a82df393e66ab6e4b3d6301c57",
+          "path": "src/ui/screens/DayCard.test.tsx",
+          "fingerprint": "55509618710dd4350e7451706691fc85711293b63809254da010227b8ed1d151"
+        },
+        {
+          "item_id": "263f31a81ae1033896139f0943dd0f7495a910b965652d619dce57e43c03a151",
+          "path": "src/ui/screens/DayCard.tsx",
+          "fingerprint": "5779002a1883ea9278526e1d141e91f9ff41d09f4868d044aded97bdb954b572"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "02f31cbfa860e0ee31a10188563d0568e39651a82df393e66ab6e4b3d6301c57",
+          "path": "src/ui/screens/DayCard.test.tsx",
+          "fingerprint": "55509618710dd4350e7451706691fc85711293b63809254da010227b8ed1d151"
+        },
+        {
+          "item_id": "263f31a81ae1033896139f0943dd0f7495a910b965652d619dce57e43c03a151",
+          "path": "src/ui/screens/DayCard.tsx",
+          "fingerprint": "5779002a1883ea9278526e1d141e91f9ff41d09f4868d044aded97bdb954b572"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "2c614f4e332d005ff004e72ac6876b84497c708281dcdd3b2b056594061be064",
+          "path": "evidence/D95/words-changed.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "4d5c271516ca811de6fdffd152dfc1faa8d60372516d3c1001aa2122e3f443aa",
+          "path": "evidence/D95/tdd-log/T95.21-B2.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "80ba360532a0ab2416d6e9bb022f21b55d2054255e4a7cdf606cd0d451a9f99d",
+          "path": "evidence/D95/ocr/T95.21-d542bfe9.json",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ab47bc811f23c17f4c6317a43b1bf19eff8f2b20af07649acc55f19159f8bebc",
+          "path": "evidence/D95/structural.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "e3097bd05207ff2a77b5e56e5d5910ea07c8a667ee97dc2c7cb695026cd6f9f6",
+          "path": "evidence/D95/new-words.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "f9bd1edab9c43749d45731cfb5949302b55e49623d795ffea4ab9e21d812095b",
+          "path": "evidence/D95/tdd-log/T95.21-B1.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 7479
+  }
+}
