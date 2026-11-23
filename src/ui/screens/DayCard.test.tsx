@@ -50,15 +50,17 @@ function review(over: { day?: DaySummary; trades?: readonly WalkedTrade[]; compl
     binding,
   };
 }
-function renderCard(ready: Ready, openCard = vi.fn()) {
+// The calls the card makes: a card to open, an Instrument's cell in the Marks step, or the skipped sessions' columns.
+function renderCard(ready: Ready) {
+  const calls = { openCard: vi.fn(), openMarks: vi.fn(), openSkipped: vi.fn() };
   render(
     <RuntimeContext.Provider value={{ writable: true, report: () => undefined }}>
       <MemoryRouter>
-        <DayCard review={ready} name={(id) => id} openCard={openCard} />
+        <DayCard review={ready} name={(id) => id} {...calls} />
       </MemoryRouter>
     </RuntimeContext.Provider>,
   );
-  return openCard;
+  return calls;
 }
 
 const stepItems = () => within(screen.getByRole('list', { name: 'Steps' })).getAllByRole('listitem');
@@ -110,14 +112,15 @@ describe('the day card', () => {
       { tradeId: 't1', marks: 1, closeReview: false, needs: ['Marks', 'Action'] },
       { tradeId: 't2', marks: 0, closeReview: false, needs: ['Action'] },
     ];
-    const openCard = renderCard(review({ today: [missingRow('AXIO', ['t1'])], day: day({ lines }) }));
+    const marks = renderCard(review({ today: [missingRow('AXIO', ['t1'])], day: day({ lines }) }));
     await user.click(screen.getByRole('button', { name: 'Enter the Marks' }));
-    expect(openCard).toHaveBeenCalledExactlyOnceWith('t1', 'Marks', 'AXIO');
+    expect(marks.openMarks).toHaveBeenCalledExactlyOnceWith('AXIO');
+    expect(marks.openCard).not.toHaveBeenCalled();
     cleanup();
 
     const next = renderCard(review({ day: day({ toGo: { marks: 0, actions: 1, expirations: 0, closeReviews: 0, reflections: 0 }, lines: [lines[1]!] }) }));
     await user.click(screen.getByRole('button', { name: 'Next: DALE' }));
-    expect(next).toHaveBeenCalledExactlyOnceWith('t2', 'Action', undefined);
+    expect(next.openCard).toHaveBeenCalledExactlyOnceWith('t2', 'Action');
   });
 
   it('should list each Trade with its label and what it still needs, as a link that opens its card', async () => {
@@ -130,14 +133,18 @@ describe('the day card', () => {
     ];
     const closed: Ready['owed'] = [{ tradeId: 't9', underlying: 'EARL', lifecycle: 'Closed', owed: [], progress: reflectionsOwedProgress(1) }];
     const trades = [walked('t1', 'AXIO', { band: 'StopReached' }), walked('t2', 'DALE'), walked('t3', 'CORV', { band: 'TargetReached' })];
-    const openCard = renderCard(review({ trades, owed: closed, today: [missingRow('AXIO', ['t1'])], day: day({ lines }) }));
+    const { openCard, openMarks } = renderCard(review({ trades, owed: closed, today: [missingRow('AXIO', ['t1'])], day: day({ lines }) }));
 
     const items = within(screen.getByRole('list', { name: 'Trade lines' })).getAllByRole('listitem');
     expect(items.map((item) => item.textContent)).toEqual(['AXIO Past Stop To do: 2 Marks, Action', 'DALE To do: Settle', 'CORV At Target Done', 'EARL Closed To do: Close Review']);
     expect(within(items[0]!).getByRole('link', { name: 'AXIO' }).getAttribute('href')).toBe('/review?trade=t1&instrument=AXIO');
     expect(within(items[1]!).getByRole('link', { name: 'DALE' }).getAttribute('href')).toBe('/review?trade=t2&panel=Settlement');
     await user.click(within(items[3]!).getByRole('link', { name: 'EARL' }));
-    expect(openCard).toHaveBeenCalledExactlyOnceWith('t9', 'Reflections', undefined);
+    expect(openCard).toHaveBeenCalledExactlyOnceWith('t9', 'Reflections');
+    // A line whose first need is a Mark goes to its cell in the Marks step, not to a card.
+    await user.click(within(items[0]!).getByRole('link', { name: 'AXIO' }));
+    expect(openMarks).toHaveBeenCalledExactlyOnceWith('AXIO');
+    expect(openCard).toHaveBeenCalledTimes(1);
   });
 
   it('should describe each day line link by its labels own reasons without adding them to the line text', () => {
@@ -170,14 +177,15 @@ describe('the day card', () => {
     expect(screen.queryByText(/Day so far/)).toBeNull();
   });
 
-  it('should name the sessions with no Review and offer to add their Marks', async () => {
+  it('should name the sessions with no Review and offer to add their Marks in the Marks step', async () => {
     const user = userEvent.setup();
     const missed = day({ missed: ['2026-11-18', '2026-11-19'] });
-    const openCard = renderCard(review({ day: missed, earlier: [gapOf('DALE', 't2')] }));
+    const { openSkipped, openCard } = renderCard(review({ day: missed, earlier: [gapOf('DALE', 't2')] }));
 
     expect(screen.getByText(/^No Review for/).closest('p')?.textContent).toBe('No Review for Wed Nov 18, Thu Nov 19. Their Marks are optional. Add them');
     await user.click(screen.getByRole('button', { name: 'Add them' }));
-    expect(openCard).toHaveBeenCalledExactlyOnceWith('t2', 'Marks', 'DALE');
+    expect(openSkipped).toHaveBeenCalledOnce();
+    expect(openCard).not.toHaveBeenCalled();
     cleanup();
 
     // Nothing to add where no Instrument has a gap, and nothing said where no session was skipped.

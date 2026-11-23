@@ -160,10 +160,9 @@ const savedButNotRead = (instrumentKey: string, tradingDate: string, price: stri
   marks: [{ key: { instrumentKey, tradingDate }, resolution: available(price), resolutionRevision: 1, classification: 'InitialManual' }],
   review: { kind: 'ChangedDuringAssembly' },
 });
-// Opens the open card's Marks panel by its header, unless it is already open (A152).
-async function openMarks(user: ReturnType<typeof userEvent.setup>) {
-  const header = await screen.findByRole('button', { name: /^Marks\b/ });
-  if (header.getAttribute('aria-expanded') !== 'true') await user.click(header);
+// The Marks step is the page's, so there is no panel to open: it waits for the step to be there.
+async function openMarks() {
+  await screen.findByRole('region', { name: /^Marks for / });
 }
 // Choosing a cell (focusing its input, or pressing its button) opens its editor, a region named after it.
 async function chooseCell(user: ReturnType<typeof userEvent.setup>, name: string) {
@@ -195,9 +194,9 @@ describe('overview', () => {
     );
     renderReview(facade);
 
-    expect(await screen.findByText('Mon Oct 12')).toBeTruthy();
+    const header = await screen.findByRole('region', { name: 'The day' });
+    expect(within(header).getByText('Mon Oct 12')).toBeTruthy();
     expect(vi.mocked(facade.DailyReview.open)).toHaveBeenCalledExactlyOnceWith({ date: { kind: 'LatestCompleted' }, asOf: '2026-10-12T21:00:00Z' });
-    const header = screen.getByRole('region', { name: 'The day' });
     expect(within(header).getByText('Incomplete')).toBeTruthy();
     expect(within(header).getByText('2 Trades · 1 Mark and 1 Action to go')).toBeTruthy();
     const lines = within(within(header).getByRole('list', { name: 'Trade lines' })).getAllByRole('listitem');
@@ -307,7 +306,7 @@ describe('overview', () => {
 });
 
 describe('Marks in the card (P11, P15)', () => {
-  it('should head each Instrument of the card Trade as a row, and name each shared Instrument with its Trades in its editor, using MarkEntry', async () => {
+  it('should head each Instrument of the page as a row once, and name each shared Instrument with its Trades in its editor, using MarkEntry', async () => {
     const facade = reviewFacade(
       ready({
         today: [markRow('DEF', ['t3']), markRow('XYZ', ['t1', 't2'], available('52'), 3)],
@@ -320,12 +319,12 @@ describe('Marks in the card (P11, P15)', () => {
     renderReview(facade);
     const user = userEvent.setup();
 
-    // The first card holds the shared Instrument alone, naming both Trades that hold it.
-    await openMarks(user);
-    const marks = await within(await screen.findByRole('region', { name: 'XYZ review' })).findByRole('region', { name: 'Marks' });
-    expect(within(marks).getAllByRole('rowheader').map((header) => header.textContent)).toEqual(['XYZ Mark']);
+    // One grid holds the shared Instrument once, in the order of the Trades, and names both Trades that hold it.
+    await openMarks();
+    const marks = await screen.findByRole('region', { name: /^Marks for / });
+    expect(within(marks).getAllByRole('rowheader').map((header) => header.textContent)).toEqual(['XYZ', 'DEF']);
     const xyz = await chooseCell(user, 'XYZ Mark, Mon Oct 12');
-    expect(within(xyz).getAllByRole('link').map((link) => link.getAttribute('href'))).toEqual(['/trades/t2']);
+    expect(within(xyz).getAllByRole('link').map((link) => link.getAttribute('href'))).toEqual(['/trades/t1', '/trades/t2']);
     // Its editor is a MarkEntry bound to the key's revision.
     await user.click(within(xyz).getByRole('button', { name: 'Correct' }));
     await user.type(within(xyz).getByLabelText('Price'), '51.5');
@@ -333,16 +332,11 @@ describe('Marks in the card (P11, P15)', () => {
     await user.click(within(xyz).getByRole('button', { name: 'Save correction' }));
     expect(facade.MarketData.save).toHaveBeenLastCalledWith({ intention: 'CorrectMark', instrumentKey: 'XYZ', tradingDate: '2026-10-12', price: '51.5', reason: 'typo', expectedResolutionRevision: 3 });
 
-    // The Conflict keeps the typed values, which hold the card; cancelling them lets it be left.
+    // The Conflict keeps the typed values; cancelling them frees the grid.
     await user.click(within(xyz).getByRole('button', { name: 'Cancel' }));
-    // The third card holds the other Instrument and not the shared one.
-    await user.click(screen.getByRole('button', { name: /^Review DEF\b/ }));
-    const other = await screen.findByRole('region', { name: 'DEF review' });
-    expect(within(other).getAllByRole('rowheader').map((header) => header.textContent)).toEqual(['DEF Mark']);
-    // Held by this card's Trade alone, it names no other Trade.
-    expect(within(await chooseCell(user, 'DEF Mark, Mon Oct 12')).queryByRole('link')).toBeNull();
-    await user.type(within(other).getByRole('textbox', { name: 'DEF Mark, Mon Oct 12' }), '12');
-    await user.click(within(other).getByRole('button', { name: 'Save Marks (1)' }));
+    // The Instrument held by one Trade names no other Trade; it is typed and saved in the same grid.
+    await user.type(within(marks).getByRole('textbox', { name: 'DEF Mark, Mon Oct 12' }), '12');
+    await user.click(within(marks).getByRole('button', { name: 'Save Marks (1)' }));
     expect(facade.DailyReview.save).toHaveBeenLastCalledWith(
       expect.objectContaining({ kind: 'SaveReviewMarks', entries: [{ key: { instrumentKey: 'DEF', tradingDate: '2026-10-12' }, expectedRevision: 'None', intention: { kind: 'RecordInitialManualMark', price: '12' } }] }),
     );
@@ -362,7 +356,7 @@ describe('Marks in the card (P11, P15)', () => {
           // A session before the date the Trade is relevant from (2026-09-01) is not this card's.
           gap('MNO', { missing: [...missing, '2026-08-20'], acknowledged: [day(10)], revisions, acknowledgments }),
           gap('ABC', { missing: ['2026-09-30'], revisions: { '2026-09-30': 'None' } }),
-          // Another Trade's Instrument is not this card's.
+          // Another Trade's Instrument is on the page too.
           gap('OTHER', { trades: [{ tradeId: 't9', from: '2026-09-01' }], missing: ['2026-09-30'], revisions: { '2026-09-30': 'None' } }),
         ],
         completion: incomplete(markMissing('MNO', 't1'), ...actionMissing('t1')),
@@ -372,10 +366,11 @@ describe('Marks in the card (P11, P15)', () => {
     renderReview(facade);
     const user = userEvent.setup();
 
-    const marks = await screen.findByRole('region', { name: 'Marks' });
-    // One row for each Instrument the card's Trade holds or held; the Review Date comes first, then the earlier sessions newest first.
-    expect(within(marks).getAllByRole('rowheader').map((header) => header.textContent)).toEqual(['MNO Mark', 'ABC Mark']);
-    const sessions = () => within(marks).getAllByRole('columnheader').slice(1).map((header) => header.getAttribute('data-session'));
+    const marks = await screen.findByRole('region', { name: /^Marks for / });
+    await user.click(within(marks).getByRole('button', { name: 'Add the skipped sessions' }));
+    // One row for each Instrument the page holds, and the earlier sessions run oldest to newest, the Review Date last (read here newest first).
+    expect(within(marks).getAllByRole('rowheader').map((header) => header.textContent)).toEqual(['MNO', 'ABC', 'OTHER']);
+    const sessions = () => within(marks).getAllByRole('columnheader').flatMap((header) => header.getAttribute('data-session') ?? []).reverse();
     expect(sessions()).toHaveLength(21);
     expect(sessions().slice(0, 3)).toEqual(['2026-10-12', '2026-09-30', day(25)]);
     expect(sessions()[20]).toBe(day(7));
@@ -418,14 +413,15 @@ describe('Marks in the card (P11, P15)', () => {
     renderReview(facade);
     const user = userEvent.setup();
 
-    await openMarks(user);
+    await openMarks();
+    await user.click(await screen.findByRole('button', { name: 'Add the skipped sessions' }));
     const row = await chooseCell(user, 'DEF Mark, Fri Oct 9');
     expect(within(row).getByText(/no quote/)).toBeTruthy();
     expect(within(row).queryByRole('button', { name: 'Withdraw' })).toBeNull();
     // An acknowledged date can take a price, but not another acknowledgment.
     expect(within(row).queryByRole('button', { name: "Can't get a price" })).toBeNull();
     await user.type(within(row).getByLabelText('Price'), '9.5');
-    await user.click(within(screen.getByRole('region', { name: 'Marks' })).getByRole('button', { name: 'Save Marks (1)' }));
+    await user.click(within(screen.getByRole('region', { name: /^Marks for / })).getByRole('button', { name: 'Save Marks (1)' }));
     expect(facade.DailyReview.save).toHaveBeenCalledWith(
       expect.objectContaining({ entries: [{ key: { instrumentKey: 'DEF', tradingDate: '2026-10-09' }, expectedRevision: 2, intention: { kind: 'RecordInitialManualMark', price: '9.5' } }] }),
     );
@@ -460,9 +456,10 @@ describe('Marks in the card (P11, P15)', () => {
     vi.mocked(facade.DailyReview.save).mockResolvedValueOnce(savedButNotRead('DEF', '2026-10-09', '9'));
     renderReview(facade);
     const user = userEvent.setup();
-    await openMarks(user);
+    await openMarks();
+    await user.click(await screen.findByRole('button', { name: 'Add the skipped sessions' }));
     await user.type(await screen.findByRole('textbox', { name: 'DEF Mark, Fri Oct 9' }), '9');
-    await user.click(within(screen.getByRole('region', { name: 'Marks' })).getByRole('button', { name: 'Save Marks (1)' }));
+    await user.click(within(screen.getByRole('region', { name: /^Marks for / })).getByRole('button', { name: 'Save Marks (1)' }));
     await user.click(await screen.findByRole('button', { name: 'Refresh' }));
     await waitFor(() => expect(facade.DailyReview.open).toHaveBeenCalledTimes(2));
     await waitFor(() => expect(facade.DailyReview.getTrade).toHaveBeenCalledTimes(2));
@@ -482,14 +479,14 @@ describe('Marks in the card (P11, P15)', () => {
     renderReview(facade);
     const user = userEvent.setup();
 
-    // The first card that is not Done opens; its Mark is the returned one.
-    expect(within(await chooseCell(user, 'DEF Mark, Mon Oct 12')).getByText('Missing')).toBeTruthy();
+    // The Marks step shows the returned Marks: DEF's is still to enter.
+    expect(await screen.findByRole('textbox', { name: 'DEF Mark, Mon Oct 12' })).toBeTruthy();
     const headers = screen.getAllByRole('button', { name: /^Review / });
     expect(headers[0]!.textContent).toContain('Done · Action saved');
     expect(headers[1]!.textContent).toContain('1 Mark · Action');
     // The saved Mark comes from the returned state alone.
     await user.click(headers[0]!);
-    await openMarks(user);
+    await openMarks();
     const xyz = await screen.findByRole('button', { name: 'XYZ Mark, Mon Oct 12' });
     expect(within(xyz).getByText('$52.00', { exact: false })).toBeTruthy();
     // No Review session, stage, or progress is kept in the browser.
@@ -521,7 +518,7 @@ describe('Marks in the card (P11, P15)', () => {
     expect(screen.queryByText('Unsaved')).toBeNull();
   });
 
-  it('should name each Mark entry region by Instrument and date', async () => {
+  it('should name each Mark cell by Instrument and date, and an earlier session editor too', async () => {
     const facade = reviewFacade(
       ready({
         today: [markRow('DEF', ['t1'])],
@@ -532,7 +529,8 @@ describe('Marks in the card (P11, P15)', () => {
     );
     renderReview(facade);
     const user = userEvent.setup();
-    await chooseCell(user, 'DEF Mark, Mon Oct 12');
+    expect(await screen.findByRole('textbox', { name: 'DEF Mark, Mon Oct 12' })).toBeTruthy();
+    await user.click(await screen.findByRole('button', { name: 'Add the skipped sessions' }));
     await chooseCell(user, 'DEF Mark, Fri Oct 9');
   });
 
@@ -549,6 +547,7 @@ describe('Marks in the card (P11, P15)', () => {
     renderReview(facade, { onDirtyChange: dirty });
     const user = userEvent.setup();
     const todayEntry = await screen.findByRole('textbox', { name: 'DEF Mark, Mon Oct 12' });
+    await user.click(await screen.findByRole('button', { name: 'Add the skipped sessions' }));
     const earlierEntry = screen.getByRole('textbox', { name: 'DEF Mark, Fri Oct 9' });
     expect(dirty).not.toHaveBeenCalledWith(true);
 
@@ -558,7 +557,7 @@ describe('Marks in the card (P11, P15)', () => {
     await user.clear(todayEntry);
     // One draft still holds a value.
     expect(dirty).toHaveBeenLastCalledWith(true);
-    await user.click(within(screen.getByRole('region', { name: 'Marks' })).getByRole('button', { name: 'Discard' }));
+    await user.click(within(screen.getByRole('region', { name: /^Marks for / })).getByRole('button', { name: 'Discard' }));
     expect(dirty).toHaveBeenLastCalledWith(false);
   });
 
@@ -573,7 +572,8 @@ describe('Marks in the card (P11, P15)', () => {
     );
     renderReview(facade, { writable: false });
 
-    const marks = await screen.findByRole('region', { name: 'Marks' });
+    const marks = await screen.findByRole('region', { name: /^Marks for / });
+    await userEvent.setup().click(within(marks).getByRole('button', { name: 'Add the skipped sessions' }));
     expect(within(marks).getAllByText('Missing')).toHaveLength(2);
     for (const name of ['Enter', "Can't get a price", 'Correct', 'Withdraw']) expect(within(marks).queryByRole('button', { name })).toBeNull();
     expect(facade.MarketData.save).not.toHaveBeenCalled();
@@ -588,7 +588,7 @@ describe('Marks in the card (P11, P15)', () => {
     renderReview(facade);
     const user = userEvent.setup();
 
-    await openMarks(user);
+    await openMarks();
     await correctPrice(user, await chooseCell(user, 'DEF Mark, Mon Oct 12'), '2');
     expect((await screen.findByRole('alert')).textContent).toContain('We couldn’t refresh the Review. Nothing was changed.');
     expect(screen.getByRole('button', { name: 'XYZ Mark, Mon Oct 12' })).toBeTruthy();
@@ -604,30 +604,30 @@ describe('Marks in the card (P11, P15)', () => {
 });
 
 describe('A failed Save Marks with no walked card open (T9R2.13-B3)', () => {
-  it('should show a failed Save Marks and its Refresh in the status header when no walked card is open', async () => {
+  it('should show a failed Save Marks and its Refresh in the Marks step when no walked card is open', async () => {
     const trades = [tradeItem('t1', 'DEF')];
     const first = ready({ today: [markRow('DEF', ['t1'])], trades, completion: incomplete(...actionMissing('t1')) });
     const facade = reviewFacade(first);
     vi.mocked(facade.DailyReview.save).mockResolvedValueOnce({ kind: 'ReviewChanged', evidence: { marketDataSnapshotId: 'mds1:2:def', frames: [] } });
     renderReview(facade);
     const user = userEvent.setup();
-    await openMarks(user);
+    await openMarks();
     await user.type(await screen.findByRole('textbox', { name: 'DEF Mark, Mon Oct 12' }), '12');
     // Collapsing the card leaves the draft on the Review, and no walked card open.
     await user.click(screen.getByRole('button', { name: /^Review DEF\b/ }));
-    const status = screen.getByRole('region', { name: 'The day' });
-    await user.click(within(status).getByRole('button', { name: 'Save Marks (1)' }));
+    const step = screen.getByRole('region', { name: /^Marks for / });
+    await user.click(within(step).getByRole('button', { name: 'Save Marks (1)' }));
 
-    expect((await within(status).findByRole('alert')).textContent).toContain('The Review changed after you opened it.');
-    await user.click(within(status).getByRole('button', { name: 'Refresh' }));
+    expect((await within(step).findByRole('alert')).textContent).toContain('The Review changed after you opened it.');
+    await user.click(within(step).getByRole('button', { name: 'Refresh' }));
     await waitFor(() => expect(facade.DailyReview.open).toHaveBeenCalledTimes(2));
-    await waitFor(() => expect(within(status).queryByRole('alert')).toBeNull());
-    expect(within(status).getByText('1 unsaved Mark')).toBeTruthy();
+    await waitFor(() => expect(within(step).queryByRole('alert')).toBeNull());
+    expect(within(step).getByRole('button', { name: 'Save Marks (1)' })).toBeTruthy();
   });
 });
 
 describe('A card opened during the status header Refresh (T9R2.13-B4)', () => {
-  it('should let a card opened during the status header Refresh read its Trade from the refreshed Review', async () => {
+  it('should let a card opened during the Marks step Refresh read its Trade from the refreshed Review', async () => {
     const trades = [tradeItem('t1', 'DEF')];
     const first = ready({ today: [markRow('DEF', ['t1'])], trades, completion: incomplete(...actionMissing('t1')) });
     const newBinding: ReviewBinding = { ...binding, journalRevision: 2 };
@@ -636,10 +636,10 @@ describe('A card opened during the status header Refresh (T9R2.13-B4)', () => {
     vi.mocked(facade.DailyReview.save).mockResolvedValueOnce({ kind: 'ReviewChanged', evidence: { marketDataSnapshotId: 'mds1:2:def', frames: [] } });
     renderReview(facade);
     const user = userEvent.setup();
-    await openMarks(user);
+    await openMarks();
     await user.type(await screen.findByRole('textbox', { name: 'DEF Mark, Mon Oct 12' }), '12');
     await user.click(screen.getByRole('button', { name: /^Review DEF\b/ }));
-    const status = screen.getByRole('region', { name: 'The day' });
+    const status = screen.getByRole('region', { name: /^Marks for / });
     await user.click(within(status).getByRole('button', { name: 'Save Marks (1)' }));
     await within(status).findByRole('alert');
 

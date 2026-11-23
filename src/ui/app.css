@@ -905,6 +905,117 @@ ul.rows > li {
   background: transparent;
   color: var(--target);
 }
+/* The Marks step (T95.12): one grid for the page; under 40rem each row stacks (the Instrument and its input, then the previous Mark and
+   "Can't get a price" beneath). */
+.marks-step {
+  container-type: inline-size;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+  padding: 0 1rem 0.75rem;
+  margin-bottom: 1rem;
+}
+.marks-step h2 {
+  margin: 0.75rem 0 0.25rem;
+  font-size: 1.1rem;
+}
+.marks-step-scroll {
+  overflow-x: auto;
+}
+.marks-step-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.marks-step-table th,
+.marks-step-table td {
+  padding: 0.35rem 0.5rem;
+  text-align: left;
+  border-top: 1px solid var(--line);
+  vertical-align: middle;
+}
+.marks-step-table thead th {
+  border-top: 0;
+  color: var(--muted);
+  font-weight: 600;
+}
+.marks-step-table td:not(.marks-step-change) {
+  font-variant-numeric: tabular-nums;
+}
+.link-button {
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+@container (max-width: 39.99rem) {
+  .marks-step-table,
+  .marks-step-table tbody {
+    display: block;
+  }
+  .marks-step-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+  .marks-step-table tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    border-top: 1px solid var(--line);
+  }
+  .marks-step-table th,
+  .marks-step-table td {
+    border-top: 0;
+  }
+  .marks-step-table tbody th {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .marks-step-table td.marks-step-today {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .marks-step-table td.marks-step-previous {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .marks-step-table td.marks-step-change {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  .marks-step-table td.marks-step-change:has(input) {
+    grid-column: 1 / -1;
+    grid-row: 3;
+  }
+  .marks-step-table td.marks-step-optional {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .marks-step-table td.marks-step-previous::before,
+  .marks-step-table td.marks-step-optional::before {
+    content: attr(data-label) ' ';
+  }
+  /* A cell and the controls in it keep the touch height, whatever sits in the row (P161). */
+  .marks-step-table td {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 0.5rem;
+    min-height: 44px;
+  }
+  .marks-step-table .session-grid-control {
+    min-height: 44px;
+  }
+}
+
 .day-lines {
   list-style: none;
   padding: 0;

@@ -31,6 +31,23 @@ function priceText(price: Rational): string {
   return formatDecimal(price, 6).replace(/(\.\d\d)0+$/, '$1')
 }
 
+// The change the typed entry makes from the previous Mark: dollars a share, and percent of the previous Mark (signed, one decimal) when
+// that Mark is not zero. Nothing when either is not a price. The grid shows it as the price is typed.
+export interface MarkChange {
+  readonly dollars: Rational
+  readonly percent?: string
+}
+
+export function markChange(input: { entry: string; previous: string }): MarkChange | undefined {
+  const entry = parseDecimal(input.entry)
+  const previous = parseDecimal(input.previous)
+  if (!entry.ok || entry.value.numerator < 0n || !previous.ok) return undefined
+  const dollars = entry.value.sub(previous.value)
+  if (previous.value.numerator === 0n) return { dollars }
+  const percent = dollars.div(previous.value).mul(HUNDRED)
+  return { dollars, percent: `${percent.numerator > 0n ? '+' : ''}${formatDecimal(percent, 1)}` }
+}
+
 export function checkMarkSlip(input: { instrument: Instrument; entry: string; lastMark?: string }, limits: MarkSlipLimits = MARK_SLIP_LIMITS): MarkSlipAnswer {
   const entry = parseDecimal(input.entry)
   const last = input.lastMark === undefined ? undefined : parseDecimal(input.lastMark)

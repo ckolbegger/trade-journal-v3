@@ -350,8 +350,8 @@ describe('owed-reflection group (P19, P20)', () => {
   });
 });
 
-describe('Save Marks from the status header while an owed card is open (T9R2.13-B2)', () => {
-  it('should save Marks from the status header while an owed card is open and refresh the Review', async () => {
+describe('Save Marks from the Marks step while an owed card is open (T9R2.13-B2)', () => {
+  it('should save Marks from the Marks step while an owed card is open and refresh the Review', async () => {
     const row = { instrumentKey: 'XYZ', instrument: symbol, tradingDate: DATE, trades: ['t-w'], resolution: { kind: 'Missing' }, resolutionRevision: 'None', task: 'Manual' } as const;
     const overview = ready();
     const withRow = { ...overview, families: [{ family: 'Marks' as const, earlierMarks: [], today: [row], earlier: [] }, overview.families[1]!] };
@@ -372,12 +372,10 @@ describe('Save Marks from the status header while an owed card is open (T9R2.13-
 
     // A draft typed in the walked card stays when another card opens; here the owed card is the open one.
     await user.click(within(screen.getByRole('list', { name: 'Positions' })).getByRole('button', { name: /^Review XYZ/ }));
-    const marks = await screen.findByRole('button', { name: /^Marks\b/ });
-    if (marks.getAttribute('aria-expanded') !== 'true') await user.click(marks);
     await user.type(await screen.findByRole('textbox', { name: 'XYZ Mark, Tue Oct 13' }), '12');
     await user.click(within(screen.getByRole('list', { name: GROUP })).getAllByRole('button', { name: /^Review / })[0]!);
     await screen.findByRole('region', { name: 'ABC review' });
-    await user.click(within(screen.getByRole('region', { name: 'The day' })).getByRole('button', { name: 'Save Marks (1)' }));
+    await user.click(within(screen.getByRole('region', { name: /^Marks for / })).getByRole('button', { name: 'Save Marks (1)' }));
 
     expect(facade.DailyReview.save).toHaveBeenCalledWith(expect.objectContaining({ kind: 'SaveReviewMarks' }));
     // The Review the save returned is the screen's: its completion replaces the held one, and the owed card stays open.

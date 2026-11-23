@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { flushSync } from 'react-dom';
 import { useSearchParams } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
 import type { MarketDataPrepareEntry, OpenDailyReviewResult, OwedReflectionsTrade, PostSaveReview, SaveReviewMarksResult, WalkedTrade } from '../../app/types.ts';
@@ -8,13 +7,13 @@ import { useRuntime } from '../runtime.tsx';
 import { shortDate, tradeName, tradeSummary } from '../format.ts';
 import { discardDraftsSetAside } from './action-draft.ts';
 import type { SavedAction } from './ActionForm.tsx';
-import { SaveFailure, tooManyWords, type EntryDirty } from './CardMarks.tsx';
 import { DayCard, type OpenCard } from './DayCard.tsx';
-import { fold, marksOf, nextCard, type Held, type HeldResult } from './held-review.ts';
+import { fold, instrumentOf, nextCard, type Held, type HeldResult } from './held-review.ts';
+import { MarksStep, type EntryDirty, type MarksGo } from './MarksStep.tsx';
 import type { Draft } from './review-drafts.ts';
 import { NO_GO, PANELS, ReviewCard, type CardDetail, type Go, type PanelName } from './ReviewCard.tsx';
 import { OwedCard, type OwedDetail } from './ReviewOwedCard.tsx';
-import { useMarkDrafts, type MarkDrafts } from './useMarkDrafts.ts';
+import { useMarkDrafts } from './useMarkDrafts.ts';
 
 export interface ReviewViewProps {
   readonly facade: UiFacade;
@@ -26,14 +25,6 @@ export interface ReviewViewProps {
 }
 
 type Ready = Extract<OpenDailyReviewResult, { kind: 'Ready' }>;
-
-// The first card, in attention order, holding the Instrument: its Review-date row or an earlier session names the Trade.
-function holderOf(review: Ready, instrumentKey: string): string | undefined {
-  const family = review.families.find((f) => f.family === 'Marks');
-  if (family?.family !== 'Marks') return undefined;
-  const holding = new Set([...family.today.filter((row) => row.instrumentKey === instrumentKey).flatMap((row) => row.trades), ...family.earlier.filter((group) => group.instrumentKey === instrumentKey).flatMap((group) => group.trades.map((t) => t.tradeId))]);
-  return walkedTrades(review).find((t) => holding.has(t.tradeId))?.tradeId;
-}
 
 function ReviewDate({ date }: { readonly date: string }) {
   return (
@@ -62,27 +53,6 @@ function tradeLabels(trades: readonly WalkedTrade[], owed: readonly OwedReflecti
   };
 }
 
-// The Mark drafts on the page, with the one Save Marks and Discard over all of them (W75, W76).
-function UnsavedMarks({ drafts, showFailure, onRefresh }: { readonly drafts: MarkDrafts; readonly showFailure: boolean; readonly onRefresh: () => Promise<boolean> }) {
-  return (
-    <div role="group" aria-label="Unsaved Marks">
-      <p>
-        <strong>
-          {drafts.count} unsaved {drafts.count === 1 ? 'Mark' : 'Marks'}
-        </strong>{' '}
-        <button type="button" className="pill primary" disabled={drafts.saving} onClick={() => void drafts.save()}>
-          Save Marks ({drafts.count})
-        </button>{' '}
-        <button type="button" className="pill secondary" onClick={drafts.discard}>
-          Discard
-        </button>
-      </p>
-      {drafts.tooMany && <p role="status">{tooManyWords(drafts.tooMany)}</p>}
-      {showFailure && <SaveFailure drafts={drafts} onRefresh={onRefresh} />}
-    </div>
-  );
-}
-
 // The card that is open, with the count of the opening it was shown at, and what it shows.
 interface Shown {
   readonly tradeId: string;
@@ -95,38 +65,37 @@ const walkedDetail = (detail: Shown['detail'] | undefined): CardDetail | undefin
 const owedDetail = (detail: Shown['detail'] | undefined): OwedDetail | undefined => (typeof detail === 'object' && 'trade' in detail ? undefined : detail);
 
 const AFTER_SAVE = {
-  Mark: 'A Mark is needed before the next Trade. It is listed in its card.',
+  Mark: 'A Mark is needed before the next Trade.',
   Assembly: 'The Action is saved. Reload the Review to refresh it.',
 } as const;
 
 // The card a link into the Review names, and where in it.
 interface LinkedCard {
-  readonly tradeId: string;
+  // A link into the Marks step names no card: the step's cell for the Instrument, or the step alone.
+  readonly marks?: { readonly instrument?: string };
+  readonly tradeId?: string;
   readonly panel?: PanelName;
-  readonly instrument?: string;
   // The Replay session its slider opens on (A257).
   readonly session?: string;
 }
 
-// The card a link's search params name, if the Review holds it (A161): ?trade= picks the card, ?instrument= its Marks row when
-// that card holds the Instrument, else ?panel=; ?instrument= alone picks the first card holding it.
+// The card a link's search params name, if the Review holds it (A161): ?trade= picks the card and ?panel= its panel; ?instrument=, or
+// ?panel=Marks, goes to the Marks step, to the Instrument's cell when the Review lists it.
 function linkedCard(held: Held, params: URLSearchParams): LinkedCard | undefined {
   const review = held.review;
   const instrument = params.get('instrument');
   const wanted = params.get('trade');
+  const listed = instrument !== null && instrumentOf(held, instrument) !== undefined;
   // An owed Trade has a Reflections panel alone, which is the one panel that opens.
   if (wanted !== null && review.owed.some((t) => t.tradeId === wanted)) return { tradeId: wanted, panel: 'Reflections' };
+  if (listed || (wanted !== null && params.get('panel') === 'Marks')) return { marks: { ...(listed && { instrument }) } };
   if (wanted !== null && walkedTrades(review).some((t) => t.tradeId === wanted)) {
-    const marks = marksOf(held, wanted);
-    const holds = instrument !== null && (marks.today.some((row) => row.instrumentKey === instrument) || marks.earlier.some((group) => group.instrumentKey === instrument));
-    if (holds) return { tradeId: wanted, panel: 'Marks', instrument };
     // An unknown panel name is ignored: the first panel not done opens.
     const panel = PANELS.find((name) => name === params.get('panel'));
     const session = params.get('session');
     return { tradeId: wanted, ...(panel !== undefined && { panel }), ...(session !== null && { session }) };
   }
-  const holder = instrument === null ? undefined : holderOf(review, instrument);
-  return instrument !== null && holder !== undefined ? { tradeId: holder, panel: 'Marks', instrument } : undefined;
+  return undefined;
 }
 
 type MarksSaved = Extract<SaveReviewMarksResult, { kind: 'MarksSaved' }>;
@@ -164,12 +133,12 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
     setHeldReview(latest.current);
   };
   // The Mark drafts belong to the Review, not to a card (P156); one Save Marks sends them all (P157).
-  const markDrafts = useMarkDrafts({ latest: () => latest.current, onResult: apply, onReveal: (tradeId) => revealCard(tradeId), onSave: (entries, newest) => saveMarks(entries, newest) });
+  const markDrafts = useMarkDrafts({ latest: () => latest.current, onResult: apply, onSave: (entries, newest) => saveMarks(entries, newest) });
   // The cards follow the newest Review the screen holds (A150, decision 64): a refreshed Review re-sorts them.
   const trades = walkedTrades(review);
   const { name, line: tradeLine } = tradeLabels(trades, review.owed);
-  // A link into the Review names the card that opens on load (A161): the first holding ?instrument=, on its Marks panel with
-  // focus on the row, or ?trade=. Otherwise the first card that is not Done opens (A151).
+  // A link into the Review names the card that opens on load (A161): ?trade=, or the Marks step's cell for ?instrument=. Otherwise the
+  // first card that is not Done opens (A151).
   const [params] = useSearchParams();
   const [link] = useState(() => linkedCard(heldReview, params));
   // Only the way back from Price History (it reopens the overlay) gives a started Action back to its card (C9AR.5).
@@ -180,7 +149,14 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
   // The first card not done, in walk order and then group order (A90), opens when nothing else is named.
   const [firstId] = useState(() => link?.tradeId ?? [...walkedTrades(initial), ...initial.owed].find((t) => !t.progress.done)?.tradeId);
   // The link the open card is to answer, and the card it is for.
-  const [go, setGo] = useState<{ readonly tradeId: string | undefined; readonly go: Go }>({ tradeId: link?.tradeId, go: link ? { panel: link.panel, instrument: link.instrument, session: link.session, count: 1 } : NO_GO });
+  const [go, setGo] = useState<{ readonly tradeId: string | undefined; readonly go: Go }>({ tradeId: link?.tradeId, go: link?.tradeId ? { panel: link.panel, session: link.session, count: 1 } : NO_GO });
+  // The Marks step answers a link, or a day line, by choosing its cell, or by adding the skipped sessions' columns.
+  const [marksGo, setMarksGo] = useState<MarksGo>(link?.marks ? { count: 1, ...link.marks } : { count: 0 });
+  const openMarks = (instrument?: string) => {
+    setAfterSave(undefined);
+    setMarksGo((current) => ({ count: current.count + 1, ...(instrument !== undefined && { instrument }) }));
+  };
+  const openSkipped = () => setMarksGo((current) => ({ count: current.count + 1, skipped: true }));
   const [shown, setShown] = useState<Shown | undefined>(firstId === undefined ? undefined : { tradeId: firstId, opening: 0, detail: 'Loading' });
   // A count of the changes to what is open; each opening carries the count it was shown at, so a result for an earlier opening is not applied.
   const selection = useRef(0);
@@ -192,9 +168,7 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
   // The card the trader pressed, and how many times a card has been asked for: it scrolls into view and takes focus.
   const [reveal, setReveal] = useState({ tradeId: link?.tradeId ?? '', count: link ? 1 : 0 });
   // The card whose Marks were saved but whose figures could not be read under them (ChangedDuringAssembly).
-  const [stale, setStale] = useState<string>();
-  // How many times Save Marks has finished on a card: it moves on to its next panel that is not done (A157).
-  const [advance, setAdvance] = useState({ tradeId: '', count: 0 });
+  const [stale, setStale] = useState(false);
   // What follows a save when no Trade is next, and a refresh that could not be made.
   const [afterSave, setAfterSave] = useState<string>();
   const [failed, setFailed] = useState(false);
@@ -289,7 +263,7 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
     if (!result) return false;
     const held = latest.current.review;
     if (!walkedTrades(held).some((t) => t.tradeId === tradeId) && !held.owed.some((t) => t.tradeId === tradeId)) {
-      setStale(undefined);
+      setStale(false);
       if (selection.current === request) {
         collapse();
         // Any message about this card (an Action saved, a draft to save or discard) has no card to act on now.
@@ -309,7 +283,7 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
       }
     }
     if (trade?.kind !== 'Ready' && trade?.kind !== 'ReflectionsOwed') return false;
-    setStale(undefined);
+    setStale(false);
     if (selection.current !== request) return true;
     if (trade.kind === 'ReflectionsOwed') {
       setShown({ tradeId, opening: request, detail: { card: trade.card } });
@@ -321,30 +295,6 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
     if (shownDate !== undefined && trade.trade.saveBinding.reviewDate !== shownDate) setAfterSave(`The Review moved to ${shortDate(result.reviewDate)}. This Trade’s form starts afresh for that date.`);
     setShown({ tradeId, opening: request, detail: { trade: trade.trade } });
     return true;
-  };
-  // Opens a card on its Marks panel with focus in its body: a row (A161), or a refused save's key (A294). The card is shown before it is
-  // read: the read's result would otherwise batch into the same render, and the card's header, revealed after its body mounts, would take
-  // the focus.
-  const openOnMarks = (tradeId: string, instrument?: string) => {
-    let request = 0;
-    flushSync(() => {
-      setAfterSave(undefined);
-      setReveal((current) => ({ tradeId, count: current.count + 1 }));
-      setGo((current) => ({ tradeId, go: { panel: 'Marks', instrument, keepFocus: instrument === undefined, count: current.go.count + 1 } }));
-      request = show(tradeId, 'Loading');
-    });
-    void read(tradeId, request);
-  };
-  // A refused save, or a Conflict, opens the card of the Trade its first key's draft was typed in, on its Marks panel (A294). A Correct or a
-  // form with entered values holds the open card, as it holds a press.
-  const revealCard = (tradeId: string) => {
-    if (!walkedTrades(latest.current.review).some((t) => t.tradeId === tradeId)) return;
-    if (tradeId !== openId) {
-      if (held) setRefused(true);
-      else openOnMarks(tradeId);
-      return;
-    }
-    setGo((current) => ({ tradeId, go: { panel: 'Marks', keepFocus: true, count: current.go.count + 1 } }));
   };
   // The save's result is the Review from here on: its completion and binding replace the overview's, and its next step is the Trade shown.
   // Only a save for the opening still shown moves the card; the Review it returned applies whatever is open.
@@ -369,9 +319,10 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
     if (!open) return;
     const next = nextCard(latest.current, post.nextStep);
     setGo({ tradeId: undefined, go: NO_GO });
-    // A Mark is the next step: the first card holding it opens on its Marks panel with focus in the row, as a day line's link does.
+    // A Mark is the next step: the Marks step's cell for it takes focus, as a day line's link does.
     if (next.kind === 'Mark') {
-      openOnMarks(next.tradeId, next.instrumentKey);
+      collapse();
+      openMarks(next.instrumentKey);
       return;
     }
     if (next.kind === 'Trade') {
@@ -389,6 +340,8 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
   // The entries holding a value (a Correct, Action, Debt and reflection forms) hold the open card (A156); the page is unsaved while
   // any does, or while any Mark draft exists (P156).
   const dirty = useRef(new Set<string>());
+  // The corrections in progress in the Marks step: they hold the page, not a card.
+  const markEdits = useRef(new Set<string>());
   const [held, setHeld] = useState(false);
   const { writable } = useRuntime();
   // A read-only shell shows no draft fields and no Discard, so its drafts hold nothing: they stay unsaved in state.
@@ -401,7 +354,7 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
   useEffect(() => {
     if (draftsReported.current === draftsHeld) return;
     draftsReported.current = draftsHeld;
-    reportDirty.current(dirty.current.size > 0 || draftsHeld);
+    reportDirty.current(dirty.current.size > 0 || markEdits.current.size > 0 || draftsHeld);
   }, [draftsHeld]);
   const reportMarks = useRef(onMarkDraftsChange);
   useEffect(() => {
@@ -427,7 +380,15 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
       const any = dirty.current.size > 0;
       setHeld(any);
       if (!any) setRefused(false);
-      onDirtyChange(any || draftsReported.current);
+      onDirtyChange(any || markEdits.current.size > 0 || draftsReported.current);
+    },
+    [onDirtyChange],
+  );
+  const onMarksEntryDirty = useCallback<EntryDirty>(
+    (id, isDirty) => {
+      if (isDirty) markEdits.current.add(id);
+      else markEdits.current.delete(id);
+      onDirtyChange(dirty.current.size > 0 || markEdits.current.size > 0 || draftsReported.current);
     },
     [onDirtyChange],
   );
@@ -441,7 +402,7 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
     }
   };
   // A day line's link opens the card and panel that resolve it (A161). Another panel of the open card is no departure, so it is allowed while the card holds drafts.
-  const openCard: OpenCard = (tradeId, panel, instrument) => {
+  const openCard: OpenCard = (tradeId, panel) => {
     if (tradeId !== openId) {
       if (held) {
         setRefused(true);
@@ -449,7 +410,7 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
       }
       void select(tradeId, true);
     }
-    setGo((current) => ({ tradeId, go: { panel, instrument, count: current.go.count + 1 } }));
+    setGo((current) => ({ tradeId, go: { panel, count: current.go.count + 1 } }));
   };
   // A change of the search params while the Review is mounted (a navigate, browser history) opens the card they name, as a link
   // does; it only acts on a changed search string, not on an unrelated render.
@@ -467,18 +428,24 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
     if (search === appliedSearch.current) return;
     appliedSearch.current = search;
     const next = linkedCard(latest.current, params);
-    if (next !== undefined) openCard(next.tradeId, next.panel, next.instrument);
+    if (next?.marks) openMarks(next.marks.instrument);
+    else if (next?.tradeId) openCard(next.tradeId, next.panel);
   });
   // A saved Mark changes what the card's figures and the Action's binding are read at: the Review and the card are read again.
   const [rereading, setRereading] = useState(false);
   const markSaved = (draftId: string) => {
-    if (openId === undefined || shown === undefined) return;
     setRereading(true);
-    // The opening is this render's: a Mark saved here finishes after another card opened, and must not replace it.
-    void refreshTrade(openId, shown.opening, [draftId]).then((ok) => {
+    const finished = (ok: boolean) => {
       setFailed(!ok);
       setRereading(false);
-    });
+    };
+    // With no card open, the Review alone is read again.
+    if (openId === undefined || shown === undefined) {
+      void reopenAndApply().then((next) => finished(next !== undefined));
+      return;
+    }
+    // The opening is this render's: a Mark saved here finishes after another card opened, and must not replace it.
+    void refreshTrade(openId, shown.opening, [draftId]).then(finished);
   };
   // Save Marks (P37): one command for the open card, under the newest binding the screen holds.
   // The saved Marks and the Review under them are the screen's from here on, with no read (P38, A157): the Trades re-sort,
@@ -487,16 +454,15 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
     apply({ kind: 'MarksSaved', marks, review: post });
     if (post.kind !== 'Ready') {
       // The Marks are saved, but the Review under them could not be read: the card says so until Refresh.
-      setStale(tradeId);
+      setStale(true);
       return;
     }
     // A Review that read cleanly makes the figures current again, so an earlier out-of-date notice goes.
-    setStale(undefined);
+    setStale(false);
     if (selection.current !== opening) return;
     // The returned card is the first Trade's, which is not always the one open: the open card stays open and is read under the new binding.
     if (post.trade.tradeId === tradeId) setShown({ tradeId, opening, detail: { trade: post.trade } });
     else void read(tradeId, opening, true);
-    setAdvance((current) => ({ tradeId, count: current.count + 1 }));
   };
   // Its Trade chooses the card the saved Review refreshes: the open walked card's, or, with none open or an owed card open (which the Marks
   // save cannot read), the Trade the newest draft was typed in.
@@ -510,8 +476,6 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
     if (result.kind === 'MarksSaved') marksSaved(result, opening, tradeId);
     return result;
   };
-  // A failed Save Marks shows in the open walked card's Marks panel, and in the day card when no walked card is open (owed card open, or none).
-  const walkedOpen = openId !== undefined && walkedTrades(review).some((t) => t.tradeId === openId);
   // Refresh from the header: the open (owed) card's refresh, else the Review alone.
   const refreshHeld = async (): Promise<boolean> => {
     if (openId !== undefined) return refreshTrade(openId);
@@ -523,11 +487,14 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
   }, [firstId, read]);
   return (
     <>
-      {empty ? <EmptyReview date={review.reviewDate} /> : <DayCard review={review} name={name} openCard={openCard} unsaved={writable && markDrafts.count > 0 && <UnsavedMarks drafts={markDrafts} showFailure={!walkedOpen} onRefresh={refreshHeld} />} />}
+      {empty ? <EmptyReview date={review.reviewDate} /> : <DayCard review={review} name={name} openCard={openCard} openMarks={openMarks} openSkipped={openSkipped} />}
       {failed && (
         <div role="alert" className="banner warning">
           <p>We couldn’t refresh the Review. Nothing was changed.</p>
         </div>
+      )}
+      {!empty && (
+        <MarksStep facade={facade} held={heldReview} onResult={apply} tradeLine={tradeLine} onEntryDirty={onMarksEntryDirty} onMarkSaved={markSaved} markDrafts={markDrafts} outOfDate={stale} onRefresh={refreshHeld} go={marksGo} />
       )}
       {!empty && (
         <>
@@ -541,20 +508,11 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
                 expanded={trade.tradeId === openId}
                 detail={trade.tradeId === openId ? walkedDetail(shown?.detail) : undefined}
                 reveal={reveal.tradeId === trade.tradeId ? reveal.count : 0}
-                advance={advance.tradeId === trade.tradeId ? advance.count : 0}
                 go={go.tradeId === trade.tradeId ? go.go : NO_GO}
-                marks={marksOf(heldReview, trade.tradeId)}
-                held={heldReview}
-                onResult={apply}
-                tradeLine={tradeLine}
                 onToggle={() => toggle(trade.tradeId)}
                 onSaved={(result) => saved(result, shown?.opening ?? -1)}
                 onReflectionResolved={reflectionResolved}
                 onRefresh={() => refreshTrade(trade.tradeId)}
-                onMarkSaved={markSaved}
-                markDrafts={markDrafts}
-                nameOf={name}
-                outOfDate={stale === trade.tradeId}
                 holdMessage={refused && trade.tradeId === openId}
                 pending={rereading}
                 onEntryDirty={onEntryDirty}

@@ -1,12 +1,13 @@
 // Shared support for the D9A-R browser suite (plan section 7.2): D9's helpers (the overlay's opener, the session cards, the stake grid, the Trades built through the UI), and what this
 // breakdown adds: DALE-hold on R-DALE-D's Marks, a Review holding three Trades, a touch launch, `expectOneLine`, `expectClearOfCursor` and the carried responsive checks.
+import { marksStepOf, saveMarksButton } from '../d4/support.ts';
 import type { BrowserContext, Locator, Page } from '@playwright/test';
 import { REPLAY_SESSION_DATES } from '../../src/domain/trade-analysis/reference-trade.ts';
 import { R_DALE_D } from '../../src/domain/trade-analysis/option-trade.ts';
 import { expectShownInFull } from '../d7p/support.ts';
 import {
   AXIO, BREN, closeOf, currentTradeId, DALE, detail, expect, fillOptionPlan, fillOptionRows, fillPlan, fillRows, label, onboardedAt, openExitForm, openReview, pinClock, pnlChart, priceStrip, LAUNCH,
-  answerIn, exitReflection, reachPanel, recordEntry, recordOptionEntry, savedUnlessRefused, seek, slider, sliderValue, tradeCard, type Fixture, type Profile, type TradeRef,
+  answerIn, exitReflection, reachPanel, recordEntry, recordOptionEntry, savedUnlessRefused, seek, slider, sliderValue, type Fixture, type Profile, type TradeRef,
 } from '../d9/support.ts';
 
 export * from '../d9/support.ts';
@@ -50,6 +51,9 @@ async function enterTrade(page: Page, fixture: Fixture, through: number): Promis
   await page.goto('/');
   await openReview(page);
   const panel = await reachPanel(page, trade, 'Marks');
+  // The earlier sessions are columns only once asked for.
+  const addSkipped = panel.getByRole('button', { name: 'Add the skipped sessions' });
+  if ((await addSkipped.count()) > 0) await addSkipped.click();
   let count = 0;
   for (const [i, date] of REPLAY_SESSION_DATES.slice(0, through + 1).entries()) {
     const when = label(date);
@@ -65,8 +69,8 @@ async function enterTrade(page: Page, fixture: Fixture, through: number): Promis
     }
   }
   await panel.getByRole('button', { name: `Save Marks (${count})`, exact: true }).click();
-  await savedUnlessRefused('enterTrade', tradeCard(page, trade).locator('section[aria-label="Marks"]'), () =>
-    expect(tradeCard(page, trade).locator('section[aria-label="Marks"] button', { hasText: /^Save Marks/ })).toHaveText('Save Marks (0)', LAUNCH),
+  await savedUnlessRefused('enterTrade', marksStepOf(page), () =>
+    expect(saveMarksButton(page)).toHaveText('Save Marks (0)', LAUNCH),
   );
   return trade;
 }

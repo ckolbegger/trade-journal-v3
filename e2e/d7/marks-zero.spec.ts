@@ -1,6 +1,6 @@
 import type { Locator } from '@playwright/test';
 import {
-  markEditorOf, confirmOptionPlan, createTradeAt, currentTradeId, enterMark, expect, firstPage, launchAt, observationsOf, onboardedAt, openReview, optionMarkRow, OS, PLAN, probe, recordOptionEntry, reloadReview, saveMarkPrice, savedOptionMarkRow, test,
+  markEditorOf, marksStepOf, confirmOptionPlan, createTradeAt, currentTradeId, enterMark, expect, firstPage, launchAt, observationsOf, onboardedAt, openReview, optionMarkRow, OS, PLAN, probe, recordOptionEntry, reloadReview, saveMarkPrice, savedOptionMarkRow, test,
   TUESDAY, TUESDAY_1700, TUESDAY_1030, workspaceOf,
 } from './support.ts';
 
@@ -28,21 +28,23 @@ test.describe('B7.6 Marks of 0', () => {
     await page.goto('/');
     await openReview(page);
     const putRow = await optionMarkRow(page, mno, PUT, TUESDAY);
-    await expect(putRow.getByText(ZERO_NOTE)).toBeVisible();
+    await expect(marksStepOf(page).getByText(ZERO_NOTE)).toBeVisible();
     await saveMarkPrice(page, mno, putRow, '0');
     const saved: Locator = await savedOptionMarkRow(page, mno, PUT, TUESDAY);
     await expect(saved).toContainText('Manual');
     await expect(saved).toContainText('$0.00');
 
     // 0 for KLM stock.
-    await expect((await markEditorOf(page, klm, TUESDAY)).getByText(ZERO_NOTE)).toBeVisible();
+    await markEditorOf(page, klm, TUESDAY);
+    await expect(marksStepOf(page).getByText(ZERO_NOTE)).toBeVisible();
     await enterMark(page, klm, TUESDAY, '0');
 
     // -1 for ABC is refused with its error, and nothing is saved for ABC.
     const abcRow = await markEditorOf(page, abc, TUESDAY);
     await saveMarkPrice(page, abc, abcRow, '-1');
-    await expect(abcRow.getByText('A price cannot be negative.')).toBeVisible();
-    await expect(abcRow.getByText('Missing')).toBeVisible();
+    await expect(marksStepOf(page).getByText('A price cannot be negative.')).toBeVisible();
+    // Still a price to enter, holding the refused draft.
+    await expect(marksStepOf(page).getByRole('textbox', { name: `ABC Mark, ${TUESDAY}`, exact: true })).toHaveValue('-1');
     await reloadReview(page);
 
     // The probe shows exactly two Mark revisions: the put's and KLM's, each 0, first revisions.

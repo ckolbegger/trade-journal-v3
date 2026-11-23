@@ -1405,6 +1405,9 @@ describe('Action (A159)', () => {
   });
 });
 
+// The Marks step is the page's: its grid and its Save Marks are not in any card.
+const marksStep = () => screen.getByRole('region', { name: /^Marks for / });
+
 describe('moving on', () => {
   it('should open the next panel that is not done when a panel work is finished, and after an Action save open the card the result names as the next step, collapsing this one', async () => {
     const user = userEvent.setup();
@@ -1433,13 +1436,15 @@ describe('moving on', () => {
       .mockResolvedValueOnce({ kind: 'Saved', action: savedAction('Hold'), review: { kind: 'Ready', cards: [savedCard('t1')], progress: { tradesWithAction: 1, tradesEligible: 2 }, completion: atT2, nextStep: { kind: 'Trade', trade: next }, binding } });
     renderWalk(facade);
     const card = await openTrade(user, 'XYZ');
-    const opened = () => (['Marks', 'Reflections', 'Action'] as const).filter((name) => panelHeader(card, name).getAttribute('aria-expanded') === 'true');
-    expect(opened()).toEqual(['Marks']);
+    const opened = () => (['Reflections', 'Action'] as const).filter((name) => panelHeader(card, name).getAttribute('aria-expanded') === 'true');
+    // The Marks are the page's, so the card opens on the reflection due.
+    expect(opened()).toEqual(['Reflections']);
 
-    // Save Marks finishes the Marks panel: the reflection due is the next panel that is not done.
-    await user.type(within(card).getByRole('textbox', { name: /Mark, / }), '52.00');
-    await user.click(within(card).getByRole('button', { name: 'Save Marks (1)' }));
-    await vi.waitFor(() => expect(opened()).toEqual(['Reflections']));
+    // Save Marks, in the Marks step, leaves the card's panels as they are.
+    await user.type(within(marksStep()).getByRole('textbox', { name: /Mark, / }), '52.00');
+    await user.click(within(marksStep()).getByRole('button', { name: 'Save Marks (1)' }));
+    await vi.waitFor(() => expect(within(marksStep()).getByRole('button', { name: 'Save Marks (0)' })).toBeTruthy());
+    expect(opened()).toEqual(['Reflections']);
 
     // The last reflection resolved finishes that one: the Action panel opens.
     await user.click(within(card).getByRole('button', { name: /Reflect on 2026-10-09 10:30/ }));
@@ -1479,9 +1484,9 @@ describe('Save Marks from a card that is not first in the new order', () => {
   }
 
   it('should keep the open card open after Save Marks when it is not first in the new order', async () => {
-    const { user, card } = await savedFromSecondCard();
-    await user.type(within(card).getByRole('textbox', { name: /Mark, / }), '52.00');
-    await user.click(within(card).getByRole('button', { name: 'Save Marks (1)' }));
+    const { user } = await savedFromSecondCard();
+    await user.type(within(marksStep()).getByRole('textbox', { name: /Mark, / }), '52.00');
+    await user.click(within(marksStep()).getByRole('button', { name: 'Save Marks (1)' }));
 
     await vi.waitFor(() => expect(screen.getByRole('button', { name: /^Review DEF\b/ })).toBeTruthy());
     expect(screen.getByRole('button', { name: /^Review XYZ\b/ }).getAttribute('aria-expanded')).toBe('true');
@@ -1494,9 +1499,8 @@ describe('Save Marks from a card that is not first in the new order', () => {
     const { user, card } = await savedFromSecondCard();
     await user.click(panelHeader(card, 'Action'));
     await user.click(within(card).getByRole('radio', { name: 'Exit' }));
-    await user.click(panelHeader(card, 'Marks'));
-    await user.type(within(card).getByRole('textbox', { name: /Mark, / }), '52.00');
-    await user.click(within(card).getByRole('button', { name: 'Save Marks (1)' }));
+    await user.type(within(marksStep()).getByRole('textbox', { name: /Mark, / }), '52.00');
+    await user.click(within(marksStep()).getByRole('button', { name: 'Save Marks (1)' }));
 
     await vi.waitFor(() => expect(screen.getAllByRole('button', { name: /^Review (DEF|XYZ)\b/ })[0]!.textContent).toMatch(/DEF/));
     await new Promise((resolve) => setTimeout(resolve, 50));
@@ -1525,9 +1529,8 @@ describe('Save Marks from a card that is not first when reading it again fails',
     const card = await openTrade(user, 'XYZ');
     await user.click(panelHeader(card, 'Action'));
     await user.click(within(card).getByRole('radio', { name: 'Exit' }));
-    await user.click(panelHeader(card, 'Marks'));
-    await user.type(within(card).getByRole('textbox', { name: /Mark, / }), '52.00');
-    await user.click(within(card).getByRole('button', { name: 'Save Marks (1)' }));
+    await user.type(within(marksStep()).getByRole('textbox', { name: /Mark, / }), '52.00');
+    await user.click(within(marksStep()).getByRole('button', { name: 'Save Marks (1)' }));
 
     await vi.waitFor(() => expect(screen.getAllByRole('button', { name: /^Review (DEF|XYZ)\b/ })[0]!.textContent).toMatch(/DEF/));
     await vi.waitFor(() => expect(vi.mocked(facade.DailyReview.getTrade)).toHaveBeenCalledTimes(2));
@@ -1557,37 +1560,6 @@ describe('moving on from Reflections', () => {
   });
 });
 
-describe('moving on from the panel that finished', () => {
-  it('should advance from the Marks panel when Save Marks finishes after the trader opened the Reflections panel, leaving Reflections open while a reflection is due', async () => {
-    const user = userEvent.setup();
-    // T-1 owes a Mark, a reflection due and its Action.
-    const walkedTrades = [item('t1', 'XYZ')].map((t) => ({ ...t, progress: cardProgress(1, 0, { needed: 1, resolved: 0 }) }));
-    const owing: ReviewCompletion = { kind: 'Incomplete', reasons: [{ code: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'XYZ' }, tradingDate: '2026-10-12', trades: ['t1'] }, { code: 'ReflectionDue', tradeId: 't1', debtIds: ['d1'] }, { code: 'ActionMissing', tradeId: 't1' }] };
-    const review = ready([item('t1', 'XYZ')], [], { completion: owing, families: [{ family: 'Marks', earlierMarks: [], today: [markRow('XYZ')], earlier: [] }, { family: 'Trades', trades: walkedTrades }] });
-    const trade = tradeReview('t1', 'XYZ', { reflections: owedPair });
-    const facade = walkFacade(review, trade);
-    const afterMarks: ReviewCompletion = { kind: 'Incomplete', reasons: owing.kind === 'Incomplete' ? owing.reasons.filter((r) => r.code !== 'MarkMissing') : [] };
-    const mark = { revisionId: 'r1', revisionNumber: 1, price: '52.00', source: 'Manual', savedAt: '2026-10-12T21:00:00Z' } as const;
-    const held = deferred<SaveDailyReviewResult>();
-    vi.mocked(facade.DailyReview.save).mockReturnValueOnce(held.promise);
-    renderWalk(facade);
-    const card = await openTrade(user, 'XYZ');
-    const opened = () => (['Marks', 'Reflections', 'Action'] as const).filter((name) => panelHeader(card, name).getAttribute('aria-expanded') === 'true');
-
-    await user.type(within(card).getByRole('textbox', { name: /Mark, / }), '52.00');
-    await user.click(within(card).getByRole('button', { name: 'Save Marks (1)' }));
-    await user.click(panelHeader(card, 'Reflections'));
-    held.resolve({
-      kind: 'MarksSaved',
-      marks: [{ key: { instrumentKey: 'XYZ', tradingDate: '2026-10-12' }, resolution: { kind: 'Available', mark }, resolutionRevision: 1, classification: 'InitialManual' }],
-      review: { kind: 'Ready', progress: { tradesWithAction: 0, tradesEligible: 1 }, completion: afterMarks, binding, trades: walkedTrades.map((t) => ({ ...t, progress: cardProgress(1, 1) })), trade, nextStep: { kind: 'Trade', trade } },
-    });
-
-    await vi.waitFor(() => expect(within(panelHeader(card, 'Marks')).getByText('Saved')).toBeTruthy());
-    expect(opened()).toEqual(['Reflections']);
-  });
-});
-
 describe('a reflection draft when the shell turns read only', () => {
   it('should release the unsaved hold on the card once the shell is read only, as the Action form does', async () => {
     const user = userEvent.setup();
@@ -1612,39 +1584,6 @@ describe('a reflection draft when the shell turns read only', () => {
 });
 
 describe('panel headers from progress (A169)', () => {
-  it('should read the Marks panel as 1 of 2 for Mon Oct 12 with 1 needed, and 2 of 2 with Saved once its progress has none needed', async () => {
-    const user = userEvent.setup();
-    // The completion reasons name no Mark, so only the progress can say what the Marks panel owes: 0 of 2, then 1 of 2, then 2 of 2.
-    const walkedWith = (resolved: number, needed: number) => [{ ...item('t1', 'XYZ'), progress: cardProgress(0, 0, { resolved, needed }) }];
-    const review = ready([item('t1', 'XYZ')], ['t1'], { families: [{ family: 'Marks', earlierMarks: [], today: [markRow('XYZ'), markRow('ABC')], earlier: [] }, { family: 'Trades', trades: walkedWith(0, 2) }] });
-    const trade = tradeReview('t1', 'XYZ', { progress: walkedWith(0, 2)[0]!.progress });
-    const facade = walkFacade(review, trade);
-    const mark = { revisionId: 'r1', revisionNumber: 1, price: '52.00', source: 'Manual', savedAt: '2026-10-12T21:00:00Z' } as const;
-    const marksSaved = (instrumentKey: string, resolved: number, needed: number): SaveDailyReviewResult => ({
-      kind: 'MarksSaved',
-      marks: [{ key: { instrumentKey, tradingDate: '2026-10-12' }, resolution: { kind: 'Available', mark }, resolutionRevision: 1, classification: 'InitialManual' }],
-      review: { kind: 'Ready', progress: { tradesWithAction: 0, tradesEligible: 1 }, completion: review.completion, binding, trades: walkedWith(resolved, needed), trade, nextStep: { kind: 'Trade', trade } },
-    });
-    vi.mocked(facade.DailyReview.save).mockResolvedValueOnce(marksSaved('XYZ', 1, 1)).mockResolvedValueOnce(marksSaved('ABC', 2, 0));
-    renderWalk(facade);
-    const card = await openTrade(user, 'XYZ');
-    const marks = panelHeader(card, 'Marks');
-    expect(within(marks).getByText('0 of 2 for Mon Oct 12')).toBeTruthy();
-    expect(within(marks).getByText('2 needed')).toBeTruthy();
-
-    await user.click(marks);
-    await user.type(within(card).getByRole('textbox', { name: /^XYZ Mark, / }), '52.00');
-    await user.click(within(card).getByRole('button', { name: 'Save Marks (1)' }));
-    await vi.waitFor(() => expect(within(panelHeader(card, 'Marks')).getByText('1 of 2 for Mon Oct 12')).toBeTruthy());
-    expect(within(panelHeader(card, 'Marks')).getByText('1 needed')).toBeTruthy();
-
-    await user.click(panelHeader(card, 'Marks'));
-    await user.type(within(card).getByRole('textbox', { name: /^ABC Mark, / }), '52.00');
-    await user.click(within(card).getByRole('button', { name: 'Save Marks (1)' }));
-    await vi.waitFor(() => expect(within(panelHeader(card, 'Marks')).getByText('2 of 2 for Mon Oct 12')).toBeTruthy());
-    expect(within(panelHeader(card, 'Marks')).getByText('Saved')).toBeTruthy();
-  });
-
   it('should read the Reflections panel as 2 owed, 1 due now with 1 due, 1 owed, 0 due now with Not due, and None owed with None', async () => {
     const user = userEvent.setup();
     // The Trade lists no owed reflection and the completion names none: only the progress says what the panel owes.
@@ -1687,7 +1626,8 @@ describe('panel headers from progress (A169)', () => {
     for (const [progress, panel] of [
       [cardProgress(0, 1), 'Action'],
       [cardProgress(1, 0), 'Reflections'],
-      [cardProgress(1, 0, { needed: 1 }), 'Marks'],
+      // A Mark still to enter is the page's: the card opens on its first panel of its own that is not done.
+      [cardProgress(1, 0, { needed: 1 }), 'Reflections'],
     ] as const) {
       const review = ready([item('t1', 'XYZ')], [], {
         completion: { kind: 'Incomplete', reasons: [{ code: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'XYZ' }, tradingDate: '2026-10-12', trades: ['t1'] }] },
@@ -1696,7 +1636,7 @@ describe('panel headers from progress (A169)', () => {
       renderWalk(walkFacade(review, tradeReview('t1', 'XYZ', { reflections: [], progress })));
       const card = await openTrade(user, 'XYZ');
 
-      expect((['Marks', 'Reflections', 'Action'] as const).filter((name) => panelHeader(card, name).getAttribute('aria-expanded') === 'true')).toEqual([panel]);
+      expect((['Reflections', 'Action'] as const).filter((name) => panelHeader(card, name).getAttribute('aria-expanded') === 'true')).toEqual([panel]);
       cleanup();
     }
   });
@@ -1704,27 +1644,24 @@ describe('panel headers from progress (A169)', () => {
 
 describe('panels (A152)', () => {
 
-  it('should show Marks, Reflections, and Action panels in that order, with one open at a time, each header a button with its summary and status as text, and None on Reflections for a card that owes none', async () => {
+  it('should show Reflections and Action panels in that order and no Marks panel, with one open at a time, each header a button with its summary and status as text, and None on Reflections for a card that owes none', async () => {
     const user = userEvent.setup();
     renderWalk(walkFacade(owingReview(), tradeReview('t1', 'XYZ', { reflections: owedPair })));
     const card = await openTrade(user, 'XYZ');
 
-    const [marks, reflections, action] = [panelHeader(card, 'Marks'), panelHeader(card, 'Reflections'), panelHeader(card, 'Action')] as const;
-    expect(marks.compareDocumentPosition(reflections) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    const [reflections, action] = [panelHeader(card, 'Reflections'), panelHeader(card, 'Action')] as const;
     expect(reflections.compareDocumentPosition(action) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(within(marks).getByText('0 of 2 for Mon Oct 12 · 1 earlier optional')).toBeTruthy();
-    expect(within(marks).getByText('2 needed')).toBeTruthy();
+    expect(within(card).queryByRole('button', { name: /^Marks\b/ })).toBeNull();
     expect(within(reflections).getByText('2 owed, 1 due now')).toBeTruthy();
     expect(within(reflections).getByText('1 due')).toBeTruthy();
     expect(within(action).getByText('Hold, Exit, Roll or Adjust')).toBeTruthy();
     expect(within(action).getByText('Needed')).toBeTruthy();
     // The card opens on its first panel that is not done; pressing another header opens that one and closes this.
-    expect([marks, reflections, action].map((h) => h.getAttribute('aria-expanded'))).toEqual(['true', 'false', 'false']);
+    expect([reflections, action].map((h) => h.getAttribute('aria-expanded'))).toEqual(['true', 'false']);
     expect(within(card).queryByRole('form', { name: 'Action' })).toBeNull();
     await user.click(action);
-    expect([marks, reflections, action].map((h) => h.getAttribute('aria-expanded'))).toEqual(['false', 'false', 'true']);
+    expect([reflections, action].map((h) => h.getAttribute('aria-expanded'))).toEqual(['false', 'true']);
     expect(within(card).getByRole('form', { name: 'Action' })).toBeTruthy();
-    expect(within(card).queryByRole('region', { name: 'Marks' })).toBeNull();
     cleanup();
 
     renderWalk(walkFacade(ready([item('t1', 'XYZ')]), tradeReview('t1', 'XYZ')));
@@ -1865,8 +1802,8 @@ describe('Review card: the Replay button (decision 3)', () => {
     });
     renderWalk(facade);
     const card = await openTrade(user, 'XYZ');
-    await user.type(within(card).getByRole('textbox', { name: /Mark, / }), '52.00');
-    await user.click(within(card).getByRole('button', { name: 'Save Marks (1)' }));
+    await user.type(within(marksStep()).getByRole('textbox', { name: /Mark, / }), '52.00');
+    await user.click(within(marksStep()).getByRole('button', { name: 'Save Marks (1)' }));
     await user.click(await within(card).findByRole('button', { name: 'Replay' }));
     const dialog = await screen.findByRole('dialog', { name: 'Replay, XYZ' });
     expect(within(dialog).getByRole('heading', { level: 2 }).textContent).toBe('XYZ · Trade P&L +$582.00');
@@ -2070,7 +2007,7 @@ describe('Review card: the Replay button (decision 3)', () => {
     // A card with no replay in its Trade keeps its other panels and the Action form.
     const card = await openTrade(user, 'XYZ');
     expect(within(card).queryByRole('button', { name: 'Replay' })).toBeNull();
-    for (const name of ['Marks', 'Reflections', 'Action']) expect(within(card).getByRole('button', { name: new RegExp(`^${name}\\b`) })).toBeTruthy();
+    for (const name of ['Reflections', 'Action']) expect(within(card).getByRole('button', { name: new RegExp(`^${name}\\b`) })).toBeTruthy();
     expect(within(card).getByRole('form', { name: 'Action' })).toBeTruthy();
   });
 });

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { checkMarkSlip, MARK_SLIP_LIMITS } from './index.ts'
+import { checkMarkSlip, markChange, MARK_SLIP_LIMITS } from './index.ts'
+import { Rational } from '../values/index.ts'
 import type { Instrument } from '../instrument/index.ts'
 
 const stock: Instrument = { kind: 'Stock', symbol: 'XYZ' }
@@ -66,5 +67,26 @@ describe('The Mark slip check (P167)', () => {
     expect(checkMarkSlip({ instrument: stock, entry: '48.00', lastMark: '45.10' }, wide)).toEqual({ kind: 'Pass' })
     expect(checkMarkSlip({ instrument: option, entry: '130.00', lastMark: '45.00' }, wide)).toEqual({ kind: 'Pass' })
     expect(checkMarkSlip({ instrument: option, entry: '10.00', lastMark: '45.00' }, wide)).toEqual({ kind: 'Pass' })
+  })
+})
+
+describe('The change from the previous Mark (T95.12, P167)', () => {
+  it('should give the change from the previous Mark in dollars and percent', () => {
+    const down = markChange({ entry: '44.00', previous: '45.10' })
+    expect(down?.dollars.equals(Rational.of(-110n, 100n))).toBe(true)
+    expect(down?.percent).toBe('−2.4')
+    const up = markChange({ entry: '49.00', previous: '45.10' })
+    expect(up?.dollars.equals(Rational.of(390n, 100n))).toBe(true)
+    expect(up?.percent).toBe('+8.6')
+    expect(markChange({ entry: '45.10', previous: '45.10' })?.percent).toBe('0.0')
+  })
+  it('should give dollars alone when the previous Mark is zero, and nothing for an entry or a previous Mark that is not a price', () => {
+    const fromZero = markChange({ entry: '0.45', previous: '0' })
+    expect(fromZero?.dollars.equals(Rational.of(45n, 100n))).toBe(true)
+    expect(fromZero?.percent).toBeUndefined()
+    expect(markChange({ entry: 'abc', previous: '45.10' })).toBeUndefined()
+    expect(markChange({ entry: '', previous: '45.10' })).toBeUndefined()
+    expect(markChange({ entry: '-5', previous: '45.10' })).toBeUndefined()
+    expect(markChange({ entry: '44.00', previous: 'x' })).toBeUndefined()
   })
 })

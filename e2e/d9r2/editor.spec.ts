@@ -1,4 +1,4 @@
-import { dayLine, expectMark, marksPanelOf, markEditorOf, acknowledgeMark, completion, createGapFixture, enterMark, expect, OCT_12, OCT_7, OCT_8, OCT_9, openReview, reachCard, LAUNCH, reloadReview, saveAction, saveMarksOf, status, test, tradeCard } from './support.ts';
+import { dayLine, expectMark, marksPanelOf, marksStepOf, markEditorOf, acknowledgeMark, completion, createGapFixture, enterMark, expect, OCT_12, OCT_7, OCT_8, OCT_9, openReview, reachCard, LAUNCH, reloadReview, saveAction, status, test , saveMarksButton } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -11,15 +11,16 @@ test.describe('B9R2.4 The cell editor', () => {
     const { context, page, tA, tF } = await createGapFixture(profile);
 
     await test.step("Can't get a price needs a reason", async () => {
-      const editor = await markEditorOf(page, tA, OCT_12);
-      await editor.getByRole('button', { name: "Can't get a price" }).click();
-      await saveMarksOf(page, tA).click();
-      await expect(editor.getByText("Enter why you can't get a price.")).toBeVisible();
+      // The Review Date's cell is answered in its row (W113): the reason is asked for before anything is held.
+      const row = marksStepOf(page).getByRole('row').filter({ has: page.getByRole('rowheader', { name: 'XYZ', exact: true }) });
+      await row.getByRole('button', { name: /^Can't get a price/ }).click();
+      await row.getByRole('button', { name: 'No price', exact: true }).click();
+      await expect(row.getByText("Enter why you can't get a price.")).toBeVisible();
       await expect(status(page)).toContainText('Incomplete');
-      await editor.getByLabel('Reason (required)').fill('No quote today');
-      await saveMarksOf(page, tA).click();
-      // A saved result moves the card on to its next panel (A157), so the panel's own button is read inside the card.
-      await expect(tradeCard(page, tA).locator('section[aria-label="Marks"] button', { hasText: /^Save Marks/ })).toHaveText('Save Marks (0)');
+      await row.getByRole('textbox', { name: /^Why no price/ }).fill('No quote today');
+      await row.getByRole('button', { name: 'No price', exact: true }).click();
+      await saveMarksButton(page).click();
+      await expect(saveMarksButton(page)).toHaveText('Save Marks (0)');
       await expectMark(page, tA, OCT_12, 'Acknowledged Unavailable');
     });
 
@@ -76,10 +77,10 @@ test.describe('B9R2.4 The cell editor', () => {
       await second.close();
       const cell = marks.getByRole('textbox', { name: `XYZ Mark, ${OCT_9}`, exact: true });
       await cell.fill('50.60');
-      await saveMarksOf(page, tA).click();
+      await saveMarksButton(page).click();
       await expect(page.getByRole('alert').filter({ hasText: 'This Mark changed after you opened it. Nothing was saved.' })).toBeVisible(LAUNCH);
       // Nothing was written from this tab: the other tab's Mark stands.
-      await expect(saveMarksOf(page, tA)).toHaveText('Save Marks (1)');
+      await expect(saveMarksButton(page)).toHaveText('Save Marks (1)');
       // The conflicted cell's editor takes focus in its input (A294).
       await expect(marks.getByRole('region', { name: `XYZ Mark, ${OCT_9}`, exact: true }).getByLabel('Price')).toBeFocused();
     });
@@ -111,7 +112,7 @@ test.describe('B9R2.4 The cell editor', () => {
       await openReview(second);
       await enterMark(second, tA, OCT_9, '50.85');
       await second.close();
-      await status(page).getByRole('button', { name: 'Save Marks (2)' }).click();
+      await saveMarksButton(page).click();
       await expect(page.getByRole('region', { name: `XYZ Mark, ${OCT_9}`, exact: true }).getByLabel('Price')).toBeFocused(LAUNCH);
       await expect(page.getByText('We couldn’t load this Trade. Nothing was changed.')).toHaveCount(0);
     });
@@ -125,25 +126,26 @@ test.describe('B9R2.4 The cell editor', () => {
     const cell = (date: string) => marks.getByRole('textbox', { name: `XYZ Mark, ${date}`, exact: true });
 
     await test.step('one refused price on page 2 while page 1 shows', async () => {
+      await marks.getByRole('button', { name: 'Add the skipped sessions' }).click();
       await marks.getByRole('button', { name: 'Next page' }).click();
       await cell(AUG_31).fill('-1');
       await marks.getByRole('button', { name: 'Previous page' }).click();
       await cell(OCT_9).fill('50.40');
-      await saveMarksOf(page, tA).click();
+      await saveMarksButton(page).click();
       await expect(marks.getByText('Sessions 21 to 27 of 27')).toBeVisible();
       await expect(marks.getByRole('region', { name: `XYZ Mark, ${AUG_31}`, exact: true }).getByText(NEGATIVE)).toBeVisible();
       await expect(cell(AUG_31)).toBeFocused();
       // Nothing was saved: the valid price stays a draft.
-      await expect(saveMarksOf(page, tA)).toHaveText('Save Marks (2)');
+      await expect(saveMarksButton(page)).toHaveText('Save Marks (2)');
     });
 
     await test.step('with two refused prices the first opens: Thu Oct 8, typed first and first in the grid', async () => {
-      await status(page).getByRole('button', { name: 'Discard' }).click();
+      await marks.getByRole('button', { name: 'Discard' }).click();
       await marks.getByRole('button', { name: 'Previous page' }).click();
       await cell(OCT_8).fill('-2');
       await marks.getByRole('button', { name: 'Next page' }).click();
       await cell(AUG_31).fill('-1');
-      await saveMarksOf(page, tA).click();
+      await saveMarksButton(page).click();
       await expect(marks.getByText('Sessions 1 to 20 of 27')).toBeVisible();
       await expect(marks.getByRole('region', { name: `XYZ Mark, ${OCT_8}`, exact: true }).getByText(NEGATIVE)).toBeVisible();
       await expect(cell(OCT_8)).toBeFocused();

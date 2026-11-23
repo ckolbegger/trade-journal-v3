@@ -3,6 +3,7 @@
 // shown: every earlier session's Mark is entered in the Review's Marks panel (its rows are the missed sessions), and every Position Change is
 // recorded with its own Economic Time. The prices are the series' observed Marks (the same arrays the Node suite replays); every figure and
 // word a spec asserts is plan section 5's or a W row's. All dates are 2026 and fall in EST (UTC-5).
+import { marksStepOf, saveMarksButton } from '../d4/support.ts';
 import type { Locator, Page } from '@playwright/test';
 import { K_SALE, R_BREN_U, R_CORV_D, R_DALE_D, R_DALE_U } from '../../src/domain/trade-analysis/option-trade.ts';
 import { R_AXIO_D, R_AXIO_U, REPLAY_SESSION_DATES } from '../../src/domain/trade-analysis/reference-trade.ts';
@@ -170,6 +171,9 @@ async function saveMarks(page: Page, trade: TradeRef, fixture: Fixture, through:
   await page.goto('/');
   await openReview(page);
   const panel = await reachPanel(page, trade, 'Marks');
+  // The earlier sessions are columns only once asked for.
+  const addSkipped = panel.getByRole('button', { name: 'Add the skipped sessions' });
+  if ((await addSkipped.count()) > 0) await addSkipped.click();
   let count = 0;
   for (const [i, date] of REPLAY_SESSION_DATES.slice(0, through + 1).entries()) {
     const when = label(date);
@@ -186,8 +190,8 @@ async function saveMarks(page: Page, trade: TradeRef, fixture: Fixture, through:
   }
   await panel.getByRole('button', { name: `Save Marks (${count})`, exact: true }).click();
   // The card moves on to its next panel once the Marks are saved, so the Marks panel's own button is read inside the card.
-  await savedUnlessRefused('saveMarks', tradeCard(page, trade).locator('section[aria-label="Marks"]'), () =>
-    expect(tradeCard(page, trade).locator('section[aria-label="Marks"] button', { hasText: /^Save Marks/ })).toHaveText('Save Marks (0)', LAUNCH),
+  await savedUnlessRefused('saveMarks', marksStepOf(page), () =>
+    expect(saveMarksButton(page)).toHaveText('Save Marks (0)', LAUNCH),
   );
 }
 

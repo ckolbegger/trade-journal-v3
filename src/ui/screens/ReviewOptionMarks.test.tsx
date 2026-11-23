@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { cleanup, render, screen, within, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -112,12 +112,6 @@ function renderReview(facade: UiFacade, at = '/review') {
   );
 }
 
-const markRegion = (card: HTMLElement, label: string) => within(card).getByRole('region', { name: `${label} Mark, Fri Nov 20` });
-// Choosing a cell by its input opens its editor, a region named after it.
-async function chooseCell(user: ReturnType<typeof userEvent.setup>, card: HTMLElement, label: string) {
-  await user.click(within(card).getByRole('textbox', { name: `${label} Mark, Fri Nov 20` }));
-  return markRegion(card, label);
-}
 
 describe('option Marks (A115)', () => {
   it('should accept 0 for a contract with its explanatory note, and show Needed only while settlement is due on a task needed only by Settlement Due Trades', async () => {
@@ -126,22 +120,20 @@ describe('option Marks (A115)', () => {
     vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'Rejected', issues: [] });
     renderReview(facade);
 
-    const card = await screen.findByRole('region', { name: 'MNO review' });
-    // The contract is named by its label in its cell and the cell's editor (convention C6), never by its OCC key; its row is headed Put Mark.
-    const marks = within(card).getByRole('region', { name: 'Marks' });
-    expect(within(marks).getAllByRole('rowheader').map((h) => h.textContent)).toEqual(['Put Mark', 'MNO Mark', 'XYZ Mark']);
+    await screen.findByRole('region', { name: 'MNO review' });
+    // The contract is named by its label in its cell (convention C6), never by its OCC key; its row is headed by that label too.
+    const marks = screen.getByRole('region', { name: /^Marks for / });
+    const rowOf = (label: string) => within(marks).getByRole('rowheader', { name: label }).closest('tr')!;
+    expect(within(marks).getAllByRole('rowheader').map((h) => h.textContent)).toEqual(['MNO Nov 20 $45 Put', 'MNO', 'XYZ']);
     const contractInput = within(marks).getByRole('textbox', { name: 'MNO Nov 20 $45 Put Mark, Fri Nov 20' });
 
     // 0 is an honest closing value, with the note saying so, for every Instrument.
     await user.type(contractInput, '0');
-    const contract = markRegion(card, 'MNO Nov 20 $45 Put');
-    expect(within(contract).getByText('0 means it closed with no value')).toBeTruthy();
+    expect(within(marks).getByText('0 means it closed with no value')).toBeTruthy();
     // A task only the Settlement Due Trade needs says so; one a Trade without a due settlement also needs does not.
-    expect(within(contract).getByText('Needed only while settlement is due')).toBeTruthy();
-    const mno = await chooseCell(user, card, 'MNO');
-    expect(within(mno).getByText('0 means it closed with no value')).toBeTruthy();
-    expect(within(mno).getByText('Needed only while settlement is due')).toBeTruthy();
-    expect(within(await chooseCell(user, card, 'XYZ')).queryByText('Needed only while settlement is due')).toBeNull();
+    expect(within(rowOf('MNO Nov 20 $45 Put')).getByText('Needed only while settlement is due')).toBeTruthy();
+    expect(within(rowOf('MNO')).getByText('Needed only while settlement is due')).toBeTruthy();
+    expect(within(rowOf('XYZ')).queryByText('Needed only while settlement is due')).toBeNull();
     await user.click(within(marks).getByRole('button', { name: /^Save Marks/ }));
     expect(facade.DailyReview.save).toHaveBeenCalledWith(
       expect.objectContaining({ kind: 'SaveReviewMarks', entries: [{ key: { instrumentKey: PUT_KEY, tradingDate: DATE }, expectedRevision: 'None', intention: { kind: 'RecordInitialManualMark', price: '0' } }] }),
@@ -187,12 +179,13 @@ describe('a contract named by its label (conflict K18) and the card payoff summa
   it('should move focus to the contract row when the Trade day line link is followed', async () => {
     const user = userEvent.setup();
     renderReview(walkFacade(review(), tradeReview('t3', 'MNO')));
-    const card = await screen.findByRole('region', { name: 'MNO review' });
+    await screen.findByRole('region', { name: 'MNO review' });
 
     const lines = within(screen.getByRole('region', { name: 'The day' })).getByRole('list', { name: 'Trade lines' });
     await user.click(within(lines).getByRole('link', { name: 'MNO' }));
 
-    expect(document.activeElement).toBe(within(card).getByRole('textbox', { name: 'MNO Nov 20 $45 Put Mark, Fri Nov 20' }));
+    // The Mark is the page's: its cell in the Marks step takes the focus.
+    await waitFor(() => expect(document.activeElement).toBe(screen.getByRole('textbox', { name: 'MNO Nov 20 $45 Put Mark, Fri Nov 20' })));
   });
 
   it('should word Market Datas AfterExpiration beside the contract row with the expiration date', async () => {
@@ -200,12 +193,13 @@ describe('a contract named by its label (conflict K18) and the card payoff summa
     const facade = walkFacade(review(), tradeReview('t3', 'MNO'));
     vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'Rejected', issues: [{ entryIndex: 0, field: 'tradingDate', code: 'AfterExpiration' }] } as never);
     renderReview(facade);
-    const card = await screen.findByRole('region', { name: 'MNO review' });
+    await screen.findByRole('region', { name: 'MNO review' });
+    const marks = screen.getByRole('region', { name: /^Marks for / });
 
-    await user.type(within(card).getByRole('textbox', { name: 'MNO Nov 20 $45 Put Mark, Fri Nov 20' }), '0.10');
-    await user.click(within(card).getByRole('button', { name: /^Save Marks/ }));
+    await user.type(within(marks).getByRole('textbox', { name: 'MNO Nov 20 $45 Put Mark, Fri Nov 20' }), '0.10');
+    await user.click(within(marks).getByRole('button', { name: /^Save Marks/ }));
 
-    expect(within(markRegion(card, 'MNO Nov 20 $45 Put')).getByText('This contract expired on Fri Nov 20, so it has no Mark for a later date.')).toBeTruthy();
+    expect(await within(marks).findByText('This contract expired on Fri Nov 20, so it has no Mark for a later date.')).toBeTruthy();
   });
 
   it('should list a contract acknowledged unavailable by its label', async () => {

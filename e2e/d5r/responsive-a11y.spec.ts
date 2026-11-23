@@ -1,6 +1,6 @@
 import {
   panelOf, markEditorOf, markInputOf, actionFormOf, cardHeader, cardItem, completion, createCardFixture, createRoutineTrades, createTrades, expect, expectAccessible, FRIDAY, MONDAY, MONDAY_1700, onboardedAt, openReview, panelHeader, LAUNCH, remainsOf, meterOf, status, tabTo,
-  test, tradeCard, type TradeRef,
+  test, tradeCard, saveMarksButton, marksStepOf, type TradeRef,
 } from './support.ts';
 
 const INTENT = /^Why are you taking this action\?/;
@@ -33,8 +33,8 @@ test.describe('B5R.11 Responsive and accessible', () => {
     await expect(remainsOf(page, tA)).toHaveText('1 Mark · 1 reflection due · Action');
     await expect(status(page)).toContainText('Incomplete');
     await expect(friday.getByText('Unsaved')).toBeVisible();
-    await expect((await markEditorOf(page, tA, MONDAY)).getByText('Unsaved')).toBeVisible();
-    await expect(panelHeader(page, tA, 'Marks')).toContainText('1 needed');
+    await expect(saveMarksButton(page)).toHaveText('Save Marks (2)');
+    await expect(saveMarksButton(page)).toHaveText('Save Marks (2)');
     const action = await actionFormOf(page, tA);
     await action.getByRole('radio', { name: 'Exit', exact: true }).check();
     await action.getByLabel(INTENT).fill('Half written');
@@ -68,7 +68,7 @@ test.describe('B5R.11 Responsive and accessible', () => {
     await expect((await markEditorOf(page, tA, FRIDAY)).getByLabel('Reason (required)')).toHaveValue('No quo');
 
     // Put the drafts away (mouse), then complete T-B's card with the keyboard only.
-    await tradeCard(page, 'XYZ').getByRole('button', { name: 'Discard' }).click();
+    await marksStepOf(page).getByRole('button', { name: 'Discard' }).click();
     const form = await actionFormOf(page, tA);
     await form.getByRole('radio', { name: 'Hold', exact: true }).check();
     await form.getByLabel(INTENT).fill('');
@@ -79,12 +79,14 @@ test.describe('B5R.11 Responsive and accessible', () => {
     await expect(cardHeader(page, tB)).toBeFocused();
     // Keyboard and focus steps assert navigation itself (section 6.4, rule 4): raw locators, no reaches.
     const abc = tradeCard(page, 'ABC');
-    const price = abc.getByRole('textbox', { name: `ABC Mark, ${MONDAY}`, exact: true });
+    const price = marksStepOf(page).getByRole('textbox', { name: `ABC Mark, ${MONDAY}`, exact: true });
     await tabTo(page, price);
     await page.keyboard.type('27.50');
+    // Enter would go on to the next Instrument's price: Save Marks is reached by Tab here.
+    await tabTo(page, saveMarksButton(page));
     await page.keyboard.press('Enter');
-    await expect(abc.getByRole('button', { name: /^Save Marks/ })).toBeFocused();
-    await page.keyboard.press('Enter');
+    await expect(saveMarksButton(page)).toHaveText('Save Marks (0)');
+    // The Marks are the page's, so T-B's card was on its Action panel all along.
     await expect(panelHeader(page, tB, 'Action')).toHaveAttribute('aria-expanded', 'true');
     const save = abc.getByRole('form', { name: 'Action' }).getByRole('button', { name: 'Save' });
     await expect(save).toBeEnabled();

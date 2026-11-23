@@ -52,7 +52,6 @@ export async function createRoutineTrades(page: Page, count: number): Promise<vo
 
 // The meter of a card's header (a collapsed card shows it too).
 export const meterOf = (page: Page, card: CardRef): Locator => cardItem(page, card).locator('.review-card-head').getByRole('img');
-export const saveMarksOf = (page: Page, card: CardRef): Locator => cardItem(page, card).getByRole('button', { name: /^Save Marks/ });
 // What the collapsed header says remains.
 export const remainsOf = (page: Page, card: CardRef): Locator => cardItem(page, card).locator('.review-card-remains');
 

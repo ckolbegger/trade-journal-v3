@@ -17,19 +17,23 @@ const FAMILY_TEXT: Record<CalculationFamily, string> = { Valuation: 'Valuation',
 
 type DaySummary = NonNullable<Ready['day']>;
 
-// Opens a card, on a panel and an Instrument's row when they are named (A161).
-export type OpenCard = (tradeId: string, panel?: PanelName, instrument?: string) => void;
+// Opens a card, on a panel when one is named (A161).
+export type OpenCard = (tradeId: string, panel?: PanelName) => void;
 
 export interface DayCardProps {
   readonly review: Ready;
   readonly name: (tradeId: string) => string;
   readonly openCard: OpenCard;
+  // The Marks step's cell for an Instrument, chosen and focused; with none named, the first Mark still to enter (A161).
+  readonly openMarks: (instrument?: string) => void;
+  // The Marks step with the skipped sessions' columns added.
+  readonly openSkipped: () => void;
   // The unsaved-Marks notice with its Save Marks and Discard, which the page owns until T95.14.
   readonly unsaved?: ReactNode;
 }
 
 // A link that opens the card; it stays a real link, so it can be opened in a new tab.
-function CardLink({ tradeId, open, panel, instrument, describedBy, children }: { readonly tradeId: string; readonly open: OpenCard; readonly panel?: PanelName; readonly instrument?: string; readonly describedBy?: string; readonly children: ReactNode }) {
+function CardLink({ tradeId, open, panel, instrument, describedBy, children }: { readonly tradeId: string; readonly open: () => void; readonly panel?: PanelName; readonly instrument?: string; readonly describedBy?: string; readonly children: ReactNode }) {
   let href = `/review?trade=${tradeId}`;
   if (instrument !== undefined) href += `&instrument=${encodeURIComponent(instrument)}`;
   else if (panel !== undefined) href += `&panel=${panel}`;
@@ -41,7 +45,7 @@ function CardLink({ tradeId, open, panel, instrument, describedBy, children }: {
         // A new-tab or new-window click is the browser's: the href names the same card, panel and row.
         if (event.ctrlKey || event.metaKey || event.shiftKey || event.button !== 0) return;
         event.preventDefault();
-        open(tradeId, panel, instrument);
+        open();
       }}
     >
       {children}
@@ -80,12 +84,13 @@ const todoText = (line: DaySummary['lines'][number]): string => (line.needs.leng
 
 const STEPS = ['1 Marks', '2 Trades', '3 The day'] as const;
 
-const PANEL_OF = { Marks: 'Marks', Reflection: 'Reflections', Settlement: 'Settlement', Action: 'Action' } as const satisfies Record<DaySummary['lines'][number]['needs'][number], PanelName>;
+// A Mark is entered in the Marks step, not in the card.
+const PANEL_OF = { Reflection: 'Reflections', Settlement: 'Settlement', Action: 'Action' } as const satisfies Partial<Record<DaySummary['lines'][number]['needs'][number], PanelName>>;
 
 // The Trade the day card sends the trader to next: the first line, in the card's order, that still needs something (W98).
 const nextLine = (day: DaySummary) => day.lines.find((line) => line.needs.length > 0);
 
-export function DayCard({ review, name, openCard, unsaved }: DayCardProps) {
+export function DayCard({ review, name, openCard, openMarks, openSkipped, unsaved }: DayCardProps) {
   const { day, completion } = review;
   const { timeZone } = useRuntime();
   const reasonId = useId();
@@ -93,20 +98,19 @@ export function DayCard({ review, name, openCard, unsaved }: DayCardProps) {
   const facts = completion.kind === 'Incomplete' ? completion.reasons.filter((reason) => reason.code === 'IntegrityDisagreement' || reason.code === 'IncoherentFacts') : [];
   const underlyingOf = (tradeId: string): string => [...review.families.flatMap((f) => (f.family === 'Trades' ? f.trades : [])), ...review.owed].find((t) => t.tradeId === tradeId)?.underlying ?? tradeId;
   const marksFamily = review.families.find((f) => f.family === 'Marks');
-  // A line opens its card on the panel of the first thing it needs, and on its first Mark still missing (A161).
+  // A line whose first need is a Mark goes to its first Mark still missing in the Marks step; any other opens its card on that need's panel (A161).
   const targetOf = (line: DaySummary['lines'][number]) => {
     const need = line.needs[0];
-    const instrument = need === 'Marks' && marksFamily?.family === 'Marks' ? marksFamily.today.find((row) => row.resolution.kind === 'Missing' && row.trades.includes(line.tradeId))?.instrumentKey : undefined;
-    return { panel: need && PANEL_OF[need], instrument };
+    if (need === 'Marks') return { panel: undefined, instrument: marksFamily?.family === 'Marks' ? marksFamily.today.find((row) => row.resolution.kind === 'Missing' && row.trades.includes(line.tradeId))?.instrumentKey : undefined };
+    return { panel: need && PANEL_OF[need], instrument: undefined };
   };
   const open = (line: DaySummary['lines'][number]) => {
     const { panel, instrument } = targetOf(line);
-    openCard(line.tradeId, panel, instrument);
+    if (line.needs[0] === 'Marks') openMarks(instrument);
+    else openCard(line.tradeId, panel);
   };
-  // "Add them" opens the Marks of the first Instrument with a gap, on the first Trade of the walk that holds it.
-  const walkedIds = review.families.flatMap((f) => (f.family === 'Trades' ? f.trades.map((t) => t.tradeId) : []));
+  // "Add them" opens the Marks step's skipped-session columns, when the Review lists a gap.
   const gap = marksFamily?.family === 'Marks' ? marksFamily.earlier[0] : undefined;
-  const gapTrade = gap && walkedIds.find((id) => gap.trades.some((t) => t.tradeId === id));
   const labelsFor = (tradeId: string): { label: string; reason: string | undefined }[] => {
     const walkedTrade = review.families.flatMap((f) => (f.family === 'Trades' ? f.trades : [])).find((t) => t.tradeId === tradeId);
     if (walkedTrade) return describedLabelsOf(walkedTrade, timeZone ?? 'UTC');
@@ -151,8 +155,8 @@ export function DayCard({ review, name, openCard, unsaved }: DayCardProps) {
       {day && day.missed.length > 0 && (
         <p>
           <b>No Review for {day.missed.map(shortDate).join(', ')}.</b> Their Marks are optional.{' '}
-          {gap && gapTrade && (
-            <button type="button" className="pill secondary" onClick={() => openCard(gapTrade, 'Marks', gap.instrumentKey)}>
+          {gap && (
+            <button type="button" className="pill secondary" onClick={openSkipped}>
               Add them
             </button>
           )}
@@ -167,7 +171,7 @@ export function DayCard({ review, name, openCard, unsaved }: DayCardProps) {
             const reasonIds = labels.flatMap(({ reason }, i) => (reason ? [`${reasonId}-${line.tradeId}-${i}`] : []));
             return (
               <li key={line.tradeId}>
-                <CardLink tradeId={line.tradeId} open={openCard} panel={panel} instrument={instrument} describedBy={reasonIds.join(' ') || undefined}>
+                <CardLink tradeId={line.tradeId} open={() => open(line)} panel={panel} instrument={instrument} describedBy={reasonIds.join(' ') || undefined}>
                   {underlyingOf(line.tradeId)}
                 </CardLink>{' '}
                 {labels.map(({ label }) => (

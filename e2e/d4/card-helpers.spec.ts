@@ -1,6 +1,5 @@
 import {
-  markEditorOf, markInputOf, actionFormOf, cardHeader, cardList, createTrades, enterMark, expect, FOUR_TRADES, marksFamily, MONDAY_1700, onboardedAt, openPanelOf, openReview, panelHeader, PLAN, reachCard, reloadReview, status, test,
-  tradeCard,
+  markEditorOf, markInputOf, marksStepOf, saveMarksButton, actionFormOf, cardHeader, cardList, createTrades, enterMark, expect, FOUR_TRADES, marksFamily, MONDAY_1700, onboardedAt, openPanelOf, openReview, PLAN, reachCard, reloadReview, status, test,
   type FixtureTrade, type TradeRef,
 } from './support.ts';
 
@@ -20,7 +19,7 @@ async function twoXyzReview(page: Parameters<typeof openReview>[0]): Promise<{ t
 }
 
 test.describe('reach (decision 65)', () => {
-  test('should open ABC’s collapsed card and its Marks panel and return ABC’s Monday row, Missing', async ({ profile }) => {
+  test('should return ABC’s Monday cell in the Marks step, empty, and leave ABC’s card collapsed and XYZ’s card open', async ({ profile }) => {
     const { context, page } = await onboardedAt(profile, MONDAY_1700);
     await createTrades(page);
     await openReview(page);
@@ -28,12 +27,12 @@ test.describe('reach (decision 65)', () => {
     await expect(cardHeader(page, 'XYZ')).toHaveAttribute('aria-expanded', 'true');
     await expect(cardHeader(page, 'ABC')).toHaveAttribute('aria-expanded', 'false');
 
-    const row = await markEditorOf(page, 'ABC', DATE);
-    await expect(row).toContainText('Missing');
-    await expect(row).toBeVisible();
-    await expect(cardHeader(page, 'ABC')).toHaveAttribute('aria-expanded', 'true');
-    await expect(cardHeader(page, 'XYZ')).toHaveAttribute('aria-expanded', 'false');
-    await expect(panelHeader(page, 'ABC', 'Marks')).toHaveAttribute('aria-expanded', 'true');
+    // The Marks are the page's: reaching ABC's cell opens no card.
+    const input = await markInputOf(page, 'ABC', DATE);
+    await expect(input).toBeVisible();
+    await expect(input).toHaveValue('');
+    await expect(cardHeader(page, 'ABC')).toHaveAttribute('aria-expanded', 'false');
+    await expect(cardHeader(page, 'XYZ')).toHaveAttribute('aria-expanded', 'true');
     await context.close();
   });
 
@@ -87,7 +86,7 @@ test.describe('reach (decision 65)', () => {
     await expect(card).toBeVisible();
     await expect(cardHeader(page, 'ABC')).toHaveAttribute('aria-expanded', 'true');
     await expect(page.getByText(/^Save or discard what you entered for/)).toHaveCount(0);
-    await expect(status(page)).toContainText('1 unsaved Mark');
+    await expect(saveMarksButton(page)).toHaveText('Save Marks (1)');
     await context.close();
   });
 
@@ -122,20 +121,19 @@ test.describe('reach (decision 65)', () => {
 });
 
 test.describe('reach by Trade (decision 68)', () => {
-  test('should open the second XYZ Trade’s collapsed card by its Trade id and return its Monday row, leaving the first XYZ card collapsed', async ({ profile }) => {
+  test('should return the one XYZ Monday cell in the Marks step for the second XYZ Trade, opening no card', async ({ profile }) => {
     const { context, page } = await onboardedAt(profile, MONDAY_1700);
     const { tA, tF } = await twoXyzReview(page);
     // One XYZ card is open on load; the helper must open the other by its Trade id.
     await expect(cardHeader(page, tA)).toHaveAttribute('aria-expanded', 'true');
     await expect(cardHeader(page, tF)).toHaveAttribute('aria-expanded', 'false');
 
-    const row = await markEditorOf(page, tF, DATE);
-    await expect(row).toContainText('Missing');
-    await expect(row).toBeVisible();
-    await expect(tradeCard(page, tF).getByRole('region', { name: `XYZ Mark, ${DATE}`, exact: true })).toHaveCount(1);
-    await expect(cardHeader(page, tF)).toHaveAttribute('aria-expanded', 'true');
-    await expect(cardHeader(page, tA)).toHaveAttribute('aria-expanded', 'false');
-    await expect(panelHeader(page, tF, 'Marks')).toHaveAttribute('aria-expanded', 'true');
+    // The Marks are the page's: XYZ is one row for both Trades, and reaching it opens no card.
+    const input = await markInputOf(page, tF, DATE);
+    await expect(input).toBeVisible();
+    await expect(marksStepOf(page).getByRole('textbox', { name: `XYZ Mark, ${DATE}`, exact: true })).toHaveCount(1);
+    await expect(cardHeader(page, tA)).toHaveAttribute('aria-expanded', 'true');
+    await expect(cardHeader(page, tF)).toHaveAttribute('aria-expanded', 'false');
     await context.close();
   });
 

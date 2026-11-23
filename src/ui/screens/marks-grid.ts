@@ -8,6 +8,9 @@ export type GridCellState = Standing;
 // The words of the key's `can't get a price` action and of the cell that holds it as a draft.
 export const CANT_GET_A_PRICE = "Can't get a price";
 
+// What a cell holds once "Can't get a price" is given with its reason (W113).
+export const NO_PRICE = 'No price';
+
 // A session before the Trade held the Instrument (W77).
 export const NOT_HELD = 'NotHeld';
 
@@ -22,7 +25,7 @@ export interface GridSession {
   readonly role?: 'review-date' | 'previous';
 }
 
-// Which cells a card's grid holds and each one's state, decided from the open result (A291). Nothing is worked out here: a cell
+// Which cells the page's grid holds and each one's state, decided from the open result (A291). Nothing is worked out here: a cell
 // reads the Review's own rows, gap groups, earlier Marks and standings.
 export interface GridModel {
   readonly instruments: readonly GridInstrument[];
@@ -34,19 +37,20 @@ export interface GridModel {
 
 export interface GridInput {
   readonly reviewDate: string;
-  readonly tradeId: string;
-  // The card Trade's Review-date rows.
+  // The page's Review-date rows.
   readonly today: readonly MarkRow[];
-  // The card Trade's earlier sessions without an effective Mark, as the card opened.
+  // The page's earlier sessions without an effective Mark, as the page opened.
   readonly earlier: readonly GapGroup[];
   readonly earlierMarks: CardEarlierMarks;
   // A key's standing from the held Review, learned results included (A172).
   readonly standing: (key: ObservationKey) => Standing | undefined;
 }
 
+const earliest = (trades: readonly { readonly from: string }[] | undefined): string | undefined => trades?.map(({ from }) => from).sort()[0];
+
 const newestFirst = (a: string, b: string): number => (a < b ? 1 : -1);
 
-export function gridModel({ reviewDate, tradeId, today, earlier, earlierMarks, standing }: GridInput): GridModel {
+export function gridModel({ reviewDate, today, earlier, earlierMarks, standing }: GridInput): GridModel {
   const previous = earlierMarks.previousSession;
   const gapDates = [...new Set(earlier.flatMap((group) => [...group.missing, ...group.acknowledged]))].filter((date) => date !== previous && date !== reviewDate).sort(newestFirst);
   const sessions: GridSession[] = [
@@ -62,9 +66,9 @@ export function gridModel({ reviewDate, tradeId, today, earlier, earlierMarks, s
     if (acknowledgment) return { resolution: { kind: 'AcknowledgedUnavailable', acknowledgment }, revision: group.revisions[date] ?? 'None' };
     return group.missing.includes(date) ? { resolution: { kind: 'Missing' }, revision: group.revisions[date] ?? 'None' } : undefined;
   };
-  // The session the Trade first held the Instrument from; an Instrument with no earlier Marks was opened on the Review Date.
+  // The session the first Trade holding the Instrument held it from; an Instrument with no earlier Marks was opened on the Review Date.
   const heldFrom = (instrumentKey: string): string =>
-    earlierMarks.instruments.find((i) => i.instrumentKey === instrumentKey)?.from ?? earlier.find((g) => g.instrumentKey === instrumentKey)?.trades.find((t) => t.tradeId === tradeId)?.from ?? reviewDate;
+    earlierMarks.instruments.find((i) => i.instrumentKey === instrumentKey)?.from ?? earliest(earlier.find((g) => g.instrumentKey === instrumentKey)?.trades) ?? reviewDate;
   const cellAt = (instrumentKey: string, date: string): GridCellState | typeof NOT_HELD | undefined => {
     if (date < heldFrom(instrumentKey)) return NOT_HELD;
     const known = standing({ instrumentKey, tradingDate: date });

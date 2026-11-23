@@ -1,6 +1,7 @@
 // Shared support for the D7 browser suite (plan section 6.2): D6's helpers (which re-export D5R's, D5's, D4's and D2's), the faults
 // build as the served build (the default for every case), and the option steps: the option Plan form and the option exit. Dates follow the breakdown's fixtures:
 // every contract expires Friday 2026-11-20 (EST, UTC-5).
+import { marksStepOf, saveMarksButton } from '../d4/support.ts';
 import type { Locator, Page } from '@playwright/test';
 import { answerCloseReviewIn, answerIn, chooseCell, closeReasonGroup, closingSection, closeReviewGroup, completeReflection, createTradeAt, currentTradeId, detail, executionRow, expect, openDrawer, openEntryForm, PLAN, reachCard, reachPanel, LAUNCH, savedUnlessRefused, tradeCard, type CardRef, type ProbedDatabase, type TradeRef, test as d1Test, type Row } from '../d6/support.ts'; // d6's test, whose automatic fixture serves current
 
@@ -127,8 +128,8 @@ export async function saveMarkPrice(page: Page, card: CardRef, row: Locator, pri
 // After Save Marks succeeded the card clears its drafts and moves on to its next panel (A157); this waits for that, then
 // opens the Marks panel again and returns the saved option row.
 export async function savedOptionMarkRow(page: Page, card: CardRef, label: string, date: string): Promise<Locator> {
-  await savedUnlessRefused('savedOptionMarkRow', tradeCard(page, card).locator('section[aria-label="Marks"]'), () =>
-    expect(tradeCard(page, card).locator('section[aria-label="Marks"] button', { hasText: /^Save Marks/ })).toHaveText('Save Marks (0)'),
+  await savedUnlessRefused('savedOptionMarkRow', marksStepOf(page), () =>
+    expect(saveMarksButton(page)).toHaveText('Save Marks (0)'),
   );
   return optionMarkRow(page, card, label, date);
 }

@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import {
-  expectMark, marksPanelOf, markEditorOf, markInputOf, acknowledgeMark, actionFormOf, cardHeader, cardList, completion, createTradeAt, createTrades, detail, enterMark, expect, expectAccessible, firstPage, FOUR_TRADES, holdTradesStore, launchAt, MONDAY_1700, onboardedAt, onboardedPage,
+  expectMark, marksPanelOf, markEditorOf, markInputOf, marksStepOf, acknowledgeMark, actionFormOf, cardHeader, cardList, completion, createTradeAt, createTrades, detail, enterMark, expect, expectAccessible, firstPage, FOUR_TRADES, holdTradesStore, launchAt, MONDAY_1700, onboardedAt, onboardedPage,
   openDrawer, openReview, panelHeader, openTradeFromOpenList, reachCard, LAUNCH, recordEntry, releaseTradesStore, reloadReview, saveAction, setClock, status, tabTo, test, tradeCard, TUESDAY_NOON, writeIntegrityFixture,
 } from './support.ts';
 
@@ -292,23 +292,24 @@ test.describe('B4.13 Responsive and accessible', () => {
     await expect(page.getByRole('region', { name: 'The day' })).toBeVisible();
     // Keyboard and focus steps assert navigation itself (section 6.4, rule 4): raw locators, no reaches.
     const xyz = tradeCard(page, 'XYZ');
-    const entry = xyz.getByRole('region', { name: `XYZ Mark, ${DATE}`, exact: true });
-    const price = xyz.getByRole('textbox', { name: `XYZ Mark, ${DATE}`, exact: true });
+    const step = marksStepOf(page);
+    const entry = step.getByRole('region', { name: `XYZ Mark, ${DATE}`, exact: true });
+    const price = step.getByRole('textbox', { name: `XYZ Mark, ${DATE}`, exact: true });
     const actionForm = xyz.getByRole('form', { name: 'Action' });
     await tabTo(page, price);
     await page.keyboard.type('52.00');
     // Enter in the last price moves on to Save Marks (A153).
     await page.keyboard.press('Enter');
-    await expect(xyz.getByRole('region', { name: 'Marks', exact: true }).getByRole('button', { name: /^Save Marks/ })).toBeFocused();
+    await expect(step.getByRole('button', { name: /^Save Marks/ })).toBeFocused();
     await page.keyboard.press('Enter');
-    // Save Marks moved the card on to its Action panel (A157); the saved row is read in the Marks panel, then the Action panel is back.
-    await expect(panelHeader(page, 'XYZ', 'Action')).toHaveAttribute('aria-expanded', 'true');
-    await shiftTabTo(page, panelHeader(page, 'XYZ', 'Marks'));
+    // The Marks are the page's: the saved row stays in the Marks step, and its cell opens its editor by keyboard.
+    const saved = step.getByRole('button', { name: `XYZ Mark, ${DATE}`, exact: true });
+    await expect(saved).toBeVisible();
+    // Save Marks is disabled once its drafts are saved, so the keyboard goes back from where it was to the cell above it.
+    await shiftTabTo(page, saved);
     await page.keyboard.press('Enter');
-    await expect(panelHeader(page, 'XYZ', 'Marks')).toHaveAttribute('aria-expanded', 'true');
     await expect(entry.getByText('Manual')).toBeVisible();
-    await tabTo(page, panelHeader(page, 'XYZ', 'Action'));
-    await page.keyboard.press('Enter');
+    // The card is open on its Action panel from the start.
     await expect(panelHeader(page, 'XYZ', 'Action')).toHaveAttribute('aria-expanded', 'true');
     // The card is open from the start; Shift+Tab from the end of the card walks back to its header with a focus ring.
     await expect(cardList(page)).toBeVisible();

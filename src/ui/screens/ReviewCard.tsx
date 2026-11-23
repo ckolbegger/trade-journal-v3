@@ -2,7 +2,7 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
 import type { CardProgress, DailyTradeReview, PanelProgress, PostSaveReview, WalkedTrade } from '../../app/types.ts';
 import { Badge } from '../Badge.tsx';
-import { plural, shortDate, tradeName, tradeSummary } from '../format.ts';
+import { plural, tradeName, tradeSummary } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
 import type { UiFacade } from '../../app/compose.ts';
 import { ActionForm, type SavedAction } from './ActionForm.tsx';
@@ -10,8 +10,7 @@ import { ReplayDrawer } from '../cockpit/drawers/replay.tsx';
 import { overlayWordsOf } from '../cockpit/replay/overlay.props.ts';
 import { ReplayOverlay } from '../cockpit/replay/overlay.tsx';
 import { CardFigures } from './CardFigures.tsx';
-import { CardMarks, type CardMarksProps, type EntryDirty } from './CardMarks.tsx';
-import type { CardMarkRows } from './held-review.ts';
+import type { EntryDirty } from './MarksStep.tsx';
 import { ReviewReflections } from './ReviewReflections.tsx';
 import { SettlementPanel, settlementSummary } from './ReviewSettlement.tsx';
 import { describedLabelsOf, reasonText } from './review-attention.ts';
@@ -38,18 +37,15 @@ function remainsText(progress: CardProgress): string {
   return parts.length > 0 ? parts.join(' · ') : 'Done · Action saved';
 }
 
-export const PANELS = ['Marks', 'Reflections', 'Settlement', 'Action'] as const;
+export const PANELS = ['Reflections', 'Settlement', 'Action'] as const;
 export type PanelName = (typeof PANELS)[number];
 
-// Where a link into the Review sends this card (A161): a panel to open, and an Instrument's row to focus. The count grows
-// with each link, so a card that is already open answers the next one too.
+// Where a link into the Review sends this card (A161): a panel to open. The count grows with each link, so a card that is already open
+// answers the next one too.
 export interface Go {
   readonly panel?: PanelName;
-  readonly instrument?: string;
   // The Replay session the card's overlay opens on, from a way back from Trade Detail (A257, A274).
   readonly session?: string;
-  // A refused save's key takes the focus itself: the panel's button does not (A294).
-  readonly keepFocus?: boolean;
   readonly count: number;
 }
 export const NO_GO: Go = { count: 0 };
@@ -64,22 +60,11 @@ export interface ReviewCardProps {
   readonly detail: CardDetail | undefined;
   // A count that grows each time the trader asks for this card: it scrolls into view and takes focus on its header.
   readonly reveal: number;
-  // A count that grows each time Save Marks finishes on this card: it moves on to its next panel that is not done (A157).
-  readonly advance: number;
   readonly go: Go;
-  readonly marks: CardMarkRows;
-  readonly held: CardMarksProps['held'];
-  readonly onResult: CardMarksProps['onResult'];
-  readonly tradeLine: (tradeId: string) => string;
   readonly onToggle: () => void;
   readonly onSaved: (saved: SavedAction) => void;
   readonly onReflectionResolved: (review: PostSaveReview) => void;
   readonly onRefresh: () => Promise<boolean>;
-  readonly onMarkSaved: (draftId: string) => void;
-  readonly markDrafts: CardMarksProps['markDrafts'];
-  readonly nameOf: CardMarksProps['tradeName'];
-  // The Marks were saved but the figures were not read under them: the card says so and offers Refresh.
-  readonly outOfDate: boolean;
   // The trader tried to leave while the card holds an entered value (A156).
   readonly holdMessage: boolean;
   // The Review is being read again after a Mark save, so the Action cannot be saved yet.
@@ -88,7 +73,7 @@ export interface ReviewCardProps {
 }
 
 // One position of the Review: a collapsed header (Underlying, what remains, band, meter) over its content.
-export function ReviewCard({ facade, trade, expanded, detail, reveal, advance, go, marks, held, onResult, tradeLine, onToggle, onSaved, onReflectionResolved, onRefresh, onMarkSaved, markDrafts, nameOf, outOfDate, holdMessage, pending, onEntryDirty }: ReviewCardProps) {
+export function ReviewCard({ facade, trade, expanded, detail, reveal, go, onToggle, onSaved, onReflectionResolved, onRefresh, holdMessage, pending, onEntryDirty }: ReviewCardProps) {
   const item = useRef<HTMLLIElement>(null);
   const header = useRef<HTMLButtonElement>(null);
   const { timeZone } = useRuntime();
@@ -109,7 +94,7 @@ export function ReviewCard({ facade, trade, expanded, detail, reveal, advance, g
   useEffect(() => {
     if (reveal === 0 || !bodyShown || scrolledFor.current === reveal) return;
     scrolledFor.current = reveal;
-    // A Mark-row landing has already focused its row in the body (child effects run first): that focus scroll stays.
+    // A landing in the body has already focused its control (child effects run first): that focus scroll stays.
     const focused = document.activeElement;
     if (focused && focused !== header.current && item.current?.contains(focused)) return;
     item.current?.scrollIntoView?.({ block: 'start' });
@@ -151,19 +136,10 @@ export function ReviewCard({ facade, trade, expanded, detail, reveal, advance, g
           trade={detail.trade}
           progress={trade.progress}
           name={tradeName(trade)}
-          advance={advance}
           go={go}
-          marks={marks}
-          held={held}
-          onResult={onResult}
-          tradeLine={tradeLine}
           onSaved={onSaved}
           onReflectionResolved={onReflectionResolved}
           onRefresh={onRefresh}
-          onMarkSaved={onMarkSaved}
-          markDrafts={markDrafts}
-          nameOf={nameOf}
-          outOfDate={outOfDate}
           pending={pending}
           onEntryDirty={onEntryDirty}
         />
@@ -179,19 +155,10 @@ interface CardBodyProps {
   readonly progress: CardProgress;
   // The Trade's name (A150): it labels the region, so a screen reader hears which Trade it is.
   readonly name: string;
-  readonly advance: number;
   readonly go: Go;
-  readonly marks: CardMarkRows;
-  readonly held: CardMarksProps['held'];
-  readonly onResult: CardMarksProps['onResult'];
-  readonly tradeLine: (tradeId: string) => string;
   readonly onSaved: (saved: SavedAction) => void;
   readonly onReflectionResolved: (review: PostSaveReview) => void;
   readonly onRefresh: () => Promise<boolean>;
-  readonly onMarkSaved: (draftId: string) => void;
-  readonly markDrafts: CardMarksProps['markDrafts'];
-  readonly nameOf: CardMarksProps['tradeName'];
-  readonly outOfDate: boolean;
   readonly pending: boolean;
   readonly onEntryDirty: EntryDirty;
 }
@@ -203,13 +170,6 @@ interface PanelHeader {
   readonly done: boolean;
 }
 
-function marksStatus(needed: number, rows: number, earlier: number): string {
-  if (needed > 0) return `${needed} needed`;
-  if (rows > 0) return 'Saved';
-  if (earlier > 0) return 'Optional';
-  return 'None';
-}
-
 // Owed counts the reflections still outstanding, so one answered or declined in this view is no longer owed (P46).
 export function reflectionsStatus(due: number, owed: number): string {
   if (due > 0) return `${due} due`;
@@ -217,21 +177,12 @@ export function reflectionsStatus(due: number, owed: number): string {
   return 'None';
 }
 
-function panelHeaders(trade: DailyTradeReview, progress: CardProgress, marks: CardMarkRows): Record<PanelName, PanelHeader> {
-  const { resolved, needed } = panelOf(progress, 'Marks');
-  const rows = resolved + needed;
-  const earlier = marks.earlier.reduce((sum, group) => sum + group.missing.length + group.acknowledged.length, 0);
-  const date = shortDate(trade.saveBinding.reviewDate);
+function panelHeaders(trade: DailyTradeReview, progress: CardProgress): Record<PanelName, PanelHeader> {
   const { dueNow: due, later } = panelOf(progress, 'Reflections');
   const owed = due + later;
   const form = trade.form;
   const settlement = settlementOf(progress);
   return {
-    Marks: {
-      summary: [rows > 0 ? `${resolved} of ${rows} for ${date}` : `No Marks for ${date}`, ...(earlier > 0 ? [`${earlier} earlier optional`] : [])].join(' · '),
-      status: marksStatus(needed, rows, earlier),
-      done: panelOf(progress, 'Marks').done,
-    },
     Reflections: {
       summary: owed > 0 ? `${owed} owed, ${due} due now` : 'None owed',
       status: reflectionsStatus(due, owed),
@@ -252,9 +203,9 @@ function panelHeaders(trade: DailyTradeReview, progress: CardProgress, marks: Ca
 }
 
 // The open card: its figures, then the three panels in the spec's work order (P36, A152), one open at a time.
-function CardBody({ facade, trade, progress, name, advance, go, marks, held, onResult, tradeLine, onSaved, onReflectionResolved, onRefresh, onMarkSaved, markDrafts, nameOf, outOfDate, pending, onEntryDirty }: CardBodyProps) {
+function CardBody({ facade, trade, progress, name, go, onSaved, onReflectionResolved, onRefresh, pending, onEntryDirty }: CardBodyProps) {
   const uid = useId();
-  const headers = panelHeaders(trade, progress, marks);
+  const headers = panelHeaders(trade, progress);
   // The card's panels in work order: the Settlement panel is there only while a contract's settlement is due (decision 81).
   const panels = PANELS.filter((name) => name !== 'Settlement' || settlementOf(progress) !== undefined);
   // The next panel that is not done after this one, wrapping to the ones before it; none when every other panel is done.
@@ -329,7 +280,7 @@ function CardBody({ facade, trade, progress, name, advance, go, marks, held, onR
     if (go.panel && panels.includes(go.panel)) {
       setOpen(go.panel);
       // The Replay button's own address (trade and panel) asks for this card again while its overlay is open: focus stays in the overlay.
-      if (!go.instrument && !go.keepFocus && !replayOpen) setFocusPanel({ panel: go.panel });
+      if (!replayOpen) setFocusPanel({ panel: go.panel });
     }
   }
   // A panel's work is finished: the next panel that is not done after that one opens and takes focus. A trader who has
@@ -343,12 +294,7 @@ function CardBody({ facade, trade, progress, name, advance, go, marks, held, onR
   };
   const [finished, setFinished] = useState(0);
   const finishPanel = useCallback(() => setFinished((count) => count + 1), []);
-  const [handledMarks, setHandledMarks] = useState(advance);
   const [handledReflections, setHandledReflections] = useState(finished);
-  if (advance !== handledMarks) {
-    setHandledMarks(advance);
-    moveOn('Marks');
-  }
   if (finished !== handledReflections) {
     setHandledReflections(finished);
     moveOn('Reflections');
@@ -386,7 +332,6 @@ function CardBody({ facade, trade, progress, name, advance, go, marks, held, onR
             </button>
           </h4>
           <div id={`${uid}-${name}`} hidden={open !== name}>
-            {name === 'Marks' && <CardMarks link={go} facade={facade} tradeId={trade.tradeId} marks={marks} held={held} onResult={onResult} tradeLine={tradeLine} onEntryDirty={onEntryDirty} onMarkSaved={onMarkSaved} markDrafts={markDrafts} tradeName={nameOf} outOfDate={outOfDate} onRefresh={onRefresh} />}
             {name === 'Reflections' && <ReviewReflections facade={facade} reviewDate={trade.saveBinding.reviewDate} reflections={trade.reflections} onReview={onReflectionResolved} onNoneRemaining={finishPanel} onEntryDirty={onEntryDirty} />}
             {name === 'Settlement' && <SettlementPanel tradeId={trade.tradeId} items={trade.settlement} timeZone={timeZone ?? 'UTC'} />}
             {name === 'Action' && trade.replay && (

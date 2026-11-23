@@ -200,15 +200,19 @@ const correctedAbc = {
 } as never;
 // Opens a panel of the card by its header, unless it is already open (A152).
 async function showPanel(user: ReturnType<typeof userEvent.setup>, card: HTMLElement, name: 'Marks' | 'Reflections' | 'Action') {
+  // The Marks are the page's Marks step, not a panel of a card: there is nothing to open.
+  if (name === 'Marks') return;
   const header = within(card).getByRole('button', { name: new RegExp(`^${name}\\b`) });
   if (header.getAttribute('aria-expanded') !== 'true') await user.click(header);
 }
+// The Marks step: the page's one grid, whichever card is open.
+const marksStep = () => screen.getByRole('region', { name: /^Marks for / });
 // A cell of the Marks grid by its name: its input while it is Missing, else its button (A161: a link focuses it).
-const cellNamed = (card: HTMLElement, name: string) => within(card).queryByRole('textbox', { name }) ?? within(card).getByRole('button', { name });
+const cellNamed = (_card: HTMLElement, name: string) => within(marksStep()).queryByRole('textbox', { name }) ?? within(marksStep()).getByRole('button', { name });
 // Choosing a cell (focusing its input, or pressing its button) opens its editor, a region named after it.
-async function chooseCell(user: ReturnType<typeof userEvent.setup>, card: HTMLElement, name: string) {
-  await user.click(within(card).queryByRole('textbox', { name }) ?? within(card).getByRole('button', { name }));
-  return within(card).getByRole('region', { name });
+async function chooseCell(user: ReturnType<typeof userEvent.setup>, _card: HTMLElement, name: string) {
+  await user.click(within(marksStep()).queryByRole('textbox', { name }) ?? within(marksStep()).getByRole('button', { name }));
+  return within(marksStep()).getByRole('region', { name });
 }
 // Corrects the card's ABC Mark and saves it.
 async function correctAbc(user: ReturnType<typeof userEvent.setup>, card: HTMLElement) {
@@ -354,9 +358,10 @@ describe('opening in place (A151)', () => {
     expect(headers().map((h) => h.getAttribute('aria-expanded'))).toEqual(['true', 'false', 'false', 'false', 'false']);
     // The open card sits inside its own list item, under its header.
     expect(card.closest('li')).toBe(headers()[0]!.closest('li'));
-    // Its figures and panels: Marks, Reflections, and the Action, which is the first not done.
+    // Its figures and panels: Reflections and the Action, which is the first not done. The Marks are the page's.
     expect(within(card).getByText('Trade P&L')).toBeTruthy();
-    expect((['Marks', 'Reflections', 'Action'] as const).map((name) => within(card).getByRole('button', { name: new RegExp(`^${name}\\b`) }).getAttribute('aria-expanded'))).toEqual(['false', 'false', 'true']);
+    expect((['Reflections', 'Action'] as const).map((name) => within(card).getByRole('button', { name: new RegExp(`^${name}\\b`) }).getAttribute('aria-expanded'))).toEqual(['false', 'true']);
+    expect(within(card).queryByRole('button', { name: /^Marks\b/ })).toBeNull();
     expect(within(card).getByRole('form', { name: 'Action' })).toBeTruthy();
 
     // With every card Done, none opens and nothing is read.
@@ -597,30 +602,24 @@ describe('Save while the Review is read again', () => {
 describe('unsaved work (A156)', () => {
   const MESSAGE = 'Save or discard what you entered for ABC to leave it';
 
-  it('should still hold the card while a Correct, an Action, a Debt or a reflection form has entered values', async () => {
+  it('should hold the page, not a card, while a Correct is in progress, and still hold the card while an Action, a Debt or a reflection form has entered values', async () => {
     const user = userEvent.setup();
     const onDirtyChange = vi.fn();
     const facade = cardFacade();
     renderReview(facade, { onDirtyChange });
     const card = await screen.findByRole('region', { name: 'ABC review' });
 
-    // A Correct in progress holds the card, and reports unsaved through onDirtyChange. An Action form holds it the same way below, and a reflection form
-    // does in ReviewCard.test.tsx (Leaving an unsaved reflection).
-    await showPanel(user, card, 'Marks');
+    // A Correct in progress sits in the Marks step: it reports the page unsaved, and holds no card.
     const entry = await chooseCell(user, card, 'ABC Mark, Mon Oct 12');
     await user.click(within(entry).getByRole('button', { name: 'Correct' }));
     await user.type(within(entry).getByLabelText('Price'), '28.00');
     await waitFor(() => expect(onDirtyChange).toHaveBeenLastCalledWith(true));
     await user.click(headers()[2]!);
-    expect(screen.getByText(new RegExp(MESSAGE))).toBeTruthy();
-    expect(screen.getByRole('region', { name: 'ABC review' })).toBe(card);
-    expect(headers().map((h) => h.getAttribute('aria-expanded'))).toEqual(['true', 'false', 'false', 'false', 'false']);
-    expect(facade.DailyReview.getTrade).toHaveBeenCalledTimes(1);
-    // The open card's own header cannot collapse it either.
-    await user.click(headers()[0]!);
-    expect(screen.getByRole('region', { name: 'ABC review' })).toBe(card);
+    expect(screen.queryByText(new RegExp(MESSAGE))).toBeNull();
+    await waitFor(() => expect(headers()[2]!.getAttribute('aria-expanded')).toBe('true'));
+    expect(within(marksStep()).getByLabelText<HTMLInputElement>('Price').value).toBe('28.00');
 
-    // An entered Action value holds it the same way.
+    // An entered Action value holds the card, as does a reflection form (ReviewCard.test.tsx, Leaving an unsaved reflection).
     cleanup();
     const second = cardFacade();
     renderReview(second);
@@ -642,7 +641,7 @@ describe('leaving the page holds only Mark drafts (P156)', () => {
     await user.click(within(within(card).getByRole('form', { name: 'Action' })).getByRole('radio', { name: 'Exit' }));
     expect(onMarkDraftsChange).not.toHaveBeenCalledWith(true);
     await showPanel(user, card, 'Marks');
-    await user.type(within(card).getByRole('textbox', { name: 'DEF Mark, Mon Oct 12' }), '33.10');
+    await user.type(within(marksStep()).getByRole('textbox', { name: 'DEF Mark, Mon Oct 12' }), '33.10');
     await waitFor(() => expect(onMarkDraftsChange).toHaveBeenLastCalledWith(true));
   });
 });
@@ -684,7 +683,7 @@ describe('read only (A162)', () => {
     expect(within(first).getByText('Trade P&L')).toBeTruthy();
     expect(within(first).getByText('No Action saved.')).toBeTruthy();
     await showPanel(user, first, 'Marks');
-    expect(within(first).getByRole('button', { name: 'ABC Mark, Mon Oct 12' }).textContent).toContain('$27.50');
+    expect(within(marksStep()).getByRole('button', { name: 'ABC Mark, Mon Oct 12' }).textContent).toContain('$27.50');
     // The card with a reflection and a saved Action.
     await user.click(headers()[3]!);
     const card = await screen.findByRole('region', { name: 'XYZ review' });
@@ -701,18 +700,16 @@ describe('read only (A162)', () => {
 });
 
 describe('links (A161)', () => {
-  it('should open the first card holding XYZ in attention order on its Marks panel, with focus on XYZ row, for /review?instrument=XYZ', async () => {
+  it('should focus the Review Date cell of the Instrument in the Marks step for /review?instrument=XYZ, and open no card for it', async () => {
     const facade = cardFacade();
     renderReview(facade, { at: '/review?instrument=XYZ' });
-    const card = await screen.findByRole('region', { name: 'XYZ review' });
+    const card = await screen.findByRole('region', { name: 'ABC review' });
 
-    // T-F comes before T-A in attention order; the card ABC that would open on load does not.
-    expect(headers().map((h) => h.getAttribute('aria-expanded'))).toEqual(['false', 'false', 'true', 'false', 'false']);
-    expect(card.closest('li')).toBe(headers()[2]!.closest('li'));
+    // The Marks are the page's: the card that opens on load is still the first not done, and the link reads no other.
+    expect(headers().map((h) => h.getAttribute('aria-expanded'))).toEqual(['true', 'false', 'false', 'false', 'false']);
     expect(facade.DailyReview.getTrade).toHaveBeenCalledTimes(1);
-    expect(vi.mocked(facade.DailyReview.getTrade).mock.calls[0]![0]).toMatchObject({ tradeId: 't-f' });
-    expect(within(card).getByRole('button', { name: /^Marks\b/ }).getAttribute('aria-expanded')).toBe('true');
-    // Focus lands in a passive effect after the commit that shows the card, so the test waits for it.
+    expect(vi.mocked(facade.DailyReview.getTrade).mock.calls[0]![0]).toMatchObject({ tradeId: 't-b' });
+    // Focus lands in a passive effect after the commit that shows the step, so the test waits for it.
     await waitFor(() => expect(document.activeElement).toBe(cellNamed(card, 'XYZ Mark, Mon Oct 12')));
   });
 
@@ -724,37 +721,44 @@ describe('links (A161)', () => {
     expect(headers().map((h) => h.getAttribute('aria-expanded'))).toEqual(['false', 'false', 'false', 'false', 'true']);
     expect(facade.DailyReview.getTrade).toHaveBeenCalledTimes(1);
     expect(vi.mocked(facade.DailyReview.getTrade).mock.calls[0]![0]).toMatchObject({ tradeId: 't-e' });
-    // Its Marks are saved and no reflection is due, so the Action is the first panel not done.
-    expect((['Marks', 'Reflections', 'Action'] as const).map((name) => within(card).getByRole('button', { name: new RegExp(`^${name}\\b`) }).getAttribute('aria-expanded'))).toEqual(['false', 'false', 'true']);
+    // No reflection is due, so the Action is the first panel not done.
+    expect((['Reflections', 'Action'] as const).map((name) => within(card).getByRole('button', { name: new RegExp(`^${name}\\b`) }).getAttribute('aria-expanded'))).toEqual(['false', 'true']);
   });
 
-  it('should open the card that the trade param names, with the row that the instrument param names, when both are given', async () => {
+  it('should focus the Instrument cell when both a trade and an instrument are given, the Marks being the pages', async () => {
     const facade = cardFacade();
     renderReview(facade, { at: '/review?trade=t-a&instrument=XYZ' });
-    const card = await screen.findByRole('region', { name: 'XYZ review' });
+    const card = await screen.findByRole('region', { name: 'ABC review' });
 
-    // T-F also holds XYZ and comes first, but the Trade picks the card.
-    expect(headers().map((h) => h.getAttribute('aria-expanded'))).toEqual(['false', 'false', 'false', 'true', 'false']);
-    expect(vi.mocked(facade.DailyReview.getTrade).mock.calls[0]![0]).toMatchObject({ tradeId: 't-a' });
-    expect(within(card).getByRole('button', { name: /^Marks\b/ }).getAttribute('aria-expanded')).toBe('true');
+    // T-A and T-F both hold XYZ; the page has the one row, and no card is picked for it.
+    expect(headers().map((h) => h.getAttribute('aria-expanded'))).toEqual(['true', 'false', 'false', 'false', 'false']);
     await waitFor(() => expect(document.activeElement).toBe(cellNamed(card, 'XYZ Mark, Mon Oct 12')));
   });
 
-  const panelStates = (card: HTMLElement) => (['Marks', 'Reflections', 'Action'] as const).map((name) => within(card).getByRole('button', { name: new RegExp(`^${name}\\b`) }).getAttribute('aria-expanded'));
+  const panelStates = (card: HTMLElement) => (['Reflections', 'Action'] as const).map((name) => within(card).getByRole('button', { name: new RegExp(`^${name}\\b`) }).getAttribute('aria-expanded'));
+
+  it('should send panel=Marks to the Marks step and open no card panel for it', async () => {
+    renderReview(cardFacade(), { at: '/review?trade=t-e&panel=Marks' });
+    const step = await screen.findByRole('region', { name: /^Marks for / });
+
+    // The Marks panel left the card: the link goes to the step, which takes focus in its first price.
+    await waitFor(() => expect(step.contains(document.activeElement)).toBe(true));
+    expect(headers().map((h) => h.getAttribute('aria-expanded'))).toEqual(['true', 'false', 'false', 'false', 'false']);
+  });
 
   it('should open the panel that the panel param names, not the first panel that is not done', async () => {
-    renderReview(cardFacade(), { at: '/review?trade=t-e&panel=Marks' });
+    renderReview(cardFacade(), { at: '/review?trade=t-e&panel=Reflections' });
     const card = await screen.findByRole('region', { name: 'JKL review' });
 
-    // T-E's Action is its first panel not done; the link names Marks.
-    expect(panelStates(card)).toEqual(['true', 'false', 'false']);
+    // T-E's Action is its first panel not done; the link names Reflections.
+    expect(panelStates(card)).toEqual(['true', 'false']);
   });
 
   it('should ignore a panel param that names no panel', async () => {
     renderReview(cardFacade(), { at: '/review?trade=t-e&panel=Nonsense' });
     const card = await screen.findByRole('region', { name: 'JKL review' });
 
-    expect(panelStates(card)).toEqual(['false', 'false', 'true']);
+    expect(panelStates(card)).toEqual(['false', 'true']);
   });
 });
 
@@ -770,7 +774,7 @@ describe('a search-param change on the mounted Review (A161)', () => {
 
     expect(headers().map((h) => h.getAttribute('aria-expanded'))).toEqual(['false', 'false', 'false', 'false', 'true']);
     expect(vi.mocked(facade.DailyReview.getTrade).mock.calls.at(-1)![0]).toMatchObject({ tradeId: 't-e' });
-    expect((['Marks', 'Reflections', 'Action'] as const).map((name) => within(card).getByRole('button', { name: new RegExp(`^${name}\\b`) }).getAttribute('aria-expanded'))).toEqual(['false', 'false', 'true']);
+    expect((['Reflections', 'Action'] as const).map((name) => within(card).getByRole('button', { name: new RegExp(`^${name}\\b`) }).getAttribute('aria-expanded'))).toEqual(['false', 'true']);
   });
 
   it('should keep the held card open and say to save or discard what was entered when a changed param names another card', async () => {
@@ -793,12 +797,12 @@ describe('a search-param change on the mounted Review (A161)', () => {
     renderReview(cardFacade(), { navigateTo: '/review?trade=t-b&panel=Reflections' });
     const card = await screen.findByRole('region', { name: 'ABC review' });
     await user.click(within(within(card).getByRole('form', { name: 'Action' })).getByRole('radio', { name: 'Exit' }));
-    const states = () => (['Marks', 'Reflections', 'Action'] as const).map((name) => within(card).getByRole('button', { name: new RegExp(`^${name}\\b`) }).getAttribute('aria-expanded'));
-    expect(states()).toEqual(['false', 'false', 'true']);
+    const states = () => (['Reflections', 'Action'] as const).map((name) => within(card).getByRole('button', { name: new RegExp(`^${name}\\b`) }).getAttribute('aria-expanded'));
+    expect(states()).toEqual(['false', 'true']);
 
     await user.click(screen.getByRole('button', { name: 'Navigate /review?trade=t-b&panel=Reflections' }));
 
-    await waitFor(() => expect(states()).toEqual(['false', 'true', 'false']));
+    await waitFor(() => expect(states()).toEqual(['true', 'false']));
     expect(screen.getByRole('region', { name: 'ABC review' })).toBe(card);
   });
 });
@@ -830,12 +834,16 @@ describe('day line links open in a new tab (A161)', () => {
     expect(headers().map((h) => h.getAttribute('aria-expanded'))).toEqual(['true', 'false', 'false', 'false', 'false']);
   });
 
-  it('should still open the card in place for a plain left click', async () => {
+  it('should still open the card in place for a plain left click, and the Marks step for a Mark to go', async () => {
     renderReview(cardFacade());
     await screen.findByRole('region', { name: 'ABC review' });
 
+    // DEF's line needs a Mark first: its click goes to the Marks step, whose cell takes the focus.
     expect(fireEvent.click(lineLink('DEF'))).toBe(false);
-    await screen.findByRole('region', { name: 'DEF review' });
+    await waitFor(() => expect(document.activeElement).toBe(cellNamed(document.body, 'DEF Mark, Mon Oct 12')));
+    // XYZ's line needs a reflection: its card opens in place.
+    expect(fireEvent.click(lineLink('XYZ', 1))).toBe(false);
+    await screen.findByRole('region', { name: 'XYZ review' });
   });
 });
 
@@ -858,11 +866,9 @@ describe('header', () => {
     ]);
     await screen.findByRole('region', { name: 'ABC review' });
 
-    // The Mark opens DEF's card on its Marks panel, with focus on the row.
+    // The Mark goes to the Marks step, with focus on the cell.
     await user.click(within(lines[1]!).getByRole('link', { name: 'DEF' }));
-    const def = await screen.findByRole('region', { name: 'DEF review' });
-    expect(within(def).getByRole('button', { name: /^Marks\b/ }).getAttribute('aria-expanded')).toBe('true');
-    await waitFor(() => expect(document.activeElement).toBe(cellNamed(def, 'DEF Mark, Mon Oct 12')));
+    await waitFor(() => expect(document.activeElement).toBe(cellNamed(document.body, 'DEF Mark, Mon Oct 12')));
     // The reflection opens XYZ's card on its Reflections panel.
     await user.click(within(lines[3]!).getByRole('link', { name: 'XYZ' }));
     const xyz = await screen.findByRole('region', { name: 'XYZ review' });
@@ -883,9 +889,7 @@ describe('the day card button', () => {
 
     await user.click(within(screen.getByRole('region', { name: 'The day' })).getByRole('button', { name: 'Enter the Marks' }));
 
-    const def = await screen.findByRole('region', { name: 'DEF review' });
-    expect(within(def).getByRole('button', { name: /^Marks\b/ }).getAttribute('aria-expanded')).toBe('true');
-    await waitFor(() => expect(document.activeElement).toBe(cellNamed(def, 'DEF Mark, Mon Oct 12')));
+    await waitFor(() => expect(document.activeElement).toBe(cellNamed(document.body, 'DEF Mark, Mon Oct 12')));
   });
 });
 
@@ -897,16 +901,6 @@ describe('card-top scroll once the body shows (T5R.15-B1-B1)', () => {
   });
   type Spy = ReturnType<typeof vi.fn<(options: ScrollIntoViewOptions) => void>>;
   const topScrolls = (spy: Spy, li: Element | null) => spy.mock.contexts.flatMap((context, i) => (context === li ? [spy.mock.calls[i]![0]] : []));
-
-  it('should leave a focused Mark row alone, scrolling the card top only at the press, for a Mark-row landing', async () => {
-    const scrollIntoView: Spy = vi.fn();
-    Element.prototype.scrollIntoView = scrollIntoView;
-    renderReview(cardFacade(), { at: '/review?instrument=XYZ' });
-    const card = await screen.findByRole('region', { name: 'XYZ review' });
-
-    await waitFor(() => expect(document.activeElement).toBe(cellNamed(card, 'XYZ Mark, Mon Oct 12')));
-    expect(topScrolls(scrollIntoView, card.closest('li'))).toEqual([{ block: 'start' }]);
-  });
 
   it('should scroll the card top at the press and again once the body shows, for a plain header open', async () => {
     const scrollIntoView: Spy = vi.fn();
@@ -926,7 +920,7 @@ describe('Action save whose next step is a Mark (T5R.12-B3)', () => {
   const markStep = (trades: readonly string[]) => ({ kind: 'Mark', row: markRow('DEF', trades) }) as const;
   const postWith = (nextStep: ReturnType<typeof markStep>) => ({ kind: 'Ready', cards: [], progress: { tradesWithAction: 1, tradesEligible: 5 }, completion: MONDAY_COMPLETION, nextStep, binding }) as const;
 
-  it('should collapse the saving card and open the card for the Missing Mark on its Marks panel, with focus in the row', async () => {
+  it('should collapse the saving card and take focus to the Missing Mark cell in the Marks step', async () => {
     const user = userEvent.setup();
     const facade = cardFacade();
     vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'Saved', action: {} as never, review: postWith(markStep(['t-c'])) });
@@ -935,31 +929,26 @@ describe('Action save whose next step is a Mark (T5R.12-B3)', () => {
 
     await user.click(within(abc).getByRole('button', { name: 'Save' }));
 
-    const def = await screen.findByRole('region', { name: 'DEF review' });
-    expect(screen.queryByRole('region', { name: 'ABC review' })).toBeNull();
-    expect(headers().map((h) => h.getAttribute('aria-expanded'))).toEqual(['false', 'true', 'false', 'false', 'false']);
-    expect(within(def).getByRole('button', { name: /^Marks\b/ }).getAttribute('aria-expanded')).toBe('true');
-    await waitFor(() => expect(document.activeElement).toBe(cellNamed(def, 'DEF Mark, Mon Oct 12')));
+    await waitFor(() => expect(screen.queryByRole('region', { name: 'ABC review' })).toBeNull());
+    expect(headers().map((h) => h.getAttribute('aria-expanded'))).toEqual(['false', 'false', 'false', 'false', 'false']);
+    await waitFor(() => expect(document.activeElement).toBe(cellNamed(document.body, 'DEF Mark, Mon Oct 12')));
     expect(screen.queryByRole('status')).toBeNull();
   });
-
-  it('should open the next card after an Action save with no Save or discard message when only Mark drafts exist', async () => {
+  it('should keep a typed Mark and say nothing of saving or discarding after an Action save whose next step is a Mark', async () => {
     const user = userEvent.setup();
     const facade = cardFacade();
     vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'Saved', action: {} as never, review: postWith(markStep(['t-e'])) });
     renderReview(facade, { at: '/review?trade=t-c' });
     const card = await screen.findByRole('region', { name: 'DEF review' });
-    await user.type(within(card).getByRole('textbox', { name: 'DEF Mark, Mon Oct 12' }), '33.10');
+    await user.type(within(marksStep()).getByRole('textbox', { name: 'DEF Mark, Mon Oct 12' }), '33.10');
     await showPanel(user, card, 'Action');
 
     await user.click(within(card).getByRole('button', { name: 'Save' }));
 
-    // The next card opens, and the draft stays with the Review.
-    expect(await screen.findByRole('region', { name: 'JKL review' })).toBeTruthy();
+    // The Mark is next, so its cell takes the focus with the draft in it.
+    await waitFor(() => expect(document.activeElement).toBe(cellNamed(document.body, 'DEF Mark, Mon Oct 12')));
     expect(screen.queryByText(/Save or discard what you entered/)).toBeNull();
-    expect(screen.queryByRole('region', { name: 'DEF review' })).toBeNull();
-    await user.click(headers()[1]!);
-    expect(within(await screen.findByRole('region', { name: 'DEF review' })).getByRole<HTMLInputElement>('textbox', { name: 'DEF Mark, Mon Oct 12' }).value).toBe('33.10');
+    expect((document.activeElement as HTMLInputElement).value).toBe('33.10');
   });
 });
 
@@ -971,7 +960,7 @@ describe('Action save while other forms hold values (A156)', () => {
     vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'Saved', action: {} as never, review: post });
     renderReview(facade, { at: '/review?trade=t-c' });
     const card = await screen.findByRole('region', { name: 'DEF review' });
-    await user.type(within(card).getByRole('textbox', { name: 'DEF Mark, Mon Oct 12' }), '33.10');
+    await user.type(within(marksStep()).getByRole('textbox', { name: 'DEF Mark, Mon Oct 12' }), '33.10');
     await showPanel(user, card, 'Action');
 
     await user.click(within(card).getByRole('button', { name: 'Save' }));
@@ -980,10 +969,30 @@ describe('Action save while other forms hold values (A156)', () => {
     expect(await screen.findByRole('region', { name: 'XYZ review' })).toBeTruthy();
     expect(screen.queryByText(/Save or discard what you entered/)).toBeNull();
     expect(screen.queryByRole('region', { name: 'DEF review' })).toBeNull();
-    await user.click(headers()[1]!);
-    expect(within(await screen.findByRole('region', { name: 'DEF review' })).getByRole<HTMLInputElement>('textbox', { name: 'DEF Mark, Mon Oct 12' }).value).toBe('33.10');
+    expect(within(marksStep()).getByRole<HTMLInputElement>('textbox', { name: 'DEF Mark, Mon Oct 12' }).value).toBe('33.10');
   });
 });
+
+// A reflection due for T-F: its open form holds the card, which a Mark in the Marks step no longer does.
+const DUE_REFLECTION: OwedReflection = {
+  debtId: 'd1',
+  entryType: 'Position Change Reflection',
+  definition: reflectionDefinition,
+  economicTime: '2026-10-09T14:30:00Z',
+  executions: [{ factId: 'x1', economicTime: '2026-10-09T14:30:00Z', recordedSequence: 1, action: 'Buy', instrument: symbol, quantity: '100', price: '50.00', fee: '1.00' }] as unknown as OwedReflection['executions'],
+  classification: 'Due',
+  saveBinding: { debtId: 'd1', debtRevision: 'd1-rev-1', definitionRevision: 'def-pcr-1' },
+};
+// Opens T-F's reflection and starts to answer it, so the card holds an entered value.
+async function startReflection(user: ReturnType<typeof userEvent.setup>, card: HTMLElement) {
+  await showPanel(user, card, 'Reflections');
+  await user.click(within(card).getByRole('button', { name: /^Reflect on/ }));
+  await user.type(within(card).getByLabelText('Reason for declining (optional)'), 'No time.');
+  await showPanel(user, card, 'Action');
+}
+// T-F's card carries the reflection due.
+const withDueReflection = (facade: UiFacade, walked: readonly WalkedTrade[]) =>
+  vi.mocked(facade.DailyReview.getTrade).mockImplementation(({ tradeId }) => Promise.resolve({ kind: 'Ready', reviewDate: '2026-10-12', cutoff: CUTOFF, trade: tradeReview(walked.find((t) => t.tradeId === tradeId)!, tradeId === 't-f' ? { reflections: [DUE_REFLECTION] } : {}) }));
 
 describe('Trade names in messages and blockers (decision 68)', () => {
   // The two XYZ Trades carry summaries here only; the shared fixtures carry none.
@@ -1063,17 +1072,14 @@ describe('Trade names in messages and blockers (decision 68)', () => {
   it('should name the Trade in the message after an Action save on a held card', async () => {
     const user = userEvent.setup();
     const facade = cardFacade(namedReview());
+    withDueReflection(facade, named);
     const post = { kind: 'Ready', cards: [], progress: { tradesWithAction: 1, tradesEligible: 5 }, completion: MONDAY_COMPLETION, nextStep: { kind: 'Trade', trade: tradeReview(TA) }, binding } as const;
     vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'Saved', action: {} as never, review: post });
     renderReview(facade, { at: '/review?trade=t-f' });
     await waitFor(() => expect(facade.DailyReview.getTrade).toHaveBeenCalledTimes(1));
     const card = (await screen.findAllByRole('listitem')).find((li) => li.getAttribute('data-trade-id') === 't-f')!;
-    // A Mark draft holds the card while its Action is saved.
-    await showPanel(user, card, 'Marks');
-    const entry = await chooseCell(user, card, 'XYZ Mark, Mon Oct 12');
-    await user.click(within(entry).getByRole('button', { name: 'Correct' }));
-    await user.type(within(entry).getByLabelText('Price'), '53.00');
-    await showPanel(user, card, 'Action');
+    // A reflection with an entered value holds the card while its Action is saved.
+    await startReflection(user, card);
 
     await user.click(within(card).getByRole('button', { name: 'Save' }));
 
@@ -1085,16 +1091,13 @@ describe('Trade names in messages and blockers (decision 68)', () => {
   async function savedOnHeldCard(refreshed: OpenDailyReviewResult, owedCard?: OwedReflectionsCard, unreadable = false) {
     const user = userEvent.setup();
     const facade = cardFacade(namedReview());
+    withDueReflection(facade, named);
     const post = { kind: 'Ready', cards: [], progress: { tradesWithAction: 1, tradesEligible: 5 }, completion: MONDAY_COMPLETION, nextStep: { kind: 'Trade', trade: tradeReview(TA) }, binding } as const;
     vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'Saved', action: {} as never, review: post });
     renderReview(facade, { at: '/review?trade=t-f' });
     await waitFor(() => expect(facade.DailyReview.getTrade).toHaveBeenCalledTimes(1));
     const card = (await screen.findAllByRole('listitem')).find((li) => li.getAttribute('data-trade-id') === 't-f')!;
-    await showPanel(user, card, 'Marks');
-    const entry = await chooseCell(user, card, 'XYZ Mark, Mon Oct 12');
-    await user.click(within(entry).getByRole('button', { name: 'Correct' }));
-    await user.type(within(entry).getByLabelText('Price'), '53.00');
-    await showPanel(user, card, 'Action');
+    await startReflection(user, card);
     vi.mocked(facade.DailyReview.open).mockResolvedValue(refreshed);
     if (owedCard) vi.mocked(facade.DailyReview.getTrade).mockResolvedValue({ kind: 'ReflectionsOwed', reviewDate: '2026-10-12', cutoff: CUTOFF, card: owedCard });
     // The first read of the Trade as it now is fails, so its owed card offers Retry.

@@ -156,7 +156,7 @@ describe('Review card: the meter (W51)', () => {
     // The second XYZ card is T-F's.
     expect(meterIn(cardOf('XYZ', 1)).getAttribute('data-state')).toBe('empty');
 
-    const panel = await screen.findByRole('region', { name: 'Marks' });
+    const panel = await screen.findByRole('region', { name: /^Marks for / });
     await user.type(within(panel).getByRole('textbox', { name: 'XYZ Mark, Mon Oct 12' }), '52.00');
     await user.click(within(panel).getByRole('button', { name: 'Save Marks (1)' }));
 

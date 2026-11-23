@@ -48,9 +48,12 @@ async function acknowledgeTuesday(page: Page, trade: TradeRef): Promise<void> {
   const TUESDAY = 'Tue Oct 13';
   const reason = 'No quote available.';
   await acknowledgeMark(page, trade, TUESDAY, reason);
-  const entry = await optionMarkRow(page, trade, OC3_CALL, TUESDAY);
-  await entry.getByRole('button', { name: "Can't get a price" }).click();
-  await entry.getByLabel('Reason (required)').fill(reason);
+  // The contract's row takes its reason in the grid (W113).
+  await optionMarkRow(page, trade, OC3_CALL, TUESDAY);
+  const row = (await reachPanel(page, trade, 'Marks')).getByRole('row').filter({ has: page.locator('td.marks-step-today').getByRole('textbox', { name: `${OC3_CALL} Mark, ${TUESDAY}`, exact: true }) });
+  await row.getByRole('button', { name: /^Can't get a price/ }).click();
+  await row.getByRole('textbox', { name: /^Why no price/ }).fill(reason);
+  await row.getByRole('button', { name: 'No price', exact: true }).click();
   await (await reachPanel(page, trade, 'Marks')).getByRole('button', { name: /^Save Marks/ }).click();
   await savedOptionMarkRow(page, trade, OC3_CALL, TUESDAY);
 }

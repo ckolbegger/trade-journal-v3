@@ -1,4 +1,4 @@
-import { expectMark, panelOf, actionEntriesOf, actionFormOf, cardHeader, cardList, createTrades, enterMark, expect, firstPage, launchAt, marksFamily, observationsOf, onboardedAt, openReview, probe, reachCard, saveAction, status, test, tradeCard, tradesOf, workspaceOf, MONDAY_1700 } from './support.ts';
+import { expectMark, panelOf, actionEntriesOf, actionFormOf, cardHeader, cardList, createTrades, enterMark, expect, firstPage, launchAt, marksStepOf, observationsOf, onboardedAt, openReview, probe, reachCard, saveAction, status, test, tradeCard, tradesOf, workspaceOf, MONDAY_1700 } from './support.ts';
 
 const DATE = 'Mon Oct 12';
 
@@ -12,7 +12,7 @@ test.describe('B4.1 Daily Review end to end', () => {
     await openReview(page);
     await expect(status(page)).toContainText('Incomplete');
     await expect(cardList(page).getByRole('button', { name: /^Review / })).toHaveCount(4);
-    await expect(marksFamily(page)).toBeVisible();
+    await expect(marksStepOf(page)).toBeVisible();
     for (const symbol of ['ABC', 'DEF', 'JKL', 'XYZ']) {
       await reachCard(page, symbol);
       await expectMark(page, symbol, DATE, 'Missing');

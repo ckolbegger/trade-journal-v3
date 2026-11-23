@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import type { MarketDataPrepareEntry, ObservationKey, SaveReviewMarksResult } from '../../app/types.ts';
 import { useRuntime } from '../runtime.tsx';
 import { holdersOf, listedStanding, standing, type Held, type HeldResult } from './held-review.ts';
@@ -14,8 +14,7 @@ export interface Rejection {
   readonly draft: DraftValue['kind'];
 }
 
-// The card of the Trade the key's draft was typed in shows this key's cell: its page and editor open, and focus goes to the issue when
-// there is one (A294).
+// The Marks step shows this key's cell: its column and editor open, and focus goes to the issue when there is one (A294).
 export interface Reveal {
   readonly key: ObservationKey;
   readonly tradeId: string;
@@ -54,13 +53,11 @@ interface Options {
   // The newest Review the screen holds, so each draft is bound at its key's current standing (A172).
   readonly latest: () => Held;
   readonly onResult: (result: HeldResult) => void;
-  // A refused save or a Conflict names the Trade whose card is to show its first key (A294).
-  readonly onReveal: (tradeId: string) => void;
   // Saves the entries as one command, for the open card's Trade or, with none open, the one given (P157).
   readonly onSave: (entries: readonly MarketDataPrepareEntry[], tradeId: string | undefined) => Promise<SaveReviewMarksResult>;
 }
 
-export function useMarkDrafts({ latest, onResult, onReveal, onSave }: Options): MarkDrafts {
+export function useMarkDrafts({ latest, onResult, onSave }: Options): MarkDrafts {
   const { report } = useRuntime();
   const [drafts, setDrafts] = useState<Drafts>(emptyDrafts);
   // The drafts as of the last change, for what runs between renders (a refreshed Review's reconciling).
@@ -77,17 +74,11 @@ export function useMarkDrafts({ latest, onResult, onReveal, onSave }: Options): 
   const [saving, setSaving] = useState(false);
   const [reveal, setReveal] = useState<Reveal>();
   const revealed = useRef(0);
-  // The result of a save arrives after the screen may have moved on: the newest render's way of showing a card is the one called.
-  const reveals = useRef(onReveal);
-  useEffect(() => {
-    reveals.current = onReveal;
-  });
   const show = (key: ObservationKey, focus: boolean) => {
     const draft = draftAt(live.current, key);
     if (draft === undefined) return;
     revealed.current += 1;
     setReveal({ key, tradeId: draft.tradeId, focus, count: revealed.current });
-    reveals.current(draft.tradeId);
   };
   const settleReveal = useCallback((count: number) => setReveal((current) => (current?.count === count ? undefined : current)), []);
   // Changing a draft answers what a refused save said about its key.
