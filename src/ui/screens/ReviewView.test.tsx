@@ -603,6 +603,43 @@ describe('Marks in the card (P11, P15)', () => {
   });
 });
 
+describe('A Refresh with no card open (T95.12-B1)', () => {
+  // Save Marks saved the Marks but its Review could not be read; the card is collapsed so the Refresh reads the Review alone.
+  async function savedUnreadWithNoCard(first: Ready, second: Ready) {
+    const facade = reviewFacade(first, second);
+    vi.mocked(facade.DailyReview.save).mockResolvedValueOnce(savedButNotRead('DEF', '2026-10-12', '9'));
+    renderReview(facade);
+    const user = userEvent.setup();
+    await openMarks();
+    await user.type(await screen.findByRole('textbox', { name: 'DEF Mark, Mon Oct 12' }), '9');
+    await user.click(screen.getByRole('button', { name: /^Review DEF\b/ }));
+    const step = screen.getByRole('region', { name: /^Marks for / });
+    await user.click(within(step).getByRole('button', { name: 'Save Marks (1)' }));
+    await within(step).findByText(/figures are out of date/);
+    await user.click(within(step).getByRole('button', { name: 'Refresh' }));
+    await waitFor(() => expect(facade.DailyReview.open).toHaveBeenCalledTimes(2));
+    return step;
+  }
+  const trades = [tradeItem('t1', 'DEF')];
+  const base = { today: [markRow('DEF', ['t1'])], trades, completion: incomplete(...actionMissing('t1')) };
+
+  it('should clear the out-of-date notice once the Refresh reads the Review', async () => {
+    const step = await savedUnreadWithNoCard(ready(base), ready(base));
+    await waitFor(() => expect(within(step).queryByText(/figures are out of date/)).toBeNull());
+  });
+
+  it('should add a column for a gap the refreshed Review newly lists, and drop one it no longer lists', async () => {
+    const step = await savedUnreadWithNoCard(ready(base), ready({ ...base, earlier: [gap('DEF', { missing: ['2026-10-09'], revisions: { '2026-10-09': 'None' } })] }));
+    await within(step).findByRole('button', { name: 'Add the skipped sessions' });
+  });
+
+  it('should drop the skipped sessions a refreshed Review no longer lists', async () => {
+    const first = ready({ ...base, earlier: [gap('DEF', { missing: ['2026-10-09'], revisions: { '2026-10-09': 'None' } })] });
+    const step = await savedUnreadWithNoCard(first, ready(base));
+    await waitFor(() => expect(within(step).queryByRole('button', { name: 'Add the skipped sessions' })).toBeNull());
+  });
+});
+
 describe('A failed Save Marks with no walked card open (T9R2.13-B3)', () => {
   it('should show a failed Save Marks and its Refresh in the Marks step when no walked card is open', async () => {
     const trades = [tradeItem('t1', 'DEF')];

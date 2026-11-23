@@ -441,7 +441,11 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
     };
     // With no card open, the Review alone is read again.
     if (openId === undefined || shown === undefined) {
-      void reopenAndApply().then((next) => finished(next !== undefined));
+      void reopenAndApply().then((next) => {
+        // A Review that read cleanly makes the figures current again, so an earlier out-of-date notice goes.
+        if (next !== undefined) setStale(false);
+        finished(next !== undefined);
+      });
       return;
     }
     // The opening is this render's: a Mark saved here finishes after another card opened, and must not replace it.
@@ -477,9 +481,15 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
     return result;
   };
   // Refresh from the header: the open (owed) card's refresh, else the Review alone.
+  // How many times the page was read again from Refresh: the Marks step takes its skipped sessions afresh each time.
+  const [reads, setReads] = useState(0);
   const refreshHeld = async (): Promise<boolean> => {
     if (openId !== undefined) return refreshTrade(openId);
-    return (await reopenAndApply()) !== undefined;
+    const next = await reopenAndApply();
+    if (next === undefined) return false;
+    setStale(false);
+    setReads((n) => n + 1);
+    return true;
   };
   // Only the card open on load is read here; later presses call select themselves.
   useEffect(() => {
@@ -494,7 +504,7 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
         </div>
       )}
       {!empty && (
-        <MarksStep facade={facade} held={heldReview} onResult={apply} tradeLine={tradeLine} onEntryDirty={onMarksEntryDirty} onMarkSaved={markSaved} markDrafts={markDrafts} outOfDate={stale} onRefresh={refreshHeld} go={marksGo} />
+        <MarksStep facade={facade} held={heldReview} onResult={apply} tradeLine={tradeLine} onEntryDirty={onMarksEntryDirty} onMarkSaved={markSaved} markDrafts={markDrafts} outOfDate={stale} reads={reads} onRefresh={refreshHeld} go={marksGo} />
       )}
       {!empty && (
         <>

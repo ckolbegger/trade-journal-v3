@@ -167,6 +167,8 @@ export interface MarksStepProps {
   readonly markDrafts: MarkDrafts;
   // The Marks are saved but the figures were not read under them (A157).
   readonly outOfDate: boolean;
+  // Counts the Refreshes: the skipped sessions' columns are taken afresh from the Review each time.
+  readonly reads?: number;
   // Reads the Review and the card again; false when that could not be done.
   readonly onRefresh: () => Promise<boolean>;
   readonly go?: MarksGo;
@@ -201,13 +203,18 @@ export function SaveFailure({ drafts, onRefresh }: { readonly drafts: MarkDrafts
 
 // The Marks step (A153, P158): the one grid for the page. A typed price or a "Can't get a price" is a draft until Save Marks; the chosen
 // cell's editor keeps the per-key Correct and Withdraw of a Mark.
-export function MarksStep({ facade, held: heldReview, onResult, tradeLine, onEntryDirty, onMarkSaved, markDrafts, outOfDate, onRefresh, go }: MarksStepProps) {
+export function MarksStep({ facade, held: heldReview, onResult, tradeLine, onEntryDirty, onMarkSaved, markDrafts, outOfDate, reads = 0, onRefresh, go }: MarksStepProps) {
   const uid = useId();
   const { writable, timeZone } = useRuntime();
   const trades = heldReview.review.families.flatMap((family) => (family.family === 'Trades' ? family.trades.map((trade) => trade.tradeId) : []));
   const marks = stepMarks(heldReview, trades);
   // The earlier sessions as the step opened: a session filled meanwhile stays a column, with its saved Mark, until the page is read again.
-  const [opened] = useState(marks.earlier);
+  const [opened, setOpened] = useState(marks.earlier);
+  const [readsSeen, setReadsSeen] = useState(reads);
+  if (reads !== readsSeen) {
+    setReadsSeen(reads);
+    setOpened(marks.earlier);
+  }
   const [showEarlier, setShowEarlier] = useState(false);
   const [chosen, setChosen] = useState<ObservationKey>();
   const [refreshFailed, setRefreshFailed] = useState(false);
