@@ -471,3 +471,5 @@ ocr (session 70ebe2ba): 9 files, 0 findings. `evidence/D95/ocr/T95.18-5307f1b1.j
 ### T95.18-F1
 
 Commit `b34205bd`: the card-list case read the open card's drawing before `getTrade` filled it; `getByRole` → `await findByRole`. Before: 3 of 4 folder runs failed. After: 1 uncaptured failure in the first 10 runs, then 44 of 44 passed (sequential and 3 or 4 in parallel). The uncaptured one may be the earlier "Loading the Trade…" race; watched — a further sighting gets its own task.
+
+Run `t95.18-captions` (browser-task): unit 2877, integration 304, browser 13, checks 14 of 14. Passed. T95.18 Done.
