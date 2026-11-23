@@ -34,3 +34,5 @@
 - With several saved Exits, "Tomorrow" reads "Sell AXIO, BREN, then record the sales." Each Trade name links to its own card. One Exit keeps "Sell BREN, then record the sale."
 
 - T95.16: "−$30.00 today" (the day's change in the card header, from the prototype, no W row); header P&L "+$180.00 · +0.40R".
+
+- T95.17 (no W row): the Marks line ("AXIO $45.10 −$0.50", "Call $1.20 +$0.05"); "lose −$…" without "another" while ahead; "To Stop (…)" and "Past Stop (…)" with no price distance; "$1.00 past Stop"; "with DALE then: <reason>"; "1 session". For the word review: "More figures" keeps the existing "max loss: unlimited" where W92 says "max loss no limit".

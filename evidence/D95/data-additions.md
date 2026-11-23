@@ -8,4 +8,5 @@ Coordinator data added so the screens can show what the approved prototype shows
 | T95.16-D1 | `DailyTradeReview.plan: { thesis, invalidation }` | the Trade Analysis record `getTrade` reads | the Plan box (decision 130) |
 | T95.16-D2 | `WalkedTrade.pnl: { dollars, planR, change }` | the evaluation `open` reads | the collapsed header (decision 131) |
 | T95.16-D3 | `day.lines[].action` (the Action saved for the Review Date) | the Actions `open` already reads | "Done · Hold" in the card header and day card |
+| T95.17-D1 | `DailyTradeReview.expiration { date, sessionsLeft? }`; `datedLastClose.meter` | the open Lots and calendar `getTrade` reads | the Now box's Expiration row; the dated close's drawing |
 
