@@ -271,6 +271,8 @@ ocr (`ocr/T95.13-e8fbbc64.json`, 11 files, 3 comments, all Valid):
 
 ocr of B1 and B2 (`ocr/T95.13-B1-B2-0480e840.json`): **No findings.**
 
+**Complete run `t95.13-slip-questions`** (on `b9607645`; `browser tier: full (first matching path since 5971acd3: e2e/d4/support.ts)`; run complete): unit 237 files, 2,811 tests; integration 141 files, 300 tests; browser 127 (5.3 min), 80 (5.0 min), 57 (4.4 min), 137 and 4 skipped (7.3 min); checks 14 of 14. No failures. T95.13 Done (`e8fbbc64`; B1 `e60318da`; B2 `0480e840`).
+
 ## Trial: complete runs overlapped with the next task (the user, 2026-11-22, for 5 or 6 tasks)
 
 Each task's complete run runs in a detached scratch copy (`.claude/worktrees/run-<label>`, set up by `lane-setup.sh`) at the task's commit, while the next task's subagent starts in this worktree. The run's files are copied back to `evidence/D95/suite-runs/`. A failure becomes a bug task as before; the next task restarts only if it built on the broken code. Times are recorded per run to measure the saving.
