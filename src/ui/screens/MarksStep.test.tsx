@@ -1034,6 +1034,51 @@ describe('earlier sessions after Refresh', () => {
   });
 });
 
+describe('earlier sessions after a header Refresh with a card open (T95.12-B1-B1)', () => {
+  const changedSave = () => {
+    const facade = cardFacade();
+    vi.mocked(facade.DailyReview.save).mockResolvedValueOnce({ kind: 'ReviewChanged', evidence: { marketDataSnapshotId: 'mds1:2:def', frames: [] } });
+    return facade;
+  };
+  async function refreshedFrom(facade: UiFacade, refreshed: Ready) {
+    renderReview(facade);
+    const user = userEvent.setup();
+    const panel = await marksPanelWithEarlier();
+    await user.type(inputOf(panel, 'XYZ', 'Mon Oct 12'), '51.00');
+    await user.click(within(panel).getByRole('button', { name: 'Save Marks (1)' }));
+    await within(panel).findByRole('alert');
+    vi.mocked(facade.DailyReview.open).mockResolvedValue(refreshed);
+    await user.click(within(panel).getByRole('button', { name: 'Refresh' }));
+    await waitFor(() => expect(facade.DailyReview.open).toHaveBeenCalledTimes(2));
+    return { panel, user };
+  }
+
+  it('should drop the skipped-session columns the refreshed Review no longer lists when a card is open', async () => {
+    const none = review({ families: [{ family: 'Marks', earlierMarks: [], today: [missingRow('XYZ', ['t-a', 't-f']), missingRow('DEF', ['t-c'])], earlier: [] }, { family: 'Trades', trades: WALK }] });
+    const { panel } = await refreshedFrom(changedSave(), none);
+    await waitFor(() => expect(sessionDates(panel)).toEqual([MONDAY]));
+  });
+
+  it('should show the last page when a Refresh leaves fewer skipped sessions than the page it was on', async () => {
+    const facade = cardFacade(pagedReview());
+    vi.mocked(facade.DailyReview.save).mockResolvedValueOnce({ kind: 'ReviewChanged', evidence: { marketDataSnapshotId: 'mds1:2:def', frames: [] } });
+    const missing = [day(1), day(2), day(3)];
+    const gap: Earlier[number] = { ...xyzGap, trades: [{ tradeId: 't-a', from: day(1) }], missing, revisions: Object.fromEntries(missing.map((d) => [d, 'None'])) };
+    const fewer = gridReview({ today: [missingRow('XYZ', ['t-a', 't-f'])], earlier: [gap], earlierMarks: [xyzMarks({ [FRIDAY]: markAt('51') }, day(1))] });
+    renderReview(facade);
+    const user = userEvent.setup();
+    const panel = await marksPanelWithEarlier();
+    await user.click(within(panel).getByRole('button', { name: 'Next page' }));
+    await user.type(inputOf(panel, 'XYZ', 'Mon Oct 12'), '51.00');
+    await user.click(within(panel).getByRole('button', { name: 'Save Marks (1)' }));
+    await within(panel).findByRole('alert');
+    vi.mocked(facade.DailyReview.open).mockResolvedValue(fewer);
+    await user.click(within(panel).getByRole('button', { name: 'Refresh' }));
+
+    await waitFor(() => expect(sessionDates(panel)).toEqual([MONDAY, FRIDAY, day(3), day(2), day(1)]));
+  });
+});
+
 describe('Save Marks (P37, A155) not written', () => {
   it('should say nothing was saved, keep the drafts, and offer Refresh when the Review changed, and say so when storage failed', async () => {
     const facade = cardFacade();

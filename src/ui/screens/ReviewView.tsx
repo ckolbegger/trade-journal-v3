@@ -484,7 +484,11 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
   // How many times the page was read again from Refresh: the Marks step takes its skipped sessions afresh each time.
   const [reads, setReads] = useState(0);
   const refreshHeld = async (): Promise<boolean> => {
-    if (openId !== undefined) return refreshTrade(openId);
+    if (openId !== undefined) {
+      const refreshed = await refreshTrade(openId);
+      if (refreshed) setReads((n) => n + 1);
+      return refreshed;
+    }
     const next = await reopenAndApply();
     if (next === undefined) return false;
     setStale(false);

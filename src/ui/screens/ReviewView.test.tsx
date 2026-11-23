@@ -447,7 +447,7 @@ describe('Marks in the card (P11, P15)', () => {
     expect(within(await chooseCell(user, 'DEF Mark, Mon Oct 12')).getByLabelText<HTMLInputElement>('Price').value).toBe('12.5');
   });
 
-  it('should keep an earlier session listed with its saved Mark while the card stays open, although the Review read again no longer lists it', async () => {
+  it('should keep an earlier session listed with its saved Mark until the Refresh reads the Review again, then drop it when the Review no longer lists it', async () => {
     const trades = [tradeItem('t1', 'DEF')];
     const first = ready({ today: [markRow('DEF', ['t1'], available('12'), 1)], earlier: [gap('DEF', { missing: ['2026-10-09'], revisions: { '2026-10-09': 'None' } })], trades, completion: incomplete(...actionMissing('t1')) });
     // Read again, the filled session is no longer a gap.
@@ -464,7 +464,7 @@ describe('Marks in the card (P11, P15)', () => {
     await waitFor(() => expect(facade.DailyReview.open).toHaveBeenCalledTimes(2));
     await waitFor(() => expect(facade.DailyReview.getTrade).toHaveBeenCalledTimes(2));
 
-    expect(within(screen.getByRole('button', { name: 'DEF Mark, Fri Oct 9' })).getByText('$9.00', { exact: false })).toBeTruthy();
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'DEF Mark, Fri Oct 9' })).toBeNull());
   });
 
   it('should resume from the returned state after a reload, showing saved Actions and Marks without any stored session', async () => {

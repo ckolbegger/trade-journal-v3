@@ -52,7 +52,7 @@ const idOf = (key: ObservationKey): string => `${key.instrumentKey}:${key.tradin
 // previous Mark. The skipped sessions are optional columns, added on request.
 export function MarksGrid({ model, reviewDate, writable, showEarlier, draftOf, noteOf, onPrice, onNoPrice, onUndo, fieldOf, chosen, onChoose, onLastEnter, pagingHeld, onPage }: MarksGridProps) {
   const { timeZone } = useRuntime();
-  const [page, setPage] = useState(0);
+  const [requestedPage, setPage] = useState(0);
   const holdId = useId();
   // A page button that goes when pressed (the last page's Next, the first page's Previous) hands focus to the other one.
   const previousButton = useRef<HTMLButtonElement>(null);
@@ -62,7 +62,7 @@ export function MarksGrid({ model, reviewDate, writable, showEarlier, draftOf, n
     if (pressed.current === 'next' && !nextButton.current) previousButton.current?.focus();
     if (pressed.current === 'previous' && !previousButton.current) nextButton.current?.focus();
     pressed.current = undefined;
-  }, [page]);
+  }, [requestedPage]);
   // The "Why no price?" field is open for one cell at a time; what is typed in it is the cell's draft, as a typed price is.
   const [asking, setAsking] = useState<{ readonly id: string; readonly refused?: true }>();
   const reasonField = useRef<HTMLInputElement | null>(null);
@@ -99,6 +99,8 @@ export function MarksGrid({ model, reviewDate, writable, showEarlier, draftOf, n
     const [id] = JSON.parse(refusedNoPrice) as string[];
     if (id !== undefined) setAsking({ id });
   }
+  // A Refresh can leave fewer skipped sessions than the page held: the page is the last one that exists.
+  const page = Math.min(requestedPage, Math.max(0, Math.ceil(earlier.length / SESSIONS_PER_PAGE) - 1));
   const first = page * SESSIONS_PER_PAGE;
   const shown = showEarlier ? earlier.slice(first, first + SESSIONS_PER_PAGE) : [];
   // Columns run oldest to newest, the Review Date last; the prices in Enter order run down a session's column, newest session first (A295).
