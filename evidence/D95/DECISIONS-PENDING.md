@@ -72,4 +72,16 @@
 
 **Answer (2026-11-22):** (a). Recorded as decision 129, plan revision 118, the breakdown's P176; follow-on T95.4-D1 before T95.10. **Status:** answered 2026-11-22; T95.10 and T95.11 resume after T95.4-D1.
 
-**Previous status:** asked. Parked: T95.10 and the screen tasks after it. 
+**Previous status:** asked. Parked: T95.10 and the screen tasks after it.
+
+## Q6 (T95.13): "Worth nothing?" on the day an option expires — asked 2026-11-23
+
+**Plain words.** The slip check asks "Worth nothing?" for any $0.00 option Mark (T95.13 case 4). On the day a contract expires, the grid already tells you "Expired worth nothing: enter 0." (W111), so entering 0 as told then asks "Worth nothing?" straight after. The mockup skips the question on the expiration day; the spec and the plan are silent. As built, the question is asked (case 4 as planned).
+
+**Options.**
+- (a) Skip "Worth nothing?" for a $0.00 Mark on the contract's expiration day (the Review Date the card says it expires, from the returned `expiresOnReviewDate`); a small follow-on, T95.13-D1.
+- (b) Keep asking it every time, as built.
+
+**Recommendation:** (a): the screen has just asked for 0, so asking again is noise, and the mockup agrees.
+
+**Status:** asked. Parks nothing (T95.13 continues; the follow-on would come after).

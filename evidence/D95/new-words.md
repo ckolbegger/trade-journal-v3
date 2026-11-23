@@ -15,3 +15,6 @@
 - "· optional" in a skipped column's header.
 - "Cancel" beside the reason field.
 - "Enter why you can't get a price." (existing words, reused for an empty reason).
+
+## T95.13 (provisional)
+- "1 Mark to check first." (W109's singular).
