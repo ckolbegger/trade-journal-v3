@@ -1943,6 +1943,23 @@ describe('the slip questions in the grid (T95.13)', () => {
     expect(within(step).getByRole('button', { name: 'Save Marks (1)' })).toBeTruthy();
   });
 
+  it('should not ask Worth nothing for a zero option Mark on the day its contract expires', async () => {
+    const call = { kind: 'Option' as const, symbol: 'XYZ', root: 'XYZ', expiration: '2026-10-12', right: 'Call' as const, strike: '50', multiplier: 100 as const };
+    const key = 'XYZ261012C00050000';
+    const row: MarkRow = { ...missingRow(key, ['t-a']), instrument: call };
+    const marks = { instrumentKey: key, instrument: call, trades: [{ tradeId: 't-a', from: FRIDAY }], marks: { [FRIDAY]: markAt('1.50') } };
+    const family: MarksFamily = { family: 'Marks', today: [row], earlier: [], earlierMarks: [marks], previousSession: FRIDAY };
+    renderReview(cardFacade(review({ families: [family, { family: 'Trades', trades: [{ ...TA, expiresOnReviewDate: true as const }, TF, TC] }] })));
+    const user = userEvent.setup();
+    const step = await marksPanel();
+    const price = within(step).getByRole<HTMLInputElement>('textbox', { name: /Mark, Mon Oct 12$/ });
+
+    await user.type(price, '0');
+    await user.tab();
+    expect(within(step).queryByText('Worth nothing?')).toBeNull();
+    expect(within(step).getByRole('button', { name: 'Save Marks (1)' })).toBeTruthy();
+  });
+
   it('should refuse what is not a price, and a zero share price', async () => {
     renderReview(slipReview());
     const user = userEvent.setup();

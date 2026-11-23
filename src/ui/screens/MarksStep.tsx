@@ -422,7 +422,9 @@ export function MarksStep({ facade, held: heldReview, onResult, tradeLine, onEnt
   // A price that reads as a slip: the domain's answer, measured from the previous session's Mark (P167). Asked once per price typed.
   const questionFor = (key: ObservationKey, entry: string) => {
     if (slipAnswered[rowId(key.instrumentKey, key.tradingDate)] === entry) return undefined;
-    const answer = checkMarkSlip({ instrument: instrumentOf(key.instrumentKey), entry, lastMark: previousMark(model, key.instrumentKey) });
+    // The grid asks for 0 on the day a contract expires (W111), so a zero is not asked about again then.
+    const expiresOnReviewDate = holdersOf(heldReview.review, key).some((tradeId) => walkedTrades.some((trade) => trade.tradeId === tradeId && trade.expiresOnReviewDate));
+    const answer = checkMarkSlip({ instrument: instrumentOf(key.instrumentKey), entry, lastMark: previousMark(model, key.instrumentKey), expiresOnReviewDate });
     return answer.kind === 'Pass' ? undefined : { answer, entry };
   };
   // The Review Date prices typed, trimmed as Save Marks sends them.

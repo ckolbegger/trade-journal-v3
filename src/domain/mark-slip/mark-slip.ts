@@ -48,7 +48,8 @@ export function markChange(input: { entry: string; previous: string }): MarkChan
   return { dollars, percent: `${percent.numerator > 0n ? '+' : ''}${formatDecimal(percent, 1)}` }
 }
 
-export function checkMarkSlip(input: { instrument: Instrument; entry: string; lastMark?: string }, limits: MarkSlipLimits = MARK_SLIP_LIMITS): MarkSlipAnswer {
+// expiresOnReviewDate: the contract expires on the Review Date, where the grid has asked for 0, so a zero is not asked about again (W111).
+export function checkMarkSlip(input: { instrument: Instrument; entry: string; lastMark?: string; expiresOnReviewDate?: boolean }, limits: MarkSlipLimits = MARK_SLIP_LIMITS): MarkSlipAnswer {
   const entry = parseDecimal(input.entry)
   const last = input.lastMark === undefined ? undefined : parseDecimal(input.lastMark)
   if (!entry.ok || entry.value.numerator < 0n) return { kind: 'NotAPrice' }
@@ -56,7 +57,7 @@ export function checkMarkSlip(input: { instrument: Instrument; entry: string; la
   if (entry.value.numerator === 0n && !isOption) return { kind: 'ZeroSharePrice' }
   // No last Mark, or one of zero, gives nothing to measure a move against.
   if (last === undefined || !last.ok || last.value.numerator === 0n) return { kind: 'Pass' }
-  if (entry.value.numerator === 0n) return { kind: 'WorthNothing' }
+  if (entry.value.numerator === 0n) return input.expiresOnReviewDate ? { kind: 'Pass' } : { kind: 'WorthNothing' }
   const band = isOption ? limits.option : limits.stock
   const one = Rational.of(1n)
   const top = last.value.mul(one.add(percentOf(band.up)))

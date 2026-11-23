@@ -42,6 +42,10 @@ describe('The Mark slip check (P167)', () => {
     expect(checkMarkSlip({ instrument: stock, entry: '0.00', lastMark: '45.10' })).toEqual({ kind: 'ZeroSharePrice' })
     expect(checkMarkSlip({ instrument: stock, entry: '0' })).toEqual({ kind: 'ZeroSharePrice' })
   })
+  it('should not ask whether an option is worth nothing on its expiration day', () => {
+    expect(checkMarkSlip({ instrument: option, entry: '0.00', lastMark: '0.45', expiresOnReviewDate: true })).toEqual({ kind: 'Pass' })
+    expect(checkMarkSlip({ instrument: option, entry: '0.00', lastMark: '0.45', expiresOnReviewDate: false })).toEqual({ kind: 'WorthNothing' })
+  })
   it('should refuse an entry that is not a price', () => {
     for (const entry of ['', 'abc', '45,10', '$45.10', '1e3', '-5', '45.1234567', ' 45.10']) {
       expect(checkMarkSlip({ instrument: stock, entry, lastMark: '45.10' })).toEqual({ kind: 'NotAPrice' })
