@@ -356,6 +356,19 @@ describe('the Plan box in the open card (T95.16, U2)', () => {
   });
 });
 
+describe('the header owes a Close Review (T95.16-B1)', () => {
+  it('should read To do: Close Review in the header when the day card line says Close Review', async () => {
+    const built = review();
+    const lines = built.day!.lines.map((line) => (line.tradeId === 't-a' ? { ...line, closeReview: true, needs: ['Reflection' as const] } : line));
+    renderReview(cardFacade({ ...built, day: { ...built.day!, lines } }));
+    await screen.findAllByRole('button', { name: /^Review / });
+
+    const header = headers().find((h) => h.closest('li')?.getAttribute('data-trade-id') === 't-a')!;
+    expect(header.textContent).toContain('To do: Close Review');
+    expect(header.textContent).not.toContain('Reflection');
+  });
+});
+
 describe('opening and closing a card from the day card (T95.16)', () => {
   it('should open the card the day card link names, and close it on a second press', async () => {
     const user = userEvent.setup();

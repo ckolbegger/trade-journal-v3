@@ -46,12 +46,12 @@ export const NO_GO: Go = { count: 0 };
 
 // "To do: 2 Marks, Reflection, Action", or "Done · Hold" once the card is done (W101): what the card's progress record still owes, in the day card's words.
 // The Action is the one the day summary's line for this Trade says was saved for the Review Date.
-function remainsText(progress: CardProgress, action: string | undefined): string {
+function remainsText(progress: CardProgress, action: string | undefined, closeReview: boolean): string {
   const { needed } = panelOf(progress, 'Marks');
   const { dueNow } = panelOf(progress, 'Reflections');
   const { owed } = panelOf(progress, 'Action');
   const needs: DayLine['needs'][number][] = [...(needed > 0 ? ['Marks' as const] : []), ...(dueNow > 0 ? ['Reflection' as const] : []), ...(settlementOf(progress)?.done === false ? ['Settlement' as const] : []), ...(owed ? ['Action' as const] : [])];
-  return todoText({ tradeId: '', marks: needed, closeReview: false, needs, ...(action !== undefined && { action }) });
+  return todoText({ tradeId: '', marks: needed, closeReview, needs, ...(action !== undefined && { action }) });
 }
 
 // What the open card shows while its Trade is read, or when it could not be.
@@ -116,7 +116,7 @@ export function ReviewCard({ facade, trade, line, expanded, detail, reveal, go, 
                 <span className="review-card-summary">{tradeSummary(trade.summary)}</span>{' '}
               </>
             )}
-            <span className="review-card-remains">{remainsText(trade.progress, line?.action)}</span>{' '}
+            <span className="review-card-remains">{remainsText(trade.progress, line?.action, line?.closeReview ?? false)}</span>{' '}
             {labels.map(({ label }) => (
               <Badge key={label} tone="neutral">
                 {label}
