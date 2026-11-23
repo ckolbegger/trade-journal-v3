@@ -201,6 +201,8 @@ Commit `8c2b0643` (from `4e217d99`; a first attempt from `b2400751` stopped befo
 
 **Subagent notes (not bug tasks):** "Next: XYZ" can be ambiguous when two Trades share an Underlying (three specs use `.first()`); "Add them" opens the first Instrument with a gap, which T95.12's grid should take over; a line with nothing to do reads "Done", since W101's "Done · Hold" needs the saved Action, which `day.lines` lacks; walked lines keep `BAND_TEXT`'s old words until T95.11.
 
+ocr (`ocr/T95.10-8c2b0643.json`, 27 files): **No findings.**
+
 ## Trial: complete runs overlapped with the next task (the user, 2026-11-22, for 5 or 6 tasks)
 
 Each task's complete run runs in a detached scratch copy (`.claude/worktrees/run-<label>`, set up by `lane-setup.sh`) at the task's commit, while the next task's subagent starts in this worktree. The run's files are copied back to `evidence/D95/suite-runs/`. A failure becomes a bug task as before; the next task restarts only if it built on the broken code. Times are recorded per run to measure the saving.
