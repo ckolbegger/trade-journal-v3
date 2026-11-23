@@ -1,0 +1,138 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 2,
+    "total_tokens": 188944,
+    "input_tokens": 187055,
+    "output_tokens": 1889,
+    "cache_read_tokens": 14976,
+    "elapsed": "1m8s"
+  },
+  "tool_calls": {
+    "total": 24,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 5,
+      "file_find": 4,
+      "file_read": 14
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "e2e/d1/support.ts",
+      "content": "The test server normally serves `dist-faults`, but this builds the saved profile on `dist-releases/current`. The profile includes the installed service worker and its release cache; `serveRequest` serves navigations from that cache, so switching the server back does not make the cloned browser run the faults build (the new worker waits for ApplyUpdate). These five tests therefore no longer exercise the same build as before and may see an unintended update. Build on the requesting test's release, using an isolated setup-server lifecycle as specified, rather than hardcoding `current`.",
+      "existing_code": "              server.use('dist-releases/current');",
+      "start_line": 86,
+      "end_line": 86,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "e2e/d1/support.ts",
+      "content": "If `setup.build` throws after launching a browser (for example, an assertion in `enterTrade` fails), it never returns `context`, so this close is skipped. The `profileAt(dir)` passed here does not track contexts like the normal `profile` fixture does; the finally block only restores the server. Track every context launched by the setup profile and close them in a finally block, including when the builder fails, so failed setup attempts do not leave Chromium running against the saved directory.",
+      "existing_code": "                const { context, made } = await setup.build(profileAt(dir));\n                await context.close();",
+      "start_line": 88,
+      "end_line": 89,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "e2e/d1/support.ts",
+        "e2e/d9ar/review.spec.ts",
+        "e2e/d9ar/support.ts"
+      ]
+    }
+  ],
+  "session_id": "32f3707a-ffbe-4d61-890a-3e3f769fb8a4",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "32f3707a-ffbe-4d61-890a-3e3f769fb8a4",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "2ef488d0",
+      "resolved_base": "27c38a7d645e28f1a733bf11f76bb19f7bc2799f",
+      "resolved_head": "2ef488d02c8e55411c91de1a60e57b8adcec457b",
+      "exact_range": "27c38a7d645e28f1a733bf11f76bb19f7bc2799f..2ef488d02c8e55411c91de1a60e57b8adcec457b",
+      "source_artifact_sha256": "fe575143c9ba4db410bdb6c155999ecda560fec87baba5bda76ba63e5170eaa7"
+    },
+    "execution": {
+      "ocr_version": "v1.14.2",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "839b5d74be9dab57ce22d8164cf43a870716504e404925773518309e596f49ef",
+          "path": "e2e/d9ar/support.ts",
+          "fingerprint": "d764af9f5ba098dd3869ec24cfa55016ff7addfce63854d71cf2239f519d1993"
+        },
+        {
+          "item_id": "b194ba36fc8d3d6f6152cfb8ca3afe4573944cb85df750e137ded5f77d41a6c9",
+          "path": "e2e/d1/support.ts",
+          "fingerprint": "f47c5081f4b9f26907d9046b2a7f62c58d2886c2b5aae7a1b9e443152a0817f8"
+        },
+        {
+          "item_id": "f7406ef2881011b62532c827cd87807e71f1ffb772c241794158f993a5a0fd38",
+          "path": "e2e/d9ar/review.spec.ts",
+          "fingerprint": "b775e0f54b9023574dc7fa4562f9ddf44417fa31ea87aee0db3dd75ef5d1f0c7"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "839b5d74be9dab57ce22d8164cf43a870716504e404925773518309e596f49ef",
+          "path": "e2e/d9ar/support.ts",
+          "fingerprint": "d764af9f5ba098dd3869ec24cfa55016ff7addfce63854d71cf2239f519d1993"
+        },
+        {
+          "item_id": "b194ba36fc8d3d6f6152cfb8ca3afe4573944cb85df750e137ded5f77d41a6c9",
+          "path": "e2e/d1/support.ts",
+          "fingerprint": "f47c5081f4b9f26907d9046b2a7f62c58d2886c2b5aae7a1b9e443152a0817f8"
+        },
+        {
+          "item_id": "f7406ef2881011b62532c827cd87807e71f1ffb772c241794158f993a5a0fd38",
+          "path": "e2e/d9ar/review.spec.ts",
+          "fingerprint": "b775e0f54b9023574dc7fa4562f9ddf44417fa31ea87aee0db3dd75ef5d1f0c7"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "05eaf1178482da79be7e48facfc38f7cfd60e18d9db44ee96da09ea7bb363bcb",
+          "path": "evidence/Setup-Snapshot/timings.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "58c0af07fd954452ec4877d437d083e0eeedbe6d77ee65274c58f98f68b360f2",
+          "path": "evidence/Setup-Snapshot/structural.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 68119
+  }
+}

@@ -18,3 +18,10 @@ Deviation from the proof of concept: the build runs inside the first asking test
 Break check (copy switched off, so an empty profile): all 5 tests failed (the Review link never appeared on the first screen); copy switched back on: all 5 pass. The switch was one line in copySetup (the cp call), restored by an edit (git diff shows no trace).
 
 Unchanged-spec check: e2e/d2/narrow.spec.ts (uses `profile`, no setup) passed with it (5 passed) in the same run as review.spec.ts (10 passed, 20.2 s).
+
+### ST.1 ocr
+
+gpt-6.1-sol, session 32f3707a: 3 files reviewed (2 excluded), 2 findings, both Valid. `evidence/Setup-Snapshot/ocr/ST.1-2ef488d0.json`.
+
+- **ST.1-B1** (`e2e/d1/support.ts:86`): the setup is always built on `dist-releases/current`, but the d9ar tests serve `dist-faults` (d7's automatic fixture switches the server). The copy carries `current`'s service worker and cache, so the tests may run a different build than before.
+- **ST.1-B2** (`e2e/d1/support.ts:88`): if a builder throws after launching a browser, its context is never closed, and the rejected build stays in the map.
