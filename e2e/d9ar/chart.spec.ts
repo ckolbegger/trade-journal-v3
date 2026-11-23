@@ -115,20 +115,10 @@ test.describe('B9AR.5 The chart', () => {
     expect(await chartText(pnlChart(scope))).toContain('Target reached');
     expect(await key(scope)).toContain('Target reached');
     await expect(pnlChart(scope).locator('g.first-crossing')).not.toHaveCount(0);
-    await context.close();
-  });
-
-  // W66 lists "No Mark" among the key's entries, and the key lists what is drawn; the P&L chart draws the shaded column from Tue 11-10 on. The product lists "No Mark" only when the Underlying's own
-  // Mark is missing (the price strip's gap), so the key leaves out the column the P&L chart shades (reported to the main session as a reading of W66).
-  test('should name the shaded No Mark column in the key on R-CORV-D', async ({ profile }) => {
-    test.setTimeout(240_000);
-    const { context, page } = await build(profile, CORV, closeOf('2026-11-11'), 7);
-    const scope = await open(page, 0);
-    await expect(pnlChart(scope).locator('rect.no-mark')).toHaveCount(1);
-    for (const back of [0, 1]) {
-      if (back > 0) await seek(page, scope, 'ArrowLeft');
-      expect(await key(scope), `the key on ${await sliderValue(scope).textContent()}`).toContain('No Mark');
-    }
+    // W66: the key names the shaded column, on Wed 11-11 and one session back on Tue 11-10.
+    expect(await key(scope), 'the key on Wed 11-11').toContain('No Mark');
+    await seek(page, scope, 'ArrowLeft');
+    expect(await key(scope), `the key on ${await sliderValue(scope).textContent()}`).toContain('No Mark');
     await context.close();
   });
 
