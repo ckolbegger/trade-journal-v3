@@ -32,3 +32,5 @@
 ## T95.21-B1 (provisional)
 
 - With several saved Exits, "Tomorrow" reads "Sell AXIO, BREN, then record the sales." Each Trade name links to its own card. One Exit keeps "Sell BREN, then record the sale."
+
+- T95.16: "−$30.00 today" (the day's change in the card header, from the prototype, no W row); header P&L "+$180.00 · +0.40R".

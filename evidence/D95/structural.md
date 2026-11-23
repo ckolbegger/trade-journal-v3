@@ -381,3 +381,7 @@ Commit `755901fa` (from `a4bc18e0`). `WalkedTrade.pnl?: { dollars, planR, change
 ocr (session 446d666e): 5 files, 0 findings. `evidence/D95/ocr/T95.16-D2-755901fa.json`.
 
 Run `t95.16-d2-walked-pnl` (browser-auto a4bc18e0 → task tier): unit 2848, integration 303, browser 9, checks 14 of 14. Passed. T95.16-D2 Done.
+
+## T95.16 — The card: header and Plan box (Full)
+
+Commits `77002281` (data: `day.lines[].action`, the Review Date's saved Action, from the Actions `open` already reads; T95.16-D3 under decision 131's standing approval) and `f878796f` (from `a60389a3`). New PlanBox, todo-text; header per U3 and W101 ("To do: Mark, Action", "Done · Hold"); no meter in the open card's header. Cases 1, 2, 3, 5 and 7 red then green; cases 4 and 6 first-run passes, mutation-checked. Case 5 partly met: CardFigures' Conditions list still shows Stop and Target prices until T95.17 removes CardFigures; its "At entry" group is hidden. The header's Trade P&L repeats CardFigures' row until T95.17. **Broken:** e2e specs that read the open card's header meter (`meterOf`, `reviewMeters`): `e2e/d5r/{review,marks,sliders,responsive-a11y}` fail (5 cases); `e2e/d7p/layout` and `e2e/d9/{meter-a11y,open-list}` likely. T95.17's Now box is a new drawing, not the shared meter in the header, so these go to follow-on **T95.16-F1** before the run.

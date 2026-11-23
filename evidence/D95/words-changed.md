@@ -9,3 +9,5 @@
 | Row | Before | After | Why |
 |---|---|---|---|
 | W119 | "Sell 2 BREN, then record the sale." | "Sell BREN, then record the sale." | The day summary carries no quantity and the UI may not work one out; the card still shows it. |
+
+- T95.16 (W101 wording, not a shortening): card header needs "1 Mark · 1 reflection due · Settlement · Action" → "To do: Mark, Reflection, Settle, Action"; "Done · Action saved" → "Done · Hold".
