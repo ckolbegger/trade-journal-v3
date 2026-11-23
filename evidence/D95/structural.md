@@ -279,6 +279,8 @@ Commit `ca71b127` (from `58172855`), 29 files. Cases 2, 4, 5, 6 red then green (
 
 ocr (`ocr/T95.14-ca71b127-partial.json`): **incomplete.** 17 of 28 files reviewed; 11 (every source file) failed with "servers are currently overloaded", and a rerun failed on all 28 with the ChatGPT "Subscription Sharing usage limit". One comment: `e2e/d4/support.ts:364` (Valid) `expectCellShows` builds an unanchored regex, so an expected 51.5 also passes for 151.50 or 51.59. → **T95.14-B1**. The full review reruns once ChatGPT usage is back. `ocr llm test` can't detect it (it tests only the default provider, Anthropic), so `.claude/scripts/ocr-usage-wait.sh` now probes with a one-commit ChatGPT review.
 
+**T95.14-B1** `92c52094`: `expectCellShows` anchors its pattern (`^\$?<escaped price>` then `0*` with a dot, `(\.0+)?` without), so 51.5 matches 51.5 and 51.50 but not 151.50 or 51.59. Shown first by a wrong expected price in correct-mark.spec.ts passing before and failing after (spec restored). Browser: d4 27, and every other `expectMark` caller (18, 13), all pass.
+
 ## Trial: complete runs overlapped with the next task (the user, 2026-11-22, for 5 or 6 tasks)
 
 Each task's complete run runs in a detached scratch copy (`.claude/worktrees/run-<label>`, set up by `lane-setup.sh`) at the task's commit, while the next task's subagent starts in this worktree. The run's files are copied back to `evidence/D95/suite-runs/`. A failure becomes a bug task as before; the next task restarts only if it built on the broken code. Times are recorded per run to measure the saving.
