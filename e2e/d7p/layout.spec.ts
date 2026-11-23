@@ -1,7 +1,7 @@
 import type { BrowserContext, Page } from '@playwright/test';
 import {
-  acknowledgeMark, answerIn, cardItem, createTrades, dayLine, detail, enterMark, exitReflection, expect, expectInsideCell, expectNoSidewaysScroll, expectShownInFull, firstPage, FOUR_TRADES, launchAt, MONDAY_1700, onboardedAt,
-  openDrawer, openExitForm, openReview, openTradeFromOpenList, LAUNCH, reachCard, recordEntry, fillRows, sell, setClock, setWidth, meterOf, test, tradeCard, TUESDAY_NOON, WIDTHS, writeSellQuantities,
+  acknowledgeMark, answerIn, createTrades, dayLine, detail, enterMark, exitReflection, expect, expectInsideCell, expectNoSidewaysScroll, expectShownInFull, firstPage, FOUR_TRADES, launchAt, MONDAY_1700, onboardedAt,
+  openDrawer, openExitForm, openReview, openTradeFromOpenList, LAUNCH, reachCard, recordEntry, fillRows, sell, setClock, setWidth, meterOf, collapseOpenCard, test, tradeCard, TUESDAY_NOON, WIDTHS, writeSellQuantities,
   type Profile,
 } from './support.ts';
 
@@ -145,6 +145,11 @@ test.describe('T7P.11 Layout of the worded reasons', () => {
         await setWidth(page, width);
         await expectNoSidewaysScroll(page, `${symbol} card at ${width}`);
         await expectShownInFull(tradeCard(page, symbol).locator('p', { hasText: sentence }).first(), sentence, `${symbol} attention sentence at ${width}`);
+      }
+      // The open card draws no header meter (T95.16): the card is collapsed to read it.
+      await collapseOpenCard(page);
+      for (const width of WIDTHS) {
+        await setWidth(page, width);
         const meter = meterOf(page, symbol);
         if (figure === undefined) await expect(meter).toHaveCount(0);
         else {
@@ -153,7 +158,6 @@ test.describe('T7P.11 Layout of the worded reasons', () => {
           expect(box!.x + box!.width, `${symbol} meter inside the viewport at ${width}`).toBeLessThanOrEqual(width);
         }
       }
-      await cardItem(page, symbol).getByRole('button', { name: new RegExp(`^Review ${symbol}`) }).click();
     }
     await context.close();
   });

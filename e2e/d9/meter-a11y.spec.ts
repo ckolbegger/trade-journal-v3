@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import { expectNoSidewaysScroll } from '../d7p/support.ts';
-import { detail, expect, expectAccessible, listMeters, openFourTradesFri, openOpenList, openReview, LAUNCH, reviewMeters, setViewport, test, type TradeRef } from './support.ts';
+import { detail, expect, expectAccessible, listMeters, openFourTradesFri, openOpenList, openReview, LAUNCH, collapseOpenCard, reviewMeters, setViewport, test, type TradeRef } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -60,6 +60,9 @@ async function surfaces(page: Page, bren: TradeRef, size: (typeof SIZES)[number]
   // A Review card: each card's header meter is inside the viewport, and the page does not scroll sideways.
   await page.goto('/');
   await openReview(page);
+  // The open card draws no header meter (T95.16): the open card is checked as it is, then collapsed so every card's header shows its meter.
+  await expectAccessible(page, `the Review's open card at ${where}`);
+  await collapseOpenCard(page);
   const cards = await reviewMeters(page);
   expect(cards, `${where}: four cards`).toHaveLength(4);
   for (const card of cards) expect(card.name, `${where}: each card's meter is named`).toMatch(/^P&L [+−]\$/);

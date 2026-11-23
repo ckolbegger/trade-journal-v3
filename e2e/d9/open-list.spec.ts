@@ -1,5 +1,5 @@
 import {
-  build, closeOf, DALE, expect, firstPage, launchAt, expectTrackDashed, listMeters, MON_1123_1700, openFourTradesFri, openOpenList, openReview, reviewMeters, test,
+  build, closeOf, DALE, expect, firstPage, launchAt, expectTrackDashed, listMeters, MON_1123_1700, openFourTradesFri, openOpenList, openReview, collapseOpenCard, reviewMeters, test,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
@@ -24,6 +24,8 @@ test.describe('B9.9 The Open list', () => {
     const { context, page, symbolOf } = await fourTrades(profile, copySetup);
     await page.goto('/');
     await openReview(page);
+    // The open card draws no header meter (T95.16): it is collapsed so every card's header shows its meter.
+    await collapseOpenCard(page);
     const review = await reviewMeters(page);
     expect(review).toHaveLength(4);
     await openOpenList(page);

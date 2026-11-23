@@ -281,7 +281,7 @@ export async function setViewport(page: Page, width: number, height: number): Pr
 // ---- Stage C: the meter's names, in the Review's cards and in the Open list's rows ------------------------------------------------------------
 
 // The Review's card order and the dashed-track check live in D5R's support (since TD.8); D9's specs reach them here.
-export { expectTrackDashed, reviewMeters } from '../d5r/support.ts';
+export { collapseOpenCard, expectTrackDashed, reviewMeters } from '../d5r/support.ts';
 // The Open list's rows in their order: each Trade's id, and the name of every meter a row shows (a hidden copy is not shown).
 // A list that re-renders under the read gives no rows, or rows without their meter, for a moment, so the read is repeated until every row has one.
 export async function listMeters(page: Page): Promise<{ id: string; names: string[] }[]> {

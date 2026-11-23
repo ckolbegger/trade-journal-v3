@@ -70,8 +70,15 @@ export async function createRoutineTrades(page: Page, count: number): Promise<vo
 
 // ---- Locators for a fixture Trade's card, reached by its Trade (decision 68) -------------------------------------------------
 
-// The meter of a card's header (a collapsed card shows it too).
+// The meter of a collapsed card's header. The open card's header has none (T95.16, U3): a case that reads it collapses the open card first.
 export const meterOf = (page: Page, card: CardRef): Locator => cardItem(page, card).locator('.review-card-head').getByRole('img');
+// Collapses the open card, so its header shows the meter; a card that holds unsaved work refuses and stays open, and the wait fails.
+export async function collapseOpenCard(page: Page): Promise<void> {
+  const open = page.locator('.review-card-head button[aria-expanded="true"]');
+  if ((await open.count()) === 0) return;
+  await open.first().click();
+  await expect(open).toHaveCount(0);
+}
 // What the collapsed header says remains.
 export const remainsOf = (page: Page, card: CardRef): Locator => cardItem(page, card).locator('.review-card-remains');
 

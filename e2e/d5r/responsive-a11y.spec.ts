@@ -1,5 +1,5 @@
 import {
-  panelOf, markEditorOf, markInputOf, expectMarkUnsaved, actionFormOf, cardHeader, cardItem, completion, createRoutineTrades, createTrades, expect, expectAccessible, FRIDAY, MONDAY, MONDAY_1700, onboardedAt, openReview, panelHeader, LAUNCH, remainsOf, meterOf, status, tabTo, test, tradeCard, saveMarksButton, expectMarksSaved, marksStepOf, openCardFixture, type TradeRef,
+  panelOf, markEditorOf, markInputOf, expectMarkUnsaved, actionFormOf, cardHeader, cardItem, completion, createRoutineTrades, createTrades, expect, expectAccessible, FRIDAY, MONDAY, MONDAY_1700, onboardedAt, openReview, panelHeader, LAUNCH, remainsOf, meterOf, collapseOpenCard, status, tabTo, test, tradeCard, saveMarksButton, expectMarksSaved, marksStepOf, openCardFixture, type TradeRef,
 } from './support.ts';
 
 const INTENT = /^Why are you taking this action\?/;
@@ -9,6 +9,11 @@ test.describe('B5R.11 Responsive and accessible', () => {
     test.setTimeout(300_000);
     const { context, page, 'T-A': tA, 'T-B': tB, 'T-C': tC, 'T-E': tE, 'T-F': tF } = await openCardFixture(profile, copySetup);
     await openReview(page);
+    // The open card draws no meter: T-A's card is collapsed to read its meter, before any draft, and opened again.
+    await collapseOpenCard(page);
+    await expect(meterOf(page, tA)).toHaveAttribute('role', 'img');
+    await cardHeader(page, tA).click();
+    await expect(cardHeader(page, tA)).toHaveAttribute('aria-expanded', 'true');
 
     // Wide: the meter sits beside the header, in the same row.
     const rowOf = async (trade: TradeRef) => {
@@ -40,7 +45,7 @@ test.describe('B5R.11 Responsive and accessible', () => {
     await action.getByLabel(INTENT).fill('Half written');
 
     // Axe on the card list, then on the open card with each panel open, with the drafts held; the meters are in every state.
-    for (const trade of [tA, tB, tC, tE, tF]) await expect(meterOf(page, trade)).toHaveAttribute('role', 'img');
+    for (const trade of [tB, tC, tE, tF]) await expect(meterOf(page, trade)).toHaveAttribute('role', 'img');
     for (const panel of ['Marks', 'Reflections', 'Action'] as const) {
       await panelOf(page, tA, panel);
       await expectAccessible(page, `T-A's card with the ${panel} panel open, drafts held`);
@@ -104,6 +109,8 @@ test.describe('B5R.11 Responsive and accessible', () => {
     test.setTimeout(120_000);
     const { context, page, 'T-A': tA } = await openCardFixture(profile, copySetup);
     await openReview(page);
+    // The open card draws no meter: T-A's card is collapsed, and its header is measured so.
+    await collapseOpenCard(page);
 
     // T-A's header: the head row (the card's header width), the visible text pieces' line boxes, and the meter.
     const measure = async () => {

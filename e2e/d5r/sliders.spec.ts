@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import {
-  cardHeader, enterMark, expect, MONDAY, marksStepOf, openReview, LAUNCH, meterOf, expectTrackDashed, test, openCardFixture, type CardTrade,
+  cardHeader, enterMark, expect, MONDAY, marksStepOf, openReview, LAUNCH, meterOf, collapseOpenCard, expectTrackDashed, test, openCardFixture, type CardTrade,
 } from './support.ts';
 
 const nav = (page: Page) => page.getByRole('navigation', { name: 'Primary' });
@@ -56,6 +56,8 @@ test.describe('B5R.7 Meter states', () => {
     const { context, page, ...trades } = await openCardFixture(profile, copySetup);
     const { 'T-A': tA, 'T-B': tB, 'T-C': tC, 'T-E': tE, 'T-F': tF } = trades;
     await openReview(page);
+    // The open card draws no meter: T-A's card is collapsed, so every meter is in a collapsed header.
+    await collapseOpenCard(page);
     // Before any Mark, T-A's track is already dashed.
     await expectTrackDashed(meterOf(page, tA), true);
     // Monday Marks for every Instrument but DEF.

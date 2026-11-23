@@ -1,5 +1,5 @@
 import {
-  actionEntriesOf, answerDebt, cardHeader, cardList, completion, createRoutineTrades, enterMark, entriesWithSettledDebt, expect, fillDebtAnswers, firstPage, launchAt, MONDAY, MONDAY_1700, observationsOf, marksStepOf, openReview, probe, reflectionsOf, remainsOf, reviewMeters, saveAction, meterOf, test, tradeCard, workspaceOf, openCardFixture,
+  actionEntriesOf, answerDebt, cardHeader, cardList, completion, createRoutineTrades, enterMark, entriesWithSettledDebt, expect, fillDebtAnswers, firstPage, launchAt, MONDAY, MONDAY_1700, observationsOf, marksStepOf, openReview, probe, reflectionsOf, remainsOf, reviewMeters, saveAction, meterOf, collapseOpenCard, test, tradeCard, workspaceOf, openCardFixture,
 } from './support.ts';
 
 const OPEN_HEADERS = '.review-card-head button[aria-expanded="true"]';
@@ -16,8 +16,12 @@ test.describe('B5R.1 Review end to end on cards', () => {
     await expect(cards.first()).toHaveAttribute('data-trade-id', tA.tradeId);
     await expect(cardHeader(page, tA)).toHaveAttribute('aria-expanded', 'true');
     await expect(cardList(page).locator(OPEN_HEADERS)).toHaveCount(1);
+    // The open card draws no meter: T-A's card is collapsed to read it, and opened again.
+    await collapseOpenCard(page);
     await expect(meterOf(page, tA)).toHaveAccessibleName('Mark missing: XYZ, Mon Oct 12 Stop −$270.00, Target +$580.00.');
     await expect(meterOf(page, tF)).toHaveAccessibleName('Mark missing: XYZ, Mon Oct 12 Stop −$101.00, Target +$249.00.');
+    await cardHeader(page, tA).click();
+    await expect(cardHeader(page, tA)).toHaveAttribute('aria-expanded', 'true');
 
     // The walk is in attention order: the two XYZ Trades owe a Mark and more, so they come first. A saved Mark re-sorts it (the two XYZ cards go last).
     // (T-B, T-C and T-E tie, and their order among themselves is not fixed.)
@@ -33,6 +37,7 @@ test.describe('B5R.1 Review end to end on cards', () => {
     const figure = (term: string) => tradeCard(page, 'XYZ').locator('dt', { hasText: new RegExp(`^${term}$`) }).locator('xpath=following-sibling::dd[1]');
     await expect(figure('Trade P&L')).toHaveText('+$180.00 · +0.72R');
     await expect(figure('Current Risk · At Stop')).toHaveText('$450.00 · 1.80R');
+    await collapseOpenCard(page);
     await expect(meterOf(page, tA)).toHaveAccessibleName(/^P&L \+\$180\.00, 31% of the way to the Target\. Stop −\$270\.00, Target \+\$580\.00\.$/);
     await expect(meterOf(page, tF)).toHaveAccessibleName(/^P&L \+\$99\.00, 40% of the way to the Target\. Stop −\$101\.00, Target \+\$249\.00\.$/);
     const second = await orderOf(page);

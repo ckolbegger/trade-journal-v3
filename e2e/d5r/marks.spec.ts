@@ -1,5 +1,5 @@
 import {
-  expectMark, expectMarksSaved, marksStepOf, markEditorOf, markInputOf, actionFormOf, cardHeader, createCardFixture, enterMark, expect, FRIDAY, MONDAY, MONDAY_1700, observationsOf, onboardedAt, openReview, probe, remainsOf, meterOf, test, THURSDAY, workspaceOf, saveMarksButton, openCardFixture,
+  expectMark, expectMarksSaved, marksStepOf, markEditorOf, markInputOf, actionFormOf, cardHeader, createCardFixture, enterMark, expect, FRIDAY, MONDAY, MONDAY_1700, observationsOf, onboardedAt, openReview, probe, remainsOf, meterOf, collapseOpenCard, test, THURSDAY, workspaceOf, saveMarksButton, openCardFixture,
 } from './support.ts';
 
 const NOT_A_PRICE = 'Enter a price as a number, with at most 6 decimal places.';
@@ -8,11 +8,16 @@ test.describe('B5R.3 Shared Mark', () => {
   test('should move T-A’s collapsed meter at once when XYZ is saved in T-F’s card, show XYZ saved there as also held, and store one observation', async ({ profile, copySetup }) => {
     const { context, page, 'T-A': tA, 'T-F': tF } = await openCardFixture(profile, copySetup);
     await openReview(page);
+    // The open card draws no meter: T-A's card is collapsed to read it, and opened again.
+    await collapseOpenCard(page);
     await expect(meterOf(page, tA)).toHaveAccessibleName('Mark missing: XYZ, Mon Oct 12 Stop −$270.00, Target +$580.00.');
+    await cardHeader(page, tA).click();
+    await expect(cardHeader(page, tA)).toHaveAttribute('aria-expanded', 'true');
 
     // Enter XYZ once, in the Marks step, and press Save Marks: it is one row for both Trades, and T-A's card stays as it was.
     await enterMark(page, tF, MONDAY, '52.00');
     await expect(cardHeader(page, tA)).toHaveAttribute('aria-expanded', 'true');
+    await collapseOpenCard(page);
     await expect(meterOf(page, tA)).toHaveAccessibleName(/^P&L \+\$180\.00, 31% of the way to the Target\. Stop −\$270\.00, Target \+\$580\.00\.$/);
     await expect(remainsOf(page, tA)).toHaveText('To do: Reflection, Action');
 
