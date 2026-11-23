@@ -281,7 +281,8 @@ describe('card list (A150)', () => {
     // The meter, named by its figures: one between its rails, one past the Stop, and the one with no Mark by its reason.
     expect(a.getByRole('img', { name: 'P&L +$180.00, 40% of the way to the Target. Stop −$450.00, Target +$450.00.' })).toBeTruthy();
     // ABC is the open card: its meter is the "Now" box's, not the header's (U3, T95.17).
-    const drawing = b.getByRole('img', { name: 'P&L −$200.00, past the Stop by $50.00. Stop −$150.00, Target +$300.00.' });
+    // The open card's body loads after its header (getTrade), so wait for it.
+    const drawing = await b.findByRole('img', { name: 'P&L −$200.00, past the Stop by $50.00. Stop −$150.00, Target +$300.00.' });
     expect(drawing.closest('.review-card-head')).toBeNull();
     expect(drawing.closest('.now-draw')).not.toBeNull();
     expect(c.getByRole('img', { name: 'Mark missing: DEF, Mon Oct 12 Stop −$200.00, Target +$400.00.' })).toBeTruthy();
