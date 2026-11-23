@@ -1,6 +1,9 @@
 import type { Locator } from '@playwright/test';
 import { expectNoSidewaysScroll, setWidth } from '../d7p/support.ts';
-import { backToTrade, createTrades, detail, enterMark, expect, fillRows, FOUR_TRADES, MONDAY_1700, onboardedAt, openReview, test } from '../d4/support.ts';
+import { actionFormOf, backToTrade, createTrades, detail, enterMark, expect, fillRows, FOUR_TRADES, MONDAY_1700, onboardedAt, openReview, reachCard, saveAction, setClock, tradeCard, test } from '../d4/support.ts';
+import { openCardFixture } from '../d5r/support.ts';
+import { openStandardReview } from '../d9ar/support.ts';
+import { atBothWidths } from './support.ts';
 
 const boxOf = async (locator: Locator) => (await locator.boundingBox())!;
 
@@ -113,6 +116,120 @@ test.describe('B95.4 The card', () => {
         expect(box.x + box.width, `a label's right edge at ${width}`).toBeLessThanOrEqual(width + 0.5);
       }
     }
+    await context.close();
+  });
+
+  // BREN (a long call) is past its Target, AXIO (stock) and DALE (a short put) are past their Stops; each is Marked to Mon Nov 16.
+  const PAST = [
+    { symbol: 'BREN', label: 'Target reached', stop: /^−\$3\.36 to Stop \(lose −\$672\.00\)$/, target: /^\$0\.16 past Target \(\+\$32\.00 so far\)$/ },
+    { symbol: 'AXIO', label: 'Stop breached', stop: /^\$3\.00 past Stop \(−\$300\.00 so far\)$/, target: /^\+\$12\.00 to Target \(gain \$1,200\.00\)$/ },
+    { symbol: 'DALE', label: 'Stop breached', stop: /^\$0\.80 past Stop \(−\$552\.00 so far\)$/, target: /^−\$4\.22 to Target \(gain \$2,532\.00\)$/ },
+  ] as const;
+
+  test('should show the Plan box and the Now box of a long option past its Target, a stock and a short option past their Stops, with the figures Trade Detail gives', async ({ profile, copySetup }) => {
+    test.setTimeout(300_000);
+    const { context, page, trades } = await openStandardReview(profile, copySetup);
+    const seen: Record<string, { risk: string; reward: string; worst: string; maxReward: string }> = {};
+    for (const { symbol, label, stop, target } of PAST) {
+      const trade = trades.find((t) => t.symbol === symbol)!;
+      await reachCard(page, trade);
+      const card = tradeCard(page, trade);
+      const plan = card.getByRole('region', { name: 'Plan' });
+      const now = card.getByRole('region', { name: 'Now · Mon Nov 16' });
+      const figure = (box: typeof card, term: string) => box.locator('dl > div').filter({ has: page.getByText(term, { exact: true }) }).locator('dd');
+      await atBothWidths(page, async (width) => {
+        await expect(card, `${symbol}'s band at ${width}`).toContainText(label);
+        await expect(plan.locator('dt')).toContainText(['Entry', 'Stop', 'Target', 'Risk', 'Reward']);
+        await expect(now.getByRole('note').first()).toHaveAccessibleName(stop);
+        await expect(now.getByRole('note').nth(1)).toHaveAccessibleName(target);
+        await expect(now.locator('.now-draw').getByRole('img')).toHaveAccessibleName(/^P&L [−+]?\$[\d,.]+, past the (Stop|Target) by \$[\d,.]+\./);
+        await expectNoSidewaysScroll(page, `Review card ${symbol} at ${width} px`);
+      });
+      seen[symbol] = {
+        risk: (await figure(plan, 'Risk').innerText()).replace(/ \(1R\)$/, ''),
+        reward: await figure(plan, 'Reward').innerText(),
+        worst: (await figure(now, 'Worst case').innerText()).replace(' more', ''),
+        maxReward: (await figure(now, 'Max reward').innerText()).replace(' more', ''),
+      };
+    }
+    // The same figures on Trade Detail's Plan and Risk (AC-CALC-003).
+    for (const [symbol, figures] of Object.entries(seen)) {
+      await page.goto(`/trades/${trades.find((t) => t.symbol === symbol)!.tradeId}`);
+      await page.getByRole('tab', { name: 'Plan and Risk' }).click();
+      const panel = page.getByRole('tabpanel');
+      await expect(panel, `${symbol}'s 1R`).toContainText(new RegExp(`1R \\(original risk\\)\\s*${figures.risk.replace(/[$.]/g, '\\$&')}`));
+      await expect(panel).toContainText(new RegExp(`Original reward\\s*${figures.reward.replace(/[$.]/g, '\\$&')}`));
+      await expect(panel).toContainText(`Worst case: ${figures.worst}`);
+      if (figures.maxReward !== 'No cap') await expect(panel).toContainText(`Max reward: ${figures.maxReward}`);
+    }
+    await context.close();
+  });
+
+  test("should say the figures wait for today's Marks and offer no Action until the Mark is in, at 1280 and 375 wide", async ({ profile, copySetup }) => {
+    test.setTimeout(300_000);
+    const { context, page, ...trades } = await openCardFixture(profile, copySetup);
+    await openReview(page);
+    const abc = trades['T-B'];
+    await reachCard(page, abc);
+    const card = tradeCard(page, abc);
+    await atBothWidths(page, async (width) => {
+      await expect(card.getByText("Figures wait for today's Marks.", { exact: false }), `the figures wait at ${width}`).toBeVisible();
+      await expect(card.getByText("No Action until today's Mark is in.")).toBeVisible();
+      await expect(card.getByRole('link', { name: 'Enter it' })).toBeVisible();
+      await expect(card.getByRole('radio', { name: 'Hold', exact: true })).toBeHidden();
+      await expectNoSidewaysScroll(page, `Review card before its Marks at ${width} px`);
+    });
+    // With the Mark saved, the same card offers the Action.
+    await enterMark(page, abc, 'Mon Oct 12', '29.00');
+    await expect((await actionFormOf(page, abc)).getByRole('radio', { name: 'Hold', exact: true })).toBeVisible();
+    await expect(card.getByText("Figures wait for today's Marks.", { exact: false })).toHaveCount(0);
+    await context.close();
+  });
+
+  test('should list the last four decisions and fold the older three behind "3 earlier decisions" at 375 wide', async ({ profile }) => {
+    test.setTimeout(420_000);
+    const { context, page } = await onboardedAt(profile, MONDAY_1700);
+    await createTrades(page, [FOUR_TRADES[1]!]);
+    // ABC (Stop 28, Target 36) is held on Mon, Tue, Thu and Fri, the last two past its Stop.
+    const days = [
+      ['2026-10-12T21:00:00Z', 'Mon Oct 12', '29.00', 'Up today.'],
+      ['2026-10-13T21:00:00Z', 'Tue Oct 13', '29.50', 'One more day.'],
+      ['2026-10-15T21:00:00Z', 'Thu Oct 15', '27.50', 'It may turn.'],
+      ['2026-10-16T21:00:00Z', 'Fri Oct 16', '27.40', 'Still waiting.'],
+    ] as const;
+    for (const [instant, date, price, reason] of days) {
+      await setClock(context, page, instant);
+      await openReview(page);
+      await enterMark(page, 'ABC', date, price);
+      await reachCard(page, 'ABC');
+      await saveAction(page, 'Hold', reason, 'ABC');
+    }
+    await setClock(context, page, '2026-10-19T21:00:00Z');
+    await openReview(page);
+    await enterMark(page, 'ABC', 'Mon Oct 19', '27.60');
+    const form = await actionFormOf(page, 'ABC');
+    await expect(form).toBeVisible();
+    const decisions = tradeCard(page, 'ABC').getByRole('region', { name: 'Your last decisions' });
+    const items = decisions.getByRole('listitem');
+
+    await setWidth(page, 1280);
+    await expect(items).toHaveCount(4);
+    await expect(items.first()).toHaveText(/^Fri Oct 16 · Hold · [−+]\$[\d,.]+“Still waiting\.”$/);
+    await expect(items.last()).toHaveText(/^Mon Oct 12 · Hold · −\$101\.00“Up today\.”$/);
+    await expect(decisions).toContainText('Held past the Stop 2 sessions running.');
+    await expect(decisions.getByText('3 earlier decisions')).toHaveCount(0);
+
+    // At 375 the newest shows and the other three fold.
+    await setWidth(page, 375);
+    const more = decisions.locator('details');
+    await expect(decisions.getByText('3 earlier decisions')).toBeVisible();
+    await expect(more).not.toHaveJSProperty('open', true);
+    await expect(decisions.getByText('Fri Oct 16')).toBeVisible();
+    await expect(decisions.getByText('Thu Oct 15')).toBeHidden();
+    await more.getByText('3 earlier decisions').click();
+    await expect(more.getByRole('listitem')).toHaveCount(3);
+    await expect(decisions.getByText('Mon Oct 12')).toBeVisible();
+    await expectNoSidewaysScroll(page, 'Review card, last decisions at 375 px');
     await context.close();
   });
 });

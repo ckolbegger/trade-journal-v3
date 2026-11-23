@@ -1,4 +1,4 @@
-import { setWidth } from '../d7p/support.ts';
+import { atBothWidths } from './support.ts';
 import { createTrades, enterMark, expect, FOUR_TRADES, LAUNCH, MONDAY_1700, onboardedAt, openReview, reachCard, saveAction, setClock, test, TUESDAY_1700 } from '../d4/support.ts';
 
 const MONDAY = 'Mon Oct 12';
@@ -22,11 +22,9 @@ test.describe('B95.5 The Open list follows the Review order', () => {
     await enterMark(page, 'DEF', MONDAY, '46.50');
     const trades = page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Trades', exact: true });
     await trades.click();
-    for (const width of [1280, 375]) {
-      await setWidth(page, width);
+    await atBothWidths(page, async (width) => {
       expect(await listOrder(page), `Open list at ${width}`).toEqual(['ABC', 'DEF', 'XYZ']);
-    }
-    await setWidth(page, 1280);
+    });
 
     // The day after an Exit is saved for XYZ, the Open list places it first.
     await openReview(page);
@@ -34,12 +32,11 @@ test.describe('B95.5 The Open list follows the Review order', () => {
     await saveAction(page, 'Exit', 'The thesis no longer holds.', 'XYZ');
     await setClock(context, page, TUESDAY_1700);
     await trades.click();
-    for (const width of [1280, 375]) {
-      await setWidth(page, width);
+    await atBothWidths(page, async (width) => {
       const order = await listOrder(page);
       expect(order[0], `Open list at ${width}`).toBe('XYZ');
       expect(order).toHaveLength(3);
-    }
+    });
     await context.close();
   });
 });

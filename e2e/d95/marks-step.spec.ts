@@ -1,13 +1,15 @@
 import type { Locator } from '@playwright/test';
 import { expectNoSidewaysScroll, setWidth } from '../d7p/support.ts';
-import { createTradeAt, enterMark, expect, FOUR_TRADES, FRIDAY_1700, marksStepOf, MONDAY_1700, onboardedAt, openReview, setClock, test } from '../d4/support.ts';
+import { answerSlipQuestions, createTradeAt, enterMark, expect, FOUR_TRADES, FRIDAY_1700, marksStepOf, MONDAY_1700, onboardedAt, openReview, reloadReview, saveMarksButton, setClock, status, test } from '../d4/support.ts';
+import { openCardFixture } from '../d5r/support.ts';
+import { atBothWidths } from './support.ts';
 
 const FRIDAY = 'Fri Oct 9';
 const MONDAY = 'Mon Oct 12';
 
 const boxOf = async (locator: Locator) => (await locator.boundingBox())!;
 
-test.describe('B95.1 The Marks step', () => {
+test.describe('B95.2 The Marks step', () => {
   test('should stack each row at 375 wide: the Instrument and its input, then the previous Mark and Can\'t get a price beneath', async ({ profile }) => {
     test.setTimeout(300_000);
     const { context, page } = await onboardedAt(profile, FRIDAY_1700);
@@ -53,6 +55,59 @@ test.describe('B95.1 The Marks step', () => {
       }
     }
     await expectNoSidewaysScroll(page, 'Review, Marks step at 375 px');
+    await context.close();
+  });
+
+  test('should keep nothing typed after a reload, save once and fold, re-sort the Trades with focus on the first, fix a saved Mark in place with no reason, and show an acknowledged Mark as no price and a gap as a gap, at 1280 and 375 wide', async ({ profile, copySetup }) => {
+    test.setTimeout(300_000);
+    const { context, page } = await openCardFixture(profile, copySetup);
+    await openReview(page);
+    const step = marksStepOf(page);
+    const input = (symbol: string) => step.getByRole('textbox', { name: `${symbol} Mark, ${MONDAY}`, exact: true });
+    const lineOrder = () => status(page).getByRole('list', { name: 'Trade lines' }).getByRole('listitem').evaluateAll((items) => items.map((item) => item.querySelector('a')!.textContent));
+    // With no Mark in, the Trades tie on attention and fall in a random order; once ABC is past its Stop it goes first.
+    expect([...(await lineOrder())].sort(), 'the day card lists each Trade').toEqual(['ABC', 'DEF', 'JKL', 'XYZ', 'XYZ']);
+
+    // A typed price is a draft: after a reload the cell is empty.
+    await input('XYZ').fill('52.00');
+    await reloadReview(page);
+    await expect(input('XYZ')).toHaveValue('');
+
+    // ABC past its Stop, DEF and JKL inside their lines, and XYZ with no price to give. Save Marks takes all four at once.
+    await input('ABC').fill('27.50');
+    await input('DEF').fill('41.00');
+    await input('JKL').fill('20.50');
+    await input('XYZ').press('n');
+    const xyz = step.getByRole('row').filter({ has: page.getByRole('rowheader', { name: 'XYZ', exact: true }) });
+    await xyz.getByRole('textbox', { name: /^Why no price/ }).fill('Halted');
+    await xyz.getByRole('button', { name: 'No price', exact: true }).click();
+    await answerSlipQuestions(page);
+    await expect(saveMarksButton(page)).toHaveText('Save Marks (4)');
+    await saveMarksButton(page).click();
+
+    // The grid folds to its line, the Trade past its Stop goes first, and focus lands on its header (A327).
+    await expect(step).toContainText('4 of 4 saved · 1 no price');
+    await expect(step.getByRole('button', { name: 'Edit', exact: true })).toBeVisible();
+    await expect.poll(async () => (await lineOrder())[0]).toBe('ABC');
+    await expect(page.getByRole('button', { name: /^Review ABC/ })).toBeFocused();
+    // The acknowledged Mark is no price, and says so on the day card and on the Trade's card.
+    await expect(status(page).getByRole('listitem').filter({ hasText: 'XYZ' }).first()).toContainText('No price today');
+    await atBothWidths(page, async (width) => {
+      await expect(step, `the fold at ${width}`).toContainText('4 of 4 saved · 1 no price');
+      await expect(step.getByRole('button', { name: 'Edit', exact: true })).toBeVisible();
+    });
+
+    // Edit opens the grid again: a saved Mark is fixed in place, and no reason is asked.
+    await step.getByRole('button', { name: 'Edit', exact: true }).click();
+    await expect(step).toContainText('Saved in this Review: fix it in place, no reason needed.');
+    await expect(step.getByText('Acknowledged Unavailable')).toBeVisible();
+    // A session with no Mark stays a gap (a dash), never a price.
+    await expect(step.getByRole('row').filter({ has: page.getByRole('rowheader', { name: 'ABC', exact: true }) }).getByRole('cell').nth(0)).toHaveText('—');
+    await input('ABC').fill('27.00');
+    await expect(step.getByRole('textbox', { name: /^(Reason|Why no price)/ })).toHaveCount(0);
+    await saveMarksButton(page).click();
+    await expect(step).toContainText('4 of 4 saved · 1 no price');
+    await expect(step.getByRole('button', { name: 'Edit', exact: true })).toBeVisible();
     await context.close();
   });
 });
