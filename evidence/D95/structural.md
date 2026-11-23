@@ -333,3 +333,7 @@ ocr (gpt-6.1-sol, session 170d4202): 3 files, 2 findings, both Valid. `evidence/
 ### T95.21-B1
 
 Commit `953cd3c0`. Each Trade to be sold links to its own card; red: no link named "CORV"; green. DayCard.test.tsx 14 passed. New words in new-words.md.
+
+### T95.21-B2
+
+Commit `996d2ee5`. The expiration reminder names each Trade once (de-duplicated by tradeId in the UI before naming the underlying; not arithmetic). Red: "AXIO, AXIO expire Fri Nov 20."; green. DayCard.test.tsx 15 passed.
