@@ -120,3 +120,8 @@
 **Parked meanwhile:** T95.16 and the tasks that wait on it (T95.17, T95.18, T95.19, T95.20, T95.25). T95.21, T95.22, T95.23 and T95.24 carry on.
 
 **Answer (2026-11-23):** (a). Recorded as decision 130, plan revision 120 (P177); follow-on T95.16-D1 before T95.16. **Status:** answered.
+
+
+## Q9 — T95.16 case 1: Trade P&L in R and the day's change in the collapsed header (2026-11-23)
+
+T95.16 stopped before writing. The collapsed card header (U3, breakdown line 85) shows Trade P&L in dollars and R with the day's change, but `WalkedTrade` carries only dollars (`figures.pnl`); R and each Trade's change since the session before are on no field, and the UI may not divide or subtract (ADR 0001). **Recommendation (a):** follow-on T95.16-D2 before T95.16 adds `pnl: { dollars, planR, change }` to `WalkedTrade`, built in `open` from the evaluation it already reads (`currentMarkedPnlInPlanR`; now and session-before P&L, as the day total already does); no new store read. Cases: each walked Trade carries P&L in dollars and R; its change since the session before; both Unavailable as the evaluation's are; request counts hold. **(b):** drop R and the change from the header (changes U3 and case 1). **Parked:** T95.16, T95.17, T95.18, T95.19, T95.20, T95.25. **Status:** asked.
