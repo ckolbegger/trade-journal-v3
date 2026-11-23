@@ -1,0 +1,122 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 0,
+    "total_tokens": 31849,
+    "input_tokens": 30956,
+    "output_tokens": 893,
+    "cache_read_tokens": 3328,
+    "elapsed": "28s"
+  },
+  "tool_calls": {
+    "total": 2,
+    "by_tool": {
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Marks keyboard interactions and screen tests",
+      "files": [
+        "e2e/d95/marks-keys.spec.ts",
+        "src/ui/screens/MarksGrid.tsx",
+        "src/ui/screens/MarksStep.test.tsx",
+        "src/ui/screens/MarksStep.tsx"
+      ]
+    }
+  ],
+  "session_id": "dd5070e1-7c05-4a5b-a9ca-be366b5ddede",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "dd5070e1-7c05-4a5b-a9ca-be366b5ddede",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "41cf5039",
+      "resolved_base": "ae8cb81c7a974f54e4995daff8cc8f71321fa336",
+      "resolved_head": "41cf5039f78bf8c7280147bb16456f90e1137f30",
+      "exact_range": "ae8cb81c7a974f54e4995daff8cc8f71321fa336..41cf5039f78bf8c7280147bb16456f90e1137f30",
+      "source_artifact_sha256": "36f75f9a80a583c489e5f962cd0274aa85764a26b16ec3dc736d143b9c306b38"
+    },
+    "execution": {
+      "ocr_version": "v1.14.2",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "1a8b204813f2ba42444221ccf71dd5d66d82adae9a0ef7d191f74dc7f17e40e2",
+          "path": "src/ui/screens/MarksStep.test.tsx",
+          "fingerprint": "b2b2a0f5f329395be855a6be02e6ad7d10b255fccddca812a3980caa5f7ebb4a"
+        },
+        {
+          "item_id": "3986a6a0a4abf89307704f3b17b626724059c9e58101376110817356339499eb",
+          "path": "src/ui/screens/MarksStep.tsx",
+          "fingerprint": "681e200b41d8d5c6d5c1eb2666e7164c8e58e9cb0e85a286eee21b649d73c41d"
+        },
+        {
+          "item_id": "6592ab8b42a2a0eb72d5c443fd10dc2ec5ff7b95d3538d8f6d2cae55aa0b2a15",
+          "path": "e2e/d95/marks-keys.spec.ts",
+          "fingerprint": "e47b405f35f9bf8075056a60cecab6bbcfccdffdfd5d1a8623784abf5580ceca"
+        },
+        {
+          "item_id": "6b3ea2ff8de74765e3af18e89799b9b10bb04a902bac37f58df69f7eda81b1bd",
+          "path": "src/ui/screens/MarksGrid.tsx",
+          "fingerprint": "fc8bc5ae26065b6ca99edbbda94012cd570af1c278adc8767fcda3295ea6ddf7"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "1a8b204813f2ba42444221ccf71dd5d66d82adae9a0ef7d191f74dc7f17e40e2",
+          "path": "src/ui/screens/MarksStep.test.tsx",
+          "fingerprint": "b2b2a0f5f329395be855a6be02e6ad7d10b255fccddca812a3980caa5f7ebb4a"
+        },
+        {
+          "item_id": "3986a6a0a4abf89307704f3b17b626724059c9e58101376110817356339499eb",
+          "path": "src/ui/screens/MarksStep.tsx",
+          "fingerprint": "681e200b41d8d5c6d5c1eb2666e7164c8e58e9cb0e85a286eee21b649d73c41d"
+        },
+        {
+          "item_id": "6592ab8b42a2a0eb72d5c443fd10dc2ec5ff7b95d3538d8f6d2cae55aa0b2a15",
+          "path": "e2e/d95/marks-keys.spec.ts",
+          "fingerprint": "e47b405f35f9bf8075056a60cecab6bbcfccdffdfd5d1a8623784abf5580ceca"
+        },
+        {
+          "item_id": "6b3ea2ff8de74765e3af18e89799b9b10bb04a902bac37f58df69f7eda81b1bd",
+          "path": "src/ui/screens/MarksGrid.tsx",
+          "fingerprint": "fc8bc5ae26065b6ca99edbbda94012cd570af1c278adc8767fcda3295ea6ddf7"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "e6e9a20c605249992c784ca56557c640dfc3032613c8d062e021460a6eb093aa",
+          "path": "evidence/D95/tdd-log/T95.15.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 27985
+  }
+}
