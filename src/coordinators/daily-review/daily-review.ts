@@ -722,6 +722,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
           tradeId,
           marks: progress.panels.reduce((sum, panel) => sum + (panel.panel === 'Marks' ? panel.needed : 0), 0),
           closeReview: closeReviewTrades.has(tradeId),
+          ...(tradeId in actions.actions && { action: actions.actions[tradeId]!.action }),
           needs: progress.panels.flatMap((panel): DayNeed[] => {
             if (panel.panel === 'Marks') return panel.done ? [] : ['Marks'];
             if (panel.panel === 'Reflections') return panel.done ? [] : ['Reflection'];

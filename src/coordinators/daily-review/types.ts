@@ -240,7 +240,8 @@ export interface DaySummary {
   // One line per Trade of the walk, in its order, then one for each Trade outside it that owes a due reflection.
   // `marks` is the Trade's count of Review Date Marks still to go (0 for a Trade outside the walk).
   // `closeReview` is true when a reflection the Trade owes now is a Close Review.
-  readonly lines: readonly { readonly tradeId: string; readonly marks: number; readonly closeReview: boolean; readonly needs: readonly DayNeed[] }[];
+  // `action` is the Action saved for the Review Date, when there is one (T95.16 data).
+  readonly lines: readonly { readonly tradeId: string; readonly marks: number; readonly closeReview: boolean; readonly needs: readonly DayNeed[]; readonly action?: string }[];
 }
 
 // What one Review read represents; getTrade and save compare against it (A46, AC-REV-005).

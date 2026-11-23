@@ -101,6 +101,21 @@ describe('open: what each Trade still needs (A300)', () => {
   }, 60_000);
 });
 
+describe('open: the Action saved for each Trade (T95.16 data)', () => {
+  it('should give each Trade line the Action saved for the Review Date', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const open_ = await heldStock(stack, 'ABC', '30.00', '28.00', '36.00');
+    const done = await heldStock(stack, 'GHI', '20.00', '18.00', '26.00');
+    await stack.saveMark('GHI', '21.00');
+    await stack.saveAction(done, 'Hold', REVIEW_DATE);
+
+    const opened = await open(stack);
+
+    const actions = Object.fromEntries(opened.day.lines.map((line) => [line.tradeId, line.action]));
+    expect(actions).toEqual({ [open_]: undefined, [done]: 'Hold' });
+  }, 60_000);
+});
+
 describe('open: the Marks each Trade has to go (decision 129)', () => {
   it("should give each Trade's count of Marks to go", async () => {
     const stack = await reviewStack(MONDAY_1700);
