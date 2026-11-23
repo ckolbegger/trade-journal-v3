@@ -22,7 +22,7 @@ The test lists, conflicts and risks per group are in the survey's section "The g
 ## 2. Where the work happens
 
 - Branch `setup-snapshot` (from `claude-opus-5.5` at `63b46893`), in the worktree `.claude/worktrees/setup-snapshot`. This plan and its Progress table live on that branch and merge back with the code.
-- **Ports while working:** app 4175, Chrome debugging 8343 and 8344, so nothing touches 5175, 9341 or 9342. ST.0 makes that change as a temporary commit (the first proof of concept's port move, `41f06677` on `setup-snapshot-poc`); ST.11 reverts it before the merge, so no port change reaches `claude-opus-5.5`.
+- **Ports:** the primary ones (app 5175, Chrome debugging 9341 and 9342). The user, 2026-11-23: "We are the only change running, so you can use the primary ports." No port change is made, so none can reach `claude-opus-5.5`.
 - The proof-of-concept branch `setup-snapshot-poc` and its worktree stay as a record. Its POC files (`review-snapshot.spec.ts`, `responsive-a11y-snapshot.spec.ts`) never reach this branch: their code is moved into the original spec files and the shared helper.
 - Evidence: `evidence/Setup-Snapshot/` (`structural.md`, `timings.md`, `ocr/`, `suite-runs/`), on the branch.
 
@@ -40,9 +40,9 @@ The test lists, conflicts and risks per group are in the survey's section "The g
 
 ## 4. Tasks
 
-### ST.0 — Working ports (Light)
+### ST.0 — Working ports (dropped)
 
-Cherry-pick `41f06677` (the port move: 4175, 8343, 8344 in `tools/release-server.ts`, `e2e/d1/support.ts` and the kill, restore, stale and smoke specs, `tools/capacity/measure-basis.ts`). Check `rg -n "5175|9341|9342" e2e tools playwright.config.ts` shows nothing left that a test run would use. Commit "test(e2e): ST.0 temporary working ports (reverted in ST.11)".
+Dropped by the user, 2026-11-23: the work uses the primary ports.
 
 ### ST.1 — The shared helper, and `d9ar/review.spec.ts` on it (Standard)
 
@@ -91,9 +91,9 @@ Move the second proof of concept into the original file: 17 of 18 tests on the s
 
 Read the stage run outputs from the tasks' runs and confirm each stage builds each setup once (or say where a second build happens, for example d95 between d9 and d9ar, and whether declaring the fixture on d1's `test` avoided it). Record in `structural.md`. No code change unless a stage builds a setup more than twice.
 
-### ST.11 — Revert the ports, one complete run, merge (Standard)
+### ST.11 — One complete run, merge (Standard)
 
-1. Revert ST.0's commit. Check `git diff claude-opus-5.5 -- tools e2e/d1/support.ts` shows no port change.
+1. Check `git diff claude-opus-5.5 -- tools` is empty and `e2e/d1/support.ts` changed only by the shared helper.
 2. One complete cumulative run with the full browser tier (`browser-full`) through `suite-runner`, with per-stage timings, into `evidence/Setup-Snapshot/suite-runs/`, holding the main worktree's browser lock (nothing else may run on 5175 then). Compare per stage with `evidence/Test-Dedup/suite-runs/td.11-dedup-timings.md`.
 3. If it passes, ask the user to merge `setup-snapshot` into `claude-opus-5.5` (or merge on their word). No push.
 
@@ -101,7 +101,7 @@ Read the stage run outputs from the tasks' runs and confirm each stage builds ea
 
 | Task | Level | Status | Commits |
 |---|---|---|---|
-| ST.0 | Light | Not started | |
+| ST.0 | — | Dropped | |
 | ST.1 | Standard | Not started | |
 | ST.2 | Light | Not started | |
 | ST.3 | Light | Not started | |
