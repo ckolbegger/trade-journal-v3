@@ -29,23 +29,29 @@ test.describe('B95.3 The grid keys', () => {
     await expectNoSidewaysScroll(page, 'Review, Marks step key hint at 375 px');
 
     await setWidth(page, 1280);
+    // ABC and DEF tie on attention and the tie falls to a random tradeId, so read the grid's row order.
+    const abcY = (await input('ABC').boundingBox())!.y;
+    const defY = (await input('DEF').boundingBox())!.y;
+    const [first, second]: [string, string] = abcY < defY ? ['ABC', 'DEF'] : ['DEF', 'ABC'];
+    // Each Instrument gets a Mark near its Friday Mark, so no large-move question opens in the grid.
+    const price = (symbol: string) => (symbol === 'ABC' ? '31.00' : '40.50');
     // Enter goes to the next price, then Save Marks; the arrow keys go up and down the column.
-    await input('ABC').fill('31.00');
-    await input('ABC').press('Enter');
-    await expect(input('DEF')).toBeFocused();
-    await input('DEF').press('ArrowUp');
-    await expect(input('ABC')).toBeFocused();
-    await input('ABC').press('ArrowDown');
-    await expect(input('DEF')).toBeFocused();
-    await input('DEF').fill('40.50');
-    await input('DEF').press('Enter');
+    await input(first).fill(price(first));
+    await input(first).press('Enter');
+    await expect(input(second)).toBeFocused();
+    await input(second).press('ArrowUp');
+    await expect(input(first)).toBeFocused();
+    await input(first).press('ArrowDown');
+    await expect(input(second)).toBeFocused();
+    await input(second).fill(price(second));
+    await input(second).press('Enter');
     await expect(step.getByRole('button', { name: 'Save Marks (2)' })).toBeFocused();
 
     // N in an empty price asks why there is no price, and types no letter.
-    await input('DEF').fill('');
-    await input('DEF').press('n');
-    await expect(step.getByRole('textbox', { name: 'Why no price, DEF' })).toBeFocused();
-    await expect(input('DEF')).toHaveValue('');
+    await input(second).fill('');
+    await input(second).press('n');
+    await expect(step.getByRole('textbox', { name: `Why no price, ${second}` })).toBeFocused();
+    await expect(input(second)).toHaveValue('');
     await context.close();
   });
 });
