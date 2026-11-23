@@ -361,7 +361,11 @@ export async function expectMark(page: Page, card: CardRef, date: string, text: 
 async function expectCellShows(cell: Locator, text: string): Promise<void> {
   if (await cell.evaluate((element) => element instanceof HTMLInputElement)) {
     if (text === 'Manual') await expect(cell).not.toHaveValue('');
-    else await expect(cell).toHaveValue(new RegExp(text.replace(/^\$/, '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+    else {
+      // The whole value is the price, with or without its trailing zeros (51.5 shows as 51.50, 52 as 52.00).
+      const price = text.replace(/^\$/, '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      await expect(cell).toHaveValue(new RegExp(`^\\$?${price}${text.includes('.') ? '0*' : '(\\.0+)?'}$`));
+    }
     return;
   }
   await expect(cell).toContainText(text);
