@@ -281,6 +281,11 @@ ocr (`ocr/T95.14-ca71b127-partial.json`): **incomplete.** 17 of 28 files reviewe
 
 **T95.14-B1** `92c52094`: `expectCellShows` anchors its pattern (`^\$?<escaped price>` then `0*` with a dot, `(\.0+)?` without), so 51.5 matches 51.5 and 51.50 but not 151.50 or 51.59. Shown first by a wrong expected price in correct-mark.spec.ts passing before and failing after (spec restored). Browser: d4 27, and every other `expectMark` caller (18, 13), all pass.
 
+ocr rerun of T95.14 and B1 (`ocr/T95.14-B1-92c52094.json`, 29 files, 6 comments; complete; it ran while T95.13-D1 edited MarksStep.tsx near line 425, after every cited line, so the judgments stand):
+- **T95.14-B2** (MarksStep, three Valid): `:387` the grid folds on `saved && toGo === 0 && count === 0`, ignoring `dirtyIds`, so a Save Marks that finishes the day while a Correct is open drops the typed correction (Save Marks is disabled only by `count === 0 || saving`); `:482` `if (ok) setBlanked(new Set())` restores a saved cell emptied while the save was pending (inputs aren't disabled while saving); `:462` emptying a saved Mark's price leaves `count` 0, so Save Marks and Discard are both disabled and the cell looks missing with no way to cancel.
+- `:415` no Price History link on the folded line: **Wrong** (Q7 (a)).
+- `.claude/scripts/ocr-usage-wait.sh:20` (Doubtful) any provider failure read as the usage limit; `:13` (Doubtful) `mktemp -t` template without X's fails on GNU. Fixed in the main session (tooling): the probe now reads the session's error for `usage_limit_exceeded`, and `mktemp` uses an `XXXXXX` template.
+
 ## Trial: complete runs overlapped with the next task (the user, 2026-11-22, for 5 or 6 tasks)
 
 Each task's complete run runs in a detached scratch copy (`.claude/worktrees/run-<label>`, set up by `lane-setup.sh`) at the task's commit, while the next task's subagent starts in this worktree. The run's files are copied back to `evidence/D95/suite-runs/`. A failure becomes a bug task as before; the next task restarts only if it built on the broken code. Times are recorded per run to measure the saving.

@@ -10,14 +10,15 @@
 
 probe() {
   local out dir status
-  dir=$(mktemp -d -t ocr-probe)
+  dir=$(mktemp -d "${TMPDIR:-/tmp}/ocr-probe.XXXXXX")
   out=$(ocr review --provider chatgpt --model gpt-6.1-sol -c eacad071 --rule .claude/ocr-rule.json --audience agent -f json --color never -o "$dir/p.json" 2>&1)
   status=$(jq -r '.status // empty' "$dir/p.json" 2>/dev/null)
   if [ "$status" = "complete" ]; then
     echo "$(TZ=America/New_York date +%H:%M) ChatGPT review worked ($status)"
     return 0
   fi
-  if jq -e '[.. | objects | select(.classification? == "provider")] | length > 0' "$dir/p.json" >/dev/null 2>&1; then
+  sid=$(jq -r '.session_id // empty' "$dir/p.json" 2>/dev/null)
+  if [ -n "$sid" ] && ocr session show "$sid" --json 2>/dev/null | grep -q 'usage_limit_exceeded'; then
     echo "$(TZ=America/New_York date +%H:%M) still limited (provider failure)"
     return 2
   fi
