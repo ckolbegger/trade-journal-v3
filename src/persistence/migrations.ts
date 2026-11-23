@@ -2,8 +2,10 @@ import {
   BOOTSTRAP_DB_NAME,
   ensureWorkspaceV2Stores,
   ensureWorkspaceV3Stores,
+  ensureWorkspaceV4Stores,
   SCHEMA_VERSION_V2,
   SCHEMA_VERSION_V3,
+  SCHEMA_VERSION_V4,
   WORKSPACE_DB_PREFIX,
   type AccountRecord,
   type CatalogMetaRecord,
@@ -82,6 +84,7 @@ export async function migrateWorkspaceV1ToV2(options: {
   let sourceDb: IDBDatabase | undefined;
   let candidateDb: IDBDatabase | undefined;
   let bootstrapDb: IDBDatabase | undefined;
+  let pointerFlipped = false;
 
   try {
     // Confirm bootstrap pointer still points at fromGeneration / v1 before touching candidate DB
@@ -201,6 +204,7 @@ export async function migrateWorkspaceV1ToV2(options: {
       tx.onerror = () => reject(tx.error ?? new Error('Bootstrap pointer flip failed'));
       tx.onabort = () => reject(tx.error ?? new Error('Bootstrap pointer flip aborted'));
     });
+    pointerFlipped = true;
     bootstrapDb.close();
     bootstrapDb = undefined;
 
@@ -215,7 +219,9 @@ export async function migrateWorkspaceV1ToV2(options: {
     sourceDb?.close();
     candidateDb?.close();
     bootstrapDb?.close();
-    await deleteDb(idb, candidateName);
+    if (!pointerFlipped) {
+      await deleteDb(idb, candidateName);
+    }
     return {
       status: 'MigrationBlocked',
       reason: error instanceof Error ? error.message : 'Migration failed; prior workspace intact.',
@@ -236,6 +242,7 @@ export async function migrateWorkspaceV2ToV3(options: {
   let sourceDb: IDBDatabase | undefined;
   let candidateDb: IDBDatabase | undefined;
   let bootstrapDb: IDBDatabase | undefined;
+  let pointerFlipped = false;
 
   const v2Stores = [
     'workspace_meta',
@@ -404,6 +411,7 @@ export async function migrateWorkspaceV2ToV3(options: {
       tx.onerror = () => reject(tx.error ?? new Error('Bootstrap pointer v3 flip failed'));
       tx.onabort = () => reject(tx.error ?? new Error('Bootstrap pointer v3 flip aborted'));
     });
+    pointerFlipped = true;
     bootstrapDb.close();
     bootstrapDb = undefined;
 
@@ -418,10 +426,171 @@ export async function migrateWorkspaceV2ToV3(options: {
     sourceDb?.close();
     candidateDb?.close();
     bootstrapDb?.close();
-    await deleteDb(idb, candidateName);
+    if (!pointerFlipped) {
+      await deleteDb(idb, candidateName);
+    }
     return {
       status: 'MigrationBlocked',
       reason: error instanceof Error ? error.message : 'v2->v3 migration failed; prior workspace intact.',
+    };
+  }
+}
+
+export async function migrateWorkspaceV3ToV4(options: {
+  readonly indexedDB: IDBFactory;
+  readonly fromGeneration: number;
+  readonly injectFailureStage?: 'after_copy';
+}): Promise<MigrationResult> {
+  const { indexedDB: idb, fromGeneration, injectFailureStage } = options;
+  const toGeneration = fromGeneration + 1;
+  const sourceName = `${WORKSPACE_DB_PREFIX}${fromGeneration}`;
+  const candidateName = `${WORKSPACE_DB_PREFIX}${toGeneration}`;
+
+  let sourceDb: IDBDatabase | undefined;
+  let candidateDb: IDBDatabase | undefined;
+  let bootstrapDb: IDBDatabase | undefined;
+  let pointerFlipped = false;
+
+  const v3Stores = [
+    'workspace_meta',
+    'catalog_meta',
+    'catalog_institutions',
+    'catalog_accounts',
+    'catalog_strategies',
+    'trades',
+    'trade_facts',
+    'position_changes',
+    'executions',
+    'deviations',
+    'journal_meta',
+    'journal_definitions',
+    'journal_entries',
+    'journal_debt',
+    'journal_declines',
+    'proj_trade_analysis_input',
+  ] as const;
+
+  try {
+    bootstrapDb = await openRaw(idb, BOOTSTRAP_DB_NAME, 1);
+    const preCheck = (await reqToPromise(
+      bootstrapDb.transaction('pointer', 'readonly').objectStore('pointer').get('active'),
+    )) as { activeGeneration?: number; schemaVersion?: number } | undefined;
+    bootstrapDb.close();
+    bootstrapDb = undefined;
+
+    if (
+      preCheck?.schemaVersion === SCHEMA_VERSION_V4 &&
+      (preCheck.activeGeneration ?? 0) >= toGeneration
+    ) {
+      return {
+        status: 'Migrated',
+        fromGeneration,
+        toGeneration: preCheck.activeGeneration!,
+        fromSchemaVersion: SCHEMA_VERSION_V3,
+        toSchemaVersion: SCHEMA_VERSION_V4,
+      };
+    }
+    if (preCheck?.activeGeneration !== fromGeneration || preCheck?.schemaVersion !== SCHEMA_VERSION_V3) {
+      return {
+        status: 'MigrationBlocked',
+        reason: 'Bootstrap pointer changed before v3->v4 migration started.',
+      };
+    }
+
+    sourceDb = await openRaw(idb, sourceName, SCHEMA_VERSION_V3);
+    const readTx = sourceDb.transaction([...v3Stores], 'readonly');
+    const storeData = new Map<string, unknown[]>();
+    await Promise.all(
+      v3Stores.map(async (storeName) => {
+        const rows = (await reqToPromise(readTx.objectStore(storeName).getAll())) as unknown[];
+        storeData.set(storeName, rows);
+      }),
+    );
+    sourceDb.close();
+    sourceDb = undefined;
+
+    const metaRows = (storeData.get('workspace_meta') ?? []) as WorkspaceMetaRecord[];
+    const workspaceMeta = metaRows.find((r) => r.key === 'singleton');
+    if (!workspaceMeta) {
+      return {
+        status: 'MigrationBlocked',
+        reason: 'Source v3 workspace_meta is missing; cannot migrate.',
+      };
+    }
+
+    await deleteDb(idb, candidateName);
+    candidateDb = await openRaw(idb, candidateName, SCHEMA_VERSION_V4, ensureWorkspaceV4Stores);
+
+    await new Promise<void>((resolve, reject) => {
+      const tx = candidateDb!.transaction([...v3Stores], 'readwrite');
+      for (const storeName of v3Stores) {
+        const rows = storeData.get(storeName) ?? [];
+        const objStore = tx.objectStore(storeName);
+        for (const row of rows) {
+          if (storeName === 'workspace_meta') {
+            objStore.put({ ...(row as WorkspaceMetaRecord), schemaVersion: SCHEMA_VERSION_V4 });
+          } else {
+            objStore.put(row);
+          }
+        }
+      }
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error ?? new Error('Candidate v4 migration write failed'));
+      tx.onabort = () => reject(tx.error ?? new Error('Candidate v4 migration write aborted'));
+    });
+
+    if (injectFailureStage === 'after_copy') {
+      throw new Error('Injected v3->v4 migration failure after candidate copy.');
+    }
+
+    // Verify exact row counts across all copied stores before pointer flip
+    const verifyTx = candidateDb.transaction([...v3Stores], 'readonly');
+    const countsOk = await Promise.all(
+      v3Stores.map(async (storeName) => {
+        const copied = await reqToPromise(verifyTx.objectStore(storeName).count());
+        return copied === (storeData.get(storeName)?.length ?? 0);
+      }),
+    );
+    if (countsOk.some((ok) => !ok)) {
+      throw new Error('Candidate v4 migration verification count mismatch.');
+    }
+
+    candidateDb.close();
+    candidateDb = undefined;
+
+    bootstrapDb = await openRaw(idb, BOOTSTRAP_DB_NAME, 1);
+    await new Promise<void>((resolve, reject) => {
+      const tx = bootstrapDb!.transaction('pointer', 'readwrite');
+      tx.objectStore('pointer').put({
+        key: 'active',
+        activeGeneration: toGeneration,
+        schemaVersion: SCHEMA_VERSION_V4,
+      });
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error ?? new Error('Bootstrap pointer v4 flip failed'));
+      tx.onabort = () => reject(tx.error ?? new Error('Bootstrap pointer v4 flip aborted'));
+    });
+    pointerFlipped = true;
+    bootstrapDb.close();
+    bootstrapDb = undefined;
+
+    return {
+      status: 'Migrated',
+      fromGeneration,
+      toGeneration,
+      fromSchemaVersion: SCHEMA_VERSION_V3,
+      toSchemaVersion: SCHEMA_VERSION_V4,
+    };
+  } catch (error) {
+    sourceDb?.close();
+    candidateDb?.close();
+    bootstrapDb?.close();
+    if (!pointerFlipped) {
+      await deleteDb(idb, candidateName);
+    }
+    return {
+      status: 'MigrationBlocked',
+      reason: error instanceof Error ? error.message : 'v3->v4 migration failed; prior workspace intact.',
     };
   }
 }

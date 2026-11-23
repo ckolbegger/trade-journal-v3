@@ -1,0 +1,171 @@
+/* Marks grid styles directly from prototypes/review-coach-mockup/index.html */
+.mkTitle {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.mkTable {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.mkTable th {
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-weight: 650;
+  text-align: right;
+  padding: 5px 10px;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+.mkTable th:first-child,
+.mkTable td:first-child {
+  text-align: left;
+  padding-left: 0;
+}
+
+.mkTable td {
+  padding: 5px 10px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  height: 44px;
+  border-bottom: 1px solid var(--tint);
+}
+
+.mkInst {
+  font-weight: 650;
+}
+
+.mkInst small {
+  font-weight: 450;
+  color: var(--muted);
+  margin-left: 6px;
+}
+
+.mkFeedback {
+  text-align: left !important;
+  white-space: normal !important;
+  font-size: 0.88rem;
+  width: 44%;
+}
+
+.mkInput {
+  width: 108px;
+  text-align: right;
+  padding: 5px 8px;
+  border: 1.5px dashed #8f8a7e;
+  border-radius: 8px;
+  background: var(--tint);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.mkInputHas {
+  border-style: solid;
+  border-color: var(--ink);
+  background: var(--card);
+}
+
+.mkInputSaved {
+  border-style: solid;
+  border-color: var(--line);
+  background: var(--card);
+}
+
+.mkInputBad {
+  border-style: solid;
+  border-color: var(--stop);
+  background: var(--stop-ground);
+}
+
+.mkInputWarn {
+  border-style: solid;
+  border-color: var(--warning-line);
+  background: var(--warning-ground);
+}
+
+.mkFoot {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.keys {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.keys kbd {
+  font: inherit;
+  font-size: 0.74rem;
+  border: 1px solid var(--line);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  padding: 0 5px;
+  background: var(--card);
+}
+
+.linkBtn {
+  background: none;
+  border: 0;
+  padding: 0;
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: 550;
+  color: var(--ink);
+  font-size: 0.86rem;
+}
+
+.linkBtnMuted {
+  color: var(--muted);
+  font-weight: 450;
+}
+
+.faded {
+  opacity: 0.6;
+}
+
+.up {
+  color: var(--target);
+}
+
+.down {
+  color: var(--stop);
+}
+
+@media (max-width: 720px) {
+  .mkTable thead {
+    display: none;
+  }
+
+  .mkTable,
+  .mkTable tbody,
+  .mkTable tr,
+  .mkTable td {
+    display: block;
+    width: 100%;
+    height: auto;
+    text-align: left !important;
+    padding: 4px 0;
+  }
+
+  .mkTable tr {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .mkTable td {
+    border-bottom: 0;
+  }
+
+  .mkFeedback {
+    width: 100%;
+  }
+}

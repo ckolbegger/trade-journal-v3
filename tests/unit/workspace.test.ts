@@ -119,7 +119,7 @@ describe('Workspace seam', () => {
     expect(opened.fresh).toBe(true);
     expect(opened.workspaceStatus.timeZone).toBe('America/New_York');
     expect(opened.workspaceStatus.onboardingState).toBe('NeedsInstitutionAndAccount');
-    expect(opened.workspaceStatus.capabilities.releaseDeliverable).toBe('D3');
+    expect(opened.workspaceStatus.capabilities.releaseDeliverable).toBe('D4');
 
     // Adding an Institution + Account transitions onboarding to ReadyForTradePlanning.
     const inst = await catalog.save({ kind: 'CreateInstitution', label: 'Fidelity' });

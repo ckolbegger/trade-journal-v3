@@ -258,6 +258,138 @@
   color: var(--stop);
 }
 
+.faded {
+  opacity: 0.6;
+}
+
+.near {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--info-ink);
+  background: var(--info-ground);
+  border-radius: 6px;
+  padding: 1px 6px;
+  margin-left: 6px;
+}
+
+/* Price tracks directly from prototypes/trade-detail/index.html */
+.trackBlock {
+  margin-top: 8px;
+}
+
+.trackTitle {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin: 0 0 32px;
+}
+
+.track {
+  position: relative;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--neutral-ground);
+  margin: 0 6px;
+}
+
+.zone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+
+.zoneStop {
+  background: #e9b3ab;
+  border-radius: 999px 0 0 999px;
+  left: 0;
+}
+
+.zoneTarget {
+  background: #9fcfaa;
+  border-radius: 0 999px 999px 0;
+  right: 0;
+}
+
+.edge {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 2px;
+  transform: translateX(-1px);
+}
+
+.edgeStop {
+  background: var(--stop);
+}
+
+.edgeTarget {
+  background: var(--target);
+}
+
+.mk {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.mkDot {
+  display: block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--ink);
+  border: 3px solid var(--card);
+  box-shadow: 0 0 0 1px var(--ink);
+}
+
+.mkEntry .mkDot {
+  background: var(--card);
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--muted);
+  box-shadow: none;
+}
+
+.mkPrev .mkDot {
+  background: #8f8a7e;
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--card);
+  box-shadow: none;
+}
+
+.mkLab {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.mkNow .mkLab {
+  bottom: 18px;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.mkEntry .mkLab {
+  bottom: 15px;
+  color: var(--muted);
+}
+
+.mkPrev .mkLab {
+  top: 14px;
+  color: var(--muted);
+}
+
+.trackEnds {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.76rem;
+  color: var(--muted);
+  margin: 26px 6px 0;
+}
+
 @media (max-width: 860px) {
   .cockpitGrid {
     grid-template-columns: 1fr;

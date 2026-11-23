@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { formatSessionDateShort } from '../../market-data/session-calendar';
 import type { TradeLifecycleState } from '../../persistence/idb';
 import type { TradeBrowseItem, TradeViewsAndReporting } from '../../trade-views/trade-views';
 import styles from '../shell/AppShell.module.css';
@@ -10,6 +11,26 @@ interface TradesViewProps {
   readonly refreshKey: number;
   readonly onSelectTrade: (tradeId: string) => void;
   readonly onNewPlan: () => void;
+}
+
+function renderOpenPnlCell(item: TradeBrowseItem) {
+  if (item.evaluation?.availability === 'Available') {
+    return (
+      <>
+        <strong>{item.evaluation.openPnlDisplay}</strong>
+        <div className={styles.muted}>{item.evaluation.openPnlRDisplay}</div>
+      </>
+    );
+  }
+  if (item.evaluation?.availability === 'Unavailable' && item.evaluation.priorContext) {
+    const prior = item.evaluation.priorContext;
+    return (
+      <span className={styles.muted}>
+        {prior.evaluation.openPnlDisplay} (at {formatSessionDateShort(prior.asOfSessionDate)})
+      </span>
+    );
+  }
+  return <span className={styles.muted}>—</span>;
 }
 
 export function TradesView({ views, refreshKey, onSelectTrade, onNewPlan }: TradesViewProps) {
@@ -99,6 +120,7 @@ export function TradesView({ views, refreshKey, onSelectTrade, onNewPlan }: Trad
                 <th>State</th>
                 <th>Account</th>
                 <th>Position</th>
+                <th>Open P&amp;L</th>
                 <th>1R Risk</th>
                 <th>Planned R:R</th>
                 <th>Open</th>
@@ -128,6 +150,7 @@ export function TradesView({ views, refreshKey, onSelectTrade, onNewPlan }: Trad
                     {item.openSharesDisplay} / {item.plannedQuantityDisplay} sh @{' '}
                     {item.intendedEntryDisplay}
                   </td>
+                  <td className={styles.mono}>{renderOpenPnlCell(item)}</td>
                   <td className={styles.mono}>{item.oneRDisplay}</td>
                   <td className={styles.mono}>{item.plannedRRDisplay}</td>
                   <td>

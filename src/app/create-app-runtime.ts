@@ -1,5 +1,6 @@
 import { createReferenceCatalog, type ReferenceCatalog } from '../catalog/reference-catalog';
 import { createJournal, type Journal } from '../journal/journal';
+import { createMarketData, type MarketData } from '../market-data/market-data';
 import { createPersistenceSeam, type PersistenceSeam } from '../persistence/idb';
 import {
   createRuntimeReadinessController,
@@ -22,6 +23,7 @@ export interface AppRuntime {
   readonly readiness: RuntimeReadinessController;
   readonly catalog: ReferenceCatalog;
   readonly journal: Journal;
+  readonly marketData: MarketData;
   readonly tradeRecord: TradeRecord;
   readonly workflows: TradeWorkflows;
   readonly views: TradeViewsAndReporting;
@@ -51,19 +53,12 @@ export function createBrowserAppRuntime(): AppRuntime {
   });
   gateHolder.checkWritable = () => readiness.checkWritable();
 
-  const catalog = createReferenceCatalog({
-    persistence,
-    clock: systemClock,
-  });
-
-  const journal = createJournal({
-    persistence,
-    clock: systemClock,
-  });
-
+  const catalog = createReferenceCatalog({ persistence, clock: systemClock });
+  const journal = createJournal({ persistence, clock: systemClock });
+  const marketData = createMarketData({ persistence, clock: systemClock });
   const tradeRecord = createTradeRecord({ persistence });
   const workflows = createTradeWorkflows({ persistence, clock: systemClock });
-  const views = createTradeViews({ persistence });
+  const views = createTradeViews({ persistence, clock: systemClock });
 
   const workspace = createWorkspace({
     persistence,
@@ -79,6 +74,7 @@ export function createBrowserAppRuntime(): AppRuntime {
     readiness,
     catalog,
     journal,
+    marketData,
     tradeRecord,
     workflows,
     views,

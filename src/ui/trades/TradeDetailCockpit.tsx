@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Journal } from '../../journal/journal';
+import { formatSessionDateShort } from '../../market-data/session-calendar';
 import type { Clock } from '../../shared/clock';
 import { ExactNumber, isPositive, sub, toDecimalString } from '../../shared/exact-number';
 import type {
@@ -9,9 +10,10 @@ import type {
 import type { TradeWorkflows } from '../../trade-workflows/trade-workflows';
 import styles from '../shell/AppShell.module.css';
 import cockpitStyles from './Cockpit.module.css';
+import { PriceTrack } from './PriceTrack';
 import { RecordEntryPanel } from './RecordEntryPanel';
 
-type CockpitDrawer = 'position' | 'plan' | 'journal';
+type CockpitDrawer = 'today' | 'position' | 'plan' | 'history' | 'journal';
 
 interface TradeDetailCockpitProps {
   readonly tradeId: string;
@@ -20,7 +22,9 @@ interface TradeDetailCockpitProps {
   readonly workflows: TradeWorkflows;
   readonly clock: Clock;
   readonly writable: boolean;
+  readonly refreshKey: number;
   readonly onBack: () => void;
+  readonly onGoToReview: () => void;
   readonly onTradeMutated: () => void;
   readonly onDirtyChange: (dirty: boolean) => void;
 }
@@ -43,7 +47,9 @@ export function TradeDetailCockpit({
   workflows,
   clock,
   writable,
+  refreshKey,
   onBack,
+  onGoToReview,
   onTradeMutated,
   onDirtyChange,
 }: TradeDetailCockpitProps) {
@@ -78,6 +84,12 @@ export function TradeDetailCockpit({
     void loadDetail();
   }, [loadDetail]);
 
+  useEffect(() => {
+    if (refreshKey > 0) {
+      void loadDetail();
+    }
+  }, [refreshKey, loadDetail]);
+
   if (loading) {
     return (
       <section className={styles.card} aria-busy="true">
@@ -99,21 +111,40 @@ export function TradeDetailCockpit({
     );
   }
 
-  const { trade, planFact, derived, journalEntries, journalDebt, journalDeclines } = detail;
+  const {
+    trade,
+    planFact,
+    derived,
+    evaluation,
+    priceHistory,
+    journalEntries,
+    journalDebt,
+    journalDeclines,
+  } = detail;
   const outstandingDebt = journalDebt.filter((d) => d.status === 'Outstanding');
   const hasPositionDrawer = derived.openLots.length > 0 || trade.lifecycleState === 'Open';
+  const hasTodayDrawer = trade.lifecycleState === 'Open';
+  const hasHistoryDrawer = trade.lifecycleState === 'Open' && priceHistory.length > 0;
   const canRecordEntry =
     writable &&
     !derived.integrityDisagreement &&
     (trade.lifecycleState === 'Planned' || trade.lifecycleState === 'Open');
 
-  const defaultEntryPriceNumeric = toDecimalString(ExactNumber.fromJSON(trade.intendedEntryPrice), 2);
+  const defaultEntryPriceNumeric = toDecimalString(
+    ExactNumber.fromJSON(trade.intendedEntryPrice),
+    2,
+  );
   const remainingPlanned = sub(ExactNumber.fromJSON(trade.plannedQuantity), derived.openShares);
   const defaultEntryQuantity = isPositive(remainingPlanned)
     ? remainingPlanned.den === 1n
       ? remainingPlanned.num.toString()
       : toDecimalString(remainingPlanned, 4).replace(/\.?0+$/, '')
     : '';
+
+  const liveEval = evaluation?.availability === 'Available' ? evaluation : null;
+  const priorFallback =
+    evaluation?.availability === 'Unavailable' ? evaluation.priorContext : null;
+  const displayEval = liveEval ?? priorFallback?.evaluation ?? null;
 
   return (
     <section aria-labelledby="cockpit-symbol-heading">
@@ -195,14 +226,66 @@ export function TradeDetailCockpit({
             )}
           </div>
 
-          {/* Card 2: P&L & Open Shares */}
+          {/* Card 2: P&L & Open Shares (with OV-04 dated prior-session fallback when today's Mark is missing) */}
           <div className={cockpitStyles.railCard}>
-            <div className={cockpitStyles.railPnl}>—</div>
-            <div className={styles.muted} style={{ marginTop: 4 }}>
-              {trade.lifecycleState === 'Planned'
-                ? 'Trade P&L once the entry is recorded and marked'
-                : 'No Marks yet — enter Marks in Review to compute P&L'}
-            </div>
+            {liveEval ? (
+              <>
+                <div
+                  className={`${cockpitStyles.railPnl} ${
+                    liveEval.openPnl.num >= 0n ? cockpitStyles.up : cockpitStyles.down
+                  }`}
+                >
+                  {liveEval.openPnlDisplay}
+                </div>
+                <div className={styles.muted} style={{ marginTop: 4 }}>
+                  <strong>{liveEval.openPnlRDisplay}</strong>
+                  {liveEval.dailyChangeDisplay && liveEval.priorSessionDate ? (
+                    <span
+                      className={
+                        liveEval.dailyChange && liveEval.dailyChange.num >= 0n
+                          ? cockpitStyles.up
+                          : cockpitStyles.down
+                      }
+                      style={{ marginLeft: 8 }}
+                    >
+                      {liveEval.dailyChangeDisplay} since{' '}
+                      {formatSessionDateShort(liveEval.priorSessionDate)}
+                    </span>
+                  ) : (
+                    <span style={{ marginLeft: 8 }}>
+                      Mark {liveEval.currentMarkDisplay} ({detail.expectedSessionDateShort})
+                    </span>
+                  )}
+                </div>
+              </>
+            ) : priorFallback ? (
+              <>
+                <div className={`${cockpitStyles.railPnl} ${cockpitStyles.faded}`}>
+                  {priorFallback.evaluation.openPnlDisplay}
+                </div>
+                <div style={{ marginTop: 6 }}>
+                  <span className={`${styles.pill} ${styles.pillWarning}`}>
+                    {evaluation?.availability === 'Unavailable' &&
+                    evaluation.acknowledgedUnavailable
+                      ? 'No price today'
+                      : 'Marks needed'}
+                  </span>
+                </div>
+                <div className={styles.muted} style={{ marginTop: 4 }}>
+                  At the {formatSessionDateShort(priorFallback.asOfSessionDate)} Marks (today
+                  Unavailable)
+                </div>
+              </>
+            ) : (
+              <>
+                <div className={cockpitStyles.railPnl}>—</div>
+                <div className={styles.muted} style={{ marginTop: 4 }}>
+                  {trade.lifecycleState === 'Planned'
+                    ? 'Trade P&L once the entry is recorded and marked'
+                    : 'No Marks yet — enter Marks in Review to compute P&L'}
+                </div>
+              </>
+            )}
             <div className={styles.mono} style={{ marginTop: 8, fontWeight: 600 }}>
               {derived.openSharesDisplay} of {detail.plannedQuantityDisplay} shares open
             </div>
@@ -222,30 +305,93 @@ export function TradeDetailCockpit({
 
           {/* Card 4: Conditions */}
           <div className={cockpitStyles.railCard}>
-            <h2 className={styles.cardTitle}>Conditions</h2>
-            <ul className={cockpitStyles.conditionList}>
+            <div className={styles.spaceBetween} style={{ marginBottom: 8 }}>
+              <h2 className={styles.cardTitle} style={{ margin: 0 }}>
+                Conditions
+              </h2>
+              {!liveEval && priorFallback && (
+                <span className={styles.muted} style={{ fontSize: '0.76rem' }}>
+                  At {formatSessionDateShort(priorFallback.asOfSessionDate)}
+                </span>
+              )}
+            </div>
+            <ul
+              className={`${cockpitStyles.conditionList} ${
+                !liveEval && priorFallback ? cockpitStyles.faded : ''
+              }`}
+            >
               <li className={cockpitStyles.conditionItem}>
-                <span className={`${styles.pill} ${styles.pillDanger}`}>Stop</span>
-                <span className={`${cockpitStyles.condFig} ${cockpitStyles.down}`}>
-                  -{planFact.baseline.originalPlannedRiskDisplay} (-1.00R)
+                <span>
+                  <span className={`${styles.pill} ${styles.pillDanger}`}>
+                    {displayEval?.stopCondition.status === 'Breached' ? 'Stop Breached' : 'Stop'}
+                  </span>
+                  {displayEval?.stopCondition.nearest && (
+                    <span className={cockpitStyles.near}>nearest</span>
+                  )}
+                </span>
+                <span
+                  className={`${cockpitStyles.condFig} ${
+                    !displayEval || displayEval.stopCondition.impactDollars.num < 0n
+                      ? cockpitStyles.down
+                      : cockpitStyles.up
+                  }`}
+                >
+                  {displayEval
+                    ? `${displayEval.stopCondition.impactDisplay} (${displayEval.stopCondition.impactRDisplay})`
+                    : `-${planFact.baseline.originalPlannedRiskDisplay} (-1.00R)`}
                 </span>
                 <span className={cockpitStyles.condWhat}>
                   {trade.symbol} at or below {detail.stopPriceDisplay}
                 </span>
+                {displayEval?.stopCondition.overrunDisplay && (
+                  <span className={`${styles.muted} ${cockpitStyles.down}`} style={{ gridColumn: '1 / -1' }}>
+                    Overrun past Stop: {displayEval.stopCondition.overrunDisplay}
+                  </span>
+                )}
               </li>
+
               <li className={cockpitStyles.conditionItem}>
-                <span className={`${styles.pill} ${styles.pillSuccess}`}>Target</span>
-                <span className={`${cockpitStyles.condFig} ${cockpitStyles.up}`}>
-                  +{planFact.baseline.originalPlannedRewardDisplay} (+
-                  {planFact.baseline.plannedRewardToRiskDisplay})
+                <span>
+                  <span className={`${styles.pill} ${styles.pillSuccess}`}>
+                    {displayEval?.targetCondition.status === 'Reached'
+                      ? 'Target Reached'
+                      : 'Target'}
+                  </span>
+                  {displayEval?.targetCondition.nearest && (
+                    <span className={cockpitStyles.near}>nearest</span>
+                  )}
+                </span>
+                <span
+                  className={`${cockpitStyles.condFig} ${
+                    !displayEval || displayEval.targetCondition.impactDollars.num >= 0n
+                      ? cockpitStyles.up
+                      : cockpitStyles.down
+                  }`}
+                >
+                  {displayEval
+                    ? `${displayEval.targetCondition.impactDisplay} (${displayEval.targetCondition.impactRDisplay})`
+                    : `+${planFact.baseline.originalPlannedRewardDisplay} (+${planFact.baseline.plannedRewardToRiskDisplay})`}
                 </span>
                 <span className={cockpitStyles.condWhat}>
                   {trade.symbol} at or above {detail.targetPriceDisplay}
                 </span>
               </li>
             </ul>
+
             <div className={cockpitStyles.extremes}>
-              Distances to each condition arrive with the first Marks after entry.
+              {displayEval ? (
+                <>
+                  <div>
+                    <strong>Worst case:</strong> {displayEval.worstCaseRiskDisplay} ·{' '}
+                    {displayEval.worstCaseRiskRDisplay} if {trade.symbol} goes to zero
+                  </div>
+                  <div>
+                    <strong>Max reward:</strong> no cap above
+                  </div>
+                </>
+              ) : (
+                'Distances to each condition arrive with the first Marks after entry.'
+              )}
             </div>
           </div>
         </aside>
@@ -253,6 +399,19 @@ export function TradeDetailCockpit({
         {/* Right conditional tabbed drawers */}
         <div className={cockpitStyles.drawerColumn}>
           <div className={cockpitStyles.tabBar} role="tablist" aria-label="Trade detail drawers">
+            {hasTodayDrawer && (
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeDrawer === 'today'}
+                className={`${cockpitStyles.tabButton} ${
+                  activeDrawer === 'today' ? cockpitStyles.tabButtonActive : ''
+                }`}
+                onClick={() => setActiveDrawer('today')}
+              >
+                Today
+              </button>
+            )}
             {hasPositionDrawer && (
               <button
                 type="button"
@@ -277,6 +436,19 @@ export function TradeDetailCockpit({
             >
               Plan and Risk
             </button>
+            {hasHistoryDrawer && (
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeDrawer === 'history'}
+                className={`${cockpitStyles.tabButton} ${
+                  activeDrawer === 'history' ? cockpitStyles.tabButtonActive : ''
+                }`}
+                onClick={() => setActiveDrawer('history')}
+              >
+                Price History
+              </button>
+            )}
             <button
               type="button"
               role="tab"
@@ -290,13 +462,86 @@ export function TradeDetailCockpit({
             </button>
           </div>
 
+          {activeDrawer === 'today' && hasTodayDrawer && (
+            <div className={styles.card} role="tabpanel" aria-label="Today">
+              {liveEval ? (
+                <>
+                  <h2 className={styles.cardTitle}>
+                    Marks: {detail.expectedSessionDateShort}
+                    {liveEval.priorSessionDate
+                      ? ` against ${formatSessionDateShort(liveEval.priorSessionDate)}`
+                      : ''}
+                  </h2>
+                  <table className={styles.table} aria-label="Today mark comparison">
+                    <thead>
+                      <tr>
+                        <th>Instrument</th>
+                        <th>
+                          {liveEval.priorSessionDate
+                            ? formatSessionDateShort(liveEval.priorSessionDate)
+                            : 'Prior'}
+                        </th>
+                        <th>{detail.expectedSessionDateShort}</th>
+                        <th>Change</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>
+                          <strong>{trade.symbol} Mark</strong>
+                        </td>
+                        <td className={styles.mono}>{liveEval.priorMarkDisplay ?? '—'}</td>
+                        <td className={styles.mono}>
+                          <strong>{liveEval.currentMarkDisplay}</strong>
+                        </td>
+                        <td className={styles.mono}>{liveEval.markChangeDisplay ?? '—'}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+                  {derived.averageEntryPrice && (
+                    <div style={{ marginTop: 20 }}>
+                      <h3 className={styles.cardTitle}>Where the price sits</h3>
+                      <PriceTrack
+                        symbol={trade.symbol}
+                        stopPrice={ExactNumber.fromJSON(trade.stopPrice)}
+                        targetPrice={ExactNumber.fromJSON(trade.targetPrice)}
+                        entryPrice={derived.averageEntryPrice}
+                        currentMark={liveEval.currentMark}
+                        priorMark={liveEval.priorMark}
+                        priorLabel={
+                          liveEval.priorSessionDate
+                            ? formatSessionDateShort(liveEval.priorSessionDate)
+                            : null
+                        }
+                      />
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div>
+                  <h2 className={styles.cardTitle}>
+                    Marks needed for {detail.expectedSessionDateShort}
+                  </h2>
+                  <p className={styles.muted} style={{ marginBottom: 12 }}>
+                    Today&apos;s authoritative valuation is Unavailable until a closing Mark is
+                    entered in Review.
+                  </p>
+                  <button type="button" className={styles.btnPrimary} onClick={onGoToReview}>
+                    Enter Marks in the Review
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
           {activeDrawer === 'position' && hasPositionDrawer && (
             <div className={styles.card} role="tabpanel" aria-label="Position">
               <div className={styles.spaceBetween} style={{ marginBottom: 12 }}>
                 <h2 className={styles.cardTitle} style={{ margin: 0 }}>
                   Open Lots &amp; Executions
                 </h2>
-                <span className={styles.pill}>No Marks yet</span>
+                {!liveEval && <span className={styles.pill}>No Marks yet</span>}
               </div>
 
               <div style={{ overflowX: 'auto' }}>
@@ -407,6 +652,57 @@ export function TradeDetailCockpit({
                   What would invalidate the thesis?
                 </div>
                 <p style={{ margin: '3px 0 0' }}>{planFact.invalidation}</p>
+              </div>
+            </div>
+          )}
+
+          {activeDrawer === 'history' && hasHistoryDrawer && (
+            <div className={styles.card} role="tabpanel" aria-label="Price History">
+              <div className={styles.spaceBetween} style={{ marginBottom: 12 }}>
+                <h2 className={styles.cardTitle} style={{ margin: 0 }}>
+                  Price History (Completed Sessions)
+                </h2>
+                <button type="button" className={styles.btnSecondary} onClick={onGoToReview}>
+                  Enter Marks in the Review
+                </button>
+              </div>
+              <div style={{ overflowX: 'auto' }}>
+                <table className={styles.table} aria-label="Price history">
+                  <thead>
+                    <tr>
+                      <th>Session</th>
+                      <th>{trade.symbol} Mark</th>
+                      <th>Trade P&amp;L</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {priceHistory.map((row) => (
+                      <tr key={row.sessionDate}>
+                        <td>{row.sessionDateShort}</td>
+                        <td className={styles.mono}>
+                          {row.markDisplay ?? (
+                            <span className={styles.muted}>
+                              {row.unavailableAcknowledged ? 'No price' : '—'}
+                            </span>
+                          )}
+                        </td>
+                        <td className={styles.mono}>
+                          {row.tradePnlDisplay ? (
+                            <span
+                              className={
+                                row.tradePnlPositive ? cockpitStyles.up : cockpitStyles.down
+                              }
+                            >
+                              {row.tradePnlDisplay}
+                            </span>
+                          ) : (
+                            <span className={styles.muted}>—</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           )}

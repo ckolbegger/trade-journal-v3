@@ -4,6 +4,7 @@ import type { RuntimeReadinessSnapshot } from './runtime/readiness';
 import type { SwUpdateHandle } from './runtime/sw-client';
 import { AboutView } from './ui/about/AboutView';
 import { AccountsView } from './ui/accounts/AccountsView';
+import { ReviewMarksView } from './ui/review/ReviewMarksView';
 import { AppShell, type NavTab } from './ui/shell/AppShell';
 import { OnboardingScreen } from './ui/shell/OnboardingScreen';
 import { ReadinessScreen } from './ui/shell/ReadinessScreen';
@@ -67,9 +68,10 @@ export function App() {
   const [aboutDirty, setAboutDirty] = useState(false);
   const [planDirty, setPlanDirty] = useState(false);
   const [entryDirty, setEntryDirty] = useState(false);
+  const [reviewDirty, setReviewDirty] = useState(false);
   const [durabilityBusy, setDurabilityBusy] = useState(false);
 
-  const hasUnsavedChanges = accountsDirty || aboutDirty || planDirty || entryDirty;
+  const hasUnsavedChanges = accountsDirty || aboutDirty || planDirty || entryDirty || reviewDirty;
 
   const bootOrRefresh = useCallback(async () => {
     const seq = ++bootSeqRef.current;
@@ -239,8 +241,10 @@ export function App() {
 
   const handleSelectTab = (tab: NavTab) => {
     setActiveTab(tab);
-    if (tab === 'trades') {
-      setSelectedTradeId(null);
+    if (tab === 'trades' || tab === 'review') {
+      if (tab === 'trades') {
+        setSelectedTradeId(null);
+      }
       setTradesRefreshKey((k) => k + 1);
     }
   };
@@ -303,8 +307,13 @@ export function App() {
             workflows={runtime.workflows}
             clock={runtime.clock}
             writable={!screen.recoveryOnly}
+            refreshKey={tradesRefreshKey}
             onBack={() => {
               setSelectedTradeId(null);
+              setTradesRefreshKey((k) => k + 1);
+            }}
+            onGoToReview={() => {
+              setActiveTab('review');
               setTradesRefreshKey((k) => k + 1);
             }}
             onTradeMutated={() => setTradesRefreshKey((k) => k + 1)}
@@ -318,6 +327,21 @@ export function App() {
             onNewPlan={() => setActiveTab('new-plan')}
           />
         )}
+      </div>
+
+      <div hidden={activeTab !== 'review'}>
+        <ReviewMarksView
+          views={runtime.views}
+          marketData={runtime.marketData}
+          refreshKey={tradesRefreshKey}
+          writable={!screen.recoveryOnly}
+          onMarksChanged={() => setTradesRefreshKey((k) => k + 1)}
+          onInspectTrade={(tradeId) => {
+            setSelectedTradeId(tradeId);
+            setActiveTab('trades');
+          }}
+          onDirtyChange={setReviewDirty}
+        />
       </div>
 
       <div hidden={activeTab !== 'new-plan'}>

@@ -4,7 +4,8 @@ import type { ReadinessCheckId, RuntimeNotWritableReason } from '../shared/resul
 export const SCHEMA_VERSION_V1 = 1 as const;
 export const SCHEMA_VERSION_V2 = 2 as const;
 export const SCHEMA_VERSION_V3 = 3 as const;
-export const CURRENT_SCHEMA_VERSION = SCHEMA_VERSION_V3;
+export const SCHEMA_VERSION_V4 = 4 as const;
+export const CURRENT_SCHEMA_VERSION = SCHEMA_VERSION_V4;
 export const BOOTSTRAP_DB_NAME = 'tjv3_bootstrap';
 export const DIAGNOSTICS_DB_NAME = 'tjv3_diagnostics';
 export const WORKSPACE_DB_PREFIX = 'tjv3_ws_gen_';
@@ -232,6 +233,35 @@ export interface TradeAnalysisInputProjection {
   readonly updatedAt: string;
 }
 
+export interface MarketMetaRecord {
+  readonly key: 'singleton';
+  readonly snapshotId: number;
+  readonly sessionPolicyRevision: string;
+  readonly updatedAt: string;
+}
+
+export interface MarketMarkRecord {
+  readonly id: string;
+  readonly symbol: string;
+  readonly sessionDate: string;
+  readonly price: SerializedRational;
+  readonly source: 'Manual';
+  readonly intent: 'Initial' | 'Override' | 'Correction';
+  readonly reason?: string;
+  readonly revision: number;
+  readonly effective: boolean;
+  readonly recordedAt: string;
+}
+
+export interface MarketAcknowledgmentRecord {
+  readonly id: string;
+  readonly symbol: string;
+  readonly sessionDate: string;
+  readonly status: 'Active' | 'Withdrawn' | 'Superseded';
+  readonly reason?: string;
+  readonly recordedAt: string;
+}
+
 export interface StoreSchemaMap {
   workspace_meta: WorkspaceMetaRecord;
   catalog_meta: CatalogMetaRecord;
@@ -249,6 +279,9 @@ export interface StoreSchemaMap {
   journal_debt: JournalDebtRecord;
   journal_declines: JournalDeclineRecord;
   proj_trade_analysis_input: TradeAnalysisInputProjection;
+  market_meta: MarketMetaRecord;
+  market_marks: MarketMarkRecord;
+  market_acknowledgments: MarketAcknowledgmentRecord;
 }
 
 export type StoreName = keyof StoreSchemaMap;
@@ -444,8 +477,30 @@ export function ensureWorkspaceV3Stores(db: IDBDatabase): void {
   }
 }
 
-function isSupportedSchemaVersion(v: unknown): v is 1 | 2 | 3 {
-  return v === SCHEMA_VERSION_V1 || v === SCHEMA_VERSION_V2 || v === SCHEMA_VERSION_V3;
+export function ensureWorkspaceV4Stores(db: IDBDatabase): void {
+  ensureWorkspaceV3Stores(db);
+  if (!db.objectStoreNames.contains('market_meta')) {
+    db.createObjectStore('market_meta', { keyPath: 'key' });
+  }
+  if (!db.objectStoreNames.contains('market_marks')) {
+    const marks = db.createObjectStore('market_marks', { keyPath: 'id' });
+    marks.createIndex('by_symbol', 'symbol', { unique: false });
+    marks.createIndex('by_symbol_date', ['symbol', 'sessionDate'], { unique: false });
+  }
+  if (!db.objectStoreNames.contains('market_acknowledgments')) {
+    const acks = db.createObjectStore('market_acknowledgments', { keyPath: 'id' });
+    acks.createIndex('by_symbol', 'symbol', { unique: false });
+    acks.createIndex('by_symbol_date', ['symbol', 'sessionDate'], { unique: false });
+  }
+}
+
+function isSupportedSchemaVersion(v: unknown): v is 1 | 2 | 3 | 4 {
+  return (
+    v === SCHEMA_VERSION_V1 ||
+    v === SCHEMA_VERSION_V2 ||
+    v === SCHEMA_VERSION_V3 ||
+    v === SCHEMA_VERSION_V4
+  );
 }
 
 function isValidPointer(raw: unknown): raw is BootstrapPointerRecord {
@@ -555,6 +610,9 @@ export function createPersistenceSeam(options: {
         break;
       case SCHEMA_VERSION_V3:
         ensureFn = ensureWorkspaceV3Stores;
+        break;
+      case SCHEMA_VERSION_V4:
+        ensureFn = ensureWorkspaceV4Stores;
         break;
       default:
         throw new Error(`Unsupported workspace schema version: ${schemaVersion}`);

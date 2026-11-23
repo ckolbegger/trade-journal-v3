@@ -17,12 +17,17 @@ import {
   CURRENT_SCHEMA_VERSION,
   SCHEMA_VERSION_V1,
   SCHEMA_VERSION_V2,
+  SCHEMA_VERSION_V3,
   type AccountRecord,
   type InstitutionRecord,
   type PersistenceSeam,
   type WorkspaceMetaRecord,
 } from '../persistence/idb';
-import { migrateWorkspaceV1ToV2, migrateWorkspaceV2ToV3 } from '../persistence/migrations';
+import {
+  migrateWorkspaceV1ToV2,
+  migrateWorkspaceV2ToV3,
+  migrateWorkspaceV3ToV4,
+} from '../persistence/migrations';
 import type {
   RuntimeReadinessController,
   RuntimeReadinessSnapshot,
@@ -312,7 +317,7 @@ export function createWorkspace(options: {
             };
           }
           const postV3 = await persistence.inspectRoot();
-          if (postV3.status !== 'Present' || postV3.schemaVersion !== CURRENT_SCHEMA_VERSION) {
+          if (postV3.status !== 'Present' || postV3.schemaVersion !== SCHEMA_VERSION_V3) {
             return {
               status: 'MigrationBlocked',
               reason: 'Post-migration v3 root verification failed.',
@@ -322,6 +327,38 @@ export function createWorkspace(options: {
           activeMeta = postV3.workspaceMeta;
           activeSchemaVersion = postV3.schemaVersion;
           activeGeneration = postV3.activeGeneration;
+        }
+
+        if (activeSchemaVersion === SCHEMA_VERSION_V3) {
+          if (!persistence.indexedDB) {
+            return {
+              status: 'MigrationBlocked',
+              reason: 'IndexedDB factory is unavailable for v3 to v4 migration.',
+              readiness: readinessSnapshot,
+            };
+          }
+          const migrated = await migrateWorkspaceV3ToV4({
+            indexedDB: persistence.indexedDB,
+            fromGeneration: activeGeneration,
+          });
+          if (migrated.status === 'MigrationBlocked') {
+            return {
+              status: 'MigrationBlocked',
+              reason: migrated.reason,
+              readiness: readinessSnapshot,
+            };
+          }
+          const postV4 = await persistence.inspectRoot();
+          if (postV4.status !== 'Present' || postV4.schemaVersion !== CURRENT_SCHEMA_VERSION) {
+            return {
+              status: 'MigrationBlocked',
+              reason: 'Post-migration v4 root verification failed.',
+              readiness: readinessSnapshot,
+            };
+          }
+          activeMeta = postV4.workspaceMeta;
+          activeSchemaVersion = postV4.schemaVersion;
+          activeGeneration = postV4.activeGeneration;
           activeReadiness = await readiness.evaluate();
         }
 
