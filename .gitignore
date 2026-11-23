@@ -1,5 +1,6 @@
 # Dependencies
 node_modules/
+.pnpm-store/
 .pnp
 .pnp.js
 .yarn/
@@ -21,6 +22,8 @@ pnpm-debug.log*
 # Test / coverage
 coverage/
 .nyc_output/
+playwright-report/
+test-results/
 
 # Caches
 .cache/
