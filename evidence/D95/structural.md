@@ -504,3 +504,5 @@ Structural. `OPERATIONS` and the Review route gain: `DailyReview.open` DaySummar
 - `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`: all exit 0.
 
 Main session on T95.23's note: keeping `SaveReviewMarks` beside `SaveReviewMarksPage` is right; the request kind is unchanged and still sent, and manifest names are labels only. No decision needed.
+
+ocr of T95.23 (session 1fb907e3): 3 files, 0 findings. `evidence/D95/ocr/T95.23-a8eef6af.json`.
