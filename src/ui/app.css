@@ -9,6 +9,7 @@
   --focus: #1f5fbf;
   --warning-ground: #fff4dd;
   --warning-line: #b26b00;
+  --warning-text: #8a5200;
   --error: #a3261b;
   --stop: #a3261b;
   --target: #1d6b34;
@@ -1434,9 +1435,9 @@ ul.rows > li {
   color: var(--stop);
 }
 .last-decisions-held[data-line='target'] {
-  color: var(--warning-line);
+  color: var(--warning-text);
 }
 .last-decisions-missed {
-  color: var(--warning-line);
+  color: var(--warning-text);
   font-weight: 650;
 }

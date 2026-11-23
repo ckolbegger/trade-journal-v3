@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { readFileSync } from 'node:fs';
 import { cleanup, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { DailyTradeReview } from '../../app/types.ts';
@@ -76,6 +77,25 @@ describe('LastDecisions', () => {
     expect(within(fold).getAllByRole('listitem')).toHaveLength(3);
     expect(within(region).getAllByRole('listitem')).toHaveLength(4);
     expect(within(region).getAllByRole('list')[0]!.textContent).toBe('Fri Nov 13 · Hold · −$930.00“Up.”');
+  });
+
+  it('should colour the held past Target line and the missed Review note at 4.5 to 1 or more on the tint', () => {
+    const css = readFileSync('src/ui/app.css', 'utf8');
+    const token = (name: string) => css.match(new RegExp(`--${name}:\\s*(#[0-9a-f]{6})`, 'i'))![1]!;
+    const luminance = (hex: string) => {
+      const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
+      return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
+    };
+    const contrast = (a: string, b: string) => {
+      const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+      return (hi! + 0.05) / (lo! + 0.05);
+    };
+    for (const selector of ["\\.last-decisions-held\\[data-line='target'\\]", '\\.last-decisions-missed']) {
+      const rule = css.match(new RegExp(`${selector} \\{([^}]*)\\}`))![1]!;
+      const colour = rule.match(/color:\s*(var\(--[a-z-]+\)|#[0-9a-f]{6})/i)![1]!;
+      const hex = colour.startsWith('var(') ? token(colour.slice(6, -1)) : colour;
+      expect(contrast(hex, token('tint')), selector).toBeGreaterThanOrEqual(4.5);
+    }
   });
 
   it('should say no reason given where none was saved', () => {
