@@ -473,3 +473,7 @@ ocr (session 70ebe2ba): 9 files, 0 findings. `evidence/D95/ocr/T95.18-5307f1b1.j
 Commit `b34205bd`: the card-list case read the open card's drawing before `getTrade` filled it; `getByRole` → `await findByRole`. Before: 3 of 4 folder runs failed. After: 1 uncaptured failure in the first 10 runs, then 44 of 44 passed (sequential and 3 or 4 in parallel). The uncaptured one may be the earlier "Loading the Trade…" race; watched — a further sighting gets its own task.
 
 Run `t95.18-captions` (browser-task): unit 2877, integration 304, browser 13, checks 14 of 14. Passed. T95.18 Done.
+
+## T95.19 — The last decision line and "Your last decisions" (Standard)
+
+Commit `f14e8e71` (from `539eed9d`). LastDecisions and LastDecisionLine. Seven cases red then green. Assumption (U6): the list shows in the Action panel; the top line shows only where Action isn't offered (Marks to enter, or a contract to settle); `listShown` in ReviewCard.tsx is where T95.20 and later tasks hook in. Nothing shown with no earlier Action (not the mockup's "First Review of this Trade."). "No Review …" once above the list. 375-wide fold by unit test with stubbed `matchMedia`; browser coverage left to B95.4 (T95.25).
