@@ -1,7 +1,7 @@
 import type { Locator, Page } from '@playwright/test';
 import { expectNoSidewaysScroll, setWidth } from '../d7p/support.ts';
 import type { DrawerName } from '../support/detail/index.ts';
-import { buildOc3, detail, expect, expectAccessible, openDetailAt, openDrawer, LAUNCH, tabTo, test, THURSDAY_1800 } from './support.ts';
+import { copyOc3ThursdayHold, detail, expect, expectAccessible, openDetailAt, openDrawer, LAUNCH, tabTo, test, THURSDAY_1800 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -59,9 +59,9 @@ const gridColumns = (panel: Locator) =>
   );
 
 test.describe('B8P.5 Responsive and accessible', () => {
-  test('should fit every drawer at 1280, 375 and 320 px with no sideways scroll, no wrapped condition row, no WCAG 2.1 AA violations, and the replacements for the retired Summary-card checks', async ({ profile }) => {
+  test('should fit every drawer at 1280, 375 and 320 px with no sideways scroll, no wrapped condition row, no WCAG 2.1 AA violations, and the replacements for the retired Summary-card checks', async ({ profile, copySetup }) => {
     test.setTimeout(540_000);
-    const trade = await buildOc3(profile, { thursdayHold: true });
+    const trade = await copyOc3ThursdayHold(copySetup);
     const { context, page } = await openDetailAt(profile, THURSDAY_1800, trade);
     const panel = (name: DrawerName) => page.locator(`#drawer-panel-${name.toLowerCase().replaceAll(' ', '-')}`);
 
@@ -121,9 +121,9 @@ test.describe('B8P.5 Responsive and accessible', () => {
     await context.close();
   });
 
-  test('should work by keyboard alone: Tab through the rail with a visible focus ring, the tabs by the arrow keys, the drawer panel, and Reflect now opening the Journal form', async ({ profile }) => {
+  test('should work by keyboard alone: Tab through the rail with a visible focus ring, the tabs by the arrow keys, the drawer panel, and Reflect now opening the Journal form', async ({ profile, copySetup }) => {
     test.setTimeout(420_000);
-    const trade = await buildOc3(profile, { thursdayHold: true });
+    const trade = await copyOc3ThursdayHold(copySetup);
     const { context, page } = await openDetailAt(profile, THURSDAY_1800, trade);
     const tab = (name: DrawerName) => page.getByRole('tablist', { name: 'Detail' }).getByRole('tab', { name, exact: true });
 

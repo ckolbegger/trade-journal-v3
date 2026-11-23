@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { buildOc3, detail, expect, FRIDAY_1200, FRIDAY_1800, openBreachedStockTrade, openDetailAt, test, THURSDAY_1800 } from './support.ts';
+import { copyOc3ThursdayHold, detail, expect, FRIDAY_1200, FRIDAY_1800, openBreachedStockTrade, openDetailAt, test, THURSDAY_1800 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -17,9 +17,9 @@ const railGone = async (page: Page): Promise<void> => {
 };
 
 test.describe('B8R.3 Rail', () => {
-  test('should show each condition with its distance at Thu 18:00, then no dated line at Fri 12:00 and Thursday dated figures at Fri 18:00', async ({ profile }) => {
+  test('should show each condition with its distance at Thu 18:00, then no dated line at Fri 12:00 and Thursday dated figures at Fri 18:00', async ({ profile, copySetup }) => {
     test.setTimeout(540_000);
-    const trade = await buildOc3(profile, { thursdayHold: true });
+    const trade = await copyOc3ThursdayHold(copySetup);
 
     await test.step('Thu 18:00 (W21): "Stop · $2.20 away" for the option condition and "Target · 2.10 away" for the Underlying one; the P&L card as today', async () => {
       const { context, page } = await openDetailAt(profile, THURSDAY_1800, trade);

@@ -104,3 +104,21 @@ Watch point: overlay line 29 (browser Back) passes unchanged on the copy (the ov
 Break check (the six files in one run): copy switched off (the cp call in e2e/d1/support.ts replaced by `execFileSync('true', ...)`): 35 failed (toBeVisible on the first screen), the 8 CORV and R-DALE-U cases passed (own builds); switched on: 43 passed (1.1 min). Switch made and restored by edits; git status shows e2e/d1/support.ts unchanged.
 
 Assumptions: none beyond the plan. Plan counted CORV cases as staying on their own build; the conditional start inside the looped tests keeps one test body per loop.
+
+## ST.5 Group 2, O-C3 with the Thursday Hold, on the shared setup
+
+What changed (test code only):
+- e2e/d8p/support.ts, beside buildOc3: `OC3_THURSDAY_HOLD` (defineSetup 'oc3-thursday-hold': buildOc3(profile, { thursdayHold: true }); its builder ends with one launch at Thu 18:00 only to hand the helper an open context to close) and `copyOc3ThursdayHold(copySetup)`, which asks for the copy and returns the TradeRef. Nothing is launched: these tests launch their own browser after the build.
+- e2e/d8r/support.ts: `buildOc3Plus(profile, copySetup)` starts from the copy and runs its one Fri 11:05 step; buildOc3 is no longer imported there.
+- The converted specs ask for `copySetup` and start with `copyOc3ThursdayHold(copySetup)` instead of buildOc3; bodies unchanged.
+- Release check (ST.1-B1): these tests serve dist-faults (the shared test's server; none of the converted tests switches release), and the setup is built and keyed on the release of the first asking test's server, so a copy is only handed to a test serving that release. All 11 pass, so no mismatch error.
+
+Which tests start from which setup (all OC3_THURSDAY_HOLD, 11 tests):
+- d8/backup B8.1; d8/restore B8.3 (profile A: it is now the test's own profile, `const a = profile`, holding the copy; profile B is still `profileAt(${profile.dir}-b)`, its own build via seedJournal); d8p/responsive-a11y (2); d8r/rail (Thu 18:00 case); d8r/responsive-a11y (T8R.25-B4; B8R.7, which adds O-S2X on top with addOs2x); d8r/today (line 8); d8r/plan-risk (first test, through buildOc3Plus).
+- Plain O-C3 joined: d8p/payoff-fit and d8p/lot-matches-fit (the O-C3 test) pass unchanged on the Thursday Hold copy (the Hold changes nothing they check: the Payoff chart's box and the Lot Matches columns at Thu 18:00). Both joined.
+
+Kept their own build: none of the planned tests. The other tests in these files never used O-C3 with the Thursday Hold (plan-risk and rail's breached stock case, lot-matches' DEF case, today's BeforeMarks case, T8R.25-B7's O-S2X, restore's other describes, backup's other describes); unchanged. Not in scope and unchanged: noTuesdayReview, correctedWednesdayXyz, buildOc3BeforeMarks.
+
+Break check (the nine files in one run): copy switched off (the cp call in e2e/d1/support.ts replaced by `execFileSync('true', ...)`): 11 failed (toBeVisible on the first screen), the other 13 tests passed (own builds); switched on: 24 passed (1.3 min). Switch made and restored by edits; git diff shows e2e/d1/support.ts unchanged.
+
+Assumptions: restore's profile A reuse of `profile` instead of a `-a` folder (the copy goes to profile.dir); the builder's last launch to hand back a context.

@@ -4,8 +4,8 @@
 // W or A row's.
 import type { Page } from '@playwright/test';
 import {
-  at, buildOc3, closeTheTrade, confirmOc3, confirmOptionPlan, createTrades, currentTradeId, detail, enterMark, expect, FOUR_TRADES, fillOptionPlan, fillOptionRows, launchAt, MONDAY_0900,
-  MONDAY_1005, MONDAY_1105, MONDAY_1700, onboardedAt, openReview, openTradeFromOpenList, OS, LAUNCH, recordOptionEntry, type OptionPlanValues, type Profile, type TradeRef,
+  at, closeTheTrade, confirmOc3, copyOc3ThursdayHold, confirmOptionPlan, createTrades, currentTradeId, detail, enterMark, expect, FOUR_TRADES, fillOptionPlan, fillOptionRows, launchAt, MONDAY_0900,
+  MONDAY_1005, MONDAY_1105, MONDAY_1700, onboardedAt, openReview, openTradeFromOpenList, OS, LAUNCH, recordOptionEntry, type OptionPlanValues, type Profile, type Setup, type TradeRef,
 } from '../d8p/support.ts';
 
 export * from '../d8p/support.ts';
@@ -20,9 +20,9 @@ export const FRIDAY_NOV_1105 = '2026-11-13T16:05:00Z';
 export const PRICE_HISTORY = /^Price History( \d+)?$/;
 export const ALL_DRAWERS = ['Today', 'Position', 'Plan and Risk', PRICE_HISTORY, 'Journal', 'Payoff'] as const;
 
-// O-C3+ (plan section 5): O-C3, then one more contract bought Fri 10-16 11:00 at $3.30 (fee $0.65). Every browser is closed on return.
-export async function buildOc3Plus(profile: Profile): Promise<TradeRef> {
-  const trade = await buildOc3(profile, { thursdayHold: true });
+// O-C3+ (plan section 5): O-C3 (the copy of the saved setup with the Thursday Hold), then one more contract bought Fri 10-16 11:00 at $3.30 (fee $0.65). Every browser is closed on return.
+export async function buildOc3Plus(profile: Profile, copySetup: <T>(setup: Setup<T>) => Promise<T>): Promise<TradeRef> {
+  const trade = await copyOc3ThursdayHold(copySetup);
   await at(profile, FRIDAY_1105, async (page) => {
     await page.goto(`/trades/${trade.tradeId}`);
     await expect(detail.heading(page, 'XYZ')).toBeVisible(LAUNCH);

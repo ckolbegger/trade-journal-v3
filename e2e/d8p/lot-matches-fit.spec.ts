@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import { expectNoSidewaysScroll, setWidth } from '../d7p/support.ts';
-import { buildOc3, closeTheTrade, createTrades, detail, expect, FOUR_TRADES, fillRows, firstPage, launchAt, MONDAY_1700, onboardedAt, openDrawer, openExitForm, LAUNCH, sell, test, THURSDAY_1800 } from './support.ts';
+import { closeTheTrade, copyOc3ThursdayHold, createTrades, detail, expect, FOUR_TRADES, fillRows, firstPage, launchAt, MONDAY_1700, onboardedAt, openDrawer, openExitForm, LAUNCH, sell, test, THURSDAY_1800 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -72,9 +72,9 @@ test.describe('T8P.26-B2 the Lot Matches fit in the Position drawer', () => {
     await context.close();
   });
 
-  test('should show every Lot Matches column in view at 1280 px on O-C3, with the table scrolling inside its box at 375 and 320 px', async ({ profile }) => {
+  test('should show every Lot Matches column in view at 1280 px on O-C3, with the table scrolling inside its box at 375 and 320 px', async ({ profile, copySetup }) => {
     test.setTimeout(600_000);
-    const trade = await buildOc3(profile);
+    const trade = await copyOc3ThursdayHold(copySetup);
     const context = await launchAt(profile, THURSDAY_1800, { width: 1280 });
     const page = await firstPage(context);
     await page.goto(`/trades/${trade.tradeId}`);

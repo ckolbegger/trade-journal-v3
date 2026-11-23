@@ -6,8 +6,8 @@
 // Tuesday has no Marks. Every figure and word the specs assert is plan section 5's, 1.6's or a W or A row's.
 import type { Page } from '@playwright/test';
 import {
-  acknowledgeMark, currentTradeId, detail, enterMark, executionRow, expect, fillOptionPlan, firstPage, launchAt, MONDAY, MONDAY_0900, MONDAY_1700, onboardedAt, openReview, optionMarkRow, LAUNCH, reachCard, reachPanel, recordOptionEntry,
-  expectMarksSaved, markCell, saveAction, saveMarksButton, saveMarkPrice, savedOptionMarkRow, THURSDAY, WEDNESDAY, WEDNESDAY_1700, type OptionPlanValues, type Profile, type TradeRef,
+  acknowledgeMark, currentTradeId, defineSetup, detail, enterMark, executionRow, expect, fillOptionPlan, firstPage, launchAt, MONDAY, MONDAY_0900, MONDAY_1700, onboardedAt, openReview, optionMarkRow, LAUNCH, reachCard, reachPanel, recordOptionEntry,
+  expectMarksSaved, markCell, saveAction, saveMarksButton, saveMarkPrice, savedOptionMarkRow, THURSDAY, WEDNESDAY, WEDNESDAY_1700, type OptionPlanValues, type Profile, type Setup, type TradeRef,
 } from '../d7s/support.ts';
 
 export * from '../d7s/support.ts';
@@ -127,6 +127,18 @@ export async function buildOc3(profile: Profile, options: { readonly thursdayHol
       await saveAction(page, 'Hold', undefined, trade);
     });
   return trade;
+}
+
+// The saved setup of O-C3 with the Thursday Hold (setup-snapshot plan, group 2): built once per worker, and each test that asks starts on a copy. The build's last launch is only
+// there to hand the helper an open context to close; the Trade is the one buildOc3 made.
+export const OC3_THURSDAY_HOLD = defineSetup('oc3-thursday-hold', async (profile) => {
+  const trade = await buildOc3(profile, { thursdayHold: true });
+  return { context: await launchAt(profile, THURSDAY_1800), made: trade };
+});
+
+// Copy O-C3 with the Thursday Hold: in place of buildOc3(profile, { thursdayHold: true }), for tests that launch their own browser after the build. Nothing is launched.
+export function copyOc3ThursdayHold(copySetup: <T>(setup: Setup<T>) => Promise<T>): Promise<TradeRef> {
+  return copySetup(OC3_THURSDAY_HOLD);
 }
 
 // A Trade Detail opened at the instant, the way a returning user would.

@@ -1,13 +1,13 @@
-import { buildOc3, buildOc3BeforeMarks, detail, expect, FRIDAY_1200, MONDAY_1200, openDetailAt, openDrawer, SATURDAY_1000, test, THURSDAY_1800 } from './support.ts';
+import { buildOc3BeforeMarks, copyOc3ThursdayHold, detail, expect, FRIDAY_1200, MONDAY_1200, openDetailAt, openDrawer, SATURDAY_1000, test, THURSDAY_1800 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
 // B8R.1 (plan section 7.2): O-C3 through the UI, its Detail opened at Thu 18:00, Fri 12:00, Sat 10:00, and (a second Trade) at Mon 10-12 12:00 before the first
 // Marks. W29's headings and cells per A232 and A233. O-C3's Marks (plan section 5): Wed 57.40 and 2.90, Thu 57.90 and 3.20; Tuesday and Friday have none.
 test.describe('B8R.1 Today on an Open Trade', () => {
-  test('should show the Marks table dated by the session at Thu 18:00, Fri 12:00 and Sat 10:00, with a note under it only when one applies', async ({ profile }) => {
+  test('should show the Marks table dated by the session at Thu 18:00, Fri 12:00 and Sat 10:00, with a note under it only when one applies', async ({ profile, copySetup }) => {
     test.setTimeout(540_000);
-    const trade = await buildOc3(profile, { thursdayHold: true });
+    const trade = await copyOc3ThursdayHold(copySetup);
 
     await test.step('Thu 18:00: Today is Thursday, Yesterday Wednesday, each Instrument with its Marks and its change', async () => {
       const { context, page } = await openDetailAt(profile, THURSDAY_1800, trade);

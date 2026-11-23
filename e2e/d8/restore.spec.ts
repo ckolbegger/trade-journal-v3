@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 import {
-  BASE_URL, backUpFirst, buildOc3, chooseFile, chooseRestoreFile, completeLine, confirmStep, declineSafetyBackup, detail, downloadBackup, expect, FIXTURE_BACKUP, fillPlan, firstPage,
+  BASE_URL, backUpFirst, chooseFile, chooseRestoreFile, completeLine, confirmStep, copyOc3ThursdayHold, declineSafetyBackup, detail, downloadBackup, expect, FIXTURE_BACKUP, fillPlan, firstPage,
   launchAt, MONDAY_1005, onboardedPage, openBackup, openDrawer, pinClock, PLAN, probe, profileAt, LAUNCH, readSaved, replaceEntire, restoreComplete, restoreSection, restoreWithoutBackup, rootOf,
   safetyBackup, scratch, seedJournal, spawnedBrowser, test, THURSDAY_1800, understood, verifyWith, watchOutgoing, withoutEmptyCandidateList, workspaceNames, workspaceOf, writeFlipped, writeNewer, type ProbedDatabase,
 } from './support.ts';
@@ -30,11 +30,12 @@ const storesOf = (db: ProbedDatabase | undefined) => (db ? { stores: db.stores, 
 
 // B8.3 (AC-REST-001, AC-REST-002): profile A holds O-C3 (as B8.1); profile B holds another Plan; both launch at Thu 2026-10-15 18:00 New York.
 test.describe('B8.3 Restore with a safety backup', () => {
-  test('should show the preview with counts, enable Replace only after both steps, render the summary, and after relaunch show lists and Details equal to profile A with a new pointer target and the old database gone', async ({ profile }) => {
+  test('should show the preview with counts, enable Replace only after both steps, render the summary, and after relaunch show lists and Details equal to profile A with a new pointer target and the old database gone', async ({ profile, copySetup }) => {
     test.setTimeout(600_000);
-    const a = profileAt(`${profile.dir}-a`);
+    // Profile A is the test's own profile, holding the copy; profile B stays its own build.
+    const a = profile;
     const b = profileAt(`${profile.dir}-b`);
-    const trade = await buildOc3(a, { thursdayHold: true });
+    const trade = await copyOc3ThursdayHold(copySetup);
     const fileA = scratch('from-a.tjbackup');
     const contextA = await launchAt(a, THURSDAY_1800);
     const pageA = await firstPage(contextA);

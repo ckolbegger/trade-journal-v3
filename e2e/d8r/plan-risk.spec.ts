@@ -9,9 +9,9 @@ const PANEL = '#drawer-panel-plan-and-risk';
 const GROUPS = ['Plan', 'Since the last Marks', 'Conditions', 'Plan Baseline', 'Entry Quality', 'Planned-Leg Fulfillment', 'Deviations'];
 
 test.describe('B8R.4 Plan and Risk and the Journal line', () => {
-  test('should list the groups in order with W23 and W31, then land on Deviations when See Plan and Risk is pressed in the Journal', async ({ profile }) => {
+  test('should list the groups in order with W23 and W31, then land on Deviations when See Plan and Risk is pressed in the Journal', async ({ profile, copySetup }) => {
     test.setTimeout(600_000);
-    const trade = await buildOc3Plus(profile);
+    const trade = await buildOc3Plus(profile, copySetup);
     const { context, page } = await openDetailAt(profile, FRIDAY_1200, trade);
 
     await test.step('the groups, in order, Deviations last', async () => {

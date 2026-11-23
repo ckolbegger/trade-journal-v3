@@ -1,6 +1,6 @@
 import {
-  buildOc3, chooseFile, completeLine, downloadBackup, DOWNLOADED_NOT_VERIFIED, downloadSection, expect, firstPage, fullDigestOf, installDump, launchAt, MONDAY_1005, openBackup, primaryNav,
-  probe, profileAt, LAUNCH, readSaved, scratch, seedJournal, test, THURSDAY_1800, TUESDAY_NOON, verifyWith, writeTruncated,
+  chooseFile, completeLine, downloadBackup, DOWNLOADED_NOT_VERIFIED, downloadSection, expect, firstPage, fullDigestOf, installDump, launchAt, MONDAY_1005, openBackup, primaryNav,
+  copyOc3ThursdayHold, probe, profileAt, LAUNCH, readSaved, scratch, seedJournal, test, THURSDAY_1800, TUESDAY_NOON, verifyWith, writeTruncated,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
@@ -8,9 +8,9 @@ test.use({ actionTimeout: 15_000 });
 // B8.1 (plan section 6.2, AC-BACK-001): O-C3 (the D8P browser cases' Trade, with its Marks, Journal and deferred reflection) created through the UI at Thu 2026-10-15 18:00
 // New York; the Backup page; the saved file is read by the test itself, with its own gunzip and SHA-256.
 test.describe('B8.1 Download and verify', () => {
-  test('should show Downloaded not verified yet and then Backup complete with the time, name the file by A124, match the manifest digest in the saved file, and change no store', async ({ profile }) => {
+  test('should show Downloaded not verified yet and then Backup complete with the time, name the file by A124, match the manifest digest in the saved file, and change no store', async ({ profile, copySetup }) => {
     test.setTimeout(420_000);
-    await buildOc3(profile, { thursdayHold: true });
+    await copyOc3ThursdayHold(copySetup);
     const context = await launchAt(profile, THURSDAY_1800);
     const page = await firstPage(context);
     await page.goto('/');

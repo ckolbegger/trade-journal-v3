@@ -37,3 +37,17 @@ ST.4 (the six e2e/d9ar files in one run, main lock held, Playwright's list repor
 | ST.4 | e2e/d9ar/readout.spec.ts | 32.3 | 13.7 |
 | ST.4 | e2e/d9ar/sweep.spec.ts | 15.6 | 8.7 |
 | ST.4 | e2e/d9ar/crossing-position.spec.ts | 2.5 | 0.8 |
+
+ST.5 (the nine e2e/d8, d8p and d8r files in one run, main lock held, Playwright's list reporter; per-file figures are the sum of the tests' own times; one run each). Whole run before 2.6 min, after 1.3 min (24 passed both times). Break check with the copy off: 4.2 min (11 failures, each waiting out its first-screen check).
+
+| Task | File | Before (s) | After (s) |
+|---|---|---|---|
+| ST.5 | e2e/d8/backup.spec.ts | 15.1 | 15.4 (the first test pays the one build, 9.2) |
+| ST.5 | e2e/d8/restore.spec.ts | 24.9 | 17.0 |
+| ST.5 | e2e/d8p/responsive-a11y.spec.ts | 25.8 | 10.7 |
+| ST.5 | e2e/d8r/rail.spec.ts | 11.4 | 3.6 |
+| ST.5 | e2e/d8r/responsive-a11y.spec.ts | 32.8 | 17.9 |
+| ST.5 | e2e/d8r/today.spec.ts | 11.8 | 4.2 |
+| ST.5 | e2e/d8r/plan-risk.spec.ts | 11.3 | 3.6 |
+| ST.5 | e2e/d8p/lot-matches-fit.spec.ts | 12.0 | 5.1 |
+| ST.5 | e2e/d8p/payoff-fit.spec.ts | 7.4 | 0.7 |

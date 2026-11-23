@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 import { expectNoSidewaysScroll, setWidth } from '../d7p/support.ts';
-import { buildOc3, detail, expect, openDetailAt, openDrawer, test, THURSDAY_1800 } from './support.ts';
+import { copyOc3ThursdayHold, detail, expect, openDetailAt, openDrawer, test, THURSDAY_1800 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -20,9 +20,9 @@ const geometry = (page: Page) =>
   });
 
 test.describe('T8P.26-B1 the Payoff chart fits its box', () => {
-  test('should show the whole Payoff chart, the Now legend and both lines, inside its box at 1280 px, and keep scrolling inside the box at 375 and 320 px', async ({ profile }) => {
+  test('should show the whole Payoff chart, the Now legend and both lines, inside its box at 1280 px, and keep scrolling inside the box at 375 and 320 px', async ({ profile, copySetup }) => {
     test.setTimeout(300_000);
-    const trade = await buildOc3(profile);
+    const trade = await copyOc3ThursdayHold(copySetup);
     const { context, page } = await openDetailAt(profile, THURSDAY_1800, trade, 1280);
     await openDrawer(page, 'Payoff');
     await page.evaluate(() => document.fonts.ready.then(() => undefined));
