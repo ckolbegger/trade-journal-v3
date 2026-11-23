@@ -1,0 +1,255 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 11 selected item(s).",
+  "summary": {
+    "files_reviewed": 11,
+    "comments": 3,
+    "total_tokens": 408892,
+    "input_tokens": 405600,
+    "output_tokens": 3292,
+    "cache_read_tokens": 77056,
+    "elapsed": "1m51s"
+  },
+  "tool_calls": {
+    "total": 28,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 4,
+      "file_find": 2,
+      "file_read": 20
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/MarksStep.tsx",
+      "content": "Clear this cell's `left` entry when typing starts, as well as its previous answer. After leaving `49.00` and choosing Yes (or Retype), clearing and typing `49.00` again makes `left[id] === entry` true before blur, so the question reappears while the user is still typing. The same stale state survives Discard. Track whether the current edit has been left rather than matching only its price, and add a test asserting no question before the second blur.",
+      "existing_code": "          setSlipAnswered((prev) =\u003e Object.fromEntries(Object.entries(prev).filter(([id]) =\u003e id !== rowId(key.instrumentKey, key.tradingDate))));",
+      "start_line": 468,
+      "end_line": 468,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/MarksStep.tsx",
+      "content": "Apply the slip lifecycle to the cell-editor price input too. Review Date cells with `AcknowledgedUnavailable` use `DraftFields`, whose input calls `panel.hold` directly and has no leave handler, so a suspicious replacement price is not questioned on blur. After answering it through Save Marks, clearing and retyping the same value in that editor also leaves `slipAnswered` intact and allows saving without a fresh confirmation. Share the edit/leave handlers with that input (keeping answer-driven updates separate) and cover this state in the tests.",
+      "existing_code": "        onPrice={(key, price) =\u003e {\n          // Typing makes it a new entry: an answer to the old one no longer stands.\n          setSlipAnswered((prev) =\u003e Object.fromEntries(Object.entries(prev).filter(([id]) =\u003e id !== rowId(key.instrumentKey, key.tradingDate))));\n          hold(key, { kind: 'Price', price });\n        }}",
+      "start_line": 466,
+      "end_line": 470,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/SlipQuestion.tsx",
+      "content": "Preserve enough decimal precision to distinguish the two readings. Marks support six fractional digits, but `decimalMoney` rounds to cents: with a previous stock Mark of `0.0001` and an entry of `0.001`, both choices render as `$0.00` despite saving different prices (and also receive identical React keys). The user cannot tell which reading they are confirming. Format these prices with sufficient precision and use a unique key for each option.",
+      "existing_code": "    asked = { text: `${readings.map(decimalMoney).join(' or ')}?`, options: readings.map((price) =\u003e keep(price, decimalMoney(price))) };",
+      "start_line": 29,
+      "end_line": 29,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Marks end-to-end support and zero-mark test updates",
+      "files": [
+        "e2e/d4/support.ts",
+        "e2e/d7/marks-zero.spec.ts",
+        "e2e/d7/support.ts",
+        "e2e/d9/support.ts",
+        "e2e/d9ar/support.ts"
+      ]
+    },
+    {
+      "label": "Slip questions and marks-entry UI with unit and end-to-end tests",
+      "files": [
+        "e2e/d95/slip-questions.spec.ts",
+        "src/ui/screens/MarksGrid.tsx",
+        "src/ui/screens/MarksStep.test.tsx",
+        "src/ui/screens/MarksStep.tsx",
+        "src/ui/screens/SlipQuestion.tsx",
+        "src/ui/screens/marks-grid.ts"
+      ]
+    }
+  ],
+  "session_id": "c3fb51cc-ced5-4829-bd94-437ab513869c",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "c3fb51cc-ced5-4829-bd94-437ab513869c",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "e8fbbc64",
+      "resolved_base": "4727c2a5b9b7c6fa1b17fd8b2cc7c52534b23888",
+      "resolved_head": "e8fbbc645fff6dea67af3c8c4fa8b5c25820a3dc",
+      "exact_range": "4727c2a5b9b7c6fa1b17fd8b2cc7c52534b23888..e8fbbc645fff6dea67af3c8c4fa8b5c25820a3dc",
+      "source_artifact_sha256": "8a83897b34aff8c8b589f162b6df3f06e3b8d273dcba8cf0643e80b5500aa638"
+    },
+    "execution": {
+      "ocr_version": "v1.14.2",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "1a8b204813f2ba42444221ccf71dd5d66d82adae9a0ef7d191f74dc7f17e40e2",
+          "path": "src/ui/screens/MarksStep.test.tsx",
+          "fingerprint": "af3541da0fd834cedd3e838f49180c03a3731502e82eed9ac7c391eb9427882f"
+        },
+        {
+          "item_id": "326fec64a38460be5a7fe266ee2cf2f16c6b26da3c62d1cb9c171cda27d05e8e",
+          "path": "src/ui/screens/SlipQuestion.tsx",
+          "fingerprint": "9b1cecca2541955551475c3d5d6473daab0b5a1714497136783948417bf4b9ab"
+        },
+        {
+          "item_id": "3986a6a0a4abf89307704f3b17b626724059c9e58101376110817356339499eb",
+          "path": "src/ui/screens/MarksStep.tsx",
+          "fingerprint": "88adf0166491a09867d7c7a005414f92d642c45138b77218f44675270cd12b68"
+        },
+        {
+          "item_id": "459aafe26ac450e9ab0d9496b85f05b870a21059b32b7cfc7b465308a56bd289",
+          "path": "e2e/d7/marks-zero.spec.ts",
+          "fingerprint": "e879426ad6696cd82f9c95606cb6d159de4a83a0eb70b736789033e742f20007"
+        },
+        {
+          "item_id": "5b80632f5fe42dd695f06fc9d39d2f297c146395ebaf1a63480614d7717a6085",
+          "path": "e2e/d95/slip-questions.spec.ts",
+          "fingerprint": "ffeace031332ed0a5c494f01cc431392a29bd9c674843339ad69231af7453b18"
+        },
+        {
+          "item_id": "6b3ea2ff8de74765e3af18e89799b9b10bb04a902bac37f58df69f7eda81b1bd",
+          "path": "src/ui/screens/MarksGrid.tsx",
+          "fingerprint": "e7ba23633d0356bec72a613908ba65c40c1ec97c342e62033145435d77b5abec"
+        },
+        {
+          "item_id": "77a09965bbc16832a6776b36503973c81fdfb4c349ef52771fbc221627efe7c5",
+          "path": "e2e/d4/support.ts",
+          "fingerprint": "28aab6fc4028af1ae21e1ea569c742ed24d0fe5e203431e8efd3934cf6416d8d"
+        },
+        {
+          "item_id": "839b5d74be9dab57ce22d8164cf43a870716504e404925773518309e596f49ef",
+          "path": "e2e/d9ar/support.ts",
+          "fingerprint": "b1f0aa0b26836ca4e15087218410bf08975d0b6e65e6f78642f4c78bcebbc57c"
+        },
+        {
+          "item_id": "96c7c6472e6933bb71f4cab0181de2c6d68c2ad2d66131a372b8004c149c310f",
+          "path": "src/ui/screens/marks-grid.ts",
+          "fingerprint": "b6311c94926b28950b11dafdbf8b5706de697e03fde41a5f1986db444fff2547"
+        },
+        {
+          "item_id": "99c596ee1732c530a194c9499667a3a11331103a4114e4c1d962b6235c95f741",
+          "path": "e2e/d7/support.ts",
+          "fingerprint": "5da065ada45ff4ecd071d98f67918ce3f928d0125d090095d5ac9ffdd7591de7"
+        },
+        {
+          "item_id": "d0126439061216e58eb2b1a6bab019f2d20601558a9531d4100a29b4b9c5c3f9",
+          "path": "e2e/d9/support.ts",
+          "fingerprint": "f5eff7e2f35a1a5b21cb2e5571d0d26e9b48319507479675a818686460608fda"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "1a8b204813f2ba42444221ccf71dd5d66d82adae9a0ef7d191f74dc7f17e40e2",
+          "path": "src/ui/screens/MarksStep.test.tsx",
+          "fingerprint": "af3541da0fd834cedd3e838f49180c03a3731502e82eed9ac7c391eb9427882f"
+        },
+        {
+          "item_id": "326fec64a38460be5a7fe266ee2cf2f16c6b26da3c62d1cb9c171cda27d05e8e",
+          "path": "src/ui/screens/SlipQuestion.tsx",
+          "fingerprint": "9b1cecca2541955551475c3d5d6473daab0b5a1714497136783948417bf4b9ab"
+        },
+        {
+          "item_id": "3986a6a0a4abf89307704f3b17b626724059c9e58101376110817356339499eb",
+          "path": "src/ui/screens/MarksStep.tsx",
+          "fingerprint": "88adf0166491a09867d7c7a005414f92d642c45138b77218f44675270cd12b68"
+        },
+        {
+          "item_id": "459aafe26ac450e9ab0d9496b85f05b870a21059b32b7cfc7b465308a56bd289",
+          "path": "e2e/d7/marks-zero.spec.ts",
+          "fingerprint": "e879426ad6696cd82f9c95606cb6d159de4a83a0eb70b736789033e742f20007"
+        },
+        {
+          "item_id": "5b80632f5fe42dd695f06fc9d39d2f297c146395ebaf1a63480614d7717a6085",
+          "path": "e2e/d95/slip-questions.spec.ts",
+          "fingerprint": "ffeace031332ed0a5c494f01cc431392a29bd9c674843339ad69231af7453b18"
+        },
+        {
+          "item_id": "6b3ea2ff8de74765e3af18e89799b9b10bb04a902bac37f58df69f7eda81b1bd",
+          "path": "src/ui/screens/MarksGrid.tsx",
+          "fingerprint": "e7ba23633d0356bec72a613908ba65c40c1ec97c342e62033145435d77b5abec"
+        },
+        {
+          "item_id": "77a09965bbc16832a6776b36503973c81fdfb4c349ef52771fbc221627efe7c5",
+          "path": "e2e/d4/support.ts",
+          "fingerprint": "28aab6fc4028af1ae21e1ea569c742ed24d0fe5e203431e8efd3934cf6416d8d"
+        },
+        {
+          "item_id": "839b5d74be9dab57ce22d8164cf43a870716504e404925773518309e596f49ef",
+          "path": "e2e/d9ar/support.ts",
+          "fingerprint": "b1f0aa0b26836ca4e15087218410bf08975d0b6e65e6f78642f4c78bcebbc57c"
+        },
+        {
+          "item_id": "96c7c6472e6933bb71f4cab0181de2c6d68c2ad2d66131a372b8004c149c310f",
+          "path": "src/ui/screens/marks-grid.ts",
+          "fingerprint": "b6311c94926b28950b11dafdbf8b5706de697e03fde41a5f1986db444fff2547"
+        },
+        {
+          "item_id": "99c596ee1732c530a194c9499667a3a11331103a4114e4c1d962b6235c95f741",
+          "path": "e2e/d7/support.ts",
+          "fingerprint": "5da065ada45ff4ecd071d98f67918ce3f928d0125d090095d5ac9ffdd7591de7"
+        },
+        {
+          "item_id": "d0126439061216e58eb2b1a6bab019f2d20601558a9531d4100a29b4b9c5c3f9",
+          "path": "e2e/d9/support.ts",
+          "fingerprint": "f5eff7e2f35a1a5b21cb2e5571d0d26e9b48319507479675a818686460608fda"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "432e012dc279dfe2e14a1156a309947e762d80dee5acdcc5ab6ab86a739c3e57",
+          "path": "evidence/D95/suite-runs/T95.13-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "91a2dc6dbf181a985298ad4bb3b345b45e437ed3a62628124350fc79969db67b",
+          "path": "evidence/D95/suite-runs/T95.13-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "bd2cf066d789fef3c1b2e339ce1c3a13f7d7ad9876b9f2bfde853560dab211ed",
+          "path": "evidence/D95/suite-runs/T95.13-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ea71f06a42de555aa6f3c632edf96f80eece965eeb357aa930ba237b60af57d5",
+          "path": "evidence/D95/tdd-log/T95.13.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "f98a627e382480d2b6865fb704e558861dacbbd364e2b50ff55e390461706c61",
+          "path": "evidence/D95/suite-runs/T95.13-checks.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 110616
+  }
+}
