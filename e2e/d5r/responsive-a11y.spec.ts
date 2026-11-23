@@ -33,7 +33,8 @@ test.describe('B5R.11 Responsive and accessible', () => {
     await expect(remainsOf(page, tA)).toHaveText('1 Mark · 1 reflection due · Action');
     await expect(status(page)).toContainText('Incomplete');
     await expect(friday.getByText('Unsaved')).toBeVisible();
-    await expect(saveMarksButton(page)).toHaveText('Save Marks (2)');
+    // Monday's draft is held in the grid's cell, and counted by Save Marks beside Friday's.
+    await expect(await markInputOf(page, tA, MONDAY)).toHaveValue('52.00');
     await expect(saveMarksButton(page)).toHaveText('Save Marks (2)');
     const action = await actionFormOf(page, tA);
     await action.getByRole('radio', { name: 'Exit', exact: true }).check();

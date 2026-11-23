@@ -301,7 +301,8 @@ export async function chooseCell(page: Page, card: CardRef, name: string): Promi
   if ((await cell.count()) > 0) await cell.click();
   const editor = panel.getByRole('region', { name, exact: true });
   // A Review Date price still to enter is answered in the grid's row and has no editor: its input stands for it (its aria-label is the cell's name).
-  return isInput ? panel.locator(`input[aria-label="${name}"]`).or(editor) : editor;
+  // An earlier session's Missing cell is an input too, but choosing it opens an editor of the same name: the editor is the one answer then.
+  return isInput && (await editor.count()) === 0 ? panel.locator(`input[aria-label="${name}"]`).or(editor) : editor;
 }
 // The Instrument's cell on the date, chosen; the cell editor's region.
 export async function markRow(page: Page, card: CardRef, date: string): Promise<Locator> {
@@ -337,6 +338,9 @@ export async function expectMark(page: Page, card: CardRef, date: string, text: 
     const step = await reachPanel(page, card, 'Marks');
     const name = `${symbolOf(card)} Mark, ${date}`;
     const input = step.getByRole('textbox', { name, exact: true });
+    // A skipped session's column is added on request (T95.12), as chooseCell does.
+    const add = step.getByRole('button', { name: 'Add the skipped sessions' });
+    if ((await input.count()) === 0 && (await add.count()) > 0) await add.click();
     // A read only Review shows the word in the cell itself.
     await expect(input.or(step.getByRole('button', { name, exact: true }).filter({ hasText: 'Missing' }))).toBeVisible();
     if ((await input.count()) > 0) await expect(input).toHaveValue('');
