@@ -1996,3 +1996,30 @@ describe('Review card: the Replay button (decision 3)', () => {
     expect(within(card).getByRole('form', { name: 'Action' })).toBeTruthy();
   });
 });
+
+describe('The last decision line', () => {
+  const decisions: NonNullable<DailyTradeReview['decisions']> = {
+    recent: [{ date: '2026-10-09', action: 'Hold', reason: 'Up today. One more day.', tradePnl: value(-930n) }],
+    earlier: 0,
+    sessionsWithoutReview: [],
+  };
+
+  it('should show the card top line only where the list is not shown', async () => {
+    const user = userEvent.setup();
+    // Marks still to enter: the Action waits, so no list is shown and the top line says the last decision.
+    const waiting = { ...item('t1', 'XYZ'), progress: cardProgress(0, 0, { needed: 1, resolved: 0 }) };
+    const review = ready([waiting], [], { families: [{ family: 'Marks', earlierMarks: [], today: [markRow('XYZ')], earlier: [] }, { family: 'Trades', trades: [waiting] }] });
+    renderWalk(walkFacade(review, tradeReview('t1', 'XYZ', { progress: waiting.progress, decisions: { ...decisions, sessionsWithoutReview: ['2026-10-12'] } })));
+    const card = await openTrade(user, 'XYZ');
+    expect(within(card).getByText('Fri Oct 9 you chose Hold: “Up today. One more day.”')).toBeTruthy();
+    expect(within(card).getByText('No Review Mon Oct 12.')).toBeTruthy();
+    expect(within(card).queryByRole('region', { name: 'Your last decisions' })).toBeNull();
+    cleanup();
+
+    // Marks in: the list sits by the Action and the top line stays out, so the decision is said once.
+    renderWalk(walkFacade(ready([item('t1', 'XYZ')]), tradeReview('t1', 'XYZ', { decisions })));
+    const open = await openTrade(user, 'XYZ');
+    expect(within(open).getByRole('region', { name: 'Your last decisions' })).toBeTruthy();
+    expect(within(open).queryByText(/you chose/)).toBeNull();
+  });
+});

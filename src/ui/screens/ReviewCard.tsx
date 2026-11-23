@@ -15,6 +15,7 @@ import { ReviewReflections } from './ReviewReflections.tsx';
 import { SettlementPanel, settlementSummary } from './ReviewSettlement.tsx';
 import { describedLabelsOf, reasonText } from './review-attention.ts';
 import { PlanBox } from './PlanBox.tsx';
+import { LastDecisionLine, LastDecisions } from './LastDecisions.tsx';
 import { unsigned } from '../cockpit/replay/readout.props.ts';
 import { todoText, type DayLine } from './todo-text.ts';
 import { signed, pnlText } from '../figures.ts';
@@ -331,6 +332,8 @@ function CardBody({ facade, trade, progress, name, go, onSaved, onReflectionReso
   const planColumn = trade.replay?.planColumn;
   const atEntry = trade.evaluation?.atEntry;
   const planBoxCarriesAtEntry = planColumn !== undefined && atEntry != null && atEntry.riskFromEntry.equals(unsigned(planColumn.atStop)) && atEntry.rewardFromEntry.equals(planColumn.atTarget);
+  // U6: the list sits by the Action; the card's top line says the last decision only where the Action is not offered (Marks to enter, a contract to settle).
+  const listShown = panelOf(progress, 'Marks').needed === 0 && settlementOf(progress) === undefined;
   const atEntryShown = atEntry != null && !planBoxCarriesAtEntry ? atEntry : undefined;
   return (
     <section aria-label={`${name} review`}>
@@ -346,6 +349,7 @@ function CardBody({ facade, trade, progress, name, go, onSaved, onReflectionReso
       {trade.attention.reasons.map((reason, i) => (
         <p key={i}>{reasonText(reason, trade.attention.basis, timeZone ?? 'UTC')}</p>
       ))}
+      {trade.decisions && !listShown && <LastDecisionLine decisions={trade.decisions} />}
       <div className="plan-now">
         <PlanBox plan={trade.plan} replay={trade.replay} />
         <NowBox trade={trade} meter={meter} />
@@ -386,6 +390,7 @@ function CardBody({ facade, trade, progress, name, go, onSaved, onReflectionReso
                 Replay
               </button>
             )}
+            {name === 'Action' && trade.decisions && listShown && <LastDecisions decisions={trade.decisions} />}
             {name === 'Action' && <ActionForm facade={facade} form={trade.form} binding={trade.saveBinding} onSaved={onSaved} onRefresh={onRefresh} onDirtyChange={report} pending={pending} />}
           </div>
         </div>

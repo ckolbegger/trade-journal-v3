@@ -1393,3 +1393,50 @@ ul.rows > li {
     padding-bottom: 0.5rem;
   }
 }
+
+/* "Your last decisions" (T95.19, W115) and the card's top line (W114). */
+.review-card-last {
+  margin: 0.4rem 0;
+}
+.last-decisions {
+  background: var(--tint);
+  border-radius: 10px;
+  padding: 0.6rem 0.9rem;
+  margin: 0.6rem 0;
+}
+.last-decisions h4 {
+  margin: 0 0 0.3rem;
+}
+.last-decisions ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.last-decisions li {
+  padding: 0.25rem 0;
+  border-top: 1px solid var(--line);
+}
+.last-decisions li:first-child {
+  border-top: 0;
+}
+.last-decisions-when {
+  font-weight: 650;
+}
+.last-decisions-reason {
+  display: block;
+  color: var(--muted);
+}
+.last-decisions-held {
+  margin: 0 0 0.3rem;
+  font-weight: 700;
+}
+.last-decisions-held[data-line='stop'] {
+  color: var(--stop);
+}
+.last-decisions-held[data-line='target'] {
+  color: var(--warning-line);
+}
+.last-decisions-missed {
+  color: var(--warning-line);
+  font-weight: 650;
+}
