@@ -6,7 +6,8 @@ export const SCHEMA_VERSION_V2 = 2 as const;
 export const SCHEMA_VERSION_V3 = 3 as const;
 export const SCHEMA_VERSION_V4 = 4 as const;
 export const SCHEMA_VERSION_V5 = 5 as const;
-export const CURRENT_SCHEMA_VERSION = SCHEMA_VERSION_V5;
+export const SCHEMA_VERSION_V6 = 6 as const;
+export const CURRENT_SCHEMA_VERSION = SCHEMA_VERSION_V6;
 export const BOOTSTRAP_DB_NAME = 'tjv3_bootstrap';
 export const DIAGNOSTICS_DB_NAME = 'tjv3_diagnostics';
 export const WORKSPACE_DB_PREFIX = 'tjv3_ws_gen_';
@@ -78,6 +79,27 @@ export interface SerializedPlanBaseline {
   readonly plannedRewardToRiskDisplay: string;
 }
 
+export interface CloseReasonRecord {
+  readonly id: string;
+  readonly productKey: string | null;
+  readonly currentLabel: string;
+  readonly normalizedLabel: string;
+  readonly status: CatalogAvailability;
+  readonly revision: number;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+  readonly history: readonly CatalogHistoryEntry[];
+}
+
+export interface LotMatchRecord {
+  readonly id: string;
+  readonly tradeId: string;
+  readonly openingExecutionId: string;
+  readonly disposalExecutionId: string;
+  readonly matchedQuantity: SerializedRational;
+  readonly recordedAt: string;
+}
+
 export interface TradeRecordRow {
   readonly id: string;
   readonly accountId: string;
@@ -93,6 +115,9 @@ export interface TradeRecordRow {
   readonly stopPrice: SerializedRational;
   readonly targetPrice: SerializedRational;
   readonly baseline: SerializedPlanBaseline;
+  readonly closeReasonId?: string;
+  readonly closedAt?: string;
+  readonly terminalDisposition?: string;
 }
 
 export interface PlanVersionFactRecord {
@@ -205,8 +230,14 @@ export interface ExecutionRecord {
 export interface DeviationRecord {
   readonly id: string;
   readonly tradeId: string;
-  readonly kind: 'EntrySize' | 'UnplannedExposure';
+  readonly kind: 'EntrySize' | 'UnplannedExposure' | 'StopDiscipline';
   readonly message: string;
+  readonly episodeFingerprint?: string;
+  readonly startSessionDate?: string;
+  readonly endSessionDate?: string;
+  readonly sessionCount?: number;
+  readonly maxOverrunDisplay?: string;
+  readonly voided?: boolean;
   readonly recordedAt: string;
 }
 
@@ -275,10 +306,12 @@ export interface StoreSchemaMap {
   catalog_institutions: InstitutionRecord;
   catalog_accounts: AccountRecord;
   catalog_strategies: StrategyRecord;
+  catalog_close_reasons: CloseReasonRecord;
   trades: TradeRecordRow;
   trade_facts: TradeFactRecord;
   position_changes: PositionChangeRecord;
   executions: ExecutionRecord;
+  lot_matches: LotMatchRecord;
   deviations: DeviationRecord;
   journal_meta: JournalMetaRecord;
   journal_definitions: EntryDefinitionRecord;
@@ -510,13 +543,25 @@ export function ensureWorkspaceV5Stores(db: IDBDatabase): void {
   ensureWorkspaceV4Stores(db);
 }
 
-function isSupportedSchemaVersion(v: unknown): v is 1 | 2 | 3 | 4 | 5 {
+export function ensureWorkspaceV6Stores(db: IDBDatabase): void {
+  ensureWorkspaceV5Stores(db);
+  if (!db.objectStoreNames.contains('catalog_close_reasons')) {
+    db.createObjectStore('catalog_close_reasons', { keyPath: 'id' });
+  }
+  if (!db.objectStoreNames.contains('lot_matches')) {
+    const lm = db.createObjectStore('lot_matches', { keyPath: 'id' });
+    lm.createIndex('by_trade', 'tradeId', { unique: false });
+  }
+}
+
+function isSupportedSchemaVersion(v: unknown): v is 1 | 2 | 3 | 4 | 5 | 6 {
   return (
     v === SCHEMA_VERSION_V1 ||
     v === SCHEMA_VERSION_V2 ||
     v === SCHEMA_VERSION_V3 ||
     v === SCHEMA_VERSION_V4 ||
-    v === SCHEMA_VERSION_V5
+    v === SCHEMA_VERSION_V5 ||
+    v === SCHEMA_VERSION_V6
   );
 }
 
@@ -633,6 +678,9 @@ export function createPersistenceSeam(options: {
         break;
       case SCHEMA_VERSION_V5:
         ensureFn = ensureWorkspaceV5Stores;
+        break;
+      case SCHEMA_VERSION_V6:
+        ensureFn = ensureWorkspaceV6Stores;
         break;
       default:
         throw new Error(`Unsupported workspace schema version: ${schemaVersion}`);

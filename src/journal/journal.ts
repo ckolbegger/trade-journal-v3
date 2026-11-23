@@ -7,7 +7,7 @@ import type {
 import type { Clock } from '../shared/clock';
 import type { RuntimeNotWritableResult } from '../shared/result';
 
-export const JOURNAL_SEED_MANIFEST_VERSION = 3 as const;
+export const JOURNAL_SEED_MANIFEST_VERSION = 4 as const;
 export const PLAN_REFLECTION_TYPE_ID = 'entry_type_plan_reflection' as const;
 export const PLAN_REFLECTION_DEF_ID = 'def_plan_reflection_v1' as const;
 export const POSITION_CHANGE_REFLECTION_TYPE_ID = 'entry_type_position_change_reflection' as const;
@@ -15,7 +15,7 @@ export const POSITION_CHANGE_REFLECTION_DEF_ID = 'def_position_change_reflection
 export const DAILY_TRADE_REVIEW_TYPE_ID = 'entry_type_daily_trade_review' as const;
 export const DAILY_TRADE_REVIEW_DEF_ID = 'def_daily_trade_review_v1' as const;
 
-export const DAILY_REVIEW_ACTION_OPTIONS = ['Hold'] as const;
+export const DAILY_REVIEW_ACTION_OPTIONS = ['Hold', 'Exit'] as const;
 export type DailyReviewAction = (typeof DAILY_REVIEW_ACTION_OPTIONS)[number];
 
 export const DECISION_MODE_OPTIONS = [
@@ -258,12 +258,12 @@ export function validatePositionChangeReflectionInput(
   return { ok: true, note: trimmedNote || undefined };
 }
 
-export function buildDailyTradeReviewDefinitionV1(createdAt: string): EntryDefinitionRecord {
+export function buildDailyTradeReviewDefinition(createdAt: string): EntryDefinitionRecord {
   return {
     id: DAILY_TRADE_REVIEW_DEF_ID,
     entryTypeId: DAILY_TRADE_REVIEW_TYPE_ID,
     label: 'Daily Trade Review',
-    revision: 1,
+    revision: 2,
     createdAt,
     prompts: [
       {
@@ -334,9 +334,13 @@ export function createJournal(options: {
             additions.push(POSITION_CHANGE_REFLECTION_DEF_ID);
           }
 
-          const hasDtrDef = defs.some((d) => d.entryTypeId === DAILY_TRADE_REVIEW_TYPE_ID);
-          if (!hasDtrDef) {
-            tx.put('journal_definitions', buildDailyTradeReviewDefinitionV1(now));
+          // Safe in-place revision 1 -> 2 upgrade: all existing JournalEntryRecords preserve their own immutable point-in-time definitionSnapshot.
+          const existingDtrDef = defs.find((d) => d.entryTypeId === DAILY_TRADE_REVIEW_TYPE_ID);
+          if (!existingDtrDef || existingDtrDef.revision < 2) {
+            tx.put(
+              'journal_definitions',
+              buildDailyTradeReviewDefinition(existingDtrDef?.createdAt ?? now),
+            );
             additions.push(DAILY_TRADE_REVIEW_DEF_ID);
           }
 

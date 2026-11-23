@@ -5,6 +5,7 @@ import {
   getLatestCompletedSessionDate,
 } from '../market-data/session-calendar';
 import type {
+  DeviationRecord,
   ExecutionRecord,
   JournalDebtRecord,
   JournalDeclineRecord,
@@ -17,6 +18,8 @@ import type {
 } from '../persistence/idb';
 import type { Clock } from '../shared/clock';
 import {
+  add,
+  cmp,
   ExactNumber,
   mul,
   sub,
@@ -41,6 +44,9 @@ export interface TradeBrowseItem {
   readonly plannedRewardDisplay: string;
   readonly plannedRRDisplay: string;
   readonly evaluation: LongStockEvaluation | null;
+  readonly realizedPnlDisplay: string | null;
+  readonly realizedRDisplay: string | null;
+  readonly closeReasonLabel: string | null;
   readonly createdAt: string;
 }
 
@@ -53,11 +59,24 @@ export interface PriceHistoryRow {
   readonly tradePnlPositive: boolean | null;
 }
 
+export interface PlanVsActualSummary {
+  readonly plannedEntrySummary: string;
+  readonly actualEntrySummary: string;
+  readonly stopFirstReachedShort: string | null;
+  readonly targetFirstReachedShort: string | null;
+  readonly exitSummary: string;
+  readonly plannedResultSummary: string;
+  readonly actualResultSummary: string;
+  readonly actualResultPositive: boolean;
+}
+
 export interface TradeDetailCockpitViewModel {
   readonly trade: TradeRecordRow;
   readonly strategyLabel: string;
   readonly accountLabel: string;
   readonly institutionLabel: string;
+  readonly closeReasonLabel: string | null;
+  readonly closedAtShort: string | null;
   readonly plannedQuantityDisplay: string;
   readonly intendedEntryDisplay: string;
   readonly stopPriceDisplay: string;
@@ -68,6 +87,8 @@ export interface TradeDetailCockpitViewModel {
   readonly executions: readonly ExecutionRecord[];
   readonly derived: DerivedLongStockState;
   readonly evaluation: LongStockEvaluation | null;
+  readonly stopDisciplineDeviations: readonly DeviationRecord[];
+  readonly planVsActual: PlanVsActualSummary | null;
   readonly priceHistory: readonly PriceHistoryRow[];
   readonly journalEntries: readonly JournalEntryRecord[];
   readonly journalDebt: readonly JournalDebtRecord[];
@@ -164,6 +185,7 @@ export function createTradeViews(options: {
           'catalog_institutions',
           'catalog_accounts',
           'catalog_strategies',
+          'catalog_close_reasons',
           'proj_trade_analysis_input',
           'market_marks',
           'market_acknowledgments',
@@ -175,6 +197,7 @@ export function createTradeViews(options: {
             institutions,
             accounts,
             strategies,
+            closeReasons,
             projections,
             allMarks,
             allAcks,
@@ -184,6 +207,7 @@ export function createTradeViews(options: {
             tx.getAll('catalog_institutions'),
             tx.getAll('catalog_accounts'),
             tx.getAll('catalog_strategies'),
+            tx.getAll('catalog_close_reasons'),
             tx.getAll('proj_trade_analysis_input'),
             tx.getAll('market_marks'),
             tx.getAll('market_acknowledgments'),
@@ -192,6 +216,7 @@ export function createTradeViews(options: {
           const instMap = new Map(institutions.map((i) => [i.id, i.currentLabel]));
           const acctMap = new Map(accounts.map((a) => [a.id, a.currentLabel]));
           const stratMap = new Map(strategies.map((s) => [s.id, s.currentLabel]));
+          const closeReasonMap = new Map(closeReasons.map((c) => [c.id, c.currentLabel]));
           const projMap = new Map(projections.map((p) => [p.tradeId, p]));
           const ackSet = new Set(
             allAcks
@@ -213,7 +238,10 @@ export function createTradeViews(options: {
             .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
             .map((t) => {
               let evaluation: LongStockEvaluation | null = null;
-              if (t.lifecycleState === 'Open') {
+              let realizedPnlDisplay: string | null = null;
+              let realizedRDisplay: string | null = null;
+
+              if (t.lifecycleState === 'Open' || t.lifecycleState === 'Closed') {
                 const tradeExecs = [...(execsByTrade.get(t.id) ?? [])].sort((a, b) => {
                   const byTime = a.economicTime.localeCompare(b.economicTime);
                   return byTime !== 0 ? byTime : a.recordedSequence - b.recordedSequence;
@@ -226,32 +254,39 @@ export function createTradeViews(options: {
                     stopPrice: t.stopPrice,
                     targetPrice: t.targetPrice,
                   },
+                  originalPlannedRisk: t.baseline.originalPlannedRisk,
                   executions: tradeExecs,
                 });
-                const entrySessionDate =
-                  tradeExecs.length > 0
-                    ? getExchangeDateForInstant(new Date(tradeExecs[0]!.economicTime))
-                    : undefined;
-                const frame = resolveSymbolFrame(
-                  t.symbol,
-                  expectedSessionDate,
-                  marksBySymbol,
-                  ackSet,
-                );
-                evaluation = evaluateLongStockTrade({
-                  derived,
-                  plan: { stopPrice: t.stopPrice, targetPrice: t.targetPrice },
-                  originalPlannedRisk: t.baseline.originalPlannedRisk,
-                  expectedSessionDate,
-                  entrySessionDate,
-                  todayMark: frame.todayMark
-                    ? { sessionDate: frame.todayMark.sessionDate, price: frame.todayMark.price }
-                    : null,
-                  priorMark: frame.priorMark
-                    ? { sessionDate: frame.priorMark.sessionDate, price: frame.priorMark.price }
-                    : null,
-                  todayUnavailableAcknowledged: frame.todayUnavailableAcknowledged,
-                });
+                if (t.lifecycleState === 'Closed' || derived.lotMatches.length > 0) {
+                  realizedPnlDisplay = derived.realizedPnlDisplay;
+                  realizedRDisplay = derived.realizedRDisplay;
+                }
+                if (t.lifecycleState === 'Open') {
+                  const entrySessionDate =
+                    tradeExecs.length > 0
+                      ? getExchangeDateForInstant(new Date(tradeExecs[0]!.economicTime))
+                      : undefined;
+                  const frame = resolveSymbolFrame(
+                    t.symbol,
+                    expectedSessionDate,
+                    marksBySymbol,
+                    ackSet,
+                  );
+                  evaluation = evaluateLongStockTrade({
+                    derived,
+                    plan: { stopPrice: t.stopPrice, targetPrice: t.targetPrice },
+                    originalPlannedRisk: t.baseline.originalPlannedRisk,
+                    expectedSessionDate,
+                    entrySessionDate,
+                    todayMark: frame.todayMark
+                      ? { sessionDate: frame.todayMark.sessionDate, price: frame.todayMark.price }
+                      : null,
+                    priorMark: frame.priorMark
+                      ? { sessionDate: frame.priorMark.sessionDate, price: frame.priorMark.price }
+                      : null,
+                    todayUnavailableAcknowledged: frame.todayUnavailableAcknowledged,
+                  });
+                }
               }
 
               return {
@@ -268,6 +303,11 @@ export function createTradeViews(options: {
                 plannedRewardDisplay: t.baseline.originalPlannedRewardDisplay,
                 plannedRRDisplay: t.baseline.plannedRewardToRiskDisplay,
                 evaluation,
+                realizedPnlDisplay,
+                realizedRDisplay,
+                closeReasonLabel: t.closeReasonId
+                  ? (closeReasonMap.get(t.closeReasonId) ?? 'Unknown Close Reason')
+                  : null,
                 createdAt: t.createdAt,
               };
             });
@@ -284,12 +324,14 @@ export function createTradeViews(options: {
           'trades',
           'trade_facts',
           'executions',
+          'deviations',
           'journal_entries',
           'journal_debt',
           'journal_declines',
           'catalog_institutions',
           'catalog_accounts',
           'catalog_strategies',
+          'catalog_close_reasons',
           'market_marks',
           'market_acknowledgments',
         ],
@@ -302,23 +344,27 @@ export function createTradeViews(options: {
           const [
             facts,
             executions,
+            deviations,
             entries,
             debt,
             declines,
             institution,
             account,
             strategy,
+            closeReason,
             symMarks,
             symAcks,
           ] = await Promise.all([
             tx.getAllByIndex('trade_facts', 'by_trade', tradeId),
             tx.getAllByIndex('executions', 'by_trade', tradeId),
+            tx.getAllByIndex('deviations', 'by_trade', tradeId),
             tx.getAllByIndex('journal_entries', 'by_trade', tradeId),
             tx.getAllByIndex('journal_debt', 'by_trade', tradeId),
             tx.getAllByIndex('journal_declines', 'by_trade', tradeId),
             tx.get('catalog_institutions', trade.institutionId),
             tx.get('catalog_accounts', trade.accountId),
             tx.get('catalog_strategies', trade.strategyId),
+            trade.closeReasonId ? tx.get('catalog_close_reasons', trade.closeReasonId) : undefined,
             tx.getAllByIndex('market_marks', 'by_symbol', trade.symbol),
             tx.getAllByIndex('market_acknowledgments', 'by_symbol', trade.symbol),
           ]);
@@ -342,6 +388,7 @@ export function createTradeViews(options: {
               stopPrice: trade.stopPrice,
               targetPrice: trade.targetPrice,
             },
+            originalPlannedRisk: trade.baseline.originalPlannedRisk,
             executions: sortedExecs,
           });
 
@@ -376,16 +423,23 @@ export function createTradeViews(options: {
               : null;
 
           // Build read-only Price History completed-session grid preserving explicit gaps,
-          // evaluating each session against the position as-of that session date.
+          // stopping at closure date for Closed trades and computing Open+Realized or final Realized P&L.
           const priceHistory: PriceHistoryRow[] = [];
+          const closedSessionDate =
+            trade.lifecycleState === 'Closed' && trade.closedAt
+              ? getExchangeDateForInstant(new Date(trade.closedAt))
+              : null;
+          const historyEndDate =
+            closedSessionDate && closedSessionDate < expectedSessionDate
+              ? closedSessionDate
+              : expectedSessionDate;
           if (sortedExecs.length > 0) {
             const firstExecDate = entrySessionDate!;
             const effectiveMarks = new Map(
               symMarks.filter((m) => m.effective).map((m) => [m.sessionDate, m]),
             );
-            const fromDate =
-              firstExecDate <= expectedSessionDate ? firstExecDate : expectedSessionDate;
-            const sessions = getCompletedSessionsBetween(fromDate, expectedSessionDate).reverse();
+            const fromDate = firstExecDate <= historyEndDate ? firstExecDate : historyEndDate;
+            const sessions = getCompletedSessionsBetween(fromDate, historyEndDate).reverse();
             for (const sessionDate of sessions) {
               const mrk = effectiveMarks.get(sessionDate);
               if (mrk) {
@@ -400,14 +454,16 @@ export function createTradeViews(options: {
                     stopPrice: trade.stopPrice,
                     targetPrice: trade.targetPrice,
                   },
+                  originalPlannedRisk: trade.baseline.originalPlannedRisk,
                   executions: execsAsOfSession,
                 });
                 const price = ExactNumber.fromJSON(mrk.price);
                 if (derivedAsOf.averageEntryPrice && derivedAsOf.openShares.num > 0n) {
-                  const pnl = sub(
+                  const openPnl = sub(
                     mul(sub(price, derivedAsOf.averageEntryPrice), derivedAsOf.openShares),
-                    derivedAsOf.totalOpeningFees,
+                    derivedAsOf.feeReconciliation.openingFeesUnconsumed,
                   );
+                  const pnl = add(derivedAsOf.realizedPnl, openPnl);
                   priceHistory.push({
                     sessionDate,
                     sessionDateShort: formatSessionDateShort(sessionDate),
@@ -415,6 +471,15 @@ export function createTradeViews(options: {
                     unavailableAcknowledged: false,
                     tradePnlDisplay: toMoneyString(pnl, true),
                     tradePnlPositive: pnl.num >= 0n,
+                  });
+                } else if (derivedAsOf.lotMatches.length > 0) {
+                  priceHistory.push({
+                    sessionDate,
+                    sessionDateShort: formatSessionDateShort(sessionDate),
+                    markDisplay: toMoneyString(price),
+                    unavailableAcknowledged: false,
+                    tradePnlDisplay: derivedAsOf.realizedPnlDisplay,
+                    tradePnlPositive: derivedAsOf.realizedPnl.num >= 0n,
                   });
                 } else {
                   priceHistory.push({
@@ -439,21 +504,82 @@ export function createTradeViews(options: {
             }
           }
 
+          const stopPriceRat = ExactNumber.fromJSON(trade.stopPrice);
+          const targetPriceRat = ExactNumber.fromJSON(trade.targetPrice);
+          const stopDisciplineDeviations = deviations
+            .filter((d) => d.kind === 'StopDiscipline' && !d.voided)
+            .sort((a, b) => (a.startSessionDate ?? '').localeCompare(b.startSessionDate ?? ''));
+
+          let planVsActual: PlanVsActualSummary | null = null;
+          if (trade.lifecycleState === 'Closed') {
+            const buyExecs = sortedExecs.filter((e) => e.side === 'Buy');
+            const sellExecs = sortedExecs.filter((e) => e.side === 'Sell');
+            const effectiveSortedMarks = symMarks
+              .filter(
+                (m) =>
+                  m.effective &&
+                  (!entrySessionDate || m.sessionDate >= entrySessionDate) &&
+                  (!closedSessionDate || m.sessionDate <= closedSessionDate),
+              )
+              .sort((a, b) => a.sessionDate.localeCompare(b.sessionDate));
+            const firstStopSession =
+              effectiveSortedMarks.find(
+                (m) => cmp(ExactNumber.fromJSON(m.price), stopPriceRat) <= 0,
+              )?.sessionDate ?? null;
+            const firstTargetSession =
+              effectiveSortedMarks.find(
+                (m) => cmp(ExactNumber.fromJSON(m.price), targetPriceRat) >= 0,
+              )?.sessionDate ?? null;
+
+            const plannedEntrySummary = `${formatShares(trade.plannedQuantity)} shares at ${toMoneyString(ExactNumber.fromJSON(trade.intendedEntryPrice))}`;
+            const actualEntrySummary =
+              buyExecs.length === 1 && derived.entryQuality
+                ? `Bought ${formatShares(buyExecs[0]!.quantity)} at ${toMoneyString(derived.entryQuality.averageEntryPrice)} (${formatSessionDateShort(getExchangeDateForInstant(new Date(buyExecs[0]!.economicTime)))})`
+                : `${buyExecs.length} fills, avg ${derived.entryQuality?.averageEntryPriceDisplay ?? '—'}`;
+            const exitSummary = sellExecs
+              .map(
+                (e) =>
+                  `Sold ${formatShares(e.quantity)} at ${toMoneyString(ExactNumber.fromJSON(e.fillPrice))} (${formatSessionDateShort(getExchangeDateForInstant(new Date(e.economicTime)))})`,
+              )
+              .join('; ');
+
+            planVsActual = {
+              plannedEntrySummary,
+              actualEntrySummary,
+              stopFirstReachedShort: firstStopSession
+                ? formatSessionDateShort(firstStopSession)
+                : null,
+              targetFirstReachedShort: firstTargetSession
+                ? formatSessionDateShort(firstTargetSession)
+                : null,
+              exitSummary: exitSummary || (trade.terminalDisposition ?? 'Closed'),
+              plannedResultSummary: `+${trade.baseline.originalPlannedRewardDisplay} · +${trade.baseline.plannedRewardToRiskDisplay}`,
+              actualResultSummary: `${derived.realizedPnlDisplay}${derived.realizedRDisplay ? ` · ${derived.realizedRDisplay}` : ''}`,
+              actualResultPositive: derived.realizedPnl.num >= 0n,
+            };
+          }
+
           return {
             trade,
             strategyLabel: strategy?.currentLabel ?? 'Unknown Strategy',
             accountLabel: account?.currentLabel ?? 'Unknown Account',
             institutionLabel: institution?.currentLabel ?? 'Unknown Institution',
+            closeReasonLabel: closeReason?.currentLabel ?? null,
+            closedAtShort: trade.closedAt
+              ? formatSessionDateShort(getExchangeDateForInstant(new Date(trade.closedAt)))
+              : null,
             plannedQuantityDisplay: formatShares(trade.plannedQuantity),
             intendedEntryDisplay: toMoneyString(ExactNumber.fromJSON(trade.intendedEntryPrice)),
-            stopPriceDisplay: toMoneyString(ExactNumber.fromJSON(trade.stopPrice)),
-            targetPriceDisplay: toMoneyString(ExactNumber.fromJSON(trade.targetPrice)),
+            stopPriceDisplay: toMoneyString(stopPriceRat),
+            targetPriceDisplay: toMoneyString(targetPriceRat),
             expectedSessionDate,
             expectedSessionDateShort: formatSessionDateShort(expectedSessionDate),
             planFact,
             executions: sortedExecs,
             derived,
             evaluation,
+            stopDisciplineDeviations,
+            planVsActual,
             priceHistory,
             journalEntries: [...entries].sort((a, b) => b.recordedAt.localeCompare(a.recordedAt)),
             journalDebt: [...debt].sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
@@ -537,6 +663,7 @@ export function createTradeViews(options: {
                 stopPrice: t.stopPrice,
                 targetPrice: t.targetPrice,
               },
+              originalPlannedRisk: t.baseline.originalPlannedRisk,
               executions: tradeExecs,
             });
             const entrySessionDate =
@@ -583,6 +710,11 @@ export function createTradeViews(options: {
               oneRDisplay: t.baseline.originalPlannedRiskDisplay,
               plannedRewardDisplay: t.baseline.originalPlannedRewardDisplay,
               plannedRRDisplay: t.baseline.plannedRewardToRiskDisplay,
+              realizedPnlDisplay:
+                derived.lotMatches.length > 0 ? derived.realizedPnlDisplay : null,
+              realizedRDisplay:
+                derived.lotMatches.length > 0 ? derived.realizedRDisplay : null,
+              closeReasonLabel: null,
               evaluation,
               createdAt: t.createdAt,
             };

@@ -153,6 +153,10 @@ export function toRatioString(value: Rational, showPlus = false): string {
   return `${raw}R`;
 }
 
+export function formatQuantityString(value: Rational): string {
+  return value.den === 1n ? value.num.toString() : toDecimalString(value, 4).replace(/\.?0+$/, '');
+}
+
 export const ExactNumber = {
   fromInteger,
   fromDecimalString,

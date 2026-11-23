@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import type { ReferenceCatalog } from '../../catalog/reference-catalog';
 import type {
   DailyReview,
   DailyReviewDebtItem,
@@ -8,10 +9,12 @@ import type {
   TradeStanding,
 } from '../../daily-review/daily-review';
 import {
+  DAILY_REVIEW_ACTION_OPTIONS,
   DECISION_MODE_OPTIONS,
   PRIMARY_EMOTION_OPTIONS,
   type DailyReviewAction,
   type DecisionMode,
+  type Journal,
   type PrimaryEmotion,
 } from '../../journal/journal';
 import {
@@ -20,7 +23,11 @@ import {
   type MarkSanityCheck,
 } from '../../market-data/market-data';
 import { formatSessionDateShort } from '../../market-data/session-calendar';
+import type { CloseReasonRecord } from '../../persistence/idb';
+import type { Clock } from '../../shared/clock';
+import type { TradeWorkflows } from '../../trade-workflows/trade-workflows';
 import styles from '../shell/AppShell.module.css';
+import { RecordExitPanel } from '../trades/RecordExitPanel';
 import drStyles from './DailyReview.module.css';
 import { GaugeMeter } from './GaugeMeter';
 import mkStyles from './ReviewMarks.module.css';
@@ -28,6 +35,10 @@ import mkStyles from './ReviewMarks.module.css';
 interface DailyReviewViewProps {
   readonly dailyReview: DailyReview;
   readonly marketData: MarketData;
+  readonly catalog: ReferenceCatalog;
+  readonly workflows: TradeWorkflows;
+  readonly journal: Journal;
+  readonly clock: Clock;
   readonly refreshKey: number;
   readonly writable: boolean;
   readonly onReviewMutated: () => void;
@@ -52,6 +63,23 @@ interface DebtFormState {
   note: string;
   declineReason: string;
   error: string | null;
+}
+
+function renderRowPnlText(
+  trade: DailyReviewTradeItem,
+  liveEval: DailyReviewTradeItem['evaluation'] | null,
+  priorCtx: { readonly asOfSessionDate: string; readonly evaluation: { readonly openPnlDisplay: string } } | null,
+): string {
+  if (liveEval && liveEval.availability === 'Available') {
+    if (trade.derived.lotMatches.length > 0) {
+      return `${liveEval.combinedPnlDisplay} · ${liveEval.combinedPnlRDisplay}`;
+    }
+    return `${liveEval.openPnlDisplay} · ${liveEval.openPnlRDisplay}`;
+  }
+  if (priorCtx) {
+    return `${formatSessionDateShort(priorCtx.asOfSessionDate)} ${priorCtx.evaluation.openPnlDisplay}`;
+  }
+  return '—';
 }
 
 function renderStandingChip(standing: TradeStanding, muted = false, asOfShort?: string) {
@@ -105,6 +133,7 @@ function isActionDraftDirty(draft: ActionDraft | undefined, trade: DailyReviewTr
   if (!draft) return false;
   if (trade.todayAction) {
     return (
+      draft.action !== trade.todayAction.action ||
       draft.reason.trim() !== (trade.todayAction.reason ?? '') ||
       draft.conviction !== (trade.todayAction.conviction ?? 0) ||
       draft.consideredAgainst.trim() !== (trade.todayAction.consideredAgainst ?? '') ||
@@ -112,7 +141,7 @@ function isActionDraftDirty(draft: ActionDraft | undefined, trade: DailyReviewTr
     );
   }
   return (
-    (trade.strict && draft.action !== null) ||
+    (trade.strict ? draft.action !== null : draft.action !== null && draft.action !== 'Hold') ||
     draft.reason.trim().length > 0 ||
     draft.conviction > 0 ||
     draft.consideredAgainst.trim().length > 0 ||
@@ -123,6 +152,10 @@ function isActionDraftDirty(draft: ActionDraft | undefined, trade: DailyReviewTr
 export function DailyReviewView({
   dailyReview,
   marketData,
+  catalog,
+  workflows,
+  journal,
+  clock,
   refreshKey,
   writable,
   onReviewMutated,
@@ -130,6 +163,8 @@ export function DailyReviewView({
   onDirtyChange,
 }: DailyReviewViewProps) {
   const [model, setModel] = useState<DailyReviewViewModel | null>(null);
+  const [closeReasons, setCloseReasons] = useState<readonly CloseReasonRecord[]>([]);
+  const [closeReasonsUnavailable, setCloseReasonsUnavailable] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -144,11 +179,16 @@ export function DailyReviewView({
   // Trade accordion & action form state
   const [openTradeId, setOpenTradeId] = useState<string | null>(null);
   const [changingTradeId, setChangingTradeId] = useState<string | null>(null);
+  const [recordingExitTradeId, setRecordingExitTradeId] = useState<string | null>(null);
+  const [exitPanelDirty, setExitPanelDirty] = useState(false);
+  const [acknowledgedStaleIds, setAcknowledgedStaleIds] = useState<Record<string, boolean>>({});
   const [actionDrafts, setActionDrafts] = useState<Record<string, ActionDraft>>({});
   const [refuseSwitch, setRefuseSwitch] = useState<{
     fromId: string;
     fromSymbol: string;
     targetId: string | null;
+    dirtySource: 'action' | 'exit';
+    openExitPanel?: boolean;
   } | null>(null);
 
   // Due Debt state
@@ -162,9 +202,23 @@ export function DailyReviewView({
   const loadView = useCallback(async () => {
     const seq = ++loadSeqRef.current;
     try {
-      const res = await dailyReview.open();
+      const [res, crRes] = await Promise.all([
+        dailyReview.open(),
+        catalog
+          .query({ family: 'CloseReason', includeInactive: false })
+          .then((r) => ({ ok: true as const, r }))
+          .catch(() => ({ ok: false as const })),
+      ]);
       if (seq !== loadSeqRef.current) return;
       setModel(res);
+      if (crRes.ok) {
+        if (crRes.r.family === 'CloseReason') {
+          setCloseReasons(crRes.r.items);
+          setCloseReasonsUnavailable(false);
+        }
+      } else {
+        setCloseReasonsUnavailable(true);
+      }
       setMarkDrafts((prev) => {
         const next: Record<string, string> = {};
         for (const row of res.marks) {
@@ -193,7 +247,7 @@ export function DailyReviewView({
         setLoading(false);
       }
     }
-  }, [dailyReview]);
+  }, [dailyReview, catalog]);
 
   useEffect(() => {
     void loadView();
@@ -221,9 +275,18 @@ export function DailyReviewView({
     const debtDirty = Object.values(debtForms).some(
       (f) => f.note.trim().length > 0 || f.declineReason.trim().length > 0 || f.mode === 'Decline',
     );
-    onDirtyChange(marksDirty || skippedDirty || actionsDirty || debtDirty);
+    onDirtyChange(marksDirty || skippedDirty || actionsDirty || debtDirty || exitPanelDirty);
     return () => onDirtyChange(false);
-  }, [model, markDrafts, skippedDrafts, showSkippedCols, actionDrafts, debtForms, onDirtyChange]);
+  }, [
+    model,
+    markDrafts,
+    skippedDrafts,
+    showSkippedCols,
+    actionDrafts,
+    debtForms,
+    exitPanelDirty,
+    onDirtyChange,
+  ]);
 
   const handleMarkDraftChange = (row: DailyReviewMarkRow, value: string) => {
     setMarkDrafts((prev) => ({ ...prev, [row.symbol]: value }));
@@ -492,21 +555,42 @@ export function DailyReviewView({
     }));
   };
 
-  const requestOpenTrade = (targetId: string | null) => {
+  const requestOpenTrade = (targetId: string | null, openExitPanel = false) => {
     if (!model) return;
-    if (openTradeId && openTradeId !== targetId) {
+    const targetChanging = openTradeId !== targetId;
+    if (openTradeId && targetChanging) {
       const current = model.trades.find((t) => t.tradeId === openTradeId);
-      if (current && isActionDraftDirty(actionDrafts[openTradeId], current)) {
+      const dirtyExitHere = recordingExitTradeId === openTradeId && exitPanelDirty;
+      const dirtyActionHere = Boolean(
+        current && isActionDraftDirty(actionDrafts[openTradeId], current),
+      );
+      if (dirtyExitHere || dirtyActionHere) {
         setRefuseSwitch({
-          fromId: current.tradeId,
-          fromSymbol: current.symbol,
+          fromId: current?.tradeId ?? openTradeId,
+          fromSymbol: current?.symbol ?? 'Trade',
           targetId,
+          dirtySource: dirtyExitHere ? 'exit' : 'action',
+          openExitPanel,
         });
         return;
       }
+      setRecordingExitTradeId(null);
+      setExitPanelDirty(false);
     }
     setRefuseSwitch(null);
     setOpenTradeId(targetId);
+    if (openExitPanel && targetId) {
+      setRecordingExitTradeId(targetId);
+    }
+  };
+
+  const actionRequiresReason = (
+    trade: DailyReviewTradeItem,
+    action: DailyReviewAction | null,
+  ): boolean => {
+    if (trade.staleExit !== null) return true;
+    if (action === 'Exit') return !trade.planCheck.exitFollowsPlan;
+    return trade.strict;
   };
 
   const handleSaveAction = async (trade: DailyReviewTradeItem): Promise<boolean> => {
@@ -516,8 +600,15 @@ export function DailyReviewView({
       updateDraft(trade, { error: 'Choose an Action.' });
       return false;
     }
-    if (trade.strict && draft.reason.trim().length === 0) {
-      updateDraft(trade, { error: 'Say why you are holding past your Plan line.' });
+    if (actionRequiresReason(trade, draft.action) && draft.reason.trim().length === 0) {
+      updateDraft(trade, {
+        error:
+          trade.staleExit !== null
+            ? 'Say what happened and why.'
+            : draft.action === 'Exit'
+              ? (trade.planCheck.reasonIfLeaving ?? 'Say why you are leaving the Plan.')
+              : 'Say why you are holding past your Plan line.',
+      });
       return false;
     }
 
@@ -852,11 +943,24 @@ export function DailyReviewView({
                 </dd>
               </>
             )}
-            {model.daySummary.chosenHoldSymbols.length > 0 && (
+            {(model.daySummary.chosenHoldSymbols.length > 0 ||
+              model.daySummary.chosenExitSymbols.length > 0) && (
               <>
                 <dt>You chose</dt>
                 <dd>
-                  <strong>Hold</strong> {model.daySummary.chosenHoldSymbols.join(', ')}
+                  {model.daySummary.chosenHoldSymbols.length > 0 && (
+                    <span>
+                      <strong>Hold</strong> {model.daySummary.chosenHoldSymbols.join(', ')}
+                    </span>
+                  )}
+                  {model.daySummary.chosenHoldSymbols.length > 0 &&
+                    model.daySummary.chosenExitSymbols.length > 0 &&
+                    ' · '}
+                  {model.daySummary.chosenExitSymbols.length > 0 && (
+                    <span>
+                      <strong>Exit</strong> {model.daySummary.chosenExitSymbols.join(', ')}
+                    </span>
+                  )}
                 </dd>
               </>
             )}
@@ -923,6 +1027,46 @@ export function DailyReviewView({
               </span>
             )}
           </div>
+
+          {model.trades
+            .filter(
+              (t) =>
+                t.staleExit !== null &&
+                !acknowledgedStaleIds[t.tradeId] &&
+                !t.todayAction,
+            )
+            .map((t) => (
+              <div key={`stale-top-${t.tradeId}`} className={drStyles.staleNote}>
+                <div>
+                  <strong>
+                    {t.staleExit!.priorReviewDateShort} you chose {t.staleExit!.priorAction} on{' '}
+                    {t.symbol}:
+                  </strong>{' '}
+                  {t.staleExit!.priorReason ? `"${t.staleExit!.priorReason}" ` : ''}
+                  {t.staleExit!.soldSinceDisplay ? `${t.staleExit!.soldSinceDisplay} ` : ''}
+                  Still holding {t.openSharesDisplay}.
+                </div>
+                <div className={styles.row} style={{ marginTop: 6 }}>
+                  <button
+                    type="button"
+                    className={styles.btnPrimary}
+                    disabled={!writable}
+                    onClick={() => requestOpenTrade(t.tradeId, true)}
+                  >
+                    I sold: record it
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.btnSecondary}
+                    onClick={() =>
+                      setAcknowledgedStaleIds((prev) => ({ ...prev, [t.tradeId]: true }))
+                    }
+                  >
+                    Still holding
+                  </button>
+                </div>
+              </div>
+            ))}
 
           {model.skippedSessions.length > 0 && (
             <p className={drStyles.notePlain}>
@@ -1425,17 +1569,16 @@ export function DailyReviewView({
                   <span
                     className={`${drStyles.hp} ${
                       liveEval
-                        ? liveEval.openPnl.num >= 0n
+                        ? (trade.derived.lotMatches.length > 0
+                            ? liveEval.combinedPnl
+                            : liveEval.openPnl
+                          ).num >= 0n
                           ? drStyles.up
                           : drStyles.down
                         : styles.muted
                     }`}
                   >
-                    {liveEval
-                      ? `${liveEval.openPnlDisplay} · ${liveEval.openPnlRDisplay}`
-                      : priorCtx
-                        ? `${formatSessionDateShort(priorCtx.asOfSessionDate)} ${priorCtx.evaluation.openPnlDisplay}`
-                        : '—'}
+                    {renderRowPnlText(trade, liveEval, priorCtx)}
                   </span>
                   <span
                     className={`${drStyles.hd} ${
@@ -1449,7 +1592,12 @@ export function DailyReviewView({
                     {liveEval?.dailyChangeDisplay ? `${liveEval.dailyChangeDisplay} today` : ''}
                   </span>
                   <span className={`${drStyles.theadMeter} ${liveEval ? '' : drStyles.faded}`}>
-                    <GaugeMeter symbol={trade.symbol} evaluation={displayEval} big={false} />
+                    <GaugeMeter
+                      symbol={trade.symbol}
+                      evaluation={displayEval}
+                      big={false}
+                      hasLotMatches={trade.derived.lotMatches.length > 0}
+                    />
                   </span>
                   <span className={`${drStyles.todo} ${trade.todayAction ? drStyles.todoOk : ''}`}>
                     {trade.todayAction
@@ -1464,24 +1612,35 @@ export function DailyReviewView({
                   (refuseSwitch.targetId === trade.tradeId ||
                     (refuseSwitch.targetId === null && refuseSwitch.fromId === trade.tradeId)) && (
                   <div className={drStyles.refuse} role="alert">
-                    <strong>{refuseSwitch.fromSymbol}&apos;s note isn&apos;t saved.</strong>
-                    <button
-                      type="button"
-                      className={styles.btnPrimary}
-                      disabled={!writable || saving}
-                      onClick={async () => {
-                        const fromTrade = model.trades.find(
-                          (t) => t.tradeId === refuseSwitch.fromId,
-                        );
-                        if (!fromTrade) return;
-                        const ok = await handleSaveAction(fromTrade);
-                        if (ok) {
-                          setOpenTradeId(refuseSwitch.targetId);
-                        }
-                      }}
-                    >
-                      Save it
-                    </button>
+                    <strong>
+                      {refuseSwitch.dirtySource === 'exit'
+                        ? `${refuseSwitch.fromSymbol}'s exit form has unsaved edits.`
+                        : `${refuseSwitch.fromSymbol}'s note isn't saved.`}
+                    </strong>
+                    {refuseSwitch.dirtySource === 'action' && (
+                      <button
+                        type="button"
+                        className={styles.btnPrimary}
+                        disabled={!writable || saving}
+                        onClick={async () => {
+                          const fromTrade = model.trades.find(
+                            (t) => t.tradeId === refuseSwitch.fromId,
+                          );
+                          if (!fromTrade) return;
+                          const ok = await handleSaveAction(fromTrade);
+                          if (ok) {
+                            const target = refuseSwitch.targetId;
+                            const wantExit = refuseSwitch.openExitPanel;
+                            setRefuseSwitch(null);
+                            setRecordingExitTradeId(wantExit && target ? target : null);
+                            setExitPanelDirty(false);
+                            setOpenTradeId(target);
+                          }
+                        }}
+                      >
+                        Save it
+                      </button>
+                    )}
                     <button
                       type="button"
                       className={styles.btnSecondary}
@@ -1492,11 +1651,14 @@ export function DailyReviewView({
                           return next;
                         });
                         const target = refuseSwitch.targetId;
+                        const wantExit = refuseSwitch.openExitPanel;
                         setRefuseSwitch(null);
+                        setExitPanelDirty(false);
+                        setRecordingExitTradeId(wantExit && target ? target : null);
                         setOpenTradeId(target);
                       }}
                     >
-                      Discard it
+                      {refuseSwitch.dirtySource === 'exit' ? 'Discard exit draft' : 'Discard it'}
                     </button>
                     <button
                       type="button"
@@ -1569,7 +1731,12 @@ export function DailyReviewView({
                                 </span>
                               ) : null}
                             </p>
-                            <GaugeMeter symbol={trade.symbol} evaluation={displayEval} big />
+                            <GaugeMeter
+                              symbol={trade.symbol}
+                              evaluation={displayEval}
+                              big
+                              hasLotMatches={trade.derived.lotMatches.length > 0}
+                            />
                             <div className={drStyles.legs}>
                               <span className={drStyles.down}>
                                 Stop: {displayEval.stopCondition.impactDisplay} (
@@ -1590,6 +1757,18 @@ export function DailyReviewView({
                               <dd>No cap</dd>
                             </dl>
                             <div className={drStyles.key}>
+                              {displayEval.realizedPnl.num !== 0n && (
+                                <span>
+                                  <i
+                                    className={drStyles.keySwatch}
+                                    style={{
+                                      background:
+                                        displayEval.realizedPnl.num > 0n ? '#1d6b34' : '#a3261b',
+                                    }}
+                                  />
+                                  Realized ({displayEval.realizedPnlDisplay})
+                                </span>
+                              )}
                               <span>
                                 <i
                                   className={drStyles.keySwatch}
@@ -1626,6 +1805,88 @@ export function DailyReviewView({
                       </div>
                     </div>
 
+                    {/* OV-05 STALE EXIT ACCOUNTABILITY & INLINE RECORD EXIT */}
+                    {trade.staleExit &&
+                      !trade.todayAction &&
+                      recordingExitTradeId !== trade.tradeId && (
+                      <div className={drStyles.staleNote}>
+                        <strong>
+                          You chose {trade.staleExit.priorAction} on{' '}
+                          {trade.staleExit.priorReviewDateShort}.{' '}
+                          {trade.staleExit.soldSinceDisplay
+                            ? `${trade.staleExit.soldSinceDisplay} `
+                            : ''}
+                          Still holding {trade.openSharesDisplay}.
+                        </strong>{' '}
+                        <button
+                          type="button"
+                          className={styles.btnSecondary}
+                          style={{ marginLeft: 8 }}
+                          disabled={!writable}
+                          onClick={() => setRecordingExitTradeId(trade.tradeId)}
+                        >
+                          I sold: record it
+                        </button>
+                      </div>
+                    )}
+
+                    {recordingExitTradeId === trade.tradeId &&
+                      (trade.tradeId in model.expectedSnapshot.tradeFactRevisions ? (
+                        <div style={{ marginTop: 10 }}>
+                          <RecordExitPanel
+                            tradeId={trade.tradeId}
+                            symbol={trade.symbol}
+                            expectedFactRevision={
+                              model.expectedSnapshot.tradeFactRevisions[trade.tradeId]!
+                            }
+                            openSharesDisplay={trade.openSharesDisplay}
+                            openShares={trade.derived.openShares}
+                            closeReasons={closeReasons}
+                            closeReasonsUnavailable={closeReasonsUnavailable}
+                            workflows={workflows}
+                            journal={journal}
+                            clock={clock}
+                            writable={writable}
+                            stopPrice={trade.stopPrice}
+                            targetPrice={trade.targetPrice}
+                            stopPriceDisplay={trade.stopPriceDisplay}
+                            targetPriceDisplay={trade.targetPriceDisplay}
+                            priorExitAction={
+                              trade.staleExit
+                                ? {
+                                    reviewDateShort: trade.staleExit.priorReviewDateShort,
+                                    reason: trade.staleExit.priorReason,
+                                  }
+                                : trade.todayAction?.action === 'Exit'
+                                  ? {
+                                      reviewDateShort: model.reviewDateShort,
+                                      reason: trade.todayAction.reason,
+                                    }
+                                  : null
+                            }
+                            onSuccess={async () => {
+                              setRecordingExitTradeId(null);
+                              setExitPanelDirty(false);
+                              await loadView();
+                              onReviewMutated();
+                            }}
+                            onConflict={() => {
+                              void loadView();
+                            }}
+                            onCancel={() => {
+                              setRecordingExitTradeId(null);
+                              setExitPanelDirty(false);
+                            }}
+                            onDirtyChange={setExitPanelDirty}
+                          />
+                        </div>
+                      ) : (
+                        <div className={styles.alertError} role="alert" style={{ marginTop: 10 }}>
+                          Trade state changed since Review opened; reload Review before recording an
+                          exit.
+                        </div>
+                      ))}
+
                     {/* MARKS-BEFORE-ACTION GATE OR ACTION AREA */}
                     {!trade.isResolvedForToday ? (
                       <div className={drStyles.locked}>
@@ -1649,11 +1910,26 @@ export function DailyReviewView({
                               <strong>
                                 {model.reviewDateShort}: {trade.todayAction.action}
                               </strong>
-                              {trade.todayAction.reason ? ` · "${trade.todayAction.reason}"` : ''}
+                              {trade.todayAction.reason
+                                ? ` · "${trade.todayAction.reason}"`
+                                : trade.todayAction.action === 'Exit'
+                                  ? " · the Plan's exit"
+                                  : ''}
                               {trade.todayAction.conviction
                                 ? ` · Conviction ${trade.todayAction.conviction}/5`
                                 : ''}
                             </span>
+                            {trade.todayAction.action === 'Exit' &&
+                              recordingExitTradeId !== trade.tradeId && (
+                                <button
+                                  type="button"
+                                  className={styles.btnPrimary}
+                                  disabled={!writable}
+                                  onClick={() => setRecordingExitTradeId(trade.tradeId)}
+                                >
+                                  Record the exit
+                                </button>
+                              )}
                             <button
                               type="button"
                               className={styles.btnSecondary}
@@ -1669,6 +1945,11 @@ export function DailyReviewView({
                               Change
                             </button>
                           </div>
+                          {trade.todayAction.action === 'Exit' && (
+                            <p className={styles.muted} style={{ margin: '4px 0 0', fontSize: '0.84rem' }}>
+                              Not done until it is recorded. Tomorrow&apos;s Review will ask.
+                            </p>
+                          )}
                         </div>
                         {renderDecisionTrail(trade)}
                       </div>
@@ -1677,33 +1958,56 @@ export function DailyReviewView({
                         <div role="form" aria-label={`Action, ${trade.symbol}`}>
                           <h3 className={drStyles.subHead}>Action</h3>
                           <p className={drStyles.ask}>
-                            {trade.standing.kind === 'PastStop'
-                              ? `Past your Stop (${trade.symbol} ≤ ${trade.stopPriceDisplay}). The Plan says out.`
-                              : trade.standing.kind === 'AtTarget'
-                                ? `At your Target (${trade.symbol} ≥ ${trade.targetPriceDisplay}). The Plan says out.`
-                                : 'Inside its lines. The Plan says hold.'}
+                            {trade.staleExit
+                              ? `You chose ${trade.staleExit.priorAction} and still hold ${trade.openSharesDisplay} shares. What happened, and what now?`
+                              : trade.standing.kind === 'PastStop'
+                                ? `Past your Stop (${trade.symbol} ≤ ${trade.stopPriceDisplay}). The Plan says out.`
+                                : trade.standing.kind === 'AtTarget'
+                                  ? `At your Target (${trade.symbol} ≥ ${trade.targetPriceDisplay}). The Plan says out.`
+                                  : 'Inside its lines. The Plan says hold.'}
                           </p>
                           <div className={drStyles.seg} role="group" aria-label="Action choice">
-                            <button
-                              type="button"
-                              className={drStyles.segBtn}
-                              aria-pressed={draft.action === 'Hold'}
-                              onClick={() =>
-                                updateDraft(trade, { action: 'Hold', error: null })
-                              }
-                            >
-                              Hold
-                            </button>
+                            {DAILY_REVIEW_ACTION_OPTIONS.map((opt) => (
+                              <button
+                                key={opt}
+                                type="button"
+                                className={drStyles.segBtn}
+                                aria-pressed={draft.action === opt}
+                                onClick={() =>
+                                  updateDraft(trade, { action: opt, error: null })
+                                }
+                              >
+                                {opt}
+                              </button>
+                            ))}
                           </div>
-                          {trade.strict && !draft.action && (
+                          {draft.action === 'Hold' ? (
+                            <p className={styles.muted} style={{ margin: '6px 0 0', fontSize: '0.88rem' }}>
+                              {trade.standing.kind === 'PastStop' ||
+                              trade.standing.kind === 'AtTarget'
+                                ? 'Holding leaves the Plan.'
+                                : 'Keep it as it is.'}
+                            </p>
+                          ) : draft.action === 'Exit' ? (
+                            <p className={styles.muted} style={{ margin: '6px 0 0', fontSize: '0.88rem' }}>
+                              {trade.planCheck.exitFollowsPlan
+                                ? `The Plan's exit: sell all ${trade.openSharesDisplay} shares. No reason needed.`
+                                : `${trade.planCheck.reasonIfLeaving ?? 'Exiting now leaves the Plan.'}`}{' '}
+                              Record the exit once it is done.
+                            </p>
+                          ) : trade.strict ? (
                             <p className={styles.muted} style={{ margin: '6px 0 0' }}>
                               Nothing is chosen for you here.
                             </p>
-                          )}
+                          ) : null}
 
                           <label className={styles.field} style={{ marginTop: 10 }}>
                             <span>
-                              {trade.strict ? 'Why leave the Plan?' : 'Why? (optional)'}
+                              {trade.staleExit
+                                ? 'What happened, and why this?'
+                                : actionRequiresReason(trade, draft.action)
+                                  ? 'Why leave the Plan?'
+                                  : 'Why? (optional)'}
                             </span>
                             <textarea
                               aria-label={`${trade.symbol} action reason`}
@@ -1839,6 +2143,12 @@ function renderDecisionTrail(trade: DailyReviewTradeItem) {
             ? `${trade.holdPastTargetStreak} sessions running`
             : 'last session'}
           .
+        </p>
+      )}
+      {trade.stopDisciplineDeviations.length > 0 && (
+        <p className={drStyles.streak} style={{ color: 'var(--stop)' }}>
+          Stop-Discipline Deviation ({trade.stopDisciplineDeviations.length}):{' '}
+          {trade.stopDisciplineDeviations[trade.stopDisciplineDeviations.length - 1]!.message}
         </p>
       )}
       {trade.pastDecisions.length === 0 ? (

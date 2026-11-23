@@ -303,6 +303,7 @@ export function App() {
           <TradeDetailCockpit
             tradeId={selectedTradeId}
             views={runtime.views}
+            catalog={runtime.catalog}
             journal={runtime.journal}
             workflows={runtime.workflows}
             clock={runtime.clock}
@@ -333,6 +334,10 @@ export function App() {
         <DailyReviewView
           dailyReview={runtime.dailyReview}
           marketData={runtime.marketData}
+          catalog={runtime.catalog}
+          workflows={runtime.workflows}
+          journal={runtime.journal}
+          clock={runtime.clock}
           refreshKey={tradesRefreshKey}
           writable={!screen.recoveryOnly}
           onReviewMutated={() => setTradesRefreshKey((k) => k + 1)}

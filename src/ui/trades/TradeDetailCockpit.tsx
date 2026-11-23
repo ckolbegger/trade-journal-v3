@@ -1,8 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import type { ReferenceCatalog } from '../../catalog/reference-catalog';
 import type { Journal } from '../../journal/journal';
 import { formatSessionDateShort } from '../../market-data/session-calendar';
+import type { CloseReasonRecord } from '../../persistence/idb';
 import type { Clock } from '../../shared/clock';
-import { ExactNumber, isPositive, sub, toDecimalString } from '../../shared/exact-number';
+import {
+  ExactNumber,
+  formatQuantityString,
+  isPositive,
+  sub,
+  toDecimalString,
+  toMoneyString,
+} from '../../shared/exact-number';
 import type {
   TradeDetailCockpitViewModel,
   TradeViewsAndReporting,
@@ -12,12 +21,14 @@ import styles from '../shell/AppShell.module.css';
 import cockpitStyles from './Cockpit.module.css';
 import { PriceTrack } from './PriceTrack';
 import { RecordEntryPanel } from './RecordEntryPanel';
+import { RecordExitPanel } from './RecordExitPanel';
 
 type CockpitDrawer = 'today' | 'position' | 'plan' | 'history' | 'journal';
 
 interface TradeDetailCockpitProps {
   readonly tradeId: string;
   readonly views: TradeViewsAndReporting;
+  readonly catalog: ReferenceCatalog;
   readonly journal: Journal;
   readonly workflows: TradeWorkflows;
   readonly clock: Clock;
@@ -40,9 +51,17 @@ function formatShortTimestamp(iso: string): string {
   });
 }
 
+function formatScalingLabel(scaling: string | null): string {
+  if (!scaling) return '—';
+  if (scaling === 'SingleEntrySingleExit') return 'Single entry, single exit';
+  if (scaling === 'Scaled') return 'Scaled';
+  return scaling;
+}
+
 export function TradeDetailCockpit({
   tradeId,
   views,
+  catalog,
   journal,
   workflows,
   clock,
@@ -55,17 +74,37 @@ export function TradeDetailCockpit({
 }: TradeDetailCockpitProps) {
   const loadSeqRef = useRef(0);
   const [detail, setDetail] = useState<TradeDetailCockpitViewModel | null>(null);
+  const [closeReasons, setCloseReasons] = useState<readonly CloseReasonRecord[]>([]);
+  const [closeReasonsUnavailable, setCloseReasonsUnavailable] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeDrawer, setActiveDrawer] = useState<CockpitDrawer>('plan');
   const [showRecordEntry, setShowRecordEntry] = useState(false);
+  const [showRecordExit, setShowRecordExit] = useState(false);
 
   const loadDetail = useCallback(async () => {
     const seq = ++loadSeqRef.current;
     try {
-      const res = await views.getTradeDetail(tradeId);
+      const [res, crRes] = await Promise.all([
+        views.getTradeDetail(tradeId),
+        catalog
+          .query({ family: 'CloseReason', includeInactive: false })
+          .then((r) => ({ ok: true as const, r }))
+          .catch(() => ({ ok: false as const })),
+      ]);
       if (seq !== loadSeqRef.current) return;
       setDetail(res);
+      if (crRes.ok) {
+        if (crRes.r.family === 'CloseReason') {
+          setCloseReasons(crRes.r.items);
+          setCloseReasonsUnavailable(false);
+        }
+      } else {
+        setCloseReasonsUnavailable(true);
+      }
+      if (res?.trade.lifecycleState === 'Closed') {
+        setActiveDrawer((prev) => (prev === 'today' ? 'position' : prev));
+      }
       setError(res ? null : 'Trade not found.');
     } catch (err) {
       if (seq !== loadSeqRef.current) return;
@@ -75,11 +114,12 @@ export function TradeDetailCockpit({
         setLoading(false);
       }
     }
-  }, [tradeId, views]);
+  }, [tradeId, views, catalog]);
 
   useEffect(() => {
     setLoading(true);
     setShowRecordEntry(false);
+    setShowRecordExit(false);
     setActiveDrawer('plan');
     void loadDetail();
   }, [loadDetail]);
@@ -120,15 +160,27 @@ export function TradeDetailCockpit({
     journalEntries,
     journalDebt,
     journalDeclines,
+    executions,
+    stopDisciplineDeviations,
+    planVsActual,
   } = detail;
   const outstandingDebt = journalDebt.filter((d) => d.status === 'Outstanding');
-  const hasPositionDrawer = derived.openLots.length > 0 || trade.lifecycleState === 'Open';
+  const isClosed = trade.lifecycleState === 'Closed';
+  const hasPositionDrawer =
+    derived.openLots.length > 0 ||
+    derived.lotMatches.length > 0 ||
+    executions.length > 0 ||
+    trade.lifecycleState === 'Open' ||
+    isClosed;
   const hasTodayDrawer = trade.lifecycleState === 'Open';
-  const hasHistoryDrawer = trade.lifecycleState === 'Open' && priceHistory.length > 0;
+  const hasHistoryDrawer =
+    (trade.lifecycleState === 'Open' || isClosed) && priceHistory.length > 0;
   const canRecordEntry =
     writable &&
     !derived.integrityDisagreement &&
     (trade.lifecycleState === 'Planned' || trade.lifecycleState === 'Open');
+  const canRecordExit =
+    writable && !derived.integrityDisagreement && trade.lifecycleState === 'Open';
 
   const defaultEntryPriceNumeric = toDecimalString(
     ExactNumber.fromJSON(trade.intendedEntryPrice),
@@ -188,6 +240,38 @@ export function TradeDetailCockpit({
         />
       )}
 
+      {showRecordExit && (
+        <RecordExitPanel
+          tradeId={trade.id}
+          symbol={trade.symbol}
+          expectedFactRevision={trade.factRevision}
+          openSharesDisplay={derived.openSharesDisplay}
+          openShares={derived.openShares}
+          closeReasons={closeReasons}
+          closeReasonsUnavailable={closeReasonsUnavailable}
+          latestExecutionIso={executions[executions.length - 1]?.economicTime ?? null}
+          workflows={workflows}
+          journal={journal}
+          clock={clock}
+          writable={writable}
+          stopPrice={ExactNumber.fromJSON(trade.stopPrice)}
+          targetPrice={ExactNumber.fromJSON(trade.targetPrice)}
+          stopPriceDisplay={detail.stopPriceDisplay}
+          targetPriceDisplay={detail.targetPriceDisplay}
+          onSuccess={() => {
+            setShowRecordExit(false);
+            setActiveDrawer('position');
+            void loadDetail();
+            onTradeMutated();
+          }}
+          onConflict={() => {
+            void loadDetail();
+          }}
+          onCancel={() => setShowRecordExit(false)}
+          onDirtyChange={onDirtyChange}
+        />
+      )}
+
       <div className={cockpitStyles.cockpitGrid}>
         {/* Sticky left State-of-Play rail — stacked white cards matching prototypes/trade-detail/index.html C. Cockpit */}
         <aside className={cockpitStyles.rail} aria-label="Trade state of play">
@@ -213,32 +297,78 @@ export function TradeDetailCockpit({
                 {detail.institutionLabel}, {detail.accountLabel}
               </div>
             </div>
-            {canRecordEntry && !showRecordEntry && (
+            {(canRecordEntry || canRecordExit) && !showRecordEntry && !showRecordExit && (
               <div className={cockpitStyles.railActions}>
-                <button
-                  type="button"
-                  className={styles.btnPrimary}
-                  onClick={() => setShowRecordEntry(true)}
-                >
-                  Record entry
-                </button>
+                {canRecordEntry && (
+                  <button
+                    type="button"
+                    className={styles.btnPrimary}
+                    onClick={() => {
+                      setShowRecordExit(false);
+                      setShowRecordEntry(true);
+                    }}
+                  >
+                    Record entry
+                  </button>
+                )}
+                {canRecordExit && (
+                  <button
+                    type="button"
+                    className={styles.btnSecondary}
+                    onClick={() => {
+                      setShowRecordEntry(false);
+                      setShowRecordExit(true);
+                    }}
+                  >
+                    Record exit
+                  </button>
+                )}
               </div>
             )}
           </div>
 
-          {/* Card 2: P&L & Open Shares (with OV-04 dated prior-session fallback when today's Mark is missing) */}
+          {/* Card 2: P&L & Open Shares (Closed shows Final Realized P&L + R; Open shows live or prior-session fallback) */}
           <div className={cockpitStyles.railCard}>
-            {liveEval ? (
+            {isClosed ? (
               <>
                 <div
                   className={`${cockpitStyles.railPnl} ${
-                    liveEval.openPnl.num >= 0n ? cockpitStyles.up : cockpitStyles.down
+                    derived.realizedPnl.num >= 0n ? cockpitStyles.up : cockpitStyles.down
                   }`}
                 >
-                  {liveEval.openPnlDisplay}
+                  {derived.realizedPnlDisplay}
                 </div>
                 <div className={styles.muted} style={{ marginTop: 4 }}>
-                  <strong>{liveEval.openPnlRDisplay}</strong>
+                  <strong
+                    className={
+                      derived.realizedPnl.num >= 0n ? cockpitStyles.up : cockpitStyles.down
+                    }
+                  >
+                    {derived.realizedRDisplay ?? '—'}
+                  </strong>{' '}
+                  realized, final
+                </div>
+              </>
+            ) : liveEval ? (
+              <>
+                <div
+                  className={`${cockpitStyles.railPnl} ${
+                    (derived.lotMatches.length > 0 ? liveEval.combinedPnl : liveEval.openPnl).num >=
+                    0n
+                      ? cockpitStyles.up
+                      : cockpitStyles.down
+                  }`}
+                >
+                  {derived.lotMatches.length > 0
+                    ? liveEval.combinedPnlDisplay
+                    : liveEval.openPnlDisplay}
+                </div>
+                <div className={styles.muted} style={{ marginTop: 4 }}>
+                  <strong>
+                    {derived.lotMatches.length > 0
+                      ? liveEval.combinedPnlRDisplay
+                      : liveEval.openPnlRDisplay}
+                  </strong>
                   {liveEval.dailyChangeDisplay && liveEval.priorSessionDate ? (
                     <span
                       className={
@@ -257,6 +387,11 @@ export function TradeDetailCockpit({
                     </span>
                   )}
                 </div>
+                {derived.lotMatches.length > 0 && (
+                  <div className={styles.muted} style={{ marginTop: 4, fontSize: '0.84rem' }}>
+                    Open {liveEval.openPnlDisplay} · Realized {derived.realizedPnlDisplay}
+                  </div>
+                )}
               </>
             ) : priorFallback ? (
               <>
@@ -275,6 +410,11 @@ export function TradeDetailCockpit({
                   At the {formatSessionDateShort(priorFallback.asOfSessionDate)} Marks (today
                   Unavailable)
                 </div>
+                {derived.lotMatches.length > 0 && (
+                  <div className={styles.muted} style={{ marginTop: 4, fontSize: '0.84rem' }}>
+                    Realized: {derived.realizedPnlDisplay}
+                  </div>
+                )}
               </>
             ) : (
               <>
@@ -284,12 +424,36 @@ export function TradeDetailCockpit({
                     ? 'Trade P&L once the entry is recorded and marked'
                     : 'No Marks yet — enter Marks in Review to compute P&L'}
                 </div>
+                {derived.lotMatches.length > 0 && (
+                  <div className={styles.muted} style={{ marginTop: 4, fontSize: '0.84rem' }}>
+                    Realized so far: {derived.realizedPnlDisplay}
+                  </div>
+                )}
               </>
             )}
             <div className={styles.mono} style={{ marginTop: 8, fontWeight: 600 }}>
               {derived.openSharesDisplay} of {detail.plannedQuantityDisplay} shares open
             </div>
           </div>
+
+          {/* Card 2b: Result rail card when Closed */}
+          {isClosed && (
+            <section className={cockpitStyles.railCard} aria-labelledby="cockpit-result-heading">
+              <h2 id="cockpit-result-heading" className={styles.cardTitle}>
+                Result
+              </h2>
+              <dl className={cockpitStyles.kv}>
+                <dt>Terminal Disposition</dt>
+                <dd>{derived.terminalDisposition ?? 'Closed'}</dd>
+                <dt>Close Reason</dt>
+                <dd>{detail.closeReasonLabel ?? '—'}</dd>
+                <dt>Closed</dt>
+                <dd>{detail.closedAtShort ?? '—'}</dd>
+                <dt>Entry / Exit Scaling</dt>
+                <dd>{formatScalingLabel(derived.entryExitScaling)}</dd>
+              </dl>
+            </section>
+          )}
 
           {/* Card 3: Needs you (only when Outstanding Debt exists) */}
           {outstandingDebt.length > 0 && (
@@ -303,13 +467,13 @@ export function TradeDetailCockpit({
             </div>
           )}
 
-          {/* Card 4: Conditions */}
+          {/* Card 4: Conditions (Closed lists frozen conditions without live figures or extremes) */}
           <div className={cockpitStyles.railCard}>
             <div className={styles.spaceBetween} style={{ marginBottom: 8 }}>
               <h2 className={styles.cardTitle} style={{ margin: 0 }}>
                 Conditions
               </h2>
-              {!liveEval && priorFallback && (
+              {!isClosed && !liveEval && priorFallback && (
                 <span className={styles.muted} style={{ fontSize: '0.76rem' }}>
                   At {formatSessionDateShort(priorFallback.asOfSessionDate)}
                 </span>
@@ -317,34 +481,41 @@ export function TradeDetailCockpit({
             </div>
             <ul
               className={`${cockpitStyles.conditionList} ${
-                !liveEval && priorFallback ? cockpitStyles.faded : ''
+                !isClosed && !liveEval && priorFallback ? cockpitStyles.faded : ''
               }`}
             >
               <li className={cockpitStyles.conditionItem}>
                 <span>
                   <span className={`${styles.pill} ${styles.pillDanger}`}>
-                    {displayEval?.stopCondition.status === 'Breached' ? 'Stop Breached' : 'Stop'}
+                    {!isClosed && displayEval?.stopCondition.status === 'Breached'
+                      ? 'Stop Breached'
+                      : 'Stop'}
                   </span>
-                  {displayEval?.stopCondition.nearest && (
+                  {!isClosed && displayEval?.stopCondition.nearest && (
                     <span className={cockpitStyles.near}>nearest</span>
                   )}
                 </span>
-                <span
-                  className={`${cockpitStyles.condFig} ${
-                    !displayEval || displayEval.stopCondition.impactDollars.num < 0n
-                      ? cockpitStyles.down
-                      : cockpitStyles.up
-                  }`}
-                >
-                  {displayEval
-                    ? `${displayEval.stopCondition.impactDisplay} (${displayEval.stopCondition.impactRDisplay})`
-                    : `-${planFact.baseline.originalPlannedRiskDisplay} (-1.00R)`}
-                </span>
+                {!isClosed && (
+                  <span
+                    className={`${cockpitStyles.condFig} ${
+                      !displayEval || displayEval.stopCondition.impactDollars.num < 0n
+                        ? cockpitStyles.down
+                        : cockpitStyles.up
+                    }`}
+                  >
+                    {displayEval
+                      ? `${displayEval.stopCondition.impactDisplay} (${displayEval.stopCondition.impactRDisplay})`
+                      : `-${planFact.baseline.originalPlannedRiskDisplay} (-1.00R)`}
+                  </span>
+                )}
                 <span className={cockpitStyles.condWhat}>
                   {trade.symbol} at or below {detail.stopPriceDisplay}
                 </span>
-                {displayEval?.stopCondition.overrunDisplay && (
-                  <span className={`${styles.muted} ${cockpitStyles.down}`} style={{ gridColumn: '1 / -1' }}>
+                {!isClosed && displayEval?.stopCondition.overrunDisplay && (
+                  <span
+                    className={`${styles.muted} ${cockpitStyles.down}`}
+                    style={{ gridColumn: '1 / -1' }}
+                  >
                     Overrun past Stop: {displayEval.stopCondition.overrunDisplay}
                   </span>
                 )}
@@ -353,46 +524,50 @@ export function TradeDetailCockpit({
               <li className={cockpitStyles.conditionItem}>
                 <span>
                   <span className={`${styles.pill} ${styles.pillSuccess}`}>
-                    {displayEval?.targetCondition.status === 'Reached'
+                    {!isClosed && displayEval?.targetCondition.status === 'Reached'
                       ? 'Target Reached'
                       : 'Target'}
                   </span>
-                  {displayEval?.targetCondition.nearest && (
+                  {!isClosed && displayEval?.targetCondition.nearest && (
                     <span className={cockpitStyles.near}>nearest</span>
                   )}
                 </span>
-                <span
-                  className={`${cockpitStyles.condFig} ${
-                    !displayEval || displayEval.targetCondition.impactDollars.num >= 0n
-                      ? cockpitStyles.up
-                      : cockpitStyles.down
-                  }`}
-                >
-                  {displayEval
-                    ? `${displayEval.targetCondition.impactDisplay} (${displayEval.targetCondition.impactRDisplay})`
-                    : `+${planFact.baseline.originalPlannedRewardDisplay} (+${planFact.baseline.plannedRewardToRiskDisplay})`}
-                </span>
+                {!isClosed && (
+                  <span
+                    className={`${cockpitStyles.condFig} ${
+                      !displayEval || displayEval.targetCondition.impactDollars.num >= 0n
+                        ? cockpitStyles.up
+                        : cockpitStyles.down
+                    }`}
+                  >
+                    {displayEval
+                      ? `${displayEval.targetCondition.impactDisplay} (${displayEval.targetCondition.impactRDisplay})`
+                      : `+${planFact.baseline.originalPlannedRewardDisplay} (+${planFact.baseline.plannedRewardToRiskDisplay})`}
+                  </span>
+                )}
                 <span className={cockpitStyles.condWhat}>
                   {trade.symbol} at or above {detail.targetPriceDisplay}
                 </span>
               </li>
             </ul>
 
-            <div className={cockpitStyles.extremes}>
-              {displayEval ? (
-                <>
-                  <div>
-                    <strong>Worst case:</strong> {displayEval.worstCaseRiskDisplay} ·{' '}
-                    {displayEval.worstCaseRiskRDisplay} if {trade.symbol} goes to zero
-                  </div>
-                  <div>
-                    <strong>Max reward:</strong> no cap above
-                  </div>
-                </>
-              ) : (
-                'Distances to each condition arrive with the first Marks after entry.'
-              )}
-            </div>
+            {!isClosed && (
+              <div className={cockpitStyles.extremes}>
+                {displayEval ? (
+                  <>
+                    <div>
+                      <strong>Worst case:</strong> {displayEval.worstCaseRiskDisplay} ·{' '}
+                      {displayEval.worstCaseRiskRDisplay} if {trade.symbol} goes to zero
+                    </div>
+                    <div>
+                      <strong>Max reward:</strong> no cap above
+                    </div>
+                  </>
+                ) : (
+                  'Distances to each condition arrive with the first Marks after entry.'
+                )}
+              </div>
+            )}
           </div>
         </aside>
 
@@ -422,7 +597,7 @@ export function TradeDetailCockpit({
                 }`}
                 onClick={() => setActiveDrawer('position')}
               >
-                Position ({derived.openLots.length})
+                {isClosed ? 'Position' : `Position (${derived.openLots.length})`}
               </button>
             )}
             <button
@@ -539,51 +714,239 @@ export function TradeDetailCockpit({
             <div className={styles.card} role="tabpanel" aria-label="Position">
               <div className={styles.spaceBetween} style={{ marginBottom: 12 }}>
                 <h2 className={styles.cardTitle} style={{ margin: 0 }}>
-                  Open Lots &amp; Executions
+                  {isClosed ? 'Lot Matches & Executions' : 'Open Lots & Executions'}
                 </h2>
-                {!liveEval && <span className={styles.pill}>No Marks yet</span>}
+                {!isClosed && !liveEval && <span className={styles.pill}>No Marks yet</span>}
               </div>
 
-              <div style={{ overflowX: 'auto' }}>
-                <table className={styles.table} aria-label="Open lots">
-                  <thead>
-                    <tr>
-                      <th>Open lot</th>
-                      <th>Shares</th>
-                      <th>Price</th>
-                      <th>Fee left</th>
-                      <th>Intent</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {derived.openLots.map((lot) => (
-                      <tr key={lot.executionId}>
-                        <td className={styles.muted}>{formatShortTimestamp(lot.economicTime)}</td>
-                        <td className={styles.mono}>{lot.quantityDisplay}</td>
-                        <td className={styles.mono}>{lot.fillPriceDisplay}</td>
-                        <td className={styles.mono}>{lot.unconsumedOpeningFeeDisplay}</td>
-                        <td>
-                          <span className={styles.pill}>{lot.plannedLegIntent}</span>
-                        </td>
+              {derived.openLots.length > 0 && (
+                <div style={{ overflowX: 'auto' }}>
+                  <table className={styles.table} aria-label="Open lots">
+                    <thead>
+                      <tr>
+                        <th>Open lot</th>
+                        <th>Shares</th>
+                        <th>Price</th>
+                        <th>Fee left</th>
+                        <th>Intent</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {derived.openLots.map((lot) => (
+                        <tr key={lot.executionId}>
+                          <td className={styles.muted}>{formatShortTimestamp(lot.economicTime)}</td>
+                          <td className={styles.mono}>{lot.quantityDisplay}</td>
+                          <td className={styles.mono}>{lot.fillPriceDisplay}</td>
+                          <td className={styles.mono}>{lot.unconsumedOpeningFeeDisplay}</td>
+                          <td>
+                            <span className={styles.pill}>{lot.plannedLegIntent}</span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
 
               <dl className={cockpitStyles.kv} style={{ marginTop: 14 }}>
-                <dt>Average entry fill</dt>
-                <dd>{derived.averageEntryPriceDisplay}</dd>
-                <dt>Opening fees paid</dt>
-                <dd>{derived.totalOpeningFeesDisplay}</dd>
+                {!isClosed && liveEval && (
+                  <>
+                    <dt>Open P&amp;L</dt>
+                    <dd className={liveEval.openPnl.num >= 0n ? cockpitStyles.up : cockpitStyles.down}>
+                      {liveEval.openPnlDisplay}
+                    </dd>
+                  </>
+                )}
+                {derived.lotMatches.length > 0 && (
+                  <>
+                    <dt>Realized</dt>
+                    <dd
+                      className={
+                        derived.realizedPnl.num >= 0n ? cockpitStyles.up : cockpitStyles.down
+                      }
+                    >
+                      {derived.realizedPnlDisplay}
+                      {derived.realizedRDisplay ? ` · ${derived.realizedRDisplay}` : ''}
+                    </dd>
+                  </>
+                )}
+                <dt>Fees paid</dt>
+                <dd>{derived.feeReconciliation.incurredFeesDisplay}</dd>
+                {derived.averageEntryPrice && (
+                  <>
+                    <dt>Average entry fill</dt>
+                    <dd>{derived.averageEntryPriceDisplay}</dd>
+                  </>
+                )}
                 <dt>Planned leg fulfillment</dt>
                 <dd>{derived.fulfillment}</dd>
+                {derived.entryExitScaling && (
+                  <>
+                    <dt>Entry / Exit Scaling</dt>
+                    <dd>{formatScalingLabel(derived.entryExitScaling)}</dd>
+                  </>
+                )}
               </dl>
+
+              {derived.lotMatches.length > 0 && (
+                <>
+                  <h3 className={cockpitStyles.cSub}>Lot Matches</h3>
+                  <div style={{ overflowX: 'auto' }}>
+                    <table className={styles.table} aria-label="Lot Matches">
+                      <thead>
+                        <tr>
+                          <th>Sold</th>
+                          <th>Shares</th>
+                          <th>Opened at</th>
+                          <th>Closed at</th>
+                          <th>Realized</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {[...derived.lotMatches].reverse().map((m, idx) => (
+                          <tr key={`${m.openingExecutionId}-${m.disposalExecutionId}-${idx}`}>
+                            <td className={styles.muted}>
+                              {formatShortTimestamp(m.disposedAtEconomicTime)}
+                            </td>
+                            <td className={styles.mono}>{m.matchedQuantityDisplay}</td>
+                            <td className={styles.mono}>
+                              {m.openingPriceDisplay} (
+                              {formatShortTimestamp(m.openedAtEconomicTime)})
+                            </td>
+                            <td className={styles.mono}>{m.disposalPriceDisplay}</td>
+                            <td
+                              className={`${styles.mono} ${
+                                m.realizedPnl.num >= 0n ? cockpitStyles.up : cockpitStyles.down
+                              }`}
+                            >
+                              {m.realizedPnlDisplay}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <p className={styles.muted} style={{ fontSize: '0.82rem', margin: '6px 0 0' }}>
+                    Each match&apos;s amount is rounded to the cent for display.
+                  </p>
+
+                  <details className={cockpitStyles.cMore}>
+                    <summary>Fee reconciliation</summary>
+                    <dl className={cockpitStyles.kv}>
+                      <dt>Incurred fees</dt>
+                      <dd>{derived.feeReconciliation.incurredFeesDisplay}</dd>
+                      <dt>Opening fees incurred</dt>
+                      <dd>{derived.feeReconciliation.openingFeesIncurredDisplay}</dd>
+                      <dt>Opening fees allocated to Lot Matches</dt>
+                      <dd>{derived.feeReconciliation.openingFeesAllocatedDisplay}</dd>
+                      <dt>Opening fees unconsumed</dt>
+                      <dd>{derived.feeReconciliation.openingFeesUnconsumedDisplay}</dd>
+                      <dt>Disposal fees incurred</dt>
+                      <dd>{derived.feeReconciliation.disposalFeesIncurredDisplay}</dd>
+                      <dt>Disposal fees allocated to Lot Matches</dt>
+                      <dd>{derived.feeReconciliation.disposalFeesAllocatedDisplay}</dd>
+                    </dl>
+                  </details>
+                </>
+              )}
+
+              {executions.length > 0 && (
+                <>
+                  <h3 className={cockpitStyles.cSub}>Executions</h3>
+                  <ol className={cockpitStyles.journalList}>
+                    {[...executions].reverse().map((ex) => (
+                      <li key={ex.id}>
+                        <span className={cockpitStyles.jWhen}>
+                          {formatShortTimestamp(ex.economicTime)}
+                        </span>
+                        <div className={cockpitStyles.jBody}>
+                          {ex.side === 'Buy' ? 'Buy to open' : 'Sell to close'}{' '}
+                          <span className={styles.mono}>
+                            {formatQuantityString(ExactNumber.fromJSON(ex.quantity))}
+                          </span>{' '}
+                          {trade.symbol} @{' '}
+                          <span className={styles.mono}>
+                            {toMoneyString(ExactNumber.fromJSON(ex.fillPrice))}
+                          </span>
+                          , fee{' '}
+                          <span className={styles.mono}>
+                            {toMoneyString(ExactNumber.fromJSON(ex.fee))}
+                          </span>
+                        </div>
+                      </li>
+                    ))}
+                  </ol>
+                </>
+              )}
             </div>
           )}
 
           {activeDrawer === 'plan' && (
             <div className={styles.card} role="tabpanel" aria-label="Plan and Risk">
+              {planVsActual && (
+                <div className={cockpitStyles.kvGroup}>
+                  <h2 className={cockpitStyles.kvGroupTitle}>Plan vs. What happened</h2>
+                  <div style={{ overflowX: 'auto' }}>
+                    <table className={styles.table} aria-label="Plan vs. What happened">
+                      <thead>
+                        <tr>
+                          <th>Item</th>
+                          <th>Plan</th>
+                          <th>What happened</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>Entry</td>
+                          <td className={styles.mono}>{planVsActual.plannedEntrySummary}</td>
+                          <td className={styles.mono}>{planVsActual.actualEntrySummary}</td>
+                        </tr>
+                        <tr>
+                          <td>Stop</td>
+                          <td className={styles.mono}>
+                            {trade.symbol} ≤ {detail.stopPriceDisplay}
+                          </td>
+                          <td className={planVsActual.stopFirstReachedShort ? cockpitStyles.down : ''}>
+                            {planVsActual.stopFirstReachedShort
+                              ? `Reached ${planVsActual.stopFirstReachedShort}`
+                              : 'Never reached'}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Target</td>
+                          <td className={styles.mono}>
+                            {trade.symbol} ≥ {detail.targetPriceDisplay}
+                          </td>
+                          <td className={planVsActual.targetFirstReachedShort ? cockpitStyles.up : ''}>
+                            {planVsActual.targetFirstReachedShort
+                              ? `Reached ${planVsActual.targetFirstReachedShort}`
+                              : 'Never reached'}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Exit</td>
+                          <td>All at Stop or Target</td>
+                          <td className={styles.mono}>{planVsActual.exitSummary}</td>
+                        </tr>
+                        <tr>
+                          <td>Result</td>
+                          <td className={styles.mono}>{planVsActual.plannedResultSummary}</td>
+                          <td
+                            className={`${styles.mono} ${
+                              planVsActual.actualResultPositive
+                                ? cockpitStyles.up
+                                : cockpitStyles.down
+                            }`}
+                          >
+                            <strong>{planVsActual.actualResultSummary}</strong>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
               <div className={cockpitStyles.kvGroup}>
                 <h2 className={cockpitStyles.kvGroupTitle}>Frozen Plan Baseline</h2>
                 <dl className={cockpitStyles.kv}>
@@ -628,12 +991,17 @@ export function TradeDetailCockpit({
                 </div>
               )}
 
-              {derived.deviations.length > 0 && (
+              {(derived.deviations.length > 0 || stopDisciplineDeviations.length > 0) && (
                 <div className={styles.alertError} style={{ marginTop: 14 }}>
                   <strong>Fact-Only Deviations:</strong>
                   <ul style={{ margin: '6px 0 0', paddingLeft: 18 }}>
                     {derived.deviations.map((dev, idx) => (
-                      <li key={idx}>
+                      <li key={`d-${idx}`}>
+                        <strong>{dev.kind}:</strong> {dev.message}
+                      </li>
+                    ))}
+                    {stopDisciplineDeviations.map((dev) => (
+                      <li key={dev.id}>
                         <strong>{dev.kind}:</strong> {dev.message}
                       </li>
                     ))}

@@ -49,7 +49,13 @@ describe('ReferenceCatalog seam', () => {
     const first = await catalog.seedDefaults();
     expect(first.status).toBe('Seeded');
     if (first.status !== 'Seeded') return;
-    expect(first.additions).toEqual(['strat_long_stock']);
+    expect(first.additions).toEqual([
+      'strat_long_stock',
+      'cr_target_reached',
+      'cr_stop_triggered',
+      'cr_thesis_invalidated',
+      'cr_time_based_exit',
+    ]);
     expect(first.hasSelectableAccounts).toBe(false);
 
     const second = await catalog.seedDefaults();
@@ -61,9 +67,16 @@ describe('ReferenceCatalog seam', () => {
     const insts = await catalog.query({ family: 'Institution', includeInactive: true });
     const accts = await catalog.query({ family: 'Account', includeInactive: true });
     const strategies = await catalog.query({ family: 'Strategy', includeInactive: true });
+    const closeReasons = await catalog.query({ family: 'CloseReason', includeInactive: true });
     expect(insts.items).toEqual([]);
     expect(accts.items).toEqual([]);
     expect(strategies.items.map((s) => s.currentLabel)).toEqual(['Long Stock']);
+    expect(closeReasons.items.map((c) => c.currentLabel)).toEqual([
+      'Stop Triggered',
+      'Target Reached',
+      'Thesis Invalidated',
+      'Time-Based Exit',
+    ]);
   });
 
   it('prevents concurrent duplicate-label creation inside atomic write transactions', async () => {

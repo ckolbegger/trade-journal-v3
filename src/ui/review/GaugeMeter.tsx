@@ -6,6 +6,7 @@ interface GaugeMeterProps {
   readonly symbol: string;
   readonly evaluation: AvailableLongStockEvaluation | null;
   readonly big: boolean;
+  readonly hasLotMatches?: boolean;
 }
 
 function toFloat(r: Rational): number {
@@ -22,7 +23,7 @@ function formatSignedMoney(val: number): string {
   return `$${abs}`;
 }
 
-export function GaugeMeter({ symbol, evaluation, big }: GaugeMeterProps) {
+export function GaugeMeter({ symbol, evaluation, big, hasLotMatches = false }: GaugeMeterProps) {
   const patternId = useId().replace(/:/g, '');
 
   if (!evaluation) {
@@ -33,7 +34,8 @@ export function GaugeMeter({ symbol, evaluation, big }: GaugeMeterProps) {
     );
   }
 
-  const now = toFloat(evaluation.openPnl);
+  const re = toFloat(evaluation.realizedPnl);
+  const now = toFloat(evaluation.combinedPnl);
   const stopImpact = toFloat(evaluation.stopCondition.impactDollars);
   const targetImpact = toFloat(evaluation.targetCondition.impactDollars);
   const atStop = now + stopImpact;
@@ -41,7 +43,7 @@ export function GaugeMeter({ symbol, evaluation, big }: GaugeMeterProps) {
   const prior =
     evaluation.dailyChange !== null ? now - toFloat(evaluation.dailyChange) : null;
 
-  const vals = [now, atStop, atTarget, 0, ...(prior !== null ? [prior] : [])];
+  const vals = [now, atStop, atTarget, 0, re, ...(prior !== null ? [prior] : [])];
   let lo = Math.min(...vals);
   let hi = Math.max(...vals);
   const pad = (hi - lo) * 0.08 || 1;
@@ -59,7 +61,10 @@ export function GaugeMeter({ symbol, evaluation, big }: GaugeMeterProps) {
   const hatchBg = stopBreached ? '#f2c6c0' : '#c2e2c9';
   const hatchFg = stopBreached ? '#a3261b' : '#1d6b34';
 
-  const sentence = `${symbol} P&L ${evaluation.openPnlDisplay}${
+  const hasRealized = hasLotMatches || Math.abs(re) > 0.004;
+  const sentence = `${symbol} P&L ${hasRealized ? evaluation.combinedPnlDisplay : evaluation.openPnlDisplay}${
+    hasRealized ? ` (${evaluation.realizedPnlDisplay} realized, ${evaluation.openPnlDisplay} open)` : ''
+  }${
     stopBreached
       ? `, past Stop (${formatSignedMoney(atStop)})`
       : targetReached
@@ -156,19 +161,22 @@ export function GaugeMeter({ symbol, evaluation, big }: GaugeMeterProps) {
       {/* Neutral baseline track */}
       <rect x="0" y={top + bh / 2 - 1.5} width={W} height="3" fill="#ece7da" />
 
-      {/* Open P&L bar with hatched overrun past Stop or Target */}
+      {/* Solid realized layer from 0 to realized P&L */}
+      {hasRealized && renderBar(0, re, re > 0 ? '#1d6b34' : '#a3261b')}
+
+      {/* Open P&L layer from realized P&L to combined P&L (with hatched overrun past Stop/Target) */}
       {now < atStop - 0.004 ? (
         <>
-          {atStop < 0 && renderBar(0, atStop, '#f2c6c0')}
-          {renderBar(Math.min(0, atStop), now, `url(#${patternId})`)}
+          {re > atStop && renderBar(re, atStop, '#f2c6c0')}
+          {renderBar(Math.min(re, atStop), now, `url(#${patternId})`)}
         </>
       ) : now > atTarget + 0.004 ? (
         <>
-          {atTarget > 0 && renderBar(0, atTarget, '#c2e2c9')}
-          {renderBar(Math.max(0, atTarget), now, `url(#${patternId})`)}
+          {re < atTarget && renderBar(re, atTarget, '#c2e2c9')}
+          {renderBar(Math.max(re, atTarget), now, `url(#${patternId})`)}
         </>
       ) : (
-        renderBar(0, now, now < 0 ? '#f2c6c0' : '#c2e2c9')
+        renderBar(re, now, now < re ? '#f2c6c0' : '#c2e2c9')
       )}
 
       {/* Zero, Stop, Target ticks */}

@@ -1,4 +1,5 @@
 import {
+  DAILY_TRADE_REVIEW_TYPE_ID,
   PLAN_REFLECTION_TYPE_ID,
   POSITION_CHANGE_REFLECTION_TYPE_ID,
   validatePlanReflectionInput,
@@ -12,6 +13,7 @@ import type {
   JournalDebtRecord,
   JournalDeclineRecord,
   JournalEntryRecord,
+  LotMatchRecord,
   PersistenceSeam,
   PlannedLegIntent,
   PlanVersionFactRecord,
@@ -24,6 +26,10 @@ import { ExactNumber, isNegative, isPositive, tryFromDecimalString } from '../sh
 import type { RuntimeNotWritableResult } from '../shared/result';
 import { assessLongStockPlan } from '../trade-analysis/assess-plan';
 import { deriveLongStockPosition, type DerivedLongStockState } from '../trade-analysis/derive';
+import {
+  diffStopDisciplineDeviationRecords,
+  extractDailyReviewActions,
+} from '../trade-analysis/replay';
 
 export interface ConfirmPlanCommand {
   readonly accountId: string;
@@ -58,6 +64,7 @@ export type ConfirmPlanResult =
   | RuntimeNotWritableResult;
 
 export interface OpeningExecutionInput {
+  readonly side?: 'Buy' | 'Sell';
   readonly quantity: string;
   readonly fillPrice: string;
   readonly fee: string;
@@ -74,6 +81,7 @@ export interface RecordPositionChangeCommand {
   readonly expectedFactRevision: number;
   readonly economicTime: string;
   readonly executions: readonly OpeningExecutionInput[];
+  readonly closeReasonId?: string;
   readonly reflection: PositionChangeReflectionDisposition;
 }
 
@@ -310,6 +318,9 @@ export function createTradeWorkflows(options: {
           'trades',
           'position_changes',
           'executions',
+          'lot_matches',
+          'catalog_close_reasons',
+          'market_marks',
           'deviations',
           'journal_definitions',
           'journal_entries',
@@ -340,7 +351,7 @@ export function createTradeWorkflows(options: {
               errors: [
                 {
                   field: 'tradeId',
-                  message: `Cannot record opening execution on a ${trade.lifecycleState} Trade.`,
+                  message: `Cannot record a position change on a ${trade.lifecycleState} Trade.`,
                 },
               ],
             };
@@ -350,11 +361,12 @@ export function createTradeWorkflows(options: {
           if (command.executions.length === 0) {
             errors.push({
               field: 'executions',
-              message: 'Add at least one opening fill.',
+              message: 'Add at least one fill.',
             });
           }
 
           const parsedExecs: {
+            side: 'Buy' | 'Sell';
             quantity: ReturnType<typeof ExactNumber.toJSON>;
             fillPrice: ReturnType<typeof ExactNumber.toJSON>;
             fee: ReturnType<typeof ExactNumber.toJSON>;
@@ -362,6 +374,7 @@ export function createTradeWorkflows(options: {
           }[] = [];
 
           command.executions.forEach((ex, idx) => {
+            const side: 'Buy' | 'Sell' = ex.side ?? 'Buy';
             const qty = tryFromDecimalString(ex.quantity);
             if (!qty || !isPositive(qty)) {
               errors.push({
@@ -385,6 +398,7 @@ export function createTradeWorkflows(options: {
             }
             if (qty && isPositive(qty) && price && isPositive(price) && fee && !isNegative(fee)) {
               parsedExecs.push({
+                side,
                 quantity: ExactNumber.toJSON(qty),
                 fillPrice: ExactNumber.toJSON(price),
                 fee: ExactNumber.toJSON(fee),
@@ -393,10 +407,22 @@ export function createTradeWorkflows(options: {
             }
           });
 
-          const [existingExecs, existingDevs, definitions] = await Promise.all([
+          const [
+            existingExecs,
+            existingLotMatches,
+            existingDevs,
+            closeReasons,
+            definitions,
+            symMarks,
+            tradeJournalEntries,
+          ] = await Promise.all([
             tx.getAllByIndex('executions', 'by_trade', trade.id),
+            tx.getAllByIndex('lot_matches', 'by_trade', trade.id),
             tx.getAllByIndex('deviations', 'by_trade', trade.id),
+            tx.getAll('catalog_close_reasons'),
             tx.getAll('journal_definitions'),
+            tx.getAllByIndex('market_marks', 'by_symbol', trade.symbol),
+            tx.getAllByIndex('journal_entries', 'by_trade', trade.id),
           ]);
 
           // Pre-mutation integrity agreement check: never auto-repair disagreeing stored state
@@ -408,6 +434,7 @@ export function createTradeWorkflows(options: {
               stopPrice: trade.stopPrice,
               targetPrice: trade.targetPrice,
             },
+            originalPlannedRisk: trade.baseline.originalPlannedRisk,
             executions: existingExecs,
           });
           if (preCheck.integrityDisagreement) {
@@ -465,7 +492,7 @@ export function createTradeWorkflows(options: {
             id: genId('exec'),
             tradeId: trade.id,
             positionChangeId,
-            side: 'Buy',
+            side: p.side,
             quantity: p.quantity,
             fillPrice: p.fillPrice,
             fee: p.fee,
@@ -484,14 +511,73 @@ export function createTradeWorkflows(options: {
               stopPrice: trade.stopPrice,
               targetPrice: trade.targetPrice,
             },
+            originalPlannedRisk: trade.baseline.originalPlannedRisk,
             executions: allExecs,
           });
+
+          if (derived.oversold) {
+            return {
+              status: 'Rejected',
+              errors: [
+                {
+                  field: 'executions',
+                  message: 'Sell quantity exceeds shares open at that execution time.',
+                },
+              ],
+            };
+          }
+
+          const requestedCloseReasonId = command.closeReasonId?.trim() || undefined;
+          let activeCloseReasonId: string | undefined;
+          if (derived.derivedLifecycleState === 'Closed') {
+            const matchedReason = closeReasons.find(
+              (c) => c.id === requestedCloseReasonId && c.status === 'Active',
+            );
+            if (!matchedReason) {
+              return {
+                status: 'Rejected',
+                errors: [
+                  {
+                    field: 'closeReasonId',
+                    message: 'Select an active Close Reason when closing a Trade.',
+                  },
+                ],
+              };
+            }
+            activeCloseReasonId = matchedReason.id;
+          } else if (requestedCloseReasonId !== undefined) {
+            return {
+              status: 'Rejected',
+              errors: [
+                {
+                  field: 'closeReasonId',
+                  message: 'Close Reason applies only when closing all remaining shares.',
+                },
+              ],
+            };
+          }
+
+          const latestDisposalTime =
+            derived.lotMatches.reduce<string | null>(
+              (latest, m) =>
+                latest === null || m.disposedAtEconomicTime > latest
+                  ? m.disposedAtEconomicTime
+                  : latest,
+              null,
+            ) ?? canonicalEconomicTime;
 
           const updatedTrade: TradeRecordRow = {
             ...trade,
             lifecycleState: derived.derivedLifecycleState,
             factRevision: nextFactRevision,
             updatedAt: now,
+            ...(derived.derivedLifecycleState === 'Closed'
+              ? {
+                  closeReasonId: activeCloseReasonId,
+                  closedAt: latestDisposalTime,
+                  terminalDisposition: derived.terminalDisposition ?? undefined,
+                }
+              : {}),
           };
 
           const positionChange: PositionChangeRecord = {
@@ -509,9 +595,43 @@ export function createTradeWorkflows(options: {
             tx.put('executions', exec);
           }
 
-          // Reconcile fact-only deviations for this Trade
+          // Reconcile persisted FIFO LotMatchRecords (preserve unchanged matches; delete stale ones)
+          const lmKey = (openId: string, dispId: string, q: { num: string; den: string }) =>
+            `${openId}::${dispId}::${q.num}/${q.den}`;
+          const existingLmByKey = new Map(
+            existingLotMatches.map((lm) => [
+              lmKey(lm.openingExecutionId, lm.disposalExecutionId, lm.matchedQuantity),
+              lm,
+            ]),
+          );
+          const desiredLmKeys = new Set<string>();
+          for (const m of derived.lotMatches) {
+            const qtyJson = ExactNumber.toJSON(m.matchedQuantity);
+            const key = lmKey(m.openingExecutionId, m.disposalExecutionId, qtyJson);
+            desiredLmKeys.add(key);
+            if (!existingLmByKey.has(key)) {
+              const lmRec: LotMatchRecord = {
+                id: genId('lm'),
+                tradeId: trade.id,
+                openingExecutionId: m.openingExecutionId,
+                disposalExecutionId: m.disposalExecutionId,
+                matchedQuantity: qtyJson,
+                recordedAt: now,
+              };
+              tx.put('lot_matches', lmRec);
+            }
+          }
+          for (const oldLm of existingLotMatches) {
+            if (!desiredLmKeys.has(lmKey(oldLm.openingExecutionId, oldLm.disposalExecutionId, oldLm.matchedQuantity))) {
+              tx.delete('lot_matches', oldLm.id);
+            }
+          }
+
+          // Reconcile EntrySize/UnplannedExposure deviations AND atomic StopDiscipline episodes
           for (const oldDev of existingDevs) {
-            tx.delete('deviations', oldDev.id);
+            if (oldDev.kind !== 'StopDiscipline') {
+              tx.delete('deviations', oldDev.id);
+            }
           }
           for (const dev of derived.deviations) {
             const devRec: DeviationRecord = {
@@ -521,6 +641,27 @@ export function createTradeWorkflows(options: {
               message: dev.message,
               recordedAt: now,
             };
+            tx.put('deviations', devRec);
+          }
+
+          const reviewActions = extractDailyReviewActions(
+            tradeJournalEntries,
+            DAILY_TRADE_REVIEW_TYPE_ID,
+          );
+          const effectiveSymMarks = symMarks
+            .filter((m) => m.effective)
+            .map((m) => ({ sessionDate: m.sessionDate, price: m.price }));
+          const stopDevWrites = diffStopDisciplineDeviationRecords({
+            tradeId: trade.id,
+            stopPrice: trade.stopPrice,
+            executions: allExecs,
+            effectiveMarks: effectiveSymMarks,
+            reviewActions,
+            existingDeviations: existingDevs,
+            nowIso: now,
+            generateId: genId,
+          });
+          for (const devRec of stopDevWrites) {
             tx.put('deviations', devRec);
           }
 

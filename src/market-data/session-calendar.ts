@@ -178,3 +178,42 @@ export function formatSessionDateShort(ymd: string): string {
     day: 'numeric',
   });
 }
+
+/**
+ * Returns the exact UTC instant for US exchange regular/early close on YYYY-MM-DD in America/New_York.
+ */
+export function getSessionCloseInstant(ymd: string): Date {
+  const { year, month, day } = parseYmd(ymd);
+  const closeMinutes = getSessionCloseMinutesEt(ymd);
+  const probe = new Date(Date.UTC(year, month - 1, day, 20, 0, 0));
+  const etAt20Utc = getExchangeDateAndMinutesEt(probe);
+  const deltaMinutes = closeMinutes - etAt20Utc.minutesEt;
+  return new Date(probe.getTime() + deltaMinutes * 60_000);
+}
+
+/**
+ * Resolves an execution economicTime ISO string from a UI date picker value:
+ * uses clock.nowIso() when matching today's exchange date, or the exchange close
+ * (clamped after minSameDayIso + 1s and never exceeding clock.now()) when backdated.
+ */
+export function resolveExecutionEconomicIso(
+  executionDate: string,
+  now: Date,
+  minSameDayIso?: string | null,
+): string {
+  const todayYmd = getExchangeDateForInstant(now);
+  if (executionDate === todayYmd) {
+    return now.toISOString();
+  }
+  let targetMs = getSessionCloseInstant(executionDate).getTime();
+  if (minSameDayIso) {
+    const minMs = Date.parse(minSameDayIso);
+    if (!Number.isNaN(minMs) && getExchangeDateForInstant(new Date(minMs)) === executionDate && targetMs <= minMs) {
+      targetMs = minMs + 1000;
+    }
+  }
+  if (targetMs > now.getTime()) {
+    targetMs = now.getTime();
+  }
+  return new Date(targetMs).toISOString();
+}

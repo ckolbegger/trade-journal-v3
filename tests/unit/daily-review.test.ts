@@ -407,4 +407,255 @@ describe('D5 DailyReview coordinator seam', () => {
     });
     expect(missingFromSnap.status).toBe('ReviewChanged');
   });
+
+  it('reconciles continuous StopDiscipline deviations atomically, supports Exit (OV-02/OV-05) without duplicates, and keeps cutoff eligibility after closing', async () => {
+    const h = await createD5Harness();
+    const axioId = await h.openLongStock({
+      symbol: 'AXIO',
+      entry: '50.00',
+      stop: '47.00',
+      target: '56.00',
+      economicTime: '2026-11-18T15:00:00.000Z',
+      deferReflection: false,
+    });
+
+    // Day 1 (Nov 18): Past Stop ($46.00) -> Hold -> creates 1 StopDiscipline Deviation
+    h.clock.setIso('2026-11-18T22:00:00.000Z');
+    await h.marketData.save({
+      kind: 'SaveManualMark',
+      symbol: 'AXIO',
+      sessionDate: '2026-11-18',
+      price: '46.00',
+      intent: 'Initial',
+    });
+    const rev18 = await h.dailyReview.open('2026-11-18');
+    const save18 = await h.dailyReview.save({
+      kind: 'SaveTradeAction',
+      tradeId: axioId,
+      reviewDate: '2026-11-18',
+      action: 'Hold',
+      reason: 'Day 1 breach hold',
+      expectedSnapshot: rev18.expectedSnapshot,
+    });
+    expect(save18.status).toBe('Saved');
+
+    // Day 2 (Nov 19): Past Stop ($45.00) -> Hold -> MUST update the SAME StopDiscipline episode (zero duplicate!)
+    h.clock.setIso('2026-11-19T22:00:00.000Z');
+    await h.marketData.save({
+      kind: 'SaveManualMark',
+      symbol: 'AXIO',
+      sessionDate: '2026-11-19',
+      price: '45.00',
+      intent: 'Initial',
+    });
+    const rev19 = await h.dailyReview.open('2026-11-19');
+    const save19 = await h.dailyReview.save({
+      kind: 'SaveTradeAction',
+      tradeId: axioId,
+      reviewDate: '2026-11-19',
+      action: 'Hold',
+      reason: 'Day 2 breach hold',
+      expectedSnapshot: rev19.expectedSnapshot,
+    });
+    expect(save19.status).toBe('Saved');
+
+    const devsAfterHold = await h.persistence.runReadTransaction(['deviations'], (tx) =>
+      tx.getAllByIndex('deviations', 'by_trade', axioId),
+    );
+    const activeStopDevs = devsAfterHold.filter((d) => d.kind === 'StopDiscipline' && !d.voided);
+    expect(activeStopDevs).toHaveLength(1);
+    expect(activeStopDevs[0]?.sessionCount).toBe(2);
+    expect(activeStopDevs[0]?.maxOverrunDisplay).toBe('-$200.00');
+
+    // Day 3 (Nov 20): Exit while at Stop after holding past it -> OV-02 requires reason; with reason succeeds
+    h.clock.setIso('2026-11-20T22:00:00.000Z');
+    await h.marketData.save({
+      kind: 'SaveManualMark',
+      symbol: 'AXIO',
+      sessionDate: '2026-11-20',
+      price: '45.50',
+      intent: 'Initial',
+    });
+    const rev20 = await h.dailyReview.open('2026-11-20');
+    const axio20 = rev20.trades.find((t) => t.tradeId === axioId)!;
+    expect(axio20.planCheck.exitFollowsPlan).toBe(false);
+
+    const exitNoReason = await h.dailyReview.save({
+      kind: 'SaveTradeAction',
+      tradeId: axioId,
+      reviewDate: '2026-11-20',
+      action: 'Exit',
+      expectedSnapshot: rev20.expectedSnapshot,
+    });
+    expect(exitNoReason.status).toBe('Rejected');
+
+    const exitSaved = await h.dailyReview.save({
+      kind: 'SaveTradeAction',
+      tradeId: axioId,
+      reviewDate: '2026-11-20',
+      action: 'Exit',
+      reason: 'Cutting the loser tomorrow.',
+      expectedSnapshot: rev20.expectedSnapshot,
+    });
+    expect(exitSaved.status).toBe('Saved');
+
+    // Day 4 (Nov 23): Still holding without sale -> staleExit ranks #1 with strict=true
+    h.clock.setIso('2026-11-23T22:00:00.000Z');
+    await h.marketData.save({
+      kind: 'SaveManualMark',
+      symbol: 'AXIO',
+      sessionDate: '2026-11-23',
+      price: '45.60',
+      intent: 'Initial',
+    });
+    const rev23 = await h.dailyReview.open('2026-11-23');
+    expect(rev23.trades[0]?.staleExit?.priorAction).toBe('Exit');
+    expect(rev23.trades[0]?.strict).toBe(true);
+
+    // Also verify fresh Target Exit with NO prior Hold past line requires zero reason (OV-02)
+    const nvdaId = await h.openLongStock({
+      symbol: 'NVDA',
+      entry: '140.00',
+      stop: '132.00',
+      target: '164.00',
+      economicTime: '2026-11-23T15:00:00.000Z',
+      deferReflection: false,
+    });
+    await h.marketData.save({
+      kind: 'SaveManualMark',
+      symbol: 'NVDA',
+      sessionDate: '2026-11-23',
+      price: '165.00',
+      intent: 'Initial',
+    });
+    const rev23WithNvda = await h.dailyReview.open('2026-11-23');
+    const nvdaItem = rev23WithNvda.trades.find((t) => t.tradeId === nvdaId)!;
+    expect(nvdaItem.planCheck.exitFollowsPlan).toBe(true);
+    const nvdaExitOk = await h.dailyReview.save({
+      kind: 'SaveTradeAction',
+      tradeId: nvdaId,
+      reviewDate: '2026-11-23',
+      action: 'Exit',
+      expectedSnapshot: rev23WithNvda.expectedSnapshot,
+    });
+    expect(nvdaExitOk.status).toBe('Saved');
+
+    // Close AXIO on Nov 23 -> cutoff eligibility on Nov 20 still sees AXIO as Open! (AC-REV-001)
+    const closeAxio = await h.workflows.recordPositionChange({
+      tradeId: axioId,
+      expectedFactRevision: 2,
+      economicTime: '2026-11-23T16:00:00.000Z',
+      executions: [
+        { side: 'Sell', quantity: '100', fillPrice: '45.60', fee: '0.00', plannedLegIntent: 'PlannedLeg' },
+      ],
+      closeReasonId: 'cr_stop_triggered',
+      reflection: { kind: 'Defer' },
+    });
+    expect(closeAxio.status).toBe('Recorded');
+
+    const historicalRev20 = await h.dailyReview.open('2026-11-20');
+    expect(historicalRev20.trades.some((t) => t.tradeId === axioId)).toBe(true);
+  });
+
+  it('keeps staleExit active across Change/re-save while open and skips malformed legacy action entries during StopDiscipline replay', async () => {
+    const h = await createD5Harness();
+    h.clock.setIso('2026-11-24T22:00:00.000Z');
+    const nvdaId = await h.openLongStock({
+      symbol: 'NVDA',
+      entry: '140.00',
+      stop: '132.00',
+      target: '164.00',
+      economicTime: '2026-11-19T15:00:00.000Z',
+    });
+    await h.marketData.save({
+      kind: 'SaveManualMark',
+      symbol: 'NVDA',
+      sessionDate: '2026-11-19',
+      price: '165.00',
+      intent: 'Initial',
+    });
+    const r19 = await h.dailyReview.open('2026-11-19');
+    const saveExit19 = await h.dailyReview.save({
+      kind: 'SaveTradeAction',
+      tradeId: nvdaId,
+      reviewDate: '2026-11-19',
+      action: 'Exit',
+      reason: 'Booked target',
+      expectedSnapshot: r19.expectedSnapshot,
+    });
+    expect(saveExit19.status).toBe('Saved');
+
+    // Advance to Nov 20 (At Target again, still Open after Exit prior day): save Exit with reason, then inspect staleExit on reload & attempt Change without reason
+    await h.marketData.save({
+      kind: 'SaveManualMark',
+      symbol: 'NVDA',
+      sessionDate: '2026-11-20',
+      price: '166.00',
+      intent: 'Initial',
+    });
+    const r20Before = await h.dailyReview.open('2026-11-20');
+    expect(r20Before.trades.find((t) => t.tradeId === nvdaId)?.staleExit).not.toBeNull();
+
+    const save20 = await h.dailyReview.save({
+      kind: 'SaveTradeAction',
+      tradeId: nvdaId,
+      reviewDate: '2026-11-20',
+      action: 'Exit',
+      reason: 'Order still pending',
+      expectedSnapshot: r20Before.expectedSnapshot,
+    });
+    expect(save20.status).toBe('Saved');
+
+    const r20After = await h.dailyReview.open('2026-11-20');
+    // Server validation requires reason on staleExit Change -> UI open() must also keep staleExit non-null so UI agrees!
+    expect(r20After.trades.find((t) => t.tradeId === nvdaId)?.staleExit).not.toBeNull();
+
+    // Inject malformed legacy Review entry without action below Stop -> saving another date's Action must NOT coerce it to Hold
+    await h.marketData.save({
+      kind: 'SaveManualMark',
+      symbol: 'NVDA',
+      sessionDate: '2026-11-23',
+      price: '128.00',
+      intent: 'Initial',
+    });
+    await h.persistence.runWriteTransaction(['journal_entries'], (tx) => {
+      tx.put('journal_entries', {
+        id: 'jrn_legacy_bad',
+        entryTypeId: DAILY_TRADE_REVIEW_TYPE_ID,
+        definitionId: 'def_daily_trade_review_v1',
+        definitionRevision: 1,
+        definitionSnapshot: {} as never,
+        source: 'DailyReview',
+        anchor: { kind: 'Trade', tradeId: nvdaId },
+        tradeId: nvdaId,
+        origin: { kind: 'DailyReview', reviewDate: '2026-11-23' },
+        obligationKey: `daily_review:${nvdaId}:2026-11-23`,
+        responses: {},
+        recordedAt: '2026-11-23T22:00:00.000Z',
+      });
+    });
+
+    await h.marketData.save({
+      kind: 'SaveManualMark',
+      symbol: 'NVDA',
+      sessionDate: '2026-11-24',
+      price: '150.00',
+      intent: 'Initial',
+    });
+    const r24 = await h.dailyReview.open('2026-11-24');
+    const save24 = await h.dailyReview.save({
+      kind: 'SaveTradeAction',
+      tradeId: nvdaId,
+      reviewDate: '2026-11-24',
+      action: 'Hold',
+      reason: 'Confirming valid save with prior Exit intact',
+      expectedSnapshot: r24.expectedSnapshot,
+    });
+    expect(save24.status).toBe('Saved');
+
+    const devs = await h.persistence.runReadTransaction(['deviations'], (tx) =>
+      tx.getAllByIndex('deviations', 'by_trade', nvdaId),
+    );
+    expect(devs.filter((d) => !d.voided)).toHaveLength(0);
+  });
 });

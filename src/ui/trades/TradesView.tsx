@@ -4,7 +4,7 @@ import type { TradeLifecycleState } from '../../persistence/idb';
 import type { TradeBrowseItem, TradeViewsAndReporting } from '../../trade-views/trade-views';
 import styles from '../shell/AppShell.module.css';
 
-type LifecycleFilter = 'All' | 'Planned' | 'Open';
+type LifecycleFilter = 'All' | 'Planned' | 'Open' | 'Closed';
 
 interface TradesViewProps {
   readonly views: TradeViewsAndReporting;
@@ -13,12 +13,31 @@ interface TradesViewProps {
   readonly onNewPlan: () => void;
 }
 
-function renderOpenPnlCell(item: TradeBrowseItem) {
+function renderPnlCell(item: TradeBrowseItem) {
+  if (item.lifecycleState === 'Closed') {
+    return (
+      <>
+        <strong>{item.realizedPnlDisplay ?? '—'}</strong>
+        <div className={styles.muted}>
+          {item.realizedRDisplay ? `${item.realizedRDisplay} · ` : ''}Final
+          {item.closeReasonLabel ? ` · ${item.closeReasonLabel}` : ''}
+        </div>
+      </>
+    );
+  }
+  const hasPartialRealized = item.realizedPnlDisplay !== null;
+
   if (item.evaluation?.availability === 'Available') {
     return (
       <>
-        <strong>{item.evaluation.openPnlDisplay}</strong>
-        <div className={styles.muted}>{item.evaluation.openPnlRDisplay}</div>
+        <strong>
+          {hasPartialRealized ? item.evaluation.combinedPnlDisplay : item.evaluation.openPnlDisplay}
+        </strong>
+        <div className={styles.muted}>
+          {hasPartialRealized
+            ? `${item.evaluation.combinedPnlRDisplay} · Realized ${item.realizedPnlDisplay}`
+            : item.evaluation.openPnlRDisplay}
+        </div>
       </>
     );
   }
@@ -28,6 +47,11 @@ function renderOpenPnlCell(item: TradeBrowseItem) {
       <span className={styles.muted}>
         {prior.evaluation.openPnlDisplay} (at {formatSessionDateShort(prior.asOfSessionDate)})
       </span>
+    );
+  }
+  if (hasPartialRealized) {
+    return (
+      <span className={styles.muted}>Realized {item.realizedPnlDisplay}</span>
     );
   }
   return <span className={styles.muted}>—</span>;
@@ -71,7 +95,7 @@ export function TradesView({ views, refreshKey, onSelectTrade, onNewPlan }: Trad
             Trades
           </h1>
           <p className={styles.muted} style={{ margin: '4px 0 0' }}>
-            Browse Planned and Open Trades from your local journal.
+            Browse Planned, Open, and Closed Trades from your local journal.
           </p>
         </div>
         <button type="button" className={styles.btnPrimary} onClick={onNewPlan}>
@@ -80,7 +104,7 @@ export function TradesView({ views, refreshKey, onSelectTrade, onNewPlan }: Trad
       </div>
 
       <div className={styles.row} style={{ marginBottom: 14 }} role="group" aria-label="Filter by lifecycle state">
-        {(['All', 'Open', 'Planned'] as const).map((option) => (
+        {(['All', 'Open', 'Planned', 'Closed'] as const).map((option) => (
           <button
             key={option}
             type="button"
@@ -120,7 +144,7 @@ export function TradesView({ views, refreshKey, onSelectTrade, onNewPlan }: Trad
                 <th>State</th>
                 <th>Account</th>
                 <th>Position</th>
-                <th>Open P&amp;L</th>
+                <th>P&amp;L</th>
                 <th>1R Risk</th>
                 <th>Planned R:R</th>
                 <th>Open</th>
@@ -150,7 +174,7 @@ export function TradesView({ views, refreshKey, onSelectTrade, onNewPlan }: Trad
                     {item.openSharesDisplay} / {item.plannedQuantityDisplay} sh @{' '}
                     {item.intendedEntryDisplay}
                   </td>
-                  <td className={styles.mono}>{renderOpenPnlCell(item)}</td>
+                  <td className={styles.mono}>{renderPnlCell(item)}</td>
                   <td className={styles.mono}>{item.oneRDisplay}</td>
                   <td className={styles.mono}>{item.plannedRRDisplay}</td>
                   <td>

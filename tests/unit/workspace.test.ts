@@ -14,6 +14,7 @@ import {
   type ReadinessProbes,
 } from '../../src/runtime/readiness';
 import { createReferenceCatalog } from '../../src/catalog/reference-catalog';
+import { createJournal } from '../../src/journal/journal';
 import { createWorkspace } from '../../src/workspace/workspace';
 import { createManualClock } from '../../src/shared/clock';
 import type { StorageProtectionStatus } from '../../src/shared/result';
@@ -67,10 +68,12 @@ function createWorkspaceHarness(options: {
   const readiness = createRuntimeReadinessController({ clock, probes });
   gateHolder.checkWritable = () => readiness.checkWritable();
   const catalog = createReferenceCatalog({ persistence, clock });
+  const journal = createJournal({ persistence, clock });
   const workspace = createWorkspace({
     persistence,
     readiness,
     catalog,
+    journal,
     clock,
     requestPersistentStorage: async () => {
       if (protection.state === 'Protected') {
@@ -129,7 +132,11 @@ describe('Workspace seam', () => {
     expect(opened.fresh).toBe(true);
     expect(opened.workspaceStatus.timeZone).toBe('America/New_York');
     expect(opened.workspaceStatus.onboardingState).toBe('NeedsInstitutionAndAccount');
-    expect(opened.workspaceStatus.capabilities.releaseDeliverable).toBe('D5');
+    expect(opened.workspaceStatus.capabilities.releaseDeliverable).toBe('D6');
+
+    const freshCloseReasons = await catalog.query({ family: 'CloseReason', includeInactive: false });
+    expect(freshCloseReasons.items).toHaveLength(4);
+    expect(opened.receipt.seedAdditions).toContain('cr_target_reached');
 
     // Adding an Institution + Account transitions onboarding to ReadyForTradePlanning.
     const inst = await catalog.save({ kind: 'CreateInstitution', label: 'Fidelity' });
@@ -230,7 +237,7 @@ describe('Workspace seam', () => {
     expect(already.currentProtection.state).toBe('Protected');
   });
 
-  it('chains a genuine v1 workspace through v1->v5 on Workspace.initialize preserving catalog records', async () => {
+  it('chains a genuine v1 workspace through v1->v6 on Workspace.initialize preserving catalog records and seeding Close Reasons', async () => {
     const { idb, persistence, workspace, catalog } = createWorkspaceHarness();
 
     await new Promise<void>((resolve, reject) => {
@@ -312,7 +319,7 @@ describe('Workspace seam', () => {
     const root = await persistence.inspectRoot();
     expect(root.status).toBe('Present');
     if (root.status === 'Present') {
-      expect(root.activeGeneration).toBe(5);
+      expect(root.activeGeneration).toBe(6);
       expect(root.schemaVersion).toBe(CURRENT_SCHEMA_VERSION);
     }
 
@@ -321,10 +328,21 @@ describe('Workspace seam', () => {
     if (insts.family === 'Institution') {
       expect(insts.items.map((i) => i.currentLabel)).toEqual(['Schwab']);
     }
+
+    const reasons = await catalog.query({ family: 'CloseReason', includeInactive: false });
+    expect(reasons.family).toBe('CloseReason');
+    if (reasons.family === 'CloseReason') {
+      expect(reasons.items.map((r) => r.currentLabel)).toEqual([
+        'Stop Triggered',
+        'Target Reached',
+        'Thesis Invalidated',
+        'Time-Based Exit',
+      ]);
+    }
   });
 
-  it('upgrades a genuine v3 workspace to v5 on Workspace.initialize preserving trades and projections', async () => {
-    const { idb, persistence, workspace } = createWorkspaceHarness();
+  it('upgrades a genuine v3 workspace to v6 on Workspace.initialize preserving trades and projections', async () => {
+    const { idb, persistence, workspace, catalog } = createWorkspaceHarness();
 
     await new Promise<void>((resolve, reject) => {
       const req = idb.open(BOOTSTRAP_DB_NAME, 1);
@@ -395,18 +413,27 @@ describe('Workspace seam', () => {
     const root = await persistence.inspectRoot();
     expect(root.status).toBe('Present');
     if (root.status === 'Present') {
-      expect(root.activeGeneration).toBe(3);
+      expect(root.activeGeneration).toBe(4);
       expect(root.schemaVersion).toBe(CURRENT_SCHEMA_VERSION);
     }
 
-    const { trade, proj } = await persistence.runReadTransaction(
-      ['trades', 'proj_trade_analysis_input'],
+    const { trade, proj, dtrDefs } = await persistence.runReadTransaction(
+      ['trades', 'proj_trade_analysis_input', 'journal_definitions'],
       async (tx) => ({
         trade: await tx.get('trades', 'trd-v3-open'),
         proj: await tx.get('proj_trade_analysis_input', 'trd-v3-open'),
+        dtrDefs: await tx.getAll('journal_definitions'),
       }),
     );
     expect(trade?.symbol).toBe('NVDA');
     expect(proj?.openSharesDisplay).toBe('100');
+    const dtr = dtrDefs.find((d) => d.entryTypeId === 'entry_type_daily_trade_review');
+    expect(dtr?.revision).toBe(2);
+
+    const upgradedReasons = await catalog.query({ family: 'CloseReason', includeInactive: false });
+    expect(upgradedReasons.family).toBe('CloseReason');
+    if (upgradedReasons.family === 'CloseReason') {
+      expect(upgradedReasons.items).toHaveLength(4);
+    }
   });
 });

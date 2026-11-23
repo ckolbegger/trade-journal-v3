@@ -1,4 +1,5 @@
 import {
+  buildCloseReasonSeeds,
   buildLongStockStrategySeed,
   CATALOG_SEED_MANIFEST_VERSION,
   LONG_STOCK_PRODUCT_KEY,
@@ -6,7 +7,7 @@ import {
   type ReferenceCatalog,
 } from '../catalog/reference-catalog';
 import {
-  buildDailyTradeReviewDefinitionV1,
+  buildDailyTradeReviewDefinition,
   buildPlanReflectionDefinitionV1,
   buildPositionChangeReflectionDefinitionV1,
   DAILY_TRADE_REVIEW_TYPE_ID,
@@ -22,6 +23,7 @@ import {
   SCHEMA_VERSION_V3,
   SCHEMA_VERSION_V4,
   SCHEMA_VERSION_V5,
+  SCHEMA_VERSION_V6,
   type AccountRecord,
   type InstitutionRecord,
   type PersistenceSeam,
@@ -32,6 +34,7 @@ import {
   migrateWorkspaceV2ToV3,
   migrateWorkspaceV3ToV4,
   migrateWorkspaceV4ToV5,
+  migrateWorkspaceV5ToV6,
 } from '../persistence/migrations';
 import type {
   RuntimeReadinessController,
@@ -275,6 +278,7 @@ export function createWorkspace(options: {
           { from: SCHEMA_VERSION_V2, to: SCHEMA_VERSION_V3, run: migrateWorkspaceV2ToV3 },
           { from: SCHEMA_VERSION_V3, to: SCHEMA_VERSION_V4, run: migrateWorkspaceV3ToV4 },
           { from: SCHEMA_VERSION_V4, to: SCHEMA_VERSION_V5, run: migrateWorkspaceV4ToV5 },
+          { from: SCHEMA_VERSION_V5, to: SCHEMA_VERSION_V6, run: migrateWorkspaceV5ToV6 },
         ] as const;
 
         let migratedAny = false;
@@ -369,16 +373,19 @@ export function createWorkspace(options: {
           'workspace_meta',
           'catalog_meta',
           'catalog_strategies',
+          'catalog_close_reasons',
           'journal_meta',
           'journal_definitions',
         ],
         async (tx) => {
-          const [existingMeta, existingCatalogMeta, strategies, definitions] = await Promise.all([
-            tx.get('workspace_meta', 'singleton'),
-            tx.get('catalog_meta', 'singleton'),
-            tx.getAll('catalog_strategies'),
-            tx.getAll('journal_definitions'),
-          ]);
+          const [existingMeta, existingCatalogMeta, strategies, closeReasons, definitions] =
+            await Promise.all([
+              tx.get('workspace_meta', 'singleton'),
+              tx.get('catalog_meta', 'singleton'),
+              tx.getAll('catalog_strategies'),
+              tx.getAll('catalog_close_reasons'),
+              tx.getAll('journal_definitions'),
+            ]);
 
           if (existingMeta) {
             return { fresh: false, meta: existingMeta, additions: [] as string[] };
@@ -400,6 +407,12 @@ export function createWorkspace(options: {
             tx.put('catalog_strategies', buildLongStockStrategySeed(now));
             additions.push(LONG_STOCK_STRATEGY_ID);
           }
+          for (const seed of buildCloseReasonSeeds(now)) {
+            if (!closeReasons.some((c) => c.productKey === seed.productKey)) {
+              tx.put('catalog_close_reasons', seed);
+              additions.push(seed.id);
+            }
+          }
           tx.put('catalog_meta', {
             key: 'singleton',
             catalogRevision: (existingCatalogMeta?.catalogRevision ?? 0) + 1,
@@ -414,7 +427,7 @@ export function createWorkspace(options: {
             tx.put('journal_definitions', buildPositionChangeReflectionDefinitionV1(now));
           }
           if (!definitions.some((d) => d.entryTypeId === DAILY_TRADE_REVIEW_TYPE_ID)) {
-            tx.put('journal_definitions', buildDailyTradeReviewDefinitionV1(now));
+            tx.put('journal_definitions', buildDailyTradeReviewDefinition(now));
           }
           tx.put('journal_meta', {
             key: 'singleton',

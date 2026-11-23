@@ -1,5 +1,6 @@
 import {
   abs,
+  add,
   cmp,
   div,
   ExactNumber,
@@ -57,6 +58,12 @@ export interface AvailableLongStockEvaluation {
   readonly openPnlDisplay: string;
   readonly openPnlR: Rational;
   readonly openPnlRDisplay: string;
+  readonly realizedPnl: Rational;
+  readonly realizedPnlDisplay: string;
+  readonly combinedPnl: Rational;
+  readonly combinedPnlDisplay: string;
+  readonly combinedPnlR: Rational;
+  readonly combinedPnlRDisplay: string;
   readonly dailyChange: Rational | null;
   readonly dailyChangeDisplay: string | null;
   readonly stopCondition: EvaluatedStopCondition;
@@ -97,8 +104,14 @@ function evaluateAtExactMark(params: {
   const avgEntry = derived.averageEntryPrice!;
   const openShares = derived.openShares;
 
-  const openPnl = sub(mul(sub(currentPrice, avgEntry), openShares), derived.totalOpeningFees);
+  // Subtract only unconsumed opening fees so realized Lot Match fees are never double-counted
+  const openPnl = sub(
+    mul(sub(currentPrice, avgEntry), openShares),
+    derived.feeReconciliation.openingFeesUnconsumed,
+  );
   const openPnlR = div(openPnl, oneR);
+  const combinedPnl = add(derived.realizedPnl, openPnl);
+  const combinedPnlR = div(combinedPnl, oneR);
 
   let priorPrice: Rational | null = null;
   let dailyChange: Rational | null = null;
@@ -148,6 +161,12 @@ function evaluateAtExactMark(params: {
     openPnlDisplay: toMoneyString(openPnl, true),
     openPnlR,
     openPnlRDisplay: toRatioString(openPnlR, true),
+    realizedPnl: derived.realizedPnl,
+    realizedPnlDisplay: derived.realizedPnlDisplay,
+    combinedPnl,
+    combinedPnlDisplay: toMoneyString(combinedPnl, true),
+    combinedPnlR,
+    combinedPnlRDisplay: toRatioString(combinedPnlR, true),
     dailyChange,
     dailyChangeDisplay: dailyChange ? toMoneyString(dailyChange, true) : null,
     stopCondition: {

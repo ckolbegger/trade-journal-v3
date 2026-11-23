@@ -2,6 +2,7 @@ import type {
   AccountRecord,
   CatalogHistoryEntry,
   CatalogMetaRecord,
+  CloseReasonRecord,
   InstitutionRecord,
   PersistenceSeam,
   ReadTxHandle,
@@ -10,9 +11,38 @@ import type {
 import type { Clock } from '../shared/clock';
 import type { RuntimeNotWritableResult } from '../shared/result';
 
-export const CATALOG_SEED_MANIFEST_VERSION = 2 as const;
+export const CATALOG_SEED_MANIFEST_VERSION = 3 as const;
 export const LONG_STOCK_STRATEGY_ID = 'strat_long_stock' as const;
 export const LONG_STOCK_PRODUCT_KEY = 'long-stock' as const;
+
+export const CLOSE_REASON_SEEDS = [
+  { id: 'cr_target_reached', productKey: 'target-reached', label: 'Target Reached' },
+  { id: 'cr_stop_triggered', productKey: 'stop-triggered', label: 'Stop Triggered' },
+  { id: 'cr_thesis_invalidated', productKey: 'thesis-invalidated', label: 'Thesis Invalidated' },
+  { id: 'cr_time_based_exit', productKey: 'time-based-exit', label: 'Time-Based Exit' },
+] as const;
+
+export function buildCloseReasonSeeds(now: string): CloseReasonRecord[] {
+  return CLOSE_REASON_SEEDS.map((seed) => ({
+    id: seed.id,
+    productKey: seed.productKey,
+    currentLabel: seed.label,
+    normalizedLabel: normalizeLabel(seed.label),
+    status: 'Active',
+    revision: 1,
+    createdAt: now,
+    updatedAt: now,
+    history: [
+      {
+        revision: 1,
+        action: 'Created',
+        label: seed.label,
+        status: 'Active',
+        recordedAt: now,
+      },
+    ],
+  }));
+}
 
 export type CatalogSaveCommand =
   | { readonly kind: 'CreateInstitution'; readonly label: string }
@@ -110,7 +140,8 @@ export type CatalogQueryRequest =
       readonly includeInactive: boolean;
       readonly institutionId?: string;
     }
-  | { readonly family: 'Strategy'; readonly includeInactive: boolean };
+  | { readonly family: 'Strategy'; readonly includeInactive: boolean }
+  | { readonly family: 'CloseReason'; readonly includeInactive: boolean };
 
 export type CatalogQueryResult =
   | {
@@ -126,6 +157,11 @@ export type CatalogQueryResult =
   | {
       readonly family: 'Strategy';
       readonly items: readonly StrategyRecord[];
+      readonly catalogRevision: number;
+    }
+  | {
+      readonly family: 'CloseReason';
+      readonly items: readonly CloseReasonRecord[];
       readonly catalogRevision: number;
     };
 
@@ -281,9 +317,18 @@ export function createReferenceCatalog(options: {
   return {
     async seedDefaults(): Promise<SeedCatalogResult> {
       const txResult = await persistence.runWriteTransaction(
-        ['catalog_meta', 'catalog_institutions', 'catalog_accounts', 'catalog_strategies'],
+        [
+          'catalog_meta',
+          'catalog_institutions',
+          'catalog_accounts',
+          'catalog_strategies',
+          'catalog_close_reasons',
+        ],
         async (tx): Promise<Exclude<SeedCatalogResult, RuntimeNotWritableResult>> => {
-          const snapshot = await readSnapshotFromTx(tx);
+          const [snapshot, closeReasons] = await Promise.all([
+            readSnapshotFromTx(tx),
+            tx.getAll('catalog_close_reasons'),
+          ]);
           const hasSelectableAccounts = computeHasSelectableAccounts(
             snapshot.institutions,
             snapshot.accounts,
@@ -298,6 +343,13 @@ export function createReferenceCatalog(options: {
           if (!hasLongStock) {
             tx.put('catalog_strategies', buildLongStockStrategySeed(now));
             additions.push(LONG_STOCK_STRATEGY_ID);
+          }
+
+          for (const seedRecord of buildCloseReasonSeeds(now)) {
+            if (!closeReasons.some((c) => c.productKey === seedRecord.productKey)) {
+              tx.put('catalog_close_reasons', seedRecord);
+              additions.push(seedRecord.id);
+            }
           }
 
           if (
@@ -867,6 +919,24 @@ export function createReferenceCatalog(options: {
     },
 
     async query(request: CatalogQueryRequest): Promise<CatalogQueryResult> {
+      if (request.family === 'CloseReason') {
+        const { meta, closeReasons } = await persistence.runReadTransaction(
+          ['catalog_meta', 'catalog_close_reasons'],
+          async (tx) => ({
+            meta: await tx.get('catalog_meta', 'singleton'),
+            closeReasons: await tx.getAll('catalog_close_reasons'),
+          }),
+        );
+        const filtered = request.includeInactive
+          ? closeReasons
+          : closeReasons.filter((c) => c.status === 'Active');
+        return {
+          family: 'CloseReason',
+          items: sortByLabelThenId(filtered),
+          catalogRevision: meta?.catalogRevision ?? 0,
+        };
+      }
+
       const snapshot = await persistence.runReadTransaction(
         ['catalog_meta', 'catalog_institutions', 'catalog_accounts', 'catalog_strategies'],
         readSnapshotFromTx,

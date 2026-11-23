@@ -1,5 +1,5 @@
 import {
-  buildDailyTradeReviewDefinitionV1,
+  buildDailyTradeReviewDefinition,
   DAILY_REVIEW_ACTION_OPTIONS,
   DAILY_TRADE_REVIEW_TYPE_ID,
   validatePositionChangeReflectionInput,
@@ -16,6 +16,7 @@ import {
   isUsTradingDay,
 } from '../market-data/session-calendar';
 import type {
+  DeviationRecord,
   ExecutionRecord,
   JournalDebtRecord,
   JournalDeclineRecord,
@@ -45,6 +46,10 @@ import {
   type AvailableLongStockEvaluation,
   type LongStockEvaluation,
 } from '../trade-analysis/evaluate';
+import {
+  diffStopDisciplineDeviationRecords,
+  extractDailyReviewActions,
+} from '../trade-analysis/replay';
 
 export type DailyReviewCompletionState =
   | 'Incomplete'
@@ -85,6 +90,19 @@ export interface DailyReviewPastDecision {
   readonly conviction: number | null;
 }
 
+export interface DailyReviewPlanCheck {
+  readonly exitFollowsPlan: boolean;
+  readonly reasonIfLeaving: string | null;
+}
+
+export interface StaleExitDecision {
+  readonly priorReviewDate: string;
+  readonly priorReviewDateShort: string;
+  readonly priorAction: DailyReviewAction;
+  readonly priorReason: string | null;
+  readonly soldSinceDisplay: string | null;
+}
+
 export interface DailyReviewTradeItem {
   readonly tradeId: string;
   readonly symbol: string;
@@ -105,6 +123,9 @@ export interface DailyReviewTradeItem {
   readonly standing: TradeStanding;
   readonly isResolvedForToday: boolean;
   readonly strict: boolean;
+  readonly planCheck: DailyReviewPlanCheck;
+  readonly staleExit: StaleExitDecision | null;
+  readonly stopDisciplineDeviations: readonly DeviationRecord[];
   readonly todayAction: {
     readonly entryId: string;
     readonly action: DailyReviewAction;
@@ -137,6 +158,7 @@ export interface DailyReviewDaySummary {
   readonly pastStopSymbols: readonly string[];
   readonly atTargetSymbols: readonly string[];
   readonly chosenHoldSymbols: readonly string[];
+  readonly chosenExitSymbols: readonly string[];
   readonly tomorrowItems: readonly string[];
   readonly nextSessionDateShort: string;
 }
@@ -266,17 +288,92 @@ function computeStanding(evalObj: AvailableLongStockEvaluation | null): TradeSta
   return { kind: 'Inside', towards: 'Target', pct };
 }
 
-function rankKey(standing: TradeStanding): readonly [number, number] {
-  switch (standing.kind) {
+function rankKey(item: {
+  readonly standing: TradeStanding;
+  readonly staleExit: StaleExitDecision | null;
+  readonly hasTodayAction?: boolean;
+}): readonly [number, number] {
+  if (item.staleExit && !item.hasTodayAction) {
+    return [-1, 0];
+  }
+  switch (item.standing.kind) {
     case 'PastStop':
-      return [0, -standing.overrunR];
+      return [0, -item.standing.overrunR];
     case 'AtTarget':
-      return [1, -standing.overrunR];
+      return [1, -item.standing.overrunR];
     case 'Inside':
-      return standing.towards === 'Stop' ? [2, -standing.pct] : [3, standing.pct];
+      return item.standing.towards === 'Stop'
+        ? [2, -item.standing.pct]
+        : [3, item.standing.pct];
     case 'Unmarked':
       return [4, 0];
   }
+}
+
+function computeExitPlanCheck(params: {
+  readonly standing: TradeStanding;
+  readonly holdPastStopStreak: number;
+  readonly holdPastTargetStreak: number;
+}): DailyReviewPlanCheck {
+  const { standing, holdPastStopStreak, holdPastTargetStreak } = params;
+  if (standing.kind === 'PastStop') {
+    if (holdPastStopStreak > 0) {
+      return {
+        exitFollowsPlan: false,
+        reasonIfLeaving: `You held past the Stop for ${holdPastStopStreak} prior ${holdPastStopStreak === 1 ? 'session' : 'sessions'}; exiting now leaves the Plan.`,
+      };
+    }
+    return { exitFollowsPlan: true, reasonIfLeaving: null };
+  }
+  if (standing.kind === 'AtTarget') {
+    if (holdPastTargetStreak > 0) {
+      return {
+        exitFollowsPlan: false,
+        reasonIfLeaving: `You held past the Target for ${holdPastTargetStreak} prior ${holdPastTargetStreak === 1 ? 'session' : 'sessions'}; exiting now leaves the Plan.`,
+      };
+    }
+    return { exitFollowsPlan: true, reasonIfLeaving: null };
+  }
+  return {
+    exitFollowsPlan: false,
+    reasonIfLeaving: 'Neither the Stop nor the Target is reached; exiting now leaves the Plan.',
+  };
+}
+
+function computeHoldStreaks(params: {
+  readonly priorDtrs: readonly JournalEntryRecord[];
+  readonly symMarks: readonly MarketMarkRecord[];
+  readonly stopPrice: Rational;
+  readonly targetPrice: Rational;
+}): { holdPastStopStreak: number; holdPastTargetStreak: number } {
+  const { priorDtrs, symMarks, stopPrice, targetPrice } = params;
+  let holdPastStopStreak = 0;
+  let holdPastTargetStreak = 0;
+  for (const e of priorDtrs) {
+    const d = extractDailyReviewDate(e);
+    if (!d || e.responses.action !== 'Hold') break;
+    const m = symMarks.find((mk) => mk.sessionDate === d);
+    if (!m) break;
+    const p = ExactNumber.fromJSON(m.price);
+    if (sub(p, stopPrice).num <= 0n) {
+      holdPastStopStreak += 1;
+    } else {
+      break;
+    }
+  }
+  for (const e of priorDtrs) {
+    const d = extractDailyReviewDate(e);
+    if (!d || e.responses.action !== 'Hold') break;
+    const m = symMarks.find((mk) => mk.sessionDate === d);
+    if (!m) break;
+    const p = ExactNumber.fromJSON(m.price);
+    if (sub(p, targetPrice).num >= 0n) {
+      holdPastTargetStreak += 1;
+    } else {
+      break;
+    }
+  }
+  return { holdPastStopStreak, holdPastTargetStreak };
 }
 
 function obligationKeyFor(tradeId: string, reviewDate: string): string {
@@ -305,6 +402,7 @@ export function createDailyReview(options: {
         'trade_facts',
         'position_changes',
         'executions',
+        'deviations',
         'catalog_institutions',
         'catalog_accounts',
         'catalog_strategies',
@@ -320,6 +418,7 @@ export function createDailyReview(options: {
           tradeFacts,
           positionChanges,
           executions,
+          deviations,
           institutions,
           accounts,
           strategies,
@@ -333,6 +432,7 @@ export function createDailyReview(options: {
           tx.getAll('trade_facts'),
           tx.getAll('position_changes'),
           tx.getAll('executions'),
+          tx.getAll('deviations'),
           tx.getAll('catalog_institutions'),
           tx.getAll('catalog_accounts'),
           tx.getAll('catalog_strategies'),
@@ -342,6 +442,14 @@ export function createDailyReview(options: {
           tx.getAll('journal_entries'),
           tx.getAll('journal_debt'),
         ]);
+
+        const devsByTrade = new Map<string, DeviationRecord[]>();
+        for (const dev of deviations) {
+          if (dev.voided || dev.kind !== 'StopDiscipline') continue;
+          const list = devsByTrade.get(dev.tradeId) ?? [];
+          list.push(dev);
+          devsByTrade.set(dev.tradeId, list);
+        }
 
         const pcEconomicTimeById = new Map(positionChanges.map((pc) => [pc.id, pc.economicTime]));
 
@@ -424,6 +532,7 @@ export function createDailyReview(options: {
               stopPrice: t.stopPrice,
               targetPrice: t.targetPrice,
             },
+            originalPlannedRisk: t.baseline.originalPlannedRisk,
             executions: execsAsOf,
           });
           if (!isPositive(derived.openShares)) continue;
@@ -508,7 +617,7 @@ export function createDailyReview(options: {
         const actionEntryIds: Record<string, string | null> = {};
 
         const tradeItems: DailyReviewTradeItem[] = openAtCutoff.map(
-          ({ trade, derived, entrySessionDate }) => {
+          ({ trade, execsAsOf, derived, entrySessionDate }) => {
             tradeFactRevisions[trade.id] = trade.factRevision;
             const symMarks = marksBySymbol.get(trade.symbol) ?? [];
             const todayMark = symMarks.find((m) => m.sessionDate === reviewDate) ?? null;
@@ -539,7 +648,6 @@ export function createDailyReview(options: {
                 ? evaluation
                 : (evaluation.priorContext?.evaluation ?? null);
             const standing = computeStanding(activeEval);
-            const strict = standing.kind === 'PastStop' || standing.kind === 'AtTarget';
 
             const tradeDtrs = dtrEntriesByTrade.get(trade.id) ?? [];
             const todayEntry =
@@ -561,45 +669,69 @@ export function createDailyReview(options: {
                 reviewDate: d,
                 reviewDateShort: formatSessionDateShort(d),
                 action: String(e.responses.action ?? 'Hold'),
-                reason: typeof e.responses.reason === 'string' && e.responses.reason.trim()
-                  ? e.responses.reason
-                  : null,
+                reason:
+                  typeof e.responses.reason === 'string' && e.responses.reason.trim()
+                    ? e.responses.reason
+                    : null,
                 conviction:
                   typeof e.responses.conviction === 'number' ? e.responses.conviction : null,
               };
             });
 
-            // Count consecutive prior Holds while past Stop or At Target
-            let holdPastStopStreak = 0;
-            let holdPastTargetStreak = 0;
             const stopP = ExactNumber.fromJSON(trade.stopPrice);
             const targetP = ExactNumber.fromJSON(trade.targetPrice);
-            for (const e of priorDtrs) {
-              const d = extractDailyReviewDate(e);
-              if (!d || e.responses.action !== 'Hold') break;
-              const m = symMarks.find((mk) => mk.sessionDate === d);
-              if (!m) break;
-              const p = ExactNumber.fromJSON(m.price);
-              if (sub(p, stopP).num <= 0n) {
-                holdPastStopStreak += 1;
-              } else {
-                break;
-              }
-            }
-            for (const e of priorDtrs) {
-              const d = extractDailyReviewDate(e);
-              if (!d || e.responses.action !== 'Hold') break;
-              const m = symMarks.find((mk) => mk.sessionDate === d);
-              if (!m) break;
-              const p = ExactNumber.fromJSON(m.price);
-              if (sub(p, targetP).num >= 0n) {
-                holdPastTargetStreak += 1;
-              } else {
-                break;
-              }
+            const { holdPastStopStreak, holdPastTargetStreak } = computeHoldStreaks({
+              priorDtrs,
+              symMarks,
+              stopPrice: stopP,
+              targetPrice: targetP,
+            });
+            const planCheck = computeExitPlanCheck({
+              standing,
+              holdPastStopStreak,
+              holdPastTargetStreak,
+            });
+
+            // OV-05: Prior review Exit accountability (always populated for UI/save validation parity while Open)
+            let staleExit: StaleExitDecision | null = null;
+            const latestPrior = priorDtrs[0];
+            if (latestPrior && latestPrior.responses.action === 'Exit') {
+              const priorDate = extractDailyReviewDate(latestPrior)!;
+              const soldAfter = execsAsOf.filter(
+                (ex) =>
+                  ex.side === 'Sell' &&
+                  getExchangeDateForInstant(new Date(ex.economicTime)) > priorDate,
+              );
+              const soldAfterSum = soldAfter.reduce(
+                (acc, ex) => add(acc, ExactNumber.fromJSON(ex.quantity)),
+                fromInteger(0),
+              );
+              staleExit = {
+                priorReviewDate: priorDate,
+                priorReviewDateShort: formatSessionDateShort(priorDate),
+                priorAction: 'Exit',
+                priorReason:
+                  typeof latestPrior.responses.reason === 'string' &&
+                  latestPrior.responses.reason.trim()
+                    ? latestPrior.responses.reason
+                    : null,
+                soldSinceDisplay: isPositive(soldAfterSum)
+                  ? `Sold ${formatShares(ExactNumber.toJSON(soldAfterSum))} since.`
+                  : null,
+              };
             }
 
+            const strict =
+              staleExit !== null ||
+              standing.kind === 'PastStop' ||
+              standing.kind === 'AtTarget';
+
             const planFact = planFactByTrade.get(trade.id);
+            const sortedStopDevs = [...(devsByTrade.get(trade.id) ?? [])]
+              .filter((d) => !d.startSessionDate || d.startSessionDate <= reviewDate)
+              .sort((a, b) =>
+                (a.startSessionDate ?? '').localeCompare(b.startSessionDate ?? ''),
+              );
             return {
               tradeId: trade.id,
               symbol: trade.symbol,
@@ -620,6 +752,9 @@ export function createDailyReview(options: {
               standing,
               isResolvedForToday,
               strict,
+              planCheck,
+              staleExit,
+              stopDisciplineDeviations: sortedStopDevs,
               todayAction: todayEntry
                 ? {
                     entryId: todayEntry.id,
@@ -656,10 +791,18 @@ export function createDailyReview(options: {
           },
         );
 
-        // Attention-rank Trade items
+        // Attention-rank Trade items (Unanswered Stale Exit #1 -> Past Stop -> At Target -> Inside Stop -> Inside Target -> Unmarked)
         tradeItems.sort((a, b) => {
-          const ra = rankKey(a.standing);
-          const rb = rankKey(b.standing);
+          const ra = rankKey({
+            standing: a.standing,
+            staleExit: a.staleExit,
+            hasTodayAction: a.todayAction !== null,
+          });
+          const rb = rankKey({
+            standing: b.standing,
+            staleExit: b.staleExit,
+            hasTodayAction: b.todayAction !== null,
+          });
           if (ra[0] !== rb[0]) return ra[0] - rb[0];
           if (ra[1] !== rb[1]) return ra[1] - rb[1];
           return a.symbol.localeCompare(b.symbol);
@@ -722,8 +865,16 @@ export function createDailyReview(options: {
         const chosenHoldSymbols = tradeItems
           .filter((t) => t.todayAction?.action === 'Hold')
           .map((t) => t.symbol);
+        const chosenExitSymbols = tradeItems
+          .filter((t) => t.todayAction?.action === 'Exit')
+          .map((t) => t.symbol);
 
         const tomorrowItems: string[] = [];
+        for (const t of tradeItems) {
+          if (t.todayAction?.action === 'Exit') {
+            tomorrowItems.push(`Sell ${t.openSharesDisplay} ${t.symbol}, then record the sale.`);
+          }
+        }
         const heldPastStop = tradeItems
           .filter((t) => t.standing.kind === 'PastStop' && t.todayAction?.action === 'Hold')
           .map((t) => t.symbol);
@@ -770,6 +921,7 @@ export function createDailyReview(options: {
             pastStopSymbols,
             atTargetSymbols,
             chosenHoldSymbols,
+            chosenExitSymbols,
             tomorrowItems,
             nextSessionDateShort: formatSessionDateShort(getNextTradingDate(reviewDate)),
           },
@@ -799,6 +951,7 @@ export function createDailyReview(options: {
           'trades',
           'position_changes',
           'executions',
+          'deviations',
           'market_meta',
           'market_marks',
           'market_acknowledgments',
@@ -828,10 +981,11 @@ export function createDailyReview(options: {
               };
             }
 
-            const [trade, executions, marketMeta, symMarks, symAcks, defs, tradeEntries] =
+            const [trade, executions, existingDevs, marketMeta, symMarks, symAcks, defs, tradeEntries] =
               await Promise.all([
                 tx.get('trades', command.tradeId),
                 tx.getAllByIndex('executions', 'by_trade', command.tradeId),
+                tx.getAllByIndex('deviations', 'by_trade', command.tradeId),
                 tx.get('market_meta', 'singleton'),
                 tx.getAll('market_marks'),
                 tx.getAll('market_acknowledgments'),
@@ -956,13 +1110,42 @@ export function createDailyReview(options: {
                 ? evalRes
                 : (evalRes.priorContext?.evaluation ?? null);
             const standing = computeStanding(activeEval);
-            const strict = standing.kind === 'PastStop' || standing.kind === 'AtTarget';
+
+            const priorDtrs = tradeEntries
+              .filter((e) => {
+                if (e.entryTypeId !== DAILY_TRADE_REVIEW_TYPE_ID) return false;
+                const d = extractDailyReviewDate(e);
+                return d !== null && d < command.reviewDate;
+              })
+              .sort((a, b) =>
+                (extractDailyReviewDate(b) ?? '').localeCompare(extractDailyReviewDate(a) ?? ''),
+              );
+            const { holdPastStopStreak, holdPastTargetStreak } = computeHoldStreaks({
+              priorDtrs,
+              symMarks: marksForSym,
+              stopPrice: ExactNumber.fromJSON(trade.stopPrice),
+              targetPrice: ExactNumber.fromJSON(trade.targetPrice),
+            });
+            const planCheck = computeExitPlanCheck({
+              standing,
+              holdPastStopStreak,
+              holdPastTargetStreak,
+            });
+            const staleExit = priorDtrs[0]?.responses.action === 'Exit';
 
             const trimmedReason = command.reason?.trim() ?? '';
-            if (strict && trimmedReason.length === 0) {
+            const needsReason =
+              staleExit ||
+              (command.action === 'Hold'
+                ? standing.kind === 'PastStop' || standing.kind === 'AtTarget'
+                : !planCheck.exitFollowsPlan);
+            if (needsReason && trimmedReason.length === 0) {
               return {
                 status: 'Rejected',
-                message: 'Say why you are holding past your Plan line.',
+                message:
+                  command.action === 'Exit'
+                    ? (planCheck.reasonIfLeaving ?? 'Say why you are leaving the Plan.')
+                    : 'Say why you are holding past your Plan line.',
               };
             }
 
@@ -980,7 +1163,7 @@ export function createDailyReview(options: {
 
             const def =
               defs.find((d) => d.entryTypeId === DAILY_TRADE_REVIEW_TYPE_ID) ??
-              buildDailyTradeReviewDefinitionV1(now);
+              buildDailyTradeReviewDefinition(now);
 
             const entryId = existingEntry?.id ?? genId('jrn');
             const entry: JournalEntryRecord = {
@@ -1005,6 +1188,32 @@ export function createDailyReview(options: {
             };
 
             tx.put('journal_entries', entry);
+
+            // AC-REV-004: Atomic Stop-Discipline episode reconciliation against bound Marks & Actions
+            const allDtrsAfterSave = extractDailyReviewActions(
+              tradeEntries
+                .filter((x) => x.entryTypeId === DAILY_TRADE_REVIEW_TYPE_ID && x.id !== entryId)
+                .concat(entry),
+              DAILY_TRADE_REVIEW_TYPE_ID,
+            );
+
+            const devWrites = diffStopDisciplineDeviationRecords({
+              tradeId: trade.id,
+              stopPrice: trade.stopPrice,
+              executions,
+              effectiveMarks: marksForSym.map((m) => ({
+                sessionDate: m.sessionDate,
+                price: m.price,
+              })),
+              reviewActions: allDtrsAfterSave,
+              existingDeviations: existingDevs,
+              nowIso: now,
+              generateId: genId,
+            });
+            for (const devRec of devWrites) {
+              tx.put('deviations', devRec);
+            }
+
             return { status: 'Saved', recordId: entryId };
           }
 
