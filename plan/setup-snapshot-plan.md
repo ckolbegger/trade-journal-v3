@@ -111,7 +111,7 @@ Read the stage run outputs from the tasks' runs and confirm each stage builds ea
 | ST.5 | Standard | Done | 34068c3c |
 | ST.6 | Light | Done | 061b786f |
 | ST.7 | Light | Done | 0d3425a5 |
-| ST.8 | Light | Not started | |
+| ST.8 | Light | Done | 888d32d1 |
 | ST.9 | Light | Not started | |
 | ST.10 | Light | Not started | |
 | ST.11 | Standard | Not started | |

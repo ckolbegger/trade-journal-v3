@@ -168,3 +168,20 @@ Kept its own build: e2e/d9r2/grid.spec.ts line 70 (a Thursday Oct 8 17:00 onboar
 Break check (two tests, one per kind of start, as the brief allows): copy switched off (the cp call in e2e/d1/support.ts replaced by `execFileSync('true', ...)`): drafts line 26 (openGapFixture) and responsive-a11y 390 px (copyGapFixture and touch launch) both failed (TimeoutError on the Review link click, the first-screen check); switched on: all five files, 17 passed (26.2 s; before 56.7 s). Switch made and restored by edits; git status shows e2e/d1/support.ts unchanged.
 
 Assumptions: the copy is opened with page.goto('/') then openReview, as createGapFixture ends on the Review page; typecheck, tsc6, lint (0 errors) and lint:deps pass.
+
+## ST.8 Group 5, d6 T-A, on the shared setup
+
+What changed (test code only):
+- e2e/d6/support.ts, beside createTA: `T_A_SETUP` (defineSetup 'd6-t-a': onboardedAt(profile, MONDAY_1700), then createTA(page); its open context handed to the helper to close), `copyTA(copySetup)` (copy only, returns the Trade id, nothing launched) and `openTA(profile, copySetup)` (the copy launched at Mon 10-12 17:00 on the Today screen, returns { context, page }).
+- The converted tests ask for `copySetup` and start with `copyTA(copySetup)` (or `openTA`) in place of onboardedAt + createTA (or createTrades(FOUR_TRADES.slice(0, 1)), the same Trade); bodies unchanged. Unused imports dropped.
+- Release check (ST.1-B1): d6 serves dist-releases/current (d5r's default); the setup is built and keyed on it; all pass, so no mismatch error.
+
+Which tests start from which setup (all T_A_SETUP, 9 tests):
+- copyTA, then the test's own launch at Tue 10:05 or 14:05 (8): exit-requirements lines 9 and 62; exit line 10; no-save line 48; offline line 11 (then the server is closed and the launch is offline); responsive-a11y lines 196, 248, 293.
+- openTA, carry on (1): exit-action line 9 (launched at Mon 17:00 on Today; the test goes to the Review itself).
+
+Kept their own build (1 of the plan's 10): d6/runtime-failure line 77 switches the server to dist-faults before building, while the setup is built on dist-releases/current (the release d6 serves); a copy would be refused (ST.1-B1), and a second setup on dist-faults would serve this one test and cost its own build. Same reason as d5r/durability line 76 in ST.6. Not in scope and unchanged: d6/kill, runtime-failure line 11 and responsive-a11y line 28 (bigger journals), close-review.
+
+Break check (two tests, one per kind of start, as the brief allows): copy switched off (the cp call in e2e/d1/support.ts replaced by `execFileSync('true', ...)`): exit-requirements line 9 (copyTA) and exit-action (openTA) both failed (TimeoutError on the first click); switched on: all seven files, 12 passed (40.4 s; before 53.2 s). Switch made and restored (git checkout of the one file); git status shows e2e/d1/support.ts unchanged.
+
+Assumptions: openTA opens the copy with page.goto('/') (Today) where the build left the page after the Trade's last step; exit-action then goes to the Review through its own openReview, as before. Checks: typecheck, tsc6, lint (0 errors) and lint:deps pass.

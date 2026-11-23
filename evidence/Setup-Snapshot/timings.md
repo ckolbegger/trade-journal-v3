@@ -71,3 +71,15 @@ ST.7 (the five e2e/d9r2 files in one run, main lock held; per-file figures are t
 | ST.7 | e2e/d9r2/grid.spec.ts | 4.7 | 2.8 |
 | ST.7 | e2e/d9r2/history.spec.ts | 2.9 | 1.0 |
 | ST.7 | e2e/d9r2/responsive-a11y.spec.ts | 19.5 | 7.8 |
+
+ST.8 (the seven e2e/d6 files in one run, main lock held; per-file figures are the sum of the tests' own times; one run each; "before" is HEAD~1's versions). Whole run before 53.2 s (12 passed), after 40.4 s (12 passed). Break check with the copy off (two tests): both failed.
+
+| Task | File | Before (s) | After (s) |
+|---|---|---|---|
+| ST.8 | e2e/d6/exit-requirements.spec.ts | 5.8 | 2.5 |
+| ST.8 | e2e/d6/exit.spec.ts | 3.7 | 2.1 |
+| ST.8 | e2e/d6/no-save.spec.ts | 3.4 | 1.7 |
+| ST.8 | e2e/d6/offline.spec.ts | 3.6 | 2.0 |
+| ST.8 | e2e/d6/runtime-failure.spec.ts | 6.6 | 6.8 (unchanged: both tests keep their own build) |
+| ST.8 | e2e/d6/responsive-a11y.spec.ts | 26.5 | 21.4 |
+| ST.8 | e2e/d6/exit-action.spec.ts | 3.0 | 3.4 (the first test to ask pays the one build) |
