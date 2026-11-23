@@ -104,3 +104,7 @@ Every dropped assertion and where it lives:
 Cases kept: none (all six removed).
 
 References (rule 10): grep of the six titles found living text only in the plan itself. Re-pointed: plan/D09-trade-replay.md line 910 (AC-UI-001, AC-UI-002 command) now `npx playwright test e2e/d9ar/responsive-a11y.spec.ts` with the note "B9AR.7; since TD.3, the d9 file was removed". `.claude/scripts/acceptance-commands.sh plan/D09-trade-replay.md`: 9 commands checked, 0 failed (both rows list 18 tests). Not re-pointed, left as written: plan/D09-trade-replay.md:813 (the B9.5 test-plan row, a record of what was planned) and plan/D09A-R-stage-a-refactor.md inventory lines naming the d9 file (120s, 141, 143, 144, 506, 689, 1000s: records of the state when T9AR ran). History, left as written: evidence/D09AR/structural.md:1408, evidence/D09/structural.md:335 and :340, evidence/D09AR/tdd-log/T9AR.18-D1.md, T9AR.23.md:21, evidence/D09/tdd-log/T9.18.md, T9.18-F2.md, T9.18-F3.md, T9.19-B1.md, T9.19-B7.md.
+
+### TD.3 ocr
+
+gpt-6.1-sol, session a39533b9: 1 file reviewed (e2e/d9ar/responsive-a11y.spec.ts; plan, evidence and the deleted spec excluded), 0 findings. `evidence/Test-Dedup/ocr/TD.3-050d59a9.json`.
