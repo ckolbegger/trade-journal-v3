@@ -1,0 +1,216 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 11 selected item(s).",
+  "summary": {
+    "files_reviewed": 11,
+    "comments": 0,
+    "total_tokens": 144786,
+    "input_tokens": 143836,
+    "output_tokens": 950,
+    "cache_read_tokens": 16640,
+    "elapsed": "20s"
+  },
+  "tool_calls": {
+    "total": 22,
+    "by_tool": {
+      "code_search": 5,
+      "file_read": 16,
+      "file_read_diff": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Backup and restore end-to-end tests",
+      "files": [
+        "e2e/d8/backup.spec.ts",
+        "e2e/d8/restore.spec.ts"
+      ]
+    },
+    {
+      "label": "D8P end-to-end tests and shared support",
+      "files": [
+        "e2e/d8p/lot-matches-fit.spec.ts",
+        "e2e/d8p/payoff-fit.spec.ts",
+        "e2e/d8p/responsive-a11y.spec.ts",
+        "e2e/d8p/support.ts"
+      ]
+    },
+    {
+      "label": "D8R end-to-end tests and shared support",
+      "files": [
+        "e2e/d8r/plan-risk.spec.ts",
+        "e2e/d8r/rail.spec.ts",
+        "e2e/d8r/responsive-a11y.spec.ts",
+        "e2e/d8r/support.ts",
+        "e2e/d8r/today.spec.ts"
+      ]
+    }
+  ],
+  "session_id": "c31755e1-6ab1-4086-bbbf-f99548956a66",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "c31755e1-6ab1-4086-bbbf-f99548956a66",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "34068c3c",
+      "resolved_base": "2ffcea3bdf9f34b672aad2967d88ae4566ba5f1f",
+      "resolved_head": "34068c3cde16ea407c6655cf4ecef54c4472844a",
+      "exact_range": "2ffcea3bdf9f34b672aad2967d88ae4566ba5f1f..34068c3cde16ea407c6655cf4ecef54c4472844a",
+      "source_artifact_sha256": "87c28e677fdd281f636d46e598565cb5ef0316bbd92a5c9f9c986b4f05dc9e58"
+    },
+    "execution": {
+      "ocr_version": "v1.14.2",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "1afde35a58e3e0e9a9f6507d22fcbd3f3e2aca36a344bf1896873e07fec7ad17",
+          "path": "e2e/d8p/support.ts",
+          "fingerprint": "371162673bda35d74002ac9154cf3da230704ed81e524ce71702a82eb7d01ebc"
+        },
+        {
+          "item_id": "5056b38c802cad31932fca5d7ee5ca026a05257056595f1e7aba939b32759d63",
+          "path": "e2e/d8r/rail.spec.ts",
+          "fingerprint": "92eb0fdd263eb27034e9787057f97ecf1ab12a079c299fcaf58d86dd52587551"
+        },
+        {
+          "item_id": "5aa3b7437fca46e1cfc6cec523929e224123a1800fa77dca6b850d1197f4656b",
+          "path": "e2e/d8r/responsive-a11y.spec.ts",
+          "fingerprint": "a3b95cb07fee14c8dd7367d0d04c5b8aba3f29b0fb42b1feae7023793d6e8c37"
+        },
+        {
+          "item_id": "9655575f610d6149cfe411ca43e1a5abf7ee774b9079c5428edae3d96fd2e0a1",
+          "path": "e2e/d8p/lot-matches-fit.spec.ts",
+          "fingerprint": "0c494e9bce49efa212a41ba39854198bf4ffeba910e58db33eafc221105be746"
+        },
+        {
+          "item_id": "cfb5607e5664c176cf826e45eb9599e5f0b01795cc8ee6340fbbb4484a1fe5b7",
+          "path": "e2e/d8/restore.spec.ts",
+          "fingerprint": "8b5dcb167f6524f4051bfba24b7e8522048ea080ac9fce2257caddf6f28f7a1d"
+        },
+        {
+          "item_id": "d3eb99946b5bb7f90658427e630f7c2515168d299467467f8bbc8ee72641f7e3",
+          "path": "e2e/d8r/support.ts",
+          "fingerprint": "347e39adfb7a53b8780e17c8bbf2839569e89d26c2252a41a154c408176f306b"
+        },
+        {
+          "item_id": "d4d512e82838459be6e9c06c2713ff4e273127d5e7e4c84d5817c9b51f000312",
+          "path": "e2e/d8p/payoff-fit.spec.ts",
+          "fingerprint": "ce9b74db47a05542f017ba0b7736f36bb6ba63234f8bacc4002a1861242c5af3"
+        },
+        {
+          "item_id": "d76dc36cd0ca75847f731730eb49f083d4aca9bd2dd312ed1b1454319ad4d5a1",
+          "path": "e2e/d8r/plan-risk.spec.ts",
+          "fingerprint": "bb1f997175d0d95aa0dbc81fd9a8a606cd766e38808d4d13fb8b62e8abaac3f4"
+        },
+        {
+          "item_id": "e4c49e0ed402290ed042b475b5dd4de4bac2ab7a55132a63d4678f4c5b9cb1a7",
+          "path": "e2e/d8/backup.spec.ts",
+          "fingerprint": "32b739700c2fd85fa3b95cf560deb2db16c2107f4148992af031080629ca16d3"
+        },
+        {
+          "item_id": "ef534729fd6836df58cddd01829d10e4273fd00a0302a62edd8d94d4d7f1b060",
+          "path": "e2e/d8r/today.spec.ts",
+          "fingerprint": "d29996a8d6f077c9955aef03a11d7cb5f142d9798c18d5615ce0569be37ae598"
+        },
+        {
+          "item_id": "efe807094ca709ea98548a6a284f2e579157551da75e12941da6d413bd8797a6",
+          "path": "e2e/d8p/responsive-a11y.spec.ts",
+          "fingerprint": "d32fc78a2d4007f683887645d8966e41f09ab30885e209a5ccfbafb9f33d8ef9"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "1afde35a58e3e0e9a9f6507d22fcbd3f3e2aca36a344bf1896873e07fec7ad17",
+          "path": "e2e/d8p/support.ts",
+          "fingerprint": "371162673bda35d74002ac9154cf3da230704ed81e524ce71702a82eb7d01ebc"
+        },
+        {
+          "item_id": "5056b38c802cad31932fca5d7ee5ca026a05257056595f1e7aba939b32759d63",
+          "path": "e2e/d8r/rail.spec.ts",
+          "fingerprint": "92eb0fdd263eb27034e9787057f97ecf1ab12a079c299fcaf58d86dd52587551"
+        },
+        {
+          "item_id": "5aa3b7437fca46e1cfc6cec523929e224123a1800fa77dca6b850d1197f4656b",
+          "path": "e2e/d8r/responsive-a11y.spec.ts",
+          "fingerprint": "a3b95cb07fee14c8dd7367d0d04c5b8aba3f29b0fb42b1feae7023793d6e8c37"
+        },
+        {
+          "item_id": "9655575f610d6149cfe411ca43e1a5abf7ee774b9079c5428edae3d96fd2e0a1",
+          "path": "e2e/d8p/lot-matches-fit.spec.ts",
+          "fingerprint": "0c494e9bce49efa212a41ba39854198bf4ffeba910e58db33eafc221105be746"
+        },
+        {
+          "item_id": "cfb5607e5664c176cf826e45eb9599e5f0b01795cc8ee6340fbbb4484a1fe5b7",
+          "path": "e2e/d8/restore.spec.ts",
+          "fingerprint": "8b5dcb167f6524f4051bfba24b7e8522048ea080ac9fce2257caddf6f28f7a1d"
+        },
+        {
+          "item_id": "d3eb99946b5bb7f90658427e630f7c2515168d299467467f8bbc8ee72641f7e3",
+          "path": "e2e/d8r/support.ts",
+          "fingerprint": "347e39adfb7a53b8780e17c8bbf2839569e89d26c2252a41a154c408176f306b"
+        },
+        {
+          "item_id": "d4d512e82838459be6e9c06c2713ff4e273127d5e7e4c84d5817c9b51f000312",
+          "path": "e2e/d8p/payoff-fit.spec.ts",
+          "fingerprint": "ce9b74db47a05542f017ba0b7736f36bb6ba63234f8bacc4002a1861242c5af3"
+        },
+        {
+          "item_id": "d76dc36cd0ca75847f731730eb49f083d4aca9bd2dd312ed1b1454319ad4d5a1",
+          "path": "e2e/d8r/plan-risk.spec.ts",
+          "fingerprint": "bb1f997175d0d95aa0dbc81fd9a8a606cd766e38808d4d13fb8b62e8abaac3f4"
+        },
+        {
+          "item_id": "e4c49e0ed402290ed042b475b5dd4de4bac2ab7a55132a63d4678f4c5b9cb1a7",
+          "path": "e2e/d8/backup.spec.ts",
+          "fingerprint": "32b739700c2fd85fa3b95cf560deb2db16c2107f4148992af031080629ca16d3"
+        },
+        {
+          "item_id": "ef534729fd6836df58cddd01829d10e4273fd00a0302a62edd8d94d4d7f1b060",
+          "path": "e2e/d8r/today.spec.ts",
+          "fingerprint": "d29996a8d6f077c9955aef03a11d7cb5f142d9798c18d5615ce0569be37ae598"
+        },
+        {
+          "item_id": "efe807094ca709ea98548a6a284f2e579157551da75e12941da6d413bd8797a6",
+          "path": "e2e/d8p/responsive-a11y.spec.ts",
+          "fingerprint": "d32fc78a2d4007f683887645d8966e41f09ab30885e209a5ccfbafb9f33d8ef9"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "05eaf1178482da79be7e48facfc38f7cfd60e18d9db44ee96da09ea7bb363bcb",
+          "path": "evidence/Setup-Snapshot/timings.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "58c0af07fd954452ec4877d437d083e0eeedbe6d77ee65274c58f98f68b360f2",
+          "path": "evidence/Setup-Snapshot/structural.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 19676
+  }
+}

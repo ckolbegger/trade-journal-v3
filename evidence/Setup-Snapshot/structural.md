@@ -122,3 +122,7 @@ Kept their own build: none of the planned tests. The other tests in these files 
 Break check (the nine files in one run): copy switched off (the cp call in e2e/d1/support.ts replaced by `execFileSync('true', ...)`): 11 failed (toBeVisible on the first screen), the other 13 tests passed (own builds); switched on: 24 passed (1.3 min). Switch made and restored by edits; git diff shows e2e/d1/support.ts unchanged.
 
 Assumptions: restore's profile A reuse of `profile` instead of a `-a` folder (the copy goes to profile.dir); the builder's last launch to hand back a context.
+
+### ST.5 ocr
+
+gpt-6.1-sol, session c31755e1: 11 files reviewed, 0 findings. `evidence/Setup-Snapshot/ocr/ST.5-34068c3c.json`.
