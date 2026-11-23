@@ -357,3 +357,5 @@ Run `t95.21-finished-day-2` (browser-task, after T95.15-B1): unit 2839, integrat
 Commit `04ec189a` (from `467bb2c8`). `DailyTradeReview.plan?: { thesis, invalidation }`, set by `getTrade` from the Trade Analysis record it already reads (one line). Optional, like `decisions?`, because hand-built cards in five UI test files don't carry it; `getTrade` always returns it. Case 1 red then green; cases 2 and 3 first-run passes, mutation-checked (invalidation set to the thesis; one extra `journal.queryActions` read). Request counts equal I9AR.4's `CARD`. No snapshot changed.
 
 ocr (gpt-6.1-sol, session 14c44730): 4 files, 0 findings. `evidence/D95/ocr/T95.16-D1-04ec189a.json`.
+
+Run `t95.16-d1-plan-text` (browser-auto 467bb2c8 → task tier): unit 2840, integration 302, browser 8, checks 14 of 14. Passed. T95.16-D1 Done.
