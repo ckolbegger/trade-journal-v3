@@ -286,6 +286,8 @@ ocr rerun of T95.14 and B1 (`ocr/T95.14-B1-92c52094.json`, 29 files, 6 comments;
 - `:415` no Price History link on the folded line: **Wrong** (Q7 (a)).
 - `.claude/scripts/ocr-usage-wait.sh:20` (Doubtful) any provider failure read as the usage limit; `:13` (Doubtful) `mktemp -t` template without X's fails on GNU. Fixed in the main session (tooling): the probe now reads the session's error for `usage_limit_exceeded`, and `mktemp` uses an `XXXXXX` template.
 
+**T95.13-D1** `d06479f7` (Q6 (a)): `checkMarkSlip` takes an optional `expiresOnReviewDate`; when true a $0.00 option Mark passes instead of "Worth nothing?"; MarksStep sets it when a Trade holding the Instrument has `expiresOnReviewDate` (no date comparison in src/ui). Two cases red then green; case 4's "asked on any other day" cases unchanged and green. Note: the fact is per Trade, not per contract, so a Trade with two options where only one expires today skips the question for both (the grid's W111 line has the same reach). src/ui and mark-slip 1,338; browser 11 of 11.
+
 ## Trial: complete runs overlapped with the next task (the user, 2026-11-22, for 5 or 6 tasks)
 
 Each task's complete run runs in a detached scratch copy (`.claude/worktrees/run-<label>`, set up by `lane-setup.sh`) at the task's commit, while the next task's subagent starts in this worktree. The run's files are copied back to `evidence/D95/suite-runs/`. A failure becomes a bug task as before; the next task restarts only if it built on the broken code. Times are recorded per run to measure the saving.
