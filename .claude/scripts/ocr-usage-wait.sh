@@ -1,27 +1,31 @@
 #!/bin/bash
 # usage: ocr-usage-wait.sh
-# One round of waiting for ocr's ChatGPT usage limit to reset. It sends `ocr llm test`; if the usage limit
-# still blocks it, it waits 9.5 minutes and sends it once more, so one call fits inside the Bash tool's
-# 10-minute limit and two calls in a row test about every 10 minutes. The limit error names no reset time,
-# so testing is the only way to know it has reset.
-# Exit 0: the test worked (usage is back). Exit 2: still limited after this round.
-# Exit 1: some other failure (sign-in, network); its first error line is printed.
+# One round of waiting for ocr's ChatGPT usage limit to reset. `ocr llm test` can't be used: it tests only
+# ocr's configured default provider and takes no --provider flag. So it reviews one tiny fixed commit
+# (eacad071, a one-line test change) with the review's own provider and model; if the provider still fails,
+# it waits 9.5 minutes and tries once more, so one call fits inside the Bash tool's 10-minute limit.
+# The limit error names no reset time, so trying is the only way to know it has reset.
+# Exit 0: the review worked (usage is back). Exit 2: still failing on the provider after this round.
+# Exit 1: some other failure; its first line is printed.
 
-test_once() {
-  local out
-  if out=$(ocr llm test 2>&1); then
-    echo "$(TZ=America/New_York date +%H:%M) ocr llm test worked"
+probe() {
+  local out dir status
+  dir=$(mktemp -d -t ocr-probe)
+  out=$(ocr review --provider chatgpt --model gpt-6.1-sol -c eacad071 --rule .claude/ocr-rule.json --audience agent -f json --color never -o "$dir/p.json" 2>&1)
+  status=$(jq -r '.status // empty' "$dir/p.json" 2>/dev/null)
+  if [ "$status" = "completed" ] || [ "$status" = "succeeded" ] || [ "$status" = "ok" ]; then
+    echo "$(TZ=America/New_York date +%H:%M) ChatGPT review worked ($status)"
     return 0
   fi
-  if grep -q 'usage_limit_exceeded\|usage limit' <<<"$out"; then
-    echo "$(TZ=America/New_York date +%H:%M) still limited"
+  if jq -e '[.. | objects | select(.classification? == "provider")] | length > 0' "$dir/p.json" >/dev/null 2>&1; then
+    echo "$(TZ=America/New_York date +%H:%M) still limited (provider failure)"
     return 2
   fi
-  echo "$(TZ=America/New_York date +%H:%M) other failure: $(grep -m1 -i 'error' <<<"$out" | cut -c1-300)"
+  echo "$(TZ=America/New_York date +%H:%M) other result: status=${status:-none} $(head -1 <<<"$out" | cut -c1-300)"
   return 1
 }
 
-test_once; status=$?
-[ "$status" -ne 2 ] && exit "$status"
+probe; s=$?
+[ "$s" -ne 2 ] && exit "$s"
 sleep 570
-test_once
+probe
