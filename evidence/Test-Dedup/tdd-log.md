@@ -79,3 +79,15 @@ Moved checks went into e2e/d9ar/states.spec.ts (K-sale case, R-DALE-U case, No M
 | all, restored | green | `... e2e/d9ar/states.spec.ts e2e/d9ar/overlay.spec.ts e2e/d9ar/readout.spec.ts`: 23 passed |
 
 Not mutated: the second half of expectNoPayoffOrTheory (no payoff/theoretical words), moved as written. The chart words "Realized +$478" and "Realized +$1,138" sit in the same array assertion as the mutated "Sold 2 at $4.00" and are covered by it.
+
+## TD.5
+
+Moved checks went into e2e/d9/estimates.spec.ts, the case "should show W47’s chips for R-BREN-U on Mon 11-16, ...". Each mutation changed one expected value and ran that case; command each time: `.claude/scripts/with-browser-lock.sh npm run test:e2e:specs -- e2e/d9/estimates.spec.ts -g "should show W47"`.
+
+| Moved check | Run | Result |
+|---|---|---|
+| aria-expanded is "false" after the first Escape | mutated (expected "true") | 1 failed, assertion: Expected "true", Received "false" |
+| focus is on the chip after 500 ms | mutated (not.toBeFocused) | 1 failed, assertion: Expected: not focused, Received: focused |
+| second Escape closes the overlay | mutated (toHaveCount 1) | 1 failed, assertion: toHaveCount Expected 1, Received 0 |
+| overlay still open after the first Escape and 500 ms | mutated (toHaveCount 0) | 1 failed, assertion: toHaveCount Expected 0, Received 1 |
+| all, restored | green | `... e2e/d9/estimates-a11y.spec.ts e2e/d9/estimates.spec.ts`: 6 passed |

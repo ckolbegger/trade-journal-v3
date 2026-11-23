@@ -5,8 +5,7 @@ import { BREN, build, closeOf, detailReplayButton, expect, expectAccessible, exp
 test.use({ actionTimeout: 15_000 });
 
 // B9.7 (plan section 7.2, AC-UI-001, AC-UI-002, D9A-R): R-BREN-U to Mon 11-16 in the Detail's Replay overlay at 375 and 320 px wide (667 high). The implied volatility chip's small chart is opened by keyboard and
-// measured inside the full-screen overlay: it lies inside the viewport, nothing scrolls sideways and axe finds no WCAG 2.1 A or AA violation with it open. The first Escape closes the chart and leaves the
-// overlay open, with the focus on the chip (read once it has settled).
+// measured inside the full-screen overlay: it lies inside the viewport, nothing scrolls sideways and axe finds no WCAG 2.1 A or AA violation with it open.
 const SIZES = [
   { width: 375, height: 667 },
   { width: 320, height: 667 },
@@ -47,30 +46,6 @@ for (const size of SIZES) {
       await expectFitsOneScreen(scope, size, where);
       await expectNoSidewaysScroll(page, where);
       await expectAccessible(page, where);
-      await context.close();
-    });
-
-    test(`should close the small chart on the first Escape, leave the overlay open and return the focus to the chip at ${size.width} px`, async ({ profile }) => {
-      test.setTimeout(240_000);
-      const { context, page } = await build(profile, BREN, closeOf('2026-11-16'), 10);
-      await setViewport(page, size.width, size.height);
-      await detailReplayButton(page).click();
-      const scope = replay(page);
-      await expect(scope).toBeVisible();
-      await scope.getByRole('slider', { name: 'Session' }).focus();
-      for (let presses = 0; presses < 12 && !(await volatilityChip(scope).evaluate((el) => el === document.activeElement)); presses += 1) await page.keyboard.press('Tab');
-      await expect(smallChart(scope)).toBeVisible();
-      await page.keyboard.press('Escape');
-      await expect(smallChart(scope)).toHaveCount(0);
-      await expect(scope, 'the first Escape leaves the overlay open').toBeVisible();
-      // Focus settles a moment after a close (critic-3 saw it reach the Replay button late): read it after that moment.
-      await page.waitForTimeout(500);
-      await expect(scope).toBeVisible();
-      await expect(volatilityChip(scope), 'the focus is on the chip').toBeFocused();
-      await expect(volatilityChip(scope)).toHaveAttribute('aria-expanded', 'false');
-      // The second Escape closes the overlay, as before.
-      await page.keyboard.press('Escape');
-      await expect(replay(page)).toHaveCount(0);
       await context.close();
     });
   });

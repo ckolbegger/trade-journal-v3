@@ -170,3 +170,26 @@ References (rule 10): `rg` of the five titles found living text only in the plan
 ### TD.4 ocr
 
 gpt-6.1-sol, session b5710bc6: 4 files reviewed (4 excluded), 0 findings. `evidence/Test-Dedup/ocr/TD.4-9f05e3de.json`.
+
+## TD.5
+
+Removed: e2e/d9/estimates-a11y.spec.ts, the loop case "should close the small chart on the first Escape, leave the overlay open and return the focus to the chip at ${size.width} px" (two run-time cases, 375 and 320). The loop's other case (the chart inside the overlay, no sideways scroll, axe) stays. Its header comment lost the Escape sentence.
+
+Kept: e2e/d9/estimates.spec.ts "should show W47’s chips for R-BREN-U on Mon 11-16, each estimate tagged, and open the volatility chip’s chart by keyboard". Confirm first (375 case) held: the kept case ran green with every moved check at its default size. Cases kept: none. Nothing failed for a real reason.
+
+Moved checks (kept case, after the first Escape, then at the end): 500 ms wait; overlay still open; focus on the chip; aria-expanded "false"; after Enter reopens the chart, Escape closes it and a second Escape closes the overlay. Mutations in tdd-log.md under TD.5.
+
+| Dropped assertion | Where |
+|---|---|
+| Tab reaches the chip and the small chart is visible | L: kept case (tabToVolatilityChip, chart visible, aria-expanded "true") |
+| First Escape: chart gone | L: kept case (already asserted) |
+| First Escape: overlay still open | L: kept case (immediately, and now again after 500 ms) |
+| Focus on the chip after 500 ms | M: kept case |
+| aria-expanded "false" | M: kept case |
+| Second Escape closes the overlay | M: kept case (end of the case) |
+
+Not carried: the 375 and 320 px viewport for the Escape behaviour; the kept case runs at the default size, and the other estimates-a11y case still opens the chart at both widths.
+
+Spec counts (e2e/d9/estimates-a11y.spec.ts + e2e/d9/estimates.spec.ts): before 8 passed, after 6 passed.
+
+References (rule 10): rg of the title found only the plan itself. plan/D09-trade-replay.md B9.7 test-plan row (line 815) said estimates-a11y covers "Escape" and "focus returns to the chip"; re-pointed to estimates.spec.ts (since TD.5). Left as written: research/browser-test-duplicates.md, evidence/D09/structural.md (finished-task records), suite-run outputs.

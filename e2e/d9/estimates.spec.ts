@@ -58,8 +58,18 @@ test.describe('B9.6 The estimates', () => {
     await page.keyboard.press('Escape');
     await expect(smallChart(scope)).toHaveCount(0);
     await expect(replay(page)).toBeVisible();
+    // Focus settles a moment after a close (critic-3 saw it reach the Replay button late): read it after that moment.
+    await page.waitForTimeout(500);
+    await expect(replay(page), 'the first Escape leaves the overlay open').toBeVisible();
+    await expect(volatilityChip(scope), 'the focus is on the chip').toBeFocused();
+    await expect(volatilityChip(scope)).toHaveAttribute('aria-expanded', 'false');
     await page.keyboard.press('Enter');
     await expect(smallChart(scope)).toBeVisible();
+    // Escape closes the chart again, and the next Escape closes the overlay, as before.
+    await page.keyboard.press('Escape');
+    await expect(smallChart(scope)).toHaveCount(0);
+    await page.keyboard.press('Escape');
+    await expect(replay(page)).toHaveCount(0);
     await context.close();
   });
 
