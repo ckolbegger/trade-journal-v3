@@ -2,7 +2,7 @@ import type { Locator } from '@playwright/test';
 import { expectNoSidewaysScroll, setWidth } from '../d7p/support.ts';
 import { answerSlipQuestions, createTradeAt, enterMark, expect, FOUR_TRADES, FRIDAY_1700, marksStepOf, MONDAY_1700, onboardedAt, openReview, reloadReview, saveMarksButton, setClock, status, test } from '../d4/support.ts';
 import { openCardFixture } from '../d5r/support.ts';
-import { atBothWidths } from './support.ts';
+import { WIDTHS } from './support.ts';
 
 const FRIDAY = 'Fri Oct 9';
 const MONDAY = 'Mon Oct 12';
@@ -58,9 +58,10 @@ test.describe('B95.2 The Marks step', () => {
     await context.close();
   });
 
-  test('should keep nothing typed after a reload, save once and fold, re-sort the Trades with focus on the first, fix a saved Mark in place with no reason, and show an acknowledged Mark as no price and a gap as a gap, at 1280 and 375 wide', async ({ profile, copySetup }) => {
+  for (const width of WIDTHS) test(`should keep nothing typed after a reload, save once and fold, re-sort the Trades with focus on the first, fix a saved Mark in place with no reason, and show an acknowledged Mark as no price and a gap as a gap, at ${width} wide`, async ({ profile, copySetup }) => {
     test.setTimeout(300_000);
     const { context, page } = await openCardFixture(profile, copySetup);
+    await setWidth(page, width);
     await openReview(page);
     const step = marksStepOf(page);
     const input = (symbol: string) => step.getByRole('textbox', { name: `${symbol} Mark, ${MONDAY}`, exact: true });
@@ -92,10 +93,7 @@ test.describe('B95.2 The Marks step', () => {
     await expect(page.getByRole('button', { name: /^Review ABC/ })).toBeFocused();
     // The acknowledged Mark is no price, and says so on the day card and on the Trade's card.
     await expect(status(page).getByRole('listitem').filter({ hasText: 'XYZ' }).first()).toContainText('No price today');
-    await atBothWidths(page, async (width) => {
-      await expect(step, `the fold at ${width}`).toContainText('4 of 4 saved · 1 no price');
-      await expect(step.getByRole('button', { name: 'Edit', exact: true })).toBeVisible();
-    });
+    await expect(step, `the fold at ${width}`).toContainText('4 of 4 saved · 1 no price');
 
     // Edit opens the grid again: a saved Mark is fixed in place, and no reason is asked.
     await step.getByRole('button', { name: 'Edit', exact: true }).click();
@@ -108,6 +106,9 @@ test.describe('B95.2 The Marks step', () => {
     await saveMarksButton(page).click();
     await expect(step).toContainText('4 of 4 saved · 1 no price');
     await expect(step.getByRole('button', { name: 'Edit', exact: true })).toBeVisible();
+    // The correction was kept: after a reload the grid holds 27.00, not the first 27.50 (B1).
+    await reloadReview(page);
+    await expect(input('ABC')).toHaveValue('27.00');
     await context.close();
   });
 });
