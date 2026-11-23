@@ -339,3 +339,5 @@ Commit `953cd3c0`. Each Trade to be sold links to its own card; red: no link nam
 Commit `996d2ee5`. The expiration reminder names each Trade once (de-duplicated by tradeId in the UI before naming the underlying; not arithmetic). Red: "AXIO, AXIO expire Fri Nov 20."; green. DayCard.test.tsx 15 passed.
 
 ocr of T95.21-B1 and T95.21-B2 (gpt-6.1-sol, session cff735b4, d542bfe9..996d2ee5): 2 files, 0 findings. `evidence/D95/ocr/T95.21-B1-B2-996d2ee5.json`.
+
+Run `t95.21-finished-day` (browser-task): unit 2839, integration 300, checks 14 of 14 passed; browser `@every-task` 5 passed, `e2e/d95` 2 passed and 1 failed: `e2e/d95/marks-keys.spec.ts:9` "B95.3 … key hint at 375 wide, and take Enter, the arrow keys and N" — `toBeFocused` on "DEF Mark, Mon Oct 12" (line 35) received inactive. Failed again twice alone in the main session. It passed in `st.11-setup-snapshot` at `1e3b3fab`, so T95.21 or its fixes broke it. Bug task **T95.21-B3**.
