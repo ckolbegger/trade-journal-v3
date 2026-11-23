@@ -25,3 +25,13 @@ gpt-6.1-sol, session 32f3707a: 3 files reviewed (2 excluded), 2 findings, both V
 
 - **ST.1-B1** (`e2e/d1/support.ts:86`): the setup is always built on `dist-releases/current`, but the d9ar tests serve `dist-faults` (d7's automatic fixture switches the server). The copy carries `current`'s service worker and cache, so the tests may run a different build than before.
 - **ST.1-B2** (`e2e/d1/support.ts:88`): if a builder throws after launching a browser, its context is never closed, and the rejected build stays in the map.
+
+## ST.1-B1 A saved setup is built on the release its tests serve
+
+What changed (test code only, e2e/d1/support.ts): the build no longer switches the asking test's server to dist-releases/current. It runs through the asking test's own server on the release that server serves now (dist-faults for the d9ar tests). Saved setups are keyed by setup name and release, with the release in its own side folder, so a copy is only built for, and handed to, a test serving that release. The helper records the release it built on and, when a test asks, fails loudly if it differs from the one the test serves: `Saved setup "<name>" was built on <release> but this test serves <release>`.
+
+Which tests start from which setup: unchanged from ST.1 (the five tests of d9ar/review.spec.ts start from STANDARD_REVIEW). None kept its own build.
+
+Mutation run (the check shows): the recorded release forced to dist-releases/current. All 5 review tests failed with `Saved setup "standard-review" was built on dist-releases/current but this test serves dist-faults`; restored (git diff shows only the fix); the 5 pass, with narrow.spec.ts 10 passed together (20.6 s; before 20.9 s).
+
+Assumption: a test that switches the server after its copy was made is not detected (the check runs when the copy is asked for), and the saved copy keeps the service worker and release cache of the release it was built on.

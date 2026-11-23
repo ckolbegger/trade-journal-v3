@@ -36,7 +36,7 @@ export interface Setup<T> {
 export const defineSetup = <T>(name: string, build: Setup<T>['build']): Setup<T> => ({ name, build });
 
 interface SavedSetups {
-  // The setup's finished profile folder and what its build returned, built on first use.
+  // The setup's finished profile folder and what its build returned, built on first use on the release the asking test's server serves.
   saved<T>(setup: Setup<T>, server: ReleaseServer): Promise<{ dir: string; made: T }>;
 }
 
@@ -74,26 +74,25 @@ export const test = base.extend<{ server: ReleaseServer; profile: Profile; copyS
     async ({}, provide, workerInfo) => {
       const root = path.join(workerInfo.project.outputDir, `saved-setups-${workerInfo.workerIndex}`);
       rmSync(root, { recursive: true, force: true });
-      const built = new Map<string, Promise<{ dir: string; made: unknown }>>();
+      // Keyed by setup and release: a copy is only handed to a test serving the release it was built on.
+      const built = new Map<string, Promise<{ dir: string; made: unknown; release: string }>>();
       await provide({
-        saved: <T>(setup: Setup<T>, server: ReleaseServer) => {
-          if (!built.has(setup.name)) {
-            built.set(setup.name, (async () => {
-              // The setup is built on the release the tests serve, through the test's own server, then that server goes back to what it served.
-              const dir = path.join(root, setup.name);
+        saved: async <T>(setup: Setup<T>, server: ReleaseServer) => {
+          const release = server.current();
+          const key = `${setup.name}@${release}`;
+          if (!built.has(key)) {
+            built.set(key, (async () => {
+              // Built through the asking test's own server, on the release it serves now (the server is not switched).
+              const dir = path.join(root, release.replace(/\W+/g, '_'), setup.name);
               mkdirSync(dir, { recursive: true });
-              const served = server.current();
-              server.use('dist-releases/current');
-              try {
-                const { context, made } = await setup.build(profileAt(dir));
-                await context.close();
-                return { dir, made };
-              } finally {
-                server.use(served);
-              }
+              const { context, made } = await setup.build(profileAt(dir));
+              await context.close();
+              return { dir, made, release: server.current() };
             })());
           }
-          return built.get(setup.name)! as Promise<{ dir: string; made: T }>;
+          const { dir, made, release: builtOn } = await built.get(key)!;
+          if (builtOn !== release) throw new Error(`Saved setup "${setup.name}" was built on ${builtOn} but this test serves ${release}`);
+          return { dir, made: made as T };
         },
       });
       rmSync(root, { recursive: true, force: true });
