@@ -265,6 +265,8 @@ ocr (`ocr/T95.13-e8fbbc64.json`, 11 files, 3 comments, all Valid):
 - **T95.13-B1** (the question's lifecycle): `MarksStep.tsx:468` typing doesn't clear the cell's `left` entry, so clearing and retyping the same price re-asks mid-typing, and `left` survives Discard; `:466-470` the cell editor's Price input (`DraftFields`, an acknowledged-unavailable Review Date cell) has no leave handler and its `panel.hold` never clears `slipAnswered`, so no question on leaving and an old answer survives a retype.
 - **T95.13-B2**: `SlipQuestion.tsx:29` two readings that differ only beyond the cents show the same (`decimalMoney` rounds) and share a React key.
 
+**T95.13-B1** `e60318da`: `Panel` gains `typePrice` (clears the cell's `left` and `slipAnswered`, then holds the Price; used by the grid input and the editor's Price input) and `leavePrice` (`leave`, now ignoring cells not on the Review Date); Discard clears `left` and `slipAnswered`. Three cases red then green (the editor case's reds by mutation, after a fixture slip). src/ui 1,315; browser 13 of 13.
+
 ## Trial: complete runs overlapped with the next task (the user, 2026-11-22, for 5 or 6 tasks)
 
 Each task's complete run runs in a detached scratch copy (`.claude/worktrees/run-<label>`, set up by `lane-setup.sh`) at the task's commit, while the next task's subagent starts in this worktree. The run's files are copied back to `evidence/D95/suite-runs/`. A failure becomes a bug task as before; the next task restarts only if it built on the broken code. Times are recorded per run to measure the saving.
