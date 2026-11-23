@@ -1,4 +1,4 @@
-import type { Locator, Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
 import {
   actionEntriesOf, actionFormOf, boxOf, cardReplayButton, closeButton, detail, expect, headline, openCardReplay, openStandardReview, pressSave, probe, reachCard, LAUNCH, replay, seek, sliderValue, test, tradeCard, workspaceOf,
   type TradeRef,
@@ -8,8 +8,7 @@ test.use({ actionTimeout: 15_000 });
 
 // B9AR.2 (plan section 7.2, AC-JOUR-001, AC-REV-003): the three-Trade Review (BREN, AXIO on R-AXIO-D, DALE-hold), every Trade Marked to Mon 11-16. On BREN's card an Action is started (Exit and an
 // Intent), the Replay overlay is opened, the slider moved and the overlay closed; then opened again, Price History used and the way back taken; then the Action is saved. AXIO's and DALE-hold's
-// cards are opened for their summaries, which read in the replay's words (W56, W70).
-const row = (card: Locator, term: string): Locator => card.locator('dl > div').filter({ has: card.page().locator('dt', { hasText: new RegExp(`^${term}$`) }) }).locator('dd');
+// cards are opened for their Now boxes, which caption the line each has passed (W86).
 const actions = async (page: Page): Promise<number> => actionEntriesOf(workspaceOf(await probe(page))!).length;
 const INTENT = 'The Target is reached; take the profit.';
 
@@ -149,19 +148,19 @@ test.describe('B9AR.2 The overlay in the Review, and the summary', () => {
     await context.close();
   });
 
-  test('should read each card’s summary in the replay’s words, with no zero Overrun', async ({ profile, copySetup }) => {
+  test('should caption the line each card has passed in the Now box, with no zero Overrun', async ({ profile, copySetup }) => {
     test.setTimeout(420_000);
     const { context, page, trades } = await openStandardReview(profile, copySetup);
     const [bren, axio, dale] = trades as [TradeRef, TradeRef, TradeRef];
     await reachCard(page, bren);
-    await expect(row(tradeCard(page, bren), 'Trade P&L')).toHaveText('+$988.00 · +3.05R');
-    await expect(row(tradeCard(page, bren), 'Remaining Reward')).toHaveText('Past the Target by $32.00 (0.10R)');
-    await expect(row(tradeCard(page, bren), 'Current Risk · At Stop')).toHaveCount(1);
+    const caption = (card: TradeRef, line: 'stop' | 'target') => tradeCard(page, card).locator(`.now-box [data-caption="${line}"]`);
+    await expect(caption(bren, 'target')).toHaveText('$0.16 past Target (+$32.00 so far)');
+    await expect(caption(bren, 'stop')).toContainText(' to Stop (lose ');
     await reachCard(page, axio);
-    await expect(row(tradeCard(page, axio), 'Current Risk')).toHaveText('Past the Stop by $300.00 (0.50R)');
+    await expect(caption(axio, 'stop')).toHaveText('$3.00 past Stop (−$300.00 so far)');
     await expect(tradeCard(page, axio)).not.toContainText('$0.00 · 0.00R');
     await reachCard(page, dale);
-    await expect(row(tradeCard(page, dale), 'Current Risk')).toHaveText('Past the Stop by $552.00 (0.36R)');
+    await expect(caption(dale, 'stop')).toHaveText(/^\$[\d.]+ past Stop \(−\$552\.00 so far\)$/);
     await expect(tradeCard(page, dale)).not.toContainText('$0.00 · 0.00R');
     await context.close();
   });

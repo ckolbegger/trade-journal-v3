@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
-import type { CardProgress, DailyTradeReview, PanelProgress, PostSaveReview, WalkedTrade } from '../../app/types.ts';
+import type { CardProgress, DailyTradeReview, MeterReading, PanelProgress, PostSaveReview, WalkedTrade } from '../../app/types.ts';
 import { Badge } from '../Badge.tsx';
 import { plural, tradeName, tradeSummary } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
@@ -9,7 +9,7 @@ import { ActionForm, type SavedAction } from './ActionForm.tsx';
 import { ReplayDrawer } from '../cockpit/drawers/replay.tsx';
 import { overlayWordsOf } from '../cockpit/replay/overlay.props.ts';
 import { ReplayOverlay } from '../cockpit/replay/overlay.tsx';
-import { CardFigures } from './CardFigures.tsx';
+import { NowBox } from './NowBox.tsx';
 import type { EntryDirty } from './MarksStep.tsx';
 import { ReviewReflections } from './ReviewReflections.tsx';
 import { SettlementPanel, settlementSummary } from './ReviewSettlement.tsx';
@@ -162,6 +162,7 @@ export function ReviewCard({ facade, trade, line, expanded, detail, reveal, go, 
           onRefresh={onRefresh}
           pending={pending}
           onEntryDirty={onEntryDirty}
+          meter={trade.meter}
         />
       )}
     </li>
@@ -181,6 +182,8 @@ interface CardBodyProps {
   readonly onRefresh: () => Promise<boolean>;
   readonly pending: boolean;
   readonly onEntryDirty: EntryDirty;
+  // The Trade's meter reading on the Review Date, from the walk: the "Now" box draws it.
+  readonly meter: MeterReading | undefined;
 }
 
 // What a panel's header says: a one-line summary and a status.
@@ -223,7 +226,7 @@ function panelHeaders(trade: DailyTradeReview, progress: CardProgress): Record<P
 }
 
 // The open card: its figures, then the three panels in the spec's work order (P36, A152), one open at a time.
-function CardBody({ facade, trade, progress, name, go, onSaved, onReflectionResolved, onRefresh, pending, onEntryDirty }: CardBodyProps) {
+function CardBody({ facade, trade, progress, name, go, onSaved, onReflectionResolved, onRefresh, pending, onEntryDirty, meter }: CardBodyProps) {
   const uid = useId();
   const headers = panelHeaders(trade, progress);
   // The card's panels in work order: the Settlement panel is there only while a contract's settlement is due (decision 81).
@@ -328,6 +331,7 @@ function CardBody({ facade, trade, progress, name, go, onSaved, onReflectionReso
   const planColumn = trade.replay?.planColumn;
   const atEntry = trade.evaluation?.atEntry;
   const planBoxCarriesAtEntry = planColumn !== undefined && atEntry != null && atEntry.riskFromEntry.equals(unsigned(planColumn.atStop)) && atEntry.rewardFromEntry.equals(planColumn.atTarget);
+  const atEntryShown = atEntry != null && !planBoxCarriesAtEntry ? atEntry : undefined;
   return (
     <section aria-label={`${name} review`}>
       <p>
@@ -342,8 +346,25 @@ function CardBody({ facade, trade, progress, name, go, onSaved, onReflectionReso
       {trade.attention.reasons.map((reason, i) => (
         <p key={i}>{reasonText(reason, trade.attention.basis, timeZone ?? 'UTC')}</p>
       ))}
-      <PlanBox plan={trade.plan} replay={trade.replay} />
-      <CardFigures trade={trade.evaluation && planBoxCarriesAtEntry ? { ...trade, evaluation: { ...trade.evaluation, atEntry: null } } : trade} />
+      <div className="plan-now">
+        <PlanBox plan={trade.plan} replay={trade.replay} />
+        <NowBox trade={trade} meter={meter} />
+      </div>
+      {atEntryShown && (
+        <div role="group" aria-labelledby={`${uid}-entry`}>
+          <h4 id={`${uid}-entry`}>At entry</h4>
+          <dl>
+            <div>
+              <dt>Risk to stop</dt>
+              <dd className="number">{money(atEntryShown.riskFromEntry)}</dd>
+            </div>
+            <div>
+              <dt>Reward to target</dt>
+              <dd className="number">{money(atEntryShown.rewardFromEntry)}</dd>
+            </div>
+          </dl>
+        </div>
+      )}
       {/* Every panel stays mounted, so a panel left open keeps its drafts; only the open one is shown. */}
       {panels.map((name) => (
         <div key={name} className="review-panel">

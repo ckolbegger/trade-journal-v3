@@ -1,6 +1,6 @@
 import type { Locator } from '@playwright/test';
 import { expectNoSidewaysScroll, setWidth } from '../d7p/support.ts';
-import { createTrades, expect, FOUR_TRADES, MONDAY_1700, onboardedAt, openReview, test } from '../d4/support.ts';
+import { createTrades, enterMark, expect, FOUR_TRADES, MONDAY_1700, onboardedAt, openReview, test } from '../d4/support.ts';
 
 const boxOf = async (locator: Locator) => (await locator.boundingBox())!;
 
@@ -45,6 +45,38 @@ test.describe('B95.4 The card', () => {
       expect(value.y, `${term}: the value on a second line`).toBeGreaterThanOrEqual(label.y + label.height - 1);
     }
     await expectNoSidewaysScroll(page, 'Review card Plan box at 375 px');
+    await context.close();
+  });
+
+  test('should draw the Now box with its labels, arrows and captions whole inside the viewport at 1280, 375 and 320 wide', async ({ profile }) => {
+    test.setTimeout(300_000);
+    const { context, page } = await onboardedAt(profile, MONDAY_1700);
+    // ABC: 100 shares at $30.00, a Stop at $28.00 and a Target at $36.00; a Mark of $29.00 puts it inside its lines, at -$101.00 with the fee.
+    await createTrades(page, [FOUR_TRADES[1]!]);
+    await openReview(page);
+    await enterMark(page, 'ABC', 'Mon Oct 12', '29.00');
+    const now = page.getByRole('region', { name: 'Now · Mon Oct 12' });
+    await expect(now).toBeVisible();
+    await expect(now.locator('.now-marks')).toContainText('ABC $29.00');
+
+    for (const width of [1280, 375, 320]) {
+      await setWidth(page, width);
+      const drawing = now.locator('.now-draw').getByRole('img');
+      await expect(drawing, `the drawing at ${width}`).toHaveAccessibleName(/^P&L −\$101\.00, \d+% of the way to the Stop\./);
+      // A red arrow to the Stop, running left, and a green one to the Target, running right, each captioned.
+      await expect(now.locator('[data-arrow="stop"]')).toHaveAttribute('data-direction', 'left');
+      await expect(now.locator('[data-arrow="target"]')).toHaveAttribute('data-direction', 'right');
+      await expect(now.locator('[data-caption="stop"]')).toHaveText(/^−\$1\.00 to Stop \(lose another −\$\d[\d,.]*\)$/);
+      await expect(now.locator('[data-caption="target"]')).toHaveText(/^\+\$7\.00 to Target \(gain \$\d[\d,.]*\)$/);
+      // Every piece of the drawing is whole inside the viewport, and the two labels do not run into each other.
+      for (const piece of ['.now-label[data-line="stop"]', '.now-label[data-line="target"]', '[data-caption="stop"]', '[data-caption="target"]', '.now-draw .meter']) {
+        const box = await boxOf(now.locator(piece));
+        expect(box.x, `${piece} left edge at ${width}`).toBeGreaterThanOrEqual(-0.5);
+        expect(box.x + box.width, `${piece} right edge at ${width}`).toBeLessThanOrEqual(width + 0.5);
+      }
+      const [stop, target] = [await boxOf(now.locator('.now-label[data-line="stop"]')), await boxOf(now.locator('.now-label[data-line="target"]'))];
+      expect(stop.x + stop.width, `the Stop and Target labels apart at ${width}`).toBeLessThanOrEqual(target.x);
+      await expectNoSidewaysScroll(page, `Review card Now box at ${width} px`);    }
     await context.close();
   });
 });

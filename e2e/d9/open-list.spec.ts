@@ -24,7 +24,10 @@ test.describe('B9.9 The Open list', () => {
     const { context, page, symbolOf } = await fourTrades(profile, copySetup);
     await page.goto('/');
     await openReview(page);
-    // The open card draws no header meter (T95.16): it is collapsed so every card's header shows its meter.
+    // The open card draws no header meter (T95.16): its drawing in the "Now" box (T95.17) is read, then it is collapsed so every card's header shows its meter.
+    const drawing = page.locator('li.review-card .now-draw').getByRole('img');
+    await expect(drawing).toHaveCount(1);
+    const drawn = { id: await page.locator('li.review-card:has(.now-draw)').getAttribute('data-trade-id'), name: await drawing.getAttribute('aria-label') };
     await collapseOpenCard(page);
     const review = await reviewMeters(page);
     expect(review).toHaveLength(4);
@@ -41,6 +44,8 @@ test.describe('B9.9 The Open list', () => {
       expect(row.names[0]).toBe(review[index]!.name);
       expect(row.names[0], symbolOf[row.id]).toBe(NAMES[symbolOf[row.id]!]);
     }
+    // The open card's drawing is named as that Trade's row in the list is.
+    expect(rows.find((row) => row.id === drawn.id)?.names[0]).toBe(drawn.name);
     await context.close();
   });
 

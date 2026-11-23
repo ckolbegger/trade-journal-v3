@@ -399,3 +399,39 @@ ocr of T95.16-B1 to B5 (session 868b5592, f878796f..e857812f): 6 files, 0 findin
 Commit `2823e2b7`: `collapseOpenCard(page)` in `e2e/d5r/support.ts` (re-exported by d9); each case collapses the open card before reading its meter. Before: 8 failed, 14 passed; after (with e2e/d95): 28 passed. Checks that only the open card's meter can make, carried to **T95.17**'s Now box: B5R.11 case 1 (T-A's meter while its drafts are held), B9.11 (the open card's meter in the viewport at 1280, 375, 320), B9.9 (Open list row named as the open card's meter), T7P.11 (meter beside the open card's attention sentence).
 
 Run `t95.16-card-header` (browser-auto a60389a3 → full tier): unit 2857, integration 303, browser 127 + 79 + 55 + 117 (4 skipped), checks 14 of 14; 19m00s. Passed. T95.16 Done.
+
+## T95.17 — The "Now" box: the drawing and its rows (Full)
+
+Data commit `5e00f791` (decision 131, fields only, request counts unchanged: tests/integration/d95/now-box.test.ts): `DailyTradeReview.expiration { date, sessionsLeft? }` (the open contract's date and the session dates after the Review Date through it, from the calendar `open` already reads) and `datedLastClose.meter` (the dated close's meter reading, `meterReadingOf` of the dated evaluation). Both are for the box: W90's "4 sessions", and a drawing for "At the Fri Nov 13 Marks".
+
+New: NowBox.tsx, now-box.props.ts, their tests (19 cases: the planned 13, the three that pair CardFigures' retired cases 2, 12 and 13, the short put and sign case, the amount-only case and the dated-close case). The box draws the shared Meter itself, so its name, test ids and tone are the meter's (S12 untouched). The labels and arrows stand at the places the Meter wrote on its own marks (read from its inline offsets), so no position is worked out twice.
+
+**CardFigures retired; its 13 cases paired.** CardFigures.tsx and CardFigures.test.tsx are deleted.
+
+| CardFigures case | Paired with |
+|---|---|
+| A158 figures: P&L, Risk to stop, Worst case, Reward to target each in dollars and R, then Reward : risk, then At entry | NowBox "Worst case and Max reward", "Reward to risk"; the captions' dollars (cases 4, 5, 6); P&L is the header's (T95.16); At entry stays where it differs from the Plan box (ReviewCard, T95.16-B2) |
+| a figure that is not a Value in words, never 0 | NowBox "Worst case and Max reward" (third fixture) and "should word a Reward to risk the Mark cannot give" |
+| dated figures headed "At the Fri Oct 9 Marks", and their group named the same | NowBox case 1 (heading, region name) and "should read every figure from the dated close" |
+| the dated group kept beside the figures when the Review Date Mark is missing | the same two cases; the box shows the one session |
+| value at expiration beside the payoff summary | NowBox "Expiration row" (W90) and "More figures" (W92); the summary stays Trade Detail's words |
+| the same figure in words when the Underlying Mark is missing or the contract is due | NowBox "Expiration row", fourth fixture |
+| no such line on a stock Trade | NowBox "Expiration row", last fixture |
+| the replay's names Current Risk, Remaining Reward | retired: the captions (W82, W83) replace the rows; the names stay in the Replay and Trade Detail |
+| Reward to risk in one row with the odds and the Plan | NowBox case 8: ratio and the Plan's, no odds (U8) |
+| past a line: the replay's wording in place of the row, no zero | NowBox case 5 (W86); e2e/d9ar/review.spec.ts |
+| the marked result named Trade P&L, in both groups | retired: the header carries it (T95.16 case 1); ReviewCards.test.tsx "Stop and Target prices once ... no Trade P&L in the body" |
+| each renamed figure's canonical term as hover text | NowBox "should keep the renamed figures canonical term as hover text" |
+| the extremes' weight | NowBox "should give the extremes the Plan weight" |
+
+The W8 Conditions list case (ReviewCard.test.tsx, O-S2 on Wednesday) is retired and paired with NowBox "should caption the line a short put has crossed and sign the move to the other by the side its line is on", which uses the same O-S2 fixture; each condition's status stays in Trade Detail and the Replay.
+
+**Existing cases whose expectations changed** (the card's figures moved from CardFigures to the box; fixtures gained `maximumIncrementalReward`, `realizedToDate`, `remainingOpenPnl` and an empty `sessions` where they hand-build a card): ReviewCard.test.tsx (Trade figures cases, save and ReviewChanged cases), ReviewCards.test.tsx (two "Trade P&L" figure checks; T95.16's "no meter in the open card header" now looks at the header, and the card-list case at the drawing), MarksStep.test.tsx, ReviewOptionMarks.test.tsx (the Mark line leaves with CardFigures; the payoff summary is behind More figures). Browser: e2e/d4/review.spec.ts, d5r/review.spec.ts, d7s/responsive-a11y.spec.ts, d9r2/history.spec.ts, d7sp/review-dated-line.spec.ts, d9ar/review.spec.ts read the box in place of the retired rows.
+
+**T95.16-F1 checks put back on the drawing:** B5R.11 case 1 (T-A's drawing while its drafts are held; `nowDrawingOf` in d5r/support.ts), B9.11 (the open card's drawing, named and inside the viewport at 1280, 375, 320), B9.9 (the open card's drawing is named as that Trade's row in the Open list; case 13 makes them equal), T7P.11 (the drawing beside the attention sentence at 320 and 375). All four apply.
+
+New browser case: e2e/d95/card.spec.ts "should draw the Now box with its labels, arrows and captions whole inside the viewport at 1280, 375 and 320 wide".
+
+Browser runs: e2e/d95/card.spec.ts 3 passed; e2e/d4/review, d5r/review, d5r/responsive-a11y, d7s/responsive-a11y, d7sp/review-dated-line 9 passed; e2e/d9ar/review, d9/meter-a11y, d9/open-list, d9r2/history, d7p/layout 15 passed.
+
+Review of T95.17 (before the final commit): a line crossed by its condition while the result is inside the lines now reads "$1.00 past Stop" (bold) and hides Reward to risk, as the replay's F2 reads it. `npm run verify:fixtures`: OK, no snapshot changed (the card's new fields are not in any frozen view). One full `npx vitest run src/ui`: 91 files, 1361 tests passed; in an earlier combined run TradeList.test.tsx "Open list" failed once ("expected 2 to be 3") and passed alone and in this run (a timing flake, not this task's).

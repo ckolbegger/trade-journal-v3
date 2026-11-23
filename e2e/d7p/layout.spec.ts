@@ -145,6 +145,14 @@ test.describe('T7P.11 Layout of the worded reasons', () => {
         await setWidth(page, width);
         await expectNoSidewaysScroll(page, `${symbol} card at ${width}`);
         await expectShownInFull(tradeCard(page, symbol).locator('p', { hasText: sentence }).first(), sentence, `${symbol} attention sentence at ${width}`);
+        // The open card's "Now" box draws the meter beside the sentence (T95.17): named in the same words, whole inside the viewport.
+        const drawing = tradeCard(page, symbol).locator('.now-draw').getByRole('img');
+        if (figure === undefined) await expect(drawing).toHaveCount(0);
+        else {
+          await expect(drawing).toHaveAccessibleName(new RegExp(figure.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+          const drawn = await drawing.boundingBox();
+          expect(drawn!.x + drawn!.width, `${symbol} drawing inside the viewport at ${width}`).toBeLessThanOrEqual(width);
+        }
       }
       // The open card draws no header meter (T95.16): the card is collapsed to read it.
       await collapseOpenCard(page);

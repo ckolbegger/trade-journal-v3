@@ -40,13 +40,14 @@ test.describe('B4.1 Daily Review end to end', () => {
     // T-A's form opens with Hold preselected: Save alone records the Action.
     await reachCard(page, 'XYZ');
     await expect((await actionFormOf(page, 'XYZ')).getByRole('radio', { name: 'Hold', exact: true })).toBeChecked();
-    // The Trade's figures carry the worst case and the R of risk and reward.
+    // The Trade's "Now" box carries the worst case and the distance to each line.
     const figures = tradeCard(page, 'XYZ');
-    const figure = (term: string) => figures.locator('dt', { hasText: new RegExp(`^${term}$`) }).locator('xpath=following-sibling::dd[1]');
-    await expect(figure('Trade P&L')).toHaveText('+$180.00 · +0.72R');
-    await expect(figure('Current Risk · At Stop')).toHaveText('$450.00 · 1.80R');
-    await expect(figure('Current Risk · At Worst case')).toHaveText('$5,200.00 · 20.80R');
-    await expect(figure('Remaining Reward · At Target')).toHaveText('$400.00 · 1.60R');
+    const figure = (term: string) => figures.locator('.now-box dt', { hasText: new RegExp(`^${term}$`) }).locator('xpath=following-sibling::dd[1]');
+    await expect(figure('Worst case')).toHaveText('$5,200.00 more · 20.80R');
+    await expect(figure('Max reward')).toHaveText('No cap');
+    // The distance to each line is the caption under its arrow, in the Trade's own price and then in dollars (U4).
+    await expect(figures.locator('.now-box [data-caption="stop"]')).toHaveText('−$4.50 to Stop (lose −$450.00)');
+    await expect(figures.locator('.now-box [data-caption="target"]')).toHaveText('+$4.00 to Target (gain $400.00)');
     await saveAction(page, 'Hold', undefined, 'XYZ');
     await expect(status(page)).toContainText('Incomplete');
     await reachCard(page, 'ABC');

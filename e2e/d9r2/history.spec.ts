@@ -26,7 +26,7 @@ test.describe('B9R2.1 Price History and Journal: acknowledged sessions', () => {
 
     await test.step('the Review card heading says Marks, not close (W79)', async () => {
       await reachCard(page, tA);
-      await expect(tradeCard(page, tA).getByRole('group', { name: 'At the Fri Oct 9 Marks' })).toBeVisible();
+      await expect(tradeCard(page, tA).getByRole('heading', { name: 'At the Fri Oct 9 Marks' })).toBeVisible();
       await expect(tradeCard(page, tA)).not.toContainText('Fri Oct 9 close');
     });
 

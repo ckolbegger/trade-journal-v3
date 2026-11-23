@@ -113,7 +113,21 @@ function renderReview(facade: UiFacade) {
 const cardOf = (underlying: string, index = 0) => screen.getAllByRole('button', { name: new RegExp('^Review ' + underlying + '\\b') })[index]!.closest('li')!;
 const meterIn = (card: HTMLElement) => within(card).getByRole('img');
 
+// The figures the "Now" box reads of an open card; every other evaluation field is out of this screen's sight.
+const evaluationOf = { kind: 'Evaluated', conditions: [], valuationDate: MONDAY, observation: { instrument: { kind: 'Stock', symbol: 'DEF' }, tradingDate: MONDAY, mark: { revisionId: 'r1', revisionNumber: 1, price: '52.00' } }, currentMarkedPnl: value(990n), worstCaseOngoingRisk: value(5000n), worstCaseOngoingRiskInPlanR: value(20n), maximumIncrementalReward: { kind: 'Unbounded', direction: 'Above' }, realizedToDate: value(0n), remainingOpenPnl: value(990n), rewardRiskNow: value(3n), planBaseline: { kind: 'Value', value: { rewardRiskRatio: rational(12n, 5n) } }, atEntry: null } as unknown as DailyTradeReview['evaluation'];
+
 describe('Review card: the meter (W51)', () => {
+  it('should draw the open card meter in its Now box from the walk reading, named as its header meter is', async () => {
+    const def = walked('t-c', 'DEF', { meter: within62 });
+    const facade = cardFacade([def]);
+    vi.mocked(facade.DailyReview.getTrade).mockResolvedValue({ kind: 'Ready', reviewDate: MONDAY, cutoff: CUTOFF, trade: { ...tradeReview(def), evaluation: evaluationOf } });
+    renderReview(facade);
+
+    await waitFor(() => expect(document.querySelector('.now-draw [role="img"]')?.getAttribute('aria-label')).toBe('P&L +$990.00, 62% of the way to the Target. Realized +$400.00. Stop −$600.00, Target +$1,600.00. Up from +$850.00 on Fri Oct 9.'));
+    // The open card's header draws none (U3): the one meter in the card is the box's.
+    expect(within(cardOf('DEF')).getAllByRole('img')).toHaveLength(1);
+  });
+
   it('should show the meter in the card header, named by its figures, and no slider', async () => {
     renderReview(cardFacade([TA, walked('t-c', 'DEF', { meter: within62 }), TF]));
     await screen.findAllByRole('button', { name: /^Review / });

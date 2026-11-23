@@ -1136,6 +1136,192 @@ ul.rows > li {
   margin: 0 0 0.25rem;
   overflow-wrap: anywhere;
 }
+/* The "Now" box (T95.17, U3) beside the Plan box: the Marks, the shared meter with its labels and arrows, then the figures the header and the
+   drawing do not give. One column under 40rem. */
+.plan-now {
+  display: grid;
+  grid-template-columns: minmax(0, 6fr) minmax(0, 7fr);
+  gap: 0.75rem;
+  align-items: start;
+}
+.now-box h4 {
+  margin: 0.5rem 0 0.25rem;
+}
+.now-marks {
+  margin: 0 0 0.5rem;
+}
+.now-draw {
+  max-width: 28rem;
+}
+/* The labels and arrows stand over the meter's own inner track, which its side padding sets in from the edges. */
+.now-labels,
+.now-arrows {
+  position: relative;
+  margin: 0 9px;
+}
+.now-labels {
+  height: 1.25rem;
+  font-size: 0.8rem;
+  font-weight: 650;
+}
+.now-label {
+  position: absolute;
+  top: 0;
+  white-space: nowrap;
+}
+.now-label[data-tone='loss'],
+.now-caption[data-tone='loss'] {
+  color: var(--stop);
+}
+.now-label[data-tone='profit'],
+.now-caption[data-tone='profit'] {
+  color: var(--target);
+}
+.now-draw .meter {
+  max-width: none;
+  margin-top: 0;
+}
+.now-arrows {
+  height: 0.9rem;
+  margin-top: 0.25rem;
+}
+.now-arrows:has([data-row='2']) {
+  height: 1.7rem;
+}
+.now-arrow {
+  position: absolute;
+  height: 0.8rem;
+  top: 0;
+}
+.now-arrow[data-row='2'] {
+  top: 0.8rem;
+}
+/* A shaft along the middle, a dot where it starts (now) and a head at the line. */
+.now-arrow::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(50% - 1px);
+  height: 2px;
+  background: currentColor;
+}
+.now-arrow::after {
+  content: '';
+  position: absolute;
+  top: calc(50% - 4px);
+  border: 4px solid transparent;
+}
+.now-arrow[data-direction='right']::after {
+  right: 0;
+  border-left: 7px solid currentColor;
+  border-right: 0;
+}
+.now-arrow[data-direction='left']::after {
+  left: 0;
+  border-right: 7px solid currentColor;
+  border-left: 0;
+}
+.now-arrow[data-tone='loss'] {
+  color: var(--stop);
+}
+.now-arrow[data-tone='profit'] {
+  color: var(--target);
+}
+.now-legs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0 0.6rem;
+  margin: 0 0 0.4rem;
+  font-size: 0.84rem;
+  line-height: 1.3;
+}
+.now-caption:last-child:not(:first-child) {
+  margin-left: auto;
+  text-align: right;
+}
+.now-rows {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.2rem 0.75rem;
+  margin: 0;
+}
+.now-rows > div {
+  display: contents;
+}
+.now-rows dt {
+  color: var(--muted);
+}
+.now-rows dd {
+  margin: 0;
+  font-weight: 650;
+}
+.now-rows > [data-weight='Remote'] {
+  font-size: 0.85em;
+  color: var(--muted);
+}
+.now-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  margin: 0.4rem 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.76rem;
+  color: var(--muted);
+}
+.now-key li::before {
+  content: '';
+  display: inline-block;
+  width: 14px;
+  height: 9px;
+  margin-right: 4px;
+  border-radius: 2px;
+  background: var(--ink);
+}
+.now-key [data-mark='open']::before {
+  background: #c2e2c9;
+  box-shadow: inset 0 0 0 1px var(--target);
+}
+.now-key [data-mark='past-the-line']::before {
+  background: repeating-linear-gradient(45deg, var(--stop) 0 2px, #f2c6c0 2px 5px);
+}
+.now-key [data-mark='session-before']::before {
+  width: 9px;
+  border-radius: 50%;
+  border: 1.5px solid var(--muted);
+  background: var(--card);
+}
+.now-key [data-mark='now']::before {
+  width: 8px;
+  height: 12px;
+  border: 2px solid var(--ink);
+  background: var(--card);
+  vertical-align: -2px;
+}
+.now-key [data-mark='Stop']::before,
+.now-key [data-mark='Target']::before {
+  width: 3px;
+  height: 12px;
+  vertical-align: -2px;
+  border-radius: 0;
+  background: var(--stop);
+}
+.now-key [data-mark='Target']::before {
+  background: var(--target);
+}
+.now-more {
+  margin-top: 0.4rem;
+}
+.now-more summary {
+  cursor: pointer;
+}
+@container (max-width: 39.99rem) {
+  .plan-now {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
 @container (max-width: 39.99rem) {
   .plan-box-body {
     grid-template-columns: minmax(0, 1fr);

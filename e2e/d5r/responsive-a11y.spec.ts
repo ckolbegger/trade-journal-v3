@@ -1,5 +1,5 @@
 import {
-  panelOf, markEditorOf, markInputOf, expectMarkUnsaved, actionFormOf, cardHeader, cardItem, completion, createRoutineTrades, createTrades, expect, expectAccessible, FRIDAY, MONDAY, MONDAY_1700, onboardedAt, openReview, panelHeader, LAUNCH, remainsOf, meterOf, collapseOpenCard, status, tabTo, test, tradeCard, saveMarksButton, expectMarksSaved, marksStepOf, openCardFixture, type TradeRef,
+  panelOf, markEditorOf, markInputOf, expectMarkUnsaved, actionFormOf, cardHeader, cardItem, completion, createRoutineTrades, createTrades, expect, expectAccessible, FRIDAY, MONDAY, MONDAY_1700, onboardedAt, openReview, panelHeader, LAUNCH, remainsOf, meterOf, nowDrawingOf, collapseOpenCard, status, tabTo, test, tradeCard, saveMarksButton, expectMarksSaved, marksStepOf, openCardFixture, type TradeRef,
 } from './support.ts';
 
 const INTENT = /^Why are you taking this action\?/;
@@ -46,6 +46,8 @@ test.describe('B5R.11 Responsive and accessible', () => {
 
     // Axe on the card list, then on the open card with each panel open, with the drafts held; the meters are in every state.
     for (const trade of [tB, tC, tE, tF]) await expect(meterOf(page, trade)).toHaveAttribute('role', 'img');
+    // T-A's card is open, with its drafts held: its drawing in the "Now" box is its meter.
+    await expect(nowDrawingOf(page, tA)).toHaveAttribute('role', 'img');
     for (const panel of ['Marks', 'Reflections', 'Action'] as const) {
       await panelOf(page, tA, panel);
       await expectAccessible(page, `T-A's card with the ${panel} panel open, drafts held`);

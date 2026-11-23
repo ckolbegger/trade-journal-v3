@@ -34,9 +34,9 @@ test.describe('B5R.1 Review end to end on cards', () => {
 
     // Type the first card's Mark and press Save Marks: its figures and both XYZ meters follow the result.
     await enterMark(page, tA, MONDAY, '52.00');
-    const figure = (term: string) => tradeCard(page, 'XYZ').locator('dt', { hasText: new RegExp(`^${term}$`) }).locator('xpath=following-sibling::dd[1]');
-    await expect(figure('Trade P&L')).toHaveText('+$180.00 · +0.72R');
-    await expect(figure('Current Risk · At Stop')).toHaveText('$450.00 · 1.80R');
+    const figure = (term: string) => tradeCard(page, 'XYZ').locator('.now-box dt', { hasText: new RegExp(`^${term}$`) }).locator('xpath=following-sibling::dd[1]');
+    await expect(figure('Worst case')).toHaveText('$5,200.00 more · 20.80R');
+    await expect(tradeCard(page, 'XYZ').locator('.now-box [data-caption="stop"]')).toHaveText('−$4.50 to Stop (lose −$450.00)');
     await collapseOpenCard(page);
     await expect(meterOf(page, tA)).toHaveAccessibleName(/^P&L \+\$180\.00, 31% of the way to the Target\. Stop −\$270\.00, Target \+\$580\.00\.$/);
     await expect(meterOf(page, tF)).toHaveAccessibleName(/^P&L \+\$99\.00, 40% of the way to the Target\. Stop −\$101\.00, Target \+\$249\.00\.$/);

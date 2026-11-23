@@ -72,6 +72,8 @@ export async function createRoutineTrades(page: Page, count: number): Promise<vo
 
 // The meter of a collapsed card's header. The open card's header has none (T95.16, U3): a case that reads it collapses the open card first.
 export const meterOf = (page: Page, card: CardRef): Locator => cardItem(page, card).locator('.review-card-head').getByRole('img');
+// The open card's drawing in its "Now" box (T95.17): the shared meter, named in the same words as the collapsed header's.
+export const nowDrawingOf = (page: Page, card: CardRef): Locator => cardItem(page, card).locator('.now-draw').getByRole('img');
 // Collapses the open card, so its header shows the meter; a card that holds unsaved work refuses and stays open, and the wait fails.
 export async function collapseOpenCard(page: Page): Promise<void> {
   const open = page.locator('.review-card-head button[aria-expanded="true"]');

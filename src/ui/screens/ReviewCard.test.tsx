@@ -6,8 +6,6 @@ import { MemoryRouter, useLocation, useNavigate, useNavigationType } from 'react
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { resetDrafts } from './action-draft.ts';
 import { facadeDouble } from '../../../tests/support/facade-double.ts';
-import { optionOpenDetail } from '../../../tests/support/option-detail-fixtures.ts';
-import { OS2_S1 } from '../../../tests/support/option-trade-fixtures.ts';
 import type { UiFacade } from '../../app/compose.ts';
 import type { DailyTradeReview, MarkRow, OpenDailyReviewResult, OwedReflection, OwedReflectionsCard, ReviewBinding, ReviewCompletion, ReviewTradeItem, SaveDailyReviewResult } from '../../app/types.ts';
 import { reflectionDefinition } from '../../../tests/support/position-change-form-facade.ts';
@@ -77,6 +75,9 @@ function evaluation(over: Record<string, unknown> = {}): Evaluation {
     incrementalRewardToTarget: value(1200n),
     incrementalRewardToTargetInPlanR: value(24n, 5n),
     rewardRiskNow: value(3n),
+    maximumIncrementalReward: { kind: 'Unbounded', direction: 'Above' },
+    realizedToDate: value(0n),
+    remainingOpenPnl: value(582n),
     planBaseline: { kind: 'Value' as const, value: { rewardRiskRatio: Rational.of(12n, 5n) } },
     atEntry: null,
     ...over,
@@ -172,11 +173,10 @@ describe('Trade in the walk', () => {
 
     const trade = await openTrade(user, 'XYZ');
     expect(vi.mocked(facade.DailyReview.getTrade)).toHaveBeenCalledExactlyOnceWith({ reviewDate: '2026-10-12', tradeId: 't1', binding });
-    expect(within(trade).getByText('Mark $52.00 for XYZ, Mon Oct 12')).toBeTruthy();
+    expect(within(trade).getByRole('heading', { name: 'Now · Mon Oct 12' })).toBeTruthy();
     const figure = (term: string) => within(trade).getByText(term).nextElementSibling?.textContent;
-    expect(figure('Trade P&L')).toBe('+$582.00 · +2.33R');
-    expect(figure('Current Risk · At Stop')).toBe('$400.00 · 1.60R');
-    expect(figure('Remaining Reward · At Target')).toBe('$1,200.00 · 4.80R');
+    expect(figure('Worst case')).toBe('$5,000.00 more · 20.00R');
+    expect(figure('Max reward')).toBe('No cap');
     expect(within(trade).getByText('31% of the way from entry to the Target')).toBeTruthy();
     expect(within(trade).queryByRole('group', { name: /close/ })).toBeNull();
     expect(within(trade).queryByRole('group', { name: 'At entry' })).toBeNull();
@@ -201,14 +201,10 @@ describe('Trade in the walk', () => {
     const again = walkFacade(ready([limited]), missing);
     renderWalk(again);
     const second = await openTrade(user, 'XYZ');
-    expect(figure2(second, 'Trade P&L')).toBe('Mark missing: XYZ, Mon Oct 12');
-    expect(figure2(second, 'Current Risk · At Stop')).toBe('Mark missing: XYZ, Mon Oct 12');
-    expect(within(second).queryByText('Mark $52.00 for XYZ, Mon Oct 12')).toBeNull();
-    const dated = within(second).getByRole('group', { name: 'At the Fri Oct 9 Marks' });
-    expect(figure2(dated, 'Trade P&L')).toBe('−$50.00 · −0.20R');
-    expect(figure2(dated, 'Current Risk · At Stop')).toBe('$300.00 · 1.20R');
-    expect(figure2(dated, 'Current Risk · At Worst case')).toBe('$2,600.00 · 10.40R');
-    expect(figure2(dated, 'Remaining Reward · At Target')).toBe('$900.00 · 3.60R');
+    // The box reads the dated close, headed by its date, and no number stands in for the Mark that is missing.
+    expect(within(second).getByRole('heading', { name: 'At the Fri Oct 9 Marks' })).toBeTruthy();
+    expect(within(second).queryByRole('heading', { name: /^Now · / })).toBeNull();
+    expect(figure2(second, 'Worst case')).toBe('$2,600.00 more · 10.40R');
     const atEntry = within(second).getByRole('group', { name: 'At entry' });
     expect(figure2(atEntry, 'Risk to stop')).toBe('$60.00');
     expect(figure2(atEntry, 'Reward to target')).toBe('$200.00');
@@ -218,7 +214,7 @@ describe('Trade in the walk', () => {
 
 describe('Trade figures in R and worst case', () => {
   const rValue = (n: bigint, d = 1n) => value(n, d);
-  it('should show the reference Trade with P&L, risk to stop, worst case and reward to target, each with its R', async () => {
+  it('should show the reference Trade with its worst case and its R in the Now box', async () => {
     const facade = walkFacade(ready([item('t1', 'XYZ')]), tradeReview('t1', 'XYZ', {
       evaluation: evaluation({
         currentMarkedPnl: value(180n), currentMarkedPnlInPlanR: rValue(18n, 25n),
@@ -229,15 +225,11 @@ describe('Trade figures in R and worst case', () => {
     }));
     renderWalk(facade);
     const trade = await openTrade(userEvent.setup(), 'XYZ');
-    expect(figure2(trade, 'Trade P&L')).toBe('+$180.00 · +0.72R');
-    expect(figure2(trade, 'Current Risk · At Stop')).toBe('$450.00 · 1.80R');
-    expect(figure2(trade, 'Current Risk · At Worst case')).toBe('$5,200.00 · 20.80R');
-    expect(figure2(trade, 'Remaining Reward · At Target')).toBe('$400.00 · 1.60R');
-    const terms = [...trade.querySelectorAll('dt')].map((dt) => dt.textContent);
-    expect(terms.slice(0, 4)).toEqual(['Trade P&L', 'Current Risk · At Stop', 'Current Risk · At Worst case', 'Remaining Reward · At Target']);
+    expect(figure2(trade, 'Worst case')).toBe('$5,200.00 more · 20.80R');
+    expect(figure2(trade, 'Reward to risk')).toBe('3.00 to 1 · Plan 2.40 to 1');
   });
 
-  it('should show the worst case Unavailable in the same words as the other figures when the Mark is missing', async () => {
+  it('should show the worst case Unavailable in the same words when the Mark is missing', async () => {
     const unavailable = { kind: 'Unavailable' as const, reason: 'MarkMissing', instrument: symbol, date: '2026-10-12' };
     const facade = walkFacade(ready([item('t1', 'XYZ')]), tradeReview('t1', 'XYZ', {
       evaluation: evaluation({
@@ -247,8 +239,7 @@ describe('Trade figures in R and worst case', () => {
     }));
     renderWalk(facade);
     const trade = await openTrade(userEvent.setup(), 'XYZ');
-    expect(figure2(trade, 'Current Risk · At Worst case')).toBe('Mark missing: XYZ, Mon Oct 12');
-    expect(figure2(trade, 'Current Risk · At Stop')).toBe('Mark missing: XYZ, Mon Oct 12');
+    expect(figure2(trade, 'Worst case')).toBe('Mark missing: XYZ, Mon Oct 12');
   });
 });
 
@@ -290,7 +281,7 @@ describe('Action form (AC-REV-003)', () => {
   it('should save Hold with one press of Save and move to the next Trade from the returned next step without calling open or getTrade', async () => {
     const trades = [item('t1', 'XYZ'), item('t2', 'DEF')];
     const first = tradeReview('t1', 'XYZ');
-    const next = tradeReview('t2', 'DEF', { evaluation: evaluation({ ongoingRiskToStop: value(150n) }) });
+    const next = tradeReview('t2', 'DEF', { evaluation: evaluation({ worstCaseOngoingRisk: value(1500n), worstCaseOngoingRiskInPlanR: value(10n) }) });
     const facade = walkFacade(ready(trades), first);
     const nextBinding: ReviewBinding = { ...binding, journalRevision: 2 };
     vi.mocked(facade.DailyReview.save).mockResolvedValue({
@@ -308,7 +299,7 @@ describe('Action form (AC-REV-003)', () => {
     // One call, carrying the exact binding getTrade returned and no Intent.
     expect(vi.mocked(facade.DailyReview.save)).toHaveBeenCalledExactlyOnceWith({ kind: 'SaveTradeAction', binding: first.saveBinding, action: 'Hold' });
     const following = await screen.findByRole('region', { name: 'DEF review' });
-    expect(within(following).getByText('$150.00 · 1.60R')).toBeTruthy();
+    expect(within(following).getByText('$1,500.00 more · 10.00R')).toBeTruthy();
     expect(screen.queryByRole('region', { name: 'XYZ review' })).toBeNull();
     expect(vi.mocked(facade.DailyReview.open)).toHaveBeenCalledTimes(opens);
     expect(vi.mocked(facade.DailyReview.getTrade)).toHaveBeenCalledTimes(1);
@@ -416,7 +407,7 @@ describe('Changed review', () => {
   it('should show ReviewChanged with the entered values kept and offer Refresh', async () => {
     const first = tradeReview('t1', 'XYZ');
     const refreshedBinding: ReviewBinding = { ...binding, marketDataSnapshotId: 'mds1:2:def', factRevisions: { t1: 3 } };
-    const refreshed = tradeReview('t1', 'XYZ', { evaluation: evaluation({ ongoingRiskToStop: value(350n) }), saveBinding: savedBinding({ factRevision: 3, marketDataSnapshotId: 'mds1:2:def' }) });
+    const refreshed = tradeReview('t1', 'XYZ', { evaluation: evaluation({ worstCaseOngoingRisk: value(3500n), worstCaseOngoingRiskInPlanR: value(14n) }), saveBinding: savedBinding({ factRevision: 3, marketDataSnapshotId: 'mds1:2:def' }) });
     const facade = walkFacade(ready([item('t1', 'XYZ')]), first, refreshed);
     vi.mocked(facade.DailyReview.open).mockResolvedValueOnce(ready([item('t1', 'XYZ')])).mockResolvedValue(ready([item('t1', 'XYZ')], undefined, { binding: refreshedBinding }));
     vi.mocked(facade.DailyReview.save)
@@ -440,7 +431,7 @@ describe('Changed review', () => {
 
     await user.click(within(alert).getByRole('button', { name: 'Refresh' }));
     // The Review is asked for again and the Trade is read under the new binding; the entered values stay.
-    expect(await within(await screen.findByRole('region', { name: 'XYZ review' })).findByText('$350.00 · 1.60R')).toBeTruthy();
+    expect(await within(await screen.findByRole('region', { name: 'XYZ review' })).findByText('$3,500.00 more · 14.00R')).toBeTruthy();
     expect(vi.mocked(facade.DailyReview.getTrade)).toHaveBeenLastCalledWith({ reviewDate: '2026-10-12', tradeId: 't1', binding: refreshedBinding });
     const again = screen.getByRole('region', { name: 'XYZ review' });
     expect(within(again).queryByRole('alert')).toBeNull();
@@ -1668,39 +1659,6 @@ describe('panels (A152)', () => {
     renderWalk(walkFacade(ready([item('t1', 'XYZ')]), tradeReview('t1', 'XYZ')));
     const bare = await openTrade(user, 'XYZ');
     expect(within(panelHeader(bare, 'Reflections')).getByText('None')).toBeTruthy();
-  });
-});
-
-describe('Review card: conditions (W8)', () => {
-  // Wednesday 10-14 (breakdown section 4): MNO 43.20, the put 3.70. The card's Trade is O-S2, a Cash-Secured Put.
-  const wednesday = (underlyingMark?: string) => {
-    const detail = optionOpenDetail('O-S2', [OS2_S1], { tradingDate: '2026-10-14', closeInstant: '2026-10-14T20:00:00Z', contractMark: '3.70', ...(underlyingMark && { underlyingMark }) });
-    return tradeReview('t1', 'MNO', { summary: detail.summary!, evaluation: detail.current.evaluation });
-  };
-  const conditionLines = (card: HTMLElement) => {
-    const list = within(card).getByRole('list', { name: 'Conditions' });
-    return within(list).getAllByRole('listitem').map((line) => line.textContent);
-  };
-
-  it('should list O-S2s four conditions on Wednesdays card with their status, Stop on the option price at or above 3.60 Breached, 20.00 beyond, and an Unavailable condition by its reasons figure', async () => {
-    const user = userEvent.setup();
-    renderWalk(walkFacade(ready([item('t1', 'MNO')]), wednesday('43.20')));
-    expect(conditionLines(await openTrade(user, 'MNO'))).toEqual([
-      'Stop on MNO at or below 41.00: Active',
-      'Stop on the option price at or above $3.60: Breached, $20.00 beyond',
-      'Target on MNO at or above 44.50: Active',
-      'Target on the option price at or below $0.30: Active',
-    ]);
-    cleanup();
-
-    // No MNO Mark: the two Underlying-price conditions have no reading, and say why as the figures do.
-    renderWalk(walkFacade(ready([item('t1', 'MNO')]), wednesday()));
-    expect(conditionLines(await openTrade(user, 'MNO'))).toEqual([
-      'Stop on MNO at or below 41.00: Mark missing: MNO, Wed Oct 14',
-      'Stop on the option price at or above $3.60: Breached, $20.00 beyond',
-      'Target on MNO at or above 44.50: Mark missing: MNO, Wed Oct 14',
-      'Target on the option price at or below $0.30: Active',
-    ]);
   });
 });
 

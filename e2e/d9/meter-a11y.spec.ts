@@ -62,6 +62,11 @@ async function surfaces(page: Page, bren: TradeRef, size: (typeof SIZES)[number]
   await openReview(page);
   // The open card draws no header meter (T95.16): the open card is checked as it is, then collapsed so every card's header shows its meter.
   await expectAccessible(page, `the Review's open card at ${where}`);
+  // The open card's drawing in its "Now" box is the meter there (T95.17): one, named, inside the viewport.
+  const drawing = page.locator('li.review-card .now-draw').getByRole('img');
+  await expect(drawing, `${where}: one drawing on the open card`).toHaveCount(1);
+  await expect(drawing, `${where}: the drawing is named`).toHaveAccessibleName(/^P&L [+−]\$/);
+  await expectInside(drawing, size.width, `${where} open card`);
   await collapseOpenCard(page);
   const cards = await reviewMeters(page);
   expect(cards, `${where}: four cards`).toHaveLength(4);

@@ -160,19 +160,21 @@ const optionEvaluation = (): Evaluation =>
     incrementalRewardToTarget: value(100n),
     incrementalRewardToTargetInPlanR: value(1n),
     rewardRiskNow: value(1n),
+    maximumIncrementalReward: value(900n),
+    realizedToDate: value(0n),
+    remainingOpenPnl: value(160n),
     planBaseline: { kind: 'Value' as const, value: { rewardRiskRatio: Rational.of(1n) } },
     atEntry: null,
   }) as unknown as Evaluation;
 
 // Not in the breakdown: the other rows of K18 and 24.7 to 24.8, each against one card.
 describe('a contract named by its label (conflict K18) and the card payoff summary', () => {
-  it('should name the contract by its label in the Mark line, and word the Current payoff in one line', async () => {
+  it('should word the Current payoff in one line, behind More figures', async () => {
     const payoff = payoffFixtures.osPayoffs();
     renderReview(walkFacade(review(), tradeReview('t3', 'MNO', { evaluation: optionEvaluation(), payoff })));
 
     const card = await screen.findByRole('region', { name: 'MNO review' });
 
-    expect(within(card).getByText('Mark $0.45 for MNO Nov 20 $45 Put, Fri Nov 20')).toBeTruthy();
     expect(within(card).getByText('At expiration: breakeven 43.76 · max profit $248.70 · max loss $8,751.30')).toBeTruthy();
   });
 

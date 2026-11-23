@@ -58,14 +58,14 @@ test.describe('B7S.5 Responsive and accessible', () => {
     for (const condition of await conditions.all()) await expect(condition).toContainText(/(Stop|Target)[\s\S]*(−\$|\+\$|Breached|Reached|Mark missing)/);
     await accessibleAtBothWidths(page, 'Detail conditions');
 
-    // The Review card's conditions, after the Tuesday Marks: each line names its status in words.
+    // The Review card's "Now" box, after the Tuesday Marks: the line each arrow runs to is captioned in words.
     await openReview(page);
     await saveSessionMarks(page, trade, TUESDAY, '44.00', '1.80');
     const card = await reachCard(page, trade);
-    const lines = card.getByRole('list', { name: 'Conditions' }).locator('li');
-    await expect(lines).toHaveCount(4);
-    for (const line of await lines.all()) await expect(line).toHaveText(/: (Active|Breached|Reached)/);
-    await accessibleAtBothWidths(page, 'Review card conditions');
+    const captions = card.locator('.now-box [data-caption]');
+    await expect(captions).toHaveCount(2);
+    for (const caption of await captions.all()) await expect(caption).toHaveText(/ (to|past) (Stop|Target) \(/);
+    await accessibleAtBothWidths(page, 'Review card Now box');
     await context.close();
   });
 

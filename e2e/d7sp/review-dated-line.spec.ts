@@ -28,11 +28,12 @@ test.describe('B7SP.11 The option dated line in the Review', () => {
     for (const width of [320, 1280]) {
       await setWidth(page, width);
       await reachCard(page, oc);
-      const group = tradeCard(page, oc).getByRole('group', { name: 'At the Mon Oct 12 Marks' });
+      const group = tradeCard(page, oc).getByRole('region', { name: 'At the Mon Oct 12 Marks' });
       await expect(group, `${width} px`).toBeVisible();
-      await expect(group.locator('dt'), `${width} px figures`).toHaveText(['Trade P&L', 'Current Risk · At Stop', 'Current Risk · At Worst case', 'Remaining Reward · At Target']);
+      await expect(group.locator('dt'), `${width} px figures`).toHaveText(['Worst case', 'Max reward', 'Reward to risk', 'Expiration']);
       // Contract-only figures are values; the Underlying-dependent ones read as unavailable (XYZ has no Monday Mark).
-      await expect(group.locator('dd'), `${width} px values`).toHaveText(['+$98.70 · +0.25R', 'Mark missing: XYZ, Mon Oct 12', '$500.00 · 1.25R', 'Mark missing: XYZ, Mon Oct 12']);
+      await expect(group.locator('dd').first(), `${width} px worst case`).toHaveText('$500.00 more · 1.25R');
+      await expect(group.locator('dd').nth(2), `${width} px reward to risk`).toHaveText(/^Mark missing: XYZ, Mon Oct 12/);
       await expectNoSidewaysScroll(page, `Review card at ${width} px`);
     }
     await context.close();

@@ -763,6 +763,9 @@ const EVALUATED = {
   incrementalRewardToTarget: value(1200n),
   incrementalRewardToTargetInPlanR: value(24n, 5n),
   rewardRiskNow: value(3n),
+  maximumIncrementalReward: { kind: 'Unbounded', direction: 'Above' },
+  realizedToDate: value(0n),
+  remainingOpenPnl: value(582n),
   planBaseline: { kind: 'Value' as const, value: { rewardRiskRatio: Rational.of(12n, 5n) } },
   atEntry: null,
 } as unknown as DailyTradeReview['evaluation'];
@@ -784,7 +787,7 @@ describe('Save Marks (P37, A155) rendering', () => {
     renderReview(facade);
     const user = userEvent.setup();
     const panel = await marksPanelWithEarlier();
-    expect(screen.queryByText('Trade P&L')).toBeNull();
+    expect(screen.queryByRole('heading', { name: /^Now · / })).toBeNull();
     const otherHeader = tfHeader();
     expect(otherHeader.textContent).toContain('To do: Mark');
     await user.type(inputOf(panel, 'XYZ', MONDAY_LABEL), '52.00');
@@ -799,7 +802,7 @@ describe('Save Marks (P37, A155) rendering', () => {
     expect(within(await choose(user, panel, 'XYZ', FRIDAY_LABEL)).getByRole('button', { name: 'Correct' })).toBeTruthy();
     // The card's figures come from the result.
     const card = screen.getByRole('region', { name: 'XYZ review' });
-    expect(within(card).getByText('Trade P&L')).toBeTruthy();
+    expect(within(card).getByRole('heading', { name: 'Now · Mon Oct 12' })).toBeTruthy();
     // The other XYZ card's summary and meter follow the shared Mark.
     const sharedHeader = tfHeader();
     expect(sharedHeader.textContent).not.toContain('To do: Mark');
