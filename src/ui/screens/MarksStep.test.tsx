@@ -1505,11 +1505,11 @@ describe('drafts belong to the Review (P156)', () => {
 describe('links, refused saves, kept drafts and the turn (T9R2.14)', () => {
   it('should focus the Instrument Review Date cell from a Missing-Mark link, with no card opened for it', async () => {
     renderReview(cardFacade(), { at: '/review?trade=t-a&instrument=XYZ' });
-    const panel = await marksPanelWithEarlier();
+    const panel = await marksPanel();
 
-    // T-A also lacks Friday's Mark, but the link names the Review Date cell.
+    // T-A also lacks Friday's Mark, but the link names the Review Date cell: Friday's column is not added.
     await waitFor(() => expect(document.activeElement).toBe(inputOf(panel, 'XYZ', MONDAY_LABEL)));
-    expect(document.activeElement).not.toBe(inputOf(panel, 'XYZ', FRIDAY_LABEL));
+    expect(within(panel).queryByRole('textbox', { name: `XYZ Mark, ${FRIDAY_LABEL}` })).toBeNull();
   });
 
   it('should show the first refused key after a refused save, on its page, with its issue and focus on its input', async () => {
@@ -1615,5 +1615,95 @@ describe('focus when the pressed control goes (T9R2.17-B3)', () => {
 
     await user.click(within(panel).getByRole('button', { name: 'Previous page' }));
     expect(document.activeElement).toBe(within(panel).getByRole('button', { name: 'Next page' }));
+  });
+});
+
+describe('the skipped sessions, and the Cant get a price field (T95.12-B2)', () => {
+  const stock = (symbol: string) => ({ kind: 'Stock' as const, symbol });
+  const xyzAcknowledged: Earlier[number] = { ...xyzGap, trades: [{ tradeId: 't-a', from: THURSDAY }], missing: [], acknowledged: [THURSDAY], revisions: { [THURSDAY]: 2 }, acknowledgments: { [THURSDAY]: ACK.acknowledgment } };
+  const defThursday: Earlier[number] = { ...xyzGap, instrumentKey: 'DEF', instrument: stock('DEF'), trades: [{ tradeId: 't-c', from: THURSDAY }], missing: [THURSDAY], revisions: { [THURSDAY]: 'None' } };
+  const withMissedDay = (built: Ready): Ready => ({ ...built, day: { ...built.day!, missed: [THURSDAY] } });
+  const reasonField = (step: HTMLElement) => within(step).getByRole<HTMLInputElement>('textbox', { name: 'Why no price, XYZ' });
+
+  it('should focus the first Missing cell, not a held cell, when the skipped sessions are added', async () => {
+    renderReview(cardFacade(gridReview({ earlier: [xyzAcknowledged, defThursday] })));
+    const user = userEvent.setup();
+    const step = await marksPanel();
+
+    await user.click(within(step).getByRole('button', { name: 'Add the skipped sessions' }));
+
+    // XYZ is acknowledged on Thursday; DEF is the one still Missing.
+    expect(document.activeElement).toBe(within(step).getByRole('textbox', { name: 'DEF Mark, Thu Oct 8' }));
+  });
+
+  it('should focus the previous session Missing cell when Add them is pressed and that is the only gap', async () => {
+    // XYZ has Friday's Mark; DEF lacks it, and Friday is the previous session, so no earlier column is added.
+    const defFriday: Earlier[number] = { ...defThursday, trades: [{ tradeId: 't-c', from: FRIDAY }], missing: [FRIDAY], revisions: { [FRIDAY]: 'None' } };
+    renderReview(cardFacade(withMissedDay(gridReview({ earlier: [defFriday], earlierMarks: [xyzMarks({ [FRIDAY]: markAt('51') })] }))));
+    const user = userEvent.setup();
+    const step = await marksPanel();
+
+    await user.click(await screen.findByRole('button', { name: 'Add them' }));
+
+    await waitFor(() => expect(document.activeElement).toBe(within(step).getByRole('textbox', { name: 'DEF Mark, Fri Oct 9' })));
+  });
+
+  it('should leave focus on the first skipped cell after an Instrument link, not move it back to the Instrument', async () => {
+    const xyzThursday: Earlier[number] = { ...xyzGap, trades: [{ tradeId: 't-a', from: THURSDAY }, { tradeId: 't-f', from: MONDAY }], missing: [THURSDAY], revisions: { [THURSDAY]: 'None' } };
+    renderReview(cardFacade(gridReview({ earlier: [xyzThursday], earlierMarks: [xyzMarks({ [FRIDAY]: markAt('51') }, THURSDAY)] })), { at: '/review?trade=t-a&instrument=XYZ' });
+    const user = userEvent.setup();
+    const step = await marksPanel();
+    await waitFor(() => expect(document.activeElement).toBe(within(step).getByRole('textbox', { name: 'XYZ Mark, Mon Oct 12' })));
+
+    await user.click(within(step).getByRole('button', { name: 'Add the skipped sessions' }));
+
+    await waitFor(() => expect(document.activeElement).toBe(within(step).getByRole('textbox', { name: 'XYZ Mark, Thu Oct 8' })));
+    // It stays: nothing moves it back a moment later.
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(document.activeElement).toBe(within(step).getByRole('textbox', { name: 'XYZ Mark, Thu Oct 8' }));
+  });
+
+  it('should show a refused reason in its row and focus the reason field, when Save Marks refuses a Review Date Cant get a price', async () => {
+    const facade = cardFacade(gridReview());
+    vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'Rejected', issues: [{ entryIndex: 0, field: 'reason', code: 'ReasonTooLong' }] });
+    renderReview(facade);
+    const user = userEvent.setup();
+    const step = await marksPanel();
+    await user.click(within(step).getByRole('button', { name: "Can't get a price, XYZ" }));
+    await user.type(reasonField(step), 'no quote');
+    await user.click(within(step).getByRole('button', { name: 'No price' }));
+    expect(within(step).queryByRole('textbox', { name: 'Why no price, XYZ' })).toBeNull();
+
+    await user.click(within(step).getByRole('button', { name: 'Save Marks (1)' }));
+
+    expect(await within(step).findByText('Keep the reason to 500 characters or fewer.')).toBeTruthy();
+    await waitFor(() => expect(document.activeElement).toBe(reasonField(step)));
+    expect(reasonField(step).value).toBe('no quote');
+  });
+
+  it('should hold the reason to 500 characters', async () => {
+    renderReview(cardFacade(gridReview()));
+    const user = userEvent.setup();
+    const step = await marksPanel();
+    await user.click(within(step).getByRole('button', { name: "Can't get a price, XYZ" }));
+
+    await user.click(reasonField(step));
+    await user.paste('x'.repeat(501));
+
+    expect(reasonField(step).value).toHaveLength(500);
+  });
+
+  it('should count a reason typed in the Cant get a price field as unsaved, and clear it with Discard', async () => {
+    renderReview(cardFacade(gridReview()));
+    const user = userEvent.setup();
+    const step = await marksPanel();
+    await user.click(within(step).getByRole('button', { name: "Can't get a price, XYZ" }));
+    await user.type(reasonField(step), 'no quote');
+    expect(within(step).getByRole('button', { name: 'Save Marks (1)' })).toBeTruthy();
+
+    await user.click(within(step).getByRole('button', { name: 'Discard' }));
+
+    expect(within(step).getByRole('button', { name: 'Save Marks (0)' })).toBeTruthy();
+    expect(reasonField(step).value).toBe('');
   });
 });

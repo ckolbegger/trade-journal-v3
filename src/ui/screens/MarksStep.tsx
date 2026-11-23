@@ -314,10 +314,11 @@ export function MarksStep({ facade, held: heldReview, onResult, tradeLine, onEnt
   // The cell is found by its name: the Instrument's label, which a contract's key is not (K18).
   const linkedInstrumentLabel = model.instruments.find((i) => i.instrumentKey === linkedInstrument)?.instrument;
   const linkedCell = linkedInstrumentLabel && `${instrumentLabel(linkedInstrumentLabel, timeZone)} Mark, ${shortDate(reviewDate)}`;
-  // The first earlier session with a gap, newest first as the grid pages them: where "the skipped sessions" lead.
-  const firstGap = model.sessions.find(({ role }) => role === undefined)?.date;
-  const gapCell = firstGap === undefined ? undefined : model.instruments.find(({ instrumentKey }) => model.cellAt(instrumentKey, firstGap) !== undefined && model.cellAt(instrumentKey, firstGap) !== NOT_HELD);
-  const gapLabel = gapCell && firstGap && `${instrumentLabel(gapCell.instrument, timeZone)} Mark, ${shortDate(firstGap)}`;
+  // The first Missing cell of the skipped sessions, newest first as the grid pages them, or of the previous session when none is skipped: where "the skipped sessions" lead.
+  const gap = [...model.sessions.filter(({ role }) => role === undefined), ...model.sessions.filter(({ role }) => role === 'previous')]
+    .flatMap(({ date }) => model.instruments.map(({ instrumentKey, instrument }) => ({ instrument, date, state: model.cellAt(instrumentKey, date) })))
+    .find(({ state }) => state !== undefined && state !== NOT_HELD && state.resolution.kind === 'Missing');
+  const gapLabel = gap && `${instrumentLabel(gap.instrument, timeZone)} Mark, ${shortDate(gap.date)}`;
   const skippedLabel = skipped ? gapLabel : undefined;
   // The button that adds the skipped sessions goes once pressed: the focus goes to the first of them.
   const focusAfterAdd = useRef<string | undefined>(undefined);
@@ -337,7 +338,7 @@ export function MarksStep({ facade, held: heldReview, onResult, tradeLine, onEnt
     const controls = [...(section.current?.querySelectorAll<HTMLElement>('table input, table button') ?? [])];
     // A link that names no Instrument goes to the first price to enter.
     (wanted === undefined ? controls.find((control) => control.tagName === 'INPUT') : controls.find((control) => control.getAttribute('aria-label') === wanted))?.focus();
-  }, [handledLink, linkedCell, skippedLabel, linkRefused, showEarlier]);
+  }, [handledLink, linkedCell, skippedLabel, linkRefused]);
   const standing = (key: ObservationKey, listed: Standing): Standing => heldStanding(heldReview, key) ?? listed;
   const saveButton = useRef<HTMLButtonElement>(null);
   // The walked Trades with a due settlement, from their card progress: a Mark only they need is said so in its editor (A112).
@@ -416,7 +417,7 @@ export function MarksStep({ facade, held: heldReview, onResult, tradeLine, onEnt
         onUndo={(key) => hold(key, undefined)}
         fieldOf={(key) => {
           const id = rowId(key.instrumentKey, key.tradingDate);
-          return { id: fieldIds(uid, id).price, issues: issues[id] ?? [] };
+          return { id: fieldIds(uid, id).price, reasonId: fieldIds(uid, id).reason, issues: issues[id] ?? [] };
         }}
         chosen={chosen}
         onChoose={choose}

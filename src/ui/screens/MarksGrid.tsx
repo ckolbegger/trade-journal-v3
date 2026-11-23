@@ -15,6 +15,8 @@ const SESSIONS_PER_PAGE = 20;
 
 // W113: the field's placeholder and the buttons around it.
 const WHY_NO_PRICE = 'Why no price? Halted, no quote…';
+// Market Data refuses a longer reason.
+const MAX_REASON = 500;
 
 export interface MarksGridProps {
   readonly model: GridModel;
@@ -31,7 +33,8 @@ export interface MarksGridProps {
   readonly onNoPrice: (key: ObservationKey, reason: string) => void;
   readonly onUndo: (key: ObservationKey) => void;
   // The key's price input: its element id, and what a refused save said about it.
-  readonly fieldOf: (key: ObservationKey) => { readonly id: string; readonly issues: readonly FieldIssue[] };
+  // The reason's field id too, for a refused save to focus.
+  readonly fieldOf: (key: ObservationKey) => { readonly id: string; readonly reasonId: string; readonly issues: readonly FieldIssue[] };
   // The chosen cell (P160): pressing a cell, or focusing its input, chooses it.
   readonly chosen?: ObservationKey;
   readonly onChoose: (key: ObservationKey) => void;
@@ -60,8 +63,8 @@ export function MarksGrid({ model, reviewDate, writable, showEarlier, draftOf, n
     if (pressed.current === 'previous' && !previousButton.current) nextButton.current?.focus();
     pressed.current = undefined;
   }, [page]);
-  // The "Why no price?" field is open for one cell at a time; what is typed in it is screen state until "No price" is pressed.
-  const [asking, setAsking] = useState<{ readonly id: string; readonly reason: string; readonly refused?: true }>();
+  // The "Why no price?" field is open for one cell at a time; what is typed in it is the cell's draft, as a typed price is.
+  const [asking, setAsking] = useState<{ readonly id: string; readonly refused?: true }>();
   const reasonField = useRef<HTMLInputElement | null>(null);
   // The field takes the focus as it opens.
   const reasonRef = useCallback((field: HTMLInputElement | null) => {
@@ -83,6 +86,19 @@ export function MarksGrid({ model, reviewDate, writable, showEarlier, draftOf, n
     const at = chosen === undefined ? -1 : earlier.findIndex(({ date }) => date === chosen.tradingDate);
     if (at >= 0) setPage(Math.floor(at / SESSIONS_PER_PAGE));
   }
+  // A refused save of a "Can't get a price" opens its reason field again, with the words beside it.
+  const refusedNoPrice = JSON.stringify(
+    model.instruments.flatMap(({ instrumentKey }) => {
+      const key = { instrumentKey, tradingDate: reviewDate };
+      return draftOf(key)?.kind === 'CantGetPrice' && fieldOf(key).issues.length > 0 ? [idOf(key)] : [];
+    }),
+  );
+  const [refusedSeen, setRefusedSeen] = useState('[]');
+  if (refusedNoPrice !== refusedSeen) {
+    setRefusedSeen(refusedNoPrice);
+    const [id] = JSON.parse(refusedNoPrice) as string[];
+    if (id !== undefined) setAsking({ id });
+  }
   const first = page * SESSIONS_PER_PAGE;
   const shown = showEarlier ? earlier.slice(first, first + SESSIONS_PER_PAGE) : [];
   // Columns run oldest to newest, the Review Date last; the prices in Enter order run down a session's column, newest session first (A295).
@@ -102,7 +118,8 @@ export function MarksGrid({ model, reviewDate, writable, showEarlier, draftOf, n
     const draft = draftOf(key);
     if (state.resolution.kind === 'Missing' && !writable) return { kind: 'text' as const, text: 'Missing', label, id };
     if (state.resolution.kind === 'Missing') {
-      if (draft?.kind === 'CantGetPrice') return { kind: 'text' as const, text: NO_PRICE, label, id };
+      // The price cell stays an input while its reason is being asked.
+      if (draft?.kind === 'CantGetPrice' && asking?.id !== id) return { kind: 'text' as const, text: NO_PRICE, label, id };
       const field = fieldOf(key);
       return { kind: 'input' as const, label, value: draft?.kind === 'Price' ? draft.price : '', field, key };
     }
@@ -182,6 +199,10 @@ export function MarksGrid({ model, reviewDate, writable, showEarlier, draftOf, n
               // CASE1-NO-CHANGE
               const change = entry === undefined || last === undefined ? undefined : markChange({ entry, previous: last });
               const issues = today.kind === 'input' ? today.field.issues.filter((issue) => issue.field === today.field.id) : [];
+              const reasonId = fieldOf(todayKey).reasonId;
+              // A refused "Can't get a price" has no price cell to show it in: its words sit in the row.
+              const noPriceIssues = draft?.kind === 'CantGetPrice' && today.kind !== 'input' ? fieldOf(todayKey).issues : [];
+              const asked = writable && asking?.id === todayId;
               const { fieldError } = fieldIssues(issues);
               return (
                 <tr key={instrumentKey}>
@@ -203,7 +224,8 @@ export function MarksGrid({ model, reviewDate, writable, showEarlier, draftOf, n
                     {/* An issue about the Mark as a whole (a date after the contract expired) has no field to sit beside. */}
                     {today.kind === 'input' && today.field.issues.filter((issue) => issue.field !== today.field.id).map((issue) => <p key={issue.field} className="field-error">{issue.message}</p>)}
                     {today.kind === 'input' && noteOf?.(instrumentKey) && <small>{noteOf(instrumentKey)}</small>}
-                    {writable && draft?.kind === 'CantGetPrice' && (
+                    {noPriceIssues.map((issue) => <p key={issue.field + issue.message} className="field-error">{issue.message}</p>)}
+                    {writable && draft?.kind === 'CantGetPrice' && !asked && (
                       <>
                         <span>{draft.reason}</span>{' '}
                         <button type="button" className="link-button" onClick={() => {
@@ -214,26 +236,28 @@ export function MarksGrid({ model, reviewDate, writable, showEarlier, draftOf, n
                         </button>
                       </>
                     )}
-                    {writable && today.kind === 'input' && asking?.id !== todayId && draft === undefined && (
-                      <button type="button" className="link-button" aria-label={`${CANT_GET_A_PRICE}, ${instrumentLabel(instrument, timeZone)}`} onClick={() => setAsking({ id: todayId, reason: '' })}>
+                    {writable && today.kind === 'input' && !asked && draft === undefined && (
+                      <button type="button" className="link-button" aria-label={`${CANT_GET_A_PRICE}, ${instrumentLabel(instrument, timeZone)}`} onClick={() => setAsking({ id: todayId })}>
                         {CANT_GET_A_PRICE}
                       </button>
                     )}
-                    {writable && asking?.id === todayId && (
+                    {asked && asking && (
                       <>
-                        <input ref={reasonRef} type="text" placeholder={WHY_NO_PRICE} aria-label={`Why no price, ${instrumentLabel(instrument, timeZone)}`} value={asking.reason} onChange={(event) => setAsking({ id: todayId, reason: event.target.value })} />{' '}
+                        <input ref={reasonRef} id={reasonId} type="text" maxLength={MAX_REASON} placeholder={WHY_NO_PRICE} aria-label={`Why no price, ${instrumentLabel(instrument, timeZone)}`} aria-invalid={fieldOf(todayKey).issues.length > 0 || undefined} value={draft?.kind === 'CantGetPrice' ? draft.reason : ''} onChange={(event) => (event.target.value === '' ? onUndo(todayKey) : onNoPrice(todayKey, event.target.value))} />{' '}
                         <button type="button" className="pill secondary" onClick={() => {
-                            if (asking.reason.trim() === '') {
+                            if (draft?.kind !== 'CantGetPrice' || draft.reason.trim() === '') {
                               setAsking({ ...asking, refused: true });
                               reasonField.current?.focus();
                               return;
                             }
-                            onNoPrice(todayKey, asking.reason);
                             setAsking(undefined);
                           }}>
                           No price
                         </button>{' '}
-                        <button type="button" className="link-button" onClick={() => setAsking(undefined)}>
+                        <button type="button" className="link-button" onClick={() => {
+                            onUndo(todayKey);
+                            setAsking(undefined);
+                          }}>
                           Cancel
                         </button>
                         {asking.refused && <p className="field-error">Enter why you can't get a price.</p>}
