@@ -369,3 +369,5 @@ ocr (gpt-6.1-sol, session 5cae7dd0): 4 files, 1 finding, Valid: the Open list's 
 ### T95.22-B1
 
 Commit `23a7393a`: `ReviewDateQuery.earlierOnly?`; with `since`, `queryActions` skips the Review-Date reads; the Open list passes it, the Review's callers don't. Red then green on Review-Date Actions with two and four Trades (one read).
+
+ocr of T95.22-B1 (session d657cf39): 4 files, 0 findings. `evidence/D95/ocr/T95.22-B1-23a7393a.json`.

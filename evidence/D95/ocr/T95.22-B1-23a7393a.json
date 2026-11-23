@@ -1,0 +1,129 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 0,
+    "total_tokens": 48888,
+    "input_tokens": 48469,
+    "output_tokens": 419,
+    "cache_read_tokens": 9984,
+    "elapsed": "15s"
+  },
+  "tool_calls": {
+    "total": 8,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 5,
+      "file_read_diff": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Trade view coordination and open-order tests",
+      "files": [
+        "src/coordinators/trade-views/open-order.test.ts",
+        "src/coordinators/trade-views/trade-views.ts"
+      ]
+    },
+    {
+      "label": "Journal state and effects",
+      "files": [
+        "src/modules/journal/effects.ts",
+        "src/modules/journal/journal.ts"
+      ]
+    }
+  ],
+  "session_id": "d657cf39-7be7-4878-838c-7c9813a2e79f",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "d657cf39-7be7-4878-838c-7c9813a2e79f",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "23a7393a",
+      "resolved_base": "145dea66ba74486689e23989038d12a5f10f8622",
+      "resolved_head": "23a7393ac7a5d0363ab56da96763be76e0b97129",
+      "exact_range": "145dea66ba74486689e23989038d12a5f10f8622..23a7393ac7a5d0363ab56da96763be76e0b97129",
+      "source_artifact_sha256": "6fe228d025425c3b6b3493dd4193f48ce190d250d90fa9a914b134ada1761735"
+    },
+    "execution": {
+      "ocr_version": "v1.14.2",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "d3ebc89d70c7cc92159b1562253e4f66955affbd974f3b8dd41ec5ddfb012535"
+        },
+        {
+          "item_id": "39a326886738a0dc0bdca817f05f43abda353be747a46325b49f8a06f69dec6a",
+          "path": "src/coordinators/trade-views/open-order.test.ts",
+          "fingerprint": "5a4e4d656ee1a3dc9471d58bd4363999cc4a61b0fc0be94dfd3dc273911ee1d1"
+        },
+        {
+          "item_id": "d5ca0db109bd5eca3585475c4cd3739bada34094523b44a916a4118276e691b6",
+          "path": "src/modules/journal/journal.ts",
+          "fingerprint": "e69c07e00aa9890627182268cb5b52ec8fc3c03024206f206e51d7dc9028f190"
+        },
+        {
+          "item_id": "fd1c910f754a206e66b4e66d854fe19ed7ac30adb9c39111b3b1ccc9e7046634",
+          "path": "src/modules/journal/effects.ts",
+          "fingerprint": "3a6e4058cc0e35a59c6976164c43486adf3c180c52c15005446a78498d68ae03"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "d3ebc89d70c7cc92159b1562253e4f66955affbd974f3b8dd41ec5ddfb012535"
+        },
+        {
+          "item_id": "39a326886738a0dc0bdca817f05f43abda353be747a46325b49f8a06f69dec6a",
+          "path": "src/coordinators/trade-views/open-order.test.ts",
+          "fingerprint": "5a4e4d656ee1a3dc9471d58bd4363999cc4a61b0fc0be94dfd3dc273911ee1d1"
+        },
+        {
+          "item_id": "d5ca0db109bd5eca3585475c4cd3739bada34094523b44a916a4118276e691b6",
+          "path": "src/modules/journal/journal.ts",
+          "fingerprint": "e69c07e00aa9890627182268cb5b52ec8fc3c03024206f206e51d7dc9028f190"
+        },
+        {
+          "item_id": "fd1c910f754a206e66b4e66d854fe19ed7ac30adb9c39111b3b1ccc9e7046634",
+          "path": "src/modules/journal/effects.ts",
+          "fingerprint": "3a6e4058cc0e35a59c6976164c43486adf3c180c52c15005446a78498d68ae03"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "0741a9b988d397b50335e542ec8dcd0bac4ddb3b8910504744de9f4de5232dd9",
+          "path": "evidence/D95/tdd-log/T95.22-B1.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 14663
+  }
+}
