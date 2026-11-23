@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test';
 import {
-  answerCloseReviewIn, answerIn, closeReasonGroup, closeReviewGroup, closingSection, createTA, debtsOf, declinesOf, entriesWithSettledDebt, executionRow, exitReflection, expect, factsOf, fillRows,
-  firstPage, launchAt, MONDAY_1700, onboardedAt, openExitForm, openTradeFromOpenList, probe, LAUNCH, sell, test, tradesOf, TUESDAY_1405, TUESDAY_1405_LOCAL, workspaceOf,
+  answerCloseReviewIn, answerIn, closeReasonGroup, closeReviewGroup, closingSection, copyTA, debtsOf, declinesOf, entriesWithSettledDebt, executionRow, exitReflection, expect, factsOf, fillRows,
+  firstPage, launchAt, openExitForm, openTradeFromOpenList, probe, LAUNCH, sell, test, tradesOf, TUESDAY_1405, TUESDAY_1405_LOCAL, workspaceOf,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
@@ -45,11 +45,9 @@ function traces(dump: unknown): string[] {
 }
 
 test.describe('B6.11 Nothing saved without Save (AC-JOUR-001)', () => {
-  test('should store no Position Change, Close Reason, Entry, decline, Debt, or Web Storage value after typing a full exit with a Close Reason and both reflections, resizing, leaving, and restarting', async ({ profile }) => {
+  test('should store no Position Change, Close Reason, Entry, decline, Debt, or Web Storage value after typing a full exit with a Close Reason and both reflections, resizing, leaving, and restarting', async ({ copySetup, profile }) => {
     test.setTimeout(240_000);
-    const { context: setup, page: setupPage } = await onboardedAt(profile, MONDAY_1700);
-    await createTA(setupPage);
-    await setup.close();
+    await copyTA(copySetup);
 
     const context = await launchAt(profile, TUESDAY_1405);
     const page = await firstPage(context);

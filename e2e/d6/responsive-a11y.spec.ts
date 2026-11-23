@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import {
-  answerIn, closeReasonGroup, closeTheTrade, closingSection, createTrades, debtForm, detail, executionRow, expect, expectAccessible, exitReflection, FOUR_TRADES, fillRows, firstPage, holdTradesStore,
+  answerIn, closeReasonGroup, closeTheTrade, closingSection, copyTA, createTrades, debtForm, detail, executionRow, expect, expectAccessible, exitReflection, FOUR_TRADES, fillRows, firstPage, holdTradesStore,
   launchAt, MONDAY_1700, onboardedAt, openDrawer, openExitForm, openReview, openTradeFromOpenList, LAUNCH, receiptResult, releaseTradesStore, sell, setClock, tabTo, test, TUESDAY_1000_LOCAL, TUESDAY_1405,
   TUESDAY_1405_LOCAL, TUESDAY_1700, valueOf, writeIntegrityFixture,
 } from './support.ts';
@@ -193,11 +193,9 @@ test.describe('B6.12 Responsive and accessible', () => {
     await failing.close();
   });
 
-  test('should keep every money amount in the figure grids on one line at 375 px and 320 px, on Open Detail with Lot Matches and on Closed Detail', async ({ profile }) => {
+  test('should keep every money amount in the figure grids on one line at 375 px and 320 px, on Open Detail with Lot Matches and on Closed Detail', async ({ copySetup, profile }) => {
     test.setTimeout(240_000);
-    const { context: setup, page: setupPage } = await onboardedAt(profile, MONDAY_1700);
-    await createTrades(setupPage, FOUR_TRADES.slice(0, 1));
-    await setup.close();
+    await copyTA(copySetup);
     const context = await launchAt(profile, TUESDAY_1405);
     const page = await firstPage(context);
     await page.goto('/');
@@ -245,11 +243,9 @@ test.describe('B6.12 Responsive and accessible', () => {
     await context.close();
   });
 
-  test('should keep each price with its date and time, and each money amount, whole on one line in the Lot Matches table at 375 px and 320 px', async ({ profile }) => {
+  test('should keep each price with its date and time, and each money amount, whole on one line in the Lot Matches table at 375 px and 320 px', async ({ copySetup, profile }) => {
     test.setTimeout(240_000);
-    const { context: setup, page: setupPage } = await onboardedAt(profile, MONDAY_1700);
-    await createTrades(setupPage, FOUR_TRADES.slice(0, 1));
-    await setup.close();
+    await copyTA(copySetup);
     const context = await launchAt(profile, TUESDAY_1405);
     const page = await firstPage(context);
     await page.goto('/');
@@ -290,11 +286,9 @@ test.describe('B6.12 Responsive and accessible', () => {
   });
 
   // T6.28-B5: the receipt's Lot Matches tables keep their nowrap cells (B4) inside focusable scroll regions, as Trade Detail does.
-  test('should reflow the exit receipt, with its Lot Matches and Changed Lot Matches tables reachable by name, at 375 px and 320 px', async ({ profile }) => {
+  test('should reflow the exit receipt, with its Lot Matches and Changed Lot Matches tables reachable by name, at 375 px and 320 px', async ({ copySetup, profile }) => {
     test.setTimeout(240_000);
-    const { context: setup, page: setupPage } = await onboardedAt(profile, MONDAY_1700);
-    await createTrades(setupPage, FOUR_TRADES.slice(0, 1));
-    await setup.close();
+    await copyTA(copySetup);
     const context = await launchAt(profile, TUESDAY_1405);
     const page = await firstPage(context);
     await page.goto('/');

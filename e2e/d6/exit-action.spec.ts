@@ -1,15 +1,14 @@
 import {
-  cardHeader, closeTheTrade, completion, createTA, enterMark, expect, fillRows, MONDAY, MONDAY_1700, onboardedAt, openExitForm, openReview, openTradeFromOpenList, reachCard, saveAction, sell, test,
+  cardHeader, closeTheTrade, completion, openTA, enterMark, expect, fillRows, MONDAY, openExitForm, openReview, openTradeFromOpenList, reachCard, saveAction, sell, test,
   tradeCard,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
 test.describe('B6.5 Exit link', () => {
-  test('should save Exit with Intent in the Review with no Record the exit offered, record the exit from Trade Detail, and still walk T-A in Monday’s Review with its Exit Action', async ({ profile }) => {
+  test('should save Exit with Intent in the Review with no Record the exit offered, record the exit from Trade Detail, and still walk T-A in Monday’s Review with its Exit Action', async ({ copySetup, profile }) => {
     test.setTimeout(240_000);
-    const { context, page } = await onboardedAt(profile, MONDAY_1700);
-    await createTA(page);
+    const { context, page } = await openTA(profile, copySetup);
 
     // Monday 17:00: save Exit with Intent in the Review. The card offers no way to record the exit.
     await openReview(page);

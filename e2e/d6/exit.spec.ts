@@ -1,5 +1,5 @@
 import {
-  answerIn, closeTheTrade, closingSection, createTA, detail, executionRow, exitReflection, expect, factsOf, fillRows, firstPage, launchAt, lotMatchRecordsIn, MONDAY_1700, onboardedAt, openClosedTab,
+  answerIn, closeTheTrade, closingSection, copyTA, detail, executionRow, exitReflection, expect, factsOf, fillRows, firstPage, launchAt, lotMatchRecordsIn, openClosedTab,
   openDrawer, openExitForm, openTradeFromOpenList, probe, receiptResult, sell, setClock, test, tradesOf, TUESDAY_1000_LOCAL, TUESDAY_1405, TUESDAY_1405_LOCAL, valueOf, workspaceOf,
 } from './support.ts';
 
@@ -7,11 +7,9 @@ const TUESDAY_1005 = '2026-10-13T14:05:00Z';
 test.use({ actionTimeout: 15_000 });
 
 test.describe('B6.1 Partial then final exit', () => {
-  test('should keep T-A Open at 70 shares with one Lot Match and $55.90 realized after the first exit, close it at $248.00 and 0.99R after the second, and store the Sell Executions and the Close Reason fact with no Lot-Match record', async ({ profile }) => {
+  test('should keep T-A Open at 70 shares with one Lot Match and $55.90 realized after the first exit, close it at $248.00 and 0.99R after the second, and store the Sell Executions and the Close Reason fact with no Lot-Match record', async ({ copySetup, profile }) => {
     test.setTimeout(240_000);
-    const { context: setup, page: setupPage } = await onboardedAt(profile, MONDAY_1700);
-    await createTA(setupPage);
-    await setup.close();
+    await copyTA(copySetup);
 
     // Tuesday 10:05: Record exit 30 @ 52.00, fee 0.60, with the reflection. 30 of 100 shares closes nothing.
     const context = await launchAt(profile, TUESDAY_1005);

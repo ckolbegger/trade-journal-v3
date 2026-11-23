@@ -1,5 +1,5 @@
 import {
-  answerIn, closeTheTrade, createTA, detail, exitReflection, expect, factsOf, fillRows, firstPage, launchAt, MONDAY_1700, onboardedAt, openClosedTab, openDrawer, openExitForm, openTradeFromOpenList, probe, receiptResult,
+  answerIn, closeTheTrade, copyTA, detail, exitReflection, expect, factsOf, fillRows, firstPage, launchAt, openClosedTab, openDrawer, openExitForm, openTradeFromOpenList, probe, receiptResult,
   sell, test, tradesOf, TUESDAY_1405, TUESDAY_1405_LOCAL, TUESDAY_1000_LOCAL, valueOf, workspaceOf,
 } from './support.ts';
 
@@ -8,11 +8,9 @@ test.use({ actionTimeout: 15_000 });
 const NOT_WRITABLE = { name: /Read only/ };
 
 test.describe('B6.8 Offline cold restart (AC-DEL-001)', () => {
-  test('should record a partial and then a full exit offline after a full stop, and keep both across another offline restart', async ({ server, profile }) => {
+  test('should record a partial and then a full exit offline after a full stop, and keep both across another offline restart', async ({ copySetup, server, profile }) => {
     test.setTimeout(240_000);
-    const { context: setup, page: setupPage } = await onboardedAt(profile, MONDAY_1700);
-    await createTA(setupPage);
-    await setup.close();
+    await copyTA(copySetup);
     // Network disabled: offline emulation plus no server for the origin at all.
     await server.close();
 

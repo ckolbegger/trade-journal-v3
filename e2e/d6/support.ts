@@ -1,7 +1,9 @@
 // Shared support for the D6 browser suite (plan section 6.2): D5R's helpers (the Playwright clock, the production build of the checked-out code as
 // the default served build, the card helpers) plus the exit form's steps, the Closed tab, and the stored records an exit leaves.
 import type { Locator, Page } from '@playwright/test';
-import { detail, executionRow, expect, FOUR_TRADES, createTrades, LAUNCH, type ProbedDatabase, type Row } from '../d5r/support.ts';
+import {
+  defineSetup, detail, executionRow, expect, firstPage, FOUR_TRADES, createTrades, LAUNCH, launchAt, MONDAY_1700, onboardedAt, type Profile, type ProbedDatabase, type Row, type Setup,
+} from '../d5r/support.ts';
 
 export * from '../d5r/support.ts';
 
@@ -15,6 +17,26 @@ export const WEDNESDAY_1405 = '2026-10-14T18:05:00Z';
 export async function createTA(page: Page): Promise<string> {
   const [id] = await createTrades(page, FOUR_TRADES.slice(0, 1));
   return id!;
+}
+
+// The saved setup of T-A (setup-snapshot plan, group 5): onboarded at Mon 10-12 17:00 with createTA's one Trade, built once per worker; each test that asks starts on a copy.
+export const T_A_SETUP = defineSetup('d6-t-a', async (profile) => {
+  const { context, page } = await onboardedAt(profile, MONDAY_1700);
+  return { context, made: await createTA(page) };
+});
+
+// Copy T-A, nothing launched: in place of onboardedAt + createTA, for tests that close the setup and launch their own browser. Returns the Trade's id.
+export function copyTA(copySetup: <T>(setup: Setup<T>) => Promise<T>): Promise<string> {
+  return copySetup(T_A_SETUP);
+}
+
+// The copy launched at Mon 10-12 17:00 on the Today screen, for a test that carries on from the setup's page: in place of onboardedAt + createTA.
+export async function openTA(profile: Profile, copySetup: <T>(setup: Setup<T>) => Promise<T>) {
+  await copyTA(copySetup);
+  const context = await launchAt(profile, MONDAY_1700);
+  const page = await firstPage(context);
+  await page.goto('/');
+  return { context, page };
 }
 
 // A Row for an exit.

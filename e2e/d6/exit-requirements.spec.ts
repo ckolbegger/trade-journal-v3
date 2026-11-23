@@ -1,16 +1,14 @@
 import {
-  answerIn, closeReasonGroup, closeReviewGroup, closingSection, createTA, detail, executionRow, exitReflection, expect, factsOf, fillRows, firstPage, launchAt, MONDAY_1700, onboardedAt, openDrawer, openExitForm,
+  answerIn, closeReasonGroup, closeReviewGroup, closingSection, copyTA, detail, executionRow, exitReflection, expect, factsOf, fillRows, firstPage, launchAt, openDrawer, openExitForm,
   openTradeFromOpenList, probe, sell, test, tradesOf, TUESDAY_1405, TUESDAY_1405_LOCAL, workspaceOf,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
 test.describe('B6.3 Close requirements', () => {
-  test('should show Choose a Close Reason beside the group with focus on the issues and the values kept, then save once a reason is chosen', async ({ profile }) => {
+  test('should show Choose a Close Reason beside the group with focus on the issues and the values kept, then save once a reason is chosen', async ({ copySetup, profile }) => {
     test.setTimeout(240_000);
-    const { context: setup, page: setupPage } = await onboardedAt(profile, MONDAY_1700);
-    await createTA(setupPage);
-    await setup.close();
+    await copyTA(copySetup);
 
     const context = await launchAt(profile, TUESDAY_1405);
     const page = await firstPage(context);
@@ -59,11 +57,9 @@ test.describe('B6.3 Close requirements', () => {
 });
 
 test.describe('B6.4 Oversell', () => {
-  test('should refuse an exit of 101 shares on a 100-share Position with The position has only 100 shares beside the row and save nothing', async ({ profile }) => {
+  test('should refuse an exit of 101 shares on a 100-share Position with The position has only 100 shares beside the row and save nothing', async ({ copySetup, profile }) => {
     test.setTimeout(240_000);
-    const { context: setup, page: setupPage } = await onboardedAt(profile, MONDAY_1700);
-    await createTA(setupPage);
-    await setup.close();
+    await copyTA(copySetup);
 
     const context = await launchAt(profile, TUESDAY_1405);
     const page = await firstPage(context);
