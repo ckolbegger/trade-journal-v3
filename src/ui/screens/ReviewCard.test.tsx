@@ -2022,4 +2022,18 @@ describe('The last decision line', () => {
     expect(within(open).getByRole('region', { name: 'Your last decisions' })).toBeTruthy();
     expect(within(open).queryByText(/you chose/)).toBeNull();
   });
+
+  it('should show the card top line when Reflections is the open panel and the Action panel is closed', async () => {
+    const user = userEvent.setup();
+    const review = dueReview();
+    renderWalk(walkFacade(review, tradeReview('t1', 'XYZ', { reflections: owedPair, progress: cardProgress(1, 1, { resolved: 0 }), decisions })));
+    const card = await openTrade(user, 'XYZ');
+    expect(panelHeader(card, 'Reflections').getAttribute('aria-expanded')).toBe('true');
+    expect(panelHeader(card, 'Action').getAttribute('aria-expanded')).toBe('false');
+    expect(within(card).getByText('Fri Oct 9 you chose Hold: “Up today. One more day.”')).toBeTruthy();
+    // Opening the Action panel moves the decision to the list, so it is said once.
+    await user.click(panelHeader(card, 'Action'));
+    expect(within(card).getByRole('region', { name: 'Your last decisions' })).toBeTruthy();
+    expect(within(card).queryByText(/you chose/)).toBeNull();
+  });
 });

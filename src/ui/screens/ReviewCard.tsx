@@ -332,8 +332,10 @@ function CardBody({ facade, trade, progress, name, go, onSaved, onReflectionReso
   const planColumn = trade.replay?.planColumn;
   const atEntry = trade.evaluation?.atEntry;
   const planBoxCarriesAtEntry = planColumn !== undefined && atEntry != null && atEntry.riskFromEntry.equals(unsigned(planColumn.atStop)) && atEntry.rewardFromEntry.equals(planColumn.atTarget);
-  // U6: the list sits by the Action; the card's top line says the last decision only where the Action is not offered (Marks to enter, a contract to settle).
+  // U6: the list sits by the Action; the card's top line says the last decision wherever the list is not visible: the Action is not offered
+  // (Marks to enter, a contract to settle) or another panel is the open one.
   const listShown = panelOf(progress, 'Marks').needed === 0 && settlementOf(progress) === undefined;
+  const listVisible = listShown && open === 'Action';
   const atEntryShown = atEntry != null && !planBoxCarriesAtEntry ? atEntry : undefined;
   return (
     <section aria-label={`${name} review`}>
@@ -349,7 +351,7 @@ function CardBody({ facade, trade, progress, name, go, onSaved, onReflectionReso
       {trade.attention.reasons.map((reason, i) => (
         <p key={i}>{reasonText(reason, trade.attention.basis, timeZone ?? 'UTC')}</p>
       ))}
-      {trade.decisions && !listShown && <LastDecisionLine decisions={trade.decisions} />}
+      {trade.decisions && !listVisible && <LastDecisionLine decisions={trade.decisions} />}
       <div className="plan-now">
         <PlanBox plan={trade.plan} replay={trade.replay} />
         <NowBox trade={trade} meter={meter} />
