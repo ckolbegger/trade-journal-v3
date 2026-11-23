@@ -251,6 +251,8 @@ ocr of B1, B2, B3 (`ocr/T95.12-B1-B3-8e409a71.json`, 7 files, 6 comments, all Va
 
 **T95.12-B2-B1** `244c8ada`: MarksStep passes `refusals` so a repeat refusal of the same cell reopens and focuses the reason; the reason field closes once its cell is no longer Missing; the grid brings up the first Missing cell's page whenever `showSession.count` rises (on `requestedPage`). Four cases red then green (one red rerun after a wrong date label in the test). The page switch doesn't check `pagingHeld` (a Correct in progress keeps its editor and focus). src/ui 1,301; browser 8 of 8.
 
+ocr of B1-B1 and B2-B1 (`ocr/T95.12-B1-B1-B2-B1-244c8ada.json`, 5 files, 1 comment): `MarksStep.tsx:310` (Valid) the skipped-sessions link changes the grid's page while a Correct holds paging (`gapShown` bypasses `pagingHeld`), so the correction's cell can go off-page. → **T95.12-B2-B2**.
+
 ## Trial: complete runs overlapped with the next task (the user, 2026-11-22, for 5 or 6 tasks)
 
 Each task's complete run runs in a detached scratch copy (`.claude/worktrees/run-<label>`, set up by `lane-setup.sh`) at the task's commit, while the next task's subagent starts in this worktree. The run's files are copied back to `evidence/D95/suite-runs/`. A failure becomes a bug task as before; the next task restarts only if it built on the broken code. Times are recorded per run to measure the saving.
