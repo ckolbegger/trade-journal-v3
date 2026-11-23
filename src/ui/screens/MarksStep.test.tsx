@@ -802,7 +802,7 @@ describe('Save Marks (P37, A155) rendering', () => {
     expect(within(card).getByText('Trade P&L')).toBeTruthy();
     // The other XYZ card's summary and meter follow the shared Mark.
     const sharedHeader = tfHeader();
-    expect(sharedHeader.textContent).not.toContain('1 Mark');
+    expect(sharedHeader.textContent).not.toContain('To do: Mark');
     expect(within(sharedHeader.closest('li')!).getByRole('img').getAttribute('aria-label')).toContain('50% of the way to the Target');
     // No read followed the save.
     expect(facade.DailyReview.open).toHaveBeenCalledTimes(1);
