@@ -393,3 +393,7 @@ ocr (session 30a10fbb, a60389a3..f878796f): 27 files, 6 findings. Valid, bug tas
 B1 `2dfeacb3` (header passes `closeReview`), B2 `0827a7bc` (At entry hidden only when equal to the Plan box's figures), B3 `347ace42` (`overflow-wrap: anywhere`; new browser case), B4 `5ba40d94` (d4 release-history expectation restored; red then green), B5 `e857812f` (`not.toContain('To do: Mark')`, mutation-checked). Each red then green; no first-run passes.
 
 ocr of T95.16-B1 to B5 (session 868b5592, f878796f..e857812f): 6 files, 0 findings. `evidence/D95/ocr/T95.16-B1-B5-e857812f.json`.
+
+### T95.16-F1
+
+Commit `2823e2b7`: `collapseOpenCard(page)` in `e2e/d5r/support.ts` (re-exported by d9); each case collapses the open card before reading its meter. Before: 8 failed, 14 passed; after (with e2e/d95): 28 passed. Checks that only the open card's meter can make, carried to **T95.17**'s Now box: B5R.11 case 1 (T-A's meter while its drafts are held), B9.11 (the open card's meter in the viewport at 1280, 375, 320), B9.9 (Open list row named as the open card's meter), T7P.11 (meter beside the open card's attention sentence).
