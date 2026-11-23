@@ -356,6 +356,27 @@ describe('the Plan box in the open card (T95.16, U2)', () => {
   });
 });
 
+describe('the Plan box and At entry group when fills differ from the Plan (T95.16-B2)', () => {
+  it('should keep the At entry Risk and Reward when the fills differ from the Plan box figures', async () => {
+    const facade = cardFacade();
+    vi.mocked(facade.DailyReview.getTrade).mockImplementation(({ tradeId }) => {
+      const found = [TB, TC, TF, TA, TE].find((t) => t.tradeId === tradeId)!;
+      const base = tradeReview(found);
+      // The Plan says risk $700.00 and reward $1,500.00; the fills measured from the Stop and Target are $650.00 and $1,420.00.
+      const evaluation = { ...base.evaluation, atEntry: { label: 'AtEntry', quantity: rational(100n), averageEntry: rational(49n), riskFromEntry: rational(650n), rewardFromEntry: rational(1420n) } } as unknown as DailyTradeReview['evaluation'];
+      const replay = { planColumn: { atStop: rational(-700n), atTarget: rational(1500n), rewardRisk: rational(15n, 7n), terms: { legs: [{ instrument: { kind: 'Stock', symbol: 'ABC' }, side: 'Long', quantity: rational(100n), entryPrice: rational(50n) }], conditions: [] } } } as unknown as DailyTradeReview['replay'];
+      return Promise.resolve({ kind: 'Ready', reviewDate: '2026-10-12', cutoff: CUTOFF, trade: { ...base, evaluation, replay, plan: { thesis: 'Earnings are priced in.', invalidation: 'A close under the 200-day line.' } } });
+    });
+    renderReview(facade);
+    const card = await screen.findByRole('region', { name: 'ABC review' });
+
+    expect(within(card).getByRole('region', { name: 'Plan' })).toBeTruthy();
+    expect(within(card).getByText('At entry')).toBeTruthy();
+    expect(within(card).getByText('$650.00')).toBeTruthy();
+    expect(within(card).getByText('$1,420.00')).toBeTruthy();
+  });
+});
+
 describe('the header owes a Close Review (T95.16-B1)', () => {
   it('should read To do: Close Review in the header when the day card line says Close Review', async () => {
     const built = review();

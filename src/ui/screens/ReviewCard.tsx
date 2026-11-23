@@ -15,6 +15,7 @@ import { ReviewReflections } from './ReviewReflections.tsx';
 import { SettlementPanel, settlementSummary } from './ReviewSettlement.tsx';
 import { describedLabelsOf, reasonText } from './review-attention.ts';
 import { PlanBox } from './PlanBox.tsx';
+import { unsigned } from '../cockpit/replay/readout.props.ts';
 import { todoText, type DayLine } from './todo-text.ts';
 import { signed, pnlText } from '../figures.ts';
 import { money } from '../format.ts';
@@ -322,8 +323,11 @@ function CardBody({ facade, trade, progress, name, go, onSaved, onReflectionReso
   // The Action form reports under its Trade, so the Review's unsaved state counts it with the Mark entries.
   const tradeId = trade.tradeId;
   const report = useCallback((dirty: boolean) => onEntryDirty(`action:${tradeId}`, dirty), [tradeId, onEntryDirty]);
-  // The Plan box's Risk and Reward are the At entry group's two figures: with the box shown, the group is left out (U2).
-  const planBoxCarriesAtEntry = trade.replay?.planColumn !== undefined && trade.evaluation?.atEntry != null;
+  // The Plan box's Risk and Reward are the At entry group's two figures: with the box showing the same two amounts, the group is left out (U2).
+  // The group is measured from the actual fills, so it stays when they differ from the Plan.
+  const planColumn = trade.replay?.planColumn;
+  const atEntry = trade.evaluation?.atEntry;
+  const planBoxCarriesAtEntry = planColumn !== undefined && atEntry != null && atEntry.riskFromEntry.equals(unsigned(planColumn.atStop)) && atEntry.rewardFromEntry.equals(planColumn.atTarget);
   return (
     <section aria-label={`${name} review`}>
       <p>
@@ -339,7 +343,7 @@ function CardBody({ facade, trade, progress, name, go, onSaved, onReflectionReso
         <p key={i}>{reasonText(reason, trade.attention.basis, timeZone ?? 'UTC')}</p>
       ))}
       <PlanBox plan={trade.plan} replay={trade.replay} />
-      <CardFigures trade={planBoxCarriesAtEntry ? { ...trade, evaluation: { ...trade.evaluation, atEntry: null } } : trade} />
+      <CardFigures trade={trade.evaluation && planBoxCarriesAtEntry ? { ...trade, evaluation: { ...trade.evaluation, atEntry: null } } : trade} />
       {/* Every panel stays mounted, so a panel left open keeps its drafts; only the open one is shown. */}
       {panels.map((name) => (
         <div key={name} className="review-panel">
