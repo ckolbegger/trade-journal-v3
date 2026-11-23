@@ -55,3 +55,27 @@ Moved checks went into e2e/d9ar/responsive-a11y.spec.ts (`expectPhoneLabels`, `t
 | BD16: tap leaves no hover column | mutated | `.claude/scripts/with-browser-lock.sh npm run test:e2e:specs -- e2e/d9ar/responsive-a11y.spec.ts -g "should move the slider by a tap"` | 1 failed, assertion: a tap leaves no hover column |
 | d9:168: nothing covers a focused control (a full-screen cover injected) | mutated | `.claude/scripts/with-browser-lock.sh npm run test:e2e:specs -- e2e/d9ar/responsive-a11y.spec.ts -g "should fit the Detail overlay on one screen"` | 1 failed, assertion: Detail overlay at 375 px: "Previous session" (y 222 to 266) has something over its centre |
 | all, restored | green | `.claude/scripts/with-browser-lock.sh npm run test:e2e:specs -- e2e/d9ar/responsive-a11y.spec.ts` | 18 passed |
+
+## TD.4
+
+Moved checks went into e2e/d9ar/states.spec.ts (K-sale case, R-DALE-U case, No Mark once case), e2e/d9ar/overlay.spec.ts and the two new helpers in e2e/d9ar/support.ts. Each mutation changed one expected value, ran states.spec.ts and overlay.spec.ts, then was restored. Command each time: `.claude/scripts/with-browser-lock.sh npm run test:e2e:specs -- e2e/d9ar/states.spec.ts e2e/d9ar/overlay.spec.ts`.
+
+| Moved check | Run | Result |
+|---|---|---|
+| expectSixDrawers: the selected drawer is Today (support.ts helper, used by K-sale, R-DALE-U, overlay) | mutated (expected "Position") | failed, assertion: Expected "Position", Received "Today" |
+| No Mark once: readout does not contain "Mark missing" | mutated (not.toContainText "Put Mark") | failed, assertion: Expected substring: not "Put Mark" |
+| expectNoPayoffOrTheory: no payoff path in the replay (support.ts helper, used by K-sale, R-DALE-U, overlay) | mutated (toHaveCount 1) | failed, assertion: toHaveCount Expected 1, Received 0 |
+| R-DALE-U: no "going" line while Settlement Due | mutated (toHaveCount 1) | failed, assertion: toHaveCount |
+| No Mark once: count of /No Mark for\|Mark missing/ is 1 | mutated (length 2) | failed, assertion: Expected length 2 |
+| K-sale: readout Trade P&L +$1,138.00 | mutated ("+$1,139.00") | failed, assertion: toHaveText |
+| R-DALE-U: Thu Nov 19 headline +$564.00 · 0.37R | mutated ("0.38R") | failed, assertion: toHaveText |
+| K-sale: readout Realized +$1,138.00 | mutated ("+$1,139.00") | failed, assertion: toHaveText |
+| R-DALE-U: stake sentence after expiry | mutated (trailing "!") | failed, assertion: toHaveText |
+| K-sale: chart words (Sold 2 at $4.00) | mutated ("$4.01") | failed, assertion: ArrayContaining |
+| R-DALE-U: "Expired" in the P&L chart | mutated ("Expired X") | failed, assertion: toContain |
+| K-sale: Thu Nov 12 headline +$982.00 · 3.03R | mutated ("3.04R") | failed, assertion: toHaveText |
+| K-sale: Thu Nov 12 going line | mutated ("$27.00 past it.") | failed, assertion: toHaveText |
+| K-sale: Thu Nov 12 first group "How it is going" | mutated ("How it is going X") | failed, assertion: toHaveText |
+| all, restored | green | `... e2e/d9ar/states.spec.ts e2e/d9ar/overlay.spec.ts e2e/d9ar/readout.spec.ts`: 23 passed |
+
+Not mutated: the second half of expectNoPayoffOrTheory (no payoff/theoretical words), moved as written. The chart words "Realized +$478" and "Realized +$1,138" sit in the same array assertion as the mutated "Sold 2 at $4.00" and are covered by it.

@@ -7,13 +7,28 @@ import { R_DALE_D } from '../../src/domain/trade-analysis/option-trade.ts';
 import { expectShownInFull } from '../d7p/support.ts';
 import {
   AXIO, BREN, closeOf, currentTradeId, DALE, detail, expect, fillOptionPlan, fillOptionRows, fillPlan, fillRows, label, onboardedAt, openExitForm, openReview, pinClock, pnlChart, priceStrip, LAUNCH,
-  answerIn, exitReflection, reachPanel, recordEntry, recordOptionEntry, savedUnlessRefused, seek, slider, sliderValue, type Fixture, type Profile, type TradeRef,
+  answerIn, exitReflection, PRICE_HISTORY, reachPanel, recordEntry, recordOptionEntry, replay, savedUnlessRefused, seek, slider, sliderValue, type Fixture, type Profile, type TradeRef,
 } from '../d9/support.ts';
 
 export * from '../d9/support.ts';
 
 // Where the specs write their screenshots: the git-ignored test-results, so a run never rewrites D9A-R's committed evidence/D09AR/screenshots.
 export const SCREENSHOTS = 'test-results/d9ar-screenshots';
+
+// AC-CALC-004: the replay draws no Expiration Payoff and shows no theoretical price as a value.
+export async function expectNoPayoffOrTheory(page: Page): Promise<void> {
+  const scope = replay(page);
+  await expect(scope.locator('path.payoff, path.payoff-line, [class*="payoff"]')).toHaveCount(0);
+  await expect(scope).not.toContainText(/payoff|theoretical|fair value|model price/i);
+}
+
+// The six drawers of a Trade that has been entered, with one selected and its panel shown (moved from d9/states.spec.ts's expectDrawers, TD.4).
+export async function expectSixDrawers(page: Page, selected: string): Promise<void> {
+  const tabs = page.getByRole('tablist', { name: 'Detail' });
+  await expect(tabs.getByRole('tab')).toHaveText(['Today', 'Position', 'Plan and Risk', PRICE_HISTORY, /^Journal( \d+ owed)?$/, 'Payoff']);
+  await expect(tabs.getByRole('tab', { selected: true })).toHaveText(selected);
+  await expect(page.locator(`#drawer-panel-${selected.toLowerCase().replaceAll(' ', '-')}`)).toBeVisible();
+}
 
 // R-DALE-D's Marks with the six short held to the end: no buyback on Tue 11-10 (the Stop's line is crossed Thu 11-12 and stays crossed).
 export const DALE_HOLD: Fixture = { ...DALE, changes: [], series: R_DALE_D };

@@ -1,5 +1,5 @@
 import {
-  boxOf, BREN, build, closeButton, closeOf, detail, detailReplayButton, expect, headline, PRICE_HISTORY, LAUNCH, replay, seek, slider, sliderValue, SCREENSHOTS, test,
+  boxOf, BREN, build, closeButton, closeOf, detail, detailReplayButton, expect, expectNoPayoffOrTheory, expectSixDrawers, headline, PRICE_HISTORY, LAUNCH, replay, seek, slider, sliderValue, SCREENSHOTS, test,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
@@ -11,8 +11,7 @@ test.describe('B9AR.1 The overlay on Trade Detail', () => {
   test('should open the overlay from the Replay button beside six drawers, named and headed as W53 says', async ({ profile }) => {
     test.setTimeout(240_000);
     const { context, page } = await build(profile, BREN, closeOf('2026-11-16'), 10);
-    const tabs = page.getByRole('tablist', { name: 'Detail' });
-    await expect(tabs.getByRole('tab')).toHaveText(['Today', 'Position', 'Plan and Risk', PRICE_HISTORY, /^Journal( \d+ owed)?$/, 'Payoff']);
+    await expectSixDrawers(page, 'Today');
     await expect(detailReplayButton(page)).toHaveCount(1);
     await expect(replay(page)).toHaveCount(0);
     await detailReplayButton(page).click();
@@ -20,6 +19,7 @@ test.describe('B9AR.1 The overlay on Trade Detail', () => {
     await expect(dialog).toBeVisible();
     await expect(dialog.getByRole('heading', { level: 2 })).toHaveText('BREN · Trade P&L +$988.00');
     await expect(headline(dialog)).toHaveText('+$988.00 · 3.05R');
+    await expectNoPayoffOrTheory(page);
     // It covers the whole page: the dialog's box is the viewport's.
     const viewport = page.viewportSize()!;
     expect(await boxOf(dialog)).toEqual({ x: 0, y: 0, width: viewport.width, height: viewport.height });

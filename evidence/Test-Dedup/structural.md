@@ -108,3 +108,61 @@ References (rule 10): grep of the six titles found living text only in the plan 
 ### TD.3 ocr
 
 gpt-6.1-sol, session a39533b9: 1 file reviewed (e2e/d9ar/responsive-a11y.spec.ts; plan, evidence and the deleted spec excluded), 0 findings. `evidence/Test-Dedup/ocr/TD.3-050d59a9.json`.
+
+## TD.4 — How a replay ends, and No Mark said once (BD1, BD4)
+
+Spec counts, run through with-browser-lock.sh on 5175:
+
+| Files | Before | After |
+|---|---|---|
+| e2e/d9/states.spec.ts, e2e/d9ar/states.spec.ts, e2e/d9ar/overlay.spec.ts, e2e/d9ar/readout.spec.ts | 28 passed | 23 passed (d9ar states, overlay, readout only; d9/states.spec.ts deleted) |
+
+Removed cases (5):
+
+| File, title | Where its checks now live |
+|---|---|
+| e2e/d9/states.spec.ts, "should show the Replay button beside the six drawers on an Open Trade, with Today selected and no payoff line in the replay" | See the assertion table |
+| e2e/d9/states.spec.ts, "should end K-sale on its sale with a Final result headline, the banked total and an Events card row, and show every drawer" | d9ar/states "should end K-sale on a Final result with its header, cards to the final session and nothing at stake" |
+| e2e/d9/states.spec.ts, "should end R-DALE-U at Fri 11-20 with no Mark while Settlement Due, then with a Final result once its Expiration is recorded" | d9ar/states "should end R-DALE-U with no Mark while Settlement Due, then with a Final result and an Expiration, not an Execution, once it is recorded" |
+| e2e/d9/states.spec.ts, "should show no Replay button on a Planned Trade, and Plan and Risk selected" | d9ar/states "should show no Replay button on a Planned Trade"; d8r/states "should show a Planned Trade with Plan and Risk, Journal and Payoff only, opening on Plan and Risk, with no Today" |
+| e2e/d9ar/readout.spec.ts, "should show R-CORV-D at Tue 11-10 with the dash named No Mark in the Trade P&L row, and the missing Mark said once on the replay" | d9ar/states "should say No Mark once on Tue 11-10 ..."; d9/gaps "should show No Mark on Tue 11-10 with the two results kept ..." |
+
+`e2e/d9/states.spec.ts` is deleted (it held only those four cases).
+
+Every dropped assertion and where it lives (M = moved in this task; L = a living case that already asserts it on the same kind of Trade):
+
+| Dropped assertion | Where |
+|---|---|
+| Open Trade (BREN): six drawers in order, Today selected | M: overlay "should open the overlay from the Replay button beside six drawers ..." via new support helper `expectSixDrawers` (list was there; selected tab and Today panel visible added) |
+| Open Trade: Replay headline +$988.00 · 3.05R | L: the same overlay case (BREN, Mon 11-16) |
+| Open Trade: readout groups How it is going / At stake from here, whole Position / Marks / Position | L: d9ar/states R-DALE-U case at Fri Nov 20 (an Open Trade, not final) asserts the same four groups |
+| Open Trade: no payoff line or theory words | M: `expectNoPayoffOrTheory` (moved to d9ar/support.ts), called in the overlay case |
+| K-sale: lifecycle badge "Long Call, Closed" | L: same d9ar K-sale case |
+| K-sale: six drawers, Today selected | M: `expectSixDrawers` in the d9ar K-sale case |
+| K-sale: slider "Fri Nov 13 · 10 of 10", headline +$1,138.00, going, stake, groups Final result / Marks / Position | L: same d9ar K-sale case |
+| K-sale: readout Trade P&L and Realized +$1,138.00 | M: d9ar K-sale case |
+| K-sale: chart words Realized +$478, Realized +$1,138, Sold 2 at $4.00 | M: d9ar K-sale case |
+| K-sale: final session card rows | L: same d9ar K-sale case (identical list) |
+| K-sale: step back to Thu Nov 12 (slider, +$982.00 · 3.03R, "Target reached, $26.00 past it.", first group How it is going) | M: d9ar K-sale case |
+| K-sale: no payoff line (at Fri Nov 13 and Thu Nov 12) | M: `expectNoPayoffOrTheory`, called at both |
+| R-DALE-U: Settlement Due heading; six drawers, Today selected (Settlement Due and again after recording) | M: `expectSixDrawers` twice in the d9ar R-DALE-U case; the heading was already there |
+| R-DALE-U: Fri Nov 20 slider, headline "No Mark for the put on Fri Nov 20.", no Final result, groups | L: same d9ar case |
+| R-DALE-U: no going line while Settlement Due | M: d9ar R-DALE-U case |
+| R-DALE-U: no payoff line (Settlement Due, and after expiry) | M: `expectNoPayoffOrTheory`, called at both |
+| R-DALE-U: Thu Nov 19 slider and headline +$564.00 · 0.37R | M: d9ar R-DALE-U case (after the Settlement Due screenshot, before Close) |
+| R-DALE-U after expiry: slider, headline +$564.00, going, groups Final result / Marks / Position, card EventsExpired | L: same d9ar case |
+| R-DALE-U after expiry: stake "Nothing is at risk and nothing is left to gain." | M: d9ar R-DALE-U case |
+| R-DALE-U after expiry: "Expired" in the P&L chart | M: d9ar R-DALE-U case |
+| Planned: drawers Plan and Risk, Journal, Payoff only; Today, Position, Price History absent; Plan and Risk selected | L: d8r/states Planned case (an option Long Call; asserts the same list, gone list and selected drawer) |
+| Planned: no Replay button | L: d9ar/states "should show no Replay button on a Planned Trade" (button count 0) |
+| Planned: no `.replay-card` | L: the same d9ar case asserts no dialog named Replay (the card is that overlay) |
+| CORV Tue 11-10: slider "Tue Nov 10 · 7 of 8" | L: d9ar/states "should say No Mark once ..." |
+| CORV: readout does not contain "Mark missing" | M: d9ar/states "should say No Mark once ..." |
+| CORV: Trade P&L dash named No Mark, text "—" | L: d9/gaps "should show No Mark on Tue 11-10 ..." (same assertion on R-CORV-D, same session) |
+| CORV: count of /No Mark for\|Mark missing/ is 1 on the replay | M: d9ar/states "should say No Mark once ..." (its count regex widened from "No Mark for" to "No Mark for\|Mark missing"; strictly stronger) |
+
+Moved helpers (rule 2): `expectNoPayoffOrTheory` (AC-CALC-004) and `expectSixDrawers` (the six-drawer list, selected tab, its panel shown) in e2e/d9ar/support.ts; the overlay case's own inline drawer list now calls `expectSixDrawers`.
+
+Cases kept: none; all five removed, every "confirm first" held. Nothing failed for a real reason.
+
+References (rule 10): `rg` of the five titles found living text only in the plan itself and unit and integration tests with similar words (src/ui/cockpit/replay/readout.props.test.ts, tests/integration/d9/lifetime.test.ts; not these titles). Re-pointed: plan/D09-trade-replay.md AC-CALC-004 row (command now `npx playwright test e2e/d9ar/states.spec.ts`, "(since TD.4)"). `.claude/scripts/acceptance-commands.sh plan/D09-trade-replay.md`: 9 commands checked, 0 failed (the AC-CALC-004 row lists 4 tests). Left as written: plan/D09-trade-replay.md line 812 (the B9.4 test-plan row, a record of what was planned), plan/D09.5-daily-review-redesign.md lines 1522, 1632, 1665 and 1902 (pasted grep counts naming `e2e/d9/states.spec.ts`, past records), and plan/D09A-R-handoff.md line 136 (a general rule), and suite-run, tdd-log and structural entries of finished tasks. package.json `test:e2e:4` runs the whole e2e/d9 folder, so the deletion needs no change there.

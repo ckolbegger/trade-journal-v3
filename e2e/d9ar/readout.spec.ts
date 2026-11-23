@@ -193,18 +193,6 @@ test.describe('B9AR.3 The readout', () => {
     await context.close();
   });
 
-  test('should show R-CORV-D at Tue 11-10 with the dash named No Mark in the Trade P&L row, and the missing Mark said once on the replay', async ({ profile }) => {
-    test.setTimeout(240_000);
-    const { context, page } = await build(profile, CORV, closeOf('2026-11-11'), 7);
-    const scope = await openAt(page, 'ArrowLeft', 1);
-    await expect(sliderValue(scope)).toHaveText('Tue Nov 10 · 7 of 8');
-    const readout = scope.locator('.replay-readout');
-    await expect(readout).not.toContainText('Mark missing');
-    await expect(readout.locator('[data-row="Trade P&L"]').getByRole('img', { name: 'No Mark' })).toHaveText('—');
-    expect((await scope.innerText()).match(/No Mark for|Mark missing/g) ?? [], 'the reason is said once on the replay').toHaveLength(1);
-    await context.close();
-  });
-
   // The plan's `expectOneLine` on every figure. The Trade P&L figure ("+$642.00 · 2.02R") breaks onto a second line in the readout's narrow column (the committed screenshots in D9A-R's evidence, B9AR.3-*.png),
   // so the case is expected to fail until the product fits it; kept as the plan writes it.
   const situations = [

@@ -1,5 +1,5 @@
 import {
-  marksPanelOf, BREN, BREN_SOLD_OUT, build, buildPlanned, cardRows, closeOf, CORV, DALE, detail, detailReplayButton, expect, going, headline, MON_1123_1700, noMarkDash, openDetailAt, openDrawer, positionGroup,
+  marksPanelOf, BREN, BREN_SOLD_OUT, build, buildPlanned, cardRows, chartText, closeOf, CORV, DALE, detail, detailReplayButton, expect, expectNoPayoffOrTheory, expectSixDrawers, going, headline, MON_1123_1700, noMarkDash, openDetailAt, openDrawer, pnlChart, positionGroup,
   LAUNCH, readoutPnl, readoutR, readoutValue, recordExpiration, replay, seek, sessionCard, sessionCards, sliderValue, SCREENSHOTS, stake, test, expectMarksSaved,
 } from './support.ts';
 
@@ -13,6 +13,7 @@ test.describe('B9AR.6 How a replay ends, and a session with no Mark', () => {
     test.setTimeout(300_000);
     const { context, page } = await build(profile, BREN_SOLD_OUT, closeOf('2026-11-13'), 9);
     await expect(detail.lifecycleBadge(page)).toHaveText('Long Call, Closed');
+    await expectSixDrawers(page, 'Today');
     await openDrawer(page, 'Replay');
     const scope = replay(page);
     await expect(scope.getByRole('heading', { level: 2 })).toHaveText('BREN · Final result +$1,138.00');
@@ -28,7 +29,19 @@ test.describe('B9AR.6 How a replay ends, and a session with no Mark', () => {
     const last = await sessionCard(scope, 'Fri Nov 13');
     await expect(last).toHaveAttribute('aria-current', 'true');
     await expect(cardRows(last)).toHaveText(['BREN Mark$104.60', 'Call Mark$4.91', 'Trade P&L+$1,138.00', 'Realized+$1,138.00', 'EventsSold 2 at $4.91, $0.91 above the Target']);
+    // The banked total and the sale on the chart (moved from d9/states.spec.ts, TD.4).
+    await expect(readoutValue(scope, 'Trade P&L')).toHaveText('+$1,138.00');
+    await expect(readoutValue(scope, 'Realized')).toHaveText('+$1,138.00');
+    expect(await chartText(pnlChart(scope))).toEqual(expect.arrayContaining(['Realized +$478', 'Realized +$1,138', 'Sold 2 at $4.00']));
+    await expectNoPayoffOrTheory(page);
     await page.screenshot({ path: `${SCREENSHOTS}/B9AR.6-k-sale-final-result.png` });
+    // The session before the last is not final: it keeps its own headline and what is still at stake.
+    await seek(page, scope, 'ArrowLeft');
+    await expect(sliderValue(scope)).toHaveText('Thu Nov 12 · 9 of 10');
+    await expect(headline(scope)).toHaveText('+$982.00 · 3.03R');
+    await expect(going(scope)).toHaveText('Target reached, $26.00 past it.');
+    await expect(scope.locator('.replay-readout-group h3').first()).toHaveText('How it is going');
+    await expectNoPayoffOrTheory(page);
     await context.close();
   });
 
@@ -38,27 +51,38 @@ test.describe('B9AR.6 How a replay ends, and a session with no Mark', () => {
     await built.context.close();
     const { context, page } = await openDetailAt(profile, MON_1123_1700, built.trade);
     await expect(detail.settlementDueHeading(page)).toBeVisible();
+    await expectSixDrawers(page, 'Today');
     await openDrawer(page, 'Replay');
     let scope = replay(page);
     await expect(sliderValue(scope)).toHaveText('Fri Nov 20 · 15 of 15');
     await expect(headline(scope)).toHaveText('No Mark for the put on Fri Nov 20.');
+    await expect(going(scope)).toHaveCount(0);
     await expect(scope).not.toContainText('Final result');
     await expect(scope.getByRole('heading', { level: 2 })).not.toContainText('Final result');
     await expect(scope.locator('.replay-readout-group h3')).toHaveText(['How it is going', 'At stake from here, whole Position', 'Marks', 'Position']);
     await expect(sessionCards(scope)).toHaveCount(15);
+    await expectNoPayoffOrTheory(page);
     await page.screenshot({ path: `${SCREENSHOTS}/B9AR.6-dale-settlement-due.png` });
+    // Thu 11-19, the last session with a Mark: the put is worth $0.00 and the Trade is ahead (moved from d9/states.spec.ts, TD.4).
+    await seek(page, scope, 'ArrowLeft');
+    await expect(sliderValue(scope)).toHaveText('Thu Nov 19 · 14 of 15');
+    await expect(headline(scope)).toHaveText('+$564.00 · 0.37R');
     await scope.getByRole('button', { name: 'Close' }).click();
     await detail.recordExpirationLink(page).click();
     await recordExpiration(page);
     await page.getByRole('link', { name: 'Back to the Trade' }).click();
     await expect(detail.heading(page, 'DALE')).toBeVisible();
+    await expectSixDrawers(page, 'Today');
     await openDrawer(page, 'Replay');
     scope = replay(page);
     await expect(sliderValue(scope)).toHaveText('Fri Nov 20 · 15 of 15');
     await expect(scope.getByRole('heading', { level: 2 })).toHaveText('DALE · Final result +$564.00');
     await expect(headline(scope)).toHaveText('+$564.00');
     await expect(going(scope)).toHaveText('Final result: the put expired Fri Nov 20.');
+    await expect(stake(scope)).toHaveText('Nothing is at risk and nothing is left to gain.');
     await expect(scope.locator('.replay-readout-group h3')).toHaveText(['Final result', 'Marks', 'Position']);
+    expect(await chartText(pnlChart(scope))).toContain('Expired');
+    await expectNoPayoffOrTheory(page);
     await expect(sessionCards(scope)).toHaveCount(15);
     // An Expiration is a Position Change, never an Execution: "Expiration, Fri Nov 20" with "Expired", in the Position group and on the card.
     const position = positionGroup(scope);
@@ -87,7 +111,8 @@ test.describe('B9AR.6 How a replay ends, and a session with no Mark', () => {
     await expect(sliderValue(scope)).toHaveText('Tue Nov 10 · 7 of 8');
     await expect(headline(scope)).toHaveText('No Mark for the put on Tue Nov 10.');
     // Said once, at normal size (not the figure's large type), and with nothing computed under it.
-    expect((await scope.innerText()).match(/No Mark for/g) ?? [], 'No Mark for … is said once in the whole overlay').toHaveLength(1);
+    await expect(scope.locator('.replay-readout')).not.toContainText('Mark missing');
+    expect((await scope.innerText()).match(/No Mark for|Mark missing/g) ?? [], 'the missing Mark is said once in the whole overlay').toHaveLength(1);
     await expect(scope.locator('.replay-figure')).toHaveCount(0);
     await expect(going(scope)).toHaveCount(0);
     await expect(stake(scope)).toHaveCount(0);
