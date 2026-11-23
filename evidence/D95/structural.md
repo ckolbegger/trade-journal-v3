@@ -451,3 +451,5 @@ ocr of T95.17-B1, T95.17-B2 (session c2b70a12): 5 files, 1 finding, Doubtful: th
 ### T95.17-B3
 
 Commit `31bb87f5`: the overlap effect depends on `[at, stopText, targetText]`. Red then green (same places, wider text, Target to row 2).
+
+ocr of T95.17-B3 (session 24bb72f2): 2 files, 0 findings. `evidence/D95/ocr/T95.17-B3-31bb87f5.json`.

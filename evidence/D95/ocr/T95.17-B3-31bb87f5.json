@@ -1,0 +1,101 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 0,
+    "total_tokens": 28223,
+    "input_tokens": 27964,
+    "output_tokens": 259,
+    "cache_read_tokens": 4992,
+    "elapsed": "15s"
+  },
+  "tool_calls": {
+    "total": 3,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/screens/NowBox.test.tsx",
+        "src/ui/screens/NowBox.tsx"
+      ]
+    }
+  ],
+  "session_id": "24bb72f2-60c7-4dcf-97b7-32ab79321cfe",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "24bb72f2-60c7-4dcf-97b7-32ab79321cfe",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "31bb87f5",
+      "resolved_base": "d2833bbe32a3fc6154016b92f79b4331306a3c0b",
+      "resolved_head": "31bb87f57102dd97532b15272a45584bbee48f1e",
+      "exact_range": "d2833bbe32a3fc6154016b92f79b4331306a3c0b..31bb87f57102dd97532b15272a45584bbee48f1e",
+      "source_artifact_sha256": "2fa42e175d2f79f1e443130ab748e09c4c07fee565820d8c73919f80bfc23af9"
+    },
+    "execution": {
+      "ocr_version": "v1.14.2",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "4a10c7f7a28a5b02040fdd986d28829b7d8bca1dff05fb12ed281264b9699809",
+          "path": "src/ui/screens/NowBox.tsx",
+          "fingerprint": "2260f4d0833c1b09c68078b9b138f6e601237df340720a86b4ad9c12f30a7bc9"
+        },
+        {
+          "item_id": "d3b0e476336debedae17e83bab9198bf23ead094c81f9a7aa114447b3fba6437",
+          "path": "src/ui/screens/NowBox.test.tsx",
+          "fingerprint": "c28653a3e471971ae54cc8b3ed55d50f291c874dc7258079cffc63f4226dfcc5"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "4a10c7f7a28a5b02040fdd986d28829b7d8bca1dff05fb12ed281264b9699809",
+          "path": "src/ui/screens/NowBox.tsx",
+          "fingerprint": "2260f4d0833c1b09c68078b9b138f6e601237df340720a86b4ad9c12f30a7bc9"
+        },
+        {
+          "item_id": "d3b0e476336debedae17e83bab9198bf23ead094c81f9a7aa114447b3fba6437",
+          "path": "src/ui/screens/NowBox.test.tsx",
+          "fingerprint": "c28653a3e471971ae54cc8b3ed55d50f291c874dc7258079cffc63f4226dfcc5"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "642a87bbe08dd1c37d7c437f8bc3d1542c168d367232916b993f97a96a0597c1",
+          "path": "evidence/D95/tdd-log/T95.17-B3.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 14736
+  }
+}
