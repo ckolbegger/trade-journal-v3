@@ -345,3 +345,7 @@ Run `t95.21-finished-day` (browser-task): unit 2839, integration 300, checks 14 
 ### T95.21-B3 (stopped, no change) → T95.15-B1
 
 The marks-keys failure is not T95.21's: `e2e/d95/marks-keys.spec.ts` fails about half the time, also with DayCard.tsx and app.css reverted to `1e3b3fab` (4 of 12). The grid lists Instruments in the Trades' attention order; ABC's and DEF's Trades tie, and `byAttention` (`src/coordinators/valuation/attention.ts:187`) breaks the tie by tradeId, which is random per run, so the order is stable within a journal but differs between runs. The test assumes ABC first. The app is right (overview: the order is stable within a Review view; ties fall to stable identity); the test is wrong. Main session ruling: fix the test to follow the grid's row order, as **T95.15-B1** (T95.15's spec). T95.21-B3 is closed with no change.
+
+### T95.15-B1
+
+Commit `a5b4592a`: marks-keys reads the grid's row order (ABC and DEF y positions) and gives each Instrument its own price (ABC 31.00, DEF 40.50; 31.00 on DEF opened a large-move question). `--repeat-each=12`: 12 passed; e2e/d95 3 passed.
