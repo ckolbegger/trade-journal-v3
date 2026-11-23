@@ -47,3 +47,7 @@ Check (temporary spec, deleted, not committed): a setup that launches a browser,
 Which tests start from which setup, which kept their build: unchanged (the five d9ar/review.spec.ts tests on STANDARD_REVIEW; none kept its own build).
 
 Break check after both fixes (e2e/d9ar/review.spec.ts): copy switched off (the cp call replaced): 5 failed (toBeVisible on the first screen); switched on: 5 passed (11.3 s). Both specs together after B2: 10 passed (20.4 s).
+
+### ST.1-B1 and ST.1-B2 ocr
+
+gpt-6.1-sol, session 84331d74, range 2ef488d0..2aa85183: 1 file reviewed (e2e/d1/support.ts), 0 findings. `evidence/Setup-Snapshot/ocr/ST.1-B1-B2-2aa85183.json`.
