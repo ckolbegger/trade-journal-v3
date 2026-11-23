@@ -205,6 +205,14 @@ ocr (`ocr/T95.10-8c2b0643.json`, 27 files): **No findings.**
 
 **Complete run `t95.10-day-card`** (on `befe8916`; `browser tier: full (first matching path since 4e217d99: e2e/d4/acknowledge.spec.ts)`; run complete): integration 141 files, 300 tests; browser 127 (5.9 min), 80 (5.6 min), 57 (5.2 min), 137 and 4 skipped (7.9 min); checks 14 of 14. Unit 2,768 of 2,769: `tools/estimate-rules.test.ts:122` timed out (5,407 ms against 5,000 ms) under the run's load; rerun alone it passed (8 of 8, 3.5 s). Not reproduced, so recorded as a flake (its second; tech debt already lists it). T95.10 Done.
 
+**The user's direction (2026-11-22):** give `tools/estimate-rules.test.ts:122` a 10 s limit, untested until the next task's run. Commit `eacad071`.
+
+## T95.11 — plain labels (Standard)
+
+Commit `c823f8ba` (from `befe8916`; a first attempt stopped before code and joined Q5). `labelsOf(trade)` in `review-attention.ts` replaces `BAND_TEXT`; labels on the card header and the day lines. Cases 1 to 7 red then green (case 1 red a runtime TypeError); no first-run pass. Precedence: "Expired: settle", then "Marks needed" (beside the session before's label with its day) while the Marks panel isn't done, then "Past Stop" / "At Target", "No price today", the share. Labels come from returned figures (`meter.now.share`, `meter.previous.zone` and date, `expiresOnReviewDate`); the short day is formatting. `isAcknowledgedUnavailableAttention` added to `calculation-words.ts` (`verify:wording`). Each card label's reasons are its accessible description (`aria-describedby`); day lines carry labels only. `ReviewSettlement.test.tsx`'s fixture band corrected from `Blocker` to `SettlementDue`. Browser: d4 review, d7s conditions, d5r responsive-a11y, 6 pass. No snapshot changed; no words shortened.
+
+**Subagent notes (not bug tasks):** A302 has no label for a Blocker, an Exit not carried out (T95.41's banner), or a Routine or QuantifiedPressure Trade with no share; those show no label, and a card keeps its reason text in the body.
+
 ## Trial: complete runs overlapped with the next task (the user, 2026-11-22, for 5 or 6 tasks)
 
 Each task's complete run runs in a detached scratch copy (`.claude/worktrees/run-<label>`, set up by `lane-setup.sh`) at the task's commit, while the next task's subagent starts in this worktree. The run's files are copied back to `evidence/D95/suite-runs/`. A failure becomes a bug task as before; the next task restarts only if it built on the broken code. Times are recorded per run to measure the saving.
