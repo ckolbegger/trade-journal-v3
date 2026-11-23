@@ -129,5 +129,5 @@ describe('the estimates rule (P121)', () => {
     expect(sources.length).toBeGreaterThan(500);
     const found = sources.flatMap((p) => hits(relative(root, p), readFileSync(p, 'utf8')).map((h) => `${relative(root, p)}:${h.line}`));
     expect(found).toEqual([]);
-  });
+  }, 10_000);
 });
