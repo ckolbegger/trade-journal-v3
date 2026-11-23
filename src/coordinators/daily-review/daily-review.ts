@@ -640,7 +640,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
         ...item,
         progress: progressOf(item.tradeId, settlement.some((s) => s.tradeId === item.tradeId)),
         ...(valuation?.state.contractStatuses.some(({ status }) => status === 'DueToday') && { expiresOnReviewDate: true as const }),
-        ...(valuation && { meter: meterReadingOf(valuation.evaluation, before), figures: { riskToStop: valuation.evaluation.ongoingRiskToStop, pnl: valuation.evaluation.currentMarkedPnl, rewardRiskNow: valuation.evaluation.rewardRiskNow } }),
+        ...(valuation && { meter: meterReadingOf(valuation.evaluation, before), figures: { riskToStop: valuation.evaluation.ongoingRiskToStop, pnl: valuation.evaluation.currentMarkedPnl, rewardRiskNow: valuation.evaluation.rewardRiskNow }, pnl: { dollars: valuation.evaluation.currentMarkedPnl, planR: valuation.evaluation.currentMarkedPnlInPlanR, change: dayChangeOf([{ valuation, before }], false, reviewDate, read.previousSessionDate !== undefined) } }),
       }),
     );
     const families: ReviewFamily[] = [

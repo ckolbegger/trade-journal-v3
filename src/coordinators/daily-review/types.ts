@@ -72,6 +72,14 @@ export interface WalkedTrade extends ReviewTradeItem {
   readonly figures?: SliderFigures;
   // The meter's reading at the Review Date, with the session before as its earlier result (A260). Absent with the figures.
   readonly meter?: MeterReading;
+  // The Trade's P&L at the Review Date in dollars and in planned R, with its change since the session before (P178, decision 131). Absent with the figures.
+  readonly pnl?: WalkedPnl;
+}
+
+export interface WalkedPnl {
+  readonly dollars: TradeEvaluation['currentMarkedPnl'];
+  readonly planR: TradeEvaluation['currentMarkedPnlInPlanR'];
+  readonly change: DayChange;
 }
 
 // One Outstanding reflection of a Trade outside the walk: which obligation it answers (the Debt's Entry Type) and how
