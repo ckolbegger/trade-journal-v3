@@ -1,0 +1,135 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 1,
+    "total_tokens": 202227,
+    "input_tokens": 199596,
+    "output_tokens": 2631,
+    "cache_read_tokens": 22528,
+    "elapsed": "1m25s"
+  },
+  "tool_calls": {
+    "total": 30,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 13,
+      "file_find": 1,
+      "file_read": 15
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/coordinators/trade-views/trade-views.ts",
+      "content": "`queryActions` also loads Actions on `reviewDate`: it reads that day's obligations and then calls `tx.get('journalEntries', ...)` once per obligation (journal.ts:549–551). Consequently, after today's Review Actions have been saved, browsing the Open list adds N individual Journal reads as well as the range read, violating R3's constant-read requirement. This caller only uses `earlier`; use a history-only range query instead, and seed current-date Actions in the two-versus-four read-count test so it exercises this case.",
+      "existing_code": "        const history = session \u0026\u0026 earliestPlan ? await deps.journal.queryActions({ reviewDate: session.tradingDate, since: Temporal.Instant.from(earliestPlan).toZonedDateTimeISO('UTC').toPlainDate().toString() }) : undefined;",
+      "start_line": 976,
+      "end_line": 976,
+      "category": "performance",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Open-order trade list behavior and test coverage",
+      "files": [
+        "e2e/d95/open-list.spec.ts",
+        "src/coordinators/trade-views/open-order.test.ts",
+        "src/coordinators/trade-views/trade-views.ts",
+        "src/ui/screens/TradeList.test.tsx"
+      ]
+    }
+  ],
+  "session_id": "5cae7dd0-bea8-4916-854b-f0d875d7f29c",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "5cae7dd0-bea8-4916-854b-f0d875d7f29c",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "0afb8500",
+      "resolved_base": "40fae14efd0ae4143fd500f72c4fd7a8653ca00e",
+      "resolved_head": "0afb8500e187eb5a9c37a4494434ba1b5067d8e7",
+      "exact_range": "40fae14efd0ae4143fd500f72c4fd7a8653ca00e..0afb8500e187eb5a9c37a4494434ba1b5067d8e7",
+      "source_artifact_sha256": "22c011ef3cf69e71f8cde80179434001bb8e11563e97722cd5a3d07c186c911d"
+    },
+    "execution": {
+      "ocr_version": "v1.14.2",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "05932d0c5afaad2354fb9b0a26670b0064ecbb7ea49c9158ab0791ce7104d410",
+          "path": "e2e/d95/open-list.spec.ts",
+          "fingerprint": "6c7f8b4d926ae6b09af2312051a345729629fdf6296e09b2a9745951b0cb5d52"
+        },
+        {
+          "item_id": "21528fdea1f786ee58019fc622e43786a82d341175e8a059f5ae72ed67e96e01",
+          "path": "src/ui/screens/TradeList.test.tsx",
+          "fingerprint": "977442c0bbecf6cb39326a136e142025d26fd6951b2743ea3b7586b837d55506"
+        },
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "223f2c402676c5a77aed03f7ed44757ddf9818adad98663ae2594e9ac39c3092"
+        },
+        {
+          "item_id": "39a326886738a0dc0bdca817f05f43abda353be747a46325b49f8a06f69dec6a",
+          "path": "src/coordinators/trade-views/open-order.test.ts",
+          "fingerprint": "ef482b1806f5423398c63aeeb0da10624b9da44db349d6bc1b661d79fd6cfb88"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "05932d0c5afaad2354fb9b0a26670b0064ecbb7ea49c9158ab0791ce7104d410",
+          "path": "e2e/d95/open-list.spec.ts",
+          "fingerprint": "6c7f8b4d926ae6b09af2312051a345729629fdf6296e09b2a9745951b0cb5d52"
+        },
+        {
+          "item_id": "21528fdea1f786ee58019fc622e43786a82d341175e8a059f5ae72ed67e96e01",
+          "path": "src/ui/screens/TradeList.test.tsx",
+          "fingerprint": "977442c0bbecf6cb39326a136e142025d26fd6951b2743ea3b7586b837d55506"
+        },
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "223f2c402676c5a77aed03f7ed44757ddf9818adad98663ae2594e9ac39c3092"
+        },
+        {
+          "item_id": "39a326886738a0dc0bdca817f05f43abda353be747a46325b49f8a06f69dec6a",
+          "path": "src/coordinators/trade-views/open-order.test.ts",
+          "fingerprint": "ef482b1806f5423398c63aeeb0da10624b9da44db349d6bc1b661d79fd6cfb88"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "bb982e7d892c11d5d9c373f2822c7b697f31722e4229064fe51941be35d5d251",
+          "path": "evidence/D95/tdd-log/T95.22.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 84705
+  }
+}
