@@ -518,3 +518,5 @@ Run `t95.23-capabilities-2` (browser-task): unit 2890, integration 305, browser 
 ## T95.24 — Integration suite, Part A (Standard)
 
 Commit `78f40087` (from `865200d2`): I95.1 to I95.6, 23 cases in six files plus `tests/integration/d95/support.ts`; no production code. All first-run passes (behaviour built earlier), each mutation-checked; two mutations reach only part of their case (noted in the tdd log). Main session on the binding note: AC-REV-005 is about Action saves; a page Marks save checks the Workspace and each entry's revision, which is what decides whether that Mark changed, so the overview's binding need not be compared. As built.
+
+ocr (session a641c7b7): 7 files, 3 findings. Valid: **T95.24-B1** the R5 case uses stock Trades only, so it never measures an option's dated-line `observations` read. Doubtful: **T95.24-B2** the measured `getTrade` results aren't asserted Ready. Doubtful, no task: a fixed extra preparation snapshot isn't caught by the 1-versus-3 comparison, but `d5r/query-count.test.ts` (202-221) already pins the single snapshot (one safeguard per risk). `evidence/D95/ocr/T95.24-78f40087.json`.
