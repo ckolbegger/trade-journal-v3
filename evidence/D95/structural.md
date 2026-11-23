@@ -534,3 +534,7 @@ Run `t95.24-integration` (browser-task): unit 2890, integration 329, browser 13,
 Commit `cfa99464` (from `79c42910`): B95.1 (new day-card.spec.ts), B95.2, B95.4 added through `atBothWidths` (1280 and 375); B95.3 and B95.5 already covered. Six cases, all first-run passes (behaviour built earlier), each mutation-checked; B95.2's mutation reaches only the fix-in-place words. e2e/d95: 14 passed in 40 s. "Edit with a reason for an earlier session" left to its integration case. A325: browser-4 ran 3:18 and 3:22 in the last two full runs (t95.16, t95.17-2; the 13.7 min tech-debt figure predates the shared setups), well under 8 minutes, so no browser-5 stage. The full run at T95.25 confirms.
 
 ocr (session 870d4727): 5 files, 2 findings. Valid: **T95.25-B1** marks-step's fix-in-place never checks the corrected ABC Mark (27.00) was saved. Valid in part: **T95.25-B2** typing, Save Marks and Edit are driven only at 1280; 375 re-checks only the folded state. Scope: drive the Marks step's type, save and fix-in-place at 375 in marks-step.spec.ts; resizing with typed state stays B95.17's (Part B). `evidence/D95/ocr/T95.25-cfa99464.json`.
+
+### T95.25-B1, T95.25-B2
+
+Commit `6d25dc13` (both): B1 reloads the Review after the fix and asserts ABC reads 27.00 (red with the second save discarding drafts, at both widths); B2 runs the whole flow at 1280 and 375 from the shared `openCardFixture` setup, every assertion kept (+1.4 s). No 375-only behaviour to mutate.
