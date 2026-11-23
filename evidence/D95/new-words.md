@@ -28,3 +28,7 @@
 - "Past a line" shows "(N sessions)" only when N is above 1.
 - "You chose" lists Exit, Roll, Adjust, then Hold.
 - "Missed" row: the dates with the existing "Add them" button (replaces the "No Review for … Their Marks are optional." paragraph on a finished day only).
+
+## T95.21-B1 (provisional)
+
+- With several saved Exits, "Tomorrow" reads "Sell AXIO, BREN, then record the sales." Each Trade name links to its own card. One Exit keeps "Sell BREN, then record the sale."

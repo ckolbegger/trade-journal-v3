@@ -329,3 +329,7 @@ Commit `d542bfe9` (from `2a0751e6`). DayCard.tsx, DayCard.test.tsx, app.css (`.d
 ocr (gpt-6.1-sol, session 170d4202): 3 files, 2 findings, both Valid. `evidence/D95/ocr/T95.21-d542bfe9.json`.
 - **T95.21-B1** (`DayCard.tsx:214`): with several saved Exits, "Tomorrow" lists every Trade but the one "record the sale" link opens only the first Trade's card.
 - **T95.21-B2** (`DayCard.tsx:227`): the expiration reminder names one Instrument per option contract, so two contracts of one Trade expiring that day read "AXIO, AXIO expire …".
+
+### T95.21-B1
+
+Commit `953cd3c0`. Each Trade to be sold links to its own card; red: no link named "CORV"; green. DayCard.test.tsx 14 passed. New words in new-words.md.
