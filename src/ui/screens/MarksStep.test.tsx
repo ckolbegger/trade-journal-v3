@@ -665,6 +665,55 @@ describe('drafts', () => {
     expect(within(panel).getByRole<HTMLButtonElement>('button', { name: 'Save Marks (0)' }).disabled).toBe(true);
     expect(facade.DailyReview.save).not.toHaveBeenCalled();
   });
+
+  it('should tag a typed Review Date price Unsaved until it is saved', async () => {
+    renderReview(cardFacade());
+    const user = userEvent.setup();
+    const step = await marksPanel();
+    const rows = Object.fromEntries(['XYZ', 'DEF'].map((symbol) => [symbol, inputOf(step, symbol, MONDAY_LABEL).closest('tr')!]));
+    const row = (symbol: string) => rows[symbol]!;
+    expect(within(step).queryByText('Unsaved')).toBeNull();
+
+    await user.type(inputOf(step, 'XYZ', MONDAY_LABEL), '52.00');
+    // The tag sits in the row of the typed price, and the cell keeps its name.
+    expect(within(row('XYZ')).getByText('Unsaved')).toBeTruthy();
+    expect(within(row('DEF')).queryByText('Unsaved')).toBeNull();
+    expect(inputOf(step, 'XYZ', MONDAY_LABEL).getAttribute('aria-describedby')).toBe(within(row('XYZ')).getByText('Unsaved').id);
+
+    // A "Can't get a price" with its reason is unsaved too.
+    await user.click(within(step).getByRole('button', { name: /^Can't get a price/ }));
+    await user.type(within(step).getByRole('textbox', { name: /^Why no price/ }), 'halted');
+    await user.click(within(step).getByRole('button', { name: 'No price' }));
+    expect(within(row('DEF')).getByText('Unsaved')).toBeTruthy();
+  });
+
+  it('should drop the Unsaved tag on Discard and when the price is typed back to the saved one', async () => {
+    const facade = cardFacade();
+    const xyzSaved = { ...missingRow('XYZ', ['t-a', 't-f']), resolution: available('52'), resolutionRevision: 1, task: null };
+    vi.mocked(facade.DailyReview.open).mockResolvedValue(gridReview({ today: [xyzSaved, missingRow('DEF', ['t-c'])] }));
+    vi.mocked(facade.DailyReview.save).mockResolvedValueOnce(marksSavedResult([savedKey('DEF', MONDAY, '33.10')]));
+    renderReview(facade);
+    const user = userEvent.setup();
+    let step = await marksPanel();
+    await user.type(inputOf(step, 'DEF', MONDAY_LABEL), '33.10');
+    expect(within(step).getByText('Unsaved')).toBeTruthy();
+    await user.click(within(step).getByRole('button', { name: 'Discard' }));
+    expect(within(step).queryByText('Unsaved')).toBeNull();
+
+    await user.type(inputOf(step, 'DEF', MONDAY_LABEL), '33.10');
+    await user.click(within(step).getByRole('button', { name: 'Save Marks (1)' }));
+    await user.click(await screen.findByRole('button', { name: 'Edit' }));
+    step = await marksPanel();
+    // A saved Mark edited in place is unsaved while it differs from the saved price.
+    const xyz = inputOf(step, 'XYZ', MONDAY_LABEL);
+    expect(within(step).queryByText('Unsaved')).toBeNull();
+    await user.clear(xyz);
+    await user.type(xyz, '52.50');
+    expect(within(step).getByText('Unsaved')).toBeTruthy();
+    await user.clear(xyz);
+    await user.type(xyz, '52.00');
+    expect(within(step).queryByText('Unsaved')).toBeNull();
+  });
 });
 
 describe('Save Marks (P37, A155)', () => {

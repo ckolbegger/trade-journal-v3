@@ -339,6 +339,10 @@ export async function markEditorOf(page: Page, card: CardRef, date: string): Pro
 export async function markInputOf(page: Page, card: CardRef, date: string): Promise<Locator> {
   return markCell(page, card, date);
 }
+// Expects the cell's price to be typed and not yet saved: its row carries "Unsaved" (T95.12-D1).
+export async function expectMarkUnsaved(page: Page, card: CardRef, date: string): Promise<void> {
+  await expect((await markInputOf(page, card, date)).locator('xpath=ancestor::tr[1]').getByText('Unsaved')).toBeVisible();
+}
 // Expects the Instrument's cell on the date to show the text.
 export async function expectMark(page: Page, card: CardRef, date: string, text: string): Promise<void> {
   // A Missing cell is a price input with nothing in it; the others show their state in the cell's editor.

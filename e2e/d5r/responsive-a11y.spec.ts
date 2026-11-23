@@ -1,5 +1,5 @@
 import {
-  panelOf, markEditorOf, markInputOf, actionFormOf, cardHeader, cardItem, completion, createCardFixture, createRoutineTrades, createTrades, expect, expectAccessible, FRIDAY, MONDAY, MONDAY_1700, onboardedAt, openReview, panelHeader, LAUNCH, remainsOf, meterOf, status, tabTo,
+  panelOf, markEditorOf, markInputOf, expectMarkUnsaved, actionFormOf, cardHeader, cardItem, completion, createCardFixture, createRoutineTrades, createTrades, expect, expectAccessible, FRIDAY, MONDAY, MONDAY_1700, onboardedAt, openReview, panelHeader, LAUNCH, remainsOf, meterOf, status, tabTo,
   test, tradeCard, saveMarksButton, expectMarksSaved, marksStepOf, type TradeRef,
 } from './support.ts';
 
@@ -33,8 +33,9 @@ test.describe('B5R.11 Responsive and accessible', () => {
     await expect(remainsOf(page, tA)).toHaveText('1 Mark · 1 reflection due · Action');
     await expect(status(page)).toContainText('Incomplete');
     await expect(friday.getByText('Unsaved')).toBeVisible();
-    // Monday's draft is held in the grid's cell, and counted by Save Marks beside Friday's.
+    // Monday's draft is held in the grid's cell, tagged Unsaved, and counted by Save Marks beside Friday's.
     await expect(await markInputOf(page, tA, MONDAY)).toHaveValue('52.00');
+    await expectMarkUnsaved(page, tA, MONDAY);
     await expect(saveMarksButton(page)).toHaveText('Save Marks (2)');
     const action = await actionFormOf(page, tA);
     await action.getByRole('radio', { name: 'Exit', exact: true }).check();

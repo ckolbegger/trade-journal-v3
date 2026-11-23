@@ -172,13 +172,14 @@ export function MarksGrid({ model, reviewDate, writable, showEarlier, draftOf, n
     const cell = cells.get(`${instrumentKey}|${date}`)!;
     if (cell.kind === 'input') inputs.push(cell.label);
   }
-  const view = (cell: ReturnType<typeof cellFor>, instrumentKey: string, date: string) => {
+  const view = (cell: ReturnType<typeof cellFor>, instrumentKey: string, date: string, unsavedId?: string) => {
     if (cell.kind === 'empty') return <span role="img" aria-label="No Mark">—</span>;
     if (cell.kind === 'notHeld') return <span role="img" aria-label="Not held">—</span>;
     if (cell.kind === 'input') {
       const invalid = cell.field.issues.some((issue) => issue.field === cell.field.id);
+      const describedBy = [invalid ? `${cell.field.id}-error` : undefined, unsavedId].filter(Boolean).join(' ') || undefined;
       return (
-        <input type="text" inputMode="decimal" className="session-grid-control" id={cell.field.id} aria-label={cell.label} aria-invalid={invalid || undefined} aria-describedby={invalid ? `${cell.field.id}-error` : undefined} value={cell.value} onFocus={() => onChoose(cell.key)} onChange={(event) => onPrice(cell.key, event.target.value)} onBlur={() => cell.key.tradingDate === reviewDate && onLeave?.(cell.key)}
+        <input type="text" inputMode="decimal" className="session-grid-control" id={cell.field.id} aria-label={cell.label} aria-invalid={invalid || undefined} aria-describedby={describedBy} value={cell.value} onFocus={() => onChoose(cell.key)} onChange={(event) => onPrice(cell.key, event.target.value)} onBlur={() => cell.key.tradingDate === reviewDate && onLeave?.(cell.key)}
           onKeyDown={(event) => {
             if (event.key !== 'Enter') return;
             event.preventDefault();
@@ -234,6 +235,10 @@ export function MarksGrid({ model, reviewDate, writable, showEarlier, draftOf, n
               const noPriceIssues = draft?.kind === 'CantGetPrice' && today.kind !== 'input' ? fieldOf(todayKey).issues : [];
               const asked = writable && asking?.id === todayId;
               const { fieldError } = fieldIssues(issues);
+              // A typed price that is not the saved one, or a "Can't get a price" not yet saved, is unsaved until Save Marks or Discard.
+              const typedUnsaved = draft?.kind === 'Price' && draft.price.trim() !== '' && !(savedPrice !== undefined && today.kind === 'input' && today.saved && (draft.price === savedPrice || draft.price === decimalUnderlyingPrice(savedPrice)));
+              const unsaved = writable && (typedUnsaved || draft?.kind === 'CantGetPrice');
+              const unsavedId = `${holdId}-unsaved-${instrumentKey}`;
               return (
                 <Fragment key={instrumentKey}>
                 <tr>
@@ -243,7 +248,10 @@ export function MarksGrid({ model, reviewDate, writable, showEarlier, draftOf, n
                       {view(cells.get(`${instrumentKey}|${date}`)!, instrumentKey, date)}
                     </td>
                   ))}
-                  <td className="marks-step-today">{view(today, instrumentKey, reviewDate)}</td>
+                  <td className="marks-step-today">
+                    {view(today, instrumentKey, reviewDate, unsaved ? unsavedId : undefined)}
+                    {unsaved && <small id={unsavedId}>Unsaved</small>}
+                  </td>
                   <td className="marks-step-change">
                     {change && (
                       <span>
