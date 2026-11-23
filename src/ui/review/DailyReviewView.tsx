@@ -742,13 +742,43 @@ export function DailyReviewView({
           <div className={drStyles.dayTop}>
             <div>
               <p className={drStyles.dayDate}>{model.reviewDateShort}</p>
-              <p className={drStyles.dayCount}>No Open Trades to review yet</p>
+              <p className={drStyles.dayCount}>
+                {model.openedAfterCutoffTrades.length > 0
+                  ? `${model.openedAfterCutoffTrades.length} Open ${model.openedAfterCutoffTrades.length === 1 ? 'Trade' : 'Trades'} entered after ${model.reviewDateShort} close`
+                  : 'No Open Trades to review yet'}
+              </p>
             </div>
             {renderProgressPills()}
           </div>
-          <p className={styles.muted} style={{ margin: 0 }}>
-            Record an opening entry on a Planned Trade first, then return here after the close.
-          </p>
+          {model.openedAfterCutoffTrades.length > 0 ? (
+            <div>
+              <p className={styles.muted} style={{ margin: '0 0 8px' }}>
+                Trades opened after the latest completed U.S. session ({model.reviewDateShort})
+                become eligible for Daily Review after their session&apos;s 4:00 PM ET close:
+              </p>
+              <ul className={drStyles.tlist}>
+                {model.openedAfterCutoffTrades.map((t) => (
+                  <li key={t.tradeId}>
+                    <button
+                      type="button"
+                      className={drStyles.tlistBtn}
+                      onClick={() => onInspectTrade(t.tradeId)}
+                    >
+                      {t.symbol}
+                    </button>
+                    <span className={`${drStyles.chip} ${drStyles.chipQuiet}`}>
+                      Opened {t.entrySessionDateShort}
+                    </span>
+                    <span className={styles.muted}>Eligible after close</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : (
+            <p className={styles.muted} style={{ margin: 0 }}>
+              Record an opening entry on a Planned Trade first, then return here after the close.
+            </p>
+          )}
         </section>
       ) : isComplete ? (
         <section className={styles.card} aria-label="The day, complete">

@@ -141,6 +141,13 @@ export interface DailyReviewDaySummary {
   readonly nextSessionDateShort: string;
 }
 
+export interface DailyReviewAfterCutoffTrade {
+  readonly tradeId: string;
+  readonly symbol: string;
+  readonly entrySessionDate: string;
+  readonly entrySessionDateShort: string;
+}
+
 export interface DailyReviewViewModel {
   readonly reviewDate: string;
   readonly reviewDateShort: string;
@@ -150,6 +157,7 @@ export interface DailyReviewViewModel {
   readonly skippedSessions: readonly { readonly date: string; readonly short: string }[];
   readonly dueDebt: readonly DailyReviewDebtItem[];
   readonly trades: readonly DailyReviewTradeItem[];
+  readonly openedAfterCutoffTrades: readonly DailyReviewAfterCutoffTrade[];
   readonly daySummary: DailyReviewDaySummary;
 }
 
@@ -295,6 +303,7 @@ export function createDailyReview(options: {
       [
         'trades',
         'trade_facts',
+        'position_changes',
         'executions',
         'catalog_institutions',
         'catalog_accounts',
@@ -309,6 +318,7 @@ export function createDailyReview(options: {
         const [
           trades,
           tradeFacts,
+          positionChanges,
           executions,
           institutions,
           accounts,
@@ -321,6 +331,7 @@ export function createDailyReview(options: {
         ] = await Promise.all([
           tx.getAll('trades'),
           tx.getAll('trade_facts'),
+          tx.getAll('position_changes'),
           tx.getAll('executions'),
           tx.getAll('catalog_institutions'),
           tx.getAll('catalog_accounts'),
@@ -331,6 +342,8 @@ export function createDailyReview(options: {
           tx.getAll('journal_entries'),
           tx.getAll('journal_debt'),
         ]);
+
+        const pcEconomicTimeById = new Map(positionChanges.map((pc) => [pc.id, pc.economicTime]));
 
         const instMap = new Map(institutions.map((i) => [i.id, i.currentLabel]));
         const acctMap = new Map(accounts.map((a) => [a.id, a.currentLabel]));
@@ -380,6 +393,7 @@ export function createDailyReview(options: {
           derived: DerivedLongStockState;
           entrySessionDate: string;
         }[] = [];
+        const openedAfterCutoffTrades: DailyReviewAfterCutoffTrade[] = [];
 
         for (const t of trades) {
           const sorted = [...(execsByTrade.get(t.id) ?? [])].sort((a, b) => {
@@ -389,7 +403,18 @@ export function createDailyReview(options: {
           const execsAsOf = sorted.filter(
             (ex) => getExchangeDateForInstant(new Date(ex.economicTime)) <= reviewDate,
           );
-          if (execsAsOf.length === 0) continue;
+          if (execsAsOf.length === 0) {
+            if (sorted.length > 0 && t.lifecycleState === 'Open') {
+              const firstDate = getExchangeDateForInstant(new Date(sorted[0]!.economicTime));
+              openedAfterCutoffTrades.push({
+                tradeId: t.id,
+                symbol: t.symbol,
+                entrySessionDate: firstDate,
+                entrySessionDateShort: formatSessionDateShort(firstDate),
+              });
+            }
+            continue;
+          }
 
           const derived = deriveLongStockPosition({
             storedLifecycleState: t.lifecycleState,
@@ -640,22 +665,23 @@ export function createDailyReview(options: {
           return a.symbol.localeCompare(b.symbol);
         });
 
-        // Due Journal Debt: Outstanding debt created on or before reviewDate
+        // Due Journal Debt: Outstanding debt whose economic origin (or creation) is on or before reviewDate
         const tradeById = new Map(trades.map((t) => [t.id, t]));
         const dueDebt: DailyReviewDebtItem[] = allDebt
-          .filter(
-            (d) =>
-              d.status === 'Outstanding' &&
-              getExchangeDateForInstant(new Date(d.createdAt)) <= reviewDate,
-          )
+          .filter((d) => {
+            if (d.status !== 'Outstanding') return false;
+            const originIso = pcEconomicTimeById.get(d.origin.factId) ?? d.createdAt;
+            return getExchangeDateForInstant(new Date(originIso)) <= reviewDate;
+          })
           .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
           .map((debt) => {
             const tr = tradeById.get(debt.tradeId);
+            const originIso = pcEconomicTimeById.get(debt.origin.factId) ?? debt.createdAt;
             return {
               debt,
               symbol: tr?.symbol ?? 'Trade',
               strategyLabel: tr ? (stratMap.get(tr.strategyId) ?? 'Long Stock') : 'Trade',
-              summary: `Deferred Position Change Reflection (${formatSessionDateShort(getExchangeDateForInstant(new Date(debt.createdAt)))})`,
+              summary: `Deferred Position Change Reflection (${formatSessionDateShort(getExchangeDateForInstant(new Date(originIso)))})`,
             };
           });
 
@@ -735,6 +761,7 @@ export function createDailyReview(options: {
           skippedSessions,
           dueDebt,
           trades: tradeItems,
+          openedAfterCutoffTrades,
           daySummary: {
             dayPnlChangeDisplay: hasAnyDayChg ? toMoneyString(dayChgTotal, true) : null,
             dayPnlChangePositive: hasAnyDayChg ? dayChgTotal.num >= 0n : null,
@@ -770,6 +797,7 @@ export function createDailyReview(options: {
       const txResult = await persistence.runWriteTransaction(
         [
           'trades',
+          'position_changes',
           'executions',
           'market_meta',
           'market_marks',
@@ -990,7 +1018,10 @@ export function createDailyReview(options: {
               reason: 'Due reflections changed since Review opened; reload before saving.',
             };
           }
-          const debt = await tx.get('journal_debt', command.debtId);
+          const [debt, pc] = await Promise.all([
+            tx.get('journal_debt', command.debtId),
+            tx.getAll('position_changes'),
+          ]);
           if (!debt) {
             return { status: 'Rejected', message: 'Journal Debt record not found.' };
           }
@@ -1000,7 +1031,9 @@ export function createDailyReview(options: {
               reason: 'This deferred reflection has already been resolved.',
             };
           }
-          if (getExchangeDateForInstant(new Date(debt.createdAt)) > command.reviewDate) {
+          const originPc = pc.find((p) => p.id === debt.origin.factId);
+          const originIso = originPc?.economicTime ?? debt.createdAt;
+          if (getExchangeDateForInstant(new Date(originIso)) > command.reviewDate) {
             return {
               status: 'Rejected',
               message: 'This deferred reflection is not due on the selected Review date.',

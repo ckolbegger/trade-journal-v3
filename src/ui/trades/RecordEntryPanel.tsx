@@ -7,6 +7,7 @@ import {
   type Journal,
   type PrimaryEmotion,
 } from '../../journal/journal';
+import { getExchangeDateForInstant } from '../../market-data/session-calendar';
 import type { EntryDefinitionRecord, PlannedLegIntent } from '../../persistence/idb';
 import type { Clock } from '../../shared/clock';
 import type {
@@ -55,6 +56,8 @@ export function RecordEntryPanel({
   onDirtyChange,
 }: RecordEntryPanelProps) {
   const [pcDef, setPcDef] = useState<EntryDefinitionRecord | null>(null);
+  const initialDate = getExchangeDateForInstant(clock.now());
+  const [executionDate, setExecutionDate] = useState<string>(initialDate);
   const [fills, setFills] = useState<readonly FillRowDraft[]>([
     {
       quantity: defaultQuantity,
@@ -152,11 +155,16 @@ export function RecordEntryPanel({
     }
 
     setSubmitting(true);
+    const economicTime =
+      executionDate === initialDate
+        ? clock.nowIso()
+        : `${executionDate}T15:00:00.000Z`;
+
     try {
       const res = await workflows.recordPositionChange({
         tradeId,
         expectedFactRevision,
-        economicTime: clock.nowIso(),
+        economicTime,
         executions: fills,
         reflection,
       });
@@ -204,6 +212,19 @@ export function RecordEntryPanel({
       )}
 
       <form onSubmit={handleSubmit}>
+        <div className={styles.field} style={{ maxWidth: 220, marginBottom: 12 }}>
+          <label className={styles.label} htmlFor="entry-exec-date">
+            Execution Date
+          </label>
+          <input
+            id="entry-exec-date"
+            className={styles.input}
+            type="date"
+            value={executionDate}
+            disabled={!writable}
+            onChange={(e) => setExecutionDate(e.target.value)}
+          />
+        </div>
         {fills.map((row, idx) => (
           <div key={idx} className={cockpitStyles.formGrid} style={{ marginBottom: 10 }}>
             <div className={styles.field}>

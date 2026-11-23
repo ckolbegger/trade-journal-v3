@@ -182,9 +182,10 @@ describe('D5 DailyReview coordinator seam', () => {
       },
     });
 
-    // 1. Cutoff 2026-11-19 includes ONLY AXIO
+    // 1. Cutoff 2026-11-19 includes ONLY AXIO, and surfaces NVDA (opened 2026-11-20) in openedAfterCutoffTrades
     const rev19 = await h.dailyReview.open('2026-11-19');
     expect(rev19.trades.map((t) => t.symbol)).toEqual(['AXIO']);
+    expect(rev19.openedAfterCutoffTrades.map((t) => t.symbol)).toEqual(['NVDA']);
 
     // 2. Cutoff 2026-11-20 includes AXIO and NVDA; Marks-before-Action blocks Hold before Marks exist
     h.clock.setIso('2026-11-20T22:00:00.000Z');
