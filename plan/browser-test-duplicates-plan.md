@@ -194,13 +194,14 @@ Medium confidence, confirm first. File: `e2e/d2/ui-alignment.spec.ts`.
 | TD.10 | Light | Not started | |
 | TD.11 | Standard | Not started | |
 
-## 5. Open questions for the user
+## 5. Answers (the user, 2026-11-23)
 
-1. **Is it worth it?** The measured durations of the dropped cases add up to about 97 seconds, not the report's 55 to 60 minutes. Playwright's per-test times may leave out some setup, so the truth may sit between, but it is likely small. Options: (a) do all of TD.1, TD.2, TD.3, TD.4, TD.5, TD.6, TD.7, TD.8, TD.9, TD.10 for a tidier suite; (b) do only the high-confidence, low-effort ones (TD.1, TD.2, TD.3, TD.5) and drop the rest; (c) first time one stage with and without the dropped cases.
-2. **Evidence folder.** This plan assumes `evidence/Test-Dedup/` (`structural.md`, `tdd-log.md`, `suite-runs/`). `status.sh` does not know it; is that fine, or should it go under `evidence/D95/`?
-3. **Standard tasks' after-task run.** Decision 122 gives a Standard task an ocr review and then a `browser-task` run. There is no TD browser folder, so that tier would run only `@every-task`. Keep that, or make all tasks Light and add an ocr review to TD.3, TD.4, TD.6, TD.8 only?
-4. **d9:168's generic check.** Drop it with :168 (this plan), or add its "nothing covers the focused control" check to d9ar:170's Tab loop?
-5. **When to run.** D9.5 is in progress and its tasks edit some of the same spec folders. Run this after D9.5's gate, or between D9.5 tasks? Either way, the baseline must be a full run at TD.1's base, not an older D95 run.
+1. **Worth it:** yes. "Getting rid of duplicate code is always worth it." All of TD.1, TD.2, TD.3, TD.4, TD.5, TD.6, TD.7, TD.8, TD.9, TD.10 are in.
+2. **Evidence folder:** a new `evidence/Test-Dedup/` (`structural.md`, `tdd-log.md`, `suite-runs/`).
+3. **Runs:** only test code is deleted, so each task runs just the spec files it modifies (through `with-browser-lock.sh`, port 5175). No per-task suite run, whatever the task's level. One complete cumulative suite run, TD.11, after every duplicate is removed.
+4. **d9:168's generic check:** keep it. TD.3 moves :168's Tab loop with its "nothing covers the focused control" check (`document.elementFromPoint` at each focused Replay control's centre, at 375 and 320 wide) into the d9ar Replay test that checks the overlay covers the bottom navigation (`expectOverlayCoversNavigation`), shows it can fail (cover a control on purpose, then restore), then deletes :168.
+5. **When:** after D9.5 is finished (its final gate, T95.67). The baseline for TD.11's comparison is a full run at TD.1's base.
+6. **Timings:** every full run from T95.14's onward writes per-stage timings to `evidence/D95/suite-runs/<label>-timings.md` (unit, integration, each browser stage, each check, total). TD.11 writes the same table to `evidence/Test-Dedup/` and compares it with the last D9.5 full run's timings and the TD.1-base run.
 
 ## 6. Not in this plan
 
