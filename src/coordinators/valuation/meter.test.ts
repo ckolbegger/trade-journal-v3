@@ -55,6 +55,16 @@ describe('meter reading (A260)', () => {
     expect(frac(reading.previous!.pnl)).toBe(dollars(1138n));
   });
 
+  it("should give the session before's zone with its previous reading", () => {
+    // 11-13's result, +$1,138.00, is past the Target's +$956.00.
+    expect(meterReadingOf(evaluateAt(R_BREN_U, '2026-11-16'), before(R_BREN_U, '2026-11-13')).previous?.zone).toBe('PastTarget');
+    // The zone is the session before's own standing, not today's.
+    const earlier = before(R_BREN_U, '2026-11-12');
+    const standing = earlier.evaluation.standing;
+    if (standing?.kind !== 'Value') throw new Error('expected a Value standing');
+    expect(meterReadingOf(evaluateAt(R_BREN_U, '2026-11-16'), earlier).previous?.zone).toBe(standing.value.zone);
+  });
+
   it('should give no earlier result when the session before has no figure', () => {
     // R-CORV-D has no put Mark on Tue 11-10.
     const reading = meterReadingOf(evaluateAt(R_CORV_D, '2026-11-11'), before(R_CORV_D, '2026-11-10'));

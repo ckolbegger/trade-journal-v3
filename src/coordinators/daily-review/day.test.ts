@@ -101,13 +101,31 @@ describe('open: what each Trade still needs (A300)', () => {
   }, 60_000);
 });
 
+describe('open: the Marks each Trade has to go (decision 129)', () => {
+  it("should give each Trade's count of Marks to go", async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const unmarked = await heldStock(stack, 'ABC', '30.00', '28.00', '36.00');
+    const marked = await heldStock(stack, 'DEF', '40.00', '38.00', '46.00');
+    // A contract needs its own Mark and its Underlying's.
+    const contract = await optionTrade(stack, 'UVW', '2026-10-16');
+    await stack.saveMark('DEF', '41.00');
+
+    const opened = await open(stack);
+
+    const marks = Object.fromEntries(opened.day.lines.map((line) => [line.tradeId, line.marks]));
+    expect(marks).toEqual({ [unmarked]: 1, [marked]: 0, [contract]: 2 });
+    // The lines add up to the day's count.
+    expect(opened.day.lines.reduce((sum, line) => sum + line.marks, 0)).toBeGreaterThanOrEqual(opened.day.toGo.marks);
+  }, 60_000);
+});
+
 describe('open: reflections due (A300)', () => {
   it('should count a Close Review or a reflection that is due', async () => {
     // T-M is closed outside the walk with its Close Review due; the day names it, and counts no reflection.
     const closed = await closedTradeReviewFixture();
     const closeDay = ready(await closed.stack.dailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: TUESDAY_1700 })).day;
     expect(closeDay.toGo).toMatchObject({ closeReviews: 1, reflections: 0 });
-    expect(closeDay.lines.find((line) => line.tradeId === closed.trades.M)).toEqual({ tradeId: closed.trades.M, needs: ['Reflection'] });
+    expect(closeDay.lines.find((line) => line.tradeId === closed.trades.M)).toMatchObject({ tradeId: closed.trades.M, needs: ['Reflection'] });
 
     // T-A owes two due reflections and T-F, T-E and T-G one each; the later ones are not counted.
     const debts = await debtFixture();
@@ -303,6 +321,40 @@ describe('open: what comes due (A300, P175)', () => {
     expect(byTrade(ahead[0]!.contracts)).toEqual(byTrade([{ tradeId: contracts[0]!, instrument: callOn('UVW', '2026-10-16') }, { tradeId: contracts[1]!, instrument: callOn('XYZ', '2026-10-16') }]));
     expect(ahead[1]!.contracts).toEqual([{ tradeId: contracts[2], instrument: callOn('RST', '2026-10-23') }]);
   }, 120_000);
+});
+
+describe('open: a reflection that is a Close Review (decision 129)', () => {
+  it('should say whether an owed reflection is a Close Review', async () => {
+    // T-M is closed outside the walk with its Close Review due.
+    const closed = await closedTradeReviewFixture();
+    const closeDay = ready(await closed.stack.dailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: TUESDAY_1700 })).day;
+    expect(closeDay.lines.find((line) => line.tradeId === closed.trades.M)).toMatchObject({ needs: ['Reflection'], closeReview: true });
+
+    // T-A owes ordinary reflections: due, but no Close Review.
+    const debts = await debtFixture();
+    const debtDay = ready(await debts.stack.dailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: TUESDAY_1700 })).day;
+    expect(debtDay.lines.find((line) => line.tradeId === debts.trades.a)).toMatchObject({ needs: expect.arrayContaining(['Reflection']) as unknown, closeReview: false });
+    // A Trade with no reflection due is not one either.
+    expect(debtDay.lines.find((line) => line.tradeId === debts.trades.h)?.closeReview).toBe(false);
+  }, 120_000);
+});
+
+describe('open: a contract that expires on the Review Date (decision 129)', () => {
+  it('should say when a contract expires on the Review Date', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const today = await optionTrade(stack, 'UVW', REVIEW_DATE);
+    const later = await optionTrade(stack, 'XYZ', '2026-10-16', false);
+    const past = await optionTrade(stack, 'RST', '2026-10-09', false);
+    const stock = await heldStock(stack, 'ABC', '30.00', '28.00', '36.00');
+
+    const opened = await open(stack);
+
+    const walk = opened.families.find((family) => family.family === 'Trades');
+    if (walk?.family !== 'Trades') throw new Error('no Trades family');
+    const expires = Object.fromEntries(walk.trades.map((trade) => [trade.tradeId, trade.expiresOnReviewDate]));
+    // Only the contract whose expiration date is the Review Date: not one still live, one already past, or a stock.
+    expect(expires).toEqual({ [today]: true, [later]: undefined, [past]: undefined, [stock]: undefined });
+  }, 60_000);
 });
 
 describe('open: the next Review Date (A300)', () => {

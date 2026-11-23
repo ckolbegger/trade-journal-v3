@@ -65,6 +65,8 @@ export interface SliderFigures {
 // A Trade of the walk, with its card's progress; an owed reflection never moves its band.
 export interface WalkedTrade extends ReviewTradeItem {
   readonly progress: CardProgress;
+  // True when an option contract the Trade holds expires on the Review Date (its Settlement Due begins that day, P25); absent otherwise.
+  readonly expiresOnReviewDate?: true;
   // The figures the card's slider describes (P39, A150): the same evaluation results `getTrade` returns, unformatted.
   // Absent when the Trade's facts cannot be replayed.
   readonly figures?: SliderFigures;
@@ -225,10 +227,12 @@ export interface DaySummary {
   // The sessions with no saved Action of any Trade, from the one after the latest earlier Action (or, with none, the first exposure's date)
   // up to the one before the Review Date. A session the calendar does not cover is left out.
   readonly missed: readonly string[];
-  // Present on `open` only, and only once nothing is to go (the Review is not Incomplete).
+  // Present only once nothing is to go (the Review is not Incomplete): on `open`, and on the save that leaves nothing to go (decision 129).
   readonly finished?: FinishedDay;
   // One line per Trade of the walk, in its order, then one for each Trade outside it that owes a due reflection.
-  readonly lines: readonly { readonly tradeId: string; readonly needs: readonly DayNeed[] }[];
+  // `marks` is the Trade's count of Review Date Marks still to go (0 for a Trade outside the walk).
+  // `closeReview` is true when a reflection the Trade owes now is a Close Review.
+  readonly lines: readonly { readonly tradeId: string; readonly marks: number; readonly closeReview: boolean; readonly needs: readonly DayNeed[] }[];
 }
 
 // What one Review read represents; getTrade and save compare against it (A46, AC-REV-005).
@@ -467,6 +471,8 @@ export type PostSaveReview =
       readonly completion: ReviewCompletion;
       readonly nextStep: ReviewNextStep;
       readonly binding: ReviewBinding;
+      // The day summary of the Review under these facts, equal to a fresh `open`'s (decision 129); absent when nothing is walked.
+      readonly day?: DaySummary;
       // The progress of the Trade the save resolved, when it is walked (A165).
       readonly cards: readonly { readonly tradeId: string; readonly progress: CardProgress }[];
     }
@@ -496,6 +502,8 @@ export type PostMarksReview =
       readonly progress: ReviewProgress;
       readonly completion: ReviewCompletion;
       readonly binding: ReviewBinding;
+      // The day summary of the Review under these Marks, equal to a fresh `open`'s (decision 129).
+      readonly day?: DaySummary;
       // Every walked Trade in attention order, with its revised band, reasons and meter reading.
       readonly trades: readonly WalkedTrade[];
       // The card of the first Trade in the new order, evaluated with the Marks.

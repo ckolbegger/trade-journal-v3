@@ -639,6 +639,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
       ({ item, valuation, before }): WalkedTrade => ({
         ...item,
         progress: progressOf(item.tradeId, settlement.some((s) => s.tradeId === item.tradeId)),
+        ...(valuation?.state.contractStatuses.some(({ status }) => status === 'DueToday') && { expiresOnReviewDate: true as const }),
         ...(valuation && { meter: meterReadingOf(valuation.evaluation, before), figures: { riskToStop: valuation.evaluation.ongoingRiskToStop, pnl: valuation.evaluation.currentMarkedPnl, rewardRiskNow: valuation.evaluation.rewardRiskNow } }),
       }),
     );
@@ -685,7 +686,9 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     const settlementTrades = new Set(settlement.map((item) => item.tradeId));
     const dueDebts = outstanding.filter((debt) => classifyDue(debt.dueAnchor, closes) === 'Due');
     const marksToGo = today.filter((row) => row.task === 'Manual').length;
-    // The finished day's lists are read once nothing is to go, and by `open` alone: the replays they need stay out of the save passes.
+    const closeReviewTrades = new Set(dueDebts.filter((debt) => debt.entryTypeKey === 'entry-type.close-review').map((debt) => debt.anchor.tradeId));
+    // The finished day's lists are read once nothing is to go: by `open`, and by the save that leaves nothing to go. The replays they need run only for
+    // a Trade the Review Date's conditions read as crossed, so a save that leaves something to go makes none.
     const finished =
       withFinished && completion.kind !== 'Incomplete'
         ? {
@@ -717,6 +720,8 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
       lines: [
         ...walked.map(({ tradeId, progress }) => ({
           tradeId,
+          marks: progress.panels.reduce((sum, panel) => sum + (panel.panel === 'Marks' ? panel.needed : 0), 0),
+          closeReview: closeReviewTrades.has(tradeId),
           needs: progress.panels.flatMap((panel): DayNeed[] => {
             if (panel.panel === 'Marks') return panel.done ? [] : ['Marks'];
             if (panel.panel === 'Reflections') return panel.done ? [] : ['Reflection'];
@@ -724,7 +729,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
             return panel.done || settlementTrades.has(tradeId) ? [] : ['Action'];
           }),
         })),
-        ...group.trades.filter(({ progress }) => !progress.done).map(({ tradeId }) => ({ tradeId, needs: ['Reflection' as const] })),
+        ...group.trades.filter(({ progress }) => !progress.done).map(({ tradeId }) => ({ tradeId, marks: 0, closeReview: closeReviewTrades.has(tradeId), needs: ['Reflection' as const] })),
       ],
     };
 
@@ -1059,7 +1064,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
   type ReadAfterSave = Omit<Extract<PostSaveReview, { kind: 'Ready' }>, 'nextStep' | 'cards'> & { readonly nextTask: NextTask; readonly trades: readonly WalkedTrade[]; readonly owed: readonly OwedReflectionsTrade[] };
   async function readAfterSave(reviewDate: string, from?: string) {
     return coherently<ReadAfterSave | Extract<PostSaveReview, { kind: 'ChangedDuringAssembly' }>>(async () => {
-      const pass = await assemble({ kind: 'Review', reviewDate }, false, from);
+      const pass = await assemble({ kind: 'Review', reviewDate }, false, from, true);
       if (pass.kind === 'Expired') return { retry: true };
       // Nothing walked and no reflection due: a settled, complete Review with nothing left to ask, never an unstable read.
       if (pass.kind === 'Empty') {
@@ -1075,6 +1080,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
           nextTask: pass.nextTask,
           trades: walk?.family === 'Trades' ? walk.trades : [],
           owed: pass.review.owed,
+          ...(pass.review.day && { day: pass.review.day }),
           binding: { ...binding, ...pass.evidence },
         }),
       };
@@ -1090,7 +1096,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
       // answered its last reflection, so it has left the group and its card is done (A165, A90).
       const listed = [...read.trades, ...read.owed].filter((trade) => trade.tradeId === from).map(({ tradeId, progress }) => ({ tradeId, progress }));
       const cards = listed.length > 0 || from === undefined ? listed : [{ tradeId: from, progress: owedCardProgress({ due: 0, later: 0 }) }];
-      const review = { kind: read.kind, progress: read.progress, completion: read.completion, binding: read.binding, cards };
+      const review = { kind: read.kind, progress: read.progress, completion: read.completion, binding: read.binding, ...(read.day && { day: read.day }), cards };
       if (nextTask.kind !== 'Trade' && nextTask.kind !== 'OwedTrade') return { ...review, nextStep: nextTask };
       const next = await readTrade({ reviewDate, tradeId: nextTask.tradeId, binding: read.binding }, read.binding.workspace.contentRevision);
       if (next.kind === 'Moved') return undefined;
@@ -1113,7 +1119,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
       if (card.kind === 'Moved') return undefined;
       if (card.kind !== 'Ready') return { kind: 'ChangedDuringAssembly' };
       const { nextTask } = read;
-      const review = { kind: read.kind, progress: read.progress, completion: read.completion, binding: read.binding, trades: read.trades, trade: card.trade };
+      const review = { kind: read.kind, progress: read.progress, completion: read.completion, binding: read.binding, ...(read.day && { day: read.day }), trades: read.trades, trade: card.trade };
       if (nextTask.kind === 'Done') return { ...review, nextStep: nextTask };
       if (nextTask.kind === 'OwedTrade') {
         const owed = await readTrade({ reviewDate, tradeId: nextTask.tradeId, binding: read.binding }, revision);

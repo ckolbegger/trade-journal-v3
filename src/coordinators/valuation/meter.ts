@@ -17,6 +17,8 @@ export interface MeterPreviousReading {
   readonly pnl: Rational;
   // The result now against this one; present exactly when now is a Value.
   readonly direction?: 'Up' | 'Down' | 'Level';
+  // Where that session's result stood against the lines; absent when its standing is not a Value or the reading was given without one.
+  readonly zone?: TradeStandingReading['zone'];
 }
 
 export interface MeterReading {
@@ -35,7 +37,7 @@ function shareOf(pnl: Rational, fraction: Rational): NonNullable<MeterNowReading
 
 const directionOf = (now: Rational, then: Rational): 'Up' | 'Down' | 'Level' => ['Down' as const, 'Level' as const, 'Up' as const][now.compare(then) + 1]!;
 
-export function meterReadingOf(evaluation: TradeEvaluation, before?: { readonly tradingDate: string; readonly evaluation: Pick<TradeEvaluation, 'currentMarkedPnl'> }): MeterReading {
+export function meterReadingOf(evaluation: TradeEvaluation, before?: { readonly tradingDate: string; readonly evaluation: Pick<TradeEvaluation, 'currentMarkedPnl'> & Partial<Pick<TradeEvaluation, 'standing'>> }): MeterReading {
   const { outcomes, standing } = evaluation;
   if (!outcomes || !standing) throw new Error('meterReadingOf: the evaluation carries no outcomes or standing');
   const now: MeterReading['now'] =
@@ -44,6 +46,6 @@ export function meterReadingOf(evaluation: TradeEvaluation, before?: { readonly 
       : (standing as Exclude<typeof standing, { kind: 'Value' }>);
   const earlier = before?.evaluation.currentMarkedPnl;
   const previous: MeterPreviousReading | undefined =
-    before && earlier?.kind === 'Value' ? { tradingDate: before.tradingDate, pnl: earlier.value, ...(now.kind === 'Value' && { direction: directionOf(now.value.pnl, earlier.value) }) } : undefined;
+    before && earlier?.kind === 'Value' ? { tradingDate: before.tradingDate, pnl: earlier.value, ...(before.evaluation.standing?.kind === 'Value' && { zone: before.evaluation.standing.value.zone }), ...(now.kind === 'Value' && { direction: directionOf(now.value.pnl, earlier.value) }) } : undefined;
   return { stop: outcomes.atStop, target: outcomes.atTarget, banked: evaluation.realizedToDate, now, ...(previous && { previous }) };
 }
