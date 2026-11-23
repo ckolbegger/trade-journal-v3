@@ -192,7 +192,7 @@ Medium confidence, confirm first. File: `e2e/d2/ui-alignment.spec.ts`.
 | TD.7 | Light | Done | 3a283e13 |
 | TD.8 | Standard | Done | 0a247665 |
 | TD.9 | Light | Done | ec77b36b |
-| TD.10 | Light | Not started | |
+| TD.10 | Light | Done | 6cfec5d0 |
 | TD.11 | Standard | Not started | |
 
 ## 5. Answers (the user, 2026-11-23)
