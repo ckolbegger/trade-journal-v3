@@ -187,7 +187,16 @@ Medium confidence, confirm first. File: `e2e/d2/ui-alignment.spec.ts`.
 | TD.2-F1 | Light | Done | 149c26a5 |
 | TD.3 | Standard | Done | 050d59a9 |
 | TD.4 | Standard | Done | 9f05e3de |
-| TD.5 | Light | Done | PENDING |
+| TD.5 | Light | Done | pre-commit: npm run typecheck
+pre-commit: npm run lint
+
+/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/src/ui/screens/OwedDebtItem.tsx
+  78:6  warning  React Hook useEffect has missing dependencies: 'blocked', 'definition', 'open', 'request', and 'writable'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  86:6  warning  React Hook useEffect has a missing dependency: 'focusOnOpen'. Either include it or remove the dependency array                                                 react-hooks/exhaustive-deps
+
+✖ 2 problems (0 errors, 2 warnings)
+
+739c0782 |
 | TD.6 | Standard | Not started | |
 | TD.7 | Light | Not started | |
 | TD.8 | Standard | Not started | |
