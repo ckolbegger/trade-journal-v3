@@ -245,6 +245,13 @@ describe('the "Now" box (T95.17)', () => {
     expect(within(held.container).queryByText('Realized, open', { selector: 'dt' })).toBeNull();
   });
 
+  it('should show Realized, open after a sale that nets to zero', () => {
+    const reduced = { id: 'p2', kind: 'Execution', effect: 'Reduced', fills: [] };
+    const breakEven = trade({ evaluation: evaluation({ realizedToDate: value(0n), remainingOpenPnl: value(-490n) }), replay: replayOf([], { sessions: [{ date: '2026-11-16', marks: [], markers: [reduced] }] }) as never });
+    const { container } = render(<Box trade={breakEven} />);
+    expect(within(container).getByText('Realized, open', { selector: 'dt' }).nextElementSibling?.textContent).toBe('$0.00 · −$490.00');
+  });
+
   it('should show the Expiration row for an option', () => {
     const atClose = { kind: 'Value', value: { underlyingPrice: rational(5320n, 100n), value: rational(-2016n) } };
     const row = (root: HTMLElement) => within(root).queryByText('Expiration', { selector: 'dt' })?.nextElementSibling?.textContent;

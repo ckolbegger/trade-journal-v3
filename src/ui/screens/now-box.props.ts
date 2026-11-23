@@ -90,10 +90,12 @@ function ratioRow(evaluation: Evaluation, timeZone: string | undefined): readonl
   return [{ label: 'Reward to risk', value: `${calculation(now, ratioToOne, timeZone)}${plan}` }];
 }
 
-// "Realized, open" (W89, decision 120): what a sale banked and what the rest still shows, once something was realized.
-function realizedRow(evaluation: Evaluation, timeZone: string | undefined): readonly NowRow[] {
+// "Realized, open" (W89, decision 120): what a sale banked and what the rest still shows, once a sale happened. The replay's Position Changes say so
+// (a sale that nets to exactly zero banks nothing yet happened); a figure the replay does not show, such as a sale in the session not yet ended, still counts.
+function realizedRow(trade: DailyTradeReview, evaluation: Evaluation, date: string, timeZone: string | undefined): readonly NowRow[] {
   const { realizedToDate: realized, remainingOpenPnl: open } = evaluation;
-  if (realized.kind !== 'Value' || realized.value.compare(ZERO) === 0) return [];
+  const sold = trade.replay?.sessions.some((s) => s.date <= date && s.markers?.some((m) => m.effect === 'Reduced' || m.effect === 'Closed')) ?? false;
+  if (realized.kind !== 'Value' || (!sold && realized.value.compare(ZERO) === 0)) return [];
   return [{ label: 'Realized, open', value: `${signed(money)(realized.value)} · ${calculation(open, signed(money), timeZone)}` }];
 }
 
@@ -182,6 +184,6 @@ export function nowBoxOf(trade: DailyTradeReview, meter: MeterReading | undefine
     ...(bar && { meter: bar }),
     captions: captionsOf(trade, session.evaluation),
     ...(trade.payoff?.current.kind === 'Value' && { more: payoffSummary(trade.payoff.current.value) }),
-    rows: [...extremeRows(session.evaluation, timeZone), ...ratioRow(session.evaluation, timeZone), ...realizedRow(session.evaluation, timeZone), ...expirationRow(trade, session.evaluation, timeZone)],
+    rows: [...extremeRows(session.evaluation, timeZone), ...ratioRow(session.evaluation, timeZone), ...realizedRow(trade, session.evaluation, session.date, timeZone), ...expirationRow(trade, session.evaluation, timeZone)],
   };
 }
