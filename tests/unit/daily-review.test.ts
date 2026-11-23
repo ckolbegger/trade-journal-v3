@@ -658,4 +658,362 @@ describe('D5 DailyReview coordinator seam', () => {
     );
     expect(devs.filter((d) => !d.voided)).toHaveLength(0);
   });
+
+  it('rejects missing Mark, invalid conviction, and detects factRevision/actionEntry/debt snapshot conflicts', async () => {
+    const h = await createD5Harness();
+
+    // AXIO opened with deferred reflection -> creates 1 Outstanding Review Debt
+    const axioId = await h.openLongStock({
+      symbol: 'AXIO',
+      entry: '50.00',
+      stop: '47.00',
+      target: '56.00',
+      economicTime: '2026-11-18T15:00:00.000Z',
+      deferReflection: true,
+    });
+
+    h.clock.setIso('2026-11-19T22:00:00.000Z');
+    const revBeforeMark = await h.dailyReview.open('2026-11-19');
+
+    // 1. SaveTradeAction without today Mark -> Rejected
+    const noMark = await h.dailyReview.save({
+      kind: 'SaveTradeAction',
+      tradeId: axioId,
+      reviewDate: '2026-11-19',
+      action: 'Hold',
+      expectedSnapshot: revBeforeMark.expectedSnapshot,
+    });
+    expect(noMark).toMatchObject({
+      status: 'Rejected',
+      message: expect.stringMatching(/Enter today's Mark/),
+    });
+
+    // Save mark for 2026-11-19
+    await h.marketData.save({
+      kind: 'SaveManualMark',
+      symbol: 'AXIO',
+      sessionDate: '2026-11-19',
+      price: '51.50',
+      intent: 'Initial',
+    });
+    const rev1 = await h.dailyReview.open('2026-11-19');
+    const rev2 = await h.dailyReview.open('2026-11-19');
+    expect(rev1.dueDebt).toHaveLength(1);
+    const debtId = rev1.dueDebt[0]!.debt.id;
+
+    // 2. Invalid conviction bounds (0, 6, 2.5) -> Rejected
+    for (const badConviction of [0, 6, 2.5]) {
+      const badConvRes = await h.dailyReview.save({
+        kind: 'SaveTradeAction',
+        tradeId: axioId,
+        reviewDate: '2026-11-19',
+        action: 'Hold',
+        conviction: badConviction,
+        expectedSnapshot: rev1.expectedSnapshot,
+      });
+      expect(badConvRes).toMatchObject({
+        status: 'Rejected',
+        message: expect.stringMatching(/Conviction must be an integer/),
+      });
+    }
+
+    // 3. ResolveReviewDebt snapshot mismatch -> ReviewChanged, then double-resolve race -> Conflict
+    const missingDebtInSnap = await h.dailyReview.save({
+      kind: 'ResolveReviewDebt',
+      debtId,
+      reviewDate: '2026-11-19',
+      mode: 'Decline',
+      declineReason: 'Stale snapshot check',
+      expectedSnapshot: { ...rev1.expectedSnapshot, outstandingDebtIds: [] },
+    });
+    expect(missingDebtInSnap).toMatchObject({
+      status: 'ReviewChanged',
+      reason: expect.stringMatching(/Due reflections changed/),
+    });
+
+    const resolve1 = await h.dailyReview.save({
+      kind: 'ResolveReviewDebt',
+      debtId,
+      reviewDate: '2026-11-19',
+      mode: 'Complete',
+      decisionMode: 'As Planned',
+      primaryEmotion: 'Calm',
+      confidence: 4,
+      expectedSnapshot: rev1.expectedSnapshot,
+    });
+    expect(resolve1.status).toBe('Saved');
+
+    const staleDebt = await h.dailyReview.save({
+      kind: 'ResolveReviewDebt',
+      debtId,
+      reviewDate: '2026-11-19',
+      mode: 'Decline',
+      declineReason: 'Duplicate attempt',
+      expectedSnapshot: rev2.expectedSnapshot,
+    });
+    expect(staleDebt).toMatchObject({
+      status: 'Conflict',
+      reason: expect.stringMatching(/already been resolved/),
+    });
+
+    // 4. actionEntryIds conflict: first SaveTradeAction succeeds, second with pre-action snapshot returns ReviewChanged
+    const revAfterDebt1 = await h.dailyReview.open('2026-11-19');
+    const revAfterDebt2 = await h.dailyReview.open('2026-11-19');
+    const actionSave1 = await h.dailyReview.save({
+      kind: 'SaveTradeAction',
+      tradeId: axioId,
+      reviewDate: '2026-11-19',
+      action: 'Hold',
+      expectedSnapshot: revAfterDebt1.expectedSnapshot,
+    });
+    expect(actionSave1.status).toBe('Saved');
+
+    const staleActionEntry = await h.dailyReview.save({
+      kind: 'SaveTradeAction',
+      tradeId: axioId,
+      reviewDate: '2026-11-19',
+      action: 'Exit',
+      reason: 'Stale tab overwrite',
+      expectedSnapshot: revAfterDebt2.expectedSnapshot,
+    });
+    expect(staleActionEntry).toMatchObject({
+      status: 'ReviewChanged',
+      reason: expect.stringMatching(/Another Review decision/),
+    });
+
+    // 5. tradeFactRevisions conflict: partial sell advances factRevision; saving with snapshot from before sell -> ReviewChanged
+    const revBeforeSell = await h.dailyReview.open('2026-11-19');
+    const partialSell = await h.workflows.recordPositionChange({
+      tradeId: axioId,
+      expectedFactRevision: revBeforeSell.expectedSnapshot.tradeFactRevisions[axioId]!,
+      economicTime: '2026-11-19T16:00:00.000Z',
+      executions: [
+        {
+          side: 'Sell',
+          quantity: '25',
+          fillPrice: '51.50',
+          fee: '0.00',
+          plannedLegIntent: 'PlannedLeg',
+        },
+      ],
+      reflection: { kind: 'Defer' },
+    });
+    expect(partialSell.status).toBe('Recorded');
+
+    const staleFactSave = await h.dailyReview.save({
+      kind: 'SaveTradeAction',
+      tradeId: axioId,
+      reviewDate: '2026-11-19',
+      action: 'Exit',
+      reason: 'Snapshot predates partial fill',
+      expectedSnapshot: revBeforeSell.expectedSnapshot,
+    });
+    expect(staleFactSave).toMatchObject({
+      status: 'ReviewChanged',
+      reason: expect.stringMatching(/Trade facts changed/),
+    });
+  });
+
+  it('blocks DailyReview.save with RuntimeNotWritable on a real seeded store and writes nothing', async () => {
+    const { IDBFactory: LocalIDBFactory } = await import('fake-indexeddb');
+    const { createPersistenceSeam: createLocalPersistence, CURRENT_SCHEMA_VERSION } = await import(
+      '../../src/persistence/idb'
+    );
+    const { createDailyReview: createLocalDailyReview } = await import('../../src/daily-review/daily-review');
+    const { createMarketData: createLocalMarketData } = await import('../../src/market-data/market-data');
+    const { createReferenceCatalog: createLocalCatalog } = await import(
+      '../../src/catalog/reference-catalog'
+    );
+    const { createJournal: createLocalJournal, PLAN_REFLECTION_TYPE_ID } = await import(
+      '../../src/journal/journal'
+    );
+    const { createTradeWorkflows: createLocalWorkflows } = await import(
+      '../../src/trade-workflows/trade-workflows'
+    );
+    const { createManualClock: createLocalClock } = await import('../../src/shared/clock');
+
+    let writable = true;
+    const clock = createLocalClock('2026-11-18T15:00:00.000Z');
+    const persistence = createLocalPersistence({
+      indexedDB: new LocalIDBFactory(),
+      writeGate: {
+        checkWritable: () =>
+          writable
+            ? { writable: true }
+            : {
+                writable: false,
+                reason: 'RecoveryOnly',
+                failedChecks: ['storage_diagnostic'],
+              },
+      },
+    });
+    await persistence.runWriteTransaction(['workspace_meta'], async (tx) => {
+      tx.put('workspace_meta', {
+        key: 'singleton',
+        schemaVersion: CURRENT_SCHEMA_VERSION,
+        timeZone: 'America/New_York',
+        settingsRevision: 1,
+        workspaceRevision: 1,
+        initializedAt: clock.nowIso(),
+        updatedAt: clock.nowIso(),
+      });
+    });
+
+    const catalog = createLocalCatalog({ persistence, clock });
+    const journal = createLocalJournal({ persistence, clock });
+    const workflows = createLocalWorkflows({ persistence, clock });
+    const marketData = createLocalMarketData({ persistence, clock });
+    const dailyReview = createLocalDailyReview({ persistence, clock });
+
+    await catalog.seedDefaults();
+    await journal.seedDefaults();
+    const inst = await catalog.save({ kind: 'CreateInstitution', label: 'Fidelity' });
+    if (inst.status !== 'Saved' || inst.family !== 'Institution') throw new Error('inst failed');
+    const acct = await catalog.save({
+      kind: 'CreateAccount',
+      institutionId: inst.record.id,
+      label: 'Margin',
+    });
+    if (acct.status !== 'Saved' || acct.family !== 'Account') throw new Error('acct failed');
+    const strats = await catalog.query({ family: 'Strategy', includeInactive: false });
+    if (strats.family !== 'Strategy' || !strats.items[0]) throw new Error('strat missing');
+    const defs = await journal.getDefinitions();
+    const planDef = defs.definitions.find((d) => d.entryTypeId === PLAN_REFLECTION_TYPE_ID)!;
+
+    const conf = await workflows.confirmPlan({
+      accountId: acct.record.id,
+      strategyId: strats.items[0].id,
+      symbol: 'AXIO',
+      quantity: '100',
+      intendedEntryPrice: '50.00',
+      stopPrice: '47.00',
+      targetPrice: '56.00',
+      economicTime: '2026-11-18T15:00:00.000Z',
+      planReflection: {
+        definitionId: planDef.id,
+        definitionRevision: planDef.revision,
+        thesis: 'Breakout',
+        invalidation: 'Below 47',
+      },
+    });
+    if (conf.status !== 'Confirmed') throw new Error('confirm failed');
+
+    const entry = await workflows.recordPositionChange({
+      tradeId: conf.postCommit.trade.id,
+      expectedFactRevision: 1,
+      economicTime: '2026-11-18T15:00:00.000Z',
+      executions: [
+        { side: 'Buy', quantity: '100', fillPrice: '50.00', fee: '0.00', plannedLegIntent: 'PlannedLeg' },
+      ],
+      reflection: { kind: 'Defer' },
+    });
+    expect(entry.status).toBe('Recorded');
+
+    clock.setIso('2026-11-19T22:00:00.000Z');
+    await marketData.save({
+      kind: 'SaveManualMark',
+      symbol: 'AXIO',
+      sessionDate: '2026-11-19',
+      price: '51.50',
+      intent: 'Initial',
+    });
+
+    const revBeforeBlock = await dailyReview.open('2026-11-19');
+    expect(revBeforeBlock.trades[0]?.todayAction).toBeNull();
+
+    writable = false;
+    const blocked = await dailyReview.save({
+      kind: 'SaveTradeAction',
+      tradeId: conf.postCommit.trade.id,
+      reviewDate: '2026-11-19',
+      action: 'Hold',
+      expectedSnapshot: revBeforeBlock.expectedSnapshot,
+    });
+    expect(blocked.status).toBe('RuntimeNotWritable');
+
+    writable = true;
+    const revAfterBlock = await dailyReview.open('2026-11-19');
+    expect(revAfterBlock.trades[0]?.todayAction).toBeNull();
+    expect(revAfterBlock.expectedSnapshot).toEqual(revBeforeBlock.expectedSnapshot);
+  });
+
+  it('shares one symbol Mark row across two Open Trades of the same symbol while keeping independent Standing and Actions', async () => {
+    const h = await createD5Harness();
+
+    // Trade A: AXIO with stop $48.00 (will NOT be breached at $49.00 mark)
+    const axioSafeId = await h.openLongStock({
+      symbol: 'AXIO',
+      entry: '50.00',
+      stop: '48.00',
+      target: '56.00',
+      economicTime: '2026-11-18T15:00:00.000Z',
+      deferReflection: false,
+    });
+
+    // Trade B: AXIO with tighter stop $49.50 (WILL be PastStop at $49.00 mark)
+    const axioBreachId = await h.openLongStock({
+      symbol: 'AXIO',
+      entry: '51.00',
+      stop: '49.50',
+      target: '58.00',
+      economicTime: '2026-11-18T16:00:00.000Z',
+      deferReflection: false,
+    });
+
+    h.clock.setIso('2026-11-19T22:00:00.000Z');
+    await h.marketData.save({
+      kind: 'SaveManualMark',
+      symbol: 'AXIO',
+      sessionDate: '2026-11-19',
+      price: '49.00',
+      intent: 'Initial',
+    });
+
+    const rev = await h.dailyReview.open('2026-11-19');
+    expect(rev.marks).toHaveLength(1);
+    expect(rev.marks[0]?.symbol).toBe('AXIO');
+    expect(rev.marks[0]?.openTradeCount).toBe(2);
+
+    const safeTrade = rev.trades.find((t) => t.tradeId === axioSafeId);
+    const breachTrade = rev.trades.find((t) => t.tradeId === axioBreachId);
+    expect(safeTrade?.standing.kind).toBe('Inside');
+    expect(breachTrade?.standing.kind).toBe('PastStop');
+
+    // Save Hold without reason succeeds for Inside trade, rejects for PastStop trade, then Exit saves cleanly
+    const holdSafe = await h.dailyReview.save({
+      kind: 'SaveTradeAction',
+      tradeId: axioSafeId,
+      reviewDate: '2026-11-19',
+      action: 'Hold',
+      expectedSnapshot: rev.expectedSnapshot,
+    });
+    expect(holdSafe.status).toBe('Saved');
+
+    const rev2 = await h.dailyReview.open('2026-11-19');
+    const holdBreachNoReason = await h.dailyReview.save({
+      kind: 'SaveTradeAction',
+      tradeId: axioBreachId,
+      reviewDate: '2026-11-19',
+      action: 'Hold',
+      expectedSnapshot: rev2.expectedSnapshot,
+    });
+    expect(holdBreachNoReason).toMatchObject({
+      status: 'Rejected',
+      message: expect.stringMatching(/holding past your Plan line/i),
+    });
+
+    const exitBreach = await h.dailyReview.save({
+      kind: 'SaveTradeAction',
+      tradeId: axioBreachId,
+      reviewDate: '2026-11-19',
+      action: 'Exit',
+      expectedSnapshot: rev2.expectedSnapshot,
+    });
+    expect(exitBreach.status).toBe('Saved');
+
+    const rev3 = await h.dailyReview.open('2026-11-19');
+    expect(rev3.completionState).toBe('Complete');
+    expect(rev3.trades.find((t) => t.tradeId === axioSafeId)?.todayAction?.action).toBe('Hold');
+    expect(rev3.trades.find((t) => t.tradeId === axioBreachId)?.todayAction?.action).toBe('Exit');
+  });
 });

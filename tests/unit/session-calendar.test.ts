@@ -39,4 +39,83 @@ describe('U.S. Market Session Calendar seam', () => {
     const sessions = getCompletedSessionsBetween('2026-11-25', '2026-11-30');
     expect(sessions).toEqual(['2026-11-25', '2026-11-27', '2026-11-30']);
   });
+
+  it('computes exact EST, EDT, and early-close instants via getSessionCloseInstant', async () => {
+    const { getSessionCloseInstant } = await import('../../src/market-data/session-calendar');
+    // Standard time (EST, UTC-5): 4:00 PM ET = 21:00 UTC
+    expect(getSessionCloseInstant('2026-11-23').toISOString()).toBe('2026-11-23T21:00:00.000Z');
+    // Daylight saving time (EDT, UTC-4): 4:00 PM ET = 20:00 UTC
+    expect(getSessionCloseInstant('2026-07-15').toISOString()).toBe('2026-07-15T20:00:00.000Z');
+    // NYSE early close (Day after Thanksgiving 2026-11-27, 1:00 PM EST = 18:00 UTC)
+    expect(getSessionCloseInstant('2026-11-27').toISOString()).toBe('2026-11-27T18:00:00.000Z');
+  });
+
+  it('resolves economic timestamps with EDT/EST, early close, now cap, and minSameDayIso clamping', async () => {
+    const { resolveExecutionEconomicIso } = await import('../../src/market-data/session-calendar');
+
+    // Past EDT session after close -> exact 20:00Z close
+    expect(
+      resolveExecutionEconomicIso('2026-07-15', new Date('2026-07-16T15:00:00.000Z')),
+    ).toBe('2026-07-15T20:00:00.000Z');
+
+    // Early close session -> exact 18:00Z close
+    expect(
+      resolveExecutionEconomicIso('2026-11-27', new Date('2026-11-30T15:00:00.000Z')),
+    ).toBe('2026-11-27T18:00:00.000Z');
+
+    // Same-day before market close -> capped at now
+    expect(
+      resolveExecutionEconomicIso('2026-11-23', new Date('2026-11-23T15:30:00.000Z')),
+    ).toBe('2026-11-23T15:30:00.000Z');
+
+    // Same-day after close: returns now (minSameDayIso does not alter today cap)
+    expect(
+      resolveExecutionEconomicIso(
+        '2026-11-23',
+        new Date('2026-11-23T22:00:00.000Z'),
+        '2026-11-23T21:15:00.000Z',
+      ),
+    ).toBe('2026-11-23T22:00:00.000Z');
+
+    // Backdated session with same-day prior execution after close -> clamped to minSameDayIso + 1s
+    expect(
+      resolveExecutionEconomicIso(
+        '2026-11-23',
+        new Date('2026-11-24T15:00:00.000Z'),
+        '2026-11-23T21:15:00.000Z',
+      ),
+    ).toBe('2026-11-23T21:15:01.000Z');
+
+    // Backdated session with minSameDayIso on a DIFFERENT exchange date -> ignored, returns exact close
+    expect(
+      resolveExecutionEconomicIso(
+        '2026-11-23',
+        new Date('2026-11-24T15:00:00.000Z'),
+        '2026-11-20T21:15:00.000Z',
+      ),
+    ).toBe('2026-11-23T21:00:00.000Z');
+  });
+
+  it('handles Good Friday, Juneteenth, year boundaries, and rejects malformed YYYY-MM-DD dates', async () => {
+    const {
+      isUsTradingDay,
+      getPreviousTradingDate,
+      getNextTradingDate,
+      getSessionCloseInstant,
+    } = await import('../../src/market-data/session-calendar');
+
+    expect(isUsTradingDay('2026-04-03')).toBe(false); // Good Friday
+    expect(isUsTradingDay('2026-06-19')).toBe(false); // Juneteenth
+    expect(getPreviousTradingDate('2026-04-06')).toBe('2026-04-02');
+    expect(getNextTradingDate('2026-04-02')).toBe('2026-04-06');
+
+    // Year boundary: 2027-01-01 New Year's Day (Friday) -> Jan 4 Monday
+    expect(isUsTradingDay('2027-01-01')).toBe(false);
+    expect(getNextTradingDate('2026-12-31')).toBe('2027-01-04');
+    expect(getPreviousTradingDate('2027-01-04')).toBe('2026-12-31');
+
+    expect(() => isUsTradingDay('not-a-date')).toThrow();
+    expect(() => getSessionCloseInstant('not-a-date')).toThrow();
+    expect(() => getNextTradingDate('2026-11-9')).toThrow();
+  });
 });

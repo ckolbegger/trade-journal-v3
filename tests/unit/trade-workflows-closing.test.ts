@@ -356,4 +356,221 @@ describe('TradeWorkflows.recordPositionChange (D6 Partial & Closing Exits) seam'
     expect(voidedDevs.filter((d) => d.kind === 'StopDiscipline' && !d.voided)).toHaveLength(0);
     expect(voidedDevs.some((d) => d.kind === 'StopDiscipline' && d.voided)).toBe(true);
   });
+
+  it('rejects recordPositionChange on an already-Closed Trade with zero writes', async () => {
+    const h = await setupD6WorkflowsHarness(true);
+    const { ExactNumber, add, sub, fromInteger, formatQuantityString } = await import(
+      '../../src/shared/exact-number'
+    );
+
+    const readTradeState = () =>
+      h.persistence.runReadTransaction(
+        ['trades', 'executions', 'position_changes', 'lot_matches'],
+        async (tx) => ({
+          trade: await tx.get('trades', h.tradeId),
+          execs: await tx.getAllByIndex('executions', 'by_trade', h.tradeId),
+          pcs: await tx.getAllByIndex('position_changes', 'by_trade', h.tradeId),
+          lots: await tx.getAllByIndex('lot_matches', 'by_trade', h.tradeId),
+        }),
+      );
+
+    const before = await readTradeState();
+    let totalOpen = fromInteger(0);
+    for (const ex of before.execs) {
+      const q = ExactNumber.fromJSON(ex.quantity);
+      totalOpen = ex.side === 'Buy' ? add(totalOpen, q) : sub(totalOpen, q);
+    }
+    const openQty = formatQuantityString(totalOpen);
+    const buyMs = Math.max(...before.execs.map((e) => Date.parse(e.economicTime)));
+    const closeTime = new Date(buyMs + 60_000).toISOString();
+    h.clock.setIso(closeTime);
+
+    const closed = await h.workflows.recordPositionChange({
+      tradeId: h.tradeId,
+      expectedFactRevision: before.trade!.factRevision,
+      economicTime: closeTime,
+      executions: [
+        {
+          side: 'Sell',
+          quantity: openQty,
+          fillPrice: '110.00',
+          fee: '0.00',
+          plannedLegIntent: 'PlannedLeg',
+        },
+      ],
+      closeReasonId: 'cr_target_reached',
+      reflection: { kind: 'Defer' },
+    });
+    expect(closed.status).toBe('Recorded');
+    if (closed.status !== 'Recorded') return;
+    expect(closed.postCommit.trade.lifecycleState).toBe('Closed');
+    const afterClose = await readTradeState();
+
+    const afterCloseTime = new Date(buyMs + 120_000).toISOString();
+    h.clock.setIso(afterCloseTime);
+    const rejected = await h.workflows.recordPositionChange({
+      tradeId: h.tradeId,
+      expectedFactRevision: closed.postCommit.trade.factRevision,
+      economicTime: afterCloseTime,
+      executions: [
+        {
+          side: 'Buy',
+          quantity: '10',
+          fillPrice: '111.00',
+          fee: '0.00',
+          plannedLegIntent: 'ExplicitlyUnplanned',
+        },
+      ],
+      reflection: { kind: 'Defer' },
+    });
+    expect(rejected.status).toBe('Rejected');
+    if (rejected.status === 'Rejected') {
+      expect(rejected.errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            field: 'tradeId',
+            message: expect.stringMatching(/Closed/i),
+          }),
+        ]),
+      );
+    }
+
+    const after = await readTradeState();
+    expect(after.trade?.factRevision).toBe(closed.postCommit.trade.factRevision);
+    expect(after.execs).toHaveLength(afterClose.execs.length);
+    expect(after.pcs).toHaveLength(afterClose.pcs.length);
+    expect(after.lots).toHaveLength(afterClose.lots.length);
+  });
+
+  it('rejects a backdated Sell earlier than the first Buy (oversold across economic-time-sorted fills) with zero writes', async () => {
+    const h = await setupD6WorkflowsHarness(true);
+
+    const before = await h.persistence.runReadTransaction(['trades', 'executions'], async (tx) => ({
+      trade: await tx.get('trades', h.tradeId),
+      execs: await tx.getAllByIndex('executions', 'by_trade', h.tradeId),
+    }));
+    const buyMs = Math.min(...before.execs.map((e) => Date.parse(e.economicTime)));
+    const earlierTime = new Date(buyMs - 60_000).toISOString();
+
+    const rejected = await h.workflows.recordPositionChange({
+      tradeId: h.tradeId,
+      expectedFactRevision: before.trade!.factRevision,
+      economicTime: earlierTime,
+      executions: [
+        {
+          side: 'Sell',
+          quantity: '10',
+          fillPrice: '105.00',
+          fee: '0.00',
+          plannedLegIntent: 'PlannedLeg',
+        },
+      ],
+      reflection: { kind: 'Defer' },
+    });
+
+    expect(rejected.status).toBe('Rejected');
+    if (rejected.status === 'Rejected') {
+      expect(rejected.errors).toEqual([
+        expect.objectContaining({
+          field: 'executions',
+          message: expect.stringContaining('exceeds shares open'),
+        }),
+      ]);
+    }
+    const after = await h.persistence.runReadTransaction(['trades', 'executions'], async (tx) => ({
+      trade: await tx.get('trades', h.tradeId),
+      execs: await tx.getAllByIndex('executions', 'by_trade', h.tradeId),
+    }));
+    expect(after.trade?.factRevision).toBe(before.trade!.factRevision);
+    expect(after.execs).toHaveLength(before.execs.length);
+  });
+
+  it('rejects full close when closeReasonId is unknown or Archived with zero writes', async () => {
+    const h = await setupD6WorkflowsHarness(true);
+    const { ExactNumber, add, sub, fromInteger, formatQuantityString } = await import(
+      '../../src/shared/exact-number'
+    );
+
+    const before = await h.persistence.runReadTransaction(['trades', 'executions'], async (tx) => ({
+      trade: await tx.get('trades', h.tradeId),
+      execs: await tx.getAllByIndex('executions', 'by_trade', h.tradeId),
+    }));
+    let totalOpen = fromInteger(0);
+    for (const ex of before.execs) {
+      const q = ExactNumber.fromJSON(ex.quantity);
+      totalOpen = ex.side === 'Buy' ? add(totalOpen, q) : sub(totalOpen, q);
+    }
+    const openQty = formatQuantityString(totalOpen);
+    const buyMs = Math.max(...before.execs.map((e) => Date.parse(e.economicTime)));
+    const closeTime = new Date(buyMs + 60_000).toISOString();
+    h.clock.setIso(closeTime);
+
+    const seedRes = await h.persistence.runWriteTransaction(['catalog_close_reasons'], async (tx) => {
+      await tx.put('catalog_close_reasons', {
+        id: 'cr_archived_test',
+        productKey: 'archived-test',
+        currentLabel: 'Archived Test Reason',
+        normalizedLabel: 'archived test reason',
+        status: 'Archived',
+        revision: 2,
+        createdAt: closeTime,
+        updatedAt: closeTime,
+        history: [
+          {
+            revision: 1,
+            action: 'Created',
+            label: 'Archived Test Reason',
+            status: 'Active',
+            recordedAt: closeTime,
+          },
+          {
+            revision: 2,
+            action: 'Archived',
+            label: 'Archived Test Reason',
+            status: 'Archived',
+            recordedAt: closeTime,
+          },
+        ],
+      });
+    });
+    expect(seedRes.status).toBe('Committed');
+
+    for (const badReasonId of ['cr_unknown_reason', 'cr_archived_test']) {
+      const rejected = await h.workflows.recordPositionChange({
+        tradeId: h.tradeId,
+        expectedFactRevision: before.trade!.factRevision,
+        economicTime: closeTime,
+        executions: [
+          {
+            side: 'Sell',
+            quantity: openQty,
+            fillPrice: '110.00',
+            fee: '0.00',
+            plannedLegIntent: 'PlannedLeg',
+          },
+        ],
+        closeReasonId: badReasonId,
+        reflection: { kind: 'Defer' },
+      });
+      expect(rejected.status).toBe('Rejected');
+      if (rejected.status === 'Rejected') {
+        expect(rejected.errors).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              field: 'closeReasonId',
+              message: expect.stringMatching(/Close Reason/i),
+            }),
+          ]),
+        );
+      }
+    }
+
+    const after = await h.persistence.runReadTransaction(['trades', 'executions'], async (tx) => ({
+      trade: await tx.get('trades', h.tradeId),
+      execs: await tx.getAllByIndex('executions', 'by_trade', h.tradeId),
+    }));
+    expect(after.trade?.lifecycleState).toBe('Open');
+    expect(after.trade?.factRevision).toBe(before.trade!.factRevision);
+    expect(after.execs).toHaveLength(before.execs.length);
+  });
 });

@@ -163,4 +163,132 @@ describe('TradeAnalysis.evaluate (Ongoing Risk/Reward & OV-04 Prior-Session Fall
       expect(breachedCheck.targetCondition.nearest).toBe(false);
     }
   });
+
+  it('handles exact Mark === Stop/Target boundaries, missing prior fallback when todayUnavailableAcknowledged, zero 1R, and partial-exit combinedPnl', () => {
+    // Exact Mark === Stop ($47.50) -> Breached with $0.00 overrun
+    const atStopExact = evaluateLongStockTrade({
+      derived,
+      plan,
+      originalPlannedRisk: oneR,
+      expectedSessionDate: '2026-11-12',
+      todayMark: {
+        sessionDate: '2026-11-12',
+        price: ExactNumber.toJSON(fromDecimalString('47.50')),
+      },
+      priorMark: null,
+      todayUnavailableAcknowledged: false,
+    });
+    expect(atStopExact.availability).toBe('Available');
+    if (atStopExact.availability === 'Available') {
+      expect(atStopExact.stopCondition.status).toBe('Breached');
+      expect(atStopExact.stopCondition.overrunDisplay).toBe('$0.00');
+    }
+
+    // Exact Mark === Target ($56.00) -> Reached
+    const atTargetExact = evaluateLongStockTrade({
+      derived,
+      plan,
+      originalPlannedRisk: oneR,
+      expectedSessionDate: '2026-11-12',
+      todayMark: {
+        sessionDate: '2026-11-12',
+        price: ExactNumber.toJSON(fromDecimalString('56.00')),
+      },
+      priorMark: null,
+      todayUnavailableAcknowledged: false,
+    });
+    expect(atTargetExact.availability).toBe('Available');
+    if (atTargetExact.availability === 'Available') {
+      expect(atTargetExact.targetCondition.status).toBe('Reached');
+    }
+
+    // todayUnavailableAcknowledged with zero prior mark -> acknowledgedUnavailable: true, priorContext: null
+    const unavailNoPrior = evaluateLongStockTrade({
+      derived,
+      plan,
+      originalPlannedRisk: oneR,
+      expectedSessionDate: '2026-11-12',
+      todayMark: null,
+      priorMark: null,
+      todayUnavailableAcknowledged: true,
+    });
+    expect(unavailNoPrior.availability).toBe('Unavailable');
+    if (unavailNoPrior.availability === 'Unavailable') {
+      expect(unavailNoPrior.acknowledgedUnavailable).toBe(true);
+      expect(unavailNoPrior.priorContext).toBeNull();
+    }
+
+    // Zero originalPlannedRisk returns Unavailable without falling back to priorContext or dividing by zero
+    const zeroOneR = evaluateLongStockTrade({
+      derived,
+      plan,
+      originalPlannedRisk: ExactNumber.toJSON(fromDecimalString('0')),
+      expectedSessionDate: '2026-11-12',
+      todayMark: null,
+      priorMark: {
+        sessionDate: '2026-11-11',
+        price: ExactNumber.toJSON(fromDecimalString('51.80')),
+      },
+      todayUnavailableAcknowledged: false,
+    });
+    expect(zeroOneR.availability).toBe('Unavailable');
+    if (zeroOneR.availability === 'Unavailable') {
+      expect(zeroOneR.priorContext).toBeNull();
+    }
+
+    // Partial-exit trade combines realizedPnl + openPnl cleanly
+    const partialDerived = deriveLongStockPosition({
+      storedLifecycleState: 'Open',
+      plan,
+      originalPlannedRisk: oneR,
+      executions: [
+        {
+          id: 'b1',
+          tradeId: 'trd-p',
+          positionChangeId: 'pc-1',
+          side: 'Buy',
+          quantity: ExactNumber.toJSON(fromDecimalString('100')),
+          fillPrice: ExactNumber.toJSON(fromDecimalString('50.00')),
+          fee: ExactNumber.toJSON(fromDecimalString('0.00')),
+          plannedLegIntent: 'PlannedLeg',
+          economicTime: '2026-11-10T15:00:00.000Z',
+          recordedSequence: 2,
+          recordedAt: '2026-11-10T15:00:00.000Z',
+        },
+        {
+          id: 's1',
+          tradeId: 'trd-p',
+          positionChangeId: 'pc-2',
+          side: 'Sell',
+          quantity: ExactNumber.toJSON(fromDecimalString('50')),
+          fillPrice: ExactNumber.toJSON(fromDecimalString('52.00')),
+          fee: ExactNumber.toJSON(fromDecimalString('0.00')),
+          plannedLegIntent: 'PlannedLeg',
+          economicTime: '2026-11-11T15:00:00.000Z',
+          recordedSequence: 3,
+          recordedAt: '2026-11-11T15:00:00.000Z',
+        },
+      ],
+    });
+    const partialEval = evaluateLongStockTrade({
+      derived: partialDerived,
+      plan,
+      originalPlannedRisk: oneR,
+      expectedSessionDate: '2026-11-12',
+      todayMark: {
+        sessionDate: '2026-11-12',
+        price: ExactNumber.toJSON(fromDecimalString('54.00')),
+      },
+      priorMark: null,
+      todayUnavailableAcknowledged: false,
+    });
+    expect(partialEval.availability).toBe('Available');
+    if (partialEval.availability === 'Available') {
+      // Realized = +$100, Open = (54-50)*50 = +$200, Combined = +$300 (+1.20R)
+      expect(partialEval.realizedPnlDisplay).toBe('+$100.00');
+      expect(partialEval.openPnlDisplay).toBe('+$200.00');
+      expect(partialEval.combinedPnlDisplay).toBe('+$300.00');
+      expect(partialEval.combinedPnlRDisplay).toBe('+1.20R');
+    }
+  });
 });

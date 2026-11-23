@@ -192,4 +192,80 @@ describe('MarketData seam', () => {
       expect(downSlip.suggestedDisplay).toBe('$44.00');
     }
   });
+
+  it('covers upward 10x slip, exact 5% vs 5.1% outlier boundary, invalid price inputs, null reference, bad Save inputs, and RuntimeNotWritable', async () => {
+    const ref = ExactNumber.fromDecimalString('44.00');
+
+    const upSlip = checkStockMarkSanity('440.00', ref);
+    expect(upSlip.status).toBe('ConfirmDecimalSlip');
+    if (upSlip.status === 'ConfirmDecimalSlip') {
+      expect(upSlip.suggestedRaw).toBe('44.00');
+    }
+
+    // Exact +5.0% move (46.20 vs 44.00) is within threshold -> Ok; +5.02% (46.21) -> ConfirmOutlier
+    expect(checkStockMarkSanity('46.20', ref).status).toBe('Ok');
+    const outlier = checkStockMarkSanity('46.21', ref);
+    expect(outlier.status).toBe('ConfirmOutlier');
+
+    expect(checkStockMarkSanity('', ref).status).toBe('Error');
+    expect(checkStockMarkSanity('abc', ref).status).toBe('Error');
+    expect(checkStockMarkSanity('0', ref).status).toBe('Error');
+    expect(checkStockMarkSanity('-12.50', ref).status).toBe('Error');
+    expect(checkStockMarkSanity('500.00', null).status).toBe('Ok');
+
+    const { marketData, setWritable } = await createMarketHarness();
+    const blankSymbol = await marketData.save({
+      kind: 'SaveManualMark',
+      symbol: '   ',
+      sessionDate: '2026-11-23',
+      price: '100.00',
+      intent: 'Initial',
+    });
+    expect(blankSymbol).toMatchObject({
+      status: 'Rejected',
+      message: expect.stringMatching(/Symbol is required/i),
+    });
+
+    const invalidDate = await marketData.save({
+      kind: 'SaveManualMark',
+      symbol: 'AAPL',
+      sessionDate: '2026-13-45',
+      price: '100.00',
+      intent: 'Initial',
+    });
+    expect(invalidDate).toMatchObject({
+      status: 'Rejected',
+      message: expect.stringMatching(/YYYY-MM-DD/),
+    });
+
+    // Thanksgiving 2026-11-26 is an exchange holiday -> Rejected
+    const holidaySave = await marketData.save({
+      kind: 'SaveManualMark',
+      symbol: 'AAPL',
+      sessionDate: '2026-11-26',
+      price: '100.00',
+      intent: 'Initial',
+    });
+    expect(holidaySave).toMatchObject({
+      status: 'Rejected',
+      message: expect.stringMatching(/not a U\.S\. equity trading session/),
+    });
+
+    setWritable(false);
+    const blocked = await marketData.save({
+      kind: 'SaveManualMark',
+      symbol: 'AAPL',
+      sessionDate: '2026-11-23',
+      price: '100.00',
+      intent: 'Initial',
+    });
+    expect(blocked.status).toBe('RuntimeNotWritable');
+    setWritable(true);
+    const obsAfterBlocked = await marketData.inspectObservations({
+      symbol: 'AAPL',
+      sessionDate: '2026-11-23',
+    });
+    expect(obsAfterBlocked.marks).toEqual([]);
+    expect(obsAfterBlocked.acknowledgments).toEqual([]);
+  });
 });

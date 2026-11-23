@@ -225,4 +225,205 @@ describe('TradeWorkflows.recordPositionChange (D3 Opening Execution) seam', () =
       expect(attempted.errors[0]?.message).toContain("Facts can't be replayed");
     }
   });
+
+  it('rejects recordPositionChange for unknown tradeId, empty executions, non-positive qty/price, negative fee, and invalid economicTime with zero writes', async () => {
+    const h = await setupD3Harness();
+
+    const validExec = {
+      side: 'Buy' as const,
+      quantity: '10',
+      fillPrice: '100.00',
+      fee: '1.00',
+      plannedLegIntent: 'PlannedLeg' as const,
+    };
+
+    const baseValid = {
+      tradeId: h.tradeId,
+      expectedFactRevision: 1,
+      economicTime: '2026-11-23T14:35:00.000Z',
+      executions: [validExec],
+      reflection: { kind: 'Defer' as const },
+    };
+
+    const invalidCases = [
+      { expectedField: 'tradeId', cmd: { ...baseValid, tradeId: 'trade_does_not_exist' } },
+      { expectedField: 'executions', cmd: { ...baseValid, executions: [] } },
+      {
+        expectedField: 'executions[0].quantity',
+        cmd: {
+          ...baseValid,
+          executions: [{ ...validExec, quantity: '0' }],
+        },
+      },
+      {
+        expectedField: 'executions[0].quantity',
+        cmd: {
+          ...baseValid,
+          executions: [{ ...validExec, quantity: '-5' }],
+        },
+      },
+      {
+        expectedField: 'executions[0].fillPrice',
+        cmd: {
+          ...baseValid,
+          executions: [{ ...validExec, fillPrice: '0' }],
+        },
+      },
+      {
+        expectedField: 'executions[0].fillPrice',
+        cmd: {
+          ...baseValid,
+          executions: [{ ...validExec, fillPrice: '-10.00' }],
+        },
+      },
+      {
+        expectedField: 'executions[0].fee',
+        cmd: {
+          ...baseValid,
+          executions: [{ ...validExec, fee: '-0.01' }],
+        },
+      },
+      { expectedField: 'economicTime', cmd: { ...baseValid, economicTime: 'not-an-iso-timestamp' } },
+    ];
+
+    for (const { expectedField, cmd } of invalidCases) {
+      const result = await h.workflows.recordPositionChange(cmd);
+      expect(result.status).toBe('Rejected');
+      if (result.status === 'Rejected') {
+        expect(result.errors.some((e) => e.field === expectedField)).toBe(true);
+      }
+    }
+
+    const counts = await h.persistence.runReadTransaction(
+      ['trades', 'position_changes', 'executions'],
+      async (tx) => ({
+        trade: await tx.get('trades', h.tradeId),
+        pcs: await tx.getAllByIndex('position_changes', 'by_trade', h.tradeId),
+        execs: await tx.getAllByIndex('executions', 'by_trade', h.tradeId),
+      }),
+    );
+    expect(counts.trade?.factRevision).toBe(1);
+    expect(counts.trade?.lifecycleState).toBe('Planned');
+    expect(counts.pcs).toHaveLength(0);
+    expect(counts.execs).toHaveLength(0);
+  });
+
+  it('returns RuntimeNotWritable with zero writes when write gate denies recordPositionChange', async () => {
+    const { IDBFactory: LocalIDBFactory } = await import('fake-indexeddb');
+    const { createPersistenceSeam: createLocalPersistence, CURRENT_SCHEMA_VERSION } = await import(
+      '../../src/persistence/idb'
+    );
+    const { createTradeWorkflows: createLocalWorkflows } = await import(
+      '../../src/trade-workflows/trade-workflows'
+    );
+    const { createReferenceCatalog: createLocalCatalog } = await import(
+      '../../src/catalog/reference-catalog'
+    );
+    const { createJournal: createLocalJournal, PLAN_REFLECTION_TYPE_ID } = await import(
+      '../../src/journal/journal'
+    );
+    const { createManualClock: createLocalClock } = await import('../../src/shared/clock');
+
+    let writable = true;
+    const clock = createLocalClock('2026-11-23T14:30:00.000Z');
+    const persistence = createLocalPersistence({
+      indexedDB: new LocalIDBFactory(),
+      writeGate: {
+        checkWritable: () =>
+          writable
+            ? { writable: true }
+            : {
+                writable: false,
+                reason: 'RecoveryOnly',
+                failedChecks: ['storage_diagnostic'],
+              },
+      },
+    });
+    await persistence.runWriteTransaction(['workspace_meta'], async (tx) => {
+      tx.put('workspace_meta', {
+        key: 'singleton',
+        schemaVersion: CURRENT_SCHEMA_VERSION,
+        timeZone: 'America/New_York',
+        settingsRevision: 1,
+        workspaceRevision: 1,
+        initializedAt: clock.nowIso(),
+        updatedAt: clock.nowIso(),
+      });
+    });
+
+    const catalog = createLocalCatalog({ persistence, clock });
+    const journal = createLocalJournal({ persistence, clock });
+    const workflows = createLocalWorkflows({ persistence, clock });
+    await catalog.seedDefaults();
+    await journal.seedDefaults();
+    const inst = await catalog.save({ kind: 'CreateInstitution', label: 'Fidelity' });
+    if (inst.status !== 'Saved' || inst.family !== 'Institution') throw new Error('inst failed');
+    const acct = await catalog.save({
+      kind: 'CreateAccount',
+      institutionId: inst.record.id,
+      label: 'Margin',
+    });
+    if (acct.status !== 'Saved' || acct.family !== 'Account') throw new Error('acct failed');
+    const strats = await catalog.query({ family: 'Strategy', includeInactive: false });
+    if (strats.family !== 'Strategy' || !strats.items[0]) throw new Error('strat missing');
+    const defs = await journal.getDefinitions();
+    const planDef = defs.definitions.find((d) => d.entryTypeId === PLAN_REFLECTION_TYPE_ID)!;
+
+    const confirmed = await workflows.confirmPlan({
+      accountId: acct.record.id,
+      strategyId: strats.items[0].id,
+      symbol: 'AAPL',
+      quantity: '10',
+      intendedEntryPrice: '100.00',
+      stopPrice: '95.00',
+      targetPrice: '110.00',
+      economicTime: '2026-11-23T14:30:00.000Z',
+      planReflection: {
+        definitionId: planDef.id,
+        definitionRevision: planDef.revision,
+        thesis: 'Test thesis',
+        invalidation: 'Test invalidation',
+      },
+    });
+    expect(confirmed.status).toBe('Confirmed');
+    if (confirmed.status !== 'Confirmed') return;
+
+    clock.setIso('2026-11-23T14:35:00.000Z');
+    writable = false;
+    const result = await workflows.recordPositionChange({
+      tradeId: confirmed.postCommit.trade.id,
+      expectedFactRevision: 1,
+      economicTime: '2026-11-23T14:35:00.000Z',
+      executions: [
+        {
+          side: 'Buy',
+          quantity: '10',
+          fillPrice: '100.00',
+          fee: '0.00',
+          plannedLegIntent: 'PlannedLeg',
+        },
+      ],
+      reflection: { kind: 'Defer' },
+    });
+
+    expect(result.status).toBe('RuntimeNotWritable');
+    if (result.status === 'RuntimeNotWritable') {
+      expect(result.reason).toBe('RecoveryOnly');
+      expect(result.failedChecks).toEqual(['storage_diagnostic']);
+    }
+
+    writable = true;
+    const persisted = await persistence.runReadTransaction(
+      ['trades', 'position_changes', 'executions'],
+      async (tx) => ({
+        trade: await tx.get('trades', confirmed.postCommit.trade.id),
+        pcs: await tx.getAllByIndex('position_changes', 'by_trade', confirmed.postCommit.trade.id),
+        execs: await tx.getAllByIndex('executions', 'by_trade', confirmed.postCommit.trade.id),
+      }),
+    );
+    expect(persisted.trade?.factRevision).toBe(1);
+    expect(persisted.trade?.lifecycleState).toBe('Planned');
+    expect(persisted.pcs).toHaveLength(0);
+    expect(persisted.execs).toHaveLength(0);
+  });
 });

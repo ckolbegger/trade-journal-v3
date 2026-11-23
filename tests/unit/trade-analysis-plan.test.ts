@@ -59,4 +59,49 @@ describe('TradeAnalysis.assessPlan (Long Stock) seam', () => {
       );
     }
   });
+
+  it('rejects equal Stop/Target prices, negative/malformed numbers, invalid symbols, and accepts exact fractional quantities', () => {
+    const equalLines = assessLongStockPlan({
+      symbol: 'BRK.B',
+      quantity: '10',
+      intendedEntryPrice: '400',
+      stopPrice: '400',
+      targetPrice: '400',
+    });
+    expect(equalLines.status).toBe('Rejected');
+    if (equalLines.status === 'Rejected') {
+      expect(equalLines.errors.map((e) => e.field)).toEqual(
+        expect.arrayContaining(['stopPrice', 'targetPrice']),
+      );
+    }
+
+    const negativeAndBadSymbol = assessLongStockPlan({
+      symbol: 'TOOLONGSYMBOL1',
+      quantity: '-5',
+      intendedEntryPrice: '-10',
+      stopPrice: 'abc',
+      targetPrice: '0',
+    });
+    expect(negativeAndBadSymbol.status).toBe('Rejected');
+    if (negativeAndBadSymbol.status === 'Rejected') {
+      expect(negativeAndBadSymbol.errors.map((e) => e.field)).toEqual(
+        expect.arrayContaining(['symbol', 'quantity', 'intendedEntryPrice', 'stopPrice', 'targetPrice']),
+      );
+    }
+
+    const fractional = assessLongStockPlan({
+      symbol: 'brk.b',
+      quantity: '12.5',
+      intendedEntryPrice: '100.00',
+      stopPrice: '92.00',
+      targetPrice: '124.00',
+    });
+    expect(fractional.status).toBe('Accepted');
+    if (fractional.status === 'Accepted') {
+      expect(fractional.normalizedSymbol).toBe('BRK.B');
+      expect(fractional.baseline.originalPlannedRiskDisplay).toBe('$100.00');
+      expect(fractional.baseline.originalPlannedRewardDisplay).toBe('$300.00');
+      expect(fractional.baseline.plannedRewardToRiskDisplay).toBe('3.00R');
+    }
+  });
 });

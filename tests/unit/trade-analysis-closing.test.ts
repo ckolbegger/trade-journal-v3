@@ -197,4 +197,150 @@ describe('TradeAnalysis.derive (FIFO Lot Matches, Lot-Aware Fees, & Closed Trans
     });
     expect(oversold.oversold).toBe(true);
   });
+
+  it('handles >4-decimal fractional shares, exact $0.00 breakeven partial exits, and post-partial re-entry Buys in FIFO order', () => {
+    // (a) >4-decimal fractional quantity closes cleanly with exact unrounded matching
+    const fracClosed = deriveLongStockPosition({
+      storedLifecycleState: 'Closed',
+      plan: {
+        plannedQuantity: ExactNumber.toJSON(fromDecimalString('10.12345')),
+        intendedEntryPrice: ExactNumber.toJSON(fromDecimalString('50.00')),
+        stopPrice: ExactNumber.toJSON(fromDecimalString('47.00')),
+        targetPrice: ExactNumber.toJSON(fromDecimalString('56.00')),
+      },
+      originalPlannedRisk: oneR,
+      executions: [
+        {
+          id: 'fb1',
+          tradeId: 'trd-frac',
+          positionChangeId: 'pc-1',
+          side: 'Buy',
+          quantity: ExactNumber.toJSON(fromDecimalString('10.12345')),
+          fillPrice: ExactNumber.toJSON(fromDecimalString('50.00')),
+          fee: ExactNumber.toJSON(fromDecimalString('0.00')),
+          plannedLegIntent: 'PlannedLeg',
+          economicTime: '2026-11-18T14:35:00.000Z',
+          recordedSequence: 2,
+          recordedAt: '2026-11-18T14:35:05.000Z',
+        },
+        {
+          id: 'fs1',
+          tradeId: 'trd-frac',
+          positionChangeId: 'pc-2',
+          side: 'Sell',
+          quantity: ExactNumber.toJSON(fromDecimalString('10.12345')),
+          fillPrice: ExactNumber.toJSON(fromDecimalString('52.00')),
+          fee: ExactNumber.toJSON(fromDecimalString('0.00')),
+          plannedLegIntent: 'PlannedLeg',
+          economicTime: '2026-11-19T15:00:00.000Z',
+          recordedSequence: 3,
+          recordedAt: '2026-11-19T15:00:05.000Z',
+        },
+      ],
+    });
+    expect(fracClosed.derivedLifecycleState).toBe('Closed');
+    expect(fracClosed.openShares.num).toBe(0n);
+    expect(fracClosed.oversold).toBe(false);
+    expect(fracClosed.lotMatches).toHaveLength(1);
+    expect(fracClosed.lotMatches[0]?.matchedQuantity).toEqual(fromDecimalString('10.12345'));
+    expect(fracClosed.realizedPnl).toEqual(fromDecimalString('20.2469'));
+    expect(fracClosed.realizedPnlDisplay).toBe('+$20.25'); // 2 * 10.12345 = 20.2469 -> $20.25
+
+    // (b) Exact $0.00 breakeven partial exit preserves non-empty lotMatches and zero realizedPnl
+    const breakeven = deriveLongStockPosition({
+      storedLifecycleState: 'Open',
+      plan: basePlan,
+      originalPlannedRisk: oneR,
+      executions: [
+        {
+          id: 'bb1',
+          tradeId: 'trd-be',
+          positionChangeId: 'pc-1',
+          side: 'Buy',
+          quantity: ExactNumber.toJSON(fromDecimalString('100')),
+          fillPrice: ExactNumber.toJSON(fromDecimalString('50.00')),
+          fee: ExactNumber.toJSON(fromDecimalString('0.00')),
+          plannedLegIntent: 'PlannedLeg',
+          economicTime: '2026-11-18T14:35:00.000Z',
+          recordedSequence: 2,
+          recordedAt: '2026-11-18T14:35:05.000Z',
+        },
+        {
+          id: 'bs1',
+          tradeId: 'trd-be',
+          positionChangeId: 'pc-2',
+          side: 'Sell',
+          quantity: ExactNumber.toJSON(fromDecimalString('40')),
+          fillPrice: ExactNumber.toJSON(fromDecimalString('50.00')),
+          fee: ExactNumber.toJSON(fromDecimalString('0.00')),
+          plannedLegIntent: 'PlannedLeg',
+          economicTime: '2026-11-19T15:00:00.000Z',
+          recordedSequence: 3,
+          recordedAt: '2026-11-19T15:00:05.000Z',
+        },
+      ],
+    });
+    expect(breakeven.lotMatches).toHaveLength(1);
+    expect(breakeven.realizedPnl.num).toBe(0n);
+    expect(breakeven.realizedPnlDisplay).toBe('$0.00');
+    expect(breakeven.openSharesDisplay).toBe('60');
+
+    // (c) Re-entry Buy after partial Sell preserves remaining FIFO Lot 1 + new Lot 2
+    const reentry = deriveLongStockPosition({
+      storedLifecycleState: 'Open',
+      plan: basePlan,
+      originalPlannedRisk: oneR,
+      executions: [
+        {
+          id: 'rb1',
+          tradeId: 'trd-re',
+          positionChangeId: 'pc-1',
+          side: 'Buy',
+          quantity: ExactNumber.toJSON(fromDecimalString('50')),
+          fillPrice: ExactNumber.toJSON(fromDecimalString('50.00')),
+          fee: ExactNumber.toJSON(fromDecimalString('1.00')),
+          plannedLegIntent: 'PlannedLeg',
+          economicTime: '2026-11-18T14:35:00.000Z',
+          recordedSequence: 2,
+          recordedAt: '2026-11-18T14:35:05.000Z',
+        },
+        {
+          id: 'rs1',
+          tradeId: 'trd-re',
+          positionChangeId: 'pc-2',
+          side: 'Sell',
+          quantity: ExactNumber.toJSON(fromDecimalString('30')),
+          fillPrice: ExactNumber.toJSON(fromDecimalString('55.00')),
+          fee: ExactNumber.toJSON(fromDecimalString('0.60')),
+          plannedLegIntent: 'PlannedLeg',
+          economicTime: '2026-11-19T15:00:00.000Z',
+          recordedSequence: 3,
+          recordedAt: '2026-11-19T15:00:05.000Z',
+        },
+        {
+          id: 'rb2',
+          tradeId: 'trd-re',
+          positionChangeId: 'pc-3',
+          side: 'Buy',
+          quantity: ExactNumber.toJSON(fromDecimalString('20')),
+          fillPrice: ExactNumber.toJSON(fromDecimalString('52.00')),
+          fee: ExactNumber.toJSON(fromDecimalString('0.40')),
+          plannedLegIntent: 'PlannedLeg',
+          economicTime: '2026-11-20T15:00:00.000Z',
+          recordedSequence: 4,
+          recordedAt: '2026-11-20T15:00:05.000Z',
+        },
+      ],
+    });
+    expect(reentry.openSharesDisplay).toBe('40'); // 20 left from rb1 + 20 from rb2
+    expect(reentry.lotMatches).toHaveLength(1);
+    expect(reentry.lotMatches[0]?.openingExecutionId).toBe('rb1');
+    expect(reentry.openLots).toHaveLength(2);
+    expect(reentry.openLots.map((l) => l.executionId)).toEqual(['rb1', 'rb2']);
+    expect(reentry.openLots.map((l) => l.quantityDisplay)).toEqual(['20', '20']);
+    expect(reentry.openLots[0]?.unconsumedOpeningFeeDisplay).toBe('$0.40');
+    expect(reentry.openLots[1]?.unconsumedOpeningFeeDisplay).toBe('$0.40');
+    expect(reentry.averageEntryPriceDisplay).toBe('$51.00'); // (20*50 + 20*52)/40
+    expect(reentry.realizedPnlDisplay).toBe('+$148.80'); // (55-50)*30 - 0.60 - 0.60 = 148.80
+  });
 });

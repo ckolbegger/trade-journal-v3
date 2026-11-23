@@ -4,6 +4,7 @@ import {
   add,
   cmp,
   div,
+  formatQuantityString,
   fromDecimalString,
   fromInteger,
   mul,
@@ -54,5 +55,27 @@ describe('ExactNumber (BigInt Rational) seam', () => {
     expect(() => fromDecimalString('1,8,2.50')).toThrow();
     expect(() => fromDecimalString('1,,000')).toThrow();
     expect(() => div(fromInteger(1), fromInteger(0))).toThrow();
+  });
+
+  it('rejects corrupt serialized JSON payloads and formats exact/fractional quantities', () => {
+    expect(() => ExactNumber.fromJSON({ num: 'abc', den: '1' })).toThrow(
+      /Corrupt serialized ExactNumber payload/,
+    );
+    expect(() => ExactNumber.fromJSON({ num: '1', den: '0' })).toThrow(
+      /Division by zero in ExactNumber/,
+    );
+    expect(() => ExactNumber.fromJSON({ num: '1', den: '-2' })).toThrow(
+      /Corrupt serialized ExactNumber payload/,
+    );
+    expect(() => ExactNumber.fromJSON(null as never)).toThrow(
+      /Corrupt serialized ExactNumber payload/,
+    );
+    expect(() => ExactNumber.fromJSON({} as never)).toThrow(
+      /Corrupt serialized ExactNumber payload/,
+    );
+
+    expect(formatQuantityString(fromInteger(100))).toBe('100');
+    expect(formatQuantityString(fromDecimalString('10.2500'))).toBe('10.25');
+    expect(formatQuantityString(fromDecimalString('10.12345'))).toBe('10.1235');
   });
 });
