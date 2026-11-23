@@ -453,3 +453,5 @@ ocr of T95.17-B1, T95.17-B2 (session c2b70a12): 5 files, 1 finding, Doubtful: th
 Commit `31bb87f5`: the overlap effect depends on `[at, stopText, targetText]`. Red then green (same places, wider text, Target to row 2).
 
 ocr of T95.17-B3 (session 24bb72f2): 2 files, 0 findings. `evidence/D95/ocr/T95.17-B3-31bb87f5.json`.
+
+Run `t95.17-now-box` (full tier, 19:05): unit 2870 passed; integration 1 failed (`tests/integration/d7sp/review-valuation.test.ts` "should give O-C a card the same dated line as the Trade Views Detail": the card's dated line now carries T95.17-D1's `meter`); browser-2 1 failed (`e2e/d7s/conditions.spec.ts:65` B7S.4: the Review card's Conditions list, retired by T95.17); others passed; checks 14 of 14. Both follow from T95.17's planned changes: follow-on **T95.17-F1**.
