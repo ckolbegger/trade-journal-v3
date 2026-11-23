@@ -743,10 +743,11 @@ describe('Save Marks (P37, A155) rendering', () => {
     await user.click(within(panel).getByRole('button', { name: 'Save Marks (2)' }));
 
     // Every row shows its saved Mark, and nothing is Unsaved.
-    await waitFor(() => expect(within(cellOf(panel, 'XYZ', MONDAY_LABEL)).getByText('$52.00', { exact: false })).toBeTruthy());
+    // The Review Date's saved Mark is an input holding its price (fixed in place, T95.14); an earlier session's is a button with its Correct.
+    await waitFor(() => expect(inputOf(panel, 'XYZ', MONDAY_LABEL).value).toBe('52.00'));
     expect(within(cellOf(panel, 'XYZ', FRIDAY_LABEL)).getByText('$51.00', { exact: false })).toBeTruthy();
     expect(within(panel).queryByText('Unsaved')).toBeNull();
-    expect(within(await choose(user, panel, 'XYZ', MONDAY_LABEL)).getByRole('button', { name: 'Correct' })).toBeTruthy();
+    expect(within(await choose(user, panel, 'XYZ', FRIDAY_LABEL)).getByRole('button', { name: 'Correct' })).toBeTruthy();
     // The card's figures come from the result.
     const card = screen.getByRole('region', { name: 'XYZ review' });
     expect(within(card).getByText('Trade P&L')).toBeTruthy();
@@ -777,10 +778,13 @@ describe('Save Marks (P37, A155) pending', () => {
     finish(marksSavedResult([savedKey('XYZ', MONDAY, '52.00'), savedKey('XYZ', FRIDAY, '51.00')]));
 
     // Monday was sent unchanged, so it shows its saved Mark; Friday stays Unsaved with what was typed.
-    await waitFor(() => expect(within(cellOf(panel, 'XYZ', MONDAY_LABEL)).getByText('$52.00', { exact: false })).toBeTruthy());
+    await waitFor(() => expect(inputOf(panel, 'XYZ', MONDAY_LABEL).value).toBe('52.00'));
     expect(within(panel).getByRole('button', { name: 'Save Marks (1)' })).toBeTruthy();
     // Friday now holds its saved Mark in the grid, and the changed draft over it shows in its editor.
     expect(within(await choose(user, panel, 'XYZ', FRIDAY_LABEL)).getByLabelText<HTMLInputElement>('Price').value).toBe('51.001');
+    // A draft over an earlier session's Mark is no in-place fix: it goes as it always went, not as a correction with no reason.
+    await user.click(within(panel).getByRole('button', { name: 'Save Marks (1)' }));
+    expect(vi.mocked(facade.DailyReview.save).mock.calls[1]![0]).toMatchObject({ entries: [{ key: { instrumentKey: 'XYZ', tradingDate: FRIDAY }, intention: { kind: 'RecordInitialManualMark', price: '51.001' } }] });
   });
 
   it('should keep a draft for a key that was not sent when the result is MarksSaved', async () => {
@@ -795,8 +799,8 @@ describe('Save Marks (P37, A155) pending', () => {
     await user.type(inputOf(panel, 'XYZ', FRIDAY_LABEL), '51.00');
     finish(marksSavedResult([savedKey('XYZ', MONDAY, '52.00')]));
 
-    await waitFor(() => expect(within(cellOf(panel, 'XYZ', MONDAY_LABEL)).getByText('$52.00', { exact: false })).toBeTruthy());
-    expect(within(panel).getByRole('button', { name: 'Save Marks (1)' })).toBeTruthy();
+    await waitFor(() => expect(within(panel).getByRole('button', { name: 'Save Marks (1)' })).toBeTruthy());
+    expect(inputOf(panel, 'XYZ', MONDAY_LABEL).value).toBe('52.00');
     expect(inputOf(panel, 'XYZ', FRIDAY_LABEL).value).toBe('51.00');
   });
 });
@@ -847,13 +851,11 @@ describe('Save Marks (P37, A155) conflicted', () => {
     await user.type(inputOf(panel, 'XYZ', FRIDAY_LABEL), '51.00');
     await user.click(within(panel).getByRole('button', { name: 'Save Marks (2)' }));
 
-    // The key that moved shows what it is now, in its editor, and says nothing was saved.
-    const monday = within(panel).getByRole('region', { name: 'XYZ Mark, Mon Oct 12' });
-    await waitFor(() => expect(within(monday).getByText('$51.50', { exact: false })).toBeTruthy());
-    expect(within(monday).getByRole('alert').textContent).toContain('Nothing was saved');
+    // The key that moved says nothing was saved, in its row; its input holds the draft over the Mark it is now.
+    expect((await within(panel).findByRole('alert')).textContent).toContain('Nothing was saved');
     expect(within(panel).getAllByRole('alert')).toHaveLength(1);
     // Every draft is kept, and the retry binds to the revision the Conflict reported.
-    expect(within(monday).getByLabelText<HTMLInputElement>('Price').value).toBe('52.00');
+    expect(inputOf(panel, 'XYZ', MONDAY_LABEL).value).toBe('52.00');
     expect(inputOf(panel, 'XYZ', FRIDAY_LABEL).value).toBe('51.00');
     vi.mocked(facade.DailyReview.save).mockResolvedValueOnce(marksSavedResult([savedKey('XYZ', MONDAY, '52.00'), savedKey('XYZ', FRIDAY, '51.00')]));
     await user.click(within(panel).getByRole('button', { name: 'Save Marks (2)' }));
@@ -874,9 +876,8 @@ describe('Save Marks (A294) conflicted, focus', () => {
     const panel = await marksPanelWithEarlier();
     await user.type(inputOf(panel, 'XYZ', MONDAY_LABEL), '52.00');
     await user.click(within(panel).getByRole('button', { name: 'Save Marks (1)' }));
-    const monday = await within(panel).findByRole('region', { name: 'XYZ Mark, Mon Oct 12' });
-    expect(within(monday).getByRole('alert').textContent).toContain('Nothing was saved');
-    await waitFor(() => expect(document.activeElement).toBe(within(monday).getByLabelText('Price')));
+    expect((await within(panel).findByRole('alert')).textContent).toContain('Nothing was saved');
+    await waitFor(() => expect(document.activeElement).toBe(inputOf(panel, 'XYZ', MONDAY_LABEL)));
   });
 });
 
@@ -890,7 +891,7 @@ describe('Save Marks (P37, A155) with the Review changed during assembly', () =>
     await user.type(inputOf(panel, 'XYZ', MONDAY_LABEL), '52.00');
     await user.click(within(panel).getByRole('button', { name: 'Save Marks (1)' }));
 
-    await waitFor(() => expect(within(cellOf(panel, 'XYZ', MONDAY_LABEL)).getByText('$52.00', { exact: false })).toBeTruthy());
+    await waitFor(() => expect(inputOf(panel, 'XYZ', MONDAY_LABEL).value).toBe('52.00'));
     expect(within(panel).getByText(/figures are out of date/)).toBeTruthy();
     expect(facade.DailyReview.open).toHaveBeenCalledTimes(1);
     expect(facade.DailyReview.getTrade).toHaveBeenCalledTimes(1);
@@ -933,14 +934,11 @@ describe('rows with a Mark', () => {
     const user = userEvent.setup();
     const panel = await marksPanelWithEarlier();
 
-    const xyz = await choose(user, panel, 'XYZ', MONDAY_LABEL);
-    expect(within(xyz).queryByLabelText('Price')).toBeNull();
-    await user.click(within(xyz).getByRole('button', { name: 'Correct' }));
-    await user.type(within(xyz).getByLabelText('Price'), '51.5');
-    await user.type(within(xyz).getByLabelText('Reason (required)'), 'typo');
-    await user.click(within(xyz).getByRole('button', { name: 'Save correction' }));
-    expect(facade.MarketData.save).toHaveBeenLastCalledWith({ intention: 'CorrectMark', instrumentKey: 'XYZ', tradingDate: MONDAY, price: '51.5', reason: 'typo', expectedResolutionRevision: 3 });
-    await user.click(within(xyz).getByRole('button', { name: 'Cancel' }));
+    // The Review Date's typed Mark is fixed in place, with no editor and no Correct (T95.14); an earlier session's Correct is covered in the cell editor cases.
+    expect(inputOf(panel, 'XYZ', MONDAY_LABEL).value).toBe('52.00');
+    expect(within(panel).queryByRole('button', { name: 'Correct' })).toBeNull();
+    await user.click(inputOf(panel, 'XYZ', MONDAY_LABEL));
+    expect(editors(panel)).toEqual([]);
 
     const abc = await choose(user, panel, 'ABC', MONDAY_LABEL);
     await user.click(within(abc).getByRole('button', { name: 'Withdraw' }));
@@ -956,7 +954,8 @@ describe('two quick row saves', () => {
       { instrumentKey: 'XYZ', instrument: { kind: 'Stock', symbol: 'XYZ' }, tradingDate: MONDAY, trades: ['t-a', 't-f'], resolution: available('52.00', 1), resolutionRevision: 1, task: null },
       { instrumentKey: 'ABC', instrument: { kind: 'Stock', symbol: 'ABC' }, tradingDate: MONDAY, trades: ['t-a'], resolution: available('27.50', 1), resolutionRevision: 1, task: null },
     ];
-    const overview = review({ families: [{ family: 'Marks', earlierMarks: [], today: rows, earlier: [] }, { family: 'Trades', trades: WALK }] });
+    // The previous session's Marks are corrected: the Review Date's own are fixed in place.
+    const overview = review({ families: [{ family: 'Marks', earlierMarks: [xyzMarks({ [FRIDAY]: markAt('51') }), abcMarks({ [FRIDAY]: markAt('27') })], today: rows, earlier: [], previousSession: FRIDAY }, { family: 'Trades', trades: WALK }] });
     const facade = cardFacade(overview);
     // The first read at mount answers; the refresh after the first save waits to be released.
     let release: (result: Ready) => void = () => undefined;
@@ -971,7 +970,7 @@ describe('two quick row saves', () => {
     const user = userEvent.setup();
     const panel = await marksPanelWithEarlier();
     for (const symbol of ['XYZ', 'ABC']) {
-      const row = await choose(user, panel, symbol, MONDAY_LABEL);
+      const row = await choose(user, panel, symbol, FRIDAY_LABEL);
       await user.click(within(row).getByRole('button', { name: 'Correct' }));
       await user.type(within(row).getByLabelText('Price'), '50.00');
       await user.type(within(row).getByLabelText('Reason (required)'), 'typo');
@@ -999,6 +998,8 @@ describe('earlier sessions after a save', () => {
     const panel = await marksPanelWithEarlier();
     await user.type(inputOf(panel, 'XYZ', 'Fri Sep 25'), '9');
     await user.click(within(panel).getByRole('button', { name: 'Save Marks (1)' }));
+    // Every Review Date Mark is in, so the grid folds; Edit opens it again with its skipped sessions.
+    await user.click(await screen.findByRole('button', { name: 'Edit' }));
     await waitFor(() => expect(within(cellOf(panel, 'XYZ', 'Fri Sep 25')).getByText('$9.00', { exact: false })).toBeTruthy());
 
     await user.click(within(panel).getByRole('button', { name: 'Next page' }));
@@ -1135,8 +1136,8 @@ describe('Save Marks (P37, A155) when the runtime turns read only', () => {
 });
 
 describe('the cell editor (A153)', () => {
-  it('should name the Trades holding XYZ, linked, in the editor of its saved Review Date cell', async () => {
-    const saved = { ...markRowOf('XYZ', available('52.00', 2), 2), trades: ['t-a', 't-f'] };
+  it('should name the Trades holding XYZ, linked, in the editor of its acknowledged Review Date cell', async () => {
+    const saved = { ...markRowOf('XYZ', ACK, 2), trades: ['t-a', 't-f'] };
     renderReview(cardFacade(gridReview({ today: [saved], earlierMarks: [xyzMarks({ [FRIDAY]: markAt('51') })] })));
     const user = userEvent.setup();
 
@@ -1230,8 +1231,8 @@ describe('the cell editor (P160)', () => {
   });
 
   it('should say which Trades hold the Instrument, only when more than one does', async () => {
-    const xyz = { ...markRowOf('XYZ', available('52.00', 2), 2), trades: ['t-a', 't-f'] };
-    renderReview(cardFacade(gridReview({ today: [xyz, markRowOf('ABC', available('28.00', 2), 2)], earlierMarks: [xyzMarks({ [FRIDAY]: markAt('51') }), abcMarks({ [FRIDAY]: markAt('27.5') })] })));
+    const xyz = { ...markRowOf('XYZ', ACK, 2), trades: ['t-a', 't-f'] };
+    renderReview(cardFacade(gridReview({ today: [xyz, markRowOf('ABC', ACK, 2)], earlierMarks: [xyzMarks({ [FRIDAY]: markAt('51') }), abcMarks({ [FRIDAY]: markAt('27.5') })] })));
     const user = userEvent.setup();
     const panel = await marksPanelWithEarlier();
 
@@ -1294,7 +1295,7 @@ describe('the cell editor (P160)', () => {
   it('should refuse another cell while a Correct is in progress', async () => {
     const paged = pagedReview();
     const marks = paged.families[0] as MarksFamily;
-    const facade = cardFacade(review({ families: [{ ...marks, today: [...marks.today, markRowOf('ABC', available('27.50', 2), 2)] }, paged.families[1]!] }));
+    const facade = cardFacade(review({ families: [{ ...marks, today: [...marks.today, markRowOf('ABC', ACK, 2)] }, paged.families[1]!] }));
     renderReview(facade);
     const user = userEvent.setup();
     const panel = await marksPanelWithEarlier();
@@ -1416,7 +1417,8 @@ describe('drafts belong to the Review (P156)', () => {
         { key: { instrumentKey: 'DEF', tradingDate: MONDAY }, expectedRevision: 'None', intention: { kind: 'RecordInitialManualMark', price: '33.10' } },
       ],
     });
-    await waitFor(() => expect(within(panel).getByRole('button', { name: 'Save Marks (0)' })).toBeTruthy());
+    // Every Review Date Mark is in: the grid folds to its line.
+    expect(await screen.findByRole('region', { name: 'Marks for Mon Oct 12 · 2 of 2 saved' })).toBeTruthy();
   });
 
   it('should empty every draft on the page with Discard', async () => {
@@ -2085,5 +2087,188 @@ describe('the slip questions in the grid (T95.13)', () => {
       binding,
       entries: [{ key: { instrumentKey: 'XYZ', tradingDate: MONDAY }, expectedRevision: 'None', intention: { kind: 'RecordInitialManualMark', price: '44.00' } }],
     });
+  });
+});
+
+describe('Save Marks: fold, Edit, the re-sort, the fix in place (T95.14)', () => {
+  const ackKey = (instrumentKey: string): Extract<SaveResult, { kind: 'MarksSaved' }>['marks'][number] => ({
+    key: { instrumentKey, tradingDate: MONDAY },
+    resolution: { kind: 'AcknowledgedUnavailable', acknowledgment: { versionId: 'a1', kind: 'Asserted', reason: 'halted', savedAt: '2026-10-12T21:00:00Z' } },
+    resolutionRevision: 1,
+    classification: 'Acknowledgment' as never,
+  });
+  const order = () => [...screen.getByRole('list', { name: 'Positions' }).querySelectorAll(':scope > li')].map((li) => li.getAttribute('data-trade-id'));
+
+  it('should save every typed Mark and acknowledgment on the page with one Save Marks', async () => {
+    const facade = cardFacade();
+    vi.mocked(facade.DailyReview.save).mockResolvedValue(marksSavedResult([savedKey('XYZ', MONDAY, '52.00'), ackKey('DEF')]));
+    renderReview(facade);
+    const user = userEvent.setup();
+    const step = await marksPanel();
+    await user.type(inputOf(step, 'XYZ', MONDAY_LABEL), '52.00');
+    await user.click(within(step).getByRole('button', { name: /^Can't get a price/ }));
+    await user.type(within(step).getByRole('textbox', { name: /^Why no price/ }), 'halted');
+    await user.click(within(step).getByRole('button', { name: 'No price' }));
+
+    await user.click(within(step).getByRole('button', { name: 'Save Marks (2)' }));
+
+    expect(facade.DailyReview.save).toHaveBeenCalledTimes(1);
+    expect(facade.DailyReview.save).toHaveBeenCalledWith({
+      kind: 'SaveReviewMarks',
+      reviewDate: MONDAY,
+      binding,
+      entries: [
+        { key: { instrumentKey: 'XYZ', tradingDate: MONDAY }, expectedRevision: 'None', intention: { kind: 'RecordInitialManualMark', price: '52.00' } },
+        { key: { instrumentKey: 'DEF', tradingDate: MONDAY }, expectedRevision: 'None', intention: { kind: 'AssertUnavailable', reason: 'halted' } },
+      ],
+    });
+  });
+
+  it('should fold the grid to one line saying how many are saved and how many have no price', async () => {
+    const facade = cardFacade();
+    vi.mocked(facade.DailyReview.save).mockResolvedValue(marksSavedResult([savedKey('XYZ', MONDAY, '52.00'), ackKey('DEF')]));
+    renderReview(facade);
+    const user = userEvent.setup();
+    const step = await marksPanel();
+    await user.type(inputOf(step, 'XYZ', MONDAY_LABEL), '52.00');
+    await user.click(within(step).getByRole('button', { name: /^Can't get a price/ }));
+    await user.type(within(step).getByRole('textbox', { name: /^Why no price/ }), 'halted');
+    await user.click(within(step).getByRole('button', { name: 'No price' }));
+    await user.click(within(step).getByRole('button', { name: 'Save Marks (2)' }));
+
+    const folded = await screen.findByRole('region', { name: 'Marks for Mon Oct 12 · 2 of 2 saved · 1 no price' });
+    expect(within(folded).getByRole('button', { name: 'Edit' })).toBeTruthy();
+    expect(within(folded).queryByRole('table')).toBeNull();
+    expect(within(folded).queryByRole('button', { name: /^Save Marks/ })).toBeNull();
+  });
+
+  it('should move focus to the first Trade header', async () => {
+    const facade = cardFacade();
+    vi.mocked(facade.DailyReview.save).mockResolvedValue(marksSavedResult([savedKey('XYZ', MONDAY, '52.00'), savedKey('DEF', MONDAY, '33.10')], readyReview({ trades: [TC, TA, TF] })));
+    renderReview(facade);
+    const user = userEvent.setup();
+    const step = await marksPanel();
+    await user.type(inputOf(step, 'XYZ', MONDAY_LABEL), '52.00');
+    await user.type(inputOf(step, 'DEF', MONDAY_LABEL), '33.10');
+    await user.click(within(step).getByRole('button', { name: 'Save Marks (2)' }));
+
+    // DEF's card is first in the returned order: its header, not the Edit button or the page, holds the focus.
+    await waitFor(() => expect(document.activeElement).toBe(screen.getByRole('button', { name: /^Review DEF\b/ })));
+  });
+
+  it('should say how many Marks are still to go when some are left', async () => {
+    const facade = cardFacade();
+    // The returned day says how many are left: that count is the one shown, as the day card shows it.
+    const day = review().day!;
+    vi.mocked(facade.DailyReview.save).mockResolvedValue(marksSavedResult([savedKey('XYZ', MONDAY, '52.00')], readyReview({ day: { ...day, toGo: { ...day.toGo, marks: 3 } } })));
+    renderReview(facade);
+    const user = userEvent.setup();
+    const step = await marksPanel();
+    await user.type(inputOf(step, 'XYZ', MONDAY_LABEL), '52.00');
+    await user.click(within(step).getByRole('button', { name: 'Save Marks (1)' }));
+
+    // The grid stays open, says what is left, and takes focus to the first price still to enter.
+    expect(await within(step).findByText('3 Marks to go.')).toBeTruthy();
+    expect(document.activeElement).toBe(inputOf(step, 'DEF', MONDAY_LABEL));
+    expect(screen.queryByRole('button', { name: 'Edit' })).toBeNull();
+    // Typing again ends the note.
+    await user.type(inputOf(step, 'DEF', MONDAY_LABEL), '3');
+    expect(within(step).queryByText('3 Marks to go.')).toBeNull();
+  });
+
+  it('should open the grid again on Edit, with a saved Mark editable in place and no reason asked', async () => {
+    const facade = cardFacade();
+    const xyzSaved = { ...missingRow('XYZ', ['t-a', 't-f']), resolution: available('52'), resolutionRevision: 1, task: null };
+    vi.mocked(facade.DailyReview.open).mockResolvedValue(gridReview({ today: [xyzSaved, missingRow('DEF', ['t-c'])] }));
+    vi.mocked(facade.DailyReview.save)
+      .mockResolvedValueOnce(marksSavedResult([savedKey('DEF', MONDAY, '33.10')]))
+      .mockResolvedValueOnce(marksSavedResult([{ key: { instrumentKey: 'XYZ', tradingDate: MONDAY }, resolution: available('52.50', 2), resolutionRevision: 2, classification: 'Correction' }]));
+    renderReview(facade);
+    const user = userEvent.setup();
+    const step = await marksPanel();
+    await user.type(inputOf(step, 'DEF', MONDAY_LABEL), '33.10');
+    await user.click(within(step).getByRole('button', { name: 'Save Marks (1)' }));
+    await user.click(await screen.findByRole('button', { name: 'Edit' }));
+
+    // The saved Mark is an input holding its price, with the words about fixing it, and no Correct or Withdraw editor.
+    const xyz = inputOf(await marksPanel(), 'XYZ', MONDAY_LABEL);
+    // Shown with two decimals, as the cell showed it before.
+    expect(xyz.value).toBe('52.00');
+    expect(document.activeElement).toBe(xyz);
+    expect(screen.getByText('Saved in this Review: fix it in place, no reason needed.')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Correct' })).toBeNull();
+    // Typing the saved price back is no change.
+    await user.clear(xyz);
+    await user.type(xyz, '52.00');
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'Save Marks (0)' })).toBeTruthy();
+    expect(xyz.value).toBe('52.00');
+    await user.clear(xyz);
+    await user.type(xyz, '52.50');
+    await user.click(screen.getByRole('button', { name: 'Save Marks (1)' }));
+
+    expect(screen.queryByText(/Reason/)).toBeNull();
+    expect(facade.DailyReview.save).toHaveBeenLastCalledWith({
+      kind: 'SaveReviewMarks',
+      reviewDate: MONDAY,
+      binding: newBinding,
+      entries: [{ key: { instrumentKey: 'XYZ', tradingDate: MONDAY }, expectedRevision: 1, intention: { kind: 'CorrectMark', price: '52.50', reason: '' } }],
+    });
+    // The fixed Mark folds the grid again.
+    expect(await screen.findByRole('region', { name: 'Marks for Mon Oct 12 · 2 of 2 saved' })).toBeTruthy();
+  });
+
+  it('should empty the typed Marks on Discard', async () => {
+    const facade = cardFacade();
+    renderReview(facade);
+    const user = userEvent.setup();
+    const step = await marksPanel();
+    await user.type(inputOf(step, 'XYZ', MONDAY_LABEL), '52.00');
+    await user.click(within(step).getByRole('button', { name: /^Can't get a price/ }));
+    await user.type(within(step).getByRole('textbox', { name: /^Why no price/ }), 'halted');
+    await user.click(within(step).getByRole('button', { name: 'No price' }));
+    expect(within(step).getByRole('button', { name: 'Save Marks (2)' })).toBeTruthy();
+
+    await user.click(within(step).getByRole('button', { name: 'Discard' }));
+
+    expect(within(step).getByRole('button', { name: 'Save Marks (0)' })).toBeTruthy();
+    expect(inputOf(step, 'XYZ', MONDAY_LABEL).value).toBe('');
+    expect(within(step).queryByText('halted')).toBeNull();
+    expect(facade.DailyReview.save).not.toHaveBeenCalled();
+  });
+
+  it('should keep the typed Marks and show the failure when the save fails', async () => {
+    const facade = cardFacade();
+    vi.mocked(facade.DailyReview.save).mockRejectedValue(new Error('storage'));
+    renderReview(facade);
+    const user = userEvent.setup();
+    const step = await marksPanel();
+    await user.type(inputOf(step, 'XYZ', MONDAY_LABEL), '52.00');
+    await user.type(inputOf(step, 'DEF', MONDAY_LABEL), '33.10');
+
+    await user.click(within(step).getByRole('button', { name: 'Save Marks (2)' }));
+
+    expect(await within(step).findByText('These Marks could not be saved.')).toBeTruthy();
+    expect(inputOf(step, 'XYZ', MONDAY_LABEL).value).toBe('52.00');
+    expect(inputOf(step, 'DEF', MONDAY_LABEL).value).toBe('33.10');
+    expect(within(step).getByRole('button', { name: 'Save Marks (2)' })).toBeTruthy();
+    // Nothing folded.
+    expect(screen.queryByRole('button', { name: 'Edit' })).toBeNull();
+  });
+
+  it('should put the cards in the returned Review order, once', async () => {
+    const facade = cardFacade();
+    vi.mocked(facade.DailyReview.save).mockResolvedValue(marksSavedResult([savedKey('XYZ', MONDAY, '52.00')], readyReview({ trades: [TC, TA, TF] })));
+    renderReview(facade);
+    const user = userEvent.setup();
+    const step = await marksPanel();
+    expect(order()).toEqual(['t-a', 't-f', 't-c']);
+    await user.type(inputOf(step, 'XYZ', MONDAY_LABEL), '52.00');
+    await user.click(within(step).getByRole('button', { name: 'Save Marks (1)' }));
+    await waitFor(() => expect(order()).toEqual(['t-c', 't-a', 't-f']));
+
+    // Later typing sorts nothing again: the order stays until the next save.
+    await user.type(inputOf(step, 'DEF', MONDAY_LABEL), '33.10');
+    expect(order()).toEqual(['t-c', 't-a', 't-f']);
   });
 });

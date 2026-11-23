@@ -508,7 +508,7 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
         </div>
       )}
       {!empty && (
-        <MarksStep facade={facade} held={heldReview} onResult={apply} tradeLine={tradeLine} onEntryDirty={onMarksEntryDirty} onMarkSaved={markSaved} markDrafts={markDrafts} outOfDate={stale} reads={reads} onRefresh={refreshHeld} go={marksGo} />
+        <MarksStep facade={facade} held={heldReview} onResult={apply} tradeLine={tradeLine} onEntryDirty={onMarksEntryDirty} onMarkSaved={markSaved} markDrafts={markDrafts} outOfDate={stale} reads={reads} onRefresh={refreshHeld} go={marksGo} onFolded={() => trades[0] && setReveal((current) => ({ tradeId: trades[0]!.tradeId, count: current.count + 1 }))} />
       )}
       {!empty && (
         <>

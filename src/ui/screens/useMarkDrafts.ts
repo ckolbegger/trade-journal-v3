@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 import type { MarketDataPrepareEntry, ObservationKey, SaveReviewMarksResult } from '../../app/types.ts';
 import { useRuntime } from '../runtime.tsx';
-import { holdersOf, listedStanding, standing, type Held, type HeldResult } from './held-review.ts';
+import { holdersOf, listedStanding, savedInPlace, standing, type Held, type HeldResult } from './held-review.ts';
 import { clearDraft, discardAll, draftAt, draftCount, emptyDrafts, keepOnly, moveDraft, newestTrade, saveEntries, setDraft, type Draft, type Drafts, type DraftValue } from './review-drafts.ts';
 
 const idOf = (key: ObservationKey): string => `${key.instrumentKey}:${key.tradingDate}`;
@@ -45,7 +45,8 @@ export interface MarkDrafts {
   // A Review read again: the drafts whose keys it still lists stay (a draft whose Trade no longer holds its key moves to one that does); the
   // rest are dropped and returned, with the Trades they were typed in (P156).
   readonly reconcile: (held: Held) => readonly Draft[];
-  readonly save: () => Promise<void>;
+  // Whether every draft was written.
+  readonly save: () => Promise<boolean>;
   readonly discard: () => void;
 }
 
@@ -107,11 +108,14 @@ export function useMarkDrafts({ latest, onResult, onSave }: Options): MarkDrafts
   };
   const save = async () => {
     const sent = Object.values(drafts);
-    const prepared = saveEntries(drafts, (key) => standing(latest(), key)?.revision);
+    const prepared = saveEntries(drafts, (key) => standing(latest(), key)?.revision, (key) => {
+      const known = standing(latest(), key);
+      return known !== undefined && savedInPlace(latest().review.reviewDate, key.tradingDate, known.resolution);
+    });
     // Market Data takes 100 entries at once: the screen says so and sends nothing (W76).
     if (prepared.kind === 'TooMany') {
       setOverLimit(true);
-      return;
+      return false;
     }
     setOverLimit(false);
     setSaving(true);
@@ -158,6 +162,7 @@ export function useMarkDrafts({ latest, onResult, onSave }: Options): MarkDrafts
       if (found[0]) show(found[0].draft.key, true);
       else setFailure('failed');
     } else setFailure(result.kind === 'ReviewChanged' ? 'changed' : 'failed');
+    return result?.kind === 'MarksSaved';
   };
   // Discard drops every draft on the page, and with them what a refused save said about them.
   const discard = () => {

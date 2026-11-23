@@ -1,6 +1,6 @@
 import {
   marksPanelOf, BREN, BREN_SOLD_OUT, build, buildPlanned, cardRows, closeOf, CORV, DALE, detail, detailReplayButton, expect, going, headline, MON_1123_1700, noMarkDash, openDetailAt, openDrawer, positionGroup,
-  LAUNCH, readoutPnl, readoutR, readoutValue, recordExpiration, replay, seek, sessionCard, sessionCards, sliderValue, SCREENSHOTS, stake, test, saveMarksButton,
+  LAUNCH, readoutPnl, readoutR, readoutValue, recordExpiration, replay, seek, sessionCard, sessionCards, sliderValue, SCREENSHOTS, stake, test, expectMarksSaved,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
@@ -113,8 +113,10 @@ test.describe('B9AR.6 How a replay ends, and a session with no Mark', () => {
     await row.getByLabel('Reason (required)').fill('No quote available.');
     await (await marksPanelOf(page, trade)).getByRole('button', { name: /^Save Marks/ }).click();
     // Saving moves the card on to another panel (A157), so the saved row is read again from the Marks panel.
-    await expect(saveMarksButton(page)).toHaveText('Save Marks (0)');
+    await expectMarksSaved(page);
     await marksPanelOf(page, trade);
+    // The grid folded after the save: Edit opened it again, and the acknowledged cell is pressed to read its editor.
+    await page.getByRole('button', { name: cellName, exact: true }).click();
     await expect(row).toContainText('Acknowledged Unavailable');
     await page.goto(`/trades/${trade.tradeId}`);
     await expect(detail.heading(page, 'CORV')).toBeVisible(LAUNCH);

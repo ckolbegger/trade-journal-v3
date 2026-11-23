@@ -96,7 +96,8 @@ function review(over: Partial<Ready> = {}): Ready {
     reviewDate: '2026-10-12',
     cutoff: CUTOFF,
     families: [
-      { family: 'Marks', earlierMarks: [], today: [markRow('ABC', ['t-b'], available('27.50')), markRow('DEF', ['t-c']), markRow('XYZ', ['t-f', 't-a'], available('52.00')), markRow('JKL', ['t-e'], available('21.00'))], earlier: [] },
+      // ABC's Mark of the session before is the one a per-row correction fixes: a Mark of the Review Date is fixed in place (T95.14).
+      { family: 'Marks', earlierMarks: [{ instrumentKey: 'ABC', instrument: { kind: 'Stock', symbol: 'ABC' }, trades: [{ tradeId: 't-b', from: '2026-10-09' }], marks: { '2026-10-09': { resolution: { kind: 'Available', mark: { revisionId: 'f1', revisionNumber: 1, price: '27.00', source: 'Manual', savedAt: '2026-10-09T21:00:00Z' } }, resolutionRevision: 1 } } }], previousSession: '2026-10-09', today: [markRow('ABC', ['t-b'], available('27.50')), markRow('DEF', ['t-c']), markRow('XYZ', ['t-f', 't-a'], available('52.00')), markRow('JKL', ['t-e'], available('21.00'))], earlier: [] },
       { family: 'Trades', trades: WALK },
     ],
     owed: [],
@@ -191,12 +192,12 @@ const headers = () => screen.getAllByRole('button', { name: /^Review / });
 // What MarketData.save answers to a correction of ABC's Mark, the per-row save that refreshes the Review.
 const correctedAbc = {
   kind: 'Saved',
-  key: { instrumentKey: 'ABC', tradingDate: '2026-10-12' },
+  key: { instrumentKey: 'ABC', tradingDate: '2026-10-09' },
   resolution: available('28.00'),
   resolutionRevision: 2,
   classification: 'Correction',
   revision: { revisionId: 'r2', revisionNumber: 2, price: '28.00', source: 'Manual', intention: 'Correction', observedAt: CUTOFF, savedAt: CUTOFF },
-  binding: { instrumentKey: 'ABC', tradingDate: '2026-10-12', expectedResolutionRevision: 1 },
+  binding: { instrumentKey: 'ABC', tradingDate: '2026-10-09', expectedResolutionRevision: 1 },
 } as never;
 // Opens a panel of the card by its header, unless it is already open (A152).
 async function showPanel(user: ReturnType<typeof userEvent.setup>, card: HTMLElement, name: 'Marks' | 'Reflections' | 'Action') {
@@ -217,7 +218,7 @@ async function chooseCell(user: ReturnType<typeof userEvent.setup>, _card: HTMLE
 // Corrects the card's ABC Mark and saves it.
 async function correctAbc(user: ReturnType<typeof userEvent.setup>, card: HTMLElement) {
   await showPanel(user, card, 'Marks');
-  const entry = await chooseCell(user, card, 'ABC Mark, Mon Oct 12');
+  const entry = await chooseCell(user, card, 'ABC Mark, Fri Oct 9');
   await user.click(within(entry).getByRole('button', { name: 'Correct' }));
   await user.type(within(entry).getByLabelText('Price'), '28.00');
   await user.type(within(entry).getByLabelText('Reason (required)'), 'typo');
@@ -507,10 +508,10 @@ describe('card order follows the newest Review (A150, decision 64)', () => {
     renderReview(facade);
     const card = await screen.findByRole('region', { name: 'ABC review' });
     // A value is entered in the card's Action form before the Mark is corrected.
-    const field = within(card).getAllByRole('textbox').find((box) => !box.closest('[aria-label="ABC Mark, Mon Oct 12"]'))!;
+    const field = within(card).getAllByRole('textbox').find((box) => !box.closest('[aria-label="ABC Mark, Fri Oct 9"]'))!;
     await user.type(field, 'kept');
     await showPanel(user, card, 'Marks');
-    const entry = await chooseCell(user, card, 'ABC Mark, Mon Oct 12');
+    const entry = await chooseCell(user, card, 'ABC Mark, Fri Oct 9');
     await user.click(within(entry).getByRole('button', { name: 'Correct' }));
     await user.type(within(entry).getByLabelText('Price'), '28.00');
     await user.type(within(entry).getByLabelText('Reason (required)'), 'typo');
@@ -610,7 +611,7 @@ describe('unsaved work (A156)', () => {
     const card = await screen.findByRole('region', { name: 'ABC review' });
 
     // A Correct in progress sits in the Marks step: it reports the page unsaved, and holds no card.
-    const entry = await chooseCell(user, card, 'ABC Mark, Mon Oct 12');
+    const entry = await chooseCell(user, card, 'ABC Mark, Fri Oct 9');
     await user.click(within(entry).getByRole('button', { name: 'Correct' }));
     await user.type(within(entry).getByLabelText('Price'), '28.00');
     await waitFor(() => expect(onDirtyChange).toHaveBeenLastCalledWith(true));
@@ -1231,6 +1232,6 @@ describe('Review words (P72)', () => {
     renderReview(cardFacade(review({ families: [review().families[0]!, { family: 'Trades', trades: [incoherent] }] })));
     await screen.findAllByRole('button', { name: /^Review / });
 
-    expect(screen.queryByRole('img')).toBeNull();
+    expect(within(screen.getByRole('list', { name: 'Positions' })).queryByRole('img')).toBeNull();
   });
 });

@@ -1,5 +1,5 @@
 import {
-  expectMark, marksStepOf, markEditorOf, markInputOf, actionFormOf, cardHeader, createCardFixture, enterMark, expect, FRIDAY, MONDAY, MONDAY_1700, observationsOf, onboardedAt, openReview, probe, remainsOf, meterOf, test, THURSDAY, workspaceOf, saveMarksButton,
+  expectMark, expectMarksSaved, marksStepOf, markEditorOf, markInputOf, actionFormOf, cardHeader, createCardFixture, enterMark, expect, FRIDAY, MONDAY, MONDAY_1700, observationsOf, onboardedAt, openReview, probe, remainsOf, meterOf, test, THURSDAY, workspaceOf, saveMarksButton,
 } from './support.ts';
 
 const NOT_A_PRICE = 'Enter a price as a number, with at most 6 decimal places.';
@@ -17,8 +17,9 @@ test.describe('B5R.3 Shared Mark', () => {
     await expect(meterOf(page, tA)).toHaveAccessibleName(/^P&L \+\$180\.00, 31% of the way to the Target\. Stop −\$270\.00, Target \+\$580\.00\.$/);
     await expect(remainsOf(page, tA)).toHaveText('1 reflection due · Action');
 
-    // The saved cell's editor names the Trades holding XYZ by their Trade-list summary lines, linked to them (decision 67).
-    const today = await markEditorOf(page, tA, MONDAY);
+    // The saved cell, chosen, names the Trades holding XYZ by their Trade-list summary lines, linked to them (decision 67).
+    await markEditorOf(page, tA, MONDAY);
+    const today = marksStepOf(page);
     await expect(today).toContainText('held by');
     await expect(today).toContainText('Long 50 shares @ $50.00');
     await expect(today.getByRole('link', { name: 'Long 50 shares @ $50.00' })).toHaveAttribute('href', /^\/trades\//);
@@ -63,7 +64,7 @@ test.describe('B5R.4 Invalid price saves nothing', () => {
     // Fixing the price and pressing Save Marks again saves all three.
     await (await markInputOf(page, tA, FRIDAY)).fill('51.00');
     await saveMarksButton(page).click();
-    await expect(saveMarksButton(page)).toHaveText('Save Marks (0)');
+    await expectMarksSaved(page);
     const stored = observationsOf(workspaceOf(await probe(page))!);
     expect(stored.map((o) => `${o.tradingDate} ${Number(o.marks[0]!.price)}`).sort()).toEqual(['2026-10-08 49', '2026-10-09 51', '2026-10-12 52']);
     await context.close();
@@ -101,7 +102,7 @@ test.describe('B5R.5 Unsaved work holds the card', () => {
     // The draft stays with the Review: the Marks step still counts it, and its Discard empties it.
     await expect(saveMarksButton(page)).toHaveText('Save Marks (1)');
     await marksStepOf(page).getByRole('button', { name: 'Discard' }).click();
-    await expect(saveMarksButton(page)).toHaveText('Save Marks (0)');
+    await expectMarksSaved(page);
     expect(await probe(page)).toEqual(before);
     await context.close();
   });
@@ -119,12 +120,13 @@ test.describe('B5R.8 Changed evidence', () => {
     await openReview(second);
     await enterMark(second, tA, MONDAY, '51.00');
 
-    const row = await markEditorOf(page, tA, MONDAY);
     await (await markInputOf(page, tA, MONDAY)).fill('52.00');
     await saveMarksButton(page).click();
 
-    await expect(marksStepOf(page).getByRole('alert').filter({ hasText: 'This Mark changed after you opened it. Nothing was saved.' })).toBeVisible();
-    await expect(row).toContainText('51');
+    // The draft sits over the Mark in its cell, so the notice says what the Mark is now.
+    const conflict = marksStepOf(page).getByRole('alert').filter({ hasText: 'This Mark changed after you opened it. Nothing was saved.' });
+    await expect(conflict).toBeVisible();
+    await expect(conflict).toContainText('It is now $51.00.');
     await expect(await markInputOf(page, tA, MONDAY)).toHaveValue('52.00');
     await expect(saveMarksButton(page)).toHaveText('Save Marks (1)');
     const observations = observationsOf(workspaceOf(await probe(page))!);

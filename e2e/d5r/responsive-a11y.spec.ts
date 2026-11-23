@@ -1,6 +1,6 @@
 import {
   panelOf, markEditorOf, markInputOf, actionFormOf, cardHeader, cardItem, completion, createCardFixture, createRoutineTrades, createTrades, expect, expectAccessible, FRIDAY, MONDAY, MONDAY_1700, onboardedAt, openReview, panelHeader, LAUNCH, remainsOf, meterOf, status, tabTo,
-  test, tradeCard, saveMarksButton, marksStepOf, type TradeRef,
+  test, tradeCard, saveMarksButton, expectMarksSaved, marksStepOf, type TradeRef,
 } from './support.ts';
 
 const INTENT = /^Why are you taking this action\?/;
@@ -86,7 +86,7 @@ test.describe('B5R.11 Responsive and accessible', () => {
     // Enter would go on to the next Instrument's price: Save Marks is reached by Tab here.
     await tabTo(page, saveMarksButton(page));
     await page.keyboard.press('Enter');
-    await expect(saveMarksButton(page)).toHaveText('Save Marks (0)');
+    await expectMarksSaved(page);
     // The Marks are the page's, so T-B's card was on its Action panel all along.
     await expect(panelHeader(page, tB, 'Action')).toHaveAttribute('aria-expanded', 'true');
     const save = abc.getByRole('form', { name: 'Action' }).getByRole('button', { name: 'Save' });

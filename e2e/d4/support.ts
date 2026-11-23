@@ -160,6 +160,8 @@ export const marksFamily = (page: Page): Locator => page.getByRole('region', { n
 export const marksStepOf = (page: Page): Locator => page.getByRole('region', { name: /^Marks for / });
 // Save Marks in the Marks step.
 export const saveMarksButton = (page: Page): Locator => marksStepOf(page).getByRole('button', { name: /^Save Marks/ });
+// The success sign of a Save Marks: the button at zero, or, with every Review Date Mark in, the folded line with its Edit (T95.14).
+export const expectMarksSaved = (page: Page, options?: { readonly timeout: number }): Promise<void> => expect(marksStepOf(page).getByRole('button', { name: /^(Save Marks \(0\)|Edit)$/ })).toBeVisible(options);
 
 // The list of Trades: the cards' list, or a previous release's Trades section. A raw locator that never clicks, for the
 // steps that assert navigation (rule 4) or read an old release (rule 5), as marksFamily is.
@@ -275,6 +277,12 @@ export async function reachPanel(page: Page, card: CardRef, panel: Panel): Promi
   // The Marks are the page's: the step is on the page whichever card is open.
   if (panel === 'Marks') {
     await expect(marksStepOf(page)).toBeVisible();
+    // After a Save Marks that left nothing to go, the grid is folded to its line (T95.14): Edit opens it again.
+    const edit = marksStepOf(page).getByRole('button', { name: 'Edit', exact: true });
+    if ((await edit.count()) > 0) {
+      await edit.click();
+      await expect(marksStepOf(page).getByRole('table')).toBeVisible();
+    }
     return marksStepOf(page);
   }
   await reachCard(page, card);
@@ -346,7 +354,17 @@ export async function expectMark(page: Page, card: CardRef, date: string, text: 
     if ((await input.count()) > 0) await expect(input).toHaveValue('');
     return;
   }
-  await expect(await markRow(page, card, date)).toContainText(text);
+  await expectCellShows(await markRow(page, card, date), text);
+}
+// A Mark saved in this Review is held in place by an input holding its price (T95.14): 'Manual' says it is filled, a price says which.
+// The other states show in the cell's editor.
+async function expectCellShows(cell: Locator, text: string): Promise<void> {
+  if (await cell.evaluate((element) => element instanceof HTMLInputElement)) {
+    if (text === 'Manual') await expect(cell).not.toHaveValue('');
+    else await expect(cell).toHaveValue(new RegExp(text.replace(/^\$/, '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+    return;
+  }
+  await expect(cell).toContainText(text);
 }
 export async function actionFormOf(page: Page, card: CardRef): Promise<Locator> {
   return (await reachPanel(page, card, 'Action')).getByRole('form', { name: 'Action' });
@@ -390,8 +408,9 @@ export async function savedUnlessRefused(helper: string, scope: Locator, waitSav
 
 // Shows the saved row in the Marks step once Save Marks has cleared the drafts.
 async function checkSavedRow(page: Page, card: CardRef, date: string, text: string): Promise<void> {
-  await savedUnlessRefused('checkSavedRow', marksStepOf(page), () => expect(saveMarksButton(page)).toHaveText('Save Marks (0)'));
-  await expect(await markRow(page, card, date)).toContainText(text);
+  // The saved page shows Save Marks (0), or, with every Review Date Mark in, the folded line with its Edit.
+  await savedUnlessRefused('checkSavedRow', marksStepOf(page), () => expect(marksStepOf(page).getByRole('button', { name: /^(Save Marks \(0\)|Edit)$/ })).toBeVisible());
+  await expectCellShows(await markRow(page, card, date), text);
 }
 
 // A price that reads as a slip is questioned when its cell is left (T95.13). Leaves the cell in hand, then answers every question under the

@@ -52,7 +52,11 @@ const progressFor = (rows: readonly MarkRow[], dueNow: number, owed: boolean) =>
   const needed = rows.filter((row) => row.resolution.kind === 'Missing').length;
   return cardProgress(dueNow, 0, { needed, resolved: rows.length - needed, owed });
 };
-function ready(over: { today?: readonly MarkRow[]; earlier?: Earlier; trades?: readonly ReviewTradeItem[]; completion?: ReviewCompletion; reviewDate?: string } = {}): Ready {
+type EarlierMarksFamily = Extract<Ready['families'][number], { family: 'Marks' }>['earlierMarks'];
+// The previous session's saved Marks of the Instruments named: what a per-row Correct fixes, since a Review Date Mark is fixed in place (T95.14).
+const fridayMarks = (...symbols: string[]): EarlierMarksFamily =>
+  symbols.map((instrumentKey) => ({ instrumentKey, instrument: { kind: 'Stock', symbol: instrumentKey }, trades: [{ tradeId: 't1', from: '2026-10-09' }], marks: { '2026-10-09': { resolution: { kind: 'Available', mark: { revisionId: 'f1', revisionNumber: 1, price: '1', source: 'Manual', savedAt: '2026-10-09T21:00:00Z' } }, resolutionRevision: 1 } } }));
+function ready(over: { today?: readonly MarkRow[]; earlier?: Earlier; earlierMarks?: EarlierMarksFamily; trades?: readonly ReviewTradeItem[]; completion?: ReviewCompletion; reviewDate?: string } = {}): Ready {
   const completion = over.completion ?? { kind: 'Complete' };
   const reasons = completion.kind === 'Incomplete' ? completion.reasons : [];
   const built: Omit<Ready, 'day'> = {
@@ -60,7 +64,7 @@ function ready(over: { today?: readonly MarkRow[]; earlier?: Earlier; trades?: r
     reviewDate: over.reviewDate ?? '2026-10-12',
     cutoff: CUTOFF,
     families: [
-      { family: 'Marks', earlierMarks: [], today: over.today ?? [], earlier: over.earlier ?? [] },
+      { family: 'Marks', earlierMarks: over.earlierMarks ?? [], ...(over.earlierMarks && { previousSession: '2026-10-09' }), today: over.today ?? [], earlier: over.earlier ?? [] },
       // The double's progress follows its Review-date rows and its completion reasons (D5R2 section 6.3): a row without a Mark is
       // needed, one with a Mark resolved; a reflection reason is due now, and the Action is owed while the completion names it.
       {
@@ -309,7 +313,8 @@ describe('Marks in the card (P11, P15)', () => {
   it('should head each Instrument of the page as a row once, and name each shared Instrument with its Trades in its editor, using MarkEntry', async () => {
     const facade = reviewFacade(
       ready({
-        today: [markRow('DEF', ['t3']), markRow('XYZ', ['t1', 't2'], available('52'), 3)],
+        // XYZ's Mark is acknowledged: a typed Mark is fixed in place with no editor (T95.14), so the editor with its Trades is the acknowledgment's.
+        today: [markRow('DEF', ['t3']), markRow('XYZ', ['t1', 't2'], { kind: 'AcknowledgedUnavailable', acknowledgment: { versionId: 'a1', kind: 'Asserted', savedAt: '2026-10-12T21:00:00Z' } }, 3)],
         trades: [tradeItem('t1', 'XYZ'), tradeItem('t2', 'XYZ'), tradeItem('t3', 'DEF')],
         completion: incomplete(markMissing('DEF', 't3'), ...actionMissing('t1', 't2', 't3')),
       }),
@@ -326,14 +331,9 @@ describe('Marks in the card (P11, P15)', () => {
     const xyz = await chooseCell(user, 'XYZ Mark, Mon Oct 12');
     expect(within(xyz).getAllByRole('link').map((link) => link.getAttribute('href'))).toEqual(['/trades/t1', '/trades/t2']);
     // Its editor is a MarkEntry bound to the key's revision.
-    await user.click(within(xyz).getByRole('button', { name: 'Correct' }));
-    await user.type(within(xyz).getByLabelText('Price'), '51.5');
-    await user.type(within(xyz).getByLabelText('Reason (required)'), 'typo');
-    await user.click(within(xyz).getByRole('button', { name: 'Save correction' }));
-    expect(facade.MarketData.save).toHaveBeenLastCalledWith({ intention: 'CorrectMark', instrumentKey: 'XYZ', tradingDate: '2026-10-12', price: '51.5', reason: 'typo', expectedResolutionRevision: 3 });
+    await user.click(within(xyz).getByRole('button', { name: 'Withdraw' }));
+    expect(facade.MarketData.save).toHaveBeenLastCalledWith({ intention: 'WithdrawAcknowledgment', instrumentKey: 'XYZ', tradingDate: '2026-10-12', expectedResolutionRevision: 3 });
 
-    // The Conflict keeps the typed values; cancelling them frees the grid.
-    await user.click(within(xyz).getByRole('button', { name: 'Cancel' }));
     // The Instrument held by one Trade names no other Trade; it is typed and saved in the same grid.
     await user.type(within(marks).getByRole('textbox', { name: 'DEF Mark, Mon Oct 12' }), '12');
     await user.click(within(marks).getByRole('button', { name: 'Save Marks (1)' }));
@@ -429,17 +429,17 @@ describe('Marks in the card (P11, P15)', () => {
 
   it('should keep a value typed into a Mark entry when the Review read again after a save brings that key a newer revision', async () => {
     const trades = [tradeItem('t1', 'DEF')];
-    const first = ready({ today: [markRow('DEF', ['t1']), markRow('XYZ', ['t1'], available('52'), 1)], trades, completion: incomplete(markMissing('DEF', 't1'), ...actionMissing('t1')) });
+    const first = ready({ today: [markRow('DEF', ['t1']), markRow('XYZ', ['t1'], available('52'), 1)], earlierMarks: fridayMarks('XYZ'), trades, completion: incomplete(markMissing('DEF', 't1'), ...actionMissing('t1')) });
     // The refreshed key is acknowledged unavailable, so the typed price still fits it.
     const acknowledged: MarkResolution = { kind: 'AcknowledgedUnavailable', acknowledgment: { versionId: 'a1', kind: 'Asserted', savedAt: '2026-10-12T21:00:00Z' } };
-    const second = ready({ today: [markRow('DEF', ['t1'], acknowledged, 1), markRow('XYZ', ['t1'], available('52'), 1)], trades, completion: incomplete(...actionMissing('t1')) });
+    const second = ready({ today: [markRow('DEF', ['t1'], acknowledged, 1), markRow('XYZ', ['t1'], available('52'), 1)], earlierMarks: fridayMarks('XYZ'), trades, completion: incomplete(...actionMissing('t1')) });
     const facade = reviewFacade(first, second);
-    vi.mocked(facade.MarketData.save).mockResolvedValue(savedMark('XYZ', '2026-10-12', '52'));
+    vi.mocked(facade.MarketData.save).mockResolvedValue(savedMark('XYZ', '2026-10-09', '52'));
     renderReview(facade);
     const user = userEvent.setup();
     await user.type(await screen.findByRole('textbox', { name: 'DEF Mark, Mon Oct 12' }), '12.5');
 
-    await correctPrice(user, await chooseCell(user, 'XYZ Mark, Mon Oct 12'), '52');
+    await correctPrice(user, await chooseCell(user, 'XYZ Mark, Fri Oct 9'), '52');
     await waitFor(() => expect(facade.DailyReview.open).toHaveBeenCalledTimes(2));
     await waitFor(() => expect(screen.getByRole('button', { name: 'DEF Mark, Mon Oct 12' }).textContent).toContain('Acknowledged Unavailable'));
 
@@ -487,8 +487,7 @@ describe('Marks in the card (P11, P15)', () => {
     // The saved Mark comes from the returned state alone.
     await user.click(headers[0]!);
     await openMarks();
-    const xyz = await screen.findByRole('button', { name: 'XYZ Mark, Mon Oct 12' });
-    expect(within(xyz).getByText('$52.00', { exact: false })).toBeTruthy();
+    expect((await screen.findByRole<HTMLInputElement>('textbox', { name: 'XYZ Mark, Mon Oct 12' })).value).toBe('52.00');
     // No Review session, stage, or progress is kept in the browser.
     expect(stored).not.toHaveBeenCalled();
     expect(read).not.toHaveBeenCalled();
@@ -498,18 +497,18 @@ describe('Marks in the card (P11, P15)', () => {
 
   it('should show a fresh entry for an Instrument whose Review Date changed when the Review is read again', async () => {
     const trades = [tradeItem('t1', 'DEF')];
-    const monday = ready({ today: [markRow('DEF', ['t1']), markRow('XYZ', ['t1'], available('52'), 1)], trades, completion: incomplete(markMissing('DEF', 't1'), ...actionMissing('t1')) });
+    const monday = ready({ today: [markRow('DEF', ['t1']), markRow('XYZ', ['t1'], available('52'), 1)], earlierMarks: fridayMarks('XYZ'), trades, completion: incomplete(markMissing('DEF', 't1'), ...actionMissing('t1')) });
     const tuesday: Ready = {
       ...ready({ today: [{ ...markRow('DEF', ['t1']), tradingDate: '2026-10-13' }], trades, completion: incomplete({ code: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'DEF' }, tradingDate: '2026-10-13', trades: ['t1'] }, ...actionMissing('t1')) }),
       reviewDate: '2026-10-13',
     };
     const facade = reviewFacade(monday, tuesday);
-    vi.mocked(facade.MarketData.save).mockResolvedValue(savedMark('XYZ', '2026-10-12', '52'));
+    vi.mocked(facade.MarketData.save).mockResolvedValue(savedMark('XYZ', '2026-10-09', '52'));
     renderReview(facade);
     const user = userEvent.setup();
     await user.type(await screen.findByRole('textbox', { name: 'DEF Mark, Mon Oct 12' }), '12');
 
-    await correctPrice(user, await chooseCell(user, 'XYZ Mark, Mon Oct 12'), '52');
+    await correctPrice(user, await chooseCell(user, 'XYZ Mark, Fri Oct 9'), '52');
     const tuesday$ = await screen.findByRole<HTMLInputElement>('textbox', { name: 'DEF Mark, Tue Oct 13' });
 
     // The Monday draft, with its typed price, is gone; Tuesday's key starts empty and Unsaved is not shown.
@@ -581,7 +580,7 @@ describe('Marks in the card (P11, P15)', () => {
 
   it('should keep the Marks and say the Review could not be refreshed when the Review read after a save fails, then clear it once a refresh succeeds', async () => {
     const trades = [tradeItem('t1', 'XYZ')];
-    const first = ready({ today: [markRow('DEF', ['t1'], available('1'), 1), markRow('XYZ', ['t1'], available('1'), 1), markRow('GHI', ['t1'], available('1'), 1)], trades, completion: incomplete(...actionMissing('t1')) });
+    const first = ready({ today: [markRow('DEF', ['t1'], available('1'), 1), markRow('XYZ', ['t1'], available('1'), 1), markRow('GHI', ['t1'], available('1'), 1)], earlierMarks: fridayMarks('DEF', 'XYZ', 'GHI'), trades, completion: incomplete(...actionMissing('t1')) });
     const facade = reviewFacade(first);
     vi.mocked(facade.DailyReview.open).mockResolvedValueOnce(first).mockRejectedValueOnce(new Error('boom')).mockResolvedValueOnce({ kind: 'ChangedDuringAssembly' }).mockResolvedValue(first);
     vi.mocked(facade.MarketData.save).mockImplementation((command) => Promise.resolve(savedMark(command.instrumentKey, command.tradingDate, '1')));
@@ -589,15 +588,15 @@ describe('Marks in the card (P11, P15)', () => {
     const user = userEvent.setup();
 
     await openMarks();
-    await correctPrice(user, await chooseCell(user, 'DEF Mark, Mon Oct 12'), '2');
+    await correctPrice(user, await chooseCell(user, 'DEF Mark, Fri Oct 9'), '2');
     expect((await screen.findByRole('alert')).textContent).toContain('We couldn’t refresh the Review. Nothing was changed.');
-    expect(screen.getByRole('button', { name: 'XYZ Mark, Mon Oct 12' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'XYZ Mark, Fri Oct 9' })).toBeTruthy();
 
     // A refused refresh says the same, and the next save's succeeds.
-    await correctPrice(user, await chooseCell(user, 'XYZ Mark, Mon Oct 12'), '2');
+    await correctPrice(user, await chooseCell(user, 'XYZ Mark, Fri Oct 9'), '2');
     await waitFor(() => expect(facade.DailyReview.open).toHaveBeenCalledTimes(3));
     expect(screen.getByRole('alert').textContent).toContain('We couldn’t refresh the Review.');
-    await correctPrice(user, await chooseCell(user, 'GHI Mark, Mon Oct 12'), '2');
+    await correctPrice(user, await chooseCell(user, 'GHI Mark, Fri Oct 9'), '2');
     await waitFor(() => expect(screen.queryByRole('alert')).toBeNull());
     expect(facade.DailyReview.open).toHaveBeenCalledTimes(4);
   });

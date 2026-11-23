@@ -1,5 +1,5 @@
 import {
-  expectMark, markEditorOf, BASE_URL, createCardFixture, enterMark, expect, firstPage, launchAt, MONDAY, MONDAY_1700, observationsOf, onboardedAt, onboardedPage, openReview, pinClock, probe, reachCard, LAUNCH, spawnedBrowser, test, workspaceOf,
+  expectMark, BASE_URL, createCardFixture, enterMark, expect, firstPage, launchAt, MONDAY, MONDAY_1700, observationsOf, onboardedAt, onboardedPage, openReview, pinClock, probe, reachCard, LAUNCH, spawnedBrowser, test, workspaceOf,
   type TradeRef,
 } from './support.ts';
 
@@ -30,9 +30,8 @@ test.describe('B5R.9 Kill after Save Marks', () => {
       const page = await firstPage(relaunched.context);
       await page.goto(`${BASE_URL}/`);
       await openReview(page);
-      const row = await markEditorOf(page, tA, MONDAY);
-      await expect(row).toContainText('Manual');
-      await expect(row).toContainText('52');
+      await expectMark(page, tA, MONDAY, 'Manual');
+      await expectMark(page, tA, MONDAY, '52');
       const observations = observationsOf(workspaceOf(await probe(page))!);
       expect(observations).toHaveLength(1);
       expect(observations[0]!.instrumentKey).toBe('XYZ');

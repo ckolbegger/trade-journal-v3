@@ -53,7 +53,8 @@ test.describe('B95.2 The slip questions', () => {
     await answerSlipQuestions(page);
     await expect(saveMarksButton(page)).toHaveText('Save Marks (2)');
     await saveMarksButton(page).click();
-    await expect(saveMarksButton(page)).toHaveText('Save Marks (0)');
+    // Both Marks are in, so the grid folds to its line.
+    await expect(step.getByRole('button', { name: 'Edit', exact: true })).toBeVisible();
 
     // Only the prices were stored: nothing of the questions or their answers.
     const stored = observationsOf(workspaceOf(await probe(page))!).filter((o) => o.tradingDate === '2026-10-12');

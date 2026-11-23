@@ -7,7 +7,7 @@
 import type { Page } from '@playwright/test';
 import {
   acknowledgeMark, currentTradeId, detail, enterMark, executionRow, expect, fillOptionPlan, firstPage, launchAt, MONDAY, MONDAY_0900, MONDAY_1700, onboardedAt, openReview, optionMarkRow, LAUNCH, reachCard, reachPanel, recordOptionEntry,
-  markRow, saveAction, saveMarkPrice, savedOptionMarkRow, THURSDAY, WEDNESDAY, WEDNESDAY_1700, type OptionPlanValues, type Profile, type TradeRef,
+  expectMarksSaved, markCell, saveAction, saveMarksButton, saveMarkPrice, savedOptionMarkRow, THURSDAY, WEDNESDAY, WEDNESDAY_1700, type OptionPlanValues, type Profile, type TradeRef,
 } from '../d7s/support.ts';
 
 export * from '../d7s/support.ts';
@@ -83,8 +83,9 @@ async function sellOneAndDefer(page: Page): Promise<void> {
 // O-C3 with section 5's executions, Marks and Journal, created through the UI. With `thursdayHold` the Hold for Thu 10-15 is saved at Thu 18:00
 // (without it the history ends at Thu 17:00, since a Hold saved at 18:00 is after it). Every browser is closed on return; the caller launches
 // at the final clock itself.
-// With `correctedWednesdayXyz` (T8R.27, B8R.6) Wednesday's XYZ Mark is corrected to that price straight after it is saved, with a reason.
-export const CORRECTION_REASON = 'Misread the closing quote.';
+// With `correctedWednesdayXyz` (T8R.27, B8R.6) Wednesday's XYZ Mark is fixed to that price straight after it is saved: a Mark saved in this Review is
+// fixed in its cell with no reason asked, and the correction carries the reason Daily Review gives it (T95.14, answer 8).
+export const CORRECTION_REASON = 'Fixed in the same Review';
 export async function buildOc3(profile: Profile, options: { readonly thursdayHold?: boolean; readonly correctedWednesdayXyz?: string; readonly noTuesdayReview?: boolean } = {}): Promise<TradeRef> {
   const { context: setup, page: setupPage } = await onboardedAt(profile, MONDAY_0900);
   const trade: TradeRef = { symbol: 'XYZ', tradeId: await confirmOc3(setupPage), label: 'O-C3' };
@@ -113,12 +114,9 @@ export async function buildOc3(profile: Profile, options: { readonly thursdayHol
   await at(profile, WEDNESDAY_1700, async (page) => {
     await saveOc3Marks(page, trade, WEDNESDAY, '57.40', '2.90');
     if (options.correctedWednesdayXyz === undefined) return;
-    const entry = await markRow(page, trade, WEDNESDAY);
-    await entry.getByRole('button', { name: 'Correct', exact: true }).click();
-    await entry.getByLabel('Price').fill(options.correctedWednesdayXyz);
-    await entry.getByLabel('Reason (required)').fill(CORRECTION_REASON);
-    await entry.getByRole('button', { name: 'Save correction' }).click();
-    await expect(entry).toContainText(`Corrected: ${CORRECTION_REASON}`);
+    await (await markCell(page, trade, WEDNESDAY)).fill(options.correctedWednesdayXyz);
+    await saveMarksButton(page).click();
+    await expectMarksSaved(page);
   });
   await at(profile, THURSDAY_1700, (page) => saveOc3Marks(page, trade, THURSDAY, '57.90', '3.20'));
   if (options.thursdayHold === true)

@@ -6,6 +6,7 @@ import { acknowledgedUnavailableStatusLabel, instrumentLabel } from '../calculat
 import { signed } from '../figures.ts';
 import { decimalMoney, decimalUnderlyingPrice, money, shortDate } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
+import { savedInPlace } from './held-review.ts';
 import { CANT_GET_A_PRICE, NO_PRICE, NOT_HELD, previousMark, type GridModel } from './marks-grid.ts';
 import type { FieldIssue } from './plan-issues.ts';
 import type { DraftValue } from './review-drafts.ts';
@@ -46,6 +47,8 @@ export interface MarksGridProps {
   // Paging shows these sessions (the Review Date, the previous one and the page's earlier ones).
   readonly onPage: (visible: readonly string[]) => void;
   // A price left in its cell (T95.13), and the question it raises, if any: shown in place under the row.
+  // What a Conflict said about a Review Date cell: nothing was saved, and the Mark shown is the current one.
+  readonly noticeOf?: (key: ObservationKey) => string | undefined;
   readonly onLeave?: (key: ObservationKey) => void;
   readonly slipOf?: (key: ObservationKey) => Omit<SlipQuestionProps, 'last' | 'onChoose'> | undefined;
   readonly onAnswer?: (key: ObservationKey, choice: SlipChoice) => void;
@@ -59,7 +62,7 @@ const idOf = (key: ObservationKey): string => `${key.instrumentKey}:${key.tradin
 
 // The Marks step's grid: one row per Instrument on the page, the previous session's Mark, the Review Date's price and the change from the
 // previous Mark. The skipped sessions are optional columns, added on request.
-export function MarksGrid({ model, reviewDate, writable, showEarlier, draftOf, noteOf, onPrice, onNoPrice, onUndo, fieldOf, chosen, onChoose, onLastEnter, pagingHeld, onPage, refusals, showSession, onLeave, slipOf, onAnswer }: MarksGridProps) {
+export function MarksGrid({ model, reviewDate, writable, showEarlier, draftOf, noteOf, onPrice, onNoPrice, onUndo, fieldOf, chosen, onChoose, onLastEnter, pagingHeld, onPage, refusals, showSession, onLeave, slipOf, onAnswer, noticeOf }: MarksGridProps) {
   const { timeZone } = useRuntime();
   const [requestedPage, setPage] = useState(0);
   const holdId = useId();
@@ -148,6 +151,8 @@ export function MarksGrid({ model, reviewDate, writable, showEarlier, draftOf, n
     }
     if (state.resolution.kind === 'AcknowledgedUnavailable') return { kind: 'text' as const, text: acknowledgedUnavailableStatusLabel(), label, id };
     const { price } = state.resolution.mark;
+    // A typed Mark saved in this Review is fixed in place: its cell is an input holding the price (T95.14).
+    if (writable && savedInPlace(reviewDate, date, state.resolution)) return { kind: 'input' as const, label, value: draft?.kind === 'Price' ? draft.price : decimalUnderlyingPrice(price), field: fieldOf(key), key, saved: true };
     const optionTrade = model.instruments.some((i) => i.instrument.kind === 'Option');
     return { kind: 'text' as const, text: instrument.kind === 'Stock' && optionTrade ? decimalUnderlyingPrice(price) : decimalMoney(price), label, id, corrected: state.resolution.mark.correctionReason !== undefined };
   };
@@ -218,7 +223,9 @@ export function MarksGrid({ model, reviewDate, writable, showEarlier, draftOf, n
               const slip = slipOf?.(todayKey);
               const saved = model.cellAt(instrumentKey, reviewDate);
               const savedPrice = saved && saved !== NOT_HELD && saved.resolution.kind === 'Available' ? saved.resolution.mark.price : undefined;
-              const entry = draft?.kind === 'Price' ? draft.price : savedPrice;
+              // An emptied price has no change to show.
+              const typed = draft?.kind === 'Price' ? draft.price : savedPrice;
+              const entry = typed?.trim() === '' ? undefined : typed;
               // CASE1-NO-CHANGE
               const change = entry === undefined || last === undefined ? undefined : markChange({ entry, previous: last });
               const issues = today.kind === 'input' ? today.field.issues.filter((issue) => issue.field === today.field.id) : [];
@@ -244,6 +251,11 @@ export function MarksGrid({ model, reviewDate, writable, showEarlier, draftOf, n
                         {change.percent !== undefined && ` (${change.percent}%)`}
                       </span>
                     )}
+                    {today.kind === 'input' && noticeOf?.(todayKey) && (
+                      <div role="alert" className="banner warning">
+                        <p>{noticeOf(todayKey)}</p>
+                      </div>
+                    )}
                     {issues.length > 0 && fieldError(today.kind === 'input' ? today.field.id : '')}
                     {/* An issue about the Mark as a whole (a date after the contract expired) has no field to sit beside. */}
                     {today.kind === 'input' && today.field.issues.filter((issue) => issue.field !== today.field.id).map((issue) => <p key={issue.field} className="field-error">{issue.message}</p>)}
@@ -260,7 +272,7 @@ export function MarksGrid({ model, reviewDate, writable, showEarlier, draftOf, n
                         </button>
                       </>
                     )}
-                    {writable && today.kind === 'input' && !asked && draft === undefined && (
+                    {writable && today.kind === 'input' && !today.saved && !asked && draft === undefined && (
                       <button type="button" className="link-button" aria-label={`${CANT_GET_A_PRICE}, ${instrumentLabel(instrument, timeZone)}`} onClick={() => setAsking({ id: todayId })}>
                         {CANT_GET_A_PRICE}
                       </button>

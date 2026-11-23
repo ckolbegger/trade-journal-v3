@@ -5,10 +5,10 @@ import type { MarkResolution, MarkRow, ObservationKey } from '../../app/types.ts
 import type { Instrument } from '../../domain/instrument/index.ts';
 import { checkMarkSlip } from '../../domain/mark-slip/index.ts';
 import { instrumentLabel } from '../calculation-words.ts';
-import { shortDate } from '../format.ts';
+import { decimalMoney, decimalUnderlyingPrice, shortDate } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
 import { fieldIssues } from './form-issues.tsx';
-import { holdersOf, instrumentOf as heldInstrument, standing as heldStanding, type Held, type HeldResult, type Standing } from './held-review.ts';
+import { holdersOf, instrumentOf as heldInstrument, savedInPlace, standing as heldStanding, type Held, type HeldResult, type Standing } from './held-review.ts';
 import { CANT_GET_A_PRICE, gridModel, NOT_HELD, previousMark } from './marks-grid.ts';
 import { stepMarks } from './marks-step.ts';
 import { MarkEntry, type MarkEntryProps } from './MarkEntry.tsx';
@@ -31,6 +31,8 @@ function ReviewMarkEntry({ instrumentKey, tradingDate, onEntryDirty, onMarkSaved
 // A Mark task only a Trade with a due settlement needs (A112, T7.24): recording the expiration removes it.
 // A typed price, or "Can't get a price" with its reason, is a draft the Review holds until Save Marks (A153, P156).
 const SETTLEMENT_ONLY_NOTE = 'Needed only while settlement is due';
+// W110: a Mark saved in this Review is fixed where it stands.
+const SAVED_FIX_WORDS = 'Saved in this Review: fix it in place, no reason needed.';
 
 // What the cell editor under the grid shares: the drafts and the controls over them.
 interface Panel {
@@ -177,6 +179,8 @@ export interface MarksStepProps {
   // Reads the Review and the card again; false when that could not be done.
   readonly onRefresh: () => Promise<boolean>;
   readonly go?: MarksGo;
+  // The grid folded after a Save Marks that left no Mark to go: the page takes focus to the first Trade's header (A327).
+  readonly onFolded?: () => void;
 }
 
 // What a failed Save Marks says, with Refresh when the Review changed.
@@ -208,7 +212,7 @@ export function SaveFailure({ drafts, onRefresh }: { readonly drafts: MarkDrafts
 
 // The Marks step (A153, P158): the one grid for the page. A typed price or a "Can't get a price" is a draft until Save Marks; the chosen
 // cell's editor keeps the per-key Correct and Withdraw of a Mark.
-export function MarksStep({ facade, held: heldReview, onResult, tradeLine, onEntryDirty, onMarkSaved, markDrafts, outOfDate, reads = 0, onRefresh, go }: MarksStepProps) {
+export function MarksStep({ facade, held: heldReview, onResult, tradeLine, onEntryDirty, onMarkSaved, markDrafts, outOfDate, reads = 0, onRefresh, go, onFolded }: MarksStepProps) {
   const uid = useId();
   const { writable, timeZone } = useRuntime();
   const trades = heldReview.review.families.flatMap((family) => (family.family === 'Trades' ? family.trades.map((trade) => trade.tradeId) : []));
@@ -228,10 +232,14 @@ export function MarksStep({ facade, held: heldReview, onResult, tradeLine, onEnt
   const reportDirty = onEntryDirty;
   // Choosing another cell was refused because a correction is in progress (A297); the words show until it ends.
   const [refused, setRefused] = useState(false);
+  // A Save Marks just wrote everything typed: the grid folds once no Review Date Mark is left (T95.14). Typing, Edit or a link to a cell ends it.
+  const [saved, setSaved] = useState(false);
   // The price each Review Date cell was last left with (T95.13). Whether it is questioned is worked out from the draft each render.
   const [left, setLeft] = useState<Readonly<Record<string, string>>>({});
   // The price each was answered at: it is not asked about again.
   const [slipAnswered, setSlipAnswered] = useState<Readonly<Record<string, string>>>({});
+  // A saved Mark's input emptied to be retyped: it holds no draft yet, but shows empty rather than the saved price.
+  const [blanked, setBlanked] = useState<ReadonlySet<string>>(new Set());
   const entryDirty = useCallback<EntryDirty>(
     (id, dirty) => {
       if (!dirty) setRefused(false);
@@ -250,7 +258,10 @@ export function MarksStep({ facade, held: heldReview, onResult, tradeLine, onEnt
   const { drafts, count, rejections, notices, failure, tooMany, saving, reveal, settleReveal } = markDrafts;
   const holdDraft = markDrafts.hold;
   const holder = (key: ObservationKey) => holdersOf(heldReview.review, key)[0] ?? trades[0] ?? '';
-  const hold = (key: ObservationKey, value: DraftValue | undefined) => holdDraft(key, value, holder(key));
+  const hold = (key: ObservationKey, value: DraftValue | undefined) => {
+    setSaved(false);
+    holdDraft(key, value, holder(key));
+  };
   // What a refused save said about each key, worded under this step's field ids.
   const issues: Readonly<Record<string, readonly FieldIssue[]>> = Object.fromEntries(
     Object.entries(rejections).flatMap(([id, rejection]) => {
@@ -284,6 +295,7 @@ export function MarksStep({ facade, held: heldReview, onResult, tradeLine, onEnt
   const [revealHeld, setRevealHeld] = useState(false);
   if (reveal !== undefined && reveal.count !== handledReveal) {
     setHandledReveal(reveal.count);
+    setSaved(false);
     // A correction in progress holds the editor as it holds a press (A297): the key stays reported by its cell, and the correction keeps the focus.
     const held = correctionHolds(reveal.key);
     setRevealHeld(held);
@@ -314,6 +326,7 @@ export function MarksStep({ facade, held: heldReview, onResult, tradeLine, onEnt
   const [linkRefused, setLinkRefused] = useState(false);
   if (linked !== handledLink) {
     setHandledLink(linked);
+    setSaved(false);
     const key = linkedInstrument === undefined ? undefined : { instrumentKey: linkedInstrument, tradingDate: reviewDate };
     // Adding the skipped sessions changes the page, which a correction in progress holds (A296).
     const skippedHeld = skipped === true && dirtyIds.size > 0;
@@ -361,9 +374,49 @@ export function MarksStep({ facade, held: heldReview, onResult, tradeLine, onEnt
   // The walked Trades with a due settlement, from their card progress: a Mark only they need is said so in its editor (A112).
   const walkedTrades = heldReview.review.families.flatMap((family) => (family.family === 'Trades' ? family.trades : []));
   const settlementTrades = new Set(walkedTrades.filter((trade) => trade.progress.panels.some((p) => p.panel === 'Settlement' && !p.done)).map((trade) => trade.tradeId));
-  const panel: Panel = { facade, writable, uid, draftOf: (key) => draftAt(drafts, key)?.value, hold, typePrice: (key, price) => typePrice(key, price), leavePrice: (key) => leave(key), issues, notices, standing, onResult, onEntryDirty: entryDirty, focus, onMarkSaved, settlementTrades };
+  const panel: Panel = { facade, writable, uid, draftOf: (key) => draftAt(drafts, key)?.value ?? (blanked.has(rowId(key.instrumentKey, key.tradingDate)) ? { kind: 'Price', price: '' } : undefined), hold, typePrice: (key, price) => typePrice(key, price), leavePrice: (key) => leave(key), issues, notices, standing, onResult, onEntryDirty: entryDirty, focus, onMarkSaved, settlementTrades };
   const instrumentOf = (instrumentKey: string): Instrument => model.instruments.find((i) => i.instrumentKey === instrumentKey)!.instrument;
+  // The Review Date's Marks by state: the fold counts them, and the Marks left come from the day when the Review carries one.
+  const todayResolutions = model.instruments.flatMap(({ instrumentKey }) => {
+    const state = model.cellAt(instrumentKey, reviewDate);
+    return state === undefined || state === NOT_HELD ? [] : [state.resolution];
+  });
+  const noPriceCount = todayResolutions.filter((resolution) => resolution.kind === 'AcknowledgedUnavailable').length;
+  const toGo = heldReview.review.day?.toGo.marks ?? todayResolutions.filter((resolution) => resolution.kind === 'Missing').length;
+  const afterSave = saved && !outOfDate && count === 0;
+  const folded = afterSave && toGo === 0;
+  const notifyFolded = useRef(onFolded);
+  useEffect(() => {
+    notifyFolded.current = onFolded;
+  });
+  useEffect(() => {
+    if (folded) notifyFolded.current?.();
+    // After a save that left Marks to go, the first price still to enter takes the focus (the Save button is disabled now).
+    else if (afterSave) [...(section.current?.querySelectorAll<HTMLInputElement>('td.marks-step-today input') ?? [])].find((input) => input.value === '')?.focus();
+  }, [afterSave, folded]);
+  // Edit opens the grid again, on its first price.
+  const editing = useRef(false);
+  useEffect(() => {
+    if (folded || !editing.current) return;
+    editing.current = false;
+    section.current?.querySelector<HTMLElement>('td.marks-step-today input')?.focus();
+  }, [folded]);
   if (marks.today.length === 0 && opened.length === 0) return null;
+  if (folded) {
+    return (
+      <section className="marks-step" aria-labelledby={`${uid}-marks`} ref={section}>
+        <h2 id={`${uid}-marks`}>
+          {`Marks for ${shortDate(reviewDate)} · ${todayResolutions.filter((resolution) => resolution.kind !== 'Missing').length} of ${todayResolutions.length} saved${noPriceCount > 0 ? ` · ${noPriceCount} no price` : ''}`}
+        </h2>
+        <button type="button" className="pill secondary" onClick={() => {
+            editing.current = true;
+            setSaved(false);
+          }}>
+          Edit
+        </button>
+      </section>
+    );
+  }
   // Each cell is one tab stop and the one editor sits under the grid, so Tab goes from the chosen cell into the editor's controls and on from
   // its last control to the next cell; Shift+Tab goes back from the editor's first control to its cell (P160).
   // A price that reads as a slip: the domain's answer, measured from the previous session's Mark (P167). Asked once per price typed.
@@ -383,9 +436,20 @@ export function MarksStep({ facade, held: heldReview, onResult, tradeLine, onEnt
     const entry = typedPrices.find((typed) => typed.key.instrumentKey === key.instrumentKey)?.entry;
     return entry !== undefined && left[rowId(key.instrumentKey, key.tradingDate)] === entry ? questionFor(key, entry) : undefined;
   };
+  // The price of a Mark saved in this Review, which its cell holds in place (T95.14).
+  const savedPriceOf = (key: ObservationKey) => {
+    const state = model.cellAt(key.instrumentKey, key.tradingDate);
+    return state !== undefined && state !== NOT_HELD && state.resolution.kind === 'Available' && savedInPlace(reviewDate, key.tradingDate, state.resolution) ? state.resolution.mark.price : undefined;
+  };
   const leave = (key: ObservationKey) => {
     if (key.tradingDate !== reviewDate) return;
     const entry = typedPrices.find((typed) => typed.key.instrumentKey === key.instrumentKey)?.entry;
+    // A saved Mark left as it was, as it is shown or as it is stored, is no change.
+    const savedPrice = savedPriceOf(key);
+    if (entry !== undefined && savedPrice !== undefined && (entry === savedPrice || entry === decimalUnderlyingPrice(savedPrice))) {
+      hold(key, undefined);
+      return;
+    }
     if (entry !== undefined) setLeft((prev) => ({ ...prev, [rowId(key.instrumentKey, key.tradingDate)]: entry }));
   };
   // Typing makes it a new entry: what was left and an answer to the old one no longer stand.
@@ -393,11 +457,19 @@ export function MarksStep({ facade, held: heldReview, onResult, tradeLine, onEnt
     const without = (prev: Readonly<Record<string, string>>) => Object.fromEntries(Object.entries(prev).filter(([id]) => id !== rowId(key.instrumentKey, key.tradingDate)));
     setLeft(without);
     setSlipAnswered(without);
+    setBlanked((prev) => {
+      const next = new Set(prev);
+      if (savedPriceOf(key) !== undefined && price === '') next.add(rowId(key.instrumentKey, key.tradingDate));
+      else next.delete(rowId(key.instrumentKey, key.tradingDate));
+      return next;
+    });
     hold(key, { kind: 'Price', price });
   };
   const discard = () => {
     setLeft({});
     setSlipAnswered({});
+    setSaved(false);
+    setBlanked(new Set());
     markDrafts.discard();
   };
   const toCheck = typedPrices.filter(({ key }) => slipOf(key) !== undefined).length;
@@ -405,7 +477,10 @@ export function MarksStep({ facade, held: heldReview, onResult, tradeLine, onEnt
   const saveMarks = () => {
     setLeft(Object.fromEntries(typedPrices.map(({ key, entry }) => [rowId(key.instrumentKey, key.tradingDate), entry])));
     const first = typedPrices.find(({ key, entry }) => questionFor(key, entry) !== undefined);
-    if (first === undefined) void markDrafts.save();
+    if (first === undefined) void markDrafts.save().then((ok) => {
+        setSaved(ok);
+        if (ok) setBlanked(new Set());
+      });
     else focus(fieldIds(uid, rowId(first.key.instrumentKey, first.key.tradingDate)).price);
   };
   const answer = (key: ObservationKey, choice: SlipChoice) => {
@@ -453,9 +528,21 @@ export function MarksStep({ facade, held: heldReview, onResult, tradeLine, onEnt
   const chosenCell = chosen && model.cellAt(chosen.instrumentKey, chosen.tradingDate);
   const todayRow: MarkRow | undefined = chosen && chosen.tradingDate === heldReview.review.reviewDate ? marks.today.find((row) => row.instrumentKey === chosen.instrumentKey) : undefined;
   // The Review Date's cell of an Instrument still to be priced is typed in the grid itself, with "Can't get a price" beside it: no editor.
-  const inGrid = chosen !== undefined && chosen.tradingDate === reviewDate && chosenCell !== undefined && chosenCell !== NOT_HELD && chosenCell.resolution.kind === 'Missing';
+  const chosenSavedInPlace = writable && chosen !== undefined && chosenCell !== undefined && chosenCell !== NOT_HELD && savedInPlace(reviewDate, chosen.tradingDate, chosenCell.resolution);
+  const inGrid = chosenSavedInPlace || (chosen !== undefined && chosen.tradingDate === reviewDate && chosenCell !== undefined && chosenCell !== NOT_HELD && chosenCell.resolution.kind === 'Missing');
   // A shared Instrument names the Trades that hold it, by their summary line (A153, decision 67).
   const heldBy = todayRow?.trades ?? [];
+  const heldByLine = heldBy.length > 1 && (
+    <p>
+      held by{' '}
+      {heldBy.map((id, i) => (
+        <span key={id}>
+          {i > 0 && ', '}
+          <Link to={`/trades/${id}`}>{tradeLine(id)}</Link>
+        </span>
+      ))}
+    </p>
+  );
   return (
     <section className="marks-step" aria-labelledby={`${uid}-marks`} ref={section} onKeyDown={throughEditor}>
       <h2 id={`${uid}-marks`}>Marks for {shortDate(reviewDate)}</h2>
@@ -493,6 +580,13 @@ export function MarksStep({ facade, held: heldReview, onResult, tradeLine, onEnt
         refusals={handledReveal}
         showSession={gap && { date: gap.date, count: gapShown }}
         onLeave={leave}
+        noticeOf={(key) => {
+          const notice = notices[rowId(key.instrumentKey, key.tradingDate)];
+          const state = model.cellAt(key.instrumentKey, key.tradingDate);
+          // The draft sits over the Mark in the cell, so the notice says what the Mark is now.
+          const now = state !== undefined && state !== NOT_HELD && state.resolution.kind === 'Available' ? ` It is now ${decimalMoney(state.resolution.mark.price)}.` : '';
+          return notice?.replace(' The current Mark is shown above, and your values are kept.', `${now} Your values are kept.`);
+        }}
         slipOf={slipOf}
         onAnswer={answer}
         onPage={(visible) => {
@@ -519,23 +613,15 @@ export function MarksStep({ facade, held: heldReview, onResult, tradeLine, onEnt
       {opened.length > 0 && (showEarlier || !model.sessions.some(({ role }) => role === undefined)) && <p>Earlier sessions don't block the Review.</p>}
       {walkedTrades.some((trade) => trade.expiresOnReviewDate) && <p>Expired worth nothing: enter 0.</p>}
       {inGrid && <p className="hint">{ZERO_MARK_NOTE}</p>}
+      {chosenSavedInPlace && <p className="hint">{SAVED_FIX_WORDS}</p>}
+      {chosenSavedInPlace && heldByLine}
       {writable && <p className="hint">{SLIP_LIMITS_WORDS}</p>}
       {refused && dirtyIds.size > 0 && <p role="status">Save or cancel the correction to choose another cell.</p>}
       {chosen && chosenCell && chosenCell !== NOT_HELD && !inGrid && (
         <div data-cell-editor>
           <CellEditor key={rowId(chosen.instrumentKey, chosen.tradingDate)} panel={panel} instrumentKey={chosen.instrumentKey} instrument={instrumentOf(chosen.instrumentKey)} tradingDate={chosen.tradingDate} listed={chosenCell} withdraw={todayRow !== undefined}>
             {todayRow?.task === 'Manual' && todayRow.trades.every((id) => settlementTrades.has(id)) && <p>{SETTLEMENT_ONLY_NOTE}</p>}
-            {heldBy.length > 1 && (
-              <p>
-                held by{' '}
-                {heldBy.map((id, i) => (
-                  <span key={id}>
-                    {i > 0 && ', '}
-                    <Link to={`/trades/${id}`}>{tradeLine(id)}</Link>
-                  </span>
-                ))}
-              </p>
-            )}
+            {heldByLine}
           </CellEditor>
         </div>
       )}
@@ -549,7 +635,7 @@ export function MarksStep({ facade, held: heldReview, onResult, tradeLine, onEnt
             Discard
           </button>
           {toCheck > 0 && <span role="status"> {toCheck} {toCheck === 1 ? 'Mark' : 'Marks'} to check first.</span>}
-        </p>
+          {afterSave && toGo > 0 && <span role="status"> {toGo} {toGo === 1 ? 'Mark' : 'Marks'} to go.</span>}        </p>
       )}
       {writable && tooMany && <p role="status">{tooManyWords(tooMany)}</p>}
     </section>

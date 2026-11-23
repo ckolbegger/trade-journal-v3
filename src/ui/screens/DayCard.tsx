@@ -28,8 +28,6 @@ export interface DayCardProps {
   readonly openMarks: (instrument?: string) => void;
   // The Marks step with the skipped sessions' columns added.
   readonly openSkipped: () => void;
-  // The unsaved-Marks notice with its Save Marks and Discard, which the page owns until T95.14.
-  readonly unsaved?: ReactNode;
 }
 
 // A link that opens the card; it stays a real link, so it can be opened in a new tab.
@@ -90,7 +88,7 @@ const PANEL_OF = { Reflection: 'Reflections', Settlement: 'Settlement', Action: 
 // The Trade the day card sends the trader to next: the first line, in the card's order, that still needs something (W98).
 const nextLine = (day: DaySummary) => day.lines.find((line) => line.needs.length > 0);
 
-export function DayCard({ review, name, openCard, openMarks, openSkipped, unsaved }: DayCardProps) {
+export function DayCard({ review, name, openCard, openMarks, openSkipped }: DayCardProps) {
   const { day, completion } = review;
   const { timeZone } = useRuntime();
   const reasonId = useId();
@@ -141,7 +139,6 @@ export function DayCard({ review, name, openCard, openMarks, openSkipped, unsave
       <p>
         <strong>{COMPLETION_TEXT[completion.kind]}</strong>
       </p>
-      {unsaved}
       {(nextText || day?.change.kind === 'Value') && (
         <div className="day-next">
           {nextText && (

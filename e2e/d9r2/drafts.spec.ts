@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import { chooseRestoreFile, FIXTURE_BACKUP, openBackup, restoreSection } from '../d8/support.ts';
-import { marksPanelOf, marksStepOf, saveMarksButton, createGapFixture, expect, observationsOf, OCT_12, OCT_8, OCT_9, probe, reachCard, status, test, workspaceOf, type StoredObservation, type TradeRef } from './support.ts';
+import { expectMarksSaved, marksPanelOf, marksStepOf, saveMarksButton, createGapFixture, expect, observationsOf, OCT_12, OCT_8, OCT_9, probe, reachCard, status, test, workspaceOf, type StoredObservation, type TradeRef } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -91,7 +91,7 @@ test.describe('B9R2.3 Drafts belong to the Review', () => {
     await expect(saveMarksButton(page)).toHaveText('Save Marks (4)');
 
     await saveMarksButton(page).click();
-    await expect(saveMarksButton(page)).toHaveText('Save Marks (0)');
+    await expectMarksSaved(page);
 
     const after = await storedOf(page);
     const changed = after.filter((o) => JSON.stringify(o) !== JSON.stringify(before.find((b) => b.tradingDate === o.tradingDate && b.instrumentKey === o.instrumentKey)));
@@ -109,7 +109,7 @@ test.describe('B9R2.3 Drafts belong to the Review', () => {
 
     // T-F holds XYZ too and shows the one Mark.
     const marksF = await marksPanelOf(page, tF);
-    await expect(marksF.getByRole('button', { name: `XYZ Mark, ${OCT_12}`, exact: true })).toContainText('51.20');
+    await expect(marksF.getByRole('textbox', { name: `XYZ Mark, ${OCT_12}`, exact: true })).toHaveValue('51.20');
     await context.close();
   });
 
@@ -132,7 +132,7 @@ test.describe('B9R2.3 Drafts belong to the Review', () => {
     // A reload drops the drafts and stores none of them.
     await page.reload();
     await expect(status(page)).toBeVisible();
-    await expect(saveMarksButton(page)).toHaveText('Save Marks (0)');
+    await expectMarksSaved(page);
     const marks = await marksPanelOf(page, tA);
     await expect(input(marks, OCT_12)).toHaveValue('');
     await expect(input(marks, OCT_9)).toHaveValue('');
@@ -196,7 +196,7 @@ test.describe('B9R2.3 Drafts belong to the Review', () => {
     accept = true;
     await page.reload();
     expect(prompts).toEqual(['beforeunload', 'beforeunload']);
-    await expect(saveMarksButton(page)).toHaveText('Save Marks (0)');
+    await expectMarksSaved(page);
 
     // Typed again, a page close accepted at the prompt leaves.
     await type(page, tA, OCT_12, '53.17');

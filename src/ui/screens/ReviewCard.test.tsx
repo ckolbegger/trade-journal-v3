@@ -1443,7 +1443,8 @@ describe('moving on', () => {
     // Save Marks, in the Marks step, leaves the card's panels as they are.
     await user.type(within(marksStep()).getByRole('textbox', { name: /Mark, / }), '52.00');
     await user.click(within(marksStep()).getByRole('button', { name: 'Save Marks (1)' }));
-    await vi.waitFor(() => expect(within(marksStep()).getByRole('button', { name: 'Save Marks (0)' })).toBeTruthy());
+    // The only Mark is in, so the grid folds to its line.
+    await vi.waitFor(() => expect(within(marksStep()).getByRole('button', { name: 'Edit' })).toBeTruthy());
     expect(opened()).toEqual(['Reflections']);
 
     // The last reflection resolved finishes that one: the Action panel opens.

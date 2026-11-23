@@ -3,6 +3,9 @@ import type { DailyTradeReview, ExpectedResolutionRevision, MarkResolution, Obse
 
 export type Ready = Extract<OpenDailyReviewResult, { kind: 'Ready' }>;
 
+// A typed Mark of the Review Date's own session: saved in this Review, it is fixed in its cell and saved as a correction with no reason (T95.14, A303).
+export const savedInPlace = (reviewDate: string, tradingDate: string, resolution: MarkResolution): boolean => tradingDate === reviewDate && resolution.kind === 'Available' && resolution.mark.source === 'Manual';
+
 // Where a key stands: its resolution and the revision a save of it binds to.
 export interface Standing {
   readonly resolution: MarkResolution;

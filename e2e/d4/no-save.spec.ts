@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { expectMark, markEditorOf, actionEntriesOf, actionFormOf, createTrades, enterMark, expect, firstPage, FOUR_TRADES, launchAt, MONDAY_1700, observationsOf, onboardedAt, openReview, probe, reachCard, LAUNCH, test, workspaceOf } from './support.ts';
+import { expectMark, markInputOf, actionEntriesOf, actionFormOf, createTrades, enterMark, expect, firstPage, FOUR_TRADES, launchAt, MONDAY_1700, observationsOf, onboardedAt, openReview, probe, reachCard, LAUNCH, test, workspaceOf } from './support.ts';
 
 const DATE = 'Mon Oct 12';
 // Distinctive values, so any trace of them in storage is unmistakable.
@@ -45,11 +45,9 @@ test.describe('B4.12 Nothing saved without Save (AC-JOUR-001)', () => {
     await expect(await actionFormOf(page, 'XYZ')).toBeVisible();
     const before = workspaceOf(await probe(page));
 
-    // Type, and save nothing: a correction of XYZ's Mark with its reason, and an Exit with Intent, Conviction, considered text, and Note.
-    // The reaches switch between the Marks and Action panels of the one card; the panels stay mounted, so the typed correction survives.
-    await (await markEditorOf(page, 'XYZ', DATE)).getByRole('button', { name: 'Correct' }).click();
-    await (await markEditorOf(page, 'XYZ', DATE)).getByLabel('Price').fill(TYPED.correctedPrice);
-    await (await markEditorOf(page, 'XYZ', DATE)).getByLabel('Reason (required)').fill(TYPED.reason);
+    // Type, and save nothing: a fix of XYZ's Mark in its cell (a Mark saved in this Review is fixed in place, with no reason), and an Exit with Intent, Conviction, considered text, and Note.
+    // The reaches switch between the Marks step and the Action panel; the step stays mounted, so the typed fix survives.
+    await (await markInputOf(page, 'XYZ', DATE)).fill(TYPED.correctedPrice);
     await (await actionFormOf(page, 'XYZ')).getByRole('radio', { name: 'Exit', exact: true }).check();
     await (await actionFormOf(page, 'XYZ')).getByLabel(/^Why are you taking this action\?/).fill(TYPED.intent);
     await (await actionFormOf(page, 'XYZ')).getByLabel('Conviction now').selectOption('4');
@@ -59,15 +57,15 @@ test.describe('B4.12 Nothing saved without Save (AC-JOUR-001)', () => {
     // Resize and back: the typed values are still there, none of them saved.
     await page.setViewportSize({ width: 390, height: 844 });
     await page.setViewportSize({ width: 1280, height: 900 });
-    await expect((await markEditorOf(page, 'XYZ', DATE)).getByLabel('Price')).toHaveValue(TYPED.correctedPrice);
-    await expect((await markEditorOf(page, 'XYZ', DATE)).getByLabel('Reason (required)')).toHaveValue(TYPED.reason);
+    await expect(await markInputOf(page, 'XYZ', DATE)).toHaveValue(TYPED.correctedPrice);
     await expect((await actionFormOf(page, 'XYZ')).getByLabel(/^Why are you taking this action\?/)).toHaveValue(TYPED.intent);
     await expect((await actionFormOf(page, 'XYZ')).getByLabel('Conviction now')).toHaveValue('4');
     await expect((await actionFormOf(page, 'XYZ')).getByLabel(/^Note/)).toHaveValue(TYPED.note);
     expect(traces(await webStorage(page))).toEqual([]);
     expect(workspaceOf(await probe(page))).toEqual(before);
 
-    // Navigate away (the Open list), then restart the browser.
+    // Navigate away (the Open list; the typed fix is a draft, so the page asks first and it is told to leave), then restart the browser.
+    page.on('dialog', (dialog) => void dialog.accept());
     await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Trades' }).click();
     await expect(page.getByRole('table', { name: 'Open Trades' })).toBeVisible(LAUNCH);
     expect(traces(await webStorage(page))).toEqual([]);

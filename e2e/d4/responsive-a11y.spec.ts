@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import {
-  expectMark, marksPanelOf, markEditorOf, markInputOf, marksStepOf, acknowledgeMark, actionFormOf, cardHeader, cardList, completion, createTradeAt, createTrades, detail, enterMark, expect, expectAccessible, firstPage, FOUR_TRADES, holdTradesStore, launchAt, MONDAY_1700, onboardedAt, onboardedPage,
+  expectMark, marksPanelOf, markInputOf, marksStepOf, acknowledgeMark, actionFormOf, cardHeader, cardList, completion, createTradeAt, createTrades, detail, enterMark, expect, expectAccessible, firstPage, FOUR_TRADES, holdTradesStore, launchAt, MONDAY_1700, onboardedAt, onboardedPage,
   openDrawer, openReview, panelHeader, openTradeFromOpenList, reachCard, LAUNCH, recordEntry, releaseTradesStore, reloadReview, saveAction, setClock, status, tabTo, test, tradeCard, TUESDAY_NOON, writeIntegrityFixture,
 } from './support.ts';
 
@@ -163,9 +163,10 @@ test.describe('B4.13 Responsive and accessible', () => {
     await acknowledgeMark(page, 'DEF', DATE, 'No quote available.');
     await enterMark(page, 'JKL', 'Fri Oct 9', '20.80');
     await reachCard(page, 'ABC');
-    await (await markEditorOf(page, 'ABC', DATE)).getByRole('button', { name: 'Correct' }).click();
-    await expectAccessible(page, 'Mark correction form');
-    await (await markEditorOf(page, 'ABC', DATE)).getByRole('button', { name: 'Cancel' }).click();
+    // A Mark saved in this Review is fixed in its cell: the fix typed there, then taken back.
+    await (await markInputOf(page, 'ABC', DATE)).fill('27.60');
+    await expectAccessible(page, 'Mark fixed in place');
+    await (await marksPanelOf(page, 'ABC')).getByRole('button', { name: 'Discard' }).click();
     // The words that tell the Marks apart without colour, each in its own card.
     await reachCard(page, 'XYZ');
     await expectMark(page, 'XYZ', DATE, 'Manual');
@@ -293,7 +294,6 @@ test.describe('B4.13 Responsive and accessible', () => {
     // Keyboard and focus steps assert navigation itself (section 6.4, rule 4): raw locators, no reaches.
     const xyz = tradeCard(page, 'XYZ');
     const step = marksStepOf(page);
-    const entry = step.getByRole('region', { name: `XYZ Mark, ${DATE}`, exact: true });
     const price = step.getByRole('textbox', { name: `XYZ Mark, ${DATE}`, exact: true });
     const actionForm = xyz.getByRole('form', { name: 'Action' });
     await tabTo(page, price);
@@ -302,13 +302,15 @@ test.describe('B4.13 Responsive and accessible', () => {
     await page.keyboard.press('Enter');
     await expect(step.getByRole('button', { name: /^Save Marks/ })).toBeFocused();
     await page.keyboard.press('Enter');
-    // The Marks are the page's: the saved row stays in the Marks step, and its cell opens its editor by keyboard.
-    const saved = step.getByRole('button', { name: `XYZ Mark, ${DATE}`, exact: true });
-    await expect(saved).toBeVisible();
-    // Save Marks is disabled once its drafts are saved, so the keyboard goes back from where it was to the cell above it.
-    await shiftTabTo(page, saved);
+    // The only Mark is in, so the grid folds to its line and the first Trade's header takes the focus (T95.14).
+    const edit = step.getByRole('button', { name: 'Edit', exact: true });
+    await expect(edit).toBeVisible();
+    await expect(cardHeader(page, 'XYZ')).toBeFocused();
+    // Shift+Tab goes back to Edit, and Enter opens the grid on the saved Mark, held in place.
+    await shiftTabTo(page, edit);
     await page.keyboard.press('Enter');
-    await expect(entry.getByText('Manual')).toBeVisible();
+    await expect(price).toBeFocused();
+    await expect(price).toHaveValue('52.00');
     // The card is open on its Action panel from the start.
     await expect(panelHeader(page, 'XYZ', 'Action')).toHaveAttribute('aria-expanded', 'true');
     // The card is open from the start; Shift+Tab from the end of the card walks back to its header with a focus ring.

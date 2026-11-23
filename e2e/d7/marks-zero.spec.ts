@@ -31,8 +31,8 @@ test.describe('B7.6 Marks of 0', () => {
     await expect(marksStepOf(page).getByText(ZERO_NOTE)).toBeVisible();
     await saveMarkPrice(page, mno, putRow, '0');
     const saved: Locator = await savedOptionMarkRow(page, mno, PUT, TUESDAY);
-    await expect(saved).toContainText('Manual');
-    await expect(saved).toContainText('$0.00');
+    // A saved Mark is held in place by an input holding its price.
+    await expect(saved).toHaveValue('0.00');
 
     // 0 for KLM stock is refused where it is typed (T95.13, W107): a share price cannot be $0.00. The draft is cleared again.
     await markEditorOf(page, klm, TUESDAY);

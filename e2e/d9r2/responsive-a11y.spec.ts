@@ -1,6 +1,6 @@
 import type { Locator } from '@playwright/test';
 import { expectNoSidewaysScroll, setWidth } from '../d7p/support.ts';
-import { marksPanelOf, createGapFixture, expect, expectAccessible, firstPage, launchTouchAt, MONDAY_1700, observationsOf, OCT_12, OCT_7, OCT_8, OCT_9, openReview, probe, saveMarksButton, tabTo, test, workspaceOf } from './support.ts';
+import { marksPanelOf, createGapFixture, expect, expectMarksSaved, expectAccessible, firstPage, launchTouchAt, MONDAY_1700, observationsOf, OCT_12, OCT_7, OCT_8, OCT_9, openReview, probe, saveMarksButton, tabTo, test, workspaceOf } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -111,7 +111,7 @@ test.describe('B9R2.5 Responsive and accessible', () => {
     // Tab on to Save Marks and press it.
     await tabTo(page, saveMarksButton(page));
     await page.keyboard.press('Enter');
-    await expect(saveMarksButton(page)).toHaveText('Save Marks (0)');
+    await expectMarksSaved(page);
     const saved = observationsOf(workspaceOf(await probe(page))!).filter((o) => o.marks.some((m) => m.price === '51.2' || m.price === '50.4'));
     expect(saved.map((o) => o.tradingDate).sort()).toEqual(['2026-10-09', '2026-10-12']);
     await context.close();

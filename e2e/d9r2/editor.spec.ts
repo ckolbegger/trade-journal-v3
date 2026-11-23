@@ -1,4 +1,4 @@
-import { dayLine, expectMark, marksPanelOf, marksStepOf, markEditorOf, acknowledgeMark, completion, createGapFixture, enterMark, expect, OCT_12, OCT_7, OCT_8, OCT_9, openReview, reachCard, LAUNCH, reloadReview, saveAction, status, test , saveMarksButton } from './support.ts';
+import { dayLine, expectMark, expectMarksSaved, marksPanelOf, marksStepOf, markEditorOf, acknowledgeMark, completion, createGapFixture, enterMark, expect, OCT_12, OCT_7, OCT_8, OCT_9, openReview, reachCard, LAUNCH, reloadReview, saveAction, status, test , saveMarksButton } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -20,7 +20,7 @@ test.describe('B9R2.4 The cell editor', () => {
       await row.getByRole('textbox', { name: /^Why no price/ }).fill('No quote today');
       await row.getByRole('button', { name: 'No price', exact: true }).click();
       await saveMarksButton(page).click();
-      await expect(saveMarksButton(page)).toHaveText('Save Marks (0)');
+      await expectMarksSaved(page);
       await expectMark(page, tA, OCT_12, 'Acknowledged Unavailable');
     });
 

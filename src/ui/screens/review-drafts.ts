@@ -56,13 +56,19 @@ export type SaveEntries =
 
 // One save entry per draft, in the order the drafts were first entered, each bound at the revision its key stands at (A172). A key
 // with no known standing binds at None: Market Data's per-key revision check owns the rest.
-export function saveEntries(drafts: Drafts, revisionOf: (key: ObservationKey) => ExpectedResolutionRevision | undefined): SaveEntries {
+// A price over a Mark saved in this Review is a fix: Daily Review gives its reason (A303).
+function intentionOf(value: DraftValue, saved: boolean): MarketDataPrepareEntry['intention'] {
+  if (value.kind !== 'Price') return { kind: 'AssertUnavailable', reason: value.reason };
+  return saved ? { kind: 'CorrectMark', price: value.price.trim(), reason: '' } : { kind: 'RecordInitialManualMark', price: value.price.trim() };
+}
+
+export function saveEntries(drafts: Drafts, revisionOf: (key: ObservationKey) => ExpectedResolutionRevision | undefined, isSaved: (key: ObservationKey) => boolean = () => false): SaveEntries {
   const all = Object.values(drafts);
   if (all.length > MAX_ENTRIES) return { kind: 'TooMany', entered: all.length, limit: MAX_ENTRIES, over: all.length - MAX_ENTRIES };
   const entries = all.map(({ key, value }): MarketDataPrepareEntry => ({
     key,
     expectedRevision: revisionOf(key) ?? 'None',
-    intention: value.kind === 'Price' ? { kind: 'RecordInitialManualMark', price: value.price.trim() } : { kind: 'AssertUnavailable', reason: value.reason },
+    intention: intentionOf(value, isSaved(key)),
   }));
   return { kind: 'Entries', entries };
 }
