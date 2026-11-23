@@ -397,3 +397,5 @@ ocr of T95.16-B1 to B5 (session 868b5592, f878796f..e857812f): 6 files, 0 findin
 ### T95.16-F1
 
 Commit `2823e2b7`: `collapseOpenCard(page)` in `e2e/d5r/support.ts` (re-exported by d9); each case collapses the open card before reading its meter. Before: 8 failed, 14 passed; after (with e2e/d95): 28 passed. Checks that only the open card's meter can make, carried to **T95.17**'s Now box: B5R.11 case 1 (T-A's meter while its drafts are held), B9.11 (the open card's meter in the viewport at 1280, 375, 320), B9.9 (Open list row named as the open card's meter), T7P.11 (meter beside the open card's attention sentence).
+
+Run `t95.16-card-header` (browser-auto a60389a3 → full tier): unit 2857, integration 303, browser 127 + 79 + 55 + 117 (4 skipped), checks 14 of 14; 19m00s. Passed. T95.16 Done.
