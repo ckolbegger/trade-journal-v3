@@ -187,6 +187,8 @@ Success path: e2e/d4, d5, d7, d9, d9ar 225 passed, 4 skipped, 1 failed (the know
 
 **T95.9 ocr** (22 files; `ocr/T95.9-267964e5.json`): **No findings.** Main-session note: the five new helpers are thin wrappers over `reachPanel`, `markRow`, `markCell`; T95.12 changes both layers, all inside support files (decision 65 holds).
 
+**Complete run `t95.9-mark-helpers`** (on `aa2258ca`, browser-task; run complete): unit 234 files, 2,752 tests; integration 141 files, 300 tests; browser `@every-task` 5 in 13.7 s (no `e2e/d95` yet; the subagent ran all four stages on `267964e5`: 126, 80, 57, 137 + 4 skipped); checks 14 of 14. No failures. T95.9 Done.
+
 ## Trial: complete runs overlapped with the next task (the user, 2026-11-22, for 5 or 6 tasks)
 
 Each task's complete run runs in a detached scratch copy (`.claude/worktrees/run-<label>`, set up by `lane-setup.sh`) at the task's commit, while the next task's subagent starts in this worktree. The run's files are copied back to `evidence/D95/suite-runs/`. A failure becomes a bug task as before; the next task restarts only if it built on the broken code. Times are recorded per run to measure the saving.
