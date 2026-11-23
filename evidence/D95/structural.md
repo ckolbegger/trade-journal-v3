@@ -351,3 +351,7 @@ The marks-keys failure is not T95.21's: `e2e/d95/marks-keys.spec.ts` fails about
 Commit `a5b4592a`: marks-keys reads the grid's row order (ABC and DEF y positions) and gives each Instrument its own price (ABC 31.00, DEF 40.50; 31.00 on DEF opened a large-move question). `--repeat-each=12`: 12 passed; e2e/d95 3 passed.
 
 Run `t95.21-finished-day-2` (browser-task, after T95.15-B1): unit 2839, integration 300, browser 8 passed, checks 14 of 14. Passed. T95.21 Done.
+
+## T95.16-D1 — Thesis and "No longer valid if" on the Review card's data (Full; decision 130)
+
+Commit `04ec189a` (from `467bb2c8`). `DailyTradeReview.plan?: { thesis, invalidation }`, set by `getTrade` from the Trade Analysis record it already reads (one line). Optional, like `decisions?`, because hand-built cards in five UI test files don't carry it; `getTrade` always returns it. Case 1 red then green; cases 2 and 3 first-run passes, mutation-checked (invalidation set to the thesis; one extra `journal.queryActions` read). Request counts equal I9AR.4's `CARD`. No snapshot changed.
