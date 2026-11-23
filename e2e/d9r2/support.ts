@@ -2,7 +2,7 @@
 // markCell, chooseCell, enterMark, acknowledgeMark, createCardFixture, saveMarksOf, remainsOf, optionMarkRow, saveMarkPrice, observationsOf, launchTouchAt),
 // and the one thing this folder adds: the gap fixture.
 import type { BrowserContext, Page } from '@playwright/test';
-import { acknowledgeMark, createTradeAt, enterMark, FOUR_TRADES, MONDAY_1700, onboardedAt, openReview, PLAN, setClock, type PlanValues, type Profile, type TradeRef } from '../d9ar/support.ts';
+import { acknowledgeMark, createTradeAt, defineSetup, enterMark, firstPage, FOUR_TRADES, launchAt, MONDAY_1700, onboardedAt, openReview, PLAN, setClock, type PlanValues, type Profile, type Setup, type TradeRef } from '../d9ar/support.ts';
 
 export * from '../d9ar/support.ts';
 
@@ -40,6 +40,27 @@ export async function createGapFixture(profile: Profile): Promise<GapFixture> {
   await acknowledgeMark(page, tA, OCT_7, 'No quote today');
   await setClock(context, page, MONDAY_1700);
   const tF = { symbol: 'XYZ', tradeId: await createTradeAt(page, T_F, '2026-10-12T09:30', [['50', '50.00', '2026-10-12T10:30']]), label: 'T-F' };
+  await openReview(page);
+  return { context, page, tA, tF };
+}
+
+// The saved setup of the gap fixture (setup-snapshot plan, group 4): createGapFixture built once per worker; each test that asks starts on a copy.
+export const GAP_FIXTURE = defineSetup('d9r2-gap-fixture', async (profile) => {
+  const { context, tA, tF } = await createGapFixture(profile);
+  return { context, made: { tA, tF } };
+});
+
+// The copy, nothing launched: in place of createGapFixture, for tests that launch their own touch context after the build. Returns the two Trades.
+export function copyGapFixture(copySetup: <T>(setup: Setup<T>) => Promise<T>): Promise<{ readonly tA: TradeRef; readonly tF: TradeRef }> {
+  return copySetup(GAP_FIXTURE);
+}
+
+// The copy launched at Mon 10-12 17:00 with the Review open, as createGapFixture leaves it: in place of createGapFixture.
+export async function openGapFixture(profile: Profile, copySetup: <T>(setup: Setup<T>) => Promise<T>): Promise<GapFixture> {
+  const { tA, tF } = await copyGapFixture(copySetup);
+  const context = await launchAt(profile, MONDAY_1700);
+  const page = await firstPage(context);
+  await page.goto('/');
   await openReview(page);
   return { context, page, tA, tF };
 }

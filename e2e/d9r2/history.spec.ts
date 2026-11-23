@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { createGapFixture, detail, enterMark, expect, OCT_9, openDrawer, reachCard, LAUNCH, test, tradeCard } from './support.ts';
+import { openGapFixture, detail, enterMark, expect, OCT_9, openDrawer, reachCard, LAUNCH, test, tradeCard } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -18,10 +18,10 @@ const tokenColour = (page: Page, token: string): Promise<string> =>
   }, token);
 
 test.describe('B9R2.1 Price History and Journal: acknowledged sessions', () => {
-  test('should show an acknowledged session as Acknowledged Unavailable, count only Missing sessions on the tab, name both counts under the table, colour gains and losses, show the acknowledged Mark on a Journal card and head the Review card At the Fri Oct 9 Marks', async ({ profile }) => {
+  test('should show an acknowledged session as Acknowledged Unavailable, count only Missing sessions on the tab, name both counts under the table, colour gains and losses, show the acknowledged Mark on a Journal card and head the Review card At the Fri Oct 9 Marks', async ({ profile, copySetup }) => {
     test.setTimeout(300_000);
     // The gap fixture: Wed Oct 7 acknowledged, Tue Oct 6 Marked (a loss), and Fri Oct 9 Marked here (a gain).
-    const { context, page, tA } = await createGapFixture(profile);
+    const { context, page, tA } = await openGapFixture(profile, copySetup);
     await enterMark(page, tA, OCT_9, '50.50');
 
     await test.step('the Review card heading says Marks, not close (W79)', async () => {

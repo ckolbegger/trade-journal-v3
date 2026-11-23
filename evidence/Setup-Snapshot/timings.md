@@ -61,3 +61,13 @@ ST.6 (the five e2e/d5r files in one run, main lock held; per-file figures are th
 | ST.6 | e2e/d5r/review.spec.ts | 18.7 | 12.5 |
 | ST.6 | e2e/d5r/sliders.spec.ts | 12.3 | 2.8 |
 | ST.6 | e2e/d5r/durability.spec.ts | 14.8 | 14.3 (the first test to ask pays the one build, 5.1) |
+
+ST.7 (the five e2e/d9r2 files in one run, main lock held; per-file figures are the sum of the tests' own times; one run each; "before" is HEAD's versions). Whole run before 56.7 s (17 passed), after 26.2 s (17 passed). Break check with the copy off (two tests): both failed, 39 s in all.
+
+| Task | File | Before (s) | After (s) |
+|---|---|---|---|
+| ST.7 | e2e/d9r2/drafts.spec.ts | 15.1 | 8.1 |
+| ST.7 | e2e/d9r2/editor.spec.ts | 13.7 | 5.9 |
+| ST.7 | e2e/d9r2/grid.spec.ts | 4.7 | 2.8 |
+| ST.7 | e2e/d9r2/history.spec.ts | 2.9 | 1.0 |
+| ST.7 | e2e/d9r2/responsive-a11y.spec.ts | 19.5 | 7.8 |

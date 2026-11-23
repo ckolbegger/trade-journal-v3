@@ -1,4 +1,4 @@
-import { dayLine, expectMark, expectMarksSaved, marksPanelOf, marksStepOf, markEditorOf, acknowledgeMark, completion, createGapFixture, enterMark, expect, OCT_12, OCT_7, OCT_8, OCT_9, openReview, reachCard, LAUNCH, reloadReview, saveAction, status, test , saveMarksButton } from './support.ts';
+import { dayLine, expectMark, expectMarksSaved, marksPanelOf, marksStepOf, markEditorOf, acknowledgeMark, completion, openGapFixture, enterMark, expect, OCT_12, OCT_7, OCT_8, OCT_9, openReview, reachCard, LAUNCH, reloadReview, saveAction, status, test , saveMarksButton } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -6,9 +6,9 @@ const AUG_31 = 'Mon Aug 31';
 const NEGATIVE = 'A price cannot be negative.';
 
 test.describe('B9R2.4 The cell editor', () => {
-  test('should ask for a reason with Can\'t get a price, correct an earlier Mark, offer Withdraw on the Review Date only, and complete with Unavailable Marks from the Review Date alone', async ({ profile }) => {
+  test('should ask for a reason with Can\'t get a price, correct an earlier Mark, offer Withdraw on the Review Date only, and complete with Unavailable Marks from the Review Date alone', async ({ profile, copySetup }) => {
     test.setTimeout(300_000);
-    const { context, page, tA, tF } = await createGapFixture(profile);
+    const { context, page, tA, tF } = await openGapFixture(profile, copySetup);
 
     await test.step("Can't get a price needs a reason", async () => {
       // The Review Date's cell is answered in its row (W113): the reason is asked for before anything is held.
@@ -63,9 +63,9 @@ test.describe('B9R2.4 The cell editor', () => {
     await context.close();
   });
 
-  test('should name a conflict, and after a refused save open the first refused cell with focus in its input', async ({ profile }) => {
+  test('should name a conflict, and after a refused save open the first refused cell with focus in its input', async ({ profile, copySetup }) => {
     test.setTimeout(300_000);
-    const { context, page, tA } = await createGapFixture(profile);
+    const { context, page, tA } = await openGapFixture(profile, copySetup);
 
     await test.step('a conflict: another tab saved the cell first', async () => {
       // T-A's card is open in this tab before the other tab saves.
@@ -87,9 +87,9 @@ test.describe('B9R2.4 The cell editor', () => {
     await context.close();
   });
 
-  test('should read a card that was not open after another tab saved a Mark, and open the refused cell of a closed card with focus in its input (T9R2.17-B8)', async ({ profile }) => {
+  test('should read a card that was not open after another tab saved a Mark, and open the refused cell of a closed card with focus in its input (T9R2.17-B8)', async ({ profile, copySetup }) => {
     test.setTimeout(300_000);
-    const { context, page, tA, tF } = await createGapFixture(profile);
+    const { context, page, tA, tF } = await openGapFixture(profile, copySetup);
 
     await test.step('another tab saves a Mark while T-F is open here: opening T-A still reads its card', async () => {
       await marksPanelOf(page, tF);
@@ -119,9 +119,9 @@ test.describe('B9R2.4 The cell editor', () => {
     await context.close();
   });
 
-  test('should open the first refused cell, on its page, with its issue and focus in the input', async ({ profile }) => {
+  test('should open the first refused cell, on its page, with its issue and focus in the input', async ({ profile, copySetup }) => {
     test.setTimeout(300_000);
-    const { context, page, tA } = await createGapFixture(profile);
+    const { context, page, tA } = await openGapFixture(profile, copySetup);
     const marks = await marksPanelOf(page, tA);
     const cell = (date: string) => marks.getByRole('textbox', { name: `XYZ Mark, ${date}`, exact: true });
 

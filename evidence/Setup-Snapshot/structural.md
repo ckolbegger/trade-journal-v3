@@ -150,3 +150,21 @@ Kept their own build (4 tests):
 Break check (the five files in one run): copy switched off (the cp call in e2e/d1/support.ts replaced by `execFileSync('true', ...)`): 12 failed (first-screen check), the 4 own-build tests passed (20.0 min, each failure waiting out its check); switched on: 16 passed (51.3 s). Switch made and restored by edits; git status shows e2e/d1/support.ts unchanged.
 
 Assumptions: the copy is opened with page.goto('/') (Today) where the build left the page on the Trade it last made; every converted test then goes to the Review through the nav link (openReview) or its own goto, as before. Checks: typecheck, tsc6, lint (0 errors) pass.
+
+## ST.7 Group 4, the d9r2 gap fixture, on the shared setup
+
+What changed (test code only):
+- e2e/d9r2/support.ts, beside createGapFixture: `GAP_FIXTURE` (defineSetup 'd9r2-gap-fixture': createGapFixture(profile), its open context handed to the helper to close), `copyGapFixture(copySetup)` (copy only, returns tA and tF, nothing launched) and `openGapFixture(profile, copySetup)` (the copy launched at Mon 10-12 17:00, first page to '/', Review opened, returns the same { context, page, tA, tF } as createGapFixture).
+- The converted tests ask for `copySetup` and start with openGapFixture (or copyGapFixture) in place of createGapFixture; bodies unchanged except that the three touch cases no longer close the setup's context (the helper closed it after the build).
+- Release check (ST.1-B1): d9r2 serves dist-faults (d7's fixture); the setup is built and keyed on it; all pass, so no mismatch error.
+- In-memory state check: the build's only in-memory state at its end is the pinned clock (setFixedTime Mon 10-12 17:00) and the open Review page; the copy re-pins the same instant with launchAt and reopens the Review. All Marks, Trades and the acknowledged session are in IndexedDB. All 16 pass on the copy, so nothing needed was lost.
+
+Which tests start from which setup (all GAP_FIXTURE, 16 tests):
+- openGapFixture (13): drafts (5: lines 26, 77, 116, 147, 175); editor (4: lines 9, 66, 90, 122; the two second-tab tests open their tab on the copy's context as before); grid line 11; history line 21; responsive-a11y line 16 (live resize) and line 87 (keyboard flow).
+- copyGapFixture, then the test's own touch launch (3): responsive-a11y line 58 at 390, 375 and 320 px.
+
+Kept its own build: e2e/d9r2/grid.spec.ts line 70 (a Thursday Oct 8 17:00 onboarding with an Option Trade, not the gap fixture; not in the plan's list).
+
+Break check (two tests, one per kind of start, as the brief allows): copy switched off (the cp call in e2e/d1/support.ts replaced by `execFileSync('true', ...)`): drafts line 26 (openGapFixture) and responsive-a11y 390 px (copyGapFixture and touch launch) both failed (TimeoutError on the Review link click, the first-screen check); switched on: all five files, 17 passed (26.2 s; before 56.7 s). Switch made and restored by edits; git status shows e2e/d1/support.ts unchanged.
+
+Assumptions: the copy is opened with page.goto('/') then openReview, as createGapFixture ends on the Review page; typecheck, tsc6, lint (0 errors) and lint:deps pass.

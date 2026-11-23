@@ -1,6 +1,6 @@
 import type { Locator } from '@playwright/test';
 import { expectNoSidewaysScroll, setWidth } from '../d7p/support.ts';
-import { marksPanelOf, createGapFixture, expect, expectMarksSaved, expectAccessible, firstPage, launchTouchAt, MONDAY_1700, observationsOf, OCT_12, OCT_7, OCT_8, OCT_9, openReview, probe, saveMarksButton, tabTo, test, workspaceOf } from './support.ts';
+import { marksPanelOf, copyGapFixture, openGapFixture, expect, expectMarksSaved, expectAccessible, firstPage, launchTouchAt, MONDAY_1700, observationsOf, OCT_12, OCT_7, OCT_8, OCT_9, openReview, probe, saveMarksButton, tabTo, test, workspaceOf } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -13,9 +13,9 @@ async function typeIn(marks: Locator, date: string, price: string): Promise<void
 }
 
 test.describe('B9R2.5 Responsive and accessible', () => {
-  test('should keep drafts, the chosen cell and the focus through a live resize, show no sideways scroll at 390 px and report no WCAG 2.1 AA violations in each state', async ({ profile }) => {
+  test('should keep drafts, the chosen cell and the focus through a live resize, show no sideways scroll at 390 px and report no WCAG 2.1 AA violations in each state', async ({ profile, copySetup }) => {
     test.setTimeout(300_000);
-    const { context, page, tA } = await createGapFixture(profile);
+    const { context, page, tA } = await openGapFixture(profile, copySetup);
 
     // Wide: every kind of cell (inputs, an acknowledged press), with a draft and an open editor.
     const marks = await marksPanelOf(page, tA);
@@ -55,10 +55,9 @@ test.describe('B9R2.5 Responsive and accessible', () => {
   });
 
   for (const width of [390, 375, 320]) {
-    test(`should fit the Marks step at ${width} px with no sideways scroll, no clipped text and 44 px cells on a touch screen`, async ({ profile }) => {
+    test(`should fit the Marks step at ${width} px with no sideways scroll, no clipped text and 44 px cells on a touch screen`, async ({ profile, copySetup }) => {
       test.setTimeout(300_000);
-      const { context: setup, tA } = await createGapFixture(profile);
-      await setup.close();
+      const { tA } = await copyGapFixture(copySetup);
       const context = await launchTouchAt(profile, MONDAY_1700, width);
       const page = await firstPage(context);
       await page.goto('/');
@@ -84,9 +83,9 @@ test.describe('B9R2.5 Responsive and accessible', () => {
     });
   }
 
-  test('should take the whole flow by keyboard: choose a cell, type, Enter through the cells, add the skipped sessions, press an acknowledged cell and save, with a visible focus ring', async ({ profile }) => {
+  test('should take the whole flow by keyboard: choose a cell, type, Enter through the cells, add the skipped sessions, press an acknowledged cell and save, with a visible focus ring', async ({ profile, copySetup }) => {
     test.setTimeout(300_000);
-    const { context, page, tA } = await createGapFixture(profile);
+    const { context, page, tA } = await openGapFixture(profile, copySetup);
     const marks = await marksPanelOf(page, tA);
 
     // Tab to the Review Date cell, type, Enter to the previous session's cell, type again.

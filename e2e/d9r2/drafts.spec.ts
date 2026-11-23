@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import { chooseRestoreFile, FIXTURE_BACKUP, openBackup, restoreSection } from '../d8/support.ts';
-import { expectMarksSaved, marksPanelOf, marksStepOf, saveMarksButton, createGapFixture, expect, observationsOf, OCT_12, OCT_8, OCT_9, probe, reachCard, status, test, workspaceOf, type StoredObservation, type TradeRef } from './support.ts';
+import { expectMarksSaved, marksPanelOf, marksStepOf, saveMarksButton, openGapFixture, expect, observationsOf, OCT_12, OCT_8, OCT_9, probe, reachCard, status, test, workspaceOf, type StoredObservation, type TradeRef } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -23,9 +23,9 @@ type Stored = StoredObservation & { revision: number };
 const storedOf = async (page: Page): Promise<Stored[]> => observationsOf(workspaceOf(await probe(page))!) as Stored[];
 
 test.describe('B9R2.3 Drafts belong to the Review', () => {
-  test('should keep drafts across cards and pages, count them on Save Marks and empty them all with Discard', async ({ profile }) => {
+  test('should keep drafts across cards and pages, count them on Save Marks and empty them all with Discard', async ({ profile, copySetup }) => {
     test.setTimeout(300_000);
-    const { context, page, tA, tF } = await createGapFixture(profile);
+    const { context, page, tA, tF } = await openGapFixture(profile, copySetup);
 
     await test.step('a price typed once, for XYZ, which both Trades hold, is one draft', async () => {
       await type(page, tA, OCT_12, '51.20');
@@ -74,9 +74,9 @@ test.describe('B9R2.3 Drafts belong to the Review', () => {
     await context.close();
   });
 
-  test('should save every draft of every session in one Save Marks, one Mark for the key two Trades share', async ({ profile }) => {
+  test('should save every draft of every session in one Save Marks, one Mark for the key two Trades share', async ({ profile, copySetup }) => {
     test.setTimeout(300_000);
-    const { context, page, tA, tF } = await createGapFixture(profile);
+    const { context, page, tA, tF } = await openGapFixture(profile, copySetup);
     const before = await storedOf(page);
 
     await type(page, tA, OCT_12, '51.20');
@@ -113,9 +113,9 @@ test.describe('B9R2.3 Drafts belong to the Review', () => {
     await context.close();
   });
 
-  test('should hold leaving the page while a draft exists, and store nothing when the page is reloaded with drafts typed (AC-JOUR-001)', async ({ profile }) => {
+  test('should hold leaving the page while a draft exists, and store nothing when the page is reloaded with drafts typed (AC-JOUR-001)', async ({ profile, copySetup }) => {
     test.setTimeout(300_000);
-    const { context, page, tA } = await createGapFixture(profile);
+    const { context, page, tA } = await openGapFixture(profile, copySetup);
     const before = JSON.stringify(workspaceOf(await probe(page)));
     await type(page, tA, OCT_12, '53.17');
     await type(page, tA, OCT_9, '52.83');
@@ -144,9 +144,9 @@ test.describe('B9R2.3 Drafts belong to the Review', () => {
     await context.close();
   });
 
-  test('should ask before a route change while a draft exists, stay on Cancel, leave on OK, and mark the page for the browser prompt (T9R2.17-B9)', async ({ profile }) => {
+  test('should ask before a route change while a draft exists, stay on Cancel, leave on OK, and mark the page for the browser prompt (T9R2.17-B9)', async ({ profile, copySetup }) => {
     test.setTimeout(300_000);
-    const { context, page, tA } = await createGapFixture(profile);
+    const { context, page, tA } = await openGapFixture(profile, copySetup);
     await type(page, tA, OCT_12, '53.17');
     await expect(saveMarksButton(page)).toHaveText('Save Marks (1)');
     const asked: string[] = [];
@@ -172,9 +172,9 @@ test.describe('B9R2.3 Drafts belong to the Review', () => {
     await context.close();
   });
 
-  test('should raise the browser leave prompt on a real page close while a draft exists, keep the page on dismiss, close on accept, and raise none without a draft (T9R2.17-B11)', async ({ profile }) => {
+  test('should raise the browser leave prompt on a real page close while a draft exists, keep the page on dismiss, close on accept, and raise none without a draft (T9R2.17-B11)', async ({ profile, copySetup }) => {
     test.setTimeout(300_000);
-    const { context, page, tA } = await createGapFixture(profile);
+    const { context, page, tA } = await openGapFixture(profile, copySetup);
     await type(page, tA, OCT_12, '53.17');
     await expect(saveMarksButton(page)).toHaveText('Save Marks (1)');
     const reviewUrl = page.url();

@@ -1,5 +1,5 @@
 import type { Locator } from '@playwright/test';
-import { dayLine, marksPanelOf, confirmOptionPlan, createGapFixture, currentTradeId, enterMark, expect, MONDAY_1700, OC, OCT_12, OCT_8, OCT_9, onboardedAt, openReview, recordOptionEntry, setClock, test } from './support.ts';
+import { dayLine, marksPanelOf, confirmOptionPlan, openGapFixture, currentTradeId, enterMark, expect, MONDAY_1700, OC, OCT_12, OCT_8, OCT_9, onboardedAt, openReview, recordOptionEntry, setClock, test } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -8,9 +8,9 @@ const THURSDAY_OCT_8_1700 = '2026-10-08T21:00:00Z';
 const EARLIER = "Earlier sessions don't block the Review.";
 
 test.describe('B9R2.2 The Marks grid', () => {
-  test('should show the previous session and the Review Date, the skipped sessions as optional columns on request, 20 sessions a page with the fixed columns, W72, one row for the Instrument two Trades share, and a Missing-Mark link that focuses the Review Date cell', async ({ profile }) => {
+  test('should show the previous session and the Review Date, the skipped sessions as optional columns on request, 20 sessions a page with the fixed columns, W72, one row for the Instrument two Trades share, and a Missing-Mark link that focuses the Review Date cell', async ({ profile, copySetup }) => {
     test.setTimeout(300_000);
-    const { context, page, tA } = await createGapFixture(profile);
+    const { context, page, tA } = await openGapFixture(profile, copySetup);
     const sessionsOf = (grid: Locator) => grid.locator('thead th[data-session]').evaluateAll((heads) => heads.map((head) => head.getAttribute('data-session')));
 
     await test.step('rows and the two columns shown at first', async () => {
