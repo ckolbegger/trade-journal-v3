@@ -1,0 +1,178 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 9 selected item(s).",
+  "summary": {
+    "files_reviewed": 9,
+    "comments": 0,
+    "total_tokens": 89086,
+    "input_tokens": 87824,
+    "output_tokens": 1262,
+    "cache_read_tokens": 6656,
+    "elapsed": "44s"
+  },
+  "tool_calls": {
+    "total": 9,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 8
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "NowBox caption fitting, styling, and responsive accessibility tests",
+      "files": [
+        "e2e/d7s/responsive-a11y.spec.ts",
+        "e2e/d95/card.spec.ts",
+        "e2e/d9ar/review.spec.ts",
+        "src/ui/app.css",
+        "src/ui/screens/NowBox.test.tsx",
+        "src/ui/screens/NowBox.tsx",
+        "src/ui/screens/caption-fit.test.ts",
+        "src/ui/screens/caption-fit.ts",
+        "src/ui/screens/now-box.props.ts"
+      ]
+    }
+  ],
+  "session_id": "70ebe2ba-7812-41f0-870f-861e38bc0fbf",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "70ebe2ba-7812-41f0-870f-861e38bc0fbf",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "5307f1b1",
+      "resolved_base": "4e33baefee787b63230b8e089de2681748930c13",
+      "resolved_head": "5307f1b1da304c87594ebb56cc998eba8101bf8c",
+      "exact_range": "4e33baefee787b63230b8e089de2681748930c13..5307f1b1da304c87594ebb56cc998eba8101bf8c",
+      "source_artifact_sha256": "4fc6a2cc831c1a0cbaabe2b888f5364e607ddbbbf941e80560e0e1c732207d99"
+    },
+    "execution": {
+      "ocr_version": "v1.14.2",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "da8c34d8f4d79feac099a449e25170e14d1e5c1441b17b882e00e3868434c9bd"
+        },
+        {
+          "item_id": "4a10c7f7a28a5b02040fdd986d28829b7d8bca1dff05fb12ed281264b9699809",
+          "path": "src/ui/screens/NowBox.tsx",
+          "fingerprint": "69983cd72bd5e4a5ef86a71d2d66b1c44d77a63bbb3a75f5f33aa015580ec968"
+        },
+        {
+          "item_id": "51dec72fc6a3ac1aef99e80b2594b4c71cd26a1dab5f5b5a131afe35e6aec0db",
+          "path": "src/ui/screens/caption-fit.test.ts",
+          "fingerprint": "8a05e8514c4994d840a8eb18efb2b78866c2978da3b0fba20a7b88f16fa3d270"
+        },
+        {
+          "item_id": "63891947b6e746ce1db02d88e7728d31aed73b6dc2180ffbcc63d3983f792163",
+          "path": "src/ui/screens/now-box.props.ts",
+          "fingerprint": "4e389f0fd18654838722d854372d2a5b21182c3fd47ca41ab54b6fb15cc442e2"
+        },
+        {
+          "item_id": "8eb12166c99cf6ff402820398884fbc4e6184d1eb6bd4d5e42c774e184073840",
+          "path": "src/ui/screens/caption-fit.ts",
+          "fingerprint": "03add3bdaccd0fb8cff694257634d61dbaf2cd7568f3935ce822f4fee0896051"
+        },
+        {
+          "item_id": "8f03783a683fbec34a8ba6e705a726f6419576c0dba0cecbaafeceef9e8e9f76",
+          "path": "e2e/d7s/responsive-a11y.spec.ts",
+          "fingerprint": "18a335dc31c014897552ee87d150f230f1c1a36adae412dfc6bff9d4b0928c37"
+        },
+        {
+          "item_id": "d3b0e476336debedae17e83bab9198bf23ead094c81f9a7aa114447b3fba6437",
+          "path": "src/ui/screens/NowBox.test.tsx",
+          "fingerprint": "79daac1c167f38684e9d0d8686fdd88142bf75dafc86edaa1dad893a7ef8963b"
+        },
+        {
+          "item_id": "d8bd1b41a59e923384e7e7442c046b63731ba0f99a51a10d56be665548e60b5e",
+          "path": "e2e/d95/card.spec.ts",
+          "fingerprint": "f7873f96866e0afc0e2dd66f98bff3f0a07d3f1938bea4e1e15031ee9df7b7d4"
+        },
+        {
+          "item_id": "f7406ef2881011b62532c827cd87807e71f1ffb772c241794158f993a5a0fd38",
+          "path": "e2e/d9ar/review.spec.ts",
+          "fingerprint": "e76d1bb39be4fa2b65a7c19c54f73a6c6bd9e4dd6fcc3dab4b67c7038b8f25ec"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "da8c34d8f4d79feac099a449e25170e14d1e5c1441b17b882e00e3868434c9bd"
+        },
+        {
+          "item_id": "4a10c7f7a28a5b02040fdd986d28829b7d8bca1dff05fb12ed281264b9699809",
+          "path": "src/ui/screens/NowBox.tsx",
+          "fingerprint": "69983cd72bd5e4a5ef86a71d2d66b1c44d77a63bbb3a75f5f33aa015580ec968"
+        },
+        {
+          "item_id": "51dec72fc6a3ac1aef99e80b2594b4c71cd26a1dab5f5b5a131afe35e6aec0db",
+          "path": "src/ui/screens/caption-fit.test.ts",
+          "fingerprint": "8a05e8514c4994d840a8eb18efb2b78866c2978da3b0fba20a7b88f16fa3d270"
+        },
+        {
+          "item_id": "63891947b6e746ce1db02d88e7728d31aed73b6dc2180ffbcc63d3983f792163",
+          "path": "src/ui/screens/now-box.props.ts",
+          "fingerprint": "4e389f0fd18654838722d854372d2a5b21182c3fd47ca41ab54b6fb15cc442e2"
+        },
+        {
+          "item_id": "8eb12166c99cf6ff402820398884fbc4e6184d1eb6bd4d5e42c774e184073840",
+          "path": "src/ui/screens/caption-fit.ts",
+          "fingerprint": "03add3bdaccd0fb8cff694257634d61dbaf2cd7568f3935ce822f4fee0896051"
+        },
+        {
+          "item_id": "8f03783a683fbec34a8ba6e705a726f6419576c0dba0cecbaafeceef9e8e9f76",
+          "path": "e2e/d7s/responsive-a11y.spec.ts",
+          "fingerprint": "18a335dc31c014897552ee87d150f230f1c1a36adae412dfc6bff9d4b0928c37"
+        },
+        {
+          "item_id": "d3b0e476336debedae17e83bab9198bf23ead094c81f9a7aa114447b3fba6437",
+          "path": "src/ui/screens/NowBox.test.tsx",
+          "fingerprint": "79daac1c167f38684e9d0d8686fdd88142bf75dafc86edaa1dad893a7ef8963b"
+        },
+        {
+          "item_id": "d8bd1b41a59e923384e7e7442c046b63731ba0f99a51a10d56be665548e60b5e",
+          "path": "e2e/d95/card.spec.ts",
+          "fingerprint": "f7873f96866e0afc0e2dd66f98bff3f0a07d3f1938bea4e1e15031ee9df7b7d4"
+        },
+        {
+          "item_id": "f7406ef2881011b62532c827cd87807e71f1ffb772c241794158f993a5a0fd38",
+          "path": "e2e/d9ar/review.spec.ts",
+          "fingerprint": "e76d1bb39be4fa2b65a7c19c54f73a6c6bd9e4dd6fcc3dab4b67c7038b8f25ec"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "555678b70acc659e4cdcacadcff3cea8b8012beb46c43c070c4cd6edd4f1efc6",
+          "path": "evidence/D95/tdd-log/T95.18.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 43827
+  }
+}
