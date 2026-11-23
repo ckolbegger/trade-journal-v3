@@ -32,7 +32,7 @@ test.describe('B4.7 update from D2 with data', { tag: '@release-history' }, () =
     await enterMark(page, 'XYZ', 'Mon Oct 12', '52.00');
     await reachCard(page, 'XYZ');
     await saveAction(page, 'Hold', undefined, 'XYZ');
-    await expect(tradesFamily(page).getByRole('listitem').filter({ hasText: 'Review XYZ' })).toContainText('Done · Hold');
+    await expect(tradesFamily(page).getByRole('listitem').filter({ hasText: 'Review XYZ' })).toContainText('Action saved');
 
     // About: the d4 release at schema 3 with the session policy.
     await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'About' }).click();
