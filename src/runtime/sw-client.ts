@@ -143,6 +143,9 @@ export async function registerAppServiceWorker(
 
     if (!navigator.serviceWorker.controller) {
       await waitForController(4000);
+    } else {
+      // Proactively check for a newer stamped sw.js when returning to an already-controlled tab
+      void registration.update().catch(() => {});
     }
     return registration;
   } catch {

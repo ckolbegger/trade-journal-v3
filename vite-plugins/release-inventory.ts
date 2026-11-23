@@ -67,6 +67,25 @@ export function buildReleaseInventory(distDir: string): ReleaseInventory {
   };
 }
 
+export function emitReleaseInventoryAndStampSw(outDir: string): ReleaseInventory {
+  const inventory = buildReleaseInventory(outDir);
+  writeFileSync(
+    join(outDir, 'release-inventory.json'),
+    `${JSON.stringify(inventory, null, 2)}\n`,
+    'utf8',
+  );
+
+  // Stamp releaseId into sw.js so every asset or SW change produces byte-different sw.js
+  // and triggers the browser's native Service Worker update lifecycle cleanly.
+  const swPath = join(outDir, 'sw.js');
+  if (existsSync(swPath)) {
+    const swSource = readFileSync(swPath, 'utf8').replace(/\n?\/\/ releaseId: [^\n]+\n?$/, '');
+    writeFileSync(swPath, `${swSource}\n// releaseId: ${inventory.releaseId}\n`, 'utf8');
+  }
+
+  return inventory;
+}
+
 export function releaseInventoryPlugin(): Plugin {
   let resolvedOutDir = 'dist';
   return {
@@ -76,12 +95,7 @@ export function releaseInventoryPlugin(): Plugin {
       resolvedOutDir = resolve(config.root, config.build.outDir);
     },
     closeBundle() {
-      const inventory = buildReleaseInventory(resolvedOutDir);
-      writeFileSync(
-        join(resolvedOutDir, 'release-inventory.json'),
-        `${JSON.stringify(inventory, null, 2)}\n`,
-        'utf8',
-      );
+      emitReleaseInventoryAndStampSw(resolvedOutDir);
     },
   };
 }
