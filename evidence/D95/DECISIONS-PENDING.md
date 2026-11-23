@@ -54,3 +54,18 @@
 **Answer (2026-11-22):** (b). A test-setup choice within T95.7-B1 (no plan revision). **Status:** answered 2026-11-22; T95.7-B1 resumes.
 
 **Previous status:** asked. Parked: T95.7-B1's two specs (T95.7's run waits on them).
+
+## Q5 (T95.10): the day card after a save — asked 2026-11-22
+
+**Plain words.** The day summary (`day`, T95.4) comes only with `open`. A Save Marks, an Action save or an answered reflection returns the refreshed Review without it, so the day card (counts to go, the one "next" button, the steps done, "Day so far") would go stale after every save. The spec says the screen continues from each save's response without calling `open` again (and the request-count pins hold that). Nothing later in the breakdown fills the gap, though T95.14, T95.21 and I95.2 assume it.
+
+**Options.**
+- (a) A small coordinator follow-on before T95.10 (T95.4-D1): every save result carries `day`, built in the same pass as the refreshed Review (no new store read; the finished-day lists, which need each crossed Trade's replay, come with the save that finishes the day, or through `open` only then). In the same task, `day` gains what T95.10's words need and it lacks: each Trade's count of Marks to go ("To do: 2 Marks, Action") and whether an owed reflection is a Close Review. Plan revision r118.
+- (b) The screen calls `open` again after each save and takes only `day` from it. Quick, but it breaks the spec sentence and the request-count pins; needs a spec amendment.
+- (c) Refresh only when the day finishes; counts stale in between. Not recommended.
+
+**Recommendation:** (a).
+
+**Main-session readings recorded with this question (not asked):** the "Review status" block also holds the completion word, the Unavailable Marks disclosure, the integrity-disagreement and incoherent-facts lines, and the unsaved-Marks notice; T95.10 removes only the Blockers list and the block's heading and keeps those lines in the day card (the unsaved-Marks notice stays until T95.14). Case 4's "focus the Marks step" focuses the existing Marks section until T95.12 builds the grid. Case 10 is checked in the browser at 375 wide, not in jsdom.
+
+**Status:** asked. Parked: T95.10 and the screen tasks after it. 
