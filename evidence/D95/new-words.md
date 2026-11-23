@@ -9,3 +9,9 @@
 ## T95.11-B1 (provisional; hidden, screen readers only)
 - "Past Stop at the close on Fri" / "At Target at the close on Thu" (the session before's label).
 - "63% of the way from entry to the Stop" / "…to the Target" (a share label; reuses `reasonText`'s wording).
+
+## T95.12 (provisional)
+- "Add the skipped sessions" (the grid's button).
+- "· optional" in a skipped column's header.
+- "Cancel" beside the reason field.
+- "Enter why you can't get a price." (existing words, reused for an empty reason).
