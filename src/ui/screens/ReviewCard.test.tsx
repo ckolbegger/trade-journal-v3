@@ -1825,6 +1825,32 @@ describe('Review card: the Replay button (decision 3)', () => {
     expect(within(dialog).queryByRole('link', { name: 'Position' })).toBeNull();
   });
 
+  it("should keep each card's Price History link once the Marks are saved and the grid is folded", async () => {
+    const user = userEvent.setup();
+    const walked = { ...item('t1', 'XYZ'), progress: cardProgress(0, 0, { needed: 1, resolved: 0 }) };
+    const review = ready([walked], [], { families: [{ family: 'Marks', earlierMarks: [], today: [markRow('XYZ')], earlier: [] }, { family: 'Trades', trades: [walked] }] });
+    const before = tradeReview('t1', 'XYZ', { progress: walked.progress, replay: replayTo(replaySession('2026-10-08', '50.00', 0n)) });
+    const after = tradeReview('t1', 'XYZ', { replay: THURSDAY_AND_MONDAY });
+    const facade = walkFacade(review, before);
+    const mark = { revisionId: 'r1', revisionNumber: 1, price: '52.00', source: 'Manual', savedAt: '2026-10-12T21:00:00Z' } as const;
+    vi.mocked(facade.DailyReview.save).mockResolvedValueOnce({
+      kind: 'MarksSaved',
+      marks: [{ key: { instrumentKey: 'XYZ', tradingDate: '2026-10-12' }, resolution: { kind: 'Available', mark }, resolutionRevision: 1, classification: 'InitialManual' }],
+      review: { kind: 'Ready', progress: { tradesWithAction: 0, tradesEligible: 1 }, completion: { kind: 'Incomplete', reasons: [{ code: 'ActionMissing', tradeId: 't1' }] }, binding, trades: [{ ...walked, progress: cardProgress(0, 0, { resolved: 1 }) }], trade: after, nextStep: { kind: 'Trade', trade: after } },
+    });
+    renderWalk(facade);
+    const card = await openTrade(user, 'XYZ');
+    await user.type(within(marksStep()).getByRole('textbox', { name: /Mark, / }), '52.00');
+    await user.click(within(marksStep()).getByRole('button', { name: 'Save Marks (1)' }));
+    // The only Mark is in, so the grid folds to its line, which holds no Price History link.
+    await vi.waitFor(() => expect(within(marksStep()).getByRole('button', { name: 'Edit' })).toBeTruthy());
+    expect(within(marksStep()).queryByRole('link', { name: 'Price History' })).toBeNull();
+    // The card's own Replay still offers it.
+    await user.click(await within(card).findByRole('button', { name: 'Replay' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Replay, XYZ' });
+    expect(within(dialog).getByRole('link', { name: 'Price History' }).getAttribute('href')).toBe('/trades/t1?drawer=price-history&session=2026-10-12&from=review');
+  });
+
   it('should reopen the overlay on the named session when the address names the card with replay=open', async () => {
     const user = userEvent.setup();
     // Two cards: the first not done would open by itself, so the card named is the one that opens, with its overlay.
