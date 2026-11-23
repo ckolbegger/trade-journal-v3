@@ -379,3 +379,5 @@ Run `t95.22-open-order` (browser-task): unit 2845, integration 302, browser 9, c
 Commit `755901fa` (from `a4bc18e0`). `WalkedTrade.pnl?: { dollars, planR, change }` (optional like `meter`; absent when facts can't replay); change from `dayChangeOf` per Trade. Cases 1 and 2 red then green (case 2's red needed a placeholder, logged); cases 3 and 4 first-run passes, mutation-checked. Request counts equal `OPEN`. One existing test strips `pnl` beside `meter`. No snapshot changed.
 
 ocr (session 446d666e): 5 files, 0 findings. `evidence/D95/ocr/T95.16-D2-755901fa.json`.
+
+Run `t95.16-d2-walked-pnl` (browser-auto a4bc18e0 → task tier): unit 2848, integration 303, browser 9, checks 14 of 14. Passed. T95.16-D2 Done.
