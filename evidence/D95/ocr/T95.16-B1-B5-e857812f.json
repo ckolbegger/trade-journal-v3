@@ -1,0 +1,201 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 6 selected item(s).",
+  "summary": {
+    "files_reviewed": 6,
+    "comments": 0,
+    "total_tokens": 83279,
+    "input_tokens": 82570,
+    "output_tokens": 709,
+    "cache_read_tokens": 13312,
+    "elapsed": "25s"
+  },
+  "tool_calls": {
+    "total": 12,
+    "by_tool": {
+      "code_search": 2,
+      "file_read": 10
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Review card presentation and coverage",
+      "files": [
+        "e2e/d95/card.spec.ts",
+        "src/ui/app.css",
+        "src/ui/screens/ReviewCard.tsx",
+        "src/ui/screens/ReviewCards.test.tsx"
+      ]
+    },
+    {
+      "label": "Update workflow end-to-end test",
+      "files": [
+        "e2e/d4/update.spec.ts"
+      ]
+    },
+    {
+      "label": "Marks step test adjustment",
+      "files": [
+        "src/ui/screens/MarksStep.test.tsx"
+      ]
+    }
+  ],
+  "session_id": "868b5592-2a21-4dc0-84cc-69d9b632d9a1",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "868b5592-2a21-4dc0-84cc-69d9b632d9a1",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "f878796f",
+      "requested_head": "e857812f",
+      "resolved_base": "f878796f70c871da2d53da92ed89e52d2723c72a",
+      "resolved_head": "e857812fc5b2b77c3ab678395a4e4f2c0a764ced",
+      "exact_range": "f878796f70c871da2d53da92ed89e52d2723c72a..e857812fc5b2b77c3ab678395a4e4f2c0a764ced",
+      "source_artifact_sha256": "ac4271afa55e5d3453d8bb7d2e59f49de83a165fae1d4ef4efb5659446238bb5"
+    },
+    "execution": {
+      "ocr_version": "v1.14.2",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "38aeef0f163feea36a51abec7a5682a7d56670f177c89e58c49bb45f7f22563e",
+          "path": "src/ui/screens/ReviewCards.test.tsx",
+          "fingerprint": "9f761fb3c0369ac79c7efc523ea3df96b3bffb651677ad21e03974313634fda0"
+        },
+        {
+          "item_id": "5b385c845542d6ccb7cd429923948b5ea16275e021991c866647b870c23c4c76",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "0de3bea5b915c6dfb7bb9f31aafbeb2c964f43ca1e765daa5d5efb79c58c5bb2"
+        },
+        {
+          "item_id": "7d9fbbb916fbeb38e4b54d9137925ab547b565bfa15a0a00dddcaa544c195d5b",
+          "path": "e2e/d95/card.spec.ts",
+          "fingerprint": "a8b29f47ee95e00252503a4f78765b465a925895a638f99dd2c31a0f015602ec"
+        },
+        {
+          "item_id": "aa02a05b4881073ca1bb3f85ff78ad8713a1b6996978e8ecdf490c815750997f",
+          "path": "src/ui/app.css",
+          "fingerprint": "aeff964376033ec552035340332d10b0a3d682267451c81d3347f762a4d0c124"
+        },
+        {
+          "item_id": "aa591ceb1cca87e9deef51ee2919eb1c504d9d2dfedf718c686022ab548dc372",
+          "path": "e2e/d4/update.spec.ts",
+          "fingerprint": "7e7711307461f48f97676ea60fd64bfa2e234d064413838fe6a240b37c9d3b2f"
+        },
+        {
+          "item_id": "f88b8489a05d22559cf942583fe7b073450ce3857d8b76cdd026cc548c128a83",
+          "path": "src/ui/screens/MarksStep.test.tsx",
+          "fingerprint": "89d145f9a12d5d166f630fa3ff02cd1d6fb669e52a77b73f0f9e16421baf40c2"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "38aeef0f163feea36a51abec7a5682a7d56670f177c89e58c49bb45f7f22563e",
+          "path": "src/ui/screens/ReviewCards.test.tsx",
+          "fingerprint": "9f761fb3c0369ac79c7efc523ea3df96b3bffb651677ad21e03974313634fda0"
+        },
+        {
+          "item_id": "5b385c845542d6ccb7cd429923948b5ea16275e021991c866647b870c23c4c76",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "0de3bea5b915c6dfb7bb9f31aafbeb2c964f43ca1e765daa5d5efb79c58c5bb2"
+        },
+        {
+          "item_id": "7d9fbbb916fbeb38e4b54d9137925ab547b565bfa15a0a00dddcaa544c195d5b",
+          "path": "e2e/d95/card.spec.ts",
+          "fingerprint": "a8b29f47ee95e00252503a4f78765b465a925895a638f99dd2c31a0f015602ec"
+        },
+        {
+          "item_id": "aa02a05b4881073ca1bb3f85ff78ad8713a1b6996978e8ecdf490c815750997f",
+          "path": "src/ui/app.css",
+          "fingerprint": "aeff964376033ec552035340332d10b0a3d682267451c81d3347f762a4d0c124"
+        },
+        {
+          "item_id": "aa591ceb1cca87e9deef51ee2919eb1c504d9d2dfedf718c686022ab548dc372",
+          "path": "e2e/d4/update.spec.ts",
+          "fingerprint": "7e7711307461f48f97676ea60fd64bfa2e234d064413838fe6a240b37c9d3b2f"
+        },
+        {
+          "item_id": "f88b8489a05d22559cf942583fe7b073450ce3857d8b76cdd026cc548c128a83",
+          "path": "src/ui/screens/MarksStep.test.tsx",
+          "fingerprint": "89d145f9a12d5d166f630fa3ff02cd1d6fb669e52a77b73f0f9e16421baf40c2"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "2c614f4e332d005ff004e72ac6876b84497c708281dcdd3b2b056594061be064",
+          "path": "evidence/D95/words-changed.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "3e19333079c55aaba9525e7920b608d334fb135e835f669d29eb1124f6991f6f",
+          "path": "evidence/D95/data-additions.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "606f2925e6e64d4730f07c501f1e1b2b62271eae615fe39a6fe4630ad3ac12d4",
+          "path": "evidence/D95/tdd-log/T95.16-B4.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "7882b5905e6fbb0d6ac62556ca298f39e3aa0fcd8fd88e734894403aae1564a4",
+          "path": "evidence/D95/tdd-log/T95.16-B1.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "9c083b40095e878b0ab3fb36f2519df8542d3d220072bb6c664798160c9bc176",
+          "path": "evidence/D95/tdd-log/T95.16-B3.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ab47bc811f23c17f4c6317a43b1bf19eff8f2b20af07649acc55f19159f8bebc",
+          "path": "evidence/D95/structural.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "b006c89bbc89c960e857d08f7eab41dc0f5f6c55209b6e4d7bdc579fc79eb1bd",
+          "path": "evidence/D95/tdd-log/T95.16-B2.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "b6d8403dbcc03242cb0e72ab398a9b27e62afd5babb62d225e5ac988dbca62e6",
+          "path": "evidence/D95/tdd-log/T95.16-B5.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "e3097bd05207ff2a77b5e56e5d5910ea07c8a667ee97dc2c7cb695026cd6f9f6",
+          "path": "evidence/D95/new-words.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "e73ad45d8b5d506593b84baa56fe8fbc55e11b67d2d096bd9352118c58647fc3",
+          "path": "evidence/D95/ocr/T95.16-f878796f.json",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 25329
+  }
+}

@@ -391,3 +391,5 @@ ocr (session 30a10fbb, a60389a3..f878796f): 27 files, 6 findings. Valid, bug tas
 ### T95.16-B1, T95.16-B2, T95.16-B3, T95.16-B4, T95.16-B5
 
 B1 `2dfeacb3` (header passes `closeReview`), B2 `0827a7bc` (At entry hidden only when equal to the Plan box's figures), B3 `347ace42` (`overflow-wrap: anywhere`; new browser case), B4 `5ba40d94` (d4 release-history expectation restored; red then green), B5 `e857812f` (`not.toContain('To do: Mark')`, mutation-checked). Each red then green; no first-run passes.
+
+ocr of T95.16-B1 to B5 (session 868b5592, f878796f..e857812f): 6 files, 0 findings. `evidence/D95/ocr/T95.16-B1-B5-e857812f.json`.
