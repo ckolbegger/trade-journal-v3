@@ -1,7 +1,7 @@
 import type { Locator, Page } from '@playwright/test';
 import {
-  acknowledgeMark, actionFormOf, cardHeader, cardList, completion, createTradeAt, createTrades, detail, enterMark, expect, expectAccessible, firstPage, FOUR_TRADES, holdTradesStore, launchAt, markCell, markRow, MONDAY_1700, onboardedAt, onboardedPage,
-  openDrawer, openReview, panelHeader, openTradeFromOpenList, reachCard, reachPanel, LAUNCH, recordEntry, releaseTradesStore, reloadReview, saveAction, setClock, status, tabTo, test, tradeCard, TUESDAY_NOON, writeIntegrityFixture,
+  expectMark, marksPanelOf, markEditorOf, markInputOf, acknowledgeMark, actionFormOf, cardHeader, cardList, completion, createTradeAt, createTrades, detail, enterMark, expect, expectAccessible, firstPage, FOUR_TRADES, holdTradesStore, launchAt, MONDAY_1700, onboardedAt, onboardedPage,
+  openDrawer, openReview, panelHeader, openTradeFromOpenList, reachCard, LAUNCH, recordEntry, releaseTradesStore, reloadReview, saveAction, setClock, status, tabTo, test, tradeCard, TUESDAY_NOON, writeIntegrityFixture,
 } from './support.ts';
 
 const DATE = 'Mon Oct 12';
@@ -130,25 +130,25 @@ test.describe('B4.13 Responsive and accessible', () => {
     await expectAccessible(page, 'Review Incomplete, narrow');
     await page.setViewportSize({ width: 1280, height: 900 });
     await reachCard(page, 'XYZ');
-    await (await markCell(page, 'XYZ', DATE)).fill('1');
+    await (await markInputOf(page, 'XYZ', DATE)).fill('1');
     await expectAccessible(page, 'Mark entry form');
-    await (await reachPanel(page, 'XYZ', 'Marks')).getByRole('button', { name: 'Discard' }).click();
+    await (await marksPanelOf(page, 'XYZ')).getByRole('button', { name: 'Discard' }).click();
 
     await enterMark(page, 'XYZ', DATE, '52.00');
     await enterMark(page, 'ABC', DATE, '27.50');
     await acknowledgeMark(page, 'DEF', DATE, 'No quote available.');
     await enterMark(page, 'JKL', 'Fri Oct 9', '20.80');
     await reachCard(page, 'ABC');
-    await (await markRow(page, 'ABC', DATE)).getByRole('button', { name: 'Correct' }).click();
+    await (await markEditorOf(page, 'ABC', DATE)).getByRole('button', { name: 'Correct' }).click();
     await expectAccessible(page, 'Mark correction form');
-    await (await markRow(page, 'ABC', DATE)).getByRole('button', { name: 'Cancel' }).click();
+    await (await markEditorOf(page, 'ABC', DATE)).getByRole('button', { name: 'Cancel' }).click();
     // The words that tell the Marks apart without colour, each in its own card.
     await reachCard(page, 'XYZ');
-    await expect(await markRow(page, 'XYZ', DATE)).toContainText('Manual');
+    await expectMark(page, 'XYZ', DATE, 'Manual');
     await reachCard(page, 'DEF');
-    await expect(await markRow(page, 'DEF', DATE)).toContainText('Acknowledged Unavailable');
+    await expectMark(page, 'DEF', DATE, 'Acknowledged Unavailable');
     await reachCard(page, 'JKL');
-    await expect(await markRow(page, 'JKL', DATE)).toContainText('Missing');
+    await expectMark(page, 'JKL', DATE, 'Missing');
     await expectAccessible(page, 'Review Marks family: Manual, Acknowledged Unavailable, Missing');
 
     // The Open list at Monday 17:00: Available, Unavailable (acknowledged), and Missing rows.

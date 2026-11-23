@@ -1,4 +1,4 @@
-import { actionEntriesOf, BASE_URL, cardHeader, completion, createTrades, enterMark, expect, firstPage, FOUR_TRADES, MONDAY_1700, observationsOf, onboardedPage, openReview, pinClock, probe, reachCard, reachPanel, saveAction, spawnedBrowser, test, workspaceOf } from './support.ts';
+import { panelOf, actionEntriesOf, BASE_URL, cardHeader, completion, createTrades, enterMark, expect, firstPage, FOUR_TRADES, MONDAY_1700, observationsOf, onboardedPage, openReview, pinClock, probe, reachCard, saveAction, spawnedBrowser, test, workspaceOf } from './support.ts';
 
 test.describe('B4.8 Kill after commit', () => {
   test('should keep the Action after the browser is killed once its save result renders, and resume the Review from it', async ({ profile }) => {
@@ -26,7 +26,7 @@ test.describe('B4.8 Kill after commit', () => {
       // The Review resumes from the stored Action: Complete, the Action shown for the Trade.
       await expect(completion(page)).toHaveText('Complete');
       await expect(cardHeader(page, 'XYZ')).toContainText('Action saved');
-      await reachPanel(page, 'XYZ', 'Action');
+      await panelOf(page, 'XYZ', 'Action');
       await expect(page.getByRole('region', { name: 'Saved Action' })).toContainText('Saved Action: Exit');
 
       const workspace = workspaceOf(await probe(page))!;

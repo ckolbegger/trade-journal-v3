@@ -1,5 +1,5 @@
 import {
-  actionFormOf, cardHeader, cardItem, completion, createCardFixture, createRoutineTrades, createTrades, expect, expectAccessible, FRIDAY, markCell, markRow, MONDAY, MONDAY_1700, onboardedAt, openReview, panelHeader, reachPanel, LAUNCH, remainsOf, meterOf, status, tabTo,
+  panelOf, markEditorOf, markInputOf, actionFormOf, cardHeader, cardItem, completion, createCardFixture, createRoutineTrades, createTrades, expect, expectAccessible, FRIDAY, MONDAY, MONDAY_1700, onboardedAt, openReview, panelHeader, LAUNCH, remainsOf, meterOf, status, tabTo,
   test, tradeCard, type TradeRef,
 } from './support.ts';
 
@@ -24,8 +24,8 @@ test.describe('B5R.11 Responsive and accessible', () => {
     expect(wide.meter.y).toBeLessThan(wide.button.y + wide.button.height);
 
     // Half-fill drafts at 1280 px: a price and a half-written "Can't get a price" in the Marks panel, an Exit and a half-written Intent in the Action panel.
-    await (await markCell(page, tA, MONDAY)).fill('52.00');
-    const friday = await markRow(page, tA, FRIDAY);
+    await (await markInputOf(page, tA, MONDAY)).fill('52.00');
+    const friday = await markEditorOf(page, tA, FRIDAY);
     await friday.getByRole('button', { name: "Can't get a price" }).click();
     await friday.getByLabel('Reason (required)').fill('No quo');
     // Band, status and Unsaved are words.
@@ -33,7 +33,7 @@ test.describe('B5R.11 Responsive and accessible', () => {
     await expect(remainsOf(page, tA)).toHaveText('1 Mark · 1 reflection due · Action');
     await expect(status(page)).toContainText('Incomplete');
     await expect(friday.getByText('Unsaved')).toBeVisible();
-    await expect((await markRow(page, tA, MONDAY)).getByText('Unsaved')).toBeVisible();
+    await expect((await markEditorOf(page, tA, MONDAY)).getByText('Unsaved')).toBeVisible();
     await expect(panelHeader(page, tA, 'Marks')).toContainText('1 needed');
     const action = await actionFormOf(page, tA);
     await action.getByRole('radio', { name: 'Exit', exact: true }).check();
@@ -42,7 +42,7 @@ test.describe('B5R.11 Responsive and accessible', () => {
     // Axe on the card list, then on the open card with each panel open, with the drafts held; the meters are in every state.
     for (const trade of [tA, tB, tC, tE, tF]) await expect(meterOf(page, trade)).toHaveAttribute('role', 'img');
     for (const panel of ['Marks', 'Reflections', 'Action'] as const) {
-      await reachPanel(page, tA, panel);
+      await panelOf(page, tA, panel);
       await expectAccessible(page, `T-A's card with the ${panel} panel open, drafts held`);
     }
     await expectAccessible(page, 'Card list, drafts held');
@@ -64,8 +64,8 @@ test.describe('B5R.11 Responsive and accessible', () => {
     }).toPass({ timeout: 5000 });
     await expect((await actionFormOf(page, tA)).getByRole('radio', { name: 'Exit', exact: true })).toBeChecked();
     await expect((await actionFormOf(page, tA)).getByLabel(INTENT)).toHaveValue('Half written');
-    await expect(await markCell(page, tA, MONDAY)).toHaveValue('52.00');
-    await expect((await markRow(page, tA, FRIDAY)).getByLabel('Reason (required)')).toHaveValue('No quo');
+    await expect(await markInputOf(page, tA, MONDAY)).toHaveValue('52.00');
+    await expect((await markEditorOf(page, tA, FRIDAY)).getByLabel('Reason (required)')).toHaveValue('No quo');
 
     // Put the drafts away (mouse), then complete T-B's card with the keyboard only.
     await tradeCard(page, 'XYZ').getByRole('button', { name: 'Discard' }).click();

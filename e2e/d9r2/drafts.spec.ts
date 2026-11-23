@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import { chooseRestoreFile, FIXTURE_BACKUP, openBackup, restoreSection } from '../d8/support.ts';
-import { createGapFixture, expect, observationsOf, OCT_12, OCT_8, OCT_9, probe, reachCard, reachPanel, status, test, workspaceOf, type StoredObservation, type TradeRef } from './support.ts';
+import { marksPanelOf, createGapFixture, expect, observationsOf, OCT_12, OCT_8, OCT_9, probe, reachCard, status, test, workspaceOf, type StoredObservation, type TradeRef } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -10,7 +10,7 @@ const headerButton = (page: Page, name: RegExp): Locator => status(page).getByRo
 
 // Types a price into a cell of the card's grid, on whichever page of sessions it is.
 async function type(page: Page, card: TradeRef, date: string, price: string): Promise<void> {
-  const marks = await reachPanel(page, card, 'Marks');
+  const marks = await marksPanelOf(page, card);
   const turn = marks.getByRole('button', { name: date === AUG_31 ? 'Next page' : 'Previous page' });
   if ((await turn.count()) > 0) await turn.click();
   await input(marks, date).fill(price);
@@ -30,7 +30,7 @@ test.describe('B9R2.3 Drafts belong to the Review', () => {
       await expect(status(page)).toContainText('1 unsaved Mark');
       await expect(headerButton(page, /^Save Marks \(1\)$/)).toBeVisible();
       await expect(headerButton(page, /^Discard$/)).toBeVisible();
-      const marksF = await reachPanel(page, tF, 'Marks');
+      const marksF = await marksPanelOf(page, tF);
       const mirrored = marksF.getByRole('button', { name: `XYZ Mark, ${OCT_12}`, exact: true });
       await expect(mirrored).toContainText('51.20');
       await expect(mirrored).toContainText('Unsaved');
@@ -45,7 +45,7 @@ test.describe('B9R2.3 Drafts belong to the Review', () => {
       await expect(status(page)).toContainText('2 unsaved Marks');
       await type(page, tA, AUG_31, '48.00');
       await expect(status(page)).toContainText('3 unsaved Marks');
-      const marks = await reachPanel(page, tA, 'Marks');
+      const marks = await marksPanelOf(page, tA);
       // Page 2 holds Aug 31; page 1 holds the other two.
       await marks.getByRole('button', { name: 'Previous page' }).click();
       await expect(input(marks, OCT_9)).toHaveValue('50.40');
@@ -55,7 +55,7 @@ test.describe('B9R2.3 Drafts belong to the Review', () => {
       await reachCard(page, tF);
       await reachCard(page, tA);
       // The card opens on its first page again; its drafts are all there.
-      const back = await reachPanel(page, tA, 'Marks');
+      const back = await marksPanelOf(page, tA);
       await expect(input(back, OCT_12)).toHaveValue('51.20');
       await expect(input(back, OCT_9)).toHaveValue('50.40');
       await back.getByRole('button', { name: 'Next page' }).click();
@@ -65,11 +65,11 @@ test.describe('B9R2.3 Drafts belong to the Review', () => {
     });
 
     await test.step('pressing the mirrored cell in T-F moves the price to T-F (A293)', async () => {
-      const marksF = await reachPanel(page, tF, 'Marks');
+      const marksF = await marksPanelOf(page, tF);
       await marksF.getByRole('button', { name: `XYZ Mark, ${OCT_12}`, exact: true }).click();
       await expect(input(marksF, OCT_12)).toHaveValue('51.20');
       await expect(input(marksF, OCT_12)).toBeFocused();
-      const marksA = await reachPanel(page, tA, 'Marks');
+      const marksA = await marksPanelOf(page, tA);
       await expect(marksA.getByRole('button', { name: `XYZ Mark, ${OCT_12}`, exact: true })).toContainText('Unsaved');
       await expect(status(page)).toContainText('3 unsaved Marks');
     });
@@ -77,13 +77,13 @@ test.describe('B9R2.3 Drafts belong to the Review', () => {
     await test.step('Discard empties every draft at once', async () => {
       await headerButton(page, /^Discard$/).click();
       await expect(status(page)).not.toContainText('unsaved Mark');
-      const marksA = await reachPanel(page, tA, 'Marks');
+      const marksA = await marksPanelOf(page, tA);
       await expect(input(marksA, OCT_12)).toHaveValue('');
       await expect(input(marksA, OCT_9)).toHaveValue('');
       await expect(marksA.getByRole('button', { name: /^Save Marks/ })).toHaveText('Save Marks (0)');
       await marksA.getByRole('button', { name: 'Next page' }).click();
       await expect(input(marksA, AUG_31)).toHaveValue('');
-      const marksF = await reachPanel(page, tF, 'Marks');
+      const marksF = await marksPanelOf(page, tF);
       await expect(input(marksF, OCT_12)).toHaveValue('');
     });
     await context.close();
@@ -97,7 +97,7 @@ test.describe('B9R2.3 Drafts belong to the Review', () => {
     await type(page, tA, OCT_12, '51.20');
     await type(page, tA, OCT_9, '50.40');
     // A "Can't get a price" with its reason is a draft too: Thu Oct 8's.
-    const marks = await reachPanel(page, tA, 'Marks');
+    const marks = await marksPanelOf(page, tA);
     await input(marks, OCT_8).focus();
     await marks.getByRole('region', { name: `XYZ Mark, ${OCT_8}`, exact: true }).getByRole('button', { name: "Can't get a price" }).click();
     await marks.getByLabel('Reason (required)').fill('No quote that day');
@@ -122,7 +122,7 @@ test.describe('B9R2.3 Drafts belong to the Review', () => {
     expect(savedAts.size).toBe(1);
 
     // T-F holds XYZ too and shows the one Mark.
-    const marksF = await reachPanel(page, tF, 'Marks');
+    const marksF = await marksPanelOf(page, tF);
     await expect(marksF.getByRole('button', { name: `XYZ Mark, ${OCT_12}`, exact: true })).toContainText('51.20');
     await context.close();
   });
@@ -147,7 +147,7 @@ test.describe('B9R2.3 Drafts belong to the Review', () => {
     await page.reload();
     await expect(status(page)).toBeVisible();
     await expect(status(page)).not.toContainText('unsaved Mark');
-    const marks = await reachPanel(page, tA, 'Marks');
+    const marks = await marksPanelOf(page, tA);
     await expect(input(marks, OCT_12)).toHaveValue('');
     await expect(input(marks, OCT_9)).toHaveValue('');
     const afterRaw = JSON.stringify(workspaceOf(await probe(page)));
@@ -204,7 +204,7 @@ test.describe('B9R2.3 Drafts belong to the Review', () => {
     await expect.poll(() => prompts).toEqual(['beforeunload']);
     expect(page.isClosed()).toBe(false);
     await expect(status(page)).toContainText('1 unsaved Mark');
-    await expect(input(await reachPanel(page, tA, 'Marks'), OCT_12)).toHaveValue('53.17');
+    await expect(input(await marksPanelOf(page, tA), OCT_12)).toHaveValue('53.17');
 
     // A real reload meets the same prompt; accepting it drops the draft.
     accept = true;

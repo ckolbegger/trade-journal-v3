@@ -1,4 +1,4 @@
-import { completion, createTradeAt, enterMark, expect, FOUR_TRADES, markRow, MONDAY_1700, observationsOf, onboardedAt, openReview, probe, reachCard, reachPanel, reloadReview, saveAction, setClock, test, workspaceOf } from './support.ts';
+import { expectMark, marksPanelOf, markEditorOf, completion, createTradeAt, enterMark, expect, FOUR_TRADES, MONDAY_1700, observationsOf, onboardedAt, openReview, probe, reachCard, reloadReview, saveAction, setClock, test, workspaceOf } from './support.ts';
 
 const MNO = { ...FOUR_TRADES[0]!.plan, symbol: 'MNO' };
 const WEDNESDAY_1700 = '2026-10-07T21:00:00Z';
@@ -18,9 +18,9 @@ test.describe('B4.6 Skipped sessions', () => {
     // Monday 17:00: Friday was skipped and is listed as an optional gap, beside Monday's task.
     await setClock(context, page, MONDAY_1700);
     await openReview(page);
-    const marks = await reachPanel(page, 'MNO', 'Marks');
+    const marks = await marksPanelOf(page, 'MNO');
     await expect(marks).toContainText(EARLIER);
-    await expect(await markRow(page, 'MNO', 'Fri Oct 9')).toBeVisible();
+    await expect(await markEditorOf(page, 'MNO', 'Fri Oct 9')).toBeVisible();
     await expect(marks).not.toContainText('Wed Oct 7');
     await expect(marks).not.toContainText('Thu Oct 8');
 
@@ -32,15 +32,15 @@ test.describe('B4.6 Skipped sessions', () => {
     await reloadReview(page);
     await expect(completion(page)).toHaveText('Complete');
     await reachCard(page, 'MNO');
-    await expect(await markRow(page, 'MNO', 'Fri Oct 9')).toContainText('Missing');
+    await expectMark(page, 'MNO', 'Fri Oct 9', 'Missing');
 
     // Friday's Mark from the optional list empties it.
     await enterMark(page, 'MNO', 'Fri Oct 9', '51.50');
     await reloadReview(page);
     await expect(completion(page)).toHaveText('Complete');
-    await expect(await reachPanel(page, 'MNO', 'Marks')).not.toContainText(EARLIER);
+    await expect(await marksPanelOf(page, 'MNO')).not.toContainText(EARLIER);
     // Friday stays as the Previous column, with its Mark.
-    await expect(await markRow(page, 'MNO', 'Fri Oct 9')).toContainText('Manual');
+    await expectMark(page, 'MNO', 'Fri Oct 9', 'Manual');
     expect(observationsOf(workspaceOf(await probe(page))!).map((o) => [o.tradingDate, o.marks[0]!.price])).toEqual([['2026-10-07', '50.5'], ['2026-10-08', '51'], ['2026-10-09', '51.5'], ['2026-10-12', '52']]);
     await context.close();
   });

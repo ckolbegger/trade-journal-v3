@@ -295,6 +295,27 @@ export async function markCell(page: Page, card: CardRef, date: string): Promise
   const input = (await reachPanel(page, card, 'Marks')).getByRole('textbox', { name: `${symbolOf(card)} Mark, ${date}`, exact: true });
   return (await input.count()) > 0 ? input : row.getByLabel('Price');
 }
+// What specs call to reach Marks entry (T95.9): when the Marks panel gives way to the page grid, only these change.
+// The Trade's open Marks panel.
+export async function marksPanelOf(page: Page, card: CardRef): Promise<Locator> {
+  return reachPanel(page, card, 'Marks');
+}
+// The Trade's card with the named panel open (Marks, Action or Reflections); returns the panel's content.
+export async function panelOf(page: Page, card: CardRef, panel: Panel): Promise<Locator> {
+  return reachPanel(page, card, panel);
+}
+// The Instrument's cell on the date, chosen: the cell editor's region (its buttons and fields).
+export async function markEditorOf(page: Page, card: CardRef, date: string): Promise<Locator> {
+  return markRow(page, card, date);
+}
+// The cell's price input.
+export async function markInputOf(page: Page, card: CardRef, date: string): Promise<Locator> {
+  return markCell(page, card, date);
+}
+// Expects the Instrument's cell on the date to show the text.
+export async function expectMark(page: Page, card: CardRef, date: string, text: string): Promise<void> {
+  await expect(await markRow(page, card, date)).toContainText(text);
+}
 export async function actionFormOf(page: Page, card: CardRef): Promise<Locator> {
   return (await reachPanel(page, card, 'Action')).getByRole('form', { name: 'Action' });
 }

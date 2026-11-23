@@ -190,3 +190,13 @@ Success path: e2e/d4, d5, d7, d9, d9ar 225 passed, 4 skipped, 1 failed (the know
 Each task's complete run runs in a detached scratch copy (`.claude/worktrees/run-<label>`, set up by `lane-setup.sh`) at the task's commit, while the next task's subagent starts in this worktree. The run's files are copied back to `evidence/D95/suite-runs/`. A failure becomes a bug task as before; the next task restarts only if it built on the broken code. Times are recorded per run to measure the saving.
 
 **Ended by the user, 2026-11-22 ~20:05**, after T95.4, T95.6-B2, T95.7, T95.4-B1, T95.4-B2 and T95.8's start: completed work was piling up unconfirmed, and load caused spurious failures (run `t95.3-t95.5`: `estimate-rules` timeout, browser stages up to 13.7 min against about 5; T95.4's own unit runs: the same timeout twice and 3 uncaptured failures). The run already started (`t95.6-t95.7`, at `f5db240e`) and T95.8 finish; from then on, one task at a time with its run before the next task, as before.
+
+## T95.9 Browser helpers: every Mark entry goes through the support helpers
+
+Command: `grep -rnE "reachPanel\(|chooseCell\(|markRow\(|markCell\(" e2e`. Before: 132 uses, 106 of them outside the support files (21 spec files). After: 0 outside the support files; the rest are inside `support.ts` files only.
+
+New helpers in `e2e/d4/support.ts` (re-exported down the chain): `marksPanelOf` (open Marks panel), `panelOf` (any panel, for a variable or non-Marks panel), `markEditorOf` (the cell's editor region), `markInputOf` (the cell's price input), `expectMark` (cell shows text). Each one calls the old helper, so no expectation moved or changed; T95.12 changes these helpers alone.
+
+Specs now calling them: d4 (acknowledge, kill, update, no-save, review, gaps, offline, runtime-failure, card-helpers, responsive-a11y, correct-mark), d5 detail-debt, d5r (marks, durability, responsive-a11y), d7 marks-zero, d9r2 (editor, grid, responsive-a11y, drafts), d9ar states.
+
+Browser stages under with-browser-lock.sh, unchanged: `test:e2e:1` 126 passed; `:2` 80 passed; `:3` 57 passed; `:4` 137 passed, 4 skipped (same as the last complete run). typecheck, tsc6, lint (2 existing warnings in OwedDebtItem.tsx, 0 errors) and lint:deps exit 0.

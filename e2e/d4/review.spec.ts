@@ -1,4 +1,4 @@
-import { actionEntriesOf, actionFormOf, cardHeader, cardList, createTrades, enterMark, expect, firstPage, launchAt, markRow, marksFamily, observationsOf, onboardedAt, openReview, probe, reachCard, reachPanel, saveAction, status, test, tradeCard, tradesOf, workspaceOf, MONDAY_1700 } from './support.ts';
+import { expectMark, panelOf, actionEntriesOf, actionFormOf, cardHeader, cardList, createTrades, enterMark, expect, firstPage, launchAt, marksFamily, observationsOf, onboardedAt, openReview, probe, reachCard, saveAction, status, test, tradeCard, tradesOf, workspaceOf, MONDAY_1700 } from './support.ts';
 
 const DATE = 'Mon Oct 12';
 
@@ -15,7 +15,7 @@ test.describe('B4.1 Daily Review end to end', () => {
     await expect(marksFamily(page)).toBeVisible();
     for (const symbol of ['ABC', 'DEF', 'JKL', 'XYZ']) {
       await reachCard(page, symbol);
-      await expect(await markRow(page, symbol, DATE)).toContainText('Missing');
+      await expectMark(page, symbol, DATE, 'Missing');
     }
 
     await enterMark(page, 'XYZ', DATE, '52.00');
@@ -70,7 +70,7 @@ test.describe('B4.1 Daily Review end to end', () => {
     const expected = { XYZ: 'Hold', ABC: 'Exit', JKL: 'Adjust', DEF: 'Hold' };
     for (const [symbol, action] of Object.entries(expected)) {
       await expect(cardHeader(again, symbol)).toContainText('Action saved');
-      await reachPanel(again, symbol, 'Action');
+      await panelOf(again, symbol, 'Action');
       await expect(again.getByRole('region', { name: 'Saved Action' })).toContainText(`Saved Action: ${action}`);
     }
 

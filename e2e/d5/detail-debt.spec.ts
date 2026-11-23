@@ -1,5 +1,5 @@
 import {
-  answerDebt, completion, confirmReference, debtsOf, deferEntry, detail, enterMark, entriesWithSettledDebt, expect, fillDebtAnswers, markRow, onboardedAt, openDrawer, openReview, openTradeFromOpenList, probe, reachCard, reflectionsOf, setClock, test, tradeCard,
+  markEditorOf, answerDebt, completion, confirmReference, debtsOf, deferEntry, detail, enterMark, entriesWithSettledDebt, expect, fillDebtAnswers, onboardedAt, openDrawer, openReview, openTradeFromOpenList, probe, reachCard, reflectionsOf, setClock, test, tradeCard,
   TUESDAY, TUESDAY_1005, TUESDAY_1230, WEDNESDAY, WEDNESDAY_1700, workspaceOf,
 } from './support.ts';
 
@@ -34,7 +34,7 @@ test.describe('B5.3 Reflect on Trade Detail', () => {
     // Wednesday's Review lists no reflection for the Trade.
     await setClock(context, page, WEDNESDAY_1700);
     await openReview(page);
-    await expect(await markRow(page, 'XYZ', TUESDAY)).toBeVisible();
+    await expect(await markEditorOf(page, 'XYZ', TUESDAY)).toBeVisible();
     await enterMark(page, 'XYZ', TUESDAY, '52.00');
     await enterMark(page, 'XYZ', WEDNESDAY, '52.50');
     await reachCard(page, 'XYZ');

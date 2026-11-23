@@ -1,6 +1,6 @@
 import type { Locator } from '@playwright/test';
 import { expectNoSidewaysScroll, setWidth } from '../d7p/support.ts';
-import { createGapFixture, expect, expectAccessible, firstPage, launchTouchAt, MONDAY_1700, observationsOf, OCT_12, OCT_7, OCT_9, openReview, probe, reachPanel, status, tabTo, test, tradeCard, workspaceOf, cardHeader } from './support.ts';
+import { marksPanelOf, createGapFixture, expect, expectAccessible, firstPage, launchTouchAt, MONDAY_1700, observationsOf, OCT_12, OCT_7, OCT_9, openReview, probe, status, tabTo, test, tradeCard, workspaceOf, cardHeader } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -19,7 +19,7 @@ test.describe('B9R2.5 Responsive and accessible', () => {
     const turned = (marks: Locator): Locator => grid(marks).locator('table[data-layout="turned"]');
 
     // Wide: every kind of cell (inputs, an acknowledged press, a mirrored Unsaved press, Not held), with a draft and an open editor.
-    let marks = await reachPanel(page, tA, 'Marks');
+    let marks = await marksPanelOf(page, tA);
     await typeIn(marks, OCT_12, '51.20');
     await typeIn(marks, OCT_9, '50.40');
     await expect(marks.getByRole('region', { name: `XYZ Mark, ${OCT_9}`, exact: true })).toBeVisible();
@@ -28,11 +28,11 @@ test.describe('B9R2.5 Responsive and accessible', () => {
     await marks.getByRole('button', { name: 'Next page' }).click();
     await expectAccessible(page, 'T-A grid wide, second page of sessions');
     await marks.getByRole('button', { name: 'Previous page' }).click();
-    const marksF = await reachPanel(page, tF, 'Marks');
+    const marksF = await marksPanelOf(page, tF);
     await expect(marksF.getByRole('button', { name: `XYZ Mark, ${OCT_12}`, exact: true })).toContainText('Unsaved');
     await expect(grid(marksF).getByRole('img', { name: 'Not held' })).toHaveCount(1);
     await expectAccessible(page, 'T-F grid wide: a mirrored Unsaved cell and a Not held cell');
-    marks = await reachPanel(page, tA, 'Marks');
+    marks = await marksPanelOf(page, tA);
 
     // The 40rem edge: wide at 900 px, turned at 700 px (the card's own width decides), turned at 390 px.
     await setWidth(page, 900);
@@ -54,11 +54,11 @@ test.describe('B9R2.5 Responsive and accessible', () => {
     // A one-leg Trade fits: the page does not scroll sideways, and T-F's grid (one input and one Not held cell, its Review Date cell showing a
     // mirrored Unsaved draft) does not either inside its own region.
     await expectNoSidewaysScroll(page, 'Review, T-A grid turned at 390 px');
-    const marksOfF = await reachPanel(page, tF, 'Marks');
+    const marksOfF = await marksPanelOf(page, tF);
     await expectNoSidewaysScroll(page, 'Review, T-F grid turned at 390 px');
     const overflow = await grid(marksOfF).evaluate((region) => region.scrollWidth - region.clientWidth);
     expect(overflow, "T-F's grid region scrolls sideways at 390 px").toBeLessThanOrEqual(1);
-    marks = await reachPanel(page, tA, 'Marks');
+    marks = await marksPanelOf(page, tA);
     await expectAccessible(page, 'T-A grid turned at 390 px: drafts held, an open editor');
 
     // Back to wide with the focus in the Fri Oct 9 cell: the same drafts, the same chosen cell, the focus kept.
@@ -88,7 +88,7 @@ test.describe('B9R2.5 Responsive and accessible', () => {
       return boxes;
     };
     // T-A: inputs, an acknowledged press, and (after a draft in T-F's key) the rest.
-    const marksA = await reachPanel(page, tA, 'Marks');
+    const marksA = await marksPanelOf(page, tA);
     await expect(grid(marksA).locator('table[data-layout="turned"]')).toHaveCount(1);
     const a = await heights(marksA);
     expect(a.length).toBeGreaterThan(10);
@@ -97,7 +97,7 @@ test.describe('B9R2.5 Responsive and accessible', () => {
     await expectAccessible(page, 'T-A grid on a touch screen at 390 px');
     await typeIn(marksA, OCT_12, '51.20');
     // T-F: a mirrored Unsaved press and a Not held cell.
-    const marksF = await reachPanel(page, tF, 'Marks');
+    const marksF = await marksPanelOf(page, tF);
     await expect(marksF.getByRole('button', { name: `XYZ Mark, ${OCT_12}`, exact: true })).toContainText('Unsaved');
     await expect(grid(marksF).getByRole('img', { name: 'Not held' })).toHaveCount(1);
     for (const height of await heights(marksF)) expect(height, 'a T-F cell on touch').toBeGreaterThanOrEqual(44);
@@ -114,7 +114,7 @@ test.describe('B9R2.5 Responsive and accessible', () => {
       const page = await firstPage(context);
       await page.goto('/');
       await openReview(page);
-      const marks = await reachPanel(page, tA, 'Marks');
+      const marks = await marksPanelOf(page, tA);
       await expect(grid(marks).locator('table[data-layout="turned"]')).toHaveCount(1);
       // Choose the acknowledged cell: its pressed state must not clip or shrink it either.
       await marks.getByRole('button', { name: `XYZ Mark, ${OCT_7}`, exact: true }).click();

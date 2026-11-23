@@ -1,4 +1,4 @@
-import { acknowledgeMark, completion, createTrades, enterMark, expect, FOUR_TRADES, markRow, MONDAY_1700, observationsOf, onboardedAt, openReview, probe, reachCard, reloadReview, saveAction, status, test, workspaceOf } from './support.ts';
+import { expectMark, markEditorOf, acknowledgeMark, completion, createTrades, enterMark, expect, FOUR_TRADES, MONDAY_1700, observationsOf, onboardedAt, openReview, probe, reachCard, reloadReview, saveAction, status, test, workspaceOf } from './support.ts';
 
 const DATE = 'Mon Oct 12';
 
@@ -22,13 +22,13 @@ test.describe('B4.3 Can\'t get a price', () => {
       await expect(unavailable).toContainText('Instruments: DEF');
       await expect(unavailable).toContainText('Trades: DEF');
       await reachCard(page, 'DEF');
-      await expect(await markRow(page, 'DEF', DATE)).toContainText('Acknowledged Unavailable');
+      await expectMark(page, 'DEF', DATE, 'Acknowledged Unavailable');
     }
 
     // Withdrawn: the Mark is missing again and the Review Incomplete.
     await reachCard(page, 'DEF');
-    await (await markRow(page, 'DEF', DATE)).getByRole('button', { name: 'Withdraw' }).click();
-    await expect(await markRow(page, 'DEF', DATE)).toContainText('Missing');
+    await (await markEditorOf(page, 'DEF', DATE)).getByRole('button', { name: 'Withdraw' }).click();
+    await expectMark(page, 'DEF', DATE, 'Missing');
     await reloadReview(page);
     await expect(completion(page)).toHaveText('Incomplete');
     await expect(status(page)).toContainText('Mark missing for DEF on Mon Oct 12');

@@ -1,4 +1,4 @@
-import { actionEntriesOf, actionFormOf, completion, createTrades, detail, enterMark, expect, firstPage, FOUR_TRADES, launchAt, MONDAY_1700, onboardedAt, openDrawer, openReview, probe, reachCard, reachPanel, LAUNCH, saveAction, status, test, tradeCard, workspaceOf, markRow } from './support.ts';
+import { expectMark, panelOf, actionEntriesOf, actionFormOf, completion, createTrades, detail, enterMark, expect, firstPage, FOUR_TRADES, launchAt, MONDAY_1700, onboardedAt, openDrawer, openReview, probe, reachCard, LAUNCH, saveAction, status, test, tradeCard, workspaceOf, } from './support.ts';
 
 const DATE = 'Mon Oct 12';
 const READ_ONLY = "Read only: this browser can't save right now";
@@ -13,7 +13,7 @@ test.describe('B4.10 Recovery Only (faults build)', () => {
     await reachCard(first, 'XYZ');
     await saveAction(first, 'Hold', undefined, 'XYZ');
     await reachCard(first, 'ABC');
-    await expect(await markRow(first, 'ABC', DATE)).toContainText('Missing');
+    await expectMark(first, 'ABC', DATE, 'Missing');
     const before = await probe(first);
     await setup.close();
 
@@ -29,21 +29,21 @@ test.describe('B4.10 Recovery Only (faults build)', () => {
     // ABC's card: the Missing Mark with no way to enter it.
     await reachCard(page, 'ABC');
     let card = tradeCard(page, 'ABC');
-    await expect(await markRow(page, 'ABC', DATE)).toContainText('Missing');
+    await expectMark(page, 'ABC', DATE, 'Missing');
     await expect(card.getByLabel('Price')).toHaveCount(0);
     await expect(card.getByRole('button', { name: "Can't get a price" })).toHaveCount(0);
     // XYZ's card: the Manual Mark with no Correct, and the saved Action with no Change.
     await reachCard(page, 'XYZ');
     card = tradeCard(page, 'XYZ');
-    await expect(await markRow(page, 'XYZ', DATE)).toContainText('Manual');
+    await expectMark(page, 'XYZ', DATE, 'Manual');
     await expect(card.getByRole('button', { name: 'Correct' })).toHaveCount(0);
-    await reachPanel(page, 'XYZ', 'Action');
+    await panelOf(page, 'XYZ', 'Action');
     await expect(card.getByRole('region', { name: 'Saved Action' })).toContainText('Saved Action: Hold');
     await expect(card.getByRole('button', { name: 'Change' })).toHaveCount(0);
     // ABC's card again: no Action saved, and no form or Save.
     await reachCard(page, 'ABC');
     card = tradeCard(page, 'ABC');
-    await reachPanel(page, 'ABC', 'Action');
+    await panelOf(page, 'ABC', 'Action');
     await expect(card.getByText('No Action saved.')).toBeVisible();
     await expect(await actionFormOf(page, 'ABC')).toHaveCount(0);
     await expect(card.getByRole('button', { name: 'Save', exact: true })).toHaveCount(0);

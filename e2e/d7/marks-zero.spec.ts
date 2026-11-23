@@ -1,6 +1,6 @@
 import type { Locator } from '@playwright/test';
 import {
-  confirmOptionPlan, createTradeAt, currentTradeId, enterMark, expect, firstPage, launchAt, markRow, observationsOf, onboardedAt, openReview, optionMarkRow, OS, PLAN, probe, recordOptionEntry, reloadReview, saveMarkPrice, savedOptionMarkRow, test,
+  markEditorOf, confirmOptionPlan, createTradeAt, currentTradeId, enterMark, expect, firstPage, launchAt, observationsOf, onboardedAt, openReview, optionMarkRow, OS, PLAN, probe, recordOptionEntry, reloadReview, saveMarkPrice, savedOptionMarkRow, test,
   TUESDAY, TUESDAY_1700, TUESDAY_1030, workspaceOf,
 } from './support.ts';
 
@@ -35,11 +35,11 @@ test.describe('B7.6 Marks of 0', () => {
     await expect(saved).toContainText('$0.00');
 
     // 0 for KLM stock.
-    await expect((await markRow(page, klm, TUESDAY)).getByText(ZERO_NOTE)).toBeVisible();
+    await expect((await markEditorOf(page, klm, TUESDAY)).getByText(ZERO_NOTE)).toBeVisible();
     await enterMark(page, klm, TUESDAY, '0');
 
     // -1 for ABC is refused with its error, and nothing is saved for ABC.
-    const abcRow = await markRow(page, abc, TUESDAY);
+    const abcRow = await markEditorOf(page, abc, TUESDAY);
     await saveMarkPrice(page, abc, abcRow, '-1');
     await expect(abcRow.getByText('A price cannot be negative.')).toBeVisible();
     await expect(abcRow.getByText('Missing')).toBeVisible();

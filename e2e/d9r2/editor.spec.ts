@@ -1,4 +1,4 @@
-import { acknowledgeMark, completion, createGapFixture, enterMark, expect, markRow, OCT_12, OCT_7, OCT_8, OCT_9, openReview, reachCard, reachPanel, LAUNCH, reloadReview, saveAction, saveMarksOf, status, test, tradeCard } from './support.ts';
+import { expectMark, marksPanelOf, markEditorOf, acknowledgeMark, completion, createGapFixture, enterMark, expect, OCT_12, OCT_7, OCT_8, OCT_9, openReview, reachCard, LAUNCH, reloadReview, saveAction, saveMarksOf, status, test, tradeCard } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -11,7 +11,7 @@ test.describe('B9R2.4 The cell editor', () => {
     const { context, page, tA, tF } = await createGapFixture(profile);
 
     await test.step("Can't get a price needs a reason", async () => {
-      const editor = await markRow(page, tA, OCT_12);
+      const editor = await markEditorOf(page, tA, OCT_12);
       await editor.getByRole('button', { name: "Can't get a price" }).click();
       await saveMarksOf(page, tA).click();
       await expect(editor.getByText("Enter why you can't get a price.")).toBeVisible();
@@ -20,12 +20,12 @@ test.describe('B9R2.4 The cell editor', () => {
       await saveMarksOf(page, tA).click();
       // A saved result moves the card on to its next panel (A157), so the panel's own button is read inside the card.
       await expect(tradeCard(page, tA).locator('section[aria-label="Marks"] button', { hasText: /^Save Marks/ })).toHaveText('Save Marks (0)');
-      await expect(await markRow(page, tA, OCT_12)).toContainText('Acknowledged Unavailable');
+      await expectMark(page, tA, OCT_12, 'Acknowledged Unavailable');
     });
 
     await test.step('Correct an earlier Mark; an earlier Mark offers no Withdraw', async () => {
       await enterMark(page, tA, OCT_9, '50.40');
-      const editor = await markRow(page, tA, OCT_9);
+      const editor = await markEditorOf(page, tA, OCT_9);
       await expect(editor.getByRole('button', { name: 'Withdraw' })).toHaveCount(0);
       await editor.getByRole('button', { name: 'Correct', exact: true }).click();
       await editor.getByLabel('Price').fill('50.90');
@@ -34,11 +34,11 @@ test.describe('B9R2.4 The cell editor', () => {
       await expect(editor).toContainText('$50.90');
       await expect(editor).toContainText('Corrected: Misread the quote.');
       // An acknowledged earlier session has no Withdraw either.
-      await expect((await markRow(page, tA, OCT_7)).getByRole('button', { name: 'Withdraw' })).toHaveCount(0);
+      await expect((await markEditorOf(page, tA, OCT_7)).getByRole('button', { name: 'Withdraw' })).toHaveCount(0);
     });
 
     await test.step('Withdraw is offered on the Review Date only', async () => {
-      await expect((await markRow(page, tA, OCT_12)).getByRole('button', { name: 'Withdraw' })).toBeVisible();
+      await expect((await markEditorOf(page, tA, OCT_12)).getByRole('button', { name: 'Withdraw' })).toBeVisible();
     });
 
     await test.step('Complete With Unavailable Marks after a Review Date acknowledgment, whatever the earlier sessions hold', async () => {
@@ -53,8 +53,8 @@ test.describe('B9R2.4 The cell editor', () => {
       await acknowledgeMark(page, tA, 'Mon Oct 5', 'No quote that day');
       await expect(completion(page)).toHaveText('Complete with Unavailable Marks');
       // Withdrawing the Review Date's acknowledgment makes the Mark missing again.
-      await (await markRow(page, tA, OCT_12)).getByRole('button', { name: 'Withdraw' }).click();
-      await expect(await markRow(page, tA, OCT_12)).toContainText('Missing');
+      await (await markEditorOf(page, tA, OCT_12)).getByRole('button', { name: 'Withdraw' }).click();
+      await expectMark(page, tA, OCT_12, 'Missing');
       await reloadReview(page);
       await expect(completion(page)).toHaveText('Incomplete');
       await expect(status(page)).toContainText('Mark missing for XYZ on Mon Oct 12');
@@ -68,7 +68,7 @@ test.describe('B9R2.4 The cell editor', () => {
 
     await test.step('a conflict: another tab saved the cell first', async () => {
       // T-A's card is open in this tab before the other tab saves.
-      const marks = await reachPanel(page, tA, 'Marks');
+      const marks = await marksPanelOf(page, tA);
       const second = await context.newPage();
       await second.goto('/');
       await openReview(second);
@@ -91,13 +91,13 @@ test.describe('B9R2.4 The cell editor', () => {
     const { context, page, tA, tF } = await createGapFixture(profile);
 
     await test.step('another tab saves a Mark while T-F is open here: opening T-A still reads its card', async () => {
-      await reachPanel(page, tF, 'Marks');
+      await marksPanelOf(page, tF);
       const second = await context.newPage();
       await second.goto('/');
       await openReview(second);
       await enterMark(second, tA, OCT_8, '50.85');
       await second.close();
-      const marks = await reachPanel(page, tA, 'Marks');
+      const marks = await marksPanelOf(page, tA);
       await expect(marks.getByRole('textbox', { name: `XYZ Mark, ${OCT_12}`, exact: true })).toBeVisible(LAUNCH);
       await expect(page.getByText('We couldn’t load this Trade. Nothing was changed.')).toHaveCount(0);
     });
@@ -121,7 +121,7 @@ test.describe('B9R2.4 The cell editor', () => {
   test('should open the first refused cell, on its page, with its issue and focus in the input', async ({ profile }) => {
     test.setTimeout(300_000);
     const { context, page, tA } = await createGapFixture(profile);
-    const marks = await reachPanel(page, tA, 'Marks');
+    const marks = await marksPanelOf(page, tA);
     const cell = (date: string) => marks.getByRole('textbox', { name: `XYZ Mark, ${date}`, exact: true });
 
     await test.step('one refused price on page 2 while page 1 shows', async () => {

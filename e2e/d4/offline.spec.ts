@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { actionEntriesOf, cardHeader, completion, createTrades, enterMark, expect, firstPage, launchAt, markRow, MONDAY_1700, observationsOf, onboardedAt, openReview, probe, reachCard, saveAction, test, TUESDAY_1700, workspaceOf } from './support.ts';
+import { expectMark, actionEntriesOf, cardHeader, completion, createTrades, enterMark, expect, firstPage, launchAt, MONDAY_1700, observationsOf, onboardedAt, openReview, probe, reachCard, saveAction, test, TUESDAY_1700, workspaceOf } from './support.ts';
 
 const SYMBOLS = ['XYZ', 'ABC', 'DEF', 'JKL'] as const;
 const MONDAY_MARKS = { XYZ: '52.00', ABC: '27.50', DEF: '40.50', JKL: '21.00' } as const;
@@ -33,7 +33,7 @@ test.describe('B4.9 Offline cold restart (AC-DEL-001)', () => {
     await openReview(tuesday);
     await expect(tuesday.getByRole('region', NOT_WRITABLE)).toHaveCount(0);
     await expect(completion(tuesday)).toHaveText('Incomplete');
-    await expect(await markRow(tuesday, 'XYZ', 'Tue Oct 13')).toContainText('Missing');
+    await expectMark(tuesday, 'XYZ', 'Tue Oct 13', 'Missing');
     for (const symbol of SYMBOLS) await enterMark(tuesday, symbol, 'Tue Oct 13', TUESDAY_MARKS[symbol]);
     for (const symbol of SYMBOLS) {
       await reachCard(tuesday, symbol);

@@ -1,5 +1,5 @@
 import {
-  actionFormOf, cardHeader, cardList, createTrades, enterMark, expect, FOUR_TRADES, marksFamily, markCell, markRow, MONDAY_1700, onboardedAt, openPanelOf, openReview, panelHeader, PLAN, reachCard, reloadReview, status, test,
+  markEditorOf, markInputOf, actionFormOf, cardHeader, cardList, createTrades, enterMark, expect, FOUR_TRADES, marksFamily, MONDAY_1700, onboardedAt, openPanelOf, openReview, panelHeader, PLAN, reachCard, reloadReview, status, test,
   tradeCard,
   type FixtureTrade, type TradeRef,
 } from './support.ts';
@@ -28,7 +28,7 @@ test.describe('reach (decision 65)', () => {
     await expect(cardHeader(page, 'XYZ')).toHaveAttribute('aria-expanded', 'true');
     await expect(cardHeader(page, 'ABC')).toHaveAttribute('aria-expanded', 'false');
 
-    const row = await markRow(page, 'ABC', DATE);
+    const row = await markEditorOf(page, 'ABC', DATE);
     await expect(row).toContainText('Missing');
     await expect(row).toBeVisible();
     await expect(cardHeader(page, 'ABC')).toHaveAttribute('aria-expanded', 'true');
@@ -81,7 +81,7 @@ test.describe('reach (decision 65)', () => {
     await createTrades(page);
     await openReview(page);
 
-    await (await markCell(page, 'XYZ', DATE)).fill('52.00');
+    await (await markInputOf(page, 'XYZ', DATE)).fill('52.00');
     const card = await reachCard(page, 'ABC');
 
     await expect(card).toBeVisible();
@@ -113,7 +113,7 @@ test.describe('reach (decision 65)', () => {
     await openReview(page);
     await expect(status(page)).toBeVisible();
 
-    const row = await markRow(page, 'XYZ', DATE);
+    const row = await markEditorOf(page, 'XYZ', DATE);
     await expect(marksFamily(page).getByRole('region', { name: `XYZ Mark, ${DATE}`, exact: true })).toHaveCount(1);
     await expect(row).toContainText('Missing');
     await expect(row.getByRole('button', { name: 'Enter', exact: true })).toBeVisible();
@@ -129,7 +129,7 @@ test.describe('reach by Trade (decision 68)', () => {
     await expect(cardHeader(page, tA)).toHaveAttribute('aria-expanded', 'true');
     await expect(cardHeader(page, tF)).toHaveAttribute('aria-expanded', 'false');
 
-    const row = await markRow(page, tF, DATE);
+    const row = await markEditorOf(page, tF, DATE);
     await expect(row).toContainText('Missing');
     await expect(row).toBeVisible();
     await expect(tradeCard(page, tF).getByRole('region', { name: `XYZ Mark, ${DATE}`, exact: true })).toHaveCount(1);

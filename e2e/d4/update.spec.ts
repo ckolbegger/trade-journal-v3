@@ -1,4 +1,4 @@
-import { actionEntriesOf, checkForUpdate, completion, confirmReference, enterMark, expect, identity, launchAt, markRow, MONDAY_1700, onboardedPage, openReview, probe, reachCard, LAUNCH, recordEntry, reloadFromNotice, rootOf, SECOND_PLAN, test, tradesFamily, saveAction, watchUpdatingAcrossDocuments, workspaceNames, workspaceOf } from './support.ts';
+import { expectMark, actionEntriesOf, checkForUpdate, completion, confirmReference, enterMark, expect, identity, launchAt, MONDAY_1700, onboardedPage, openReview, probe, reachCard, LAUNCH, recordEntry, reloadFromNotice, rootOf, SECOND_PLAN, test, tradesFamily, saveAction, watchUpdatingAcrossDocuments, workspaceNames, workspaceOf } from './support.ts';
 
 const AT_10 = { quantity: '100', price: '50.00', fee: '1.00', time: '2026-10-12T10:00' };
 
@@ -27,8 +27,8 @@ test.describe('B4.7 update from D2 with data', { tag: '@release-history' }, () =
     // The Review lists both Instruments' Marks; a Mark and an Action save.
     await openReview(page);
     await expect(completion(page)).toHaveText('Incomplete');
-    await expect(await markRow(page, 'XYZ', 'Mon Oct 12')).toContainText('Missing');
-    await expect(await markRow(page, 'ABC', 'Mon Oct 12')).toContainText('Missing');
+    await expectMark(page, 'XYZ', 'Mon Oct 12', 'Missing');
+    await expectMark(page, 'ABC', 'Mon Oct 12', 'Missing');
     await enterMark(page, 'XYZ', 'Mon Oct 12', '52.00');
     await reachCard(page, 'XYZ');
     await saveAction(page, 'Hold', undefined, 'XYZ');

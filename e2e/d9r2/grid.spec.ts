@@ -1,4 +1,4 @@
-import { confirmOptionPlan, createGapFixture, currentTradeId, enterMark, expect, MONDAY_1700, OC, OCT_12, OCT_8, OCT_9, onboardedAt, openReview, reachPanel, recordOptionEntry, setClock, test } from './support.ts';
+import { marksPanelOf, confirmOptionPlan, createGapFixture, currentTradeId, enterMark, expect, MONDAY_1700, OC, OCT_12, OCT_8, OCT_9, onboardedAt, openReview, recordOptionEntry, setClock, test } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -12,7 +12,7 @@ test.describe('B9R2.2 The Marks grid', () => {
     const { context, page, tA, tF } = await createGapFixture(profile);
 
     await test.step('rows, columns and tags', async () => {
-      const marks = await reachPanel(page, tA, 'Marks');
+      const marks = await marksPanelOf(page, tA);
       const grid = marks.getByRole('region', { name: 'Marks by session' });
       await expect(grid.locator('tbody th')).toHaveText(['XYZ Mark']);
       await expect(grid.locator('thead th').first()).toHaveText('Session');
@@ -30,7 +30,7 @@ test.describe('B9R2.2 The Marks grid', () => {
     });
 
     await test.step('20 sessions a page, the fixed columns on every page (A296)', async () => {
-      const marks = await reachPanel(page, tA, 'Marks');
+      const marks = await marksPanelOf(page, tA);
       const grid = marks.getByRole('region', { name: 'Marks by session' });
       const heads = grid.locator('thead th[data-session]');
       await expect(marks.getByText('Sessions 1 to 20 of 27')).toBeVisible();
@@ -48,7 +48,7 @@ test.describe('B9R2.2 The Marks grid', () => {
     });
 
     await test.step('Not held: a Trade that bought on the Review Date holds nothing before it', async () => {
-      const marks = await reachPanel(page, tF, 'Marks');
+      const marks = await marksPanelOf(page, tF);
       const grid = marks.getByRole('region', { name: 'Marks by session' });
       await expect(grid.locator('thead th[data-session]')).toHaveCount(2);
       const notHeld = grid.getByRole('img', { name: 'Not held' });
@@ -79,7 +79,7 @@ test.describe('B9R2.2 The Marks grid', () => {
     await setClock(context, page, MONDAY_1700);
     await openReview(page);
 
-    const marks = await reachPanel(page, oc, 'Marks');
+    const marks = await marksPanelOf(page, oc);
     const grid = marks.getByRole('region', { name: 'Marks by session' });
     await test.step('two rows; the Thu Oct 8 column shows XYZ is Marked and the Call is not', async () => {
       await expect(grid.locator('tbody th')).toHaveText(['XYZ Mark', 'Call Mark']);
