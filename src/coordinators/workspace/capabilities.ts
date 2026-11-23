@@ -102,10 +102,11 @@ const OPERATIONS: Readonly<Record<string, readonly string[]>> = {
   // is not an operation (P37).
   // D6 P20: the Trades outside the walk with a reflection owed form a group after it, whose cards are the
   // ReflectionsOwed kind; there is still no DailyReview.getDebt.
-  'DailyReview.open': ['LatestCompleted', 'OwedReflections', 'Meter', 'GapTrades', 'OwedReflectionGroup', 'SettlementFamily'],
+  'DailyReview.open': ['LatestCompleted', 'OwedReflections', 'Meter', 'GapTrades', 'OwedReflectionGroup', 'SettlementFamily', 'DaySummary', 'PlanOrder', 'LastAction'],
   // D9 A263: the card carries the Trade's Replay. D9A-R A272: and the estimated odds.
-  'DailyReview.getTrade': ['OwedReflections', 'PlanBaseline', 'RewardRiskNow', 'ReflectionsOwed', 'ExpirationPayoff', 'SettlementDue', 'Replay', 'Odds'],
-  'DailyReview.save': ['SaveTradeAction', 'ResolveReviewDebt', 'SaveReviewMarks'],
+  'DailyReview.getTrade': ['OwedReflections', 'PlanBaseline', 'RewardRiskNow', 'ReflectionsOwed', 'ExpirationPayoff', 'SettlementDue', 'Replay', 'Odds', 'LastDecisions'],
+  // D9.5 A303: SaveReviewMarksPage saves the page's Marks in one commit; MarksFirst refuses an Action before its Marks.
+  'DailyReview.save': ['SaveTradeAction', 'ResolveReviewDebt', 'SaveReviewMarks', 'SaveReviewMarksPage', 'MarksFirst'],
   // D8 A145: a backup of a Workspace in normal use (Normal) or of a database a blocked view offers a
   // copy of (BlockedDatabase); its verification; and the two steps of Restore. The fact modules' Restore operations are internal.
   'Workspace.exportBackup': ['Normal', 'BlockedDatabase'],

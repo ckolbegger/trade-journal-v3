@@ -495,3 +495,10 @@ Commit `1a4ef61d` (from `3158ffe4`). Gate on the card's Marks to go: W94 "figure
 ocr (session 2ea56bf8): 5 files, 1 finding, Wrong, dismissed: the "Enter them" link does open the Marks step (ReviewView.tsx 424-433 applies each new search string). Reviewer note, not an ocr finding: a click when the address is already that link changes nothing. `evidence/D95/ocr/T95.20-1a4ef61d.json`.
 
 Run `t95.20-before-marks` (browser-task): unit 2890, integration 304, browser 13, checks 14 of 14. Passed. T95.20 Done.
+
+## T95.23 — Capability variants and routes, Part A (Standard)
+
+Structural. `OPERATIONS` and the Review route gain: `DailyReview.open` DaySummary, PlanOrder, LastAction; `DailyReview.getTrade` LastDecisions; `DailyReview.save` SaveReviewMarksPage, MarksFirst. `SaveReviewMarks` stays (still the request kind the page sends). New `tests/integration/d95/capabilities.test.ts` (I95.7) asserts the exact lists, that the Review route presents them, and that every route is installed.
+- `npx vitest run tests/integration/d95/capabilities.test.ts tests/integration/d9ar/capabilities.test.ts tests/integration/d9/capabilities.test.ts`: 3 passed.
+- `npm run verify:capabilities`: exit 0, "24 operations, 12 variant-qualified, 10 routes".
+- `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`: all exit 0.

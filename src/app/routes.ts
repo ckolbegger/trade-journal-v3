@@ -44,9 +44,9 @@ export const ROUTES = [
     variants: {
       // D5 P17: each Trade's card lists its owed reflections and resolves them (no Debt family).
       // D6 P20, A89, A90: the group of Trades outside the walk with a reflection owed, and its cards.
-      'DailyReview.open': ['LatestCompleted', 'OwedReflections', 'Meter', 'GapTrades', 'OwedReflectionGroup', 'SettlementFamily'],
-      'DailyReview.getTrade': ['OwedReflections', 'PlanBaseline', 'RewardRiskNow', 'ReflectionsOwed', 'ExpirationPayoff', 'SettlementDue', 'Replay', 'Odds'],
-      'DailyReview.save': ['SaveTradeAction', 'ResolveReviewDebt', 'SaveReviewMarks'],
+      'DailyReview.open': ['LatestCompleted', 'OwedReflections', 'Meter', 'GapTrades', 'OwedReflectionGroup', 'SettlementFamily', 'DaySummary', 'PlanOrder', 'LastAction'],
+      'DailyReview.getTrade': ['OwedReflections', 'PlanBaseline', 'RewardRiskNow', 'ReflectionsOwed', 'ExpirationPayoff', 'SettlementDue', 'Replay', 'Odds', 'LastDecisions'],
+      'DailyReview.save': ['SaveTradeAction', 'ResolveReviewDebt', 'SaveReviewMarks', 'SaveReviewMarksPage', 'MarksFirst'],
       'MarketData.save': ['RecordInitialManualMark', 'CorrectMark', 'AssertUnavailable', 'WithdrawAcknowledgment', 'Stock', 'Option'],
       'MarketData.query': ['ResolveFrames', 'ResolveSession', 'Current', 'Review', 'Historical', 'PreviousClose', 'Option'],
     },
