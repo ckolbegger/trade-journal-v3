@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test';
 import {
-  addK1, ALL_DRAWERS, buildOs2x, confirmOc3, confirmReference, detail, expect, firstPage, launchAt, MONDAY_0900, MONDAY_NOV_1700, onboardedAt, onboardedPage, openDrawer, PC1, LAUNCH, recordEntry,
-  recordExpiration, test, writeIntegrityFixture,
+  addK1, confirmOc3, confirmReference, detail, expect, firstPage, launchAt, MONDAY_0900, MONDAY_NOV_1700, onboardedAt, onboardedPage, openDrawer, PC1, LAUNCH, recordEntry,
+  test, writeIntegrityFixture,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
@@ -32,43 +32,6 @@ async function expectClosedStamp(page: Page): Promise<void> {
 }
 
 test.describe('B8R.2 Today on every state', () => {
-  test('should show Today on O-S2X Settlement Due with "Expired Fri Nov 20", then Closed by expiration with "Expired Fri Nov 20" as its column and the "Closed" stamp', async ({ profile }) => {
-    test.setTimeout(420_000);
-    const trade = await buildOs2x(profile);
-    const context = await launchAt(profile, MONDAY_NOV_1700);
-    const page = await firstPage(context);
-    await page.goto(`/trades/${trade.tradeId}`);
-    await expect(detail.settlementDueHeading(page)).toBeVisible(LAUNCH);
-    // W1 (amended): a Settlement Due Detail shows all six drawers and opens on Today.
-    await expectDrawers(page, [...ALL_DRAWERS], [], 'Today');
-    // W29 and W25: Mon Nov 23 is after the put's Fri Nov 20 expiration, so its Today cell is "Expired", never a price, and a screen reader hears the date.
-    await expect(detail.marksHeadings(page)).toHaveText(['Today, Mon Nov 23', 'Yesterday, Fri Nov 20', 'Change']);
-    await expect(detail.marksTable(page).locator('tbody th')).toHaveText(['MNO Mark', 'Put Mark']);
-    await expect(detail.marksCell(page, 'Put Mark', 'Today')).toHaveText('Expired');
-    await expect(detail.marksCell(page, 'Put Mark', 'Today')).toHaveAccessibleName('Expired Fri Nov 20');
-    await expect(detail.marksCell(page, 'Put Mark', 'Change')).toHaveText('—');
-    await expect(page.locator(PANEL('Today')).getByText('Expired', { exact: true })).toHaveCount(1);
-    // No price tracks on a Settlement Due Trade, and no Closed stamp.
-    await expect(page.locator(`${PANEL('Today')} h2:text-is("Where the prices sit")`)).toHaveCount(0);
-    await expect(page.locator(PANEL('Today')).getByText('Closed', { exact: true })).toHaveCount(0);
-
-    // Recording the expiration closes the Trade: W1 (amended) still shows Today first, now with the stamp (W30) and W26's second heading.
-    await detail.recordExpirationLink(page).click();
-    await recordExpiration(page);
-    await page.getByRole('link', { name: 'Back to the Trade' }).click();
-    await expect(detail.heading(page, 'MNO')).toBeVisible();
-    await expectDrawers(page, ['Today', 'Position', 'Plan and Risk', /^Price History( \d+)?$/, /^Journal/, 'Payoff'], [], 'Today');
-    await expect(detail.lifecycleBadge(page)).toHaveText('Cash-Secured Put, Closed');
-    await expect(detail.marksHeadings(page)).toHaveText(['Today, Mon Nov 23', 'Expired Fri Nov 20', 'Change']);
-    await expect(detail.marksCell(page, 'Put Mark', 'Today')).toHaveText('');
-    await expect(detail.marksCell(page, 'MNO Mark', 'Today')).toHaveText('');
-    await expect(detail.marksCell(page, 'Put Mark', 'Yesterday')).toHaveText('Expired');
-    await expect(detail.marksCell(page, 'Put Mark', 'Yesterday')).toHaveAccessibleName('Expired Fri Nov 20');
-    await expect(detail.marksCell(page, 'Put Mark', 'Change')).toHaveText('—');
-    await expectClosedStamp(page);
-    await context.close();
-  });
-
   test('should show K1 Closed by sale with "Exit Fri Nov 13", its final exit price, an empty Today column and the "Closed" stamp', async ({ profile }) => {
     test.setTimeout(420_000);
     const { context: first } = await onboardedAt(profile, MONDAY_0900);

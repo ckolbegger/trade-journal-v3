@@ -48,6 +48,11 @@ test.describe('B8P.4 States', () => {
     await expect(detail.marksHeadings(page)).toHaveText(['Today, Mon Nov 23', 'Yesterday, Fri Nov 20', 'Change']);
     await expect(detail.marksCell(page, 'Put Mark', 'Today')).toHaveText('Expired');
     await expect(detail.marksCell(page, 'Put Mark', 'Today')).toHaveAccessibleName('Expired Fri Nov 20');
+    await expect(detail.marksCell(page, 'Put Mark', 'Change')).toHaveText('—');
+    await expect(page.locator(PANEL('Today')).getByText('Expired', { exact: true })).toHaveCount(1);
+    // No price tracks on a Settlement Due Trade, and no Closed stamp.
+    await expect(page.locator(`${PANEL('Today')} h2:text-is("Where the prices sit")`)).toHaveCount(0);
+    await expect(page.locator(PANEL('Today')).getByText('Closed', { exact: true })).toHaveCount(0);
     // W4: the contract, then what the figure waits for. W15: the Position drawer's Open P&L reads "Settlement Due". W6: the conditions are not measured.
     await expect(detail.pnlFigure(page)).toHaveText('Settlement Due: MNO Nov 20 $45 Put');
     await expect(detail.pnlLine(page)).toHaveText('Trade P&L once the expiration is recorded');
@@ -68,8 +73,13 @@ test.describe('B8P.4 States', () => {
     await expect(detail.lifecycleBadge(page)).toHaveText('Cash-Secured Put, Closed');
     // T8R.7 (W26, W30): a Closed Trade's Today carries the "Closed" stamp, an empty Today column, and the expiration session's column.
     await expect(page.locator(PANEL('Today')).getByText('Closed', { exact: true })).toBeVisible();
+    // The "Closed" stamp is real text in the accessibility tree and has no aria-hidden ancestor.
+    expect(await page.locator(PANEL('Today')).ariaSnapshot(), 'the accessibility tree of Today').toMatch(/^\s*- paragraph: Closed$/m);
+    expect(await page.locator(PANEL('Today')).getByText('Closed', { exact: true }).evaluate((stamp) => stamp.closest('[aria-hidden="true"]') === null)).toBe(true);
     await expect(detail.marksHeadings(page).nth(1)).toHaveText('Expired Fri Nov 20');
     await expect(detail.marksCell(page, 'Put Mark', 'Today')).toHaveText('');
+    await expect(detail.marksCell(page, 'MNO Mark', 'Today')).toHaveText('');
+    await expect(detail.marksCell(page, 'Put Mark', 'Change')).toHaveText('—');
     await expect(detail.marksCell(page, 'Put Mark', 'Yesterday')).toHaveText('Expired');
     await expect(detail.identityCard(page).getByText('Expired Fri 20 Nov 2026', { exact: true })).toBeVisible();
     await expect(detail.pnlFigure(page)).toHaveText('$248.70');

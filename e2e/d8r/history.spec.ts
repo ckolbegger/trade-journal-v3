@@ -6,7 +6,7 @@ test.use({ actionTimeout: 15_000 });
 // B8R.6 (plan section 7.2): O-C3 with Wednesday's XYZ Mark corrected (57.40 to 57.45, saved at 17:00 with a reason), clock Thu 10-15 18:00. W33: each Price History
 // Mark cell carries its provenance in its accessible name and hover text, and a corrected Mark adds "Corrected: <reason>". W27: each Journal entry is one dated line,
 // with "· written Thu Oct 15" when it was written later. Paging the Journal by keyboard keeps focus on a paging button (tech debt item 24, fixed by T8R.16;
-// its case is also in e2e/d8p/history.spec.ts).
+// its own case in e2e/d8p/history.spec.ts was removed as a duplicate of this step).
 const journal = (page: Page): Locator => page.locator('#drawer-panel-journal');
 const earlier = (page: Page): Locator => journal(page).getByRole('button', { name: 'Earlier sessions' });
 const newer = (page: Page): Locator => journal(page).getByRole('button', { name: 'Newer sessions' });
