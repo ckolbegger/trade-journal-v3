@@ -1,0 +1,101 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 0,
+    "total_tokens": 82158,
+    "input_tokens": 80973,
+    "output_tokens": 1185,
+    "cache_read_tokens": 8320,
+    "elapsed": "37s"
+  },
+  "tool_calls": {
+    "total": 10,
+    "by_tool": {
+      "code_search": 5,
+      "file_read": 5
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/screens/MarksStep.test.tsx",
+        "src/ui/screens/MarksStep.tsx"
+      ]
+    }
+  ],
+  "session_id": "a1e4afe6-fcca-4d8f-a999-84f5b910c8e6",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "a1e4afe6-fcca-4d8f-a999-84f5b910c8e6",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "0c20cda2",
+      "resolved_base": "89e69d919c768aeb5ac5417e7ab5e4b7100ff7c7",
+      "resolved_head": "0c20cda2780dd6c9b1d399bd59eeb41696ec4f98",
+      "exact_range": "89e69d919c768aeb5ac5417e7ab5e4b7100ff7c7..0c20cda2780dd6c9b1d399bd59eeb41696ec4f98",
+      "source_artifact_sha256": "587e76f8de5a289e93bb0586fcb3ccac7290fe62fe7a5957f53cb23f6609bf68"
+    },
+    "execution": {
+      "ocr_version": "v1.14.2",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "1a8b204813f2ba42444221ccf71dd5d66d82adae9a0ef7d191f74dc7f17e40e2",
+          "path": "src/ui/screens/MarksStep.test.tsx",
+          "fingerprint": "7a1a7bcaa7c54363da66d8171c44a0cd90ac22a0b03b4aa7cfb6998ed14135da"
+        },
+        {
+          "item_id": "3986a6a0a4abf89307704f3b17b626724059c9e58101376110817356339499eb",
+          "path": "src/ui/screens/MarksStep.tsx",
+          "fingerprint": "39872a07e03263c563fc79b749d794367987fa1521c0d14d68554e5662f340e7"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "1a8b204813f2ba42444221ccf71dd5d66d82adae9a0ef7d191f74dc7f17e40e2",
+          "path": "src/ui/screens/MarksStep.test.tsx",
+          "fingerprint": "7a1a7bcaa7c54363da66d8171c44a0cd90ac22a0b03b4aa7cfb6998ed14135da"
+        },
+        {
+          "item_id": "3986a6a0a4abf89307704f3b17b626724059c9e58101376110817356339499eb",
+          "path": "src/ui/screens/MarksStep.tsx",
+          "fingerprint": "39872a07e03263c563fc79b749d794367987fa1521c0d14d68554e5662f340e7"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "2329625cb3d3f5f8d7c1c4095f020af2a82317519e34fe1dfdc51a535192e90f",
+          "path": "evidence/D95/tdd-log/T95.14-B2.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 37190
+  }
+}
