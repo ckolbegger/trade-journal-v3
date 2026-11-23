@@ -1,6 +1,6 @@
 // Shared support for the D9A-R browser suite (plan section 7.2): D9's helpers (the overlay's opener, the session cards, the stake grid, the Trades built through the UI), and what this
 // breakdown adds: DALE-hold on R-DALE-D's Marks, a Review holding three Trades, a touch launch, `expectOneLine`, `expectClearOfCursor` and the carried responsive checks.
-import { marksStepOf, saveMarksButton } from '../d4/support.ts';
+import { answerSlipQuestions, marksStepOf, saveMarksButton } from '../d4/support.ts';
 import type { BrowserContext, Locator, Page } from '@playwright/test';
 import { REPLAY_SESSION_DATES } from '../../src/domain/trade-analysis/reference-trade.ts';
 import { R_DALE_D } from '../../src/domain/trade-analysis/option-trade.ts';
@@ -68,6 +68,7 @@ async function enterTrade(page: Page, fixture: Fixture, through: number): Promis
       count += 1;
     }
   }
+  await answerSlipQuestions(page);
   await panel.getByRole('button', { name: `Save Marks (${count})`, exact: true }).click();
   await savedUnlessRefused('enterTrade', marksStepOf(page), () =>
     expect(saveMarksButton(page)).toHaveText('Save Marks (0)', LAUNCH),

@@ -35,6 +35,13 @@ export interface GridModel {
   readonly cellAt: (instrumentKey: string, date: string) => GridCellState | typeof NOT_HELD | undefined;
 }
 
+// The Instrument's Mark at the previous session, when it has one: what a typed price is measured from (P167).
+export function previousMark(model: GridModel, instrumentKey: string): string | undefined {
+  const previous = model.sessions.find(({ role }) => role === 'previous')?.date;
+  const cell = previous === undefined ? undefined : model.cellAt(instrumentKey, previous);
+  return cell && cell !== NOT_HELD && cell.resolution.kind === 'Available' ? cell.resolution.mark.price : undefined;
+}
+
 export interface GridInput {
   readonly reviewDate: string;
   // The page's Review-date rows.

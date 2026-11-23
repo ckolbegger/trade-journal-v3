@@ -816,7 +816,7 @@ describe('Save Marks (P37, A155) refused', () => {
     const panel = await marksPanelWithEarlier();
     const monday = inputOf(panel, 'XYZ', MONDAY_LABEL);
     const friday = inputOf(panel, 'XYZ', FRIDAY_LABEL);
-    await user.type(monday, 'abc');
+    await user.type(monday, '7');
     await user.type(friday, '-1');
     await user.click(within(panel).getByRole('button', { name: 'Save Marks (2)' }));
 
@@ -827,7 +827,7 @@ describe('Save Marks (P37, A155) refused', () => {
     expect(friday.getAttribute('aria-invalid')).toBe('true');
     expect(within(await choose(user, panel, 'XYZ', FRIDAY_LABEL)).getByText('A price cannot be negative.')).toBeTruthy();
     // Every draft is kept for correction.
-    expect(monday.value).toBe('abc');
+    expect(monday.value).toBe('7');
     expect(friday.value).toBe('-1');
     expect(within(panel).getByRole('button', { name: 'Save Marks (2)' })).toBeTruthy();
   });
@@ -1359,7 +1359,7 @@ describe('the cell editor (P160)', () => {
     const user = userEvent.setup();
     const panel = await marksPanelWithEarlier();
     const monday = inputOf(panel, 'XYZ', MONDAY_LABEL);
-    await user.type(monday, 'abc');
+    await user.type(monday, '51');
     const friday = await choose(user, panel, 'XYZ', FRIDAY_LABEL);
     await user.click(within(friday).getByRole('button', { name: 'Correct' }));
     await user.type(within(friday).getByLabelText('Price'), '51.5');
@@ -1372,7 +1372,7 @@ describe('the cell editor (P160)', () => {
     expect(within(friday).getByLabelText<HTMLInputElement>('Price').value).toBe('51.5');
     expect(within(friday).getByLabelText<HTMLTextAreaElement>('Reason (required)').value).toBe('typo');
     expect(document.activeElement).toBe(within(friday).getByLabelText('Price'));
-    expect(monday.value).toBe('abc');
+    expect(monday.value).toBe('51');
   });
 });
 
@@ -1486,7 +1486,7 @@ describe('drafts belong to the Review (P156)', () => {
       for (const input of within(panel).getAllByRole<HTMLInputElement>('textbox')) fireEvent.change(input, { target: { value } });
     };
     for (let page = 0; page < 6; page++) {
-      enter('9');
+      enter('51');
       if (page < 5) await user.click(within(panel).getByRole('button', { name: 'Next page' }));
     }
     expect(within(panel).getByRole('button', { name: 'Save Marks (112)' })).toBeTruthy();
@@ -1849,5 +1849,193 @@ describe('the skipped sessions, and the Cant get a price field (T95.12-B2)', () 
 
     expect(within(step).getByRole('button', { name: 'Save Marks (0)' })).toBeTruthy();
     expect(reasonField(step).value).toBe('');
+  });
+});
+
+// The slip questions (T95.13): a Review Date price that reads as a slip is questioned when its cell is left. The answers are screen state.
+describe('the slip questions in the grid (T95.13)', () => {
+  const slipReview = () => cardFacade(gridReview({ earlierMarks: [xyzMarks({ [FRIDAY]: markAt('45.10') })] }));
+  const xyzInput = (step: HTMLElement) => within(step).getByRole<HTMLInputElement>('textbox', { name: 'XYZ Mark, Mon Oct 12' });
+  const xyzRow = (step: HTMLElement) => within(gridOf(step)).getByRole('rowheader', { name: 'XYZ' }).closest('tr')!;
+
+  it('should question a Mark that reads as a slip when its cell is left, in place under the row', async () => {
+    renderReview(slipReview());
+    const user = userEvent.setup();
+    const step = await marksPanel();
+
+    await user.type(xyzInput(step), '49.00');
+    // Still typing in the cell: nothing is asked.
+    expect(within(step).queryByText('+8.6% from $45.10. Right?')).toBeNull();
+    await user.tab();
+
+    const question = within(step).getByText('+8.6% from $45.10. Right?');
+    expect(xyzRow(step).nextElementSibling!.contains(question)).toBe(true);
+    // A price inside the limits is not questioned.
+    await user.clear(xyzInput(step));
+    await user.type(xyzInput(step), '46.00');
+    await user.tab();
+    expect(within(step).queryByText(/Right\?/)).toBeNull();
+  });
+
+  it('should offer both readings of a ten-times slip and take the one pressed', async () => {
+    renderReview(slipReview());
+    const user = userEvent.setup();
+    const step = await marksPanel();
+
+    await user.type(xyzInput(step), '440');
+    await user.tab();
+    expect(within(step).getByText('$44.00 or $440.00?')).toBeTruthy();
+    await user.click(within(step).getByRole('button', { name: '$44.00' }));
+    expect(xyzInput(step).value).toBe('44.00');
+    expect(within(step).queryByText('$44.00 or $440.00?')).toBeNull();
+    expect(within(xyzRow(step)).getByText('−$1.10 (−2.4%)')).toBeTruthy();
+
+    await user.clear(xyzInput(step));
+    await user.type(xyzInput(step), '440');
+    await user.tab();
+    await user.click(within(step).getByRole('button', { name: '$440.00' }));
+    expect(xyzInput(step).value).toBe('440');
+    expect(within(step).queryByText('$44.00 or $440.00?')).toBeNull();
+  });
+
+  it('should keep the typed Mark on Yes and return to the input on Retype', async () => {
+    renderReview(slipReview());
+    const user = userEvent.setup();
+    const step = await marksPanel();
+
+    await user.type(xyzInput(step), '49.00');
+    await user.tab();
+    await user.click(within(step).getByRole('button', { name: 'Yes, $49.00' }));
+    expect(xyzInput(step).value).toBe('49.00');
+    expect(within(step).queryByText(/Right\?/)).toBeNull();
+    expect(within(step).getByRole('button', { name: 'Save Marks (1)' })).toBeTruthy();
+    // The pressed button is gone, so focus goes on to the next price, as Enter would.
+    expect(document.activeElement).toBe(within(step).getByRole('textbox', { name: 'DEF Mark, Mon Oct 12' }));
+
+    await user.clear(xyzInput(step));
+    await user.type(xyzInput(step), '55.00');
+    await user.tab();
+    await user.click(within(step).getByRole('button', { name: 'Retype' }));
+    expect(xyzInput(step).value).toBe('');
+    expect(document.activeElement).toBe(xyzInput(step));
+    expect(within(step).queryByText(/Right\?/)).toBeNull();
+    expect(within(step).getByRole('button', { name: 'Save Marks (0)' })).toBeTruthy();
+  });
+
+  it('should ask Worth nothing for a zero option Mark', async () => {
+    const call = { kind: 'Option' as const, symbol: 'XYZ', root: 'XYZ', expiration: '2026-11-20', right: 'Call' as const, strike: '50', multiplier: 100 as const };
+    const key = 'XYZ261120C00050000';
+    const row: MarkRow = { ...missingRow(key, ['t-a']), instrument: call };
+    const marks = { instrumentKey: key, instrument: call, trades: [{ tradeId: 't-a', from: FRIDAY }], marks: { [FRIDAY]: markAt('1.50') } };
+    renderReview(cardFacade(gridReview({ today: [row], earlierMarks: [marks] })));
+    const user = userEvent.setup();
+    const step = await marksPanel();
+    const price = within(step).getByRole<HTMLInputElement>('textbox', { name: /Mark, Mon Oct 12$/ });
+
+    await user.type(price, '0');
+    await user.tab();
+    expect(within(step).getByText('Worth nothing?')).toBeTruthy();
+    await user.click(within(step).getByRole('button', { name: 'Yes, $0.00' }));
+    expect(price.value).toBe('0');
+    expect(within(step).queryByText('Worth nothing?')).toBeNull();
+    expect(within(step).getByRole('button', { name: 'Save Marks (1)' })).toBeTruthy();
+  });
+
+  it('should refuse what is not a price, and a zero share price', async () => {
+    renderReview(slipReview());
+    const user = userEvent.setup();
+    const step = await marksPanel();
+
+    await user.type(xyzInput(step), 'abc');
+    await user.tab();
+    expect(within(step).getByText('Not a price. Digits only, like 45.10.')).toBeTruthy();
+    // A refusal has nothing to press: the entry is typed again.
+    expect(within(step).queryByRole('button', { name: 'Retype' })).toBeNull();
+
+    await user.clear(xyzInput(step));
+    await user.type(xyzInput(step), '0');
+    await user.tab();
+    expect(within(step).queryByText(/Not a price/)).toBeNull();
+    expect(within(step).getByText("A share price can't be $0.00.")).toBeTruthy();
+  });
+
+  it('should hold Save Marks while a question is open and say how many', async () => {
+    const facade = slipReview();
+    renderReview(facade);
+    const user = userEvent.setup();
+    const step = await marksPanel();
+    const defInput = within(step).getByRole<HTMLInputElement>('textbox', { name: 'DEF Mark, Mon Oct 12' });
+
+    await user.type(xyzInput(step), '49.00');
+    await user.type(defInput, 'x');
+    // Pressing Save Marks leaves the cell it was typed in: both are asked about, and nothing is sent.
+    await user.click(within(step).getByRole('button', { name: 'Save Marks (2)' }));
+    expect(within(step).getByText('2 Marks to check first.')).toBeTruthy();
+    expect(facade.DailyReview.save).not.toHaveBeenCalled();
+
+    await user.click(within(step).getByRole('button', { name: 'Yes, $49.00' }));
+    expect(within(step).getByText('1 Mark to check first.')).toBeTruthy();
+    await user.click(within(step).getByRole('button', { name: 'Save Marks (2)' }));
+    expect(facade.DailyReview.save).not.toHaveBeenCalled();
+  });
+
+  it('should not ask again about a Mark already answered, until it is retyped', async () => {
+    const facade = slipReview();
+    vi.mocked(facade.DailyReview.save).mockResolvedValue(marksSavedResult([savedKey('XYZ', MONDAY, '49.00')]));
+    renderReview(facade);
+    const user = userEvent.setup();
+    const step = await marksPanel();
+
+    await user.type(xyzInput(step), '49.00');
+    await user.tab();
+    await user.click(within(step).getByRole('button', { name: 'Yes, $49.00' }));
+    // Back into the cell and out again: the answer stands.
+    await user.click(xyzInput(step));
+    await user.tab();
+    expect(within(step).queryByText(/Right\?/)).toBeNull();
+
+    // Typing the same price again is a new entry, and is asked about.
+    await user.clear(xyzInput(step));
+    await user.type(xyzInput(step), '49.00');
+    await user.tab();
+    expect(within(step).getByText('+8.6% from $45.10. Right?')).toBeTruthy();
+
+    // Answered again, Save Marks sends it without asking.
+    await user.click(within(step).getByRole('button', { name: 'Yes, $49.00' }));
+    await user.click(within(step).getByRole('button', { name: 'Save Marks (1)' }));
+    expect(within(step).queryByText(/to check first/)).toBeNull();
+    expect(facade.DailyReview.save).toHaveBeenCalledTimes(1);
+  });
+
+  it('should state the limits under the grid', async () => {
+    renderReview(slipReview());
+    const step = await marksPanel();
+
+    const limits = within(step).getByText('Asks before saving a Mark that moved more than 5% (stock), or 100% up or 50% down (option), since the last Mark.');
+    // Under the grid, not inside it.
+    expect(gridOf(step).contains(limits)).toBe(false);
+    expect(gridOf(step).compareDocumentPosition(limits) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('should send no slip answer with the save', async () => {
+    const facade = slipReview();
+    vi.mocked(facade.DailyReview.save).mockResolvedValue(marksSavedResult([savedKey('XYZ', MONDAY, '44.00')]));
+    renderReview(facade);
+    const user = userEvent.setup();
+    const step = await marksPanel();
+
+    await user.type(xyzInput(step), '440');
+    await user.tab();
+    await user.click(within(step).getByRole('button', { name: '$44.00' }));
+    await user.click(within(step).getByRole('button', { name: 'Save Marks (1)' }));
+
+    // The command holds the price and nothing of the question: no answer, no reading, no entry as typed.
+    expect(facade.DailyReview.save).toHaveBeenCalledTimes(1);
+    expect(facade.DailyReview.save).toHaveBeenCalledWith({
+      kind: 'SaveReviewMarks',
+      reviewDate: MONDAY,
+      binding,
+      entries: [{ key: { instrumentKey: 'XYZ', tradingDate: MONDAY }, expectedRevision: 'None', intention: { kind: 'RecordInitialManualMark', price: '44.00' } }],
+    });
   });
 });

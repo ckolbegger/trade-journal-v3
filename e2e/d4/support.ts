@@ -394,6 +394,18 @@ async function checkSavedRow(page: Page, card: CardRef, date: string, text: stri
   await expect(await markRow(page, card, date)).toContainText(text);
 }
 
+// A price that reads as a slip is questioned when its cell is left (T95.13). Leaves the cell in hand, then answers every question under the
+// grid with the price that was typed: "Yes" to a far move or a zero option, the typed reading of a ten-times slip. A refusal has no button
+// and is left for the case to see.
+export async function answerSlipQuestions(page: Page): Promise<void> {
+  await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+  const buttons = marksStepOf(page).locator('table [role="alert"] button');
+  for (let asked = 0; asked < 20 && (await buttons.count()) > 0; asked += 1) {
+    const yes = buttons.filter({ hasText: /^Yes, / });
+    await ((await yes.count()) > 0 ? yes.first() : buttons.last()).click();
+  }
+}
+
 // On cards the price is a draft in the open card's Marks panel, saved with Save Marks (D5R, A153); a previous release's
 // Review enters it in the row and saves it there.
 export async function enterMark(page: Page, card: CardRef, date: string, price: string): Promise<void> {
@@ -401,6 +413,7 @@ export async function enterMark(page: Page, card: CardRef, date: string, price: 
   const entry = await markRow(page, card, date);
   if (cards) {
     await (await markCell(page, card, date)).fill(price);
+    await answerSlipQuestions(page);
     await saveMarksButton(page).click();
   } else {
     await entry.getByRole('button', { name: 'Enter', exact: true }).click();

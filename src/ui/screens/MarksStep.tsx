@@ -3,18 +3,20 @@ import { Link } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
 import type { MarkResolution, MarkRow, ObservationKey } from '../../app/types.ts';
 import type { Instrument } from '../../domain/instrument/index.ts';
+import { checkMarkSlip } from '../../domain/mark-slip/index.ts';
 import { instrumentLabel } from '../calculation-words.ts';
 import { shortDate } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
 import { fieldIssues } from './form-issues.tsx';
 import { holdersOf, instrumentOf as heldInstrument, standing as heldStanding, type Held, type HeldResult, type Standing } from './held-review.ts';
-import { CANT_GET_A_PRICE, gridModel, NOT_HELD } from './marks-grid.ts';
+import { CANT_GET_A_PRICE, gridModel, NOT_HELD, previousMark } from './marks-grid.ts';
 import { stepMarks } from './marks-step.ts';
 import { MarkEntry, type MarkEntryProps } from './MarkEntry.tsx';
 import { MarksGrid } from './MarksGrid.tsx';
 import { describeMarkIssues, ZERO_MARK_NOTE } from './mark-issues.ts';
 import type { FieldIssue } from './plan-issues.ts';
 import { draftAt, type DraftValue } from './review-drafts.ts';
+import { SLIP_LIMITS_WORDS, type SlipChoice } from './SlipQuestion.tsx';
 import type { MarkDrafts } from './useMarkDrafts.ts';
 
 export type EntryDirty = (id: string, dirty: boolean) => void;
@@ -223,6 +225,10 @@ export function MarksStep({ facade, held: heldReview, onResult, tradeLine, onEnt
   const reportDirty = onEntryDirty;
   // Choosing another cell was refused because a correction is in progress (A297); the words show until it ends.
   const [refused, setRefused] = useState(false);
+  // The price each Review Date cell was last left with (T95.13). Whether it is questioned is worked out from the draft each render.
+  const [left, setLeft] = useState<Readonly<Record<string, string>>>({});
+  // The price each was answered at: it is not asked about again.
+  const [slipAnswered, setSlipAnswered] = useState<Readonly<Record<string, string>>>({});
   const entryDirty = useCallback<EntryDirty>(
     (id, dirty) => {
       if (!dirty) setRefused(false);
@@ -357,6 +363,43 @@ export function MarksStep({ facade, held: heldReview, onResult, tradeLine, onEnt
   if (marks.today.length === 0 && opened.length === 0) return null;
   // Each cell is one tab stop and the one editor sits under the grid, so Tab goes from the chosen cell into the editor's controls and on from
   // its last control to the next cell; Shift+Tab goes back from the editor's first control to its cell (P160).
+  // A price that reads as a slip: the domain's answer, measured from the previous session's Mark (P167). Asked once per price typed.
+  const questionFor = (key: ObservationKey, entry: string) => {
+    if (slipAnswered[rowId(key.instrumentKey, key.tradingDate)] === entry) return undefined;
+    const answer = checkMarkSlip({ instrument: instrumentOf(key.instrumentKey), entry, lastMark: previousMark(model, key.instrumentKey) });
+    return answer.kind === 'Pass' ? undefined : { answer, entry };
+  };
+  // The Review Date prices typed, trimmed as Save Marks sends them.
+  const typedPrices = model.instruments.flatMap(({ instrumentKey }) => {
+    const key = { instrumentKey, tradingDate: reviewDate };
+    const draft = draftAt(drafts, key)?.value;
+    return draft?.kind === 'Price' && draft.price.trim() !== '' ? [{ key, entry: draft.price.trim() }] : [];
+  });
+  // A price left in its cell is asked about under its row while it stands as it was left.
+  const slipOf = (key: ObservationKey) => {
+    const entry = typedPrices.find((typed) => typed.key.instrumentKey === key.instrumentKey)?.entry;
+    return entry !== undefined && left[rowId(key.instrumentKey, key.tradingDate)] === entry ? questionFor(key, entry) : undefined;
+  };
+  const leave = (key: ObservationKey) => {
+    const entry = typedPrices.find((typed) => typed.key.instrumentKey === key.instrumentKey)?.entry;
+    if (entry !== undefined) setLeft((prev) => ({ ...prev, [rowId(key.instrumentKey, key.tradingDate)]: entry }));
+  };
+  const toCheck = typedPrices.filter(({ key }) => slipOf(key) !== undefined).length;
+  // Save Marks leaves every typed price, so each is asked about before anything is sent.
+  const saveMarks = () => {
+    setLeft(Object.fromEntries(typedPrices.map(({ key, entry }) => [rowId(key.instrumentKey, key.tradingDate), entry])));
+    const first = typedPrices.find(({ key, entry }) => questionFor(key, entry) !== undefined);
+    if (first === undefined) void markDrafts.save();
+    else focus(fieldIds(uid, rowId(first.key.instrumentKey, first.key.tradingDate)).price);
+  };
+  const answer = (key: ObservationKey, choice: SlipChoice) => {
+    if (choice.kind === 'retype') {
+      hold(key, undefined);
+      return;
+    }
+    hold(key, { kind: 'Price', price: choice.price });
+    setSlipAnswered((prev) => ({ ...prev, [rowId(key.instrumentKey, key.tradingDate)]: choice.price }));
+  };
   const chosenLabel = chosen && model.instruments.some((i) => i.instrumentKey === chosen.instrumentKey) ? `${instrumentLabel(instrumentOf(chosen.instrumentKey), timeZone)} Mark, ${shortDate(chosen.tradingDate)}` : undefined;
   const throughEditor = (event: KeyboardEvent<HTMLElement>) => {
     const editor = section.current?.querySelector<HTMLElement>('[data-cell-editor]');
@@ -420,7 +463,11 @@ export function MarksStep({ facade, held: heldReview, onResult, tradeLine, onEnt
           const row = marks.today.find((r) => r.instrumentKey === instrumentKey);
           return row?.task === 'Manual' && row.trades.every((id) => settlementTrades.has(id)) ? SETTLEMENT_ONLY_NOTE : undefined;
         }}
-        onPrice={(key, price) => hold(key, { kind: 'Price', price })}
+        onPrice={(key, price) => {
+          // Typing makes it a new entry: an answer to the old one no longer stands.
+          setSlipAnswered((prev) => Object.fromEntries(Object.entries(prev).filter(([id]) => id !== rowId(key.instrumentKey, key.tradingDate))));
+          hold(key, { kind: 'Price', price });
+        }}
         onNoPrice={(key, reason) => hold(key, { kind: 'CantGetPrice', reason })}
         onUndo={(key) => hold(key, undefined)}
         fieldOf={(key) => {
@@ -433,6 +480,9 @@ export function MarksStep({ facade, held: heldReview, onResult, tradeLine, onEnt
         pagingHeld={dirtyIds.size > 0}
         refusals={handledReveal}
         showSession={gap && { date: gap.date, count: gapShown }}
+        onLeave={leave}
+        slipOf={slipOf}
+        onAnswer={answer}
         onPage={(visible) => {
           // An editor whose cell is not on the shown page closes; a draft in it stays (P160).
           if (chosen !== undefined && !visible.includes(chosen.tradingDate)) setChosen(undefined);
@@ -457,6 +507,7 @@ export function MarksStep({ facade, held: heldReview, onResult, tradeLine, onEnt
       {opened.length > 0 && (showEarlier || !model.sessions.some(({ role }) => role === undefined)) && <p>Earlier sessions don't block the Review.</p>}
       {walkedTrades.some((trade) => trade.expiresOnReviewDate) && <p>Expired worth nothing: enter 0.</p>}
       {inGrid && <p className="hint">{ZERO_MARK_NOTE}</p>}
+      {writable && <p className="hint">{SLIP_LIMITS_WORDS}</p>}
       {refused && dirtyIds.size > 0 && <p role="status">Save or cancel the correction to choose another cell.</p>}
       {chosen && chosenCell && chosenCell !== NOT_HELD && !inGrid && (
         <div data-cell-editor>
@@ -479,12 +530,13 @@ export function MarksStep({ facade, held: heldReview, onResult, tradeLine, onEnt
       {failure && <SaveFailure drafts={markDrafts} onRefresh={onRefresh} />}
       {writable && (
         <p>
-          <button type="button" ref={saveButton} className="pill primary" disabled={count === 0 || saving} onClick={() => void markDrafts.save()}>
+          <button type="button" ref={saveButton} className="pill primary" disabled={count === 0 || saving} onClick={saveMarks}>
             Save Marks ({count})
           </button>
           <button type="button" className="pill secondary" disabled={count === 0} onClick={markDrafts.discard}>
             Discard
           </button>
+          {toCheck > 0 && <span role="status"> {toCheck} {toCheck === 1 ? 'Mark' : 'Marks'} to check first.</span>}
         </p>
       )}
       {writable && tooMany && <p role="status">{tooManyWords(tooMany)}</p>}

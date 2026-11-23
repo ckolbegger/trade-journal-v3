@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useId, useRef, useState } from 'react';
 import type { ObservationKey } from '../../app/types.ts';
 import { markChange } from '../../domain/mark-slip/index.ts';
 import { fieldIssues } from './form-issues.tsx';
@@ -6,9 +6,10 @@ import { acknowledgedUnavailableStatusLabel, instrumentLabel } from '../calculat
 import { signed } from '../figures.ts';
 import { decimalMoney, decimalUnderlyingPrice, money, shortDate } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
-import { CANT_GET_A_PRICE, NO_PRICE, NOT_HELD, type GridModel } from './marks-grid.ts';
+import { CANT_GET_A_PRICE, NO_PRICE, NOT_HELD, previousMark, type GridModel } from './marks-grid.ts';
 import type { FieldIssue } from './plan-issues.ts';
 import type { DraftValue } from './review-drafts.ts';
+import { SlipQuestion, type SlipChoice, type SlipQuestionProps } from './SlipQuestion.tsx';
 
 // Earlier sessions show 20 to a page; the Review Date and previous columns stay on every page (A296).
 const SESSIONS_PER_PAGE = 20;
@@ -44,6 +45,10 @@ export interface MarksGridProps {
   readonly pagingHeld: boolean;
   // Paging shows these sessions (the Review Date, the previous one and the page's earlier ones).
   readonly onPage: (visible: readonly string[]) => void;
+  // A price left in its cell (T95.13), and the question it raises, if any: shown in place under the row.
+  readonly onLeave?: (key: ObservationKey) => void;
+  readonly slipOf?: (key: ObservationKey) => Omit<SlipQuestionProps, 'last' | 'onChoose'> | undefined;
+  readonly onAnswer?: (key: ObservationKey, choice: SlipChoice) => void;
   // Counts the refused saves, so a repeat refusal of the same cell is a new one.
   readonly refusals: number;
   // A session to bring up: its page shows each time the count rises.
@@ -54,7 +59,7 @@ const idOf = (key: ObservationKey): string => `${key.instrumentKey}:${key.tradin
 
 // The Marks step's grid: one row per Instrument on the page, the previous session's Mark, the Review Date's price and the change from the
 // previous Mark. The skipped sessions are optional columns, added on request.
-export function MarksGrid({ model, reviewDate, writable, showEarlier, draftOf, noteOf, onPrice, onNoPrice, onUndo, fieldOf, chosen, onChoose, onLastEnter, pagingHeld, onPage, refusals, showSession }: MarksGridProps) {
+export function MarksGrid({ model, reviewDate, writable, showEarlier, draftOf, noteOf, onPrice, onNoPrice, onUndo, fieldOf, chosen, onChoose, onLastEnter, pagingHeld, onPage, refusals, showSession, onLeave, slipOf, onAnswer }: MarksGridProps) {
   const { timeZone } = useRuntime();
   const [requestedPage, setPage] = useState(0);
   const holdId = useId();
@@ -168,7 +173,7 @@ export function MarksGrid({ model, reviewDate, writable, showEarlier, draftOf, n
     if (cell.kind === 'input') {
       const invalid = cell.field.issues.some((issue) => issue.field === cell.field.id);
       return (
-        <input type="text" inputMode="decimal" className="session-grid-control" id={cell.field.id} aria-label={cell.label} aria-invalid={invalid || undefined} aria-describedby={invalid ? `${cell.field.id}-error` : undefined} value={cell.value} onFocus={() => onChoose(cell.key)} onChange={(event) => onPrice(cell.key, event.target.value)}
+        <input type="text" inputMode="decimal" className="session-grid-control" id={cell.field.id} aria-label={cell.label} aria-invalid={invalid || undefined} aria-describedby={invalid ? `${cell.field.id}-error` : undefined} value={cell.value} onFocus={() => onChoose(cell.key)} onChange={(event) => onPrice(cell.key, event.target.value)} onBlur={() => cell.key.tradingDate === reviewDate && onLeave?.(cell.key)}
           onKeyDown={(event) => {
             if (event.key !== 'Enter') return;
             event.preventDefault();
@@ -209,8 +214,8 @@ export function MarksGrid({ model, reviewDate, writable, showEarlier, draftOf, n
               const todayKey = { instrumentKey, tradingDate: reviewDate };
               const todayId = idOf(todayKey);
               const draft = draftOf(todayKey);
-              const lastPrice = previous === undefined ? undefined : model.cellAt(instrumentKey, previous);
-              const last = lastPrice && lastPrice !== NOT_HELD && lastPrice.resolution.kind === 'Available' ? lastPrice.resolution.mark.price : undefined;
+              const last = previousMark(model, instrumentKey);
+              const slip = slipOf?.(todayKey);
               const saved = model.cellAt(instrumentKey, reviewDate);
               const savedPrice = saved && saved !== NOT_HELD && saved.resolution.kind === 'Available' ? saved.resolution.mark.price : undefined;
               const entry = draft?.kind === 'Price' ? draft.price : savedPrice;
@@ -223,7 +228,8 @@ export function MarksGrid({ model, reviewDate, writable, showEarlier, draftOf, n
               const asked = writable && asking?.id === todayId;
               const { fieldError } = fieldIssues(issues);
               return (
-                <tr key={instrumentKey}>
+                <Fragment key={instrumentKey}>
+                <tr>
                   <th scope="row">{instrumentLabel(instrument, timeZone)}</th>
                   {dates.map((date) => (
                     <td key={date} className={date === previous ? 'marks-step-previous' : 'marks-step-optional'} data-label={shortDate(date)}>
@@ -283,6 +289,22 @@ export function MarksGrid({ model, reviewDate, writable, showEarlier, draftOf, n
                     )}
                   </td>
                 </tr>
+                {slip && (
+                  <tr>
+                    <td colSpan={dates.length + 3}>
+                      <SlipQuestion {...slip} last={last} onChoose={(choice) => {
+                          onAnswer?.(todayKey, choice);
+                          // The pressed button goes: focus returns to the price, or goes on to the next one as Enter does.
+                          const input = document.getElementById(fieldOf(todayKey).id);
+                          if (input instanceof HTMLInputElement) {
+                            if (choice.kind === 'retype' || today.kind !== 'input') input.focus();
+                            else enterFrom(today.label, input);
+                          }
+                        }} />
+                    </td>
+                  </tr>
+                )}
+                </Fragment>
               );
             })}
           </tbody>
