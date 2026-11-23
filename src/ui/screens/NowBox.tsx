@@ -37,10 +37,26 @@ function Drawing({ meter, captions }: { readonly meter: MeterProps; readonly cap
     const next = { stop: placeOf(root.current, 'meter-stop'), target: placeOf(root.current, 'meter-target'), now: placeOf(root.current, 'meter-pointer') };
     setAt((was) => (was.stop === next.stop && was.target === next.target && was.now === next.now ? was : next));
   }, [meter]);
+  // Two lines close on the meter's scale (both on one side of $0) would put their labels on top of each other: the Target's takes a second row then.
+  const [stacked, setStacked] = useState(false);
+  useLayoutEffect(() => {
+    const drawing = root.current;
+    if (!drawing) return;
+    const apart = () => {
+      const stop = drawing.querySelector('.now-label[data-line="stop"]')?.getBoundingClientRect();
+      const target = drawing.querySelector('.now-label[data-line="target"]')?.getBoundingClientRect();
+      if (stop && target) setStacked(stop.left < target.right && target.left < stop.right);
+    };
+    apart();
+    if (typeof ResizeObserver === 'undefined') return;
+    const watch = new ResizeObserver(apart);
+    watch.observe(drawing);
+    return () => watch.disconnect();
+  }, [at]);
   // A label stands over its mark, shifted by its own share of its width so the one at either end stays inside the bar.
   const label = (line: 'stop' | 'target', text: string, place: string | undefined) =>
     place && (
-      <span className="now-label" data-line={line} data-tone={line === 'stop' ? 'loss' : 'profit'} style={{ left: place, transform: `translateX(-${place})` }}>
+      <span className="now-label" data-line={line} data-row={stacked && line === 'target' ? 2 : 1} data-tone={line === 'stop' ? 'loss' : 'profit'} style={{ left: place, transform: `translateX(-${place})` }}>
         {text}
       </span>
     );

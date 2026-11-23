@@ -1169,6 +1169,13 @@ ul.rows > li {
   top: 0;
   white-space: nowrap;
 }
+/* Two labels that would overlap stand on two rows. */
+.now-labels:has([data-row='2']) {
+  height: 2.5rem;
+}
+.now-label[data-row='2'] {
+  top: 1.25rem;
+}
 .now-label[data-tone='loss'],
 .now-caption[data-tone='loss'] {
   color: var(--stop);
