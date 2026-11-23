@@ -1,4 +1,4 @@
-import { useId, type ReactNode } from 'react';
+import { Fragment, useId, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import type { OpenDailyReviewResult, ReviewCompletion } from '../../app/types.ts';
 import { Badge } from '../Badge.tsx';
@@ -210,11 +210,28 @@ export function DayCard({ review, name, openCard, openMarks, openSkipped }: DayC
               <dd>
                 {day.finished.due.sales.length > 0 && (
                   <p>
-                    Sell {day.finished.due.sales.map(underlyingOf).join(', ')}, then{' '}
-                    <CardLink tradeId={day.finished.due.sales[0]!} open={() => openCard(day.finished!.due.sales[0]!)}>
-                      record the sale
-                    </CardLink>
-                    .
+                    {day.finished.due.sales.length === 1 ? (
+                      <>
+                        Sell {underlyingOf(day.finished.due.sales[0]!)}, then{' '}
+                        <CardLink tradeId={day.finished.due.sales[0]!} open={() => openCard(day.finished!.due.sales[0]!)}>
+                          record the sale
+                        </CardLink>
+                        .
+                      </>
+                    ) : (
+                      <>
+                        Sell{' '}
+                        {day.finished.due.sales.map((tradeId, i) => (
+                          <Fragment key={tradeId}>
+                            {i > 0 && ', '}
+                            <CardLink tradeId={tradeId} open={() => openCard(tradeId)}>
+                              {underlyingOf(tradeId)}
+                            </CardLink>
+                          </Fragment>
+                        ))}
+                        , then record the sales.
+                      </>
+                    )}
                   </p>
                 )}
                 {heldPast(day.finished, underlyingOf).map((sentence) => (

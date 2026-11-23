@@ -128,6 +128,14 @@ describe('the day card on a finished day', () => {
     await user.click(link);
     expect(openCard).toHaveBeenCalledExactlyOnceWith('t4');
   });
+
+  it('should link each Trade to be sold to its own card when several Exits are saved', async () => {
+    const user = userEvent.setup();
+    const { openCard } = renderCard(review({ completion: { kind: 'Complete' }, day: finishedDay({ chosen: [{ tradeId: 't3', action: 'Exit' }, { tradeId: 't4', action: 'Exit' }], due: { sales: ['t3', 't4'], expirations: [] } }) }));
+    expect(screen.getByRole('link', { name: 'CORV' }).getAttribute('href')).toBe('/review?trade=t3');
+    await user.click(screen.getByRole('link', { name: 'BREN' }));
+    expect(openCard).toHaveBeenCalledExactlyOnceWith('t4');
+  });
 });
 
 const stepItems = () => within(screen.getByRole('list', { name: 'Steps' })).getAllByRole('listitem');
