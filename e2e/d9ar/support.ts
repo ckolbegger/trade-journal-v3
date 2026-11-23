@@ -8,6 +8,7 @@ import { expectShownInFull } from '../d7p/support.ts';
 import {
   AXIO, BREN, closeOf, currentTradeId, DALE, detail, expect, fillOptionPlan, fillOptionRows, fillPlan, fillRows, label, onboardedAt, openExitForm, openReview, pinClock, pnlChart, priceStrip, LAUNCH,
   answerIn, exitReflection, PRICE_HISTORY, reachPanel, recordEntry, recordOptionEntry, replay, savedUnlessRefused, seek, slider, sliderValue, type Fixture, type Profile, type TradeRef,
+  defineSetup, firstPage, launchAt, probe, tradesOf, workspaceOf, type Setup,
 } from '../d9/support.ts';
 
 export * from '../d9/support.ts';
@@ -98,6 +99,26 @@ export async function buildReview(profile: Profile, fixtures: readonly Fixture[]
   for (const fixture of fixtures) trades.push(await enterTrade(page, fixture, through));
   await page.goto('/');
   await openReview(page);
+  return { context, page, trades };
+}
+
+// The saved setup of the standard Review (BREN, AXIO and DALE-hold, every Trade Marked to Mon 11-16): built once per worker, and each test that asks starts on a copy (setup-snapshot plan, group 1).
+export const STANDARD_REVIEW = defineSetup('standard-review', async (profile) => {
+  const { context, trades } = await buildReview(profile);
+  return { context, made: trades };
+});
+
+// buildReview's shape, { context, page, trades }, from the copy: launched at the instant the build used, the Review opened, and the stored Trades checked to be the setup's.
+export async function openStandardReview(profile: Profile, copySetup: <T>(setup: Setup<T>) => Promise<T>): Promise<{ context: BrowserContext; page: Page; trades: TradeRef[] }> {
+  const trades = [...(await copySetup(STANDARD_REVIEW))];
+  const context = await launchAt(profile, closeOf(REPLAY_SESSION_DATES[10]));
+  const page = await firstPage(context);
+  await page.goto('/');
+  await expect(page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Review' })).toBeVisible(LAUNCH);
+  await expect(page.getByText('Start your journal'), 'the copy, not a fresh profile').toHaveCount(0);
+  await openReview(page);
+  const stored = tradesOf(workspaceOf(await probe(page))!).map((t) => t.tradeId).sort();
+  expect(stored, 'the copy holds the Trades the setup recorded').toEqual(trades.map((t) => t.tradeId).sort());
   return { context, page, trades };
 }
 

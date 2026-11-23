@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import {
-  actionEntriesOf, actionFormOf, boxOf, buildReview,cardReplayButton, closeButton, detail, expect, headline, openCardReplay, pressSave, probe, reachCard, LAUNCH, replay, seek, sliderValue, test, tradeCard, workspaceOf,
+  actionEntriesOf, actionFormOf, boxOf, cardReplayButton, closeButton, detail, expect, headline, openCardReplay, openStandardReview, pressSave, probe, reachCard, LAUNCH, replay, seek, sliderValue, test, tradeCard, workspaceOf,
   type TradeRef,
 } from './support.ts';
 
@@ -26,9 +26,9 @@ async function expectActionStarted(page: Page, trade: TradeRef, where: string, i
 
 test.describe('B9AR.2 The overlay in the Review, and the summary', () => {
   // T9AR.24-B3 (C9AR.5, AC-JOUR-001, AC-REV-003): the Review is left for Price History and read again on the way back, yet the started Action is still on the card, and one press saves it.
-  test('should restore a started Action on each card after the Price History round trip, and save exactly it with one press', async ({ profile }) => {
+  test('should restore a started Action on each card after the Price History round trip, and save exactly it with one press', async ({ profile, copySetup }) => {
     test.setTimeout(420_000);
-    const { context, page, trades } = await buildReview(profile);
+    const { context, page, trades } = await openStandardReview(profile, copySetup);
     const [bren, axio] = trades as [TradeRef, TradeRef];
     let saved = 0;
     for (const trade of [bren, axio]) {
@@ -80,9 +80,9 @@ test.describe('B9AR.2 The overlay in the Review, and the summary', () => {
   });
 
   // T9AR.24-B3-B2 (C9AR.5): the browser's Forward to Price History and Back again, after one round trip, keep the started Action too.
-  test('should keep a started Action when the browser goes Forward to Price History and Back again after a round trip', async ({ profile }) => {
+  test('should keep a started Action when the browser goes Forward to Price History and Back again after a round trip', async ({ profile, copySetup }) => {
     test.setTimeout(420_000);
-    const { context, page, trades } = await buildReview(profile);
+    const { context, page, trades } = await openStandardReview(profile, copySetup);
     const bren = trades[0]!;
     await reachCard(page, bren);
     await startAction(page, bren);
@@ -109,9 +109,9 @@ test.describe('B9AR.2 The overlay in the Review, and the summary', () => {
   });
 
   // T9AR.24-B11 (gate critic-2, defect 3, W46): Price History from the Review's overlay arrives with the session's column header focused and in view.
-  test('should arrive at Price History from the Review with the slider session column header focused and inside its scroller', async ({ profile }) => {
+  test('should arrive at Price History from the Review with the slider session column header focused and inside its scroller', async ({ profile, copySetup }) => {
     test.setTimeout(420_000);
-    const { context, page, trades } = await buildReview(profile);
+    const { context, page, trades } = await openStandardReview(profile, copySetup);
     const axio = trades[1]!;
     await reachCard(page, axio);
     const section = await openCardReplay(page, axio);
@@ -130,9 +130,9 @@ test.describe('B9AR.2 The overlay in the Review, and the summary', () => {
   });
 
   // T9AR.24-B11-B1: a reload with Replay open on a Price History address does not arrive; Close returns focus to the Replay button (A273).
-  test('should return focus to Replay on Close after a reload of the Price History address with Replay open', async ({ profile }) => {
+  test('should return focus to Replay on Close after a reload of the Price History address with Replay open', async ({ profile, copySetup }) => {
     test.setTimeout(420_000);
-    const { context, page, trades } = await buildReview(profile);
+    const { context, page, trades } = await openStandardReview(profile, copySetup);
     const axio = trades[1]!;
     await reachCard(page, axio);
     const section = await openCardReplay(page, axio);
@@ -149,9 +149,9 @@ test.describe('B9AR.2 The overlay in the Review, and the summary', () => {
     await context.close();
   });
 
-  test('should read each card’s summary in the replay’s words, with no zero Overrun', async ({ profile }) => {
+  test('should read each card’s summary in the replay’s words, with no zero Overrun', async ({ profile, copySetup }) => {
     test.setTimeout(420_000);
-    const { context, page, trades } = await buildReview(profile);
+    const { context, page, trades } = await openStandardReview(profile, copySetup);
     const [bren, axio, dale] = trades as [TradeRef, TradeRef, TradeRef];
     await reachCard(page, bren);
     await expect(row(tradeCard(page, bren), 'Trade P&L')).toHaveText('+$988.00 · +3.05R');

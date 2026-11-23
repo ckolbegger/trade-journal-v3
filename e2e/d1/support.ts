@@ -2,6 +2,8 @@
 // localhost:5175, persistent Chromium profiles, the read-only IndexedDB probe, and UI steps that
 // drive the production screens.
 import { test as base, chromium, expect, type BrowserContext, type Page } from '@playwright/test';
+import { execFileSync } from 'node:child_process';
+import { mkdirSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { startReleaseServer, type ReleaseServer } from '../../tools/release-server.ts';
 import { detail } from '../support/detail/index.ts';
@@ -25,7 +27,20 @@ export interface Profile {
   launch(options?: { offline?: boolean; userAgent?: string; width?: number; touch?: boolean }): Promise<BrowserContext>;
 }
 
-export const test = base.extend<{ server: ReleaseServer; profile: Profile }>({
+// A saved setup (plan/setup-snapshot-plan.md): a state that many tests build through the screens, built once per worker and copied to each test that asks.
+// `build` runs on an empty profile, leaves the app on the state, and returns its (still open) context and what the test needs to know about it (the Trade ids).
+export interface Setup<T> {
+  readonly name: string;
+  readonly build: (profile: Profile) => Promise<{ context: BrowserContext; made: T }>;
+}
+export const defineSetup = <T>(name: string, build: Setup<T>['build']): Setup<T> => ({ name, build });
+
+interface SavedSetups {
+  // The setup's finished profile folder and what its build returned, built on first use.
+  saved<T>(setup: Setup<T>, server: ReleaseServer): Promise<{ dir: string; made: T }>;
+}
+
+export const test = base.extend<{ server: ReleaseServer; profile: Profile; copySetup: <T>(setup: Setup<T>) => Promise<T> }, { savedSetups: SavedSetups }>({
   // Routine cases serve the faults build (P2); update cases switch to the harness releases.
   // eslint-disable-next-line no-empty-pattern -- Playwright requires the destructuring form.
   server: async ({}, provide) => {
@@ -52,6 +67,48 @@ export const test = base.extend<{ server: ReleaseServer; profile: Profile }>({
     } finally {
       await Promise.all(launched.map((context) => context.close().catch(() => undefined)));
     }
+  },
+  // A test asks for a setup by name and gets a copy of its folder as its own profile, plus what the build returned. A test that asks for nothing keeps an empty profile.
+  savedSetups: [
+    // eslint-disable-next-line no-empty-pattern -- Playwright requires the destructuring form.
+    async ({}, provide, workerInfo) => {
+      const root = path.join(workerInfo.project.outputDir, `saved-setups-${workerInfo.workerIndex}`);
+      rmSync(root, { recursive: true, force: true });
+      const built = new Map<string, Promise<{ dir: string; made: unknown }>>();
+      await provide({
+        saved: <T>(setup: Setup<T>, server: ReleaseServer) => {
+          if (!built.has(setup.name)) {
+            built.set(setup.name, (async () => {
+              // The setup is built on the release the tests serve, through the test's own server, then that server goes back to what it served.
+              const dir = path.join(root, setup.name);
+              mkdirSync(dir, { recursive: true });
+              const served = server.current();
+              server.use('dist-releases/current');
+              try {
+                const { context, made } = await setup.build(profileAt(dir));
+                await context.close();
+                return { dir, made };
+              } finally {
+                server.use(served);
+              }
+            })());
+          }
+          return built.get(setup.name)! as Promise<{ dir: string; made: T }>;
+        },
+      });
+      rmSync(root, { recursive: true, force: true });
+    },
+    { scope: 'worker', timeout: 120_000 },
+  ],
+  copySetup: async ({ profile, savedSetups, server }, provide) => {
+    await provide(async <T>(setup: Setup<T>): Promise<T> => {
+      const { dir, made } = await savedSetups.saved(setup, server);
+      mkdirSync(profile.dir, { recursive: true });
+      // An APFS clone of the finished folder, without Chromium's lock files.
+      execFileSync('cp', ['-c', '-R', `${dir}/.`, profile.dir]);
+      for (const lock of ['SingletonLock', 'SingletonSocket', 'SingletonCookie']) rmSync(path.join(profile.dir, lock), { force: true });
+      return made;
+    });
   },
 });
 
