@@ -37,3 +37,21 @@ Moved into e2e/d8p/states.spec.ts "should show a Settlement Due Detail with Toda
 | Marks row labels ["MNO Mark", "Put Mark"] | mutated ("MNO Mark X") | `.claude/scripts/with-browser-lock.sh npm run test:e2e:specs -- e2e/d8p/states.spec.ts -g "should show a Settlement Due Detail with Today selected"` | 1 failed, assertion: toHaveText (Expected - 1, Received + 1) |
 | Yesterday cell accessible name after Closed | mutated ("Expired Fri Nov 21") | same | 1 failed, assertion: toHaveAccessibleName, Expected "Expired Fri Nov 21", Received "Expired Fri Nov 20" |
 | both, restored | green | `... e2e/d8p/states.spec.ts` | 3 passed |
+
+## TD.3
+
+Moved checks went into e2e/d9ar/responsive-a11y.spec.ts (`expectPhoneLabels`, `throughSizes`, the new `expectFocusedControlsUncovered`, and the tap case). Each mutation changed one expected value (the d9:168 check: a full-screen cover was injected), ran the case, then was restored. "Detail" = "should fit the Detail overlay on one screen"; the Review card case runs the same `throughSizes`.
+
+| Moved check | Run | Command | Result |
+|---|---|---|---|
+| BD2/3: price title "BREN price" | mutated | `.claude/scripts/with-browser-lock.sh npm run test:e2e:specs -- e2e/d9ar/responsive-a11y.spec.ts -g "should fit the Detail overlay on one screen"` | 1 failed, assertion: Detail overlay at 375 px: price title |
+| BD2/3: P&L title "Trade P&L" | mutated | `.claude/scripts/with-browser-lock.sh npm run test:e2e:specs -- e2e/d9ar/responsive-a11y.spec.ts -g "should fit the Detail overlay on one screen"` | 1 failed, assertion: Detail overlay at 375 px: P&L title |
+| BD2/3: no long price title | mutated | `.claude/scripts/with-browser-lock.sh npm run test:e2e:specs -- e2e/d9ar/responsive-a11y.spec.ts -g "should fit the Detail overlay on one screen"` | 1 failed, assertion: Detail overlay at 375 px: no long price title |
+| BD2/3: no long P&L title | mutated | `.claude/scripts/with-browser-lock.sh npm run test:e2e:specs -- e2e/d9ar/responsive-a11y.spec.ts -g "should fit the Detail overlay on one screen"` | 1 failed, assertion: Detail overlay at 375 px: no long P&L title |
+| BD2/3: every Sold marker reads "Sold 2" | mutated | `.claude/scripts/with-browser-lock.sh npm run test:e2e:specs -- e2e/d9ar/responsive-a11y.spec.ts -g "should fit the Detail overlay on one screen"` | 1 failed, assertion: Detail overlay at 375 px: marker |
+| BD2/3: Risk and Reward tags start with "$" | mutated | `.claude/scripts/with-browser-lock.sh npm run test:e2e:specs -- e2e/d9ar/responsive-a11y.spec.ts -g "should fit the Detail overlay on one screen"` | 1 failed, assertion: Detail overlay at 375 px: stake tags Worst case +$156 / Stop +$316 / Realized +$478 / Target +$956 / Risk $666 / $26 past the Target / Target reached / Sold 2 |
+| BD3: wide results Stop +$316 at the lines | mutated | `.claude/scripts/with-browser-lock.sh npm run test:e2e:specs -- e2e/d9ar/responsive-a11y.spec.ts -g "should fit the Detail overlay on one screen"` | 1 failed, assertion: Detail overlay at 1280 px: the results at the lines |
+| BD16: tap leaves no hover box | mutated | `.claude/scripts/with-browser-lock.sh npm run test:e2e:specs -- e2e/d9ar/responsive-a11y.spec.ts -g "should move the slider by a tap"` | 1 failed, assertion: a tap leaves no hover box |
+| BD16: tap leaves no hover column | mutated | `.claude/scripts/with-browser-lock.sh npm run test:e2e:specs -- e2e/d9ar/responsive-a11y.spec.ts -g "should move the slider by a tap"` | 1 failed, assertion: a tap leaves no hover column |
+| d9:168: nothing covers a focused control (a full-screen cover injected) | mutated | `.claude/scripts/with-browser-lock.sh npm run test:e2e:specs -- e2e/d9ar/responsive-a11y.spec.ts -g "should fit the Detail overlay on one screen"` | 1 failed, assertion: Detail overlay at 375 px: "Previous session" (y 222 to 266) has something over its centre |
+| all, restored | green | `.claude/scripts/with-browser-lock.sh npm run test:e2e:specs -- e2e/d9ar/responsive-a11y.spec.ts` | 18 passed |

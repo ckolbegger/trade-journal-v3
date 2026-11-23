@@ -32,6 +32,14 @@ async function expectPhoneLabels(scope: Locator, where: string): Promise<void> {
   // The strip lists every label the drawing left out, so it holds at least the four W69 names for Thu 11-12.
   const strip = ((await scope.locator('.replay-strip-labels').textContent()) ?? '').split(' · ');
   expect(strip, `${where}: the strip`).toEqual(expect.arrayContaining(['Stop +$316', 'Realized +$478', 'Target +$956', 'Sold 2']));
+  // W39, W40 and W41 (moved here from the removed d9 responsive case, TD.3): the short chart titles and no long ones, "Sold 2" wherever a sale is named, and the stake tags start with "$".
+  const price = await chartText(priceStrip(scope));
+  expect(price, `${where}: price title`).toContain('BREN price');
+  expect(drawn, `${where}: P&L title`).toContain('Trade P&L');
+  expect(price.join('|'), `${where}: no long price title`).not.toContain('one Mark per session');
+  expect(drawn.join('|'), `${where}: no long P&L title`).not.toContain('dollars for the whole Position');
+  for (const text of strip.filter((t) => /^Sold/.test(t))) expect(text, `${where}: marker`).toBe('Sold 2');
+  expect(strip.filter((t) => /^(Risk|Reward)\b/.test(t)).every((t) => /^(Risk|Reward) \$/.test(t)), `${where}: stake tags ${strip.join(' | ')}`).toBe(true);
 }
 
 // Every match is at least 44 pixels high (the UI contract's touch target).
@@ -51,6 +59,25 @@ async function expectOverlayCoversNavigation(page: Page, where: string): Promise
     return hit?.closest('[role=dialog]') ? 'covered' : `the navigation shows at its centre (${hit?.tagName})`;
   });
   expect(covered, `${where}: the overlay covers the navigation`).toBe('covered');
+}
+
+// T9.19-B7 (moved here from the removed d9 responsive case, TD.3): Tab from Close through every control of the overlay; nothing covers the centre of the focused control, so it can be seen.
+async function expectFocusedControlsUncovered(page: Page, where: string): Promise<void> {
+  await closeButton(replay(page)).focus();
+  const seen: string[] = [];
+  for (let step = 0; step < 40; step += 1) {
+    await page.keyboard.press('Tab');
+    const result = await page.evaluate(() => {
+      const focused = document.activeElement as HTMLElement;
+      const box = focused.getBoundingClientRect();
+      const covering = document.elementFromPoint((box.left + box.right) / 2, (box.top + box.bottom) / 2);
+      return { inside: !!focused.closest('[role=dialog]'), hidden: covering === null || !focused.contains(covering), label: focused.getAttribute('aria-label') ?? focused.textContent?.trim().slice(0, 30) ?? '', top: Math.round(box.top), bottom: Math.round(box.bottom) };
+    });
+    expect(result.inside, `${where}: Tab left the overlay (on "${result.label}")`).toBe(true);
+    seen.push(result.label);
+    expect(result.hidden, `${where}: "${result.label}" (y ${result.top} to ${result.bottom}) has something over its centre`).toBe(false);
+  }
+  expect(new Set(seen).size, `${where}: replay controls reached`).toBeGreaterThan(3);
 }
 
 // Whether the page lays its navigation along the foot (the phone's layout) or as a side column.
@@ -83,6 +110,10 @@ async function throughSizes(page: Page, surface: string): Promise<void> {
       await expectPhoneLabels(replay(page), where);
       await expectSmallestChartTextAtLeast(replay(page), 10, where);
       await expectOverlayCoversNavigation(page, where);
+      await expectFocusedControlsUncovered(page, where);
+    } else {
+      // The two results stay on the lines of a wide drawing (a phone lists them in the strip, checked in expectPhoneLabels).
+      expect(await chartText(pnlChart(replay(page))), `${where}: the results at the lines`).toEqual(expect.arrayContaining(['Stop +$316', 'Target +$956']));
     }
     await expectNoSidewaysScroll(page, where);
     await expectAccessible(page, where);
@@ -268,31 +299,15 @@ test.describe('B9AR.7 Responsive, touch, accessible and offline', () => {
     await hits(scope).getByRole('button', { name: 'Wed Nov 11', exact: true }).tap();
     await expect(sliderValue(scope)).toHaveText('Wed Nov 11 · 8 of 11');
     await expect(headline(scope)).toHaveText('+$520.00 · 1.60R');
+    // Moved here from the removed "no hover box after a tap" case (TD.3): the tap leaves no hover box and no hover column.
+    await page.screenshot({ path: `${SCREENSHOTS}/B9AR.7-tap-hover-box.png` });
+    await expect(scope.getByTestId('hover'), 'a tap leaves no hover box').toHaveCount(0);
+    await expect(scope.locator('rect.hover-column'), 'a tap leaves no hover column').toHaveCount(0);
     // A tap on the heading of an earlier card (on whichever page it is) moves the slider to it.
     const card = await sessionCard(scope, 'Tue Nov 10');
     await card.getByRole('button', { name: 'Tue Nov 10', exact: true }).tap();
     await expect(sliderValue(scope)).toHaveText('Tue Nov 10 · 7 of 11');
     await expect(cardRows(await sessionCard(scope, 'Tue Nov 10')).first()).toContainText('BREN Mark');
-    await context.close();
-  });
-
-  test('should leave no hover box after a tap on a session', async ({ profile }) => {
-    test.setTimeout(420_000);
-    // Product disagrees with the plan (reported to the main session): a tap on a session leaves the hover box and column drawn.
-    const built = await build(profile, BREN, closeOf('2026-11-16'), 10);
-    const trade = built.trade;
-    await built.context.close();
-    const context = await launchTouchAt(profile, closeOf('2026-11-16'), 375);
-    const page = await firstPage(context);
-    await page.goto(`/trades/${trade.tradeId}`);
-    await setViewport(page, 375, 667);
-    await detailReplayButton(page).tap();
-    const scope = replay(page);
-    await hits(scope).getByRole('button', { name: 'Wed Nov 11', exact: true }).tap();
-    await expect(sliderValue(scope)).toHaveText('Wed Nov 11 · 8 of 11');
-    await page.screenshot({ path: `${SCREENSHOTS}/B9AR.7-tap-hover-box.png` });
-    await expect(scope.getByTestId('hover'), 'a tap leaves no hover box').toHaveCount(0);
-    await expect(scope.locator('rect.hover-column'), 'a tap leaves no hover column').toHaveCount(0);
     await context.close();
   });
 
