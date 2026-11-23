@@ -18,6 +18,7 @@ import {
   SCHEMA_VERSION_V1,
   SCHEMA_VERSION_V2,
   SCHEMA_VERSION_V3,
+  SCHEMA_VERSION_V4,
   type AccountRecord,
   type InstitutionRecord,
   type PersistenceSeam,
@@ -265,47 +266,23 @@ export function createWorkspace(options: {
         let activeGeneration = root.activeGeneration;
         let activeReadiness = readinessSnapshot;
 
-        if (activeSchemaVersion === SCHEMA_VERSION_V1) {
-          if (!persistence.indexedDB) {
-            return {
-              status: 'MigrationBlocked',
-              reason: 'IndexedDB factory is unavailable for v1 to v2 migration.',
-              readiness: readinessSnapshot,
-            };
-          }
-          const migrated = await migrateWorkspaceV1ToV2({
-            indexedDB: persistence.indexedDB,
-            fromGeneration: activeGeneration,
-          });
-          if (migrated.status === 'MigrationBlocked') {
-            return {
-              status: 'MigrationBlocked',
-              reason: migrated.reason,
-              readiness: readinessSnapshot,
-            };
-          }
-          const postV2 = await persistence.inspectRoot();
-          if (postV2.status !== 'Present' || postV2.schemaVersion !== SCHEMA_VERSION_V2) {
-            return {
-              status: 'MigrationBlocked',
-              reason: 'Post-migration v2 root verification failed.',
-              readiness: readinessSnapshot,
-            };
-          }
-          activeMeta = postV2.workspaceMeta;
-          activeSchemaVersion = postV2.schemaVersion;
-          activeGeneration = postV2.activeGeneration;
-        }
+        const migrationSteps = [
+          { from: SCHEMA_VERSION_V1, to: SCHEMA_VERSION_V2, run: migrateWorkspaceV1ToV2 },
+          { from: SCHEMA_VERSION_V2, to: SCHEMA_VERSION_V3, run: migrateWorkspaceV2ToV3 },
+          { from: SCHEMA_VERSION_V3, to: SCHEMA_VERSION_V4, run: migrateWorkspaceV3ToV4 },
+        ] as const;
 
-        if (activeSchemaVersion === SCHEMA_VERSION_V2) {
+        let migratedAny = false;
+        for (const step of migrationSteps) {
+          if (activeSchemaVersion !== step.from) continue;
           if (!persistence.indexedDB) {
             return {
               status: 'MigrationBlocked',
-              reason: 'IndexedDB factory is unavailable for v2 to v3 migration.',
+              reason: `IndexedDB factory is unavailable for v${step.from} to v${step.to} migration.`,
               readiness: readinessSnapshot,
             };
           }
-          const migrated = await migrateWorkspaceV2ToV3({
+          const migrated = await step.run({
             indexedDB: persistence.indexedDB,
             fromGeneration: activeGeneration,
           });
@@ -316,49 +293,20 @@ export function createWorkspace(options: {
               readiness: readinessSnapshot,
             };
           }
-          const postV3 = await persistence.inspectRoot();
-          if (postV3.status !== 'Present' || postV3.schemaVersion !== SCHEMA_VERSION_V3) {
+          const post = await persistence.inspectRoot();
+          if (post.status !== 'Present' || post.schemaVersion !== step.to) {
             return {
               status: 'MigrationBlocked',
-              reason: 'Post-migration v3 root verification failed.',
+              reason: `Post-migration v${step.to} root verification failed.`,
               readiness: readinessSnapshot,
             };
           }
-          activeMeta = postV3.workspaceMeta;
-          activeSchemaVersion = postV3.schemaVersion;
-          activeGeneration = postV3.activeGeneration;
+          activeMeta = post.workspaceMeta;
+          activeSchemaVersion = post.schemaVersion;
+          activeGeneration = post.activeGeneration;
+          migratedAny = true;
         }
-
-        if (activeSchemaVersion === SCHEMA_VERSION_V3) {
-          if (!persistence.indexedDB) {
-            return {
-              status: 'MigrationBlocked',
-              reason: 'IndexedDB factory is unavailable for v3 to v4 migration.',
-              readiness: readinessSnapshot,
-            };
-          }
-          const migrated = await migrateWorkspaceV3ToV4({
-            indexedDB: persistence.indexedDB,
-            fromGeneration: activeGeneration,
-          });
-          if (migrated.status === 'MigrationBlocked') {
-            return {
-              status: 'MigrationBlocked',
-              reason: migrated.reason,
-              readiness: readinessSnapshot,
-            };
-          }
-          const postV4 = await persistence.inspectRoot();
-          if (postV4.status !== 'Present' || postV4.schemaVersion !== CURRENT_SCHEMA_VERSION) {
-            return {
-              status: 'MigrationBlocked',
-              reason: 'Post-migration v4 root verification failed.',
-              readiness: readinessSnapshot,
-            };
-          }
-          activeMeta = postV4.workspaceMeta;
-          activeSchemaVersion = postV4.schemaVersion;
-          activeGeneration = postV4.activeGeneration;
+        if (migratedAny) {
           activeReadiness = await readiness.evaluate();
         }
 

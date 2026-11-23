@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { IDBFactory } from 'fake-indexeddb';
-import { createPersistenceSeam } from '../../src/persistence/idb';
+import {
+  BOOTSTRAP_DB_NAME,
+  CURRENT_SCHEMA_VERSION,
+  SCHEMA_VERSION_V1,
+  SCHEMA_VERSION_V3,
+  WORKSPACE_DB_PREFIX,
+  createPersistenceSeam,
+  ensureWorkspaceV3Stores,
+} from '../../src/persistence/idb';
 import {
   createRuntimeReadinessController,
   type ReadinessProbes,
@@ -77,6 +85,8 @@ function createWorkspaceHarness(options: {
   });
 
   return {
+    idb,
+    persistence,
     workspace,
     catalog,
     readiness,
@@ -218,5 +228,185 @@ describe('Workspace seam', () => {
     const already = await workspace.requestDurability();
     expect(already.status).toBe('AlreadyProtected');
     expect(already.currentProtection.state).toBe('Protected');
+  });
+
+  it('chains a genuine v1 workspace through v1->v2->v3->v4 on Workspace.initialize preserving catalog records', async () => {
+    const { idb, persistence, workspace, catalog } = createWorkspaceHarness();
+
+    await new Promise<void>((resolve, reject) => {
+      const req = idb.open(BOOTSTRAP_DB_NAME, 1);
+      req.onupgradeneeded = () => {
+        req.result.createObjectStore('pointer', { keyPath: 'key' });
+      };
+      req.onsuccess = () => {
+        const db = req.result;
+        const tx = db.transaction('pointer', 'readwrite');
+        tx.objectStore('pointer').put({
+          key: 'active',
+          activeGeneration: 1,
+          schemaVersion: SCHEMA_VERSION_V1,
+        });
+        tx.oncomplete = () => {
+          db.close();
+          resolve();
+        };
+        tx.onerror = () => reject(tx.error ?? new Error('pointer seed failed'));
+      };
+      req.onerror = () => reject(req.error ?? new Error('bootstrap open failed'));
+    });
+
+    await new Promise<void>((resolve, reject) => {
+      const req = idb.open(`${WORKSPACE_DB_PREFIX}1`, SCHEMA_VERSION_V1);
+      req.onupgradeneeded = () => {
+        const db = req.result;
+        db.createObjectStore('workspace_meta', { keyPath: 'key' });
+        db.createObjectStore('catalog_meta', { keyPath: 'key' });
+        db.createObjectStore('catalog_institutions', { keyPath: 'id' });
+        db.createObjectStore('catalog_accounts', { keyPath: 'id' });
+      };
+      req.onsuccess = () => {
+        const db = req.result;
+        const tx = db.transaction(
+          ['workspace_meta', 'catalog_institutions', 'catalog_accounts'],
+          'readwrite',
+        );
+        tx.objectStore('workspace_meta').put({
+          key: 'singleton',
+          schemaVersion: SCHEMA_VERSION_V1,
+          timeZone: 'America/Chicago',
+          settingsRevision: 1,
+          workspaceRevision: 1,
+          initializedAt: '2026-11-20T15:00:00.000Z',
+          updatedAt: '2026-11-20T15:00:00.000Z',
+        });
+        tx.objectStore('catalog_institutions').put({
+          id: 'inst-v1-1',
+          currentLabel: 'Schwab',
+          status: 'Active',
+          createdAt: '2026-11-20T15:00:00.000Z',
+          updatedAt: '2026-11-20T15:00:00.000Z',
+        });
+        tx.objectStore('catalog_accounts').put({
+          id: 'acct-v1-1',
+          institutionId: 'inst-v1-1',
+          currentLabel: 'IRA',
+          status: 'Active',
+          createdAt: '2026-11-20T15:00:00.000Z',
+          updatedAt: '2026-11-20T15:00:00.000Z',
+        });
+        tx.oncomplete = () => {
+          db.close();
+          resolve();
+        };
+        tx.onerror = () => reject(tx.error ?? new Error('v1 seed failed'));
+      };
+      req.onerror = () => reject(req.error ?? new Error('v1 open failed'));
+    });
+
+    const opened = await workspace.initialize({});
+    expect(opened.status).toBe('Opened');
+    if (opened.status !== 'Opened') return;
+    expect(opened.workspaceStatus.schemaVersion).toBe(CURRENT_SCHEMA_VERSION);
+    expect(opened.workspaceStatus.timeZone).toBe('America/Chicago');
+
+    const root = await persistence.inspectRoot();
+    expect(root.status).toBe('Present');
+    if (root.status === 'Present') {
+      expect(root.activeGeneration).toBe(4);
+      expect(root.schemaVersion).toBe(CURRENT_SCHEMA_VERSION);
+    }
+
+    const insts = await catalog.query({ family: 'Institution', includeInactive: true });
+    expect(insts.family).toBe('Institution');
+    if (insts.family === 'Institution') {
+      expect(insts.items.map((i) => i.currentLabel)).toEqual(['Schwab']);
+    }
+  });
+
+  it('upgrades a genuine v3 workspace to v4 on Workspace.initialize preserving trades and projections', async () => {
+    const { idb, persistence, workspace } = createWorkspaceHarness();
+
+    await new Promise<void>((resolve, reject) => {
+      const req = idb.open(BOOTSTRAP_DB_NAME, 1);
+      req.onupgradeneeded = () => {
+        req.result.createObjectStore('pointer', { keyPath: 'key' });
+      };
+      req.onsuccess = () => {
+        const db = req.result;
+        const tx = db.transaction('pointer', 'readwrite');
+        tx.objectStore('pointer').put({
+          key: 'active',
+          activeGeneration: 1,
+          schemaVersion: SCHEMA_VERSION_V3,
+        });
+        tx.oncomplete = () => {
+          db.close();
+          resolve();
+        };
+        tx.onerror = () => reject(tx.error ?? new Error('pointer seed failed'));
+      };
+      req.onerror = () => reject(req.error ?? new Error('bootstrap open failed'));
+    });
+
+    await new Promise<void>((resolve, reject) => {
+      const req = idb.open(`${WORKSPACE_DB_PREFIX}1`, SCHEMA_VERSION_V3);
+      req.onupgradeneeded = () => {
+        ensureWorkspaceV3Stores(req.result);
+      };
+      req.onsuccess = () => {
+        const db = req.result;
+        const tx = db.transaction(
+          ['workspace_meta', 'trades', 'proj_trade_analysis_input'],
+          'readwrite',
+        );
+        tx.objectStore('workspace_meta').put({
+          key: 'singleton',
+          schemaVersion: SCHEMA_VERSION_V3,
+          timeZone: 'America/New_York',
+          settingsRevision: 1,
+          workspaceRevision: 1,
+          initializedAt: '2026-11-20T15:00:00.000Z',
+          updatedAt: '2026-11-20T15:00:00.000Z',
+        });
+        tx.objectStore('trades').put({
+          id: 'trd-v3-open',
+          symbol: 'NVDA',
+          lifecycleState: 'Open',
+        });
+        tx.objectStore('proj_trade_analysis_input').put({
+          tradeId: 'trd-v3-open',
+          factRevision: 2,
+          lifecycleState: 'Open',
+          openSharesDisplay: '100',
+          executionCount: 1,
+          updatedAt: '2026-11-20T15:05:00.000Z',
+        });
+        tx.oncomplete = () => {
+          db.close();
+          resolve();
+        };
+        tx.onerror = () => reject(tx.error ?? new Error('v3 seed failed'));
+      };
+      req.onerror = () => reject(req.error ?? new Error('v3 open failed'));
+    });
+
+    const opened = await workspace.initialize({});
+    expect(opened.status).toBe('Opened');
+    const root = await persistence.inspectRoot();
+    expect(root.status).toBe('Present');
+    if (root.status === 'Present') {
+      expect(root.activeGeneration).toBe(2);
+      expect(root.schemaVersion).toBe(CURRENT_SCHEMA_VERSION);
+    }
+
+    const { trade, proj } = await persistence.runReadTransaction(
+      ['trades', 'proj_trade_analysis_input'],
+      async (tx) => ({
+        trade: await tx.get('trades', 'trd-v3-open'),
+        proj: await tx.get('proj_trade_analysis_input', 'trd-v3-open'),
+      }),
+    );
+    expect(trade?.symbol).toBe('NVDA');
+    expect(proj?.openSharesDisplay).toBe('100');
   });
 });

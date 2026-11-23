@@ -9,6 +9,7 @@ import {
   SCHEMA_VERSION_V3,
   WORKSPACE_DB_PREFIX,
   createPersistenceSeam,
+  ensureWorkspaceV3Stores,
 } from '../../src/persistence/idb';
 import { migrateWorkspaceV3ToV4 } from '../../src/persistence/migrations';
 import { createRuntimeReadinessController } from '../../src/runtime/readiness';
@@ -271,38 +272,18 @@ describe('D4 Integration — v3->v4 migration, MarketData + TradeViews, OV-04 fa
       req.onerror = () => reject(req.error ?? new Error('bootstrap open failed'));
     });
 
-    // Seed genuine v3 workspace DB with all real v3 object stores + 1 Trade
-    const v3Stores = [
-      'workspace_meta',
-      'catalog_meta',
-      'catalog_institutions',
-      'catalog_accounts',
-      'catalog_strategies',
-      'trades',
-      'trade_facts',
-      'position_changes',
-      'executions',
-      'deviations',
-      'journal_meta',
-      'journal_definitions',
-      'journal_entries',
-      'journal_debt',
-      'journal_declines',
-      'proj_trade_analysis_input',
-    ];
+    // Seed genuine v3 workspace DB using real ensureWorkspaceV3Stores (real keyPaths & indexes)
     await new Promise<void>((resolve, reject) => {
       const req = idb.open(`${WORKSPACE_DB_PREFIX}1`, SCHEMA_VERSION_V3);
       req.onupgradeneeded = () => {
-        const db = req.result;
-        for (const name of v3Stores) {
-          const keyPath =
-            name.endsWith('_meta') ? 'key' : 'id';
-          db.createObjectStore(name, { keyPath });
-        }
+        ensureWorkspaceV3Stores(req.result);
       };
       req.onsuccess = () => {
         const db = req.result;
-        const tx = db.transaction(['workspace_meta', 'trades'], 'readwrite');
+        const tx = db.transaction(
+          ['workspace_meta', 'trades', 'proj_trade_analysis_input'],
+          'readwrite',
+        );
         tx.objectStore('workspace_meta').put({
           key: 'singleton',
           schemaVersion: SCHEMA_VERSION_V3,
@@ -316,6 +297,14 @@ describe('D4 Integration — v3->v4 migration, MarketData + TradeViews, OV-04 fa
           id: 'trd-v3-1',
           symbol: 'NVDA',
           lifecycleState: 'Open',
+        });
+        tx.objectStore('proj_trade_analysis_input').put({
+          tradeId: 'trd-v3-1',
+          factRevision: 2,
+          lifecycleState: 'Open',
+          openSharesDisplay: '100',
+          executionCount: 1,
+          updatedAt: '2025-11-18T15:05:00.000Z',
         });
         tx.oncomplete = () => {
           db.close();
@@ -358,14 +347,16 @@ describe('D4 Integration — v3->v4 migration, MarketData + TradeViews, OV-04 fa
       expect(rootV4.schemaVersion).toBe(CURRENT_SCHEMA_VERSION);
     }
 
-    const { preservedTrade, marks } = await persistence.runReadTransaction(
-      ['trades', 'market_marks'],
+    const { preservedTrade, projection, marks } = await persistence.runReadTransaction(
+      ['trades', 'proj_trade_analysis_input', 'market_marks'],
       async (tx) => ({
         preservedTrade: await tx.get('trades', 'trd-v3-1'),
+        projection: await tx.get('proj_trade_analysis_input', 'trd-v3-1'),
         marks: await tx.getAll('market_marks'),
       }),
     );
     expect(preservedTrade?.symbol).toBe('NVDA');
+    expect(projection?.factRevision).toBe(2);
     expect(marks).toEqual([]);
   });
 });
