@@ -461,3 +461,7 @@ Run `t95.17-now-box` (full tier, 19:05): unit 2870 passed; integration 1 failed 
 Commit `b0a1f067`: the d7sp dated-line test compares the shared fields and checks `meter` apart; B7S.4 checks the Review card has no Conditions heading and reads the four W8 lines in Trade Detail's Conditions (per-share wording there, "$0.10 past", where the old card said "$20.00 beyond"; same status). Each red then green; d7sp 11 passed, e2e/d7s 8 passed.
 
 Run `t95.17-now-box-2` (full tier, 18:41): unit 2870, integration 304, browser 127 + 79 + 55 + 119 (4 skipped), checks 14 of 14. Passed. T95.17 Done.
+
+## T95.18 — Caption lengths and accessible names (Standard)
+
+Commit `5307f1b1` (from `f917ada7`). `caption-fit.ts` picks one of three lengths for both captions by measuring hidden copies; reruns on ResizeObserver. Full sentence kept as the caption's accessible name (`role="note"` + `aria-label`) and title. Four cases red then green; two first-run passes, mutation-checked. Three e2e specs now read the full sentence from `aria-label`. **Flake, second sighting:** `ReviewCards.test.tsx` (card list A150 "should render one card per walked Trade…" and earlier "Loading the Trade…") fails intermittently in a whole-folder `src/ui/screens` run, 2 of 4 on the clean base; passes alone. Follow-on **T95.18-F1**.

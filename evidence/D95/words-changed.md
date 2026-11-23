@@ -11,3 +11,5 @@
 | W119 | "Sell 2 BREN, then record the sale." | "Sell BREN, then record the sale." | The day summary carries no quantity and the UI may not work one out; the card still shows it. |
 
 - T95.16 (W101 wording, not a shortening): card header needs "1 Mark · 1 reflection due · Settlement · Action" → "To do: Mark, Reflection, Settle, Action"; "Done · Action saved" → "Done · Hold".
+
+- T95.18 (P137, shorter forms; the full forms stay as accessible name and title): W84 "−$4.80 to Stop (lose another −$1,314.00)" → "−$4.80 (another −$1,314.00)"; "+$2.70 to Target (gain $1,080.00)" → "+$2.70 (gain $1,080.00)". W85 shortest: "−$4.80 (−$1,314.00)", "+$2.70 (+$1,080.00)". W86 "$3.00 past Stop (−$300.00 so far)" → "$3.00 past (−$300.00)".

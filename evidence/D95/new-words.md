@@ -36,3 +36,5 @@
 - T95.16: "−$30.00 today" (the day's change in the card header, from the prototype, no W row); header P&L "+$180.00 · +0.40R".
 
 - T95.17 (no W row): the Marks line ("AXIO $45.10 −$0.50", "Call $1.20 +$0.05"); "lose −$…" without "another" while ahead; "To Stop (…)" and "Past Stop (…)" with no price distance; "$1.00 past Stop"; "with DALE then: <reason>"; "1 session". For the word review: "More figures" keeps the existing "max loss: unlimited" where W92 says "max loss no limit".
+
+- T95.18 (no W row): "−$0.50 (−$200.00 so far)" (dollar amount passed only, both shorter lengths); "To Stop (another −$200.00)" and "To Stop (−$200.00)" (no price distance; likewise Target); "Past Stop" with no overrun at every length.
