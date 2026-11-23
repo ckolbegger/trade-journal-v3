@@ -85,9 +85,26 @@ export const test = base.extend<{ server: ReleaseServer; profile: Profile; copyS
               // Built through the asking test's own server, on the release it serves now (the server is not switched).
               const dir = path.join(root, release.replace(/\W+/g, '_'), setup.name);
               mkdirSync(dir, { recursive: true });
-              const { context, made } = await setup.build(profileAt(dir));
-              await context.close();
-              return { dir, made, release: server.current() };
+              // Every context the builder's profile launches is closed when the build ends, failed or not.
+              const plain = profileAt(dir);
+              const launched: BrowserContext[] = [];
+              try {
+                const { context, made } = await setup.build({
+                  dir,
+                  launch: async (options) => {
+                    const opened = await plain.launch(options);
+                    launched.push(opened);
+                    return opened;
+                  },
+                });
+                await context.close();
+                return { dir, made, release: server.current() };
+              } catch (cause) {
+                // The failure is kept, not retried: each asking test fails at once naming the setup, where a retry would repeat a long build that already failed.
+                throw new Error(`Saved setup "${setup.name}" failed to build: ${cause instanceof Error ? cause.message : String(cause)}`, { cause });
+              } finally {
+                await Promise.all(launched.map((opened) => opened.close().catch(() => undefined)));
+              }
             })());
           }
           const { dir, made, release: builtOn } = await built.get(key)!;

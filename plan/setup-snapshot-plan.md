@@ -103,8 +103,8 @@ Read the stage run outputs from the tasks' runs and confirm each stage builds ea
 |---|---|---|---|
 | ST.0 | — | Dropped | |
 | ST.1 | Standard | Done | 2ef488d0 |
-| ST.1-B1 | Standard | In progress | |
-| ST.1-B2 | Standard | Not started | |
+| ST.1-B1 | Standard | Done | 944ecd24 |
+| ST.1-B2 | Standard | Done | HASH |
 | ST.2 | Light | Not started | |
 | ST.3 | Light | Not started | |
 | ST.4 | Light | Not started | |

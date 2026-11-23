@@ -35,3 +35,15 @@ Which tests start from which setup: unchanged from ST.1 (the five tests of d9ar/
 Mutation run (the check shows): the recorded release forced to dist-releases/current. All 5 review tests failed with `Saved setup "standard-review" was built on dist-releases/current but this test serves dist-faults`; restored (git diff shows only the fix); the 5 pass, with narrow.spec.ts 10 passed together (20.6 s; before 20.9 s).
 
 Assumption: a test that switches the server after its copy was made is not detected (the check runs when the copy is asked for), and the saved copy keeps the service worker and release cache of the release it was built on.
+
+## ST.1-B2 A failed build closes what it launched
+
+What changed (test code only, e2e/d1/support.ts): the builder gets a profile whose launch tracks every context it opens, as the profile fixture does; they are all closed in a finally when the build ends, failed or not. A build that throws fails with `Saved setup "<name>" failed to build: <the builder's message>` (the original error kept as cause).
+
+Failure kept, not retried (one sentence): the rejected build stays in the map so each asking test fails at once naming the setup, because a retry would repeat a long build that already failed, once per asking test.
+
+Check (temporary spec, deleted, not committed): a setup that launches a browser, opens a page and throws; two tests asking for it both fail with the message above (the second without a second build). With the finally close: no Chromium on the setup's folder left after the failure; with the close removed (mutation): one was left (pgrep found its process). Restored.
+
+Which tests start from which setup, which kept their build: unchanged (the five d9ar/review.spec.ts tests on STANDARD_REVIEW; none kept its own build).
+
+Break check after both fixes (e2e/d9ar/review.spec.ts): copy switched off (the cp call replaced): 5 failed (toBeVisible on the first screen); switched on: 5 passed (11.3 s). Both specs together after B2: 10 passed (20.4 s).
