@@ -383,7 +383,8 @@ export function MarksStep({ facade, held: heldReview, onResult, tradeLine, onEnt
   });
   const noPriceCount = todayResolutions.filter((resolution) => resolution.kind === 'AcknowledgedUnavailable').length;
   const toGo = heldReview.review.day?.toGo.marks ?? todayResolutions.filter((resolution) => resolution.kind === 'Missing').length;
-  const afterSave = saved && !outOfDate && count === 0;
+  // A correction in progress, or a saved Mark's input emptied to be retyped, holds the grid open: folding would drop what is being typed.
+  const afterSave = saved && !outOfDate && count === 0 && dirtyIds.size === 0 && blanked.size === 0;
   const folded = afterSave && toGo === 0;
   const notifyFolded = useRef(onFolded);
   useEffect(() => {
@@ -453,6 +454,8 @@ export function MarksStep({ facade, held: heldReview, onResult, tradeLine, onEnt
       return;
     }
     if (entry !== undefined) setLeft((prev) => ({ ...prev, [rowId(key.instrumentKey, key.tradingDate)]: entry }));
+    // A saved Mark's input left empty shows its saved price again.
+    else if (savedPrice !== undefined) setBlanked((prev) => new Set([...prev].filter((id) => id !== rowId(key.instrumentKey, key.tradingDate))));
   };
   // Typing makes it a new entry: what was left and an answer to the old one no longer stand.
   const typePrice = (key: ObservationKey, price: string) => {
@@ -479,10 +482,7 @@ export function MarksStep({ facade, held: heldReview, onResult, tradeLine, onEnt
   const saveMarks = () => {
     setLeft(Object.fromEntries(typedPrices.map(({ key, entry }) => [rowId(key.instrumentKey, key.tradingDate), entry])));
     const first = typedPrices.find(({ key, entry }) => questionFor(key, entry) !== undefined);
-    if (first === undefined) void markDrafts.save().then((ok) => {
-        setSaved(ok);
-        if (ok) setBlanked(new Set());
-      });
+    if (first === undefined) void markDrafts.save().then(setSaved);
     else focus(fieldIds(uid, rowId(first.key.instrumentKey, first.key.tradingDate)).price);
   };
   const answer = (key: ObservationKey, choice: SlipChoice) => {

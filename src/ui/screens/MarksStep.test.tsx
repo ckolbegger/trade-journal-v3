@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
 import { MemoryRouter } from 'react-router';
@@ -2287,5 +2287,74 @@ describe('Save Marks: fold, Edit, the re-sort, the fix in place (T95.14)', () =>
     // Later typing sorts nothing again: the order stays until the next save.
     await user.type(inputOf(step, 'DEF', MONDAY_LABEL), '33.10');
     expect(order()).toEqual(['t-c', 't-a', 't-f']);
+  });
+});
+
+describe('Save Marks while a cell is being fixed (T95.14-B2)', () => {
+  it('should keep a Correct in progress when Save Marks finishes the day', async () => {
+    const paged = pagedReview();
+    const marks = paged.families[0] as MarksFamily;
+    const facade = cardFacade(review({ families: [{ ...marks, today: [...marks.today, markRowOf('ABC', ACK, 2)] }, paged.families[1]!] }));
+    vi.mocked(facade.DailyReview.save).mockResolvedValue(marksSavedResult([savedKey('XYZ', MONDAY, '52.00')]));
+    renderReview(facade);
+    const user = userEvent.setup();
+    const panel = await marksPanelWithEarlier();
+    await user.type(inputOf(panel, 'XYZ', MONDAY_LABEL), '52.00');
+    const friday = await choose(user, panel, 'XYZ', FRIDAY_LABEL);
+    await user.click(within(friday).getByRole('button', { name: 'Correct' }));
+    await user.type(within(friday).getByLabelText('Price'), '51.5');
+
+    await user.click(within(panel).getByRole('button', { name: 'Save Marks (1)' }));
+
+    // The Marks are saved, yet the grid stays open with the correction as typed.
+    await waitFor(() => expect(facade.DailyReview.save).toHaveBeenCalledTimes(1));
+    expect(within(panel).getByLabelText<HTMLInputElement>('Price').value).toBe('51.5');
+    expect(screen.queryByRole('button', { name: 'Edit' })).toBeNull();
+  });
+
+  describe('a saved Mark emptied to be retyped', () => {
+    // XYZ was saved earlier in this Review and DEF now, then the grid opened again with Edit: each is an input holding its price.
+    async function editing(facade: UiFacade) {
+      const xyzSaved = { ...missingRow('XYZ', ['t-a', 't-f']), resolution: available('52'), resolutionRevision: 1, task: null };
+      vi.mocked(facade.DailyReview.open).mockResolvedValue(gridReview({ today: [xyzSaved, missingRow('DEF', ['t-c'])] }));
+      vi.mocked(facade.DailyReview.save).mockResolvedValueOnce(marksSavedResult([savedKey('DEF', MONDAY, '33.10')]));
+      renderReview(facade);
+      const user = userEvent.setup();
+      const step = await marksPanel();
+      await user.type(inputOf(step, 'DEF', MONDAY_LABEL), '33.10');
+      await user.click(within(step).getByRole('button', { name: 'Save Marks (1)' }));
+      await user.click(await screen.findByRole('button', { name: 'Edit' }));
+      return { user, step: await marksPanel() };
+    }
+
+    it('should stay empty when a save that was pending finishes', async () => {
+      const facade = cardFacade();
+      const { user, step } = await editing(facade);
+      let finish: (result: SaveResult) => void = () => undefined;
+      vi.mocked(facade.DailyReview.save).mockReturnValue(new Promise<SaveResult>((resolve) => (finish = resolve)));
+      await user.clear(inputOf(step, 'DEF', MONDAY_LABEL));
+      await user.type(inputOf(step, 'DEF', MONDAY_LABEL), '33.50');
+      await user.click(within(step).getByRole('button', { name: 'Save Marks (1)' }));
+      // The request is out: the trader empties the other saved Mark's input meanwhile.
+      await user.clear(inputOf(step, 'XYZ', MONDAY_LABEL));
+
+      act(() => finish(marksSavedResult([{ ...savedKey('DEF', MONDAY, '33.50'), classification: 'Correction' }])));
+      await waitFor(() => expect(within(step).getByRole('button', { name: 'Save Marks (0)' })).toBeTruthy());
+
+      expect(inputOf(step, 'XYZ', MONDAY_LABEL).value).toBe('');
+    });
+
+    it('should show the saved price again when its input is left empty', async () => {
+      const { user, step } = await editing(cardFacade());
+      const xyz = inputOf(step, 'XYZ', MONDAY_LABEL);
+      expect(xyz.value).toBe('52.00');
+
+      await user.clear(xyz);
+      expect(xyz.value).toBe('');
+      await user.tab();
+
+      expect(xyz.value).toBe('52.00');
+      expect(within(step).getByRole('button', { name: 'Save Marks (0)' })).toBeTruthy();
+    });
   });
 });
