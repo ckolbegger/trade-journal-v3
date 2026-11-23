@@ -309,3 +309,7 @@ Kept cases: none (both dropped). Every moved check failed on an assertion when m
 Spec counts: before 7 passed (d9/meter-review 2, d5r/review 2, d5r/sliders 3); after 5 passed (d5r/review 2, d5r/sliders 3). Both under with-browser-lock.sh on 5175. `.claude/scripts/acceptance-commands.sh plan/D09-trade-replay.md`: 9 commands checked, 0 failed.
 
 References (rule 10): plan/D09-trade-replay.md AC-REV-002 command re-pointed to `npx playwright test e2e/d5r/review.spec.ts` (since TD.8). Other hits left as history: plan/D09B-handoff.md:177, plan/D09C-handoff.md:18, plan/D09-handoff.md:165 (finished handoffs), research/browser-test-duplicates.md (the report), the B9.8 comment of the dropped file (gone with it). rg of both titles found no acceptance-matrix, spec-map or bug-tasks entry.
+
+### TD.8 ocr
+
+gpt-6.1-sol, session e1e8fbb4: 4 files reviewed (5 excluded), 0 findings. `evidence/Test-Dedup/ocr/TD.8-0a247665.json`.
