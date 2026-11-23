@@ -1,6 +1,6 @@
 import type { Locator } from '@playwright/test';
 import { expectNoSidewaysScroll } from '../d7p/support.ts';
-import { BREN, build, closeOf, detailReplayButton, expect, expectAccessible, expectFitsOneScreen, replay, setViewport, test } from '../d9ar/support.ts';
+import { BREN, detailReplayButton, expect, expectAccessible, expectFitsOneScreen, openStandardDetail, replay, setViewport, test } from '../d9ar/support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -16,9 +16,9 @@ const smallChart = (scope: Locator): Locator => scope.getByRole('group', { name:
 
 for (const size of SIZES) {
   test.describe(`B9.7 The estimates, accessible, at ${size.width} px`, () => {
-    test(`should keep the chip's small chart inside the overlay with no sideways scroll and no axe violation at ${size.width} px`, async ({ profile }) => {
+    test(`should keep the chip's small chart inside the overlay with no sideways scroll and no axe violation at ${size.width} px`, async ({ profile, copySetup }) => {
       test.setTimeout(240_000);
-      const { context, page } = await build(profile, BREN, closeOf('2026-11-16'), 10);
+      const { context, page } = await openStandardDetail(profile, copySetup, BREN);
       await setViewport(page, size.width, size.height);
       await detailReplayButton(page).click();
       const scope = replay(page);

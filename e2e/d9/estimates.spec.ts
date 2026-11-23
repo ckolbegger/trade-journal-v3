@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { BREN, build, closeOf, CORV, detailReplayButton, expect, replay, seek, sliderValue, test } from '../d9ar/support.ts';
+import { BREN, build, closeOf, CORV, detailReplayButton, expect, openStandardDetail, replay, seek, sliderValue, test } from '../d9ar/support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -22,17 +22,17 @@ async function tabToVolatilityChip(page: Page, scope: Locator): Promise<void> {
   throw new Error('Tab did not reach the Implied volatility chip');
 }
 
-async function openBren(profile: Parameters<typeof build>[0]) {
-  const { context, page } = await build(profile, BREN, closeOf('2026-11-16'), 10);
+async function openBren(profile: Parameters<typeof build>[0], copySetup: Parameters<typeof openStandardDetail>[1]) {
+  const { context, page } = await openStandardDetail(profile, copySetup, BREN);
   await detailReplayButton(page).click();
   await expect(replay(page)).toBeVisible();
   return { context, page, scope: replay(page) };
 }
 
 test.describe('B9.6 The estimates', () => {
-  test('should show W47’s chips for R-BREN-U on Mon 11-16, each estimate tagged, and open the volatility chip’s chart by keyboard', async ({ profile }) => {
+  test('should show W47’s chips for R-BREN-U on Mon 11-16, each estimate tagged, and open the volatility chip’s chart by keyboard', async ({ profile, copySetup }) => {
     test.setTimeout(240_000);
-    const { context, page, scope } = await openBren(profile);
+    const { context, page, scope } = await openBren(profile, copySetup);
     await expect(sliderValue(scope)).toHaveText('Mon Nov 16 · 11 of 11');
     // The chips, as W47 words them; the estimates carry the tag and the two plain facts do not.
     await expect(volatilityChip(scope)).toHaveText('Implied volatility 27.7%estimate');
@@ -73,9 +73,9 @@ test.describe('B9.6 The estimates', () => {
     await context.close();
   });
 
-  test('should read W48’s line under the charts at Mon 11-09 and Wed 11-11, split into the Underlying’s move, time and volatility', async ({ profile }) => {
+  test('should read W48’s line under the charts at Mon 11-09 and Wed 11-11, split into the Underlying’s move, time and volatility', async ({ profile, copySetup }) => {
     test.setTimeout(240_000);
-    const { context, page, scope } = await openBren(profile);
+    const { context, page, scope } = await openBren(profile, copySetup);
     // Mon 11-16 first: W48's own example.
     await expect(since(scope)).toHaveText("Since Fri Nov 13: Trade P&L −$150.00. The call moved −$0.75 a share: BREN's move −$0.52 · time −$0.22 · volatility −$0.01estimate");
     await seek(page, scope, 'ArrowLeft', 3);
@@ -143,9 +143,9 @@ test.describe('B9.6 The estimates', () => {
     await context.close();
   });
 
-  test('should show no interest rate and no formula beside the chart, and state them once on the About page (W50)', async ({ profile }) => {
+  test('should show no interest rate and no formula beside the chart, and state them once on the About page (W50)', async ({ profile, copySetup }) => {
     test.setTimeout(240_000);
-    const { context, page, scope } = await openBren(profile);
+    const { context, page, scope } = await openBren(profile, copySetup);
     await tabToVolatilityChip(page, scope);
     await expect(smallChart(scope)).toBeVisible();
     const shown = await text(scope);

@@ -70,3 +70,17 @@ Kept its own build: R-DALE-U (the other case of the group test): its Marks diffe
 Break check (e2e/d9ar/responsive-a11y.spec.ts): copy switched off (the cp call in copySetup replaced by a no-op): 17 failed (toBeVisible on the first screen), the R-DALE-U test passed (own build); switched back on: 18 passed (36.2 s). The switch was an edit, restored by an edit (git diff e2e/d1/support.ts shows no trace). e2e/d9ar/review.spec.ts, which shares the changed helper: 5 passed (11.8 s).
 
 Assumptions: the staged-update test, which saved nothing in the proof of concept, is still converted (it passes on the copy; it is in the plan's 17). The service worker and release cache the copy carries are those of dist-faults, the release the tests serve (ST.1-B1).
+
+## ST.3 Group 1, the d9 files, on the shared Review
+
+What changed (test code only): the six e2e/d9 specs (estimates-a11y, estimates, meter-detail, replay, review, session-cards). Each converted test asks for `copySetup` and starts with `openStandardDetail(profile, copySetup, BREN)` (ST.2's helper, e2e/d9ar/support.ts) instead of `build(profile, BREN, closeOf('2026-11-16'), 10)`; bodies unchanged. No support file changed. The three specs that import from ./support.ts (meter-detail, replay, review, session-cards) gain one import of openStandardDetail from ../d9ar/support.ts, through the support chain, not from another spec. estimates.spec.ts's `openBren` takes `copySetup` (typed from openStandardDetail's parameter) and uses the same start.
+
+Which tests start from which setup: 15 tests start from STANDARD_REVIEW (BREN's Trade Detail at Mon 11-16 on the three-Trade copy): estimates-a11y (2), estimates (3: chips, W48 line, About page), meter-detail (2), replay (5), review (2), session-cards (1).
+
+Kept its own build: estimates.spec.ts line 102 (R-CORV-D, built to Wed 11-11 through session 7): a different Trade at another clock; CORV is not in the standard setup.
+
+Watch points: d9/review lines 11 and 39 keep their body (page.goto('/'), openReview, reachCard(page, trade) and openCardReplay by Trade), so with three cards in the Review they still reach BREN's card by Trade; both pass unchanged. meter-detail's Tue 11-17 test uses setClock on the copy's context and passes.
+
+Break check (the six files, one run each): copy switched off (the cp call in e2e/d1/support.ts replaced by `execFileSync('true')`): 15 failed (toBeVisible on the first screen), 1 passed (the CORV test, own build); switched on: 16 passed (22.3 s). Switch made and restored by edits; git status shows e2e/d1/support.ts unchanged.
+
+Assumptions: none beyond the plan. First test of the file set (estimates-a11y at 375 px) pays the one build of the setup (6.7 s).

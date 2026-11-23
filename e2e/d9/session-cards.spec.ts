@@ -1,12 +1,13 @@
-import { BREN, build, closeOf, expect, openDrawer, replay, seek, sessionCard, sessionCards, setViewport, test } from './support.ts';
+import { BREN, expect, openDrawer, replay, seek, sessionCard, sessionCards, setViewport, test } from './support.ts';
+import { openStandardDetail } from '../d9ar/support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
 // T9AR.17-B4: the cards helper finds a card on whichever page holds it, older or newer than the page showing.
 test.describe('T9AR.17 session cards, looked up across pages', () => {
-  test('should find a newer card after an older one when the cards span pages', async ({ profile }) => {
+  test('should find a newer card after an older one when the cards span pages', async ({ profile, copySetup }) => {
     test.setTimeout(240_000);
-    const { context, page } = await build(profile, BREN, closeOf('2026-11-16'), 10);
+    const { context, page } = await openStandardDetail(profile, copySetup, BREN);
     await openDrawer(page, 'Replay');
     const scope = replay(page);
     await seek(page, scope, 'ArrowLeft', 2);

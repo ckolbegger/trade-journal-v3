@@ -1,4 +1,5 @@
-import { BREN, build, closeOf, detail, expect, expectTrackDashed, setClock, test } from './support.ts';
+import { BREN, closeOf, detail, expect, expectTrackDashed, setClock, test } from './support.ts';
+import { openStandardDetail } from '../d9ar/support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -7,9 +8,9 @@ test.use({ actionTimeout: 15_000 });
 const MON_1116 = 'P&L +$988.00, past the Target by $32.00. Realized +$478.00. Stop +$316.00, Target +$956.00. Down from +$1,138.00 on Fri Nov 13.';
 
 test.describe('B9.10 The meter on Trade Detail', () => {
-  test('should show the meter at the top of the Conditions card, named by its figures, with no visible words', async ({ profile }) => {
+  test('should show the meter at the top of the Conditions card, named by its figures, with no visible words', async ({ profile, copySetup }) => {
     test.setTimeout(240_000);
-    const { context, page } = await build(profile, BREN, closeOf('2026-11-16'), 10);
+    const { context, page } = await openStandardDetail(profile, copySetup, BREN);
     const card = page.locator('.conditions-card');
     await expect(card).toBeVisible();
     const meter = card.getByRole('img');
@@ -29,9 +30,9 @@ test.describe('B9.10 The meter on Trade Detail', () => {
     await context.close();
   });
 
-  test('should show the dashed track on a day with a missing Mark, named by the reason, with the lines and the session before kept', async ({ profile }) => {
+  test('should show the dashed track on a day with a missing Mark, named by the reason, with the lines and the session before kept', async ({ profile, copySetup }) => {
     test.setTimeout(240_000);
-    const { context, page, trade } = await build(profile, BREN, closeOf('2026-11-16'), 10);
+    const { context, page, trade } = await openStandardDetail(profile, copySetup, BREN);
     // Tue 11-17 has no Mark yet.
     await setClock(context, page, closeOf('2026-11-17'), `/trades/${trade.tradeId}`);
     await expect(detail.heading(page, 'BREN')).toBeVisible();

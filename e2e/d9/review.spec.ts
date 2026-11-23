@@ -1,6 +1,7 @@
 import {
-  actionFormOf, BREN, build, closeOf, openCardReplay, detail, expect, going, headline, openDrawer, openReview, readoutValue, reachCard, LAUNCH, replay, seek, slider, sliderValue, test, tradeCard,
+  actionFormOf, BREN, openCardReplay, detail, expect, going, headline, openDrawer, openReview, readoutValue, reachCard, LAUNCH, replay, seek, slider, sliderValue, test, tradeCard,
 } from './support.ts';
+import { openStandardDetail } from '../d9ar/support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -8,9 +9,9 @@ test.use({ actionTimeout: 15_000 });
 // History; the slider moves (the Review's address and the Trade's facts are unchanged); Price History opens on the slider's session; "Back to the Review" returns to the same card,
 // panel and session (/review?trade=<id>&panel=Action&session=<date>).
 test.describe('B9.3 Replay in the Review, and the round trip', () => {
-  test('should show the Replay button above the Action form, opening the replay with Price History as its only link', async ({ profile }) => {
+  test('should show the Replay button above the Action form, opening the replay with Price History as its only link', async ({ profile, copySetup }) => {
     test.setTimeout(240_000);
-    const { context, page, trade } = await build(profile, BREN, closeOf('2026-11-16'), 10);
+    const { context, page, trade } = await openStandardDetail(profile, copySetup, BREN);
     await page.goto('/');
     await openReview(page);
     await reachCard(page, trade);
@@ -36,9 +37,9 @@ test.describe('B9.3 Replay in the Review, and the round trip', () => {
     await context.close();
   });
 
-  test('should move the slider on the card, open Price History on that session and return to the same card, panel and session', async ({ profile }) => {
+  test('should move the slider on the card, open Price History on that session and return to the same card, panel and session', async ({ profile, copySetup }) => {
     test.setTimeout(240_000);
-    const { context, page, trade } = await build(profile, BREN, closeOf('2026-11-16'), 10);
+    const { context, page, trade } = await openStandardDetail(profile, copySetup, BREN);
     await page.goto('/');
     await openReview(page);
     await reachCard(page, trade);

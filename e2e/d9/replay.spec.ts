@@ -1,6 +1,7 @@
 import {
-  BREN, build, cardRows, chartText, closeOf, expect, going, headline, hits, openDrawer, pastLine, pnlChart, priceStrip, readoutPnl, readoutR, readoutValue, replay, seek, sessionCard, sessionCards, sessionLabels, slider, sliderValue, stake, test,
+  BREN, cardRows, chartText, expect, going, headline, hits, openDrawer, pastLine, pnlChart, priceStrip, readoutPnl, readoutR, readoutValue, replay, seek, sessionCard, sessionCards, sessionLabels, slider, sliderValue, stake, test,
 } from './support.ts';
+import { openStandardDetail } from '../d9ar/support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -14,9 +15,9 @@ const LATER = {
 } as const;
 
 test.describe('B9.1 Replay in Trade Detail', () => {
-  test('should show Mon 11-16 with the headline, how it is going, what is at stake and the labels W36 to W41 name', async ({ profile }) => {
+  test('should show Mon 11-16 with the headline, how it is going, what is at stake and the labels W36 to W41 name', async ({ profile, copySetup }) => {
     test.setTimeout(240_000);
-    const { context, page } = await build(profile, BREN, closeOf('2026-11-16'), 10);
+    const { context, page } = await openStandardDetail(profile, copySetup, BREN);
     await openDrawer(page, 'Replay');
     const scope = replay(page);
     await expect(headline(scope)).toHaveText('+$988.00 · 3.05R');
@@ -50,9 +51,9 @@ test.describe('B9.1 Replay in Trade Detail', () => {
     await context.close();
   });
 
-  test('should step back to Thu 11-12 by keyboard with its own figures, the Stop line stepped at the sale and the banked band begun, and nothing of a later session', async ({ profile }) => {
+  test('should step back to Thu 11-12 by keyboard with its own figures, the Stop line stepped at the sale and the banked band begun, and nothing of a later session', async ({ profile, copySetup }) => {
     test.setTimeout(240_000);
-    const { context, page } = await build(profile, BREN, closeOf('2026-11-16'), 10);
+    const { context, page } = await openStandardDetail(profile, copySetup, BREN);
     await openDrawer(page, 'Replay');
     const scope = replay(page);
     await seek(page, scope, 'ArrowLeft', 2);
@@ -89,9 +90,9 @@ test.describe('B9.1 Replay in Trade Detail', () => {
     await context.close();
   });
 
-  test('should hold the chart’s Worst case figure in the readout’s At Worst case row and on its card (C9.2)', async ({ profile }) => {
+  test('should hold the chart’s Worst case figure in the readout’s At Worst case row and on its card (C9.2)', async ({ profile, copySetup }) => {
     test.setTimeout(240_000);
-    const { context, page } = await build(profile, BREN, closeOf('2026-11-16'), 10);
+    const { context, page } = await openStandardDetail(profile, copySetup, BREN);
     await openDrawer(page, 'Replay');
     const scope = replay(page);
     await seek(page, scope, 'ArrowLeft', 2);
@@ -105,9 +106,9 @@ test.describe('B9.1 Replay in Trade Detail', () => {
     await context.close();
   });
 
-  test('should step back to Mon 11-02 by keyboard with the first session, no band and no sale, and nothing of a later session', async ({ profile }) => {
+  test('should step back to Mon 11-02 by keyboard with the first session, no band and no sale, and nothing of a later session', async ({ profile, copySetup }) => {
     test.setTimeout(240_000);
-    const { context, page } = await build(profile, BREN, closeOf('2026-11-16'), 10);
+    const { context, page } = await openStandardDetail(profile, copySetup, BREN);
     await openDrawer(page, 'Replay');
     const scope = replay(page);
     await seek(page, scope, 'Home');
@@ -128,9 +129,9 @@ test.describe('B9.1 Replay in Trade Detail', () => {
     await context.close();
   });
 
-  test('should name each revealed session as a button, mark the hovered one in both charts and move to the one pressed', async ({ profile }) => {
+  test('should name each revealed session as a button, mark the hovered one in both charts and move to the one pressed', async ({ profile, copySetup }) => {
     test.setTimeout(240_000);
-    const { context, page } = await build(profile, BREN, closeOf('2026-11-16'), 10);
+    const { context, page } = await openStandardDetail(profile, copySetup, BREN);
     await openDrawer(page, 'Replay');
     const scope = replay(page);
     await expect(hits(scope).getByRole('button')).toHaveCount(11);
