@@ -302,7 +302,9 @@ ocr (`ocr/T95.13-D1-d06479f7.json`, 4 files, 1 comment): `MarksStep.tsx:426` (Va
 
 Commit `41cf5039` (from `67f28e44`). New `e2e/d95/marks-keys.spec.ts` (B95.3: the hint at 375 wide with no sideways scroll; Enter, arrows, N). Cases 2 to 5 red then green; case 1 (Enter to the next input, then Save Marks) a first-run pass (T9R2's A295 built it), mutation-checked (`enterFrom` +1 to +2: assertion failure). W72 turned out to be D9R2's "Earlier sessions don't block the Review." (still used), not an old key hint, so W105 is new text and no expectations changed. Provisional behaviour: the Enter hold asks the question and keeps focus in the price (also on the not-a-price and zero-share refusals; not for a saved Mark left unchanged); N only in unsaved Review Date inputs ("4n" keeps its "n"); arrows only in the focused column, skipping rows with no price there, staying put at the ends. `MarksGridProps.asksAbout?` added. src/ui/screens 718; browser d95 3, d9r2 and three responsive specs 28.
 
-ocr (gpt-6.1-sol, session dd5070e1): 4 files, 0 findings. `evidence/D95/ocr/T95.15-41cf5039.json`. Its suite run is held: the user paused D9.5 on 2026-11-23 for the test dedup work.
+ocr (gpt-6.1-sol, session dd5070e1): 4 files, 0 findings. `evidence/D95/ocr/T95.15-41cf5039.json`. D9.5 paused by the user on 2026-11-23 for the test dedup work, after this task.
+
+Run `t95.15-grid-keys` (full browser tier; also the dedup baseline with T95.14's run): unit 2832 passed, integration 300 passed, browser-1 127 passed, browser-2 80 passed, browser-3 57 passed, browser-4 138 passed and 4 skipped, checks 14 of 14 exit 0. About 26m07s; browser stages 23m. Unit and integration ran at `757e31be`, browser-2 on at `e6c5f3d6` (plan-only). Timings: `evidence/D95/suite-runs/t95.15-grid-keys-timings.md`. T95.15 Done.
 
 ## Trial: complete runs overlapped with the next task (the user, 2026-11-22, for 5 or 6 tasks)
 
