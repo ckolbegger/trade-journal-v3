@@ -455,3 +455,7 @@ Commit `31bb87f5`: the overlap effect depends on `[at, stopText, targetText]`. R
 ocr of T95.17-B3 (session 24bb72f2): 2 files, 0 findings. `evidence/D95/ocr/T95.17-B3-31bb87f5.json`.
 
 Run `t95.17-now-box` (full tier, 19:05): unit 2870 passed; integration 1 failed (`tests/integration/d7sp/review-valuation.test.ts` "should give O-C a card the same dated line as the Trade Views Detail": the card's dated line now carries T95.17-D1's `meter`); browser-2 1 failed (`e2e/d7s/conditions.spec.ts:65` B7S.4: the Review card's Conditions list, retired by T95.17); others passed; checks 14 of 14. Both follow from T95.17's planned changes: follow-on **T95.17-F1**.
+
+### T95.17-F1
+
+Commit `b0a1f067`: the d7sp dated-line test compares the shared fields and checks `meter` apart; B7S.4 checks the Review card has no Conditions heading and reads the four W8 lines in Trade Detail's Conditions (per-share wording there, "$0.10 past", where the old card said "$20.00 beyond"; same status). Each red then green; d7sp 11 passed, e2e/d7s 8 passed.
