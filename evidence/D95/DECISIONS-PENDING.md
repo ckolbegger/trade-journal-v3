@@ -70,4 +70,6 @@
 
 **Main-session readings recorded with this question (not asked):** the "Review status" block also holds the completion word, the Unavailable Marks disclosure, the integrity-disagreement and incoherent-facts lines, and the unsaved-Marks notice; T95.10 removes only the Blockers list and the block's heading and keeps those lines in the day card (the unsaved-Marks notice stays until T95.14). Case 4's "focus the Marks step" focuses the existing Marks section until T95.12 builds the grid. Case 10 is checked in the browser at 375 wide, not in jsdom.
 
-**Status:** asked. Parked: T95.10 and the screen tasks after it. 
+**Answer (2026-11-22):** (a). Recorded as decision 129, plan revision 118, the breakdown's P176; follow-on T95.4-D1 before T95.10. **Status:** answered 2026-11-22; T95.10 and T95.11 resume after T95.4-D1.
+
+**Previous status:** asked. Parked: T95.10 and the screen tasks after it. 
