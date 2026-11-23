@@ -341,3 +341,7 @@ Commit `996d2ee5`. The expiration reminder names each Trade once (de-duplicated 
 ocr of T95.21-B1 and T95.21-B2 (gpt-6.1-sol, session cff735b4, d542bfe9..996d2ee5): 2 files, 0 findings. `evidence/D95/ocr/T95.21-B1-B2-996d2ee5.json`.
 
 Run `t95.21-finished-day` (browser-task): unit 2839, integration 300, checks 14 of 14 passed; browser `@every-task` 5 passed, `e2e/d95` 2 passed and 1 failed: `e2e/d95/marks-keys.spec.ts:9` "B95.3 … key hint at 375 wide, and take Enter, the arrow keys and N" — `toBeFocused` on "DEF Mark, Mon Oct 12" (line 35) received inactive. Failed again twice alone in the main session. It passed in `st.11-setup-snapshot` at `1e3b3fab`, so T95.21 or its fixes broke it. Bug task **T95.21-B3**.
+
+### T95.21-B3 (stopped, no change) → T95.15-B1
+
+The marks-keys failure is not T95.21's: `e2e/d95/marks-keys.spec.ts` fails about half the time, also with DayCard.tsx and app.css reverted to `1e3b3fab` (4 of 12). The grid lists Instruments in the Trades' attention order; ABC's and DEF's Trades tie, and `byAttention` (`src/coordinators/valuation/attention.ts:187`) breaks the tie by tradeId, which is random per run, so the order is stable within a journal but differs between runs. The test assumes ABC first. The app is right (overview: the order is stable within a Review view; ties fall to stable identity); the test is wrong. Main session ruling: fix the test to follow the grid's row order, as **T95.15-B1** (T95.15's spec). T95.21-B3 is closed with no change.
