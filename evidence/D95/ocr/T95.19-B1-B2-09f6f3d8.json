@@ -1,0 +1,143 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 0,
+    "total_tokens": 31109,
+    "input_tokens": 30820,
+    "output_tokens": 289,
+    "cache_read_tokens": 3328,
+    "elapsed": "13s"
+  },
+  "tool_calls": {
+    "total": 5,
+    "by_tool": {
+      "file_read": 5
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Review card styling and decision screen regression tests",
+      "files": [
+        "src/ui/app.css",
+        "src/ui/screens/LastDecisions.test.tsx",
+        "src/ui/screens/ReviewCard.test.tsx",
+        "src/ui/screens/ReviewCard.tsx"
+      ]
+    }
+  ],
+  "session_id": "aea3e611-5dcd-441b-8e2a-ba0e4fe08a5d",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "aea3e611-5dcd-441b-8e2a-ba0e4fe08a5d",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "f14e8e71",
+      "requested_head": "09f6f3d8",
+      "resolved_base": "f14e8e71fc510b1c432a8d21f832948cd6b03df8",
+      "resolved_head": "09f6f3d86ebbfbbfa28b9f71778ab61fad41eb1c",
+      "exact_range": "f14e8e71fc510b1c432a8d21f832948cd6b03df8..09f6f3d86ebbfbbfa28b9f71778ab61fad41eb1c",
+      "source_artifact_sha256": "cd1ed8c206fed7e9388025f39d448a3922f8a1f6094e3e055d37e3ae01cfe10e"
+    },
+    "execution": {
+      "ocr_version": "v1.14.2",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "5b385c845542d6ccb7cd429923948b5ea16275e021991c866647b870c23c4c76",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "90c8e389b15af2a9c16d33937f4477f96e25b7df045e0451e799be3d0f39a39d"
+        },
+        {
+          "item_id": "86bd057eaa6ea9a77e8bdf3197d497830977b494dcfe642b4961ac0a7269dbf8",
+          "path": "src/ui/screens/ReviewCard.test.tsx",
+          "fingerprint": "d3202a2b45a0070760108ef159135986d3e45ef7b90f78f9b6a1af4553176c30"
+        },
+        {
+          "item_id": "93097a4b88979a86f003cdffadc62ae3ac036fc035231f0b0c84793b3fe8451a",
+          "path": "src/ui/screens/LastDecisions.test.tsx",
+          "fingerprint": "e8394cf61c2524681b5fa7ab01d8ad0df8b06e8de8422a85e65c24801c77fbd7"
+        },
+        {
+          "item_id": "aa02a05b4881073ca1bb3f85ff78ad8713a1b6996978e8ecdf490c815750997f",
+          "path": "src/ui/app.css",
+          "fingerprint": "685a2cb3178a62aed74358ab2dbdac57de999b140233e9fb08f4c4f64fb3b37d"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "5b385c845542d6ccb7cd429923948b5ea16275e021991c866647b870c23c4c76",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "90c8e389b15af2a9c16d33937f4477f96e25b7df045e0451e799be3d0f39a39d"
+        },
+        {
+          "item_id": "86bd057eaa6ea9a77e8bdf3197d497830977b494dcfe642b4961ac0a7269dbf8",
+          "path": "src/ui/screens/ReviewCard.test.tsx",
+          "fingerprint": "d3202a2b45a0070760108ef159135986d3e45ef7b90f78f9b6a1af4553176c30"
+        },
+        {
+          "item_id": "93097a4b88979a86f003cdffadc62ae3ac036fc035231f0b0c84793b3fe8451a",
+          "path": "src/ui/screens/LastDecisions.test.tsx",
+          "fingerprint": "e8394cf61c2524681b5fa7ab01d8ad0df8b06e8de8422a85e65c24801c77fbd7"
+        },
+        {
+          "item_id": "aa02a05b4881073ca1bb3f85ff78ad8713a1b6996978e8ecdf490c815750997f",
+          "path": "src/ui/app.css",
+          "fingerprint": "685a2cb3178a62aed74358ab2dbdac57de999b140233e9fb08f4c4f64fb3b37d"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "623892ad94af7ebadc7896ce36e6b4019f9c50c066e0b36318f571d90735c852",
+          "path": "evidence/D95/tdd-log/T95.19-B1.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ab47bc811f23c17f4c6317a43b1bf19eff8f2b20af07649acc55f19159f8bebc",
+          "path": "evidence/D95/structural.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "b5e045b0dd87c733436aa76d074e00d0c99e915af450235664b131f7025734f0",
+          "path": "evidence/D95/ocr/T95.19-f14e8e71.json",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "e3097bd05207ff2a77b5e56e5d5910ea07c8a667ee97dc2c7cb695026cd6f9f6",
+          "path": "evidence/D95/new-words.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ee2b71f8c791f6d5d237a9cb65cc5597579e466f3cfc6ef164427d09d6b74042",
+          "path": "evidence/D95/tdd-log/T95.19-B2.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 13104
+  }
+}
