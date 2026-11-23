@@ -154,13 +154,14 @@ test.describe('B9AR.2 The overlay in the Review, and the summary', () => {
     const [bren, axio, dale] = trades as [TradeRef, TradeRef, TradeRef];
     await reachCard(page, bren);
     const caption = (card: TradeRef, line: 'stop' | 'target') => tradeCard(page, card).locator(`.now-box [data-caption="${line}"]`);
-    await expect(caption(bren, 'target')).toHaveText('$0.16 past Target (+$32.00 so far)');
-    await expect(caption(bren, 'stop')).toContainText(' to Stop (lose ');
+    // The full sentence is the caption's name at any width; the words shown are the longest form that fits (T95.18).
+    await expect(caption(bren, 'target')).toHaveAttribute('aria-label', '$0.16 past Target (+$32.00 so far)');
+    await expect(caption(bren, 'stop')).toHaveAttribute('aria-label', / to Stop \(lose /);
     await reachCard(page, axio);
-    await expect(caption(axio, 'stop')).toHaveText('$3.00 past Stop (−$300.00 so far)');
+    await expect(caption(axio, 'stop')).toHaveAttribute('aria-label', '$3.00 past Stop (−$300.00 so far)');
     await expect(tradeCard(page, axio)).not.toContainText('$0.00 · 0.00R');
     await reachCard(page, dale);
-    await expect(caption(dale, 'stop')).toHaveText(/^\$[\d.]+ past Stop \(−\$552\.00 so far\)$/);
+    await expect(caption(dale, 'stop')).toHaveAttribute('aria-label', /^\$[\d.]+ past Stop \(−\$552\.00 so far\)$/);
     await expect(tradeCard(page, dale)).not.toContainText('$0.00 · 0.00R');
     await context.close();
   });

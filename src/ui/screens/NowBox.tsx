@@ -3,6 +3,7 @@ import type { DailyTradeReview, MeterReading } from '../../app/types.ts';
 import { Meter } from '../cockpit/meter/meter.tsx';
 import type { MeterProps } from '../cockpit/meter/meter.types.ts';
 import { useRuntime } from '../runtime.tsx';
+import { captionLength, type CaptionLength } from './caption-fit.ts';
 import { nowBoxOf, type Caption } from './now-box.props.ts';
 
 export interface NowBoxProps {
@@ -55,6 +56,25 @@ function Drawing({ meter, captions }: { readonly meter: MeterProps; readonly cap
     watch.observe(drawing);
     return () => watch.disconnect();
   }, [at, stopText, targetText]);
+  // The captions' length (P170): the longest at which they fit side by side in the room the box has, measured in hidden copies of every form.
+  const legs = useRef<HTMLDivElement>(null);
+  const [length, setLength] = useState<CaptionLength>(0);
+  const forms = captions.map((caption) => caption.forms.join('|')).join('/');
+  useLayoutEffect(() => {
+    const row = legs.current;
+    if (!row) return;
+    const choose = () => {
+      const widthOf = (line: string, at: number) => root.current?.querySelector(`[data-measure][data-line="${line}"][data-length="${at}"]`)?.getBoundingClientRect().width ?? 0;
+      // Only the lines that have a caption were rendered for measuring.
+      const widths = (['Stop', 'Target'] as const).flatMap((line) => (root.current?.querySelector(`[data-measure][data-line="${line}"]`) ? [[0, 1, 2].map((at) => widthOf(line, at)) as [number, number, number]] : []));
+      setLength(captionLength(widths, row.getBoundingClientRect().width, Number.parseFloat(getComputedStyle(row).columnGap) || 0));
+    };
+    choose();
+    if (typeof ResizeObserver === 'undefined') return;
+    const watch = new ResizeObserver(choose);
+    watch.observe(row);
+    return () => watch.disconnect();
+  }, [forms]);
   // A label stands over its mark, shifted by its own share of its width so the one at either end stays inside the bar.
   const label = (line: 'stop' | 'target', text: string, place: string | undefined) =>
     place && (
@@ -94,13 +114,22 @@ function Drawing({ meter, captions }: { readonly meter: MeterProps; readonly cap
       </div>
       <Meter {...meter} />
       {arrows}
-      <div className="now-legs">
+      <div className="now-legs" ref={legs}>
         {captions.map((caption) => (
-          <span key={caption.line} className="now-caption" data-caption={caption.line.toLowerCase()} data-tone={caption.tone} data-past={caption.past || undefined}>
-            {caption.past ? <b>{caption.text}</b> : caption.text}
+          <span key={caption.line} className="now-caption" role="note" aria-label={caption.text} title={caption.text} data-caption={caption.line.toLowerCase()} data-tone={caption.tone} data-past={caption.past || undefined}>
+            {caption.past && length < 2 ? <b>{caption.forms[length]}</b> : caption.forms[length]}
           </span>
         ))}
       </div>
+      <span className="now-measure" aria-hidden="true">
+        {captions.flatMap((caption) =>
+          caption.forms.map((form, at) => (
+            <span key={`${caption.line}${at}`} data-measure data-line={caption.line} data-length={at}>
+              {caption.past && at < 2 ? <b>{form}</b> : form}
+            </span>
+          )),
+        )}
+      </span>
     </div>
   );
 }

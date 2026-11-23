@@ -66,8 +66,14 @@ test.describe('B95.4 The card', () => {
       // A red arrow to the Stop, running left, and a green one to the Target, running right, each captioned.
       await expect(now.locator('[data-arrow="stop"]')).toHaveAttribute('data-direction', 'left');
       await expect(now.locator('[data-arrow="target"]')).toHaveAttribute('data-direction', 'right');
-      await expect(now.locator('[data-caption="stop"]')).toHaveText(/^−\$1\.00 to Stop \(lose another −\$\d[\d,.]*\)$/);
-      await expect(now.locator('[data-caption="target"]')).toHaveText(/^\+\$7\.00 to Target \(gain \$\d[\d,.]*\)$/);
+      // The full sentence is each caption's name at every width; the words shown are the longest form that fits (T95.18).
+      await expect(now.getByRole('note', { name: /^−\$1\.00 to Stop \(lose another −\$\d[\d,.]*\)$/ })).toHaveAttribute('data-caption', 'stop');
+      await expect(now.getByRole('note', { name: /^\+\$7\.00 to Target \(gain \$\d[\d,.]*\)$/ })).toHaveAttribute('data-caption', 'target');
+      await expect(now.locator('[data-caption="stop"]')).toHaveText(/^−\$1\.00( to Stop \(lose another −\$\d[\d,.]*| \((another )?−\$\d[\d,.]*)\)$/);
+      await expect(now.locator('[data-caption="target"]')).toHaveText(/^\+\$7\.00( to Target \(gain \$\d[\d,.]*| \((gain \$|\+\$)\d[\d,.]*)\)$/);
+      const [stopCaption, targetCaption] = [await boxOf(now.locator('[data-caption="stop"]')), await boxOf(now.locator('[data-caption="target"]'))];
+      const apart = stopCaption.x + stopCaption.width <= targetCaption.x + 0.5 || targetCaption.x + targetCaption.width <= stopCaption.x + 0.5 || stopCaption.y + stopCaption.height <= targetCaption.y + 0.5;
+      expect(apart, `the two captions do not overlap at ${width}`).toBe(true);
       // Every piece of the drawing is whole inside the viewport, and the two labels do not run into each other.
       for (const piece of ['.now-label[data-line="stop"]', '.now-label[data-line="target"]', '[data-caption="stop"]', '[data-caption="target"]', '.now-draw .meter']) {
         const box = await boxOf(now.locator(piece));

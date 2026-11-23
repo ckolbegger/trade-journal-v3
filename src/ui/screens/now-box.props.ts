@@ -24,6 +24,8 @@ export interface Caption {
   readonly line: 'Stop' | 'Target';
   readonly tone: 'loss' | 'profit';
   readonly text: string;
+  // The caption at each length (W84, W85, W86): the full sentence, the first shorter form, the shortest. `text` is the first.
+  readonly forms: readonly [string, string, string];
   // Past its line: the caption stands in bold (W86).
   readonly past: boolean;
 }
@@ -136,19 +138,39 @@ function captionsOf(trade: DailyTradeReview, evaluation: Evaluation): readonly C
     const below = (option && condition ? conditionDirection(line, condition.kind, option) : STOCK_SIDE[line]) === 'below';
     const tone = line === 'Stop' ? 'loss' : 'profit';
     const past = standing.zone === (line === 'Stop' ? 'PastStop' : 'PastTarget') ? standing.pastBy : undefined;
-    const soFar = past && `(${line === 'Stop' ? signed(money)(negated(past.dollars)) : signed(money)(past.dollars)} so far)`;
+    const soAmount = past && (line === 'Stop' ? signed(money)(negated(past.dollars)) : signed(money)(past.dollars));
+    const soFar = soAmount && `(${soAmount} so far)`;
     // A crossed condition says the line is passed whatever the dollars say (F2): the dollars so far are said only where the result has passed it.
-    if (past?.crossed || (condition && isCrossed(condition))) return { line, tone, past: true, text: `${trigger?.beyond ? `${money(trigger.beyond)} past` : 'Past'} ${line}${soFar ? ` ${soFar}` : ''}` };
+    if (past?.crossed || (condition && isCrossed(condition))) {
+      const lead = trigger?.beyond ? `${money(trigger.beyond)} past` : 'Past';
+      const text = `${lead} ${line}${soFar ? ` ${soFar}` : ''}`;
+      // The shorter form drops the line's name and "so far" (W86); the colour and the bold already say which line.
+      const shorter = trigger?.beyond ? `${lead}${soAmount ? ` (${soAmount})` : ''}` : text;
+      return { line, tone, past: true, text, forms: [text, shorter, shorter] };
+    }
     const distance = trigger?.distance;
-    const moved = distance ? `${below ? money(negated(distance)) : signed(money)(distance)} to ` : 'To ';
+    const moveBy = (d: Rational) => (below ? money(negated(d)) : signed(money)(d));
+    const amount = distance && moveBy(distance);
+    const moved = amount ? `${amount} to ` : 'To ';
+    // The shorter forms keep the move in price and drop "to Stop" (W84, W85); with no distance they keep the line's name.
+    const lead = amount ?? `To ${line}`;
     // Only the planned amount is passed (B7): the move to the line stands, with what the amount has cost so far.
-    if (soFar) return { line, tone, past: false, text: `${moved}${line} ${soFar}` };
+    if (soFar) {
+      const text = `${moved}${line} ${soFar}`;
+      const shorter = `${lead} (${soAmount})`;
+      return { line, tone, past: false, text, forms: [text, shorter, shorter] };
+    }
     if (line === 'Stop') {
       const { ongoingRiskToStop: risk } = evaluation;
-      return risk.kind === 'Value' ? { line, tone, past: false, text: `${moved}Stop (lose ${losing ? 'another ' : ''}${money(negated(risk.value))})` } : undefined;
+      if (risk.kind !== 'Value') return undefined;
+      const loss = money(negated(risk.value));
+      const text = `${moved}Stop (lose ${losing ? 'another ' : ''}${loss})`;
+      return { line, tone, past: false, text, forms: [text, `${lead} (${losing ? 'another ' : ''}${loss})`, `${lead} (${loss})`] };
     }
     const { incrementalRewardToTarget: reward } = evaluation;
-    return reward.kind === 'Value' ? { line, tone, past: false, text: `${moved}Target (gain ${money(reward.value)})` } : undefined;
+    if (reward.kind !== 'Value') return undefined;
+    const text = `${moved}Target (gain ${money(reward.value)})`;
+    return { line, tone, past: false, text, forms: [text, `${lead} (gain ${money(reward.value)})`, `${lead} (${signed(money)(reward.value)})`] };
   };
   return [captionOf('Stop'), captionOf('Target')].filter((caption): caption is Caption => caption !== undefined);
 }
@@ -187,3 +209,4 @@ export function nowBoxOf(trade: DailyTradeReview, meter: MeterReading | undefine
     rows: [...extremeRows(session.evaluation, timeZone), ...ratioRow(session.evaluation, timeZone), ...realizedRow(trade, session.evaluation, session.date, timeZone), ...expirationRow(trade, session.evaluation, timeZone)],
   };
 }
+

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, within } from '@testing-library/react';
+import { act, cleanup, render, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { DailyTradeReview, MeterReading } from '../../app/types.ts';
 import { Rational } from '../../domain/values/index.ts';
@@ -440,5 +440,109 @@ describe('the "Now" box (T95.17)', () => {
       />,
     );
     expect(passed.container.querySelector('[data-caption="stop"]')?.textContent).toBe('Past Stop (−$300.00 so far)');
+  });
+});
+
+describe('the "Now" box caption lengths (T95.18)', () => {
+  // The drawing measures its captions at every length in hidden copies and the room its captions share; a width is ten pixels a character.
+  let room = 10000;
+  let rect: { mockRestore: () => void } | undefined;
+  const watchers: (() => void)[] = [];
+  const measure = () => {
+    rect = vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (this: Element) {
+      const el = this as HTMLElement;
+      let width = 0;
+      if (el.hasAttribute('data-measure')) width = (el.textContent ?? '').length * 10;
+      else if (el.classList.contains('now-legs')) width = room;
+      return { left: 0, right: width, top: 0, bottom: 10, width, height: 10, x: 0, y: 0, toJSON: () => ({}) };
+    });
+  };
+  const caption = (root: HTMLElement, line: string) => root.querySelector<HTMLElement>(`[data-caption="${line}"]`)!;
+  afterEach(() => {
+    rect?.mockRestore();
+    room = 10000;
+    watchers.length = 0;
+    vi.unstubAllGlobals();
+  });
+
+  it('should show the first shorter form on both captions when the full ones would overlap, and the shortest when those would (W84, W85)', () => {
+    measure();
+    // Full: 41 + 33 characters; first shorter: 27 + 23; shortest: 19 + 19.
+    room = 800;
+    const wide = render(<Box trade={trade()} />);
+    expect(caption(wide.container, 'stop').textContent).toBe('−$4.80 to Stop (lose another −$1,314.00)');
+    cleanup();
+
+    room = 600;
+    const middle = render(<Box trade={trade()} />);
+    expect(caption(middle.container, 'stop').textContent).toBe('−$4.80 (another −$1,314.00)');
+    expect(caption(middle.container, 'target').textContent).toBe('+$2.70 (gain $1,080.00)');
+    cleanup();
+
+    room = 400;
+    const narrow = render(<Box trade={trade()} />);
+    expect(caption(narrow.container, 'stop').textContent).toBe('−$4.80 (−$1,314.00)');
+    expect(caption(narrow.container, 'target').textContent).toBe('+$2.70 (+$1,080.00)');
+  });
+
+  it('should keep the full sentence as each caption accessible name and title at every length', () => {
+    measure();
+    for (const width of [800, 600, 400]) {
+      room = width;
+      const { container } = render(<Box trade={trade()} />);
+      const stop = within(container).getByRole('note', { name: '−$4.80 to Stop (lose another −$1,314.00)' });
+      const target = within(container).getByRole('note', { name: '+$2.70 to Target (gain $1,080.00)' });
+      expect(stop.getAttribute('title')).toBe('−$4.80 to Stop (lose another −$1,314.00)');
+      expect(target.getAttribute('title')).toBe('+$2.70 to Target (gain $1,080.00)');
+      cleanup();
+    }
+  });
+
+  it('should not bold the shortest past-a-line caption (W86)', () => {
+    measure();
+    const passed = trade({
+      evaluation: evaluation({
+        currentMarkedPnl: value(-2594n),
+        ongoingRiskToStop: value(0n),
+        incrementalRewardToTarget: value(2694n),
+        standing: { kind: 'Value', value: { zone: 'PastStop', pastBy: { dollars: rational(300n), r: rational(1n, 2n), crossed: true } } },
+        conditions: [condition('Stop', '47.00', { distance: rational(0n), beyond: rational(300n, 100n) }), condition('Target', '54.50', { distance: rational(780n, 100n), beyond: null })],
+      }),
+      replay: replayOf([], { meter: meter({ now: { kind: 'Value', value: { pnl: rational(-2594n), zone: 'PastStop', pastBy: { dollars: rational(300n) } as never } } }) }) as never,
+    });
+    const full = render(<Box trade={passed} />);
+    expect(caption(full.container, 'stop').textContent).toBe('$3.00 past Stop (−$300.00 so far)');
+    expect(caption(full.container, 'stop').querySelector('b')).toBeTruthy();
+    cleanup();
+
+    room = 100;
+    const shortest = render(<Box trade={passed} />);
+    expect(caption(shortest.container, 'stop').textContent).toBe('$3.00 past (−$300.00)');
+    expect(caption(shortest.container, 'stop').querySelector('b')).toBeNull();
+  });
+
+  it('should choose again when the box changes width', () => {
+    measure();
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        constructor(callback: () => void) {
+          watchers.push(callback);
+        }
+        observe() {}
+        disconnect() {}
+      },
+    );
+    room = 800;
+    const { container } = render(<Box trade={trade()} />);
+    expect(caption(container, 'stop').textContent).toBe('−$4.80 to Stop (lose another −$1,314.00)');
+
+    room = 400;
+    act(() => watchers.forEach((tell) => tell()));
+    expect(caption(container, 'stop').textContent).toBe('−$4.80 (−$1,314.00)');
+
+    room = 800;
+    act(() => watchers.forEach((tell) => tell()));
+    expect(caption(container, 'stop').textContent).toBe('−$4.80 to Stop (lose another −$1,314.00)');
   });
 });

@@ -1151,6 +1151,7 @@ ul.rows > li {
   margin: 0 0 0.5rem;
 }
 .now-draw {
+  position: relative;
   max-width: 28rem;
 }
 /* The labels and arrows stand over the meter's own inner track, which its side padding sets in from the edges. */
@@ -1243,6 +1244,20 @@ ul.rows > li {
   margin: 0 0 0.4rem;
   font-size: 0.84rem;
   line-height: 1.3;
+}
+/* Every length of every caption, unseen, so the box can measure which fit (P170). */
+.now-measure {
+  font-size: 0.84rem;
+  font-weight: 400;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  white-space: nowrap;
+  pointer-events: none;
 }
 .now-caption:last-child:not(:first-child) {
   margin-left: auto;

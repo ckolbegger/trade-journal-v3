@@ -64,7 +64,7 @@ test.describe('B7S.5 Responsive and accessible', () => {
     const card = await reachCard(page, trade);
     const captions = card.locator('.now-box [data-caption]');
     await expect(captions).toHaveCount(2);
-    for (const caption of await captions.all()) await expect(caption).toHaveText(/ (to|past) (Stop|Target) \(/);
+    for (const caption of await captions.all()) await expect(caption).toHaveAttribute('aria-label', / (to|past) (Stop|Target) \(/);
     await accessibleAtBothWidths(page, 'Review card Now box');
     await context.close();
   });
