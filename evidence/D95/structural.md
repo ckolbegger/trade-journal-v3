@@ -514,3 +514,7 @@ Run `t95.23-capabilities` (browser-task): unit 1 failed (`src/coordinators/works
 Commit `6dd789dc`: the workspace manifest pin gains the six variants. Red then green; workspace 131 and the other manifest pins (62) pass.
 
 Run `t95.23-capabilities-2` (browser-task): unit 2890, integration 305, browser 13, checks 14 of 14. Passed. T95.23 Done.
+
+## T95.24 — Integration suite, Part A (Standard)
+
+Commit `78f40087` (from `865200d2`): I95.1 to I95.6, 23 cases in six files plus `tests/integration/d95/support.ts`; no production code. All first-run passes (behaviour built earlier), each mutation-checked; two mutations reach only part of their case (noted in the tdd log). Main session on the binding note: AC-REV-005 is about Action saves; a page Marks save checks the Workspace and each entry's revision, which is what decides whether that Mark changed, so the overview's binding need not be compared. As built.
