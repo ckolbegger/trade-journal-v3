@@ -1,0 +1,154 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 2,
+    "total_tokens": 244089,
+    "input_tokens": 241570,
+    "output_tokens": 2519,
+    "cache_read_tokens": 16640,
+    "elapsed": "1m21s"
+  },
+  "tool_calls": {
+    "total": 30,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 13,
+      "file_read": 16
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "e2e/d95/marks-step.spec.ts",
+      "content": "Only the folded summary is checked at both widths. Draft entry/reload, no-price entry, Save Marks, re-sort/focus, and Edit/correction all execute outside this callback, so the mobile workflow is never exercised. The same gap affects the post-Mark Action assertions in card.spec.ts and the day-card button/focus interaction. Since AC-UI-002 explicitly requires the same fields and actions at both widths, run each stateful workflow from a fresh fixture at each width, rather than resizing only its final state.",
+      "existing_code": "    await atBothWidths(page, async (width) =\u003e {\n      await expect(step, `the fold at ${width}`).toContainText('4 of 4 saved · 1 no price');\n      await expect(step.getByRole('button', { name: 'Edit', exact: true })).toBeVisible();\n    });",
+      "start_line": 95,
+      "end_line": 98,
+      "category": "test",
+      "severity": "medium"
+    },
+    {
+      "path": "e2e/d95/marks-step.spec.ts",
+      "content": "These assertions do not verify that the correction was saved: both the saved count and Edit button were already present for the original 27.50 Mark. A regression that discards corrections would still pass. Reload the Review, reopen Edit, and assert that ABC's saved input is 27.00 (and, if needed, check the card's updated figures) to verify fix-in-place persistence.",
+      "existing_code": "    await input('ABC').fill('27.00');\n    await expect(step.getByRole('textbox', { name: /^(Reason|Why no price)/ })).toHaveCount(0);\n    await saveMarksButton(page).click();\n    await expect(step).toContainText('4 of 4 saved · 1 no price');\n    await expect(step.getByRole('button', { name: 'Edit', exact: true })).toBeVisible();",
+      "start_line": 106,
+      "end_line": 110,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "D95 end-to-end tests and shared support",
+      "files": [
+        "e2e/d95/card.spec.ts",
+        "e2e/d95/day-card.spec.ts",
+        "e2e/d95/marks-step.spec.ts",
+        "e2e/d95/open-list.spec.ts",
+        "e2e/d95/support.ts"
+      ]
+    }
+  ],
+  "session_id": "870d4727-61d0-43da-8c4c-f941137e9b15",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "870d4727-61d0-43da-8c4c-f941137e9b15",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "cfa99464",
+      "resolved_base": "69a7223f3f1dfca507d08b84a90ba08c6d6864a2",
+      "resolved_head": "cfa99464aaefbe4607543da8dd1e907edc8ae2ce",
+      "exact_range": "69a7223f3f1dfca507d08b84a90ba08c6d6864a2..cfa99464aaefbe4607543da8dd1e907edc8ae2ce",
+      "source_artifact_sha256": "67209d7ecfa775c22d41edfb4e20e674b192ee6c98f3a1ac2eadab27395eb954"
+    },
+    "execution": {
+      "ocr_version": "v1.14.2",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "05932d0c5afaad2354fb9b0a26670b0064ecbb7ea49c9158ab0791ce7104d410",
+          "path": "e2e/d95/open-list.spec.ts",
+          "fingerprint": "96b4b884c890b7052eb178dde0e3b1eccbd684f56c6350b79a8cb23ca167c2eb"
+        },
+        {
+          "item_id": "0801dba1579f31f4375d84e058fd5ca5be7019e251614388f63b565567e3f4bf",
+          "path": "e2e/d95/day-card.spec.ts",
+          "fingerprint": "64c739b6999e6218c756526864d774283cb0a30437c8f475a02949b7a4c6c697"
+        },
+        {
+          "item_id": "475cd76712388c81b9ff88bea59622b40da58238d4e5a4d821397145711377ba",
+          "path": "e2e/d95/marks-step.spec.ts",
+          "fingerprint": "3018641e9b380f88ac10d8ba77667d5fb8c3825ed649aaa6c1f30c69a82a589b"
+        },
+        {
+          "item_id": "d8bd1b41a59e923384e7e7442c046b63731ba0f99a51a10d56be665548e60b5e",
+          "path": "e2e/d95/card.spec.ts",
+          "fingerprint": "cb1ee970af5db3a996f50dc5c5191074d675087a9e8a623910757fdb2b0eeb8c"
+        },
+        {
+          "item_id": "dc774d70236dfa8cffd0a2079f8dc2c3ee1639f6c0cd0bc46c998c675058ec43",
+          "path": "e2e/d95/support.ts",
+          "fingerprint": "6ae338b05658332e40b6b49cda4f36d10596e0290bd397c16b49923e69c2a006"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "05932d0c5afaad2354fb9b0a26670b0064ecbb7ea49c9158ab0791ce7104d410",
+          "path": "e2e/d95/open-list.spec.ts",
+          "fingerprint": "96b4b884c890b7052eb178dde0e3b1eccbd684f56c6350b79a8cb23ca167c2eb"
+        },
+        {
+          "item_id": "0801dba1579f31f4375d84e058fd5ca5be7019e251614388f63b565567e3f4bf",
+          "path": "e2e/d95/day-card.spec.ts",
+          "fingerprint": "64c739b6999e6218c756526864d774283cb0a30437c8f475a02949b7a4c6c697"
+        },
+        {
+          "item_id": "475cd76712388c81b9ff88bea59622b40da58238d4e5a4d821397145711377ba",
+          "path": "e2e/d95/marks-step.spec.ts",
+          "fingerprint": "3018641e9b380f88ac10d8ba77667d5fb8c3825ed649aaa6c1f30c69a82a589b"
+        },
+        {
+          "item_id": "d8bd1b41a59e923384e7e7442c046b63731ba0f99a51a10d56be665548e60b5e",
+          "path": "e2e/d95/card.spec.ts",
+          "fingerprint": "cb1ee970af5db3a996f50dc5c5191074d675087a9e8a623910757fdb2b0eeb8c"
+        },
+        {
+          "item_id": "dc774d70236dfa8cffd0a2079f8dc2c3ee1639f6c0cd0bc46c998c675058ec43",
+          "path": "e2e/d95/support.ts",
+          "fingerprint": "6ae338b05658332e40b6b49cda4f36d10596e0290bd397c16b49923e69c2a006"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "bed0cf97054434e66be475addc6a532ee40921d788f717abb929020f82654ed4",
+          "path": "evidence/D95/tdd-log/T95.25.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 80926
+  }
+}
