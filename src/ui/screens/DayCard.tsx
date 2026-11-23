@@ -8,6 +8,7 @@ import { money, plural, shortDate } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
 import type { PanelName } from './ReviewCard.tsx';
 import { describedLabelsOf } from './review-attention.ts';
+import { todoText } from './todo-text.ts';
 
 type Ready = Extract<OpenDailyReviewResult, { kind: 'Ready' }>;
 const COMPLETION_TEXT = { Incomplete: 'Incomplete', Complete: 'Complete', CompleteWithUnavailableMarks: 'Complete with Unavailable Marks' } as const;
@@ -74,11 +75,6 @@ function stepStates({ toGo }: DaySummary, finished: boolean): readonly StepState
   if (marksDone) trades = finished ? 'done' : 'now';
   return [marksDone ? 'done' : 'now', trades, finished ? 'done' : 'todo'];
 }
-
-const NEED_TEXT = { Marks: (marks: number) => (marks > 1 ? `${marks} Marks` : 'Mark'), Reflection: (_: number, closeReview: boolean) => (closeReview ? 'Close Review' : 'Reflection'), Settlement: () => 'Settle', Action: () => 'Action' } as const;
-
-// What a Trade still needs, in the order its card works through it (W101).
-const todoText = (line: DaySummary['lines'][number]): string => (line.needs.length > 0 ? `To do: ${line.needs.map((need) => NEED_TEXT[need](line.marks, line.closeReview)).join(', ')}` : 'Done');
 
 // The Actions in the order the "You chose" row lists them: an Exit first, since it is still to record.
 const ACTION_ORDER = ['Exit', 'Roll', 'Adjust', 'Hold'] as const;

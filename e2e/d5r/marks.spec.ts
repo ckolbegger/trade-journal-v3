@@ -14,7 +14,7 @@ test.describe('B5R.3 Shared Mark', () => {
     await enterMark(page, tF, MONDAY, '52.00');
     await expect(cardHeader(page, tA)).toHaveAttribute('aria-expanded', 'true');
     await expect(meterOf(page, tA)).toHaveAccessibleName(/^P&L \+\$180\.00, 31% of the way to the Target\. Stop −\$270\.00, Target \+\$580\.00\.$/);
-    await expect(remainsOf(page, tA)).toHaveText('1 reflection due · Action');
+    await expect(remainsOf(page, tA)).toHaveText('To do: Reflection, Action');
 
     // The saved cell, chosen, names the Trades holding XYZ by their Trade-list summary lines, linked to them (decision 67).
     await markEditorOf(page, tA, MONDAY);

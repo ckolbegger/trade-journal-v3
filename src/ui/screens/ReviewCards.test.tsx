@@ -268,16 +268,17 @@ describe('card list (A150)', () => {
     for (const card of cards) expect(within(card).getAllByRole('heading')[0]!.querySelector('button')).not.toBeNull();
     // What remains, from the Mark rows, the reflection counts and the completion reasons.
     const head = (card: HTMLElement) => within(card).getAllByRole('button')[0]!.textContent;
-    expect(head(bCard)).toContain('Review ABC Action');
-    expect(head(cCard)).toContain('1 Mark · Action');
-    expect(head(aCard)).toContain('1 reflection due · Action');
+    expect(head(bCard)).toContain('Review ABC To do: Action');
+    expect(head(cCard)).toContain('To do: Mark, Action');
+    expect(head(aCard)).toContain('To do: Reflection, Action');
     // The plain label.
     expect(head(bCard)).toContain('Past Stop');
     expect(head(cCard)).toContain('Marks needed');
     expect(head(aCard)).toContain('40% to Target');
     // The meter, named by its figures: one between its rails, one past the Stop, and the one with no Mark by its reason.
     expect(a.getByRole('img', { name: 'P&L +$180.00, 40% of the way to the Target. Stop −$450.00, Target +$450.00.' })).toBeTruthy();
-    expect(b.getByRole('img', { name: 'P&L −$200.00, past the Stop by $50.00. Stop −$150.00, Target +$300.00.' })).toBeTruthy();
+    // ABC is the open card: its meter is the "Now" box's, not the header's (U3).
+    expect(b.queryByRole('img', { name: 'P&L −$200.00, past the Stop by $50.00. Stop −$150.00, Target +$300.00.' })).toBeNull();
     expect(c.getByRole('img', { name: 'Mark missing: DEF, Mon Oct 12 Stop −$200.00, Target +$400.00.' })).toBeTruthy();
     // There is no legend line and no Continue to Trades.
     expect(screen.queryByText(/Stop ◂ ▸ Target/)).toBeNull();
@@ -286,8 +287,99 @@ describe('card list (A150)', () => {
 
 });
 
+describe('the collapsed card header (T95.16, W101)', () => {
+  it('should show, collapsed: the Trade, what is held, its label, Trade P&L in dollars and R with the day change, the shared meter, and what it needs or Done · Hold', async () => {
+    const walk = [
+      TB,
+      TC,
+      TF,
+      {
+        ...TA,
+        summary: { kind: 'Stock' as const, direction: 'Long' as const, quantity: rational(50n), price: rational(61n) },
+        pnl: { dollars: value(180n), planR: value(2n, 5n), change: { kind: 'Value' as const, dollars: rational(-30n) } },
+      },
+      { ...TE, progress: cardProgress(0, 0, { owed: false }) },
+    ];
+    const base = review({ families: [{ family: 'Marks', earlierMarks: [], today: [], earlier: [] }, { family: 'Trades', trades: walk }], completion: incomplete(...actionMissing('t-b', 't-c', 't-f', 't-a')) });
+    // The Action saved for JKL on the Review Date comes on its day line.
+    const day = { ...base.day!, lines: base.day!.lines.map((line) => (line.tradeId === 't-e' ? { ...line, action: 'Hold' } : line)) };
+    renderReview(cardFacade({ ...base, day }));
+    await screen.findAllByRole('button', { name: /^Review / });
+
+    const a = headers().find((h) => h.textContent?.includes('40% to Target'))!;
+    // Not the open card: the first card is.
+    expect(a.getAttribute('aria-expanded')).toBe('false');
+    expect(a.querySelector('.review-card-name')!.textContent).toBe('XYZ');
+    expect(a.querySelector('.review-card-summary')!.textContent).toBe('Long 50 shares @ $61.00');
+    expect(a.textContent).toContain('40% to Target');
+    expect(a.textContent).toContain('+$180.00 · +0.40R');
+    expect(a.textContent).toContain('−$30.00 today');
+    expect(a.textContent).toContain('To do: Reflection, Action');
+    expect(within(a.closest('li')!).getByRole('img', { name: 'P&L +$180.00, 40% of the way to the Target. Stop −$450.00, Target +$450.00.' })).toBeTruthy();
+    expect(headers().find((h) => h.textContent?.includes('JKL'))!.textContent).toContain('Done · Hold');
+  });
+});
+
+describe('the open card header (T95.16, U3)', () => {
+  it('should show no meter in the open card header', async () => {
+    renderReview(cardFacade());
+    const open = (await screen.findByRole('region', { name: 'ABC review' })).closest('li')!;
+
+    // ABC is open and past its Stop: its meter is not drawn. A collapsed card keeps its own.
+    expect(within(open).queryByRole('img', { name: /^P&L −\$200\.00/ })).toBeNull();
+    const collapsed = headers().find((h) => h.textContent?.includes('40% to Target'))!.closest('li')!;
+    expect(within(collapsed).getByRole('img', { name: /^P&L \+\$180\.00/ })).toBeTruthy();
+  });
+});
+
+describe('the Plan box in the open card (T95.16, U2)', () => {
+  it('should show no Plan box value a second time in the open card', async () => {
+    const facade = cardFacade();
+    // The Plan: 100 shares at $50.00, 1R $700.00, reward $1,500.00; the card's At entry figures are those same two amounts.
+    vi.mocked(facade.DailyReview.getTrade).mockImplementation(({ tradeId }) => {
+      const found = [TB, TC, TF, TA, TE].find((t) => t.tradeId === tradeId)!;
+      const base = tradeReview(found);
+      const evaluation = { ...base.evaluation, atEntry: { label: 'AtEntry', quantity: rational(100n), averageEntry: rational(50n), riskFromEntry: rational(700n), rewardFromEntry: rational(1500n) } } as unknown as DailyTradeReview['evaluation'];
+      const replay = { planColumn: { atStop: rational(-700n), atTarget: rational(1500n), rewardRisk: rational(15n, 7n), terms: { legs: [{ instrument: { kind: 'Stock', symbol: 'ABC' }, side: 'Long', quantity: rational(100n), entryPrice: rational(50n) }], conditions: [] } } } as unknown as DailyTradeReview['replay'];
+      return Promise.resolve({ kind: 'Ready', reviewDate: '2026-10-12', cutoff: CUTOFF, trade: { ...base, evaluation, replay, plan: { thesis: 'Earnings are priced in.', invalidation: 'A close under the 200-day line.' } } });
+    });
+    renderReview(facade);
+    const card = await screen.findByRole('region', { name: 'ABC review' });
+
+    expect(within(card).getByRole('region', { name: 'Plan' })).toBeTruthy();
+    // Entry, Risk, Reward, the Thesis and "No longer valid if" each stand once in the open card.
+    for (const text of ['100 shares at $50.00', '$700.00 (1R)', '$1,500.00', 'Earnings are priced in.', 'A close under the 200-day line.']) {
+      expect(within(card).getAllByText(text), text).toHaveLength(1);
+    }
+    expect(within(card).queryByText('$700.00'), 'Risk to stop at entry').toBeNull();
+    expect(within(card).queryByText('Risk to stop'), 'At entry group').toBeNull();
+  });
+});
+
+describe('opening and closing a card from the day card (T95.16)', () => {
+  it('should open the card the day card link names, and close it on a second press', async () => {
+    const user = userEvent.setup();
+    renderReview(cardFacade());
+    await screen.findByRole('region', { name: 'ABC review' });
+    const link = within(within(screen.getByRole('region', { name: 'The day' })).getByRole('list', { name: 'Trade lines' })).getByRole('link', { name: 'JKL' });
+
+    await user.click(link);
+
+    const header = headers().find((h) => h.textContent?.includes('JKL'))!;
+    await screen.findByRole('region', { name: 'JKL review' });
+    expect(header.getAttribute('aria-expanded')).toBe('true');
+    // The card the line named replaces the one open before it.
+    expect(screen.queryByRole('region', { name: 'ABC review' })).toBeNull();
+
+    await user.click(header);
+
+    expect(screen.queryByRole('region', { name: 'JKL review' })).toBeNull();
+    expect(header.getAttribute('aria-expanded')).toBe('false');
+  });
+});
+
 describe('card header from progress (A169)', () => {
-  it('should read 2 Marks · 1 reflection due · Action for progress with 2 Marks needed, 1 reflection due now and the Action owed, and Done · Action saved for a done card, with no other input to the header', async () => {
+  it('should read To do: 2 Marks, Reflection, Action for progress with 2 Marks needed, 1 reflection due now and the Action owed, and Done for a done card, with no other input to the header', async () => {
     // The completion reasons disagree with the progress on purpose: they name an Action for T-E and no Marks or reflection for T-C.
     // T-C owes 2 Marks and a reflection by its progress; T-E owes nothing by its progress.
     const walk = [TB, { ...TC, progress: cardProgress(1, 0, { needed: 2 }) }, TF, TA, { ...TE, progress: cardProgress(0, 0, { owed: false }) }];
@@ -295,9 +387,9 @@ describe('card header from progress (A169)', () => {
     await screen.findAllByRole('button', { name: /^Review / });
 
     const def = headers().find((h) => h.textContent?.includes('DEF'))!;
-    expect(def.textContent).toContain('2 Marks · 1 reflection due · Action');
+    expect(def.textContent).toContain('To do: 2 Marks, Reflection, Action');
     const jkl = headers().find((h) => h.textContent?.includes('JKL'))!;
-    expect(jkl.textContent).toContain('Done · Action saved');
+    expect(jkl.textContent).toContain('Done');
     // The card keeps its place, and the others are not Done.
     expect(headers().indexOf(jkl)).toBe(4);
     for (const other of headers().filter((h) => h !== jkl)) expect(other.textContent).not.toContain('Done');
@@ -344,7 +436,7 @@ describe('card identity (decision 68)', () => {
     expect(f.getAttribute('aria-label') ?? f.textContent).toMatch(/^Review XYZ Long 100 shares @ \$50\.18 /);
     // A Trade with no summary shows its Underlying alone.
     expect(b.querySelector('.review-card-summary')).toBeNull();
-    expect(b.textContent).toMatch(/^Review ABC Action/);
+    expect(b.textContent).toMatch(/^Review ABC To do: Action/);
   });
 });
 
@@ -423,7 +515,7 @@ describe('after a per-row Mark save', () => {
     renderReview(facade);
     const card = await screen.findByRole('region', { name: 'ABC review' });
     // DEF's card still owes its Mark.
-    expect(headers()[1]!.textContent).toContain('1 Mark · Action');
+    expect(headers()[1]!.textContent).toContain('To do: Mark, Action');
 
     await correctAbc(user, card);
 

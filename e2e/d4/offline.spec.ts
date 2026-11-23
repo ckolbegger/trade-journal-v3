@@ -49,7 +49,7 @@ test.describe('B4.9 Offline cold restart (AC-DEL-001)', () => {
     await openReview(reopened);
     await expect(reopened.getByRole('region', NOT_WRITABLE)).toHaveCount(0);
     await expect(completion(reopened)).toHaveText('Complete');
-    for (const symbol of SYMBOLS) await expect(cardHeader(reopened, symbol)).toContainText('Action saved');
+    for (const symbol of SYMBOLS) await expect(cardHeader(reopened, symbol)).toContainText('Done · Hold');
     const workspace = workspaceOf(await probe(reopened))!;
     expect(actionEntriesOf(workspace)).toHaveLength(8);
     const dates = actionEntriesOf(workspace).map((e) => e.obligationKey?.[1]).sort();

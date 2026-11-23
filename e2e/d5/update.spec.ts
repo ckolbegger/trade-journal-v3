@@ -42,7 +42,7 @@ test.describe('B5.6 Update from D4 with data', { tag: '@release-history' }, () =
     await openReview(page);
     await expect(completion(page)).toHaveText('Complete');
     for (const symbol of ['ABC', 'XYZ']) {
-      await expect(cardHeader(page, symbol)).toContainText('Action saved');
+      await expect(cardHeader(page, symbol)).toContainText('Done');
     }
 
     // A deferred entry dated Monday afternoon is due in Tuesday's Review.

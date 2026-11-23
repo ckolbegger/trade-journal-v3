@@ -519,6 +519,7 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
                 key={trade.tradeId}
                 facade={facade}
                 trade={trade}
+                line={review.day?.lines.find((line) => line.tradeId === trade.tradeId)}
                 expanded={trade.tradeId === openId}
                 detail={trade.tradeId === openId ? walkedDetail(shown?.detail) : undefined}
                 reveal={reveal.tradeId === trade.tradeId ? reveal.count : 0}

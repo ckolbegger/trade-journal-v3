@@ -17,7 +17,7 @@ type ViewSession = TradeReplayView['sessions'][number];
 const ZERO = Rational.of(0n);
 const signedMoney = signed(money);
 // A sign taken off for the words ("down $150.00"): the figure is only shown without its sign, not worked on.
-const unsigned = (value: Rational): Rational => (value.numerator < 0n ? Rational.of(-value.numerator, value.denominator) : value);
+export const unsigned = (value: Rational): Rational => (value.numerator < 0n ? Rational.of(-value.numerator, value.denominator) : value);
 const figure = (text: string): ReadoutValue => ({ kind: 'Figure', text });
 
 // "up $190.00 since Tue Nov 10": a change the view measured from an earlier session, in the figure's own format.
@@ -146,15 +146,20 @@ const heldWords = (session: ViewSession): string => countWords(session.heldQuant
 type PlanTerms = NonNullable<NonNullable<TradeReplayView['planColumn']>['terms']>;
 
 // "4 contracts", "short 6 contracts", "200 shares": a Planned Leg's quantity as the Plan confirmed it.
-const legWords = (leg: PlanTerms['legs'][number]): string => countWords(leg.side === 'Short', leg.quantity, leg.instrument);
+export const legWords = (leg: PlanTerms['legs'][number]): string => countWords(leg.side === 'Short', leg.quantity, leg.instrument);
 
 // "Stop: call at or below $0.80 · P&L if hit −$324.00": what the price is a price of (the option, or the Underlying), its side, and the
 // Trade's own result there as the view finished it (A269).
 function conditionWords(condition: PlanTerms['conditions'][number], leg: PlanTerms['legs'][number]): string {
+  return `${condition.role}: ${conditionClause(condition, leg)} · P&L if hit ${signedMoney(condition.pnlIfHit)}`;
+}
+
+// "AXIO at or below $47.00", "call at or above $4.00": what the price is a price of, its side and the price. The Plan block and the Review card's Plan box both say it.
+export function conditionClause(condition: PlanTerms['conditions'][number], leg: PlanTerms['legs'][number]): string {
   const right = leg.instrument.kind === 'Option' ? leg.instrument.right : 'Call';
   const direction = conditionDirection(condition.role, condition.priceOf === 'Option' ? 'StructureValue' : 'UnderlyingPrice', { right, side: leg.side });
   const of = condition.priceOf === 'Option' ? right.toLowerCase() : leg.instrument.symbol;
-  return `${condition.role}: ${of} at or ${direction} ${money(condition.price)} · P&L if hit ${signedMoney(condition.pnlIfHit)}`;
+  return `${of} at or ${direction} ${money(condition.price)}`;
 }
 
 // The Plan block (decision 5, W62): the Plan's entry, the contract's strike, every Stop and Target, and the Plan's reward to risk.

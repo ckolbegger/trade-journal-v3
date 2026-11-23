@@ -786,7 +786,7 @@ describe('Save Marks (P37, A155) rendering', () => {
     const panel = await marksPanelWithEarlier();
     expect(screen.queryByText('Trade P&L')).toBeNull();
     const otherHeader = tfHeader();
-    expect(otherHeader.textContent).toContain('1 Mark');
+    expect(otherHeader.textContent).toContain('To do: Mark');
     await user.type(inputOf(panel, 'XYZ', MONDAY_LABEL), '52.00');
     await user.type(inputOf(panel, 'XYZ', FRIDAY_LABEL), '51.00');
     await user.click(within(panel).getByRole('button', { name: 'Save Marks (2)' }));

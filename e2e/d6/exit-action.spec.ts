@@ -16,7 +16,7 @@ test.describe('B6.5 Exit link', () => {
     await reachCard(page, 'XYZ');
     await saveAction(page, 'Exit', 'Take the target tomorrow.', 'XYZ');
     await reachCard(page, 'XYZ');
-    await expect(cardHeader(page, 'XYZ')).toContainText('Action saved');
+    await expect(cardHeader(page, 'XYZ')).toContainText('Done · Exit');
     await expect(page.getByText(/Record the exit/i)).toHaveCount(0);
     await expect(page.getByRole('link', { name: /Record (the )?exit/i })).toHaveCount(0);
     await expect(page.getByRole('button', { name: /Record (the )?exit/i })).toHaveCount(0);
@@ -33,7 +33,7 @@ test.describe('B6.5 Exit link', () => {
 
     // Monday's Review again: T-A, Open at the close, is still walked with its Exit Action.
     await openReview(page);
-    await expect(cardHeader(page, 'XYZ')).toContainText('Action saved');
+    await expect(cardHeader(page, 'XYZ')).toContainText('Done · Exit');
     await reachCard(page, 'XYZ');
     await expect(tradeCard(page, 'XYZ')).toBeVisible();
     await expect(completion(page)).toHaveText('Complete');

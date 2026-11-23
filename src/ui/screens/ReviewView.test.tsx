@@ -482,8 +482,8 @@ describe('Marks in the card (P11, P15)', () => {
     // The Marks step shows the returned Marks: DEF's is still to enter.
     expect(await screen.findByRole('textbox', { name: 'DEF Mark, Mon Oct 12' })).toBeTruthy();
     const headers = screen.getAllByRole('button', { name: /^Review / });
-    expect(headers[0]!.textContent).toContain('Done · Action saved');
-    expect(headers[1]!.textContent).toContain('1 Mark · Action');
+    expect(headers[0]!.textContent).toContain('Done');
+    expect(headers[1]!.textContent).toContain('To do: Mark, Action');
     // The saved Mark comes from the returned state alone.
     await user.click(headers[0]!);
     await openMarks();

@@ -314,7 +314,7 @@ describe('Action form (AC-REV-003)', () => {
     expect(vi.mocked(facade.DailyReview.getTrade)).toHaveBeenCalledTimes(1);
     // The cards follow the returned completion: the first is Done, the second still owes its Action.
     const cards = screen.getAllByRole('button', { name: /^Review / }).map((header) => header.textContent);
-    expect(cards[0]).toContain('Done · Action saved');
+    expect(cards[0]).toContain('Done');
     expect(cards[1]).toContain('Action');
     expect(cards[1]).not.toContain('Done');
   });
@@ -990,7 +990,7 @@ describe('Results for a Trade no longer open', () => {
   const trades = [item('t1', 'XYZ'), item('t2', 'DEF'), item('t3', 'GHI')];
   const ready1 = (trade: DailyTradeReview) => ({ kind: 'Ready' as const, reviewDate: '2026-10-12', cutoff: ready(trades).cutoff, trade });
   // Whether each card, in list order, reads Done.
-  const doneCards = () => screen.getAllByRole('button', { name: /^Review / }).map((header) => header.textContent.includes('Done · Action saved'));
+  const doneCards = () => screen.getAllByRole('button', { name: /^Review / }).map((header) => header.textContent.includes('Done'));
 
   it('should keep the open Trade and its entered values when a save for another Trade settles late', async () => {
     const user = userEvent.setup();
@@ -1343,7 +1343,7 @@ describe('progress from save results (A165, P46)', () => {
     await screen.findByRole('region', { name: 'DEF review' });
     const header = screen.getByRole('button', { name: /^Review XYZ\b/ });
     expect(header.getAttribute('aria-expanded')).toBe('false');
-    expect(header.textContent).toContain('Done · Action saved');
+    expect(header.textContent).toContain('Done');
     expect(screen.getByRole('button', { name: /^Review DEF\b/ }).textContent).toContain('Action');
     expect(screen.getByRole('button', { name: /^Review DEF\b/ }).textContent).not.toContain('Done');
   });

@@ -28,7 +28,7 @@ test.describe('B5R.11 Responsive and accessible', () => {
     await friday.getByLabel('Reason (required)').fill('No quo');
     // The label, status and Unsaved are words.
     await expect(cardItem(page, tA)).toContainText('Marks needed');
-    await expect(remainsOf(page, tA)).toHaveText('1 Mark · 1 reflection due · Action');
+    await expect(remainsOf(page, tA)).toHaveText('To do: Mark, Reflection, Action');
     await expect(status(page)).toContainText('Incomplete');
     await expect(friday.getByText('Unsaved')).toBeVisible();
     // Monday's draft is held in the grid's cell, tagged Unsaved, and counted by Save Marks beside Friday's.
@@ -93,7 +93,7 @@ test.describe('B5R.11 Responsive and accessible', () => {
     await expect(abc.getByRole('radio', { name: 'Hold', exact: true })).toBeChecked();
     await tabTo(page, save);
     await page.keyboard.press('Enter');
-    await expect(remainsOf(page, tB)).toHaveText('Done · Action saved');
+    await expect(remainsOf(page, tB)).toHaveText('Done · Hold');
     await expect(completion(page)).toHaveText('Incomplete');
     // A Done card, a pinned meter and a grey one are in the list: the page is still accessible.
     await expectAccessible(page, 'Card list with a Done card and a pinned meter');

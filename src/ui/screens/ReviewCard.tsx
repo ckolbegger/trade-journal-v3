@@ -14,6 +14,10 @@ import type { EntryDirty } from './MarksStep.tsx';
 import { ReviewReflections } from './ReviewReflections.tsx';
 import { SettlementPanel, settlementSummary } from './ReviewSettlement.tsx';
 import { describedLabelsOf, reasonText } from './review-attention.ts';
+import { PlanBox } from './PlanBox.tsx';
+import { todoText, type DayLine } from './todo-text.ts';
+import { signed, pnlText } from '../figures.ts';
+import { money } from '../format.ts';
 import { Meter } from '../cockpit/meter/meter.tsx';
 import { meterProps } from '../cockpit/meter/meter.props.ts';
 
@@ -26,16 +30,6 @@ export function panelOf<P extends PanelProgress['panel']>(progress: CardProgress
 
 // The Settlement panel, present only while a contract's settlement is due (decision 81).
 const settlementOf = (progress: CardProgress) => progress.panels.find((p): p is Extract<PanelProgress, { panel: 'Settlement' }> => p.panel === 'Settlement');
-
-// "2 Marks · 1 reflection due · Settlement · Action", or Done once the card is done (A150, A169): the words of the progress record.
-function remainsText(progress: CardProgress): string {
-  const { needed } = panelOf(progress, 'Marks');
-  const { dueNow } = panelOf(progress, 'Reflections');
-  const { owed } = panelOf(progress, 'Action');
-  const settlement = settlementOf(progress);
-  const parts = [...(needed > 0 ? [plural(needed, 'Mark', 'Marks')] : []), ...(dueNow > 0 ? [plural(dueNow, 'reflection', 'reflections') + ' due'] : []), ...(settlement?.done === false ? ['Settlement'] : []), ...(owed ? ['Action'] : [])];
-  return parts.length > 0 ? parts.join(' · ') : 'Done · Action saved';
-}
 
 export const PANELS = ['Reflections', 'Settlement', 'Action'] as const;
 export type PanelName = (typeof PANELS)[number];
@@ -50,12 +44,24 @@ export interface Go {
 }
 export const NO_GO: Go = { count: 0 };
 
+// "To do: 2 Marks, Reflection, Action", or "Done · Hold" once the card is done (W101): what the card's progress record still owes, in the day card's words.
+// The Action is the one the day summary's line for this Trade says was saved for the Review Date.
+function remainsText(progress: CardProgress, action: string | undefined): string {
+  const { needed } = panelOf(progress, 'Marks');
+  const { dueNow } = panelOf(progress, 'Reflections');
+  const { owed } = panelOf(progress, 'Action');
+  const needs: DayLine['needs'][number][] = [...(needed > 0 ? ['Marks' as const] : []), ...(dueNow > 0 ? ['Reflection' as const] : []), ...(settlementOf(progress)?.done === false ? ['Settlement' as const] : []), ...(owed ? ['Action' as const] : [])];
+  return todoText({ tradeId: '', marks: needed, closeReview: false, needs, ...(action !== undefined && { action }) });
+}
+
 // What the open card shows while its Trade is read, or when it could not be.
 export type CardDetail = 'Loading' | 'Unavailable' | { readonly trade: DailyTradeReview };
 
 export interface ReviewCardProps {
   readonly facade: UiFacade;
   readonly trade: WalkedTrade;
+  // The Trade's line of the day summary: what it still needs, or the Action it is done with (W101).
+  readonly line?: DayLine;
   readonly expanded: boolean;
   readonly detail: CardDetail | undefined;
   // A count that grows each time the trader asks for this card: it scrolls into view and takes focus on its header.
@@ -73,7 +79,7 @@ export interface ReviewCardProps {
 }
 
 // One position of the Review: a collapsed header (Underlying, what remains, band, meter) over its content.
-export function ReviewCard({ facade, trade, expanded, detail, reveal, go, onToggle, onSaved, onReflectionResolved, onRefresh, holdMessage, pending, onEntryDirty }: ReviewCardProps) {
+export function ReviewCard({ facade, trade, line, expanded, detail, reveal, go, onToggle, onSaved, onReflectionResolved, onRefresh, holdMessage, pending, onEntryDirty }: ReviewCardProps) {
   const item = useRef<HTMLLIElement>(null);
   const header = useRef<HTMLButtonElement>(null);
   const { timeZone } = useRuntime();
@@ -101,7 +107,7 @@ export function ReviewCard({ facade, trade, expanded, detail, reveal, go, onTogg
   }, [reveal, bodyShown]);
   return (
     <li className="review-card" ref={item} data-trade-id={trade.tradeId}>
-      <div className="review-card-head">
+      <div className="review-card-head" data-open={expanded || undefined}>
         <h3>
           <button type="button" ref={header} aria-expanded={expanded} aria-describedby={reasonIds.join(' ') || undefined} onClick={onToggle}>
             <span className="visually-hidden">Review</span> <span className="review-card-name">{trade.underlying}</span>{' '}
@@ -110,17 +116,30 @@ export function ReviewCard({ facade, trade, expanded, detail, reveal, go, onTogg
                 <span className="review-card-summary">{tradeSummary(trade.summary)}</span>{' '}
               </>
             )}
-            <span className="review-card-remains">{remainsText(trade.progress)}</span>{' '}
+            <span className="review-card-remains">{remainsText(trade.progress, line?.action)}</span>{' '}
             {labels.map(({ label }) => (
               <Badge key={label} tone="neutral">
                 {label}
               </Badge>
             ))}
+            {trade.pnl?.dollars.kind === 'Value' && (
+              <>
+                {' '}
+                <span className="review-card-pnl number">{pnlText(trade.pnl.dollars, trade.pnl.planR, timeZone)}</span>
+                {trade.pnl.change.kind === 'Value' && (
+                  <>
+                    {' '}
+                    <span className="review-card-change number">{signed(money)(trade.pnl.change.dollars)} today</span>
+                  </>
+                )}
+              </>
+            )}
           </button>
           {/* Each label's own reason, the button's description (not part of its name, which stays short). */}
           {labels.map(({ label, reason }, i) => reason && <span key={label} id={`${reasonId}-${i}`} className="visually-hidden">{reason}</span>)}
         </h3>
-        {meter && <Meter {...meter} />}
+        {/* The open card's meter is the "Now" box's (U3): the header draws one only while the card is collapsed. */}
+        {meter && !expanded && <Meter {...meter} />}
       </div>
       {expanded && holdMessage && <p role="status">Save or discard what you entered for {tradeName(trade)} to leave it.</p>}
       {expanded && detail === 'Loading' && <p role="status">Loading the Trade…</p>}
@@ -303,6 +322,8 @@ function CardBody({ facade, trade, progress, name, go, onSaved, onReflectionReso
   // The Action form reports under its Trade, so the Review's unsaved state counts it with the Mark entries.
   const tradeId = trade.tradeId;
   const report = useCallback((dirty: boolean) => onEntryDirty(`action:${tradeId}`, dirty), [tradeId, onEntryDirty]);
+  // The Plan box's Risk and Reward are the At entry group's two figures: with the box shown, the group is left out (U2).
+  const planBoxCarriesAtEntry = trade.replay?.planColumn !== undefined && trade.evaluation?.atEntry != null;
   return (
     <section aria-label={`${name} review`}>
       <p>
@@ -317,7 +338,8 @@ function CardBody({ facade, trade, progress, name, go, onSaved, onReflectionReso
       {trade.attention.reasons.map((reason, i) => (
         <p key={i}>{reasonText(reason, trade.attention.basis, timeZone ?? 'UTC')}</p>
       ))}
-      <CardFigures trade={trade} />
+      <PlanBox plan={trade.plan} replay={trade.replay} />
+      <CardFigures trade={planBoxCarriesAtEntry ? { ...trade, evaluation: { ...trade.evaluation, atEntry: null } } : trade} />
       {/* Every panel stays mounted, so a panel left open keeps its drafts; only the open one is shown. */}
       {panels.map((name) => (
         <div key={name} className="review-panel">

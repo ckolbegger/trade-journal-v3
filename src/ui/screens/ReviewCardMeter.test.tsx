@@ -125,7 +125,8 @@ describe('Review card: the meter (W51)', () => {
     expect(document.querySelector('.slider')).toBeNull();
 
     cleanup();
-    renderReview(cardFacade([walked('t-c', 'DEF', { meter: pastStop })]));
+    // The first card is the open one, whose meter is the "Now" box's (U3): the card under test is the second.
+    renderReview(cardFacade([TA, walked('t-c', 'DEF', { meter: pastStop })]));
     await screen.findAllByRole('button', { name: /^Review / });
     expect(meterIn(cardOf('DEF')).getAttribute('aria-label')).toBe('P&L −$920.00, past the Stop by $320.00. Stop −$600.00, Target +$1,600.00.');
   });
@@ -134,7 +135,8 @@ describe('Review card: the meter (W51)', () => {
     renderReview(cardFacade());
     await screen.findAllByRole('button', { name: /^Review / });
 
-    const xyz = meterIn(cardOf('XYZ'));
+    // The second XYZ card: the first is open, and the open card draws no meter in its header (U3).
+    const xyz = meterIn(cardOf('XYZ', 1));
     expect(xyz.getAttribute('aria-label')).toBe('Mark missing: XYZ, Mon Oct 12 Stop −$600.00, Target +$1,600.00.');
     expect(xyz.getAttribute('data-state')).toBe('empty');
     expect(within(xyz).queryByTestId('meter-pointer')).toBeNull();
@@ -165,7 +167,7 @@ describe('Review card: the meter (W51)', () => {
   });
 
   it('should keep the header other parts and their order', async () => {
-    renderReview(cardFacade([TF, TC]));
+    renderReview(cardFacade([TC, TF]));
     await screen.findAllByRole('button', { name: /^Review / });
 
     const head = cardOf('XYZ').querySelector('.review-card-head')!;

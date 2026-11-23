@@ -143,7 +143,7 @@ describe('settlement family (A112)', () => {
 
     // The collapsed card says what remains, with the settlement between the reflections and the Action (row 24.3).
     const card = await screen.findByRole('region', { name: 'MNO review' });
-    expect(screen.getByRole('button', { name: /Review MNO/ }).textContent).toContain('1 Mark · Settlement · Action');
+    expect(screen.getByRole('button', { name: /Review MNO/ }).textContent).toContain('To do: Mark, Settle, Action');
 
     // The panel header: the item in words and its status (rows 24.1, 24.2).
     const header = within(card).getByRole('button', { name: /^Settlement/ });

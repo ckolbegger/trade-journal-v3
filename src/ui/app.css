@@ -1078,6 +1078,9 @@ ul.rows > li {
   gap: 0.75rem;
   align-items: center;
 }
+.review-card-head[data-open] {
+  grid-template-columns: minmax(0, 1fr);
+}
 .review-card-head h3 {
   margin: 0;
 }
@@ -1102,6 +1105,44 @@ ul.rows > li {
 .review-card-summary,
 .review-card-remains {
   color: var(--muted);
+}
+/* The Plan box (T95.16, U7): the Plan's terms on the left, the Thesis and "No longer valid if" beside them; values bold. Under 40rem the terms stack
+   one column and Entry, Stop and Target put their value on a second line, so every value stays whole (A324). */
+.plan-box h4 {
+  margin: 0.5rem 0 0.25rem;
+}
+.plan-box-body {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: 0.75rem;
+}
+.plan-box-terms {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.2rem 0.75rem;
+  margin: 0;
+}
+.plan-box-terms > div {
+  display: contents;
+}
+.plan-box-terms dt,
+.plan-box-label {
+  color: var(--muted);
+}
+.plan-box-terms dd {
+  margin: 0;
+}
+.plan-box-why p {
+  margin: 0 0 0.25rem;
+}
+@container (max-width: 39.99rem) {
+  .plan-box-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .plan-box-long dt,
+  .plan-box-long dd {
+    grid-column: 1 / -1;
+  }
 }
 /* The open card's panels (A152): a header button with its summary and status, one panel open at a time. */
 .review-panel {

@@ -68,7 +68,7 @@ test.describe('B4.1 Daily Review end to end', () => {
     await expect(status(again)).not.toContainText('Incomplete');
     const expected = { XYZ: 'Hold', ABC: 'Exit', JKL: 'Adjust', DEF: 'Hold' };
     for (const [symbol, action] of Object.entries(expected)) {
-      await expect(cardHeader(again, symbol)).toContainText('Action saved');
+      await expect(cardHeader(again, symbol)).toContainText(`Done · ${action}`);
       await panelOf(again, symbol, 'Action');
       await expect(again.getByRole('region', { name: 'Saved Action' })).toContainText(`Saved Action: ${action}`);
     }
