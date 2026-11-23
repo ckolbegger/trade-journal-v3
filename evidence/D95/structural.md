@@ -359,3 +359,7 @@ Commit `04ec189a` (from `467bb2c8`). `DailyTradeReview.plan?: { thesis, invalida
 ocr (gpt-6.1-sol, session 14c44730): 4 files, 0 findings. `evidence/D95/ocr/T95.16-D1-04ec189a.json`.
 
 Run `t95.16-d1-plan-text` (browser-auto 467bb2c8 → task tier): unit 2840, integration 302, browser 8, checks 14 of 14. Passed. T95.16-D1 Done.
+
+## T95.22 — The Open list follows the order (Standard)
+
+Commit `0afb8500` (from `bb650283`). `browseTrades` passes each Trade's last Action to `attentionOf`, with one `queryActions` range read (earliest Plan time to the day before the Review Date; none with no Open Trades). Cases 2 and 3 red then green; cases 1 and 4 first-run passes, mutation-checked. Case 4: no Open row shows a band name; the "Stop breached"/"Target reached" badges are condition status and keep their label (A301), so a guard test only. B95.5 passed.
