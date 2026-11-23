@@ -862,6 +862,69 @@ ul.rows > li {
   border-top: 1px solid var(--line);
 }
 
+/* The day card (T95.10): the steps, one button, and one line for each Trade. */
+.day-top {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
+}
+.day-top p {
+  margin: 0.25rem 0;
+}
+.day-next {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  margin: 0.5rem 0;
+}
+.day-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0;
+}
+.day-steps li {
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+  padding: 0.125rem 0.75rem;
+  background: var(--tint);
+  color: var(--muted);
+  font-weight: 650;
+}
+.day-steps li[data-state='now'] {
+  border-color: var(--ink);
+  background: var(--card);
+  color: var(--ink);
+}
+.day-steps li[data-state='done'] {
+  border-color: var(--target);
+  background: transparent;
+  color: var(--target);
+}
+.day-lines {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0;
+}
+.day-lines li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.75rem;
+  min-height: 44px;
+  border-top: 1px solid var(--line);
+}
+.day-lines li a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-weight: 650;
+}
+
 /* The Review's position cards (A150, A151): a header button with the meter in a fixed-width side column, so meters line up. */
 .review-cards {
   list-style: none;

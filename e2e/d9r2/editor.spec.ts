@@ -1,4 +1,4 @@
-import { expectMark, marksPanelOf, markEditorOf, acknowledgeMark, completion, createGapFixture, enterMark, expect, OCT_12, OCT_7, OCT_8, OCT_9, openReview, reachCard, LAUNCH, reloadReview, saveAction, saveMarksOf, status, test, tradeCard } from './support.ts';
+import { dayLine, expectMark, marksPanelOf, markEditorOf, acknowledgeMark, completion, createGapFixture, enterMark, expect, OCT_12, OCT_7, OCT_8, OCT_9, openReview, reachCard, LAUNCH, reloadReview, saveAction, saveMarksOf, status, test, tradeCard } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -57,7 +57,7 @@ test.describe('B9R2.4 The cell editor', () => {
       await expectMark(page, tA, OCT_12, 'Missing');
       await reloadReview(page);
       await expect(completion(page)).toHaveText('Incomplete');
-      await expect(status(page)).toContainText('Mark missing for XYZ on Mon Oct 12');
+      await expect(dayLine(page, 'XYZ').first()).toContainText('To do: Mark');
     });
     await context.close();
   });

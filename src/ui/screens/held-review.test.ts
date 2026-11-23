@@ -107,6 +107,17 @@ describe('fold (A171)', () => {
     }
   });
 
+  it('should follow the day summary each save returns, so the day card needs no new open', () => {
+    const before = held();
+    const completion: ReviewCompletion = { kind: 'Incomplete', reasons: [markMissing('DEF', 't-c'), ...actionMissing('t-c')] };
+    const day: NonNullable<Ready['day']> = { trades: 3, toGo: { marks: 1, actions: 1, expirations: 0, closeReviews: 0, reflections: 0 }, change: { kind: 'Unavailable' }, missed: [], lines: [{ tradeId: 't-c', marks: 1, closeReview: false, needs: ['Marks', 'Action'] }] };
+    const post: PostSaveReview = { kind: 'Ready', cards: [], progress: { tradesWithAction: 2, tradesEligible: 3 }, completion, nextStep: { kind: 'Done' }, binding: newBinding, day };
+
+    for (const kind of ['ActionSaved', 'DebtResolved'] as const) expect(fold(before, { kind, review: post }).review.day).toEqual(day);
+    const marks = { ...postMarks({ completion, trades: [TA, TF, TC] }), day };
+    expect(fold(before, { kind: 'MarksSaved', marks: [saved('XYZ', MONDAY, available('52'))], review: marks }).review.day).toEqual(day);
+  });
+
   it('should put each MarksSaved key resolution and revision on its Review-date row, clear the row Manual task, and replace the walked Trades, completion and binding', () => {
     const before = held();
     const completion: ReviewCompletion = { kind: 'Incomplete', reasons: [markMissing('DEF', 't-c'), ...actionMissing('t-a', 't-f', 't-c')] };

@@ -1,4 +1,4 @@
-import { expectMark, panelOf, actionEntriesOf, actionFormOf, completion, createTrades, detail, enterMark, expect, firstPage, FOUR_TRADES, launchAt, MONDAY_1700, onboardedAt, openDrawer, openReview, probe, reachCard, LAUNCH, saveAction, status, test, tradeCard, workspaceOf, } from './support.ts';
+import { dayLine, expectMark, panelOf, actionEntriesOf, actionFormOf, completion, createTrades, detail, enterMark, expect, firstPage, FOUR_TRADES, launchAt, MONDAY_1700, onboardedAt, openDrawer, openReview, probe, reachCard, LAUNCH, saveAction, test, tradeCard, workspaceOf, } from './support.ts';
 
 const DATE = 'Mon Oct 12';
 const READ_ONLY = "Read only: this browser can't save right now";
@@ -25,7 +25,7 @@ test.describe('B4.10 Recovery Only (faults build)', () => {
     // The Review is readable: its status, the Missing Mark with no way to enter it, and the saved Action.
     await openReview(page);
     await expect(completion(page)).toHaveText('Incomplete');
-    await expect(status(page)).toContainText('Mark missing for ABC on Mon Oct 12');
+    await expect(dayLine(page, 'ABC')).toContainText('To do: Mark');
     // ABC's card: the Missing Mark with no way to enter it.
     await reachCard(page, 'ABC');
     let card = tradeCard(page, 'ABC');

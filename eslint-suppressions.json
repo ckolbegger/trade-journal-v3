@@ -191,7 +191,7 @@
   },
   "src/ui/screens/ReviewView.tsx": {
     "no-nested-ternary": {
-      "count": 3
+      "count": 2
     }
   },
   "src/ui/screens/TradeList.tsx": {

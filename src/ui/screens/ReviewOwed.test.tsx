@@ -14,6 +14,7 @@ import { DAILY_TRADE_REVIEW_PROMPTS } from '../../domain/daily-trade-review-prom
 import { Rational } from '../../domain/values/index.ts';
 import { RuntimeContext } from '../runtime.tsx';
 import { ReviewView } from './ReviewView.tsx';
+import { dayOf } from '../../../tests/support/review-day.ts';
 
 afterEach(cleanup);
 fixClock();
@@ -95,7 +96,7 @@ const CARDS = [CLOSED_CARD, OPEN_CARD];
 const OWED = CARDS.map(owedTrade);
 
 function ready(over: Partial<Ready> = {}): Ready {
-  return {
+  const built: Ready = {
     kind: 'Ready',
     reviewDate: DATE,
     cutoff: CUTOFF,
@@ -108,6 +109,7 @@ function ready(over: Partial<Ready> = {}): Ready {
     binding,
     ...over,
   };
+  return over.day ? built : { ...built, day: dayOf(built) };
 }
 const empty = (): Empty => ({ kind: 'Empty', reviewDate: DATE, cutoff: CUTOFF, owed: OWED, binding });
 
@@ -229,10 +231,10 @@ describe('owed-reflection group (P19, P20)', () => {
     const user = userEvent.setup();
     const incomplete = ready().completion;
     const facade = reviewFacade(ready());
-    const post = { kind: 'Ready', cards: [], progress: { tradesWithAction: 1, tradesEligible: 1 }, completion: incomplete, nextStep: { kind: 'Done' }, binding } as const;
+    const post = { kind: 'Ready', cards: [], progress: { tradesWithAction: 1, tradesEligible: 1 }, completion: incomplete, nextStep: { kind: 'Done' }, binding, day: ready().day } as const;
     vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'DebtResolved', decline: { id: 'decl-1', reason: 'Not now.', authoredTime: '2026-10-13T21:05:00Z' } as never, debt: { debtId: 'd-entry', status: 'Settled', revision: 'd-entry-rev-2' } as never, review: post });
     renderReview(facade);
-    const status = await screen.findByRole('region', { name: 'Review status' });
+    const status = await screen.findByRole('region', { name: 'The day' });
     expect(within(status).getByText('Incomplete')).toBeTruthy();
     await user.click(await screen.findByRole('button', { name: /^Review DEF/ }));
     const card = await screen.findByRole('region', { name: 'DEF review' });
@@ -245,9 +247,9 @@ describe('owed-reflection group (P19, P20)', () => {
 
     expect(facade.DailyReview.save).toHaveBeenCalledWith({ kind: 'ResolveReviewDebt', reviewDate: DATE, binding: OPEN_CARD.reflections[0]!.saveBinding, resolution: { kind: 'Decline', reason: 'Not now.' } });
     expect(await within(card).findByText('Declined to reflect. Reason: Not now.')).toBeTruthy();
-    // Completion is the Review's, and the result left it as it was: still Incomplete, with the same blocker.
+    // Completion is the Review's, and the result left it as it was: still Incomplete, with the same owed Trade listed.
     expect(within(status).getByText('Incomplete')).toBeTruthy();
-    expect(within(within(status).getByRole('list', { name: 'Blockers' })).getAllByRole('listitem')).toHaveLength(1);
+    expect(within(within(status).getByRole('list', { name: 'Trade lines' })).getByRole('link', { name: 'ABC' })).toBeTruthy();
   });
 
   it('should open the owed card, from the save result, when an Action save names an owed Trade as the next step', async () => {
@@ -275,16 +277,16 @@ describe('owed-reflection group (P19, P20)', () => {
     await waitFor(() => expect(document.activeElement).toBe(screen.getByRole('button', { name: /^Review ABC/ })));
   });
 
-  it('should name an owed Trade by its Underlying in its Reflection due blocker, and open its card from the link, and on load for its trade address', async () => {
+  it('should name an owed Trade by its Underlying in its day line, and open its card from the link, and on load for its trade address', async () => {
     const user = userEvent.setup();
     renderReview(reviewFacade(ready()), '/review?trade=t-n');
 
     // The address names the other owed Trade, so it opens in place of the first one due.
     expect(await screen.findByRole('region', { name: 'DEF review' })).toBeTruthy();
     expect(screen.queryByRole('region', { name: 'ABC review' })).toBeNull();
-    const blockers = within(screen.getByRole('region', { name: 'Review status' })).getByRole('list', { name: 'Blockers' });
-    expect(blockers.textContent).toBe('Reflection due for ABC');
-    const link = within(blockers).getByRole('link', { name: 'ABC' });
+    const lines = within(screen.getByRole('region', { name: 'The day' })).getByRole('list', { name: 'Trade lines' });
+    const link = within(lines).getByRole('link', { name: 'ABC' });
+    expect(link.closest('li')!.textContent).toBe('ABC Closed To do: Reflection');
     expect(link.getAttribute('href')).toBe('/review?trade=t-x&panel=Reflections');
 
     await user.click(link);
@@ -332,7 +334,7 @@ describe('owed-reflection group (P19, P20)', () => {
     // The Empty message stays, and the group follows it; there is no walk and no status.
     expect(await screen.findByText("No Trades were open at this session's close")).toBeTruthy();
     expect(screen.queryByRole('list', { name: 'Positions' })).toBeNull();
-    expect(screen.queryByRole('region', { name: 'Review status' })).toBeNull();
+    expect(screen.queryByRole('region', { name: 'The day' })).toBeNull();
     const group = screen.getByRole('list', { name: GROUP });
     const headers = within(group).getAllByRole('button', { name: /^Review / });
     expect(headers.map((h) => h.textContent)).toEqual([expect.stringContaining('ABC'), expect.stringContaining('DEF')]);
@@ -375,11 +377,11 @@ describe('Save Marks from the status header while an owed card is open (T9R2.13-
     await user.type(await screen.findByRole('textbox', { name: 'XYZ Mark, Tue Oct 13' }), '12');
     await user.click(within(screen.getByRole('list', { name: GROUP })).getAllByRole('button', { name: /^Review / })[0]!);
     await screen.findByRole('region', { name: 'ABC review' });
-    await user.click(within(screen.getByRole('region', { name: 'Review status' })).getByRole('button', { name: 'Save Marks (1)' }));
+    await user.click(within(screen.getByRole('region', { name: 'The day' })).getByRole('button', { name: 'Save Marks (1)' }));
 
     expect(facade.DailyReview.save).toHaveBeenCalledWith(expect.objectContaining({ kind: 'SaveReviewMarks' }));
     // The Review the save returned is the screen's: its completion replaces the held one, and the owed card stays open.
-    await waitFor(() => expect(within(screen.getByRole('region', { name: 'Review status' })).getByText('Complete')).toBeTruthy());
+    await waitFor(() => expect(within(screen.getByRole('region', { name: 'The day' })).getByText('Complete')).toBeTruthy());
     expect(screen.getByRole('region', { name: 'ABC review' })).toBeTruthy();
   });
 });
@@ -428,8 +430,8 @@ describe('Exit Action records intent only (decision 72)', () => {
 });
 
 describe('owed card links (T6.20-B1)', () => {
-  // Item 3: the Reflection due blocker names the open owed card's Reflections panel, which the trader has collapsed.
-  it('should reopen the Reflections panel the trader collapsed when a Reflection due blocker links to the open owed card', async () => {
+  // Item 3: the owed Trade's day line names the open owed card's Reflections panel, which the trader has collapsed.
+  it('should reopen the Reflections panel the trader collapsed when a day line links to the open owed card', async () => {
     const user = userEvent.setup();
     renderReview(reviewFacade(ready()));
     const card = await screen.findByRole('region', { name: 'ABC review' });
@@ -437,8 +439,8 @@ describe('owed card links (T6.20-B1)', () => {
     await user.click(panel);
     expect(panel.getAttribute('aria-expanded')).toBe('false');
 
-    const blockers = within(screen.getByRole('region', { name: 'Review status' })).getByRole('list', { name: 'Blockers' });
-    await user.click(within(blockers).getByRole('link', { name: 'ABC' }));
+    const lines = within(screen.getByRole('region', { name: 'The day' })).getByRole('list', { name: 'Trade lines' });
+    await user.click(within(lines).getByRole('link', { name: 'ABC' }));
 
     expect(panel.getAttribute('aria-expanded')).toBe('true');
     expect(document.activeElement).toBe(panel);

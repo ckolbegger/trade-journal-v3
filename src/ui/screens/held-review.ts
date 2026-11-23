@@ -41,7 +41,7 @@ export function fold(held: Held, result: HeldResult): Held {
       const progressOf = new Map(post.cards.map((card) => [card.tradeId, card.progress]));
       const families = held.review.families.map((f) => (f.family === 'Trades' ? { ...f, trades: f.trades.map((t) => ({ ...t, progress: progressOf.get(t.tradeId) ?? t.progress })) } : f));
       const owed = held.review.owed.map((t) => ({ ...t, progress: progressOf.get(t.tradeId) ?? t.progress }));
-      return { ...held, review: { ...held.review, completion: post.completion, binding: post.binding, families, owed } };
+      return { ...held, review: { ...held.review, completion: post.completion, binding: post.binding, day: post.day, families, owed } };
     }
     case 'MarksSaved': {
       const learned = learn({ ...held, review: withSavedMarks(held.review, result.marks) }, result.marks);
@@ -49,7 +49,7 @@ export function fold(held: Held, result: HeldResult): Held {
       if (post.kind !== 'Ready') return learned;
       // The re-sort (decision 64): the walked Trades follow the Review the save returned.
       const families = learned.review.families.map((f) => (f.family === 'Trades' ? { ...f, trades: post.trades } : f));
-      return { ...learned, review: { ...learned.review, completion: post.completion, binding: post.binding, families } };
+      return { ...learned, review: { ...learned.review, completion: post.completion, binding: post.binding, day: post.day, families } };
     }
     case 'MarkSaved':
       return learn(held, [result]);

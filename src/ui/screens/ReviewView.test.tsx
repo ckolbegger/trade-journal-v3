@@ -10,6 +10,7 @@ import { Rational } from '../../domain/values/index.ts';
 import { RuntimeContext } from '../runtime.tsx';
 import { ReviewView } from './ReviewView.tsx';
 import { cardProgress, reflectionsOwedProgress } from '../../../tests/support/card-progress.ts';
+import { dayOf } from '../../../tests/support/review-day.ts';
 
 afterEach(cleanup);
 
@@ -54,7 +55,7 @@ const progressFor = (rows: readonly MarkRow[], dueNow: number, owed: boolean) =>
 function ready(over: { today?: readonly MarkRow[]; earlier?: Earlier; trades?: readonly ReviewTradeItem[]; completion?: ReviewCompletion; reviewDate?: string } = {}): Ready {
   const completion = over.completion ?? { kind: 'Complete' };
   const reasons = completion.kind === 'Incomplete' ? completion.reasons : [];
-  return {
+  const built: Omit<Ready, 'day'> = {
     kind: 'Ready',
     reviewDate: over.reviewDate ?? '2026-10-12',
     cutoff: CUTOFF,
@@ -78,6 +79,7 @@ function ready(over: { today?: readonly MarkRow[]; earlier?: Earlier; trades?: r
     completion,
     binding,
   };
+  return { ...built, day: dayOf(built) };
 }
 const incomplete = (...reasons: IncompleteReason[]): ReviewCompletion => ({ kind: 'Incomplete', reasons });
 const markMissing = (instrumentKey: string, ...trades: string[]): IncompleteReason => ({ code: 'MarkMissing', instrument: { kind: 'Stock', symbol: instrumentKey }, tradingDate: '2026-10-12', trades });
@@ -182,7 +184,7 @@ async function correctPrice(user: ReturnType<typeof userEvent.setup>, entry: HTM
 }
 
 describe('overview', () => {
-  it('should show the Review Date, completion as text, and each blocker', async () => {
+  it('should show the Review Date, completion as text, the counts to go and each Trade line', async () => {
     const trades = [tradeItem('t1', 'XYZ'), tradeItem('t2', 'DEF')];
     const facade = reviewFacade(
       ready({
@@ -195,17 +197,15 @@ describe('overview', () => {
 
     expect(await screen.findByText('Mon Oct 12')).toBeTruthy();
     expect(vi.mocked(facade.DailyReview.open)).toHaveBeenCalledExactlyOnceWith({ date: { kind: 'LatestCompleted' }, asOf: '2026-10-12T21:00:00Z' });
-    const header = screen.getByRole('region', { name: 'Review status' });
+    const header = screen.getByRole('region', { name: 'The day' });
     expect(within(header).getByText('Incomplete')).toBeTruthy();
-    const blockers = within(within(header).getByRole('list', { name: 'Blockers' })).getAllByRole('listitem');
-    expect(blockers.map((b) => b.textContent)).toEqual([
-      'Mark missing for DEF on Mon Oct 12',
-      'Action missing for XYZ',
-      'DEF: recorded facts disagree',
-    ]);
+    expect(within(header).getByText('2 Trades · 1 Mark and 1 Action to go')).toBeTruthy();
+    const lines = within(within(header).getByRole('list', { name: 'Trade lines' })).getAllByRole('listitem');
+    expect(lines.map((line) => line.textContent)).toEqual(['XYZ Routine To do: Action', 'DEF Routine To do: Mark']);
+    expect(within(within(header).getByRole('list', { name: 'Facts to check' })).getAllByRole('listitem').map((item) => item.textContent)).toEqual(['DEF: recorded facts disagree']);
   });
 
-  it('should name the due reflections by Trade among the blockers while completion is Incomplete, each linking to its Trade card', async () => {
+  it('should list the due reflections by Trade among the lines while completion is Incomplete, each linking to its Trade card', async () => {
     const trades = [tradeItem('t1', 'XYZ'), tradeItem('t2', 'DEF')];
     const facade = reviewFacade(
       ready({
@@ -215,25 +215,43 @@ describe('overview', () => {
     );
     renderReview(facade);
 
-    const header = await screen.findByRole('region', { name: 'Review status' });
-    const blockers = within(within(header).getByRole('list', { name: 'Blockers' })).getAllByRole('listitem');
-    expect(blockers.map((b) => b.textContent)).toEqual(['2 reflections due for XYZ', 'Reflection due for DEF']);
+    const header = await screen.findByRole('region', { name: 'The day' });
+    expect(within(header).getByText('2 Trades · 3 reflections to go')).toBeTruthy();
+    const lines = within(within(header).getByRole('list', { name: 'Trade lines' })).getAllByRole('listitem');
+    expect(lines.map((line) => line.textContent)).toEqual(['XYZ Routine To do: Reflection', 'DEF Routine To do: Reflection']);
     // The first Trade owing opens on load; the link for the other one opens its card.
     await screen.findByRole('region', { name: 'XYZ review' });
     expect(vi.mocked(facade.DailyReview.getTrade)).toHaveBeenCalledExactlyOnceWith({ reviewDate: '2026-10-12', tradeId: 't1', binding });
 
-    await userEvent.setup().click(within(blockers[1]!).getByRole('link', { name: 'DEF' }));
+    await userEvent.setup().click(within(lines[1]!).getByRole('link', { name: 'DEF' }));
 
     expect(await screen.findByRole('region', { name: 'DEF review' })).toBeTruthy();
     expect(vi.mocked(facade.DailyReview.getTrade)).toHaveBeenLastCalledWith({ reviewDate: '2026-10-12', tradeId: 't2', binding });
   });
 
-  it('should show Complete as text with no blockers when every obligation is resolved', async () => {
+  it('should show Complete as text, with every Trade line done, when every obligation is resolved', async () => {
     renderReview(reviewFacade(ready({ trades: [tradeItem('t1', 'XYZ')], completion: { kind: 'Complete' } })));
 
-    const header = await screen.findByRole('region', { name: 'Review status' });
+    const header = await screen.findByRole('region', { name: 'The day' });
     expect(within(header).getByText('Complete')).toBeTruthy();
-    expect(within(header).queryByRole('list', { name: 'Blockers' })).toBeNull();
+    expect(within(within(header).getByRole('list', { name: 'Trade lines' })).getAllByRole('listitem').map((line) => line.textContent)).toEqual(['XYZ Routine Done']);
+  });
+
+  it('should no longer render the Blockers list, the Review status block or the Stop line', async () => {
+    renderReview(reviewFacade(ready({ today: [markRow('DEF', ['t2'])], trades: [tradeItem('t1', 'XYZ'), tradeItem('t2', 'DEF')], completion: incomplete(markMissing('DEF', 't2'), ...actionMissing('t1', 't2')) })));
+
+    await screen.findByRole('region', { name: 'The day' });
+    expect(screen.queryByRole('list', { name: 'Blockers' })).toBeNull();
+    expect(screen.queryByRole('region', { name: 'Review status' })).toBeNull();
+    expect(screen.queryByText(/Stop ◂ ▸ Target/)).toBeNull();
+    expect(screen.queryByText(/Action missing for|Reflection due for|Every Trade has an Action/)).toBeNull();
+  });
+
+  it('should head the cards Trades · most pressing first', async () => {
+    renderReview(reviewFacade(ready({ trades: [tradeItem('t1', 'XYZ'), tradeItem('t2', 'DEF')], completion: incomplete(...actionMissing('t1', 't2')) })));
+
+    const heading = await screen.findByRole('heading', { name: 'Trades · most pressing first' });
+    expect(heading.compareDocumentPosition(screen.getByRole('list', { name: 'Positions' })) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it('should render distinct Loading, Ready, Empty, and Error states with Retry', async () => {
@@ -246,7 +264,7 @@ describe('overview', () => {
     // Loading: neither a false Empty nor a Review status.
     expect(screen.getByRole('status').textContent).toBe('Loading the Review…');
     expect(screen.queryByText("No Trades were open at this session's close")).toBeNull();
-    expect(screen.queryByRole('region', { name: 'Review status' })).toBeNull();
+    expect(screen.queryByRole('region', { name: 'The day' })).toBeNull();
 
     settle({ kind: 'Empty', reviewDate: '2026-10-12', cutoff: CUTOFF, owed: [], binding });
     expect(await screen.findByText("No Trades were open at this session's close")).toBeTruthy();
@@ -264,7 +282,7 @@ describe('overview', () => {
     expect(screen.getByText(/couldn’t load the Review/)).toBeTruthy();
     expect(screen.queryByText("No Trades were open at this session's close")).toBeNull();
     await user.click(await screen.findByRole('button', { name: 'Retry' }));
-    expect(await screen.findByRole('region', { name: 'Review status' })).toBeTruthy();
+    expect(await screen.findByRole('region', { name: 'The day' })).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Retry' })).toBeNull();
     expect(vi.mocked(failing.DailyReview.open)).toHaveBeenCalledTimes(3);
   });
@@ -279,7 +297,7 @@ describe('overview', () => {
       ),
     );
 
-    const header = await screen.findByRole('region', { name: 'Review status' });
+    const header = await screen.findByRole('region', { name: 'The day' });
     expect(within(header).getByText('Complete with Unavailable Marks')).toBeTruthy();
     const disclosure = within(header).getByRole('group', { name: 'Unavailable Marks' });
     expect(within(disclosure).getByText('Instruments: XYZ, DEF')).toBeTruthy();
@@ -597,7 +615,7 @@ describe('A failed Save Marks with no walked card open (T9R2.13-B3)', () => {
     await user.type(await screen.findByRole('textbox', { name: 'DEF Mark, Mon Oct 12' }), '12');
     // Collapsing the card leaves the draft on the Review, and no walked card open.
     await user.click(screen.getByRole('button', { name: /^Review DEF\b/ }));
-    const status = screen.getByRole('region', { name: 'Review status' });
+    const status = screen.getByRole('region', { name: 'The day' });
     await user.click(within(status).getByRole('button', { name: 'Save Marks (1)' }));
 
     expect((await within(status).findByRole('alert')).textContent).toContain('The Review changed after you opened it.');
@@ -621,7 +639,7 @@ describe('A card opened during the status header Refresh (T9R2.13-B4)', () => {
     await openMarks(user);
     await user.type(await screen.findByRole('textbox', { name: 'DEF Mark, Mon Oct 12' }), '12');
     await user.click(screen.getByRole('button', { name: /^Review DEF\b/ }));
-    const status = screen.getByRole('region', { name: 'Review status' });
+    const status = screen.getByRole('region', { name: 'The day' });
     await user.click(within(status).getByRole('button', { name: 'Save Marks (1)' }));
     await within(status).findByRole('alert');
 

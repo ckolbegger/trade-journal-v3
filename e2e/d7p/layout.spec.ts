@@ -1,6 +1,6 @@
 import type { BrowserContext, Page } from '@playwright/test';
 import {
-  acknowledgeMark, answerIn, cardItem, createTrades, detail, enterMark, exitReflection, expect, expectInsideCell, expectNoSidewaysScroll, expectShownInFull, firstPage, FOUR_TRADES, launchAt, MONDAY_1700, onboardedAt,
+  acknowledgeMark, answerIn, cardItem, createTrades, dayLine, detail, enterMark, exitReflection, expect, expectInsideCell, expectNoSidewaysScroll, expectShownInFull, firstPage, FOUR_TRADES, launchAt, MONDAY_1700, onboardedAt,
   openDrawer, openExitForm, openReview, openTradeFromOpenList, LAUNCH, reachCard, recordEntry, fillRows, sell, setClock, setWidth, meterOf, test, tradeCard, TUESDAY_NOON, WIDTHS, writeSellQuantities,
   type Profile,
 } from './support.ts';
@@ -117,22 +117,21 @@ test.describe('T7P.11 Layout of the worded reasons', () => {
     await context.close();
   });
 
-  test('should show the attention sentences, meter names and blockers in full in the Review at 320 and 375 px', async ({ server, profile }) => {
+  test('should show the attention sentences, meter names and day card lines in full in the Review at 320 and 375 px', async ({ server, profile }) => {
     test.setTimeout(240_000);
     server.use('dist-faults');
     const { context, page } = await launchScenario(profile);
     await openReview(page);
-    const blockers = page.getByRole('list', { name: 'Blockers' });
-    await expect(blockers).toBeVisible();
+    const facts = page.getByRole('list', { name: 'Facts to check' });
+    await expect(facts).toBeVisible();
     for (const width of WIDTHS) {
       await setWidth(page, width);
       await expectNoSidewaysScroll(page, `Review at ${width}`);
-      // Blockers: the Mark missing sentence with its card link, and the incoherent Trade's first finding and "and 1 more".
-      const items = blockers.getByRole('listitem');
-      await expectShownInFull(items.filter({ hasText: 'Mark missing for ABC' }), `Mark missing for ABC on ${DATE}`, `Mark missing blocker at ${width}`);
-      await expectShownInFull(items.filter({ hasText: 'XYZ:' }), `XYZ: ${TWO_FINDINGS[0]} and 1 more`, `incoherent blocker at ${width}`);
-      await expectShownInFull(items.filter({ hasText: 'Mark missing for ABC' }).getByRole('link', { name: 'ABC', exact: true }), 'ABC', `card link at ${width}`);
+      // The day card: the incoherent Trade's first finding and "and 1 more" with its Detail link, and the Trade line whose Mark is missing.
+      const items = facts.getByRole('listitem');
+      await expectShownInFull(items.filter({ hasText: 'XYZ:' }), `XYZ: ${TWO_FINDINGS[0]} and 1 more`, `incoherent line at ${width}`);
       await expectShownInFull(items.filter({ hasText: 'XYZ:' }).getByRole('link', { name: 'XYZ', exact: true }), 'XYZ', `Detail link at ${width}`);
+      await expectShownInFull(dayLine(page, 'ABC').getByRole('link', { name: 'ABC', exact: true }), 'ABC', `card link at ${width}`);
     }
     // The cards: the attention sentence of each open card, and the meter's name (the incoherent Trade has no meter).
     const sentences = [

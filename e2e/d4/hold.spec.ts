@@ -1,4 +1,4 @@
-import { actionEntriesOf, actionFormOf, completion, createTrades, enterMark, expect, FOUR_TRADES, MONDAY_1700, onboardedAt, openReview, probe, reachCard, saveAction, test, tradesOf, workspaceOf } from './support.ts';
+import { actionEntriesOf, actionFormOf, completion, createTrades, dayLine, enterMark, expect, FOUR_TRADES, MONDAY_1700, onboardedAt, openReview, probe, reachCard, saveAction, test, tradesOf, workspaceOf } from './support.ts';
 
 test.describe('B4.2 One-click Hold and Intent', () => {
   test('should record nothing on leaving, show the error for Exit without Intent, save it with Intent, and add no Trade fact', async ({ profile }) => {
@@ -17,7 +17,7 @@ test.describe('B4.2 One-click Hold and Intent', () => {
     await expect(page.getByRole('table', { name: 'Open Trades' })).toBeVisible();
     await openReview(page);
     await expect(completion(page)).toHaveText('Incomplete');
-    await expect(page.getByText('Action missing for XYZ')).toBeVisible();
+    await expect(dayLine(page, 'XYZ')).toContainText('Action');
     let workspace = workspaceOf(await probe(page))!;
     expect(actionEntriesOf(workspace)).toHaveLength(0);
     expect(workspace.stores['journalEntries']).toEqual(entriesBefore);
@@ -34,7 +34,6 @@ test.describe('B4.2 One-click Hold and Intent', () => {
     // With Intent it saves: one Entry, the Review Complete, no Trade fact added.
     await saveAction(page, 'Exit', 'The thesis no longer holds.', 'XYZ');
     await expect(completion(page)).toHaveText('Complete');
-    await expect(page.getByText('Every Trade has an Action.')).toBeVisible();
     workspace = workspaceOf(await probe(page))!;
     expect(actionEntriesOf(workspace)).toHaveLength(1);
     expect(tradesOf(workspace)).toEqual(tradesOf(before));

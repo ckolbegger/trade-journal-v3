@@ -93,6 +93,30 @@ test.describe('B4.13 Responsive and accessible', () => {
     await context.close();
   });
 
+  test('should list the Trades in one column at 375 wide, with the same links', async ({ profile }) => {
+    const { context, page } = await onboardedAt(profile, MONDAY_1700);
+    await createTrades(page);
+    await openReview(page);
+    const lines = status(page).getByRole('list', { name: 'Trade lines' }).getByRole('listitem');
+    const hrefs = () => lines.getByRole('link').evaluateAll((links) => links.map((link) => link.getAttribute('href')));
+    const wide = await hrefs();
+    expect(wide).toHaveLength(4);
+
+    await page.setViewportSize({ width: 375, height: 800 });
+    await expect(async () => {
+      expect(await hrefs()).toEqual(wide);
+      const boxes = await lines.evaluateAll((items) => items.map((item) => item.getBoundingClientRect().toJSON() as { x: number; y: number; width: number; height: number }));
+      // One column: every line starts at the same left edge, inside the viewport, each below the one before it.
+      expect(new Set(boxes.map((box) => Math.round(box.x))).size, 'one left edge').toBe(1);
+      for (const [index, box] of boxes.entries()) {
+        expect(box.x + box.width, `line ${index + 1} inside the viewport`).toBeLessThanOrEqual(375);
+        if (index > 0) expect(box.y, `line ${index + 1} below line ${index}`).toBeGreaterThanOrEqual(boxes[index - 1]!.y + boxes[index - 1]!.height - 1);
+      }
+      expect(await page.evaluate(() => document.documentElement.scrollWidth), 'no sideways scroll').toBeLessThanOrEqual(375);
+    }).toPass({ timeout: 5000 });
+    await context.close();
+  });
+
   test('should show a disabled Action chip as disabled with a not-allowed cursor and reduced opacity', async ({ profile }) => {
     const { context, page } = await onboardedAt(profile, MONDAY_1700);
     await createTrades(page, [FOUR_TRADES[0]!]);
@@ -265,7 +289,7 @@ test.describe('B4.13 Responsive and accessible', () => {
     await tabTo(page, nav(page).getByRole('link', { name: 'Review' }));
     await page.keyboard.press('Enter');
     await expect(page.getByRole('heading', { name: 'Review', level: 1 })).toBeVisible();
-    await expect(page.getByRole('region', { name: 'Review status' })).toBeVisible();
+    await expect(page.getByRole('region', { name: 'The day' })).toBeVisible();
     // Keyboard and focus steps assert navigation itself (section 6.4, rule 4): raw locators, no reaches.
     const xyz = tradeCard(page, 'XYZ');
     const entry = xyz.getByRole('region', { name: `XYZ Mark, ${DATE}`, exact: true });
@@ -297,7 +321,6 @@ test.describe('B4.13 Responsive and accessible', () => {
     await tabTo(page, actionForm.getByRole('button', { name: 'Save' }));
     await page.keyboard.press('Enter');
     await expect(completion(page)).toHaveText('Complete');
-    await expect(page.getByText('Every Trade has an Action.')).toBeVisible();
     await expectAccessible(page, 'Review Complete');
     await context.close();
   });

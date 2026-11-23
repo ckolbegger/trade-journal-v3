@@ -100,7 +100,7 @@ test.describe('B5R.5 Unsaved work holds the card', () => {
     await expect(cardHeader(page, tA)).toHaveAttribute('aria-expanded', 'false');
     await expect(page.getByText('Save or discard what you entered for')).toHaveCount(0);
     // The draft stays with the Review: its status header counts it, and Discard there empties it.
-    const header = page.getByRole('region', { name: 'Review status' });
+    const header = page.getByRole('region', { name: 'The day' });
     await expect(header).toContainText('1 unsaved Mark');
     await header.getByRole('button', { name: 'Discard' }).click();
     await expect(header).not.toContainText('unsaved Mark');

@@ -42,7 +42,7 @@ test.describe('B5.3 Reflect on Trade Detail', () => {
     await expect(await reflectionsOf(page, 'XYZ')).toHaveCount(0);
     await expect(page.getByRole('button', { name: /^Reflect on / })).toHaveCount(0);
     await expect(completion(page)).toHaveText('Incomplete');
-    await expect(page.getByRole('region', { name: 'Review status' })).not.toContainText('eflection');
+    await expect(page.getByRole('region', { name: 'The day' })).not.toContainText('eflection');
     await context.close();
   });
 

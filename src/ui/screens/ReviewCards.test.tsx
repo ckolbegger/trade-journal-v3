@@ -12,6 +12,7 @@ import { Rational } from '../../domain/values/index.ts';
 import { RuntimeContext } from '../runtime.tsx';
 import { ReviewView } from './ReviewView.tsx';
 import { cardProgress, reflectionsOwedProgress } from '../../../tests/support/card-progress.ts';
+import { dayOf } from '../../../tests/support/review-day.ts';
 
 afterEach(cleanup);
 
@@ -90,7 +91,7 @@ const MONDAY_COMPLETION = incomplete(
 );
 
 function review(over: Partial<Ready> = {}): Ready {
-  return {
+  const built: Ready = {
     kind: 'Ready',
     reviewDate: '2026-10-12',
     cutoff: CUTOFF,
@@ -103,6 +104,7 @@ function review(over: Partial<Ready> = {}): Ready {
     binding,
     ...over,
   };
+  return over.day ? built : { ...built, day: dayOf(built) };
 }
 
 const saveBinding = (tradeId: string): DailyTradeReview['saveBinding'] => ({
@@ -219,7 +221,7 @@ async function correctAbc(user: ReturnType<typeof userEvent.setup>, card: HTMLEl
 }
 
 describe('card list (A150)', () => {
-  it('should render one card per walked Trade in attention order, each a heading button showing the Underlying, what remains, its band as text, and its meter, with a Stop Target legend above the list and no Continue to Trades', async () => {
+  it('should render one card per walked Trade in attention order, each a heading button showing the Underlying, what remains, its band as text, and its meter, with no Stop Target legend and no Continue to Trades', async () => {
     renderReview(cardFacade());
     await screen.findAllByRole('button', { name: /^Review / });
 
@@ -251,9 +253,8 @@ describe('card list (A150)', () => {
     expect(a.getByRole('img', { name: 'P&L +$180.00, 40% of the way to the Target. Stop −$450.00, Target +$450.00.' })).toBeTruthy();
     expect(b.getByRole('img', { name: 'P&L −$200.00, past the Stop by $50.00. Stop −$150.00, Target +$300.00.' })).toBeTruthy();
     expect(c.getByRole('img', { name: 'Mark missing: DEF, Mon Oct 12 Stop −$200.00, Target +$400.00.' })).toBeTruthy();
-    // The legend sits above the list; there is no Continue to Trades.
-    const legend = screen.getByText(/Stop ◂ ▸ Target/);
-    expect(legend.compareDocumentPosition(screen.getByRole('list', { name: 'Positions' })) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    // There is no legend line and no Continue to Trades.
+    expect(screen.queryByText(/Stop ◂ ▸ Target/)).toBeNull();
     expect(screen.queryByRole('button', { name: 'Continue to Trades' })).toBeNull();
   });
 
@@ -781,17 +782,16 @@ describe('a search-param change on the mounted Review (A161)', () => {
   });
 });
 
-describe('blocker links open in a new tab (A161)', () => {
-  const blockers = incomplete({ code: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'DEF' }, tradingDate: '2026-10-12', trades: ['t-c'] }, { code: 'ActionMissing', tradeId: 't-b' }, { code: 'ReflectionDue', tradeId: 't-a', debtIds: ['d1'] });
+describe('day line links open in a new tab (A161)', () => {
+  const lineLink = (name: string, index = 0) => within(within(screen.getByRole('region', { name: 'The day' })).getByRole('list', { name: 'Trade lines' })).getAllByRole('link', { name })[index]!;
 
-  it('should give a Mark blocker link the Instrument in its href, and Action and Reflection links the Trade and their panel', async () => {
-    renderReview(cardFacade(review({ completion: blockers })));
+  it('should give a Trade with a Mark to go the Instrument in its href, and one with an Action or a reflection to go the Trade and its panel', async () => {
+    renderReview(cardFacade());
     await screen.findByRole('region', { name: 'ABC review' });
-    const status = screen.getByRole('region', { name: 'Review status' });
 
-    expect(within(status).getByRole('link', { name: 'DEF' }).getAttribute('href')).toBe('/review?trade=t-c&instrument=DEF');
-    expect(within(status).getByRole('link', { name: 'ABC' }).getAttribute('href')).toBe('/review?trade=t-b&panel=Action');
-    expect(within(status).getByRole('link', { name: 'XYZ' }).getAttribute('href')).toBe('/review?trade=t-a&panel=Reflections');
+    expect(lineLink('DEF').getAttribute('href')).toBe('/review?trade=t-c&instrument=DEF');
+    expect(lineLink('ABC').getAttribute('href')).toBe('/review?trade=t-b&panel=Action');
+    expect(lineLink('XYZ', 1).getAttribute('href')).toBe('/review?trade=t-a&panel=Reflections');
   });
 
   it.each([
@@ -800,9 +800,9 @@ describe('blocker links open in a new tab (A161)', () => {
     ['shiftKey', { shiftKey: true }],
     ['middle button', { button: 1 }],
   ])('should leave a click with %s to the browser, with the open card unchanged', async (_name, modifier) => {
-    renderReview(cardFacade(review({ completion: blockers })));
+    renderReview(cardFacade());
     await screen.findByRole('region', { name: 'ABC review' });
-    const link = within(screen.getByRole('region', { name: 'Review status' })).getByRole('link', { name: 'DEF' });
+    const link = lineLink('DEF');
 
     // fireEvent answers false when a handler called preventDefault.
     expect(fireEvent.click(link, modifier)).toBe(true);
@@ -810,50 +810,61 @@ describe('blocker links open in a new tab (A161)', () => {
   });
 
   it('should still open the card in place for a plain left click', async () => {
-    renderReview(cardFacade(review({ completion: blockers })));
+    renderReview(cardFacade());
     await screen.findByRole('region', { name: 'ABC review' });
-    const link = within(screen.getByRole('region', { name: 'Review status' })).getByRole('link', { name: 'DEF' });
 
-    expect(fireEvent.click(link)).toBe(false);
+    expect(fireEvent.click(lineLink('DEF'))).toBe(false);
     await screen.findByRole('region', { name: 'DEF review' });
   });
 });
 
 describe('header', () => {
-  it('should show the Review Date, completion as text, and the blockers, with Missing Marks first, each opening the card and panel that resolve it', async () => {
+  it('should show the Review Date, completion as text, the counts and each Trade line, each opening the card and panel that resolve it', async () => {
     const user = userEvent.setup();
-    const facade = cardFacade(
-      review({
-        completion: incomplete(
-          { code: 'ActionMissing', tradeId: 't-b' },
-          { code: 'ReflectionDue', tradeId: 't-a', debtIds: ['d1'] },
-          { code: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'DEF' }, tradingDate: '2026-10-12', trades: ['t-c'] },
-        ),
-      }),
-    );
-    renderReview(facade);
-    const status = await screen.findByRole('region', { name: 'Review status' });
+    renderReview(cardFacade());
+    const status = await screen.findByRole('region', { name: 'The day' });
 
     expect(within(status).getByText('Mon Oct 12')).toBeTruthy();
     expect(within(status).getByText('Incomplete')).toBeTruthy();
-    const blockers = within(within(status).getByRole('list', { name: 'Blockers' })).getAllByRole('listitem');
-    expect(blockers.map((b) => b.textContent)).toEqual(['Mark missing for DEF on Mon Oct 12', 'Action missing for ABC', 'Reflection due for XYZ']);
+    expect(within(status).getByText('5 Trades · 1 Mark, 5 Actions and 1 reflection to go')).toBeTruthy();
+    const lines = within(within(status).getByRole('list', { name: 'Trade lines' })).getAllByRole('listitem');
+    expect(lines.map((line) => line.textContent)).toEqual([
+      'ABC Boundary reached To do: Action',
+      'DEF Evidence limited To do: Mark, Action',
+      'XYZ Quantified pressure To do: Action',
+      'XYZ Quantified pressure To do: Reflection, Action',
+      'JKL Routine To do: Action',
+    ]);
     await screen.findByRole('region', { name: 'ABC review' });
 
     // The Mark opens DEF's card on its Marks panel, with focus on the row.
-    await user.click(within(blockers[0]!).getByRole('link', { name: 'DEF' }));
+    await user.click(within(lines[1]!).getByRole('link', { name: 'DEF' }));
     const def = await screen.findByRole('region', { name: 'DEF review' });
     expect(within(def).getByRole('button', { name: /^Marks\b/ }).getAttribute('aria-expanded')).toBe('true');
     await waitFor(() => expect(document.activeElement).toBe(cellNamed(def, 'DEF Mark, Mon Oct 12')));
     // The reflection opens XYZ's card on its Reflections panel.
-    await user.click(within(blockers[2]!).getByRole('link', { name: 'XYZ' }));
+    await user.click(within(lines[3]!).getByRole('link', { name: 'XYZ' }));
     const xyz = await screen.findByRole('region', { name: 'XYZ review' });
     expect(within(xyz).getByRole('button', { name: /^Reflections\b/ }).getAttribute('aria-expanded')).toBe('true');
     expect(headers().map((h) => h.getAttribute('aria-expanded'))).toEqual(['false', 'false', 'false', 'true', 'false']);
     // The Action opens ABC's card on its Action panel, from another panel.
-    await user.click(within(blockers[1]!).getByRole('link', { name: 'ABC' }));
+    await user.click(within(lines[0]!).getByRole('link', { name: 'ABC' }));
     const abc = await screen.findByRole('region', { name: 'ABC review' });
     expect(within(abc).getByRole('button', { name: /^Action\b/ }).getAttribute('aria-expanded')).toBe('true');
+  });
+});
+
+describe('the day card button', () => {
+  it('should move focus to the Marks step, on the first Trade with a Mark to go, when Enter the Marks is pressed', async () => {
+    const user = userEvent.setup();
+    renderReview(cardFacade());
+    await screen.findByRole('region', { name: 'ABC review' });
+
+    await user.click(within(screen.getByRole('region', { name: 'The day' })).getByRole('button', { name: 'Enter the Marks' }));
+
+    const def = await screen.findByRole('region', { name: 'DEF review' });
+    expect(within(def).getByRole('button', { name: /^Marks\b/ }).getAttribute('aria-expanded')).toBe('true');
+    await waitFor(() => expect(document.activeElement).toBe(cellNamed(def, 'DEF Mark, Mon Oct 12')));
   });
 });
 
@@ -966,7 +977,7 @@ describe('Trade names in messages and blockers (decision 68)', () => {
   ];
   const namedReview = (over: Partial<Ready> = {}): Ready => review({ families: [review().families[0]!, { family: 'Trades', trades: named }], ...over });
 
-  it('should name the Trade in the Action missing, Reflection due, recorded facts disagree, and cannot be replayed blockers, each link still opening its card and panel, while Mark missing names the Instrument', async () => {
+  it('should name the Trade in its line and in the recorded facts disagree and cannot be replayed lines, each link still opening its card and panel', async () => {
     const user = userEvent.setup();
     renderReview(
       cardFacade(
@@ -981,40 +992,35 @@ describe('Trade names in messages and blockers (decision 68)', () => {
         }),
       ),
     );
-    const status = await screen.findByRole('region', { name: 'Review status' });
+    const status = await screen.findByRole('region', { name: 'The day' });
 
-    const blockers = within(within(status).getByRole('list', { name: 'Blockers' })).getAllByRole('listitem');
-    // A Trade with no summary is named by its Underlying alone.
-    expect(blockers.map((b) => b.textContent)).toEqual([
-      'Mark missing for DEF on Mon Oct 12',
-      `Action missing for ${NAME_F}`,
-      `Reflection due for ${NAME_A}`,
-      `${NAME_F}: recorded facts disagree`,
-      "ABC: Facts can't be replayed",
-    ]);
+    // A Trade's line names its Underlying; the lines about its facts name the Trade as the card does.
+    const facts = within(within(status).getByRole('list', { name: 'Facts to check' })).getAllByRole('listitem');
+    expect(facts.map((b) => b.textContent)).toEqual([`${NAME_F}: recorded facts disagree`, "ABC: Facts can't be replayed"]);
+    const lines = within(within(status).getByRole('list', { name: 'Trade lines' })).getAllByRole('listitem');
     const open = (index: number) => within(headers()[index]!.closest('li')!);
     const panelOpen = (index: number, panel: 'Marks' | 'Reflections' | 'Action') => open(index).getByRole('button', { name: new RegExp(`^${panel}\\b`) }).getAttribute('aria-expanded');
     await waitFor(() => expect(headers().some((h) => h.getAttribute('aria-expanded') === 'true')).toBe(true));
 
-    // Each link names the Trade and opens that Trade's own card on the panel that resolves it.
-    const action = within(blockers[1]!).getByRole('link', { name: NAME_F });
+    // Each link opens that Trade's own card on the panel that resolves it.
+    const action = within(lines[2]!).getByRole('link', { name: 'XYZ' });
     expect(action.getAttribute('href')).toBe('/review?trade=t-f&panel=Action');
     await user.click(action);
     await waitFor(() => expect(headers().map((h) => h.getAttribute('aria-expanded'))).toEqual(['false', 'false', 'true', 'false', 'false']));
     await waitFor(() => expect(panelOpen(2, 'Action')).toBe('true'));
-    const reflection = within(blockers[2]!).getByRole('link', { name: NAME_A });
+    const reflection = within(lines[3]!).getByRole('link', { name: 'XYZ' });
     expect(reflection.getAttribute('href')).toBe('/review?trade=t-a&panel=Reflections');
     await user.click(reflection);
     await waitFor(() => expect(headers().map((h) => h.getAttribute('aria-expanded'))).toEqual(['false', 'false', 'false', 'true', 'false']));
     await waitFor(() => expect(panelOpen(3, 'Reflections')).toBe('true'));
-    // Mark missing keeps naming the Instrument, which links with the Trade and the row.
-    expect(within(blockers[0]!).getByRole('link', { name: 'DEF' }).getAttribute('href')).toBe('/review?trade=t-c&instrument=DEF');
+    // A Trade with a Mark to go links with the Trade and the row.
+    expect(within(lines[1]!).getByRole('link', { name: 'DEF' }).getAttribute('href')).toBe('/review?trade=t-c&instrument=DEF');
   });
 
   it('should list the Trades by name under Complete with unavailable Marks', async () => {
     const completion: ReviewCompletion = { kind: 'CompleteWithUnavailableMarks', instruments: [{ kind: 'Stock', symbol: 'DEF' }, { kind: 'Stock', symbol: 'XYZ' }], trades: ['t-c', 't-f', 't-a'], families: ['Valuation'] };
     renderReview(cardFacade(namedReview({ completion })));
-    const status = await screen.findByRole('region', { name: 'Review status' });
+    const status = await screen.findByRole('region', { name: 'The day' });
 
     // DEF's Trade has no summary here, so it reads by its Underlying alone.
     expect(within(within(status).getByRole('group', { name: 'Unavailable Marks' })).getByText(/^Trades:/).textContent).toBe(`Trades: DEF, ${NAME_F}, ${NAME_A}`);
@@ -1187,20 +1193,11 @@ describe('Review words (P72)', () => {
     }
   });
 
-  it('should wrap the Instrument of a Mark-missing blocker in its card link, keeping the sentence words', async () => {
-    renderReview(cardFacade(review({ completion: incomplete({ code: 'MarkMissing', instrument: DEF, tradingDate: '2026-10-12', trades: ['t-c'] }) })));
-    const status = await screen.findByRole('region', { name: 'Review status' });
-
-    const [blocker] = within(within(status).getByRole('list', { name: 'Blockers' })).getAllByRole('listitem');
-    expect(blocker!.textContent).toBe('Mark missing for DEF on Mon Oct 12');
-    expect(within(blocker!).getByRole('link', { name: 'DEF' }).getAttribute('href')).toBe('/review?trade=t-c&instrument=DEF');
-  });
-
-  it('should give the blocker for facts that cannot be replayed the Trade name, the first finding sentence and and 1 more, linking to Trade Detail', async () => {
+  it('should give the line for facts that cannot be replayed the Trade name, the first finding sentence and and 1 more, linking to Trade Detail', async () => {
     renderReview(cardFacade(review({ completion: incomplete({ code: 'IncoherentFacts', tradeId: 't-b', findings: [sell('120'), duplicate] }) })));
-    const status = await screen.findByRole('region', { name: 'Review status' });
+    const status = await screen.findByRole('region', { name: 'The day' });
 
-    const [blocker] = within(within(status).getByRole('list', { name: 'Blockers' })).getAllByRole('listitem');
+    const [blocker] = within(within(status).getByRole('list', { name: 'Facts to check' })).getAllByRole('listitem');
     expect(blocker!.textContent).toBe(`ABC: ${SELL_SENTENCE} and 1 more`);
     expect(within(blocker!).getByRole('link', { name: 'ABC' }).getAttribute('href')).toBe('/trades/t-b');
   });

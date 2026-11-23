@@ -11,6 +11,7 @@ import type { DailyTradeReview, OpenDailyReviewResult, ReviewBinding, Settlement
 import { Rational } from '../../domain/values/index.ts';
 import { RuntimeContext } from '../runtime.tsx';
 import { ReviewView } from './ReviewView.tsx';
+import { dayOf } from '../../../tests/support/review-day.ts';
 
 afterEach(cleanup);
 fixClock();
@@ -58,7 +59,7 @@ const T3 = walked(MNO_ITEM, 'MNO', cardProgress(0, 0, { needed: 1, resolved: 0, 
 const T1 = walked(XYZ_ITEM, 'XYZ', cardProgress(0, 0, { settlement: true }));
 
 function review(over: Partial<Ready> = {}): Ready {
-  return {
+  const built: Ready = {
     kind: 'Ready',
     reviewDate: DATE,
     cutoff: CUTOFF,
@@ -81,6 +82,7 @@ function review(over: Partial<Ready> = {}): Ready {
     binding,
     ...over,
   };
+  return over.day ? built : { ...built, day: dayOf(built) };
 }
 
 function tradeReview(walkedTrade: WalkedTrade, item: SettlementItem, over: Partial<DailyTradeReview> = {}): DailyTradeReview {
@@ -130,19 +132,14 @@ const settlementPanel = (card: HTMLElement) => within(card).getByRole('region', 
 const termValue = (panel: HTMLElement, term: string) => within(panel).getByText(term).nextElementSibling?.textContent;
 
 describe('settlement family (A112)', () => {
-  it('should show each cards Settlement panel with its contract, quantity, settlement time, Record expiration and the assignment or exercise sentence, and list the settlements among the overview blockers after Missing Marks', async () => {
+  it('should show each cards Settlement panel with its contract, quantity, settlement time, Record expiration and the assignment or exercise sentence, and list each Trade owing a settlement among the day lines', async () => {
     const user = userEvent.setup();
     renderReview(walkFacade(review(), tradeReview(T3, MNO_ITEM), tradeReview(T1, XYZ_ITEM)));
 
-    // The overview lists each due settlement after the Missing Marks, its contract linking to the card's Settlement panel (row 24.5).
-    const blockers = within(await screen.findByRole('region', { name: 'Review status' })).getByRole('list', { name: 'Blockers' });
-    const lines = within(blockers).getAllByRole('listitem').map((li) => li.textContent);
-    expect(lines.slice(0, 3)).toEqual([
-      'Mark missing for MNO on Fri Nov 20',
-      'Settlement Due for XYZ Nov 20 $55 Call, which expired Fri Nov 20',
-      'Settlement Due for MNO Nov 20 $45 Put, which expired Fri Nov 20',
-    ]);
-    expect(within(blockers).getByRole('link', { name: 'MNO Nov 20 $45 Put' }).getAttribute('href')).toBe('/review?trade=t3&panel=Settlement');
+    // The day card lists each Trade with its settlement still to record, its link opening the card on the Settlement panel once its Marks are in.
+    const dayLines = within(await screen.findByRole('region', { name: 'The day' })).getByRole('list', { name: 'Trade lines' });
+    expect(within(dayLines).getAllByRole('listitem').map((li) => li.textContent)).toEqual(['MNO Blocker To do: Mark, Settle', 'XYZ Blocker To do: Settle']);
+    expect(within(dayLines).getByRole('link', { name: 'XYZ' }).getAttribute('href')).toBe('/review?trade=t1&panel=Settlement');
 
     // The collapsed card says what remains, with the settlement between the reflections and the Action (row 24.3).
     const card = await screen.findByRole('region', { name: 'MNO review' });

@@ -1,4 +1,4 @@
-import { expectMark, markEditorOf, acknowledgeMark, completion, createTrades, enterMark, expect, FOUR_TRADES, MONDAY_1700, observationsOf, onboardedAt, openReview, probe, reachCard, reloadReview, saveAction, status, test, workspaceOf } from './support.ts';
+import { dayLine, expectMark, markEditorOf, acknowledgeMark, completion, createTrades, enterMark, expect, FOUR_TRADES, MONDAY_1700, observationsOf, onboardedAt, openReview, probe, reachCard, reloadReview, saveAction, test, workspaceOf } from './support.ts';
 
 const DATE = 'Mon Oct 12';
 
@@ -31,7 +31,7 @@ test.describe('B4.3 Can\'t get a price', () => {
     await expectMark(page, 'DEF', DATE, 'Missing');
     await reloadReview(page);
     await expect(completion(page)).toHaveText('Incomplete');
-    await expect(status(page)).toContainText('Mark missing for DEF on Mon Oct 12');
+    await expect(dayLine(page, 'DEF')).toContainText('To do: Mark');
 
     // A Mark makes it Complete, with no unavailability left.
     await enterMark(page, 'DEF', DATE, '40.50');

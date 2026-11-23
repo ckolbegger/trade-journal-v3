@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 import {
-  completion, createSettlementFixture, debtsOf, enterMark, expect, factsOf, firstPage, FRIDAY_NOV, FRIDAY_NOV_1700, launchAt, onboardedAt, openReview, openSettlement, probe, recordExpiration, reloadReview, test,
+  completion, createSettlementFixture, dayLine, debtsOf, enterMark, expect, factsOf, firstPage, FRIDAY_NOV, FRIDAY_NOV_1700, launchAt, onboardedAt, openReview, openSettlement, probe, recordExpiration, reloadReview, test,
   tradesOf, TUESDAY_1030, workspaceOf,
 } from './support.ts';
 
@@ -22,9 +22,8 @@ test.describe('B7.3 Expiration from the Review', () => {
     await page.goto('/');
     await openReview(page);
     await expect(completion(page)).toHaveText('Incomplete');
-    const blockers = page.getByRole('list', { name: 'Blockers' });
-    await expect(blockers).toContainText('Settlement Due for XYZ Nov 20 $55 Call, which expired Fri Nov 20');
-    await expect(blockers).toContainText('Settlement Due for MNO Nov 20 $45 Put, which expired Fri Nov 20');
+    await expect(dayLine(page, 'XYZ').first()).toContainText('Settle');
+    await expect(dayLine(page, 'MNO')).toContainText('Settle');
     await enterMark(page, t1, FRIDAY_NOV, '52.00');
 
     // T-1's card Settlement panel names the contract and the long-contract explanation; Record expiration opens the form.

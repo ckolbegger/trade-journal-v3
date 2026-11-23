@@ -130,10 +130,13 @@ export async function createTradeAt(page: Page, values: PlanValues, planTime: st
 export async function openReview(page: Page): Promise<void> {
   await nav(page).getByRole('link', { name: 'Review' }).click();
   await expect(page.getByRole('heading', { name: 'Review', level: 1 })).toBeVisible(LAUNCH);
-  await expect(page.getByRole('region', { name: 'Review status' })).toBeVisible(LAUNCH);
+  await expect(status(page)).toBeVisible(LAUNCH);
 }
 
-export const status = (page: Page): Locator => page.getByRole('region', { name: 'Review status' });
+// The day card: the date, the completion word, the counts, the steps and one line for each Trade. A previous release's Review names the same region "Review status".
+export const status = (page: Page): Locator => page.getByRole('region', { name: /^(The day|Review status)$/ });
+// The day card's line for one Trade, by its Underlying: the link that opens its card, its label and what it still needs (W101).
+export const dayLine = (page: Page, symbol: string): Locator => status(page).getByRole('list', { name: 'Trade lines' }).getByRole('listitem').filter({ has: page.getByRole('link', { name: symbol, exact: true }) });
 // The completion word alone: Incomplete, Complete, or Complete with Unavailable Marks.
 export const completion = (page: Page): Locator => status(page).locator('strong');
 
@@ -148,7 +151,7 @@ export const cardList = (page: Page): Locator => page.getByRole('list', { name: 
 // The update cases first run a previous release, whose Review has the Marks family, Continue to Trades and the Trades family
 // instead of cards. The helpers follow whichever Review is on the page, once its status has rendered.
 async function hasCards(page: Page): Promise<boolean> {
-  await expect(page.getByRole('region', { name: 'Review status' })).toBeVisible(LAUNCH);
+  await expect(status(page)).toBeVisible(LAUNCH);
   return (await cardList(page).count()) > 0;
 }
 // The Marks inside the open card.

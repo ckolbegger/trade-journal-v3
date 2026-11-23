@@ -1,4 +1,4 @@
-import { marksPanelOf, confirmOptionPlan, createGapFixture, currentTradeId, enterMark, expect, MONDAY_1700, OC, OCT_12, OCT_8, OCT_9, onboardedAt, openReview, recordOptionEntry, setClock, test } from './support.ts';
+import { dayLine, marksPanelOf, confirmOptionPlan, createGapFixture, currentTradeId, enterMark, expect, MONDAY_1700, OC, OCT_12, OCT_8, OCT_9, onboardedAt, openReview, recordOptionEntry, setClock, test } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -59,8 +59,8 @@ test.describe('B9R2.2 The Marks grid', () => {
       await expect(marks).not.toContainText(EARLIER);
     });
 
-    await test.step('a Missing-Mark link focuses the Review Date cell', async () => {
-      await page.getByRole('list', { name: 'Blockers' }).getByRole('link', { name: 'XYZ', exact: true }).click();
+    await test.step('a Missing-Mark day line focuses the Review Date cell', async () => {
+      await dayLine(page, 'XYZ').first().getByRole('link', { name: 'XYZ', exact: true }).click();
       await expect(page.getByRole('textbox', { name: `XYZ Mark, ${OCT_12}`, exact: true })).toBeFocused();
       await expect(page.getByRole('region', { name: `XYZ Mark, ${OCT_12}`, exact: true })).toBeVisible();
     });

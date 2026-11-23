@@ -12,6 +12,7 @@ import { tradeSummary } from '../format.ts';
 import { RuntimeContext } from '../runtime.tsx';
 import { ReviewView } from './ReviewView.tsx';
 import { cardProgress } from '../../../tests/support/card-progress.ts';
+import { dayOf } from '../../../tests/support/review-day.ts';
 
 afterEach(cleanup);
 
@@ -71,7 +72,7 @@ const xyzGap: Earlier[number] = {
 };
 
 function review(over: Partial<Ready> = {}): Ready {
-  return {
+  const built: Ready = {
     kind: 'Ready',
     reviewDate: MONDAY,
     cutoff: CUTOFF,
@@ -84,6 +85,7 @@ function review(over: Partial<Ready> = {}): Ready {
     binding,
     ...over,
   };
+  return over.day ? built : { ...built, day: dayOf(built) };
 }
 
 const saveBinding = (tradeId: string): DailyTradeReview['saveBinding'] => ({
@@ -1182,7 +1184,7 @@ describe('the cell editor (P160)', () => {
     const paged = pagedReview();
     const marks = paged.families[0] as MarksFamily;
     const abc = { ...markRowOf('ABC', { kind: 'Missing' }, 'None', 'Manual'), trades: ['t-a'] };
-    const facade = cardFacade(review({ completion: { kind: 'Incomplete', reasons: [markMissing('ABC', 't-a')] }, families: [{ ...marks, today: [...marks.today, abc] }, paged.families[1]!] }));
+    const facade = cardFacade(review({ completion: { kind: 'Incomplete', reasons: [markMissing('ABC', 't-a')] }, families: [{ ...marks, today: [abc, ...marks.today] }, paged.families[1]!] }));
     renderReview(facade);
     const user = userEvent.setup();
     const panel = await marksPanel();
@@ -1191,7 +1193,10 @@ describe('the cell editor (P160)', () => {
     await user.type(within(friday).getByLabelText('Price'), '51.5');
     await user.type(within(friday).getByLabelText('Reason (required)'), 'typo');
 
-    await user.click(screen.getByRole('link', { name: 'ABC' }));
+    // The day line of the open card's Trade links to its first Mark to go, which is ABC's.
+    const link = within(screen.getByRole('list', { name: 'Trade lines' })).getAllByRole('link', { name: 'XYZ' })[0]!;
+    expect(link.getAttribute('href')).toBe('/review?trade=t-a&instrument=ABC');
+    await user.click(link);
     expect(editors(panel).map((editor) => editor.getAttribute('aria-label'))).toEqual(['XYZ Mark, Fri Oct 9']);
     expect(within(friday).getByLabelText<HTMLInputElement>('Price').value).toBe('51.5');
     expect(within(friday).getByLabelText<HTMLTextAreaElement>('Reason (required)').value).toBe('typo');
@@ -1281,7 +1286,7 @@ describe('drafts belong to the Review (P156)', () => {
     renderReview(cardFacade());
     const user = userEvent.setup();
     const panel = await marksPanel();
-    const status = await screen.findByRole('region', { name: 'Review status' });
+    const status = await screen.findByRole('region', { name: 'The day' });
     expect(within(status).queryByText(/unsaved Marks?$/)).toBeNull();
     expect(within(status).queryByRole('button', { name: /^Save Marks/ })).toBeNull();
 
@@ -1294,7 +1299,7 @@ describe('drafts belong to the Review (P156)', () => {
     expect(within(status).getByRole('button', { name: 'Discard' })).toBeTruthy();
     // The header follows the drafts to another card.
     await user.click(screen.getByRole('button', { name: /^Review DEF\b/ }));
-    expect(within(await screen.findByRole('region', { name: 'Review status' })).getByText('2 unsaved Marks')).toBeTruthy();
+    expect(within(await screen.findByRole('region', { name: 'The day' })).getByText('2 unsaved Marks')).toBeTruthy();
   });
 
   it('should save every draft, across Trades and sessions, in one Save Marks command', async () => {
@@ -1309,7 +1314,7 @@ describe('drafts belong to the Review (P156)', () => {
     await user.click(screen.getByRole('button', { name: /^Review DEF\b/ }));
     const other = await marksPanel();
     await user.type(inputOf(other, 'DEF', MONDAY_LABEL), '33.10');
-    const status = screen.getByRole('region', { name: 'Review status' });
+    const status = screen.getByRole('region', { name: 'The day' });
     expect(within(status).getByText('3 unsaved Marks')).toBeTruthy();
 
     await user.click(within(status).getByRole('button', { name: 'Save Marks (3)' }));
@@ -1338,7 +1343,7 @@ describe('drafts belong to the Review (P156)', () => {
     await user.click(screen.getByRole('button', { name: /^Review DEF\b/ }));
     const other = await marksPanel();
     await user.type(inputOf(other, 'DEF', MONDAY_LABEL), '33.10');
-    const status = screen.getByRole('region', { name: 'Review status' });
+    const status = screen.getByRole('region', { name: 'The day' });
     expect(within(status).getByText('3 unsaved Marks')).toBeTruthy();
 
     // The header's Discard empties the drafts of the Trades that are not open too.
@@ -1376,7 +1381,7 @@ describe('drafts belong to the Review (P156)', () => {
       enter('9');
       if (page < 5) await user.click(within(panel).getByRole('button', { name: 'Next page' }));
     }
-    const status = screen.getByRole('region', { name: 'Review status' });
+    const status = screen.getByRole('region', { name: 'The day' });
     expect(within(status).getByText('112 unsaved Marks')).toBeTruthy();
 
     await user.click(within(status).getByRole('button', { name: 'Save Marks (112)' }));
@@ -1410,7 +1415,7 @@ describe('drafts belong to the Review (P156)', () => {
     await marksPanel();
     expect(onDirtyChange).toHaveBeenLastCalledWith(true);
 
-    await user.click(within(screen.getByRole('region', { name: 'Review status' })).getByRole('button', { name: 'Discard' }));
+    await user.click(within(screen.getByRole('region', { name: 'The day' })).getByRole('button', { name: 'Discard' }));
     expect(onDirtyChange).toHaveBeenLastCalledWith(false);
   });
 
@@ -1448,7 +1453,7 @@ describe('links, refused saves, kept drafts and the turn (T9R2.14)', () => {
   });
 
   const headerOf = (symbol: string) => screen.getByRole('button', { name: new RegExp(`^Review ${symbol}\\b`) });
-  const statusOf = () => screen.getByRole('region', { name: 'Review status' });
+  const statusOf = () => screen.getByRole('region', { name: 'The day' });
 
   it('should open the first refused key card, page and editor after a refused save, with focus on its input', async () => {
     const facade = cardFacade(pagedReview());
@@ -1564,7 +1569,7 @@ describe('links, refused saves, kept drafts and the turn (T9R2.14)', () => {
     vi.mocked(facade.DailyReview.open).mockResolvedValue({ kind: 'Empty', reviewDate: MONDAY, cutoff: CUTOFF, owed: [], binding: newBinding });
     await user.click(within(panel).getByRole('button', { name: 'Refresh' }));
 
-    await waitFor(() => expect(screen.queryByRole('region', { name: 'Review status' })).toBeNull());
+    await waitFor(() => expect(screen.queryByRole('region', { name: 'The day' })).toBeNull());
     expect(screen.queryByRole('button', { name: /^Save Marks/ })).toBeNull();
     await waitFor(() => expect(onDirtyChange).toHaveBeenLastCalledWith(false));
   });

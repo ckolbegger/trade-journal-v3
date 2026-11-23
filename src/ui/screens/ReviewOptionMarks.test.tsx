@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useFixedClock as fixClock } from './trade-detail/test-support.ts';
 import { cardProgress } from '../../../tests/support/card-progress.ts';
 import { facadeDouble } from '../../../tests/support/facade-double.ts';
+import { dayOf } from '../../../tests/support/review-day.ts';
 import { payoffFixtures } from '../../../tests/support/payoff-fixtures.ts';
 import type { UiFacade } from '../../app/compose.ts';
 import type { DailyTradeReview, MarkRow, OpenDailyReviewResult, ReviewBinding, SettlementItem, WalkedTrade } from '../../app/types.ts';
@@ -51,7 +52,7 @@ const T3 = walked('t3', 'MNO', { band: 'Blocker', reasons: [{ code: 'SettlementD
 const T2 = walked('t2', 'XYZ', { progress: cardProgress(0, 0, { needed: 1, resolved: 0 }) });
 
 function review(over: Partial<Ready> = {}): Ready {
-  return {
+  const built: Ready = {
     kind: 'Ready',
     reviewDate: DATE,
     cutoff: CUTOFF,
@@ -65,6 +66,7 @@ function review(over: Partial<Ready> = {}): Ready {
     binding,
     ...over,
   };
+  return over.day ? built : { ...built, day: dayOf(built) };
 }
 
 function tradeReview(tradeId: string, underlying: string, over: Partial<DailyTradeReview> = {}): DailyTradeReview {
@@ -182,14 +184,13 @@ describe('a contract named by its label (conflict K18) and the card payoff summa
     expect(within(card).getByText('At expiration: breakeven 43.76 · max profit $248.70 · max loss $8,751.30')).toBeTruthy();
   });
 
-  it('should move focus to the contract row when the Mark blocker link is followed, and name the contract by its label in the blocker', async () => {
+  it('should move focus to the contract row when the Trade day line link is followed', async () => {
     const user = userEvent.setup();
     renderReview(walkFacade(review(), tradeReview('t3', 'MNO')));
     const card = await screen.findByRole('region', { name: 'MNO review' });
 
-    const blockers = within(screen.getByRole('region', { name: 'Review status' })).getByRole('list', { name: 'Blockers' });
-    expect(within(blockers).getByText(/^Mark missing for/).textContent).toBe('Mark missing for MNO Nov 20 $45 Put on Fri Nov 20');
-    await user.click(within(blockers).getByRole('link', { name: 'MNO Nov 20 $45 Put' }));
+    const lines = within(screen.getByRole('region', { name: 'The day' })).getByRole('list', { name: 'Trade lines' });
+    await user.click(within(lines).getByRole('link', { name: 'MNO' }));
 
     expect(document.activeElement).toBe(within(card).getByRole('textbox', { name: 'MNO Nov 20 $45 Put Mark, Fri Nov 20' }));
   });

@@ -57,7 +57,6 @@ test.describe('B4.1 Daily Review end to end', () => {
     await saveAction(page, 'Hold', undefined, 'DEF');
     await expect(status(page)).toContainText('Complete');
     await expect(status(page)).not.toContainText('Incomplete');
-    await expect(page.getByText('Every Trade has an Action.')).toBeVisible();
     await context.close();
 
     // Relaunch: the Review resumes from stored facts as Complete, every Action shown.

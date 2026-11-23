@@ -1,16 +1,15 @@
-import { Fragment, useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
-import { Link, useSearchParams } from 'react-router';
+import { useSearchParams } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
-import type { IncompleteReason, MarketDataPrepareEntry, OpenDailyReviewResult, OwedReflectionsTrade, PostSaveReview, ReviewCompletion, SaveReviewMarksResult, WalkedTrade } from '../../app/types.ts';
-import { instrumentKey } from '../../domain/instrument/index.ts';
-import { instrumentLabel, isMarkMissingBlocker, isSettlementDueBlocker, text, unavailableWords } from '../calculation-words.ts';
+import type { MarketDataPrepareEntry, OpenDailyReviewResult, OwedReflectionsTrade, PostSaveReview, SaveReviewMarksResult, WalkedTrade } from '../../app/types.ts';
 import { PageTitle } from '../PageTitle.tsx';
 import { useRuntime } from '../runtime.tsx';
 import { shortDate, tradeName, tradeSummary } from '../format.ts';
 import { discardDraftsSetAside } from './action-draft.ts';
 import type { SavedAction } from './ActionForm.tsx';
 import { SaveFailure, tooManyWords, type EntryDirty } from './CardMarks.tsx';
+import { DayCard, type OpenCard } from './DayCard.tsx';
 import { fold, marksOf, nextCard, type Held, type HeldResult } from './held-review.ts';
 import type { Draft } from './review-drafts.ts';
 import { NO_GO, PANELS, ReviewCard, type CardDetail, type Go, type PanelName } from './ReviewCard.tsx';
@@ -28,101 +27,12 @@ export interface ReviewViewProps {
 
 type Ready = Extract<OpenDailyReviewResult, { kind: 'Ready' }>;
 
-const COMPLETION_TEXT = { Incomplete: 'Incomplete', Complete: 'Complete', CompleteWithUnavailableMarks: 'Complete with Unavailable Marks' } as const;
-
-type CalculationFamily = Extract<ReviewCompletion, { kind: 'CompleteWithUnavailableMarks' }>['families'][number];
-const FAMILY_TEXT: Record<CalculationFamily, string> = { Valuation: 'Valuation', Risk: 'Risk', Reward: 'Reward', ConditionStatus: 'Condition status' };
-
-// Opens a card, on a panel and an Instrument's row when they are named (A161).
-type OpenCard = (tradeId: string, panel?: PanelName, instrument?: string) => void;
-
 // The first card, in attention order, holding the Instrument: its Review-date row or an earlier session names the Trade.
 function holderOf(review: Ready, instrumentKey: string): string | undefined {
   const family = review.families.find((f) => f.family === 'Marks');
   if (family?.family !== 'Marks') return undefined;
   const holding = new Set([...family.today.filter((row) => row.instrumentKey === instrumentKey).flatMap((row) => row.trades), ...family.earlier.filter((group) => group.instrumentKey === instrumentKey).flatMap((group) => group.trades.map((t) => t.tradeId))]);
   return walkedTrades(review).find((t) => holding.has(t.tradeId))?.tradeId;
-}
-
-// A link that opens the card; it stays a real link, so it can be opened in a new tab.
-function CardLink({ tradeId, open, panel, instrument, children }: { readonly tradeId: string; readonly open: OpenCard; readonly panel?: PanelName; readonly instrument?: string; readonly children: ReactNode }) {
-  let href = `/review?trade=${tradeId}`;
-  if (instrument !== undefined) href += `&instrument=${encodeURIComponent(instrument)}`;
-  else if (panel !== undefined) href += `&panel=${panel}`;
-  return (
-    <a
-      href={href}
-      onClick={(event) => {
-        // A new-tab or new-window click is the browser's: the href names the same card, panel and row.
-        if (event.ctrlKey || event.metaKey || event.shiftKey || event.button !== 0) return;
-        event.preventDefault();
-        open(tradeId, panel, instrument);
-      }}
-    >
-      {children}
-    </a>
-  );
-}
-
-// The Trade a blocker names, by its name (A150); each opens the card and panel that resolve it (A161).
-function blockerText(reason: IncompleteReason, review: Ready, name: (tradeId: string) => string, open: OpenCard, timeZone: string): ReactNode {
-  if (isMarkMissingBlocker(reason)) {
-    const tradeId = walkedTrades(review).find((t) => reason.trades.includes(t.tradeId))?.tradeId;
-    // The sentence is the module's; its Instrument part is the card link.
-    const parts = unavailableWords({ reason: 'MarkMissing', instrument: reason.instrument, date: reason.tradingDate }, 'sentence', timeZone);
-    return parts.map((part, i) =>
-      part.kind === 'instrument' && tradeId !== undefined ? (
-        <CardLink key={i} tradeId={tradeId} open={open} panel="Marks" instrument={instrumentKey(part.instrument)}>
-          {text([part], timeZone)}
-        </CardLink>
-      ) : (
-        <Fragment key={i}>{text([part], timeZone)}</Fragment>
-      ),
-    );
-  }
-  // The settlement's sentence is the module's too; its contract is the link to the card's Settlement panel (row 24.5).
-  if (isSettlementDueBlocker(reason)) {
-    const parts = unavailableWords({ reason: 'SettlementDue', instrument: reason.instrument, expiration: reason.expiration }, 'sentence', timeZone);
-    return parts.map((part, i) =>
-      part.kind === 'instrument' ? (
-        <CardLink key={i} tradeId={reason.tradeId} open={open} panel="Settlement">
-          {text([part], timeZone)}
-        </CardLink>
-      ) : (
-        <Fragment key={i}>{text([part], timeZone)}</Fragment>
-      ),
-    );
-  }
-  switch (reason.code) {
-    case 'ActionMissing':
-      return (
-        <>
-          Action missing for{' '}
-          <CardLink tradeId={reason.tradeId} open={open} panel="Action">
-            {name(reason.tradeId)}
-          </CardLink>
-        </>
-      );
-    // The Trade links to its card, where the reflections are resolved (A71).
-    case 'ReflectionDue':
-      return (
-        <>
-          {reason.debtIds.length === 1 ? 'Reflection' : `${reason.debtIds.length} reflections`} due for{' '}
-          <CardLink tradeId={reason.tradeId} open={open} panel="Reflections">
-            {name(reason.tradeId)}
-          </CardLink>
-        </>
-      );
-    case 'IntegrityDisagreement':
-      return `${name(reason.tradeId)}: recorded facts disagree`;
-    case 'IncoherentFacts':
-      // The Trade links to its Detail, where each finding is listed; the sentence is the module's.
-      return (
-        <>
-          <Link to={`/trades/${reason.tradeId}`}>{name(reason.tradeId)}</Link>: {text(unavailableWords({ reason: 'FactsIncoherent', findings: reason.findings }, 'sentence', timeZone), timeZone)}
-        </>
-      );
-  }
 }
 
 function ReviewDate({ date }: { readonly date: string }) {
@@ -134,9 +44,6 @@ function ReviewDate({ date }: { readonly date: string }) {
 }
 
 const walkedTrades = (review: Ready) => review.families.flatMap((f) => (f.family === 'Trades' ? f.trades : []));
-
-// The blockers with Missing Marks first (P36), the rest in the order the Review gave them.
-const marksFirst = (reasons: readonly IncompleteReason[]): IncompleteReason[] => [...reasons.filter(isMarkMissingBlocker), ...reasons.filter((r) => !isMarkMissingBlocker(r))];
 
 // How the Review names a Trade it holds, from one lookup over its walked Trades: `name` in a sentence (A150, "XYZ (Long 100
 // shares @ $50.18)"), and `line` for "also held by", the summary line alone (decision 67). The Trade id stands for one it does not hold.
@@ -176,33 +83,6 @@ function UnsavedMarks({ drafts, showFailure, onRefresh }: { readonly drafts: Mar
   );
 }
 
-function Status({ review, completion, name, openCard, drafts, failureHere, onRefresh }: { readonly review: Ready; readonly completion: ReviewCompletion; readonly name: (tradeId: string) => string; readonly openCard: OpenCard; readonly drafts: MarkDrafts; readonly failureHere: boolean; readonly onRefresh: () => Promise<boolean> }) {
-  const { timeZone, writable } = useRuntime();
-  return (
-    <section className="card" aria-label="Review status">
-      <ReviewDate date={review.reviewDate} />
-      <p>
-        <strong>{COMPLETION_TEXT[completion.kind]}</strong>
-      </p>
-      {writable && drafts.count > 0 && <UnsavedMarks drafts={drafts} showFailure={failureHere} onRefresh={onRefresh} />}
-      {completion.kind === 'CompleteWithUnavailableMarks' && (
-        <div role="group" aria-label="Unavailable Marks">
-          <p>Instruments: {completion.instruments.map((instrument) => instrumentLabel(instrument, timeZone)).join(', ')}</p>
-          <p>Trades: {completion.trades.map(name).join(', ')}</p>
-          <p>Not calculated: {completion.families.map((family) => FAMILY_TEXT[family]).join(', ')}</p>
-        </div>
-      )}
-      {completion.kind === 'Incomplete' && (
-        <ul aria-label="Blockers">
-          {marksFirst(completion.reasons).map((reason, i) => (
-            <li key={i}>{blockerText(reason, review, name, openCard, timeZone ?? 'UTC')}</li>
-          ))}
-        </ul>
-      )}
-    </section>
-  );
-}
-
 // The card that is open, with the count of the opening it was shown at, and what it shows.
 interface Shown {
   readonly tradeId: string;
@@ -215,7 +95,6 @@ const walkedDetail = (detail: Shown['detail'] | undefined): CardDetail | undefin
 const owedDetail = (detail: Shown['detail'] | undefined): OwedDetail | undefined => (typeof detail === 'object' && 'trade' in detail ? undefined : detail);
 
 const AFTER_SAVE = {
-  Done: 'Every Trade has an Action.',
   Mark: 'A Mark is needed before the next Trade. It is listed in its card.',
   Assembly: 'The Action is saved. Reload the Review to refresh it.',
 } as const;
@@ -490,7 +369,7 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
     if (!open) return;
     const next = nextCard(latest.current, post.nextStep);
     setGo({ tradeId: undefined, go: NO_GO });
-    // A Mark is the next step: the first card holding it opens on its Marks panel with focus in the row, as a Mark blocker's link does.
+    // A Mark is the next step: the first card holding it opens on its Marks panel with focus in the row, as a day line's link does.
     if (next.kind === 'Mark') {
       openOnMarks(next.tradeId, next.instrumentKey);
       return;
@@ -503,7 +382,7 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
       setReveal((current) => ({ tradeId: next.card.tradeId, count: current.count + 1 }));
       show(next.card.tradeId, { card: next.card });
     } else collapse();
-    setAfterSave(next.kind === 'Done' ? AFTER_SAVE.Done : next.kind === 'MarkNotHeld' ? AFTER_SAVE.Mark : undefined);
+    setAfterSave(next.kind === 'MarkNotHeld' ? AFTER_SAVE.Mark : undefined);
   };
   // A resolved reflection leaves the card open to show it resolved, so only the overview's completion and binding follow the result.
   const reflectionResolved = (post: PostSaveReview) => apply({ kind: 'DebtResolved', review: post });
@@ -561,7 +440,7 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
       else void select(tradeId, true);
     }
   };
-  // A blocker's link opens the card and panel that resolve it (A161). Another panel of the open card is no departure, so it is allowed while the card holds drafts.
+  // A day line's link opens the card and panel that resolve it (A161). Another panel of the open card is no departure, so it is allowed while the card holds drafts.
   const openCard: OpenCard = (tradeId, panel, instrument) => {
     if (tradeId !== openId) {
       if (held) {
@@ -631,7 +510,7 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
     if (result.kind === 'MarksSaved') marksSaved(result, opening, tradeId);
     return result;
   };
-  // A failed Save Marks shows in the open walked card's Marks panel, and in the status header when no walked card is open (owed card open, or none).
+  // A failed Save Marks shows in the open walked card's Marks panel, and in the day card when no walked card is open (owed card open, or none).
   const walkedOpen = openId !== undefined && walkedTrades(review).some((t) => t.tradeId === openId);
   // Refresh from the header: the open (owed) card's refresh, else the Review alone.
   const refreshHeld = async (): Promise<boolean> => {
@@ -644,7 +523,7 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
   }, [firstId, read]);
   return (
     <>
-      {empty ? <EmptyReview date={review.reviewDate} /> : <Status review={review} completion={review.completion} name={name} openCard={openCard} drafts={markDrafts} failureHere={!walkedOpen} onRefresh={refreshHeld} />}
+      {empty ? <EmptyReview date={review.reviewDate} /> : <DayCard review={review} name={name} openCard={openCard} unsaved={writable && markDrafts.count > 0 && <UnsavedMarks drafts={markDrafts} showFailure={!walkedOpen} onRefresh={refreshHeld} />} />}
       {failed && (
         <div role="alert" className="banner warning">
           <p>We couldn’t refresh the Review. Nothing was changed.</p>
@@ -652,7 +531,7 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
       )}
       {!empty && (
         <>
-          <p>Stop ◂ ▸ Target</p>
+          <h2>Trades · most pressing first</h2>
           <ol aria-label="Positions" className="review-cards">
             {trades.map((trade) => (
               <ReviewCard
