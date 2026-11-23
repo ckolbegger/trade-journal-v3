@@ -912,6 +912,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
           underlying: summary.underlying,
           lifecycle: summary.lifecycle,
           attention: item,
+          plan: { thesis: analysis.plan.thesis, invalidation: analysis.plan.invalidation },
           labels,
           ...figures,
           settlement,

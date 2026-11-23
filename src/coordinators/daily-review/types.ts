@@ -340,6 +340,9 @@ export interface DailyTradeReview {
   readonly replay?: TradeReplayView;
   // The Trade's band and reasons, as the overview lists them.
   readonly attention: ReviewTradeItem;
+  // The Plan's Thesis and "No longer valid if", the text Trade Detail shows (P177, decision 130).
+  // `getTrade` always returns it; optional so a card built by hand needs none (the screen that shows it, T95.16, reads it).
+  readonly plan?: { readonly thesis: string; readonly invalidation: string };
   readonly labels: { readonly strategy: string; readonly account: string; readonly institution: string };
   // The Review-date frame, with its Stale context when the Mark is Missing; this and the figures
   // below are absent when the Trade's facts cannot be replayed.
