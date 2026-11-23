@@ -487,3 +487,7 @@ B1 `b00bec4a`: top line shows whenever the list isn't visible (`listVisible = li
 ocr of T95.19-B1, T95.19-B2 (session aea3e611): 4 files, 0 findings. `evidence/D95/ocr/T95.19-B1-B2-09f6f3d8.json`.
 
 Run `t95.19-last-decisions` (browser-task): unit 2886, integration 304, browser 13, checks 14 of 14. Passed. T95.19 Done.
+
+## T95.20 — The card before its Marks (Standard)
+
+Commit `1a4ef61d` (from `3158ffe4`). Gate on the card's Marks to go: W94 "figures wait" with the box on the session before; W95 "No Action until today's Marks are in" replaces the Action form (kept mounted so drafts survive), with a link to the Marks step; a `ReviewMarksUnresolved` save shows the same words. Cases 1, 2, 4 red then green; case 3 first-run pass, mutation-checked. Existing card cases that assumed an Action form with a Mark to go now start with Marks in.
