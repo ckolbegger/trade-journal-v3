@@ -3,7 +3,8 @@ import { describe, expect, it } from 'vitest';
 import type { Application } from '../../../src/app/compose.ts';
 import type { MarketDataPrepareEntry } from '../../../src/modules/market-data/index.ts';
 import { countRequests, type CountedRequest } from '../../support/request-counter.ts';
-import { onboardedAt, planStock, record, saveMark } from '../d7/support.ts';
+import { confirmOption, OC_PC1, OC_PC2, onboardedAt, planStock, record, recordOption, saveMark, TUESDAY_1700, XYZ_CALL } from '../d7/support.ts';
+import { instrumentKey } from '../../../src/domain/instrument/index.ts';
 import { heldTrade, MARKS, MON_1700, MONDAY, openOn } from './support.ts';
 
 const entries = (requests: readonly CountedRequest[]) => requests.filter((r) => r.store === 'journalEntries');
@@ -55,6 +56,35 @@ describe('I95.6 The request pins of the Review (section 1.6)', () => {
     expect(entries(without.requests)).toEqual(entries(with5.requests));
     // R5: the card's reads of Marks do not grow with the Actions either.
     expect(with5.requests.filter((r) => r.store === 'observations')).toEqual(without.requests.filter((r) => r.store === 'observations'));
+  });
+
+  it('should add one observations read for an option dated last-close line in getTrade whatever the number of Actions', { timeout: 120_000 }, async () => {
+    // A Long Call bought Monday with Monday's Marks only, reviewed Tuesday: its current figures need Monday's Mark as a dated line (R5).
+    const optionCard = async (fills: number) => {
+      const { app } = await onboardedAt(TUESDAY_1700);
+      const tradeId = (await confirmOption(app, 'O-C')).receipt.tradeId;
+      for (const fill of [OC_PC1, OC_PC2].slice(0, fills)) await recordOption(app, tradeId, 'Buy', fill);
+      await saveMark(app, instrumentKey(XYZ_CALL), '2026-10-12', '2.20');
+      await saveMark(app, 'XYZ', '2026-10-12', '52.00');
+      const opened = (await countRequests(() => app.DailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: TUESDAY_1700 }))).result;
+      if (opened.kind !== 'Ready') throw new Error('open: not Ready');
+      return countRequests(() => app.DailyReview.getTrade({ reviewDate: opened.reviewDate, tradeId, binding: opened.binding }));
+    };
+
+    const one = await optionCard(1);
+    const two = await optionCard(2);
+
+    for (const card of [one, two]) {
+      if (card.result.kind !== 'Ready') throw new Error(`getTrade: ${card.result.kind}`);
+      expect(card.result.trade.datedLastClose?.tradingDate).toBe('2026-10-12');
+    }
+    // Tuesday's date-wide read and the Stale lookups, then exactly one read of Monday's date for the line, then one series read per Instrument.
+    const GET_ALL = { on: 'store', store: 'observations', method: 'getAll' };
+    const CURSOR = { on: 'index', store: 'observations', index: 'byInstrumentDate', method: 'openCursor' };
+    const SCAN = { on: 'index', store: 'observations', index: 'byInstrumentDate', method: 'getAll' };
+    const observations = (requests: readonly CountedRequest[]) => requests.filter((r) => r.store === 'observations');
+    expect(observations(one.requests)).toEqual([GET_ALL, CURSOR, CURSOR, GET_ALL, SCAN, SCAN]);
+    expect(observations(two.requests)).toEqual(observations(one.requests));
   });
 
   it('should save a page of Marks in one snapshot and one commit whatever the number of entries', { timeout: 120_000 }, async () => {
