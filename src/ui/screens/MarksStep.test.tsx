@@ -2407,3 +2407,79 @@ describe('Save Marks while a cell is being fixed (T95.14-B2)', () => {
     });
   });
 });
+
+describe('the grids keys (T95.15)', () => {
+  const keysReview = () => cardFacade(gridReview({ earlierMarks: [xyzMarks({ [FRIDAY]: markAt('45.10') })] }));
+  const price = (step: HTMLElement, symbol: string) => inputOf(step, symbol, 'Mon Oct 12');
+
+  it('should move to the next input on Enter, and to Save Marks after the last', async () => {
+    renderReview(keysReview());
+    const user = userEvent.setup();
+    const step = await marksPanel();
+
+    await user.type(price(step, 'XYZ'), '45.50{Enter}');
+    expect(document.activeElement).toBe(price(step, 'DEF'));
+    await user.type(price(step, 'DEF'), '30.00{Enter}');
+    expect(document.activeElement).toBe(within(step).getByRole('button', { name: 'Save Marks (2)' }));
+  });
+
+  it('should move up and down the column with the arrow keys', async () => {
+    renderReview(keysReview());
+    const user = userEvent.setup();
+    const step = await marksPanel();
+
+    await user.type(price(step, 'XYZ'), '45.50');
+    await user.keyboard('{ArrowDown}');
+    expect(document.activeElement).toBe(price(step, 'DEF'));
+    await user.keyboard('{ArrowDown}');
+    // Past the last price the key does nothing: it stays.
+    expect(document.activeElement).toBe(price(step, 'DEF'));
+    await user.keyboard('{ArrowUp}');
+    expect(document.activeElement).toBe(price(step, 'XYZ'));
+    await user.keyboard('{ArrowUp}');
+    expect(document.activeElement).toBe(price(step, 'XYZ'));
+  });
+
+  it('should mark Cant get a price on N in an empty input, and type no letter', async () => {
+    renderReview(keysReview());
+    const user = userEvent.setup();
+    const step = await marksPanel();
+
+    await user.click(price(step, 'XYZ'));
+    await user.keyboard('N');
+    // The reason is asked in the row, as the button asks it, and the letter is not typed.
+    expect(price(step, 'XYZ').value).toBe('');
+    const why = within(step).getByRole('textbox', { name: 'Why no price, XYZ' });
+    expect(document.activeElement).toBe(why);
+    expect((why as HTMLInputElement).value).toBe('');
+    // A price being typed keeps its letters: N in a filled input is not the key.
+    await user.type(price(step, 'DEF'), '4n');
+    expect(price(step, 'DEF').value).toBe('4n');
+    expect(within(step).queryByRole('textbox', { name: 'Why no price, DEF' })).toBeNull();
+  });
+
+  it('should hold Enter at an open slip question until it is answered', async () => {
+    renderReview(keysReview());
+    const user = userEvent.setup();
+    const step = await marksPanel();
+
+    await user.type(price(step, 'XYZ'), '49.00{Enter}');
+    // The price reads as a slip: Enter asks and stays, and goes nowhere while the question stands.
+    expect(within(step).getByText('+8.6% from $45.10. Right?')).toBeTruthy();
+    expect(document.activeElement).toBe(price(step, 'XYZ'));
+    await user.keyboard('{Enter}');
+    expect(document.activeElement).toBe(price(step, 'XYZ'));
+    // Once answered, the price goes on as Enter does.
+    await user.click(within(step).getByRole('button', { name: 'Yes, $49.00' }));
+    expect(document.activeElement).toBe(price(step, 'DEF'));
+    await user.type(price(step, 'XYZ'), '{Enter}');
+    expect(document.activeElement).toBe(price(step, 'DEF'));
+  });
+
+  it('should show the key hint under the grid', async () => {
+    renderReview(keysReview());
+    const step = await marksPanel();
+
+    expect(within(step).getByText('Enter next, then Save · ↑ ↓ move · N no price')).toBeTruthy();
+  });
+});

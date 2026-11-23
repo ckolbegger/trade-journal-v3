@@ -31,6 +31,8 @@ function ReviewMarkEntry({ instrumentKey, tradingDate, onEntryDirty, onMarkSaved
 // A Mark task only a Trade with a due settlement needs (A112, T7.24): recording the expiration removes it.
 // A typed price, or "Can't get a price" with its reason, is a draft the Review holds until Save Marks (A153, P156).
 const SETTLEMENT_ONLY_NOTE = 'Needed only while settlement is due';
+// The keys the grid takes (W105).
+const KEY_HINT = 'Enter next, then Save · ↑ ↓ move · N no price';
 // W110: a Mark saved in this Review is fixed where it stands.
 const SAVED_FIX_WORDS = 'Saved in this Review: fix it in place, no reason needed.';
 
@@ -439,6 +441,14 @@ export function MarksStep({ facade, held: heldReview, onResult, tradeLine, onEnt
     const entry = typedPrices.find((typed) => typed.key.instrumentKey === key.instrumentKey)?.entry;
     return entry !== undefined && left[rowId(key.instrumentKey, key.tradingDate)] === entry ? questionFor(key, entry) : undefined;
   };
+  // A typed price that reads as a slip and has no answer yet: Enter asks about it and stays (T95.15).
+  const asksAbout = (key: ObservationKey) => {
+    const entry = typedPrices.find((typed) => typed.key.instrumentKey === key.instrumentKey)?.entry;
+    const savedPrice = savedPriceOf(key);
+    // A saved Mark left as it is, as shown or as stored, is no change and asks nothing.
+    if (entry !== undefined && savedPrice !== undefined && (entry === savedPrice || entry === decimalUnderlyingPrice(savedPrice))) return false;
+    return entry !== undefined && questionFor(key, entry) !== undefined;
+  };
   // The price of a Mark saved in this Review, which its cell holds in place (T95.14).
   const savedPriceOf = (key: ObservationKey) => {
     const state = model.cellAt(key.instrumentKey, key.tradingDate);
@@ -582,6 +592,7 @@ export function MarksStep({ facade, held: heldReview, onResult, tradeLine, onEnt
         refusals={handledReveal}
         showSession={gap && { date: gap.date, count: gapShown }}
         onLeave={leave}
+        asksAbout={asksAbout}
         noticeOf={(key) => {
           const notice = notices[rowId(key.instrumentKey, key.tradingDate)];
           const state = model.cellAt(key.instrumentKey, key.tradingDate);
@@ -617,6 +628,7 @@ export function MarksStep({ facade, held: heldReview, onResult, tradeLine, onEnt
       {inGrid && <p className="hint">{ZERO_MARK_NOTE}</p>}
       {chosenSavedInPlace && <p className="hint">{SAVED_FIX_WORDS}</p>}
       {chosenSavedInPlace && heldByLine}
+      {writable && <p className="hint">{KEY_HINT}</p>}
       {writable && <p className="hint">{SLIP_LIMITS_WORDS}</p>}
       {refused && dirtyIds.size > 0 && <p role="status">Save or cancel the correction to choose another cell.</p>}
       {chosen && chosenCell && chosenCell !== NOT_HELD && !inGrid && (

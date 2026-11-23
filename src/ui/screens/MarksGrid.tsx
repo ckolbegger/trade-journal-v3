@@ -50,6 +50,8 @@ export interface MarksGridProps {
   // What a Conflict said about a Review Date cell: nothing was saved, and the Mark shown is the current one.
   readonly noticeOf?: (key: ObservationKey) => string | undefined;
   readonly onLeave?: (key: ObservationKey) => void;
+  // Whether the price in a cell reads as a slip not yet answered: Enter then asks and stays (T95.15).
+  readonly asksAbout?: (key: ObservationKey) => boolean;
   readonly slipOf?: (key: ObservationKey) => Omit<SlipQuestionProps, 'last' | 'onChoose'> | undefined;
   readonly onAnswer?: (key: ObservationKey, choice: SlipChoice) => void;
   // Counts the refused saves, so a repeat refusal of the same cell is a new one.
@@ -62,7 +64,7 @@ const idOf = (key: ObservationKey): string => `${key.instrumentKey}:${key.tradin
 
 // The Marks step's grid: one row per Instrument on the page, the previous session's Mark, the Review Date's price and the change from the
 // previous Mark. The skipped sessions are optional columns, added on request.
-export function MarksGrid({ model, reviewDate, writable, showEarlier, draftOf, noteOf, onPrice, onNoPrice, onUndo, fieldOf, chosen, onChoose, onLastEnter, pagingHeld, onPage, refusals, showSession, onLeave, slipOf, onAnswer, noticeOf }: MarksGridProps) {
+export function MarksGrid({ model, reviewDate, writable, showEarlier, draftOf, noteOf, onPrice, onNoPrice, onUndo, fieldOf, chosen, onChoose, onLastEnter, pagingHeld, onPage, refusals, showSession, onLeave, asksAbout, slipOf, onAnswer, noticeOf }: MarksGridProps) {
   const { timeZone } = useRuntime();
   const [requestedPage, setPage] = useState(0);
   const holdId = useId();
@@ -166,6 +168,15 @@ export function MarksGrid({ model, reviewDate, writable, showEarlier, draftOf, n
     if (field) field.focus();
     else onLastEnter();
   };
+  // The arrow keys go to the price above or below in the same column; a row with no price there is passed over, and the ends stay.
+  const moveInColumn = (from: HTMLInputElement, step: 1 | -1) => {
+    const cell = from.closest('td');
+    const rows = [...(from.closest('tbody')?.rows ?? [])];
+    for (let at = rows.indexOf(from.closest('tr')!) + step; at >= 0 && at < rows.length; at += step) {
+      const field = cell && rows[at]!.cells[cell.cellIndex]?.querySelector('input');
+      if (field) return field.focus();
+    }
+  };
   // Cells in Enter order first, so the inputs are known in that order; then each row is drawn from them.
   const cells = new Map(enterOrder.flatMap((date) => model.instruments.map(({ instrumentKey }) => [`${instrumentKey}|${date}`, cellFor(instrumentKey, date)] as const)));
   for (const date of enterOrder) for (const { instrumentKey } of model.instruments) {
@@ -181,8 +192,22 @@ export function MarksGrid({ model, reviewDate, writable, showEarlier, draftOf, n
       return (
         <input type="text" inputMode="decimal" className="session-grid-control" id={cell.field.id} aria-label={cell.label} aria-invalid={invalid || undefined} aria-describedby={describedBy} value={cell.value} onFocus={() => onChoose(cell.key)} onChange={(event) => onPrice(cell.key, event.target.value)} onBlur={() => cell.key.tradingDate === reviewDate && onLeave?.(cell.key)}
           onKeyDown={(event) => {
+            if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+              event.preventDefault();
+              moveInColumn(event.currentTarget, event.key === 'ArrowDown' ? 1 : -1);
+              return;
+            }
+            if ((event.key === 'n' || event.key === 'N') && !event.ctrlKey && !event.altKey && !event.metaKey && writable && date === reviewDate && !cell.saved && cell.value === '') {
+              event.preventDefault();
+              setAsking({ id: idOf(cell.key) });
+              return;
+            }
             if (event.key !== 'Enter') return;
             event.preventDefault();
+            if (date === reviewDate && asksAbout?.(cell.key)) {
+              onLeave?.(cell.key);
+              return;
+            }
             enterFrom(cell.label, event.currentTarget);
           }}
         />
