@@ -1,0 +1,128 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 0,
+    "total_tokens": 91649,
+    "input_tokens": 90955,
+    "output_tokens": 694,
+    "cache_read_tokens": 15744,
+    "elapsed": "24s"
+  },
+  "tool_calls": {
+    "total": 12,
+    "by_tool": {
+      "code_search": 3,
+      "file_read": 9
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Marks grid behavior and step tests",
+      "files": [
+        "src/ui/screens/MarksGrid.tsx",
+        "src/ui/screens/MarksStep.test.tsx"
+      ]
+    },
+    {
+      "label": "End-to-end support and responsive accessibility checks",
+      "files": [
+        "e2e/d4/support.ts",
+        "e2e/d5r/responsive-a11y.spec.ts"
+      ]
+    }
+  ],
+  "session_id": "71b4bcb6-7aaa-4c6d-a38d-56d23bbb9a01",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "71b4bcb6-7aaa-4c6d-a38d-56d23bbb9a01",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "4792dfab",
+      "resolved_base": "6e72e012d2d920bd0394407f97ba3a438badb3a2",
+      "resolved_head": "4792dfabe5286d52754d5c478f4749a9f2542ec8",
+      "exact_range": "6e72e012d2d920bd0394407f97ba3a438badb3a2..4792dfabe5286d52754d5c478f4749a9f2542ec8",
+      "source_artifact_sha256": "e0902cd066b30bfae26f9d267c7d15af93cce788b85da726bf83717f8e648170"
+    },
+    "execution": {
+      "ocr_version": "v1.14.2",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0f4aa84758c10defc83e15772fff0753dc16e94eaf609bc7de67c6ee942fd4ba",
+          "path": "e2e/d5r/responsive-a11y.spec.ts",
+          "fingerprint": "327dc59340cd1b33ad5b01eb15f0dba9fac68bd60f883f9cb2bdbd7e19cf1725"
+        },
+        {
+          "item_id": "1a8b204813f2ba42444221ccf71dd5d66d82adae9a0ef7d191f74dc7f17e40e2",
+          "path": "src/ui/screens/MarksStep.test.tsx",
+          "fingerprint": "268eefebf3c493dc97fd516e89dd663c927f8d772c7c18d96018ce2c81745342"
+        },
+        {
+          "item_id": "6b3ea2ff8de74765e3af18e89799b9b10bb04a902bac37f58df69f7eda81b1bd",
+          "path": "src/ui/screens/MarksGrid.tsx",
+          "fingerprint": "b688e189842c72a79501de38619cb5f718f24cfbdb3c3a892a83a66e39fe61fe"
+        },
+        {
+          "item_id": "77a09965bbc16832a6776b36503973c81fdfb4c349ef52771fbc221627efe7c5",
+          "path": "e2e/d4/support.ts",
+          "fingerprint": "1340ae6d41d59f0102b673c5fed67d90923c3c582c553a55ff863a601dc406ea"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0f4aa84758c10defc83e15772fff0753dc16e94eaf609bc7de67c6ee942fd4ba",
+          "path": "e2e/d5r/responsive-a11y.spec.ts",
+          "fingerprint": "327dc59340cd1b33ad5b01eb15f0dba9fac68bd60f883f9cb2bdbd7e19cf1725"
+        },
+        {
+          "item_id": "1a8b204813f2ba42444221ccf71dd5d66d82adae9a0ef7d191f74dc7f17e40e2",
+          "path": "src/ui/screens/MarksStep.test.tsx",
+          "fingerprint": "268eefebf3c493dc97fd516e89dd663c927f8d772c7c18d96018ce2c81745342"
+        },
+        {
+          "item_id": "6b3ea2ff8de74765e3af18e89799b9b10bb04a902bac37f58df69f7eda81b1bd",
+          "path": "src/ui/screens/MarksGrid.tsx",
+          "fingerprint": "b688e189842c72a79501de38619cb5f718f24cfbdb3c3a892a83a66e39fe61fe"
+        },
+        {
+          "item_id": "77a09965bbc16832a6776b36503973c81fdfb4c349ef52771fbc221627efe7c5",
+          "path": "e2e/d4/support.ts",
+          "fingerprint": "1340ae6d41d59f0102b673c5fed67d90923c3c582c553a55ff863a601dc406ea"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "3fe31516e127fb699a5b361ea10e70d0b23fe8fbc4cd4a49a101d9bd576996f9",
+          "path": "evidence/D95/tdd-log/T95.12-D1.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 24360
+  }
+}
