@@ -189,6 +189,10 @@ Success path: e2e/d4, d5, d7, d9, d9ar 225 passed, 4 skipped, 1 failed (the know
 
 **Complete run `t95.9-mark-helpers`** (on `aa2258ca`, browser-task; run complete): unit 234 files, 2,752 tests; integration 141 files, 300 tests; browser `@every-task` 5 in 13.7 s (no `e2e/d95` yet; the subagent ran all four stages on `267964e5`: 126, 80, 57, 137 + 4 skipped); checks 14 of 14. No failures. T95.9 Done.
 
+## T95.4-D1 — every save returns the day summary; figures for T95.10 and T95.11 (Full; decision 129)
+
+Commit `b8a99091` (from `783d7730`). `PostSaveReview` and `PostMarksReview` Ready gain `day?: DaySummary` (built in each save's pass; the finished-day lists on any save after which nothing is to go, replaying only Trades read as crossed); `DaySummary.lines[]` gains `marks` (Review Date Marks to go) and `closeReview`; `MeterPreviousReading` gains `zone?`; `WalkedTrade` gains `expiresOnReviewDate?: true` (a held contract `DueToday`); `DaySummary` exported. Cases 1, 2, 4, 5, 6, 7 red then green; case 3 (request counts) a first-run pass, mutation-checked (an extra `queryActions` read: assertion failure). Each save's tallies are unchanged; the finishing save adds only the replay's reads (one `meta` get, one `meta,observations` transaction, one `observations.byInstrumentDate` getAll). `day.test.ts`'s Close Review assertion widened from `toEqual` to `toMatchObject` (lines gained fields). No snapshot changed; `verify:fixtures` equal. src/coordinators 540; journal, market-data, trade-views, valuation and src/ui 1,620; integration 300.
+
 ## Trial: complete runs overlapped with the next task (the user, 2026-11-22, for 5 or 6 tasks)
 
 Each task's complete run runs in a detached scratch copy (`.claude/worktrees/run-<label>`, set up by `lane-setup.sh`) at the task's commit, while the next task's subagent starts in this worktree. The run's files are copied back to `evidence/D95/suite-runs/`. A failure becomes a bug task as before; the next task restarts only if it built on the broken code. Times are recorded per run to measure the saving.
