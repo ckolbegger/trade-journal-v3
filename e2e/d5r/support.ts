@@ -1,10 +1,10 @@
 // Shared support for the D5R browser suite (plan section 6.2): D5's helpers, which re-export D4's card helpers (decision 65,
 // section 6.4; decision 68), plus what the card cases need: the card fixture created through the UI, which returns each Trade
 // as a Trade reference the shared helpers take, and the meter and Save Marks locators.
-import type { Locator, Page } from '@playwright/test';
+import type { BrowserContext, Locator, Page } from '@playwright/test';
 import {
-  backToTrade, cardItem, confirmReference, createTradeAt, createTrades, currentTradeId, deferEntry, expect, FOUR_TRADES, PLAN, recordEntry,
-  type CardRef, type FixtureTrade, type PlanValues, type TradeRef,
+  backToTrade, cardItem, confirmReference, createTradeAt, createTrades, currentTradeId, deferEntry, defineSetup, expect, firstPage, FOUR_TRADES, launchAt, MONDAY_1700, onboardedAt, PLAN, recordEntry,
+  type CardRef, type FixtureTrade, type PlanValues, type Profile, type Setup, type TradeRef,
 } from '../d5/support.ts';
 
 export * from '../d5/support.ts';
@@ -37,6 +37,26 @@ export async function createCardFixture(page: Page, options: { readonly earlierD
   await recordEntry(page, [{ quantity: '50', price: '50.00', fee: '1.00', time: '2026-10-12T10:30' }]);
   const ref = (trade: CardTrade, tradeId: string | undefined): TradeRef => ({ symbol: SYMBOL[trade], tradeId: tradeId!, label: trade });
   return { 'T-A': ref('T-A', tA), 'T-B': ref('T-B', tB), 'T-C': ref('T-C', tC), 'T-E': ref('T-E', tE), 'T-F': ref('T-F', tF) };
+}
+
+// The saved setup of the card fixture (setup-snapshot plan, group 3): onboarded at Mon 10-12 17:00 with createCardFixture's default Trades, built once per worker; each test that asks starts on a copy.
+export const CARD_FIXTURE = defineSetup('d5r-card-fixture', async (profile) => {
+  const { context, page } = await onboardedAt(profile, MONDAY_1700);
+  return { context, made: await createCardFixture(page) };
+});
+
+// Copy the card fixture, nothing launched: in place of onboardedAt + createCardFixture, for tests that launch their own browser after the build.
+export function copyCardFixture(copySetup: <T>(setup: Setup<T>) => Promise<T>): Promise<Record<CardTrade, TradeRef>> {
+  return copySetup(CARD_FIXTURE);
+}
+
+// The copy launched at Mon 10-12 17:00 on the Today screen, with each Trade as a Trade reference: in place of onboardedAt + createCardFixture, before openReview.
+export async function openCardFixture(profile: Profile, copySetup: <T>(setup: Setup<T>) => Promise<T>): Promise<{ context: BrowserContext; page: Page } & Record<CardTrade, TradeRef>> {
+  const trades = await copyCardFixture(copySetup);
+  const context = await launchAt(profile, MONDAY_1700);
+  const page = await firstPage(context);
+  await page.goto('/');
+  return { context, page, ...trades };
 }
 
 // Routine Trades for the long list: one Long Stock Trade each, entered Monday 10:00.

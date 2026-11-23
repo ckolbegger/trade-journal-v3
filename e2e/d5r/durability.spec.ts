@@ -1,6 +1,5 @@
 import {
-  expectMark, BASE_URL, createCardFixture, enterMark, expect, firstPage, launchAt, MONDAY, MONDAY_1700, observationsOf, onboardedAt, onboardedPage, openReview, pinClock, probe, reachCard, LAUNCH, spawnedBrowser, test, workspaceOf,
-  type TradeRef,
+  expectMark, BASE_URL, createCardFixture, enterMark, expect, firstPage, launchAt, MONDAY, MONDAY_1700, observationsOf, onboardedAt, onboardedPage, openReview, pinClock, probe, reachCard, LAUNCH, spawnedBrowser, test, workspaceOf, copyCardFixture, type TradeRef,
 } from './support.ts';
 
 const NOT_WRITABLE = { name: /Read only/ };
@@ -43,12 +42,9 @@ test.describe('B5R.9 Kill after Save Marks', () => {
 });
 
 test.describe('B5R.10 Offline and Recovery Only (faults build)', () => {
-  test('should save Marks offline after a full stop and keep them across another offline restart (AC-DEL-001)', async ({ server, profile }) => {
+  test('should save Marks offline after a full stop and keep them across another offline restart (AC-DEL-001)', async ({ server, profile, copySetup }) => {
     test.setTimeout(240_000);
-    const { context, page } = await onboardedAt(profile, MONDAY_1700);
-    const { 'T-A': tA } = await createCardFixture(page);
-    await openReview(page);
-    await context.close();
+    const { 'T-A': tA } = await copyCardFixture(copySetup);
     // Network disabled: offline emulation plus no server for the origin at all.
     await server.close();
 

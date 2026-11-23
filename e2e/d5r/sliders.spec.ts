@@ -1,14 +1,13 @@
 import type { Locator, Page } from '@playwright/test';
 import {
-  cardHeader, createCardFixture, enterMark, expect, MONDAY, MONDAY_1700, marksStepOf, onboardedAt, openReview, LAUNCH, meterOf, expectTrackDashed, test, type CardTrade,
+  cardHeader, enterMark, expect, MONDAY, marksStepOf, openReview, LAUNCH, meterOf, expectTrackDashed, test, openCardFixture, type CardTrade,
 } from './support.ts';
 
 const nav = (page: Page) => page.getByRole('navigation', { name: 'Primary' });
 
 test.describe('B5R.6 Missing-Mark link', () => {
-  test('should open the Review with focus on DEF’s cell in the Marks step, and no card opened for it, when the Open list’s Mark missing link is followed', async ({ profile }) => {
-    const { context, page } = await onboardedAt(profile, MONDAY_1700);
-    const { 'T-C': tC } = await createCardFixture(page);
+  test('should open the Review with focus on DEF’s cell in the Marks step, and no card opened for it, when the Open list’s Mark missing link is followed', async ({ profile, copySetup }) => {
+    const { context, page, 'T-C': tC } = await openCardFixture(profile, copySetup);
 
     await nav(page).getByRole('link', { name: 'Trades' }).click();
     const list = page.getByRole('table', { name: 'Open Trades' });
@@ -26,9 +25,8 @@ test.describe('B5R.6 Missing-Mark link', () => {
 });
 
 test.describe('B5R.12 Missing-Mark link on a shared Instrument', () => {
-  test('should focus XYZ’s one cell in the Marks step, and open no card for the Trade that is not the first holder, when the Open list’s Mark missing link of that Trade is followed', async ({ profile }) => {
-    const { context, page } = await onboardedAt(profile, MONDAY_1700);
-    const { 'T-F': tF } = await createCardFixture(page);
+  test('should focus XYZ’s one cell in the Marks step, and open no card for the Trade that is not the first holder, when the Open list’s Mark missing link of that Trade is followed', async ({ profile, copySetup }) => {
+    const { context, page, 'T-F': tF } = await openCardFixture(profile, copySetup);
 
     await nav(page).getByRole('link', { name: 'Trades' }).click();
     const list = page.getByRole('table', { name: 'Open Trades' });
@@ -54,9 +52,8 @@ const centre = async (locator: Locator): Promise<number> => {
 const radiusOf = (dot: Locator): Promise<string> => dot.evaluate((el) => getComputedStyle(el).borderRadius);
 
 test.describe('B5R.7 Meter states', () => {
-  test('should draw T-A’s pointer right of break-even, T-B’s pointer pinned at the Stop end in the square shape, T-C’s track dashed with no pointer, each named by its figures', async ({ profile }) => {
-    const { context, page } = await onboardedAt(profile, MONDAY_1700);
-    const trades = await createCardFixture(page);
+  test('should draw T-A’s pointer right of break-even, T-B’s pointer pinned at the Stop end in the square shape, T-C’s track dashed with no pointer, each named by its figures', async ({ profile, copySetup }) => {
+    const { context, page, ...trades } = await openCardFixture(profile, copySetup);
     const { 'T-A': tA, 'T-B': tB, 'T-C': tC, 'T-E': tE, 'T-F': tF } = trades;
     await openReview(page);
     // Before any Mark, T-A's track is already dashed.

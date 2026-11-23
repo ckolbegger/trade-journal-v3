@@ -1,15 +1,13 @@
 import {
-  panelOf, markEditorOf, markInputOf, expectMarkUnsaved, actionFormOf, cardHeader, cardItem, completion, createCardFixture, createRoutineTrades, createTrades, expect, expectAccessible, FRIDAY, MONDAY, MONDAY_1700, onboardedAt, openReview, panelHeader, LAUNCH, remainsOf, meterOf, status, tabTo,
-  test, tradeCard, saveMarksButton, expectMarksSaved, marksStepOf, type TradeRef,
+  panelOf, markEditorOf, markInputOf, expectMarkUnsaved, actionFormOf, cardHeader, cardItem, completion, createRoutineTrades, createTrades, expect, expectAccessible, FRIDAY, MONDAY, MONDAY_1700, onboardedAt, openReview, panelHeader, LAUNCH, remainsOf, meterOf, status, tabTo, test, tradeCard, saveMarksButton, expectMarksSaved, marksStepOf, openCardFixture, type TradeRef,
 } from './support.ts';
 
 const INTENT = /^Why are you taking this action\?/;
 
 test.describe('B5R.11 Responsive and accessible', () => {
-  test('should keep drafts and the open panel through 390 px and back, put the meter on its own row at narrow width, report no WCAG 2.1 AA violations, say band, status and Unsaved in text, and complete a card by keyboard with visible focus', async ({ profile }) => {
+  test('should keep drafts and the open panel through 390 px and back, put the meter on its own row at narrow width, report no WCAG 2.1 AA violations, say band, status and Unsaved in text, and complete a card by keyboard with visible focus', async ({ profile, copySetup }) => {
     test.setTimeout(300_000);
-    const { context, page } = await onboardedAt(profile, MONDAY_1700);
-    const { 'T-A': tA, 'T-B': tB, 'T-C': tC, 'T-E': tE, 'T-F': tF } = await createCardFixture(page);
+    const { context, page, 'T-A': tA, 'T-B': tB, 'T-C': tC, 'T-E': tE, 'T-F': tF } = await openCardFixture(profile, copySetup);
     await openReview(page);
 
     // Wide: the meter sits beside the header, in the same row.
@@ -102,10 +100,9 @@ test.describe('B5R.11 Responsive and accessible', () => {
     await context.close();
   });
 
-  test('should keep the meter beside the header while the card\'s header is at least 40rem wide, with T-A\'s header text on at most two lines, and put it on its own full-width row below the text when narrower: beside at 1280, 960 and 760 px, below at 700 and 390 px', async ({ profile }) => {
+  test('should keep the meter beside the header while the card\'s header is at least 40rem wide, with T-A\'s header text on at most two lines, and put it on its own full-width row below the text when narrower: beside at 1280, 960 and 760 px, below at 700 and 390 px', async ({ profile, copySetup }) => {
     test.setTimeout(120_000);
-    const { context, page } = await onboardedAt(profile, MONDAY_1700);
-    const { 'T-A': tA } = await createCardFixture(page);
+    const { context, page, 'T-A': tA } = await openCardFixture(profile, copySetup);
     await openReview(page);
 
     // T-A's header: the head row (the card's header width), the visible text pieces' line boxes, and the meter.

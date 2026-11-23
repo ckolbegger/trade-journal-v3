@@ -126,3 +126,27 @@ Assumptions: restore's profile A reuse of `profile` instead of a `-a` folder (th
 ### ST.5 ocr
 
 gpt-6.1-sol, session c31755e1: 11 files reviewed, 0 findings. `evidence/Setup-Snapshot/ocr/ST.5-34068c3c.json`.
+
+## ST.6 Group 3, the d5r card fixture, on the shared setup
+
+What changed (test code only):
+- e2e/d5r/support.ts, beside createCardFixture: `CARD_FIXTURE` (defineSetup 'd5r-card-fixture': onboardedAt(profile, MONDAY_1700), then createCardFixture(page) with its default Trades; the build's open context is handed to the helper to close), `copyCardFixture(copySetup)` (copy only, returns each Trade as a Trade reference, nothing launched) and `openCardFixture(profile, copySetup)` (the copy, launched at Mon 10-12 17:00 on the Today screen, returns the context, the page and the Trade references).
+- The converted tests ask for `copySetup` and start with `openCardFixture(profile, copySetup)` in place of onboardedAt + createCardFixture; bodies unchanged (the Trade references are spread into the same destructuring). Unused imports dropped.
+- Release check (ST.1-B1): d5r serves dist-releases/current (d4's fixture); the setup is built and keyed on it; all 16 pass, so no mismatch error.
+
+Which tests start from which setup (all CARD_FIXTURE, 12 tests):
+- d5r/marks: B5R.3 (line 8), B5R.5 both (lines 75, 91), B5R.8 (line 112): 4.
+- d5r/responsive-a11y: the drafts and keyboard test (line 9), the meter-beside-header test (line 105): 2.
+- d5r/review: B5R.1 (line 9; the first card not Done still opens first on the copy), B5R.2 (line 93; the 16 routine Trades are added on top of the copy): 2.
+- d5r/sliders: all 3 (lines 9, 29, 57): 3.
+- d5r/durability line 46 (copy only, then the test's own offline launch after the server is closed): 1.
+
+Kept their own build (4 tests):
+- d5r/marks line 39: T-A's first Position Change is on Thursday (earlierDay 2026-10-08), another fixture.
+- d5r/durability line 10: a killable browser started its own way (not in the plan).
+- d5r/durability line 76: the plan said it carries on, but it switches the server to dist-faults before building; the shared setup is built on dist-releases/current (the release d5r serves), so a copy would be refused (ST.1-B1), and a second setup on dist-faults would serve this one test and cost its own build. Own build kept, no saving lost.
+- d5r/responsive-a11y line 163: createTrades and routine Trades, not the card fixture (not in the plan).
+
+Break check (the five files in one run): copy switched off (the cp call in e2e/d1/support.ts replaced by `execFileSync('true', ...)`): 12 failed (first-screen check), the 4 own-build tests passed (20.0 min, each failure waiting out its check); switched on: 16 passed (51.3 s). Switch made and restored by edits; git status shows e2e/d1/support.ts unchanged.
+
+Assumptions: the copy is opened with page.goto('/') (Today) where the build left the page on the Trade it last made; every converted test then goes to the Review through the nav link (openReview) or its own goto, as before. Checks: typecheck, tsc6, lint (0 errors) pass.

@@ -1,13 +1,12 @@
 import {
-  expectMark, expectMarksSaved, marksStepOf, markEditorOf, markInputOf, actionFormOf, cardHeader, createCardFixture, enterMark, expect, FRIDAY, MONDAY, MONDAY_1700, observationsOf, onboardedAt, openReview, probe, remainsOf, meterOf, test, THURSDAY, workspaceOf, saveMarksButton,
+  expectMark, expectMarksSaved, marksStepOf, markEditorOf, markInputOf, actionFormOf, cardHeader, createCardFixture, enterMark, expect, FRIDAY, MONDAY, MONDAY_1700, observationsOf, onboardedAt, openReview, probe, remainsOf, meterOf, test, THURSDAY, workspaceOf, saveMarksButton, openCardFixture,
 } from './support.ts';
 
 const NOT_A_PRICE = 'Enter a price as a number, with at most 6 decimal places.';
 
 test.describe('B5R.3 Shared Mark', () => {
-  test('should move T-A’s collapsed meter at once when XYZ is saved in T-F’s card, show XYZ saved there as also held, and store one observation', async ({ profile }) => {
-    const { context, page } = await onboardedAt(profile, MONDAY_1700);
-    const { 'T-A': tA, 'T-F': tF } = await createCardFixture(page);
+  test('should move T-A’s collapsed meter at once when XYZ is saved in T-F’s card, show XYZ saved there as also held, and store one observation', async ({ profile, copySetup }) => {
+    const { context, page, 'T-A': tA, 'T-F': tF } = await openCardFixture(profile, copySetup);
     await openReview(page);
     await expect(meterOf(page, tA)).toHaveAccessibleName('Mark missing: XYZ, Mon Oct 12 Stop −$270.00, Target +$580.00.');
 
@@ -72,9 +71,8 @@ test.describe('B5R.4 Invalid price saves nothing', () => {
 });
 
 test.describe('B5R.5 Unsaved work holds the card', () => {
-  test('should keep the card open with the message while an Action value is entered, and write nothing', async ({ profile }) => {
-    const { context, page } = await onboardedAt(profile, MONDAY_1700);
-    const { 'T-A': tA, 'T-B': tB } = await createCardFixture(page);
+  test('should keep the card open with the message while an Action value is entered, and write nothing', async ({ profile, copySetup }) => {
+    const { context, page, 'T-A': tA, 'T-B': tB } = await openCardFixture(profile, copySetup);
     await openReview(page);
     const before = await probe(page);
 
@@ -88,9 +86,8 @@ test.describe('B5R.5 Unsaved work holds the card', () => {
     await context.close();
   });
 
-  test('should open the other card with no message while a price is typed, keep the draft, empty it with Discard, and write nothing', async ({ profile }) => {
-    const { context, page } = await onboardedAt(profile, MONDAY_1700);
-    const { 'T-A': tA, 'T-B': tB } = await createCardFixture(page);
+  test('should open the other card with no message while a price is typed, keep the draft, empty it with Discard, and write nothing', async ({ profile, copySetup }) => {
+    const { context, page, 'T-A': tA, 'T-B': tB } = await openCardFixture(profile, copySetup);
     await openReview(page);
     const before = await probe(page);
 
@@ -109,9 +106,8 @@ test.describe('B5R.5 Unsaved work holds the card', () => {
 });
 
 test.describe('B5R.8 Changed evidence', () => {
-  test('should show a Conflict with the other tab’s value, keep the draft, and write nothing from the first tab', async ({ profile }) => {
-    const { context, page } = await onboardedAt(profile, MONDAY_1700);
-    const { 'T-A': tA } = await createCardFixture(page);
+  test('should show a Conflict with the other tab’s value, keep the draft, and write nothing from the first tab', async ({ profile, copySetup }) => {
+    const { context, page, 'T-A': tA } = await openCardFixture(profile, copySetup);
     await openReview(page);
 
     // A second tab saves XYZ while T-A's card is open in the first.

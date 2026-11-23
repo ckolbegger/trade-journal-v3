@@ -1,15 +1,13 @@
 import {
-  actionEntriesOf, answerDebt, cardHeader, cardList, completion, createCardFixture, createRoutineTrades, enterMark, entriesWithSettledDebt, expect, fillDebtAnswers, firstPage, launchAt, MONDAY, MONDAY_1700, observationsOf,
-  marksStepOf, onboardedAt, openReview, probe, reflectionsOf, remainsOf, reviewMeters, saveAction, meterOf, test, tradeCard, workspaceOf,
+  actionEntriesOf, answerDebt, cardHeader, cardList, completion, createRoutineTrades, enterMark, entriesWithSettledDebt, expect, fillDebtAnswers, firstPage, launchAt, MONDAY, MONDAY_1700, observationsOf, marksStepOf, openReview, probe, reflectionsOf, remainsOf, reviewMeters, saveAction, meterOf, test, tradeCard, workspaceOf, openCardFixture,
 } from './support.ts';
 
 const OPEN_HEADERS = '.review-card-head button[aria-expanded="true"]';
 
 test.describe('B5R.1 Review end to end on cards', () => {
-  test('should open the first card not Done on load, update the figures and meters from Save Marks, open the next card in place after each Action, and read Done and Complete after relaunch with the Marks, the settled Entry and five Action Entries stored', async ({ profile }) => {
+  test('should open the first card not Done on load, update the figures and meters from Save Marks, open the next card in place after each Action, and read Done and Complete after relaunch with the Marks, the settled Entry and five Action Entries stored', async ({ profile, copySetup }) => {
     test.setTimeout(240_000);
-    const { context, page } = await onboardedAt(profile, MONDAY_1700);
-    const { 'T-A': tA, 'T-B': tB, 'T-C': tC, 'T-E': tE, 'T-F': tF } = await createCardFixture(page);
+    const { context, page, 'T-A': tA, 'T-B': tB, 'T-C': tC, 'T-E': tE, 'T-F': tF } = await openCardFixture(profile, copySetup);
     await openReview(page);
 
     // Every card owes something, so the first card opens on load, and no other does (navigation: raw locators, before any reach).
@@ -90,10 +88,9 @@ test.describe('B5R.1 Review end to end on cards', () => {
 });
 
 test.describe('B5R.2 Opening far down the list', () => {
-  test('should open the 18th card where it is, with its header and first input in the viewport without scrolling, and collapse the card that was open', async ({ profile }) => {
+  test('should open the 18th card where it is, with its header and first input in the viewport without scrolling, and collapse the card that was open', async ({ profile, copySetup }) => {
     test.setTimeout(300_000);
-    const { context, page } = await onboardedAt(profile, MONDAY_1700);
-    const { 'T-A': tA } = await createCardFixture(page);
+    const { context, page, 'T-A': tA } = await openCardFixture(profile, copySetup);
     await createRoutineTrades(page, 16);
     await openReview(page);
 

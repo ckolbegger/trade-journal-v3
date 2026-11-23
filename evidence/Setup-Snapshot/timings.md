@@ -51,3 +51,13 @@ ST.5 (the nine e2e/d8, d8p and d8r files in one run, main lock held, Playwright'
 | ST.5 | e2e/d8r/plan-risk.spec.ts | 11.3 | 3.6 |
 | ST.5 | e2e/d8p/lot-matches-fit.spec.ts | 12.0 | 5.1 |
 | ST.5 | e2e/d8p/payoff-fit.spec.ts | 7.4 | 0.7 |
+
+ST.6 (the five e2e/d5r files in one run, main lock held; per-file figures are the sum of the tests' own times; one run each; "before" is HEAD's versions). Whole run before 1.4 min (16 passed), after 51.3 s (16 passed). Break check with the copy off: 20.0 min (12 failures waiting out their first-screen check).
+
+| Task | File | Before (s) | After (s) |
+|---|---|---|---|
+| ST.6 | e2e/d5r/marks.spec.ts | 20.1 | 7.9 |
+| ST.6 | e2e/d5r/responsive-a11y.spec.ts | 20.2 | 13.6 |
+| ST.6 | e2e/d5r/review.spec.ts | 18.7 | 12.5 |
+| ST.6 | e2e/d5r/sliders.spec.ts | 12.3 | 2.8 |
+| ST.6 | e2e/d5r/durability.spec.ts | 14.8 | 14.3 (the first test to ask pays the one build, 5.1) |
