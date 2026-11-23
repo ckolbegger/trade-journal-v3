@@ -118,3 +118,5 @@
 **Recommendation:** (a).
 
 **Parked meanwhile:** T95.16 and the tasks that wait on it (T95.17, T95.18, T95.19, T95.20, T95.25). T95.21, T95.22, T95.23 and T95.24 carry on.
+
+**Answer (2026-11-23):** (a). Recorded as decision 130, plan revision 120 (P177); follow-on T95.16-D1 before T95.16. **Status:** answered.
