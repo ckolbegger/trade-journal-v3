@@ -2007,6 +2007,54 @@ describe('the slip questions in the grid (T95.13)', () => {
     expect(facade.DailyReview.save).toHaveBeenCalledTimes(1);
   });
 
+  it('should not ask while a price answered earlier is typed again, only when its cell is left for T95.13-B1', async () => {
+    renderReview(slipReview());
+    const user = userEvent.setup();
+    const step = await marksPanel();
+
+    await user.type(xyzInput(step), '49.00');
+    await user.tab();
+    await user.click(within(step).getByRole('button', { name: 'Yes, $49.00' }));
+    await user.clear(xyzInput(step));
+    await user.type(xyzInput(step), '49.00');
+    expect(within(step).queryByText(/Right\?/)).toBeNull();
+    await user.tab();
+    expect(within(step).getByText('+8.6% from $45.10. Right?')).toBeTruthy();
+  });
+
+  it('should not ask while a price is typed again after Discard, only when its cell is left for T95.13-B1', async () => {
+    renderReview(slipReview());
+    const user = userEvent.setup();
+    const step = await marksPanel();
+
+    await user.type(xyzInput(step), '49.00');
+    await user.tab();
+    expect(within(step).getByText('+8.6% from $45.10. Right?')).toBeTruthy();
+    await user.click(within(step).getByRole('button', { name: 'Discard' }));
+    await user.type(xyzInput(step), '49.00');
+    expect(within(step).queryByText(/Right\?/)).toBeNull();
+  });
+
+  it('should question and re-question a price typed in the cell editor of an acknowledged Review Date cell when it is left for T95.13-B1', async () => {
+    renderReview(cardFacade(gridReview({ today: [markRowOf('ABC', ACK, 2)], earlierMarks: [abcMarks({ [FRIDAY]: markAt('27.5') })] })));
+    const user = userEvent.setup();
+    const panel = await marksPanel();
+
+    const editor = await choose(user, panel, 'ABC', MONDAY_LABEL);
+    await user.type(within(editor).getByLabelText('Price'), '49');
+    expect(within(panel).queryByText(/Right\?/)).toBeNull();
+    await user.tab();
+    await user.click(within(panel).getByRole('button', { name: /^Yes, / }));
+    expect(within(panel).queryByText(/Right\?/)).toBeNull();
+    // Typed again, the same price is a new entry and is asked about when left.
+    const again = within(await marksPanel()).getByLabelText('Price');
+    await user.clear(again);
+    await user.type(again, '49');
+    expect(within(panel).queryByText(/Right\?/)).toBeNull();
+    await user.tab();
+    expect(within(panel).getByText(/Right\?/)).toBeTruthy();
+  });
+
   it('should state the limits under the grid', async () => {
     renderReview(slipReview());
     const step = await marksPanel();

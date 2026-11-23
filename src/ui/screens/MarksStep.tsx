@@ -39,6 +39,9 @@ interface Panel {
   readonly uid: string;
   readonly draftOf: (key: ObservationKey) => DraftValue | undefined;
   readonly hold: (key: ObservationKey, value: DraftValue | undefined) => void;
+  // A price typed or left in an input: typing makes a new entry that is questioned only once its cell is left (T95.13).
+  readonly typePrice: (key: ObservationKey, price: string) => void;
+  readonly leavePrice: (key: ObservationKey) => void;
   // What a refused save said about each key, shown in its editor.
   readonly issues: Readonly<Record<string, readonly FieldIssue[]>>;
   // What a Conflict said about a key: nothing was saved, and the Mark shown is the current one.
@@ -107,7 +110,7 @@ function DraftFields({ panel, tradeKey, resolution }: { readonly panel: Panel; r
           {resolution.kind !== 'Missing' && (
             <label>
               Price
-              <input id={field.price} inputMode="decimal" value={draft?.kind === 'Price' ? draft.price : ''} onChange={(e) => panel.hold(tradeKey, { kind: 'Price', price: e.target.value })} {...describedBy(field.price)} />
+              <input id={field.price} inputMode="decimal" value={draft?.kind === 'Price' ? draft.price : ''} onChange={(e) => panel.typePrice(tradeKey, e.target.value)} onBlur={() => panel.leavePrice(tradeKey)} {...describedBy(field.price)} />
             </label>
           )}
           {fieldError(field.price)}
@@ -358,7 +361,7 @@ export function MarksStep({ facade, held: heldReview, onResult, tradeLine, onEnt
   // The walked Trades with a due settlement, from their card progress: a Mark only they need is said so in its editor (A112).
   const walkedTrades = heldReview.review.families.flatMap((family) => (family.family === 'Trades' ? family.trades : []));
   const settlementTrades = new Set(walkedTrades.filter((trade) => trade.progress.panels.some((p) => p.panel === 'Settlement' && !p.done)).map((trade) => trade.tradeId));
-  const panel: Panel = { facade, writable, uid, draftOf: (key) => draftAt(drafts, key)?.value, hold, issues, notices, standing, onResult, onEntryDirty: entryDirty, focus, onMarkSaved, settlementTrades };
+  const panel: Panel = { facade, writable, uid, draftOf: (key) => draftAt(drafts, key)?.value, hold, typePrice: (key, price) => typePrice(key, price), leavePrice: (key) => leave(key), issues, notices, standing, onResult, onEntryDirty: entryDirty, focus, onMarkSaved, settlementTrades };
   const instrumentOf = (instrumentKey: string): Instrument => model.instruments.find((i) => i.instrumentKey === instrumentKey)!.instrument;
   if (marks.today.length === 0 && opened.length === 0) return null;
   // Each cell is one tab stop and the one editor sits under the grid, so Tab goes from the chosen cell into the editor's controls and on from
@@ -381,8 +384,21 @@ export function MarksStep({ facade, held: heldReview, onResult, tradeLine, onEnt
     return entry !== undefined && left[rowId(key.instrumentKey, key.tradingDate)] === entry ? questionFor(key, entry) : undefined;
   };
   const leave = (key: ObservationKey) => {
+    if (key.tradingDate !== reviewDate) return;
     const entry = typedPrices.find((typed) => typed.key.instrumentKey === key.instrumentKey)?.entry;
     if (entry !== undefined) setLeft((prev) => ({ ...prev, [rowId(key.instrumentKey, key.tradingDate)]: entry }));
+  };
+  // Typing makes it a new entry: what was left and an answer to the old one no longer stand.
+  const typePrice = (key: ObservationKey, price: string) => {
+    const without = (prev: Readonly<Record<string, string>>) => Object.fromEntries(Object.entries(prev).filter(([id]) => id !== rowId(key.instrumentKey, key.tradingDate)));
+    setLeft(without);
+    setSlipAnswered(without);
+    hold(key, { kind: 'Price', price });
+  };
+  const discard = () => {
+    setLeft({});
+    setSlipAnswered({});
+    markDrafts.discard();
   };
   const toCheck = typedPrices.filter(({ key }) => slipOf(key) !== undefined).length;
   // Save Marks leaves every typed price, so each is asked about before anything is sent.
@@ -463,11 +479,7 @@ export function MarksStep({ facade, held: heldReview, onResult, tradeLine, onEnt
           const row = marks.today.find((r) => r.instrumentKey === instrumentKey);
           return row?.task === 'Manual' && row.trades.every((id) => settlementTrades.has(id)) ? SETTLEMENT_ONLY_NOTE : undefined;
         }}
-        onPrice={(key, price) => {
-          // Typing makes it a new entry: an answer to the old one no longer stands.
-          setSlipAnswered((prev) => Object.fromEntries(Object.entries(prev).filter(([id]) => id !== rowId(key.instrumentKey, key.tradingDate))));
-          hold(key, { kind: 'Price', price });
-        }}
+        onPrice={typePrice}
         onNoPrice={(key, reason) => hold(key, { kind: 'CantGetPrice', reason })}
         onUndo={(key) => hold(key, undefined)}
         fieldOf={(key) => {
@@ -533,7 +545,7 @@ export function MarksStep({ facade, held: heldReview, onResult, tradeLine, onEnt
           <button type="button" ref={saveButton} className="pill primary" disabled={count === 0 || saving} onClick={saveMarks}>
             Save Marks ({count})
           </button>
-          <button type="button" className="pill secondary" disabled={count === 0} onClick={markDrafts.discard}>
+          <button type="button" className="pill secondary" disabled={count === 0} onClick={discard}>
             Discard
           </button>
           {toCheck > 0 && <span role="status"> {toCheck} {toCheck === 1 ? 'Mark' : 'Marks'} to check first.</span>}
