@@ -445,3 +445,5 @@ ocr (session 19a40ed2, a0238c2c..eb20b229): 27 files, 3 findings. Valid: **T95.1
 ### T95.17-B1, T95.17-B2
 
 B1 `e0c4b85c`: "Realized, open" shows after any sale (a `Reduced` or `Closed` marker in the replay up to the shown date, or nonzero realized P&L); no new field. B2 `1c1dc9e6`: real after a sale (both results on one side of $0); when the label boxes overlap, the Target label drops to a second row (measured on layout and resize). Both red then green. Observed once: `ReviewCards.test.tsx` "Loading the Trade…" failed in a full `src/ui` run and passed alone (60 of 60); watched for a repeat.
+
+ocr of T95.17-B1, T95.17-B2 (session c2b70a12): 5 files, 1 finding, Doubtful: the label-overlap check reruns only when the meter's percentages change, not when the label text changes. Bug task **T95.17-B3**. `evidence/D95/ocr/T95.17-B1-B2-1c1dc9e6.json`.

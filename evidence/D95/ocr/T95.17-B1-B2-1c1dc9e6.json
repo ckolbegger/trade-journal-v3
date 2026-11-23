@@ -1,0 +1,176 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 1,
+    "total_tokens": 293522,
+    "input_tokens": 291994,
+    "output_tokens": 1528,
+    "cache_read_tokens": 71296,
+    "elapsed": "1m14s"
+  },
+  "tool_calls": {
+    "total": 27,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 10,
+      "file_read": 16
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/NowBox.tsx",
+      "content": "Recheck overlap when the label text changes, not only when the meter positions change. `setAt` deliberately preserves the previous object when the percentages are unchanged, so updating the dollar figures while retaining the same proportions does not rerun this effect. Since the labels are absolutely positioned, their increased width also does not resize `drawing`, leaving overlapping labels on one row (or unnecessarily stacked labels after shorter text). Include `meter.stop.text` and `meter.target.text` in the dependencies, or observe the label sizes as well.",
+      "existing_code": "  }, [at]);",
+      "start_line": 55,
+      "end_line": 55,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "NowBox card behavior, styling, props, and test coverage",
+      "files": [
+        "e2e/d95/card.spec.ts",
+        "src/ui/app.css",
+        "src/ui/screens/NowBox.test.tsx",
+        "src/ui/screens/NowBox.tsx",
+        "src/ui/screens/now-box.props.ts"
+      ]
+    }
+  ],
+  "session_id": "c2b70a12-b025-4508-bc9c-67048d9d5dcd",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "c2b70a12-b025-4508-bc9c-67048d9d5dcd",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "eb20b229",
+      "requested_head": "1c1dc9e6",
+      "resolved_base": "eb20b22929e1e41d83332e1692b975829524cdc0",
+      "resolved_head": "1c1dc9e69c7053b89b56615c14e6feea2e8a064a",
+      "exact_range": "eb20b22929e1e41d83332e1692b975829524cdc0..1c1dc9e69c7053b89b56615c14e6feea2e8a064a",
+      "source_artifact_sha256": "e754476a2abb7124f45816d62c99c1ebfbc6b603e790640a4060ff24b60fb050"
+    },
+    "execution": {
+      "ocr_version": "v1.14.2",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "4e7ce95ed20c2af4091b1243987cc5cc32039f3df530fdf1c37d61ced87052b7",
+          "path": "src/ui/screens/NowBox.tsx",
+          "fingerprint": "0167fd12e344ef5dfabf65a836c5954b7d8c872f9128b262171a9cd87c9fd598"
+        },
+        {
+          "item_id": "7d9fbbb916fbeb38e4b54d9137925ab547b565bfa15a0a00dddcaa544c195d5b",
+          "path": "e2e/d95/card.spec.ts",
+          "fingerprint": "66984b370ea4672f3f5eb74f3b33a5eff7f3579c35982e6506e4700b279c0b8e"
+        },
+        {
+          "item_id": "aa02a05b4881073ca1bb3f85ff78ad8713a1b6996978e8ecdf490c815750997f",
+          "path": "src/ui/app.css",
+          "fingerprint": "0c10af72c24ab4de3bb58fa603f466f412f2b0f2459beaf3669e53dc7cff2811"
+        },
+        {
+          "item_id": "babb99040137b963bd1675d8501946840d6d96be902dc082a91753be89a75298",
+          "path": "src/ui/screens/now-box.props.ts",
+          "fingerprint": "36747f7f190cf4e7e3df00847544e9ef8ef5414e28c360a645711c094d50e263"
+        },
+        {
+          "item_id": "e08678da7e0258c16fbe43576551fe05ac64964b219cad010334319923226253",
+          "path": "src/ui/screens/NowBox.test.tsx",
+          "fingerprint": "ff25ed4e1fd53f86b346756b1d8e1b645a93521e79b3d235db7b26b00aad9258"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "4e7ce95ed20c2af4091b1243987cc5cc32039f3df530fdf1c37d61ced87052b7",
+          "path": "src/ui/screens/NowBox.tsx",
+          "fingerprint": "0167fd12e344ef5dfabf65a836c5954b7d8c872f9128b262171a9cd87c9fd598"
+        },
+        {
+          "item_id": "7d9fbbb916fbeb38e4b54d9137925ab547b565bfa15a0a00dddcaa544c195d5b",
+          "path": "e2e/d95/card.spec.ts",
+          "fingerprint": "66984b370ea4672f3f5eb74f3b33a5eff7f3579c35982e6506e4700b279c0b8e"
+        },
+        {
+          "item_id": "aa02a05b4881073ca1bb3f85ff78ad8713a1b6996978e8ecdf490c815750997f",
+          "path": "src/ui/app.css",
+          "fingerprint": "0c10af72c24ab4de3bb58fa603f466f412f2b0f2459beaf3669e53dc7cff2811"
+        },
+        {
+          "item_id": "babb99040137b963bd1675d8501946840d6d96be902dc082a91753be89a75298",
+          "path": "src/ui/screens/now-box.props.ts",
+          "fingerprint": "36747f7f190cf4e7e3df00847544e9ef8ef5414e28c360a645711c094d50e263"
+        },
+        {
+          "item_id": "e08678da7e0258c16fbe43576551fe05ac64964b219cad010334319923226253",
+          "path": "src/ui/screens/NowBox.test.tsx",
+          "fingerprint": "ff25ed4e1fd53f86b346756b1d8e1b645a93521e79b3d235db7b26b00aad9258"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "3e19333079c55aaba9525e7920b608d334fb135e835f669d29eb1124f6991f6f",
+          "path": "evidence/D95/data-additions.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "467b9c154a58bfea89b79b96a68dc1a17eb85758815b2081303cf100f370e148",
+          "path": "evidence/D95/tech-debt.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "5b83ebbf0b5cae07a37e9d077ee33163b1b7295fb2e8b73427e70cac08362781",
+          "path": "evidence/D95/tdd-log/T95.17-B2.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "68953c145b880bcaee7fd968aa9ba10fc0f4cb7ff02f5f66f2b64977ec14f472",
+          "path": "evidence/D95/tdd-log/T95.17-B1.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ab47bc811f23c17f4c6317a43b1bf19eff8f2b20af07649acc55f19159f8bebc",
+          "path": "evidence/D95/structural.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "bf425c2c773b86de60d8af0a86837c593fc4a5c78f2c6c29920a9393a05546e4",
+          "path": "evidence/D95/ocr/T95.17-eb20b229.json",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "e3097bd05207ff2a77b5e56e5d5910ea07c8a667ee97dc2c7cb695026cd6f9f6",
+          "path": "evidence/D95/new-words.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 73891
+  }
+}
