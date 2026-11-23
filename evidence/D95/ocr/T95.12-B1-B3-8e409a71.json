@@ -1,0 +1,235 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 6 finding(s) across 7 selected item(s).",
+  "summary": {
+    "files_reviewed": 7,
+    "comments": 6,
+    "total_tokens": 424072,
+    "input_tokens": 420144,
+    "output_tokens": 3928,
+    "cache_read_tokens": 55296,
+    "elapsed": "1m38s"
+  },
+  "tool_calls": {
+    "total": 34,
+    "by_tool": {
+      "code_comment": 3,
+      "code_search": 5,
+      "file_find": 2,
+      "file_read": 23,
+      "file_read_diff": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/ReviewView.tsx",
+      "content": "The refresh counter is only incremented in the no-card branch. When a card is open (the default on load), `refreshHeld` returns from `refreshTrade(openId)` before reaching this update. Although that refresh applies the new Review, `MarksStep` retains its original `opened` skipped-session snapshot because `reads` is unchanged, so newly listed gaps remain unavailable and removed gaps remain displayed. Increment the counter after a successful card refresh as well, and cover that path with an integration test.",
+      "existing_code": "    const next = await reopenAndApply();\n    if (next === undefined) return false;\n    setStale(false);\n    setReads((n) =\u003e n + 1);\n    return true;",
+      "start_line": 488,
+      "end_line": 492,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/MarksGrid.tsx",
+      "content": "Reopening is keyed only to the set of rejected IDs, not to a save attempt. After a rejection, close the reopened editor with “No price” and retry Save Marks without editing: the same IDs are rejected again, so this branch does not reopen the reason input and MarksStep's focus request targets an element that is absent. The rejection reset and replacement in useMarkDrafts.save are batched, so they do not reliably provide an intermediate empty list. Trigger reopening from the rejection/reveal attempt identity, and add a repeated-rejection test.",
+      "existing_code": "  if (refusedNoPrice !== refusedSeen) {\n    setRefusedSeen(refusedNoPrice);",
+      "start_line": 97,
+      "end_line": 98,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/MarksStep.tsx",
+      "content": "The first Missing cell can now be beyond the first 20 skipped sessions (e.g. the newer sessions are all acknowledged or were filled since opening). Both Add the skipped sessions and the skipped-session link only search rendered controls by gapLabel; neither chooses this key to make MarksGrid switch pages. In that case the target is not mounted and focus is lost when the Add button disappears. Carry the observation key with the target and select/reveal its page before focusing it; cover a gap on page two.",
+      "existing_code": "  const gap = [...model.sessions.filter(({ role }) =\u003e role === undefined), ...model.sessions.filter(({ role }) =\u003e role === 'previous')]\n    .flatMap(({ date }) =\u003e model.instruments.map(({ instrumentKey, instrument }) =\u003e ({ instrument, date, state: model.cellAt(instrumentKey, date) })))\n    .find(({ state }) =\u003e state !== undefined \u0026\u0026 state !== NOT_HELD \u0026\u0026 state.resolution.kind === 'Missing');",
+      "start_line": 318,
+      "end_line": 320,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/MarksStep.tsx",
+      "content": "This invalidation only works when Refresh is pressed with no card open. ReviewView.refreshHeld returns refreshTrade(openId) directly for an open card, and refreshTrade rereads/applies the Review without incrementing reads. Consequently a successful Refresh with a card open still leaves these cached skipped-session columns stale, missing newly listed gaps or retaining removed ones. Ensure every explicit Refresh path advances the invalidation token after applying the reread Review, and test the open-card case.",
+      "existing_code": "  if (reads !== readsSeen) {\n    setReadsSeen(reads);\n    setOpened(marks.earlier);\n  }",
+      "start_line": 214,
+      "end_line": 217,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/MarksStep.tsx",
+      "content": "Refreshing can shrink the skipped-session list while MarksGrid retains its old page index. For example, refresh on page 2 after the gaps are reduced to fewer than 20 sessions: `earlier.slice(20, 40)` is empty and the pager disappears, leaving the remaining skipped columns inaccessible. Reset or clamp the grid's page whenever the refreshed session list changes.",
+      "existing_code": "    setOpened(marks.earlier);",
+      "start_line": 216,
+      "end_line": 216,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/MarksGrid.tsx",
+      "content": "A reason can now be saved directly with Save Marks while this editor is open, but a successful save clears only the draft, not `asking`. The row consequently keeps an empty reason editor beside the saved unavailable status. Typing into it creates another CantGetPrice draft for the already acknowledged key, rather than requiring the saved Mark's normal editing flow. Close the reason editor when its key is successfully saved (while preserving it on Discard, as the new test expects).",
+      "existing_code": "                    {asked \u0026\u0026 asking \u0026\u0026 (",
+      "start_line": 244,
+      "end_line": 244,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Marks grid and step behavior with tests",
+      "files": [
+        "src/ui/screens/MarksGrid.tsx",
+        "src/ui/screens/MarksStep.test.tsx",
+        "src/ui/screens/MarksStep.tsx"
+      ]
+    },
+    {
+      "label": "Review view behavior with tests",
+      "files": [
+        "src/ui/screens/ReviewView.test.tsx",
+        "src/ui/screens/ReviewView.tsx"
+      ]
+    },
+    {
+      "label": "End-to-end support and responsive accessibility checks",
+      "files": [
+        "e2e/d4/support.ts",
+        "e2e/d5r/responsive-a11y.spec.ts"
+      ]
+    }
+  ],
+  "session_id": "c1955149-d524-41f2-9c68-d442b792b215",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "c1955149-d524-41f2-9c68-d442b792b215",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "971cde6e^",
+      "requested_head": "8e409a71",
+      "resolved_base": "c26ab4efde07fbd22b47082c682e1336fd71ac60",
+      "resolved_head": "8e409a7148226c33292fd3f75b84326a24648b97",
+      "exact_range": "c26ab4efde07fbd22b47082c682e1336fd71ac60..8e409a7148226c33292fd3f75b84326a24648b97",
+      "source_artifact_sha256": "7c03dba5bdbfd2664d1b46b57737f18f6990fb3828a02db805f512e16ded637b"
+    },
+    "execution": {
+      "ocr_version": "v1.14.2",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "2aa0341444a1921ffd05d33525a1cd8b52950e6319bf29824d81bde09d8b550f",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "eb221ef0778ff4d2ab282d7dd59168e117b7809abd49dfc726c2446ec68ccde5"
+        },
+        {
+          "item_id": "7d579c7543e3b270266f816c8aec6864c3c8ff7dd0e90b929b8cb06d2f3e8a0d",
+          "path": "e2e/d4/support.ts",
+          "fingerprint": "80c1234ae6036ec64d02376c9de81f94e1005d17f8dee600b48ecc9373e2d244"
+        },
+        {
+          "item_id": "88b5b68545f1424b748f6415e66b42b1077a3cff3918af9cd90c1a49c00154de",
+          "path": "src/ui/screens/MarksStep.tsx",
+          "fingerprint": "04c758098845dcf8ddc8527ef254d8dbfb96f101309c92b1ec49abd70a623c67"
+        },
+        {
+          "item_id": "a0ad465cb7e722de0963ec8064b14f0faceed79f358a9c9320ffd2231a822923",
+          "path": "e2e/d5r/responsive-a11y.spec.ts",
+          "fingerprint": "6d6b1ddeb86429ca16370b4fba8c0ac72e417983045d5079989d239a499d72dd"
+        },
+        {
+          "item_id": "e1082cbbea4e4aa74fd15f9bfd52dc6c16e01a056778c0a700319ebc1e86cb71",
+          "path": "src/ui/screens/MarksGrid.tsx",
+          "fingerprint": "2e9fde2dd26d1fabf1edb89923e4ca248a6afbf5ec64b57697a857d914010245"
+        },
+        {
+          "item_id": "eee211474d0da94978ff8d998a4d7db521fbdd6357e1f6e1b124f60262f839db",
+          "path": "src/ui/screens/ReviewView.test.tsx",
+          "fingerprint": "9db1e2e013fa5a432eea4145d2195073ac6d6f11744543ff6dd9ddd9cd137f11"
+        },
+        {
+          "item_id": "f88b8489a05d22559cf942583fe7b073450ce3857d8b76cdd026cc548c128a83",
+          "path": "src/ui/screens/MarksStep.test.tsx",
+          "fingerprint": "df41de15e1b623850ce1dcc4b16527b342ab36451f6b1f0b91e74d8a8ae571b6"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "2aa0341444a1921ffd05d33525a1cd8b52950e6319bf29824d81bde09d8b550f",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "eb221ef0778ff4d2ab282d7dd59168e117b7809abd49dfc726c2446ec68ccde5"
+        },
+        {
+          "item_id": "7d579c7543e3b270266f816c8aec6864c3c8ff7dd0e90b929b8cb06d2f3e8a0d",
+          "path": "e2e/d4/support.ts",
+          "fingerprint": "80c1234ae6036ec64d02376c9de81f94e1005d17f8dee600b48ecc9373e2d244"
+        },
+        {
+          "item_id": "88b5b68545f1424b748f6415e66b42b1077a3cff3918af9cd90c1a49c00154de",
+          "path": "src/ui/screens/MarksStep.tsx",
+          "fingerprint": "04c758098845dcf8ddc8527ef254d8dbfb96f101309c92b1ec49abd70a623c67"
+        },
+        {
+          "item_id": "a0ad465cb7e722de0963ec8064b14f0faceed79f358a9c9320ffd2231a822923",
+          "path": "e2e/d5r/responsive-a11y.spec.ts",
+          "fingerprint": "6d6b1ddeb86429ca16370b4fba8c0ac72e417983045d5079989d239a499d72dd"
+        },
+        {
+          "item_id": "e1082cbbea4e4aa74fd15f9bfd52dc6c16e01a056778c0a700319ebc1e86cb71",
+          "path": "src/ui/screens/MarksGrid.tsx",
+          "fingerprint": "2e9fde2dd26d1fabf1edb89923e4ca248a6afbf5ec64b57697a857d914010245"
+        },
+        {
+          "item_id": "eee211474d0da94978ff8d998a4d7db521fbdd6357e1f6e1b124f60262f839db",
+          "path": "src/ui/screens/ReviewView.test.tsx",
+          "fingerprint": "9db1e2e013fa5a432eea4145d2195073ac6d6f11744543ff6dd9ddd9cd137f11"
+        },
+        {
+          "item_id": "f88b8489a05d22559cf942583fe7b073450ce3857d8b76cdd026cc548c128a83",
+          "path": "src/ui/screens/MarksStep.test.tsx",
+          "fingerprint": "df41de15e1b623850ce1dcc4b16527b342ab36451f6b1f0b91e74d8a8ae571b6"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "56dc5de1918f04a3d3663529ec38a8f85812dbf27c9b37402cb68e55116a3c75",
+          "path": "evidence/D95/tdd-log/T95.12-B2.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ab47bc811f23c17f4c6317a43b1bf19eff8f2b20af07649acc55f19159f8bebc",
+          "path": "evidence/D95/structural.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "e048329f575c8cf92889293f4caf955be5b9270d88e6903b29ec2ce6e1532bb4",
+          "path": "evidence/D95/tdd-log/T95.12-B1.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 97697
+  }
+}

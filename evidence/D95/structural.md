@@ -243,6 +243,10 @@ ocr (`ocr/T95.12-db400f79.json`, 40 files, 9 comments; run with `--provider chat
 
 **T95.12-B3** `8e409a71` (browser helpers): `chooseCell` returns the editor alone when one exists after the click, else `input.or(editor)` (the union is still needed for a Review Date cell turned editor after a Conflict); `expectMark` reveals the skipped sessions when the cell is absent; d5r responsive-a11y's duplicate assertion replaced by Monday's input holding 52.00 (the grid shows no "Unsaved" on a Review Date cell, so the old check has no counterpart). Red seen for defect 1 (strict mode, gaps.spec.ts:23); defect 2's red was masked by it; defect 3 could not fail. Browser d4 27, d5r 16, d5 detail-debt 3, d7 marks-zero 1, d9r2 editor 4; src/ui 1,295.
 
+ocr of B1, B2, B3 (`ocr/T95.12-B1-B3-8e409a71.json`, 7 files, 6 comments, all Valid):
+- **T95.12-B1-B1**: `ReviewView.tsx:488-492` and `MarksStep.tsx:214-217` (one defect): `reads` is bumped only on a Refresh with no card open; `refreshTrade` (the open-card path, the default) never bumps it, so the skipped columns stay stale; `MarksStep.tsx:216` after a Refresh shrinks the skipped list, the grid's page index isn't clamped, so columns can be unreachable (more than 20 skipped sessions).
+- **T95.12-B2-B1**: `MarksGrid.tsx:97-98` a repeat rejection of the same id doesn't reopen the reason field (batched into one render); `:244` a successful Save Marks leaves the reason editor open (`asking` not cleared); `MarksStep.tsx:318-320` the first Missing target can lie beyond the first 20 columns and no path switches the page, so focus is lost.
+
 ## Trial: complete runs overlapped with the next task (the user, 2026-11-22, for 5 or 6 tasks)
 
 Each task's complete run runs in a detached scratch copy (`.claude/worktrees/run-<label>`, set up by `lane-setup.sh`) at the task's commit, while the next task's subagent starts in this worktree. The run's files are copied back to `evidence/D95/suite-runs/`. A failure becomes a bug task as before; the next task restarts only if it built on the broken code. Times are recorded per run to measure the saving.
