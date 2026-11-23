@@ -14,7 +14,7 @@ import { CardMarks, type CardMarksProps, type EntryDirty } from './CardMarks.tsx
 import type { CardMarkRows } from './held-review.ts';
 import { ReviewReflections } from './ReviewReflections.tsx';
 import { SettlementPanel, settlementSummary } from './ReviewSettlement.tsx';
-import { labelsOf, reasonText } from './review-attention.ts';
+import { describedLabelsOf, reasonText } from './review-attention.ts';
 import { Meter } from '../cockpit/meter/meter.tsx';
 import { meterProps } from '../cockpit/meter/meter.props.ts';
 
@@ -94,8 +94,9 @@ export function ReviewCard({ facade, trade, expanded, detail, reveal, advance, g
   const { timeZone } = useRuntime();
   // A Trade whose facts cannot be replayed has no reading, so its header draws no meter.
   const meter = trade.meter && meterProps(trade.meter, 'card', timeZone);
-  const labels = labelsOf(trade);
+  const labels = describedLabelsOf(trade, timeZone ?? 'UTC');
   const reasonId = useId();
+  const reasonIds = labels.flatMap(({ reason }, i) => (reason ? [`${reasonId}-${i}`] : []));
   useEffect(() => {
     if (reveal === 0) return;
     item.current?.scrollIntoView?.({ block: 'start' });
@@ -117,7 +118,7 @@ export function ReviewCard({ facade, trade, expanded, detail, reveal, advance, g
     <li className="review-card" ref={item} data-trade-id={trade.tradeId}>
       <div className="review-card-head">
         <h3>
-          <button type="button" ref={header} aria-expanded={expanded} onClick={onToggle}>
+          <button type="button" ref={header} aria-expanded={expanded} aria-describedby={reasonIds.join(' ') || undefined} onClick={onToggle}>
             <span className="visually-hidden">Review</span> <span className="review-card-name">{trade.underlying}</span>{' '}
             {trade.summary && (
               <>
@@ -125,16 +126,14 @@ export function ReviewCard({ facade, trade, expanded, detail, reveal, advance, g
               </>
             )}
             <span className="review-card-remains">{remainsText(trade.progress)}</span>{' '}
-            {labels.map((label) => (
-              <Badge key={label} tone="neutral" describedBy={reasonId}>
+            {labels.map(({ label }) => (
+              <Badge key={label} tone="neutral">
                 {label}
               </Badge>
             ))}
           </button>
-          {/* Each label's reason, kept as its description outside the button so the button's name stays short. */}
-          <span id={reasonId} className="visually-hidden">
-            {trade.reasons.map((reason) => reasonText(reason, trade.basis, timeZone ?? 'UTC')).join('. ')}
-          </span>
+          {/* Each label's own reason, the button's description (not part of its name, which stays short). */}
+          {labels.map(({ label, reason }, i) => reason && <span key={label} id={`${reasonId}-${i}`} className="visually-hidden">{reason}</span>)}
         </h3>
         {meter && <Meter {...meter} />}
       </div>

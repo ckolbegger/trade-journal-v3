@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { instrumentOf } from '../../domain/instrument/index.ts';
 import { Rational } from '../../domain/values/index.ts';
-import { labelsOf, reasonText } from './review-attention.ts';
+import { describedLabelsOf, labelsOf, reasonText } from './review-attention.ts';
 
 afterEach(() => {
   vi.useRealTimers();
@@ -21,6 +21,22 @@ const trade = (over: Record<string, unknown>) => ({ band: 'Routine', reasons: []
 const between = (percent: bigint, toward: 'Stop' | 'Target') => ({ now: { kind: 'Value', value: { zone: 'Between', share: { percent: Rational.of(percent), toward } } } });
 
 const previous = (zone: string, tradingDate: string) => ({ now: { kind: 'Unavailable' }, previous: { tradingDate, zone } });
+
+describe('each label has its own reason (A302)', () => {
+  const unavailable = { code: 'Unavailable', reason: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'DEF' }, date: '2026-11-23' };
+  const needed = { progress: marksPanel(false), reasons: [unavailable] };
+  it('should describe Marks needed by the missing Mark and the session before label by its own crossing', () => {
+    const labels = describedLabelsOf(trade({ band: 'EvidenceLimited', ...needed, meter: previous('PastStop', '2026-11-20') }), 'UTC');
+    expect(labels).toEqual([
+      { label: 'Marks needed', reason: 'Mark missing for DEF on Mon Nov 23' },
+      { label: 'Past Stop Fri', reason: 'Past Stop at the close on Fri' },
+    ]);
+  });
+  it('should describe a share label by its own share and give a label with no returned reason none', () => {
+    expect(describedLabelsOf(trade({ band: 'QuantifiedPressure', meter: between(63n, 'Stop') }), 'UTC')).toEqual([{ label: '63% to Stop', reason: '63% of the way from entry to the Stop' }]);
+    expect(describedLabelsOf(trade({ band: 'StopReached' }), 'UTC')).toEqual([{ label: 'Past Stop', reason: undefined }]);
+  });
+});
 
 describe('plain labels (A302)', () => {
   it('should label a Trade past its Stop Past Stop and one at its Target At Target', () => {
@@ -42,8 +58,8 @@ describe('plain labels (A302)', () => {
   });
 
   it('should label a Trade with an acknowledged Unavailable Mark No price today', () => {
-    const reasons = [{ code: 'Unavailable', reason: 'AcknowledgedUnavailable' }];
-    expect(labelsOf(trade({ band: 'EvidenceLimited', reasons }))).toEqual(['No price today']);
+    const reasons = [{ code: 'Unavailable', reason: 'AcknowledgedUnavailable', instrument: { kind: 'Stock', symbol: 'DEF' }, date: '2026-11-23' }];
+    expect(labelsOf(trade({ band: 'EvidenceLimited', reasons, basis: { kind: 'Unavailable' } }))).toEqual(['No price today']);
   });
 
   it('should label a Trade inside its lines by its share of the way', () => {

@@ -230,9 +230,14 @@ describe('plain labels on the page (A302)', () => {
   it('should keep each label reason as its accessible description', async () => {
     renderReview(cardFacade());
     await screen.findAllByRole('button', { name: /^Review / });
-    const describedBy = (label: string) => document.getElementById(within(headers().find((h) => h.textContent?.includes(label))!).getByText(label).getAttribute('aria-describedby') ?? '')?.textContent;
-    expect(describedBy('Marks needed')).toBe('Mark missing for DEF on Mon Oct 12');
-    expect(describedBy('Past Stop')).toBe('Stop breached');
+    // A button's description comes from its own aria-describedby, not from its descendants'.
+    const described = (label: string) => {
+      const button = headers().find((h) => h.textContent?.includes(label))!;
+      return (button.getAttribute('aria-describedby') ?? '').split(' ').map((id) => document.getElementById(id)?.textContent).join(' ');
+    };
+    expect(described('Marks needed')).toBe('Mark missing for DEF on Mon Oct 12');
+    expect(described('Past Stop')).toBe('Stop breached');
+    expect(headers().find((h) => h.textContent?.includes('Past Stop'))!.textContent).not.toContain('Stop breached');
   });
 });
 

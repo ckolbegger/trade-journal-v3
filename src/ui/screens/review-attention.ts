@@ -10,22 +10,39 @@ const SETTLEMENT_LABEL: Partial<Record<ReviewTradeItem['band'], string>> = { Set
 const BOUNDARY_LABEL: Partial<Record<ReviewTradeItem['band'], string>> = { StopReached: 'Past Stop', TargetReached: 'At Target' };
 const STANDING_TEXT = { Between: undefined, PastStop: 'Past Stop', PastTarget: 'At Target' } as const;
 
-// The plain labels of a card or a day line (A302): what the Trade's band and reasons say, in the words the trader uses.
-export function labelsOf(trade: Pick<WalkedTrade, 'band' | 'meter' | 'progress' | 'expiresOnReviewDate' | 'reasons'>): string[] {
+type Reason = ReviewTradeItem['reasons'][number];
+type LabelledTrade = Pick<WalkedTrade, 'band' | 'meter' | 'progress' | 'expiresOnReviewDate' | 'reasons' | 'basis'>;
+const reasonsText = (reasons: readonly Reason[], trade: LabelledTrade, timeZone: string): string | undefined =>
+  reasons.length === 0 ? undefined : reasons.map((reason) => reasonText(reason, trade.basis, timeZone)).join('. ');
+
+// The plain labels of a card or a day line (A302): what the Trade's band and reasons say, in the words the trader uses,
+// each with its own reason from the returned figures (none when the walk returned none).
+export function describedLabelsOf(trade: LabelledTrade, timeZone: string): { label: string; reason: string | undefined }[] {
+  const why = (reasons: readonly Reason[]) => reasonsText(reasons, trade, timeZone);
   const settle = SETTLEMENT_LABEL[trade.band];
-  if (settle) return [settle];
+  if (settle) return [{ label: settle, reason: why(trade.reasons.filter(isSettlementDueAttention)) }];
   if (trade.progress.panels.some((panel) => panel.panel === 'Marks' && !panel.done)) {
     const before = trade.meter?.previous;
     const standing = before?.zone && STANDING_TEXT[before.zone];
-    return [trade.expiresOnReviewDate ? 'Expires today · Marks needed' : 'Marks needed', ...(before && standing ? [`${standing} ${shortDay(before.tradingDate)}`] : [])];
+    const missing = why(trade.reasons.filter((reason) => reason.code === 'Unavailable' && !isSettlementDueAttention(reason)));
+    return [
+      { label: trade.expiresOnReviewDate ? 'Expires today · Marks needed' : 'Marks needed', reason: missing },
+      ...(before && standing ? [{ label: `${standing} ${shortDay(before.tradingDate)}`, reason: `${standing} at the close on ${shortDay(before.tradingDate)}` }] : []),
+    ];
   }
   const boundary = BOUNDARY_LABEL[trade.band];
-  if (boundary) return [boundary];
-  if (trade.reasons.some(isAcknowledgedUnavailableAttention)) return ['No price today'];
+  if (boundary) return [{ label: boundary, reason: why(trade.reasons.filter((reason) => reason.code === 'StopBreached' || reason.code === 'TargetReached')) }];
+  const acknowledged = trade.reasons.filter(isAcknowledgedUnavailableAttention);
+  if (acknowledged.length > 0) return [{ label: 'No price today', reason: why(acknowledged) }];
   const now = trade.meter?.now;
-  if (now?.kind === 'Value' && now.value.share) return [`${formatDecimal(now.value.share.percent, 0)}% to ${now.value.share.toward}`];
+  if (now?.kind === 'Value' && now.value.share) {
+    const { percent, toward } = now.value.share;
+    return [{ label: `${formatDecimal(percent, 0)}% to ${toward}`, reason: `${formatDecimal(percent, 0)}% of the way from entry to the ${toward}` }];
+  }
   return [];
 }
+
+export const labelsOf = (trade: LabelledTrade): string[] => describedLabelsOf(trade, 'UTC').map(({ label }) => label);
 
 // The share of the planned range travelled, as a whole percent.
 const percent = (share: Rational): string => formatDecimal(Rational.of(share.numerator * 100n, share.denominator), 0);
