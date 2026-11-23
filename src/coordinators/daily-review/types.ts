@@ -359,7 +359,10 @@ export interface DailyTradeReview {
   // Evaluated at the Review cutoff with the Review-date frame.
   readonly evaluation?: TradeEvaluation;
   // The Position held at the Stale context's close, valued with that session's own exact Mark (P13, A54).
-  readonly datedLastClose?: { readonly tradingDate: string; readonly evaluation: TradeEvaluation };
+  readonly datedLastClose?: { readonly tradingDate: string; readonly evaluation: TradeEvaluation; readonly meter?: MeterReading };
+  // The open option contract's expiration date and the session dates after the Review Date through it (T95.17, decision 131); absent for a Trade
+  // that holds no option, and the sessions where the calendar does not cover them or the contract expires on or before the Review Date.
+  readonly expiration?: { readonly date: string; readonly sessionsLeft?: number };
   // The option contracts the Trade still holds at or past expiration; empty otherwise. The signed quantity carries the
   // assignment or exercise explanation, the settlement time the Record expiration route (A111, A112, decision 88).
   readonly settlement: readonly SettlementItem[];

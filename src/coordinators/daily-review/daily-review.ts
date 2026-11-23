@@ -344,7 +344,9 @@ function figuresOf(analysis: TradeAnalysisRecord, valuation: ValuedTrade) {
   const { evaluation, datedLine } = valuation;
   // After its expiration date an option requires no Mark, so the module read no frame (A110).
   if (!frame && contract.kind === 'Stock') throw new Error(`Market Data returned no frame for ${analysis.plan.underlying}`);
-  return { ...(summary && { summary }), ...(frame && { frame }), evaluation, ...(datedLine && { datedLastClose: datedLine }) };
+  // The dated close's meter reading needs the evaluation's outcomes and standing, which every evaluation the module builds carries.
+  const datedMeter = datedLine?.evaluation.outcomes && datedLine.evaluation.standing && meterReadingOf(datedLine.evaluation);
+  return { ...(summary && { summary }), ...(frame && { frame }), evaluation, ...(datedLine && { datedLastClose: { ...datedLine, ...(datedMeter && { meter: datedMeter }) } }) };
 }
 
 export function createDailyReview(deps: DailyReviewDeps): DailyReview {
@@ -878,6 +880,8 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     // Facts that cannot be replayed have no figures.
     const figures = valuation ? figuresOf(analysis, valuation) : {};
     const settlement = settlementItems([{ valuation }]);
+    const contract = valuation?.state.positions.find(({ instrument, openLots }) => instrument.kind === 'Option' && openLots.length > 0)?.instrument;
+    const sessions = contract?.kind === 'Option' && !settlementDueOn(contract, reviewDate) ? read.sessionDatesBetween(dayAfter(reviewDate), contract.expiration) : undefined;
     const payoff = entry.derivation.kind === 'Derived' ? payoffOf(analysis, entry.derivation) : undefined;
     // A254: the Trade's replay to the Review Date, the read session's date; the whole-lifetime derivation is the integrity one.
     const replayed = found.integrity.kind === 'Derived' && analysis.positionChanges.length > 0 ? await assembleReplay(deps, analysis, found.integrity, read, { withJournal: false }) : undefined;
@@ -917,6 +921,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
           labels,
           ...figures,
           settlement,
+          ...(contract?.kind === 'Option' && { expiration: { date: contract.expiration, ...(sessions?.kind === 'Sessions' && { sessionsLeft: sessions.dates.length }) } }),
           ...(payoff && { payoff }),
           ...(replay && { replay }),
           reflections,

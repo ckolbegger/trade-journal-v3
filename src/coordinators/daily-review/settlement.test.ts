@@ -321,3 +321,31 @@ describe('the summary of an option Trade on the Review (T7.31-F2, C2)', () => {
     expect(walked.find((t) => t.tradeId === t3)!.summary).toEqual({ kind: 'Option', direction: 'Short', contracts: Rational.of(2n), expiration: '2026-11-20', strike: '45', right: 'Put' });
   }, 60_000);
 });
+
+// T95.17-D1 (decision 131): what the Now box needs of the card that no field carried.
+describe('the card carries its contract expiration and a meter reading for its dated close (T95.17)', () => {
+  it('should give a card its contract expiration date and the sessions left to it', async () => {
+    const { stack, t2, t4 } = await settlementFixture(FRIDAY_1700, true);
+
+    const option = await cardOf(stack, FRIDAY_1700, t4);
+    const stock = await cardOf(stack, FRIDAY_1700, t2);
+
+    // Mon 11-23 through Fri 12-18, less Thanksgiving: 4 + 5 + 5 + 5 sessions.
+    expect(option.expiration).toEqual({ date: '2026-12-18', sessionsLeft: 19 });
+    expect(stock.expiration).toBeUndefined();
+  }, 60_000);
+
+  it('should give the dated last close the meter reading at that close', async () => {
+    const { stack, t4 } = await settlementFixture(FRIDAY_1700, false);
+    await stack.saveMark(instrumentKey(ABC_PUT), '1.30', '2026-11-19');
+    await stack.saveMark('ABC', '49.00', '2026-11-19');
+    await stack.saveMark('ABC', '49.00', '2026-11-20');
+
+    const card = await cardOf(stack, FRIDAY_1700, t4);
+
+    const { datedLastClose } = card;
+    const pnl = datedLastClose?.evaluation.currentMarkedPnl;
+    if (pnl?.kind !== 'Value') throw new Error('expected a dated P&L');
+    expect(datedLastClose?.meter?.now).toEqual(expect.objectContaining({ kind: 'Value', value: expect.objectContaining({ pnl: pnl.value }) as unknown }));
+  }, 60_000);
+});

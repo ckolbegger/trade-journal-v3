@@ -735,6 +735,7 @@ describe('getTrade', () => {
     expect(datedLastClose).toEqual({
       tradingDate: '2026-10-08',
       evaluation: expect.objectContaining({ valuationDate: '2026-10-08', openQuantity: { kind: 'Value', value: Rational.of(60n) }, marketValue: { kind: 'Value', value: Rational.of(3120n) } }) as unknown,
+      meter: expect.objectContaining({ now: expect.objectContaining({ kind: 'Value' }) as unknown }) as unknown,
     });
     // The 40 shares bought since are measured from their execution prices, never as valuation.
     expect(evaluation?.atEntry).toEqual({
