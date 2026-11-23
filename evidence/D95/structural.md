@@ -540,3 +540,5 @@ ocr (session 870d4727): 5 files, 2 findings. Valid: **T95.25-B1** marks-step's f
 Commit `6d25dc13` (both): B1 reloads the Review after the fix and asserts ABC reads 27.00 (red with the second save discarding drafts, at both widths); B2 runs the whole flow at 1280 and 375 from the shared `openCardFixture` setup, every assertion kept (+1.4 s). No 375-only behaviour to mutate.
 
 ocr of T95.25-B1, T95.25-B2 (session 47ad248d): 1 file, 0 findings. `evidence/D95/ocr/T95.25-B1-B2-6d25dc13.json`.
+
+Run `t95.25-browser` (browser-task): unit 2890, integration 329, browser 20, checks 14 of 14. Passed. T95.25 Done.
