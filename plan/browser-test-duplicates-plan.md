@@ -197,7 +197,7 @@ pre-commit: npm run lint
 ✖ 2 problems (0 errors, 2 warnings)
 
 739c0782 |
-| TD.6 | Standard | Not started | |
+| TD.6 | Standard | Done | af8dbae1 |
 | TD.7 | Light | Not started | |
 | TD.8 | Standard | Not started | |
 | TD.9 | Light | Not started | |
