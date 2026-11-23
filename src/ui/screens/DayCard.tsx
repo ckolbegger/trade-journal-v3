@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useId, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import type { OpenDailyReviewResult, ReviewCompletion } from '../../app/types.ts';
 import { Badge } from '../Badge.tsx';
@@ -7,7 +7,7 @@ import { signed } from '../figures.ts';
 import { money, plural, shortDate } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
 import type { PanelName } from './ReviewCard.tsx';
-import { labelsOf } from './review-attention.ts';
+import { describedLabelsOf } from './review-attention.ts';
 
 type Ready = Extract<OpenDailyReviewResult, { kind: 'Ready' }>;
 const COMPLETION_TEXT = { Incomplete: 'Incomplete', Complete: 'Complete', CompleteWithUnavailableMarks: 'Complete with Unavailable Marks' } as const;
@@ -29,13 +29,14 @@ export interface DayCardProps {
 }
 
 // A link that opens the card; it stays a real link, so it can be opened in a new tab.
-function CardLink({ tradeId, open, panel, instrument, children }: { readonly tradeId: string; readonly open: OpenCard; readonly panel?: PanelName; readonly instrument?: string; readonly children: ReactNode }) {
+function CardLink({ tradeId, open, panel, instrument, describedBy, children }: { readonly tradeId: string; readonly open: OpenCard; readonly panel?: PanelName; readonly instrument?: string; readonly describedBy?: string; readonly children: ReactNode }) {
   let href = `/review?trade=${tradeId}`;
   if (instrument !== undefined) href += `&instrument=${encodeURIComponent(instrument)}`;
   else if (panel !== undefined) href += `&panel=${panel}`;
   return (
     <a
       href={href}
+      aria-describedby={describedBy}
       onClick={(event) => {
         // A new-tab or new-window click is the browser's: the href names the same card, panel and row.
         if (event.ctrlKey || event.metaKey || event.shiftKey || event.button !== 0) return;
@@ -87,6 +88,7 @@ const nextLine = (day: DaySummary) => day.lines.find((line) => line.needs.length
 export function DayCard({ review, name, openCard, unsaved }: DayCardProps) {
   const { day, completion } = review;
   const { timeZone } = useRuntime();
+  const reasonId = useId();
   // Trades whose recorded facts disagree or cannot be read together: no line of the day can say more, so the card names them.
   const facts = completion.kind === 'Incomplete' ? completion.reasons.filter((reason) => reason.code === 'IntegrityDisagreement' || reason.code === 'IncoherentFacts') : [];
   const underlyingOf = (tradeId: string): string => [...review.families.flatMap((f) => (f.family === 'Trades' ? f.trades : [])), ...review.owed].find((t) => t.tradeId === tradeId)?.underlying ?? tradeId;
@@ -105,10 +107,10 @@ export function DayCard({ review, name, openCard, unsaved }: DayCardProps) {
   const walkedIds = review.families.flatMap((f) => (f.family === 'Trades' ? f.trades.map((t) => t.tradeId) : []));
   const gap = marksFamily?.family === 'Marks' ? marksFamily.earlier[0] : undefined;
   const gapTrade = gap && walkedIds.find((id) => gap.trades.some((t) => t.tradeId === id));
-  const labelsFor = (tradeId: string): string[] => {
+  const labelsFor = (tradeId: string): { label: string; reason: string | undefined }[] => {
     const walkedTrade = review.families.flatMap((f) => (f.family === 'Trades' ? f.trades : [])).find((t) => t.tradeId === tradeId);
-    if (walkedTrade) return labelsOf(walkedTrade);
-    return review.owed.find((t) => t.tradeId === tradeId)?.lifecycle === 'Closed' ? ['Closed'] : [];
+    if (walkedTrade) return describedLabelsOf(walkedTrade, timeZone ?? 'UTC');
+    return review.owed.find((t) => t.tradeId === tradeId)?.lifecycle === 'Closed' ? [{ label: 'Closed', reason: undefined }] : [];
   };
   const next = day && (day.toGo.marks > 0 ? day.lines.find((line) => line.marks > 0) : nextLine(day));
   const nextText = day && day.toGo.marks > 0 ? 'Enter the Marks' : next && `Next: ${underlyingOf(next.tradeId)}${next.needs[0] === 'Reflection' && next.closeReview ? "'s Close Review" : ''}`;
@@ -157,16 +159,18 @@ export function DayCard({ review, name, openCard, unsaved }: DayCardProps) {
         </p>
       )}
       {day && (
-        <ul aria-label="Trade lines" className="day-lines">
+        <>
+          <ul aria-label="Trade lines" className="day-lines">
           {day.lines.map((line) => {
             const { panel, instrument } = targetOf(line);
             const labels = labelsFor(line.tradeId);
+            const reasonIds = labels.flatMap(({ reason }, i) => (reason ? [`${reasonId}-${line.tradeId}-${i}`] : []));
             return (
               <li key={line.tradeId}>
-                <CardLink tradeId={line.tradeId} open={openCard} panel={panel} instrument={instrument}>
+                <CardLink tradeId={line.tradeId} open={openCard} panel={panel} instrument={instrument} describedBy={reasonIds.join(' ') || undefined}>
                   {underlyingOf(line.tradeId)}
                 </CardLink>{' '}
-                {labels.map((label) => (
+                {labels.map(({ label }) => (
                   <span key={label}>
                     <Badge tone="neutral">{label}</Badge>{' '}
                   </span>
@@ -176,6 +180,9 @@ export function DayCard({ review, name, openCard, unsaved }: DayCardProps) {
             );
           })}
         </ul>
+          {/* Each label's reason, the description of its line's link; kept outside the list so a line's text stays as shown. */}
+          {day.lines.flatMap((line) => labelsFor(line.tradeId).map(({ reason }, i) => reason && <span key={`${line.tradeId}-${i}`} id={`${reasonId}-${line.tradeId}-${i}`} className="visually-hidden">{reason}</span>))}
+        </>
       )}
       {completion.kind === 'CompleteWithUnavailableMarks' && (
         <div role="group" aria-label="Unavailable Marks">

@@ -140,6 +140,22 @@ describe('the day card', () => {
     expect(openCard).toHaveBeenCalledExactlyOnceWith('t9', 'Reflections', undefined);
   });
 
+  it('should describe each day line link by its labels own reasons without adding them to the line text', () => {
+    const lines: DaySummary['lines'] = [
+      { tradeId: 't1', marks: 0, closeReview: false, needs: ['Action'] },
+      { tradeId: 't2', marks: 0, closeReview: false, needs: [] },
+    ];
+    const trades = [walked('t1', 'AXIO', { band: 'StopReached', reasons: [{ code: 'StopBreached', conditionId: 'c1', overrun: Rational.of(1n, 1n) }] }), walked('t2', 'DALE')];
+    renderCard(review({ trades, day: day({ lines }) }));
+
+    const items = within(screen.getByRole('list', { name: 'Trade lines' })).getAllByRole('listitem');
+    // A link's description comes from its own aria-describedby, in elements outside the line.
+    const described = (link: HTMLElement) => (link.getAttribute('aria-describedby') ?? '').split(' ').filter(Boolean).map((id) => document.getElementById(id)?.textContent).join(' ');
+    expect(described(within(items[0]!).getByRole('link', { name: 'AXIO' }))).toBe('Stop breached');
+    expect(described(within(items[1]!).getByRole('link', { name: 'DALE' }))).toBe('');
+    expect(items.map((item) => item.textContent)).toEqual(['AXIO Past Stop To do: Action', 'DALE Done']);
+  });
+
   it('should show Day so far once the Marks are saved', () => {
     renderCard(review({ day: day({ toGo: { marks: 0, actions: 4, expirations: 0, closeReviews: 0, reflections: 0 }, change: { kind: 'Value', dollars: Rational.of(-74n, 1n) } }) }));
     expect(screen.getByText('Day so far: −$74.00')).toBeTruthy();
