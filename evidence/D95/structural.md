@@ -321,3 +321,7 @@ New helpers in `e2e/d4/support.ts` (re-exported down the chain): `marksPanelOf` 
 Specs now calling them: d4 (acknowledge, kill, update, no-save, review, gaps, offline, runtime-failure, card-helpers, responsive-a11y, correct-mark), d5 detail-debt, d5r (marks, durability, responsive-a11y), d7 marks-zero, d9r2 (editor, grid, responsive-a11y, drafts), d9ar states.
 
 Browser stages under with-browser-lock.sh, unchanged: `test:e2e:1` 126 passed; `:2` 80 passed; `:3` 57 passed; `:4` 137 passed, 4 skipped (same as the last complete run). typecheck, tsc6, lint (2 existing warnings in OwedDebtItem.tsx, 0 errors) and lint:deps exit 0.
+
+## T95.21 — "The day" on a finished day (Standard)
+
+Commit `d542bfe9` (from `2a0751e6`). DayCard.tsx, DayCard.test.tsx, app.css (`.day-rows`). Cases 2, 3 and 5 red then green (3 and 5 first written ahead of red, taken out, red seen, put back; logged). Cases 1 and 4 first-run passes (built in T95.10), mutation-checked (`COMPLETION_TEXT.Complete` → 'Done'; the Trades list emptied). ReviewView.tsx not touched: COMPLETION_TEXT and the Unavailable Marks group already live in DayCard.tsx. W119 shortened (words-changed.md). W119's held-past sentences match the Trade's past lines against the saved Hold in the UI (a set match, not arithmetic). No browser case; no snapshot changed. src/ui 1341 passed.

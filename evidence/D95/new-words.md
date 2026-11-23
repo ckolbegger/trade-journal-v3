@@ -21,3 +21,10 @@
 
 ## T95.14 (provisional)
 - "It is now $51.00. Your values are kept." (a conflict on a cell edited in place; replaces the tail "The current Mark is shown above…").
+
+## T95.21 (provisional)
+
+- "The day" row: the signed change in Trade P&L (e.g. −$74.00); on a finished day it replaces "Day so far", so the figure shows once.
+- "Past a line" shows "(N sessions)" only when N is above 1.
+- "You chose" lists Exit, Roll, Adjust, then Hold.
+- "Missed" row: the dates with the existing "Add them" button (replaces the "No Review for … Their Marks are optional." paragraph on a finished day only).
