@@ -1,15 +1,25 @@
 import {
+  buildLongStockStrategySeed,
   CATALOG_SEED_MANIFEST_VERSION,
+  LONG_STOCK_PRODUCT_KEY,
+  LONG_STOCK_STRATEGY_ID,
   type ReferenceCatalog,
 } from '../catalog/reference-catalog';
 import {
+  buildPlanReflectionDefinitionV1,
+  JOURNAL_SEED_MANIFEST_VERSION,
+  PLAN_REFLECTION_TYPE_ID,
+  type Journal,
+} from '../journal/journal';
+import {
+  CURRENT_SCHEMA_VERSION,
   SCHEMA_VERSION_V1,
   type AccountRecord,
-  type CatalogMetaRecord,
   type InstitutionRecord,
   type PersistenceSeam,
   type WorkspaceMetaRecord,
 } from '../persistence/idb';
+import { migrateWorkspaceV1ToV2 } from '../persistence/migrations';
 import type {
   RuntimeReadinessController,
   RuntimeReadinessSnapshot,
@@ -66,6 +76,11 @@ export type WorkspaceInitializationResult =
       readonly status: 'Rejected';
       readonly field: 'timeZone';
       readonly message: string;
+    }
+  | {
+      readonly status: 'MigrationBlocked';
+      readonly reason: string;
+      readonly readiness: RuntimeReadinessSnapshot;
     }
   | {
       readonly status: 'RuntimeNotWritable';
@@ -180,10 +195,11 @@ export function createWorkspace(options: {
   readonly persistence: PersistenceSeam;
   readonly readiness: RuntimeReadinessController;
   readonly catalog: ReferenceCatalog;
+  readonly journal?: Journal;
   readonly clock: Clock;
   readonly requestPersistentStorage: () => Promise<StorageProtectionStatus>;
 }): Workspace {
-  const { persistence, readiness, catalog, clock, requestPersistentStorage } = options;
+  const { persistence, readiness, catalog, journal, clock, requestPersistentStorage } = options;
 
   async function loadStatusSnapshot(
     meta: WorkspaceMetaRecord,
@@ -236,23 +252,72 @@ export function createWorkspace(options: {
       }
 
       if (root.status === 'Present') {
+        let activeMeta = root.workspaceMeta;
+        let activeSchemaVersion = root.schemaVersion;
+        let activeReadiness = readinessSnapshot;
+
+        if (root.schemaVersion === SCHEMA_VERSION_V1) {
+          if (!persistence.indexedDB) {
+            return {
+              status: 'MigrationBlocked',
+              reason: 'IndexedDB factory is unavailable for v1 to v2 migration.',
+              readiness: readinessSnapshot,
+            };
+          }
+          const migrated = await migrateWorkspaceV1ToV2({
+            indexedDB: persistence.indexedDB,
+            fromGeneration: root.activeGeneration,
+          });
+          if (migrated.status === 'MigrationBlocked') {
+            return {
+              status: 'MigrationBlocked',
+              reason: migrated.reason,
+              readiness: readinessSnapshot,
+            };
+          }
+          const postMigrateRoot = await persistence.inspectRoot();
+          if (
+            postMigrateRoot.status !== 'Present' ||
+            postMigrateRoot.schemaVersion !== CURRENT_SCHEMA_VERSION
+          ) {
+            return {
+              status: 'MigrationBlocked',
+              reason: 'Post-migration root verification failed schema version check.',
+              readiness: readinessSnapshot,
+            };
+          }
+          activeMeta = postMigrateRoot.workspaceMeta;
+          activeSchemaVersion = postMigrateRoot.schemaVersion;
+          activeReadiness = await readiness.evaluate();
+        }
+
         const seeded = await catalog.seedDefaults();
         if (seeded.status === 'RuntimeNotWritable') {
           return {
             status: 'RuntimeNotWritable',
             reason: seeded.reason,
-            readiness: readiness.getCurrent() ?? readinessSnapshot,
+            readiness: readiness.getCurrent() ?? activeReadiness,
           };
         }
-        const workspaceStatus = await loadStatusSnapshot(root.workspaceMeta, readinessSnapshot);
+        if (journal) {
+          const journalSeeded = await journal.seedDefaults();
+          if (journalSeeded.status === 'RuntimeNotWritable') {
+            return {
+              status: 'RuntimeNotWritable',
+              reason: journalSeeded.reason,
+              readiness: readiness.getCurrent() ?? activeReadiness,
+            };
+          }
+        }
+        const workspaceStatus = await loadStatusSnapshot(activeMeta, activeReadiness);
         return {
           status: 'Opened',
           fresh: false,
           workspaceStatus,
           receipt: {
-            evaluatedAt: readinessSnapshot.evaluatedAt,
+            evaluatedAt: activeReadiness.evaluatedAt,
             fresh: false,
-            schemaVersion: root.schemaVersion,
+            schemaVersion: activeSchemaVersion,
             seedManifestVersion: seeded.seedManifestVersion,
             seedAdditions: seeded.additions,
           },
@@ -276,52 +341,58 @@ export function createWorkspace(options: {
 
       const now = clock.nowIso();
       const txResult = await persistence.runWriteTransaction(
-        ['workspace_meta', 'catalog_meta', 'catalog_institutions', 'catalog_accounts'],
+        [
+          'workspace_meta',
+          'catalog_meta',
+          'catalog_strategies',
+          'journal_meta',
+          'journal_definitions',
+        ],
         async (tx) => {
-          const [existingMeta, existingCatalogMeta, institutions, accounts] = await Promise.all([
+          const [existingMeta, existingCatalogMeta, strategies, definitions] = await Promise.all([
             tx.get('workspace_meta', 'singleton'),
             tx.get('catalog_meta', 'singleton'),
-            tx.getAll('catalog_institutions'),
-            tx.getAll('catalog_accounts'),
+            tx.getAll('catalog_strategies'),
+            tx.getAll('journal_definitions'),
           ]);
 
-          // Guard against concurrent initialization overwriting existing singleton metadata
           if (existingMeta) {
-            return {
-              fresh: false,
-              meta: existingMeta,
-              catalogRevision: existingCatalogMeta?.catalogRevision ?? 0,
-              institutions,
-              accounts,
-            };
+            return { fresh: false, meta: existingMeta, additions: [] as string[] };
           }
 
           const workspaceMeta: WorkspaceMetaRecord = {
             key: 'singleton',
-            schemaVersion: SCHEMA_VERSION_V1,
+            schemaVersion: CURRENT_SCHEMA_VERSION,
             timeZone: request.proposedTimeZone!,
             settingsRevision: 1,
             workspaceRevision: 1,
             initializedAt: now,
             updatedAt: now,
           };
-          const nextCatalogRevision = (existingCatalogMeta?.catalogRevision ?? 0) + 1;
-          const catalogMeta: CatalogMetaRecord = {
+          tx.put('workspace_meta', workspaceMeta);
+
+          const additions: string[] = [];
+          if (!strategies.some((s) => s.productKey === LONG_STOCK_PRODUCT_KEY)) {
+            tx.put('catalog_strategies', buildLongStockStrategySeed(now));
+            additions.push(LONG_STOCK_STRATEGY_ID);
+          }
+          tx.put('catalog_meta', {
             key: 'singleton',
-            catalogRevision: nextCatalogRevision,
+            catalogRevision: (existingCatalogMeta?.catalogRevision ?? 0) + 1,
             seedManifestVersion: CATALOG_SEED_MANIFEST_VERSION,
             seededAt: now,
-          };
-          tx.put('workspace_meta', workspaceMeta);
-          tx.put('catalog_meta', catalogMeta);
+          });
 
-          return {
-            fresh: true,
-            meta: workspaceMeta,
-            catalogRevision: nextCatalogRevision,
-            institutions,
-            accounts,
-          };
+          if (!definitions.some((d) => d.entryTypeId === PLAN_REFLECTION_TYPE_ID)) {
+            tx.put('journal_definitions', buildPlanReflectionDefinitionV1(now));
+          }
+          tx.put('journal_meta', {
+            key: 'singleton',
+            seedManifestVersion: JOURNAL_SEED_MANIFEST_VERSION,
+            seededAt: now,
+          });
+
+          return { fresh: true, meta: workspaceMeta, additions };
         },
       );
 
@@ -333,13 +404,7 @@ export function createWorkspace(options: {
         };
       }
 
-      const workspaceStatus = assembleStatusSnapshot({
-        meta: txResult.value.meta,
-        catalogRevision: txResult.value.catalogRevision,
-        institutions: txResult.value.institutions,
-        accounts: txResult.value.accounts,
-        readinessSnapshot,
-      });
+      const workspaceStatus = await loadStatusSnapshot(txResult.value.meta, readinessSnapshot);
 
       return {
         status: 'Opened',
@@ -348,9 +413,9 @@ export function createWorkspace(options: {
         receipt: {
           evaluatedAt: readinessSnapshot.evaluatedAt,
           fresh: txResult.value.fresh,
-          schemaVersion: SCHEMA_VERSION_V1,
+          schemaVersion: CURRENT_SCHEMA_VERSION,
           seedManifestVersion: CATALOG_SEED_MANIFEST_VERSION,
-          seedAdditions: [],
+          seedAdditions: txResult.value.additions,
         },
       };
     },

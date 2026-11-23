@@ -1,7 +1,7 @@
 export interface InstalledCapabilityManifest {
-  readonly manifestVersion: 1;
-  readonly releaseDeliverable: 'D1';
-  readonly schemaVersion: 1;
+  readonly manifestVersion: 2;
+  readonly releaseDeliverable: 'D2';
+  readonly schemaVersion: 2;
   readonly operations: readonly string[];
   readonly reportFamilies: readonly string[];
   readonly providerAdapters: readonly string[];
@@ -9,9 +9,9 @@ export interface InstalledCapabilityManifest {
 }
 
 export const INSTALLED_CAPABILITY_MANIFEST: InstalledCapabilityManifest = Object.freeze({
-  manifestVersion: 1,
-  releaseDeliverable: 'D1',
-  schemaVersion: 1,
+  manifestVersion: 2,
+  releaseDeliverable: 'D2',
+  schemaVersion: 2,
   operations: Object.freeze([
     'Workspace.initialize',
     'Workspace.getStatus',
@@ -21,6 +21,15 @@ export const INSTALLED_CAPABILITY_MANIFEST: InstalledCapabilityManifest = Object
     'ReferenceCatalog.query',
     'ReferenceCatalog.resolve',
     'ReferenceCatalog.seedDefaults',
+    'TradeAnalysis.assessPlan',
+    'TradeWorkflows.confirmPlan',
+    'TradeRecord.getRecord',
+    'TradeRecord.queryRecords',
+    'Journal.getDefinitions',
+    'Journal.query',
+    'Journal.seedDefaults',
+    'TradeViewsAndReporting.browseTrades',
+    'TradeViewsAndReporting.getTradeDetail',
   ]),
   reportFamilies: Object.freeze([]),
   providerAdapters: Object.freeze([]),

@@ -7,11 +7,18 @@ import { AccountsView } from './ui/accounts/AccountsView';
 import { AppShell, type NavTab } from './ui/shell/AppShell';
 import { OnboardingScreen } from './ui/shell/OnboardingScreen';
 import { ReadinessScreen } from './ui/shell/ReadinessScreen';
+import { NewPlanView } from './ui/trades/NewPlanView';
+import { TradeDetailCockpit } from './ui/trades/TradeDetailCockpit';
+import { TradesView } from './ui/trades/TradesView';
 import type { WorkspaceStatusResult, WorkspaceStatusSnapshot } from './workspace/workspace';
 
 type AppScreenState =
   | { readonly kind: 'Loading' }
-  | { readonly kind: 'Unsupported'; readonly readiness: RuntimeReadinessSnapshot | null; readonly reason?: string }
+  | {
+      readonly kind: 'Unsupported';
+      readonly readiness: RuntimeReadinessSnapshot | null;
+      readonly reason?: string;
+    }
   | {
       readonly kind: 'IntegrityBlocked';
       readonly readiness: RuntimeReadinessSnapshot | null;
@@ -53,12 +60,15 @@ export function App() {
   const bootSeqRef = useRef(0);
   const [screen, setScreen] = useState<AppScreenState>({ kind: 'Loading' });
   const [activeTab, setActiveTab] = useState<NavTab>('accounts');
+  const [selectedTradeId, setSelectedTradeId] = useState<string | null>(null);
+  const [tradesRefreshKey, setTradesRefreshKey] = useState(0);
   const [stagedUpdate, setStagedUpdate] = useState<SwUpdateHandle | null>(null);
   const [accountsDirty, setAccountsDirty] = useState(false);
   const [aboutDirty, setAboutDirty] = useState(false);
+  const [planDirty, setPlanDirty] = useState(false);
   const [durabilityBusy, setDurabilityBusy] = useState(false);
 
-  const hasUnsavedChanges = accountsDirty || aboutDirty;
+  const hasUnsavedChanges = accountsDirty || aboutDirty || planDirty;
 
   const bootOrRefresh = useCallback(async () => {
     const seq = ++bootSeqRef.current;
@@ -67,7 +77,18 @@ export function App() {
       await runtime.registerServiceWorker((handle) => {
         setStagedUpdate(handle);
       });
-      await runtime.workspace.initialize({});
+      const initResult = await runtime.workspace.initialize({});
+      if (seq !== bootSeqRef.current) {
+        return;
+      }
+      if (initResult.status === 'MigrationBlocked') {
+        setScreen({
+          kind: 'IntegrityBlocked',
+          readiness: initResult.readiness,
+          reason: `Migration blocked: ${initResult.reason}`,
+        });
+        return;
+      }
       const status = await runtime.workspace.getStatus();
       if (seq !== bootSeqRef.current) {
         return;
@@ -102,7 +123,6 @@ export function App() {
     }
   }, [runtime]);
 
-  // Re-evaluates Runtime Readiness in place without unmounting AppShell / losing unsaved drafts
   const rerunReadinessInPlace = useCallback(async () => {
     try {
       await runtime.readiness.evaluate();
@@ -130,6 +150,9 @@ export function App() {
       }
       if (result.status === 'Rejected') {
         return result.message;
+      }
+      if (result.status === 'MigrationBlocked') {
+        return `Migration blocked: ${result.reason}`;
       }
       if (result.status === 'RuntimeNotWritable') {
         await refreshStatus();
@@ -213,6 +236,20 @@ export function App() {
     }
   };
 
+  const handleSelectTab = (tab: NavTab) => {
+    setActiveTab(tab);
+    if (tab === 'trades') {
+      setSelectedTradeId(null);
+      setTradesRefreshKey((k) => k + 1);
+    }
+  };
+
+  const handlePlanConfirmed = (tradeId: string) => {
+    setSelectedTradeId(tradeId);
+    setTradesRefreshKey((k) => k + 1);
+    setActiveTab('trades');
+  };
+
   if (screen.kind === 'Loading') {
     return <ReadinessScreen mode="Loading" readiness={null} onRetry={() => void bootOrRefresh()} />;
   }
@@ -246,7 +283,7 @@ export function App() {
   return (
     <AppShell
       activeTab={activeTab}
-      onSelectTab={setActiveTab}
+      onSelectTab={handleSelectTab}
       workspaceStatus={screen.workspaceStatus}
       recoveryOnly={screen.recoveryOnly}
       hasUnsavedChanges={hasUnsavedChanges}
@@ -256,6 +293,40 @@ export function App() {
       }}
       durabilityBusy={durabilityBusy}
     >
+      <div hidden={activeTab !== 'trades'}>
+        {selectedTradeId ? (
+          <TradeDetailCockpit
+            tradeId={selectedTradeId}
+            views={runtime.views}
+            onBack={() => {
+              setSelectedTradeId(null);
+              setTradesRefreshKey((k) => k + 1);
+            }}
+          />
+        ) : (
+          <TradesView
+            views={runtime.views}
+            refreshKey={tradesRefreshKey}
+            onSelectTrade={setSelectedTradeId}
+            onNewPlan={() => setActiveTab('new-plan')}
+          />
+        )}
+      </div>
+
+      <div hidden={activeTab !== 'new-plan'}>
+        <NewPlanView
+          accountRefreshKey={screen.workspaceStatus.selectableAccountCount}
+          catalog={runtime.catalog}
+          journal={runtime.journal}
+          workflows={runtime.workflows}
+          clock={runtime.clock}
+          writable={!screen.recoveryOnly}
+          onPlanConfirmed={handlePlanConfirmed}
+          onGoToAccounts={() => setActiveTab('accounts')}
+          onDirtyChange={setPlanDirty}
+        />
+      </div>
+
       <div hidden={activeTab !== 'accounts'}>
         <AccountsView
           catalog={runtime.catalog}
@@ -265,6 +336,7 @@ export function App() {
           onDirtyChange={setAccountsDirty}
         />
       </div>
+
       <div hidden={activeTab !== 'about'}>
         <AboutView
           workspaceStatus={screen.workspaceStatus}

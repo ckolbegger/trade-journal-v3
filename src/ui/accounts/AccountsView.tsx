@@ -451,7 +451,7 @@ export function AccountsView({
                 </ul>
               )}
 
-              <div style={{ marginTop: 14 }}>
+              <div style={{ marginTop: 14, overflowX: 'auto' }}>
                 {instAccounts.length === 0 ? (
                   <p className={styles.muted} style={{ margin: '0 0 10px' }}>
                     No {showArchived ? '' : 'active '}accounts under {inst.currentLabel}.

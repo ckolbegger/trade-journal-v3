@@ -1,17 +1,22 @@
+import type { SerializedRational } from '../shared/exact-number';
 import type { ReadinessCheckId, RuntimeNotWritableReason } from '../shared/result';
 
 export const SCHEMA_VERSION_V1 = 1 as const;
+export const SCHEMA_VERSION_V2 = 2 as const;
+export const CURRENT_SCHEMA_VERSION = SCHEMA_VERSION_V2;
 export const BOOTSTRAP_DB_NAME = 'tjv3_bootstrap';
 export const DIAGNOSTICS_DB_NAME = 'tjv3_diagnostics';
 export const WORKSPACE_DB_PREFIX = 'tjv3_ws_gen_';
 
 export type CatalogAvailability = 'Active' | 'Archived';
+export type StrategyAvailability = 'Active' | 'Retired';
+export type TradeLifecycleState = 'Planned' | 'Open' | 'Closed' | 'Abandoned';
 
 export interface CatalogHistoryEntry {
   readonly revision: number;
-  readonly action: 'Created' | 'Renamed' | 'Archived' | 'Reactivated';
+  readonly action: 'Created' | 'Renamed' | 'Archived' | 'Reactivated' | 'Retired';
   readonly label: string;
-  readonly status: CatalogAvailability;
+  readonly status: CatalogAvailability | StrategyAvailability;
   readonly recordedAt: string;
 }
 
@@ -38,6 +43,114 @@ export interface AccountRecord {
   readonly history: readonly CatalogHistoryEntry[];
 }
 
+export interface StrategyLegRole {
+  readonly instrument: 'Stock' | 'Call' | 'Put';
+  readonly side: 'Long' | 'Short';
+  readonly relativeQuantity: number;
+}
+
+export interface StrategyRecord {
+  readonly id: string;
+  readonly productKey: string | null;
+  readonly currentLabel: string;
+  readonly normalizedLabel: string;
+  readonly status: StrategyAvailability;
+  readonly revision: number;
+  readonly shape: {
+    readonly roles: readonly StrategyLegRole[];
+  };
+  readonly createdAt: string;
+  readonly updatedAt: string;
+  readonly history: readonly CatalogHistoryEntry[];
+}
+
+export interface SerializedPlanBaseline {
+  readonly riskPerShare: SerializedRational;
+  readonly rewardPerShare: SerializedRational;
+  readonly originalPlannedRisk: SerializedRational;
+  readonly originalPlannedReward: SerializedRational;
+  readonly plannedRewardToRisk: SerializedRational;
+  readonly originalPlannedRiskDisplay: string;
+  readonly originalPlannedRewardDisplay: string;
+  readonly plannedRewardToRiskDisplay: string;
+}
+
+export interface TradeRecordRow {
+  readonly id: string;
+  readonly accountId: string;
+  readonly institutionId: string;
+  readonly strategyId: string;
+  readonly symbol: string;
+  readonly lifecycleState: TradeLifecycleState;
+  readonly factRevision: number;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+  readonly plannedQuantity: SerializedRational;
+  readonly intendedEntryPrice: SerializedRational;
+  readonly stopPrice: SerializedRational;
+  readonly targetPrice: SerializedRational;
+  readonly baseline: SerializedPlanBaseline;
+}
+
+export interface PlanVersionFactRecord {
+  readonly id: string;
+  readonly kind: 'PlanVersion';
+  readonly tradeId: string;
+  readonly recordedSequence: number;
+  readonly economicTime: string;
+  readonly symbol: string;
+  readonly plannedQuantity: SerializedRational;
+  readonly intendedEntryPrice: SerializedRational;
+  readonly stopPrice: SerializedRational;
+  readonly targetPrice: SerializedRational;
+  readonly thesis: string;
+  readonly invalidation: string;
+  readonly baseline: SerializedPlanBaseline;
+  readonly recordedAt: string;
+}
+
+export type TradeFactRecord = PlanVersionFactRecord;
+
+export interface JournalPromptDefinition {
+  readonly promptId: string;
+  readonly label: string;
+  readonly kind: 'Text' | 'SingleSelect' | 'Scale';
+  readonly required: boolean;
+  readonly role?: 'Thesis' | 'Invalidation';
+  readonly options?: readonly string[];
+  readonly min?: number;
+  readonly max?: number;
+}
+
+export interface EntryDefinitionRecord {
+  readonly id: string;
+  readonly entryTypeId: string;
+  readonly label: string;
+  readonly revision: number;
+  readonly prompts: readonly JournalPromptDefinition[];
+  readonly createdAt: string;
+}
+
+export interface JournalEntryRecord {
+  readonly id: string;
+  readonly entryTypeId: string;
+  readonly definitionId: string;
+  readonly definitionRevision: number;
+  readonly definitionSnapshot: EntryDefinitionRecord;
+  readonly source: 'PlanConfirmation' | 'PositionChange';
+  readonly anchor: { readonly kind: 'Trade'; readonly tradeId: string };
+  readonly tradeId: string;
+  readonly origin: { readonly kind: 'Plan' | 'PositionChange'; readonly factId: string };
+  readonly responses: Record<string, string | number | undefined>;
+  readonly recordedAt: string;
+}
+
+export interface JournalMetaRecord {
+  readonly key: 'singleton';
+  readonly seedManifestVersion: number;
+  readonly seededAt: string;
+}
+
 export interface WorkspaceMetaRecord {
   readonly key: 'singleton';
   readonly schemaVersion: number;
@@ -60,6 +173,12 @@ export interface StoreSchemaMap {
   catalog_meta: CatalogMetaRecord;
   catalog_institutions: InstitutionRecord;
   catalog_accounts: AccountRecord;
+  catalog_strategies: StrategyRecord;
+  trades: TradeRecordRow;
+  trade_facts: TradeFactRecord;
+  journal_meta: JournalMetaRecord;
+  journal_definitions: EntryDefinitionRecord;
+  journal_entries: JournalEntryRecord;
 }
 
 export type StoreName = keyof StoreSchemaMap;
@@ -89,6 +208,11 @@ export type RootInspectionResult =
 export interface ReadTxHandle {
   get<S extends StoreName>(store: S, key: string): Promise<StoreSchemaMap[S] | undefined>;
   getAll<S extends StoreName>(store: S): Promise<StoreSchemaMap[S][]>;
+  getAllByIndex<S extends StoreName>(
+    store: S,
+    indexName: string,
+    key: IDBValidKey,
+  ): Promise<StoreSchemaMap[S][]>;
 }
 
 export interface WriteTxHandle extends ReadTxHandle {
@@ -105,6 +229,7 @@ export type WriteTransactionResult<T> =
     };
 
 export interface PersistenceSeam {
+  readonly indexedDB: IDBFactory | null | undefined;
   runDiagnosticProbe(): Promise<{ ok: true } | { ok: false; error: string }>;
   inspectRoot(): Promise<RootInspectionResult>;
   runReadTransaction<T>(
@@ -179,7 +304,7 @@ function ensureDiagnosticsStores(db: IDBDatabase): void {
   }
 }
 
-function ensureWorkspaceV1Stores(db: IDBDatabase): void {
+export function ensureWorkspaceV1Stores(db: IDBDatabase): void {
   if (!db.objectStoreNames.contains('workspace_meta')) {
     db.createObjectStore('workspace_meta', { keyPath: 'key' });
   }
@@ -196,6 +321,36 @@ function ensureWorkspaceV1Stores(db: IDBDatabase): void {
   }
 }
 
+export function ensureWorkspaceV2Stores(db: IDBDatabase): void {
+  ensureWorkspaceV1Stores(db);
+  if (!db.objectStoreNames.contains('catalog_strategies')) {
+    db.createObjectStore('catalog_strategies', { keyPath: 'id' });
+  }
+  if (!db.objectStoreNames.contains('trades')) {
+    const trades = db.createObjectStore('trades', { keyPath: 'id' });
+    trades.createIndex('by_lifecycle', 'lifecycleState', { unique: false });
+    trades.createIndex('by_created', 'createdAt', { unique: false });
+  }
+  if (!db.objectStoreNames.contains('trade_facts')) {
+    const facts = db.createObjectStore('trade_facts', { keyPath: 'id' });
+    facts.createIndex('by_trade', 'tradeId', { unique: false });
+  }
+  if (!db.objectStoreNames.contains('journal_meta')) {
+    db.createObjectStore('journal_meta', { keyPath: 'key' });
+  }
+  if (!db.objectStoreNames.contains('journal_definitions')) {
+    db.createObjectStore('journal_definitions', { keyPath: 'id' });
+  }
+  if (!db.objectStoreNames.contains('journal_entries')) {
+    const entries = db.createObjectStore('journal_entries', { keyPath: 'id' });
+    entries.createIndex('by_trade', 'tradeId', { unique: false });
+  }
+}
+
+function isSupportedSchemaVersion(v: unknown): v is 1 | 2 {
+  return v === SCHEMA_VERSION_V1 || v === SCHEMA_VERSION_V2;
+}
+
 function isValidPointer(raw: unknown): raw is BootstrapPointerRecord {
   if (typeof raw !== 'object' || raw === null) {
     return false;
@@ -206,9 +361,7 @@ function isValidPointer(raw: unknown): raw is BootstrapPointerRecord {
     typeof rec.activeGeneration === 'number' &&
     Number.isInteger(rec.activeGeneration) &&
     rec.activeGeneration >= 1 &&
-    typeof rec.schemaVersion === 'number' &&
-    Number.isInteger(rec.schemaVersion) &&
-    rec.schemaVersion === SCHEMA_VERSION_V1
+    isSupportedSchemaVersion(rec.schemaVersion)
   );
 }
 
@@ -219,8 +372,7 @@ function isValidWorkspaceMeta(raw: unknown): raw is WorkspaceMetaRecord {
   const rec = raw as Record<string, unknown>;
   return (
     rec.key === 'singleton' &&
-    typeof rec.schemaVersion === 'number' &&
-    rec.schemaVersion === SCHEMA_VERSION_V1 &&
+    isSupportedSchemaVersion(rec.schemaVersion) &&
     typeof rec.timeZone === 'string' &&
     rec.timeZone.length > 0 &&
     typeof rec.settingsRevision === 'number' &&
@@ -292,19 +444,17 @@ export function createPersistenceSeam(options: {
     }
   }
 
-  async function openActiveWorkspaceDb(generation: number): Promise<IDBDatabase> {
+  async function openActiveWorkspaceDb(generation: number, schemaVersion: number): Promise<IDBDatabase> {
     if (!idb) {
       throw new Error('IndexedDB is unavailable.');
     }
-    return openDatabase(
-      idb,
-      `${WORKSPACE_DB_PREFIX}${generation}`,
-      SCHEMA_VERSION_V1,
-      ensureWorkspaceV1Stores,
-    );
+    const ensureFn = schemaVersion === SCHEMA_VERSION_V1 ? ensureWorkspaceV1Stores : ensureWorkspaceV2Stores;
+    return openDatabase(idb, `${WORKSPACE_DB_PREFIX}${generation}`, schemaVersion, ensureFn);
   }
 
   return {
+    indexedDB: idb,
+
     async runDiagnosticProbe() {
       if (!idb) {
         return { ok: false, error: 'IndexedDB API is not available in this browser context.' };
@@ -345,13 +495,13 @@ export function createPersistenceSeam(options: {
       const { activeGeneration, schemaVersion } = pointerResult.pointer;
       let db: IDBDatabase | undefined;
       try {
-        db = await openActiveWorkspaceDb(activeGeneration);
+        db = await openActiveWorkspaceDb(activeGeneration, schemaVersion);
         const tx = db.transaction('workspace_meta', 'readonly');
         const meta = await requestToPromise(tx.objectStore('workspace_meta').get('singleton'));
-        if (!isValidWorkspaceMeta(meta)) {
+        if (!isValidWorkspaceMeta(meta) || meta.schemaVersion !== schemaVersion) {
           return {
             status: 'IntegrityBlocked',
-            reason: 'Active workspace metadata is missing or failed integrity validation.',
+            reason: 'Active workspace metadata is missing or failed schema integrity validation.',
           };
         }
         return {
@@ -385,20 +535,43 @@ export function createPersistenceSeam(options: {
         const emptyHandle: ReadTxHandle = {
           get: async () => undefined,
           getAll: async () => [],
+          getAllByIndex: async () => [],
         };
         return await fn(emptyHandle);
       }
 
-      const db = await openActiveWorkspaceDb(pointerResult.pointer.activeGeneration);
+      const db = await openActiveWorkspaceDb(
+        pointerResult.pointer.activeGeneration,
+        pointerResult.pointer.schemaVersion,
+      );
       try {
-        const tx = db.transaction([...stores], 'readonly');
+        const availableStores = stores.filter((s) => db.objectStoreNames.contains(s));
+        if (availableStores.length === 0) {
+          const emptyHandle: ReadTxHandle = {
+            get: async () => undefined,
+            getAll: async () => [],
+            getAllByIndex: async () => [],
+          };
+          return await fn(emptyHandle);
+        }
+        const tx = db.transaction(availableStores, 'readonly');
         const handle: ReadTxHandle = {
           get: <S extends StoreName>(store: S, key: string) =>
-            requestToPromise(tx.objectStore(store).get(key)) as Promise<
-              StoreSchemaMap[S] | undefined
-            >,
+            db.objectStoreNames.contains(store)
+              ? (requestToPromise(tx.objectStore(store).get(key)) as Promise<
+                  StoreSchemaMap[S] | undefined
+                >)
+              : Promise.resolve(undefined),
           getAll: <S extends StoreName>(store: S) =>
-            requestToPromise(tx.objectStore(store).getAll()) as Promise<StoreSchemaMap[S][]>,
+            db.objectStoreNames.contains(store)
+              ? (requestToPromise(tx.objectStore(store).getAll()) as Promise<StoreSchemaMap[S][]>)
+              : Promise.resolve([]),
+          getAllByIndex: <S extends StoreName>(store: S, indexName: string, key: IDBValidKey) =>
+            db.objectStoreNames.contains(store)
+              ? (requestToPromise(tx.objectStore(store).index(indexName).getAll(key)) as Promise<
+                  StoreSchemaMap[S][]
+                >)
+              : Promise.resolve([]),
         };
         return await fn(handle);
       } finally {
@@ -437,9 +610,12 @@ export function createPersistenceSeam(options: {
 
       const needsPointer = pointerResult.status === 'Missing';
       const generation = pointerResult.status === 'Valid' ? pointerResult.pointer.activeGeneration : 1;
-      const db = await openActiveWorkspaceDb(generation);
+      const schemaVersion =
+        pointerResult.status === 'Valid'
+          ? pointerResult.pointer.schemaVersion
+          : CURRENT_SCHEMA_VERSION;
+      const db = await openActiveWorkspaceDb(generation, schemaVersion);
       try {
-        // Re-check write gate immediately before opening the readwrite transaction.
         const latestDecision = writeGate.checkWritable();
         if (!latestDecision.writable) {
           return {
@@ -472,6 +648,10 @@ export function createPersistenceSeam(options: {
               >,
             getAll: <S extends StoreName>(store: S) =>
               requestToPromise(tx.objectStore(store).getAll()) as Promise<StoreSchemaMap[S][]>,
+            getAllByIndex: <S extends StoreName>(store: S, indexName: string, key: IDBValidKey) =>
+              requestToPromise(tx.objectStore(store).index(indexName).getAll(key)) as Promise<
+                StoreSchemaMap[S][]
+              >,
             put: <S extends StoreName>(store: S, record: StoreSchemaMap[S]) => {
               if (store === 'workspace_meta') {
                 wroteWorkspaceMeta = true;
@@ -514,7 +694,7 @@ export function createPersistenceSeam(options: {
           await writeBootstrapPointer({
             key: 'active',
             activeGeneration: generation,
-            schemaVersion: SCHEMA_VERSION_V1,
+            schemaVersion,
           });
         }
 

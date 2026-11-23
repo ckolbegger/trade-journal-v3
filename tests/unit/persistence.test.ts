@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { IDBFactory } from 'fake-indexeddb';
 import {
   createPersistenceSeam,
+  CURRENT_SCHEMA_VERSION,
   SCHEMA_VERSION_V1,
   type RuntimeWriteGate,
 } from '../../src/persistence/idb';
@@ -134,7 +135,7 @@ describe('Persistence/Transaction seam', () => {
 
     // Verify directly against the underlying IDB store that neither record survived rollback
     const rawCounts = await new Promise<{ meta: unknown; instCount: number }>((resolve, reject) => {
-      const req = idb.open('tjv3_ws_gen_1', 1);
+      const req = idb.open('tjv3_ws_gen_1', CURRENT_SCHEMA_VERSION);
       req.onsuccess = () => {
         const db = req.result;
         const tx = db.transaction(['workspace_meta', 'catalog_institutions'], 'readonly');

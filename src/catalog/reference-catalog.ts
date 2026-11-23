@@ -5,11 +5,14 @@ import type {
   InstitutionRecord,
   PersistenceSeam,
   ReadTxHandle,
+  StrategyRecord,
 } from '../persistence/idb';
 import type { Clock } from '../shared/clock';
 import type { RuntimeNotWritableResult } from '../shared/result';
 
-export const CATALOG_SEED_MANIFEST_VERSION = 1 as const;
+export const CATALOG_SEED_MANIFEST_VERSION = 2 as const;
+export const LONG_STOCK_STRATEGY_ID = 'strat_long_stock' as const;
+export const LONG_STOCK_PRODUCT_KEY = 'long-stock' as const;
 
 export type CatalogSaveCommand =
   | { readonly kind: 'CreateInstitution'; readonly label: string }
@@ -106,7 +109,8 @@ export type CatalogQueryRequest =
       readonly family: 'Account';
       readonly includeInactive: boolean;
       readonly institutionId?: string;
-    };
+    }
+  | { readonly family: 'Strategy'; readonly includeInactive: boolean };
 
 export type CatalogQueryResult =
   | {
@@ -117,6 +121,11 @@ export type CatalogQueryResult =
   | {
       readonly family: 'Account';
       readonly items: readonly AccountRecord[];
+      readonly catalogRevision: number;
+    }
+  | {
+      readonly family: 'Strategy';
+      readonly items: readonly StrategyRecord[];
       readonly catalogRevision: number;
     };
 
@@ -219,10 +228,11 @@ function computeHasSelectableAccounts(
 }
 
 async function readSnapshotFromTx(tx: ReadTxHandle) {
-  const [meta, institutions, accounts] = await Promise.all([
+  const [meta, institutions, accounts, strategies] = await Promise.all([
     tx.get('catalog_meta', 'singleton'),
     tx.getAll('catalog_institutions'),
     tx.getAll('catalog_accounts'),
+    tx.getAll('catalog_strategies'),
   ]);
   return {
     meta: meta ?? {
@@ -233,6 +243,32 @@ async function readSnapshotFromTx(tx: ReadTxHandle) {
     },
     institutions,
     accounts,
+    strategies,
+  };
+}
+
+export function buildLongStockStrategySeed(now: string): StrategyRecord {
+  return {
+    id: LONG_STOCK_STRATEGY_ID,
+    productKey: LONG_STOCK_PRODUCT_KEY,
+    currentLabel: 'Long Stock',
+    normalizedLabel: 'long stock',
+    status: 'Active',
+    revision: 1,
+    shape: {
+      roles: [{ instrument: 'Stock', side: 'Long', relativeQuantity: 1 }],
+    },
+    createdAt: now,
+    updatedAt: now,
+    history: [
+      {
+        revision: 1,
+        action: 'Created',
+        label: 'Long Stock',
+        status: 'Active',
+        recordedAt: now,
+      },
+    ],
   };
 }
 
@@ -245,7 +281,7 @@ export function createReferenceCatalog(options: {
   return {
     async seedDefaults(): Promise<SeedCatalogResult> {
       const txResult = await persistence.runWriteTransaction(
-        ['catalog_meta', 'catalog_institutions', 'catalog_accounts'],
+        ['catalog_meta', 'catalog_institutions', 'catalog_accounts', 'catalog_strategies'],
         async (tx): Promise<Exclude<SeedCatalogResult, RuntimeNotWritableResult>> => {
           const snapshot = await readSnapshotFromTx(tx);
           const hasSelectableAccounts = computeHasSelectableAccounts(
@@ -253,7 +289,21 @@ export function createReferenceCatalog(options: {
             snapshot.accounts,
           );
 
-          if (snapshot.meta.seedManifestVersion >= CATALOG_SEED_MANIFEST_VERSION) {
+          const additions: string[] = [];
+          const now = clock.nowIso();
+
+          const hasLongStock = snapshot.strategies.some(
+            (s) => s.productKey === LONG_STOCK_PRODUCT_KEY,
+          );
+          if (!hasLongStock) {
+            tx.put('catalog_strategies', buildLongStockStrategySeed(now));
+            additions.push(LONG_STOCK_STRATEGY_ID);
+          }
+
+          if (
+            snapshot.meta.seedManifestVersion >= CATALOG_SEED_MANIFEST_VERSION &&
+            additions.length === 0
+          ) {
             return {
               status: 'Seeded',
               catalogRevision: snapshot.meta.catalogRevision,
@@ -268,7 +318,7 @@ export function createReferenceCatalog(options: {
             key: 'singleton',
             catalogRevision: nextRevision,
             seedManifestVersion: CATALOG_SEED_MANIFEST_VERSION,
-            seededAt: clock.nowIso(),
+            seededAt: snapshot.meta.seededAt || now,
           };
           tx.put('catalog_meta', nextMeta);
 
@@ -276,7 +326,7 @@ export function createReferenceCatalog(options: {
             status: 'Seeded',
             catalogRevision: nextRevision,
             seedManifestVersion: CATALOG_SEED_MANIFEST_VERSION,
-            additions: [],
+            additions,
             hasSelectableAccounts,
           };
         },
@@ -290,7 +340,7 @@ export function createReferenceCatalog(options: {
 
     async save(command: CatalogSaveCommand): Promise<CatalogSaveResult> {
       const txResult = await persistence.runWriteTransaction(
-        ['catalog_meta', 'catalog_institutions', 'catalog_accounts'],
+        ['catalog_meta', 'catalog_institutions', 'catalog_accounts', 'catalog_strategies'],
         async (tx): Promise<Exclude<CatalogSaveResult, RuntimeNotWritableResult>> => {
           const snapshot = await readSnapshotFromTx(tx);
           const now = clock.nowIso();
@@ -818,9 +868,19 @@ export function createReferenceCatalog(options: {
 
     async query(request: CatalogQueryRequest): Promise<CatalogQueryResult> {
       const snapshot = await persistence.runReadTransaction(
-        ['catalog_meta', 'catalog_institutions', 'catalog_accounts'],
+        ['catalog_meta', 'catalog_institutions', 'catalog_accounts', 'catalog_strategies'],
         readSnapshotFromTx,
       );
+      if (request.family === 'Strategy') {
+        const filtered = request.includeInactive
+          ? snapshot.strategies
+          : snapshot.strategies.filter((s) => s.status === 'Active');
+        return {
+          family: 'Strategy',
+          items: sortByLabelThenId(filtered),
+          catalogRevision: snapshot.meta.catalogRevision,
+        };
+      }
       if (request.family === 'Institution') {
         const filtered = request.includeInactive
           ? snapshot.institutions
@@ -853,7 +913,7 @@ export function createReferenceCatalog(options: {
 
     async resolve(request): Promise<CatalogResolutionSet> {
       const snapshot = await persistence.runReadTransaction(
-        ['catalog_meta', 'catalog_institutions', 'catalog_accounts'],
+        ['catalog_meta', 'catalog_institutions', 'catalog_accounts', 'catalog_strategies'],
         readSnapshotFromTx,
       );
       if (

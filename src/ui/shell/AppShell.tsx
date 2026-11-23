@@ -3,7 +3,7 @@ import type { SwUpdateHandle } from '../../runtime/sw-client';
 import type { WorkspaceStatusSnapshot } from '../../workspace/workspace';
 import styles from './AppShell.module.css';
 
-export type NavTab = 'accounts' | 'about';
+export type NavTab = 'trades' | 'new-plan' | 'accounts' | 'about';
 
 interface AppShellProps {
   readonly activeTab: NavTab;
@@ -34,6 +34,8 @@ export function AppShell({
   const canRequestPersist = readiness.storageProtection.state === 'BestEffort';
 
   const navItems: readonly { id: NavTab; label: string }[] = [
+    { id: 'trades', label: 'Trades' },
+    { id: 'new-plan', label: 'New Plan' },
     { id: 'accounts', label: 'Accounts' },
     { id: 'about', label: 'About' },
   ];

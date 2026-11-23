@@ -43,13 +43,13 @@ async function createHarness(writable = true) {
 }
 
 describe('ReferenceCatalog seam', () => {
-  it('seeds zero fictional institutions or accounts idempotently', async () => {
+  it('seeds zero fictional institutions or accounts and seeds Long Stock strategy idempotently', async () => {
     const { catalog } = await createHarness();
 
     const first = await catalog.seedDefaults();
     expect(first.status).toBe('Seeded');
     if (first.status !== 'Seeded') return;
-    expect(first.additions).toEqual([]);
+    expect(first.additions).toEqual(['strat_long_stock']);
     expect(first.hasSelectableAccounts).toBe(false);
 
     const second = await catalog.seedDefaults();
@@ -60,8 +60,10 @@ describe('ReferenceCatalog seam', () => {
 
     const insts = await catalog.query({ family: 'Institution', includeInactive: true });
     const accts = await catalog.query({ family: 'Account', includeInactive: true });
+    const strategies = await catalog.query({ family: 'Strategy', includeInactive: true });
     expect(insts.items).toEqual([]);
     expect(accts.items).toEqual([]);
+    expect(strategies.items.map((s) => s.currentLabel)).toEqual(['Long Stock']);
   });
 
   it('prevents concurrent duplicate-label creation inside atomic write transactions', async () => {
