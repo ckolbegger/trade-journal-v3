@@ -84,7 +84,7 @@
 
 **Recommendation:** (a): the screen has just asked for 0, so asking again is noise, and the mockup agrees.
 
-**Status:** asked. Parks nothing (T95.13 continues; the follow-on would come after).
+**Answer (2026-11-23):** (a). Follow-on T95.13-D1. **Status:** answered.
 
 ## Q7 (T95.14 case 8): "keep the Price History link on the folded line" — asked 2026-11-23
 
@@ -97,4 +97,12 @@
 
 **Recommendation:** (a): it keeps the folded line short, matches the mockup, and every Trade keeps its link.
 
-**Status:** asked. Parks T95.14 case 8 only; T95.14's review goes ahead.
+**Answer (2026-11-23):** (a). Follow-on T95.14-D1: a test that each card keeps its Price History link (in its Replay) once the Marks are saved and folded; no link on the folded line. **Status:** answered.
+
+## Other answers recorded 2026-11-23 (asked one at a time; not pending decisions)
+
+- Labels for a Blocker and an Exit not carried out (T95.11 ocr, `review-attention.ts:25`): **leave unlabelled.** No bug task.
+- The "Unsaved" tag on a typed, unsaved Review Date cell (gone since T95.12): **bring it back.** Follow-on T95.12-D1.
+- The refusal wording when "Add the skipped sessions" is pressed during a Correct: **keep** "Save or cancel the correction to choose another cell."
+- ocr reviews always use gpt-6.1-sol (`--provider chatgpt --model gpt-6.1-sol`); the agent checks ChatGPT with `.claude/scripts/ocr-usage-wait.sh`, not `ocr llm test`.
+- The ChatGPT check loop is not restarted unless the user says so; the user said usage had reset at 2026-11-23 ~05:10 EST.
