@@ -37,6 +37,8 @@ function Drawing({ meter, captions }: { readonly meter: MeterProps; readonly cap
     const next = { stop: placeOf(root.current, 'meter-stop'), target: placeOf(root.current, 'meter-target'), now: placeOf(root.current, 'meter-pointer') };
     setAt((was) => (was.stop === next.stop && was.target === next.target && was.now === next.now ? was : next));
   }, [meter]);
+  const stopText = `Stop ${meter.stop.text}`;
+  const targetText = `Target ${meter.target.text}`;
   // Two lines close on the meter's scale (both on one side of $0) would put their labels on top of each other: the Target's takes a second row then.
   const [stacked, setStacked] = useState(false);
   useLayoutEffect(() => {
@@ -52,7 +54,7 @@ function Drawing({ meter, captions }: { readonly meter: MeterProps; readonly cap
     const watch = new ResizeObserver(apart);
     watch.observe(drawing);
     return () => watch.disconnect();
-  }, [at]);
+  }, [at, stopText, targetText]);
   // A label stands over its mark, shifted by its own share of its width so the one at either end stays inside the bar.
   const label = (line: 'stop' | 'target', text: string, place: string | undefined) =>
     place && (
@@ -87,8 +89,8 @@ function Drawing({ meter, captions }: { readonly meter: MeterProps; readonly cap
   return (
     <div className="now-draw" data-testid="now-drawing" ref={root}>
       <div className="now-labels">
-        {label('stop', `Stop ${meter.stop.text}`, at.stop)}
-        {label('target', `Target ${meter.target.text}`, at.target)}
+        {label('stop', stopText, at.stop)}
+        {label('target', targetText, at.target)}
       </div>
       <Meter {...meter} />
       {arrows}

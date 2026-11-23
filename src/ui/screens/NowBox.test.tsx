@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { cleanup, render, within } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { DailyTradeReview, MeterReading } from '../../app/types.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { payoffFixtures } from '../../../tests/support/payoff-fixtures.ts';
@@ -135,6 +135,39 @@ describe('the "Now" box (T95.17)', () => {
     // Break-even is a tick on the bar and says nothing.
     expect(drawing.textContent).not.toMatch(/\$0(\.00)?(?!\d)/);
     expect(bar.querySelector('[data-testid="meter-even"]')).toBeTruthy();
+  });
+
+  it('should check again whether the labels overlap when their text widens with the same positions', () => {
+    // A label's box is as wide as its text, at its own left offset: a short Stop label clears the Target's, a wider one reaches it.
+    const rect = vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (this: Element) {
+      // The label stands at its percent of a 1000px bar and is shifted back by that share of its own width, as the drawing styles it.
+      const share = Number.parseFloat((this as HTMLElement).style.left || '0') / 100;
+      const width = (this.textContent ?? '').length * 30;
+      const left = share * 1000 - share * width;
+      return { left, right: left + width, top: 0, bottom: 10, width, height: 10, x: left, y: 0, toJSON: () => ({}) };
+    });
+    try {
+      const narrow = trade({ replay: replayOf([], { meter: meter() }) as never });
+      const { container, rerender } = render(<Box trade={narrow} />);
+      const targetRow = () => container.querySelector<HTMLElement>('.now-label[data-line="target"]')!.dataset['row'];
+      const stopLeft = () => container.querySelector<HTMLElement>('.now-label[data-line="stop"]')!.style.left;
+      const was = stopLeft();
+      expect(targetRow()).toBe('1');
+
+      // Every figure a million times larger: the same places on the bar, much wider words.
+      const wide = meter({
+        stop: value(-2294000000n),
+        target: value(100000000n),
+        now: { kind: 'Value', value: { pnl: rational(-980000000n), zone: 'Between', share: { fraction: rational(2n, 3n), percent: rational(42n), toward: 'Stop' } } },
+      });
+      rerender(<Box trade={trade({ replay: replayOf([], { meter: wide }) as never })} />);
+      expect(stopLeft()).toBe(was);
+      expect(container.querySelector('.now-label[data-line="stop"]')!.textContent.length).toBeGreaterThan(20);
+      expect(container.querySelector('[data-testid="meter-pointer"]')).toBeTruthy();
+      expect(targetRow()).toBe('2');
+    } finally {
+      rect.mockRestore();
+    }
   });
 
   it('should draw a red arrow from now to the Stop and a green arrow to the Target, each with its caption', () => {
