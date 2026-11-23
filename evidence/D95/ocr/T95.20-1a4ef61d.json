@@ -1,0 +1,157 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 1,
+    "total_tokens": 424142,
+    "input_tokens": 421375,
+    "output_tokens": 2767,
+    "cache_read_tokens": 75648,
+    "elapsed": "1m10s"
+  },
+  "tool_calls": {
+    "total": 38,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 17,
+      "file_find": 2,
+      "file_read": 15,
+      "file_read_diff": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/ActionForm.tsx",
+      "content": "This same-route Link updates the URL but does not open the Marks step. ReadyReview reads `linkedCard(...)` and initializes `marksGo` only on mount; changing the search parameters leaves that component mounted and never calls `openMarks`. Wire this link to the existing Marks navigation callback (or handle subsequent search-parameter changes), and test that clicking it actually expands/focuses the Marks step rather than only asserting the address.",
+      "existing_code": "      No Action until today\u0026apos;s {toGo === 1 ? 'Mark is' : 'Marks are'} in. \u003cLink to={`/review?trade=${tradeId}\u0026panel=Marks`}\u003e{toGo === 1 ? 'Enter it' : 'Enter them'}\u003c/Link\u003e",
+      "start_line": 35,
+      "end_line": 35,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Action form and now-box properties",
+      "files": [
+        "src/ui/screens/ActionForm.tsx",
+        "src/ui/screens/now-box.props.ts"
+      ]
+    },
+    {
+      "label": "Review card behavior and tests",
+      "files": [
+        "src/ui/screens/ReviewCard.test.tsx",
+        "src/ui/screens/ReviewCard.tsx",
+        "src/ui/screens/ReviewCards.test.tsx"
+      ]
+    }
+  ],
+  "session_id": "2ea56bf8-6d34-4deb-83c2-5acf414a206a",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "2ea56bf8-6d34-4deb-83c2-5acf414a206a",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "1a4ef61d",
+      "resolved_base": "9024db1258e721f8e6e5949ebf0ef8b09e04596e",
+      "resolved_head": "1a4ef61d3ecbb5ac8accf68e89f79bca0aef191b",
+      "exact_range": "9024db1258e721f8e6e5949ebf0ef8b09e04596e..1a4ef61d3ecbb5ac8accf68e89f79bca0aef191b",
+      "source_artifact_sha256": "befc875ffcd81353f300dcb367d4127ea06899e9f55c7bc44e79b28f9752540f"
+    },
+    "execution": {
+      "ocr_version": "v1.14.2",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "06129f7bc0959665459bced5dd2b2fe42e6eefa20b943b5bcb22e15d914c46d2",
+          "path": "src/ui/screens/ReviewCards.test.tsx",
+          "fingerprint": "aec4f082b71f06d207c9f0bbd8e4a6b4acb9011eedb40a0912500e61e068ac3e"
+        },
+        {
+          "item_id": "28d9dac30140868b5ff82f3128fe52a527534ffce26da1ec10da0741844bd9af",
+          "path": "src/ui/screens/ActionForm.tsx",
+          "fingerprint": "24b363c6965a54df2f4ad2783e824eb0a74aa2b56050b14ab6c6af4a63484209"
+        },
+        {
+          "item_id": "63891947b6e746ce1db02d88e7728d31aed73b6dc2180ffbcc63d3983f792163",
+          "path": "src/ui/screens/now-box.props.ts",
+          "fingerprint": "a1c6b86d5181a9373d4c1552b478c4f444dda2f5db48986b17edfd6ab3ee46eb"
+        },
+        {
+          "item_id": "a83706f3444e16c14ac613c874f7293d7adce6354226bde7d7b9b892fce05701",
+          "path": "src/ui/screens/ReviewCard.test.tsx",
+          "fingerprint": "e854f4f02f98934c6014348a66a15fe6a43a40b36fa70711e2ae4270fed7d41b"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "bbf0cc080a3e7270fb9fc88a791d069ce4fa5c25d8824ae39818ddace4d7d8d9"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "06129f7bc0959665459bced5dd2b2fe42e6eefa20b943b5bcb22e15d914c46d2",
+          "path": "src/ui/screens/ReviewCards.test.tsx",
+          "fingerprint": "aec4f082b71f06d207c9f0bbd8e4a6b4acb9011eedb40a0912500e61e068ac3e"
+        },
+        {
+          "item_id": "28d9dac30140868b5ff82f3128fe52a527534ffce26da1ec10da0741844bd9af",
+          "path": "src/ui/screens/ActionForm.tsx",
+          "fingerprint": "24b363c6965a54df2f4ad2783e824eb0a74aa2b56050b14ab6c6af4a63484209"
+        },
+        {
+          "item_id": "63891947b6e746ce1db02d88e7728d31aed73b6dc2180ffbcc63d3983f792163",
+          "path": "src/ui/screens/now-box.props.ts",
+          "fingerprint": "a1c6b86d5181a9373d4c1552b478c4f444dda2f5db48986b17edfd6ab3ee46eb"
+        },
+        {
+          "item_id": "a83706f3444e16c14ac613c874f7293d7adce6354226bde7d7b9b892fce05701",
+          "path": "src/ui/screens/ReviewCard.test.tsx",
+          "fingerprint": "e854f4f02f98934c6014348a66a15fe6a43a40b36fa70711e2ae4270fed7d41b"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "bbf0cc080a3e7270fb9fc88a791d069ce4fa5c25d8824ae39818ddace4d7d8d9"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "a148a664cc59e2ebe80eb9eace88a7cd4cc538a2c92b6cdf2c30476e7058051e",
+          "path": "evidence/D95/tdd-log/T95.20.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "d7940bcff282aa5345d9129acbcc2747a9c1323d1372c93124db122b1101fae7",
+          "path": "evidence/D95/new-words.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 70046
+  }
+}
