@@ -508,3 +508,7 @@ Main session on T95.23's note: keeping `SaveReviewMarks` beside `SaveReviewMarks
 ocr of T95.23 (session 1fb907e3): 3 files, 0 findings. `evidence/D95/ocr/T95.23-a8eef6af.json`.
 
 Run `t95.23-capabilities` (browser-task): unit 1 failed (`src/coordinators/workspace/workspace.test.ts` "Installed Capability Manifest > should list exactly the public operations and variants through D8": its expected manifest lacks T95.23's new variants); integration 305, browser 13, checks 14 of 14 passed. T95.23 missed this pinned manifest: follow-on **T95.23-F1**.
+
+### T95.23-F1
+
+Commit `6dd789dc`: the workspace manifest pin gains the six variants. Red then green; workspace 131 and the other manifest pins (62) pass.
