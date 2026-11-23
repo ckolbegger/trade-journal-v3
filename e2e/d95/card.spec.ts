@@ -5,6 +5,19 @@ import { createTrades, expect, FOUR_TRADES, MONDAY_1700, onboardedAt, openReview
 const boxOf = async (locator: Locator) => (await locator.boundingBox())!;
 
 test.describe('B95.4 The card', () => {
+  test('should wrap a long unbroken Thesis inside the Plan box at 375 wide with no sideways scroll', async ({ profile }) => {
+    test.setTimeout(300_000);
+    const { context, page } = await onboardedAt(profile, MONDAY_1700);
+    const long = 'Unbroken'.repeat(14);
+    await createTrades(page, [{ ...FOUR_TRADES[1]!, plan: { ...FOUR_TRADES[1]!.plan, thesis: long } }]);
+    await openReview(page);
+    const plan = page.getByRole('region', { name: 'Plan' });
+    await setWidth(page, 375);
+    await expect(plan.getByText(long, { exact: true })).toBeVisible();
+    await expectNoSidewaysScroll(page, 'Review card Plan box with a long Thesis at 375 px');
+    await context.close();
+  });
+
   test('should wrap Entry, Stop and Target to two lines at 375 wide and keep every value', async ({ profile }) => {
     test.setTimeout(300_000);
     const { context, page } = await onboardedAt(profile, MONDAY_1700);

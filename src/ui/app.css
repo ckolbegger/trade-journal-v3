@@ -1134,6 +1134,7 @@ ul.rows > li {
 }
 .plan-box-why p {
   margin: 0 0 0.25rem;
+  overflow-wrap: anywhere;
 }
 @container (max-width: 39.99rem) {
   .plan-box-body {
