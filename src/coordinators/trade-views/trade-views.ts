@@ -23,6 +23,7 @@ import {
   type TradeAnalysisRecord,
 } from '../../domain/trade-analysis/index.ts';
 import { daysToExpiration, instrumentKey } from '../../domain/instrument/index.ts';
+import { Temporal } from 'temporal-polyfill';
 import { classifyDue, type SessionCloses } from '../../domain/journal-debt/index.ts';
 import { closedLongStockSummary, openTradeSummary, optionSummary, plannedTradeSummary, type TradeSummary } from '../../domain/trade-summary.ts';
 import type { Clock, Instant } from '../../domain/time/index.ts';
@@ -969,6 +970,11 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
         // The session before is read as a session of its own, with one date-wide read for the whole page and no earlier-Mark lookup (P133).
         const beforeSession = session?.previousSessionDate ? await deps.marketData.openReadSession({ kind: 'Review', reviewDate: session.previousSessionDate }, { withoutStale: true }) : undefined;
         const valuations = session ? await Promise.all(records.map(({ analysis }) => valueTrade(session, analysis))) : [];
+        // The Review's own read of the saved Actions (P168, A301): one range read through the existing index, whatever the number of Trades,
+        // from the earliest Plan time on (never later than a first exposure) to the day before the Expected Mark Date. An Exit not carried out is placed first.
+        const earliestPlan = records.map((r) => r.summary.planTime).reduce<string | undefined>((a, b) => (a === undefined || Temporal.Instant.compare(b, a) < 0 ? b : a), undefined);
+        const history = session && earliestPlan ? await deps.journal.queryActions({ reviewDate: session.tradingDate, since: Temporal.Instant.from(earliestPlan).toZonedDateTimeISO('UTC').toPlainDate().toString() }) : undefined;
+        const lastActions = new Map((history?.earlier ?? []).map((action) => [action.tradeId, action] as const));
         const earlier = beforeSession ? await Promise.all(records.map(async ({ analysis }, i) => (valuations[i]?.kind === 'Valued' ? valueTrade(beforeSession, analysis, { factsAtClose: true, skipDatedLine: true }) : undefined))) : [];
         // A Closed page reads no Market Data: Close Reason labels, and the Trades with an Outstanding reflection.
         const closeReasons = request.lifecycle === 'Closed' ? await closeReasonsOf(records.map((r) => r.analysis)) : new Map<string, CloseReasonLabel>();
@@ -981,7 +987,7 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
             const before = beforeSession && earlierValuation?.kind === 'Valued' ? { tradingDate: beforeSession.tradingDate, evaluation: earlierValuation.evaluation } : undefined;
             return {
               ...openItem(summary, analysis, valuation.state, labelsOf(summary), expectedMarkOf(session, valuation.frame), valuation.evaluation, valuation.settlement, valuation.datedLine),
-              attention: attentionOf(valuation.state, valuation.evaluation, valuation.state.findings),
+              attention: attentionOf(valuation.state, valuation.evaluation, valuation.state.findings, lastActions.get(summary.tradeId)),
               meter: meterReadingOf(valuation.evaluation, before),
             };
           }

@@ -675,6 +675,19 @@ describe('Open list current evaluation', () => {
     expect(within(table).queryByText(/risk to stop|reward to target/i)).toBeNull();
   });
 
+  it('should show the Review plain label wherever a row showed a band name', async () => {
+    const attention = (band: string) => ({ band, reasons: [], basis: { kind: 'Value', value: { side: 'None', share: Rational.of(0n) } } });
+    const stopped = { ...valued({ currentMarkedPnl: value(-320n), currentMarkedPnlInPlanR: value(-32n, 25n), conditions: [condition('Stop', 'Breached')] }), attention: attention('StopReached') };
+    const reached = { ...valued({ conditions: [condition('Target', 'Reached')] }), attention: attention('TargetReached'), tradeId: 'trade-4', underlying: 'GHI' };
+    const table = await openTable([stopped, reached]);
+    const [, stop, target] = within(table).getAllByRole('row');
+    const tradeCell = (row: HTMLElement) => within(row).getAllByRole('cell')[1]!;
+    // The row's own labels stand (A301); no band name, in the old words or as its code, shows on a row.
+    expect(within(tradeCell(stop!)).getByText('Stop breached')).toBeTruthy();
+    expect(within(tradeCell(target!)).getByText('Target reached')).toBeTruthy();
+    expect(table.textContent).not.toMatch(/StopReached|TargetReached|Boundary reached|Evidence limited|Quantified pressure|Blocker|Routine/);
+  });
+
   it('should show Mark missing linking to the Review Marks family in place of the P&L, never a number, plus the dated line P&L labelled with its date when present', async () => {
     const dated = { tradingDate: '2026-10-12', evaluation: { currentMarkedPnl: value(120n), currentMarkedPnlInPlanR: value(120n, 250n) } };
     const missing = valued({ currentMarkedPnl: unavailableMark, currentMarkedPnlInPlanR: unavailableMark, datedLine: dated });

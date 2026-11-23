@@ -17,6 +17,71 @@ async function openIds(views: ReturnType<typeof createTradeViews>) {
   return result.view.items;
 }
 
+describe("browseTrades: the Open list follows the Review's order (T95.22, A301)", () => {
+  it('should order the Open list past the Stop deepest in R first, then at the Target, by the Review comparator', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const views = createTradeViews(stack);
+    // At the Target, the most recently active.
+    const target = await stack.confirm({ symbol: 'XYZ', shares: '100', entry: '50.00', stop: '47.50', target: '56.00' });
+    await stack.fill(target, ELEVEN_AM, '100', '50.00');
+    // 1R is $200.00 and the Stop is passed by $300.00, 1.5R.
+    const shallow = await stack.confirm({ symbol: 'ABC', shares: '100', entry: '30.00', stop: '28.00', target: '36.00' });
+    await stack.fill(shallow, TEN_AM, '100', '30.00');
+    // 1R is $100.00 and the Stop is passed by $200.00, 2R: less in dollars, more in R.
+    const deep = await stack.confirm({ symbol: 'DEF', shares: '100', entry: '50.00', stop: '49.00', target: '56.00' });
+    await stack.fill(deep, TEN_AM, '100', '50.00');
+    await stack.saveMark('XYZ', '56.50');
+    await stack.saveMark('ABC', '25.00');
+    await stack.saveMark('DEF', '47.00');
+
+    const items = await openIds(views);
+
+    expect(items.map((i) => i.tradeId)).toEqual([deep.tradeId, shallow.tradeId, target.tradeId]);
+    const review = await stack.dailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: MONDAY_1700 });
+    if (review.kind !== 'Ready') throw new Error(`expected Ready, got ${review.kind}`);
+    expect(items.map((i) => i.tradeId)).toEqual(review.families.find((f) => f.family === 'Trades')!.trades.map((t) => t.tradeId));
+  }, 60_000);
+
+  it('should place first a Trade whose most recent Action is an Exit not carried out', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const views = createTradeViews(stack);
+    const past = await stack.confirm({ symbol: 'ABC', shares: '100', entry: '30.00', stop: '28.00', target: '36.00', planTime: '2026-10-08T13:00:00Z' });
+    await stack.fill(past, '2026-10-08T14:00:00Z', '100', '30.00');
+    const leaving = await stack.confirm({ symbol: 'XYZ', shares: '100', entry: '50.00', stop: '47.50', target: '56.00', planTime: '2026-10-08T13:00:00Z' });
+    await stack.fill(leaving, '2026-10-08T14:00:00Z', '100', '50.00');
+    await stack.saveMark('ABC', '27.50');
+    await stack.saveMark('XYZ', '52.00');
+    await stack.saveAction(leaving.tradeId, 'Exit', '2026-10-09');
+
+    const items = await openIds(views);
+
+    expect(items.map((i) => [i.tradeId, i.attention.band])).toEqual([
+      [leaving.tradeId, 'ExitNotCarriedOut'],
+      [past.tradeId, 'StopReached'],
+    ]);
+  }, 60_000);
+
+  it('should make exactly one Journal read for that, the same for two Trades and for four', async () => {
+    const readsFor = async (symbols: readonly string[]) => {
+      const stack = await reviewStack(MONDAY_1700);
+      for (const symbol of symbols) {
+        const planned = await stack.confirm({ symbol, shares: '100', entry: '50.00', stop: '47.50', target: '56.00', planTime: '2026-10-08T13:00:00Z' });
+        await stack.fill(planned, '2026-10-08T14:00:00Z', '100', '50.00');
+        await stack.saveMark(symbol, '52.00');
+      }
+      const { result, requests } = await countRequests(() => createTradeViews(stack).browseTrades({ lifecycle: 'Open' }));
+      if (result.kind !== 'Ready') throw new Error(`expected Ready, got ${result.kind}`);
+      return requests.filter((r) => r.store === 'journalEntries');
+    };
+
+    const two = await readsFor(['AAA', 'BBB']);
+    const four = await readsFor(['AAA', 'BBB', 'CCC', 'DDD']);
+
+    expect(two).toEqual([{ on: 'index', store: 'journalEntries', index: 'byObligation', method: 'getAll' }]);
+    expect(four).toEqual(two);
+  }, 60_000);
+});
+
 describe("browseTrades: the Open list's default order (A262)", () => {
   it('should list a Trade past its Stop before one that is not, whatever their Last Activity', async () => {
     const stack = await reviewStack(MONDAY_1700);
