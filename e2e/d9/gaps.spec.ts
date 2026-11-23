@@ -1,6 +1,4 @@
-import type { Locator } from '@playwright/test';
-import { R_DALE_D } from '../../src/domain/trade-analysis/option-trade.ts';
-import { AXIO, BREN, build, chartText, closeOf, CORV, DALE, expect, going, headline, cardRows, noMarkDash, openDrawer, pastLine, pnlChart, priceStrip, readoutPnl, readoutR, readoutValue, replay, seek, sessionCard, sliderValue, stake, test, setViewport } from './support.ts';
+import { AXIO, build, chartText, closeOf, CORV, expect, going, headline, cardRows, noMarkDash, openDrawer, pastLine, pnlChart, priceStrip, readoutPnl, readoutR, readoutValue, replay, seek, sessionCard, sliderValue, stake, test } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -80,36 +78,6 @@ test.describe('B9.2 A gap, a breach and a sale below the Stop', () => {
     await expect(monday).not.toContainText('$0.00');
     await context.close();
   });
-
-  // Critic-2's defect 2 (section 1.8): "P&L –" on one line and "$17,463.00" on the next. Each grid cell is one figure on one line, sign included, at every width.
-  const lines = (cells: Locator) =>
-    cells.evaluateAll((tds) =>
-      tds.map((td) => {
-        const range = document.createRange();
-        range.selectNodeContents(td);
-        return { text: td.textContent ?? '', lines: new Set([...range.getClientRects()].map((r) => Math.round(r.top))).size };
-      }),
-    );
-  for (const [name, fixture, date, through] of [['R-DALE-D Fri 11-13', { ...DALE, series: R_DALE_D, changes: [] }, '2026-11-13', 9], ['R-BREN-U Mon 11-02', BREN, '2026-11-02', 0]] as const) {
-    test(`should keep a signed amount on one line in every grid cell at 1280, 375 and 320 wide, ${name}`, async ({ profile }) => {
-      test.setTimeout(240_000);
-      const { context, page } = await build(profile, fixture, closeOf(date), through, 0);
-      await openDrawer(page, 'Replay');
-      const scope = replay(page);
-      await seek(page, scope, 'End');
-      for (const width of [1280, 375, 320]) {
-        await setViewport(page, width, 900);
-        const cells = await lines(scope.locator('.replay-stake-grid tbody tr:not(.replay-past-line) td'));
-        expect(cells.length).toBeGreaterThan(0);
-        for (const cell of cells) expect(cell, `${date} at ${width}: ${cell.text}`).toMatchObject({ lines: 1 });
-        // Unbreakable cells must still fit: the grid ends inside the viewport.
-        expect(await scope.locator('.replay-stake-grid').evaluate((el) => el.getBoundingClientRect().right <= window.innerWidth), `${date} at ${width}: the grid fits`).toBe(true);
-        // The signed amount is one piece: never a heading "P&L" above or before it.
-        await expect(readoutPnl(scope, 'At Worst case')).toHaveText(/^[−+]\$[\d,]+\.\d{2}$/);
-      }
-      await context.close();
-    });
-  }
 
   // W40 names the label "Realized −$440" for a banked loss; the label placer gives it the space before the stake tags.
   test('should label the banked loss "Realized −$440" in the P&L chart on Mon 11-09', async ({ profile }) => {

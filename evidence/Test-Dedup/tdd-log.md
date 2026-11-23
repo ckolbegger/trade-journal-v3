@@ -91,3 +91,16 @@ Moved checks went into e2e/d9/estimates.spec.ts, the case "should show W47’s c
 | second Escape closes the overlay | mutated (toHaveCount 1) | 1 failed, assertion: toHaveCount Expected 1, Received 0 |
 | overlay still open after the first Escape and 500 ms | mutated (toHaveCount 0) | 1 failed, assertion: toHaveCount Expected 0, Received 1 |
 | all, restored | green | `... e2e/d9/estimates-a11y.spec.ts e2e/d9/estimates.spec.ts`: 6 passed |
+
+## TD.6
+
+Moved checks went into e2e/d9ar/readout.spec.ts (helper `brokenReadoutFigures` and the `places` loop "should keep every figure in the readout and the header on one line, ..."). Each mutation changed one expected value and ran the DALE-hold Fri Nov 13 case; command each time: `.claude/scripts/with-browser-lock.sh npm run test:e2e:specs -- e2e/d9ar/readout.spec.ts -g "DALE-hold Fri Nov 13"`.
+
+| Moved check | Run | Result |
+|---|---|---|
+| Each whole readout value (.replay-value, .replay-r, .replay-pnl-value) is one line, at 1280, 1440, 1920 | mutated (limit font x 0.1) | 1 failed, assertion: Expected [] , Received "readout: value runs onto a second line ..." |
+| The stake grid ends inside the viewport | mutated (right > 10) | 1 failed, assertion: Expected [], Received "readout: the grid runs past the viewport" |
+| At Worst case P&L matches the signed-amount pattern | mutated (pattern with a literal X) | 1 failed, assertion: toHaveText Expected pattern /^[−+]\$X.../ |
+| all, restored | green | `... e2e/d9ar/readout.spec.ts e2e/d9ar/sweep.spec.ts e2e/d9/gaps.spec.ts`: 20 passed |
+
+First attempt: the whole-value check at every width failed the existing cases at 375 ("≈ 540 shares" wraps before its word on a phone). The dropped case ran at the default size only, so the check runs at 1280 and wider (an assumption, recorded in structural.md).

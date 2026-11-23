@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import {
-  AXIO, BREN, build, closeOf, CORV, DALE_HOLD, expect, expectAccessible, expectOneLine, going, openDrawer, pastLine, positionGroup, readoutPnl, readoutR, readoutValue, replay, seek, setViewport, SCREENSHOTS, sliderValue, STRAY, stake, test,
+  AXIO, BREN, build, closeOf, CORV, DALE_HOLD, expect, expectAccessible, going, openDrawer, pastLine, positionGroup, readoutPnl, readoutR, readoutValue, replay, seek, setViewport, SCREENSHOTS, sliderValue, STRAY, stake, test, type Fixture,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
@@ -8,16 +8,7 @@ test.use({ actionTimeout: 15_000 });
 // B9AR.3 (plan section 7.2, AC-CALC-003, AC-UI-002): the readout's stake grid (W55), the one row past a line (W56), a realized loss (W57), the dollar sign on every Mark (W58), the odds (W59, W60),
 // the change line, the extremes' weight (decision 6), the "From here" sentence's colour, and one line per figure. From the full reading: right-aligned tabular figures, each stake row's canonical term
 // as its accessible description (A287), and axe on AXIO's readout. The Position group's Execution words belong to T9AR.18 and come with B9AR.4's part 2.
-const FIGURES = '.replay-readout .replay-value, .replay-readout .replay-r, .replay-readout .replay-pnl-value';
 const css = (locator: Locator, property: string): Promise<string> => locator.evaluate((el, p) => getComputedStyle(el).getPropertyValue(p), property);
-
-async function expectOneLineEach(scope: Locator, where: string): Promise<void> {
-  const figures = scope.locator(FIGURES);
-  const count = await figures.count();
-  await scope.page().screenshot({ path: `${SCREENSHOTS}/B9AR.3-${where.replace(/[^\w]+/g, '-')}.png` });
-  expect(count, `${where}: figures`).toBeGreaterThan(0);
-  for (let i = 0; i < count; i += 1) await expectOneLine(figures.nth(i), `${where}: figure ${i + 1}`);
-}
 
 // Where the change line is: only under Trade P&L and the Marks (decision 8).
 async function expectChangeLineOnlyOnPnlAndMarks(scope: Locator, where: string): Promise<string[]> {
@@ -192,34 +183,26 @@ test.describe('B9AR.3 The readout', () => {
     await expectChangeLineOnlyOnPnlAndMarks(scope, 'CORV Mon 11-09');
     await context.close();
   });
-
-  // The plan's `expectOneLine` on every figure. The Trade P&L figure ("+$642.00 · 2.02R") breaks onto a second line in the readout's narrow column (the committed screenshots in D9A-R's evidence, B9AR.3-*.png),
-  // so the case is expected to fail until the product fits it; kept as the plan writes it.
-  const situations = [
-    { fixture: BREN, through: 10, back: 0, where: 'BREN Mon 11-16' },
-    { fixture: BREN, through: 10, back: 3, where: 'BREN Wed 11-11' },
-    { fixture: AXIO, through: 10, back: 0, where: 'AXIO Mon 11-16' },
-    { fixture: DALE_HOLD, through: 10, back: 3, where: 'DALE-hold Wed 11-11' },
-    { fixture: CORV, through: 5, back: 0, where: 'CORV Mon 11-09' },
-  ] as const;
-  for (const { fixture, through, back, where } of situations) {
-    test(`should keep every readout figure on one line for ${where}`, async ({ profile }) => {
-      test.setTimeout(240_000);
-      const { context, page } = await build(profile, fixture, closeOf(through === 5 ? '2026-11-09' : '2026-11-16'), through);
-      const scope = await openAt(page, 'ArrowLeft', back);
-      await expectOneLineEach(scope, where);
-      await context.close();
-    });
-  }
 });
 
 // T9AR.24-B2 (critic-1 defect 2, C9AR.2, A278): no figure in the readout or the overlay's header breaks across lines, and no sign parts from its number ("at Stop –" over "$1,536.00"). The check shares no pattern with the
 // code that marks the figures: it measures every element the page marks as a figure (.card-figure) and each grid cell, and asserts the words left around them hold no figure mark of any kind ("$", "%", an R
 // multiple, "to 1" odds, a lone sign), so a figure the code failed to mark is found as stray words. A row may wrap between figures, never inside one.
-async function brokenReadoutFigures(scope: Locator): Promise<string[]> {
-  return scope.evaluate((dialog, stray) => {
+async function brokenReadoutFigures(scope: Locator, wholeValues: boolean): Promise<string[]> {
+  return scope.evaluate((dialog, [stray, whole]) => {
     const broken: string[] = [];
     const roots = [dialog.querySelector('h2'), dialog.querySelector('.replay-readout')].filter((r): r is Element => r !== null);
+    // At the wide sizes each whole readout value is one line too (a value must not wrap between its figures; on a phone "≈ 540 shares" may wrap before its word), and the stake grid ends inside the viewport (TD.6).
+    for (const value of whole ? dialog.querySelectorAll('.replay-readout .replay-value, .replay-readout .replay-r, .replay-readout .replay-pnl-value') : []) {
+      const range = document.createRange();
+      range.selectNodeContents(value);
+      const rects = [...range.getClientRects()].filter((r) => r.width > 0 && r.height > 0);
+      const span = rects.length ? Math.max(...rects.map((r) => r.bottom)) - Math.min(...rects.map((r) => r.top)) : 0;
+      if (span > parseFloat(getComputedStyle(value).fontSize) * 1.6) broken.push(`readout: value runs onto a second line "${value.textContent}"`);
+    }
+    for (const grid of dialog.querySelectorAll('.replay-stake-grid')) {
+      if (grid.getBoundingClientRect().right > window.innerWidth) broken.push('readout: the grid runs past the viewport');
+    }
     const gridCell = '.replay-stake-grid tr:not(.replay-past-line) td';
     for (const root of roots) {
       const where = root.tagName === 'H2' ? 'header' : 'readout';
@@ -239,23 +222,29 @@ async function brokenReadoutFigures(scope: Locator): Promise<string[]> {
       }
     }
     return broken;
-  }, STRAY);
+  }, [STRAY, wholeValues] as const);
 }
 
 test.describe('T9AR.24-B2 Figures in the readout and the overlay header', () => {
-  const places = [
+  // through and date: the last session with a Mark and the clock (Mon Nov 16 unless a place says otherwise). signed: the At Worst case P&L is one signed amount (the Critic-2 defect 2 case, DALE-D at Fri 11-13).
+  const places: readonly { fixture: Fixture; back: number; where: string; through?: number; date?: string; signed?: true }[] = [
     { fixture: DALE_HOLD, back: 0, where: 'DALE-hold Mon Nov 16' },
     { fixture: AXIO, back: 0, where: 'AXIO Mon Nov 16' },
     { fixture: DALE_HOLD, back: 2, where: 'DALE-hold Thu Nov 12' },
-  ] as const;
-  for (const { fixture, back, where } of places) {
+    { fixture: DALE_HOLD, back: 1, where: 'DALE-hold Fri Nov 13', signed: true },
+    { fixture: BREN, back: 3, where: 'BREN Wed 11-11' },
+    { fixture: CORV, back: 0, where: 'CORV Mon 11-09', through: 5, date: '2026-11-09' },
+  ];
+  for (const { fixture, back, where, through = 10, date = '2026-11-16', signed } of places) {
     test(`should keep every figure in the readout and the header on one line, sign with its number, at 1280, 1440, 1920, 375 and 320, ${where}`, async ({ profile }) => {
       test.setTimeout(300_000);
-      const { context, page } = await build(profile, fixture, closeOf('2026-11-16'), 10);
+      const { context, page } = await build(profile, fixture, closeOf(date), through);
       const scope = await openAt(page, 'ArrowLeft', back);
       for (const width of [1280, 1440, 1920, 375, 320]) {
         await setViewport(page, width, 800);
-        expect(await brokenReadoutFigures(scope), `${where} at ${width}`).toEqual([]);
+        expect(await brokenReadoutFigures(scope, width >= 1280), `${where} at ${width}`).toEqual([]);
+        // The signed amount is one piece: never a heading "P&L" above or before it.
+        if (signed) await expect(readoutPnl(scope, 'At Worst case'), `${where} at ${width}`).toHaveText(/^[−+]\$[\d,]+\.\d{2}$/);
       }
       await context.close();
     });

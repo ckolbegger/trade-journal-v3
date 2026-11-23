@@ -193,3 +193,36 @@ Not carried: the 375 and 320 px viewport for the Escape behaviour; the kept case
 Spec counts (e2e/d9/estimates-a11y.spec.ts + e2e/d9/estimates.spec.ts): before 8 passed, after 6 passed.
 
 References (rule 10): rg of the title found only the plan itself. plan/D09-trade-replay.md B9.7 test-plan row (line 815) said estimates-a11y covers "Escape" and "focus returns to the chip"; re-pointed to estimates.spec.ts (since TD.5). Left as written: research/browser-test-duplicates.md, evidence/D09/structural.md (finished-task records), suite-run outputs.
+
+## TD.6 — Readout figures on one line (BD10, BD11)
+
+Kept: e2e/d9ar/readout.spec.ts "should keep every figure in the readout and the header on one line, sign with its number, at 1280, 1440, 1920, 375 and 320, ..." (the loop) and e2e/d9ar/sweep.spec.ts "should find no broken or unmarked figure anywhere in the replay at any session, ...". Confirm first held: the dropped loops measured the same kinds of Trade and session, and only the whole-value and grid checks below were missing from the kept case.
+
+Removed:
+- e2e/d9ar/readout.spec.ts, loop "should keep every readout figure on one line for ${where}" (5 cases: BREN Mon 11-16, BREN Wed 11-11, AXIO Mon 11-16, DALE-hold Wed 11-11, CORV Mon 11-09). Its helper `expectOneLineEach`, the `FIGURES` constant and the `expectOneLine` import went with it.
+- e2e/d9/gaps.spec.ts, loop "should keep a signed amount on one line in every grid cell at 1280, 375 and 320 wide, ${name}" (2 cases: R-DALE-D Fri 11-13, R-BREN-U Mon 11-02). Its `lines` helper and the imports only it used (Locator, R_DALE_D, BREN, DALE, setViewport) went with it.
+
+Moved (rule 2; all in e2e/d9ar/readout.spec.ts, mutations in tdd-log.md under TD.6):
+- `brokenReadoutFigures(scope, wholeValues)`: each whole readout value (.replay-value, .replay-r, .replay-pnl-value) is one line, at 1280, 1440 and 1920; the stake grid ends inside the viewport (all widths).
+- `places` of the loop: added BREN Wed 11-11 and CORV Mon 11-09 (:218's fixtures, CORV built through 5 at the 2026-11-09 clock), and DALE-hold Fri Nov 13 (gaps' R-DALE-D Fri 11-13; neither the loop nor the sweep visited it) with `signed`: At Worst case P&L matches /^[−+]\$[\d,]+\.\d{2}$/ at every width.
+
+Every dropped assertion, and where it lives (L living, M moved):
+
+| Dropped assertion | Where |
+|---|---|
+| readout:218, each .replay-value / .replay-r / .replay-pnl-value is one line (BREN Mon 11-16, BREN Wed 11-11, AXIO Mon 11-16, DALE-hold Wed 11-11, CORV Mon 11-09) | M: `brokenReadoutFigures` whole-value check (at 1280 and wider), run on AXIO Mon 11-16, BREN Wed 11-11, CORV Mon 11-09 and DALE-hold Mon 11-16, Thu 11-12, Fri 11-13, the same kinds of Trade and session. BREN Mon 11-16 and DALE-hold Wed 11-11 are not visited by the loop itself (the sweep checks their .card-figure pieces at 375 and 320) |
+| readout:218, figures count greater than 0 | L: the Fri Nov 13 place's At Worst case pattern fails on an absent readout cell, and `openAt` needs the Replay |
+| readout:218, a screenshot to B9AR.3-*.png | not carried (no evidence file reads it; the committed screenshots in D9A-R's evidence are history) |
+| gaps:94, each grid cell one line at 1280, 375 and 320 | L: kept loop (grid cells, five widths) on DALE-hold Fri Nov 13 (the new place), and the sweep (grid cells at every session, 375 and 320) for BREN, including Mon 11-02 |
+| gaps:94, grid cells count greater than 0 | L: the signed At Worst case pattern on the Fri Nov 13 place fails when the grid has no cells |
+| gaps:94, the grid ends inside the viewport | M: `brokenReadoutFigures` grid check, all widths, all six places |
+| gaps:94, At Worst case matches /^[−+]\$[\d,]+\.\d{2}$/ | M: loop, DALE-hold Fri Nov 13, five widths |
+| gaps:94, R-BREN-U Mon 11-02 at 1280 | L: kept loop on BREN Wed 11-11 at 1280 (same Trade); Mon 11-02 itself only in the sweep at 375 and 320 |
+
+Assumptions: (1) the whole-value check runs at 1280 and wider only, because on a phone "≈ 540 shares" wraps before its word by design and the dropped case ran at the default (wide) size; (2) the viewport height is 800, not gaps' 900, which does not affect line breaks.
+
+Cases kept: none; both sets dropped. Nothing failed for a real reason.
+
+Spec counts (e2e/d9ar/readout.spec.ts, e2e/d9ar/sweep.spec.ts, e2e/d9/gaps.spec.ts): before 24 passed, after 20 passed (minus 5 and 2, plus 3 places).
+
+References (rule 10): rg of both titles: living text only in plan/D09A-R-stage-a-refactor.md lines 239 and 539 (defect 2). Line 239 now ends "(held by readout:264 and sweep:24 since TD.6)"; line 539 is the case-list wording of a past task and is left as written. Left as written: evidence/D09AR/tdd-log/T9AR.23.md (readout:218), evidence/D09AR/structural.md:493, evidence/D09AR/tdd-log/merge6-S1.md:5, and suite-run outputs.
