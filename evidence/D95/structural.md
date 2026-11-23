@@ -493,3 +493,5 @@ Run `t95.19-last-decisions` (browser-task): unit 2886, integration 304, browser 
 Commit `1a4ef61d` (from `3158ffe4`). Gate on the card's Marks to go: W94 "figures wait" with the box on the session before; W95 "No Action until today's Marks are in" replaces the Action form (kept mounted so drafts survive), with a link to the Marks step; a `ReviewMarksUnresolved` save shows the same words. Cases 1, 2, 4 red then green; case 3 first-run pass, mutation-checked. Existing card cases that assumed an Action form with a Mark to go now start with Marks in.
 
 ocr (session 2ea56bf8): 5 files, 1 finding, Wrong, dismissed: the "Enter them" link does open the Marks step (ReviewView.tsx 424-433 applies each new search string). Reviewer note, not an ocr finding: a click when the address is already that link changes nothing. `evidence/D95/ocr/T95.20-1a4ef61d.json`.
+
+Run `t95.20-before-marks` (browser-task): unit 2890, integration 304, browser 13, checks 14 of 14. Passed. T95.20 Done.
