@@ -255,6 +255,8 @@ ocr of B1-B1 and B2-B1 (`ocr/T95.12-B1-B1-B2-B1-244c8ada.json`, 5 files, 1 comme
 
 **T95.12-B2-B2** `5fa87ce0`: while a Correct holds, "Add the skipped sessions" and the skipped link are refused like the other refusal paths (status line, focus back to the correction; no columns, no page request); MarksGrid unchanged (one guard). The reused status line says "choose another cell", slightly off for adding sessions. Two cases red then green; src/ui 1,303; browser 7 of 7. ocr (`ocr/T95.12-B2-B2-5fa87ce0.json`): **No findings.**
 
+**Complete run `t95.12-marks-step`** (on `d5197410`; `browser tier: full (first matching path since 84e1b153: e2e/d4/card-helpers.spec.ts)`; run complete): unit 236 files, 2,798 tests; integration 141 files, 300 tests; browser 127 (5.6 min), 80 (5.4 min), 57 (4.7 min), 136 and 4 skipped (7.6 min); checks 14 of 14. No failures. T95.12 Done (`db400f79`; B1 `971cde6e`; B2 `bd6a24a4`; B3 `8e409a71`; B1-B1 `f7d30832`; B2-B1 `244c8ada`; B2-B2 `5fa87ce0`).
+
 ## Trial: complete runs overlapped with the next task (the user, 2026-11-22, for 5 or 6 tasks)
 
 Each task's complete run runs in a detached scratch copy (`.claude/worktrees/run-<label>`, set up by `lane-setup.sh`) at the task's commit, while the next task's subagent starts in this worktree. The run's files are copied back to `evidence/D95/suite-runs/`. A failure becomes a bug task as before; the next task restarts only if it built on the broken code. Times are recorded per run to measure the saving.
