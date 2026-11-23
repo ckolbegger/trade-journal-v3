@@ -51,3 +51,22 @@ Break check after both fixes (e2e/d9ar/review.spec.ts): copy switched off (the c
 ### ST.1-B1 and ST.1-B2 ocr
 
 gpt-6.1-sol, session 84331d74, range 2ef488d0..2aa85183: 1 file reviewed (e2e/d1/support.ts), 0 findings. `evidence/Setup-Snapshot/ocr/ST.1-B1-B2-2aa85183.json`.
+
+## ST.2 d9ar/responsive-a11y.spec.ts on the shared helper
+
+What changed (test code only):
+- e2e/d9ar/support.ts, beside openStandardReview: `openStandardReview` now shares a private `launchStandardCopy` (copy, launch at Mon 11-16 close, go to a page, check the Review link and "Start your journal" absent, check the stored Trades are the setup's; the stored-Trades check now runs before the Review is opened, nothing else differs). New: `openStandardReviewOf(profile, copySetup, fixtures)` (the copy, with any fixture it lacks, here CORV, added on top through the screens with buildOn; the Trades in the order asked for), `openStandardDetail(profile, copySetup, fixture)` (the copy opened on that Trade's Detail), `copyStandardTrade(copySetup, fixture)` (copy only, nothing launched, for tests that launch their own touch or offline context).
+- e2e/d9ar/responsive-a11y.spec.ts: 17 of 18 tests start from STANDARD_REVIEW; only how they start changed (plus one comment above the four-Trade case).
+
+Which tests start from which setup (all STANDARD_REVIEW, the three-Trade Review BREN, AXIO, DALE held):
+- openStandardDetail (BREN): Detail overlay at every size; Detail 320 by 667 screen; P&L chart 800 wide; Tab inside the overlay; overlay Close 44 px; staged update's notice.
+- openStandardReviewOf [BREN]: Review card's overlay at every size; Review card 320 by 667 screen; page layout after Close; phone's Replay buttons 44 px.
+- openStandardReviewOf with CORV added on top: the four-Trade group (R-BREN-U, R-AXIO-D, R-CORV-D, R-DALE-D).
+- copy only (copyStandardTrade, then the test's own touch launch): tap on a session and a heading (BREN); Review card Replay tap at 320 (BREN); Price History link at 375 and 320 (BREN); DALE slider value at 320 (DALE held).
+- copy only, then server stopped and offline launch: overlay offline after a cold restart (BREN).
+
+Kept its own build: R-DALE-U (the other case of the group test): its Marks differ from the DALE held that the standard setup records, so it cannot share the profile; unchanged (buildReview).
+
+Break check (e2e/d9ar/responsive-a11y.spec.ts): copy switched off (the cp call in copySetup replaced by a no-op): 17 failed (toBeVisible on the first screen), the R-DALE-U test passed (own build); switched back on: 18 passed (36.2 s). The switch was an edit, restored by an edit (git diff e2e/d1/support.ts shows no trace). e2e/d9ar/review.spec.ts, which shares the changed helper: 5 passed (11.8 s).
+
+Assumptions: the staged-update test, which saved nothing in the proof of concept, is still converted (it passes on the copy; it is in the plan's 17). The service worker and release cache the copy carries are those of dist-faults, the release the tests serve (ST.1-B1).

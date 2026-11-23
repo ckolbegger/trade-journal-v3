@@ -6,7 +6,7 @@ import { REPLAY_SESSION_DATES } from '../../src/domain/trade-analysis/reference-
 import { R_DALE_D } from '../../src/domain/trade-analysis/option-trade.ts';
 import { expectShownInFull } from '../d7p/support.ts';
 import {
-  AXIO, BREN, closeOf, currentTradeId, DALE, detail, expect, fillOptionPlan, fillOptionRows, fillPlan, fillRows, label, onboardedAt, openExitForm, openReview, pinClock, pnlChart, priceStrip, LAUNCH,
+  AXIO, BREN, buildOn, closeOf, currentTradeId, DALE, detail, expect, fillOptionPlan, fillOptionRows, fillPlan, fillRows, label, onboardedAt, openExitForm, openReview, pinClock, pnlChart, priceStrip, LAUNCH,
   answerIn, exitReflection, PRICE_HISTORY, reachPanel, recordEntry, recordOptionEntry, replay, savedUnlessRefused, seek, slider, sliderValue, type Fixture, type Profile, type TradeRef,
   defineSetup, firstPage, launchAt, probe, tradesOf, workspaceOf, type Setup,
 } from '../d9/support.ts';
@@ -108,18 +108,50 @@ export const STANDARD_REVIEW = defineSetup('standard-review', async (profile) =>
   return { context, made: trades };
 });
 
-// buildReview's shape, { context, page, trades }, from the copy: launched at the instant the build used, the Review opened, and the stored Trades checked to be the setup's.
-export async function openStandardReview(profile: Profile, copySetup: <T>(setup: Setup<T>) => Promise<T>): Promise<{ context: BrowserContext; page: Page; trades: TradeRef[] }> {
+type CopySetup = <T>(setup: Setup<T>) => Promise<T>;
+
+// The standard Review's copy launched at the instant the build used, on `at`, with the first screen checked: the app is onboarded and the stored Trades are the setup's.
+async function launchStandardCopy(profile: Profile, copySetup: CopySetup, at: string | ((trades: TradeRef[]) => string)): Promise<{ context: BrowserContext; page: Page; trades: TradeRef[] }> {
   const trades = [...(await copySetup(STANDARD_REVIEW))];
   const context = await launchAt(profile, closeOf(REPLAY_SESSION_DATES[10]));
   const page = await firstPage(context);
-  await page.goto('/');
+  await page.goto(typeof at === 'string' ? at : at(trades));
   await expect(page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Review' })).toBeVisible(LAUNCH);
   await expect(page.getByText('Start your journal'), 'the copy, not a fresh profile').toHaveCount(0);
-  await openReview(page);
   const stored = tradesOf(workspaceOf(await probe(page))!).map((t) => t.tradeId).sort();
   expect(stored, 'the copy holds the Trades the setup recorded').toEqual(trades.map((t) => t.tradeId).sort());
   return { context, page, trades };
+}
+
+// buildReview's shape, { context, page, trades }, from the copy: launched at the instant the build used, the Review opened, and the stored Trades checked to be the setup's.
+export async function openStandardReview(profile: Profile, copySetup: CopySetup): Promise<{ context: BrowserContext; page: Page; trades: TradeRef[] }> {
+  const { context, page, trades } = await launchStandardCopy(profile, copySetup, '/');
+  await openReview(page);
+  return { context, page, trades };
+}
+
+// In place of buildReview(profile, fixtures) for fixtures that are standard Trades or Trades added on top of them through the screens (buildOn); the Trades in the order asked for.
+export async function openStandardReviewOf(profile: Profile, copySetup: CopySetup, fixtures: readonly Fixture[]): Promise<{ context: BrowserContext; page: Page; trades: TradeRef[] }> {
+  const { context, page, trades: standard } = await launchStandardCopy(profile, copySetup, '/');
+  const added = new Map<string, TradeRef>();
+  for (const fixture of fixtures) if (!standard.some((t) => t.symbol === fixture.symbol)) added.set(fixture.symbol, await buildOn(page, fixture, 10));
+  if (added.size > 0) await page.goto('/');
+  await openReview(page);
+  return { context, page, trades: fixtures.map((f) => standard.find((t) => t.symbol === f.symbol) ?? added.get(f.symbol)!) };
+}
+
+// In place of build(profile, fixture, closeOf('2026-11-16'), 10): the standard Review's Trade for the fixture, opened on its Trade Detail.
+export async function openStandardDetail(profile: Profile, copySetup: CopySetup, fixture: Fixture): Promise<{ context: BrowserContext; page: Page; trade: TradeRef }> {
+  const pick = (trades: TradeRef[]): TradeRef => trades.find((t) => t.symbol === fixture.symbol)!;
+  const { context, page, trades } = await launchStandardCopy(profile, copySetup, (all) => `/trades/${pick(all).tradeId}`);
+  const trade = pick(trades);
+  await expect(detail.heading(page, fixture.symbol)).toBeVisible(LAUNCH);
+  return { context, page, trade };
+}
+
+// The standard Review's copy in the profile folder, nothing launched (a test that launches its own touch or offline context); the fixture's Trade.
+export async function copyStandardTrade(copySetup: CopySetup, fixture: Fixture): Promise<TradeRef> {
+  return [...(await copySetup(STANDARD_REVIEW))].find((t) => t.symbol === fixture.symbol)!;
 }
 
 // A touch context (a phone's taps) on the profile at the instant, the clock pinned as `launchAt` pins it.

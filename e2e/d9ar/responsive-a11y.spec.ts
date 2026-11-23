@@ -1,7 +1,7 @@
 import type { Locator, Page } from '@playwright/test';
 import { expectNoSidewaysScroll } from '../d7p/support.ts';
 import {
-  actionFormOf, AXIO, BREN, build, buildReview, cardReplayButton, cardRows, chartText, checkForUpdate, closeButton, closeOf, detailReplayButton, expect, expectAccessible, expectChartTextInside, expectFitsOneScreen,
+  actionFormOf, AXIO, BREN, buildReview, copyStandardTrade, openStandardDetail, openStandardReviewOf, cardReplayButton, cardRows, chartText, checkForUpdate, closeButton, closeOf, detailReplayButton, expect, expectAccessible, expectChartTextInside, expectFitsOneScreen,
   expectReadoutShownInFull, expectSmallestChartTextAtLeast, expectWideLayoutAtEverySession, CORV, DALE, DALE_HOLD, firstPage, headline, hits, launchAt, launchTouchAt, notice, openCardReplay, openDrawer, openReview, pnlChart, priceStrip, reachCard, LAUNCH, replay, seek,
   SCREENSHOTS, sessionCard, sessionCards, setViewport, slider, sliderValue, smallestChartText, test, type TradeRef,
 } from './support.ts';
@@ -121,17 +121,17 @@ async function throughSizes(page: Page, surface: string): Promise<void> {
 }
 
 test.describe('B9AR.7 Responsive, touch, accessible and offline', () => {
-  test('should fit the Detail overlay on one screen at every size, keeping the session across each resize', async ({ profile }) => {
+  test('should fit the Detail overlay on one screen at every size, keeping the session across each resize', async ({ profile, copySetup }) => {
     test.setTimeout(480_000);
-    const { context, page } = await build(profile, BREN, closeOf('2026-11-16'), 10);
+    const { context, page } = await openStandardDetail(profile, copySetup, BREN);
     await openDrawer(page, 'Replay');
     await throughSizes(page, 'Detail overlay');
     await context.close();
   });
 
-  test('should fit the Review card’s overlay on one screen at every size, keeping the session across each resize', async ({ profile }) => {
+  test('should fit the Review card’s overlay on one screen at every size, keeping the session across each resize', async ({ profile, copySetup }) => {
     test.setTimeout(480_000);
-    const { context, page, trades } = await buildReview(profile, [BREN]);
+    const { context, page, trades } = await openStandardReviewOf(profile, copySetup, [BREN]);
     await reachCard(page, trades[0]!);
     await openCardReplay(page, trades[0]!);
     await throughSizes(page, 'Review card overlay');
@@ -139,18 +139,18 @@ test.describe('B9AR.7 Responsive, touch, accessible and offline', () => {
   });
 
   for (const surface of ['Detail', 'Review card'] as const) {
-    test(`should fit the ${surface} overlay’s header, headline and both charts on one 320 by 667 screen`, async ({ profile }) => {
+    test(`should fit the ${surface} overlay’s header, headline and both charts on one 320 by 667 screen`, async ({ profile, copySetup }) => {
       test.setTimeout(240_000);
       // T9AR.12 names this outcome: the header, the headline, the stake sentence and a 200 high P&L chart span 708 px of the 667 (reported to the main session).
       if (surface === 'Detail') {
-        const { context, page } = await build(profile, BREN, closeOf('2026-11-16'), 10);
+        const { context, page } = await openStandardDetail(profile, copySetup, BREN);
         await setViewport(page, 320, 667);
         await openDrawer(page, 'Replay');
         await page.screenshot({ path: `${SCREENSHOTS}/B9AR.7-detail-320.png` });
         await expectFitsOneScreen(replay(page), SIZES[4], 'Detail overlay at 320 px');
         await context.close();
       } else {
-        const { context, page, trades } = await buildReview(profile, [BREN]);
+        const { context, page, trades } = await openStandardReviewOf(profile, copySetup, [BREN]);
         await setViewport(page, 320, 667);
         await reachCard(page, trades[0]!);
         await openCardReplay(page, trades[0]!);
@@ -160,9 +160,9 @@ test.describe('B9AR.7 Responsive, touch, accessible and offline', () => {
     });
   }
 
-  test('should draw the P&L chart at least 800 wide at 1280 and wider at 1440 and 1920, with its text the same size at each', async ({ profile }) => {
+  test('should draw the P&L chart at least 800 wide at 1280 and wider at 1440 and 1920, with its text the same size at each', async ({ profile, copySetup }) => {
     test.setTimeout(240_000);
-    const { context, page } = await build(profile, BREN, closeOf('2026-11-16'), 10);
+    const { context, page } = await openStandardDetail(profile, copySetup, BREN);
     await openDrawer(page, 'Replay');
     const widths: number[] = [];
     const texts: number[] = [];
@@ -183,9 +183,10 @@ test.describe('B9AR.7 Responsive, touch, accessible and offline', () => {
   // merge6-S1: the readout column is one fixed width, so at 1280 the P&L chart keeps 800 px and nothing moves as the slider steps, on every Trade's every session. One Review launch holds R-BREN-U, R-AXIO-D,
   // R-CORV-D and R-DALE-D held; R-DALE-U is DALE too (a Review's Marks panel is found by symbol), so it has its own launch.
   for (const [group, fixtures] of [['R-BREN-U, R-AXIO-D, R-CORV-D and R-DALE-D', [BREN, AXIO, CORV, DALE_HOLD]], ['R-DALE-U', [DALE_R_U]]] as const) {
-    test(`should keep the P&L chart 800 wide and still, and each stake grid inside the readout, at every session of ${group} at 1280`, async ({ profile }) => {
+    test(`should keep the P&L chart 800 wide and still, and each stake grid inside the readout, at every session of ${group} at 1280`, async ({ profile, copySetup }) => {
       test.setTimeout(480_000);
-      const review = await buildReview(profile, fixtures);
+      // The four-Trade group is the standard Review with CORV added on top; R-DALE-U cannot share a profile that holds DALE held, so it keeps its own build.
+      const review = group === 'R-DALE-U' ? await buildReview(profile, fixtures) : await openStandardReviewOf(profile, copySetup, fixtures);
       await setViewport(review.page, 1280, 800);
       for (const trade of review.trades) {
         await reachCard(review.page, trade);
@@ -198,9 +199,9 @@ test.describe('B9AR.7 Responsive, touch, accessible and offline', () => {
     });
   }
 
-  test('should keep Tab inside the overlay, from either end, at 1280 and on a phone', async ({ profile }) => {
+  test('should keep Tab inside the overlay, from either end, at 1280 and on a phone', async ({ profile, copySetup }) => {
     test.setTimeout(240_000);
-    const { context, page } = await build(profile, BREN, closeOf('2026-11-16'), 10);
+    const { context, page } = await openStandardDetail(profile, copySetup, BREN);
     for (const size of [SIZES[0], SIZES[3]] as readonly Size[]) {
       await setViewport(page, size.width, size.height);
       await openDrawer(page, 'Replay');
@@ -226,9 +227,9 @@ test.describe('B9AR.7 Responsive, touch, accessible and offline', () => {
     await context.close();
   });
 
-  test('should show the page in the new width’s layout after Close, with a started Action still there', async ({ profile }) => {
+  test('should show the page in the new width’s layout after Close, with a started Action still there', async ({ profile, copySetup }) => {
     test.setTimeout(420_000);
-    const { context, page, trades } = await buildReview(profile, [BREN]);
+    const { context, page, trades } = await openStandardReviewOf(profile, copySetup, [BREN]);
     const bren: TradeRef = trades[0]!;
     await reachCard(page, bren);
     const form = await actionFormOf(page, bren);
@@ -256,9 +257,9 @@ test.describe('B9AR.7 Responsive, touch, accessible and offline', () => {
   });
 
   // The UI contract's touch targets on a phone: the Replay buttons, the paging buttons and each card's heading (this case); the overlay's Close button has its own case below.
-  test('should make the phone’s Replay buttons, paging buttons and card headings at least 44 pixels high', async ({ profile }) => {
+  test('should make the phone’s Replay buttons, paging buttons and card headings at least 44 pixels high', async ({ profile, copySetup }) => {
     test.setTimeout(420_000);
-    const { context, page, trades } = await buildReview(profile, [BREN]);
+    const { context, page, trades } = await openStandardReviewOf(profile, copySetup, [BREN]);
     const bren = trades[0]!;
     await setViewport(page, 375, 667);
     await reachCard(page, bren);
@@ -273,10 +274,10 @@ test.describe('B9AR.7 Responsive, touch, accessible and offline', () => {
     await context.close();
   });
 
-  test('should make the overlay’s Close button at least 44 pixels high on a phone', async ({ profile }) => {
+  test('should make the overlay’s Close button at least 44 pixels high on a phone', async ({ profile, copySetup }) => {
     test.setTimeout(240_000);
     // Product disagrees with the UI contract's touch targets (reported to the main session): the Close button is 21 px high at 375.
-    const { context, page } = await build(profile, BREN, closeOf('2026-11-16'), 10);
+    const { context, page } = await openStandardDetail(profile, copySetup, BREN);
     await setViewport(page, 375, 667);
     await openDrawer(page, 'Replay');
     await page.screenshot({ path: `${SCREENSHOTS}/B9AR.7-phone-close-button.png` });
@@ -284,11 +285,9 @@ test.describe('B9AR.7 Responsive, touch, accessible and offline', () => {
     await context.close();
   });
 
-  test('should move the slider by a tap on a session and a tap on a card’s heading', async ({ profile }) => {
+  test('should move the slider by a tap on a session and a tap on a card’s heading', async ({ profile, copySetup }) => {
     test.setTimeout(420_000);
-    const built = await build(profile, BREN, closeOf('2026-11-16'), 10);
-    const trade = built.trade;
-    await built.context.close();
+    const trade = await copyStandardTrade(copySetup, BREN);
     const context = await launchTouchAt(profile, closeOf('2026-11-16'), 375);
     const page = await firstPage(context);
     await page.goto(`/trades/${trade.tradeId}`);
@@ -313,11 +312,9 @@ test.describe('B9AR.7 Responsive, touch, accessible and offline', () => {
 
   // T9AR.24-B5 (critic-1 defect 5): on a phone the tap on the Review card's Replay button must start no hover box or band, and two taps on sessions leave none.
   for (const width of [320]) {
-    test(`should show no hover box or band from the Review card's Replay tap and after two taps on sessions at ${width}`, async ({ profile }) => {
+    test(`should show no hover box or band from the Review card's Replay tap and after two taps on sessions at ${width}`, async ({ profile, copySetup }) => {
       test.setTimeout(420_000);
-      const built = await buildReview(profile, [BREN]);
-      const trade = built.trades[0]!;
-      await built.context.close();
+      const trade = await copyStandardTrade(copySetup, BREN);
       const context = await launchTouchAt(profile, closeOf('2026-11-16'), width);
       const page = await firstPage(context);
       await page.goto('/');
@@ -342,11 +339,9 @@ test.describe('B9AR.7 Responsive, touch, accessible and offline', () => {
 
   // T9AR.24-B9 (critic-1 defect 9): the Review overlay's Price History link is a touch target, at least 44 pixels high at 375 and at 320.
   for (const width of [375, 320]) {
-    test(`should make the Review overlay's Price History link at least 44 pixels high at ${width}`, async ({ profile }) => {
+    test(`should make the Review overlay's Price History link at least 44 pixels high at ${width}`, async ({ profile, copySetup }) => {
       test.setTimeout(420_000);
-      const built = await buildReview(profile, [BREN]);
-      const trade = built.trades[0]!;
-      await built.context.close();
+      const trade = await copyStandardTrade(copySetup, BREN);
       const context = await launchTouchAt(profile, closeOf('2026-11-16'), width);
       const page = await firstPage(context);
       await page.goto('/');
@@ -360,11 +355,9 @@ test.describe('B9AR.7 Responsive, touch, accessible and offline', () => {
     });
   }
 
-  test('should leave the slider’s value uncovered by any chart element for DALE from Trade Detail at 320', async ({ profile }) => {
+  test('should leave the slider’s value uncovered by any chart element for DALE from Trade Detail at 320', async ({ profile, copySetup }) => {
     test.setTimeout(420_000);
-    const built = await build(profile, DALE_HOLD, closeOf('2026-11-16'), 10);
-    const trade = built.trade;
-    await built.context.close();
+    const trade = await copyStandardTrade(copySetup, DALE_HOLD);
     const context = await launchTouchAt(profile, closeOf('2026-11-16'), 320);
     const page = await firstPage(context);
     await page.goto(`/trades/${trade.tradeId}`);
@@ -380,10 +373,9 @@ test.describe('B9AR.7 Responsive, touch, accessible and offline', () => {
     await context.close();
   });
 
-  test('should read the overlay offline after a cold restart with the server stopped (AC-DEL-001)', async ({ server, profile }) => {
+  test('should read the overlay offline after a cold restart with the server stopped (AC-DEL-001)', async ({ server, profile, copySetup }) => {
     test.setTimeout(420_000);
-    const { context, trade } = await build(profile, BREN, closeOf('2026-11-16'), 10);
-    await context.close();
+    const trade = await copyStandardTrade(copySetup, BREN);
     await server.close();
     const offline = await launchAt(profile, closeOf('2026-11-16'), { offline: true });
     const page = await firstPage(offline);
@@ -399,9 +391,9 @@ test.describe('B9AR.7 Responsive, touch, accessible and offline', () => {
     await offline.close();
   });
 
-  test('should leave a staged update’s notice in place and unchanged when the overlay is opened and closed', async ({ server, profile }) => {
+  test('should leave a staged update’s notice in place and unchanged when the overlay is opened and closed', async ({ server, profile, copySetup }) => {
     test.setTimeout(420_000);
-    const { context, page } = await build(profile, BREN, closeOf('2026-11-16'), 10);
+    const { context, page } = await openStandardDetail(profile, copySetup, BREN);
     server.use('dist-releases/v2');
     expect(await checkForUpdate(page)).toEqual({ waiting: 'installed' });
     await expect(notice(page)).toContainText('An update is ready', LAUNCH);
