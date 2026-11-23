@@ -528,3 +528,7 @@ B2 `d8c6ef5a`: both measured `getTrade` results asserted Ready. B1 `8593a801`: a
 ocr of T95.24-B1, T95.24-B2 (session 32247238): 1 file, 0 findings. `evidence/D95/ocr/T95.24-B1-B2-8593a801.json`.
 
 Run `t95.24-integration` (browser-task): unit 2890, integration 329, browser 13, checks 14 of 14. Passed. T95.24 Done.
+
+## T95.25 — Browser suite, Part A (Standard)
+
+Commit `cfa99464` (from `79c42910`): B95.1 (new day-card.spec.ts), B95.2, B95.4 added through `atBothWidths` (1280 and 375); B95.3 and B95.5 already covered. Six cases, all first-run passes (behaviour built earlier), each mutation-checked; B95.2's mutation reaches only the fix-in-place words. e2e/d95: 14 passed in 40 s. "Edit with a reason for an earlier session" left to its integration case. A325: browser-4 ran 3:18 and 3:22 in the last two full runs (t95.16, t95.17-2; the 13.7 min tech-debt figure predates the shared setups), well under 8 minutes, so no browser-5 stage. The full run at T95.25 confirms.
