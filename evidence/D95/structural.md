@@ -365,3 +365,7 @@ Run `t95.16-d1-plan-text` (browser-auto 467bb2c8 → task tier): unit 2840, inte
 Commit `0afb8500` (from `bb650283`). `browseTrades` passes each Trade's last Action to `attentionOf`, with one `queryActions` range read (earliest Plan time to the day before the Review Date; none with no Open Trades). Cases 2 and 3 red then green; cases 1 and 4 first-run passes, mutation-checked. Case 4: no Open row shows a band name; the "Stop breached"/"Target reached" badges are condition status and keep their label (A301), so a guard test only. B95.5 passed.
 
 ocr (gpt-6.1-sol, session 5cae7dd0): 4 files, 1 finding, Valid: the Open list's `queryActions` includes the Review Date, so each Action saved that day adds a `journalEntries` read (breaks R3's constant reads; the test seeds none). Bug task **T95.22-B1**. `evidence/D95/ocr/T95.22-0afb8500.json`.
+
+### T95.22-B1
+
+Commit `23a7393a`: `ReviewDateQuery.earlierOnly?`; with `since`, `queryActions` skips the Review-Date reads; the Open list passes it, the Review's callers don't. Red then green on Review-Date Actions with two and four Trades (one read).
