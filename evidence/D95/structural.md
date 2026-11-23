@@ -298,6 +298,10 @@ ocr rerun of T95.14 and B1 (`ocr/T95.14-B1-92c52094.json`, 29 files, 6 comments;
 
 ocr (`ocr/T95.13-D1-d06479f7.json`, 4 files, 1 comment): `MarksStep.tsx:426` (Valid) the exemption is decided per Trade (`expiresOnReviewDate` is set when any contract in the Trade is `DueToday`, `daily-review.ts:642`), so in a Trade with mixed expirations a mistyped 0 on a live contract skips the question; the W111 line (`:616`) has the same reach. **Not a bug today, the user's decision (2026-11-23):** a Trade holds at most one option contract until D10 (single-leg option Plans, D7), so the Trade-level fact is exact. No bug task (T95.13-D1-B1 dropped); a to-do added to D10's section, plan revision 119.
 
+## T95.15 — the grid's keys (Standard)
+
+Commit `41cf5039` (from `67f28e44`). New `e2e/d95/marks-keys.spec.ts` (B95.3: the hint at 375 wide with no sideways scroll; Enter, arrows, N). Cases 2 to 5 red then green; case 1 (Enter to the next input, then Save Marks) a first-run pass (T9R2's A295 built it), mutation-checked (`enterFrom` +1 to +2: assertion failure). W72 turned out to be D9R2's "Earlier sessions don't block the Review." (still used), not an old key hint, so W105 is new text and no expectations changed. Provisional behaviour: the Enter hold asks the question and keeps focus in the price (also on the not-a-price and zero-share refusals; not for a saved Mark left unchanged); N only in unsaved Review Date inputs ("4n" keeps its "n"); arrows only in the focused column, skipping rows with no price there, staying put at the ends. `MarksGridProps.asksAbout?` added. src/ui/screens 718; browser d95 3, d9r2 and three responsive specs 28.
+
 ## Trial: complete runs overlapped with the next task (the user, 2026-11-22, for 5 or 6 tasks)
 
 Each task's complete run runs in a detached scratch copy (`.claude/worktrees/run-<label>`, set up by `lane-setup.sh`) at the task's commit, while the next task's subagent starts in this worktree. The run's files are copied back to `evidence/D95/suite-runs/`. A failure becomes a bug task as before; the next task restarts only if it built on the broken code. Times are recorded per run to measure the saving.
