@@ -373,3 +373,7 @@ Commit `23a7393a`: `ReviewDateQuery.earlierOnly?`; with `since`, `queryActions` 
 ocr of T95.22-B1 (session d657cf39): 4 files, 0 findings. `evidence/D95/ocr/T95.22-B1-23a7393a.json`.
 
 Run `t95.22-open-order` (browser-task): unit 2845, integration 302, browser 9, checks 14 of 14. Passed. T95.22 Done.
+
+## T95.16-D2 — P&L in dollars and R and the change on each walked Trade (Full; decision 131)
+
+Commit `755901fa` (from `a4bc18e0`). `WalkedTrade.pnl?: { dollars, planR, change }` (optional like `meter`; absent when facts can't replay); change from `dayChangeOf` per Trade. Cases 1 and 2 red then green (case 2's red needed a placeholder, logged); cases 3 and 4 first-run passes, mutation-checked. Request counts equal `OPEN`. One existing test strips `pnl` beside `meter`. No snapshot changed.
