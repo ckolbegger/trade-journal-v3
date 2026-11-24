@@ -1007,3 +1007,6 @@ Output: evidence/D95/ocr/T95.45-B-dc62c7f2..84af6c09.json. Both Valid, both test
 
 ### T95.45-B4, T95.45-B5 ocr (`af20a1ae..f1faff8a`): no findings
 Output: evidence/D95/ocr/T95.45-B4-B5-af20a1ae..f1faff8a.json.
+
+### T95.45 suite run t95.45-browser-b (browser-task, base c3d45308, at b0e65437): all passed
+Unit 3086, integration 363, browser 51 (5 @every-task + 46 e2e/d95), 14 of 14 checks; run complete, 3m55s. T95.45 stays open only for B95.10, which awaits the user's answer on adding the D9 release to tools/build-releases.ts.
