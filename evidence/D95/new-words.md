@@ -1,4 +1,4 @@
-# D9.5 new words awaiting approval
+# D9.5 new words (Part A approved 2026-11-24)
 
 ## T95.10 (provisional)
 - Accessible names: region "The day"; lists "Trade lines", "Steps", "Facts to check".
@@ -42,3 +42,7 @@
 - T95.19 (no W row): top line without a reason ends ", no reason given." (W114's form); "1 earlier decision" (singular of W117).
 
 - T95.20 (no W row): "Figures wait for today's Marks." alone, when no session before's figures are shown (W94 without its second sentence); "No Action until today's Mark is in. Enter it" for one Mark (W95's own singular); the same words for a save refused as ReviewMarksUnresolved, with the count from the refusal's Instruments.
+
+## Approved (2026-11-24)
+
+The user approved every entry above as it stands, after the T95.26 gate. "More figures" keeps "max loss: unlimited" (Trade Detail's words) over W92's "max loss no limit". The critics' wording notes stay in tech-debt.md.
