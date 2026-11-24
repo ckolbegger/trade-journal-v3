@@ -1,0 +1,116 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 0,
+    "total_tokens": 20200,
+    "input_tokens": 20021,
+    "output_tokens": 179,
+    "cache_read_tokens": 4992,
+    "elapsed": "15s"
+  },
+  "tool_calls": {
+    "total": 2,
+    "by_tool": {
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/domain/plan-exit/plan-exit.test.ts",
+        "src/domain/plan-exit/plan-exit.ts"
+      ]
+    }
+  ],
+  "session_id": "c64bb69a-b40d-4e27-9416-11a97620b6bd",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "c64bb69a-b40d-4e27-9416-11a97620b6bd",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "9c9c0275",
+      "requested_head": "970dc05f",
+      "resolved_base": "9c9c02755f8f88a3528b591b74b05fa1b7efc375",
+      "resolved_head": "970dc05f70e5cb1564406d7f6a73379e53e236ac",
+      "exact_range": "9c9c02755f8f88a3528b591b74b05fa1b7efc375..970dc05f70e5cb1564406d7f6a73379e53e236ac",
+      "source_artifact_sha256": "203a70b596293996ed7b51dd205f8b5a8b422cfbdaa2305fc53ba7962295033e"
+    },
+    "execution": {
+      "ocr_version": "v1.14.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "956b22e4a9aa1a08e17210f93a8f59595eb9b485d698a0273df269cbd1a1cff2",
+          "path": "src/domain/plan-exit/plan-exit.ts",
+          "fingerprint": "242caffc6c8cf9fd404e101361d09e1f831507610c21c41db22c6378e8a6c7c5"
+        },
+        {
+          "item_id": "bb3be81fd603b33088390a69db6be6a641a553ebab2075303e10a56d3b7bc311",
+          "path": "src/domain/plan-exit/plan-exit.test.ts",
+          "fingerprint": "e1680f2c5bb3de623e6bc60b8511936adc7feba7ffb29e9014d1fa2475884e39"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "956b22e4a9aa1a08e17210f93a8f59595eb9b485d698a0273df269cbd1a1cff2",
+          "path": "src/domain/plan-exit/plan-exit.ts",
+          "fingerprint": "242caffc6c8cf9fd404e101361d09e1f831507610c21c41db22c6378e8a6c7c5"
+        },
+        {
+          "item_id": "bb3be81fd603b33088390a69db6be6a641a553ebab2075303e10a56d3b7bc311",
+          "path": "src/domain/plan-exit/plan-exit.test.ts",
+          "fingerprint": "e1680f2c5bb3de623e6bc60b8511936adc7feba7ffb29e9014d1fa2475884e39"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "50ef10992bb31d500942ab0756c9d45c5e7b6d860fd3812b212cb1050a1971b6",
+          "path": "evidence/D95/tdd-log/T95.35-B2.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "59dc35319eae38c6dff1c41b5e2999478f36dd53f0d0df169780c33da238746c",
+          "path": "evidence/D95/ocr/T95.35-9c9c0275.json",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ab47bc811f23c17f4c6317a43b1bf19eff8f2b20af07649acc55f19159f8bebc",
+          "path": "evidence/D95/structural.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ee6ee97c248b6fa9a7578d658818c2f0b899774bac2b687a7f9038d16ea22198",
+          "path": "evidence/D95/tdd-log/T95.35-B1.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 14732
+  }
+}
