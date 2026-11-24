@@ -75,7 +75,7 @@ export async function measureSale(
   const { actions, snapshot } = await deps.journal.queryActionHistory({ tradeId: analysis.tradeId });
   // A Hold counts when its Review Date is earlier than the sale's own exchange-local date, whatever session the latest Marks belong to.
   // The sale's moment is its earliest Execution's, as recordPositionChange takes it for the reflections, whatever order they arrive in.
-  const earliest = members.reduce((a, m) => (Date.parse(m.economicTime) < Date.parse(a.economicTime) ? m : a));
+  const earliest = members.reduce((a, m) => (Temporal.Instant.compare(m.economicTime, a.economicTime) < 0 ? m : a));
   const saleDate = Temporal.Instant.from(earliest.economicTime).toZonedDateTimeISO('America/New_York').toPlainDate().toString();
   const holds = actions.filter((a) => a.action === 'Hold' && a.reviewDate < saleDate);
   const heldPast = holds.length === 0 ? [] : await heldPastOf(deps, analysis, before, session, conditions, holds);

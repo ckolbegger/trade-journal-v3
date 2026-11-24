@@ -244,9 +244,8 @@ function memberIssues(member: PositionChangeMember | ExpirationMember, index: nu
     const code = decimalIssue(text, positive);
     if (code) issue(field, code);
   }
-  const time = Date.parse(member.economicTime);
-  if (time < Date.parse(planTime)) issue('economicTime', 'EconomicTimeBeforePlan');
-  if (time > Date.parse(now)) issue('economicTime', 'EconomicTimeInFuture');
+  if (Temporal.Instant.compare(member.economicTime, planTime) < 0) issue('economicTime', 'EconomicTimeBeforePlan');
+  if (Temporal.Instant.compare(member.economicTime, now) > 0) issue('economicTime', 'EconomicTimeInFuture');
   return issues;
 }
 
@@ -324,7 +323,7 @@ const unreadableTimeIssues = (command: PositionChangeCommand): WorkflowIssue[] =
     }
   });
 
-const earliest = (times: readonly Instant[]): Instant | undefined => [...times].sort((a, b) => Date.parse(a) - Date.parse(b))[0];
+const earliest = (times: readonly Instant[]): Instant | undefined => [...times].sort((a, b) => Temporal.Instant.compare(a, b))[0];
 
 // Each Deviation action with the occurrence it acted on, as committed. A created occurrence is found
 // by its fingerprint, whose Position Change the commit mapped to its durable identity.
