@@ -122,6 +122,8 @@ test.describe('B6.12 Responsive and accessible', () => {
     await expect(closeReasonGroup(page).getByLabel('Stop Triggered', { exact: true })).toBeChecked();
     await tabTo(page, closingSection(page).getByRole('radiogroup', { name: 'Would you take this Trade again under similar conditions?' }).getByLabel('Yes, as planned'));
     await page.keyboard.press('Space');
+    await tabTo(page, closingSection(page).getByLabel('What is the key lesson?'));
+    await page.keyboard.type('Stick to the Plan.');
     await tabTo(page, page.getByRole('button', { name: 'Save exit' }));
     await page.keyboard.press('Enter');
     await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible();

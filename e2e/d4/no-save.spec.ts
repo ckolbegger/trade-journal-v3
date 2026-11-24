@@ -49,7 +49,7 @@ test.describe('B4.12 Nothing saved without Save (AC-JOUR-001)', () => {
     // The reaches switch between the Marks step and the Action panel; the step stays mounted, so the typed fix survives.
     await (await markInputOf(page, 'XYZ', DATE)).fill(TYPED.correctedPrice);
     await (await actionFormOf(page, 'XYZ')).getByRole('radio', { name: 'Exit', exact: true }).check();
-    await (await actionFormOf(page, 'XYZ')).getByLabel(/^Why are you taking this action\?/).fill(TYPED.intent);
+    await (await actionFormOf(page, 'XYZ')).getByLabel(/^Why\?/).fill(TYPED.intent);
     await (await actionFormOf(page, 'XYZ')).getByLabel('Conviction now').selectOption('4');
     await (await actionFormOf(page, 'XYZ')).getByLabel('Anything you considered doing and decided against?').fill(TYPED.considered);
     await (await actionFormOf(page, 'XYZ')).getByLabel(/^Note/).fill(TYPED.note);
@@ -58,7 +58,7 @@ test.describe('B4.12 Nothing saved without Save (AC-JOUR-001)', () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.setViewportSize({ width: 1280, height: 900 });
     await expect(await markInputOf(page, 'XYZ', DATE)).toHaveValue(TYPED.correctedPrice);
-    await expect((await actionFormOf(page, 'XYZ')).getByLabel(/^Why are you taking this action\?/)).toHaveValue(TYPED.intent);
+    await expect((await actionFormOf(page, 'XYZ')).getByLabel(/^Why\?/)).toHaveValue(TYPED.intent);
     await expect((await actionFormOf(page, 'XYZ')).getByLabel('Conviction now')).toHaveValue('4');
     await expect((await actionFormOf(page, 'XYZ')).getByLabel(/^Note/)).toHaveValue(TYPED.note);
     expect(traces(await webStorage(page))).toEqual([]);

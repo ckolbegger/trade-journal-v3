@@ -245,6 +245,8 @@ test.describe('B7.13 Responsive and accessible', () => {
     await expect(reflection.getByRole('radiogroup', { name: 'Decision confidence' }).getByLabel('4')).toBeChecked();
     await tabTo(page, closingSection(page).getByRole('radiogroup', { name: 'Would you take this Trade again under similar conditions?' }).getByLabel('Yes, as planned'));
     await page.keyboard.press('Space');
+    await tabTo(page, closingSection(page).getByLabel('What is the key lesson?'));
+    await page.keyboard.type('Stick to the Plan.');
     await expect(closeReviewGroup(page).getByLabel('Reflect now')).toBeChecked();
     await tabTo(page, page.getByRole('button', { name: 'Save expiration' }));
     await page.keyboard.press('Enter');

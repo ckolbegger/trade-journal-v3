@@ -62,9 +62,10 @@ export async function answerIn(section: Locator): Promise<void> {
   await section.getByRole('radiogroup', { name: 'Decision confidence' }).getByLabel('4').check();
 }
 
-// The Close Review's required answer inside a section or form: Yes, as planned.
+// The Close Review's required answers inside a section or form: Yes, as planned, and the key lesson (required since manifest 6).
 export async function answerCloseReviewIn(section: Locator): Promise<void> {
   await section.getByRole('radiogroup', { name: 'Would you take this Trade again under similar conditions?' }).getByLabel('Yes, as planned').check();
+  await section.getByLabel('What is the key lesson?').fill('Stick to the Plan.');
 }
 
 // Answers the exit's own reflection and the Closing the Trade section of an exit that sells every share: Target Reached, and

@@ -45,14 +45,14 @@ test.describe('reach (decision 65)', () => {
 
     const form = await actionFormOf(page, 'XYZ');
     await form.getByRole('radio', { name: 'Exit', exact: true }).check();
-    await form.getByLabel(/^Why are you taking this action\?/).fill('Stop is close');
+    await form.getByLabel(/^Why\?/).fill('Stop is close');
     expect(await openPanelOf(page, 'XYZ')).toBe('Action');
 
     const again = await actionFormOf(page, 'XYZ');
     await expect(cardHeader(page, 'XYZ')).toHaveAttribute('aria-expanded', 'true');
     expect(await openPanelOf(page, 'XYZ')).toBe('Action');
     await expect(again.getByRole('radio', { name: 'Exit', exact: true })).toBeChecked();
-    await expect(again.getByLabel(/^Why are you taking this action\?/)).toHaveValue('Stop is close');
+    await expect(again.getByLabel(/^Why\?/)).toHaveValue('Stop is close');
     // Pressing an open card's header with unsaved work would have raised the hold message (A156).
     await expect(page.getByText(/^Save or discard what you entered for/)).toHaveCount(0);
     await context.close();

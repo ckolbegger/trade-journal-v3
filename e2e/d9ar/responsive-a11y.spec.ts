@@ -234,7 +234,7 @@ test.describe('B9AR.7 Responsive, touch, accessible and offline', () => {
     await reachCard(page, bren);
     const form = await actionFormOf(page, bren);
     await form.getByRole('radio', { name: 'Exit', exact: true }).check();
-    await form.getByLabel(/^Why are you taking this action\?/).fill(INTENT);
+    await form.getByLabel(/^Why\?/).fill(INTENT);
     expect(await navAtFoot(page), 'at 1280 the navigation is the side column').toBe(false);
     await openCardReplay(page, bren);
     await setViewport(page, 375, 667);
@@ -245,14 +245,14 @@ test.describe('B9AR.7 Responsive, touch, accessible and offline', () => {
     await expect(cardReplayButton(page, bren)).toBeFocused();
     const after = await actionFormOf(page, bren);
     await expect(after.getByRole('radio', { name: 'Exit', exact: true })).toBeChecked();
-    await expect(after.getByLabel(/^Why are you taking this action\?/)).toHaveValue(INTENT);
+    await expect(after.getByLabel(/^Why\?/)).toHaveValue(INTENT);
     // And back across the breakpoint with the overlay open.
     await openCardReplay(page, bren);
     await setViewport(page, 1280, 800);
     await closeButton(replay(page)).click();
     await expect(replay(page)).toHaveCount(0);
     expect(await navAtFoot(page), 'after Close at 1280 the navigation is the side column again').toBe(false);
-    await expect(after.getByLabel(/^Why are you taking this action\?/)).toHaveValue(INTENT);
+    await expect(after.getByLabel(/^Why\?/)).toHaveValue(INTENT);
     await context.close();
   });
 

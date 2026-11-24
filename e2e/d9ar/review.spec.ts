@@ -15,12 +15,12 @@ const INTENT = 'The Target is reached; take the profit.';
 async function startAction(page: Page, trade: TradeRef): Promise<void> {
   const form = await actionFormOf(page, trade);
   await form.getByRole('radio', { name: 'Exit', exact: true }).check();
-  await form.getByLabel(/^Why are you taking this action\?/).fill(INTENT);
+  await form.getByLabel(/^Why\?/).fill(INTENT);
 }
 async function expectActionStarted(page: Page, trade: TradeRef, where: string, intent: string = INTENT): Promise<void> {
   const form = await actionFormOf(page, trade);
   await expect(form.getByRole('radio', { name: 'Exit', exact: true }), `${where}: Exit`).toBeChecked();
-  await expect(form.getByLabel(/^Why are you taking this action\?/), `${where}: Intent`).toHaveValue(intent);
+  await expect(form.getByLabel(/^Why\?/), `${where}: Intent`).toHaveValue(intent);
 }
 
 test.describe('B9AR.2 The overlay in the Review, and the summary', () => {
@@ -38,7 +38,7 @@ test.describe('B9AR.2 The overlay in the Review, and the summary', () => {
       await expect(replay(page)).toHaveCount(0);
       const form = await actionFormOf(page, trade);
       await form.getByRole('radio', { name: 'Exit', exact: true }).check();
-      await form.getByLabel(/^Why are you taking this action\?/).fill(intent);
+      await form.getByLabel(/^Why\?/).fill(intent);
       // Moved from the dropped "keep a started Action across the overlay" case: open, move and Close once, before the round trip.
       const section = await openCardReplay(page, trade);
       await expect(tradeCard(page, trade).locator('.replay-card')).toHaveCount(0);
@@ -66,7 +66,7 @@ test.describe('B9AR.2 The overlay in the Review, and the summary', () => {
       await expect(replay(page)).toHaveCount(0);
       const back = await actionFormOf(page, trade);
       await expect(back.getByRole('radio', { name: 'Exit', exact: true }), `${trade.symbol}: Exit after the return`).toBeChecked();
-      await expect(back.getByLabel(/^Why are you taking this action\?/), `${trade.symbol}: Intent after the return`).toHaveValue(intent);
+      await expect(back.getByLabel(/^Why\?/), `${trade.symbol}: Intent after the return`).toHaveValue(intent);
       await pressSave(back);
       saved += 1;
       expect(await actions(page), 'one press saves one Action').toBe(saved);
