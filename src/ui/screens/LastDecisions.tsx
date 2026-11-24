@@ -3,6 +3,7 @@ import type { DailyTradeReview } from '../../app/types.ts';
 import { calculation, signed } from '../figures.ts';
 import { money, shortDate } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
+import { Figures } from './Figures.tsx';
 
 type Decisions = NonNullable<DailyTradeReview['decisions']>;
 
@@ -46,7 +47,12 @@ export function LastDecisions({ decisions }: LastDecisionsProps) {
   const item = (decision: Decisions['recent'][number]) => (
     <li key={decision.date}>
       <span className="last-decisions-when">{shortDate(decision.date)}</span> · {decision.action}
-      {decision.tradePnl && <> · {calculation(decision.tradePnl, signed(money), timeZone)}</>}
+      {decision.tradePnl && (
+        <>
+          {' '}
+          · <Figures text={calculation(decision.tradePnl, signed(money), timeZone)} />
+        </>
+      )}
       <span className="last-decisions-reason">{decision.reason === undefined ? 'no reason given' : `“${decision.reason}”`}</span>
     </li>
   );
