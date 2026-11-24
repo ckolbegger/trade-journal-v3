@@ -568,3 +568,7 @@ Report `evidence/D95/critic-1.md`. Overall PASS; 2 moderate, 4 low. Cost: 315,58
 | critic-1 | 315,588 | 250 | 29.1 min | 2 moderate, 4 low |
 
 Moderate, bug tasks: **T95.26-B1** a Trade past its Stop on the Underlying with its option Mark unavailable is labelled and ranked "No price today" (spec: boundary-reached status stays in its higher band), while the day card says it's past the Stop. **T95.26-B2** at 320 the Expiration row breaks between "−" and "$2,016.00". Low, to tech debt: defects 3, 4, 5, 6. Brief note: `e2e/d95/support.ts` doesn't re-export d1's support as the template assumes; fix the brief for critic-2.
+
+### T95.26-B1
+
+Commit `e7366355`: `attentionOf` counts the Underlying-only crossed-line reading (the one the day card and Trade Detail use) for the band; a Stop crossed that way is StopReached, a Target TargetReached; overrun optional, pressure stays Unavailable, no figure invented. Red then green in a coordinator test and `tests/integration/d95/stop-unavailable.test.ts` (MNO short put, option Mark unavailable). e2e/d95 and e2e/d9ar 85 passed.
