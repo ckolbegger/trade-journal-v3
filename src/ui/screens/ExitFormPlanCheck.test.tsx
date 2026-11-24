@@ -86,6 +86,20 @@ describe('the Plan check on the exit form (T95.39)', () => {
     expect(screen.getByRole('button', { name: 'Say why later' })).toBeTruthy();
   });
 
+  it('should drop the question and let Save send once an edit makes the sale follow the Plan after a refusal', async () => {
+    const facade = renderExitForm();
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(rejected as never);
+    const user = userEvent.setup();
+    await screen.findByRole('group', { name: 'Execution 1' });
+    await fillRow(user, 1, '60', '52.00');
+    await user.click(screen.getByRole('button', { name: 'Save exit' }));
+    expect(screen.getAllByText('Say why you left the Plan, or choose “Say why later”.').length).toBeGreaterThan(0);
+    expect(vi.mocked(facade.TradeWorkflows.recordPositionChange)).not.toHaveBeenCalled();
+    await fillRow(user, 1, '100', '47.00');
+    expect(screen.queryByLabelText('Why did you leave the Plan?')).toBeNull();
+    await user.click(screen.getByRole('button', { name: 'Save exit' }));
+    expect(vi.mocked(facade.TradeWorkflows.recordPositionChange)).toHaveBeenCalledTimes(1);
+  });
 
   it('should send a completed reflection when the reason is given or none is owed, and Defer for the Close Review on a closing sale', async () => {
     const facade = renderExitForm();

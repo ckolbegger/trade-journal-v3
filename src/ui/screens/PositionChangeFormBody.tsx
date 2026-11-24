@@ -303,7 +303,10 @@ export function PositionChangeFormBody({ facade, tradeId, exit, onDone, backLabe
   const saleCheck = exit && 'planExit' in view && view.planExit ? checkSale(view.planExit, action, formatDecimal(entered, 6), rows.map((r) => r.price)) : undefined;
   const departurePrompt = definition.prompts.find((p) => p.kind === 'Text' && p.role === 'PlanDepartureReason');
   // The save is the authority: when it refuses for want of the reason, the form asks for it whatever it measured.
-  const asksWhy = ((saleCheck?.measure?.kind === 'Leaves' && !saleCheck.carried) || issues.some((i) => i.code === 'PlanDepartureReasonRequired')) && departurePrompt?.kind === 'Text';
+  // An edit to the quantity or price changes the Plan check, so a refusal for want of the reason no longer holds the question open.
+  const saleEdited = reported !== undefined && rows.some((r) => { const before = reported.rows.find((b) => b.key === r.key); return !before || before.quantity !== r.quantity || before.price !== r.price; });
+  const refusedForReason = !saleEdited && issues.some((i) => i.code === 'PlanDepartureReasonRequired');
+  const asksWhy = ((saleCheck?.measure?.kind === 'Leaves' && !saleCheck.carried) || refusedForReason) && departurePrompt?.kind === 'Text';
   // W134: a sale that leaves the Plan only by selling part of it asks about the part.
   const onlyPart = saleCheck?.measure?.kind === 'Leaves' && saleCheck.measure.reasons.every((r) => r.kind === 'PartOnly');
   const textOf = (promptId: string) => {
