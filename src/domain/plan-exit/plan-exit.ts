@@ -59,10 +59,12 @@ export function measurePlanExit(input: PlanExitInput): PlanExitMeasure | undefin
   const reasons: PlanExitReason[] = []
   const reached = input.conditions.filter((c) => c.status === 'Breached' || c.status === 'Reached' || reachedAtPrice(c, held.value, input.change.price))
   if (reached.length === 0) reasons.push({ kind: 'BeforeCondition' })
-  const holds = reached.map((c) => input.heldPast.find((h) => h.conditionId === c.id))
-  const first = holds[0]
-  // The sale follows the Plan when some reached condition was never held past.
-  if (first && holds.every((h) => h !== undefined)) reasons.push({ kind: 'HeldPast', line: first.line, since: first.since, sessions: first.sessions })
+  const holds = reached.flatMap((c) => input.heldPast.filter((h) => h.conditionId === c.id).slice(0, 1))
+  // The sale follows the Plan when some reached condition was never held past; otherwise each Hold is a reason, the Stop's first.
+  if (holds.length > 0 && holds.length === reached.length) {
+    const ordered = [...holds].sort((a, b) => Number(a.line === 'Target') - Number(b.line === 'Target'))
+    for (const h of ordered) reasons.push({ kind: 'HeldPast', line: h.line, since: h.since, sessions: h.sessions })
+  }
   if (sold.value.compare(heldAbs) < 0) reasons.push({ kind: 'PartOnly', held: held.normalized.replace(/^-/, ''), sold: sold.normalized })
   return reasons.length === 0 ? { kind: 'Follows' } : { kind: 'Leaves', reasons }
 }

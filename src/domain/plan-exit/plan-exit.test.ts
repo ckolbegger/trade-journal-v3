@@ -61,6 +61,20 @@ describe('The measure of a sale against the Plan Exit (A309)', () => {
       reasons: [{ kind: 'BeforeCondition' }, { kind: 'PartOnly', held: '200', sold: '50' }],
     })
   })
+  it('should give one HeldPast for each reached line held past, the Stop before the Target', () => {
+    const heldPast = [
+      { conditionId: 'target-1', line: 'Target' as const, since: '2026-11-02', sessions: 2 },
+      { conditionId: 'stop-1', line: 'Stop' as const, since: '2026-11-09', sessions: 5 },
+    ]
+    const conditions = [target({ status: 'Reached' }), stop()]
+    expect(measurePlanExit(sale({ heldPast, conditions }))).toEqual({
+      kind: 'Leaves',
+      reasons: [
+        { kind: 'HeldPast', line: 'Stop', since: '2026-11-09', sessions: 5 },
+        { kind: 'HeldPast', line: 'Target', since: '2026-11-02', sessions: 2 },
+      ],
+    })
+  })
   it('should give no measure for a sold quantity that is not positive or exceeds what is held', () => {
     expect(measurePlanExit(sale({ change: { side: 'Sell', quantity: '0', price: '94' } }))).toBeUndefined()
     expect(measurePlanExit(sale({ change: { side: 'Sell', quantity: '-5', price: '94' } }))).toBeUndefined()
