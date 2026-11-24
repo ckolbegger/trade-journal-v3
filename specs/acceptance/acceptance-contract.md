@@ -263,6 +263,13 @@ A workflow scenario needs evidence at its public boundary and durable after-stat
 - **Then:** it is Complete in the first case and Complete With Unavailable Marks in the second, naming affected Instruments/Trades/calculations. A Missing current Mark stays Incomplete. Voiding an Action or correcting facts can make a past date Incomplete again without erasing history.
 - **Evidence:** completion/blocker structures and histories across changes.
 
+### AC-REV-007 — Marks gate the Action and settlement completion is disclosed
+
+- **Given:** an open eligible Trade and a Review Date where the Expected Mark is Missing; then the same Review with an explicit Unavailable Mark Acknowledgment; then a Review where every Action is saved but an option still has Settlement Due.
+- **When:** the trader opens the Action form and attempts Save in each case, and the day card renders.
+- **Then:** with a Missing Mark the Save control is unavailable and no Action, Debt, Deviation or other evidence is written; with an Acknowledged Unavailable Mark the gate is resolved and Save succeeds while the calculation remains `Unavailable`; with all Actions saved and Settlement Due remaining, the day card shows "Complete, settlement to record" as a disclosed sub-state of `Incomplete`, naming the instrument and Trade, and never as `Complete` or `Complete With Unavailable Marks`.
+- **Evidence:** before/after Action and Journal revisions for the blocked Save, the acknowledgment and saved Action with evidence binding, the rendered day-card state and named blocker, and unchanged Trade facts.
+
 ## Market evidence
 
 ### AC-MARK-001 — prior completed session is normal evidence
@@ -334,8 +341,15 @@ A workflow scenario needs evidence at its public boundary and durable after-stat
 
 - **Given:** a planned option Trade and then remaining current option exposure with realized-to-date offset.
 - **When:** payoff and current Mark-to-Market are requested.
-- **Then:** Planned and Current payoff curves are independent and contain all zero crossings/touches/ranges, signed extrema, and attainment sets; current includes realized offset while open. No theoretical option price is produced. Flat current exposure is Not Applicable; multiple expirations are Unavailable; stock-only without option anchor is Not Applicable.
+- **Then:** Planned and Current payoff curves are independent and contain all zero crossings/touches/ranges, signed extrema, and attainment sets; current includes realized offset while open. No theoretical option price is produced, and the advisory explanation of AC-IV-001 is never an input to either curve. Flat current exposure is Not Applicable; multiple expirations are Unavailable; stock-only without option anchor is Not Applicable.
 - **Evidence:** curves/results and separately sourced current valuation.
+
+### AC-IV-001 — advisory implied volatility explains an observed Mark only
+
+- **Given:** an option leg with an exact-date Mark, strike, expiration and Underlying evidence in a replay frame; then a Mark at or below exercise value on expiration day, a price with no fitting volatility, and a price barely dependent on volatility; then the same replay with a provider Daily Bar also stored.
+- **When:** replay is requested with the advisory explanation capability installed.
+- **Then:** Advisory Implied Volatility is derived deterministically from the observed Mark by the stated formula, returned with Share Equivalent and a Price-Move Decomposition that is explicitly labelled an estimate; the `Unavailable` cases return a stable reason with no fabricated value and no partial split; the values never change Valuation, P&L, risk/reward, Stop/Target status, Expiration Payoff, lifecycle, Deviations, Daily Review, or any report; a stored Daily Bar may render as a candle but is never required and no manual OHLC entry exists. Absence of the capability removes the advisory outputs rather than producing a domain `Unavailable` result.
+- **Evidence:** the advisory result and its inputs, each `Unavailable` reason, replay with and without a Bar, and byte-equivalent canonical calculation results with advisory explanation present and absent.
 
 ## Deterministic reports
 

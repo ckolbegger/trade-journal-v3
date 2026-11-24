@@ -1,0 +1,1624 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trade replay prototypes, round 2</title>
+<style>
+/* The app's own tokens (src/ui/app.css), as in the other prototypes. */
+:root {
+  --ground: #f7f3ea;
+  --card: #ffffff;
+  --ink: #1c1b19;
+  --muted: #55524b;
+  --line: #d9d3c5;
+  --focus: #1f5fbf;
+  --warning-ground: #fff4dd;
+  --warning-line: #b26b00;
+  --stop: #a3261b;
+  --stop-ground: #f7e3e0;
+  --target: #1d6b34;
+  --target-ground: #e2f0e5;
+  --info-ground: #e4edfa;
+  --info-ink: #163b75;
+  --neutral-ground: #ece7da;
+  --tint: #f3efe6;
+  --time: #8a5200;
+  --vol: #6b3fa0;
+  --radius: 14px;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--ink);
+  background: var(--ground);
+  line-height: 1.45;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--ground); }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.num, td, dd { font-variant-numeric: tabular-nums; }
+button { font: inherit; color: inherit; }
+h1, h2, h3, h4 { margin: 0; line-height: 1.2; }
+p { margin: 0; }
+a { color: var(--info-ink); }
+
+.proto-bar { background: var(--ground); border-bottom: 1px solid var(--line); }
+.proto-inner { max-width: 1180px; margin: 0 auto; padding: 14px 16px 0; }
+.proto-head h1 { font-size: 1.15rem; }
+.proto-head p { color: var(--muted); font-size: 0.9rem; max-width: 80ch; margin-top: 4px; }
+.model-flag { margin-top: 10px; padding: 8px 12px; border-left: 4px solid var(--warning-line); background: var(--warning-ground); font-size: 0.88rem; max-width: 90ch; }
+.controls { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; margin: 12px 0 0; }
+.seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--muted); border-radius: 18px; padding: 2px; background: var(--card); }
+.seg button { border: 0; background: none; border-radius: 999px; padding: 6px 12px; cursor: pointer; font-size: 0.88rem; min-height: 36px; }
+.seg button[aria-checked='true'] { background: var(--ink); color: #fff; }
+.seg-label { font-size: 0.85rem; color: var(--muted); }
+.tabs { display: flex; gap: 2px; overflow-x: auto; margin-top: 10px; scrollbar-width: thin; }
+.tabs button { border: 0; background: none; padding: 10px 14px 9px; border-bottom: 3px solid transparent; cursor: pointer; white-space: nowrap; font-size: 0.95rem; color: var(--muted); text-align: left; }
+.tabs button[aria-selected='true'] { color: var(--ink); border-bottom-color: var(--ink); font-weight: 650; }
+.tabs small { display: block; font-size: 0.75rem; font-weight: 400; }
+
+main { max-width: 1180px; margin: 0 auto; padding: 0 16px 64px; }
+.ctl { position: sticky; top: 0; z-index: 5; background: var(--ground); border-bottom: 1px solid var(--line); padding: 8px 0; margin-bottom: 10px; }
+.ctl-row { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; }
+.slide { display: flex; align-items: center; gap: 8px; flex: 1 1 280px; min-width: 0; }
+.slide input[type='range'] { flex: 1 1 auto; min-width: 0; height: 36px; accent-color: var(--ink); }
+.step { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--ink); background: var(--card); cursor: pointer; font-size: 1.1rem; flex: none; }
+.step:disabled { border-color: var(--line); color: #8f8a7e; cursor: default; }
+.when { font-weight: 650; font-size: 0.95rem; }
+
+.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; }
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 16px; align-items: start; }
+.readout { position: sticky; top: 70px; max-height: calc(100vh - 84px); overflow-y: auto; }
+.sec-title { font-size: 1rem; font-weight: 650; margin-bottom: 8px; }
+.muted { color: var(--muted); }
+.small { font-size: 0.85rem; }
+.up { color: var(--target); }
+.down { color: var(--stop); }
+.badge { display: inline-flex; align-items: center; gap: 4px; font-size: 0.78rem; font-weight: 600; padding: 2px 9px; border-radius: 999px; border: 1px solid currentColor; white-space: nowrap; }
+.b-stop { color: var(--stop); background: var(--stop-ground); }
+.b-target { color: var(--target); background: var(--target-ground); }
+.b-quiet { color: var(--muted); background: var(--tint); border-color: var(--line); }
+.b-est { color: var(--vol); background: #f1eaf9; }
+.badges { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 10px; }
+dl.kv { display: grid; grid-template-columns: minmax(5.5em, auto) minmax(0, 1fr); gap: 4px 12px; margin: 0; font-size: 0.92rem; }
+dl.kv dt { color: var(--muted); }
+dl.kv dd { margin: 0; text-align: right; }
+dl.kv dd.sub { grid-column: 1 / -1; color: var(--muted); font-size: 0.8rem; margin-top: -3px; }
+.kv-group + .kv-group { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line); }
+.kv-group h4 { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); margin-bottom: 6px; }
+.kv-group p { font-size: 0.9rem; }
+.kv-group p + p { margin-top: 6px; }
+
+/* The hero card: how the Trade is going comes first, in the colour of the result. */
+.hero { border-left: 6px solid #8f8a7e; }
+.hero.is-up { border-left-color: var(--target); }
+.hero.is-down { border-left-color: var(--stop); }
+.status { display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: center; justify-content: space-between; padding: 8px 12px; border-radius: 10px; background: var(--tint); margin-bottom: 8px; }
+.status.is-up { background: var(--target-ground); }
+.status.is-down { background: var(--stop-ground); }
+.status-main { flex: 1 1 250px; min-width: 0; }
+.fig { font-size: 1.7rem; font-weight: 750; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.fig small { font-size: 0.95rem; font-weight: 650; margin-left: 6px; }
+.status.is-up .fig { color: var(--target); }
+.status.is-down .fig { color: var(--stop); }
+.state { font-weight: 650; font-size: 0.95rem; margin-top: 2px; }
+.stake { font-size: 0.86rem; margin-top: 2px; }
+.inset { flex: 0 1 auto; background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 4px 6px 2px; }
+.inset h4 { font-size: 0.78rem; font-weight: 650; }
+.inset h4 small { font-weight: 400; color: var(--muted); }
+.duo + .duo { margin-top: 4px; }
+.legend { display: flex; flex-wrap: wrap; gap: 2px 14px; font-size: 0.78rem; color: var(--muted); margin: 8px 0 0; }
+.legend span { display: inline-flex; align-items: center; gap: 5px; }
+.legend svg { flex: none; }
+.move { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line); font-size: 0.86rem; display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; }
+.move svg { flex: none; }
+.move .part { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.chips { position: relative; display: flex; flex-wrap: wrap; gap: 6px 8px; margin-top: 8px; }
+.chip { border: 1px solid var(--line); background: var(--tint); border-radius: 999px; padding: 3px 10px; font-size: 0.82rem; min-height: 32px; display: inline-flex; align-items: center; gap: 6px; }
+button.chip { cursor: pointer; border-color: var(--muted); }
+.pop { display: none; position: absolute; left: 0; bottom: calc(100% + 6px); width: min(340px, 100%); background: var(--card); border: 1px solid var(--muted); border-radius: 10px; padding: 10px; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18); z-index: 6; pointer-events: none; font-size: 0.82rem; }
+.chip-wrap:hover .pop, .chip-wrap:focus-within .pop, .pop.open { display: block; }
+.pop h4 { font-size: 0.85rem; margin-bottom: 4px; }
+.tip { position: fixed; z-index: 20; pointer-events: none; background: var(--ink); color: #fff; font-size: 0.8rem; line-height: 1.4; padding: 8px 10px; border-radius: 8px; max-width: 290px; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25); }
+.tip b { font-weight: 650; }
+.tip .q { color: #d9d3c5; }
+
+svg.plot { display: block; width: 100%; height: auto; overflow: visible; }
+svg.plot.fixed { width: auto; }
+svg.plot text { font-size: 10.5px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+svg.plot text.ttl { fill: var(--ink); font-weight: 650; font-size: 11.5px; }
+svg.plot text.ttl tspan { fill: var(--muted); font-weight: 400; font-size: 10.5px; }
+svg.plot text.ll { fill: var(--ink); paint-order: stroke; stroke: #fff; stroke-width: 3px; stroke-linejoin: round; }
+svg.plot text.ll.s { fill: var(--stop); }
+svg.plot text.ll.t { fill: var(--target); }
+svg.plot text.val.blue { fill: #163b75; }
+svg.plot text.val { fill: var(--ink); font-weight: 700; font-size: 11.5px; paint-order: stroke; stroke: #fff; stroke-width: 3px; stroke-linejoin: round; }
+svg.plot .grid { stroke: #ebe6da; stroke-width: 1; }
+svg.plot .axis { stroke: #8f8a7e; stroke-width: 1; fill: none; }
+svg.plot .week { stroke: #ded8ca; stroke-width: 1; stroke-dasharray: 2 3; }
+svg.plot .cursor { stroke: var(--focus); stroke-width: 1.5; }
+svg.plot .guide { stroke: #8f8a7e; stroke-width: 1.2; fill: none; }
+svg.plot .pline { stroke: var(--ink); stroke-width: 2; fill: none; stroke-linejoin: round; }
+svg.plot .mk { fill: var(--ink); stroke: #fff; stroke-width: 1.5; }
+svg.plot .exec { fill: #fff; stroke: var(--ink); stroke-width: 2; }
+svg.plot .ev { stroke: var(--ink); stroke-width: 1; stroke-dasharray: 3 3; fill: none; }
+svg.plot .hit { fill: transparent; cursor: pointer; }
+svg.plot .l-stop { stroke: var(--stop); stroke-width: 1.5; stroke-dasharray: 6 3; fill: none; }
+svg.plot .l-target { stroke: var(--target); stroke-width: 1.5; stroke-dasharray: 2 3; fill: none; }
+svg.plot .l-ref { stroke: #8f8a7e; stroke-width: 1; stroke-dasharray: 1 3; fill: none; }
+svg.plot .l-plan { stroke: var(--ink); stroke-width: 1; stroke-dasharray: 4 4; fill: none; }
+svg.plot .est { fill: #fff; stroke: var(--vol); stroke-width: 1.6; }
+svg.plot .est-line { stroke: var(--vol); stroke-width: 1.2; stroke-dasharray: 2 3; fill: none; }
+/* Result colours: light is open (a later Mark can still move it), solid is banked (nothing can). */
+svg.plot .a-up { fill: #c2e2c9; }
+svg.plot .a-dn { fill: #f2c6c0; }
+svg.plot .e-up { stroke: var(--target); stroke-width: 2; fill: none; stroke-linejoin: round; }
+svg.plot .e-dn { stroke: var(--stop); stroke-width: 2; fill: none; stroke-linejoin: round; }
+svg.plot .b-up { fill: var(--target); }
+svg.plot .b-dn { fill: var(--stop); }
+svg.plot .bl-up { stroke: var(--target); stroke-width: 2.5; fill: none; }
+svg.plot .bl-dn { stroke: var(--stop); stroke-width: 2.5; fill: none; }
+svg.plot .d-up { fill: var(--target); stroke: #fff; stroke-width: 1.2; }
+svg.plot .d-dn { fill: var(--stop); stroke: #fff; stroke-width: 1.2; }
+svg.plot .d-flat { fill: var(--muted); stroke: #fff; stroke-width: 1.2; }
+svg.plot .beam { stroke: var(--ink); stroke-width: 1.5; fill: none; }
+svg.plot .wick { stroke: #6d695f; stroke-width: 1.5; fill: none; }
+svg.plot .band { fill: #163b75; opacity: 0.82; }
+svg.plot .track { fill: #ece7da; stroke: #cfc8b8; stroke-width: 1; }
+
+details.fold { margin-top: 14px; }
+details.fold > summary { cursor: pointer; font-weight: 650; min-height: 32px; }
+details.fold > summary small { font-weight: 400; color: var(--muted); }
+.scroll-x { overflow-x: auto; margin-top: 10px; }
+table.grid { border-collapse: collapse; width: 100%; font-size: 0.84rem; }
+table.grid th, table.grid td { padding: 5px 8px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+table.grid th:first-child, table.grid td:first-child { text-align: left; position: sticky; left: 0; background: var(--card); }
+table.grid thead th { color: var(--muted); font-weight: 500; font-size: 0.78rem; vertical-align: bottom; }
+table.grid caption { text-align: left; color: var(--muted); font-size: 0.82rem; padding-bottom: 6px; caption-side: top; }
+.note { margin-top: 14px; font-size: 0.92rem; }
+.note h3 { font-size: 1rem; margin-bottom: 8px; }
+.note dl { margin: 0; display: grid; gap: 8px; }
+.note dt { font-weight: 650; }
+.note dd { margin: 0; }
+.note ul { margin: 4px 0 0; padding-left: 20px; }
+.plan-line { font-size: 0.82rem; color: var(--muted); margin-top: 8px; display: flex; flex-wrap: wrap; gap: 2px 16px; }
+.plan-line b { font-weight: 650; color: var(--ink); }
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  .readout { position: static; max-height: none; }
+}
+@media (max-width: 480px) {
+  .proto-inner { padding: 12px 16px 0; }
+  .card { padding: 12px; }
+  .hero { padding: 10px 10px 12px 8px; }
+  .seg button { padding: 6px 9px; font-size: 0.82rem; }
+  .step { width: 36px; height: 36px; }
+  .status { padding: 6px 10px; }
+  .fig { font-size: 1.45rem; }
+  .stake { font-size: 0.8rem; }
+  .state { font-size: 0.88rem; }
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <pattern id="p-over-s" width="6" height="6" patternUnits="userSpaceOnUse"><rect width="6" height="6" fill="#f2c6c0"/><path d="M0 0L6 6M6 0L0 6" stroke="#a3261b" stroke-width="1.3"/></pattern>
+    <pattern id="p-over-t" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" fill="#c2e2c9"/><rect width="1.6" height="7" fill="#1d6b34"/></pattern>
+    <pattern id="p-time" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)"><rect width="6" height="6" fill="#f6e6c8"/><rect width="2.5" height="6" fill="#8a5200"/></pattern>
+    <pattern id="p-vol" width="6" height="6" patternUnits="userSpaceOnUse"><rect width="6" height="6" fill="#efe6fa"/><circle cx="3" cy="3" r="1.6" fill="#6b3fa0"/></pattern>
+    <pattern id="p-both" width="6" height="6" patternUnits="userSpaceOnUse"><rect width="6" height="6" fill="#efe9dc"/><path d="M0 3H6M3 0V6" stroke="#55524b" stroke-width="1.2"/></pattern>
+  </defs>
+</svg>
+
+<header class="proto-bar">
+  <div class="proto-inner">
+    <div class="proto-head">
+      <h1>Trade replay, round 2: six ways to draw it</h1>
+      <p>A prototype for D9. The same six trades as round 1 (<a href="index.html">round 1 is kept here</a>). Each visualization shows the price and the Trade’s profit or loss together, and both move with the slider. It opens on the last session; drag the slider left to replay.</p>
+    </div>
+    <p class="model-flag"><strong>A model, not market data.</strong> The Underlying’s Marks are written by hand and every option Mark is generated from them by a pricing model, for this demonstration only. The generator is at the foot of the page.</p>
+    <div class="controls">
+      <span class="seg-label" id="trade-label">Trade</span>
+      <div class="seg" role="radiogroup" aria-labelledby="trade-label" id="trades"></div>
+    </div>
+    <div class="tabs" role="tablist" aria-label="Visualizations" id="tabs"></div>
+  </div>
+</header>
+
+<main>
+  <div class="ctl" id="ctl">
+    <div class="ctl-row">
+      <span class="seg-label" id="series-label">Price action</span>
+      <div class="seg" role="radiogroup" aria-labelledby="series-label" id="series">
+        <button type="button" role="radio" data-series="bull">Bullish</button>
+        <button type="button" role="radio" data-series="bear">Bearish</button>
+      </div>
+      <div class="slide">
+        <button type="button" class="step" id="prev" aria-label="Earlier session">‹</button>
+        <input type="range" id="slider" min="0" max="14" step="1" aria-label="Session shown">
+        <button type="button" class="step" id="next" aria-label="Later session">›</button>
+      </div>
+      <span class="when" id="when"></span>
+    </div>
+  </div>
+
+  <div role="tabpanel" id="stage" aria-labelledby="tab-corridor">
+    <div class="layout">
+      <section class="card hero" id="hero" aria-label="How the Trade is going, with the charts">
+        <div class="status" id="status"></div>
+        <div id="plots"></div>
+        <div class="move" id="move"></div>
+        <div class="chips" id="chips"></div>
+        <div id="key"></div>
+        <div class="plan-line" id="planline"></div>
+      </section>
+      <aside class="card readout" id="readout" aria-label="Figures for the session shown"></aside>
+    </div>
+    <details class="card fold" id="tablefold">
+      <summary>Every session so far, as a table <small id="tablenote"></small></summary>
+      <div class="scroll-x" tabindex="0" role="region" aria-label="Sessions so far" id="table"></div>
+      <p class="small muted" style="margin-top:8px">Sources and corrections for each Mark are in <a href="#" onclick="return false">Price History</a>. From the Review, that link would open Trade Detail on Price History, and its “Back to the Review” link would return to this Trade, this step and this session.</p>
+    </details>
+    <section class="card note" id="note"></section>
+    <details class="card fold">
+      <summary>What this series was written to show <small>(describes later sessions)</small></summary>
+      <p class="small" id="story" style="margin-top:8px"></p>
+    </details>
+    <details class="card fold">
+      <summary>The generator and its assumptions <small>(a model; shows all 15 sessions)</small></summary>
+      <div id="model"></div>
+    </details>
+  </div>
+</main>
+<div class="tip" id="tip" hidden></div>
+
+<script>
+'use strict';
+/* ====================================================================================================
+   THE MODEL. Everything in this block is a demonstration model: sessions, pricing, the six trades,
+   and the per-session figures. In the app, Marks are observed and nothing is generated; the figures
+   would come from Trade Analysis and Trade Views (the UI calculates nothing, ADR 0001).
+   ==================================================================================================== */
+
+const SESSIONS = ['2026-11-02', '2026-11-03', '2026-11-04', '2026-11-05', '2026-11-06', '2026-11-09', '2026-11-10', '2026-11-11', '2026-11-12', '2026-11-13', '2026-11-16', '2026-11-17', '2026-11-18', '2026-11-19', '2026-11-20'];
+const EXPIRATION = '2026-11-20';
+const RATE = 0.04; // the short-term rate; every option here expires in 18 days. (Long-term options would use 5.25%.)
+const dayNumber = (iso) => Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10)) / 86400000;
+const daysLeft = (i) => dayNumber(EXPIRATION) - dayNumber(SESSIONS[i]);
+const cents = (x) => Math.round((x + (x >= 0 ? 1e-9 : -1e-9)) * 100) / 100;
+
+// Standard normal distribution (Abramowitz and Stegun 26.2.17, error below 7.5e-8).
+function normCdf(x) {
+  const t = 1 / (1 + 0.2316419 * Math.abs(x));
+  const d = 0.3989422804014327 * Math.exp((-x * x) / 2);
+  const p = d * t * (0.31938153 + t * (-0.356563782 + t * (1.781477937 + t * (-1.821255978 + t * 1.330274429))));
+  return x >= 0 ? 1 - p : p;
+}
+
+// Black-Scholes price of a European option with no dividends. type 'C' or 'P'; calendar days to expiration; vol as a fraction.
+function blackScholes(type, S, K, days, vol, r = RATE) {
+  if (days <= 0) return Math.max(type === 'C' ? S - K : K - S, 0);
+  const T = days / 365;
+  const sd = vol * Math.sqrt(T);
+  const d1 = (Math.log(S / K) + (r + (vol * vol) / 2) * T) / sd;
+  const d2 = d1 - sd;
+  const df = Math.exp(-r * T);
+  return type === 'C' ? S * normCdf(d1) - K * df * normCdf(d2) : K * df * normCdf(-d2) - S * normCdf(-d1);
+}
+
+// The option's price change per $1 of the Underlying, from the same formula (used for the share equivalent).
+function bsDelta(type, S, K, days, vol, r = RATE) {
+  if (days <= 0) return type === 'C' ? (S > K ? 1 : 0) : (S < K ? -1 : 0);
+  const T = days / 365;
+  const sd = vol * Math.sqrt(T);
+  const d1 = (Math.log(S / K) + (r + (vol * vol) / 2) * T) / sd;
+  return type === 'C' ? normCdf(d1) : normCdf(d1) - 1;
+}
+
+/* Implied volatility: the volatility at which Black-Scholes returns the observed Mark. It explains a price that was
+   observed and predicts nothing. Unavailable (na) when no volatility fits or when the answer would mean little;
+   "fit" is then the volatility that reproduces the Mark, kept only so a move can still be split. */
+function impliedVol(type, mark, S, K, days, r = RATE) {
+  if (mark == null || S == null) return { na: 'a Mark is missing' };
+  if (days <= 0) return { na: 'on the expiration session the price no longer depends on volatility' };
+  const floor = blackScholes(type, S, K, days, 0.0001, r);
+  if (mark <= floor + 0.005) return { na: 'the Mark is at or below the option’s exercise value, so no volatility fits' };
+  let lo = 0.0001;
+  let hi = 5;
+  if (blackScholes(type, S, K, days, hi, r) < mark) return { na: 'no volatility fits this Mark' };
+  for (let n = 0; n < 60; n += 1) {
+    const mid = (lo + hi) / 2;
+    if (blackScholes(type, S, K, days, mid, r) < mark) lo = mid; else hi = mid;
+  }
+  const vol = (lo + hi) / 2;
+  // What one volatility point is worth. Under half a cent, a one-cent step in the Mark swings the answer.
+  const perPoint = blackScholes(type, S, K, days, vol + 0.01, r) - blackScholes(type, S, K, days, vol, r);
+  if (perPoint < 0.005) return { na: 'this far from the strike, or this close to expiration, the price barely depends on volatility', fit: vol };
+  return { vol };
+}
+
+/* The six trades. u: the Underlying's Marks, written by hand. vol: the volatility the generator prices with, per session,
+   in percent, written by hand. Each option Mark is Black-Scholes at that session's Underlying Mark, days left and vol,
+   rounded to cents. An Execution's price is given, or priced the same way at the Underlying price it happened at ("at").
+   Every entry fills at the Plan's price (entry: true). Fees are left out. */
+const TRADES = [
+  {
+    id: 'stock', symbol: 'AXIO', strategy: 'Long stock', legs: [], mult: 1, unit: 'share',
+    plan: { qty: 200, entry: 50.0, stop: { on: 'held', dir: 'below', price: 47.0 }, target: { on: 'held', dir: 'above', price: 56.0 } },
+    series: {
+      bull: {
+        story: 'Scaling in. Half the planned shares are bought on Nov 2 and half on Nov 6, at a higher price. The stock climbs to its Target on Nov 17 and past it.',
+        u: [50.4, 50.9, 50.7, 51.3, 51.8, 52.6, 52.3, 53.4, 54.1, 53.8, 55.2, 56.3, 57.1, 56.7, 57.4],
+        execs: [{ i: 0, qty: 100, price: 50.0 }, { i: 4, qty: 100, price: 51.4 }],
+      },
+      bear: {
+        story: 'A gap below the Stop. The stock drifts down, then on Nov 9 it opens far below $47.00. Half is sold in the gap at $45.60, below the Stop, so the realized loss on those shares is larger than the Stop promised. The rest is held, past its Stop.',
+        u: [49.7, 49.9, 49.2, 48.6, 48.1, 45.2, 45.8, 44.9, 44.3, 45.1, 44.0, 43.2, 43.6, 42.8, 42.1],
+        execs: [{ i: 0, qty: 200, price: 50.0 }, { i: 5, qty: -100, price: 45.6 }],
+      },
+    },
+  },
+  {
+    id: 'call', symbol: 'BREN', strategy: 'Long call', legs: [{ type: 'C', strike: 100, side: 1 }], mult: 100, unit: 'contract',
+    plan: { qty: 4, entryAt: 97.0, entryVol: 32, stop: { on: 'held', dir: 'below', price: 0.8 }, target: { on: 'held', dir: 'above', price: 4.0 } },
+    series: {
+      bull: {
+        story: 'A flat first week: BREN is $97.20 on Nov 2 and on Nov 6, yet the call falls from $1.68 to $1.22, moved only by time and easing volatility. Then BREN rallies through the $100 strike, the call goes from out of the money to in the money, and half is sold at the $4.00 Target on Nov 12.',
+        u: [97.2, 97.0, 97.3, 97.1, 97.2, 98.5, 100.2, 101.8, 103.6, 104.6, 104.0, 105.2, 104.8, 106.0, 106.5],
+        vol: [32, 31.5, 31, 30.5, 30, 29.5, 29, 28.5, 28, 28, 27.5, 27.5, 27, 27, 27],
+        execs: [{ i: 0, qty: 4, entry: true }, { i: 8, qty: -2, price: 4.0 }],
+      },
+      bear: {
+        story: 'BREN slides away from the strike. Rising volatility cushions the call for a while, the Stop is breached on Nov 9, and time does the rest: it expires worthless.',
+        u: [96.4, 95.8, 96.1, 95.0, 94.2, 93.5, 94.0, 92.8, 92.1, 91.5, 92.0, 91.2, 90.6, 90.9, 90.2],
+        vol: [33, 34, 34, 36, 38, 40, 40, 42, 44, 45, 45, 46, 47, 47, 47],
+        execs: [{ i: 0, qty: 4, entry: true }],
+      },
+    },
+  },
+  {
+    id: 'put', symbol: 'CORV', strategy: 'Long put', legs: [{ type: 'P', strike: 80, side: 1 }], mult: 100, unit: 'contract',
+    plan: { qty: 3, entryAt: 81.5, entryVol: 40, stop: { on: 'held', dir: 'below', price: 1.05 }, target: { on: 'held', dir: 'above', price: 5.0 } },
+    series: {
+      bull: {
+        story: 'CORV rises and volatility eases. The put loses on both counts, breaches its Stop on Nov 6 and expires worthless.',
+        u: [81.9, 82.4, 82.1, 83.0, 83.6, 84.2, 83.8, 84.9, 85.5, 85.1, 86.0, 86.4, 85.9, 86.8, 87.2],
+        vol: [40, 39, 38.5, 38, 37, 36.5, 36, 35.5, 35, 35, 34.5, 34, 34, 34, 34],
+        execs: [{ i: 0, qty: 3, entry: true }],
+      },
+      bear: {
+        story: 'CORV drops through the $80 strike as volatility jumps, and the Target is reached on Nov 6. On Nov 9 the stock rises only $0.30 but volatility falls from 53% to 44%, and the put loses $0.95. Tue Nov 10 has no Mark for the put, so its line breaks there.',
+        u: [81.2, 80.6, 79.4, 77.8, 76.5, 76.8, 76.2, 75.4, 74.6, 75.0, 74.2, 73.8, 74.4, 73.9, 73.5],
+        vol: [40, 41, 43, 48, 53, 44, 44, 44, 45, 44, 44, 43, 43, 42, 42],
+        execs: [{ i: 0, qty: 3, entry: true }],
+        missing: [6],
+      },
+    },
+  },
+  {
+    id: 'shortput', symbol: 'DALE', strategy: 'Short put', legs: [{ type: 'P', strike: 57.5, side: 1 }], mult: 100, unit: 'contract',
+    plan: { qty: -6, entryAt: 60.0, entryVol: 38, stop: { on: 'underlying', dir: 'below', price: 54.0 }, target: { on: 'held', dir: 'below', price: 0.2 } },
+    series: {
+      bull: {
+        story: 'DALE goes nowhere for two weeks. The put melts with time alone, the Target is reached on Nov 16, and the Trade ends on the most it could ever make.',
+        u: [60.1, 59.9, 60.2, 60.0, 59.8, 60.1, 60.3, 60.0, 60.2, 60.4, 60.9, 61.4, 61.2, 61.8, 62.3],
+        vol: [38, 38, 37.5, 37, 37, 36.5, 36, 36, 35.5, 35, 35, 34.5, 34, 34, 34],
+        execs: [{ i: 0, qty: -6, entry: true }],
+      },
+      bear: {
+        story: 'DALE falls toward and through the $57.50 strike, and each dollar down costs more than the last. Half the puts are bought back on Nov 10. On Nov 12 the put already costs more than the Stop’s planned amount though DALE is still above $54.00. The Stop is breached on Nov 13, and the rest are assigned.',
+        u: [59.6, 59.0, 58.4, 58.8, 57.6, 56.9, 55.8, 55.1, 54.6, 53.7, 53.2, 53.9, 52.8, 52.4, 52.0],
+        vol: [39, 40, 42, 41, 44, 47, 51, 52, 53, 56, 56, 54, 55, 55, 55],
+        execs: [{ i: 0, qty: -6, entry: true }, { i: 6, qty: 3, at: 56.2 }],
+      },
+    },
+  },
+  {
+    id: 'callspread', symbol: 'ELIX', strategy: 'Bull call spread', legs: [{ type: 'C', strike: 120, side: 1 }, { type: 'C', strike: 125, side: -1, skew: -1 }], mult: 100, unit: 'spread',
+    plan: { qty: 4, entryAt: 119.5, entryVol: 30, stop: { on: 'held', dir: 'below', price: 1.0 }, target: { on: 'held', dir: 'above', price: 4.0 } },
+    series: {
+      bull: {
+        story: 'ELIX is above both strikes by Nov 6, yet the spread is slow to reach its $5.00 cap: it needs time to run out as well. The Target is reached on Nov 12.',
+        u: [120.2, 121.5, 122.8, 124.0, 125.6, 126.4, 127.1, 126.5, 127.8, 128.6, 128.0, 129.1, 128.7, 129.5, 130.2],
+        vol: [30, 30, 29.5, 29, 29, 28.5, 28, 28, 28, 27.5, 27.5, 27, 27, 27, 27],
+        execs: [{ i: 0, qty: 4, entry: true }],
+      },
+      bear: {
+        story: 'ELIX falls below both strikes. The spread breaches its Stop on Nov 9 and expires worthless, but the loss stops at what was paid.',
+        u: [118.8, 118.0, 118.6, 117.2, 116.0, 115.1, 115.8, 114.6, 113.9, 114.4, 113.2, 112.8, 113.5, 112.6, 112.0],
+        vol: [31, 32, 32, 33, 35, 36, 36, 37, 38, 38, 39, 39, 39, 40, 40],
+        execs: [{ i: 0, qty: 4, entry: true }],
+      },
+    },
+  },
+  {
+    id: 'putspread', symbol: 'FENN', strategy: 'Bear put spread', legs: [{ type: 'P', strike: 40, side: 1 }, { type: 'P', strike: 37.5, side: -1, skew: 2 }], mult: 100, unit: 'spread',
+    plan: { qty: 10, entryAt: 40.6, entryVol: 45, stop: { on: 'held', dir: 'below', price: 0.4 }, target: { on: 'held', dir: 'above', price: 1.9 } },
+    series: {
+      bull: {
+        story: 'FENN rises away from both strikes. The spread decays, breaches its Stop on Nov 6 and expires worthless.',
+        u: [40.9, 41.3, 41.0, 41.8, 42.2, 42.6, 42.3, 43.0, 43.4, 43.1, 43.8, 44.0, 43.7, 44.3, 44.6],
+        vol: [45, 44, 44, 43, 42, 42, 41, 41, 40, 40, 40, 39, 39, 39, 39],
+        execs: [{ i: 0, qty: 10, entry: true }],
+      },
+      bear: {
+        story: 'FENN falls through both strikes. The spread climbs toward its $2.50 cap, reaches its Target on Nov 12 and settles on the cap.',
+        u: [40.2, 39.6, 39.0, 38.2, 37.6, 37.0, 37.4, 36.6, 36.0, 36.3, 35.6, 35.2, 35.7, 35.1, 34.8],
+        vol: [45, 46, 47, 49, 51, 52, 51, 52, 53, 52, 53, 53, 52, 53, 53],
+        execs: [{ i: 0, qty: 10, entry: true }],
+      },
+    },
+  },
+];
+
+const isOption = (t) => t.legs.length > 0;
+const width = (t) => (t.legs.length === 2 ? Math.abs(t.legs[0].strike - t.legs[1].strike) : null);
+const legPrices = (t, S, days, volPct) => t.legs.map((l) => cents(blackScholes(l.type, S, l.strike, days, (volPct + (l.skew || 0)) / 100)));
+// The price of the thing held: the stock, the option, or a spread's net value (long leg less short leg).
+const heldFromLegs = (t, prices) => cents(prices.reduce((sum, p, k) => sum + t.legs[k].side * p, 0));
+// What the thing held is worth at expiration with the Underlying at S. Used for an Underlying-price Stop's amount and the expiration line.
+const heldAtExpiration = (t, S) => (isOption(t) ? t.legs.reduce((sum, l) => sum + l.side * Math.max(l.type === 'C' ? S - l.strike : l.strike - S, 0), 0) : S);
+
+// The lowest and highest value the thing held can ever have.
+function heldBounds(t) {
+  if (!isOption(t)) return { min: 0, max: Infinity };
+  if (t.legs.length === 2) return { min: 0, max: width(t) };
+  return { min: 0, max: t.legs[0].type === 'C' ? Infinity : t.legs[0].strike };
+}
+
+// The Plan Baseline: 1R and the planned reward, from the planned entry, Stop and Target.
+function buildPlan(t) {
+  const p = t.plan;
+  const entry = isOption(t) ? heldFromLegs(t, legPrices(t, p.entryAt, daysLeft(0), p.entryVol)) : p.entry;
+  const boundary = (c) => (c.on === 'underlying' ? cents(heldAtExpiration(t, c.price)) : c.price);
+  const stopValue = boundary(p.stop);
+  const targetValue = boundary(p.target);
+  const size = Math.abs(p.qty) * t.mult;
+  const sign = Math.sign(p.qty);
+  const oneR = cents(sign * size * (entry - stopValue));
+  const reward = cents(sign * size * (targetValue - entry));
+  return { qty: p.qty, entry, stop: p.stop, target: p.target, stopValue, targetValue, oneR, reward, ratio: reward / oneR };
+}
+
+/* The dollar split (an estimate): one session's change in one option's Mark, divided into the part from the Underlying's
+   move, the part from the days passing, and the part from implied volatility changing, worked out in that order. */
+function splitLeg(l, before, after, k) {
+  const iv0 = before.iv[k];
+  const v0 = iv0.vol != null ? iv0.vol : iv0.fit;
+  if (v0 == null) return { na: `no volatility fits the ${shortDate(before.date)} Mark` };
+  const iv1 = after.iv[k];
+  const base = blackScholes(l.type, before.u, l.strike, before.days, v0);
+  const a = blackScholes(l.type, after.u, l.strike, before.days, v0);
+  const b = blackScholes(l.type, after.u, l.strike, after.days, v0);
+  const total = after.legs[k] - before.legs[k];
+  const separable = iv0.vol != null && (iv1.vol != null || after.days === 0);
+  const fromUnderlying = a - base;
+  if (!separable) return { total, fromUnderlying, together: total - fromUnderlying, separable };
+  const fromTime = b - a;
+  const fromVol = after.days === 0 ? 0 : blackScholes(l.type, after.u, l.strike, after.days, iv1.vol) - b;
+  return { total, fromUnderlying, fromTime, fromVol, unexplained: total - fromUnderlying - fromTime - fromVol, separable };
+}
+
+// The same split for the thing held: stock has one cause; a spread is its long leg's split less its short leg's.
+function splitHeld(t, before, after) {
+  if (before.held == null || after.held == null) return { na: 'a Mark is missing' };
+  const total = cents(after.held - before.held);
+  if (!isOption(t)) return { total, fromUnderlying: total, fromTime: 0, fromVol: 0, unexplained: 0, separable: true, exact: true };
+  const parts = t.legs.map((l, k) => splitLeg(l, before, after, k));
+  const bad = parts.find((p) => p.na);
+  if (bad) return { na: bad.na, total };
+  const sum = (f) => parts.reduce((s, p, k) => s + t.legs[k].side * (p[f] || 0), 0);
+  const fromUnderlying = sum('fromUnderlying');
+  if (parts.some((p) => !p.separable)) return { total, fromUnderlying, together: total - fromUnderlying, separable: false };
+  const fromTime = sum('fromTime');
+  const fromVol = sum('fromVol');
+  return { total, fromUnderlying, fromTime, fromVol, unexplained: total - fromUnderlying - fromTime - fromVol, separable: true };
+}
+
+// Every session of one series. Each row holds only what is known at that session.
+function buildSeries(t, key) {
+  const s = t.series[key];
+  const plan = buildPlan(t);
+  const sign = Math.sign(plan.qty);
+  const bounds = heldBounds(t);
+  const worstValue = sign > 0 ? bounds.min : bounds.max;
+  const bestValue = sign > 0 ? bounds.max : bounds.min;
+  const execs = s.execs.map((e) => ({ ...e, price: e.entry ? plan.entry : e.price != null ? e.price : heldFromLegs(t, legPrices(t, e.at, daysLeft(e.i), s.vol[e.i])) }));
+  const lots = []; // FIFO open lots: { qty (signed), price }
+  let realized = 0;
+  let prev = null;
+  const rows = [];
+  for (let i = 0; i < SESSIONS.length; i += 1) {
+    const todays = execs.filter((e) => e.i === i).map((e) => {
+      const opening = Math.sign(e.qty) === sign;
+      let banked = 0;
+      if (opening) lots.push({ qty: e.qty, price: e.price });
+      else {
+        let left = Math.abs(e.qty);
+        while (left > 0) {
+          const lot = lots[0];
+          const take = Math.min(left, Math.abs(lot.qty));
+          banked += sign * take * t.mult * (e.price - lot.price);
+          lot.qty -= sign * take;
+          left -= take;
+          if (lot.qty === 0) lots.shift();
+        }
+        realized = cents(realized + banked);
+      }
+      return { ...e, opening, banked: opening ? null : cents(banked) };
+    });
+    const qty = lots.reduce((sum, l) => sum + l.qty, 0);
+    const size = Math.abs(qty) * t.mult;
+    const u = s.u[i];
+    const days = daysLeft(i);
+    const missing = (s.missing || []).includes(i);
+    const legs = isOption(t) && !missing ? legPrices(t, u, days, s.vol[i]) : null;
+    const held = !isOption(t) ? u : missing ? null : heldFromLegs(t, legs);
+    const resultAt = (value) => cents(realized + lots.reduce((sum, l) => sum + l.qty * t.mult * (value - l.price), 0));
+    const row = { i, date: SESSIONS[i], days, u, qty, size, execs: todays, realized, missing, legs, held, settled: isOption(t) && days === 0, lots: lots.map((l) => ({ ...l })) };
+    // The Trade's result if the thing held went to its Stop value, its Target value, its lowest and its highest. Needs no Mark.
+    row.at = { stop: resultAt(plan.stopValue), target: resultAt(plan.targetValue), worst: resultAt(worstValue), max: Number.isFinite(bestValue) ? resultAt(bestValue) : Infinity };
+    row.iv = isOption(t) ? t.legs.map((l, k) => impliedVol(l.type, legs ? legs[k] : null, u, l.strike, days)) : null;
+    if (held != null) {
+      row.openPnl = cents(lots.reduce((sum, l) => sum + l.qty * t.mult * (held - l.price), 0));
+      row.pnl = cents(realized + row.openPnl);
+      const stopHit = plan.stop.on === 'underlying' ? u <= plan.stop.price : sign * (held - plan.stopValue) <= 0;
+      const targetHit = plan.target.on === 'underlying' ? u >= plan.target.price : sign * (held - plan.targetValue) >= 0;
+      const toStop = cents(sign * size * (held - plan.stopValue));
+      const toTarget = cents(sign * size * (plan.targetValue - held));
+      row.stopHit = stopHit;
+      row.targetHit = targetHit;
+      row.riskToStop = stopHit ? 0 : Math.max(toStop, 0);
+      row.stopOverrun = stopHit ? Math.max(-toStop, 0) : 0;
+      // An Underlying-price Stop not yet breached, while the Marks are already past the dollar amount the Plan fixed for it.
+      row.pastStopAmount = !stopHit && toStop < 0 ? cents(-toStop) : 0;
+      row.rewardToTarget = targetHit ? 0 : Math.max(toTarget, 0);
+      row.targetOverrun = targetHit ? Math.max(-toTarget, 0) : 0;
+      row.worstCase = cents(sign * size * (held - worstValue));
+      row.maxReward = Number.isFinite(bestValue) ? cents(sign * size * (bestValue - held)) : Infinity;
+      // Of the Risk to stop, the part that is open profit which would be given back.
+      row.giveBack = Math.min(row.riskToStop, Math.max(row.openPnl, 0));
+      row.ratio = stopHit ? 'Stop breached' : targetHit ? 'Target reached' : row.riskToStop > 0 ? row.rewardToTarget / row.riskToStop : 'Past the Stop’s amount';
+      if (row.settled) {
+        // Settled at the close: nothing is held any more, so nothing is at risk and nothing is left to gain.
+        Object.assign(row, { riskToStop: 0, stopOverrun: 0, pastStopAmount: 0, rewardToTarget: 0, targetOverrun: 0, worstCase: 0, maxReward: 0, giveBack: 0, ratio: 'Settled' });
+      }
+      // How many shares of the Underlying the Position behaves like. Exact for stock; an estimate for options.
+      if (!isOption(t)) row.shares = qty;
+      else {
+        const d = t.legs.reduce((sum, l, k) => {
+          const v = row.iv[k].vol != null ? row.iv[k].vol : row.iv[k].fit;
+          const intrinsic = Math.max(l.type === 'C' ? u - l.strike : l.strike - u, 0);
+          const delta = days <= 0 || v != null ? bsDelta(l.type, u, l.strike, days, v) : intrinsic > 0 ? (l.type === 'C' ? 1 : -1) : 0;
+          return sum + l.side * delta;
+        }, 0);
+        row.shares = Math.round(qty * t.mult * d);
+      }
+      if (prev) {
+        row.change = { since: prev.date, u: cents(u - prev.u), held: cents(held - prev.held), pnl: cents(row.pnl - prev.pnl), riskToStop: cents(row.riskToStop - prev.riskToStop), rewardToTarget: cents(row.rewardToTarget - prev.rewardToTarget) };
+      }
+      row.split = rows.length ? splitHeld(t, rows[rows.length - 1], row) : null;
+      prev = row;
+    } else if (rows.length) row.split = { na: 'a Mark is missing' };
+    // After a session with no Mark, the change is measured from the last session that had one, and can't be split.
+    if (held != null && rows.length && rows[rows.length - 1].held == null) {
+      const last = [...rows].reverse().find((x) => x.held != null);
+      row.split = { na: `${shortDate(rows[rows.length - 1].date)} has no Mark, so this is the change since ${shortDate(last.date)}`, total: cents(held - last.held) };
+    }
+    rows.push(row);
+  }
+  return { plan, rows, story: s.story, inputVol: s.vol || null };
+}
+
+const WD = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const MO = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+function shortDate(iso) {
+  const d = new Date(iso + 'T00:00:00Z');
+  return `${WD[d.getUTCDay()]} ${MO[d.getUTCMonth()]} ${d.getUTCDate()}`;
+}
+if (typeof module !== 'undefined') module.exports = { SESSIONS, RATE, daysLeft, cents, blackScholes, bsDelta, impliedVol, TRADES, buildPlan, buildSeries, heldAtExpiration, isOption, shortDate };
+</script>
+
+<script>
+'use strict';
+/* ====================================================================================================
+   THE PAGE. Formatting, the six visualizations, the readout and the table. It reads the model above.
+   ==================================================================================================== */
+const $ = (id) => document.getElementById(id);
+const MINUS = '−';
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const num = (x, dp = 2) => Math.abs(x).toLocaleString('en-US', { minimumFractionDigits: dp, maximumFractionDigits: dp });
+const money = (x, dp = 2) => (x < -0.004 ? MINUS : '') + '$' + num(x, dp);
+const signed = (x, dp = 2) => (x > 0.004 ? '+' : x < -0.004 ? MINUS : '') + '$' + num(x, dp);
+const axMoney = (x) => (x < 0 ? MINUS : '') + '$' + Math.abs(x).toLocaleString('en-US', { maximumFractionDigits: Math.abs(x) < 10 && x % 1 !== 0 ? 2 : 0 });
+const rOf = (x, plan) => `${(x / plan.oneR).toFixed(2)}R`;
+const pct = (v) => `${(v * 100).toFixed(1)}%`;
+const upDown = (x) => (Math.abs(x) < 0.005 ? 'unchanged' : `${x > 0 ? 'up' : 'down'} ${money(Math.abs(x))}`);
+const ratioText = (r) => (typeof r === 'number' ? `${r.toFixed(2)} to 1` : r);
+const toneOf = (v) => (v > 0.004 ? 'up' : v < -0.004 ? 'down' : 'flat');
+
+const heldName = (t) => (!isOption(t) ? t.symbol : t.legs.length === 2 ? 'Spread' : t.legs[0].type === 'C' ? 'Call' : 'Put');
+const heldNoun = (t) => (!isOption(t) ? 'stock' : t.legs.length === 2 ? 'spread' : t.legs[0].type === 'C' ? 'call' : 'put');
+const strikeText = (k) => '$' + (k % 1 ? k.toFixed(2) : k);
+const legName = (t, l) => `${t.symbol} Nov 20 ${strikeText(l.strike)} ${l.type === 'C' ? 'Call' : 'Put'}`;
+const units = (t, n) => `${Math.abs(n)} ${t.unit}${Math.abs(n) === 1 ? '' : 's'}`;
+const positionText = (t, qty) => (qty === 0 ? 'No Position' : `${qty > 0 ? 'Long' : 'Short'} ${units(t, qty)}`);
+const condText = (t, c) => `${c.on === 'underlying' || !isOption(t) ? t.symbol : heldName(t)} at or ${c.dir} ${money(c.price)}`;
+const execText = (t, e) => `${e.qty > 0 ? 'Bought' : 'Sold'} ${units(t, e.qty)} at ${money(e.price)}`;
+
+const VIEWS = [
+  { id: 'corridor', name: '1. Corridor', sub: 'price above, P&L between rails' },
+  { id: 'balance', name: '2. Balance', sub: 'P&L candles with wicks' },
+  { id: 'shares', name: '3. Share equivalent', sub: 'a price line as thick as the exposure' },
+  { id: 'ribbon', name: '4. Ribbon', sub: 'one chart: P&L rides the price' },
+  { id: 'gauge', name: '5. Gauge', sub: 'a meter from Stop to Target' },
+  { id: 'inset', name: '6. Inset', sub: 'P&L large, price as an inset' },
+];
+// It opens on the last session, as the Review would: the picture has to read without touching the slider.
+const state = { trade: 'call', series: 'bull', view: 'corridor', cur: 14, pop: null };
+try { Object.assign(state, JSON.parse(localStorage.getItem('replay-proto-2') || '{}')); } catch (e) { /* storage unavailable */ }
+const save = () => { try { localStorage.setItem('replay-proto-2', JSON.stringify(state)); } catch (e) { /* storage unavailable */ } };
+const cache = {};
+const seriesOf = (tradeId, key) => (cache[tradeId + key] ||= buildSeries(TRADES.find((t) => t.id === tradeId), key));
+
+/* ---------- Chart helpers ---------- */
+function ticks(min, max, want = 4) {
+  const raw = (max - min) / want;
+  const mag = 10 ** Math.floor(Math.log10(raw));
+  const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((v) => v >= raw) || raw;
+  const out = [];
+  for (let v = Math.ceil(min / step - 1e-9) * step; v <= max + 1e-9; v += step) out.push(Math.abs(v) < 1e-9 ? 0 : +v.toFixed(6));
+  return out;
+}
+const extend = (range, values, pad = 0.06) => {
+  const vs = values.filter((v) => v != null && Number.isFinite(v));
+  let [lo, hi] = range;
+  if (vs.length) { lo = Math.min(lo, ...vs); hi = Math.max(hi, ...vs); }
+  const p = (hi - lo) * pad;
+  return [lo < range[0] ? lo - p : lo, hi > range[1] ? hi + p : hi];
+};
+const f1 = (n) => n.toFixed(1);
+const diamond = (x, y, r = 5.5) => `M${x} ${y - r}L${x + r} ${y}L${x} ${y + r}L${x - r} ${y}Z`;
+// Joins consecutive points and breaks wherever a value is missing: a line never bridges a missing Mark.
+function brokenLine(points, cls) {
+  let d = '';
+  let pen = false;
+  points.forEach((p) => { if (!p) { pen = false; return; } d += `${pen ? 'L' : 'M'}${f1(p[0])} ${f1(p[1])}`; pen = true; });
+  return d ? `<path class="${cls}" d="${d}"/>` : '';
+}
+const sw = (inner) => `<svg width="18" height="12" viewBox="0 0 18 12" aria-hidden="true">${inner}</svg>`;
+const LEG = {
+  mark: sw('<circle cx="9" cy="6" r="3.5" fill="#1c1b19"/>'),
+  exec: sw('<path d="M9 0V12" stroke="#1c1b19" stroke-dasharray="3 3"/>'),
+  execPt: sw(`<path d="${diamond(9, 6, 5)}" fill="#fff" stroke="#1c1b19" stroke-width="2"/>`),
+  stop: sw('<path d="M0 6H18" stroke="#a3261b" stroke-width="1.5" stroke-dasharray="6 3"/>'),
+  target: sw('<path d="M0 6H18" stroke="#1d6b34" stroke-width="1.5" stroke-dasharray="2 3"/>'),
+  ref: sw('<path d="M0 6H18" stroke="#8f8a7e" stroke-width="1" stroke-dasharray="1 3"/>'),
+  plan: sw('<path d="M0 6H18" stroke="#1c1b19" stroke-width="1" stroke-dasharray="4 4"/>'),
+  aup: sw('<rect x="3" y="1" width="12" height="10" fill="#c2e2c9"/><path d="M3 1H15" stroke="#1d6b34" stroke-width="2"/>'),
+  adn: sw('<rect x="3" y="1" width="12" height="10" fill="#f2c6c0"/><path d="M3 11H15" stroke="#a3261b" stroke-width="2"/>'),
+  bup: sw('<rect x="3" y="1" width="12" height="10" fill="#1d6b34"/>'),
+  bdn: sw('<rect x="3" y="1" width="12" height="10" fill="#a3261b"/>'),
+  overS: sw('<rect x="3" y="0.5" width="12" height="11" fill="url(#p-over-s)" stroke="#a3261b"/>'),
+  overT: sw('<rect x="3" y="0.5" width="12" height="11" fill="url(#p-over-t)" stroke="#1d6b34"/>'),
+  beam: sw('<path d="M5 1H13M9 1V11M5 11H13" stroke="#1c1b19" stroke-width="1.5" fill="none"/>'),
+  wick: sw('<path d="M9 0V12" stroke="#6d695f" stroke-width="1.5"/><path d="M5 1H13" stroke="#1d6b34" stroke-width="2.5"/><path d="M5 11H13" stroke="#a3261b" stroke-width="2.5"/>'),
+  band: sw('<path d="M0 8L9 2L18 5V9L9 8L0 10Z" fill="#163b75"/>'),
+  und: sw('<rect x="3" y="0" width="12" height="12" fill="#163b75"/>'),
+  time: sw('<rect x="3" y="0" width="12" height="12" fill="url(#p-time)" stroke="#8a5200"/>'),
+  vol: sw('<rect x="3" y="0" width="12" height="12" fill="url(#p-vol)" stroke="#6b3fa0"/>'),
+  both: sw('<rect x="3" y="0" width="12" height="12" fill="url(#p-both)" stroke="#55524b"/>'),
+  iv: sw('<rect x="5.5" y="2.5" width="7" height="7" fill="#fff" stroke="#6b3fa0" stroke-width="1.6"/>'),
+  iv2: sw('<path d="M9 2L13.5 10H4.5Z" fill="#fff" stroke="#6b3fa0" stroke-width="1.6"/>'),
+  swept: sw('<path d="M1 6H17" stroke="#8f8a7e" stroke-width="3"/>'),
+};
+const legend = (items) => `<div class="legend">${items.map(([k, text]) => `<span>${LEG[k]}${esc(text)}</span>`).join('')}</div>`;
+
+/* Time-axis geometry: a Plan column, then the 15 sessions, always the full width to expiration. */
+function geom(W, Rg = 8) {
+  const narrow = W < 460;
+  const L = narrow ? 40 : 50;
+  const slot = (W - L - Rg) / 16;
+  return { W, L, Rg, slot, narrow, right: W - Rg, x: (i) => L + slot * (i + 1.5), planX: L + slot * 0.5 };
+}
+let uid = 0;
+
+// Labels are placed one at a time, most important first. Each takes the first of its candidate spots that is free;
+// one that must be shown takes its first choice regardless, and the others are left to the figures beside the chart.
+function placer(g, H) {
+  const boxes = [];
+  const boxOf = (x, y, anchor, text, size) => { const w = text.length * size * 0.57 + 6; const x0 = anchor === 'end' ? x - w : anchor === 'middle' ? x - w / 2 : x; return [x0, y - size + 1, x0 + w, y + 3]; };
+  const inside = (b) => b[0] >= g.L - 2 && b[2] <= g.W - 1 && b[1] >= 1 && b[3] <= H - 1;
+  const clear = (b) => !boxes.some((a) => a[0] < b[2] && b[0] < a[2] && a[1] < b[3] && b[1] < a[3]);
+  return {
+    keep(x0, y0, x1, y1) { boxes.push([x0, y0, x1, y1]); },
+    put(cls, text, cands, must = false) {
+      const size = cls.includes('val') ? 11.5 : 10.5;
+      const bs = cands.map((cd) => boxOf(cd[0], cd[1], cd[2], text, size));
+      let n = bs.findIndex((b) => inside(b) && clear(b));
+      if (n < 0 && must) n = Math.max(bs.findIndex(inside), 0);
+      if (n < 0) return '';
+      boxes.push(bs[n]);
+      return `<text class="${cls}" x="${f1(cands[n][0])}" y="${f1(cands[n][1])}" text-anchor="${cands[n][2]}">${esc(text)}</text>`;
+    },
+  };
+}
+
+// One chart on the shared time axis. o.draw receives the y scale and returns the marks.
+function frame(g, c, o) {
+  const top = 18;
+  const bottom = o.xAxis ? 30 : 8;
+  const H = o.h;
+  const [min, max] = o.range;
+  const y = (v) => top + ((max - v) / (max - min)) * (H - top - bottom);
+  const yc = (v) => Math.max(top, Math.min(H - bottom, y(v)));
+  const k = { top, bottom, H, floor: H - bottom, place: placer(g, H - bottom + 2) };
+  let s = `<svg class="plot" viewBox="0 0 ${g.W} ${H}" width="${g.W}" height="${H}" role="img" aria-label="${esc(o.aria)}">`;
+  ticks(min, max, H < 150 ? 3 : 4).forEach((v) => { s += `<path class="grid" d="M${g.L} ${f1(y(v))}H${g.right}"/><text x="${g.L - 5}" y="${f1(y(v) + 3.5)}" text-anchor="end">${esc(o.fmt(v))}</text>`; });
+  s += `<path class="axis" d="M${g.L} ${top}V${k.floor}"/>`;
+  [-1, 4, 9].forEach((i) => { const x = g.x(i) + g.slot / 2; s += `<path class="week" d="M${f1(x)} ${top}V${k.floor}"/>`; });
+  s += `<path class="cursor" d="M${f1(g.x(c.cur))} ${top}V${k.floor}"/>`;
+  const lines = (o.lines || []).filter((l) => l.v >= min && l.v <= max);
+  lines.forEach((l) => { s += `<path class="${l.cls}" d="M${g.L} ${f1(y(l.v))}H${g.right}"/>`; });
+  s += o.draw(y, yc, k);
+  // An Execution after the entry is a line down every chart, so a scale-in or a scale-out is seen on all of them at once.
+  c.rows.forEach((r) => r.execs.forEach((e) => {
+    if (r.i === 0) return;
+    const x = g.x(r.i);
+    s += `<path class="ev" d="M${f1(x)} ${top}V${k.floor}"/>`;
+    if (o.execLabel) s += k.place.put('ll', `${e.qty > 0 ? 'Bought' : 'Sold'} ${Math.abs(e.qty)}${g.narrow ? '' : ` at ${money(e.price)}`}`, [[x + 4, top + 11, 'start'], [x - 4, top + 11, 'end'], [x + 4, top + 24, 'start'], [x - 4, top + 24, 'end'], [x + 4, k.floor - 5, 'start'], [x - 4, k.floor - 5, 'end']], true);
+  }));
+  lines.forEach((l) => {
+    const yy = y(l.v);
+    const a = yy + (l.below ? 12 : -4);
+    const b = yy + (l.below ? -4 : 12);
+    const lf = (v) => [g.L + 4, v, 'start'];
+    const rt = (v) => [g.right - 3, v, 'end'];
+    s += k.place.put(`ll ${l.tone || ''}`, l.label, l.right ? [rt(a), lf(a), rt(b), lf(b)] : [lf(a), rt(a), lf(b), rt(b)], true);
+  });
+  if (o.title) s += `<text class="ttl" x="${g.L}" y="12">${esc(o.title)}${o.sub && !g.narrow ? `<tspan dx="8">${esc(o.sub)}</tspan>` : ''}</text>`;
+  if (o.xAxis) {
+    const every = g.slot < 15 ? 2 : 1;
+    s += `<text x="${f1(g.planX)}" y="${H - 14}" text-anchor="middle">Plan</text>`;
+    SESSIONS.forEach((d, i) => {
+      if (every > 1 && i % 2 === 0 && i !== c.cur) return; // narrow: every other session, never the one beside "Plan"
+      if (every > 1 && i !== c.cur && Math.abs(i - c.cur) === 1) return;
+      s += `<text x="${f1(g.x(i))}" y="${H - 14}" text-anchor="middle"${i === c.cur ? ' style="fill:var(--ink);font-weight:700"' : ''}>${+d.slice(8)}</text>`;
+    });
+    s += `<text x="${f1(g.x(0) - g.slot / 2)}" y="${H - 2}">November 2026 · sessions to expiration</text>`;
+  }
+  SESSIONS.forEach((d, i) => { s += `<rect class="hit" data-i="${i}" x="${f1(g.x(i) - g.slot / 2)}" y="0" width="${f1(g.slot)}" height="${H}"/>`; });
+  return s + '</svg>';
+}
+
+// Mark points, with a guide line between sessions that breaks at a missing Mark.
+function markDots(g, c, y, get, fmt, o = {}) {
+  let s = brokenLine(c.rows.map((r) => (get(r) == null ? null : [g.x(r.i), y(get(r))])), o.line || 'guide');
+  c.rows.forEach((r) => {
+    if (get(r) == null) return;
+    const rad = r.i === c.cur ? 5 : 3;
+    s += `<circle class="mk" cx="${f1(g.x(r.i))}" cy="${f1(y(get(r)))}" r="${rad}"/>`;
+    o.place.keep(g.x(r.i) - rad - 1, y(get(r)) - rad - 1, g.x(r.i) + rad + 1, y(get(r)) + rad + 1);
+  });
+  const v = get(c.row);
+  const x = g.x(c.cur);
+  if (v != null && o.label !== false) s += o.place.put('val', fmt(v), [[x, y(v) - 9, 'middle'], [x, y(v) + 18, 'middle'], [x - 9, y(v) + 4, 'end'], [x + 9, y(v) + 4, 'start'], [x + 2, y(v) - 9, 'end'], [x - 2, y(v) - 9, 'start']], true);
+  return s;
+}
+function missingBands(g, c, k) {
+  return c.rows.filter((r) => r.missing).map((r) => `<rect x="${f1(g.x(r.i) - g.slot / 2)}" y="${k.top}" width="${f1(g.slot)}" height="${k.floor - k.top}" fill="#f3efe6"/><text class="ll" transform="translate(${f1(g.x(r.i) + 3.5)} ${k.floor - 4}) rotate(-90)">No Mark</text>`).join('');
+}
+
+/* ---------- The price chart: the Underlying's Marks. The option's own Mark is in the figures and the hover. ---------- */
+function priceRange(c, padBy = 0.3) {
+  const { t, plan } = c;
+  const base = isOption(t) ? [t.plan.entryAt, ...t.legs.map((l) => l.strike)] : [plan.entry, plan.stop.price, plan.target.price];
+  if (plan.stop.on === 'underlying') base.push(plan.stop.price);
+  if (plan.target.on === 'underlying') base.push(plan.target.price);
+  const lo = Math.min(...base);
+  const hi = Math.max(...base);
+  const pad = Math.max((hi - lo) * padBy, hi * 0.025);
+  return extend([lo - pad, hi + pad], c.rows.map((r) => r.u));
+}
+function priceLines(c) {
+  const { t, plan } = c;
+  const lines = [];
+  t.legs.forEach((l) => lines.push({ v: l.strike, cls: 'l-ref', label: `Strike ${strikeText(l.strike)}`, below: l.side < 0 && l.strike < t.legs[0].strike }));
+  if (!isOption(t)) lines.push({ v: plan.entry, cls: 'l-plan', label: `Planned entry ${money(plan.entry)}`, right: true });
+  if (!isOption(t) || plan.stop.on === 'underlying') lines.push({ v: plan.stop.price, cls: 'l-stop', tone: 's', label: `Stop ${money(plan.stop.price)}`, below: true });
+  if (!isOption(t) || plan.target.on === 'underlying') lines.push({ v: plan.target.price, cls: 'l-target', tone: 't', label: `Target ${money(plan.target.price)}` });
+  return lines;
+}
+const execDiamonds = (g, c, y) => c.rows.flatMap((r) => r.execs.map((e) => `<path class="exec" d="${diamond(f1(g.x(r.i)) * 1, f1(y(e.price)) * 1)}"/>`)).join('');
+
+// Share equivalent as the thickness of the price line: how much of each move the Position owns.
+function exposureBand(g, c, y) {
+  const cap = Math.abs(c.plan.qty) * c.t.mult;
+  const maxW = g.narrow ? 8 : 11;
+  let s = '';
+  let run = [];
+  const flush = () => {
+    if (run.length > 1) s += `<path class="band" d="M${run.map((p) => `${f1(p[0])} ${f1(p[1] - p[2])}`).join('L')}L${[...run].reverse().map((p) => `${f1(p[0])} ${f1(p[1] + p[2])}`).join('L')}Z"/>`;
+    else if (run.length === 1) s += `<rect class="band" x="${f1(run[0][0] - 3)}" y="${f1(run[0][1] - run[0][2])}" width="6" height="${f1(run[0][2] * 2)}"/>`;
+    run = [];
+  };
+  c.rows.forEach((r) => { if (r.shares == null || r.settled) { flush(); return; } run.push([g.x(r.i), y(r.u), Math.max(0.9, (maxW * Math.abs(r.shares)) / cap)]); });
+  flush();
+  return s;
+}
+
+function priceStrip(g, c, o) {
+  const { t } = c;
+  const r = c.row;
+  const shareNote = o.weighted && r.shares != null && !r.settled ? `${isOption(t) ? '≈ ' : ''}${r.shares < 0 ? 'short ' : ''}${Math.abs(r.shares)} shares` : '';
+  return frame(g, c, { h: o.h, range: priceRange(c), fmt: axMoney, lines: priceLines(c), xAxis: o.xAxis, title: `${t.symbol} price`,
+    sub: o.weighted ? `the line is as thick as the shares the Position behaves like${isOption(t) ? ' (an estimate)' : ''}` : 'one Mark per session',
+    aria: `${t.symbol} Marks by session, up to ${shortDate(r.date)}.${o.weighted ? ' The line’s thickness is the share equivalent.' : ''} The figures are in the readout and the table.`,
+    draw: (y, yc, k) => {
+      const x = g.x(c.cur);
+      return (o.weighted ? exposureBand(g, c, y) : '') + markDots(g, c, y, (q) => q.u, money, { place: k.place }) + (!isOption(t) ? execDiamonds(g, c, y) : '')
+        + (shareNote ? k.place.put('val blue', shareNote, [[x, y(r.u) + 26, 'middle'], [x, y(r.u) - 20, 'middle'], [x - 12, y(r.u) + 22, 'end'], [x + 12, y(r.u) + 22, 'start'], [x - 12, y(r.u) - 14, 'end']], true) : '');
+    } });
+}
+
+/* ---------- Trade P&L between the result at the Stop and the result at the Target ---------- */
+// The P&L scale, from the Plan, stretched only by what has been revealed so far.
+function pnlScale(c) {
+  const { plan } = c;
+  const span = plan.oneR + plan.reward;
+  const inReach = (v) => Number.isFinite(v) && Math.abs(v) <= span * 2.2;
+  const shown = c.rows.filter((r) => !r.settled);
+  return extend([-plan.oneR * 1.4, plan.reward * 1.25], [...c.rows.map((r) => r.pnl), ...shown.flatMap((r) => [r.at.stop, r.at.target].filter(inReach))], 0.1);
+}
+// The same four results for the Plan itself: what the planned Position would make at each boundary.
+function planRails(c) {
+  const { t, plan } = c;
+  const b = heldBounds(t);
+  const sign = Math.sign(plan.qty);
+  const size = Math.abs(plan.qty) * t.mult;
+  const best = sign > 0 ? b.max : b.min;
+  return { stop: -plan.oneR, target: plan.reward, worst: cents(sign * size * ((sign > 0 ? b.min : b.max) - plan.entry)), max: Number.isFinite(best) ? cents(sign * size * (best - plan.entry)) : Infinity };
+}
+// Of the result so far, the part that is banked: no later Mark can move it.
+const bankedPart = (r) => (r.realized > 0 && r.pnl > 0 ? Math.min(r.realized, r.pnl) : r.realized < 0 && r.pnl < 0 ? Math.max(r.realized, r.pnl) : 0);
+// The rails of the session shown; once settled, the last ones that applied.
+const railsRow = (c, r = c.row) => (r.settled ? [...c.rows].reverse().find((q) => !q.settled) : r);
+
+// What is at stake from here, in neutral ink: a beam from the result to each rail, and a tag for each distance.
+function nowLabels(g, c, yc, x, P, o = {}) {
+  const r = c.row;
+  if (r.pnl == null) return '';
+  const off = o.off || 9; // how far from the session's line the beam and the labels start
+  const dir = g.right - x >= 120 ? 1 : -1; // the stake goes on the unrevealed side while there is room
+  const xb = x + dir * off;
+  const yp = yc(r.pnl);
+  const at = (d, yy) => [x + d * (off + 7), yy, d > 0 ? 'start' : 'end'];
+  let s = P.put('val', `${r.settled ? 'Final ' : ''}${signed(r.pnl, 0)}`, [[x - dir * off, yp + 4, dir > 0 ? 'end' : 'start'], [x + dir * off, yp + 4, dir > 0 ? 'start' : 'end'], [x, yp - 11, 'middle'], [x, yp + 19, 'middle'], [x + 2, yp - 11, 'end'], [x + 2, yp + 19, 'end']], true);
+  if (r.settled || o.tags === false) return s;
+  const beam = (v0, v1) => (o.beam === false ? '' : `<path class="beam" d="M${f1(xb - 4)} ${f1(yc(v1))}H${f1(xb + 4)}M${f1(xb)} ${f1(yc(v0))}V${f1(yc(v1))}"/>`);
+  const tag = (v0, v1, text, tone = '') => {
+    const a = yc(v0);
+    const b = yc(v1);
+    const mid = (a + b) / 2 + 4;
+    const out = b > a ? b + 12 : b - 5;
+    const first = Math.abs(a - b) >= 18 ? mid : out;
+    return P.put(`ll ${tone}`, text, [at(dir, first), at(-dir, first), at(dir, out), at(-dir, out), at(dir, mid), at(-dir, mid)], true);
+  };
+  if (r.riskToStop > 0) s += beam(r.pnl, r.at.stop) + tag(r.pnl, r.at.stop, `${g.narrow ? 'Risk' : 'Risk to stop'} ${money(r.riskToStop, 0)}`);
+  if (r.stopOverrun > 0) s += tag(r.at.stop, r.pnl, `${money(r.stopOverrun, 0)} past the Stop`, 's');
+  if (r.pastStopAmount > 0) s += tag(r.at.stop, r.pnl, `${money(r.pastStopAmount, 0)} past the Stop’s amount`, 's');
+  if (r.rewardToTarget > 0) s += beam(r.pnl, r.at.target) + tag(r.pnl, r.at.target, `${g.narrow ? 'Reward' : 'Reward to target'} ${money(r.rewardToTarget, 0)}`);
+  if (r.targetOverrun > 0) s += tag(r.at.target, r.pnl, `${money(r.targetOverrun, 0)} past the Target`, 't');
+  return s;
+}
+
+function pnlLayer(g, c, y, yc, k, o = {}) {
+  const { row } = c;
+  const id = ++uid;
+  const right = g.right;
+  const z = y(0);
+  const shown = c.rows.filter((r) => !r.settled);
+  const P = planRails(c);
+  const rail = (get, planV) => [[g.L, planV], [g.L + g.slot, planV], ...shown.flatMap((r) => [[g.x(r.i) - g.slot / 2, get(r)], [g.x(r.i) + g.slot / 2, get(r)]])];
+  const stopRail = rail((r) => r.at.stop, P.stop);
+  const targetRail = rail((r) => r.at.target, P.target);
+  const pts = (rl) => [...rl, [right, rl[rl.length - 1][1]]].map((p) => `${f1(p[0])},${f1(yc(p[1]))}`).join(' ');
+  let s = `<defs><clipPath id="up${id}"><rect x="0" y="0" width="${g.W}" height="${f1(z)}"/></clipPath><clipPath id="dn${id}"><rect x="0" y="${f1(z)}" width="${g.W}" height="${f1(k.H - z)}"/></clipPath>`
+    + `<clipPath id="bs${id}"><polygon points="${pts(stopRail)} ${right},${k.H} ${g.L},${k.H}"/></clipPath><clipPath id="at${id}"><polygon points="${pts(targetRail)} ${right},0 ${g.L},0"/></clipPath></defs>`;
+  s += `<path class="axis" d="M${g.L} ${f1(z)}H${right}"/>`;
+
+  // The result so far as an area from break-even: green above, red below. It breaks at a missing Mark.
+  const runs = [];
+  let run = null;
+  c.rows.forEach((r) => {
+    if (r.pnl == null) { run = null; return; }
+    if (!run) { run = r.i === 0 ? [[g.L + g.slot, 0, 0]] : []; runs.push(run); }
+    run.push([g.x(r.i), r.pnl, bankedPart(r)]);
+  });
+  const line = (ps, n, first = 'M') => ps.map((p, j) => `${j ? 'L' : first}${f1(p[0])} ${f1(y(p[n]))}`).join('');
+  runs.forEach((ps) => {
+    const b = ps[ps.length - 1][0];
+    const d = `M${f1(ps[0][0])} ${f1(z)}${line(ps, 1, 'L')}L${f1(b)} ${f1(z)}Z`;
+    s += `<g clip-path="url(#up${id})"><path class="a-up" d="${d}"/><path d="${d}" fill="url(#p-over-t)" clip-path="url(#at${id})"/><path class="e-up" d="${line(ps, 1)}"/></g>`;
+    s += `<g clip-path="url(#dn${id})"><path class="a-dn" d="${d}"/><path d="${d}" fill="url(#p-over-s)" clip-path="url(#bs${id})"/><path class="e-dn" d="${line(ps, 1)}"/></g>`;
+    const from = ps.findIndex((p) => p[2] !== 0);
+    if (from >= 0) { const bs = ps.slice(from); s += `<path class="${bs[0][2] > 0 ? 'b-up' : 'b-dn'}" d="M${f1(bs[0][0])} ${f1(z)}${line(bs, 2, 'L')}L${f1(b)} ${f1(z)}Z"/>`; }
+  });
+
+  // The rails: the Trade's result at the Stop and at the Target. They step when the Position changes.
+  const railPath = (rl, cls) => {
+    const e = rl[rl.length - 1];
+    return `<path class="${cls}" d="${rl.map((p, n) => `${n ? 'L' : 'M'}${f1(p[0])} ${f1(yc(p[1]))}`).join('')}"/>${row.settled ? '' : `<path class="${cls}" opacity="0.45" d="M${f1(e[0])} ${f1(yc(e[1]))}H${right}"/>`}`;
+  };
+  s += railPath(stopRail, 'l-stop') + railPath(targetRail, 'l-target');
+
+  // Banked: a level no later Mark can move.
+  const banked = c.rows.filter((r) => r.realized !== 0);
+  if (banked.length) {
+    const b0 = banked[0];
+    s += `<path class="${b0.realized > 0 ? 'bl-up' : 'bl-dn'}" d="${banked.map((r, n) => `${n ? 'L' : 'M'}${f1(g.x(r.i) - g.slot / 2)} ${f1(yc(r.realized))}H${f1(g.x(r.i) + g.slot / 2)}`).join('')}"/>`;
+  }
+
+  // Labels, most important first: the session shown and what is at stake, then the rails, then the rest.
+  c.rows.forEach((r) => {
+    if (r.pnl == null) return;
+    const rad = r.i === c.cur ? 5.5 : 2.6;
+    s += `<circle class="d-${toneOf(r.pnl)}" cx="${f1(g.x(r.i))}" cy="${f1(y(r.pnl))}" r="${rad}"/>`;
+    k.place.keep(g.x(r.i) - rad, y(r.pnl) - rad, g.x(r.i) + rad, y(r.pnl) + rad);
+  });
+  s += nowLabels(g, c, yc, g.x(c.cur), k.place, { tags: !o.compact });
+  const now = railsRow(c);
+  if (!o.compact) {
+    if (banked.length) {
+      const b0 = banked[0];
+      const x0 = g.x(b0.i) - g.slot / 2;
+      const text = `${b0.realized > 0 ? 'Banked' : 'Realized'} ${signed(b0.realized, 0)}`;
+      const up = yc(b0.realized) - 5;
+      const dn = yc(b0.realized) + 13;
+      s += k.place.put(`ll ${b0.realized > 0 ? 't' : 's'}`, text, b0.realized > 0 ? [[x0, up, 'start'], [x0, dn, 'start'], [x0 - 4, up, 'end'], [x0 - 4, dn, 'end']] : [[x0, dn, 'start'], [x0, up, 'start'], [x0 - 4, dn, 'end'], [x0 - 4, up, 'end']], true);
+    }
+    const [min, max] = o.range;
+    const span = c.plan.oneR + c.plan.reward;
+    const inReach = (v) => Number.isFinite(v) && Math.abs(v) <= span * 2.2;
+    const lab = (v, text, tone, below) => {
+      const a = yc(v) + (below ? 12 : -4);
+      const b = yc(v) + (below ? -4 : 12);
+      const xl = g.x(c.cur) - g.slot / 2 - 8; // failing the right edge, just left of the session shown, where the rail is still at this level
+      return k.place.put(`ll ${tone}`, text, [[right - 3, a, 'end'], [right - 3, b, 'end'], [xl, a, 'end'], [xl, b, 'end']]);
+    };
+    const near = (a, b) => Number.isFinite(a) && Number.isFinite(b) && Math.abs(yc(a) - yc(b)) < 15;
+    const worstIn = inReach(now.at.worst) && now.at.worst >= min;
+    const maxIn = inReach(now.at.max) && now.at.max <= max;
+    const worstJoin = worstIn && near(now.at.worst, now.at.stop);
+    const maxJoin = maxIn && near(now.at.max, now.at.target);
+    s += lab(now.at.stop, `Stop ${signed(now.at.stop, 0)}${worstJoin && !g.narrow ? ' · Worst case' : ''}`, 's', true);
+    s += lab(now.at.target, `Target ${signed(now.at.target, 0)}${maxJoin && !g.narrow ? ' · Max reward' : ''}`, 't');
+    if (worstIn) s += railPath(rail((r) => r.at.worst, P.worst), 'l-ref') + (worstJoin ? '' : lab(now.at.worst, `Worst case ${signed(now.at.worst, 0)}`, '', true));
+    if (maxIn) s += railPath(rail((r) => r.at.max, P.max), 'l-ref') + (maxJoin ? '' : lab(now.at.max, `Max reward ${signed(now.at.max, 0)}`, ''));
+    s += k.place.put('ll', 'Break-even', [[g.L + 4, z - 4, 'start'], [g.L + 4, z + 12, 'start']]);
+  }
+  return s;
+}
+
+function mountain(g, c, o) {
+  const range = pnlScale(c);
+  return frame(g, c, { h: o.h, range, fmt: axMoney, xAxis: o.xAxis !== false, execLabel: !o.compact, title: 'Trade P&L', sub: o.compact ? 'by session' : 'dollars for the whole Position, between the result at the Stop and at the Target',
+    aria: `Trade P&L by session, as an area from break-even, between the result at the Stop and the result at the Target, up to ${shortDate(c.row.date)}.`,
+    draw: (y, yc, k) => missingBands(g, c, k) + pnlLayer(g, c, y, yc, k, { ...o, range }) });
+}
+
+/* ---------- 2. Balance: one candle per session. The body is the result so far; the wicks are what is still at stake. ---------- */
+function candles(g, c, o) {
+  const range = pnlScale(c);
+  const P = planRails(c);
+  return frame(g, c, { h: o.h, range, fmt: axMoney, xAxis: o.xAxis, execLabel: true, title: 'Trade P&L', sub: 'body: the result so far · wicks: down to the result at the Stop, up to the result at the Target',
+    aria: `Trade P&L by session as candles. Each body runs from break-even to the result so far; each wick runs from the result at the Stop to the result at the Target. Up to ${shortDate(c.row.date)}.`,
+    draw: (y, yc, k) => {
+      const z = y(0);
+      const w = Math.max(5, Math.min(24, g.slot * 0.5));
+      const cap = (x, v, col) => `<path d="M${f1(x - w / 2 - 2)} ${f1(yc(v))}H${f1(x + w / 2 + 2)}" stroke="${col}" stroke-width="2.5"/>`;
+      let s = missingBands(g, c, k) + `<path class="axis" d="M${g.L} ${f1(z)}H${g.right}"/>`;
+      s += `<path class="wick" d="M${f1(g.planX)} ${f1(yc(P.stop))}V${f1(yc(P.target))}"/>` + cap(g.planX, P.stop, '#a3261b') + cap(g.planX, P.target, '#1d6b34');
+      c.rows.forEach((r) => {
+        const x = g.x(r.i);
+        const now = r.i === c.cur;
+        if (!r.settled) s += `<path class="wick"${r.pnl == null ? ' stroke-dasharray="2 3"' : ''} d="M${f1(x)} ${f1(yc(r.at.stop))}V${f1(yc(r.at.target))}"/>` + cap(x, r.at.stop, '#a3261b') + cap(x, r.at.target, '#1d6b34');
+        if (r.pnl == null) return;
+        const up = r.pnl >= 0;
+        const rect = (v0, v1, attrs) => `<rect x="${f1(x - w / 2)}" y="${f1(Math.min(y(v0), y(v1)))}" width="${f1(w)}" height="${f1(Math.max(Math.abs(y(v1) - y(v0)), 1.5))}" ${attrs}/>`;
+        s += rect(0, r.pnl, `class="${up ? 'a-up' : 'a-dn'}" stroke="${up ? '#1d6b34' : '#a3261b'}" stroke-width="${now ? 2.4 : 1.2}"`);
+        const b = bankedPart(r);
+        if (b) s += rect(0, b, `class="${b > 0 ? 'b-up' : 'b-dn'}"`);
+        const rl = railsRow(c, r);
+        if (r.pnl < 0 && r.pnl < rl.at.stop) s += rect(Math.min(rl.at.stop, 0), r.pnl, 'fill="url(#p-over-s)" stroke="#a3261b" stroke-width="1"');
+        if (r.pnl > 0 && r.pnl > rl.at.target) s += rect(Math.max(rl.at.target, 0), r.pnl, 'fill="url(#p-over-t)" stroke="#1d6b34" stroke-width="1"');
+      });
+      return s + nowLabels(g, c, yc, g.x(c.cur), k.place, { beam: false, off: w / 2 + 5 });
+    } });
+}
+
+/* ---------- 4. Ribbon: one chart. The price line is the spine; the result so far is a band on it, up for profit, down for loss. ---------- */
+function ribbon(g, c, o) {
+  const { t, row } = c;
+  const Hp = o.h - 48;
+  const P = planRails(c);
+  const span = c.plan.oneR + c.plan.reward;
+  const reach = (v) => Number.isFinite(v) && Math.abs(v) <= span * 2.2;
+  const shown = c.rows.filter((r) => !r.settled);
+  const upD = Math.max(P.target, ...c.rows.map((r) => r.pnl || 0), ...shown.map((r) => r.at.target).filter(reach));
+  const dnD = -Math.min(P.stop, ...c.rows.map((r) => r.pnl || 0), ...shown.map((r) => r.at.stop).filter(reach));
+  const kd = (Hp * 0.25) / Math.max(upD, dnD); // pixels per dollar of result
+  const [lo, hi] = priceRange(c, 0.12);
+  const perPx = (hi - lo) / (Hp - (upD + dnD) * kd - 16); // room is left above and below the prices for the band
+  const range = [lo - (dnD * kd + 8) * perPx, hi + (upD * kd + 8) * perPx];
+  return frame(g, c, { h: o.h, range, fmt: axMoney, lines: priceLines(c).map((l) => ({ ...l, label: l.label.replace('Planned entry', 'Entry') })), xAxis: true, execLabel: true, title: g.narrow ? `${t.symbol} price, with the result on it` : `${t.symbol} price, with the Trade’s result riding on it`,
+    aria: `${t.symbol} Marks by session with the Trade P&L drawn as a band on the price line, upward for a profit and downward for a loss, up to ${shortDate(row.date)}.`,
+    draw: (y, yc, k) => {
+      const off = (r, v) => y(r.u) - v * kd; // a dollar amount, drawn as a distance from that session's price point
+      let s = missingBands(g, c, k);
+      const runs = [];
+      let run = null;
+      c.rows.forEach((r) => { if (r.pnl == null) { run = null; return; } if (!run) { run = []; runs.push(run); } run.push(r); });
+      const band = (rs, inner, outer, attrs) => {
+        if (rs.every((r) => Math.abs(inner(r) - outer(r)) < 1e-9)) return '';
+        if (rs.length === 1) { const r = rs[0]; return `<rect x="${f1(g.x(r.i) - 3)}" y="${f1(Math.min(off(r, inner(r)), off(r, outer(r))))}" width="6" height="${f1(Math.abs(off(r, outer(r)) - off(r, inner(r))))}" ${attrs}/>`; }
+        return `<path ${attrs} d="M${rs.map((r) => `${f1(g.x(r.i))} ${f1(off(r, inner(r)))}`).join('L')}L${[...rs].reverse().map((r) => `${f1(g.x(r.i))} ${f1(off(r, outer(r)))}`).join('L')}Z"/>`;
+      };
+      runs.forEach((rs) => {
+        s += band(rs, () => 0, (r) => Math.max(r.pnl, 0), 'class="a-up" stroke="#1d6b34" stroke-width="1.5" stroke-linejoin="round"');
+        s += band(rs, () => 0, (r) => Math.min(r.pnl, 0), 'class="a-dn" stroke="#a3261b" stroke-width="1.5" stroke-linejoin="round"');
+        const from = rs.findIndex((r) => bankedPart(r) !== 0);
+        if (from >= 0) s += band(rs.slice(from), () => 0, (r) => bankedPart(r), `class="${rs[from].realized > 0 ? 'b-up' : 'b-dn'}"`);
+        s += band(rs, (r) => (r.pnl < 0 ? Math.max(r.pnl, Math.min(railsRow(c, r).at.stop, 0)) : 0), (r) => Math.min(r.pnl, 0), 'fill="url(#p-over-s)" stroke="#a3261b" stroke-width="1"');
+        s += band(rs, (r) => (r.pnl > 0 ? Math.min(r.pnl, Math.max(railsRow(c, r).at.target, 0)) : 0), (r) => Math.max(r.pnl, 0), 'fill="url(#p-over-t)" stroke="#1d6b34" stroke-width="1"');
+      });
+      // At each Execution, a fainter beam: the results at the Stop and at the Target as they stood once it was done.
+      c.rows.forEach((r) => {
+        if (!r.execs.length || r.i === c.cur || r.settled || r.pnl == null) return;
+        const xx = f1(g.x(r.i));
+        const a = f1(off(r, r.at.target));
+        const b = f1(off(r, r.at.stop));
+        s += `<g opacity="0.6"><path class="beam" d="M${xx} ${a}V${b}"/><path d="M${xx - 5} ${a}h10" stroke="#1d6b34" stroke-width="2.5"/><path d="M${xx - 5} ${b}h10" stroke="#a3261b" stroke-width="2.5"/></g>`;
+      });
+      s += markDots(g, c, y, (r) => r.u, money, { line: 'pline', label: false, place: k.place }) + (!isOption(t) ? execDiamonds(g, c, y) : '');
+      // The session shown: a neutral beam from the result at the Stop to the result at the Target, with the result so far filled in.
+      const x = g.x(c.cur);
+      const dir = g.right - x >= 130 ? 1 : -1;
+      const P = k.place;
+      const at = (d, yy) => [x + d * 10, yy, d > 0 ? 'start' : 'end'];
+      const both = (yy) => [at(dir, yy), at(-dir, yy)];
+      const yu = y(row.u);
+      if (row.pnl == null) s += P.put('val', money(row.u), [[x, yu - 10, 'middle'], [x, yu + 18, 'middle'], ...both(yu + 4)], true);
+      else {
+        const tone = toneOf(row.pnl);
+        const end = off(row, row.pnl);
+        const a = off(row, row.at.target);
+        const b = off(row, row.at.stop);
+        if (!row.settled) s += `<path class="beam" d="M${f1(x)} ${f1(a)}V${f1(b)}"/><path d="M${f1(x - 6)} ${f1(a)}H${f1(x + 6)}" stroke="#1d6b34" stroke-width="2.5"/><path d="M${f1(x - 6)} ${f1(b)}H${f1(x + 6)}" stroke="#a3261b" stroke-width="2.5"/>`;
+        if (tone !== 'flat') s += `<rect x="${f1(x - 4)}" y="${f1(Math.min(yu, end))}" width="8" height="${f1(Math.abs(row.pnl) * kd)}" class="b-${tone === 'up' ? 'up' : 'dn'}" stroke="#fff" stroke-width="1"/>`;
+        s += `<circle class="mk" cx="${f1(x)}" cy="${f1(yu)}" r="5"/>`;
+        P.keep(x - 7, Math.min(yu, end, row.settled ? yu : a) - 2, x + 7, Math.max(yu, end, row.settled ? yu : b) + 2);
+        // The result first, then the price (on the side of the price point away from the band), then the two rails.
+        s += P.put('val', `${row.settled ? 'Final ' : ''}${signed(row.pnl, 0)}`, [...both((yu + end) / 2 + 4), ...both(end + (row.pnl >= 0 ? -6 : 15))], true);
+        const py = yu + (row.pnl >= 0 ? 18 : -10);
+        s += P.put('val', money(row.u), [[x, py, 'middle'], [x + 2, py, 'end'], [x - 2, py, 'start'], ...both(yu + 4), ...both(py)], true);
+        if (!row.settled) s += P.put('ll t', `Target ${signed(row.at.target, 0)}`, [...both(a + 3), ...both(a - 7)]) + P.put('ll s', `Stop ${signed(row.at.stop, 0)}`, [...both(b + 4), ...both(b + 15)]);
+      }
+      // The thickness key: how tall 1R is.
+      const kx = g.L + 9;
+      const kh = c.plan.oneR * kd;
+      s += `<path class="beam" d="M${kx - 3} ${k.top + 6}H${kx + 3}M${kx} ${k.top + 6}V${f1(k.top + 6 + kh)}M${kx - 3} ${f1(k.top + 6 + kh)}H${kx + 3}"/>` + P.put('ll', `this tall = 1R (${money(c.plan.oneR, 0)})`, [[kx + 7, k.top + 10 + kh / 2, 'start'], [kx + 7, k.top + 14, 'start']], true);
+      return s;
+    } });
+}
+
+/* ---------- 5. Gauge: a meter from the result at the Stop to the result at the Target ---------- */
+function meter(W, c) {
+  const { row } = c;
+  const narrow = W < 460;
+  const [min, max] = pnlScale(c);
+  const L = 12;
+  const R = W - 12;
+  const ty = 30;
+  const th = 22;
+  const H = 104;
+  const x = (v) => L + ((v - min) / (max - min)) * (R - L);
+  const xc = (v) => Math.max(L, Math.min(R, x(v)));
+  const rl = railsRow(c);
+  let s = `<svg class="plot" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="A meter of the Trade P&L for ${shortDate(row.date)}, from the result at the Stop on the left to the result at the Target on the right.">`;
+  s += `<rect class="track" x="${L}" y="${ty}" width="${R - L}" height="${th}" rx="5"/>`;
+  const seen = c.rows.filter((r) => r.pnl != null).map((r) => r.pnl);
+  if (seen.length > 1) s += `<path d="M${f1(x(Math.min(...seen)))} ${ty - 5}H${f1(x(Math.max(...seen)))}" stroke="#8f8a7e" stroke-width="3" stroke-linecap="round"/>`;
+  const seg = (v0, v1, attrs) => `<rect x="${f1(Math.min(x(v0), x(v1)))}" y="${ty}" width="${f1(Math.max(Math.abs(x(v1) - x(v0)), 1.5))}" height="${th}" ${attrs}/>`;
+  if (row.pnl != null) {
+    const up = row.pnl >= 0;
+    if (Math.abs(row.pnl) > 0.004) s += seg(0, row.pnl, `class="${up ? 'a-up' : 'a-dn'}" stroke="${up ? '#1d6b34' : '#a3261b'}" stroke-width="1.5"`);
+    const b = bankedPart(row);
+    if (b) s += seg(0, b, `class="${b > 0 ? 'b-up' : 'b-dn'}"`);
+    if (row.pnl < 0 && row.pnl < rl.at.stop) s += seg(Math.min(rl.at.stop, 0), row.pnl, 'fill="url(#p-over-s)" stroke="#a3261b" stroke-width="1"');
+    if (row.pnl > 0 && row.pnl > rl.at.target) s += seg(Math.max(rl.at.target, 0), row.pnl, 'fill="url(#p-over-t)" stroke="#1d6b34" stroke-width="1"');
+  }
+  // The markers: break-even, and the rails of the session shown.
+  const marks = [{ v: 0, text: 'Break-even', col: '#1c1b19', tone: '' }];
+  marks.push({ v: rl.at.stop, text: `Stop ${signed(rl.at.stop, 0)}`, col: '#a3261b', tone: 's' }, { v: rl.at.target, text: `Target ${signed(rl.at.target, 0)}`, col: '#1d6b34', tone: 't' });
+  const boxes = [];
+  marks.slice().reverse().forEach((m) => {
+    const mx = xc(m.v);
+    s += `<path d="M${f1(mx)} ${ty - 3}V${ty + th + 3}" stroke="${m.col}" stroke-width="${m.v === 0 ? 1.5 : 2.5}"/>`;
+    const wd = m.text.length * 5.6;
+    const lx = Math.max(L + wd / 2, Math.min(R - wd / 2, mx));
+    if (boxes.some((b) => Math.abs(b.x - lx) < (b.w + wd) / 2 + 6)) return; // break-even gives way to a rail's label
+    boxes.push({ x: lx, w: wd });
+    s += `<text class="ll ${m.tone}" x="${f1(lx)}" y="${ty + th + 15}" text-anchor="middle">${esc(m.text)}</text>`;
+  });
+  if (row.pnl != null) {
+    const px = x(row.pnl);
+    const prev = c.rows.slice(0, c.cur).reverse().find((r) => r.pnl != null);
+    if (prev) s += `<path d="M${f1(x(prev.pnl))} ${ty - 2}l-4 -7h8z" fill="#fff" stroke="#8f8a7e" stroke-width="1.2"/>`;
+    s += `<path d="M${f1(px)} ${ty - 1}l-6 -10h12z" fill="#1c1b19"/>`;
+    const anchor = px > R - 60 ? 'end' : px < L + 60 ? 'start' : 'middle';
+    s += `<text class="val" x="${f1(px + (anchor === 'end' ? 8 : anchor === 'start' ? -8 : 0))}" y="13" text-anchor="${anchor}" style="font-size:13px">${row.settled ? 'Final ' : ''}${signed(row.pnl, 0)}</text>`;
+    // What is at stake from here, as neutral spans under the meter.
+    if (!row.settled) {
+      const by = ty + th + 24;
+      const spanLine = (v1) => `<path class="beam" d="M${f1(px)} ${by - 3}V${by}H${f1(xc(v1))}V${by - 3}"/>`;
+      const ly = by + 13;
+      // Each tag sits under the middle of its span, kept inside the meter; if the two would touch, the second drops a line.
+      const tags = [];
+      const tag = (v, text, tone) => { const wd = text.length * 5.8; tags.push({ x: Math.max(L + wd / 2, Math.min(R - wd / 2, (px + xc(v)) / 2)), wd, text, tone }); };
+      if (row.riskToStop > 0) { s += spanLine(rl.at.stop); tag(rl.at.stop, `${narrow ? 'Risk' : 'Risk to stop'} ${money(row.riskToStop, 0)}`, ''); }
+      else if (row.stopOverrun || row.pastStopAmount) tag(rl.at.stop, `${money(row.stopOverrun || row.pastStopAmount, 0)} past the Stop${row.pastStopAmount ? '’s amount' : ''}`, 's');
+      if (row.rewardToTarget > 0) { s += spanLine(rl.at.target); tag(rl.at.target, `${narrow ? 'Reward' : 'Reward to target'} ${money(row.rewardToTarget, 0)}`, ''); }
+      else if (row.targetOverrun) tag(rl.at.target, `${money(row.targetOverrun, 0)} past the Target`, 't');
+      const touch = tags.length === 2 && Math.abs(tags[0].x - tags[1].x) < (tags[0].wd + tags[1].wd) / 2 + 8;
+      tags.forEach((tg, n) => { s += `<text class="ll ${tg.tone}" x="${f1(tg.x)}" y="${ly + (touch && n ? 12 : 0)}" text-anchor="middle">${esc(tg.text)}</text>`; });
+    }
+  } else s += `<text class="ll" x="${f1((L + R) / 2)}" y="13" text-anchor="middle">No Mark for the ${heldNoun(c.t)}: the result is Unavailable</text>`;
+  return s + '</svg>';
+}
+
+/* ---------- Small charts: the inset, the sparklines and the pop-ups. Not on the shared axis, but the same 15 sessions. ---------- */
+function mini(W, H, c, o) {
+  const pl = o.axis ? 36 : 4;
+  const pr = 5;
+  const pt = 7;
+  const pb = 5;
+  const x = (i) => pl + ((W - pl - pr) * (i + 0.5)) / 15;
+  const [min, max] = o.range;
+  const y = (v) => pt + ((max - v) / (max - min)) * (H - pt - pb);
+  let s = `<svg class="plot fixed" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${esc(o.aria)}">`;
+  if (o.axis) ticks(min, max, 3).forEach((v) => { s += `<path class="grid" d="M${pl} ${f1(y(v))}H${W - pr}"/><text x="${pl - 4}" y="${f1(y(v) + 3.5)}" text-anchor="end">${esc(o.fmt(v))}</text>`; });
+  (o.refs || []).forEach((l) => { if (l.v >= min && l.v <= max) s += `<path class="${l.cls}" d="M${pl} ${f1(y(l.v))}H${W - pr}"/>`; });
+  if (o.cursor !== false) s += `<path class="cursor" d="M${f1(x(c.cur))} ${pt - 3}V${H - pb + 2}" opacity="0.6"/>`;
+  c.rows.forEach((r) => r.execs.forEach(() => { if (r.i > 0 && o.events) s += `<path class="ev" d="M${f1(x(r.i))} ${pt - 3}V${H - pb + 2}"/>`; }));
+  o.series.forEach((sr) => {
+    s += brokenLine(c.rows.map((r) => (sr.get(r) == null ? null : [x(r.i), y(sr.get(r))])), sr.line);
+    c.rows.forEach((r) => {
+      const v = sr.get(r);
+      if (v == null) return;
+      const big = r.i === c.cur;
+      const cx = x(r.i);
+      const cy = y(v);
+      if (sr.shape === 'square') s += `<rect class="est" x="${f1(cx - (big ? 3.5 : 2))}" y="${f1(cy - (big ? 3.5 : 2))}" width="${big ? 7 : 4}" height="${big ? 7 : 4}"/>`;
+      else if (sr.shape === 'tri') s += `<path class="est" d="M${f1(cx)} ${f1(cy - (big ? 4.5 : 2.6))}L${f1(cx + (big ? 4.5 : 2.6))} ${f1(cy + (big ? 3.5 : 2))}H${f1(cx - (big ? 4.5 : 2.6))}Z"/>`;
+      else if (big || o.dots) s += `<circle class="mk" cx="${f1(cx)}" cy="${f1(cy)}" r="${big ? 4 : 1.8}"${big ? '' : ' stroke-width="0.6"'}/>`;
+    });
+  });
+  if (o.hit) SESSIONS.forEach((d, i) => { const wd = (W - pl - pr) / 15; s += `<rect class="hit" data-i="${i}" x="${f1(x(i) - wd / 2)}" y="0" width="${f1(wd)}" height="${H}"/>`; });
+  return s + '</svg>';
+}
+const priceInset = (W, H, c) => mini(W, H, c, { range: priceRange(c, 0.15), series: [{ get: (r) => r.u, line: 'pline' }], dots: true, events: true, hit: true, refs: priceLines(c), aria: `${c.t.symbol} Marks by session, a small chart, up to ${shortDate(c.row.date)}.` });
+function ivChart(W, H, c, axis) {
+  const mid = c.t.plan.entryVol / 100;
+  const range = extend([mid - 0.1, mid + 0.1], c.rows.flatMap((r) => r.iv.map((v) => v.vol)), 0.1);
+  return mini(W, H, c, { range, axis, fmt: (v) => `${Math.round(v * 100)}%`, cursor: axis, series: c.t.legs.map((l, n) => ({ get: (r) => r.iv[n].vol, line: 'est-line', shape: axis ? (n ? 'tri' : 'square') : 'none' })), aria: `Implied volatility by session, an estimate read back from the Marks, up to ${shortDate(c.row.date)}.` });
+}
+function sharesChart(W, H, c) {
+  const cap = Math.abs(c.plan.qty) * c.t.mult;
+  const neg = c.rows.some((r) => r.shares < 0);
+  return mini(W, H, c, { range: neg ? [-cap * 1.1, 0] : [0, cap * 1.1], axis: true, fmt: (v) => `${Math.round(v)}`, dots: true, events: true, series: [{ get: (r) => (r.settled ? null : r.shares), line: 'pline' }], refs: [{ v: neg ? -cap : cap, cls: 'l-ref' }], aria: `Share equivalent by session, up to ${shortDate(c.row.date)}.` });
+}
+
+/* ---------- Words: the status, the move, the chips, the hover, the readout, the table, the notes ---------- */
+// How the Trade is going, first; what is at stake from here, second.
+function status(c) {
+  const { t, plan, row: r } = c;
+  if (r.held == null) return { tone: 'flat', fig: 'No Mark', state: `The ${heldNoun(t)} has no Mark for ${shortDate(r.date)}.`, stake: `The result and what is at stake are Unavailable for this session. ${t.symbol}’s own Mark is ${money(r.u)}.` };
+  const tone = toneOf(r.pnl);
+  const fig = `${signed(r.pnl)} <small>${rOf(r.pnl, plan)}</small>`;
+  const share = (a, b) => `${Math.round((a / b) * 100)}%`;
+  let state;
+  let stake;
+  if (r.settled) {
+    state = `Final result: the ${heldNoun(t)} ${r.held <= 0.004 ? 'expired worthless' : `settled at ${money(r.held)}${plan.qty < 0 ? ' and was assigned' : ''}`}.`;
+    stake = `Nothing is at risk and nothing is left to gain.${r.realized ? ` ${money(r.realized)} of the result was banked before expiration.` : ''}`;
+  } else if (r.stopHit) {
+    state = `Past the Stop by ${money(r.stopOverrun)} (${rOf(r.stopOverrun, plan)}).`;
+    stake = `From here: Worst case ${money(r.worstCase)} more · ${money(r.rewardToTarget)} back up to the Target.`;
+  } else if (r.pastStopAmount) {
+    state = `Past the Stop’s planned amount by ${money(r.pastStopAmount)}, though ${t.symbol} is still above ${money(plan.stop.price)}.`;
+    stake = `From here: Worst case ${money(r.worstCase)} · ${money(r.rewardToTarget)} to the Target.`;
+  } else if (r.targetHit) {
+    state = `Target reached${r.targetOverrun > 0 ? `, ${money(r.targetOverrun)} past it` : ''}.`;
+    stake = `From here: ${money(r.riskToStop)} at risk back to the Stop${r.giveBack > 0 ? ` (${money(r.giveBack)} of it open profit)` : ''} · ${Number.isFinite(r.maxReward) ? `at most ${money(r.maxReward)} more` : 'no cap above'}.`;
+  } else {
+    state = tone === 'up' && r.at.target > 0 ? `Ahead: ${share(r.pnl, r.at.target)} of the way to the Target.` : tone === 'down' && r.at.stop < 0 ? `Behind: ${share(r.pnl, r.at.stop)} of the way to the Stop.` : tone === 'up' ? 'Ahead.' : tone === 'down' ? 'Behind.' : 'At break-even.';
+    stake = `From here: ${money(r.riskToStop)} at risk to the Stop${r.giveBack > 0 ? ` (${money(r.giveBack)} of it open profit)` : ''} · ${money(r.rewardToTarget)} more to the Target · ${ratioText(r.ratio)} (the Plan was ${plan.ratio.toFixed(2)} to 1).`;
+  }
+  if (!r.settled && r.at.stop > 0) stake += ` Even at the Stop this Trade would end ${money(r.at.stop)} ahead.`;
+  return { tone, fig, state, stake };
+}
+
+// The session's move, split by cause where it can be: the one-line home of price, time and volatility.
+function splitBar(parts) {
+  const W = 120;
+  const pos = parts.reduce((s, p) => s + Math.max(p[2], 0), 0);
+  const neg = parts.reduce((s, p) => s + Math.max(-p[2], 0), 0);
+  const k = 56 / Math.max(pos, neg, 0.005);
+  const fills = { und: '#163b75', time: 'url(#p-time)', vol: 'url(#p-vol)', both: 'url(#p-both)' };
+  let up = 0;
+  let dn = 0;
+  let s = `<svg width="${W}" height="14" viewBox="0 0 ${W} 14" aria-hidden="true"><rect x="0.5" y="1.5" width="${W - 1}" height="11" fill="#f3efe6" stroke="#d9d3c5"/>`;
+  parts.forEach(([key, , v]) => {
+    const wd = Math.abs(v) * k;
+    if (wd < 0.3) return;
+    const x = v > 0 ? 60 + up : 60 - dn - wd;
+    if (v > 0) up += wd; else dn += wd;
+    s += `<rect x="${f1(x)}" y="1.5" width="${f1(wd)}" height="11" fill="${fills[key]}" stroke="#55524b" stroke-width="0.6"/>`;
+  });
+  return s + `<path d="M60 0V14" stroke="#1c1b19" stroke-width="1.5"/></svg>`;
+}
+function splitParts(t, sp) {
+  const parts = [['und', `${t.symbol}’s move`, sp.fromUnderlying]];
+  if (sp.separable) parts.push(['time', 'time', sp.fromTime], ['vol', 'volatility', sp.fromVol]);
+  else parts.push(['both', 'time and volatility together', sp.together]);
+  return parts;
+}
+function moveLine(c) {
+  const { t, row: r } = c;
+  const prev = c.rows[c.cur - 1];
+  if (!prev) return '<span class="muted">The first session: nothing earlier to compare with.</span>';
+  if (r.held == null) return `<span><b>Since ${shortDate(prev.date)}:</b> ${t.symbol} moved ${signed(r.u - prev.u)}. The ${heldNoun(t)} has no Mark, so its move is unknown.</span>`;
+  const lead = `<b>Since ${shortDate(r.change ? r.change.since : prev.date)}:</b> Trade P&amp;L ${r.change ? signed(r.change.pnl) : 'change Unavailable'}.`;
+  if (!isOption(t)) return `<span>${lead} ${t.symbol} moved ${signed(r.u - prev.u)} a share; a stock’s Mark has one cause.</span>`;
+  const sp = r.split;
+  if (!sp || sp.na) return `<span>${lead} The ${heldNoun(t)}’s move is not split: ${esc(sp ? sp.na : 'nothing to compare with')}.${sp && sp.total != null ? ` Its Mark changed ${signed(sp.total)}.` : ''}</span>`;
+  const parts = splitParts(t, sp);
+  return `<span>${lead} The ${heldNoun(t)} moved ${signed(sp.total)} a share:</span>${splitBar(parts)}${parts.map(([key, name, v]) => `<span class="part">${LEG[key]}${esc(name)} ${signed(v)}</span>`).join('')}<span class="badge b-est">estimate</span>`;
+}
+
+const ivText = (v) => (v.vol != null ? pct(v.vol) : 'Unavailable');
+function chipsHtml(c, W) {
+  const { t, row: r } = c;
+  const pw = Math.min(300, W - 24);
+  const chip = (id, label, pop) => `<span class="chip-wrap"><button type="button" class="chip" data-pop="${id}" aria-expanded="${state.pop === id}" aria-controls="pop-${id}">${label}</button><div class="pop${state.pop === id ? ' open' : ''}" id="pop-${id}">${pop}</div></span>`;
+  const out = [];
+  if (isOption(t)) {
+    out.push(chip('iv', `Implied volatility ${r.iv.map(ivText).join(' / ')}${ivChart(52, 18, c, false)}`,
+      `<h4>Implied volatility <span class="badge b-est">estimate</span></h4>${ivChart(pw, 120, c, true)}${t.legs.length === 2 ? legend([['iv', `${strikeText(t.legs[0].strike)} leg`], ['iv2', `${strikeText(t.legs[1].strike)} leg`]]) : ''}<p class="muted" style="margin-top:4px">Read back from each session’s Marks, up to ${shortDate(r.date)}. A gap means none could be read.</p>`));
+  }
+  if (r.shares != null && !r.settled) {
+    const per = Math.abs(r.shares);
+    out.push(chip('shares', `Behaves like ${isOption(t) ? '≈ ' : ''}${r.shares < 0 ? 'short ' : ''}${per} share${per === 1 ? '' : 's'}`,
+      `<h4>Share equivalent${isOption(t) ? ' <span class="badge b-est">estimate</span>' : ''}</h4>${sharesChart(pw, 110, c)}<p class="muted" style="margin-top:4px">A $1.00 ${r.shares >= 0 ? 'rise' : 'fall'} in ${t.symbol} from here gains about ${money(per)}; a $1.00 ${r.shares >= 0 ? 'fall' : 'rise'} costs about the same.</p>`));
+  }
+  if (isOption(t)) out.push(`<span class="chip">${r.days === 0 ? 'Expiration session' : `${r.days} day${r.days === 1 ? '' : 's'} to expiration`}</span>`);
+  out.push(`<span class="chip">${positionText(t, r.qty)}</span>`);
+  return out.join('');
+}
+
+// The hover on any session: its Marks, its result, and what moved it.
+function tipHtml(c, i) {
+  const { t, plan } = c;
+  if (i > c.cur) return `<b>${shortDate(SESSIONS[i])}</b><br><span class="q">Not yet revealed. Click to move the slider here.</span>`;
+  const r = c.rows[i];
+  const prev = c.rows[i - 1];
+  const q = (x) => ` <span class="q">(${x})</span>`;
+  const L = [`<b>${shortDate(r.date)}</b>${isOption(t) ? ` · ${r.days} day${r.days === 1 ? '' : 's'} to expiration` : ''}`];
+  L.push(`${t.symbol} ${money(r.u)}${prev ? q(signed(r.u - prev.u)) : ''}`);
+  if (isOption(t)) L.push(r.held == null ? `${heldName(t)}: no Mark` : `${heldName(t)} ${money(r.held)}${r.change ? q(signed(r.change.held)) : ''}${r.iv.some((v) => v.vol != null) ? ` · implied volatility ${r.iv.map(ivText).join(' / ')}` : ''}`);
+  r.execs.forEach((e) => L.push(`${execText(t, e)}${e.banked != null ? `, ${e.banked >= 0 ? 'banked' : 'realized'} ${signed(e.banked)}` : ''}`));
+  if (r.pnl == null) L.push('Trade P&amp;L: Unavailable');
+  else {
+    L.push(`<b>Trade P&amp;L ${signed(r.pnl)}</b> · ${rOf(r.pnl, plan)}${r.change ? q(signed(r.change.pnl)) : ''}`);
+    if (r.settled) L.push('Settled at expiration');
+    else L.push(`${r.stopHit ? `${money(r.stopOverrun)} past the Stop` : `Risk to stop ${money(r.riskToStop)}`} · ${r.targetHit ? `${money(r.targetOverrun)} past the Target` : `Reward to target ${money(r.rewardToTarget)}`}`);
+    const sp = r.split;
+    if (isOption(t) && sp && !sp.na) L.push(`<span class="q">Why the ${heldNoun(t)} moved (estimate):</span> ${splitParts(t, sp).map(([, name, v]) => `${esc(name)} ${signed(v)}`).join(' · ')}`);
+    else if (isOption(t) && sp && sp.na) L.push(`<span class="q">Move not split: ${esc(sp.na)}</span>`);
+    if (!r.settled && isOption(t)) L.push(`Behaves like ≈ ${r.shares < 0 ? 'short ' : ''}${Math.abs(r.shares)} shares`);
+  }
+  return L.join('<br>');
+}
+
+const kv = (rows) => `<dl class="kv">${rows.filter(Boolean).map(([k, v, sub]) => `<dt>${k}</dt><dd>${v}</dd>${sub ? `<dd class="sub">${sub}</dd>` : ''}`).join('')}</dl>`;
+const subs = (...xs) => xs.filter(Boolean).join(' · ');
+const group = (title, body) => `<div class="kv-group"><h4>${title}</h4>${body}</div>`;
+const ivBadge = (v) => (v.vol != null ? `${pct(v.vol)} <span class="badge b-est">estimate</span>` : 'Unavailable');
+
+function splitWords(c) {
+  const { t, row: r } = c;
+  const sp = r.split;
+  if (!sp) return '<p class="muted">The first session: nothing earlier to compare with.</p>';
+  if (sp.na) return `<p>Not split: ${esc(sp.na)}.${sp.total != null ? ` The Mark’s real change was ${signed(sp.total)}.` : ''}</p>`;
+  const prev = c.rows[c.cur - 1];
+  const gone = prev.days - r.days;
+  const size = Math.abs(r.qty) * t.mult * Math.sign(r.qty);
+  if (sp.exact) return `<p>${t.symbol} moved ${signed(sp.total)} since ${shortDate(prev.date)}. A stock’s Mark has one cause: its own move. For ${units(t, r.qty)}: ${signed(sp.total * size)}.</p>`;
+  const rows = [[`From ${t.symbol}’s move (${signed(r.u - prev.u)})`, signed(sp.fromUnderlying)]];
+  if (sp.separable) {
+    rows.push([`From ${gone} day${gone > 1 ? 's' : ''} passing`, signed(sp.fromTime)]);
+    const v0 = prev.iv.map((v) => (v.vol != null ? pct(v.vol) : '–')).join(' / ');
+    const v1 = r.iv.map((v) => (v.vol != null ? pct(v.vol) : '–')).join(' / ');
+    rows.push([r.days === 0 ? 'From volatility' : `From volatility (${v0} → ${v1})`, r.days === 0 ? 'none at expiration' : signed(sp.fromVol)]);
+    rows.push(['Unexplained (rounding)', signed(sp.unexplained)]);
+  } else rows.push(['From time and volatility together', signed(sp.together), 'They can’t be told apart here: no reliable volatility on one of the two sessions.']);
+  rows.push([`<strong>The ${heldNoun(t)}’s real change</strong>`, `<strong>${signed(sp.total)}</strong>`, `for ${positionText(t, r.qty).toLowerCase()}: ${signed(sp.total * size)}`]);
+  return `${kv(rows)}<p class="small muted" style="margin-top:6px">The parts are an estimate from a pricing formula, worked out in this order. Their sum is always the real change in the Mark.</p>`;
+}
+
+function readout(c) {
+  const { t, plan, row: r } = c;
+  const prev = r.change ? `${upDown(r.change.riskToStop)} since ${shortDate(r.change.since)}` : '';
+  const prevR = r.change ? `${upDown(r.change.rewardToTarget)} since ${shortDate(r.change.since)}` : '';
+  const badges = [];
+  if (r.settled) badges.push('<span class="badge b-quiet">Settled at expiration</span>');
+  if (r.stopHit && !r.settled) badges.push('<span class="badge b-stop">Stop breached</span>');
+  if (r.targetHit && !r.settled) badges.push('<span class="badge b-target">Target reached</span>');
+  if (r.missing) badges.push('<span class="badge b-quiet">No Mark for the ' + heldNoun(t) + '</span>');
+  const firstBreach = r.stopHit && c.rows.slice(0, c.cur).every((x) => !x.stopHit);
+  let h = `<h3 class="sec-title">${shortDate(r.date)} <small class="muted" style="font-weight:400">· session ${r.i + 1} of 15${isOption(t) ? ` · ${r.days} day${r.days === 1 ? '' : 's'} to expiration` : ''}</small></h3>`;
+  if (badges.length) h += `<div class="badges">${badges.join('')}</div>`;
+  if (firstBreach && !r.settled) h += '<p class="small">First seen breached at this session’s Mark. Marks are one per session, so the moment it crossed isn’t known.</p>';
+
+  if (r.held == null) h += group('How it is going', `<p>Unavailable: the ${heldNoun(t)} has no Mark for ${shortDate(r.date)}. Nothing is carried over from the session before.</p>`);
+  else {
+    h += group(r.settled ? 'Final result' : 'How it is going', kv([
+      ['Trade P&amp;L', `<strong class="${toneOf(r.pnl) === 'down' ? 'down' : 'up'}">${signed(r.pnl)}</strong> · ${rOf(r.pnl, plan)}`, r.change ? `${upDown(r.change.pnl)} since ${shortDate(r.change.since)}` : ''],
+      r.realized ? ['Banked', signed(r.realized), 'no later Mark can change it'] : null,
+      r.realized && !r.settled ? ['Open', signed(r.openPnl)] : null,
+      r.settled ? ['Settled at', r.held <= 0.004 ? 'Expired worthless' : money(r.held)] : null,
+    ]));
+    if (!r.settled) {
+      h += group('At stake from here, whole Position', kv([
+        r.stopHit ? ['Stop Overrun', `<strong>${money(r.stopOverrun)}</strong> · ${rOf(r.stopOverrun, plan)}`, 'Risk to stop is zero: the Stop is breached'] : ['Risk to stop', `<strong>${money(r.riskToStop)}</strong> · ${rOf(r.riskToStop, plan)}`, subs(prev, r.giveBack > 0 ? `${money(r.giveBack)} of it is open profit given back` : '', plan.stop.on === 'underlying' ? 'measured to the dollar amount the Plan fixed for this Stop, not what the put would really cost that day' : '')],
+        r.pastStopAmount ? ['Past the Stop’s amount', money(r.pastStopAmount)] : null,
+        ['Result at the Stop', signed(r.at.stop)],
+        ['Worst case', `${money(r.worstCase)} · ${rOf(r.worstCase, plan)}`, !isOption(t) ? `if ${t.symbol} goes to $0 in one session` : plan.qty < 0 ? `if ${t.symbol} goes to $0` : `if the ${heldNoun(t)} expires worthless`],
+        r.targetHit ? ['Target Overrun', `<strong>${money(r.targetOverrun)}</strong> · ${rOf(r.targetOverrun, plan)}`, 'Reward to target is zero: the Target is reached'] : ['Reward to target', `<strong>${money(r.rewardToTarget)}</strong> · ${rOf(r.rewardToTarget, plan)}`, prevR],
+        ['Result at the Target', signed(r.at.target)],
+        ['Max reward', Number.isFinite(r.maxReward) ? `${money(r.maxReward)} · ${rOf(r.maxReward, plan)}` : 'No cap above'],
+        ['Reward to risk', `<strong>${ratioText(r.ratio)}</strong>`, `Plan ${plan.ratio.toFixed(2)} to 1`],
+      ]));
+    }
+  }
+  const marks = [[`${t.symbol} Mark`, money(r.u), r.i ? `${signed(r.u - c.rows[c.cur - 1].u)} since ${shortDate(c.rows[c.cur - 1].date)}` : '']];
+  if (isOption(t)) {
+    if (t.legs.length === 2) {
+      marks.push(['Spread, net', r.held == null ? 'No Mark' : money(r.held), r.change ? `${signed(r.change.held)} since ${shortDate(r.change.since)}` : '']);
+      t.legs.forEach((l, k) => marks.push([`${l.side > 0 ? 'Long' : 'Short'} ${legName(t, l)}`, r.legs ? money(r.legs[k]) : 'No Mark', `Implied volatility ${ivBadge(r.iv[k])}${r.iv[k].vol == null && r.legs ? `: ${r.iv[k].na}` : ''}`]));
+    } else {
+      marks.push([legName(t, t.legs[0]), r.held == null ? 'No Mark' : money(r.held), r.change ? `${signed(r.change.held)} since ${shortDate(r.change.since)}` : '']);
+      marks.push(['Implied volatility', ivBadge(r.iv[0]), r.iv[0].vol == null ? r.iv[0].na : '']);
+    }
+  }
+  h += group('Marks', kv(marks));
+  h += group('Position', kv([
+    ['Held', positionText(t, r.qty)],
+    r.shares != null && !r.settled ? ['Share equivalent', `${isOption(t) ? 'about ' : ''}${r.shares}${isOption(t) ? ' <span class="badge b-est">estimate</span>' : ''}`, `a $1.00 move in ${t.symbol} is worth about ${money(Math.abs(r.shares))}`] : null,
+    ...r.execs.map((e) => [`Execution, ${shortDate(r.date)}`, execText(t, e), e.banked != null ? `${e.banked >= 0 ? 'banked' : 'realized'} ${money(e.banked)}; no later Mark can change it` : '']),
+  ]));
+  if (r.held != null) h += group(`Why the ${isOption(t) ? heldNoun(t) : 'stock'} moved`, splitWords(c));
+  h += group('The Plan', kv([['Entry', `${plan.qty > 0 ? 'buy' : 'sell'} ${units(t, plan.qty)} at ${money(plan.entry)}`], ['Stop', esc(condText(t, plan.stop))], ['Target', esc(condText(t, plan.target))], ['1R', money(plan.oneR)], ['Planned reward', `${money(plan.reward)} · ${plan.ratio.toFixed(2)} to 1`]]));
+  return h;
+}
+
+function table(c) {
+  const { t, plan } = c;
+  const opt = isOption(t);
+  const head = ['Session', `${t.symbol} Mark`];
+  if (opt) head.push(`${heldName(t)} Mark`, 'Implied volatility (estimate)', 'Days left');
+  head.push('Position', 'Trade P&L', 'Banked', 'Result at the Stop', 'Result at the Target', 'Risk to stop', 'Reward to target', 'Reward to risk', 'Worst case', 'Max reward', `Share equivalent${opt ? ' (estimate)' : ''}`, 'Executions');
+  if (opt) head.push('Change in Mark', 'From the Underlying', 'From time', 'From volatility', 'Time and volatility together', 'Unexplained');
+  const dr = (v) => `${money(v)} · ${rOf(v, plan)}`;
+  const body = [['Plan', opt ? money(t.plan.entryAt) : money(plan.entry), ...(opt ? [money(plan.entry), '', '18'] : []), positionText(t, plan.qty), '$0.00', '', signed(-plan.oneR), signed(plan.reward), dr(plan.oneR), dr(plan.reward), `${plan.ratio.toFixed(2)} to 1`, '', '', '', '', ...(opt ? ['', '', '', '', '', ''] : [])]];
+  c.rows.forEach((r) => {
+    const na = r.held == null;
+    const cells = [shortDate(r.date), money(r.u)];
+    if (opt) cells.push(na ? 'No Mark' : money(r.held), r.iv.map((v) => (v.vol != null ? pct(v.vol) : 'Unavailable')).join(' / '), String(r.days));
+    cells.push(positionText(t, r.qty), na ? 'Unavailable' : signed(r.pnl), r.realized ? signed(r.realized) : '');
+    cells.push(r.settled ? 'Settled' : signed(r.at.stop), r.settled ? 'Settled' : signed(r.at.target));
+    if (na) cells.push('Unavailable', 'Unavailable', 'Unavailable', 'Unavailable', 'Unavailable');
+    else if (r.settled) cells.push('Settled', 'Settled', 'Settled', 'Settled', 'Settled');
+    else cells.push(r.stopHit ? `Breached, ${money(r.stopOverrun)} past` : dr(r.riskToStop), r.targetHit ? `Reached, ${money(r.targetOverrun)} past` : dr(r.rewardToTarget), ratioText(r.ratio), dr(r.worstCase), Number.isFinite(r.maxReward) ? dr(r.maxReward) : 'No cap above');
+    cells.push(r.shares == null ? 'Unavailable' : r.settled ? 'Settled' : `${opt ? 'about ' : ''}${r.shares}`);
+    cells.push(r.execs.map((e) => execText(t, e)).join('; '));
+    if (opt) {
+      const sp = r.split;
+      if (!sp) cells.push('', '', '', '', '', '');
+      else if (sp.na) cells.push(sp.total != null ? signed(sp.total) : 'Unavailable', 'Not split', 'Not split', 'Not split', 'Not split', '');
+      else if (sp.separable) cells.push(signed(sp.total), signed(sp.fromUnderlying), signed(sp.fromTime), signed(sp.fromVol), '', signed(sp.unexplained));
+      else cells.push(signed(sp.total), signed(sp.fromUnderlying), '', '', signed(sp.together), '');
+    }
+    body.push(cells);
+  });
+  return `<table class="grid"><caption>${esc(t.symbol)} ${esc(t.strategy.toLowerCase())}, ${state.series === 'bull' ? 'bullish' : 'bearish'} series, sessions up to ${shortDate(c.row.date)}. Dollar figures are for the whole Position.</caption><thead><tr>${head.map((x) => `<th scope="col">${esc(x)}</th>`).join('')}</tr></thead><tbody>${body.map((row) => `<tr>${row.map((x, n) => (n === 0 ? `<th scope="row">${esc(x)}</th>` : `<td>${esc(x)}</td>`)).join('')}</tr>`).join('')}</tbody></table>`;
+}
+
+const RESULT_KEY = [['aup', 'Open profit'], ['adn', 'Open loss'], ['bup', 'Banked'], ['bdn', 'Realized loss'], ['overS', 'Past the Stop'], ['overT', 'Past the Target']];
+const KEYS = {
+  corridor: [['mark', 'Mark'], ...RESULT_KEY, ['stop', 'Result at the Stop'], ['target', 'Result at the Target'], ['beam', 'At stake from here'], ['exec', 'Execution']],
+  balance: [['mark', 'Mark'], ...RESULT_KEY, ['wick', 'From the result at the Stop to the result at the Target'], ['exec', 'Execution']],
+  shares: [['band', 'Share equivalent (thickness)'], ...RESULT_KEY, ['stop', 'Result at the Stop'], ['target', 'Result at the Target'], ['beam', 'At stake from here'], ['exec', 'Execution']],
+  ribbon: [['mark', 'Mark'], ...RESULT_KEY, ['wick', 'From the result at the Stop to the result at the Target: bold for the session shown, faint at each Execution'], ['exec', 'Execution']],
+  gauge: [['mark', 'Mark'], ...RESULT_KEY, ['swept', 'Where the result has been'], ['beam', 'At stake from here'], ['exec', 'Execution']],
+  inset: [['mark', 'Mark'], ...RESULT_KEY, ['stop', 'Result at the Stop'], ['target', 'Result at the Target'], ['beam', 'At stake from here'], ['exec', 'Execution']],
+};
+
+const NOTES = {
+  corridor: {
+    idea: 'The price in a short strip, and directly under it the Trade’s result as an area from break-even: green when ahead, red when behind. The area runs between two rails, the result at the Stop and the result at the Target.',
+    look: ['The colour is the result. A winning Trade is a green hill and a losing one is a red hollow, whatever the distances to the Stop and the Target are doing.', 'Solid colour is banked and can’t be lost; light colour is open. After a sale the rails pull in around the banked level.', 'The neutral beam at the session shown is what is at stake from here: Risk to stop below, Reward to target above.', 'Cross-hatching means the result has gone past a rail: below the Stop’s, or above the Target’s.'],
+    changed: 'From round 1: the two option price charts and the implied volatility chart are gone, the red and green gaps became one neutral beam, and the P&L line became a filled area.',
+    needs: ['Per session: Trade P&L, realized P&L to date, and the Trade’s result at the Stop and at the Target (realized to date plus the remaining lots valued at each boundary). Worst case and Max reward the same way.', 'The same results from the Plan Baseline, for the Plan column.', 'Per session: how far the result is toward the Target or the Stop, as a share (for the status line).', 'New Trade Views fields; each is a sum of figures `evaluate` already returns.'],
+  },
+  balance: {
+    idea: 'One candle per session. The body runs from break-even to the result so far, green or red. The wicks run down to the result at the Stop and up to the result at the Target: what is still at stake.',
+    look: ['A winner’s body climbs its wick toward the green cap; a loser’s sinks toward the red cap.', 'A scale-out shortens the whole candle and leaves a solid, banked base in the body.', 'A body that pokes out beyond a cap is cross-hatched: past the Stop, or past the Target.', 'The first candle, in the Plan column, has no body: it is the Plan’s 1R and planned reward.'],
+    changed: 'From round 1: the opposed red and green bars, which grew green as a Trade went wrong, became a body coloured by the result and neutral wicks. The price moved directly under it.',
+    needs: ['The same figures as Corridor: Trade P&L, realized P&L, and the result at the Stop and at the Target, per session and for the Plan.'],
+  },
+  shares: {
+    idea: 'The price line is drawn as thick as the number of shares the Position behaves like, so the chart shows how much of each move the Position owned. The result is the area under it.',
+    look: ['A long call’s line thickens as it goes in the money: the same $1.00 move is worth more each day.', 'A short put’s line thickens as the price falls. That is its asymmetry, seen on the price itself.', 'A spread’s line thins to nothing near its cap: nothing more to gain from a further move.', 'Stock is one constant thickness, except where shares are bought or sold.', 'A thick line with a steep move gives a big step in the area below it.'],
+    changed: 'From round 1: the separate strip of bars became the thickness of the price line, so the exposure and the price are one mark.',
+    needs: ['Per session: the Position’s share equivalent, an estimate that depends on implied volatility; the most it can be (contracts × 100).', 'The same P&L figures as Corridor.', 'Needs ADR 0007 amended: it uses a pricing formula to explain observed Marks.'],
+  },
+  ribbon: {
+    idea: 'One chart. The price line is the spine, and the Trade’s result rides on it as a band: upward and green for a profit, downward and red for a loss. The thicker the band, the more dollars.',
+    look: ['Price and result are in the same place: a flat price with a growing red band is time at work.', 'For a put that profits from a fall, the price drops while the green band grows above it.', 'At the session shown, a beam runs from the result at the Stop to the result at the Target, with the result so far filled in.', 'The solid inner layer is banked. A scale-out leaves it at a constant thickness while the open layer keeps moving.', 'A fainter beam stands at each Execution. Compare its length with the one before: a scale-out shortens it, a scale-in lengthens it.', 'The key at top left shows how tall 1R is.'],
+    changed: 'New in round 2. It answers “one chart for a phone” without giving the price and the dollars two competing scales.',
+    needs: ['The same P&L figures as Corridor; nothing else.', 'A thickness scale for the band, fixed from the Plan (1R and the planned reward).'],
+  },
+  gauge: {
+    idea: 'A meter across the top: the result at the Stop on the left, the result at the Target on the right, and a pointer at the result so far. Under it, the price, and a small strip of the result by session.',
+    look: ['The fill runs from break-even to the pointer: green to the right, red to the left.', 'The grey line above the meter is where the result has been; the hollow pointer is the session before.', 'A scale-out moves the Stop and Target markers inward and leaves a solid banked segment.', 'The neutral spans under the meter are the Risk to stop and the Reward to target.'],
+    changed: 'New in round 2, from the suggestion of a gauge on screen with the price. A straight meter is used because a dial’s angles are harder to compare than lengths.',
+    needs: ['The same P&L figures as Corridor, for the session shown and (for the small strip) per session.', 'The lowest and highest result so far.'],
+  },
+  inset: {
+    idea: 'The Trade’s result takes the whole card, and the price is a small inset beside the headline figure. It is the layout that would fit a Review card on a phone.',
+    look: ['The result chart is the same as Corridor’s, with more height.', 'The inset is not lined up with the main chart; the blue line marks the same session in both.', 'Executions are dashed lines in both.'],
+    changed: 'New in round 2, from the suggestion to try the price chart as an inset.',
+    needs: ['The same figures as Corridor.'],
+  },
+};
+
+function noteHtml(view) {
+  const n = NOTES[view];
+  const ul = (xs) => `<ul>${xs.map((x) => `<li>${esc(x).replace(/`([^`]+)`/g, '<code>$1</code>')}</li>`).join('')}</ul>`;
+  return `<h3>About this visualization</h3><dl><div><dt>Central idea</dt><dd>${esc(n.idea)}</dd></div><div><dt>What to look for</dt><dd>${ul(n.look)}</dd></div><div><dt>What changed</dt><dd>${esc(n.changed)}</dd></div><div><dt>In every visualization</dt><dd>${ul(['The headline figure and the card’s edge take the colour of the result.', 'Hover a session (or move the slider to it) for its Marks and what moved it: price, time and volatility.', 'Implied volatility and the share equivalent are chips under the chart; hover, focus or tap one for its small chart.'])}</dd></div><div><dt>Derived figures it needs (for D9’s planning)</dt><dd>${ul(n.needs)}</dd></div></dl>`;
+}
+
+function modelHtml(t, S) {
+  const s = t.series[state.series];
+  const rows = S.rows.map((r) => `<tr><th scope="row">${shortDate(r.date)}</th><td>${money(r.u)}</td>${isOption(t) ? `<td>${s.vol[r.i]}%</td><td>${r.days}</td><td>${r.legs ? r.legs.map((p) => money(p)).join(' / ') : 'left out on purpose'}</td>` : ''}</tr>`).join('');
+  return `<ul class="small" style="margin:10px 0;padding-left:20px">
+    <li><strong>The Underlying’s Marks are written by hand</strong>, with intent, one per session from Mon Nov 2 to Fri Nov 20, 2026.</li>
+    <li><strong>Every option Mark is generated</strong>: Black-Scholes at that session’s Underlying Mark, the calendar days left to Fri Nov 20 (over 365), a volatility written by hand for each session, and an interest rate of ${RATE * 100}% (the short-term rate; long-term options would use 5.25%). No dividends, no early exercise. Rounded to cents.</li>
+    <li><strong>On the expiration session</strong> an option’s Mark is its exercise value, and the Trade settles at it.</li>
+    <li><strong>Implied volatility on the page is not the input below.</strong> It is read back from each rounded Mark by solving the same formula, as the app would have to, and is Unavailable where no volatility fits or the price barely depends on it.</li>
+    <li><strong>Every entry fills at the Plan’s price</strong>; fees are left out. A spread’s short leg is priced ${t.legs[1] ? `${Math.abs(t.legs[1].skew)} volatility point${Math.abs(t.legs[1].skew) === 1 ? '' : 's'} ${t.legs[1].skew > 0 ? 'above' : 'below'} its long leg` : 'with its own volatility'}.</li>
+    <li><strong>The result and what is at stake use no model</strong>: they follow from the Marks, the Position and the Plan alone.</li>
+  </ul>
+  <div class="scroll-x" tabindex="0" role="region" aria-label="Generator inputs"><table class="grid"><caption>The generator’s inputs for ${esc(t.symbol)}, ${state.series === 'bull' ? 'bullish' : 'bearish'} series (all 15 sessions)</caption><thead><tr><th scope="col">Session</th><th scope="col">${esc(t.symbol)} Mark (by hand)</th>${isOption(t) ? '<th scope="col">Volatility input (by hand)</th><th scope="col">Days left</th><th scope="col">Generated Mark</th>' : ''}</tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+
+/* ---------- Rendering and wiring ---------- */
+let current = null;
+function renderChrome() {
+  $('trades').innerHTML = TRADES.map((t) => `<button type="button" role="radio" aria-checked="${t.id === state.trade}" tabindex="${t.id === state.trade ? 0 : -1}" data-trade="${t.id}">${t.symbol} · ${t.strategy}</button>`).join('');
+  $('tabs').innerHTML = VIEWS.map((v) => `<button type="button" role="tab" id="tab-${v.id}" aria-selected="${v.id === state.view}" aria-controls="stage" tabindex="${v.id === state.view ? 0 : -1}" data-view="${v.id}">${v.name}<small>${v.sub}</small></button>`).join('');
+  document.querySelectorAll('#series button').forEach((b) => { const on = b.dataset.series === state.series; b.setAttribute('aria-checked', on); b.tabIndex = on ? 0 : -1; });
+  $('stage').setAttribute('aria-labelledby', 'tab-' + state.view);
+}
+
+function render() {
+  if (!TRADES.some((t) => t.id === state.trade)) state.trade = 'call';
+  if (!VIEWS.some((v) => v.id === state.view)) state.view = 'corridor';
+  state.cur = Math.max(0, Math.min(14, state.cur | 0));
+  renderChrome();
+  const t = TRADES.find((x) => x.id === state.trade);
+  const S = seriesOf(state.trade, state.series);
+  const rows = S.rows.slice(0, state.cur + 1); // nothing from a later session is ever handed to a drawing function
+  const c = { t, plan: S.plan, rows, cur: state.cur, row: rows[state.cur], view: state.view };
+  current = c;
+  const plan = S.plan;
+  const view = state.view;
+  $('slider').value = state.cur;
+  $('prev').disabled = state.cur === 0;
+  $('next').disabled = state.cur === 14;
+  $('when').textContent = `${shortDate(c.row.date)} · ${state.cur + 1} of 15`;
+  const W = Math.max(240, Math.floor($('plots').clientWidth));
+  const g = geom(W);
+  const n = g.narrow;
+
+  const st = status(c);
+  $('hero').className = `card hero is-${st.tone}`;
+  $('status').className = `status is-${st.tone}`;
+  const insetW = W < 700 ? W - 16 : 300;
+  $('status').innerHTML = `<div class="status-main"><div class="fig">${st.fig}</div><div class="state">${esc(st.state)}</div><div class="stake">${esc(st.stake)}</div></div>`
+    + (view === 'inset' ? `<div class="inset"><h4>${esc(t.symbol)} ${money(c.row.u)} <small>price, one Mark per session</small></h4>${priceInset(insetW, W < 700 ? 66 : 84, c)}</div>` : '');
+  $('slider').setAttribute('aria-valuetext', `${shortDate(c.row.date)}, session ${state.cur + 1} of 15. Trade P&L ${st.fig.replace(/<[^>]+>/g, '')}. ${st.state} ${st.stake}`);
+
+  let html = '';
+  if (view === 'corridor') html = priceStrip(g, c, { h: n ? 112 : 136 }) + mountain(g, c, { h: n ? 232 : 290 });
+  if (view === 'balance') html = candles(g, c, { h: n ? 222 : 280 }) + priceStrip(g, c, { h: n ? 128 : 150, xAxis: true });
+  if (view === 'shares') html = priceStrip(g, c, { h: n ? 150 : 180, weighted: true }) + mountain(g, c, { h: n ? 200 : 240 });
+  if (view === 'ribbon') html = ribbon(g, c, { h: n ? 320 : 370 });
+  if (view === 'gauge') html = meter(W, c) + priceStrip(g, c, { h: n ? 124 : 160 }) + mountain(g, c, { h: n ? 122 : 140, compact: true });
+  if (view === 'inset') html = mountain(g, c, { h: n ? 248 : 330 });
+  $('plots').innerHTML = html;
+  $('move').innerHTML = moveLine(c);
+  $('chips').innerHTML = chipsHtml(c, W);
+  $('key').innerHTML = legend(KEYS[view]);
+  $('planline').innerHTML = `<span><b>${esc(t.symbol)} ${esc(t.strategy.toLowerCase())}</b>${isOption(t) ? `, ${t.legs.map((l) => legName(t, l)).join(' / ')}` : ''}</span><span><b>Plan:</b> ${plan.qty > 0 ? 'buy' : 'sell'} ${units(t, plan.qty)} at ${money(plan.entry)}</span><span><b>Stop:</b> ${esc(condText(t, plan.stop))}</span><span><b>Target:</b> ${esc(condText(t, plan.target))}</span><span><b>1R:</b> ${money(plan.oneR)}</span><span><b>Planned reward:</b> ${money(plan.reward)} (${plan.ratio.toFixed(2)} to 1)</span>`;
+  $('readout').innerHTML = readout(c);
+  $('table').innerHTML = table(c);
+  $('tablenote').textContent = `(${state.cur + 1} of 15 sessions)`;
+  $('note').innerHTML = noteHtml(view);
+  $('story').textContent = S.story;
+  $('model').innerHTML = modelHtml(t, S);
+  save();
+}
+
+function roving(e, attr, list, key) {
+  if (!['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp', 'Home', 'End'].includes(e.key)) return;
+  const i = list.indexOf(state[key]);
+  const fwd = e.key === 'ArrowRight' || e.key === 'ArrowDown';
+  const n = e.key === 'Home' ? 0 : e.key === 'End' ? list.length - 1 : (i + (fwd ? 1 : -1) + list.length) % list.length;
+  state[key] = list[n];
+  render();
+  document.querySelector(`[${attr}="${list[n]}"]`).focus();
+  e.preventDefault();
+}
+const tip = $('tip');
+document.addEventListener('click', (e) => {
+  tip.hidden = true;
+  const chip = e.target.closest('button.chip');
+  const wasOpen = state.pop;
+  state.pop = chip && wasOpen !== chip.dataset.pop ? chip.dataset.pop : null;
+  if (chip) { render(); document.querySelector(`button.chip[data-pop="${chip.dataset.pop}"]`).focus(); return; }
+  const hit = e.target.closest('[data-i]');
+  if (hit) { state.cur = +hit.dataset.i; render(); return; }
+  const b = e.target.closest('button');
+  if (!b) { if (wasOpen) render(); return; }
+  if (b.dataset.trade) { state.trade = b.dataset.trade; render(); document.querySelector(`[data-trade="${state.trade}"]`).focus(); }
+  else if (b.dataset.view) { state.view = b.dataset.view; render(); document.querySelector(`[data-view="${state.view}"]`).focus(); }
+  else if (b.dataset.series) { state.series = b.dataset.series; render(); b.focus(); }
+  else if (b.id === 'prev') { state.cur -= 1; render(); if (b.disabled) $('next').focus(); }
+  else if (b.id === 'next') { state.cur += 1; render(); if (b.disabled) $('prev').focus(); }
+});
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && state.pop) { const id = state.pop; state.pop = null; render(); const b = document.querySelector(`button.chip[data-pop="${id}"]`); if (b) b.focus(); } });
+// The hover: a mouse only. On touch, a tap moves the slider and the same facts are in the line under the charts.
+document.addEventListener('pointermove', (e) => {
+  const hit = e.pointerType === 'mouse' && e.target.closest ? e.target.closest('[data-i]') : null;
+  if (!hit || !current) { tip.hidden = true; return; }
+  tip.innerHTML = tipHtml(current, +hit.dataset.i);
+  tip.hidden = false;
+  const w = tip.offsetWidth;
+  const h = tip.offsetHeight;
+  tip.style.left = `${Math.max(8, Math.min(e.clientX + 14, window.innerWidth - w - 8))}px`;
+  tip.style.top = `${e.clientY + 18 + h > window.innerHeight ? Math.max(8, e.clientY - h - 12) : e.clientY + 18}px`;
+});
+document.addEventListener('pointerleave', () => { tip.hidden = true; });
+$('slider').addEventListener('input', (e) => { state.cur = +e.target.value; render(); });
+$('trades').addEventListener('keydown', (e) => roving(e, 'data-trade', TRADES.map((t) => t.id), 'trade'));
+$('tabs').addEventListener('keydown', (e) => roving(e, 'data-view', VIEWS.map((v) => v.id), 'view'));
+$('series').addEventListener('keydown', (e) => roving(e, 'data-series', ['bull', 'bear'], 'series'));
+let resizeTimer;
+window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(render, 80); });
+render();
+</script>
+</body>
+</html>

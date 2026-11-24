@@ -85,6 +85,7 @@ Precedence for interpretation is:
 | Contextual forms | Prototype bottom sheets/right drawers; later source used inline forms | No specific container | Duplicate | User made outcomes normative and container flexible: inline/route/modal/sheet/drawer all possible. |
 | Page states | Several UI states | Result-state rigor | No independent delta | Loading/Ready/Empty/Error accepted; generic domain-condition page-state layer rejected. |
 | Future Insights | Prototype coach idea | No equivalent | Duplicated concept | Explicitly deferred outside MVP; deterministic evidence/reporting remains in scope. |
+| Advisory implied volatility | `prototypes/replay/round-2.html` derives IV from observed Marks | Theoretical option pricing was outside MVP | Genuine product conflict | User decision 2026-11-23 reopens the boundary: deterministic IV inversion and price-move decomposition are permitted inside replay as advisory explanation only, never valuation, prediction or domain evidence. Recorded in `AC-IV-001`. |
 
 ## Known source supersessions
 
@@ -97,5 +98,6 @@ Precedence for interpretation is:
 - Prototype sheet/drawer containers are references; the narrow-bottom/wide-sidebar responsive navigation contract remains normative.
 - Persistent storage as a Runtime Readiness write gate is superseded by [ADR 0009](../adr/0009-advisory-storage-protection.md) (user decision, 2026-10-10): host storage protection is reported and warned about but does not gate writes. The gate first appeared during specification extraction and is not recorded in the consolidation handoff.
 - Positively confirmed external backup transfer is superseded by [ADR 0010](../adr/0010-backup-download-verified-by-read-back.md) (user decision, 2026-10-10): backup is an ordinary file download, and a `CompletedBackupReceipt` comes only from reading back and verifying the trader-selected saved file.
+- Theoretical option pricing for valuation or prediction remains outside MVP (user decision 2026-11-23). The narrow exception is Advisory Implied Volatility, Share Equivalent and Price-Move Decomposition derived deterministically from observed Marks inside Trade replay as explanation only; they are not Insights, prediction, causal attribution or a composite grade.
 
 No known product decision remains open after these supersessions.

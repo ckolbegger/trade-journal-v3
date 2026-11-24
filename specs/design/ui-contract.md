@@ -93,7 +93,7 @@ Exact values in read models remain unrounded; presentation rounding must not cha
 
 `Value`, `Unbounded`, `Unavailable`, and `Not Applicable` are rendered distinctly. A covered subtotal is labelled as such. Missing expected evidence shows the exact Instrument/date and optional older Stale context; it never displays fill cost or zero as current valuation. Acknowledged Unavailable is visibly a trader acknowledgment, not a price.
 
-Replay renders an exact Daily Bar as a candle, a close-only Mark as a point, and absence as a gap. Lines never bridge a dependent missing value. Every graphed number has a readable textual equivalent or accessible description. Mark-to-Market replay and Expiration Payoff remain separate views.
+Replay renders an exact Daily Bar as a candle when one is stored, a close-only Mark as a point, and absence as a gap; it is complete with Marks alone and never requires manual OHLC entry. Lines never bridge a dependent missing value. Every graphed number has a readable textual equivalent or accessible description. Advisory Implied Volatility, Share Equivalent and Price-Move Decomposition, when installed, are visibly labelled as explanatory estimates of an observed price, with `Unavailable` shown distinctly; they are never presented as valuation, prediction, P&L attribution or a composite grade. Mark-to-Market replay and Expiration Payoff remain separate views.
 
 The [spread detail](../reference/ui-screenshots/proto-position-detail-spread.png) and [statistics reference](../reference/ui-screenshots/proto-stats.png) inform density and hierarchy only. Their arithmetic, “adherence,” equity curve, filters, and terminology are not product semantics.
 

@@ -86,13 +86,15 @@ Realized-to-date P&L, each remaining Instrument component, the remaining-open to
 
 Produces independent Planned and Current views over nonnegative Underlying price through positive infinity. Planned uses frozen confirmed Plan facts. Current uses realized-to-date net P&L as a constant offset plus remaining open Lots and unconsumed opening fees, with no hypothetical closing fee. Each available curve includes normalized piecewise-linear segments, all zero crossings/touches/ranges, signed extrema, and the complete attainment set for each extremum.
 
-The operation performs no theoretical pricing. Co-expiring option structures of any Strategy are supported and Stock Legs may participate at that one expiration anchor. Current is Not Applicable when flat. Stock-only exposure without an option expiration anchor is Not Applicable. Multiple expirations are Unavailable rather than combined into a misleading one-date curve.
+The operation performs no theoretical pricing. Advisory explanation is confined to `replay` and is never an input here. Co-expiring option structures of any Strategy are supported and Stock Legs may participate at that one expiration anchor. Current is Not Applicable when flat. Stock-only exposure without an option expiration anchor is Not Applicable. Multiple expirations are Unavailable rather than combined into a misleading one-date curve.
 
 ### `replay`
 
 Accepts one corrected Trade snapshot and an ordered series of explicit Mark frames over a caller-specified relevant lifetime. It returns corrected Position, realized and marked results, lifecycle transitions, management, condition status, Deviations, Journal navigation keys, and explicit gaps at each point. It neither selects dates nor carries values through missing evidence.
 
 Stop Discipline is derived as continuous episodes against the effective Stop revisions. An episode begins at the first exact observation demonstrating breach after activation or an observed unbreached state, and ends only with an exact unbreached observation or condition replacement/retirement. A preceding gap means “first observed,” never a fabricated crossing date. Stable episode fingerprints allow atomic create/retain/supersede/Void reconciliation without daily duplicates.
+
+Replay may also return **advisory explanation** for option legs: Advisory Implied Volatility, a Share Equivalent, and a Price-Move Decomposition. The inversion uses a stated deterministic formula and only the exact observed Mark, strike, expiration and Underlying evidence already supplied in the frame; it returns `Unavailable` with a stable reason where no volatility fits, the Mark is at or below exercise value on expiration day, or the price barely depends on volatility. These values are presented as explanation of a price that was observed, predict nothing, and are not inputs to derivation, evaluation, expiration payoff, lifecycle, Deviations, Daily Review, or any report. Their presence or absence never changes a canonical calculation result.
 
 ### `assessChange`
 

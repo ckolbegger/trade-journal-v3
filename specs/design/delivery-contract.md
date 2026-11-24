@@ -70,7 +70,7 @@ Update delivery must retain a safe compatibility/recovery posture until migratio
 
 Each installed release publishes an immutable dependency-closed Installed Capability Manifest covering supported operations/variants, complete report and scorecard families, provider adapters, and backup/schema ranges.
 
-- A declared capability includes its validation, result states, audit behavior, necessary facts, and acceptance evidence.
+- A declared capability includes its validation, result states, audit behavior, necessary facts, and acceptance evidence. Advisory Implied Volatility, Share Equivalent and Price-Move Decomposition are one declared advisory explanation capability when installed; their absence is not a domain `Unavailable` result.
 - A partially implemented operation/report family is not declared.
 - An absent capability is absent from navigation and ordinary calls; it is not disguised as domain-level `Unavailable`.
 - Each ordinary release boundary is a complete vertical slice: its declared capabilities are reachable and usable through the production UI and operate through their required application/domain behavior and persistence/infrastructure.

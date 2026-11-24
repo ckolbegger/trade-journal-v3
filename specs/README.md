@@ -29,11 +29,12 @@ Required now:
 - Context-aware after-close Marks, optional provider recovery, Daily Bars, explicit gaps, and honest unavailable-observation handling.
 - A guided, resumable Daily Review with an explicit saved Action for every eligible Trade.
 - Deterministic Outcomes, Current Exposure, Process Scorecard, and categorical Journal Field reports.
+- Deterministic advisory explanation of observed option Marks: implied-volatility inversion and price-move decomposition, returned inside Trade replay and never used as valuation, prediction, or domain evidence.
 - Standards-based PWA delivery with capability-gated Runtime Readiness, device-local offline use, safe updates, full backup, and validated atomic replace-only Restore.
 
 Explicitly outside the MVP:
 
-- Live or streaming trading, intraday valuation replay, and theoretical option pricing.
+- Live or streaming trading, intraday valuation replay, and theoretical option pricing used for valuation or prediction. The advisory explanation required above is the sole exception and is permitted only inside its declared boundary.
 - International instruments, non-USD accounting, brokerage cash reconciliation, Account Snapshots, and an account-equity curve.
 - Application login, hosted journal-data storage, automatic synchronization, and merge Restore.
 - Campaign or lineage aggregation, provider-performance analytics, arbitrary Boolean queries, custom date ranges, nested grouping, and a general report builder.

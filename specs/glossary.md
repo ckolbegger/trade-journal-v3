@@ -134,6 +134,9 @@ Journal Entries capture saved versions only. Drafts, keystrokes, field focus, an
 | **Payoff Zero Set** | The normalized set of Crossing points, Touch points, and Zero Ranges at which an available payoff curve equals zero. | Breakeven list only |
 | **Payoff Maximum** | The signed greatest payoff over nonnegative underlying prices, with its complete Attainment Set or `Unbounded Above`. | Positive-only max profit |
 | **Payoff Minimum** | The signed least payoff over nonnegative underlying prices, with its complete Attainment Set or `Unbounded Below`. | Negative-only max loss |
+| **Advisory Implied Volatility** | A deterministic volatility read back from an observed option Mark by inverting a stated pricing formula, returned only as explanation inside Trade replay. It is `Unavailable` when no volatility fits or the Mark barely depends on volatility. It is never valuation, prediction, domain evidence, or an input to any other calculation. | Forecast volatility, model price, provider fact |
+| **Price-Move Decomposition** | An explanatory split of one session's observed option-Mark change into underlying-price, time, and volatility contributions, returned only inside Trade replay and labelled as an estimate. A missing contribution or `Unavailable` volatility makes the split unavailable rather than fabricated. | Attribution of P&L, causal claim, performance metric |
+| **Share Equivalent** | An advisory option-sensitivity figure shown beside Advisory Implied Volatility in replay, derived from the same stated formula and never used for Position, risk, payoff, or reporting. | Position, delta hedge, broker delta |
 
 An exact Mark, Daily Bar, and Unavailable Mark Acknowledgment are separate facts. Exact Mark precedence makes the Expected-Mark Status Available even when acknowledgment history also exists. An acknowledgment may allow Daily Review to complete with unavailable calculations, but it never supplies a value.
 
@@ -221,4 +224,5 @@ The permitted Break Down By dimensions are **Strategy**, **Underlying**, **Tag**
 - “Idea Source” in prose refers to the semantic **IdeaSource** Tag Type. A Plan reference and a configured Journal response have separate meanings and never overwrite one another.
 - “Unavailable” on a calculation is distinct from **Missing** or **Acknowledged Unavailable** Expected-Mark Status.
 - “Review complete” is derived from current corrected facts and is not a saved completion flag.
-- “Insight” is reserved for future interpretive behavior. Deterministic Trade views and reports belong to the MVP without an Insights module.
+- “Insight” is reserved for future interpretive behavior. Deterministic Trade views and reports belong to the MVP without an Insights module. Advisory Implied Volatility, Price-Move Decomposition and Share Equivalent are deterministic explanation of an observed Mark, not Insights, prediction or causal judgment.
+- Advisory Implied Volatility is not provider-supplied volatility and never becomes a Mark, a valuation input, or a calculation result that feeds risk, payoff, Review or reports.

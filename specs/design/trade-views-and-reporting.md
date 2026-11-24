@@ -69,7 +69,7 @@ The coordinator derives once and reuses state. Closed/Abandoned detail does not 
 
 Derives the relevant completed-session lifetime from current corrected facts. A never-exposed Planned/Abandoned Trade is Not Applicable. An Open Trade ends at current Expected Mark Date; a Closed Trade ends at its final applicable completed session. Corrections may move the automatically derived span.
 
-Replay includes fact/management/correction markers, Bar candles, close-only Mark points, explicit gaps, calculated tracks, coverage, and audit navigation. It does not accept a user range, bridge a gap, project future values, or combine replay with Expiration Payoff.
+Replay includes fact/management/correction markers, Bar candles when a stored Daily Bar exists, close-only Mark points, explicit gaps, calculated tracks, coverage, and audit navigation. It must be complete using end-of-day Marks alone; a Bar is never required, and no manual OHLC entry exists. It does not accept a user range, bridge a gap, project future values, or combine replay with Expiration Payoff. Advisory Implied Volatility, Share Equivalent and Price-Move Decomposition may appear as clearly labelled explanation inside this view and nowhere else; they never feed a valuation, risk, payoff, Review or report figure.
 
 ```mermaid
 sequenceDiagram
@@ -165,6 +165,6 @@ The UI saves through Market Data using the exact Save precondition. The successf
 - Audit history and corrected economic replay remain distinct.
 - Gaps and partial coverage survive presentation.
 - Report orchestration never duplicates Performance Analysis semantics.
-- Future Insights, coaching, predictive claims, and saved reports are absent from the MVP.
+- Future Insights, coaching, predictive claims, and saved reports are absent from the MVP. Advisory explanation of observed Marks is deterministic and explanatory only, never a predictive or interpretive Insight.
 
 See [Performance Analysis](performance-analysis.md), [UI contract](ui-contract.md), and [overview](overview.md).
