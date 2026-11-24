@@ -747,3 +747,7 @@ Diff: 6 files, 36 insertions, 108 deletions (36 viewState objects, 3 lines each 
 ocr of T95.31-F1 (session 42827c8f, with a scratch rule including the fixture views; the repo rule skipped them, to tech debt): 6 files, 0 findings. `evidence/D95/ocr/T95.31-F1-efdae00f.json`. Next: run `t95.31-plan-call-page-2` (browser-auto a54d6298).
 
 Run `t95.31-plan-call-page-2` (browser-auto a54d6298, full tier, after T95.31-F1): unit 2943, integration 329, browser 127, 79, 55 and 129 (4 skipped), checks 14 of 14. Passed. T95.31 done.
+
+### T95.32
+
+Commit `096be3e1`: the reason rule in `saveTradeAction` (A308): `IntentRequired` refuses a Hold without a reason when the call is Out, an Exit without one when the call is Hold, Roll and Adjust without one at any call, the Unknown rule, a reason of spaces, and a changed saved Action; every Action saved as intent only. The Plan Call is read only when a Hold or Exit has no reason, so saves with a reason keep their request counts. First-run passes flagged and mutation-checked: cases 1, 3, 4, 10. Existing tests that save a Hold past a line now give a reason (save, save-day, d95/day, d5r/gap-trades, d5r/save-marks, d5/rebuild, d5/review-debt). One-line UI bridges: ActionForm.tsx (IntentRequired as RequiredAnswerMissing), ReviewReflections.tsx (skips it). No fixture change.
