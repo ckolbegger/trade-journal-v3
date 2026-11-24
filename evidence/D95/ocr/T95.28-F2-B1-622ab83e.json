@@ -1,0 +1,149 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 1,
+    "total_tokens": 61482,
+    "input_tokens": 60990,
+    "output_tokens": 492,
+    "cache_read_tokens": 17920,
+    "elapsed": "32s"
+  },
+  "tool_calls": {
+    "total": 8,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 2,
+      "file_read": 5
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/AppShell.tsx",
+      "content": "Recheck `current` after awaiting the refreshed status in both branches. The existing guard runs before this new asynchronous operation, so if the effect is cleaned up (for example, because `facade` changes) while `getStatus()` is pending, its result can still overwrite the replacement effect's status. Store the refreshed status locally and call `setStatus` only if `current` is still true.",
+      "existing_code": "else setStatus(await facade.Workspace.getStatus());",
+      "start_line": 330,
+      "end_line": 330,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/AppShell.test.tsx",
+        "src/ui/AppShell.tsx"
+      ]
+    }
+  ],
+  "warnings": [
+    {
+      "file": "src/ui/AppShell.test.tsx,src/ui/AppShell.tsx",
+      "message": "round 2: LLM completion error: received error while streaming: {\"message\":\"The ChatGPT user has reached their Subscription Sharing usage limit. Ask the user to try again after their usage limit resets or use an API key instead.\",\"type\":\"invalid_request_error\",\"param\":null,\"code\":\"subscription_sharing_usage_limit_exceeded\"}",
+      "type": "review_round_failed"
+    }
+  ],
+  "session_id": "175ae55b-1b50-4e92-9ba2-a3cdc40008a2",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "175ae55b-1b50-4e92-9ba2-a3cdc40008a2",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "622ab83e",
+      "resolved_base": "168fed81aae2d713b5ae20ebd021d28d7f7df67b",
+      "resolved_head": "622ab83eefcef2a27b9a51052a0f3cc27ad04d64",
+      "exact_range": "168fed81aae2d713b5ae20ebd021d28d7f7df67b..622ab83eefcef2a27b9a51052a0f3cc27ad04d64",
+      "source_artifact_sha256": "0b019c4361ab77a3aeed493dd625d9e16dc6eecd82fefe1bb744d5bdf7e85615"
+    },
+    "execution": {
+      "ocr_version": "v1.14.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "1728d6fbf13ec180a4f8fea35d8e89f022632ae57123bc93848ff5e96777505c",
+          "path": "src/ui/AppShell.tsx",
+          "fingerprint": "bb60423848e9e9f6aca7990ba35a53f563c66e85d04b3a78fc744d918b4bcb31"
+        },
+        {
+          "item_id": "b777228b9a974c64bbabf05525468779f48aaec188283e6cc1c716511706288d",
+          "path": "src/ui/AppShell.test.tsx",
+          "fingerprint": "7f0045f52a9592ef184eb9a52f03244b2fad17fdce6f8f2d46494e9263494936"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "1728d6fbf13ec180a4f8fea35d8e89f022632ae57123bc93848ff5e96777505c",
+          "path": "src/ui/AppShell.tsx",
+          "fingerprint": "bb60423848e9e9f6aca7990ba35a53f563c66e85d04b3a78fc744d918b4bcb31"
+        },
+        {
+          "item_id": "b777228b9a974c64bbabf05525468779f48aaec188283e6cc1c716511706288d",
+          "path": "src/ui/AppShell.test.tsx",
+          "fingerprint": "7f0045f52a9592ef184eb9a52f03244b2fad17fdce6f8f2d46494e9263494936"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "494b45b94e1c19a7a38e1360185e90599d79b158cd320ff2c277b4e778d51735",
+          "path": "evidence/D95/tdd-log/T95.28-F2-B1.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 32040
+  },
+  "retry_report": {
+    "schema_version": "ocr.llm-retry-report/v1",
+    "total_requests": 10,
+    "retried_requests": 0,
+    "total_retries": 0,
+    "recovered_requests": 0,
+    "failed_requests": 1,
+    "cancelled_requests": 0,
+    "requests": [
+      {
+        "logical_request_id": "2e35c295915ba762c02036136cc8ba352441fd29479884019aa45fc39e6738b2",
+        "provider": "chatgpt",
+        "model": "gpt-6.1-sol",
+        "file_path": "src/ui/AppShell.test.tsx,src/ui/AppShell.tsx",
+        "task_type": "main_task",
+        "request_no": 9,
+        "outcome": "failed",
+        "attempts": [
+          {
+            "attempt": 1,
+            "outcome": "error",
+            "error_class": "provider",
+            "failure_phase": "stream",
+            "status_code": 200,
+            "duration_to_headers_ms": 857
+          }
+        ]
+      }
+    ]
+  }
+}
