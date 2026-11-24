@@ -638,3 +638,5 @@ Moderate 1: on a partly sold Trade the drawing's name, the collapsed header's me
 Commit `dc09ad2f`: `viewsOfRestored` restores then calls a new exported `viewsOfApp(port, app, expected)` (same checks); the test's views port keeps the app `smokeWithViews()` restored, and the Open rows, Review walk order and membership failure tests share it, reading only. File 44.29 s before, 16.59 s after (Open rows 12.3 → 6.7 s, walk 5.5 s → under 0.1 s, membership 16.7 s → under 0.1 s). Each changed test broken once and restored (tdd-log). The prepareRestore test is unchanged (a different path). 24 of 24 pass.
 
 ocr of T95.26-F2 (session a5546e98): 2 files, 0 findings. `evidence/D95/ocr/T95.26-F2-dc09ad2f.json`. Next: full run `t95.26-f2` (the user: a full suite run, no critic).
+
+Run `t95.26-f2` (browser-full, 19 min 11 s): unit 2895 in 25 s (was 53.8 s in t95.26-gate-4), integration 330, browser 127, 79, 55 and 129 (4 skipped), checks 14 of 14. Passed. T95.26-F2 done (Progress row added).
