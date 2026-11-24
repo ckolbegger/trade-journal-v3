@@ -7,7 +7,7 @@ import type { TradeSummary } from '../../domain/trade-summary.ts';
 import type { Rational } from '../../domain/values/index.ts';
 import type { WorkspaceSnapshotBinding } from '../../persistence/index.ts';
 import type { StorageFailure } from '../mutation-guard.ts';
-import type { AttentionBand, AttentionReason, CalculationFamily, Pressure, MeterReading, PressureResult, SettlementItem } from '../valuation/index.ts';
+import type { AttentionBand, AttentionReason, CalculationFamily, Pressure, MeterReading, PressureResult, PlanExitFacts, SettlementItem } from '../valuation/index.ts';
 import type { TradeReplayView } from '../trade-views/index.ts';
 import type { AnswerInput, DailyAction, DebtProjection, HistoryAction, DeclineProjection, EntryDefinitionRecord, EntryProjection, JournalIssue, JournalObligationKey, ObligationOutcome, PromptRole } from '../../modules/journal/index.ts';
 import type { AcknowledgmentVersion, ExpectedResolutionRevision, MarkFrame, MarketDataConflictedKey, MarketDataIssue, MarketDataPrepareEntry, MarketDataPrepareIssue, MarkResolution, ObservationKey, PreparedMarketDataEntry } from '../../modules/market-data/index.ts';
@@ -382,6 +382,8 @@ export interface DailyTradeReview {
   // The Trade's last decisions before the Review Date (A305).
   // `getTrade` always returns it; optional so a card built by hand needs none (the screen that shows it, T95.19, reads it).
   readonly decisions?: LastDecisions;
+  // The Plan Exit facts the exit form states and measures a sale with (T95.37, A309); absent when the facts cannot be replayed.
+  readonly planExit?: PlanExitFacts;
   readonly form: ActionForm;
   // The Daily Trade Review definition revision the form was rendered from.
   readonly definitionRevision: string;

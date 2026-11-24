@@ -37,7 +37,7 @@ import { payoffOf } from '../settlement.ts';
 import { assembleReplay } from '../replay/index.ts';
 import type { ReplayChange, ReplayNotApplicable, ReplayTradeRequest, ReplayTradeResult, TradeReplayView } from './replay-view.ts';
 import type { ReadViewResult, TradeDetailDebt, TradeDetailNarrativeItem, ViewBinding } from './view-types.ts';
-import { attentionOf, byAttention, meterReadingOf, valueTrade, type Attention, type DatedLine, type MeterReading, type SettlementItem } from '../valuation/index.ts';
+import { attentionOf, byAttention, holdsBefore, meterReadingOf, planExitFactsOf, valueTrade, type Attention, type DatedLine, type PlanExitFacts, type MeterReading, type SettlementItem } from '../valuation/index.ts';
 
 export interface TradeViewsDeps {
   readonly persistence: Persistence;
@@ -337,6 +337,8 @@ export interface OpenTradeDetail extends Omit<PlannedTradeDetail, 'journal'> {
   readonly settlementUnderlying?: { readonly today?: SeriesPoint; readonly yesterday?: SeriesPoint; readonly change?: ReplayChange };
   // A236: the open lots' average price, on every Open Detail (stock and option); a Closed Detail has none.
   readonly openAverage?: Rational;
+  // T95.37, A309: the Plan Exit facts the exit form states and measures a sale with, from the Trade's facts, its latest Marks and its saved Actions.
+  readonly planExit?: PlanExitFacts;
 }
 
 // The Closed form's valuation: the evaluation and its coverage only. A Closed Trade has no current figures
@@ -823,6 +825,7 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
         ]);
         const page = await deps.journal.query({ scope: 'TradeNarrative', tradeId: request.tradeId });
         const narrative = page.items;
+        const actions = page.actions;
         // Valued once through the module, at the session's date, and its state reused for every figure in the view.
         const asOf = deps.clock.now();
         const session = await openSession(asOf);
@@ -910,7 +913,10 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
         const settlementUnderlying = settlement.length > 0 && columns ? await settlementUnderlyingOf(session, analysis.plan.underlying, columns) : undefined;
         // The open lots' average is the Trade Summary's price, for the tracks; a Settlement Due Detail has no tracks (A236).
         const openAverage = settlement.length === 0 ? openLotsAverageOf(derived) : undefined;
-        const view: OpenTradeDetail = { ...detailWithoutValuation(planned, analysis, derived, withDueStatus(narrative, closes), lastActivity, settlement), ...optional('contractExpiration', expiration), ...optional('marksColumns', columns), ...optional('settlementUnderlying', settlementUnderlying), ...optional('openAverage', openAverage), current };
+        // A309: the Plan Exit facts. The Trade's replay is read only when a saved Hold counts (decision 133): the Holds saved past a line are read from it.
+        const replayed = holdsBefore(actions, session.tradingDate).length > 0 ? await assembleReplay(deps, analysis, derived, session, { withJournal: false }) : undefined;
+        const planExit = planExitFactsOf({ state: derived, evaluation, sessions: replayed && !('kind' in replayed) ? replayed.sessions : undefined, history: actions, before: session.tradingDate });
+        const view: OpenTradeDetail = { ...detailWithoutValuation(planned, analysis, derived, withDueStatus(narrative, closes), lastActivity, settlement), planExit, ...optional('contractExpiration', expiration), ...optional('marksColumns', columns), ...optional('settlementUnderlying', settlementUnderlying), ...optional('openAverage', openAverage), current };
         return { binding, view, ...optional('marketDataSnapshotId', snapshotIdOf(session)) };
       });
     },

@@ -588,12 +588,10 @@ export function createJournal(deps: JournalDeps): Journal {
     const labels = new Map(value.types.map((t) => [t.productKey, t.label]));
     const actions: Record<string, DailyAction> = {};
     for (const entry of value.entries) actions[entry.anchor.tradeId] = dailyAction(entry, definitions, labels);
-    const earlier = value.earlier
-      ?.filter((entry) => entry.entryTypeKey === 'entry-type.daily-trade-review')
-      .map((entry) => historyActionOf(entry, definitions, labels))
-      .filter((action) => (tradeId === undefined ? action.reviewDate >= since! : action.reviewDate < reviewDate))
-      .sort(byDateThenTrade);
-    return { kind: 'Actions', reviewDate, actions, ...(earlier && { earlier }), snapshot: { journalRevision: value.meta?.journalRevision ?? 0 } };
+    const history = value.earlier?.filter((entry) => entry.entryTypeKey === 'entry-type.daily-trade-review').map((entry) => historyActionOf(entry, definitions, labels));
+    const earlier = history?.filter((action) => (tradeId === undefined ? action.reviewDate >= since! : action.reviewDate < reviewDate)).sort(byDateThenTrade);
+    const onDate = tradeId === undefined ? undefined : history?.find((action) => action.reviewDate === reviewDate);
+    return { kind: 'Actions', reviewDate, actions, ...(earlier && { earlier }), ...(onDate && { onDate }), snapshot: { journalRevision: value.meta?.journalRevision ?? 0 } };
   }
 
   async function queryActionHistory(query: ActionHistoryQuery): Promise<ActionHistory> {
@@ -817,7 +815,11 @@ export function createJournal(deps: JournalDeps): Journal {
       items.sort((a, b) =>
         a.momentTime !== b.momentTime ? (a.momentTime < b.momentTime ? -1 : 1) : a.id < b.id ? -1 : a.id > b.id ? 1 : 0,
       );
-      return { kind: 'Page', items, snapshot: { journalRevision: value.meta?.journalRevision ?? 0 } };
+      const actions = value.entries
+        .filter((entry) => entry.entryTypeKey === 'entry-type.daily-trade-review')
+        .map((entry) => historyActionOf(entry, definitions, labels))
+        .sort(byDateThenTrade);
+      return { kind: 'Page', items, actions, snapshot: { journalRevision: value.meta?.journalRevision ?? 0 } };
     }) as unknown as Journal['query'],
 
     applyPreparedEffects(tx, prepared, mapping) {

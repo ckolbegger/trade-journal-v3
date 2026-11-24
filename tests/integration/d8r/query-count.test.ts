@@ -18,6 +18,10 @@ const tallyOf = (requests: readonly CountedRequest[]): Tally => {
 // tests/integration/d8p/replay-query-count.test.ts, D7S_DETAIL, itself D7's PINNED count).
 const D8_OPEN_DETAIL = { 'catalog.getAll': 1, 'journalDebts.getAll': 1, 'journalDeclines.getAll': 1, 'journalDefinitions.getAll': 1, 'journalEntries.getAll': 1, 'journalTypes.getAll': 1, 'meta.get': 11, 'observations.getAll': 1, 'trades.get': 2 };
 
+// T95.37 (decision 133): O-C3 has a saved Hold, so its Detail reads its replay too, for the Holds saved past a line: one series read per Instrument
+// (two) and one more `meta` snapshot check. O-S2X has none and keeps D8_OPEN_DETAIL.
+const D8_OPEN_DETAIL_WITH_HOLD = { ...D8_OPEN_DETAIL, 'meta.get': 12, 'observations.getAll': 3 };
+
 // Each read on a fresh launch over the same stores, so no read warms another.
 async function detailCounted(app: Application, d: Parameters<typeof restart>[1], tradeId: string) {
   const fresh = await restart(app, d);
@@ -41,7 +45,7 @@ describe('I8R.7 Query count (AC-PERF-001, cumulative)', () => {
     // Open: both Details' requests are D8's, whatever the Workspace holds.
     const oc3Open = await detailCounted(app, d, oc3Id);
     const os2xOpen = await detailCounted(oc3Open.app, d, os2xId);
-    expect(oc3Open.tally).toEqual(D8_OPEN_DETAIL);
+    expect(oc3Open.tally).toEqual(D8_OPEN_DETAIL_WITH_HOLD);
     expect(os2xOpen.tally).toEqual(D8_OPEN_DETAIL);
 
     // Settlement Due (Mon 11-23 18:00): the Underlying's series is the one read added.

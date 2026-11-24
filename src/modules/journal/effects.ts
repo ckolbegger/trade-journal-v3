@@ -387,6 +387,8 @@ export type TradeNarrativeItem = NarrativeItem | NarrativeDebt;
 export type JournalPage = {
   readonly kind: 'Page';
   readonly items: readonly TradeNarrativeItem[];
+  // The Trade's saved Daily Trade Review Actions with their reasons, by Review Date, from the entries the page already reads.
+  readonly actions: readonly HistoryAction[];
   readonly snapshot: { readonly journalRevision: number };
 };
 
@@ -420,5 +422,7 @@ export type ReviewDateActions = {
   readonly actions: Readonly<Record<string, DailyAction>>;
   // Present when the query gave `since`: the earlier Actions, by Review Date, then Trade.
   readonly earlier?: readonly HistoryAction[];
+  // Present when the query named a Trade that has an Action for the date: that Action with its reason, as the history rows give them.
+  readonly onDate?: HistoryAction;
   readonly snapshot: { readonly journalRevision: number };
 };

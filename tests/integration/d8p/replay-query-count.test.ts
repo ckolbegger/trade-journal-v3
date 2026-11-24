@@ -17,6 +17,10 @@ const tallyOf = (requests: readonly CountedRequest[]): Tally => {
 // (tests/integration/d7/query-count.test.ts, PINNED: 20 requests).
 const D7S_DETAIL = { 'catalog.getAll': 1, 'journalDebts.getAll': 1, 'journalDeclines.getAll': 1, 'journalDefinitions.getAll': 1, 'journalEntries.getAll': 1, 'journalTypes.getAll': 1, 'meta.get': 11, 'observations.getAll': 1, 'trades.get': 2 };
 
+// T95.37 (decision 133): a Trade with a saved Hold reads its replay too, for the Holds saved past a line: O-C3 has one. The replay's own reads,
+// one series read per Instrument (two) and one more `meta` snapshot check, are added; a Trade with none keeps D7S_DETAIL.
+const D7S_DETAIL_WITH_HOLD = { ...D7S_DETAIL, 'meta.get': 12, 'observations.getAll': 3 };
+
 // replayTrade's requests for an option Trade of two Instruments (measured at schema 7 with D08P's replay): 17 requests, 3 fewer than
 // the Detail's 20 (no Catalog read, one Trade read and 3 fewer `meta` reads), with 3 on `observations`.
 const DATE_WIDE = { on: 'store', store: 'observations', method: 'getAll' };
@@ -56,7 +60,7 @@ describe('I8P.4 Query count (AC-PERF-001, cumulative)', () => {
     // The Detail's requests, before any replay has run: D7S's count for both Trades, whatever else the Workspace holds.
     const oc3Detail = await detailCounted(app, d, tradeId);
     const os2Detail = await detailCounted(oc3Detail.app, d, os2);
-    expect(oc3Detail.tally).toEqual(D7S_DETAIL);
+    expect(oc3Detail.tally).toEqual(D7S_DETAIL_WITH_HOLD);
     expect(os2Detail.tally).toEqual(D7S_DETAIL);
 
     // The replay reads each of its two Instruments' observations once (one byInstrumentDate getAll each, no cursor and no per-session
@@ -70,6 +74,6 @@ describe('I8P.4 Query count (AC-PERF-001, cumulative)', () => {
 
     // A replay having run leaves the Detail's requests as they were.
     const after = await detailCounted(os2Replay.app, d, tradeId);
-    expect(after.tally).toEqual(D7S_DETAIL);
+    expect(after.tally).toEqual(D7S_DETAIL_WITH_HOLD);
   });
 });

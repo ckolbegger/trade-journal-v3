@@ -2,18 +2,16 @@ import { Temporal } from 'temporal-polyfill';
 import { instrumentKey, type Instrument } from '../../domain/instrument/index.ts';
 import { measurePlanExit, type PlanExitCondition, type PlanExitHoldPast, type PlanExitMeasure } from '../../domain/plan-exit/index.ts';
 import type { DerivedTradeState, TradeAnalysisRecord } from '../../domain/trade-analysis/index.ts';
-import { formatDecimal, parseDecimal, Rational } from '../../domain/values/index.ts';
+import { parseDecimal, Rational } from '../../domain/values/index.ts';
 import type { AnswerInput, HistoryAction, ReflectionDisposition } from '../../modules/journal/index.ts';
 import type { MarketDataReadSession } from '../../modules/market-data/index.ts';
 import { assembleReplay } from '../replay/index.ts';
-import { planExitConditionsOf, valueTrade } from '../valuation/index.ts';
+import { heldPastOf, holdsBefore, latestExitOf, planExitConditionsOf, signedDecimalOf, valueTrade } from '../valuation/index.ts';
 import type { TradeWorkflowsDeps } from './types.ts';
 
-// formatDecimal writes a minus sign the decimal parser does not read, so the sign is written here.
-const decimalOf = (value: Rational): string => `${value.numerator < 0n ? '-' : ''}${formatDecimal(value.numerator < 0n ? Rational.of(0n).sub(value) : value, 6)}`;
-
 // A309: each reached condition's Holds saved on an earlier Review Date while the replay of that session had it crossed: how many, and since when.
-async function heldPastOf(
+// The replay is read here; the reading of it is the shared one the views' facts use.
+async function heldPastAt(
   deps: TradeWorkflowsDeps,
   analysis: TradeAnalysisRecord,
   whole: DerivedTradeState,
@@ -23,14 +21,7 @@ async function heldPastOf(
 ): Promise<PlanExitHoldPast[]> {
   const replayed = await assembleReplay(deps, analysis, whole, session, { withJournal: false });
   if ('kind' in replayed) return [];
-  return conditions.flatMap((condition) => {
-    const role = condition.role === 'Stop' ? 'stop' : 'target';
-    const crossed = holds.flatMap((hold) => {
-      const since = replayed.sessions.find((s) => s.date === hold.reviewDate)?.crossings?.[role].conditions.find((c) => c.id === condition.id)?.since;
-      return since ? [since.date] : [];
-    });
-    return crossed.length === 0 ? [] : [{ conditionId: condition.id, line: condition.role, since: crossed[0]!, sessions: crossed.length }];
-  });
+  return heldPastOf(replayed.sessions, conditions, holds);
 }
 
 // What the measure reads of an Execution.
@@ -63,10 +54,10 @@ export async function measureSale(
   if (!first || !before) return undefined;
   const position = before.positions.find((p) => instrumentKey(p.instrument) === instrumentKey(first.instrument));
   if (!position) return undefined;
-  const held = decimalOf(position.quantity);
+  const held = signedDecimalOf(position.quantity);
   const quantities = members.map((m) => parseDecimal(m.quantity));
   if (quantities.some((q) => !q.ok)) return undefined;
-  const quantity = decimalOf(quantities.reduce((sum, q) => (q.ok ? sum.add(q.value) : sum), Rational.of(0n)));
+  const quantity = signedDecimalOf(quantities.reduce((sum, q) => (q.ok ? sum.add(q.value) : sum), Rational.of(0n)));
   const side = first.action;
   if (!measurePlanExit({ held, change: { side, quantity }, conditions: [], heldPast: [] })) return undefined;
   const session = await deps.marketData.openReadSession({ kind: 'Current', asOf: deps.clock.now() });
@@ -77,13 +68,12 @@ export async function measureSale(
   // The sale's moment is its earliest Execution's, as recordPositionChange takes it for the reflections, whatever order they arrive in.
   const earliest = members.reduce((a, m) => (Temporal.Instant.compare(m.economicTime, a.economicTime) < 0 ? m : a));
   const saleDate = Temporal.Instant.from(earliest.economicTime).toZonedDateTimeISO('America/New_York').toPlainDate().toString();
-  const holds = actions.filter((a) => a.action === 'Hold' && a.reviewDate < saleDate);
-  const heldPast = holds.length === 0 ? [] : await heldPastOf(deps, analysis, before, session, conditions, holds);
+  const holds = holdsBefore(actions, saleDate);
+  const heldPast = holds.length === 0 ? [] : await heldPastAt(deps, analysis, before, session, conditions, holds);
   const measures = members.map((m) => measurePlanExit({ held, change: { side, quantity, price: m.price }, conditions, heldPast })!);
   const measure = measures.find((m) => m.kind === 'Follows') ?? measures[0]!;
   // A310: a sale that closes the whole Position carries the reason of the Trade's most recent Action when that is an Exit with one.
-  const latest = actions.at(-1);
-  const carried = latest?.action === 'Exit' && (latest.reason ?? '').trim() !== '';
+  const carried = latestExitOf(actions)?.reason !== undefined;
   const whole = measure.kind === 'Leaves' && !measure.reasons.some((r) => r.kind === 'PartOnly');
   return { measure, owesReason: measure.kind === 'Leaves' && !(whole && carried), journalRevision: snapshot.journalRevision };
 }

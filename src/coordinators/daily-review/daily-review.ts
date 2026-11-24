@@ -14,7 +14,7 @@ import type { MutationGuard } from '../mutation-guard.ts';
 import { payoffOf } from '../settlement.ts';
 import { assembleReplay } from '../replay/index.ts';
 import { lastDecisionsOf } from './decisions.ts';
-import { attentionOf, byAttention, meterReadingOf, unavailableFamilies, valueTrade, type TradeValuation } from '../valuation/index.ts';
+import { attentionOf, byAttention, meterReadingOf, planExitFactsOf, unavailableFamilies, valueTrade, type TradeValuation } from '../valuation/index.ts';
 import type {
   ActionForm,
   DailyTradeReview,
@@ -896,6 +896,10 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     const replay = replayed && !('kind' in replayed) ? replayed : undefined;
     const saved = actions.actions[analysis.tradeId];
     const since = await unreviewedSince(read, actions.earlier?.at(-1)?.reviewDate, valuation?.state.exposureStart);
+    // A309: the Plan Exit facts. What is held is the whole lifetime's; the conditions' status is at the Review Date's Marks; a Hold counts before the Review Date,
+    // and the Exit is the most recent Action, the Review Date's own included.
+    const history = [...(actions.earlier ?? []), ...(actions.onDate ? [actions.onDate] : [])];
+    const planExit = valuation && found.integrity.kind === 'Derived' ? planExitFactsOf({ state: found.integrity, evaluation: valuation.evaluation, sessions: replay?.sessions, history, before: reviewDate }) : undefined;
     const decisions = lastDecisionsOf(actions.earlier ?? [], replay, reviewDate, since === undefined ? [] : missedSessions(read, since, dayBefore(reviewDate)));
     // The Trade's Outstanding Debt, each classified against the closes around the Review Date (A63).
     const outstanding = await boundDebts(analysis.tradeId, request.binding);
@@ -934,6 +938,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
           ...(contract?.kind === 'Option' && { expiration: { date: contract.expiration, ...(sessions?.kind === 'Sessions' && { sessionsLeft: sessions.dates.length }) } }),
           ...(payoff && { payoff }),
           ...(replay && { replay }),
+          ...(planExit && { planExit }),
           reflections,
           progress,
           decisions,

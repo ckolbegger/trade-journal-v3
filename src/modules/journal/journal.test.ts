@@ -451,6 +451,7 @@ describe('query: Trade narrative', () => {
     expect(await j.query({ scope: 'TradeNarrative', tradeId: 'trade-none' })).toEqual({
       kind: 'Page',
       items: [],
+      actions: [],
       snapshot: { journalRevision: 1 },
     });
   });
