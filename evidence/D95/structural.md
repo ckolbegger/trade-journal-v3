@@ -646,3 +646,9 @@ The user (2026-11-24) chose (a) for critic-3's moderate defect: it goes to tech 
 ### T95.27
 
 Commit `d5f4ada1`: 13 cases in `src/modules/journal/seed-revision.test.ts`. New: `SEEDED_MANIFESTS` (D1 to D5) in manifest.ts (a manifest revises only a type whose latest stored form equals an earlier manifest's form; T95.28 appends D6); `PromptRole` gains PlanDepartureReason and ExpirationReason (Text prompts only); `PromptOption.protected?`; Defer carries `requires?`, kept on the stored Debt, `PreparedDebt` and `DebtProjection`; restore accepts them; a revised type's key in `additions`. First-run passes flagged and mutation-checked: cases 4, 5, 6, 7, 8. Code for cases 2 and 3 was written before their reds, backed out, re-added after genuine reds. Existing `journal.test.ts` SeedConflict case moved to manifest version 1 (a version-2 change is now a revision). No schema change.
+
+ocr of T95.27 (session 5bb57fab; two earlier runs failed on provider errors): 7 files, 4 findings, all Doubtful. `evidence/D95/ocr/T95.27-d5f4ada1.json`. Style-only (`records.ts:4`, PromptRole shared with SingleSelect) to tech debt. Correctness, bug tasks:
+- **T95.27-B1** (`journal.ts:246`): a stored revision equal to the manifest skips the check on the latest revision, so an unrecognized later revision is not a SeedConflict.
+- **T95.27-B2** (`journal.ts:446`): a deferral accepts `requires` roles with no matching Text prompt in the pinned form, making a Debt that can never be resolved.
+- **T95.27-B3** (`journal.ts:679`): the required-role check counts a non-Text answer as answering the required Text prompt.
+The three are small and in one file; one fresh tdd-task does them in order, one commit each.

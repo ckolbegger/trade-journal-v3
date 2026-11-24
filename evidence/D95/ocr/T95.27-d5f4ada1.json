@@ -1,0 +1,224 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 4 finding(s) across 7 selected item(s).",
+  "summary": {
+    "files_reviewed": 7,
+    "comments": 4,
+    "total_tokens": 155475,
+    "input_tokens": 153420,
+    "output_tokens": 2055,
+    "cache_read_tokens": 11648,
+    "elapsed": "1m25s"
+  },
+  "tool_calls": {
+    "total": 16,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 3,
+      "file_read": 11
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/modules/journal/journal.ts",
+      "content": "A matching historical revision bypasses the latest-form compatibility check. For example, if revision 1 matches this manifest but revision 2 contains an unrecognized edited form, seeding returns `Seeded` instead of the required `SeedConflict`, leaving that unrecognized form active for new entries. Validate the latest revision's compatibility before taking the historical-match no-op path, and add a test with both revisions present.",
+      "existing_code": "    if (stored.some((d) =\u003e canonicalJson(d.prompts) === wanted)) continue;",
+      "start_line": 246,
+      "end_line": 246,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/modules/journal/journal.ts",
+      "content": "Deferral accepts required roles even when the pinned definition has no corresponding Text prompt. For example, deferring with `requires: ['PlanDepartureReason']` against the D5 reflection definition creates a Debt for which every Answer is rejected with `RequiredAnswerMissing`. A later manifest cannot repair it because resolution must use the pinned definition. Reject incompatible role requirements before preparing the Debt, and cover the missing-role case.",
+      "existing_code": "              ...(disposition.requires === undefined ? {} : { requires: disposition.requires }),",
+      "start_line": 446,
+      "end_line": 446,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/modules/journal/records.ts",
+      "content": "`PromptRole` is also used by SingleSelect prompts, so this expansion permits a typed manifest containing a SingleSelect with `role: 'PlanDepartureReason'` or `'ExpirationReason'`. `seedDefaults` persists it, but the restore schema still permits only the original four roles for SingleSelect, making that Workspace's backup unrestorable. Keep the new roles in a Text-specific role type and retain the narrower type for SingleSelect (or otherwise align the accepted stored shapes).",
+      "existing_code": "export type PromptRole = 'Thesis' | 'Invalidation' | 'Action' | 'Intent' | 'PlanDepartureReason' | 'ExpirationReason';",
+      "start_line": 4,
+      "end_line": 4,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/modules/journal/journal.ts",
+      "content": "The required-role check accepts non-Text answers as satisfying a required Text role. For example, supplying `{ kind: 'Scale', value: 1 }` for the PlanDepartureReason prompt makes `isBlank` return false, and `validateForm` does not validate answer kinds for Text prompts, so the Debt is settled without a reason. Require a Text answer with nonblank text here (or add Text-kind validation to `validateForm`) and cover a wrong-kind answer in the tests.",
+      "existing_code": "      if (isBlank(prompt \u0026\u0026 form.answers[prompt.id]) \u0026\u0026 !issues.some((i) =\u003e i.promptId === prompt?.id)) {",
+      "start_line": 679,
+      "end_line": 679,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Journal seed revision handling, persistence, and tests",
+      "files": [
+        "src/modules/journal/effects.ts",
+        "src/modules/journal/journal.test.ts",
+        "src/modules/journal/journal.ts",
+        "src/modules/journal/manifest.ts",
+        "src/modules/journal/records.ts",
+        "src/modules/journal/restore.ts",
+        "src/modules/journal/seed-revision.test.ts"
+      ]
+    }
+  ],
+  "session_id": "5bb57fab-36b5-4081-b2ea-2e8735173181",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "5bb57fab-36b5-4081-b2ea-2e8735173181",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "d5f4ada1",
+      "resolved_base": "456e8286c3edb1e20054651482438668a329d75b",
+      "resolved_head": "d5f4ada162f22be1d5b185531c613b9ab7429ede",
+      "exact_range": "456e8286c3edb1e20054651482438668a329d75b..d5f4ada162f22be1d5b185531c613b9ab7429ede",
+      "source_artifact_sha256": "81035bde55aac8b6677fe8940a1eb8ca81407732ff17fea821c169313ee771ce"
+    },
+    "execution": {
+      "ocr_version": "v1.14.2",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "265139fa195a485874d9acb508d60d0ba58df1a60a8c61f10a5dc5af23536c70",
+          "path": "src/modules/journal/manifest.ts",
+          "fingerprint": "3cc224b2075f3463ae00c70a4e0bb5c8a6e7039c9135bd9897825ab6b2f59f31"
+        },
+        {
+          "item_id": "33ac3d81cbc891ebb9dabbc93cef39770a692104e3973f3b049dd4454e22d709",
+          "path": "src/modules/journal/restore.ts",
+          "fingerprint": "cc24f8cd07e57b9275d3af87dc97ae691d27499eef48055e9afba2a0118fe9ce"
+        },
+        {
+          "item_id": "5ebb6f8e3e26f8cf5820988231bcab158521827ead5b327497db0583f27aa132",
+          "path": "src/modules/journal/journal.test.ts",
+          "fingerprint": "e67d469291a97f939c56f0e89850234d49f558b7e3d91158cabba0f5c895ba98"
+        },
+        {
+          "item_id": "83393d74b34185a9a0a6443c49c338227f5f1dfd616b79e3e4b1799df8c3041e",
+          "path": "src/modules/journal/seed-revision.test.ts",
+          "fingerprint": "c682fa53b7d0e283673d21f56752785687aeda4aaaddc2504e6fa3a688a79f89"
+        },
+        {
+          "item_id": "d5ca0db109bd5eca3585475c4cd3739bada34094523b44a916a4118276e691b6",
+          "path": "src/modules/journal/journal.ts",
+          "fingerprint": "09c67bee74235949d916c9e581ec60a5fbacfb3234479993f092e0cbf471fb96"
+        },
+        {
+          "item_id": "d6c8c47ccfe003cc12717253e6fc1645df411f51f99a7a0d515fd378b2c40a00",
+          "path": "src/modules/journal/records.ts",
+          "fingerprint": "f3f122432dc2194988e4a522b01d1715f5cb55b8a5190c435adada69f25091b7"
+        },
+        {
+          "item_id": "fd1c910f754a206e66b4e66d854fe19ed7ac30adb9c39111b3b1ccc9e7046634",
+          "path": "src/modules/journal/effects.ts",
+          "fingerprint": "8b6157b5fcec440397ecfa57db1747de4830293ccb8244dd50f1af50de8b6f74"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "265139fa195a485874d9acb508d60d0ba58df1a60a8c61f10a5dc5af23536c70",
+          "path": "src/modules/journal/manifest.ts",
+          "fingerprint": "3cc224b2075f3463ae00c70a4e0bb5c8a6e7039c9135bd9897825ab6b2f59f31"
+        },
+        {
+          "item_id": "33ac3d81cbc891ebb9dabbc93cef39770a692104e3973f3b049dd4454e22d709",
+          "path": "src/modules/journal/restore.ts",
+          "fingerprint": "cc24f8cd07e57b9275d3af87dc97ae691d27499eef48055e9afba2a0118fe9ce"
+        },
+        {
+          "item_id": "5ebb6f8e3e26f8cf5820988231bcab158521827ead5b327497db0583f27aa132",
+          "path": "src/modules/journal/journal.test.ts",
+          "fingerprint": "e67d469291a97f939c56f0e89850234d49f558b7e3d91158cabba0f5c895ba98"
+        },
+        {
+          "item_id": "83393d74b34185a9a0a6443c49c338227f5f1dfd616b79e3e4b1799df8c3041e",
+          "path": "src/modules/journal/seed-revision.test.ts",
+          "fingerprint": "c682fa53b7d0e283673d21f56752785687aeda4aaaddc2504e6fa3a688a79f89"
+        },
+        {
+          "item_id": "d5ca0db109bd5eca3585475c4cd3739bada34094523b44a916a4118276e691b6",
+          "path": "src/modules/journal/journal.ts",
+          "fingerprint": "09c67bee74235949d916c9e581ec60a5fbacfb3234479993f092e0cbf471fb96"
+        },
+        {
+          "item_id": "d6c8c47ccfe003cc12717253e6fc1645df411f51f99a7a0d515fd378b2c40a00",
+          "path": "src/modules/journal/records.ts",
+          "fingerprint": "f3f122432dc2194988e4a522b01d1715f5cb55b8a5190c435adada69f25091b7"
+        },
+        {
+          "item_id": "fd1c910f754a206e66b4e66d854fe19ed7ac30adb9c39111b3b1ccc9e7046634",
+          "path": "src/modules/journal/effects.ts",
+          "fingerprint": "8b6157b5fcec440397ecfa57db1747de4830293ccb8244dd50f1af50de8b6f74"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "90c1ed614c9cae4aa4c0856e14c39cc49a4152f87b65933cb10a038d8e02d1fb",
+          "path": "evidence/D95/tdd-log/T95.27.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 84681
+  },
+  "retry_report": {
+    "schema_version": "ocr.llm-retry-report/v1",
+    "total_requests": 12,
+    "retried_requests": 0,
+    "total_retries": 0,
+    "recovered_requests": 0,
+    "failed_requests": 1,
+    "cancelled_requests": 0,
+    "requests": [
+      {
+        "logical_request_id": "52362131550195925c2951432b96941c970459a8d7ab90a2ddd0c8aa267be22c",
+        "provider": "chatgpt",
+        "model": "gpt-6.1-sol",
+        "file_path": "src/modules/journal/effects.ts,src/modules/journal/journal.test.ts,src/modules/journal/journal.ts,src/modules/journal/manifest.ts,src/modules/journal/records.ts,src/modules/journal/restore.ts,src/modules/journal/seed-revision.test.ts",
+        "task_type": "review_filter_task",
+        "request_no": 1,
+        "outcome": "failed",
+        "attempts": [
+          {
+            "attempt": 1,
+            "outcome": "error",
+            "error_class": "provider",
+            "failure_phase": "stream",
+            "status_code": 200,
+            "duration_to_headers_ms": 1094
+          }
+        ]
+      }
+    ]
+  }
+}
