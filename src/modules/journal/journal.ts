@@ -425,6 +425,10 @@ export function createJournal(deps: JournalDeps): Journal {
     if (disposition.kind === 'Defer') {
       // The trader is shown no form, so the Debt snapshots the current revision.
       if (!definition) return { kind: 'Rejected', issues: [{ code: 'DefinitionRevisionMismatch' }] };
+      // Each required role must have a Text prompt in that revision, or the Debt could never be resolved.
+      if ((disposition.requires ?? []).some((role) => !definition.prompts.some((p) => p.kind === 'Text' && p.role === role))) {
+        return { kind: 'Rejected', issues: [{ code: 'DispositionNotAllowed' }] };
+      }
       return {
         kind: 'Prepared',
         effects: {

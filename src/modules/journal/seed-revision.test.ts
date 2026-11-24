@@ -281,6 +281,14 @@ describe('a deferred reflection carries the roles its answer must include (U14, 
     expect(page.kind === 'Debts' && page.debts.map((d) => [d.debtId, d.requires])).toEqual([[setup.debt.debtId, ['PlanDepartureReason']]]);
   });
 
+  it('should refuse a deferral that requires a role the pinned form has no Text prompt for', async () => {
+    const setup = await seededAt5();
+    expect(await setup.journal.prepareEffects(reflectionRequest({ kind: 'Defer', requires: ['PlanDepartureReason'] }))).toEqual({
+      kind: 'Rejected',
+      issues: [{ code: 'DispositionNotAllowed' }],
+    });
+  });
+
   it('should refuse to resolve that Debt with an answer missing a required role, and still let it be declined', async () => {
     const setup = await owed();
     const [, latest] = await definitionsOf(setup.persistence, 'entry-type.position-change-reflection');
