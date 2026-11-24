@@ -973,3 +973,5 @@ ocr of T95.44 (session e50bc4dd): 6 files, 2 findings, both Valid test gaps, bat
 ### T95.44-B1, T95.44-B2
 
 Commits `3d423c43` (B1: the justified Hold saved and asserted for target too; mutation refusing a Hold at the Target, after a first mutation that couldn't reach the path, fails at plan-rule.test.ts:66) and `ca2069f0` (B2: `shapeOf`/`CONTRACT` keep `requiredWhenPrompt`, the controlling prompt's text; mutation pointing "Why?" at Conviction fails the equality cases). Tests only; first-run passes mutation-checked; tests/integration/d95 66 passed.
+
+ocr of T95.44-B1, T95.44-B2 (session 052ff93d): 2 files, 0 findings. `evidence/D95/ocr/T95.44-B1-B2-ca2069f0.json`. Next: run `t95.44-integration-b` (browser-task, Standard).

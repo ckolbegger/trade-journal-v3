@@ -1,0 +1,117 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 0,
+    "total_tokens": 33574,
+    "input_tokens": 33335,
+    "output_tokens": 239,
+    "cache_read_tokens": 6656,
+    "elapsed": "14s"
+  },
+  "tool_calls": {
+    "total": 3,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "tests/integration/d95/plan-rule.test.ts",
+        "tests/integration/d95/seed-support.ts"
+      ]
+    }
+  ],
+  "session_id": "052ff93d-82d5-4a66-b5a3-0feb43370054",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "052ff93d-82d5-4a66-b5a3-0feb43370054",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "a109c44e",
+      "requested_head": "ca2069f0",
+      "resolved_base": "a109c44ef1204c1ef72e1983f61ce79cd1f2cde3",
+      "resolved_head": "ca2069f09c141d57ff1b646692d112104d0a28d7",
+      "exact_range": "a109c44ef1204c1ef72e1983f61ce79cd1f2cde3..ca2069f09c141d57ff1b646692d112104d0a28d7",
+      "source_artifact_sha256": "8f889c3ceaa12141e9ece17486463db441720acce57b6784a09d87585c8a8531"
+    },
+    "execution": {
+      "ocr_version": "v1.14.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "b525575dd7a8361a7d3810230c9a646a6b760dcaa6f8dc8377ecf7c52528dbe0",
+          "path": "tests/integration/d95/seed-support.ts",
+          "fingerprint": "dccfbaa5ac2fe95c1564f2b8376509ed86b75043894d798e7e67759b4f724270"
+        },
+        {
+          "item_id": "ffe5c08e6c8af5d19446491aa6cceb7e1013847b72efe4ac1af7d9e7724b832b",
+          "path": "tests/integration/d95/plan-rule.test.ts",
+          "fingerprint": "8c1aedb3222dd2c6feb6161bad587835c153c54f62573b68fbd7b5919586e140"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "b525575dd7a8361a7d3810230c9a646a6b760dcaa6f8dc8377ecf7c52528dbe0",
+          "path": "tests/integration/d95/seed-support.ts",
+          "fingerprint": "dccfbaa5ac2fe95c1564f2b8376509ed86b75043894d798e7e67759b4f724270"
+        },
+        {
+          "item_id": "ffe5c08e6c8af5d19446491aa6cceb7e1013847b72efe4ac1af7d9e7724b832b",
+          "path": "tests/integration/d95/plan-rule.test.ts",
+          "fingerprint": "8c1aedb3222dd2c6feb6161bad587835c153c54f62573b68fbd7b5919586e140"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "05c0d868602def5b77f22d2776c05b59fa8e01c2d3dcf670d990392465bd2469",
+          "path": "evidence/D95/tdd-log/T95.44-B1.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "2de0ee2406216d40bcee5a5170de29c4d90870d6ff8f082a90a62fc6c52446cd",
+          "path": "evidence/D95/tdd-log/T95.44-B2.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ab47bc811f23c17f4c6317a43b1bf19eff8f2b20af07649acc55f19159f8bebc",
+          "path": "evidence/D95/structural.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "f553abfb0c8797dd4169481472b4a06228caa8b47d3f8a9e14bef7d4f2cbb348",
+          "path": "evidence/D95/ocr/T95.44-a109c44e.json",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 14148
+  }
+}
