@@ -554,3 +554,5 @@ Commit `9ec06f79`: card-helpers 39, 59 and 140, B5R.5 and B5R.11 save the Trade'
 ### T95.20-B1
 
 Commit `f988238f`: the read-only New-form branch now comes before the Marks-first branch in `ActionForm.tsx`. Red then green; src/ui 1384 passed; B4.10 and e2e/d95 17 passed.
+
+ocr of T95.20-B1 (session 8667b40f): 2 files, 0 findings. `evidence/D95/ocr/T95.20-B1-f988238f.json`.
