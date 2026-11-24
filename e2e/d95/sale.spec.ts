@@ -34,6 +34,8 @@ async function writtenStores(page: Page): Promise<string> {
   }));
 }
 
+const SAY_WHY = 'Say why you left the Plan, or choose “Say why later”.';
+
 const planBox = (page: Page): Locator => page.getByRole('region', { name: 'Against the Plan' });
 
 test.use({ actionTimeout: 15_000 });
@@ -117,7 +119,7 @@ test.describe('B95.8 The sale measured against the Plan Exit (AC-REV-008, AC-POS
       // Left empty, the save is refused in words and writes nothing.
       const before = await writtenStores(page);
       await form.getByRole('button', { name: 'Save exit' }).click();
-      await expect(page.getByText(/Say why/).first()).toBeVisible();
+      await expect(page.getByText(SAY_WHY, { exact: true }).first(), 'the refusal in words').toBeVisible();
       expect(await writtenStores(page), 'a refused sale writes nothing').toBe(before);
       await page.getByLabel('Why only part?').fill('Trimming the position.');
       await form.getByRole('button', { name: 'Save exit' }).click();
