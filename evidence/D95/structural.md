@@ -1010,3 +1010,6 @@ Output: evidence/D95/ocr/T95.45-B4-B5-af20a1ae..f1faff8a.json.
 
 ### T95.45 suite run t95.45-browser-b (browser-task, base c3d45308, at b0e65437): all passed
 Unit 3086, integration 363, browser 51 (5 @every-task + 46 e2e/d95), 14 of 14 checks; run complete, 3m55s. T95.45 stays open only for B95.10, which awaits the user's answer on adding the D9 release to tools/build-releases.ts.
+
+### T95.40-D1 — The owed group heading for open and closed Trades (decision 135)
+Commit `30671d8e`: the owed group's heading "Trades with owed reflections" (W103 as amended) and the moved-to-owed notice "… is now in Trades with owed reflections, so what you entered for it was not kept."; a new case lists an open Trade owing only a Position Change Reflection under it with no Close Review label. Three cases red then green; no first-run passes. Expectations quoting the old heading updated (ReviewOwed, ReviewCards, e2e d6 close-review and responsive-a11y, d7 review-expiration, d95 sale). Review unit files 208 passed; browser 13 passed.
