@@ -681,3 +681,7 @@ ocr of T95.28 (session 26d354ec, second run; the first had 8 stream failures): 4
 - **T95.28-B2** (Valid, `bench-generator.ts:407`): `closeReviewAnswers` gives the now-required key lesson only for even, non-deferred Trades, so the benchmark writes Close Reviews with an Unanswered required prompt.
 - **T95.28-B3** (Doubtful, `backup.ts:211`): the Journal seed version is read in a separate snapshot from the export.
 - Dismissed as planned later work: `ActionForm.tsx:158` still marks the reason required for Exit (T95.33 case 4 sets the form's rule); `save.test.ts:133` has no "Exit with no reason saves" case (T95.32 case 4).
+
+### T95.28-B1, T95.28-B2, T95.28-B3
+
+Commits `9998748f` (B1: the migration receipt names revised Entry Types as `seedDefaults` does; d4, d5, d6 migration expectations updated), `707765c8` (B2: `closeReviewAnswers` always answers the key lesson; generator version and marker 9), `1a8fb348` (B3: the export snapshot reads `journalDefinitions` in its own transaction; `ExportJob.journalSeedFromForms` for a current-schema Workspace; `storedJournalSeed` removed; the race is shown by a table value no stored form matches). Red then green each; 714 tests in the touched folders passed.
