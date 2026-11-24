@@ -859,3 +859,5 @@ The tdd-task built nothing. Cases 2, 3 and 4 can't all hold: Trade Detail's held
 - `npx vitest run src/ui/screens/PositionChangeForm` (PositionChangeForm, PositionChangeFormExit, PositionChangeFormOptions tests, no test edited): 3 files, 77 passed.
 - `.claude/scripts/with-browser-lock.sh npm run test:e2e:specs -- e2e/d6/exit.spec.ts exit-action.spec.ts exit-requirements.spec.ts close-review.spec.ts no-save.spec.ts`: 6 passed.
 - typecheck, tsc6, lint (2 pre-existing warnings in OwedDebtItem.tsx), lint:deps: exit 0.
+
+T95.38 main-session note: commit `ca2ea8e4`; the body moved unchanged to `PositionChangeFormBody.tsx` (props tradeId, exit, onDone, backLabel); `ExitForm.tsx` wraps it; main.tsx unchanged. Recorded difference: moving between Record entry and Record exit on one Trade now remounts the form (row state not kept); no test covers it. d6 exit, exit-action, exit-requirements, close-review, no-save 6 passed; PositionChangeForm tests 77 passed unedited.
