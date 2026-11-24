@@ -556,3 +556,5 @@ Commit `9ec06f79`: card-helpers 39, 59 and 140, B5R.5 and B5R.11 save the Trade'
 Commit `f988238f`: the read-only New-form branch now comes before the Marks-first branch in `ActionForm.tsx`. Red then green; src/ui 1384 passed; B4.10 and e2e/d95 17 passed.
 
 ocr of T95.20-B1 (session 8667b40f): 2 files, 0 findings. `evidence/D95/ocr/T95.20-B1-f988238f.json`.
+
+Run `t95.26-gate-2` (browser-full, 20m06s): integration 329, browser 127 + 79 + 55 + 126 (4 skipped), checks 14 of 14 passed; unit 1 failed: `src/ui/screens/TradeList.test.tsx:154` Open list states, `marks('tj:open-list-ready')` 2 not 3. This is tech debt item 11's load flake (seen in D5, once during T95.17, now); it passed 5 of 5 alone in the main session. Decision 116 allows one rerun for it; the browser tier the critic stands on passed in full, so the critic proceeds on this run, and the flake gets its own fix task, **T95.26-F1**, after the critic (no code changes while a critic runs).
