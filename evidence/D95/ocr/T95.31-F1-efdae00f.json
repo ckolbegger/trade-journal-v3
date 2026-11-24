@@ -1,0 +1,141 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 6 selected item(s).",
+  "summary": {
+    "files_reviewed": 6,
+    "comments": 0,
+    "total_tokens": 17538,
+    "input_tokens": 17341,
+    "output_tokens": 197,
+    "elapsed": "12s"
+  },
+  "tool_calls": {
+    "total": 0,
+    "by_tool": {},
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Expected view fixtures across backup and workspace versions",
+      "files": [
+        "tests/fixtures/backup-v5-blocked/expected-views.json",
+        "tests/fixtures/backup-v6-blocked/expected-views.json",
+        "tests/fixtures/backup-v7/expected-views.json",
+        "tests/fixtures/workspace-v5/expected-views.json",
+        "tests/fixtures/workspace-v6/expected-views.json",
+        "tests/fixtures/workspace-v7/expected-views.json"
+      ]
+    }
+  ],
+  "session_id": "42827c8f-1097-4024-9c01-7f713db9f499",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "42827c8f-1097-4024-9c01-7f713db9f499",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "efdae00f",
+      "resolved_base": "137e1d4a4f580c78b6378b256a3ed74fee8265f6",
+      "resolved_head": "efdae00f65c0f2956f8c9f83382e5394c1a5a0d9",
+      "exact_range": "137e1d4a4f580c78b6378b256a3ed74fee8265f6..efdae00f65c0f2956f8c9f83382e5394c1a5a0d9",
+      "source_artifact_sha256": "6a191538cc087f21ff63cd8e37058ba783a7a3412998f9e40edebd7e02e7a380"
+    },
+    "execution": {
+      "ocr_version": "v1.14.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "bc388df9d692c9fbddd63bce6c87fa64d5dad30456734bf418a9a4847cc82040",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "075ced8951c74b37c572b59ce44735c33280079b0cfcd7b756af7bc692343e65",
+          "path": "tests/fixtures/backup-v7/expected-views.json",
+          "fingerprint": "d059e0f35bfd56148521cd5a1dfcaa4a1cd876ca3181d5d32aa5470dd3ba9c91"
+        },
+        {
+          "item_id": "2bb53e8ac585b73e3918e0b02ff693505b94d8b8aa2d83f8accd8d4d60498594",
+          "path": "tests/fixtures/workspace-v6/expected-views.json",
+          "fingerprint": "2500b0418819889462afc58ab58b8930e1355d25cb52afbbf04c3872e2702a14"
+        },
+        {
+          "item_id": "3266428fd20c81d9f082d29ac94bc2dcb009f74adbf87a0a1608bc974cd5781c",
+          "path": "tests/fixtures/workspace-v5/expected-views.json",
+          "fingerprint": "b015fbc10aa5bdeb28ce7a620a478bade295067e4481043adc3b4597efe5f716"
+        },
+        {
+          "item_id": "529e6aafb3d9abe130486c91fc456c4d478863c4b40210a0ee6d90dcf4451742",
+          "path": "tests/fixtures/workspace-v7/expected-views.json",
+          "fingerprint": "869c2bf3440ebe783a398a2fc481cd326c032daff9fd59f609fc4c52ae69b8cb"
+        },
+        {
+          "item_id": "a5a34b4da63afcc0456118a1d0132bc6ef1523579aad2494f9db97e28f0e42e2",
+          "path": "tests/fixtures/backup-v5-blocked/expected-views.json",
+          "fingerprint": "37d7baecf98518021318ad422b02c37f1d230c0a9606961e291e8ccc782a5e83"
+        },
+        {
+          "item_id": "bfd7bfb7c23f9db27c8d7ba6b484e7e35a3149a728c3bfe95968624829b9261b",
+          "path": "tests/fixtures/backup-v6-blocked/expected-views.json",
+          "fingerprint": "e96fe683472acc8f448c9197406d3fa823026faabf41d4c180818802a4ecec9c"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "075ced8951c74b37c572b59ce44735c33280079b0cfcd7b756af7bc692343e65",
+          "path": "tests/fixtures/backup-v7/expected-views.json",
+          "fingerprint": "d059e0f35bfd56148521cd5a1dfcaa4a1cd876ca3181d5d32aa5470dd3ba9c91"
+        },
+        {
+          "item_id": "2bb53e8ac585b73e3918e0b02ff693505b94d8b8aa2d83f8accd8d4d60498594",
+          "path": "tests/fixtures/workspace-v6/expected-views.json",
+          "fingerprint": "2500b0418819889462afc58ab58b8930e1355d25cb52afbbf04c3872e2702a14"
+        },
+        {
+          "item_id": "3266428fd20c81d9f082d29ac94bc2dcb009f74adbf87a0a1608bc974cd5781c",
+          "path": "tests/fixtures/workspace-v5/expected-views.json",
+          "fingerprint": "b015fbc10aa5bdeb28ce7a620a478bade295067e4481043adc3b4597efe5f716"
+        },
+        {
+          "item_id": "529e6aafb3d9abe130486c91fc456c4d478863c4b40210a0ee6d90dcf4451742",
+          "path": "tests/fixtures/workspace-v7/expected-views.json",
+          "fingerprint": "869c2bf3440ebe783a398a2fc481cd326c032daff9fd59f609fc4c52ae69b8cb"
+        },
+        {
+          "item_id": "a5a34b4da63afcc0456118a1d0132bc6ef1523579aad2494f9db97e28f0e42e2",
+          "path": "tests/fixtures/backup-v5-blocked/expected-views.json",
+          "fingerprint": "37d7baecf98518021318ad422b02c37f1d230c0a9606961e291e8ccc782a5e83"
+        },
+        {
+          "item_id": "bfd7bfb7c23f9db27c8d7ba6b484e7e35a3149a728c3bfe95968624829b9261b",
+          "path": "tests/fixtures/backup-v6-blocked/expected-views.json",
+          "fingerprint": "e96fe683472acc8f448c9197406d3fa823026faabf41d4c180818802a4ecec9c"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "9cb1a797774d02950cc071d8d999024e890e80edbfdf05f415f708917949c2e7",
+          "path": "evidence/D95/structural.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 11705
+  }
+}

@@ -743,3 +743,5 @@ Updated the frozen `expected-views.json` of six fixtures for T95.31 (P174 as ame
 | backup-v7 | 7 (0 to 6) |
 
 Diff: 6 files, 36 insertions, 108 deletions (36 viewState objects, 3 lines each to `{}`). Green: `npm run verify:fixtures` OK (all workspace and backup folders views equal); the 10 integration tests (d7/migration, d7s/migration I7S.1 two, d8/blocked I8.10, d8/round-trip I8.12 three, d8r/restore I8R.6 three) pass, as do their folders (tests/integration/d7, d7s, d8, d8r) and tools fixture-views and verify-fixtures tests: 49 files, 133 tests.
+
+ocr of T95.31-F1 (session 42827c8f, with a scratch rule including the fixture views; the repo rule skipped them, to tech debt): 6 files, 0 findings. `evidence/D95/ocr/T95.31-F1-efdae00f.json`. Next: run `t95.31-plan-call-page-2` (browser-auto a54d6298).
