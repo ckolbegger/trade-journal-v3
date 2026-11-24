@@ -23,6 +23,17 @@ async function openSale(page: Page, where: Where, symbol: string, ids: Record<st
 // The Debts whose latest version is still Outstanding.
 const owedOf = (workspace: NonNullable<ReturnType<typeof workspaceOf>>) => debtsOf(workspace).filter((d) => (d.versions as readonly { status: string }[]).at(-1)?.status === 'Outstanding');
 
+// The stores a sale writes: its Trade, the Journal entries, declines, obligations and debts. Read together, so a write to any of them shows.
+const WRITTEN_STORES = ['trades', 'journalEntries', 'journalDeclines', 'journalObligations', 'journalDebts'] as const;
+async function writtenStores(page: Page): Promise<string> {
+  const workspace = workspaceOf(await probe(page))!;
+  return JSON.stringify(WRITTEN_STORES.map((name) => {
+    const rows = workspace.stores[name];
+    if (rows === undefined) throw new Error(`the workspace has no ${name} store`);
+    return rows;
+  }));
+}
+
 const planBox = (page: Page): Locator => page.getByRole('region', { name: 'Against the Plan' });
 
 test.use({ actionTimeout: 15_000 });
@@ -54,14 +65,15 @@ test.describe('B95.8 The sale measured against the Plan Exit (AC-REV-008, AC-POS
         await expectNoSidewaysScroll(page, `the sale form at ${width} px`);
       });
       // Saved with no Close Reason it is refused and nothing is written.
-      const before = JSON.stringify(workspaceOf(await probe(page))!.stores['facts'] ?? []);
+      const before = await writtenStores(page);
       await form.getByRole('button', { name: 'Save exit' }).click();
       await expect(closingSection(page).locator('.field-error, [role="alert"]').first()).toBeVisible();
-      expect(JSON.stringify(workspaceOf(await probe(page))!.stores['facts'] ?? []), 'a refused sale writes nothing').toBe(before);
+      expect(await writtenStores(page), 'a refused sale writes nothing').toBe(before);
       await closeReasonGroup(page).getByRole('radio', { name: 'Stop Triggered', exact: true }).check();
       await form.getByRole('button', { name: 'Save exit' }).click();
       const receipt = page.getByText('Recorded. ABC is closed. Its Close Review is due in the next Review.', { exact: true });
       await expect(receipt).toBeVisible();
+      expect(await writtenStores(page), 'the snapshot sees the saved sale').not.toBe(before);
       await atBothWidths(page, async (width) => {
         await expect(receipt, `the receipt at ${width}`).toBeVisible();
         await expect(page.getByText('Why you left the Plan is owed')).toHaveCount(0);
@@ -103,13 +115,14 @@ test.describe('B95.8 The sale measured against the Plan Exit (AC-REV-008, AC-POS
         await expect(closingSection(page)).toHaveCount(0);
       });
       // Left empty, the save is refused in words and writes nothing.
-      const before = JSON.stringify(workspaceOf(await probe(page))!.stores['facts'] ?? []);
+      const before = await writtenStores(page);
       await form.getByRole('button', { name: 'Save exit' }).click();
       await expect(page.getByText(/Say why/).first()).toBeVisible();
-      expect(JSON.stringify(workspaceOf(await probe(page))!.stores['facts'] ?? []), 'a refused sale writes nothing').toBe(before);
+      expect(await writtenStores(page), 'a refused sale writes nothing').toBe(before);
       await page.getByLabel('Why only part?').fill('Trimming the position.');
       await form.getByRole('button', { name: 'Save exit' }).click();
       await expect(page.getByText('Recorded.', { exact: false }).first().or(page.getByRole('heading', { name: 'Exit recorded' }))).toBeVisible();
+      expect(await writtenStores(page), 'the snapshot sees the saved sale').not.toBe(before);
       await atBothWidths(page, async (width) => {
         await expect(page.getByText('Why you left the Plan is owed'), `nothing owed at ${width}`).toHaveCount(0);
       });
