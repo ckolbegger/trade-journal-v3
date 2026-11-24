@@ -620,3 +620,5 @@ Commit `8e2f88e7`: `LastDecisions.tsx` wraps the signed Trade P&L in `Figures` (
 ocr of T95.26-B4 (session 94056617): 2 files, 0 findings. `evidence/D95/ocr/T95.26-B4-8e2f88e7.json`. Next: full run `t95.26-gate-4` (covers the quick runs of T95.26-B3, T95.26-B6 and T95.26-B4), then critic-3.
 
 Run `t95.26-gate-4` (browser-full, T95.26-B3, T95.26-B6, T95.26-B4; about 20:01): unit 2895, integration 330, browser 127, 79, 55 and 129 (4 skipped), checks 14 of 14. Passed. It covers the quick runs of B3, B6 and B4. Critic-3 follows (the gate's last; brief rebuilt from critic-2's after a session restart, with the known tech-debt items listed and the fixes to check).
+
+The user (2026-11-24): if critic-3 passes, add **T95.26-F2**: `src/app/bench-generator.test.ts` restores the benchmark smoke artifact about 7 times (about 5-6 s each, about 40 of the unit stage's 53.8 s in that one file); restore once and share the loaded app across as many tests as feasible. Answer (a): `viewsOfRestored` in `src/app/bench-generator.ts` may take an already-restored app (ocr review for that change). Verification: the file's tests pass, then one full suite run; no critic.
