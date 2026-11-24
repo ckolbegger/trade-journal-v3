@@ -947,3 +947,7 @@ ocr of T95.41 (session 9ace9183): 11 files, 2 findings, both Valid, batched:
 - **T95.41-B1** (`ReviewCard.tsx:329`): opening the sale form from "I sold: record it" while the Action has unsaved edits drops the leave-warning: the sale form reports not dirty under the same `action:<tradeId>` id while ActionForm skips its own report when selling; the Action draft can be lost on a card switch.
 - **T95.41-B2** (low, `ExitBanner.tsx:10`): "I sold: record it" stays enabled when the runtime is read-only, but ActionForm returns "No Action saved." before the selling branch, so the button does nothing (card and day card).
 `evidence/D95/ocr/T95.41-1173c055.json`.
+
+### T95.41-B1, T95.41-B2
+
+Commits `277640b3` (B1: ActionForm reports dirty while the Action draft changed or the sale form holds typed values; "Save it"/"Discard it" act on the shown sale form, the held draft returns on "Back to the Review"; the case checks the dirty report the refusal reads) and `011130ff` (B2: "I sold: record it" disabled while read-only, in the shared Answers component, card and day card; "Still holding" stays enabled). Each red then green; src/ui/screens 864 passed.
