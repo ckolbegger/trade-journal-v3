@@ -834,3 +834,7 @@ ocr of T95.36 (session f75cbe5c): 11 files, 3 findings (1 Valid, 2 Doubtful), al
 - **T95.36-B2** (Doubtful, `sale-measure.ts:73`): the Action history read that waives the reason is not bound to the commit (its journalRevision is dropped), so a concurrent change of that Exit to a Hold could still record the sale without a reason.
 - **T95.36-B3** (Doubtful, `sale-measure.ts:75`): `Temporal.Instant.from` on a malformed economicTime throws, giving StorageFailure instead of an economicTime issue.
 `evidence/D95/ocr/T95.36-04a1e1d4.json`.
+
+### T95.36-B1, T95.36-B2, T95.36-B3
+
+Commits `44ca55d0` (B1: the hold-past cutoff uses the earliest member's time), `f2ff9bc6` (B2: `SaleMeasure.journalRevision`; a revision moved before the reflection is prepared returns Conflict `journal@N`, and the existing retry re-measures; no new stored shape), `0c616a21` (B3: `unreadableTimeIssues` at the coordinator's start, `EconomicTimeInvalid` on economicTime, nothing written; the throw came from `compareInstants` via prepareChange, so it covers every Position Change). Each red, then green; src/coordinators and tests/integration 926 passed.
