@@ -1015,3 +1015,5 @@ Unit 3086, integration 363, browser 51 (5 @every-task + 46 e2e/d95), 14 of 14 ch
 Commit `30671d8e`: the owed group's heading "Trades with owed reflections" (W103 as amended) and the moved-to-owed notice "… is now in Trades with owed reflections, so what you entered for it was not kept."; a new case lists an open Trade owing only a Position Change Reflection under it with no Close Review label. Three cases red then green; no first-run passes. Expectations quoting the old heading updated (ReviewOwed, ReviewCards, e2e d6 close-review and responsive-a11y, d7 review-expiration, d95 sale). Review unit files 208 passed; browser 13 passed.
 
 T95.40-D1 ocr (`30671d8e`): no findings (evidence/D95/ocr/T95.40-D1-30671d8e.json).
+
+Run `t95.40-d1` (browser-task, base 22249ee8, at b3e298f6): unit 3088, integration 363, browser 51, checks 14 of 14; run complete. T95.40-D1 done.
