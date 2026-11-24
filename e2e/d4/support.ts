@@ -477,7 +477,8 @@ export async function acknowledgeMark(page: Page, card: CardRef, date: string, r
   await expect(entry.getByText('Acknowledged Unavailable')).toBeVisible();
 }
 
-// Fills the Trade's Action form and presses Save; Hold needs no Intent. Returns once the save result has
+// Fills the Trade's Action form and presses Save; pass an Intent where the reason rule owes one (Roll and Adjust always, Hold when the Plan says out,
+// Exit unless it does; T95.32, T95.33). Returns once the save result has
 // rendered: a Saved result replaces the form (the next Trade's form, or none), so the element that was
 // pressed is gone. Until then the Review's binding is the old one, and opening another Trade would use it.
 export async function saveAction(page: Page, action: 'Hold' | 'Exit' | 'Roll' | 'Adjust', intent: string | undefined, card: CardRef): Promise<void> {

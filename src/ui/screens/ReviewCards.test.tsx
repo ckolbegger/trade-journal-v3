@@ -756,7 +756,7 @@ describe('Save while the Review is read again', () => {
     await showPanel(user, card, 'Action');
 
     await waitFor(() => expect(facade.DailyReview.open).toHaveBeenCalledTimes(2));
-    const save = () => within(screen.getByRole('region', { name: 'ABC review' })).getByRole<HTMLButtonElement>('button', { name: 'Save' });
+    const save = () => within(screen.getByRole('region', { name: 'ABC review' })).getByRole<HTMLButtonElement>('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ });
     expect(save().disabled).toBe(true);
     settle(review({ binding: { ...binding, marketDataSnapshotId: 'mds1:2:def' } }));
     await waitFor(() => expect(save().disabled).toBe(false));
@@ -852,7 +852,7 @@ describe('read only (A162)', () => {
     await user.click(headers()[3]!);
     const card = await screen.findByRole('region', { name: 'XYZ review' });
     await showPanel(user, card, 'Action');
-    expect(within(card).getByText('Saved Action: Hold')).toBeTruthy();
+    expect(within(card).getByText(/^Mon Oct 12: Hold/)).toBeTruthy();
     await showPanel(user, card, 'Reflections');
     expect(within(card).getByRole('region', { name: 'Reflections' })).toBeTruthy();
     // Opening the reflection shows its questions, none of them enabled, as D5 renders a reflection read only.
@@ -1091,7 +1091,7 @@ describe('Action save whose next step is a Mark (T5R.12-B3)', () => {
     renderReview(facade);
     const abc = await screen.findByRole('region', { name: 'ABC review' });
 
-    await user.click(within(abc).getByRole('button', { name: 'Save' }));
+    await user.click(within(abc).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
 
     await waitFor(() => expect(screen.queryByRole('region', { name: 'ABC review' })).toBeNull());
     expect(headers().map((h) => h.getAttribute('aria-expanded'))).toEqual(['false', 'false', 'false', 'false', 'false']);
@@ -1107,7 +1107,7 @@ describe('Action save whose next step is a Mark (T5R.12-B3)', () => {
     await user.type(within(marksStep()).getByRole('textbox', { name: 'DEF Mark, Mon Oct 12' }), '33.10');
     await showPanel(user, card, 'Action');
 
-    await user.click(within(card).getByRole('button', { name: 'Save' }));
+    await user.click(within(card).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
 
     // The Mark is next, so its cell takes the focus with the draft in it.
     await waitFor(() => expect(document.activeElement).toBe(cellNamed(document.body, 'DEF Mark, Mon Oct 12')));
@@ -1127,7 +1127,7 @@ describe('Action save while other forms hold values (A156)', () => {
     await user.type(within(marksStep()).getByRole('textbox', { name: 'DEF Mark, Mon Oct 12' }), '33.10');
     await showPanel(user, card, 'Action');
 
-    await user.click(within(card).getByRole('button', { name: 'Save' }));
+    await user.click(within(card).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
 
     await waitFor(() => expect(facade.DailyReview.save).toHaveBeenCalledTimes(1));
     expect(await screen.findByRole('region', { name: 'XYZ review' })).toBeTruthy();
@@ -1245,7 +1245,7 @@ describe('Trade names in messages and blockers (decision 68)', () => {
     // A reflection with an entered value holds the card while its Action is saved.
     await startReflection(user, card);
 
-    await user.click(within(card).getByRole('button', { name: 'Save' }));
+    await user.click(within(card).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
 
     expect((await screen.findByRole('status')).textContent).toBe(`The Action is saved. Save or discard what you entered for ${NAME_F} to go on.`);
     expect(headers().map((h) => h.getAttribute('aria-expanded'))).toEqual(['false', 'false', 'true', 'false', 'false']);
@@ -1266,7 +1266,7 @@ describe('Trade names in messages and blockers (decision 68)', () => {
     if (owedCard) vi.mocked(facade.DailyReview.getTrade).mockResolvedValue({ kind: 'ReflectionsOwed', reviewDate: '2026-10-12', cutoff: CUTOFF, card: owedCard });
     // The first read of the Trade as it now is fails, so its owed card offers Retry.
     if (unreadable) vi.mocked(facade.DailyReview.getTrade).mockRejectedValueOnce(new Error('down'));
-    await user.click(within(card).getByRole('button', { name: 'Save' }));
+    await user.click(within(card).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
     await waitFor(() => expect(screen.queryByRole('region', { name: `${NAME_F} review` })).toBeNull());
     return { user };
   }

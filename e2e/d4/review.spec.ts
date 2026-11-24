@@ -71,7 +71,7 @@ test.describe('B4.1 Daily Review end to end', () => {
     for (const [symbol, action] of Object.entries(expected)) {
       await expect(cardHeader(again, symbol)).toContainText(`Done · ${action}`);
       await panelOf(again, symbol, 'Action');
-      await expect(again.getByRole('region', { name: 'Saved Action' })).toContainText(`Saved Action: ${action}`);
+      await expect(again.getByRole('region', { name: 'Saved Action' })).toContainText(new RegExp(`: ${action}`));
     }
 
     // Durable state: four Action Entries under the Review Date, four observation records, no Trade fact added.

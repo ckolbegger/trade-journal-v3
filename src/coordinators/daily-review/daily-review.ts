@@ -1,5 +1,6 @@
 import { Temporal } from 'temporal-polyfill';
 import { instrumentKey, settlementDueOn, type Instrument, type OptionInstrument } from '../../domain/instrument/index.ts';
+import { reasonOwed } from '../../domain/reason-rule.ts';
 import { openTradeSummary } from '../../domain/trade-summary.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { derive, planCall, type PlanCall, type DerivedTradeState, type IncoherentFacts, type LifecycleState, type TradeAnalysisRecord, type TradeEvaluation } from '../../domain/trade-analysis/index.ts';
@@ -1020,13 +1021,6 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     };
   }
 
-  // The reason rule (A308): Roll and Adjust always; Hold when the Plan Call is Out; Exit unless it is Out. Unknown is not Out.
-  function reasonOwed({ action }: SaveTradeActionRequest, call: PlanCall | undefined): boolean {
-    if (action === 'Hold') return call?.call === 'Out';
-    if (action === 'Exit') return call?.call !== 'Out';
-    return true;
-  }
-
   // A commit refused on a binding re-reads and re-validates, so the answer names what changed; bounded (ADR 0011).
   async function saveTradeAction(request: SaveTradeActionRequest): Promise<SaveDailyReviewResult> {
     for (let i = 0; i < ASSEMBLY_ATTEMPTS; i++) {
@@ -1042,7 +1036,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     const checked = await coherently(() => checkBinding(binding, needsCall));
     if (checked.kind !== 'Checked') return checked;
     if (checked.unresolved.length > 0) return { kind: 'Rejected', issues: [{ code: 'ReviewMarksUnresolved', instruments: checked.unresolved }] };
-    if (reasonOwed(request, checked.planCall) && (request.intent ?? '').trim() === '') return { kind: 'Rejected', issues: [{ code: 'IntentRequired' }] };
+    if (reasonOwed(request.action, checked.planCall?.call) && (request.intent ?? '').trim() === '') return { kind: 'Rejected', issues: [{ code: 'IntentRequired' }] };
     const prepared = await deps.journal.prepareEffects({
       obligation: 'DailyTradeReview',
       disposition: {

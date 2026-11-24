@@ -137,7 +137,7 @@ export function marksGroup(view: TradeReplayView, session: ViewSession): Readout
 }
 
 // "4 contracts", "short 2 contracts", "100 shares": a quantity (without its sign) of an Instrument's units.
-function countWords(short: boolean, count: Rational, instrument: Instrument | undefined): string {
+export function countWords(short: boolean, count: Rational, instrument: Instrument | undefined): string {
   return `${short ? 'short ' : ''}${quantity(count)} ${instrument?.kind === 'Option' ? 'contract' : 'share'}${count.equals(Rational.of(1n)) ? '' : 's'}`;
 }
 

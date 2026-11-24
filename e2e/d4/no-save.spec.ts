@@ -50,7 +50,8 @@ test.describe('B4.12 Nothing saved without Save (AC-JOUR-001)', () => {
     await (await markInputOf(page, 'XYZ', DATE)).fill(TYPED.correctedPrice);
     await (await actionFormOf(page, 'XYZ')).getByRole('radio', { name: 'Exit', exact: true }).check();
     await (await actionFormOf(page, 'XYZ')).getByLabel(/^Why\?/).fill(TYPED.intent);
-    await (await actionFormOf(page, 'XYZ')).getByLabel('Conviction now').selectOption('4');
+    await (await actionFormOf(page, 'XYZ')).getByRole('group', { name: 'Conviction now (optional)' }).getByRole('button', { name: '4', exact: true }).click();
+    await (await actionFormOf(page, 'XYZ')).getByText('Add more: what you decided against, a note').click();
     await (await actionFormOf(page, 'XYZ')).getByLabel('Anything you considered doing and decided against?').fill(TYPED.considered);
     await (await actionFormOf(page, 'XYZ')).getByLabel(/^Note/).fill(TYPED.note);
 
@@ -59,7 +60,7 @@ test.describe('B4.12 Nothing saved without Save (AC-JOUR-001)', () => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await expect(await markInputOf(page, 'XYZ', DATE)).toHaveValue(TYPED.correctedPrice);
     await expect((await actionFormOf(page, 'XYZ')).getByLabel(/^Why\?/)).toHaveValue(TYPED.intent);
-    await expect((await actionFormOf(page, 'XYZ')).getByLabel('Conviction now')).toHaveValue('4');
+    await expect((await actionFormOf(page, 'XYZ')).getByRole('group', { name: 'Conviction now (optional)' }).getByRole('button', { name: '4', exact: true })).toHaveAttribute('aria-pressed', 'true');
     await expect((await actionFormOf(page, 'XYZ')).getByLabel(/^Note/)).toHaveValue(TYPED.note);
     expect(traces(await webStorage(page))).toEqual([]);
     expect(workspaceOf(await probe(page))).toEqual(before);

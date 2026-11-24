@@ -2,11 +2,14 @@ import { useContext, useEffect, useId, useRef, useState, type FormEvent } from '
 import { Link, UNSAFE_NavigationContext } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
 import { DAILY_TRADE_REVIEW_PROMPTS } from '../../domain/daily-trade-review-prompts.ts';
+import { reasonOwed } from '../../domain/reason-rule.ts';
+import { shortDate } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
 import { draftKey, draftSetAside, dropDraftSetAside, holdDraft, isWayBack, setDraftAsideOnTrip } from './action-draft.ts';
+import { actionMeaning, planCallLine } from './action-words.ts';
 import { fieldIssues } from './form-issues.tsx';
 import type { FieldIssue } from './plan-issues.ts';
-import type { ActionChoice, ActionForm as ActionFormState, SaveDailyReviewResult, TradeSaveBinding } from '../../app/types.ts';
+import type { ActionChoice, ActionForm as ActionFormState, DailyTradeReview, SaveDailyReviewResult, TradeSaveBinding } from '../../app/types.ts';
 
 const CHOICES: readonly ActionChoice[] = ['Hold', 'Exit', 'Roll', 'Adjust'];
 
@@ -26,6 +29,11 @@ export interface ActionFormProps {
   readonly pending?: boolean;
   // How many of the Trade's Marks for the Review Date are still to enter: while any are, no Action is offered (A304).
   readonly marksToGo?: number;
+  // What the Plan says on the Review Date's Marks (A306), and the replay that holds the Plan's own words for the condition behind it.
+  readonly planCall?: DailyTradeReview['planCall'];
+  readonly replay?: DailyTradeReview['replay'];
+  // The session whose figures the card shows when the Review Date has no price (the Now box's dated close); absent when it has one.
+  readonly decidingOn?: string;
 }
 
 // "No Action until today's Marks are in. Enter them" (W95), the link going to the Marks step.
@@ -60,7 +68,7 @@ const NOTICE = {
   ),
 } as const;
 
-const INTENT_REQUIRED = (field: string, code: string): FieldIssue => ({ field, message: 'Say why you are taking this action.', code });
+const INTENT_REQUIRED = (field: string, code: string): FieldIssue => ({ field, message: 'Say why.', code });
 // Any other rejection (the definition or the Trade is no longer what the form was rendered from) is about the Action as a whole.
 const COULD_NOT_SAVE = 'This Action could not be saved. Reopen the Trade and try again.';
 
@@ -68,8 +76,11 @@ const COULD_NOT_SAVE = 'This Action could not be saved. Reopen the Trade and try
 const { intent: INTENT, earlierIntent: EARLIER_INTENT, conviction: CONVICTION, considered: CONSIDERED, note: NOTE } = DAILY_TRADE_REVIEW_PROMPTS;
 const SCALE = [1, 2, 3, 4, 5] as const;
 
+// '' is nothing chosen: the view selects Hold only when the Plan call is Hold (A307).
+type Chosen = ActionChoice | '';
+
 interface Values {
-  readonly action: ActionChoice;
+  readonly action: Chosen;
   readonly intent: string;
   // The Conviction select's value: '' is unanswered.
   readonly conviction: string;
@@ -79,8 +90,7 @@ interface Values {
 
 // What the form was returned with: the saved Action and its answers, or Hold with none.
 function returnedValues(form: ActionFormState): Values {
-  // Nothing is selected when the Plan Call is not Hold (A307); the choice-less form is a later task's, so this still opens on Hold.
-  if (form.kind === 'New') return { action: form.viewState.selectedAction ?? 'Hold', intent: '', conviction: '', considered: '', note: '' };
+  if (form.kind === 'New') return { action: form.viewState.selectedAction ?? '', intent: '', conviction: '', considered: '', note: '' };
   const { responses } = form.action;
   const text = (prompt: string) => {
     const answer = responses.find((r) => r.prompt === prompt)?.answer;
@@ -98,7 +108,7 @@ function returnedValues(form: ActionFormState): Values {
 }
 
 // The Action for one Trade on the Review Date. Hold is preselected as view state only; nothing is recorded until Save.
-export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyChange, pending = false, marksToGo = 0 }: ActionFormProps) {
+export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyChange, pending = false, marksToGo = 0, planCall, replay, decidingOn }: ActionFormProps) {
   const { writable, report } = useRuntime();
   const returned = returnedValues(form);
   // A form opened on the way back from Price History starts from the Action the trader had started there (C9AR.5).
@@ -109,7 +119,13 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
   useEffect(() => dropDraftSetAside(key), [key]);
   // Leaving for Price History (by the link, or the browser's Forward) sets the draft aside; this cleanup runs before the one below clears it.
   useEffect(() => () => setDraftAsideOnTrip(key, history.location?.search ?? ''), [key, history]);
-  const [action, setAction] = useState((started?.action as ActionChoice | undefined) ?? returned.action);
+  const [action, setAction] = useState((started?.action as Chosen | undefined) ?? returned.action);
+  // The view's preselection can arrive after the form opened (the Marks come in and the Plan call is Hold): the form follows it until the trader chooses.
+  const [preselected, setPreselected] = useState(returned.action);
+  if (preselected !== returned.action) {
+    setPreselected(returned.action);
+    if (action === preselected) setAction(returned.action);
+  }
   // A saved Action is shown as it is until the trader chooses to change it.
   const [changing, setChanging] = useState(false);
   // One save at a time: a second would carry the same binding.
@@ -117,9 +133,12 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
   const [conviction, setConviction] = useState(started?.conviction ?? returned.conviction);
   const [considered, setConsidered] = useState(started?.considered ?? returned.considered);
   const [note, setNote] = useState(started?.note ?? returned.note);
+  // The fold stays shut until the trader opens it, and stays open while it holds a value.
+  const [more, setMore] = useState(false);
   const [issues, setIssues] = useState<readonly FieldIssue[]>([]);
   const uid = useId();
   const intentField = `${uid}-intent`;
+  const convictionLabel = `${uid}-conviction`;
   const wholeField = `${uid}-form`;
   const wholeIssue = issues.find((i) => i.field === wholeField);
   const { fieldError, describedBy } = fieldIssues(issues);
@@ -156,15 +175,20 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
   };
   // A save refused for want of Marks (A304): the form's words are the card's own until the Review is read again under a new binding.
   const [unresolved, setUnresolved] = useState<{ readonly binding: TradeSaveBinding; readonly count: number }>();
-  const required = action !== 'Hold';
+  const required = action !== '' && reasonOwed(action, planCall?.call);
   const [saving, setSaving] = useState(false);
   const submit = async (event: FormEvent) => {
     event.preventDefault();
     const text = intent.trim();
     const consideredText = considered.trim();
     const noteText = note.trim();
-    // Exit, Roll, and Adjust need Intent; a blank one is no Intent, and nothing is sent.
+    // A blank reason is no reason where the rule owes one, and nothing is sent.
     const missing = required && text === '';
+    // Nothing chosen is refused first; its words go where the whole form's refusals do.
+    if (action === '') {
+      setIssues([{ field: wholeField, message: 'Choose an Action.', code: 'ActionMissing' }]);
+      return;
+    }
     setIssues(missing ? [INTENT_REQUIRED(intentField, 'RequiredAnswerMissing')] : []);
     if (missing) return;
     setSaving(true);
@@ -190,16 +214,26 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
     setIssues(result.kind === 'Rejected' && !marks ? result.issues.map((issue) => (issue.code === 'RequiredAnswerMissing' || issue.code === 'IntentRequired' ? INTENT_REQUIRED(intentField, issue.code) : { field: wholeField, message: COULD_NOT_SAVE, code: issue.code })) : []);
     if (result.kind === 'Saved') onSaved(result);
   };
+  // Discard empties the form: the choice goes back to what the view preselected, and every answer to blank.
+  const discard = () => {
+    setAction(returned.action);
+    setIntent(returned.intent);
+    setConviction(returned.conviction);
+    setConsidered(returned.considered);
+    setNote(returned.note);
+    setIssues([]);
+  };
   // A form opened read only has no entry controls. One that held values when the shell turned read only stays, disabled, so the values are visibly kept.
   const readOnlyEmpty = !writable && !dirty;
+  const callLine = planCallLine(planCall, replay);
   const toGo = unresolved?.binding === binding ? unresolved.count : marksToGo;
   if (readOnlyEmpty && form.kind === 'New') return <p>No Action saved.</p>;
   if (toGo > 0) return <MarksFirst tradeId={binding.tradeId} toGo={toGo} />;
   // Values held over a Conflict refresh differ from the saved Action it now shows: they stay open, as if Change were pressed.
   const savedLines = form.kind === 'Saved' && (
     <>
-      <p>Saved Action: {form.action.action}</p>
-      {returned.intent !== '' && <p>{INTENT} {returned.intent}</p>}
+      <p>{`${shortDate(binding.reviewDate)}: ${form.action.action}${returned.intent === '' ? '' : ` · “${returned.intent}”`}`}</p>
+      {form.action.action === 'Exit' && <p>Not done until it is recorded. Tomorrow&apos;s Review will ask.</p>}
       {returned.conviction !== '' && <p>{CONVICTION}: {returned.conviction}</p>}
       {returned.considered !== '' && <p>{CONSIDERED} {returned.considered}</p>}
       {returned.note !== '' && <p>{NOTE}: {returned.note}</p>}
@@ -235,6 +269,9 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
           {wholeIssue.message}
         </p>
       )}
+      {decidingOn && <p className="action-dated">No price today: deciding on the {shortDate(decidingOn)} figures.</p>}
+      {callLine && <p className="action-call">{callLine}</p>}
+      {action === '' && <p className="action-nothing">Nothing is chosen for you here.</p>}
       <fieldset className="choices">
         <legend>Action</legend>
         {CHOICES.map((choice) => (
@@ -244,6 +281,7 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
           </label>
         ))}
       </fieldset>
+      {action !== '' && <p className="action-meaning">{actionMeaning(action, planCall, replay)}</p>}
       <div className="field">
         <label>
           {required ? `${INTENT} (required)` : `${INTENT} (optional)`}
@@ -251,33 +289,37 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
         </label>
         {fieldError(intentField)}
       </div>
-      <div className="field">
-        <label>
-          {CONVICTION}
-          <select value={conviction} disabled={saving || !writable} onChange={(e) => setConviction(e.target.value)}>
-            <option value="">Not answered</option>
-            {SCALE.map((n) => (
-              <option key={n} value={String(n)}>
-                {n}
-              </option>
-            ))}
-          </select>
-        </label>
+      <div className="field" role="group" aria-labelledby={convictionLabel}>
+        <span id={convictionLabel}>{CONVICTION} (optional)</span>
+        <div className="conviction-buttons">
+          {SCALE.map((n) => (
+            <button key={n} type="button" className="pill secondary" aria-pressed={conviction === String(n)} disabled={saving || !writable} onClick={() => setConviction(conviction === String(n) ? '' : String(n))}>
+              {n}
+            </button>
+          ))}
+        </div>
+        <span className="field-hint">1 low · 5 high</span>
       </div>
-      <div className="field">
-        <label>
-          {CONSIDERED}
-          <textarea value={considered} disabled={saving || !writable} onChange={(e) => setConsidered(e.target.value)} />
-        </label>
-      </div>
-      <div className="field">
-        <label>
-          {NOTE}
-          <textarea value={note} disabled={saving || !writable} onChange={(e) => setNote(e.target.value)} />
-        </label>
-      </div>
+      <details open={more || considered !== '' || note !== ''} onToggle={(e) => setMore(e.currentTarget.open)}>
+        <summary>Add more: what you decided against, a note</summary>
+        <div className="field">
+          <label>
+            {CONSIDERED}
+            <textarea value={considered} disabled={saving || !writable} onChange={(e) => setConsidered(e.target.value)} />
+          </label>
+        </div>
+        <div className="field">
+          <label>
+            {NOTE}
+            <textarea value={note} disabled={saving || !writable} onChange={(e) => setNote(e.target.value)} />
+          </label>
+        </div>
+      </details>
+      <button type="button" className="pill secondary" disabled={!dirty || saving || !writable} onClick={discard}>
+        Discard
+      </button>
       <button type="submit" className="pill primary" disabled={saving || refreshing || pending || !writable}>
-        Save
+        {action === '' ? 'Save' : `Save ${action}`}
       </button>
     </form>
   );

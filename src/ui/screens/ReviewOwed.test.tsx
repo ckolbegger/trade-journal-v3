@@ -267,7 +267,7 @@ describe('owed-reflection group (P19, P20)', () => {
     const walked = await screen.findByRole('region', { name: 'XYZ review' });
     vi.mocked(facade.DailyReview.getTrade).mockClear();
 
-    await user.click(within(walked).getByRole('button', { name: 'Save' }));
+    await user.click(within(walked).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
 
     // The owed card opens from the step's card, with no further read, and takes focus; the saved card closes.
     const closed = await screen.findByRole('region', { name: 'ABC review' });
@@ -416,8 +416,7 @@ describe('Exit Action records intent only (decision 72)', () => {
     if (header.getAttribute('aria-expanded') !== 'true') await user.click(header);
 
     // The Action panel shows the saved Exit and its Intent, and nothing that records the exit.
-    expect(within(card).getByText('Saved Action: Exit')).toBeTruthy();
-    expect(within(card).getByText(`${DAILY_TRADE_REVIEW_PROMPTS.intent} ${intent}`)).toBeTruthy();
+    expect(within(card).getByText(`Tue Oct 13: Exit · “${intent}”`)).toBeTruthy();
     expect(within(card).queryByRole('button', { name: 'Record the exit' })).toBeNull();
     expect(within(card).queryByRole('heading', { name: 'Record exit' })).toBeNull();
     expect(within(card).queryByRole('group', { name: 'Execution 1' })).toBeNull();

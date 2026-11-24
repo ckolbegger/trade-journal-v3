@@ -403,7 +403,7 @@ function CardBody({ facade, trade, progress, name, go, onSaved, onReflectionReso
               </button>
             )}
             {name === 'Action' && trade.decisions && listShown && <LastDecisions decisions={trade.decisions} />}
-            {name === 'Action' && <ActionForm facade={facade} form={trade.form} binding={trade.saveBinding} onSaved={onSaved} onRefresh={onRefresh} onDirtyChange={report} pending={pending} marksToGo={marksToGo} />}
+            {name === 'Action' && <ActionForm facade={facade} form={trade.form} binding={trade.saveBinding} onSaved={onSaved} onRefresh={onRefresh} onDirtyChange={report} pending={pending} marksToGo={marksToGo} planCall={trade.planCall} replay={trade.replay} decidingOn={waitingOn} />}
           </div>
         </div>
       ))}

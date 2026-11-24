@@ -36,9 +36,9 @@ test.describe('B5.9 Recovery Only (faults build)', () => {
     await expect((await debtFormOf(page, 'XYZ')).getByRole('radiogroup', { name: 'Decision mode' }).getByLabel('As Planned')).toBeDisabled();
     await expect((await debtFormOf(page, 'XYZ')).getByRole('button', { name: 'Answer', exact: true })).toHaveCount(0);
     await expect((await debtFormOf(page, 'XYZ')).getByRole('button', { name: 'Decline', exact: true })).toHaveCount(0);
-    await expect(page.getByRole('button', { name: 'Save', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ })).toHaveCount(0);
     await expect(await actionFormOf(page, 'XYZ')).toHaveCount(0);
-    await expect(page.getByRole('button', { name: 'Save', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ })).toHaveCount(0);
 
     // Detail shows the Debt as owed, with no Reflect now or Decline.
     await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Trades' }).click();

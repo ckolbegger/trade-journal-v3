@@ -217,7 +217,7 @@ test.describe('B4.13 Responsive and accessible', () => {
     await expectAccessible(page, 'Action form');
     await (await actionFormOf(page, 'XYZ')).getByRole('radio', { name: 'Exit', exact: true }).check();
     await (await actionFormOf(page, 'XYZ')).getByRole('button', { name: 'Save' }).click();
-    await expect((await actionFormOf(page, 'XYZ')).getByText('Say why you are taking this action.')).toBeVisible();
+    await expect((await actionFormOf(page, 'XYZ')).getByText('Say why.')).toBeVisible();
     await expectAccessible(page, 'Action form with an Intent error');
     await page.setViewportSize({ width: 390, height: 844 });
     await expectAccessible(page, 'Action form with an Intent error, narrow');

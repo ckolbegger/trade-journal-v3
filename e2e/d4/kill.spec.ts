@@ -27,7 +27,7 @@ test.describe('B4.8 Kill after commit', () => {
       await expect(completion(page)).toHaveText('Complete');
       await expect(cardHeader(page, 'XYZ')).toContainText('Done · Exit');
       await panelOf(page, 'XYZ', 'Action');
-      await expect(page.getByRole('region', { name: 'Saved Action' })).toContainText('Saved Action: Exit');
+      await expect(page.getByRole('region', { name: 'Saved Action' })).toContainText(/: Exit/);
 
       const workspace = workspaceOf(await probe(page))!;
       const entries = actionEntriesOf(workspace);

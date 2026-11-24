@@ -38,7 +38,7 @@ test.describe('B4.10 Recovery Only (faults build)', () => {
     await expectMark(page, 'XYZ', DATE, 'Manual');
     await expect(card.getByRole('button', { name: 'Correct' })).toHaveCount(0);
     await panelOf(page, 'XYZ', 'Action');
-    await expect(card.getByRole('region', { name: 'Saved Action' })).toContainText('Saved Action: Hold');
+    await expect(card.getByRole('region', { name: 'Saved Action' })).toContainText(/: Hold/);
     await expect(card.getByRole('button', { name: 'Change' })).toHaveCount(0);
     // ABC's card again: no Action saved, and no form or Save.
     await reachCard(page, 'ABC');
@@ -46,7 +46,7 @@ test.describe('B4.10 Recovery Only (faults build)', () => {
     await panelOf(page, 'ABC', 'Action');
     await expect(card.getByText('No Action saved.')).toBeVisible();
     await expect(await actionFormOf(page, 'ABC')).toHaveCount(0);
-    await expect(card.getByRole('button', { name: 'Save', exact: true })).toHaveCount(0);
+    await expect(card.getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ })).toHaveCount(0);
     await expect(card.getByRole('button', { name: /^Save Marks/ })).toHaveCount(0);
 
     // The Open list and a Detail are readable.

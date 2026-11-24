@@ -100,8 +100,9 @@ test.describe('B5R.11 Responsive and accessible', () => {
     await expect(panelHeader(page, tB, 'Action')).toHaveAttribute('aria-expanded', 'true');
     const save = abc.getByRole('form', { name: 'Action' }).getByRole('button', { name: 'Save' });
     await expect(save).toBeEnabled();
-    await expect(abc.getByRole('radio', { name: 'Hold', exact: true })).toBeChecked();
-    // ABC's Mark is past its Stop, so a Hold needs its reason (T95.32): typed by keyboard, then Save.
+    // ABC's Mark is past its Stop: the Plan says out and nothing is chosen for the trader (T95.33). A Hold then needs its reason (T95.32): chosen, typed by keyboard, then Save.
+    await expect(abc.getByRole('radio', { name: 'Hold', exact: true })).not.toBeChecked();
+    await abc.getByRole('radio', { name: 'Hold', exact: true }).check();
     await tabTo(page, abc.getByRole('form', { name: 'Action' }).getByLabel(INTENT));
     await page.keyboard.type('Holding as planned.');
     await tabTo(page, save);

@@ -328,6 +328,37 @@ fieldset.choices legend {
   color: var(--muted);
 }
 
+/* The four Action choices on two rows of two on a phone (W120 form, T95.33). */
+@media (max-width: 479.98px) {
+  fieldset.choices {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.25rem;
+  }
+
+  fieldset.choices legend {
+    grid-column: 1 / -1;
+  }
+
+  fieldset.choices label.chip {
+    margin: 0;
+    justify-content: center;
+  }
+}
+
+/* Conviction as five buttons: the chosen one filled, like a chosen Action. */
+.conviction-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.conviction-buttons button[aria-pressed='true'] {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #ffffff;
+}
+
 /* Execution rows: a tinted rounded panel; Quantity, Price and Fee in two columns, three when wide. */
 fieldset.execution-row {
   border: none;

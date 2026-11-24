@@ -259,7 +259,7 @@ describe('Action form (AC-REV-003)', () => {
     const radios = within(group).getAllByRole('radio');
     expect(radios.map((r) => (r as HTMLInputElement).labels?.[0]?.textContent)).toEqual(['Hold', 'Exit', 'Roll', 'Adjust']);
     expect(within(group).getByRole('radio', { name: 'Hold' })).toHaveProperty('checked', true);
-    expect(within(trade).getAllByRole('button', { name: /Save/ }).map((b) => b.textContent)).toEqual(['Save']);
+    expect(within(trade).getAllByRole('button', { name: /Save/ }).map((b) => b.textContent)).toEqual(['Save Hold']);
     // Opening it records nothing.
     expect(vi.mocked(facade.DailyReview.save)).not.toHaveBeenCalled();
   });
@@ -294,7 +294,7 @@ describe('Action form (AC-REV-003)', () => {
 
     const trade = await openTrade(user, 'XYZ');
     const opens = vi.mocked(facade.DailyReview.open).mock.calls.length;
-    await user.click(within(trade).getByRole('button', { name: 'Save' }));
+    await user.click(within(trade).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
 
     // One call, carrying the exact binding getTrade returned and no Intent.
     expect(vi.mocked(facade.DailyReview.save)).toHaveBeenCalledExactlyOnceWith({ kind: 'SaveTradeAction', binding: first.saveBinding, action: 'Hold' });
@@ -339,19 +339,19 @@ describe('Action form (AC-REV-003)', () => {
     for (const choice of ['Exit', 'Roll', 'Adjust']) {
       await user.click(within(trade).getByRole('radio', { name: choice }));
       expect(within(trade).getByRole('textbox', { name: INTENT_LABEL }).parentElement?.textContent).toContain(`${INTENT_PROMPT} (required)`);
-      await user.click(within(trade).getByRole('button', { name: 'Save' }));
-      const message = within(trade).getByText('Say why you are taking this action.');
+      await user.click(within(trade).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
+      const message = within(trade).getByText('Say why.');
       expect(within(trade).getByRole('textbox', { name: INTENT_LABEL }).getAttribute('aria-describedby')).toBe(message.id);
       expect(document.activeElement).toBe(within(trade).getByRole('textbox', { name: INTENT_LABEL }));
       // Blank is not Intent.
       await user.type(within(trade).getByRole('textbox', { name: INTENT_LABEL }), '   ');
-      await user.click(within(trade).getByRole('button', { name: 'Save' }));
+      await user.click(within(trade).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
       expect(vi.mocked(facade.DailyReview.save)).not.toHaveBeenCalled();
       await user.clear(within(trade).getByRole('textbox', { name: INTENT_LABEL }));
     }
 
     await user.type(within(trade).getByRole('textbox', { name: INTENT_LABEL }), ' Move to Nov. ');
-    await user.click(within(trade).getByRole('button', { name: 'Save' }));
+    await user.click(within(trade).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
     expect(vi.mocked(facade.DailyReview.save)).toHaveBeenCalledExactlyOnceWith({ kind: 'SaveTradeAction', binding: first.saveBinding, action: 'Adjust', intent: 'Move to Nov.' });
   });
 });
@@ -364,7 +364,7 @@ describe('Saved Action', () => {
     const user = userEvent.setup();
 
     const trade = await openTrade(user, 'XYZ');
-    expect(within(trade).getByText(`${INTENT_PROMPT} Saved under the earlier form.`)).toBeTruthy();
+    expect(within(trade).getByText('Mon Oct 12: Exit · “Saved under the earlier form.”')).toBeTruthy();
     await user.click(within(trade).getByRole('button', { name: 'Change' }));
     expect(within(trade).getByRole('textbox', { name: INTENT_LABEL })).toHaveProperty('value', 'Saved under the earlier form.');
   });
@@ -379,16 +379,15 @@ describe('Saved Action', () => {
 
     const trade = await openTrade(user, 'XYZ');
     // The saved values, and no form until the trader chooses to change them.
-    expect(within(trade).getByText('Saved Action: Exit')).toBeTruthy();
-    expect(within(trade).getByText(`${INTENT_PROMPT} Because the plan changed.`)).toBeTruthy();
-    expect(within(trade).queryByRole('button', { name: 'Save' })).toBeNull();
+    expect(within(trade).getByText('Mon Oct 12: Exit · “Because the plan changed.”')).toBeTruthy();
+    expect(within(trade).queryByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ })).toBeNull();
     await user.click(within(trade).getByRole('button', { name: 'Change' }));
     expect(within(trade).getByRole('radio', { name: 'Exit' })).toHaveProperty('checked', true);
     expect(within(trade).getByRole('textbox', { name: INTENT_LABEL })).toHaveProperty('value', 'Because the plan changed.');
     await user.click(within(trade).getByRole('radio', { name: 'Roll' }));
     await user.clear(within(trade).getByRole('textbox', { name: INTENT_LABEL }));
     await user.type(within(trade).getByRole('textbox', { name: INTENT_LABEL }), 'Roll to November.');
-    await user.click(within(trade).getByRole('button', { name: 'Save' }));
+    await user.click(within(trade).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
 
     expect(vi.mocked(facade.DailyReview.save)).toHaveBeenCalledExactlyOnceWith({ kind: 'SaveTradeAction', binding: { ...first.saveBinding, expectedEntryRevision: 2 }, action: 'Roll', intent: 'Roll to November.' });
   });
@@ -409,7 +408,7 @@ describe('Saved Action answers', () => {
     expect(within(trade).queryByText(/Earnings Thursday/)).toBeNull();
     await user.click(within(trade).getByRole('button', { name: 'Change' }));
     expect(within(trade).getByRole('textbox', { name: INTENT_LABEL })).toHaveProperty('value', '');
-    await user.click(within(trade).getByRole('button', { name: 'Save' }));
+    await user.click(within(trade).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
 
     expect(vi.mocked(facade.DailyReview.save)).toHaveBeenCalledExactlyOnceWith({ kind: 'SaveTradeAction', binding: { ...first.saveBinding, expectedEntryRevision: 2 }, action: 'Hold' });
   });
@@ -432,7 +431,7 @@ describe('Changed review', () => {
     expect(vi.mocked(facade.DailyReview.getTrade)).toHaveBeenLastCalledWith({ reviewDate: '2026-10-12', tradeId: 't1', binding });
     await user.click(within(trade).getByRole('radio', { name: 'Exit' }));
     await user.type(within(trade).getByRole('textbox', { name: INTENT_LABEL }), 'Stopped out.');
-    await user.click(within(trade).getByRole('button', { name: 'Save' }));
+    await user.click(within(trade).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
 
     const alert = await within(trade).findByRole('alert');
     expect(alert.textContent).toContain('The Review changed after you opened this Trade. Nothing was saved.');
@@ -449,7 +448,7 @@ describe('Changed review', () => {
     expect(within(again).queryByRole('alert')).toBeNull();
     expect(within(again).getByRole('radio', { name: 'Exit' })).toHaveProperty('checked', true);
     expect(within(again).getByRole('textbox', { name: INTENT_LABEL })).toHaveProperty('value', 'Stopped out.');
-    await user.click(within(again).getByRole('button', { name: 'Save' }));
+    await user.click(within(again).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
     expect(vi.mocked(facade.DailyReview.save)).toHaveBeenLastCalledWith({ kind: 'SaveTradeAction', binding: refreshed.saveBinding, action: 'Exit', intent: 'Stopped out.' });
   });
 
@@ -463,7 +462,7 @@ describe('Changed review', () => {
     const trade = await openTrade(user, 'XYZ');
     await user.click(within(trade).getByRole('radio', { name: 'Exit' }));
     await user.type(within(trade).getByRole('textbox', { name: INTENT_LABEL }), 'Stopped out.');
-    await user.click(within(trade).getByRole('button', { name: 'Save' }));
+    await user.click(within(trade).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
 
     const alert = await within(trade).findByRole('alert');
     expect(alert.textContent).toContain('The Review kept changing while this Action was checked. Nothing was saved.');
@@ -540,12 +539,12 @@ describe('Action form extras', () => {
     const user = userEvent.setup();
 
     const trade = await openTrade(user, 'XYZ');
-    expect(within(trade).queryByRole('button', { name: 'Save' })).toBeNull();
+    expect(within(trade).queryByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ })).toBeNull();
     expect(within(trade).queryByRole('radio')).toBeNull();
     expect(within(trade).getByText('No Action saved.')).toBeTruthy();
     await user.click(screen.getByRole('button', { name: /^Review DEF\b/ }));
     const other = await screen.findByRole('region', { name: 'DEF review' });
-    expect(within(other).getByText('Saved Action: Hold')).toBeTruthy();
+    expect(within(other).getByText(/^Mon Oct 12: Hold/)).toBeTruthy();
     expect(within(other).queryByRole('button', { name: 'Change' })).toBeNull();
   });
 });
@@ -560,7 +559,7 @@ describe('Action form when the shell turns read only after a refused write', () 
     const trade = await openTrade(user, 'XYZ');
     await user.click(within(trade).getByRole('radio', { name: 'Exit' }));
     await user.type(within(trade).getByRole('textbox', { name: INTENT_LABEL }), 'Plan changed.');
-    await user.click(within(trade).getByRole('button', { name: 'Save' }));
+    await user.click(within(trade).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
     return { facade, trade };
   }
 
@@ -570,7 +569,7 @@ describe('Action form when the shell turns read only after a refused write', () 
     const exit = await within(trade).findByRole('radio', { name: 'Exit' });
     expect(exit).toHaveProperty('checked', true);
     expect(within(trade).getByRole('textbox', { name: INTENT_LABEL })).toHaveProperty('value', 'Plan changed.');
-    expect(within(trade).getByRole('button', { name: 'Save' })).toHaveProperty('disabled', true);
+    expect(within(trade).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ })).toHaveProperty('disabled', true);
     expect(within(trade).queryByText('No Action saved.')).toBeNull();
   });
 
@@ -597,7 +596,7 @@ describe('Action save failures', () => {
     const trade = await openTrade(user, 'XYZ');
     await user.click(within(trade).getByRole('radio', { name: 'Exit' }));
     await user.type(within(trade).getByRole('textbox', { name: INTENT_LABEL }), 'Plan changed.');
-    const press = () => user.click(within(trade).getByRole('button', { name: 'Save' }));
+    const press = () => user.click(within(trade).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
     const kept = () => {
       expect(within(trade).getByRole('radio', { name: 'Exit' })).toHaveProperty('checked', true);
       expect(within(trade).getByRole('textbox', { name: INTENT_LABEL })).toHaveProperty('value', 'Plan changed.');
@@ -618,7 +617,7 @@ describe('Action save failures', () => {
 
     save.mockResolvedValueOnce({ kind: 'Rejected', issues: [{ code: 'RequiredAnswerMissing', promptId: 'prompt.daily-trade-review.intent' }] });
     await press();
-    expect(await within(trade).findByText('Say why you are taking this action.')).toBeTruthy();
+    expect(await within(trade).findByText('Say why.')).toBeTruthy();
     expect(within(trade).queryByRole('alert')).toBeNull();
     kept();
 
@@ -626,7 +625,7 @@ describe('Action save failures', () => {
     save.mockResolvedValueOnce({ kind: 'Rejected', issues: [{ code: 'DefinitionRevisionMismatch' }] });
     await press();
     expect(await within(trade).findByText('This Action could not be saved. Reopen the Trade and try again.')).toBeTruthy();
-    expect(within(trade).queryByText('Say why you are taking this action.')).toBeNull();
+    expect(within(trade).queryByText('Say why.')).toBeNull();
     kept();
 
     const refused = { kind: 'RuntimeNotWritable', runtimeReadiness: 'RecoveryOnly', failedChecks: [], workspaceStatus: 'RecoveryOnly', safeActions: [] } as const;
@@ -649,7 +648,7 @@ describe('Conflict refresh with a saved Action', () => {
     const trade = await openTrade(user, 'XYZ');
     await user.click(within(trade).getByRole('radio', { name: 'Exit' }));
     await user.type(within(trade).getByRole('textbox', { name: INTENT_LABEL }), 'Plan changed.');
-    await user.click(within(trade).getByRole('button', { name: 'Save' }));
+    await user.click(within(trade).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
     await user.click(await within(trade).findByRole('button', { name: 'Refresh' }));
     return { facade, save, user, trade: await screen.findByRole('region', { name: 'XYZ review' }) };
   }
@@ -659,15 +658,15 @@ describe('Conflict refresh with a saved Action', () => {
     const { save, user, trade } = await conflictThenRefresh(savedAction('Hold', 'Other save.', 2), onDirtyChange);
 
     // The trader's values stay in an open form, with the other save shown to compare.
-    await within(trade).findByText('Saved Action: Hold');
-    expect(within(trade).getByText(`${INTENT_PROMPT} Other save.`)).toBeTruthy();
+    await within(trade).findByText(/^Mon Oct 12: Hold/);
+    expect(within(trade).getByText('Mon Oct 12: Hold · “Other save.”')).toBeTruthy();
     expect(within(trade).getByRole('radio', { name: 'Exit' })).toHaveProperty('checked', true);
     expect(within(trade).getByRole('textbox', { name: INTENT_LABEL })).toHaveProperty('value', 'Plan changed.');
     expect(onDirtyChange).toHaveBeenLastCalledWith(true);
 
     // Save replaces the other save under the refreshed expected Entry revision.
     save.mockResolvedValueOnce({ kind: 'Saved', action: savedAction('Exit', 'Plan changed.', 3), review: { kind: 'Ready', cards: [], progress: { tradesWithAction: 1, tradesEligible: 1 }, completion: { kind: 'Complete' }, nextStep: { kind: 'Done' }, binding } });
-    await user.click(within(trade).getByRole('button', { name: 'Save' }));
+    await user.click(within(trade).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
     expect(save).toHaveBeenLastCalledWith({ kind: 'SaveTradeAction', binding: savedBinding({ expectedEntryRevision: 2 }), action: 'Exit', intent: 'Plan changed.' });
   });
 
@@ -675,8 +674,8 @@ describe('Conflict refresh with a saved Action', () => {
     const onDirtyChange = vi.fn();
     const { trade } = await conflictThenRefresh(savedAction('Exit', 'Plan changed.', 2), onDirtyChange);
 
-    await within(trade).findByText('Saved Action: Exit');
-    expect(within(trade).queryByRole('button', { name: 'Save' })).toBeNull();
+    await within(trade).findByText(/^Mon Oct 12: Exit/);
+    expect(within(trade).queryByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ })).toBeNull();
     expect(within(trade).getByRole('button', { name: 'Change' })).toBeTruthy();
     expect(onDirtyChange).toHaveBeenLastCalledWith(false);
   });
@@ -700,7 +699,7 @@ describe('Refresh to a different Review Date', () => {
     const trade = await openTrade(user, 'XYZ');
     await user.click(within(trade).getByRole('radio', { name: 'Exit' }));
     await user.type(within(trade).getByRole('textbox', { name: INTENT_LABEL }), 'Plan changed.');
-    await user.click(within(trade).getByRole('button', { name: 'Save' }));
+    await user.click(within(trade).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
     await user.click(await within(trade).findByRole('button', { name: 'Refresh' }));
 
     // The old date's draft does not carry over; the trader is told why.
@@ -712,7 +711,7 @@ describe('Refresh to a different Review Date', () => {
     expect(within(form).queryByRole('alert')).toBeNull();
     expect(onDirtyChange).toHaveBeenLastCalledWith(false);
     save.mockResolvedValueOnce({ kind: 'Conflict' });
-    await user.click(within(form).getByRole('button', { name: 'Save' }));
+    await user.click(within(form).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
     expect(save).toHaveBeenLastCalledWith({ kind: 'SaveTradeAction', binding: newBinding, action: 'Hold' });
   });
 });
@@ -736,7 +735,7 @@ describe('Refresh to a different Review Date after a failed Trade read', () => {
     const trade = await openTrade(user, 'XYZ');
     await user.click(within(trade).getByRole('radio', { name: 'Exit' }));
     await user.type(within(trade).getByRole('textbox', { name: INTENT_LABEL }), 'Plan changed.');
-    await user.click(within(trade).getByRole('button', { name: 'Save' }));
+    await user.click(within(trade).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
     await user.click(await within(trade).findByRole('button', { name: 'Refresh' }));
     // The Review moved but the Trade read failed: the form stays on its own date.
     await screen.findByRole('region', { name: 'XYZ review' });
@@ -762,7 +761,7 @@ describe('After a save', () => {
     const first = await openTrade(user, 'XYZ');
     await user.click(within(first).getByRole('radio', { name: 'Exit' }));
     await user.type(within(first).getByRole('textbox', { name: INTENT_LABEL }), 'Done.');
-    await user.click(within(first).getByRole('button', { name: 'Save' }));
+    await user.click(within(first).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
     const next = await screen.findByRole('region', { name: 'DEF review' });
     expect(within(next).getByRole('radio', { name: 'Hold' })).toHaveProperty('checked', true);
     expect(within(next).getByRole('textbox', { name: INTENT_LABEL })).toHaveProperty('value', '');
@@ -772,7 +771,7 @@ describe('After a save', () => {
     const done = walkFacade(ready(trades), tradeReview('t1', 'XYZ'));
     vi.mocked(done.DailyReview.save).mockResolvedValue({ kind: 'Saved', action: savedAction('Hold'), review: post({ kind: 'Done' }) });
     renderWalk(done);
-    await user.click(within(await openTrade(user, 'XYZ')).getByRole('button', { name: 'Save' }));
+    await user.click(within(await openTrade(user, 'XYZ')).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
     await vi.waitFor(() => expect(screen.queryByRole('region', { name: 'XYZ review' })).toBeNull());
     expect(screen.queryByRole('status')).toBeNull();
     cleanup();
@@ -781,7 +780,7 @@ describe('After a save', () => {
     vi.mocked(again.DailyReview.save).mockResolvedValue({ kind: 'Saved', action: savedAction('Hold'), review: { kind: 'ChangedDuringAssembly' } });
     renderWalk(again);
     const trade = await openTrade(user, 'XYZ');
-    await user.click(within(trade).getByRole('button', { name: 'Save' }));
+    await user.click(within(trade).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
     expect((await screen.findByRole('status')).textContent).toBe('The Action is saved. Reload the Review to refresh it.');
     expect(screen.queryByRole('region', { name: 'XYZ review' })).toBeNull();
   });
@@ -792,7 +791,7 @@ const CONSIDERED = 'Anything you considered doing and decided against?';
 describe('the definition optional questions (T4.33-B3)', () => {
   const closed = { kind: 'Saved', action: savedAction('Hold'), review: { kind: 'Ready', cards: [], progress: { tradesWithAction: 1, tradesEligible: 1 }, completion: { kind: 'Complete' }, nextStep: { kind: 'Done' }, binding } } as const;
   const fill = async (user: ReturnType<typeof userEvent.setup>, trade: HTMLElement) => {
-    await user.selectOptions(within(trade).getByRole('combobox', { name: 'Conviction now' }), '3');
+    await user.click(within(within(trade).getByRole('group', { name: 'Conviction now (optional)' })).getByRole('button', { name: '3' }));
     await user.type(within(trade).getByRole('textbox', { name: CONSIDERED }), ' Selling the call. ');
     await user.type(within(trade).getByRole('textbox', { name: 'Note' }), ' Earnings Thursday. ');
   };
@@ -804,11 +803,11 @@ describe('the definition optional questions (T4.33-B3)', () => {
 
     const form = within(trade).getByRole('form', { name: 'Action' });
     // The fields in document order, each by the question text of its label.
-    const questions = [...form.querySelectorAll('textarea, select')].map((field) => field.closest('label')!.firstChild!.textContent);
-    expect(questions).toEqual([`${INTENT_PROMPT} (optional)`, 'Conviction now', CONSIDERED, 'Note']);
-    const conviction = within(trade).getByRole('combobox', { name: 'Conviction now' });
-    expect(within(conviction).getAllByRole('option').map((o) => o.textContent)).toEqual(['Not answered', '1', '2', '3', '4', '5']);
-    expect(conviction).toHaveProperty('value', '');
+    const questions = [...form.querySelectorAll('textarea, [role="group"]')].map((field) => (field.tagName === 'TEXTAREA' ? field.closest('label')!.firstChild!.textContent : document.getElementById(field.getAttribute('aria-labelledby')!)!.textContent));
+    expect(questions).toEqual([`${INTENT_PROMPT} (optional)`, 'Conviction now (optional)', CONSIDERED, 'Note']);
+    const conviction = within(trade).getByRole('group', { name: 'Conviction now (optional)' });
+    expect(within(conviction).getAllByRole('button').map((b) => b.textContent)).toEqual(['1', '2', '3', '4', '5']);
+    expect(within(conviction).queryAllByRole('button', { pressed: true })).toHaveLength(0);
   });
 
   it('should save the answered optional questions with the Action, trimmed, and send none that were left unanswered', async () => {
@@ -819,7 +818,7 @@ describe('the definition optional questions (T4.33-B3)', () => {
     renderWalk(facade);
     const trade = await openTrade(user, 'XYZ');
     await fill(user, trade);
-    await user.click(within(trade).getByRole('button', { name: 'Save' }));
+    await user.click(within(trade).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
     expect(vi.mocked(facade.DailyReview.save)).toHaveBeenCalledExactlyOnceWith({ kind: 'SaveTradeAction', binding: first.saveBinding, action: 'Hold', conviction: 3, considered: 'Selling the call.', note: 'Earnings Thursday.' });
   });
 
@@ -833,9 +832,9 @@ describe('the definition optional questions (T4.33-B3)', () => {
     expect(onDirtyChange).toHaveBeenLastCalledWith(true);
     await user.clear(within(trade).getByRole('textbox', { name: 'Note' }));
     expect(onDirtyChange).toHaveBeenLastCalledWith(false);
-    await user.selectOptions(within(trade).getByRole('combobox', { name: 'Conviction now' }), '2');
+    await user.click(within(within(trade).getByRole('group', { name: 'Conviction now (optional)' })).getByRole('button', { name: '2' }));
     expect(onDirtyChange).toHaveBeenLastCalledWith(true);
-    await user.selectOptions(within(trade).getByRole('combobox', { name: 'Conviction now' }), '');
+    await user.click(within(within(trade).getByRole('group', { name: 'Conviction now (optional)' })).getByRole('button', { name: '2' }));
     expect(onDirtyChange).toHaveBeenLastCalledWith(false);
     await user.type(within(trade).getByRole('textbox', { name: CONSIDERED }), 'x');
     expect(onDirtyChange).toHaveBeenLastCalledWith(true);
@@ -849,12 +848,12 @@ describe('the definition optional questions (T4.33-B3)', () => {
     renderWalk(facade);
     const trade = await openTrade(user, 'XYZ');
     await fill(user, trade);
-    await user.click(within(trade).getByRole('button', { name: 'Save' }));
-    for (const field of [within(trade).getByRole('combobox', { name: 'Conviction now' }), within(trade).getByRole('textbox', { name: CONSIDERED }), within(trade).getByRole('textbox', { name: 'Note' })]) expect(field).toHaveProperty('disabled', true);
+    await user.click(within(trade).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
+    for (const field of [within(within(trade).getByRole('group', { name: 'Conviction now (optional)' })).getByRole('button', { name: '3' }), within(trade).getByRole('textbox', { name: CONSIDERED }), within(trade).getByRole('textbox', { name: 'Note' })]) expect(field).toHaveProperty('disabled', true);
 
     held.resolve({ kind: 'Conflict' });
     await within(trade).findByRole('alert');
-    expect(within(trade).getByRole('combobox', { name: 'Conviction now' })).toHaveProperty('value', '3');
+    expect(within(within(trade).getByRole('group', { name: 'Conviction now (optional)' })).getByRole('button', { name: '3' }).getAttribute('aria-pressed')).toBe('true');
     expect(within(trade).getByRole('textbox', { name: CONSIDERED })).toHaveProperty('value', ' Selling the call. ');
     expect(within(trade).getByRole('textbox', { name: 'Note' })).toHaveProperty('value', ' Earnings Thursday. ');
     expect(within(trade).getByRole('textbox', { name: 'Note' })).toHaveProperty('disabled', false);
@@ -867,10 +866,10 @@ describe('the definition optional questions (T4.33-B3)', () => {
     const user = userEvent.setup();
     const trade = await openTrade(user, 'XYZ');
     await fill(user, trade);
-    await user.click(within(trade).getByRole('button', { name: 'Save' }));
-    await vi.waitFor(() => expect(within(trade).getByRole('button', { name: 'Save' })).toHaveProperty('disabled', true));
-    expect(within(trade).getByRole('combobox', { name: 'Conviction now' })).toHaveProperty('value', '3');
-    expect(within(trade).getByRole('combobox', { name: 'Conviction now' })).toHaveProperty('disabled', true);
+    await user.click(within(trade).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
+    await vi.waitFor(() => expect(within(trade).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ })).toHaveProperty('disabled', true));
+    expect(within(within(trade).getByRole('group', { name: 'Conviction now (optional)' })).getByRole('button', { name: '3' }).getAttribute('aria-pressed')).toBe('true');
+    expect(within(within(trade).getByRole('group', { name: 'Conviction now (optional)' })).getByRole('button', { name: '3' })).toHaveProperty('disabled', true);
     expect(within(trade).getByRole('textbox', { name: CONSIDERED })).toHaveProperty('disabled', true);
     expect(within(trade).getByRole('textbox', { name: 'Note' })).toHaveProperty('value', ' Earnings Thursday. ');
   });
@@ -888,11 +887,11 @@ describe('the definition optional questions (T4.33-B3)', () => {
     expect(within(trade).getByText(`${CONSIDERED} Selling the call.`)).toBeTruthy();
     expect(within(trade).getByText('Note: Earnings Thursday.')).toBeTruthy();
     await user.click(within(trade).getByRole('button', { name: 'Change' }));
-    expect(within(trade).getByRole('combobox', { name: 'Conviction now' })).toHaveProperty('value', '4');
+    expect(within(within(trade).getByRole('group', { name: 'Conviction now (optional)' })).getByRole('button', { name: '4' }).getAttribute('aria-pressed')).toBe('true');
     expect(within(trade).getByRole('textbox', { name: CONSIDERED })).toHaveProperty('value', 'Selling the call.');
     expect(within(trade).getByRole('textbox', { name: 'Note' })).toHaveProperty('value', 'Earnings Thursday.');
     await user.clear(within(trade).getByRole('textbox', { name: 'Note' }));
-    await user.click(within(trade).getByRole('button', { name: 'Save' }));
+    await user.click(within(trade).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
     expect(vi.mocked(facade.DailyReview.save)).toHaveBeenCalledExactlyOnceWith({ kind: 'SaveTradeAction', binding: { ...first.saveBinding, expectedEntryRevision: 2 }, action: 'Hold', conviction: 4, considered: 'Selling the call.' });
   });
 });
@@ -916,7 +915,7 @@ describe('Action form while saving', () => {
     const trade = await openTrade(user, 'XYZ');
     await user.click(within(trade).getByRole('radio', { name: 'Exit' }));
     await user.type(within(trade).getByRole('textbox', { name: INTENT_LABEL }), 'Plan changed.');
-    await user.click(within(trade).getByRole('button', { name: 'Save' }));
+    await user.click(within(trade).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
 
     for (const radio of within(trade).getAllByRole('radio')) expect(radio).toHaveProperty('disabled', true);
     expect(within(trade).getByRole('textbox', { name: INTENT_LABEL })).toHaveProperty('disabled', true);
@@ -936,10 +935,10 @@ describe('Action form while saving', () => {
     vi.mocked(facade.DailyReview.save).mockResolvedValueOnce({ kind: 'Conflict' }).mockReturnValueOnce(held.promise);
     renderWalk(facade);
     const trade = await openTrade(user, 'XYZ');
-    await user.click(within(trade).getByRole('button', { name: 'Save' }));
+    await user.click(within(trade).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
     await within(trade).findByRole('alert');
     expect(within(trade).getByRole('button', { name: 'Refresh' })).toHaveProperty('disabled', false);
-    await user.click(within(trade).getByRole('button', { name: 'Save' }));
+    await user.click(within(trade).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
 
     expect(within(trade).getByRole('button', { name: 'Refresh' })).toHaveProperty('disabled', true);
 
@@ -953,17 +952,17 @@ describe('Action form while saving', () => {
     vi.mocked(facade.DailyReview.save).mockResolvedValueOnce({ kind: 'Conflict' });
     renderWalk(facade);
     const trade = await openTrade(user, 'XYZ');
-    await user.click(within(trade).getByRole('button', { name: 'Save' }));
+    await user.click(within(trade).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
     await within(trade).findByRole('alert');
     const held = deferred<Ready>();
     vi.mocked(facade.DailyReview.open).mockReturnValue(held.promise);
     vi.mocked(facade.DailyReview.getTrade).mockResolvedValue({ kind: 'Ready', reviewDate: '2026-10-12', cutoff: ready([]).cutoff, trade: tradeReview('t1', 'XYZ') });
     await user.click(within(trade).getByRole('button', { name: 'Refresh' }));
 
-    expect(within(trade).getByRole('button', { name: 'Save' })).toHaveProperty('disabled', true);
+    expect(within(trade).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ })).toHaveProperty('disabled', true);
 
     held.resolve(ready([item('t1', 'XYZ')]));
-    await vi.waitFor(() => expect(within(screen.getByRole('region', { name: 'XYZ review' })).getByRole('button', { name: 'Save' })).toHaveProperty('disabled', false));
+    await vi.waitFor(() => expect(within(screen.getByRole('region', { name: 'XYZ review' })).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ })).toHaveProperty('disabled', false));
   });
 
   it('should disable the notice Refresh while a Refresh is in flight so Save stays disabled until it settles', async () => {
@@ -972,7 +971,7 @@ describe('Action form while saving', () => {
     vi.mocked(facade.DailyReview.save).mockResolvedValueOnce({ kind: 'Conflict' });
     renderWalk(facade);
     const trade = await openTrade(user, 'XYZ');
-    await user.click(within(trade).getByRole('button', { name: 'Save' }));
+    await user.click(within(trade).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
     await within(trade).findByRole('alert');
     const held = deferred<Ready>();
     vi.mocked(facade.DailyReview.open).mockReturnValue(held.promise);
@@ -980,10 +979,10 @@ describe('Action form while saving', () => {
     await user.click(within(trade).getByRole('button', { name: 'Refresh' }));
 
     expect(within(trade).getByRole('button', { name: 'Refresh' })).toHaveProperty('disabled', true);
-    expect(within(trade).getByRole('button', { name: 'Save' })).toHaveProperty('disabled', true);
+    expect(within(trade).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ })).toHaveProperty('disabled', true);
 
     held.resolve(ready([item('t1', 'XYZ')]));
-    await vi.waitFor(() => expect(within(screen.getByRole('region', { name: 'XYZ review' })).getByRole('button', { name: 'Save' })).toHaveProperty('disabled', false));
+    await vi.waitFor(() => expect(within(screen.getByRole('region', { name: 'XYZ review' })).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ })).toHaveProperty('disabled', false));
   });
 });
 
@@ -1002,7 +1001,7 @@ describe('Results for a Trade no longer open', () => {
     vi.mocked(facade.DailyReview.save).mockReturnValue(held.promise);
     renderWalk(facade);
     const first = await openTrade(user, 'XYZ');
-    await user.click(within(first).getByRole('button', { name: 'Save' }));
+    await user.click(within(first).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
     await user.click(screen.getByRole('button', { name: /^Review DEF\b/ }));
     const second = await screen.findByRole('region', { name: 'DEF review' });
     await user.click(within(second).getByRole('radio', { name: 'Exit' }));
@@ -1042,7 +1041,7 @@ describe('Results for a Trade no longer open', () => {
     vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'ReviewChanged', evidence: { marketDataSnapshotId: 'mds1:2:def', frames: [], factRevision: 3 } });
     renderWalk(facade);
     const first = await openTrade(user, 'XYZ');
-    await user.click(within(first).getByRole('button', { name: 'Save' }));
+    await user.click(within(first).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
     const alert = await within(first).findByRole('alert');
     vi.mocked(facade.DailyReview.getTrade).mockImplementation(((query: { tradeId: string }) => (query.tradeId === 't1' ? slow.promise : Promise.resolve(ready1(tradeReview('t2', 'DEF'))))));
     await user.click(within(alert).getByRole('button', { name: 'Refresh' }));
@@ -1062,7 +1061,7 @@ describe('Results for a Trade no longer open', () => {
     vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'ReviewChanged', evidence: { marketDataSnapshotId: 'mds1:2:def', frames: [], factRevision: 3 } });
     renderWalk(facade);
     const first = await openTrade(user, 'XYZ');
-    await user.click(within(first).getByRole('button', { name: 'Save' }));
+    await user.click(within(first).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
     const alert = await within(first).findByRole('alert');
     const heldOpen = deferred<Ready>();
     vi.mocked(facade.DailyReview.open).mockReturnValueOnce(heldOpen.promise);
@@ -1087,7 +1086,7 @@ describe('Results for a Trade no longer open', () => {
     vi.mocked(facade.DailyReview.save).mockReturnValue(held.promise);
     renderWalk(facade);
     const first = await openTrade(user, 'XYZ');
-    await user.click(within(first).getByRole('button', { name: 'Save' }));
+    await user.click(within(first).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
     await user.click(screen.getByRole('button', { name: /^Review DEF\b/ }));
     await screen.findByRole('region', { name: 'DEF review' });
     await user.click(screen.getByRole('button', { name: /^Review XYZ\b/ }));
@@ -1108,7 +1107,7 @@ describe('Results for a Trade no longer open', () => {
     vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'Saved', action: savedAction('Hold'), review: { kind: 'ChangedDuringAssembly' } });
     renderWalk(facade);
     const first = await openTrade(user, 'XYZ');
-    await user.click(within(first).getByRole('button', { name: 'Save' }));
+    await user.click(within(first).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
     expect((await screen.findByRole('status')).textContent).toBe('The Action is saved. Reload the Review to refresh it.');
     await user.click(screen.getByRole('button', { name: /^Review DEF\b/ }));
     await screen.findByRole('region', { name: 'DEF review' });
@@ -1319,7 +1318,7 @@ describe('progress from save results (A165, P46)', () => {
     const card = await openTrade(user, 'XYZ');
     expect(screen.getByRole('button', { name: /^Review XYZ\b/ }).textContent).toContain('Action');
 
-    await user.click(within(card).getByRole('button', { name: 'Save' }));
+    await user.click(within(card).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
 
     await screen.findByRole('region', { name: 'DEF review' });
     const header = screen.getByRole('button', { name: /^Review XYZ\b/ });
@@ -1376,10 +1375,10 @@ describe('Action (A159)', () => {
     // The card owes a reflection first; the Action panel opens when its header is pressed.
     await user.click(panelHeader(card, 'Action'));
     expect(within(card).getByRole('radio', { name: 'Hold' })).toHaveProperty('checked', true);
-    expect(within(card).getAllByRole('button', { name: /^Save/ }).map((b) => b.textContent)).toEqual(['Save']);
+    expect(within(card).getAllByRole('button', { name: /^Save/ }).map((b) => b.textContent)).toEqual(['Save Hold']);
     expect(facade.DailyReview.save).not.toHaveBeenCalled();
 
-    await user.click(within(card).getByRole('button', { name: 'Save' }));
+    await user.click(within(card).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
 
     expect(facade.DailyReview.save).toHaveBeenCalledTimes(1);
     expect(facade.DailyReview.save).toHaveBeenCalledWith({ kind: 'SaveTradeAction', binding: savedBinding({ tradeId: 't1', obligationKey: { entryType: 'DailyTradeReview', trade: 't1', reviewDate: '2026-10-12' } }), action: 'Hold' });
@@ -1434,7 +1433,7 @@ describe('moving on', () => {
     await vi.waitFor(() => expect(opened()).toEqual(['Action']));
 
     // The Action save opens the card the result names, and this one collapses.
-    await user.click(within(card).getByRole('button', { name: 'Save' }));
+    await user.click(within(card).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
     const other = await screen.findByRole('region', { name: 'DEF review' });
     expect(within(other).getByRole('form', { name: 'Action' })).toBeTruthy();
     expect(screen.queryByRole('region', { name: 'XYZ review' })).toBeNull();
@@ -1555,7 +1554,7 @@ describe('a reflection draft when the shell turns read only', () => {
     await user.type(within(card).getByLabelText('Reason for declining (optional)'), 'No time.');
     // A refused Action save turns the shell read only, with the reflection form still holding its value.
     await user.click(panelHeader(card, 'Action'));
-    await user.click(within(card).getByRole('button', { name: 'Save' }));
+    await user.click(within(card).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
 
     await vi.waitFor(async () => {
       await user.click(screen.getByRole('button', { name: /^Review XYZ\b/ }));
@@ -1862,13 +1861,13 @@ describe('Review card: the Replay button (decision 3)', () => {
     await user.click(link);
     await user.keyboard('{/Control}');
     await user.click(within(screen.getByRole('dialog', { name: 'Replay, XYZ' })).getByRole('button', { name: 'Close' }));
-    await user.click(within(card).getByRole('button', { name: 'Save' }));
+    await user.click(within(card).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
     await screen.findByRole('region', { name: 'DEF review' });
     const back = await openTrade(user, 'XYZ');
     // The Action shows as saved; the earlier draft is not on the card as an unsaved change.
-    expect(within(back).getByText(`${INTENT_PROMPT} Take it all.`)).toBeTruthy();
+    expect(within(back).getByText(/“Take it all\.”$/)).toBeTruthy();
     expect(within(back).queryByRole('textbox', { name: INTENT_LABEL })).toBeNull();
-    expect(within(back).queryByRole('button', { name: 'Save' })).toBeNull();
+    expect(within(back).queryByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ })).toBeNull();
   });
 
   it('should not bring a started Action back when the Review was left some other way', async () => {
@@ -2063,7 +2062,7 @@ describe('The card before its Marks (T95.20)', () => {
   it('should show the same words if a save comes back ReviewMarksUnresolved', async () => {
     const { user, facade, card } = await openWaiting(0);
     vi.mocked(facade.DailyReview.save).mockResolvedValueOnce({ kind: 'Rejected', issues: [{ code: 'ReviewMarksUnresolved', instruments: [symbol, { kind: 'Stock', symbol: 'ABC' }] }] });
-    await user.click(within(card).getByRole('button', { name: 'Save' }));
+    await user.click(within(card).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
     expect((await within(card).findByText("No Action until today's Marks are in.", { exact: false })).textContent).toBe("No Action until today's Marks are in. Enter them");
     expect(within(card).queryByRole('form', { name: 'Action' })).toBeNull();
     expect(within(card).queryByText(/could not be saved/)).toBeNull();
@@ -2073,7 +2072,7 @@ describe('The card before its Marks (T95.20)', () => {
     const { user, card } = await openWaiting(2);
     expect(within(card).getByText("No Action until today's Marks are in.", { exact: false }).textContent).toBe("No Action until today's Marks are in. Enter them");
     expect(within(card).queryByRole('form', { name: 'Action' })).toBeNull();
-    expect(within(card).queryByRole('button', { name: 'Save' })).toBeNull();
+    expect(within(card).queryByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ })).toBeNull();
     await user.click(within(card).getByRole('link', { name: 'Enter them' }));
     expect(here.address).toBe('/review?trade=t1&panel=Marks');
     cleanup();
