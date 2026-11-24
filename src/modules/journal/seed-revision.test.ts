@@ -140,6 +140,18 @@ describe('seedDefaults: a revised form (P173)', () => {
     expect(await journal.seedDefaults(revisedCloseReview)).toEqual({ kind: 'SeedConflict', productKey: CLOSE_REVIEW });
     expect(await definitionsOf(persistence, CLOSE_REVIEW)).toEqual(before);
   });
+
+  it('should return SeedConflict when an earlier revision equals the manifest but the latest equals no seeded form', async () => {
+    const { persistence } = await emptyWorkspace();
+    const journal = createJournal({ persistence, ids: sequentialIds('j'), clock: fixedClock(NOW) });
+    await journal.seedDefaults(revisedCloseReview);
+    const [first] = await definitionsOf(persistence, CLOSE_REVIEW);
+    const unrecognized = { ...first, id: 'def-edited', revisionNumber: 2, prompts: (first!.prompts as { id: string }[]).map((p) => (p.id === KEY_LESSON ? { ...p, text: 'A form no manifest ever seeded' } : p)) };
+    expect((await persistence.commit({ checks: [], writes: [{ op: 'put', store: 'journalDefinitions', value: unrecognized }] })).kind).toBe('Committed');
+    const before = await definitionsOf(persistence, CLOSE_REVIEW);
+    expect(await journal.seedDefaults(revisedCloseReview)).toEqual({ kind: 'SeedConflict', productKey: CLOSE_REVIEW });
+    expect(await definitionsOf(persistence, CLOSE_REVIEW)).toEqual(before);
+  });
 });
 
 describe('a revised form: entries and Debts keep the revision they were made under (P173)', () => {

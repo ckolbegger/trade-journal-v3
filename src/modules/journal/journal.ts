@@ -241,10 +241,9 @@ export function prepareJournalSeed(
     const stored = existingDefinitions.filter((d) => d.entryTypeKey === entryType.productKey).sort((a, b) => a.revisionNumber - b.revisionNumber);
     const latest = stored.at(-1);
     if (!latest) continue;
-    // The manifest's form is already stored: nothing to add.
-    const wanted = canonicalJson(entryType.prompts);
-    if (stored.some((d) => canonicalJson(d.prompts) === wanted)) continue;
+    // The latest stored revision decides: the manifest's form already being it means nothing to add.
     const latestForm = canonicalJson(latest.prompts);
+    if (latestForm === canonicalJson(entryType.prompts)) continue;
     const earlierSeeded = SEEDED_MANIFESTS.filter((m) => m.version < manifest.version).some((m) =>
       m.entryTypes.some((t) => t.productKey === entryType.productKey && canonicalJson(t.prompts) === latestForm),
     );
