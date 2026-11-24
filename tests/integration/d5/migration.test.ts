@@ -16,8 +16,8 @@ const pointerRecords = async (factory: IDBFactory) => (await dumpAll(factory))['
 // new in 4, so it is the only addition for a schema 3 source.
 const JOURNAL_ADDITIONS = {
   1: ['entry-type.position-change-reflection', 'entry-type.daily-trade-review', 'entry-type.close-review', 'source.position-change', 'source.daily-review', 'source.trade-detail', 'source.trade-close'],
-  2: ['entry-type.daily-trade-review', 'entry-type.close-review', 'source.daily-review', 'source.trade-detail', 'source.trade-close'],
-  3: ['entry-type.close-review', 'source.trade-detail', 'source.trade-close'],
+  2: ['entry-type.daily-trade-review', 'entry-type.close-review', 'source.daily-review', 'source.trade-detail', 'source.trade-close', 'entry-type.position-change-reflection'],
+  3: ['entry-type.close-review', 'source.trade-detail', 'source.trade-close', 'entry-type.position-change-reflection', 'entry-type.daily-trade-review'],
 } as const;
 
 describe('I5.1 migrate earlier fixtures', () => {

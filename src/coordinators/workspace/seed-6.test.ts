@@ -2,6 +2,7 @@
 // Workspace on its next start, a new Workspace, a restored backup and a backup made afterwards.
 import { describe, expect, it } from 'vitest';
 import { D6_JOURNAL_MANIFEST } from '../../modules/journal/index.ts';
+import { fixtureDevice } from '../../../tests/integration/d7s/support.ts';
 import { artifactOf, CONFIRM, DECLINE, dumpAll, dumpOf, emptyDevice, exportBackup, launch, linesOf, prepared, w7Device, wtDevice } from '../../../tests/integration/d8/support.ts';
 
 const REVISED = ['entry-type.close-review', 'entry-type.daily-trade-review', 'entry-type.position-change-reflection'];
@@ -42,6 +43,14 @@ describe('Journal seed manifest 6 delivery', () => {
     const opened = await app.Workspace.initialize({});
     if (opened.kind !== 'Opened') throw new Error(`initialize: ${opened.kind}`);
     expect(opened.receipt.seeds.journal.manifestVersion).toBe(6);
+    expect([...opened.receipt.seeds.journal.additions].sort()).toEqual(REVISED);
+  }, 60_000);
+
+  it('should name the three revised types in the receipt of a Workspace migrated from schema 6', async () => {
+    const app = await launch(await fixtureDevice(6));
+    const opened = await app.Workspace.initialize({});
+    if (opened.kind !== 'Opened') throw new Error(`initialize: ${opened.kind}`);
+    expect(opened.receipt.migration?.fromVersion).toBe(6);
     expect([...opened.receipt.seeds.journal.additions].sort()).toEqual(REVISED);
   }, 60_000);
 

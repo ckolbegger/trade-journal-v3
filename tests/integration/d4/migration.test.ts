@@ -14,7 +14,7 @@ const pointerRecords = async (factory: IDBFactory) => (await dumpAll(factory))['
 // What the Journal seed adds when migrating from each schema: the Daily Trade Review is new in 3.
 const JOURNAL_ADDITIONS = {
   1: ['entry-type.position-change-reflection', 'entry-type.daily-trade-review', 'entry-type.close-review', 'source.position-change', 'source.daily-review', 'source.trade-detail', 'source.trade-close'],
-  2: ['entry-type.daily-trade-review', 'entry-type.close-review', 'source.daily-review', 'source.trade-detail', 'source.trade-close'],
+  2: ['entry-type.daily-trade-review', 'entry-type.close-review', 'source.daily-review', 'source.trade-detail', 'source.trade-close', 'entry-type.position-change-reflection'],
 } as const;
 
 // The D4 current figures of an Open list row: each must be Unavailable(MarkMissing) with no Mark (A51).

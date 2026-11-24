@@ -317,7 +317,7 @@ describe('migration to the current schema', () => {
         readiness: expect.objectContaining({ outcome: 'Writable' }) as unknown,
         seeds: {
           catalog: CATALOG_SEEDS,
-          journal: { manifestVersion: 6, additions: ['entry-type.daily-trade-review', 'entry-type.close-review', 'source.daily-review', 'source.trade-detail', 'source.trade-close'] },
+          journal: { manifestVersion: 6, additions: ['entry-type.daily-trade-review', 'entry-type.close-review', 'source.daily-review', 'source.trade-detail', 'source.trade-close', 'entry-type.position-change-reflection'] },
         },
         sessionPolicy: { recorded: nyseSessionPolicy.identity, findings: [] },
         migration: {
@@ -448,8 +448,8 @@ describe('migration to the current schema, from v1 through v3', () => {
     const v3Workspace = createWorkspace({ ...v3Stack, host: v3Stack.testHost.host, releaseId: v3Stack.testHost.releaseId });
     const cases = [
       { from: 1, source: V1_DATABASE, workspace: (await v1Stack()).workspace, additions: ['entry-type.position-change-reflection', 'entry-type.daily-trade-review', 'entry-type.close-review', 'source.position-change', 'source.daily-review', 'source.trade-detail', 'source.trade-close'] },
-      { from: 2, source: V2_DATABASE, workspace: (await v2Stack()).workspace, additions: ['entry-type.daily-trade-review', 'entry-type.close-review', 'source.daily-review', 'source.trade-detail', 'source.trade-close'] },
-      { from: 3, source: V3_DATABASE, workspace: v3Workspace, additions: ['entry-type.close-review', 'source.trade-detail', 'source.trade-close'] },
+      { from: 2, source: V2_DATABASE, workspace: (await v2Stack()).workspace, additions: ['entry-type.daily-trade-review', 'entry-type.close-review', 'source.daily-review', 'source.trade-detail', 'source.trade-close', 'entry-type.position-change-reflection'] },
+      { from: 3, source: V3_DATABASE, workspace: v3Workspace, additions: ['entry-type.close-review', 'source.trade-detail', 'source.trade-close', 'entry-type.position-change-reflection', 'entry-type.daily-trade-review'] },
     ];
     const counts = [
       { catalog: 6, journalDefinitions: 1, journalEntries: 5, journalTypes: 2, meta: 3, trades: 5 },
@@ -488,10 +488,10 @@ describe('migration to schema 5', () => {
       return { ...stack, workspace: createWorkspace({ ...stack, host: stack.testHost.host, releaseId: stack.testHost.releaseId }) };
     };
     const cases = [
-      { from: 1, source: V1_DATABASE, stack: await stackOf(V1_DUMP), journalBefore: ['entry-type.position-change-reflection', 'entry-type.daily-trade-review', 'source.position-change', 'source.daily-review', 'source.trade-detail'] },
-      { from: 2, source: V2_DATABASE, stack: await stackOf(V2_DUMP), journalBefore: ['entry-type.daily-trade-review', 'source.daily-review', 'source.trade-detail'] },
-      { from: 3, source: V3_DATABASE, stack: await stackOf(V3_DUMP), journalBefore: ['source.trade-detail'] },
-      { from: 4, source: V4_DATABASE, stack: await stackOf(V4_DUMP), journalBefore: [] },
+      { from: 1, source: V1_DATABASE, stack: await stackOf(V1_DUMP), journalBefore: ['entry-type.position-change-reflection', 'entry-type.daily-trade-review', 'source.position-change', 'source.daily-review', 'source.trade-detail'], revised: [] },
+      { from: 2, source: V2_DATABASE, stack: await stackOf(V2_DUMP), journalBefore: ['entry-type.daily-trade-review', 'source.daily-review', 'source.trade-detail'], revised: ['entry-type.position-change-reflection'] },
+      { from: 3, source: V3_DATABASE, stack: await stackOf(V3_DUMP), journalBefore: ['source.trade-detail'], revised: ['entry-type.position-change-reflection', 'entry-type.daily-trade-review'] },
+      { from: 4, source: V4_DATABASE, stack: await stackOf(V4_DUMP), journalBefore: [], revised: ['entry-type.position-change-reflection', 'entry-type.daily-trade-review'] },
     ];
     const counts = [
       { catalog: 6, journalDefinitions: 1, journalEntries: 5, journalTypes: 2, meta: 3, trades: 5 },
@@ -499,11 +499,11 @@ describe('migration to schema 5', () => {
       { catalog: 6, journalDeclines: 3, journalDefinitions: 3, journalEntries: 13, journalTypes: 6, meta: 5, observations: 5, trades: 8 },
       { catalog: 6, journalDebts: 4, journalDeclines: 4, journalDefinitions: 3, journalEntries: 14, journalTypes: 7, meta: 5, observations: 5, trades: 8 },
     ];
-    for (const [index, { from, source, stack, journalBefore }] of cases.entries()) {
+    for (const [index, { from, source, stack, journalBefore, revised }] of cases.entries()) {
       const { workspace, factory } = stack;
       const seeds = {
         catalog: CATALOG_SEEDS,
-        journal: { manifestVersion: 6, additions: [...journalBefore.filter((key) => key.startsWith('entry-type.')), 'entry-type.close-review', ...journalBefore.filter((key) => key.startsWith('source.')), 'source.trade-close'] },
+        journal: { manifestVersion: 6, additions: [...journalBefore.filter((key) => key.startsWith('entry-type.')), 'entry-type.close-review', ...journalBefore.filter((key) => key.startsWith('source.')), 'source.trade-close', ...revised] },
       };
       const result = await workspace.initialize({});
       expect(result).toEqual({

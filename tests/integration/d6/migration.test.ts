@@ -18,9 +18,9 @@ const OPTION_STRATEGIES = ['strategy.long-call', 'strategy.long-put', 'strategy.
 const CLOSE_REASONS = ['close-reason.target-reached', 'close-reason.stop-triggered', 'close-reason.thesis-invalidated', 'close-reason.time-based-exit'];
 const JOURNAL_ADDITIONS = {
   1: ['entry-type.position-change-reflection', 'entry-type.daily-trade-review', 'entry-type.close-review', 'source.position-change', 'source.daily-review', 'source.trade-detail', 'source.trade-close'],
-  2: ['entry-type.daily-trade-review', 'entry-type.close-review', 'source.daily-review', 'source.trade-detail', 'source.trade-close'],
-  3: ['entry-type.close-review', 'source.trade-detail', 'source.trade-close'],
-  4: ['entry-type.close-review', 'source.trade-close'],
+  2: ['entry-type.daily-trade-review', 'entry-type.close-review', 'source.daily-review', 'source.trade-detail', 'source.trade-close', 'entry-type.position-change-reflection'],
+  3: ['entry-type.close-review', 'source.trade-detail', 'source.trade-close', 'entry-type.position-change-reflection', 'entry-type.daily-trade-review'],
+  4: ['entry-type.close-review', 'source.trade-close', 'entry-type.position-change-reflection', 'entry-type.daily-trade-review'],
 } as const;
 
 describe('I6.1 migrate earlier fixtures', () => {

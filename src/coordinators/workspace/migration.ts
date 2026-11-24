@@ -189,6 +189,6 @@ export async function migrate(deps: MigrationDeps, source: string, fromVersion: 
       repairs: trades.repairs.map((r) => ({ tradeId: r.tradeId, findings: r.findings.map(plain) })),
       privateRebuilds: PRIVATE_REBUILDS,
     },
-    seeds: { catalog: catalogSeed.records.map((r) => r.productKey), journal: journalSeed.types.map((t) => t.productKey) },
+    seeds: { catalog: catalogSeed.records.map((r) => r.productKey), journal: [...journalSeed.types.map((t) => t.productKey), ...journalSeed.definitions.filter((definition) => definition.revisionNumber > 1).map((definition) => definition.entryTypeKey)] },
   };
 }
