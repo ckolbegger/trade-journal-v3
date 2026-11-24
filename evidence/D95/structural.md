@@ -695,3 +695,5 @@ Run `t95.28-seed-6` (browser-auto a3578e49, full tier): unit 2928, integration 3
 Commit `7e2938c6`: `answerCloseReviewIn` (e2e/d6/support.ts, used by the d7, d8p, d9 and d8r helpers) also answers "What is the key lesson?"; d6 and d7 responsive-a11y keyboard exits gain one Tab stop and the lesson; the reason label matcher `/^Why\?/` in d4/card-helpers, d4/no-save, d9ar/review (two) and d9ar/responsive-a11y. No assertion dropped; no product code. d4 27 passed; d6, d7, d8p, d9ar passed.
 
 ocr of T95.28-F1 (session cf6944ad): 7 files, 0 findings. `evidence/D95/ocr/T95.28-F1-7e2938c6.json`. Next: run `t95.28-seed-6-2` (browser-auto a3578e49).
+
+Run `t95.28-seed-6-2` (browser-auto a3578e49, full tier, after T95.28-F1): unit 2928, integration 329, browser 127, 79, 55 and 129 (4 skipped), checks 14 of 14. Passed. T95.28 done.
