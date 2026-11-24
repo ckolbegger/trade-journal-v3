@@ -19,6 +19,8 @@ describe('contract names in the Workspace zone (A238)', () => {
 const marksPanel = (done: boolean) => ({ panels: [{ panel: 'Marks', done, resolved: done ? 1 : 0, needed: 1 }] });
 const trade = (over: Record<string, unknown>) => ({ band: 'Routine', reasons: [], progress: marksPanel(true), ...over }) as never;
 const between = (percent: bigint, toward: 'Stop' | 'Target') => ({ now: { kind: 'Value', value: { zone: 'Between', share: { percent: Rational.of(percent), toward } } } });
+// The Pressure the label's percent reads: a share of the range, on the side the Trade moves toward.
+const pressure = (percent: bigint, toward: 'Stop' | 'Target') => ({ kind: 'Value', value: { side: toward === 'Stop' ? 'Losing' : 'Winning', share: Rational.of(percent, 100n), atEntry: Rational.of(300n), now: Rational.of(100n) } });
 
 const previous = (zone: string, tradingDate: string) => ({ now: { kind: 'Unavailable' }, previous: { tradingDate, zone } });
 
@@ -33,8 +35,18 @@ describe('each label has its own reason (A302)', () => {
     ]);
   });
   it('should describe a share label by its own share and give a label with no returned reason none', () => {
-    expect(describedLabelsOf(trade({ band: 'QuantifiedPressure', meter: between(63n, 'Stop') }), 'UTC')).toEqual([{ label: '63% to Stop', reason: '63% of the way from entry to the Stop' }]);
+    expect(describedLabelsOf(trade({ band: 'QuantifiedPressure', meter: between(63n, 'Stop'), basis: pressure(63n, 'Stop') }), 'UTC')).toEqual([{ label: '63% to Stop', reason: '63% of the way from entry to the Stop' }]);
     expect(describedLabelsOf(trade({ band: 'StopReached' }), 'UTC')).toEqual([{ label: 'Past Stop', reason: undefined }]);
+  });
+});
+
+describe('the share label of a partly sold Trade (T95.26-B3)', () => {
+  it('should word the label percent with the pressure share of the open Lots and not the meter share that counts the realized P&L', () => {
+    const basis = (side: 'Losing' | 'Winning', share: Rational) => ({ kind: 'Value', value: { side, share, atEntry: Rational.of(300n), now: Rational.of(100n) } });
+    const stop = trade({ band: 'QuantifiedPressure', meter: between(86n, 'Stop'), basis: basis('Losing', Rational.of(2n, 3n)) });
+    expect(describedLabelsOf(stop, 'UTC')).toEqual([{ label: '67% to Stop', reason: '67% of the way from entry to the Stop' }]);
+    const target = trade({ band: 'QuantifiedPressure', meter: between(79n, 'Target'), basis: basis('Winning', Rational.of(58n, 100n)) });
+    expect(describedLabelsOf(target, 'UTC')).toEqual([{ label: '58% to Target', reason: '58% of the way from entry to the Target' }]);
   });
 });
 
@@ -63,7 +75,7 @@ describe('plain labels (A302)', () => {
   });
 
   it('should label a Trade inside its lines by its share of the way', () => {
-    expect(labelsOf(trade({ band: 'QuantifiedPressure', meter: between(63n, 'Stop') }))).toEqual(['63% to Stop']);
-    expect(labelsOf(trade({ band: 'QuantifiedPressure', meter: between(48n, 'Target') }))).toEqual(['48% to Target']);
+    expect(labelsOf(trade({ band: 'QuantifiedPressure', meter: between(63n, 'Stop'), basis: pressure(63n, 'Stop') }))).toEqual(['63% to Stop']);
+    expect(labelsOf(trade({ band: 'QuantifiedPressure', meter: between(48n, 'Target'), basis: pressure(48n, 'Target') }))).toEqual(['48% to Target']);
   });
 });

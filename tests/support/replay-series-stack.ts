@@ -36,7 +36,7 @@ export async function seriesStack(series: ReplayTestSeries, strategyKey: string,
       legs: [{ side: leg.side, instrument: leg.instrument, quantity: leg.quantity, intendedEntry: leg.intendedEntry }],
       stops: [{ kind: plan.stops[0]!.kind, price: plan.stops[0]!.price }],
       targets: [{ kind: plan.targets[0]!.kind, price: plan.targets[0]!.price }],
-      ...(leg.side === 'Long' && { exerciseIntent: 'NotAuthorized' }),
+      ...(leg.side === 'Long' && leg.instrument.kind !== 'Stock' && { exerciseIntent: 'NotAuthorized' }),
     },
     reflection: {
       definitionId: stack.definition.id,

@@ -3,6 +3,7 @@ import { cardFixture, FRIDAY_DATE, MONDAY_1700, REVIEW_DATE, reviewStack } from 
 import { countRequests } from '../../../tests/support/request-counter.ts';
 import { seriesStack } from '../../../tests/support/replay-series-stack.ts';
 import { R_BREN_U } from '../../domain/trade-analysis/option-trade.ts';
+import { R_AXIO_D } from '../../domain/trade-analysis/reference-trade.ts';
 import { Rational } from '../../domain/values/index.ts';
 import type { MarketDataPrepareEntry } from '../../modules/market-data/index.ts';
 import type { OpenDailyReviewResult } from './index.ts';
@@ -86,5 +87,24 @@ describe('save: the meter reading after Save Marks (A260)', () => {
     // The same readings a fresh open gives, without the caller reading again.
     const reopened = await stack.dailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: MONDAY_1700 });
     expect(trades.map((t) => t.meter)).toEqual(walk(reopened).map((t) => t.meter));
+  }, 60_000);
+});
+
+// T95.26-B3: the label's percent is the Pressure share of the open Lots, not the meter's P&L share, which includes realized P&L.
+const TUE_1117_1700 = '2026-11-17T22:00:00Z';
+
+describe('open: a Trade with a partial sale (T95.26-B3)', () => {
+  it('should give a partly sold Trade the pressure share of its open Lots, apart from the meter share that counts the realized P&L', async () => {
+    // R-AXIO-D: 200 shares at $50.00 with 100 sold at $45.60; the Stop is $47.00. Marked $48.00 on Tue 11-17.
+    const { stack, tradeId } = await seriesStack({ ...R_AXIO_D, held: R_AXIO_D.held.map(() => null) }, 'strategy.long-stock', TUE_1117_1700, { marksThrough: 10, extraMarks: [{ instrument: { kind: 'Stock', symbol: 'AXIO' }, date: '2026-11-17', price: '48.00' }] });
+
+    const opened = await stack.dailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: TUE_1117_1700 });
+
+    const item = walk(opened).find((t) => t.tradeId === tradeId)!;
+    // Risk consumed since entry over risk at entry, on the 100 open shares: (300 - 100) / 300.
+    expect(item.basis).toEqual({ kind: 'Value', value: { side: 'Losing', share: Rational.of(2n, 3n), atEntry: dollars(300n), now: dollars(100n) } });
+    expect(item.meter!.now).toMatchObject({ kind: 'Value', value: { zone: 'Between' } });
+    const now = item.meter!.now;
+    expect(now.kind === 'Value' && now.value.share?.percent).not.toEqual(Rational.of(67n));
   }, 60_000);
 });

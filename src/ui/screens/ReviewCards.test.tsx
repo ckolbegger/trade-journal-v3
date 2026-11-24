@@ -73,6 +73,7 @@ const TF = trade('t-f', 'XYZ', {
 const TA = trade('t-a', 'XYZ', {
   band: 'QuantifiedPressure',
   reasons: [{ code: 'PressureTowardTarget' }],
+  basis: { kind: 'Value', value: { side: 'Winning', share: rational(2n, 5n), atEntry: rational(450n), now: rational(270n) } },
   progress: cardProgress(1, 1),
   meter: meterOf({ kind: 'Value', value: { pnl: rational(180n), zone: 'Between', share: { fraction: rational(2n, 5n), percent: rational(40n), toward: 'Target' } } }, -450n, 450n),
   figures: { riskToStop: value(450n), pnl: value(180n), rewardRiskNow: value(8n, 9n) },
