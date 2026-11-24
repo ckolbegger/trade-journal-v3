@@ -1,0 +1,148 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 1,
+    "total_tokens": 60877,
+    "input_tokens": 60239,
+    "output_tokens": 638,
+    "cache_read_tokens": 8320,
+    "elapsed": "34s"
+  },
+  "tool_calls": {
+    "total": 7,
+    "by_tool": {
+      "code_comment": 1,
+      "file_read": 6
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/ActionForm.tsx",
+      "content": "Clicking the already-preselected Hold radio (or pressing Space while it is checked) does not fire a radio `onChange`, so `chose` remains false in that case. If the view subsequently removes the Hold preselection, the form still clears the trader's explicitly confirmed Hold. Record activation of an already-checked radio as an explicit choice too (while retaining `onChange` for arrow-key changes), and add a regression test that clicks Hold directly without first choosing Exit.",
+      "existing_code": "            \u003cinput type=\"radio\" name=\"action\" value={choice} checked={action === choice} disabled={saving || !writable} onChange={() =\u003e { setAction(choice); setChose(true); }} /\u003e",
+      "start_line": 282,
+      "end_line": 282,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "e2e/d5r/responsive-a11y.spec.ts",
+        "src/ui/screens/ActionForm.test.tsx",
+        "src/ui/screens/ActionForm.tsx"
+      ]
+    }
+  ],
+  "session_id": "dfe0f83c-dee9-48ca-abf0-a7b2da0ec0fb",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "dfe0f83c-dee9-48ca-abf0-a7b2da0ec0fb",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "45cdf246",
+      "requested_head": "00361cce",
+      "resolved_base": "45cdf2469c2ee2ed546d8214de906700b407a7e5",
+      "resolved_head": "00361cce71795824d38f1853cf92ace61ecf216d",
+      "exact_range": "45cdf2469c2ee2ed546d8214de906700b407a7e5..00361cce71795824d38f1853cf92ace61ecf216d",
+      "source_artifact_sha256": "a97f843bd1732c81ddc7fa63651fa9ea9b02dc780327757910354cb8dbac48b9"
+    },
+    "execution": {
+      "ocr_version": "v1.14.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "20ead85d064cf1b09dda027fdde2de0456ef5cb682bad401e15bf6ce73ea21ad",
+          "path": "src/ui/screens/ActionForm.test.tsx",
+          "fingerprint": "c6d174cf0d3db48d8c9c8bc47309c5aa1be3ba0af3be07d6d431af7a99306497"
+        },
+        {
+          "item_id": "86402b846a7b1ca78b6e8b31050858e2273e229772b422189f4243f77cfcb88c",
+          "path": "src/ui/screens/ActionForm.tsx",
+          "fingerprint": "b3fb997d3a86fc502507d0e1fa6f989c64b669d2c6eb431b6d33efde0bf89b39"
+        },
+        {
+          "item_id": "a0ad465cb7e722de0963ec8064b14f0faceed79f358a9c9320ffd2231a822923",
+          "path": "e2e/d5r/responsive-a11y.spec.ts",
+          "fingerprint": "e23dbca9535db467b0e5f9d4f8ab97f710f42ba7287d533e01d9fe554ecf0005"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "20ead85d064cf1b09dda027fdde2de0456ef5cb682bad401e15bf6ce73ea21ad",
+          "path": "src/ui/screens/ActionForm.test.tsx",
+          "fingerprint": "c6d174cf0d3db48d8c9c8bc47309c5aa1be3ba0af3be07d6d431af7a99306497"
+        },
+        {
+          "item_id": "86402b846a7b1ca78b6e8b31050858e2273e229772b422189f4243f77cfcb88c",
+          "path": "src/ui/screens/ActionForm.tsx",
+          "fingerprint": "b3fb997d3a86fc502507d0e1fa6f989c64b669d2c6eb431b6d33efde0bf89b39"
+        },
+        {
+          "item_id": "a0ad465cb7e722de0963ec8064b14f0faceed79f358a9c9320ffd2231a822923",
+          "path": "e2e/d5r/responsive-a11y.spec.ts",
+          "fingerprint": "e23dbca9535db467b0e5f9d4f8ab97f710f42ba7287d533e01d9fe554ecf0005"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "2c614f4e332d005ff004e72ac6876b84497c708281dcdd3b2b056594061be064",
+          "path": "evidence/D95/words-changed.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "5caeede1928f4647f13f4bd1185f8b15767ecf2c0f1e79a21a32206c479b0b15",
+          "path": "evidence/D95/tdd-log/T95.33-B2.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ab47bc811f23c17f4c6317a43b1bf19eff8f2b20af07649acc55f19159f8bebc",
+          "path": "evidence/D95/structural.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "c79a359e1467091a7382a5bbce5e05c0888bdac199979e34dec24e59d625fdbe",
+          "path": "evidence/D95/tdd-log/T95.33-B1.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "e3097bd05207ff2a77b5e56e5d5910ea07c8a667ee97dc2c7cb695026cd6f9f6",
+          "path": "evidence/D95/new-words.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "fd5590af50ebd3da16da3442499da15b23401d0a9a55fb522c1d7ef917ea3b88",
+          "path": "evidence/D95/ocr/T95.33-45cdf246.json",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 33517
+  }
+}

@@ -775,3 +775,5 @@ ocr of T95.33 (session fff4c78a): 21 files, 2 findings, both Valid. `evidence/D9
 ### T95.33-B1, T95.33-B2
 
 Commits `98860c07` (B1: a `chose` flag set by any radio change ends following the view's preselection; Discard clears it; a restored draft counts as chosen; red "expected [] to deeply equal [ 'Hold' ]", green) and `00361cce` (B2: the keyboard-only section reaches Hold by Tab and selects it with Space; mutation tabIndex=-1 failed with "focus ring on BODY", restored). ActionForm.test 19 passed; the browser case passed.
+
+ocr of T95.33-B1, T95.33-B2 (session dfe0f83c): 3 files, 1 finding, Valid: **T95.33-B3** (`ActionForm.tsx:282`): clicking or pressing Space on the already-checked preselected Hold fires no onChange, so `chose` stays false and a later loss of the preselection clears the confirmed Hold. `evidence/D95/ocr/T95.33-B1-B2-00361cce.json`.
