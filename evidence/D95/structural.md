@@ -610,3 +610,5 @@ ocr of T95.26-B3 (session fe810424): 6 files, 1 finding, Valid. `evidence/D95/oc
 ### T95.26-B6
 
 Commit `049abeca`: `describedLabelsOf` builds the share label from the Pressure `basis` alone, no longer gated on the meter's share (absent when total P&L is zero). Red ("expected [] to deeply equal [ { label: '67% to Stop' … } ]"), green; src/ui/screens 768 passed. Agent's note: with a Pressure Value and the meter Unavailable, a label now shows, consistent with the card's line.
+
+ocr of T95.26-B6 (session 5497543c): 2 files, 0 findings. `evidence/D95/ocr/T95.26-B6-049abeca.json`. T95.26-B4 goes next; the quick runs of B3, B6 and B4 are folded into the full run that follows (the full tier contains the task tier), as with B2.
