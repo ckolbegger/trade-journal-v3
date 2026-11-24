@@ -11,7 +11,7 @@ async function completeReview(page: Page, date: string, marks: Record<string, st
   for (const symbol of SYMBOLS) await enterMark(page, symbol, date, marks[symbol]!);
   for (const symbol of SYMBOLS) {
     await reachCard(page, symbol);
-    await saveAction(page, 'Hold', undefined, symbol);
+    await saveAction(page, 'Hold', 'Holding as planned.', symbol);
   }
   await expect(completion(page)).toHaveText('Complete');
 }
@@ -37,7 +37,7 @@ test.describe('B4.9 Offline cold restart (AC-DEL-001)', () => {
     for (const symbol of SYMBOLS) await enterMark(tuesday, symbol, 'Tue Oct 13', TUESDAY_MARKS[symbol]);
     for (const symbol of SYMBOLS) {
       await reachCard(tuesday, symbol);
-      await saveAction(tuesday, 'Hold', undefined, symbol);
+      await saveAction(tuesday, 'Hold', 'Holding as planned.', symbol);
     }
     await expect(completion(tuesday)).toHaveText('Complete');
     await offline.close();

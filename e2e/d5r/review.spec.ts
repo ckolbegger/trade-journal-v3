@@ -50,18 +50,18 @@ test.describe('B5R.1 Review end to end on cards', () => {
     await answerDebt(page, tA);
 
     // Finishing T-A's card (its Action, Hold preselected) closes it; the next thing is a Mark, which is the page's, so no card opens.
-    await saveAction(page, 'Hold', undefined, tA);
+    await saveAction(page, 'Hold', 'Holding as planned.', tA);
     await expect(cardHeader(page, tA)).toHaveAttribute('aria-expanded', 'false');
     await expect(remainsOf(page, tA)).toHaveText('Done · Hold');
     await expect(cardList(page).locator(OPEN_HEADERS)).toHaveCount(0);
     await expect(marksStepOf(page).locator('input:focus')).toHaveCount(1);
 
     // The other cards: their Marks where one is still needed (T-F's came with T-A's), then the Action in each card's panel.
-    await saveAction(page, 'Hold', undefined, tF);
+    await saveAction(page, 'Hold', 'Holding as planned.', tF);
     await expect(remainsOf(page, tF)).toHaveText('Done · Hold');
     for (const [trade, price] of [[tB, '27.50'], [tC, '40.50'], [tE, '21.00']] as const) {
       await enterMark(page, trade, MONDAY, price);
-      await saveAction(page, 'Hold', undefined, trade);
+      await saveAction(page, 'Hold', 'Holding as planned.', trade);
       await expect(remainsOf(page, trade)).toHaveText('Done · Hold');
     }
     await expect(completion(page)).toHaveText('Complete');

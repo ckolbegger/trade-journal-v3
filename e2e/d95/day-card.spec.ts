@@ -50,7 +50,7 @@ test.describe('B95.1 The day card', () => {
     await expect(marksStepOf(page).getByRole('button', { name: 'Edit', exact: true })).toBeVisible();
     for (const symbol of ['XYZ', 'ABC', 'JKL']) {
       await reachCard(page, symbol);
-      await saveAction(page, 'Hold', undefined, symbol);
+      await saveAction(page, 'Hold', 'Holding as planned.', symbol);
     }
     await reachCard(page, 'DEF');
     await saveAction(page, 'Exit', 'Taking the sale.', 'DEF');

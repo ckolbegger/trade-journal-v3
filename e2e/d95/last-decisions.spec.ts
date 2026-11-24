@@ -9,7 +9,7 @@ test.describe('B95.4 Your last decisions', () => {
     const { context, page, trades } = await openStandardReview(profile, copySetup);
     const ofSymbol = (symbol: string) => trades.find((t: TradeRef) => t.symbol === symbol)!;
     // Hold AXIO and DALE on Mon Nov 16, both past their Stops.
-    for (const symbol of ['AXIO', 'DALE']) await saveAction(page, 'Hold', undefined, ofSymbol(symbol));
+    for (const symbol of ['AXIO', 'DALE']) await saveAction(page, 'Hold', 'Holding as planned.', ofSymbol(symbol));
     await setClock(context, page, closeOf('2026-11-17'));
     await setWidth(page, 320);
     await openReview(page);

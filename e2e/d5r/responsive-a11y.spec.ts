@@ -101,6 +101,9 @@ test.describe('B5R.11 Responsive and accessible', () => {
     const save = abc.getByRole('form', { name: 'Action' }).getByRole('button', { name: 'Save' });
     await expect(save).toBeEnabled();
     await expect(abc.getByRole('radio', { name: 'Hold', exact: true })).toBeChecked();
+    // ABC's Mark is past its Stop, so a Hold needs its reason (T95.32): typed by keyboard, then Save.
+    await tabTo(page, abc.getByRole('form', { name: 'Action' }).getByLabel(INTENT));
+    await page.keyboard.type('Holding as planned.');
     await tabTo(page, save);
     await page.keyboard.press('Enter');
     await expect(remainsOf(page, tB)).toHaveText('Done · Hold');
