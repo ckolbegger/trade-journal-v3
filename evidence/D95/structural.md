@@ -550,3 +550,7 @@ Run `t95.26-gate` (browser-full, 26m31s): unit 2890, integration 329, browser-3 
 ### T95.20-F1
 
 Commit `9ec06f79`: card-helpers 39, 59 and 140, B5R.5 and B5R.11 save the Trade's Review Date Mark first (B5R.11's draft moves to T-C's Monday cell; its labels, To-do text and keyboard start follow the new order; every check kept). B4.10 left failing: a product defect. In Recovery Only, ABC's card says "No Action until today's Mark is in. Enter it" with a link to a Marks step that has no Price field; `ActionForm.tsx` 194 (`toGo > 0` → MarksFirst) runs before 195 (read-only → "No Action saved."). Bug task **T95.20-B1**.
+
+### T95.20-B1
+
+Commit `f988238f`: the read-only New-form branch now comes before the Marks-first branch in `ActionForm.tsx`. Red then green; src/ui 1384 passed; B4.10 and e2e/d95 17 passed.
