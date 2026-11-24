@@ -955,3 +955,7 @@ Commits `277640b3` (B1: ActionForm reports dirty while the Action draft changed 
 ocr of T95.41-B1, T95.41-B2 (session 32fb8bab, second run; the first failed on a provider HTTP error): 3 files, 0 findings. `evidence/D95/ocr/T95.41-B1-B2-011130ff.json`. Next: run `t95.41-exit-banner` (browser-task, Standard).
 
 Run `t95.41-exit-banner` (browser-task): unit 3086, integration 329, browser 25, checks 14 of 14. Passed. T95.41 done.
+
+### T95.43
+
+Commit `ee16e93c`: variants `DailyReview.open` PlanCall; `getTrade` PlanCall, PlanExit; `save` PlanRule; `getTradeDetail` PlanExit; `recordPositionChange` PlanExitMeasure; each on its route (review, trade-detail, record-entry). I95.7 asserts the exact DailyReview lists and the presence of PlanExit/PlanExitMeasure on the other two (their full lists stay asserted by workspace.test.ts's exact-list case, updated); no route needs an uninstalled variant. verify:capabilities passes (24 operations, 12 variant-qualified, 10 routes).
