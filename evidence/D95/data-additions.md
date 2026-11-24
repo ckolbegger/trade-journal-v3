@@ -10,3 +10,5 @@ Coordinator data added so the screens can show what the approved prototype shows
 | T95.16-D3 | `day.lines[].action` (the Action saved for the Review Date) | the Actions `open` already reads | "Done · Hold" in the card header and day card |
 | T95.17-D1 | `DailyTradeReview.expiration { date, sessionsLeft? }`; `datedLastClose.meter` | the open Lots and calendar `getTrade` reads | the Now box's Expiration row; the dated close's drawing |
 
+
+- T95.42: `OwedReflection.requires` (from the DebtProjection `reflectionsOf` already holds); `TradeDetailDebt.requires` and `NarrativeDebt.requires` (from the stored Debt the narrative read already loads; spread only when present); `day.lines[].needs` may be `'SayWhy'`. No added read.
