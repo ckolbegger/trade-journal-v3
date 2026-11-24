@@ -57,6 +57,20 @@ describe('planCall (A306)', () => {
     expect(callAt(R_DALE_D.record, '2026-11-03', '0.15', '53.00').call).toBe('Out');
   });
 
+  it('should give Out when the contract Mark is missing but the Underlying Mark crosses a headline Stop', () => {
+    // R-DALE: no put Mark, DALE at 53.00 is at or below the Stop's 54.00 (A110: the Underlying alone reads the Stop).
+    const call = callAt(R_DALE_D.record, '2026-11-03', null, '53.00');
+    expect(call.call).toBe('Out');
+    expect(call.condition?.role).toBe('Stop');
+  });
+
+  it('should keep Unknown when the contract Mark is missing and the Underlying Mark crosses nothing', () => {
+    const call = callAt(R_DALE_D.record, '2026-11-03', null, '60.00');
+    // The Stop reads Active from the Underlying alone; the put-price Target has no Mark to read, so it is the one named.
+    expect(call.call).toBe('Unknown');
+    expect(call.condition?.role).toBe('Target');
+  });
+
   it('should name the condition that made the call', () => {
     expect(callAt(XYZ_RECORD, '2026-10-13', '47.00').condition).toEqual({ id: 'stop-1', role: 'Stop', boundary: '47.5' });
     expect(callAt(XYZ_RECORD, '2026-10-13', '56.00').condition).toEqual({ id: 'target-1', role: 'Target', boundary: '56' });
