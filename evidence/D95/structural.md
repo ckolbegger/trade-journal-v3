@@ -616,3 +616,5 @@ ocr of T95.26-B6 (session 5497543c): 2 files, 0 findings. `evidence/D95/ocr/T95.
 ### T95.26-B4
 
 Commit `8e2f88e7`: `LastDecisions.tsx` wraps the signed Trade P&L in `Figures` (B2's component). Red at 320 ("AXIO: signed figures broken across lines at 320: Received ["−$1,040.00"]"), green; new `e2e/d95/last-decisions.spec.ts`. A temporary widened check over the whole AXIO and DALE cards at 320 found no other break. Prettier --check warns on LastDecisions.tsx and the new spec (lint passes).
+
+ocr of T95.26-B4 (session 94056617): 2 files, 0 findings. `evidence/D95/ocr/T95.26-B4-8e2f88e7.json`. Next: full run `t95.26-gate-4` (covers the quick runs of T95.26-B3, T95.26-B6 and T95.26-B4), then critic-3.
