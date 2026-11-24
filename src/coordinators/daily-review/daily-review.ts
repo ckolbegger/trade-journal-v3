@@ -2,7 +2,7 @@ import { Temporal } from 'temporal-polyfill';
 import { instrumentKey, settlementDueOn, type Instrument, type OptionInstrument } from '../../domain/instrument/index.ts';
 import { openTradeSummary } from '../../domain/trade-summary.ts';
 import { Rational } from '../../domain/values/index.ts';
-import { derive, type DerivedTradeState, type IncoherentFacts, type LifecycleState, type TradeAnalysisRecord, type TradeEvaluation } from '../../domain/trade-analysis/index.ts';
+import { derive, planCall, type DerivedTradeState, type IncoherentFacts, type LifecycleState, type TradeAnalysisRecord, type TradeEvaluation } from '../../domain/trade-analysis/index.ts';
 import { classifyDue, compareDueAnchors, compareOwed, owedStandingOf, type SessionCloses } from '../../domain/journal-debt/index.ts';
 import type { DebtProjection, HistoryAction, Journal, ObligationOutcome } from '../../modules/journal/index.ts';
 import type { EvidenceBinding, FrameContext, HistoricalGaps, MarketData, MarketDataPrepareEntry, MarketDataIssue, MarketDataReadSession, SeriesPoint } from '../../modules/market-data/index.ts';
@@ -642,7 +642,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
         ...item,
         progress: progressOf(item.tradeId, settlement.some((s) => s.tradeId === item.tradeId)),
         ...(valuation?.state.contractStatuses.some(({ status }) => status === 'DueToday') && { expiresOnReviewDate: true as const }),
-        ...(valuation && { meter: meterReadingOf(valuation.evaluation, before), figures: { riskToStop: valuation.evaluation.ongoingRiskToStop, pnl: valuation.evaluation.currentMarkedPnl, rewardRiskNow: valuation.evaluation.rewardRiskNow }, pnl: { dollars: valuation.evaluation.currentMarkedPnl, planR: valuation.evaluation.currentMarkedPnlInPlanR, change: dayChangeOf([{ valuation, before }], false, reviewDate, read.previousSessionDate !== undefined) } }),
+        ...(valuation && { planCall: planCall(valuation.evaluation), meter: meterReadingOf(valuation.evaluation, before), figures: { riskToStop: valuation.evaluation.ongoingRiskToStop, pnl: valuation.evaluation.currentMarkedPnl, rewardRiskNow: valuation.evaluation.rewardRiskNow }, pnl: { dollars: valuation.evaluation.currentMarkedPnl, planR: valuation.evaluation.currentMarkedPnlInPlanR, change: dayChangeOf([{ valuation, before }], false, reviewDate, read.previousSessionDate !== undefined) } }),
       }),
     );
     const families: ReviewFamily[] = [
@@ -899,7 +899,8 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     const needed = rows.filter((frame) => frame.resolution.kind === 'Missing').length;
     const due = reflections.filter((reflection) => reflection.classification === 'Due').length;
     const progress = cardProgress({ resolved: rows.length - needed, needed }, { due, later: reflections.length - due }, !saved, settlement.length > 0);
-    const form: ActionForm = saved ? { kind: 'Saved', action: saved } : { kind: 'New', viewState: { selectedAction: 'Hold' } };
+    const planCallNow = valuation && planCall(valuation.evaluation);
+    const form: ActionForm = saved ? { kind: 'Saved', action: saved } : { kind: 'New', viewState: planCallNow?.call === 'Hold' ? { selectedAction: 'Hold' } : {} };
     // A saved Action's form is the Entry's first version's definition; a new form takes the latest.
     let definitionRevision = saved?.definitionId;
     if (definitionRevision === undefined) {
@@ -917,6 +918,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
           underlying: summary.underlying,
           lifecycle: summary.lifecycle,
           attention: item,
+          ...(planCallNow && { planCall: planCallNow }),
           plan: { thesis: analysis.plan.thesis, invalidation: analysis.plan.invalidation },
           labels,
           ...figures,

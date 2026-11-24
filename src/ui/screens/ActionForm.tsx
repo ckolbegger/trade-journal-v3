@@ -79,7 +79,8 @@ interface Values {
 
 // What the form was returned with: the saved Action and its answers, or Hold with none.
 function returnedValues(form: ActionFormState): Values {
-  if (form.kind === 'New') return { action: form.viewState.selectedAction, intent: '', conviction: '', considered: '', note: '' };
+  // Nothing is selected when the Plan Call is not Hold (A307); the choice-less form is a later task's, so this still opens on Hold.
+  if (form.kind === 'New') return { action: form.viewState.selectedAction ?? 'Hold', intent: '', conviction: '', considered: '', note: '' };
   const { responses } = form.action;
   const text = (prompt: string) => {
     const answer = responses.find((r) => r.prompt === prompt)?.answer;

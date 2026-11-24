@@ -827,8 +827,8 @@ describe('getTrade', () => {
     await breakFirstExecution(stack, e);
     const review = await overview(stack);
     const { reviewDate, binding } = review;
-    // The Trade card's attention is the overview item without its reflection counts, card progress, slider figures, meter reading and P&L (T5.8, T5R.3-B3, T5R2.4, T9.31, T95.16-D2).
-    const items = walk(review).map((t) => Object.fromEntries(Object.entries(t).filter(([key]) => key !== 'reflections' && key !== 'progress' && key !== 'figures' && key !== 'meter' && key !== 'pnl')));
+    // The Trade card's attention is the overview item without its reflection counts, card progress, slider figures, meter reading and P&L (T5.8, T5R.3-B3, T5R2.4, T9.31, T95.16-D2, T95.31).
+    const items = walk(review).map((t) => Object.fromEntries(Object.entries(t).filter(([key]) => key !== 'reflections' && key !== 'progress' && key !== 'figures' && key !== 'meter' && key !== 'pnl' && key !== 'planCall')));
 
     // A disagreement between stored records and facts keeps its Blocker reason, with the figures still evaluated.
     const disagreeing = await stack.dailyReview.getTrade({ reviewDate, tradeId: d, binding });
@@ -840,7 +840,7 @@ describe('getTrade', () => {
     expect(unreplayable.trade.attention).toEqual(items.find((t) => t.tradeId === e));
     expect(unreplayable.trade.attention.reasons).toEqual([expect.objectContaining({ code: 'Unavailable', reason: 'FactsIncoherent' })]);
     expect(unreplayable.trade).not.toHaveProperty('evaluation');
-    expect(unreplayable.trade.form).toEqual({ kind: 'New', viewState: { selectedAction: 'Hold' } });
+    expect(unreplayable.trade.form).toEqual({ kind: 'New', viewState: {} });
   }, 30_000);
 });
 

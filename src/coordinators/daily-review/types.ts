@@ -2,7 +2,7 @@ import type { RuntimeNotWritable } from '../../delivery/runtime-not-writable.ts'
 import type { DueClassification } from '../../domain/journal-debt/index.ts';
 import type { Instrument, OptionInstrument } from '../../domain/instrument/index.ts';
 import type { Instant } from '../../domain/time/index.ts';
-import type { CalculationResult, EntryResolution, ExecutionFact, ExpirationFact, ExpirationPayoffs, IncoherentFacts, IntegrityFinding, LifecycleState, NotApplicableReason, TerminalDisposition, TradeEvaluation } from '../../domain/trade-analysis/index.ts';
+import type { CalculationResult, EntryResolution, ExecutionFact, ExpirationFact, ExpirationPayoffs, IncoherentFacts, IntegrityFinding, LifecycleState, NotApplicableReason, PlanCall, TerminalDisposition, TradeEvaluation } from '../../domain/trade-analysis/index.ts';
 import type { TradeSummary } from '../../domain/trade-summary.ts';
 import type { Rational } from '../../domain/values/index.ts';
 import type { WorkspaceSnapshotBinding } from '../../persistence/index.ts';
@@ -74,6 +74,8 @@ export interface WalkedTrade extends ReviewTradeItem {
   readonly meter?: MeterReading;
   // The Trade's P&L at the Review Date in dollars and in planned R, with its change since the session before (P178, decision 131). Absent with the figures.
   readonly pnl?: WalkedPnl;
+  // What the Plan Exit calls for on the Review Date's Marks, with the condition that made it (A306). Absent with the figures.
+  readonly planCall?: PlanCall;
 }
 
 export interface WalkedPnl {
@@ -277,7 +279,7 @@ export interface GetDailyTradeReviewRequest {
 // (Daily Review, `getTrade`); nothing is recorded until Save.
 export type ActionForm =
   | { readonly kind: 'Saved'; readonly action: DailyAction }
-  | { readonly kind: 'New'; readonly viewState: { readonly selectedAction: 'Hold' } };
+  | { readonly kind: 'New'; readonly viewState: { readonly selectedAction?: 'Hold' } };
 
 // What Save must present: the exact Trade revision, evidence snapshot, obligation, and rendered
 // form revision (Daily Review, `save`).
@@ -349,6 +351,8 @@ export interface DailyTradeReview {
   readonly replay?: TradeReplayView;
   // The Trade's band and reasons, as the overview lists them.
   readonly attention: ReviewTradeItem;
+  // The Plan Call at the Review Date's Marks and the condition that made it (A306); absent when the Trade's facts cannot be replayed.
+  readonly planCall?: PlanCall;
   // The Plan's Thesis and "No longer valid if", the text Trade Detail shows (P177, decision 130).
   // `getTrade` always returns it; optional so a card built by hand needs none (the screen that shows it, T95.16, reads it).
   readonly plan?: { readonly thesis: string; readonly invalidation: string };
