@@ -1,0 +1,24 @@
+:root { font-family: system-ui, sans-serif; color: #1a1a1a; background: #f5f2ea; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+main { min-height: 100vh; }
+.shell { max-width: 960px; margin: 0 auto; padding: 1rem; }
+header h1 { font-size: 1.25rem; }
+nav { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+nav button { padding: 0.5rem 0.75rem; border: 1px solid #bbb; background: #fff; border-radius: 999px; }
+nav button[aria-current="page"] { background: #111; color: #fff; }
+form { display: grid; gap: 0.4rem; margin: 1rem 0; }
+input, select { padding: 0.5rem; border: 1px solid #bbb; border-radius: 0.5rem; }
+button[type="submit"] { padding: 0.5rem; border: 0; background: #111; color: #fff; border-radius: 999px; }
+
+@media (min-width: 900px) {
+  nav { flex-direction: column; width: 200px; }
+  .shell { display: grid; grid-template-columns: 200px 1fr; gap: 2rem; }
+  header { grid-column: 1; }
+  section[aria-live] { grid-column: 2; }
+}
+
+@media (max-width: 899px) {
+  nav { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; justify-content: space-around; margin: 0; padding: 0.5rem; }
+  .shell { padding-bottom: 4rem; }
+}
