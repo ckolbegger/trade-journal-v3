@@ -142,3 +142,26 @@ describe('pressure and meter reading for options (decision 88)', () => {
     expect(meter!.now).toMatchObject({ kind: 'Value', value: { pnl: r(887n, 10n), zone: 'Between', share: { fraction: r(887n, 2487n), toward: 'Target' } } });
   }, 60_000);
 });
+
+// A Trade whose Stop is read on the Underlying keeps its Stop-reached band when only the contract's own Mark is unavailable (Daily Review, "Date, eligibility, and ordering").
+describe('a Stop reached on the Underlying with the contract Mark unavailable', () => {
+  it('should keep MNO in the Stop reached band with its Stop breached reason and the pressure Unavailable, on the Walk and the card', async () => {
+    const { stack, confirm, fill } = await fixture();
+    const tradeId = await confirm('strategy.cash-secured-put', { underlying: 'MNO', legs: [{ side: 'Short', instrument: MNO_PUT, quantity: '-2', intendedEntry: '1.20' }], stops: [{ kind: 'UnderlyingPrice', price: '42.00' }], targets: [{ kind: 'UnderlyingPrice', price: '50.00' }] });
+    await fill(tradeId, MNO_PUT, 'Sell', MONDAY_10, '2', '1.25', '1.30');
+    await stack.acknowledge(instrumentKey(MNO_PUT), TUESDAY);
+    await stack.saveMark('MNO', '41.00', TUESDAY);
+
+    const review = ready(await stack.dailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: TUESDAY_1700 }));
+    const trades = review.families.find((f) => f.family === 'Trades');
+    if (trades?.family !== 'Trades') throw new Error('no Trades family');
+    const walked = trades.trades.find((t) => t.tradeId === tradeId)!;
+    const card = await stack.dailyReview.getTrade({ reviewDate: review.reviewDate, tradeId, binding: review.binding });
+    if (card.kind !== 'Ready') throw new Error(`expected Ready, got ${card.kind}`);
+
+    expect(walked.band).toBe('StopReached');
+    expect(walked.reasons).toEqual([expect.objectContaining({ code: 'StopBreached', conditionId: 'stop-1' })]);
+    expect(walked.basis).toMatchObject({ kind: 'Unavailable', reason: 'AcknowledgedUnavailable' });
+    expect(card.trade.attention.band).toBe('StopReached');
+  }, 60_000);
+});

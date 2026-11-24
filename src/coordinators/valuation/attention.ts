@@ -12,7 +12,7 @@ export type AttentionBand = 'Blocker' | 'ExitNotCarriedOut' | 'SettlementDue' | 
 export type AttentionReason =
   | { readonly code: 'IntegrityDisagreement'; readonly findings: readonly IntegrityFinding[] }
   | ({ readonly code: 'Unavailable' } & UnavailableReason)
-  | { readonly code: 'StopBreached' | 'TargetReached'; readonly conditionId: string; readonly overrun: Rational }
+  | { readonly code: 'StopBreached' | 'TargetReached'; readonly conditionId: string; readonly overrun?: Rational }
   | { readonly code: 'PressureTowardStop' | 'PressureTowardTarget' }
   // The Trade's most recent Action before the Review Date is Exit and the Trade is still held (A313).
   | { readonly code: 'ExitNotCarriedOut' }
@@ -144,15 +144,17 @@ export function attentionOf(state: DerivedTradeState, evaluation: TradeEvaluatio
   if (findings.length > 0) return { band: 'Blocker', reasons: [{ code: 'IntegrityDisagreement', findings }, ...due], basis };
   if (lastAction?.action === 'Exit') return { band: 'ExitNotCarriedOut', reasons: [{ code: 'ExitNotCarriedOut' }, ...due], basis };
   if (due.length > 0) return { band: 'SettlementDue', reasons: due, basis };
-  const crossed = evaluation.conditions.flatMap((c) =>
-    c.result.kind === 'Value' && c.result.value.status !== 'Active' && c.result.value.overrun
-      ? [{ code: c.role === 'Stop' ? ('StopBreached' as const) : ('TargetReached' as const), conditionId: c.id, overrun: c.result.value.overrun.dollars }]
-      : [],
-  );
+  // A line the Underlying's Mark alone shows crossed counts too, while the contract's Mark is unavailable (A110); it has no dollar figure to carry.
+  const crossed = evaluation.conditions.flatMap((c) => {
+    const code = c.role === 'Stop' ? ('StopBreached' as const) : ('TargetReached' as const);
+    if (c.result.kind === 'Value') return c.result.value.status !== 'Active' && c.result.value.overrun ? [{ code, conditionId: c.id, overrun: c.result.value.overrun.dollars }] : [];
+    return c.underlyingReading && c.underlyingReading.status !== 'Active' ? [{ code, conditionId: c.id }] : [];
+  });
   if (crossed.length > 0) {
     // The deepest Stop passed, in Plan R, orders the Trades of the StopReached band.
     const stopOverrunsR = evaluation.conditions.flatMap((c) => (c.role === 'Stop' && c.result.kind === 'Value' && c.result.value.status !== 'Active' && c.result.value.overrun ? [c.result.value.overrun.planR] : []));
-    if (stopOverrunsR.length === 0) return { band: 'TargetReached', reasons: crossed, basis };
+    if (!crossed.some((reason) => reason.code === 'StopBreached')) return { band: 'TargetReached', reasons: crossed, basis };
+    if (stopOverrunsR.length === 0) return { band: 'StopReached', reasons: crossed, basis };
     return { band: 'StopReached', reasons: crossed, basis, stopOverrunR: stopOverrunsR.reduce((a, b) => (b.compare(a) > 0 ? b : a)) };
   }
   const unavailable = evaluation.ongoingRiskToStop;
