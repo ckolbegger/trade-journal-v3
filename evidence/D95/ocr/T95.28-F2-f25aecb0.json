@@ -1,0 +1,124 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 1,
+    "total_tokens": 176711,
+    "input_tokens": 175688,
+    "output_tokens": 1023,
+    "cache_read_tokens": 38016,
+    "elapsed": "56s"
+  },
+  "tool_calls": {
+    "total": 18,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 4,
+      "file_find": 1,
+      "file_read": 12
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/AppShell.tsx",
+      "content": "If readiness changes during initialize's recheck (for example, another tab acquires the Workspace), initialize returns RuntimeNotWritable, but this fallback restores the earlier Writable/Ready status. The shell then enables write routes and controls even though opening was refused. Fetch the current Workspace status for non-Opened results (as the migration path does), or propagate the refusal, rather than using the pre-initialize snapshot. Add a test where getStatus initially returns Ready and initialize returns RuntimeNotWritable.",
+      "existing_code": "          setStatus(opened.kind === \"Opened\" ? opened.status : next);",
+      "start_line": 328,
+      "end_line": 328,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/AppShell.test.tsx",
+        "src/ui/AppShell.tsx",
+        "tests/integration/d95/launch-seed.test.ts"
+      ]
+    }
+  ],
+  "session_id": "7a2d70b8-0c02-46f0-a0d5-d1dfc450c193",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "7a2d70b8-0c02-46f0-a0d5-d1dfc450c193",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "f25aecb0",
+      "resolved_base": "93b4c53e1666953c7a13591f3d34598829b029c2",
+      "resolved_head": "f25aecb0833a511210aa628c65f20438b4f7e024",
+      "exact_range": "93b4c53e1666953c7a13591f3d34598829b029c2..f25aecb0833a511210aa628c65f20438b4f7e024",
+      "source_artifact_sha256": "42643da088f734919a5c3d66cbf1b2ef6030716df63b34b1003b48bfb31e4879"
+    },
+    "execution": {
+      "ocr_version": "v1.14.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0a902327a65486fa48a77d45624b330f299c5d4d8e6023de7e07261181cf594e",
+          "path": "tests/integration/d95/launch-seed.test.ts",
+          "fingerprint": "7fbab69fcf978ecedec8378f23b87833de623a50abed39e7be77c1fa38c085d7"
+        },
+        {
+          "item_id": "1728d6fbf13ec180a4f8fea35d8e89f022632ae57123bc93848ff5e96777505c",
+          "path": "src/ui/AppShell.tsx",
+          "fingerprint": "09c0128fa8b7e0ea1d8018101fd5fa2846f8ecd6671618e5202368e29c89cd49"
+        },
+        {
+          "item_id": "b777228b9a974c64bbabf05525468779f48aaec188283e6cc1c716511706288d",
+          "path": "src/ui/AppShell.test.tsx",
+          "fingerprint": "a481fde93a2d7b705aaf71774f5821fc1da417f68cc67fc89775eb0d3dfb370d"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0a902327a65486fa48a77d45624b330f299c5d4d8e6023de7e07261181cf594e",
+          "path": "tests/integration/d95/launch-seed.test.ts",
+          "fingerprint": "7fbab69fcf978ecedec8378f23b87833de623a50abed39e7be77c1fa38c085d7"
+        },
+        {
+          "item_id": "1728d6fbf13ec180a4f8fea35d8e89f022632ae57123bc93848ff5e96777505c",
+          "path": "src/ui/AppShell.tsx",
+          "fingerprint": "09c0128fa8b7e0ea1d8018101fd5fa2846f8ecd6671618e5202368e29c89cd49"
+        },
+        {
+          "item_id": "b777228b9a974c64bbabf05525468779f48aaec188283e6cc1c716511706288d",
+          "path": "src/ui/AppShell.test.tsx",
+          "fingerprint": "a481fde93a2d7b705aaf71774f5821fc1da417f68cc67fc89775eb0d3dfb370d"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "3dfd0bcf0ccef45d578428970703f6f34eba3092a8325917fbd6c2d997a3c218",
+          "path": "evidence/D95/tdd-log/T95.28-F2.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 55574
+  }
+}
