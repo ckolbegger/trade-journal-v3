@@ -1,0 +1,126 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 0,
+    "total_tokens": 53783,
+    "input_tokens": 53492,
+    "output_tokens": 291,
+    "cache_read_tokens": 6656,
+    "elapsed": "14s"
+  },
+  "tool_calls": {
+    "total": 5,
+    "by_tool": {
+      "file_read": 5
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/modules/journal/journal.ts",
+        "src/modules/journal/seed-revision.test.ts"
+      ]
+    }
+  ],
+  "session_id": "1e68c1c0-9800-49f5-b59d-a81ad3ab0d76",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "1e68c1c0-9800-49f5-b59d-a81ad3ab0d76",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "d5f4ada1",
+      "requested_head": "b44f35cf",
+      "resolved_base": "d5f4ada162f22be1d5b185531c613b9ab7429ede",
+      "resolved_head": "b44f35cf855c6b7ecb31d82985cba080aec098ce",
+      "exact_range": "d5f4ada162f22be1d5b185531c613b9ab7429ede..b44f35cf855c6b7ecb31d82985cba080aec098ce",
+      "source_artifact_sha256": "40702ce3dcfbdee54d93b2180b2fc47bbf7c5e04b990def9fe87bca4f50afd65"
+    },
+    "execution": {
+      "ocr_version": "v1.14.2",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "c12460eec349327b1106d72a2d41a292b5a1cb901e9d9d34a84393626d3b867b",
+          "path": "src/modules/journal/journal.ts",
+          "fingerprint": "9b5c503587e4ad9de14c4f2c40c082216a280502d7c0fe0f80c0ccab3fd3b041"
+        },
+        {
+          "item_id": "f24a5aca2e8faf8d39364ddd1121f63f46e196d48fd9ff241f6518a837ebcfae",
+          "path": "src/modules/journal/seed-revision.test.ts",
+          "fingerprint": "70751ecc968377a8cd69158094dbacbc3fa6c8e52908c8978b1c94ff6e11fcbf"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "c12460eec349327b1106d72a2d41a292b5a1cb901e9d9d34a84393626d3b867b",
+          "path": "src/modules/journal/journal.ts",
+          "fingerprint": "9b5c503587e4ad9de14c4f2c40c082216a280502d7c0fe0f80c0ccab3fd3b041"
+        },
+        {
+          "item_id": "f24a5aca2e8faf8d39364ddd1121f63f46e196d48fd9ff241f6518a837ebcfae",
+          "path": "src/modules/journal/seed-revision.test.ts",
+          "fingerprint": "70751ecc968377a8cd69158094dbacbc3fa6c8e52908c8978b1c94ff6e11fcbf"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "12f1e173b5504c18b1dfdef2b710461967b34b280fdc45b249ac37500aff0acc",
+          "path": "evidence/D95/tdd-log/T95.27-B3.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "467b9c154a58bfea89b79b96a68dc1a17eb85758815b2081303cf100f370e148",
+          "path": "evidence/D95/tech-debt.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "9e1419857fac66b1ad05b2ab2fc3f36144510d8a1e790c142a077f4eae9ebf2a",
+          "path": "evidence/D95/ocr/T95.27-d5f4ada1.json",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "a210abbfd7a9bd766d569e782d63c4ac833d165c53a4ec871f63ded3c21d1381",
+          "path": "evidence/D95/tdd-log/T95.27-B2.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ab47bc811f23c17f4c6317a43b1bf19eff8f2b20af07649acc55f19159f8bebc",
+          "path": "evidence/D95/structural.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "be4997ae7938387d5bc6d9b98479f94542d4a35436b5bd20e5d501f2e3ddb863",
+          "path": "evidence/D95/tdd-log/T95.27-B1.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 14417
+  }
+}
