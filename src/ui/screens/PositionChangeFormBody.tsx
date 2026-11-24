@@ -56,6 +56,8 @@ interface Row {
   readonly defaultInstant?: string | undefined;
 }
 
+// What the Plan check owes: a reason, nothing, or no reading of the sale yet.
+type CheckState = 'owes' | 'clear' | 'unmeasured';
 type EditableField = 'quantity' | 'price' | 'fee' | 'time';
 
 // At most 20 Executions per Position Change (D2 A18).
@@ -106,6 +108,8 @@ export function PositionChangeFormBody({ facade, tradeId, exit, onDone, backLabe
         readonly rows: readonly Row[];
         readonly answers: Answers;
         readonly closeReasonId: string;
+        // What the Plan check said when the issues were reported.
+        readonly check: CheckState;
       }
     | undefined
   >();
@@ -304,9 +308,13 @@ export function PositionChangeFormBody({ facade, tradeId, exit, onDone, backLabe
   const departurePrompt = definition.prompts.find((p) => p.kind === 'Text' && p.role === 'PlanDepartureReason');
   // The save is the authority: when it refuses for want of the reason, the form asks for it whatever it measured.
   // An edit to the quantity or price changes the Plan check, so a refusal for want of the reason no longer holds the question open.
-  const saleEdited = reported !== undefined && rows.some((r) => { const before = reported.rows.find((b) => b.key === r.key); return !before || before.quantity !== r.quantity || before.price !== r.price; });
-  const refusedForReason = !saleEdited && issues.some((i) => i.code === 'PlanDepartureReasonRequired');
-  const asksWhy = ((saleCheck?.measure?.kind === 'Leaves' && !saleCheck.carried) || refusedForReason) && departurePrompt?.kind === 'Text';
+  // A refusal for want of the reason lapses once the Plan check, which said otherwise when the refusal came, owes no reason.
+  const owesReason = saleCheck?.measure?.kind === 'Leaves' && !saleCheck.carried;
+  const checkState: CheckState = owesReason ? 'owes' : (saleCheck?.measure && 'clear') || 'unmeasured';
+  const reasonLapsed = checkState === 'clear' && reported !== undefined && reported.check !== 'clear';
+  const reasonRefusal = (issue: FieldIssue) => issue.code === 'PlanDepartureReasonRequired';
+  const refusedForReason = !reasonLapsed && issues.some(reasonRefusal);
+  const asksWhy = (checkState === 'owes' || refusedForReason) && departurePrompt?.kind === 'Text';
   // W134: a sale that leaves the Plan only by selling part of it asks about the part.
   const onlyPart = saleCheck?.measure?.kind === 'Leaves' && saleCheck.measure.reasons.every((r) => r.kind === 'PartOnly');
   const textOf = (promptId: string) => {
@@ -342,7 +350,7 @@ export function PositionChangeFormBody({ facade, tradeId, exit, onDone, backLabe
     const instants = times.flatMap((time) => (time.ok ? [time.instant] : []));
     if (timeIssues.length > 0) {
       setIssues(describePositionChangeIssues(timeIssues, rowKeys, definition, undefined, option));
-      setReported({ rows, answers, closeReasonId });
+      setReported({ rows, answers, closeReasonId, check: checkState });
       return;
     }
     const members = rows.map(
@@ -361,7 +369,7 @@ export function PositionChangeFormBody({ facade, tradeId, exit, onDone, backLabe
     // The question the form asks is answered or put off with "Say why later".
     if (!later && asksWhy && textOf(departurePrompt.id).trim() === '') {
       setIssues([{ field: departurePrompt.id, message: SAY_WHY, code: 'PlanDepartureReasonRequired' }]);
-      setReported({ rows, answers, closeReasonId });
+      setReported({ rows, answers, closeReasonId, check: checkState });
       return;
     }
     // Hidden answers and reason are never submitted; only the chosen disposition is.
@@ -385,7 +393,7 @@ export function PositionChangeFormBody({ facade, tradeId, exit, onDone, backLabe
     setReloaded(false);
     setReloadFailed(false);
     setIssues(result.kind === 'Rejected' ? describePositionChangeIssues(result.issues, rowKeys, definition, undefined, option) : []);
-    setReported({ rows, answers, closeReasonId });
+    setReported({ rows, answers, closeReasonId, check: checkState });
     if (result.kind === 'Rejected') {
       // The workflow decides whether the exit is terminal: what it requires shows the section, and
       // what it finds not applicable takes the section away again.
@@ -406,6 +414,7 @@ export function PositionChangeFormBody({ facade, tradeId, exit, onDone, backLabe
   // issues (an Economic Time before the Plan time, the reason's length) stay until the next save.
   const corrected = (issue: FieldIssue) => {
     if (!reported) return false;
+    if (reasonLapsed && reasonRefusal(issue)) return true;
     const row = rows.find((r) => issue.field.startsWith(`row-${r.key}-`));
     // A removed row's issue can never be fixed, so it counts as corrected.
     if (!row && issue.field.startsWith('row-')) return true;

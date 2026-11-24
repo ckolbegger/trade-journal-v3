@@ -101,6 +101,59 @@ describe('the Plan check on the exit form (T95.39)', () => {
     expect(vi.mocked(facade.TradeWorkflows.recordPositionChange)).toHaveBeenCalledTimes(1);
   });
 
+  const SAY_WHY_WORDS = 'Say why you left the Plan, or choose “Say why later”.';
+
+  it('should clear the question and the banner when an edit after an empty reason refusal makes the sale follow the Plan', async () => {
+    const facade = renderExitForm();
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(rejected as never);
+    const user = userEvent.setup();
+    await screen.findByRole('group', { name: 'Execution 1' });
+    await fillRow(user, 1, '60', '52.00');
+    await user.click(screen.getByRole('button', { name: 'Save exit' }));
+    expect(screen.getByRole('heading', { name: 'This exit can’t be saved yet' })).toBeTruthy();
+    await fillRow(user, 1, '100', '47.00');
+    expect(screen.queryByLabelText('Why did you leave the Plan?')).toBeNull();
+    expect(screen.queryByText(SAY_WHY_WORDS)).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'This exit can’t be saved yet' })).toBeNull();
+  });
+
+  it('should clear the question and the banner when removing the extra Execution makes the sale follow the Plan, and let Save send', async () => {
+    const facade = renderExitForm();
+    // With the extra Execution the sale is more than the Plan holds, so the form cannot measure it and the save asks for the reason.
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue({
+      ...rejected,
+      issues: [{ source: 'TradeWorkflows', field: 'prompt.position-change-reflection.plan-departure', code: 'PlanDepartureReasonRequired' }],
+    } as never);
+    const user = userEvent.setup();
+    await screen.findByRole('group', { name: 'Execution 1' });
+    await fillRow(user, 1, '100', '47.00');
+    await user.click(screen.getByRole('button', { name: 'Add Execution' }));
+    await fillRow(user, 2, '10', '47.00');
+    await user.click(screen.getByRole('button', { name: 'Save exit' }));
+    expect(screen.getAllByText(SAY_WHY_WORDS).length).toBeGreaterThan(0);
+    expect(screen.getByLabelText('Why did you leave the Plan?')).toBeTruthy();
+    expect(facade.TradeWorkflows.recordPositionChange).toHaveBeenCalledTimes(1);
+    await user.click(screen.getByRole('button', { name: 'Remove Execution 2' }));
+    expect(screen.queryByLabelText('Why did you leave the Plan?')).toBeNull();
+    expect(screen.queryByText(SAY_WHY_WORDS)).toBeNull();
+    await user.click(screen.getByRole('button', { name: 'Save exit' }));
+    expect(facade.TradeWorkflows.recordPositionChange).toHaveBeenCalledTimes(2);
+  });
+
+  it('should keep the refusal when an edit still leaves the Plan', async () => {
+    const facade = renderExitForm();
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(rejected as never);
+    const user = userEvent.setup();
+    await screen.findByRole('group', { name: 'Execution 1' });
+    await fillRow(user, 1, '60', '52.00');
+    await user.click(screen.getByRole('button', { name: 'Save exit' }));
+    await fillRow(user, 1, '70', '52.00');
+    expect(screen.getByLabelText('Why did you leave the Plan?')).toBeTruthy();
+    expect(screen.getAllByText(SAY_WHY_WORDS).length).toBeGreaterThan(0);
+    await user.click(screen.getByRole('button', { name: 'Save exit' }));
+    expect(facade.TradeWorkflows.recordPositionChange).not.toHaveBeenCalled();
+  });
+
   it('should send a completed reflection when the reason is given or none is owed, and Defer for the Close Review on a closing sale', async () => {
     const facade = renderExitForm();
     vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(rejected as never);
