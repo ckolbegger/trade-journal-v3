@@ -924,3 +924,7 @@ ocr of T95.40 (session a59ae1e9): 18 files, 3 findings. `evidence/D95/ocr/T95.40
 Commit `b8afe82d`: `readAfterSale` awaits the read and keeps the "refresh owed" flag on failure (partial-sale and dismissal paths); ReviewView's onRefresh now sets the existing banner "We couldn’t refresh the Review. Nothing was changed." on any card refresh failure (cleared on success). Three cases, each red then green. Residual: a read still in flight when the card unmounts and then fails sets the flag after cleanup (no retry). src/ui/screens 848 passed; d95/sale-form passed.
 
 ocr of T95.40-B1 (session f0f0ad6e): 4 files, 1 finding, Valid: **T95.40-B2** (`ActionForm.tsx:146`): `readAfterSale` clears the flag before the read finishes, so a dismissal or unmount while it is pending queues no retry (B1's recorded residual). `evidence/D95/ocr/T95.40-B1-b8afe82d.json`.
+
+### T95.40-B2
+
+Commit `26286f6e`: `readAfterSale` sets the owed flag when a read starts and clears it only on success; a `reading` flag blocks a second read in flight; a dismissal during a read queues a retry run only on failure; an unmount during a read skips `onLeftSold`, which the read calls itself only on failure. Cases: dismissed-pending-fails and left-pending-fails (red, green); dismissed-pending-succeeds and left-pending-succeeds (first-run passes, mutation-checked). src/ui/screens 852 passed.
