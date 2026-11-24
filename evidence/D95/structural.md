@@ -987,3 +987,10 @@ ocr of T95.45 (session eeb2cbf5): 5 files, 3 findings, test gaps, batched:
 - **T95.45-B2** (Valid, `sale.spec.ts:108`): `getByText(/Say why/).first()` can match the "Say why later" button; assert the refusal text itself.
 - **T95.45-B3** (Doubtful, `action.spec.ts:29` and the other three specs): `atBothWidths` returns to 1280 before Save/Discard/record-sale clicks, so no click runs at 375.
 `evidence/D95/ocr/T95.45-78d30f66.json`.
+
+### T95.45-B1, T95.45-B2, T95.45-B3 (tdd-task, 2026-11-24)
+- `8621f4b8` B1: sale.spec.ts's refused-sale checks snapshot trades, journalEntries, journalDeclines, journalObligations and journalDebts (helper throws on a missing store); each sale case also asserts the snapshot changes after the save.
+- `67b66d97` B2: asserts the exact refusal "Say why you left the Plan, or choose “Say why later”."
+- `84af6c09` B3: six new cases make every click at 375 (action, refusal, exit-banner, sale); desktop runs kept.
+- First-run passes, flagged and mutation-checked: B1 (snapshot check flipped: both closing cases failed), B2 (SAY_WHY text changed: both part-sale cases failed), B3 (buttons made unclickable under 400px: all six failed). Source restored each time; `git diff -- src` empty.
+- Browser: all of e2e/d95 46 of 46 passed (1.5 min).
