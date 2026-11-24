@@ -542,3 +542,7 @@ Commit `6d25dc13` (both): B1 reloads the Review after the fix and asserts ABC re
 ocr of T95.25-B1, T95.25-B2 (session 47ad248d): 1 file, 0 findings. `evidence/D95/ocr/T95.25-B1-B2-6d25dc13.json`.
 
 Run `t95.25-browser` (browser-task): unit 2890, integration 329, browser 20, checks 14 of 14. Passed. T95.25 Done.
+
+## T95.26 — Part A gate
+
+Run `t95.26-gate` (browser-full, 26m31s): unit 2890, integration 329, browser-3 55, browser-4 126 (4 skipped), checks 14 of 14 passed. Failed 6 older browser cases, all on the open Action form: `e2e/d4/card-helpers.spec.ts` 39, 59 and 140; `e2e/d5r/marks.spec.ts:79` (B5R.5); `e2e/d5r/responsive-a11y.spec.ts:8` (B5R.11); `e2e/d4/runtime-failure.spec.ts:7` (B4.10, expects "No Action saved."). Cause: T95.20 offers no Action form until the Trade's Marks are in (W95); these cases type an Action with Marks still owed. T95.20 ran only the specs it named; the full tier wasn't run after it (Standard). Follow-on **T95.20-F1**. The browser runner's report was lost (its first hand-back was a placeholder); this record is from the output files.
