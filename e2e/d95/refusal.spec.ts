@@ -98,7 +98,10 @@ test.describe('B95.7 The refusal on the Trade pressed (AC-REV-001)', () => {
     await refusalOf(page).getByRole('button', { name: 'Save it', exact: true }).click();
     await expect(cardHeader(page, 'DEF'), 'DEF opens at 375').toHaveAttribute('aria-expanded', 'true');
     await expect(refusalOf(page)).toHaveCount(0);
-    expect(await storedActions(page), "ABC's Roll saved once").toHaveLength(1);
+    const saved = await storedActions(page);
+    expect(saved, "ABC's Roll saved once").toHaveLength(1);
+    expect(JSON.stringify(saved), 'the Roll, not a Hold').toContain('option.daily-trade-review.action.roll');
+    expect(JSON.stringify(saved), 'the reason kept').toContain('Moving it out.');
     await context.close();
   });
 
