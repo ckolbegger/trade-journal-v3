@@ -1,0 +1,156 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 7 selected item(s).",
+  "summary": {
+    "files_reviewed": 7,
+    "comments": 0,
+    "total_tokens": 26187,
+    "input_tokens": 26042,
+    "output_tokens": 145,
+    "cache_read_tokens": 4992,
+    "elapsed": "11s"
+  },
+  "tool_calls": {
+    "total": 2,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Review screen behavior and related unit and end-to-end tests",
+      "files": [
+        "e2e/d6/close-review.spec.ts",
+        "e2e/d6/responsive-a11y.spec.ts",
+        "e2e/d7/review-expiration.spec.ts",
+        "e2e/d95/sale.spec.ts",
+        "src/ui/screens/ReviewCards.test.tsx",
+        "src/ui/screens/ReviewOwed.test.tsx",
+        "src/ui/screens/ReviewView.tsx"
+      ]
+    }
+  ],
+  "session_id": "94699013-1818-43c6-98ed-cf5af79ae5c2",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "94699013-1818-43c6-98ed-cf5af79ae5c2",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "30671d8e",
+      "resolved_base": "233be57ab0aa76fb6571365b6d6ad21f9147579c",
+      "resolved_head": "30671d8e37585088e5a9c97cb660c09da19c7790",
+      "exact_range": "233be57ab0aa76fb6571365b6d6ad21f9147579c..30671d8e37585088e5a9c97cb660c09da19c7790",
+      "source_artifact_sha256": "144b26cff07f6e455b0b0ef21c51593b3a23ea454cf8a3ba73eb1af39d93939c"
+    },
+    "execution": {
+      "ocr_version": "v1.14.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "06129f7bc0959665459bced5dd2b2fe42e6eefa20b943b5bcb22e15d914c46d2",
+          "path": "src/ui/screens/ReviewCards.test.tsx",
+          "fingerprint": "8ecc8253285a8f1f4daf69fb2f8a545fa3b3ded513242740ad5c23e8baddb619"
+        },
+        {
+          "item_id": "1ccbf570ad6e384cc56076140f1fc24d78ea6b24b2df44390628e2db1dbc8609",
+          "path": "e2e/d7/review-expiration.spec.ts",
+          "fingerprint": "b61adbfa497eca48624b49bade09b64bfab45aa55dc63df3958d146cdbe11485"
+        },
+        {
+          "item_id": "24130375af365892078c5278d207f29c6a19460b3f37d71486e36571ba82b0b5",
+          "path": "e2e/d6/close-review.spec.ts",
+          "fingerprint": "6378828fa3df7776dd065ec273e165d30aa2bdc6944b2fb4d99c04b6e0b84202"
+        },
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "87690a72117f33928e10556a5906935803bad23406b08ddd4c13c4264de7fc64"
+        },
+        {
+          "item_id": "70139c4628afd128449a3ffa304f7e61bbc1b97f7e2a6b371f821e8756367046",
+          "path": "e2e/d95/sale.spec.ts",
+          "fingerprint": "46915f3042c00c625d1cbbb68eabfff148f6a9b8583f87ee7bcf93f77b08fe80"
+        },
+        {
+          "item_id": "c2fd486111638d00f0d387a09d3b1d932d274fd2e5443262caf354d5c4d2756f",
+          "path": "e2e/d6/responsive-a11y.spec.ts",
+          "fingerprint": "3732918e0b41b56e092af54e8fbef92302e3632fc3047ce6b8e3f26960b8f582"
+        },
+        {
+          "item_id": "f60d40a2fcf211e72668946f9d6c2357941e916774d36dd5cb14b2a35255d3a9",
+          "path": "src/ui/screens/ReviewOwed.test.tsx",
+          "fingerprint": "5d7a4c4e420e4a6c0f968d78776942d8653edf7bd15bf5d021aeeeb324d11af7"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "06129f7bc0959665459bced5dd2b2fe42e6eefa20b943b5bcb22e15d914c46d2",
+          "path": "src/ui/screens/ReviewCards.test.tsx",
+          "fingerprint": "8ecc8253285a8f1f4daf69fb2f8a545fa3b3ded513242740ad5c23e8baddb619"
+        },
+        {
+          "item_id": "1ccbf570ad6e384cc56076140f1fc24d78ea6b24b2df44390628e2db1dbc8609",
+          "path": "e2e/d7/review-expiration.spec.ts",
+          "fingerprint": "b61adbfa497eca48624b49bade09b64bfab45aa55dc63df3958d146cdbe11485"
+        },
+        {
+          "item_id": "24130375af365892078c5278d207f29c6a19460b3f37d71486e36571ba82b0b5",
+          "path": "e2e/d6/close-review.spec.ts",
+          "fingerprint": "6378828fa3df7776dd065ec273e165d30aa2bdc6944b2fb4d99c04b6e0b84202"
+        },
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "87690a72117f33928e10556a5906935803bad23406b08ddd4c13c4264de7fc64"
+        },
+        {
+          "item_id": "70139c4628afd128449a3ffa304f7e61bbc1b97f7e2a6b371f821e8756367046",
+          "path": "e2e/d95/sale.spec.ts",
+          "fingerprint": "46915f3042c00c625d1cbbb68eabfff148f6a9b8583f87ee7bcf93f77b08fe80"
+        },
+        {
+          "item_id": "c2fd486111638d00f0d387a09d3b1d932d274fd2e5443262caf354d5c4d2756f",
+          "path": "e2e/d6/responsive-a11y.spec.ts",
+          "fingerprint": "3732918e0b41b56e092af54e8fbef92302e3632fc3047ce6b8e3f26960b8f582"
+        },
+        {
+          "item_id": "f60d40a2fcf211e72668946f9d6c2357941e916774d36dd5cb14b2a35255d3a9",
+          "path": "src/ui/screens/ReviewOwed.test.tsx",
+          "fingerprint": "5d7a4c4e420e4a6c0f968d78776942d8653edf7bd15bf5d021aeeeb324d11af7"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "3adb06256c2a6163eb7e3784c1799f1f5d169d5f33763f3a31a7d73a2bf18a4f",
+          "path": "evidence/D95/tdd-log/T95.40-D1.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 11004
+  }
+}
