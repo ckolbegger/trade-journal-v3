@@ -10,10 +10,11 @@ import type {
 import { fromWorkspaceLocal, toWorkspaceLocal } from '../../domain/time/index.ts';
 import { formatDecimal, Rational } from '../../domain/values/index.ts';
 import { PageTitle } from '../PageTitle.tsx';
+import { CardTitle } from './CardTitle.tsx';
+import type { FormHandle } from './form-handle.ts';
 import { Badge } from '../Badge.tsx';
 import { instrumentLabel } from '../calculation-words.ts';
-import { money, quantity } from '../format.ts';
-import { plural } from './ReviewCard.tsx';
+import { money, plural, quantity } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
 import { answerChanged, fieldIssues, IssueSummary, nonNegativeDecimal, positiveDecimal } from './form-issues.tsx';
 import type { FieldIssue } from './plan-issues.ts';
@@ -26,6 +27,18 @@ import { ReflectionPrompts, type Answers } from './ReflectionPrompts.tsx';
 import { ChoiceGroup, dispositionOf, type Choice } from './reflection-choice.tsx';
 import { LOCAL_TIME_CODES, minuteOf } from './local-time.ts';
 import { INCOHERENT_ENTRY_NOTE } from './trade-detail/words.ts';
+
+type Recorded = Extract<PositionChangeResult, { kind: 'Recorded' }>;
+
+// The form placed in a Review card (T95.40): what it reports to the card instead of the route's history and links.
+export interface CardSale {
+  // The sale was saved: the card refreshes its figures.
+  readonly onRecorded: (result: Recorded) => void;
+  // The receipt's way back to the Review.
+  readonly onDismiss: () => void;
+  // Offers the form's own save to the Review while it holds values (W128); undefined when it goes.
+  readonly onForm: (handle: FormHandle | undefined) => void;
+}
 
 export interface PositionChangeFormBodyProps {
   readonly facade: UiFacade;
@@ -42,6 +55,8 @@ export interface PositionChangeFormBodyProps {
   readonly now: () => string;
   // Reports whether any value differs from its initial value (update deferral, D1 A5).
   readonly onDirtyChange: (dirty: boolean) => void;
+  // Present when a Review card places the sale form.
+  readonly card?: CardSale;
 }
 
 interface Row {
@@ -65,8 +80,17 @@ const MAX_ROWS = 20;
 
 // One Position Change on the Trade's single Planned Leg: Buy rows of the Plan's Stock (D2 A18, A33),
 // or, with `exit`, Sell rows that exit it (D6 A93).
-export function PositionChangeFormBody({ facade, tradeId, exit, onDone, backLabel, timeZone, now, onDirtyChange }: PositionChangeFormBodyProps) {
+export function PositionChangeFormBody({ facade, tradeId, exit, onDone, backLabel, timeZone, now, onDirtyChange, card }: PositionChangeFormBodyProps) {
   const title = exit ? 'Record exit' : 'Record entry';
+  const Title = card ? CardTitle : PageTitle;
+  // The way back: the route's link to the Trade, or in a card a button that leaves the form.
+  const back = card ? (
+    <button type="button" className="pill secondary" onClick={onDone}>
+      {backLabel}
+    </button>
+  ) : (
+    <Link to={`/trades/${tradeId}`}>{backLabel}</Link>
+  );
   const { writable, report } = useRuntime();
   const [view, setView] = useState<TradeDetailView | undefined>();
   const [definition, setDefinition] = useState<EntryDefinitionRecord | undefined>();
@@ -116,7 +140,18 @@ export function PositionChangeFormBody({ facade, tradeId, exit, onDone, backLabe
   // The workflow found the exit terminal at this entered total, so the section shows whatever the
   // open quantity suggests (A93); another total is a different exit, which the workflow has not judged.
   const [closingRequiredAt, setClosingRequiredAt] = useState<Rational | undefined>();
-  const [recorded, setRecorded] = useState<Extract<PositionChangeResult, { kind: 'Recorded' }> | undefined>();
+  const [recorded, setRecorded] = useState<Recorded | undefined>();
+  // The form's own save, as the latest render's submit, and the form to put focus back in.
+  const latestSubmit = useRef<() => Promise<boolean>>(() => Promise.resolve(false));
+  const formRef = useRef<HTMLFormElement>(null);
+  const onForm = card?.onForm;
+  useEffect(() => {
+    onForm?.({
+      save: () => (writable ? latestSubmit.current() : Promise.resolve(false)),
+      focus: () => formRef.current?.querySelector<HTMLElement>('input, textarea')?.focus(),
+    });
+    return () => onForm?.(undefined);
+  }, [onForm, writable]);
   // The Trade changed after the form loaded: nothing was saved, and the values stay for review.
   const [conflict, setConflict] = useState(false);
   // The Trade was read again after a Conflict; its current state shows above the kept values.
@@ -230,7 +265,7 @@ export function PositionChangeFormBody({ facade, tradeId, exit, onDone, backLabe
 
   if (recorded) {
     return exit ? (
-      <ExitReceipt result={recorded} timeZone={timeZone} closeReasons={closeReasons ?? []} />
+      <ExitReceipt result={recorded} timeZone={timeZone} closeReasons={closeReasons ?? []} {...(card && { onDismiss: card.onDismiss })} />
     ) : (
       <PositionChangeReceipt result={recorded} timeZone={timeZone} />
     );
@@ -239,18 +274,18 @@ export function PositionChangeFormBody({ facade, tradeId, exit, onDone, backLabe
   if (view && 'recordedPositionChanges' in view) {
     return (
       <section className="card">
-        <PageTitle ref={headingRef} tabIndex={-1}>
+        <Title ref={headingRef} tabIndex={-1}>
           {title}
-        </PageTitle>
+        </Title>
         <p>{INCOHERENT_ENTRY_NOTE}</p>
-        <Link to={`/trades/${tradeId}`}>{backLabel}</Link>
+        {back}
       </section>
     );
   }
   if (failure === 'NotFound') {
     return (
       <section className="card">
-        <PageTitle>Trade not found</PageTitle>
+        <Title>Trade not found</Title>
         <p>No Trade with this identity exists in this journal.</p>
         <Link to="/">Back to Trades</Link>
       </section>
@@ -259,7 +294,7 @@ export function PositionChangeFormBody({ facade, tradeId, exit, onDone, backLabe
   if (failure === 'Error') {
     return (
       <section className="card">
-        <PageTitle>{title}</PageTitle>
+        <Title>{title}</Title>
         <p>{`We couldn’t load this ${exit ? 'exit' : 'entry'} form. Nothing was changed.`}</p>
         <button
           type="button"
@@ -295,11 +330,11 @@ export function PositionChangeFormBody({ facade, tradeId, exit, onDone, backLabe
   if (exit && !hasPosition) {
     return (
       <section className="card">
-        <PageTitle ref={headingRef} tabIndex={-1}>
+        <Title ref={headingRef} tabIndex={-1}>
           {title}
-        </PageTitle>
+        </Title>
         <p>This Trade has no open Position to exit.</p>
-        <Link to={`/trades/${tradeId}`}>{backLabel}</Link>
+        {back}
       </section>
     );
   }
@@ -337,7 +372,8 @@ export function PositionChangeFormBody({ facade, tradeId, exit, onDone, backLabe
     );
 
   // `later`: "Say why later" saves at once with the reflection put off.
-  const submit = async (event: FormEvent | undefined, later = false) => {
+  // True once the sale is saved: the card's own save (W128) reads it.
+  const submit = async (event: FormEvent | undefined, later = false): Promise<boolean> => {
     event?.preventDefault();
     const rowKeys = rows.map((r) => r.key);
     const times = rows.map((row) =>
@@ -351,7 +387,7 @@ export function PositionChangeFormBody({ facade, tradeId, exit, onDone, backLabe
     if (timeIssues.length > 0) {
       setIssues(describePositionChangeIssues(timeIssues, rowKeys, definition, undefined, option));
       setReported({ rows, answers, closeReasonId, check: checkState });
-      return;
+      return false;
     }
     const members = rows.map(
       (row, index): PositionChangeMember => ({
@@ -370,7 +406,7 @@ export function PositionChangeFormBody({ facade, tradeId, exit, onDone, backLabe
     if (!later && asksWhy && textOf(departurePrompt.id).trim() === '') {
       setIssues([{ field: departurePrompt.id, message: SAY_WHY, code: 'PlanDepartureReasonRequired' }]);
       setReported({ rows, answers, closeReasonId, check: checkState });
-      return;
+      return false;
     }
     // Hidden answers and reason are never submitted; only the chosen disposition is.
     const reflection = later ? ({ kind: 'Defer' } as const) : dispositionOf(choice, definition, answers, reason);
@@ -405,10 +441,13 @@ export function PositionChangeFormBody({ facade, tradeId, exit, onDone, backLabe
       setRecorded(result);
       // The saved form's history entry becomes the Trade's, so reload, or Back then Forward, shows
       // the Trade rather than a blank form. The router does not observe replaceState, so the
-      // receipt stays on screen in place; the router's state object is kept as it is.
-      window.history.replaceState(window.history.state, '', `/trades/${tradeId}`);
+      // receipt stays on screen in place; the router's state object is kept as it is. A card has no history entry of its own.
+      if (card) card.onRecorded(result);
+      else window.history.replaceState(window.history.state, '', `/trades/${tradeId}`);
     }
+    return result.kind === 'Recorded';
   };
+  latestSubmit.current = () => submit(undefined);
 
   // Only what the form can judge from the values themselves clears on edit; the server's other
   // issues (an Economic Time before the Plan time, the reason's length) stay until the next save.
@@ -445,12 +484,12 @@ export function PositionChangeFormBody({ facade, tradeId, exit, onDone, backLabe
   );
 
   return (
-    <form className="plan-form" noValidate onSubmit={(event) => void submit(event)}>
+    <form ref={formRef} className="plan-form" noValidate onSubmit={(event) => void submit(event)}>
       {/* Leaving records nothing; entered values are never saved as a draft. */}
-      <Link to={`/trades/${tradeId}`}>{backLabel}</Link>
-      <PageTitle ref={headingRef} tabIndex={-1}>
+      {back}
+      <Title ref={headingRef} tabIndex={-1}>
         {title}
-      </PageTitle>
+      </Title>
       <section className="card" aria-label="Trade">
         <p>
           <strong>{view.plan.underlying}</strong> · <span>{view.labels.strategy}</span> · <Badge tone="info">{view.lifecycle.stored}</Badge>

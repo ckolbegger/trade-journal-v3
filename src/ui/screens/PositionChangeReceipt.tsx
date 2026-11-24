@@ -6,8 +6,7 @@ import { Link } from 'react-router';
 import type { IntegrityFinding, PositionChangeResult } from '../../app/types.ts';
 import { calculation } from '../figures.ts';
 import { executionWhat } from './execution-line.ts';
-import { plural } from './ReviewCard.tsx';
-import { decimalMoney as price, localTime, money, ratio, rMultiple } from '../format.ts';
+import { decimalMoney as price, localTime, money, plural, ratio, rMultiple } from '../format.ts';
 
 type Recorded = Extract<PositionChangeResult, { readonly kind: 'Recorded' }>;
 

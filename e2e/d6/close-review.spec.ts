@@ -7,7 +7,7 @@ import {
 
 test.use({ actionTimeout: 15_000 });
 
-const OWED_GROUP = 'Trades with owed reflections';
+const OWED_GROUP = 'Closed · Close Review';
 const owedItem = (page: Page, symbol: string): Locator => page.getByRole('list', { name: OWED_GROUP }).locator('li.review-card').filter({ hasText: symbol });
 
 // Closes the Trade whose Detail is open: the whole Position sold, Target Reached, the Close Review deferred.

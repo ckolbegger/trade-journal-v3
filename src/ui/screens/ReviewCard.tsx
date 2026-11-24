@@ -85,10 +85,14 @@ export interface ReviewCardProps {
   readonly onEntryDirty: EntryDirty;
   // The Review's way into a form that holds unsaved values, by the id the form reports its values under (W128).
   readonly onForm: FormRegister;
+  // The current instant, for the sale form's default time.
+  readonly now?: () => string;
+  // The Review is read again after a closing sale was left unacknowledged.
+  readonly onLeftSold?: () => void;
 }
 
 // One position of the Review: a collapsed header (Underlying, what remains, band, meter) over its content.
-export function ReviewCard({ facade, trade, line, expanded, detail, reveal, go, onToggle, onSaved, onReflectionResolved, onRefresh, refusal, pending, onEntryDirty, onForm }: ReviewCardProps) {
+export function ReviewCard({ facade, trade, line, expanded, detail, reveal, go, onToggle, onSaved, onReflectionResolved, onRefresh, refusal, pending, onEntryDirty, onForm, now, onLeftSold }: ReviewCardProps) {
   const item = useRef<HTMLLIElement>(null);
   const header = useRef<HTMLButtonElement>(null);
   const { timeZone } = useRuntime();
@@ -172,6 +176,8 @@ export function ReviewCard({ facade, trade, line, expanded, detail, reveal, go, 
           onEntryDirty={onEntryDirty}
           onForm={onForm}
           meter={trade.meter}
+          {...(now && { now })}
+          {...(onLeftSold && { onLeftSold })}
         />
       )}
     </li>
@@ -194,6 +200,8 @@ interface CardBodyProps {
   readonly onForm: FormRegister;
   // The Trade's meter reading on the Review Date, from the walk: the "Now" box draws it.
   readonly meter: MeterReading | undefined;
+  readonly now?: () => string;
+  readonly onLeftSold?: () => void;
 }
 
 // What a panel's header says: a one-line summary and a status.
@@ -236,7 +244,7 @@ function panelHeaders(trade: DailyTradeReview, progress: CardProgress): Record<P
 }
 
 // The open card: its figures, then the three panels in the spec's work order (P36, A152), one open at a time.
-function CardBody({ facade, trade, progress, name, go, onSaved, onReflectionResolved, onRefresh, pending, onEntryDirty, onForm, meter }: CardBodyProps) {
+function CardBody({ facade, trade, progress, name, go, onSaved, onReflectionResolved, onRefresh, pending, onEntryDirty, onForm, meter, now, onLeftSold }: CardBodyProps) {
   const uid = useId();
   const headers = panelHeaders(trade, progress);
   // The card's panels in work order: the Settlement panel is there only while a contract's settlement is due (decision 81).
@@ -414,7 +422,7 @@ function CardBody({ facade, trade, progress, name, go, onSaved, onReflectionReso
               </button>
             )}
             {name === 'Action' && trade.decisions && listShown && <LastDecisions decisions={trade.decisions} />}
-            {name === 'Action' && <ActionForm facade={facade} form={trade.form} binding={trade.saveBinding} onSaved={onSaved} onRefresh={onRefresh} onDirtyChange={report} pending={pending} marksToGo={marksToGo} planCall={trade.planCall} replay={trade.replay} decidingOn={waitingOn} onHandle={offerForm} />}
+            {name === 'Action' && <ActionForm facade={facade} form={trade.form} binding={trade.saveBinding} onSaved={onSaved} onRefresh={onRefresh} onDirtyChange={report} pending={pending} marksToGo={marksToGo} planCall={trade.planCall} replay={trade.replay} planExit={trade.planExit} {...(now && { now })} {...(onLeftSold && { onLeftSold })} decidingOn={waitingOn} onHandle={offerForm} />}
           </div>
         </div>
       ))}

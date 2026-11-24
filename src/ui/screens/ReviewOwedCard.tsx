@@ -21,6 +21,8 @@ const NOTHING_NEXT = () => undefined;
 function remainsText(trade: OwedReflectionsTrade): string {
   const { dueNow, later } = panelOf(trade.progress, 'Reflections');
   if (dueNow > 0) return `${plural(dueNow, 'reflection', 'reflections')} due`;
+  // A Close Review that waits for the next Review is named by that (W151).
+  if (trade.owed.some((item) => item.entryTypeKey === 'entry-type.close-review' && item.classification === 'DueInNextReview')) return 'Close Review · next Review';
   return later > 0 ? `${later} not yet due` : 'Done';
 }
 

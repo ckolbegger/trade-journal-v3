@@ -6,6 +6,7 @@ import { Badge } from '../Badge.tsx';
 import { calculation, closedViaSale, signed } from '../figures.ts';
 import { decimalMoney as price, localTime, money, quantity, rMultiple } from '../format.ts';
 import { PageTitle } from '../PageTitle.tsx';
+import { CardTitle } from './CardTitle.tsx';
 import type { CloseReasonOption } from './ClosingTheTrade.tsx';
 import { executionWhat } from './execution-line.ts';
 import { LotMatchesTable } from './LotMatchesTable.tsx';
@@ -19,6 +20,8 @@ export interface ExitReceiptProps {
   readonly timeZone: string;
   // The Close Reasons the form offered, to name the one the result holds by identity.
   readonly closeReasons: readonly CloseReasonOption[];
+  // Present when a Review card shows the receipt: its way back is the card's, not the Trade's.
+  readonly onDismiss?: () => void;
 }
 
 // A Close Review is not a reflection on the exit: its words name it.
@@ -36,7 +39,8 @@ function closeReviewMessage(outcome: NonNullable<Recorded['postCommit']['closeRe
 // The saved exit, rendered from the command's post-commit result alone (AC-RESP-001): the Position
 // Change, the derived Lot Matches, the realized figures, and, when the exit closed the Trade, its
 // Terminal Disposition and Close Reason, with the outcome of each reflection.
-export function ExitReceipt({ result, timeZone, closeReasons }: ExitReceiptProps) {
+export function ExitReceipt({ result, timeZone, closeReasons, onDismiss }: ExitReceiptProps) {
+  const Title = onDismiss ? CardTitle : PageTitle;
   // The receipt replaces the form in place, so focus moves to its heading when it appears.
   const headingRef = useRef<HTMLHeadingElement>(null);
   useEffect(() => headingRef.current?.focus(), []);
@@ -66,9 +70,9 @@ export function ExitReceipt({ result, timeZone, closeReasons }: ExitReceiptProps
 
   return (
     <section className="card" aria-labelledby="receipt-heading">
-      <PageTitle id="receipt-heading" ref={headingRef} tabIndex={-1}>
+      <Title id="receipt-heading" ref={headingRef} tabIndex={-1}>
         Exit recorded
-      </PageTitle>
+      </Title>
       <section aria-labelledby="saved-change-heading">
         <h2 id="saved-change-heading">
           Position Change at <span className="nowrap">{localTime(saved.economicTime, timeZone)}</span>
@@ -157,13 +161,21 @@ export function ExitReceipt({ result, timeZone, closeReasons }: ExitReceiptProps
           )}
         </dl>
         {exitMessage && <p>{exitMessage}</p>}
+        {closeReview?.kind === 'Debt' && closed && <p>{`Recorded. ${trade.plan.underlying} is closed. Its Close Review is due in the next Review.`}</p>}
+        {postCommit.reflection.kind === 'Debt' && postCommit.reflection.debt.requires?.includes('PlanDepartureReason') && <p>{`${closeReview?.kind === 'Debt' && closed ? '' : 'Recorded. '}Why you left the Plan is owed at the next Review.`}</p>}
         {postCommit.reflection.kind === 'Debt' && <Badge tone="warning">Reflection owed</Badge>}
         {closeMessage && <p>{closeMessage}</p>}
         {closeReview?.kind === 'Debt' && <Badge tone="warning">Close Review owed</Badge>}
       </section>
-      <Link className="pill primary" to={`/trades/${receipt.tradeId}`}>
-        Back to the Trade
-      </Link>
+      {onDismiss ? (
+        <button type="button" className="pill primary" onClick={onDismiss}>
+          Back to the Review
+        </button>
+      ) : (
+        <Link className="pill primary" to={`/trades/${receipt.tradeId}`}>
+          Back to the Trade
+        </Link>
+      )}
     </section>
   );
 }

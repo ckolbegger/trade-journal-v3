@@ -6,8 +6,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { facadeDouble } from '../../../tests/support/facade-double.ts';
 import type { UiFacade } from '../../app/compose.ts';
 import type { DailyTradeReview, IncompleteReason, MarkResolution, MarkRow, MeterReading, OpenDailyReviewResult, OwedReflection, OwedReflectionsCard, OwedReflectionsTrade, ReviewBinding, ReviewCompletion, WalkedTrade } from '../../app/types.ts';
-import { reflectionDefinition } from '../../../tests/support/position-change-form-facade.ts';
+import { exitFormFacade, reflectionDefinition } from '../../../tests/support/position-change-form-facade.ts';
 import type { IncoherentFact } from '../../domain/calculation-result/index.ts';
+import { closedExitResult } from '../../../tests/support/exit-result-fixtures.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { RuntimeContext } from '../runtime.tsx';
 import { ReviewView } from './ReviewView.tsx';
@@ -1347,13 +1348,13 @@ describe('Trade names in messages and blockers (decision 68)', () => {
 
     // A Trade that moved to the owed group is still in the Review, but its card is a new one with none of the drafts.
     await savedOnHeldCard(withoutF({ owed: [owedF] }), OWED_F);
-    expect((await screen.findByRole('status')).textContent).toBe(`${NAME_F} is now in Trades with owed reflections, so what you entered for it was not kept.`);
+    expect((await screen.findByRole('status')).textContent).toBe(`${NAME_F} is now in Closed · Close Review, so what you entered for it was not kept.`);
   });
 
   // T6.20-B3, item 3.
   it('should keep the not kept notice when Retry opens the owed card the Trade moved to', async () => {
     const { user } = await savedOnHeldCard(withoutF({ owed: [owedF] }), OWED_F, true);
-    const notice = `${NAME_F} is now in Trades with owed reflections, so what you entered for it was not kept.`;
+    const notice = `${NAME_F} is now in Closed · Close Review, so what you entered for it was not kept.`;
     expect(await screen.findByText(notice)).toBeTruthy();
 
     await user.click(await screen.findByRole('button', { name: 'Retry' }));
@@ -1632,5 +1633,100 @@ describe('the refusal on the Trade pressed (T95.34, W128)', () => {
     await waitFor(() => expect(headers()[0]!.getAttribute('aria-expanded')).toBe('true'));
     expect(vi.mocked(facade.DailyReview.save).mock.calls[0]![0]).toMatchObject({ kind: 'ResolveReviewDebt', resolution: { kind: 'Answer' } });
     expect(headers()[2]!.getAttribute('aria-expanded')).toBe('false');
+  });
+});
+
+describe('the sale in the card (T95.40)', () => {
+  const cardOf = (tradeId: string) => screen.getAllByRole('listitem').find((li) => li.getAttribute('data-trade-id') === tradeId)!;
+  const savedExit = { kind: 'Saved', action: { action: 'Exit', responses: [{ prompt: 'Action', answer: { kind: 'Option', label: 'Exit' } }] } } as never;
+  const planExit = { positions: [{ instrument: { kind: 'Stock', symbol: 'XYZ' }, quantity: '100', conditions: [] }], heldPast: [] } as never;
+  // ABC's card holds a saved Exit; the exit form's reads come from the exit-form facade.
+  function saleFacade(): UiFacade {
+    const facade = cardFacade();
+    const sale = exitFormFacade();
+    vi.mocked(facade.DailyReview.getTrade).mockImplementation(({ tradeId }) => {
+      const found = WALK.find((t) => t.tradeId === tradeId)!;
+      return Promise.resolve({ kind: 'Ready', reviewDate: '2026-10-12', cutoff: CUTOFF, trade: tradeReview(found, tradeId === 't-b' ? { form: savedExit, planExit } : {}) });
+    });
+    Object.assign(facade, { TradeViewsAndReporting: sale.TradeViewsAndReporting, Journal: sale.Journal, ReferenceCatalog: sale.ReferenceCatalog, TradeWorkflows: sale.TradeWorkflows });
+    return facade;
+  }
+  async function pressXyzWhileAbcHoldsASale(facade = saleFacade()) {
+    const user = userEvent.setup();
+    renderReview(facade);
+    const card = await screen.findByRole('region', { name: 'ABC review' });
+    await user.click(within(card).getByRole('button', { name: 'Record the sale' }));
+    const row = await within(card).findByRole('group', { name: 'Execution 1' });
+    await user.type(within(row).getByLabelText('Quantity'), '30');
+    await user.click(headers()[2]!);
+    return { user, facade, card };
+  }
+
+  const OWED_B: OwedReflectionsCard = { tradeId: 't-b', underlying: 'ABC', lifecycle: 'Closed', labels: { strategy: 'Long Stock', account: 'Main', institution: 'Broker' }, reflections: [], progress: reflectionsOwedProgress(0, 1) };
+  const owedB: OwedReflectionsTrade = { tradeId: 't-b', underlying: 'ABC', lifecycle: 'Closed', owed: [{ debtId: 'debt-2', entryTypeKey: 'entry-type.close-review', dueAnchor: '2026-10-12T19:30:00Z', classification: 'DueInNextReview' }], progress: OWED_B.progress };
+  async function sellAllOnAbc(facade: UiFacade) {
+    const user = userEvent.setup();
+    renderReview(facade);
+    const card = await screen.findByRole('region', { name: 'ABC review' });
+    await user.click(within(card).getByRole('button', { name: 'Record the sale' }));
+    const row = await within(card).findByRole('group', { name: 'Execution 1' });
+    for (const [label, value] of [['Quantity', '100'], ['Price', '53.00'], ['Fee', '1.00']] as const) {
+      await user.clear(within(row).getByLabelText(label));
+      await user.type(within(row).getByLabelText(label), value);
+    }
+    await user.click(within(card).getByRole('button', { name: 'Save exit' }));
+    return { user, card };
+  }
+
+  it('should keep the receipt in the card after a closing sale, then show the Trade under Closed · Close Review as Close Review · next Review', async () => {
+    const facade = saleFacade();
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(closedExitResult({ reflection: { kind: 'Debt', debt: { debtId: 'debt-1' } }, closeReview: { kind: 'Debt', debt: { debtId: 'debt-2' } } }) as never);
+    const walkedGetTrade = vi.mocked(facade.DailyReview.getTrade).getMockImplementation()!;
+    vi.mocked(facade.DailyReview.getTrade).mockImplementation((request) => (request.tradeId === 't-b' && sold ? Promise.resolve({ kind: 'ReflectionsOwed', reviewDate: '2026-10-12', cutoff: CUTOFF, card: OWED_B }) : walkedGetTrade(request)));
+    let sold = false;
+    const { user, card } = await sellAllOnAbc(facade);
+    sold = true;
+    vi.mocked(facade.DailyReview.open).mockResolvedValue(review({ families: [review().families[0]!, { family: 'Trades', trades: WALK.filter((t) => t.tradeId !== 't-b') }], owed: [owedB] }));
+
+    // The Trade is still the walked card, with its receipt.
+    expect(await within(card).findByText('Recorded. XYZ is closed. Its Close Review is due in the next Review.')).toBeTruthy();
+    expect(vi.mocked(facade.DailyReview.open)).toHaveBeenCalledTimes(1);
+    await user.click(within(card).getByRole('button', { name: 'Back to the Review' }));
+
+    const group = await screen.findByRole('list', { name: 'Closed · Close Review' });
+    expect(within(group).getByRole('button', { name: /^Review ABC/ }).textContent).toContain('Close Review · next Review');
+    expect(vi.mocked(facade.DailyReview.open)).toHaveBeenCalledTimes(2);
+  });
+
+  it('should read the Review again when another Trade is pressed while the receipt of a closing sale is still shown', async () => {
+    const facade = saleFacade();
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(closedExitResult({ reflection: { kind: 'Debt', debt: { debtId: 'debt-1' } }, closeReview: { kind: 'Debt', debt: { debtId: 'debt-2' } } }) as never);
+    const { user, card } = await sellAllOnAbc(facade);
+    await within(card).findByText('Recorded. XYZ is closed. Its Close Review is due in the next Review.');
+    vi.mocked(facade.DailyReview.open).mockResolvedValue(review({ families: [review().families[0]!, { family: 'Trades', trades: WALK.filter((t) => t.tradeId !== 't-b') }], owed: [owedB] }));
+
+    await user.click(headers()[2]!);
+
+    const group = await screen.findByRole('list', { name: 'Closed · Close Review' });
+    expect(within(group).getByRole('button', { name: /^Review ABC/ })).toBeTruthy();
+    expect(vi.mocked(facade.DailyReview.open)).toHaveBeenCalledTimes(2);
+    expect(screen.queryByText(/not kept/)).toBeNull();
+  });
+
+  it('should refuse to leave a half-typed sale as a half-typed Action is refused', async () => {
+    const { user, card, facade } = await pressXyzWhileAbcHoldsASale();
+
+    expect(within(cardOf('t-f')).getByText("ABC's note isn't saved.")).toBeTruthy();
+    expect(headers().map((h) => h.getAttribute('aria-expanded'))).toEqual(['true', 'false', 'false', 'false', 'false']);
+
+    await user.click(within(cardOf('t-f')).getByRole('button', { name: 'Back to ABC' }));
+    expect(within(card).getByRole('group', { name: 'Execution 1' }).contains(document.activeElement)).toBe(true);
+    expect(within(within(card).getByRole('group', { name: 'Execution 1' })).getByLabelText('Quantity')).toHaveProperty('value', '30');
+
+    await user.click(headers()[2]!);
+    await user.click(within(cardOf('t-f')).getByRole('button', { name: 'Discard it' }));
+    await waitFor(() => expect(headers()[2]!.getAttribute('aria-expanded')).toBe('true'));
+    expect(vi.mocked(facade.TradeWorkflows.recordPositionChange)).not.toHaveBeenCalled();
+    expect(screen.queryByText("ABC's note isn't saved.")).toBeNull();
   });
 });

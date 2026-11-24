@@ -164,7 +164,7 @@ function renderReview(facade: UiFacade, at = '/review') {
   );
 }
 
-const GROUP = 'Trades with owed reflections';
+const GROUP = 'Closed · Close Review';
 
 describe('owed card Terminal Disposition, row 23.12', () => {
   it('should say Closed via sale of 1 contract and expiration of 1 contract on the owed card of an option Trade closed by a sale and an expiration', async () => {
@@ -183,6 +183,23 @@ describe('owed card Terminal Disposition, row 23.12', () => {
     const closed = await screen.findByRole('region', { name: 'ABC review' });
     const result = within(closed).getByRole('region', { name: 'Result' });
     expect(within(result).getByText('Terminal Disposition').nextElementSibling?.textContent).toBe('Closed via sale of 1 contract and expiration of 1 contract');
+  });
+});
+
+describe('the owed card header (T95.40, W151)', () => {
+  it('should label a Trade whose Close Review is owed from the next Review as Close Review · next Review', async () => {
+    const closeReviewOwed = { ...owedTrade(OPEN_CARD), owed: [{ debtId: 'd-cr', entryTypeKey: 'entry-type.close-review', dueAnchor: '2026-10-13T21:30:00Z' as never, classification: 'DueInNextReview' as const }] };
+    renderReview(reviewFacade(ready({ owed: [closeReviewOwed] })));
+    const header = await screen.findByRole('button', { name: /^Review DEF/ });
+    expect(header.textContent).toContain('Close Review · next Review');
+    expect(header.textContent).not.toContain('not yet due');
+  });
+
+  it('should keep the count of reflections not yet due on a card that owes no Close Review', async () => {
+    renderReview(reviewFacade(ready()));
+    const header = await screen.findByRole('button', { name: /^Review DEF/ });
+    expect(header.textContent).toContain('1 not yet due');
+    expect(header.textContent).not.toContain('Close Review');
   });
 });
 

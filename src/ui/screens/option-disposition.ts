@@ -1,6 +1,5 @@
 import type { PositionChangeResult } from '../../app/types.ts';
-import { quantity } from '../format.ts';
-import { plural } from './ReviewCard.tsx';
+import { plural, quantity } from '../format.ts';
 
 type Recorded = Extract<PositionChangeResult, { readonly kind: 'Recorded' }>;
 type Mechanisms = Extract<Recorded['postCommit']['derivation']['terminalDisposition'], { readonly kind: 'Value' }>['value'];

@@ -404,6 +404,13 @@ fieldset.execution-row > button.pill {
   }
 }
 
+/* The sale form in a Review card is one column on a phone: each field full width (T95.40). */
+@media (max-width: 639px) {
+  .review-card fieldset.execution-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 /* New Plan: Risk inputs in two columns at any width. */
 .risk-grid {
   display: grid;

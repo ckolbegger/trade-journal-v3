@@ -8,10 +8,12 @@ import { useRuntime } from '../runtime.tsx';
 import { draftKey, draftSetAside, dropDraftSetAside, holdDraft, isWayBack, setDraftAsideOnTrip } from './action-draft.ts';
 import type { FormHandle } from './form-handle.ts';
 import { actionMeaning, planCallLine } from './action-words.ts';
+import { ExitForm } from './ExitForm.tsx';
 import { fieldIssues } from './form-issues.tsx';
 import type { FieldIssue } from './plan-issues.ts';
 import type { ActionChoice, ActionForm as ActionFormState, DailyTradeReview, SaveDailyReviewResult, TradeSaveBinding } from '../../app/types.ts';
 
+const noForm = () => undefined;
 const CHOICES: readonly ActionChoice[] = ['Hold', 'Exit', 'Roll', 'Adjust'];
 
 export type SavedAction = Extract<SaveDailyReviewResult, { kind: 'Saved' }>;
@@ -33,10 +35,22 @@ export interface ActionFormProps {
   // What the Plan says on the Review Date's Marks (A306), and the replay that holds the Plan's own words for the condition behind it.
   readonly planCall?: DailyTradeReview['planCall'];
   readonly replay?: DailyTradeReview['replay'];
+  // The Plan Exit facts: the Position held, whose side words the sale to record (W127).
+  readonly planExit?: DailyTradeReview['planExit'];
+  // The current instant, for the sale form's default time.
+  readonly now?: () => string;
+  // A sale that closed the Trade was left on screen without its receipt being dismissed: the Review is read again (the Trade has left the walk).
+  readonly onLeftSold?: () => void;
   // The session whose figures the card shows when the Review Date has no price (the Now box's dated close); absent when it has one.
   readonly decidingOn?: string;
   // Offers the form to the Review while it is mounted; undefined when it goes (W128).
   readonly onHandle?: (handle: FormHandle | undefined) => void;
+}
+
+// What a saved Exit is carried out by, from the Position held (W127): a short Position is closed by a buy-back.
+function saleOf(form: ActionFormState, held: { readonly quantity: string } | undefined): string | undefined {
+  if (form.kind !== 'Saved' || form.action.action !== 'Exit' || !held) return undefined;
+  return held.quantity.startsWith('-') ? 'Record the buy-back' : 'Record the sale';
 }
 
 // "No Action until today's Marks are in. Enter them" (W95), the link going to the Marks step.
@@ -111,8 +125,22 @@ function returnedValues(form: ActionFormState): Values {
 }
 
 // The Action for one Trade on the Review Date. Hold is preselected as view state only; nothing is recorded until Save.
-export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyChange, pending = false, marksToGo = 0, planCall, replay, decidingOn, onHandle }: ActionFormProps) {
-  const { writable, report } = useRuntime();
+export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyChange, pending = false, marksToGo = 0, planCall, replay, planExit, now = () => new Date().toISOString(), onLeftSold, decidingOn, onHandle }: ActionFormProps) {
+  const { writable, report, timeZone } = useRuntime();
+  // The sale of a saved Exit is recorded in place of the Action (W127); the form reports its own values under the Action's id.
+  const [selling, setSelling] = useState(false);
+  // A sale that closed the Trade moves it out of the walk when the Review is read again: that waits until the receipt is dismissed.
+  const refreshOwed = useRef(false);
+  const leftSold = useRef(onLeftSold);
+  useEffect(() => {
+    leftSold.current = onLeftSold;
+  });
+  useEffect(
+    () => () => {
+      if (refreshOwed.current) leftSold.current?.();
+    },
+    [],
+  );
   const returned = returnedValues(form);
   // A form opened on the way back from Price History starts from the Action the trader had started there (C9AR.5).
   const key = draftKey(binding.reviewDate, binding.tradeId);
@@ -154,7 +182,9 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
   }, [issues]);
   const dirty = action !== returned.action || intent !== returned.intent || conviction !== returned.conviction || considered !== returned.considered || note !== returned.note;
   // Once the shell is read only the values can no longer be saved, so they hold nothing back: the trader can leave the Trade.
-  useEffect(() => onDirtyChange(dirty && writable), [dirty, writable, onDirtyChange]);
+  useEffect(() => {
+    if (!selling) onDirtyChange(dirty && writable);
+  }, [dirty, writable, selling, onDirtyChange]);
   // What the form holds is kept for a trip to Price History, which the Review's Price History link starts.
   useEffect(() => {
     holdDraft(key, dirty ? { action, intent, conviction, considered, note } : undefined);
@@ -230,12 +260,14 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
     asked.current = { attempt, blocked: saving || refreshing || pending || !writable };
   });
   useEffect(() => {
+    // The sale form offers its own while it is the one shown.
+    if (selling) return;
     onHandle?.({
       save: () => (asked.current.blocked ? Promise.resolve(false) : asked.current.attempt()),
       focus: () => formRef.current?.querySelector<HTMLElement>('input:checked, input, textarea')?.focus(),
     });
     return () => onHandle?.(undefined);
-  }, [onHandle]);
+  }, [onHandle, selling]);
   // Discard empties the form: the choice goes back to what the view preselected, and every answer to blank.
   const discard = () => {
     setAction(returned.action);
@@ -250,8 +282,23 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
   const readOnlyEmpty = !writable && !dirty;
   const callLine = planCallLine(planCall, replay);
   const toGo = unresolved?.binding === binding ? unresolved.count : marksToGo;
+  // A saved Exit is carried out by the sale (W127): a short Position is closed by a buy-back.
+  const held = planExit?.positions[0];
+  const saleWords = saleOf(form, held);
   if (readOnlyEmpty && form.kind === 'New') return <p>No Action saved.</p>;
   if (toGo > 0) return <MarksFirst tradeId={binding.tradeId} toGo={toGo} />;
+  if (selling) return <ExitForm facade={facade} tradeId={binding.tradeId} timeZone={timeZone ?? 'UTC'} now={now} onDirtyChange={onDirtyChange} onDone={() => setSelling(false)} backLabel="Back to the Review" card={{
+        onRecorded: (result) => {
+          if (result.postCommit.trade.storedLifecycle === 'Closed') refreshOwed.current = true;
+          else void onRefresh();
+        },
+        onForm: onHandle ?? noForm,
+        onDismiss: () => {
+          setSelling(false);
+          if (refreshOwed.current) void onRefresh();
+          refreshOwed.current = false;
+        },
+      }} />;
   // Values held over a Conflict refresh differ from the saved Action it now shows: they stay open, as if Change were pressed.
   const savedLines = form.kind === 'Saved' && (
     <>
@@ -269,6 +316,11 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
         {writable && (
           <button type="button" className="pill secondary" onClick={() => setChanging(true)}>
             Change
+          </button>
+        )}
+        {writable && saleWords && (
+          <button type="button" className="pill secondary" onClick={() => setSelling(true)}>
+            {saleWords}
           </button>
         )}
       </section>

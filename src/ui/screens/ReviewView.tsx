@@ -285,7 +285,7 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
     const trade = await facade.DailyReview.getTrade({ reviewDate: result.reviewDate, tradeId, binding: result.binding }).catch(() => undefined);
     // The Trade has moved from the walk to the owed group: its owed card replaces the walked one, with none of its drafts.
     if (selection.current === request && !wasOwed && latest.current.review.owed.some((t) => t.tradeId === tradeId)) {
-      setAfterSave(drafted ? `${label} is now in Trades with owed reflections, so what you entered for it was not kept.` : undefined);
+      setAfterSave(drafted ? `${label} is now in Closed · Close Review, so what you entered for it was not kept.` : undefined);
       // The owed card has no body to show without the Trade, so it says so and offers Retry. The button that was pressed went with the
       // walked card, so the focus goes to the owed card here.
       if (trade?.kind !== 'Ready' && trade?.kind !== 'ReflectionsOwed') {
@@ -589,6 +589,8 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
                 pending={rereading}
                 onEntryDirty={onEntryDirty}
                 onForm={onForm}
+                now={now}
+                onLeftSold={() => void reopenAndApply().then((next) => next === undefined && setFailed(true))}
               />
             ))}
           </ol>
@@ -596,7 +598,7 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
       )}
       {review.owed.length > 0 && (
         <section aria-labelledby="owed-group-heading">
-          <h2 id="owed-group-heading">Trades with owed reflections</h2>
+          <h2 id="owed-group-heading">Closed · Close Review</h2>
           <ol aria-labelledby="owed-group-heading" className="review-cards">
             {review.owed.map((trade) => (
               <OwedCard

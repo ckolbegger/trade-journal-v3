@@ -1,5 +1,5 @@
 import type { UiFacade } from '../../app/compose.ts';
-import { PositionChangeFormBody } from './PositionChangeFormBody.tsx';
+import { PositionChangeFormBody, type CardSale } from './PositionChangeFormBody.tsx';
 
 export interface ExitFormProps {
   readonly facade: UiFacade;
@@ -13,6 +13,8 @@ export interface ExitFormProps {
   readonly onDone: () => void;
   // The words of the link back to the Trade.
   readonly backLabel: string;
+  // Present when a Review card places the form (T95.40).
+  readonly card?: CardSale;
 }
 
 // The sale that exits a Trade's Position (D6 A93): a component any screen can place, taking the

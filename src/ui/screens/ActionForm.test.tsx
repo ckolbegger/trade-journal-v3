@@ -1,9 +1,11 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { facadeDouble } from '../../../tests/support/facade-double.ts';
+import { closedExitResult, partialExitResult } from '../../../tests/support/exit-result-fixtures.ts';
+import { exitFormFacade } from '../../../tests/support/position-change-form-facade.ts';
 import type { UiFacade } from '../../app/compose.ts';
 import type { DailyTradeReview } from '../../app/types.ts';
 import { Rational } from '../../domain/values/index.ts';
@@ -288,6 +290,156 @@ describe('The saved Action', () => {
     cleanup();
     mount({ form: saved('Hold') });
     expect(screen.queryByText(/Not done until it is recorded/)).toBeNull();
+  });
+});
+
+describe('The sale from the saved Exit (T95.40)', () => {
+  const savedExit = { kind: 'Saved', action: { action: 'Exit', responses: [{ prompt: 'Action', answer: { kind: 'Option', label: 'Exit' } }] } } as never;
+  const planExitOf = (quantity: string) => ({ positions: [{ instrument: { kind: 'Stock', symbol: 'AXIO' }, quantity, conditions: [] }], heldPast: [] }) as never;
+
+  it('should offer Record the sale on a saved Exit, and Record the buy-back for a short Position', () => {
+    mount({ form: savedExit, planExit: planExitOf('200') });
+    const region = screen.getByRole('region', { name: 'Saved Action' });
+    expect(within(region).getByRole('button', { name: 'Record the sale' })).toBeTruthy();
+    expect(within(region).queryByRole('button', { name: 'Record the buy-back' })).toBeNull();
+    cleanup();
+    mount({ form: savedExit, planExit: planExitOf('-4') });
+    expect(within(screen.getByRole('region', { name: 'Saved Action' })).getByRole('button', { name: 'Record the buy-back' })).toBeTruthy();
+    cleanup();
+    mount({ form: { kind: 'Saved', action: { action: 'Hold', responses: [] } } as never, planExit: planExitOf('200') });
+    expect(screen.queryByRole('button', { name: 'Record the sale' })).toBeNull();
+  });
+});
+
+describe('The sale form in the card (T95.40)', () => {
+  const savedExit = { kind: 'Saved', action: { action: 'Exit', responses: [{ prompt: 'Action', answer: { kind: 'Option', label: 'Exit' } }] } } as never;
+  const planExit = { positions: [{ instrument: { kind: 'Stock', symbol: 'XYZ' }, quantity: '100', conditions: [] }], heldPast: [] } as never;
+  async function openSale(over: Partial<ActionFormProps> = {}) {
+    const facade = exitFormFacade();
+    const mounted = mount({ form: savedExit, planExit, now: () => '2026-10-13T14:05:00Z', ...over }, facade);
+    await mounted.user.click(screen.getByRole('button', { name: 'Record the sale' }));
+    return { ...mounted, facade };
+  }
+
+  it('should show the Trade exit form in the card with Back to the Review in place of Back to the Trade', async () => {
+    await openSale();
+    expect(await screen.findByRole('group', { name: 'Execution 1' })).toBeTruthy();
+    expect(screen.getByText('Back to the Review')).toBeTruthy();
+    expect(screen.queryByText('Back to the Trade')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Save exit' })).toBeTruthy();
+  });
+});
+
+describe('The receipt in the card (T95.40)', () => {
+  const savedExit = { kind: 'Saved', action: { action: 'Exit', responses: [{ prompt: 'Action', answer: { kind: 'Option', label: 'Exit' } }] } } as never;
+  const planExit = { positions: [{ instrument: { kind: 'Stock', symbol: 'XYZ' }, quantity: '100', conditions: [] }], heldPast: [] } as never;
+  async function sell(result: unknown, quantity: string, over: Partial<ActionFormProps> = {}) {
+    const facade = exitFormFacade();
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(result as never);
+    const mounted = mount({ form: savedExit, planExit, now: () => '2026-10-13T14:05:00Z', ...over }, facade);
+    await mounted.user.click(screen.getByRole('button', { name: 'Record the sale' }));
+    const row = await screen.findByRole('group', { name: 'Execution 1' });
+    for (const [label, value] of [['Quantity', quantity], ['Price', '52.00'], ['Fee', '0.60']] as const) {
+      await mounted.user.clear(within(row).getByLabelText(label));
+      await mounted.user.type(within(row).getByLabelText(label), value);
+    }
+    await mounted.user.click(screen.getByRole('button', { name: 'Save exit' }));
+    return { ...mounted, facade };
+  }
+
+  it('should show the receipt in the card after the sale and refresh the card figures', async () => {
+    const onRefresh = vi.fn(() => Promise.resolve(true));
+    await sell(partialExitResult(), '30', { onRefresh });
+    expect(await screen.findByRole('heading', { level: 3, name: 'Exit recorded' })).toBeTruthy();
+    expect(screen.getByRole('region', { name: 'Lot Matches' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Back to the Review' })).toBeTruthy();
+    expect(screen.queryByText('Back to the Trade')).toBeNull();
+    await waitFor(() => expect(onRefresh).toHaveBeenCalledTimes(1));
+  });
+});
+
+describe('The reason owed on the receipt (T95.40, W155)', () => {
+  const savedExit = { kind: 'Saved', action: { action: 'Exit', responses: [] } } as never;
+  const planExit = { positions: [{ instrument: { kind: 'Stock', symbol: 'XYZ' }, quantity: '100', conditions: [] }], heldPast: [] } as never;
+  const withDebt = (requires?: string[]) => {
+    const result = partialExitResult();
+    return { ...result, postCommit: { ...result.postCommit, reflection: { kind: 'Debt', debt: { debtId: 'debt-1', ...(requires && { requires }) } } } };
+  };
+  async function sellAndSayLater(result: unknown) {
+    const facade = exitFormFacade();
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(result as never);
+    const mounted = mount({ form: savedExit, planExit, now: () => '2026-10-13T14:05:00Z' }, facade);
+    await mounted.user.click(screen.getByRole('button', { name: 'Record the sale' }));
+    const row = await screen.findByRole('group', { name: 'Execution 1' });
+    for (const [label, value] of [['Quantity', '30'], ['Price', '52.00'], ['Fee', '0.60']] as const) {
+      await mounted.user.clear(within(row).getByLabelText(label));
+      await mounted.user.type(within(row).getByLabelText(label), value);
+    }
+    await mounted.user.click(screen.getByRole('button', { name: 'Save exit' }));
+  }
+
+  it('should say on the receipt that the reason is owed at the next Review after Say why later', async () => {
+    await sellAndSayLater(withDebt(['PlanDepartureReason']));
+    expect(await screen.findByText('Recorded. Why you left the Plan is owed at the next Review.')).toBeTruthy();
+  });
+
+  it('should say nothing of a reason on the receipt when the reflection owed names none', async () => {
+    await sellAndSayLater(withDebt());
+    await screen.findByRole('heading', { level: 3, name: 'Exit recorded' });
+    expect(screen.queryByText(/Why you left the Plan/)).toBeNull();
+  });
+});
+
+describe('The saved Exit stays as it was saved (T95.40)', () => {
+  const savedExit = { kind: 'Saved', action: { action: 'Exit', responses: [{ prompt: 'Action', answer: { kind: 'Option', label: 'Exit' } }, { prompt: 'Why?', answer: { kind: 'Text', text: 'Taking the gain.' } }] } } as never;
+  const planExit = { positions: [{ instrument: { kind: 'Stock', symbol: 'XYZ' }, quantity: '100', conditions: [] }], heldPast: [] } as never;
+
+  it('should keep the saved Exit as saved after the sale, saving no Action', async () => {
+    const facade = exitFormFacade();
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(partialExitResult() as never);
+    const { user } = mount({ form: savedExit, planExit, now: () => '2026-10-13T14:05:00Z' }, facade);
+    await user.click(screen.getByRole('button', { name: 'Record the sale' }));
+    const row = await screen.findByRole('group', { name: 'Execution 1' });
+    for (const [label, value] of [['Quantity', '30'], ['Price', '52.00'], ['Fee', '0.60']] as const) {
+      await user.clear(within(row).getByLabelText(label));
+      await user.type(within(row).getByLabelText(label), value);
+    }
+    await user.click(screen.getByRole('button', { name: 'Save exit' }));
+    await user.click(await screen.findByRole('button', { name: 'Back to the Review' }));
+
+    const region = screen.getByRole('region', { name: 'Saved Action' });
+    expect(within(region).getByText('Mon Nov 16: Exit · “Taking the gain.”')).toBeTruthy();
+    expect(within(region).getByRole('button', { name: 'Change' })).toBeTruthy();
+    expect(screen.queryByRole('form', { name: 'Action' })).toBeNull();
+    expect(vi.mocked(facade.DailyReview.save)).not.toHaveBeenCalled();
+  });
+});
+
+describe('A closing sale in the card (T95.40, W135)', () => {
+  const savedExit = { kind: 'Saved', action: { action: 'Exit', responses: [] } } as never;
+  const planExit = { positions: [{ instrument: { kind: 'Stock', symbol: 'XYZ' }, quantity: '100', conditions: [] }], heldPast: [] } as never;
+  const closing = closedExitResult({ reflection: { kind: 'Debt', debt: { debtId: 'debt-1' } }, closeReview: { kind: 'Debt', debt: { debtId: 'debt-2' } } });
+  async function sellAll(over: Partial<ActionFormProps>) {
+    const facade = exitFormFacade();
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(closing as never);
+    const mounted = mount({ form: savedExit, planExit, now: () => '2026-10-13T14:05:00Z', ...over }, facade);
+    await mounted.user.click(screen.getByRole('button', { name: 'Record the sale' }));
+    const row = await screen.findByRole('group', { name: 'Execution 1' });
+    for (const [label, value] of [['Quantity', '100'], ['Price', '53.00'], ['Fee', '1.00']] as const) {
+      await mounted.user.clear(within(row).getByLabelText(label));
+      await mounted.user.type(within(row).getByLabelText(label), value);
+    }
+    await mounted.user.click(screen.getByRole('button', { name: 'Save exit' }));
+    return mounted;
+  }
+
+  it('should say the Trade is closed with its Close Review due in the next Review, and read the card again only once the receipt is dismissed', async () => {
+    const onRefresh = vi.fn(() => Promise.resolve(true));
+    const { user } = await sellAll({ onRefresh });
+    expect(await screen.findByText('Recorded. XYZ is closed. Its Close Review is due in the next Review.')).toBeTruthy();
+    expect(onRefresh).not.toHaveBeenCalled();
+    await user.click(screen.getByRole('button', { name: 'Back to the Review' }));
+    expect(onRefresh).toHaveBeenCalledTimes(1);
   });
 });
 
