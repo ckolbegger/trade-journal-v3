@@ -852,3 +852,10 @@ Run `t95.36-sale-measured` (browser-auto 0039d2db, full tier): unit 3016, integr
 ### T95.37 — parked (pending decision)
 
 The tdd-task built nothing. Cases 2, 3 and 4 can't all hold: Trade Detail's held-past facts need the Trade's replay (each Hold session's crossings), which the card already assembles but `getTradeDetail` does not; adding it costs one more observations read (counted: Detail makes observations.getAll + the byInstrumentDate cursor; replayTrade one more). Options put to the user: (1) read the replay on Detail only when a Hold exists, case 4 reworded (recommended); (2) always read it; (3) leave held-past facts off Detail. Carrying on with T95.38 (no dependence on T95.37) meanwhile.
+
+## T95.38 — The exit form becomes a component
+
+- Split: `PositionChangeFormBody.tsx` (the shared body, now taking `tradeId`, `exit`, `onDone`, `backLabel`), new `ExitForm.tsx` (the sale: body with `exit`), `PositionChangeForm.tsx` (route screen reading the Trade and `?action=Sell`, wrapping ExitForm or the buy body). `src/main.tsx` needed no change.
+- `npx vitest run src/ui/screens/PositionChangeForm` (PositionChangeForm, PositionChangeFormExit, PositionChangeFormOptions tests, no test edited): 3 files, 77 passed.
+- `.claude/scripts/with-browser-lock.sh npm run test:e2e:specs -- e2e/d6/exit.spec.ts exit-action.spec.ts exit-requirements.spec.ts close-review.spec.ts no-save.spec.ts`: 6 passed.
+- typecheck, tsc6, lint (2 pre-existing warnings in OwedDebtItem.tsx), lint:deps: exit 0.
