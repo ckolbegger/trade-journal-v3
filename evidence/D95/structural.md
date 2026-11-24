@@ -951,3 +951,5 @@ ocr of T95.41 (session 9ace9183): 11 files, 2 findings, both Valid, batched:
 ### T95.41-B1, T95.41-B2
 
 Commits `277640b3` (B1: ActionForm reports dirty while the Action draft changed or the sale form holds typed values; "Save it"/"Discard it" act on the shown sale form, the held draft returns on "Back to the Review"; the case checks the dirty report the refusal reads) and `011130ff` (B2: "I sold: record it" disabled while read-only, in the shared Answers component, card and day card; "Still holding" stays enabled). Each red then green; src/ui/screens 864 passed.
+
+ocr of T95.41-B1, T95.41-B2 (session 32fb8bab, second run; the first failed on a provider HTTP error): 3 files, 0 findings. `evidence/D95/ocr/T95.41-B1-B2-011130ff.json`. Next: run `t95.41-exit-banner` (browser-task, Standard).
