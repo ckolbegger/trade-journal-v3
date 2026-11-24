@@ -20,3 +20,13 @@ Style-only ocr findings and low critic defects (the user's rule, 2026-11-19). Re
 - Critic-2 (T95.26), low: at 320, "Reward to risk 2.30 to 1 · Plan" wraps, leaving "0.29 to 1" on the next line.
 - Critic-2, low: at 320 the drawing's "Stop −$740.00" and "Target +$160.00" labels touch, with no gap.
 - Critic-2, moderate, moved to tech debt by the user (2026-11-23): a card whose option Mark is acknowledged unavailable (DALE's Put, Tue Nov 17) does not say so; its Now box shows the session before's Marks under "At the Mon Nov 16 Marks", and today's DALE Mark is not shown. The day card and Trade Detail do disclose it.
+
+Critic-2's minor observations (added at the user's request, 2026-11-23; two others, the "0 means…" hint and the "At entry" block, are already listed above):
+- No day total with an unavailable Mark: "Day so far" and the finished day's "The day" row are left out with no explanation.
+- A reload shows the grid open: reopening a Review whose Marks are all saved shows the grid open with "Save Marks (0)", not folded with "Edit".
+- Enter doesn't confirm a reason: after typing a "Why no price" reason, Enter neither confirms "No price" nor moves on; "No price / Cancel" stay shown.
+- Old wording: the day card's hidden reasons and the Open list's rows still say "Stop breached" and "Target reached", while the Review's labels say "Past Stop" and "At Target".
+- On the standard Review, "No Review for Mon Nov 2 … Mon Nov 16. Their Marks are optional." shows although those Marks exist.
+- The drawing's name with an unavailable Mark reads "Acknowledged unavailable: XYZ, Mon Oct 12 Stop −$270.00, …", with no full stop before "Stop".
+- The Plan box's Entry reads "short 6 contracts at $0.94" (DALE), with a lower-case "short".
+- Focus after the last Hold falls to the page body (focus after each save is Part C's T95.61; check it there).
