@@ -131,7 +131,7 @@ describe('one read snapshot (P29, A128)', () => {
 
     if (result.kind !== 'Read') throw new Error(`not read: ${JSON.stringify(result)}`);
     expect(calls).toEqual(['start', 'batch:catalog', 'batch:journalTypes']);
-    expect(started).toEqual({ binding: result.binding, meta: result.meta, counts: result.counts });
+    expect(started).toEqual({ binding: result.binding, meta: result.meta, counts: result.counts, journalDefinitions: [] });
     expect(started?.counts['journalTypes']).toBe(2);
   });
 

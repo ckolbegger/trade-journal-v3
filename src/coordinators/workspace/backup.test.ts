@@ -365,6 +365,24 @@ describe('streamed export (A128, P29)', () => {
     expect(writtenAtEnd).toBe(writtenAfterDelivery.at(-1));
   });
 
+  it('should name the Journal seed the exported forms hold, read in the export snapshot itself, when the job asks', async () => {
+    const stack = await w7Stack();
+    const run = await runExport((database, layout, onBatch, onStart) => stack.persistence.readExportSnapshot(database, layout, onBatch, onStart), {
+      databaseName: W7_DATABASE,
+      layout: exportLayoutFor(7)!,
+      exportKind: 'Normal',
+      createdAt: EXPORT_AT,
+      releaseId: 'r',
+      // A table entry no stored form matches: only the export's own definitions can say 5.
+      seedManifestVersions: { catalog: 1, journal: 1 },
+      journalSeedFromForms: true,
+    });
+    if (run.kind !== 'Built') throw new Error(`expected Built, got ${run.kind}`);
+    const lines = await linesOf(new Uint8Array(await run.blob.arrayBuffer()));
+    const workspaceRecord = JSON.parse(lines.find((line) => line.kind === 'record')!.text) as { r: Record<string, unknown> };
+    expect(workspaceRecord.r['seedManifestVersions']).toEqual({ catalog: 1, journal: 5 });
+  });
+
   it('should return Conflict before writing any record when the binding differs', async () => {
     const stack = await w7Stack();
     const current = (await stack.workspace.exportBackup({})) as { sourceBinding: { databaseName: string; contentRevision: number } };

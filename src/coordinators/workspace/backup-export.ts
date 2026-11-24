@@ -3,7 +3,7 @@
 // Persistence's snapshot read. Nothing here touches the root, the write gate, or any store.
 import { ArtifactWriter, SECTION_OF_STORE } from '../../backup/format/index.ts';
 import { exportSnapshot as exportCatalog, exportWorkspaceSection } from '../../modules/reference-catalog/index.ts';
-import { exportSnapshot as exportJournal } from '../../modules/journal/index.ts';
+import { exportSnapshot as exportJournal, seededManifestVersion, type EntryDefinitionRecord } from '../../modules/journal/index.ts';
 import { exportSnapshot as exportMarketData } from '../../modules/market-data/index.ts';
 import { exportSnapshot as exportTrades } from '../../modules/trade-record/index.ts';
 import type { ExportBatch, ExportLayout, ExportReadResult, ExportStart, Persistence, WorkspaceSnapshotBinding } from '../../persistence/index.ts';
@@ -22,6 +22,8 @@ export interface ExportJob {
   readonly releaseId: string;
   // The seed manifests the exported schema was seeded with; `meta` does not store them.
   readonly seedManifestVersions: { readonly catalog: number; readonly journal: number };
+  // When set, the Journal seed version is the manifest the snapshot's own definitions hold (the table's when none matches).
+  readonly journalSeedFromForms?: boolean;
   // When supplied and different from the binding the snapshot reads, the export is a Conflict.
   readonly expectedBinding?: WorkspaceSnapshotBinding;
   readonly onProgress?: ProgressCallback;
@@ -173,7 +175,8 @@ export async function runExport(read: ReadSnapshot, job: ExportJob): Promise<Exp
         sections,
         counts: start.counts,
       });
-      write(exportWorkspaceSection(start.meta, job.seedManifestVersions));
+      const fromForms = job.journalSeedFromForms && start.journalDefinitions ? seededManifestVersion(start.journalDefinitions as unknown as readonly EntryDefinitionRecord[]) : undefined;
+      write(exportWorkspaceSection(start.meta, fromForms === undefined ? job.seedManifestVersions : { ...job.seedManifestVersions, journal: fromForms }));
       started = true;
     }),
   ).catch((error: unknown): ExportReadResult => {

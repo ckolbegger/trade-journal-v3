@@ -15,6 +15,8 @@ export interface ExportStart {
   readonly binding: { readonly databaseName: string; readonly contentRevision: number };
   readonly meta: readonly Record<string, unknown>[];
   readonly counts: Readonly<Record<string, number>>;
+  // The Journal's definitions as this snapshot holds them, when the layout has the store: what a seed version is read from.
+  readonly journalDefinitions?: readonly Record<string, unknown>[];
 }
 
 export type ExportReadResult =
@@ -153,7 +155,9 @@ export async function readExportSnapshot(
 
       let meta: Record<string, unknown>[] = [];
       const counts: Record<string, number> = {};
-      let pending = 1 + layout.stores.length;
+      let journalDefinitions: Record<string, unknown>[] | undefined;
+      const holdsDefinitions = layout.stores.includes('journalDefinitions');
+      let pending = 1 + layout.stores.length + (holdsDefinitions ? 1 : 0);
       const started = () => {
         if (--pending > 0) return;
         const schema = meta.find((record) => record['key'] === 'schema')?.['schemaVersion'];
@@ -165,13 +169,19 @@ export async function readExportSnapshot(
         const binding = { databaseName, contentRevision: content };
         result = { kind: 'Read', binding, schemaVersion: schema, meta, counts };
         // A throw here ends the snapshot like one from onBatch.
-        if (guardAsync(onStart?.({ binding, meta, counts }))) return;
+        if (guardAsync(onStart?.({ binding, meta, counts, ...(journalDefinitions && { journalDefinitions }) }))) return;
         readFrom(0, undefined);
       };
       watch('meta', tx.objectStore('meta').getAll() as IDBRequest<Record<string, unknown>[]>, (records) => {
         meta = records;
         started();
       });
+      if (holdsDefinitions) {
+        watch('journalDefinitions', tx.objectStore('journalDefinitions').getAll() as IDBRequest<Record<string, unknown>[]>, (records) => {
+          journalDefinitions = records;
+          started();
+        });
+      }
       for (const store of layout.stores) {
         watch(store, tx.objectStore(store).count(), (count) => {
           counts[store] = count;
