@@ -1,0 +1,282 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 4 finding(s) across 14 selected item(s).",
+  "summary": {
+    "files_reviewed": 14,
+    "comments": 4,
+    "total_tokens": 473660,
+    "input_tokens": 469153,
+    "output_tokens": 4507,
+    "cache_read_tokens": 53888,
+    "elapsed": "1m49s"
+  },
+  "tool_calls": {
+    "total": 38,
+    "by_tool": {
+      "code_comment": 3,
+      "code_search": 2,
+      "file_read": 30,
+      "file_read_diff": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/ActionForm.tsx",
+      "content": "This cannot return focus to an unsaved Action when its panel is collapsed or another panel is open. CardBody keeps the form mounted inside a `hidden` panel, so calling `.focus()` on its input does nothing. For example, enter an Action note, switch to Marks, press another Trade, then choose “Back to …”: the refusal disappears without revealing or focusing the note. Have the handle request that its owning panel opens before focusing (the DebtForm handle needs the same treatment). Also reveal that panel when an asked save fails, so the form's refusal is visible.",
+      "existing_code": "      focus: () =\u003e formRef.current?.querySelector\u003cHTMLElement\u003e('input:checked, input, textarea')?.focus(),",
+      "start_line": 235,
+      "end_line": 235,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/ReviewView.tsx",
+      "content": "Reveal the owning panel before focusing its form. ReviewCard keeps Action and Reflections mounted inside `hidden` containers, so entering an Action, switching to Reflections, pressing another Trade, then choosing Back selects the hidden Action handle. Its `.focus()` cannot focus an element under a hidden ancestor, and the refusal disappears without returning the user to the unsaved form. The same issue hides validation errors when Save it submits a hidden form. Include panel activation in the registered handle (or navigate to that panel before invoking it).",
+      "existing_code": "    if (id !== undefined) forms.current.get(id)!.focus();",
+      "start_line": 430,
+      "end_line": 430,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/ReviewView.tsx",
+      "content": "Keep the open Action form synchronized when another form is also dirty. For example, enter an Action, enter a reflection in the same card, then press another Trade and choose Save it. The Action is saved first, but `toggle(pressed)` refuses to leave because the reflection is still dirty. This early return only updates the overview, leaving the mounted Action showing its unsaved values with its pre-save binding; saving it again can produce a conflict against the Action just saved. The ordinary-save path already refreshes the holder when other drafts remain. Apply equivalent synchronization here while preserving the other draft.",
+      "existing_code": "    if (asked.current !== undefined) {\n      apply({ kind: 'ActionSaved', review: post });\n      return;\n    }",
+      "start_line": 304,
+      "end_line": 307,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/ReviewView.tsx",
+      "content": "Protect the entire refusal interaction while a save is pending. The refusal buttons remain enabled: clicking Save it again calls the now-blocked handle, which returns false immediately and clears `asked.current` while the original save is still running. Its completion then follows normal next-step navigation instead of the requested-save path. Discard it can also open another card during the request, after which the original completion calls `toggle(pressed)` using the old selection. Track a single pending operation, disable conflicting actions, and verify that operation/selection before navigating.",
+      "existing_code": "    asked.current = pressed;\n    const saved = await forms.current.get(id)!.save().finally(() =\u003e {\n      asked.current = undefined;\n    });",
+      "start_line": 411,
+      "end_line": 414,
+      "category": "bug",
+      "severity": "high"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Action and debt forms, refusal UI, and shared form handle",
+      "files": [
+        "src/ui/screens/ActionForm.tsx",
+        "src/ui/screens/DebtForm.tsx",
+        "src/ui/screens/Refusal.tsx",
+        "src/ui/screens/form-handle.ts"
+      ]
+    },
+    {
+      "label": "Review cards and view with component and end-to-end tests",
+      "files": [
+        "e2e/d4/card-helpers.spec.ts",
+        "e2e/d4/support.ts",
+        "src/ui/screens/ReviewCard.test.tsx",
+        "src/ui/screens/ReviewCard.tsx",
+        "src/ui/screens/ReviewCards.test.tsx",
+        "src/ui/screens/ReviewOwedCard.tsx",
+        "src/ui/screens/ReviewReflections.tsx",
+        "src/ui/screens/ReviewView.tsx"
+      ]
+    },
+    {
+      "label": "Marks step component and end-to-end tests",
+      "files": [
+        "e2e/d5r/marks.spec.ts",
+        "src/ui/screens/MarksStep.test.tsx"
+      ]
+    }
+  ],
+  "session_id": "42f4e726-2d3c-42c9-94c3-375594deb339",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "42f4e726-2d3c-42c9-94c3-375594deb339",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "785eee18",
+      "resolved_base": "696f5d2929b000ffb40662a396785ae2bf7efe2e",
+      "resolved_head": "785eee18c749a0962fbbe425ce5a4ecf750f2c1e",
+      "exact_range": "696f5d2929b000ffb40662a396785ae2bf7efe2e..785eee18c749a0962fbbe425ce5a4ecf750f2c1e",
+      "source_artifact_sha256": "8f756bdd13ace198cd93935d3720d71c0748d4560c79ac046b0e502a7617bb63"
+    },
+    "execution": {
+      "ocr_version": "v1.14.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "02d2b522fc8ad50e6ef168e466ec06ab756cf8ca676015178a348d1e1a98f989",
+          "path": "src/ui/screens/ReviewReflections.tsx",
+          "fingerprint": "17bf44e9b86383ea57a8ad69a562291d411a4dcbef8643c51c7fd53efd715a6f"
+        },
+        {
+          "item_id": "06129f7bc0959665459bced5dd2b2fe42e6eefa20b943b5bcb22e15d914c46d2",
+          "path": "src/ui/screens/ReviewCards.test.tsx",
+          "fingerprint": "246defb87e9f496062ac4b5ab2531e4111d70bded855914bea0c4a1263fd7c80"
+        },
+        {
+          "item_id": "0912656ffbb7e6b5a379af71813d84a2286b259536675ea03a3c357426bb8cba",
+          "path": "e2e/d5r/marks.spec.ts",
+          "fingerprint": "c49625428a9cc30aaa997342faf40bce3b4f91873e3eefccace73e905d2f81c3"
+        },
+        {
+          "item_id": "150741dcc4cc2f3b9795937c853b6881d9158f89b78c2fa680263d1a4ef46829",
+          "path": "src/ui/screens/DebtForm.tsx",
+          "fingerprint": "e226d6ec8dd66e4ff8117f8e831a7a86508c97865834bc14f80beb818d03b219"
+        },
+        {
+          "item_id": "1a8b204813f2ba42444221ccf71dd5d66d82adae9a0ef7d191f74dc7f17e40e2",
+          "path": "src/ui/screens/MarksStep.test.tsx",
+          "fingerprint": "56786d28182af9608f82da4d062a7f1141d87b93ff33b8bf7fccf239822a9f6b"
+        },
+        {
+          "item_id": "1bfbdedbd684bd327b64502c5d12df456d1a1b61696650ccf7bc88e9450bf57c",
+          "path": "e2e/d4/card-helpers.spec.ts",
+          "fingerprint": "a1a986af08d7cb8646c4a8a8d970fea751d924e6b55f183fcfb9516e9957b9c1"
+        },
+        {
+          "item_id": "28d9dac30140868b5ff82f3128fe52a527534ffce26da1ec10da0741844bd9af",
+          "path": "src/ui/screens/ActionForm.tsx",
+          "fingerprint": "e36da2a72dba4e99c5e33c9248518093a8457326e92dc33b0ba4a7dc3766bb13"
+        },
+        {
+          "item_id": "658cacd7d8755bc419d3c8b2dc3f0b93468308fa9e366c831087e003312a3c83",
+          "path": "src/ui/screens/ReviewOwedCard.tsx",
+          "fingerprint": "a2b916aaeb05db3d714b267af0fb978ff3247116d0650de65ca619b84c62007b"
+        },
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "b25fe90e548be7fe10705a08a691dfea8ef6a28e5ebd10e6c9a0c4e991144880"
+        },
+        {
+          "item_id": "77a09965bbc16832a6776b36503973c81fdfb4c349ef52771fbc221627efe7c5",
+          "path": "e2e/d4/support.ts",
+          "fingerprint": "4281bc9c42e9202e974ad5d252257bc5e1e6b1eca255b01665d75c1e8fd195f6"
+        },
+        {
+          "item_id": "a780294ee0af7dc1c71af9680226fdddf806d1c185ef08cc965c66337f51a25d",
+          "path": "src/ui/screens/form-handle.ts",
+          "fingerprint": "fad7636496fee615148bc1816cdb6ed7f54a27a135ac99a26638be11612eec2b"
+        },
+        {
+          "item_id": "a83706f3444e16c14ac613c874f7293d7adce6354226bde7d7b9b892fce05701",
+          "path": "src/ui/screens/ReviewCard.test.tsx",
+          "fingerprint": "e852196c41ca879d207e30251e363bc0ac3e2fe93ce39d7c071e7d6b7ea1e0ce"
+        },
+        {
+          "item_id": "b96e68dda1adf0c65d1cc4ea2f79ed5e7b74306c7ea27a93130960068cfb8d8b",
+          "path": "src/ui/screens/Refusal.tsx",
+          "fingerprint": "bbc07823a68e424db351369dedabec027ff0ffe303dcebd2aae70a650be16723"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "9fd51c36a21b7280671b365e5aa75c1680d50ea01d94df60c25a321faf505dc8"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "02d2b522fc8ad50e6ef168e466ec06ab756cf8ca676015178a348d1e1a98f989",
+          "path": "src/ui/screens/ReviewReflections.tsx",
+          "fingerprint": "17bf44e9b86383ea57a8ad69a562291d411a4dcbef8643c51c7fd53efd715a6f"
+        },
+        {
+          "item_id": "06129f7bc0959665459bced5dd2b2fe42e6eefa20b943b5bcb22e15d914c46d2",
+          "path": "src/ui/screens/ReviewCards.test.tsx",
+          "fingerprint": "246defb87e9f496062ac4b5ab2531e4111d70bded855914bea0c4a1263fd7c80"
+        },
+        {
+          "item_id": "0912656ffbb7e6b5a379af71813d84a2286b259536675ea03a3c357426bb8cba",
+          "path": "e2e/d5r/marks.spec.ts",
+          "fingerprint": "c49625428a9cc30aaa997342faf40bce3b4f91873e3eefccace73e905d2f81c3"
+        },
+        {
+          "item_id": "150741dcc4cc2f3b9795937c853b6881d9158f89b78c2fa680263d1a4ef46829",
+          "path": "src/ui/screens/DebtForm.tsx",
+          "fingerprint": "e226d6ec8dd66e4ff8117f8e831a7a86508c97865834bc14f80beb818d03b219"
+        },
+        {
+          "item_id": "1a8b204813f2ba42444221ccf71dd5d66d82adae9a0ef7d191f74dc7f17e40e2",
+          "path": "src/ui/screens/MarksStep.test.tsx",
+          "fingerprint": "56786d28182af9608f82da4d062a7f1141d87b93ff33b8bf7fccf239822a9f6b"
+        },
+        {
+          "item_id": "1bfbdedbd684bd327b64502c5d12df456d1a1b61696650ccf7bc88e9450bf57c",
+          "path": "e2e/d4/card-helpers.spec.ts",
+          "fingerprint": "a1a986af08d7cb8646c4a8a8d970fea751d924e6b55f183fcfb9516e9957b9c1"
+        },
+        {
+          "item_id": "28d9dac30140868b5ff82f3128fe52a527534ffce26da1ec10da0741844bd9af",
+          "path": "src/ui/screens/ActionForm.tsx",
+          "fingerprint": "e36da2a72dba4e99c5e33c9248518093a8457326e92dc33b0ba4a7dc3766bb13"
+        },
+        {
+          "item_id": "658cacd7d8755bc419d3c8b2dc3f0b93468308fa9e366c831087e003312a3c83",
+          "path": "src/ui/screens/ReviewOwedCard.tsx",
+          "fingerprint": "a2b916aaeb05db3d714b267af0fb978ff3247116d0650de65ca619b84c62007b"
+        },
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "b25fe90e548be7fe10705a08a691dfea8ef6a28e5ebd10e6c9a0c4e991144880"
+        },
+        {
+          "item_id": "77a09965bbc16832a6776b36503973c81fdfb4c349ef52771fbc221627efe7c5",
+          "path": "e2e/d4/support.ts",
+          "fingerprint": "4281bc9c42e9202e974ad5d252257bc5e1e6b1eca255b01665d75c1e8fd195f6"
+        },
+        {
+          "item_id": "a780294ee0af7dc1c71af9680226fdddf806d1c185ef08cc965c66337f51a25d",
+          "path": "src/ui/screens/form-handle.ts",
+          "fingerprint": "fad7636496fee615148bc1816cdb6ed7f54a27a135ac99a26638be11612eec2b"
+        },
+        {
+          "item_id": "a83706f3444e16c14ac613c874f7293d7adce6354226bde7d7b9b892fce05701",
+          "path": "src/ui/screens/ReviewCard.test.tsx",
+          "fingerprint": "e852196c41ca879d207e30251e363bc0ac3e2fe93ce39d7c071e7d6b7ea1e0ce"
+        },
+        {
+          "item_id": "b96e68dda1adf0c65d1cc4ea2f79ed5e7b74306c7ea27a93130960068cfb8d8b",
+          "path": "src/ui/screens/Refusal.tsx",
+          "fingerprint": "bbc07823a68e424db351369dedabec027ff0ffe303dcebd2aae70a650be16723"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "9fd51c36a21b7280671b365e5aa75c1680d50ea01d94df60c25a321faf505dc8"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "eb8eab3006426cb530f53a043bac8a1d465937d6861221935bed3c011f2fa792",
+          "path": "evidence/D95/tdd-log/T95.34.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 108601
+  }
+}
