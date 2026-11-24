@@ -574,3 +574,5 @@ Moderate, bug tasks: **T95.26-B1** a Trade past its Stop on the Underlying with 
 Commit `e7366355`: `attentionOf` counts the Underlying-only crossed-line reading (the one the day card and Trade Detail use) for the band; a Stop crossed that way is StopReached, a Target TargetReached; overrun optional, pressure stays Unavailable, no figure invented. Red then green in a coordinator test and `tests/integration/d95/stop-unavailable.test.ts` (MNO short put, option Mark unavailable). e2e/d95 and e2e/d9ar 85 passed.
 
 ocr of T95.26-B1 (session f14acec8): 3 files, 0 findings. `evidence/D95/ocr/T95.26-B1-e7366355.json`.
+
+Run `t95.26-b1` (browser-task): unit 2892, integration 330, browser 20, checks 14 of 14. Passed.
