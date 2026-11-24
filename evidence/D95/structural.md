@@ -814,3 +814,5 @@ Run `t95.34-refusal` (browser-task): unit 2986, integration 329, browser 24 (@ev
 ### T95.35
 
 Commit `9c9c0275`: `measurePlanExit` in new `src/domain/plan-exit/` (Follows; Leaves with BeforeCondition, HeldPast {line, since, sessions}, PartOnly {held, sold}, every reason together; undefined for a buy). First-run pass flagged and mutation-checked: case 7. Assumptions recorded: a `pricedInTradedInstrument` flag per condition; a Hold past a line counts only while the line is still reached; a sale of at least what is held is the whole Position. No lint:deps change needed. Facts the views must return carried to T95.37.
+
+ocr of T95.35 (session b72baacd): 3 files, 2 findings, both Doubtful (bug tasks under the rule): **T95.35-B1** (`plan-exit.ts:52`): a zero Sell gives PartOnly and selling more than held gives Follows; **T95.35-B2** (`plan-exit.ts:60`): with Holds past two reached lines only the first HeldPast is given. Batched into one tdd-task, a commit each. `evidence/D95/ocr/T95.35-9c9c0275.json`.

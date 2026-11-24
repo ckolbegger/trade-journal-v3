@@ -1,0 +1,132 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 2,
+    "total_tokens": 87148,
+    "input_tokens": 85672,
+    "output_tokens": 1476,
+    "cache_read_tokens": 9984,
+    "elapsed": "53s"
+  },
+  "tool_calls": {
+    "total": 9,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 5,
+      "file_read": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/domain/plan-exit/plan-exit.ts",
+      "content": "Validate that the change quantity is positive and does not exceed the absolute held quantity before measuring it. `parseDecimal` accepts zero and negative values, so a zero-quantity Sell currently produces `PartOnly` despite not reducing the position; selling 201 against a held quantity of 200 can return `Follows` despite opening a reverse position. Return no measure for unsupported quantities (or explicitly handle reversals), and add long/short boundary tests.",
+      "existing_code": "  const sold = parseDecimal(input.change.quantity)\n  if (!held.ok || !sold.ok) return undefined",
+      "start_line": 52,
+      "end_line": 53,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/domain/plan-exit/plan-exit.ts",
+      "content": "When multiple reached conditions have been held past, this emits only the first condition's reason. For example, a breached Stop at the latest Marks and a Target reached at the sale price, each with a saved Hold, lose the Target's date/session details; reversing the conditions changes which details survive. Preserve a `HeldPast` reason for each applicable held-past condition rather than selecting only `holds[0]`, and cover this case in the tests.",
+      "existing_code": "  if (first \u0026\u0026 holds.every((h) =\u003e h !== undefined)) reasons.push({ kind: 'HeldPast', line: first.line, since: first.since, sessions: first.sessions })",
+      "start_line": 62,
+      "end_line": 62,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/domain/plan-exit/index.ts",
+        "src/domain/plan-exit/plan-exit.test.ts",
+        "src/domain/plan-exit/plan-exit.ts"
+      ]
+    }
+  ],
+  "session_id": "b72baacd-7d60-4dc3-8fda-df5eb886e37c",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "b72baacd-7d60-4dc3-8fda-df5eb886e37c",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "9c9c0275",
+      "resolved_base": "a5a84b3a06ec7035d90b27be8a2dc8a7e1092cb1",
+      "resolved_head": "9c9c02755f8f88a3528b591b74b05fa1b7efc375",
+      "exact_range": "a5a84b3a06ec7035d90b27be8a2dc8a7e1092cb1..9c9c02755f8f88a3528b591b74b05fa1b7efc375",
+      "source_artifact_sha256": "90a94b9476565092e605fbc1a0943d6bdc45b32a19508c24aef14148a38c93e2"
+    },
+    "execution": {
+      "ocr_version": "v1.14.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "40cc755fddb01e5bf86bb792d6742e042d0db7950d7538bf4fa62808053be8f3",
+          "path": "src/domain/plan-exit/plan-exit.test.ts",
+          "fingerprint": "e54e56a9524eb13460869d42adde0fb38c51fb942d46e7689355a4a0e28343a7"
+        },
+        {
+          "item_id": "548e384ae0a87c8160f7fc21a48bd39f13347a7385fad3ec1fea5a4ce585cd34",
+          "path": "src/domain/plan-exit/plan-exit.ts",
+          "fingerprint": "a3f5c02a5e57a72f2f9dbcd1abf6fc56f9487f52c9afb412a949f4af0211c60e"
+        },
+        {
+          "item_id": "c79559f558ecb78283b320bb44acd2914005bf862d2672c4936cdce0b994681b",
+          "path": "src/domain/plan-exit/index.ts",
+          "fingerprint": "1667aa9aec4a375e50d5bad012daf569e54d09917a32c595f500ebd2a21a4d20"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "40cc755fddb01e5bf86bb792d6742e042d0db7950d7538bf4fa62808053be8f3",
+          "path": "src/domain/plan-exit/plan-exit.test.ts",
+          "fingerprint": "e54e56a9524eb13460869d42adde0fb38c51fb942d46e7689355a4a0e28343a7"
+        },
+        {
+          "item_id": "548e384ae0a87c8160f7fc21a48bd39f13347a7385fad3ec1fea5a4ce585cd34",
+          "path": "src/domain/plan-exit/plan-exit.ts",
+          "fingerprint": "a3f5c02a5e57a72f2f9dbcd1abf6fc56f9487f52c9afb412a949f4af0211c60e"
+        },
+        {
+          "item_id": "c79559f558ecb78283b320bb44acd2914005bf862d2672c4936cdce0b994681b",
+          "path": "src/domain/plan-exit/index.ts",
+          "fingerprint": "1667aa9aec4a375e50d5bad012daf569e54d09917a32c595f500ebd2a21a4d20"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "de44b5820d71d53fbe83523a1d3f0bbe63c6a5ffb2a45520d58ef83986a59b80",
+          "path": "evidence/D95/tdd-log/T95.35.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 53044
+  }
+}
