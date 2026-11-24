@@ -875,3 +875,7 @@ Commit `f65df05c`: the workflow prompts (Plan Departure Reason, Expiration Reaso
 ocr of T95.42 (session 3058ecc4): 22 files, 0 findings. `evidence/D95/ocr/T95.42-f65df05c.json`. Next: run `t95.42-reflection-prompts` (browser-task, Standard).
 
 Run `t95.42-reflection-prompts` (browser-task): unit 3032, integration 329, browser 24, checks 14 of 14. Passed. T95.42 done.
+
+### T95.37
+
+Commit `eb591078`: `PlanExitFacts` on `DailyTradeReview.planExit` and `OpenTradeDetail.planExit` (per open Position its signed quantity and headline conditions with status; heldPast; the latest Exit with its reason); shared functions moved into `valuation/plan-exit-facts.ts` (heldPastOf, holdsBefore, latestExitOf, planExitFactsOf, signedDecimalOf), `measureSale` calls them; `JournalPage.actions` and `ReviewDateActions.onDate` from reads already made (data-additions.md). Trade Detail reads the replay only when a saved Hold counts (decision 133). First-run passes flagged and mutation-checked: case 3, case 4. Pins: case 4 new; for an option Trade with a Hold the replay reads one series per Instrument, so `d8p/replay-query-count` (D7S_DETAIL_WITH_HOLD) and `d8r/query-count` (D8_OPEN_DETAIL_WITH_HOLD) go from observations.getAll 1 to 3 and meta.get 11 to 12; main session accepted this as decision 133's meaning (the replay's own reads) and worded the decision so. verify:fixtures equal (no expected-views change). Integration d2 to d95 pass.
