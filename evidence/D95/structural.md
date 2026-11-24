@@ -930,3 +930,7 @@ ocr of T95.40-B1 (session f0f0ad6e): 4 files, 1 finding, Valid: **T95.40-B2** (`
 Commit `26286f6e`: `readAfterSale` sets the owed flag when a read starts and clears it only on success; a `reading` flag blocks a second read in flight; a dismissal during a read queues a retry run only on failure; an unmount during a read skips `onLeftSold`, which the read calls itself only on failure. Cases: dismissed-pending-fails and left-pending-fails (red, green); dismissed-pending-succeeds and left-pending-succeeds (first-run passes, mutation-checked). src/ui/screens 852 passed.
 
 ocr of T95.40-B2 (session 0195e4c5): 2 files, 1 finding, Valid: **T95.40-B3** (`ActionForm.tsx:144`): `gone.current` is set in the effect cleanup and never reset in setup, so under StrictMode's replay (development) a mounted form is marked gone and a failed read calls `onLeftSold` instead of the in-card retry. `evidence/D95/ocr/T95.40-B2-26286f6e.json`.
+
+### T95.40-B3
+
+Commit `86f6abd9`: the effect's setup resets `gone.current = false` (StrictMode replay). Case in <StrictMode>: red "called 2 times, but got 1", green; ActionForm.test 34 passed.
