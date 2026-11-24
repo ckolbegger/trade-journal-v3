@@ -17,4 +17,20 @@ describe('Deterministic clock and U.S. calendar (D2-S3 structural)', () => {
     const b = resolveExpectedMarkDate(new Date('2026-11-24T17:00:00Z'))
     expect(a).toBe(b)
   })
+
+  it('should order equal-Economic-Time facts by Recorded Sequence in D3 derivation', async () => {
+    const { derive } = await import('../../src/domain/derive')
+    const time = '2026-11-24T20:00:00Z'
+    const result = derive({
+      tradeId: 'trade-order', storedLifecycle: 'Open',
+      plan: { underlying: 'AAPL', quantity: 2, entry: '100', stop: '95', target: '110', oneR: '10.00', baseline: '2.00' },
+      executions: [
+        { id: 'second', instrument: 'AAPL', action: 'Buy', quantity: '1', price: '101', fee: '1', economicTime: time, recordedSequence: 2 },
+        { id: 'first', instrument: 'AAPL', action: 'Buy', quantity: '1', price: '100', fee: '1', economicTime: time, recordedSequence: 1 },
+      ],
+    })
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.value.effectiveFacts.map(f => f.id)).toEqual(['first', 'second'])
+  })
 })

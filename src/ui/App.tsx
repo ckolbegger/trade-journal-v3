@@ -4,14 +4,53 @@ import {
   confirmPlanFromDraft, initialPlanState, loadPlannedTrades, previewPlan,
   type PlanDraft, type PlanState,
 } from './plan-controller'
+import { openDb } from '../persistence/db'
+import { queryOpenTrades, type StoredOpenTrade } from '../domain/open-views'
+import { recordOpeningPositionChange } from './position-controller'
+import type { ReflectionDisposition } from '../domain/position-change-reflection'
 
 const initial: AppState = {
   view: 'loading', institutions: [], accounts: [], message: '', layout: 'wide', protection: '',
+  readiness: { outcome: 'Writable', passed: true, failedChecks: [], protection: { kind: 'BestEffort', reason: 'checking' } },
 }
 const emptyDraft: PlanDraft = {
   accountId: '', underlying: '', quantity: '', entry: '', stop: '', target: '', thesis: '', invalidation: '',
 }
 type Screen = 'accounts' | 'new-plan' | 'trades'
+
+type ExecutionDraft = { instrument: string; quantity: string; price: string; fee: string; economicTime: string }
+const emptyExecution = (): ExecutionDraft => ({
+  instrument: '', quantity: '', price: '', fee: '', economicTime: '2026-11-24T20:00:00Z',
+})
+type PositionForm = {
+  executions: ExecutionDraft[]
+  reflection: 'Defer' | 'Decline' | 'Complete'
+  decisionMode: string
+  primaryEmotion: string
+  decisionConfidence: string
+  note: string
+  declineReason: string
+}
+const emptyPositionForm = (): PositionForm => ({
+  executions: [emptyExecution()], reflection: 'Defer', decisionMode: '', primaryEmotion: '',
+  decisionConfidence: '', note: '', declineReason: '',
+})
+
+function dispositionOf(form: PositionForm): ReflectionDisposition {
+  if (form.reflection === 'Complete') {
+    return {
+      kind: 'Complete',
+      form: {
+        decisionMode: form.decisionMode,
+        primaryEmotion: form.primaryEmotion,
+        decisionConfidence: Number(form.decisionConfidence),
+        ...(form.note ? { note: form.note } : {}),
+      },
+    }
+  }
+  if (form.reflection === 'Decline') return { kind: 'Decline', reason: form.declineReason || undefined }
+  return { kind: 'Defer' }
+}
 
 export function App() {
   const [state, setState] = useState<AppState>(initial)
@@ -21,6 +60,11 @@ export function App() {
   const [institutionId, setInstitutionId] = useState('')
   const [draft, setDraft] = useState<PlanDraft>(emptyDraft)
   const [plan, setPlan] = useState<PlanState>(initialPlanState)
+  const [openTrades, setOpenTrades] = useState<StoredOpenTrade[]>([])
+  const [selectedOpen, setSelectedOpen] = useState<StoredOpenTrade | null>(null)
+  const [executingId, setExecutingId] = useState<string | null>(null)
+  const [positionForm, setPositionForm] = useState<PositionForm>(emptyPositionForm())
+  const [positionError, setPositionError] = useState('')
 
   useEffect(() => {
     void establish().then(s => {
@@ -50,20 +94,64 @@ export function App() {
 
   const preview = previewPlan(draft)
 
+  const refreshTrades = useCallback(async () => {
+    const planned = await loadPlannedTrades()
+    setPlan({ ...initialPlanState, confirmed: planned })
+    setOpenTrades(await queryOpenTrades(await openDb()))
+  }, [])
+
   const onConfirmPlan = useCallback(async () => {
     const { error } = await confirmPlanFromDraft(draft, state.accounts, state.institutions)
     if (error) { setPlan(p => ({ ...p, error })); return }
-    const trades = await loadPlannedTrades()
-    setPlan({ ...initialPlanState, screen: 'list', confirmed: trades })
+    await refreshTrades()
+    setSelectedOpen(null)
     setScreen('trades')
     setDraft(emptyDraft)
-  }, [draft, state.accounts, state.institutions])
+  }, [draft, state.accounts, state.institutions, refreshTrades])
 
   const onOpenTrades = useCallback(async () => {
-    const trades = await loadPlannedTrades()
-    setPlan({ ...initialPlanState, confirmed: trades })
+    await refreshTrades()
     setScreen('trades')
-  }, [])
+  }, [refreshTrades])
+
+  const onRecordPosition = useCallback(async (tradeId: string, expectedRevision: string) => {
+    const result = await recordOpeningPositionChange({
+      tradeId,
+      expectedRevision,
+      positionChangeId: `pc-${tradeId}`,
+      economicTime: '2026-11-24T20:00:00Z',
+      executions: positionForm.executions.map((e, index) => ({
+        id: `exec-${tradeId}-${index + 1}`,
+        instrument: e.instrument,
+        action: 'Buy' as const,
+        quantity: e.quantity,
+        price: e.price,
+        fee: e.fee,
+        economicTime: e.economicTime,
+        plannedLegId: 'leg-1',
+      })),
+      reflection: { definitionRevision: 'D1', disposition: dispositionOf(positionForm) },
+      readiness: state.readiness,
+    })
+    if (!result.ok) {
+      setPositionError(result.error.kind === 'Validation'
+        ? result.error.issues.join(', ')
+        : 'Writes are disabled until Runtime Readiness is Writable.')
+      return
+    }
+    setPositionError('')
+    setExecutingId(null)
+    setPositionForm(emptyPositionForm())
+    await refreshTrades()
+    setSelectedOpen(result.value.trade)
+  }, [positionForm, state.readiness, refreshTrades])
+
+  const updateExecution = (index: number, field: keyof ExecutionDraft, value: string) => {
+    setPositionForm(f => ({
+      ...f,
+      executions: f.executions.map((e, i) => i === index ? { ...e, [field]: value } : e),
+    }))
+  }
 
   return (
     <main data-view={state.view} data-layout={state.layout}>
@@ -140,18 +228,41 @@ export function App() {
               )}
 
               {screen === 'trades' && (
-                <section aria-label="Planned trades" data-screen="planned">
-                  <h2>Planned trades</h2>
-                  <ul>
-                    {plan.confirmed.map(t => (
-                      <li key={t.trade.id}>
-                        <button type="button" onClick={() => setPlan({ ...plan, screen: 'detail', selected: t })}>
-                          {t.trade.plan.underlying}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                  {plan.screen === 'detail' && plan.selected && (
+                <>
+                  <section aria-label="Planned trades" data-screen="planned">
+                    <h2>Planned trades</h2>
+                    <ul>
+                      {plan.confirmed.map(t => (
+                        <li key={t.trade.id}>
+                          <button type="button" onClick={() => {
+                            setSelectedOpen(null)
+                            setExecutingId(null)
+                            setPlan({ ...plan, screen: 'detail', selected: t })
+                          }}>
+                            {t.trade.plan.underlying}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+
+                  <section aria-label="Open trades" data-screen="open">
+                    <h2>Open trades</h2>
+                    <ul>
+                      {openTrades.map(t => (
+                        <li key={t.id}>
+                          <button type="button" onClick={() => {
+                            setPlan(p => ({ ...p, screen: 'list', selected: null }))
+                            setSelectedOpen(t)
+                          }}>
+                            {t.plan.underlying}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+
+                  {plan.screen === 'detail' && plan.selected && !selectedOpen && (
                     <section aria-label="Trade detail">
                       <h3>{plan.selected.trade.plan.underlying} Plan</h3>
                       <p>Lifecycle: <span data-testid="trade-lifecycle">{plan.selected.trade.lifecycle}</span></p>
@@ -162,9 +273,98 @@ export function App() {
                         <p>Thesis: {String(plan.selected.entry.snapshot?.answers?.Thesis ?? '')}</p>
                         <p>Invalidation: {String(plan.selected.entry.snapshot?.answers?.Invalidation ?? '')}</p>
                       </section>
+                      <button type="button" onClick={() => {
+                        setExecutingId(plan.selected!.trade.id)
+                        setPositionForm(emptyPositionForm())
+                        setPositionError('')
+                      }}>Add execution</button>
+                      {executingId === plan.selected.trade.id && (
+                        <form aria-label="Add execution" onSubmit={e => {
+                          e.preventDefault()
+                          void onRecordPosition(plan.selected!.trade.id, plan.selected!.revisions.trade)
+                        }}>
+                          {positionForm.executions.map((execution, index) => (
+                            <fieldset key={index}>
+                              <legend>Execution {index + 1}</legend>
+                              <label htmlFor={`ex-inst-${index}`}>Execution {index + 1} instrument</label>
+                              <input id={`ex-inst-${index}`} value={execution.instrument} onChange={e => updateExecution(index, 'instrument', e.target.value)} />
+                              <label htmlFor={`ex-qty-${index}`}>Execution {index + 1} quantity</label>
+                              <input id={`ex-qty-${index}`} value={execution.quantity} onChange={e => updateExecution(index, 'quantity', e.target.value)} />
+                              <label htmlFor={`ex-price-${index}`}>Execution {index + 1} price</label>
+                              <input id={`ex-price-${index}`} value={execution.price} onChange={e => updateExecution(index, 'price', e.target.value)} />
+                              <label htmlFor={`ex-fee-${index}`}>Execution {index + 1} fee</label>
+                              <input id={`ex-fee-${index}`} value={execution.fee} onChange={e => updateExecution(index, 'fee', e.target.value)} />
+                              <label htmlFor={`ex-time-${index}`}>Execution {index + 1} economic time</label>
+                              <input id={`ex-time-${index}`} value={execution.economicTime} onChange={e => updateExecution(index, 'economicTime', e.target.value)} />
+                            </fieldset>
+                          ))}
+                          <button type="button" onClick={() => setPositionForm(f => ({
+                            ...f, executions: [...f.executions, emptyExecution()],
+                          }))}>Add another execution</button>
+                          <fieldset>
+                            <legend>Position Change Reflection</legend>
+                            <label><input type="radio" name="reflection" checked={positionForm.reflection === 'Defer'} onChange={() => setPositionForm(f => ({ ...f, reflection: 'Defer' }))} /> Defer reflection</label>
+                            <label><input type="radio" name="reflection" checked={positionForm.reflection === 'Decline'} onChange={() => setPositionForm(f => ({ ...f, reflection: 'Decline' }))} /> Decline reflection</label>
+                            <label><input type="radio" name="reflection" checked={positionForm.reflection === 'Complete'} onChange={() => setPositionForm(f => ({ ...f, reflection: 'Complete' }))} /> Complete reflection</label>
+                            {positionForm.reflection === 'Complete' && (
+                              <>
+                                <label htmlFor="decision-mode">Decision mode</label>
+                                <select id="decision-mode" value={positionForm.decisionMode} onChange={e => setPositionForm(f => ({ ...f, decisionMode: e.target.value }))}>
+                                  <option value="">Choose…</option>
+                                  <option>As Planned</option>
+                                  <option>Deliberate Adjustment</option>
+                                  <option>Reactive</option>
+                                  <option>Externally Imposed</option>
+                                </select>
+                                <label htmlFor="primary-emotion">Primary emotion</label>
+                                <select id="primary-emotion" value={positionForm.primaryEmotion} onChange={e => setPositionForm(f => ({ ...f, primaryEmotion: e.target.value }))}>
+                                  <option value="">Choose…</option>
+                                  <option>Calm</option><option>Eager</option><option>Anxious</option><option>FOMO</option>
+                                  <option>Revenge</option><option>Relieved</option><option>Frustrated</option><option>Other</option>
+                                </select>
+                                <label htmlFor="decision-confidence">Decision confidence</label>
+                                <input id="decision-confidence" value={positionForm.decisionConfidence} onChange={e => setPositionForm(f => ({ ...f, decisionConfidence: e.target.value }))} />
+                                <label htmlFor="reflection-note">Note</label>
+                                <input id="reflection-note" value={positionForm.note} onChange={e => setPositionForm(f => ({ ...f, note: e.target.value }))} />
+                              </>
+                            )}
+                            {positionForm.reflection === 'Decline' && (
+                              <>
+                                <label htmlFor="decline-reason">Decline reason</label>
+                                <input id="decline-reason" value={positionForm.declineReason} onChange={e => setPositionForm(f => ({ ...f, declineReason: e.target.value }))} />
+                              </>
+                            )}
+                          </fieldset>
+                          {positionError && <p role="alert">{positionError}</p>}
+                          <button type="submit">Record position change</button>
+                        </form>
+                      )}
                     </section>
                   )}
-                </section>
+
+                  {selectedOpen && (
+                    <section aria-label="Open trade detail">
+                      <h3>{selectedOpen.plan.underlying} position</h3>
+                      <p>Lifecycle: <span data-testid="trade-lifecycle">{selectedOpen.lifecycle}</span></p>
+                      <p>Position: <span data-testid="open-position">{selectedOpen.positions[0]?.netQuantity ?? '0'}</span> shares</p>
+                      <p data-testid="open-lots">{selectedOpen.lots.length} open lots</p>
+                      <p>Allocated opening fees: <span data-testid="open-fees">{selectedOpen.lots.reduce((sum, l) => sum + Number(l.allocatedOpeningFee), 0).toFixed(2)}</span></p>
+                      <p>Realized to date: <span data-testid="realized-to-date">{selectedOpen.realizedToDate}</span></p>
+                      <section aria-label="Executions">
+                        <h4>Executions</h4>
+                        <ul>{selectedOpen.executions.map(e => (
+                          <li key={e.id}>{e.instrument} · {e.quantity} @ {e.price} · fee {e.fee}</li>
+                        ))}</ul>
+                      </section>
+                      <section aria-label="Open Lots">
+                        <h4>Open Lots</h4>
+                        <ul>{selectedOpen.lots.map(l => (
+                          <li key={l.id}>{l.instrument} · {l.quantity} · basis {l.basis} · allocated fee {l.allocatedOpeningFee}</li>
+                        ))}</ul>
+                      </section>
+                    </section>
+                  )}
+                </>
               )}
             </>
           )}

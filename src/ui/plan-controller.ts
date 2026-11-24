@@ -90,6 +90,7 @@ export async function loadPlannedTrades(): Promise<ConfirmPlanResult['value'][]>
   const rows = await repo.all<Record<string, unknown> & { id: string }>(db, 'trade')
   const result: ConfirmPlanResult['value'][] = []
   for (const r of rows) {
+    if (!r.plan || r.lifecycle !== 'Planned') continue
     const entry = (await repo.get<ConfirmPlanResult['value']['entry']>(db, 'journal', `entry-${r.id}`)) ?? { snapshot: {} }
     result.push({
       trade: {

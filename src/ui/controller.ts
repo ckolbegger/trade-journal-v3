@@ -4,7 +4,7 @@ import { seedCatalog, seedJournal } from '../domain/initialize'
 import { SEED_MANIFEST } from '../domain/seeds'
 import { createInstitution, createAccount, resolveNewSelection } from '../domain/catalog'
 import { openDb, repo, transaction } from '../persistence/db'
-import type { Account, Institution } from '../domain/types'
+import type { Account, Institution, ReadinessEvidence } from '../domain/types'
 
 export type ViewState = 'loading' | 'empty' | 'ready' | 'error'
 
@@ -15,6 +15,7 @@ export type AppState = {
   message: string
   layout: 'wide' | 'narrow'
   protection: string
+  readiness: ReadinessEvidence
 }
 
 function protection(): { kind: string } {
@@ -47,13 +48,14 @@ export async function establish(): Promise<AppState> {
       view: 'error', institutions: [], accounts: [], layout,
       message: `Journal is ${readiness.outcome}. Reads and backup remain available; writes are disabled.`,
       protection: readiness.protection.kind,
+      readiness,
     }
   }
 
   const db = await openDb()
   const gate = guardWrite(readiness, 'Workspace.initialize')
   if (!gate.ok) {
-    return { view: 'error', institutions: [], accounts: [], layout, message: 'Writes are not writable.', protection: readiness.protection.kind }
+    return { view: 'error', institutions: [], accounts: [], layout, message: 'Writes are not writable.', protection: readiness.protection.kind, readiness }
   }
 
   await transaction(db, ['catalog', 'journal'], 'readwrite', async tx => {
@@ -76,6 +78,7 @@ export async function establish(): Promise<AppState> {
     institutions, accounts, layout,
     message: '',
     protection: protection().kind,
+    readiness,
   }
 }
 
