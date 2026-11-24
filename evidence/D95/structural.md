@@ -806,3 +806,5 @@ ocr of T95.34-B1, T95.34-B2, T95.34-B3 (session cdceeeb0): 6 files, 1 finding, V
 ### T95.34-B4
 
 Commit `06df0de8`: `apply` counts every result carrying a Review; `reopenAndApply` drops a read that started before a newer one was applied (covers the asked-save refresh, the ordinary-save refresh, `markSaved`, header Refresh); `reopen` no longer shares a stale in-flight read. Red "expected <strong></strong> to be null", green; mutation check (guard off fails). A per-row MarkSaved carries no Review and doesn't count (an existing MarksStep test shares one read for two quick saves): a residual narrow window, noted.
+
+ocr of T95.34-B4 (session b730d892): 2 files, 0 findings. `evidence/D95/ocr/T95.34-B4-06df0de8.json`. Next: run `t95.34-refusal` (browser-task, Standard).
