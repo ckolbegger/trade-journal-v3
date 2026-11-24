@@ -81,8 +81,8 @@ export async function createApplication(deps: ApplicationDeps) {
   const journal = createJournal({ persistence, ids: deps.ids, clock: deps.clock });
   const tradeRecord = createTradeRecord({ persistence, ids: deps.ids });
   const workspace = createWorkspace({ persistence, session, catalog, journal, host: deps.host, ids: deps.ids, clock: deps.clock, releaseId: deps.releaseId, sessionPolicy, locks: deps.locks, migrationHooks: deps.migrationHooks, restoreHooks: deps.restoreHooks, backup: { ...(deps.exportPort && { export: deps.exportPort }), ...(deps.download && { download: deps.download }) } });
-  const tradeWorkflows = createTradeWorkflows({ persistence, catalog, journal, tradeRecord, clock: deps.clock, guard });
   const marketData = createMarketData({ persistence, ids: deps.ids, clock: deps.clock, sessionPolicy });
+  const tradeWorkflows = createTradeWorkflows({ persistence, catalog, journal, marketData, tradeRecord, clock: deps.clock, guard });
   // Daily Review shares this one Market Data (D4 A39): it never builds its own or sees the policy.
   const dailyReview = createDailyReview({ persistence, tradeRecord, catalog, journal, marketData, guard });
   const tradeViews = createTradeViews({ persistence, catalog, journal, tradeRecord, marketData, clock: deps.clock });

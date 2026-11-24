@@ -19,6 +19,7 @@ import type { DebtProjection, DeclineProjection, EntryProjection, JournalIssue, 
 import type { TradeFact } from '../../modules/trade-record/index.ts';
 import { beginSemanticTransaction, type WorkspaceSnapshotBinding } from '../../persistence/index.ts';
 import { retryCounterConflict } from './counter-retry.ts';
+import { deferNamingReason, holdsReason, measureSale, planDepartureReasonPromptOf } from './sale-measure.ts';
 import type { TradeMutationSuccess, TradeWorkflowsDeps, WorkflowIssue } from './types.ts';
 
 // One member of a Position Change in the full spec form (D2 A18): the Trade that owns it, its
@@ -272,6 +273,8 @@ function closeRequirementIssues(command: PositionChangeCommand, requirement: Clo
     return [
       ...(command.closeReasonId === undefined ? [issue('closeReasonId', 'CloseReasonRequired')] : []),
       ...(command.closeReview === undefined ? [issue('closeReview', 'CloseReviewDispositionRequired')] : []),
+      // A312: a closing sale only puts its Close Review off; it is answered or declined later, through its Debt.
+      ...(command.closeReview !== undefined && command.closeReview.kind !== 'Defer' ? [issue('closeReview', 'CloseReviewMustDefer')] : []),
     ];
   }
   return [
@@ -386,6 +389,9 @@ async function attemptPositionChange(deps: TradeWorkflowsDeps, command: Position
   if (otherExpiration || executionMembers.some((m) => instrumentKey(m.instrument) !== legKey(m))) {
     return { kind: 'VariantNotInstalled', variants: ['OtherInstrument'] };
   }
+  // A309: an Execution that reduces the Position is measured against the Plan Exit (the measure is stored nowhere).
+  const sale = executionMembers.length > 0 ? await measureSale(deps, prepared.beforeAnalysisInput!, beforeDerived.kind === 'Derived' ? beforeDerived : undefined, executionMembers) : undefined;
+  const owesReason = sale?.owesReason === true;
   // The candidate Position Change the Journal outcome's origin names until apply maps it.
   const positionChange = prepared.candidate.facts
     .slice(prepared.before?.facts.length)
@@ -395,7 +401,7 @@ async function attemptPositionChange(deps: TradeWorkflowsDeps, command: Position
   const momentTime = earliest(command.members.map((m) => m.economicTime)) ?? prepared.before!.planTime;
   const reflection = await deps.journal.prepareEffects({
     obligation: 'PositionChangeReflection',
-    disposition: command.reflection,
+    disposition: await deferNamingReason(deps, command.reflection, owesReason),
     anchor: { kind: 'Trade', ref: tradeId },
     origin: { kind: 'PositionChange', ref: positionChange.factId },
     momentTime,
@@ -406,6 +412,15 @@ async function attemptPositionChange(deps: TradeWorkflowsDeps, command: Position
     ...command.members.flatMap((m, i) => memberIssues(m, i, prepared.before!.planTime, deps.clock.now())),
   ];
   if (reflection.kind === 'Rejected') issues.push(...journalIssues(reflection.issues));
+  // A312: a sale's reflection is completed or put off; Decline is refused at the sale (it stays possible on the owed reflection).
+  if (sale !== undefined && command.reflection.kind === 'Decline') issues.push({ source: 'TradeWorkflows', field: 'reflection', code: 'ReflectionDeclineNotAllowed' });
+  // A312: a completed reflection for a sale that leaves the Plan Exit holds the Plan Departure Reason.
+  if (owesReason && command.reflection.kind === 'Complete') {
+    const promptId = await planDepartureReasonPromptOf(deps, command.reflection.form.definitionId);
+    if (promptId !== undefined && !holdsReason(command.reflection.form.answers[promptId])) {
+      issues.push({ source: 'TradeWorkflows', field: promptId, code: 'PlanDepartureReasonRequired' });
+    }
+  }
   // Values that do not parse cannot be replayed, so the candidate is analysed only when every member is valid.
   const candidateDerived = issues.some((i) => i.source === 'TradeWorkflows')
     ? undefined

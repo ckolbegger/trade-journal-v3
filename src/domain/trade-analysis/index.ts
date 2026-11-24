@@ -74,7 +74,7 @@ export {
   type ReplaySessionInput,
   type ReplayedSession,
 } from './replay-series.ts';
-export { planCall, type PlanCall, type PlanCallCondition } from './plan-call.ts';
+export { headlineConditionsOf, planCall, type PlanCall, type PlanCallCondition } from './plan-call.ts';
 export {
   evaluate,
   type ExtremesWeight,

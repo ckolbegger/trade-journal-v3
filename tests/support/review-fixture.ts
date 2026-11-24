@@ -136,7 +136,8 @@ export async function reviewStack(now = MONDAY_1700) {
   };
 
   // A Daily Trade Review Action saved through the Journal (the Review's own save is T4.16).
-  const saveAction = async (tradeId: string, action: 'Hold' | 'Exit' | 'Roll' | 'Adjust' = 'Hold', reviewDate = REVIEW_DATE): Promise<void> => {
+  // `intent` is the Action's reason: a fixed one for each Action but Hold, none with null.
+  const saveAction = async (tradeId: string, action: 'Hold' | 'Exit' | 'Roll' | 'Adjust' = 'Hold', reviewDate = REVIEW_DATE, intent: string | null = 'Because the plan changed.'): Promise<void> => {
     const definition = await stack.journal.getDefinitions({ latestFor: 'entry-type.daily-trade-review' });
     if (definition.kind !== 'Found') throw new Error('no Daily Trade Review definition');
     const prepared = await stack.journal.prepareEffects({
@@ -147,7 +148,7 @@ export async function reviewStack(now = MONDAY_1700) {
           definitionId: definition.definition.id,
           answers: {
             'prompt.daily-trade-review.action': { kind: 'Option', optionId: `option.daily-trade-review.action.${action.toLowerCase()}` },
-            ...(action === 'Hold' ? {} : { 'prompt.daily-trade-review.intent': { kind: 'Text', text: 'Because the plan changed.' } }),
+            ...(action === 'Hold' || intent === null ? {} : { 'prompt.daily-trade-review.intent': { kind: 'Text', text: intent } }),
           },
         },
       },

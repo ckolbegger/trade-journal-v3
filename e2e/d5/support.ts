@@ -44,6 +44,9 @@ export async function fillDebtAnswers(page: Page): Promise<void> {
   await form.getByRole('radiogroup', { name: 'Decision mode' }).getByLabel('As Planned').check();
   await form.getByRole('radiogroup', { name: 'Primary emotion' }).getByLabel('Calm').check();
   await form.getByRole('radiogroup', { name: 'Decision confidence' }).getByLabel('4').check();
+  // A put-off sale that left the Plan Exit cannot be answered without its Plan Departure Reason (D9.5 A312); the form of a buy has no such field to fill.
+  const reason = form.getByLabel('Why did you leave the Plan?');
+  if ((await reason.count()) > 0) await reason.fill('Stopped out early.');
 }
 
 // Waits for the form to go, then shows the saved result. On a card the save also moves the card on to its next panel

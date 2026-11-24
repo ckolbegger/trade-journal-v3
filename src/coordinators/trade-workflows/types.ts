@@ -2,6 +2,7 @@ import type { MutationGuard } from '../mutation-guard.ts';
 import type { Clock } from '../../domain/time/index.ts';
 import type { DerivedTradeState, LifecycleState, TradeAnalysisRecord } from '../../domain/trade-analysis/index.ts';
 import type { EntryProjection, Journal } from '../../modules/journal/index.ts';
+import type { MarketData } from '../../modules/market-data/index.ts';
 import type { ReferenceCatalog } from '../../modules/reference-catalog/index.ts';
 import type { TradeRecord } from '../../modules/trade-record/index.ts';
 import type { Rational } from '../../domain/values/index.ts';
@@ -13,6 +14,7 @@ export interface TradeWorkflowsDeps {
   readonly persistence: Persistence;
   readonly catalog: ReferenceCatalog;
   readonly journal: Journal;
+  readonly marketData: MarketData;
   readonly tradeRecord: TradeRecord;
   readonly clock: Clock;
   readonly guard: MutationGuard;

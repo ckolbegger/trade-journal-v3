@@ -19,12 +19,18 @@ const statusOf = (c: ConditionStatus) => (c.result.kind === 'Value' ? c.result.v
 
 const named = (c: ConditionStatus): PlanCallCondition => ({ id: c.id, role: c.role, boundary: c.boundary });
 
-export function planCall(evaluation: Pick<TradeEvaluation, 'conditions' | 'planBaseline'>): PlanCall {
-  if (evaluation.planBaseline.kind !== 'Value') return { call: 'Unknown' };
+// The Stop and the Target the Plan Baseline names as headline (A197), as the evaluation reads them; none without a baseline.
+export function headlineConditionsOf(evaluation: Pick<TradeEvaluation, 'conditions' | 'planBaseline'>): readonly ConditionStatus[] | undefined {
+  if (evaluation.planBaseline.kind !== 'Value') return undefined;
   const { stopBasis, targetBasis } = evaluation.planBaseline.value;
   const headlineIdOf = (role: 'stop' | 'target', basis: typeof stopBasis) => `${role}-${basis.indexOf(headlineBasisOf(basis)) + 1}`;
   const headlines = [headlineIdOf('stop', stopBasis), headlineIdOf('target', targetBasis)];
-  const conditions = evaluation.conditions.filter((c) => headlines.includes(c.id));
+  return evaluation.conditions.filter((c) => headlines.includes(c.id));
+}
+
+export function planCall(evaluation: Pick<TradeEvaluation, 'conditions' | 'planBaseline'>): PlanCall {
+  const conditions = headlineConditionsOf(evaluation);
+  if (!conditions) return { call: 'Unknown' };
   const crossed = conditions.find((c) => (statusOf(c) ?? 'Active') !== 'Active');
   if (crossed) return { call: 'Out', condition: named(crossed) };
   const unreadable = conditions.find((c) => statusOf(c) === undefined);
