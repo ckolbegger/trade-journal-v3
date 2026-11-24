@@ -558,3 +558,13 @@ Commit `f988238f`: the read-only New-form branch now comes before the Marks-firs
 ocr of T95.20-B1 (session 8667b40f): 2 files, 0 findings. `evidence/D95/ocr/T95.20-B1-f988238f.json`.
 
 Run `t95.26-gate-2` (browser-full, 20m06s): integration 329, browser 127 + 79 + 55 + 126 (4 skipped), checks 14 of 14 passed; unit 1 failed: `src/ui/screens/TradeList.test.tsx:154` Open list states, `marks('tj:open-list-ready')` 2 not 3. This is tech debt item 11's load flake (seen in D5, once during T95.17, now); it passed 5 of 5 alone in the main session. Decision 116 allows one rerun for it; the browser tier the critic stands on passed in full, so the critic proceeds on this run, and the flake gets its own fix task, **T95.26-F1**, after the critic (no code changes while a critic runs).
+
+### Critic-1 (T95.26)
+
+Report `evidence/D95/critic-1.md`. Overall PASS; 2 moderate, 4 low. Cost: 315,588 tokens, 250 tool calls, 29.1 min; brief `self.criticBrief` v1; defects found.
+
+| Critic | Tokens | Tool calls | Duration | Defects |
+|---|---|---|---|---|
+| critic-1 | 315,588 | 250 | 29.1 min | 2 moderate, 4 low |
+
+Moderate, bug tasks: **T95.26-B1** a Trade past its Stop on the Underlying with its option Mark unavailable is labelled and ranked "No price today" (spec: boundary-reached status stays in its higher band), while the day card says it's past the Stop. **T95.26-B2** at 320 the Expiration row breaks between "−" and "$2,016.00". Low, to tech debt: defects 3, 4, 5, 6. Brief note: `e2e/d95/support.ts` doesn't re-export d1's support as the template assumes; fix the brief for critic-2.

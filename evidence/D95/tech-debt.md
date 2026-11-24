@@ -11,3 +11,8 @@ Style-only ocr findings and low critic defects (the user's rule, 2026-11-19). Re
 | the user, 2026-11-22 | test tooling | About 25 post-save heading waits in e2e support helpers (Exit, Expiration, Restore recorded; `READY`, 20 s) would burn 20 s on a refused save; candidates for T95.7-F2's `savedUnlessRefused`. |
 
 - T95.17 ocr (style): `src/ui/screens/ReviewCard.tsx` 332 and 334 use `atEntry != null`; the codebase uses strict checks.
+
+- Critic-1 (T95.26), low: the "0 means it closed with no value" hint shows under a stocks-only grid that refuses $0.00.
+- Critic-1, low: an "At entry" block repeats near-identical Risk and Reward beside the Plan box and drawing on a card whose Mark is missing or unavailable.
+- Critic-1, low: at 1280, "Reward to risk Mark missing: … · Plan 2.40 to 1" wraps, leaving "1" alone.
+- Critic-1, low: at 375 with two slip questions open, "Discard 2" and "Marks to check first." split across lines.
