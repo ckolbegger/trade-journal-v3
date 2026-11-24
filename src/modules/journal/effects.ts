@@ -374,6 +374,8 @@ export interface NarrativeDebt {
   readonly dueAnchor: Instant;
   // The Debt's revision, its optimistic binding for a resolution.
   readonly revision: string;
+  // The roles the answer must include, when the Debt was owed with any (D9.5 A321).
+  readonly requires?: readonly PromptRole[];
 }
 
 // A recorded outcome in a Trade's narrative: an Entry or a decline.

@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { Link, MemoryRouter, Route, Routes } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useFixedClock as fixClock } from './trade-detail/test-support.ts';
-import { exitFormFacade, plannedDetail } from '../../../tests/support/position-change-form-facade.ts';
+import { closeReviewDefinition, exitFormFacade, plannedDetail, reflectionDefinition6 } from '../../../tests/support/position-change-form-facade.ts';
 import { expiredOptionTrade, OC_CONTRACT } from '../../../tests/support/option-trade-fixtures.ts';
 import type { UiFacade } from '../../app/compose.ts';
 import { Rational } from '../../domain/values/index.ts';
@@ -213,5 +213,19 @@ describe('load, dirtiness, and another Trade', () => {
     const terms = await screen.findByRole('region', { name: 'Expiration' });
     expect(within(terms).getByText('Quantity').nextElementSibling?.textContent).toBe('Long 3 contracts');
     expect(screen.queryByRole('heading', { name: 'Expiration recorded' })).toBeNull();
+  });
+});
+
+describe('the workflow prompts (T95.42, A322)', () => {
+  it('should leave the two workflow prompts out of today expiration form', async () => {
+    const facade = exitFormFacade(dueDetail);
+    vi.mocked(facade.Journal.getDefinitions).mockImplementation((request) =>
+      Promise.resolve({ kind: 'Found', definition: ('latestFor' in request && request.latestFor === 'entry-type.close-review' ? closeReviewDefinition : reflectionDefinition6) as never }),
+    );
+    renderForm(facade);
+    const reflection = await screen.findByRole('region', { name: 'Reflection on this expiration' });
+    expect(within(reflection).getByRole('radiogroup', { name: 'Decision mode' })).toBeTruthy();
+    expect(within(reflection).queryByLabelText('Why did you leave the Plan?')).toBeNull();
+    expect(within(reflection).queryByLabelText('Why did it expire worthless?')).toBeNull();
   });
 });

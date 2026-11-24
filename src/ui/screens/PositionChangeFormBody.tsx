@@ -543,7 +543,7 @@ export function PositionChangeFormBody({ facade, tradeId, exit, onDone, backLabe
           </div>
         )}
         {choice === 'now' && (
-          <ReflectionPrompts definition={definition} answers={answers} onChange={setAnswers} errors={promptErrors(definition)} />
+          <ReflectionPrompts definition={definition} answers={answers} onChange={setAnswers} errors={promptErrors(definition)} roles={exit ? ['PlanDepartureReason'] : []} />
         )}
       </section>
       {showClosing && (

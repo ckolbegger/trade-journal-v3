@@ -795,6 +795,7 @@ export function createJournal(deps: JournalDeps): Journal {
               definitionId: debt.definitionId,
               dueAnchor: debt.dueAnchor,
               revision: debt.versions.at(-1)!.versionId,
+              ...(debt.requires === undefined ? {} : { requires: debt.requires }),
             }),
           ),
         ...value.declines.map(

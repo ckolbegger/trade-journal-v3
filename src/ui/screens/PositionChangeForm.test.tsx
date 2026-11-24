@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { BrowserRouter, Link, MemoryRouter, Route, Routes } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { incoherentDetailOf, openDetailOf, PC1 } from '../../../tests/support/open-detail-fixtures.ts';
-import { plannedDetail, positionChangeFormFacade, reflectionDefinition } from '../../../tests/support/position-change-form-facade.ts';
+import { plannedDetail, positionChangeFormFacade, reflectionDefinition, reflectionDefinition6 } from '../../../tests/support/position-change-form-facade.ts';
 import type { UiFacade } from '../../app/compose.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { RuntimeContext } from '../runtime.tsx';
@@ -1338,5 +1338,17 @@ describe('Economic Time during a fall-back hour', () => {
       'Execution 1: the Economic Time does not exist because clocks spring forward; enter an earlier or later time.',
     ]);
     expect(facade.TradeWorkflows.recordPositionChange).not.toHaveBeenCalled();
+  });
+});
+
+describe('the workflow prompts (T95.42, A322)', () => {
+  it('should leave the two workflow prompts out of a buy reflection form', async () => {
+    const facade = positionChangeFormFacade();
+    vi.mocked(facade.Journal.getDefinitions).mockResolvedValue({ kind: 'Found', definition: reflectionDefinition6 } as never);
+    renderForm(facade);
+    const reflection = await screen.findByRole('region', { name: 'Position Change Reflection' });
+    expect(within(reflection).getByRole('radiogroup', { name: 'Decision mode' })).toBeTruthy();
+    expect(within(reflection).queryByLabelText('Why did you leave the Plan?')).toBeNull();
+    expect(within(reflection).queryByLabelText('Why did it expire worthless?')).toBeNull();
   });
 });

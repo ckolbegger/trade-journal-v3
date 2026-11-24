@@ -11,7 +11,7 @@ import { facadeDouble } from '../../../tests/support/facade-double.ts';
 import { incoherentDetailOf, openDetailAt, PC1, PC2, PC3, pc1Reflection, pc3Excess, X1, X2 } from '../../../tests/support/open-detail-fixtures.ts';
 import { optionOpenDetail, type OptionFrames } from '../../../tests/support/option-detail-fixtures.ts';
 import { OS_S1 } from '../../../tests/support/option-trade-fixtures.ts';
-import { reflectionDefinition } from '../../../tests/support/position-change-form-facade.ts';
+import { reflectionDefinition, reflectionDefinition6 } from '../../../tests/support/position-change-form-facade.ts';
 import { plannedDetail } from '../../../tests/support/views-fixtures.ts';
 import type { TradeDetailDebt, TradeDetailView, TradeReplayView } from '../../app/types.ts';
 import { Rational } from '../../domain/values/index.ts';
@@ -244,6 +244,21 @@ describe('Trade Detail: the replay read (P95)', () => {
     expect(facade.Journal.save).toHaveBeenCalledTimes(1);
     expect(facade.TradeViewsAndReporting.getTradeDetail).toHaveBeenCalledTimes(1);
     expect(facade.TradeViewsAndReporting.replayTrade).toHaveBeenCalledTimes(1);
+  });
+
+  it('should show Why did you leave the Plan, required, on Trade Detail owed reflection whose Debt requires it', async () => {
+    const user = userEvent.setup();
+    // The narrative, and the replay's session of the sale, carry the same Debt.
+    const owing = { ...debt, requires: ['PlanDepartureReason'] } as const;
+    const facade = facadeOf({ view: thursday([owing]), replayResult: { kind: 'Ready', view: replay([owing]), binding: BINDING } });
+    vi.mocked(facade.Journal.getDefinitions).mockResolvedValue({ kind: 'Found', definition: reflectionDefinition6 } as never);
+    renderWith(facade);
+    await user.click(await screen.findByRole('tab', { name: 'Journal' }));
+    const journal = screen.getByRole('tabpanel', { name: 'Journal' });
+    await user.click(within(journal).getByRole('button', { name: 'Reflect now' }));
+    const reason = await within(journal).findByLabelText('Why did you leave the Plan?');
+    expect(reason.getAttribute('aria-required')).toBe('true');
+    expect(within(journal).queryByLabelText('Why did it expire worthless?')).toBeNull();
   });
 
   it('should show no Summary card, Valuation section or Risk and reward section, with each of their figures in its one place', async () => {

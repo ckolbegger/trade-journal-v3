@@ -14,6 +14,14 @@ export const reflectionDefinition = {
   prompts: D2_JOURNAL_MANIFEST.entryTypes.find((t) => t.productKey === 'entry-type.position-change-reflection')!.prompts,
 };
 
+// The Position Change Reflection of manifest 6: the Plan Departure Reason and the Expiration Reason first, every prompt optional.
+export const reflectionDefinition6 = {
+  id: 'def-pcr-3',
+  entryTypeKey: 'entry-type.position-change-reflection',
+  revisionNumber: 3,
+  prompts: D6_JOURNAL_MANIFEST.entryTypes.find((t) => t.productKey === 'entry-type.position-change-reflection')!.prompts,
+};
+
 export const plannedDetail = {
   tradeId: 'trade-1',
   factRevision: 1,

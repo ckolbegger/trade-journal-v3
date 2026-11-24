@@ -2,7 +2,7 @@
 import { act, cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { reflectionDefinition } from '../../../tests/support/position-change-form-facade.ts';
+import { reflectionDefinition, reflectionDefinition6 } from '../../../tests/support/position-change-form-facade.ts';
 import type { EntryDefinitionRecord, ReflectionSaveBinding } from '../../app/types.ts';
 import { RuntimeContext } from '../runtime.tsx';
 import { DebtForm, type DebtSubmitResult } from './DebtForm.tsx';
@@ -38,13 +38,14 @@ const debt = {
 
 function renderForm(
   submit: (request: never) => Promise<DebtSubmitResult> = () => Promise.resolve({ kind: 'Resolved', debt }),
-  options: { writable?: boolean; onDirtyChange?: (dirty: boolean) => void; onCancel?: () => void; onResolved?: (r: never) => void } = {},
+  options: { definition?: EntryDefinitionRecord; requires?: readonly ('PlanDepartureReason' | 'ExpirationReason')[]; writable?: boolean; onDirtyChange?: (dirty: boolean) => void; onCancel?: () => void; onResolved?: (r: never) => void } = {},
 ) {
   const adapter = vi.fn(submit);
   render(
     <RuntimeContext.Provider value={{ writable: options.writable ?? true, report: () => undefined }}>
       <DebtForm
-        definition={snapshot}
+        definition={options.definition ?? snapshot}
+        requires={options.requires}
         binding={binding}
         submit={adapter as never}
         onDirtyChange={options.onDirtyChange}
@@ -314,5 +315,107 @@ describe('conflict and leaving', () => {
     for (const name of ['Answer', 'Decline']) expect(screen.queryByRole('button', { name })).toBeNull();
     expect(screen.getByLabelText('Lesson').matches(':disabled')).toBe(true);
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeTruthy();
+  });
+});
+
+// T95.42: a reflection owed for a sale that left the Plan names the Plan Departure Reason as required (U14, A322).
+const DEPARTURE = 'prompt.position-change-reflection.plan-departure';
+const EXPIRATION = 'prompt.position-change-reflection.expiration-reason';
+const owedUnder6 = reflectionDefinition6 as unknown as EntryDefinitionRecord;
+
+describe('the workflow prompts (T95.42)', () => {
+  it('should leave them out of an owed reflection form whose Debt requires neither', () => {
+    renderForm(undefined, { definition: owedUnder6 });
+    expect(screen.getByRole('radiogroup', { name: 'Decision mode' })).toBeTruthy();
+    expect(screen.queryByLabelText('Why did you leave the Plan?')).toBeNull();
+    expect(screen.queryByLabelText('Why did it expire worthless?')).toBeNull();
+  });
+
+  it('should show Why did you leave the Plan, required, on an owed reflection whose Debt requires it', () => {
+    renderForm(undefined, { definition: owedUnder6, requires: ['PlanDepartureReason'] });
+    const reason = screen.getByLabelText('Why did you leave the Plan?');
+    expect(reason.getAttribute('aria-required')).toBe('true');
+    expect(screen.queryByLabelText('Why did it expire worthless?')).toBeNull();
+  });
+});
+
+describe('answering the reason owed (T95.42)', () => {
+  // What the Journal does with a Debt that requires the Plan Departure Reason: an Answer without it is refused.
+  const journal = (request: { readonly resolution: { readonly kind: string; readonly answers?: Record<string, { readonly kind: string; readonly text?: string }> } }): Promise<DebtSubmitResult> =>
+    Promise.resolve(
+      request.resolution.kind === 'Answer' && request.resolution.answers?.[DEPARTURE]?.text === undefined
+        ? { kind: 'Rejected', issues: [{ promptId: DEPARTURE, code: 'RequiredAnswerMissing' }] }
+        : { kind: 'Resolved', debt },
+    );
+
+  it('should refuse to answer that reflection without it', async () => {
+    const adapter = renderForm(journal, { definition: owedUnder6, requires: ['PlanDepartureReason'] });
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: 'Answer' }));
+    expect(adapter).toHaveBeenCalledTimes(1);
+    const reason = screen.getByLabelText('Why did you leave the Plan?');
+    expect(reason.getAttribute('aria-invalid')).toBe('true');
+    expect(await screen.findByText('Answer “Why did you leave the Plan?”.')).toBeTruthy();
+    expect(document.activeElement).toBe(reason);
+    expect(screen.queryByRole('region', { name: 'Saved reflection' })).toBeNull();
+    // With the reason typed, the Answer goes through.
+    await user.type(reason, 'Needed the cash.');
+    await user.click(screen.getByRole('button', { name: 'Answer' }));
+    expect(await screen.findByRole('region', { name: 'Saved reflection' })).toBeTruthy();
+  });
+
+  it('should still let it be declined, with one more press than answering', async () => {
+    const adapter = renderForm(journal, { definition: owedUnder6, requires: ['PlanDepartureReason'] });
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: 'Decline' }));
+    // The first press only asks again; nothing is sent.
+    expect(adapter).not.toHaveBeenCalled();
+    await user.click(screen.getByRole('button', { name: 'Decline anyway' }));
+    expect(adapter).toHaveBeenCalledTimes(1);
+    expect(adapter).toHaveBeenCalledWith({ binding, resolution: { kind: 'Decline' } });
+    expect(await screen.findByRole('region', { name: 'Saved reflection' })).toBeTruthy();
+  });
+
+  it('should decline an owed reflection that requires nothing in one press as before', async () => {
+    const adapter = renderForm(journal, { definition: owedUnder6 });
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: 'Decline' }));
+    expect(adapter).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('the other prompts of the revision (T95.42)', () => {
+  it('should still render every other prompt of the new revision', () => {
+    renderForm(undefined, { definition: owedUnder6, requires: ['PlanDepartureReason'] });
+    const others = owedUnder6.prompts.filter((p) => p.id !== EXPIRATION);
+    // The revision keeps its three earlier choices and its note beside the one reason the Debt requires.
+    expect(others.length).toBeGreaterThan(3);
+    for (const prompt of others) expect(screen.getAllByText(prompt.text).length, prompt.text).toBeGreaterThan(0);
+    expect(screen.queryByText('Why did it expire worthless?')).toBeNull();
+  });
+});
+
+describe('the saved reflection (T95.42)', () => {
+  const answered = (responses: readonly unknown[]) => () => Promise.resolve({ kind: 'Resolved', entry: { id: 'entry-1', responses }, debt } as unknown as DebtSubmitResult);
+
+  it('should show a saved Plan Departure Reason where the reflection is read', async () => {
+    renderForm(answered([{ promptId: DEPARTURE, value: { kind: 'Text', text: 'Needed the cash.' } }, { promptId: EXPIRATION, value: { kind: 'Unanswered' } }]), { definition: owedUnder6, requires: ['PlanDepartureReason'] });
+    const user = userEvent.setup();
+    await user.type(screen.getByLabelText('Why did you leave the Plan?'), 'Needed the cash.');
+    await user.click(screen.getByRole('button', { name: 'Answer' }));
+    const saved = await screen.findByRole('region', { name: 'Saved reflection' });
+    expect(within(saved).getByText('Why did you leave the Plan?').nextElementSibling?.textContent).toBe('Needed the cash.');
+    // The question no workflow asked of this reflection is not listed as unanswered.
+    expect(within(saved).queryByText('Why did it expire worthless?')).toBeNull();
+  });
+
+  it('should leave the workflow prompts out of the saved view of a reflection that never asked them', async () => {
+    renderForm(answered([]), { definition: owedUnder6 });
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: 'Answer' }));
+    const saved = await screen.findByRole('region', { name: 'Saved reflection' });
+    expect(within(saved).queryByText('Why did you leave the Plan?')).toBeNull();
+    expect(within(saved).queryByText('Why did it expire worthless?')).toBeNull();
+    expect(within(saved).getByText('Decision mode')).toBeTruthy();
   });
 });

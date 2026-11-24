@@ -126,6 +126,7 @@ export type {
   NarrativeItem,
   PromptDefinition,
   PromptOption,
+  PromptRole,
   ReflectionDisposition,
   // Debt (D5): the Outstanding Debt page, and resolving one by Answer or Decline (P17, A64).
   DebtProjection,

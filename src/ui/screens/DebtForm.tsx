@@ -6,6 +6,7 @@ import type {
   EntryDefinitionRecord,
   EntryProjection,
   ObligationOutcome,
+  PromptRole,
   ReflectionSaveBinding,
 } from '../../app/types.ts';
 import { useRuntime } from '../runtime.tsx';
@@ -13,7 +14,7 @@ import { fieldIssues } from './form-issues.tsx';
 import { describeJournalIssue, type FieldIssue } from './plan-issues.ts';
 import { REASON_TOO_LONG } from './position-change-issues.ts';
 import type { FormHandle } from './form-handle.ts';
-import { ReflectionPrompts, type Answers } from './ReflectionPrompts.tsx';
+import { isWorkflowPrompt, ReflectionPrompts, type Answers } from './ReflectionPrompts.tsx';
 
 // How the trader resolves a reflection owed: an Answer to the snapshot definition's prompts, or a Decline.
 export type DebtResolutionInput =
@@ -39,6 +40,8 @@ export interface DebtFormProps {
   // The Debt's snapshot definition revision, which may differ from the current revision.
   readonly definition: EntryDefinitionRecord;
   readonly binding: ReflectionSaveBinding;
+  // The roles the Debt requires an answer to: the form shows those prompts, required (U14, A322).
+  readonly requires?: readonly PromptRole[];
   // The host's call: turns the resolution into its own request and returns the normalized result.
   readonly submit: (request: { readonly binding: ReflectionSaveBinding; readonly resolution: DebtResolutionInput }) => Promise<DebtSubmitResult>;
   // The accepted result, for the host to continue from (the form already shows the saved outcome).
@@ -78,6 +81,8 @@ function SavedEntry({ definition, entry }: { readonly definition: EntryDefinitio
     <dl>
       {definition.prompts.map((prompt) => {
         const value = entry.responses.find((r) => r.promptId === prompt.id)?.value;
+        // A question a workflow places is listed only when it was answered; one never asked is not "Not answered".
+        if (isWorkflowPrompt(prompt) && value?.kind !== 'Text') return null;
         const text = savedResponseText(prompt, value);
         return (
           <div key={prompt.id}>
@@ -90,7 +95,7 @@ function SavedEntry({ definition, entry }: { readonly definition: EntryDefinitio
   );
 }
 
-export function DebtForm({ definition, binding, submit, onResolved, onCancel, onDirtyChange, onHandle }: DebtFormProps) {
+export function DebtForm({ definition, binding, requires, submit, onResolved, onCancel, onDirtyChange, onHandle }: DebtFormProps) {
   const [answers, setAnswers] = useState<Answers>({});
   const [resolved, setResolved] = useState<DebtResolved | undefined>();
   const [reason, setReason] = useState('');
@@ -107,6 +112,8 @@ export function DebtForm({ definition, binding, submit, onResolved, onCancel, on
   // Leaving abandons the values, so the form no longer holds an update back.
   useEffect(() => () => onDirtyChange?.(false), [onDirtyChange]);
   const [issues, setIssues] = useState<readonly FieldIssue[]>([]);
+  // A Debt that requires an answer asks once more before it is declined: declining it stays possible, but takes a deliberate second press.
+  const [confirmingDecline, setConfirmingDecline] = useState(false);
   const reasonField = `${useId()}-reason`;
   const formRef = useRef<HTMLFormElement>(null);
   // A rejected submission takes focus to the first field, in the form's order, that has an issue.
@@ -213,7 +220,7 @@ export function DebtForm({ definition, binding, submit, onResolved, onCancel, on
           <strong>This reflection could not be saved.</strong> Nothing was saved. Your values are kept, so you can try again.
         </div>
       )}
-      <ReflectionPrompts definition={definition} answers={answers} onChange={setAnswers} errors={promptErrors(definition)} disabled={!writable} />
+      <ReflectionPrompts definition={definition} answers={answers} onChange={setAnswers} errors={promptErrors(definition)} disabled={!writable} roles={requires} requiredRoles={requires} />
       <div className="field">
         <label>
           Reason for declining (optional)
@@ -226,8 +233,8 @@ export function DebtForm({ definition, binding, submit, onResolved, onCancel, on
           <button type="submit" className="pill primary" disabled={pending}>
             Answer
           </button>
-          <button type="button" className="pill secondary" disabled={pending} onClick={() => void send({ kind: 'Decline', ...(reason.trim() !== '' && { reason }) })}>
-            Decline
+          <button type="button" className="pill secondary" disabled={pending} onClick={() => (requires?.length && !confirmingDecline ? setConfirmingDecline(true) : void send({ kind: 'Decline', ...(reason.trim() !== '' && { reason }) }))}>
+            {confirmingDecline ? 'Decline anyway' : 'Decline'}
           </button>
         </>
       )}

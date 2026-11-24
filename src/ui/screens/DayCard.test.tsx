@@ -229,6 +229,17 @@ describe('the day card', () => {
     expect(openCard).toHaveBeenCalledTimes(1);
   });
 
+  it('should read To do: Say why on the line of a Trade whose reflection owes its reason, and open its Reflections panel', async () => {
+    const user = userEvent.setup();
+    const lines: DaySummary['lines'] = [{ tradeId: 't1', marks: 0, closeReview: false, needs: ['SayWhy', 'Action'] }];
+    const { openCard } = renderCard(review({ trades: [walked('t1', 'AXIO')], day: day({ lines }) }));
+
+    const items = within(screen.getByRole('list', { name: 'Trade lines' })).getAllByRole('listitem');
+    expect(items.map((item) => item.textContent)).toEqual(['AXIO To do: Say why, Action']);
+    await user.click(within(items[0]!).getByRole('link', { name: 'AXIO' }));
+    expect(openCard).toHaveBeenCalledExactlyOnceWith('t1', 'Reflections');
+  });
+
   it('should describe each day line link by its labels own reasons without adding them to the line text', () => {
     const lines: DaySummary['lines'] = [
       { tradeId: 't1', marks: 0, closeReview: false, needs: ['Action'] },

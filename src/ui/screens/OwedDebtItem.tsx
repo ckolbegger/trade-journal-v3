@@ -161,6 +161,7 @@ export function OwedDebtItem({
           <DebtForm
             definition={definition}
             binding={{ debtId: debt.id, debtRevision: debt.revision, definitionRevision: debt.definitionId }}
+            requires={debt.requires}
             submit={submit}
             onResolved={resolved}
             onCancel={close}

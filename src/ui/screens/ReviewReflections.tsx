@@ -76,7 +76,7 @@ function ReflectionRow({ reflection, timeZone, isOpen, resolved, blocked, submit
           Reflect on {when}
         </button>
       )}
-      {(isOpen || resolved) && <DebtForm definition={reflection.definition} binding={reflection.saveBinding} submit={submit} onResolved={onResolved} onCancel={resolved ? undefined : onClose} onDirtyChange={dirty} onHandle={offer} />}
+      {(isOpen || resolved) && <DebtForm definition={reflection.definition} binding={reflection.saveBinding} requires={reflection.requires} submit={submit} onResolved={onResolved} onCancel={resolved ? undefined : onClose} onDirtyChange={dirty} onHandle={offer} />}
     </li>
   );
 }

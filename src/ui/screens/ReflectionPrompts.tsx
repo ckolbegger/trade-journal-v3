@@ -1,4 +1,4 @@
-import type { AnswerInput, EntryDefinitionRecord } from '../../app/types.ts';
+import type { AnswerInput, EntryDefinitionRecord, PromptRole } from '../../app/types.ts';
 
 export type Answers = Readonly<Record<string, AnswerInput>>;
 
@@ -10,11 +10,23 @@ export interface ReflectionPromptsProps {
   readonly errors?: Readonly<Record<string, string>>;
   // The values are shown but cannot be changed (the shell is read only).
   readonly disabled?: boolean;
+  // The workflow roles this form places itself: the sale form's Plan Departure Reason, an owed reflection's required role.
+  // A Text prompt with any other workflow role is not rendered (A322).
+  readonly roles?: readonly PromptRole[];
+  // The roles an owed reflection's Debt requires an answer to (U14): their prompts are marked required.
+  readonly requiredRoles?: readonly PromptRole[];
 }
+
+const WORKFLOW_ROLES: readonly PromptRole[] = ['PlanDepartureReason', 'ExpirationReason'];
+
+// The prompts a generic reflection form asks: those a workflow places itself are left out unless this form is given their role.
+export const isWorkflowPrompt = (prompt: EntryDefinitionRecord['prompts'][number]) => prompt.kind === 'Text' && prompt.role !== undefined && WORKFLOW_ROLES.includes(prompt.role);
+export const shownPrompts = (definition: EntryDefinitionRecord, roles: readonly PromptRole[] = []) =>
+  definition.prompts.filter((prompt) => !isWorkflowPrompt(prompt) || (prompt.kind === 'Text' && prompt.role !== undefined && roles.includes(prompt.role)));
 
 // Renders the exact definition revision loaded for the form, answering stable Prompt and
 // Option identities. Single choices are radio groups inside a labelled fieldset.
-export function ReflectionPrompts({ definition, answers, onChange, errors = {}, disabled }: ReflectionPromptsProps) {
+export function ReflectionPrompts({ definition, answers, onChange, errors = {}, disabled, roles = [], requiredRoles = [] }: ReflectionPromptsProps) {
   const set = (promptId: string, answer: AnswerInput | undefined) => {
     const next = { ...answers };
     if (answer === undefined) delete next[promptId];
@@ -23,7 +35,7 @@ export function ReflectionPrompts({ definition, answers, onChange, errors = {}, 
   };
   return (
     <>
-      {definition.prompts.map((prompt) => {
+      {shownPrompts(definition, roles).map((prompt) => {
         const error = errors[prompt.id];
         const errorId = `${prompt.id}-error`;
         const described = error ? { 'aria-invalid': true, 'aria-describedby': errorId } : {};
@@ -41,6 +53,7 @@ export function ReflectionPrompts({ definition, answers, onChange, errors = {}, 
                 <textarea
                   name={prompt.id}
                   disabled={disabled}
+                  {...(prompt.role !== undefined && requiredRoles.includes(prompt.role) && { 'aria-required': true })}
                   value={answer?.kind === 'Text' ? answer.text : ''}
                   onChange={(e) => set(prompt.id, e.target.value === '' ? undefined : { kind: 'Text', text: e.target.value })}
                   {...described}

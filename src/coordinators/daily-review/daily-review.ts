@@ -690,6 +690,12 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     const dueDebts = outstanding.filter((debt) => classifyDue(debt.dueAnchor, closes) === 'Due');
     const marksToGo = today.filter((row) => row.task === 'Manual').length;
     const closeReviewTrades = new Set(dueDebts.filter((debt) => debt.entryTypeKey === 'entry-type.close-review').map((debt) => debt.anchor.tradeId));
+    // What a Trade's due reflections ask for: a reason owed by name (W155), and the reflections that name none.
+    const reflectionNeeds = (tradeId: string): DayNeed[] => {
+      const due = dueDebts.filter((debt) => debt.anchor.tradeId === tradeId);
+      const sayWhy = due.some((debt) => debt.requires?.length);
+      return [...(sayWhy ? ['SayWhy' as const] : []), ...(!sayWhy || due.some((debt) => !debt.requires?.length) ? ['Reflection' as const] : [])];
+    };
     // The finished day's lists are read once nothing is to go: by `open`, and by the save that leaves nothing to go. The replays they need run only for
     // a Trade the Review Date's conditions read as crossed, so a save that leaves something to go makes none.
     const finished =
@@ -728,12 +734,12 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
           ...(tradeId in actions.actions && { action: actions.actions[tradeId]!.action }),
           needs: progress.panels.flatMap((panel): DayNeed[] => {
             if (panel.panel === 'Marks') return panel.done ? [] : ['Marks'];
-            if (panel.panel === 'Reflections') return panel.done ? [] : ['Reflection'];
+            if (panel.panel === 'Reflections') return panel.done ? [] : reflectionNeeds(tradeId);
             if (panel.panel === 'Settlement') return ['Settlement'];
             return panel.done || settlementTrades.has(tradeId) ? [] : ['Action'];
           }),
         })),
-        ...group.trades.filter(({ progress }) => !progress.done).map(({ tradeId }) => ({ tradeId, marks: 0, closeReview: closeReviewTrades.has(tradeId), needs: ['Reflection' as const] })),
+        ...group.trades.filter(({ progress }) => !progress.done).map(({ tradeId }) => ({ tradeId, marks: 0, closeReview: closeReviewTrades.has(tradeId), needs: reflectionNeeds(tradeId) })),
       ],
     };
 
@@ -811,6 +817,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
         legs,
         ...(positionChange?.settlements && { settlements: positionChange.settlements }),
         classification: classifyDue(debt.dueAnchor, closes),
+        ...(debt.requires !== undefined && { requires: debt.requires }),
         saveBinding: { debtId: debt.debtId, debtRevision: debt.revision, definitionRevision: debt.definitionId },
       });
     }

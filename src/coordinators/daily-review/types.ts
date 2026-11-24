@@ -9,7 +9,7 @@ import type { WorkspaceSnapshotBinding } from '../../persistence/index.ts';
 import type { StorageFailure } from '../mutation-guard.ts';
 import type { AttentionBand, AttentionReason, CalculationFamily, Pressure, MeterReading, PressureResult, SettlementItem } from '../valuation/index.ts';
 import type { TradeReplayView } from '../trade-views/index.ts';
-import type { AnswerInput, DailyAction, DebtProjection, HistoryAction, DeclineProjection, EntryDefinitionRecord, EntryProjection, JournalIssue, JournalObligationKey, ObligationOutcome } from '../../modules/journal/index.ts';
+import type { AnswerInput, DailyAction, DebtProjection, HistoryAction, DeclineProjection, EntryDefinitionRecord, EntryProjection, JournalIssue, JournalObligationKey, ObligationOutcome, PromptRole } from '../../modules/journal/index.ts';
 import type { AcknowledgmentVersion, ExpectedResolutionRevision, MarkFrame, MarketDataConflictedKey, MarketDataIssue, MarketDataPrepareEntry, MarketDataPrepareIssue, MarkResolution, ObservationKey, PreparedMarketDataEntry } from '../../modules/market-data/index.ts';
 
 // The request names the date and the as-of instant (Daily Review, "Date, eligibility, and ordering").
@@ -190,7 +190,7 @@ export type ReviewCompletion = { readonly kind: 'Incomplete'; readonly reasons: 
 // What is still to go on the day, counted from the same facts as the completion's reasons (A300). An expiration to settle owes no Action
 // (decision 125), so a Trade with Settlement Due is not counted in `actions`.
 // What a Trade still needs, in the order its card works through them (A164).
-export type DayNeed = 'Marks' | 'Reflection' | 'Settlement' | 'Action';
+export type DayNeed = 'Marks' | 'Reflection' | 'SayWhy' | 'Settlement' | 'Action';
 
 export interface DayToGo {
   readonly marks: number;
@@ -316,6 +316,8 @@ export interface OwedReflection {
   // The Expiration the Position Change recorded, which is not an Execution (row 21.14); absent when it holds none.
   readonly settlements?: readonly ExpirationFact[];
   readonly classification: DueClassification;
+  // The roles the Debt requires an answer to, when it was owed with any: a sale that left the Plan Exit owes its Plan Departure Reason (U14).
+  readonly requires?: readonly PromptRole[];
   readonly saveBinding: ReflectionSaveBinding;
 }
 
