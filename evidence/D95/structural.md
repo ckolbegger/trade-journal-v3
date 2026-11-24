@@ -794,3 +794,7 @@ ocr of T95.34 (session 42f4e726): 14 files, 4 findings, all Valid. `evidence/D95
 - **T95.34-B1** (`ReviewView.tsx:411`): the refusal's buttons stay enabled while Save it runs; a second Save it gets false and `finally` clears `asked.current` mid-save, so the first save ends through the ordinary next-step path; Discard it can open another card mid-save.
 - **T95.34-B2** (`ActionForm.tsx:235`, `ReviewView.tsx:430`, one root cause): "Back to X" and Save it act on a form in a hidden panel (`hidden={open !== name}`): focus goes nowhere and the form's refusal is hidden. Open the owning panel first.
 - **T95.34-B3** (`ReviewView.tsx:304`): with another form also unsaved, an asked Action save skips `refreshTrade(…[action:id])`, leaving the Action form stale (a later save can conflict).
+
+### T95.34-B1, T95.34-B2, T95.34-B3
+
+Commits `96804a9d` (B1: the refusal's buttons disabled while Save it runs; one save; the Trade pressed opens after), `73001569` (B2: `shownFirst` opens the owning panel before focus or save; Action panel cases only, Reflections and owed-card share the helper), `00833676` (B3: an asked Action save with a reflection also unsaved reads the Trade again). Each red first, then green; src/ui 801 passed.
