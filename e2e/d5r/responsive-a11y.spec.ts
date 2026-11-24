@@ -1,5 +1,5 @@
 import {
-  panelOf, markEditorOf, markInputOf, expectMarkUnsaved, actionFormOf, cardHeader, cardItem, completion, createRoutineTrades, createTrades, expect, expectAccessible, FRIDAY, MONDAY, MONDAY_1700, onboardedAt, openReview, panelHeader, LAUNCH, remainsOf, meterOf, nowDrawingOf, collapseOpenCard, status, tabTo, test, tradeCard, saveMarksButton, expectMarksSaved, marksStepOf, openCardFixture, type TradeRef,
+  panelOf, markEditorOf, markInputOf, expectMarkUnsaved, actionFormOf, cardHeader, cardItem, completion, createRoutineTrades, createTrades, enterMark, expect, expectAccessible, FRIDAY, MONDAY, MONDAY_1700, onboardedAt, openReview, panelHeader, LAUNCH, remainsOf, meterOf, nowDrawingOf, collapseOpenCard, status, tabTo, test, tradeCard, saveMarksButton, expectMarksSaved, marksStepOf, openCardFixture, type TradeRef,
 } from './support.ts';
 
 const INTENT = /^Why are you taking this action\?/;
@@ -9,6 +9,8 @@ test.describe('B5R.11 Responsive and accessible', () => {
     test.setTimeout(300_000);
     const { context, page, 'T-A': tA, 'T-B': tB, 'T-C': tC, 'T-E': tE, 'T-F': tF } = await openCardFixture(profile, copySetup);
     await openReview(page);
+    // T-A's Review Date Mark is saved first: no Action is offered until it is (W95).
+    await enterMark(page, tA, MONDAY, '52.00');
     // The open card draws no meter: T-A's card is collapsed to read its meter, before any draft, and opened again.
     await collapseOpenCard(page);
     await expect(meterOf(page, tA)).toHaveAttribute('role', 'img');
@@ -26,19 +28,19 @@ test.describe('B5R.11 Responsive and accessible', () => {
     expect(wide.meter.x).toBeGreaterThanOrEqual(wide.button.x + wide.button.width - 1);
     expect(wide.meter.y).toBeLessThan(wide.button.y + wide.button.height);
 
-    // Half-fill drafts at 1280 px: a price and a half-written "Can't get a price" in the Marks panel, an Exit and a half-written Intent in the Action panel.
-    await (await markInputOf(page, tA, MONDAY)).fill('52.00');
+    // Half-fill drafts at 1280 px: a price (T-C's) and a half-written "Can't get a price" in the Marks panel, an Exit and a half-written Intent in the Action panel.
+    await (await markInputOf(page, tC, MONDAY)).fill('41.00');
     const friday = await markEditorOf(page, tA, FRIDAY);
     await friday.getByRole('button', { name: "Can't get a price" }).click();
     await friday.getByLabel('Reason (required)').fill('No quo');
     // The label, status and Unsaved are words.
-    await expect(cardItem(page, tA)).toContainText('Marks needed');
-    await expect(remainsOf(page, tA)).toHaveText('To do: Mark, Reflection, Action');
+    await expect(cardItem(page, tC)).toContainText('Marks needed');
+    await expect(remainsOf(page, tA)).toHaveText('To do: Reflection, Action');
     await expect(status(page)).toContainText('Incomplete');
     await expect(friday.getByText('Unsaved')).toBeVisible();
-    // Monday's draft is held in the grid's cell, tagged Unsaved, and counted by Save Marks beside Friday's.
-    await expect(await markInputOf(page, tA, MONDAY)).toHaveValue('52.00');
-    await expectMarkUnsaved(page, tA, MONDAY);
+    // T-C's draft is held in the grid's cell, tagged Unsaved, and counted by Save Marks beside Friday's.
+    await expect(await markInputOf(page, tC, MONDAY)).toHaveValue('41.00');
+    await expectMarkUnsaved(page, tC, MONDAY);
     await expect(saveMarksButton(page)).toHaveText('Save Marks (2)');
     const action = await actionFormOf(page, tA);
     await action.getByRole('radio', { name: 'Exit', exact: true }).check();
@@ -71,7 +73,7 @@ test.describe('B5R.11 Responsive and accessible', () => {
     }).toPass({ timeout: 5000 });
     await expect((await actionFormOf(page, tA)).getByRole('radio', { name: 'Exit', exact: true })).toBeChecked();
     await expect((await actionFormOf(page, tA)).getByLabel(INTENT)).toHaveValue('Half written');
-    await expect(await markInputOf(page, tA, MONDAY)).toHaveValue('52.00');
+    await expect(await markInputOf(page, tC, MONDAY)).toHaveValue('41.00');
     await expect((await markEditorOf(page, tA, FRIDAY)).getByLabel('Reason (required)')).toHaveValue('No quo');
 
     // Put the drafts away (mouse), then complete T-B's card with the keyboard only.
@@ -79,7 +81,8 @@ test.describe('B5R.11 Responsive and accessible', () => {
     const form = await actionFormOf(page, tA);
     await form.getByRole('radio', { name: 'Hold', exact: true }).check();
     await form.getByLabel(INTENT).fill('');
-    await cardHeader(page, tA).focus();
+    // T-A's Mark is in, so its card sorts below T-B's: the Tab starts above the Marks step.
+    await page.getByRole('button', { name: 'Enter the Marks' }).focus();
     await tabTo(page, cardHeader(page, tB));
     await page.keyboard.press('Enter');
     await expect(cardHeader(page, tB)).toHaveAttribute('aria-expanded', 'true', LAUNCH);

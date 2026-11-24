@@ -79,6 +79,8 @@ test.describe('B5R.5 Unsaved work holds the card', () => {
   test('should keep the card open with the message while an Action value is entered, and write nothing', async ({ profile, copySetup }) => {
     const { context, page, 'T-A': tA, 'T-B': tB } = await openCardFixture(profile, copySetup);
     await openReview(page);
+    // T-A's Review Date Mark is saved first: no Action is offered until it is (W95).
+    await enterMark(page, tA, MONDAY, '52.00');
     const before = await probe(page);
 
     await (await actionFormOf(page, tA)).getByRole('radio', { name: 'Exit', exact: true }).check();

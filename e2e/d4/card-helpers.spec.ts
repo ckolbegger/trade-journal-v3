@@ -40,6 +40,8 @@ test.describe('reach (decision 65)', () => {
     const { context, page } = await onboardedAt(profile, MONDAY_1700);
     await createTrades(page);
     await openReview(page);
+    // No Action is offered until the Trade's Review Date Mark is saved (W95).
+    await enterMark(page, 'XYZ', DATE, '52.00');
 
     const form = await actionFormOf(page, 'XYZ');
     await form.getByRole('radio', { name: 'Exit', exact: true }).check();
@@ -60,6 +62,7 @@ test.describe('reach (decision 65)', () => {
     const { context, page } = await onboardedAt(profile, MONDAY_1700);
     await createTrades(page);
     await openReview(page);
+    await enterMark(page, 'XYZ', DATE, '52.00');
 
     const form = await actionFormOf(page, 'XYZ');
     await form.getByRole('radio', { name: 'Exit', exact: true }).check();
@@ -140,6 +143,8 @@ test.describe('reach by Trade (decision 68)', () => {
   test('should fail naming both XYZ cards, the holder found by its list item’s Trade id, when reaching the second is refused while the first holds an Action value', async ({ profile }) => {
     const { context, page } = await onboardedAt(profile, MONDAY_1700);
     const { tA, tF } = await twoXyzReview(page);
+    // XYZ's one Mark covers both Trades; it is in before T-A's Action form is offered (W95).
+    await enterMark(page, tA, DATE, '52.00');
 
     const form = await actionFormOf(page, tA);
     await form.getByRole('radio', { name: 'Exit', exact: true }).check();
