@@ -652,3 +652,7 @@ ocr of T95.27 (session 5bb57fab; two earlier runs failed on provider errors): 7 
 - **T95.27-B2** (`journal.ts:446`): a deferral accepts `requires` roles with no matching Text prompt in the pinned form, making a Debt that can never be resolved.
 - **T95.27-B3** (`journal.ts:679`): the required-role check counts a non-Text answer as answering the required Text prompt.
 The three are small and in one file; one fresh tdd-task does them in order, one commit each.
+
+### T95.27-B1, T95.27-B2, T95.27-B3
+
+Commits `5e904f21` (B1: the seed looks only at the latest stored revision: equal to the manifest adds nothing, equal to an earlier seeded form adds the next revision, else SeedConflict), `5d17e26e` (B2: a deferral whose `requires` role has no Text prompt in the current revision is refused, `DispositionNotAllowed`), `b44f35cf` (B3: a required role is answered only by a non-empty Text answer). Red then green each; Journal module 328 passed. `validateForm`'s acceptance of a non-Text answer for an ordinary Text prompt pre-dates D9.5 and is unchanged.
