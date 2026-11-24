@@ -903,3 +903,7 @@ Commit `cbccc891`: a reason-required refusal lapses (question, banner, Save guar
 ocr of T95.39-B2 (session 4d7e1905): 2 files, 1 finding (`PositionChangeFormBody.tsx:314`: a workflow reason refusal that arrives while the form's check is `clear` never lapses on later edits). Dismissed by the main session, not a defect: there the save (the authority, with Current statuses and the sale's date) owes a reason the form can't see, so the form can't know an edit lifted it; keeping the question until answered or "Say why later" is the intended rule (T95.39 note), and Save isn't blocked (either choice saves). `evidence/D95/ocr/T95.39-B2-cbccc891.json`. Next: run `t95.39-plan-check` (browser-auto 7e623a14).
 
 Run `t95.39-plan-check` (browser-auto 7e623a14, full tier): unit 3053, integration 329, browser 127, 79, 55 and 130 (4 skipped), checks 14 of 14. Passed. T95.39 done.
+
+### T95.40 — parked (pending decision)
+
+The tdd-task stopped before any edit: case 6 ("show the Trade under 'Closed · Close Review' as 'Close Review · next Review'", W135) quotes words the breakdown gives to T95.58 (the group heading, X12 and T95.58 case 1, now "Trades with owed reflections" at ReviewView.tsx:599; the card label W151, T95.58 case 5, now from remainsText in ReviewOwedCard.tsx); neither file is on T95.40's Files line; B95.8 (T95.45) asserts the same. Options put to the user: (1) T95.40 builds the heading and label (T95.58 cases 1 and 5 then first-run pass, flagged; X12's test edits move to T95.40) — recommended; (2) case 6 moves to T95.58; (3) an interim wording.
