@@ -1,3 +1,4 @@
+import { DAILY_TRADE_REVIEW_TYPE_ID } from '../journal/journal';
 import {
   formatSessionDateShort,
   getCompletedSessionsBetween,
@@ -29,6 +30,12 @@ import {
 } from '../shared/exact-number';
 import { deriveLongStockPosition, type DerivedLongStockState } from '../trade-analysis/derive';
 import { evaluateLongStockTrade, type LongStockEvaluation } from '../trade-analysis/evaluate';
+import {
+  assembleLongStockReplayInput,
+  extractReplayReviewActions,
+  replayLongStockTrade,
+  type LongStockReplayModel,
+} from '../trade-analysis/replay';
 
 export interface TradeBrowseItem {
   readonly id: string;
@@ -114,12 +121,43 @@ export interface ReviewMarksViewModel {
   readonly openTrades: readonly TradeBrowseItem[];
 }
 
+export interface TradeReplayView {
+  readonly trade: TradeRecordRow;
+  readonly strategyLabel: string;
+  readonly accountLabel: string;
+  readonly institutionLabel: string;
+  readonly closeReasonLabel: string | null;
+  readonly closedAtShort: string | null;
+  readonly terminalDisposition: string | null;
+  readonly expectedSessionDate: string;
+  readonly expectedSessionDateShort: string;
+  readonly replay: LongStockReplayModel;
+}
+
+export type TradeReplayViewResult =
+  | { readonly status: 'Ready'; readonly view: TradeReplayView }
+  | { readonly status: 'NotFound'; readonly tradeId: string }
+  | {
+      readonly status: 'NotApplicable';
+      readonly tradeId: string;
+      readonly reason: 'UnenteredTrade' | 'NotEnteredAsOf';
+    }
+  | {
+      readonly status: 'IntegrityBlocked';
+      readonly tradeId: string;
+      readonly reason: string;
+    };
+
 export interface TradeViewsAndReporting {
   browseTrades(filter?: {
     readonly lifecycleState?: TradeLifecycleState;
   }): Promise<{ readonly items: readonly TradeBrowseItem[] }>;
   getTradeDetail(tradeId: string): Promise<TradeDetailCockpitViewModel | null>;
   getReviewMarksView(sessionDate?: string): Promise<ReviewMarksViewModel>;
+  replayTrade(
+    tradeId: string,
+    options?: { readonly asOfSessionDate?: string },
+  ): Promise<TradeReplayViewResult>;
 }
 
 function formatShares(raw: { num: string; den: string }): string {
@@ -744,6 +782,190 @@ export function createTradeViews(options: {
             snapshotId: meta?.snapshotId ?? 0,
             rows,
             openTrades,
+          };
+        },
+      );
+    },
+
+    async replayTrade(
+      tradeId: string,
+      options?: { readonly asOfSessionDate?: string },
+    ): Promise<TradeReplayViewResult> {
+      const rawAsOf = options?.asOfSessionDate ?? null;
+      if (rawAsOf !== null && !/^\d{4}-\d{2}-\d{2}$/.test(rawAsOf)) {
+        throw new Error(`Invalid asOfSessionDate: ${rawAsOf}`);
+      }
+      const latestCompleted = getLatestCompletedSessionDate(getNow());
+      const asOfDate =
+        rawAsOf !== null && rawAsOf > latestCompleted ? latestCompleted : rawAsOf;
+      const expectedSessionDate = asOfDate ?? latestCompleted;
+
+      return persistence.runReadTransaction(
+        [
+          'trades',
+          'trade_facts',
+          'executions',
+          'journal_entries',
+          'catalog_institutions',
+          'catalog_accounts',
+          'catalog_strategies',
+          'catalog_close_reasons',
+          'market_marks',
+          'market_acknowledgments',
+        ],
+        async (tx) => {
+          const trade = await tx.get('trades', tradeId);
+          if (!trade) {
+            return { status: 'NotFound', tradeId };
+          }
+
+          const [
+            facts,
+            executions,
+            entries,
+            institution,
+            account,
+            strategy,
+            closeReason,
+            symMarks,
+            symAcks,
+          ] = await Promise.all([
+            tx.getAllByIndex('trade_facts', 'by_trade', tradeId),
+            tx.getAllByIndex('executions', 'by_trade', tradeId),
+            tx.getAllByIndex('journal_entries', 'by_trade', tradeId),
+            tx.get('catalog_institutions', trade.institutionId),
+            tx.get('catalog_accounts', trade.accountId),
+            tx.get('catalog_strategies', trade.strategyId),
+            trade.closeReasonId
+              ? tx.get('catalog_close_reasons', trade.closeReasonId)
+              : undefined,
+            tx.getAllByIndex('market_marks', 'by_symbol', trade.symbol),
+            tx.getAllByIndex('market_acknowledgments', 'by_symbol', trade.symbol),
+          ]);
+
+          const hasPlanVersion = facts.some((f) => f.kind === 'PlanVersion');
+          if (!hasPlanVersion) {
+            return {
+              status: 'IntegrityBlocked',
+              tradeId,
+              reason: 'Missing initial PlanVersion fact.',
+            };
+          }
+
+          const sortedExecs = [...executions].sort((a, b) => {
+            const byTime = a.economicTime.localeCompare(b.economicTime);
+            return byTime !== 0 ? byTime : a.recordedSequence - b.recordedSequence;
+          });
+
+          if (sortedExecs.length === 0) {
+            return { status: 'NotApplicable', tradeId, reason: 'UnenteredTrade' };
+          }
+
+          const derived = deriveLongStockPosition({
+            storedLifecycleState: trade.lifecycleState,
+            plan: {
+              plannedQuantity: trade.plannedQuantity,
+              intendedEntryPrice: trade.intendedEntryPrice,
+              stopPrice: trade.stopPrice,
+              targetPrice: trade.targetPrice,
+            },
+            originalPlannedRisk: trade.baseline.originalPlannedRisk,
+            executions: sortedExecs,
+          });
+          if (derived.integrityDisagreement) {
+            return {
+              status: 'IntegrityBlocked',
+              tradeId,
+              reason: `Stored lifecycle (${trade.lifecycleState}) disagrees with derived position (${derived.derivedLifecycleState}).`,
+            };
+          }
+
+          const replayExecs = asOfDate
+            ? sortedExecs.filter(
+                (ex) => getExchangeDateForInstant(new Date(ex.economicTime)) <= asOfDate,
+              )
+            : sortedExecs;
+          if (replayExecs.length === 0) {
+            return { status: 'NotApplicable', tradeId, reason: 'NotEnteredAsOf' };
+          }
+
+          const firstExecDate = getExchangeDateForInstant(
+            new Date(replayExecs[0]!.economicTime),
+          );
+          const rawClosedSessionDate =
+            trade.lifecycleState === 'Closed'
+              ? getExchangeDateForInstant(
+                  new Date(
+                    trade.closedAt ?? sortedExecs[sortedExecs.length - 1]!.economicTime,
+                  ),
+                )
+              : null;
+
+          const closedSessionDate =
+            rawClosedSessionDate !== null &&
+            (asOfDate === null || rawClosedSessionDate <= asOfDate)
+              ? rawClosedSessionDate
+              : null;
+
+          let endSessionDate: string;
+          if (closedSessionDate !== null) {
+            endSessionDate = closedSessionDate;
+          } else if (expectedSessionDate >= firstExecDate) {
+            endSessionDate = expectedSessionDate;
+          } else {
+            endSessionDate = firstExecDate;
+          }
+
+          const isUnfinishedToday =
+            asOfDate === null &&
+            closedSessionDate === null &&
+            endSessionDate > expectedSessionDate;
+
+          const sessions = getCompletedSessionsBetween(firstExecDate, endSessionDate);
+          const replayInput = assembleLongStockReplayInput({
+            tradeId: trade.id,
+            symbol: trade.symbol,
+            plan: {
+              plannedQuantity: trade.plannedQuantity,
+              intendedEntryPrice: trade.intendedEntryPrice,
+              stopPrice: trade.stopPrice,
+              targetPrice: trade.targetPrice,
+            },
+            originalPlannedRisk: trade.baseline.originalPlannedRisk,
+            originalPlannedReward: trade.baseline.originalPlannedReward,
+            sortedExecutions: replayExecs,
+            sessions,
+            cutoffDate: endSessionDate,
+            ...(isUnfinishedToday ? { inProgressSessionDate: endSessionDate } : {}),
+            effectiveMarks: symMarks
+              .filter((m) => m.effective)
+              .map((m) => ({ sessionDate: m.sessionDate, price: m.price })),
+            acknowledgedUnavailableDates: symAcks
+              .filter((a) => a.status === 'Active')
+              .map((a) => a.sessionDate),
+            reviewActions: extractReplayReviewActions(entries, DAILY_TRADE_REVIEW_TYPE_ID),
+          });
+          const replay = replayLongStockTrade(replayInput);
+
+          const isClosedAsOf = closedSessionDate !== null;
+          return {
+            status: 'Ready',
+            view: {
+              trade,
+              strategyLabel: strategy?.currentLabel ?? 'Long Stock',
+              accountLabel: account?.currentLabel ?? 'Account',
+              institutionLabel: institution?.currentLabel ?? 'Institution',
+              closeReasonLabel: isClosedAsOf ? (closeReason?.currentLabel ?? null) : null,
+              closedAtShort: closedSessionDate
+                ? formatSessionDateShort(closedSessionDate)
+                : null,
+              terminalDisposition: isClosedAsOf
+                ? (trade.terminalDisposition ?? derived.terminalDisposition ?? 'Closed')
+                : null,
+              expectedSessionDate,
+              expectedSessionDateShort: formatSessionDateShort(expectedSessionDate),
+              replay,
+            },
           };
         },
       );

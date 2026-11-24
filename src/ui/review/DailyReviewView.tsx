@@ -27,6 +27,7 @@ import type { CloseReasonRecord } from '../../persistence/idb';
 import type { Clock } from '../../shared/clock';
 import type { TradeWorkflows } from '../../trade-workflows/trade-workflows';
 import styles from '../shell/AppShell.module.css';
+import { ReplayStrip } from '../replay/ReplayStrip';
 import { RecordExitPanel } from '../trades/RecordExitPanel';
 import drStyles from './DailyReview.module.css';
 import { GaugeMeter } from './GaugeMeter';
@@ -43,6 +44,11 @@ interface DailyReviewViewProps {
   readonly writable: boolean;
   readonly onReviewMutated: () => void;
   readonly onInspectTrade: (tradeId: string) => void;
+  readonly onOpenReplay: (
+    tradeId: string,
+    triggerEl?: HTMLElement | null,
+    asOfSessionDate?: string,
+  ) => void;
   readonly onDirtyChange: (dirty: boolean) => void;
 }
 
@@ -160,6 +166,7 @@ export function DailyReviewView({
   writable,
   onReviewMutated,
   onInspectTrade,
+  onOpenReplay,
   onDirtyChange,
 }: DailyReviewViewProps) {
   const [model, setModel] = useState<DailyReviewViewModel | null>(null);
@@ -178,6 +185,7 @@ export function DailyReviewView({
 
   // Trade accordion & action form state
   const [openTradeId, setOpenTradeId] = useState<string | null>(null);
+  const [openClosedTradeId, setOpenClosedTradeId] = useState<string | null>(null);
   const [changingTradeId, setChangingTradeId] = useState<string | null>(null);
   const [recordingExitTradeId, setRecordingExitTradeId] = useState<string | null>(null);
   const [exitPanelDirty, setExitPanelDirty] = useState(false);
@@ -252,6 +260,11 @@ export function DailyReviewView({
   useEffect(() => {
     void loadView();
   }, [loadView, refreshKey]);
+
+  const loadedReviewDate = model?.reviewDate ?? null;
+  useEffect(() => {
+    setOpenClosedTradeId(null);
+  }, [loadedReviewDate]);
 
   // Track unsaved edits for App navigation / SW update deferral guardrails
   useEffect(() => {
@@ -1805,6 +1818,11 @@ export function DailyReviewView({
                       </div>
                     </div>
 
+                    <ReplayStrip
+                      model={trade.replay}
+                      onOpen={(triggerEl) => onOpenReplay(trade.tradeId, triggerEl, model.reviewDate)}
+                    />
+
                     {/* OV-05 STALE EXIT ACCOUNTABILITY & INLINE RECORD EXIT */}
                     {trade.staleExit &&
                       !trade.todayAction &&
@@ -2119,8 +2137,87 @@ export function DailyReviewView({
           })}
         </section>
       )}
+
+      {/* CLOSED TRADES (Replayable in D7; Close Review obligations arrive in D8) */}
+      {model.closedTrades.length > 0 && (
+        <section aria-label="Closed trades">
+          <h2 className={drStyles.grpTitle}>Closed</h2>
+          {model.closedTrades.map((closed) => {
+            const isClosedOpen = openClosedTradeId === closed.tradeId;
+            return (
+              <div
+                key={closed.tradeId}
+                className={`${drStyles.tcard} ${isClosedOpen ? drStyles.tcardOpen : ''}`}
+              >
+                <button
+                  type="button"
+                  className={drStyles.thead}
+                  aria-expanded={isClosedOpen}
+                  onClick={() =>
+                    setOpenClosedTradeId(isClosedOpen ? null : closed.tradeId)
+                  }
+                >
+                  <span className={drStyles.sym}>{closed.symbol}</span>
+                  <span className={drStyles.pos}>
+                    {closed.terminalDisposition} · {closed.closedAtShort}
+                  </span>
+                  <span>
+                    <span className={`${drStyles.chip} ${drStyles.chipQuiet}`}>
+                      {closed.closeReasonLabel ?? 'Closed'}
+                    </span>
+                  </span>
+                  <span />
+                  <span className={`${drStyles.hp} ${getClosedPnlToneClass(closed.realizedPnl.num)}`}>
+                    {closed.realizedPnlDisplay}
+                    {closed.realizedRDisplay ? ` · ${closed.realizedRDisplay}` : ''}
+                  </span>
+                  <span className={drStyles.hd} />
+                  <span />
+                  <span className={`${drStyles.todo} ${drStyles.todoOk}`}>Closed</span>
+                </button>
+
+                {isClosedOpen && (
+                  <div className={drStyles.tbody}>
+                    <div className={drStyles.closedActionsRow}>
+                      <p className={drStyles.closedEndText}>
+                        <strong>How it ended:</strong> {closed.terminalDisposition},{' '}
+                        {closed.closedAtShort}.
+                        {closed.closeReasonLabel ? ` ${closed.closeReasonLabel}.` : ''}
+                      </p>
+                      <button
+                        type="button"
+                        className={styles.btnSecondary}
+                        onClick={() => onInspectTrade(closed.tradeId)}
+                      >
+                        Inspect
+                      </button>
+                    </div>
+                    {closed.replay ? (
+                      <ReplayStrip
+                        model={closed.replay}
+                        onOpen={(triggerEl) => onOpenReplay(closed.tradeId, triggerEl, model.reviewDate)}
+                      />
+                    ) : (
+                      <div className={`${styles.alertError} ${drStyles.closedBlocked}`} role="status">
+                        <strong>Facts can&apos;t be replayed:</strong>{' '}
+                        {closed.integrityBlockedReason ?? 'Position integrity disagreement.'}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </section>
+      )}
     </section>
   );
+}
+
+function getClosedPnlToneClass(num: bigint): string {
+  if (num > 0n) return drStyles.up ?? '';
+  if (num < 0n) return drStyles.down ?? '';
+  return '';
 }
 
 function renderDecisionTrail(trade: DailyReviewTradeItem) {

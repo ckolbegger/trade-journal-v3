@@ -1,0 +1,428 @@
+/* Prototype-matched Replay strip & Corridor overlay (prototypes/replay/round-2.html & review-coach-mockup/index.html) */
+
+.strip {
+  margin-top: 10px;
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  padding: 6px 14px;
+  border: 1.5px solid var(--ink);
+  border-radius: 10px;
+  background: var(--card);
+}
+
+.stripText {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  font-size: 0.94rem;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: var(--ground);
+  overflow: auto;
+}
+
+.overlayHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 22px;
+  border-bottom: 1px solid var(--line);
+  background: var(--card);
+  position: sticky;
+  top: 0;
+  z-index: 4;
+}
+
+.overlayTitle {
+  font-size: 0.84rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.overlayBody {
+  max-width: 1220px;
+  margin: 0 auto;
+  padding: 16px 22px 64px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 18px;
+  align-items: start;
+}
+
+.mainCol {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.readout {
+  position: sticky;
+  top: 68px;
+  max-height: calc(100vh - 84px);
+  overflow-y: auto;
+}
+
+.readoutHeading {
+  font-size: 0.76rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 14px 0 6px;
+}
+
+.readoutHeadingFirst {
+  margin-top: 0;
+}
+
+.hero {
+  border-left: 6px solid var(--ghost);
+}
+
+.heroUp {
+  border-left-color: var(--target);
+}
+
+.heroDown {
+  border-left-color: var(--stop);
+}
+
+.heroHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 14px;
+}
+
+.heroDate {
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.heroFig {
+  font-size: 1.5rem;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+}
+
+.heroLine {
+  margin: 4px 0 0;
+  font-size: 0.95rem;
+}
+
+.momentsRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.momentsSelect {
+  font: inherit;
+  font-weight: 600;
+  padding: 5px 10px;
+  border: 1.5px solid var(--ink);
+  border-radius: 8px;
+  background: var(--card);
+  min-height: 36px;
+  max-width: 100%;
+  cursor: pointer;
+}
+
+.momentCallout {
+  margin: 6px 0 8px;
+  padding: 8px 12px;
+  background: var(--warning-ground);
+  border-left: 4px solid var(--warning-line);
+  border-radius: 0 8px 8px 0;
+  font-size: 0.92rem;
+}
+
+.momentCalloutNone {
+  background: var(--tint);
+  border-left-color: var(--line);
+  color: var(--muted);
+}
+
+.scrubRow {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin: 8px 0 10px;
+}
+
+.stepBtn {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  border: 1px solid var(--ink);
+  background: var(--card);
+  cursor: pointer;
+  font-size: 1.15rem;
+  flex: none;
+}
+
+.stepBtn:disabled {
+  border-color: var(--line);
+  color: var(--muted);
+  opacity: 0.5;
+  cursor: default;
+}
+
+.slider {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 34px;
+  accent-color: var(--ink);
+  cursor: pointer;
+}
+
+.when {
+  font-weight: 650;
+  font-size: 0.92rem;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.chartWrap {
+  position: relative;
+  width: 100%;
+}
+
+.plot {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.tooltip {
+  position: fixed;
+  z-index: 80;
+  pointer-events: none;
+  background: var(--ink);
+  color: #ffffff;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  padding: 8px 10px;
+  border-radius: 8px;
+  max-width: 290px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+.tooltipMuted {
+  color: var(--line);
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-top: 8px;
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.kv {
+  display: grid;
+  grid-template-columns: minmax(6em, auto) minmax(0, 1fr);
+  gap: 5px 12px;
+  margin: 0;
+  font-size: 0.92rem;
+}
+
+.kv dt {
+  color: var(--muted);
+}
+
+.kv dd {
+  margin: 0;
+  text-align: right;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.kvSub {
+  grid-column: 1 / -1;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 400;
+  margin-top: -3px;
+  text-align: right;
+}
+
+.fold {
+  margin-top: 4px;
+}
+
+.fold summary {
+  cursor: pointer;
+  font-weight: 650;
+  min-height: 32px;
+}
+
+.scrollX {
+  overflow-x: auto;
+  margin-top: 10px;
+}
+
+.sessionTable {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.84rem;
+}
+
+.sessionTable th,
+.sessionTable td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--line);
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.sessionTable th:first-child,
+.sessionTable td:first-child {
+  text-align: left;
+  position: sticky;
+  left: 0;
+  background: var(--card);
+}
+
+.sessionTable thead th {
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 0.78rem;
+}
+
+.rowActive {
+  background: var(--tint);
+}
+
+.rowActive td:first-child {
+  background: var(--tint);
+}
+
+.rowJumpBtn {
+  background: none;
+  border: 0;
+  padding: 2px 4px;
+  margin: -2px -4px;
+  cursor: pointer;
+  font-weight: 650;
+  color: var(--info-ink);
+  text-decoration: underline;
+  text-align: left;
+}
+
+.up {
+  color: var(--target);
+}
+
+.down {
+  color: var(--stop);
+}
+
+.amber {
+  color: var(--amber);
+  font-weight: 650;
+}
+
+@media (max-width: 900px) {
+  .overlayBody {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 12px 12px 48px;
+  }
+
+  .readout {
+    position: static;
+    max-height: none;
+  }
+}
+
+@media (max-width: 680px) {
+  .strip {
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    padding: 8px 12px;
+  }
+
+  .strip svg {
+    width: 150px;
+    height: 36px;
+    flex: none;
+  }
+
+  .stripAction {
+    order: 1;
+    margin-left: auto;
+  }
+
+  .stripText {
+    order: 2;
+    flex-basis: 100%;
+  }
+
+  .overlayHeader {
+    padding: 8px 12px;
+  }
+
+  .scrubRow {
+    flex-wrap: wrap;
+    gap: 6px 10px;
+  }
+
+  .when {
+    order: -1;
+    flex-basis: 100%;
+  }
+
+  .heroFig {
+    font-size: 1.35rem;
+  }
+}
+
+.cardTight {
+  margin-bottom: 0;
+}
+
+.momentsLabel {
+  font-weight: 650;
+}
+
+.tableActions {
+  margin-top: 12px;
+}
+
+.readoutLine {
+  margin: 0 0 8px;
+}
+
+.readoutLineBold {
+  margin: 0 0 6px;
+  font-weight: 650;
+}
+
+.episodeAlert {
+  margin-top: 6px;
+  margin-bottom: 10px;
+}
+
+.readoutNote {
+  margin: 10px 0 0;
+}

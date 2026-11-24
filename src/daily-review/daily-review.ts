@@ -47,8 +47,12 @@ import {
   type LongStockEvaluation,
 } from '../trade-analysis/evaluate';
 import {
+  assembleLongStockReplayInput,
   diffStopDisciplineDeviationRecords,
   extractDailyReviewActions,
+  extractReplayReviewActions,
+  replayLongStockTrade,
+  type LongStockReplayModel,
 } from '../trade-analysis/replay';
 
 export type DailyReviewCompletionState =
@@ -141,6 +145,24 @@ export interface DailyReviewTradeItem {
   readonly stopPrice: Rational;
   readonly targetPrice: Rational;
   readonly oneR: Rational;
+  readonly replay: LongStockReplayModel;
+}
+
+export interface DailyReviewClosedTradeItem {
+  readonly tradeId: string;
+  readonly symbol: string;
+  readonly strategyLabel: string;
+  readonly accountLabel: string;
+  readonly institutionLabel: string;
+  readonly closedAtShort: string;
+  readonly closedAtIso: string;
+  readonly terminalDisposition: string;
+  readonly closeReasonLabel: string | null;
+  readonly realizedPnl: Rational;
+  readonly realizedPnlDisplay: string;
+  readonly realizedRDisplay: string | null;
+  readonly integrityBlockedReason: string | null;
+  readonly replay: LongStockReplayModel | null;
 }
 
 export interface DailyReviewDebtItem {
@@ -179,6 +201,7 @@ export interface DailyReviewViewModel {
   readonly skippedSessions: readonly { readonly date: string; readonly short: string }[];
   readonly dueDebt: readonly DailyReviewDebtItem[];
   readonly trades: readonly DailyReviewTradeItem[];
+  readonly closedTrades: readonly DailyReviewClosedTradeItem[];
   readonly openedAfterCutoffTrades: readonly DailyReviewAfterCutoffTrade[];
   readonly daySummary: DailyReviewDaySummary;
 }
@@ -406,6 +429,7 @@ export function createDailyReview(options: {
         'catalog_institutions',
         'catalog_accounts',
         'catalog_strategies',
+        'catalog_close_reasons',
         'market_meta',
         'market_marks',
         'market_acknowledgments',
@@ -422,6 +446,7 @@ export function createDailyReview(options: {
           institutions,
           accounts,
           strategies,
+          closeReasons,
           marketMeta,
           allMarks,
           allAcks,
@@ -436,6 +461,7 @@ export function createDailyReview(options: {
           tx.getAll('catalog_institutions'),
           tx.getAll('catalog_accounts'),
           tx.getAll('catalog_strategies'),
+          tx.getAll('catalog_close_reasons'),
           tx.get('market_meta', 'singleton'),
           tx.getAll('market_marks'),
           tx.getAll('market_acknowledgments'),
@@ -456,6 +482,7 @@ export function createDailyReview(options: {
         const instMap = new Map(institutions.map((i) => [i.id, i.currentLabel]));
         const acctMap = new Map(accounts.map((a) => [a.id, a.currentLabel]));
         const stratMap = new Map(strategies.map((s) => [s.id, s.currentLabel]));
+        const closeReasonMap = new Map(closeReasons.map((c) => [c.id, c.currentLabel]));
         const planFactByTrade = new Map<string, PlanVersionFactRecord>();
         for (const f of tradeFacts) {
           const prev = planFactByTrade.get(f.tradeId);
@@ -479,11 +506,15 @@ export function createDailyReview(options: {
           marksBySymbol.set(m.symbol, list);
         }
 
-        const ackSet = new Set(
-          allAcks
-            .filter((a) => a.status === 'Active')
-            .map((a) => `${a.symbol}::${a.sessionDate}`),
-        );
+        const ackSet = new Set<string>();
+        const ackDatesBySymbol = new Map<string, string[]>();
+        for (const a of allAcks) {
+          if (a.status !== 'Active') continue;
+          ackSet.add(`${a.symbol}::${a.sessionDate}`);
+          const list = ackDatesBySymbol.get(a.symbol) ?? [];
+          list.push(a.sessionDate);
+          ackDatesBySymbol.set(a.symbol, list);
+        }
 
         const dtrEntriesByTrade = new Map<string, JournalEntryRecord[]>();
         for (const e of allEntries) {
@@ -492,6 +523,12 @@ export function createDailyReview(options: {
           list.push(e);
           dtrEntriesByTrade.set(e.tradeId, list);
         }
+
+        const sortExecs = (list: readonly ExecutionRecord[]): ExecutionRecord[] =>
+          [...list].sort((a, b) => {
+            const byTime = a.economicTime.localeCompare(b.economicTime);
+            return byTime !== 0 ? byTime : a.recordedSequence - b.recordedSequence;
+          });
 
         // StateAtEconomicCutoff(Open): trades with earliest execution exchange date <= reviewDate
         // and derived openShares > 0 as of reviewDate.
@@ -504,15 +541,19 @@ export function createDailyReview(options: {
         const openedAfterCutoffTrades: DailyReviewAfterCutoffTrade[] = [];
 
         for (const t of trades) {
-          const sorted = [...(execsByTrade.get(t.id) ?? [])].sort((a, b) => {
-            const byTime = a.economicTime.localeCompare(b.economicTime);
-            return byTime !== 0 ? byTime : a.recordedSequence - b.recordedSequence;
-          });
+          const sorted = sortExecs(execsByTrade.get(t.id) ?? []);
+          if (t.lifecycleState === 'Closed') {
+            const closedAtIso =
+              t.closedAt ?? (sorted.length > 0 ? sorted[sorted.length - 1]!.economicTime : null);
+            if (!closedAtIso || getExchangeDateForInstant(new Date(closedAtIso)) <= reviewDate) {
+              continue;
+            }
+          }
           const execsAsOf = sorted.filter(
             (ex) => getExchangeDateForInstant(new Date(ex.economicTime)) <= reviewDate,
           );
           if (execsAsOf.length === 0) {
-            if (sorted.length > 0 && t.lifecycleState === 'Open') {
+            if (sorted.length > 0 && (t.lifecycleState === 'Open' || t.lifecycleState === 'Closed')) {
               const firstDate = getExchangeDateForInstant(new Date(sorted[0]!.economicTime));
               openedAfterCutoffTrades.push({
                 tradeId: t.id,
@@ -525,7 +566,7 @@ export function createDailyReview(options: {
           }
 
           const derived = deriveLongStockPosition({
-            storedLifecycleState: t.lifecycleState,
+            storedLifecycleState: t.lifecycleState === 'Closed' ? 'Open' : t.lifecycleState,
             plan: {
               plannedQuantity: t.plannedQuantity,
               intendedEntryPrice: t.intendedEntryPrice,
@@ -732,6 +773,32 @@ export function createDailyReview(options: {
               .sort((a, b) =>
                 (a.startSessionDate ?? '').localeCompare(b.startSessionDate ?? ''),
               );
+            const replay = replayLongStockTrade(
+              assembleLongStockReplayInput({
+                tradeId: trade.id,
+                symbol: trade.symbol,
+                plan: {
+                  plannedQuantity: trade.plannedQuantity,
+                  intendedEntryPrice: trade.intendedEntryPrice,
+                  stopPrice: trade.stopPrice,
+                  targetPrice: trade.targetPrice,
+                },
+                originalPlannedRisk: trade.baseline.originalPlannedRisk,
+                originalPlannedReward: trade.baseline.originalPlannedReward,
+                sortedExecutions: execsAsOf,
+                sessions: getCompletedSessionsBetween(entrySessionDate, reviewDate),
+                cutoffDate: reviewDate,
+                effectiveMarks: symMarks.map((m) => ({
+                  sessionDate: m.sessionDate,
+                  price: m.price,
+                })),
+                acknowledgedUnavailableDates: ackDatesBySymbol.get(trade.symbol) ?? [],
+                reviewActions: extractReplayReviewActions(
+                  tradeDtrs,
+                  DAILY_TRADE_REVIEW_TYPE_ID,
+                ),
+              }),
+            );
             return {
               tradeId: trade.id,
               symbol: trade.symbol,
@@ -787,6 +854,7 @@ export function createDailyReview(options: {
               stopPrice: stopP,
               targetPrice: targetP,
               oneR: ExactNumber.fromJSON(trade.baseline.originalPlannedRisk),
+              replay,
             };
           },
         );
@@ -903,6 +971,139 @@ export function createDailyReview(options: {
           outstandingDebtIds: dueDebt.map((d) => d.debt.id),
         };
 
+        // Closed Trades up to reviewDate (viewable via Replay; D8 adds Close Review obligations)
+        const closedTrades: DailyReviewClosedTradeItem[] = [];
+        for (const t of trades) {
+          if (t.lifecycleState !== 'Closed') continue;
+          const sorted = sortExecs(execsByTrade.get(t.id) ?? []);
+          const closedAtIso =
+            t.closedAt ?? (sorted.length > 0 ? sorted[sorted.length - 1]!.economicTime : null);
+          const rawClosedDate = closedAtIso
+            ? getExchangeDateForInstant(new Date(closedAtIso))
+            : null;
+
+          let effectiveClosedDate = rawClosedDate;
+          let effectiveClosedIso = closedAtIso;
+          let cutoffExecs = sorted;
+
+          if (sorted.length === 0) {
+            if (rawClosedDate !== null && rawClosedDate > reviewDate) {
+              continue;
+            }
+          } else if (rawClosedDate === null || rawClosedDate > reviewDate) {
+            const execsAsOf = sorted.filter(
+              (ex) => getExchangeDateForInstant(new Date(ex.economicTime)) <= reviewDate,
+            );
+            if (execsAsOf.length === 0) continue;
+            const derivedAsOf = deriveLongStockPosition({
+              storedLifecycleState: 'Closed',
+              plan: {
+                plannedQuantity: t.plannedQuantity,
+                intendedEntryPrice: t.intendedEntryPrice,
+                stopPrice: t.stopPrice,
+                targetPrice: t.targetPrice,
+              },
+              originalPlannedRisk: t.baseline.originalPlannedRisk,
+              executions: execsAsOf,
+            });
+            if (isPositive(derivedAsOf.openShares) || derivedAsOf.oversold) {
+              continue;
+            }
+            cutoffExecs = execsAsOf;
+            effectiveClosedIso = execsAsOf[execsAsOf.length - 1]!.economicTime;
+            effectiveClosedDate = getExchangeDateForInstant(new Date(effectiveClosedIso));
+          }
+
+          const derived = deriveLongStockPosition({
+            storedLifecycleState: t.lifecycleState,
+            plan: {
+              plannedQuantity: t.plannedQuantity,
+              intendedEntryPrice: t.intendedEntryPrice,
+              stopPrice: t.stopPrice,
+              targetPrice: t.targetPrice,
+            },
+            originalPlannedRisk: t.baseline.originalPlannedRisk,
+            executions: cutoffExecs,
+          });
+          const closeReasonLabel = t.closeReasonId
+            ? (closeReasonMap.get(t.closeReasonId) ?? null)
+            : null;
+          const baseItem = {
+            tradeId: t.id,
+            symbol: t.symbol,
+            strategyLabel: stratMap.get(t.strategyId) ?? 'Long Stock',
+            accountLabel: acctMap.get(t.accountId) ?? 'Account',
+            institutionLabel: instMap.get(t.institutionId) ?? 'Institution',
+            closedAtShort: effectiveClosedDate
+              ? formatSessionDateShort(effectiveClosedDate)
+              : 'Unknown date',
+            closedAtIso: effectiveClosedIso ?? '',
+            terminalDisposition:
+              t.terminalDisposition ?? derived.terminalDisposition ?? 'Closed',
+            closeReasonLabel,
+            realizedPnl: derived.realizedPnl,
+            realizedPnlDisplay: derived.realizedPnlDisplay,
+            realizedRDisplay: derived.realizedRDisplay,
+          };
+
+          if (cutoffExecs.length === 0) {
+            closedTrades.push({
+              ...baseItem,
+              integrityBlockedReason: 'Stored lifecycle (Closed) has no recorded executions.',
+              replay: null,
+            });
+            continue;
+          }
+
+          if (derived.integrityDisagreement) {
+            closedTrades.push({
+              ...baseItem,
+              integrityBlockedReason: `Stored lifecycle (${t.lifecycleState}) disagrees with derived position (${derived.derivedLifecycleState}).`,
+              replay: null,
+            });
+            continue;
+          }
+
+          const firstExecDate = getExchangeDateForInstant(new Date(cutoffExecs[0]!.economicTime));
+          const closedSessionDate = effectiveClosedDate!;
+          const symMarks = marksBySymbol.get(t.symbol) ?? [];
+          const tradeDtrs = dtrEntriesByTrade.get(t.id) ?? [];
+
+          const replay = replayLongStockTrade(
+            assembleLongStockReplayInput({
+              tradeId: t.id,
+              symbol: t.symbol,
+              plan: {
+                plannedQuantity: t.plannedQuantity,
+                intendedEntryPrice: t.intendedEntryPrice,
+                stopPrice: t.stopPrice,
+                targetPrice: t.targetPrice,
+              },
+              originalPlannedRisk: t.baseline.originalPlannedRisk,
+              originalPlannedReward: t.baseline.originalPlannedReward,
+              sortedExecutions: cutoffExecs,
+              sessions: getCompletedSessionsBetween(firstExecDate, closedSessionDate),
+              cutoffDate: closedSessionDate,
+              effectiveMarks: symMarks.map((m) => ({
+                sessionDate: m.sessionDate,
+                price: m.price,
+              })),
+              acknowledgedUnavailableDates: ackDatesBySymbol.get(t.symbol) ?? [],
+              reviewActions: extractReplayReviewActions(
+                tradeDtrs,
+                DAILY_TRADE_REVIEW_TYPE_ID,
+              ),
+            }),
+          );
+
+          closedTrades.push({
+            ...baseItem,
+            integrityBlockedReason: null,
+            replay,
+          });
+        }
+        closedTrades.sort((a, b) => b.closedAtIso.localeCompare(a.closedAtIso));
+
         return {
           reviewDate,
           reviewDateShort: formatSessionDateShort(reviewDate),
@@ -912,6 +1113,7 @@ export function createDailyReview(options: {
           skippedSessions,
           dueDebt,
           trades: tradeItems,
+          closedTrades,
           openedAfterCutoffTrades,
           daySummary: {
             dayPnlChangeDisplay: hasAnyDayChg ? toMoneyString(dayChgTotal, true) : null,

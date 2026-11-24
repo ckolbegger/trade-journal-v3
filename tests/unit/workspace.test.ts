@@ -132,7 +132,6 @@ describe('Workspace seam', () => {
     expect(opened.fresh).toBe(true);
     expect(opened.workspaceStatus.timeZone).toBe('America/New_York');
     expect(opened.workspaceStatus.onboardingState).toBe('NeedsInstitutionAndAccount');
-    expect(opened.workspaceStatus.capabilities.releaseDeliverable).toBe('D6');
 
     const freshCloseReasons = await catalog.query({ family: 'CloseReason', includeInactive: false });
     expect(freshCloseReasons.items).toHaveLength(4);
@@ -153,6 +152,26 @@ describe('Workspace seam', () => {
       expect(afterAccounts.workspaceStatus.onboardingState).toBe('ReadyForTradePlanning');
       expect(afterAccounts.workspaceStatus.selectableAccountCount).toBe(1);
     }
+  });
+
+  it('advertises the D7 capability manifest while keeping persistence schemaVersion at 6', async () => {
+    const { workspace, persistence } = createWorkspaceHarness();
+    const opened = await workspace.initialize({ proposedTimeZone: 'America/New_York' });
+    expect(opened.status).toBe('Opened');
+    if (opened.status !== 'Opened') return;
+
+    const meta = await persistence.runReadTransaction(['workspace_meta'], (tx) =>
+      tx.get('workspace_meta', 'singleton'),
+    );
+    expect(meta?.schemaVersion).toBe(6);
+    expect(opened.workspaceStatus.capabilities.manifestVersion).toBe(7);
+    expect(opened.workspaceStatus.capabilities.releaseDeliverable).toBe('D7');
+    expect(opened.workspaceStatus.capabilities.operations).toEqual(
+      expect.arrayContaining([
+        'TradeAnalysis.replay',
+        'TradeViewsAndReporting.replayTrade',
+      ]),
+    );
   });
 
   it('saves time zone with optimistic revision, returns complete post-commit status, and enters RecoveryOnly if readiness later fails', async () => {

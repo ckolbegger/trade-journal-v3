@@ -23,7 +23,7 @@ import { PriceTrack } from './PriceTrack';
 import { RecordEntryPanel } from './RecordEntryPanel';
 import { RecordExitPanel } from './RecordExitPanel';
 
-type CockpitDrawer = 'today' | 'position' | 'plan' | 'history' | 'journal';
+export type CockpitDrawer = 'today' | 'position' | 'plan' | 'history' | 'journal';
 
 interface TradeDetailCockpitProps {
   readonly tradeId: string;
@@ -34,8 +34,15 @@ interface TradeDetailCockpitProps {
   readonly clock: Clock;
   readonly writable: boolean;
   readonly refreshKey: number;
+  readonly requestedDrawer?: {
+    readonly tradeId: string;
+    readonly drawer: CockpitDrawer;
+    readonly requestKey: number;
+  } | null;
   readonly onBack: () => void;
   readonly onGoToReview: () => void;
+  readonly onOpenReplay: (tradeId: string, triggerEl?: HTMLElement | null) => void;
+  readonly onDrawerRequestConsumed?: (requestKey: number) => void;
   readonly onTradeMutated: () => void;
   readonly onDirtyChange: (dirty: boolean) => void;
 }
@@ -67,12 +74,19 @@ export function TradeDetailCockpit({
   clock,
   writable,
   refreshKey,
+  requestedDrawer,
   onBack,
   onGoToReview,
+  onOpenReplay,
+  onDrawerRequestConsumed,
   onTradeMutated,
   onDirtyChange,
 }: TradeDetailCockpitProps) {
   const loadSeqRef = useRef(0);
+  const lastAppliedDrawerKeyRef = useRef<number | null>(null);
+  const pendingHistoryFocusRef = useRef(false);
+  const historyHeadingRef = useRef<HTMLHeadingElement | null>(null);
+  const positionHeadingRef = useRef<HTMLHeadingElement | null>(null);
   const [detail, setDetail] = useState<TradeDetailCockpitViewModel | null>(null);
   const [closeReasons, setCloseReasons] = useState<readonly CloseReasonRecord[]>([]);
   const [closeReasonsUnavailable, setCloseReasonsUnavailable] = useState(false);
@@ -117,12 +131,64 @@ export function TradeDetailCockpit({
   }, [tradeId, views, catalog]);
 
   useEffect(() => {
+    pendingHistoryFocusRef.current = false;
     setLoading(true);
     setShowRecordEntry(false);
     setShowRecordExit(false);
     setActiveDrawer('plan');
     void loadDetail();
   }, [loadDetail]);
+
+  useEffect(() => {
+    if (
+      requestedDrawer &&
+      requestedDrawer.tradeId === tradeId &&
+      requestedDrawer.requestKey !== lastAppliedDrawerKeyRef.current
+    ) {
+      lastAppliedDrawerKeyRef.current = requestedDrawer.requestKey;
+      setActiveDrawer(requestedDrawer.drawer);
+      if (requestedDrawer.drawer === 'history') {
+        pendingHistoryFocusRef.current = true;
+      }
+      onDrawerRequestConsumed?.(requestedDrawer.requestKey);
+    }
+  }, [tradeId, requestedDrawer, onDrawerRequestConsumed]);
+
+  useEffect(() => {
+    if (loading || !detail || !pendingHistoryFocusRef.current) {
+      return;
+    }
+    if (activeDrawer === 'history') {
+      if (detail.priceHistory.length === 0) {
+        const hasPos =
+          detail.derived.openLots.length > 0 ||
+          detail.derived.lotMatches.length > 0 ||
+          detail.executions.length > 0 ||
+          detail.trade.lifecycleState === 'Open' ||
+          detail.trade.lifecycleState === 'Closed';
+        if (hasPos) {
+          setActiveDrawer('position');
+        } else {
+          pendingHistoryFocusRef.current = false;
+        }
+        return;
+      }
+      pendingHistoryFocusRef.current = false;
+      const rafId = requestAnimationFrame(() => {
+        historyHeadingRef.current?.focus();
+      });
+      return () => cancelAnimationFrame(rafId);
+    }
+    if (activeDrawer === 'position') {
+      pendingHistoryFocusRef.current = false;
+      const rafId = requestAnimationFrame(() => {
+        positionHeadingRef.current?.focus();
+      });
+      return () => cancelAnimationFrame(rafId);
+    }
+    pendingHistoryFocusRef.current = false;
+    return undefined;
+  }, [loading, activeDrawer, detail]);
 
   useEffect(() => {
     if (refreshKey > 0) {
@@ -181,6 +247,9 @@ export function TradeDetailCockpit({
     (trade.lifecycleState === 'Planned' || trade.lifecycleState === 'Open');
   const canRecordExit =
     writable && !derived.integrityDisagreement && trade.lifecycleState === 'Open';
+  const canReplay =
+    !derived.integrityDisagreement &&
+    (trade.lifecycleState === 'Open' || isClosed);
 
   const defaultEntryPriceNumeric = toDecimalString(
     ExactNumber.fromJSON(trade.intendedEntryPrice),
@@ -297,34 +366,45 @@ export function TradeDetailCockpit({
                 {detail.institutionLabel}, {detail.accountLabel}
               </div>
             </div>
-            {(canRecordEntry || canRecordExit) && !showRecordEntry && !showRecordExit && (
-              <div className={cockpitStyles.railActions}>
-                {canRecordEntry && (
-                  <button
-                    type="button"
-                    className={styles.btnPrimary}
-                    onClick={() => {
-                      setShowRecordExit(false);
-                      setShowRecordEntry(true);
-                    }}
-                  >
-                    Record entry
-                  </button>
-                )}
-                {canRecordExit && (
-                  <button
-                    type="button"
-                    className={styles.btnSecondary}
-                    onClick={() => {
-                      setShowRecordEntry(false);
-                      setShowRecordExit(true);
-                    }}
-                  >
-                    Record exit
-                  </button>
-                )}
-              </div>
-            )}
+            {(canRecordEntry || canRecordExit || canReplay) &&
+              !showRecordEntry &&
+              !showRecordExit && (
+                <div className={cockpitStyles.railActions}>
+                  {canRecordEntry && (
+                    <button
+                      type="button"
+                      className={styles.btnPrimary}
+                      onClick={() => {
+                        setShowRecordExit(false);
+                        setShowRecordEntry(true);
+                      }}
+                    >
+                      Record entry
+                    </button>
+                  )}
+                  {canRecordExit && (
+                    <button
+                      type="button"
+                      className={styles.btnSecondary}
+                      onClick={() => {
+                        setShowRecordEntry(false);
+                        setShowRecordExit(true);
+                      }}
+                    >
+                      Record exit
+                    </button>
+                  )}
+                  {canReplay && (
+                    <button
+                      type="button"
+                      className={styles.btnSecondary}
+                      onClick={(e) => onOpenReplay(trade.id, e.currentTarget)}
+                    >
+                      Replay
+                    </button>
+                  )}
+                </div>
+              )}
           </div>
 
           {/* Card 2: P&L & Open Shares (Closed shows Final Realized P&L + R; Open shows live or prior-session fallback) */}
@@ -713,7 +793,12 @@ export function TradeDetailCockpit({
           {activeDrawer === 'position' && hasPositionDrawer && (
             <div className={styles.card} role="tabpanel" aria-label="Position">
               <div className={styles.spaceBetween} style={{ marginBottom: 12 }}>
-                <h2 className={styles.cardTitle} style={{ margin: 0 }}>
+                <h2
+                  ref={positionHeadingRef}
+                  tabIndex={-1}
+                  className={styles.cardTitle}
+                  style={{ margin: 0 }}
+                >
                   {isClosed ? 'Lot Matches & Executions' : 'Open Lots & Executions'}
                 </h2>
                 {!isClosed && !liveEval && <span className={styles.pill}>No Marks yet</span>}
@@ -1027,12 +1112,23 @@ export function TradeDetailCockpit({
           {activeDrawer === 'history' && hasHistoryDrawer && (
             <div className={styles.card} role="tabpanel" aria-label="Price History">
               <div className={styles.spaceBetween} style={{ marginBottom: 12 }}>
-                <h2 className={styles.cardTitle} style={{ margin: 0 }}>
+                <h2 ref={historyHeadingRef} tabIndex={-1} className={styles.cardTitle} style={{ margin: 0 }}>
                   Price History (Completed Sessions)
                 </h2>
-                <button type="button" className={styles.btnSecondary} onClick={onGoToReview}>
-                  Enter Marks in the Review
-                </button>
+                <div className={styles.row}>
+                  {canReplay && (
+                    <button
+                      type="button"
+                      className={styles.btnSecondary}
+                      onClick={(e) => onOpenReplay(trade.id, e.currentTarget)}
+                    >
+                      Replay
+                    </button>
+                  )}
+                  <button type="button" className={styles.btnSecondary} onClick={onGoToReview}>
+                    Enter Marks in the Review
+                  </button>
+                </div>
               </div>
               <div style={{ overflowX: 'auto' }}>
                 <table className={styles.table} aria-label="Price history">
