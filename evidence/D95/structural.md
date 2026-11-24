@@ -977,3 +977,7 @@ Commits `3d423c43` (B1: the justified Hold saved and asserted for target too; mu
 ocr of T95.44-B1, T95.44-B2 (session 052ff93d): 2 files, 0 findings. `evidence/D95/ocr/T95.44-B1-B2-ca2069f0.json`. Next: run `t95.44-integration-b` (browser-task, Standard).
 
 Run `t95.44-integration-b` (browser-task): unit 3086, integration 363, browser 25, checks 14 of 14. Passed. T95.44 done.
+
+### T95.45 (in part)
+
+Commit `78d30f66`: B95.6 action.spec.ts (4), B95.7 refusal.spec.ts (6), B95.8 sale.spec.ts (6; closing-sale cases set the sale time to 11:00 so the Trade leaves the walk; nothing asserted about where an open Trade owing a reflection sits), B95.9 exit-banner.spec.ts (4) — 18 cases, at 1280 and 375 (atBothWidths), all first-run passes, each mutation-checked (two first mutations redone after making assertions exact); e2e/d95 40 passed. **B95.10 upgrade.spec.ts not written**: it needs a served D9 release; dist-releases stops at d5r2; adding a `d9r2` entry to tools/build-releases.ts was tried, its build denied by the permission classifier, and reverted — put to the user. Focus note (agent's, low) to tech-debt.md.
