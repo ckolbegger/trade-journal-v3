@@ -1,0 +1,317 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 18 selected item(s).",
+  "summary": {
+    "files_reviewed": 18,
+    "comments": 3,
+    "total_tokens": 619398,
+    "input_tokens": 613613,
+    "output_tokens": 5785,
+    "cache_read_tokens": 89728,
+    "elapsed": "1m34s"
+  },
+  "tool_calls": {
+    "total": 66,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 14,
+      "file_read": 46,
+      "file_read_diff": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/ReviewView.tsx",
+      "content": "This heading now describes every owed trade as closed and owing a Close Review, but `owedGroup` includes any trade outside the walk with outstanding debt, including open trades entered after the cutoff with only a Position Change Reflection. `ReviewOwed.test.tsx` still exercises exactly that case (DEF). Those open positions will now appear under “Closed · Close Review,” contradicting their lifecycle badge and hiding the nature of their work. Split out the closed/Close Review subset for this heading, or retain an accurate generic heading for mixed owed trades; update the relocation notice consistently.",
+      "existing_code": "          \u003ch2 id=\"owed-group-heading\"\u003eClosed · Close Review\u003c/h2\u003e",
+      "start_line": 601,
+      "end_line": 601,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/PositionChangeFormBody.tsx",
+      "content": "The in-card back button calls `onDone` directly, which sets `selling` to false and unmounts the execution form even when it contains unsaved values. Unlike switching Review cards, typing part of a sale and pressing “Back to the Review” silently loses it without the save/discard refusal. Route this dismissal through a dirty-form guard (while allowing an explicit discard) and cover this local back path in a test.",
+      "existing_code": "    \u003cbutton type=\"button\" className=\"pill secondary\" onClick={onDone}\u003e",
+      "start_line": 88,
+      "end_line": 88,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/ActionForm.tsx",
+      "content": "The closing-sale refresh result is ignored and `refreshOwed` is cleared before the refresh succeeds. `refreshTrade` can return false when reopening the Review fails, without displaying an error itself. In that case the receipt disappears, the closed Trade remains in the active walk with stale figures, and leaving the card no longer triggers the deferred refresh. Await the refresh and retain a retryable failure state/deferred refresh until it succeeds; apply equivalent failure handling to the partial-sale refresh.",
+      "existing_code": "          if (refreshOwed.current) void onRefresh();\n          refreshOwed.current = false;",
+      "start_line": 298,
+      "end_line": 299,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Review cards, shared titles, styling, and review flow tests",
+      "files": [
+        "e2e/d6/close-review.spec.ts",
+        "e2e/d6/responsive-a11y.spec.ts",
+        "e2e/d7/review-expiration.spec.ts",
+        "src/ui/app.css",
+        "src/ui/screens/CardTitle.tsx",
+        "src/ui/screens/ReviewCard.tsx",
+        "src/ui/screens/ReviewCards.test.tsx",
+        "src/ui/screens/ReviewOwed.test.tsx",
+        "src/ui/screens/ReviewOwedCard.tsx",
+        "src/ui/screens/ReviewView.tsx"
+      ]
+    },
+    {
+      "label": "Sale and position-change forms, receipts, and tests",
+      "files": [
+        "e2e/d95/sale-form.spec.ts",
+        "src/ui/screens/ActionForm.test.tsx",
+        "src/ui/screens/ActionForm.tsx",
+        "src/ui/screens/PositionChangeFormBody.tsx",
+        "src/ui/screens/PositionChangeReceipt.tsx",
+        "src/ui/screens/option-disposition.ts"
+      ]
+    },
+    {
+      "label": "Exit form and receipt",
+      "files": [
+        "src/ui/screens/ExitForm.tsx",
+        "src/ui/screens/ExitReceipt.tsx"
+      ]
+    }
+  ],
+  "session_id": "a59ae1e9-81b3-464f-b74e-b5c7f30c7583",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "a59ae1e9-81b3-464f-b74e-b5c7f30c7583",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "25cc8ba3",
+      "resolved_base": "7e2601cc6c45d57493b6e2256f77aefc0f9cf437",
+      "resolved_head": "25cc8ba36cfafbb2e586960c7f2b91fff2603c1a",
+      "exact_range": "7e2601cc6c45d57493b6e2256f77aefc0f9cf437..25cc8ba36cfafbb2e586960c7f2b91fff2603c1a",
+      "source_artifact_sha256": "d3d7606d0294b87780b76878a614e1ca2c7e38320ac40c4d7a1e73bfa09456bc"
+    },
+    "execution": {
+      "ocr_version": "v1.14.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "06129f7bc0959665459bced5dd2b2fe42e6eefa20b943b5bcb22e15d914c46d2",
+          "path": "src/ui/screens/ReviewCards.test.tsx",
+          "fingerprint": "062c94def2fbe5709854212a8cec438ba960659620c514cd6547ebd4401179d5"
+        },
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "0aa2d9a936778addd2f8c6dca06d541db1a126422954ae72ccdc2a71d7837480"
+        },
+        {
+          "item_id": "1ccbf570ad6e384cc56076140f1fc24d78ea6b24b2df44390628e2db1dbc8609",
+          "path": "e2e/d7/review-expiration.spec.ts",
+          "fingerprint": "d497b816086bc3e35298a7be04da70b633e9a0867156ba92828b3469da6a7d63"
+        },
+        {
+          "item_id": "24130375af365892078c5278d207f29c6a19460b3f37d71486e36571ba82b0b5",
+          "path": "e2e/d6/close-review.spec.ts",
+          "fingerprint": "6de1d9985d7516274a08784133921f53de7dcb8aa7d77bad895dc6aa1b4338cb"
+        },
+        {
+          "item_id": "28d9dac30140868b5ff82f3128fe52a527534ffce26da1ec10da0741844bd9af",
+          "path": "src/ui/screens/ActionForm.tsx",
+          "fingerprint": "5e1cd7fcc6760d4799309b412ee68cadd35062797e7465f4807d25d8f99930ba"
+        },
+        {
+          "item_id": "2a7cf82e9b1b9e0377c987ba61198d4c53a248a7ba0e28868608fb81e568b56c",
+          "path": "src/ui/screens/ActionForm.test.tsx",
+          "fingerprint": "44a24a88898cac04c285a4ef4ffaad3dc92d97a462acbafa13e07e4c0954a114"
+        },
+        {
+          "item_id": "3a4a5637a6695e81d787acb39ab7ab5416cd1102b71b9ac15dc972753363dd61",
+          "path": "e2e/d95/sale-form.spec.ts",
+          "fingerprint": "c487b8bc2e0dcc4be8b05f255572eddb5e3dae462eec04f22d38bd3382606e8f"
+        },
+        {
+          "item_id": "3b19891a8713f43c2aa08f50a42cf3abbe4d166f7d44b7ccfe76ba2b19a154b8",
+          "path": "src/ui/screens/PositionChangeReceipt.tsx",
+          "fingerprint": "e1f9757d4b08b61e1313d8b9f6046d0da667e0f779c1988cb858a34104b98bdb"
+        },
+        {
+          "item_id": "4b0976901ac969b53089b0385e364130b4fffa8f0eea854b0a99083e7af51265",
+          "path": "src/ui/screens/ExitForm.tsx",
+          "fingerprint": "dcab89ff78129fefe2dce26e4bb83b3881618074956730bc6bb4e1bfa993fe74"
+        },
+        {
+          "item_id": "4f6cb7d33708d2ec6ba56caabfdcacaef771172f55d6690df1ca86605d86a205",
+          "path": "src/ui/screens/PositionChangeFormBody.tsx",
+          "fingerprint": "64434dd4adcc805471dfdae9842bf6f62f4b73f5155026780c1cf1e5ffb739f6"
+        },
+        {
+          "item_id": "653efb2b31237e13c5a1037d87974037711d91bbb8af348fbeb9bb265663c1ef",
+          "path": "src/ui/screens/option-disposition.ts",
+          "fingerprint": "b6f4e678a2a3284867c6eade82a1d25453bc3b43411fd6590b8daa0651cd3a4b"
+        },
+        {
+          "item_id": "658cacd7d8755bc419d3c8b2dc3f0b93468308fa9e366c831087e003312a3c83",
+          "path": "src/ui/screens/ReviewOwedCard.tsx",
+          "fingerprint": "f34bbc885312afb8fab4b8612d0ee5486d2b379b2a22008cb116697f3d46edd1"
+        },
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "d4668585609a95480824e50096beace73bbdfd54dfbf32ba528d58e8784a8fdd"
+        },
+        {
+          "item_id": "7d52d85a5dcc833fee5642e16c8942b905a440aeb3b90a8ad3a47ff2762f257a",
+          "path": "src/ui/screens/ExitReceipt.tsx",
+          "fingerprint": "4418fdb7c750253196c664b647163cda61905b39e57ee2981bd423e15a6162f9"
+        },
+        {
+          "item_id": "b169bbc1169af941819451b604d5f961123e02963b7f31daace07c71fb3f7bbc",
+          "path": "src/ui/screens/CardTitle.tsx",
+          "fingerprint": "9d9a59f1b8e81741dddf2a06de2dc23bdf8f294a812910458a3d496084a3a86b"
+        },
+        {
+          "item_id": "c2fd486111638d00f0d387a09d3b1d932d274fd2e5443262caf354d5c4d2756f",
+          "path": "e2e/d6/responsive-a11y.spec.ts",
+          "fingerprint": "c5d21488ecdcf87980e2b7ecb5278a310bef9829d4616440e3e67c83d2d6582a"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "917433057136bcba26cf7df5e8cda455848ad323a65c8958cfda74e1bc90e6b2"
+        },
+        {
+          "item_id": "f60d40a2fcf211e72668946f9d6c2357941e916774d36dd5cb14b2a35255d3a9",
+          "path": "src/ui/screens/ReviewOwed.test.tsx",
+          "fingerprint": "97b15c16c4472d2bad75504ae9c12294e17e0301cf6db706b2460703ff85f28f"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "06129f7bc0959665459bced5dd2b2fe42e6eefa20b943b5bcb22e15d914c46d2",
+          "path": "src/ui/screens/ReviewCards.test.tsx",
+          "fingerprint": "062c94def2fbe5709854212a8cec438ba960659620c514cd6547ebd4401179d5"
+        },
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "0aa2d9a936778addd2f8c6dca06d541db1a126422954ae72ccdc2a71d7837480"
+        },
+        {
+          "item_id": "1ccbf570ad6e384cc56076140f1fc24d78ea6b24b2df44390628e2db1dbc8609",
+          "path": "e2e/d7/review-expiration.spec.ts",
+          "fingerprint": "d497b816086bc3e35298a7be04da70b633e9a0867156ba92828b3469da6a7d63"
+        },
+        {
+          "item_id": "24130375af365892078c5278d207f29c6a19460b3f37d71486e36571ba82b0b5",
+          "path": "e2e/d6/close-review.spec.ts",
+          "fingerprint": "6de1d9985d7516274a08784133921f53de7dcb8aa7d77bad895dc6aa1b4338cb"
+        },
+        {
+          "item_id": "28d9dac30140868b5ff82f3128fe52a527534ffce26da1ec10da0741844bd9af",
+          "path": "src/ui/screens/ActionForm.tsx",
+          "fingerprint": "5e1cd7fcc6760d4799309b412ee68cadd35062797e7465f4807d25d8f99930ba"
+        },
+        {
+          "item_id": "2a7cf82e9b1b9e0377c987ba61198d4c53a248a7ba0e28868608fb81e568b56c",
+          "path": "src/ui/screens/ActionForm.test.tsx",
+          "fingerprint": "44a24a88898cac04c285a4ef4ffaad3dc92d97a462acbafa13e07e4c0954a114"
+        },
+        {
+          "item_id": "3a4a5637a6695e81d787acb39ab7ab5416cd1102b71b9ac15dc972753363dd61",
+          "path": "e2e/d95/sale-form.spec.ts",
+          "fingerprint": "c487b8bc2e0dcc4be8b05f255572eddb5e3dae462eec04f22d38bd3382606e8f"
+        },
+        {
+          "item_id": "3b19891a8713f43c2aa08f50a42cf3abbe4d166f7d44b7ccfe76ba2b19a154b8",
+          "path": "src/ui/screens/PositionChangeReceipt.tsx",
+          "fingerprint": "e1f9757d4b08b61e1313d8b9f6046d0da667e0f779c1988cb858a34104b98bdb"
+        },
+        {
+          "item_id": "4b0976901ac969b53089b0385e364130b4fffa8f0eea854b0a99083e7af51265",
+          "path": "src/ui/screens/ExitForm.tsx",
+          "fingerprint": "dcab89ff78129fefe2dce26e4bb83b3881618074956730bc6bb4e1bfa993fe74"
+        },
+        {
+          "item_id": "4f6cb7d33708d2ec6ba56caabfdcacaef771172f55d6690df1ca86605d86a205",
+          "path": "src/ui/screens/PositionChangeFormBody.tsx",
+          "fingerprint": "64434dd4adcc805471dfdae9842bf6f62f4b73f5155026780c1cf1e5ffb739f6"
+        },
+        {
+          "item_id": "653efb2b31237e13c5a1037d87974037711d91bbb8af348fbeb9bb265663c1ef",
+          "path": "src/ui/screens/option-disposition.ts",
+          "fingerprint": "b6f4e678a2a3284867c6eade82a1d25453bc3b43411fd6590b8daa0651cd3a4b"
+        },
+        {
+          "item_id": "658cacd7d8755bc419d3c8b2dc3f0b93468308fa9e366c831087e003312a3c83",
+          "path": "src/ui/screens/ReviewOwedCard.tsx",
+          "fingerprint": "f34bbc885312afb8fab4b8612d0ee5486d2b379b2a22008cb116697f3d46edd1"
+        },
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "d4668585609a95480824e50096beace73bbdfd54dfbf32ba528d58e8784a8fdd"
+        },
+        {
+          "item_id": "7d52d85a5dcc833fee5642e16c8942b905a440aeb3b90a8ad3a47ff2762f257a",
+          "path": "src/ui/screens/ExitReceipt.tsx",
+          "fingerprint": "4418fdb7c750253196c664b647163cda61905b39e57ee2981bd423e15a6162f9"
+        },
+        {
+          "item_id": "b169bbc1169af941819451b604d5f961123e02963b7f31daace07c71fb3f7bbc",
+          "path": "src/ui/screens/CardTitle.tsx",
+          "fingerprint": "9d9a59f1b8e81741dddf2a06de2dc23bdf8f294a812910458a3d496084a3a86b"
+        },
+        {
+          "item_id": "c2fd486111638d00f0d387a09d3b1d932d274fd2e5443262caf354d5c4d2756f",
+          "path": "e2e/d6/responsive-a11y.spec.ts",
+          "fingerprint": "c5d21488ecdcf87980e2b7ecb5278a310bef9829d4616440e3e67c83d2d6582a"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "917433057136bcba26cf7df5e8cda455848ad323a65c8958cfda74e1bc90e6b2"
+        },
+        {
+          "item_id": "f60d40a2fcf211e72668946f9d6c2357941e916774d36dd5cb14b2a35255d3a9",
+          "path": "src/ui/screens/ReviewOwed.test.tsx",
+          "fingerprint": "97b15c16c4472d2bad75504ae9c12294e17e0301cf6db706b2460703ff85f28f"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "8a2a2a1098f93892f0c295fdc551c67a5fd6b2fa787d5ebb4ade9d44c07df35d",
+          "path": "evidence/D95/tdd-log/T95.40.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 93774
+  }
+}
