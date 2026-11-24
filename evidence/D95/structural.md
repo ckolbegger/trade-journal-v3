@@ -705,3 +705,7 @@ Commit `b6d31abe` (tests and helpers only; 38 files): sale reflections in helper
 ocr of T95.29 (session 5ded078d): 39 files, 0 findings. `evidence/D95/ocr/T95.29-b6d31abe.json`. Next: run `t95.29-helpers` (browser-task).
 
 Run `t95.29-helpers` (browser-task): unit 2928, integration 329, browser 5 + 18, checks 14 of 14. Passed. T95.29 done.
+
+### T95.30
+
+Commit `e0e2a55e`: new `src/domain/trade-analysis/plan-call.ts` `planCall(evaluation)` → `{ call: 'Out' | 'Hold' | 'Unknown'; condition? }`; `ReplayedSession.planCall?` filled by `replay`. Seven cases; first-run pass flagged and mutation-checked: case 5 (either of two headline conditions). Decisions recorded (implementation-level): headline conditions from the Plan Baseline's nearest line per role (A197); Out names the reached condition, the Stop when both; Unknown names the first unreadable headline condition; an option with its contract Mark missing is Unknown even if the Underlying crossed; nothing held is Unknown. trade-analysis 287 passed.
