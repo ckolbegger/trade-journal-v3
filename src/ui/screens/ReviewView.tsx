@@ -301,8 +301,10 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
   // Only a save for the opening still shown moves the card; the Review it returned applies whatever is open.
   const saved = ({ review: post }: SavedAction, opening: number) => {
     // An asked save (Save it) goes on to the Trade pressed, not to the Action's next step: only the Review it returned is applied.
+    // Another unsaved form on the card is kept, so the Action form is read again as an ordinary save reads it.
     if (asked.current !== undefined) {
       apply({ kind: 'ActionSaved', review: post });
+      if (selection.current === opening && openId !== undefined && [...dirty.current].some((id) => id !== `action:${openId}`)) void refreshTrade(openId, opening, [`action:${openId}`]).then((ok) => setFailed(!ok));
       return;
     }
     const open = selection.current === opening;

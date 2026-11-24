@@ -1537,6 +1537,27 @@ describe('the refusal on the Trade pressed (T95.34, W128)', () => {
     expect(within(card).getByRole('button', { name: /^Action\b/ }).getAttribute('aria-expanded')).toBe('true');
   });
 
+  it('should read the Trade again after an asked Action save when a reflection is also unsaved', async () => {
+    const user = userEvent.setup();
+    const facade = cardFacade();
+    withDueReflection(facade, WALK);
+    vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'Saved', action: {} as never, review: savedPost });
+    renderReview(facade, { at: '/review?trade=t-f' });
+    await waitFor(() => expect(facade.DailyReview.getTrade).toHaveBeenCalledTimes(1));
+    const form = await within(cardOf('t-f')).findByRole('form', { name: 'Action' });
+    await user.click(within(form).getByRole('radio', { name: 'Exit' }));
+    await user.type(within(form).getAllByRole('textbox')[0]!, 'Plan changed.');
+    await startReflection(user, cardOf('t-f'));
+    await user.click(headers()[0]!);
+    const readsOfF = () => vi.mocked(facade.DailyReview.getTrade).mock.calls.filter(([request]) => request.tradeId === 't-f').length;
+    const before = readsOfF();
+
+    await user.click(within(cardOf('t-b')).getByRole('button', { name: 'Save it' }));
+
+    await waitFor(() => expect(readsOfF()).toBeGreaterThan(before));
+    expect(vi.mocked(facade.DailyReview.save).mock.calls[0]![0]).toMatchObject({ kind: 'SaveTradeAction', action: 'Exit' });
+  });
+
   it('should not refuse when only the Marks step holds typed Marks', async () => {
     const user = userEvent.setup();
     renderReview(cardFacade());
