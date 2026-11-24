@@ -14048,9 +14048,7 @@
       },
       "form": {
         "kind": "New",
-        "viewState": {
-          "selectedAction": "Hold"
-        }
+        "viewState": {}
       },
       "definitionRevision": "entry-type.daily-trade-review.revision-2"
     },
@@ -14625,9 +14623,7 @@
       },
       "form": {
         "kind": "New",
-        "viewState": {
-          "selectedAction": "Hold"
-        }
+        "viewState": {}
       },
       "definitionRevision": "entry-type.daily-trade-review.revision-2"
     },
@@ -15199,9 +15195,7 @@
       },
       "form": {
         "kind": "New",
-        "viewState": {
-          "selectedAction": "Hold"
-        }
+        "viewState": {}
       },
       "definitionRevision": "entry-type.daily-trade-review.revision-2"
     },
@@ -16051,9 +16045,7 @@
       },
       "form": {
         "kind": "New",
-        "viewState": {
-          "selectedAction": "Hold"
-        }
+        "viewState": {}
       },
       "definitionRevision": "entry-type.daily-trade-review.revision-2"
     },
@@ -16416,9 +16408,7 @@
       },
       "form": {
         "kind": "New",
-        "viewState": {
-          "selectedAction": "Hold"
-        }
+        "viewState": {}
       },
       "definitionRevision": "entry-type.daily-trade-review.revision-2"
     },
@@ -16781,9 +16771,7 @@
       },
       "form": {
         "kind": "New",
-        "viewState": {
-          "selectedAction": "Hold"
-        }
+        "viewState": {}
       },
       "definitionRevision": "entry-type.daily-trade-review.revision-2"
     },
@@ -17392,9 +17380,7 @@
       },
       "form": {
         "kind": "New",
-        "viewState": {
-          "selectedAction": "Hold"
-        }
+        "viewState": {}
       },
       "definitionRevision": "entry-type.daily-trade-review.revision-2"
     }

@@ -727,3 +727,19 @@ Commit `4803ac91`: `WalkedTrade.planCall?` and `DailyTradeReview.planCall?` (fro
 ocr of T95.31 (session 37fe31a8): 5 files, 1 finding, Doubtful (`ActionForm.tsx:83`: the `?? 'Hold'` bridge re-selects Hold when the coordinator selects nothing). Not a bug task: it is the recorded bridge, and T95.33 (items 2, 5, 10) builds the form with nothing chosen; carried to T95.33's brief. `evidence/D95/ocr/T95.31-4803ac91.json`. Next: run `t95.31-plan-call-page` (browser-auto a54d6298).
 
 Run `t95.31-plan-call-page` (browser-auto a54d6298, full tier): unit 2943 passed; browser 127, 79, 55, 129 (4 skipped) passed; integration 10 failed (d7/migration, d7s/migration two, d8/blocked I8.10, d8/round-trip three, d8r/restore three) and `verify:fixtures` failed: workspace-v5, workspace-v6, workspace-v7, backup-v5-blocked, backup-v6-blocked, backup-v7 views differ at `reviewTrades[n].form.viewState.selectedAction` (A307: Hold only when the Plan Call is Hold). P174 as amended by decision 127 allows a frozen derived-view change the redesign causes, with no figure or computation changed and the diff recorded: **T95.31-F1** updates the six `expected-views.json` at those values only.
+
+
+### T95.31-F1
+
+Updated the frozen `expected-views.json` of six fixtures for T95.31 (P174 as amended by decision 127: a derived view the redesign changes, no figure or computation changed; `dump.json` and `backup.tjbackup` untouched). Cause: a new Action's `form.viewState` is `{ selectedAction: 'Hold' }` only when the Plan Call is Hold (A307), else `{}`. The compare lists every differing path; before the edit all were `reviewTrades[n].form.viewState.selectedAction` and nothing else. After: each `"viewState": { "selectedAction": "Hold" }` became `"viewState": {}` (no Review Trade kept Hold: every one is Out or Unknown). No tool regenerates a single value, so the edit was exact-text.
+
+| Fixture | reviewTrades changed |
+| --- | --- |
+| workspace-v5 | 5 (0 to 4) |
+| workspace-v6 | 6 (0 to 5) |
+| workspace-v7 | 7 (0 to 6) |
+| backup-v5-blocked | 5 (0 to 4) |
+| backup-v6-blocked | 6 (0 to 5) |
+| backup-v7 | 7 (0 to 6) |
+
+Diff: 6 files, 36 insertions, 108 deletions (36 viewState objects, 3 lines each to `{}`). Green: `npm run verify:fixtures` OK (all workspace and backup folders views equal); the 10 integration tests (d7/migration, d7s/migration I7S.1 two, d8/blocked I8.10, d8/round-trip I8.12 three, d8r/restore I8R.6 three) pass, as do their folders (tests/integration/d7, d7s, d8, d8r) and tools fixture-views and verify-fixtures tests: 49 files, 133 tests.
