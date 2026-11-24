@@ -938,3 +938,7 @@ Commit `86f6abd9`: the effect's setup resets `gone.current = false` (StrictMode 
 ocr of T95.40-B3 (session bf621f7c): 2 files, 0 findings. `evidence/D95/ocr/T95.40-B3-86f6abd9.json`. Next: run `t95.40-sale-in-card` (browser-auto 17841c4a).
 
 Run `t95.40-sale-in-card` (browser-auto 17841c4a, full tier): unit 3073, integration 329, browser 127, 79, 55 and 131 (4 skipped), checks 14 of 14. Passed. T95.40 done. (Open: the owed group's heading for open Trades owing only a reflection, put to the user.)
+
+### T95.41
+
+Commit `1173c055`: the banner for an Exit not carried out: `ReviewTradeItem.exitCarry` {direction, held, sold?} from the new `exit-carry.ts` (the most recent Action before the Review Date is an Exit, A313; sold since = Executions after its Review Date, exchange-local; first open Position only; no added read, data-additions.md); first on the card with the day and what is held, "Sold N since"; on the day card with the reason; "I sold: record it" opens the sale form (also before today's Marks); "Still holding" hides it, saves nothing, Hold stays preselected (ReviewView state, lost on reload = a fresh open); none for an earlier Roll or Adjust; off once the Review Date's own Action is saved. Files beyond the line: the coordinator, ActionForm.tsx, ReviewView.tsx. First-run passes flagged and mutation-checked: case 6, case 7 (moved to the coordinator seam; a card-level version couldn't fail and was deleted), two "off once saved" guards. New words in new-words.md. B95.9 (exit-banner.spec.ts) left to T95.45. Browser: d95, d5r, d4 63 passed.
