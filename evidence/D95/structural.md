@@ -822,3 +822,5 @@ ocr of T95.35 (session b72baacd): 3 files, 2 findings, both Doubtful (bug tasks 
 Commits `05194184` (B1: no measure for a sold quantity not positive or above what is held; red, green) and `970dc05f` (B2: one HeldPast per reached line held past, Stop before Target; red, green). plan-exit 10 passed.
 
 ocr of T95.35-B1, T95.35-B2 (session c64bb69a): 2 files, 0 findings. `evidence/D95/ocr/T95.35-B1-B2-970dc05f.json`. Next: run `t95.35-plan-exit` (browser-task, Standard).
+
+Run `t95.35-plan-exit` (browser-task): unit 2996, integration 329, browser 24, checks 14 of 14. Passed. T95.35 done.
