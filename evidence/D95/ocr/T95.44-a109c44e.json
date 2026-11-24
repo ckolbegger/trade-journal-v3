@@ -1,0 +1,165 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 6 selected item(s).",
+  "summary": {
+    "files_reviewed": 6,
+    "comments": 2,
+    "total_tokens": 314346,
+    "input_tokens": 311973,
+    "output_tokens": 2373,
+    "cache_read_tokens": 32384,
+    "elapsed": "1m24s"
+  },
+  "tool_calls": {
+    "total": 23,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 10,
+      "file_read": 11
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "tests/integration/d95/plan-rule.test.ts",
+      "content": "The successful justified Hold is only exercised for `shallow`, although this case promises coverage for both Out trades. `target` is only checked for rejection with a missing/blank reason, so a regression that always rejects Hold at the Target would still pass. Run the successful save and Journal snapshot assertions for both trades, using each trade's ID in the expected action.",
+      "existing_code": "    expect(await saveOn(book.app, book.ids.shallow, 'Hold', 'The gap will fill.')).toMatchObject({ kind: 'Saved' });\n    const saved = await savedActions(book, book.ids.shallow);",
+      "start_line": 64,
+      "end_line": 65,
+      "category": "test",
+      "severity": "medium"
+    },
+    {
+      "path": "tests/integration/d95/seed-support.ts",
+      "content": "`shapeOf` drops `requiredWhen.promptId` and resolves option IDs against the Action prompt regardless of which prompt the condition actually references. A seeded Why? prompt with the correct Roll/Adjust option IDs but an incorrect controlling prompt therefore still equals `CONTRACT`, although Journal conditional validation would no longer require those answers. Include the controlling prompt's identity (or normalized role) in the shape and expected contract so the form-equivalence tests verify this link as well.",
+      "existing_code": "    ...('requiredWhen' in p \u0026\u0026 p.requiredWhen ? { requiredWhenOptions: p.requiredWhen.optionIds.map((id) =\u003e label(id)) } : {}),",
+      "start_line": 61,
+      "end_line": 61,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "D95 integration scenarios and shared seed support",
+      "files": [
+        "tests/integration/d95/plan-rule.test.ts",
+        "tests/integration/d95/rebuild.test.ts",
+        "tests/integration/d95/restore-seed.test.ts",
+        "tests/integration/d95/sale-plan-exit.test.ts",
+        "tests/integration/d95/seed-6.test.ts",
+        "tests/integration/d95/seed-support.ts"
+      ]
+    }
+  ],
+  "session_id": "e50bc4dd-4b68-440c-a791-e749a0b5ee86",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "e50bc4dd-4b68-440c-a791-e749a0b5ee86",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "a109c44e",
+      "resolved_base": "e8c899306b044c699644aef38d05bb6fd8696244",
+      "resolved_head": "a109c44ef1204c1ef72e1983f61ce79cd1f2cde3",
+      "exact_range": "e8c899306b044c699644aef38d05bb6fd8696244..a109c44ef1204c1ef72e1983f61ce79cd1f2cde3",
+      "source_artifact_sha256": "90a1ce1b78c8b099add1ed4fb858e9080957e61127bb7815b6a584d45e26efc6"
+    },
+    "execution": {
+      "ocr_version": "v1.14.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "1cb74d36bcbae8a79569fb2c8e3277ce96a79dbb48735fe60a58e58aeefce42b",
+          "path": "tests/integration/d95/seed-6.test.ts",
+          "fingerprint": "e997e41680e4d9112b57b91a8a2c85e8befbfb65006adccff6900778cd3b037a"
+        },
+        {
+          "item_id": "465abfb0c66d16ed2b375d0cfb99848fe14fa83c16dd12f39329b1cfefbd17c7",
+          "path": "tests/integration/d95/rebuild.test.ts",
+          "fingerprint": "e0ca8814eb5527a08cd19708aff6127bd5823d7a8c8ac6fe8a2c08cf2c5caca8"
+        },
+        {
+          "item_id": "617d66167ca02ee1d5230593841abe7ba94e03c4ef4a547731a9f2ef6caa7fd2",
+          "path": "tests/integration/d95/seed-support.ts",
+          "fingerprint": "a3008bb858b4d9a88ae1454dfad86dc0df0505a5a71c9d14eeb0aab64885033c"
+        },
+        {
+          "item_id": "92bbbf76d1b30d87d0c178f5b279d498ca73ffd59214a1f8f27dc2ffea8f8e9d",
+          "path": "tests/integration/d95/plan-rule.test.ts",
+          "fingerprint": "cab3904fcf6d89f2cb7780b2e2dfe6089fb128bd12676181065434c49566bd10"
+        },
+        {
+          "item_id": "9ca123cbf287b8d954131721d0b3d9d6eaae359aa1a6817c5ce4483692e859e6",
+          "path": "tests/integration/d95/sale-plan-exit.test.ts",
+          "fingerprint": "6c6b7417df5311c648bb8353dec8381755a673adbb4196ebfdd57c1c2b85ab86"
+        },
+        {
+          "item_id": "fe33ed6e3efcb908357a9ef3385b12ab359dca64d0088b73dcf016fcec4030c9",
+          "path": "tests/integration/d95/restore-seed.test.ts",
+          "fingerprint": "60aaa0d55264ddc023cae07fc3e296d2740a5cce716e18d8d56e7740b816f21f"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "1cb74d36bcbae8a79569fb2c8e3277ce96a79dbb48735fe60a58e58aeefce42b",
+          "path": "tests/integration/d95/seed-6.test.ts",
+          "fingerprint": "e997e41680e4d9112b57b91a8a2c85e8befbfb65006adccff6900778cd3b037a"
+        },
+        {
+          "item_id": "465abfb0c66d16ed2b375d0cfb99848fe14fa83c16dd12f39329b1cfefbd17c7",
+          "path": "tests/integration/d95/rebuild.test.ts",
+          "fingerprint": "e0ca8814eb5527a08cd19708aff6127bd5823d7a8c8ac6fe8a2c08cf2c5caca8"
+        },
+        {
+          "item_id": "617d66167ca02ee1d5230593841abe7ba94e03c4ef4a547731a9f2ef6caa7fd2",
+          "path": "tests/integration/d95/seed-support.ts",
+          "fingerprint": "a3008bb858b4d9a88ae1454dfad86dc0df0505a5a71c9d14eeb0aab64885033c"
+        },
+        {
+          "item_id": "92bbbf76d1b30d87d0c178f5b279d498ca73ffd59214a1f8f27dc2ffea8f8e9d",
+          "path": "tests/integration/d95/plan-rule.test.ts",
+          "fingerprint": "cab3904fcf6d89f2cb7780b2e2dfe6089fb128bd12676181065434c49566bd10"
+        },
+        {
+          "item_id": "9ca123cbf287b8d954131721d0b3d9d6eaae359aa1a6817c5ce4483692e859e6",
+          "path": "tests/integration/d95/sale-plan-exit.test.ts",
+          "fingerprint": "6c6b7417df5311c648bb8353dec8381755a673adbb4196ebfdd57c1c2b85ab86"
+        },
+        {
+          "item_id": "fe33ed6e3efcb908357a9ef3385b12ab359dca64d0088b73dcf016fcec4030c9",
+          "path": "tests/integration/d95/restore-seed.test.ts",
+          "fingerprint": "60aaa0d55264ddc023cae07fc3e296d2740a5cce716e18d8d56e7740b816f21f"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "c30065e38e79d84b08a243cea49d943bb38c023f1559a30260f6c9129130300e",
+          "path": "evidence/D95/tdd-log/T95.44.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 83852
+  }
+}
