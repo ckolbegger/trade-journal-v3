@@ -1,0 +1,111 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 0,
+    "total_tokens": 34265,
+    "input_tokens": 34055,
+    "output_tokens": 210,
+    "cache_read_tokens": 3328,
+    "elapsed": "12s"
+  },
+  "tool_calls": {
+    "total": 4,
+    "by_tool": {
+      "file_read": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/coordinators/trade-workflows/record-position-change.ts",
+        "src/coordinators/trade-workflows/record-sale-plan-exit.test.ts",
+        "src/coordinators/trade-workflows/sale-measure.ts"
+      ]
+    }
+  ],
+  "session_id": "fd23e829-6cfa-427c-94ac-b40441dcc5ca",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "fd23e829-6cfa-427c-94ac-b40441dcc5ca",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "c59d4ad7",
+      "resolved_base": "4dc704a0bfbdf2fe6c8f5da534fd637dc7f3b11c",
+      "resolved_head": "c59d4ad70da8c096c9626fc0b50c1a2421d4f7d0",
+      "exact_range": "4dc704a0bfbdf2fe6c8f5da534fd637dc7f3b11c..c59d4ad70da8c096c9626fc0b50c1a2421d4f7d0",
+      "source_artifact_sha256": "72ebd6a6d60a6e862c9c9d38f82a6e99a16d2be4fe08a53914719a4a603fc58f"
+    },
+    "execution": {
+      "ocr_version": "v1.14.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "3a8ecfb3dd154fcf05e5c1b2a5af46a84a9c07adb19070f5ea81a6bc85099948",
+          "path": "src/coordinators/trade-workflows/sale-measure.ts",
+          "fingerprint": "77a4fd9f3e86da90bba1a0a7d92779ed419bc7ec60e6ec2de7de791e54e57d72"
+        },
+        {
+          "item_id": "790ded636ff1a88f09622c89be62549976f9ec377429b4bc8b9b9caabe98b1c1",
+          "path": "src/coordinators/trade-workflows/record-sale-plan-exit.test.ts",
+          "fingerprint": "f3976c435bdf0cbc6de23cd4b158edccbc96baebc67fb5e9f92ba2290510f7bc"
+        },
+        {
+          "item_id": "f5361c4fd75f977f1898251826a612f6ea83d6729570ae276fdef8fb7944213f",
+          "path": "src/coordinators/trade-workflows/record-position-change.ts",
+          "fingerprint": "b1f2a7afabc847a8070b4a3bc3d204825abe6a89655a22aef9810c577fd75ce1"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "3a8ecfb3dd154fcf05e5c1b2a5af46a84a9c07adb19070f5ea81a6bc85099948",
+          "path": "src/coordinators/trade-workflows/sale-measure.ts",
+          "fingerprint": "77a4fd9f3e86da90bba1a0a7d92779ed419bc7ec60e6ec2de7de791e54e57d72"
+        },
+        {
+          "item_id": "790ded636ff1a88f09622c89be62549976f9ec377429b4bc8b9b9caabe98b1c1",
+          "path": "src/coordinators/trade-workflows/record-sale-plan-exit.test.ts",
+          "fingerprint": "f3976c435bdf0cbc6de23cd4b158edccbc96baebc67fb5e9f92ba2290510f7bc"
+        },
+        {
+          "item_id": "f5361c4fd75f977f1898251826a612f6ea83d6729570ae276fdef8fb7944213f",
+          "path": "src/coordinators/trade-workflows/record-position-change.ts",
+          "fingerprint": "b1f2a7afabc847a8070b4a3bc3d204825abe6a89655a22aef9810c577fd75ce1"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "74a0ffbbe3d22ac29534f1ad060d17c351540e53b078c717826d0608df51936b",
+          "path": "evidence/D95/tdd-log/T95.36-B4.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 11545
+  }
+}
