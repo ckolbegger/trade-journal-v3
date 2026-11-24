@@ -1,0 +1,342 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 22 selected item(s).",
+  "summary": {
+    "files_reviewed": 22,
+    "comments": 0,
+    "total_tokens": 277685,
+    "input_tokens": 273843,
+    "output_tokens": 3842,
+    "cache_read_tokens": 28288,
+    "elapsed": "56s"
+  },
+  "tool_calls": {
+    "total": 45,
+    "by_tool": {
+      "code_search": 11,
+      "file_read": 31,
+      "file_read_diff": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Daily review requirements and journal integration",
+      "files": [
+        "src/app/types.ts",
+        "src/coordinators/daily-review/daily-review.ts",
+        "src/coordinators/daily-review/owed-requires.test.ts",
+        "src/coordinators/daily-review/types.ts",
+        "src/modules/journal/effects.ts",
+        "src/modules/journal/journal.ts"
+      ]
+    },
+    {
+      "label": "Day and review card presentation",
+      "files": [
+        "src/ui/screens/DayCard.test.tsx",
+        "src/ui/screens/DayCard.tsx",
+        "src/ui/screens/ReviewCard.tsx",
+        "src/ui/screens/ReviewCards.test.tsx",
+        "src/ui/screens/todo-text.ts"
+      ]
+    },
+    {
+      "label": "Debt form and owed debt display",
+      "files": [
+        "src/ui/screens/DebtForm.test.tsx",
+        "src/ui/screens/DebtForm.tsx",
+        "src/ui/screens/OwedDebtItem.tsx"
+      ]
+    },
+    {
+      "label": "Position change and expiration workflows",
+      "files": [
+        "src/ui/screens/ExpirationForm.test.tsx",
+        "src/ui/screens/PositionChangeForm.test.tsx",
+        "src/ui/screens/PositionChangeFormBody.tsx",
+        "src/ui/screens/TradeDetail.test.tsx",
+        "tests/support/position-change-form-facade.ts"
+      ]
+    },
+    {
+      "label": "Review reflection prompts",
+      "files": [
+        "src/ui/screens/ReflectionPrompts.tsx",
+        "src/ui/screens/ReviewReflections.test.tsx",
+        "src/ui/screens/ReviewReflections.tsx"
+      ]
+    }
+  ],
+  "session_id": "3058ecc4-591c-4f91-a953-979e43c5f96a",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "3058ecc4-591c-4f91-a953-979e43c5f96a",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "f65df05c",
+      "resolved_base": "bb705a190da814e3dc6bf1028fc5652f3f11e4d4",
+      "resolved_head": "f65df05c005ba96f066afe380565060ecb61e164",
+      "exact_range": "bb705a190da814e3dc6bf1028fc5652f3f11e4d4..f65df05c005ba96f066afe380565060ecb61e164",
+      "source_artifact_sha256": "88d8d27a12fb273f79bed5d1bfef16edba5da3ee62e42e6c7f23e0a7fad70bb3"
+    },
+    "execution": {
+      "ocr_version": "v1.14.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "02d2b522fc8ad50e6ef168e466ec06ab756cf8ca676015178a348d1e1a98f989",
+          "path": "src/ui/screens/ReviewReflections.tsx",
+          "fingerprint": "1788ee79e5af1ec0a90045c6fc3a1c1ba7ba524cd917b5b9e7255e5e85a05073"
+        },
+        {
+          "item_id": "06129f7bc0959665459bced5dd2b2fe42e6eefa20b943b5bcb22e15d914c46d2",
+          "path": "src/ui/screens/ReviewCards.test.tsx",
+          "fingerprint": "d8c5cc126b650910433bbea957e430bc48a9b1bb9537361b76289c51e91086d9"
+        },
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "be63ac1ef55f768106dd90593d545cc0ef9c63ca10cec5b116c177b807f87ab4"
+        },
+        {
+          "item_id": "150741dcc4cc2f3b9795937c853b6881d9158f89b78c2fa680263d1a4ef46829",
+          "path": "src/ui/screens/DebtForm.tsx",
+          "fingerprint": "020dc0565207c493732aec48d02d66b077e329647d59b278becdee4de1e7d2e3"
+        },
+        {
+          "item_id": "291ff04d5b13885b7146bf8eb6539426032c6b8eefc18524ae85e4f8d55c3f0b",
+          "path": "src/ui/screens/DayCard.test.tsx",
+          "fingerprint": "4ea8e28c130377ceb03b469694dc2011e1d3cbcef381049f9feaf19c48f05c1c"
+        },
+        {
+          "item_id": "360f0c0c6a08d59bdc50988ff729f8031fe5275eeb735bbc6c714ef5915fa7f8",
+          "path": "src/ui/screens/DayCard.tsx",
+          "fingerprint": "55b8ace770cafdb8a930f8ce5e9d70bac1e6617a14e9f1b97d2802e5697015c3"
+        },
+        {
+          "item_id": "41e36b2fc461f001fd3da3ef154d234ed6312c47fd74d522eb021fe693bb95a6",
+          "path": "src/ui/screens/ExpirationForm.test.tsx",
+          "fingerprint": "7d02d3b4f0d77eab99086e7810443fc649af8d4cada6f41af8c5ea956d8f7b6f"
+        },
+        {
+          "item_id": "41e5b5fd9120773618275de28795e788717356305ec8adf32df169ba69aacacb",
+          "path": "src/app/types.ts",
+          "fingerprint": "5cc0566821a678bc38d3af0b6a8fc812030809c507f927c911e7f25eae7a00f1"
+        },
+        {
+          "item_id": "48116b9d3bd537ef5c41a73afe4393d3bd4fb751c48d55f646c13d09f2bdfc1a",
+          "path": "src/ui/screens/todo-text.ts",
+          "fingerprint": "46d22b5ea7ad3c9b62a9ceef7c36e564890d86accfa4a6b5bc3b462c0ae043a5"
+        },
+        {
+          "item_id": "4f6cb7d33708d2ec6ba56caabfdcacaef771172f55d6690df1ca86605d86a205",
+          "path": "src/ui/screens/PositionChangeFormBody.tsx",
+          "fingerprint": "74c2966421413fabad007705c0b230eda05b75c57563a1abcd86558eb815d338"
+        },
+        {
+          "item_id": "710ba1a8ebaf3134eff8729095ed7a9840ac0dae47b51f10fb69b069ca0ff95b",
+          "path": "src/ui/screens/OwedDebtItem.tsx",
+          "fingerprint": "121a17e2d6c094953e5d7b7de99e73bb3629f2bbd9c4d692db1961eb5146cdfd"
+        },
+        {
+          "item_id": "7fb17753390b86fe1b6b3f3e7ac2efb28db4e5172fa45c2cc1966309cca2392a",
+          "path": "tests/support/position-change-form-facade.ts",
+          "fingerprint": "345e0d7ba5c410eeed7413b20e90580fff29200d4c2d7ff6a88d5af10615d6d8"
+        },
+        {
+          "item_id": "87638b8e40a8471b5a00443528a3c98bf4752f964c11c4b564b6258d593b8716",
+          "path": "src/ui/screens/TradeDetail.test.tsx",
+          "fingerprint": "7468e1db9ec9a96f6c05dd7a64f8d2318fddbc3dc312bd0b8eef68cca6607b8f"
+        },
+        {
+          "item_id": "898ebab2d170bcc752f194c459504564703c3fd17482f450e72a33b542acd468",
+          "path": "src/coordinators/daily-review/owed-requires.test.ts",
+          "fingerprint": "2fb31c3bce22be27a9e7c7769c5509cba6179be86b9c38974f02a3b085dca1f8"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "b192b829623c8048ac6762401331c42aafb732b0d4c00861416a23c51634ffd4"
+        },
+        {
+          "item_id": "b50e9fe46417117e03fc595a50959d159d4680c568d9b5d7d7bff33a84ca0dfe",
+          "path": "src/ui/screens/PositionChangeForm.test.tsx",
+          "fingerprint": "b825b7e5eb2d1f3cdc01d7f0ba4f5814905546080aff4a8f5efa406ecd7f4dec"
+        },
+        {
+          "item_id": "b8e6ac3141c78f3f98db87b2baec46cc291fc1cf7872f6920033a9237484e1e1",
+          "path": "src/ui/screens/ReviewReflections.test.tsx",
+          "fingerprint": "e9e9ea5f567c86857ed9f489bd6074a32a2b8432e788c913ab88fb88cc8ce182"
+        },
+        {
+          "item_id": "cdb6bf19adef0a54a3abd6fa99897d6bace154a0ebff900a7b8e2c69883a9622",
+          "path": "src/ui/screens/DebtForm.test.tsx",
+          "fingerprint": "8a295c3e6cf7d579d031ab30036565a612cb37b60954aaacf0c83240b03334f3"
+        },
+        {
+          "item_id": "d5ca0db109bd5eca3585475c4cd3739bada34094523b44a916a4118276e691b6",
+          "path": "src/modules/journal/journal.ts",
+          "fingerprint": "98fc1decd6e9e8f2a12cab5f6ff0a1019462a0af9d535b772b0201c89869ac11"
+        },
+        {
+          "item_id": "e3ddf8122bc736b0309df4458fed964987e048a7af3ad05c41e33fa897907818",
+          "path": "src/ui/screens/ReflectionPrompts.tsx",
+          "fingerprint": "d9143c0045124cf5b32dc0056a301918a37a920875bbc7aa5ac12c1bbd173fe9"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "25f69d946babcdc0b38cc04b754d54e28359c30bec7993bd520b96559ff42b80"
+        },
+        {
+          "item_id": "fd1c910f754a206e66b4e66d854fe19ed7ac30adb9c39111b3b1ccc9e7046634",
+          "path": "src/modules/journal/effects.ts",
+          "fingerprint": "622cdd81d8e0517129c5bce773a1dec872c10ce3142b046d1b54146936ac4c9c"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "02d2b522fc8ad50e6ef168e466ec06ab756cf8ca676015178a348d1e1a98f989",
+          "path": "src/ui/screens/ReviewReflections.tsx",
+          "fingerprint": "1788ee79e5af1ec0a90045c6fc3a1c1ba7ba524cd917b5b9e7255e5e85a05073"
+        },
+        {
+          "item_id": "06129f7bc0959665459bced5dd2b2fe42e6eefa20b943b5bcb22e15d914c46d2",
+          "path": "src/ui/screens/ReviewCards.test.tsx",
+          "fingerprint": "d8c5cc126b650910433bbea957e430bc48a9b1bb9537361b76289c51e91086d9"
+        },
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "be63ac1ef55f768106dd90593d545cc0ef9c63ca10cec5b116c177b807f87ab4"
+        },
+        {
+          "item_id": "150741dcc4cc2f3b9795937c853b6881d9158f89b78c2fa680263d1a4ef46829",
+          "path": "src/ui/screens/DebtForm.tsx",
+          "fingerprint": "020dc0565207c493732aec48d02d66b077e329647d59b278becdee4de1e7d2e3"
+        },
+        {
+          "item_id": "291ff04d5b13885b7146bf8eb6539426032c6b8eefc18524ae85e4f8d55c3f0b",
+          "path": "src/ui/screens/DayCard.test.tsx",
+          "fingerprint": "4ea8e28c130377ceb03b469694dc2011e1d3cbcef381049f9feaf19c48f05c1c"
+        },
+        {
+          "item_id": "360f0c0c6a08d59bdc50988ff729f8031fe5275eeb735bbc6c714ef5915fa7f8",
+          "path": "src/ui/screens/DayCard.tsx",
+          "fingerprint": "55b8ace770cafdb8a930f8ce5e9d70bac1e6617a14e9f1b97d2802e5697015c3"
+        },
+        {
+          "item_id": "41e36b2fc461f001fd3da3ef154d234ed6312c47fd74d522eb021fe693bb95a6",
+          "path": "src/ui/screens/ExpirationForm.test.tsx",
+          "fingerprint": "7d02d3b4f0d77eab99086e7810443fc649af8d4cada6f41af8c5ea956d8f7b6f"
+        },
+        {
+          "item_id": "41e5b5fd9120773618275de28795e788717356305ec8adf32df169ba69aacacb",
+          "path": "src/app/types.ts",
+          "fingerprint": "5cc0566821a678bc38d3af0b6a8fc812030809c507f927c911e7f25eae7a00f1"
+        },
+        {
+          "item_id": "48116b9d3bd537ef5c41a73afe4393d3bd4fb751c48d55f646c13d09f2bdfc1a",
+          "path": "src/ui/screens/todo-text.ts",
+          "fingerprint": "46d22b5ea7ad3c9b62a9ceef7c36e564890d86accfa4a6b5bc3b462c0ae043a5"
+        },
+        {
+          "item_id": "4f6cb7d33708d2ec6ba56caabfdcacaef771172f55d6690df1ca86605d86a205",
+          "path": "src/ui/screens/PositionChangeFormBody.tsx",
+          "fingerprint": "74c2966421413fabad007705c0b230eda05b75c57563a1abcd86558eb815d338"
+        },
+        {
+          "item_id": "710ba1a8ebaf3134eff8729095ed7a9840ac0dae47b51f10fb69b069ca0ff95b",
+          "path": "src/ui/screens/OwedDebtItem.tsx",
+          "fingerprint": "121a17e2d6c094953e5d7b7de99e73bb3629f2bbd9c4d692db1961eb5146cdfd"
+        },
+        {
+          "item_id": "7fb17753390b86fe1b6b3f3e7ac2efb28db4e5172fa45c2cc1966309cca2392a",
+          "path": "tests/support/position-change-form-facade.ts",
+          "fingerprint": "345e0d7ba5c410eeed7413b20e90580fff29200d4c2d7ff6a88d5af10615d6d8"
+        },
+        {
+          "item_id": "87638b8e40a8471b5a00443528a3c98bf4752f964c11c4b564b6258d593b8716",
+          "path": "src/ui/screens/TradeDetail.test.tsx",
+          "fingerprint": "7468e1db9ec9a96f6c05dd7a64f8d2318fddbc3dc312bd0b8eef68cca6607b8f"
+        },
+        {
+          "item_id": "898ebab2d170bcc752f194c459504564703c3fd17482f450e72a33b542acd468",
+          "path": "src/coordinators/daily-review/owed-requires.test.ts",
+          "fingerprint": "2fb31c3bce22be27a9e7c7769c5509cba6179be86b9c38974f02a3b085dca1f8"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "b192b829623c8048ac6762401331c42aafb732b0d4c00861416a23c51634ffd4"
+        },
+        {
+          "item_id": "b50e9fe46417117e03fc595a50959d159d4680c568d9b5d7d7bff33a84ca0dfe",
+          "path": "src/ui/screens/PositionChangeForm.test.tsx",
+          "fingerprint": "b825b7e5eb2d1f3cdc01d7f0ba4f5814905546080aff4a8f5efa406ecd7f4dec"
+        },
+        {
+          "item_id": "b8e6ac3141c78f3f98db87b2baec46cc291fc1cf7872f6920033a9237484e1e1",
+          "path": "src/ui/screens/ReviewReflections.test.tsx",
+          "fingerprint": "e9e9ea5f567c86857ed9f489bd6074a32a2b8432e788c913ab88fb88cc8ce182"
+        },
+        {
+          "item_id": "cdb6bf19adef0a54a3abd6fa99897d6bace154a0ebff900a7b8e2c69883a9622",
+          "path": "src/ui/screens/DebtForm.test.tsx",
+          "fingerprint": "8a295c3e6cf7d579d031ab30036565a612cb37b60954aaacf0c83240b03334f3"
+        },
+        {
+          "item_id": "d5ca0db109bd5eca3585475c4cd3739bada34094523b44a916a4118276e691b6",
+          "path": "src/modules/journal/journal.ts",
+          "fingerprint": "98fc1decd6e9e8f2a12cab5f6ff0a1019462a0af9d535b772b0201c89869ac11"
+        },
+        {
+          "item_id": "e3ddf8122bc736b0309df4458fed964987e048a7af3ad05c41e33fa897907818",
+          "path": "src/ui/screens/ReflectionPrompts.tsx",
+          "fingerprint": "d9143c0045124cf5b32dc0056a301918a37a920875bbc7aa5ac12c1bbd173fe9"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "25f69d946babcdc0b38cc04b754d54e28359c30bec7993bd520b96559ff42b80"
+        },
+        {
+          "item_id": "fd1c910f754a206e66b4e66d854fe19ed7ac30adb9c39111b3b1ccc9e7046634",
+          "path": "src/modules/journal/effects.ts",
+          "fingerprint": "622cdd81d8e0517129c5bce773a1dec872c10ce3142b046d1b54146936ac4c9c"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "99c7f427abecf3cc000afb4a87ff7ad67cb42600004e481bb8eb3ddc32df9685",
+          "path": "evidence/D95/tdd-log/T95.42.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 55543
+  }
+}
