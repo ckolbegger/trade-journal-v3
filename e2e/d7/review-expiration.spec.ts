@@ -6,7 +6,7 @@ import {
 
 test.use({ actionTimeout: 15_000 });
 
-const OWED_GROUP = 'Closed · Close Review';
+const OWED_GROUP = 'Trades with owed reflections';
 const owedItem = (page: Page, tradeId: string) => page.getByRole('list', { name: OWED_GROUP }).locator(`li.review-card[data-trade-id="${tradeId}"]`);
 
 test.describe('B7.3 Expiration from the Review', () => {

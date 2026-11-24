@@ -8,7 +8,7 @@ import {
 test.use({ actionTimeout: 15_000 });
 
 const nav = (page: Page): Locator => page.getByRole('navigation', { name: 'Primary' });
-const OWED_GROUP = 'Closed · Close Review';
+const OWED_GROUP = 'Trades with owed reflections';
 const NARROW = { width: 390, height: 844 };
 const WIDE = { width: 1280, height: 900 };
 

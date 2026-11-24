@@ -86,11 +86,11 @@ test.describe('B95.8 The sale measured against the Plan Exit (AC-REV-008, AC-POS
       expect(debts, 'one Close Review Debt and nothing else').toHaveLength(1);
       expect(JSON.stringify(debts[0])).toContain('close-review');
       expect(entriesWithSettledDebt(workspace), 'no reflection settled with a Debt').toHaveLength(0);
-      // Back in the Review the closed Trade is listed under "Closed · Close Review".
+      // Back in the Review the closed Trade is listed under "Trades with owed reflections".
       if (where === 'Review') await page.getByRole('button', { name: 'Back to the Review' }).click();
       else await openReview(page);
       await atBothWidths(page, async (width) => {
-        await expect(page.getByRole('heading', { name: 'Closed · Close Review', level: 2 }), `the group at ${width}`).toBeVisible();
+        await expect(page.getByRole('heading', { name: 'Trades with owed reflections', level: 2 }), `the group at ${width}`).toBeVisible();
         await expect(cardHeader(page, 'ABC')).toContainText('Close Review · next Review');
       });
       await context.close();

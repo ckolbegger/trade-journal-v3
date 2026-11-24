@@ -164,7 +164,7 @@ function renderReview(facade: UiFacade, at = '/review') {
   );
 }
 
-const GROUP = 'Closed · Close Review';
+const GROUP = 'Trades with owed reflections';
 
 describe('owed card Terminal Disposition, row 23.12', () => {
   it('should say Closed via sale of 1 contract and expiration of 1 contract on the owed card of an option Trade closed by a sale and an expiration', async () => {
@@ -199,6 +199,21 @@ describe('the owed card header (T95.40, W151)', () => {
     renderReview(reviewFacade(ready()));
     const header = await screen.findByRole('button', { name: /^Review DEF/ });
     expect(header.textContent).toContain('1 not yet due');
+    expect(header.textContent).not.toContain('Close Review');
+  });
+});
+
+describe('owed-reflection group heading (T95.40-D1, W103)', () => {
+  it('should head the owed group Trades with owed reflections', async () => {
+    renderReview(reviewFacade(ready()));
+    expect(await screen.findByRole('heading', { name: 'Trades with owed reflections', level: 2 })).toBeTruthy();
+    expect(screen.getByRole('list', { name: 'Trades with owed reflections' })).toBeTruthy();
+  });
+
+  it('should list an open Trade owing only a Position Change Reflection under that heading with no Close Review label on its card', async () => {
+    renderReview(reviewFacade(ready()));
+    const group = await screen.findByRole('list', { name: 'Trades with owed reflections' });
+    const header = within(group).getByRole('button', { name: /^Review DEF/ });
     expect(header.textContent).not.toContain('Close Review');
   });
 });

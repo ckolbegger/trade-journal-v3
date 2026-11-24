@@ -1348,13 +1348,13 @@ describe('Trade names in messages and blockers (decision 68)', () => {
 
     // A Trade that moved to the owed group is still in the Review, but its card is a new one with none of the drafts.
     await savedOnHeldCard(withoutF({ owed: [owedF] }), OWED_F);
-    expect((await screen.findByRole('status')).textContent).toBe(`${NAME_F} is now in Closed · Close Review, so what you entered for it was not kept.`);
+    expect((await screen.findByRole('status')).textContent).toBe(`${NAME_F} is now in Trades with owed reflections, so what you entered for it was not kept.`);
   });
 
   // T6.20-B3, item 3.
   it('should keep the not kept notice when Retry opens the owed card the Trade moved to', async () => {
     const { user } = await savedOnHeldCard(withoutF({ owed: [owedF] }), OWED_F, true);
-    const notice = `${NAME_F} is now in Closed · Close Review, so what you entered for it was not kept.`;
+    const notice = `${NAME_F} is now in Trades with owed reflections, so what you entered for it was not kept.`;
     expect(await screen.findByText(notice)).toBeTruthy();
 
     await user.click(await screen.findByRole('button', { name: 'Retry' }));
@@ -1678,7 +1678,7 @@ describe('the sale in the card (T95.40)', () => {
     return { user, card };
   }
 
-  it('should keep the receipt in the card after a closing sale, then show the Trade under Closed · Close Review as Close Review · next Review', async () => {
+  it('should keep the receipt in the card after a closing sale, then show the Trade under Trades with owed reflections as Close Review · next Review', async () => {
     const facade = saleFacade();
     vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(closedExitResult({ reflection: { kind: 'Debt', debt: { debtId: 'debt-1' } }, closeReview: { kind: 'Debt', debt: { debtId: 'debt-2' } } }) as never);
     const walkedGetTrade = vi.mocked(facade.DailyReview.getTrade).getMockImplementation()!;
@@ -1693,7 +1693,7 @@ describe('the sale in the card (T95.40)', () => {
     expect(vi.mocked(facade.DailyReview.open)).toHaveBeenCalledTimes(1);
     await user.click(within(card).getByRole('button', { name: 'Back to the Review' }));
 
-    const group = await screen.findByRole('list', { name: 'Closed · Close Review' });
+    const group = await screen.findByRole('list', { name: 'Trades with owed reflections' });
     expect(within(group).getByRole('button', { name: /^Review ABC/ }).textContent).toContain('Close Review · next Review');
     expect(vi.mocked(facade.DailyReview.open)).toHaveBeenCalledTimes(2);
   });
@@ -1717,7 +1717,7 @@ describe('the sale in the card (T95.40)', () => {
 
     await user.click(headers()[2]!);
 
-    const group = await screen.findByRole('list', { name: 'Closed · Close Review' });
+    const group = await screen.findByRole('list', { name: 'Trades with owed reflections' });
     expect(within(group).getByRole('button', { name: /^Review ABC/ })).toBeTruthy();
     expect(vi.mocked(facade.DailyReview.open)).toHaveBeenCalledTimes(2);
     expect(screen.queryByText(/not kept/)).toBeNull();
