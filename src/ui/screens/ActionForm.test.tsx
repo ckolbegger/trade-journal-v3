@@ -480,6 +480,80 @@ describe('A sale whose card read fails (T95.40-B1)', () => {
   });
 });
 
+describe('A sale whose card read is still pending (T95.40-B2)', () => {
+  const savedExit = { kind: 'Saved', action: { action: 'Exit', responses: [] } } as never;
+  const planExit = { positions: [{ instrument: { kind: 'Stock', symbol: 'XYZ' }, quantity: '100', conditions: [] }], heldPast: [] } as never;
+  // A read that stays open until the test settles it.
+  function deferredRead() {
+    let settle: (ok: boolean) => void = () => undefined;
+    const first = new Promise<boolean>((resolve) => {
+      settle = resolve;
+    });
+    const onRefresh = vi.fn().mockReturnValueOnce(first).mockResolvedValue(true);
+    return { onRefresh, settle: (ok: boolean) => settle(ok) };
+  }
+  async function sell(result: unknown, quantity: string, over: Partial<ActionFormProps>) {
+    const facade = exitFormFacade();
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(result as never);
+    const mounted = mount({ form: savedExit, planExit, now: () => '2026-10-13T14:05:00Z', ...over }, facade);
+    await mounted.user.click(screen.getByRole('button', { name: 'Record the sale' }));
+    const row = await screen.findByRole('group', { name: 'Execution 1' });
+    for (const [label, value] of [['Quantity', quantity], ['Price', '53.00'], ['Fee', '1.00']] as const) {
+      await mounted.user.clear(within(row).getByLabelText(label));
+      await mounted.user.type(within(row).getByLabelText(label), value);
+    }
+    await mounted.user.click(screen.getByRole('button', { name: 'Save exit' }));
+    return mounted;
+  }
+  const closing = () => closedExitResult({ reflection: { kind: 'Debt', debt: { debtId: 'debt-1' } }, closeReview: { kind: 'Debt', debt: { debtId: 'debt-2' } } });
+
+  it('should read again when the receipt is dismissed while the read is pending and the read then fails', async () => {
+    const { onRefresh, settle } = deferredRead();
+    const { user } = await sell(partialExitResult(), '30', { onRefresh });
+    await waitFor(() => expect(onRefresh).toHaveBeenCalledTimes(1));
+    await user.click(await screen.findByRole('button', { name: 'Back to the Review' }));
+    settle(false);
+    await waitFor(() => expect(onRefresh).toHaveBeenCalledTimes(2));
+  });
+
+  it('should hand the read to the Review when the card is left while the read is pending and the read then fails', async () => {
+    const { onRefresh, settle } = deferredRead();
+    const onLeftSold = vi.fn();
+    const { user } = await sell(closing(), '100', { onRefresh, onLeftSold });
+    await user.click(await screen.findByRole('button', { name: 'Back to the Review' }));
+    await waitFor(() => expect(onRefresh).toHaveBeenCalledTimes(1));
+    cleanup();
+    settle(false);
+    await waitFor(() => expect(onLeftSold).toHaveBeenCalledTimes(1));
+  });
+
+  it('should read exactly once when the receipt is dismissed while the read is pending and the read then succeeds', async () => {
+    const { onRefresh, settle } = deferredRead();
+    const onLeftSold = vi.fn();
+    const { user } = await sell(partialExitResult(), '30', { onRefresh, onLeftSold });
+    await waitFor(() => expect(onRefresh).toHaveBeenCalledTimes(1));
+    await user.click(await screen.findByRole('button', { name: 'Back to the Review' }));
+    settle(true);
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    cleanup();
+    expect(onRefresh).toHaveBeenCalledTimes(1);
+    expect(onLeftSold).not.toHaveBeenCalled();
+  });
+
+  it('should read exactly once when the card is left while the read is pending and the read then succeeds', async () => {
+    const { onRefresh, settle } = deferredRead();
+    const onLeftSold = vi.fn();
+    const { user } = await sell(closing(), '100', { onRefresh, onLeftSold });
+    await user.click(await screen.findByRole('button', { name: 'Back to the Review' }));
+    await waitFor(() => expect(onRefresh).toHaveBeenCalledTimes(1));
+    cleanup();
+    settle(true);
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(onRefresh).toHaveBeenCalledTimes(1);
+    expect(onLeftSold).not.toHaveBeenCalled();
+  });
+});
+
 describe('A day with no price', () => {
   it('should say which figures the choice rests on when today has no price', () => {
     mount({ planCall: hold, replay: stockReplay, decidingOn: '2026-11-13' });

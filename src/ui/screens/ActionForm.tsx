@@ -135,16 +135,34 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
   useEffect(() => {
     leftSold.current = onLeftSold;
   });
+  // A read in flight, and what was asked of it meanwhile: another read once it fails (receipt dismissed), or the Review's own (card left).
+  const reading = useRef(false);
+  const retry = useRef(false);
+  const gone = useRef(false);
   useEffect(
     () => () => {
-      if (refreshOwed.current) leftSold.current?.();
+      gone.current = true;
+      // A read in flight hands the Review the retry only if it fails.
+      if (refreshOwed.current && !reading.current) leftSold.current?.();
     },
     [],
   );
   // The card is read again after a sale. What is owed stays owed until a read succeeds: a failed one is retried when the receipt is dismissed or the card is left.
   const readAfterSale = async () => {
-    refreshOwed.current = false;
-    if (!(await onRefresh())) refreshOwed.current = true;
+    if (reading.current) return;
+    reading.current = true;
+    retry.current = false;
+    refreshOwed.current = true;
+    let read: boolean;
+    try {
+      read = await onRefresh();
+    } finally {
+      reading.current = false;
+    }
+    refreshOwed.current = !read;
+    if (read) return;
+    if (gone.current) leftSold.current?.();
+    else if (retry.current) void readAfterSale();
   };
   const returned = returnedValues(form);
   // A form opened on the way back from Price History starts from the Action the trader had started there (C9AR.5).
@@ -300,7 +318,9 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
         onForm: onHandle ?? noForm,
         onDismiss: () => {
           setSelling(false);
-          if (refreshOwed.current) void readAfterSale();
+          if (!refreshOwed.current) return;
+          if (reading.current) retry.current = true;
+          else void readAfterSale();
         },
       }} />;
   // Values held over a Conflict refresh differ from the saved Action it now shows: they stay open, as if Change were pressed.
