@@ -810,3 +810,7 @@ Commit `06df0de8`: `apply` counts every result carrying a Review; `reopenAndAppl
 ocr of T95.34-B4 (session b730d892): 2 files, 0 findings. `evidence/D95/ocr/T95.34-B4-06df0de8.json`. Next: run `t95.34-refusal` (browser-task, Standard).
 
 Run `t95.34-refusal` (browser-task): unit 2986, integration 329, browser 24 (@every-task 5, e2e/d95 19), checks 14 of 14. Passed. (The task agent ran the changed e2e/d4 and e2e/d5r specs itself.) T95.34 done.
+
+### T95.35
+
+Commit `9c9c0275`: `measurePlanExit` in new `src/domain/plan-exit/` (Follows; Leaves with BeforeCondition, HeldPast {line, since, sessions}, PartOnly {held, sold}, every reason together; undefined for a buy). First-run pass flagged and mutation-checked: case 7. Assumptions recorded: a `pricedInTradedInstrument` flag per condition; a Hold past a line counts only while the line is still reached; a sale of at least what is held is the whole Position. No lint:deps change needed. Facts the views must return carried to T95.37.
