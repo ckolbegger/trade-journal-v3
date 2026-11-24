@@ -658,3 +658,5 @@ The three are small and in one file; one fresh tdd-task does them in order, one 
 Commits `5e904f21` (B1: the seed looks only at the latest stored revision: equal to the manifest adds nothing, equal to an earlier seeded form adds the next revision, else SeedConflict), `5d17e26e` (B2: a deferral whose `requires` role has no Text prompt in the current revision is refused, `DispositionNotAllowed`), `b44f35cf` (B3: a required role is answered only by a non-empty Text answer). Red then green each; Journal module 328 passed. `validateForm`'s acceptance of a non-Text answer for an ordinary Text prompt pre-dates D9.5 and is unchanged.
 
 ocr of T95.27-B1, T95.27-B2, T95.27-B3 (range d5f4ada1..b44f35cf, session 1e68c1c0): 2 files, 0 findings. `evidence/D95/ocr/T95.27-B1-B3-b44f35cf.json`. Next: run `t95.27-seed-revision` (browser-auto af6d3071).
+
+Run `t95.27-seed-revision` (browser-auto af6d3071, task tier): unit 2911, integration 330, browser 5 + 18, checks 14 of 14. Passed. T95.27 done.
