@@ -1004,3 +1004,6 @@ Output: evidence/D95/ocr/T95.45-B-dc62c7f2..84af6c09.json. Both Valid, both test
 - `d0349676` B4: refusal.spec.ts "Save it … at 375 wide" asserts the saved Action holds option.daily-trade-review.action.roll and contains "Moving it out.". First-run pass, flagged; mutation (ActionForm saved 'Hold') failed with "the Roll, not a Hold".
 - `f1faff8a` B5: sale.spec.ts narrows to 375 before openSale, so opening and filling happen at 375. First-run pass, flagged; mutation (buttons unclickable under 400px) failed with a click timeout. The agent did not confirm which click failed; its log row's claim that it was an opening or row click is unverified.
 - Source restored after each mutation; `git diff -- src` empty. All of e2e/d95: 46 passed.
+
+### T95.45-B4, T95.45-B5 ocr (`af20a1ae..f1faff8a`): no findings
+Output: evidence/D95/ocr/T95.45-B4-B5-af20a1ae..f1faff8a.json.
