@@ -785,3 +785,7 @@ Commit `dbdfa898`: the Action radio also sets `chose` on click (Space on a check
 ocr of T95.33-B3 (session c1613295): 2 files, 0 findings. `evidence/D95/ocr/T95.33-B3-dbdfa898.json`. Next: run `t95.33-action-form` (browser-auto d485fdbe).
 
 Run `t95.33-action-form` (browser-auto d485fdbe, full tier): unit 2973, integration 329, browser 127, 79, 55 and 130 (4 skipped), checks 14 of 14. Passed. T95.33 done.
+
+### T95.34
+
+Commit `785eee18`: the refusal on the Trade pressed (W128; X5 names W122, built to W128): "<Underlying>'s note isn't saved." with "Save it" (focused; saves through the form's own save, then opens the Trade pressed; stays on the form's own refusal when it can't save), "Discard it", "Back to <Underlying>"; Marks-step drafts don't refuse. New `Refusal.tsx`, `form-handle.ts` (FormHandle {save, focus}); ReviewView, ActionForm, DebtForm, ReviewReflections edited (outside the Files line). Assumption: "Save it" on a reflection draft presses its Answer (an added case). First-run pass flagged and mutation-checked: case 7. Case 4 passed first because case 3's code held the guard; guard removed, red, restored. Known edges recorded: a day-line link's panel is lost after Save it/Discard it; with two unsaved forms Save it saves the first and refuses again. Same-Underlying wording question added to new-words.md. e2e d4/support (reachCard, refusal()) and two specs follow the new words; d95 and d5r 35 passed.

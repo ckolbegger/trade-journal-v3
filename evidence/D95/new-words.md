@@ -50,3 +50,4 @@ The user approved every entry above as it stands, after the T95.26 gate. "More f
 ## Part B (awaiting approval)
 
 - T95.33 (no W row): an Unknown Plan Call shows no call line, only "Nothing is chosen for you here."; a short Position: "buy back all 4 contracts at the Stop… Record the buy-back once it is done."; with no replay the Exit line says "sell all of it"; with nothing chosen the button reads "Save"; a saved Action with no reason reads "Mon Nov 16: Hold" with no quote; Conviction hint "1 low · 5 high", group "Conviction now (optional)".
+- T95.34 (question for the word review): W128 names the Underlying ("XYZ's note isn't saved.", "Back to XYZ"); with two Trades on the same Underlying the words don't say which. Built as W128 states. The old "… to go on" message (ReviewView.tsx 307) has no W128 replacement and is unchanged.
