@@ -191,8 +191,8 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
   // A form opened read only has no entry controls. One that held values when the shell turned read only stays, disabled, so the values are visibly kept.
   const readOnlyEmpty = !writable && !dirty;
   const toGo = unresolved?.binding === binding ? unresolved.count : marksToGo;
-  if (toGo > 0) return <MarksFirst tradeId={binding.tradeId} toGo={toGo} />;
   if (readOnlyEmpty && form.kind === 'New') return <p>No Action saved.</p>;
+  if (toGo > 0) return <MarksFirst tradeId={binding.tradeId} toGo={toGo} />;
   // Values held over a Conflict refresh differ from the saved Action it now shows: they stay open, as if Change were pressed.
   const savedLines = form.kind === 'Saved' && (
     <>

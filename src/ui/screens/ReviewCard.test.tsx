@@ -2019,7 +2019,7 @@ describe('The last decision line', () => {
 describe('The card before its Marks (T95.20)', () => {
   const gone = { kind: 'Unavailable', reason: 'MarkMissing', instrument: symbol, date: '2026-10-12' };
   // Marks still to enter for the Review Date: the walked card says one to go, and the Trade's figures are the session before's.
-  async function openWaiting(toGo = 1) {
+  async function openWaiting(toGo = 1, writable = true) {
     const user = userEvent.setup();
     const progress = cardProgress(0, 0, { needed: toGo, resolved: 0 });
     const waiting = { ...item('t1', 'XYZ'), progress };
@@ -2030,7 +2030,7 @@ describe('The card before its Marks (T95.20)', () => {
       datedLastClose: { tradingDate: '2026-10-09', evaluation: evaluation({ valuationDate: '2026-10-09' }) },
     });
     const facade = walkFacade(review, trade);
-    renderWalk(facade);
+    renderWalk(facade, { writable });
     return { user, facade, card: await openTrade(user, 'XYZ') };
   }
 
@@ -2069,5 +2069,12 @@ describe('The card before its Marks (T95.20)', () => {
     const one = await openWaiting(1);
     expect(within(one.card).getByText("No Action until today's Mark is in.", { exact: false }).textContent).toBe("No Action until today's Mark is in. Enter it");
     expect(within(one.card).getByRole('link', { name: 'Enter it' })).toBeTruthy();
+  });
+
+  it('should show No Action saved with no link while the runtime is not writable and Marks are still to go', async () => {
+    const { card } = await openWaiting(1, false);
+    expect(within(card).getByText('No Action saved.')).toBeTruthy();
+    expect(within(card).queryByText(/No Action until today/)).toBeNull();
+    expect(within(card).queryByRole('link', { name: 'Enter it' })).toBeNull();
   });
 });
