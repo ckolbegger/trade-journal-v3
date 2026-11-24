@@ -959,3 +959,5 @@ Run `t95.41-exit-banner` (browser-task): unit 3086, integration 329, browser 25,
 ### T95.43
 
 Commit `ee16e93c`: variants `DailyReview.open` PlanCall; `getTrade` PlanCall, PlanExit; `save` PlanRule; `getTradeDetail` PlanExit; `recordPositionChange` PlanExitMeasure; each on its route (review, trade-detail, record-entry). I95.7 asserts the exact DailyReview lists and the presence of PlanExit/PlanExitMeasure on the other two (their full lists stay asserted by workspace.test.ts's exact-list case, updated); no route needs an uninstalled variant. verify:capabilities passes (24 operations, 12 variant-qualified, 10 routes).
+
+ocr of T95.43 (session d1c4cca4): 4 files, 0 findings. `evidence/D95/ocr/T95.43-ee16e93c.json`. Next: run `t95.43-capabilities` (browser-task, Standard).

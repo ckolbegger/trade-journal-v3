@@ -1,0 +1,122 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 0,
+    "total_tokens": 18916,
+    "input_tokens": 18640,
+    "output_tokens": 276,
+    "cache_read_tokens": 3328,
+    "elapsed": "11s"
+  },
+  "tool_calls": {
+    "total": 4,
+    "by_tool": {
+      "file_read": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Workspace capabilities and routing updates with unit and integration coverage",
+      "files": [
+        "src/app/routes.ts",
+        "src/coordinators/workspace/capabilities.ts",
+        "src/coordinators/workspace/workspace.test.ts",
+        "tests/integration/d95/capabilities.test.ts"
+      ]
+    }
+  ],
+  "session_id": "d1c4cca4-cc81-4ed0-ba47-89e3348bdcca",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "d1c4cca4-cc81-4ed0-ba47-89e3348bdcca",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "ee16e93c",
+      "resolved_base": "059fbe2b7fe8a73c3e67b06c1b0011dbc6822ff8",
+      "resolved_head": "ee16e93c92f7fc68ecf1cea8a4d10f42d7e86d07",
+      "exact_range": "059fbe2b7fe8a73c3e67b06c1b0011dbc6822ff8..ee16e93c92f7fc68ecf1cea8a4d10f42d7e86d07",
+      "source_artifact_sha256": "40551fc34cce68838c10fce349d1b50e476cc1c559a26f6502bd90157623815f"
+    },
+    "execution": {
+      "ocr_version": "v1.14.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0f41d19ccbb61d1a664235ee5301f06784615cdc8ddb16035e108900527ee722",
+          "path": "src/app/routes.ts",
+          "fingerprint": "f9e35805f8ddc96919352530148bc892d5743959df3070fa22e2361978a532b2"
+        },
+        {
+          "item_id": "3f548f1ae81ab4049dfea9d702e6a61b509722ca36f81ecd61e08037be77aa16",
+          "path": "src/coordinators/workspace/capabilities.ts",
+          "fingerprint": "721eaacd9c2c0f7c7f1849b6e37f136f47feb0952878c43540f32cda7e07974e"
+        },
+        {
+          "item_id": "6c0a9060a31bf3ba57c05369b276def7b239838a93c46585ef412fe0536e8181",
+          "path": "src/coordinators/workspace/workspace.test.ts",
+          "fingerprint": "12e0273f6ef0c92a67ded1edd9ae0ad623901e0944dd0beb1306268071d95990"
+        },
+        {
+          "item_id": "7e32b333adace5236c817180e9c0dde2bcdabb3d697d89d92f66ff642acb59e7",
+          "path": "tests/integration/d95/capabilities.test.ts",
+          "fingerprint": "3b37c9ce813dbceebba212548e84f421b72a43c0a8233e93df7390f6ed72b64a"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0f41d19ccbb61d1a664235ee5301f06784615cdc8ddb16035e108900527ee722",
+          "path": "src/app/routes.ts",
+          "fingerprint": "f9e35805f8ddc96919352530148bc892d5743959df3070fa22e2361978a532b2"
+        },
+        {
+          "item_id": "3f548f1ae81ab4049dfea9d702e6a61b509722ca36f81ecd61e08037be77aa16",
+          "path": "src/coordinators/workspace/capabilities.ts",
+          "fingerprint": "721eaacd9c2c0f7c7f1849b6e37f136f47feb0952878c43540f32cda7e07974e"
+        },
+        {
+          "item_id": "6c0a9060a31bf3ba57c05369b276def7b239838a93c46585ef412fe0536e8181",
+          "path": "src/coordinators/workspace/workspace.test.ts",
+          "fingerprint": "12e0273f6ef0c92a67ded1edd9ae0ad623901e0944dd0beb1306268071d95990"
+        },
+        {
+          "item_id": "7e32b333adace5236c817180e9c0dde2bcdabb3d697d89d92f66ff642acb59e7",
+          "path": "tests/integration/d95/capabilities.test.ts",
+          "fingerprint": "3b37c9ce813dbceebba212548e84f421b72a43c0a8233e93df7390f6ed72b64a"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "75dc93e7dbfab1b4645a4d1c167d89616b018aeccd62220a9d13eb6ff287f95f",
+          "path": "evidence/D95/tdd-log/T95.43.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 11489
+  }
+}
