@@ -1,0 +1,140 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 1,
+    "total_tokens": 144352,
+    "input_tokens": 143306,
+    "output_tokens": 1046,
+    "cache_read_tokens": 32896,
+    "elapsed": "47s"
+  },
+  "tool_calls": {
+    "total": 18,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 6,
+      "file_read": 9,
+      "file_read_diff": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/ActionForm.tsx",
+      "content": "Clearing the debt before the read completes loses the retry if the user leaves the card while the request is pending: the unmount cleanup sees `false`, and a later failure only updates the ref of an already-unmounted form. Likewise, dismissing a partial-sale receipt before its initial read fails skips the dismissal retry. Keep track of the outstanding read/debt until success and arrange a retry when dismissal or leaving occurs during a read that subsequently fails. The new tests use immediately resolved promises, so they do not cover these pending-request cases.",
+      "existing_code": "    refreshOwed.current = false;\n    if (!(await onRefresh())) refreshOwed.current = true;",
+      "start_line": 146,
+      "end_line": 147,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Action form behavior and tests",
+      "files": [
+        "src/ui/screens/ActionForm.test.tsx",
+        "src/ui/screens/ActionForm.tsx"
+      ]
+    },
+    {
+      "label": "Review view and card tests",
+      "files": [
+        "src/ui/screens/ReviewCards.test.tsx",
+        "src/ui/screens/ReviewView.tsx"
+      ]
+    }
+  ],
+  "session_id": "f0f0ad6e-1628-469d-81cf-ff6b80eabfba",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "f0f0ad6e-1628-469d-81cf-ff6b80eabfba",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "b8afe82d",
+      "resolved_base": "613333226da3a82f7d0a796d66d07ac99006f42a",
+      "resolved_head": "b8afe82d1d160452fab992fb33f6edfc2c1f9083",
+      "exact_range": "613333226da3a82f7d0a796d66d07ac99006f42a..b8afe82d1d160452fab992fb33f6edfc2c1f9083",
+      "source_artifact_sha256": "b20a085de0ec83e0be1de8ac59146df65233dcedc17b29ab2f1f4448160e9485"
+    },
+    "execution": {
+      "ocr_version": "v1.14.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "06129f7bc0959665459bced5dd2b2fe42e6eefa20b943b5bcb22e15d914c46d2",
+          "path": "src/ui/screens/ReviewCards.test.tsx",
+          "fingerprint": "acdab09b780103f41603186bb980457c06bba1504f7b00f9dba1f8421a02ddee"
+        },
+        {
+          "item_id": "28d9dac30140868b5ff82f3128fe52a527534ffce26da1ec10da0741844bd9af",
+          "path": "src/ui/screens/ActionForm.tsx",
+          "fingerprint": "ee98a1cdbe123bf357f0055f4436f683fdce68f8987f3d38ad8a21a941aa8295"
+        },
+        {
+          "item_id": "2a7cf82e9b1b9e0377c987ba61198d4c53a248a7ba0e28868608fb81e568b56c",
+          "path": "src/ui/screens/ActionForm.test.tsx",
+          "fingerprint": "71a4d29f3bc21925421828027147f4437a1e080f6a73c915cab8ab13b3020ff1"
+        },
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "8965bfaf9be744971de0bb94b0368accaa144fb989de498fa777370ff9ef5076"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "06129f7bc0959665459bced5dd2b2fe42e6eefa20b943b5bcb22e15d914c46d2",
+          "path": "src/ui/screens/ReviewCards.test.tsx",
+          "fingerprint": "acdab09b780103f41603186bb980457c06bba1504f7b00f9dba1f8421a02ddee"
+        },
+        {
+          "item_id": "28d9dac30140868b5ff82f3128fe52a527534ffce26da1ec10da0741844bd9af",
+          "path": "src/ui/screens/ActionForm.tsx",
+          "fingerprint": "ee98a1cdbe123bf357f0055f4436f683fdce68f8987f3d38ad8a21a941aa8295"
+        },
+        {
+          "item_id": "2a7cf82e9b1b9e0377c987ba61198d4c53a248a7ba0e28868608fb81e568b56c",
+          "path": "src/ui/screens/ActionForm.test.tsx",
+          "fingerprint": "71a4d29f3bc21925421828027147f4437a1e080f6a73c915cab8ab13b3020ff1"
+        },
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "8965bfaf9be744971de0bb94b0368accaa144fb989de498fa777370ff9ef5076"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "f154e26302f534bf37a3d0d0f878e54547c1a547af64e199a8457c02f1c75ebe",
+          "path": "evidence/D95/tdd-log/T95.40-B1.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 46951
+  }
+}
