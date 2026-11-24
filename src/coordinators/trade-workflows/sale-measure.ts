@@ -46,6 +46,8 @@ export interface SaleMeasure {
   readonly measure: PlanExitMeasure;
   // A310, A312: whether the sale owes the Plan Departure Reason.
   readonly owesReason: boolean;
+  // The Journal revision the Action history was read at; the caller binds it to the reflection's own snapshot.
+  readonly journalRevision: number;
 }
 
 // A309: the measure of the Executions of one Position Change against the Plan Exit, from the Trade's facts, its latest Marks and its saved Actions.
@@ -70,7 +72,7 @@ export async function measureSale(
   const session = await deps.marketData.openReadSession({ kind: 'Current', asOf: deps.clock.now() });
   const valuation = await valueTrade(session, analysis);
   const conditions = valuation.kind === 'Valued' ? planExitConditionsOf(valuation.evaluation, first.instrument) : [];
-  const { actions } = await deps.journal.queryActionHistory({ tradeId: analysis.tradeId });
+  const { actions, snapshot } = await deps.journal.queryActionHistory({ tradeId: analysis.tradeId });
   // A Hold counts when its Review Date is earlier than the sale's own exchange-local date, whatever session the latest Marks belong to.
   // The sale's moment is its earliest Execution's, as recordPositionChange takes it for the reflections, whatever order they arrive in.
   const earliest = members.reduce((a, m) => (Date.parse(m.economicTime) < Date.parse(a.economicTime) ? m : a));
@@ -83,7 +85,7 @@ export async function measureSale(
   const latest = actions.at(-1);
   const carried = latest?.action === 'Exit' && (latest.reason ?? '').trim() !== '';
   const whole = measure.kind === 'Leaves' && !measure.reasons.some((r) => r.kind === 'PartOnly');
-  return { measure, owesReason: measure.kind === 'Leaves' && !(whole && carried) };
+  return { measure, owesReason: measure.kind === 'Leaves' && !(whole && carried), journalRevision: snapshot.journalRevision };
 }
 
 // The id of the Plan Departure Reason prompt of a form revision, found by its role; none on a form that has no such prompt (a Workspace

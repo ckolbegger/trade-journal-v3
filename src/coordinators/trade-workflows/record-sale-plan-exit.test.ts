@@ -3,7 +3,7 @@ import type { ReflectionDisposition } from '../../modules/journal/index.ts';
 import { D6_CATALOG_MANIFEST } from '../../modules/reference-catalog/index.ts';
 import { dumpAll } from '../../../tests/support/stack.ts';
 import { MONDAY_1700, TEN_AM, reviewStack, type ReviewStack } from '../../../tests/support/review-fixture.ts';
-import type { PositionChangeCommand, PositionChangeMember, PositionChangeResult } from './index.ts';
+import { createTradeWorkflows, type PositionChangeCommand, type PositionChangeMember, type PositionChangeResult } from './index.ts';
 
 // T95.36: a sale is measured against the Plan Exit; its dispositions; "Say why later" (A309 to A312, U14).
 // A long 100 shares of XYZ bought Monday 10-12 at 50.00 (Stop 47.50, Target 56.00), reviewed that evening.
@@ -290,6 +290,31 @@ describe('a sale that leaves the Plan Exit', () => {
 
     // The earliest Execution is on Monday, the day of the Hold, which therefore does not count against the sale.
     expect([await outcome(false), await outcome(true)]).toEqual(['Recorded', 'Recorded']);
+  }, 60_000);
+
+  it('should not record a whole sale without its reason when the Exit that excused it becomes a Hold before the commit', async () => {
+    const held = await longTrade();
+    await held.stack.saveMark('XYZ', '51.00');
+    await held.stack.saveAction(held.tradeId, 'Exit', '2026-10-12', 'The thesis broke.');
+    // The Trade's latest Action changes to a Hold after the sale was measured, just before its reflection is prepared.
+    let changed = false;
+    const prepareEffects = held.stack.journal.prepareEffects.bind(held.stack.journal) as (command: { obligation?: string }) => Promise<unknown>;
+    const journal = {
+      ...held.stack.journal,
+      prepareEffects: (async (command: { obligation?: string }) => {
+        if (!changed && 'obligation' in command && command.obligation === 'PositionChangeReflection') {
+          changed = true;
+          await held.stack.saveAction(held.tradeId, 'Hold', '2026-10-13');
+        }
+        return prepareEffects(command);
+      }) as typeof held.stack.journal.prepareEffects,
+    };
+    const racing = createTradeWorkflows({ ...held.stack, journal, guard: held.stack.guard });
+    const command = await saleCommand(held, '100', '51.00', noAnswers(held.stack), await closing(held));
+
+    const result = await racing.recordPositionChange(command);
+
+    expect(result).toMatchObject({ kind: 'Rejected', issues: [{ field: PLAN_DEPARTURE, code: 'PlanDepartureReasonRequired' }] });
   }, 60_000);
 
   it('should record a whole sale with no reason when its own price reaches the Stop that the latest Marks have not', async () => {

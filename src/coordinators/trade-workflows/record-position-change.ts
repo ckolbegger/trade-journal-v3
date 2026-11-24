@@ -411,6 +411,11 @@ async function attemptPositionChange(deps: TradeWorkflowsDeps, command: Position
     ...(command.members.length > MAX_EXECUTIONS ? [{ source: 'TradeWorkflows', field: 'members', code: 'TooManyExecutions' } as const] : []),
     ...command.members.flatMap((m, i) => memberIssues(m, i, prepared.before!.planTime, deps.clock.now())),
   ];
+  // The Action history the measure read is bound to the Journal revision the reflection was prepared at (the commit rechecks that one):
+  // a Journal write between the two re-measures the sale through the counter retry, so a stale waiver is never committed.
+  if (sale !== undefined && reflection.kind === 'Prepared' && reflection.snapshot.journalRevision !== sale.journalRevision) {
+    return { kind: 'Conflict', changed: [`journal@${sale.journalRevision}`] };
+  }
   if (reflection.kind === 'Rejected') issues.push(...journalIssues(reflection.issues));
   // A312: a sale's reflection is completed or put off; Decline is refused at the sale (it stays possible on the owed reflection).
   if (sale !== undefined && command.reflection.kind === 'Decline') issues.push({ source: 'TradeWorkflows', field: 'reflection', code: 'ReflectionDeclineNotAllowed' });
