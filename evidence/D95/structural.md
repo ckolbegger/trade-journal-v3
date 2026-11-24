@@ -865,3 +865,5 @@ T95.38 main-session note: commit `ca2ea8e4`; the body moved unchanged to `Positi
 ocr of T95.38 (session 331df033): 3 files, 0 findings. `evidence/D95/ocr/T95.38-ca2ea8e4.json`. Next: run `t95.38-exit-form` (browser-task, Standard).
 
 Run `t95.38-exit-form` (browser-task): unit 3016, integration 329, browser 24, checks 14 of 14. Passed. T95.38 done.
+
+T95.37 decision: the user chose option 1 (decision 133, plan revision 122): Trade Detail reads the replay only when the Trade has a saved Hold; case 4 reworded. The user also confirmed T95.28's fixed revision identity (decision 132). T95.37 resumes after T95.42.
