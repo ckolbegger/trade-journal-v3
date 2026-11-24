@@ -883,3 +883,7 @@ Commit `eb591078`: `PlanExitFacts` on `DailyTradeReview.planExit` and `OpenTrade
 ocr of T95.37 (session 7130443a): 14 files, 0 findings. `evidence/D95/ocr/T95.37-eb591078.json`. Next: run `t95.37-plan-exit-facts` (browser-task, Standard).
 
 Run `t95.37-plan-exit-facts` (browser-task): unit 3036, integration 329, browser 24, checks 14 of 14. Passed. T95.37 done.
+
+### T95.39
+
+Commit `a770136a`: the sale form's Plan check (new `PlanCheck.tsx`, `checkSale` calling `measurePlanExit`): "Against the Plan", "Follows the Plan" (W131 in full), "Leaves the Plan" with each reason, updated as typed; one question ("Why did you leave the Plan?", or "Why only part?" when part-only is the sole reason) with "Say why later" (saves at once, reflection put off); the carried Exit reason (W133) for a whole sale; empty question refused locally, and the workflow's `PlanDepartureReasonRequired` (e.g. a backdated sale) shows the question with its message (the save is the authority); no reflection choices on a sale; earlier prompts behind "Add more"; Close Reason with nothing preselected, no Close Review choice, Close Review always Defer; a buy keeps its three choices (first-run pass, mutation-checked). One unit case retired (the Close Review group's issue tie: the group no longer exists on a sale). e2e helpers and d6, d8p, d8r, d95 specs follow the form (same intent). New words in new-words.md. Browser: d6 14, d7 21, d7p/d8/d8r 40, d8p 19, d9/d9ar/d9r2/d95 130 (4 skipped) passed.
