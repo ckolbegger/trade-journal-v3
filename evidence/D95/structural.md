@@ -755,3 +755,7 @@ Commit `096be3e1`: the reason rule in `saveTradeAction` (A308): `IntentRequired`
 ocr of T95.32 (session f3758c73): 12 files, 1 finding (Valid in the UI, `ActionForm.tsx:159`: the form still requires a reason for every Action but Hold, so an Exit with no reason on an Out call can't be saved from the screen). Not a bug task: T95.33 case 4 ("mark it required as the rule says") is planned next and builds that form; carried into T95.33's brief. `evidence/D95/ocr/T95.32-096be3e1.json`. Next: run `t95.32-reason-rule` (browser-auto e7815aa7).
 
 Run `t95.32-reason-rule` (browser-auto e7815aa7, full tier): unit 2953, integration 329, browser-3 55, checks 14 of 14 passed; browser 6 failed: d4/offline:20, d4/responsive-a11y:138, d5r/review:8, d95/day-card:40, d95/last-decisions:7 (each "pressSave: the app refused the save and shows: 'Say why you are taking this action.'", the T95.32 rule on a Hold past a line), and d5r/responsive-a11y:8 (toHaveText, not yet traced). Fix: **T95.32-F1** in a fresh tdd-task.
+
+### T95.32-F1
+
+Commit `3934d569` (six specs): each Hold the rule now refuses gets the reason "Holding as planned." (d4/offline, d4/responsive-a11y, d5r/review, d95/day-card, d95/last-decisions); B5R.11 (d5r/responsive-a11y) had the same cause (ABC past its Stop), now Tabs to "Why?" and types the reason, still keyboard only. No assertion dropped; no product defect. d4, d5r, d95 61 passed.
