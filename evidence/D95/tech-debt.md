@@ -19,3 +19,4 @@ Style-only ocr findings and low critic defects (the user's rule, 2026-11-19). Re
 
 - Critic-2 (T95.26), low: at 320, "Reward to risk 2.30 to 1 · Plan" wraps, leaving "0.29 to 1" on the next line.
 - Critic-2, low: at 320 the drawing's "Stop −$740.00" and "Target +$160.00" labels touch, with no gap.
+- Critic-2, moderate, moved to tech debt by the user (2026-11-23): a card whose option Mark is acknowledged unavailable (DALE's Put, Tue Nov 17) does not say so; its Now box shows the session before's Marks under "At the Mon Nov 16 Marks", and today's DALE Mark is not shown. The day card and Trade Detail do disclose it.

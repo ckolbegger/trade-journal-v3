@@ -598,3 +598,5 @@ Report `evidence/D95/critic-2.md`. Overall PASS; 3 moderate, 2 low. Cost: 285,71
 | critic-2 | 285,710 | 206 | 35.2 min | 3 moderate, 2 low |
 
 Moderate, bug tasks (not started; the user asked to stop after critic-2 for a Claude Code update): **T95.26-B3** a Trade with a partial sale shows a label percent from the meter's P&L share (AXIO "86% to Stop") while the card's own line and the spec's Pressure give 67%. **T95.26-B4** at 320 "Your last decisions" breaks between "−" and "$1,040.00" (B2 fixed only the Now box). **T95.26-B5** a card whose option Mark is acknowledged unavailable does not say so (no "No price today", Now box shows the session before's Marks). Low, to tech debt: defects 4, 5. After B3, B4 and B5: a full run, then critic-3 (the last before asking the user).
+
+The user (2026-11-23): fix T95.26-B3 and T95.26-B4; T95.26-B5 (the unavailable option Mark not shown on its card) moves to tech debt and is not a bug task. After B3 and B4: a full run, then critic-3.
