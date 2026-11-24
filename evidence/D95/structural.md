@@ -981,3 +981,9 @@ Run `t95.44-integration-b` (browser-task): unit 3086, integration 363, browser 2
 ### T95.45 (in part)
 
 Commit `78d30f66`: B95.6 action.spec.ts (4), B95.7 refusal.spec.ts (6), B95.8 sale.spec.ts (6; closing-sale cases set the sale time to 11:00 so the Trade leaves the walk; nothing asserted about where an open Trade owing a reflection sits), B95.9 exit-banner.spec.ts (4) — 18 cases, at 1280 and 375 (atBothWidths), all first-run passes, each mutation-checked (two first mutations redone after making assertions exact); e2e/d95 40 passed. **B95.10 upgrade.spec.ts not written**: it needs a served D9 release; dist-releases stops at d5r2; adding a `d9r2` entry to tools/build-releases.ts was tried, its build denied by the permission classifier, and reverted — put to the user. Focus note (agent's, low) to tech-debt.md.
+
+ocr of T95.45 (session eeb2cbf5): 5 files, 3 findings, test gaps, batched:
+- **T95.45-B1** (Valid, `sale.spec.ts:57`, `:106`, `:109`): "a refused sale writes nothing" reads a `facts` store that doesn't exist, so both snapshots are `[]`.
+- **T95.45-B2** (Valid, `sale.spec.ts:108`): `getByText(/Say why/).first()` can match the "Say why later" button; assert the refusal text itself.
+- **T95.45-B3** (Doubtful, `action.spec.ts:29` and the other three specs): `atBothWidths` returns to 1280 before Save/Discard/record-sale clicks, so no click runs at 375.
+`evidence/D95/ocr/T95.45-78d30f66.json`.

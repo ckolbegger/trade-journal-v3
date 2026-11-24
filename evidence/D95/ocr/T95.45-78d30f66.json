@@ -1,0 +1,164 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 3,
+    "total_tokens": 427603,
+    "input_tokens": 424402,
+    "output_tokens": 3201,
+    "cache_read_tokens": 37760,
+    "elapsed": "1m57s"
+  },
+  "tool_calls": {
+    "total": 42,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 19,
+      "file_find": 3,
+      "file_read": 18
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "e2e/d95/action.spec.ts",
+      "content": "The responsive checks resize the already-mutated page, but `atBothWidths` restores 1280 before this Save is clicked. The same pattern in the refusal, sale, and banner specs means destructive interactions run only at desktop width; a mobile-only broken or obscured Save/Discard/record-sale control would still pass. Parameterize each interaction scenario by width and start from a fresh fixture at that width so both layouts exercise the actions, not just their resulting text.",
+      "existing_code": "    await pressSave(form);",
+      "start_line": 29,
+      "end_line": 29,
+      "category": "test",
+      "severity": "medium"
+    },
+    {
+      "path": "e2e/d95/sale.spec.ts",
+      "content": "This can match the existing “Say why later” button even if submitting never renders a refusal. That button was already asserted visible above, so the check does not establish that validation explains the rejected save. Assert the actual error text, `Say why you left the Plan, or choose “Say why later”.`, or scope the assertion to the field's error element.",
+      "existing_code": "      await expect(page.getByText(/Say why/).first()).toBeVisible();",
+      "start_line": 108,
+      "end_line": 108,
+      "category": "test",
+      "severity": "medium"
+    },
+    {
+      "path": "e2e/d95/sale.spec.ts",
+      "content": "This snapshot reads a nonexistent `facts` object store: trade facts are stored inside records in the `trades` store. Consequently both snapshots fall back to `[]`, so the “writes nothing” assertion always passes even if the refused submission persists a sale. Compare the `trades` records (and other affected stores, if asserting no writes at all) instead, and apply the same fix to the partial-sale test below.",
+      "existing_code": "      const before = JSON.stringify(workspaceOf(await probe(page))!.stores['facts'] ?? []);",
+      "start_line": 57,
+      "end_line": 57,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "D95 end-to-end scenarios and shared test support",
+      "files": [
+        "e2e/d95/action.spec.ts",
+        "e2e/d95/exit-banner.spec.ts",
+        "e2e/d95/refusal.spec.ts",
+        "e2e/d95/sale.spec.ts",
+        "e2e/d95/support.ts"
+      ]
+    }
+  ],
+  "session_id": "eeb2cbf5-a549-4ee6-8392-ec42e8e2e7fd",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "eeb2cbf5-a549-4ee6-8392-ec42e8e2e7fd",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "78d30f66",
+      "resolved_base": "8dc9360b69d707a8548d861ded2838f617795c0d",
+      "resolved_head": "78d30f669bb5962168b2e4df9a67e456f79fe580",
+      "exact_range": "8dc9360b69d707a8548d861ded2838f617795c0d..78d30f669bb5962168b2e4df9a67e456f79fe580",
+      "source_artifact_sha256": "7d52a0ece4d475d6e5bbe891a918bcde0e65f5614a1a6350b35cec589a2497d0"
+    },
+    "execution": {
+      "ocr_version": "v1.14.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "6b0110f16a480bd87c44471aee83fe57d8785014973c5f40dd15d5e026cc27a9",
+          "path": "e2e/d95/action.spec.ts",
+          "fingerprint": "43d0ae2e900d22d0cd336f577fde82a48cd7fe94d12086315e6dde4514d49af1"
+        },
+        {
+          "item_id": "70139c4628afd128449a3ffa304f7e61bbc1b97f7e2a6b371f821e8756367046",
+          "path": "e2e/d95/sale.spec.ts",
+          "fingerprint": "77c811b8b31e4e5ed29c802ffa7832a3ba65e4163c6a4ffc5ca7e879dac95889"
+        },
+        {
+          "item_id": "8ecc0c3c0d50f057682f64368b81515a21f46238ee4ce6572ab94eb9c3aa2411",
+          "path": "e2e/d95/refusal.spec.ts",
+          "fingerprint": "ebf413cc9811698d647b5277eba500469ba345c4e28a49668896d7c6543d3716"
+        },
+        {
+          "item_id": "9ade1945f246e299473fb3f0ea94ca33ab9fda10ba95e9be158875b26b93254c",
+          "path": "e2e/d95/exit-banner.spec.ts",
+          "fingerprint": "4d1e4d61dd0eda85a93077791c56f40dddb35aa31c7ba3a0f06df11fb73e3761"
+        },
+        {
+          "item_id": "dc774d70236dfa8cffd0a2079f8dc2c3ee1639f6c0cd0bc46c998c675058ec43",
+          "path": "e2e/d95/support.ts",
+          "fingerprint": "bac79f03c1681de325c03173d104a89d3f85c4010a6b82d4e6ff47234a84ebdf"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "6b0110f16a480bd87c44471aee83fe57d8785014973c5f40dd15d5e026cc27a9",
+          "path": "e2e/d95/action.spec.ts",
+          "fingerprint": "43d0ae2e900d22d0cd336f577fde82a48cd7fe94d12086315e6dde4514d49af1"
+        },
+        {
+          "item_id": "70139c4628afd128449a3ffa304f7e61bbc1b97f7e2a6b371f821e8756367046",
+          "path": "e2e/d95/sale.spec.ts",
+          "fingerprint": "77c811b8b31e4e5ed29c802ffa7832a3ba65e4163c6a4ffc5ca7e879dac95889"
+        },
+        {
+          "item_id": "8ecc0c3c0d50f057682f64368b81515a21f46238ee4ce6572ab94eb9c3aa2411",
+          "path": "e2e/d95/refusal.spec.ts",
+          "fingerprint": "ebf413cc9811698d647b5277eba500469ba345c4e28a49668896d7c6543d3716"
+        },
+        {
+          "item_id": "9ade1945f246e299473fb3f0ea94ca33ab9fda10ba95e9be158875b26b93254c",
+          "path": "e2e/d95/exit-banner.spec.ts",
+          "fingerprint": "4d1e4d61dd0eda85a93077791c56f40dddb35aa31c7ba3a0f06df11fb73e3761"
+        },
+        {
+          "item_id": "dc774d70236dfa8cffd0a2079f8dc2c3ee1639f6c0cd0bc46c998c675058ec43",
+          "path": "e2e/d95/support.ts",
+          "fingerprint": "bac79f03c1681de325c03173d104a89d3f85c4010a6b82d4e6ff47234a84ebdf"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "45f6a45e84248ef385d95ba314fe927e358d107f8c13a19b207be090cf95e03e",
+          "path": "evidence/D95/tdd-log/T95.45.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 116536
+  }
+}
