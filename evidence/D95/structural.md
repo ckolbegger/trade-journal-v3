@@ -994,3 +994,8 @@ ocr of T95.45 (session eeb2cbf5): 5 files, 3 findings, test gaps, batched:
 - `84af6c09` B3: six new cases make every click at 375 (action, refusal, exit-banner, sale); desktop runs kept.
 - First-run passes, flagged and mutation-checked: B1 (snapshot check flipped: both closing cases failed), B2 (SAY_WHY text changed: both part-sale cases failed), B3 (buttons made unclickable under 400px: all six failed). Source restored each time; `git diff -- src` empty.
 - Browser: all of e2e/d95 46 of 46 passed (1.5 min).
+
+### T95.45-B ocr (`dc62c7f2..84af6c09`), two findings
+Output: evidence/D95/ocr/T95.45-B-dc62c7f2..84af6c09.json. Both Valid, both test gaps; they become bug tasks:
+- T95.45-B4: `e2e/d95/refusal.spec.ts:101` "Save it at 375 wide" checks only that one Action exists; assert, as the desktop twin does, the saved Action is the Roll with "Moving it out.".
+- T95.45-B5: `e2e/d95/sale.spec.ts:139` the closing sale "every click made at 375 wide" opens and fills the form at desktop width; narrow to 375 before opening it.
