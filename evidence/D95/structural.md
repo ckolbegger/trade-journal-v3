@@ -588,3 +588,13 @@ ocr of T95.26-B2 (session a4136929): 3 files, 0 findings. `evidence/D95/ocr/T95.
 Commit `ce3e1043`: `tj:open-list-ready` is emitted from a `useEffect` after the Ready render; the three count assertions after a `findBy` now `await waitFor`. Under load 1 of 12 failed before; 0 of 10 after. Product unchanged. Tech debt item 11's unit flake closed. B2's quick run is folded into the full run that follows (the full tier contains the task tier).
 
 Run `t95.26-gate-3` (browser-full, T95.26-B1, T95.26-B2, T95.26-F1): unit 2892, integration 330, browser 127, 79, 55 and 127 (4 skipped), checks 14 of 14. Passed. It covers T95.26-B2's quick run. Critic-2 follows.
+
+### Critic-2 (T95.26)
+
+Report `evidence/D95/critic-2.md`. Overall PASS; 3 moderate, 2 low. Cost: 285,710 tokens, 206 tool calls, 35.2 min; brief `self.criticBrief` v2 (support imports fixed); defects found. Critic-1's B1 and B2 confirmed fixed.
+
+| Critic | Tokens | Tool calls | Duration | Defects |
+|---|---|---|---|---|
+| critic-2 | 285,710 | 206 | 35.2 min | 3 moderate, 2 low |
+
+Moderate, bug tasks (not started; the user asked to stop after critic-2 for a Claude Code update): **T95.26-B3** a Trade with a partial sale shows a label percent from the meter's P&L share (AXIO "86% to Stop") while the card's own line and the spec's Pressure give 67%. **T95.26-B4** at 320 "Your last decisions" breaks between "−" and "$1,040.00" (B2 fixed only the Now box). **T95.26-B5** a card whose option Mark is acknowledged unavailable does not say so (no "No price today", Now box shows the session before's Marks). Low, to tech debt: defects 4, 5. After B3, B4 and B5: a full run, then critic-3 (the last before asking the user).
