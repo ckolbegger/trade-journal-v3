@@ -1,0 +1,112 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 1,
+    "total_tokens": 121713,
+    "input_tokens": 120433,
+    "output_tokens": 1280,
+    "cache_read_tokens": 13312,
+    "elapsed": "54s"
+  },
+  "tool_calls": {
+    "total": 11,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 3,
+      "file_read": 7
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/PositionChangeFormBody.tsx",
+      "content": "A refusal received while the local check is already `clear` can never lapse: `reported.check` stays `clear` even after subsequent sale edits. This case is explicitly supported by the existing “should show the workflow refusal when it comes back” test (the workflow can measure a backdated sale differently). After that refusal, changing the sale to leave the Plan and then back to follow it still leaves the question, banner, and empty-reason Save guard active. Derive expiry from the current no-reason check rather than requiring a non-clear snapshot, and add coverage for a workflow refusal initially reported against a clear local check.",
+      "existing_code": "  const reasonLapsed = checkState === 'clear' \u0026\u0026 reported !== undefined \u0026\u0026 reported.check !== 'clear';",
+      "start_line": 314,
+      "end_line": 314,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/screens/ExitFormPlanCheck.test.tsx",
+        "src/ui/screens/PositionChangeFormBody.tsx"
+      ]
+    }
+  ],
+  "session_id": "4d7e1905-cad1-4184-9ead-5f87033d89df",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "4d7e1905-cad1-4184-9ead-5f87033d89df",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "cbccc891",
+      "resolved_base": "ef8d2d8e6b59abd5f58d45dc75ba8507fb85c783",
+      "resolved_head": "cbccc8918b8eaf061576f6abd68e981aa978a40e",
+      "exact_range": "ef8d2d8e6b59abd5f58d45dc75ba8507fb85c783..cbccc8918b8eaf061576f6abd68e981aa978a40e",
+      "source_artifact_sha256": "48cea655fd1daa1613ccbcdcf76cc44eec4549cd1001baf59566771f071d8a9b"
+    },
+    "execution": {
+      "ocr_version": "v1.14.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "4f6cb7d33708d2ec6ba56caabfdcacaef771172f55d6690df1ca86605d86a205",
+          "path": "src/ui/screens/PositionChangeFormBody.tsx",
+          "fingerprint": "db1ae0faf3ba885d7fc6749a328da1218573444c1ffc9e069c185c012a723b75"
+        },
+        {
+          "item_id": "bc0f492c4fba56c5d9af590be3fb6dd06ba83822bd2627f1fac7691a34f89efa",
+          "path": "src/ui/screens/ExitFormPlanCheck.test.tsx",
+          "fingerprint": "685924c191227792d1259c34e14614d44fd43ed69d5a8a2257f1ab3c6f6a3ad4"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "4f6cb7d33708d2ec6ba56caabfdcacaef771172f55d6690df1ca86605d86a205",
+          "path": "src/ui/screens/PositionChangeFormBody.tsx",
+          "fingerprint": "db1ae0faf3ba885d7fc6749a328da1218573444c1ffc9e069c185c012a723b75"
+        },
+        {
+          "item_id": "bc0f492c4fba56c5d9af590be3fb6dd06ba83822bd2627f1fac7691a34f89efa",
+          "path": "src/ui/screens/ExitFormPlanCheck.test.tsx",
+          "fingerprint": "685924c191227792d1259c34e14614d44fd43ed69d5a8a2257f1ab3c6f6a3ad4"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "93345d3bd02eabdfe83582a7331791b9ce7632e8070640c384be8531cd52b3e1",
+          "path": "evidence/D95/tdd-log/T95.39-B2.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 54190
+  }
+}
