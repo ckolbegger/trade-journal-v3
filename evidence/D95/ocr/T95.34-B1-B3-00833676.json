@@ -1,0 +1,182 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 6 selected item(s).",
+  "summary": {
+    "files_reviewed": 6,
+    "comments": 1,
+    "total_tokens": 267716,
+    "input_tokens": 265480,
+    "output_tokens": 2236,
+    "cache_read_tokens": 14976,
+    "elapsed": "1m21s"
+  },
+  "tool_calls": {
+    "total": 21,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 2,
+      "file_read": 18
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/ReviewView.tsx",
+      "content": "This refresh can overwrite a subsequent reflection save. After the asked Action save finishes, `asking` is cleared while `refreshTrade` may still be awaiting `DailyReview.open`; the remaining reflection can then be saved. If that save completes before the earlier open response arrives, `reopenAndApply` unconditionally applies the older Review, rolling back the newer completion/progress and binding. The selection guard only protects the card detail, not that overview update. Invalidate refresh responses when a newer save is applied (or serialize saves with the refresh), and cover this ordering with deferred responses.",
+      "existing_code": "      if (selection.current === opening \u0026\u0026 openId !== undefined \u0026\u0026 [...dirty.current].some((id) =\u003e id !== `action:${openId}`)) void refreshTrade(openId, opening, [`action:${openId}`]).then((ok) =\u003e setFailed(!ok));",
+      "start_line": 307,
+      "end_line": 307,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Review screen form handling and card behavior with tests",
+      "files": [
+        "src/ui/screens/Refusal.tsx",
+        "src/ui/screens/ReviewCard.tsx",
+        "src/ui/screens/ReviewCards.test.tsx",
+        "src/ui/screens/ReviewOwedCard.tsx",
+        "src/ui/screens/ReviewView.tsx",
+        "src/ui/screens/form-handle.ts"
+      ]
+    }
+  ],
+  "session_id": "cdceeeb0-4f60-4d71-914b-12a71cc057b6",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "cdceeeb0-4f60-4d71-914b-12a71cc057b6",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "785eee18",
+      "requested_head": "00833676",
+      "resolved_base": "785eee18c749a0962fbbe425ce5a4ecf750f2c1e",
+      "resolved_head": "0083367616d6d2effea0bb53858f29b19555eb82",
+      "exact_range": "785eee18c749a0962fbbe425ce5a4ecf750f2c1e..0083367616d6d2effea0bb53858f29b19555eb82",
+      "source_artifact_sha256": "5aec48f9e6f5a43c3165f6d85873254c205acf657083165846f5818bec034c10"
+    },
+    "execution": {
+      "ocr_version": "v1.14.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "08f8116230cf8c08bc4434e9515cd20dcd5f8465748f8464853ae8b95c5202e5",
+          "path": "src/ui/screens/form-handle.ts",
+          "fingerprint": "dd81b7582bbdb086e9a0751ed01b3262c468c5636dcda5f7d88c7171af8f0b64"
+        },
+        {
+          "item_id": "2aa0341444a1921ffd05d33525a1cd8b52950e6319bf29824d81bde09d8b550f",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "bcf5df5ee3a23629a9ea8441a2b8d8d9ab7c39bcea061d6ff30fb911951bc612"
+        },
+        {
+          "item_id": "2affa70b9dc5d3cb4e2d2e18cbcff83f467837ca600372b168f2b594c5cf1cd8",
+          "path": "src/ui/screens/Refusal.tsx",
+          "fingerprint": "85c5bdcad6d8b96d1894cc2204624a327abb05889e527cf8ffa3566f2d1c3766"
+        },
+        {
+          "item_id": "38aeef0f163feea36a51abec7a5682a7d56670f177c89e58c49bb45f7f22563e",
+          "path": "src/ui/screens/ReviewCards.test.tsx",
+          "fingerprint": "f8316115ae04dbe90a4f9d4c29f3dd67790dd7285a98e7ac549991e9edeefcf7"
+        },
+        {
+          "item_id": "4ea21892d3027752d7d1fa91f0c291f5ec6227d108c0eb839ab89b6620bdc93e",
+          "path": "src/ui/screens/ReviewOwedCard.tsx",
+          "fingerprint": "67a70f91edb67825ae1cfc3d65594851b5d5a3dc55995f8eb7f31ffe36603059"
+        },
+        {
+          "item_id": "5b385c845542d6ccb7cd429923948b5ea16275e021991c866647b870c23c4c76",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "abd602d5acd866cabc6807ee3ff51e1f910060376abf20b4984502d8b88567f1"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "08f8116230cf8c08bc4434e9515cd20dcd5f8465748f8464853ae8b95c5202e5",
+          "path": "src/ui/screens/form-handle.ts",
+          "fingerprint": "dd81b7582bbdb086e9a0751ed01b3262c468c5636dcda5f7d88c7171af8f0b64"
+        },
+        {
+          "item_id": "2aa0341444a1921ffd05d33525a1cd8b52950e6319bf29824d81bde09d8b550f",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "bcf5df5ee3a23629a9ea8441a2b8d8d9ab7c39bcea061d6ff30fb911951bc612"
+        },
+        {
+          "item_id": "2affa70b9dc5d3cb4e2d2e18cbcff83f467837ca600372b168f2b594c5cf1cd8",
+          "path": "src/ui/screens/Refusal.tsx",
+          "fingerprint": "85c5bdcad6d8b96d1894cc2204624a327abb05889e527cf8ffa3566f2d1c3766"
+        },
+        {
+          "item_id": "38aeef0f163feea36a51abec7a5682a7d56670f177c89e58c49bb45f7f22563e",
+          "path": "src/ui/screens/ReviewCards.test.tsx",
+          "fingerprint": "f8316115ae04dbe90a4f9d4c29f3dd67790dd7285a98e7ac549991e9edeefcf7"
+        },
+        {
+          "item_id": "4ea21892d3027752d7d1fa91f0c291f5ec6227d108c0eb839ab89b6620bdc93e",
+          "path": "src/ui/screens/ReviewOwedCard.tsx",
+          "fingerprint": "67a70f91edb67825ae1cfc3d65594851b5d5a3dc55995f8eb7f31ffe36603059"
+        },
+        {
+          "item_id": "5b385c845542d6ccb7cd429923948b5ea16275e021991c866647b870c23c4c76",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "abd602d5acd866cabc6807ee3ff51e1f910060376abf20b4984502d8b88567f1"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "7e2e37a560f620e07b7279ca1accae617419a27ca85de4a9401edf8a10bf4ebf",
+          "path": "evidence/D95/ocr/T95.34-785eee18.json",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ab47bc811f23c17f4c6317a43b1bf19eff8f2b20af07649acc55f19159f8bebc",
+          "path": "evidence/D95/structural.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "bc34757278483298ab9f7bf65f2e2144f7b929c84ce78ba4580ce1460b470ba0",
+          "path": "evidence/D95/tdd-log/T95.34-B2.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "d1dc13b07c72c77b3b452df0b1dc2eb28c2e1ad57091e399089576d6a0c12c2e",
+          "path": "evidence/D95/tdd-log/T95.34-B1.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "e3097bd05207ff2a77b5e56e5d5910ea07c8a667ee97dc2c7cb695026cd6f9f6",
+          "path": "evidence/D95/new-words.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "fc041d051711d96462ad22c4ac2d0397d8490bbaad133b54a518462c84c2b7d8",
+          "path": "evidence/D95/tdd-log/T95.34-B3.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 80984
+  }
+}
