@@ -4,6 +4,7 @@ import { Meter } from '../cockpit/meter/meter.tsx';
 import type { MeterProps } from '../cockpit/meter/meter.types.ts';
 import { useRuntime } from '../runtime.tsx';
 import { captionLength, type CaptionLength } from './caption-fit.ts';
+import { Figures } from './Figures.tsx';
 import { nowBoxOf, type Caption } from './now-box.props.ts';
 
 export interface NowBoxProps {
@@ -152,7 +153,9 @@ export function NowBox({ trade, meter }: NowBoxProps) {
               {mark.change && (
                 <>
                   {' '}
-                  <small className="number">{mark.change}</small>
+                  <small className="number">
+                    <Figures text={mark.change} />
+                  </small>
                 </>
               )}
             </span>
@@ -164,7 +167,9 @@ export function NowBox({ trade, meter }: NowBoxProps) {
         {props.rows.map((row) => (
           <div key={row.label} data-weight={row.weight}>
             <dt title={row.term}>{row.label}</dt>
-            <dd className="number">{row.value}</dd>
+            <dd className="number">
+              <Figures text={row.value} />
+            </dd>
           </div>
         ))}
       </dl>

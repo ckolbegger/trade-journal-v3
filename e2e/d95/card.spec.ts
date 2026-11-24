@@ -165,6 +165,35 @@ test.describe('B95.4 The card', () => {
     await context.close();
   });
 
+  // T95.26-B2 (critic-1 defect 2, W90): the "−" must not part from "$2,016.00" at a line end.
+  test('should keep every signed figure in the Now box whole on one line at 320 wide', async ({ profile, copySetup }) => {
+    test.setTimeout(300_000);
+    const { context, page, trades } = await openStandardReview(profile, copySetup);
+    const trade = trades.find((t) => t.symbol === 'DALE')!;
+    await reachCard(page, trade);
+    const now = tradeCard(page, trade).getByRole('region', { name: 'Now · Mon Nov 16' });
+    await setWidth(page, 320);
+    await expect(now.locator('dl > div').filter({ has: page.getByText('Expiration', { exact: true }) }).locator('dd')).toContainText('then: −$2,016.00');
+    // Every signed money figure in the Now box: its own line box, so the sign stays with its number.
+    const broken = await now.evaluate((box) => {
+      const out: string[] = [];
+      const walker = document.createTreeWalker(box, NodeFilter.SHOW_TEXT);
+      for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+        const text = (n as Text).data;
+        for (const m of text.matchAll(/[−+]\$[\d,]+(\.\d+)?/g)) {
+          const range = document.createRange();
+          range.setStart(n, m.index);
+          range.setEnd(n, m.index + m[0].length);
+          const rects = [...range.getClientRects()].filter((r) => r.width > 0);
+          if (rects.length && Math.max(...rects.map((r) => r.bottom)) - Math.min(...rects.map((r) => r.top)) > 1.6 * parseFloat(getComputedStyle(n.parentElement!).fontSize)) out.push(m[0]);
+        }
+      }
+      return out;
+    });
+    expect(broken, 'signed figures broken across lines at 320').toEqual([]);
+    await context.close();
+  });
+
   test("should say the figures wait for today's Marks and offer no Action until the Mark is in, at 1280 and 375 wide", async ({ profile, copySetup }) => {
     test.setTimeout(300_000);
     const { context, page, ...trades } = await openCardFixture(profile, copySetup);
