@@ -45,7 +45,10 @@ describe('Institution and Account onboarding', () => {
   });
 
   it('should create the Institution then the Account and, from the returned onboarding state alone, show the Trades empty state with a New Plan action', async () => {
-    const facade = facadeDouble({ status: readyStatus({ onboarding: 'NeedsInstitutionAndAccount' }) });
+    const opened = readyStatus({ onboarding: 'NeedsInstitutionAndAccount' });
+    const facade = facadeDouble({ status: opened });
+    // The launch seed step calls initialize on an existing Writable Workspace; the real one returns Opened (no second status read).
+    vi.mocked(facade.Workspace.initialize).mockResolvedValue({ kind: 'Opened', status: opened, receipt: {} } as never);
     const institution = { id: 'inst-1', kind: 'Institution', label: 'Fidelity', normalizedLabel: 'fidelity', active: true, origin: 'Trader', recordRevision: 1 };
     const account = { id: 'acct-1', kind: 'Account', institutionId: 'inst-1', label: 'Roth IRA', normalizedLabel: 'roth ira', active: true, origin: 'Trader', recordRevision: 1 };
     vi.mocked(facade.ReferenceCatalog.save)
