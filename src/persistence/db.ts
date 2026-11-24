@@ -2,7 +2,7 @@ import type { Account, Institution } from '../domain/types'
 
 // The single IndexedDB database. One atomic transaction per semantic command.
 const DB_NAME = 'tjv3'
-const DB_VERSION = 1
+const DB_VERSION = 2
 export const STORES = ['workspace', 'institutions', 'accounts', 'catalog', 'journal', 'market', 'trade'] as const
 
 export type Db = IDBDatabase

@@ -9,12 +9,15 @@ test('readiness resolves and the shell reaches a real view', async ({ page }) =>
   })
 })
 
-test('navigation declares exactly the two installed capabilities', async ({ page }) => {
+test('navigation declares only installed capabilities', async ({ page }) => {
   await page.goto('/')
   const nav = await page.locator('nav[aria-label="Primary"]').innerText()
-  expect(nav).toContain('Institutions & Accounts')
-  expect(nav).toContain('Workspace')
-  for (const forbidden of ['Plan', 'Trade', 'Journal', 'Mark', 'Report', 'Backup', 'Restore']) {
+  // D1 capabilities remain installed; D2 adds New Plan and Trades. Assert the
+  // exact installed set and that no later capability appears.
+  for (const entry of ['Institutions & Accounts', 'Workspace', 'New Plan', 'Trades']) {
+    expect(nav).toContain(entry)
+  }
+  for (const forbidden of ['Execution', 'Mark', 'Review', 'Report', 'Backup', 'Restore']) {
     expect(nav).not.toContain(forbidden)
   }
 })
