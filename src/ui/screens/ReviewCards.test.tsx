@@ -1252,6 +1252,38 @@ describe('Trade names in messages and blockers (decision 68)', () => {
     expect(headers().map((h) => h.getAttribute('aria-expanded'))).toEqual(['false', 'false', 'true', 'false', 'false']);
   });
 
+  // T95.34-B4: a Review read that started before a later save was applied must not undo it when it returns last.
+  it('should keep the Review a later reflection save applied when the Review read after an Action save returns afterwards', async () => {
+    const user = userEvent.setup();
+    const facade = cardFacade();
+    withDueReflection(facade, WALK);
+    const actionPost = { kind: 'Ready', cards: [], progress: { tradesWithAction: 1, tradesEligible: 5 }, completion: MONDAY_COMPLETION, nextStep: { kind: 'Trade', trade: tradeReview(TA) }, binding } as const;
+    const debtPost = { ...actionPost, completion: { kind: 'Complete' }, nextStep: { kind: 'Done' } } as const;
+    vi.mocked(facade.DailyReview.save).mockImplementation(((request: { kind: string }) =>
+      Promise.resolve(request.kind === 'SaveTradeAction' ? { kind: 'Saved', action: {}, review: actionPost } : { kind: 'DebtResolved', entry: { id: 'e1', responses: [] }, debt: { debtId: 'd1', status: 'Settled', revision: 'd1-rev-2' }, review: debtPost })) as never);
+    let late: (value: Ready) => void = () => {};
+    vi.mocked(facade.DailyReview.open).mockResolvedValueOnce(review()).mockReturnValueOnce(new Promise<Ready>((resolve) => (late = resolve)));
+    renderReview(facade, { at: '/review?trade=t-f' });
+    await waitFor(() => expect(facade.DailyReview.getTrade).toHaveBeenCalledTimes(1));
+    const card = (await screen.findAllByRole('listitem')).find((li) => li.getAttribute('data-trade-id') === 't-f')!;
+    await startReflection(user, card);
+    await user.click(within(card).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
+    await waitFor(() => expect(facade.DailyReview.open).toHaveBeenCalledTimes(2));
+    await showPanel(user, card, 'Reflections');
+    await user.click(within(card).getByRole('button', { name: 'Decline' }));
+    await waitFor(() => expect(facade.DailyReview.save).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(screen.getAllByText('Complete').length).toBeGreaterThan(0));
+    expect(screen.queryByText('Incomplete')).toBeNull();
+
+    await act(async () => {
+      late(review());
+      await Promise.resolve();
+    });
+
+    expect(screen.queryByText('Incomplete')).toBeNull();
+    expect(screen.getAllByText('Complete').length).toBeGreaterThan(0);
+  });
+
   // T6.20-B2, items 3 and 4: an Action is saved on a card that holds a Mark draft, and the Review read again no longer walks the Trade.
   async function savedOnHeldCard(refreshed: OpenDailyReviewResult, owedCard?: OwedReflectionsCard, unreadable = false) {
     const user = userEvent.setup();

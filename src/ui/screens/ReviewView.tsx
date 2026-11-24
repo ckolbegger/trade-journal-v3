@@ -129,7 +129,11 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
   const [empty, setEmpty] = useState(initiallyEmpty);
   const review = heldReview.review;
   const latest = useRef(heldReview);
+  // How many results were folded in: a Review read that started before a later one was applied is out of date when it returns.
+  const applied = useRef(0);
   const apply = (result: HeldResult) => {
+    // A Mark saved on its own, or a conflict, carries no Review: it leaves a read in flight as current as it was.
+    if ('review' in result) applied.current += 1;
     latest.current = fold(latest.current, result);
     setHeldReview(latest.current);
   };
@@ -211,12 +215,15 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
   // are both refreshed. Undefined when it could not be produced.
   // A Ready or an Empty Review is a Review: the screen holds either, as it does when it first opens. Any other result is a failure.
   const inFlight = useRef<Promise<Ready | OpenEmpty | undefined>>(undefined);
+  const inFlightAt = useRef(0);
   const reopen = (): Promise<Ready | OpenEmpty | undefined> => {
-    if (inFlight.current) return inFlight.current;
+    // A read that started before a later result was applied is not shared: it would bring back the older Review.
+    if (inFlight.current && inFlightAt.current === applied.current) return inFlight.current;
+    inFlightAt.current = applied.current;
     const asking = facade.DailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: now() })
       .catch(() => undefined)
       .then((result) => {
-        inFlight.current = undefined;
+        if (inFlight.current === asking) inFlight.current = undefined;
         return result?.kind === 'Ready' || result?.kind === 'Empty' ? result : undefined;
       });
     inFlight.current = asking;
@@ -233,7 +240,10 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
   };
   // The Review asked for and applied. A card opened while it is pending waits for it, so it is read under the binding it returns.
   const reopenAndApply = async (): Promise<Ready | OpenEmpty | undefined> => {
+    const startedAt = applied.current;
     const asking = reopen().then((next) => {
+      // A later result was applied while this was read: the older Review does not replace it, and the held one is what the caller reads from.
+      if (next && applied.current !== startedAt) return latest.current.review;
       if (next) {
         apply({ kind: 'Opened', review: next.kind === 'Ready' ? next : heldEmpty(next) });
         setEmpty(next.kind === 'Empty');
