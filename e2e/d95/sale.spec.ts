@@ -1,7 +1,7 @@
 import type { Locator, Page } from '@playwright/test';
 import { debtsOf, entriesWithSettledDebt } from '../d5/support.ts';
 import { cardHeader, closeReasonGroup, closingSection, dayLine, debtFormOf, enterMark, expect, fillRows, openExitForm, openReview, probe, reachPanel, reflectionsOf, saveAction, sell, setClock, test, TUESDAY_1700, workspaceOf } from '../d6/support.ts';
-import { expectNoSidewaysScroll } from '../d7p/support.ts';
+import { expectNoSidewaysScroll, setWidth } from '../d7p/support.ts';
 import { atBothWidths, openAbcDef } from './support.ts';
 
 type Where = 'Review' | 'Detail';
@@ -132,6 +132,24 @@ test.describe('B95.8 The sale measured against the Plan Exit (AC-REV-008, AC-POS
       await context.close();
     });
   }
+
+  test('should refuse a closing sale with no Close Reason, then record it, every click made at 375 wide', async ({ profile, copySetup }) => {
+    test.setTimeout(90_000);
+    const { context, page, ids } = await openAbcDef(profile, copySetup);
+    const form = await openSale(page, 'Detail', 'ABC', ids);
+    await fillRows(page, [sell('100', '27.60', '1.00', '2026-10-12T11:00')]);
+    await setWidth(page, 375);
+    const before = await writtenStores(page);
+    await form.getByRole('button', { name: 'Save exit' }).click();
+    await expect(closingSection(page).locator('.field-error, [role="alert"]').first(), 'the refusal at 375').toBeVisible();
+    expect(await writtenStores(page), 'a refused sale writes nothing').toBe(before);
+    await closeReasonGroup(page).getByRole('radio', { name: 'Stop Triggered', exact: true }).check();
+    await form.getByRole('button', { name: 'Save exit' }).click();
+    await expect(page.getByText('Recorded. ABC is closed. Its Close Review is due in the next Review.', { exact: true }), 'the receipt at 375').toBeVisible();
+    expect(await writtenStores(page), 'the snapshot sees the saved sale').not.toBe(before);
+    await expectNoSidewaysScroll(page, 'the receipt at 375 px');
+    await context.close();
+  });
 
   test('should carry the Exit reason of a whole sale before the lines and ask nothing more', async ({ profile, copySetup }) => {
     test.setTimeout(90_000);

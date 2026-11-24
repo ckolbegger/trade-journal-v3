@@ -1,4 +1,4 @@
-import { expectNoSidewaysScroll } from '../d7p/support.ts';
+import { expectNoSidewaysScroll, setWidth } from '../d7p/support.ts';
 import { actionEntriesOf, actionFormOf, enterMark, expect, pressSave, probe, reachPanel, reloadReview, openReview, test, workspaceOf } from '../d4/support.ts';
 import { atBothWidths, openAbcDef } from './support.ts';
 
@@ -34,6 +34,29 @@ test.describe('B95.6 The Action form on the Review (AC-REV-007, AC-REV-003)', ()
       await expect(saved.getByRole('button', { name: 'Change', exact: true })).toBeVisible();
       await expect(saved.getByText('Not done until it is recorded')).toHaveCount(0);
     });
+    expect(await storedActions(page), 'one Action saved').toBe(1);
+    await context.close();
+  });
+
+  test('should save the Hold and discard a Roll at 375 wide, with every click made at that width', async ({ profile, copySetup }) => {
+    test.setTimeout(300_000);
+    const { context, page } = await openAbcDef(profile, copySetup);
+    await openReview(page);
+    await enterMark(page, 'ABC', 'Mon Oct 12', '29.00');
+    const form = await actionFormOf(page, 'ABC');
+    await setWidth(page, 375);
+    // Discard at 375: a Roll and its reason go, and Hold is back.
+    await form.getByRole('radio', { name: 'Roll', exact: true }).check();
+    await form.getByLabel('Why? (required)').fill('Moving it out.');
+    await form.getByRole('button', { name: 'Discard', exact: true }).click();
+    await expect(form.getByRole('radio', { name: 'Hold', exact: true }), 'Hold back at 375').toBeChecked();
+    await expect(form.getByLabel('Why? (optional)')).toHaveValue('');
+    expect(await storedActions(page), 'Discard records nothing').toBe(0);
+    // Save at 375.
+    await pressSave(form);
+    const saved = (await reachPanel(page, 'ABC', 'Action')).getByRole('region', { name: 'Saved Action' });
+    await expect(saved.getByText('Mon Oct 12: Hold', { exact: true }), 'the saved line at 375').toBeVisible();
+    await expectNoSidewaysScroll(page, 'the saved Action at 375 px');
     expect(await storedActions(page), 'one Action saved').toBe(1);
     await context.close();
   });

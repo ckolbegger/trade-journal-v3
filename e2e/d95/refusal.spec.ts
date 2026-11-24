@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import { actionEntriesOf, actionFormOf, cardHeader, enterMark, expect, markCell, openReview, probe, reachCard, test, workspaceOf } from '../d4/support.ts';
-import { expectNoSidewaysScroll } from '../d7p/support.ts';
+import { expectNoSidewaysScroll, setWidth } from '../d7p/support.ts';
 import { atBothWidths, openAbcDef } from './support.ts';
 
 const storedActions = async (page: Page) => actionEntriesOf(workspaceOf(await probe(page))!);
@@ -87,6 +87,30 @@ test.describe('B95.7 The refusal on the Trade pressed (AC-REV-001)', () => {
       await expect(cardHeader(page, 'DEF')).toHaveAttribute('aria-expanded', 'false');
     });
     expect(await storedActions(page)).toHaveLength(0);
+    await context.close();
+  });
+
+  test('should save the form on Save it and open the Trade pressed, with the choice pressed at 375 wide', async ({ profile, copySetup }) => {
+    test.setTimeout(300_000);
+    const { context, page } = await openAbcDef(profile, copySetup);
+    await pressDefOverUnsavedAbc(page);
+    await setWidth(page, 375);
+    await refusalOf(page).getByRole('button', { name: 'Save it', exact: true }).click();
+    await expect(cardHeader(page, 'DEF'), 'DEF opens at 375').toHaveAttribute('aria-expanded', 'true');
+    await expect(refusalOf(page)).toHaveCount(0);
+    expect(await storedActions(page), "ABC's Roll saved once").toHaveLength(1);
+    await context.close();
+  });
+
+  test('should let the form go on Discard it at 375 wide and open the Trade pressed', async ({ profile, copySetup }) => {
+    test.setTimeout(300_000);
+    const { context, page } = await openAbcDef(profile, copySetup);
+    await pressDefOverUnsavedAbc(page);
+    await setWidth(page, 375);
+    await refusalOf(page).getByRole('button', { name: 'Discard it', exact: true }).click();
+    await expect(cardHeader(page, 'DEF'), 'DEF opens at 375').toHaveAttribute('aria-expanded', 'true');
+    await expect(refusalOf(page)).toHaveCount(0);
+    expect(await storedActions(page), 'Discard it saves nothing').toHaveLength(0);
     await context.close();
   });
 

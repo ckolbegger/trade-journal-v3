@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import { actionEntriesOf, cardHeader, createTrades, defineSetup, enterMark, expect, firstPage, FOUR_TRADES, fillRows, launchAt, MONDAY_1700, onboardedAt, openReview, probe, reachCard, reloadReview, saveAction, sell, test, TUESDAY_1700, workspaceOf, type Profile, type Setup } from '../d6/support.ts';
-import { expectNoSidewaysScroll } from '../d7p/support.ts';
+import { expectNoSidewaysScroll, setWidth } from '../d7p/support.ts';
 import { atBothWidths } from './support.ts';
 
 // Monday: ABC (100 shares, Stop $28.00, Target $36.00) is inside its lines at $29.00 and an Exit is saved with a reason; DEF is untouched.
@@ -92,6 +92,36 @@ test.describe('B95.9 An Exit not carried out (AC-REV-007)', () => {
     await atBothWidths(page, async (width) => {
       await expect(cardBanner(page).getByText('You chose Exit on Mon Oct 12. Sold 40 since. Still holding 60.', { exact: true }), `the banner after a part sale at ${width}`).toBeVisible();
     });
+    await context.close();
+  });
+
+  test('should hide the banner on Still holding pressed at 375 wide', async ({ profile, copySetup }) => {
+    test.setTimeout(120_000);
+    const { context, page } = await openTuesday(profile, copySetup, EXIT_SAVED);
+    await reachCard(page, 'ABC');
+    await setWidth(page, 375);
+    await cardBanner(page).getByRole('button', { name: 'Still holding', exact: true }).click();
+    await expect(cardBanner(page), "the card's banner gone at 375").toHaveCount(0);
+    await expect(dayNote(page), "the day card's note gone at 375").toHaveCount(0);
+    expect(await storedActions(page), 'Still holding saves nothing').toHaveLength(1);
+    await context.close();
+  });
+
+  test('should record a part sale from I sold: record it, every click made at 375 wide', async ({ profile, copySetup }) => {
+    test.setTimeout(120_000);
+    const { context, page } = await openTuesday(profile, copySetup, EXIT_SAVED);
+    await reachCard(page, 'ABC');
+    await setWidth(page, 375);
+    await cardBanner(page).getByRole('button', { name: 'I sold: record it', exact: true }).click();
+    const form = page.locator('form.plan-form');
+    await expect(form.getByRole('group', { name: 'Execution 1' }), 'the sale form at 375').toBeVisible();
+    await fillRows(page, [sell('40', '29.50', '1.00', '2026-10-13T10:00')]);
+    await page.getByLabel('Why did you leave the Plan?').fill('Trimming.');
+    await form.getByRole('button', { name: 'Save exit' }).click();
+    await expect(page.getByText(/^Recorded/).first().or(page.getByRole('heading', { name: 'Exit recorded' }))).toBeVisible();
+    await page.getByRole('button', { name: 'Back to the Review' }).click();
+    await reachCard(page, 'ABC');
+    await expect(cardBanner(page).getByText('You chose Exit on Mon Oct 12. Sold 40 since. Still holding 60.', { exact: true }), 'the banner after a part sale at 375').toBeVisible();
     await context.close();
   });
 
