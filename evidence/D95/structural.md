@@ -640,3 +640,5 @@ Commit `dc09ad2f`: `viewsOfRestored` restores then calls a new exported `viewsOf
 ocr of T95.26-F2 (session a5546e98): 2 files, 0 findings. `evidence/D95/ocr/T95.26-F2-dc09ad2f.json`. Next: full run `t95.26-f2` (the user: a full suite run, no critic).
 
 Run `t95.26-f2` (browser-full, 19 min 11 s): unit 2895 in 25 s (was 53.8 s in t95.26-gate-4), integration 330, browser 127, 79, 55 and 129 (4 skipped), checks 14 of 14. Passed. T95.26-F2 done (Progress row added).
+
+The user (2026-11-24) chose (a) for critic-3's moderate defect: it goes to tech debt. `acceptance-commands.sh plan/D09.5-daily-review-redesign.md`: 43 commands checked, 26 failed; every failing command names a Part B or Part C file (d95/plan-rule, action.spec, d95/sale-plan-exit, sale.spec, d95/settle-later, settle-later.spec, d95/expiration-reason, expiration.spec, d95/close-review, d95/seed-6, resize.spec, keyboard-day.spec, offline.spec, d95/not-writable, d95/restore-seed, d95/rebuild), as expected until those parts write them. **The T95.26 gate is closed; Part A is complete.**
