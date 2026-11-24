@@ -1,4 +1,5 @@
 import { evaluateReadiness } from '../domain/readiness'
+import { verifyOfflineInventory } from '../domain/offline-inventory'
 import { guardWrite } from '../domain/write-gate'
 import { seedCatalog, seedJournal } from '../domain/initialize'
 import { SEED_MANIFEST } from '../domain/seeds'
@@ -23,6 +24,55 @@ function protection(): { kind: string } {
   return { kind: 'BestEffort' }
 }
 
+const CHECK_LABEL: Record<string, string> = {
+  'diagnostic-transaction': 'diagnostic transaction failed',
+  capacity: 'insufficient capacity',
+  'service-worker': 'service worker is not controlling this page',
+  'offline-inventory': 'offline release inventory is not verified',
+}
+
+export function readinessMessage(readiness: ReadinessEvidence): string {
+  if (readiness.outcome === 'Writable') return ''
+  const reasons = readiness.failedChecks.map(check => CHECK_LABEL[check] ?? check).join(', ')
+  return `Journal is ${readiness.outcome}${reasons ? ` (${reasons})` : ''}. Reads and backup remain available; writes are disabled.`
+}
+
+// Production evidence is earned, not assumed: the generated inventory is
+// fetched and every recorded asset digest is recomputed from delivered bytes.
+async function probeOfflineInventory(): Promise<boolean> {
+  try {
+    const response = await fetch('/offline-inventory.json', { cache: 'no-store' })
+    if (!response.ok) return false
+    const inventory = await response.json()
+    return await verifyOfflineInventory(inventory, async url => {
+      const asset = await fetch(url, { cache: 'no-store' })
+      if (!asset.ok) throw new Error(`asset ${url} unavailable`)
+      return new Uint8Array(await asset.arrayBuffer())
+    })
+  } catch {
+    return false
+  }
+}
+
+async function hasServiceWorkerControl(): Promise<boolean> {
+  if (!('serviceWorker' in navigator)) return false
+  const sw = navigator.serviceWorker
+  if (sw.controller) return true
+  return await new Promise(resolve => {
+    let done = false
+    const finish = () => {
+      if (done) return
+      done = true
+      clearTimeout(timer)
+      sw.removeEventListener('controllerchange', onChange)
+      resolve(sw.controller !== null)
+    }
+    const onChange = () => { if (sw.controller) finish() }
+    const timer = setTimeout(finish, 4000)
+    sw.addEventListener('controllerchange', onChange)
+  })
+}
+
 export async function establish(): Promise<AppState> {
   // On the production origin the service worker controls the page and the
   // generated Offline Release Inventory is present and digest-valid. DEV-001
@@ -34,8 +84,10 @@ export async function establish(): Promise<AppState> {
   const readiness = evaluateReadiness({
     diagnosticTransaction: true,
     capacityHeadroom: true,
-    serviceWorkerControl: localDev || ('serviceWorker' in navigator && navigator.serviceWorker.controller !== null),
-    offlineInventoryValid: localDev,
+    // Dev has no generated inventory or service worker; the same checks are
+    // performed for real in a production build.
+    serviceWorkerControl: localDev || await hasServiceWorkerControl(),
+    offlineInventoryValid: localDev || await probeOfflineInventory(),
     protection: { kind: 'BestEffort', reason: 'browser-managed' },
     workspaceReadable: true,
     existingRoot: 'none',
@@ -46,7 +98,7 @@ export async function establish(): Promise<AppState> {
   if (readiness.outcome !== 'Writable') {
     return {
       view: 'error', institutions: [], accounts: [], layout,
-      message: `Journal is ${readiness.outcome}. Reads and backup remain available; writes are disabled.`,
+      message: readinessMessage(readiness),
       protection: readiness.protection.kind,
       readiness,
     }

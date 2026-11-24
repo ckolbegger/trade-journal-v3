@@ -85,7 +85,7 @@ test('should validate a completed reflection and accept an explicit decline', as
   await fillExecution(page, 1, '10', '100', '5')
   await page.getByRole('radio', { name: 'Complete reflection' }).check()
   await page.getByRole('button', { name: 'Record position change' }).click()
-  await expect(page.getByRole('alert')).toContainText('DecisionMode')
+  await expect(page.getByRole('alert')).toContainText('Decision mode is required.')
 
   await page.getByRole('radio', { name: 'Decline reflection' }).check()
   await page.getByLabel('Decline reason').fill('No time')

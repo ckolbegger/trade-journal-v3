@@ -7,6 +7,7 @@ import {
 import { openDb } from '../persistence/db'
 import { queryOpenTrades, type StoredOpenTrade } from '../domain/open-views'
 import { recordOpeningPositionChange } from './position-controller'
+import { formatIssues } from './issue-copy'
 import type { ReflectionDisposition } from '../domain/position-change-reflection'
 
 const initial: AppState = {
@@ -75,7 +76,19 @@ export function App() {
     })
     const onResize = () => setState(s => ({ ...s, layout: window.innerWidth >= 900 ? 'wide' : 'narrow' }))
     window.addEventListener('resize', onResize)
-    return () => window.removeEventListener('resize', onResize)
+    // A production worker can gain control after first paint; re-establish
+    // readiness without disturbing entered-but-unsaved form state.
+    const sw = 'serviceWorker' in navigator ? navigator.serviceWorker : undefined
+    const onControllerChange = () => {
+      void establish().then(next => setState(s => ({
+        ...s, view: next.view, message: next.message, readiness: next.readiness,
+      })))
+    }
+    sw?.addEventListener('controllerchange', onControllerChange)
+    return () => {
+      window.removeEventListener('resize', onResize)
+      sw?.removeEventListener('controllerchange', onControllerChange)
+    }
   }, [])
 
   const onAddInstitution = useCallback(async () => {
@@ -137,7 +150,7 @@ export function App() {
     })
     if (!result.ok) {
       setPositionError(result.error.kind === 'Validation'
-        ? result.error.issues.join(', ')
+        ? formatIssues(result.error.issues)
         : 'Writes are disabled until Runtime Readiness is Writable.')
       return
     }
