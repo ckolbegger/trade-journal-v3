@@ -918,3 +918,7 @@ ocr of T95.40 (session a59ae1e9): 18 files, 3 findings. `evidence/D95/ocr/T95.40
 - **T95.40-B1** (Valid, `ActionForm.tsx:298`): after a sale the refresh result is ignored and the "refresh owed" flag cleared first; if the Review read fails, the receipt is gone, the closed Trade stays with old figures and nothing retries (the partial-sale path too).
 - Finding 2 (Valid in fact, a design question; to the user): "Closed · Close Review" (W103, decision 134) heads the owed group, which also holds open Trades owing only a Position Change Reflection (`owedGroup` lists any Trade outside the walk with an outstanding reflection), so an open Trade shows under "Closed".
 - Finding 3 (Doubtful, `PositionChangeFormBody.tsx:88`): "Back to the Review" ends a half-typed sale at once. Dismissed by the main session: an explicit leave, like the Action form's Discard and the page form's Cancel (drafts are never saved); case 7's refusal is for leaving to another card, which is built.
+
+### T95.40-B1
+
+Commit `b8afe82d`: `readAfterSale` awaits the read and keeps the "refresh owed" flag on failure (partial-sale and dismissal paths); ReviewView's onRefresh now sets the existing banner "We couldn’t refresh the Review. Nothing was changed." on any card refresh failure (cleared on success). Three cases, each red then green. Residual: a read still in flight when the card unmounts and then fails sets the flag after cleanup (no retry). src/ui/screens 848 passed; d95/sale-form passed.
