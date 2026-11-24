@@ -863,3 +863,5 @@ The tdd-task built nothing. Cases 2, 3 and 4 can't all hold: Trade Detail's held
 T95.38 main-session note: commit `ca2ea8e4`; the body moved unchanged to `PositionChangeFormBody.tsx` (props tradeId, exit, onDone, backLabel); `ExitForm.tsx` wraps it; main.tsx unchanged. Recorded difference: moving between Record entry and Record exit on one Trade now remounts the form (row state not kept); no test covers it. d6 exit, exit-action, exit-requirements, close-review, no-save 6 passed; PositionChangeForm tests 77 passed unedited.
 
 ocr of T95.38 (session 331df033): 3 files, 0 findings. `evidence/D95/ocr/T95.38-ca2ea8e4.json`. Next: run `t95.38-exit-form` (browser-task, Standard).
+
+Run `t95.38-exit-form` (browser-task): unit 3016, integration 329, browser 24, checks 14 of 14. Passed. T95.38 done.
