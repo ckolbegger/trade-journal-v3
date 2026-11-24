@@ -1,0 +1,179 @@
+{
+  "status": "failed",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review failed: 0 finding(s); 3 of 3 selected item(s) failed.",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 0,
+    "total_tokens": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "elapsed": "3s"
+  },
+  "tool_calls": {
+    "total": 0,
+    "by_tool": {},
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": null,
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "e2e/d95/upgrade.spec.ts",
+        "src/ui/AppShell.test.tsx",
+        "src/ui/AppShell.tsx"
+      ]
+    }
+  ],
+  "session_id": "b990e24e-4561-4c40-aaa3-bd87f31fdecb",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "b990e24e-4561-4c40-aaa3-bd87f31fdecb",
+    "operation": "review",
+    "terminal_state": "failed",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "a2dbcc59^",
+      "requested_head": "00a4d031",
+      "resolved_base": "c05636b9ca5213e7e6859c37e168a49a4ea47fd9",
+      "resolved_head": "00a4d03157d8216600cc79bfc5cb1f4b62fea1d6",
+      "exact_range": "c05636b9ca5213e7e6859c37e168a49a4ea47fd9..00a4d03157d8216600cc79bfc5cb1f4b62fea1d6",
+      "source_artifact_sha256": "a27534e6019a05fd8743f587ce90e991cef196a0515ecbb6d7dcb6551603d9be"
+    },
+    "execution": {
+      "ocr_version": "v1.14.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "05d90cb87c5d447fd664f52e88591c76b66b98891a321a30c33cba1aa99b87be",
+          "path": "e2e/d95/upgrade.spec.ts",
+          "fingerprint": "2eac2cf998bb469eacc7e9b658a5d26a0919345262287cac3ea80ca712bfc8e7"
+        },
+        {
+          "item_id": "20e5786cb6ea5a9d3c13b4bbbb2b3d4903d06eb616936313bd038e5e97218b98",
+          "path": "src/ui/AppShell.test.tsx",
+          "fingerprint": "262273f1b335bbf39b119d9fad4a700b734b1fcc880b518eb96e77a5a5b30c57"
+        },
+        {
+          "item_id": "ed33075e3c18905cddd7fa82e7df1603fded0e0e6cc89f5b3766cbe422506d90",
+          "path": "src/ui/AppShell.tsx",
+          "fingerprint": "42cea8b6409d546e2d0b84ffd2f2e9784b66337a3c5838b5bd8efb3239264e28"
+        }
+      ],
+      "completed": [],
+      "reused": [],
+      "failed": [
+        {
+          "item_id": "05d90cb87c5d447fd664f52e88591c76b66b98891a321a30c33cba1aa99b87be",
+          "path": "e2e/d95/upgrade.spec.ts",
+          "fingerprint": "2eac2cf998bb469eacc7e9b658a5d26a0919345262287cac3ea80ca712bfc8e7",
+          "classification": "provider",
+          "reason": "provider or subtask request failed"
+        },
+        {
+          "item_id": "20e5786cb6ea5a9d3c13b4bbbb2b3d4903d06eb616936313bd038e5e97218b98",
+          "path": "src/ui/AppShell.test.tsx",
+          "fingerprint": "262273f1b335bbf39b119d9fad4a700b734b1fcc880b518eb96e77a5a5b30c57",
+          "classification": "provider",
+          "reason": "provider or subtask request failed"
+        },
+        {
+          "item_id": "ed33075e3c18905cddd7fa82e7df1603fded0e0e6cc89f5b3766cbe422506d90",
+          "path": "src/ui/AppShell.tsx",
+          "fingerprint": "42cea8b6409d546e2d0b84ffd2f2e9784b66337a3c5838b5bd8efb3239264e28",
+          "classification": "provider",
+          "reason": "provider or subtask request failed"
+        }
+      ],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "3b8b8c10fde2471370ab2cf14c446622c07f492c0119de48f572dc2ce4403a74",
+          "path": "evidence/D95/tdd-log/T95.45-B95.10.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ab47bc811f23c17f4c6317a43b1bf19eff8f2b20af07649acc55f19159f8bebc",
+          "path": "evidence/D95/structural.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ad2624c869aea66bb13a6dd19a77ca34d8d4e51a4da03a2b19549734aeac5f56",
+          "path": "evidence/D95/ocr/T95.28-F2-B2-a2dbcc59-provider-failed.json",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "b2f82bd85524f24c49b8d1a74e164ea402c04b009571b2cdfb6e8cf0a63b0566",
+          "path": "evidence/D95/tdd-log/T95.28-F2-B2.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 3484
+  },
+  "retry_report": {
+    "schema_version": "ocr.llm-retry-report/v1",
+    "total_requests": 2,
+    "retried_requests": 0,
+    "total_retries": 0,
+    "recovered_requests": 0,
+    "failed_requests": 2,
+    "cancelled_requests": 0,
+    "requests": [
+      {
+        "logical_request_id": "012edba94872cb221aedb3dad77aba6360fc18e5e1ef7e41e7f838cba2ba25ac",
+        "provider": "chatgpt",
+        "model": "gpt-6.1-sol",
+        "file_path": "e2e/d95/upgrade.spec.ts,src/ui/AppShell.test.tsx,src/ui/AppShell.tsx",
+        "task_type": "main_task",
+        "request_no": 1,
+        "outcome": "failed",
+        "attempts": [
+          {
+            "attempt": 1,
+            "outcome": "error",
+            "error_class": "provider",
+            "failure_phase": "stream",
+            "status_code": 200,
+            "duration_to_headers_ms": 1629
+          }
+        ]
+      },
+      {
+        "logical_request_id": "9c8eb22c0c97b9bc4a8aeb2199a1a0f9d000bc8260902a41b44e960ca58208b9",
+        "provider": "chatgpt",
+        "model": "gpt-6.1-sol",
+        "file_path": "e2e/d95/upgrade.spec.ts,src/ui/AppShell.test.tsx,src/ui/AppShell.tsx",
+        "task_type": "plan_task",
+        "request_no": 1,
+        "outcome": "failed",
+        "attempts": [
+          {
+            "attempt": 1,
+            "outcome": "error",
+            "error_class": "provider",
+            "failure_phase": "stream",
+            "status_code": 200,
+            "duration_to_headers_ms": 1605
+          }
+        ]
+      }
+    ]
+  }
+}
