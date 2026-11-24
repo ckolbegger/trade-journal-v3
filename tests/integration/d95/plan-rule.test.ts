@@ -61,10 +61,13 @@ describe('I95.10 AC-REV-007 The Action follows the Plan', () => {
     }
     expect(await dumpAll(book.d.factory)).toEqual(before);
 
-    expect(await saveOn(book.app, book.ids.shallow, 'Hold', 'The gap will fill.')).toMatchObject({ kind: 'Saved' });
-    const saved = await savedActions(book, book.ids.shallow);
-    expect(saved.actions).toEqual([{ tradeId: book.ids.shallow, reviewDate: MONDAY, action: 'Hold', reason: 'The gap will fill.' }]);
-    expect(saved.reviews[0]).toContainEqual({ prompt: 'Why?', answer: { kind: 'Text', text: 'The gap will fill.' } });
+    for (const name of ['shallow', 'target'] as const) {
+      // Catches a justified Hold refused or mis-saved for the Trade at either line.
+      expect(await saveOn(book.app, book.ids[name], 'Hold', 'The gap will fill.')).toMatchObject({ kind: 'Saved' });
+      const saved = await savedActions(book, book.ids[name]);
+      expect(saved.actions).toEqual([{ tradeId: book.ids[name], reviewDate: MONDAY, action: 'Hold', reason: 'The gap will fill.' }]);
+      expect(saved.reviews[0]).toContainEqual({ prompt: 'Why?', answer: { kind: 'Text', text: 'The gap will fill.' } });
+    }
   });
 
   it('should save an Exit without a reason for each Trade that is Out', { timeout: 120_000 }, async () => {
