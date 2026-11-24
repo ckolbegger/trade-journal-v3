@@ -318,8 +318,20 @@ export function AppShell({
 
   useEffect(() => {
     let current = true;
-    void facade.Workspace.getStatus().then((next) => {
+    void facade.Workspace.getStatus().then(async (next) => {
       if (!current) return;
+      // An existing Writable Workspace gets any seed this release adds (idempotent), before the first screen reads it.
+      if (next.kind === "Ready" && next.readiness.outcome === "Writable") {
+        try {
+          const opened = await facade.Workspace.initialize({});
+          if (!current) return;
+          setStatus(opened.kind === "Opened" ? opened.status : next);
+        } catch {
+          if (!current) return;
+          setStatus(next);
+        }
+        return;
+      }
       setStatus(next);
       // An older schema under Writable readiness: this launch migrates it (D2 P6).
       if (

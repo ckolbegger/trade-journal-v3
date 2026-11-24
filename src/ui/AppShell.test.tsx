@@ -1266,3 +1266,20 @@ describe('first run (P33)', () => {
     expect(screen.queryByRole('button', { name: 'Restore from a backup' })).toBeNull();
   });
 });
+
+describe('launch seeding of an existing Workspace (T95.28-F2)', () => {
+  it('should run the Journal seed step when the app opens an existing Writable Workspace', async () => {
+    const facade = facadeDouble();
+    renderShell(facade);
+    expect(await screen.findByText('Trades screen')).toBeTruthy();
+    expect(facade.Workspace.initialize).toHaveBeenCalledTimes(1);
+  });
+
+  it('should not run the seed step on a read-only open', async () => {
+    const readiness = { ...writableReadiness, outcome: 'RecoveryOnly' };
+    const facade = facadeDouble({ status: readyStatus({ readiness }) });
+    renderShell(facade);
+    await screen.findByText('Trades screen');
+    expect(facade.Workspace.initialize).not.toHaveBeenCalled();
+  });
+});
