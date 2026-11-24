@@ -273,6 +273,25 @@ describe('a sale that leaves the Plan Exit', () => {
     expect(result).toMatchObject({ kind: 'Rejected', issues: [{ field: PLAN_DEPARTURE, code: 'PlanDepartureReasonRequired' }] });
   }, 60_000);
 
+  it('should give the same answer for the same Executions in either order, the earliest one fixing the sale date', async () => {
+    const outcome = async (reverse: boolean) => {
+      const stack = await reviewStack('2026-10-13T17:00:00Z');
+      await stack.catalog.seedDefaults(D6_CATALOG_MANIFEST);
+      const trade = await stack.confirm({ symbol: 'XYZ', shares: '100', entry: '50.00', stop: '47.50', target: '56.00' });
+      await stack.fill(trade, TEN_AM, '100', '50.00');
+      const held = { stack, tradeId: trade.tradeId, plannedLegId: trade.plan.legs[0]!.factId };
+      await stack.saveMark('XYZ', '47.00', '2026-10-12');
+      await stack.saveAction(held.tradeId, 'Hold', '2026-10-12');
+      const base = await saleCommand(held, '50', '47.00', noAnswers(stack), await closing(held));
+      const members = ['2026-10-12T20:45:00Z', '2026-10-13T15:00:00Z'].map((economicTime) => ({ ...base.members[0]!, economicTime }));
+      const result = await stack.tradeWorkflows.recordPositionChange({ ...base, members: reverse ? members.reverse() : members });
+      return result.kind;
+    };
+
+    // The earliest Execution is on Monday, the day of the Hold, which therefore does not count against the sale.
+    expect([await outcome(false), await outcome(true)]).toEqual(['Recorded', 'Recorded']);
+  }, 60_000);
+
   it('should record a whole sale with no reason when its own price reaches the Stop that the latest Marks have not', async () => {
     const held = await longTrade();
     await held.stack.saveMark('XYZ', '51.00');
