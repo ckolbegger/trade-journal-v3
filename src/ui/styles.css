@@ -38,6 +38,14 @@ p { margin: 0.35rem 0; }
 }
 .positive { color: #157a4a; }
 .negative { color: #b3261e; }
+.unavailable {
+  color: #8a3b12;
+  border: 1px dashed #c99a6a;
+  border-radius: 6px;
+  padding: 0.1rem 0.35rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
 
 .badge {
   display: inline-block;

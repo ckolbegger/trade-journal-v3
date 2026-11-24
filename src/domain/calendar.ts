@@ -21,3 +21,16 @@ export function resolveExpectedMarkDate(instant: Date): string {
   }
   return d.toISOString().slice(0, 10)
 }
+
+// Inclusive completed-session enumeration. Absences are reported by the
+// caller as explicit gaps; this function never fills them in.
+export function completedSessionsBetween(fromDate: string, toDate: string): string[] {
+  const out: string[] = []
+  const d = new Date(`${fromDate}T12:00:00Z`)
+  while (d.toISOString().slice(0, 10) <= toDate) {
+    const date = d.toISOString().slice(0, 10)
+    if (isCompletedSession(date)) out.push(date)
+    d.setUTCDate(d.getUTCDate() + 1)
+  }
+  return out
+}

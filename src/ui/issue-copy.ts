@@ -18,6 +18,11 @@ const COPY: Record<string, string> = {
   StaleRevision: 'This Plan changed since you opened it; review it and try again.',
   NotPlanned: 'This Trade is not Planned.',
   NotFound: 'Trade not found.',
+  InvalidPrice: 'Enter a positive numeric price.',
+  MissingReason: 'A reason is required.',
+  ExactMarkExists: 'An exact Mark already exists for this date.',
+  MissingCorrectionReason: 'A correction reason is required.',
+  ManualSticky: 'The effective Manual Mark is sticky; a provider close cannot replace it.',
 }
 
 export function formatIssues(issues: string[]): string {

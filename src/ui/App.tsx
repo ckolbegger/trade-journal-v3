@@ -9,6 +9,8 @@ import { queryOpenTrades, type StoredOpenTrade } from '../domain/open-views'
 import { recordOpeningPositionChange } from './position-controller'
 import { formatIssues } from './issue-copy'
 import { requestDurability } from '../domain/workspace'
+import { evaluateOpenTrade, saveManualMark } from './market-controller'
+import type { CalculationResult } from '../domain/calculation'
 import type { ReflectionDisposition } from '../domain/position-change-reflection'
 
 const initial: AppState = {
@@ -39,6 +41,17 @@ const emptyPositionForm = (): PositionForm => ({
 })
 
 const monogram = (label: string) => label.slice(0, 2).toUpperCase()
+// Explicit View Moment: noon Tuesday resolves Monday as the Expected Mark Date.
+const VIEW_MOMENT = new Date('2026-11-24T17:00:00Z')
+
+function resultText(result: CalculationResult<string>, testId: string) {
+  if (result.kind === 'Value') return <span className="num" data-testid={testId}>{result.value}</span>
+  if (result.kind === 'Unavailable') {
+    return <span className="unavailable" data-testid={testId}>Unavailable: {result.reason} ({result.details.instrument}, {result.details.date})</span>
+  }
+  if (result.kind === 'Unbounded') return <span data-testid={testId}>Unbounded {result.direction}: {result.explanation}</span>
+  return <span data-testid={testId}>Not applicable: {result.reason}</span>
+}
 
 function dispositionOf(form: PositionForm): ReflectionDisposition {
   if (form.reflection === 'Complete') {
@@ -70,6 +83,10 @@ export function App() {
   const [positionForm, setPositionForm] = useState<PositionForm>(emptyPositionForm())
   const [positionError, setPositionError] = useState('')
   const [durabilityMessage, setDurabilityMessage] = useState('')
+  const [selectedEvaluation, setSelectedEvaluation] = useState<Awaited<ReturnType<typeof evaluateOpenTrade>> | null>(null)
+  const [markDraft, setMarkDraft] = useState({ price: '', reason: '' })
+  const [markError, setMarkError] = useState('')
+  const [markMessage, setMarkMessage] = useState('')
 
   useEffect(() => {
     void establish().then(s => {
@@ -131,6 +148,42 @@ export function App() {
     setScreen('trades')
   }, [refreshTrades])
 
+  const showOpen = useCallback(async (trade: StoredOpenTrade) => {
+    setPlan(p => ({ ...p, screen: 'list', selected: null }))
+    setSelectedOpen(trade)
+    // Clear stale form state before the async load so a value typed while the
+    // evaluation resolves is not wiped afterwards.
+    setMarkDraft({ price: '', reason: '' })
+    setMarkError('')
+    setMarkMessage('')
+    setSelectedEvaluation(await evaluateOpenTrade(trade, await openDb(), VIEW_MOMENT))
+  }, [])
+
+  const onSaveMark = useCallback(async (intention: 'RecordManualMark' | 'AcknowledgeUnavailable') => {
+    if (!selectedOpen || !selectedEvaluation) return
+    const result = await saveManualMark({
+      instrument: selectedOpen.plan.underlying,
+      date: selectedEvaluation.expectedDate,
+      expectedRevision: selectedEvaluation.revision,
+      intention,
+      price: intention === 'RecordManualMark' ? markDraft.price : undefined,
+      reason: intention === 'AcknowledgeUnavailable' ? markDraft.reason : undefined,
+      observedAt: `${selectedEvaluation.expectedDate}T20:00:00Z`,
+      savedAt: VIEW_MOMENT.toISOString(),
+      readiness: state.readiness,
+    })
+    if (!result.ok) {
+      setMarkError(result.error.kind === 'Validation'
+        ? formatIssues(result.error.issues)
+        : 'Writes are disabled until Runtime Readiness is Writable.')
+      return
+    }
+    setMarkError('')
+    setMarkDraft({ price: '', reason: '' })
+    setMarkMessage(intention === 'RecordManualMark' ? 'Manual Mark recorded.' : 'Unavailability acknowledged.')
+    setSelectedEvaluation(await evaluateOpenTrade(selectedOpen, await openDb(), VIEW_MOMENT))
+  }, [selectedOpen, selectedEvaluation, markDraft, state.readiness])
+
   const onRecordPosition = useCallback(async (tradeId: string, expectedRevision: string) => {
     const result = await recordOpeningPositionChange({
       tradeId,
@@ -160,8 +213,8 @@ export function App() {
     setExecutingId(null)
     setPositionForm(emptyPositionForm())
     await refreshTrades()
-    setSelectedOpen(result.value.trade)
-  }, [positionForm, state.readiness, refreshTrades])
+    await showOpen(result.value.trade)
+  }, [positionForm, state.readiness, refreshTrades, showOpen])
 
   const updateExecution = (index: number, field: keyof ExecutionDraft, value: string) => {
     setPositionForm(f => ({
@@ -299,10 +352,7 @@ export function App() {
                     <ul>
                       {openTrades.map(t => (
                         <li key={t.id}>
-                          <button type="button" className="trade-row" onClick={() => {
-                            setPlan(p => ({ ...p, screen: 'list', selected: null }))
-                            setSelectedOpen(t)
-                          }}>
+                          <button type="button" className="trade-row" onClick={() => { void showOpen(t) }}>
                             <span className="monogram" aria-hidden="true">{monogram(t.plan.underlying)}</span>
                             <span className="row-main">
                               <span className="row-title">{t.plan.underlying}</span>
@@ -487,6 +537,62 @@ export function App() {
                           </li>
                         ))}</ul>
                       </section>
+
+                      {selectedEvaluation && (
+                        <>
+                          <section aria-label="Marks" className="card">
+                            <p className="section-label">Marks</p>
+                            <h4>Expected Mark Date</h4>
+                            <p><span data-testid="expected-mark-date">{selectedEvaluation.expectedDate}</span> for {selectedOpen.plan.underlying}</p>
+                            <p data-testid="mark-status">
+                              {selectedEvaluation.frame.status === 'Available' ? 'Available' : selectedEvaluation.frame.status === 'AcknowledgedUnavailable' ? 'Acknowledged Unavailable' : 'Missing'}
+                            </p>
+                            {selectedEvaluation.frame.stale && (
+                              <p className="muted">Stale context only: {selectedEvaluation.frame.stale.price} on {selectedEvaluation.frame.stale.date} (not a value).</p>
+                            )}
+                            <div className="field-grid">
+                              <div>
+                                <label htmlFor="manual-mark-price">Manual Mark price</label>
+                                <input id="manual-mark-price" value={markDraft.price} onChange={e => setMarkDraft(d => ({ ...d, price: e.target.value }))} />
+                              </div>
+                              <div>
+                                <label htmlFor="unavailability-reason">Unavailability reason</label>
+                                <input id="unavailability-reason" value={markDraft.reason} onChange={e => setMarkDraft(d => ({ ...d, reason: e.target.value }))} />
+                              </div>
+                            </div>
+                            <div className="sheet-actions">
+                              <button type="button" onClick={() => { void onSaveMark('RecordManualMark') }}>Record mark</button>
+                              <button type="button" onClick={() => { void onSaveMark('AcknowledgeUnavailable') }}>Acknowledge unavailable</button>
+                            </div>
+                            {markError && <p role="alert">{markError}</p>}
+                            {markMessage && <p role="status">{markMessage}</p>}
+                          </section>
+
+                          <section aria-label="Risk and reward" className="card">
+                            <p className="section-label">Risk and reward</p>
+                            <div className="figure-grid">
+                              <div><p className="section-label">Marked P&amp;L</p>{resultText(selectedEvaluation.evaluation.markedPnl, 'marked-pnl')}</div>
+                              <div><p className="section-label">Ongoing risk to Stop</p>{resultText(selectedEvaluation.evaluation.ongoingRiskToStop, 'ongoing-risk')}</div>
+                              <div><p className="section-label">Incremental reward</p>{resultText(selectedEvaluation.evaluation.incrementalReward, 'incremental-reward')}</div>
+                              <div><p className="section-label">Worst-case ongoing risk</p>{resultText(selectedEvaluation.evaluation.worstCaseOngoingRisk, 'worst-case')}</div>
+                              <div><p className="section-label">1R</p>{resultText(selectedEvaluation.evaluation.oneR, 'eval-one-r')}</div>
+                              <div><p className="section-label">Plan R:R</p>{resultText(selectedEvaluation.evaluation.planBaseline, 'plan-baseline')}</div>
+                              <div><p className="section-label">Stop Overrun</p>{resultText(selectedEvaluation.evaluation.overrun, 'overrun')}</div>
+                              <div><p className="section-label">Max reward</p>{resultText(selectedEvaluation.evaluation.maxIncrementalReward, 'max-reward')}</div>
+                              <div><p className="section-label">Plan-R risk</p>{resultText(selectedEvaluation.evaluation.planR.risk, 'plan-r-risk')}</div>
+                            </div>
+                            <h4>Conditions</h4>
+                            <ul className="detail-list">
+                              {selectedEvaluation.evaluation.conditions.map(c => (
+                                <li key={c.id} data-testid={c.id === 'stop-underlying' ? 'condition-stop' : 'condition-target'}>
+                                  <span>{c.kind}: {c.status}</span><span className="muted">{c.detail}</span>
+                                </li>
+                              ))}
+                            </ul>
+                            <p className="muted">Coverage: {selectedEvaluation.evaluation.coverage.instrument} on {selectedEvaluation.evaluation.coverage.date} · {selectedEvaluation.evaluation.coverage.status}. Gaps: {selectedEvaluation.gaps.length}.</p>
+                          </section>
+                        </>
+                      )}
                     </section>
                   )}
                 </>
