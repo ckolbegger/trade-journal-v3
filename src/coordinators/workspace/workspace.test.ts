@@ -36,7 +36,7 @@ describe('initialize', () => {
               additions: ['strategy.long-stock', 'strategy.long-call', 'strategy.long-put', 'strategy.cash-secured-put', 'close-reason.target-reached', 'close-reason.stop-triggered', 'close-reason.thesis-invalidated', 'close-reason.time-based-exit'],
             },
             journal: {
-              manifestVersion: 5,
+              manifestVersion: 6,
               additions: [
                 'entry-type.plan-reflection',
                 'entry-type.position-change-reflection',
@@ -91,7 +91,7 @@ describe('initialize', () => {
           fresh: false,
           seeds: {
             catalog: { manifestVersion: 3, additions: [] },
-            journal: { manifestVersion: 5, additions: [] },
+            journal: { manifestVersion: 6, additions: [] },
           },
         }) as unknown,
       }),
@@ -153,7 +153,7 @@ describe('initialize', () => {
         receipt: expect.objectContaining({
           seeds: {
             catalog: { manifestVersion: 3, additions: [] },
-            journal: { manifestVersion: 5, additions: [], completed: false },
+            journal: { manifestVersion: 6, additions: [], completed: false },
           },
         }) as unknown,
       }),

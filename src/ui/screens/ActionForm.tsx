@@ -65,7 +65,7 @@ const INTENT_REQUIRED = (field: string, code: string): FieldIssue => ({ field, m
 const COULD_NOT_SAVE = 'This Action could not be saved. Reopen the Trade and try again.';
 
 // The definition's wording for its optional questions; a saved Action's responses are told apart by it.
-const { intent: INTENT, conviction: CONVICTION, considered: CONSIDERED, note: NOTE } = DAILY_TRADE_REVIEW_PROMPTS;
+const { intent: INTENT, earlierIntent: EARLIER_INTENT, conviction: CONVICTION, considered: CONSIDERED, note: NOTE } = DAILY_TRADE_REVIEW_PROMPTS;
 const SCALE = [1, 2, 3, 4, 5] as const;
 
 interface Values {
@@ -88,7 +88,8 @@ function returnedValues(form: ActionFormState): Values {
   const conviction = responses.find((r) => r.prompt === CONVICTION)?.answer;
   return {
     action: form.action.action as ActionChoice,
-    intent: text(INTENT),
+    // An Action saved under manifests 3 to 5 carries the reason under that form's wording.
+    intent: text(INTENT) || text(EARLIER_INTENT),
     conviction: conviction?.kind === 'Scale' ? String(conviction.value) : '',
     considered: text(CONSIDERED),
     note: text(NOTE),

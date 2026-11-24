@@ -117,7 +117,7 @@ export const D3_JOURNAL_MANIFEST: JournalSeedManifest = {
         {
           id: 'prompt.daily-trade-review.intent',
           kind: 'Text',
-          text: PROMPT.intent,
+          text: PROMPT.earlierIntent,
           required: false,
           role: 'Intent',
           requiredWhen: { promptId: ACTION, optionIds: ['Exit', 'Roll', 'Adjust'].map(actionOption) },
@@ -170,6 +170,44 @@ export const D5_JOURNAL_MANIFEST: JournalSeedManifest = {
   sources: [...D4_JOURNAL_MANIFEST.sources, { productKey: 'source.trade-close', label: 'Trade Close' }],
 };
 
+type EntryTypeDefinition = JournalSeedManifest['entryTypes'][number];
+const revisedType = (productKey: string, prompts: (earlier: readonly PromptDefinition[]) => readonly PromptDefinition[]) => (type: EntryTypeDefinition): EntryTypeDefinition =>
+  type.productKey === productKey ? { ...type, prompts: prompts(type.prompts) } : type;
+
+const REFLECTION_PROMPT = 'prompt.position-change-reflection';
+
+// D9.5 revises the Daily Trade Review's reason prompt and Action, the Position Change Reflection's
+// prompts and the Close Review's key lesson; the stored forms are revised on the next start (P173).
+export const D6_JOURNAL_MANIFEST: JournalSeedManifest = {
+  version: 6,
+  entryTypes: D5_JOURNAL_MANIFEST.entryTypes
+    .map(
+      revisedType('entry-type.daily-trade-review', (earlier) =>
+        earlier.map((prompt) => {
+          if (prompt.id === ACTION && prompt.kind === 'SingleSelect') {
+            return { ...prompt, options: [...prompt.options, { id: actionOption('settle-later'), label: 'Settle Later', protected: true as const }] };
+          }
+          if (prompt.id === 'prompt.daily-trade-review.intent' && prompt.kind === 'Text') {
+            return { ...prompt, text: PROMPT.intent, requiredWhen: { promptId: ACTION, optionIds: ['Roll', 'Adjust'].map(actionOption) } };
+          }
+          return prompt;
+        }),
+      ),
+    )
+    .map(
+      // Every prompt is optional, so a completed reflection may hold no answers; the two roles are placed by their workflows.
+      revisedType('entry-type.position-change-reflection', (earlier) => [
+        { id: `${REFLECTION_PROMPT}.plan-departure`, kind: 'Text', text: 'Why did you leave the Plan?', required: false, role: 'PlanDepartureReason' },
+        { id: `${REFLECTION_PROMPT}.expiration-reason`, kind: 'Text', text: 'Why did it expire worthless?', required: false, role: 'ExpirationReason' },
+        ...earlier.map((prompt): PromptDefinition => ({ ...prompt, required: false })),
+      ]),
+    )
+    .map(
+      revisedType('entry-type.close-review', (earlier) => earlier.map((prompt): PromptDefinition => (prompt.id === 'prompt.close-review.key-lesson' ? { ...prompt, required: true } : prompt))),
+    ),
+  sources: D5_JOURNAL_MANIFEST.sources,
+};
+
 // Every manifest a Workspace was ever seeded with, oldest first. The seed step revises an Entry Type
 // whose latest stored form equals a form of an earlier manifest in this list (D9.5 P173); each new
 // manifest is appended here when it ships.
@@ -179,4 +217,5 @@ export const SEEDED_MANIFESTS: readonly JournalSeedManifest[] = [
   D3_JOURNAL_MANIFEST,
   D4_JOURNAL_MANIFEST,
   D5_JOURNAL_MANIFEST,
+  D6_JOURNAL_MANIFEST,
 ];

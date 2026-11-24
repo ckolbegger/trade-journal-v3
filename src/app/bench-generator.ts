@@ -8,7 +8,7 @@
 // Close Reviews and Debts by the plan's dispositions.
 import { runExport } from '../coordinators/workspace/backup-export.ts';
 import { expiredOn, instrumentKey, type Instrument, type OptionInstrument } from '../domain/instrument/index.ts';
-import { D5_JOURNAL_MANIFEST, prepareJournalSeed } from '../modules/journal/index.ts';
+import { D6_JOURNAL_MANIFEST, prepareJournalSeed } from '../modules/journal/index.ts';
 import { D7_CATALOG_MANIFEST, prepareSeed } from '../modules/reference-catalog/index.ts';
 import { exportLayoutFor, SCHEMA_VERSION, type ExportReadResult, type SessionPolicyIdentity } from '../persistence/index.ts';
 import { readArtifact, type ArtifactDigests } from '../backup/format/index.ts';
@@ -404,7 +404,7 @@ function seedOf() {
   }
   const catalog: Row[] = [...seeded.records, ...institutions, ...accounts].map((row) => ({ ...row })).sort((a, b) => ((a['id'] as string) < (b['id'] as string) ? -1 : 1));
   let definitionNumber = 0;
-  const journalSeed = prepareJournalSeed([], [], D5_JOURNAL_MANIFEST, { next: () => `jdef-${pad(++definitionNumber, 3)}` });
+  const journalSeed = prepareJournalSeed([], [], D6_JOURNAL_MANIFEST, { next: () => `jdef-${pad(++definitionNumber, 3)}` });
   if (journalSeed.kind !== 'Additions') throw new Error('the Journal seed conflicts');
   return {
     catalog,
@@ -1264,7 +1264,7 @@ export async function generateBenchArtifact(options: { readonly calendar: BenchC
       exportKind: 'Normal',
       createdAt: BENCH_AS_OF_INSTANT,
       releaseId: BENCH_RELEASE,
-      seedManifestVersions: { catalog: D7_CATALOG_MANIFEST.version, journal: D5_JOURNAL_MANIFEST.version },
+      seedManifestVersions: { catalog: D7_CATALOG_MANIFEST.version, journal: D6_JOURNAL_MANIFEST.version },
     },
   );
   if (run.kind !== 'Built') throw new Error(`the artifact was not built: ${JSON.stringify(run)}`);

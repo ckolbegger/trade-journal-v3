@@ -20,7 +20,7 @@
 // owed reflections can keep Tuesday's Review from completing.
 import type { PositionChangeMember } from '../../src/coordinators/trade-workflows/index.ts';
 import type { TradeAnalysisRecord } from '../../src/domain/trade-analysis/index.ts';
-import { D5_JOURNAL_MANIFEST, type DebtProjection, type ReflectionDisposition } from '../../src/modules/journal/index.ts';
+import { D6_JOURNAL_MANIFEST, type DebtProjection, type ReflectionDisposition } from '../../src/modules/journal/index.ts';
 import { D6_CATALOG_MANIFEST } from '../../src/modules/reference-catalog/index.ts';
 import { ELEVEN_AM, MONDAY_1700, reviewStack, TEN_AM, type ReviewStack } from './review-fixture.ts';
 
@@ -68,7 +68,7 @@ export async function closedTradeReviewFixture(options: ClosedTradeFixtureOption
   const stack = await reviewStack(MONDAY_1700);
   const included = (name: ClosedTradeName) => options.only === undefined || options.only.includes(name);
   await stack.catalog.seedDefaults(D6_CATALOG_MANIFEST);
-  const seeded = await stack.journal.seedDefaults(D5_JOURNAL_MANIFEST);
+  const seeded = await stack.journal.seedDefaults(D6_JOURNAL_MANIFEST);
   if (seeded.kind !== 'Seeded') throw new Error(`Close Review seed failed: ${seeded.kind}`);
   const reasons = await stack.catalog.query({ family: 'CloseReason' });
   if (reasons.kind !== 'Page') throw new Error('no Close Reasons');
@@ -81,7 +81,7 @@ export async function closedTradeReviewFixture(options: ClosedTradeFixtureOption
     kind: 'Complete',
     form: {
       definitionId: closeReviewDefinitionId,
-      answers: { 'prompt.close-review.take-again': { kind: 'Option', optionId: 'option.close-review.take-again.yes-as-planned' } },
+      answers: { 'prompt.close-review.take-again': { kind: 'Option', optionId: 'option.close-review.take-again.yes-as-planned' }, 'prompt.close-review.key-lesson': { kind: 'Text', text: 'Size down into earnings.' } },
     },
   };
   const deferred: ReflectionDisposition = { kind: 'Defer' };

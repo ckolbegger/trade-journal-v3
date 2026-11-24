@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { instrumentKey } from '../../domain/instrument/index.ts';
 import { fixedClock } from '../../domain/time/index.ts';
 import { Rational } from '../../domain/values/index.ts';
-import { D5_JOURNAL_MANIFEST, type ReflectionDisposition } from '../../modules/journal/index.ts';
+import { D6_JOURNAL_MANIFEST, type ReflectionDisposition } from '../../modules/journal/index.ts';
 import type { MarketData, MarketDataReadSession } from '../../modules/market-data/index.ts';
 import { D7_CATALOG_MANIFEST, type StrategyRecord } from '../../modules/reference-catalog/index.ts';
 import { reviewStack } from '../../../tests/support/review-fixture.ts';
@@ -42,7 +42,7 @@ const withSession = <M extends { openReadSession(context: Parameters<MarketData[
 async function optionStack(now: string) {
   const stack = await reviewStack(now);
   await stack.catalog.seedDefaults(D7_CATALOG_MANIFEST);
-  await stack.journal.seedDefaults(D5_JOURNAL_MANIFEST);
+  await stack.journal.seedDefaults(D6_JOURNAL_MANIFEST);
   const strategies = await stack.catalog.query({ family: 'Strategy' });
   if (strategies.kind !== 'Page') throw new Error('no strategies');
   // Looked up by product key, never by position in the list.
@@ -55,7 +55,7 @@ async function optionStack(now: string) {
   if (closeReview.kind !== 'Found') throw new Error('no Close Review definition');
   const closeReviewForm: ReflectionDisposition = {
     kind: 'Complete',
-    form: { definitionId: closeReview.definition.id, answers: { 'prompt.close-review.take-again': { kind: 'Option', optionId: 'option.close-review.take-again.yes-as-planned' } } },
+    form: { definitionId: closeReview.definition.id, answers: { 'prompt.close-review.take-again': { kind: 'Option', optionId: 'option.close-review.take-again.yes-as-planned' }, 'prompt.close-review.key-lesson': { kind: 'Text', text: 'Size down into earnings.' } } },
   };
   const planReflection = {
     definitionId: stack.definition.id,

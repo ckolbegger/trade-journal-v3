@@ -660,3 +660,16 @@ Commits `5e904f21` (B1: the seed looks only at the latest stored revision: equal
 ocr of T95.27-B1, T95.27-B2, T95.27-B3 (range d5f4ada1..b44f35cf, session 1e68c1c0): 2 files, 0 findings. `evidence/D95/ocr/T95.27-B1-B3-b44f35cf.json`. Next: run `t95.27-seed-revision` (browser-auto af6d3071).
 
 Run `t95.27-seed-revision` (browser-auto af6d3071, task tier): unit 2911, integration 330, browser 5 + 18, checks 14 of 14. Passed. T95.27 done.
+
+### T95.28
+
+Journal seed manifest 6 (`D6_JOURNAL_MANIFEST`, appended to `SEEDED_MANIFESTS`) and its delivery. Wired in `workspace.ts` (a start, a new Workspace, both receipts), `migration.ts`, `restore.ts` and `bench-generator.ts`. Decisions recorded:
+- A323: a backup's Journal seed version for a current-schema Workspace is read from its stored forms (`seededManifestVersion` in journal.ts, called by `exportBackup` for a KnownWorkspace); the per-schema table stays for databases the release has not migrated and as the fallback if the read fails. A schema-7 Workspace not yet started on this release (still manifest 5) therefore still exports as 5, which I8.3 needs (its fresh export of W7 equals the committed A7 digest). No new stored field, so no pending decision.
+- A revised form's definition identity is `<entryTypeKey>.revision-<n>`, not a minted id. Reason: `verify:fixtures` compares a restored backup's views with the matching Workspace fixture's, and a minted id differs by route (`verify-` against `restore-` prefix, and a candidate id shifts the count), so no one expected value could satisfy both. New types keep minted ids.
+- `DAILY_TRADE_REVIEW_PROMPTS.intent` is now "Why?"; `earlierIntent` keeps manifests 3 to 5's wording, which D3 still reads, and ActionForm reads an Action saved under either wording.
+- Restore's preview `seedAdditions` and a migration receipt's journal additions list new Entry Types only, so they do not name a revised type (the Workspace start receipt does, case 7). Not asked for by a case; left.
+- Until T95.32 lands, a Daily Review Exit or Hold saves with no reason (the Journal form now requires one only for Roll and Adjust); T95.32 adds the Plan Call rule.
+
+Fixture diff (`npm run verify:fixtures` passes; `dump.json`, `backup.tjbackup` and `downloaded.json` untouched): only `"definitionRevision"` values in `reviewTrades[]` of each older fixture's `expected-views.json`, to `entry-type.daily-trade-review.revision-2`: workspace-v3 and backup-v3-blocked 1 line (fx-0004), workspace-v4 and backup-v4-blocked 1 (fx-0004), workspace-v5 and backup-v5-blocked 5 (fx-0008), workspace-v6 and backup-v6-blocked 6 (fx-0011), workspace-v7 and backup-v7 7 (fx-0011). No `definitionId` value changed: verify reports none (a saved Action keeps the revision it was saved under).
+
+Checks: typecheck, tsc6, lint (0 errors; 2 existing warnings), lint:deps, verify:fixtures, verify:capabilities, verify:capacity pass. Browser: e2e/d4/responsive-a11y, e2e/d4/runtime-failure, e2e/d5r/responsive-a11y (the "Why?" label): 11 passed.

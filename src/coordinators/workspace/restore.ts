@@ -9,7 +9,7 @@ import type { IntegrityFinding } from '../../domain/trade-analysis/index.ts';
 import { plannedTradeSummary } from '../../domain/trade-summary.ts';
 import { formatDecimal, type Rational } from '../../domain/values/index.ts';
 import {
-  D5_JOURNAL_MANIFEST,
+  D6_JOURNAL_MANIFEST,
   applyPreparedRestore as applyJournal,
   exportSnapshot as exportJournal,
   measureCandidateSection as measureJournal,
@@ -565,7 +565,7 @@ export function createRestoreOperations<S>(deps: RestoreDeps<S>, backup: BackupO
     const staged = persistence.candidateSource(candidate);
     const catalogSeed = prepareSeed((await collect(staged, 'catalog')) as unknown as CatalogRecord[], D7_CATALOG_MANIFEST, deps.ids);
     const definitions = (await collect(staged, 'journalDefinitions')) as unknown as EntryDefinitionRecord[];
-    const journalSeed = prepareJournalSeed((await collect(staged, 'journalTypes')) as unknown as JournalTypeRecord[], definitions, D5_JOURNAL_MANIFEST, deps.ids);
+    const journalSeed = prepareJournalSeed((await collect(staged, 'journalTypes')) as unknown as JournalTypeRecord[], definitions, D6_JOURNAL_MANIFEST, deps.ids);
     if (catalogSeed.kind !== 'Additions' || journalSeed.kind !== 'Additions') throw new Error('Seed manifests conflict with stored defaults');
     await persistence.putCandidateRecords(candidate, [
       ...catalogSeed.records.map((r): StoreRecord => ({ store: 'catalog', value: { ...r } })),

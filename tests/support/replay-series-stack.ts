@@ -1,6 +1,6 @@
 import { instrumentKey, type Instrument } from '../../src/domain/instrument/index.ts';
 import { REPLAY_SESSION_DATES, type ReplayTestSeries } from '../../src/domain/trade-analysis/reference-trade.ts';
-import { D5_JOURNAL_MANIFEST, type ReflectionDisposition } from '../../src/modules/journal/index.ts';
+import { D6_JOURNAL_MANIFEST, type ReflectionDisposition } from '../../src/modules/journal/index.ts';
 import { D7_CATALOG_MANIFEST, type StrategyRecord } from '../../src/modules/reference-catalog/index.ts';
 import type { ExpirationMember, PositionChangeMember } from '../../src/coordinators/trade-workflows/index.ts';
 import { createTradeViews } from '../../src/coordinators/trade-views/index.ts';
@@ -11,7 +11,7 @@ import { reviewStack } from './review-fixture.ts';
 export async function seriesStack(series: ReplayTestSeries, strategyKey: string, now: string, options: { readonly marksThrough: number; readonly closes?: boolean; readonly without?: (pcId: string) => boolean; readonly extraMarks?: readonly { readonly instrument: Instrument; readonly date: string; readonly price: string }[] }) {
   const stack = await reviewStack(now);
   await stack.catalog.seedDefaults(D7_CATALOG_MANIFEST);
-  await stack.journal.seedDefaults(D5_JOURNAL_MANIFEST);
+  await stack.journal.seedDefaults(D6_JOURNAL_MANIFEST);
   const strategies = await stack.catalog.query({ family: 'Strategy' });
   const strategy = strategies.kind === 'Page' ? strategies.items.find((s): s is StrategyRecord => s.kind === 'Strategy' && s.productKey === strategyKey) : undefined;
   if (!strategy) throw new Error(`no ${strategyKey}`);
@@ -19,7 +19,7 @@ export async function seriesStack(series: ReplayTestSeries, strategyKey: string,
   if (closeReview.kind !== 'Found') throw new Error('no Close Review definition');
   const closeReviewForm: ReflectionDisposition = {
     kind: 'Complete',
-    form: { definitionId: closeReview.definition.id, answers: { 'prompt.close-review.take-again': { kind: 'Option', optionId: 'option.close-review.take-again.yes-as-planned' } } },
+    form: { definitionId: closeReview.definition.id, answers: { 'prompt.close-review.take-again': { kind: 'Option', optionId: 'option.close-review.take-again.yes-as-planned' }, 'prompt.close-review.key-lesson': { kind: 'Text', text: 'Size down into earnings.' } } },
   };
   const reasons = await stack.catalog.query({ family: 'CloseReason' });
   if (reasons.kind !== 'Page') throw new Error('no Close Reasons');

@@ -17,7 +17,7 @@ describe('I6.15 fresh initialization at schema 6', () => {
     expect(opened.receipt.migration).toBeUndefined();
     expect(opened.receipt.seeds.catalog.manifestVersion).toBe(3);
     expect(opened.receipt.seeds.catalog.additions).toEqual(['strategy.long-stock', 'strategy.long-call', 'strategy.long-put', 'strategy.cash-secured-put', ...CLOSE_REASONS]);
-    expect(opened.receipt.seeds.journal.manifestVersion).toBe(5);
+    expect(opened.receipt.seeds.journal.manifestVersion).toBe(6);
     expect(opened.receipt.seeds.journal.additions).toEqual(expect.arrayContaining(['entry-type.close-review', 'source.trade-close']));
 
     const dump = await dumpAll(d.factory);

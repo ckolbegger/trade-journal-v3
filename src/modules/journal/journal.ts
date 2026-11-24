@@ -225,6 +225,16 @@ export type PreparedJournalSeed =
     }
   | { readonly kind: 'SeedConflict'; readonly productKey: string };
 
+// The newest seeded manifest whose every form is the latest stored revision of its Entry Type: which
+// seed a Workspace holds, read from what it stores (D9.5 A323). Undefined when none matches.
+export function seededManifestVersion(definitions: readonly EntryDefinitionRecord[]): number | undefined {
+  const latestForm = (key: string) => {
+    const latest = definitions.filter((d) => d.entryTypeKey === key).sort((a, b) => b.revisionNumber - a.revisionNumber)[0];
+    return latest && canonicalJson(latest.prompts);
+  };
+  return [...SEEDED_MANIFESTS].reverse().find((m) => m.entryTypes.every((t) => latestForm(t.productKey) === canonicalJson(t.prompts)))?.version;
+}
+
 // Matches stable product keys and prepares only genuinely missing identities; it never resets
 // a revised definition or matches by label. An Entry Type whose latest stored form equals a form an
 // earlier manifest seeded, and differs from this manifest's, gets the manifest's form as the next
@@ -261,7 +271,8 @@ export function prepareJournalSeed(
     ],
     definitions: [
       ...newTypes.map((t): EntryDefinitionRecord => ({ id: ids.next(), entryTypeKey: t.productKey, revisionNumber: 1, prompts: t.prompts })),
-      ...revisions.map((r): EntryDefinitionRecord => ({ id: ids.next(), ...r })),
+      // A revision's identity follows from its Entry Type and number, so every route that seeds it (a start, a migration, a Restore) writes the same one.
+      ...revisions.map((r): EntryDefinitionRecord => ({ id: `${r.entryTypeKey}.revision-${r.revisionNumber}`, ...r })),
     ],
   };
 }

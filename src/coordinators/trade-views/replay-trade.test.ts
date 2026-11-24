@@ -3,7 +3,7 @@ import { instrumentKey, type Instrument } from '../../domain/instrument/index.ts
 import { BREN_CALL, DALE_PUT, OC2_CONTRACT, K_SALE, R_BREN_U, R_DALE_U } from '../../domain/trade-analysis/option-trade.ts';
 import { REPLAY_SESSION_DATES, type ReplayTestSeries } from '../../domain/trade-analysis/reference-trade.ts';
 import { Rational } from '../../domain/values/index.ts';
-import { D5_JOURNAL_MANIFEST, type ReflectionDisposition } from '../../modules/journal/index.ts';
+import { D6_JOURNAL_MANIFEST, type ReflectionDisposition } from '../../modules/journal/index.ts';
 import { D7_CATALOG_MANIFEST, type StrategyRecord } from '../../modules/reference-catalog/index.ts';
 import { beginSemanticTransaction } from '../../persistence/index.ts';
 import { breakFirstExecution, reviewStack } from '../../../tests/support/review-fixture.ts';
@@ -26,7 +26,7 @@ const q = (n: bigint, d = 1n) => frac(Rational.of(n, d));
 async function oc3Stack(now = THURSDAY_1700) {
   const stack = await reviewStack(now);
   await stack.catalog.seedDefaults(D7_CATALOG_MANIFEST);
-  await stack.journal.seedDefaults(D5_JOURNAL_MANIFEST);
+  await stack.journal.seedDefaults(D6_JOURNAL_MANIFEST);
   const strategies = await stack.catalog.query({ family: 'Strategy' });
   if (strategies.kind !== 'Page') throw new Error('no strategies');
   const strategyOf = (productKey: string): StrategyRecord => {
@@ -38,7 +38,7 @@ async function oc3Stack(now = THURSDAY_1700) {
   if (closeReview.kind !== 'Found') throw new Error('no Close Review definition');
   const closeReviewForm: ReflectionDisposition = {
     kind: 'Complete',
-    form: { definitionId: closeReview.definition.id, answers: { 'prompt.close-review.take-again': { kind: 'Option', optionId: 'option.close-review.take-again.yes-as-planned' } } },
+    form: { definitionId: closeReview.definition.id, answers: { 'prompt.close-review.take-again': { kind: 'Option', optionId: 'option.close-review.take-again.yes-as-planned' }, 'prompt.close-review.key-lesson': { kind: 'Text', text: 'Size down into earnings.' } } },
   };
   const plan: ConfirmPlanCommand['plan'] = {
     underlying: 'XYZ',
@@ -293,7 +293,7 @@ describe("getTradeDetail: open lots' average (A236)", () => {
 async function seriesStack(series: ReplayTestSeries, strategyKey: string, now: string, options: { readonly marksThrough: number; readonly closes?: boolean; readonly without?: (pcId: string) => boolean; readonly extraMarks?: readonly { readonly instrument: Instrument; readonly date: string; readonly price: string }[] }) {
   const stack = await reviewStack(now);
   await stack.catalog.seedDefaults(D7_CATALOG_MANIFEST);
-  await stack.journal.seedDefaults(D5_JOURNAL_MANIFEST);
+  await stack.journal.seedDefaults(D6_JOURNAL_MANIFEST);
   const strategies = await stack.catalog.query({ family: 'Strategy' });
   const strategy = strategies.kind === 'Page' ? strategies.items.find((s): s is StrategyRecord => s.kind === 'Strategy' && s.productKey === strategyKey) : undefined;
   if (!strategy) throw new Error(`no ${strategyKey}`);
@@ -301,7 +301,7 @@ async function seriesStack(series: ReplayTestSeries, strategyKey: string, now: s
   if (closeReview.kind !== 'Found') throw new Error('no Close Review definition');
   const closeReviewForm: ReflectionDisposition = {
     kind: 'Complete',
-    form: { definitionId: closeReview.definition.id, answers: { 'prompt.close-review.take-again': { kind: 'Option', optionId: 'option.close-review.take-again.yes-as-planned' } } },
+    form: { definitionId: closeReview.definition.id, answers: { 'prompt.close-review.take-again': { kind: 'Option', optionId: 'option.close-review.take-again.yes-as-planned' }, 'prompt.close-review.key-lesson': { kind: 'Text', text: 'Size down into earnings.' } } },
   };
   const reasons = await stack.catalog.query({ family: 'CloseReason' });
   if (reasons.kind !== 'Page') throw new Error('no Close Reasons');

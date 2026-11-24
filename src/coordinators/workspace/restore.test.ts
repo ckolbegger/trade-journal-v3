@@ -36,7 +36,8 @@ const A7_COUNTS = {
   accounts: 3,
   strategies: 4,
   closeReasons: 4,
-  entryDefinitionRevisions: 4,
+  // A7 holds manifest 5's four forms; Restore adds the three revisions of manifest 6 (T95.28).
+  entryDefinitionRevisions: 7,
   // Fact versions of every Trade, and the versions of every Entry and Debt.
   versions: { trades: 127, entries: 33, debts: 8 },
 };
@@ -105,7 +106,7 @@ describe('valid artifact (AC-REST-001, A133)', () => {
       observations: 7,
       trades: 17,
       journalTypes: 9,
-      journalDefinitions: 4,
+      journalDefinitions: 7,
       journalEntries: 32,
       journalDeclines: 14,
       journalDebts: 6,
@@ -120,7 +121,7 @@ describe('valid artifact (AC-REST-001, A133)', () => {
       trades: await measureTrades(source),
       journal: await measureJournal(source),
     };
-    expect(recorded['journal']!.counts).toEqual({ journalTypes: 9, journalDefinitions: 4, journalEntries: 32, journalDeclines: 14, journalDebts: 6 });
+    expect(recorded['journal']!.counts).toEqual({ journalTypes: 9, journalDefinitions: 7, journalEntries: 32, journalDeclines: 14, journalDebts: 6 });
     expect(Object.keys(recorded['journal']!.storeDigests)).toEqual(['journalTypes', 'journalDefinitions', 'journalEntries', 'journalDeclines', 'journalDebts']);
     expect(await applyCatalog(source, recorded['catalog']!)).toEqual({ kind: 'Accepted' });
     expect(await applyMarketData(source, recorded['marketData']!)).toEqual({ kind: 'Accepted' });

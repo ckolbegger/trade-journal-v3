@@ -14,7 +14,7 @@ describe('I2.12 fresh initialization at schema 6', () => {
     expect(opened.receipt.migration).toBeUndefined();
     expect(opened.receipt.seeds.journal).toEqual({
       // The release's current manifest (v5 since D6 T6.15) includes D2's types.
-      manifestVersion: 5,
+      manifestVersion: 6,
       additions: [
         'entry-type.plan-reflection',
         'entry-type.position-change-reflection',

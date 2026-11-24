@@ -2,7 +2,7 @@ import {
   panelOf, markEditorOf, markInputOf, expectMarkUnsaved, actionFormOf, cardHeader, cardItem, completion, createRoutineTrades, createTrades, enterMark, expect, expectAccessible, FRIDAY, MONDAY, MONDAY_1700, onboardedAt, openReview, panelHeader, LAUNCH, remainsOf, meterOf, nowDrawingOf, collapseOpenCard, status, tabTo, test, tradeCard, saveMarksButton, expectMarksSaved, marksStepOf, openCardFixture, type TradeRef,
 } from './support.ts';
 
-const INTENT = /^Why are you taking this action\?/;
+const INTENT = /^Why\?/;
 
 test.describe('B5R.11 Responsive and accessible', () => {
   test('should keep drafts and the open panel through 390 px and back, put the meter on its own row at narrow width, report no WCAG 2.1 AA violations, say band, status and Unsaved in text, and complete a card by keyboard with visible focus', async ({ profile, copySetup }) => {

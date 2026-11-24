@@ -14,7 +14,7 @@ describe('I5.13 fresh initialization at schema 6', () => {
     expect(opened.receipt.fresh).toBe(true);
     expect(opened.receipt.migration).toBeUndefined();
     expect(opened.receipt.seeds.journal).toEqual({
-      manifestVersion: 5,
+      manifestVersion: 6,
       additions: [
         'entry-type.plan-reflection',
         'entry-type.position-change-reflection',

@@ -34,7 +34,7 @@ describe('I6.1 migrate earlier fixtures', () => {
         expect.objectContaining({ fromVersion: version, toVersion: 7, sourceDatabase: fixtureDatabase(version), databaseName: expect.stringMatching(/^tj-ws-/) as string }),
       );
       expect(opened.receipt.seeds.catalog).toEqual({ manifestVersion: 3, additions: [...OPTION_STRATEGIES, ...CLOSE_REASONS] });
-      expect(opened.receipt.seeds.journal).toEqual({ manifestVersion: 5, additions: JOURNAL_ADDITIONS[version] });
+      expect(opened.receipt.seeds.journal).toEqual({ manifestVersion: 6, additions: JOURNAL_ADDITIONS[version] });
       expect(opened.receipt.seeds.journal.additions).toEqual(expect.arrayContaining(['entry-type.close-review', 'source.trade-close']));
       const newDatabase = opened.receipt.migration!.databaseName;
 

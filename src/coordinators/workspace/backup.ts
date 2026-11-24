@@ -5,7 +5,7 @@ import type { DownloadPort, HostPort } from '../../delivery/host.ts';
 import type { ReadinessSession } from '../../delivery/readiness.ts';
 import type { Clock } from '../../domain/time/index.ts';
 import { toWorkspaceLocal } from '../../domain/time/index.ts';
-import { D5_JOURNAL_MANIFEST } from '../../modules/journal/index.ts';
+import { D5_JOURNAL_MANIFEST, seededManifestVersion, type EntryDefinitionRecord } from '../../modules/journal/index.ts';
 import { D7_CATALOG_MANIFEST } from '../../modules/reference-catalog/index.ts';
 import { exportLayoutFor, type IdGenerator, type Persistence, type WorkspaceSnapshotBinding } from '../../persistence/index.ts';
 import { ArtifactReadError, readArtifact } from '../../backup/format/index.ts';
@@ -49,6 +49,16 @@ const SEED_MANIFEST_VERSIONS: Readonly<Record<number, { readonly catalog: number
   6: { catalog: D7_CATALOG_MANIFEST.version, journal: D5_JOURNAL_MANIFEST.version },
   7: { catalog: D7_CATALOG_MANIFEST.version, journal: D5_JOURNAL_MANIFEST.version },
 };
+
+// The Journal manifest the live Workspace's forms match; undefined when none matches or the read fails (the table answers then).
+async function storedJournalSeed(persistence: Persistence): Promise<number | undefined> {
+  try {
+    const { value } = await persistence.readSnapshot(['journalDefinitions'], (tx) => tx.getAll('journalDefinitions'));
+    return seededManifestVersion(value as unknown as readonly EntryDefinitionRecord[]);
+  } catch {
+    return undefined;
+  }
+}
 
 const bindingShape = z.object({ databaseName: z.string(), contentRevision: z.number() });
 const countsShape = z.record(z.string(), z.number());
@@ -187,8 +197,8 @@ export function createBackupOperations(deps: BackupDeps): BackupOperations {
         return notCompleted('IntegrityBlocked', { stage: 'Read', name: 'IntegrityBlocked', message: `The journal root is ${inspection.kind}`, context: { rootKind: inspection.kind } });
       }
       const layout = exportLayoutFor(inspection.schemaVersion);
-      const seeds = SEED_MANIFEST_VERSIONS[inspection.schemaVersion];
-      if (!layout || !seeds) {
+      const tabled = SEED_MANIFEST_VERSIONS[inspection.schemaVersion];
+      if (!layout || !tabled) {
         return notCompleted('IntegrityBlocked', {
           stage: 'Read',
           name: 'IntegrityBlocked',
@@ -196,6 +206,10 @@ export function createBackupOperations(deps: BackupDeps): BackupOperations {
           context: { rootKind: inspection.kind, schemaVersion: inspection.schemaVersion },
         });
       }
+      // Schema 7 changed no store, so the table cannot tell a Workspace not yet started on a later seed from one that was:
+      // a current-schema Workspace says which Journal manifest it holds by its stored forms (D9.5 A323).
+      const stored = inspection.kind === 'KnownWorkspace' ? await storedJournalSeed(deps.persistence) : undefined;
+      const seeds = stored === undefined ? tabled : { ...tabled, journal: stored };
       const run = await exporter.run({
         databaseName: inspection.databaseName,
         layout,

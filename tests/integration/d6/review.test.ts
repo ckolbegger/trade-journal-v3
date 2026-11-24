@@ -8,7 +8,7 @@ import { Rational } from '../../../src/domain/values/index.ts';
 import { closedScenario, MONDAY_1700, outstandingDebts, restart, reviewAt, TUESDAY_1700, TUESDAY_DATE, walkedIds, workspaceStores, dumpAll } from './support.ts';
 
 const CLOSE_REVIEW = 'entry-type.close-review';
-const ANSWERS = { 'prompt.close-review.take-again': { kind: 'Option', optionId: 'option.close-review.take-again.yes-as-planned' } } as const;
+const ANSWERS = { 'prompt.close-review.take-again': { kind: 'Option', optionId: 'option.close-review.take-again.yes-as-planned' }, 'prompt.close-review.key-lesson': { kind: 'Text', text: 'Size down into earnings.' } } as const;
 
 type Opened = Awaited<ReturnType<typeof reviewAt>>;
 const owedOf = (opened: Opened) => opened.owed.map((t) => [t.tradeId, t.lifecycle, t.owed.map((o) => [o.entryTypeKey, o.classification])] as const);

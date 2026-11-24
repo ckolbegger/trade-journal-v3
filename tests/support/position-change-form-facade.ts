@@ -2,7 +2,7 @@
 // loads: the Reference Trade's confirmed Plan (100 XYZ, entry 50, Stop 47.50, Target 56).
 import { vi } from 'vitest';
 import type { PlannedTradeDetail } from '../../src/app/types.ts';
-import { D2_JOURNAL_MANIFEST, D5_JOURNAL_MANIFEST } from '../../src/modules/journal/index.ts';
+import { D2_JOURNAL_MANIFEST, D6_JOURNAL_MANIFEST } from '../../src/modules/journal/index.ts';
 import { D6_CATALOG_MANIFEST } from '../../src/modules/reference-catalog/index.ts';
 import { facadeDouble } from './facade-double.ts';
 import { openDetailOf, PC1, PC2 } from './open-detail-fixtures.ts';
@@ -37,7 +37,7 @@ export const closeReviewDefinition = {
   id: 'def-cr-1',
   entryTypeKey: 'entry-type.close-review',
   revisionNumber: 1,
-  prompts: D5_JOURNAL_MANIFEST.entryTypes.find((t) => t.productKey === 'entry-type.close-review')!.prompts,
+  prompts: D6_JOURNAL_MANIFEST.entryTypes.find((t) => t.productKey === 'entry-type.close-review')!.prompts,
 };
 
 // The four seeded Close Reasons as ReferenceCatalog.query returns them, in seed order.

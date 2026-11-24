@@ -2,7 +2,7 @@ import { IDBFactory } from 'fake-indexeddb';
 import { describe, expect, it } from 'vitest';
 import { derive, type TradeAnalysisRecord } from '../../domain/trade-analysis/index.ts';
 import { Rational } from '../../domain/values/index.ts';
-import { D5_JOURNAL_MANIFEST, type ReflectionDisposition } from '../../modules/journal/index.ts';
+import { D6_JOURNAL_MANIFEST, type ReflectionDisposition } from '../../modules/journal/index.ts';
 import { D6_CATALOG_MANIFEST } from '../../modules/reference-catalog/index.ts';
 import { activityDescOf } from '../../persistence/index.ts';
 import { dumpAll } from '../../../tests/support/stack.ts';
@@ -413,7 +413,6 @@ describe('rejected', () => {
         { source: 'TradeWorkflows', member: 2, field: 'fee', code: 'Negative' },
         { source: 'TradeWorkflows', member: 3, field: 'fee', code: 'Required' },
         { source: 'TradeWorkflows', member: 4, field: 'quantity', code: 'TooManyFractionalDigits' },
-        { source: 'Journal', field: 'prompt.position-change-reflection.decision-confidence', code: 'RequiredAnswerMissing' },
       ],
     });
     expect(await dumpAll(ref.stack.factory)).toEqual(before);
@@ -436,7 +435,6 @@ describe('rejected', () => {
       command(ref, 1, [{ ...member, economicTime: '2026-10-13T00:00:00Z' }]),
       command(ref, 1, [{ ...member, quantity: '0' }]),
       command(ref, 1, [member, { ...member, action: 'Sell' }]),
-      command(ref, 1, [member], { kind: 'Complete', form: { definitionId: ref.reflectionDefinitionId, answers: {} } }),
       command(ref, 0, [member]),
     ];
     const revisions = (stores: Record<string, unknown[]>) => {
@@ -552,7 +550,7 @@ interface ExitReference extends Reference {
 async function exitReference(): Promise<ExitReference> {
   const ref = await referenceTrade(EXIT_NOW);
   await ref.stack.catalog.seedDefaults(D6_CATALOG_MANIFEST);
-  await ref.stack.journal.seedDefaults(D5_JOURNAL_MANIFEST);
+  await ref.stack.journal.seedDefaults(D6_JOURNAL_MANIFEST);
   const reasons = await ref.stack.catalog.query({ family: 'CloseReason' });
   if (reasons.kind !== 'Page') throw new Error('no Close Reasons');
   const definition = await ref.stack.journal.getDefinitions({ latestFor: 'entry-type.close-review' });
@@ -589,7 +587,7 @@ const closeReviewForm = (ref: ExitReference): ReflectionDisposition => ({
   kind: 'Complete',
   form: {
     definitionId: ref.closeReviewDefinitionId,
-    answers: { 'prompt.close-review.take-again': { kind: 'Option', optionId: 'option.close-review.take-again.yes-as-planned' } },
+    answers: { 'prompt.close-review.take-again': { kind: 'Option', optionId: 'option.close-review.take-again.yes-as-planned' }, 'prompt.close-review.key-lesson': { kind: 'Text', text: 'Size down into earnings.' } },
   },
 });
 
@@ -701,14 +699,11 @@ describe('terminal exit AC-POS-004', () => {
     const before = await dumpAll(ref.stack.factory);
     const result = await ref.stack.tradeWorkflows.recordPositionChange(command(ref, revision, x2Members(ref), blankReflection(ref)));
     if (result.kind !== 'Rejected') throw new Error(`expected Rejected, got ${result.kind}`);
-    expect(result.issues).toHaveLength(5);
+    expect(result.issues).toHaveLength(2);
     expect(result.issues).toEqual(
       expect.arrayContaining([
         { source: 'TradeWorkflows', field: 'closeReasonId', code: 'CloseReasonRequired' },
         { source: 'TradeWorkflows', field: 'closeReview', code: 'CloseReviewDispositionRequired' },
-        expect.objectContaining({ source: 'Journal', field: 'prompt.position-change-reflection.decision-mode' }),
-        expect.objectContaining({ source: 'Journal', field: 'prompt.position-change-reflection.primary-emotion' }),
-        expect.objectContaining({ source: 'Journal', field: 'prompt.position-change-reflection.decision-confidence' }),
       ]),
     );
     expect(await dumpAll(ref.stack.factory)).toEqual(before);
@@ -827,6 +822,7 @@ describe('terminal exit AC-POS-004', () => {
           issues: [
             { source: 'ReferenceCatalog', field: 'closeReasonId', code },
             { source: 'Journal', field: 'prompt.close-review.take-again', code: 'RequiredAnswerMissing' },
+            { source: 'Journal', field: 'prompt.close-review.key-lesson', code: 'RequiredAnswerMissing' },
           ],
         }),
       );

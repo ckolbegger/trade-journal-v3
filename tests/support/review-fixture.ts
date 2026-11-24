@@ -6,7 +6,7 @@ import { createDailyReview } from '../../src/coordinators/daily-review/index.ts'
 import type { PositionChangeMember } from '../../src/coordinators/trade-workflows/index.ts';
 import { nyseSessionPolicy } from '../../src/domain/session-policy/index.ts';
 import type { TradeAnalysisRecord } from '../../src/domain/trade-analysis/index.ts';
-import { D3_JOURNAL_MANIFEST, type ReflectionDisposition } from '../../src/modules/journal/index.ts';
+import { D6_JOURNAL_MANIFEST, type ReflectionDisposition } from '../../src/modules/journal/index.ts';
 import { createMarketData, type MarketDataSaveResult } from '../../src/modules/market-data/index.ts';
 import { beginSemanticTransaction } from '../../src/persistence/index.ts';
 import { onboardedStack } from './onboarded.ts';
@@ -34,7 +34,7 @@ export interface PlanSpec {
 export async function reviewStack(now = MONDAY_1700) {
   const factory = new IDBFactory();
   const stack = await onboardedStack(factory, now);
-  const seeded = await stack.journal.seedDefaults(D3_JOURNAL_MANIFEST);
+  const seeded = await stack.journal.seedDefaults(D6_JOURNAL_MANIFEST);
   if (seeded.kind !== 'Seeded') throw new Error(`Daily Trade Review seed failed: ${seeded.kind}`);
   const marketData = createMarketData({ persistence: stack.persistence, ids: sequentialIds('md'), clock: stack.clock, sessionPolicy: nyseSessionPolicy });
   const dailyReview = createDailyReview({ ...stack, marketData });

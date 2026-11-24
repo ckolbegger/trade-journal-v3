@@ -312,7 +312,7 @@ describe('Action form (AC-REV-003)', () => {
 });
 
 const INTENT_PROMPT = DAILY_TRADE_REVIEW_PROMPTS.intent;
-const INTENT_LABEL = /Why are you taking this action\?/;
+const INTENT_LABEL = /^Why\?/;
 
 describe('Action form (AC-REV-003)', () => {
   it('should label the Intent field with the definition prompt and its required or optional marker', async () => {
@@ -357,6 +357,18 @@ describe('Action form (AC-REV-003)', () => {
 });
 
 describe('Saved Action', () => {
+  it('should show the reason of an Action saved under the earlier form, and pre-fill it on Change', async () => {
+    const earlier = { ...savedAction('Exit', undefined, 1), responses: [{ prompt: 'Action', answer: { kind: 'Option' as const, label: 'Exit' } }, { prompt: DAILY_TRADE_REVIEW_PROMPTS.earlierIntent, answer: { kind: 'Text' as const, text: 'Saved under the earlier form.' } }] };
+    const first = tradeReview('t1', 'XYZ', { form: { kind: 'Saved', action: earlier }, saveBinding: savedBinding({ expectedEntryRevision: 1 }) });
+    renderWalk(walkFacade(ready([item('t1', 'XYZ')], []), first));
+    const user = userEvent.setup();
+
+    const trade = await openTrade(user, 'XYZ');
+    expect(within(trade).getByText(`${INTENT_PROMPT} Saved under the earlier form.`)).toBeTruthy();
+    await user.click(within(trade).getByRole('button', { name: 'Change' }));
+    expect(within(trade).getByRole('textbox', { name: INTENT_LABEL })).toHaveProperty('value', 'Saved under the earlier form.');
+  });
+
   it('should show a saved Action with its values and allow changing it, submitting the expected Entry revision', async () => {
     const saved = savedAction('Exit', 'Because the plan changed.', 2);
     const first = tradeReview('t1', 'XYZ', { form: { kind: 'Saved', action: saved }, saveBinding: savedBinding({ expectedEntryRevision: 2 }) });

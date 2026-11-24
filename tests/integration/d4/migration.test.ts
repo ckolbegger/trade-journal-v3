@@ -40,7 +40,7 @@ describe('I4.1 migrate earlier fixtures', () => {
       expect(opened.receipt.migration).toEqual(
         expect.objectContaining({ fromVersion: version, toVersion: 7, sourceDatabase: fixtureDatabase(version), databaseName: expect.stringMatching(/^tj-ws-/) as string }),
       );
-      expect(opened.receipt.seeds.journal).toEqual({ manifestVersion: 5, additions: JOURNAL_ADDITIONS[version] });
+      expect(opened.receipt.seeds.journal).toEqual({ manifestVersion: 6, additions: JOURNAL_ADDITIONS[version] });
       expect(opened.receipt.sessionPolicy).toEqual({ recorded: nyseSessionPolicy.identity, findings: [] });
       const newDatabase = opened.receipt.migration!.databaseName;
 

@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { derive, type TradeAnalysisRecord } from '../../domain/trade-analysis/index.ts';
 import { Rational } from '../../domain/values/index.ts';
-import { D5_JOURNAL_MANIFEST, type ReflectionDisposition } from '../../modules/journal/index.ts';
+import { D6_JOURNAL_MANIFEST, type ReflectionDisposition } from '../../modules/journal/index.ts';
 import { D6_CATALOG_MANIFEST } from '../../modules/reference-catalog/index.ts';
 import { closedTradeReviewFixture } from '../../../tests/support/closed-trade-review-fixture.ts';
 import { ELEVEN_AM, TEN_AM, rawEditTrade, reviewStack } from '../../../tests/support/review-fixture.ts';
@@ -94,14 +94,14 @@ describe('browseTrades: Closed (A95)', () => {
 async function tradeA(now = TUESDAY_1700) {
   const stack = await reviewStack(now);
   await stack.catalog.seedDefaults(D6_CATALOG_MANIFEST);
-  await stack.journal.seedDefaults(D5_JOURNAL_MANIFEST);
+  await stack.journal.seedDefaults(D6_JOURNAL_MANIFEST);
   const reasons = await stack.catalog.query({ family: 'CloseReason' });
   if (reasons.kind !== 'Page') throw new Error('no Close Reasons');
   const definition = await stack.journal.getDefinitions({ latestFor: 'entry-type.close-review' });
   if (definition.kind !== 'Found') throw new Error('no Close Review definition');
   const closeReview: ReflectionDisposition = {
     kind: 'Complete',
-    form: { definitionId: definition.definition.id, answers: { 'prompt.close-review.take-again': { kind: 'Option', optionId: 'option.close-review.take-again.yes-as-planned' } } },
+    form: { definitionId: definition.definition.id, answers: { 'prompt.close-review.take-again': { kind: 'Option', optionId: 'option.close-review.take-again.yes-as-planned' }, 'prompt.close-review.key-lesson': { kind: 'Text', text: 'Size down into earnings.' } } },
   };
   const trade = await stack.confirm({ symbol: 'XYZ', shares: '100', entry: '50.00', stop: '47.50', target: '56.00' });
   await stack.fill(trade, TEN_AM, '60', '50.10');

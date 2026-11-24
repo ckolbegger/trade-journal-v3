@@ -2,7 +2,7 @@ import { IDBFactory } from 'fake-indexeddb';
 import { describe, expect, it } from 'vitest';
 import { derive, type TradeAnalysisRecord } from '../../domain/trade-analysis/index.ts';
 import { Rational } from '../../domain/values/index.ts';
-import { D5_JOURNAL_MANIFEST, type ReflectionDisposition } from '../../modules/journal/index.ts';
+import { D6_JOURNAL_MANIFEST, type ReflectionDisposition } from '../../modules/journal/index.ts';
 import { D7_CATALOG_MANIFEST, type StrategyRecord } from '../../modules/reference-catalog/index.ts';
 import { dumpAll } from '../../../tests/support/stack.ts';
 import { onboardedStack } from '../../../tests/support/onboarded.ts';
@@ -52,7 +52,7 @@ async function strategyOf(stack: Stack, productKey: string): Promise<StrategyRec
 async function optionTrade(kind: 'CashSecuredPut' | 'LongCall', now: string): Promise<Ref> {
   const stack = await onboardedStack(new IDBFactory(), now);
   await stack.catalog.seedDefaults(D7_CATALOG_MANIFEST);
-  await stack.journal.seedDefaults(D5_JOURNAL_MANIFEST);
+  await stack.journal.seedDefaults(D6_JOURNAL_MANIFEST);
   const strategy = await strategyOf(stack, kind === 'LongCall' ? 'strategy.long-call' : 'strategy.cash-secured-put');
   const base = { accountId: stack.account.id, accountRevision: stack.account.recordRevision, strategyId: strategy.id, strategyRevision: strategy.recordRevision, economicTime: MONDAY_PLAN, reflection: reflection(stack) };
   const plan: ConfirmPlanCommand['plan'] =
@@ -119,7 +119,7 @@ const complete = (ref: Ref): ReflectionDisposition => ({
 
 const closeReviewForm = (ref: Ref): ReflectionDisposition => ({
   kind: 'Complete',
-  form: { definitionId: ref.closeReviewDefinitionId, answers: { 'prompt.close-review.take-again': { kind: 'Option', optionId: 'option.close-review.take-again.yes-as-planned' } } },
+  form: { definitionId: ref.closeReviewDefinitionId, answers: { 'prompt.close-review.take-again': { kind: 'Option', optionId: 'option.close-review.take-again.yes-as-planned' }, 'prompt.close-review.key-lesson': { kind: 'Text', text: 'Size down into earnings.' } } },
 });
 
 function command(ref: Ref, expectedFactRevision: number, members: PositionChangeCommand['members'], extra: Partial<PositionChangeCommand> = {}): PositionChangeCommand {

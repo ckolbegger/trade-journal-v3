@@ -9402,7 +9402,7 @@
           "selectedAction": "Hold"
         }
       },
-      "definitionRevision": "fx-0008"
+      "definitionRevision": "entry-type.daily-trade-review.revision-2"
     },
     {
       "tradeId": "fx-0046",
@@ -10264,7 +10264,7 @@
           "selectedAction": "Hold"
         }
       },
-      "definitionRevision": "fx-0008"
+      "definitionRevision": "entry-type.daily-trade-review.revision-2"
     },
     {
       "tradeId": "fx-0114",
@@ -10634,7 +10634,7 @@
           "selectedAction": "Hold"
         }
       },
-      "definitionRevision": "fx-0008"
+      "definitionRevision": "entry-type.daily-trade-review.revision-2"
     },
     {
       "tradeId": "fx-0129",
@@ -11004,7 +11004,7 @@
           "selectedAction": "Hold"
         }
       },
-      "definitionRevision": "fx-0008"
+      "definitionRevision": "entry-type.daily-trade-review.revision-2"
     },
     {
       "tradeId": "fx-0089",
@@ -11625,7 +11625,7 @@
           "selectedAction": "Hold"
         }
       },
-      "definitionRevision": "fx-0008"
+      "definitionRevision": "entry-type.daily-trade-review.revision-2"
     }
   ],
   "debts": [

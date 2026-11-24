@@ -42,12 +42,9 @@ describe('I2.7 rejections write nothing', () => {
         { source: 'TradeWorkflows', member: 0, field: 'economicTime', code: 'EconomicTimeBeforePlan' },
         { source: 'TradeWorkflows', member: 1, field: 'economicTime', code: 'EconomicTimeInFuture' },
         expect.objectContaining({ source: 'TradeWorkflows', member: 2, field: 'quantity' }),
-        expect.objectContaining({ source: 'Journal', field: 'prompt.position-change-reflection.decision-mode' }),
-        expect.objectContaining({ source: 'Journal', field: 'prompt.position-change-reflection.primary-emotion' }),
-        expect.objectContaining({ source: 'Journal', field: 'prompt.position-change-reflection.decision-confidence' }),
       ]),
     );
-    expect(issues).toHaveLength(6);
+    expect(issues).toHaveLength(3);
     expect(await dumpAll(d.factory)).toEqual(before);
 
     // A Buy mixed with a Sell is outside the installed variant (D2 A18, D6 A76).

@@ -33,6 +33,8 @@ describe('I8.1 Round trip', () => {
   it('should verify the backup of W7 as the captured file and as its decompressed form, restore it into an empty factory, and show equal views, identities, histories and rebuilt private state, with identical section digests from two later exports', async () => {
     const source = await w7Device();
     const app = await launch(source);
+    // W7 is seeded at manifest 5; its next start gives it manifest 6's forms, as a Restore does.
+    await app.Workspace.initialize({});
     const sourceDump = await dumpAll(source.factory);
     const sourceDatabase = liveOf(sourceDump);
     const marks = marksIn(sourceDump[sourceDatabase]!);

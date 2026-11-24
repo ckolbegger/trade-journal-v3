@@ -79,7 +79,7 @@ export async function closeReviewDisposition(app: Application, kind: CloseReview
     kind: 'Complete',
     form: {
       definitionId: definition.definition.id,
-      answers: { 'prompt.close-review.take-again': { kind: 'Option', optionId: 'option.close-review.take-again.yes-as-planned' } },
+      answers: { 'prompt.close-review.take-again': { kind: 'Option', optionId: 'option.close-review.take-again.yes-as-planned' }, 'prompt.close-review.key-lesson': { kind: 'Text', text: 'Size down into earnings.' } },
     },
   };
 }

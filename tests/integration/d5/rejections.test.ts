@@ -5,32 +5,6 @@ import { planCommand } from '../d1/support.ts';
 import { dumpAll, journalStores, reflectionForm, withDebt } from './support.ts';
 
 describe('I5.10 Rejections write nothing', () => {
-  it('should reject an Answer with a blank required prompt with a typed issue and leave every store unchanged', async () => {
-    const { d, app, debt } = await withDebt();
-    const form = await reflectionForm(app);
-    const promptId = 'prompt.position-change-reflection.decision-mode';
-    const before = await dumpAll(d.factory);
-
-    const blank = await app.Journal.save({
-      intention: 'ResolveDebt',
-      debtId: debt.debtId,
-      expectedDebtRevision: debt.revision,
-      resolution: { kind: 'Answer', form: { ...form, answers: { ...form.answers, [promptId]: { kind: 'Text', text: '   ' } } } },
-    });
-    const missing = await app.Journal.save({
-      intention: 'ResolveDebt',
-      debtId: debt.debtId,
-      expectedDebtRevision: debt.revision,
-      resolution: { kind: 'Answer', form: { ...form, answers: Object.fromEntries(Object.entries(form.answers).filter(([id]) => id !== promptId)) } },
-    });
-
-    const issue = { kind: 'Rejected', issues: [{ promptId, code: 'RequiredAnswerMissing' }] };
-    expect(blank).toEqual(issue);
-    expect(missing).toEqual(issue);
-    expect(await dumpAll(d.factory)).toEqual(before);
-    expect((await app.Journal.query({ scope: 'OutstandingDebt' })).kind).toBe('Debts');
-  }, 60_000);
-
   it('should reject a 501-character decline reason with ReasonTooLong and leave every store unchanged, while 500 is accepted', async () => {
     const { d, app, debt } = await withDebt();
     const before = await dumpAll(d.factory);

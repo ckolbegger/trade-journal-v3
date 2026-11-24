@@ -76,7 +76,7 @@ describe('migration from schema 1', () => {
         seeds: {
           catalog: CATALOG_SEEDS,
           journal: {
-            manifestVersion: 5,
+            manifestVersion: 6,
             additions: ['entry-type.position-change-reflection', 'entry-type.daily-trade-review', 'entry-type.close-review', 'source.position-change', 'source.daily-review', 'source.trade-detail', 'source.trade-close'],
           },
         },
@@ -317,7 +317,7 @@ describe('migration to the current schema', () => {
         readiness: expect.objectContaining({ outcome: 'Writable' }) as unknown,
         seeds: {
           catalog: CATALOG_SEEDS,
-          journal: { manifestVersion: 5, additions: ['entry-type.daily-trade-review', 'entry-type.close-review', 'source.daily-review', 'source.trade-detail', 'source.trade-close'] },
+          journal: { manifestVersion: 6, additions: ['entry-type.daily-trade-review', 'entry-type.close-review', 'source.daily-review', 'source.trade-detail', 'source.trade-close'] },
         },
         sessionPolicy: { recorded: nyseSessionPolicy.identity, findings: [] },
         migration: {
@@ -347,7 +347,7 @@ describe('migration to the current schema', () => {
     expect([...opened].filter((name) => name !== 'tj-root' && name !== V1_DATABASE)).toEqual([result.receipt.migration.databaseName]);
     expect(result.receipt.migration).toMatchObject({ fromVersion: 1, toVersion: 7, sourceDatabase: V1_DATABASE });
     expect(result.receipt.seeds.journal).toEqual({
-      manifestVersion: 5,
+      manifestVersion: 6,
       additions: ['entry-type.position-change-reflection', 'entry-type.daily-trade-review', 'entry-type.close-review', 'source.position-change', 'source.daily-review', 'source.trade-detail', 'source.trade-close'],
     });
     const dump = await dumpAll(factory);
@@ -466,7 +466,7 @@ describe('migration to the current schema, from v1 through v3', () => {
           readiness: expect.objectContaining({ outcome: 'Writable' }) as unknown,
           seeds: {
             catalog: CATALOG_SEEDS,
-            journal: { manifestVersion: 5, additions },
+            journal: { manifestVersion: 6, additions },
           },
           sessionPolicy: { recorded: nyseSessionPolicy.identity, findings: [] },
           migration: expect.objectContaining({ fromVersion: from, toVersion: 7, sourceDatabase: source, counts: counts[index] }) as unknown,
@@ -503,7 +503,7 @@ describe('migration to schema 5', () => {
       const { workspace, factory } = stack;
       const seeds = {
         catalog: CATALOG_SEEDS,
-        journal: { manifestVersion: 5, additions: [...journalBefore.filter((key) => key.startsWith('entry-type.')), 'entry-type.close-review', ...journalBefore.filter((key) => key.startsWith('source.')), 'source.trade-close'] },
+        journal: { manifestVersion: 6, additions: [...journalBefore.filter((key) => key.startsWith('entry-type.')), 'entry-type.close-review', ...journalBefore.filter((key) => key.startsWith('source.')), 'source.trade-close'] },
       };
       const result = await workspace.initialize({});
       expect(result).toEqual({
@@ -536,7 +536,7 @@ describe('migration to schema 5', () => {
       const second = await workspace.initialize({});
       expect(second.kind === 'Opened' && [second.receipt.migration, second.receipt.seeds]).toEqual([
         undefined,
-        { catalog: { manifestVersion: 3, additions: [] }, journal: { manifestVersion: 5, additions: [] } },
+        { catalog: { manifestVersion: 3, additions: [] }, journal: { manifestVersion: 6, additions: [] } },
       ]);
       expect(await dumpAll(factory)).toEqual(dump);
     }

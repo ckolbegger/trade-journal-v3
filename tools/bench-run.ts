@@ -487,7 +487,7 @@ async function timeSaveAction(page: Page, saveCard: SaveCard): Promise<number> {
   else firstSaves.add(labelOf(saveCard));
   const form = card.getByRole('form', { name: 'Action' });
   await form.getByRole('radio', { name: 'Hold', exact: true }).check();
-  await form.getByLabel(/^Why are you taking this action\?/).fill('bench edit');
+  await form.getByLabel(/^Why\?/).fill('bench edit');
   return pressToRendered(page, { kind: 'actionSaved', tradeId: saveCard.tradeId }, () => form.getByRole('button', { name: 'Save' }).click());
 }
 

@@ -7,6 +7,8 @@ describe('I8.11 First-run Restore', () => {
     // The views of W7 itself, as I8.1 captures them.
     const source = await w7Device();
     const sourceApp = await launch(source);
+    // W7 is seeded at manifest 5; its next start gives it manifest 6's forms, as a Restore does.
+    await sourceApp.Workspace.initialize({});
     const sourceDump = await dumpAll(source.factory);
     const marks = marksIn(sourceDump[liveOf(sourceDump)]!);
     const expected = await capture(sourceApp, EXPORT_AT, marks);

@@ -483,7 +483,7 @@ export async function acknowledgeMark(page: Page, card: CardRef, date: string, r
 export async function saveAction(page: Page, action: 'Hold' | 'Exit' | 'Roll' | 'Adjust', intent: string | undefined, card: CardRef): Promise<void> {
   const form = await actionFormOf(page, card);
   await form.getByRole('radio', { name: action, exact: true }).check();
-  if (intent !== undefined) await form.getByLabel(/^Why are you taking this action\?/).fill(intent);
+  if (intent !== undefined) await form.getByLabel(/^Why\?/).fill(intent);
   await pressSave(form);
 }
 

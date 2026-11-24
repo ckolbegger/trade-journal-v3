@@ -121,7 +121,7 @@ describe('SaveTradeAction (AC-REV-003)', () => {
     expect(review.nextStep.trade.tradeId).toBe(order[2]);
   }, 30_000);
 
-  it('should reject Exit, Roll, or Adjust without Intent, and save them with Intent while creating no Trade fact', async () => {
+  it('should reject Roll or Adjust without Intent, and save them and Exit with Intent while creating no Trade fact', async () => {
     const stack = await reviewStack(MONDAY_1700);
     const { a, b, c } = await fiveTradeFixture(stack);
     // An Action waits for its Trade's Marks (A304): DEF's Review Date Mark is saved first.
@@ -130,7 +130,7 @@ describe('SaveTradeAction (AC-REV-003)', () => {
     const before = await dumpAll(stack.factory);
 
     // Without Intent, or with a blank one, nothing is written.
-    for (const action of ['Exit', 'Roll', 'Adjust'] as const) {
+    for (const action of ['Roll', 'Adjust'] as const) {
       expect(await saveAction(stack, bindings.a, action)).toEqual({ kind: 'Rejected', issues: [{ code: 'RequiredAnswerMissing', promptId: 'prompt.daily-trade-review.intent' }] });
       expect(await saveAction(stack, bindings.a, action, '   ')).toEqual({ kind: 'Rejected', issues: [{ code: 'RequiredAnswerMissing', promptId: 'prompt.daily-trade-review.intent' }] });
     }
@@ -144,7 +144,7 @@ describe('SaveTradeAction (AC-REV-003)', () => {
     ] as const;
     for (const [tradeId, binding, action] of choices) {
       const result = saved(await saveAction(stack, binding, action, 'Because the plan changed.'));
-      expect(result.action).toEqual(expect.objectContaining({ action, responses: expect.arrayContaining([{ prompt: 'Why are you taking this action?', answer: { kind: 'Text', text: 'Because the plan changed.' } }]) as unknown }));
+      expect(result.action).toEqual(expect.objectContaining({ action, responses: expect.arrayContaining([{ prompt: 'Why?', answer: { kind: 'Text', text: 'Because the plan changed.' } }]) as unknown }));
       expect((await stack.journal.queryActions({ reviewDate: binding.reviewDate })).actions[tradeId]).toEqual(result.action);
     }
     const after = await dumpAll(stack.factory);
@@ -194,7 +194,7 @@ describe('the definition optional questions (T4.33-B3)', () => {
     const { a, b } = await fiveTradeFixture(stack);
 
     const all = saved(await saveAction(stack, await bindingFor(stack, a), 'Exit', 'Taking profit.', { conviction: 4, considered: '  Selling the call. ', note: ' Earnings Thursday. ' }));
-    expect(all.action.responses.map((r) => r.prompt)).toEqual(['Action', 'Why are you taking this action?', 'Conviction now', 'Anything you considered doing and decided against?', 'Note']);
+    expect(all.action.responses.map((r) => r.prompt)).toEqual(['Action', 'Why?', 'Conviction now', 'Anything you considered doing and decided against?', 'Note']);
     expect(answered(all.action.responses).slice(2)).toEqual([CONVICTION, CONSIDERED, NOTE]);
 
     const some = saved(await saveAction(stack, await bindingFor(stack, b), 'Hold', undefined, { considered: '   ', note: 'Earnings Thursday.' }));

@@ -16,7 +16,11 @@ async function wtWithX() {
 }
 
 // A7's record count per store, from its committed Downloaded result.
-const a7Counts = (): Record<string, number> => (JSON.parse(readFileSync(`${FIXTURES}/backup-v7/downloaded.json`, 'utf8')) as { counts: Record<string, number> }).counts;
+// The restored Workspace also holds manifest 6's three revised forms, which A7 (seeded at manifest 5) lacks.
+const a7Counts = (): Record<string, number> => {
+  const { counts } = JSON.parse(readFileSync(`${FIXTURES}/backup-v7/downloaded.json`, 'utf8')) as { counts: Record<string, number> };
+  return { ...counts, journalDefinitions: counts['journalDefinitions']! + 3 };
+};
 
 async function expectReplacedByA7(wt: Awaited<ReturnType<typeof wtWithX>>, applied: { kind: string }) {
   expect(applied.kind).toBe('Restored');

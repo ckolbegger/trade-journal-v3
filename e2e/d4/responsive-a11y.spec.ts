@@ -43,7 +43,7 @@ test.describe('B4.13 Responsive and accessible', () => {
     await enterMark(page, 'XYZ', DATE, '52.00');
     await reachCard(page, 'XYZ');
     await (await actionFormOf(page, 'XYZ')).getByRole('radio', { name: 'Adjust', exact: true }).check();
-    await (await actionFormOf(page, 'XYZ')).getByLabel(/^Why are you taking this action\?/).fill('Move the Stop to break even.');
+    await (await actionFormOf(page, 'XYZ')).getByLabel(/^Why\?/).fill('Move the Stop to break even.');
     await expect(nav(page)).toHaveAttribute('data-placement', 'sidebar');
 
     await page.setViewportSize({ width: 390, height: 844 });
@@ -55,7 +55,7 @@ test.describe('B4.13 Responsive and accessible', () => {
     await page.setViewportSize({ width: 1280, height: 900 });
 
     await expect((await actionFormOf(page, 'XYZ')).getByRole('radio', { name: 'Adjust', exact: true })).toBeChecked();
-    await expect((await actionFormOf(page, 'XYZ')).getByLabel(/^Why are you taking this action\?/)).toHaveValue('Move the Stop to break even.');
+    await expect((await actionFormOf(page, 'XYZ')).getByLabel(/^Why\?/)).toHaveValue('Move the Stop to break even.');
     await expect(completion(page)).toHaveText('Incomplete');
     await context.close();
   });

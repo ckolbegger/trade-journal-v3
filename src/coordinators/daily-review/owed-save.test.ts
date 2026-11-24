@@ -6,7 +6,7 @@ import type { SaveDailyReviewResult, TradeSaveBinding } from './index.ts';
 // T6.13: DailyReview.save across the walk and the owed-reflection group, against the Closed-Trade Review fixture at
 // Tuesday 17:00, every Mark and every Action saved.
 
-const CLOSE_REVIEW_ANSWERS = { 'prompt.close-review.take-again': { kind: 'Option', optionId: 'option.close-review.take-again.yes-as-planned' } } as const;
+const CLOSE_REVIEW_ANSWERS = { 'prompt.close-review.take-again': { kind: 'Option', optionId: 'option.close-review.take-again.yes-as-planned' }, 'prompt.close-review.key-lesson': { kind: 'Text', text: 'Size down into earnings.' } } as const;
 
 async function openTuesday(fixture: ClosedTradeFixture) {
   const review = await fixture.stack.dailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: TUESDAY_1700 });

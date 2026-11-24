@@ -76,7 +76,7 @@ test.describe('B4.11 Mid-session failure (faults build, AC-DEL-006)', () => {
     await reachCard(page, 'XYZ');
     const form = await actionFormOf(page, 'XYZ');
     await form.getByRole('radio', { name: 'Exit', exact: true }).check();
-    await form.getByLabel(/^Why are you taking this action\?/).fill('Taking the profit before the gap risk.');
+    await form.getByLabel(/^Why\?/).fill('Taking the profit before the gap risk.');
     const before = workspaceOf(await probe(page))!;
 
     await page.evaluate(() => window.__tjFaults?.set(['inventory']));
@@ -87,7 +87,7 @@ test.describe('B4.11 Mid-session failure (faults build, AC-DEL-006)', () => {
     await expect(banner.getByRole('listitem')).toHaveText(["The app's offline copy is missing or damaged, so it could not reopen without a network."]);
     // The values are kept and nothing is recorded.
     await expect((await actionFormOf(page, 'XYZ')).getByRole('radio', { name: 'Exit', exact: true })).toBeChecked();
-    await expect((await actionFormOf(page, 'XYZ')).getByLabel(/^Why are you taking this action\?/)).toHaveValue('Taking the profit before the gap risk.');
+    await expect((await actionFormOf(page, 'XYZ')).getByLabel(/^Why\?/)).toHaveValue('Taking the profit before the gap risk.');
     await expect(completion(page)).toHaveText('Incomplete');
     const workspace = workspaceOf(await probe(page))!;
     expect(actionEntriesOf(workspace)).toEqual([]);
