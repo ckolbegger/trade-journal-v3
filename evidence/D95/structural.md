@@ -580,3 +580,5 @@ Run `t95.26-b1` (browser-task): unit 2892, integration 330, browser 20, checks 1
 ### T95.26-B2
 
 Commit `2bd629f7`: new `Figures` wraps each signed money figure in `.nowrap`; the Now box uses it for row values and the Marks' change. Plan box has no signed figure. Red then green (browser, DALE at 320: "−$2,016.00" broken). e2e/d95 and e2e/d9ar 86 passed.
+
+ocr of T95.26-B2 (session a4136929): 3 files, 0 findings. `evidence/D95/ocr/T95.26-B2-2bd629f7.json`. T95.26-F1 (Light, test-only) goes next; B2's quick run follows it and covers both.
