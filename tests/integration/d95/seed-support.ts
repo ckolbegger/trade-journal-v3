@@ -16,7 +16,7 @@ export const definitionsOf = (dump: Dump): Definition[] => {
   return (dump[name!] as Record<string, unknown[]>)['journalDefinitions'] as Definition[];
 };
 
-// The contract's prompt lists: text, kind, whether required, the workflow role, options, range.
+// The contract's prompt lists: text, kind, whether required, the workflow role, options, range, and for a conditionally required prompt the text of the prompt that controls it.
 export const CONTRACT: Record<string, readonly object[]> = {
   [REFLECTION]: [
     { text: 'Why did you leave the Plan?', kind: 'Text', required: false, role: 'PlanDepartureReason' },
@@ -33,7 +33,7 @@ export const CONTRACT: Record<string, readonly object[]> = {
   ],
   [DAILY]: [
     { text: 'Action', kind: 'SingleSelect', required: true, role: 'Action', options: ['Hold', 'Exit', 'Roll', 'Adjust', 'Settle Later'], protectedOptions: ['Settle Later'] },
-    { text: 'Why?', kind: 'Text', required: false, role: 'Intent', requiredWhenOptions: ['Roll', 'Adjust'] },
+    { text: 'Why?', kind: 'Text', required: false, role: 'Intent', requiredWhenPrompt: 'Action', requiredWhenOptions: ['Roll', 'Adjust'] },
     { text: 'Conviction now', kind: 'Scale', required: false, range: [1, 5] },
     { text: 'Anything you considered doing and decided against?', kind: 'Text', required: false },
     { text: 'Note', kind: 'Text', required: false },
@@ -58,7 +58,7 @@ export function shapeOf(prompts: Awaited<ReturnType<typeof latestForm>>['prompts
     ...(p.kind === 'SingleSelect' ? { options: p.options.map((o) => o.label) } : {}),
     ...(p.kind === 'SingleSelect' && p.options.some((o) => o.protected) ? { protectedOptions: p.options.filter((o) => o.protected).map((o) => o.label) } : {}),
     ...(p.kind === 'Scale' ? { range: [p.min, p.max] } : {}),
-    ...('requiredWhen' in p && p.requiredWhen ? { requiredWhenOptions: p.requiredWhen.optionIds.map((id) => label(id)) } : {}),
+    ...('requiredWhen' in p && p.requiredWhen ? { requiredWhenPrompt: prompts.find((q) => q.id === p.requiredWhen!.promptId)?.text ?? p.requiredWhen.promptId, requiredWhenOptions: p.requiredWhen.optionIds.map((id) => label(id)) } : {}),
   }));
 }
 
