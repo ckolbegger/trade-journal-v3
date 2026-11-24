@@ -840,3 +840,7 @@ ocr of T95.36 (session f75cbe5c): 11 files, 3 findings (1 Valid, 2 Doubtful), al
 Commits `44ca55d0` (B1: the hold-past cutoff uses the earliest member's time), `f2ff9bc6` (B2: `SaleMeasure.journalRevision`; a revision moved before the reflection is prepared returns Conflict `journal@N`, and the existing retry re-measures; no new stored shape), `0c616a21` (B3: `unreadableTimeIssues` at the coordinator's start, `EconomicTimeInvalid` on economicTime, nothing written; the throw came from `compareInstants` via prepareChange, so it covers every Position Change). Each red, then green; src/coordinators and tests/integration 926 passed.
 
 ocr of T95.36-B1, T95.36-B2, T95.36-B3 (session 58744809): 3 files, 1 finding, Valid: **T95.36-B4** (`sale-measure.ts:78`): the earliest-member reduce uses `Date.parse`, which gives NaN for an annotated instant (`…Z[UTC]`) the B3 check accepts, so the first member wins again; the same pattern at `record-position-change.ts` 247-249 and 327 and `trade-workflows.ts:71`. `evidence/D95/ocr/T95.36-B1-B3-0c616a21.json`.
+
+### T95.36-B4
+
+Commit `c59d4ad7`: `Temporal.Instant.compare` picks the earliest member in sale-measure.ts and in record-position-change.ts (`earliest()`, memberIssues' before-plan and in-future bounds). Red, green (annotated times in both orders); the moment's agreement rests on the code, not asserted. `confirmPlan`'s `Date.parse` (trade-workflows.ts:71, pre-existing) added to tech-debt.md. src/coordinators and tests/integration 927 passed.
