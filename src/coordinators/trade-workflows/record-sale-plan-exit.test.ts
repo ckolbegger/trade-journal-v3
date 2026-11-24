@@ -317,6 +317,18 @@ describe('a sale that leaves the Plan Exit', () => {
     expect(result).toMatchObject({ kind: 'Rejected', issues: [{ field: PLAN_DEPARTURE, code: 'PlanDepartureReasonRequired' }] });
   }, 60_000);
 
+  it('should reject a sale whose Economic Time is malformed as an economicTime issue and write nothing', async () => {
+    const held = await longTrade();
+    await held.stack.saveMark('XYZ', '47.00');
+    const before = await dumpAll(held.stack.factory);
+    const base = await saleCommand(held, '100', '47.00', noAnswers(held.stack), await closing(held));
+
+    const result = await held.stack.tradeWorkflows.recordPositionChange({ ...base, members: base.members.map((m) => ({ ...m, economicTime: 'not a time' })) });
+
+    expect(result).toMatchObject({ kind: 'Rejected', issues: [{ source: 'TradeWorkflows', member: 0, field: 'economicTime' }] });
+    expect(await dumpAll(held.stack.factory)).toEqual(before);
+  }, 60_000);
+
   it('should record a whole sale with no reason when its own price reaches the Stop that the latest Marks have not', async () => {
     const held = await longTrade();
     await held.stack.saveMark('XYZ', '51.00');

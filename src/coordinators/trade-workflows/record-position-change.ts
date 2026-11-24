@@ -1,3 +1,4 @@
+import { Temporal } from 'temporal-polyfill';
 import type { RuntimeNotWritable } from '../../delivery/runtime-not-writable.ts';
 import { instrumentKey, type OptionInstrument, type StockInstrument } from '../../domain/instrument/index.ts';
 import type { Instant } from '../../domain/time/index.ts';
@@ -312,6 +313,17 @@ function positionPathIssues(findings: IncoherentFacts['findings'], memberIds: re
   return issues;
 }
 
+// A time the platform cannot read as an instant would throw wherever it is first used, so it is refused before anything reads it.
+const unreadableTimeIssues = (command: PositionChangeCommand): WorkflowIssue[] =>
+  command.members.flatMap((m, member): WorkflowIssue[] => {
+    try {
+      Temporal.Instant.from(m.economicTime);
+      return [];
+    } catch {
+      return [{ source: 'TradeWorkflows', member, field: 'economicTime', code: 'EconomicTimeInvalid' }];
+    }
+  });
+
 const earliest = (times: readonly Instant[]): Instant | undefined => [...times].sort((a, b) => Date.parse(a) - Date.parse(b))[0];
 
 // Each Deviation action with the occurrence it acted on, as committed. A created occurrence is found
@@ -352,6 +364,8 @@ async function attemptPositionChange(deps: TradeWorkflowsDeps, command: Position
   const executionMembers: readonly PositionChangeMember[] = command.members.filter(isExecution);
   const expirationMember = command.members.find((m): m is ExpirationMember => m.kind === 'Expiration');
   if (variants.length > 0 || !installed(executionMembers)) return { kind: 'VariantNotInstalled', variants };
+  const unreadable = unreadableTimeIssues(command);
+  if (unreadable.length > 0) return rejected(deps, unreadable);
   const tradeId = command.originTradeId;
   const prepared = await deps.tradeRecord.prepareChange({
     kind: 'PositionChange',
