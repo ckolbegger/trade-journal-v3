@@ -66,7 +66,7 @@ export async function at(profile: Profile, instant: string, step: (page: Page) =
   await context.close();
 }
 
-// The Sell 1 @ 3.00 at Wed 11:00 (fee 0.65), with its Position Change Reflection deferred ("Reflect later"), so it stays owed.
+// The Sell 1 @ 3.00 at Wed 11:00 (fee 0.65), with its Position Change Reflection deferred ("Say why later"), so it stays owed.
 async function sellOneAndDefer(page: Page): Promise<void> {
   await detail.recordExitLink(page).click();
   await expect(page.getByRole('heading', { name: 'Record exit', level: 1 })).toBeVisible();
@@ -75,8 +75,7 @@ async function sellOneAndDefer(page: Page): Promise<void> {
   await row.getByLabel('Price (per share)').fill('3.00');
   await row.getByLabel('Fee').fill('0.65');
   await row.getByLabel('Economic Time').fill('2026-10-14T11:00');
-  await page.getByRole('region', { name: 'Reflection on this exit' }).getByLabel('Reflect later').check();
-  await page.getByRole('button', { name: 'Save exit' }).click();
+  await page.getByRole('button', { name: 'Say why later' }).click();
   await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible();
 }
 

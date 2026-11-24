@@ -17,10 +17,10 @@ test.describe('B6.3 Close requirements', () => {
     await openExitForm(page);
     await fillRows(page, [sell('100', '53.00', '1.40', TUESDAY_1405_LOCAL)]);
     await answerSaleIn(exitReflection(page));
-    // The full exit shows Closing the Trade; the Close Reason is left unchosen and the Close Review is deferred.
+    // The full exit shows Closing the Trade; the Close Reason is left unchosen, and there is no Close Review to choose (T95.39).
     await expect(closingSection(page)).toBeVisible();
     await expect(closeReasonGroup(page).getByRole('radio', { checked: true })).toHaveCount(0);
-    await closeReviewGroup(page).getByLabel('Reflect later').check();
+    await expect(closeReviewGroup(page)).toHaveCount(0);
     await page.getByRole('button', { name: 'Save exit' }).click();
 
     // The message is beside the Close Reason group, the group is marked invalid, and the issue summary has focus.
@@ -37,7 +37,6 @@ test.describe('B6.3 Close requirements', () => {
     await expect(executionRow(page, 1).getByLabel('Fee')).toHaveValue('1.40');
     await expect(executionRow(page, 1).getByLabel('Economic Time')).toHaveValue(TUESDAY_1405_LOCAL);
     await expect(exitReflection(page).getByRole('radiogroup', { name: 'Decision mode' }).getByLabel('As Planned')).toBeChecked();
-    await expect(closeReviewGroup(page).getByLabel('Reflect later')).toBeChecked();
 
     // Nothing was saved either: the Trade is still Open with no Sell.
     const unsaved = workspaceOf(await probe(page))!;

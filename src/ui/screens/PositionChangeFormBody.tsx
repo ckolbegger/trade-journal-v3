@@ -8,7 +8,7 @@ import type {
   TradeDetailView,
 } from '../../app/types.ts';
 import { fromWorkspaceLocal, toWorkspaceLocal } from '../../domain/time/index.ts';
-import { Rational } from '../../domain/values/index.ts';
+import { formatDecimal, Rational } from '../../domain/values/index.ts';
 import { PageTitle } from '../PageTitle.tsx';
 import { Badge } from '../Badge.tsx';
 import { instrumentLabel } from '../calculation-words.ts';
@@ -17,10 +17,11 @@ import { plural } from './ReviewCard.tsx';
 import { useRuntime } from '../runtime.tsx';
 import { answerChanged, fieldIssues, IssueSummary, nonNegativeDecimal, positiveDecimal } from './form-issues.tsx';
 import type { FieldIssue } from './plan-issues.ts';
-import { describePositionChangeIssues, rowField } from './position-change-issues.ts';
+import { describePositionChangeIssues, rowField, SAY_WHY } from './position-change-issues.ts';
 import { PositionChangeReceipt } from './PositionChangeReceipt.tsx';
 import { ClosingTheTrade, type CloseReasonOption } from './ClosingTheTrade.tsx';
 import { ExitReceipt } from './ExitReceipt.tsx';
+import { checkSale, PlanCheck } from './PlanCheck.tsx';
 import { ReflectionPrompts, type Answers } from './ReflectionPrompts.tsx';
 import { ChoiceGroup, dispositionOf, type Choice } from './reflection-choice.tsx';
 import { LOCAL_TIME_CODES, minuteOf } from './local-time.ts';
@@ -77,7 +78,6 @@ export function PositionChangeFormBody({ facade, tradeId, exit, onDone, backLabe
   const clearLoad = () => {
     setView(undefined);
     setDefinition(undefined);
-    setCloseDefinition(undefined);
     setCloseReasons(undefined);
     setFailure(undefined);
   };
@@ -86,13 +86,11 @@ export function PositionChangeFormBody({ facade, tradeId, exit, onDone, backLabe
   // given stay on screen in case they complete it after all.
   const [choice, setChoice] = useState<Choice>('now');
   const [reason, setReason] = useState('');
+  // The sale's earlier reflection prompts are asked only when the trader opens them.
+  const [more, setMore] = useState(false);
   // The exit form's Closing the Trade inputs (P21): what its section loads, and what the trader chose.
-  const [closeDefinition, setCloseDefinition] = useState<EntryDefinitionRecord | undefined>();
   const [closeReasons, setCloseReasons] = useState<readonly CloseReasonOption[] | undefined>();
   const [closeReasonId, setCloseReasonId] = useState('');
-  const [closeChoice, setCloseChoice] = useState<Choice>('now');
-  const [closeAnswers, setCloseAnswers] = useState<Answers>({});
-  const [closeDeclineReason, setCloseDeclineReason] = useState('');
   const nextKey = useRef(1);
   const blankRow = (): Row => {
     const defaultInstant = minuteOf(now());
@@ -108,8 +106,6 @@ export function PositionChangeFormBody({ facade, tradeId, exit, onDone, backLabe
         readonly rows: readonly Row[];
         readonly answers: Answers;
         readonly closeReasonId: string;
-        readonly closeChoice: Choice;
-        readonly closeAnswers: Answers;
       }
     | undefined
   >();
@@ -132,9 +128,6 @@ export function PositionChangeFormBody({ facade, tradeId, exit, onDone, backLabe
       setChoice('now');
       setReason('');
       setCloseReasonId('');
-      setCloseChoice('now');
-      setCloseAnswers({});
-      setCloseDeclineReason('');
       setIssues([]);
       setReported(undefined);
       setClosingRequiredAt(undefined);
@@ -154,10 +147,7 @@ export function PositionChangeFormBody({ facade, tradeId, exit, onDone, backLabe
       Object.keys(answers).length > 0 ||
       choice !== 'now' ||
       reason !== '' ||
-      closeReasonId !== '' ||
-      closeChoice !== 'now' ||
-      Object.keys(closeAnswers).length > 0 ||
-      closeDeclineReason !== '');
+      closeReasonId !== '');
   useEffect(() => onDirtyChange(dirty), [dirty, onDirtyChange]);
   // Leaving the form abandons it, so it no longer holds an update back.
   useEffect(() => () => onDirtyChange(false), [onDirtyChange]);
@@ -190,7 +180,7 @@ export function PositionChangeFormBody({ facade, tradeId, exit, onDone, backLabe
   // only the Trade) moves focus to the view's heading; a reload in place after a Conflict keeps the
   // form shown, so it never does.
   const headingRef = useRef<HTMLHeadingElement>(null);
-  const loaded = definition !== undefined && (!exit || (closeDefinition !== undefined && closeReasons !== undefined));
+  const loaded = definition !== undefined && (!exit || closeReasons !== undefined);
   const shown = view !== undefined && ('recordedPositionChanges' in view || loaded);
   useEffect(() => {
     if (shown) headingRef.current?.focus();
@@ -219,14 +209,7 @@ export function PositionChangeFormBody({ facade, tradeId, exit, onDone, backLabe
       live(() => setFailure((current) => current ?? 'Error')),
     );
     if (exit) {
-      // Closing the Trade needs the Close Review definition and the selectable Close Reasons (A93).
-      void facade.Journal.getDefinitions({ latestFor: 'entry-type.close-review' }).then(
-        live((result) => {
-          if (result.kind === 'Found') setCloseDefinition(result.definition);
-          else setFailure((current) => current ?? 'Error');
-        }),
-        live(() => setFailure((current) => current ?? 'Error')),
-      );
+      // Closing the Trade needs the selectable Close Reasons (A93); its Close Review is always put off, so it needs no form.
       void facade.ReferenceCatalog.query({ family: 'CloseReason', pageSize: 500 }).then(
         live((page) => {
           if (page.kind === 'Page') setCloseReasons(page.items.map(({ id, label }) => ({ id, label })));
@@ -287,7 +270,7 @@ export function PositionChangeFormBody({ facade, tradeId, exit, onDone, backLabe
       </section>
     );
   }
-  if (!view || !definition || (exit && (!closeDefinition || !closeReasons))) return <p role="status">{`Loading the ${exit ? 'exit' : 'entry'} form…`}</p>;
+  if (!view || !definition || (exit && !closeReasons)) return <p role="status">{`Loading the ${exit ? 'exit' : 'entry'} form…`}</p>;
 
   const leg = view.plan.legs[0]!;
   // An option leg names the action by its side, never by the Strategy: a Long leg buys to open and
@@ -316,6 +299,23 @@ export function PositionChangeFormBody({ facade, tradeId, exit, onDone, backLabe
       </section>
     );
   }
+  // The sale's measure against the Plan Exit, from the facts the view returned (A309); the question is the form's own prompt, asked only when the sale leaves the Plan.
+  const saleCheck = exit && 'planExit' in view && view.planExit ? checkSale(view.planExit, action, formatDecimal(entered, 6), rows.map((r) => r.price)) : undefined;
+  const departurePrompt = definition.prompts.find((p) => p.kind === 'Text' && p.role === 'PlanDepartureReason');
+  // The save is the authority: when it refuses for want of the reason, the form asks for it whatever it measured.
+  const asksWhy = ((saleCheck?.measure?.kind === 'Leaves' && !saleCheck.carried) || issues.some((i) => i.code === 'PlanDepartureReasonRequired')) && departurePrompt?.kind === 'Text';
+  // W134: a sale that leaves the Plan only by selling part of it asks about the part.
+  const onlyPart = saleCheck?.measure?.kind === 'Leaves' && saleCheck.measure.reasons.every((r) => r.kind === 'PartOnly');
+  const textOf = (promptId: string) => {
+    const answer = answers[promptId];
+    return answer?.kind === 'Text' ? answer.text : '';
+  };
+  const setText = (promptId: string, text: string) => {
+    const next = { ...answers };
+    if (text === '') delete next[promptId];
+    else next[promptId] = { kind: 'Text', text };
+    setAnswers(next);
+  };
   const setRow = (key: number, name: EditableField, value: string) =>
     setRows((current) =>
       current.map((r) => {
@@ -325,8 +325,9 @@ export function PositionChangeFormBody({ facade, tradeId, exit, onDone, backLabe
       }),
     );
 
-  const submit = async (event: FormEvent) => {
-    event.preventDefault();
+  // `later`: "Say why later" saves at once with the reflection put off.
+  const submit = async (event: FormEvent | undefined, later = false) => {
+    event?.preventDefault();
     const rowKeys = rows.map((r) => r.key);
     const times = rows.map((row) =>
       row.defaultInstant !== undefined ? ({ ok: true, instant: row.defaultInstant } as const) : fromWorkspaceLocal(row.time, timeZone),
@@ -337,8 +338,8 @@ export function PositionChangeFormBody({ facade, tradeId, exit, onDone, backLabe
     );
     const instants = times.flatMap((time) => (time.ok ? [time.instant] : []));
     if (timeIssues.length > 0) {
-      setIssues(describePositionChangeIssues(timeIssues, rowKeys, definition, closeDefinition, option));
-      setReported({ rows, answers, closeReasonId, closeChoice, closeAnswers });
+      setIssues(describePositionChangeIssues(timeIssues, rowKeys, definition, undefined, option));
+      setReported({ rows, answers, closeReasonId });
       return;
     }
     const members = rows.map(
@@ -354,8 +355,14 @@ export function PositionChangeFormBody({ facade, tradeId, exit, onDone, backLabe
         economicTime: instants[index]!,
       }),
     );
+    // The question the form asks is answered or put off with "Say why later".
+    if (!later && asksWhy && textOf(departurePrompt.id).trim() === '') {
+      setIssues([{ field: departurePrompt.id, message: SAY_WHY, code: 'PlanDepartureReasonRequired' }]);
+      setReported({ rows, answers, closeReasonId });
+      return;
+    }
     // Hidden answers and reason are never submitted; only the chosen disposition is.
-    const reflection = dispositionOf(choice, definition, answers, reason);
+    const reflection = later ? ({ kind: 'Defer' } as const) : dispositionOf(choice, definition, answers, reason);
     loadEpoch.current += 1;
     const result = await facade.TradeWorkflows.recordPositionChange({
       originTradeId: tradeId,
@@ -365,7 +372,8 @@ export function PositionChangeFormBody({ facade, tradeId, exit, onDone, backLabe
       // The Close Reason and Close Review go only with the section that asks for them.
       ...(showClosing && {
         ...(closeReasonId !== '' && { closeReasonId }),
-        closeReview: dispositionOf(closeChoice, closeDefinition!, closeAnswers, closeDeclineReason),
+        // A closing sale always puts its Close Review off (A311).
+        closeReview: { kind: 'Defer' },
       }),
     });
     // A refusal to write switches the whole shell to read only; the form keeps its values.
@@ -373,8 +381,8 @@ export function PositionChangeFormBody({ facade, tradeId, exit, onDone, backLabe
     setConflict(result.kind === 'Conflict');
     setReloaded(false);
     setReloadFailed(false);
-    setIssues(result.kind === 'Rejected' ? describePositionChangeIssues(result.issues, rowKeys, definition, closeDefinition, option) : []);
-    setReported({ rows, answers, closeReasonId, closeChoice, closeAnswers });
+    setIssues(result.kind === 'Rejected' ? describePositionChangeIssues(result.issues, rowKeys, definition, undefined, option) : []);
+    setReported({ rows, answers, closeReasonId });
     if (result.kind === 'Rejected') {
       // The workflow decides whether the exit is terminal: what it requires shows the section, and
       // what it finds not applicable takes the section away again.
@@ -408,11 +416,21 @@ export function PositionChangeFormBody({ facade, tradeId, exit, onDone, backLabe
       return false;
     }
     if (issue.field === 'closeReasonId') return closeReasonId !== '' && closeReasonId !== reported.closeReasonId;
-    if (issue.field === 'closeReview') return closeChoice !== reported.closeChoice;
-    if (closeDefinition?.prompts.some((p) => p.id === issue.field)) return answerChanged(reported.closeAnswers, closeAnswers, issue.field);
     return definition.prompts.some((p) => p.id === issue.field) && answerChanged(reported.answers, answers, issue.field);
   };
   const { fieldError, describedBy, promptErrors } = fieldIssues(issues.filter((issue) => !corrected(issue)));
+  const question = asksWhy && (
+    <div className="field">
+      <label>
+        {onlyPart ? 'Why only part?' : departurePrompt.text}
+        <textarea name={departurePrompt.id} value={textOf(departurePrompt.id)} onChange={(e) => setText(departurePrompt.id, e.target.value)} {...describedBy(departurePrompt.id)} />
+      </label>
+      {fieldError(departurePrompt.id)}
+      <button type="button" className="pill secondary" disabled={!writable} onClick={() => void submit(undefined, true)}>
+        Say why later
+      </button>
+    </div>
+  );
 
   return (
     <form className="plan-form" noValidate onSubmit={(event) => void submit(event)}>
@@ -530,9 +548,16 @@ export function PositionChangeFormBody({ facade, tradeId, exit, onDone, backLabe
       >
         Add Execution
       </button>
+      {saleCheck ? (
+        <PlanCheck check={saleCheck} leg={leg}>
+          {question}
+        </PlanCheck>
+      ) : (
+        question && <section className="card">{question}</section>
+      )}
       <section className="card" aria-labelledby="reflection-heading">
         <h2 id="reflection-heading">{exit ? 'Reflection on this exit' : 'Position Change Reflection'}</h2>
-        <ChoiceGroup legend="Reflection" name="disposition" value={choice} onChange={setChoice} />
+        {!exit && <ChoiceGroup legend="Reflection" name="disposition" value={choice} onChange={setChoice} />}
         {choice === 'decline' && (
           <div className="field">
             <label>
@@ -542,8 +567,13 @@ export function PositionChangeFormBody({ facade, tradeId, exit, onDone, backLabe
             {fieldError('reason')}
           </div>
         )}
-        {choice === 'now' && (
-          <ReflectionPrompts definition={definition} answers={answers} onChange={setAnswers} errors={promptErrors(definition)} roles={exit ? ['PlanDepartureReason'] : []} />
+        {exit && (
+          <button type="button" className="pill secondary" aria-expanded={more} onClick={() => setMore(!more)}>
+            Add more
+          </button>
+        )}
+        {choice === 'now' && (!exit || more) && (
+          <ReflectionPrompts definition={definition} answers={answers} onChange={setAnswers} errors={promptErrors(definition)} />
         )}
       </section>
       {showClosing && (
@@ -551,16 +581,8 @@ export function PositionChangeFormBody({ facade, tradeId, exit, onDone, backLabe
           reasons={closeReasons}
           reasonId={closeReasonId}
           onReason={setCloseReasonId}
-          definition={closeDefinition!}
-          choice={closeChoice}
-          onChoice={setCloseChoice}
-          declineReason={closeDeclineReason}
-          onDeclineReason={setCloseDeclineReason}
-          answers={closeAnswers}
-          onAnswers={setCloseAnswers}
           fieldError={fieldError}
           describedBy={describedBy}
-          promptErrors={promptErrors(closeDefinition!)}
         />
       )}
       <button type="submit" className="pill primary" disabled={!writable}>

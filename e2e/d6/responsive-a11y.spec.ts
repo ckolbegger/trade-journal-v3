@@ -54,6 +54,7 @@ test.describe('B6.12 Responsive and accessible', () => {
     await openTradeFromOpenList(page, 'XYZ');
     await openExitForm(page);
     await fillRows(page, [sell('100', '53.00', '1.40', TUESDAY_1405_LOCAL)]);
+    await exitReflection(page).getByRole('button', { name: 'Add more' }).click();
     await exitReflection(page).getByRole('radiogroup', { name: 'Decision mode' }).getByLabel('As Planned').check();
     await exitReflection(page).getByLabel('Note').fill('Half-written note that must survive resizing.');
     await expect(closingSection(page)).toBeVisible();
@@ -107,6 +108,11 @@ test.describe('B6.12 Responsive and accessible', () => {
     await tabTo(page, row.getByLabel('Fee'));
     await page.keyboard.type('1.00');
     const reflection = exitReflection(page);
+    // The question the sale asks comes first (it leaves the Plan), then Add more opens the three earlier prompts.
+    await tabTo(page, page.getByLabel('Why did you leave the Plan?'));
+    await page.keyboard.type('Stopped out early.');
+    await tabTo(page, reflection.getByRole('button', { name: 'Add more' }));
+    await page.keyboard.press('Enter');
     await tabTo(page, reflection.getByRole('radiogroup', { name: 'Decision mode' }).getByLabel('As Planned'));
     await page.keyboard.press('Space');
     await tabTo(page, reflection.getByRole('radiogroup', { name: 'Primary emotion' }).getByLabel('Calm'));
@@ -114,18 +120,14 @@ test.describe('B6.12 Responsive and accessible', () => {
     await tabTo(page, reflection.getByRole('radiogroup', { name: 'Decision confidence' }).getByLabel('1', { exact: true }));
     for (let n = 0; n < 3; n++) await page.keyboard.press('ArrowRight');
     await expect(reflection.getByRole('radiogroup', { name: 'Decision confidence' }).getByLabel('4')).toBeChecked();
-    await tabTo(page, reflection.getByLabel('Why did you leave the Plan?'));
-    await page.keyboard.type('Stopped out early.');
     await expect(closingSection(page)).toBeVisible();
     // Tab reaches the group at its first reason; Space chooses it and the arrow key moves the choice to the second.
     await tabTo(page, closeReasonGroup(page).getByLabel('Target Reached', { exact: true }));
     await page.keyboard.press('Space');
     await page.keyboard.press('ArrowRight');
     await expect(closeReasonGroup(page).getByLabel('Stop Triggered', { exact: true })).toBeChecked();
-    // A terminal sale only puts its Close Review off (A312): Tab reaches the group at Reflect now, and the arrow key moves the choice to Reflect later.
-    await tabTo(page, closeReviewGroup(page).getByLabel('Reflect now'));
-    await page.keyboard.press('ArrowRight');
-    await expect(closeReviewGroup(page).getByLabel('Reflect later')).toBeChecked();
+    // A terminal sale puts its Close Review off (A312), so the form offers no choice for it.
+    await expect(closeReviewGroup(page)).toHaveCount(0);
     await tabTo(page, page.getByRole('button', { name: 'Save exit' }));
     await page.keyboard.press('Enter');
     await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible();

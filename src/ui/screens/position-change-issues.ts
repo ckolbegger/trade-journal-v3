@@ -9,6 +9,9 @@ import { describeJournalIssue, type FieldIssue, type Issue } from './plan-issues
 // The field name of one value in one Execution row, stable while rows are added or removed.
 export const rowField = (rowKey: number, field: string) => `row-${rowKey}-${field}`;
 
+// A sale that leaves the Plan owes its reason (A312), or "Say why later".
+export const SAY_WHY = 'Say why you left the Plan, or choose “Say why later”.';
+
 export const REASON_TOO_LONG = 'Keep the reason for declining to 500 characters or fewer.';
 
 const DECIMAL: Record<string, string> = {
@@ -70,6 +73,7 @@ function describeIssue(issue: PathIssue, rowKeys: readonly number[], definition:
   if (issue.source === 'TradeAnalysis' && (isExceedsOpenQuantityIssue(issue) || isFlatBeforeLaterFactsIssue(issue))) {
     return { field: 'members', message: `This exit would leave a later recorded exit without enough ${option ? 'contracts' : 'shares'} in the position.` };
   }
+  if (issue.source === 'TradeWorkflows' && issue.code === 'PlanDepartureReasonRequired') return { field: issue.field ?? 'reflection', message: SAY_WHY };
   if (issue.code === 'TradeClosed') return { field: 'trade', message: 'This Trade is closed. New exposure needs a new Plan.' };
   if (issue.source === 'TradeWorkflows' && CLOSE[issue.code]) return CLOSE[issue.code]!;
   if (issue.source === 'ReferenceCatalog' && issue.field === 'closeReasonId') {

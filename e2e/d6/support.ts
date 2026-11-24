@@ -70,12 +70,20 @@ export async function answerCloseReviewIn(section: Locator): Promise<void> {
   await section.getByLabel('What is the key lesson?').fill('Stick to the Plan.');
 }
 
-// The exit's own reflection as a sale gives it: the three answers and a fixed Plan Departure Reason, an optional answer
-// that a sale leaving the Plan needs (D9.5 A312). The field is filled where the form shows it.
+// The exit's own reflection as a sale gives it: the three answers (behind "Add more") and a fixed answer to the question a sale
+// that leaves the Plan asks (D9.5 A312, T95.39). The question sits under "Against the Plan", so it is found on the page, and
+// it is filled where the form shows it.
 export async function answerSaleIn(section: Locator): Promise<void> {
+  const more = section.getByRole('button', { name: 'Add more' });
+  if ((await more.count()) > 0 && (await more.getAttribute('aria-expanded')) === 'false') await more.click();
   await answerIn(section);
-  const reason = section.getByLabel('Why did you leave the Plan?');
+  const reason = section.page().getByLabel(/^Why (did you leave the Plan|only part)\?$/);
   if ((await reason.count()) > 0) await reason.fill('Stopped out early.');
+}
+
+// A sale that leaves the Plan, saved at once with its reflection put off: "Say why later" beside the question (W154).
+export async function sayWhyLater(page: Page): Promise<void> {
+  await page.getByRole('button', { name: 'Say why later' }).click();
 }
 
 // A Close Review put off at the sale, answered afterwards on the Trade's Detail through its Debt: from the Needs you rail to the
@@ -86,14 +94,13 @@ export async function answerCloseReviewOnDetail(page: Page): Promise<void> {
   await answerDebt(page, undefined, 'Detail');
 }
 
-// Answers the exit's own reflection and the Closing the Trade section of an exit that sells every share: Target Reached, and
-// the Close Review put off at the sale (A312: a terminal sale only defers it). A spec whose subject is the Close Review's
-// answer gives it afterwards through the Debt.
+// Answers the exit's own reflection and the Closing the Trade section of an exit that sells every share: Target Reached. The
+// Close Review is put off at the sale whatever is chosen (A312, T95.39: the form offers no choice). A spec whose subject is the
+// Close Review's answer gives it afterwards through the Debt.
 export async function closeTheTrade(page: Page): Promise<void> {
   await answerSaleIn(exitReflection(page));
   await expect(closingSection(page)).toBeVisible();
   await closeReasonGroup(page).getByLabel('Target Reached', { exact: true }).check();
-  await closeReviewGroup(page).getByLabel('Reflect later').check();
 }
 
 export const receiptResult = (page: Page): Locator => page.getByRole('region', { name: 'Result' });

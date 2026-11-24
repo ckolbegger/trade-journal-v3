@@ -1,5 +1,5 @@
 import {
-  answerSaleIn, closeReasonGroup, closeReviewGroup, closeTheTrade, createTrades, createTA, detail, executionRow, exitReflection, expect, factsOf, FOUR_TRADES, fillRows, firstPage, launchAt, MONDAY_1700,
+  answerSaleIn, closeReasonGroup, closeTheTrade, createTrades, createTA, detail, executionRow, exitReflection, expect, factsOf, FOUR_TRADES, fillRows, firstPage, launchAt, MONDAY_1700,
   onboardedAt, openDrawer, openExitForm, openTradeFromOpenList, probe, LAUNCH, receiptResult, sell, test, tradesOf, TUESDAY_1405, TUESDAY_1405_LOCAL, TUESDAY_1000_LOCAL, workspaceOf,
 } from './support.ts';
 
@@ -102,7 +102,6 @@ test.describe('B6.10 Mid-session failure (faults build, AC-DEL-006)', () => {
     await expect(executionRow(page, 1).getByLabel('Price')).toHaveValue('53.00');
     await expect(exitReflection(page).getByRole('radiogroup', { name: 'Decision mode' }).getByLabel('As Planned')).toBeChecked();
     await expect(closeReasonGroup(page).getByLabel('Target Reached', { exact: true })).toBeChecked();
-    await expect(closeReviewGroup(page).getByLabel('Reflect later')).toBeChecked();
     await expect(receiptResult(page)).toHaveCount(0);
     const workspace = workspaceOf(await probe(page))!;
     expect(tradesOf(workspace)[0]!.lifecycle).toBe('Open');

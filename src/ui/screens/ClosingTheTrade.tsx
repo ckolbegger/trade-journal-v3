@@ -15,23 +15,25 @@ export interface ClosingTheTradeProps {
   readonly reasonId?: string;
   readonly onReason?: (id: string) => void;
   readonly noReasonNote?: string;
-  readonly definition: EntryDefinitionRecord;
-  readonly choice: Choice;
-  readonly onChoice: (choice: Choice) => void;
-  readonly declineReason: string;
-  readonly onDeclineReason: (reason: string) => void;
-  readonly answers: Answers;
-  readonly onAnswers: (answers: Answers) => void;
+  // The Close Review's own disposition. A closing sale always puts it off, so it asks nothing and gives none of these.
+  readonly definition?: EntryDefinitionRecord;
+  readonly choice?: Choice;
+  readonly onChoice?: (choice: Choice) => void;
+  readonly declineReason?: string;
+  readonly onDeclineReason?: (reason: string) => void;
+  readonly answers?: Answers;
+  readonly onAnswers?: (answers: Answers) => void;
   // Issue messages beside their fields, from the form's issue handling.
   readonly fieldError: (field: string) => ReactNode;
   readonly describedBy: (field: string) => object;
-  readonly promptErrors: Readonly<Record<string, string>>;
+  readonly promptErrors?: Readonly<Record<string, string>>;
 }
 
 // What closing the Trade asks for (P21): the Close Reason, and the Close Review with its own
 // disposition, apart from the exit's reflection.
 export function ClosingTheTrade(props: ClosingTheTradeProps) {
   const { reasons, reasonId, definition, choice, answers, fieldError, describedBy } = props;
+  const asksReview = definition !== undefined && choice !== undefined && props.onChoice !== undefined;
   return (
     <section className="card" aria-labelledby="closing-heading">
       <h2 id="closing-heading">Closing the Trade</h2>
@@ -51,18 +53,18 @@ export function ClosingTheTrade(props: ClosingTheTradeProps) {
       ) : (
         <p>{props.noReasonNote}</p>
       )}
-      <ChoiceGroup legend="Close Review" name="close-review-disposition" value={choice} onChange={props.onChoice} describedBy={describedBy('closeReview')} />
+      {asksReview && <ChoiceGroup legend="Close Review" name="close-review-disposition" value={choice} onChange={props.onChoice} describedBy={describedBy('closeReview')} />}
       {fieldError('closeReview')}
-      {choice === 'decline' && (
+      {asksReview && choice === 'decline' && (
         <div className="field">
           <label>
             Reason for declining the Close Review (optional)
-            <textarea value={props.declineReason} onChange={(e) => props.onDeclineReason(e.target.value)} {...describedBy('closeReviewReason')} />
+            <textarea value={props.declineReason ?? ''} onChange={(e) => props.onDeclineReason?.(e.target.value)} {...describedBy('closeReviewReason')} />
           </label>
           {fieldError('closeReviewReason')}
         </div>
       )}
-      {choice === 'now' && <ReflectionPrompts definition={definition} answers={answers} onChange={props.onAnswers} errors={props.promptErrors} />}
+      {asksReview && choice === 'now' && <ReflectionPrompts definition={definition} answers={answers ?? {}} onChange={props.onAnswers!} errors={props.promptErrors ?? {}} />}
     </section>
   );
 }

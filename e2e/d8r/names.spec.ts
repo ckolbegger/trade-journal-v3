@@ -102,8 +102,7 @@ test.describe('B8R.5 Contract names', () => {
       await fillOptionExit(page, [{ quantity: '1', price: '3.00', fee: '0.65', time: '2026-10-12T14:00' }]);
       await expect(executionRow(page, 1)).toBeVisible();
       await expectNamed(page, 'the exit form', CURRENT_YEAR, true);
-      await page.getByRole('region', { name: 'Reflection on this exit' }).getByLabel('Reflect later').check();
-      await page.getByRole('button', { name: 'Save exit' }).click();
+      await page.getByRole('button', { name: 'Say why later' }).click();
       await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible();
       await expectNamed(page, 'the exit receipt', CURRENT_YEAR, true);
       expect(await cellText(page)).not.toMatch(/Dec 18,? 2026|2026-12-18/);

@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 import {
-  answerCloseReviewIn, answerSaleIn, closeReasonGroup, closeReviewGroup, closingSection, copyTA, debtsOf, declinesOf, entriesWithSettledDebt, executionRow, exitReflection, expect, factsOf, fillRows,
+  answerSaleIn, closeReasonGroup, closingSection, copyTA, debtsOf, declinesOf, entriesWithSettledDebt, executionRow, exitReflection, expect, factsOf, fillRows,
   firstPage, launchAt, openExitForm, openTradeFromOpenList, probe, LAUNCH, sell, test, tradesOf, TUESDAY_1405, TUESDAY_1405_LOCAL, workspaceOf,
 } from './support.ts';
 
@@ -11,10 +11,9 @@ const TYPED = {
   price: '53.17',
   fee: '3.17',
   exitNote: 'Unsaved exit note marker 7d41.',
-  exitReason: 'Unsaved exit decline marker 1f86.',
-  closeReason: 'Unsaved close review decline marker 9e03.',
+  exitReason: 'Unsaved Plan departure marker 1f86.',
 };
-const TEXT = [TYPED.exitNote, TYPED.exitReason, TYPED.closeReason];
+const TEXT = [TYPED.exitNote, TYPED.exitReason];
 const NUMBERS = [TYPED.price, TYPED.fee];
 
 const webStorage = (page: Page): Promise<unknown> => page.evaluate(() => ({ local: { ...localStorage }, session: { ...sessionStorage } }));
@@ -55,24 +54,16 @@ test.describe('B6.11 Nothing saved without Save (AC-JOUR-001)', () => {
     await openTradeFromOpenList(page, 'XYZ');
     const before = workspaceOf(await probe(page));
 
-    // A full exit with the Close Reason and both reflections answered, plus a Note on each, all unsaved.
+    // A full exit with the Close Reason chosen and the reflection answered, with a Note and the question the sale asks, all unsaved.
     await openExitForm(page);
     await fillRows(page, [sell('100', TYPED.price, TYPED.fee, TUESDAY_1405_LOCAL)]);
     await answerSaleIn(exitReflection(page));
     await exitReflection(page).getByLabel('Note').fill(TYPED.exitNote);
     await expect(closingSection(page)).toBeVisible();
     await closeReasonGroup(page).getByLabel('Target Reached', { exact: true }).check();
-    await answerCloseReviewIn(closingSection(page));
 
-    // Switch both dispositions through Reflect later and Decline (typing a reason) and back to Reflect now.
-    await exitReflection(page).getByLabel('Reflect later').check();
-    await exitReflection(page).getByLabel('Decline to reflect').check();
-    await page.getByLabel('Reason for declining (optional)').fill(TYPED.exitReason);
-    await exitReflection(page).getByLabel('Reflect now').check();
-    await closeReviewGroup(page).getByLabel('Reflect later').check();
-    await closeReviewGroup(page).getByLabel('Decline to reflect').check();
-    await page.getByLabel('Reason for declining the Close Review (optional)').fill(TYPED.closeReason);
-    await closeReviewGroup(page).getByLabel('Reflect now').check();
+    // A sale offers no disposition to switch (T95.39): the question the sale asks takes the typed marker instead.
+    await page.getByLabel('Why did you leave the Plan?').fill(TYPED.exitReason);
 
     // Resize to 390 px and back: the values stay, and nothing is stored.
     await page.setViewportSize({ width: 390, height: 844 });
@@ -80,7 +71,7 @@ test.describe('B6.11 Nothing saved without Save (AC-JOUR-001)', () => {
     await expect(executionRow(page, 1).getByLabel('Price')).toHaveValue(TYPED.price);
     await expect(exitReflection(page).getByLabel('Note')).toHaveValue(TYPED.exitNote);
     await expect(closeReasonGroup(page).getByLabel('Target Reached', { exact: true })).toBeChecked();
-    await expect(closingSection(page).getByLabel('Yes, as planned')).toBeChecked();
+    await expect(page.getByLabel('Why did you leave the Plan?')).toHaveValue(TYPED.exitReason);
     expect(traces(await webStorage(page))).toEqual([]);
     expect(workspaceOf(await probe(page))).toEqual(before);
 

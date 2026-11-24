@@ -31,7 +31,7 @@ function renderExitForm(facade: UiFacade = exitFormFacade(), now: () => string =
 }
 
 describe('rendering (A93)', () => {
-  it('should render Record exit with Sell, the symbol, and the Planned Leg read-only, Execution rows, and Reflection on this exit with Reflect now selected', async () => {
+  it('should render Record exit with Sell, the symbol, and the Planned Leg read-only, Execution rows, and Reflection on this exit with Add more and no disposition choice', async () => {
     renderExitForm();
     expect(await screen.findByRole('heading', { level: 1, name: 'Record exit' })).toBeTruthy();
     const terms = screen.getByRole('region', { name: 'Exit' });
@@ -45,13 +45,14 @@ describe('rendering (A93)', () => {
     expect(within(row).getByLabelText<HTMLInputElement>('Economic Time').value).toBe('2026-10-13T10:05');
 
     const reflection = screen.getByRole('region', { name: 'Reflection on this exit' });
-    expect(within(reflection).getByRole('radio', { name: 'Reflect now' })).toHaveProperty('checked', true);
-    expect(within(reflection).getByRole('radio', { name: 'Reflect later' })).toHaveProperty('checked', false);
+    // T95.39: a sale is never declined or put off as a whole; its earlier prompts wait behind Add more.
+    expect(within(reflection).queryAllByRole('radio')).toEqual([]);
+    expect(within(reflection).getByRole('button', { name: 'Add more' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Save exit' })).toBeTruthy();
     expect(screen.queryByRole('heading', { name: 'Record entry' })).toBeNull();
   });
 
-  it('should show Closing the Trade, with Close Reason as a radio group of the selectable reasons and Close Review with its own disposition group with Reflect now selected, once the entered quantities total the open quantity, and hide it otherwise', async () => {
+  it('should show Closing the Trade, with Close Reason as a radio group of the selectable reasons and no Close Review choice, once the entered quantities total the open quantity, and hide it otherwise', async () => {
     const facade = renderExitForm();
     const user = userEvent.setup();
     const closing = () => screen.queryByRole('region', { name: 'Closing the Trade' });
@@ -62,7 +63,8 @@ describe('rendering (A93)', () => {
     };
     await screen.findByRole('group', { name: 'Execution 1' });
     expect(facade.ReferenceCatalog.query).toHaveBeenCalledWith(expect.objectContaining({ family: 'CloseReason' }));
-    expect(facade.Journal.getDefinitions).toHaveBeenCalledWith({ latestFor: 'entry-type.close-review' });
+    // A closing sale always puts its Close Review off, so no form is loaded for it (T95.39).
+    expect(facade.Journal.getDefinitions).not.toHaveBeenCalledWith({ latestFor: 'entry-type.close-review' });
     // Nothing is entered, then less than the 100 shares open.
     expect(closing()).toBeNull();
     await enter(1, '60');
@@ -77,14 +79,8 @@ describe('rendering (A93)', () => {
     const reason = section.getByRole('radiogroup', { name: 'Close Reason' });
     expect(labels(reason)).toEqual(['Target Reached', 'Stop Triggered', 'Thesis Invalidated', 'Time-Based Exit']);
     expect(within(reason).getAllByRole<HTMLInputElement>('radio').map((r) => r.checked)).toEqual([false, false, false, false]);
-    const review = section.getByRole('radiogroup', { name: 'Close Review' });
-    expect(labels(review)).toEqual(['Reflect now', 'Reflect later', 'Decline to reflect']);
-    expect(within(review).getByRole('radio', { name: 'Reflect now' })).toHaveProperty('checked', true);
-    expect(section.getByRole('radiogroup', { name: 'Would you take this Trade again under similar conditions?' })).toBeTruthy();
-    // The Close Review's disposition is its own: the exit's reflection keeps Reflect now.
-    await user.click(within(review).getByRole('radio', { name: 'Reflect later' }));
+    expect(section.queryByRole('radiogroup', { name: 'Close Review' })).toBeNull();
     expect(section.queryByRole('radiogroup', { name: 'Would you take this Trade again under similar conditions?' })).toBeNull();
-    expect(within(screen.getByRole('region', { name: 'Reflection on this exit' })).getByRole('radio', { name: 'Reflect now' })).toHaveProperty('checked', true);
     // More than the open quantity does not close it either.
     await enter(2, '41');
     expect(closing()).toBeNull();
@@ -127,14 +123,13 @@ const sell = (quantity: string) => ({
 });
 
 describe('submission', () => {
-  it('should submit the Close Reason identity and the Close Review disposition only while the section is shown', async () => {
+  it('should submit the Close Reason identity and the deferred Close Review only while the section is shown', async () => {
     const facade = renderExitForm();
     vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(rejected as never);
     const user = userEvent.setup();
     await screen.findByRole('group', { name: 'Execution 1' });
     const save = () => user.click(screen.getByRole('button', { name: 'Save exit' }));
     const lastCommand = () => vi.mocked(facade.TradeWorkflows.recordPositionChange).mock.lastCall![0] as unknown as Record<string, unknown>;
-    await user.click(within(screen.getByRole('region', { name: 'Reflection on this exit' })).getByRole('radio', { name: 'Reflect later' }));
 
     // A partial exit: no section, so neither is submitted.
     await fillRow(user, 1, '60');
@@ -144,46 +139,24 @@ describe('submission', () => {
       originTradeId: 'trade-1',
       trades: [{ tradeId: 'trade-1', expectedFactRevision: 3 }],
       members: [sell('60')],
-      reflection: { kind: 'Defer' },
+      reflection: { kind: 'Complete', form: { definitionId: 'def-pcr-1', answers: {} } },
     });
     expect(lastCommand()).not.toHaveProperty('closeReasonId');
     expect(lastCommand()).not.toHaveProperty('closeReview');
 
-    // The full quantity shows the section: the chosen reason and the completed Close Review go with it.
+    // The full quantity shows the section: the chosen reason and the deferred Close Review go with it.
     await fillRow(user, 1, '100');
     const closing = () => within(screen.getByRole('region', { name: 'Closing the Trade' }));
     await user.click(closing().getByRole('radio', { name: 'Stop Triggered' }));
-    await user.click(closing().getByRole('radio', { name: 'Yes, as planned' }));
-    await user.type(closing().getByLabelText('What is the key lesson?'), 'Sold into strength.');
     await save();
     expect(lastCommand()).toEqual({
       originTradeId: 'trade-1',
       trades: [{ tradeId: 'trade-1', expectedFactRevision: 3 }],
       members: [sell('100')],
-      reflection: { kind: 'Defer' },
+      reflection: { kind: 'Complete', form: { definitionId: 'def-pcr-1', answers: {} } },
       closeReasonId: 'cr-2',
-      closeReview: {
-        kind: 'Complete',
-        form: {
-          definitionId: 'def-cr-1',
-          answers: {
-            'prompt.close-review.take-again': { kind: 'Option', optionId: 'option.close-review.take-again.yes-as-planned' },
-            'prompt.close-review.key-lesson': { kind: 'Text', text: 'Sold into strength.' },
-          },
-        },
-      },
+      closeReview: { kind: 'Defer' },
     });
-
-    // Each disposition submits for the Close Review alone, whatever the exit's reflection is.
-    await user.click(closing().getByRole('radio', { name: 'Reflect later' }));
-    await save();
-    expect(lastCommand()).toEqual(expect.objectContaining({ reflection: { kind: 'Defer' }, closeReasonId: 'cr-2', closeReview: { kind: 'Defer' } }));
-    await user.click(closing().getByRole('radio', { name: 'Decline to reflect' }));
-    await user.type(closing().getByLabelText('Reason for declining the Close Review (optional)'), 'Nothing to add.');
-    await save();
-    expect(lastCommand()).toEqual(
-      expect.objectContaining({ reflection: { kind: 'Defer' }, closeReview: { kind: 'Decline', definitionId: 'def-cr-1', reason: 'Nothing to add.' } }),
-    );
 
     // Back to a partial exit, the section goes and so do its values, which the form keeps.
     await fillRow(user, 1, '60');
@@ -197,28 +170,25 @@ describe('submission', () => {
 
   it('should on CloseReasonRequired show the section with the issue, keeping every entered value', async () => {
     const facade = renderExitForm();
-    const required = [
-      { source: 'TradeWorkflows', field: 'closeReasonId', code: 'CloseReasonRequired' },
-      { source: 'TradeWorkflows', field: 'closeReview', code: 'CloseReviewDispositionRequired' },
-    ];
+    const required = [{ source: 'TradeWorkflows', field: 'closeReasonId', code: 'CloseReasonRequired' }];
     vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue({ ...rejected, issues: required } as never);
     const user = userEvent.setup();
     await screen.findByRole('group', { name: 'Execution 1' });
     // 60 of the 100 shares: the form shows no section, though the workflow finds the exit terminal.
     await fillRow(user, 1, '60', '52.25', '0.75');
     const exitReflection = within(screen.getByRole('region', { name: 'Reflection on this exit' }));
+    await user.click(exitReflection.getByRole('button', { name: 'Add more' }));
     await user.click(exitReflection.getByRole('radio', { name: 'Reactive' }));
     await user.type(exitReflection.getByLabelText('Note'), 'Sold into the spike.');
     expect(screen.queryByRole('region', { name: 'Closing the Trade' })).toBeNull();
     await user.click(screen.getByRole('button', { name: 'Save exit' }));
 
     const summary = await screen.findByRole('region', { name: 'This exit can’t be saved yet' });
-    expect(within(summary).getAllByRole('listitem').map((item) => item.textContent)).toEqual(['Choose a Close Reason.', 'Choose how to meet the Close Review.']);
+    expect(within(summary).getAllByRole('listitem').map((item) => item.textContent)).toEqual(['Choose a Close Reason.']);
     const closing = within(screen.getByRole('region', { name: 'Closing the Trade' }));
     const reasons = closing.getByRole('radiogroup', { name: 'Close Reason' });
     expect(reasons.getAttribute('aria-invalid')).toBe('true');
     expect(document.getElementById(reasons.getAttribute('aria-describedby')!)!.textContent).toBe('Choose a Close Reason.');
-    expect(closing.getByRole('radio', { name: 'Reflect now' })).toHaveProperty('checked', true);
 
     // Every entered value is kept.
     expect(within(rowOf(1)).getByLabelText<HTMLInputElement>('Quantity').value).toBe('60');
@@ -230,11 +200,11 @@ describe('submission', () => {
 
     // Choosing a reason clears its issue, and the next Save submits the section.
     await user.click(closing.getByRole('radio', { name: 'Target Reached' }));
-    expect(within(summary).queryByText('Choose a Close Reason.')).toBeNull();
+    // The one issue was corrected, so the summary goes.
+    expect(screen.queryByRole('region', { name: 'This exit can’t be saved yet' })).toBeNull();
     await user.click(screen.getByRole('button', { name: 'Save exit' }));
-    const closeReview: unknown = expect.objectContaining({ kind: 'Complete' });
     expect(vi.mocked(facade.TradeWorkflows.recordPositionChange).mock.lastCall![0]).toEqual(
-      expect.objectContaining({ members: [{ ...sell('60'), price: '52.25', fee: '0.75' }], closeReasonId: 'cr-1', closeReview }),
+      expect.objectContaining({ members: [{ ...sell('60'), price: '52.25', fee: '0.75' }], closeReasonId: 'cr-1', closeReview: { kind: 'Defer' } }),
     );
 
     // Only a member issue comes back while the section is shown: the section and its values stay.
@@ -250,10 +220,7 @@ describe('submission', () => {
   // T6.17-B1, item 2 (ocr, Doubtful): the workflow's verdict is about the quantities it was given.
   it('should hide a section the workflow required once the quantities no longer total the open quantity, submit nothing for it, and keep its values', async () => {
     const facade = renderExitForm();
-    const required = [
-      { source: 'TradeWorkflows', field: 'closeReasonId', code: 'CloseReasonRequired' },
-      { source: 'TradeWorkflows', field: 'closeReview', code: 'CloseReviewDispositionRequired' },
-    ];
+    const required = [{ source: 'TradeWorkflows', field: 'closeReasonId', code: 'CloseReasonRequired' }];
     vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue({ ...rejected, issues: required } as never);
     const user = userEvent.setup();
     await screen.findByRole('group', { name: 'Execution 1' });
@@ -263,7 +230,6 @@ describe('submission', () => {
     await fillRow(user, 1, '60');
     await user.click(screen.getByRole('button', { name: 'Save exit' }));
     await user.click(within(await screen.findByRole('region', { name: 'Closing the Trade' })).getByRole('radio', { name: 'Stop Triggered' }));
-    await user.click(within(closing()!).getByRole('radio', { name: 'Reflect later' }));
 
     // Fewer shares than before: the verdict about 60 no longer applies, so the section goes.
     await user.clear(within(rowOf(1)).getByLabelText('Quantity'));
@@ -279,35 +245,6 @@ describe('submission', () => {
     await user.clear(within(rowOf(1)).getByLabelText('Quantity'));
     await user.type(within(rowOf(1)).getByLabelText('Quantity'), '60');
     expect(within(closing()!).getByRole('radio', { name: 'Stop Triggered' })).toHaveProperty('checked', true);
-    expect(within(closing()!).getByRole('radio', { name: 'Reflect later' })).toHaveProperty('checked', true);
-  });
-
-  // T6.17-B1, item 3 (ocr, Valid minor): the Close Review group is tied to its issue like the Close Reason group.
-  it('should tie the Close Review issue to its group and clear it once the disposition changes', async () => {
-    const facade = renderExitForm();
-    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue({
-      ...rejected,
-      issues: [{ source: 'TradeWorkflows', field: 'closeReview', code: 'CloseReviewDispositionRequired' }],
-    } as never);
-    const user = userEvent.setup();
-    await screen.findByRole('group', { name: 'Execution 1' });
-    await fillRow(user, 1, '100');
-    await user.click(screen.getByRole('button', { name: 'Save exit' }));
-
-    expect(await screen.findByRole('region', { name: 'This exit can’t be saved yet' })).toBeTruthy();
-    const closing = within(screen.getByRole('region', { name: 'Closing the Trade' }));
-    const review = closing.getByRole('radiogroup', { name: 'Close Review' });
-    expect(review.getAttribute('aria-invalid')).toBe('true');
-    expect(document.getElementById(review.getAttribute('aria-describedby')!)!.textContent).toBe('Choose how to meet the Close Review.');
-    // The Close Reason group has no issue, and the exit's reflection group keeps its own markup.
-    expect(closing.getByRole('radiogroup', { name: 'Close Reason' }).getAttribute('aria-describedby')).toBeNull();
-    expect(screen.getByRole('radiogroup', { name: 'Reflection' }).getAttribute('aria-describedby')).toBeNull();
-
-    // Choosing a disposition answers the issue: the summary and the message go.
-    await user.click(closing.getByRole('radio', { name: 'Reflect later' }));
-    expect(screen.queryByRole('region', { name: 'This exit can’t be saved yet' })).toBeNull();
-    expect(closing.queryByText('Choose how to meet the Close Review.')).toBeNull();
-    expect(closing.getByRole('radiogroup', { name: 'Close Review' }).getAttribute('aria-describedby')).toBeNull();
   });
 
   it('should render the saved exit from the result alone: Lot Matches, realized P&L, lifecycle Closed, Terminal Disposition, Close Reason, and both reflection outcomes', async () => {

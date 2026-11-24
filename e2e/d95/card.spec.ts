@@ -99,8 +99,7 @@ test.describe('B95.4 The card', () => {
     await detail.recordExitLink(page).click();
     await expect(page.getByRole('heading', { name: 'Record exit', level: 1 })).toBeVisible();
     await fillRows(page, [{ quantity: '90', price: '40.00', fee: '1.00', time: '2026-10-12T11:00' }]);
-    await page.getByRole('region', { name: 'Reflection on this exit' }).getByLabel('Reflect later').check();
-    await page.getByRole('button', { name: 'Save exit' }).click();
+    await page.getByRole('button', { name: 'Say why later' }).click();
     await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible();
     await openReview(page);
     await enterMark(page, 'ABC', 'Mon Oct 12', '33.00');
