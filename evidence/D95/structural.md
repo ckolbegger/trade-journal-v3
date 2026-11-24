@@ -848,3 +848,7 @@ Commit `c59d4ad7`: `Temporal.Instant.compare` picks the earliest member in sale-
 ocr of T95.36-B4 (session fd23e829): 3 files, 0 findings. `evidence/D95/ocr/T95.36-B4-c59d4ad7.json`. Next: run `t95.36-sale-measured` (browser-auto 0039d2db).
 
 Run `t95.36-sale-measured` (browser-auto 0039d2db, full tier): unit 3016, integration 329, browser 127, 79, 55 and 130 (4 skipped), checks 14 of 14. Passed. T95.36 done.
+
+### T95.37 — parked (pending decision)
+
+The tdd-task built nothing. Cases 2, 3 and 4 can't all hold: Trade Detail's held-past facts need the Trade's replay (each Hold session's crossings), which the card already assembles but `getTradeDetail` does not; adding it costs one more observations read (counted: Detail makes observations.getAll + the byInstrumentDate cursor; replayTrade one more). Options put to the user: (1) read the replay on Detail only when a Hold exists, case 4 reworded (recommended); (2) always read it; (3) leave held-past facts off Detail. Carrying on with T95.38 (no dependence on T95.37) meanwhile.
