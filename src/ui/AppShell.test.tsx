@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, cleanup, render, screen, within } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
 import { Link, MemoryRouter } from 'react-router';
@@ -1311,5 +1311,27 @@ describe('launch seeding of an existing Workspace (T95.28-F2)', () => {
     renderShell(facade, '/accounts');
     expect(await screen.findByText('Accounts (read only)')).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Add Account' })).toBeNull();
+  });
+
+  it('should not let a superseded launch effect set the status after its seed step', async () => {
+    const stale = facadeDouble();
+    let resolveStale: (status: never) => void = () => undefined;
+    vi.mocked(stale.Workspace.initialize).mockResolvedValue({ kind: 'RuntimeNotWritable' } as never);
+    vi.mocked(stale.Workspace.getStatus)
+      .mockResolvedValueOnce(readyStatus() as never)
+      .mockReturnValueOnce(new Promise((resolve) => (resolveStale = resolve)) as never);
+    const view = renderShell(stale, '/accounts');
+    await waitFor(() => expect(stale.Workspace.getStatus).toHaveBeenCalledTimes(2));
+    // The shell now runs on another facade; the first launch effect is superseded.
+    view.rerender(
+      <MemoryRouter initialEntries={['/accounts']}>
+        <AppShell facade={facadeDouble()} screens={screens} />
+      </MemoryRouter>,
+    );
+    expect(await screen.findByRole('button', { name: 'Add Account' })).toBeTruthy();
+    resolveStale(takenOver() as never);
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(screen.queryByText('Accounts (read only)')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Add Account' })).toBeTruthy();
   });
 });

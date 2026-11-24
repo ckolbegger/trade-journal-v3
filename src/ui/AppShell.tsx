@@ -327,10 +327,14 @@ export function AppShell({
           if (!current) return;
           // Not Opened (another tab took the Workspace meanwhile): show what it now reports, not the stale read.
           if (opened.kind === "Opened") setStatus(opened.status);
-          else setStatus(await facade.Workspace.getStatus());
+          else {
+            const reread = await facade.Workspace.getStatus();
+            if (current) setStatus(reread);
+          }
         } catch {
           if (!current) return;
-          setStatus(await facade.Workspace.getStatus());
+          const reread = await facade.Workspace.getStatus();
+          if (current) setStatus(reread);
         }
         return;
       }
