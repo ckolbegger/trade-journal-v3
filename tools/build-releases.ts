@@ -6,6 +6,8 @@
 // the current source is built as a labelled release like v1. D6 T6.21 (A97, decision 70): d5r2 is
 // built from the tag claude-opus-5.5-d5r2, the last release before D6, and the current source moves
 // from d5 to d6. Decision 112: the checked-out code is built as `current`; no d5 or d6 folder remains.
+// D9.5 T95.45 (B95.10, the user's approval 2026-11-24): d9r2 is built from the tag claude-opus-5.5-d9r2, the
+// last release before D9.5, for the upgrade case.
 import { execFileSync } from 'node:child_process';
 import { cp, mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -15,7 +17,7 @@ import type { OfflineReleaseInventory } from '../src/delivery/inventory.ts';
 import { INVENTORY_FILE } from './release.ts';
 
 export const RELEASES_DIR = path.resolve('dist-releases');
-export const RELEASES = ['v1', 'v2', 'v2-corrupt', 'd1', 'd2', 'd4', 'd5r2', 'current'] as const;
+export const RELEASES = ['v1', 'v2', 'v2-corrupt', 'd1', 'd2', 'd4', 'd5r2', 'd9r2', 'current'] as const;
 export type ReleaseName = (typeof RELEASES)[number];
 
 // A34, A50: the tags the previous releases are built from. Git tags are shared by every worktree,
@@ -25,7 +27,8 @@ export const D1_RELEASE_TAG = 'claude-opus-5.5-d1';
 export const D2_RELEASE_TAG = 'claude-opus-5.5-d2';
 export const D4_RELEASE_TAG = 'claude-opus-5.5-d4';
 export const PREVIOUS_RELEASE_TAG = 'claude-opus-5.5-d5r2';
-const TAGGED_RELEASES = { d1: D1_RELEASE_TAG, d2: D2_RELEASE_TAG, d4: D4_RELEASE_TAG, d5r2: PREVIOUS_RELEASE_TAG } as const;
+export const D9R2_RELEASE_TAG = 'claude-opus-5.5-d9r2';
+const TAGGED_RELEASES = { d1: D1_RELEASE_TAG, d2: D2_RELEASE_TAG, d4: D4_RELEASE_TAG, d5r2: PREVIOUS_RELEASE_TAG, d9r2: D9R2_RELEASE_TAG } as const;
 
 // The asset v2-corrupt alters: the stylesheet, so the altered release still parses as a page.
 export async function corruptedAsset(dir: string): Promise<string> {
@@ -91,6 +94,7 @@ if (import.meta.main) {
   await cp(await buildTaggedRelease('d2'), path.join(RELEASES_DIR, 'd2'), { recursive: true });
   await cp(await buildTaggedRelease('d4'), path.join(RELEASES_DIR, 'd4'), { recursive: true });
   await cp(await buildTaggedRelease('d5r2'), path.join(RELEASES_DIR, 'd5r2'), { recursive: true });
+  await cp(await buildTaggedRelease('d9r2'), path.join(RELEASES_DIR, 'd9r2'), { recursive: true });
   await buildLabelled('current');
   console.log(`build:releases OK: ${RELEASES.join(', ')} in ${RELEASES_DIR}; v2-corrupt alters ${altered}`);
 }
