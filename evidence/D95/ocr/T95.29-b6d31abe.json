@@ -1,0 +1,559 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 39 selected item(s).",
+  "summary": {
+    "files_reviewed": 39,
+    "comments": 0,
+    "total_tokens": 723951,
+    "input_tokens": 718813,
+    "output_tokens": 5138,
+    "cache_read_tokens": 78464,
+    "elapsed": "57s"
+  },
+  "tool_calls": {
+    "total": 73,
+    "by_tool": {
+      "code_search": 18,
+      "file_read": 54,
+      "file_read_diff": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "D6 end-to-end lifecycle, failure handling, and shared support",
+      "files": [
+        "e2e/d6/close-review.spec.ts",
+        "e2e/d6/exit-action.spec.ts",
+        "e2e/d6/exit-requirements.spec.ts",
+        "e2e/d6/exit.spec.ts",
+        "e2e/d6/kill.spec.ts",
+        "e2e/d6/no-save.spec.ts",
+        "e2e/d6/offline.spec.ts",
+        "e2e/d6/responsive-a11y.spec.ts",
+        "e2e/d6/runtime-failure.spec.ts",
+        "e2e/d6/support.ts"
+      ]
+    },
+    {
+      "label": "D7 end-to-end support and layout coverage",
+      "files": [
+        "e2e/d7/support.ts",
+        "e2e/d7p/layout.spec.ts"
+      ]
+    },
+    {
+      "label": "D8 end-to-end journal, lot matching, and state coverage",
+      "files": [
+        "e2e/d8p/journal-final-session.spec.ts",
+        "e2e/d8p/lot-matches-fit.spec.ts",
+        "e2e/d8p/states.spec.ts",
+        "e2e/d8r/support.ts"
+      ]
+    },
+    {
+      "label": "D9 end-to-end shared support",
+      "files": [
+        "e2e/d9/support.ts",
+        "e2e/d9ar/support.ts"
+      ]
+    },
+    {
+      "label": "ESLint suppression cleanup",
+      "files": [
+        "eslint-suppressions.json"
+      ]
+    },
+    {
+      "label": "Daily review coordinator tests and review fixtures",
+      "files": [
+        "src/coordinators/daily-review/card-kinds.test.ts",
+        "src/coordinators/daily-review/settlement.test.ts",
+        "tests/support/closed-trade-review-fixture.ts",
+        "tests/support/review-fixture.ts"
+      ]
+    },
+    {
+      "label": "Trade view coordinator tests and replay fixtures",
+      "files": [
+        "src/coordinators/trade-views/closed-views.test.ts",
+        "src/coordinators/trade-views/option-views.test.ts",
+        "src/coordinators/trade-views/replay-trade.test.ts",
+        "tests/support/replay-series-app.ts",
+        "tests/support/replay-series-stack.ts"
+      ]
+    },
+    {
+      "label": "Position-change workflow tests",
+      "files": [
+        "src/coordinators/trade-workflows/record-position-change-options.test.ts",
+        "src/coordinators/trade-workflows/record-position-change.test.ts"
+      ]
+    },
+    {
+      "label": "D6 integration lifecycle and shared support",
+      "files": [
+        "tests/integration/d6/close-review.test.ts",
+        "tests/integration/d6/lifecycle.test.ts",
+        "tests/integration/d6/rejections.test.ts",
+        "tests/integration/d6/retries.test.ts",
+        "tests/integration/d6/support.ts"
+      ]
+    },
+    {
+      "label": "D7 integration lifecycle, rebuild, and shared support",
+      "files": [
+        "tests/integration/d7/lifecycle.test.ts",
+        "tests/integration/d7/rebuild.test.ts",
+        "tests/integration/d7/support.ts"
+      ]
+    },
+    {
+      "label": "D8 backup integration coverage",
+      "files": [
+        "tests/integration/d8/backup.test.ts"
+      ]
+    }
+  ],
+  "session_id": "5ded078d-1018-4f8c-aa47-a9b9e18044de",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "5ded078d-1018-4f8c-aa47-a9b9e18044de",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "b6d31abe",
+      "resolved_base": "b4a47c05d64049a7ad0fd142f9f73bca4bde5cce",
+      "resolved_head": "b6d31abe991a4862bec75bce0b3e92dab6c9df4e",
+      "exact_range": "b4a47c05d64049a7ad0fd142f9f73bca4bde5cce..b6d31abe991a4862bec75bce0b3e92dab6c9df4e",
+      "source_artifact_sha256": "7af0f4e8466a951b34aea498088a0c51962efda8ee12ea3f82fcca60dc29610e"
+    },
+    "execution": {
+      "ocr_version": "v1.14.2",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "00348c08b88213d3d57b3e4256892b9c7cf87665741192e45bf2193252030ecf",
+          "path": "tests/integration/d6/close-review.test.ts",
+          "fingerprint": "dec5cb24e1e0f7f25c346164fa3570eabb6b477589612c6a8c2f4fb017e61d62"
+        },
+        {
+          "item_id": "0177c0fd0b71e02fae081a582cfb87816a0b602cd5a656d2f55b0d280028bb9e",
+          "path": "tests/integration/d8/backup.test.ts",
+          "fingerprint": "59f552d2b32560450fdec6e3fd4910f8c110a3b3db181aaf71e06f6ab544b22c"
+        },
+        {
+          "item_id": "09f4fd969df730db8a852bf5766b882688a210b66b69d7454fe53b1e419d206d",
+          "path": "tests/integration/d6/retries.test.ts",
+          "fingerprint": "6e1606a68d03db70df27d2efe67b93edf2fb1abeac4409e3df417d8bb6aa683f"
+        },
+        {
+          "item_id": "17f81f1c6edfaa6ba945e70c4be78d7522ac2c31042a6e915dc1ba9f8ea6ba55",
+          "path": "tests/integration/d7/lifecycle.test.ts",
+          "fingerprint": "fb99edfe65553bad104aa76d7349ad3f6db867f06b2c3ad6bf9d624be120d480"
+        },
+        {
+          "item_id": "18b6b01ed98f6d00b64a2e2fe8392a7b542a29a5e4bd0cb775cefb4bbb11a1ab",
+          "path": "src/coordinators/daily-review/settlement.test.ts",
+          "fingerprint": "0e02cda49d4dd4d9f24f5b962cf8acc5fd3279c363a7a183f59dc97ff99a7b56"
+        },
+        {
+          "item_id": "1d45db421e94e4694f6f3250c8a059de25ae8ed03b5c669cf5f50e18144d7d03",
+          "path": "src/coordinators/trade-views/replay-trade.test.ts",
+          "fingerprint": "59b1439c8db3c59baabf93557c573485c2088515f86c3854b44ed44ddaac6284"
+        },
+        {
+          "item_id": "1e601d1a56ad3fee323589674806fd60bb94a71af11b7eb969142cdabfb1a93b",
+          "path": "tests/support/replay-series-app.ts",
+          "fingerprint": "8803251947b2d8cc07ddd5b5575116b223a4992694a01a613fe1cdcaab136249"
+        },
+        {
+          "item_id": "207a0ef92c54cfe0e00d07eed05868ee1f04d45c5ed88924d1ddc928165b13c8",
+          "path": "tests/support/closed-trade-review-fixture.ts",
+          "fingerprint": "f0dcf5cdc1e0ee82ef86a84f2aa5a8f45c0e982db5cd16d52d78755a4acd5381"
+        },
+        {
+          "item_id": "24130375af365892078c5278d207f29c6a19460b3f37d71486e36571ba82b0b5",
+          "path": "e2e/d6/close-review.spec.ts",
+          "fingerprint": "083a5df3476d5af900cedd558e9cc8a30bb3a092e72b76c496672a643997cef2"
+        },
+        {
+          "item_id": "30273611721b694304fcba1e627fe765af668fd478e0661a0cc14f1ce1b4a3ab",
+          "path": "e2e/d8p/states.spec.ts",
+          "fingerprint": "a9558f03ecddde09dbf79620512d66f4278a6baf39f72e582b317d5a5ae5c76f"
+        },
+        {
+          "item_id": "30a50c1fd52b525b6d09b81c248c7988a7f3bded31939f5c01311931cbcccc64",
+          "path": "src/coordinators/trade-workflows/record-position-change-options.test.ts",
+          "fingerprint": "287b930da1c375202ccd324b0ad26fd68a396438613b2e7bc0c6e4df4f4e8685"
+        },
+        {
+          "item_id": "3b10cb12a1006410d4f752e1a79bccd1370fd9d3773efc171116939e63cbe14d",
+          "path": "e2e/d6/offline.spec.ts",
+          "fingerprint": "87a9e1b2634d16de176f1a0fe7a2f5ae81f52c9886dad3100a629ac5be568cab"
+        },
+        {
+          "item_id": "42b58eea0e5f000f63b6a9c3c24ac44a84b91196ca48804afea34e6a7d81e1e1",
+          "path": "e2e/d6/support.ts",
+          "fingerprint": "5f75c4123403f7b24dafb22b0a1616a7f93e41f71d56ce17b488587a27051d3e"
+        },
+        {
+          "item_id": "4b9fadd3d5bd8cee14f60df670c85c90c9aa10deaead2a1084151c24c9231db1",
+          "path": "tests/integration/d7/support.ts",
+          "fingerprint": "c090d5fe5aef610abb6d21c773d2301866db9659622bac3f6c7945a4c6080938"
+        },
+        {
+          "item_id": "4cf80cd4f93db1111cad9410f18fcd4baae047865e777e269c718c3d5a3e6005",
+          "path": "e2e/d6/runtime-failure.spec.ts",
+          "fingerprint": "8f4e709bf74c95b511aaadb141e5ef46d8c17fdcc54386017d9471f884facd89"
+        },
+        {
+          "item_id": "521c7dbde62f7354e20ad40dd0d97b64b3818e666fd197f336cb01c403bd78a6",
+          "path": "tests/integration/d6/lifecycle.test.ts",
+          "fingerprint": "38de2db4c0af85e29febd54ccf400a9ff0b72d0b633ecfc3eccdba0a483e2ba5"
+        },
+        {
+          "item_id": "59c8efa8b5496b76f01205c2c3458fbae5ad85d86f9434b0b6f27b5ac0335aba",
+          "path": "tests/integration/d6/support.ts",
+          "fingerprint": "da742094993892eb971738a8ce7bad704eedce5e91cd2b6303a5ddeb5460355f"
+        },
+        {
+          "item_id": "5ee14afc5ed4f81e9e986dc0193e7a09ec1f9124a2060aed5e5fe510724365fd",
+          "path": "tests/support/replay-series-stack.ts",
+          "fingerprint": "2ce6042d6b4e46a3331759db180b94a88ad61b9d480abbf09fe46756d0ecf283"
+        },
+        {
+          "item_id": "76efdeef135787460ed7383bfa3d4fb0d1704caf6cf1fdfbc80b1d59af60f8ed",
+          "path": "src/coordinators/trade-workflows/record-position-change.test.ts",
+          "fingerprint": "786fb51140b605245d2484f04c4a5f9002bd6df1025dd9e5681cec39bb145bc3"
+        },
+        {
+          "item_id": "839b5d74be9dab57ce22d8164cf43a870716504e404925773518309e596f49ef",
+          "path": "e2e/d9ar/support.ts",
+          "fingerprint": "fcfb59e10ea432e088b3ba6dae05ddaa48d0858623c32a49b2b5f53966481208"
+        },
+        {
+          "item_id": "844627d1016ec4532c30658900797183d4ec63e3af79e14f3ed455d230a199e0",
+          "path": "src/coordinators/trade-views/closed-views.test.ts",
+          "fingerprint": "e06b3abbfb2c583324dabc45ac5fbeaa32cef4d86d585e580b381ebf40e6ca1d"
+        },
+        {
+          "item_id": "856d01bbd2e134c577d38a43ff27eb1f42ac3b5352ac113ab0dc7f3d80cc1286",
+          "path": "e2e/d7p/layout.spec.ts",
+          "fingerprint": "8808855e72932cb3b808ea1ecac7d0b83196eaadded99188237c7ab81cc90a64"
+        },
+        {
+          "item_id": "864910b6044f4c010950747b691b0043cb238ae233dc93c2a1bff473f956d5f7",
+          "path": "e2e/d6/exit-requirements.spec.ts",
+          "fingerprint": "baeb410011356ac85cc736b12a900609be7eb5873596d86b8c4c7155c9e8e887"
+        },
+        {
+          "item_id": "87b2e26986ce1c04b97085d36a9c44176f081ea4870a965ec3f0a8a1ff221e02",
+          "path": "tests/integration/d6/rejections.test.ts",
+          "fingerprint": "2c4b48edac5dadd1bd4e7f37f830806989574e365f8f21acfaac71f6bc028af3"
+        },
+        {
+          "item_id": "91621aa61475f0d88bb22f9abc2d265b07ba0de2848238b7b32e6713691ca068",
+          "path": "e2e/d6/exit-action.spec.ts",
+          "fingerprint": "20fdd0a924e05acb7edffeff6dbcac5a8635f09df129c61508fa51b2bda86340"
+        },
+        {
+          "item_id": "91ff58367ec3d2a15928ef8f8ebb92bd93f8907b895057902f78bfa677b32f23",
+          "path": "e2e/d6/exit.spec.ts",
+          "fingerprint": "5781153cc6e8a236fecb13482d6de27dfb0fa253ecef1674e4feab1b7cad7975"
+        },
+        {
+          "item_id": "9655575f610d6149cfe411ca43e1a5abf7ee774b9079c5428edae3d96fd2e0a1",
+          "path": "e2e/d8p/lot-matches-fit.spec.ts",
+          "fingerprint": "f4c5ec190c4e50e06c99bdff3e8014a956abf11f1c0017f91d915b11bc488bd1"
+        },
+        {
+          "item_id": "99c596ee1732c530a194c9499667a3a11331103a4114e4c1d962b6235c95f741",
+          "path": "e2e/d7/support.ts",
+          "fingerprint": "cc41a4d8a8b8814ad581496ca7c1186962cf89c489743ee3bc26f8ea76253d4c"
+        },
+        {
+          "item_id": "9ed3b8864ddb503a11ac274ee506d00c15beb42dc070cfeadfbbaa52f59fc8a2",
+          "path": "e2e/d8p/journal-final-session.spec.ts",
+          "fingerprint": "82e0fd9c84c56c3a93031965b8816168a12edb96646f196643f9b9515ebc39c2"
+        },
+        {
+          "item_id": "9fcc9106e1f1d3b34a703c3af12c8e441b2327bf74a78dbb4748f627b9a5c7a9",
+          "path": "tests/support/review-fixture.ts",
+          "fingerprint": "d0e19b9086c016c40e25e99025b1f8b55f42f6431bbdeea8e99bd1f191c6b8dc"
+        },
+        {
+          "item_id": "bcf49ea06a9812838b8ae188a08a17ea76121ba171d5a16bb4f087f6285ce9a1",
+          "path": "src/coordinators/trade-views/option-views.test.ts",
+          "fingerprint": "6c45595c5cdcd9e5066c22294114e0f3fc0211db0cd1076f33bcea1f241b2b18"
+        },
+        {
+          "item_id": "c2fd486111638d00f0d387a09d3b1d932d274fd2e5443262caf354d5c4d2756f",
+          "path": "e2e/d6/responsive-a11y.spec.ts",
+          "fingerprint": "fe42d7caf982d633015e941d9440e0596a21d610329fef517364ff6db1c6c7a7"
+        },
+        {
+          "item_id": "d0126439061216e58eb2b1a6bab019f2d20601558a9531d4100a29b4b9c5c3f9",
+          "path": "e2e/d9/support.ts",
+          "fingerprint": "7d075bc07b1c213908992fe15a3debfcb8bc4d5fffa1f09fa491ff5127e37d30"
+        },
+        {
+          "item_id": "d1b7c2d196e7678482b261471640427ee30e4fb7fb2f5e13ac6544d29d1ce0f0",
+          "path": "tests/integration/d7/rebuild.test.ts",
+          "fingerprint": "9d02f8b8585b831ccf0f4b1816c4ecb8fcae55b9ddfb9f2edde1ca5eda11c0aa"
+        },
+        {
+          "item_id": "d3eb99946b5bb7f90658427e630f7c2515168d299467467f8bbc8ee72641f7e3",
+          "path": "e2e/d8r/support.ts",
+          "fingerprint": "9f09fcb42b02e51ea3dcdabd8a4f9d75d140e4a58efa3c5a32e4a79e266fd3f4"
+        },
+        {
+          "item_id": "f180a53f2934a8a69912b5408316ca81e34494dbb498bb6db8a13744f32e0f3a",
+          "path": "eslint-suppressions.json",
+          "fingerprint": "3cf9effa77d48c647776f867a893f6c381f7bad2c5c0d568de9041c0c57bcb8c"
+        },
+        {
+          "item_id": "f1e1f9f2f6e2ce0e03d8c208ae60ff108aac95baa6e4276f2b3e97a9a6496a6a",
+          "path": "e2e/d6/no-save.spec.ts",
+          "fingerprint": "4fdf73769454bbcd90daa42f708243879212784ca6275c986870eef0ec6eedb8"
+        },
+        {
+          "item_id": "f67951cf5b25d8eb0457d906fbc3279b2eda265d42aee55f5240d5152bf0a487",
+          "path": "e2e/d6/kill.spec.ts",
+          "fingerprint": "902a43f0dcb40879bdd13ea2792fc4c7b4f3df7b9bf9d4debaafcbea463b44bb"
+        },
+        {
+          "item_id": "faf221cf31623695ce2612116b2cc352b77033b2c58ea5ad80739fb16860f12c",
+          "path": "src/coordinators/daily-review/card-kinds.test.ts",
+          "fingerprint": "9242e0af0db1219e21f779077c1f57d24345cdc64b14a188b427daf8a9aa4fbb"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "00348c08b88213d3d57b3e4256892b9c7cf87665741192e45bf2193252030ecf",
+          "path": "tests/integration/d6/close-review.test.ts",
+          "fingerprint": "dec5cb24e1e0f7f25c346164fa3570eabb6b477589612c6a8c2f4fb017e61d62"
+        },
+        {
+          "item_id": "0177c0fd0b71e02fae081a582cfb87816a0b602cd5a656d2f55b0d280028bb9e",
+          "path": "tests/integration/d8/backup.test.ts",
+          "fingerprint": "59f552d2b32560450fdec6e3fd4910f8c110a3b3db181aaf71e06f6ab544b22c"
+        },
+        {
+          "item_id": "09f4fd969df730db8a852bf5766b882688a210b66b69d7454fe53b1e419d206d",
+          "path": "tests/integration/d6/retries.test.ts",
+          "fingerprint": "6e1606a68d03db70df27d2efe67b93edf2fb1abeac4409e3df417d8bb6aa683f"
+        },
+        {
+          "item_id": "17f81f1c6edfaa6ba945e70c4be78d7522ac2c31042a6e915dc1ba9f8ea6ba55",
+          "path": "tests/integration/d7/lifecycle.test.ts",
+          "fingerprint": "fb99edfe65553bad104aa76d7349ad3f6db867f06b2c3ad6bf9d624be120d480"
+        },
+        {
+          "item_id": "18b6b01ed98f6d00b64a2e2fe8392a7b542a29a5e4bd0cb775cefb4bbb11a1ab",
+          "path": "src/coordinators/daily-review/settlement.test.ts",
+          "fingerprint": "0e02cda49d4dd4d9f24f5b962cf8acc5fd3279c363a7a183f59dc97ff99a7b56"
+        },
+        {
+          "item_id": "1d45db421e94e4694f6f3250c8a059de25ae8ed03b5c669cf5f50e18144d7d03",
+          "path": "src/coordinators/trade-views/replay-trade.test.ts",
+          "fingerprint": "59b1439c8db3c59baabf93557c573485c2088515f86c3854b44ed44ddaac6284"
+        },
+        {
+          "item_id": "1e601d1a56ad3fee323589674806fd60bb94a71af11b7eb969142cdabfb1a93b",
+          "path": "tests/support/replay-series-app.ts",
+          "fingerprint": "8803251947b2d8cc07ddd5b5575116b223a4992694a01a613fe1cdcaab136249"
+        },
+        {
+          "item_id": "207a0ef92c54cfe0e00d07eed05868ee1f04d45c5ed88924d1ddc928165b13c8",
+          "path": "tests/support/closed-trade-review-fixture.ts",
+          "fingerprint": "f0dcf5cdc1e0ee82ef86a84f2aa5a8f45c0e982db5cd16d52d78755a4acd5381"
+        },
+        {
+          "item_id": "24130375af365892078c5278d207f29c6a19460b3f37d71486e36571ba82b0b5",
+          "path": "e2e/d6/close-review.spec.ts",
+          "fingerprint": "083a5df3476d5af900cedd558e9cc8a30bb3a092e72b76c496672a643997cef2"
+        },
+        {
+          "item_id": "30273611721b694304fcba1e627fe765af668fd478e0661a0cc14f1ce1b4a3ab",
+          "path": "e2e/d8p/states.spec.ts",
+          "fingerprint": "a9558f03ecddde09dbf79620512d66f4278a6baf39f72e582b317d5a5ae5c76f"
+        },
+        {
+          "item_id": "30a50c1fd52b525b6d09b81c248c7988a7f3bded31939f5c01311931cbcccc64",
+          "path": "src/coordinators/trade-workflows/record-position-change-options.test.ts",
+          "fingerprint": "287b930da1c375202ccd324b0ad26fd68a396438613b2e7bc0c6e4df4f4e8685"
+        },
+        {
+          "item_id": "3b10cb12a1006410d4f752e1a79bccd1370fd9d3773efc171116939e63cbe14d",
+          "path": "e2e/d6/offline.spec.ts",
+          "fingerprint": "87a9e1b2634d16de176f1a0fe7a2f5ae81f52c9886dad3100a629ac5be568cab"
+        },
+        {
+          "item_id": "42b58eea0e5f000f63b6a9c3c24ac44a84b91196ca48804afea34e6a7d81e1e1",
+          "path": "e2e/d6/support.ts",
+          "fingerprint": "5f75c4123403f7b24dafb22b0a1616a7f93e41f71d56ce17b488587a27051d3e"
+        },
+        {
+          "item_id": "4b9fadd3d5bd8cee14f60df670c85c90c9aa10deaead2a1084151c24c9231db1",
+          "path": "tests/integration/d7/support.ts",
+          "fingerprint": "c090d5fe5aef610abb6d21c773d2301866db9659622bac3f6c7945a4c6080938"
+        },
+        {
+          "item_id": "4cf80cd4f93db1111cad9410f18fcd4baae047865e777e269c718c3d5a3e6005",
+          "path": "e2e/d6/runtime-failure.spec.ts",
+          "fingerprint": "8f4e709bf74c95b511aaadb141e5ef46d8c17fdcc54386017d9471f884facd89"
+        },
+        {
+          "item_id": "521c7dbde62f7354e20ad40dd0d97b64b3818e666fd197f336cb01c403bd78a6",
+          "path": "tests/integration/d6/lifecycle.test.ts",
+          "fingerprint": "38de2db4c0af85e29febd54ccf400a9ff0b72d0b633ecfc3eccdba0a483e2ba5"
+        },
+        {
+          "item_id": "59c8efa8b5496b76f01205c2c3458fbae5ad85d86f9434b0b6f27b5ac0335aba",
+          "path": "tests/integration/d6/support.ts",
+          "fingerprint": "da742094993892eb971738a8ce7bad704eedce5e91cd2b6303a5ddeb5460355f"
+        },
+        {
+          "item_id": "5ee14afc5ed4f81e9e986dc0193e7a09ec1f9124a2060aed5e5fe510724365fd",
+          "path": "tests/support/replay-series-stack.ts",
+          "fingerprint": "2ce6042d6b4e46a3331759db180b94a88ad61b9d480abbf09fe46756d0ecf283"
+        },
+        {
+          "item_id": "76efdeef135787460ed7383bfa3d4fb0d1704caf6cf1fdfbc80b1d59af60f8ed",
+          "path": "src/coordinators/trade-workflows/record-position-change.test.ts",
+          "fingerprint": "786fb51140b605245d2484f04c4a5f9002bd6df1025dd9e5681cec39bb145bc3"
+        },
+        {
+          "item_id": "839b5d74be9dab57ce22d8164cf43a870716504e404925773518309e596f49ef",
+          "path": "e2e/d9ar/support.ts",
+          "fingerprint": "fcfb59e10ea432e088b3ba6dae05ddaa48d0858623c32a49b2b5f53966481208"
+        },
+        {
+          "item_id": "844627d1016ec4532c30658900797183d4ec63e3af79e14f3ed455d230a199e0",
+          "path": "src/coordinators/trade-views/closed-views.test.ts",
+          "fingerprint": "e06b3abbfb2c583324dabc45ac5fbeaa32cef4d86d585e580b381ebf40e6ca1d"
+        },
+        {
+          "item_id": "856d01bbd2e134c577d38a43ff27eb1f42ac3b5352ac113ab0dc7f3d80cc1286",
+          "path": "e2e/d7p/layout.spec.ts",
+          "fingerprint": "8808855e72932cb3b808ea1ecac7d0b83196eaadded99188237c7ab81cc90a64"
+        },
+        {
+          "item_id": "864910b6044f4c010950747b691b0043cb238ae233dc93c2a1bff473f956d5f7",
+          "path": "e2e/d6/exit-requirements.spec.ts",
+          "fingerprint": "baeb410011356ac85cc736b12a900609be7eb5873596d86b8c4c7155c9e8e887"
+        },
+        {
+          "item_id": "87b2e26986ce1c04b97085d36a9c44176f081ea4870a965ec3f0a8a1ff221e02",
+          "path": "tests/integration/d6/rejections.test.ts",
+          "fingerprint": "2c4b48edac5dadd1bd4e7f37f830806989574e365f8f21acfaac71f6bc028af3"
+        },
+        {
+          "item_id": "91621aa61475f0d88bb22f9abc2d265b07ba0de2848238b7b32e6713691ca068",
+          "path": "e2e/d6/exit-action.spec.ts",
+          "fingerprint": "20fdd0a924e05acb7edffeff6dbcac5a8635f09df129c61508fa51b2bda86340"
+        },
+        {
+          "item_id": "91ff58367ec3d2a15928ef8f8ebb92bd93f8907b895057902f78bfa677b32f23",
+          "path": "e2e/d6/exit.spec.ts",
+          "fingerprint": "5781153cc6e8a236fecb13482d6de27dfb0fa253ecef1674e4feab1b7cad7975"
+        },
+        {
+          "item_id": "9655575f610d6149cfe411ca43e1a5abf7ee774b9079c5428edae3d96fd2e0a1",
+          "path": "e2e/d8p/lot-matches-fit.spec.ts",
+          "fingerprint": "f4c5ec190c4e50e06c99bdff3e8014a956abf11f1c0017f91d915b11bc488bd1"
+        },
+        {
+          "item_id": "99c596ee1732c530a194c9499667a3a11331103a4114e4c1d962b6235c95f741",
+          "path": "e2e/d7/support.ts",
+          "fingerprint": "cc41a4d8a8b8814ad581496ca7c1186962cf89c489743ee3bc26f8ea76253d4c"
+        },
+        {
+          "item_id": "9ed3b8864ddb503a11ac274ee506d00c15beb42dc070cfeadfbbaa52f59fc8a2",
+          "path": "e2e/d8p/journal-final-session.spec.ts",
+          "fingerprint": "82e0fd9c84c56c3a93031965b8816168a12edb96646f196643f9b9515ebc39c2"
+        },
+        {
+          "item_id": "9fcc9106e1f1d3b34a703c3af12c8e441b2327bf74a78dbb4748f627b9a5c7a9",
+          "path": "tests/support/review-fixture.ts",
+          "fingerprint": "d0e19b9086c016c40e25e99025b1f8b55f42f6431bbdeea8e99bd1f191c6b8dc"
+        },
+        {
+          "item_id": "bcf49ea06a9812838b8ae188a08a17ea76121ba171d5a16bb4f087f6285ce9a1",
+          "path": "src/coordinators/trade-views/option-views.test.ts",
+          "fingerprint": "6c45595c5cdcd9e5066c22294114e0f3fc0211db0cd1076f33bcea1f241b2b18"
+        },
+        {
+          "item_id": "c2fd486111638d00f0d387a09d3b1d932d274fd2e5443262caf354d5c4d2756f",
+          "path": "e2e/d6/responsive-a11y.spec.ts",
+          "fingerprint": "fe42d7caf982d633015e941d9440e0596a21d610329fef517364ff6db1c6c7a7"
+        },
+        {
+          "item_id": "d0126439061216e58eb2b1a6bab019f2d20601558a9531d4100a29b4b9c5c3f9",
+          "path": "e2e/d9/support.ts",
+          "fingerprint": "7d075bc07b1c213908992fe15a3debfcb8bc4d5fffa1f09fa491ff5127e37d30"
+        },
+        {
+          "item_id": "d1b7c2d196e7678482b261471640427ee30e4fb7fb2f5e13ac6544d29d1ce0f0",
+          "path": "tests/integration/d7/rebuild.test.ts",
+          "fingerprint": "9d02f8b8585b831ccf0f4b1816c4ecb8fcae55b9ddfb9f2edde1ca5eda11c0aa"
+        },
+        {
+          "item_id": "d3eb99946b5bb7f90658427e630f7c2515168d299467467f8bbc8ee72641f7e3",
+          "path": "e2e/d8r/support.ts",
+          "fingerprint": "9f09fcb42b02e51ea3dcdabd8a4f9d75d140e4a58efa3c5a32e4a79e266fd3f4"
+        },
+        {
+          "item_id": "f180a53f2934a8a69912b5408316ca81e34494dbb498bb6db8a13744f32e0f3a",
+          "path": "eslint-suppressions.json",
+          "fingerprint": "3cf9effa77d48c647776f867a893f6c381f7bad2c5c0d568de9041c0c57bcb8c"
+        },
+        {
+          "item_id": "f1e1f9f2f6e2ce0e03d8c208ae60ff108aac95baa6e4276f2b3e97a9a6496a6a",
+          "path": "e2e/d6/no-save.spec.ts",
+          "fingerprint": "4fdf73769454bbcd90daa42f708243879212784ca6275c986870eef0ec6eedb8"
+        },
+        {
+          "item_id": "f67951cf5b25d8eb0457d906fbc3279b2eda265d42aee55f5240d5152bf0a487",
+          "path": "e2e/d6/kill.spec.ts",
+          "fingerprint": "902a43f0dcb40879bdd13ea2792fc4c7b4f3df7b9bf9d4debaafcbea463b44bb"
+        },
+        {
+          "item_id": "faf221cf31623695ce2612116b2cc352b77033b2c58ea5ad80739fb16860f12c",
+          "path": "src/coordinators/daily-review/card-kinds.test.ts",
+          "fingerprint": "9242e0af0db1219e21f779077c1f57d24345cdc64b14a188b427daf8a9aa4fbb"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "7d377e91b089f68a751b3ad60cdc1a46a8fbf6c111962b988ad25e849d60d2ff",
+          "path": "evidence/D95/tdd-log/T95.29.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 57289
+  }
+}
