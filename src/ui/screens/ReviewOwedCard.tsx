@@ -1,4 +1,5 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 import type { UiFacade } from '../../app/compose.ts';
 import type { OwedReflectionsCard, OwedReflectionsTrade, OwedTradeSummary, PostSaveReview } from '../../app/types.ts';
 import { Badge } from '../Badge.tsx';
@@ -6,7 +7,7 @@ import { calculation, closedViaSale, signed } from '../figures.ts';
 import { money, rMultiple, tradeSummary } from '../format.ts';
 import { panelOf, plural, reflectionsStatus, type Go } from './ReviewCard.tsx';
 import { closedViaOption } from './option-disposition.ts';
-import type { FormRegister } from './form-handle.ts';
+import { shownFirst, type FormRegister } from './form-handle.ts';
 import { Refusal, type RefusalProps } from './Refusal.tsx';
 import { ReviewReflections } from './ReviewReflections.tsx';
 
@@ -132,6 +133,7 @@ interface OwedBodyProps {
 function OwedBody({ facade, card, progress, reviewDate, go, onReflectionResolved, onEntryDirty, onForm }: OwedBodyProps) {
   const uid = useId();
   const [open, setOpen] = useState(true);
+  const offerReflection = useCallback<FormRegister>((id, handle) => onForm(id, shownFirst(() => flushSync(() => setOpen(true)), handle)), [onForm, setOpen]);
   // A link to a card that is already open opens its Reflections panel again, if the trader has closed it, and takes focus (A161).
   const panelButton = useRef<HTMLButtonElement>(null);
   const [focusPanel, setFocusPanel] = useState<object>();
@@ -161,7 +163,7 @@ function OwedBody({ facade, card, progress, reviewDate, go, onReflectionResolved
           </button>
         </h4>
         <div id={`${uid}-Reflections`} hidden={!open}>
-          <ReviewReflections facade={facade} reviewDate={reviewDate} reflections={card.reflections} onReview={onReflectionResolved} onNoneRemaining={NOTHING_NEXT} onEntryDirty={onEntryDirty} onForm={onForm} />
+          <ReviewReflections facade={facade} reviewDate={reviewDate} reflections={card.reflections} onReview={onReflectionResolved} onNoneRemaining={NOTHING_NEXT} onEntryDirty={onEntryDirty} onForm={offerReflection} />
         </div>
       </div>
     </section>

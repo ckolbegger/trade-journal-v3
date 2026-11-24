@@ -1508,6 +1508,35 @@ describe('the refusal on the Trade pressed (T95.34, W128)', () => {
     await waitFor(() => expect(headers().map((h) => h.getAttribute('aria-expanded'))).toEqual(['false', 'false', 'true', 'false', 'false']));
   });
 
+  it('should open the Action panel, and focus its form, on Back to ABC when another panel is open', async () => {
+    const user = userEvent.setup();
+    renderReview(cardFacade());
+    const card = await screen.findByRole('region', { name: 'ABC review' });
+    await user.click(within(within(card).getByRole('form', { name: 'Action' })).getByRole('radio', { name: 'Exit' }));
+    await showPanel(user, card, 'Reflections');
+    await user.click(headers()[2]!);
+
+    await user.click(within(cardOf('t-f')).getByRole('button', { name: 'Back to ABC' }));
+
+    expect(within(card).getByRole('button', { name: /^Action\b/ }).getAttribute('aria-expanded')).toBe('true');
+    const form = within(card).getByRole('form', { name: 'Action' });
+    expect(form.contains(document.activeElement)).toBe(true);
+  });
+
+  it('should open the Action panel on Save it when another panel is open, so the form own refusal shows', async () => {
+    const user = userEvent.setup();
+    renderReview(cardFacade());
+    const card = await screen.findByRole('region', { name: 'ABC review' });
+    await user.click(within(within(card).getByRole('form', { name: 'Action' })).getByRole('radio', { name: 'Exit' }));
+    await showPanel(user, card, 'Reflections');
+    await user.click(headers()[2]!);
+
+    await user.click(within(cardOf('t-f')).getByRole('button', { name: 'Save it' }));
+
+    expect(await within(card).findByText('Say why.')).toBeTruthy();
+    expect(within(card).getByRole('button', { name: /^Action\b/ }).getAttribute('aria-expanded')).toBe('true');
+  });
+
   it('should not refuse when only the Marks step holds typed Marks', async () => {
     const user = userEvent.setup();
     renderReview(cardFacade());

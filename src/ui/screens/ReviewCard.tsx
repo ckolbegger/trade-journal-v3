@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 import { Link, useNavigate, useSearchParams } from 'react-router';
 import type { CardProgress, DailyTradeReview, MeterReading, PanelProgress, PostSaveReview, WalkedTrade } from '../../app/types.ts';
 import { Badge } from '../Badge.tsx';
@@ -6,7 +7,7 @@ import { plural, tradeName, tradeSummary } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
 import type { UiFacade } from '../../app/compose.ts';
 import { ActionForm, type SavedAction } from './ActionForm.tsx';
-import type { FormHandle, FormRegister } from './form-handle.ts';
+import { shownFirst, type FormHandle, type FormRegister } from './form-handle.ts';
 import { Refusal, type RefusalProps } from './Refusal.tsx';
 import { ReplayDrawer } from '../cockpit/drawers/replay.tsx';
 import { overlayWordsOf } from '../cockpit/replay/overlay.props.ts';
@@ -333,7 +334,9 @@ function CardBody({ facade, trade, progress, name, go, onSaved, onReflectionReso
   // The Action form reports under its Trade, so the Review's unsaved state counts it with the Mark entries.
   const tradeId = trade.tradeId;
   const report = useCallback((dirty: boolean) => onEntryDirty(`action:${tradeId}`, dirty), [tradeId, onEntryDirty]);
-  const offerForm = useCallback((handle: FormHandle | undefined) => onForm(`action:${tradeId}`, handle), [tradeId, onForm]);
+  // A form offers itself with its panel shown first: the other panels stay mounted, hidden.
+  const offerForm = useCallback((handle: FormHandle | undefined) => onForm(`action:${tradeId}`, shownFirst(() => flushSync(() => setOpen('Action')), handle)), [tradeId, onForm, setOpen]);
+  const offerReflection = useCallback<FormRegister>((id, handle) => onForm(id, shownFirst(() => flushSync(() => setOpen('Reflections')), handle)), [onForm, setOpen]);
   // The Plan box's Risk and Reward are the At entry group's two figures: with the box showing the same two amounts, the group is left out (U2).
   // The group is measured from the actual fills, so it stays when they differ from the Plan.
   const planColumn = trade.replay?.planColumn;
@@ -401,7 +404,7 @@ function CardBody({ facade, trade, progress, name, go, onSaved, onReflectionReso
             </button>
           </h4>
           <div id={`${uid}-${name}`} hidden={open !== name}>
-            {name === 'Reflections' && <ReviewReflections facade={facade} reviewDate={trade.saveBinding.reviewDate} reflections={trade.reflections} onReview={onReflectionResolved} onNoneRemaining={finishPanel} onEntryDirty={onEntryDirty} onForm={onForm} />}
+            {name === 'Reflections' && <ReviewReflections facade={facade} reviewDate={trade.saveBinding.reviewDate} reflections={trade.reflections} onReview={onReflectionResolved} onNoneRemaining={finishPanel} onEntryDirty={onEntryDirty} onForm={offerReflection} />}
             {name === 'Settlement' && <SettlementPanel tradeId={trade.tradeId} items={trade.settlement} timeZone={timeZone ?? 'UTC'} />}
             {name === 'Action' && trade.replay && (
               <button ref={replayButton} type="button" className="pill secondary review-card-replay" onClick={openReplay}>
