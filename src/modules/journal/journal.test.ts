@@ -105,7 +105,8 @@ describe('seedDefaults', () => {
     const [planReflection] = D1_JOURNAL_MANIFEST.entryTypes;
     const incompatible = {
       ...D1_JOURNAL_MANIFEST,
-      version: 2,
+      // Version 1 has no earlier manifest: a different form there is no revision (P173), so it conflicts.
+      version: 1,
       entryTypes: [{ ...planReflection!, prompts: planReflection!.prompts.slice(1) }],
     };
     expect(await j.seedDefaults(incompatible)).toEqual({ kind: 'SeedConflict', productKey: 'entry-type.plan-reflection' });

@@ -40,8 +40,8 @@ import type {
   ResponseValue,
   PrepareJournalEffectsResult,
 } from './effects.ts';
-import type { JournalSeedManifest } from './manifest.ts';
-import type { EntryDefinitionRecord, JournalSnapshot, JournalTypeRecord, PromptDefinition } from './records.ts';
+import { SEEDED_MANIFESTS, type JournalSeedManifest } from './manifest.ts';
+import type { EntryDefinitionRecord, JournalSnapshot, JournalTypeRecord, PromptDefinition, PromptRole } from './records.ts';
 
 export interface JournalDeps {
   readonly persistence: Persistence;
@@ -179,6 +179,7 @@ interface StoredDebt {
   readonly route: 'JournalOnly';
   readonly anchorTradeId: string;
   readonly outstandingDue?: string;
+  readonly requires?: readonly PromptRole[];
   readonly versions: readonly {
     readonly versionId: string;
     readonly status: DebtProjection['status'];
@@ -207,6 +208,7 @@ function debtProjection(debt: StoredDebt): DebtProjection {
     revision: current.versionId,
     ...(current.entryId === undefined ? {} : { entryId: current.entryId }),
     ...(current.declineId === undefined ? {} : { declineId: current.declineId }),
+    ...(debt.requires === undefined ? {} : { requires: debt.requires }),
   };
 }
 
@@ -224,7 +226,9 @@ export type PreparedJournalSeed =
   | { readonly kind: 'SeedConflict'; readonly productKey: string };
 
 // Matches stable product keys and prepares only genuinely missing identities; it never resets
-// a revised definition or matches by label.
+// a revised definition or matches by label. An Entry Type whose latest stored form equals a form an
+// earlier manifest seeded, and differs from this manifest's, gets the manifest's form as the next
+// revision (P173); any other difference is incompatible key history.
 export function prepareJournalSeed(
   existing: readonly JournalTypeRecord[],
   existingDefinitions: readonly EntryDefinitionRecord[],
@@ -232,12 +236,20 @@ export function prepareJournalSeed(
   ids: IdGenerator,
 ): PreparedJournalSeed {
   const present = new Set(existing.map((t) => t.productKey));
-  // A known Entry Type whose seeded revision differs from the manifest is incompatible key history.
+  const revisions: { readonly entryTypeKey: string; readonly revisionNumber: number; readonly prompts: readonly PromptDefinition[] }[] = [];
   for (const entryType of manifest.entryTypes) {
-    const seeded = existingDefinitions.find((d) => d.entryTypeKey === entryType.productKey && d.revisionNumber === 1);
-    if (seeded && canonicalJson(seeded.prompts) !== canonicalJson(entryType.prompts)) {
-      return { kind: 'SeedConflict', productKey: entryType.productKey };
-    }
+    const stored = existingDefinitions.filter((d) => d.entryTypeKey === entryType.productKey).sort((a, b) => a.revisionNumber - b.revisionNumber);
+    const latest = stored.at(-1);
+    if (!latest) continue;
+    // The manifest's form is already stored: nothing to add.
+    const wanted = canonicalJson(entryType.prompts);
+    if (stored.some((d) => canonicalJson(d.prompts) === wanted)) continue;
+    const latestForm = canonicalJson(latest.prompts);
+    const earlierSeeded = SEEDED_MANIFESTS.filter((m) => m.version < manifest.version).some((m) =>
+      m.entryTypes.some((t) => t.productKey === entryType.productKey && canonicalJson(t.prompts) === latestForm),
+    );
+    if (!earlierSeeded) return { kind: 'SeedConflict', productKey: entryType.productKey };
+    revisions.push({ entryTypeKey: entryType.productKey, revisionNumber: latest.revisionNumber + 1, prompts: entryType.prompts });
   }
   const newTypes = manifest.entryTypes.filter((t) => !present.has(t.productKey));
   return {
@@ -248,9 +260,10 @@ export function prepareJournalSeed(
         .filter((src) => !present.has(src.productKey))
         .map((src): JournalTypeRecord => ({ id: src.productKey, kind: 'Source', productKey: src.productKey, label: src.label })),
     ],
-    definitions: newTypes.map(
-      (t): EntryDefinitionRecord => ({ id: ids.next(), entryTypeKey: t.productKey, revisionNumber: 1, prompts: t.prompts }),
-    ),
+    definitions: [
+      ...newTypes.map((t): EntryDefinitionRecord => ({ id: ids.next(), entryTypeKey: t.productKey, revisionNumber: 1, prompts: t.prompts })),
+      ...revisions.map((r): EntryDefinitionRecord => ({ id: ids.next(), ...r })),
+    ],
   };
 }
 
@@ -430,6 +443,7 @@ export function createJournal(deps: JournalDeps): Journal {
               dueAnchor: request.momentTime,
               dueRule: 'OneSessionGrace',
               route: 'JournalOnly',
+              ...(disposition.requires === undefined ? {} : { requires: disposition.requires }),
             },
           ],
         },
@@ -659,6 +673,13 @@ export function createJournal(deps: JournalDeps): Journal {
     // The answers are validated against the Debt's snapshot revision, never a later one.
     if (form.definitionId !== debt.definitionId) return { kind: 'Rejected', issues: [{ code: 'DefinitionRevisionMismatch' }] };
     const issues = validateForm(definition, form.answers);
+    // The roles the Debt was owed with must be answered (U14), whatever the prompt's own required flag.
+    for (const role of debt.requires ?? []) {
+      const prompt = definition.prompts.find((p) => p.kind === 'Text' && p.role === role);
+      if (isBlank(prompt && form.answers[prompt.id]) && !issues.some((i) => i.promptId === prompt?.id)) {
+        issues.push({ ...(prompt ? { promptId: prompt.id } : {}), code: 'RequiredAnswerMissing' });
+      }
+    }
     if (issues.length > 0) return { kind: 'Rejected', issues };
     return {
       kind: 'Prepared',
@@ -897,6 +918,7 @@ export function createJournal(deps: JournalDeps): Journal {
           status: 'Outstanding',
           // The Debt's revision is its last version identity (A61).
           revision: deps.ids.next(),
+          ...(debt.requires === undefined ? {} : { requires: debt.requires }),
         };
         const { status, revision, ...identity } = projection;
         tx.stage({
@@ -984,7 +1006,7 @@ export function createJournal(deps: JournalDeps): Journal {
         const current = value.meta?.journalRevision ?? 0;
         const prepared = prepareJournalSeed(value.types, value.definitions, manifest, deps.ids);
         if (prepared.kind === 'SeedConflict') return prepared;
-        if (prepared.types.length === 0) return { kind: 'Seeded', additions: [], snapshot: { journalRevision: current } };
+        if (prepared.types.length === 0 && prepared.definitions.length === 0) return { kind: 'Seeded', additions: [], snapshot: { journalRevision: current } };
         const journalRevision = current + 1;
         const writes: Write[] = [
           ...prepared.types.map((t): Write => ({ op: 'put', store: 'journalTypes', value: { ...t } })),
@@ -998,7 +1020,9 @@ export function createJournal(deps: JournalDeps): Journal {
           if (attempt < MAX_ATTEMPTS) continue;
           return { kind: 'Conflict' };
         }
-        return { kind: 'Seeded', additions: prepared.types.map((t) => t.productKey), snapshot: { journalRevision } };
+        // A revised Entry Type has no new type record; its added revision names it.
+        const revised = prepared.definitions.filter((d) => d.revisionNumber > 1).map((d) => d.entryTypeKey);
+        return { kind: 'Seeded', additions: [...prepared.types.map((t) => t.productKey), ...revised], snapshot: { journalRevision } };
       }
     },
   };

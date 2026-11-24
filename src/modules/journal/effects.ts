@@ -1,5 +1,6 @@
 import type { DueRule } from '../../domain/journal-debt/index.ts';
 import type { Instant } from '../../domain/time/index.ts';
+import type { PromptRole } from './records.ts';
 
 // A candidate reference names a not-yet-durable fact inside one prepared command; it reserves
 // no identity. Apply maps it to Trade Record's durable identity.
@@ -17,7 +18,8 @@ export type ReflectionDisposition =
     }
   // An explicit decline names the definition revision the trader was shown.
   | { readonly kind: 'Decline'; readonly definitionId: string; readonly reason?: string }
-  | { readonly kind: 'Defer' };
+  // `requires`: the roles the later answer must include (a sale that leaves the Plan Exit, D9.5 A312).
+  | { readonly kind: 'Defer'; readonly requires?: readonly PromptRole[] };
 
 export interface PlanReflectionRequest {
   readonly obligation: 'PlanReflection';
@@ -166,6 +168,8 @@ export interface PreparedDebt {
   readonly dueAnchor: Instant;
   readonly dueRule: DueRule;
   readonly route: 'JournalOnly';
+  // The roles the answer to this Debt must include.
+  readonly requires?: readonly PromptRole[];
 }
 
 export interface PreparedJournalEffects {
@@ -266,6 +270,8 @@ export interface DebtProjection {
   // The outcome a Settled or Declined Debt links.
   readonly entryId?: string;
   readonly declineId?: string;
+  // The roles the answer must include, when the Debt was owed with any (D9.5 A321).
+  readonly requires?: readonly PromptRole[];
 }
 
 export type JournalApplyResult = {

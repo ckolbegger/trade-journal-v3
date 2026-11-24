@@ -46,6 +46,8 @@ const origin = z.union([
 // Every other obligation's key is a string (`PlanReflection:<tradeId>`, ...).
 const obligationKey = z.union([z.string(), z.tuple([z.literal('DailyTradeReview'), z.string(), z.string()])]);
 const role = z.enum(['Thesis', 'Invalidation', 'Action', 'Intent']);
+// A Text prompt's role may also be one of the two a workflow places itself (D9.5 A321).
+const textRole = z.enum(['Thesis', 'Invalidation', 'Action', 'Intent', 'PlanDepartureReason', 'ExpirationReason']);
 
 const prompt = z.discriminatedUnion('kind', [
   z.strictObject({
@@ -53,7 +55,7 @@ const prompt = z.discriminatedUnion('kind', [
     kind: z.literal('Text'),
     text: z.string(),
     required: z.boolean(),
-    role: role.optional(),
+    role: textRole.optional(),
     requiredWhen: z.strictObject({ promptId: z.string(), optionIds: z.array(z.string()) }).optional(),
   }),
   z.strictObject({ id: z.string(), kind: z.literal('Scale'), text: z.string(), required: z.boolean(), min: z.number().int(), max: z.number().int() }),
@@ -63,7 +65,7 @@ const prompt = z.discriminatedUnion('kind', [
     text: z.string(),
     required: z.boolean(),
     role: role.optional(),
-    options: z.array(z.strictObject({ id: z.string(), label: z.string() })),
+    options: z.array(z.strictObject({ id: z.string(), label: z.string(), protected: z.literal(true).optional() })),
   }),
 ]);
 
@@ -121,6 +123,8 @@ const SCHEMAS: Readonly<Record<JournalSectionStore, z.ZodType>> = {
     route: z.literal('JournalOnly'),
     anchorTradeId: z.string(),
     outstandingDue: instant.optional(),
+    // The roles the answer must include (D9.5 A321).
+    requires: z.array(textRole).optional(),
     versions: z.array(
       z.strictObject({ versionId: z.string(), status: z.enum(['Outstanding', 'Settled', 'Declined']), savedAt: instant, entryId: z.string().optional(), declineId: z.string().optional() }),
     ),

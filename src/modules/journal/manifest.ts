@@ -169,3 +169,14 @@ export const D5_JOURNAL_MANIFEST: JournalSeedManifest = {
   ],
   sources: [...D4_JOURNAL_MANIFEST.sources, { productKey: 'source.trade-close', label: 'Trade Close' }],
 };
+
+// Every manifest a Workspace was ever seeded with, oldest first. The seed step revises an Entry Type
+// whose latest stored form equals a form of an earlier manifest in this list (D9.5 P173); each new
+// manifest is appended here when it ships.
+export const SEEDED_MANIFESTS: readonly JournalSeedManifest[] = [
+  D1_JOURNAL_MANIFEST,
+  D2_JOURNAL_MANIFEST,
+  D3_JOURNAL_MANIFEST,
+  D4_JOURNAL_MANIFEST,
+  D5_JOURNAL_MANIFEST,
+];
