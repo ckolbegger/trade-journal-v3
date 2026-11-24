@@ -341,8 +341,9 @@ function closeReviewAnswers(n: number, symbol: string, later: boolean): Record<s
         kind: 'Text',
         text: later ? `Recalled at the Review: the ${symbol} exit was earlier than planned; trade ${n}.` : `The ${symbol} entry held its level and the stop was respected; trade ${n}.`,
       },
-      ...(!later && { 'prompt.close-review.key-lesson': { kind: 'Text', text: 'Scale out into strength instead of waiting for the full target.' } }),
     }),
+    // Required since Journal manifest 6: every answered Close Review states it.
+    'prompt.close-review.key-lesson': { kind: 'Text', text: later ? `Recalled at the Review: scale out of ${symbol} into strength; trade ${n}.` : 'Scale out into strength instead of waiting for the full target.' },
   };
 }
 

@@ -174,11 +174,11 @@ describe('bench generator artifact (D8 P35)', () => {
     expect(lines.filter((line) => line['kind'] === 'sectionEnd').map((line) => line['section'])).toEqual(['workspace', 'catalog', 'marketData', 'trades', 'journal']);
   });
 
-  it('should stamp the artifact with generator version 8', async () => {
+  it('should stamp the artifact with generator version 9', async () => {
     const { artifact } = await smoke();
     const header = linesOf(artifact.parts).map((line) => JSON.parse(line) as Record<string, unknown>)[0]!;
-    expect(BENCH_GENERATOR_VERSION).toBe(8);
-    expect(header['releaseId']).toBe('tj-bench-generator-v8');
+    expect(BENCH_GENERATOR_VERSION).toBe(9);
+    expect(header['releaseId']).toBe('tj-bench-generator-v9');
   });
 });
 
@@ -291,6 +291,16 @@ describe('bench generator Marks', () => {
 });
 
 describe('bench generator Journal', () => {
+  it('should answer the required key lesson in every Close Review it writes as answered', async () => {
+    const { artifact } = await smoke();
+    const closeReviews = recordsOf(artifact.parts, 'journalEntries').filter((entry) => entry.entryTypeKey === 'entry-type.close-review');
+    expect(closeReviews.length).toBeGreaterThan(0);
+    for (const entry of closeReviews) {
+      const responses = entry.versions.at(-1)!.responses as unknown as { promptId: string; value: { kind: string } }[];
+      expect(responses.find((response) => response.promptId === 'prompt.close-review.key-lesson')?.value.kind).toBe('Text');
+    }
+  });
+
   it('should give every Plan its reflection, every Position Change and Close its outcome by the section 1.4 dispositions, each deferred one a Debt settled, declined or still Outstanding, and every session an Action for each Trade open at its cutoff', async () => {
     const { artifact, expected } = await smoke();
     const plan = smokeSchedule();
