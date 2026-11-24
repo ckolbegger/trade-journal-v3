@@ -25,6 +25,43 @@
 - **P3 — implied volatility — ACCEPTED with spec reopening.** Deterministic implied-volatility inversion from observed Marks, IV/share-equivalent chips and the underlying/time/volatility price-move decomposition are implemented as **advisory explanation only**. They never feed valuation, P&L, risk/reward, Stop/Target, payoff, Daily Review completion or reports; no prediction, no LLM, no coaching. The prototype itself states "the result and what is at stake use no model." Required scope change, to be applied to `specs/README.md` and the payoff/analysis contracts before step 8a freezes: theoretical option pricing moves from outside the MVP to permitted *only* as this advisory deterministic derivation, with new acceptance scenarios and an Installed Capability Manifest entry.
 - **P4 — Trade Detail figures — ACCEPTED (layout yes, composite score no).** The prototype's card hierarchy, density and figure placement are adopted. The slots are populated with canonical descriptive results — Planned Leg Fulfillment, Entry Quality, Realized R, the four fixed Deviation categories, Plan conformance and explicit coverage. No composite adherence percentage, weighted grade or good/bad judgment. The prototype's own index marks its adherence numbers non-authoritative.
 
+## Phase 5 review decisions
+
+- **Phase 5-1 — mandatory execution gates — ACCEPTED.** A fresh critic agent with browser control, a startable application server, and production HTTPS evidence are recorded as explicit execution preconditions and blockers, not assumptions. Each deliverable's critic gate requires a fresh agent driving the production UI; local `localhost:$DEV_PORT` automation is not a substitute for production HTTPS evidence. If any gate is unavailable, implementation stops and reports the blocker rather than self-certifying.
+- **Phase 5-2 — task breakdown timing — ACCEPTED.** A detailed task breakdown, including `describe`/`it should` cases and per-case red/green evidence procedures, is produced immediately before implementation of each deliverable. It is not part of this deliverable list. The Phase 4 matrix carries scenario-level checks until then.
+- **Phase 5-3 — prerequisite edges — ACCEPTED.** The 16 dependency edges below are written with data/resource/sequence types and single-owner resources; ordering is by real dependency, not list position.
+- **Phase 5-5 — freeze provenance — ACCEPTED.** Exact browser and operating-system versions used for delivery evidence are captured at execution time and recorded in the freeze manifest as provenance only, never as a support allowlist.
+- **Phase 5-4 — D8a classification — ACCEPTED as a vertical slice.** Complete Trade Detail + mark-only replay is an independently usable, production-UI-reachable capability traversing the full read stack (UI → read coordinator → pure analysis → Market Data persistence → Journal → Catalog labels). No layer-only exception is required.
+
+## Prerequisite edges
+
+Edges are serialised by real dependencies, not merely by list order. Types: **data** = the later capability needs facts or operations from the earlier one; **resource** = both touch a single-owner shared resource; **sequence** = agreed user ordering without a hard data dependency.
+
+| Edge | Type | Reason |
+|---|---|---|
+| 1 → 2 | data + resource | Plans need a real Account; D1 owns schema v1, seed manifest, capability manifest and navigation shell |
+| 2 → 3 | data | Opening Executions require a confirmed Planned Trade |
+| 3 → 4 | data | Marks and risk/reward require an existing Position |
+| 4 → 5 | data | The Action Save gate requires resolved Marks and an evaluation binding |
+| 5 → 6 | sequence | Review before close is the user's ordered capability progression; not a hard data dependency |
+| 6 → 7 | data | Close Review requires a closed Trade and its obligation key |
+| 2, 3, 6 → 8 | data | Option plans, executions and closes reuse `assessPlan`, `recordPositionChange` and terminal Close Reason |
+| 8 → 8a | sequence | User requirement: single option legs in place before replay |
+| 8a → 9 | sequence | Agreed order; mark-only replay does not require provider Bars |
+| 9 → 10 | sequence | Provider retrieval precedes spreads in the agreed progression |
+| 10 → 11 | sequence | Backup/Restore follows spreads; it must cover all facts accumulated so far |
+| 11 → 11a | data | Corrections rely on the verified backup as a safety net and on stable schema/rules from D11 |
+| 11a → 12 | sequence | Corrections precede multi-leg options in the agreed order |
+| 12 → 12b | sequence | Trader taxonomy arrives after multi-leg options |
+| 12b → 13 | data | Metrics and Journal Field reports need real Tag Values, IdeaSource values and custom Strategies |
+| 13 → 14 | data | Filters apply to existing lists and report families |
+| 14 → 15 | data | Account metrics reuse filter and breakdown machinery |
+| 15 → 15a | sequence | Management Revision and Rolls are deferred until after metrics |
+| 15a → 16 | data | Settlement-created Management Debt is resolved by `reviseManagement`, owned by D15a |
+| 16 → 17 | sequence | Covered Call and PMCC are the final strategy step |
+
+Single-owner resources: schema/durable representation (D1 creates v1, D11 owns migration), seed/default manifest (D1 owns product defaults; D12b adds only trader-owned values), Installed Capability Manifest (updated by the deliverable being built, serialised; D11 verifies declaration honesty), navigation shell (D1), and the shared analysis operations `derive`, `evaluate`, `replay`, `assessChange` (first owner D3/D4/D5/D11a respectively; later deliverables reuse unchanged).
+
 ## Precedence within this plan
 
 1. Prototype for presentation, composition, interaction and workflow choreography, including literal divergences logged below.
