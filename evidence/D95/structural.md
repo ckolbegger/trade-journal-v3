@@ -546,3 +546,7 @@ Run `t95.25-browser` (browser-task): unit 2890, integration 329, browser 20, che
 ## T95.26 — Part A gate
 
 Run `t95.26-gate` (browser-full, 26m31s): unit 2890, integration 329, browser-3 55, browser-4 126 (4 skipped), checks 14 of 14 passed. Failed 6 older browser cases, all on the open Action form: `e2e/d4/card-helpers.spec.ts` 39, 59 and 140; `e2e/d5r/marks.spec.ts:79` (B5R.5); `e2e/d5r/responsive-a11y.spec.ts:8` (B5R.11); `e2e/d4/runtime-failure.spec.ts:7` (B4.10, expects "No Action saved."). Cause: T95.20 offers no Action form until the Trade's Marks are in (W95); these cases type an Action with Marks still owed. T95.20 ran only the specs it named; the full tier wasn't run after it (Standard). Follow-on **T95.20-F1**. The browser runner's report was lost (its first hand-back was a placeholder); this record is from the output files.
+
+### T95.20-F1
+
+Commit `9ec06f79`: card-helpers 39, 59 and 140, B5R.5 and B5R.11 save the Trade's Review Date Mark first (B5R.11's draft moves to T-C's Monday cell; its labels, To-do text and keyboard start follow the new order; every check kept). B4.10 left failing: a product defect. In Recovery Only, ABC's card says "No Action until today's Mark is in. Enter it" with a link to a Marks step that has no Price field; `ActionForm.tsx` 194 (`toGo > 0` → MarksFirst) runs before 195 (read-only → "No Action saved."). Bug task **T95.20-B1**.
