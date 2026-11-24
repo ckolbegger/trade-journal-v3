@@ -526,7 +526,7 @@ describe('Leaving an unsaved reflection', () => {
     expect(vi.mocked(facade.DailyReview.open)).toHaveBeenCalledTimes(opens);
     expect(vi.mocked(facade.DailyReview.getTrade)).toHaveBeenCalledTimes(1);
     expect(screen.getByRole('region', { name: 'XYZ review' })).toBeTruthy();
-    expect(screen.getByText(/Save or discard what you entered for XYZ to leave it/)).toBeTruthy();
+    expect(screen.getByText("XYZ's note isn't saved.")).toBeTruthy();
     expect(within(trade).getByLabelText<HTMLTextAreaElement>('Reason for declining (optional)').value).toBe('No time.');
   });
 });
@@ -581,7 +581,7 @@ describe('Action form when the shell turns read only after a refused write', () 
       await userEvent.setup().click(screen.getByRole('button', { name: /^Review XYZ\b/ }));
       expect(screen.queryByRole('region', { name: 'XYZ review' })).toBeNull();
     });
-    expect(screen.queryByText(/Save or discard what you entered/)).toBeNull();
+    expect(screen.queryByText(/note isn't saved/)).toBeNull();
   });
 });
 
@@ -1560,7 +1560,7 @@ describe('a reflection draft when the shell turns read only', () => {
       await user.click(screen.getByRole('button', { name: /^Review XYZ\b/ }));
       expect(screen.queryByRole('region', { name: 'XYZ review' })).toBeNull();
     });
-    expect(screen.queryByText(/Save or discard what you entered/)).toBeNull();
+    expect(screen.queryByText(/note isn't saved/)).toBeNull();
   });
 });
 

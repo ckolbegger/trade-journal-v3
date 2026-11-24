@@ -764,7 +764,7 @@ describe('Save while the Review is read again', () => {
 });
 
 describe('unsaved work (A156)', () => {
-  const MESSAGE = 'Save or discard what you entered for ABC to leave it';
+  const MESSAGE = "ABC's note isn't saved";
 
   it('should hold the page, not a card, while a Correct is in progress, and still hold the card while an Action, a Debt or a reflection form has entered values', async () => {
     const user = userEvent.setup();
@@ -950,7 +950,7 @@ describe('a search-param change on the mounted Review (A161)', () => {
 
     await user.click(screen.getByRole('button', { name: 'Navigate /review?trade=t-e' }));
 
-    expect(await screen.findByText('Save or discard what you entered for ABC to leave it.')).toBeTruthy();
+    expect(await screen.findByText("ABC's note isn't saved.")).toBeTruthy();
     expect(screen.getByRole('region', { name: 'ABC review' })).toBe(card);
     expect(headers().map((h) => h.getAttribute('aria-expanded'))).toEqual(['true', 'false', 'false', 'false', 'false']);
     expect(facade.DailyReview.getTrade).toHaveBeenCalledTimes(1);
@@ -1229,7 +1229,8 @@ describe('Trade names in messages and blockers (decision 68)', () => {
 
     await user.click(headers()[0]!);
 
-    expect((await screen.findByRole('status')).textContent).toBe(`Save or discard what you entered for ${NAME_F} to leave it.`);
+    // W128 names the Underlying; the card pressed is another Trade's.
+    expect(await within(screen.getAllByRole('listitem').find((li) => li.getAttribute('data-trade-id') === 't-b')!).findByText("XYZ's note isn't saved.")).toBeTruthy();
     expect(headers().map((h) => h.getAttribute('aria-expanded'))).toEqual(['false', 'false', 'true', 'false', 'false']);
   });
 
@@ -1396,5 +1397,130 @@ describe('Review words (P72)', () => {
     await screen.findAllByRole('button', { name: /^Review / });
 
     expect(within(screen.getByRole('list', { name: 'Positions' })).queryByRole('img')).toBeNull();
+  });
+});
+
+describe('the refusal on the Trade pressed (T95.34, W128)', () => {
+  const cardOf = (tradeId: string) => screen.getAllByRole('listitem').find((li) => li.getAttribute('data-trade-id') === tradeId)!;
+  // ABC is the open card; its Action form holds an Exit that is not saved, and XYZ's header is pressed.
+  async function pressXyzWhileAbcHoldsExit(facade = cardFacade(), intent = '') {
+    const user = userEvent.setup();
+    renderReview(facade);
+    const card = await screen.findByRole('region', { name: 'ABC review' });
+    const form = within(card).getByRole('form', { name: 'Action' });
+    await user.click(within(form).getByRole('radio', { name: 'Exit' }));
+    if (intent) await user.type(within(form).getAllByRole('textbox')[0]!, intent);
+    await user.click(headers()[2]!);
+    return { user, facade, card };
+  }
+  const savedPost = { kind: 'Ready', cards: [], progress: { tradesWithAction: 1, tradesEligible: 5 }, completion: MONDAY_COMPLETION, nextStep: { kind: 'Trade', trade: tradeReview(TA) }, binding } as const;
+
+  it('should show the refusal on the Trade pressed, naming the Trade whose form is unsaved', async () => {
+    await pressXyzWhileAbcHoldsExit();
+
+    const refusal = within(cardOf('t-f'));
+    expect(refusal.getByText("ABC's note isn't saved.")).toBeTruthy();
+    expect(within(cardOf('t-b')).queryByText("ABC's note isn't saved.")).toBeNull();
+    expect(screen.queryByText(/Save or discard what you entered for ABC to leave it/)).toBeNull();
+  });
+
+  it('should focus Save it when the refusal appears', async () => {
+    await pressXyzWhileAbcHoldsExit();
+
+    await waitFor(() => expect(document.activeElement).toBe(within(cardOf('t-f')).getByRole('button', { name: 'Save it' })));
+  });
+
+  it('should save that form on Save it and then open the Trade pressed', async () => {
+    const facade = cardFacade();
+    vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'Saved', action: {} as never, review: savedPost });
+    const { user } = await pressXyzWhileAbcHoldsExit(facade, 'Plan changed.');
+
+    await user.click(within(cardOf('t-f')).getByRole('button', { name: 'Save it' }));
+
+    await waitFor(() => expect(headers()[2]!.getAttribute('aria-expanded')).toBe('true'));
+    expect(vi.mocked(facade.DailyReview.save).mock.calls[0]![0]).toMatchObject({ kind: 'SaveTradeAction', action: 'Exit', intent: 'Plan changed.' });
+    // The Action's next step is not the Trade opened: the pressed Trade is.
+    expect(headers().map((h) => h.getAttribute('aria-expanded'))).toEqual(['false', 'false', 'true', 'false', 'false']);
+    expect(screen.queryByText("ABC's note isn't saved.")).toBeNull();
+  });
+
+  it('should show the form own refusal, and stay on it, when Save it cannot save', async () => {
+    const facade = cardFacade();
+    vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'Saved', action: {} as never, review: savedPost });
+    // No reason is typed, and an Exit owes one.
+    const { user, card } = await pressXyzWhileAbcHoldsExit(facade);
+
+    await user.click(within(cardOf('t-f')).getByRole('button', { name: 'Save it' }));
+
+    expect(await within(card).findByText('Say why.')).toBeTruthy();
+    expect(facade.DailyReview.save).not.toHaveBeenCalled();
+    expect(headers().map((h) => h.getAttribute('aria-expanded'))).toEqual(['true', 'false', 'false', 'false', 'false']);
+    expect(within(cardOf('t-f')).getByText("ABC's note isn't saved.")).toBeTruthy();
+
+    // The Trade pressed is not kept as the target: the ordinary Save that follows goes to the Action's next step.
+    await user.type(within(within(card).getByRole('form', { name: 'Action' })).getAllByRole('textbox')[0]!, 'Plan changed.');
+    await user.click(within(card).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
+    await waitFor(() => expect(headers()[3]!.getAttribute('aria-expanded')).toBe('true'));
+    expect(headers()[2]!.getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('should discard it on Discard it and open the Trade pressed', async () => {
+    const { user, facade } = await pressXyzWhileAbcHoldsExit(cardFacade(), 'Plan changed.');
+
+    await user.click(within(cardOf('t-f')).getByRole('button', { name: 'Discard it' }));
+
+    await waitFor(() => expect(headers()[2]!.getAttribute('aria-expanded')).toBe('true'));
+    expect(headers()[0]!.getAttribute('aria-expanded')).toBe('false');
+    expect(facade.DailyReview.save).not.toHaveBeenCalled();
+    expect(screen.queryByText("ABC's note isn't saved.")).toBeNull();
+    // What was entered is gone: the card opened again shows the Hold the Plan preselected, with no reason.
+    await user.click(headers()[0]!);
+    const form = await screen.findByRole('form', { name: 'Action' });
+    expect(within(form).getByRole('radio', { name: 'Hold' })).toHaveProperty('checked', true);
+    expect(within(form).getAllByRole('textbox')[0]).toHaveProperty('value', '');
+  });
+
+  it('should return to the unsaved form on Back to ABC', async () => {
+    const { user, card } = await pressXyzWhileAbcHoldsExit(cardFacade(), 'Plan changed.');
+
+    await user.click(within(cardOf('t-f')).getByRole('button', { name: 'Back to ABC' }));
+
+    expect(screen.queryByText("ABC's note isn't saved.")).toBeNull();
+    const form = within(card).getByRole('form', { name: 'Action' });
+    expect(form.contains(document.activeElement)).toBe(true);
+    expect(within(form).getByRole('radio', { name: 'Exit' })).toHaveProperty('checked', true);
+    expect(within(form).getAllByRole('textbox')[0]).toHaveProperty('value', 'Plan changed.');
+    expect(headers().map((h) => h.getAttribute('aria-expanded'))).toEqual(['true', 'false', 'false', 'false', 'false']);
+  });
+
+  it('should not refuse when only the Marks step holds typed Marks', async () => {
+    const user = userEvent.setup();
+    renderReview(cardFacade());
+    await screen.findByRole('region', { name: 'ABC review' });
+    await user.type(within(marksStep()).getByRole('textbox', { name: 'DEF Mark, Mon Oct 12' }), '33.10');
+
+    await user.click(headers()[2]!);
+
+    await waitFor(() => expect(headers().map((h) => h.getAttribute('aria-expanded'))).toEqual(['false', 'false', 'true', 'false', 'false']));
+    expect(screen.queryByText(/note isn't saved/)).toBeNull();
+    expect(within(marksStep()).getByRole('textbox', { name: 'DEF Mark, Mon Oct 12' })).toHaveProperty('value', '33.10');
+  });
+
+  it('should answer an unsaved reflection on Save it and then open the Trade pressed', async () => {
+    const user = userEvent.setup();
+    const facade = cardFacade();
+    withDueReflection(facade, WALK);
+    const post = { kind: 'Ready', cards: [], progress: { tradesWithAction: 0, tradesEligible: 5 }, completion: MONDAY_COMPLETION, nextStep: { kind: 'Done' }, binding } as const;
+    vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'DebtResolved', entry: { id: 'e1', responses: [] } as never, debt: { debtId: 'd1', status: 'Settled', revision: 'd1-rev-2' } as never, review: post });
+    renderReview(facade, { at: '/review?trade=t-f' });
+    await waitFor(() => expect(facade.DailyReview.getTrade).toHaveBeenCalledTimes(1));
+    await startReflection(user, cardOf('t-f'));
+    await user.click(headers()[0]!);
+
+    await user.click(within(cardOf('t-b')).getByRole('button', { name: 'Save it' }));
+
+    await waitFor(() => expect(headers()[0]!.getAttribute('aria-expanded')).toBe('true'));
+    expect(vi.mocked(facade.DailyReview.save).mock.calls[0]![0]).toMatchObject({ kind: 'ResolveReviewDebt', resolution: { kind: 'Answer' } });
+    expect(headers()[2]!.getAttribute('aria-expanded')).toBe('false');
   });
 });

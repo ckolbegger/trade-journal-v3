@@ -6,6 +6,7 @@ import { reasonOwed } from '../../domain/reason-rule.ts';
 import { shortDate } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
 import { draftKey, draftSetAside, dropDraftSetAside, holdDraft, isWayBack, setDraftAsideOnTrip } from './action-draft.ts';
+import type { FormHandle } from './form-handle.ts';
 import { actionMeaning, planCallLine } from './action-words.ts';
 import { fieldIssues } from './form-issues.tsx';
 import type { FieldIssue } from './plan-issues.ts';
@@ -34,6 +35,8 @@ export interface ActionFormProps {
   readonly replay?: DailyTradeReview['replay'];
   // The session whose figures the card shows when the Review Date has no price (the Now box's dated close); absent when it has one.
   readonly decidingOn?: string;
+  // Offers the form to the Review while it is mounted; undefined when it goes (W128).
+  readonly onHandle?: (handle: FormHandle | undefined) => void;
 }
 
 // "No Action until today's Marks are in. Enter them" (W95), the link going to the Marks step.
@@ -108,7 +111,7 @@ function returnedValues(form: ActionFormState): Values {
 }
 
 // The Action for one Trade on the Review Date. Hold is preselected as view state only; nothing is recorded until Save.
-export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyChange, pending = false, marksToGo = 0, planCall, replay, decidingOn }: ActionFormProps) {
+export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyChange, pending = false, marksToGo = 0, planCall, replay, decidingOn, onHandle }: ActionFormProps) {
   const { writable, report } = useRuntime();
   const returned = returnedValues(form);
   // A form opened on the way back from Price History starts from the Action the trader had started there (C9AR.5).
@@ -179,8 +182,7 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
   const [unresolved, setUnresolved] = useState<{ readonly binding: TradeSaveBinding; readonly count: number }>();
   const required = action !== '' && reasonOwed(action, planCall?.call);
   const [saving, setSaving] = useState(false);
-  const submit = async (event: FormEvent) => {
-    event.preventDefault();
+  const attempt = async (): Promise<boolean> => {
     const text = intent.trim();
     const consideredText = considered.trim();
     const noteText = note.trim();
@@ -189,10 +191,10 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
     // Nothing chosen is refused first; its words go where the whole form's refusals do.
     if (action === '') {
       setIssues([{ field: wholeField, message: 'Choose an Action.', code: 'ActionMissing' }]);
-      return;
+      return false;
     }
     setIssues(missing ? [INTENT_REQUIRED(intentField, 'RequiredAnswerMissing')] : []);
-    if (missing) return;
+    if (missing) return false;
     setSaving(true);
     let result;
     try {
@@ -215,7 +217,25 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
     setUnresolved(marks && 'instruments' in marks ? { binding, count: marks.instruments.length } : undefined);
     setIssues(result.kind === 'Rejected' && !marks ? result.issues.map((issue) => (issue.code === 'RequiredAnswerMissing' || issue.code === 'IntentRequired' ? INTENT_REQUIRED(intentField, issue.code) : { field: wholeField, message: COULD_NOT_SAVE, code: issue.code })) : []);
     if (result.kind === 'Saved') onSaved(result);
+    return result.kind === 'Saved';
   };
+  const submit = (event: FormEvent) => {
+    event.preventDefault();
+    void attempt();
+  };
+  // The Review asks for the form's own Save, under the guards its button has, and for focus back in the form (W128).
+  const formRef = useRef<HTMLFormElement>(null);
+  const asked = useRef({ attempt, blocked: false });
+  useEffect(() => {
+    asked.current = { attempt, blocked: saving || refreshing || pending || !writable };
+  });
+  useEffect(() => {
+    onHandle?.({
+      save: () => (asked.current.blocked ? Promise.resolve(false) : asked.current.attempt()),
+      focus: () => formRef.current?.querySelector<HTMLElement>('input:checked, input, textarea')?.focus(),
+    });
+    return () => onHandle?.(undefined);
+  }, [onHandle]);
   // Discard empties the form: the choice goes back to what the view preselected, and every answer to blank.
   const discard = () => {
     setAction(returned.action);
@@ -255,7 +275,7 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
     );
   }
   return (
-    <form aria-label="Action" noValidate onSubmit={(event) => void submit(event)}>
+    <form ref={formRef} aria-label="Action" noValidate onSubmit={submit}>
       {!changing && savedLines}
       {notice && (
         <div ref={noticeRef} role="alert" tabIndex={-1} className="banner warning">

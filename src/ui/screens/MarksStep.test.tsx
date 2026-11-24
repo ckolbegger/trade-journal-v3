@@ -1183,7 +1183,7 @@ describe('Save Marks (P37, A155) when the runtime turns read only', () => {
     const open = screen.getAllByRole('button', { name: /^Review / }).find((header) => header.getAttribute('aria-expanded') === 'true')!;
     await user.click(open);
     expect(screen.queryByRole('region', { name: 'Marks' })).toBeNull();
-    expect(screen.queryByText(/Save or discard what you entered/)).toBeNull();
+    expect(screen.queryByText(/note isn't saved/)).toBeNull();
   });
 });
 
@@ -1441,7 +1441,7 @@ describe('drafts belong to the Review (P156)', () => {
     await user.click(headerOf('DEF'));
 
     expect(await screen.findByRole('region', { name: 'DEF review' })).toBeTruthy();
-    expect(screen.queryByText(/Save or discard what you entered/)).toBeNull();
+    expect(screen.queryByText(/note isn't saved/)).toBeNull();
     expect(screen.queryByRole('region', { name: 'XYZ review' })).toBeNull();
   });
 

@@ -86,7 +86,7 @@ test.describe('B5R.5 Unsaved work holds the card', () => {
     await (await actionFormOf(page, tA)).getByRole('radio', { name: 'Exit', exact: true }).check();
     // Press another card's header (navigation: raw locators).
     await cardHeader(page, tB).click();
-    await expect(page.getByRole('status').filter({ hasText: 'Save or discard what you entered for XYZ (Long 100 shares @ $50.18) to leave it.' })).toBeVisible();
+    await expect(page.getByRole('status').filter({ hasText: "XYZ's note isn't saved." })).toBeVisible();
     await expect(cardHeader(page, tA)).toHaveAttribute('aria-expanded', 'true');
     await expect(cardHeader(page, tB)).toHaveAttribute('aria-expanded', 'false');
     expect(await probe(page)).toEqual(before);
@@ -102,7 +102,7 @@ test.describe('B5R.5 Unsaved work holds the card', () => {
     await cardHeader(page, tB).click();
     await expect(cardHeader(page, tB)).toHaveAttribute('aria-expanded', 'true');
     await expect(cardHeader(page, tA)).toHaveAttribute('aria-expanded', 'false');
-    await expect(page.getByText('Save or discard what you entered for')).toHaveCount(0);
+    await expect(page.getByText(/note isn't saved/)).toHaveCount(0);
     // The draft stays with the Review: the Marks step still counts it, and its Discard empties it.
     await expect(saveMarksButton(page)).toHaveText('Save Marks (1)');
     await marksStepOf(page).getByRole('button', { name: 'Discard' }).click();

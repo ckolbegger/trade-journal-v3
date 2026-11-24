@@ -54,7 +54,7 @@ test.describe('reach (decision 65)', () => {
     await expect(again.getByRole('radio', { name: 'Exit', exact: true })).toBeChecked();
     await expect(again.getByLabel(/^Why\?/)).toHaveValue('Stop is close');
     // Pressing an open card's header with unsaved work would have raised the hold message (A156).
-    await expect(page.getByText(/^Save or discard what you entered for/)).toHaveCount(0);
+    await expect(page.getByText(/note isn't saved\./)).toHaveCount(0);
     await context.close();
   });
 
@@ -88,7 +88,7 @@ test.describe('reach (decision 65)', () => {
 
     await expect(card).toBeVisible();
     await expect(cardHeader(page, 'ABC')).toHaveAttribute('aria-expanded', 'true');
-    await expect(page.getByText(/^Save or discard what you entered for/)).toHaveCount(0);
+    await expect(page.getByText(/note isn't saved\./)).toHaveCount(0);
     await expect(saveMarksButton(page)).toHaveText('Save Marks (1)');
     await context.close();
   });

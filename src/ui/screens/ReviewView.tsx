@@ -7,6 +7,7 @@ import { useRuntime } from '../runtime.tsx';
 import { shortDate, tradeName, tradeSummary } from '../format.ts';
 import { discardDraftsSetAside } from './action-draft.ts';
 import type { SavedAction } from './ActionForm.tsx';
+import type { FormHandle } from './form-handle.ts';
 import { DayCard, type OpenCard } from './DayCard.tsx';
 import { fold, instrumentOf, nextCard, type Held, type HeldResult } from './held-review.ts';
 import { MarksStep, type EntryDirty, type MarksGo } from './MarksStep.tsx';
@@ -299,6 +300,11 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
   // The save's result is the Review from here on: its completion and binding replace the overview's, and its next step is the Trade shown.
   // Only a save for the opening still shown moves the card; the Review it returned applies whatever is open.
   const saved = ({ review: post }: SavedAction, opening: number) => {
+    // An asked save (Save it) goes on to the Trade pressed, not to the Action's next step: only the Review it returned is applied.
+    if (asked.current !== undefined) {
+      apply({ kind: 'ActionSaved', review: post });
+      return;
+    }
     const open = selection.current === opening;
     // The card holds other entered values (a Mark draft, a reflection draft): going on would lose them (A156). The card stays,
     // read again so its Action shows as saved, and says why.
@@ -342,7 +348,6 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
   const dirty = useRef(new Set<string>());
   // The corrections in progress in the Marks step: they hold the page, not a card.
   const markEdits = useRef(new Set<string>());
-  const [held, setHeld] = useState(false);
   const { writable } = useRuntime();
   // A read-only shell shows no draft fields and no Discard, so its drafts hold nothing: they stay unsaved in state.
   const draftsHeld = writable && markDrafts.count > 0;
@@ -372,14 +377,14 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
     [],
   );
   // The trader asked to leave while something was held: the card says why it stays.
-  const [refused, setRefused] = useState(false);
+  // The Trade whose header was pressed while a form held values, and how many times a Trade has been refused.
+  const [refused, setRefused] = useState<{ readonly pressed: string; readonly count: number }>();
   const onEntryDirty = useCallback<EntryDirty>(
     (id, isDirty) => {
       if (isDirty) dirty.current.add(id);
       else dirty.current.delete(id);
       const any = dirty.current.size > 0;
-      setHeld(any);
-      if (!any) setRefused(false);
+      if (!any) setRefused(undefined);
       onDirtyChange(any || markEdits.current.size > 0 || draftsReported.current);
     },
     [onDirtyChange],
@@ -392,8 +397,44 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
     },
     [onDirtyChange],
   );
+  // The forms holding values that offer a way into themselves, by dirty id, and the Trade pressed while Save it runs.
+  const forms = useRef(new Map<string, FormHandle>());
+  const onForm = useCallback((id: string, handle: FormHandle | undefined) => {
+    if (handle) forms.current.set(id, handle);
+    else forms.current.delete(id);
+  }, []);
+  const asked = useRef<string | undefined>(undefined);
+  // Save it: the unsaved form is saved as its own Save does, and the Trade pressed opens once it is; a refusal stays on the form.
+  const saveIt = async (pressed: string) => {
+    const id = [...dirty.current].find((entry) => forms.current.has(entry));
+    if (id === undefined) return;
+    asked.current = pressed;
+    const saved = await forms.current.get(id)!.save().finally(() => {
+      asked.current = undefined;
+    });
+    if (!saved) return;
+    dirty.current.delete(id);
+    setRefused(undefined);
+    toggle(pressed);
+  };
+  // Discard it: what the open card holds is let go, and the Trade pressed opens.
+  const discardIt = (pressed: string) => {
+    dirty.current.clear();
+    setRefused(undefined);
+    toggle(pressed);
+  };
+  // Back to the holder: the refusal goes and focus returns to the unsaved form.
+  const backIt = () => {
+    setRefused(undefined);
+    const id = [...dirty.current].find((entry) => forms.current.has(entry));
+    if (id !== undefined) forms.current.get(id)!.focus();
+  };
+  const refuse = (pressed: string) => setRefused((current) => ({ pressed, count: (current?.count ?? 0) + 1 }));
+  // The Underlying of the open card's Trade, which the refusal names.
+  const holderName = (openId !== undefined && (trades.find((t) => t.tradeId === openId) ?? review.owed.find((t) => t.tradeId === openId))?.underlying) || '';
+  const refusalFor = (tradeId: string) => (refused?.pressed === tradeId ? { holder: holderName, count: refused.count, onSave: () => void saveIt(tradeId), onDiscard: () => discardIt(tradeId), onBack: backIt } : undefined);
   const toggle = (tradeId: string) => {
-    if (held) setRefused(true);
+    if (dirty.current.size > 0) refuse(tradeId);
     else {
       // A card opened by its header answers no earlier link.
       setGo({ tradeId: undefined, go: NO_GO });
@@ -404,8 +445,8 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
   // A day line's link opens the card and panel that resolve it (A161). Another panel of the open card is no departure, so it is allowed while the card holds drafts.
   const openCard: OpenCard = (tradeId, panel) => {
     if (tradeId !== openId) {
-      if (held) {
-        setRefused(true);
+      if (dirty.current.size > 0) {
+        refuse(tradeId);
         return;
       }
       void select(tradeId, true);
@@ -528,9 +569,10 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
                 onSaved={(result) => saved(result, shown?.opening ?? -1)}
                 onReflectionResolved={reflectionResolved}
                 onRefresh={() => refreshTrade(trade.tradeId)}
-                holdMessage={refused && trade.tradeId === openId}
+                refusal={refusalFor(trade.tradeId)}
                 pending={rereading}
                 onEntryDirty={onEntryDirty}
+                onForm={onForm}
               />
             ))}
           </ol>
@@ -550,11 +592,12 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
                 detail={trade.tradeId === openId ? owedDetail(shown?.detail) : undefined}
                 reveal={reveal.tradeId === trade.tradeId ? reveal.count : 0}
                 go={go.tradeId === trade.tradeId ? go.go : NO_GO}
-                holdMessage={refused && trade.tradeId === openId}
+                refusal={refusalFor(trade.tradeId)}
                 onToggle={() => toggle(trade.tradeId)}
                 onRetry={() => void select(trade.tradeId, true, true)}
                 onReflectionResolved={reflectionResolved}
                 onEntryDirty={onEntryDirty}
+                onForm={onForm}
               />
             ))}
           </ol>

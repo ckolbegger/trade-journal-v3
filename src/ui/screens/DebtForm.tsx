@@ -12,6 +12,7 @@ import { useRuntime } from '../runtime.tsx';
 import { fieldIssues } from './form-issues.tsx';
 import { describeJournalIssue, type FieldIssue } from './plan-issues.ts';
 import { REASON_TOO_LONG } from './position-change-issues.ts';
+import type { FormHandle } from './form-handle.ts';
 import { ReflectionPrompts, type Answers } from './ReflectionPrompts.tsx';
 
 // How the trader resolves a reflection owed: an Answer to the snapshot definition's prompts, or a Decline.
@@ -46,6 +47,8 @@ export interface DebtFormProps {
   readonly onCancel?: () => void;
   // Reports whether a value was entered (update deferral, D1 A5).
   readonly onDirtyChange?: (dirty: boolean) => void;
+  // Offers the form to the Review while it is open; undefined when it goes (W128).
+  readonly onHandle?: (handle: FormHandle | undefined) => void;
 }
 
 const OUTCOME: Record<ObligationOutcome['kind'], string> = { Entry: 'answered', Decline: 'declined', Debt: 'still owed' };
@@ -87,7 +90,7 @@ function SavedEntry({ definition, entry }: { readonly definition: EntryDefinitio
   );
 }
 
-export function DebtForm({ definition, binding, submit, onResolved, onCancel, onDirtyChange }: DebtFormProps) {
+export function DebtForm({ definition, binding, submit, onResolved, onCancel, onDirtyChange, onHandle }: DebtFormProps) {
   const [answers, setAnswers] = useState<Answers>({});
   const [resolved, setResolved] = useState<DebtResolved | undefined>();
   const [reason, setReason] = useState('');
@@ -122,8 +125,8 @@ export function DebtForm({ definition, binding, submit, onResolved, onCancel, on
   const [gone, setGone] = useState(false);
   // The last rejection named no prompt, so it is about the reflection as a whole.
   const [rejected, setRejected] = useState(false);
-  const send = async (resolution: DebtResolutionInput) => {
-    if (inFlight.current) return;
+  const send = async (resolution: DebtResolutionInput): Promise<boolean> => {
+    if (inFlight.current) return false;
     inFlight.current = true;
     setPending(true);
     setFailed(false);
@@ -133,7 +136,7 @@ export function DebtForm({ definition, binding, submit, onResolved, onCancel, on
     } catch {
       // The adapter threw: nothing was saved, the values stay, and the trader may try again.
       setFailed(true);
-      return;
+      return false;
     } finally {
       inFlight.current = false;
       setPending(false);
@@ -155,7 +158,20 @@ export function DebtForm({ definition, binding, submit, onResolved, onCancel, on
       setResolved(result);
       onResolved?.(result);
     }
+    return result.kind === 'Resolved';
   };
+  // The Review asks for the form's Answer, and for focus back in the form (W128).
+  const asked = useRef({ send, answers, blocked: pending || !writable });
+  useEffect(() => {
+    asked.current = { send, answers, blocked: pending || !writable };
+  });
+  useEffect(() => {
+    onHandle?.({
+      save: () => (asked.current.blocked ? Promise.resolve(false) : asked.current.send({ kind: 'Answer', answers: asked.current.answers })),
+      focus: () => formRef.current?.querySelector<HTMLElement>('input, textarea, select')?.focus(),
+    });
+    return () => onHandle?.(undefined);
+  }, [onHandle]);
   const { promptErrors, fieldError, describedBy } = fieldIssues(issues);
   if (resolved) {
     return (

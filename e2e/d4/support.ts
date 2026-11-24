@@ -248,7 +248,7 @@ export async function reachCard(page: Page, card: CardRef): Promise<Locator> {
   if ((await header.getAttribute('aria-expanded')) !== 'true') {
     await header.click();
     // Opening is refused while the open card holds unsaved work (A156): it says so, and stays open.
-    const hold = page.getByRole('status').filter({ hasText: /^Save or discard what you entered for / });
+    const hold = page.getByRole('status').filter({ hasText: /note isn't saved\./ });
     const outcome = async (): Promise<'opened' | 'refused' | 'waiting'> => {
       if ((await header.getAttribute('aria-expanded')) === 'true') return 'opened';
       return (await hold.count()) > 0 ? 'refused' : 'waiting';
@@ -266,7 +266,7 @@ export async function reachCard(page: Page, card: CardRef): Promise<Locator> {
 async function refusal(page: Page, card: CardRef, hold: Locator): Promise<Error> {
   const open = page.locator('li.review-card').filter({ has: page.getByRole('button', { name: /^Review /, expanded: true }) });
   const holderId = (await open.count()) > 0 ? await open.first().getAttribute('data-trade-id') : null;
-  const symbol = /entered for (.+?) to leave it/.exec((await hold.first().textContent()) ?? '')?.[1] ?? 'the open card';
+  const symbol = /^(.+?)'s note isn't saved/.exec((await hold.first().textContent()) ?? '')?.[1] ?? 'the open card';
   const holder = holderId === null ? symbol : (labelOfId.get(holderId) ?? `${symbol} (trade ${holderId})`);
   const target = typeof card === 'string' ? card : (card.label ?? `${card.symbol} (trade ${card.tradeId})`);
   return new Error(`Cannot reach ${target}'s card: ${holder}'s card holds unsaved work, so it stays open. Save or discard it first; the helper does neither.`);

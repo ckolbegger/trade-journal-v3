@@ -6,6 +6,8 @@ import { calculation, closedViaSale, signed } from '../figures.ts';
 import { money, rMultiple, tradeSummary } from '../format.ts';
 import { panelOf, plural, reflectionsStatus, type Go } from './ReviewCard.tsx';
 import { closedViaOption } from './option-disposition.ts';
+import type { FormRegister } from './form-handle.ts';
+import { Refusal, type RefusalProps } from './Refusal.tsx';
 import { ReviewReflections } from './ReviewReflections.tsx';
 
 // What the open owed card shows while its Trade is read, or when it could not be.
@@ -73,17 +75,18 @@ export interface OwedCardProps {
   readonly reveal: number;
   // Where a link into the Review sends this card (A161): its Reflections panel is the one it has to open.
   readonly go: Go;
-  // The trader tried to leave while the card holds an entered value (A156).
-  readonly holdMessage: boolean;
+  // The trader pressed this card's header while another card's form holds an entered value (A156, W128).
+  readonly refusal?: RefusalProps;
   readonly onToggle: () => void;
   // Reads the Trade again when it could not be read.
   readonly onRetry: () => void;
   readonly onReflectionResolved: (review: PostSaveReview) => void;
   readonly onEntryDirty: (id: string, dirty: boolean) => void;
+  readonly onForm: FormRegister;
 }
 
 // One Trade of the group after the walk (P20): a position card with a Reflections panel and no Action panel (D5R, section 9).
-export function OwedCard({ facade, trade, reviewDate, expanded, detail, reveal, go, holdMessage, onToggle, onRetry, onReflectionResolved, onEntryDirty }: OwedCardProps) {
+export function OwedCard({ facade, trade, reviewDate, expanded, detail, reveal, go, refusal, onToggle, onRetry, onReflectionResolved, onEntryDirty, onForm }: OwedCardProps) {
   const item = useRef<HTMLLIElement>(null);
   const header = useRef<HTMLButtonElement>(null);
   useEffect(() => {
@@ -100,7 +103,7 @@ export function OwedCard({ facade, trade, reviewDate, expanded, detail, reveal, 
           </button>
         </h3>
       </div>
-      {expanded && holdMessage && <p role="status">Save or discard what you entered for {trade.underlying} to leave it.</p>}
+      {refusal && <Refusal {...refusal} />}
       {expanded && detail === 'Loading' && <p role="status">Loading the Trade…</p>}
       {expanded && detail === 'Unavailable' && (
         <div role="alert" className="banner warning">
@@ -110,7 +113,7 @@ export function OwedCard({ facade, trade, reviewDate, expanded, detail, reveal, 
           </button>
         </div>
       )}
-      {expanded && typeof detail === 'object' && <OwedBody facade={facade} card={detail.card} progress={trade.progress} reviewDate={reviewDate} go={go} onReflectionResolved={onReflectionResolved} onEntryDirty={onEntryDirty} />}
+      {expanded && typeof detail === 'object' && <OwedBody facade={facade} card={detail.card} progress={trade.progress} reviewDate={reviewDate} go={go} onReflectionResolved={onReflectionResolved} onEntryDirty={onEntryDirty} onForm={onForm} />}
     </li>
   );
 }
@@ -123,9 +126,10 @@ interface OwedBodyProps {
   readonly go: Go;
   readonly onReflectionResolved: (review: PostSaveReview) => void;
   readonly onEntryDirty: (id: string, dirty: boolean) => void;
+  readonly onForm: FormRegister;
 }
 
-function OwedBody({ facade, card, progress, reviewDate, go, onReflectionResolved, onEntryDirty }: OwedBodyProps) {
+function OwedBody({ facade, card, progress, reviewDate, go, onReflectionResolved, onEntryDirty, onForm }: OwedBodyProps) {
   const uid = useId();
   const [open, setOpen] = useState(true);
   // A link to a card that is already open opens its Reflections panel again, if the trader has closed it, and takes focus (A161).
@@ -157,7 +161,7 @@ function OwedBody({ facade, card, progress, reviewDate, go, onReflectionResolved
           </button>
         </h4>
         <div id={`${uid}-Reflections`} hidden={!open}>
-          <ReviewReflections facade={facade} reviewDate={reviewDate} reflections={card.reflections} onReview={onReflectionResolved} onNoneRemaining={NOTHING_NEXT} onEntryDirty={onEntryDirty} />
+          <ReviewReflections facade={facade} reviewDate={reviewDate} reflections={card.reflections} onReview={onReflectionResolved} onNoneRemaining={NOTHING_NEXT} onEntryDirty={onEntryDirty} onForm={onForm} />
         </div>
       </div>
     </section>

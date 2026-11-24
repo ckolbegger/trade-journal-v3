@@ -6,6 +6,8 @@ import { plural, tradeName, tradeSummary } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
 import type { UiFacade } from '../../app/compose.ts';
 import { ActionForm, type SavedAction } from './ActionForm.tsx';
+import type { FormHandle, FormRegister } from './form-handle.ts';
+import { Refusal, type RefusalProps } from './Refusal.tsx';
 import { ReplayDrawer } from '../cockpit/drawers/replay.tsx';
 import { overlayWordsOf } from '../cockpit/replay/overlay.props.ts';
 import { ReplayOverlay } from '../cockpit/replay/overlay.tsx';
@@ -46,7 +48,6 @@ export interface Go {
   readonly count: number;
 }
 export const NO_GO: Go = { count: 0 };
-
 // "To do: 2 Marks, Reflection, Action", or "Done · Hold" once the card is done (W101): what the card's progress record still owes, in the day card's words.
 // The Action is the one the day summary's line for this Trade says was saved for the Review Date.
 function remainsText(progress: CardProgress, action: string | undefined, closeReview: boolean): string {
@@ -74,15 +75,17 @@ export interface ReviewCardProps {
   readonly onSaved: (saved: SavedAction) => void;
   readonly onReflectionResolved: (review: PostSaveReview) => void;
   readonly onRefresh: () => Promise<boolean>;
-  // The trader tried to leave while the card holds an entered value (A156).
-  readonly holdMessage: boolean;
+  // The trader pressed this card's header while another card's form holds an entered value (A156, W128).
+  readonly refusal?: RefusalProps;
   // The Review is being read again after a Mark save, so the Action cannot be saved yet.
   readonly pending: boolean;
   readonly onEntryDirty: EntryDirty;
+  // The Review's way into a form that holds unsaved values, by the id the form reports its values under (W128).
+  readonly onForm: FormRegister;
 }
 
 // One position of the Review: a collapsed header (Underlying, what remains, band, meter) over its content.
-export function ReviewCard({ facade, trade, line, expanded, detail, reveal, go, onToggle, onSaved, onReflectionResolved, onRefresh, holdMessage, pending, onEntryDirty }: ReviewCardProps) {
+export function ReviewCard({ facade, trade, line, expanded, detail, reveal, go, onToggle, onSaved, onReflectionResolved, onRefresh, refusal, pending, onEntryDirty, onForm }: ReviewCardProps) {
   const item = useRef<HTMLLIElement>(null);
   const header = useRef<HTMLButtonElement>(null);
   const { timeZone } = useRuntime();
@@ -144,7 +147,7 @@ export function ReviewCard({ facade, trade, line, expanded, detail, reveal, go, 
         {/* The open card's meter is the "Now" box's (U3): the header draws one only while the card is collapsed. */}
         {meter && !expanded && <Meter {...meter} />}
       </div>
-      {expanded && holdMessage && <p role="status">Save or discard what you entered for {tradeName(trade)} to leave it.</p>}
+      {refusal && <Refusal {...refusal} />}
       {expanded && detail === 'Loading' && <p role="status">Loading the Trade…</p>}
       {expanded && detail === 'Unavailable' && (
         <div role="alert" className="banner warning">
@@ -164,6 +167,7 @@ export function ReviewCard({ facade, trade, line, expanded, detail, reveal, go, 
           onRefresh={onRefresh}
           pending={pending}
           onEntryDirty={onEntryDirty}
+          onForm={onForm}
           meter={trade.meter}
         />
       )}
@@ -184,6 +188,7 @@ interface CardBodyProps {
   readonly onRefresh: () => Promise<boolean>;
   readonly pending: boolean;
   readonly onEntryDirty: EntryDirty;
+  readonly onForm: FormRegister;
   // The Trade's meter reading on the Review Date, from the walk: the "Now" box draws it.
   readonly meter: MeterReading | undefined;
 }
@@ -228,7 +233,7 @@ function panelHeaders(trade: DailyTradeReview, progress: CardProgress): Record<P
 }
 
 // The open card: its figures, then the three panels in the spec's work order (P36, A152), one open at a time.
-function CardBody({ facade, trade, progress, name, go, onSaved, onReflectionResolved, onRefresh, pending, onEntryDirty, meter }: CardBodyProps) {
+function CardBody({ facade, trade, progress, name, go, onSaved, onReflectionResolved, onRefresh, pending, onEntryDirty, onForm, meter }: CardBodyProps) {
   const uid = useId();
   const headers = panelHeaders(trade, progress);
   // The card's panels in work order: the Settlement panel is there only while a contract's settlement is due (decision 81).
@@ -328,6 +333,7 @@ function CardBody({ facade, trade, progress, name, go, onSaved, onReflectionReso
   // The Action form reports under its Trade, so the Review's unsaved state counts it with the Mark entries.
   const tradeId = trade.tradeId;
   const report = useCallback((dirty: boolean) => onEntryDirty(`action:${tradeId}`, dirty), [tradeId, onEntryDirty]);
+  const offerForm = useCallback((handle: FormHandle | undefined) => onForm(`action:${tradeId}`, handle), [tradeId, onForm]);
   // The Plan box's Risk and Reward are the At entry group's two figures: with the box showing the same two amounts, the group is left out (U2).
   // The group is measured from the actual fills, so it stays when they differ from the Plan.
   const planColumn = trade.replay?.planColumn;
@@ -395,7 +401,7 @@ function CardBody({ facade, trade, progress, name, go, onSaved, onReflectionReso
             </button>
           </h4>
           <div id={`${uid}-${name}`} hidden={open !== name}>
-            {name === 'Reflections' && <ReviewReflections facade={facade} reviewDate={trade.saveBinding.reviewDate} reflections={trade.reflections} onReview={onReflectionResolved} onNoneRemaining={finishPanel} onEntryDirty={onEntryDirty} />}
+            {name === 'Reflections' && <ReviewReflections facade={facade} reviewDate={trade.saveBinding.reviewDate} reflections={trade.reflections} onReview={onReflectionResolved} onNoneRemaining={finishPanel} onEntryDirty={onEntryDirty} onForm={onForm} />}
             {name === 'Settlement' && <SettlementPanel tradeId={trade.tradeId} items={trade.settlement} timeZone={timeZone ?? 'UTC'} />}
             {name === 'Action' && trade.replay && (
               <button ref={replayButton} type="button" className="pill secondary review-card-replay" onClick={openReplay}>
@@ -403,7 +409,7 @@ function CardBody({ facade, trade, progress, name, go, onSaved, onReflectionReso
               </button>
             )}
             {name === 'Action' && trade.decisions && listShown && <LastDecisions decisions={trade.decisions} />}
-            {name === 'Action' && <ActionForm facade={facade} form={trade.form} binding={trade.saveBinding} onSaved={onSaved} onRefresh={onRefresh} onDirtyChange={report} pending={pending} marksToGo={marksToGo} planCall={trade.planCall} replay={trade.replay} decidingOn={waitingOn} />}
+            {name === 'Action' && <ActionForm facade={facade} form={trade.form} binding={trade.saveBinding} onSaved={onSaved} onRefresh={onRefresh} onDirtyChange={report} pending={pending} marksToGo={marksToGo} planCall={trade.planCall} replay={trade.replay} decidingOn={waitingOn} onHandle={offerForm} />}
           </div>
         </div>
       ))}

@@ -5,6 +5,7 @@ import { DUE_TEXT } from '../due-text.ts';
 import { decimalMoney as price, localTime, shortDate } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
 import { DebtForm, type DebtSubmitResult, type DebtFormProps } from './DebtForm.tsx';
+import type { FormRegister } from './form-handle.ts';
 import { executionWhat, expirationLine } from './execution-line.ts';
 
 interface ReflectionsProps {
@@ -17,6 +18,7 @@ interface ReflectionsProps {
   // No reflection is left to resolve in the card: the host moves focus on.
   readonly onNoneRemaining: () => void;
   readonly onEntryDirty: (id: string, dirty: boolean) => void;
+  readonly onForm: FormRegister;
 }
 
 interface RowProps {
@@ -30,12 +32,14 @@ interface RowProps {
   readonly onClose: () => void;
   readonly onResolved: () => void;
   readonly onEntryDirty: (id: string, dirty: boolean) => void;
+  readonly onForm: FormRegister;
   readonly buttonRef: (button: HTMLButtonElement | null) => void;
 }
 
-function ReflectionRow({ reflection, timeZone, isOpen, resolved, blocked, submit, onOpen, onClose, onResolved, onEntryDirty, buttonRef }: RowProps) {
+function ReflectionRow({ reflection, timeZone, isOpen, resolved, blocked, submit, onOpen, onClose, onResolved, onEntryDirty, onForm, buttonRef }: RowProps) {
   const { debtId } = reflection;
   const dirty = useCallback((isDirty: boolean) => onEntryDirty(`debt:${debtId}`, isDirty), [debtId, onEntryDirty]);
+  const offer = useCallback((handle: Parameters<FormRegister>[1]) => onForm(`debt:${debtId}`, handle), [debtId, onForm]);
   const when = localTime(reflection.economicTime, timeZone);
   const row = useRef<HTMLLIElement>(null);
   const button = useRef<HTMLButtonElement | null>(null);
@@ -72,14 +76,14 @@ function ReflectionRow({ reflection, timeZone, isOpen, resolved, blocked, submit
           Reflect on {when}
         </button>
       )}
-      {(isOpen || resolved) && <DebtForm definition={reflection.definition} binding={reflection.saveBinding} submit={submit} onResolved={onResolved} onCancel={resolved ? undefined : onClose} onDirtyChange={dirty} />}
+      {(isOpen || resolved) && <DebtForm definition={reflection.definition} binding={reflection.saveBinding} submit={submit} onResolved={onResolved} onCancel={resolved ? undefined : onClose} onDirtyChange={dirty} onHandle={offer} />}
     </li>
   );
 }
 
 // The Trade's Outstanding reflections above its Action form (A71), each with its Position Change and when it is due.
 // One Debt form is open at a time; a resolved reflection stays in the card as the result rendered it.
-export function ReviewReflections({ facade, reviewDate, reflections, onReview, onNoneRemaining, onEntryDirty }: ReflectionsProps) {
+export function ReviewReflections({ facade, reviewDate, reflections, onReview, onNoneRemaining, onEntryDirty, onForm }: ReflectionsProps) {
   const { timeZone = 'UTC', report } = useRuntime();
   const [open, setOpen] = useState<string>();
   const [resolved, setResolved] = useState<ReadonlySet<string>>(new Set());
@@ -151,6 +155,7 @@ export function ReviewReflections({ facade, reviewDate, reflections, onReview, o
                 onClose={() => setOpen(undefined)}
                 onResolved={() => resolvedOne(reflection.debtId)}
                 onEntryDirty={onEntryDirty}
+                onForm={onForm}
                 buttonRef={(button) => (button ? buttons.current.set(reflection.debtId, button) : buttons.current.delete(reflection.debtId))}
               />
             ))}
