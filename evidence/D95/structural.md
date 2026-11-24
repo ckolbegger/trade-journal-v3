@@ -632,3 +632,7 @@ Report `evidence/D95/critic-3.md`. Overall PASS (C95.1, C95.2, C95.3, C95.4); 1 
 | critic-3 | 253,884 | 177 | 23.7 min | 1 moderate |
 
 Moderate 1: on a partly sold Trade the drawing's name, the collapsed header's meter and the Open list row's meter say "86% of the way to the Stop" (the shared meter's P&L share, T95.17 case 13, S12: the shared meter is not edited), while the label and line say 67% (Pressure). The third critic leaves a moderate defect: asked of the user (the gate cap).
+
+### T95.26-F2
+
+Commit `dc09ad2f`: `viewsOfRestored` restores then calls a new exported `viewsOfApp(port, app, expected)` (same checks); the test's views port keeps the app `smokeWithViews()` restored, and the Open rows, Review walk order and membership failure tests share it, reading only. File 44.29 s before, 16.59 s after (Open rows 12.3 → 6.7 s, walk 5.5 s → under 0.1 s, membership 16.7 s → under 0.1 s). Each changed test broken once and restored (tdd-log). The prepareRestore test is unchanged (a different path). 24 of 24 pass.
