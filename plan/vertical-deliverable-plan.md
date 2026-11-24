@@ -6,6 +6,8 @@
 
 **Plan location:** `plan/vertical-deliverable-plan.md` in worktree `Hy4-Flash`.
 
+**Phase 4 companion:** `plan/acceptance-evidence-matrix.md` maps every acceptance scenario to deliverable, task seam, TDD/structural check, mock-free integration, browser-critic flow, commands, expected durable-state proof and failure evidence.
+
 **Phases:** 1 (comprehension) and 2 (stack choice) complete. This is the Phase 3 draft; it is not frozen.
 
 ## Decision log
