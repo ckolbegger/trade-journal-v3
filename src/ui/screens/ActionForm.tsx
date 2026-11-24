@@ -139,14 +139,15 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
   const reading = useRef(false);
   const retry = useRef(false);
   const gone = useRef(false);
-  useEffect(
-    () => () => {
+  useEffect(() => {
+    // StrictMode replays cleanup then setup on a mounted form: only a real unmount leaves it gone.
+    gone.current = false;
+    return () => {
       gone.current = true;
       // A read in flight hands the Review the retry only if it fails.
       if (refreshOwed.current && !reading.current) leftSold.current?.();
-    },
-    [],
-  );
+    };
+  }, []);
   // The card is read again after a sale. What is owed stays owed until a read succeeds: a failed one is retried when the receipt is dismissed or the card is left.
   const readAfterSale = async () => {
     if (reading.current) return;

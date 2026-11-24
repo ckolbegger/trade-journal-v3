@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { StrictMode } from 'react';
 import { MemoryRouter } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { facadeDouble } from '../../../tests/support/facade-double.ts';
@@ -56,7 +57,7 @@ const callReplay = {
 const out = (role: 'Stop' | 'Target', n = 1): PlanCall => ({ call: 'Out', condition: { id: `${role.toLowerCase()}-${n}`, role, boundary: '47.00' } });
 const hold: PlanCall = { call: 'Hold' };
 
-function mount(over: Partial<ActionFormProps> = {}, facade: UiFacade = facadeDouble()) {
+function mount(over: Partial<ActionFormProps> = {}, facade: UiFacade = facadeDouble(), strict = false) {
   const props: ActionFormProps = {
     facade,
     form: { kind: 'New', viewState: {} },
@@ -66,13 +67,16 @@ function mount(over: Partial<ActionFormProps> = {}, facade: UiFacade = facadeDou
     onDirtyChange: () => undefined,
     ...over,
   };
-  const tree = (p: ActionFormProps) => (
-    <RuntimeContext.Provider value={{ writable: true, timeZone: 'America/New_York', report: () => undefined }}>
-      <MemoryRouter>
-        <ActionForm {...p} />
-      </MemoryRouter>
-    </RuntimeContext.Provider>
-  );
+  const tree = (p: ActionFormProps) => {
+    const form = (
+      <RuntimeContext.Provider value={{ writable: true, timeZone: 'America/New_York', report: () => undefined }}>
+        <MemoryRouter>
+          <ActionForm {...p} />
+        </MemoryRouter>
+      </RuntimeContext.Provider>
+    );
+    return strict ? <StrictMode>{form}</StrictMode> : form;
+  };
   const { rerender } = render(tree(props));
   return { facade, user: userEvent.setup(), form: screen.queryByRole('form', { name: 'Action' })!, again: (next: Partial<ActionFormProps>) => rerender(tree({ ...props, ...next })) };
 }
@@ -550,6 +554,34 @@ describe('A sale whose card read is still pending (T95.40-B2)', () => {
     settle(true);
     await new Promise((resolve) => setTimeout(resolve, 20));
     expect(onRefresh).toHaveBeenCalledTimes(1);
+    expect(onLeftSold).not.toHaveBeenCalled();
+  });
+});
+
+describe('A sale whose card read fails under StrictMode (T95.40-B3)', () => {
+  it('should retry in the card and not hand the read to the Review when the read fails after the receipt is dismissed', async () => {
+    const savedExit = { kind: 'Saved', action: { action: 'Exit', responses: [] } } as never;
+    const planExit = { positions: [{ instrument: { kind: 'Stock', symbol: 'XYZ' }, quantity: '100', conditions: [] }], heldPast: [] } as never;
+    let settle: (ok: boolean) => void = () => undefined;
+    const first = new Promise<boolean>((resolve) => {
+      settle = resolve;
+    });
+    const onRefresh = vi.fn().mockReturnValueOnce(first).mockResolvedValue(true);
+    const onLeftSold = vi.fn();
+    const facade = exitFormFacade();
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(partialExitResult() as never);
+    const { user } = mount({ form: savedExit, planExit, now: () => '2026-10-13T14:05:00Z', onRefresh, onLeftSold }, facade, true);
+    await user.click(screen.getByRole('button', { name: 'Record the sale' }));
+    const row = await screen.findByRole('group', { name: 'Execution 1' });
+    for (const [label, value] of [['Quantity', '30'], ['Price', '53.00'], ['Fee', '1.00']] as const) {
+      await user.clear(within(row).getByLabelText(label));
+      await user.type(within(row).getByLabelText(label), value);
+    }
+    await user.click(screen.getByRole('button', { name: 'Save exit' }));
+    await waitFor(() => expect(onRefresh).toHaveBeenCalledTimes(1));
+    await user.click(await screen.findByRole('button', { name: 'Back to the Review' }));
+    settle(false);
+    await waitFor(() => expect(onRefresh).toHaveBeenCalledTimes(2));
     expect(onLeftSold).not.toHaveBeenCalled();
   });
 });
