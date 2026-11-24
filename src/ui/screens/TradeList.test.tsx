@@ -124,7 +124,8 @@ describe('Open list', () => {
     renderOpen(ready);
     expect(await screen.findByRole('table', { name: 'Open Trades' })).toBeTruthy();
     // The benchmark's marks (T2.21): the Open list is complete, and the first one while Writable is interactive.
-    expect(marks('tj:open-list-ready')).toBe(1);
+    // The marks come from the list's effect, which can run just after the table is visible.
+    await waitFor(() => expect(marks('tj:open-list-ready')).toBe(1));
     expect(marks('tj:interactive')).toBe(1);
     cleanup();
 
@@ -133,7 +134,7 @@ describe('Open list', () => {
     renderOpen(empty);
     expect(await screen.findByText(/no open trades/i)).toBeTruthy();
     expect(screen.getByText(/recording an entry on a planned trade opens it/i)).toBeTruthy();
-    expect(marks('tj:open-list-ready')).toBe(2);
+    await waitFor(() => expect(marks('tj:open-list-ready')).toBe(2));
     expect(marks('tj:interactive')).toBe(1);
     fireEvent.click(screen.getByRole('button', { name: 'Show Planned Trades' }));
     expect(screen.getByRole('tab', { name: 'Planned' }).getAttribute('aria-selected')).toBe('true');
@@ -151,7 +152,7 @@ describe('Open list', () => {
     expect(await screen.findByText(/couldn’t load your open trades/i)).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
     expect(await screen.findByText(/no open trades/i)).toBeTruthy();
-    expect(marks('tj:open-list-ready')).toBe(3);
+    await waitFor(() => expect(marks('tj:open-list-ready')).toBe(3));
   });
 });
 
