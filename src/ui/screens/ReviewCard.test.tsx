@@ -2094,7 +2094,7 @@ describe('The card before its Marks (T95.20)', () => {
 describe('An Exit not carried out (T95.41)', () => {
   const exit = { reviewDate: '2026-10-09', action: 'Exit', reason: 'Take the money.' };
   const planExitOf = (quantity: string) => ({ positions: [{ instrument: symbol, quantity, conditions: [] }], heldPast: [] }) as DailyTradeReview['planExit'];
-  async function openExited(over: { readonly carry?: ReviewTradeItem['exitCarry']; readonly lastAction?: ReviewTradeItem['lastAction']; readonly toGo?: number; readonly form?: DailyTradeReview['form'] } = {}) {
+  async function openExited(over: { readonly carry?: ReviewTradeItem['exitCarry']; readonly lastAction?: ReviewTradeItem['lastAction']; readonly toGo?: number; readonly form?: DailyTradeReview['form']; readonly onDirtyChange?: (dirty: boolean) => void; readonly writable?: boolean } = {}) {
     const user = userEvent.setup();
     const progress = cardProgress(0, 0, { needed: over.toGo ?? 0, resolved: 0 });
     const exited = { ...item('t1', 'XYZ', { band: 'ExitNotCarriedOut', reasons: [{ code: 'ExitNotCarriedOut' }], lastAction: over.lastAction ?? exit, ...('carry' in over ? (over.carry && { exitCarry: over.carry }) : { exitCarry: { direction: 'Long' as const, held: Rational.of(2n) } }) }), progress };
@@ -2103,7 +2103,7 @@ describe('An Exit not carried out (T95.41)', () => {
     const facade = exitFormFacade();
     vi.mocked(facade.DailyReview.open).mockResolvedValue(review);
     vi.mocked(facade.DailyReview.getTrade).mockResolvedValue({ kind: 'Ready', reviewDate: '2026-10-12', cutoff: review.cutoff, trade });
-    renderWalk(facade);
+    renderWalk(facade, { ...(over.onDirtyChange && { onDirtyChange: over.onDirtyChange }), ...(over.writable !== undefined && { writable: over.writable }) });
     return { user, facade, card: await openTrade(user, 'XYZ') };
   }
 
@@ -2129,6 +2129,20 @@ describe('An Exit not carried out (T95.41)', () => {
     expect(within(card).queryByRole('group', { name: 'Execution 1' })).toBeNull();
     await user.click(within(within(day).getByRole('group', { name: 'Exit not carried out: XYZ' })).getByRole('button', { name: 'I sold: record it' }));
     expect(await within(card).findByRole('group', { name: 'Execution 1' })).toBeTruthy();
+  });
+
+  it('should keep the page unsaved when the sale form is opened over an Action draft', async () => {
+    const onDirtyChange = vi.fn();
+    const { user, card } = await openExited({ onDirtyChange });
+    await user.type(within(card).getByRole('textbox', { name: INTENT_LABEL }), 'Not yet.');
+    expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+    await user.click(within(within(card).getByRole('group', { name: 'Exit not carried out' })).getByRole('button', { name: 'I sold: record it' }));
+    expect(await within(card).findByRole('group', { name: 'Execution 1' })).toBeTruthy();
+    expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+    // Back to the Review shows the Action draft as it was.
+    await user.click(within(card).getByText('Back to the Review'));
+    expect(within(card).getByRole<HTMLTextAreaElement>('textbox', { name: INTENT_LABEL }).value).toBe('Not yet.');
+    expect(onDirtyChange).toHaveBeenLastCalledWith(true);
   });
 
   it('should hide the banner on Still holding, save nothing, and show the Action form as usual', async () => {
