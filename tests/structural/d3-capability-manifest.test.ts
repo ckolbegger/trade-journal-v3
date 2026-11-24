@@ -16,7 +16,7 @@ describe('D3 Installed Capability Manifest (S1 structural)', () => {
   })
 
   it('should add no new navigation entry and no Execution-as-operation or close control', () => {
-    expect(D3_NAVIGATION).toEqual(['Institutions & Accounts', 'Workspace', 'New Plan', 'Trades'])
+    expect(D3_NAVIGATION).toEqual(['Accounts', 'Status', 'New Plan', 'Trades'])
     for (const forbidden of ['Execution', 'Close', 'Mark', 'Review', 'Report', 'Backup', 'Restore']) {
       expect(D3_NAVIGATION.some(n => n.includes(forbidden))).toBe(false)
     }

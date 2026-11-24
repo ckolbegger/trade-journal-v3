@@ -19,7 +19,7 @@ describe('D2 Installed Capability Manifest (S1 structural)', () => {
   })
 
   it('should add New Plan and Trades to navigation and no later capability', () => {
-    expect(D2_NAVIGATION).toEqual(['Institutions & Accounts', 'Workspace', 'New Plan', 'Trades'])
+    expect(D2_NAVIGATION).toEqual(['Accounts', 'Status', 'New Plan', 'Trades'])
     for (const forbidden of ['Execution', 'Mark', 'Review', 'Report', 'Backup', 'Restore']) {
       expect(D2_NAVIGATION.some(n => n.includes(forbidden))).toBe(false)
     }

@@ -8,6 +8,7 @@ import { openDb } from '../persistence/db'
 import { queryOpenTrades, type StoredOpenTrade } from '../domain/open-views'
 import { recordOpeningPositionChange } from './position-controller'
 import { formatIssues } from './issue-copy'
+import { requestDurability } from '../domain/workspace'
 import type { ReflectionDisposition } from '../domain/position-change-reflection'
 
 const initial: AppState = {
@@ -17,7 +18,7 @@ const initial: AppState = {
 const emptyDraft: PlanDraft = {
   accountId: '', underlying: '', quantity: '', entry: '', stop: '', target: '', thesis: '', invalidation: '',
 }
-type Screen = 'accounts' | 'new-plan' | 'trades'
+type Screen = 'accounts' | 'status' | 'new-plan' | 'trades'
 
 type ExecutionDraft = { instrument: string; quantity: string; price: string; fee: string; economicTime: string }
 const emptyExecution = (): ExecutionDraft => ({
@@ -68,6 +69,7 @@ export function App() {
   const [executingId, setExecutingId] = useState<string | null>(null)
   const [positionForm, setPositionForm] = useState<PositionForm>(emptyPositionForm())
   const [positionError, setPositionError] = useState('')
+  const [durabilityMessage, setDurabilityMessage] = useState('')
 
   useEffect(() => {
     void establish().then(s => {
@@ -174,8 +176,8 @@ export function App() {
         <header>
           <h1>Trade Journal V3</h1>
           <nav aria-label="Primary">
-            <button type="button" aria-current={screen === 'accounts' ? 'page' : undefined} onClick={() => setScreen('accounts')}>Institutions &amp; Accounts</button>
-            <button type="button">Workspace</button>
+            <button type="button" aria-current={screen === 'accounts' ? 'page' : undefined} onClick={() => setScreen('accounts')}>Accounts</button>
+            <button type="button" aria-current={screen === 'status' ? 'page' : undefined} onClick={() => setScreen('status')}>Status</button>
             <button type="button" aria-current={screen === 'new-plan' ? 'page' : undefined} onClick={() => setScreen('new-plan')}>New Plan</button>
             <button type="button" aria-current={screen === 'trades' ? 'page' : undefined} onClick={() => { void onOpenTrades() }}>Trades</button>
           </nav>
@@ -206,8 +208,31 @@ export function App() {
                   </form>
                   <section aria-label="Institutions" className="card"><h2>Institutions</h2><ul>{state.institutions.map(i => <li key={i.id}>{i.label}</li>)}</ul></section>
                   <section aria-label="Accounts" className="card"><h2>Accounts</h2><ul>{state.accounts.map(a => <li key={a.id}>{a.label}</li>)}</ul></section>
-                  <section aria-label="Workspace" className="card"><h2>Workspace</h2><p>Storage protection: {state.protection || 'checking…'}</p></section>
                 </>
+              )}
+
+              {screen === 'status' && (
+                <section aria-label="Workspace status" className="card">
+                  <p className="section-label">Workspace status</p>
+                  <h2>Status</h2>
+                  <p>Runtime Readiness: {state.readiness.outcome}</p>
+                  <p>Storage protection: {state.readiness.protection.kind}</p>
+                  {state.readiness.failedChecks.length > 0 && (
+                    <p role="alert">Checks not passing: {state.readiness.failedChecks.join(', ')}</p>
+                  )}
+                  {state.readiness.protection.kind !== 'Protected' && (
+                    <>
+                      <p className="muted">This browser may clear journal data. Download a backup and keep a copy elsewhere; backup is not yet available in this build.</p>
+                      <button type="button" onClick={() => setDurabilityMessage(
+                        requestDurability(state.readiness.protection) === 'AlreadyProtected'
+                          ? 'Storage is already protected.'
+                          : 'This browser does not offer a stronger protection request.',
+                      )}>Request stronger storage protection</button>
+                    </>
+                  )}
+                  {durabilityMessage && <p role="status">{durabilityMessage}</p>}
+                  <p className="muted">Journal data stays on this device.</p>
+                </section>
               )}
 
               {screen === 'new-plan' && (

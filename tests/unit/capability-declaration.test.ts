@@ -7,11 +7,11 @@ describe('D1 installed capability declaration', () => {
   })
 
   it('should omit every later capability from navigation', () => {
-    expect(navigationFor()).toEqual(['Institutions & Accounts', 'Workspace'])
+    expect(navigationFor()).toEqual(['Accounts', 'Status', 'New Plan', 'Trades'])
   })
 
   it('should never return a domain Unavailable result for an undelivered capability', () => {
-    for (const label of ['Plan', 'Trade', 'Journal', 'Mark', 'Report', 'Backup', 'Restore']) {
+    for (const label of ['Journal', 'Mark', 'Report', 'Backup', 'Restore', 'Execution', 'Close']) {
       expect(navigationFor()).not.toContain(label)
     }
   })

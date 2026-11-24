@@ -14,8 +14,11 @@ test('navigation declares only installed capabilities', async ({ page }) => {
   const nav = await page.locator('nav[aria-label="Primary"]').innerText()
   // D1 capabilities remain installed; D2 adds New Plan and Trades. Assert the
   // exact installed set and that no later capability appears.
-  for (const entry of ['Institutions & Accounts', 'Workspace', 'New Plan', 'Trades']) {
+  for (const entry of ['Accounts', 'Status', 'New Plan', 'Trades']) {
     expect(nav).toContain(entry)
+  }
+  for (const oldLabel of ['Institutions & Accounts', 'Workspace']) {
+    expect(nav).not.toContain(oldLabel)
   }
   for (const forbidden of ['Execution', 'Mark', 'Review', 'Report', 'Backup', 'Restore']) {
     expect(nav).not.toContain(forbidden)
@@ -32,6 +35,45 @@ test('a trader can create an institution and account through the UI', async ({ p
   await page.getByRole('button', { name: 'Add account' }).click()
   await expect(page.getByRole('region', { name: 'Accounts' }).getByText('Main')).toBeVisible()
   await expect(page.locator('main')).toHaveAttribute('data-view', 'ready')
+})
+
+test('Status navigation opens a real Workspace view with a durability action', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.locator('main')).toHaveAttribute('data-view', /^(empty|ready)$/)
+  await page.getByRole('button', { name: 'Status' }).click()
+  const status = page.getByRole('region', { name: 'Workspace status' })
+  await expect(status).toBeVisible()
+  await expect(status).toContainText('Runtime Readiness: Writable')
+  await expect(status).toContainText('may clear journal data')
+  const before = await page.evaluate(async () => {
+    const db = await new Promise<IDBDatabase>((resolve, reject) => {
+      const request = indexedDB.open('tjv3')
+      request.onsuccess = () => resolve(request.result)
+      request.onerror = () => reject(request.error)
+    })
+    return await new Promise<number>((resolve, reject) => {
+      const request = db.transaction('institutions').objectStore('institutions').count()
+      request.onsuccess = () => resolve(request.result)
+      request.onerror = () => reject(request.error)
+    })
+  })
+  await status.getByRole('button', { name: 'Request stronger storage protection' }).click()
+  await expect(status.getByRole('status')).toContainText('does not offer')
+  const after = await page.evaluate(async () => {
+    const db = await new Promise<IDBDatabase>((resolve, reject) => {
+      const request = indexedDB.open('tjv3')
+      request.onsuccess = () => resolve(request.result)
+      request.onerror = () => reject(request.error)
+    })
+    return await new Promise<number>((resolve, reject) => {
+      const request = db.transaction('institutions').objectStore('institutions').count()
+      request.onsuccess = () => resolve(request.result)
+      request.onerror = () => reject(request.error)
+    })
+  })
+  expect(after).toBe(before)
+  await page.getByRole('button', { name: 'Accounts' }).click()
+  await expect(page.getByLabel('Institution name')).toBeVisible()
 })
 
 test('responsive layout switches on live resize without reload', async ({ page }) => {

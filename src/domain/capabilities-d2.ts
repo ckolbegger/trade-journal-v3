@@ -12,4 +12,4 @@ export const D2_CAPABILITIES = [
   'Journal.getDefinitions',
 ] as const
 
-export const D2_NAVIGATION = ['Institutions & Accounts', 'Workspace', 'New Plan', 'Trades'] as const
+export const D2_NAVIGATION = ['Accounts', 'Status', 'New Plan', 'Trades'] as const

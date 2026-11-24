@@ -12,4 +12,4 @@ export const D3_CAPABILITIES = [
 ] as const
 
 // Add Execution is an action on a Planned detail, not a navigation entry.
-export const D3_NAVIGATION = ['Institutions & Accounts', 'Workspace', 'New Plan', 'Trades'] as const
+export const D3_NAVIGATION = ['Accounts', 'Status', 'New Plan', 'Trades'] as const
