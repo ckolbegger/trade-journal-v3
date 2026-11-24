@@ -783,3 +783,5 @@ ocr of T95.33-B1, T95.33-B2 (session dfe0f83c): 3 files, 1 finding, Valid: **T95
 Commit `dbdfa898`: the Action radio also sets `chose` on click (Space on a checked radio fires a click). Red "expected [] to deeply equal [ 'Hold' ]", green; ActionForm.test 20 passed.
 
 ocr of T95.33-B3 (session c1613295): 2 files, 0 findings. `evidence/D95/ocr/T95.33-B3-dbdfa898.json`. Next: run `t95.33-action-form` (browser-auto d485fdbe).
+
+Run `t95.33-action-form` (browser-auto d485fdbe, full tier): unit 2973, integration 329, browser 127, 79, 55 and 130 (4 skipped), checks 14 of 14. Passed. T95.33 done.
