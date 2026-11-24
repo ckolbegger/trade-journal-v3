@@ -1,0 +1,156 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 6 selected item(s).",
+  "summary": {
+    "files_reviewed": 6,
+    "comments": 1,
+    "total_tokens": 156762,
+    "input_tokens": 155600,
+    "output_tokens": 1162,
+    "cache_read_tokens": 26880,
+    "elapsed": "49s"
+  },
+  "tool_calls": {
+    "total": 22,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 8,
+      "file_read": 13
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/review-attention.ts",
+      "content": "The Pressure label is still gated by the meter's P\u0026L share, which is absent at total-P\u0026L break-even. A partial sale can realize $200 while the remaining 100 shares (entry $50, Stop $47, Mark $48) lose $200: Pressure is 67% toward Stop, but this condition returns no label or accessible description. Derive label availability from the Pressure/band rather than `now.value.share`, and add a regression case with a valid Pressure and a meter value without a share.",
+      "existing_code": "  if (now?.kind === 'Value' \u0026\u0026 now.value.share \u0026\u0026 pressure) {",
+      "start_line": 40,
+      "end_line": 40,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Daily review pressure labels and attention behavior",
+      "files": [
+        "e2e/d95/pressure-label.spec.ts",
+        "src/coordinators/daily-review/meter.test.ts",
+        "src/ui/screens/ReviewCards.test.tsx",
+        "src/ui/screens/review-attention.test.ts",
+        "src/ui/screens/review-attention.ts",
+        "tests/support/replay-series-stack.ts"
+      ]
+    }
+  ],
+  "session_id": "fe810424-5149-48fa-9fca-f3b49ce3c39e",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "fe810424-5149-48fa-9fca-f3b49ce3c39e",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "21656a1a",
+      "resolved_base": "c6f5f752763b8c5a34b31f02b90d858c573fd47e",
+      "resolved_head": "21656a1a4b7d39fd0dfc4cdab92587aceff1df9d",
+      "exact_range": "c6f5f752763b8c5a34b31f02b90d858c573fd47e..21656a1a4b7d39fd0dfc4cdab92587aceff1df9d",
+      "source_artifact_sha256": "07cbeb4235e5dffaaad6e7f855766d2b0780b2631dc9b974fc70c2b18ce6a610"
+    },
+    "execution": {
+      "ocr_version": "v1.14.2",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "06129f7bc0959665459bced5dd2b2fe42e6eefa20b943b5bcb22e15d914c46d2",
+          "path": "src/ui/screens/ReviewCards.test.tsx",
+          "fingerprint": "27f7002fd29d907c7043fd50635b26acbea7c23ee05f812d6101415030c9b556"
+        },
+        {
+          "item_id": "426cbca5cd9775e523071e54ffd418bdb89335823d64829b92e3e9a1fa4f4ac5",
+          "path": "src/ui/screens/review-attention.test.ts",
+          "fingerprint": "a3122dd8fe966374a3443d8a929c21bd4c71a108160d6bbfd2d4e7a0f72f56c6"
+        },
+        {
+          "item_id": "5ee14afc5ed4f81e9e986dc0193e7a09ec1f9124a2060aed5e5fe510724365fd",
+          "path": "tests/support/replay-series-stack.ts",
+          "fingerprint": "505c34c8daaba2873dc47c358d25bbea0db69c5e1c3cee57eaf9e0a32163ed72"
+        },
+        {
+          "item_id": "6c4cc8015b3f916d6301b317630fa7d30fddbf47de85645f85b2f3b1830b15fe",
+          "path": "src/ui/screens/review-attention.ts",
+          "fingerprint": "6e5c5a38a9a8463161cc29a838556d1e4d8110b3a4432c20c7317640e52a7d48"
+        },
+        {
+          "item_id": "81199aa2be44b50e7ed38fe21bca08f8e0562cb53a4b1b1e0d27458526ad5890",
+          "path": "e2e/d95/pressure-label.spec.ts",
+          "fingerprint": "76c294301008fc2512eb6b2d66980f6a0d3f259ddc21b6d745e211a55a3b9ac0"
+        },
+        {
+          "item_id": "8633dface08223127116d7f8e5028d52b81d9130753f225b9613ac7d4ed1f3ba",
+          "path": "src/coordinators/daily-review/meter.test.ts",
+          "fingerprint": "d04e5d7a72c20cc27a47dfabc40a399862fc68ad99a9c1d91aa7f38eefb03b86"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "06129f7bc0959665459bced5dd2b2fe42e6eefa20b943b5bcb22e15d914c46d2",
+          "path": "src/ui/screens/ReviewCards.test.tsx",
+          "fingerprint": "27f7002fd29d907c7043fd50635b26acbea7c23ee05f812d6101415030c9b556"
+        },
+        {
+          "item_id": "426cbca5cd9775e523071e54ffd418bdb89335823d64829b92e3e9a1fa4f4ac5",
+          "path": "src/ui/screens/review-attention.test.ts",
+          "fingerprint": "a3122dd8fe966374a3443d8a929c21bd4c71a108160d6bbfd2d4e7a0f72f56c6"
+        },
+        {
+          "item_id": "5ee14afc5ed4f81e9e986dc0193e7a09ec1f9124a2060aed5e5fe510724365fd",
+          "path": "tests/support/replay-series-stack.ts",
+          "fingerprint": "505c34c8daaba2873dc47c358d25bbea0db69c5e1c3cee57eaf9e0a32163ed72"
+        },
+        {
+          "item_id": "6c4cc8015b3f916d6301b317630fa7d30fddbf47de85645f85b2f3b1830b15fe",
+          "path": "src/ui/screens/review-attention.ts",
+          "fingerprint": "6e5c5a38a9a8463161cc29a838556d1e4d8110b3a4432c20c7317640e52a7d48"
+        },
+        {
+          "item_id": "81199aa2be44b50e7ed38fe21bca08f8e0562cb53a4b1b1e0d27458526ad5890",
+          "path": "e2e/d95/pressure-label.spec.ts",
+          "fingerprint": "76c294301008fc2512eb6b2d66980f6a0d3f259ddc21b6d745e211a55a3b9ac0"
+        },
+        {
+          "item_id": "8633dface08223127116d7f8e5028d52b81d9130753f225b9613ac7d4ed1f3ba",
+          "path": "src/coordinators/daily-review/meter.test.ts",
+          "fingerprint": "d04e5d7a72c20cc27a47dfabc40a399862fc68ad99a9c1d91aa7f38eefb03b86"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "84783694e20bfc587ac4b7c61b7de8b0583e1030c5874a9b1d98b0d6c910b5ba",
+          "path": "evidence/D95/tdd-log/T95.26-B3.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 49463
+  }
+}

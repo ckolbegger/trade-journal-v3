@@ -604,3 +604,5 @@ The user (2026-11-23): fix T95.26-B3 and T95.26-B4; T95.26-B5 (the unavailable o
 ### T95.26-B3
 
 Commit `21656a1a`: `describedLabelsOf` (src/ui/screens/review-attention.ts) words the label percent from the Trade's `basis.share` (the spec's Pressure, the figure the line already shows) instead of the meter's P&L share; the coordinator was already right and the attention order already sorts on `basis.share`. AXIO 67% to Stop, BREN 58% to Target, DALE 61%. Red (unit: "86% to Stop" vs "67% to Stop"), green; browser `e2e/d95/pressure-label.spec.ts` at 1280 failed on the old code, passed twice. First-run pass flagged: the coordinator case (the coordinator was already right; mutation in attention.ts failed it). `tests/support/replay-series-stack.ts` no longer sends an exercise intent for a stock plan.
+
+ocr of T95.26-B3 (session fe810424): 6 files, 1 finding, Valid. `evidence/D95/ocr/T95.26-B3-21656a1a.json`. **T95.26-B6** (`review-attention.ts:40`): the label is still gated on the meter's share, which is absent when total P&L is exactly zero, so a partly sold Trade with a valid Pressure gets no label.
