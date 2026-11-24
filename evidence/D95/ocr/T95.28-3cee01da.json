@@ -1,0 +1,812 @@
+{
+  "status": "partial",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review partially complete: 5 finding(s); 5 of 48 selected item(s) failed.",
+  "summary": {
+    "files_reviewed": 48,
+    "comments": 5,
+    "total_tokens": 939410,
+    "input_tokens": 930959,
+    "output_tokens": 8451,
+    "cache_read_tokens": 134912,
+    "elapsed": "1m31s"
+  },
+  "tool_calls": {
+    "total": 122,
+    "by_tool": {
+      "code_comment": 5,
+      "code_search": 23,
+      "file_find": 1,
+      "file_read": 86,
+      "file_read_diff": 7
+    },
+    "failure": 1,
+    "failure_by_tool": {
+      "file_read": 1
+    },
+    "failure_details": [
+      {
+        "tool_call_number": 45,
+        "tool_name": "file_read",
+        "file_path": "src/coordinators/trade-workflows/record-position-change-options.test.ts,src/coordinators/trade-workflows/record-position-change.test.ts,src/ui/screens/ActionForm.tsx,tests/support/position-change-form-facade.ts",
+        "arguments": "{\"file_path\": \"src/modules/journal/manifest.ts\", \"start_line\": 440, \"end_line\": 550}",
+        "error": "file \"src/modules/journal/manifest.ts\" has only 222 lines, requested range 440-550"
+      }
+    ]
+  },
+  "comments": [
+    {
+      "path": "src/coordinators/daily-review/save.test.ts",
+      "content": "Add a positive regression case for saving Exit with omitted/blank Intent, including the UI path. Removing Exit from the rejection loop does not verify the new behavior: `ActionForm.tsx` still uses `action !== 'Hold'` to require Intent and blocks Exit submissions, while `ReviewCard.test.tsx` still explicitly expects that rejection. Consequently these updated tests can pass while users cannot save Exit without a reason, contrary to manifest 6's requirement. Update those UI expectations and validation alongside the positive case.",
+      "existing_code": "    for (const action of ['Roll', 'Adjust'] as const) {",
+      "start_line": 133,
+      "end_line": 133,
+      "category": "test",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/ActionForm.tsx",
+      "content": "The form adopts the v6 “Why?” prompt, but still computes `required` as `action !== 'Hold'`. Selecting Exit therefore labels the reason as required and blocks submission when it is blank, even though v6 requires a reason only for Roll and Adjust. Update the client-side required condition to match the new manifest and add a test that an Exit with no reason reaches save.",
+      "existing_code": "const { intent: INTENT, earlierIntent: EARLIER_INTENT, conviction: CONVICTION, considered: CONSIDERED, note: NOTE } = DAILY_TRADE_REVIEW_PROMPTS;",
+      "start_line": 68,
+      "end_line": 68,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/app/bench-generator.ts",
+      "content": "Switching the generated definitions to v6 makes the Close Review key lesson required, but `closeReviewAnswers()` still supplies it only when `n` is even and `later` is false. `journalOf()` therefore emits completed entries against the v6 definition with an Unanswered required lesson (including every deferred-and-answered Close Review). Update the answer generator to always include a key lesson for completed Close Reviews so the benchmark artifact contains records that the production save path would accept.",
+      "existing_code": "  const journalSeed = prepareJournalSeed([], [], D6_JOURNAL_MANIFEST, { next: () =\u003e `jdef-${pad(++definitionNumber, 3)}` });",
+      "start_line": 407,
+      "end_line": 407,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/coordinators/workspace/backup.ts",
+      "content": "Manifest detection and export use separate snapshots, but the binding returned by readSnapshot is discarded. If another tab initializes a version-5 Workspace after this read and before exporter.run opens its snapshot, the backup contains manifest-6 forms while declaring Journal seed version 5. The exporter's binding check only uses request.expectedBinding, which may be absent, so it does not protect this read. Derive the version within the export snapshot, or retain the detection binding and validate it against the export snapshot (retrying or returning Conflict on a change). Add a regression test that seeds between detection and export.",
+      "existing_code": "      const stored = inspection.kind === 'KnownWorkspace' ? await storedJournalSeed(deps.persistence) : undefined;\n      const seeds = stored === undefined ? tabled : { ...tabled, journal: stored };",
+      "start_line": 211,
+      "end_line": 212,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/coordinators/workspace/migration.ts",
+      "content": "Include revised Entry Types in the migration seed receipt as well as newly created types. For a schema-5 or schema-6 Workspace already seeded with Journal manifest 5, this call adds the three definition revisions, but the returned `seeds.journal` still uses only `journalSeed.types`, which is empty in that case. Initialization consequently reports manifest 6 with no additions despite changing all three forms. Derive the receipt keys from the union of new types and revised definitions (deduplicated), matching the normal-start receipt.",
+      "existing_code": "    D6_JOURNAL_MANIFEST,",
+      "start_line": 4,
+      "end_line": 4,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Responsive accessibility and runtime end-to-end tests",
+      "files": [
+        "e2e/d4/responsive-a11y.spec.ts",
+        "e2e/d4/runtime-failure.spec.ts",
+        "e2e/d4/support.ts",
+        "e2e/d5r/responsive-a11y.spec.ts"
+      ]
+    },
+    {
+      "label": "Benchmark generation and execution",
+      "files": [
+        "src/app/bench-generator.ts",
+        "tools/bench-run.ts"
+      ]
+    },
+    {
+      "label": "Daily review prompts, saving, and review UI",
+      "files": [
+        "src/coordinators/daily-review/card-kinds.test.ts",
+        "src/coordinators/daily-review/owed-save.test.ts",
+        "src/coordinators/daily-review/save.test.ts",
+        "src/domain/daily-trade-review-prompts.ts",
+        "src/ui/screens/ReviewCard.test.tsx",
+        "tests/support/review-fixture.ts"
+      ]
+    },
+    {
+      "label": "Trade views and replay fixtures",
+      "files": [
+        "src/coordinators/trade-views/closed-views.test.ts",
+        "src/coordinators/trade-views/option-views.test.ts",
+        "src/coordinators/trade-views/replay-trade.test.ts",
+        "tests/support/closed-trade-review-fixture.ts",
+        "tests/support/replay-series-stack.ts"
+      ]
+    },
+    {
+      "label": "Position change workflows and action form",
+      "files": [
+        "src/coordinators/trade-workflows/record-position-change-options.test.ts",
+        "src/coordinators/trade-workflows/record-position-change.test.ts",
+        "src/ui/screens/ActionForm.tsx",
+        "tests/support/position-change-form-facade.ts"
+      ]
+    },
+    {
+      "label": "Workspace migration, seed, backup, and restore",
+      "files": [
+        "src/coordinators/workspace/backup.ts",
+        "src/coordinators/workspace/migration.test.ts",
+        "src/coordinators/workspace/migration.ts",
+        "src/coordinators/workspace/restore.test.ts",
+        "src/coordinators/workspace/restore.ts",
+        "src/coordinators/workspace/seed-6.test.ts",
+        "src/coordinators/workspace/workspace.test.ts",
+        "src/coordinators/workspace/workspace.ts"
+      ]
+    },
+    {
+      "label": "Journal manifest version and module integration",
+      "files": [
+        "src/modules/journal/index.ts",
+        "src/modules/journal/journal.ts",
+        "src/modules/journal/manifest-6.test.ts",
+        "src/modules/journal/manifest.ts"
+      ]
+    },
+    {
+      "label": "D2 integration migration, seed, and rejection coverage",
+      "files": [
+        "tests/integration/d2/migration.test.ts",
+        "tests/integration/d2/rejections.test.ts",
+        "tests/integration/d2/seed.test.ts"
+      ]
+    },
+    {
+      "label": "D4 and D5 integration migration and validation",
+      "files": [
+        "tests/integration/d4/migration.test.ts",
+        "tests/integration/d4/seed.test.ts",
+        "tests/integration/d5/migration.test.ts",
+        "tests/integration/d5/rejections.test.ts",
+        "tests/integration/d5/seed.test.ts"
+      ]
+    },
+    {
+      "label": "D6 integration migration, seed, and review coverage",
+      "files": [
+        "tests/integration/d6/migration.test.ts",
+        "tests/integration/d6/review.test.ts",
+        "tests/integration/d6/seed.test.ts",
+        "tests/integration/d6/support.ts"
+      ]
+    },
+    {
+      "label": "D8 first-run, round-trip, and safety integration",
+      "files": [
+        "tests/integration/d8/first-run.test.ts",
+        "tests/integration/d8/round-trip.test.ts",
+        "tests/integration/d8/safety.test.ts"
+      ]
+    }
+  ],
+  "session_id": "26d354ec-0758-451e-b839-76d9ce9af3ec",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "26d354ec-0758-451e-b839-76d9ce9af3ec",
+    "operation": "review",
+    "terminal_state": "partial",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "3cee01da",
+      "resolved_base": "0a14e686cae01289c22962b1cc05eb8df3219866",
+      "resolved_head": "3cee01da5d7cee19491d45f6a3b1bdee2395cfed",
+      "exact_range": "0a14e686cae01289c22962b1cc05eb8df3219866..3cee01da5d7cee19491d45f6a3b1bdee2395cfed",
+      "source_artifact_sha256": "40ec89993fa6cc020bcb19dc680d31f68c5eb9da9ea08ee194661d6ee2851966"
+    },
+    "execution": {
+      "ocr_version": "v1.14.2",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "04c2d27c147e833f1bf50cbfd198f6a6a352da1bb91b7562e4cacf4a5e1d9aa6",
+          "path": "tests/integration/d8/first-run.test.ts",
+          "fingerprint": "d339ff0df56a70739d6092b498a4e0f2b9c9b96a48f0f25d196bb3d845a878ef"
+        },
+        {
+          "item_id": "050676a7d9001ad82b5c4977cb7dbddf98401aad9cbfca57375fd6c0177af8d7",
+          "path": "tools/bench-run.ts",
+          "fingerprint": "19a6732eb34ed0ae5db2b6877d1455508cde3ad4e1fe261f4af3ce1316727194"
+        },
+        {
+          "item_id": "0a3a62aa304991db7d1b38da918657722368065c0e3d2aaf370fd2bc16a6ffdf",
+          "path": "src/coordinators/workspace/restore.ts",
+          "fingerprint": "23ce440b0306b9535af0c65a42346e5fb0a4a607bc1974b088c30684d976e031"
+        },
+        {
+          "item_id": "0c6dfb382f1e5dd4970da6c721a3a6031480ea4e665cf73df0bdb5120f824052",
+          "path": "src/coordinators/workspace/backup.ts",
+          "fingerprint": "68f28eb79924062ff16f4fa653ce7eac6ed6da40e10090693f13762eade23ff8"
+        },
+        {
+          "item_id": "0f4aa84758c10defc83e15772fff0753dc16e94eaf609bc7de67c6ee942fd4ba",
+          "path": "e2e/d5r/responsive-a11y.spec.ts",
+          "fingerprint": "7567c539746251b94773ef25cb77b719c761c383c5c6b1506b670c88369a7e75"
+        },
+        {
+          "item_id": "1084d8ac89fd454da9e0373df7f2721164a123db93f8b00b0eb5f92acbdcf093",
+          "path": "tests/integration/d8/round-trip.test.ts",
+          "fingerprint": "a7ad24fd8cc1f263b32d7a79f266a8e64f55b3534d64f62bd0b66dea718e8c39"
+        },
+        {
+          "item_id": "1190633fe0e7c77538e88f410a5cf19e762f9a95eccb1b7ea13d371a3387ede2",
+          "path": "src/coordinators/daily-review/owed-save.test.ts",
+          "fingerprint": "8d244c5f6abf13dc1da47ae79621e1482b83c6a68badbb3cef08b9b4b4714492"
+        },
+        {
+          "item_id": "1cd4b927b8c58c8513dd4947971e640ee676f66a0693b882176cc745a5f58ab9",
+          "path": "src/coordinators/workspace/migration.ts",
+          "fingerprint": "afcf021fc73e746504b688a02d582c83ca8baf7333cbaf8d7b45cb7133b26a38"
+        },
+        {
+          "item_id": "1d45db421e94e4694f6f3250c8a059de25ae8ed03b5c669cf5f50e18144d7d03",
+          "path": "src/coordinators/trade-views/replay-trade.test.ts",
+          "fingerprint": "b7ea09c85cd028fa44a0eadbc36a641f178660e95295a480041978bb964b76a9"
+        },
+        {
+          "item_id": "2050c0dcb57f7604bd25d673c72a1f5e261f0fc2e89eba3601c7cacebdd4a4b4",
+          "path": "tests/integration/d4/seed.test.ts",
+          "fingerprint": "147657e9e3066166a693d33629cb3aef606de111cb9da06e0f71113435eee01f"
+        },
+        {
+          "item_id": "207a0ef92c54cfe0e00d07eed05868ee1f04d45c5ed88924d1ddc928165b13c8",
+          "path": "tests/support/closed-trade-review-fixture.ts",
+          "fingerprint": "adcf13845d4ad853e351110c81eda25eec95b0e178ae9b52b4922d90910d203f"
+        },
+        {
+          "item_id": "20a837045730932965fbc67b0ad00d44460d5de10ae779a490f73bbed0c0ffd1",
+          "path": "tests/integration/d2/migration.test.ts",
+          "fingerprint": "77b45ceed0dd3aba1583b4ff010932c32760e91ad5db5bf7afd2e24f9855a1d0"
+        },
+        {
+          "item_id": "265139fa195a485874d9acb508d60d0ba58df1a60a8c61f10a5dc5af23536c70",
+          "path": "src/modules/journal/manifest.ts",
+          "fingerprint": "9f39a18f36b3ba54c3f9e75fae4f77d545affe699896e522d3ecc6a3311e2182"
+        },
+        {
+          "item_id": "28d9dac30140868b5ff82f3128fe52a527534ffce26da1ec10da0741844bd9af",
+          "path": "src/ui/screens/ActionForm.tsx",
+          "fingerprint": "f95777522f1e6609ef7ca18164a7105c5937776ef2a8e19430eb09b0201200f4"
+        },
+        {
+          "item_id": "2f64c03c681bb0e4cb769794bfa15cb393d2414f28f9249686cc06d16338bb98",
+          "path": "src/modules/journal/index.ts",
+          "fingerprint": "273cb37d719aaac83ec309705c5332a35cd872851a71ea38ac83114e7d63f45d"
+        },
+        {
+          "item_id": "30a50c1fd52b525b6d09b81c248c7988a7f3bded31939f5c01311931cbcccc64",
+          "path": "src/coordinators/trade-workflows/record-position-change-options.test.ts",
+          "fingerprint": "2f4344237e41f507b533c185e1a6f6d208cb34ac695899094f86bdef620e6ebc"
+        },
+        {
+          "item_id": "3c0a7cd4011a894a37c413408123e58f207095d8da3046a88ab112ed0b76fa7a",
+          "path": "tests/integration/d5/migration.test.ts",
+          "fingerprint": "04735d70543fab9edb7295c735b163ff28eb4eac25c5aeac66c8970033ea3261"
+        },
+        {
+          "item_id": "3ef573cc225cdc555134d148f865f9b979839c7c8e18dbe1e0d14e979c0264e8",
+          "path": "tests/integration/d6/migration.test.ts",
+          "fingerprint": "254b5d029cfc6083ee0175d5187bafe4848102754a450392cebdf4bc184b717d"
+        },
+        {
+          "item_id": "50d7538e00a272561ee77fda78c8cd431428935a1ccf6993defe88e1d6d67840",
+          "path": "e2e/d4/runtime-failure.spec.ts",
+          "fingerprint": "f2fd773030026e61c4201496dd9fa0dabafade74fff9e5fb27ba76ed21830996"
+        },
+        {
+          "item_id": "50df0e1efdcb2e3cfc4cb9f69c4431db9714d28bec2a8b4bf057e48c6d658816",
+          "path": "tests/integration/d6/review.test.ts",
+          "fingerprint": "7f080d5c1d9339a44cb72a3ff5e0ad122a206d7976a8d19ae21c622a3529e8b5"
+        },
+        {
+          "item_id": "523d336f95b7d5d87598951d371783d23c85b6c1f887fbc55e29fb4230fd2375",
+          "path": "src/coordinators/workspace/seed-6.test.ts",
+          "fingerprint": "3cf3dc216e50a7cad768a5fb0a1e1bec6d1c36bf92d0d7cd4035d9ebab484aff"
+        },
+        {
+          "item_id": "59c8efa8b5496b76f01205c2c3458fbae5ad85d86f9434b0b6f27b5ac0335aba",
+          "path": "tests/integration/d6/support.ts",
+          "fingerprint": "6872ddeba178d0366547a268e49a7cccfdb6d54448c209342c1c471cdc636c37"
+        },
+        {
+          "item_id": "5b7e5143dd9c19d2ee819c57853ff0170a4fbc34a14589d3fe7fff2f5c6a2e47",
+          "path": "src/app/bench-generator.ts",
+          "fingerprint": "d1f3823d4923b39e23e10321e2460b6bb41186c2dccf9f24f5fedead9590a7cd"
+        },
+        {
+          "item_id": "5c5c65ecfbd6509c1c9cd5930f925801873d3a61b68d86996c32fa9f6b35fbec",
+          "path": "tests/integration/d5/rejections.test.ts",
+          "fingerprint": "2de46de4eaa3f6fa57b915a3eae3115ba0903ef352755c44f3faf630f18d8754"
+        },
+        {
+          "item_id": "5ee14afc5ed4f81e9e986dc0193e7a09ec1f9124a2060aed5e5fe510724365fd",
+          "path": "tests/support/replay-series-stack.ts",
+          "fingerprint": "bde682092f83ae66609bbc7b3eebf86958b38ce172f8eb5f01a83bbd00d10571"
+        },
+        {
+          "item_id": "61ffc91163a7c2e132c1b453f17001b3550b7e700577b236e81740637fc8916f",
+          "path": "src/modules/journal/manifest-6.test.ts",
+          "fingerprint": "11ac1cdfbd892b3dd3e45f3e7bac9e94ab61ea13c107b33d366dfbc1cb4275ce"
+        },
+        {
+          "item_id": "6876eaa41b208bde3088c7312bd16bd697f96d6a7ffcc06f6edeb3bbf5f489c2",
+          "path": "tests/integration/d2/seed.test.ts",
+          "fingerprint": "f89ed25dab46275b7f909d82769ca351753ad70fa29def9a238027b6af6cfeef"
+        },
+        {
+          "item_id": "6c0a9060a31bf3ba57c05369b276def7b239838a93c46585ef412fe0536e8181",
+          "path": "src/coordinators/workspace/workspace.test.ts",
+          "fingerprint": "656fae6c587f33e5d0346e8c58f5efe321c0f4395529f64359102eda3179bf3b"
+        },
+        {
+          "item_id": "6e42d8a99b22448ed9cf1b6d80480e12a2a95b2e4beae86768fbbe8e089c6068",
+          "path": "tests/integration/d4/migration.test.ts",
+          "fingerprint": "d9ad4f441dfd9470ecc7c7901d7b871844526d9a37c4058e6e4de661e70ba606"
+        },
+        {
+          "item_id": "7133d9018503b4e4b64899b7222737cff200ce528f314911a61285d44ffdb603",
+          "path": "src/coordinators/workspace/migration.test.ts",
+          "fingerprint": "5f69afc4b0a67ca79ba41e5b01043d27a5ce81b09dcff0f18dbd20f405dbd136"
+        },
+        {
+          "item_id": "76efdeef135787460ed7383bfa3d4fb0d1704caf6cf1fdfbc80b1d59af60f8ed",
+          "path": "src/coordinators/trade-workflows/record-position-change.test.ts",
+          "fingerprint": "2099a030404abe9dccbf6d0072f35f0028d1056cb561601ddb91e1435e65a2e1"
+        },
+        {
+          "item_id": "77a09965bbc16832a6776b36503973c81fdfb4c349ef52771fbc221627efe7c5",
+          "path": "e2e/d4/support.ts",
+          "fingerprint": "de5fbb89b616d6da0cdd50aef0717595f40a27abcb16f5574e6b473f260e88de"
+        },
+        {
+          "item_id": "7fb17753390b86fe1b6b3f3e7ac2efb28db4e5172fa45c2cc1966309cca2392a",
+          "path": "tests/support/position-change-form-facade.ts",
+          "fingerprint": "5c946f8ed5196d9c5675337675422fdbfa823b7362a042ba2cce2391d2bf2e0e"
+        },
+        {
+          "item_id": "844627d1016ec4532c30658900797183d4ec63e3af79e14f3ed455d230a199e0",
+          "path": "src/coordinators/trade-views/closed-views.test.ts",
+          "fingerprint": "e1213f5cf883d2e97a0f9fb78d969deb7f1dc5a232c5783ca8cff988a70b9937"
+        },
+        {
+          "item_id": "85f54adc663644bbd97379f30446ece398bfe1c1aceef4d7c1922ee1410beec7",
+          "path": "src/domain/daily-trade-review-prompts.ts",
+          "fingerprint": "df224f928bca80b917bdae0276cee57fb1f0f3d92804e7ae3f5e9b73456e2bf0"
+        },
+        {
+          "item_id": "88fa32f89f0b245e917d5f5c89e3dadf659f4c077f987073d02c9ac509c80562",
+          "path": "tests/integration/d8/safety.test.ts",
+          "fingerprint": "e0ee72ac516994b001811d106790e79652cdcc6f0184b1a3deb0207676ea4059"
+        },
+        {
+          "item_id": "9a4b301f29315822f41fc01f8354d580d79ad32a81c83e53e329d62ef01ec058",
+          "path": "tests/integration/d6/seed.test.ts",
+          "fingerprint": "0d16a5489bfd6178fc28619bb209ec892fcc1466dbb6cf527188885874565375"
+        },
+        {
+          "item_id": "9fc2814396ca8fdc4b4a786543b42eb524301cfcaa0ad2260221dc91be7ee063",
+          "path": "e2e/d4/responsive-a11y.spec.ts",
+          "fingerprint": "e4efe045286abc6662fe134fcce12842949b807139bdd50792e36f36a4fa1f37"
+        },
+        {
+          "item_id": "9fcc9106e1f1d3b34a703c3af12c8e441b2327bf74a78dbb4748f627b9a5c7a9",
+          "path": "tests/support/review-fixture.ts",
+          "fingerprint": "db6bd64212ad8021ab7215570b48049e23cb47d178d580dbf2310feb3dc0fd9c"
+        },
+        {
+          "item_id": "a83706f3444e16c14ac613c874f7293d7adce6354226bde7d7b9b892fce05701",
+          "path": "src/ui/screens/ReviewCard.test.tsx",
+          "fingerprint": "0cade651b7af0e6d5971bd693af98090611aefef40b198a4102fccaa7480d746"
+        },
+        {
+          "item_id": "b1da146fb0362afc63198aacb4ed2bca816369ba3243f222de243f945066fb01",
+          "path": "src/coordinators/workspace/restore.test.ts",
+          "fingerprint": "1e20d0b860b6897d9536c2b53a998d545d143e1edb9dff440390f98a122ec41e"
+        },
+        {
+          "item_id": "bcf49ea06a9812838b8ae188a08a17ea76121ba171d5a16bb4f087f6285ce9a1",
+          "path": "src/coordinators/trade-views/option-views.test.ts",
+          "fingerprint": "560d3551c2169bc67b1cbc388081c62fb4676166c9f33f7b8e938f3f62746607"
+        },
+        {
+          "item_id": "c5ee56093f9bcfa69f9d62c86b352f1683a83a2548350b7facc249f86389ce53",
+          "path": "tests/integration/d5/seed.test.ts",
+          "fingerprint": "7d452d008601b04266140ab55cca4cdf1e817dbb114d1d094d9565bc816e37cd"
+        },
+        {
+          "item_id": "cea93c00052d4417fb3d8347e305faa30ad72cd9fd172eba5a124e9ca3cdae0c",
+          "path": "tests/integration/d2/rejections.test.ts",
+          "fingerprint": "fdb998a4b2ca36b7763bab3c5426bb6e9a0ab0a214f98c60977a6d059cb0133e"
+        },
+        {
+          "item_id": "d5ca0db109bd5eca3585475c4cd3739bada34094523b44a916a4118276e691b6",
+          "path": "src/modules/journal/journal.ts",
+          "fingerprint": "5734151f67aedd0e25250c24cad7de371b1af53235c8fcd9f360f713cc2e7808"
+        },
+        {
+          "item_id": "f1030df827c5901440ba4c43d43635aef3e7698f2ea00255a635dc2b120e73e9",
+          "path": "src/coordinators/workspace/workspace.ts",
+          "fingerprint": "f070d3a16191034211df7e5973b98da13c284b113d462fa18c3f5f581b256b76"
+        },
+        {
+          "item_id": "faf221cf31623695ce2612116b2cc352b77033b2c58ea5ad80739fb16860f12c",
+          "path": "src/coordinators/daily-review/card-kinds.test.ts",
+          "fingerprint": "5f9dbe29e27e242be92c2a4529ca813f57044127f29a73d112837be8c4168c04"
+        },
+        {
+          "item_id": "fb614d0468bc592c284c1de7c4c50f159f50d09d6cc85e6d05359e230934d392",
+          "path": "src/coordinators/daily-review/save.test.ts",
+          "fingerprint": "ad47b68079f745737019a3d20f08cbe7a77ce973447a34a6fb5254e8c177ac6d"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "04c2d27c147e833f1bf50cbfd198f6a6a352da1bb91b7562e4cacf4a5e1d9aa6",
+          "path": "tests/integration/d8/first-run.test.ts",
+          "fingerprint": "d339ff0df56a70739d6092b498a4e0f2b9c9b96a48f0f25d196bb3d845a878ef"
+        },
+        {
+          "item_id": "050676a7d9001ad82b5c4977cb7dbddf98401aad9cbfca57375fd6c0177af8d7",
+          "path": "tools/bench-run.ts",
+          "fingerprint": "19a6732eb34ed0ae5db2b6877d1455508cde3ad4e1fe261f4af3ce1316727194"
+        },
+        {
+          "item_id": "0a3a62aa304991db7d1b38da918657722368065c0e3d2aaf370fd2bc16a6ffdf",
+          "path": "src/coordinators/workspace/restore.ts",
+          "fingerprint": "23ce440b0306b9535af0c65a42346e5fb0a4a607bc1974b088c30684d976e031"
+        },
+        {
+          "item_id": "0c6dfb382f1e5dd4970da6c721a3a6031480ea4e665cf73df0bdb5120f824052",
+          "path": "src/coordinators/workspace/backup.ts",
+          "fingerprint": "68f28eb79924062ff16f4fa653ce7eac6ed6da40e10090693f13762eade23ff8"
+        },
+        {
+          "item_id": "0f4aa84758c10defc83e15772fff0753dc16e94eaf609bc7de67c6ee942fd4ba",
+          "path": "e2e/d5r/responsive-a11y.spec.ts",
+          "fingerprint": "7567c539746251b94773ef25cb77b719c761c383c5c6b1506b670c88369a7e75"
+        },
+        {
+          "item_id": "1084d8ac89fd454da9e0373df7f2721164a123db93f8b00b0eb5f92acbdcf093",
+          "path": "tests/integration/d8/round-trip.test.ts",
+          "fingerprint": "a7ad24fd8cc1f263b32d7a79f266a8e64f55b3534d64f62bd0b66dea718e8c39"
+        },
+        {
+          "item_id": "1190633fe0e7c77538e88f410a5cf19e762f9a95eccb1b7ea13d371a3387ede2",
+          "path": "src/coordinators/daily-review/owed-save.test.ts",
+          "fingerprint": "8d244c5f6abf13dc1da47ae79621e1482b83c6a68badbb3cef08b9b4b4714492"
+        },
+        {
+          "item_id": "1cd4b927b8c58c8513dd4947971e640ee676f66a0693b882176cc745a5f58ab9",
+          "path": "src/coordinators/workspace/migration.ts",
+          "fingerprint": "afcf021fc73e746504b688a02d582c83ca8baf7333cbaf8d7b45cb7133b26a38"
+        },
+        {
+          "item_id": "2050c0dcb57f7604bd25d673c72a1f5e261f0fc2e89eba3601c7cacebdd4a4b4",
+          "path": "tests/integration/d4/seed.test.ts",
+          "fingerprint": "147657e9e3066166a693d33629cb3aef606de111cb9da06e0f71113435eee01f"
+        },
+        {
+          "item_id": "20a837045730932965fbc67b0ad00d44460d5de10ae779a490f73bbed0c0ffd1",
+          "path": "tests/integration/d2/migration.test.ts",
+          "fingerprint": "77b45ceed0dd3aba1583b4ff010932c32760e91ad5db5bf7afd2e24f9855a1d0"
+        },
+        {
+          "item_id": "265139fa195a485874d9acb508d60d0ba58df1a60a8c61f10a5dc5af23536c70",
+          "path": "src/modules/journal/manifest.ts",
+          "fingerprint": "9f39a18f36b3ba54c3f9e75fae4f77d545affe699896e522d3ecc6a3311e2182"
+        },
+        {
+          "item_id": "28d9dac30140868b5ff82f3128fe52a527534ffce26da1ec10da0741844bd9af",
+          "path": "src/ui/screens/ActionForm.tsx",
+          "fingerprint": "f95777522f1e6609ef7ca18164a7105c5937776ef2a8e19430eb09b0201200f4"
+        },
+        {
+          "item_id": "2f64c03c681bb0e4cb769794bfa15cb393d2414f28f9249686cc06d16338bb98",
+          "path": "src/modules/journal/index.ts",
+          "fingerprint": "273cb37d719aaac83ec309705c5332a35cd872851a71ea38ac83114e7d63f45d"
+        },
+        {
+          "item_id": "30a50c1fd52b525b6d09b81c248c7988a7f3bded31939f5c01311931cbcccc64",
+          "path": "src/coordinators/trade-workflows/record-position-change-options.test.ts",
+          "fingerprint": "2f4344237e41f507b533c185e1a6f6d208cb34ac695899094f86bdef620e6ebc"
+        },
+        {
+          "item_id": "3c0a7cd4011a894a37c413408123e58f207095d8da3046a88ab112ed0b76fa7a",
+          "path": "tests/integration/d5/migration.test.ts",
+          "fingerprint": "04735d70543fab9edb7295c735b163ff28eb4eac25c5aeac66c8970033ea3261"
+        },
+        {
+          "item_id": "3ef573cc225cdc555134d148f865f9b979839c7c8e18dbe1e0d14e979c0264e8",
+          "path": "tests/integration/d6/migration.test.ts",
+          "fingerprint": "254b5d029cfc6083ee0175d5187bafe4848102754a450392cebdf4bc184b717d"
+        },
+        {
+          "item_id": "50d7538e00a272561ee77fda78c8cd431428935a1ccf6993defe88e1d6d67840",
+          "path": "e2e/d4/runtime-failure.spec.ts",
+          "fingerprint": "f2fd773030026e61c4201496dd9fa0dabafade74fff9e5fb27ba76ed21830996"
+        },
+        {
+          "item_id": "50df0e1efdcb2e3cfc4cb9f69c4431db9714d28bec2a8b4bf057e48c6d658816",
+          "path": "tests/integration/d6/review.test.ts",
+          "fingerprint": "7f080d5c1d9339a44cb72a3ff5e0ad122a206d7976a8d19ae21c622a3529e8b5"
+        },
+        {
+          "item_id": "523d336f95b7d5d87598951d371783d23c85b6c1f887fbc55e29fb4230fd2375",
+          "path": "src/coordinators/workspace/seed-6.test.ts",
+          "fingerprint": "3cf3dc216e50a7cad768a5fb0a1e1bec6d1c36bf92d0d7cd4035d9ebab484aff"
+        },
+        {
+          "item_id": "59c8efa8b5496b76f01205c2c3458fbae5ad85d86f9434b0b6f27b5ac0335aba",
+          "path": "tests/integration/d6/support.ts",
+          "fingerprint": "6872ddeba178d0366547a268e49a7cccfdb6d54448c209342c1c471cdc636c37"
+        },
+        {
+          "item_id": "5b7e5143dd9c19d2ee819c57853ff0170a4fbc34a14589d3fe7fff2f5c6a2e47",
+          "path": "src/app/bench-generator.ts",
+          "fingerprint": "d1f3823d4923b39e23e10321e2460b6bb41186c2dccf9f24f5fedead9590a7cd"
+        },
+        {
+          "item_id": "5c5c65ecfbd6509c1c9cd5930f925801873d3a61b68d86996c32fa9f6b35fbec",
+          "path": "tests/integration/d5/rejections.test.ts",
+          "fingerprint": "2de46de4eaa3f6fa57b915a3eae3115ba0903ef352755c44f3faf630f18d8754"
+        },
+        {
+          "item_id": "61ffc91163a7c2e132c1b453f17001b3550b7e700577b236e81740637fc8916f",
+          "path": "src/modules/journal/manifest-6.test.ts",
+          "fingerprint": "11ac1cdfbd892b3dd3e45f3e7bac9e94ab61ea13c107b33d366dfbc1cb4275ce"
+        },
+        {
+          "item_id": "6876eaa41b208bde3088c7312bd16bd697f96d6a7ffcc06f6edeb3bbf5f489c2",
+          "path": "tests/integration/d2/seed.test.ts",
+          "fingerprint": "f89ed25dab46275b7f909d82769ca351753ad70fa29def9a238027b6af6cfeef"
+        },
+        {
+          "item_id": "6c0a9060a31bf3ba57c05369b276def7b239838a93c46585ef412fe0536e8181",
+          "path": "src/coordinators/workspace/workspace.test.ts",
+          "fingerprint": "656fae6c587f33e5d0346e8c58f5efe321c0f4395529f64359102eda3179bf3b"
+        },
+        {
+          "item_id": "6e42d8a99b22448ed9cf1b6d80480e12a2a95b2e4beae86768fbbe8e089c6068",
+          "path": "tests/integration/d4/migration.test.ts",
+          "fingerprint": "d9ad4f441dfd9470ecc7c7901d7b871844526d9a37c4058e6e4de661e70ba606"
+        },
+        {
+          "item_id": "7133d9018503b4e4b64899b7222737cff200ce528f314911a61285d44ffdb603",
+          "path": "src/coordinators/workspace/migration.test.ts",
+          "fingerprint": "5f69afc4b0a67ca79ba41e5b01043d27a5ce81b09dcff0f18dbd20f405dbd136"
+        },
+        {
+          "item_id": "76efdeef135787460ed7383bfa3d4fb0d1704caf6cf1fdfbc80b1d59af60f8ed",
+          "path": "src/coordinators/trade-workflows/record-position-change.test.ts",
+          "fingerprint": "2099a030404abe9dccbf6d0072f35f0028d1056cb561601ddb91e1435e65a2e1"
+        },
+        {
+          "item_id": "77a09965bbc16832a6776b36503973c81fdfb4c349ef52771fbc221627efe7c5",
+          "path": "e2e/d4/support.ts",
+          "fingerprint": "de5fbb89b616d6da0cdd50aef0717595f40a27abcb16f5574e6b473f260e88de"
+        },
+        {
+          "item_id": "7fb17753390b86fe1b6b3f3e7ac2efb28db4e5172fa45c2cc1966309cca2392a",
+          "path": "tests/support/position-change-form-facade.ts",
+          "fingerprint": "5c946f8ed5196d9c5675337675422fdbfa823b7362a042ba2cce2391d2bf2e0e"
+        },
+        {
+          "item_id": "85f54adc663644bbd97379f30446ece398bfe1c1aceef4d7c1922ee1410beec7",
+          "path": "src/domain/daily-trade-review-prompts.ts",
+          "fingerprint": "df224f928bca80b917bdae0276cee57fb1f0f3d92804e7ae3f5e9b73456e2bf0"
+        },
+        {
+          "item_id": "88fa32f89f0b245e917d5f5c89e3dadf659f4c077f987073d02c9ac509c80562",
+          "path": "tests/integration/d8/safety.test.ts",
+          "fingerprint": "e0ee72ac516994b001811d106790e79652cdcc6f0184b1a3deb0207676ea4059"
+        },
+        {
+          "item_id": "9a4b301f29315822f41fc01f8354d580d79ad32a81c83e53e329d62ef01ec058",
+          "path": "tests/integration/d6/seed.test.ts",
+          "fingerprint": "0d16a5489bfd6178fc28619bb209ec892fcc1466dbb6cf527188885874565375"
+        },
+        {
+          "item_id": "9fc2814396ca8fdc4b4a786543b42eb524301cfcaa0ad2260221dc91be7ee063",
+          "path": "e2e/d4/responsive-a11y.spec.ts",
+          "fingerprint": "e4efe045286abc6662fe134fcce12842949b807139bdd50792e36f36a4fa1f37"
+        },
+        {
+          "item_id": "9fcc9106e1f1d3b34a703c3af12c8e441b2327bf74a78dbb4748f627b9a5c7a9",
+          "path": "tests/support/review-fixture.ts",
+          "fingerprint": "db6bd64212ad8021ab7215570b48049e23cb47d178d580dbf2310feb3dc0fd9c"
+        },
+        {
+          "item_id": "a83706f3444e16c14ac613c874f7293d7adce6354226bde7d7b9b892fce05701",
+          "path": "src/ui/screens/ReviewCard.test.tsx",
+          "fingerprint": "0cade651b7af0e6d5971bd693af98090611aefef40b198a4102fccaa7480d746"
+        },
+        {
+          "item_id": "b1da146fb0362afc63198aacb4ed2bca816369ba3243f222de243f945066fb01",
+          "path": "src/coordinators/workspace/restore.test.ts",
+          "fingerprint": "1e20d0b860b6897d9536c2b53a998d545d143e1edb9dff440390f98a122ec41e"
+        },
+        {
+          "item_id": "c5ee56093f9bcfa69f9d62c86b352f1683a83a2548350b7facc249f86389ce53",
+          "path": "tests/integration/d5/seed.test.ts",
+          "fingerprint": "7d452d008601b04266140ab55cca4cdf1e817dbb114d1d094d9565bc816e37cd"
+        },
+        {
+          "item_id": "cea93c00052d4417fb3d8347e305faa30ad72cd9fd172eba5a124e9ca3cdae0c",
+          "path": "tests/integration/d2/rejections.test.ts",
+          "fingerprint": "fdb998a4b2ca36b7763bab3c5426bb6e9a0ab0a214f98c60977a6d059cb0133e"
+        },
+        {
+          "item_id": "d5ca0db109bd5eca3585475c4cd3739bada34094523b44a916a4118276e691b6",
+          "path": "src/modules/journal/journal.ts",
+          "fingerprint": "5734151f67aedd0e25250c24cad7de371b1af53235c8fcd9f360f713cc2e7808"
+        },
+        {
+          "item_id": "f1030df827c5901440ba4c43d43635aef3e7698f2ea00255a635dc2b120e73e9",
+          "path": "src/coordinators/workspace/workspace.ts",
+          "fingerprint": "f070d3a16191034211df7e5973b98da13c284b113d462fa18c3f5f581b256b76"
+        },
+        {
+          "item_id": "faf221cf31623695ce2612116b2cc352b77033b2c58ea5ad80739fb16860f12c",
+          "path": "src/coordinators/daily-review/card-kinds.test.ts",
+          "fingerprint": "5f9dbe29e27e242be92c2a4529ca813f57044127f29a73d112837be8c4168c04"
+        },
+        {
+          "item_id": "fb614d0468bc592c284c1de7c4c50f159f50d09d6cc85e6d05359e230934d392",
+          "path": "src/coordinators/daily-review/save.test.ts",
+          "fingerprint": "ad47b68079f745737019a3d20f08cbe7a77ce973447a34a6fb5254e8c177ac6d"
+        }
+      ],
+      "reused": [],
+      "failed": [
+        {
+          "item_id": "1d45db421e94e4694f6f3250c8a059de25ae8ed03b5c669cf5f50e18144d7d03",
+          "path": "src/coordinators/trade-views/replay-trade.test.ts",
+          "fingerprint": "b7ea09c85cd028fa44a0eadbc36a641f178660e95295a480041978bb964b76a9",
+          "classification": "provider",
+          "reason": "provider or subtask request failed"
+        },
+        {
+          "item_id": "207a0ef92c54cfe0e00d07eed05868ee1f04d45c5ed88924d1ddc928165b13c8",
+          "path": "tests/support/closed-trade-review-fixture.ts",
+          "fingerprint": "adcf13845d4ad853e351110c81eda25eec95b0e178ae9b52b4922d90910d203f",
+          "classification": "provider",
+          "reason": "provider or subtask request failed"
+        },
+        {
+          "item_id": "5ee14afc5ed4f81e9e986dc0193e7a09ec1f9124a2060aed5e5fe510724365fd",
+          "path": "tests/support/replay-series-stack.ts",
+          "fingerprint": "bde682092f83ae66609bbc7b3eebf86958b38ce172f8eb5f01a83bbd00d10571",
+          "classification": "provider",
+          "reason": "provider or subtask request failed"
+        },
+        {
+          "item_id": "844627d1016ec4532c30658900797183d4ec63e3af79e14f3ed455d230a199e0",
+          "path": "src/coordinators/trade-views/closed-views.test.ts",
+          "fingerprint": "e1213f5cf883d2e97a0f9fb78d969deb7f1dc5a232c5783ca8cff988a70b9937",
+          "classification": "provider",
+          "reason": "provider or subtask request failed"
+        },
+        {
+          "item_id": "bcf49ea06a9812838b8ae188a08a17ea76121ba171d5a16bb4f087f6285ce9a1",
+          "path": "src/coordinators/trade-views/option-views.test.ts",
+          "fingerprint": "560d3551c2169bc67b1cbc388081c62fb4676166c9f33f7b8e938f3f62746607",
+          "classification": "provider",
+          "reason": "provider or subtask request failed"
+        }
+      ],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "075ced8951c74b37c572b59ce44735c33280079b0cfcd7b756af7bc692343e65",
+          "path": "tests/fixtures/backup-v7/expected-views.json",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "194d1a082c20bea5aa69493da0ba94cee8e0ce01914964b82a1f84d3d240f250",
+          "path": "tests/fixtures/workspace-v4/expected-views.json",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "2bb53e8ac585b73e3918e0b02ff693505b94d8b8aa2d83f8accd8d4d60498594",
+          "path": "tests/fixtures/workspace-v6/expected-views.json",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "2d680b50685bb4f7b8564114d1d2fa5711c6899fda34c764d9da4a7b74382458",
+          "path": "tests/fixtures/backup-v3-blocked/expected-views.json",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "3266428fd20c81d9f082d29ac94bc2dcb009f74adbf87a0a1608bc974cd5781c",
+          "path": "tests/fixtures/workspace-v5/expected-views.json",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "4d745f240df7cb34c0935536579dd331f4bf3f40c141dffc87b9df7ffc9ee6c4",
+          "path": "tests/fixtures/workspace-v3/expected-views.json",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "529e6aafb3d9abe130486c91fc456c4d478863c4b40210a0ee6d90dcf4451742",
+          "path": "tests/fixtures/workspace-v7/expected-views.json",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "64f1af1b61046022ca9ca809b993559c375c074d26b17ccc7528ed883732d90a",
+          "path": "tests/fixtures/backup-v4-blocked/expected-views.json",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "9cb1a797774d02950cc071d8d999024e890e80edbfdf05f415f708917949c2e7",
+          "path": "evidence/D95/structural.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "a5a34b4da63afcc0456118a1d0132bc6ef1523579aad2494f9db97e28f0e42e2",
+          "path": "tests/fixtures/backup-v5-blocked/expected-views.json",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "bfd7bfb7c23f9db27c8d7ba6b484e7e35a3149a728c3bfe95968624829b9261b",
+          "path": "tests/fixtures/backup-v6-blocked/expected-views.json",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "fa48fc70b792279ec9cdac0295caea9a574ab83dd27ba81dc377569c4e275246",
+          "path": "evidence/D95/tdd-log/T95.28.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 90993
+  },
+  "retry_report": {
+    "schema_version": "ocr.llm-retry-report/v1",
+    "total_requests": 67,
+    "retried_requests": 0,
+    "total_retries": 0,
+    "recovered_requests": 0,
+    "failed_requests": 1,
+    "cancelled_requests": 0,
+    "requests": [
+      {
+        "logical_request_id": "e8ed64e26d7af93ab80ba7425fa7254bb68c99e314be65bf0399b2011871d88a",
+        "provider": "chatgpt",
+        "model": "gpt-6.1-sol",
+        "file_path": "src/coordinators/trade-views/closed-views.test.ts,src/coordinators/trade-views/option-views.test.ts,src/coordinators/trade-views/replay-trade.test.ts,tests/support/closed-trade-review-fixture.ts,tests/support/replay-series-stack.ts",
+        "task_type": "main_task",
+        "request_no": 3,
+        "outcome": "failed",
+        "attempts": [
+          {
+            "attempt": 1,
+            "outcome": "error",
+            "error_class": "provider",
+            "failure_phase": "stream",
+            "status_code": 200,
+            "duration_to_headers_ms": 1503
+          }
+        ]
+      }
+    ]
+  }
+}
