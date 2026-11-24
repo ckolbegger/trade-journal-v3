@@ -136,9 +136,9 @@ test.describe('B95.8 The sale measured against the Plan Exit (AC-REV-008, AC-POS
   test('should refuse a closing sale with no Close Reason, then record it, every click made at 375 wide', async ({ profile, copySetup }) => {
     test.setTimeout(90_000);
     const { context, page, ids } = await openAbcDef(profile, copySetup);
+    await setWidth(page, 375);
     const form = await openSale(page, 'Detail', 'ABC', ids);
     await fillRows(page, [sell('100', '27.60', '1.00', '2026-10-12T11:00')]);
-    await setWidth(page, 375);
     const before = await writtenStores(page);
     await form.getByRole('button', { name: 'Save exit' }).click();
     await expect(closingSection(page).locator('.field-error, [role="alert"]').first(), 'the refusal at 375').toBeVisible();
