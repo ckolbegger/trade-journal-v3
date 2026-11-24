@@ -33,7 +33,7 @@ describe('I5.12 Rebuild equivalence', () => {
     let app = await onboarded(monday);
     const { a, b, c, e, all } = await fixture(app);
     await saveMarks(app, MONDAY);
-    for (const tradeId of all) await saveAction(app, monday, tradeId);
+    for (const tradeId of all) await saveAction(app, monday, tradeId, 'Hold', 'Holding on.');
     const tuesday: Device = { ...monday, now: TUESDAY_1700 };
     app = await restart(app, tuesday);
     await saveMarks(app, TUESDAY);
@@ -46,7 +46,7 @@ describe('I5.12 Rebuild equivalence', () => {
       resolution: { kind: 'Answer', answers: (await reflectionForm(app)).answers },
     });
     expect(answered.kind).toBe('DebtResolved');
-    for (const tradeId of all) await saveAction(app, tuesday, tradeId);
+    for (const tradeId of all) await saveAction(app, tuesday, tradeId, 'Hold', 'Holding on.');
 
     // I5.7: a deferral dated Tuesday 10:00 on T-B answered on Trade Detail, one on T-E declined there,
     // and one on T-C left Outstanding.

@@ -187,7 +187,7 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
     setNotice(result.kind === 'ReviewChanged' || result.kind === 'ChangedDuringAssembly' || result.kind === 'Conflict' || result.kind === 'StorageFailure' ? result.kind : undefined);
     const marks = result.kind === 'Rejected' ? result.issues.find((issue) => issue.code === 'ReviewMarksUnresolved') : undefined;
     setUnresolved(marks && 'instruments' in marks ? { binding, count: marks.instruments.length } : undefined);
-    setIssues(result.kind === 'Rejected' && !marks ? result.issues.map((issue) => (issue.code === 'RequiredAnswerMissing' ? INTENT_REQUIRED(intentField, issue.code) : { field: wholeField, message: COULD_NOT_SAVE, code: issue.code })) : []);
+    setIssues(result.kind === 'Rejected' && !marks ? result.issues.map((issue) => (issue.code === 'RequiredAnswerMissing' || issue.code === 'IntentRequired' ? INTENT_REQUIRED(intentField, issue.code) : { field: wholeField, message: COULD_NOT_SAVE, code: issue.code })) : []);
     if (result.kind === 'Saved') onSaved(result);
   };
   // A form opened read only has no entry controls. One that held values when the shell turned read only stays, disabled, so the values are visibly kept.

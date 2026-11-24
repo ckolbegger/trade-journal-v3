@@ -33,7 +33,7 @@ async function runReview(resolution: 'Answer' | 'Decline') {
   expect(first.families.flatMap((f) => (f.family === 'Trades' ? f.trades.filter((t) => t.tradeId === a).map(reflectionCounts) : []))).toEqual([{ due: 0, later: 1 }]);
   expect((await cardOf(app, monday, a)).reflections).toEqual([expect.objectContaining({ debtId: d1.debtId, classification: 'DueInNextReview' })]);
   await saveMarks(app, MONDAY);
-  for (const tradeId of all) await saveAction(app, monday, tradeId);
+  for (const tradeId of all) await saveAction(app, monday, tradeId, 'Hold', 'Holding on.');
   expect((await openReview(app, monday)).completion).toEqual({ kind: 'Complete' });
 
   // Tuesday 17:00: Marks first, then the walk with D-1 Due in T-A's card.
@@ -66,10 +66,10 @@ async function runReview(resolution: 'Answer' | 'Decline') {
   // Only the Actions are missing now.
   expect(result.review.completion.kind === 'Incomplete' && result.review.completion.reasons.map((r) => r.code)).toEqual(['ActionMissing', 'ActionMissing', 'ActionMissing', 'ActionMissing']);
 
-  for (const tradeId of all.slice(0, -1)) await saveAction(app, tuesday, tradeId);
+  for (const tradeId of all.slice(0, -1)) await saveAction(app, tuesday, tradeId, 'Hold', 'Holding on.');
   const nearly = await openReview(app, tuesday);
   expect(nearly.completion.kind).toBe('Incomplete');
-  await saveAction(app, tuesday, all.at(-1)!);
+  await saveAction(app, tuesday, all.at(-1)!, 'Hold', 'Holding on.');
   const done = await openReview(app, tuesday);
   expect(done.completion).toEqual({ kind: 'Complete' });
 

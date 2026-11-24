@@ -102,7 +102,7 @@ export function ReviewReflections({ facade, reviewDate, reflections, onReview, o
         return { kind: 'Resolved', ...(result.entry && { entry: result.entry }), ...(result.decline && { decline: result.decline }), debt: result.debt };
       case 'Rejected':
         // Only the Journal's issues name a prompt or the reason; a Mark issue is about the Review as a whole.
-        return { kind: 'Rejected', issues: result.issues.flatMap((i) => ('field' in i || 'instruments' in i ? [] : [{ ...(i.promptId !== undefined && { promptId: i.promptId }), code: i.code }])) };
+        return { kind: 'Rejected', issues: result.issues.flatMap((i) => ('field' in i || 'instruments' in i || i.code === 'IntentRequired' ? [] : [{ ...(i.promptId !== undefined && { promptId: i.promptId }), code: i.code }])) };
       case 'Conflict':
         return { kind: 'Conflict', ...(result.currentOutcome && { currentOutcome: result.currentOutcome }) };
       case 'NotFound':

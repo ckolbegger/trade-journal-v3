@@ -75,7 +75,7 @@ describe('I5R.1 Save Marks together', () => {
     const resolved = await live.DailyReview.save({ kind: 'ResolveReviewDebt', reviewDate: reopened.reviewDate, binding: due.saveBinding, resolution: { kind: 'Answer', answers: (await reflectionForm(live)).answers } });
     expect(resolved.kind).toBe('DebtResolved');
     expect((await openReview(live, d)).completion.kind).toBe('Incomplete');
-    for (const tradeId of [trades.a, trades.b, trades.c, trades.e, trades.f]) await saveAction(live, d, tradeId);
+    for (const tradeId of [trades.a, trades.b, trades.c, trades.e, trades.f]) await saveAction(live, d, tradeId, 'Hold', 'Holding on.');
     const done = await openReview(live, d);
     expect(done.completion).toMatchObject({ kind: 'CompleteWithUnavailableMarks', instruments: [{ kind: 'Stock', symbol: 'DEF' }], trades: [trades.c] });
 

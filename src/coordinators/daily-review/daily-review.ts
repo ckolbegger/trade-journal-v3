@@ -2,7 +2,7 @@ import { Temporal } from 'temporal-polyfill';
 import { instrumentKey, settlementDueOn, type Instrument, type OptionInstrument } from '../../domain/instrument/index.ts';
 import { openTradeSummary } from '../../domain/trade-summary.ts';
 import { Rational } from '../../domain/values/index.ts';
-import { derive, planCall, type DerivedTradeState, type IncoherentFacts, type LifecycleState, type TradeAnalysisRecord, type TradeEvaluation } from '../../domain/trade-analysis/index.ts';
+import { derive, planCall, type PlanCall, type DerivedTradeState, type IncoherentFacts, type LifecycleState, type TradeAnalysisRecord, type TradeEvaluation } from '../../domain/trade-analysis/index.ts';
 import { classifyDue, compareDueAnchors, compareOwed, owedStandingOf, type SessionCloses } from '../../domain/journal-debt/index.ts';
 import type { DebtProjection, HistoryAction, Journal, ObligationOutcome } from '../../modules/journal/index.ts';
 import type { EvidenceBinding, FrameContext, HistoricalGaps, MarketData, MarketDataPrepareEntry, MarketDataIssue, MarketDataReadSession, SeriesPoint } from '../../modules/market-data/index.ts';
@@ -986,8 +986,9 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
   const optionalText = (promptId: string, text: string | undefined) => (text === undefined || text.trim() === '' ? {} : { [promptId]: { kind: 'Text' as const, text: text.trim() } });
 
   // The Trade's facts and the Review-date evidence as they are now, against what the form was rendered from.
-  type Checked = { readonly kind: 'Checked'; readonly cutoff: string; readonly evidenceBinding: EvidenceBinding; readonly unresolved: readonly Instrument[] } | Extract<SaveDailyReviewResult, { kind: 'ReviewChanged' | 'Rejected' }>;
-  async function checkBinding(binding: TradeSaveBinding): Promise<Attempt<Checked>> {
+  type Checked = { readonly kind: 'Checked'; readonly cutoff: string; readonly evidenceBinding: EvidenceBinding; readonly unresolved: readonly Instrument[]; readonly planCall?: PlanCall } | Extract<SaveDailyReviewResult, { kind: 'ReviewChanged' | 'Rejected' }>;
+  // `needsCall`: the reason rule turns on the Plan Call at the Review Date's Marks (A308), so the one Trade is valued then and only then.
+  async function checkBinding(binding: TradeSaveBinding, needsCall = false): Promise<Attempt<Checked>> {
     const session = await deps.marketData.query({ kind: 'ResolveSession', context: { kind: 'Review', reviewDate: binding.reviewDate } });
     if (session.kind === 'Rejected') return { done: session };
     if (session.kind !== 'Session') throw new Error(`unexpected session result: ${session.kind}`);
@@ -1006,13 +1007,24 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     const missing = new Set(frames.frames.filter((frame) => frame.resolution.kind === 'Missing').map((frame) => frame.instrumentKey));
     const unresolved = new Map<string, Instrument>();
     for (const { instrument } of entry ? observationNeeds([entry]).requirements : []) if (missing.has(instrumentKey(instrument))) unresolved.set(instrumentKey(instrument), instrument);
+    const valued = needsCall && !stale && unresolved.size === 0 && entry && entry.derivation.kind === 'Derived' && entry.integrity.kind === 'Derived' ? await valueTrade(read, entry.analysis, { factsAtClose: true, skipDatedLine: true }) : undefined;
+    let call: PlanCall | undefined;
+    if (valued?.kind === 'Valued') call = planCall(valued.evaluation);
+    else if (needsCall) call = { call: 'Unknown' };
     // Settled through `coherently`, so the Workspace is also the same before and after; the binding's Workspace is compared by database name.
     return {
       settle: ({ workspace }) =>
         stale || workspace.databaseName !== binding.databaseName
           ? { kind: 'ReviewChanged', evidence }
-          : { kind: 'Checked', cutoff: session.closeInstant, evidenceBinding: frames.evidenceBinding, unresolved: [...unresolved.values()] },
+          : { kind: 'Checked', cutoff: session.closeInstant, evidenceBinding: frames.evidenceBinding, unresolved: [...unresolved.values()], ...(call && { planCall: call }) },
     };
+  }
+
+  // The reason rule (A308): Roll and Adjust always; Hold when the Plan Call is Out; Exit unless it is Out. Unknown is not Out.
+  function reasonOwed({ action }: SaveTradeActionRequest, call: PlanCall | undefined): boolean {
+    if (action === 'Hold') return call?.call === 'Out';
+    if (action === 'Exit') return call?.call !== 'Out';
+    return true;
   }
 
   // A commit refused on a binding re-reads and re-validates, so the answer names what changed; bounded (ADR 0011).
@@ -1026,9 +1038,11 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
 
   async function attemptSave(request: SaveTradeActionRequest): Promise<SaveDailyReviewResult | { readonly kind: 'Retry' }> {
     const { binding } = request;
-    const checked = await coherently(() => checkBinding(binding));
+    const needsCall = (request.action === 'Hold' || request.action === 'Exit') && (request.intent ?? '').trim() === '';
+    const checked = await coherently(() => checkBinding(binding, needsCall));
     if (checked.kind !== 'Checked') return checked;
     if (checked.unresolved.length > 0) return { kind: 'Rejected', issues: [{ code: 'ReviewMarksUnresolved', instruments: checked.unresolved }] };
+    if (reasonOwed(request, checked.planCall) && (request.intent ?? '').trim() === '') return { kind: 'Rejected', issues: [{ code: 'IntentRequired' }] };
     const prepared = await deps.journal.prepareEffects({
       obligation: 'DailyTradeReview',
       disposition: {

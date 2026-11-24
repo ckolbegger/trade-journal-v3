@@ -115,7 +115,7 @@ describe('SaveTradeAction (AC-REV-003)', () => {
     // Save the second Trade of the walk: the first is still open, but the walk continues after the saved one.
     const binding = await bindingFor(stack, order[1]!);
 
-    const { review } = saved(await saveAction(stack, binding));
+    const { review } = saved(await saveAction(stack, binding, 'Hold', 'Holding past the line.'));
 
     if (review.kind !== 'Ready' || review.nextStep.kind !== 'Trade') throw new Error(`expected a Trade next step, got ${review.kind === 'Ready' ? review.nextStep.kind : review.kind}`);
     expect(review.nextStep.trade.tradeId).toBe(order[2]);
@@ -131,8 +131,8 @@ describe('SaveTradeAction (AC-REV-003)', () => {
 
     // Without Intent, or with a blank one, nothing is written.
     for (const action of ['Roll', 'Adjust'] as const) {
-      expect(await saveAction(stack, bindings.a, action)).toEqual({ kind: 'Rejected', issues: [{ code: 'RequiredAnswerMissing', promptId: 'prompt.daily-trade-review.intent' }] });
-      expect(await saveAction(stack, bindings.a, action, '   ')).toEqual({ kind: 'Rejected', issues: [{ code: 'RequiredAnswerMissing', promptId: 'prompt.daily-trade-review.intent' }] });
+      expect(await saveAction(stack, bindings.a, action)).toEqual({ kind: 'Rejected', issues: [{ code: 'IntentRequired' }] });
+      expect(await saveAction(stack, bindings.a, action, '   ')).toEqual({ kind: 'Rejected', issues: [{ code: 'IntentRequired' }] });
     }
     expect(await dumpAll(stack.factory)).toEqual(before);
 
@@ -197,8 +197,8 @@ describe('the definition optional questions (T4.33-B3)', () => {
     expect(all.action.responses.map((r) => r.prompt)).toEqual(['Action', 'Why?', 'Conviction now', 'Anything you considered doing and decided against?', 'Note']);
     expect(answered(all.action.responses).slice(2)).toEqual([CONVICTION, CONSIDERED, NOTE]);
 
-    const some = saved(await saveAction(stack, await bindingFor(stack, b), 'Hold', undefined, { considered: '   ', note: 'Earnings Thursday.' }));
-    expect(answered(some.action.responses)).toEqual([{ prompt: 'Action', answer: { kind: 'Option', label: 'Hold' } }, NOTE]);
+    const some = saved(await saveAction(stack, await bindingFor(stack, b), 'Hold', 'Holding past the line.', { considered: '   ', note: 'Earnings Thursday.' }));
+    expect(answered(some.action.responses)).toEqual([{ prompt: 'Action', answer: { kind: 'Option', label: 'Hold' } }, { prompt: 'Why?', answer: { kind: 'Text', text: 'Holding past the line.' } }, NOTE]);
   }, 30_000);
 
   it('should replace the optional answers on an edit, so an answer left out is removed', async () => {
@@ -559,7 +559,7 @@ describe('the Review after a save (T4.30-B1)', () => {
     // The returned binding is still accepted by getTrade and by the next save.
     const trade = await stack.dailyReview.getTrade({ reviewDate: binding.reviewDate, tradeId: b, binding: ready.binding });
     if (trade.kind !== 'Ready') throw new Error(`expected Ready, got ${trade.kind}`);
-    expect(saved(await saveAction(stack, trade.trade.saveBinding)).action).toEqual(expect.objectContaining({ action: 'Hold' }));
+    expect(saved(await saveAction(stack, trade.trade.saveBinding, 'Hold', 'Holding past the line.')).action).toEqual(expect.objectContaining({ action: 'Hold' }));
   }, 30_000);
 });
 

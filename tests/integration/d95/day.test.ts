@@ -21,7 +21,7 @@ describe('I95.2 The day summary through a day (A300)', () => {
     // Catches a Marks save that leaves the Mark count, or touches the Action count.
     expect(marks.review.day?.toGo).toMatchObject({ marks: 0, actions: 5 });
 
-    const action = await saveActionOn(book.app, MON_1700, book.ids.deep, 'Hold');
+    const action = await saveActionOn(book.app, MON_1700, book.ids.deep, 'Hold', 'Holding past the line.');
     // Catches an Action save that leaves the count, and the saved result's day against a fresh open's.
     expect(action.review.kind === 'Ready' && action.review.day?.toGo).toMatchObject({ marks: 0, actions: 4 });
     expect((await openOn(book.app, MON_1700)).day?.toGo).toMatchObject({ marks: 0, actions: 4, expirations: 1 });
@@ -52,8 +52,8 @@ describe('I95.2 The day summary through a day (A300)', () => {
 
     // Catches a finished day shown while Actions are still to go.
     expect((await openOn(app, MON_1700)).day?.finished).toBeUndefined();
-    await saveActionOn(app, MON_1700, past, 'Hold');
-    await saveActionOn(app, MON_1700, at, 'Hold');
+    await saveActionOn(app, MON_1700, past, 'Hold', 'Holding past the line.');
+    await saveActionOn(app, MON_1700, at, 'Hold', 'Holding past the line.');
     await saveActionOn(app, MON_1700, later, 'Hold');
     const last = await saveActionOn(app, MON_1700, selling, 'Exit', 'The thesis is done.');
     const { day } = await openOn(app, MON_1700);

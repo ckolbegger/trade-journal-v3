@@ -541,7 +541,7 @@ export interface RefreshedEvidence {
 }
 
 // Daily Review's own issues (P166). The Action is not saved until each Instrument its figures require has its Review Date Mark saved or acknowledged Unavailable.
-export type DailyReviewIssue = { readonly code: 'ReviewMarksUnresolved'; readonly instruments: readonly Instrument[] };
+export type DailyReviewIssue = { readonly code: 'ReviewMarksUnresolved'; readonly instruments: readonly Instrument[] } | { readonly code: 'IntentRequired' };
 
 export type SaveDailyReviewResult =
   | { readonly kind: 'Saved'; readonly action: DailyAction; readonly review: PostSaveReview }

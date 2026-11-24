@@ -26,7 +26,7 @@ async function hold(stack: ReviewStack, tradeId: string, asOf = MONDAY_1700): Pr
   if (opened.kind !== 'Ready') throw new Error(`expected Ready, got ${opened.kind}`);
   const card = await stack.dailyReview.getTrade({ reviewDate: opened.reviewDate, tradeId, binding: opened.binding });
   if (card.kind !== 'Ready') throw new Error(`expected Ready, got ${card.kind}`);
-  return stack.dailyReview.save({ kind: 'SaveTradeAction', binding: card.trade.saveBinding, action: 'Hold' });
+  return stack.dailyReview.save({ kind: 'SaveTradeAction', binding: card.trade.saveBinding, action: 'Hold', intent: 'Holding past the line.' });
 }
 
 async function saveMarks(stack: ReviewStack, prices: Readonly<Record<string, string>>): Promise<SaveReviewMarksResult> {
@@ -186,7 +186,7 @@ describe('save: the request counts (decision 129, R2, R4)', () => {
     if (fOpened.kind !== 'Ready') throw new Error('expected Ready');
     const fCard = await fin.stack.dailyReview.getTrade({ reviewDate: fOpened.reviewDate, tradeId: fin.at, binding: fOpened.binding });
     if (fCard.kind !== 'Ready') throw new Error('expected Ready');
-    const finished = await countRequests(() => fin.stack.dailyReview.save({ kind: 'SaveTradeAction', binding: fCard.trade.saveBinding, action: 'Hold' }), { transactions: true });
+    const finished = await countRequests(() => fin.stack.dailyReview.save({ kind: 'SaveTradeAction', binding: fCard.trade.saveBinding, action: 'Hold', intent: 'Holding past the line.' }), { transactions: true });
     expect(finished.result.kind).toBe('Saved');
     seen.finishing = tally(finished.requests);
     // The saves that leave something to go read what they read before: the day is built from the same pass.

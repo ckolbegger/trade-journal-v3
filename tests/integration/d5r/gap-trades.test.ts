@@ -29,7 +29,7 @@ describe('I5R.5 Gap Trades', () => {
     const due = form.reflections.find((reflection) => reflection.classification === 'Due')!;
     const resolved = await app.DailyReview.save({ kind: 'ResolveReviewDebt', reviewDate: opened.reviewDate, binding: due.saveBinding, resolution: { kind: 'Answer', answers: (await reflectionForm(app)).answers } });
     expect(resolved.kind).toBe('DebtResolved');
-    for (const tradeId of [trades.a, trades.b, trades.c, trades.e, trades.f]) await saveAction(app, d, tradeId);
+    for (const tradeId of [trades.a, trades.b, trades.c, trades.e, trades.f]) await saveAction(app, d, tradeId, 'Hold', 'Holding on.');
 
     const done = await openReview(app, d);
     expect(done.completion).toMatchObject({ kind: 'CompleteWithUnavailableMarks', instruments: [{ kind: 'Stock', symbol: 'DEF' }] });
