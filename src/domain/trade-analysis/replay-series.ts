@@ -7,6 +7,7 @@ import { evaluate, oddsOf, type ConditionReading, type ConditionStatus, type Obs
 import type { ConditionBasis, PlanBaseline } from './plan.ts';
 import type { ReplayEstimates } from './estimate.ts';
 import { markChangeSplit, optionShareEquivalent, rateAndDays, stockShareEquivalent, volatilityOf, type EstimateSession } from './replay-estimates.ts';
+import { planCall, type PlanCall } from './plan-call.ts';
 import { derive, type DerivedTradeState, type IncoherentFact, type TradeAnalysisRecord } from './derive.ts';
 
 // A211: one completed session's Mark points, one frame per Instrument (Available, Missing or AcknowledgedUnavailable,
@@ -160,6 +161,8 @@ export interface ReplayedSession {
   readonly positionChangeIds: readonly string[];
   // A250: this session's figures.
   readonly figures?: ReplayFigures;
+  // A306: what the Plan Exit calls for on this session's Marks.
+  readonly planCall?: PlanCall;
   // A251: the Position Changes in this session.
   readonly markers?: readonly ReplayMarker[];
   // A271: each role's first crossing and current run. Not filled until T9AR.5.
@@ -217,6 +220,7 @@ export function replay(input: ReplayInput): ReplayResult {
       marks: session.frames.map((frame) => markOf(frame, lastMark)),
       positionChangeIds,
       figures: figuresOf(evaluation, openPnlOf(tradePnl, state.realizedToDate)),
+      planCall: planCall(evaluation),
       ...estimatesFor(estimable, index, positions),
       crossings: {
         stop: crossingsOf(evaluation.conditions, 'Stop', session.tradingDate, stopCrossings),
