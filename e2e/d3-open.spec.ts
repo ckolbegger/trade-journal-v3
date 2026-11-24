@@ -93,6 +93,20 @@ test('should validate a completed reflection and accept an explicit decline', as
   await expect(page.getByRole('region', { name: 'Open trades' }).getByText('AAPL')).toBeVisible()
 })
 
+test('should keep the Add execution action clear of bottom navigation at narrow width', async ({ page }) => {
+  await seedAndConfirm(page)
+  await page.setViewportSize({ width: 480, height: 800 })
+  const button = page.getByRole('button', { name: 'Add execution' })
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))
+  const action = await button.boundingBox()
+  const nav = await page.getByRole('navigation', { name: 'Primary' }).boundingBox()
+  expect(action).not.toBeNull()
+  expect(nav).not.toBeNull()
+  expect(action!.y + action!.height).toBeLessThanOrEqual(nav!.y + 1)
+  await button.click({ timeout: 5000 })
+  await expect(page.getByRole('form', { name: 'Add execution' })).toBeVisible()
+})
+
 test('should preserve unsaved execution values across a live resize', async ({ page }) => {
   await seedAndConfirm(page)
   await page.setViewportSize({ width: 1200, height: 900 })

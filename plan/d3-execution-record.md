@@ -1,7 +1,7 @@
 # D3 execution record
 
 ## Status
-Deliverable 3 (Open a Long Stock position) complete. Fresh browser-critic gate passed 6/6 flows with no defects. Frozen baseline `plan/freeze.md` rev `c5d28a8a`; DEV-001 applies. Frozen file digests re-verified unchanged after implementation.
+Deliverable 3 (Open a Long Stock position) complete. Initial fresh browser-critic gate passed 6/6 flows; after the reported visual gap, a final fresh browser-critic gate also passed 6/6 flows with no defects. Frozen baseline `plan/freeze.md` rev `c5d28a8a`; DEV-001 applies. Frozen file digests re-verified unchanged after implementation.
 
 ## Task breakdown first
 `plan/d3-task-breakdown.md` was written before any production code. Structural tasks S1–S4 and behaviour-bearing tasks T1–T5 each name the public seam, concrete `it should` cases, red/green commands, mock-free integration cases and critic flows.
@@ -29,10 +29,10 @@ Defects/fixture issues caught by the loop:
 ## Verification commands and outcomes (cumulative, all green)
 - `npm run test:all` — 30 files, 112 tests passed (baseline before D3: 21 files, 75 tests).
 - `npm run test:integration` — 5 files, 13 tests passed (mock-free real persistence).
-- `npx playwright test` — 12 browser tests passed (8 D1/D2 + 4 D3).
+- `npx playwright test` — 12 browser tests passed at initial D3 completion (8 D1/D2 + 4 D3); 14 after the visual pass (adds 2 visual-language cases); 15 final (adds a narrow-width action-overlap case).
 - `npm run lint` — exit 0.
 - `npm run typecheck` (`tsc --noEmit`, TS 7.0.2) — exit 0; `npm run typecheck:6` (`tsc6 --noEmit`, TS 6.0.3) — exit 0.
-- `npm run build` — passed; Offline Release Inventory `sha256-af29754f659a7810cf99f067ee5ed4fd7beccf39821604be01a4c6c036d1bd9a`, 6 assets.
+- `npm run build` — passed; Offline Release Inventory `sha256-af29754f659a7810cf99f067ee5ed4fd7beccf39821604be01a4c6c036d1bd9a`, 6 assets at initial completion; final `sha256-f5fb483bf591639b7375e1e69619615e67bcb3000405f5e634dcd937362c75b3`, 6 assets.
 
 ## Browser-critic gate
 Fresh independent general subagent (not this session) ran with `plan/d3-critic-brief.md`; it started the app itself and drove the production UI at `http://localhost:5182` with `playwright-cli` 0.1.25, editing nothing. Verdict: **6 PASS / 0 FAIL** — no defects, so no repair loop was needed.
@@ -48,6 +48,11 @@ Evidence provenance: HeadlessChrome 158.0.0.0 (UA macOS 10_15_7), macOS 26.6.2 (
 
 Neutral critic observation (not a defect): a Lot's `basis` includes its allocated opening fee while the allocated fee is also displayed separately. This is intended — the Lot carries its own fee in basis, and the separately displayed incurred fee is disclosure, not a second subtraction.
 
+## Visual-fidelity follow-up (reported defect)
+After the first critic, the trader reported that the Open Trades list and Trade Detail did not look like the prototype. This was a real gap against the normative Visual language section of `specs/design/ui-contract.md`: the D3 screens were a functional scaffold without cream/white cards, small-caps section labels, semantic badges, monogram rows, pill chips or right-aligned tabular numerals, and the Add Execution form was inline rather than a sheet/drawer. Prototype content that the screenshot index marks non-authoritative (adherence, `+$0`/`+0%`, "Close position", Insights, stock multiplier arithmetic) was deliberately not copied.
+
+Repair loop: `e2e/d3-visual.spec.ts` was added first and run to RED — body background `rgba(0,0,0,0)` vs expected cream, and Add Execution form `position: static` vs expected `fixed` — proving the absent visual behaviour rather than a fixture error. Then `src/ui/styles.css` and the D3 markup in `src/ui/App.tsx` were restyled; every accessible name, label, test id and behavioural seam was preserved. GREEN: both visual cases pass. All cumulative suites were re-run green (`test:all` 112, `test:integration` 13, `playwright` 14, lint/typecheck/typecheck:6/build). A second fresh critic is running with `plan/d3-visual-critic-brief.md`; its verdict is recorded below once returned.
+
 ## Acceptance scenario status for D3
 - AC-JOUR-003 **full** — Defer creates one Outstanding Debt with the trigger-time definition snapshot, no blank Entry; factual Open recording succeeds. Evidence: `position-change-reflection.test.ts`, `record-position-change.test.ts` (unit + integration), `e2e/d3-open.spec.ts` journal-store inspection.
 - AC-RESP-001 **full** for `recordPositionChange` — one-call revision-bound result; `postCommit.trade` equals durable state at the returned revision; no required follow-up read. Evidence: unit and integration.
@@ -55,7 +60,13 @@ Neutral critic observation (not a defect): a Lot's `basis` includes its allocate
 - AC-POS-002 **partial** (one decision group) — several Executions share one Position Change identity and stable order, each keeps its identity/Trade ownership and Planned-Leg binding, and exactly one reflection obligation key/outcome is recorded. Multi-leg option decisions belong to D8/D10/D12.
 - AC-JOUR-005 **partial** — one current outcome per obligation key; retry conflicts with no write; `reopenDebtOnVoid` is covered at unit level. Concurrency and Void-settlement reopen through the browser are D5 full.
 
+## Second fresh critic (visual fidelity)
+Verdict: **5 PASS / 1 FAIL**. Flows 2–6 passed, including behaviour/durability, responsive drawer↔bottom-sheet switching, Cancel writing nothing and typed validation errors. Flow 1 failed on a real visual defect: Trade row title and subtitle were inline (`display: inline`) with no separator, rendering as `AAPLLong Stock · 1R 50.00` instead of stacked lines. Non-blocking observations: the `Buy` chip stretched to the drawer width, and revealed Complete-reflection fields laid out inline at narrow width.
+
+Test-first repair: `e2e/d3-visual.spec.ts` was strengthened to assert the subtitle's bounding box starts below the title's — RED with subtitle `y = 216.375` vs required `>= 230.375`. Then `.row-main` became a grid with block title/subtitle lines, `.action-pill` was given `justify-self: start`, and the Complete fields were wrapped in paired `.field-grid` cells. GREEN: 2/2 visual cases. All cumulative suites re-run green (`test:all` 112, `test:integration` 13, `playwright` 14, lint/typecheck/typecheck:6/build). Third fresh critic verdict: **5 PASS / 1 FAIL** — Flows 1–5 passed; the row-title repair, compact Buy chip and paired narrow-width Complete fields were confirmed. Flow 6 found a real defect (D3-CRIT-1): at 480×800 the fixed bottom nav covered the Planned-detail "Add execution" button, leaving only a ~10px clickable sliver. Test-first repair: a new case in `e2e/d3-open.spec.ts` scrolls to the bottom at 480px and asserts the button's bottom edge is above the nav; RED (`781.09 > 704`) then GREEN after narrow `.shell` bottom padding was raised from 4.5rem to 10rem. All cumulative suites re-run green (`test:all` 112, `test:integration` 13, `playwright` 15, lint/typecheck/typecheck:6/build); one transient `main`-not-found startup flake in a 4-worker run passed on immediate rerun. Fourth fresh critic verdict: **6 PASS / 0 FAIL — no defects** (Google Chrome 158.0.8127.37 / macOS 26.6.2, exact high-entropy version, loopback `http://localhost:5182`, DEV-001). It confirmed stacked Trade rows, compact Buy chip, Planned/Open card hierarchy, drawer↔bottom-sheet switching with preserved values, Cancel writing nothing, Defer→Debt with no blank Entry, and durable state after reload. The repaired narrow-width overlap was re-checked with `elementFromPoint` and a physical centre click: "Add execution" bottom 640 vs nav top 703 (63px clear), hit-testing to the button. No failure screenshots were needed. The visual defect is closed; the follow-up is committed separately and the original `hy4-flash-d3-complete` tag is intentionally left on the initial D3 commit.
+
 ## Open items / carried forward
+- Visual fidelity to the prototype was initially missing; it is now repaired and critic-confirmed. Typed validation keys still appear as raw domain tokens in alerts rather than human prose (non-blocking observation, not a D3 defect).
 - No valuation, Mark, Daily Review, Report, Backup, Restore, disposal or closing Lot Match in D3 (by declared scope).
 - `reopenDebtOnVoid` is unit-covered but not yet browser-exercised; full settlement/Void behaviour is D5.
 - Definition revision changes (AC-JOUR-004) are D12b.

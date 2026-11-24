@@ -36,6 +36,8 @@ const emptyPositionForm = (): PositionForm => ({
   decisionConfidence: '', note: '', declineReason: '',
 })
 
+const monogram = (label: string) => label.slice(0, 2).toUpperCase()
+
 function dispositionOf(form: PositionForm): ReflectionDisposition {
   if (form.reflection === 'Complete') {
     return {
@@ -189,14 +191,15 @@ export function App() {
                     </select>
                     <button type="submit">Add account</button>
                   </form>
-                  <section aria-label="Institutions"><h2>Institutions</h2><ul>{state.institutions.map(i => <li key={i.id}>{i.label}</li>)}</ul></section>
-                  <section aria-label="Accounts"><h2>Accounts</h2><ul>{state.accounts.map(a => <li key={a.id}>{a.label}</li>)}</ul></section>
-                  <section aria-label="Workspace"><h2>Workspace</h2><p>Storage protection: {state.protection || 'checking…'}</p></section>
+                  <section aria-label="Institutions" className="card"><h2>Institutions</h2><ul>{state.institutions.map(i => <li key={i.id}>{i.label}</li>)}</ul></section>
+                  <section aria-label="Accounts" className="card"><h2>Accounts</h2><ul>{state.accounts.map(a => <li key={a.id}>{a.label}</li>)}</ul></section>
+                  <section aria-label="Workspace" className="card"><h2>Workspace</h2><p>Storage protection: {state.protection || 'checking…'}</p></section>
                 </>
               )}
 
               {screen === 'new-plan' && (
-                <section aria-label="New Plan">
+                <section aria-label="New Plan" className="card">
+                  <p className="section-label">New plan</p>
                   <h2>New Plan — Long Stock</h2>
                   <form onSubmit={e => { e.preventDefault(); void onConfirmPlan() }}>
                     <label htmlFor="strategy">Strategy</label>
@@ -229,33 +232,46 @@ export function App() {
 
               {screen === 'trades' && (
                 <>
-                  <section aria-label="Planned trades" data-screen="planned">
+                  <section aria-label="Planned trades" data-screen="planned" className="card">
+                    <p className="section-label">Planned trades</p>
                     <h2>Planned trades</h2>
                     <ul>
                       {plan.confirmed.map(t => (
                         <li key={t.trade.id}>
-                          <button type="button" onClick={() => {
+                          <button type="button" className="trade-row" onClick={() => {
                             setSelectedOpen(null)
                             setExecutingId(null)
                             setPlan({ ...plan, screen: 'detail', selected: t })
                           }}>
-                            {t.trade.plan.underlying}
+                            <span className="monogram" aria-hidden="true">{monogram(t.trade.plan.underlying)}</span>
+                            <span className="row-main">
+                              <span className="row-title">{t.trade.plan.underlying}</span>
+                              <span className="row-sub">Long Stock · 1R {t.trade.plan.oneR}</span>
+                            </span>
+                            <span className="badge badge-planned">Planned</span>
                           </button>
                         </li>
                       ))}
                     </ul>
                   </section>
 
-                  <section aria-label="Open trades" data-screen="open">
+                  <section aria-label="Open trades" data-screen="open" className="card">
+                    <p className="section-label">Open trades</p>
                     <h2>Open trades</h2>
                     <ul>
                       {openTrades.map(t => (
                         <li key={t.id}>
-                          <button type="button" onClick={() => {
+                          <button type="button" className="trade-row" onClick={() => {
                             setPlan(p => ({ ...p, screen: 'list', selected: null }))
                             setSelectedOpen(t)
                           }}>
-                            {t.plan.underlying}
+                            <span className="monogram" aria-hidden="true">{monogram(t.plan.underlying)}</span>
+                            <span className="row-main">
+                              <span className="row-title">{t.plan.underlying}</span>
+                              <span className="row-sub">Long Stock · {t.lots.length} lots</span>
+                            </span>
+                            <span className="num positive">{t.realizedToDate}</span>
+                            <span className="badge badge-open">Open</span>
                           </button>
                         </li>
                       ))}
@@ -264,11 +280,21 @@ export function App() {
 
                   {plan.screen === 'detail' && plan.selected && !selectedOpen && (
                     <section aria-label="Trade detail">
-                      <h3>{plan.selected.trade.plan.underlying} Plan</h3>
-                      <p>Lifecycle: <span data-testid="trade-lifecycle">{plan.selected.trade.lifecycle}</span></p>
-                      <p>1R: <span data-testid="trade-one-r">{plan.selected.trade.plan.oneR}</span></p>
-                      <p>Plan R:R: {plan.selected.trade.plan.baseline}</p>
-                      <section aria-label="Plan Reflection" data-testid="plan-reflection">
+                      <section className="card">
+                        <div className="sheet-header">
+                          <div>
+                            <p className="section-label">Planned trade</p>
+                            <h3>{plan.selected.trade.plan.underlying} Plan</h3>
+                          </div>
+                          <span className="badge badge-planned" data-testid="trade-lifecycle">{plan.selected.trade.lifecycle}</span>
+                        </div>
+                        <div className="figure-grid">
+                          <div><p className="section-label">1R</p><p className="figure-value num" data-testid="trade-one-r">{plan.selected.trade.plan.oneR}</p></div>
+                          <div><p className="section-label">Plan R:R</p><p className="figure-value num">{plan.selected.trade.plan.baseline}</p></div>
+                          <div><p className="section-label">Strategy</p><p className="figure-value">Long Stock</p></div>
+                        </div>
+                      </section>
+                      <section aria-label="Plan Reflection" data-testid="plan-reflection" className="card">
                         <h4>Plan Reflection</h4>
                         <p>Thesis: {String(plan.selected.entry.snapshot?.answers?.Thesis ?? '')}</p>
                         <p>Invalidation: {String(plan.selected.entry.snapshot?.answers?.Invalidation ?? '')}</p>
@@ -279,54 +305,86 @@ export function App() {
                         setPositionError('')
                       }}>Add execution</button>
                       {executingId === plan.selected.trade.id && (
-                        <form aria-label="Add execution" onSubmit={e => {
+                        <div className="sheet-backdrop">
+                        <form className="sheet" aria-label="Add execution" onSubmit={e => {
                           e.preventDefault()
                           void onRecordPosition(plan.selected!.trade.id, plan.selected!.revisions.trade)
                         }}>
+                          <div className="sheet-header">
+                            <div>
+                              <p className="section-label">Add execution</p>
+                              <h3>{plan.selected.trade.plan.underlying}</h3>
+                            </div>
+                            <button type="button" onClick={() => { setExecutingId(null); setPositionError('') }}>Cancel</button>
+                          </div>
+                          <p className="section-label">Action</p>
+                          <span className="action-pill">Buy</span>
                           {positionForm.executions.map((execution, index) => (
                             <fieldset key={index}>
                               <legend>Execution {index + 1}</legend>
-                              <label htmlFor={`ex-inst-${index}`}>Execution {index + 1} instrument</label>
-                              <input id={`ex-inst-${index}`} value={execution.instrument} onChange={e => updateExecution(index, 'instrument', e.target.value)} />
-                              <label htmlFor={`ex-qty-${index}`}>Execution {index + 1} quantity</label>
-                              <input id={`ex-qty-${index}`} value={execution.quantity} onChange={e => updateExecution(index, 'quantity', e.target.value)} />
-                              <label htmlFor={`ex-price-${index}`}>Execution {index + 1} price</label>
-                              <input id={`ex-price-${index}`} value={execution.price} onChange={e => updateExecution(index, 'price', e.target.value)} />
-                              <label htmlFor={`ex-fee-${index}`}>Execution {index + 1} fee</label>
-                              <input id={`ex-fee-${index}`} value={execution.fee} onChange={e => updateExecution(index, 'fee', e.target.value)} />
-                              <label htmlFor={`ex-time-${index}`}>Execution {index + 1} economic time</label>
-                              <input id={`ex-time-${index}`} value={execution.economicTime} onChange={e => updateExecution(index, 'economicTime', e.target.value)} />
+                              <div className="field-grid">
+                                <div>
+                                  <label htmlFor={`ex-qty-${index}`}>Execution {index + 1} quantity</label>
+                                  <input id={`ex-qty-${index}`} value={execution.quantity} onChange={e => updateExecution(index, 'quantity', e.target.value)} />
+                                </div>
+                                <div>
+                                  <label htmlFor={`ex-price-${index}`}>Execution {index + 1} price</label>
+                                  <input id={`ex-price-${index}`} value={execution.price} onChange={e => updateExecution(index, 'price', e.target.value)} />
+                                </div>
+                                <div>
+                                  <label htmlFor={`ex-fee-${index}`}>Execution {index + 1} fee</label>
+                                  <input id={`ex-fee-${index}`} value={execution.fee} onChange={e => updateExecution(index, 'fee', e.target.value)} />
+                                </div>
+                                <div>
+                                  <label htmlFor={`ex-time-${index}`}>Execution {index + 1} economic time</label>
+                                  <input id={`ex-time-${index}`} value={execution.economicTime} onChange={e => updateExecution(index, 'economicTime', e.target.value)} />
+                                </div>
+                              </div>
+                              <div>
+                                <label htmlFor={`ex-inst-${index}`}>Execution {index + 1} instrument</label>
+                                <input id={`ex-inst-${index}`} value={execution.instrument} onChange={e => updateExecution(index, 'instrument', e.target.value)} />
+                              </div>
                             </fieldset>
                           ))}
-                          <button type="button" onClick={() => setPositionForm(f => ({
-                            ...f, executions: [...f.executions, emptyExecution()],
-                          }))}>Add another execution</button>
+                          <div className="sheet-actions">
+                            <button type="button" onClick={() => setPositionForm(f => ({
+                              ...f, executions: [...f.executions, emptyExecution()],
+                            }))}>Add another execution</button>
+                          </div>
                           <fieldset>
                             <legend>Position Change Reflection</legend>
-                            <label><input type="radio" name="reflection" checked={positionForm.reflection === 'Defer'} onChange={() => setPositionForm(f => ({ ...f, reflection: 'Defer' }))} /> Defer reflection</label>
-                            <label><input type="radio" name="reflection" checked={positionForm.reflection === 'Decline'} onChange={() => setPositionForm(f => ({ ...f, reflection: 'Decline' }))} /> Decline reflection</label>
-                            <label><input type="radio" name="reflection" checked={positionForm.reflection === 'Complete'} onChange={() => setPositionForm(f => ({ ...f, reflection: 'Complete' }))} /> Complete reflection</label>
+                            <label className="pill-option"><input type="radio" name="reflection" checked={positionForm.reflection === 'Defer'} onChange={() => setPositionForm(f => ({ ...f, reflection: 'Defer' }))} /> Defer reflection</label>
+                            <label className="pill-option"><input type="radio" name="reflection" checked={positionForm.reflection === 'Decline'} onChange={() => setPositionForm(f => ({ ...f, reflection: 'Decline' }))} /> Decline reflection</label>
+                            <label className="pill-option"><input type="radio" name="reflection" checked={positionForm.reflection === 'Complete'} onChange={() => setPositionForm(f => ({ ...f, reflection: 'Complete' }))} /> Complete reflection</label>
                             {positionForm.reflection === 'Complete' && (
-                              <>
-                                <label htmlFor="decision-mode">Decision mode</label>
-                                <select id="decision-mode" value={positionForm.decisionMode} onChange={e => setPositionForm(f => ({ ...f, decisionMode: e.target.value }))}>
-                                  <option value="">Choose…</option>
-                                  <option>As Planned</option>
-                                  <option>Deliberate Adjustment</option>
-                                  <option>Reactive</option>
-                                  <option>Externally Imposed</option>
-                                </select>
-                                <label htmlFor="primary-emotion">Primary emotion</label>
-                                <select id="primary-emotion" value={positionForm.primaryEmotion} onChange={e => setPositionForm(f => ({ ...f, primaryEmotion: e.target.value }))}>
-                                  <option value="">Choose…</option>
-                                  <option>Calm</option><option>Eager</option><option>Anxious</option><option>FOMO</option>
-                                  <option>Revenge</option><option>Relieved</option><option>Frustrated</option><option>Other</option>
-                                </select>
-                                <label htmlFor="decision-confidence">Decision confidence</label>
-                                <input id="decision-confidence" value={positionForm.decisionConfidence} onChange={e => setPositionForm(f => ({ ...f, decisionConfidence: e.target.value }))} />
-                                <label htmlFor="reflection-note">Note</label>
-                                <input id="reflection-note" value={positionForm.note} onChange={e => setPositionForm(f => ({ ...f, note: e.target.value }))} />
-                              </>
+                              <div className="field-grid">
+                                <div>
+                                  <label htmlFor="decision-mode">Decision mode</label>
+                                  <select id="decision-mode" value={positionForm.decisionMode} onChange={e => setPositionForm(f => ({ ...f, decisionMode: e.target.value }))}>
+                                    <option value="">Choose…</option>
+                                    <option>As Planned</option>
+                                    <option>Deliberate Adjustment</option>
+                                    <option>Reactive</option>
+                                    <option>Externally Imposed</option>
+                                  </select>
+                                </div>
+                                <div>
+                                  <label htmlFor="primary-emotion">Primary emotion</label>
+                                  <select id="primary-emotion" value={positionForm.primaryEmotion} onChange={e => setPositionForm(f => ({ ...f, primaryEmotion: e.target.value }))}>
+                                    <option value="">Choose…</option>
+                                    <option>Calm</option><option>Eager</option><option>Anxious</option><option>FOMO</option>
+                                    <option>Revenge</option><option>Relieved</option><option>Frustrated</option><option>Other</option>
+                                  </select>
+                                </div>
+                                <div>
+                                  <label htmlFor="decision-confidence">Decision confidence</label>
+                                  <input id="decision-confidence" value={positionForm.decisionConfidence} onChange={e => setPositionForm(f => ({ ...f, decisionConfidence: e.target.value }))} />
+                                </div>
+                                <div>
+                                  <label htmlFor="reflection-note">Note</label>
+                                  <input id="reflection-note" value={positionForm.note} onChange={e => setPositionForm(f => ({ ...f, note: e.target.value }))} />
+                                </div>
+                              </div>
                             )}
                             {positionForm.reflection === 'Decline' && (
                               <>
@@ -336,30 +394,59 @@ export function App() {
                             )}
                           </fieldset>
                           {positionError && <p role="alert">{positionError}</p>}
-                          <button type="submit">Record position change</button>
+                          <div className="sheet-actions">
+                            <button type="submit">Record position change</button>
+                          </div>
                         </form>
+                        </div>
                       )}
                     </section>
                   )}
 
                   {selectedOpen && (
                     <section aria-label="Open trade detail">
-                      <h3>{selectedOpen.plan.underlying} position</h3>
-                      <p>Lifecycle: <span data-testid="trade-lifecycle">{selectedOpen.lifecycle}</span></p>
-                      <p>Position: <span data-testid="open-position">{selectedOpen.positions[0]?.netQuantity ?? '0'}</span> shares</p>
-                      <p data-testid="open-lots">{selectedOpen.lots.length} open lots</p>
-                      <p>Allocated opening fees: <span data-testid="open-fees">{selectedOpen.lots.reduce((sum, l) => sum + Number(l.allocatedOpeningFee), 0).toFixed(2)}</span></p>
-                      <p>Realized to date: <span data-testid="realized-to-date">{selectedOpen.realizedToDate}</span></p>
-                      <section aria-label="Executions">
+                      <section className="card">
+                        <div className="sheet-header">
+                          <div>
+                            <p className="section-label">Long stock · open</p>
+                            <h3>{selectedOpen.plan.underlying}</h3>
+                          </div>
+                          <span className="badge badge-open" data-testid="trade-lifecycle">{selectedOpen.lifecycle}</span>
+                        </div>
+                        <p className="section-label">Position</p>
+                        <p className="headline num" data-testid="open-position">{selectedOpen.positions[0]?.netQuantity ?? '0'}</p>
+                        <p className="muted">shares · net exposure from opening Executions</p>
+                        <div className="figure-grid">
+                          <div>
+                            <p className="section-label">Open lots</p>
+                            <p className="figure-value num" data-testid="open-lots">{selectedOpen.lots.length} open lots</p>
+                          </div>
+                          <div>
+                            <p className="section-label">Allocated opening fees</p>
+                            <p className="figure-value num" data-testid="open-fees">{selectedOpen.lots.reduce((sum, l) => sum + Number(l.allocatedOpeningFee), 0).toFixed(2)}</p>
+                          </div>
+                          <div>
+                            <p className="section-label">Realized to date</p>
+                            <p className="figure-value num" data-testid="realized-to-date">{selectedOpen.realizedToDate}</p>
+                          </div>
+                        </div>
+                      </section>
+                      <section aria-label="Executions" className="card">
                         <h4>Executions</h4>
-                        <ul>{selectedOpen.executions.map(e => (
-                          <li key={e.id}>{e.instrument} · {e.quantity} @ {e.price} · fee {e.fee}</li>
+                        <ul className="detail-list">{selectedOpen.executions.map(e => (
+                          <li key={e.id}>
+                            <span>{e.instrument} · {e.quantity} @ {e.price}</span>
+                            <span className="num">fee {e.fee}</span>
+                          </li>
                         ))}</ul>
                       </section>
-                      <section aria-label="Open Lots">
+                      <section aria-label="Open Lots" className="card">
                         <h4>Open Lots</h4>
-                        <ul>{selectedOpen.lots.map(l => (
-                          <li key={l.id}>{l.instrument} · {l.quantity} · basis {l.basis} · allocated fee {l.allocatedOpeningFee}</li>
+                        <ul className="detail-list">{selectedOpen.lots.map(l => (
+                          <li key={l.id}>
+                            <span>{l.instrument} · {l.quantity} · basis {l.basis}</span>
+                            <span className="num">allocated fee {l.allocatedOpeningFee}</span>
+                          </li>
                         ))}</ul>
                       </section>
                     </section>
