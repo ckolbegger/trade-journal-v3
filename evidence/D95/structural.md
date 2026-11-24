@@ -697,3 +697,7 @@ Commit `7e2938c6`: `answerCloseReviewIn` (e2e/d6/support.ts, used by the d7, d8p
 ocr of T95.28-F1 (session cf6944ad): 7 files, 0 findings. `evidence/D95/ocr/T95.28-F1-7e2938c6.json`. Next: run `t95.28-seed-6-2` (browser-auto a3578e49).
 
 Run `t95.28-seed-6-2` (browser-auto a3578e49, full tier, after T95.28-F1): unit 2928, integration 329, browser 127, 79, 55 and 129 (4 skipped), checks 14 of 14. Passed. T95.28 done.
+
+### T95.29
+
+Commit `b6d31abe` (tests and helpers only; 38 files): sale reflections in helpers carry a Plan Departure Reason (`completeSale`, `saleReflection`, browser `answerSaleIn`); a closing sale's Close Review is deferred and resolved through the Debt (`resolveCloseReview`, `answerCloseReviewOnDetail`); `closeTheTrade(page)` takes no argument. Red came from a temporary stand-in for T95.36's rule in record-position-change.ts (removed; `git diff -- src` holds tests only); 13 red/green rows. Retired parts: AC-POS-004 "for each disposition" now defers and resolves through the Debt (source `source.trade-detail`); the Catalog resolution case lost its Close Review form-issue half. `eslint-suppressions.json` pruned (two entries the edit removed; one for the deleted CardFigures.tsx). Unchanged: d8/backup.test (seed 5 fixture, no Plan Departure Reason prompt; note for T95.36). Unit and integration 3257 passed; e2e d6, d7, d7p, d8p 48 passed.
