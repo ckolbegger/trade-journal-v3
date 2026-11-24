@@ -1,0 +1,112 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 0,
+    "total_tokens": 38674,
+    "input_tokens": 38366,
+    "output_tokens": 308,
+    "cache_read_tokens": 3328,
+    "elapsed": "14s"
+  },
+  "tool_calls": {
+    "total": 6,
+    "by_tool": {
+      "code_search": 2,
+      "file_read": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/coordinators/valuation/attention.ts",
+        "src/coordinators/valuation/option-attention.test.ts",
+        "tests/integration/d95/stop-unavailable.test.ts"
+      ]
+    }
+  ],
+  "session_id": "f14acec8-c4b3-424c-ba5e-760c6f8c4735",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "f14acec8-c4b3-424c-ba5e-760c6f8c4735",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "e7366355",
+      "resolved_base": "98122774f8812a7c386d5b808ffe25dfb13e07f3",
+      "resolved_head": "e73663555403ad0c46daed962eec1004f19bd488",
+      "exact_range": "98122774f8812a7c386d5b808ffe25dfb13e07f3..e73663555403ad0c46daed962eec1004f19bd488",
+      "source_artifact_sha256": "fbd5b93ee3558bf8ada90bb2a0b0b11988438fa4850e240fbb338669cd1ec686"
+    },
+    "execution": {
+      "ocr_version": "v1.14.2",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "01439cf8759a73b25ce50b9a2a3083b7a0414801d438a6ca84e3a4647d5ecbdc",
+          "path": "tests/integration/d95/stop-unavailable.test.ts",
+          "fingerprint": "10d9a5710d0a79301baadd85c6d20ae5f82c6da1f1a4ba6b7fb4077f910a0002"
+        },
+        {
+          "item_id": "26f3b7a0d185848ee422f3d31c4b47aada1fa5fe6694a8b92c4c1fe2be218bdf",
+          "path": "src/coordinators/valuation/option-attention.test.ts",
+          "fingerprint": "c5968fa6d9e02c51f9a9535afd016985c08a98e373f7dde0a7f748ae6a74c8c1"
+        },
+        {
+          "item_id": "9034ab22766968e1b5addc66277401296a7360fc83ca7dd7a428874bc79c1e88",
+          "path": "src/coordinators/valuation/attention.ts",
+          "fingerprint": "44180d816808a40d109ef8db0523dfea44e55f4c6b70ed25b4f8290c1c0285bc"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "01439cf8759a73b25ce50b9a2a3083b7a0414801d438a6ca84e3a4647d5ecbdc",
+          "path": "tests/integration/d95/stop-unavailable.test.ts",
+          "fingerprint": "10d9a5710d0a79301baadd85c6d20ae5f82c6da1f1a4ba6b7fb4077f910a0002"
+        },
+        {
+          "item_id": "26f3b7a0d185848ee422f3d31c4b47aada1fa5fe6694a8b92c4c1fe2be218bdf",
+          "path": "src/coordinators/valuation/option-attention.test.ts",
+          "fingerprint": "c5968fa6d9e02c51f9a9535afd016985c08a98e373f7dde0a7f748ae6a74c8c1"
+        },
+        {
+          "item_id": "9034ab22766968e1b5addc66277401296a7360fc83ca7dd7a428874bc79c1e88",
+          "path": "src/coordinators/valuation/attention.ts",
+          "fingerprint": "44180d816808a40d109ef8db0523dfea44e55f4c6b70ed25b4f8290c1c0285bc"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "20b2f19e4f2dc31fd0ced4c16f230fec256076282cb52d8476b5d7ff6fe9f6b8",
+          "path": "evidence/D95/tdd-log/T95.26-B1.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 13859
+  }
+}
