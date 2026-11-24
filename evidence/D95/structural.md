@@ -582,3 +582,7 @@ Run `t95.26-b1` (browser-task): unit 2892, integration 330, browser 20, checks 1
 Commit `2bd629f7`: new `Figures` wraps each signed money figure in `.nowrap`; the Now box uses it for row values and the Marks' change. Plan box has no signed figure. Red then green (browser, DALE at 320: "−$2,016.00" broken). e2e/d95 and e2e/d9ar 86 passed.
 
 ocr of T95.26-B2 (session a4136929): 3 files, 0 findings. `evidence/D95/ocr/T95.26-B2-2bd629f7.json`. T95.26-F1 (Light, test-only) goes next; B2's quick run follows it and covers both.
+
+### T95.26-F1
+
+Commit `ce3e1043`: `tj:open-list-ready` is emitted from a `useEffect` after the Ready render; the three count assertions after a `findBy` now `await waitFor`. Under load 1 of 12 failed before; 0 of 10 after. Product unchanged. Tech debt item 11's unit flake closed. B2's quick run is folded into the full run that follows (the full tier contains the task tier).
