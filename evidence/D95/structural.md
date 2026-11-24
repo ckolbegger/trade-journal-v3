@@ -586,3 +586,5 @@ ocr of T95.26-B2 (session a4136929): 3 files, 0 findings. `evidence/D95/ocr/T95.
 ### T95.26-F1
 
 Commit `ce3e1043`: `tj:open-list-ready` is emitted from a `useEffect` after the Ready render; the three count assertions after a `findBy` now `await waitFor`. Under load 1 of 12 failed before; 0 of 10 after. Product unchanged. Tech debt item 11's unit flake closed. B2's quick run is folded into the full run that follows (the full tier contains the task tier).
+
+Run `t95.26-gate-3` (browser-full, T95.26-B1, T95.26-B2, T95.26-F1): unit 2892, integration 330, browser 127, 79, 55 and 127 (4 skipped), checks 14 of 14. Passed. It covers T95.26-B2's quick run. Critic-2 follows.
