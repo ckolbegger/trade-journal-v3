@@ -679,7 +679,9 @@ export function createJournal(deps: JournalDeps): Journal {
     // The roles the Debt was owed with must be answered (U14), whatever the prompt's own required flag.
     for (const role of debt.requires ?? []) {
       const prompt = definition.prompts.find((p) => p.kind === 'Text' && p.role === role);
-      if (isBlank(prompt && form.answers[prompt.id]) && !issues.some((i) => i.promptId === prompt?.id)) {
+      const answer = prompt && form.answers[prompt.id];
+      // Only a non-empty Text answer answers a role; another kind of answer does not.
+      if ((answer?.kind !== 'Text' || isBlank(answer)) && !issues.some((i) => i.promptId === prompt?.id)) {
         issues.push({ ...(prompt ? { promptId: prompt.id } : {}), code: 'RequiredAnswerMissing' });
       }
     }

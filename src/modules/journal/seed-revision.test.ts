@@ -289,6 +289,23 @@ describe('a deferred reflection carries the roles its answer must include (U14, 
     });
   });
 
+  it('should refuse a required role answered by a non-Text answer', async () => {
+    const setup = await owed();
+    const [, latest] = await definitionsOf(setup.persistence, 'entry-type.position-change-reflection');
+    const otherAnswers = {
+      'prompt.position-change-reflection.decision-mode': { kind: 'Option', optionId: 'option.position-change-reflection.decision-mode.as-planned' },
+      'prompt.position-change-reflection.primary-emotion': { kind: 'Option', optionId: 'option.position-change-reflection.primary-emotion.calm' },
+      'prompt.position-change-reflection.decision-confidence': { kind: 'Scale', value: 4 },
+    };
+    const saved = await setup.journal.save({
+      intention: 'ResolveDebt',
+      debtId: setup.debt.debtId,
+      expectedDebtRevision: setup.debt.revision,
+      resolution: { kind: 'Answer', form: { definitionId: latest!.id, answers: { ...otherAnswers, [DEPARTURE]: { kind: 'Scale', value: 1 } } } },
+    } as never);
+    expect(saved).toEqual({ kind: 'Rejected', issues: [{ promptId: DEPARTURE, code: 'RequiredAnswerMissing' }] });
+  });
+
   it('should refuse to resolve that Debt with an answer missing a required role, and still let it be declined', async () => {
     const setup = await owed();
     const [, latest] = await definitionsOf(setup.persistence, 'entry-type.position-change-reflection');
