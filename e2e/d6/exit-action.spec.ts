@@ -27,7 +27,7 @@ test.describe('B6.5 Exit link', () => {
     await openTradeFromOpenList(page, 'XYZ');
     await openExitForm(page);
     await fillRows(page, [sell('100', '53.00', '1.00', '')]);
-    await closeTheTrade(page, 'now');
+    await closeTheTrade(page);
     await page.getByRole('button', { name: 'Save exit' }).click();
     await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible();
 

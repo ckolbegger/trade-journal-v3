@@ -200,9 +200,9 @@ describe('replayTrade (A212, A213)', () => {
   });
 
   it('should end a Closed Trade at its final session', async () => {
-    const { record, closeReviewForm, stack, replay } = await oc3Stack();
-    // The last contract is sold Wednesday 12:00, which closes the Trade; Thursday's Mark and Hold were saved before.
-    await record('Sell', '2026-10-14T16:00:00Z', '1', '3.10', '0.65', stack.reflection, closeReviewForm);
+    const { record, stack, replay } = await oc3Stack();
+    // The last contract is sold Wednesday 12:00, which closes the Trade (its Close Review put off); Thursday's Mark and Hold were saved before.
+    await record('Sell', '2026-10-14T16:00:00Z', '1', '3.10', '0.65', stack.saleReflection, { kind: 'Defer' });
     const view = ready(await replay());
 
     expect(view.sessions.map((s) => s.date)).toEqual([DATES.mon, DATES.tue, DATES.wed]);
@@ -344,10 +344,12 @@ async function seriesStack(series: ReplayTestSeries, strategyKey: string, now: s
       originTradeId: tradeId,
       trades: [{ tradeId, expectedFactRevision: current.factRevision }],
       members,
-      reflection: stack.reflection,
-      ...(closing && { ...(!expiring && { closeReasonId: reasons.items[0]!.id }), closeReview: closeReviewForm }),
+      reflection: members.some((m) => m.kind === 'Execution' && m.action === (leg.side === 'Short' ? 'Buy' : 'Sell')) ? stack.saleReflection : stack.reflection,
+      // A closing sale only puts its Close Review off (A312); an Expiration still answers it (T95.48 moves that).
+      ...(closing && { ...(!expiring && { closeReasonId: reasons.items[0]!.id }), closeReview: expiring ? closeReviewForm : ({ kind: 'Defer' } as const) }),
     });
     if (result.kind !== 'Recorded') throw new Error(`expected Recorded, got ${JSON.stringify(result)}`);
+    if (closing && !expiring) await stack.resolveCloseReview(tradeId, closeReviewForm);
   }
   const held = leg.instrument;
   const underlying: Instrument = { kind: 'Stock', symbol: plan.underlying };

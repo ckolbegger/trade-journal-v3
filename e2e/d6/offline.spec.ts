@@ -1,5 +1,5 @@
 import {
-  answerIn, closeTheTrade, copyTA, detail, exitReflection, expect, factsOf, fillRows, firstPage, launchAt, openClosedTab, openDrawer, openExitForm, openTradeFromOpenList, probe, receiptResult,
+  answerSaleIn, closeTheTrade, copyTA, detail, exitReflection, expect, factsOf, fillRows, firstPage, launchAt, openClosedTab, openDrawer, openExitForm, openTradeFromOpenList, probe, receiptResult,
   sell, test, tradesOf, TUESDAY_1405, TUESDAY_1405_LOCAL, TUESDAY_1000_LOCAL, valueOf, workspaceOf,
 } from './support.ts';
 
@@ -23,7 +23,7 @@ test.describe('B6.8 Offline cold restart (AC-DEL-001)', () => {
     // The partial exit: 30 of 100 shares, with its reflection.
     await openExitForm(page);
     await fillRows(page, [sell('30', '52.00', '0.60', TUESDAY_1000_LOCAL)]);
-    await answerIn(exitReflection(page));
+    await answerSaleIn(exitReflection(page));
     await page.getByRole('button', { name: 'Save exit' }).click();
     await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible();
     await expect(valueOf(receiptResult(page), 'Realized to date')).toContainText('$55.90');
@@ -34,7 +34,7 @@ test.describe('B6.8 Offline cold restart (AC-DEL-001)', () => {
     // The full exit of the remaining 70, closing the Trade.
     await openExitForm(page);
     await fillRows(page, [sell('70', '53.00', '1.40', TUESDAY_1405_LOCAL)]);
-    await closeTheTrade(page, 'now');
+    await closeTheTrade(page);
     await page.getByRole('button', { name: 'Save exit' }).click();
     await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible();
     await expect(valueOf(receiptResult(page), 'Lifecycle')).toHaveText('Closed');

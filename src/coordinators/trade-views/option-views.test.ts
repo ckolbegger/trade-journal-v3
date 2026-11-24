@@ -71,12 +71,15 @@ async function optionStack(now: string) {
   const record = async (tradeId: string, members: (legId: string) => PositionChangeMember[] | ExpirationMember[], closeReviewDisposition?: ReflectionDisposition) => {
     const current = await stack.tradeRecord.getRecord({ tradeId, projection: 'AnalysisInput' });
     if (current.kind !== 'Found') throw new Error('no Trade');
-    const legId = (current.projection as unknown as { plan: { legs: { factId: string }[] } }).plan.legs[0]!.factId;
+    const leg = (current.projection as unknown as { plan: { legs: { factId: string; side: string }[] } }).plan.legs[0]!;
+    const legMembers = members(leg.factId);
+    // A sale (a Sell of a long leg, a Buy of a short one) carries a fixed Plan Departure Reason (D9.5 A312).
+    const sale = legMembers.some((m) => m.kind === 'Execution' && m.action === (leg.side === 'Short' ? 'Buy' : 'Sell'));
     const result = await stack.tradeWorkflows.recordPositionChange({
       originTradeId: tradeId,
       trades: [{ tradeId, expectedFactRevision: current.factRevision }],
-      members: members(legId),
-      reflection: stack.reflection,
+      members: legMembers,
+      reflection: sale ? stack.saleReflection : stack.reflection,
       ...(closeReviewDisposition && { closeReview: closeReviewDisposition }),
     });
     if (result.kind !== 'Recorded') throw new Error(`expected Recorded, got ${JSON.stringify(result)}`);

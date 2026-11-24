@@ -5,6 +5,8 @@ import {
   defineSetup, detail, executionRow, expect, firstPage, FOUR_TRADES, createTrades, LAUNCH, launchAt, MONDAY_1700, onboardedAt, type Profile, type ProbedDatabase, type Row, type Setup,
 } from '../d5r/support.ts';
 
+import { answerDebt } from '../d5/support.ts';
+
 export * from '../d5r/support.ts';
 
 // Instants in America/New_York (EDT, UTC-4) used by these cases.
@@ -68,14 +70,30 @@ export async function answerCloseReviewIn(section: Locator): Promise<void> {
   await section.getByLabel('What is the key lesson?').fill('Stick to the Plan.');
 }
 
+// The exit's own reflection as a sale gives it: the three answers and a fixed Plan Departure Reason, an optional answer
+// that a sale leaving the Plan needs (D9.5 A312). The field is filled where the form shows it.
+export async function answerSaleIn(section: Locator): Promise<void> {
+  await answerIn(section);
+  const reason = section.getByLabel('Why did you leave the Plan?');
+  if ((await reason.count()) > 0) await reason.fill('Stopped out early.');
+}
+
+// A Close Review put off at the sale, answered afterwards on the Trade's Detail through its Debt: from the Needs you rail to the
+// saved answer. The Trade's Detail must be open.
+export async function answerCloseReviewOnDetail(page: Page): Promise<void> {
+  await detail.reflectNowButton(page).click();
+  await answerCloseReviewIn(detail.debtForm(page));
+  await answerDebt(page, undefined, 'Detail');
+}
+
 // Answers the exit's own reflection and the Closing the Trade section of an exit that sells every share: Target Reached, and
-// the Close Review either answered ('now') or deferred ('later').
-export async function closeTheTrade(page: Page, closeReview: 'now' | 'later'): Promise<void> {
-  await answerIn(exitReflection(page));
+// the Close Review put off at the sale (A312: a terminal sale only defers it). A spec whose subject is the Close Review's
+// answer gives it afterwards through the Debt.
+export async function closeTheTrade(page: Page): Promise<void> {
+  await answerSaleIn(exitReflection(page));
   await expect(closingSection(page)).toBeVisible();
   await closeReasonGroup(page).getByLabel('Target Reached', { exact: true }).check();
-  if (closeReview === 'later') await closeReviewGroup(page).getByLabel('Reflect later').check();
-  else await answerCloseReviewIn(closingSection(page));
+  await closeReviewGroup(page).getByLabel('Reflect later').check();
 }
 
 export const receiptResult = (page: Page): Locator => page.getByRole('region', { name: 'Result' });

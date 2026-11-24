@@ -146,16 +146,18 @@ async function closedWithCompletedCloseReview(stack: ReviewStack) {
     ],
     reflection: { kind: 'Defer' },
     closeReasonId: reasons.items[0]!.id,
-    closeReview: {
-      kind: 'Complete',
-      form: {
-        definitionId: closeReview.definition.id,
-        answers: { 'prompt.close-review.take-again': { kind: 'Option', optionId: 'option.close-review.take-again.yes-as-planned' }, 'prompt.close-review.key-lesson': { kind: 'Text', text: 'Size down into earnings.' } },
-      },
-    },
+    // The sale only puts its Close Review off (A312); it is answered afterwards through the Debt.
+    closeReview: { kind: 'Defer' },
   });
   if (result.kind !== 'Recorded') throw new Error(`expected Recorded, got ${result.kind}`);
-  return { tradeId: trade.tradeId, closeReviewEntryId: result.receipt.closeReview!.id };
+  const closeReviewEntryId = await stack.resolveCloseReview(trade.tradeId, {
+    kind: 'Complete',
+    form: {
+      definitionId: closeReview.definition.id,
+      answers: { 'prompt.close-review.take-again': { kind: 'Option', optionId: 'option.close-review.take-again.yes-as-planned' }, 'prompt.close-review.key-lesson': { kind: 'Text', text: 'Size down into earnings.' } },
+    },
+  });
+  return { tradeId: trade.tradeId, closeReviewEntryId: closeReviewEntryId! };
 }
 
 describe('Close Review outcome of an owed card (A90)', () => {

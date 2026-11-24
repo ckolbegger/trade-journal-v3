@@ -18,7 +18,7 @@ test.describe('T8P.26-B3 a Journal card whose session has no Mark has no change 
     await setupPage.goto(`/trades/${def}`);
     await openExitForm(setupPage);
     await fillRows(setupPage, [sell('100', '44.00', '1.00', '2026-10-12T15:00')]);
-    await closeTheTrade(setupPage, 'now');
+    await closeTheTrade(setupPage);
     await setupPage.getByRole('button', { name: 'Save exit' }).click();
     await expect(setupPage.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible(LAUNCH);
     await openReview(setupPage);

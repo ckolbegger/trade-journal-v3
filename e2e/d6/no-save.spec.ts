@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 import {
-  answerCloseReviewIn, answerIn, closeReasonGroup, closeReviewGroup, closingSection, copyTA, debtsOf, declinesOf, entriesWithSettledDebt, executionRow, exitReflection, expect, factsOf, fillRows,
+  answerCloseReviewIn, answerSaleIn, closeReasonGroup, closeReviewGroup, closingSection, copyTA, debtsOf, declinesOf, entriesWithSettledDebt, executionRow, exitReflection, expect, factsOf, fillRows,
   firstPage, launchAt, openExitForm, openTradeFromOpenList, probe, LAUNCH, sell, test, tradesOf, TUESDAY_1405, TUESDAY_1405_LOCAL, workspaceOf,
 } from './support.ts';
 
@@ -58,7 +58,7 @@ test.describe('B6.11 Nothing saved without Save (AC-JOUR-001)', () => {
     // A full exit with the Close Reason and both reflections answered, plus a Note on each, all unsaved.
     await openExitForm(page);
     await fillRows(page, [sell('100', TYPED.price, TYPED.fee, TUESDAY_1405_LOCAL)]);
-    await answerIn(exitReflection(page));
+    await answerSaleIn(exitReflection(page));
     await exitReflection(page).getByLabel('Note').fill(TYPED.exitNote);
     await expect(closingSection(page)).toBeVisible();
     await closeReasonGroup(page).getByLabel('Target Reached', { exact: true }).check();

@@ -14,7 +14,7 @@ const owedItem = (page: Page, symbol: string): Locator => page.getByRole('list',
 async function closeWithCloseReviewLater(page: Page): Promise<void> {
   await openExitForm(page);
   await fillRows(page, [sell('100', '53.00', '1.00', TUESDAY_1405_LOCAL)]);
-  await closeTheTrade(page, 'later');
+  await closeTheTrade(page);
   await page.getByRole('button', { name: 'Save exit' }).click();
   await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible();
   await expect(page.getByText('Close Review owed')).toBeVisible();

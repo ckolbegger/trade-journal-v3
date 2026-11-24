@@ -62,10 +62,12 @@ export async function seriesStack(series: ReplayTestSeries, strategyKey: string,
       originTradeId: tradeId,
       trades: [{ tradeId, expectedFactRevision: current.factRevision }],
       members,
-      reflection: stack.reflection,
-      ...(closing && { ...(!expiring && { closeReasonId: reasons.items[0]!.id }), closeReview: closeReviewForm }),
+      reflection: members.some((m) => m.kind === 'Execution' && m.action === (leg.side === 'Short' ? 'Buy' : 'Sell')) ? stack.saleReflection : stack.reflection,
+      // A closing sale only puts its Close Review off (A312) and answers it afterwards through the Debt.
+      ...(closing && { ...(!expiring && { closeReasonId: reasons.items[0]!.id }), closeReview: expiring ? closeReviewForm : ({ kind: 'Defer' } as const) }),
     });
     if (result.kind !== 'Recorded') throw new Error(`expected Recorded, got ${JSON.stringify(result)}`);
+    if (closing && !expiring) await stack.resolveCloseReview(tradeId, closeReviewForm);
   }
   const held = leg.instrument;
   const underlying: Instrument = { kind: 'Stock', symbol: plan.underlying };

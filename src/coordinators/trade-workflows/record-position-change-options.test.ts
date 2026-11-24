@@ -122,8 +122,17 @@ const closeReviewForm = (ref: Ref): ReflectionDisposition => ({
   form: { definitionId: ref.closeReviewDefinitionId, answers: { 'prompt.close-review.take-again': { kind: 'Option', optionId: 'option.close-review.take-again.yes-as-planned' }, 'prompt.close-review.key-lesson': { kind: 'Text', text: 'Size down into earnings.' } } },
 });
 
+// A sale (a Sell of a long leg, a Buy of a short one) carries a fixed Plan Departure Reason, an optional answer under
+// manifest 6 and what a sale that leaves the Plan requires (D9.5 A312).
+const completeSale = (ref: Ref): ReflectionDisposition => {
+  const reflection = complete(ref);
+  if (reflection.kind !== 'Complete') throw new Error('expected Complete');
+  return { ...reflection, form: { ...reflection.form, answers: { ...reflection.form.answers, 'prompt.position-change-reflection.plan-departure': { kind: 'Text', text: 'Stopped out early.' } } } };
+};
+
 function command(ref: Ref, expectedFactRevision: number, members: PositionChangeCommand['members'], extra: Partial<PositionChangeCommand> = {}): PositionChangeCommand {
-  return { originTradeId: ref.trade.tradeId, trades: [{ tradeId: ref.trade.tradeId, expectedFactRevision }], members, reflection: complete(ref), ...extra };
+  const sale = members.some((m) => m.kind === 'Execution' && m.action === (ref.trade.plan.legs[0]!.side === 'Short' ? 'Buy' : 'Sell'));
+  return { originTradeId: ref.trade.tradeId, trades: [{ tradeId: ref.trade.tradeId, expectedFactRevision }], members, reflection: sale ? completeSale(ref) : complete(ref), ...extra };
 }
 
 // Records each change in turn with a completed reflection, from the Plan's FactRevision 1.
@@ -180,7 +189,7 @@ describe('option Executions', () => {
       { source: 'TradeWorkflows', field: 'closeReview', code: 'CloseReviewDispositionRequired' },
     ]);
     expect(await dumpAll(ref.stack.factory)).toEqual(before);
-    const accepted = await ref.stack.tradeWorkflows.recordPositionChange(command(ref, revision, buyAll, { closeReasonId: ref.closeReasonId, closeReview: closeReviewForm(ref) }));
+    const accepted = await ref.stack.tradeWorkflows.recordPositionChange(command(ref, revision, buyAll, { closeReasonId: ref.closeReasonId, closeReview: { kind: 'Defer' } }));
     if (accepted.kind !== 'Recorded') throw new Error(`expected Recorded, got ${JSON.stringify(accepted)}`);
     expect(accepted.receipt.lifecycleTransitions).toEqual([{ tradeId: ref.trade.tradeId, from: 'Open', to: 'Closed' }]);
   });

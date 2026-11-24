@@ -1,5 +1,5 @@
 import {
-  answerIn, closeReasonGroup, closeTheTrade, closingSection, createTrades, createTA, detail, executionRow, exitReflection, expect, factsOf, FOUR_TRADES, fillRows, firstPage, launchAt, MONDAY_1700,
+  answerSaleIn, closeReasonGroup, closeReviewGroup, closeTheTrade, createTrades, createTA, detail, executionRow, exitReflection, expect, factsOf, FOUR_TRADES, fillRows, firstPage, launchAt, MONDAY_1700,
   onboardedAt, openDrawer, openExitForm, openTradeFromOpenList, probe, LAUNCH, receiptResult, sell, test, tradesOf, TUESDAY_1405, TUESDAY_1405_LOCAL, TUESDAY_1000_LOCAL, workspaceOf,
 } from './support.ts';
 
@@ -19,14 +19,14 @@ test.describe('B6.9 Recovery Only (faults build)', () => {
     await openTradeFromOpenList(first, 'XYZ');
     await openExitForm(first);
     await fillRows(first, [sell('100', '53.00', '1.40', TUESDAY_1405_LOCAL)]);
-    await closeTheTrade(first, 'later');
+    await closeTheTrade(first);
     await first.getByRole('button', { name: 'Save exit' }).click();
     await expect(first.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible();
     await first.goto('/');
     await openTradeFromOpenList(first, 'ABC');
     await openExitForm(first);
     await fillRows(first, [sell('40', '31.00', '0.50', TUESDAY_1000_LOCAL)]);
-    await answerIn(exitReflection(first));
+    await answerSaleIn(exitReflection(first));
     await first.getByRole('button', { name: 'Save exit' }).click();
     await expect(first.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible();
     const before = await probe(first);
@@ -87,7 +87,7 @@ test.describe('B6.10 Mid-session failure (faults build, AC-DEL-006)', () => {
     await openTradeFromOpenList(page, 'XYZ');
     await openExitForm(page);
     await fillRows(page, [sell('100', '53.00', '1.40', TUESDAY_1405_LOCAL)]);
-    await closeTheTrade(page, 'now');
+    await closeTheTrade(page);
     const before = workspaceOf(await probe(page))!;
 
     await page.evaluate(() => window.__tjFaults?.set(['inventory']));
@@ -102,7 +102,7 @@ test.describe('B6.10 Mid-session failure (faults build, AC-DEL-006)', () => {
     await expect(executionRow(page, 1).getByLabel('Price')).toHaveValue('53.00');
     await expect(exitReflection(page).getByRole('radiogroup', { name: 'Decision mode' }).getByLabel('As Planned')).toBeChecked();
     await expect(closeReasonGroup(page).getByLabel('Target Reached', { exact: true })).toBeChecked();
-    await expect(closingSection(page).getByRole('radiogroup', { name: 'Would you take this Trade again under similar conditions?' }).getByLabel('Yes, as planned')).toBeChecked();
+    await expect(closeReviewGroup(page).getByLabel('Reflect later')).toBeChecked();
     await expect(receiptResult(page)).toHaveCount(0);
     const workspace = workspaceOf(await probe(page))!;
     expect(tradesOf(workspace)[0]!.lifecycle).toBe('Open');

@@ -26,6 +26,7 @@ describe('I8.2 Concurrent mutation', () => {
     const oc = trades.find((t) => t.lifecycle === 'Open' && t.facts.some((f) => f.kind === 'PlannedLeg' && f.versions.at(-1)!.value.instrument?.right === 'Call' && f.versions.at(-1)!.value.instrument?.symbol === 'XYZ'));
     if (!oc) throw new Error('W7 holds no open XYZ Long Call');
     const sellTime = '2026-11-20T20:00:00Z';
+    // The fixture is Workspace at Journal seed 5, whose form has no Plan Departure Reason prompt: its reflection stays as the form has it.
     const command = await optionCommand(app, oc.tradeId, [await optionExecution(app, oc.tradeId, 'Sell', { quantity: '1', price: '3.00', economicTime: sellTime, fee: '0.65' })], {
       reflection: await complete(app),
       closeReasonId: await closeReasonId(app, 'Time-Based Exit'),

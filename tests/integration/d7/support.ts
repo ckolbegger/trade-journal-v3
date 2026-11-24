@@ -9,7 +9,7 @@ import type { ReflectionDisposition } from '../../../src/modules/journal/index.t
 import type { StrategyRecord } from '../../../src/modules/reference-catalog/index.ts';
 import { instrumentKey } from '../../../src/domain/instrument/index.ts';
 import { planCommand } from '../d1/support.ts';
-import { complete, device, loaded, onboarded, PC1_TIME, PLAN_TIME, planStock, record, recordDeferred, saveMark, type Device, type Fill } from '../d6/support.ts';
+import { complete, completeSale, device, loaded, onboarded, PC1_TIME, PLAN_TIME, planStock, record, recordDeferred, resolveCloseReview, saveMark, type Device, type Fill } from '../d6/support.ts';
 
 export * from '../d6/support.ts';
 
@@ -118,21 +118,26 @@ export async function expirationMember(app: Application, tradeId: string, quanti
 
 // A command for the given members against the Trade's current FactRevision.
 export async function optionCommand(app: Application, tradeId: string, members: readonly (PositionChangeMember | ExpirationMember)[], options: ChangeOptions = {}): Promise<PositionChangeCommand> {
-  const { factRevision } = await loaded(app, tradeId);
+  const { factRevision, leg } = await loaded(app, tradeId);
+  // A sale reduces the Position: a Sell of a long leg, a Buy of a short one.
+  const sale = members.some((m) => m.kind === 'Execution' && m.action === (leg.side === 'Short' ? 'Buy' : 'Sell'));
   return {
     originTradeId: tradeId,
     trades: [{ tradeId, expectedFactRevision: factRevision }],
     members,
-    reflection: options.reflection ?? (await complete(app)),
+    reflection: options.reflection ?? (sale ? await completeSale(app) : await complete(app)),
     ...(options.closeReasonId !== undefined && { closeReasonId: options.closeReasonId }),
     ...(options.closeReview !== undefined && { closeReview: options.closeReview }),
   };
 }
 
 // Records one option Execution and requires it to be accepted.
+// A Close Review that is to be answered or declined is put off at the change and then resolved through its Debt (D9.5 A312).
 export async function recordOption(app: Application, tradeId: string, action: 'Buy' | 'Sell', fill: Fill, options: ChangeOptions = {}) {
-  const result = await app.TradeWorkflows.recordPositionChange(await optionCommand(app, tradeId, [await optionExecution(app, tradeId, action, fill)], options));
+  const later = options.closeReasonId !== undefined && options.closeReview !== undefined && options.closeReview.kind !== 'Defer' ? options.closeReview : undefined;
+  const result = await app.TradeWorkflows.recordPositionChange(await optionCommand(app, tradeId, [await optionExecution(app, tradeId, action, fill)], later ? { ...options, closeReview: { kind: 'Defer' } } : options));
   if (result.kind !== 'Recorded') throw new Error(`recordPositionChange: ${JSON.stringify(result)}`);
+  if (later) await resolveCloseReview(app, tradeId, later);
   return result;
 }
 

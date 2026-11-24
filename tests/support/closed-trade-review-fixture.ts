@@ -113,10 +113,12 @@ export async function closedTradeReviewFixture(options: ClosedTradeFixtureOption
       originTradeId: trade.tradeId,
       trades: [{ tradeId: trade.tradeId, expectedFactRevision: current.factRevision }],
       members: [member],
-      reflection: stack.reflection,
-      ...(closeReviewDisposition && { closeReasonId, closeReview: closeReviewDisposition }),
+      reflection: stack.saleReflection,
+      ...(closeReviewDisposition && { closeReasonId, closeReview: deferred }),
     });
     if (result.kind !== 'Recorded') throw new Error(`exit of ${name}: expected Recorded, got ${result.kind}`);
+    // The sale only puts its Close Review off; a completed one is answered afterwards through the Debt.
+    if (closeReviewDisposition && closeReviewDisposition.kind !== 'Defer') await stack.resolveCloseReview(trade.tradeId, closeReviewDisposition);
   };
   const buy = async (name: ClosedTradeName, economicTime: string, quantity: string, reflection?: ReflectionDisposition) => {
     if (included(name)) await stack.fill(recordOf(name), economicTime, quantity, PLANS[name].entry, reflection);

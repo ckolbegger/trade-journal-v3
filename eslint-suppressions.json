@@ -59,11 +59,6 @@
       "count": 1
     }
   },
-  "src/coordinators/trade-workflows/record-position-change.test.ts": {
-    "no-nested-ternary": {
-      "count": 2
-    }
-  },
   "src/coordinators/workspace/backup.test.ts": {
     "no-nested-ternary": {
       "count": 1
@@ -145,11 +140,6 @@
     }
   },
   "src/ui/cockpit/replay/price-strip.test.tsx": {
-    "no-nested-ternary": {
-      "count": 1
-    }
-  },
-  "src/ui/screens/CardFigures.tsx": {
     "no-nested-ternary": {
       "count": 1
     }

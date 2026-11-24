@@ -1,5 +1,5 @@
 import {
-  answerIn, closeTheTrade, closingSection, copyTA, detail, executionRow, exitReflection, expect, factsOf, fillRows, firstPage, launchAt, lotMatchRecordsIn, openClosedTab,
+  answerSaleIn, closeTheTrade, closingSection, copyTA, detail, executionRow, exitReflection, expect, factsOf, fillRows, firstPage, launchAt, lotMatchRecordsIn, openClosedTab,
   openDrawer, openExitForm, openTradeFromOpenList, probe, receiptResult, sell, setClock, test, tradesOf, TUESDAY_1000_LOCAL, TUESDAY_1405, TUESDAY_1405_LOCAL, valueOf, workspaceOf,
 } from './support.ts';
 
@@ -19,7 +19,7 @@ test.describe('B6.1 Partial then final exit', () => {
     await openExitForm(page);
     await fillRows(page, [sell('30', '52.00', '0.60', TUESDAY_1000_LOCAL)]);
     await expect(closingSection(page)).toHaveCount(0);
-    await answerIn(exitReflection(page));
+    await answerSaleIn(exitReflection(page));
     await page.getByRole('button', { name: 'Save exit' }).click();
     await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible();
     await expect(receiptResult(page)).toContainText('Open');
@@ -49,7 +49,7 @@ test.describe('B6.1 Partial then final exit', () => {
     await second.getByLabel('Fee').fill('0.70');
     await second.getByLabel('Economic Time').fill(TUESDAY_1405_LOCAL);
     await expect(closingSection(page)).toBeVisible();
-    await closeTheTrade(page, 'now');
+    await closeTheTrade(page);
     await page.getByRole('button', { name: 'Save exit' }).click();
     await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible();
     await expect(valueOf(receiptResult(page), 'Lifecycle')).toHaveText('Closed');

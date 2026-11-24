@@ -34,8 +34,8 @@ describe('I6.4 Close Review dispositions', () => {
     }
     const results: Record<string, Awaited<ReturnType<typeof recordExit>>> = {};
     for (const { kind } of DISPOSITIONS) results[kind] = await recordExit(app, trades[kind], [SELL], { closeReasonId: reason, closeReview: await closeReviewDisposition(app, kind) });
-    // Each result names the one Close Review outcome the disposition produced.
-    expect(DISPOSITIONS.map(({ kind }) => results[kind]!.receipt.closeReview?.kind)).toEqual(['Entry', 'Decline', 'Debt']);
+    // A sale only puts its Close Review off (A312): each result names the Debt, and recordExit answered or declined it afterwards.
+    expect(DISPOSITIONS.map(({ kind }) => results[kind]!.receipt.closeReview?.kind)).toEqual(['Debt', 'Debt', 'Debt']);
 
     const again = await restart(app, d);
     const details = Object.fromEntries(
@@ -56,8 +56,8 @@ describe('I6.4 Close Review dispositions', () => {
     const stores = journalStores(await dumpAll(d.factory));
     const key = (tradeId: string) => `CloseReview:${tradeId}`;
     const closeEntries = stores.entries.filter((e) => e.entryTypeKey === 'entry-type.close-review');
-    expect(closeEntries).toEqual([expect.objectContaining({ obligationKey: key(trades.Complete), sourceKey: 'source.trade-close' })]);
-    expect(stores.declines).toEqual([expect.objectContaining({ sourceKey: 'source.trade-close' })]);
+    expect(closeEntries).toEqual([expect.objectContaining({ obligationKey: key(trades.Complete), sourceKey: 'source.trade-detail' })]);
+    expect(stores.declines).toEqual([expect.objectContaining({ sourceKey: 'source.trade-detail' })]);
     expect(stores.debts.filter((debt) => debt.obligationKey === key(trades.Defer))).toEqual([
       expect.objectContaining({ entryTypeKey: 'entry-type.close-review', dueAnchor: TUESDAY_1400, anchor: { kind: 'Trade', tradeId: trades.Defer }, versions: [expect.objectContaining({ status: 'Outstanding' })] }),
     ]);
@@ -74,8 +74,8 @@ describe('I6.4 Close Review dispositions', () => {
       if (!('positionChanges' in view)) throw new Error('expected the Open or Closed form of Detail');
       return view.journal;
     };
-    expect(narrative('Complete')).toEqual(expect.arrayContaining([expect.objectContaining({ kind: 'Entry', entryTypeKey: 'entry-type.close-review', source: 'Trade Close' })]));
-    expect(narrative('Decline').filter((item) => item.kind === 'Decline')).toEqual([expect.objectContaining({ entryTypeKey: 'entry-type.close-review', source: 'Trade Close' })]);
+    expect(narrative('Complete')).toEqual(expect.arrayContaining([expect.objectContaining({ kind: 'Entry', entryTypeKey: 'entry-type.close-review', source: 'Trade Detail' })]));
+    expect(narrative('Decline').filter((item) => item.kind === 'Decline')).toEqual([expect.objectContaining({ entryTypeKey: 'entry-type.close-review', source: 'Trade Detail' })]);
     expect(narrative('Defer').filter((item) => item.kind === 'Debt' && item.entryTypeKey === 'entry-type.close-review')).toHaveLength(1);
     expect(narrative('Defer').some((item) => item.kind === 'Entry' && item.entryTypeKey === 'entry-type.close-review')).toBe(false);
 

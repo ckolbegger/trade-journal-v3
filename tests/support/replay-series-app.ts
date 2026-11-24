@@ -5,7 +5,7 @@ import { instrumentKey, type Instrument } from '../../src/domain/instrument/inde
 import { REPLAY_SESSION_DATES, type ReplayTestSeries } from '../../src/domain/trade-analysis/reference-trade.ts';
 import type { ExpirationMember, PositionChangeMember } from '../../src/coordinators/trade-workflows/index.ts';
 import { planCommand } from '../integration/d1/support.ts';
-import { closeReviewDisposition, complete, device, loaded, onboarded, restart, saveMark, strategyOf, type Device } from '../integration/d7s/support.ts';
+import { closeReviewDisposition, complete, completeSale, device, loaded, onboarded, restart, resolveCloseReview, saveMark, strategyOf, type Device } from '../integration/d7s/support.ts';
 
 export interface SeriesOptions {
   // Marks are saved for the sessions REPLAY_SESSION_DATES[0..marksThrough].
@@ -64,10 +64,12 @@ async function addSeries(app: Application, series: ReplayTestSeries, strategyKey
       originTradeId: tradeId,
       trades: [{ tradeId, expectedFactRevision: factRevision }],
       members,
-      reflection: await complete(app),
-      ...(closing && { ...(!expiring && { closeReasonId: await firstCloseReasonId(app) }), closeReview: await closeReviewDisposition(app, 'Complete') }),
+      reflection: members.some((m) => m.kind === 'Execution' && m.action === (leg.side === 'Short' ? 'Buy' : 'Sell')) ? await completeSale(app) : await complete(app),
+      // A closing sale only puts its Close Review off (A312) and answers it afterwards through the Debt.
+      ...(closing && { ...(!expiring && { closeReasonId: await firstCloseReasonId(app) }), closeReview: expiring ? await closeReviewDisposition(app, 'Complete') : ({ kind: 'Defer' } as const) }),
     });
     if (result.kind !== 'Recorded') throw new Error(`recordPositionChange: ${JSON.stringify(result)}`);
+    if (closing && !expiring) await resolveCloseReview(app, tradeId, await closeReviewDisposition(app, 'Complete'));
   }
 
   const underlying: Instrument = { kind: 'Stock', symbol: plan.underlying };

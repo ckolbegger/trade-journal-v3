@@ -82,11 +82,19 @@ function complete(ref: Reference): ReflectionDisposition {
   };
 }
 
+// A sale's completed reflection carries a fixed Plan Departure Reason: an optional answer under manifest 6, and what a sale that
+// leaves the Plan requires (D9.5 A312).
+function completeSale(ref: Reference): ReflectionDisposition {
+  const reflection = complete(ref);
+  if (reflection.kind !== 'Complete') throw new Error('expected Complete');
+  return { ...reflection, form: { ...reflection.form, answers: { ...reflection.form.answers, 'prompt.position-change-reflection.plan-departure': { kind: 'Text', text: 'Stopped out early.' } } } };
+}
+
 function command(
   ref: Reference,
   expectedFactRevision: number,
   members: readonly PositionChangeMember[],
-  reflection: ReflectionDisposition = complete(ref),
+  reflection: ReflectionDisposition = members.some((m) => m.action === 'Sell') ? completeSale(ref) : complete(ref),
 ): PositionChangeCommand {
   return {
     originTradeId: ref.trade.tradeId,
@@ -622,15 +630,19 @@ describe('partial exit', () => {
   });
 });
 
-const blankReflection = (ref: Reference): ReflectionDisposition => ({ kind: 'Complete', form: { definitionId: ref.reflectionDefinitionId, answers: {} } });
+// A completed reflection with no answer but the fixed Plan Departure Reason, so a sale's only issues are the ones a case names.
+const blankReflection = (ref: Reference): ReflectionDisposition => ({
+  kind: 'Complete',
+  form: { definitionId: ref.reflectionDefinitionId, answers: { 'prompt.position-change-reflection.plan-departure': { kind: 'Text', text: 'Stopped out early.' } } },
+});
 
 describe('terminal exit AC-POS-004', () => {
   it('should commit X2 with one Close Reason fact, the Open-to-Closed lifecycle and index move, the terminal time, the exit reflection outcome, and the Close Review outcome for each disposition in one semantic commit, returning the lifecycle transition, Terminal Disposition, Realized R, and both Journal outcome projections', async () => {
     for (const kind of ['Complete', 'Decline', 'Defer'] as const) {
       const ref = await exitReference();
       const revision = await beforeTerminalExit(ref);
-      const disposition: ReflectionDisposition =
-        kind === 'Complete' ? closeReviewForm(ref) : kind === 'Decline' ? { kind, definitionId: ref.closeReviewDefinitionId, reason: 'Nothing to add.' } : { kind };
+      // The sale only puts its Close Review off (A312); an answer or a decline comes afterwards, through the Debt.
+      const disposition: ReflectionDisposition = { kind: 'Defer' };
       const before = workspaceStores(await dumpAll(ref.stack.factory));
       const result = await ref.stack.tradeWorkflows.recordPositionChange(closeCommand(ref, revision, disposition));
       if (result.kind !== 'Recorded') throw new Error(`expected Recorded for ${kind}, got ${result.kind}`);
@@ -645,7 +657,7 @@ describe('terminal exit AC-POS-004', () => {
       expect(trade.closeReasonFacts[0]!.versions).toEqual([{ versionNumber: 1, value: { closeReasonId: ref.closeReasonId, terminalPositionChangeId: x2 } }]);
       // The Close Review outcome is separate from the exit's own reflection (Source Trade Close, key CloseReview and Trade).
       const closeKey = `CloseReview:${ref.trade.tradeId}`;
-      const outcome = { Complete: 'Entry', Decline: 'Decline', Defer: 'Debt' }[kind];
+      const outcome = 'Debt';
       expect(after['journalObligations']).toEqual(
         expect.arrayContaining([
           expect.objectContaining({ obligationKey: closeKey, outcome: expect.objectContaining({ kind: outcome }) as unknown }),
@@ -658,27 +670,17 @@ describe('terminal exit AC-POS-004', () => {
         origin: { kind: 'PositionChange', factId: x2 },
         momentTime: X2_TIME,
       };
-      const stored = {
-        Complete: (after['journalEntries'] as { entryTypeKey: string }[]).find((e) => e.entryTypeKey === 'entry-type.close-review'),
-        Decline: (after['journalDeclines'] as { entryTypeKey: string }[]).find((e) => e.entryTypeKey === 'entry-type.close-review'),
-        Defer: (after['journalDebts'] as { entryTypeKey: string }[]).find((e) => e.entryTypeKey === 'entry-type.close-review'),
-      }[kind];
+      const stored = (after['journalDebts'] as { entryTypeKey: string }[]).find((e) => e.entryTypeKey === 'entry-type.close-review');
       expect(stored).toEqual(expect.objectContaining(closeReview));
-      if (kind === 'Defer') expect(stored).toEqual(expect.objectContaining({ dueAnchor: X2_TIME, dueRule: 'OneSessionGrace' }));
+      expect(stored).toEqual(expect.objectContaining({ dueAnchor: X2_TIME, dueRule: 'OneSessionGrace' }));
       // The receipt and the post-commit result.
       const { receipt, postCommit, affected } = result;
       expect(receipt.lifecycleTransitions).toEqual([{ tradeId: ref.trade.tradeId, from: 'Open', to: 'Closed' }]);
       expect(receipt.reflection.kind).toBe('Entry');
-      const storedId = kind === 'Defer' ? (stored as unknown as { debtId: string }).debtId : (stored as unknown as { id: string }).id;
+      const storedId = (stored as unknown as { debtId: string }).debtId;
       expect(receipt.closeReview).toEqual({ kind: outcome, id: storedId });
       expect(postCommit.reflection.kind).toBe('Entry');
-      expect(postCommit.closeReview).toEqual(
-        kind === 'Complete'
-          ? { kind: 'Entry', entry: expect.objectContaining(closeReview) as unknown }
-          : kind === 'Decline'
-            ? { kind: 'Decline', decline: expect.objectContaining(closeReview) as unknown }
-            : { kind: 'Debt', debt: expect.objectContaining({ ...closeReview, status: 'Outstanding', dueAnchor: X2_TIME }) as unknown },
-      );
+      expect(postCommit.closeReview).toEqual({ kind: 'Debt', debt: expect.objectContaining({ ...closeReview, status: 'Outstanding', dueAnchor: X2_TIME }) as unknown });
       expect(postCommit.trade).toEqual(expect.objectContaining({ storedLifecycle: 'Closed', terminalTime: X2_TIME }));
       expect(postCommit.trade.closeReason).toEqual(expect.objectContaining({ closeReasonId: ref.closeReasonId, terminalPositionChangeId: x2 }));
       expect(postCommit.derivation.expectedLifecycle).toBe('Closed');
@@ -690,6 +692,19 @@ describe('terminal exit AC-POS-004', () => {
         { scope: 'TradeList', lifecycle: 'Closed' },
         { scope: 'TradeList', lifecycle: 'Open' },
       ]);
+      // A Close Review answered or declined later is a separate outcome of the same obligation, from the same sale.
+      if (kind !== 'Defer') {
+        const debt = (await ref.stack.journal.query({ scope: 'OutstandingDebt' })).debts.find((d) => d.entryTypeKey === 'entry-type.close-review')!;
+        const resolution = kind === 'Complete' ? ({ kind: 'Answer', form: (closeReviewForm(ref) as Extract<ReflectionDisposition, { kind: 'Complete' }>).form } as const) : ({ kind: 'Decline', reason: 'Nothing to add.' } as const);
+        const resolved = await ref.stack.journal.save({ intention: 'ResolveDebt', debtId: debt.debtId, expectedDebtRevision: debt.revision, resolution });
+        expect(resolved.kind).toBe('Saved');
+        const settled = workspaceStores(await dumpAll(ref.stack.factory));
+        expect(settled['journalObligations']).toEqual(
+          expect.arrayContaining([expect.objectContaining({ obligationKey: closeKey, outcome: expect.objectContaining({ kind: kind === 'Complete' ? 'Entry' : 'Decline' }) as unknown })]),
+        );
+        const found = (kind === 'Complete' ? (settled['journalEntries'] as { entryTypeKey: string }[]) : (settled['journalDeclines'] as { entryTypeKey: string }[])).find((e) => e.entryTypeKey === 'entry-type.close-review');
+        expect(found).toEqual(expect.objectContaining({ ...closeReview, sourceKey: 'source.trade-detail' }));
+      }
     }
   });
 
@@ -728,11 +743,11 @@ describe('terminal exit AC-POS-004', () => {
     const result = await ref.stack.tradeWorkflows.recordPositionChange({
       ...command(ref, revision, earlierMembers),
       closeReasonId: ref.closeReasonId,
-      closeReview: closeReviewForm(ref),
+      closeReview: { kind: 'Defer' },
     });
     if (result.kind !== 'Recorded') throw new Error(`expected Recorded, got ${result.kind}`);
     expect(result.receipt.lifecycleTransitions).toEqual([{ tradeId: ref.trade.tradeId, from: 'Open', to: 'Closed' }]);
-    expect(result.receipt.closeReview?.kind).toBe('Entry');
+    expect(result.receipt.closeReview?.kind).toBe('Debt');
     expect(result.postCommit.trade.closeReason).toEqual(expect.objectContaining({ closeReasonId: ref.closeReasonId }));
   });
 
@@ -742,7 +757,7 @@ describe('terminal exit AC-POS-004', () => {
     const result = await ref.stack.tradeWorkflows.recordPositionChange({
       ...command(ref, revision, [sell(ref, '2026-10-13T13:00:00Z', '70', '53.00', '1.40')]),
       closeReasonId: ref.closeReasonId,
-      closeReview: closeReviewForm(ref),
+      closeReview: { kind: 'Defer' },
     });
     if (result.kind !== 'Recorded') throw new Error(`expected Recorded, got ${result.kind}`);
     const lastInFactOrder = result.postCommit.derivation.facts.at(-1)!.positionChangeId;
@@ -758,7 +773,7 @@ describe('terminal exit AC-POS-004', () => {
     const result = await ref.stack.tradeWorkflows.recordPositionChange({
       ...command(ref, revision, [sell(ref, '2026-10-13T13:00:00Z', '40', '53.00', '0.80'), sell(ref, '2026-10-13T15:00:00Z', '30', '53.00', '0.60')]),
       closeReasonId: ref.closeReasonId,
-      closeReview: closeReviewForm(ref),
+      closeReview: { kind: 'Defer' },
     });
     if (result.kind !== 'Recorded') throw new Error(`expected Recorded, got ${result.kind}`);
     const lastInFactOrder = result.postCommit.derivation.facts.at(-1)!.positionChangeId;
@@ -772,7 +787,7 @@ describe('terminal exit AC-POS-004', () => {
     const result = await ref.stack.tradeWorkflows.recordPositionChange({
       ...command(ref, revision, [sell(ref, '2026-10-13T13:00:00Z', '40', '53.00', '0.80'), sell(ref, '2026-10-13T15:00:00Z', '30', '53.00', '0.60')]),
       closeReasonId: ref.closeReasonId,
-      closeReview: closeReviewForm(ref),
+      closeReview: { kind: 'Defer' },
     });
     if (result.kind !== 'Recorded') throw new Error(`expected Recorded, got ${result.kind}`);
     const stored = (workspaceStores(await dumpAll(ref.stack.factory))['trades'] as { terminalTime?: string; terminalDesc?: string }[])[0]!;
@@ -805,24 +820,21 @@ describe('terminal exit AC-POS-004', () => {
     }
   });
 
-  it('should reject an unknown Close Reason or a Strategy identity with the Catalog resolution issue, together with the Close Review form issues', async () => {
+  it('should reject an unknown Close Reason or a Strategy identity with the Catalog resolution issue alone, the Close Review form issues having gone with a Close Review at the sale', async () => {
     const ref = await exitReference();
     const revision = await beforeTerminalExit(ref);
     const before = await dumpAll(ref.stack.factory);
-    const blankCloseReview: ReflectionDisposition = { kind: 'Complete', form: { definitionId: ref.closeReviewDefinitionId, answers: {} } };
     const attempts: [string, string][] = [
       ['no-such-reason', 'UnknownReference'],
       [ref.stack.strategy.id, 'WrongKind'],
     ];
     for (const [closeReasonId, code] of attempts) {
-      const result = await ref.stack.tradeWorkflows.recordPositionChange({ ...closeCommand(ref, revision, blankCloseReview), closeReasonId });
+      const result = await ref.stack.tradeWorkflows.recordPositionChange({ ...closeCommand(ref, revision, { kind: 'Defer' }), closeReasonId });
       expect(result).toEqual(
         expect.objectContaining({
           kind: 'Rejected',
           issues: [
             { source: 'ReferenceCatalog', field: 'closeReasonId', code },
-            { source: 'Journal', field: 'prompt.close-review.take-again', code: 'RequiredAnswerMissing' },
-            { source: 'Journal', field: 'prompt.close-review.key-lesson', code: 'RequiredAnswerMissing' },
           ],
         }),
       );

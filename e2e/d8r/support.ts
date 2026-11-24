@@ -86,7 +86,7 @@ export async function addK1(profile: Profile): Promise<TradeRef> {
     await detail.recordExitLink(page).click();
     await expect(page.getByRole('heading', { name: 'Record exit', level: 1 })).toBeVisible();
     await fillOptionRows(page, [{ quantity: '2', price: '12.40', fee: '1.30', time: '2026-11-13T11:00' }]);
-    await closeTheTrade(page, 'later');
+    await closeTheTrade(page);
     await page.getByRole('button', { name: 'Save exit' }).click();
     await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible();
   });

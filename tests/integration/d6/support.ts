@@ -9,7 +9,7 @@ import type { PositionChangeCommand, PositionChangeMember } from '../../../src/c
 import type { ReflectionDisposition } from '../../../src/modules/journal/index.ts';
 import { loadDump, type WorkspaceDump } from '../../../tools/fixtures/workspace-fixture.ts';
 import {
-  buy, complete, confirmReference, device, type Device, type Fill, type MutableDump, MONDAY_1700, onboarded, PC1, PC1_TIME, PC2, planStock, positionChange, record, recordDeferred, restart, saveAction, saveMark,
+  buy, complete, confirmReference, device, type Device, type Fill, type MutableDump, MONDAY_1700, onboarded, outstandingDebts, PC1, PC1_TIME, PC2, planStock, positionChange, record, recordDeferred, restart, saveAction, saveMark,
   TUESDAY_1700,
 } from '../d5/support.ts';
 
@@ -67,6 +67,8 @@ export async function closeReasonId(app: Application, label: string): Promise<st
   return found.id;
 }
 
+const PLAN_DEPARTURE_PROMPT = 'prompt.position-change-reflection.plan-departure';
+
 export type CloseReviewKind = 'Complete' | 'Decline' | 'Defer';
 
 // A Close Review disposition against the current Close Review definition.
@@ -86,6 +88,24 @@ export async function closeReviewDisposition(app: Application, kind: CloseReview
 
 // --- Sells ---
 
+// The exit's own completed reflection: the three required answers and a fixed Plan Departure Reason, which an optional
+// answer under manifest 6 accepts and a sale that leaves the Plan requires (D9.5 A312).
+export async function completeSale(app: Application): Promise<ReflectionDisposition> {
+  const reflection = await complete(app);
+  if (reflection.kind !== 'Complete') throw new Error('expected Complete');
+  return { ...reflection, form: { ...reflection.form, answers: { ...reflection.form.answers, [PLAN_DEPARTURE_PROMPT]: { kind: 'Text', text: 'Stopped out early.' } } } };
+}
+
+// A terminal sale only puts its Close Review off (D9.5 A312). Where a test's subject is the Close Review's answer, it
+// is resolved afterwards through the Debt: answered, or declined.
+export async function resolveCloseReview(app: Application, tradeId: string, disposition: ReflectionDisposition): Promise<void> {
+  const debt = (await outstandingDebts(app)).find((d) => d.entryTypeKey === 'entry-type.close-review' && d.anchor.tradeId === tradeId);
+  if (!debt) throw new Error(`no Outstanding Close Review Debt for ${tradeId}`);
+  const resolution = disposition.kind === 'Complete' ? ({ kind: 'Answer', form: disposition.form } as const) : ({ kind: 'Decline', reason: 'Nothing to add.' } as const);
+  const saved = await app.Journal.save({ intention: 'ResolveDebt', debtId: debt.debtId, expectedDebtRevision: debt.revision, resolution });
+  if (saved.kind !== 'Saved') throw new Error(`Journal.save ResolveDebt: ${saved.kind}`);
+}
+
 // A Sell member serving the Trade's Planned Leg.
 export async function sell(app: Application, tradeId: string, fill: Fill): Promise<PositionChangeMember> {
   return { ...(await buy(app, tradeId, fill)), action: 'Sell' };
@@ -102,14 +122,17 @@ export interface ExitOptions {
 export async function exitCommand(app: Application, tradeId: string, fills: readonly Fill[], options: ExitOptions = {}): Promise<PositionChangeCommand> {
   const members: PositionChangeMember[] = [];
   for (const fill of fills) members.push(await sell(app, tradeId, fill));
-  const command = await positionChange(app, tradeId, members, options.reflection ?? (await complete(app)));
+  const command = await positionChange(app, tradeId, members, options.reflection ?? (await completeSale(app)));
   return { ...command, ...(options.closeReasonId !== undefined && { closeReasonId: options.closeReasonId }), ...(options.closeReview !== undefined && { closeReview: options.closeReview }) };
 }
 
-// Records an exit and requires it to be accepted.
+// Records an exit and requires it to be accepted. A Close Review that is to be answered or declined is put off at the
+// sale and then resolved through its Debt; the receipt is the sale's.
 export async function recordExit(app: Application, tradeId: string, fills: readonly Fill[], options: ExitOptions = {}) {
-  const result = await app.TradeWorkflows.recordPositionChange(await exitCommand(app, tradeId, fills, options));
+  const later = options.closeReview !== undefined && options.closeReview.kind !== 'Defer' ? options.closeReview : undefined;
+  const result = await app.TradeWorkflows.recordPositionChange(await exitCommand(app, tradeId, fills, later ? { ...options, closeReview: { kind: 'Defer' } } : options));
   if (result.kind !== 'Recorded') throw new Error(`recordPositionChange: ${JSON.stringify(result)}`);
+  if (later) await resolveCloseReview(app, tradeId, later);
   return result;
 }
 

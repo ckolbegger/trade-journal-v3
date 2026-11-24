@@ -3,7 +3,7 @@
 // every contract expires Friday 2026-11-20 (EST, UTC-5).
 import { answerSlipQuestions, expectMarksSaved, marksStepOf } from '../d4/support.ts';
 import type { Locator, Page } from '@playwright/test';
-import { answerCloseReviewIn, answerIn, chooseCell, closeReasonGroup, closingSection, closeReviewGroup, completeReflection, createTradeAt, currentTradeId, detail, executionRow, expect, openDrawer, openEntryForm, PLAN, reachCard, reachPanel, LAUNCH, savedUnlessRefused, tradeCard, type CardRef, type ProbedDatabase, type TradeRef, test as d1Test, type Row } from '../d6/support.ts'; // d6's test, whose automatic fixture serves current
+import { answerCloseReviewIn, answerIn, answerSaleIn, chooseCell, closeReasonGroup, closingSection, closeReviewGroup, completeReflection, createTradeAt, currentTradeId, detail, executionRow, expect, openDrawer, openEntryForm, PLAN, reachCard, reachPanel, LAUNCH, savedUnlessRefused, tradeCard, type CardRef, type ProbedDatabase, type TradeRef, test as d1Test, type Row } from '../d6/support.ts'; // d6's test, whose automatic fixture serves current
 
 export * from '../d6/support.ts';
 
@@ -205,8 +205,5 @@ export async function fillOptionExit(page: Page, rows: readonly Row[]): Promise<
   await detail.recordExitLink(page).click();
   await expect(page.getByRole('heading', { name: 'Record exit', level: 1 })).toBeVisible();
   await fillOptionRows(page, rows);
-  const section = page.getByRole('region', { name: 'Reflection on this exit' });
-  await section.getByRole('radiogroup', { name: 'Decision mode' }).getByLabel('As Planned').check();
-  await section.getByRole('radiogroup', { name: 'Primary emotion' }).getByLabel('Calm').check();
-  await section.getByRole('radiogroup', { name: 'Decision confidence' }).getByLabel('4').check();
+  await answerSaleIn(page.getByRole('region', { name: 'Reflection on this exit' }));
 }

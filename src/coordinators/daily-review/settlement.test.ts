@@ -48,11 +48,14 @@ async function settlementFixture(now: string, withMarks: boolean) {
     return confirmed.postCommit.trade;
   };
 
-  const record = async (tradeId: string, members: (legId: string) => PositionChangeMember[], disposition: ReflectionDisposition = stack.reflection) => {
+  const record = async (tradeId: string, members: (legId: string) => PositionChangeMember[], disposition?: ReflectionDisposition) => {
     const current = await stack.tradeRecord.getRecord({ tradeId, projection: 'AnalysisInput' });
     if (current.kind !== 'Found') throw new Error('no Trade');
-    const legId = (current.projection as unknown as { plan: { legs: { factId: string }[] } }).plan.legs[0]!.factId;
-    const result = await stack.tradeWorkflows.recordPositionChange({ originTradeId: tradeId, trades: [{ tradeId, expectedFactRevision: current.factRevision }], members: members(legId), reflection: disposition });
+    const leg = (current.projection as unknown as { plan: { legs: { factId: string; side: string }[] } }).plan.legs[0]!;
+    const legMembers = members(leg.factId);
+    // A sale (a Sell of a long leg, a Buy of a short one) carries a fixed Plan Departure Reason (D9.5 A312).
+    const sale = legMembers.some((m) => m.action === (leg.side === 'Short' ? 'Buy' : 'Sell'));
+    const result = await stack.tradeWorkflows.recordPositionChange({ originTradeId: tradeId, trades: [{ tradeId, expectedFactRevision: current.factRevision }], members: legMembers, reflection: disposition ?? (sale ? stack.saleReflection : stack.reflection) });
     if (result.kind !== 'Recorded') throw new Error(`expected Recorded, got ${JSON.stringify(result)}`);
   };
   const optionFill = (tradeId: string, instrument: Contract, action: 'Buy' | 'Sell', economicTime: string, quantity: string, price: string, fee: string) => (legId: string): PositionChangeMember[] => [

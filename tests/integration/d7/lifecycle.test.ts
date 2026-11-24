@@ -40,7 +40,7 @@ describe('I7.3 Long Call lifecycle', () => {
     // PC1, PC2, X1: Open, Open, Open; each result equals the stored Trade.
     const results = [];
     for (const [action, fill] of [['Buy', OC_PC1], ['Buy', OC_PC2], ['Sell', OC_X1]] as const) {
-      const result = await recordOption(app, tradeId, action, fill, { reflection: await complete(app) });
+      const result = await recordOption(app, tradeId, action, fill);
       results.push(result);
       expect(result.postCommit.trade.storedLifecycle).toBe('Open');
       expect(result.postCommit.derivation.expectedLifecycle).toBe('Open');

@@ -28,7 +28,7 @@ function closeReviewOutcomes(dump: Awaited<ReturnType<typeof dumpAll>>, tradeId:
 describe('I6.12 Retries', () => {
   it('a: should return Conflict for a second submission of terminal X2, leaving one Close Reason and one Close Review outcome', async () => {
     const { d, app, tradeId, reason } = await afterPc2();
-    const command = await exitCommand(app, tradeId, [SELL_ALL], { closeReasonId: reason, closeReview: await closeReviewDisposition(app, 'Complete') });
+    const command = await exitCommand(app, tradeId, [SELL_ALL], { closeReasonId: reason, closeReview: await closeReviewDisposition(app, 'Defer') });
 
     const first = await app.TradeWorkflows.recordPositionChange(command);
     expect(first.kind).toBe('Recorded');
@@ -39,7 +39,7 @@ describe('I6.12 Retries', () => {
     expect(await dumpAll(d.factory)).toEqual(before);
     const trades = workspaceStores(before)['trades'] as StoredTradeDoc[];
     expect(trades[0]!.closeReasonFacts).toHaveLength(1);
-    expect(closeReviewOutcomes(before, tradeId)).toEqual([expect.objectContaining({ outcome: expect.objectContaining({ kind: 'Entry' }) as unknown })]);
+    expect(closeReviewOutcomes(before, tradeId)).toEqual([expect.objectContaining({ outcome: expect.objectContaining({ kind: 'Debt' }) as unknown })]);
   }, 60_000);
 
   it('b: should return Conflict carrying the Entry when a deferred Close Review is answered twice with the same expected revision', async () => {

@@ -52,6 +52,24 @@ export async function reviewStack(now = MONDAY_1700) {
     },
   };
 
+  // A sale's completed reflection: the same answers with a fixed Plan Departure Reason, an optional answer under manifest 6
+  // that a sale leaving the Plan requires (D9.5 A312).
+  const saleReflection: ReflectionDisposition = {
+    ...reflection,
+    form: { ...reflection.form, answers: { ...reflection.form.answers, 'prompt.position-change-reflection.plan-departure': { kind: 'Text', text: 'Stopped out early.' } } },
+  };
+
+  // A terminal sale only puts its Close Review off (A312); a fixture whose subject is the answer resolves the Debt after it.
+  const resolveCloseReview = async (tradeId: string, disposition: ReflectionDisposition): Promise<string | undefined> => {
+    const outstanding = await stack.journal.query({ scope: 'OutstandingDebt' });
+    const debt = outstanding.debts.find((d) => d.entryTypeKey === 'entry-type.close-review' && d.anchor.tradeId === tradeId);
+    if (!debt) throw new Error(`no Outstanding Close Review Debt for ${tradeId}`);
+    const resolution = disposition.kind === 'Complete' ? ({ kind: 'Answer', form: disposition.form } as const) : ({ kind: 'Decline' } as const);
+    const saved = await stack.journal.save({ intention: 'ResolveDebt', debtId: debt.debtId, expectedDebtRevision: debt.revision, resolution });
+    if (saved.kind !== 'Saved') throw new Error(`expected Saved, got ${saved.kind}`);
+    return saved.entry?.id;
+  };
+
   const confirm = async (plan: PlanSpec): Promise<TradeAnalysisRecord> => {
     const confirmed = await stack.tradeWorkflows.confirmPlan({
       accountId: stack.account.id,
@@ -144,7 +162,7 @@ export async function reviewStack(now = MONDAY_1700) {
     if (committed.kind !== 'Committed') throw new Error(`expected Committed, got ${committed.kind}`);
   };
 
-  return { ...stack, factory, marketData, dailyReview, reflection, confirm, fill, fillTogether, saveMark, acknowledge, saveAction };
+  return { ...stack, factory, marketData, dailyReview, reflection, saleReflection, resolveCloseReview, confirm, fill, fillTogether, saveMark, acknowledge, saveAction };
 }
 
 export type ReviewStack = Awaited<ReturnType<typeof reviewStack>>;

@@ -1,6 +1,6 @@
 import type { BrowserContext, Page } from '@playwright/test';
 import {
-  acknowledgeMark, answerIn, createTrades, dayLine, detail, enterMark, exitReflection, expect, expectInsideCell, expectNoSidewaysScroll, expectShownInFull, firstPage, FOUR_TRADES, launchAt, MONDAY_1700, onboardedAt,
+  acknowledgeMark, answerSaleIn, createTrades, dayLine, detail, enterMark, exitReflection, expect, expectInsideCell, expectNoSidewaysScroll, expectShownInFull, firstPage, FOUR_TRADES, launchAt, MONDAY_1700, onboardedAt,
   openDrawer, openExitForm, openReview, openTradeFromOpenList, LAUNCH, reachCard, recordEntry, fillRows, sell, setClock, setWidth, meterOf, collapseOpenCard, test, tradeCard, TUESDAY_NOON, WIDTHS, writeSellQuantities,
   type Profile,
 } from './support.ts';
@@ -28,7 +28,7 @@ async function sellXyzInTwoParts(page: Page): Promise<void> {
     await openTradeFromOpenList(page, 'XYZ');
     await openExitForm(page);
     await fillRows(page, [sell(quantity, '51.00', '1.00', time)]);
-    await answerIn(exitReflection(page));
+    await answerSaleIn(exitReflection(page));
     await page.getByRole('button', { name: 'Save exit' }).click();
     await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible();
   }

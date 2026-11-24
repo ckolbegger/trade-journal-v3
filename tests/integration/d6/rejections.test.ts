@@ -50,7 +50,7 @@ describe('I6.5 Close requirements write nothing', () => {
     // Terminal X2 with a Strategy identity as its Close Reason.
     const strategies = await app.ReferenceCatalog.query({ family: 'Strategy' });
     if (strategies.kind !== 'Page') throw new Error('no Strategies');
-    const wrong = await rejected(app, d, await exitCommand(app, tradeId, [sellOf('100', TUESDAY_1400)], { closeReasonId: longStockOf(strategies.items).id, closeReview: await closeReviewDisposition(app, 'Complete') }));
+    const wrong = await rejected(app, d, await exitCommand(app, tradeId, [sellOf('100', TUESDAY_1400)], { closeReasonId: longStockOf(strategies.items).id, closeReview: await closeReviewDisposition(app, 'Defer') }));
     expect(wrong).toEqual([expect.objectContaining({ source: 'ReferenceCatalog', field: 'closeReasonId', code: 'WrongKind' })]);
   }, 60_000);
 });

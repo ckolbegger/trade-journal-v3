@@ -7,7 +7,7 @@ import { R_DALE_D } from '../../src/domain/trade-analysis/option-trade.ts';
 import { expectShownInFull } from '../d7p/support.ts';
 import {
   AXIO, BREN, buildOn, closeOf, currentTradeId, DALE, detail, expect, fillOptionPlan, fillOptionRows, fillPlan, fillRows, label, onboardedAt, openExitForm, openReview, pinClock, pnlChart, priceStrip, LAUNCH,
-  answerIn, exitReflection, PRICE_HISTORY, reachPanel, recordEntry, recordOptionEntry, replay, savedUnlessRefused, seek, slider, sliderValue, type Fixture, type Profile, type TradeRef,
+  answerSaleIn, exitReflection, PRICE_HISTORY, reachPanel, recordEntry, recordOptionEntry, replay, savedUnlessRefused, seek, slider, sliderValue, type Fixture, type Profile, type TradeRef,
   defineSetup, firstPage, launchAt, probe, tradesOf, workspaceOf, type Setup,
 } from '../d9/support.ts';
 
@@ -60,7 +60,7 @@ async function enterTrade(page: Page, fixture: Fixture, through: number): Promis
     await openExitForm(page);
     if ('stock' in fixture.plan) await fillRows(page, [change.row]);
     else await fillOptionRows(page, [change.row]);
-    await answerIn(exitReflection(page));
+    await answerSaleIn(exitReflection(page));
     await page.getByRole('button', { name: 'Save exit' }).click();
     await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible();
   }

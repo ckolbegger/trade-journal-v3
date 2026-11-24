@@ -123,10 +123,12 @@ async function tradeA(now = TUESDAY_1700) {
           ...m,
         }),
       ),
-      reflection: stack.reflection,
-      ...(terminal && { closeReasonId: reasons.items[0]!.id, closeReview }),
+      reflection: stack.saleReflection,
+      // A closing sale only puts its Close Review off (A312); the answer follows through the Debt.
+      ...(terminal && { closeReasonId: reasons.items[0]!.id, closeReview: { kind: 'Defer' } as const }),
     });
     if (result.kind !== 'Recorded') throw new Error(`expected Recorded, got ${result.kind}`);
+    if (terminal) await stack.resolveCloseReview(trade.tradeId, closeReview);
   };
   // X1: Sell 30 @ 52.00, fee 0.60. X2: two Executions that sell the remaining 70.
   const x1 = () => exit([{ economicTime: X1_TIME, quantity: '30', price: '52.00', fee: '0.60' }]);

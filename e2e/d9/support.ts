@@ -8,7 +8,7 @@ import type { Locator, Page } from '@playwright/test';
 import { K_SALE, R_BREN_U, R_CORV_D, R_DALE_D, R_DALE_U } from '../../src/domain/trade-analysis/option-trade.ts';
 import { R_AXIO_D, R_AXIO_U, REPLAY_SESSION_DATES } from '../../src/domain/trade-analysis/reference-trade.ts';
 import {
-  answerIn, closeTheTrade, currentTradeId, defineSetup, detail, exitReflection, expect, fillOptionPlan, fillPlan, fillOptionRows, fillRows, firstPage, launchAt, onboardedAt, openDrawer as openDetailDrawer, openExitForm, openReview, LAUNCH, reachPanel,
+  answerSaleIn, closeTheTrade, currentTradeId, defineSetup, detail, exitReflection, expect, fillOptionPlan, fillPlan, fillOptionRows, fillRows, firstPage, launchAt, onboardedAt, openDrawer as openDetailDrawer, openExitForm, openReview, LAUNCH, reachPanel,
   recordExpiration, recordOptionEntry, recordEntry, savedUnlessRefused, test, tradeCard, type OptionPlanValues, type PlanValues, type Profile, type Row, type Setup, type TradeRef,
 } from '../d8r/support.ts';
 import type { BrowserContext } from '@playwright/test';
@@ -156,8 +156,8 @@ export async function buildOn(page: Page, fixture: Fixture, through: number, rec
     await openExitForm(page);
     if ('stock' in fixture.plan) await fillRows(page, [change.row]);
     else await fillOptionRows(page, [change.row]);
-    if (change.closes) await closeTheTrade(page, 'later');
-    else await answerIn(exitReflection(page));
+    if (change.closes) await closeTheTrade(page);
+    else await answerSaleIn(exitReflection(page));
     await page.getByRole('button', { name: 'Save exit' }).click();
     await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible();
   }

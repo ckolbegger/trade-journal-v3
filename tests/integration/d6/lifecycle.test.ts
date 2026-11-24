@@ -101,14 +101,14 @@ describe('I6.3 complete lifecycle', () => {
     }
     expect(results[2]!.postCommit.derivation.realizedToDate).toEqual(dec('55.90'));
 
-    // X2 closes the Trade with a Close Reason and a completed Close Review, both reflections completed.
+    // X2 closes the Trade with a Close Reason and its Close Review put off at the sale, then answered through the Debt.
     const targetReached = await closeReasonId(app, 'Target Reached');
     const closing = await recordExit(app, tradeId, [X2A, X2B], { closeReasonId: targetReached, closeReview: await closeReviewDisposition(app, 'Complete') });
     expect(closing.receipt.lifecycleTransitions).toEqual([{ tradeId, from: 'Open', to: 'Closed' }]);
     expect(closing.postCommit.trade.storedLifecycle).toBe('Closed');
     expect(closing.postCommit.derivation.expectedLifecycle).toBe('Closed');
     expect(closing.postCommit.derivation.agreement).toEqual({ kind: 'Agrees' });
-    expect(closing.postCommit.closeReview?.kind).toBe('Entry');
+    expect(closing.postCommit.closeReview?.kind).toBe('Debt');
 
     // The same commit moved the Trade from the Open index to the Closed one.
     const closed = await stored(d, tradeId);

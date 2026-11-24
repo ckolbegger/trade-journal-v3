@@ -6,7 +6,7 @@ import {
 test.use({ actionTimeout: 15_000 });
 
 test.describe('B6.7 Kill after commit', () => {
-  test('should keep the Closed lifecycle, the Sell Executions, the Close Reason, and both reflection outcomes after the browser is killed once a terminal exit’s result renders, and derive the same Lot Matches', async ({ profile }) => {
+  test('should keep the Closed lifecycle, the Sell Executions, the Close Reason, and the exit’s reflection outcome and owed Close Review after the browser is killed once a terminal exit’s result renders, and derive the same Lot Matches', async ({ profile }) => {
     test.setTimeout(240_000);
     let lotMatchesBefore: string;
     const killed = await spawnedBrowser(profile.dir, 9341);
@@ -18,7 +18,7 @@ test.describe('B6.7 Kill after commit', () => {
       await openTradeFromOpenList(page, 'XYZ');
       await openExitForm(page);
       await fillRows(page, [sell('100', '53.00', '1.40', TUESDAY_1405_LOCAL)]);
-      await closeTheTrade(page, 'now');
+      await closeTheTrade(page);
       await page.getByRole('button', { name: 'Save exit' }).click();
       // The result has rendered: the browser is killed right after.
       await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible();
@@ -44,9 +44,8 @@ test.describe('B6.7 Kill after commit', () => {
       await expect(detail.resultValue(page, 'Terminal Disposition')).toHaveText('Closed via sale of 100 shares');
       await openDrawer(page, 'Position');
       expect(await detail.lotMatches(page).locator('tbody').innerText()).toBe(lotMatchesBefore);
-      // Both reflections are answered: nothing is owed.
-      await expect(detail.anywhere(() => detail.reflectionOwed(page))).toHaveCount(0);
-      await expect(detail.anywhere(() => detail.closeReviewOwed(page))).toHaveCount(0);
+      // The exit's own reflection is answered; its Close Review was put off at the sale (A312), so that is the one thing owed.
+      await expect(detail.anywhere(() => detail.closeReviewOwed(page))).not.toHaveCount(0);
 
       const workspace = workspaceOf(await probe(page))!;
       const [trade] = tradesOf(workspace);
@@ -57,7 +56,9 @@ test.describe('B6.7 Kill after commit', () => {
       expect(closeReasons.map((f) => f.kind)).toEqual(['CloseReason']);
       // Both reflection outcomes of the exit: its own reflection (the third Position Change Reflection after PC1's and PC2's) and the Close Review.
       const entries = (workspace.stores['journalEntries'] ?? []) as { entryTypeKey: string }[];
-      expect(entries.filter((e) => /close-review/.test(e.entryTypeKey))).toHaveLength(1);
+      expect(entries.filter((e) => /close-review/.test(e.entryTypeKey))).toHaveLength(0);
+      const debts = (workspace.stores['journalDebts'] ?? []) as { entryTypeKey: string }[];
+      expect(debts.filter((d) => /close-review/.test(d.entryTypeKey))).toHaveLength(1);
       expect(entries.filter((e) => /position-change-reflection/.test(e.entryTypeKey))).toHaveLength(3);
     } finally {
       await relaunched.kill();

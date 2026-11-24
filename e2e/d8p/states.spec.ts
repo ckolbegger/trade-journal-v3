@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 import {
-  closeTheTrade, confirmOptionPlan, confirmReference, createTrades, currentTradeId, detail, enterMark, expect, FOUR_TRADES, fillRows, firstPage, launchAt, MONDAY, MONDAY_0900, MONDAY_1105, MONDAY_1700, MONDAY_NOV_1700,
+  answerCloseReviewOnDetail, closeTheTrade, confirmOptionPlan, confirmReference, createTrades, currentTradeId, detail, enterMark, expect, FOUR_TRADES, fillRows, firstPage, launchAt, MONDAY, MONDAY_0900, MONDAY_1105, MONDAY_1700, MONDAY_NOV_1700,
   onboardedAt, onboardedPage, openDrawer, openExitForm, openReview, OS, PC1, LAUNCH, recordEntry, recordExpiration, recordOptionEntry, sell, test, writeIntegrityFixture,
 } from './support.ts';
 
@@ -106,9 +106,12 @@ test.describe('B8P.4 States', () => {
     await setupPage.goto(`/trades/${def}`);
     await openExitForm(setupPage);
     await fillRows(setupPage, [sell('100', '44.00', '1.00', '2026-10-12T15:00')]);
-    await closeTheTrade(setupPage, 'now');
+    await closeTheTrade(setupPage);
     await setupPage.getByRole('button', { name: 'Save exit' }).click();
     await expect(setupPage.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible(LAUNCH);
+    // The sale put its Close Review off (A312); DEF's Detail is shown with it answered.
+    await setupPage.goto(`/trades/${def}`);
+    await answerCloseReviewOnDetail(setupPage);
     await openReview(setupPage);
     await enterMark(setupPage, 'XYZ', MONDAY, '52.00');
     await enterMark(setupPage, 'ABC', MONDAY, '32.00');

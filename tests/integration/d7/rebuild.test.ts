@@ -121,9 +121,10 @@ describe('I7.13 Rebuild equivalence', () => {
     expect(indexesBefore.byLifecycleTerminal).toHaveLength(5);
     expect((indexesBefore.journalObligations as unknown[]).length).toBeGreaterThan(5);
     // Four deferred reflections (the Close Reviews of B, C and T-1, and T-5's add) are Outstanding Debts anchored to their
-    // Trades, and Trades with Executions carry exposureStart.
+    // Trades, and A's Close Review, put off at the sale and answered after it, is a fifth, Settled; Trades with Executions
+    // carry exposureStart.
     expect(indexesBefore.byOutstandingDue).toHaveLength(4);
-    expect(indexesBefore.debtsByAnchorTrade).toHaveLength(4);
+    expect(indexesBefore.debtsByAnchorTrade).toHaveLength(5);
     expect((indexesBefore.trades as { exposureStart?: string }[]).filter((t) => t.exposureStart !== undefined).length).toBeGreaterThan(5);
     expect(before.review.kind).toBe('Ready');
     expect(before.details.filter((view) => (view as { payoff?: { current: { kind: string } } }).payoff?.current.kind === 'Value')).not.toHaveLength(0);

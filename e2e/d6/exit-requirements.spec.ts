@@ -1,5 +1,5 @@
 import {
-  answerIn, closeReasonGroup, closeReviewGroup, closingSection, copyTA, detail, executionRow, exitReflection, expect, factsOf, fillRows, firstPage, launchAt, openDrawer, openExitForm,
+  answerSaleIn, closeReasonGroup, closeReviewGroup, closingSection, copyTA, detail, executionRow, exitReflection, expect, factsOf, fillRows, firstPage, launchAt, openDrawer, openExitForm,
   openTradeFromOpenList, probe, sell, test, tradesOf, TUESDAY_1405, TUESDAY_1405_LOCAL, workspaceOf,
 } from './support.ts';
 
@@ -16,7 +16,7 @@ test.describe('B6.3 Close requirements', () => {
     await openTradeFromOpenList(page, 'XYZ');
     await openExitForm(page);
     await fillRows(page, [sell('100', '53.00', '1.40', TUESDAY_1405_LOCAL)]);
-    await answerIn(exitReflection(page));
+    await answerSaleIn(exitReflection(page));
     // The full exit shows Closing the Trade; the Close Reason is left unchosen and the Close Review is deferred.
     await expect(closingSection(page)).toBeVisible();
     await expect(closeReasonGroup(page).getByRole('radio', { checked: true })).toHaveCount(0);
@@ -67,7 +67,7 @@ test.describe('B6.4 Oversell', () => {
     await openTradeFromOpenList(page, 'XYZ');
     await openExitForm(page);
     await fillRows(page, [sell('101', '53.00', '1.40', TUESDAY_1405_LOCAL)]);
-    await answerIn(exitReflection(page));
+    await answerSaleIn(exitReflection(page));
     await page.getByRole('button', { name: 'Save exit' }).click();
 
     const row = executionRow(page, 1);

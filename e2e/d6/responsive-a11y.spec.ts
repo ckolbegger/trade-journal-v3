@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import {
-  answerIn, closeReasonGroup, closeTheTrade, closingSection, copyTA, createTrades, debtForm, detail, executionRow, expect, expectAccessible, exitReflection, FOUR_TRADES, fillRows, firstPage, holdTradesStore,
+  answerCloseReviewOnDetail, answerSaleIn, closeReasonGroup, closeReviewGroup, closeTheTrade, closingSection, copyTA, createTrades, debtForm, detail, executionRow, expect, expectAccessible, exitReflection, FOUR_TRADES, fillRows, firstPage, holdTradesStore,
   launchAt, MONDAY_1700, onboardedAt, openDrawer, openExitForm, openReview, openTradeFromOpenList, LAUNCH, receiptResult, releaseTradesStore, sell, setClock, tabTo, test, TUESDAY_1000_LOCAL, TUESDAY_1405,
   TUESDAY_1405_LOCAL, TUESDAY_1700, valueOf, writeIntegrityFixture,
 } from './support.ts';
@@ -82,7 +82,7 @@ test.describe('B6.12 Responsive and accessible', () => {
 
     // Finish that partial exit, then axe on Open Detail with its Lot Matches.
     await executionRow(page, 1).getByLabel('Economic Time').fill(TUESDAY_1000_LOCAL);
-    await answerIn(exitReflection(page));
+    await answerSaleIn(exitReflection(page));
     await page.getByRole('button', { name: 'Save exit' }).click();
     await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible();
     await expect(receiptResult(page)).toBeVisible();
@@ -114,27 +114,32 @@ test.describe('B6.12 Responsive and accessible', () => {
     await tabTo(page, reflection.getByRole('radiogroup', { name: 'Decision confidence' }).getByLabel('1', { exact: true }));
     for (let n = 0; n < 3; n++) await page.keyboard.press('ArrowRight');
     await expect(reflection.getByRole('radiogroup', { name: 'Decision confidence' }).getByLabel('4')).toBeChecked();
+    await tabTo(page, reflection.getByLabel('Why did you leave the Plan?'));
+    await page.keyboard.type('Stopped out early.');
     await expect(closingSection(page)).toBeVisible();
     // Tab reaches the group at its first reason; Space chooses it and the arrow key moves the choice to the second.
     await tabTo(page, closeReasonGroup(page).getByLabel('Target Reached', { exact: true }));
     await page.keyboard.press('Space');
     await page.keyboard.press('ArrowRight');
     await expect(closeReasonGroup(page).getByLabel('Stop Triggered', { exact: true })).toBeChecked();
-    await tabTo(page, closingSection(page).getByRole('radiogroup', { name: 'Would you take this Trade again under similar conditions?' }).getByLabel('Yes, as planned'));
-    await page.keyboard.press('Space');
-    await tabTo(page, closingSection(page).getByLabel('What is the key lesson?'));
-    await page.keyboard.type('Stick to the Plan.');
+    // A terminal sale only puts its Close Review off (A312): Tab reaches the group at Reflect now, and the arrow key moves the choice to Reflect later.
+    await tabTo(page, closeReviewGroup(page).getByLabel('Reflect now'));
+    await page.keyboard.press('ArrowRight');
+    await expect(closeReviewGroup(page).getByLabel('Reflect later')).toBeChecked();
     await tabTo(page, page.getByRole('button', { name: 'Save exit' }));
     await page.keyboard.press('Enter');
     await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible();
     await expect(valueOf(receiptResult(page), 'Lifecycle')).toHaveText('Closed');
+    // ABC's Close Review was put off at the sale (A312) and is answered afterwards on its Detail, so ABC owes none.
+    await page.getByRole('link', { name: 'Back to the Trade' }).click();
+    await answerCloseReviewOnDetail(page);
 
     // DEF is closed with the mouse and its Close Review deferred, so it owes one.
     await page.goto('/');
     await openTradeFromOpenList(page, 'DEF');
     await openExitForm(page);
     await fillRows(page, [sell('100', '41.00', '1.00', TUESDAY_1405_LOCAL)]);
-    await closeTheTrade(page, 'later');
+    await closeTheTrade(page);
     await page.getByRole('button', { name: 'Save exit' }).click();
     await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible();
     await accessibleAtBothWidths(page, 'Exit receipt with the Close Review owed');
@@ -204,7 +209,7 @@ test.describe('B6.12 Responsive and accessible', () => {
     await openTradeFromOpenList(page, 'XYZ');
     await openExitForm(page);
     await fillRows(page, [sell('30', '53.00', '0.50', TUESDAY_1000_LOCAL)]);
-    await answerIn(exitReflection(page));
+    await answerSaleIn(exitReflection(page));
     await page.getByRole('button', { name: 'Save exit' }).click();
     await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible(LAUNCH);
     await page.getByRole('link', { name: 'Back to the Trade' }).click();
@@ -232,7 +237,7 @@ test.describe('B6.12 Responsive and accessible', () => {
     await page.setViewportSize(WIDE);
     await openExitForm(page);
     await fillRows(page, [sell('70', '51.00', '1.00', TUESDAY_1405_LOCAL)]);
-    await closeTheTrade(page, 'later');
+    await closeTheTrade(page);
     await page.getByRole('button', { name: 'Save exit' }).click();
     await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible();
     await page.getByRole('link', { name: 'Back to the Trade' }).click();
@@ -254,7 +259,7 @@ test.describe('B6.12 Responsive and accessible', () => {
     await openTradeFromOpenList(page, 'XYZ');
     await openExitForm(page);
     await fillRows(page, [sell('30', '53.00', '0.50', TUESDAY_1000_LOCAL)]);
-    await answerIn(exitReflection(page));
+    await answerSaleIn(exitReflection(page));
     await page.getByRole('button', { name: 'Save exit' }).click();
     await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible(LAUNCH);
     await page.getByRole('link', { name: 'Back to the Trade' }).click();
@@ -309,7 +314,7 @@ test.describe('B6.12 Responsive and accessible', () => {
     const recordExit = async (quantity: string, time: string): Promise<void> => {
       await openExitForm(page);
       await fillRows(page, [sell(quantity, '53.00', '0.50', time)]);
-      await answerIn(exitReflection(page));
+      await answerSaleIn(exitReflection(page));
       await page.getByRole('button', { name: 'Save exit' }).click();
       await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible(LAUNCH);
     };
