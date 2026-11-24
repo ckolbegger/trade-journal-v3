@@ -576,3 +576,7 @@ Commit `e7366355`: `attentionOf` counts the Underlying-only crossed-line reading
 ocr of T95.26-B1 (session f14acec8): 3 files, 0 findings. `evidence/D95/ocr/T95.26-B1-e7366355.json`.
 
 Run `t95.26-b1` (browser-task): unit 2892, integration 330, browser 20, checks 14 of 14. Passed.
+
+### T95.26-B2
+
+Commit `2bd629f7`: new `Figures` wraps each signed money figure in `.nowrap`; the Now box uses it for row values and the Marks' change. Plan box has no signed figure. Red then green (browser, DALE at 320: "−$2,016.00" broken). e2e/d95 and e2e/d9ar 86 passed.
