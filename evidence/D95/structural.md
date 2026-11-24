@@ -936,3 +936,5 @@ ocr of T95.40-B2 (session 0195e4c5): 2 files, 1 finding, Valid: **T95.40-B3** (`
 Commit `86f6abd9`: the effect's setup resets `gone.current = false` (StrictMode replay). Case in <StrictMode>: red "called 2 times, but got 1", green; ActionForm.test 34 passed.
 
 ocr of T95.40-B3 (session bf621f7c): 2 files, 0 findings. `evidence/D95/ocr/T95.40-B3-86f6abd9.json`. Next: run `t95.40-sale-in-card` (browser-auto 17841c4a).
+
+Run `t95.40-sale-in-card` (browser-auto 17841c4a, full tier): unit 3073, integration 329, browser 127, 79, 55 and 131 (4 skipped), checks 14 of 14. Passed. T95.40 done. (Open: the owed group's heading for open Trades owing only a reflection, put to the user.)
