@@ -1017,3 +1017,6 @@ Commit `30671d8e`: the owed group's heading "Trades with owed reflections" (W103
 T95.40-D1 ocr (`30671d8e`): no findings (evidence/D95/ocr/T95.40-D1-30671d8e.json).
 
 Run `t95.40-d1` (browser-task, base 22249ee8, at b3e298f6): unit 3088, integration 363, browser 51, checks 14 of 14; run complete. T95.40-D1 done.
+
+### T95.45 B95.10 stopped (tdd-task, 2026-11-24): a product gap
+d9r2 builds and serves (tools/build-releases.ts gained d9r2, the user's approval, committed). A probe onboarded a Workspace on d9r2 with a Position Change Reflection owed, then updated to current: data intact, but journalDefinitions stayed at the four revision-1 forms, after reloads, the Review and a Mark. Only `Workspace.initialize` runs the seed; the browser calls it on first run and on a schema migration only, and D9 and D9.5 are both schema 7. I95.8 calls initialize directly. Nothing committed. Follow-on T95.28-F2 (carries out T95.28 case 6 "on its next start" in the app): run the seed step on every Writable open of an existing Workspace. B95.10 resumes after it (plan: a saved d9r2 setup, assert the owed reflection's stored definition id stays revision 1 and a new Hold's is revision 2).
