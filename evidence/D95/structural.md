@@ -907,3 +907,5 @@ Run `t95.39-plan-check` (browser-auto 7e623a14, full tier): unit 3053, integrati
 ### T95.40 — parked (pending decision)
 
 The tdd-task stopped before any edit: case 6 ("show the Trade under 'Closed · Close Review' as 'Close Review · next Review'", W135) quotes words the breakdown gives to T95.58 (the group heading, X12 and T95.58 case 1, now "Trades with owed reflections" at ReviewView.tsx:599; the card label W151, T95.58 case 5, now from remainsText in ReviewOwedCard.tsx); neither file is on T95.40's Files line; B95.8 (T95.45) asserts the same. Options put to the user: (1) T95.40 builds the heading and label (T95.58 cases 1 and 5 then first-run pass, flagged; X12's test edits move to T95.40) — recommended; (2) case 6 moves to T95.58; (3) an interim wording.
+
+T95.40 decision: the user chose option 1 (decision 134, plan revision 123): T95.40 builds the closed group's heading (W103) and the owed card's Close Review label (W151) with X12's test edits; T95.58 cases 1 and 5 will first-run pass, flagged.
