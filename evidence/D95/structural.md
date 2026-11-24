@@ -723,3 +723,5 @@ Run `t95.30-plan-call` (browser-task): unit 2937, integration 329, browser 5 + 1
 ### T95.31
 
 Commit `4803ac91`: `WalkedTrade.planCall?` and `DailyTradeReview.planCall?` (from the evaluation already read; no request count moves); a new Action's `viewState.selectedAction` is 'Hold' only when the call is Hold, else `{}`. First-run passes flagged and mutation-checked: Hold selected for Hold, nothing for Unknown, a saved Action returned as saved, nothing recorded on open (a first mutation threw a TypeError and was redone). Bridge outside the Files line: `ActionForm.tsx` `selectedAction ?? 'Hold'` keeps today's screen until T95.33. 2,760 tests in the touched folders passed.
+
+ocr of T95.31 (session 37fe31a8): 5 files, 1 finding, Doubtful (`ActionForm.tsx:83`: the `?? 'Hold'` bridge re-selects Hold when the coordinator selects nothing). Not a bug task: it is the recorded bridge, and T95.33 (items 2, 5, 10) builds the form with nothing chosen; carried to T95.33's brief. `evidence/D95/ocr/T95.31-4803ac91.json`. Next: run `t95.31-plan-call-page` (browser-auto a54d6298).

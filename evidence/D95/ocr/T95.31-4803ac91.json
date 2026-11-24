@@ -1,0 +1,146 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 1,
+    "total_tokens": 114630,
+    "input_tokens": 113421,
+    "output_tokens": 1209,
+    "cache_read_tokens": 4992,
+    "elapsed": "48s"
+  },
+  "tool_calls": {
+    "total": 16,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 4,
+      "file_find": 1,
+      "file_read": 10
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/ActionForm.tsx",
+      "content": "When the coordinator returns an empty viewState for an Out, Unknown, or unavailable Plan Call, this fallback turns it back into a selected Hold. The radio group therefore shows Hold checked, and submit() accepts it without an explicit choice or intent, allowing Save to record Hold despite the new unselected state. Preserve the absent action in local state and require an explicit selection before saving; add a UI test using `{ kind: 'New', viewState: {} }`.",
+      "existing_code": "  if (form.kind === 'New') return { action: form.viewState.selectedAction ?? 'Hold', intent: '', conviction: '', considered: '', note: '' };",
+      "start_line": 83,
+      "end_line": 83,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Daily review planning and action form integration",
+      "files": [
+        "src/coordinators/daily-review/daily-review.test.ts",
+        "src/coordinators/daily-review/daily-review.ts",
+        "src/coordinators/daily-review/plan-call.test.ts",
+        "src/coordinators/daily-review/types.ts",
+        "src/ui/screens/ActionForm.tsx"
+      ]
+    }
+  ],
+  "session_id": "37fe31a8-bc84-4ead-be7a-5fc0a82803cf",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "37fe31a8-bc84-4ead-be7a-5fc0a82803cf",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "4803ac91",
+      "resolved_base": "4b322285174ac59d28812e1e46a778df1e4b870e",
+      "resolved_head": "4803ac91928d74d7db11402db8de6701fea38b49",
+      "exact_range": "4b322285174ac59d28812e1e46a778df1e4b870e..4803ac91928d74d7db11402db8de6701fea38b49",
+      "source_artifact_sha256": "e67d05f9f2b0ef4fb860a31d7e7e62c191b51b898d0ef574dc458bdd3d68f3c3"
+    },
+    "execution": {
+      "ocr_version": "v1.14.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "44abe7c73fab5a8f7bf5940b740f28069a8c087d4e5967d9a53d81747d6d8b51"
+        },
+        {
+          "item_id": "28d9dac30140868b5ff82f3128fe52a527534ffce26da1ec10da0741844bd9af",
+          "path": "src/ui/screens/ActionForm.tsx",
+          "fingerprint": "e8b890e6f9e5a5d15c7aacfc406a73afa90031bf422c19e3f8d2e809e961f8fc"
+        },
+        {
+          "item_id": "835fe238986a14f50aa73feeedba69e298a0728d45c05d35543575d749816715",
+          "path": "src/coordinators/daily-review/daily-review.test.ts",
+          "fingerprint": "8a005ccc8d55d7288eda6947eab06a661a4d2bc278475368d83232cf57b1dfcd"
+        },
+        {
+          "item_id": "9317cb6abe0392023716ddbff2e2fd480a006a1c43ac426ce47f4b5949c918ac",
+          "path": "src/coordinators/daily-review/plan-call.test.ts",
+          "fingerprint": "d6c1d3da34a8e02d8ece55ddce8d99654cd56628c2ba13968ba1f239a4000c6b"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "5415745bc89374477a70a2c5a35b27353066d5143a1126d160c5fd17c451e2bd"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "44abe7c73fab5a8f7bf5940b740f28069a8c087d4e5967d9a53d81747d6d8b51"
+        },
+        {
+          "item_id": "28d9dac30140868b5ff82f3128fe52a527534ffce26da1ec10da0741844bd9af",
+          "path": "src/ui/screens/ActionForm.tsx",
+          "fingerprint": "e8b890e6f9e5a5d15c7aacfc406a73afa90031bf422c19e3f8d2e809e961f8fc"
+        },
+        {
+          "item_id": "835fe238986a14f50aa73feeedba69e298a0728d45c05d35543575d749816715",
+          "path": "src/coordinators/daily-review/daily-review.test.ts",
+          "fingerprint": "8a005ccc8d55d7288eda6947eab06a661a4d2bc278475368d83232cf57b1dfcd"
+        },
+        {
+          "item_id": "9317cb6abe0392023716ddbff2e2fd480a006a1c43ac426ce47f4b5949c918ac",
+          "path": "src/coordinators/daily-review/plan-call.test.ts",
+          "fingerprint": "d6c1d3da34a8e02d8ece55ddce8d99654cd56628c2ba13968ba1f239a4000c6b"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "5415745bc89374477a70a2c5a35b27353066d5143a1126d160c5fd17c451e2bd"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "0325b0d28bb6282bb5069465a99c583d42867ea6018b86b09d7e904d18da02bb",
+          "path": "evidence/D95/tdd-log/T95.31.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 47892
+  }
+}
