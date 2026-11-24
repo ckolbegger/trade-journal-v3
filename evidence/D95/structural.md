@@ -846,3 +846,5 @@ ocr of T95.36-B1, T95.36-B2, T95.36-B3 (session 58744809): 3 files, 1 finding, V
 Commit `c59d4ad7`: `Temporal.Instant.compare` picks the earliest member in sale-measure.ts and in record-position-change.ts (`earliest()`, memberIssues' before-plan and in-future bounds). Red, green (annotated times in both orders); the moment's agreement rests on the code, not asserted. `confirmPlan`'s `Date.parse` (trade-workflows.ts:71, pre-existing) added to tech-debt.md. src/coordinators and tests/integration 927 passed.
 
 ocr of T95.36-B4 (session fd23e829): 3 files, 0 findings. `evidence/D95/ocr/T95.36-B4-c59d4ad7.json`. Next: run `t95.36-sale-measured` (browser-auto 0039d2db).
+
+Run `t95.36-sale-measured` (browser-auto 0039d2db, full tier): unit 3016, integration 329, browser 127, 79, 55 and 130 (4 skipped), checks 14 of 14. Passed. T95.36 done.
