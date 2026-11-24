@@ -34,10 +34,9 @@ export function describedLabelsOf(trade: LabelledTrade, timeZone: string): { lab
   if (boundary) return [{ label: boundary, reason: why(trade.reasons.filter((reason) => reason.code === 'StopBreached' || reason.code === 'TargetReached')) }];
   const acknowledged = trade.reasons.filter(isAcknowledgedUnavailableAttention);
   if (acknowledged.length > 0) return [{ label: 'No price today', reason: why(acknowledged) }];
-  // The share is the Pressure's (risk or reward consumed since entry, on the open Lots), the figure the card's line and the order use; the meter's share counts the realized P&L too.
-  const now = trade.meter?.now;
+  // The share is the Pressure's (risk or reward consumed since entry, on the open Lots), the figure the card's line and the order use; the meter's share counts the realized P&L too, and is absent when the total result is zero.
   const pressure = trade.basis.kind === 'Value' && trade.basis.value.side !== 'None' ? trade.basis.value : undefined;
-  if (now?.kind === 'Value' && now.value.share && pressure) {
+  if (pressure) {
     const toward = pressure.side === 'Losing' ? 'Stop' : 'Target';
     return [{ label: `${percent(pressure.share)}% to ${toward}`, reason: `${percent(pressure.share)}% of the way from entry to the ${toward}` }];
   }

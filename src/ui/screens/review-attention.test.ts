@@ -50,6 +50,14 @@ describe('the share label of a partly sold Trade (T95.26-B3)', () => {
   });
 });
 
+describe('the share label of a Trade whose total result is zero (T95.26-B6)', () => {
+  it('should word the label from the pressure share when the meter returns no share', () => {
+    const noShare = { now: { kind: 'Value', value: { zone: 'Between' } } };
+    const basis = { kind: 'Value', value: { side: 'Losing', share: Rational.of(2n, 3n), atEntry: Rational.of(300n), now: Rational.of(100n) } };
+    expect(describedLabelsOf(trade({ band: 'QuantifiedPressure', meter: noShare, basis }), 'UTC')).toEqual([{ label: '67% to Stop', reason: '67% of the way from entry to the Stop' }]);
+  });
+});
+
 describe('plain labels (A302)', () => {
   it('should label a Trade past its Stop Past Stop and one at its Target At Target', () => {
     expect(labelsOf(trade({ band: 'StopReached' }))).toEqual(['Past Stop']);
