@@ -771,3 +771,7 @@ Commit `45cdf246`: the Action form: the Plan Call line above the choices, Hold c
 ocr of T95.33 (session fff4c78a): 21 files, 2 findings, both Valid. `evidence/D95/ocr/T95.33-45cdf246.json`.
 - **T95.33-B1** (`ActionForm.tsx:125`): the form follows a changed preselection whenever the current Action equals the old one; a trader who chose Exit then Hold loses the explicit Hold when the preselection becomes empty (no flag records an explicit choice).
 - **T95.33-B2** (test, `e2e/d5r/responsive-a11y.spec.ts:105`): the keyboard-only section now picks Hold with `check()`, so the keyboard path to the Action radios is no longer exercised.
+
+### T95.33-B1, T95.33-B2
+
+Commits `98860c07` (B1: a `chose` flag set by any radio change ends following the view's preselection; Discard clears it; a restored draft counts as chosen; red "expected [] to deeply equal [ 'Hold' ]", green) and `00361cce` (B2: the keyboard-only section reaches Hold by Tab and selects it with Space; mutation tabIndex=-1 failed with "focus ring on BODY", restored). ActionForm.test 19 passed; the browser case passed.
