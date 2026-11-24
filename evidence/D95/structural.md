@@ -685,3 +685,5 @@ ocr of T95.28 (session 26d354ec, second run; the first had 8 stream failures): 4
 ### T95.28-B1, T95.28-B2, T95.28-B3
 
 Commits `9998748f` (B1: the migration receipt names revised Entry Types as `seedDefaults` does; d4, d5, d6 migration expectations updated), `707765c8` (B2: `closeReviewAnswers` always answers the key lesson; generator version and marker 9), `1a8fb348` (B3: the export snapshot reads `journalDefinitions` in its own transaction; `ExportJob.journalSeedFromForms` for a current-schema Workspace; `storedJournalSeed` removed; the race is shown by a table value no stored form matches). Red then green each; 714 tests in the touched folders passed.
+
+ocr of T95.28-B1, T95.28-B2, T95.28-B3 (range 3cee01da..1a8fb348, session 9a152bc6): 14 files, 0 findings. `evidence/D95/ocr/T95.28-B1-B3-1a8fb348.json`. Next: run `t95.28-seed-6` (browser-auto a3578e49).

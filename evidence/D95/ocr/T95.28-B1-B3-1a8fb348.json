@@ -1,0 +1,264 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 14 selected item(s).",
+  "summary": {
+    "files_reviewed": 14,
+    "comments": 0,
+    "total_tokens": 111041,
+    "input_tokens": 110028,
+    "output_tokens": 1013,
+    "cache_read_tokens": 22528,
+    "elapsed": "22s"
+  },
+  "tool_calls": {
+    "total": 23,
+    "by_tool": {
+      "code_search": 5,
+      "file_read": 18
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Benchmark generation and execution",
+      "files": [
+        "src/app/bench-generator.test.ts",
+        "src/app/bench-generator.ts",
+        "src/app/bench.ts"
+      ]
+    },
+    {
+      "label": "Workspace backup and snapshot export",
+      "files": [
+        "src/coordinators/workspace/backup-export.ts",
+        "src/coordinators/workspace/backup.test.ts",
+        "src/coordinators/workspace/backup.ts",
+        "src/persistence/export-snapshot.test.ts",
+        "src/persistence/export-snapshot.ts"
+      ]
+    },
+    {
+      "label": "Workspace migrations and seed compatibility",
+      "files": [
+        "src/coordinators/workspace/migration.test.ts",
+        "src/coordinators/workspace/migration.ts",
+        "src/coordinators/workspace/seed-6.test.ts",
+        "tests/integration/d4/migration.test.ts",
+        "tests/integration/d5/migration.test.ts",
+        "tests/integration/d6/migration.test.ts"
+      ]
+    }
+  ],
+  "session_id": "9a152bc6-aee3-4c63-9c43-6c81e2309eae",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "9a152bc6-aee3-4c63-9c43-6c81e2309eae",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "3cee01da",
+      "requested_head": "1a8fb348",
+      "resolved_base": "3cee01da5d7cee19491d45f6a3b1bdee2395cfed",
+      "resolved_head": "1a8fb348072c878e7a35d9f597d5c75ec9c263a6",
+      "exact_range": "3cee01da5d7cee19491d45f6a3b1bdee2395cfed..1a8fb348072c878e7a35d9f597d5c75ec9c263a6",
+      "source_artifact_sha256": "5cb6e8851cba1199a5aee6a7c151b3225a2f466c6adde69f8a3a9daf9e15c0dd"
+    },
+    "execution": {
+      "ocr_version": "v1.14.2",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "1829f40b932c0e8aabdd0678b4cd72b819f4fbf9711429df6ff01f0253c7621a",
+          "path": "src/coordinators/workspace/migration.ts",
+          "fingerprint": "7847d8e0cd1521dcbbc284ad8f1e1f959f58252f07875dd14446c0518b2a0cf3"
+        },
+        {
+          "item_id": "20b041a131661266aa91b16c1d5231e4f57f570f3a0f958a5054b9bb987be472",
+          "path": "src/app/bench.ts",
+          "fingerprint": "5f58c75b204188edf25d452724aca2275072051a4175a06ed1da3124e6be3334"
+        },
+        {
+          "item_id": "3419f465119ff186ff0cf66b90f6456285889425d7a6a27e01b94e7edfa3d96b",
+          "path": "src/app/bench-generator.ts",
+          "fingerprint": "933c32ff6fe3ec48a4e1389dd5311d40467be4ffec3bfa7486449e4acf00d9c9"
+        },
+        {
+          "item_id": "34d1797b5dac47e1020c8a712c16bc75bc374425c9a74e7742bb761a7f0a36f6",
+          "path": "src/app/bench-generator.test.ts",
+          "fingerprint": "2f423611cd2b1f42bd2b19ad55dd830f83b3d9125e619ea6ad63686b597b4af3"
+        },
+        {
+          "item_id": "3a5722f81675ba9c4286fda538544f35318fadf234ee53d6417ad120a77a4344",
+          "path": "src/persistence/export-snapshot.ts",
+          "fingerprint": "56bb067685f37efc5933ca9e9bdff52aeb813d3bbc24ac3ee4c297538bc4e01c"
+        },
+        {
+          "item_id": "43d0c1bd7d43dbe60127b5d1db2490e4f8d110855b976315d4676170055c2151",
+          "path": "src/persistence/export-snapshot.test.ts",
+          "fingerprint": "c02c76fb2b66efe27424cbb242e044f5838869226ff74a3e8500fcc6be913c13"
+        },
+        {
+          "item_id": "5686c07e62e730544500b0de50e82aadbec43876b6c76d27e13edaa4c3f6a102",
+          "path": "tests/integration/d4/migration.test.ts",
+          "fingerprint": "9f4a4991e7b3a7f3f597f509048efb49fab74bc6fbaafefc02cb01b9a199f32e"
+        },
+        {
+          "item_id": "820c2811bc1e7cd68e9758a6937080b7618a9704b72f541f8c873dc87453363f",
+          "path": "tests/integration/d5/migration.test.ts",
+          "fingerprint": "050dfc90edb41efbb6753954b4fee045e3e03d67714c827a9ca67e329d959dd5"
+        },
+        {
+          "item_id": "8f3e8ccde3f39cfe56770cba806e829d396871937be98a24fc79e5eeba49a5ca",
+          "path": "tests/integration/d6/migration.test.ts",
+          "fingerprint": "48de5c3804b2965d8bc98e37f0328241cfccb958fcb41f743bd27baa7650d8c3"
+        },
+        {
+          "item_id": "bca7aad2074f283d89e1c579d526b01316b27caad0ad77d8f74a198fc95d0cd0",
+          "path": "src/coordinators/workspace/backup.ts",
+          "fingerprint": "7c92131f8d716e9b2e0aa8bc8bace48dafd6811f2c6bb0de58400d2e075b1507"
+        },
+        {
+          "item_id": "ddfd003dd9621669848333539e92885f7f7406c7061e7ed07a63acf8bcb8ac42",
+          "path": "src/coordinators/workspace/seed-6.test.ts",
+          "fingerprint": "45c5a7b06bb65f5c8315e56287cc6907caa31419a18cd200ffc3e768e107df0a"
+        },
+        {
+          "item_id": "e2b2e62949a780ba81628214c47c1c18132ca4a0dc8285ee42603816826c12b1",
+          "path": "src/coordinators/workspace/backup.test.ts",
+          "fingerprint": "ce47b5ce33d921866635228ad48bd0a0e2e766dbad89ccb9f262d9f059d3b5a3"
+        },
+        {
+          "item_id": "e852bb1f98a1a8655b5be103cf9c9ce8d9ad2517e127adf2242776e95fa1a912",
+          "path": "src/coordinators/workspace/backup-export.ts",
+          "fingerprint": "5c3e38bfa3ab4870957f489a533427531b1e06c6bd5ead3eca7527333ddd207b"
+        },
+        {
+          "item_id": "fddc0a609ed0940da8fec22b9eef6ed45749de0ecdf46cd12dec06a00e595598",
+          "path": "src/coordinators/workspace/migration.test.ts",
+          "fingerprint": "d18b1d05a3cb20473cd38159dd4e344bfbcd442f929e8c7ce12fdcfccfed3027"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "1829f40b932c0e8aabdd0678b4cd72b819f4fbf9711429df6ff01f0253c7621a",
+          "path": "src/coordinators/workspace/migration.ts",
+          "fingerprint": "7847d8e0cd1521dcbbc284ad8f1e1f959f58252f07875dd14446c0518b2a0cf3"
+        },
+        {
+          "item_id": "20b041a131661266aa91b16c1d5231e4f57f570f3a0f958a5054b9bb987be472",
+          "path": "src/app/bench.ts",
+          "fingerprint": "5f58c75b204188edf25d452724aca2275072051a4175a06ed1da3124e6be3334"
+        },
+        {
+          "item_id": "3419f465119ff186ff0cf66b90f6456285889425d7a6a27e01b94e7edfa3d96b",
+          "path": "src/app/bench-generator.ts",
+          "fingerprint": "933c32ff6fe3ec48a4e1389dd5311d40467be4ffec3bfa7486449e4acf00d9c9"
+        },
+        {
+          "item_id": "34d1797b5dac47e1020c8a712c16bc75bc374425c9a74e7742bb761a7f0a36f6",
+          "path": "src/app/bench-generator.test.ts",
+          "fingerprint": "2f423611cd2b1f42bd2b19ad55dd830f83b3d9125e619ea6ad63686b597b4af3"
+        },
+        {
+          "item_id": "3a5722f81675ba9c4286fda538544f35318fadf234ee53d6417ad120a77a4344",
+          "path": "src/persistence/export-snapshot.ts",
+          "fingerprint": "56bb067685f37efc5933ca9e9bdff52aeb813d3bbc24ac3ee4c297538bc4e01c"
+        },
+        {
+          "item_id": "43d0c1bd7d43dbe60127b5d1db2490e4f8d110855b976315d4676170055c2151",
+          "path": "src/persistence/export-snapshot.test.ts",
+          "fingerprint": "c02c76fb2b66efe27424cbb242e044f5838869226ff74a3e8500fcc6be913c13"
+        },
+        {
+          "item_id": "5686c07e62e730544500b0de50e82aadbec43876b6c76d27e13edaa4c3f6a102",
+          "path": "tests/integration/d4/migration.test.ts",
+          "fingerprint": "9f4a4991e7b3a7f3f597f509048efb49fab74bc6fbaafefc02cb01b9a199f32e"
+        },
+        {
+          "item_id": "820c2811bc1e7cd68e9758a6937080b7618a9704b72f541f8c873dc87453363f",
+          "path": "tests/integration/d5/migration.test.ts",
+          "fingerprint": "050dfc90edb41efbb6753954b4fee045e3e03d67714c827a9ca67e329d959dd5"
+        },
+        {
+          "item_id": "8f3e8ccde3f39cfe56770cba806e829d396871937be98a24fc79e5eeba49a5ca",
+          "path": "tests/integration/d6/migration.test.ts",
+          "fingerprint": "48de5c3804b2965d8bc98e37f0328241cfccb958fcb41f743bd27baa7650d8c3"
+        },
+        {
+          "item_id": "bca7aad2074f283d89e1c579d526b01316b27caad0ad77d8f74a198fc95d0cd0",
+          "path": "src/coordinators/workspace/backup.ts",
+          "fingerprint": "7c92131f8d716e9b2e0aa8bc8bace48dafd6811f2c6bb0de58400d2e075b1507"
+        },
+        {
+          "item_id": "ddfd003dd9621669848333539e92885f7f7406c7061e7ed07a63acf8bcb8ac42",
+          "path": "src/coordinators/workspace/seed-6.test.ts",
+          "fingerprint": "45c5a7b06bb65f5c8315e56287cc6907caa31419a18cd200ffc3e768e107df0a"
+        },
+        {
+          "item_id": "e2b2e62949a780ba81628214c47c1c18132ca4a0dc8285ee42603816826c12b1",
+          "path": "src/coordinators/workspace/backup.test.ts",
+          "fingerprint": "ce47b5ce33d921866635228ad48bd0a0e2e766dbad89ccb9f262d9f059d3b5a3"
+        },
+        {
+          "item_id": "e852bb1f98a1a8655b5be103cf9c9ce8d9ad2517e127adf2242776e95fa1a912",
+          "path": "src/coordinators/workspace/backup-export.ts",
+          "fingerprint": "5c3e38bfa3ab4870957f489a533427531b1e06c6bd5ead3eca7527333ddd207b"
+        },
+        {
+          "item_id": "fddc0a609ed0940da8fec22b9eef6ed45749de0ecdf46cd12dec06a00e595598",
+          "path": "src/coordinators/workspace/migration.test.ts",
+          "fingerprint": "d18b1d05a3cb20473cd38159dd4e344bfbcd442f929e8c7ce12fdcfccfed3027"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "3dfe5de9940db0db3efed0da3f13c763a4948223bc3747003819064e4178665c",
+          "path": "evidence/D95/tdd-log/T95.28-B3.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "5434bb198e2c077d668576d6c029a5006dec5ad1e833dd6cd9495faf97f54adc",
+          "path": "evidence/D95/ocr/T95.28-3cee01da.json",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ab47bc811f23c17f4c6317a43b1bf19eff8f2b20af07649acc55f19159f8bebc",
+          "path": "evidence/D95/structural.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "abd61c84f8edf8e5703667020d6b1449a4f97937677e7207feda282087638d74",
+          "path": "evidence/D95/tdd-log/T95.28-B1.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "b6484ae39dc04ecaca96efdc23c63478e153e1f697fd8535821210f0a6310ef1",
+          "path": "evidence/D95/tdd-log/T95.28-B2.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 21827
+  }
+}
