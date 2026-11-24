@@ -46,3 +46,7 @@
 ## Approved (2026-11-24)
 
 The user approved every entry above as it stands, after the T95.26 gate. "More figures" keeps "max loss: unlimited" (Trade Detail's words) over W92's "max loss no limit". The critics' wording notes stay in tech-debt.md.
+
+## Part B (awaiting approval)
+
+- T95.33 (no W row): an Unknown Plan Call shows no call line, only "Nothing is chosen for you here."; a short Position: "buy back all 4 contracts at the Stop… Record the buy-back once it is done."; with no replay the Exit line says "sell all of it"; with nothing chosen the button reads "Save"; a saved Action with no reason reads "Mon Nov 16: Hold" with no quote; Conviction hint "1 low · 5 high", group "Conviction now (optional)".

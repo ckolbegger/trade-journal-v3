@@ -17,3 +17,7 @@
 ## Approved (2026-11-24)
 
 The user approved every entry above as it stands, after the T95.26 gate. "More figures" keeps "max loss: unlimited" (Trade Detail's words) over W92's "max loss no limit". The critics' wording notes stay in tech-debt.md.
+
+## Part B
+
+- T95.33: the refusal "Say why you are taking this action." → "Say why." (X7); the saved Action's "Saved Action: Hold" and "Why? …" lines → one line (W127); Save → "Save Hold" / "Save Exit" / …; Conviction select → five buttons.
