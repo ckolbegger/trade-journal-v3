@@ -1,0 +1,233 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 12 selected item(s).",
+  "summary": {
+    "files_reviewed": 12,
+    "comments": 1,
+    "total_tokens": 223357,
+    "input_tokens": 220855,
+    "output_tokens": 2502,
+    "cache_read_tokens": 18304,
+    "elapsed": "58s"
+  },
+  "tool_calls": {
+    "total": 31,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 6,
+      "file_read": 21,
+      "file_read_diff": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/ActionForm.tsx",
+      "content": "The new coordinator rule allows Exit without a reason when the Plan Call is Out, but this form still sets `required = action !== 'Hold'` and returns early on an empty reason before calling `facade.DailyReview.save`. Consequently, that newly supported save (including changing a saved Action to Exit) remains impossible through the UI; handling `IntentRequired` here does not fix the client-side rejection. Update the local validation and required/optional label to use the Plan Call rule, or defer reason validation to the coordinator.",
+      "existing_code": "    setIssues(result.kind === 'Rejected' \u0026\u0026 !marks ? result.issues.map((issue) =\u003e (issue.code === 'RequiredAnswerMissing' || issue.code === 'IntentRequired' ? INTENT_REQUIRED(intentField, issue.code) : { field: wholeField, message: COULD_NOT_SAVE, code: issue.code })) : []);",
+      "start_line": 190,
+      "end_line": 190,
+      "category": "bug",
+      "severity": "high"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Daily review coordinator, save behavior, and unit tests",
+      "files": [
+        "src/coordinators/daily-review/daily-review.ts",
+        "src/coordinators/daily-review/save-day.test.ts",
+        "src/coordinators/daily-review/save-plan-rule.test.ts",
+        "src/coordinators/daily-review/save.test.ts",
+        "src/coordinators/daily-review/types.ts"
+      ]
+    },
+    {
+      "label": "Daily review UI consumers",
+      "files": [
+        "src/ui/screens/ActionForm.tsx",
+        "src/ui/screens/ReviewReflections.tsx"
+      ]
+    },
+    {
+      "label": "Daily review integration test updates",
+      "files": [
+        "tests/integration/d5/rebuild.test.ts",
+        "tests/integration/d5/review-debt.test.ts",
+        "tests/integration/d5r/gap-trades.test.ts",
+        "tests/integration/d5r/save-marks.test.ts",
+        "tests/integration/d95/day.test.ts"
+      ]
+    }
+  ],
+  "session_id": "f3758c73-d1ae-480c-9e6c-a29e12d6a353",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "f3758c73-d1ae-480c-9e6c-a29e12d6a353",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "096be3e1",
+      "resolved_base": "9426f43d333e2c60fd85db29be5f597bf319bd66",
+      "resolved_head": "096be3e18e8bb68a300908a8d5a73476fbd91a5d",
+      "exact_range": "9426f43d333e2c60fd85db29be5f597bf319bd66..096be3e18e8bb68a300908a8d5a73476fbd91a5d",
+      "source_artifact_sha256": "c3e53929463f3d4064c79d14e6a2d84ee6abbffad03489d707fb48f3758fcfd4"
+    },
+    "execution": {
+      "ocr_version": "v1.14.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "02d2b522fc8ad50e6ef168e466ec06ab756cf8ca676015178a348d1e1a98f989",
+          "path": "src/ui/screens/ReviewReflections.tsx",
+          "fingerprint": "077160dc302c04b49c34c60c9f9e8ab8e6d8d19e8c3c52c2a041295c699531f9"
+        },
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "b16b441b93d480276c7258c752db4fb84294bf9b821c103d4b7ee27599d37ea3"
+        },
+        {
+          "item_id": "19df79ecc5e980d5f19131110eae1154615b3c6b81922510acc6734ec7a4a0d2",
+          "path": "tests/integration/d5/rebuild.test.ts",
+          "fingerprint": "2047a3c7b8dcd29b997da02afd0c9c5c15c7e0fe2f88f28ceca01ed048e91c8a"
+        },
+        {
+          "item_id": "237bdf4ffe6af458bd4b0574b4fb4c3c6d1d85ab24e801fad008118dcd408b2d",
+          "path": "src/coordinators/daily-review/save-day.test.ts",
+          "fingerprint": "4838df2eba4a3789f04a3bacb3f69bbaf54a1052283aebb2c862b471e4788d00"
+        },
+        {
+          "item_id": "28d9dac30140868b5ff82f3128fe52a527534ffce26da1ec10da0741844bd9af",
+          "path": "src/ui/screens/ActionForm.tsx",
+          "fingerprint": "edabc72dbfc4b6142b7b6f5e3345b14939a82de45af407044e400116e0bb5286"
+        },
+        {
+          "item_id": "7ef02bbd72ba4623d3bcebadc13096154cd433e6de179db40529f8af213442cf",
+          "path": "src/coordinators/daily-review/save-plan-rule.test.ts",
+          "fingerprint": "8862649c31dfd0179621bf2ace99d16dd3755c6ccb4cde11831ea32ef1a571de"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "9357c73e8c7f58fb17f9b07a55c866166689de89596d258dd333c273604b925a"
+        },
+        {
+          "item_id": "c7b22111ebcf77be1b460173e276cc33a053b3e5c0e3448573707ec45a948bd2",
+          "path": "tests/integration/d5r/gap-trades.test.ts",
+          "fingerprint": "e3d01ce06ae2a7cfc73ffe18b38b073660bb3caeb8da356fda02183e8091b606"
+        },
+        {
+          "item_id": "cb9c540330da03d961ca2434e4463a522e5d53136d141221f3f85a53d693e744",
+          "path": "tests/integration/d5r/save-marks.test.ts",
+          "fingerprint": "6ccda16e04eec254b674a91014774451f1fc15ba26017fd50fa305441ff7d56d"
+        },
+        {
+          "item_id": "d6bea2c28cf4fc04da5370b246ab81d6e039c31f54724b71135076583ec730c4",
+          "path": "tests/integration/d95/day.test.ts",
+          "fingerprint": "4e333ef0a717b04fce23062917498f7da657957450c37fdba0e785cf45cc2f72"
+        },
+        {
+          "item_id": "f5e4dc1534efb3a6c019516ae21ff6a7fd7b97ae17b0f56768c87c8549eb2567",
+          "path": "tests/integration/d5/review-debt.test.ts",
+          "fingerprint": "b5e22dfe4b7310c75f8f6c0b433f2a8b44ab4af90df08654db00a15aa493333e"
+        },
+        {
+          "item_id": "fb614d0468bc592c284c1de7c4c50f159f50d09d6cc85e6d05359e230934d392",
+          "path": "src/coordinators/daily-review/save.test.ts",
+          "fingerprint": "9ce6f26ad45ca90e06668c83e41d32f73980d7a9235a0eaba3ff0f46c2eb5c43"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "02d2b522fc8ad50e6ef168e466ec06ab756cf8ca676015178a348d1e1a98f989",
+          "path": "src/ui/screens/ReviewReflections.tsx",
+          "fingerprint": "077160dc302c04b49c34c60c9f9e8ab8e6d8d19e8c3c52c2a041295c699531f9"
+        },
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "b16b441b93d480276c7258c752db4fb84294bf9b821c103d4b7ee27599d37ea3"
+        },
+        {
+          "item_id": "19df79ecc5e980d5f19131110eae1154615b3c6b81922510acc6734ec7a4a0d2",
+          "path": "tests/integration/d5/rebuild.test.ts",
+          "fingerprint": "2047a3c7b8dcd29b997da02afd0c9c5c15c7e0fe2f88f28ceca01ed048e91c8a"
+        },
+        {
+          "item_id": "237bdf4ffe6af458bd4b0574b4fb4c3c6d1d85ab24e801fad008118dcd408b2d",
+          "path": "src/coordinators/daily-review/save-day.test.ts",
+          "fingerprint": "4838df2eba4a3789f04a3bacb3f69bbaf54a1052283aebb2c862b471e4788d00"
+        },
+        {
+          "item_id": "28d9dac30140868b5ff82f3128fe52a527534ffce26da1ec10da0741844bd9af",
+          "path": "src/ui/screens/ActionForm.tsx",
+          "fingerprint": "edabc72dbfc4b6142b7b6f5e3345b14939a82de45af407044e400116e0bb5286"
+        },
+        {
+          "item_id": "7ef02bbd72ba4623d3bcebadc13096154cd433e6de179db40529f8af213442cf",
+          "path": "src/coordinators/daily-review/save-plan-rule.test.ts",
+          "fingerprint": "8862649c31dfd0179621bf2ace99d16dd3755c6ccb4cde11831ea32ef1a571de"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "9357c73e8c7f58fb17f9b07a55c866166689de89596d258dd333c273604b925a"
+        },
+        {
+          "item_id": "c7b22111ebcf77be1b460173e276cc33a053b3e5c0e3448573707ec45a948bd2",
+          "path": "tests/integration/d5r/gap-trades.test.ts",
+          "fingerprint": "e3d01ce06ae2a7cfc73ffe18b38b073660bb3caeb8da356fda02183e8091b606"
+        },
+        {
+          "item_id": "cb9c540330da03d961ca2434e4463a522e5d53136d141221f3f85a53d693e744",
+          "path": "tests/integration/d5r/save-marks.test.ts",
+          "fingerprint": "6ccda16e04eec254b674a91014774451f1fc15ba26017fd50fa305441ff7d56d"
+        },
+        {
+          "item_id": "d6bea2c28cf4fc04da5370b246ab81d6e039c31f54724b71135076583ec730c4",
+          "path": "tests/integration/d95/day.test.ts",
+          "fingerprint": "4e333ef0a717b04fce23062917498f7da657957450c37fdba0e785cf45cc2f72"
+        },
+        {
+          "item_id": "f5e4dc1534efb3a6c019516ae21ff6a7fd7b97ae17b0f56768c87c8549eb2567",
+          "path": "tests/integration/d5/review-debt.test.ts",
+          "fingerprint": "b5e22dfe4b7310c75f8f6c0b433f2a8b44ab4af90df08654db00a15aa493333e"
+        },
+        {
+          "item_id": "fb614d0468bc592c284c1de7c4c50f159f50d09d6cc85e6d05359e230934d392",
+          "path": "src/coordinators/daily-review/save.test.ts",
+          "fingerprint": "9ce6f26ad45ca90e06668c83e41d32f73980d7a9235a0eaba3ff0f46c2eb5c43"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "024e792130aea347eb94d9b4ad86308507c7e56e83de6e309fb08e7a182b82c5",
+          "path": "evidence/D95/tdd-log/T95.32.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 58431
+  }
+}
