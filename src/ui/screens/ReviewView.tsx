@@ -584,7 +584,7 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
                 onToggle={() => toggle(trade.tradeId)}
                 onSaved={(result) => saved(result, shown?.opening ?? -1)}
                 onReflectionResolved={reflectionResolved}
-                onRefresh={() => refreshTrade(trade.tradeId)}
+                onRefresh={() => refreshTrade(trade.tradeId).then((ok) => { setFailed(!ok); return ok; })}
                 refusal={refusalFor(trade.tradeId)}
                 pending={rereading}
                 onEntryDirty={onEntryDirty}

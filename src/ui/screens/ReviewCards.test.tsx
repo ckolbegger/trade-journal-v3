@@ -1698,6 +1698,16 @@ describe('the sale in the card (T95.40)', () => {
     expect(vi.mocked(facade.DailyReview.open)).toHaveBeenCalledTimes(2);
   });
 
+  it('should say the Review could not be refreshed when the read after dismissing the receipt of a closing sale fails', async () => {
+    const facade = saleFacade();
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(closedExitResult({ reflection: { kind: 'Debt', debt: { debtId: 'debt-1' } }, closeReview: { kind: 'Debt', debt: { debtId: 'debt-2' } } }) as never);
+    const { user, card } = await sellAllOnAbc(facade);
+    await within(card).findByText('Recorded. XYZ is closed. Its Close Review is due in the next Review.');
+    vi.mocked(facade.DailyReview.open).mockRejectedValue(new Error('down'));
+    await user.click(within(card).getByRole('button', { name: 'Back to the Review' }));
+    expect((await screen.findByRole('alert')).textContent).toContain('We couldn’t refresh the Review. Nothing was changed.');
+  });
+
   it('should read the Review again when another Trade is pressed while the receipt of a closing sale is still shown', async () => {
     const facade = saleFacade();
     vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(closedExitResult({ reflection: { kind: 'Debt', debt: { debtId: 'debt-1' } }, closeReview: { kind: 'Debt', debt: { debtId: 'debt-2' } } }) as never);

@@ -141,6 +141,11 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
     },
     [],
   );
+  // The card is read again after a sale. What is owed stays owed until a read succeeds: a failed one is retried when the receipt is dismissed or the card is left.
+  const readAfterSale = async () => {
+    refreshOwed.current = false;
+    if (!(await onRefresh())) refreshOwed.current = true;
+  };
   const returned = returnedValues(form);
   // A form opened on the way back from Price History starts from the Action the trader had started there (C9AR.5).
   const key = draftKey(binding.reviewDate, binding.tradeId);
@@ -290,13 +295,12 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
   if (selling) return <ExitForm facade={facade} tradeId={binding.tradeId} timeZone={timeZone ?? 'UTC'} now={now} onDirtyChange={onDirtyChange} onDone={() => setSelling(false)} backLabel="Back to the Review" card={{
         onRecorded: (result) => {
           if (result.postCommit.trade.storedLifecycle === 'Closed') refreshOwed.current = true;
-          else void onRefresh();
+          else void readAfterSale();
         },
         onForm: onHandle ?? noForm,
         onDismiss: () => {
           setSelling(false);
-          if (refreshOwed.current) void onRefresh();
-          refreshOwed.current = false;
+          if (refreshOwed.current) void readAfterSale();
         },
       }} />;
   // Values held over a Conflict refresh differ from the saved Action it now shows: they stay open, as if Change were pressed.

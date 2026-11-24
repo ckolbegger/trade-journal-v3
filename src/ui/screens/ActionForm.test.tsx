@@ -443,6 +443,43 @@ describe('A closing sale in the card (T95.40, W135)', () => {
   });
 });
 
+describe('A sale whose card read fails (T95.40-B1)', () => {
+  const savedExit = { kind: 'Saved', action: { action: 'Exit', responses: [] } } as never;
+  const planExit = { positions: [{ instrument: { kind: 'Stock', symbol: 'XYZ' }, quantity: '100', conditions: [] }], heldPast: [] } as never;
+  async function sell(result: unknown, quantity: string, over: Partial<ActionFormProps>) {
+    const facade = exitFormFacade();
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(result as never);
+    const mounted = mount({ form: savedExit, planExit, now: () => '2026-10-13T14:05:00Z', ...over }, facade);
+    await mounted.user.click(screen.getByRole('button', { name: 'Record the sale' }));
+    const row = await screen.findByRole('group', { name: 'Execution 1' });
+    for (const [label, value] of [['Quantity', quantity], ['Price', '53.00'], ['Fee', '1.00']] as const) {
+      await mounted.user.clear(within(row).getByLabelText(label));
+      await mounted.user.type(within(row).getByLabelText(label), value);
+    }
+    await mounted.user.click(screen.getByRole('button', { name: 'Save exit' }));
+    return mounted;
+  }
+
+  it('should read the Review again when the card is left after a closing sale whose read on dismissal failed', async () => {
+    const onRefresh = vi.fn(() => Promise.resolve(false));
+    const onLeftSold = vi.fn();
+    const closing = closedExitResult({ reflection: { kind: 'Debt', debt: { debtId: 'debt-1' } }, closeReview: { kind: 'Debt', debt: { debtId: 'debt-2' } } });
+    const { user } = await sell(closing, '100', { onRefresh, onLeftSold });
+    await user.click(await screen.findByRole('button', { name: 'Back to the Review' }));
+    await waitFor(() => expect(onRefresh).toHaveBeenCalledTimes(1));
+    cleanup();
+    expect(onLeftSold).toHaveBeenCalledTimes(1);
+  });
+
+  it('should read the card again on dismissal after a partial sale whose read failed', async () => {
+    const onRefresh = vi.fn(() => Promise.resolve(false));
+    const { user } = await sell(partialExitResult(), '30', { onRefresh });
+    await waitFor(() => expect(onRefresh).toHaveBeenCalledTimes(1));
+    await user.click(await screen.findByRole('button', { name: 'Back to the Review' }));
+    await waitFor(() => expect(onRefresh).toHaveBeenCalledTimes(2));
+  });
+});
+
 describe('A day with no price', () => {
   it('should say which figures the choice rests on when today has no price', () => {
     mount({ planCall: hold, replay: stockReplay, decidingOn: '2026-11-13' });
