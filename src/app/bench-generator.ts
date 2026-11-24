@@ -995,7 +995,11 @@ const sameList = (what: string, got: readonly string[], want: readonly string[])
 // against the membership the generator computed from the records it wrote. Throws on any disagreement. The Review's
 // walk, owed group and settlement family come back in the application's own order.
 export async function viewsOfRestored(port: BenchViewsPort, bytes: Uint8Array, expected: Pick<GeneratedBench['expected'], 'asOf' | 'counts' | 'asOfReview'>): Promise<{ readonly openRows: BenchOpenRows; readonly asOfReview: BenchAsOfReview }> {
-  const app = await port.restore(bytes, expected.asOf);
+  return viewsOfApp(port, await port.restore(bytes, expected.asOf), expected);
+}
+
+// The same reading and checks over an application that is already restored (read-only), so a caller holding one need not restore again.
+export async function viewsOfApp(port: BenchViewsPort, app: Awaited<ReturnType<BenchViewsPort['restore']>>, expected: Pick<GeneratedBench['expected'], 'asOf' | 'counts' | 'asOfReview'>): Promise<{ readonly openRows: BenchOpenRows; readonly asOfReview: BenchAsOfReview }> {
   const browsed = await app.TradeViewsAndReporting.browseTrades({ lifecycle: 'Open' });
   if (browsed.kind !== 'Ready') throw new Error(`browseTrades Open: ${browsed.kind}`);
   const items = browsed.view.items;
