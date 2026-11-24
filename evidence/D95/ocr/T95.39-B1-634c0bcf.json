@@ -1,0 +1,121 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 2,
+    "total_tokens": 166154,
+    "input_tokens": 165215,
+    "output_tokens": 939,
+    "cache_read_tokens": 20608,
+    "elapsed": "48s"
+  },
+  "tool_calls": {
+    "total": 11,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 1,
+      "file_read": 8
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/PositionChangeFormBody.tsx",
+      "content": "Removing an execution is not detected as a sale edit: `rows.some(...)` only examines surviving rows. For example, after a reason-required refusal for rows of 100 shares at the Stop plus an extra execution, removing the extra row makes the sale follow the Plan, but the remaining row matches `reported.rows`, so `refusedForReason` stays true and Save remains blocked. Include removed rows in the comparison (for example, compare row counts as well), and add a regression test for this path.",
+      "existing_code": "  const saleEdited = reported !== undefined \u0026\u0026 rows.some((r) =\u003e { const before = reported.rows.find((b) =\u003e b.key === r.key); return !before || before.quantity !== r.quantity || before.price !== r.price; });",
+      "start_line": 307,
+      "end_line": 307,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/PositionChangeFormBody.tsx",
+      "content": "The stale refusal is ignored for `asksWhy` but still displayed by `IssueSummary`: `corrected()` only clears this prompt's issue when its answer changes. In the new test's scenario, changing to 100 at 47 hides the question while the banner still says “This exit can’t be saved yet” and instructs the user to answer the now-hidden question or choose the now-hidden “Say why later” button. Also mark the reason-required issue as corrected when the sale edit makes the question unnecessary, and assert that the stale message disappears in the regression test.",
+      "existing_code": "  const refusedForReason = !saleEdited \u0026\u0026 issues.some((i) =\u003e i.code === 'PlanDepartureReasonRequired');",
+      "start_line": 308,
+      "end_line": 308,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/screens/ExitFormPlanCheck.test.tsx",
+        "src/ui/screens/PositionChangeFormBody.tsx"
+      ]
+    }
+  ],
+  "session_id": "558e0d2e-4159-46c8-b559-61dd09cc7263",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "558e0d2e-4159-46c8-b559-61dd09cc7263",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "634c0bcf",
+      "resolved_base": "95dc7fcfb59dd70f12fadc228ab72b407cd41a6b",
+      "resolved_head": "634c0bcf9928c05cdfcf8ebc19bcbee1856e7865",
+      "exact_range": "95dc7fcfb59dd70f12fadc228ab72b407cd41a6b..634c0bcf9928c05cdfcf8ebc19bcbee1856e7865",
+      "source_artifact_sha256": "118115441ac12282ceffbe9e4a6e18cd7ce9ec471562f117c7bf21c1ac7a8884"
+    },
+    "execution": {
+      "ocr_version": "v1.14.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "4f6cb7d33708d2ec6ba56caabfdcacaef771172f55d6690df1ca86605d86a205",
+          "path": "src/ui/screens/PositionChangeFormBody.tsx",
+          "fingerprint": "c50eb19e2e58418183c643b16d9c8963b4584af90145df377f252321726b846b"
+        },
+        {
+          "item_id": "bc0f492c4fba56c5d9af590be3fb6dd06ba83822bd2627f1fac7691a34f89efa",
+          "path": "src/ui/screens/ExitFormPlanCheck.test.tsx",
+          "fingerprint": "5f73075dddc657492335ff41d3f69027c4ec063adf4637796e05d38c24b70f30"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "4f6cb7d33708d2ec6ba56caabfdcacaef771172f55d6690df1ca86605d86a205",
+          "path": "src/ui/screens/PositionChangeFormBody.tsx",
+          "fingerprint": "c50eb19e2e58418183c643b16d9c8963b4584af90145df377f252321726b846b"
+        },
+        {
+          "item_id": "bc0f492c4fba56c5d9af590be3fb6dd06ba83822bd2627f1fac7691a34f89efa",
+          "path": "src/ui/screens/ExitFormPlanCheck.test.tsx",
+          "fingerprint": "5f73075dddc657492335ff41d3f69027c4ec063adf4637796e05d38c24b70f30"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "d2cfe09117640af3975efaf992a1ee1d2f64f515f84f165a19c32f6121db1f6a",
+          "path": "evidence/D95/tdd-log/T95.39-B1.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 47764
+  }
+}

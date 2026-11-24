@@ -893,3 +893,5 @@ ocr of T95.39 (session 61c24bd6): 14 files, 1 finding, Valid: **T95.39-B1** (`Po
 ### T95.39-B1
 
 Commit `634c0bcf`: `saleEdited` (any row's quantity or price differs from the values last reported) stops a reason-required issue keeping `asksWhy` on, releasing the Save guard; a time-only edit doesn't clear it (the form's Plan check ignores time; the save's hold-past cutoff uses the sale date, and its refusal reappears on the next save). Red "expected <textarea> to be null", green; PositionChangeForm tests 92 passed; d95/card 8 passed.
+
+ocr of T95.39-B1 (session 558e0d2e): 2 files, 2 findings, both Valid, one root cause, one bug task **T95.39-B2**: (`PositionChangeFormBody.tsx:308`) the banner keeps the stale "Say why you left the Plan, or choose “Say why later”." after the question is hidden; (`:307`) removing an Execution isn't a sale edit, so the question and the Save block stay. Fix at the root: the reason-required issue follows the current Plan check (dropped from question, banner and guard whenever the check owes no reason), not an edit detector. `evidence/D95/ocr/T95.39-B1-634c0bcf.json`.
