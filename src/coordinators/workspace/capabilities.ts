@@ -79,12 +79,14 @@ const OPERATIONS: Readonly<Record<string, readonly string[]>> = {
     'SellToOpen',
     'BuyToClose',
     'Expiration',
+    // D9.5 A-series: the sale's measure against the Plan's exit (Part B).
+    'PlanExitMeasure',
   ],
   // D4: the Open list and Detail carry the current evaluation. D5: Detail carries Debt status and actions.
   // D6: the Closed list and Detail, which need no Mark.
   'TradeViewsAndReporting.browseTrades': ['Planned', 'Open', 'Closed', 'CurrentEvaluation', 'Option', 'AttentionOrder', 'Meter'],
   // D7: the payoff at the single expiration, and the Settlement Due item.
-  'TradeViewsAndReporting.getTradeDetail': ['Planned', 'Open', 'Closed', 'CurrentEvaluation', 'Debt', 'ExpirationPayoff', 'SettlementDue'],
+  'TradeViewsAndReporting.getTradeDetail': ['Planned', 'Open', 'Closed', 'CurrentEvaluation', 'Debt', 'ExpirationPayoff', 'SettlementDue', 'PlanExit'],
   // D08P A212: a Trade's replay by session, its own read (P95).
   // D9 A263: the replay carries each Session's condition status and the markers (no new operation).
   // D9A-R A272: and the Plan's terms and odds, each fill against the Plan, and each first crossing.
@@ -102,11 +104,11 @@ const OPERATIONS: Readonly<Record<string, readonly string[]>> = {
   // is not an operation (P37).
   // D6 P20: the Trades outside the walk with a reflection owed form a group after it, whose cards are the
   // ReflectionsOwed kind; there is still no DailyReview.getDebt.
-  'DailyReview.open': ['LatestCompleted', 'OwedReflections', 'Meter', 'GapTrades', 'OwedReflectionGroup', 'SettlementFamily', 'DaySummary', 'PlanOrder', 'LastAction'],
+  'DailyReview.open': ['LatestCompleted', 'OwedReflections', 'Meter', 'GapTrades', 'OwedReflectionGroup', 'SettlementFamily', 'DaySummary', 'PlanOrder', 'LastAction', 'PlanCall'],
   // D9 A263: the card carries the Trade's Replay. D9A-R A272: and the estimated odds.
-  'DailyReview.getTrade': ['OwedReflections', 'PlanBaseline', 'RewardRiskNow', 'ReflectionsOwed', 'ExpirationPayoff', 'SettlementDue', 'Replay', 'Odds', 'LastDecisions'],
+  'DailyReview.getTrade': ['OwedReflections', 'PlanBaseline', 'RewardRiskNow', 'ReflectionsOwed', 'ExpirationPayoff', 'SettlementDue', 'Replay', 'Odds', 'LastDecisions', 'PlanCall', 'PlanExit'],
   // D9.5 A303: SaveReviewMarksPage saves the page's Marks in one commit; MarksFirst refuses an Action before its Marks.
-  'DailyReview.save': ['SaveTradeAction', 'ResolveReviewDebt', 'SaveReviewMarks', 'SaveReviewMarksPage', 'MarksFirst'],
+  'DailyReview.save': ['SaveTradeAction', 'ResolveReviewDebt', 'SaveReviewMarks', 'SaveReviewMarksPage', 'MarksFirst', 'PlanRule'],
   // D8 A145: a backup of a Workspace in normal use (Normal) or of a database a blocked view offers a
   // copy of (BlockedDatabase); its verification; and the two steps of Restore. The fact modules' Restore operations are internal.
   'Workspace.exportBackup': ['Normal', 'BlockedDatabase'],
