@@ -689,3 +689,7 @@ Commits `9998748f` (B1: the migration receipt names revised Entry Types as `seed
 ocr of T95.28-B1, T95.28-B2, T95.28-B3 (range 3cee01da..1a8fb348, session 9a152bc6): 14 files, 0 findings. `evidence/D95/ocr/T95.28-B1-B3-1a8fb348.json`. Next: run `t95.28-seed-6` (browser-auto a3578e49).
 
 Run `t95.28-seed-6` (browser-auto a3578e49, full tier): unit 2928, integration 329, checks 14 of 14 passed; browser 16 failed (browser-1 2, browser-2 8, browser-3 3, browser-4 3): d4/card-helpers:39, d4/no-save:38, d6/close-review:41 ("Answer “What is the key lesson?”."), d6/exit-action:9, d6/exit:10, d6/kill:9, d6/offline:11, d6/responsive-a11y:28, d7/kill:8, d7/responsive-a11y:225, d8p/journal-final-session:14, d8p/lot-matches-fit:55, d8p/states:101, d9ar/responsive-a11y:230, d9ar/review:28, d9ar/review:82. Manifest 6 (key lesson required, "Why?" label, optional reflections) broke browser setups that T95.28's agent did not run. Fix: **T95.28-F1** in a fresh tdd-task.
+
+### T95.28-F1
+
+Commit `7e2938c6`: `answerCloseReviewIn` (e2e/d6/support.ts, used by the d7, d8p, d9 and d8r helpers) also answers "What is the key lesson?"; d6 and d7 responsive-a11y keyboard exits gain one Tab stop and the lesson; the reason label matcher `/^Why\?/` in d4/card-helpers, d4/no-save, d9ar/review (two) and d9ar/responsive-a11y. No assertion dropped; no product code. d4 27 passed; d6, d7, d8p, d9ar passed.
