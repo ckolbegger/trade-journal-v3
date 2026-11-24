@@ -122,9 +122,11 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
   const [action, setAction] = useState((started?.action as Chosen | undefined) ?? returned.action);
   // The view's preselection can arrive after the form opened (the Marks come in and the Plan call is Hold): the form follows it until the trader chooses.
   const [preselected, setPreselected] = useState(returned.action);
+  // Any explicit choice, even one that matches the preselection, ends the following.
+  const [chose, setChose] = useState(started !== undefined);
   if (preselected !== returned.action) {
     setPreselected(returned.action);
-    if (action === preselected) setAction(returned.action);
+    if (!chose) setAction(returned.action);
   }
   // A saved Action is shown as it is until the trader chooses to change it.
   const [changing, setChanging] = useState(false);
@@ -217,6 +219,7 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
   // Discard empties the form: the choice goes back to what the view preselected, and every answer to blank.
   const discard = () => {
     setAction(returned.action);
+    setChose(false);
     setIntent(returned.intent);
     setConviction(returned.conviction);
     setConsidered(returned.considered);
@@ -276,7 +279,7 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
         <legend>Action</legend>
         {CHOICES.map((choice) => (
           <label key={choice} className="chip">
-            <input type="radio" name="action" value={choice} checked={action === choice} disabled={saving || !writable} onChange={() => setAction(choice)} />
+            <input type="radio" name="action" value={choice} checked={action === choice} disabled={saving || !writable} onChange={() => { setAction(choice); setChose(true); }} />
             {choice}
           </label>
         ))}

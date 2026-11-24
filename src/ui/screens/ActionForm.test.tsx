@@ -100,6 +100,14 @@ describe('A preselection that arrives after the form opened', () => {
     again({ marksToGo: 0, planCall: out('Stop'), form: { kind: 'New', viewState: {} } });
     expect(chosen()).toEqual(['Exit']);
   });
+
+  it('should keep an explicit Hold when the trader chose Exit and then Hold and the preselection then becomes empty', async () => {
+    const { again, user } = mount({ planCall: hold, form: { kind: 'New', viewState: { selectedAction: 'Hold' } } });
+    await user.click(screen.getByRole('radio', { name: 'Exit' }));
+    await user.click(screen.getByRole('radio', { name: 'Hold' }));
+    again({ planCall: out('Stop'), form: { kind: 'New', viewState: {} } });
+    expect(chosen()).toEqual(['Hold']);
+  });
 });
 
 describe('What the chosen Action means for the Plan', () => {
