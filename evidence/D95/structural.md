@@ -622,3 +622,13 @@ ocr of T95.26-B4 (session 94056617): 2 files, 0 findings. `evidence/D95/ocr/T95.
 Run `t95.26-gate-4` (browser-full, T95.26-B3, T95.26-B6, T95.26-B4; about 20:01): unit 2895, integration 330, browser 127, 79, 55 and 129 (4 skipped), checks 14 of 14. Passed. It covers the quick runs of B3, B6 and B4. Critic-3 follows (the gate's last; brief rebuilt from critic-2's after a session restart, with the known tech-debt items listed and the fixes to check).
 
 The user (2026-11-24): if critic-3 passes, add **T95.26-F2**: `src/app/bench-generator.test.ts` restores the benchmark smoke artifact about 7 times (about 5-6 s each, about 40 of the unit stage's 53.8 s in that one file); restore once and share the loaded app across as many tests as feasible. Answer (a): `viewsOfRestored` in `src/app/bench-generator.ts` may take an already-restored app (ocr review for that change). Verification: the file's tests pass, then one full suite run; no critic.
+
+### Critic-3 (T95.26)
+
+Report `evidence/D95/critic-3.md`. Overall PASS (C95.1, C95.2, C95.3, C95.4); 1 moderate, no low. Cost: 253,884 tokens, 177 tool calls, 23.7 min; brief rebuilt from critic-2's; defects found. T95.26-B3 and T95.26-B4 confirmed fixed.
+
+| Critic | Tokens | Tool calls | Duration | Defects |
+|---|---|---|---|---|
+| critic-3 | 253,884 | 177 | 23.7 min | 1 moderate |
+
+Moderate 1: on a partly sold Trade the drawing's name, the collapsed header's meter and the Open list row's meter say "86% of the way to the Stop" (the shared meter's P&L share, T95.17 case 13, S12: the shared meter is not edited), while the label and line say 67% (Pressure). The third critic leaves a moderate defect: asked of the user (the gate cap).
