@@ -61,4 +61,10 @@ describe('The measure of a sale against the Plan Exit (A309)', () => {
       reasons: [{ kind: 'BeforeCondition' }, { kind: 'PartOnly', held: '200', sold: '50' }],
     })
   })
+  it('should give no measure for a sold quantity that is not positive or exceeds what is held', () => {
+    expect(measurePlanExit(sale({ change: { side: 'Sell', quantity: '0', price: '94' } }))).toBeUndefined()
+    expect(measurePlanExit(sale({ change: { side: 'Sell', quantity: '-5', price: '94' } }))).toBeUndefined()
+    expect(measurePlanExit(sale({ change: { side: 'Sell', quantity: '201', price: '94' } }))).toBeUndefined()
+    expect(measurePlanExit(sale({ held: '-100', change: { side: 'Buy', quantity: '101', price: '105' } }))).toBeUndefined()
+  })
 })

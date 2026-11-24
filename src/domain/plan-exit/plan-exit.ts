@@ -53,6 +53,9 @@ export function measurePlanExit(input: PlanExitInput): PlanExitMeasure | undefin
   if (!held.ok || !sold.ok) return undefined
   // A sale takes the side opposite the Position's: a Sell of a long one, a Buy of a short one.
   if (held.value.numerator === 0n || (held.value.numerator > 0n) !== (input.change.side === 'Sell')) return undefined
+  const heldAbs = held.value.numerator < 0n ? Rational.of(0n).sub(held.value) : held.value
+  // No measure for a quantity that is not positive or is more than is held (the save refuses it).
+  if (sold.value.numerator <= 0n || sold.value.compare(heldAbs) > 0) return undefined
   const reasons: PlanExitReason[] = []
   const reached = input.conditions.filter((c) => c.status === 'Breached' || c.status === 'Reached' || reachedAtPrice(c, held.value, input.change.price))
   if (reached.length === 0) reasons.push({ kind: 'BeforeCondition' })
@@ -60,7 +63,6 @@ export function measurePlanExit(input: PlanExitInput): PlanExitMeasure | undefin
   const first = holds[0]
   // The sale follows the Plan when some reached condition was never held past.
   if (first && holds.every((h) => h !== undefined)) reasons.push({ kind: 'HeldPast', line: first.line, since: first.since, sessions: first.sessions })
-  const heldAbs = held.value.numerator < 0n ? Rational.of(0n).sub(held.value) : held.value
   if (sold.value.compare(heldAbs) < 0) reasons.push({ kind: 'PartOnly', held: held.normalized.replace(/^-/, ''), sold: sold.normalized })
   return reasons.length === 0 ? { kind: 'Follows' } : { kind: 'Leaves', reasons }
 }
