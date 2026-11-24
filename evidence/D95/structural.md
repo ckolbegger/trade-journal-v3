@@ -802,3 +802,7 @@ Commits `96804a9d` (B1: the refusal's buttons disabled while Save it runs; one s
 (T95.34's four ocr findings are three bug tasks: B2 covers two findings with one root cause.)
 
 ocr of T95.34-B1, T95.34-B2, T95.34-B3 (session cdceeeb0): 6 files, 1 finding, Valid: **T95.34-B4** (`ReviewView.tsx:307`): refreshes fold in with `apply({kind:'Opened'})`, which replaces the Review wholesale, and nothing drops a result that arrives out of order; B3's asked-save refresh (like the ordinary one at 316 and `markSaved`) can land after a newer save and undo it. `evidence/D95/ocr/T95.34-B1-B3-00833676.json`.
+
+### T95.34-B4
+
+Commit `06df0de8`: `apply` counts every result carrying a Review; `reopenAndApply` drops a read that started before a newer one was applied (covers the asked-save refresh, the ordinary-save refresh, `markSaved`, header Refresh); `reopen` no longer shares a stale in-flight read. Red "expected <strong></strong> to be null", green; mutation check (guard off fails). A per-row MarkSaved carries no Review and doesn't count (an existing MarksStep test shares one read for two quick saves): a residual narrow window, noted.
