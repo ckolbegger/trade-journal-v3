@@ -1,0 +1,155 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 6 selected item(s).",
+  "summary": {
+    "files_reviewed": 6,
+    "comments": 0,
+    "total_tokens": 93192,
+    "input_tokens": 92482,
+    "output_tokens": 710,
+    "cache_read_tokens": 14976,
+    "elapsed": "22s"
+  },
+  "tool_calls": {
+    "total": 14,
+    "by_tool": {
+      "code_search": 4,
+      "file_read": 10
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "D4 offline and responsive accessibility tests",
+      "files": [
+        "e2e/d4/offline.spec.ts",
+        "e2e/d4/responsive-a11y.spec.ts"
+      ]
+    },
+    {
+      "label": "D5R responsive accessibility and review tests",
+      "files": [
+        "e2e/d5r/responsive-a11y.spec.ts",
+        "e2e/d5r/review.spec.ts"
+      ]
+    },
+    {
+      "label": "D95 day card and last decisions tests",
+      "files": [
+        "e2e/d95/day-card.spec.ts",
+        "e2e/d95/last-decisions.spec.ts"
+      ]
+    }
+  ],
+  "session_id": "6b635650-c336-47e3-8cc6-2650f2559cde",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "6b635650-c336-47e3-8cc6-2650f2559cde",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "3934d569",
+      "resolved_base": "1e1a9b4b17f3a59ebd9e553c1297c0569db875a9",
+      "resolved_head": "3934d569899d679f2478b519015eabd5c69f0b88",
+      "exact_range": "1e1a9b4b17f3a59ebd9e553c1297c0569db875a9..3934d569899d679f2478b519015eabd5c69f0b88",
+      "source_artifact_sha256": "de5ddb658c99075b279ee908781fa7091ffae24307ff65809ec1ab4c1ca89fbc"
+    },
+    "execution": {
+      "ocr_version": "v1.14.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0801dba1579f31f4375d84e058fd5ca5be7019e251614388f63b565567e3f4bf",
+          "path": "e2e/d95/day-card.spec.ts",
+          "fingerprint": "36e1dc4ff8fdb932547924b4eaeeefde9336d34c01b93c2dac42a3d09c5dc2f7"
+        },
+        {
+          "item_id": "0cd2ecf51cea4b0091b63afa1a4504fcab4d2cdcedbfe9da9d4f65d4df150f7e",
+          "path": "e2e/d95/last-decisions.spec.ts",
+          "fingerprint": "b79cb51a82ebf27a2344af31e231bec2dffc7eb0fb9b37b6841d1812234fd1ed"
+        },
+        {
+          "item_id": "0f4aa84758c10defc83e15772fff0753dc16e94eaf609bc7de67c6ee942fd4ba",
+          "path": "e2e/d5r/responsive-a11y.spec.ts",
+          "fingerprint": "fdec4c41fd9695b180bc06a125c0449d9ebb6fe78f4e3ed9ee0ab8684da5cc7b"
+        },
+        {
+          "item_id": "5a7479061290e878cd699b58fd728ca81cd25fa2b215e151727c95f8558dc27e",
+          "path": "e2e/d5r/review.spec.ts",
+          "fingerprint": "d9103f7b6a5f3f1918a0abcf8391ea811e8bc9d6eeebefed5defb6514fd69bdb"
+        },
+        {
+          "item_id": "8d601c9d1c13a847f73e54761211ee605aa7e22ed6e5fa8ba83ebf6459aa6160",
+          "path": "e2e/d4/offline.spec.ts",
+          "fingerprint": "b149254cc8902f5c0e982c50ea8f01531cdc084cd85374330593afd5c4fadba4"
+        },
+        {
+          "item_id": "9fc2814396ca8fdc4b4a786543b42eb524301cfcaa0ad2260221dc91be7ee063",
+          "path": "e2e/d4/responsive-a11y.spec.ts",
+          "fingerprint": "a5b4b6373dc43912292eb6c9e05b7ee870a91a5053cdbbff650d339a3f06306e"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0801dba1579f31f4375d84e058fd5ca5be7019e251614388f63b565567e3f4bf",
+          "path": "e2e/d95/day-card.spec.ts",
+          "fingerprint": "36e1dc4ff8fdb932547924b4eaeeefde9336d34c01b93c2dac42a3d09c5dc2f7"
+        },
+        {
+          "item_id": "0cd2ecf51cea4b0091b63afa1a4504fcab4d2cdcedbfe9da9d4f65d4df150f7e",
+          "path": "e2e/d95/last-decisions.spec.ts",
+          "fingerprint": "b79cb51a82ebf27a2344af31e231bec2dffc7eb0fb9b37b6841d1812234fd1ed"
+        },
+        {
+          "item_id": "0f4aa84758c10defc83e15772fff0753dc16e94eaf609bc7de67c6ee942fd4ba",
+          "path": "e2e/d5r/responsive-a11y.spec.ts",
+          "fingerprint": "fdec4c41fd9695b180bc06a125c0449d9ebb6fe78f4e3ed9ee0ab8684da5cc7b"
+        },
+        {
+          "item_id": "5a7479061290e878cd699b58fd728ca81cd25fa2b215e151727c95f8558dc27e",
+          "path": "e2e/d5r/review.spec.ts",
+          "fingerprint": "d9103f7b6a5f3f1918a0abcf8391ea811e8bc9d6eeebefed5defb6514fd69bdb"
+        },
+        {
+          "item_id": "8d601c9d1c13a847f73e54761211ee605aa7e22ed6e5fa8ba83ebf6459aa6160",
+          "path": "e2e/d4/offline.spec.ts",
+          "fingerprint": "b149254cc8902f5c0e982c50ea8f01531cdc084cd85374330593afd5c4fadba4"
+        },
+        {
+          "item_id": "9fc2814396ca8fdc4b4a786543b42eb524301cfcaa0ad2260221dc91be7ee063",
+          "path": "e2e/d4/responsive-a11y.spec.ts",
+          "fingerprint": "a5b4b6373dc43912292eb6c9e05b7ee870a91a5053cdbbff650d339a3f06306e"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "40fa11c7bd7de207d135496104c006c109c109edbeccb6bfda5c17076a3f079d",
+          "path": "evidence/D95/tdd-log/T95.32-F1.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 22091
+  }
+}

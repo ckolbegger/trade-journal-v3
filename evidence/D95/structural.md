@@ -759,3 +759,5 @@ Run `t95.32-reason-rule` (browser-auto e7815aa7, full tier): unit 2953, integrat
 ### T95.32-F1
 
 Commit `3934d569` (six specs): each Hold the rule now refuses gets the reason "Holding as planned." (d4/offline, d4/responsive-a11y, d5r/review, d95/day-card, d95/last-decisions); B5R.11 (d5r/responsive-a11y) had the same cause (ABC past its Stop), now Tabs to "Why?" and types the reason, still keyboard only. No assertion dropped; no product defect. d4, d5r, d95 61 passed.
+
+ocr of T95.32-F1 (session 6b635650): 6 files, 0 findings. `evidence/D95/ocr/T95.32-F1-3934d569.json`. Next: run `t95.32-reason-rule-2` (browser-auto e7815aa7).
