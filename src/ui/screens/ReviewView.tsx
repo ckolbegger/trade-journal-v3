@@ -404,13 +404,17 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
     else forms.current.delete(id);
   }, []);
   const asked = useRef<string | undefined>(undefined);
+  // Save it is running: the refusal's buttons wait for it.
+  const [asking, setAsking] = useState(false);
   // Save it: the unsaved form is saved as its own Save does, and the Trade pressed opens once it is; a refusal stays on the form.
   const saveIt = async (pressed: string) => {
     const id = [...dirty.current].find((entry) => forms.current.has(entry));
-    if (id === undefined) return;
+    if (id === undefined || asked.current !== undefined) return;
     asked.current = pressed;
+    setAsking(true);
     const saved = await forms.current.get(id)!.save().finally(() => {
       asked.current = undefined;
+      setAsking(false);
     });
     if (!saved) return;
     dirty.current.delete(id);
@@ -432,7 +436,7 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
   const refuse = (pressed: string) => setRefused((current) => ({ pressed, count: (current?.count ?? 0) + 1 }));
   // The Underlying of the open card's Trade, which the refusal names.
   const holderName = (openId !== undefined && (trades.find((t) => t.tradeId === openId) ?? review.owed.find((t) => t.tradeId === openId))?.underlying) || '';
-  const refusalFor = (tradeId: string) => (refused?.pressed === tradeId ? { holder: holderName, count: refused.count, onSave: () => void saveIt(tradeId), onDiscard: () => discardIt(tradeId), onBack: backIt } : undefined);
+  const refusalFor = (tradeId: string) => (refused?.pressed === tradeId ? { holder: holderName, count: refused.count, pending: asking, onSave: () => void saveIt(tradeId), onDiscard: () => discardIt(tradeId), onBack: backIt } : undefined);
   const toggle = (tradeId: string) => {
     if (dirty.current.size > 0) refuse(tradeId);
     else {

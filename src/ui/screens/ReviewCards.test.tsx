@@ -1493,6 +1493,21 @@ describe('the refusal on the Trade pressed (T95.34, W128)', () => {
     expect(headers().map((h) => h.getAttribute('aria-expanded'))).toEqual(['true', 'false', 'false', 'false', 'false']);
   });
 
+  it('should hold the refusal buttons while Save it runs, and open the Trade pressed once it ends', async () => {
+    const facade = cardFacade();
+    let finish: (value: never) => void = () => {};
+    vi.mocked(facade.DailyReview.save).mockReturnValue(new Promise((resolve) => (finish = resolve as never)) as never);
+    const { user } = await pressXyzWhileAbcHoldsExit(facade, 'Plan changed.');
+
+    await user.click(within(cardOf('t-f')).getByRole('button', { name: 'Save it' }));
+
+    for (const name of ['Save it', 'Discard it', 'Back to ABC']) expect(within(cardOf('t-f')).getByRole('button', { name })).toHaveProperty('disabled', true);
+    await user.click(within(cardOf('t-f')).getByRole('button', { name: 'Save it' }));
+    expect(facade.DailyReview.save).toHaveBeenCalledTimes(1);
+    finish({ kind: 'Saved', action: {} as never, review: savedPost } as never);
+    await waitFor(() => expect(headers().map((h) => h.getAttribute('aria-expanded'))).toEqual(['false', 'false', 'true', 'false', 'false']));
+  });
+
   it('should not refuse when only the Marks step holds typed Marks', async () => {
     const user = userEvent.setup();
     renderReview(cardFacade());
