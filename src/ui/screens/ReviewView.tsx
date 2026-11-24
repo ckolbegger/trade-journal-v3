@@ -459,7 +459,13 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
     }
   };
   // A day line's link opens the card and panel that resolve it (A161). Another panel of the open card is no departure, so it is allowed while the card holds drafts.
-  const openCard: OpenCard = (tradeId, panel) => {
+  // "Still holding" (A313) hides an Exit's banner for this view only; it saves nothing, and a fresh open shows the banner again. Focus goes to the card's header.
+  const [holding, setHolding] = useState<ReadonlySet<string>>(() => new Set());
+  const stillHolding = (tradeId: string) => {
+    setHolding((current) => new Set(current).add(tradeId));
+    setReveal((current) => ({ tradeId, count: current.count + 1 }));
+  };
+  const openCard: OpenCard = (tradeId, panel, sale) => {
     if (tradeId !== openId) {
       if (dirty.current.size > 0) {
         refuse(tradeId);
@@ -467,7 +473,7 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
       }
       void select(tradeId, true);
     }
-    setGo((current) => ({ tradeId, go: { panel, count: current.go.count + 1 } }));
+    setGo((current) => ({ tradeId, go: { panel, ...(sale && { sale }), count: current.go.count + 1 } }));
   };
   // A change of the search params while the Review is mounted (a navigate, browser history) opens the card they name, as a link
   // does; it only acts on a changed search string, not on an unrelated render.
@@ -558,7 +564,7 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
   }, [firstId, read]);
   return (
     <>
-      {empty ? <EmptyReview date={review.reviewDate} /> : <DayCard review={review} name={name} openCard={openCard} openMarks={openMarks} openSkipped={openSkipped} />}
+      {empty ? <EmptyReview date={review.reviewDate} /> : <DayCard review={review} name={name} openCard={openCard} openMarks={openMarks} openSkipped={openSkipped} holding={holding} onStillHolding={stillHolding} />}
       {failed && (
         <div role="alert" className="banner warning">
           <p>We couldn’t refresh the Review. Nothing was changed.</p>
@@ -582,6 +588,8 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
                 reveal={reveal.tradeId === trade.tradeId ? reveal.count : 0}
                 go={go.tradeId === trade.tradeId ? go.go : NO_GO}
                 onToggle={() => toggle(trade.tradeId)}
+                stillHolding={holding.has(trade.tradeId)}
+                onStillHolding={() => stillHolding(trade.tradeId)}
                 onSaved={(result) => saved(result, shown?.opening ?? -1)}
                 onReflectionResolved={reflectionResolved}
                 onRefresh={() => refreshTrade(trade.tradeId).then((ok) => { setFailed(!ok); return ok; })}

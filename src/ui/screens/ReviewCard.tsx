@@ -12,6 +12,7 @@ import { Refusal, type RefusalProps } from './Refusal.tsx';
 import { ReplayDrawer } from '../cockpit/drawers/replay.tsx';
 import { overlayWordsOf } from '../cockpit/replay/overlay.props.ts';
 import { ReplayOverlay } from '../cockpit/replay/overlay.tsx';
+import { ExitBanner } from './ExitBanner.tsx';
 import { NowBox } from './NowBox.tsx';
 import type { EntryDirty } from './MarksStep.tsx';
 import { ReviewReflections } from './ReviewReflections.tsx';
@@ -46,6 +47,8 @@ export interface Go {
   readonly panel?: PanelName;
   // The Replay session the card's overlay opens on, from a way back from Trade Detail (A257, A274).
   readonly session?: string;
+  // The sale form opens too (the day card's "I sold: record it", A313).
+  readonly sale?: boolean;
   readonly count: number;
 }
 export const NO_GO: Go = { count: 0 };
@@ -75,6 +78,9 @@ export interface ReviewCardProps {
   readonly reveal: number;
   readonly go: Go;
   readonly onToggle: () => void;
+  // "Still holding" was pressed for this Trade's Exit banner in this view (A313).
+  readonly stillHolding: boolean;
+  readonly onStillHolding: () => void;
   readonly onSaved: (saved: SavedAction) => void;
   readonly onReflectionResolved: (review: PostSaveReview) => void;
   readonly onRefresh: () => Promise<boolean>;
@@ -92,7 +98,7 @@ export interface ReviewCardProps {
 }
 
 // One position of the Review: a collapsed header (Underlying, what remains, band, meter) over its content.
-export function ReviewCard({ facade, trade, line, expanded, detail, reveal, go, onToggle, onSaved, onReflectionResolved, onRefresh, refusal, pending, onEntryDirty, onForm, now, onLeftSold }: ReviewCardProps) {
+export function ReviewCard({ facade, trade, line, expanded, detail, reveal, go, onToggle, stillHolding, onStillHolding, onSaved, onReflectionResolved, onRefresh, refusal, pending, onEntryDirty, onForm, now, onLeftSold }: ReviewCardProps) {
   const item = useRef<HTMLLIElement>(null);
   const header = useRef<HTMLButtonElement>(null);
   const { timeZone } = useRuntime();
@@ -169,6 +175,8 @@ export function ReviewCard({ facade, trade, line, expanded, detail, reveal, go, 
           progress={trade.progress}
           name={tradeName(trade)}
           go={go}
+          stillHolding={stillHolding}
+          onStillHolding={onStillHolding}
           onSaved={onSaved}
           onReflectionResolved={onReflectionResolved}
           onRefresh={onRefresh}
@@ -192,6 +200,8 @@ interface CardBodyProps {
   // The Trade's name (A150): it labels the region, so a screen reader hears which Trade it is.
   readonly name: string;
   readonly go: Go;
+  readonly stillHolding: boolean;
+  readonly onStillHolding: () => void;
   readonly onSaved: (saved: SavedAction) => void;
   readonly onReflectionResolved: (review: PostSaveReview) => void;
   readonly onRefresh: () => Promise<boolean>;
@@ -244,7 +254,7 @@ function panelHeaders(trade: DailyTradeReview, progress: CardProgress): Record<P
 }
 
 // The open card: its figures, then the three panels in the spec's work order (P36, A152), one open at a time.
-function CardBody({ facade, trade, progress, name, go, onSaved, onReflectionResolved, onRefresh, pending, onEntryDirty, onForm, meter, now, onLeftSold }: CardBodyProps) {
+function CardBody({ facade, trade, progress, name, go, stillHolding, onStillHolding, onSaved, onReflectionResolved, onRefresh, pending, onEntryDirty, onForm, meter, now, onLeftSold }: CardBodyProps) {
   const uid = useId();
   const headers = panelHeaders(trade, progress);
   // The card's panels in work order: the Settlement panel is there only while a contract's settlement is due (decision 81).
@@ -314,10 +324,17 @@ function CardBody({ facade, trade, progress, name, go, onSaved, onReflectionReso
   useEffect(() => {
     if (focusPanel) panelButtons.current[focusPanel.panel]?.focus();
   }, [focusPanel]);
+  // "I sold: record it" opens the sale form in the Action panel (A313): the form takes the request by its count. A card opened for it asks at once.
+  const [saleAsk, setSaleAsk] = useState(go.sale ? 1 : 0);
+  const askSale = () => {
+    flushSync(() => setOpen('Action'));
+    setSaleAsk((count) => count + 1);
+  };
   // A link to a card that is already open moves it to the panel named (A161).
   const [handledGo, setHandledGo] = useState(go.count);
   if (go.count !== handledGo) {
     setHandledGo(go.count);
+    if (go.sale) setSaleAsk((count) => count + 1);
     if (go.panel && panels.includes(go.panel)) {
       setOpen(go.panel);
       // The Replay button's own address (trade and panel) asks for this card again while its overlay is open: focus stays in the overlay.
@@ -363,6 +380,8 @@ function CardBody({ facade, trade, progress, name, go, onSaved, onReflectionReso
   const atEntryShown = atEntry != null && !planBoxCarriesAtEntry ? atEntry : undefined;
   return (
     <section aria-label={`${name} review`}>
+      {/* A313: the Exit chosen on an earlier Review Date, not yet carried out, is said first. */}
+      {trade.attention.exitCarry && trade.attention.lastAction && trade.form.kind === 'New' && !stillHolding && <ExitBanner reviewDate={trade.attention.lastAction.reviewDate} carry={trade.attention.exitCarry} onSold={askSale} onHolding={onStillHolding} />}
       <p>
         {trade.labels.strategy} · {trade.labels.account} · {trade.labels.institution}
       </p>
@@ -422,7 +441,7 @@ function CardBody({ facade, trade, progress, name, go, onSaved, onReflectionReso
               </button>
             )}
             {name === 'Action' && trade.decisions && listShown && <LastDecisions decisions={trade.decisions} />}
-            {name === 'Action' && <ActionForm facade={facade} form={trade.form} binding={trade.saveBinding} onSaved={onSaved} onRefresh={onRefresh} onDirtyChange={report} pending={pending} marksToGo={marksToGo} planCall={trade.planCall} replay={trade.replay} planExit={trade.planExit} {...(now && { now })} {...(onLeftSold && { onLeftSold })} decidingOn={waitingOn} onHandle={offerForm} />}
+            {name === 'Action' && <ActionForm facade={facade} form={trade.form} binding={trade.saveBinding} onSaved={onSaved} onRefresh={onRefresh} onDirtyChange={report} pending={pending} marksToGo={marksToGo} planCall={trade.planCall} replay={trade.replay} planExit={trade.planExit} saleRequest={saleAsk} {...(now && { now })} {...(onLeftSold && { onLeftSold })} decidingOn={waitingOn} onHandle={offerForm} />}
           </div>
         </div>
       ))}

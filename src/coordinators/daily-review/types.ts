@@ -35,6 +35,15 @@ export interface ReviewTradeItem {
   readonly stopOverrunR?: Rational;
   // The Trade's most recent Daily Trade Review Action before the Review Date (A305); absent when it has none.
   readonly lastAction?: LastAction;
+  // An Exit not carried out (A313): what is still held and what was sold since the Exit's Review Date. Present only when that Action is an Exit and a Position is open.
+  readonly exitCarry?: ExitCarry;
+}
+
+// What an Exit chosen earlier still holds, unsigned, and what was sold (or bought back, for a short Position) since; `sold` is absent when nothing was.
+export interface ExitCarry {
+  readonly direction: 'Long' | 'Short';
+  readonly held: Rational;
+  readonly sold?: Rational;
 }
 
 // A saved Action as the page carries it: the Review Date it was saved for, the Action, and the reason when one was saved.

@@ -7,6 +7,7 @@ import { signed } from '../figures.ts';
 import { money, plural, shortDate } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
 import type { PanelName } from './ReviewCard.tsx';
+import { ExitDayNote } from './ExitBanner.tsx';
 import { describedLabelsOf } from './review-attention.ts';
 import { todoText } from './todo-text.ts';
 
@@ -19,7 +20,8 @@ const FAMILY_TEXT: Record<CalculationFamily, string> = { Valuation: 'Valuation',
 type DaySummary = NonNullable<Ready['day']>;
 
 // Opens a card, on a panel when one is named (A161).
-export type OpenCard = (tradeId: string, panel?: PanelName) => void;
+// With `sale`, the card's sale form opens as well (A313).
+export type OpenCard = (tradeId: string, panel?: PanelName, sale?: boolean) => void;
 
 export interface DayCardProps {
   readonly review: Ready;
@@ -29,6 +31,9 @@ export interface DayCardProps {
   readonly openMarks: (instrument?: string) => void;
   // The Marks step with the skipped sessions' columns added.
   readonly openSkipped: () => void;
+  // The Trades whose Exit banner "Still holding" hid in this view, and the press that hides one (A313).
+  readonly holding: ReadonlySet<string>;
+  readonly onStillHolding: (tradeId: string) => void;
 }
 
 // A link that opens the card; it stays a real link, so it can be opened in a new tab.
@@ -101,7 +106,7 @@ const PANEL_OF = { Reflection: 'Reflections', SayWhy: 'Reflections', Settlement:
 // The Trade the day card sends the trader to next: the first line, in the card's order, that still needs something (W98).
 const nextLine = (day: DaySummary) => day.lines.find((line) => line.needs.length > 0);
 
-export function DayCard({ review, name, openCard, openMarks, openSkipped }: DayCardProps) {
+export function DayCard({ review, name, openCard, openMarks, openSkipped, holding, onStillHolding }: DayCardProps) {
   const { day, completion } = review;
   const { timeZone } = useRuntime();
   const reasonId = useId();
@@ -162,6 +167,12 @@ export function DayCard({ review, name, openCard, openMarks, openSkipped }: DayC
           {day?.change.kind === 'Value' && !day.finished && <span>Day so far: {signed(money)(day.change.dollars)}</span>}
         </div>
       )}
+      {/* A313: each Exit chosen earlier and not carried out, until the Review Date's own Action is saved for it. */}
+      {day &&
+        review.families
+          .flatMap((f) => (f.family === 'Trades' ? f.trades : []))
+          .filter((t) => t.exitCarry && t.lastAction && !holding.has(t.tradeId) && day.lines.find((line) => line.tradeId === t.tradeId)?.action === undefined)
+          .map((t) => <ExitDayNote key={t.tradeId} underlying={t.underlying} lastAction={t.lastAction!} carry={t.exitCarry!} onSold={() => openCard(t.tradeId, 'Action', true)} onHolding={() => onStillHolding(t.tradeId)} />)}
       {day && !day.finished && day.missed.length > 0 && (
         <p>
           <b>No Review for {day.missed.map(shortDate).join(', ')}.</b> Their Marks are optional.{' '}

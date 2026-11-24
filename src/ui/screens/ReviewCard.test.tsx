@@ -8,7 +8,7 @@ import { resetDrafts } from './action-draft.ts';
 import { facadeDouble } from '../../../tests/support/facade-double.ts';
 import type { UiFacade } from '../../app/compose.ts';
 import type { DailyTradeReview, MarkRow, OpenDailyReviewResult, OwedReflection, OwedReflectionsCard, ReviewBinding, ReviewCompletion, ReviewTradeItem, SaveDailyReviewResult } from '../../app/types.ts';
-import { reflectionDefinition } from '../../../tests/support/position-change-form-facade.ts';
+import { exitFormFacade, reflectionDefinition } from '../../../tests/support/position-change-form-facade.ts';
 import { DAILY_TRADE_REVIEW_PROMPTS } from '../../domain/daily-trade-review-prompts.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { RuntimeContext } from '../runtime.tsx';
@@ -2087,5 +2087,79 @@ describe('The card before its Marks (T95.20)', () => {
     expect(within(card).getByText('No Action saved.')).toBeTruthy();
     expect(within(card).queryByText(/No Action until today/)).toBeNull();
     expect(within(card).queryByRole('link', { name: 'Enter it' })).toBeNull();
+  });
+});
+
+// T95.41: an Exit chosen earlier and not carried out: the card says so first, with the two ways to answer (A313, W129).
+describe('An Exit not carried out (T95.41)', () => {
+  const exit = { reviewDate: '2026-10-09', action: 'Exit', reason: 'Take the money.' };
+  const planExitOf = (quantity: string) => ({ positions: [{ instrument: symbol, quantity, conditions: [] }], heldPast: [] }) as DailyTradeReview['planExit'];
+  async function openExited(over: { readonly carry?: ReviewTradeItem['exitCarry']; readonly lastAction?: ReviewTradeItem['lastAction']; readonly toGo?: number; readonly form?: DailyTradeReview['form'] } = {}) {
+    const user = userEvent.setup();
+    const progress = cardProgress(0, 0, { needed: over.toGo ?? 0, resolved: 0 });
+    const exited = { ...item('t1', 'XYZ', { band: 'ExitNotCarriedOut', reasons: [{ code: 'ExitNotCarriedOut' }], lastAction: over.lastAction ?? exit, ...('carry' in over ? (over.carry && { exitCarry: over.carry }) : { exitCarry: { direction: 'Long' as const, held: Rational.of(2n) } }) }), progress };
+    const review = ready([exited], [], { families: [{ family: 'Marks', earlierMarks: [], today: [], earlier: [] }, { family: 'Trades', trades: [exited] }] });
+    const trade = tradeReview('t1', 'XYZ', { attention: exited, progress, planExit: planExitOf('2'), form: over.form ?? { kind: 'New', viewState: {} } });
+    const facade = exitFormFacade();
+    vi.mocked(facade.DailyReview.open).mockResolvedValue(review);
+    vi.mocked(facade.DailyReview.getTrade).mockResolvedValue({ kind: 'Ready', reviewDate: '2026-10-12', cutoff: review.cutoff, trade });
+    renderWalk(facade);
+    return { user, facade, card: await openTrade(user, 'XYZ') };
+  }
+
+  it('should say first on the card that an Exit was chosen, on which day, and what is still held', async () => {
+    const { card } = await openExited();
+    const banner = within(card).getByRole('group', { name: 'Exit not carried out' });
+    expect(banner.textContent).toContain('You chose Exit on Fri Oct 9. Still holding 2.');
+    expect(card.firstElementChild).toBe(banner);
+    expect(banner.textContent).not.toMatch(/since/);
+  });
+
+  it('should open the sale form on I sold: record it, with its Marks still to enter', async () => {
+    const { user, card } = await openExited({ toGo: 1 });
+    expect(within(card).getByText("No Action until today's Mark is in.", { exact: false })).toBeTruthy();
+    await user.click(within(within(card).getByRole('group', { name: 'Exit not carried out' })).getByRole('button', { name: 'I sold: record it' }));
+    expect(await within(card).findByRole('group', { name: 'Execution 1' })).toBeTruthy();
+    expect(within(card).getByText('Back to the Review')).toBeTruthy();
+  });
+
+  it('should open the sale form from I sold: record it on the day card', async () => {
+    const { user, card } = await openExited({ toGo: 1 });
+    const day = screen.getByRole('region', { name: 'The day' });
+    expect(within(card).queryByRole('group', { name: 'Execution 1' })).toBeNull();
+    await user.click(within(within(day).getByRole('group', { name: 'Exit not carried out: XYZ' })).getByRole('button', { name: 'I sold: record it' }));
+    expect(await within(card).findByRole('group', { name: 'Execution 1' })).toBeTruthy();
+  });
+
+  it('should hide the banner on Still holding, save nothing, and show the Action form as usual', async () => {
+    const { user, facade, card } = await openExited({ form: { kind: 'New', viewState: { selectedAction: 'Hold' } } });
+    const day = screen.getByRole('region', { name: 'The day' });
+    await user.click(within(within(card).getByRole('group', { name: 'Exit not carried out' })).getByRole('button', { name: 'Still holding' }));
+    expect(within(card).queryByRole('group', { name: 'Exit not carried out' })).toBeNull();
+    expect(within(day).queryByRole('group', { name: 'Exit not carried out: XYZ' })).toBeNull();
+    // The Action form is asked as usual: the Plan Call's own preselection stands, and nothing was written.
+    expect(within(card).getByRole<HTMLInputElement>('radio', { name: 'Hold' }).checked).toBe(true);
+    expect(vi.mocked(facade.DailyReview.save)).not.toHaveBeenCalled();
+    expect(vi.mocked(facade.TradeWorkflows.recordPositionChange)).not.toHaveBeenCalled();
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: /^Review XYZ/ }));
+  });
+
+  it('should leave the banner off once the Review Dates own Action is saved', async () => {
+    const { card } = await openExited({ form: { kind: 'Saved', action: savedAction('Hold') } });
+    expect(within(card).queryByRole('group', { name: 'Exit not carried out' })).toBeNull();
+  });
+
+  it('should show the banner again after a fresh open', async () => {
+    const first = await openExited();
+    await first.user.click(within(within(first.card).getByRole('group', { name: 'Exit not carried out' })).getByRole('button', { name: 'Still holding' }));
+    expect(within(first.card).queryByRole('group', { name: 'Exit not carried out' })).toBeNull();
+    cleanup();
+    const again = await openExited();
+    expect(within(again.card).getByRole('group', { name: 'Exit not carried out' })).toBeTruthy();
+  });
+
+  it('should say how much was sold since, when part was sold', async () => {
+    const { card } = await openExited({ carry: { direction: 'Long', held: Rational.of(1n), sold: Rational.of(1n) } });
+    expect(within(card).getByRole('group', { name: 'Exit not carried out' }).textContent).toContain('You chose Exit on Fri Oct 9. Sold 1 since. Still holding 1.');
   });
 });

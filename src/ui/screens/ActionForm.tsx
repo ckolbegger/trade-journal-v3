@@ -37,6 +37,8 @@ export interface ActionFormProps {
   readonly replay?: DailyTradeReview['replay'];
   // The Plan Exit facts: the Position held, whose side words the sale to record (W127).
   readonly planExit?: DailyTradeReview['planExit'];
+  // A count that grows each time the card asks for the sale form (the banner's "I sold: record it").
+  readonly saleRequest?: number;
   // The current instant, for the sale form's default time.
   readonly now?: () => string;
   // A sale that closed the Trade was left on screen without its receipt being dismissed: the Review is read again (the Trade has left the walk).
@@ -125,10 +127,15 @@ function returnedValues(form: ActionFormState): Values {
 }
 
 // The Action for one Trade on the Review Date. Hold is preselected as view state only; nothing is recorded until Save.
-export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyChange, pending = false, marksToGo = 0, planCall, replay, planExit, now = () => new Date().toISOString(), onLeftSold, decidingOn, onHandle }: ActionFormProps) {
+export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyChange, pending = false, marksToGo = 0, planCall, replay, planExit, saleRequest = 0, now = () => new Date().toISOString(), onLeftSold, decidingOn, onHandle }: ActionFormProps) {
   const { writable, report, timeZone } = useRuntime();
   // The sale of a saved Exit is recorded in place of the Action (W127); the form reports its own values under the Action's id.
   const [selling, setSelling] = useState(false);
+  const [handledSale, setHandledSale] = useState(0);
+  if (saleRequest !== handledSale) {
+    setHandledSale(saleRequest);
+    setSelling(true);
+  }
   // A sale that closed the Trade moves it out of the walk when the Review is read again: that waits until the receipt is dismissed.
   const refreshOwed = useRef(false);
   const leftSold = useRef(onLeftSold);
@@ -310,7 +317,7 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
   const held = planExit?.positions[0];
   const saleWords = saleOf(form, held);
   if (readOnlyEmpty && form.kind === 'New') return <p>No Action saved.</p>;
-  if (toGo > 0) return <MarksFirst tradeId={binding.tradeId} toGo={toGo} />;
+  // The sale does not wait for the Marks: a sale is recorded whatever the day's Marks (A313).
   if (selling) return <ExitForm facade={facade} tradeId={binding.tradeId} timeZone={timeZone ?? 'UTC'} now={now} onDirtyChange={onDirtyChange} onDone={() => setSelling(false)} backLabel="Back to the Review" card={{
         onRecorded: (result) => {
           if (result.postCommit.trade.storedLifecycle === 'Closed') refreshOwed.current = true;
@@ -324,6 +331,7 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
           else void readAfterSale();
         },
       }} />;
+  if (toGo > 0) return <MarksFirst tradeId={binding.tradeId} toGo={toGo} />;
   // Values held over a Conflict refresh differ from the saved Action it now shows: they stay open, as if Change were pressed.
   const savedLines = form.kind === 'Saved' && (
     <>

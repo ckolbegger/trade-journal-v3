@@ -14,6 +14,7 @@ import type { MutationGuard } from '../mutation-guard.ts';
 import { payoffOf } from '../settlement.ts';
 import { assembleReplay } from '../replay/index.ts';
 import { lastDecisionsOf } from './decisions.ts';
+import { exitCarryOf } from './exit-carry.ts';
 import { attentionOf, byAttention, meterReadingOf, planExitFactsOf, unavailableFamilies, valueTrade, type TradeValuation } from '../valuation/index.ts';
 import type {
   ActionForm,
@@ -313,7 +314,8 @@ function reviewItem({ summary, analysis, derivation, integrity, valuation, befor
   if (integrity.kind === 'IncoherentFacts') return { item: incoherentItem(identity, integrity), valuation: undefined, before: undefined };
   if (!valuation) throw new Error(`Trade ${summary.tradeId} was not valued`);
   const held = openTradeSummary(analysis.plan.legs[0]!.instrument, derivation);
-  const item: ReviewTradeItem = { ...identity, ...(held && { summary: held }), ...attentionOf(derivation, valuation.evaluation, integrity.findings, lastAction) };
+  const exitCarry = lastAction?.action === 'Exit' ? exitCarryOf(integrity, lastAction.reviewDate) : undefined;
+  const item: ReviewTradeItem = { ...identity, ...(held && { summary: held }), ...(exitCarry && { exitCarry }), ...attentionOf(derivation, valuation.evaluation, integrity.findings, lastAction) };
   return { item, valuation, before };
 }
 

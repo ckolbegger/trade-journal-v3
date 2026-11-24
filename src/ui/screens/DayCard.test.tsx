@@ -52,11 +52,11 @@ function review(over: { day?: DaySummary; trades?: readonly WalkedTrade[]; compl
 }
 // The calls the card makes: a card to open, an Instrument's cell in the Marks step, or the skipped sessions' columns.
 function renderCard(ready: Ready) {
-  const calls = { openCard: vi.fn(), openMarks: vi.fn(), openSkipped: vi.fn() };
+  const calls = { openCard: vi.fn(), openMarks: vi.fn(), openSkipped: vi.fn(), onStillHolding: vi.fn() };
   render(
     <RuntimeContext.Provider value={{ writable: true, report: () => undefined }}>
       <MemoryRouter>
-        <DayCard review={ready} name={(id) => id} {...calls} />
+        <DayCard review={ready} name={(id) => id} holding={new Set()} {...calls} />
       </MemoryRouter>
     </RuntimeContext.Provider>,
   );
@@ -301,5 +301,22 @@ describe('the day card', () => {
     cleanup();
     renderCard(review({ day: day({ trades: 3, toGo: { marks: 0, actions: 0, expirations: 0, closeReviews: 1, reflections: 0 } }) }));
     expect(screen.getByText('3 Trades · 1 Close Review to go')).toBeTruthy();
+  });
+});
+
+// T95.41: an Exit chosen on an earlier Review Date and not carried out is said on the day card as well, with its reason (A313, W129).
+describe('the day card after an Exit not carried out (T95.41)', () => {
+  const exited = walked('t1', 'AXIO', { lastAction: { reviewDate: '2026-11-13', action: 'Exit', reason: 'Take the money.' }, exitCarry: { direction: 'Long', held: Rational.of(2n) } });
+  const lines: DaySummary['lines'] = [{ tradeId: 't1', marks: 0, closeReview: false, needs: ['Action'] }];
+
+  it('should leave the day card note off once the Review Dates own Action is saved', () => {
+    renderCard(review({ trades: [exited], day: day({ lines: [{ ...lines[0]!, needs: [], action: 'Hold' }] }) }));
+    expect(screen.queryByRole('group', { name: 'Exit not carried out: AXIO' })).toBeNull();
+  });
+
+  it('should say it on the day card as well, with the Exits reason', () => {
+    renderCard(review({ trades: [exited], day: day({ lines }) }));
+    const note = screen.getByRole('group', { name: 'Exit not carried out: AXIO' });
+    expect(note.textContent).toContain('Fri Nov 13 you chose Exit on AXIO: “Take the money.” Still holding 2.');
   });
 });
