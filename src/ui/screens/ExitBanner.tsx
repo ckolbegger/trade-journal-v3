@@ -1,13 +1,16 @@
 import type { ReviewTradeItem } from '../../app/types.ts';
 import { quantity, shortDate } from '../format.ts';
+import { useRuntime } from '../runtime.tsx';
 
 type ExitCarry = NonNullable<ReviewTradeItem['exitCarry']>;
 
 // The two ways to answer an Exit that was not carried out: record the sale, or say the Position is still held (A313).
 function Answers({ carry, onSold, onHolding }: { readonly carry: ExitCarry; readonly onSold: () => void; readonly onHolding: () => void }) {
+  // Recording a sale writes, so it waits while the runtime is read only.
+  const { writable } = useRuntime();
   return (
     <>
-      <button type="button" className="pill secondary" onClick={onSold}>
+      <button type="button" className="pill secondary" disabled={!writable} onClick={onSold}>
         I {carry.direction === 'Long' ? 'sold' : 'bought back'}: record it
       </button>{' '}
       <button type="button" className="pill secondary" onClick={onHolding}>

@@ -2145,6 +2145,14 @@ describe('An Exit not carried out (T95.41)', () => {
     expect(onDirtyChange).toHaveBeenLastCalledWith(true);
   });
 
+  it('should disable I sold: record it on the card and the day card while the runtime is read only', async () => {
+    const { card } = await openExited({ writable: false });
+    const day = screen.getByRole('region', { name: 'The day' });
+    const sold = (scope: HTMLElement, name: string) => within(within(scope).getByRole('group', { name })).getByRole<HTMLButtonElement>('button', { name: 'I sold: record it' });
+    expect(sold(card, 'Exit not carried out').disabled).toBe(true);
+    expect(sold(day, 'Exit not carried out: XYZ').disabled).toBe(true);
+  });
+
   it('should hide the banner on Still holding, save nothing, and show the Action form as usual', async () => {
     const { user, facade, card } = await openExited({ form: { kind: 'New', viewState: { selectedAction: 'Hold' } } });
     const day = screen.getByRole('region', { name: 'The day' });
