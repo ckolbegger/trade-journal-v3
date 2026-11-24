@@ -717,3 +717,5 @@ ocr of T95.30 (session 5ac8cb60; round 2 hit a provider overload, marked complet
 Commit `e7092508`: `planCall` reads a condition's status from `result`, or from `underlyingReading.status` when `result` is Unavailable; an Underlying-only crossing gives Out (Stop named first when both). An uncrossed Underlying-only reading counts as read for that condition; Unknown stays when any headline condition has no reading (A110 doesn't say an Underlying-only reading alone makes Hold). Red "expected 'Unknown' to be 'Out'", green; second case a first-run pass, mutation-checked. trade-analysis and ui 1676 passed. `statusOf` duplicated from replay-series.ts (not exported there).
 
 ocr of T95.30-B1 (session 5d915602): 2 files, 0 findings. `evidence/D95/ocr/T95.30-B1-e7092508.json`. Next: run `t95.30-plan-call` (browser-task).
+
+Run `t95.30-plan-call` (browser-task): unit 2937, integration 329, browser 5 + 18, checks 14 of 14. Passed. T95.30 done.
