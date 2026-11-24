@@ -719,3 +719,7 @@ Commit `e7092508`: `planCall` reads a condition's status from `result`, or from 
 ocr of T95.30-B1 (session 5d915602): 2 files, 0 findings. `evidence/D95/ocr/T95.30-B1-e7092508.json`. Next: run `t95.30-plan-call` (browser-task).
 
 Run `t95.30-plan-call` (browser-task): unit 2937, integration 329, browser 5 + 18, checks 14 of 14. Passed. T95.30 done.
+
+### T95.31
+
+Commit `4803ac91`: `WalkedTrade.planCall?` and `DailyTradeReview.planCall?` (from the evaluation already read; no request count moves); a new Action's `viewState.selectedAction` is 'Hold' only when the call is Hold, else `{}`. First-run passes flagged and mutation-checked: Hold selected for Hold, nothing for Unknown, a saved Action returned as saved, nothing recorded on open (a first mutation threw a TypeError and was redone). Bridge outside the Files line: `ActionForm.tsx` `selectedAction ?? 'Hold'` keeps today's screen until T95.33. 2,760 tests in the touched folders passed.
