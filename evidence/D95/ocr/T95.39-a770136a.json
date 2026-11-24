@@ -1,0 +1,250 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 14 selected item(s).",
+  "summary": {
+    "files_reviewed": 14,
+    "comments": 1,
+    "total_tokens": 475954,
+    "input_tokens": 472763,
+    "output_tokens": 3191,
+    "cache_read_tokens": 48256,
+    "elapsed": "1m40s"
+  },
+  "tool_calls": {
+    "total": 42,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 8,
+      "file_find": 1,
+      "file_read": 32
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/PositionChangeFormBody.tsx",
+      "content": "A missing-reason issue permanently forces `asksWhy` until another workflow call replaces `issues`, even when execution edits make the sale follow the Plan. For example, enter a partial sale, click Save with no reason, then change it to the full quantity at the Stop: the UI says “Nothing more to ask” but still shows the question and blocks Save locally. This also happens after a workflow refusal. Scope the refusal override to the execution values it was reported against, and invalidate/re-evaluate it when quantity, price, or economic time changes. Add a regression test for correcting the sale after the empty-reason refusal.",
+      "existing_code": "  const asksWhy = ((saleCheck?.measure?.kind === 'Leaves' \u0026\u0026 !saleCheck.carried) || issues.some((i) =\u003e i.code === 'PlanDepartureReasonRequired')) \u0026\u0026 departurePrompt?.kind === 'Text';",
+      "start_line": 306,
+      "end_line": 306,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Exit-form plan check UI, validation, and component tests",
+      "files": [
+        "src/ui/screens/ClosingTheTrade.tsx",
+        "src/ui/screens/ExitFormPlanCheck.test.tsx",
+        "src/ui/screens/PlanCheck.tsx",
+        "src/ui/screens/PositionChangeFormBody.tsx",
+        "src/ui/screens/PositionChangeFormExit.test.tsx",
+        "src/ui/screens/position-change-issues.ts"
+      ]
+    },
+    {
+      "label": "End-to-end workflow updates and shared test support",
+      "files": [
+        "e2e/d6/exit-requirements.spec.ts",
+        "e2e/d6/no-save.spec.ts",
+        "e2e/d6/responsive-a11y.spec.ts",
+        "e2e/d6/runtime-failure.spec.ts",
+        "e2e/d6/support.ts",
+        "e2e/d8p/support.ts",
+        "e2e/d8r/names.spec.ts",
+        "e2e/d95/card.spec.ts"
+      ]
+    }
+  ],
+  "session_id": "61c24bd6-cc1c-4cd6-a1bf-6b4b7d48ddcf",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "61c24bd6-cc1c-4cd6-a1bf-6b4b7d48ddcf",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "a770136a",
+      "resolved_base": "83ed8bbce5b97d74228785d78a91e602fe7cd0f2",
+      "resolved_head": "a770136a381faf6e719a84aa1d1aa6d240208097",
+      "exact_range": "83ed8bbce5b97d74228785d78a91e602fe7cd0f2..a770136a381faf6e719a84aa1d1aa6d240208097",
+      "source_artifact_sha256": "b32fbe7fa7ad9b20882cdc390faf181067575954eaaaddbc52baba1c086fb339"
+    },
+    "execution": {
+      "ocr_version": "v1.14.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "1a46ae2d6997a485bf28ef4c1ad43b26145f9a2477c6c7af4f0705b0d81ad514",
+          "path": "src/ui/screens/PlanCheck.tsx",
+          "fingerprint": "b6df73f1065fbb6707a8c967739ff0f82ad534c1b94085fa377725d255d79059"
+        },
+        {
+          "item_id": "1afde35a58e3e0e9a9f6507d22fcbd3f3e2aca36a344bf1896873e07fec7ad17",
+          "path": "e2e/d8p/support.ts",
+          "fingerprint": "5c5a7b823a9007ca2db9b01ae17b55d5e201a43e00ae0f02660d2731ca7b2533"
+        },
+        {
+          "item_id": "2adcb3c7b02dfb0f11a29d0aea7dec7ea0c3d1d28b92bd3eb0dddee5cf39f6eb",
+          "path": "e2e/d8r/names.spec.ts",
+          "fingerprint": "cce7d1a5eaf1b1a4b9b7a5acb3502f382d8c38d2422bde1c27e305b6ae163569"
+        },
+        {
+          "item_id": "42b58eea0e5f000f63b6a9c3c24ac44a84b91196ca48804afea34e6a7d81e1e1",
+          "path": "e2e/d6/support.ts",
+          "fingerprint": "b9c446cf09011862c1052b1a6cedf811ef3c0d6c0a2b6e1aaa1f0ac132ede9f2"
+        },
+        {
+          "item_id": "4cf80cd4f93db1111cad9410f18fcd4baae047865e777e269c718c3d5a3e6005",
+          "path": "e2e/d6/runtime-failure.spec.ts",
+          "fingerprint": "b6a785dc23b61d800a3a303198e5202d3813ea017b4b48a8665c7055472905b9"
+        },
+        {
+          "item_id": "4f6cb7d33708d2ec6ba56caabfdcacaef771172f55d6690df1ca86605d86a205",
+          "path": "src/ui/screens/PositionChangeFormBody.tsx",
+          "fingerprint": "c6948e59e078be0de89d2e4cf9b46feddfc667b1b2421221c4a6447963021732"
+        },
+        {
+          "item_id": "65f33867831aeb054dd88dcf09a0d610354447756e080f06541a165045b74826",
+          "path": "src/ui/screens/position-change-issues.ts",
+          "fingerprint": "1a4d14ab7d88a7136e72773227fcd5d7fea4b5fd6c2be17c2b0a59c868b55af2"
+        },
+        {
+          "item_id": "829f831b6260b98151855d0cebc18a9c103747faf3328034408bb44e9b588424",
+          "path": "src/ui/screens/PositionChangeFormExit.test.tsx",
+          "fingerprint": "0bac087d19dc31774dcf3a84da948a43a8c097ab81ade7a5de19ce00436ab5c9"
+        },
+        {
+          "item_id": "864910b6044f4c010950747b691b0043cb238ae233dc93c2a1bff473f956d5f7",
+          "path": "e2e/d6/exit-requirements.spec.ts",
+          "fingerprint": "8a8aaaaee044f818595bf5414129e9f979690fa8fdffedb44c6208f698ad3abe"
+        },
+        {
+          "item_id": "9d7884d831fddbc890d507230ab592c13e484d97f5f895740b67d9c580587249",
+          "path": "src/ui/screens/ClosingTheTrade.tsx",
+          "fingerprint": "c08fe091400c9365272af65c3afca28ea3e04e27cc4ade62948376d2b835d6fd"
+        },
+        {
+          "item_id": "bc0f492c4fba56c5d9af590be3fb6dd06ba83822bd2627f1fac7691a34f89efa",
+          "path": "src/ui/screens/ExitFormPlanCheck.test.tsx",
+          "fingerprint": "7e9f4a0a7ccb7076abe2937c3fdfc4536a0dd5626d48d367460eb31873272bf2"
+        },
+        {
+          "item_id": "c2fd486111638d00f0d387a09d3b1d932d274fd2e5443262caf354d5c4d2756f",
+          "path": "e2e/d6/responsive-a11y.spec.ts",
+          "fingerprint": "0c8b0feb4a5631f8b69b6d6090cc57ab3db3bf17e79437f0b657afa4d5f62ed9"
+        },
+        {
+          "item_id": "d8bd1b41a59e923384e7e7442c046b63731ba0f99a51a10d56be665548e60b5e",
+          "path": "e2e/d95/card.spec.ts",
+          "fingerprint": "0f66324ba96611590d8b8f9a6b66bc7c0fb2cfff7276ce2e7056db33cb9ba59c"
+        },
+        {
+          "item_id": "f1e1f9f2f6e2ce0e03d8c208ae60ff108aac95baa6e4276f2b3e97a9a6496a6a",
+          "path": "e2e/d6/no-save.spec.ts",
+          "fingerprint": "ce5ebb1b8e2712618a8b91c41920bf9276aa399ca2424a5640a24dae32bcdae7"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "1a46ae2d6997a485bf28ef4c1ad43b26145f9a2477c6c7af4f0705b0d81ad514",
+          "path": "src/ui/screens/PlanCheck.tsx",
+          "fingerprint": "b6df73f1065fbb6707a8c967739ff0f82ad534c1b94085fa377725d255d79059"
+        },
+        {
+          "item_id": "1afde35a58e3e0e9a9f6507d22fcbd3f3e2aca36a344bf1896873e07fec7ad17",
+          "path": "e2e/d8p/support.ts",
+          "fingerprint": "5c5a7b823a9007ca2db9b01ae17b55d5e201a43e00ae0f02660d2731ca7b2533"
+        },
+        {
+          "item_id": "2adcb3c7b02dfb0f11a29d0aea7dec7ea0c3d1d28b92bd3eb0dddee5cf39f6eb",
+          "path": "e2e/d8r/names.spec.ts",
+          "fingerprint": "cce7d1a5eaf1b1a4b9b7a5acb3502f382d8c38d2422bde1c27e305b6ae163569"
+        },
+        {
+          "item_id": "42b58eea0e5f000f63b6a9c3c24ac44a84b91196ca48804afea34e6a7d81e1e1",
+          "path": "e2e/d6/support.ts",
+          "fingerprint": "b9c446cf09011862c1052b1a6cedf811ef3c0d6c0a2b6e1aaa1f0ac132ede9f2"
+        },
+        {
+          "item_id": "4cf80cd4f93db1111cad9410f18fcd4baae047865e777e269c718c3d5a3e6005",
+          "path": "e2e/d6/runtime-failure.spec.ts",
+          "fingerprint": "b6a785dc23b61d800a3a303198e5202d3813ea017b4b48a8665c7055472905b9"
+        },
+        {
+          "item_id": "4f6cb7d33708d2ec6ba56caabfdcacaef771172f55d6690df1ca86605d86a205",
+          "path": "src/ui/screens/PositionChangeFormBody.tsx",
+          "fingerprint": "c6948e59e078be0de89d2e4cf9b46feddfc667b1b2421221c4a6447963021732"
+        },
+        {
+          "item_id": "65f33867831aeb054dd88dcf09a0d610354447756e080f06541a165045b74826",
+          "path": "src/ui/screens/position-change-issues.ts",
+          "fingerprint": "1a4d14ab7d88a7136e72773227fcd5d7fea4b5fd6c2be17c2b0a59c868b55af2"
+        },
+        {
+          "item_id": "829f831b6260b98151855d0cebc18a9c103747faf3328034408bb44e9b588424",
+          "path": "src/ui/screens/PositionChangeFormExit.test.tsx",
+          "fingerprint": "0bac087d19dc31774dcf3a84da948a43a8c097ab81ade7a5de19ce00436ab5c9"
+        },
+        {
+          "item_id": "864910b6044f4c010950747b691b0043cb238ae233dc93c2a1bff473f956d5f7",
+          "path": "e2e/d6/exit-requirements.spec.ts",
+          "fingerprint": "8a8aaaaee044f818595bf5414129e9f979690fa8fdffedb44c6208f698ad3abe"
+        },
+        {
+          "item_id": "9d7884d831fddbc890d507230ab592c13e484d97f5f895740b67d9c580587249",
+          "path": "src/ui/screens/ClosingTheTrade.tsx",
+          "fingerprint": "c08fe091400c9365272af65c3afca28ea3e04e27cc4ade62948376d2b835d6fd"
+        },
+        {
+          "item_id": "bc0f492c4fba56c5d9af590be3fb6dd06ba83822bd2627f1fac7691a34f89efa",
+          "path": "src/ui/screens/ExitFormPlanCheck.test.tsx",
+          "fingerprint": "7e9f4a0a7ccb7076abe2937c3fdfc4536a0dd5626d48d367460eb31873272bf2"
+        },
+        {
+          "item_id": "c2fd486111638d00f0d387a09d3b1d932d274fd2e5443262caf354d5c4d2756f",
+          "path": "e2e/d6/responsive-a11y.spec.ts",
+          "fingerprint": "0c8b0feb4a5631f8b69b6d6090cc57ab3db3bf17e79437f0b657afa4d5f62ed9"
+        },
+        {
+          "item_id": "d8bd1b41a59e923384e7e7442c046b63731ba0f99a51a10d56be665548e60b5e",
+          "path": "e2e/d95/card.spec.ts",
+          "fingerprint": "0f66324ba96611590d8b8f9a6b66bc7c0fb2cfff7276ce2e7056db33cb9ba59c"
+        },
+        {
+          "item_id": "f1e1f9f2f6e2ce0e03d8c208ae60ff108aac95baa6e4276f2b3e97a9a6496a6a",
+          "path": "e2e/d6/no-save.spec.ts",
+          "fingerprint": "ce5ebb1b8e2712618a8b91c41920bf9276aa399ca2424a5640a24dae32bcdae7"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "2db14ae5c6d3205a2535b88072d8fac87662a641194a32b9f3756bd7e9d1d027",
+          "path": "evidence/D95/tdd-log/T95.39.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 99529
+  }
+}
