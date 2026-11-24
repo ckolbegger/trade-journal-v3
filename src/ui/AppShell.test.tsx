@@ -1282,4 +1282,34 @@ describe('launch seeding of an existing Workspace (T95.28-F2)', () => {
     await screen.findByText('Trades screen');
     expect(facade.Workspace.initialize).not.toHaveBeenCalled();
   });
+
+  // Another tab took the Workspace after the first status read: the seed step's own readiness check says so.
+  const takenOver = () => ({
+    kind: 'RecoveryOnly',
+    observedAt: '2026-10-12T14:05:00Z',
+    installedCapabilities: facadeDouble().capabilities,
+    readiness: { ...writableReadiness, outcome: 'RecoveryOnly' },
+    protection: 'BestEffort',
+    failedChecks: [{ check: 'inventory', reason: 'InventoryMissing' }],
+    binding: { databaseName: 'tj-ws-1', contentRevision: 3 },
+    timeZone: 'America/New_York',
+  });
+
+  it('should show the status read again when the launch seed step is refused', async () => {
+    const facade = facadeDouble();
+    vi.mocked(facade.Workspace.initialize).mockResolvedValue({ kind: 'RuntimeNotWritable' } as never);
+    vi.mocked(facade.Workspace.getStatus).mockResolvedValueOnce(readyStatus() as never).mockResolvedValue(takenOver() as never);
+    renderShell(facade, '/accounts');
+    expect(await screen.findByText('Accounts (read only)')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Add Account' })).toBeNull();
+  });
+
+  it('should show the status read again when the launch seed step fails', async () => {
+    const facade = facadeDouble();
+    vi.mocked(facade.Workspace.initialize).mockRejectedValue(new Error('activation failed'));
+    vi.mocked(facade.Workspace.getStatus).mockResolvedValueOnce(readyStatus() as never).mockResolvedValue(takenOver() as never);
+    renderShell(facade, '/accounts');
+    expect(await screen.findByText('Accounts (read only)')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Add Account' })).toBeNull();
+  });
 });

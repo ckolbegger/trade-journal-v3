@@ -325,10 +325,12 @@ export function AppShell({
         try {
           const opened = await facade.Workspace.initialize({});
           if (!current) return;
-          setStatus(opened.kind === "Opened" ? opened.status : next);
+          // Not Opened (another tab took the Workspace meanwhile): show what it now reports, not the stale read.
+          if (opened.kind === "Opened") setStatus(opened.status);
+          else setStatus(await facade.Workspace.getStatus());
         } catch {
           if (!current) return;
-          setStatus(next);
+          setStatus(await facade.Workspace.getStatus());
         }
         return;
       }
