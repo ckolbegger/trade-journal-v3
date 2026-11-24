@@ -1,0 +1,249 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 14 selected item(s).",
+  "summary": {
+    "files_reviewed": 14,
+    "comments": 0,
+    "total_tokens": 198615,
+    "input_tokens": 196104,
+    "output_tokens": 2511,
+    "cache_read_tokens": 21632,
+    "elapsed": "50s"
+  },
+  "tool_calls": {
+    "total": 29,
+    "by_tool": {
+      "code_search": 6,
+      "file_read": 19,
+      "file_read_diff": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Daily review plan-exit facts integration",
+      "files": [
+        "src/coordinators/daily-review/daily-review.ts",
+        "src/coordinators/daily-review/plan-exit-facts.test.ts",
+        "src/coordinators/daily-review/types.ts"
+      ]
+    },
+    {
+      "label": "Plan-exit valuation and trade view consumers",
+      "files": [
+        "src/coordinators/trade-views/plan-exit-facts.test.ts",
+        "src/coordinators/trade-views/trade-summary.test.ts",
+        "src/coordinators/trade-views/trade-views.ts",
+        "src/coordinators/trade-workflows/sale-measure.ts",
+        "src/coordinators/valuation/index.ts",
+        "src/coordinators/valuation/plan-exit-facts.ts"
+      ]
+    },
+    {
+      "label": "Journal effects and query-count regression coverage",
+      "files": [
+        "src/modules/journal/effects.ts",
+        "src/modules/journal/journal.test.ts",
+        "src/modules/journal/journal.ts",
+        "tests/integration/d8p/replay-query-count.test.ts",
+        "tests/integration/d8r/query-count.test.ts"
+      ]
+    }
+  ],
+  "session_id": "7130443a-d7b3-462e-8116-ff901333f72c",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "7130443a-d7b3-462e-8116-ff901333f72c",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "eb591078",
+      "resolved_base": "f5823103af2776bbf0d5f436e80ab2715cfb6efe",
+      "resolved_head": "eb591078103c7edee4a4d38855d66eeae4068acf",
+      "exact_range": "f5823103af2776bbf0d5f436e80ab2715cfb6efe..eb591078103c7edee4a4d38855d66eeae4068acf",
+      "source_artifact_sha256": "c99198b39a27da2d211d24ce4395b2f8892243d6d573a500bacce7ee37de518a"
+    },
+    "execution": {
+      "ocr_version": "v1.14.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "046b2cb8758327f5dba6b8865914fb830d4ae498e71b36acf7f1a25fbbd367a1",
+          "path": "src/coordinators/daily-review/plan-exit-facts.test.ts",
+          "fingerprint": "313592a7791b5c00ea897e141186b73cdabfb9628c57ff145bad4796b5eb5a40"
+        },
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "ad322d9616fe5510685b817630d88cb7452915349e42edc9489c941609021f45"
+        },
+        {
+          "item_id": "296d1eab9b96c668538b80a90dfce907c8d0bd9780e287cb3c211befa07f1f47",
+          "path": "tests/integration/d8p/replay-query-count.test.ts",
+          "fingerprint": "2907d5aecbc8568763df1e5d84e8be8348952e22badda424d102e88c4af3bbcf"
+        },
+        {
+          "item_id": "2de3c2a3801e9c40d4316c531c61d6d45ad9375aca72a8d35884b2cf0b4edbbb",
+          "path": "src/coordinators/trade-views/trade-summary.test.ts",
+          "fingerprint": "bc30c7985e22cf1663d1853fa680f446c9f0ab2449f31d0cb6648ca401f25600"
+        },
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "60deba6a4660695c1d42ecefd9fba18f73610d50f92b95f42f5d6dab68ea125c"
+        },
+        {
+          "item_id": "3a8ecfb3dd154fcf05e5c1b2a5af46a84a9c07adb19070f5ea81a6bc85099948",
+          "path": "src/coordinators/trade-workflows/sale-measure.ts",
+          "fingerprint": "4021ed61eab015c865ab42c2da9df8e6f21352755a82f0a7b40a293503d037e1"
+        },
+        {
+          "item_id": "5ebb6f8e3e26f8cf5820988231bcab158521827ead5b327497db0583f27aa132",
+          "path": "src/modules/journal/journal.test.ts",
+          "fingerprint": "c8b855585f8c5d1cf7efe78da6445b99d43f354803590811af779707b9a53d73"
+        },
+        {
+          "item_id": "6ab872f11a725300e14cdc1dd23a8b3029980ba44f57933e196c09dc18d24719",
+          "path": "src/coordinators/trade-views/plan-exit-facts.test.ts",
+          "fingerprint": "8f1aa5e406756ca9c1401189202f57d437fb85c9e5bd08dc734048f7edf55732"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "9cd9d32a2a8fec9789bc0d83d263508609bd02c7f74b9218601725384e568f1d"
+        },
+        {
+          "item_id": "a3416457179a37cd5870a6a38f628ff5ba14fdef610e12d65e8bdc46921c496a",
+          "path": "tests/integration/d8r/query-count.test.ts",
+          "fingerprint": "24ef44755b5711c88af5987d7409ae5acf452d092ce66b6f5827634d05bbb084"
+        },
+        {
+          "item_id": "b19ec1bcad75098482125b4592ab045a1607bdf7c921462a97a75c2821f330a5",
+          "path": "src/coordinators/valuation/index.ts",
+          "fingerprint": "aa12d54c5822c334bf3c9cebf7406cc332fa3352c2023a851dedbfa5a6437af5"
+        },
+        {
+          "item_id": "ce442f15b7035a0e4956c7fb515c9eb28a15e1eea163f348cdef0a029292ca2b",
+          "path": "src/coordinators/valuation/plan-exit-facts.ts",
+          "fingerprint": "46e0a0c0e16740e735f92d1716b843003915fe448f300b22ed4598714848d39e"
+        },
+        {
+          "item_id": "d5ca0db109bd5eca3585475c4cd3739bada34094523b44a916a4118276e691b6",
+          "path": "src/modules/journal/journal.ts",
+          "fingerprint": "9515dba9af9ceee616ae909a0d6e13926cd8d43ce73ca415dac279a1f47b57de"
+        },
+        {
+          "item_id": "fd1c910f754a206e66b4e66d854fe19ed7ac30adb9c39111b3b1ccc9e7046634",
+          "path": "src/modules/journal/effects.ts",
+          "fingerprint": "9e4b018a330462fecd76aba7de03c93756b6e093ff665ecba31ee4aa1d934424"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "046b2cb8758327f5dba6b8865914fb830d4ae498e71b36acf7f1a25fbbd367a1",
+          "path": "src/coordinators/daily-review/plan-exit-facts.test.ts",
+          "fingerprint": "313592a7791b5c00ea897e141186b73cdabfb9628c57ff145bad4796b5eb5a40"
+        },
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "ad322d9616fe5510685b817630d88cb7452915349e42edc9489c941609021f45"
+        },
+        {
+          "item_id": "296d1eab9b96c668538b80a90dfce907c8d0bd9780e287cb3c211befa07f1f47",
+          "path": "tests/integration/d8p/replay-query-count.test.ts",
+          "fingerprint": "2907d5aecbc8568763df1e5d84e8be8348952e22badda424d102e88c4af3bbcf"
+        },
+        {
+          "item_id": "2de3c2a3801e9c40d4316c531c61d6d45ad9375aca72a8d35884b2cf0b4edbbb",
+          "path": "src/coordinators/trade-views/trade-summary.test.ts",
+          "fingerprint": "bc30c7985e22cf1663d1853fa680f446c9f0ab2449f31d0cb6648ca401f25600"
+        },
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "60deba6a4660695c1d42ecefd9fba18f73610d50f92b95f42f5d6dab68ea125c"
+        },
+        {
+          "item_id": "3a8ecfb3dd154fcf05e5c1b2a5af46a84a9c07adb19070f5ea81a6bc85099948",
+          "path": "src/coordinators/trade-workflows/sale-measure.ts",
+          "fingerprint": "4021ed61eab015c865ab42c2da9df8e6f21352755a82f0a7b40a293503d037e1"
+        },
+        {
+          "item_id": "5ebb6f8e3e26f8cf5820988231bcab158521827ead5b327497db0583f27aa132",
+          "path": "src/modules/journal/journal.test.ts",
+          "fingerprint": "c8b855585f8c5d1cf7efe78da6445b99d43f354803590811af779707b9a53d73"
+        },
+        {
+          "item_id": "6ab872f11a725300e14cdc1dd23a8b3029980ba44f57933e196c09dc18d24719",
+          "path": "src/coordinators/trade-views/plan-exit-facts.test.ts",
+          "fingerprint": "8f1aa5e406756ca9c1401189202f57d437fb85c9e5bd08dc734048f7edf55732"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "9cd9d32a2a8fec9789bc0d83d263508609bd02c7f74b9218601725384e568f1d"
+        },
+        {
+          "item_id": "a3416457179a37cd5870a6a38f628ff5ba14fdef610e12d65e8bdc46921c496a",
+          "path": "tests/integration/d8r/query-count.test.ts",
+          "fingerprint": "24ef44755b5711c88af5987d7409ae5acf452d092ce66b6f5827634d05bbb084"
+        },
+        {
+          "item_id": "b19ec1bcad75098482125b4592ab045a1607bdf7c921462a97a75c2821f330a5",
+          "path": "src/coordinators/valuation/index.ts",
+          "fingerprint": "aa12d54c5822c334bf3c9cebf7406cc332fa3352c2023a851dedbfa5a6437af5"
+        },
+        {
+          "item_id": "ce442f15b7035a0e4956c7fb515c9eb28a15e1eea163f348cdef0a029292ca2b",
+          "path": "src/coordinators/valuation/plan-exit-facts.ts",
+          "fingerprint": "46e0a0c0e16740e735f92d1716b843003915fe448f300b22ed4598714848d39e"
+        },
+        {
+          "item_id": "d5ca0db109bd5eca3585475c4cd3739bada34094523b44a916a4118276e691b6",
+          "path": "src/modules/journal/journal.ts",
+          "fingerprint": "9515dba9af9ceee616ae909a0d6e13926cd8d43ce73ca415dac279a1f47b57de"
+        },
+        {
+          "item_id": "fd1c910f754a206e66b4e66d854fe19ed7ac30adb9c39111b3b1ccc9e7046634",
+          "path": "src/modules/journal/effects.ts",
+          "fingerprint": "9e4b018a330462fecd76aba7de03c93756b6e093ff665ecba31ee4aa1d934424"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "44e22aaf708e6205d1474f160b9699478d8b9b16f40931c7b411c460660433d2",
+          "path": "evidence/D95/data-additions.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "f1de8b13a800990cea120424cd1c8b856f716e5f1efb2cb59976220ef5b4d92d",
+          "path": "evidence/D95/tdd-log/T95.37.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 49581
+  }
+}
