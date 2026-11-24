@@ -963,3 +963,7 @@ Commit `ee16e93c`: variants `DailyReview.open` PlanCall; `getTrade` PlanCall, Pl
 ocr of T95.43 (session d1c4cca4): 4 files, 0 findings. `evidence/D95/ocr/T95.43-ee16e93c.json`. Next: run `t95.43-capabilities` (browser-task, Standard).
 
 Run `t95.43-capabilities` (browser-task): unit 3086, integration 329, browser 25, checks 14 of 14. Passed. T95.43 done.
+
+### T95.44
+
+Commit `a109c44e`: Part B integration suites I95.8 (seed-6, 5 cases), I95.9 (restore-seed, 3), I95.10 (plan-rule, 12), I95.11 (sale-plan-exit, 13), I95.12 (rebuild, 3), with `seed-support.ts`. No defect found. Every case a first-run pass (the code existed), each mutation-checked (mutations across reason-rule, daily-review, journal, sale-measure, record-position-change, trade-views, manifest, restore, backup-export, rebuild); two cases strengthened until their mutation failed (I95.8 second start asserts the exact receipt; I95.12 three separate mutations). Recorded gaps: I95.9's equal-views half rests on D8's I8.1; I95.10's nothing-written half is an unchanged dump no mutation reached. tests/integration 367 passed.
