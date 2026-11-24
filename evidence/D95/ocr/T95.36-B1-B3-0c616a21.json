@@ -1,0 +1,146 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 1,
+    "total_tokens": 199169,
+    "input_tokens": 197080,
+    "output_tokens": 2089,
+    "cache_read_tokens": 19968,
+    "elapsed": "1m27s"
+  },
+  "tool_calls": {
+    "total": 25,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 8,
+      "file_find": 1,
+      "file_read": 15
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/coordinators/trade-workflows/sale-measure.ts",
+      "content": "Use Temporal.Instant.compare here so ordering matches the new time validator and Trade Record's ordering. Temporal accepts annotated instants such as `2026-10-12T20:45:00Z[UTC]`, but Date.parse returns NaN for them. With a Tuesday execution first and that Monday execution second, this reduction keeps Tuesday; reversing the members selects Monday. The Hold cutoff (and therefore whether a Plan Departure Reason is required) remains order-dependent for inputs that pass unreadableTimeIssues. Add an annotated-timestamp regression case as well.",
+      "suggestion_code": "  const earliest = members.reduce((a, m) =\u003e (Temporal.Instant.compare(m.economicTime, a.economicTime) \u003c 0 ? m : a));",
+      "existing_code": "  const earliest = members.reduce((a, m) =\u003e (Date.parse(m.economicTime) \u003c Date.parse(a.economicTime) ? m : a));",
+      "start_line": 78,
+      "end_line": 78,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/coordinators/trade-workflows/record-position-change.ts",
+        "src/coordinators/trade-workflows/record-sale-plan-exit.test.ts",
+        "src/coordinators/trade-workflows/sale-measure.ts"
+      ]
+    }
+  ],
+  "session_id": "58744809-3f90-4606-983b-c124716d4888",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "58744809-3f90-4606-983b-c124716d4888",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "04a1e1d4",
+      "requested_head": "0c616a21",
+      "resolved_base": "04a1e1d42cca3ae6f7d4a9352a949fdea71e36fb",
+      "resolved_head": "0c616a216e7a9da5fc6f5361871f3d6ab6960cd2",
+      "exact_range": "04a1e1d42cca3ae6f7d4a9352a949fdea71e36fb..0c616a216e7a9da5fc6f5361871f3d6ab6960cd2",
+      "source_artifact_sha256": "f302fe28cd1a99ab3e92bc889cf13a914f480e5d4cb60f49ef6dd58aa4c474fa"
+    },
+    "execution": {
+      "ocr_version": "v1.14.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "409b77791f9d73d50f85e3803c5629265822211b9378fb847eb81d048bdc00e0",
+          "path": "src/coordinators/trade-workflows/sale-measure.ts",
+          "fingerprint": "a8d97e405a22a2f9175beecf7e19b4842702d2130ac676d03132e51153183c10"
+        },
+        {
+          "item_id": "4bdddb6f6c490ff0eb1bb77b99473a198c9c9460317ff8d676e9abef3f572496",
+          "path": "src/coordinators/trade-workflows/record-position-change.ts",
+          "fingerprint": "bf15eb427fa3e846504f40a31d5063b412829c4bd3f0239c3da97bc6615a2102"
+        },
+        {
+          "item_id": "dd783c1889315ea9bcde6364e9799619a903503afa85d704388588f50b0a4572",
+          "path": "src/coordinators/trade-workflows/record-sale-plan-exit.test.ts",
+          "fingerprint": "5af185c7821b3bd7ee21a6b05c7fbc55775ae4afceac29063fb5a7b24c1a1aad"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "409b77791f9d73d50f85e3803c5629265822211b9378fb847eb81d048bdc00e0",
+          "path": "src/coordinators/trade-workflows/sale-measure.ts",
+          "fingerprint": "a8d97e405a22a2f9175beecf7e19b4842702d2130ac676d03132e51153183c10"
+        },
+        {
+          "item_id": "4bdddb6f6c490ff0eb1bb77b99473a198c9c9460317ff8d676e9abef3f572496",
+          "path": "src/coordinators/trade-workflows/record-position-change.ts",
+          "fingerprint": "bf15eb427fa3e846504f40a31d5063b412829c4bd3f0239c3da97bc6615a2102"
+        },
+        {
+          "item_id": "dd783c1889315ea9bcde6364e9799619a903503afa85d704388588f50b0a4572",
+          "path": "src/coordinators/trade-workflows/record-sale-plan-exit.test.ts",
+          "fingerprint": "5af185c7821b3bd7ee21a6b05c7fbc55775ae4afceac29063fb5a7b24c1a1aad"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "197bfbb3c2b9db77aed4d8f9ea1f16b574581b5bf08cd4073dd3fb85f2bdfd96",
+          "path": "evidence/D95/tdd-log/T95.36-B2.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "4ab4c36b761e2d87c075b9c6459493b9cb7775456be5ef4566c1c0d0dddd96e1",
+          "path": "evidence/D95/ocr/T95.36-04a1e1d4.json",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "97ae7107ecddea73da82bc26373ef5e3edc93ce21843393087e6fb28cf550524",
+          "path": "evidence/D95/tdd-log/T95.36-B1.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "9808fc800850858cb968b5a7e6180010c57a15f0da023b08fd6ae7ca072c09cf",
+          "path": "evidence/D95/tdd-log/T95.36-B3.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ab47bc811f23c17f4c6317a43b1bf19eff8f2b20af07649acc55f19159f8bebc",
+          "path": "evidence/D95/structural.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 87092
+  }
+}
