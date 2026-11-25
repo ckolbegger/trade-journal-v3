@@ -1,0 +1,199 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 6 selected item(s).",
+  "summary": {
+    "files_reviewed": 6,
+    "comments": 1,
+    "total_tokens": 116024,
+    "input_tokens": 114389,
+    "output_tokens": 1635,
+    "cache_read_tokens": 16640,
+    "elapsed": "28s"
+  },
+  "tool_calls": {
+    "total": 15,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 3,
+      "file_find": 1,
+      "file_read": 10
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/ExitReceipt.tsx",
+      "content": "The conditional inside the template literal is nested within another ternary, contrary to the review checklist. Use an early return for `Due`, then compute the Review label separately to keep the same behavior without nested ternaries.",
+      "suggestion_code": "  const when = (classification: DueClassification | undefined, preposition: string) =\u003e {\n    if (classification === 'Due') return 'now';\n    const review = classification === 'DueInReviewAfterNext' ? 'the Review after next' : 'the next Review';\n    return `${preposition} ${review}`;\n  };",
+      "existing_code": "  const when = (classification: DueClassification | undefined, preposition: string) =\u003e\n    classification === 'Due' ? 'now' : `${preposition} ${classification === 'DueInReviewAfterNext' ? 'the Review after next' : 'the next Review'}`;",
+      "start_line": 58,
+      "end_line": 59,
+      "category": "style",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Trade position changes and sale-plan exit workflow",
+      "files": [
+        "src/coordinators/trade-workflows/record-position-change.ts",
+        "src/coordinators/trade-workflows/record-sale-plan-exit.test.ts"
+      ]
+    },
+    {
+      "label": "Exit action form and receipt",
+      "files": [
+        "src/ui/screens/ActionForm.test.tsx",
+        "src/ui/screens/ExitReceipt.tsx"
+      ]
+    },
+    {
+      "label": "Review card behavior and tests",
+      "files": [
+        "src/ui/screens/ReviewCard.test.tsx",
+        "src/ui/screens/ReviewCard.tsx"
+      ]
+    }
+  ],
+  "session_id": "02ea6282-4453-46f9-b960-4196c817c5de",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "02ea6282-4453-46f9-b960-4196c817c5de",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "e0e2fdbb^",
+      "requested_head": "b5473f84",
+      "resolved_base": "5d8b19d482f3f6c5a72c666d27f74d3549ad75e8",
+      "resolved_head": "b5473f8459986553a0dcfb77aabaa4a718dafe1a",
+      "exact_range": "5d8b19d482f3f6c5a72c666d27f74d3549ad75e8..b5473f8459986553a0dcfb77aabaa4a718dafe1a",
+      "source_artifact_sha256": "0411623dfbf6985ba1b7e1f66f13d8b648c219bd1736a7ccc3c0116c19c3770c"
+    },
+    "execution": {
+      "ocr_version": "v1.14.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "20ead85d064cf1b09dda027fdde2de0456ef5cb682bad401e15bf6ce73ea21ad",
+          "path": "src/ui/screens/ActionForm.test.tsx",
+          "fingerprint": "e07eb4268b361175e75c5950c32009f3b8179327c4d86349d2292512f9f4a1c5"
+        },
+        {
+          "item_id": "4bdddb6f6c490ff0eb1bb77b99473a198c9c9460317ff8d676e9abef3f572496",
+          "path": "src/coordinators/trade-workflows/record-position-change.ts",
+          "fingerprint": "8d6e50c0afe02952f395d0a47f11da5ccc81b7af502f0ddf18c43ceef0c09173"
+        },
+        {
+          "item_id": "5b385c845542d6ccb7cd429923948b5ea16275e021991c866647b870c23c4c76",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "502781bcc2ae308a6feca7abb95160ca4b85df4df35552bd58e4265b77e59ded"
+        },
+        {
+          "item_id": "6b2b4f18717fc5837f6274818529fd99fc80a8f9df8585dc8d7f7d32760283e2",
+          "path": "src/ui/screens/ExitReceipt.tsx",
+          "fingerprint": "461098411600ec097a3a5f1798367bd4321614bf282526a3171a8d5a82f68f3c"
+        },
+        {
+          "item_id": "86bd057eaa6ea9a77e8bdf3197d497830977b494dcfe642b4961ac0a7269dbf8",
+          "path": "src/ui/screens/ReviewCard.test.tsx",
+          "fingerprint": "d55048e21b695418468e90e5391bb1e85f04d4e0266309c2a7a216348a7b8796"
+        },
+        {
+          "item_id": "dd783c1889315ea9bcde6364e9799619a903503afa85d704388588f50b0a4572",
+          "path": "src/coordinators/trade-workflows/record-sale-plan-exit.test.ts",
+          "fingerprint": "118c24f88781f8ad48e7d60be15d7871083c54d862a384a4ebea99d90e7ab8ed"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "20ead85d064cf1b09dda027fdde2de0456ef5cb682bad401e15bf6ce73ea21ad",
+          "path": "src/ui/screens/ActionForm.test.tsx",
+          "fingerprint": "e07eb4268b361175e75c5950c32009f3b8179327c4d86349d2292512f9f4a1c5"
+        },
+        {
+          "item_id": "4bdddb6f6c490ff0eb1bb77b99473a198c9c9460317ff8d676e9abef3f572496",
+          "path": "src/coordinators/trade-workflows/record-position-change.ts",
+          "fingerprint": "8d6e50c0afe02952f395d0a47f11da5ccc81b7af502f0ddf18c43ceef0c09173"
+        },
+        {
+          "item_id": "5b385c845542d6ccb7cd429923948b5ea16275e021991c866647b870c23c4c76",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "502781bcc2ae308a6feca7abb95160ca4b85df4df35552bd58e4265b77e59ded"
+        },
+        {
+          "item_id": "6b2b4f18717fc5837f6274818529fd99fc80a8f9df8585dc8d7f7d32760283e2",
+          "path": "src/ui/screens/ExitReceipt.tsx",
+          "fingerprint": "461098411600ec097a3a5f1798367bd4321614bf282526a3171a8d5a82f68f3c"
+        },
+        {
+          "item_id": "86bd057eaa6ea9a77e8bdf3197d497830977b494dcfe642b4961ac0a7269dbf8",
+          "path": "src/ui/screens/ReviewCard.test.tsx",
+          "fingerprint": "d55048e21b695418468e90e5391bb1e85f04d4e0266309c2a7a216348a7b8796"
+        },
+        {
+          "item_id": "dd783c1889315ea9bcde6364e9799619a903503afa85d704388588f50b0a4572",
+          "path": "src/coordinators/trade-workflows/record-sale-plan-exit.test.ts",
+          "fingerprint": "118c24f88781f8ad48e7d60be15d7871083c54d862a384a4ebea99d90e7ab8ed"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "247b092c8481cd7b57a10ecb52d816d89361acd92a596e980d9d9b244dd5383a",
+          "path": "evidence/D95/tdd-log/T95.46-B8.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "286f62ecbde8c69266312837c7af0bcc1210e44ecfbccff1a24edc432f5ad014",
+          "path": "evidence/D95/tdd-log/T95.46-B6.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "3ed40f12e15baa0308fbe1d5f48a75c0f660ae52afee9ecee432400634a0cb3a",
+          "path": "evidence/D95/tdd-log/T95.46-B5.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "4e630978377fc38ed46a53eb49ced5023eaf417b3e2b4fba8aef1a51065c7d73",
+          "path": "evidence/D95/tdd-log/T95.46-B9.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ab47bc811f23c17f4c6317a43b1bf19eff8f2b20af07649acc55f19159f8bebc",
+          "path": "evidence/D95/structural.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "c6809aaa4654574d246e71de343949c7b44aad6069565efe2c16d7fe3484c338",
+          "path": "evidence/D95/tdd-log/T95.46-B7.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "e3097bd05207ff2a77b5e56e5d5910ea07c8a667ee97dc2c7cb695026cd6f9f6",
+          "path": "evidence/D95/new-words.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 28343
+  }
+}
