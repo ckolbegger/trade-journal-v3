@@ -4,10 +4,12 @@ import {
   confirmPlanFromDraft, initialPlanState, loadPlannedTrades, previewPlan,
   type PlanDraft, type PlanState,
 } from './plan-controller'
-import { openDb, repo } from '../persistence/db'
+import { openDb, repo, type Db } from '../persistence/db'
 import { queryClosedTrades, queryOpenTrades, type StoredClosedTrade, type StoredOpenTrade } from '../domain/open-views'
 import { recordOpeningPositionChange } from './position-controller'
 import { recordClosePositionChange } from './close-controller'
+import { saveCloseReview } from './close-review-controller'
+import { buildTradeNarrative, type NarrativeItem } from '../domain/journal-narrative'
 import { formatIssues } from './issue-copy'
 import { requestDurability } from '../domain/workspace'
 import { evaluateOpenTrade, saveManualMark } from './market-controller'
@@ -65,6 +67,17 @@ const emptyCloseForm = (): CloseForm => ({
   decisionConfidence: '', note: '', declineReason: '',
 })
 
+type CloseReviewFormState = {
+  disposition: 'Complete' | 'Defer' | 'Decline'
+  takeAgain: string
+  worked: string
+  lesson: string
+  reason: string
+}
+const emptyCloseReviewForm = (): CloseReviewFormState => ({
+  disposition: 'Complete', takeAgain: '', worked: '', lesson: '', reason: '',
+})
+
 function closeDispositionOf(form: CloseForm): ReflectionDisposition {
   if (form.reflection === 'Complete') {
     return {
@@ -79,6 +92,23 @@ function closeDispositionOf(form: CloseForm): ReflectionDisposition {
   }
   if (form.reflection === 'Decline') return { kind: 'Decline', reason: form.declineReason || undefined }
   return { kind: 'Defer' }
+}
+
+async function loadCloseReviewState(
+  trade: { id: string; executions: { id: string }[] },
+  db: Db,
+) {
+  const rows = await repo.all<Record<string, unknown> & { id: string; obligationKey?: string; kind?: string; status?: string }>(db, 'journal')
+  const own = rows.filter(r => r.obligationKey === `CloseReview:${trade.id}`)
+  // A settled Debt and its settlement Entry share the key; the effective
+  // outcome wins over the historical obligation row.
+  const effective = own.find(r => r.kind === 'Entry')
+    ?? own.find(r => r.kind === 'JournalDecline')
+    ?? own.find(r => r.kind === 'Debt' && r.status !== 'Settled')
+  return {
+    status: effective?.kind === 'Entry' ? 'Saved' : effective?.kind === 'JournalDecline' ? 'Declined' : effective ? 'Outstanding Debt' : '',
+    narrative: buildTradeNarrative(rows, trade.id, trade.executions.map(e => e.id)),
+  }
 }
 
 const monogram = (label: string) => label.slice(0, 2).toUpperCase()
@@ -129,6 +159,12 @@ export function App() {
   const [closeForm, setCloseForm] = useState<CloseForm>(emptyCloseForm())
   const [closeError, setCloseError] = useState('')
   const [closeReasons, setCloseReasons] = useState<string[]>([])
+  const [closeReviewOpen, setCloseReviewOpen] = useState<string | null>(null)
+  const [closeReviewForm, setCloseReviewForm] = useState<CloseReviewFormState>(emptyCloseReviewForm())
+  const [closeReviewError, setCloseReviewError] = useState('')
+  const [closeReviewStatus, setCloseReviewStatus] = useState('')
+  const [narrative, setNarrative] = useState<NarrativeItem[]>([])
+  const [reviewDebtAnswers, setReviewDebtAnswers] = useState<Record<string, string>>({})
   const [positionForm, setPositionForm] = useState<PositionForm>(emptyPositionForm())
   const [positionError, setPositionError] = useState('')
   const [durabilityMessage, setDurabilityMessage] = useState('')
@@ -206,13 +242,23 @@ export function App() {
     setClosingId(null)
     setCloseForm(emptyCloseForm())
     setCloseError('')
+    setCloseReviewOpen(null)
+    setCloseReviewForm(emptyCloseReviewForm())
     setScreen('trades')
     // The detail can still be mounted from a previous visit; re-derive its
     // evaluation so Marks recorded in Review are not shown as stale.
+    const db = await openDb()
     if (selectedOpen) {
-      setSelectedEvaluation(await evaluateOpenTrade(selectedOpen, await openDb(), VIEW_MOMENT))
+      setSelectedEvaluation(await evaluateOpenTrade(selectedOpen, db, VIEW_MOMENT))
     }
-  }, [refreshTrades, selectedOpen])
+    // A deferred Close Review can be answered in Review while this detail is
+    // still mounted; re-derive its status and narrative on the way back.
+    if (selectedClosed) {
+      const state = await loadCloseReviewState(selectedClosed, db)
+      setCloseReviewStatus(state.status)
+      setNarrative(state.narrative)
+    }
+  }, [refreshTrades, selectedOpen, selectedClosed])
 
   const showOpen = useCallback(async (trade: StoredOpenTrade) => {
     setPlan(p => ({ ...p, screen: 'list', selected: null }))
@@ -256,6 +302,8 @@ export function App() {
     setClosingId(null)
     setCloseForm(emptyCloseForm())
     setCloseError('')
+    setCloseReviewOpen(null)
+    setCloseReviewForm(emptyCloseReviewForm())
     setScreen('review')
     const next = await openReview(VIEW_MOMENT)
     setReview(next)
@@ -321,12 +369,16 @@ export function App() {
     setReview(await openReview(VIEW_MOMENT))
   }, [review, actionForms, state.readiness])
 
-  const onResolveDebt = useCallback(async (debtId: string, text: string) => {
-    const result = await resolveReviewDebt({ debtId, form: { text }, readiness: state.readiness })
+  const onResolveDebt = useCallback(async (debtId: string, text: string, answers?: { takeAgain: string }) => {
+    const result = await resolveReviewDebt({
+      debtId, form: { text, ...(answers ? { answers } : {}) }, readiness: state.readiness,
+    })
     if (!result.ok) {
       setReviewError(result.error.kind === 'NeedsTradeWorkflow'
         ? 'This Debt must be resolved in its Trade Workflow.'
-        : 'The Debt could not be resolved.')
+        : result.error.kind === 'Validation'
+          ? 'Answer the Close Review against its original definition.'
+          : 'The Debt could not be resolved.')
       return
     }
     setReviewError('')
@@ -366,11 +418,17 @@ export function App() {
     await showOpen(result.value.trade)
   }, [positionForm, state.readiness, refreshTrades, showOpen])
 
-  const showClosed = useCallback((trade: StoredClosedTrade) => {
+  const showClosed = useCallback(async (trade: StoredClosedTrade) => {
     setPlan(p => ({ ...p, screen: 'list', selected: null }))
     setSelectedOpen(null)
     setClosingId(null)
     setSelectedClosed(trade)
+    setCloseReviewOpen(null)
+    setCloseReviewForm(emptyCloseReviewForm())
+    setCloseReviewError('')
+    const state = await loadCloseReviewState(trade, await openDb())
+    setCloseReviewStatus(state.status)
+    setNarrative(state.narrative)
   }, [])
 
   const onRecordClose = useCallback(async (trade: StoredOpenTrade) => {
@@ -378,7 +436,7 @@ export function App() {
       tradeId: trade.id,
       expectedRevision: trade.revision,
       positionChangeId: `close-${trade.id}`,
-      economicTime: '2026-11-25T20:00:00Z',
+      economicTime: closeForm.executions[0]?.economicTime || '2026-11-25T20:00:00Z',
       executions: closeForm.executions.map((e, index) => ({
         id: `close-exec-${trade.id}-${index + 1}`,
         instrument: e.instrument, quantity: e.quantity, price: e.price,
@@ -398,9 +456,50 @@ export function App() {
     setClosingId(null)
     setCloseForm(emptyCloseForm())
     setSelectedOpen(null)
+    // A newly closed Trade auto-opens its detail; clear the previous Trade's
+    // Close Review status and narrative rather than rendering them as stale.
+    setCloseReviewOpen(null)
+    setCloseReviewForm(emptyCloseReviewForm())
+    setCloseReviewError('')
+    setCloseReviewStatus('')
+    setNarrative([])
     setSelectedClosed(result.value.trade)
     await refreshTrades()
   }, [closeForm, state.readiness, refreshTrades])
+
+  const onSaveCloseReview = useCallback(async (trade: StoredClosedTrade) => {
+    const form = closeReviewForm
+    const disposition = form.disposition === 'Complete'
+      ? {
+          kind: 'Complete' as const,
+          form: {
+            takeAgain: form.takeAgain,
+            ...(form.worked ? { workedAndDidNot: form.worked } : {}),
+            ...(form.lesson ? { keyLesson: form.lesson } : {}),
+          },
+        }
+      : form.disposition === 'Decline'
+        ? { kind: 'Decline' as const, reason: form.reason || undefined }
+        : { kind: 'Defer' as const }
+    const result = await saveCloseReview({
+      tradeId: trade.id, definitionRevision: 'D1', economicTime: trade.economicTime,
+      disposition, readiness: state.readiness,
+    })
+    if (!result.ok) {
+      setCloseReviewError(result.error.kind === 'Conflict'
+        ? 'This Close Review already has an outcome.'
+        : result.error.kind === 'Validation'
+          ? formatIssues(result.error.issues)
+          : 'Writes are disabled until Runtime Readiness is Writable.')
+      return
+    }
+    setCloseReviewError('')
+    setCloseReviewOpen(null)
+    setCloseReviewForm(emptyCloseReviewForm())
+    setCloseReviewStatus(result.value.outcome.kind === 'Entry' ? 'Saved'
+      : result.value.outcome.kind === 'JournalDecline' ? 'Declined' : 'Outstanding Debt')
+    await showClosed(trade)
+  }, [closeReviewForm, state.readiness, showClosed])
 
   const updateExecution = (index: number, field: keyof ExecutionDraft, value: string) => {
     setPositionForm(f => ({
@@ -966,6 +1065,78 @@ export function App() {
                           </li>
                         ))}</ul>
                       </section>
+
+                      <section aria-label="Close Review" className="card">
+                        <p className="section-label">Close Review</p>
+                        <h4>Close Review</h4>
+                        <p data-testid="close-review-status">{closeReviewStatus || 'Not started'}</p>
+                        {!closeReviewStatus && (
+                          <button type="button" onClick={() => {
+                            setCloseReviewOpen(selectedClosed.id)
+                            setCloseReviewForm(emptyCloseReviewForm())
+                            setCloseReviewError('')
+                          }}>Start Close Review</button>
+                        )}
+                        {closeReviewOpen === selectedClosed.id && (
+                          <form className="sheet" aria-label="Close Review" onSubmit={e => {
+                            e.preventDefault()
+                            void onSaveCloseReview(selectedClosed)
+                          }}>
+                            <fieldset>
+                              <legend>Outcome</legend>
+                              <label className="pill-option"><input type="radio" name="close-review-outcome" checked={closeReviewForm.disposition === 'Complete'} onChange={() => setCloseReviewForm(f => ({ ...f, disposition: 'Complete' }))} /> Complete review</label>
+                              <label className="pill-option"><input type="radio" name="close-review-outcome" checked={closeReviewForm.disposition === 'Defer'} onChange={() => setCloseReviewForm(f => ({ ...f, disposition: 'Defer' }))} /> Defer review</label>
+                              <label className="pill-option"><input type="radio" name="close-review-outcome" checked={closeReviewForm.disposition === 'Decline'} onChange={() => setCloseReviewForm(f => ({ ...f, disposition: 'Decline' }))} /> Decline review</label>
+                            </fieldset>
+                            {closeReviewForm.disposition === 'Complete' && (
+                              <div className="field-grid">
+                                <div>
+                                  <label htmlFor="cr-take-again">Would you take this Trade again?</label>
+                                  <select id="cr-take-again" value={closeReviewForm.takeAgain} onChange={e => setCloseReviewForm(f => ({ ...f, takeAgain: e.target.value }))}>
+                                    <option value="">Choose…</option>
+                                    <option>Yes, as planned</option><option>Yes, with changes</option>
+                                    <option>No</option><option>Unsure</option>
+                                  </select>
+                                </div>
+                                <div>
+                                  <label htmlFor="cr-worked">What worked and what did not?</label>
+                                  <input id="cr-worked" value={closeReviewForm.worked} onChange={e => setCloseReviewForm(f => ({ ...f, worked: e.target.value }))} />
+                                </div>
+                                <div>
+                                  <label htmlFor="cr-lesson">Key lesson</label>
+                                  <input id="cr-lesson" value={closeReviewForm.lesson} onChange={e => setCloseReviewForm(f => ({ ...f, lesson: e.target.value }))} />
+                                </div>
+                              </div>
+                            )}
+                            {closeReviewForm.disposition === 'Decline' && (
+                              <div>
+                                <label htmlFor="cr-reason">Decline reason</label>
+                                <input id="cr-reason" value={closeReviewForm.reason} onChange={e => setCloseReviewForm(f => ({ ...f, reason: e.target.value }))} />
+                              </div>
+                            )}
+                            <div className="sheet-actions">
+                              <button type="submit">Save Close Review</button>
+                              <button type="button" onClick={() => {
+                                setCloseReviewOpen(null)
+                                setCloseReviewForm(emptyCloseReviewForm())
+                                setCloseReviewError('')
+                              }}>Cancel</button>
+                            </div>
+                            {closeReviewError && <p role="alert">{closeReviewError}</p>}
+                          </form>
+                        )}
+                      </section>
+
+                      <section aria-label="Journal narrative" className="card" data-testid="journal-narrative">
+                        <p className="section-label">Journal narrative</p>
+                        <h4>Journal narrative</h4>
+                        <ul className="detail-list">{narrative.map(n => (
+                          <li key={n.id}>
+                            <span>{n.obligationKey} · {n.kind} · {n.source}</span>
+                            <span className="muted">{Object.entries(n.answers).map(([k, v]) => `${k}: ${v}`).join(', ')}</span>
+                          </li>
+                        ))}</ul>
+                      </section>
                     </section>
                   )}
                 </>
@@ -984,12 +1155,32 @@ export function App() {
                   <p data-testid="action-gate" role="status">
                     {review?.missingMarks.length ? 'MarkMissing — record an exact Mark before saving an Action.' : 'Evidence ready'}
                   </p>
-                  {review?.dueDebt.map(debt => (
-                    <div key={debt.id} className="card">
-                      <p>Due Debt: {debt.obligationKey}</p>
-                      <button type="button" onClick={() => { void onResolveDebt(debt.id, 'resolved in review') }}>Resolve debt</button>
-                    </div>
-                  ))}
+                  <div data-testid="review-due-debt">
+                    {review?.dueDebt.map(debt => (
+                      <div key={debt.id} className="card">
+                        <p>Due Debt: {debt.obligationKey}</p>
+                        {debt.obligationKey.startsWith('CloseReview:') ? (
+                          <>
+                            <label htmlFor={`debt-answer-${debt.id}`}>Review TakeAgain</label>
+                            <select
+                              id={`debt-answer-${debt.id}`}
+                              value={reviewDebtAnswers[debt.id] ?? ''}
+                              onChange={e => setReviewDebtAnswers(a => ({ ...a, [debt.id]: e.target.value }))}
+                            >
+                              <option value="">Choose…</option>
+                              <option>Yes, as planned</option><option>Yes, with changes</option>
+                              <option>No</option><option>Unsure</option>
+                            </select>
+                            <button type="button" onClick={() => {
+                              void onResolveDebt(debt.id, '', { takeAgain: reviewDebtAnswers[debt.id] ?? '' })
+                            }}>Answer Close Review debt</button>
+                          </>
+                        ) : (
+                          <button type="button" onClick={() => { void onResolveDebt(debt.id, 'resolved in review') }}>Resolve debt</button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                   {review?.items.map(item => {
                     const form = actionForms[item.trade.id] ?? newActionForm()
                     const draft = reviewDrafts[item.trade.id] ?? { price: '', reason: '' }

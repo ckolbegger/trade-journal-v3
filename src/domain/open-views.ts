@@ -2,6 +2,7 @@ import Decimal from 'decimal.js'
 import { repo, type Db } from '../persistence/db'
 import type { OpenTradeProjection } from './record-position-change'
 import type { ClosedTradeProjection } from './record-close'
+import { buildTradeNarrative } from './journal-narrative'
 
 // TradeViewsAndReporting + Trade Record reads for the Open presentation.
 export const LIFECYCLE_INDEX_ID = 'lifecycle-index'
@@ -84,7 +85,10 @@ export type StoredClosedTrade = ClosedTradeProjection & {
   agreement?: { lifecycle: boolean; lots: boolean; findings: string[] }
 }
 
-export function toClosedDetail(trade: StoredClosedTrade | undefined) {
+export function toClosedDetail(
+  trade: StoredClosedTrade | undefined,
+  narrative: ReturnType<typeof buildTradeNarrative> = [],
+) {
   if (!trade) return { status: 'NotFound' as const }
   const findings = trade.agreement?.findings ?? []
   return {
@@ -92,6 +96,7 @@ export function toClosedDetail(trade: StoredClosedTrade | undefined) {
     trade,
     history: toHistoryView(trade),
     integrity: { agreement: findings.length === 0, findings },
+    narrative,
   }
 }
 
@@ -108,5 +113,7 @@ export async function queryClosedTrades(db: Db): Promise<StoredClosedTrade[]> {
 export async function getClosedTradeDetail(db: Db, id: string) {
   const trade = await repo.get<StoredClosedTrade>(db, 'trade', id)
   if (!trade || trade.lifecycle !== 'Closed') return { status: 'NotFound' as const }
-  return toClosedDetail(trade)
+  const rows = await repo.all<Parameters<typeof buildTradeNarrative>[0][number]>(db, 'journal')
+  const narrative = buildTradeNarrative(rows, id, trade.executions.map(e => e.id))
+  return toClosedDetail(trade, narrative)
 }

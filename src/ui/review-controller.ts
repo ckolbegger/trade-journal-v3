@@ -16,7 +16,17 @@ import {
   deriveCompletion, rankTrades, type AttentionResult, type CompletionResult,
 } from '../domain/review-completion'
 import { orderTaskFamilies, type TaskFamily } from '../domain/review-order'
+import type { CloseReviewForm } from '../domain/close-review'
+import { answerDeferredCloseReview } from './close-review-controller'
 import type { ReadinessEvidence, Result, RuntimeNotWritable } from '../domain/types'
+
+// Due means Outstanding with a next-Review date at or before the cutoff. Older
+// Debts without a due date stay due for backward compatibility.
+export function isDebtDueAt(row: Record<string, unknown>, reviewDate: string): boolean {
+  if (row.kind !== 'Debt' || row.status === 'Settled') return false
+  const dueAt = typeof row.dueAt === 'string' ? row.dueAt : undefined
+  return !dueAt || dueAt <= reviewDate
+}
 
 export type ReviewItem = {
   trade: StoredOpenTrade
@@ -66,7 +76,7 @@ export async function openReview(now: Date, db?: Db): Promise<ReviewView> {
   const missingMarks: string[] = []
   const dueDebt: ReviewView['dueDebt'] = []
   for (const row of journal) {
-    if (row.kind === 'Debt' && row.status !== 'Settled') dueDebt.push({
+    if (isDebtDueAt(row, reviewDate)) dueDebt.push({
       id: row.id, obligationKey: String(row.obligationKey ?? ''), route: row.settlementRoute ? String(row.settlementRoute) : undefined,
     })
   }
@@ -208,14 +218,16 @@ export async function saveTradeAction(
 
 export type ResolveDebtRequest = {
   debtId: string
-  form: { text?: string }
+  form: { text?: string; answers?: CloseReviewForm }
+  definitionRevision?: string
+  authoredAt?: string
   readiness: ReadinessEvidence
 }
 
 export async function resolveReviewDebt(
   request: ResolveDebtRequest,
   db?: Db,
-): Promise<Result<{ entryId: string; debtId: string }, { kind: 'RuntimeNotWritable' | 'NeedsTradeWorkflow' | 'NotFound' | 'Validation' }>> {
+): Promise<Result<{ entryId: string; debtId: string }, { kind: 'RuntimeNotWritable' | 'NeedsTradeWorkflow' | 'NotFound' | 'Validation' | 'Conflict' }>> {
   const gate = guardWrite(request.readiness, 'DailyReview.save')
   if (!gate.ok) return { ok: false, error: { kind: 'RuntimeNotWritable' } }
   const handle = db ?? await openDb()
@@ -224,6 +236,18 @@ export async function resolveReviewDebt(
   if (String(debt.settlementRoute ?? '').includes('TradeWorkflows') ||
       String(debt.obligationKey ?? '').startsWith('ManagementRevision:')) {
     return { ok: false, error: { kind: 'NeedsTradeWorkflow' } }
+  }
+  if (String(debt.obligationKey ?? '').startsWith('CloseReview:')) {
+    if (!request.form.answers) return { ok: false, error: { kind: 'Validation' } }
+    const answered = await answerDeferredCloseReview({
+      obligationKey: String(debt.obligationKey),
+      form: request.form.answers,
+      definitionRevision: request.definitionRevision ?? String((debt.snapshot as { definitionRevision?: string } | undefined)?.definitionRevision ?? 'D1'),
+      authoredAt: request.authoredAt ?? new Date().toISOString(),
+      readiness: request.readiness,
+    }, handle)
+    if (!answered.ok) return { ok: false, error: { kind: answered.error.kind === 'Conflict' ? 'Conflict' : 'Validation' } }
+    return { ok: true, value: { entryId: answered.value.outcome.id, debtId: request.debtId } }
   }
   if (!request.form.text?.trim()) return { ok: false, error: { kind: 'Validation' } }
   const entryId = `entry-${request.debtId}`
