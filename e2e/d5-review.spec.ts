@@ -85,6 +85,20 @@ test('should atomically save one Action and one Stop episode from a breached Mar
   expect(stored.deviations).toHaveLength(1)
 })
 
+test('should refresh Trade Detail with a Mark recorded in Review and show it on reopen', async ({ page }) => {
+  await setupOpenTrade(page)
+  await page.getByLabel('Review mark price').fill('105')
+  await page.getByRole('button', { name: 'Record mark for review' }).click()
+  await expect(page.getByTestId('review-mark-status')).toContainText('Available')
+
+  await page.getByRole('button', { name: 'Trades' }).click()
+  await expect(page.getByTestId('mark-status')).toContainText('Available')
+  await expect(page.getByTestId('marked-pnl')).toHaveText('45.00')
+
+  await page.getByRole('button', { name: 'Review', exact: true }).click()
+  await expect(page.getByTestId('review-mark-status')).toContainText('Available')
+})
+
 test('should preserve unsaved Action state across resize and write nothing on leave', async ({ page }) => {
   await setupOpenTrade(page)
   await page.getByLabel('Review mark price').fill('100')

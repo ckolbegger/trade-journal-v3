@@ -158,7 +158,12 @@ export function App() {
   const onOpenTrades = useCallback(async () => {
     await refreshTrades()
     setScreen('trades')
-  }, [refreshTrades])
+    // The detail can still be mounted from a previous visit; re-derive its
+    // evaluation so Marks recorded in Review are not shown as stale.
+    if (selectedOpen) {
+      setSelectedEvaluation(await evaluateOpenTrade(selectedOpen, await openDb(), VIEW_MOMENT))
+    }
+  }, [refreshTrades, selectedOpen])
 
   const showOpen = useCallback(async (trade: StoredOpenTrade) => {
     setPlan(p => ({ ...p, screen: 'list', selected: null }))
@@ -201,7 +206,9 @@ export function App() {
     const next = await openReview(VIEW_MOMENT)
     setReview(next)
     setActionForms(Object.fromEntries(next.items.map(i => [i.trade.id, newActionForm()])))
-    setReviewDrafts(Object.fromEntries(next.items.map(i => [i.trade.id, { price: '', reason: '' }])))
+    setReviewDrafts(Object.fromEntries(next.items.map(i => [i.trade.id, {
+      price: i.frame.price ?? '', reason: '',
+    }])))
     setReviewMessage('')
     setReviewError('')
   }, [])
@@ -215,7 +222,8 @@ export function App() {
       instrument: item.trade.plan.underlying,
       date: review.reviewDate,
       expectedRevision: item.frame.revision ?? '0',
-      intention,
+      intention: intention === 'RecordManualMark' && item.frame.status === 'Available'
+        ? 'ManualOverride' : intention,
       price: intention === 'RecordManualMark' ? draft.price : undefined,
       reason: intention === 'AcknowledgeUnavailable' ? draft.reason : undefined,
       observedAt: `${review.reviewDate}T20:00:00Z`,
@@ -228,7 +236,10 @@ export function App() {
     }
     setReviewError('')
     setReviewMessage(intention === 'RecordManualMark' ? 'Mark recorded.' : 'Unavailability acknowledged.')
-    setReview(await openReview(VIEW_MOMENT))
+    const refreshed = await openReview(VIEW_MOMENT)
+    setReview(refreshed)
+    const savedPrice = refreshed.items.find(i => i.trade.id === tradeId)?.frame.price ?? ''
+    setReviewDrafts(d => ({ ...d, [tradeId]: { price: savedPrice, reason: '' } }))
   }, [review, reviewDrafts, state.readiness])
 
   const onSaveAction = useCallback(async (tradeId: string) => {
@@ -719,6 +730,9 @@ export function App() {
                         <p data-testid="review-mark-status">
                           {item.frame.status === 'AcknowledgedUnavailable' ? 'Acknowledged Unavailable' : item.frame.status}
                         </p>
+                        {item.frame.price && (
+                          <p className="muted">Saved Mark: {item.frame.price} on {item.frame.date}. Edit and record to override.</p>
+                        )}
                         <div className="field-grid">
                           <div>
                             <label htmlFor={`review-price-${item.trade.id}`}>Review mark price</label>
