@@ -1698,6 +1698,30 @@ describe('the sale in the card (T95.40)', () => {
     expect(vi.mocked(facade.DailyReview.open)).toHaveBeenCalledTimes(2);
   });
 
+  it('should show no open-position figures beside the receipt of a closing sale', async () => {
+    const facade = saleFacade();
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(closedExitResult({ reflection: { kind: 'Debt', debt: { debtId: 'debt-1' } }, closeReview: { kind: 'Debt', debt: { debtId: 'debt-2' } } }) as never);
+    const pnl = { dollars: value(-251n), planR: value(-126n, 100n), change: { kind: 'Value' as const, dollars: rational(-150n) } };
+    vi.mocked(facade.DailyReview.open).mockResolvedValue(review({ families: [review().families[0]!, { family: 'Trades', trades: WALK.map((t) => (t.tradeId === 't-b' ? { ...t, pnl } : t)) }] }));
+    const user = userEvent.setup();
+    renderReview(facade);
+    const card = await screen.findByRole('region', { name: 'ABC review' });
+    expect(within(card).getByText('Worst case')).toBeTruthy();
+    expect(headers()[0]!.textContent).toContain('today');
+    await user.click(within(card).getByRole('button', { name: 'Record the sale' }));
+    const row = await within(card).findByRole('group', { name: 'Execution 1' });
+    for (const [label, value] of [['Quantity', '100'], ['Price', '53.00'], ['Fee', '1.00']] as const) {
+      await user.clear(within(row).getByLabelText(label));
+      await user.type(within(row).getByLabelText(label), value);
+    }
+    await user.click(within(card).getByRole('button', { name: 'Save exit' }));
+
+    expect(await within(card).findByText('Recorded. XYZ is closed. Its Close Review is due in the next Review.')).toBeTruthy();
+    expect(within(card).queryByText('Worst case')).toBeNull();
+    expect(headers()[0]!.textContent).not.toContain('today');
+    expect(headers()[0]!.textContent).not.toContain('Past Stop');
+  });
+
   it('should say the Review could not be refreshed when the read after dismissing the receipt of a closing sale fails', async () => {
     const facade = saleFacade();
     vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(closedExitResult({ reflection: { kind: 'Debt', debt: { debtId: 'debt-1' } }, closeReview: { kind: 'Debt', debt: { debtId: 'debt-2' } } }) as never);

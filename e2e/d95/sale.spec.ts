@@ -79,6 +79,11 @@ test.describe('B95.8 The sale measured against the Plan Exit (AC-REV-008, AC-POS
       await atBothWidths(page, async (width) => {
         await expect(receipt, `the receipt at ${width}`).toBeVisible();
         await expect(page.getByText('Why you left the Plan is owed')).toHaveCount(0);
+        // T95.46-B2: the open-position figures are gone from the card beside the receipt.
+        if (where === 'Review') {
+          await expect(page.getByText('Worst case', { exact: true }), `no Now box at ${width}`).toHaveCount(0);
+          await expect(cardHeader(page, 'ABC'), `no open-position figures in the header at ${width}`).not.toContainText('today');
+        }
       });
       // One Close Review owed and no reflection Debt; the Close Review is never blocking.
       const workspace = workspaceOf(await probe(page))!;

@@ -43,6 +43,8 @@ export interface ActionFormProps {
   readonly now?: () => string;
   // A sale that closed the Trade was left on screen without its receipt being dismissed: the Review is read again (the Trade has left the walk).
   readonly onLeftSold?: () => void;
+  // A sale closed the Trade: the card's open-position figures no longer describe it while the receipt is shown.
+  readonly onClosedSale?: () => void;
   // The session whose figures the card shows when the Review Date has no price (the Now box's dated close); absent when it has one.
   readonly decidingOn?: string;
   // Offers the form to the Review while it is mounted; undefined when it goes (W128).
@@ -127,7 +129,7 @@ function returnedValues(form: ActionFormState): Values {
 }
 
 // The Action for one Trade on the Review Date. Hold is preselected as view state only; nothing is recorded until Save.
-export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyChange, pending = false, marksToGo = 0, planCall, replay, planExit, saleRequest = 0, now = () => new Date().toISOString(), onLeftSold, decidingOn, onHandle }: ActionFormProps) {
+export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyChange, pending = false, marksToGo = 0, planCall, replay, planExit, saleRequest = 0, now = () => new Date().toISOString(), onLeftSold, onClosedSale, decidingOn, onHandle }: ActionFormProps) {
   const { writable, report, timeZone } = useRuntime();
   // The sale of a saved Exit is recorded in place of the Action (W127); the form reports its own values under the Action's id.
   const [selling, setSelling] = useState(false);
@@ -322,7 +324,10 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
   // The sale does not wait for the Marks: a sale is recorded whatever the day's Marks (A313).
   if (selling) return <ExitForm facade={facade} tradeId={binding.tradeId} timeZone={timeZone ?? 'UTC'} now={now} onDirtyChange={setSaleDirty} onDone={() => setSelling(false)} backLabel="Back to the Review" card={{
         onRecorded: (result) => {
-          if (result.postCommit.trade.storedLifecycle === 'Closed') refreshOwed.current = true;
+          if (result.postCommit.trade.storedLifecycle === 'Closed') {
+            refreshOwed.current = true;
+            onClosedSale?.();
+          }
           else void readAfterSale();
         },
         onForm: onHandle ?? noForm,

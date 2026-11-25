@@ -104,6 +104,9 @@ export function ReviewCard({ facade, trade, line, expanded, detail, reveal, go, 
   const { timeZone } = useRuntime();
   // A Trade whose facts cannot be replayed has no reading, so its header draws no meter.
   const meter = trade.meter && meterProps(trade.meter, 'card', timeZone);
+  // A sale closed the Trade and its receipt is shown: the open-position figures (header P&L, the Now box) are left out until the Review is read again.
+  const [soldOut, setSoldOut] = useState(false);
+  const closedSale = useCallback(() => setSoldOut(true), []);
   const labels = describedLabelsOf(trade, timeZone ?? 'UTC');
   const reasonId = useId();
   const reasonIds = labels.flatMap(({ reason }, i) => (reason ? [`${reasonId}-${i}`] : []));
@@ -136,12 +139,12 @@ export function ReviewCard({ facade, trade, line, expanded, detail, reveal, go, 
               </>
             )}
             <span className="review-card-remains">{remainsText(trade.progress, line?.action, line?.closeReview ?? false, line?.needs ?? [])}</span>{' '}
-            {labels.map(({ label }) => (
+            {!soldOut && labels.map(({ label }) => (
               <Badge key={label} tone="neutral">
                 {label}
               </Badge>
             ))}
-            {trade.pnl?.dollars.kind === 'Value' && (
+            {!soldOut && trade.pnl?.dollars.kind === 'Value' && (
               <>
                 {' '}
                 <span className="review-card-pnl number">{pnlText(trade.pnl.dollars, trade.pnl.planR, timeZone)}</span>
@@ -186,6 +189,8 @@ export function ReviewCard({ facade, trade, line, expanded, detail, reveal, go, 
           meter={trade.meter}
           {...(now && { now })}
           {...(onLeftSold && { onLeftSold })}
+          onClosedSale={closedSale}
+          soldOut={soldOut}
         />
       )}
     </li>
@@ -212,6 +217,9 @@ interface CardBodyProps {
   readonly meter: MeterReading | undefined;
   readonly now?: () => string;
   readonly onLeftSold?: () => void;
+  readonly onClosedSale: () => void;
+  // A closing sale's receipt is shown: the Now box's open-position figures are left out.
+  readonly soldOut: boolean;
 }
 
 // What a panel's header says: a one-line summary and a status.
@@ -254,7 +262,7 @@ function panelHeaders(trade: DailyTradeReview, progress: CardProgress): Record<P
 }
 
 // The open card: its figures, then the three panels in the spec's work order (P36, A152), one open at a time.
-function CardBody({ facade, trade, progress, name, go, stillHolding, onStillHolding, onSaved, onReflectionResolved, onRefresh, pending, onEntryDirty, onForm, meter, now, onLeftSold }: CardBodyProps) {
+function CardBody({ facade, trade, progress, name, go, stillHolding, onStillHolding, onSaved, onReflectionResolved, onRefresh, pending, onEntryDirty, onForm, meter, now, onLeftSold, onClosedSale, soldOut }: CardBodyProps) {
   const uid = useId();
   const headers = panelHeaders(trade, progress);
   // The card's panels in work order: the Settlement panel is there only while a contract's settlement is due (decision 81).
@@ -402,7 +410,7 @@ function CardBody({ facade, trade, progress, name, go, stillHolding, onStillHold
       )}
       <div className="plan-now">
         <PlanBox plan={trade.plan} replay={trade.replay} />
-        <NowBox trade={trade} meter={meter} />
+        {!soldOut && <NowBox trade={trade} meter={meter} />}
       </div>
       {atEntryShown && (
         <div role="group" aria-labelledby={`${uid}-entry`}>
@@ -441,7 +449,7 @@ function CardBody({ facade, trade, progress, name, go, stillHolding, onStillHold
               </button>
             )}
             {name === 'Action' && trade.decisions && listShown && <LastDecisions decisions={trade.decisions} />}
-            {name === 'Action' && <ActionForm facade={facade} form={trade.form} binding={trade.saveBinding} onSaved={onSaved} onRefresh={onRefresh} onDirtyChange={report} pending={pending} marksToGo={marksToGo} planCall={trade.planCall} replay={trade.replay} planExit={trade.planExit} saleRequest={saleAsk} {...(now && { now })} {...(onLeftSold && { onLeftSold })} decidingOn={waitingOn} onHandle={offerForm} />}
+            {name === 'Action' && <ActionForm facade={facade} form={trade.form} binding={trade.saveBinding} onSaved={onSaved} onRefresh={onRefresh} onDirtyChange={report} pending={pending} marksToGo={marksToGo} planCall={trade.planCall} replay={trade.replay} planExit={trade.planExit} saleRequest={saleAsk} {...(now && { now })} {...(onLeftSold && { onLeftSold })} onClosedSale={onClosedSale} decidingOn={waitingOn} onHandle={offerForm} />}
           </div>
         </div>
       ))}
