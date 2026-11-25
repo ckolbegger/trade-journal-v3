@@ -2095,10 +2095,10 @@ describe('The card before its Marks (T95.20)', () => {
 describe('An Exit not carried out (T95.41)', () => {
   const exit = { reviewDate: '2026-10-09', action: 'Exit', reason: 'Take the money.' };
   const planExitOf = (quantity: string) => ({ positions: [{ instrument: symbol, quantity, conditions: [] }], heldPast: [] }) as DailyTradeReview['planExit'];
-  async function openExited(over: { readonly carry?: ReviewTradeItem['exitCarry']; readonly lastAction?: ReviewTradeItem['lastAction']; readonly toGo?: number; readonly form?: DailyTradeReview['form']; readonly onDirtyChange?: (dirty: boolean) => void; readonly writable?: boolean } = {}) {
+  async function openExited(over: { readonly carry?: ReviewTradeItem['exitCarry']; readonly lastAction?: ReviewTradeItem['lastAction']; readonly toGo?: number; readonly form?: DailyTradeReview['form']; readonly onDirtyChange?: (dirty: boolean) => void; readonly writable?: boolean; readonly item?: Partial<ReviewTradeItem> } = {}) {
     const user = userEvent.setup();
     const progress = cardProgress(0, 0, { needed: over.toGo ?? 0, resolved: 0 });
-    const exited = { ...item('t1', 'XYZ', { band: 'ExitNotCarriedOut', reasons: [{ code: 'ExitNotCarriedOut' }], lastAction: over.lastAction ?? exit, ...('carry' in over ? (over.carry && { exitCarry: over.carry }) : { exitCarry: { direction: 'Long' as const, held: Rational.of(2n) } }) }), progress };
+    const exited = { ...item('t1', 'XYZ', { band: 'ExitNotCarriedOut', reasons: [{ code: 'ExitNotCarriedOut' }], lastAction: over.lastAction ?? exit, ...('carry' in over ? (over.carry && { exitCarry: over.carry }) : { exitCarry: { direction: 'Long' as const, held: Rational.of(2n) } }), ...over.item }), progress };
     const review = ready([exited], [], { families: [{ family: 'Marks', earlierMarks: [], today: [], earlier: [] }, { family: 'Trades', trades: [exited] }] });
     const trade = tradeReview('t1', 'XYZ', { attention: exited, progress, planExit: planExitOf('2'), form: over.form ?? { kind: 'New', viewState: {} } });
     const facade = exitFormFacade();
@@ -2200,6 +2200,30 @@ describe('An Exit not carried out (T95.41)', () => {
     expect(card.textContent).not.toContain('You chose Exit and it is not recorded');
     expect(card.textContent).not.toContain('Needed');
     expect(screen.getByRole('button', { name: /^Review XYZ/ }).textContent).not.toContain('To do');
+  });
+
+  // Records a closing sale from the banner, as the case above does.
+  async function sellAll(user: ReturnType<typeof userEvent.setup>, facade: Awaited<ReturnType<typeof openExited>>['facade'], card: HTMLElement) {
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(closedExitResult({ reflection: { kind: 'Debt', debt: { debtId: 'debt-1' } }, closeReview: { kind: 'Debt', debt: { debtId: 'debt-2' } } }) as never);
+    await user.click(within(within(card).getByRole('group', { name: 'Exit not carried out' })).getByRole('button', { name: 'I sold: record it' }));
+    const row = await within(card).findByRole('group', { name: 'Execution 1' });
+    for (const [label, value] of [['Quantity', '2'], ['Price', '53.00'], ['Fee', '1.00']] as const) {
+      await user.clear(within(row).getByLabelText(label));
+      await user.type(within(row).getByLabelText(label), value);
+    }
+    await user.click(within(card).getByRole('button', { name: 'Save exit' }));
+    await within(card).findByText('Recorded. XYZ is closed. Its Close Review is due in the next Review.');
+  }
+  const losing = { kind: 'Value' as const, value: { side: 'Losing' as const, share: Rational.of(1n, 2n), atEntry: Rational.of(1000n), now: Rational.of(500n) } };
+
+  it('should give a sold-out card a header with no open-position reasons in its accessible description', async () => {
+    const { user, facade, card } = await openExited({ item: { basis: losing } });
+    const header = screen.getByRole('button', { name: /^Review XYZ/ });
+    const reasonOf = () => (header.getAttribute('aria-describedby') ?? '').split(' ').filter(Boolean).map((id) => document.getElementById(id)?.textContent).join(' ');
+    expect(reasonOf()).toContain('of the way from entry to the Stop');
+    await sellAll(user, facade, card);
+    expect(header.getAttribute('aria-describedby')).toBeNull();
+    expect(card.textContent).not.toContain('of the way from entry to the Stop');
   });
 
   it('should say how much was sold since, when part was sold', async () => {

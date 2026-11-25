@@ -107,7 +107,8 @@ export function ReviewCard({ facade, trade, line, expanded, detail, reveal, go, 
   const { timeZone } = useRuntime();
   // A Trade whose facts cannot be replayed has no reading, so its header draws no meter.
   const meter = trade.meter && meterProps(trade.meter, 'card', timeZone);
-  const labels = describedLabelsOf(trade, timeZone ?? 'UTC');
+  // A card whose closing sale shows its receipt names no open-position label or reason, to the eye or to a screen reader.
+  const labels = soldOut ? [] : describedLabelsOf(trade, timeZone ?? 'UTC');
   const reasonId = useId();
   const reasonIds = labels.flatMap(({ reason }, i) => (reason ? [`${reasonId}-${i}`] : []));
   useEffect(() => {
