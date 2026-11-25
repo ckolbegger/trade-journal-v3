@@ -1057,3 +1057,5 @@ T95.46 critic B1 (general-purpose, effort medium; report evidence/D95/critic-b1.
 T95.46-B1 `e7ead78f`: the Action radio's onChange clears the form's refusals (setIssues([])), so "Say why." and "Choose an Action." go when the choice changes (also clears a "could not be saved" refusal; taken as in scope). Two cases red then green; ActionForm 36 passed; e2e/d95 action and refusal 13 passed.
 
 ocr of `a2dbcc59^..e7ead78f`: provider failed again (0 of 6 files; evidence copy not kept, no content). Owed range now a2dbcc59^..e7ead78f.
+
+T95.46-B2 `db2de383`: ActionForm gains optional onClosedSale (fires when a sale's receipt returns the Trade Closed); ReviewCard sets soldOut, hiding the header's P&L, day change and label badges and the Now box beside the receipt; the Review is still read only on "Back to the Review"; no UI arithmetic, no new words. The flag is never reset (the Trade leaves the walk on the next read; if that read fails the figures stay hidden while the retry runs). Case red then green; src/ui/screens 869 passed; sale.spec.ts's Review closing-sale case gained two assertions at both widths; e2e/d95 sale and sale-form 8 passed.
