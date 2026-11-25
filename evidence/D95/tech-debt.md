@@ -46,3 +46,10 @@ Critic B1's minor observations (T95.46):
 - A closed Trade owing a reason is headed "Close Review · next Review" then "2 reflections due", never "Say why" (closed card is T95.58; check there).
 - After a part sale on a day with no Marks, the next card header says "Long 60 shares" while "At the Mon Oct 12 Marks" figures are for 100 shares (T95.20's session-before figures).
 - Not covered by any flow: a short Position's "Record the buy-back".
+
+- Critic B2 (T95.46), low: with an Exit saved with no reason, the day card's note reads "Tue Oct 13 you chose Exit on ABC: Still holding 60." (a bare colon).
+Critic B2's minor observations (T95.46):
+- A sale at the default 17:00 from Trade Detail leaves the Trade on that evening's Review as "Closed after this session's close · Closed" with "To do: Action", an Action form and 100-share figures; a part sale at 17:00 leaves "Long 100 shares" until the next day (Marks at the close; wording predates D9.5).
+- Exit and part sale on the same day: the next day's banner omits "Sold 40 since".
+- A closed Trade's card header keeps "Long 100 shares @ $30.00" beside "Done · Exit" after the receipt; its body still shows "Stop breached".
+- Not covered by a flow: T95.40-D1 items 2 and 3; "Save it" and "Back to JKL" on a half-typed sale; "Record the buy-back".
