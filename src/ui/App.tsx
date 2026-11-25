@@ -24,6 +24,9 @@ import { canonicalInstrument, type OptionContract } from '../domain/option-contr
 import { resolveStrategyShape } from '../domain/strategy-shapes'
 import { expirationPayoff, type PayoffLeg } from '../domain/expiration-payoff'
 import { recordOptionPositionChange, recordOptionClose } from './option-controller'
+import { loadCompleteTradeDetail, type LoadedDetail } from './detail-controller'
+import { CompleteDetailView } from './complete-detail-view'
+import { D8A_CAPABILITIES } from '../domain/capabilities-d8a'
 
 const SINGLE_LEG_OPTION_IDS = ['seed-long-call', 'seed-long-put', 'seed-cash-secured-put']
 type OptionPlanFields = {
@@ -238,6 +241,8 @@ export function App() {
   const [reviewDrafts, setReviewDrafts] = useState<Record<string, { price: string; reason: string }>>({})
   const [reviewMessage, setReviewMessage] = useState('')
   const [reviewError, setReviewError] = useState('')
+  const [completeDetail, setCompleteDetail] = useState<LoadedDetail | null>(null)
+  const [replayIndex, setReplayIndex] = useState(0)
 
   useEffect(() => {
     void establish().then(async s => {
@@ -287,6 +292,15 @@ export function App() {
     const db = await openDb()
     setOpenTrades(await queryOpenTrades(db))
     setClosedTrades(await queryClosedTrades(db))
+  }, [])
+
+  const onOpenCompleteDetail = useCallback(async (tradeId: string) => {
+    setCompleteDetail(await loadCompleteTradeDetail({
+      tradeId,
+      now: VIEW_MOMENT,
+      advisoryInstalled: D8A_CAPABILITIES.some(c => c === 'TradeAnalysis.advisoryExplanation(IV)'),
+    }))
+    setReplayIndex(0)
   }, [])
 
   const onConfirmPlan = useCallback(async () => {
@@ -804,6 +818,7 @@ export function App() {
                             </span>
                             <span className="badge badge-planned">Planned</span>
                           </button>
+                          <button type="button" className="detail-link" aria-label={`Complete detail for ${t.trade.plan.underlying}`} onClick={() => { void onOpenCompleteDetail(t.trade.id) }}>Complete detail</button>
                         </li>
                       ))}
                     </ul>
@@ -824,6 +839,7 @@ export function App() {
                             <span className="num positive">{t.realizedToDate}</span>
                             <span className="badge badge-open">Open</span>
                           </button>
+                          <button type="button" className="detail-link" aria-label={`Complete detail for ${t.plan.underlying}`} onClick={() => { void onOpenCompleteDetail(t.id) }}>Complete detail</button>
                         </li>
                       ))}
                     </ul>
@@ -844,10 +860,22 @@ export function App() {
                             <span className="num">{t.realizedToDate}</span>
                             <span className="badge badge-closed">Closed</span>
                           </button>
+                          <button type="button" className="detail-link" aria-label={`Complete detail for ${t.plan.underlying}`} onClick={() => { void onOpenCompleteDetail(t.id) }}>Complete detail</button>
                         </li>
                       ))}
                     </ul>
                   </section>
+
+                  {completeDetail && (
+                    <>
+                      <button type="button" className="detail-link" onClick={() => setCompleteDetail(null)}>Back to trades</button>
+                      <CompleteDetailView
+                        loaded={completeDetail}
+                        replayIndex={replayIndex}
+                        onSelectReplay={setReplayIndex}
+                      />
+                    </>
+                  )}
 
                   {plan.screen === 'detail' && plan.selected && !selectedOpen && (
                     <section aria-label="Trade detail">
