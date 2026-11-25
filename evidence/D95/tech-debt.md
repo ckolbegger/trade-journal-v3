@@ -54,3 +54,10 @@ Critic B2's minor observations (T95.46):
 - A closed Trade's card header keeps "Long 100 shares @ $30.00" beside "Done · Exit" after the receipt; its body still shows "Stop breached".
 - Not covered by a flow: T95.40-D1 items 2 and 3; "Save it" and "Back to JKL" on a half-typed sale; "Record the buy-back".
 - T95.46-B4 (agent note): a sale dated before the previous close (backdated) is classified Due, and its receipt still says "the next Review"; the receipt's due wording covers the after-close case only.
+
+- Critic B3 (T95.46), low: after a closing sale through the day card's banner with no Marks entered, the card still says "Figures wait for today's Marks. Below: at the Mon Oct 12 Marks." with nothing below but the Plan box and the receipt.
+- Critic B3, low: beside a closing sale's receipt, the day card still lists the closed Trade ("Next: ABC", "ABC · 30% to Stop · To do: Action", or "Marks needed · To do: Mark, Action" with its row left in the Marks grid) until "Back to the Review" (T95.46-B3 hid the banner and the card's state, not the day card's line).
+Critic B3's minor observations (T95.46):
+- "Day so far" rises when a Trade is sold at a loss before the close (only Trades open at the close count; matches specs/design/daily-review.md:19).
+- "Back to the Review" drops a half-typed sale without the refusal.
+- The Trade-switch refusal stays beside the form's own refusal after a failed "Save it".
