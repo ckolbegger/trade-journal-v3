@@ -1075,3 +1075,5 @@ Full run `t95.46-gate-full-3` (full tier, at 7e082c10, after T95.46-B3 and T95.4
 T95.46 critic B3 (the third and last; report evidence/D95/critic-b3.md): **PASS**, C95.5, C95.6, C95.7, C95.8 at 1280 and 375; B1's and B2's four defects confirmed fixed (B2's defect 1 on the card; the day card's line remains, low); also reached "Record the buy-back" (short put) and T95.40-D1 item 3. Two low defects and minor observations → tech-debt.md. No high or moderate defect.
 
 **T95.46 Part B gate: passed** — full run 3 passed, acceptance commands pass for every Part B row, critic B3 passed with lows only. Owed: the ocr review of `a2dbcc59^..1a774a68` (T95.28-F2-B2, B95.10, T95.28-F2-F1, T95.46-B1, B2, B3, B4), provider failing since about 18:30.
+
+ocr retry, 2026-11-25 03:21 EST, after the user added credits: all seven code commits (a2dbcc59, 00a4d031, ce52daf6, e7ead78f, db2de383, 439f2f34, 1a774a68) failed at once on the provider; `ocr session show` gives "The ChatGPT user has reached their Subscription Sharing usage limit … (subscription_sharing_usage_limit_exceeded)". Still owed.
