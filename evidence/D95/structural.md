@@ -1049,3 +1049,5 @@ T95.45 done: B1 to B5 and B95.10 (`00a4d031`); run `t95.28-f2-t95.45` browser 52
 
 ### T95.46 — Part B gate (light)
 Full run `t95.46-gate-full` (full tier, at 7d68892d): unit 3093, integration 364, browser 127, 79, 55 and 158 (4 skipped), checks 14 of 14; run complete, 21 min; no stage over 8 min. Passed.
+
+T95.46 acceptance commands (`.claude/scripts/acceptance-commands.sh plan/D09.5-daily-review-redesign.md`): 43 checked, 31 pass, 12 fail; every failure names a Part C file not yet written (I95.13 settle-later, I95.14 expiration-reason, I95.16 close-review, I95.17 not-writable; B95.11 expiration, B95.12 settle-later, B95.15 keyboard-day, B95.16 offline, B95.17 resize). Every Part B command passes.
