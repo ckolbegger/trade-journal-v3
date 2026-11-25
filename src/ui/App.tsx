@@ -4,9 +4,10 @@ import {
   confirmPlanFromDraft, initialPlanState, loadPlannedTrades, previewPlan,
   type PlanDraft, type PlanState,
 } from './plan-controller'
-import { openDb } from '../persistence/db'
-import { queryOpenTrades, type StoredOpenTrade } from '../domain/open-views'
+import { openDb, repo } from '../persistence/db'
+import { queryClosedTrades, queryOpenTrades, type StoredClosedTrade, type StoredOpenTrade } from '../domain/open-views'
 import { recordOpeningPositionChange } from './position-controller'
+import { recordClosePositionChange } from './close-controller'
 import { formatIssues } from './issue-copy'
 import { requestDurability } from '../domain/workspace'
 import { evaluateOpenTrade, saveManualMark } from './market-controller'
@@ -44,6 +45,41 @@ const emptyPositionForm = (): PositionForm => ({
   executions: [emptyExecution()], reflection: 'Defer', decisionMode: '', primaryEmotion: '',
   decisionConfidence: '', note: '', declineReason: '',
 })
+
+type CloseExecutionDraft = ExecutionDraft
+type CloseForm = {
+  executions: CloseExecutionDraft[]
+  closeReason: string
+  reflection: 'Defer' | 'Decline' | 'Complete'
+  decisionMode: string
+  primaryEmotion: string
+  decisionConfidence: string
+  note: string
+  declineReason: string
+}
+const emptyCloseForm = (): CloseForm => ({
+  executions: [{
+    instrument: '', quantity: '', price: '', fee: '', economicTime: '2026-11-25T20:00:00Z',
+  }],
+  closeReason: '', reflection: 'Defer', decisionMode: '', primaryEmotion: '',
+  decisionConfidence: '', note: '', declineReason: '',
+})
+
+function closeDispositionOf(form: CloseForm): ReflectionDisposition {
+  if (form.reflection === 'Complete') {
+    return {
+      kind: 'Complete',
+      form: {
+        decisionMode: form.decisionMode,
+        primaryEmotion: form.primaryEmotion,
+        decisionConfidence: Number(form.decisionConfidence),
+        ...(form.note ? { note: form.note } : {}),
+      },
+    }
+  }
+  if (form.reflection === 'Decline') return { kind: 'Decline', reason: form.declineReason || undefined }
+  return { kind: 'Defer' }
+}
 
 const monogram = (label: string) => label.slice(0, 2).toUpperCase()
 const completionLabel = (state: string) =>
@@ -85,8 +121,14 @@ export function App() {
   const [draft, setDraft] = useState<PlanDraft>(emptyDraft)
   const [plan, setPlan] = useState<PlanState>(initialPlanState)
   const [openTrades, setOpenTrades] = useState<StoredOpenTrade[]>([])
+  const [closedTrades, setClosedTrades] = useState<StoredClosedTrade[]>([])
   const [selectedOpen, setSelectedOpen] = useState<StoredOpenTrade | null>(null)
+  const [selectedClosed, setSelectedClosed] = useState<StoredClosedTrade | null>(null)
   const [executingId, setExecutingId] = useState<string | null>(null)
+  const [closingId, setClosingId] = useState<string | null>(null)
+  const [closeForm, setCloseForm] = useState<CloseForm>(emptyCloseForm())
+  const [closeError, setCloseError] = useState('')
+  const [closeReasons, setCloseReasons] = useState<string[]>([])
   const [positionForm, setPositionForm] = useState<PositionForm>(emptyPositionForm())
   const [positionError, setPositionError] = useState('')
   const [durabilityMessage, setDurabilityMessage] = useState('')
@@ -101,9 +143,11 @@ export function App() {
   const [reviewError, setReviewError] = useState('')
 
   useEffect(() => {
-    void establish().then(s => {
+    void establish().then(async s => {
       setState(s)
       setDraft(d => ({ ...d, accountId: s.accounts[0]?.id ?? '' }))
+      const catalog = await repo.get<{ closeReasons?: { label: string }[] }>(await openDb(), 'catalog', 'catalog-1')
+      setCloseReasons((catalog?.closeReasons ?? []).map(r => r.label))
     })
     const onResize = () => setState(s => ({ ...s, layout: window.innerWidth >= 900 ? 'wide' : 'narrow' }))
     window.addEventListener('resize', onResize)
@@ -143,7 +187,9 @@ export function App() {
   const refreshTrades = useCallback(async () => {
     const planned = await loadPlannedTrades()
     setPlan({ ...initialPlanState, confirmed: planned })
-    setOpenTrades(await queryOpenTrades(await openDb()))
+    const db = await openDb()
+    setOpenTrades(await queryOpenTrades(db))
+    setClosedTrades(await queryClosedTrades(db))
   }, [])
 
   const onConfirmPlan = useCallback(async () => {
@@ -157,6 +203,9 @@ export function App() {
 
   const onOpenTrades = useCallback(async () => {
     await refreshTrades()
+    setClosingId(null)
+    setCloseForm(emptyCloseForm())
+    setCloseError('')
     setScreen('trades')
     // The detail can still be mounted from a previous visit; re-derive its
     // evaluation so Marks recorded in Review are not shown as stale.
@@ -167,6 +216,8 @@ export function App() {
 
   const showOpen = useCallback(async (trade: StoredOpenTrade) => {
     setPlan(p => ({ ...p, screen: 'list', selected: null }))
+    setSelectedClosed(null)
+    setClosingId(null)
     setSelectedOpen(trade)
     // Clear stale form state before the async load so a value typed while the
     // evaluation resolves is not wiped afterwards.
@@ -202,6 +253,9 @@ export function App() {
   }, [selectedOpen, selectedEvaluation, markDraft, state.readiness])
 
   const onOpenReview = useCallback(async () => {
+    setClosingId(null)
+    setCloseForm(emptyCloseForm())
+    setCloseError('')
     setScreen('review')
     const next = await openReview(VIEW_MOMENT)
     setReview(next)
@@ -311,6 +365,42 @@ export function App() {
     await refreshTrades()
     await showOpen(result.value.trade)
   }, [positionForm, state.readiness, refreshTrades, showOpen])
+
+  const showClosed = useCallback((trade: StoredClosedTrade) => {
+    setPlan(p => ({ ...p, screen: 'list', selected: null }))
+    setSelectedOpen(null)
+    setClosingId(null)
+    setSelectedClosed(trade)
+  }, [])
+
+  const onRecordClose = useCallback(async (trade: StoredOpenTrade) => {
+    const result = await recordClosePositionChange({
+      tradeId: trade.id,
+      expectedRevision: trade.revision,
+      positionChangeId: `close-${trade.id}`,
+      economicTime: '2026-11-25T20:00:00Z',
+      executions: closeForm.executions.map((e, index) => ({
+        id: `close-exec-${trade.id}-${index + 1}`,
+        instrument: e.instrument, quantity: e.quantity, price: e.price,
+        fee: e.fee, economicTime: e.economicTime,
+      })),
+      closeReason: closeForm.closeReason,
+      reflection: { definitionRevision: 'D1', disposition: closeDispositionOf(closeForm) },
+      readiness: state.readiness,
+    })
+    if (!result.ok) {
+      setCloseError(result.error.kind === 'Validation'
+        ? formatIssues(result.error.issues)
+        : 'Writes are disabled until Runtime Readiness is Writable.')
+      return
+    }
+    setCloseError('')
+    setClosingId(null)
+    setCloseForm(emptyCloseForm())
+    setSelectedOpen(null)
+    setSelectedClosed(result.value.trade)
+    await refreshTrades()
+  }, [closeForm, state.readiness, refreshTrades])
 
   const updateExecution = (index: number, field: keyof ExecutionDraft, value: string) => {
     setPositionForm(f => ({
@@ -457,6 +547,26 @@ export function App() {
                             </span>
                             <span className="num positive">{t.realizedToDate}</span>
                             <span className="badge badge-open">Open</span>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+
+                  <section aria-label="Closed trades" className="card">
+                    <p className="section-label">Closed trades</p>
+                    <h2>Closed trades</h2>
+                    <ul>
+                      {closedTrades.map(t => (
+                        <li key={t.id}>
+                          <button type="button" className="trade-row" onClick={() => showClosed(t)}>
+                            <span className="monogram" aria-hidden="true">{monogram(t.plan.underlying)}</span>
+                            <span className="row-main">
+                              <span className="row-title">{t.plan.underlying}</span>
+                              <span className="row-sub">Long Stock · {t.lotMatches.length} lot matches</span>
+                            </span>
+                            <span className="num">{t.realizedToDate}</span>
+                            <span className="badge badge-closed">Closed</span>
                           </button>
                         </li>
                       ))}
@@ -635,6 +745,122 @@ export function App() {
                         ))}</ul>
                       </section>
 
+                      <button type="button" onClick={() => {
+                        setClosingId(selectedOpen.id)
+                        setCloseForm(emptyCloseForm())
+                        setCloseError('')
+                      }}>Close position</button>
+                      {closingId === selectedOpen.id && (
+                        <div className="sheet-backdrop" onClick={e => {
+                          if (e.target === e.currentTarget) {
+                            setClosingId(null)
+                            setCloseForm(emptyCloseForm())
+                            setCloseError('')
+                          }
+                        }}>
+                          <form className="sheet" aria-label="Close position" onSubmit={e => {
+                            e.preventDefault()
+                            void onRecordClose(selectedOpen)
+                          }}>
+                            <div className="sheet-header">
+                              <div>
+                                <p className="section-label">Terminal Long Stock close</p>
+                                <h3>Close {selectedOpen.plan.underlying}</h3>
+                              </div>
+                            </div>
+                            {closeForm.executions.map((e, index) => (
+                              <fieldset key={index}>
+                                <legend>Close {index + 1}</legend>
+                                <div className="field-grid">
+                                  <div>
+                                    <label htmlFor={`close-instrument-${index}`}>Close {index + 1} instrument</label>
+                                    <input id={`close-instrument-${index}`} value={e.instrument} onChange={ev => setCloseForm(f => ({
+                                      ...f, executions: f.executions.map((x, i) => i === index ? { ...x, instrument: ev.target.value } : x),
+                                    }))} />
+                                  </div>
+                                  <div>
+                                    <label htmlFor={`close-quantity-${index}`}>Close {index + 1} quantity</label>
+                                    <input id={`close-quantity-${index}`} value={e.quantity} onChange={ev => setCloseForm(f => ({
+                                      ...f, executions: f.executions.map((x, i) => i === index ? { ...x, quantity: ev.target.value } : x),
+                                    }))} />
+                                  </div>
+                                  <div>
+                                    <label htmlFor={`close-price-${index}`}>Close {index + 1} price</label>
+                                    <input id={`close-price-${index}`} value={e.price} onChange={ev => setCloseForm(f => ({
+                                      ...f, executions: f.executions.map((x, i) => i === index ? { ...x, price: ev.target.value } : x),
+                                    }))} />
+                                  </div>
+                                  <div>
+                                    <label htmlFor={`close-fee-${index}`}>Close {index + 1} fee</label>
+                                    <input id={`close-fee-${index}`} value={e.fee} onChange={ev => setCloseForm(f => ({
+                                      ...f, executions: f.executions.map((x, i) => i === index ? { ...x, fee: ev.target.value } : x),
+                                    }))} />
+                                  </div>
+                                  <div>
+                                    <label htmlFor={`close-time-${index}`}>Close {index + 1} economic time</label>
+                                    <input id={`close-time-${index}`} value={e.economicTime} onChange={ev => setCloseForm(f => ({
+                                      ...f, executions: f.executions.map((x, i) => i === index ? { ...x, economicTime: ev.target.value } : x),
+                                    }))} />
+                                  </div>
+                                </div>
+                              </fieldset>
+                            ))}
+                            <button type="button" onClick={() => setCloseForm(f => ({
+                              ...f,
+                              executions: [...f.executions, { instrument: f.executions[0]?.instrument ?? '', quantity: '', price: '', fee: '', economicTime: '2026-11-25T20:00:00Z' }],
+                            }))}>Add another closing execution</button>
+                            <div>
+                              <label htmlFor="close-reason">Close reason</label>
+                              <select id="close-reason" value={closeForm.closeReason} onChange={ev => setCloseForm(f => ({ ...f, closeReason: ev.target.value }))}>
+                                <option value="">Choose…</option>
+                                {closeReasons.map(reason => <option key={reason}>{reason}</option>)}
+                              </select>
+                            </div>
+                            <fieldset>
+                              <legend>Position Change Reflection</legend>
+                              <label className="pill-option"><input type="radio" name="close-reflection" checked={closeForm.reflection === 'Defer'} onChange={() => setCloseForm(f => ({ ...f, reflection: 'Defer' }))} /> Defer reflection</label>
+                              <label className="pill-option"><input type="radio" name="close-reflection" checked={closeForm.reflection === 'Decline'} onChange={() => setCloseForm(f => ({ ...f, reflection: 'Decline' }))} /> Decline reflection</label>
+                              <label className="pill-option"><input type="radio" name="close-reflection" checked={closeForm.reflection === 'Complete'} onChange={() => setCloseForm(f => ({ ...f, reflection: 'Complete' }))} /> Complete reflection</label>
+                              {closeForm.reflection === 'Complete' && (
+                                <div className="field-grid">
+                                  <div>
+                                    <label htmlFor="close-decision-mode">Decision mode</label>
+                                    <select id="close-decision-mode" value={closeForm.decisionMode} onChange={ev => setCloseForm(f => ({ ...f, decisionMode: ev.target.value }))}>
+                                      <option value="">Choose…</option><option>As Planned</option><option>Deliberate Adjustment</option><option>Reactive</option><option>Externally Imposed</option>
+                                    </select>
+                                  </div>
+                                  <div>
+                                    <label htmlFor="close-primary-emotion">Primary emotion</label>
+                                    <select id="close-primary-emotion" value={closeForm.primaryEmotion} onChange={ev => setCloseForm(f => ({ ...f, primaryEmotion: ev.target.value }))}>
+                                      <option value="">Choose…</option><option>Calm</option><option>Eager</option><option>Anxious</option><option>FOMO</option><option>Revenge</option><option>Relieved</option><option>Frustrated</option><option>Other</option>
+                                    </select>
+                                  </div>
+                                  <div>
+                                    <label htmlFor="close-decision-confidence">Decision confidence</label>
+                                    <input id="close-decision-confidence" value={closeForm.decisionConfidence} onChange={ev => setCloseForm(f => ({ ...f, decisionConfidence: ev.target.value }))} />
+                                  </div>
+                                </div>
+                              )}
+                              {closeForm.reflection === 'Decline' && (
+                                <div>
+                                  <label htmlFor="close-decline-reason">Decline reason</label>
+                                  <input id="close-decline-reason" value={closeForm.declineReason} onChange={ev => setCloseForm(f => ({ ...f, declineReason: ev.target.value }))} />
+                                </div>
+                              )}
+                            </fieldset>
+                            <div className="sheet-actions">
+                              <button type="submit">Record close</button>
+                              <button type="button" onClick={() => {
+                                setClosingId(null)
+                                setCloseForm(emptyCloseForm())
+                                setCloseError('')
+                              }}>Cancel</button>
+                            </div>
+                            {closeError && <p role="alert">{closeError}</p>}
+                          </form>
+                        </div>
+                      )}
+
                       {selectedEvaluation && (
                         <>
                           <section aria-label="Marks" className="card">
@@ -690,6 +916,56 @@ export function App() {
                           </section>
                         </>
                       )}
+                    </section>
+                  )}
+
+                  {selectedClosed && !selectedOpen && (
+                    <section aria-label="Closed trade detail">
+                      <section className="card">
+                        <div className="sheet-header">
+                          <div>
+                            <p className="section-label">Long stock · closed</p>
+                            <h3>{selectedClosed.plan.underlying}</h3>
+                          </div>
+                          <span className="badge badge-closed" data-testid="trade-lifecycle">{selectedClosed.lifecycle}</span>
+                        </div>
+                        <div className="figure-grid">
+                          <div>
+                            <p className="section-label">Realized P&amp;L</p>
+                            <p className="figure-value num" data-testid="closed-realized-pnl">{selectedClosed.realizedToDate}</p>
+                          </div>
+                          <div>
+                            <p className="section-label">Close Reason</p>
+                            <p className="figure-value" data-testid="closed-reason">{selectedClosed.closeReason.label}</p>
+                          </div>
+                          <div>
+                            <p className="section-label">Closed via</p>
+                            <p className="figure-value" data-testid="closed-disposition">{selectedClosed.terminalDisposition.kind}</p>
+                          </div>
+                          <div>
+                            <p className="section-label">FIFO Lot Matches</p>
+                            <p className="figure-value num" data-testid="closed-lot-matches">{selectedClosed.lotMatches.length}</p>
+                          </div>
+                        </div>
+                      </section>
+                      <section aria-label="Lot Matches" className="card">
+                        <h4>FIFO Lot Matches</h4>
+                        <ul className="detail-list">{selectedClosed.lotMatches.map(m => (
+                          <li key={m.id}>
+                            <span>{m.quantity} shares · {m.matchingMethod}</span>
+                            <span className="num">opening fee {m.allocatedOpeningFee} · disposal fee {m.allocatedDisposalFee}</span>
+                          </li>
+                        ))}</ul>
+                      </section>
+                      <section aria-label="Executions" className="card">
+                        <h4>Executions</h4>
+                        <ul className="detail-list">{selectedClosed.executions.map(e => (
+                          <li key={e.id}>
+                            <span>{e.action} · {e.instrument} · {e.quantity} @ {e.price}</span>
+                            <span className="num">fee {e.fee}</span>
+                          </li>
+                        ))}</ul>
+                      </section>
                     </section>
                   )}
                 </>

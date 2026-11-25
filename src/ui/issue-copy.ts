@@ -23,6 +23,14 @@ const COPY: Record<string, string> = {
   ExactMarkExists: 'An exact Mark already exists for this date.',
   MissingCorrectionReason: 'A correction reason is required.',
   ManualSticky: 'The effective Manual Mark is sticky; a provider close cannot replace it.',
+  NotOpen: 'This Trade is not Open.',
+  CloseReasonMissing: 'Close Reason is required to close a Trade.',
+  CloseReasonUnknown: 'Choose a seeded Close Reason.',
+  CloseReasonInactive: 'That Close Reason is no longer available.',
+  CloseReasonNotApplicable: 'This closure has no trader agency, so it takes no Close Reason.',
+  IncoherentEconomicFacts: 'The closing quantity exceeds the remaining open exposure.',
+  NotFlat: 'The Trade is not flat; record the remaining disposal.',
+  NoDisposingFacts: 'Record at least one disposing Execution.',
 }
 
 export function formatIssues(issues: string[]): string {

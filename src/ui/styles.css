@@ -61,6 +61,7 @@ p { margin: 0.35rem 0; }
 }
 .badge-open { border-color: #a9d6bd; background: #eaf7ef; color: #14663f; }
 .badge-planned { border-color: #d8cdb0; background: #f7f1df; color: #6a5417; }
+.badge-closed { border-color: #b8c4d6; background: #edf2f8; color: #2f4a6b; }
 .steps { display: flex; gap: 0.4rem; flex-wrap: wrap; margin: 0.6rem 0; }
 .steps span {
   border: 1px solid #d9d2c3;

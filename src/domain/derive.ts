@@ -31,6 +31,7 @@ export type TradeDerivationInput = {
   }
   executions: ExecutionFact[]
   storedLots?: { executionId: string; quantity: string }[]
+  storedMatches?: { executionId: string; lotId: string; quantity: string }[]
 }
 
 export type OpenLot = {
@@ -44,12 +45,24 @@ export type OpenLot = {
   recordedSequence: number
 }
 
+// A Lot Match is a link plus matched quantity and fee allocation only. Price,
+// basis and P&L are never copied onto it; they remain derivable from the facts.
+export type ClosingLotMatch = {
+  id: string
+  executionId: string
+  lotId: string
+  matchingMethod: 'FIFO'
+  quantity: string
+  allocatedOpeningFee: string
+  allocatedDisposalFee: string
+}
+
 export type DerivedTradeState = {
   tradeId: string
   effectiveFacts: ExecutionFact[]
   positions: { instrument: string; netQuantity: string; lotCount: number }[]
   lots: OpenLot[]
-  closingLotMatches: []
+  closingLotMatches: ClosingLotMatch[]
   realizedToDate: string
   expectedLifecycle: 'Planned' | 'Open' | 'Closed'
   agreement: { lifecycle: boolean; lots: boolean; findings: string[] }
@@ -79,28 +92,86 @@ export function derive(input: TradeDerivationInput): Result<DerivedTradeState, {
     (a, b) => a.economicTime.localeCompare(b.economicTime) || a.recordedSequence - b.recordedSequence,
   )
 
-  const lots: OpenLot[] = []
+  type TrackedLot = {
+    lot: OpenLot
+    originalFee: Decimal
+    originalQuantity: Decimal
+    remainingQuantity: Decimal
+    allocatedOpeningTotal: Decimal
+    unitCost: Decimal
+    touched: boolean
+  }
+  const tracked: TrackedLot[] = []
+  const matches: ClosingLotMatch[] = []
   const netByInstrument = new Map<string, Decimal>()
+  let realized = new Decimal(0)
+
   for (const e of effectiveFacts) {
     const q = new Decimal(e.quantity)
+    const price = new Decimal(e.price)
+    const fee = new Decimal(e.fee)
     const signed = e.action === 'Buy' ? q : q.negated()
     netByInstrument.set(e.instrument, (netByInstrument.get(e.instrument) ?? new Decimal(0)).plus(signed))
 
-    // Opening facts create Lots. Disposal matching belongs to D6, not D3.
     if (e.action === 'Buy') {
-      const basis = q.times(e.price).plus(e.fee)
-      lots.push({
+      const lot: OpenLot = {
         id: `lot-${e.id}`,
         executionId: e.id,
         instrument: e.instrument,
         quantity: q.toString(),
-        basis: fixed(basis),
-        allocatedOpeningFee: fixed(new Decimal(e.fee)),
+        basis: fixed(q.times(price).plus(fee)),
+        allocatedOpeningFee: fixed(fee),
         economicTime: e.economicTime,
         recordedSequence: e.recordedSequence,
+      }
+      tracked.push({
+        lot, originalFee: fee, originalQuantity: q, remainingQuantity: q,
+        allocatedOpeningTotal: new Decimal(0), unitCost: price, touched: false,
+      })
+      continue
+    }
+
+    // FIFO: consume the oldest still-open Lots first. Disposal fee is split
+    // across this Execution's Lot Matches in proportion to matched quantity.
+    let remaining = q
+    for (const t of tracked) {
+      if (remaining.lte(0)) break
+      if (t.remainingQuantity.lte(0)) continue
+      const take = Decimal.min(t.remainingQuantity, remaining)
+      // Each Lot's opening fee is proportional to its original quantity; the
+      // unconsumed portion stays with the Lot across any number of matches.
+      const allocatedOpening = t.originalFee.times(take).div(t.originalQuantity)
+      const allocatedDisposal = fee.times(take).div(q)
+      realized = realized.plus(price.minus(t.unitCost).times(take).minus(allocatedOpening).minus(allocatedDisposal))
+      t.remainingQuantity = t.remainingQuantity.minus(take)
+      t.allocatedOpeningTotal = t.allocatedOpeningTotal.plus(allocatedOpening)
+      t.touched = true
+      remaining = remaining.minus(take)
+      matches.push({
+        id: `match-${e.id}-${t.lot.id}`,
+        executionId: e.id,
+        lotId: t.lot.id,
+        matchingMethod: 'FIFO',
+        quantity: take.toString(),
+        allocatedOpeningFee: fixed(allocatedOpening),
+        allocatedDisposalFee: fixed(allocatedDisposal),
       })
     }
+    if (remaining.gt(0)) issues.push('IncoherentEconomicFacts')
   }
+  if (issues.length) return { ok: false, error: { issues: [...new Set(issues)] } }
+
+  const lots = tracked
+    .filter(t => t.remainingQuantity.gt(0))
+    .map(t => {
+      if (!t.touched) return t.lot
+      return {
+        ...t.lot,
+        quantity: t.remainingQuantity.toString(),
+        basis: fixed(t.unitCost.times(t.remainingQuantity).plus(t.originalFee.minus(t.allocatedOpeningTotal))),
+        allocatedOpeningFee: fixed(t.originalFee.minus(t.allocatedOpeningTotal)),
+      }
+    })
 
   const positions = [...netByInstrument.entries()].map(([instrument, net]) => ({
     instrument,
@@ -108,7 +179,12 @@ export function derive(input: TradeDerivationInput): Result<DerivedTradeState, {
     lotCount: lots.filter(l => l.instrument === instrument).length,
   }))
 
-  const expectedLifecycle = effectiveFacts.length === 0 ? 'Planned' as const : 'Open' as const
+  const hasDisposal = effectiveFacts.some(f => f.action === 'Sell')
+  const flat = [...netByInstrument.values()].every(net => net.eq(0))
+  const expectedLifecycle = effectiveFacts.length === 0
+    ? 'Planned' as const
+    : hasDisposal && flat ? 'Closed' as const : 'Open' as const
+
   const findings: string[] = []
   if (input.storedLifecycle !== expectedLifecycle) findings.push('StoredLifecycleDisagreement')
   const lotsAgree = input.storedLots === undefined || (
@@ -116,6 +192,14 @@ export function derive(input: TradeDerivationInput): Result<DerivedTradeState, {
     input.storedLots.every((s, i) => s.executionId === lots[i].executionId && new Decimal(s.quantity).eq(lots[i].quantity))
   )
   if (!lotsAgree) findings.push('StoredLotDisagreement')
+  if (input.storedMatches !== undefined) {
+    const matchesAgree = input.storedMatches.length === matches.length &&
+      input.storedMatches.every((s, i) =>
+        s.executionId === matches[i].executionId &&
+        s.lotId === matches[i].lotId &&
+        new Decimal(s.quantity).eq(matches[i].quantity))
+    if (!matchesAgree) findings.push('StoredLotMatchDisagreement')
+  }
 
   return {
     ok: true,
@@ -124,8 +208,8 @@ export function derive(input: TradeDerivationInput): Result<DerivedTradeState, {
       effectiveFacts,
       positions,
       lots,
-      closingLotMatches: [],
-      realizedToDate: '0.00',
+      closingLotMatches: matches,
+      realizedToDate: fixed(realized),
       expectedLifecycle,
       agreement: { lifecycle: !findings.includes('StoredLifecycleDisagreement'), lots: lotsAgree, findings },
     },

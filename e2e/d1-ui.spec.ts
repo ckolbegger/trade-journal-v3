@@ -21,7 +21,7 @@ test('navigation declares only installed capabilities', async ({ page }) => {
     expect(nav).not.toContain(oldLabel)
   }
   // D3-D5 install Execution, Mark and Review; only later capabilities stay hidden.
-  for (const forbidden of ['Provider', 'Report', 'Backup', 'Restore', 'Close position']) {
+  for (const forbidden of ['Provider', 'Report', 'Backup', 'Restore']) {
     expect(nav).not.toContain(forbidden)
   }
 })

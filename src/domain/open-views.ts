@@ -1,6 +1,7 @@
 import Decimal from 'decimal.js'
 import { repo, type Db } from '../persistence/db'
 import type { OpenTradeProjection } from './record-position-change'
+import type { ClosedTradeProjection } from './record-close'
 
 // TradeViewsAndReporting + Trade Record reads for the Open presentation.
 export const LIFECYCLE_INDEX_ID = 'lifecycle-index'
@@ -77,4 +78,35 @@ export async function getOpenTradeDetail(db: Db, id: string) {
   const trade = await repo.get<StoredOpenTrade>(db, 'trade', id)
   if (!trade || trade.lifecycle !== 'Open') return { status: 'NotFound' as const }
   return toDetail(trade)
+}
+
+export type StoredClosedTrade = ClosedTradeProjection & {
+  agreement?: { lifecycle: boolean; lots: boolean; findings: string[] }
+}
+
+export function toClosedDetail(trade: StoredClosedTrade | undefined) {
+  if (!trade) return { status: 'NotFound' as const }
+  const findings = trade.agreement?.findings ?? []
+  return {
+    status: 'Ready' as const,
+    trade,
+    history: toHistoryView(trade),
+    integrity: { agreement: findings.length === 0, findings },
+  }
+}
+
+export async function queryClosedTrades(db: Db): Promise<StoredClosedTrade[]> {
+  const index = await readLifecycleIndex(db)
+  const rows: StoredClosedTrade[] = []
+  for (const id of index.members.Closed) {
+    const trade = await repo.get<StoredClosedTrade>(db, 'trade', id)
+    if (trade && trade.lifecycle === 'Closed') rows.push(trade)
+  }
+  return rows
+}
+
+export async function getClosedTradeDetail(db: Db, id: string) {
+  const trade = await repo.get<StoredClosedTrade>(db, 'trade', id)
+  if (!trade || trade.lifecycle !== 'Closed') return { status: 'NotFound' as const }
+  return toClosedDetail(trade)
 }

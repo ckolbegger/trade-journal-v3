@@ -55,8 +55,11 @@ test('should record a Manual Mark and show Values with an unchanged 1R', async (
   await expect(page.getByTestId('eval-one-r')).toHaveText('50.00')
   await expect(page.getByTestId('condition-stop')).toContainText('Unbreached')
   await expect(page.getByTestId('condition-target')).toContainText('Unreached')
+  // D6 installs Close position on the Open detail; only later capabilities stay forbidden.
   const body = await page.locator('main').innerText()
-  expect(body).not.toContain('Close position')
+  for (const forbidden of ['Provider', 'Report', 'Backup', 'Restore']) {
+    expect(body).not.toContain(forbidden)
+  }
 })
 
 test('should acknowledge unavailability without a price and keep the calculation Unavailable', async ({ page }) => {
