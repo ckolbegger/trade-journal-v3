@@ -1102,3 +1102,5 @@ Full run `t95.46-gate-full-4` (full tier, at d3c571b5, after T95.46-B5 to B9): u
 
 ## T95.47 — Trade Analysis: an expired contract's standing
 Commit `a518f759`: new `expirationStanding(input)` in src/domain/trade-analysis/expiration-standing.ts (input: contract, exposure, oneR, underlyingMark?; figures: underlyingPrice, strike, inTheMoney, amount (per share, never negative), worth (signed: a short contract's is negative), ifSettled and ifExpiredWorthless in dollars and R); `positionOf` and `intrinsic` exported from payoff.ts. Unavailable (MarkMissing) with no Underlying Mark. 7 cases: six red then green; "at its strike, not in the money" first-run pass, flagged, mutation (> 0 → >= 0) failed. CORV check: 1467 and 4.61R, matching W137. Notes for T95.52: whether a short contract's worth shows signed or as owed; an acknowledged-Unavailable Mark has no distinct reason here.
+
+T95.47 ocr (`a518f759`): **No findings** (evidence/D95/ocr/T95.47-a518f759.json).
