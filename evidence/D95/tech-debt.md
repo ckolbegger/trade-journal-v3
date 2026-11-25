@@ -53,3 +53,4 @@ Critic B2's minor observations (T95.46):
 - Exit and part sale on the same day: the next day's banner omits "Sold 40 since".
 - A closed Trade's card header keeps "Long 100 shares @ $30.00" beside "Done · Exit" after the receipt; its body still shows "Stop breached".
 - Not covered by a flow: T95.40-D1 items 2 and 3; "Save it" and "Back to JKL" on a half-typed sale; "Record the buy-back".
+- T95.46-B4 (agent note): a sale dated before the previous close (backdated) is classified Due, and its receipt still says "the next Review"; the receipt's due wording covers the after-close case only.
