@@ -162,7 +162,8 @@ const savedCard = (tradeId: string) => ({ tradeId, progress: cardProgress(0, 0, 
 async function openTrade(user: ReturnType<typeof userEvent.setup>, underlying: string) {
   const header = await screen.findByRole('button', { name: new RegExp(`^Review ${underlying}\\b`) });
   if (header.getAttribute('aria-expanded') !== 'true') await user.click(header);
-  return screen.findByRole('region', { name: `${underlying} review` });
+  // A Trade with a summary names its region with the summary after the Underlying.
+  return screen.findByRole('region', { name: new RegExp(`^${underlying}\\b.* review$`) });
 }
 
 describe('Trade in the walk', () => {
@@ -2224,6 +2225,16 @@ describe('An Exit not carried out (T95.41)', () => {
     await sellAll(user, facade, card);
     expect(header.getAttribute('aria-describedby')).toBeNull();
     expect(card.textContent).not.toContain('of the way from entry to the Stop');
+  });
+
+  it('should leave the position summary off the header of a card whose closing sale shows its receipt', async () => {
+    const summary = { kind: 'Stock' as const, direction: 'Long' as const, quantity: Rational.of(2n), price: Rational.of(5010n, 100n) };
+    const { user, facade, card } = await openExited({ item: { summary } });
+    const header = screen.getByRole('button', { name: /^Review XYZ/ });
+    expect(header.textContent).toContain('Long 2 shares');
+    await sellAll(user, facade, card);
+    expect(header.textContent).not.toContain('Long 2 shares');
+    expect(header.querySelector('.review-card-summary')).toBeNull();
   });
 
   it('should say how much was sold since, when part was sold', async () => {

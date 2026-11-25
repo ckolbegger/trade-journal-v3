@@ -134,7 +134,7 @@ export function ReviewCard({ facade, trade, line, expanded, detail, reveal, go, 
         <h3>
           <button type="button" ref={header} aria-expanded={expanded} aria-describedby={reasonIds.join(' ') || undefined} onClick={onToggle}>
             <span className="visually-hidden">Review</span> <span className="review-card-name">{trade.underlying}</span>{' '}
-            {trade.summary && (
+            {trade.summary && !soldOut && (
               <>
                 <span className="review-card-summary">{tradeSummary(trade.summary)}</span>{' '}
               </>
