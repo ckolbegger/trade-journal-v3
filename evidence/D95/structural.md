@@ -1097,3 +1097,5 @@ T95.46-B7 `26d98c55`: a soldOut card's header has no label reasons, so no reason
 ocr of `e0e2fdbb^..b5473f84` (T95.46-B5, B6, B7, B8, B9; evidence/D95/ocr/T95.46-B5-B9-e0e2fdbb..b5473f84.json): one style finding (nested ternary in ExitReceipt.tsx's `when` helper) → tech-debt.md; no correctness findings.
 
 ocr re-review of the four thinly reviewed files (AppShell.tsx, AppShell.test.tsx, Onboarding.test.tsx, upgrade.spec.ts) over `a2dbcc59^..1a774a68`, restricted with --exclude (evidence/D95/ocr/T95.46-owed-four-files-rereview.json): complete, **no findings**. Every owed ocr review is now done. Full run next to confirm the Part B gate after T95.46-B5 to B9.
+
+Full run `t95.46-gate-full-4` (full tier, at d3c571b5, after T95.46-B5 to B9): unit 3106, integration 364, browser 127, 79, 55 and 160 (4 skipped), checks 14 of 14; run complete. Passed. **T95.46 Part B gate stands; every ocr review is done.** Part C next.
