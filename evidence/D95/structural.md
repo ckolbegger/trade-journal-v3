@@ -1046,3 +1046,6 @@ T95.28-F2-F1 `ce52daf6` (test only): the Onboarding test's facade double left Wo
 T95.28-F2 done: run `t95.28-f2-t95.45` passed but for the one unit failure fixed by T95.28-F2-F1 (src/ui unit re-run passed); the T95.46 full run confirms. ocr of B2 owed (provider limit).
 
 T95.45 done: B1 to B5 and B95.10 (`00a4d031`); run `t95.28-f2-t95.45` browser 52 passed. ocr of B95.10 owed (provider limit).
+
+### T95.46 — Part B gate (light)
+Full run `t95.46-gate-full` (full tier, at 7d68892d): unit 3093, integration 364, browser 127, 79, 55 and 158 (4 skipped), checks 14 of 14; run complete, 21 min; no stage over 8 min. Passed.
