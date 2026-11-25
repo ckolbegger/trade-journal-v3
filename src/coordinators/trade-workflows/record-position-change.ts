@@ -99,8 +99,9 @@ export type PositionChangeSuccess = TradeMutationSuccess<
 // Trade Detail reads it), so the receipt says what the Review will. With no session there is nothing to say.
 async function dueInOf(deps: TradeWorkflowsDeps, symbol: string, reflection: ReflectionOutcome, closeReview: ReflectionOutcome | undefined) {
   if (reflection.kind !== 'Debt' && closeReview?.kind !== 'Debt') return {};
-  const result = await deps.marketData.query({ kind: 'ResolveFrames', context: { kind: 'Current', asOf: deps.clock.now() }, instruments: [symbol] });
-  const frame = result.kind === 'Frames' ? result.frames[0] : undefined;
+  // The change is already saved: a failed read leaves the classification out rather than turning a saved sale into a failure.
+  const result = await deps.marketData.query({ kind: 'ResolveFrames', context: { kind: 'Current', asOf: deps.clock.now() }, instruments: [symbol] }).catch(() => undefined);
+  const frame = result?.kind === 'Frames' ? result.frames[0] : undefined;
   if (!frame) return {};
   const closes = { previousClose: frame.previousCloseInstant, close: frame.closeInstant };
   const of = (outcome: ReflectionOutcome | undefined) => (outcome?.kind === 'Debt' ? classifyDue(outcome.debt.dueAnchor, closes) : undefined);

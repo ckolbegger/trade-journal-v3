@@ -381,4 +381,30 @@ describe('a sale put off to be answered later', () => {
 
     expect(result.postCommit.dueIn).toEqual({ reflection: 'DueInNextReview', closeReview: 'DueInNextReview' });
   }, 60_000);
+
+  // T95.46-B5: the sale is already saved when the due classification is read, so a failed read cannot make it a failure.
+  it('should return the sale success without dueIn when the Market Data read for the due classification fails after the commit', async () => {
+    const held = await longTrade();
+    await held.stack.saveMark('XYZ', '51.00');
+    let committed = false;
+    const persistence = {
+      ...held.stack.persistence,
+      commit: async (...args: Parameters<typeof held.stack.persistence.commit>) => {
+        const outcome = await held.stack.persistence.commit(...args);
+        committed = true;
+        return outcome;
+      },
+    };
+    const marketData = {
+      ...held.stack.marketData,
+      query: ((...args: Parameters<typeof held.stack.marketData.query>) => (committed ? Promise.reject(new Error('Market Data is down')) : held.stack.marketData.query(...args))) as typeof held.stack.marketData.query,
+    };
+    const failing = createTradeWorkflows({ ...held.stack, persistence, marketData, guard: held.stack.guard });
+    const command = await saleCommand(held, '100', '51.00', { kind: 'Defer' }, await closing(held));
+
+    const result = recorded(await failing.recordPositionChange({ ...command, members: command.members.map((m) => ({ ...m, economicTime: '2026-10-12T20:45:00Z' })) }));
+
+    expect(result.postCommit.reflection.kind).toBe('Debt');
+    expect(result.postCommit.dueIn).toBeUndefined();
+  }, 60_000);
 });
