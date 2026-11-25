@@ -7,7 +7,7 @@ describe('D1 installed capability declaration', () => {
   })
 
   it('should omit every later capability from navigation', () => {
-    expect(navigationFor()).toEqual(['Accounts', 'Status', 'New Plan', 'Trades'])
+    expect(navigationFor()).toEqual(['Accounts', 'Status', 'New Plan', 'Trades', 'Review'])
   })
 
   it('should never return a domain Unavailable result for an undelivered capability', () => {

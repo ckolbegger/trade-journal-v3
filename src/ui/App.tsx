@@ -10,6 +10,11 @@ import { recordOpeningPositionChange } from './position-controller'
 import { formatIssues } from './issue-copy'
 import { requestDurability } from '../domain/workspace'
 import { evaluateOpenTrade, saveManualMark } from './market-controller'
+import {
+  newActionForm, openReview, saveTradeAction, resolveReviewDebt,
+  type ReviewView,
+} from './review-controller'
+import type { DailyActionForm } from '../domain/daily-action'
 import type { CalculationResult } from '../domain/calculation'
 import type { ReflectionDisposition } from '../domain/position-change-reflection'
 
@@ -20,7 +25,7 @@ const initial: AppState = {
 const emptyDraft: PlanDraft = {
   accountId: '', underlying: '', quantity: '', entry: '', stop: '', target: '', thesis: '', invalidation: '',
 }
-type Screen = 'accounts' | 'status' | 'new-plan' | 'trades'
+type Screen = 'accounts' | 'status' | 'new-plan' | 'trades' | 'review'
 
 type ExecutionDraft = { instrument: string; quantity: string; price: string; fee: string; economicTime: string }
 const emptyExecution = (): ExecutionDraft => ({
@@ -41,6 +46,8 @@ const emptyPositionForm = (): PositionForm => ({
 })
 
 const monogram = (label: string) => label.slice(0, 2).toUpperCase()
+const completionLabel = (state: string) =>
+  state === 'CompleteWithUnavailableMarks' ? 'Complete with unavailable Marks' : state
 // Explicit View Moment: noon Tuesday resolves Monday as the Expected Mark Date.
 const VIEW_MOMENT = new Date('2026-11-24T17:00:00Z')
 
@@ -87,6 +94,11 @@ export function App() {
   const [markDraft, setMarkDraft] = useState({ price: '', reason: '' })
   const [markError, setMarkError] = useState('')
   const [markMessage, setMarkMessage] = useState('')
+  const [review, setReview] = useState<ReviewView | null>(null)
+  const [actionForms, setActionForms] = useState<Record<string, DailyActionForm>>({})
+  const [reviewDrafts, setReviewDrafts] = useState<Record<string, { price: string; reason: string }>>({})
+  const [reviewMessage, setReviewMessage] = useState('')
+  const [reviewError, setReviewError] = useState('')
 
   useEffect(() => {
     void establish().then(s => {
@@ -184,6 +196,79 @@ export function App() {
     setSelectedEvaluation(await evaluateOpenTrade(selectedOpen, await openDb(), VIEW_MOMENT))
   }, [selectedOpen, selectedEvaluation, markDraft, state.readiness])
 
+  const onOpenReview = useCallback(async () => {
+    setScreen('review')
+    const next = await openReview(VIEW_MOMENT)
+    setReview(next)
+    setActionForms(Object.fromEntries(next.items.map(i => [i.trade.id, newActionForm()])))
+    setReviewDrafts(Object.fromEntries(next.items.map(i => [i.trade.id, { price: '', reason: '' }])))
+    setReviewMessage('')
+    setReviewError('')
+  }, [])
+
+  const onReviewMark = useCallback(async (tradeId: string, intention: 'RecordManualMark' | 'AcknowledgeUnavailable') => {
+    if (!review) return
+    const item = review.items.find(i => i.trade.id === tradeId)
+    if (!item) return
+    const draft = reviewDrafts[tradeId] ?? { price: '', reason: '' }
+    const result = await saveManualMark({
+      instrument: item.trade.plan.underlying,
+      date: review.reviewDate,
+      expectedRevision: item.frame.revision ?? '0',
+      intention,
+      price: intention === 'RecordManualMark' ? draft.price : undefined,
+      reason: intention === 'AcknowledgeUnavailable' ? draft.reason : undefined,
+      observedAt: `${review.reviewDate}T20:00:00Z`,
+      savedAt: VIEW_MOMENT.toISOString(),
+      readiness: state.readiness,
+    })
+    if (!result.ok) {
+      setReviewError(result.error.kind === 'Validation' ? formatIssues(result.error.issues) : 'Writes are disabled until Runtime Readiness is Writable.')
+      return
+    }
+    setReviewError('')
+    setReviewMessage(intention === 'RecordManualMark' ? 'Mark recorded.' : 'Unavailability acknowledged.')
+    setReview(await openReview(VIEW_MOMENT))
+  }, [review, reviewDrafts, state.readiness])
+
+  const onSaveAction = useCallback(async (tradeId: string) => {
+    if (!review) return
+    const result = await saveTradeAction({
+      tradeId, reviewDate: review.reviewDate, definitionRevision: 'D1',
+      form: actionForms[tradeId] ?? newActionForm(),
+      expectedDigest: review.snapshot.digest,
+      expectedTradeRevision: review.items.find(i => i.trade.id === tradeId)?.trade.revision ?? '1',
+      readiness: state.readiness, now: VIEW_MOMENT,
+    })
+    if (!result.ok) {
+      setReviewError(result.error.kind === 'Validation'
+        ? formatIssues(result.error.issues)
+        : result.error.kind === 'MarkMissing'
+          ? 'An exact Mark is required before saving an Action.'
+          : result.error.kind === 'ReviewChanged'
+            ? 'Evidence changed; review it and save again.'
+            : 'The Action could not be saved.')
+      if (result.error.kind === 'ReviewChanged') setReview(result.error.refreshed)
+      return
+    }
+    setReviewError('')
+    setReviewMessage(result.value.nextStep)
+    setReview(await openReview(VIEW_MOMENT))
+  }, [review, actionForms, state.readiness])
+
+  const onResolveDebt = useCallback(async (debtId: string, text: string) => {
+    const result = await resolveReviewDebt({ debtId, form: { text }, readiness: state.readiness })
+    if (!result.ok) {
+      setReviewError(result.error.kind === 'NeedsTradeWorkflow'
+        ? 'This Debt must be resolved in its Trade Workflow.'
+        : 'The Debt could not be resolved.')
+      return
+    }
+    setReviewError('')
+    setReviewMessage('Debt resolved.')
+    setReview(await openReview(VIEW_MOMENT))
+  }, [state.readiness])
+
   const onRecordPosition = useCallback(async (tradeId: string, expectedRevision: string) => {
     const result = await recordOpeningPositionChange({
       tradeId,
@@ -233,6 +318,7 @@ export function App() {
             <button type="button" aria-current={screen === 'status' ? 'page' : undefined} onClick={() => setScreen('status')}>Status</button>
             <button type="button" aria-current={screen === 'new-plan' ? 'page' : undefined} onClick={() => setScreen('new-plan')}>New Plan</button>
             <button type="button" aria-current={screen === 'trades' ? 'page' : undefined} onClick={() => { void onOpenTrades() }}>Trades</button>
+            <button type="button" aria-current={screen === 'review' ? 'page' : undefined} onClick={() => { void onOpenReview() }}>Review</button>
           </nav>
         </header>
         <section aria-live="polite">
@@ -596,6 +682,98 @@ export function App() {
                     </section>
                   )}
                 </>
+              )}
+
+              {screen === 'review' && (
+                <section aria-label="Daily Review" className="card">
+                  <p className="section-label">Daily review</p>
+                  <h2>Review — <span data-testid="review-date">{review?.reviewDate ?? '…'}</span></h2>
+                  <p data-testid="review-completion">{completionLabel(review?.completion.state ?? 'Incomplete')}</p>
+                  <div className="steps">
+                    {(['Marks', 'Debt', 'Settlement', 'Trades'] as const).map(step => (
+                      <span key={step} data-review-step className={review?.tasks.some(t => t.kind === step) ? 'now' : ''}>{step}</span>
+                    ))}
+                  </div>
+                  <p data-testid="action-gate" role="status">
+                    {review?.missingMarks.length ? 'MarkMissing — record an exact Mark before saving an Action.' : 'Evidence ready'}
+                  </p>
+                  {review?.dueDebt.map(debt => (
+                    <div key={debt.id} className="card">
+                      <p>Due Debt: {debt.obligationKey}</p>
+                      <button type="button" onClick={() => { void onResolveDebt(debt.id, 'resolved in review') }}>Resolve debt</button>
+                    </div>
+                  ))}
+                  {review?.items.map(item => {
+                    const form = actionForms[item.trade.id] ?? newActionForm()
+                    const draft = reviewDrafts[item.trade.id] ?? { price: '', reason: '' }
+                    const reconciled = (item.trade.deviations?.length ?? 0) > 0
+                    return (
+                      <section key={item.trade.id} className="card" aria-label={`Trade ${item.trade.plan.underlying}`}>
+                        <div className="sheet-header">
+                          <div>
+                            <p className="section-label">{item.attention.band} · {item.attention.reasons.join(', ')}</p>
+                            <h3>{item.trade.plan.underlying}</h3>
+                          </div>
+                          <span className="badge badge-open">{item.trade.lifecycle}</span>
+                        </div>
+                        <p data-testid="review-mark-status">
+                          {item.frame.status === 'AcknowledgedUnavailable' ? 'Acknowledged Unavailable' : item.frame.status}
+                        </p>
+                        <div className="field-grid">
+                          <div>
+                            <label htmlFor={`review-price-${item.trade.id}`}>Review mark price</label>
+                            <input id={`review-price-${item.trade.id}`} value={draft.price} onChange={e => setReviewDrafts(d => ({
+                              ...d, [item.trade.id]: { ...draft, price: e.target.value },
+                            }))} />
+                          </div>
+                          <div>
+                            <label htmlFor={`review-reason-${item.trade.id}`}>Review unavailability reason</label>
+                            <input id={`review-reason-${item.trade.id}`} value={draft.reason} onChange={e => setReviewDrafts(d => ({
+                              ...d, [item.trade.id]: { ...draft, reason: e.target.value },
+                            }))} />
+                          </div>
+                        </div>
+                        <div className="sheet-actions">
+                          <button type="button" onClick={() => { void onReviewMark(item.trade.id, 'RecordManualMark') }}>Record mark for review</button>
+                          <button type="button" onClick={() => { void onReviewMark(item.trade.id, 'AcknowledgeUnavailable') }}>Acknowledge for review</button>
+                        </div>
+                        <p data-testid="review-episode">
+                          {reconciled ? 'Stop episode reconciled' : item.replay.episodes.length
+                            ? `Stop episode from ${item.replay.episodes[0].start}`
+                            : 'No Stop episode'}
+                        </p>
+                        <fieldset>
+                          <legend>Daily Trade Review Action</legend>
+                          {(['Hold', 'Exit', 'Roll', 'Adjust'] as const).map(action => (
+                            <label key={action} className="pill-option">
+                              <input
+                                type="radio"
+                                name={`action-${item.trade.id}`}
+                                checked={form.action === action}
+                                onChange={() => setActionForms(f => ({ ...f, [item.trade.id]: { ...form, action } }))}
+                              /> {action} action
+                            </label>
+                          ))}
+                          {form.action !== 'Hold' && (
+                            <div>
+                              <label htmlFor={`intent-${item.trade.id}`}>Review action intent</label>
+                              <input
+                                id={`intent-${item.trade.id}`}
+                                value={form.intent ?? ''}
+                                onChange={e => setActionForms(f => ({ ...f, [item.trade.id]: { ...form, intent: e.target.value } }))}
+                              />
+                            </div>
+                          )}
+                        </fieldset>
+                        <div className="sheet-actions">
+                          <button type="button" disabled={item.frame.status === 'Missing'} onClick={() => { void onSaveAction(item.trade.id) }}>Save action</button>
+                        </div>
+                      </section>
+                    )
+                  })}
+                  {reviewMessage && <p role="status">{reviewMessage}</p>}
+                  {reviewError && <p role="alert">{reviewError}</p>}
+                </section>
               )}
             </>
           )}

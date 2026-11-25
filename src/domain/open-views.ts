@@ -8,6 +8,7 @@ export type LifecycleMembers = { Planned: string[]; Open: string[]; Closed: stri
 export type LifecycleIndex = { id: typeof LIFECYCLE_INDEX_ID; members: LifecycleMembers }
 export type StoredOpenTrade = OpenTradeProjection & {
   agreement?: { lifecycle: boolean; lots: boolean; findings: string[] }
+  deviations?: { fingerprint: string; kind?: string; start?: string; end?: string }[]
 }
 
 const emptyMembers = (): LifecycleMembers => ({ Planned: [], Open: [], Closed: [], Abandoned: [] })

@@ -61,6 +61,18 @@ p { margin: 0.35rem 0; }
 }
 .badge-open { border-color: #a9d6bd; background: #eaf7ef; color: #14663f; }
 .badge-planned { border-color: #d8cdb0; background: #f7f1df; color: #6a5417; }
+.steps { display: flex; gap: 0.4rem; flex-wrap: wrap; margin: 0.6rem 0; }
+.steps span {
+  border: 1px solid #d9d2c3;
+  border-radius: 999px;
+  padding: 0.15rem 0.7rem;
+  font-size: 0.75rem;
+  font-weight: 650;
+  color: #6b6559;
+  background: #faf8f2;
+}
+.steps span.now { border-color: #111; color: #111; background: #fff; }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
 
 button {
   font: inherit;

@@ -5,7 +5,7 @@ export function declaredCapabilities(): string[] {
 }
 
 export function navigationFor(): string[] {
-  return ['Accounts', 'Status', 'New Plan', 'Trades']
+  return ['Accounts', 'Status', 'New Plan', 'Trades', 'Review']
 }
 
 export function hasCapability(name: string): boolean {

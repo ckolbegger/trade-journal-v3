@@ -14,13 +14,14 @@ test('navigation declares only installed capabilities', async ({ page }) => {
   const nav = await page.locator('nav[aria-label="Primary"]').innerText()
   // D1 capabilities remain installed; D2 adds New Plan and Trades. Assert the
   // exact installed set and that no later capability appears.
-  for (const entry of ['Accounts', 'Status', 'New Plan', 'Trades']) {
+  for (const entry of ['Accounts', 'Status', 'New Plan', 'Trades', 'Review']) {
     expect(nav).toContain(entry)
   }
   for (const oldLabel of ['Institutions & Accounts', 'Workspace']) {
     expect(nav).not.toContain(oldLabel)
   }
-  for (const forbidden of ['Execution', 'Mark', 'Review', 'Report', 'Backup', 'Restore']) {
+  // D3-D5 install Execution, Mark and Review; only later capabilities stay hidden.
+  for (const forbidden of ['Provider', 'Report', 'Backup', 'Restore', 'Close position']) {
     expect(nav).not.toContain(forbidden)
   }
 })
@@ -79,6 +80,8 @@ test('Status navigation opens a real Workspace view with a durability action', a
 test('responsive layout switches on live resize without reload', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 })
   await page.goto('/')
+  // Wait for readiness so the resize listener is attached before resizing.
+  await expect(page.locator('main')).toHaveAttribute('data-view', /^(empty|ready)$/)
   await expect(page.locator('main')).toHaveAttribute('data-layout', 'wide')
   await page.setViewportSize({ width: 390, height: 844 })
   await expect(page.locator('main')).toHaveAttribute('data-layout', 'narrow')

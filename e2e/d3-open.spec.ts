@@ -51,7 +51,7 @@ test('should record several executions as one decision and show Open position, l
   await expect(page.getByTestId('open-lots')).toContainText('2 open lots')
   const body = await page.locator('main').innerText()
   // D4 installs Marks on Open detail; only later capabilities stay forbidden.
-  for (const forbidden of ['Close position', 'Valuation', 'Review', 'Restore']) expect(body).not.toContain(forbidden)
+  for (const forbidden of ['Close position', 'Valuation', 'Restore', 'Provider']) expect(body).not.toContain(forbidden)
 })
 
 test('should defer reflection without a blank Entry and keep the recorded fact', async ({ page }) => {
