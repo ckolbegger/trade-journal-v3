@@ -17,13 +17,15 @@ async function seedAccount(page: import('@playwright/test').Page) {
   }
 }
 
-test('New Plan form shows only Long Stock and a live 1R preview', async ({ page }) => {
+test('New Plan form defaults to Long Stock with a live 1R preview', async ({ page }) => {
   await seedAccount(page)
   await page.getByRole('button', { name: 'New Plan' }).click()
   await expect(page.getByLabel('Strategy')).toHaveValue('seed-long-stock')
   await expect(page.locator('option[value="seed-long-stock"]')).toHaveCount(1)
+  // D8 makes the three seeded single-leg option shapes selectable here; the
+  // Long Stock default and its live stock preview remain unchanged.
   const options = await page.getByLabel('Strategy').locator('option').allTextContents()
-  expect(options).toEqual(['Long Stock'])
+  expect(options).toEqual(['Long Stock', 'Long Call', 'Long Put', 'Cash-Secured Put'])
   await page.getByLabel('Underlying').fill('AAPL')
   await page.getByLabel('Quantity').fill('10')
   await page.getByLabel('Entry price').fill('100')

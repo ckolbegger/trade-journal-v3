@@ -20,6 +20,32 @@ import {
 import type { DailyActionForm } from '../domain/daily-action'
 import type { CalculationResult } from '../domain/calculation'
 import type { ReflectionDisposition } from '../domain/position-change-reflection'
+import { canonicalInstrument, type OptionContract } from '../domain/option-contract'
+import { resolveStrategyShape } from '../domain/strategy-shapes'
+import { expirationPayoff, type PayoffLeg } from '../domain/expiration-payoff'
+import { recordOptionPositionChange, recordOptionClose } from './option-controller'
+
+const SINGLE_LEG_OPTION_IDS = ['seed-long-call', 'seed-long-put', 'seed-cash-secured-put']
+type OptionPlanFields = {
+  strategyId: string
+  entry: string
+  contract: OptionContract
+  contractInstrument: string
+  plannedLeg: { contract: OptionContract; quantity: number; openingAction: 'Buy' | 'Sell' }
+  management: { stop: string; target: string }
+}
+
+function optionPlanFields(plan: unknown): OptionPlanFields | null {
+  const p = plan as Partial<OptionPlanFields> | null
+  if (!p || !p.strategyId || !SINGLE_LEG_OPTION_IDS.includes(p.strategyId) || !p.contract || !p.plannedLeg) return null
+  return p as OptionPlanFields
+}
+
+function strategyLabel(id?: string): string {
+  if (!id) return 'Long Stock'
+  const shape = resolveStrategyShape(id)
+  return shape.ok ? shape.value.label : 'Long Stock'
+}
 
 const initial: AppState = {
   view: 'loading', institutions: [], accounts: [], message: '', layout: 'wide', protection: '',
@@ -27,6 +53,7 @@ const initial: AppState = {
 }
 const emptyDraft: PlanDraft = {
   accountId: '', underlying: '', quantity: '', entry: '', stop: '', target: '', thesis: '', invalidation: '',
+  strategyId: 'seed-long-stock', optionKind: 'Call', strike: '', expiration: '', multiplier: '100',
 }
 type Screen = 'accounts' | 'status' | 'new-plan' | 'trades' | 'review'
 
@@ -124,6 +151,40 @@ function resultText(result: CalculationResult<string>, testId: string) {
   }
   if (result.kind === 'Unbounded') return <span data-testid={testId}>Unbounded {result.direction}: {result.explanation}</span>
   return <span data-testid={testId}>Not applicable: {result.reason}</span>
+}
+
+function OptionPayoffPanel({ plan, realizedToDate }: { plan: OptionPlanFields; realizedToDate?: string }) {
+  const leg: PayoffLeg = {
+    contract: plan.contract,
+    openingAction: plan.plannedLeg.openingAction,
+    entry: plan.entry,
+    quantity: plan.plannedLeg.quantity,
+  }
+  const payoff = expirationPayoff({
+    view: realizedToDate === undefined ? 'Planned' : 'Current',
+    legs: [leg],
+    ...(realizedToDate === undefined ? {} : { realizedToDate, unconsumedOpeningFees: '0.00' }),
+  })
+  return (
+    <section aria-label="Expiration payoff" data-testid="payoff-panel" className="card">
+      <p className="section-label">Expiration payoff</p>
+      <h4>Intrinsic payoff at expiration</h4>
+      <p data-testid="payoff-contract">{canonicalInstrument(plan.contract)}</p>
+      {payoff.kind === 'Value' ? (
+        <>
+          <p data-testid="payoff-break-even">Break-even: {payoff.value.zeroCrossings.join(', ') || '—'}</p>
+          <ul className="detail-list">
+            {payoff.value.extrema.map((e, index) => (
+              <li key={index}>{e.kind}: {e.value} on {e.attainedOn}</li>
+            ))}
+          </ul>
+        </>
+      ) : (
+        <p data-testid="payoff-status">{payoff.kind}: {payoff.reason}</p>
+      )}
+      <p className="muted">Intrinsic settlement only — no model-derived price.</p>
+    </section>
+  )
 }
 
 function dispositionOf(form: PositionForm): ReflectionDisposition {
@@ -270,6 +331,13 @@ export function App() {
     setMarkDraft({ price: '', reason: '' })
     setMarkError('')
     setMarkMessage('')
+    // Option plans carry premium Stop/Target values, not underlying-price
+    // conditions; the standard Marks/evaluation card is not applicable. The
+    // independent intrinsic payoff panel presents option exposure instead.
+    if (optionPlanFields(trade.plan)) {
+      setSelectedEvaluation(null)
+      return
+    }
     setSelectedEvaluation(await evaluateOpenTrade(trade, await openDb(), VIEW_MOMENT))
   }, [])
 
@@ -387,6 +455,46 @@ export function App() {
   }, [state.readiness])
 
   const onRecordPosition = useCallback(async (tradeId: string, expectedRevision: string) => {
+    const option = optionPlanFields(plan.selected?.trade.plan)
+    if (option) {
+      const instrument = canonicalInstrument(option.contract)
+      if (positionForm.executions.some(e => e.instrument.trim() && e.instrument.trim() !== instrument)) {
+        setPositionError(`Instrument must match the frozen contract ${instrument}.`)
+        return
+      }
+      const shape = resolveStrategyShape(option.strategyId)
+      const action: 'Buy' | 'Sell' = shape.ok ? shape.value.openingAction : 'Buy'
+      const result = await recordOptionPositionChange({
+        tradeId,
+        expectedRevision,
+        positionChangeId: `pc-${tradeId}`,
+        economicTime: '2026-11-24T20:00:00Z',
+        executions: positionForm.executions.map((e, index) => ({
+          id: `exec-${tradeId}-${index + 1}`,
+          contract: option.contract,
+          action,
+          opening: true,
+          quantity: e.quantity,
+          price: e.price,
+          fee: e.fee,
+          economicTime: e.economicTime,
+        })),
+        reflection: { definitionRevision: 'D1', disposition: dispositionOf(positionForm) },
+        readiness: state.readiness,
+      })
+      if (!result.ok) {
+        setPositionError(result.error.kind === 'Validation'
+          ? formatIssues(result.error.issues)
+          : 'Writes are disabled until Runtime Readiness is Writable.')
+        return
+      }
+      setPositionError('')
+      setExecutingId(null)
+      setPositionForm(emptyPositionForm())
+      await refreshTrades()
+      await showOpen(result.value.trade as unknown as StoredOpenTrade)
+      return
+    }
     const result = await recordOpeningPositionChange({
       tradeId,
       expectedRevision,
@@ -416,7 +524,7 @@ export function App() {
     setPositionForm(emptyPositionForm())
     await refreshTrades()
     await showOpen(result.value.trade)
-  }, [positionForm, state.readiness, refreshTrades, showOpen])
+  }, [positionForm, state.readiness, refreshTrades, showOpen, plan.selected])
 
   const showClosed = useCallback(async (trade: StoredClosedTrade) => {
     setPlan(p => ({ ...p, screen: 'list', selected: null }))
@@ -432,6 +540,53 @@ export function App() {
   }, [])
 
   const onRecordClose = useCallback(async (trade: StoredOpenTrade) => {
+    const option = optionPlanFields(trade.plan)
+    if (option) {
+      const instrument = canonicalInstrument(option.contract)
+      if (closeForm.executions.some(e => e.instrument.trim() && e.instrument.trim() !== instrument)) {
+        setCloseError(`Instrument must match the frozen contract ${instrument}.`)
+        return
+      }
+      const shape = resolveStrategyShape(option.strategyId)
+      const action: 'Buy' | 'Sell' = shape.ok && shape.value.openingAction === 'Buy' ? 'Sell' : 'Buy'
+      const result = await recordOptionClose({
+        tradeId: trade.id,
+        expectedRevision: trade.revision,
+        positionChangeId: `close-${trade.id}`,
+        economicTime: closeForm.executions[0]?.economicTime || '2026-11-25T20:00:00Z',
+        executions: closeForm.executions.map((e, index) => ({
+          id: `close-exec-${trade.id}-${index + 1}`,
+          contract: option.contract,
+          action,
+          opening: false,
+          quantity: e.quantity,
+          price: e.price,
+          fee: e.fee,
+          economicTime: e.economicTime,
+        })),
+        closeReason: closeForm.closeReason,
+        reflection: { definitionRevision: 'D1', disposition: closeDispositionOf(closeForm) },
+        readiness: state.readiness,
+      })
+      if (!result.ok) {
+        setCloseError(result.error.kind === 'Validation'
+          ? formatIssues(result.error.issues)
+          : 'Writes are disabled until Runtime Readiness is Writable.')
+        return
+      }
+      setCloseError('')
+      setClosingId(null)
+      setCloseForm(emptyCloseForm())
+      setSelectedOpen(null)
+      setCloseReviewOpen(null)
+      setCloseReviewForm(emptyCloseReviewForm())
+      setCloseReviewError('')
+      setCloseReviewStatus('')
+      setNarrative([])
+      setSelectedClosed(result.value.trade as unknown as StoredClosedTrade)
+      await refreshTrades()
+      return
+    }
     const result = await recordClosePositionChange({
       tradeId: trade.id,
       expectedRevision: trade.revision,
@@ -577,11 +732,18 @@ export function App() {
               {screen === 'new-plan' && (
                 <section aria-label="New Plan" className="card">
                   <p className="section-label">New plan</p>
-                  <h2>New Plan — Long Stock</h2>
+                  <h2>New Plan — {strategyLabel(draft.strategyId)}</h2>
                   <form onSubmit={e => { e.preventDefault(); void onConfirmPlan() }}>
                     <label htmlFor="strategy">Strategy</label>
-                    <select id="strategy" value="seed-long-stock" readOnly>
+                    <select id="strategy" value={draft.strategyId ?? 'seed-long-stock'} onChange={e => {
+                      const strategyId = e.target.value
+                      const shape = resolveStrategyShape(strategyId)
+                      setDraft({ ...draft, strategyId, optionKind: shape.ok ? shape.value.expectedKind : (draft.optionKind ?? 'Call') })
+                    }}>
                       <option value="seed-long-stock">Long Stock</option>
+                      <option value="seed-long-call">Long Call</option>
+                      <option value="seed-long-put">Long Put</option>
+                      <option value="seed-cash-secured-put">Cash-Secured Put</option>
                     </select>
                     <label htmlFor="underlying">Underlying</label>
                     <input id="underlying" value={draft.underlying} onChange={e => setDraft({ ...draft, underlying: e.target.value })} />
@@ -593,6 +755,21 @@ export function App() {
                     <input id="stop" value={draft.stop} onChange={e => setDraft({ ...draft, stop: e.target.value })} />
                     <label htmlFor="target">Target price</label>
                     <input id="target" value={draft.target} onChange={e => setDraft({ ...draft, target: e.target.value })} />
+                    {draft.strategyId && draft.strategyId !== 'seed-long-stock' && (
+                      <>
+                        <label htmlFor="option-kind">Option type</label>
+                        <select id="option-kind" value={draft.optionKind ?? 'Call'} onChange={e => setDraft({ ...draft, optionKind: e.target.value as 'Call' | 'Put' })}>
+                          <option value="Call">Call</option>
+                          <option value="Put">Put</option>
+                        </select>
+                        <label htmlFor="strike">Strike</label>
+                        <input id="strike" value={draft.strike ?? ''} onChange={e => setDraft({ ...draft, strike: e.target.value })} />
+                        <label htmlFor="expiration">Expiration</label>
+                        <input id="expiration" value={draft.expiration ?? ''} onChange={e => setDraft({ ...draft, expiration: e.target.value })} />
+                        <label htmlFor="multiplier">Multiplier</label>
+                        <input id="multiplier" value={draft.multiplier ?? '100'} onChange={e => setDraft({ ...draft, multiplier: e.target.value })} />
+                      </>
+                    )}
                     <label htmlFor="thesis">Thesis</label>
                     <textarea id="thesis" value={draft.thesis} onChange={e => setDraft({ ...draft, thesis: e.target.value })} />
                     <label htmlFor="invalidation">Invalidation</label>
@@ -623,7 +800,7 @@ export function App() {
                             <span className="monogram" aria-hidden="true">{monogram(t.trade.plan.underlying)}</span>
                             <span className="row-main">
                               <span className="row-title">{t.trade.plan.underlying}</span>
-                              <span className="row-sub">Long Stock · 1R {t.trade.plan.oneR}</span>
+                              <span className="row-sub">{strategyLabel((t.trade.plan as unknown as { strategyId?: string }).strategyId)} · 1R {t.trade.plan.oneR}</span>
                             </span>
                             <span className="badge badge-planned">Planned</span>
                           </button>
@@ -642,7 +819,7 @@ export function App() {
                             <span className="monogram" aria-hidden="true">{monogram(t.plan.underlying)}</span>
                             <span className="row-main">
                               <span className="row-title">{t.plan.underlying}</span>
-                              <span className="row-sub">Long Stock · {t.lots.length} lots</span>
+                              <span className="row-sub">{strategyLabel((t.plan as unknown as { strategyId?: string }).strategyId)} · {t.lots.length} lots</span>
                             </span>
                             <span className="num positive">{t.realizedToDate}</span>
                             <span className="badge badge-open">Open</span>
@@ -662,7 +839,7 @@ export function App() {
                             <span className="monogram" aria-hidden="true">{monogram(t.plan.underlying)}</span>
                             <span className="row-main">
                               <span className="row-title">{t.plan.underlying}</span>
-                              <span className="row-sub">Long Stock · {t.lotMatches.length} lot matches</span>
+                              <span className="row-sub">{strategyLabel((t.plan as unknown as { strategyId?: string }).strategyId)} · {t.lotMatches.length} lot matches</span>
                             </span>
                             <span className="num">{t.realizedToDate}</span>
                             <span className="badge badge-closed">Closed</span>
@@ -685,7 +862,7 @@ export function App() {
                         <div className="figure-grid">
                           <div><p className="section-label">1R</p><p className="figure-value num" data-testid="trade-one-r">{plan.selected.trade.plan.oneR}</p></div>
                           <div><p className="section-label">Plan R:R</p><p className="figure-value num">{plan.selected.trade.plan.baseline}</p></div>
-                          <div><p className="section-label">Strategy</p><p className="figure-value">Long Stock</p></div>
+                          <div><p className="section-label">Strategy</p><p className="figure-value">{strategyLabel((plan.selected.trade.plan as unknown as { strategyId?: string }).strategyId)}</p></div>
                         </div>
                       </section>
                       <section aria-label="Plan Reflection" data-testid="plan-reflection" className="card">
@@ -693,6 +870,9 @@ export function App() {
                         <p>Thesis: {String(plan.selected.entry.snapshot?.answers?.Thesis ?? '')}</p>
                         <p>Invalidation: {String(plan.selected.entry.snapshot?.answers?.Invalidation ?? '')}</p>
                       </section>
+                      {optionPlanFields(plan.selected.trade.plan) && (
+                        <OptionPayoffPanel plan={optionPlanFields(plan.selected.trade.plan)!} />
+                      )}
                       <button type="button" onClick={() => {
                         setExecutingId(plan.selected!.trade.id)
                         setPositionForm(emptyPositionForm())
@@ -712,7 +892,7 @@ export function App() {
                             <button type="button" onClick={() => { setExecutingId(null); setPositionError('') }}>Cancel</button>
                           </div>
                           <p className="section-label">Action</p>
-                          <span className="action-pill">Buy</span>
+                          <span className="action-pill">{optionPlanFields(plan.selected?.trade.plan)?.plannedLeg.openingAction ?? 'Buy'}</span>
                           {positionForm.executions.map((execution, index) => (
                             <fieldset key={index}>
                               <legend>Execution {index + 1}</legend>
@@ -802,8 +982,11 @@ export function App() {
                       <section className="card">
                         <div className="sheet-header">
                           <div>
-                            <p className="section-label">Long stock · open</p>
+                            <p className="section-label">{strategyLabel((selectedOpen.plan as unknown as { strategyId?: string }).strategyId)} · open</p>
                             <h3>{selectedOpen.plan.underlying}</h3>
+                            {optionPlanFields(selectedOpen.plan) && (
+                              <p data-testid="option-contract">{canonicalInstrument(optionPlanFields(selectedOpen.plan)!.contract)}</p>
+                            )}
                           </div>
                           <span className="badge badge-open" data-testid="trade-lifecycle">{selectedOpen.lifecycle}</span>
                         </div>
@@ -843,6 +1026,12 @@ export function App() {
                           </li>
                         ))}</ul>
                       </section>
+                      {optionPlanFields(selectedOpen.plan) && (
+                        <OptionPayoffPanel
+                          plan={optionPlanFields(selectedOpen.plan)!}
+                          realizedToDate={selectedOpen.realizedToDate}
+                        />
+                      )}
 
                       <button type="button" onClick={() => {
                         setClosingId(selectedOpen.id)
@@ -863,7 +1052,7 @@ export function App() {
                           }}>
                             <div className="sheet-header">
                               <div>
-                                <p className="section-label">Terminal Long Stock close</p>
+                                <p className="section-label">Terminal position close</p>
                                 <h3>Close {selectedOpen.plan.underlying}</h3>
                               </div>
                             </div>
@@ -1023,7 +1212,7 @@ export function App() {
                       <section className="card">
                         <div className="sheet-header">
                           <div>
-                            <p className="section-label">Long stock · closed</p>
+                            <p className="section-label">{strategyLabel((selectedClosed.plan as unknown as { strategyId?: string }).strategyId)} · closed</p>
                             <h3>{selectedClosed.plan.underlying}</h3>
                           </div>
                           <span className="badge badge-closed" data-testid="trade-lifecycle">{selectedClosed.lifecycle}</span>
@@ -1039,7 +1228,7 @@ export function App() {
                           </div>
                           <div>
                             <p className="section-label">Closed via</p>
-                            <p className="figure-value" data-testid="closed-disposition">{selectedClosed.terminalDisposition.kind}</p>
+                            <p className="figure-value" data-testid="closed-disposition">{selectedClosed.terminalDisposition?.kind ?? 'Execution'}</p>
                           </div>
                           <div>
                             <p className="section-label">FIFO Lot Matches</p>
@@ -1051,8 +1240,8 @@ export function App() {
                         <h4>FIFO Lot Matches</h4>
                         <ul className="detail-list">{selectedClosed.lotMatches.map(m => (
                           <li key={m.id}>
-                            <span>{m.quantity} shares · {m.matchingMethod}</span>
-                            <span className="num">opening fee {m.allocatedOpeningFee} · disposal fee {m.allocatedDisposalFee}</span>
+                            <span>{m.quantity} · {m.matchingMethod}</span>
+                            <span className="num">opening fee {m.allocatedOpeningFee ?? '—'} · disposal fee {m.allocatedDisposalFee ?? '—'}</span>
                           </li>
                         ))}</ul>
                       </section>

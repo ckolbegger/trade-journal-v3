@@ -1,5 +1,8 @@
 import { assessPlan } from '../domain/assess-plan'
 import { confirmPlan, type ConfirmPlanCommand, type ConfirmPlanResult } from '../domain/confirm-plan'
+import { assessOptionPlan } from '../domain/option-plan'
+import { parseOptionContract } from '../domain/option-contract'
+import { confirmOptionPlan } from './option-controller'
 import { openDb, repo, transaction } from '../persistence/db'
 import type { Account, Institution } from '../domain/types'
 
@@ -12,6 +15,11 @@ export type PlanDraft = {
   target: string
   thesis: string
   invalidation: string
+  strategyId?: string
+  optionKind?: 'Call' | 'Put'
+  strike?: string
+  expiration?: string
+  multiplier?: string
 }
 
 export type PlanState = {
@@ -26,6 +34,20 @@ export const initialPlanState: PlanState = { screen: 'form', error: '', confirme
 export function previewPlan(draft: PlanDraft): { oneR: string; baseline: string; error: string } {
   // The live preview reflects only the Plan numbers; it is not a command and
   // must not require the reflection or a committed account.
+  const optionId = draft.strategyId && draft.strategyId !== 'seed-long-stock' ? draft.strategyId : undefined
+  if (optionId) {
+    const parsed = parseOptionContract({
+      underlying: draft.underlying, kind: draft.optionKind ?? '',
+      strike: draft.strike ?? '', expiration: draft.expiration ?? '', multiplier: draft.multiplier ?? '',
+    })
+    if (!parsed.ok) return { oneR: '', baseline: '', error: '' }
+    const assessed = assessOptionPlan({
+      strategyId: optionId, contract: parsed.value, quantity: Number(draft.quantity),
+      entry: draft.entry, stop: draft.stop, target: draft.target,
+    })
+    if (!assessed.ok) return { oneR: '', baseline: '', error: '' }
+    return { oneR: assessed.value.oneR, baseline: assessed.value.baseline, error: '' }
+  }
   const assessment = assessPlan({
     strategyId: 'seed-long-stock',
     underlying: draft.underlying,
@@ -71,6 +93,34 @@ export async function confirmPlanFromDraft(
 ): Promise<{ result?: ConfirmPlanResult['value']; error: string }> {
   const account = accounts.find(a => a.id === draft.accountId) ?? accounts[0]
   if (!account) return { error: 'Create an institution and account first.' }
+  if (draft.strategyId && draft.strategyId !== 'seed-long-stock') {
+    const parsed = parseOptionContract({
+      underlying: draft.underlying, kind: draft.optionKind ?? '',
+      strike: draft.strike ?? '', expiration: draft.expiration ?? '', multiplier: draft.multiplier ?? '',
+    })
+    if (!parsed.ok) return { error: parsed.error.issues.join(', ') }
+    const result = await confirmOptionPlan({
+      account, definitionRevision: 'D1', strategyId: draft.strategyId, contract: parsed.value,
+      quantity: Number(draft.quantity), entry: draft.entry, stop: draft.stop, target: draft.target,
+      reflection: { thesis: draft.thesis, invalidation: draft.invalidation },
+      economicTime: '2026-11-24T20:00:00Z', readiness: { outcome: 'Writable', passed: true, failedChecks: [], protection: { kind: 'BestEffort', reason: 'ui' } },
+    })
+    if (!result.ok) return { error: result.error.kind === 'Validation' ? result.error.issues.join(', ') : 'Writes are disabled.' }
+    return {
+      result: {
+        trade: {
+          id: result.value.trade.id, lifecycle: 'Planned',
+          plan: result.value.trade.plan as ConfirmPlanResult['value']['trade']['plan'],
+          economicTime: result.value.trade.economicTime,
+        },
+        entry: result.value.entry,
+        revisions: { trade: '1', entry: '1', catalog: '1' },
+        postCommit: { trade: result.value.trade, entry: result.value.entry },
+        affectedScopes: [],
+      },
+      error: '',
+    }
+  }
   const strategy = { id: 'seed-long-stock', label: 'Long Stock', active: true, revision: '1' }
   const result = confirmPlan(buildCommand(draft, 'D1', '2026-11-24T20:00:00Z', institutions, strategy, account))
   if (!result.ok) return { error: result.error.issues.join(', ') }
