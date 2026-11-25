@@ -53,8 +53,10 @@ export function ExitReceipt({ result, timeZone, closeReasons, onDismiss }: ExitR
   const closeReason = trade.closeReason?.closeReasonId;
   const exitMessage = reflectionMessage(postCommit.reflection);
   const closeMessage = closeReview && closeReviewMessage(closeReview);
-  // The coordinator classifies each owed item as the Review does (A327); an item due in the Review after next says so.
-  const later = (classification: DueClassification | undefined) => classification === 'DueInReviewAfterNext';
+  // The coordinator classifies each owed item as the Review does (A327): one the Review asks for now says so, and one due in
+  // the Review after next says so.
+  const when = (classification: DueClassification | undefined, preposition: string) =>
+    classification === 'Due' ? 'now' : `${preposition} ${classification === 'DueInReviewAfterNext' ? 'the Review after next' : 'the next Review'}`;
   const { dueIn } = postCommit;
   const at = (executionId: string) => {
     const execution = executions.get(executionId)!;
@@ -164,8 +166,8 @@ export function ExitReceipt({ result, timeZone, closeReasons, onDismiss }: ExitR
           )}
         </dl>
         {exitMessage && <p>{exitMessage}</p>}
-        {closeReview?.kind === 'Debt' && closed && <p>{`Recorded. ${trade.plan.underlying} is closed. Its Close Review is due in ${later(dueIn?.closeReview) ? 'the Review after next' : 'the next Review'}.`}</p>}
-        {postCommit.reflection.kind === 'Debt' && postCommit.reflection.debt.requires?.includes('PlanDepartureReason') && <p>{`${closeReview?.kind === 'Debt' && closed ? '' : 'Recorded. '}Why you left the Plan is owed at ${later(dueIn?.reflection) ? 'the Review after next' : 'the next Review'}.`}</p>}
+        {closeReview?.kind === 'Debt' && closed && <p>{`Recorded. ${trade.plan.underlying} is closed. Its Close Review is due ${when(dueIn?.closeReview, 'in')}.`}</p>}
+        {postCommit.reflection.kind === 'Debt' && postCommit.reflection.debt.requires?.includes('PlanDepartureReason') && <p>{`${closeReview?.kind === 'Debt' && closed ? '' : 'Recorded. '}Why you left the Plan is owed ${when(dueIn?.reflection, 'at')}.`}</p>}
         {postCommit.reflection.kind === 'Debt' && <Badge tone="warning">Reflection owed</Badge>}
         {closeMessage && <p>{closeMessage}</p>}
         {closeReview?.kind === 'Debt' && <Badge tone="warning">Close Review owed</Badge>}

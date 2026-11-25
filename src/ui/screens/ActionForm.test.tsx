@@ -478,6 +478,22 @@ describe('A closing sale in the card (T95.40, W135)', () => {
     expect(screen.getByText('Why you left the Plan is owed at the Review after next.')).toBeTruthy();
   });
 
+  it('should say the reason and the Close Review are due now when the coordinator classifies them Due', async () => {
+    const withDue = { ...closing, postCommit: { ...closing.postCommit, reflection: { kind: 'Debt', debt: { debtId: 'debt-1', requires: ['PlanDepartureReason'] } }, dueIn: { reflection: 'Due', closeReview: 'Due' } } };
+    const facade = exitFormFacade();
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(withDue as never);
+    const { user } = mount({ form: savedExit, planExit, now: () => '2026-10-13T14:05:00Z' }, facade);
+    await user.click(screen.getByRole('button', { name: 'Record the sale' }));
+    const row = await screen.findByRole('group', { name: 'Execution 1' });
+    for (const [label, value] of [['Quantity', '100'], ['Price', '53.00'], ['Fee', '1.00']] as const) {
+      await user.clear(within(row).getByLabelText(label));
+      await user.type(within(row).getByLabelText(label), value);
+    }
+    await user.click(screen.getByRole('button', { name: 'Save exit' }));
+    expect(await screen.findByText('Recorded. XYZ is closed. Its Close Review is due now.')).toBeTruthy();
+    expect(screen.getByText('Why you left the Plan is owed now.')).toBeTruthy();
+  });
+
   it('should say the Trade is closed with its Close Review due in the next Review, and read the card again only once the receipt is dismissed', async () => {
     const onRefresh = vi.fn(() => Promise.resolve(true));
     const { user } = await sellAll({ onRefresh });
