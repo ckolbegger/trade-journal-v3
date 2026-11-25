@@ -1089,3 +1089,5 @@ Output: evidence/D95/ocr/T95.46-owed-a2dbcc59..1a774a68.json; 15 files complete.
 | medium | `ReviewCard.tsx:141` | after a closing sale, the header still shows the summary ("Long 100 shares @ …") | Valid | bug task **T95.46-B8** |
 | medium | `ReviewView.tsx:465` | soldOut is add-only, never cleared for the mounted view | Doubtful | bug task **T95.46-B9** |
 | low | `AppShell.test.tsx:1332` | a fixed 20 ms wait instead of an awaited act | style | tech-debt.md |
+
+T95.46-B5 `e0e2fdbb`: dueInOf catches a failed Market Data read after the commit and leaves dueIn out (the receipt falls back to "the next Review"); case red (StorageFailure) then green. T95.46-B6 `f90cd581`: a Due classification reads "due now" / "owed now" on the receipt (new-words.md Part B); case red then green. trade-workflows and ActionForm 118 passed; e2e/d95 sale 8 passed. Their ocr runs with T95.46-B7, B8, B9 as one range.
