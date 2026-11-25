@@ -77,6 +77,19 @@ test('Status navigation opens a real Workspace view with a durability action', a
   await expect(page.getByLabel('Institution name')).toBeVisible()
 })
 
+test('brand is a compact label directly above the navigation buttons', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/')
+  await expect(page.locator('main')).toHaveAttribute('data-view', /^(empty|ready)$/)
+  const brand = page.getByRole('heading', { name: 'Trade Journal V3' })
+  expect(await brand.evaluate(el => parseFloat(getComputedStyle(el).fontSize))).toBeLessThanOrEqual(14)
+  const brandBox = await brand.boundingBox()
+  const navBox = await page.getByRole('navigation', { name: 'Primary' }).boundingBox()
+  expect(navBox).not.toBeNull()
+  expect(navBox!.y).toBeGreaterThan(brandBox!.y)
+  expect(navBox!.y - (brandBox!.y + brandBox!.height)).toBeLessThan(12)
+})
+
 test('responsive layout switches on live resize without reload', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 })
   await page.goto('/')
