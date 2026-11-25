@@ -61,3 +61,5 @@ Critic B3's minor observations (T95.46):
 - "Day so far" rises when a Trade is sold at a loss before the close (only Trades open at the close count; matches specs/design/daily-review.md:19).
 - "Back to the Review" drops a half-typed sale without the refusal.
 - The Trade-switch refusal stays beside the form's own refusal after a failed "Save it".
+- ocr (owed range a2dbcc59^..1a774a68), style: `src/ui/AppShell.test.tsx:1332` waits a fixed 20 ms for the stale status instead of an awaited act.
+- The T95.46-B4 agent note on backdated sales above is now bug task T95.46-B6.

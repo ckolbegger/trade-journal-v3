@@ -1077,3 +1077,15 @@ T95.46 critic B3 (the third and last; report evidence/D95/critic-b3.md): **PASS*
 **T95.46 Part B gate: passed** — full run 3 passed, acceptance commands pass for every Part B row, critic B3 passed with lows only. Owed: the ocr review of `a2dbcc59^..1a774a68` (T95.28-F2-B2, B95.10, T95.28-F2-F1, T95.46-B1, B2, B3, B4), provider failing since about 18:30.
 
 ocr retry, 2026-11-25 03:21 EST, after the user added credits: all seven code commits (a2dbcc59, 00a4d031, ce52daf6, e7ead78f, db2de383, 439f2f34, 1a774a68) failed at once on the provider; `ocr session show` gives "The ChatGPT user has reached their Subscription Sharing usage limit … (subscription_sharing_usage_limit_exceeded)". Still owed.
+
+### ocr of the seven owed commits, one cumulative diff (`a2dbcc59^..1a774a68`, the user's choice, 2026-11-25)
+Output: evidence/D95/ocr/T95.46-owed-a2dbcc59..1a774a68.json; 15 files complete. One round-2 request hit "server overloaded" (upgrade.spec.ts, AppShell.tsx, AppShell.test.tsx, Onboarding.test.tsx), so those four may be reviewed thinly.
+
+| Severity | Location | Claim | Assessment | Route |
+|---|---|---|---|---|
+| high | `record-position-change.ts:534` | the Due Classification's Market Data read runs after the commit; if it rejects, a saved sale reports failure | Valid | bug task **T95.46-B5** |
+| medium | `ExitReceipt.tsx:167` | a `Due` classification (backdated sale) reads "next Review" though the Review asks now | Valid | bug task **T95.46-B6** (supersedes the T95.46-B4 agent note in tech-debt.md) |
+| medium | `ReviewCard.tsx:142` | after a closing sale, the header's aria-describedby and hidden reason spans keep the open-position reasons | Valid | bug task **T95.46-B7** |
+| medium | `ReviewCard.tsx:141` | after a closing sale, the header still shows the summary ("Long 100 shares @ …") | Valid | bug task **T95.46-B8** |
+| medium | `ReviewView.tsx:465` | soldOut is add-only, never cleared for the mounted view | Doubtful | bug task **T95.46-B9** |
+| low | `AppShell.test.tsx:1332` | a fixed 20 ms wait instead of an awaited act | style | tech-debt.md |
