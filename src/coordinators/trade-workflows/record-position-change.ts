@@ -1,6 +1,7 @@
 import { Temporal } from 'temporal-polyfill';
 import type { RuntimeNotWritable } from '../../delivery/runtime-not-writable.ts';
 import { instrumentKey, type OptionInstrument, type StockInstrument } from '../../domain/instrument/index.ts';
+import { classifyDue, type DueClassification } from '../../domain/journal-debt/index.ts';
 import type { Instant } from '../../domain/time/index.ts';
 import type { StorageFailure } from '../mutation-guard.ts';
 import {
@@ -88,8 +89,24 @@ export type PositionChangeSuccess = TradeMutationSuccess<
     readonly reflection: ReflectionOutcome;
     // Present only when the change closed the Trade.
     readonly closeReview?: ReflectionOutcome;
+    // When each owed item falls due, by the Due Classification the Review and Trade Detail use (A327). Present only for a Debt, and
+    // only when Market Data resolves the session the closes come from.
+    readonly dueIn?: { readonly reflection?: DueClassification; readonly closeReview?: DueClassification };
   }
 >;
+
+// When each Debt this change left falls due, against the closes of the session Market Data resolves now (the Expected Mark Date, as
+// Trade Detail reads it), so the receipt says what the Review will. With no session there is nothing to say.
+async function dueInOf(deps: TradeWorkflowsDeps, symbol: string, reflection: ReflectionOutcome, closeReview: ReflectionOutcome | undefined) {
+  if (reflection.kind !== 'Debt' && closeReview?.kind !== 'Debt') return {};
+  const result = await deps.marketData.query({ kind: 'ResolveFrames', context: { kind: 'Current', asOf: deps.clock.now() }, instruments: [symbol] });
+  const frame = result.kind === 'Frames' ? result.frames[0] : undefined;
+  if (!frame) return {};
+  const closes = { previousClose: frame.previousCloseInstant, close: frame.closeInstant };
+  const of = (outcome: ReflectionOutcome | undefined) => (outcome?.kind === 'Debt' ? classifyDue(outcome.debt.dueAnchor, closes) : undefined);
+  const [first, second] = [of(reflection), of(closeReview)];
+  return { dueIn: { ...(first && { reflection: first }), ...(second && { closeReview: second }) } };
+}
 
 // Selects the one outcome the commit produced, and the identity the receipt names for it.
 function reflectionOutcome(journal: {
@@ -514,7 +531,7 @@ async function attemptPositionChange(deps: TradeWorkflowsDeps, command: Position
       reflection: ref,
       ...(close && { closeReview: close.ref }),
     },
-    postCommit: { trade, derivation, reflection: outcome, ...(close && { closeReview: close.outcome }) },
+    postCommit: { trade, derivation, reflection: outcome, ...(close && { closeReview: close.outcome }), ...(await dueInOf(deps, trade.plan.underlying, outcome, close?.outcome)) },
     // The Open list reorders by Last Activity; the list the Trade left loses it.
     affected: [trade.storedLifecycle, ...(before === trade.storedLifecycle ? [] : [before])].map((lifecycle) => ({ scope: 'TradeList', lifecycle })),
   };

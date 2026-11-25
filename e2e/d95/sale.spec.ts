@@ -176,6 +176,23 @@ test.describe('B95.8 The sale measured against the Plan Exit (AC-REV-008, AC-POS
     await context.close();
   });
 
+  test('should say the Close Review is due in the Review after next when the sale is dated after the close', async ({ profile, copySetup }) => {
+    test.setTimeout(120_000);
+    const { context, page, ids } = await openAbcDef(profile, copySetup);
+    await openReview(page);
+    await enterMark(page, 'ABC', 'Mon Oct 12', '27.50');
+    await saveAction(page, 'Exit', undefined, 'ABC');
+    await openSale(page, 'Review', 'ABC', ids);
+    await fillRows(page, [sell('100', '27.60', '1.00', '2026-10-12T17:00')]);
+    await closeReasonGroup(page).getByRole('radio').first().check();
+    await page.getByRole('button', { name: 'Save exit' }).click();
+    const closeReview = page.getByText('Recorded. ABC is closed. Its Close Review is due in the Review after next.', { exact: true });
+    await atBothWidths(page, async (width) => {
+      await expect(closeReview, `the Close Review at ${width}`).toBeVisible();
+    });
+    await context.close();
+  });
+
   test('should save a sale at once on Say why later and ask for the reason in the next Review', async ({ profile, copySetup }) => {
     test.setTimeout(120_000);
     const { context, page, ids } = await openAbcDef(profile, copySetup);

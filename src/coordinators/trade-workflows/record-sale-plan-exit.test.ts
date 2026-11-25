@@ -356,3 +356,29 @@ describe('a sale that leaves the Plan Exit', () => {
     expect(result.receipt.reflection.kind).toBe('Entry');
   }, 60_000);
 });
+
+// T95.46-B4: the receipt says when each owed item is due, by the Due Classification the Review uses (W155).
+describe('a sale put off to be answered later', () => {
+  const saleAt = async (held: Held, economicTime: string) => {
+    const command = await saleCommand(held, '100', '51.00', { kind: 'Defer' }, await closing(held));
+    return recorded(await held.stack.tradeWorkflows.recordPositionChange({ ...command, members: command.members.map((m) => ({ ...m, economicTime })) }));
+  };
+
+  it('should say the reflection and the Close Review fall due in the Review after next when the sale is dated after the close', async () => {
+    const held = await longTrade();
+    await held.stack.saveMark('XYZ', '51.00');
+
+    const result = await saleAt(held, '2026-10-12T20:45:00Z');
+
+    expect(result.postCommit.dueIn).toEqual({ reflection: 'DueInReviewAfterNext', closeReview: 'DueInReviewAfterNext' });
+  }, 60_000);
+
+  it('should say the reflection and the Close Review fall due in the next Review when the sale is dated before the close', async () => {
+    const held = await longTrade();
+    await held.stack.saveMark('XYZ', '51.00');
+
+    const result = await saleAt(held, '2026-10-12T19:30:00Z');
+
+    expect(result.postCommit.dueIn).toEqual({ reflection: 'DueInNextReview', closeReview: 'DueInNextReview' });
+  }, 60_000);
+});

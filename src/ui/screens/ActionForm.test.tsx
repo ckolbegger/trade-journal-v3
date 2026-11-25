@@ -406,6 +406,12 @@ describe('The reason owed on the receipt (T95.40, W155)', () => {
     expect(await screen.findByText('Recorded. Why you left the Plan is owed at the next Review.')).toBeTruthy();
   });
 
+  it('should say on the receipt that the reason is owed at the Review after next when the coordinator classifies it so', async () => {
+    const result = withDebt(['PlanDepartureReason']);
+    await sellAndSayLater({ ...result, postCommit: { ...result.postCommit, dueIn: { reflection: 'DueInReviewAfterNext' } } });
+    expect(await screen.findByText('Recorded. Why you left the Plan is owed at the Review after next.')).toBeTruthy();
+  });
+
   it('should say nothing of a reason on the receipt when the reflection owed names none', async () => {
     await sellAndSayLater(withDebt());
     await screen.findByRole('heading', { level: 3, name: 'Exit recorded' });
@@ -455,6 +461,22 @@ describe('A closing sale in the card (T95.40, W135)', () => {
     await mounted.user.click(screen.getByRole('button', { name: 'Save exit' }));
     return mounted;
   }
+
+  it('should say the Close Review is due in the Review after next and the reason is owed then when the coordinator classifies them so', async () => {
+    const withDueIn = { ...closing, postCommit: { ...closing.postCommit, reflection: { kind: 'Debt', debt: { debtId: 'debt-1', requires: ['PlanDepartureReason'] } }, dueIn: { reflection: 'DueInReviewAfterNext', closeReview: 'DueInReviewAfterNext' } } };
+    const facade = exitFormFacade();
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(withDueIn as never);
+    const { user } = mount({ form: savedExit, planExit, now: () => '2026-10-13T14:05:00Z' }, facade);
+    await user.click(screen.getByRole('button', { name: 'Record the sale' }));
+    const row = await screen.findByRole('group', { name: 'Execution 1' });
+    for (const [label, value] of [['Quantity', '100'], ['Price', '53.00'], ['Fee', '1.00']] as const) {
+      await user.clear(within(row).getByLabelText(label));
+      await user.type(within(row).getByLabelText(label), value);
+    }
+    await user.click(screen.getByRole('button', { name: 'Save exit' }));
+    expect(await screen.findByText('Recorded. XYZ is closed. Its Close Review is due in the Review after next.')).toBeTruthy();
+    expect(screen.getByText('Why you left the Plan is owed at the Review after next.')).toBeTruthy();
+  });
 
   it('should say the Trade is closed with its Close Review due in the next Review, and read the card again only once the receipt is dismissed', async () => {
     const onRefresh = vi.fn(() => Promise.resolve(true));
