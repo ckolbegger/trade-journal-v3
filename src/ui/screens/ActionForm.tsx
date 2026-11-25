@@ -386,7 +386,7 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
         <legend>Action</legend>
         {CHOICES.map((choice) => (
           <label key={choice} className="chip">
-            <input type="radio" name="action" value={choice} checked={action === choice} disabled={saving || !writable} onClick={() => setChose(true)} onChange={() => { setAction(choice); setChose(true); }} />
+            <input type="radio" name="action" value={choice} checked={action === choice} disabled={saving || !writable} onClick={() => setChose(true)} onChange={() => { setAction(choice); setChose(true); setIssues([]); }} />
             {choice}
           </label>
         ))}

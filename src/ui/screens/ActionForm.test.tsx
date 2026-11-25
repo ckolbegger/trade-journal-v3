@@ -180,6 +180,25 @@ describe('Refusing a save in words', () => {
   });
 });
 
+describe('A refusal goes when the choice changes', () => {
+  it('should clear Say why when the chosen Action no longer needs a reason', async () => {
+    const { user, form } = mount({ planCall: out('Stop'), replay: stockReplay });
+    await user.click(within(form).getByRole('radio', { name: 'Hold' }));
+    await user.click(within(form).getByRole('button', { name: /^Save/ }));
+    expect(within(form).getByText('Say why.')).toBeTruthy();
+    await user.click(within(form).getByRole('radio', { name: 'Exit' }));
+    expect(within(form).queryByText('Say why.')).toBeNull();
+  });
+
+  it('should clear Choose an Action once an Action is chosen', async () => {
+    const { user, form } = mount({ planCall: out('Stop'), replay: stockReplay });
+    await user.click(within(form).getByRole('button', { name: 'Save' }));
+    expect(within(form).getByText('Choose an Action.')).toBeTruthy();
+    await user.click(within(form).getByRole('radio', { name: 'Exit' }));
+    expect(within(form).queryByText('Choose an Action.')).toBeNull();
+  });
+});
+
 describe('A save refused for want of a reason', () => {
   it('should show the same words when the save comes back IntentRequired', async () => {
     const facade = facadeDouble();
