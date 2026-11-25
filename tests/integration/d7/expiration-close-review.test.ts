@@ -1,22 +1,25 @@
-// I7.5: the Close Review of an Expiration is completed, declined or deferred without blocking the closure, and an
-// Expiration takes no Close Reason (AC-POS-004, A107). The Review's owed group classifies the deferred one by the
-// Review it is read in.
+// I7.5: the Close Review of an Expiration is put off without blocking the closure, and an Expiration takes no Close
+// Reason (AC-POS-004, A107, D9.5 A312). A sale's Close Review answered or declined through its Debt is the other two
+// outcomes (T95.48: an expiration no longer completes or declines its Close Review at the change). The Review's owed
+// group classifies the deferred one by the Review it is read in.
 import { describe, expect, it } from 'vitest';
 import {
-  attemptExpiration, closeReasonId, closeReviewDisposition, confirmOption, detailOf, dumpAll, FRIDAY_1600, FRIDAY_1700, MONDAY_NEXT_1700, OC_PC1, onboardedAt, outstandingDebts, recordOption, restart, reviewAt,
+  attemptExpiration, closeReasonId, closeReviewDisposition, confirmOption, detailOf, dumpAll, FRIDAY_1600, FRIDAY_1700, MONDAY_NEXT_1700, OC_PC1, OC_X1, onboardedAt, outstandingDebts, recordOption, restart, reviewAt,
   recordExpiration, workspaceStores, type CloseReviewKind, type StoredTradeDoc,
 } from './support.ts';
 
 describe('I7.5 Expiration Close Review dispositions', () => {
-  it('should close three expiring Long Calls with no Close Reason and an Entry, a decline and an Outstanding Debt due Friday 16:00, reject a fourth with a Close Reason writing nothing, and classify the deferred one as DueInNextReview on Friday and Due on Monday', async () => {
+  it('should close three Long Calls, two by a sale whose Close Review is answered and declined through its Debt and one by an expiration with no Close Reason and an Outstanding Debt due Friday 16:00, reject a fourth expiration with a Close Reason writing nothing, and classify the deferred one as DueInNextReview on Friday and Due on Monday', async () => {
     const { d, app } = await onboardedAt(FRIDAY_1700);
     const trades = {} as Record<CloseReviewKind, string>;
     for (const kind of ['Complete', 'Decline', 'Defer'] as const) {
       const tradeId = (await confirmOption(app, 'O-C')).receipt.tradeId;
       await recordOption(app, tradeId, 'Buy', OC_PC1);
-      const result = await recordExpiration(app, tradeId, '1', FRIDAY_1600, { closeReview: await closeReviewDisposition(app, kind) });
+      const result = kind === 'Defer'
+        ? await recordExpiration(app, tradeId, '1', FRIDAY_1600)
+        : await recordOption(app, tradeId, 'Sell', OC_X1, { closeReasonId: await closeReasonId(app, 'Target Reached'), closeReview: await closeReviewDisposition(app, kind) });
       expect(result.receipt.lifecycleTransitions).toEqual([{ tradeId, from: 'Open', to: 'Closed' }]);
-      expect(result.receipt.closeReview?.kind).toBe({ Complete: 'Entry', Decline: 'Decline', Defer: 'Debt' }[kind]);
+      expect(result.receipt.closeReview?.kind).toBe('Debt');
       trades[kind] = tradeId;
     }
 
@@ -24,7 +27,7 @@ describe('I7.5 Expiration Close Review dispositions', () => {
     const fourth = (await confirmOption(app, 'O-C')).receipt.tradeId;
     await recordOption(app, fourth, 'Buy', OC_PC1);
     const before = await dumpAll(d.factory);
-    const rejected = await attemptExpiration(app, fourth, '1', FRIDAY_1600, { closeReasonId: await closeReasonId(app, 'Time-Based Exit'), closeReview: await closeReviewDisposition(app, 'Complete') });
+    const rejected = await attemptExpiration(app, fourth, '1', FRIDAY_1600, { closeReasonId: await closeReasonId(app, 'Time-Based Exit'), closeReview: await closeReviewDisposition(app, 'Defer') });
     expect(rejected).toEqual(expect.objectContaining({ kind: 'Rejected', issues: [{ source: 'TradeWorkflows', field: 'closeReasonId', code: 'CloseReasonNotApplicable' }] }));
     expect(await dumpAll(d.factory)).toEqual(before);
     expect((await detailOf(app, fourth)).lifecycle).toEqual({ stored: 'Open', agreement: { kind: 'Agrees' } });
@@ -35,7 +38,7 @@ describe('I7.5 Expiration Close Review dispositions', () => {
       const detail = await detailOf(friday, tradeId);
       if (!('terminalDisposition' in detail)) throw new Error('expected the Closed form of Detail');
       expect(detail.lifecycle).toEqual({ stored: 'Closed', agreement: { kind: 'Agrees' } });
-      expect(detail.closeReason).toBeUndefined();
+      if (tradeId === trades.Defer) expect(detail.closeReason).toBeUndefined();
     }
     const stores = workspaceStores(await dumpAll(d.factory));
     const storedTrades = stores['trades'] as StoredTradeDoc[];
@@ -43,7 +46,7 @@ describe('I7.5 Expiration Close Review dispositions', () => {
       const stored = storedTrades.find((t) => t.tradeId === tradeId);
       expect(stored?.lifecycle).toBe('Closed');
       // The stored document omits the field when the Trade has no Close Reason fact.
-      expect(stored?.closeReasonFacts ?? []).toEqual([]);
+      if (tradeId === trades.Defer) expect(stored?.closeReasonFacts ?? []).toEqual([]);
     }
     const obligations = stores['journalObligations'] as { obligationKey: string; outcome: { kind: string } }[];
     const outcomeOf = (tradeId: string) => obligations.find((o) => o.obligationKey === `CloseReview:${tradeId}`)?.outcome.kind;

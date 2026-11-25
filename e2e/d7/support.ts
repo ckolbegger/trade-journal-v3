@@ -3,7 +3,7 @@
 // every contract expires Friday 2026-11-20 (EST, UTC-5).
 import { answerSlipQuestions, expectMarksSaved, marksStepOf } from '../d4/support.ts';
 import type { Locator, Page } from '@playwright/test';
-import { answerCloseReviewIn, answerIn, answerSaleIn, chooseCell, closeReasonGroup, closingSection, closeReviewGroup, completeReflection, createTradeAt, currentTradeId, detail, executionRow, expect, openDrawer, openEntryForm, PLAN, reachCard, reachPanel, LAUNCH, savedUnlessRefused, tradeCard, type CardRef, type ProbedDatabase, type TradeRef, test as d1Test, type Row } from '../d6/support.ts'; // d6's test, whose automatic fixture serves current
+import { answerIn, answerSaleIn, chooseCell, closeReasonGroup, closeReviewGroup, completeReflection, createTradeAt, currentTradeId, detail, executionRow, expect, openDrawer, openEntryForm, PLAN, reachCard, reachPanel, LAUNCH, savedUnlessRefused, tradeCard, type CardRef, type ProbedDatabase, type TradeRef, test as d1Test, type Row } from '../d6/support.ts'; // d6's test, whose automatic fixture serves current
 
 export * from '../d6/support.ts';
 
@@ -145,14 +145,17 @@ export async function openSettlement(page: Page, card: CardRef): Promise<Locator
   return tradeCard(page, card).getByRole('region', { name: 'Settlement', exact: true });
 }
 
-// On the expiration form: answers the expiration's own reflection, then either defers the Close Review (Reflect later, the
-// default) or answers it now, and saves. The Close Reason is never asked for an Expiration (row 21.16).
-export async function recordExpiration(page: Page, closeReview: 'later' | 'now' = 'later'): Promise<void> {
+// On the expiration form: answers the expiration's own reflection with a fixed Expiration Reason (where the form asks for
+// one), puts the Close Review off (Reflect later: an expiration settles nothing else at the change, D9.5 A312), and saves.
+// The Close Reason is never asked for an Expiration (row 21.16).
+export async function recordExpiration(page: Page): Promise<void> {
   await expect(page.getByRole('heading', { name: 'Expiration', level: 1 })).toBeVisible();
-  await answerIn(page.getByRole('region', { name: 'Reflection on this expiration' }));
+  const reflection = page.getByRole('region', { name: 'Reflection on this expiration' });
+  await answerIn(reflection);
+  const reason = reflection.getByLabel(/^Why did it expire worthless\?/);
+  if ((await reason.count()) > 0) await reason.fill('Expired out of the money.');
   await expect(closeReasonGroup(page)).toHaveCount(0);
-  if (closeReview === 'later') await closeReviewGroup(page).getByLabel('Reflect later').check();
-  else await answerCloseReviewIn(closingSection(page));
+  await closeReviewGroup(page).getByLabel('Reflect later').check();
   await page.getByRole('button', { name: 'Save expiration' }).click();
   await expect(page.getByRole('heading', { name: 'Expiration recorded', level: 1 })).toBeVisible();
 }

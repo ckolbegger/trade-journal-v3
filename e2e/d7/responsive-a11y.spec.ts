@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import {
-  closeReviewGroup, closingSection, completion, createSettlementFixture, createShortPutTrade, currentTradeId, detail, expect, expectAccessible, expectPayoffChart, expectPayoffNotApplicable,
+  closeReviewGroup, completion, createSettlementFixture, createShortPutTrade, currentTradeId, detail, expect, expectAccessible, expectPayoffChart, expectPayoffNotApplicable,
   fillOptionPlan, firstPage, FRIDAY_NOV_1700, launchAt, MONDAY_NOV_1700, onboardedAt, openDrawer, openEntryForm, openReview, openSettlement, receiptResult, LAUNCH, test, tabTo, TUESDAY_1030, valueOf,
 } from './support.ts';
 
@@ -243,11 +243,9 @@ test.describe('B7.13 Responsive and accessible', () => {
     await tabTo(page, reflection.getByRole('radiogroup', { name: 'Decision confidence' }).getByLabel('1', { exact: true }));
     for (let n = 0; n < 3; n++) await page.keyboard.press('ArrowRight');
     await expect(reflection.getByRole('radiogroup', { name: 'Decision confidence' }).getByLabel('4')).toBeChecked();
-    await tabTo(page, closingSection(page).getByRole('radiogroup', { name: 'Would you take this Trade again under similar conditions?' }).getByLabel('Yes, as planned'));
-    await page.keyboard.press('Space');
-    await tabTo(page, closingSection(page).getByLabel('What is the key lesson?'));
-    await page.keyboard.type('Stick to the Plan.');
-    await expect(closeReviewGroup(page).getByLabel('Reflect now')).toBeChecked();
+    await tabTo(page, closeReviewGroup(page).getByLabel('Reflect now'));
+    await page.keyboard.press('ArrowRight');
+    await expect(closeReviewGroup(page).getByLabel('Reflect later')).toBeChecked();
     await tabTo(page, page.getByRole('button', { name: 'Save expiration' }));
     await page.keyboard.press('Enter');
     await expect(page.getByRole('heading', { name: 'Expiration recorded', level: 1 })).toBeVisible();

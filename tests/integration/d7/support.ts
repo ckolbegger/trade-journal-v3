@@ -39,6 +39,16 @@ export const OC_X1: Fill = { quantity: '1', price: '3.00', economicTime: TUESDAY
 export const OS_S1: Fill = { quantity: '2', price: '1.25', economicTime: '2026-10-12T14:00:00Z', fee: '1.30' };
 export const OS_B1: Fill = { quantity: '1', price: '0.60', economicTime: TUESDAY_10, fee: '0.65' };
 
+const EXPIRATION_REASON_PROMPT = 'prompt.position-change-reflection.expiration-reason';
+
+// An expiration's own completed reflection: the three required answers and a fixed Expiration Reason, which an in-the-money
+// expiration requires and an out-of-the-money one accepts (D9.5 T95.50).
+export async function completeExpiration(app: Application): Promise<ReflectionDisposition> {
+  const reflection = await complete(app);
+  if (reflection.kind !== 'Complete') throw new Error('expected Complete');
+  return { ...reflection, form: { ...reflection.form, answers: { ...reflection.form.answers, [EXPIRATION_REASON_PROMPT]: { kind: 'Text', text: 'Expired out of the money.' } } } };
+}
+
 export type OptionKind = 'O-C' | 'O-P' | 'O-S';
 
 const STRATEGY: Record<OptionKind, string> = { 'O-C': 'strategy.long-call', 'O-P': 'strategy.long-put', 'O-S': 'strategy.cash-secured-put' };
@@ -116,16 +126,24 @@ export async function expirationMember(app: Application, tradeId: string, quanti
   return { kind: 'Expiration', tradeId, instrument: leg.instrument, quantity, economicTime };
 }
 
+// The reflection a Position Change carries when its test names none: a sale's with a Plan Departure Reason, an expiration's
+// with an Expiration Reason.
+async function defaultReflection(app: Application, sale: boolean, expiring: boolean): Promise<ReflectionDisposition> {
+  if (sale) return completeSale(app);
+  return expiring ? completeExpiration(app) : complete(app);
+}
+
 // A command for the given members against the Trade's current FactRevision.
 export async function optionCommand(app: Application, tradeId: string, members: readonly (PositionChangeMember | ExpirationMember)[], options: ChangeOptions = {}): Promise<PositionChangeCommand> {
   const { factRevision, leg } = await loaded(app, tradeId);
   // A sale reduces the Position: a Sell of a long leg, a Buy of a short one.
   const sale = members.some((m) => m.kind === 'Execution' && m.action === (leg.side === 'Short' ? 'Buy' : 'Sell'));
+  const expiring = members.some((m) => m.kind === 'Expiration');
   return {
     originTradeId: tradeId,
     trades: [{ tradeId, expectedFactRevision: factRevision }],
     members,
-    reflection: options.reflection ?? (sale ? await completeSale(app) : await complete(app)),
+    reflection: options.reflection ?? (await defaultReflection(app, sale, expiring)),
     ...(options.closeReasonId !== undefined && { closeReasonId: options.closeReasonId }),
     ...(options.closeReview !== undefined && { closeReview: options.closeReview }),
   };
@@ -141,15 +159,21 @@ export async function recordOption(app: Application, tradeId: string, action: 'B
   return result;
 }
 
-// The Expiration of `quantity` contracts at the settlement time, returning the facade's result as it is.
+// A single-leg expiration is always terminal (A113) and only puts its Close Review off (D9.5 A312); one to be answered or declined is the later answer through its Debt.
+const putOff = (options: ChangeOptions): ChangeOptions => (options.closeReview?.kind === 'Defer' ? options : { ...options, closeReview: { kind: 'Defer' } });
+
+// The Expiration of `quantity` contracts at the settlement time, returning the facade's result as it is. Its reflection is
+// completed with an Expiration Reason and its Close Review put off, whatever the options ask.
 export async function attemptExpiration(app: Application, tradeId: string, quantity: string, economicTime: string, options: ChangeOptions = {}) {
-  return app.TradeWorkflows.recordPositionChange(await optionCommand(app, tradeId, [await expirationMember(app, tradeId, quantity, economicTime)], options));
+  return app.TradeWorkflows.recordPositionChange(await optionCommand(app, tradeId, [await expirationMember(app, tradeId, quantity, economicTime)], putOff(options)));
 }
 
-// Records an Expiration and requires it to be accepted.
+// Records an Expiration and requires it to be accepted. A Close Review that is to be answered or declined is resolved
+// afterwards through its Debt; the receipt is the expiration's.
 export async function recordExpiration(app: Application, tradeId: string, quantity: string, economicTime: string, options: ChangeOptions = {}) {
   const result = await attemptExpiration(app, tradeId, quantity, economicTime, options);
   if (result.kind !== 'Recorded') throw new Error(`recordPositionChange: ${JSON.stringify(result)}`);
+  if (options.closeReview !== undefined && options.closeReview.kind !== 'Defer') await resolveCloseReview(app, tradeId, options.closeReview);
   return result;
 }
 

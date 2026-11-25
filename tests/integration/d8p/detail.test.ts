@@ -2,7 +2,7 @@
 // Through the real facade on fake-indexeddb.
 import { describe, expect, it } from 'vitest';
 import {
-  closeReviewDisposition, confirmOption, confirmOs2, detailOf, FRIDAY_1600, FRIDAY_1700, OC_PC1, OC_PC2, OC_X1, onboardedAt, openOs2, recordExpiration, recordOption, saveSession, TUESDAY, TUESDAY_1700_NY,
+  confirmOption, confirmOs2, detailOf, FRIDAY_1600, FRIDAY_1700, OC_PC1, OC_PC2, OC_X1, onboardedAt, openOs2, recordExpiration, recordOption, saveSession, TUESDAY, TUESDAY_1700_NY,
 } from '../d7s/support.ts';
 import { MONDAY_0900, oc3Command } from './support.ts';
 
@@ -35,7 +35,7 @@ describe('expiration line: days (A208)', () => {
     await recordOption(app, tradeId, 'Buy', OC_PC1);
     await recordOption(app, tradeId, 'Buy', OC_PC2);
     await recordOption(app, tradeId, 'Sell', OC_X1);
-    await recordExpiration(app, tradeId, '1', FRIDAY_1600, { closeReview: await closeReviewDisposition(app, 'Complete') });
+    await recordExpiration(app, tradeId, '1', FRIDAY_1600);
 
     const detail = await detailOf(app, tradeId);
 

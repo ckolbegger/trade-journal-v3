@@ -5,7 +5,7 @@ import {
 test.use({ actionTimeout: 15_000 });
 
 test.describe('B7.8 Kill after commit', () => {
-  test('should keep the Closed lifecycle, the Expiration, and both reflection outcomes after the browser is killed once an Expiration result renders', async ({ profile }) => {
+  test('should keep the Closed lifecycle, the Expiration, and its reflection and put-off Close Review after the browser is killed once an Expiration result renders', async ({ profile }) => {
     test.setTimeout(300_000);
     const killed = await spawnedBrowser(profile.dir, 9341);
     try {
@@ -13,7 +13,7 @@ test.describe('B7.8 Kill after commit', () => {
       const page = await onboardedPage(killed.context);
       await createShortPutTrade(page);
       await detail.recordExpirationLink(page).click();
-      await recordExpiration(page, 'now');
+      await recordExpiration(page);
       // The result has rendered: the browser is killed right after.
       await expect(valueOf(receiptResult(page), 'Lifecycle')).toHaveText('Closed');
     } finally {
@@ -31,18 +31,17 @@ test.describe('B7.8 Kill after commit', () => {
       await row.getByRole('link', { name: 'MNO', exact: true }).click();
       await expect(detail.heading(page, 'MNO')).toBeVisible();
       await expect(detail.resultValue(page, 'Terminal Disposition')).toHaveText('Closed via expiration of 2 contracts');
-      // Both reflections are answered: nothing is owed.
-      await expect(detail.anywhere(() => detail.reflectionOwed(page))).toHaveCount(0);
-      await expect(detail.anywhere(() => detail.closeReviewOwed(page))).toHaveCount(0);
+      // The expiration's reflection is answered and its Close Review put off: the Close Review is owed.
+      await expect(detail.anywhere(() => detail.closeReviewOwed(page))).not.toHaveCount(0);
 
       const workspace = workspaceOf(await probe(page))!;
       const [trade] = tradesOf(workspace);
       expect(trade!.lifecycle).toBe('Closed');
       expect(factsOf(trade!, 'Expiration')).toHaveLength(1);
       expect(factsOf(trade!, 'Execution')).toHaveLength(1);
-      // Both reflection outcomes: the expiration's own reflection (after the entry's) and the answered Close Review.
+      // Both reflection outcomes: the expiration's own reflection (after the entry's) and the Close Review put off, with no entry.
       const entries = entriesOf(workspace);
-      expect(entries.filter((e) => /close-review/.test(e.entryTypeKey))).toHaveLength(1);
+      expect(entries.filter((e) => /close-review/.test(e.entryTypeKey))).toHaveLength(0);
       expect(entries.filter((e) => /position-change-reflection/.test(e.entryTypeKey))).toHaveLength(2);
     } finally {
       await relaunched.kill();

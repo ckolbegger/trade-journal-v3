@@ -5,7 +5,7 @@
 import { describe, expect, it } from 'vitest';
 import { dec } from '../d2/support.ts';
 import {
-  closeReviewDisposition, complete, confirmOption, detailOf, dumpAll, FRIDAY_1600, FRIDAY_1700, MONDAY_NEXT_1700, MONDAY_NEXT_1705, onboardedAt, OS_S1, recordExpiration, recordOption, restart, reviewAt,
+  confirmOption, detailOf, dumpAll, FRIDAY_1600, FRIDAY_1700, MONDAY_NEXT_1700, MONDAY_NEXT_1705, onboardedAt, OS_S1, recordExpiration, recordOption, restart, reviewAt,
   THURSDAY_1700, workspaceStores, type StoredTradeDoc,
 } from './support.ts';
 
@@ -61,7 +61,7 @@ describe('I7.6 Settlement Due is never inferred', () => {
 
     // E-S at Monday 17:05, dated at the settlement time: Closed at Friday 16:00.
     current = await restart(current, { ...d, now: MONDAY_NEXT_1705 });
-    const expired = await recordExpiration(current, tradeId, '2', FRIDAY_1600, { reflection: await complete(current), closeReview: await closeReviewDisposition(current, 'Defer') });
+    const expired = await recordExpiration(current, tradeId, '2', FRIDAY_1600);
     expect(expired.receipt.lifecycleTransitions).toEqual([{ tradeId, from: 'Open', to: 'Closed' }]);
     const closed = await detailOf(current, tradeId);
     if (!('terminalDisposition' in closed)) throw new Error('expected the Closed form of Detail');

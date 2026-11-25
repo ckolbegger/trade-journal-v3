@@ -4,7 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rational } from '../../../src/domain/values/index.ts';
 import {
-  closeReasonId, closeReviewDisposition, complete, confirmOption, dec, detailOf, dumpAll, FRIDAY_1600, FRIDAY_1700, onboardedAt, optionCommand, optionExecution, OS_B1, OS_S1, recordExpiration, recordOption, restart, WEDNESDAY_10,
+  closeReasonId, closeReviewDisposition, confirmOption, dec, detailOf, dumpAll, FRIDAY_1600, FRIDAY_1700, onboardedAt, optionCommand, optionExecution, OS_B1, OS_S1, recordExpiration, recordOption, restart, WEDNESDAY_10,
   workspaceStores, type Fill, type StoredTradeDoc,
 } from './support.ts';
 
@@ -97,7 +97,7 @@ describe('I7.4 Cash-Secured Put lifecycle', () => {
     const { d, app } = await onboardedAt(FRIDAY_1700);
     const tradeId = (await confirmOption(app, 'O-S')).receipt.tradeId;
     const s1 = await recordOption(app, tradeId, 'Sell', OS_S1);
-    const expired = await recordExpiration(app, tradeId, '2', FRIDAY_1600, { reflection: await complete(app), closeReview: await closeReviewDisposition(app, 'Defer') });
+    const expired = await recordExpiration(app, tradeId, '2', FRIDAY_1600);
     expect(expired.receipt.lifecycleTransitions).toEqual([{ tradeId, from: 'Open', to: 'Closed' }]);
 
     const again = await restart(app, d);

@@ -59,7 +59,7 @@ describe('Trade Detail as a finished read (decision 105)', () => {
     await recordOption(app, tradeId, 'Buy', OC_PC1);
     await recordOption(app, tradeId, 'Buy', OC_PC2);
     await recordOption(app, tradeId, 'Sell', OC_X1);
-    await recordExpiration(app, tradeId, '1', FRIDAY_1600, { closeReview: await closeReviewDisposition(app, 'Complete') });
+    await recordExpiration(app, tradeId, '1', FRIDAY_1600);
 
     const detail = await detailOf(app, tradeId);
 

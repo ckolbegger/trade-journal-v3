@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { Rational } from '../../../src/domain/values/index.ts';
 import { closedViaOption } from '../../../src/ui/screens/option-disposition.ts';
 import {
-  closeReviewDisposition, complete, confirmOption, dec, detailOf, dumpAll, listed, OC_PC1, OC_PC2, OC_X1, onboardedAt, recordExpiration, recordOption, restart, FRIDAY_1600, FRIDAY_1700, XYZ_CALL,
+  closeReviewDisposition, confirmOption, dec, detailOf, dumpAll, listed, OC_PC1, OC_PC2, OC_X1, onboardedAt, recordExpiration, recordOption, restart, FRIDAY_1600, FRIDAY_1700, XYZ_CALL,
   workspaceStores, type StoredTradeDoc,
 } from './support.ts';
 
@@ -55,8 +55,8 @@ describe('I7.3 Long Call lifecycle', () => {
     expect(results[0]!.receipt.lifecycleTransitions).toEqual([{ tradeId, from: 'Planned', to: 'Open' }]);
     expect(results[2]!.postCommit.derivation.realizedToDate).toEqual(dec('88.70'));
 
-    // E1 at the settlement time, Friday 16:00, recorded at 17:00 with both reflections completed.
-    const expired = await recordExpiration(app, tradeId, '1', FRIDAY_1600, { reflection: await complete(app), closeReview: await closeReviewDisposition(app, 'Complete') });
+    // E1 at the settlement time, Friday 16:00, recorded at 17:00 with its reflection completed; its Close Review is put off and answered through its Debt.
+    const expired = await recordExpiration(app, tradeId, '1', FRIDAY_1600, { closeReview: await closeReviewDisposition(app, 'Complete') });
     expect(expired.receipt.lifecycleTransitions).toEqual([{ tradeId, from: 'Open', to: 'Closed' }]);
     expect(expired.postCommit.trade.storedLifecycle).toBe('Closed');
     expect(expired.postCommit.derivation.expectedLifecycle).toBe('Closed');

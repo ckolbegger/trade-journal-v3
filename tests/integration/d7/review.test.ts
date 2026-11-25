@@ -6,7 +6,7 @@ import type { Application } from '../../../src/app/compose.ts';
 import { instrumentKey } from '../../../src/domain/instrument/index.ts';
 import { Rational } from '../../../src/domain/values/index.ts';
 import {
-  bindingFor, closeReviewDisposition, complete, device, dumpAll, FRIDAY_1600, FRIDAY_1700, FRIDAY_DATE, MNO_PUT, onboarded, recordExpiration, restart, reviewAt, saveAction, saveMark, SATURDAY_1000,
+  bindingFor, complete, device, dumpAll, FRIDAY_1600, FRIDAY_1700, FRIDAY_DATE, MNO_PUT, onboarded, recordExpiration, restart, reviewAt, saveAction, saveMark, SATURDAY_1000,
   settlementTrades, workspaceStores, XYZ_CALL, type Device,
 } from './support.ts';
 
@@ -61,7 +61,7 @@ describe('I7.7 Review end to end with settlement', () => {
 
     // E1 for T-1 from its item, the Close Review deferred.
     const item = settlementOf(marked).find((candidate) => candidate.tradeId === t1)!;
-    const expired = await recordExpiration(app, t1, item.quantity.numerator.toString(), item.settlementTime.kind === 'Value' ? item.settlementTime.value : '', { reflection: await complete(app), closeReview: await closeReviewDisposition(app, 'Defer') });
+    const expired = await recordExpiration(app, t1, item.quantity.numerator.toString(), item.settlementTime.kind === 'Value' ? item.settlementTime.value : '');
     expect(expired.receipt.lifecycleTransitions).toEqual([{ tradeId: t1, from: 'Open', to: 'Closed' }]);
 
     // After E1: T-1 is out of the walk and the settlement family, its contract's Mark task is gone, XYZ's task names T-2

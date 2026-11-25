@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { Rational } from '../../../src/domain/values/index.ts';
 import { instrumentKey } from '../../../src/domain/instrument/index.ts';
 import {
-  closeReviewDisposition, confirmOption, dec, detail, detailOf, FRIDAY_1600, FRIDAY_1700, OC_PC1, OC_PC2, OC_X1, onboardedAt, recordExpiration, recordOption, referenceTrade, restart, saveMark, TUESDAY_1700,
+  confirmOption, dec, detail, detailOf, FRIDAY_1600, FRIDAY_1700, OC_PC1, OC_PC2, OC_X1, onboardedAt, recordExpiration, recordOption, referenceTrade, restart, saveMark, TUESDAY_1700,
   TUESDAY_DATE, value, XYZ_CALL, type Fill,
 } from './support.ts';
 
@@ -90,7 +90,7 @@ describe('I7.10 Payoff is not valuation', () => {
 
     // After E1: Current is NotApplicable and Planned is still the same.
     app = await restart(app, { ...d, now: FRIDAY_1700 });
-    await recordExpiration(app, tradeId, '1', FRIDAY_1600, { closeReview: await closeReviewDisposition(app, 'Complete') });
+    await recordExpiration(app, tradeId, '1', FRIDAY_1600);
     const closed = await detailOf(app, tradeId);
     if (!('payoff' in closed)) throw new Error('expected a Detail with payoff views');
     expect(closed.payoff.current).toEqual({ kind: 'NotApplicable', reason: 'NoRemainingPosition' });

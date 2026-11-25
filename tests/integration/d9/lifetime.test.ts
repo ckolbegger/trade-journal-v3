@@ -3,7 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import { DALE_PUT, K_SALE, R_DALE_U } from '../../../src/domain/trade-analysis/option-trade.ts';
 import { REPLAY_SESSION_DATES } from '../../../src/domain/trade-analysis/reference-trade.ts';
-import { closeReviewDisposition, device, onboarded, planStock, recordExpiration, restart } from '../d7s/support.ts';
+import { device, onboarded, planStock, recordExpiration, restart } from '../d7s/support.ts';
 import { dollars as q, figure, MON_1116_1700, MON_1123_1800, readyReplay, replayView, seriesApp } from './support.ts';
 
 const EXPIRATION_TIME = '2026-11-20T21:00:00Z';
@@ -38,7 +38,7 @@ describe('I9.5 How a replay ends', () => {
 
     // The Expiration is recorded with its Close Review.
     const fresh = await restart(app, d);
-    await recordExpiration(fresh, tradeId, '6', EXPIRATION_TIME, { closeReview: await closeReviewDisposition(fresh, 'Complete') });
+    await recordExpiration(fresh, tradeId, '6', EXPIRATION_TIME);
 
     const expired = await readyReplay(await restart(fresh, d), tradeId);
 

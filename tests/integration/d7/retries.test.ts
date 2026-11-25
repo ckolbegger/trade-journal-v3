@@ -2,7 +2,7 @@
 // each leave one settlement fact and one current Close Review outcome, and the second submission writes nothing.
 import { describe, expect, it } from 'vitest';
 import {
-  closeReviewDisposition, complete, confirmOption, dumpAll, expirationMember, FRIDAY_1600, FRIDAY_1700, journalStores, OC_PC1, OC_PC2, OC_X1, onboardedAt, optionCommand, outstandingDebts, recordExpiration,
+  closeReviewDisposition, confirmOption, dumpAll, expirationMember, FRIDAY_1600, FRIDAY_1700, journalStores, OC_PC1, OC_PC2, OC_X1, onboardedAt, optionCommand, outstandingDebts, recordExpiration,
   recordOption, workspaceStores, type StoredTradeDoc,
 } from './support.ts';
 
@@ -19,7 +19,7 @@ async function afterX1() {
 describe('I7.11 Retries', () => {
   it('a: should return Conflict for a second submission of E1, leaving one Expiration settlement fact and one Close Review outcome', async () => {
     const { d, app, tradeId } = await afterX1();
-    const command = await optionCommand(app, tradeId, [await expirationMember(app, tradeId, '1', FRIDAY_1600)], { reflection: await complete(app), closeReview: await closeReviewDisposition(app, 'Complete') });
+    const command = await optionCommand(app, tradeId, [await expirationMember(app, tradeId, '1', FRIDAY_1600)], { closeReview: await closeReviewDisposition(app, 'Defer') });
 
     const first = await app.TradeWorkflows.recordPositionChange(command);
     expect(first.kind).toBe('Recorded');
@@ -31,12 +31,12 @@ describe('I7.11 Retries', () => {
     const trade = (workspaceStores(before)['trades'] as StoredTradeDoc[])[0]!;
     expect(trade.facts.filter((f) => f.kind === 'Expiration')).toHaveLength(1);
     const outcomes = journalStores(before).obligations.filter((o) => o.obligationKey === `CloseReview:${tradeId}`);
-    expect(outcomes).toEqual([expect.objectContaining({ outcome: expect.objectContaining({ kind: 'Entry' }) as unknown })]);
+    expect(outcomes).toEqual([expect.objectContaining({ outcome: expect.objectContaining({ kind: 'Debt' }) as unknown })]);
   }, 60_000);
 
   it('b: should return Conflict carrying the Entry when the deferred Close Review of E1 is answered twice with the same expected revision', async () => {
     const { d, app, tradeId } = await afterX1();
-    await recordExpiration(app, tradeId, '1', FRIDAY_1600, { closeReview: await closeReviewDisposition(app, 'Defer') });
+    await recordExpiration(app, tradeId, '1', FRIDAY_1600);
     const debt = (await outstandingDebts(app)).find((x) => x.entryTypeKey === 'entry-type.close-review')!;
     const answer = await closeReviewDisposition(app, 'Complete');
     if (answer.kind !== 'Complete') throw new Error('expected Complete');

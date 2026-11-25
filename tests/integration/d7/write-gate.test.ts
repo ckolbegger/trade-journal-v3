@@ -3,7 +3,7 @@
 // store unchanged, and the Detail, both payoff views and the Review stay readable. One case per boundary.
 import { describe, expect, it } from 'vitest';
 import {
-  closeReviewDisposition, complete, confirmOption, detailOf, device, dumpAll, expirationMember, FRIDAY_1600, FRIDAY_1700, OC_PC1, OC_PC2, OC_X1, onboarded, optionCommand, optionPlanCommand, recordOption,
+  closeReviewDisposition, confirmOption, detailOf, device, dumpAll, expirationMember, FRIDAY_1600, FRIDAY_1700, OC_PC1, OC_PC2, OC_X1, onboarded, optionCommand, optionPlanCommand, recordOption,
   restart, reviewAt,
 } from './support.ts';
 
@@ -22,7 +22,7 @@ async function failedHost() {
   await recordOption(app, tradeId, 'Buy', OC_PC2);
   await recordOption(app, tradeId, 'Sell', OC_X1);
   const plan = await optionPlanCommand(app, 'O-C');
-  const expiration = await optionCommand(app, tradeId, [await expirationMember(app, tradeId, '1', FRIDAY_1600)], { reflection: await complete(app), closeReview: await closeReviewDisposition(app, 'Complete') });
+  const expiration = await optionCommand(app, tradeId, [await expirationMember(app, tradeId, '1', FRIDAY_1600)], { closeReview: await closeReviewDisposition(app, 'Defer') });
   const healthy = { detail: await detailOf(app, tradeId), review: { ...(await reviewAt(app, FRIDAY_1700)), binding: undefined } };
 
   d.testHost.fail(['inventory']);

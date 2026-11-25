@@ -59,7 +59,14 @@ export async function reviewStack(now = MONDAY_1700) {
     form: { ...reflection.form, answers: { ...reflection.form.answers, 'prompt.position-change-reflection.plan-departure': { kind: 'Text', text: 'Stopped out early.' } } },
   };
 
-  // A terminal sale only puts its Close Review off (A312); a fixture whose subject is the answer resolves the Debt after it.
+  // An expiration's completed reflection: the same answers with a fixed Expiration Reason, which an in-the-money expiration
+  // requires and an out-of-the-money one accepts (D9.5 T95.50).
+  const expirationReflection: ReflectionDisposition = {
+    ...reflection,
+    form: { ...reflection.form, answers: { ...reflection.form.answers, 'prompt.position-change-reflection.expiration-reason': { kind: 'Text', text: 'Expired out of the money.' } } },
+  };
+
+  // A terminal sale or expiration only puts its Close Review off (A312); a fixture whose subject is the answer resolves the Debt after it.
   const resolveCloseReview = async (tradeId: string, disposition: ReflectionDisposition): Promise<string | undefined> => {
     const outstanding = await stack.journal.query({ scope: 'OutstandingDebt' });
     const debt = outstanding.debts.find((d) => d.entryTypeKey === 'entry-type.close-review' && d.anchor.tradeId === tradeId);
@@ -163,7 +170,7 @@ export async function reviewStack(now = MONDAY_1700) {
     if (committed.kind !== 'Committed') throw new Error(`expected Committed, got ${committed.kind}`);
   };
 
-  return { ...stack, factory, marketData, dailyReview, reflection, saleReflection, resolveCloseReview, confirm, fill, fillTogether, saveMark, acknowledge, saveAction };
+  return { ...stack, factory, marketData, dailyReview, reflection, saleReflection, expirationReflection, resolveCloseReview, confirm, fill, fillTogether, saveMark, acknowledge, saveAction };
 }
 
 export type ReviewStack = Awaited<ReturnType<typeof reviewStack>>;

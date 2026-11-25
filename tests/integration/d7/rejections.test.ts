@@ -5,7 +5,7 @@ import type { Application } from '../../../src/app/compose.ts';
 import type { ConfirmPlanCommand, PositionChangeCommand } from '../../../src/coordinators/trade-workflows/index.ts';
 import { Rational } from '../../../src/domain/values/index.ts';
 import {
-  closeReviewDisposition, complete, confirmOption, dumpAll, expirationMember, FRIDAY_1600, MONDAY_NEXT_1700, onboardedAt, optionCommand, optionExecution, optionPlanCommand, OS_S1, recordExpiration,
+  closeReviewDisposition, confirmOption, dumpAll, expirationMember, FRIDAY_1600, MONDAY_NEXT_1700, onboardedAt, optionCommand, optionExecution, optionPlanCommand, OS_S1, recordExpiration,
   recordOption, XYZ_CALL,
 } from './support.ts';
 
@@ -108,7 +108,7 @@ describe('I7.8 Rejections write nothing', () => {
     const tradeId = (await confirmOption(app, 'O-S')).receipt.tradeId;
     await recordOption(app, tradeId, 'Sell', OS_S1);
     const buy = (quantity: string, economicTime: string) => optionExecution(app, tradeId, 'Buy', { quantity, price: '0.60', economicTime, fee: '0.65' });
-    const close = { closeReview: await closeReviewDisposition(app, 'Complete') };
+    const close = { closeReview: await closeReviewDisposition(app, 'Defer') };
 
     // A Buy 3 after S1 exceeds the 2 contracts open.
     const exceeds = issuesOf(await refused(app, d, await optionCommand(app, tradeId, [await buy('3', '2026-10-13T14:00:00Z')])));
@@ -136,7 +136,7 @@ describe('I7.8 Rejections write nothing', () => {
     expect(mixed).toEqual({ kind: 'VariantNotInstalled', variants: ['MixedMembers'] });
 
     // After E-S closes the Trade, a Buy is refused with TradeClosed.
-    await recordExpiration(app, tradeId, '2', FRIDAY_1600, { reflection: await complete(app), closeReview: await closeReviewDisposition(app, 'Complete') });
+    await recordExpiration(app, tradeId, '2', FRIDAY_1600);
     const closed = issuesOf(await refused(app, d, await optionCommand(app, tradeId, [await buy('1', '2026-10-13T14:00:00Z')])));
     expect(closed).toEqual([expect.objectContaining({ code: 'TradeClosed' })]);
   }, 60_000);

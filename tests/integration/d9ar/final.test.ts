@@ -3,7 +3,7 @@
 // odds are as they were before the end.
 import { describe, expect, it } from 'vitest';
 import { DALE_PUT, K_SALE, R_BREN_U, R_DALE_U } from '../../../src/domain/trade-analysis/option-trade.ts';
-import { closeReviewDisposition, recordExpiration, restart } from '../d7s/support.ts';
+import { recordExpiration, restart } from '../d7s/support.ts';
 import { dollars as q, figure, fillsOf, frac, MON_1116_1700, MON_1123_1800, oddsText, readyReplay, seriesApp, sessionOf } from './support.ts';
 
 const EXPIRATION_TIME = '2026-11-20T21:00:00Z';
@@ -41,7 +41,7 @@ describe('I9AR.5 A finished Trade', () => {
     const { d, app, tradeId } = await seriesApp(R_DALE_U, 'strategy.cash-secured-put', MON_1123_1800, { marksThrough: 13, without: (id) => id === 'pc-dale-e', extraMarks: marks });
     const due = await readyReplay(app, tradeId);
     const fresh = await restart(app, d);
-    await recordExpiration(fresh, tradeId, '6', EXPIRATION_TIME, { closeReview: await closeReviewDisposition(fresh, 'Complete') });
+    await recordExpiration(fresh, tradeId, '6', EXPIRATION_TIME);
 
     const expired = await readyReplay(await restart(fresh, d), tradeId);
 

@@ -90,12 +90,12 @@ describe('I7.13 Rebuild equivalence', () => {
     await recordOption(app, b, 'Buy', B0, { closeReasonId: reason, closeReview: await closeReviewDisposition(app, 'Defer') });
     const c = (await confirmOption(app, 'O-S')).receipt.tradeId;
     await recordOption(app, c, 'Sell', OS_S1);
-    await recordExpiration(app, c, '2', FRIDAY_1600, { closeReview: await closeReviewDisposition(app, 'Defer') });
+    await recordExpiration(app, c, '2', FRIDAY_1600);
 
     // I7.7: the Settlement Review fixture, XYZ's Mark, E1 for T-1 with its Close Review deferred, and the Actions.
     const { t1, t2, t3, t4, t5 } = await settlementTrades(app, true);
     await saveMark(app, 'XYZ', FRIDAY_DATE, '52.00');
-    await recordExpiration(app, t1, '1', FRIDAY_1600, { closeReview: await closeReviewDisposition(app, 'Defer') });
+    await recordExpiration(app, t1, '1', FRIDAY_1600);
     for (const tradeId of [t2, t3, t4, t5]) await saveAction(app, d, tradeId);
 
     const databaseName = await currentDatabase(d.factory);
@@ -124,7 +124,8 @@ describe('I7.13 Rebuild equivalence', () => {
     // Trades, and A's Close Review, put off at the sale and answered after it, is a fifth, Settled; Trades with Executions
     // carry exposureStart.
     expect(indexesBefore.byOutstandingDue).toHaveLength(4);
-    expect(indexesBefore.debtsByAnchorTrade).toHaveLength(5);
+    // The answered Close Review of E1 is a resolved Debt too (T95.48: put off at the expiration, answered through its Debt).
+    expect(indexesBefore.debtsByAnchorTrade).toHaveLength(6);
     expect((indexesBefore.trades as { exposureStart?: string }[]).filter((t) => t.exposureStart !== undefined).length).toBeGreaterThan(5);
     expect(before.review.kind).toBe('Ready');
     expect(before.details.filter((view) => (view as { payoff?: { current: { kind: string } } }).payoff?.current.kind === 'Value')).not.toHaveLength(0);
