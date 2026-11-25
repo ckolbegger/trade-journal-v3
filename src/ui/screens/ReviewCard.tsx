@@ -95,18 +95,18 @@ export interface ReviewCardProps {
   readonly now?: () => string;
   // The Review is read again after a closing sale was left unacknowledged.
   readonly onLeftSold?: () => void;
+  // A sale closed this Trade and its receipt is shown: the open-position state is left out until the Review is read again; the view keeps it, for the day card too.
+  readonly soldOut: boolean;
+  readonly onClosedSale: () => void;
 }
 
 // One position of the Review: a collapsed header (Underlying, what remains, band, meter) over its content.
-export function ReviewCard({ facade, trade, line, expanded, detail, reveal, go, onToggle, stillHolding, onStillHolding, onSaved, onReflectionResolved, onRefresh, refusal, pending, onEntryDirty, onForm, now, onLeftSold }: ReviewCardProps) {
+export function ReviewCard({ facade, trade, line, expanded, detail, reveal, go, onToggle, stillHolding, onStillHolding, onSaved, onReflectionResolved, onRefresh, refusal, pending, onEntryDirty, onForm, now, onLeftSold, soldOut, onClosedSale }: ReviewCardProps) {
   const item = useRef<HTMLLIElement>(null);
   const header = useRef<HTMLButtonElement>(null);
   const { timeZone } = useRuntime();
   // A Trade whose facts cannot be replayed has no reading, so its header draws no meter.
   const meter = trade.meter && meterProps(trade.meter, 'card', timeZone);
-  // A sale closed the Trade and its receipt is shown: the open-position figures (header P&L, the Now box) are left out until the Review is read again.
-  const [soldOut, setSoldOut] = useState(false);
-  const closedSale = useCallback(() => setSoldOut(true), []);
   const labels = describedLabelsOf(trade, timeZone ?? 'UTC');
   const reasonId = useId();
   const reasonIds = labels.flatMap(({ reason }, i) => (reason ? [`${reasonId}-${i}`] : []));
@@ -138,7 +138,7 @@ export function ReviewCard({ facade, trade, line, expanded, detail, reveal, go, 
                 <span className="review-card-summary">{tradeSummary(trade.summary)}</span>{' '}
               </>
             )}
-            <span className="review-card-remains">{remainsText(trade.progress, line?.action, line?.closeReview ?? false, line?.needs ?? [])}</span>{' '}
+            {!soldOut && <span className="review-card-remains">{remainsText(trade.progress, line?.action, line?.closeReview ?? false, line?.needs ?? [])}</span>}{' '}
             {!soldOut && labels.map(({ label }) => (
               <Badge key={label} tone="neutral">
                 {label}
@@ -189,7 +189,7 @@ export function ReviewCard({ facade, trade, line, expanded, detail, reveal, go, 
           meter={trade.meter}
           {...(now && { now })}
           {...(onLeftSold && { onLeftSold })}
-          onClosedSale={closedSale}
+          onClosedSale={onClosedSale}
           soldOut={soldOut}
         />
       )}
@@ -389,7 +389,7 @@ function CardBody({ facade, trade, progress, name, go, stillHolding, onStillHold
   return (
     <section aria-label={`${name} review`}>
       {/* A313: the Exit chosen on an earlier Review Date, not yet carried out, is said first. */}
-      {trade.attention.exitCarry && trade.attention.lastAction && trade.form.kind === 'New' && !stillHolding && <ExitBanner reviewDate={trade.attention.lastAction.reviewDate} carry={trade.attention.exitCarry} onSold={askSale} onHolding={onStillHolding} />}
+      {trade.attention.exitCarry && trade.attention.lastAction && trade.form.kind === 'New' && !stillHolding && !soldOut && <ExitBanner reviewDate={trade.attention.lastAction.reviewDate} carry={trade.attention.exitCarry} onSold={askSale} onHolding={onStillHolding} />}
       <p>
         {trade.labels.strategy} · {trade.labels.account} · {trade.labels.institution}
       </p>
@@ -399,7 +399,7 @@ function CardBody({ facade, trade, progress, name, go, stillHolding, onStillHold
           <span>Closed after this session&apos;s close</span> · <span className="review-card-lifecycle">{trade.lifecycle}</span>
         </p>
       )}
-      {trade.attention.reasons.map((reason, i) => (
+      {!soldOut && trade.attention.reasons.map((reason, i) => (
         <p key={i}>{reasonText(reason, trade.attention.basis, timeZone ?? 'UTC')}</p>
       ))}
       {trade.decisions && !listVisible && <LastDecisionLine decisions={trade.decisions} />}
@@ -437,7 +437,7 @@ function CardBody({ facade, trade, progress, name, go, stillHolding, onStillHold
                 panelButtons.current[name] = button;
               }}
               aria-expanded={open === name} aria-controls={`${uid}-${name}`} onClick={() => setOpen(name)}>
-              <span className="review-panel-name">{name}</span> <span className="review-panel-summary">{headers[name].summary}</span> <Badge tone="neutral">{headers[name].status}</Badge>
+              <span className="review-panel-name">{name}</span>{soldOut && name === 'Action' ? null : <> <span className="review-panel-summary">{headers[name].summary}</span> <Badge tone="neutral">{headers[name].status}</Badge></>}
             </button>
           </h4>
           <div id={`${uid}-${name}`} hidden={open !== name}>

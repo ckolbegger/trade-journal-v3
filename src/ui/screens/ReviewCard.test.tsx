@@ -9,6 +9,7 @@ import { facadeDouble } from '../../../tests/support/facade-double.ts';
 import type { UiFacade } from '../../app/compose.ts';
 import type { DailyTradeReview, MarkRow, OpenDailyReviewResult, OwedReflection, OwedReflectionsCard, ReviewBinding, ReviewCompletion, ReviewTradeItem, SaveDailyReviewResult } from '../../app/types.ts';
 import { exitFormFacade, reflectionDefinition } from '../../../tests/support/position-change-form-facade.ts';
+import { closedExitResult } from '../../../tests/support/exit-result-fixtures.ts';
 import { DAILY_TRADE_REVIEW_PROMPTS } from '../../domain/daily-trade-review-prompts.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { RuntimeContext } from '../runtime.tsx';
@@ -2178,6 +2179,27 @@ describe('An Exit not carried out (T95.41)', () => {
     cleanup();
     const again = await openExited();
     expect(within(again.card).getByRole('group', { name: 'Exit not carried out' })).toBeTruthy();
+  });
+
+  it('should show no Exit banner, to-do, Needed or day card note beside the receipt of a closing sale recorded from the banner', async () => {
+    const { user, facade, card } = await openExited();
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(closedExitResult({ reflection: { kind: 'Debt', debt: { debtId: 'debt-1' } }, closeReview: { kind: 'Debt', debt: { debtId: 'debt-2' } } }) as never);
+    const day = screen.getByRole('region', { name: 'The day' });
+    expect(within(day).getByRole('group', { name: 'Exit not carried out: XYZ' })).toBeTruthy();
+    await user.click(within(within(card).getByRole('group', { name: 'Exit not carried out' })).getByRole('button', { name: 'I sold: record it' }));
+    const row = await within(card).findByRole('group', { name: 'Execution 1' });
+    for (const [label, value] of [['Quantity', '2'], ['Price', '53.00'], ['Fee', '1.00']] as const) {
+      await user.clear(within(row).getByLabelText(label));
+      await user.type(within(row).getByLabelText(label), value);
+    }
+    await user.click(within(card).getByRole('button', { name: 'Save exit' }));
+
+    expect(await within(card).findByText('Recorded. XYZ is closed. Its Close Review is due in the next Review.')).toBeTruthy();
+    expect(within(card).queryByRole('group', { name: 'Exit not carried out' })).toBeNull();
+    expect(within(day).queryByRole('group', { name: 'Exit not carried out: XYZ' })).toBeNull();
+    expect(card.textContent).not.toContain('You chose Exit and it is not recorded');
+    expect(card.textContent).not.toContain('Needed');
+    expect(screen.getByRole('button', { name: /^Review XYZ/ }).textContent).not.toContain('To do');
   });
 
   it('should say how much was sold since, when part was sold', async () => {

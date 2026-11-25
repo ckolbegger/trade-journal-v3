@@ -461,6 +461,9 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
   // A day line's link opens the card and panel that resolve it (A161). Another panel of the open card is no departure, so it is allowed while the card holds drafts.
   // "Still holding" (A313) hides an Exit's banner for this view only; it saves nothing, and a fresh open shows the banner again. Focus goes to the card's header.
   const [holding, setHolding] = useState<ReadonlySet<string>>(() => new Set());
+  // A closing sale's receipt is shown for these Trades: their cards and day card note leave the open-position state out until the Review is read again.
+  const [soldOut, setSoldOut] = useState<ReadonlySet<string>>(() => new Set());
+  const closedSale = (tradeId: string) => setSoldOut((current) => new Set(current).add(tradeId));
   const stillHolding = (tradeId: string) => {
     setHolding((current) => new Set(current).add(tradeId));
     setReveal((current) => ({ tradeId, count: current.count + 1 }));
@@ -564,7 +567,7 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
   }, [firstId, read]);
   return (
     <>
-      {empty ? <EmptyReview date={review.reviewDate} /> : <DayCard review={review} name={name} openCard={openCard} openMarks={openMarks} openSkipped={openSkipped} holding={holding} onStillHolding={stillHolding} />}
+      {empty ? <EmptyReview date={review.reviewDate} /> : <DayCard review={review} name={name} openCard={openCard} openMarks={openMarks} openSkipped={openSkipped} holding={new Set([...holding, ...soldOut])} onStillHolding={stillHolding} />}
       {failed && (
         <div role="alert" className="banner warning">
           <p>We couldn’t refresh the Review. Nothing was changed.</p>
@@ -590,6 +593,8 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
                 onToggle={() => toggle(trade.tradeId)}
                 stillHolding={holding.has(trade.tradeId)}
                 onStillHolding={() => stillHolding(trade.tradeId)}
+                soldOut={soldOut.has(trade.tradeId)}
+                onClosedSale={() => closedSale(trade.tradeId)}
                 onSaved={(result) => saved(result, shown?.opening ?? -1)}
                 onReflectionResolved={reflectionResolved}
                 onRefresh={() => refreshTrade(trade.tradeId).then((ok) => { setFailed(!ok); return ok; })}

@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { actionEntriesOf, cardHeader, createTrades, defineSetup, enterMark, expect, firstPage, FOUR_TRADES, fillRows, launchAt, MONDAY_1700, onboardedAt, openReview, probe, reachCard, reloadReview, saveAction, sell, test, TUESDAY_1700, workspaceOf, type Profile, type Setup } from '../d6/support.ts';
+import { actionEntriesOf, cardHeader, closeReasonGroup, createTrades, defineSetup, enterMark, expect, firstPage, FOUR_TRADES, fillRows, launchAt, MONDAY_1700, onboardedAt, openReview, probe, reachCard, reloadReview, saveAction, sell, test, TUESDAY_1700, workspaceOf, type Profile, type Setup } from '../d6/support.ts';
 import { expectNoSidewaysScroll, setWidth } from '../d7p/support.ts';
 import { atBothWidths } from './support.ts';
 
@@ -91,6 +91,25 @@ test.describe('B95.9 An Exit not carried out (AC-REV-007)', () => {
     await reachCard(page, 'ABC');
     await atBothWidths(page, async (width) => {
       await expect(cardBanner(page).getByText('You chose Exit on Mon Oct 12. Sold 40 since. Still holding 60.', { exact: true }), `the banner after a part sale at ${width}`).toBeVisible();
+    });
+    await context.close();
+  });
+
+  test('should leave no banner, To do, Needed or day card note beside the receipt of a closing sale recorded from I sold: record it, at both widths', async ({ profile, copySetup }) => {
+    test.setTimeout(120_000);
+    const { context, page } = await openTuesday(profile, copySetup, EXIT_SAVED);
+    await reachCard(page, 'ABC');
+    await cardBanner(page).getByRole('button', { name: 'I sold: record it', exact: true }).click();
+    const form = page.locator('form.plan-form');
+    await fillRows(page, [sell('100', '29.50', '1.00', '2026-10-13T10:00')]);
+    await closeReasonGroup(page).getByRole('radio', { name: 'Time-Based Exit', exact: true }).check();
+    await form.getByRole('button', { name: 'Save exit' }).click();
+    await expect(page.getByText('Recorded. ABC is closed. Its Close Review is due in the next Review.', { exact: true })).toBeVisible();
+    await atBothWidths(page, async (width) => {
+      await expect(cardBanner(page), `the card's banner at ${width}`).toHaveCount(0);
+      await expect(dayNote(page), `the day card's note at ${width}`).toHaveCount(0);
+      await expect(page.getByText('You chose Exit and it is not recorded'), `the Exit reason at ${width}`).toHaveCount(0);
+      await expect(cardHeader(page, 'ABC'), `the header at ${width}`).not.toContainText('To do');
     });
     await context.close();
   });
