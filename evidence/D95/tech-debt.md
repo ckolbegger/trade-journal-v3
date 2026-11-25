@@ -37,3 +37,12 @@ Critic-2's minor observations (added at the user's request, 2026-11-23; two othe
 - T95.36-B4 (pre-existing, outside the sale): `confirmPlan` (`src/coordinators/trade-workflows/trade-workflows.ts:71`) checks its economicTime against now with `Date.parse`; an annotated instant (`…Z[UTC]`) gives NaN, so the future-time check never fires on that path.
 - T95.45 (agent note, low): the Action form's `focus` handle (`ActionForm.tsx`) uses `querySelector('input:checked, input, textarea')`, which returns the first radio, so "Back to ABC" puts focus in the form but not on the chosen Action.
 - T95.28-F2-B1 (ocr reviewer note, not an ocr finding): `src/ui/AppShell.tsx:333` the launch seed step's catch branch awaits getStatus() with no handler of its own; if that read rejects too, the rejection is unhandled and the status stays unset.
+
+- Critic B1 (T95.46), low: after a part sale through "I sold: record it", the day card's note reads "… Still holding 60." without "Sold 40 since." (the card has it). Built that way on purpose in T95.41 (new-words.md Part B: shorter than the mockup); for the word review.
+Critic B1's minor observations (T95.46):
+- A closed Trade owing a Close Review and a Position Change Reflection has two buttons both named "Reflect on 2026-10-13 15:00"; their order varied between runs. May predate D9.5.
+- An Unknown Plan Call with no earlier Mark says only "Nothing is chosen for you here."; W120 and W121 cover neither case.
+- At 375 the Conviction button "5" wraps to a second row.
+- A closed Trade owing a reason is headed "Close Review · next Review" then "2 reflections due", never "Say why" (closed card is T95.58; check there).
+- After a part sale on a day with no Marks, the next card header says "Long 60 shares" while "At the Mon Oct 12 Marks" figures are for 100 shares (T95.20's session-before figures).
+- Not covered by any flow: a short Position's "Record the buy-back".
