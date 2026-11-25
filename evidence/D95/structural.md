@@ -1061,3 +1061,5 @@ ocr of `a2dbcc59^..e7ead78f`: provider failed again (0 of 6 files; evidence copy
 T95.46-B2 `db2de383`: ActionForm gains optional onClosedSale (fires when a sale's receipt returns the Trade Closed); ReviewCard sets soldOut, hiding the header's P&L, day change and label badges and the Now box beside the receipt; the Review is still read only on "Back to the Review"; no UI arithmetic, no new words. The flag is never reset (the Trade leaves the walk on the next read; if that read fails the figures stay hidden while the retry runs). Case red then green; src/ui/screens 869 passed; sale.spec.ts's Review closing-sale case gained two assertions at both widths; e2e/d95 sale and sale-form 8 passed.
 
 ocr of `a2dbcc59^..db2de383`: provider failed again (all 9 files; resume id 144d0fe4-7968-4f58-a041-b17771daad8b). Owed. Full run before critic B2 started.
+
+Full run `t95.46-gate-full-2` (full tier, at c7d88ee6, after T95.46-B1 and T95.46-B2): unit 3096, integration 364, browser 127, 79, 55 and 158 (4 skipped), checks 14 of 14; run complete, 20 min. Passed. Critic B2 next.
