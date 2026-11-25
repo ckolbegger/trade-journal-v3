@@ -2237,6 +2237,21 @@ describe('An Exit not carried out (T95.41)', () => {
     expect(header.querySelector('.review-card-summary')).toBeNull();
   });
 
+  it('should keep a closed Trades card free of open-position figures when the Review is read again and still lists it', async () => {
+    const summary = { kind: 'Stock' as const, direction: 'Long' as const, quantity: Rational.of(2n), price: Rational.of(5010n, 100n) };
+    const { user, facade, card } = await openExited({ item: { summary, basis: losing } });
+    const day = screen.getByRole('region', { name: 'The day' });
+    await sellAll(user, facade, card);
+    // A sale after the session's close leaves the Trade in that day's Review: every read returns it, as the double does, and only a void or correction on another screen could reopen it.
+    await user.click(within(card).getByRole('button', { name: 'Back to the Review' }));
+    await waitFor(() => expect(vi.mocked(facade.DailyReview.open).mock.calls.length).toBeGreaterThan(1));
+    const header = screen.getByRole('button', { name: /^Review XYZ/ });
+    expect(header.textContent).not.toContain('Long 2 shares');
+    expect(header.getAttribute('aria-describedby')).toBeNull();
+    expect(within(screen.getByRole('region', { name: /^XYZ.* review$/ })).queryByRole('group', { name: 'Exit not carried out' })).toBeNull();
+    expect(within(day).queryByRole('group', { name: 'Exit not carried out: XYZ' })).toBeNull();
+  });
+
   it('should say how much was sold since, when part was sold', async () => {
     const { card } = await openExited({ carry: { direction: 'Long', held: Rational.of(1n), sold: Rational.of(1n) } });
     expect(within(card).getByRole('group', { name: 'Exit not carried out' }).textContent).toContain('You chose Exit on Fri Oct 9. Sold 1 since. Still holding 1.');
