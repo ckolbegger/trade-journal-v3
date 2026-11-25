@@ -86,14 +86,14 @@ interface Position {
   readonly multiplier: Rational;
 }
 
-function positionOf(instrument: OptionInstrument, contracts: Rational, basis: Rational): Position {
+export function positionOf(instrument: OptionInstrument, contracts: Rational, basis: Rational): Position {
   const strike = parseDecimal(instrument.strike);
   if (!strike.ok) throw new Error('A frozen option strike is a valid decimal');
   return { contracts, basis, strike: strike.value, right: instrument.right, multiplier: Rational.of(BigInt(multiplierOf(instrument))) };
 }
 
 // The contract's intrinsic value at expiration at an Underlying price (A100).
-function intrinsic(position: Position, price: Rational): Rational {
+export function intrinsic(position: Position, price: Rational): Rational {
   const raw = position.right === 'Call' ? price.sub(position.strike) : position.strike.sub(price);
   return sign(raw) > 0 ? raw : ZERO;
 }

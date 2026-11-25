@@ -74,6 +74,12 @@ export {
   type ReplaySessionInput,
   type ReplayedSession,
 } from './replay-series.ts';
+export {
+  expirationStanding,
+  type ExpirationStandingFigures,
+  type ExpirationStandingInput,
+  type TradeResultAt,
+} from './expiration-standing.ts';
 export { headlineConditionsOf, planCall, type PlanCall, type PlanCallCondition } from './plan-call.ts';
 export {
   evaluate,
