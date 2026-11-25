@@ -56,6 +56,19 @@ type ErrorResult =
   | { kind: 'RuntimeNotWritable'; runtimeNotWritable: RuntimeNotWritable }
   | { kind: 'Validation'; issues: string[] }
 
+let idCounter = 0
+
+// Uniqueness must not depend on crypto.randomUUID being present: older
+// browsers, insecure contexts and embedded browser panes may not expose it.
+export function tradeIdToken(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID().slice(0, 8)
+  }
+  idCounter += 1
+  const random = Math.floor(Math.random() * 0xffffffff).toString(36)
+  return `${Date.now().toString(36)}-${idCounter.toString(36)}-${random}`.slice(0, 16)
+}
+
 export async function confirmOptionPlan(
   request: ConfirmOptionPlanRequest,
   db?: Db,
@@ -83,7 +96,7 @@ export async function confirmOptionPlan(
   // Identical Plans confirmed on the same day must remain distinct Trades.
   // A short uniqueness token keeps the readable contract prefix while never
   // overwriting an earlier confirmation of the same exact contract.
-  const id = `trade-${c.underlying.toLowerCase()}-${c.kind.toLowerCase()}-${c.strike}-${c.expiration}-${request.economicTime.slice(0, 10)}-${crypto.randomUUID().slice(0, 8)}`
+  const id = `trade-${c.underlying.toLowerCase()}-${c.kind.toLowerCase()}-${c.strike}-${c.expiration}-${request.economicTime.slice(0, 10)}-${tradeIdToken()}`
   const trade: OptionPlanProjection = {
     id, lifecycle: 'Planned', revision: '1', economicTime: request.economicTime,
     plan: {

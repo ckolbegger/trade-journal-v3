@@ -304,12 +304,17 @@ export function App() {
   }, [])
 
   const onConfirmPlan = useCallback(async () => {
-    const { error } = await confirmPlanFromDraft(draft, state.accounts, state.institutions)
-    if (error) { setPlan(p => ({ ...p, error })); return }
-    await refreshTrades()
-    setSelectedOpen(null)
-    setScreen('trades')
-    setDraft(emptyDraft)
+    try {
+      const { error } = await confirmPlanFromDraft(draft, state.accounts, state.institutions)
+      if (error) { setPlan(p => ({ ...p, error })); return }
+      await refreshTrades()
+      setSelectedOpen(null)
+      setScreen('trades')
+      setDraft(emptyDraft)
+    } catch (e) {
+      // An unexpected browser/API failure must never look like a dead button.
+      setPlan(p => ({ ...p, error: e instanceof Error ? e.message : 'Could not save the Plan.' }))
+    }
   }, [draft, state.accounts, state.institutions, refreshTrades])
 
   const onOpenTrades = useCallback(async () => {
@@ -469,6 +474,7 @@ export function App() {
   }, [state.readiness])
 
   const onRecordPosition = useCallback(async (tradeId: string, expectedRevision: string) => {
+    try {
     const option = optionPlanFields(plan.selected?.trade.plan)
     if (option) {
       const instrument = canonicalInstrument(option.contract)
@@ -538,6 +544,9 @@ export function App() {
     setPositionForm(emptyPositionForm())
     await refreshTrades()
     await showOpen(result.value.trade)
+    } catch (e) {
+      setPositionError(e instanceof Error ? e.message : 'Could not record the position change.')
+    }
   }, [positionForm, state.readiness, refreshTrades, showOpen, plan.selected])
 
   const showClosed = useCallback(async (trade: StoredClosedTrade) => {
@@ -554,6 +563,7 @@ export function App() {
   }, [])
 
   const onRecordClose = useCallback(async (trade: StoredOpenTrade) => {
+    try {
     const option = optionPlanFields(trade.plan)
     if (option) {
       const instrument = canonicalInstrument(option.contract)
@@ -634,6 +644,9 @@ export function App() {
     setNarrative([])
     setSelectedClosed(result.value.trade)
     await refreshTrades()
+    } catch (e) {
+      setCloseError(e instanceof Error ? e.message : 'Could not record the close.')
+    }
   }, [closeForm, state.readiness, refreshTrades])
 
   const onSaveCloseReview = useCallback(async (trade: StoredClosedTrade) => {
