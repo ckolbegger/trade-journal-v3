@@ -63,3 +63,4 @@ Critic B3's minor observations (T95.46):
 - The Trade-switch refusal stays beside the form's own refusal after a failed "Save it".
 - ocr (owed range a2dbcc59^..1a774a68), style: `src/ui/AppShell.test.tsx:1332` waits a fixed 20 ms for the stale status instead of an awaited act.
 - The T95.46-B4 agent note on backdated sales above is now bug task T95.46-B6.
+- T95.46-B8 (agent note): a sold-out card's region label ("XYZ Long 2 shares @ $50.10 review") still carries the position summary after the sale.
