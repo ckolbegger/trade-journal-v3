@@ -1106,3 +1106,11 @@ Commit `a518f759`: new `expirationStanding(input)` in src/domain/trade-analysis/
 T95.47 ocr (`a518f759`): **No findings** (evidence/D95/ocr/T95.47-a518f759.json).
 
 Run `t95.47-expiration-standing` (browser-task, base 4656edba): unit 3113, integration 364, browser 54, checks 14 of 14; run complete. Passed. T95.47 done.
+
+## T95.48 — Helpers first: every expiration sends a completed reflection and a deferred Close Review
+Commit `30301fad` (21 files, tests and fixtures only; src/ untouched). New `completeExpiration(app)` (fixed Expiration Reason "Expired out of the money.") in tests/integration/d7/support.ts; optionCommand defaults an expiration's reflection to it; attemptExpiration always defers the Close Review; recordExpiration resolves Complete/Decline afterwards through the Debt; review stack gains expirationReflection; browser recordExpiration(page) always chooses "Reflect later" and fills "Why did it expire worthless?" only when present.
+- Narrowed list: deferred and resolved through the Debt: lifecycle, rebuild (debtsByAnchorTrade 5 → 6); stopped sending Complete: payoff, d7sp trade-detail-finished, d8p detail, d9 lifetime, d9ar final; stopped sending Complete/Decline: rejections, write-gate; changed: retries case a (Entry → Debt), e2e/d7 kill.spec (Close Review owed; renamed), e2e/d7 responsive-a11y keyboard case ("Reflect later"); no edit needed: review, settlement-due, short-put, createSettlementFixture.
+- Pairing row: d7/expiration-close-review.test.ts (I7.5): its Complete and Decline dispositions moved from an expiration to a sale of the same Long Call; the Defer case, CloseReasonNotApplicable and the Friday/Monday classification stay on the expiration. Retired: none.
+- Checks: vitest 416 files, 3477 tests passed; browser specs touched 34 passed, the one failure (d7 keyboard case) fixed, 4 of 4 after; typecheck, tsc6, lint, lint:deps exit 0.
+- Notes for T95.50: tools/fixtures-freeze.ts, tools/capacity/measure-page.ts, src/app/bench-generator.ts and src/ tests record expirations through the coordinator outside this Files line; they may need a reason. For T95.52: check the label regex /^Why did it expire worthless\?/ against W140.
+- Paused here at the user's request (2026-11-25): ocr of 30301fad and its suite run not yet started.
