@@ -1059,3 +1059,5 @@ T95.46-B1 `e7ead78f`: the Action radio's onChange clears the form's refusals (se
 ocr of `a2dbcc59^..e7ead78f`: provider failed again (0 of 6 files; evidence copy not kept, no content). Owed range now a2dbcc59^..e7ead78f.
 
 T95.46-B2 `db2de383`: ActionForm gains optional onClosedSale (fires when a sale's receipt returns the Trade Closed); ReviewCard sets soldOut, hiding the header's P&L, day change and label badges and the Now box beside the receipt; the Review is still read only on "Back to the Review"; no UI arithmetic, no new words. The flag is never reset (the Trade leaves the walk on the next read; if that read fails the figures stay hidden while the retry runs). Case red then green; src/ui/screens 869 passed; sale.spec.ts's Review closing-sale case gained two assertions at both widths; e2e/d95 sale and sale-form 8 passed.
+
+ocr of `a2dbcc59^..db2de383`: provider failed again (all 9 files; resume id 144d0fe4-7968-4f58-a041-b17771daad8b). Owed. Full run before critic B2 started.
