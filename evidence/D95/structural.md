@@ -1308,3 +1308,7 @@ ocr of T95.58 (session 2a845f87): **partial** — ChatGPT's usage limit (`subscr
 ### T95.58-B1
 
 Commit `57a35542`: a Close Review classified `DueInReviewAfterNext` shows "Due in the Review after next." (`DUE_TEXT` plus a full stop); "Not due until the next Review." only for `DueInNextReview`. Case 1 red then green; case 2 first-run pass, flagged, mutation (condition back to `!== 'Due'`) failed, restored. src/ui/screens 911 passed; typecheck, tsc6, lint (2 pre-existing warnings), lint:deps exit 0; d95/closed-card 1 passed.
+
+### T95.58-B2
+
+Commit `0f1a0faa`: a closed card owing a due Position Change Reflection reads "N reflection(s) due · " plus W151's Close Review state ("Close Review · next Review", "saved", "declined"); a due Close Review still reads only "Close Review due"; `DueInReviewAfterNext` isn't named on the label (W151 has no words). Case 1 red then green; case 2 first-run pass (built by T95.40), flagged, mutation (due check only when `dueNow === 0`) failed, restored. src/ui/screens 913 passed; typecheck, tsc6, lint (2 pre-existing warnings), lint:deps exit 0; browser d95 closed-card, sale, d6 close-review: 10 passed, exit 0 (per-spec lines for two not separately seen). Waiting: ChatGPT usage limit (hit 2026-11-26 ~10:52Z) for the rerun of T95.58's ocr over the 8 failed files and the ocr of B1 and B2.
