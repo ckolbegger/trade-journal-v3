@@ -1,0 +1,303 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 17 selected item(s).",
+  "summary": {
+    "files_reviewed": 17,
+    "comments": 2,
+    "total_tokens": 894070,
+    "input_tokens": 886751,
+    "output_tokens": 7319,
+    "cache_read_tokens": 96000,
+    "elapsed": "2m10s"
+  },
+  "tool_calls": {
+    "total": 73,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 21,
+      "file_find": 2,
+      "file_read": 44,
+      "file_read_diff": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/ReviewCard.tsx",
+      "content": "This initializer introduces nested ternary expressions, which the review checklist explicitly prohibits. Extract the initial-panel selection into a helper with early returns (requested panel, first unfinished panel, then the fallback) so the fallback behavior remains easy to follow.",
+      "existing_code": "  const [open, setOpen] = useState\u003cPanelName\u003e(() =\u003e (go.panel \u0026\u0026 panels.includes(go.panel) ? go.panel : (panels.find((name) =\u003e !headers[name].done) ?? (panels.includes('Action') ? 'Action' : panels[0]!))));",
+      "start_line": 271,
+      "end_line": 271,
+      "category": "maintainability",
+      "severity": "low"
+    },
+    {
+      "path": "src/ui/screens/ReviewSettlement.tsx",
+      "content": "Disable the sale and expiration choices while `saving` is true, not just the record-later button. With a slow Settle Later save, the user can open the sale form or “It expired worthless” and start entering values before it resolves. The eventual `onSaved` advances/collapses the card; `ReviewView.saved` deliberately excludes `action:${tradeId}` from its draft-preservation check, which is also the ID used by these new forms, so that draft is discarded without a warning. Apply the saving guard to all alternative workflow buttons (including the worthless/record-expiration buttons).",
+      "existing_code": "    \u003cbutton type=\"button\" className=\"pill secondary\" onClick={onSell}\u003e",
+      "start_line": 105,
+      "end_line": 105,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "D7 end-to-end scenarios and shared test support",
+      "files": [
+        "e2e/d7/no-save.spec.ts",
+        "e2e/d7/responsive-a11y.spec.ts",
+        "e2e/d7/review-expiration.spec.ts",
+        "e2e/d7/runtime-failure.spec.ts",
+        "e2e/d7/support.ts"
+      ]
+    },
+    {
+      "label": "Action and expiration forms, validation, receipts, and styling",
+      "files": [
+        "src/ui/app.css",
+        "src/ui/screens/ActionForm.tsx",
+        "src/ui/screens/ExpirationForm.test.tsx",
+        "src/ui/screens/ExpirationForm.tsx",
+        "src/ui/screens/ExpirationReceipt.tsx",
+        "src/ui/screens/ReviewExpiration.test.tsx",
+        "src/ui/screens/expiration-issues.ts"
+      ]
+    },
+    {
+      "label": "Day card rendering and tests",
+      "files": [
+        "src/ui/screens/DayCard.test.tsx",
+        "src/ui/screens/DayCard.tsx"
+      ]
+    },
+    {
+      "label": "Review cards and settlement workflow",
+      "files": [
+        "src/ui/screens/ReviewCard.tsx",
+        "src/ui/screens/ReviewSettlement.test.tsx",
+        "src/ui/screens/ReviewSettlement.tsx"
+      ]
+    }
+  ],
+  "session_id": "5946152c-a5ae-4453-8e88-fed423b76a0f",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "5946152c-a5ae-4453-8e88-fed423b76a0f",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "6a7034e6",
+      "resolved_base": "8a0c1ecc9aae9d73a5e192a14cea469b2545ad38",
+      "resolved_head": "6a7034e669e13a2199e45d3c487cb8696db9dd8b",
+      "exact_range": "8a0c1ecc9aae9d73a5e192a14cea469b2545ad38..6a7034e669e13a2199e45d3c487cb8696db9dd8b",
+      "source_artifact_sha256": "36e4ebb58cd5d894dfc7adeecfaf563c17533918b07ac1c28a7ee18cde998a7c"
+    },
+    "execution": {
+      "ocr_version": "v1.14.4",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "06ea30f6aaa7049bd156e318bc4548dc9bf9b583ea8f7181ccbd2da39b44410b",
+          "path": "src/ui/screens/ExpirationReceipt.tsx",
+          "fingerprint": "ceaf31111ed67415e22caf8e42e56397b56aec6ead8abd0793f80a622ced53f5"
+        },
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "58e61c9c833221267db12f5b0af7190a6469daefc4e2ba649079e67bd09eb32b"
+        },
+        {
+          "item_id": "1ccbf570ad6e384cc56076140f1fc24d78ea6b24b2df44390628e2db1dbc8609",
+          "path": "e2e/d7/review-expiration.spec.ts",
+          "fingerprint": "a04b84f546765593ae57cf5d4ebefdc87f1a3579da005216188d9f33f0c57662"
+        },
+        {
+          "item_id": "28d9dac30140868b5ff82f3128fe52a527534ffce26da1ec10da0741844bd9af",
+          "path": "src/ui/screens/ActionForm.tsx",
+          "fingerprint": "da404fbbb0a5f0490ae419e52bf10b4bd2b956982f9824c98c764a57ffd6ad16"
+        },
+        {
+          "item_id": "291ff04d5b13885b7146bf8eb6539426032c6b8eefc18524ae85e4f8d55c3f0b",
+          "path": "src/ui/screens/DayCard.test.tsx",
+          "fingerprint": "00acb8853b4c118811951701e7a0886ad7fb33dc6f644298bef73e21a2fc50aa"
+        },
+        {
+          "item_id": "360f0c0c6a08d59bdc50988ff729f8031fe5275eeb735bbc6c714ef5915fa7f8",
+          "path": "src/ui/screens/DayCard.tsx",
+          "fingerprint": "99a60e2e0abe0680a4187991de1be0cb354530cec6dc1a40d770f9fc739905d8"
+        },
+        {
+          "item_id": "41e36b2fc461f001fd3da3ef154d234ed6312c47fd74d522eb021fe693bb95a6",
+          "path": "src/ui/screens/ExpirationForm.test.tsx",
+          "fingerprint": "7f27aa4f835b24de0ae3429f62d7404f38371c90cdfc1a7c504112c675191ae9"
+        },
+        {
+          "item_id": "4e995098d3a2739c27d7614956fdc9064c2736a0d40ad8a2991a03a83a3e6552",
+          "path": "e2e/d7/responsive-a11y.spec.ts",
+          "fingerprint": "aad7e4d8128f6dde53a3769dc3c65b8d3423c057bd016af65e317a06fc4dea23"
+        },
+        {
+          "item_id": "6376131ed368e5ac2277c2f7a6073ab00b06d8dcc7fa59c84c1807d7587ffa40",
+          "path": "src/ui/screens/ReviewSettlement.tsx",
+          "fingerprint": "7cf310718b2127feb9fad0f7dcebb76d68acb13999861ddf9d591df2907a7484"
+        },
+        {
+          "item_id": "65bccfc98e101dd12c3c3c7d1e445313eab5ae6feae6a2b9a027d8ea4143e4db",
+          "path": "src/ui/screens/ReviewExpiration.test.tsx",
+          "fingerprint": "51366734c3bee38099957f4e8020d6b7d56f660e2d33734ceb6f792a8491dac7"
+        },
+        {
+          "item_id": "7d3af699e015eb360947cf05c76cb4540c958e6e9d088ceaf731821eede44489",
+          "path": "src/ui/screens/expiration-issues.ts",
+          "fingerprint": "cf6ec364d84a9fe14ab13939167d74d0568613be6565fd3cecc7849c9cb8acc0"
+        },
+        {
+          "item_id": "8f669bf40c4e0581202e35b0025c05599ce1cb413cf1791b9979e09d426e5d54",
+          "path": "src/ui/screens/ExpirationForm.tsx",
+          "fingerprint": "338a0655b5cceec16a5d5a4f58c4ed81afd76d4782656b153d16c6b2d1f0033c"
+        },
+        {
+          "item_id": "99c596ee1732c530a194c9499667a3a11331103a4114e4c1d962b6235c95f741",
+          "path": "e2e/d7/support.ts",
+          "fingerprint": "9238af679929b42b1545d8b0d5c880fdb22d66e62a4f158895dfc9eb10b8fa00"
+        },
+        {
+          "item_id": "9e888db941aaa026b03ee9ea52c8deac995d9f8bc522c19b2caf8ec3de412ae5",
+          "path": "e2e/d7/runtime-failure.spec.ts",
+          "fingerprint": "5397276c674d7ca65e79a70e62a6b91249e9b59fe583ce24f4f99651ef2fac78"
+        },
+        {
+          "item_id": "ca830210571b3c1c130132730f3b5ff5e6224fd42856b0400a111e121dfb1fc8",
+          "path": "src/ui/screens/ReviewSettlement.test.tsx",
+          "fingerprint": "66b52f12d3c63d9b5f01ec7a4f5ff81ec127f122b6340c1ed435a99d192bbd81"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "6543b25045fed57bbd0ca62e5fd0b897612e7c1c208e55fcee0a18ec0212ef3e"
+        },
+        {
+          "item_id": "fffa17a0269737f7ac983fd806652d889f71f03d56012e43d61220a30d4cbf71",
+          "path": "e2e/d7/no-save.spec.ts",
+          "fingerprint": "b788a51c3d797f08c4196e75516ce5e10b7ca0181190fbbbe715c0acf8ffa69a"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "06ea30f6aaa7049bd156e318bc4548dc9bf9b583ea8f7181ccbd2da39b44410b",
+          "path": "src/ui/screens/ExpirationReceipt.tsx",
+          "fingerprint": "ceaf31111ed67415e22caf8e42e56397b56aec6ead8abd0793f80a622ced53f5"
+        },
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "58e61c9c833221267db12f5b0af7190a6469daefc4e2ba649079e67bd09eb32b"
+        },
+        {
+          "item_id": "1ccbf570ad6e384cc56076140f1fc24d78ea6b24b2df44390628e2db1dbc8609",
+          "path": "e2e/d7/review-expiration.spec.ts",
+          "fingerprint": "a04b84f546765593ae57cf5d4ebefdc87f1a3579da005216188d9f33f0c57662"
+        },
+        {
+          "item_id": "28d9dac30140868b5ff82f3128fe52a527534ffce26da1ec10da0741844bd9af",
+          "path": "src/ui/screens/ActionForm.tsx",
+          "fingerprint": "da404fbbb0a5f0490ae419e52bf10b4bd2b956982f9824c98c764a57ffd6ad16"
+        },
+        {
+          "item_id": "291ff04d5b13885b7146bf8eb6539426032c6b8eefc18524ae85e4f8d55c3f0b",
+          "path": "src/ui/screens/DayCard.test.tsx",
+          "fingerprint": "00acb8853b4c118811951701e7a0886ad7fb33dc6f644298bef73e21a2fc50aa"
+        },
+        {
+          "item_id": "360f0c0c6a08d59bdc50988ff729f8031fe5275eeb735bbc6c714ef5915fa7f8",
+          "path": "src/ui/screens/DayCard.tsx",
+          "fingerprint": "99a60e2e0abe0680a4187991de1be0cb354530cec6dc1a40d770f9fc739905d8"
+        },
+        {
+          "item_id": "41e36b2fc461f001fd3da3ef154d234ed6312c47fd74d522eb021fe693bb95a6",
+          "path": "src/ui/screens/ExpirationForm.test.tsx",
+          "fingerprint": "7f27aa4f835b24de0ae3429f62d7404f38371c90cdfc1a7c504112c675191ae9"
+        },
+        {
+          "item_id": "4e995098d3a2739c27d7614956fdc9064c2736a0d40ad8a2991a03a83a3e6552",
+          "path": "e2e/d7/responsive-a11y.spec.ts",
+          "fingerprint": "aad7e4d8128f6dde53a3769dc3c65b8d3423c057bd016af65e317a06fc4dea23"
+        },
+        {
+          "item_id": "6376131ed368e5ac2277c2f7a6073ab00b06d8dcc7fa59c84c1807d7587ffa40",
+          "path": "src/ui/screens/ReviewSettlement.tsx",
+          "fingerprint": "7cf310718b2127feb9fad0f7dcebb76d68acb13999861ddf9d591df2907a7484"
+        },
+        {
+          "item_id": "65bccfc98e101dd12c3c3c7d1e445313eab5ae6feae6a2b9a027d8ea4143e4db",
+          "path": "src/ui/screens/ReviewExpiration.test.tsx",
+          "fingerprint": "51366734c3bee38099957f4e8020d6b7d56f660e2d33734ceb6f792a8491dac7"
+        },
+        {
+          "item_id": "7d3af699e015eb360947cf05c76cb4540c958e6e9d088ceaf731821eede44489",
+          "path": "src/ui/screens/expiration-issues.ts",
+          "fingerprint": "cf6ec364d84a9fe14ab13939167d74d0568613be6565fd3cecc7849c9cb8acc0"
+        },
+        {
+          "item_id": "8f669bf40c4e0581202e35b0025c05599ce1cb413cf1791b9979e09d426e5d54",
+          "path": "src/ui/screens/ExpirationForm.tsx",
+          "fingerprint": "338a0655b5cceec16a5d5a4f58c4ed81afd76d4782656b153d16c6b2d1f0033c"
+        },
+        {
+          "item_id": "99c596ee1732c530a194c9499667a3a11331103a4114e4c1d962b6235c95f741",
+          "path": "e2e/d7/support.ts",
+          "fingerprint": "9238af679929b42b1545d8b0d5c880fdb22d66e62a4f158895dfc9eb10b8fa00"
+        },
+        {
+          "item_id": "9e888db941aaa026b03ee9ea52c8deac995d9f8bc522c19b2caf8ec3de412ae5",
+          "path": "e2e/d7/runtime-failure.spec.ts",
+          "fingerprint": "5397276c674d7ca65e79a70e62a6b91249e9b59fe583ce24f4f99651ef2fac78"
+        },
+        {
+          "item_id": "ca830210571b3c1c130132730f3b5ff5e6224fd42856b0400a111e121dfb1fc8",
+          "path": "src/ui/screens/ReviewSettlement.test.tsx",
+          "fingerprint": "66b52f12d3c63d9b5f01ec7a4f5ff81ec127f122b6340c1ed435a99d192bbd81"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "6543b25045fed57bbd0ca62e5fd0b897612e7c1c208e55fcee0a18ec0212ef3e"
+        },
+        {
+          "item_id": "fffa17a0269737f7ac983fd806652d889f71f03d56012e43d61220a30d4cbf71",
+          "path": "e2e/d7/no-save.spec.ts",
+          "fingerprint": "b788a51c3d797f08c4196e75516ce5e10b7ca0181190fbbbe715c0acf8ffa69a"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "293614ea51e4dfb93ba1f1bd5860fac80281da10d857abcfcea23940bc4ce655",
+          "path": "evidence/D95/tdd-log/T95.52.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 129859
+  }
+}

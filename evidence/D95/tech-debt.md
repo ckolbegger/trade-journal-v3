@@ -67,3 +67,4 @@ Critic B3's minor observations (T95.46):
 - ocr (T95.46-B5 to B9), style: `src/ui/screens/ExitReceipt.tsx:58-59` the `when` helper nests a ternary in a template literal inside a ternary; an early return for Due reads more simply.
 
 - ocr (T95.48), style: `tests/support/replay-series-app.ts:68` nests the expiration ternary inside the sale ternary; explicit branches read more simply.
+- ocr (T95.52), style: `src/ui/screens/ReviewCard.tsx:271` the open-panel useState initializer nests a ternary inside `??`; a helper with early returns reads more simply.
