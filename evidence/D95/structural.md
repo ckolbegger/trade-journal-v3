@@ -1119,3 +1119,10 @@ ocr of T95.48 (session 8456bb31, after a ChatGPT usage-limit wait; earlier sessi
 - **T95.48-B1** (Doubtful, `e2e/d7/responsive-a11y.spec.ts:246`): the keyboard-only expiration case never fills "Why did it expire worthless?", unlike `recordExpiration`, so it may fail once T95.50 requires the reason. Reviewer's reading: T95.50 asks the reason only for an in-the-money expiration, and this case saves no Mark first; it becomes real if T95.50 also refuses an expiration with no Mark. Cases: it should fill "Why did it expire worthless?" by keyboard when the prompt is shown; it should still record the expiration by keyboard alone when the prompt is absent.
 - Style only (tech-debt.md): `tests/support/replay-series-app.ts:68` nests the expiration ternary inside the sale ternary.
 - Reviewer's note (not an ocr finding): it did not check the S6 and S7 lists for expiration tests the commit missed.
+
+### T95.48-B1
+
+Commit `a43299b9` (`e2e/d7/responsive-a11y.spec.ts` +7): the keyboard case tabs to "Why did it expire worthless?" and types the reason when the prompt is present (recordExpiration's check), else records by keyboard alone as before. First-run pass, flagged: the prompt is absent today (no Mark saved), so the absent path ran (1 passed); mutation `count() > 0` → `>= 0` made the case fail (tabTo: target never received focus), restored. The present path is not exercised. tdd-log rows written by hand (tdd.sh runs vitest only). typecheck, tsc6, lint:deps exit 0; lint 0 errors, 2 pre-existing warnings in OwedDebtItem.tsx.
+- For T95.50: if it refuses an expiration with no Mark, this case needs a saved Mark first.
+
+ocr of T95.48-B1 (session 9e1ec8bf): 1 file, 0 findings. `evidence/D95/ocr/T95.48-B1-a43299b9.json`. Next: run `t95.48-expiration-helpers` (browser-task).
