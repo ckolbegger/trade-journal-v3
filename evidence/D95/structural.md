@@ -1255,3 +1255,7 @@ Commit `1499c00f`: the last session reads End when `last.positions.length === 0`
 ocr of T95.54-B1 (session 73da9999): 2 files, 0 findings. `evidence/D95/ocr/T95.54-B1-1499c00f.json`. Next: run `t95.54-key-moments` (browser-task, Standard).
 
 Run `t95.54-key-moments` (browser-task): unit 3167, integration 364, browser 5 and 49, checks 14 of 14. Passed. T95.54 done.
+
+### T95.55
+
+Level raised from Standard to Full (decision 122: its Files line changes coordinators, `assemble-replay.ts`, `replay-view.ts`, `daily-review.ts`, `trade-views.ts`): ocr, then the run with `browser-auto b1bf44fa`.
