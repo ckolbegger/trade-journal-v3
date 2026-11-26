@@ -166,3 +166,10 @@ From ocr of T95.62 (Doubtful, `capabilities.ts:105`). The plan's T95.62 bullet p
 Not parked: T95.62 is built as option 1, which needs no approval; option 2 would be a follow-on.
 
 **Answer (2026-11-26):** (2). Decision 138, plan revision 127; follow-on T95.62-D1, run after T95.56. **Status:** answered.
+
+## Q13 (T95.60 case 6): declining a Close Review is not more presses than answering it — asked 2026-11-26
+
+**Plain words.** T95.60 case 6 says declining any owed reflection takes more presses than answering it. For a reflection's form it now does (answer: Save, 1; decline: "Decline…" then confirm, 2). For the Close Review it can't, as worded: declining is "Decline…" then "Decline the Close Review" (2 presses, W153); answering is "Write the Close Review", walking the key moments ("Next moment" for each one after the first), choosing "Would you take it again?", typing the lesson and "Save the Close Review" (at least 2 presses plus the answers).
+1. *Recommend:* accept it for the Close Review: answering takes at least as many presses as declining, plus the walk and the typed answers; case 6 is reworded to "never fewer presses to decline than to answer, and declining always asks to confirm". No code change.
+2. Add a third decline step for the Close Review (for example, declining only from inside the walk after the moments are seen, or a required reason, which changes W153's "Why? (optional)").
+**Parked:** T95.60's completion; its ocr and run go ahead.
