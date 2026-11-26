@@ -21,6 +21,7 @@ import type { DebtProjection, DeclineProjection, EntryProjection, JournalIssue, 
 import type { TradeFact } from '../../modules/trade-record/index.ts';
 import { beginSemanticTransaction, type WorkspaceSnapshotBinding } from '../../persistence/index.ts';
 import { retryCounterConflict } from './counter-retry.ts';
+import { standingOf } from '../settlement.ts';
 import { deferNamingReason, holdsReason, measureSale, planDepartureReasonPromptOf } from './sale-measure.ts';
 import type { TradeMutationSuccess, TradeWorkflowsDeps, WorkflowIssue } from './types.ts';
 
@@ -285,6 +286,8 @@ function closeRequirementIssues(command: PositionChangeCommand, requirement: Clo
     return [
       ...(command.closeReasonId === undefined ? [] : [issue('closeReasonId', 'CloseReasonNotApplicable')]),
       ...(command.closeReview === undefined ? [issue('closeReview', 'CloseReviewDispositionRequired')] : []),
+      // A312: a terminal expiration puts its Close Review off, as a closing sale does.
+      ...(command.closeReview !== undefined && command.closeReview.kind !== 'Defer' ? [issue('closeReview', 'CloseReviewMustDefer')] : []),
     ];
   }
   if (requirement === 'TerminalWithAgency') {
@@ -299,6 +302,38 @@ function closeRequirementIssues(command: PositionChangeCommand, requirement: Clo
     ...(command.closeReasonId === undefined ? [] : [issue('closeReasonId', 'CloseReasonNotApplicable')]),
     ...(command.closeReview === undefined ? [] : [issue('closeReview', 'CloseReviewNotApplicable')]),
   ];
+}
+
+// The id of the Expiration Reason prompt of a form revision, found by its role; none on a form that has no such prompt (an earlier form).
+async function expirationReasonPromptOf(deps: TradeWorkflowsDeps, definitionId: string): Promise<string | undefined> {
+  const found = await deps.journal.getDefinitions({ revision: definitionId });
+  if (found.kind !== 'Found') return undefined;
+  return found.definition.prompts.find((p) => p.kind === 'Text' && p.role === 'ExpirationReason')?.id;
+}
+
+// Whether the contract finished in the money at the Underlying's Mark for the session that settles it: the session of its expiration date, or
+// the latest one before it. With no Mark for that session (or none readable) it is not known, and no reason is asked.
+async function finishedInTheMoney(deps: TradeWorkflowsDeps, member: ExpirationMember, state: DerivedTradeState): Promise<boolean> {
+  const { instrument } = member;
+  if (instrument.kind !== 'Option') return false;
+  const session = await deps.marketData.openReadSession({ kind: 'Current', asOf: deps.clock.now() });
+  const settles = await session.settlementTime(instrument);
+  if (settles.kind !== 'Value') return false;
+  const date = Temporal.Instant.from(settles.value).toZonedDateTimeISO('America/New_York').toPlainDate().toString();
+  // The one stored read of the change, made only when the form leaves the reason out.
+  const [frame] = await session.historicalFrames(date, [instrument.symbol]).catch(() => []);
+  const mark = frame?.resolution.kind === 'Available' ? frame.resolution.mark.price : undefined;
+  const standing = standingOf(state, instrument, mark);
+  return standing.kind === 'Value' && standing.value.inTheMoney;
+}
+
+// A312, A321: an Expiration completes its reflection, and one that finished in the money holds the Expiration Reason.
+async function expirationIssues(deps: TradeWorkflowsDeps, command: PositionChangeCommand, member: ExpirationMember, before: DerivedTradeState | undefined): Promise<WorkflowIssue[]> {
+  if (command.reflection.kind !== 'Complete') return [{ source: 'TradeWorkflows', field: 'reflection', code: 'ReflectionMustComplete' }];
+  const { form } = command.reflection;
+  const promptId = await expirationReasonPromptOf(deps, form.definitionId);
+  if (promptId === undefined || holdsReason(form.answers[promptId]) || !before) return [];
+  return (await finishedInTheMoney(deps, member, before)) ? [{ source: 'TradeWorkflows', field: promptId, code: 'ExpirationReasonRequired' }] : [];
 }
 
 // P22: findings that are only about the position path are the change's own fault and come back as
@@ -457,6 +492,7 @@ async function attemptPositionChange(deps: TradeWorkflowsDeps, command: Position
       issues.push({ source: 'TradeWorkflows', field: promptId, code: 'PlanDepartureReasonRequired' });
     }
   }
+  if (expirationMember !== undefined) issues.push(...(await expirationIssues(deps, command, expirationMember, beforeDerived.kind === 'Derived' ? beforeDerived : undefined)));
   // Values that do not parse cannot be replayed, so the candidate is analysed only when every member is valid.
   const candidateDerived = issues.some((i) => i.source === 'TradeWorkflows')
     ? undefined
