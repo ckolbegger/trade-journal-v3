@@ -142,7 +142,7 @@ T95.16 stopped before writing. The collapsed card header (U3, breakdown line 85)
 
 **Parked meanwhile:** T95.56. T95.57 and T95.58 carry on; T95.59 waits on this answer if it needs the owed card's replay.
 
-**Status:** asked.
+**Answer (2026-11-26):** (1), "Please load the replay". Decision 136, plan revision 125; T95.56 gains cases 9 and 10. **Status:** answered; T95.56 resumes, then T95.59.
 
 ## Q11 (T95.57): the Key moments drop-down lists moments after the slider's session — queued 2026-11-26 (to ask after Q10)
 
