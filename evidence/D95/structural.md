@@ -1227,3 +1227,5 @@ ocr of T95.52 (session 5946152c): 17 files, 2 findings. `evidence/D95/ocr/T95.52
 ### T95.52-B1
 
 Commit `73ea3b70`: `disabled={saving}` on the sale button, "Record expiration" and both "It expired worthless" buttons. Case 1 red ("Sold before the close" enabled), green. Case 2 first-run pass, flagged; mutation (no `setSaving(false)` in `recordLater`'s finally) failed `expected true to be false`, restored; a green row was logged before the fix (ordering slip, explained in a note row). ReviewSettlement and ReviewCard tests 198 passed; typecheck, tsc6, lint (2 pre-existing warnings), lint:deps exit 0; e2e/d7/review-expiration 1 passed.
+
+ocr of T95.52-B1 (session 448d2ed9): 2 files, 0 findings. `evidence/D95/ocr/T95.52-B1-73ea3b70.json`. Next: run `t95.52-expiration-block` (browser-auto 9766fe8a).
