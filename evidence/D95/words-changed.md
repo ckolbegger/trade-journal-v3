@@ -29,3 +29,6 @@ The user approved every entry above as it stands, after the T95.26 gate. "More f
 
 ## T95.56
 - No words shortened: W146's four phrases are used as approved. (The Replay button's visible words stay "Replay"; the phrase's closing sentence is kept.)
+
+## T95.59
+- No words shortened: W148's "Next moment", "1 of 4 seen", "All 4 seen. Now write." and W152's four phrases are used as approved.

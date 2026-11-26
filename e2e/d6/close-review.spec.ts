@@ -1,8 +1,8 @@
 import type { Locator, Page } from '@playwright/test';
 import {
-  answerCloseReviewIn, answerDebt, closeTheTrade, completion, createTrades, debtForm, debtsOf, enterMark, entriesWithSettledDebt, expect, firstPage, FOUR_TRADES, fillRows, launchAt,
+  closeTheTrade, completion, createTrades, debtsOf, enterMark, entriesWithSettledDebt, expect, firstPage, FOUR_TRADES, fillRows, launchAt,
   MONDAY_1700, onboardedAt, openExitForm, openReview, openTradeFromOpenList, probe, reloadReview, saveAction, sell, setClock, test, TUESDAY, TUESDAY_1405, TUESDAY_1405_LOCAL, TUESDAY_1700, WEDNESDAY,
-  WEDNESDAY_1700, workspaceOf,
+  WEDNESDAY_1700, walkCloseReview, workspaceOf,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
@@ -33,8 +33,8 @@ async function openOwedCard(page: Page, symbol: string): Promise<Locator> {
 async function answerCloseReviewOnCard(page: Page, symbol: string): Promise<void> {
   const item = await openOwedCard(page, symbol);
   await item.getByRole('button', { name: 'Write the Close Review' }).click();
-  await answerCloseReviewIn(debtForm(page));
-  await answerDebt(page, undefined, 'page');
+  await walkCloseReview(page);
+  await expect(item.getByRole('region', { name: 'Saved reflection' })).toBeVisible();
 }
 
 test.describe('B6.2 Close Review deferred to the Review', () => {

@@ -7,7 +7,9 @@ import { useFixedClock as fixClock } from './trade-detail/test-support.ts';
 import { OC_PC1, optionTrade } from '../../../tests/support/option-trade-fixtures.ts';
 import { cardProgress,reflectionsOwedProgress } from '../../../tests/support/card-progress.ts';
 import { facadeDouble } from '../../../tests/support/facade-double.ts';
-import { reflectionDefinition } from '../../../tests/support/position-change-form-facade.ts';
+import { closeReviewDefinition, reflectionDefinition } from '../../../tests/support/position-change-form-facade.ts';
+import { session, view } from '../cockpit/replay/view-doubles.props.ts';
+import type { ReplayView } from '../cockpit/replay/replay.props.ts';
 import type { UiFacade } from '../../app/compose.ts';
 import type { DailyTradeReview, OpenDailyReviewResult, OwedReflection, OwedReflectionsCard, OwedReflectionsTrade, OwedTradeSummary, ReviewBinding, WalkedTrade } from '../../app/types.ts';
 import { DAILY_TRADE_REVIEW_PROMPTS } from '../../domain/daily-trade-review-prompts.ts';
@@ -655,5 +657,44 @@ describe('owed card links (T6.20-B1)', () => {
     expect(panel.getAttribute('aria-expanded')).toBe('true');
     expect(document.activeElement).toBe(panel);
     expect(within(card).getByRole('button', { name: /^Reflect on/ })).toBeTruthy();
+  });
+});
+
+describe('the Close Review walk from the closed card (T95.59, W152)', () => {
+  const dates = ['2026-10-09', '2026-10-12'];
+  const replay: ReplayView = { ...view(dates.map((date) => session({ date, pnl: 100, held: 4 }))), keyMoments: [{ date: dates[0]!, kinds: ['Entry'] }, { date: dates[1]!, kinds: ['Sale'] }] as unknown as ReplayView['keyMoments'] };
+  const closeReview: OwedReflection = { ...reflection('d-cr', 'Due', '2026-10-12T18:00:00Z', 'Close Review'), entryTypeKey: 'entry-type.close-review', definition: closeReviewDefinition, saveBinding: { debtId: 'd-cr', debtRevision: 'd-cr-rev-1', definitionRevision: 'def-cr-1' } };
+  const card: OwedReflectionsCard = { ...CLOSED_CARD, reflections: [closeReview], replay };
+  const trade: OwedReflectionsTrade = { ...owedTrade(card), owed: [{ debtId: 'd-cr', entryTypeKey: 'entry-type.close-review', dueAnchor: '2026-10-12T18:00:00Z', classification: 'Due' }] };
+
+  it('should resolve the Debt through ResolveReviewDebt on Save the Close Review and mark the card Close Review saved', async () => {
+    const user = userEvent.setup();
+    const facade = reviewFacade(ready({ owed: [trade] }));
+    vi.mocked(facade.DailyReview.getTrade).mockResolvedValue({ kind: 'ReflectionsOwed', reviewDate: DATE, cutoff: CUTOFF, card });
+    const post = { kind: 'Ready', cards: [], progress: { tradesWithAction: 1, tradesEligible: 1 }, completion: ready().completion, nextStep: { kind: 'Done' }, binding, day: ready().day } as const;
+    const entry = { id: 'e-cr', responses: [{ promptId: 'prompt.close-review.take-again', value: { kind: 'Option', optionId: 'option.close-review.take-again.yes-as-planned' } }, { promptId: 'prompt.close-review.key-lesson', value: { kind: 'Text', text: 'Sell into strength.' } }] };
+    vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'DebtResolved', entry: entry as never, debt: { debtId: 'd-cr', status: 'Settled', revision: 'd-cr-rev-2' } as never, review: post });
+    renderReview(facade);
+    const closed = await screen.findByRole('region', { name: 'ABC review' });
+
+    await user.click(within(closed).getByRole('button', { name: 'Write the Close Review' }));
+    // The walk opens over the page: the Replay with the questions, not the Debt form in the card.
+    expect(within(closed).queryByRole('form', { name: 'Reflection' })).toBeNull();
+    const dialog = screen.getByRole('dialog', { name: 'Replay, ABC' });
+    await user.selectOptions(within(dialog).getByRole('combobox', { name: 'Key moments' }), '2. Sale · Mon Oct 12');
+    const form = within(dialog).getByRole('form', { name: 'Close Review' });
+    await user.click(within(form).getByLabelText('Yes, as planned'));
+    await user.type(within(form).getByLabelText('What is the key lesson?'), 'Sell into strength.');
+    await user.click(within(form).getByRole('button', { name: 'Save the Close Review' }));
+
+    expect(facade.DailyReview.save).toHaveBeenCalledWith({
+      kind: 'ResolveReviewDebt',
+      reviewDate: DATE,
+      binding: closeReview.saveBinding,
+      resolution: { kind: 'Answer', answers: { 'prompt.close-review.take-again': { kind: 'Option', optionId: 'option.close-review.take-again.yes-as-planned' }, 'prompt.close-review.key-lesson': { kind: 'Text', text: 'Sell into strength.' } } },
+    });
+    expect(await screen.findByRole('button', { name: /^Review ABC.*Close Review saved/ })).toBeTruthy();
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(within(closed).getByText('Sell into strength.')).toBeTruthy();
   });
 });

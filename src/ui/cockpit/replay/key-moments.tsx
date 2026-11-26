@@ -17,6 +17,12 @@ export function KeyMoments({ words, current, onChoose }: { readonly words: KeyMo
           </option>
         ))}
       </select>
+      {words.walk?.next && (
+        <button type="button" onClick={() => onChoose(words.walk!.next!)}>
+          {words.walk.nextLabel}
+        </button>
+      )}
+      {words.walk && <p className="replay-moments-seen">{words.walk.progress}</p>}
       {!onMoment && <p>{words.none}</p>}
     </div>
   );

@@ -95,6 +95,19 @@ function SavedEntry({ definition, entry }: { readonly definition: EntryDefinitio
   );
 }
 
+// What a resolved reflection shows in place of its form: the saved answers, or that it was declined.
+export function SavedReflection({ definition, resolved }: { readonly definition: EntryDefinitionRecord; readonly resolved: DebtResolved }) {
+  return (
+    <section aria-label="Saved reflection">
+      {resolved.entry ? (
+        <SavedEntry definition={definition} entry={resolved.entry} />
+      ) : (
+        <p>Declined to reflect.{resolved.decline?.reason ? ` Reason: ${resolved.decline.reason}` : ''}</p>
+      )}
+    </section>
+  );
+}
+
 export function DebtForm({ definition, binding, requires, submit, onResolved, onCancel, onDirtyChange, onHandle }: DebtFormProps) {
   const [answers, setAnswers] = useState<Answers>({});
   const [resolved, setResolved] = useState<DebtResolved | undefined>();
@@ -180,17 +193,7 @@ export function DebtForm({ definition, binding, requires, submit, onResolved, on
     return () => onHandle?.(undefined);
   }, [onHandle]);
   const { promptErrors, fieldError, describedBy } = fieldIssues(issues);
-  if (resolved) {
-    return (
-      <section aria-label="Saved reflection">
-        {resolved.entry ? (
-          <SavedEntry definition={definition} entry={resolved.entry} />
-        ) : (
-          <p>Declined to reflect.{resolved.decline?.reason ? ` Reason: ${resolved.decline.reason}` : ''}</p>
-        )}
-      </section>
-    );
-  }
+  if (resolved) return <SavedReflection definition={definition} resolved={resolved} />;
   const onSubmit = (event: FormEvent) => {
     event.preventDefault();
     void send({ kind: 'Answer', answers });

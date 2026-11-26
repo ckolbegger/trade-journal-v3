@@ -1,0 +1,32 @@
+/* The Close Review walk (T95.59, A319): the Replay on the left and the Close Review's questions beside it; on a phone one column, the questions under the chart. */
+.replay-overlay .close-review-walk {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  column-gap: 16px;
+  align-items: start;
+}
+
+/* Beside the questions the replay has the width left, so its charts and readout stand in one column. */
+.replay-overlay .close-review-walk .replay-card {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.replay-overlay .close-review-walk .replay-chart-box,
+.replay-overlay .close-review-walk .replay-readout {
+  grid-column: 1;
+}
+
+.replay-overlay .walk-questions {
+  position: sticky;
+  top: 0;
+}
+
+@media (max-width: 860px) {
+  .replay-overlay .close-review-walk {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .replay-overlay .walk-questions {
+    position: static;
+  }
+}

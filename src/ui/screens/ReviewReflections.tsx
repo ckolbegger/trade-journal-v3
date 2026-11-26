@@ -1,12 +1,20 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import type { UiFacade } from '../../app/compose.ts';
-import type { DueClassification, OwedReflection, PostSaveReview } from '../../app/types.ts';
+import type { DueClassification, OwedReflection, PostSaveReview, TradeReplayView } from '../../app/types.ts';
+import { CloseReviewWalk } from '../cockpit/replay/close-review-walk.tsx';
 import { DUE_TEXT } from '../due-text.ts';
 import { decimalMoney as price, localTime, shortDate } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
-import { DebtForm, type DebtSubmitResult, type DebtFormProps } from './DebtForm.tsx';
+import { DebtForm, SavedReflection, type DebtResolved, type DebtSubmitResult, type DebtFormProps } from './DebtForm.tsx';
 import type { FormRegister } from './form-handle.ts';
 import { executionWhat, expirationLine } from './execution-line.ts';
+
+// A Close Review is written through the walk over its Trade's Replay (T95.59); the card names the Replay and hears when it was saved.
+export interface ReflectionWalk {
+  readonly replay: TradeReplayView;
+  readonly underlying: string;
+  readonly onSaved: () => void;
+}
 
 interface ReflectionsProps {
   readonly facade: UiFacade;
@@ -19,6 +27,7 @@ interface ReflectionsProps {
   readonly onNoneRemaining: () => void;
   readonly onEntryDirty: (id: string, dirty: boolean) => void;
   readonly onForm: FormRegister;
+  readonly walk?: ReflectionWalk;
 }
 
 interface RowProps {
@@ -34,15 +43,19 @@ interface RowProps {
   readonly onEntryDirty: (id: string, dirty: boolean) => void;
   readonly onForm: FormRegister;
   readonly buttonRef: (button: HTMLButtonElement | null) => void;
+  readonly walk?: ReflectionWalk;
 }
 
-function ReflectionRow({ reflection, timeZone, isOpen, resolved, blocked, submit, onOpen, onClose, onResolved, onEntryDirty, onForm, buttonRef }: RowProps) {
+function ReflectionRow({ reflection, timeZone, isOpen, resolved, blocked, submit, onOpen, onClose, onResolved, onEntryDirty, onForm, buttonRef, walk }: RowProps) {
   const { debtId } = reflection;
   const dirty = useCallback((isDirty: boolean) => onEntryDirty(`debt:${debtId}`, isDirty), [debtId, onEntryDirty]);
   const offer = useCallback((handle: Parameters<FormRegister>[1]) => onForm(`debt:${debtId}`, handle), [debtId, onForm]);
   const when = localTime(reflection.economicTime, timeZone);
   // A Close Review is written, not "reflected on" (W151).
   const closeReview = reflection.entryTypeKey === 'entry-type.close-review';
+  // The walk needs a key moment to start on; without one the Close Review is answered in the Debt form.
+  const walkable = closeReview && walk !== undefined && (walk.replay.keyMoments?.length ?? 0) > 0;
+  const [walked, setWalked] = useState<DebtResolved>();
   const row = useRef<HTMLLIElement>(null);
   const button = useRef<HTMLButtonElement | null>(null);
   const wasOpen = useRef(false);
@@ -80,14 +93,31 @@ function ReflectionRow({ reflection, timeZone, isOpen, resolved, blocked, submit
       )}
       {!resolved && !isOpen && closeReview && reflection.classification === 'DueInNextReview' && <p>Not due until the next Review.</p>}
       {!resolved && !isOpen && closeReview && reflection.classification === 'DueInReviewAfterNext' && <p>{DUE_TEXT.DueInReviewAfterNext}.</p>}
-      {(isOpen || resolved) && <DebtForm definition={reflection.definition} binding={reflection.saveBinding} requires={reflection.requires} submit={submit} onResolved={onResolved} onCancel={resolved ? undefined : onClose} onDirtyChange={dirty} onHandle={offer} />}
+      {walked && <SavedReflection definition={reflection.definition} resolved={walked} />}
+      {!walked && walkable && isOpen && (
+        <CloseReviewWalk
+          replay={walk.replay}
+          underlying={walk.underlying}
+          definition={reflection.definition}
+          binding={reflection.saveBinding}
+          submit={submit}
+          onResolved={(result) => {
+            setWalked(result);
+            onResolved();
+            walk.onSaved();
+          }}
+          onClose={onClose}
+          onDirtyChange={dirty}
+        />
+      )}
+      {!walked && !(walkable && isOpen) && (isOpen || resolved) && <DebtForm definition={reflection.definition} binding={reflection.saveBinding} requires={reflection.requires} submit={submit} onResolved={onResolved} onCancel={resolved ? undefined : onClose} onDirtyChange={dirty} onHandle={offer} />}
     </li>
   );
 }
 
 // The Trade's Outstanding reflections above its Action form (A71), each with its Position Change and when it is due.
 // One Debt form is open at a time; a resolved reflection stays in the card as the result rendered it.
-export function ReviewReflections({ facade, reviewDate, reflections, onReview, onNoneRemaining, onEntryDirty, onForm }: ReflectionsProps) {
+export function ReviewReflections({ facade, reviewDate, reflections, onReview, onNoneRemaining, onEntryDirty, onForm, walk }: ReflectionsProps) {
   const { timeZone = 'UTC', report } = useRuntime();
   const [open, setOpen] = useState<string>();
   const [resolved, setResolved] = useState<ReadonlySet<string>>(new Set());
@@ -160,6 +190,7 @@ export function ReviewReflections({ facade, reviewDate, reflections, onReview, o
                 onResolved={() => resolvedOne(reflection.debtId)}
                 onEntryDirty={onEntryDirty}
                 onForm={onForm}
+                {...(walk && { walk })}
                 buttonRef={(button) => (button ? buttons.current.set(reflection.debtId, button) : buttons.current.delete(reflection.debtId))}
               />
             ))}

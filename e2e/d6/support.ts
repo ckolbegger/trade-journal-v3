@@ -86,6 +86,20 @@ export async function sayWhyLater(page: Page): Promise<void> {
   await page.getByRole('button', { name: 'Say why later' }).click();
 }
 
+// The Close Review of a closed card, written through the walk over its Trade's Replay (T95.59): every key moment is shown with "Next moment",
+// then the required answers are given and saved, and the walk closes.
+export async function walkCloseReview(page: Page): Promise<void> {
+  const dialog = page.getByRole('dialog', { name: /^Replay, / });
+  await expect(dialog).toBeVisible();
+  const next = dialog.getByRole('button', { name: 'Next moment' });
+  for (let presses = 0; presses < 20 && (await next.count()) > 0; presses++) await next.click();
+  await expect(dialog.getByText(/^All \d+ seen\. Now write\.$/)).toBeVisible();
+  const form = dialog.getByRole('form', { name: 'Close Review' });
+  await answerCloseReviewIn(form);
+  await form.getByRole('button', { name: 'Save the Close Review' }).click();
+  await expect(dialog).toBeHidden();
+}
+
 // A Close Review put off at the sale, answered afterwards on the Trade's Detail through its Debt: from the Needs you rail to the
 // saved answer. The Trade's Detail must be open.
 export async function answerCloseReviewOnDetail(page: Page): Promise<void> {

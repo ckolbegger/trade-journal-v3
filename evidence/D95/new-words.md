@@ -67,3 +67,10 @@ The user approved every entry above as it stands, after the T95.26 gate. "More f
 - Replay strip, past the Stop with no calendar to count the run: "Past the Stop since Mon Nov 9. See how it got here." ("N sessions" left out).
 - Replay strip, a closed Trade with no low: "9 sessions. Walk it before you write."; "1 session" for one.
 - Closed card's Plan and what happened table, Stop and Target cells: "Never reached", "Reached Fri Nov 6" (W150 and the mockup; shown only for a line the Plan has).
+
+## T95.59 (the Close Review walk, awaiting approval)
+- Walk, ask before leaving with answers typed (no W row; nearest W128): reuses the Review's own words "ABC's note isn't saved." with "Save it", "Discard it", "Back to ABC".
+- Walk, a save that was not accepted (no W row): the Debt form's own sentence, "This reflection could not be saved. Nothing was saved. Your values are kept, so you can try again."
+- Walk, heading over the questions: "Close Review" (the mockup's own heading). The questions use the snapshot form's own words ("Would you take this Trade again under similar conditions?", "What is the key lesson?").
+- Walk, a required answer left blank (W152 gives two): "Choose one." under a single choice and "Write the lesson." under the key lesson; any other required text question says "Answer “<question>”." (the Debt form's own).
+- W148 used as written: "Next moment" (goes to the first moment not yet seen, as in the mockup), "1 of 4 seen", "All 4 seen. Now write."; the "Next moment" button and the count are hidden once all are seen, except the count line, which reads "All 4 seen. Now write."

@@ -21,6 +21,8 @@ type ViewSession = TradeReplayView['sessions'][number];
 // the call that keeps the slider's session.
 export interface ReplayOptions {
   readonly Plot: ReplayProps['Plot'];
+  // The key moments' dates already seen, in a Close Review walk (A319).
+  readonly seen?: ReadonlySet<string>;
   readonly initialSession?: string;
   readonly onSessionChange?: (date: string) => void;
 }
@@ -61,9 +63,9 @@ function frameSessionOf(view: TradeReplayView, index: number): ReplayFrameSessio
 }
 
 // A255: the whole view as the frame's props, from finished values only; no figure is worked out here (ADR 0001, A256).
-export function replayProps(view: TradeReplayView, { Plot, initialSession, onSessionChange }: ReplayOptions): ReplayProps {
+export function replayProps(view: TradeReplayView, { Plot, seen, initialSession, onSessionChange }: ReplayOptions): ReplayProps {
   const plan = planBlockOf(view);
-  const moments = keyMomentsOf(view);
+  const moments = keyMomentsOf(view, seen);
   return {
     tradeKey: view.tradeId,
     sessions: view.sessions.map((_, index) => frameSessionOf(view, index)),

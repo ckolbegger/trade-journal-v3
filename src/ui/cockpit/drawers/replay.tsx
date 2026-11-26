@@ -21,15 +21,17 @@ export interface ReplayDrawerProps {
   readonly links?: (session: SessionLinks) => ReactNode;
   // The session to open on (a date), from the address (A257); the newest when absent.
   readonly initialSession?: string;
+  // The key moments' dates already seen, in a Close Review walk (A319).
+  readonly seen?: ReadonlySet<string>;
   // Called when the slider moves to another session.
   readonly onSessionChange?: (date: string) => void;
 }
 
 // The Replay drawer (W1, W35, P128): the Corridor in its frame, drawn from the replay the Detail already read.
-export function ReplayDrawer({ replay, links, initialSession, onSessionChange }: ReplayDrawerProps) {
+export function ReplayDrawer({ replay, links, initialSession, seen, onSessionChange }: ReplayDrawerProps) {
   const props = useMemo(
-    () => replayProps(replay, { Plot: CorridorPlot, ...(initialSession !== undefined && { initialSession }), ...(onSessionChange && { onSessionChange }) }),
-    [replay, initialSession, onSessionChange],
+    () => replayProps(replay, { Plot: CorridorPlot, ...(seen && { seen }), ...(initialSession !== undefined && { initialSession }), ...(onSessionChange && { onSessionChange }) }),
+    [replay, initialSession, seen, onSessionChange],
   );
   // W47: the chips under the charts, from the estimates the view carries.
   const chips = useMemo(() => chipsOf(replay), [replay]);

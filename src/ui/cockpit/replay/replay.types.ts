@@ -317,6 +317,9 @@ export interface KeyMomentsWords {
   // "No key moment this session.", said under the drop-down on a session that is no moment.
   readonly none: string;
   readonly moments: readonly { readonly date: string; readonly label: string }[];
+  // The Close Review walk's count, beside the drop-down: "1 of 4 seen", "All 4 seen. Now write." (W148); absent outside a walk.
+  // "Next moment" goes to the first moment not yet seen (its date); absent once every one has been.
+  readonly walk?: { readonly progress: string; readonly nextLabel: string; readonly next?: string };
 }
 
 // Everything the frame shows for one session. The frame reveals sessions up to the slider's and drops the rest from

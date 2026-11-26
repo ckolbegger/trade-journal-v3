@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import {
-  answerCloseReviewOnDetail, answerSaleIn, closeReasonGroup, closeReviewGroup, closeTheTrade, closingSection, copyTA, createTrades, debtForm, detail, executionRow, expect, expectAccessible, exitReflection, FOUR_TRADES, fillRows, firstPage, holdTradesStore,
+  answerCloseReviewOnDetail, answerSaleIn, closeReasonGroup, closeReviewGroup, closeTheTrade, closingSection, copyTA, createTrades, detail, executionRow, expect, expectAccessible, exitReflection, FOUR_TRADES, fillRows, firstPage, holdTradesStore,
   launchAt, MONDAY_1700, onboardedAt, openDrawer, openExitForm, openReview, openTradeFromOpenList, LAUNCH, receiptResult, releaseTradesStore, sell, setClock, tabTo, test, TUESDAY_1000_LOCAL, TUESDAY_1405,
   TUESDAY_1405_LOCAL, TUESDAY_1700, valueOf, writeIntegrityFixture,
 } from './support.ts';
@@ -187,8 +187,8 @@ test.describe('B6.12 Responsive and accessible', () => {
     await expect(header).toHaveAttribute('aria-expanded', 'true');
     await accessibleAtBothWidths(page, 'Review owed-reflection card, open');
     await card.getByRole('button', { name: 'Write the Close Review' }).click();
-    await expect(debtForm(page)).toBeVisible();
-    await accessibleAtBothWidths(page, 'Review owed-reflection card with the Close Review form');
+    await expect(page.getByRole('dialog', { name: /^Replay, / }).getByRole('form', { name: 'Close Review' })).toBeVisible();
+    await accessibleAtBothWidths(page, 'Review owed-reflection card with the Close Review walk');
     await context.close();
 
     // The Closed list, Error: a Trade the list cannot read (a Position Change naming a missing Execution).
