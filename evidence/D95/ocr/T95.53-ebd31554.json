@@ -1,0 +1,161 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 7 selected item(s).",
+  "summary": {
+    "files_reviewed": 7,
+    "comments": 0,
+    "total_tokens": 79738,
+    "input_tokens": 79017,
+    "output_tokens": 721,
+    "cache_read_tokens": 9984,
+    "elapsed": "18s"
+  },
+  "tool_calls": {
+    "total": 14,
+    "by_tool": {
+      "code_search": 5,
+      "file_read": 9
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Day card presentation and current-day UI tests",
+      "files": [
+        "src/ui/app.css",
+        "src/ui/screens/DayCard.test.tsx",
+        "src/ui/screens/DayCard.tsx",
+        "src/ui/screens/NowBox.test.tsx"
+      ]
+    },
+    {
+      "label": "Review card and settlement behavior",
+      "files": [
+        "src/ui/screens/ReviewCard.tsx",
+        "src/ui/screens/ReviewSettlement.test.tsx",
+        "src/ui/screens/ReviewSettlement.tsx"
+      ]
+    }
+  ],
+  "session_id": "46f2ff1d-d50e-4587-8dfe-3eeb6ec69b8d",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "46f2ff1d-d50e-4587-8dfe-3eeb6ec69b8d",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "ebd31554",
+      "resolved_base": "c910463e406a77be58fe2d3baef98743a6262c4b",
+      "resolved_head": "ebd315541fa8a144f2cbfae3dcef5997a62c5a27",
+      "exact_range": "c910463e406a77be58fe2d3baef98743a6262c4b..ebd315541fa8a144f2cbfae3dcef5997a62c5a27",
+      "source_artifact_sha256": "242d36aa85c3074b16d13fb67a4829d8adccab362a00e8659deb904eb3a5ac1f"
+    },
+    "execution": {
+      "ocr_version": "v1.14.4",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "dbf122fa81d7fd39fc1b321ec258cd997845eb1433ced14e4cb7211fb35faa77"
+        },
+        {
+          "item_id": "291ff04d5b13885b7146bf8eb6539426032c6b8eefc18524ae85e4f8d55c3f0b",
+          "path": "src/ui/screens/DayCard.test.tsx",
+          "fingerprint": "d88b8c1e27fc5bbea8e3a3ed5d0c613d63fd94d2afe8f01534cfc588fa26035b"
+        },
+        {
+          "item_id": "360f0c0c6a08d59bdc50988ff729f8031fe5275eeb735bbc6c714ef5915fa7f8",
+          "path": "src/ui/screens/DayCard.tsx",
+          "fingerprint": "6f644ca5c6ea89a2a6ee20f343c7e908646443257199a75d8258d6d257673955"
+        },
+        {
+          "item_id": "6376131ed368e5ac2277c2f7a6073ab00b06d8dcc7fa59c84c1807d7587ffa40",
+          "path": "src/ui/screens/ReviewSettlement.tsx",
+          "fingerprint": "025f254007f72f482fc1050f5cf811e1a57f358262bb3ea1fa039daf205e215a"
+        },
+        {
+          "item_id": "ca830210571b3c1c130132730f3b5ff5e6224fd42856b0400a111e121dfb1fc8",
+          "path": "src/ui/screens/ReviewSettlement.test.tsx",
+          "fingerprint": "2eca846c45ba3013ed9b29004aec2ff17e879d537a7f200038b4837cafbf6cd8"
+        },
+        {
+          "item_id": "d3b0e476336debedae17e83bab9198bf23ead094c81f9a7aa114447b3fba6437",
+          "path": "src/ui/screens/NowBox.test.tsx",
+          "fingerprint": "87721d835d4e7c7ee9ee244fe58d724450afd435a534bcd80568efceeccb6e20"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "a57f406bec40a1b01f0050753d38bcbdd49f52482e1b74af22ccaf22aecbbe00"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "dbf122fa81d7fd39fc1b321ec258cd997845eb1433ced14e4cb7211fb35faa77"
+        },
+        {
+          "item_id": "291ff04d5b13885b7146bf8eb6539426032c6b8eefc18524ae85e4f8d55c3f0b",
+          "path": "src/ui/screens/DayCard.test.tsx",
+          "fingerprint": "d88b8c1e27fc5bbea8e3a3ed5d0c613d63fd94d2afe8f01534cfc588fa26035b"
+        },
+        {
+          "item_id": "360f0c0c6a08d59bdc50988ff729f8031fe5275eeb735bbc6c714ef5915fa7f8",
+          "path": "src/ui/screens/DayCard.tsx",
+          "fingerprint": "6f644ca5c6ea89a2a6ee20f343c7e908646443257199a75d8258d6d257673955"
+        },
+        {
+          "item_id": "6376131ed368e5ac2277c2f7a6073ab00b06d8dcc7fa59c84c1807d7587ffa40",
+          "path": "src/ui/screens/ReviewSettlement.tsx",
+          "fingerprint": "025f254007f72f482fc1050f5cf811e1a57f358262bb3ea1fa039daf205e215a"
+        },
+        {
+          "item_id": "ca830210571b3c1c130132730f3b5ff5e6224fd42856b0400a111e121dfb1fc8",
+          "path": "src/ui/screens/ReviewSettlement.test.tsx",
+          "fingerprint": "2eca846c45ba3013ed9b29004aec2ff17e879d537a7f200038b4837cafbf6cd8"
+        },
+        {
+          "item_id": "d3b0e476336debedae17e83bab9198bf23ead094c81f9a7aa114447b3fba6437",
+          "path": "src/ui/screens/NowBox.test.tsx",
+          "fingerprint": "87721d835d4e7c7ee9ee244fe58d724450afd435a534bcd80568efceeccb6e20"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "a57f406bec40a1b01f0050753d38bcbdd49f52482e1b74af22ccaf22aecbbe00"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "e19c420dd899f90240c75f571ddd79831d463dc4fefbff74e4d429fadd7e6d57",
+          "path": "evidence/D95/tdd-log/T95.53.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 18016
+  }
+}
