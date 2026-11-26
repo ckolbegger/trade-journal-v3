@@ -1467,3 +1467,7 @@ Commit `48aad904`: `open`'s walked Trades carry `expirationStanding` and `settle
 
 ocr of T95.62-D1 (session 3e37a973): complete, 8 files, 1 finding. `evidence/D95/ocr/T95.62-D1-48aad904.json`.
 - Doubtful, performance, not correctness (`daily-review.ts:682`): the replay is assembled twice in memory for a Settlement Due Trade past a line on the expiration session; no store read repeats. Sent to tech-debt.md (only correctness findings become bug tasks).
+
+Run `t95.62-d1-standing` (browser-auto 8788c06d, full tier; at `535ab6e8`): unit 266 files, 3228 passed; integration 158 files, 364 passed; browser-1 127, browser-2 79, browser-3 55, browser-4 164 passed, 4 skipped; 14 of 14 checks exit 0; run-complete. Passed. T95.62-D1 done.
+
+## T95.59
