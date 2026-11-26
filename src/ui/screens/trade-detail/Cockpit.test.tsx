@@ -315,7 +315,8 @@ describe('Trade Detail cockpit (W1, A217)', () => {
       renderOwed();
       await openDrawer(user, 'Journal');
       await user.click(await within(await screen.findByRole('tabpanel', { name: 'Journal' })).findByRole('button', { name: 'Reflect now' }));
-      await user.click(await screen.findByRole('button', { name: 'Decline' }));
+      await user.click(await screen.findByRole('button', { name: 'Decline…' }));
+      await user.click(await screen.findByRole('button', { name: 'Decline the reflection' }));
       await screen.findByRole('region', { name: 'Saved reflection' });
 
       await openDrawer(user, 'Plan and Risk');

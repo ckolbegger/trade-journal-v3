@@ -35,7 +35,7 @@ test.describe('B5.9 Recovery Only (faults build)', () => {
     await (await reflectionsOf(page, 'XYZ')).getByRole('button', { name: /^Reflect on / }).click();
     await expect((await debtFormOf(page, 'XYZ')).getByRole('radiogroup', { name: 'Decision mode' }).getByLabel('As Planned')).toBeDisabled();
     await expect((await debtFormOf(page, 'XYZ')).getByRole('button', { name: 'Answer', exact: true })).toHaveCount(0);
-    await expect((await debtFormOf(page, 'XYZ')).getByRole('button', { name: 'Decline', exact: true })).toHaveCount(0);
+    await expect((await debtFormOf(page, 'XYZ')).getByRole('button', { name: 'Decline…', exact: true })).toHaveCount(0);
     await expect(page.getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ })).toHaveCount(0);
     await expect(await actionFormOf(page, 'XYZ')).toHaveCount(0);
     await expect(page.getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ })).toHaveCount(0);

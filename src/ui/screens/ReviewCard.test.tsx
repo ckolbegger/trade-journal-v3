@@ -521,7 +521,8 @@ describe('Leaving an unsaved reflection', () => {
 
     await user.click(panelHeader(trade, 'Reflections'));
     await user.click(within(trade).getByRole('button', { name: /Reflect on 2026-10-09 10:30/ }));
-    await user.type(within(trade).getByLabelText('Reason for declining (optional)'), 'No time.');
+    await user.click(within(trade).getByRole('button', { name: 'Decline…' }));
+    await user.type(within(within(trade).getByRole('region', { name: 'Reflections' })).getByLabelText('Why? (optional)'), 'No time.');
 
     await user.click(within(screen.getByRole('list', { name: 'Trade lines' })).getByRole('link', { name: 'DEF' }));
     await user.click(screen.getByRole('button', { name: /^Review DEF/ }));
@@ -529,7 +530,7 @@ describe('Leaving an unsaved reflection', () => {
     expect(vi.mocked(facade.DailyReview.getTrade)).toHaveBeenCalledTimes(1);
     expect(screen.getByRole('region', { name: 'XYZ review' })).toBeTruthy();
     expect(screen.getByText("XYZ's note isn't saved.")).toBeTruthy();
-    expect(within(trade).getByLabelText<HTMLTextAreaElement>('Reason for declining (optional)').value).toBe('No time.');
+    expect(within(within(trade).getByRole('region', { name: 'Reflections' })).getByLabelText<HTMLTextAreaElement>('Why? (optional)').value).toBe('No time.');
   });
 });
 
@@ -1206,8 +1207,9 @@ describe('reflections in the Trade card (A71)', () => {
     const section = within(trade).getByRole('region', { name: 'Reflections' });
 
     await user.click(within(section).getByRole('button', { name: /Reflect on 2026-10-09 10:30/ }));
-    await user.type(within(section).getByLabelText('Reason for declining (optional)'), 'No time.');
-    await user.click(within(section).getByRole('button', { name: 'Decline' }));
+    await user.click(within(section).getByRole('button', { name: 'Decline…' }));
+    await user.type(within(section).getByLabelText('Why? (optional)'), 'No time.');
+    await user.click(within(section).getByRole('button', { name: 'Decline the reflection' }));
 
     expect(vi.mocked(facade.DailyReview.save)).toHaveBeenLastCalledWith({ kind: 'ResolveReviewDebt', reviewDate: '2026-10-12', binding: reflections[0]!.saveBinding, resolution: { kind: 'Decline', reason: 'No time.' } });
     expect(report).toHaveBeenLastCalledWith(expect.objectContaining({ kind: 'DebtResolved' }));
@@ -1217,7 +1219,8 @@ describe('reflections in the Trade card (A71)', () => {
     expect(screen.queryByText('Complete')).toBeNull();
 
     await user.click(within(section).getByRole('button', { name: /Reflect on 2026-10-12 10:30/ }));
-    await user.click(within(section).getByRole('button', { name: 'Decline' }));
+    await user.click(within(section).getByRole('button', { name: 'Decline…' }));
+    await user.click(within(section).getByRole('button', { name: 'Decline the reflection' }));
 
     expect(vi.mocked(facade.DailyReview.save)).toHaveBeenLastCalledWith({ kind: 'ResolveReviewDebt', reviewDate: '2026-10-12', binding: reflections[1]!.saveBinding, resolution: { kind: 'Decline' } });
     expect((await screen.findByText('Complete')).tagName).toBe('STRONG');
@@ -1266,8 +1269,9 @@ describe('reflections', () => {
     expect(within(monday).getAllByRole('button', { name: /^Reflect on/ })).toHaveLength(1);
 
     await user.click(within(friday).getByRole('button', { name: /Reflect on 2026-10-09 10:30/ }));
-    await user.type(within(friday).getByLabelText('Reason for declining (optional)'), 'No time.');
-    await user.click(within(friday).getByRole('button', { name: 'Decline' }));
+    await user.click(within(friday).getByRole('button', { name: 'Decline…' }));
+    await user.type(within(friday).getByLabelText('Why? (optional)'), 'No time.');
+    await user.click(within(friday).getByRole('button', { name: 'Decline the reflection' }));
 
     expect(vi.mocked(facade.DailyReview.save)).toHaveBeenLastCalledWith({ kind: 'ResolveReviewDebt', reviewDate: '2026-10-12', binding: owedPair[0]!.saveBinding, resolution: { kind: 'Decline', reason: 'No time.' } });
     expect(await within(friday).findByText('Declined to reflect. Reason: No time.')).toBeTruthy();
@@ -1293,7 +1297,8 @@ describe('progress from save results (A165, P46)', () => {
     expect(within(panelHeader(card, 'Reflections')).getByText('2 owed, 1 due now')).toBeTruthy();
 
     await user.click(within(card).getByRole('button', { name: /Reflect on 2026-10-09 10:30/ }));
-    await user.click(within(card).getByRole('button', { name: 'Decline' }));
+    await user.click(within(card).getByRole('button', { name: 'Decline…' }));
+    await user.click(within(card).getByRole('button', { name: 'Decline the reflection' }));
     expect(await within(card).findByText('Declined to reflect.')).toBeTruthy();
 
     // The one answered is no longer owed: the same state read fresh shows one owed and none due.
@@ -1302,7 +1307,8 @@ describe('progress from save results (A165, P46)', () => {
 
     await user.click(panelHeader(card, 'Reflections'));
     await user.click(within(card).getByRole('button', { name: /Reflect on 2026-10-12 10:30/ }));
-    await user.click(within(card).getByRole('button', { name: 'Decline' }));
+    await user.click(within(card).getByRole('button', { name: 'Decline…' }));
+    await user.click(within(card).getByRole('button', { name: 'Decline the reflection' }));
     await vi.waitFor(() => expect(within(panelHeader(card, 'Reflections')).getByText('None owed')).toBeTruthy());
     expect(within(panelHeader(card, 'Reflections')).getByText('None')).toBeTruthy();
     expect(within(panelHeader(card, 'Reflections')).queryByText('Resolved')).toBeNull();
@@ -1431,7 +1437,8 @@ describe('moving on', () => {
 
     // The last reflection resolved finishes that one: the Action panel opens.
     await user.click(within(card).getByRole('button', { name: /Reflect on 2026-10-09 10:30/ }));
-    await user.click(within(card).getByRole('button', { name: 'Decline' }));
+    await user.click(within(card).getByRole('button', { name: 'Decline…' }));
+    await user.click(within(card).getByRole('button', { name: 'Decline the reflection' }));
     await vi.waitFor(() => expect(opened()).toEqual(['Action']));
 
     // The Action save opens the card the result names, and this one collapses.
@@ -1536,7 +1543,8 @@ describe('moving on from Reflections', () => {
     expect(panelHeader(card, 'Reflections').getAttribute('aria-expanded')).toBe('true');
 
     await user.click(within(card).getByRole('button', { name: /Reflect on 2026-10-09 10:30/ }));
-    await user.click(within(card).getByRole('button', { name: 'Decline' }));
+    await user.click(within(card).getByRole('button', { name: 'Decline…' }));
+    await user.click(within(card).getByRole('button', { name: 'Decline the reflection' }));
 
     await vi.waitFor(() => expect(panelHeader(card, 'Action').getAttribute('aria-expanded')).toBe('true'));
     expect(panelHeader(card, 'Reflections').getAttribute('aria-expanded')).toBe('false');
@@ -1553,7 +1561,8 @@ describe('a reflection draft when the shell turns read only', () => {
     renderWalk(facade, { shellLike: true });
     const card = await openTrade(user, 'XYZ');
     await user.click(within(card).getByRole('button', { name: /Reflect on 2026-10-09/ }));
-    await user.type(within(card).getByLabelText('Reason for declining (optional)'), 'No time.');
+    await user.click(within(card).getByRole('button', { name: 'Decline…' }));
+    await user.type(within(within(card).getByRole('region', { name: 'Reflections' })).getByLabelText('Why? (optional)'), 'No time.');
     // A refused Action save turns the shell read only, with the reflection form still holding its value.
     await user.click(panelHeader(card, 'Action'));
     await user.click(within(card).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));

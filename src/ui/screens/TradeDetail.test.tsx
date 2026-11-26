@@ -11,7 +11,7 @@ import { facadeDouble } from '../../../tests/support/facade-double.ts';
 import { incoherentDetailOf, openDetailAt, PC1, PC2, PC3, pc1Reflection, pc3Excess, X1, X2 } from '../../../tests/support/open-detail-fixtures.ts';
 import { optionOpenDetail, type OptionFrames } from '../../../tests/support/option-detail-fixtures.ts';
 import { OS_S1 } from '../../../tests/support/option-trade-fixtures.ts';
-import { reflectionDefinition, reflectionDefinition6 } from '../../../tests/support/position-change-form-facade.ts';
+import { closeReviewDefinition, reflectionDefinition, reflectionDefinition6 } from '../../../tests/support/position-change-form-facade.ts';
 import { plannedDetail } from '../../../tests/support/views-fixtures.ts';
 import type { TradeDetailDebt, TradeDetailView, TradeReplayView } from '../../app/types.ts';
 import { Rational } from '../../domain/values/index.ts';
@@ -235,7 +235,8 @@ describe('Trade Detail: the replay read (P95)', () => {
     await user.click(await screen.findByRole('tab', { name: 'Journal' }));
     const journal = screen.getByRole('tabpanel', { name: 'Journal' });
     await user.click(within(journal).getByRole('button', { name: 'Reflect now' }));
-    await user.click(await within(journal).findByRole('button', { name: 'Decline' }));
+    await user.click(await within(journal).findByRole('button', { name: 'Decline…' }));
+    await user.click(await within(journal).findByRole('button', { name: 'Decline the reflection' }));
     // The card shows the saved reflection, and the Debt is no longer owed on it.
     expect(await within(journal).findByRole('region', { name: 'Saved reflection' })).toBeTruthy();
     expect(within(journal).queryByText('Reflection owed')).toBeNull();
@@ -376,6 +377,110 @@ describe('Trade Detail: Reflect now finds the Debt (T8P.22-B1)', () => {
   });
 });
 
+describe('Trade Detail: an owed Close Review is written in the walk (T95.60, decision 29)', () => {
+  const closeDebt: TradeDetailDebt = { ...debt, id: 'debt-cr', entryType: 'Close Review', entryTypeKey: 'entry-type.close-review', definitionId: 'def-cr-2', revision: 'debt-cr-rev-1', dueStatus: 'Due' };
+  const withMoments = (): TradeReplayView => ({ ...replay([closeDebt]), keyMoments: [{ date: '2026-10-12', kinds: ['Entry'] }, { date: '2026-10-15', kinds: ['End'] }] });
+
+  it('should open the same walk from Trade Detail owed Close Review and resolve the Debt through Journal.save', async () => {
+    const user = userEvent.setup();
+    const facade = facadeOf({ view: thursday([closeDebt]), replayResult: { kind: 'Ready', view: withMoments(), binding: BINDING } });
+    vi.mocked(facade.Journal.getDefinitions).mockResolvedValue({ kind: 'Found', definition: { ...closeReviewDefinition, id: 'def-cr-2' } } as never);
+    vi.mocked(facade.Journal.save).mockResolvedValue({ kind: 'Saved', entry: { id: 'entry-cr', authoredTime: '2026-10-15T21:00:00Z', responses: [] }, debt: { debtId: 'debt-cr' }, currentOutcome: { kind: 'Entry', id: 'entry-cr' }, snapshot: { journalRevision: 5 } } as never);
+    renderWith(facade);
+    await user.click(await screen.findByRole('tab', { name: 'Journal' }));
+    const journal = screen.getByRole('tabpanel', { name: 'Journal' });
+    await user.click(within(journal).getByRole('button', { name: 'Write the Close Review' }));
+
+    // The walk opens beside the Replay, its questions locked until the moments are seen.
+    const form = await screen.findByRole('form', { name: 'Close Review' });
+    expect(facade.Journal.getDefinitions).toHaveBeenCalledWith({ revision: 'def-cr-2' });
+    expect(within(form).getByText('See the 2 key moments first, then answer.')).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: 'Next moment' }));
+    await user.click(within(form).getByLabelText('Yes, as planned'));
+    await user.type(within(form).getByLabelText('What is the key lesson?'), 'Sell into strength.');
+    await user.click(within(form).getByRole('button', { name: 'Save the Close Review' }));
+
+    await within(journal).findByRole('region', { name: 'Saved reflection' });
+    expect(facade.Journal.save).toHaveBeenCalledTimes(1);
+    expect(facade.Journal.save).toHaveBeenCalledWith({
+      intention: 'ResolveDebt',
+      debtId: 'debt-cr',
+      expectedDebtRevision: 'debt-cr-rev-1',
+      resolution: {
+        kind: 'Answer',
+        form: {
+          definitionId: 'def-cr-2',
+          answers: {
+            'prompt.close-review.take-again': { kind: 'Option', optionId: 'option.close-review.take-again.yes-as-planned' },
+            'prompt.close-review.key-lesson': { kind: 'Text', text: 'Sell into strength.' },
+          },
+        },
+      },
+    });
+    expect(screen.queryByRole('form', { name: 'Close Review' })).toBeNull();
+    expect(within(journal).queryByText('Reflection owed')).toBeNull();
+    expect(within(journal).getByText('Deferred, answered')).toBeTruthy();
+    // No read beyond the two the page makes when it opens.
+    expect(facade.TradeViewsAndReporting.getTradeDetail).toHaveBeenCalledTimes(1);
+    expect(facade.TradeViewsAndReporting.replayTrade).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('Trade Detail: declining any owed reflection (T95.60, W153)', () => {
+  // A press is one click on a button, counted from the item's own button; typing is not counted.
+  async function pressesToResolve(how: 'answer' | 'decline') {
+    const facade = facadeOf();
+    vi.mocked(facade.Journal.getDefinitions).mockResolvedValue({ kind: 'Found', definition: reflectionDefinition } as never);
+    vi.mocked(facade.Journal.save).mockResolvedValue({ kind: 'Saved', decline: { id: 'decl-1', authoredTime: '2026-10-15T21:00:00Z' }, entry: { id: 'entry-1', authoredTime: '2026-10-15T21:00:00Z', responses: [] }, debt: { debtId: 'debt-1' }, currentOutcome: { kind: 'Decline', id: 'decl-1' }, snapshot: { journalRevision: 5 } } as never);
+    renderWith(facade);
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole('tab', { name: 'Journal' }));
+    const journal = screen.getByRole('tabpanel', { name: 'Journal' });
+    let presses = 0;
+    const press = async (button: HTMLElement) => {
+      await user.click(button);
+      presses += 1;
+    };
+    await press(await within(journal).findByRole('button', { name: how === 'answer' ? 'Reflect now' : 'Decline' }));
+    const form = await within(journal).findByRole('form', { name: 'Reflection' });
+    while (vi.mocked(facade.Journal.save).mock.calls.length === 0 && presses < 6) {
+      await press(within(form).queryByRole('button', { name: how === 'answer' ? 'Answer' : 'Decline the reflection' }) ?? within(form).getByRole('button', { name: 'Decline…' }));
+    }
+    cleanup();
+    return presses;
+  }
+
+  it('should take more presses to decline any owed reflection than to answer it', async () => {
+    expect(await pressesToResolve('decline')).toBeGreaterThan(await pressesToResolve('answer'));
+  });
+});
+
+describe('Trade Detail: declining an owed Close Review (T95.60, W153)', () => {
+  const closeDebt: TradeDetailDebt = { ...debt, id: 'debt-cr', entryType: 'Close Review', entryTypeKey: 'entry-type.close-review', definitionId: 'def-cr-2', revision: 'debt-cr-rev-1', dueStatus: 'Due' };
+  const withMoments = (): TradeReplayView => ({ ...replay([closeDebt]), keyMoments: [{ date: '2026-10-12', kinds: ['Entry'] }, { date: '2026-10-15', kinds: ['End'] }] });
+
+  it('should ask first, then decline the Close Review through Journal.save with the reason', async () => {
+    const user = userEvent.setup();
+    const facade = facadeOf({ view: thursday([closeDebt]), replayResult: { kind: 'Ready', view: withMoments(), binding: BINDING } });
+    vi.mocked(facade.Journal.getDefinitions).mockResolvedValue({ kind: 'Found', definition: { ...closeReviewDefinition, id: 'def-cr-2' } } as never);
+    vi.mocked(facade.Journal.save).mockResolvedValue({ kind: 'Saved', decline: { id: 'decl-cr', reason: 'Not worth it.', authoredTime: '2026-10-15T21:00:00Z' }, debt: { debtId: 'debt-cr' }, currentOutcome: { kind: 'Decline', id: 'decl-cr' }, snapshot: { journalRevision: 5 } } as never);
+    renderWith(facade);
+    await user.click(await screen.findByRole('tab', { name: 'Journal' }));
+    const journal = screen.getByRole('tabpanel', { name: 'Journal' });
+    await user.click(within(journal).getByRole('button', { name: 'Decline…' }));
+    expect(await within(journal).findByText('Decline this Close Review? The Journal will show it as declined.')).toBeTruthy();
+    expect(screen.queryByRole('form', { name: 'Close Review' })).toBeNull();
+    expect(facade.Journal.save).not.toHaveBeenCalled();
+    await user.type(within(journal).getByLabelText('Why? (optional)'), 'Not worth it.');
+    await user.click(within(journal).getByRole('button', { name: 'Decline the Close Review' }));
+
+    expect(await within(journal).findByText('Declined to reflect. Reason: Not worth it.')).toBeTruthy();
+    expect(facade.Journal.save).toHaveBeenCalledWith({ intention: 'ResolveDebt', debtId: 'debt-cr', expectedDebtRevision: 'debt-cr-rev-1', resolution: { kind: 'Decline', reason: 'Not worth it.' } });
+    expect(within(journal).getByText('Declined later')).toBeTruthy();
+    expect(facade.TradeViewsAndReporting.replayTrade).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe('Trade Detail: Needs you follows the Journal (revision 95)', () => {
   it('should take a Debt off Needs you as soon as it is answered or declined on its card, without reading again', async () => {
     const user = userEvent.setup();
@@ -392,7 +497,8 @@ describe('Trade Detail: Needs you follows the Journal (revision 95)', () => {
     await user.click(screen.getByRole('tab', { name: 'Journal' }));
     const journal = screen.getByRole('tabpanel', { name: 'Journal' });
     await user.click(within(journal).getAllByRole('button', { name: 'Reflect now' })[0]!);
-    await user.click(within(await within(journal).findByRole('form', { name: 'Reflection' })).getByRole('button', { name: 'Decline' }));
+    await user.click(within(await within(journal).findByRole('form', { name: 'Reflection' })).getByRole('button', { name: 'Decline…' }));
+    await user.click(within(await within(journal).findByRole('form', { name: 'Reflection' })).getByRole('button', { name: 'Decline the reflection' }));
     await within(journal).findByRole('region', { name: 'Saved reflection' });
 
     // One Debt is left in Needs you, and the Journal tab counts the one still owed; the answered one is gone from the rail's DOM.

@@ -32,3 +32,6 @@ The user approved every entry above as it stands, after the T95.26 gate. "More f
 
 ## T95.59
 - No words shortened: W148's "Next moment", "1 of 4 seen", "All 4 seen. Now write." and W152's four phrases are used as approved.
+
+## T95.60
+- The Debt form's decline: "Reason for declining (optional)", always shown beside "Answer" and "Decline" → the reason appears only after "Decline…", labelled W153's "Why? (optional)" under "Decline this reflection? The Journal will show it as declined." (a Close Review: "Decline this Close Review? …"). W153's other words are used as approved.

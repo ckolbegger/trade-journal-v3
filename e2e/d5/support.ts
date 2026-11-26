@@ -77,11 +77,12 @@ export async function answerDebt(page: Page, card: CardRef | undefined, where: D
   await expectSavedReflection(page, form, card, where);
 }
 
-// Types a reason (when given), presses Decline, and waits for the saved result. The card is undefined only on Trade Detail.
+// Presses Decline…, types a reason (when given), confirms, and waits for the saved result. The card is undefined only on Trade Detail.
 export async function declineDebt(page: Page, reason: string | undefined, card: CardRef | undefined): Promise<void> {
   const form = card === undefined ? detail.debtForm(page) : await debtFormOf(page, card);
-  if (reason !== undefined) await form.getByLabel('Reason for declining (optional)').fill(reason);
-  await form.getByRole('button', { name: 'Decline', exact: true }).click();
+  await form.getByRole('button', { name: 'Decline…', exact: true }).click();
+  if (reason !== undefined) await form.getByLabel('Why? (optional)').fill(reason);
+  await form.getByRole('button', { name: 'Decline the reflection', exact: true }).click();
   await expectSavedReflection(page, form, card, 'Detail');
 }
 

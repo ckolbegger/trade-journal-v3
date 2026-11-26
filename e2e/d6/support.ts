@@ -5,7 +5,6 @@ import {
   defineSetup, detail, executionRow, expect, firstPage, FOUR_TRADES, createTrades, LAUNCH, launchAt, MONDAY_1700, onboardedAt, type Profile, type ProbedDatabase, type Row, type Setup,
 } from '../d5r/support.ts';
 
-import { answerDebt } from '../d5/support.ts';
 
 export * from '../d5r/support.ts';
 
@@ -100,12 +99,12 @@ export async function walkCloseReview(page: Page): Promise<void> {
   await expect(dialog).toBeHidden();
 }
 
-// A Close Review put off at the sale, answered afterwards on the Trade's Detail through its Debt: from the Needs you rail to the
-// saved answer. The Trade's Detail must be open.
+// A Close Review put off at the sale, answered afterwards on the Trade's Detail through its Debt: from the Needs you rail, through the
+// walk over the Replay (T95.60), to the saved answer. The Trade's Detail must be open.
 export async function answerCloseReviewOnDetail(page: Page): Promise<void> {
   await detail.reflectNowButton(page).click();
-  await answerCloseReviewIn(detail.debtForm(page));
-  await answerDebt(page, undefined, 'Detail');
+  await walkCloseReview(page);
+  await expect(detail.savedReflection(page)).toBeVisible();
 }
 
 // Answers the exit's own reflection and the Closing the Trade section of an exit that sells every share: Target Reached. The

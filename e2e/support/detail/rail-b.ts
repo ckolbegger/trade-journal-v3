@@ -46,8 +46,9 @@ export const reflectNowButton = (page: Page): Locator => roleOf(needsYouCard(pag
 
 // The Journal card's own items, which hold the forms. `includeHidden` so an absence read holds while another drawer is selected.
 export const reflectionOwedExact = (page: Page): Locator => journalRegion(page).getByText('Reflection owed', { exact: true });
-export const journalReflectNowButton = (page: Page): Locator => detailRoot(page).locator('#drawer-panel-journal').getByRole('button', { name: 'Reflect now', includeHidden: true });
-export const declineButton = (page: Page): Locator => roleOf(journalRegion(page), 'button', { name: 'Decline', exact: true });
+export const journalReflectNowButton = (page: Page): Locator => detailRoot(page).locator('#drawer-panel-journal').getByRole('button', { name: /^(Reflect now|Write the Close Review)$/, includeHidden: true });
+// "Decline" on an owed item, and "Decline…" on an owed Close Review that has its walk (T95.60).
+export const declineButton = (page: Page): Locator => roleOf(journalRegion(page), 'button', { name: /^Decline…?$/ });
 export const answerButton = (page: Page): Locator => roleOf(journalRegion(page), 'button', { name: 'Answer', exact: true });
 export const debtForm = (page: Page): Locator => roleOf(journalRegion(page), 'form', { name: 'Reflection' });
 export const savedReflection = (page: Page): Locator => roleOf(journalRegion(page), 'region', { name: 'Saved reflection' });

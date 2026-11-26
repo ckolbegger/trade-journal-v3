@@ -74,3 +74,10 @@ The user approved every entry above as it stands, after the T95.26 gate. "More f
 - Walk, heading over the questions: "Close Review" (the mockup's own heading). The questions use the snapshot form's own words ("Would you take this Trade again under similar conditions?", "What is the key lesson?").
 - Walk, a required answer left blank (W152 gives two): "Choose one." under a single choice and "Write the lesson." under the key lesson; any other required text question says "Answer “<question>”." (the Debt form's own).
 - W148 used as written: "Next moment" (goes to the first moment not yet seen, as in the mockup), "1 of 4 seen", "All 4 seen. Now write."; the "Next moment" button and the count are hidden once all are seen, except the count line, which reads "All 4 seen. Now write."
+
+## T95.60 (declining, awaiting approval)
+- Decline's ask for a reflection that is not a Close Review (W153 words only the Close Review): "Decline this reflection? The Journal will show it as declined." with "Decline the reflection"; "Why? (optional)" and "Keep it" as W153.
+- Trade Detail, the owed Close Review's buttons (W151 words the Review card only): "Write the Close Review" and the link "Decline…" in place of "Reflect now" and "Decline", when the Replay has key moments to walk.
+- T95.42's temporary "Decline anyway" is gone: the ask replaces it for every owed reflection.
+- The decline-only form's accessible name: "Decline" (the Close Review link's ask; the full form stays "Reflection").
+- Trade Detail and the Review card offer no "Decline…" link while the shell is read only; "Keep it" stays in an ask that can no longer save.

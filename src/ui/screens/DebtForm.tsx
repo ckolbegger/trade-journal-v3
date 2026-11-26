@@ -52,6 +52,8 @@ export interface DebtFormProps {
   readonly onDirtyChange?: (dirty: boolean) => void;
   // Offers the form to the Review while it is open; undefined when it goes (W128).
   readonly onHandle?: (handle: FormHandle | undefined) => void;
+  // Only the decline's ask, with no questions: the Close Review's "Decline…" link (W153). "Keep it" leaves through `onCancel`.
+  readonly declineOnly?: boolean;
 }
 
 const OUTCOME: Record<ObligationOutcome['kind'], string> = { Entry: 'answered', Decline: 'declined', Debt: 'still owed' };
@@ -108,7 +110,7 @@ export function SavedReflection({ definition, resolved }: { readonly definition:
   );
 }
 
-export function DebtForm({ definition, binding, requires, submit, onResolved, onCancel, onDirtyChange, onHandle }: DebtFormProps) {
+export function DebtForm({ definition, binding, requires, submit, onResolved, onCancel, onDirtyChange, onHandle, declineOnly = false }: DebtFormProps) {
   const [answers, setAnswers] = useState<Answers>({});
   const [resolved, setResolved] = useState<DebtResolved | undefined>();
   const [reason, setReason] = useState('');
@@ -120,13 +122,15 @@ export function DebtForm({ definition, binding, requires, submit, onResolved, on
   }, [conflict]);
   const { writable } = useRuntime();
   // Once the shell is read only the values can no longer be saved, so they hold nothing back.
-  const dirty = !resolved && (Object.keys(answers).length > 0 || reason !== '');
+  // In the decline-only ask a reason is not held: leaving drops it, since the Review's Save it would decline the Debt.
+  const dirty = !resolved && (Object.keys(answers).length > 0 || (reason !== '' && !declineOnly));
   useEffect(() => onDirtyChange?.(dirty && writable), [dirty, writable, onDirtyChange]);
   // Leaving abandons the values, so the form no longer holds an update back.
   useEffect(() => () => onDirtyChange?.(false), [onDirtyChange]);
   const [issues, setIssues] = useState<readonly FieldIssue[]>([]);
-  // A Debt that requires an answer asks once more before it is declined: declining it stays possible, but takes a deliberate second press.
-  const [confirmingDecline, setConfirmingDecline] = useState(false);
+  // Declining asks first (W153), so it takes a press more than answering does.
+  const [asking, setAsking] = useState(declineOnly);
+  const subject = definition.entryTypeKey === 'entry-type.close-review' ? 'Close Review' : 'reflection';
   const reasonField = `${useId()}-reason`;
   const formRef = useRef<HTMLFormElement>(null);
   // A rejected submission takes focus to the first field, in the form's order, that has an issue.
@@ -199,7 +203,7 @@ export function DebtForm({ definition, binding, requires, submit, onResolved, on
     void send({ kind: 'Answer', answers });
   };
   return (
-    <form ref={formRef} aria-label="Reflection" noValidate onSubmit={onSubmit}>
+    <form ref={formRef} aria-label={declineOnly ? 'Decline' : 'Reflection'} noValidate onSubmit={onSubmit}>
       {conflict && (
         <div ref={conflictRef} role="alert" tabIndex={-1} className="banner warning">
           <p>
@@ -223,26 +227,51 @@ export function DebtForm({ definition, binding, requires, submit, onResolved, on
           <strong>This reflection could not be saved.</strong> Nothing was saved. Your values are kept, so you can try again.
         </div>
       )}
-      <ReflectionPrompts definition={definition} answers={answers} onChange={setAnswers} errors={promptErrors(definition)} disabled={!writable} roles={requires} requiredRoles={requires} />
-      <div className="field">
-        <label>
-          Reason for declining (optional)
-          <textarea id={reasonField} value={reason} disabled={!writable} onChange={(e) => setReason(e.target.value)} {...describedBy(reasonField)} />
-        </label>
-        {fieldError(reasonField)}
-      </div>
-      {writable && !gone && (
+      {!declineOnly && <ReflectionPrompts definition={definition} answers={answers} onChange={setAnswers} errors={promptErrors(definition)} disabled={!writable} roles={requires} requiredRoles={requires} />}
+      {asking && (
+        <div className="decline-ask">
+          <p>{`Decline this ${subject}? The Journal will show it as declined.`}</p>
+          <div className="field">
+            <label>
+              Why? (optional)
+              <textarea id={reasonField} value={reason} disabled={!writable} onChange={(e) => setReason(e.target.value)} {...describedBy(reasonField)} />
+            </label>
+            {fieldError(reasonField)}
+          </div>
+          {writable && !gone && (
+            <button type="button" className="pill secondary" disabled={pending} onClick={() => void send({ kind: 'Decline', ...(reason.trim() !== '' && { reason }) })}>
+              {`Decline the ${subject}`}
+            </button>
+          )}
+          {/* The way out stays when nothing can be saved: the Debt was removed, or the shell is read only. */}
+          <button
+            type="button"
+            className="pill secondary"
+            disabled={pending}
+            onClick={() => {
+              setReason('');
+              setAsking(false);
+              if (declineOnly) onCancel?.();
+            }}
+          >
+            Keep it
+          </button>
+        </div>
+      )}
+      {writable && !gone && !declineOnly && (
         <>
           <button type="submit" className="pill primary" disabled={pending}>
             Answer
           </button>
-          <button type="button" className="pill secondary" disabled={pending} onClick={() => (requires?.length && !confirmingDecline ? setConfirmingDecline(true) : void send({ kind: 'Decline', ...(reason.trim() !== '' && { reason }) }))}>
-            {confirmingDecline ? 'Decline anyway' : 'Decline'}
-          </button>
+          {!asking && (
+            <button type="button" className="pill secondary" disabled={pending} onClick={() => setAsking(true)}>
+              Decline…
+            </button>
+          )}
         </>
       )}
       {/* Leaving records nothing: entered values are never saved as a draft. */}
-      {onCancel && (
+      {onCancel && !declineOnly && (
         <button type="button" className="pill secondary" disabled={pending} onClick={onCancel}>
           Cancel
         </button>

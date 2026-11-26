@@ -1,12 +1,13 @@
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import type { UiFacade } from '../../app/compose.ts';
-import type { EntryDefinitionRecord, TradeDetailDebt } from '../../app/types.ts';
+import type { EntryDefinitionRecord, TradeDetailDebt, TradeReplayView } from '../../app/types.ts';
 import { Badge } from '../Badge.tsx';
 import { DUE_TEXT } from '../due-text.ts';
 import { localTime } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
 import { entryLine } from '../cockpit/drawers/journal-line.ts';
-import { DebtForm, type DebtFormProps, type DebtResolved, type DebtSubmitResult } from './DebtForm.tsx';
+import { CloseReviewWalk } from '../cockpit/replay/close-review-walk.tsx';
+import { DebtForm, SavedReflection, type DebtFormProps, type DebtResolved, type DebtSubmitResult } from './DebtForm.tsx';
 
 // An Outstanding Debt in a Trade's narrative: its Entry Type and "Reflection owed" beside its Position Change, with its
 // due status as text (absent outside session-policy coverage) and, while Writable, the ways to resolve it.
@@ -21,6 +22,13 @@ export interface ReflectRequest {
   readonly settled?: (debtId: string) => void;
 }
 export const ReflectRequestContext = createContext<ReflectRequest>({ handled: () => undefined });
+
+// The Trade's replay the page already read, for a Close Review's walk (T95.60). Without it (not read, or none) a Close Review is answered in the Debt form.
+export interface WalkSource {
+  readonly replay: TradeReplayView;
+  readonly underlying: string;
+}
+export const WalkSourceContext = createContext<WalkSource | undefined>(undefined);
 
 export function OwedDebtItem({
   facade,
@@ -45,11 +53,17 @@ export function OwedDebtItem({
   const { writable, report } = useRuntime();
   const [definition, setDefinition] = useState<EntryDefinitionRecord>();
   const [openFailed, setOpenFailed] = useState(false);
+  // A Close Review with a key moment to start on is written in the walk; "Decline…" asks first, with none of the questions (W153).
+  const source = useContext(WalkSourceContext);
+  const walkable = debt.entryTypeKey === 'entry-type.close-review' && source !== undefined && (source.replay.keyMoments?.length ?? 0) > 0;
+  const [declining, setDeclining] = useState(false);
+  const [walked, setWalked] = useState<DebtResolved>();
   // The form was opened by a request from outside, so it takes focus when it appears.
   const [focusOnOpen, setFocusOnOpen] = useState(false);
 
-  const open = async (fromRequest = false) => {
+  const open = async (fromRequest = false, decline = false) => {
     setOpenFailed(false);
+    setDeclining(decline);
     setFocusOnOpen(fromRequest);
     onOpen();
     try {
@@ -100,6 +114,7 @@ export function OwedDebtItem({
   };
   const close = () => {
     setDefinition(undefined);
+    setDeclining(false);
     setFocusOnOpen(false);
     onClose();
   };
@@ -132,6 +147,29 @@ export function OwedDebtItem({
     }
   };
 
+  const binding = { debtId: debt.id, debtRevision: debt.revision, definitionRevision: debt.definitionId };
+  // The walk for a Close Review (once saved, its answers), or the Debt form: with all its questions, or only the decline's ask.
+  const formOf = (loaded: EntryDefinitionRecord) => {
+    if (walked) return <SavedReflection definition={loaded} resolved={walked} />;
+    if (walkable && !declining) {
+      return (
+        <CloseReviewWalk
+          replay={source.replay}
+          underlying={source.underlying}
+          definition={loaded}
+          binding={binding}
+          submit={submit}
+          onResolved={(result) => {
+            setWalked(result);
+            resolved(result);
+          }}
+          onClose={close}
+          {...(onDirtyChange && { onDirtyChange })}
+        />
+      );
+    }
+    return <DebtForm definition={loaded} binding={binding} requires={debt.requires} submit={submit} onResolved={resolved} onCancel={close} onDirtyChange={onDirtyChange} declineOnly={declining} />;
+  };
   return (
     <li>
       <h3>
@@ -158,18 +196,20 @@ export function OwedDebtItem({
       )}
       {definition ? (
         <div ref={formArea} tabIndex={-1}>
-          <DebtForm
-            definition={definition}
-            binding={{ debtId: debt.id, debtRevision: debt.revision, definitionRevision: debt.definitionId }}
-            requires={debt.requires}
-            submit={submit}
-            onResolved={resolved}
-            onCancel={close}
-            onDirtyChange={onDirtyChange}
-          />
+          {formOf(definition)}
         </div>
       ) : (
-        writable && (
+        writable &&
+        (walkable ? (
+          <>
+            <button type="button" className="pill secondary" disabled={blocked} onClick={() => void open()}>
+              Write the Close Review
+            </button>
+            <button type="button" className="link-button" disabled={blocked} onClick={() => void open(false, true)}>
+              Decline…
+            </button>
+          </>
+        ) : (
           <>
             <button type="button" className="pill secondary" disabled={blocked} onClick={() => void open()}>
               Reflect now
@@ -178,7 +218,7 @@ export function OwedDebtItem({
               Decline
             </button>
           </>
-        )
+        ))
       )}
     </li>
   );

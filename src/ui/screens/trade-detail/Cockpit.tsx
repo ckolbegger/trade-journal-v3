@@ -16,7 +16,7 @@ import { ReplayDrawer, type SessionLinks } from '../../cockpit/drawers/replay.ts
 import { TodayDrawer } from '../../cockpit/drawers/today.tsx';
 import { overlayWordsOf } from '../../cockpit/replay/overlay.props.ts';
 import { ReplayOverlay } from '../../cockpit/replay/overlay.tsx';
-import { ReflectRequestContext } from '../OwedDebtItem.tsx';
+import { ReflectRequestContext, WalkSourceContext } from '../OwedDebtItem.tsx';
 import { IncoherentPanel, IntegrityPanel } from './Banner.tsx';
 import { DRAWERS, DrawerFocusContext, DrawerRequestContext, useDrawerRequest, type Drawer, type DrawerFocus, type DrawerRequest } from './drawer-request.ts';
 
@@ -200,6 +200,7 @@ export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange, i
 
   return (
     <ReflectRequestContext.Provider value={request}>
+      <WalkSourceContext.Provider value={replay && 'plan' in view ? { replay, underlying: view.plan.underlying } : undefined}>
       <DrawerRequestContext.Provider value={requestDrawer}>
       <DrawerFocusContext.Provider value={focusing}>
       {children}
@@ -261,6 +262,7 @@ export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange, i
       )}
       </DrawerFocusContext.Provider>
       </DrawerRequestContext.Provider>
+      </WalkSourceContext.Provider>
     </ReflectRequestContext.Provider>
   );
 }

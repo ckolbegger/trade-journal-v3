@@ -349,6 +349,30 @@ describe('the closed card offers the Close Review (T95.58, W151)', () => {
   });
 });
 
+describe('declining the Close Review on the closed card (T95.60, W151, W153)', () => {
+  it('should mark the card Close Review declined after declining', async () => {
+    const user = userEvent.setup();
+    const closeReview = { ...reflection('d-cr', 'Due', '2026-10-12T18:00:00Z', 'Close Review'), entryTypeKey: 'entry-type.close-review', definition: closeReviewDefinition };
+    const card: OwedReflectionsCard = { ...CLOSED_CARD, reflections: [closeReview] };
+    const owedClose = { ...owedTrade(card), owed: [{ debtId: 'd-cr', entryTypeKey: 'entry-type.close-review', dueAnchor: '2026-10-12T18:00:00Z' as never, classification: 'Due' as const }] };
+    const facade = reviewFacade(ready({ owed: [owedClose] }));
+    vi.mocked(facade.DailyReview.getTrade).mockResolvedValue({ kind: 'ReflectionsOwed', reviewDate: DATE, cutoff: CUTOFF, card });
+    const post = { kind: 'Ready', cards: [], progress: { tradesWithAction: 1, tradesEligible: 1 }, completion: ready().completion, nextStep: { kind: 'Done' }, binding, day: ready().day } as const;
+    vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'DebtResolved', decline: { id: 'decl-1', authoredTime: '2026-10-13T21:05:00Z' } as never, debt: { debtId: 'd-cr', status: 'Settled', revision: 'd-cr-rev-2' } as never, review: post });
+    renderReview(facade);
+    const closed = await screen.findByRole('region', { name: 'ABC review' });
+    expect(screen.getByRole('button', { name: /^Review ABC/ }).textContent).toContain('Close Review due');
+
+    await user.click(within(closed).getByRole('button', { name: 'Decline…' }));
+    await user.click(within(closed).getByRole('button', { name: 'Decline the Close Review' }));
+
+    await within(closed).findByText('Declined to reflect.');
+    const header = screen.getByRole('button', { name: /^Review ABC/ }).textContent;
+    expect(header).toContain('Close Review declined');
+    expect(header).not.toContain('Close Review due');
+  });
+});
+
 describe('the closed card keeps a Position Change Reflection answerable (T95.58, A90)', () => {
   it('should keep an owed Position Change Reflection answerable on a closed card beside its Close Review', async () => {
     const user = userEvent.setup();
@@ -363,8 +387,10 @@ describe('the closed card keeps a Position Change Reflection answerable (T95.58,
     const closed = await screen.findByRole('region', { name: 'ABC review' });
 
     await user.click(within(closed).getByRole('button', { name: /^Reflect on/ }));
-    await user.type(within(closed).getByLabelText('Reason for declining (optional)'), 'Not now.');
-    await user.click(within(closed).getByRole('button', { name: 'Decline' }));
+    // The Close Review's own Decline link stands beside the reflection's form, so the form's is the one scoped.
+    await user.click(within(within(closed).getByRole('form', { name: 'Reflection' })).getByRole('button', { name: 'Decline…' }));
+    await user.type(within(closed).getByLabelText('Why? (optional)'), 'Not now.');
+    await user.click(within(closed).getByRole('button', { name: 'Decline the reflection' }));
 
     expect(facade.DailyReview.save).toHaveBeenCalledWith({ kind: 'ResolveReviewDebt', reviewDate: DATE, binding: pcr.saveBinding, resolution: { kind: 'Decline', reason: 'Not now.' } });
     expect(await within(closed).findByText('Declined to reflect. Reason: Not now.')).toBeTruthy();
@@ -457,8 +483,9 @@ describe('owed-reflection group (P19, P20)', () => {
     // The reflection is not due yet, and can still be answered now.
     await user.click(within(card).getByRole('button', { name: /^Reflect on/ }));
     expect(within(card).getByRole('form', { name: 'Reflection' })).toBeTruthy();
-    await user.type(within(card).getByLabelText('Reason for declining (optional)'), 'Not now.');
-    await user.click(within(card).getByRole('button', { name: 'Decline' }));
+    await user.click(within(card).getByRole('button', { name: 'Decline…' }));
+    await user.type(within(card).getByLabelText('Why? (optional)'), 'Not now.');
+    await user.click(within(card).getByRole('button', { name: 'Decline the reflection' }));
 
     expect(facade.DailyReview.save).toHaveBeenCalledWith({ kind: 'ResolveReviewDebt', reviewDate: DATE, binding: OPEN_CARD.reflections[0]!.saveBinding, resolution: { kind: 'Decline', reason: 'Not now.' } });
     expect(await within(card).findByText('Declined to reflect. Reason: Not now.')).toBeTruthy();

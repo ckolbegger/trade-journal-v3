@@ -94,7 +94,7 @@ test.describe('B5R.10 Offline and Recovery Only (faults build)', () => {
       await expect(card.getByRole('button', { name: /^Save/ })).toHaveCount(0);
       await expect(card.getByRole('button', { name: 'Discard' })).toHaveCount(0);
       await expect(card.getByRole('button', { name: 'Answer', exact: true })).toHaveCount(0);
-      await expect(card.getByRole('button', { name: 'Decline', exact: true })).toHaveCount(0);
+      await expect(card.getByRole('button', { name: 'Decline…', exact: true })).toHaveCount(0);
     }
     // The saved Mark is shown, and the Missing rows are shown as such, in a read-only card.
     await expectMark(page, trades['T-A'], MONDAY, 'Manual');

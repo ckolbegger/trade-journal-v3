@@ -309,7 +309,8 @@ describe('Debt on Trade Detail (A69, P17)', () => {
         await user.click(within(within(form).getByRole('radiogroup', { name: 'Primary emotion' })).getAllByRole('radio')[0] as HTMLElement);
         await user.click(within(within(form).getByRole('radiogroup', { name: 'Decision confidence' })).getAllByRole('radio')[0] as HTMLElement);
       }
-      await user.click(within(form).getByRole('button', { name: button }));
+      if (button === 'Decline') await user.click(within(form).getByRole('button', { name: 'Decline…' }));
+      await user.click(within(form).getByRole('button', { name: button === 'Decline' ? 'Decline the reflection' : button }));
       const item = (await screen.findByRole('region', { name: 'Saved reflection' })).closest('li') as HTMLElement;
       expect(within(item).getByText(label, { selector: '.badge' })).toBeTruthy();
       expect(within(item).getByText(`Position Change · Mon Oct 12, 10:00 am · written Tue Oct 13`)).toBeTruthy();
@@ -338,7 +339,8 @@ describe('Debt on Trade Detail (A69, P17)', () => {
     const user = userEvent.setup();
     await openDrawer(user, 'Journal');
     await user.click(await within(await screen.findByRole('tabpanel', { name: 'Journal' })).findByRole('button', { name: 'Reflect now' }));
-    await user.click(await screen.findByRole('button', { name: 'Decline' }));
+    await user.click(await screen.findByRole('button', { name: 'Decline…' }));
+    await user.click(await screen.findByRole('button', { name: 'Decline the reflection' }));
     const item = (await screen.findByRole('region', { name: 'Saved reflection' })).closest('li') as HTMLElement;
     expect(within(item).getByText('Position Change · Mon Oct 12, 10:00 am · written Tue Oct 13')).toBeTruthy();
     expect(within(item).queryByText('Answered', { selector: 'dt' })).toBeNull();
@@ -396,7 +398,8 @@ describe('Debt on Trade Detail (A69, P17)', () => {
     expect(within(second).getByRole('button', { name: 'Reflect now' }).hasAttribute('disabled')).toBe(false);
 
     await user.click(within(first).getByRole('button', { name: 'Reflect now' }));
-    await user.click(await within(first).findByRole('button', { name: 'Decline' }));
+    await user.click(await within(first).findByRole('button', { name: 'Decline…' }));
+    await user.click(await within(first).findByRole('button', { name: 'Decline the reflection' }));
     await within(first).findByRole('region', { name: 'Saved reflection' });
     expect(within(second).getByRole('button', { name: 'Reflect now' }).hasAttribute('disabled')).toBe(false);
   });
@@ -461,7 +464,8 @@ describe('Debt on Trade Detail (A69, P17)', () => {
     await user.click(within(screen.getByRole('tabpanel', { name: 'Journal' })).getByRole('button', { name: 'Reflect now' }));
     await answerMode();
     expect(onDirtyChange).toHaveBeenLastCalledWith(true);
-    await user.click(screen.getByRole('button', { name: 'Decline' }));
+    await user.click(screen.getByRole('button', { name: 'Decline…' }));
+    await user.click(screen.getByRole('button', { name: 'Decline the reflection' }));
     await screen.findByRole('region', { name: 'Saved reflection' });
     expect(onDirtyChange).toHaveBeenLastCalledWith(false);
   });
@@ -487,7 +491,8 @@ describe('Debt on Trade Detail (A69, P17)', () => {
     const user = userEvent.setup();
     await openDrawer(user, 'Journal');
     await user.click(await within(await screen.findByRole('tabpanel', { name: 'Journal' })).findByRole('button', { name: 'Reflect now' }));
-    await user.click(await screen.findByRole('button', { name: 'Decline' }));
+    await user.click(await screen.findByRole('button', { name: 'Decline…' }));
+    await user.click(await screen.findByRole('button', { name: 'Decline the reflection' }));
 
     const saved = await screen.findByRole('region', { name: 'Saved reflection' });
     expect(saved.parentElement?.contains(document.activeElement)).toBe(true);
@@ -517,8 +522,9 @@ describe('Debt on Trade Detail (A69, P17)', () => {
     await openDrawer(user, 'Journal');
     await user.click(await screen.findByRole('button', { name: 'Decline' }));
     const form = await screen.findByRole('form', { name: 'Reflection' });
-    await user.type(within(form).getByLabelText('Reason for declining (optional)'), 'No time.');
-    await user.click(within(form).getByRole('button', { name: 'Decline' }));
+    await user.click(within(form).getByRole('button', { name: 'Decline…' }));
+    await user.type(within(form).getByLabelText('Why? (optional)'), 'No time.');
+    await user.click(within(form).getByRole('button', { name: 'Decline the reflection' }));
 
     expect(facade.Journal.save).toHaveBeenCalledWith({
       intention: 'ResolveDebt',

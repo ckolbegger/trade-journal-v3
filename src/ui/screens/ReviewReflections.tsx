@@ -11,9 +11,11 @@ import { executionWhat, expirationLine } from './execution-line.ts';
 
 // A Close Review is written through the walk over its Trade's Replay (T95.59); the card names the Replay and hears when it was saved.
 export interface ReflectionWalk {
-  readonly replay: TradeReplayView;
+  // Without it (the Trade's replay could not be read) a Close Review is written in the Debt form.
+  readonly replay?: TradeReplayView;
   readonly underlying: string;
-  readonly onSaved: () => void;
+  // The Close Review was saved or declined here (W151): the card's header says so from the result, with no read.
+  readonly onClosed: (outcome: 'saved' | 'declined') => void;
 }
 
 interface ReflectionsProps {
@@ -48,14 +50,21 @@ interface RowProps {
 
 function ReflectionRow({ reflection, timeZone, isOpen, resolved, blocked, submit, onOpen, onClose, onResolved, onEntryDirty, onForm, buttonRef, walk }: RowProps) {
   const { debtId } = reflection;
+  const { writable } = useRuntime();
   const dirty = useCallback((isDirty: boolean) => onEntryDirty(`debt:${debtId}`, isDirty), [debtId, onEntryDirty]);
   const offer = useCallback((handle: Parameters<FormRegister>[1]) => onForm(`debt:${debtId}`, handle), [debtId, onForm]);
   const when = localTime(reflection.economicTime, timeZone);
   // A Close Review is written, not "reflected on" (W151).
   const closeReview = reflection.entryTypeKey === 'entry-type.close-review';
   // The walk needs a key moment to start on; without one the Close Review is answered in the Debt form.
-  const walkable = closeReview && walk !== undefined && (walk.replay.keyMoments?.length ?? 0) > 0;
+  const walkable = closeReview && walk?.replay !== undefined && (walk.replay.keyMoments?.length ?? 0) > 0;
   const [walked, setWalked] = useState<DebtResolved>();
+  // The ask before a decline stands in the row on its own, with none of the questions (W153).
+  const [declining, setDeclining] = useState(false);
+  const leave = () => {
+    setDeclining(false);
+    onClose();
+  };
   const row = useRef<HTMLLIElement>(null);
   const button = useRef<HTMLButtonElement | null>(null);
   const wasOpen = useRef(false);
@@ -91,10 +100,37 @@ function ReflectionRow({ reflection, timeZone, isOpen, resolved, blocked, submit
           {closeReview ? 'Write the Close Review' : `Reflect on ${when}`}
         </button>
       )}
+      {!resolved && !isOpen && closeReview && writable && (
+        <button
+          type="button"
+          className="link-button"
+          disabled={blocked}
+          onClick={() => {
+            setDeclining(true);
+            onOpen();
+          }}
+        >
+          Decline…
+        </button>
+      )}
       {!resolved && !isOpen && closeReview && reflection.classification === 'DueInNextReview' && <p>Not due until the next Review.</p>}
       {!resolved && !isOpen && closeReview && reflection.classification === 'DueInReviewAfterNext' && <p>{DUE_TEXT.DueInReviewAfterNext}.</p>}
       {walked && <SavedReflection definition={reflection.definition} resolved={walked} />}
-      {!walked && walkable && isOpen && (
+      {declining && (isOpen || resolved) && (
+        <DebtForm
+          declineOnly
+          definition={reflection.definition}
+          binding={reflection.saveBinding}
+          submit={submit}
+          onResolved={() => {
+            onResolved();
+            walk?.onClosed('declined');
+          }}
+          onCancel={leave}
+          onDirtyChange={dirty}
+        />
+      )}
+      {!walked && !declining && walkable && isOpen && (
         <CloseReviewWalk
           replay={walk.replay}
           underlying={walk.underlying}
@@ -104,13 +140,27 @@ function ReflectionRow({ reflection, timeZone, isOpen, resolved, blocked, submit
           onResolved={(result) => {
             setWalked(result);
             onResolved();
-            walk.onSaved();
+            walk.onClosed('saved');
           }}
           onClose={onClose}
           onDirtyChange={dirty}
         />
       )}
-      {!walked && !(walkable && isOpen) && (isOpen || resolved) && <DebtForm definition={reflection.definition} binding={reflection.saveBinding} requires={reflection.requires} submit={submit} onResolved={onResolved} onCancel={resolved ? undefined : onClose} onDirtyChange={dirty} onHandle={offer} />}
+      {!walked && !declining && !(walkable && isOpen) && (isOpen || resolved) && (
+        <DebtForm
+          definition={reflection.definition}
+          binding={reflection.saveBinding}
+          requires={reflection.requires}
+          submit={submit}
+          onResolved={(result) => {
+            onResolved();
+            if (closeReview) walk?.onClosed(result.entry ? 'saved' : 'declined');
+          }}
+          onCancel={resolved ? undefined : onClose}
+          onDirtyChange={dirty}
+          onHandle={offer}
+        />
+      )}
     </li>
   );
 }

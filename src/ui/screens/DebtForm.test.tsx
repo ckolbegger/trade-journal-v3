@@ -38,7 +38,7 @@ const debt = {
 
 function renderForm(
   submit: (request: never) => Promise<DebtSubmitResult> = () => Promise.resolve({ kind: 'Resolved', debt }),
-  options: { definition?: EntryDefinitionRecord; requires?: readonly ('PlanDepartureReason' | 'ExpirationReason')[]; writable?: boolean; onDirtyChange?: (dirty: boolean) => void; onCancel?: () => void; onResolved?: (r: never) => void } = {},
+  options: { definition?: EntryDefinitionRecord; requires?: readonly ('PlanDepartureReason' | 'ExpirationReason')[]; declineOnly?: boolean; writable?: boolean; onDirtyChange?: (dirty: boolean) => void; onCancel?: () => void; onResolved?: (r: never) => void } = {},
 ) {
   const adapter = vi.fn(submit);
   render(
@@ -46,6 +46,7 @@ function renderForm(
       <DebtForm
         definition={options.definition ?? snapshot}
         requires={options.requires}
+        declineOnly={options.declineOnly}
         binding={binding}
         submit={adapter as never}
         onDirtyChange={options.onDirtyChange}
@@ -147,11 +148,12 @@ describe('declining', () => {
     const user = userEvent.setup();
     // Answers typed before declining are not submitted with the Decline.
     await user.type(screen.getByLabelText('Lesson'), 'ignored');
-    await user.type(screen.getByLabelText('Reason for declining (optional)'), 'Too long for the form.');
-    await user.click(screen.getByRole('button', { name: 'Decline' }));
+    await user.click(screen.getByRole('button', { name: 'Decline…' }));
+    await user.type(screen.getByLabelText('Why? (optional)'), 'Too long for the form.');
+    await user.click(screen.getByRole('button', { name: 'Decline the reflection' }));
 
     expect(adapter).toHaveBeenLastCalledWith({ binding, resolution: { kind: 'Decline', reason: 'Too long for the form.' } });
-    const reason = screen.getByLabelText('Reason for declining (optional)');
+    const reason = screen.getByLabelText('Why? (optional)');
     expect(reason.getAttribute('aria-invalid')).toBe('true');
     expect(document.getElementById(reason.getAttribute('aria-describedby')!)?.textContent).toBe(
       'Keep the reason for declining to 500 characters or fewer.',
@@ -159,7 +161,7 @@ describe('declining', () => {
 
     // The reason is optional: a blank one is not sent.
     await user.clear(reason);
-    await user.click(screen.getByRole('button', { name: 'Decline' }));
+    await user.click(screen.getByRole('button', { name: 'Decline the reflection' }));
     expect(adapter).toHaveBeenLastCalledWith({ binding, resolution: { kind: 'Decline' } });
     expect(await screen.findByRole('region', { name: 'Saved reflection' })).toBeTruthy();
     expect(screen.getByText('Declined to reflect.')).toBeTruthy();
@@ -168,11 +170,12 @@ describe('declining', () => {
   it('should move focus to the reason field when Decline is rejected with ReasonTooLong', async () => {
     renderForm(() => Promise.resolve({ kind: 'Rejected', issues: [{ code: 'ReasonTooLong' }] }));
     const user = userEvent.setup();
-    await user.type(screen.getByLabelText('Reason for declining (optional)'), 'Too long for the form.');
-    await user.click(screen.getByRole('button', { name: 'Decline' }));
+    await user.click(screen.getByRole('button', { name: 'Decline…' }));
+    await user.type(screen.getByLabelText('Why? (optional)'), 'Too long for the form.');
+    await user.click(screen.getByRole('button', { name: 'Decline the reflection' }));
 
     await screen.findByText('Keep the reason for declining to 500 characters or fewer.');
-    expect(document.activeElement).toBe(screen.getByLabelText('Reason for declining (optional)'));
+    expect(document.activeElement).toBe(screen.getByLabelText('Why? (optional)'));
   });
 });
 
@@ -184,8 +187,8 @@ describe('one submission at a time', () => {
     await user.click(screen.getByRole('button', { name: 'Answer' }));
 
     expect(screen.getByRole('button', { name: 'Answer' }).matches(':disabled')).toBe(true);
-    expect(screen.getByRole('button', { name: 'Decline' }).matches(':disabled')).toBe(true);
-    await user.click(screen.getByRole('button', { name: 'Decline' }));
+    expect(screen.getByRole('button', { name: 'Decline…' }).matches(':disabled')).toBe(true);
+    await user.click(screen.getByRole('button', { name: 'Decline…' }));
     await user.click(screen.getByRole('button', { name: 'Answer' }));
     expect(adapter).toHaveBeenCalledTimes(1);
 
@@ -195,7 +198,7 @@ describe('one submission at a time', () => {
       return Promise.resolve();
     });
     expect(screen.getByRole('button', { name: 'Answer' }).matches(':disabled')).toBe(false);
-    expect(screen.getByRole('button', { name: 'Decline' }).matches(':disabled')).toBe(false);
+    expect(screen.getByRole('button', { name: 'Decline…' }).matches(':disabled')).toBe(false);
   });
 
   it('should disable Cancel while a reflection save is pending', async () => {
@@ -223,14 +226,15 @@ describe('adapter failure', () => {
     const adapter = renderForm(() => Promise.reject(new Error('offline')));
     const user = userEvent.setup();
     await user.type(screen.getByLabelText('Lesson'), 'Wait for the close.');
-    await user.type(screen.getByLabelText('Reason for declining (optional)'), 'No time.');
+    await user.click(screen.getByRole('button', { name: 'Decline…' }));
+    await user.type(screen.getByLabelText('Why? (optional)'), 'No time.');
     await user.click(screen.getByRole('button', { name: 'Answer' }));
 
     const alert = await screen.findByRole('alert');
     expect(alert.textContent).toContain('This reflection could not be saved');
     expect(alert.textContent).toContain('Nothing was saved');
     expect(screen.getByLabelText<HTMLTextAreaElement>('Lesson').value).toBe('Wait for the close.');
-    expect(screen.getByLabelText<HTMLTextAreaElement>('Reason for declining (optional)').value).toBe('No time.');
+    expect(screen.getByLabelText<HTMLTextAreaElement>('Why? (optional)').value).toBe('No time.');
     expect(screen.queryByRole('region', { name: 'Saved reflection' })).toBeNull();
     // The trader may try again.
     expect(screen.getByRole('button', { name: 'Answer' }).matches(':disabled')).toBe(false);
@@ -249,7 +253,7 @@ describe('not found', () => {
     expect(alert.textContent).toContain('This reflection no longer exists');
     expect(alert.textContent).toContain('Nothing was saved');
     expect(screen.queryByRole('button', { name: 'Answer' })).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Decline' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Decline…' })).toBeNull();
     expect(screen.queryByRole('region', { name: 'Saved reflection' })).toBeNull();
   });
 });
@@ -274,7 +278,8 @@ describe('conflict and leaving', () => {
     const user = userEvent.setup();
     await user.type(screen.getByLabelText('Lesson'), 'Wait for the close.');
     await user.click(within(screen.getByRole('radiogroup', { name: 'Decision mode' })).getByLabelText('Impulsive'));
-    await user.type(screen.getByLabelText('Reason for declining (optional)'), 'No time.');
+    await user.click(screen.getByRole('button', { name: 'Decline…' }));
+    await user.type(screen.getByLabelText('Why? (optional)'), 'No time.');
     await user.click(screen.getByRole('button', { name: 'Answer' }));
 
     const alert = await screen.findByRole('alert');
@@ -284,7 +289,7 @@ describe('conflict and leaving', () => {
     // Nothing was saved and the values stay.
     expect(screen.getByLabelText<HTMLTextAreaElement>('Lesson').value).toBe('Wait for the close.');
     expect(screen.getByLabelText<HTMLInputElement>('Impulsive').checked).toBe(true);
-    expect(screen.getByLabelText<HTMLTextAreaElement>('Reason for declining (optional)').value).toBe('No time.');
+    expect(screen.getByLabelText<HTMLTextAreaElement>('Why? (optional)').value).toBe('No time.');
     expect(screen.queryByRole('region', { name: 'Saved reflection' })).toBeNull();
   });
 
@@ -306,13 +311,14 @@ describe('conflict and leaving', () => {
     // A reason alone is a value too.
     const second = vi.fn();
     renderForm(undefined, { onDirtyChange: second });
-    await user.type(screen.getByLabelText('Reason for declining (optional)'), 'x');
+    await user.click(screen.getByRole('button', { name: 'Decline…' }));
+    await user.type(screen.getByLabelText('Why? (optional)'), 'x');
     expect(second).toHaveBeenLastCalledWith(true);
     cleanup();
 
     // Read only: the values can be read, but nothing offers to save them.
     renderForm(undefined, { writable: false, onCancel });
-    for (const name of ['Answer', 'Decline']) expect(screen.queryByRole('button', { name })).toBeNull();
+    for (const name of ['Answer', 'Decline…']) expect(screen.queryByRole('button', { name })).toBeNull();
     expect(screen.getByLabelText('Lesson').matches(':disabled')).toBe(true);
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeTruthy();
   });
@@ -367,20 +373,67 @@ describe('answering the reason owed (T95.42)', () => {
   it('should still let it be declined, with one more press than answering', async () => {
     const adapter = renderForm(journal, { definition: owedUnder6, requires: ['PlanDepartureReason'] });
     const user = userEvent.setup();
-    await user.click(screen.getByRole('button', { name: 'Decline' }));
-    // The first press only asks again; nothing is sent.
+    await user.click(screen.getByRole('button', { name: 'Decline…' }));
+    // The first press only asks; nothing is sent.
     expect(adapter).not.toHaveBeenCalled();
-    await user.click(screen.getByRole('button', { name: 'Decline anyway' }));
+    await user.click(screen.getByRole('button', { name: 'Decline the reflection' }));
     expect(adapter).toHaveBeenCalledTimes(1);
     expect(adapter).toHaveBeenCalledWith({ binding, resolution: { kind: 'Decline' } });
     expect(await screen.findByRole('region', { name: 'Saved reflection' })).toBeTruthy();
   });
 
-  it('should decline an owed reflection that requires nothing in one press as before', async () => {
+  it('should ask before declining an owed reflection that requires nothing, as it does for one that does', async () => {
     const adapter = renderForm(journal, { definition: owedUnder6 });
     const user = userEvent.setup();
-    await user.click(screen.getByRole('button', { name: 'Decline' }));
+    await user.click(screen.getByRole('button', { name: 'Decline…' }));
+    expect(adapter).not.toHaveBeenCalled();
+    await user.click(screen.getByRole('button', { name: 'Decline the reflection' }));
     expect(adapter).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('declining takes more presses than answering (T95.60, W153)', () => {
+  // A press is one click on a button; typing is not counted. Both are counted from the open form, which is what the Review card and Trade Detail show.
+  async function pressesToResolve(how: 'answer' | 'decline', definition: EntryDefinitionRecord, requires?: readonly ('PlanDepartureReason' | 'ExpirationReason')[]) {
+    const adapter = renderForm(() => Promise.resolve({ kind: 'Resolved', debt }), { definition, requires });
+    const user = userEvent.setup();
+    let presses = 0;
+    while (adapter.mock.calls.length === 0 && presses < 5) {
+      const next = how === 'answer' ? screen.getByRole('button', { name: 'Answer' }) : (screen.queryByRole('button', { name: 'Decline the reflection' }) ?? screen.getByRole('button', { name: 'Decline…' }));
+      await user.click(next);
+      presses += 1;
+    }
+    cleanup();
+    return presses;
+  }
+
+  it('should take more presses to decline any owed reflection than to answer it', async () => {
+    for (const [definition, requires] of [[snapshot, undefined], [owedUnder6, ['PlanDepartureReason']], [owedUnder6, undefined]] as const) {
+      expect(await pressesToResolve('decline', definition, requires)).toBeGreaterThan(await pressesToResolve('answer', definition, requires));
+    }
+  });
+});
+
+describe('leaving the decline ask that cannot save (T95.60, W153)', () => {
+  it('should leave the ask on Keep it after the reflection no longer exists', async () => {
+    const onCancel = vi.fn();
+    renderForm(() => Promise.resolve({ kind: 'NotFound' }), { declineOnly: true, onCancel });
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: 'Decline the reflection' }));
+    expect((await screen.findByRole('alert')).textContent).toContain('This reflection no longer exists');
+    expect(screen.queryByRole('button', { name: 'Decline the reflection' })).toBeNull();
+    await user.click(screen.getByRole('button', { name: 'Keep it' }));
+    expect(onCancel).toHaveBeenCalledTimes(1);
+  });
+
+  it('should leave the ask on Keep it when the shell is read only, with nothing to confirm', async () => {
+    const onCancel = vi.fn();
+    const adapter = renderForm(undefined, { declineOnly: true, writable: false, onCancel });
+    const user = userEvent.setup();
+    expect(screen.queryByRole('button', { name: 'Decline the reflection' })).toBeNull();
+    await user.click(screen.getByRole('button', { name: 'Keep it' }));
+    expect(onCancel).toHaveBeenCalledTimes(1);
+    expect(adapter).not.toHaveBeenCalled();
   });
 });
 

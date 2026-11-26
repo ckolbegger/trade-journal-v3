@@ -1165,7 +1165,8 @@ const DUE_REFLECTION: OwedReflection = {
 async function startReflection(user: ReturnType<typeof userEvent.setup>, card: HTMLElement) {
   await showPanel(user, card, 'Reflections');
   await user.click(within(card).getByRole('button', { name: /^Reflect on/ }));
-  await user.type(within(card).getByLabelText('Reason for declining (optional)'), 'No time.');
+  await user.click(within(card).getByRole('button', { name: 'Decline…' }));
+  await user.type(within(within(card).getByRole('region', { name: 'Reflections' })).getByLabelText('Why? (optional)'), 'No time.');
   await showPanel(user, card, 'Action');
 }
 // T-F's card carries the reflection due.
@@ -1284,7 +1285,8 @@ describe('Trade names in messages and blockers (decision 68)', () => {
     await user.click(within(card).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
     await waitFor(() => expect(facade.DailyReview.open).toHaveBeenCalledTimes(2));
     await showPanel(user, card, 'Reflections');
-    await user.click(within(card).getByRole('button', { name: 'Decline' }));
+    // The ask opened when the reason was typed, and the form was kept.
+    await user.click(within(card).getByRole('button', { name: 'Decline the reflection' }));
     await waitFor(() => expect(facade.DailyReview.save).toHaveBeenCalledTimes(2));
     await waitFor(() => expect(screen.getAllByText('Complete').length).toBeGreaterThan(0));
     expect(screen.queryByText('Incomplete')).toBeNull();
