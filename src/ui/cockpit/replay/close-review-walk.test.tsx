@@ -172,6 +172,40 @@ describe('the Close Review walk: saving (T95.59, W152)', () => {
   });
 });
 
+describe('the Close Review walk: while a save is pending (T95.59-B1)', () => {
+  const holdSave = () => {
+    let settle: (result: DebtSubmitResult) => void = () => undefined;
+    const submit = () => new Promise<DebtSubmitResult>((resolve) => { settle = resolve; });
+    return { submit, settle: (result: DebtSubmitResult) => settle(result) };
+  };
+  const fill = async (user: ReturnType<typeof userEvent.setup>) => {
+    await user.click(within(form()).getByLabelText('No'));
+    await user.type(within(form()).getByLabelText('What is the key lesson?'), 'Wait.');
+    await user.click(within(form()).getByRole('button', { name: 'Save the Close Review' }));
+  };
+
+  it('should not let the answers change while the save is pending', async () => {
+    const held = holdSave();
+    const { user } = await openUnlocked({ submit: held.submit });
+    await fill(user);
+    const controls = [...within(form()).getAllByRole('radio'), ...within(form()).getAllByRole('textbox')];
+    expect(controls.every((control) => (control as HTMLInputElement).disabled)).toBe(true);
+    held.settle(resolved);
+  });
+
+  it('should keep the answers editable again after a refused save', async () => {
+    const held = holdSave();
+    const { user } = await openUnlocked({ submit: held.submit });
+    await fill(user);
+    held.settle({ kind: 'Conflict' });
+    await within(form()).findByRole('alert');
+    const controls = [...within(form()).getAllByRole('radio'), ...within(form()).getAllByRole('textbox')];
+    expect(controls.every((control) => !(control as HTMLInputElement).disabled)).toBe(true);
+    await user.type(within(form()).getByLabelText('What is the key lesson?'), '!');
+    expect(within(form()).getByLabelText('What is the key lesson?')).toHaveProperty('value', 'Wait.!');
+  });
+});
+
 describe('the Close Review walk: what is seen (T95.59, A319)', () => {
   it('should forget what was seen when the overlay closes, and send nothing about it', async () => {
     const submit = vi.fn(() => Promise.resolve(resolved));

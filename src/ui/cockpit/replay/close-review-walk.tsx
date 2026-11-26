@@ -109,7 +109,7 @@ export function CloseReviewWalk({ replay, underlying, definition, binding, submi
             </div>
           )}
           {locked && <p>{`See the ${moments.length} key moments first, then answer.`}</p>}
-          <ReflectionPrompts definition={definition} answers={answers} onChange={setAnswers} errors={errors} disabled={locked || !writable} />
+          <ReflectionPrompts definition={definition} answers={answers} onChange={setAnswers} errors={errors} disabled={locked || !writable || pending} />
           <button type="submit" className="pill primary" disabled={locked || !writable || pending}>
             Save the Close Review
           </button>
