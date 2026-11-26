@@ -1,4 +1,4 @@
-import { useContext, useEffect, useId, useRef, useState, type FormEvent } from 'react';
+import { useContext, useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { Link, UNSAFE_NavigationContext } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
 import { DAILY_TRADE_REVIEW_PROMPTS } from '../../domain/daily-trade-review-prompts.ts';
@@ -49,6 +49,8 @@ export interface ActionFormProps {
   readonly decidingOn?: string;
   // Offers the form to the Review while it is mounted; undefined when it goes (W128).
   readonly onHandle?: (handle: FormHandle | undefined) => void;
+  // A card with no Action to ask (an expired contract, A315) places this instead of the form; only the sale form opens in its place.
+  readonly idle?: ReactNode;
 }
 
 // What a saved Exit is carried out by, from the Position held (W127): a short Position is closed by a buy-back.
@@ -129,7 +131,7 @@ function returnedValues(form: ActionFormState): Values {
 }
 
 // The Action for one Trade on the Review Date. Hold is preselected as view state only; nothing is recorded until Save.
-export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyChange, pending = false, marksToGo = 0, planCall, replay, planExit, saleRequest = 0, now = () => new Date().toISOString(), onLeftSold, onClosedSale, decidingOn, onHandle }: ActionFormProps) {
+export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyChange, pending = false, marksToGo = 0, planCall, replay, planExit, saleRequest = 0, now = () => new Date().toISOString(), onLeftSold, onClosedSale, decidingOn, onHandle, idle }: ActionFormProps) {
   const { writable, report, timeZone } = useRuntime();
   // The sale of a saved Exit is recorded in place of the Action (W127); the form reports its own values under the Action's id.
   const [selling, setSelling] = useState(false);
@@ -295,14 +297,14 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
     asked.current = { attempt, blocked: saving || refreshing || pending || !writable };
   });
   useEffect(() => {
-    // The sale form offers its own while it is the one shown.
-    if (selling) return;
+    // The sale form offers its own while it is the one shown, and an idle form has no values to offer.
+    if (selling || idle !== undefined) return;
     onHandle?.({
       save: () => (asked.current.blocked ? Promise.resolve(false) : asked.current.attempt()),
       focus: () => formRef.current?.querySelector<HTMLElement>('input:checked, input, textarea')?.focus(),
     });
     return () => onHandle?.(undefined);
-  }, [onHandle, selling]);
+  }, [onHandle, selling, idle]);
   // Discard empties the form: the choice goes back to what the view preselected, and every answer to blank.
   const discard = () => {
     setAction(returned.action);
@@ -320,6 +322,7 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
   // A saved Exit is carried out by the sale (W127): a short Position is closed by a buy-back.
   const held = planExit?.positions[0];
   const saleWords = saleOf(form, held);
+  if (idle !== undefined && !selling) return idle;
   if (readOnlyEmpty && form.kind === 'New') return <p>No Action saved.</p>;
   // The sale does not wait for the Marks: a sale is recorded whatever the day's Marks (A313).
   if (selling) return <ExitForm facade={facade} tradeId={binding.tradeId} timeZone={timeZone ?? 'UTC'} now={now} onDirtyChange={setSaleDirty} onDone={() => setSelling(false)} backLabel="Back to the Review" card={{

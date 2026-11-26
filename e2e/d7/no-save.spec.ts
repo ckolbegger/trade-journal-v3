@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 import {
-  answerCloseReviewIn, answerIn, closeReviewGroup, closingSection, createShortPutTrade, debtsOf, declinesOf, detail, entriesOf, entriesWithSettledDebt, expect, factsOf, fillOptionPlan, firstPage, FRIDAY_NOV_1700, launchAt,
+  answerIn, createShortPutTrade, debtsOf, declinesOf, detail, entriesOf, entriesWithSettledDebt, expect, factsOf, fillOptionPlan, firstPage, FRIDAY_NOV_1700, launchAt,
   OC, onboardedAt, probe, LAUNCH, test, tradesOf, workspaceOf,
 } from './support.ts';
 
@@ -15,10 +15,8 @@ const TYPED = {
   thesis: 'Unsaved plan thesis marker 7d41.',
   invalidation: 'Unsaved plan invalidation marker 2c58.',
   note: 'Unsaved expiration note marker 5b19.',
-  reason: 'Unsaved expiration decline marker 1f86.',
-  closeReason: 'Unsaved close review decline marker 9e03.',
 };
-const TEXT = [TYPED.thesis, TYPED.invalidation, TYPED.note, TYPED.reason, TYPED.closeReason];
+const TEXT = [TYPED.thesis, TYPED.invalidation, TYPED.note];
 const NUMBERS = [TYPED.strike, TYPED.entry, TYPED.stop, TYPED.target];
 
 const webStorage = (page: Page): Promise<unknown> => page.evaluate(() => ({ local: { ...localStorage }, session: { ...sessionStorage } }));
@@ -72,7 +70,7 @@ test.describe('B7.12 Nothing saved without Save (AC-JOUR-001)', () => {
     expect(traces(await webStorage(page))).toEqual([]);
     expect(workspaceOf(await probe(page))).toEqual(before);
 
-    // Leave the Plan unsaved for the expiration form of the short Put: answers, a Note, and both dispositions through Decline.
+    // Leave the Plan unsaved for the expiration form of the short Put: answers and a Note (it has no reflection or Close Review choice).
     await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Trades' }).click();
     await page.getByRole('table', { name: 'Open Trades' }).getByRole('link', { name: 'MNO', exact: true }).click();
     await detail.recordExpirationLink(page).click();
@@ -80,18 +78,10 @@ test.describe('B7.12 Nothing saved without Save (AC-JOUR-001)', () => {
     const reflection = page.getByRole('region', { name: 'Reflection on this expiration' });
     await answerIn(reflection);
     await reflection.getByLabel('Note').fill(TYPED.note);
-    await reflection.getByLabel('Decline to reflect').check();
-    await page.getByLabel('Reason for declining (optional)').fill(TYPED.reason);
-    await reflection.getByLabel('Reflect now').check();
-    await answerCloseReviewIn(closingSection(page));
-    await closeReviewGroup(page).getByLabel('Decline to reflect').check();
-    await page.getByLabel('Reason for declining the Close Review (optional)').fill(TYPED.closeReason);
-    await closeReviewGroup(page).getByLabel('Reflect later').check();
 
     await page.setViewportSize({ width: 390, height: 844 });
     await page.setViewportSize({ width: 1280, height: 900 });
     await expect(reflection.getByLabel('Note')).toHaveValue(TYPED.note);
-    await expect(closeReviewGroup(page).getByLabel('Reflect later')).toBeChecked();
     expect(traces(await webStorage(page))).toEqual([]);
     expect(workspaceOf(await probe(page))).toEqual(before);
 

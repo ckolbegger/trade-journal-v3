@@ -1,72 +1,195 @@
-import { Link } from 'react-router';
-import type { SettlementItem } from '../../app/types.ts';
-import { toWorkspaceLocal } from '../../domain/time/index.ts';
+import { useEffect, useId, useRef, useState } from 'react';
+import { ExpirationForm } from './ExpirationForm.tsx';
+import type { UiFacade } from '../../app/compose.ts';
+import type { DailyTradeReview, SettlementItem, TradeSaveBinding } from '../../app/types.ts';
 import { Rational } from '../../domain/values/index.ts';
-import { instrumentLabel } from '../calculation-words.ts';
-import { calculation } from '../figures.ts';
-import { shortDate } from '../format.ts';
+import { signed } from '../figures.ts';
+import { money, rMultiple, shortDate } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
-import { settlementTime, signedContracts } from './option-words.ts';
+import type { SavedAction } from './ActionForm.tsx';
+import type { FormHandle } from './form-handle.ts';
 
-// The exchange's zone: a settlement time is the close of a session, whatever zone the Workspace shows times in.
-const EXCHANGE_ZONE = 'America/New_York';
-
-// The assignment or exercise limit, keyed by the item's signed quantity and never by the Strategy (row 24.4, decision 88).
-const assignmentSentence = (short: boolean): string =>
-  short
-    ? "If it was assigned, this release can't record the assignment yet, so this Review stays incomplete until a later release can"
-    : "If it was exercised, this release can't record the exercise yet, so this Review stays incomplete until a later release can";
-
-// The panel header's one-line summary: "Short 2 contracts, expired Fri Nov 20" (row 24.1).
-export const settlementSummary = (items: readonly SettlementItem[]): string => items.map((item) => `${signedContracts(item.quantity)}, expired ${shortDate(item.expiration)}`).join('; ');
-
-// When the expiration date was not a session, the settlement time is the close of the latest session before it (row 24.9).
-function notASession(item: SettlementItem): string | undefined {
-  if (item.settlementTime.kind !== 'Value') return undefined;
-  const session = toWorkspaceLocal(item.settlementTime.value, EXCHANGE_ZONE).split('T')[0] ?? '';
-  return session === item.expiration ? undefined : `${shortDate(item.expiration)} wasn't a trading session, so the settlement time is the close of ${shortDate(session)}.`;
+export interface ExpirationBlockProps {
+  readonly facade: UiFacade;
+  readonly item: SettlementItem;
+  readonly underlying: string;
+  // Where the contract finished, from the view; absent when the Trade's facts cannot be replayed.
+  readonly standing: DailyTradeReview['expirationStanding'];
+  // The card's binding: Settle Later presents it as an Action does.
+  readonly binding: TradeSaveBinding;
+  // A Settle Later is already saved for the Review Date.
+  readonly settledLater: boolean;
+  readonly onSaved: (saved: SavedAction) => void;
+  // The Review is being read again, so a save would present the old binding.
+  readonly pending: boolean;
+  // "Sold before the close": the card's sale form opens in place of the block.
+  readonly onSell: () => void;
+  // The expiration form's values and its own save, for the card's unsaved-form rules (W128).
+  readonly onDirtyChange: (dirty: boolean) => void;
+  readonly onForm: (handle: FormHandle | undefined) => void;
+  // The expiration closed the Trade: the card leaves out its open-position figures, and the Review is read again once the receipt is dismissed.
+  readonly onClosedSale: () => void;
+  readonly onRefresh: () => Promise<boolean>;
+  readonly onLeftSold?: () => void;
 }
 
-export interface SettlementPanelProps {
-  readonly tradeId: string;
-  readonly items: readonly SettlementItem[];
-  readonly timeZone: string;
+const ZERO = Rational.of(0n);
+const unsigned = (amount: Rational): Rational => (amount.compare(ZERO) < 0 ? amount.mul(Rational.of(-1n)) : amount);
+
+// A refused save that read the Review again would not repeat itself; any other refusal could not write at all.
+const refusalOf = (kind: string): 'Changed' | 'Failed' => (['ReviewChanged', 'ChangedDuringAssembly', 'Conflict'].includes(kind) ? 'Changed' : 'Failed');
+
+// Where the Underlying finished against the strike, in words.
+function sideOf(price: Rational, strike: Rational): string {
+  const order = price.compare(strike);
+  if (order === 0) return 'at';
+  return order > 0 ? 'above' : 'below';
 }
 
-// The card's Settlement panel: each contract still held at or past its expiration date, and where to record its expiration.
-// Record expiration opens the form on its own page, which offers the way back to the Review (conflict K14); an item whose
-// date lies outside the market calendar has no settlement time to record at, so it offers none (row Q1).
-export function SettlementPanel({ tradeId, items, timeZone }: SettlementPanelProps) {
-  const { writable } = useRuntime();
+// What the Trade's result if recorded as expired worthless means to the trader: a long contract loses what was paid, a short one keeps what was received.
+function kept(result: Rational, long: boolean): string {
+  const amount = money(unsigned(result));
+  if (result.compare(ZERO) < 0) return long ? `You lose the ${amount} paid.` : `You lose ${amount}.`;
+  return `You keep ${amount}.`;
+}
+
+// The expired contract's block on the card (W136): an expired contract owes no Action, only a word on how it settled.
+export function ExpirationBlock({ facade, item, underlying, standing, binding, settledLater, onSaved, pending, onSell, onDirtyChange, onForm, onClosedSale, onRefresh, onLeftSold }: ExpirationBlockProps) {
+  const { writable, report, timeZone } = useRuntime();
+  const finished = standing?.kind === 'Value' ? standing.value : undefined;
+  const long = item.quantity.compare(Rational.of(0n)) > 0;
+  // A date outside the market calendar has no settlement time to record at (D7 Q1).
+  const recordable = item.settlementTime.kind === 'Value';
+  const laterId = useId();
+  const [saving, setSaving] = useState(false);
+  // What a refused save says: the Review changed under it (Refresh reads it again), or it could not be saved at all.
+  const [refused, setRefused] = useState<'Changed' | 'Failed' | undefined>();
+  const [refreshing, setRefreshing] = useState(false);
+  // "It expired worthless" in the money: what it would book, and the form that asks why.
+  const [opened, setOpened] = useState<'plain' | 'why' | undefined>();
+  // A recorded expiration is read again once the receipt is dismissed; a card left first has the Review read at once.
+  const readOwed = useRef(false);
+  const leftSold = useRef(onLeftSold);
+  useEffect(() => {
+    leftSold.current = onLeftSold;
+  });
+  useEffect(
+    () => () => {
+      if (readOwed.current) leftSold.current?.();
+    },
+    [],
+  );
+  const recordLater = async () => {
+    if (saving || pending) return;
+    setSaving(true);
+    try {
+      // A Settle Later records no Trade fact: it only lets this Review finish (A315).
+      const result = await facade.DailyReview.save({ kind: 'SettleLater', binding });
+      // A refusal to write switches the whole shell to read only.
+      report(result);
+      setRefused(result.kind === 'Saved' ? undefined : refusalOf(result.kind));
+      if (result.kind === 'Saved') onSaved(result);
+    } finally {
+      setSaving(false);
+    }
+  };
+  const refresh = async () => {
+    setRefreshing(true);
+    try {
+      if (await onRefresh()) setRefused(undefined);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+  const sellButton = (words: string) => (
+    <button type="button" className="pill secondary" onClick={onSell}>
+      {words} before the close
+    </button>
+  );
+  const laterButton = (main: boolean) =>
+    !settledLater && (
+      <button type="button" className={`pill ${main ? 'primary' : 'secondary'}`} aria-describedby={finished?.inTheMoney ? laterId : undefined} disabled={saving || pending} onClick={() => void recordLater()}>
+        {long ? 'Exercised' : 'Assigned'}: record later
+      </button>
+    );
   return (
-    <section aria-label="Settlement">
-      {items.map((item) => {
-        const note = notASession(item);
-        return (
-          <div key={`${instrumentLabel(item.instrument, timeZone)}`}>
-            <dl>
-              <div>
-                <dt>Contract</dt>
-                <dd>{instrumentLabel(item.instrument, timeZone)}</dd>
-              </div>
-              <div>
-                <dt>Quantity</dt>
-                <dd>{signedContracts(item.quantity)}</dd>
-              </div>
-              <div>
-                <dt>Settlement time</dt>
-                <dd>{calculation(item.settlementTime, (instant) => settlementTime(instant, timeZone))}</dd>
-              </div>
-            </dl>
-            {note && <p>{note}</p>}
-            <p>{assignmentSentence(item.quantity.compare(Rational.of(0n)) < 0)}</p>
-          </div>
-        );
-      })}
-      {writable && items.every((item) => item.settlementTime.kind === 'Value') && (
-        <Link className="pill primary" to={`/trades/${tradeId}/record-expiration?from=review`}>
-          Record expiration
-        </Link>
+    <section aria-label="Expired contract">
+      <h4>Expired {shortDate(item.expiration)} · no Action needed</h4>
+      {finished?.inTheMoney && (
+        <>
+          <p>
+            {underlying} {money(finished.underlyingPrice)}, strike {money(finished.strike)}: {money(finished.amount)} in the money
+          </p>
+          <p>
+            Worth {money(unsigned(finished.worth))} at expiration: {signed(money)(finished.ifSettled.dollars)} · {signed(rMultiple)(finished.ifSettled.r)} on the Trade.
+          </p>
+        </>
+      )}
+      {finished && !finished.inTheMoney && (
+        <p>
+          {underlying} {money(finished.underlyingPrice)}, {sideOf(finished.underlyingPrice, finished.strike)} the {money(finished.strike)} strike: expired worthless. {kept(finished.ifExpiredWorthless.dollars, long)}
+        </p>
+      )}
+      {!finished && <p>No price for {underlying}, so the app can&apos;t say where it finished. What happened?</p>}
+      {settledLater && <p>{long ? 'Exercised' : 'Assigned'}, to record later. Today&apos;s Review can finish. The next Review asks again.</p>}
+      {refused === 'Failed' && <p role="alert">This could not be saved. Nothing was saved.</p>}
+      {refused === 'Changed' && (
+        <div role="alert">
+          <p>The Review changed after you opened this Trade. Nothing was saved. Refresh to see the current Review.</p>
+          <button type="button" className="pill secondary" disabled={refreshing} onClick={() => void refresh()}>
+            Refresh
+          </button>
+        </div>
+      )}
+      {writable && !opened && (
+        <div className="expiration-choices">
+          {finished?.inTheMoney && laterButton(true)}
+          {finished?.inTheMoney && sellButton(long ? 'Sold' : 'Bought back')}
+          {finished && !finished.inTheMoney && recordable && (
+            <button type="button" className="pill primary" onClick={() => setOpened('plain')}>
+              Record expiration
+            </button>
+          )}
+          {finished && !finished.inTheMoney && sellButton(long ? 'Sold it' : 'Bought it back')}
+          {!finished && laterButton(false)}
+          {!finished && sellButton(long ? 'Sold' : 'Bought back')}
+          {!finished && recordable && (
+            <button type="button" className="pill secondary" onClick={() => setOpened('plain')}>
+              It expired worthless
+            </button>
+          )}
+          {finished?.inTheMoney && recordable && (
+            <button type="button" className="link-button" onClick={() => setOpened('why')}>
+              It expired worthless
+            </button>
+          )}
+        </div>
+      )}
+      {finished?.inTheMoney && !settledLater && (
+        <p id={laterId} className="hint">
+          {`The app can't record ${long ? 'an exercise' : 'an assignment'} yet. This only lets today's Review finish. The next Review asks again.`}
+        </p>
+      )}
+      {opened && (
+        <div>
+          {opened === 'why' && finished && (
+            <p>
+              This books {signed(money)(finished.ifExpiredWorthless.dollars)} · {signed(rMultiple)(finished.ifExpiredWorthless.r)} on a {item.instrument.right.toLowerCase()} worth {money(unsigned(finished.worth))}.
+            </p>
+          )}
+          <ExpirationForm facade={facade} tradeId={binding.tradeId} timeZone={timeZone ?? 'UTC'} onDirtyChange={onDirtyChange} onDone={() => setOpened(undefined)} backLabel="Back to the Review" fromReview card={{
+              onRecorded: () => {
+                readOwed.current = true;
+                onClosedSale();
+              },
+              onDismiss: () => {
+                void onRefresh().then((read) => {
+                  if (read) readOwed.current = false;
+                });
+              },
+              onForm,
+            }} askWhy={opened === 'why'} submitLabel={opened === 'why' ? 'Record expiration anyway' : 'Record expiration'} />
+        </div>
       )}
     </section>
   );

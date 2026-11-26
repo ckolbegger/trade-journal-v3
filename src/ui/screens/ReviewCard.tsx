@@ -16,7 +16,7 @@ import { ExitBanner } from './ExitBanner.tsx';
 import { NowBox } from './NowBox.tsx';
 import type { EntryDirty } from './MarksStep.tsx';
 import { ReviewReflections } from './ReviewReflections.tsx';
-import { SettlementPanel, settlementSummary } from './ReviewSettlement.tsx';
+import { ExpirationBlock } from './ReviewSettlement.tsx';
 import { describedLabelsOf, reasonText } from './review-attention.ts';
 import { PlanBox } from './PlanBox.tsx';
 import { sessionOf } from './now-box.props.ts';
@@ -38,7 +38,7 @@ export function panelOf<P extends PanelProgress['panel']>(progress: CardProgress
 // The Settlement panel, present only while a contract's settlement is due (decision 81).
 const settlementOf = (progress: CardProgress) => progress.panels.find((p): p is Extract<PanelProgress, { panel: 'Settlement' }> => p.panel === 'Settlement');
 
-export const PANELS = ['Reflections', 'Settlement', 'Action'] as const;
+export const PANELS = ['Reflections', 'Action'] as const;
 export type PanelName = (typeof PANELS)[number];
 
 // Where a link into the Review sends this card (A161): a panel to open. The count grows with each link, so a card that is already open
@@ -241,18 +241,11 @@ function panelHeaders(trade: DailyTradeReview, progress: CardProgress): Record<P
   const { dueNow: due, later } = panelOf(progress, 'Reflections');
   const owed = due + later;
   const form = trade.form;
-  const settlement = settlementOf(progress);
   return {
     Reflections: {
       summary: owed > 0 ? `${owed} owed, ${due} due now` : 'None owed',
       status: reflectionsStatus(due, owed),
       done: panelOf(progress, 'Reflections').done,
-    },
-    // Rows 24.1 and 24.2; a card with no due settlement has no such panel, so this header is never shown.
-    Settlement: {
-      summary: settlementSummary(trade.settlement),
-      status: settlement?.needed === false ? 'Recorded' : 'Needed',
-      done: settlement?.done ?? true,
     },
     Action: {
       summary: form.kind === 'Saved' ? form.action.action : 'Hold, Exit, Roll or Adjust',
@@ -266,15 +259,16 @@ function panelHeaders(trade: DailyTradeReview, progress: CardProgress): Record<P
 function CardBody({ facade, trade, progress, name, go, stillHolding, onStillHolding, onSaved, onReflectionResolved, onRefresh, pending, onEntryDirty, onForm, meter, now, onLeftSold, onClosedSale, soldOut }: CardBodyProps) {
   const uid = useId();
   const headers = panelHeaders(trade, progress);
-  // The card's panels in work order: the Settlement panel is there only while a contract's settlement is due (decision 81).
-  const panels = PANELS.filter((name) => name !== 'Settlement' || settlementOf(progress) !== undefined);
+  // A contract due for settlement owes no Action (A315): the expiration block stands where the Action panel would.
+  const expiring = trade.settlement[0];
+  const panels = PANELS.filter((name) => name !== 'Action' || expiring === undefined);
   // The next panel that is not done after this one, wrapping to the ones before it; none when every other panel is done.
   const nextAfter = (from: PanelName): PanelName | undefined => {
     const start = panels.indexOf(from);
     return [...panels.slice(start + 1), ...panels.slice(0, start)].find((name) => !headers[name].done);
   };
   // The card opens on the panel a link names, or else on its first panel that is not done.
-  const [open, setOpen] = useState<PanelName>(() => (go.panel && panels.includes(go.panel) ? go.panel : (panels.find((name) => !headers[name].done) ?? 'Action')));
+  const [open, setOpen] = useState<PanelName>(() => (go.panel && panels.includes(go.panel) ? go.panel : (panels.find((name) => !headers[name].done) ?? (panels.includes('Action') ? 'Action' : panels[0]!))));
   // A274: the overlay is open while the address holds `replay=open`. Opening pushes one history entry, so Back closes it; Close and Escape go
   // back that entry when this visit pushed it, and otherwise (a reload, a link straight in) replace the address without `replay`.
   const [params, setParams] = useSearchParams();
@@ -336,7 +330,7 @@ function CardBody({ facade, trade, progress, name, go, stillHolding, onStillHold
   // "I sold: record it" opens the sale form in the Action panel (A313): the form takes the request by its count. A card opened for it asks at once.
   const [saleAsk, setSaleAsk] = useState(go.sale ? 1 : 0);
   const askSale = () => {
-    flushSync(() => setOpen('Action'));
+    flushSync(() => setOpen((now) => (panels.includes('Action') ? 'Action' : now)));
     setSaleAsk((count) => count + 1);
   };
   // A link to a card that is already open moves it to the panel named (A161).
@@ -380,7 +374,7 @@ function CardBody({ facade, trade, progress, name, go, stillHolding, onStillHold
   const planBoxCarriesAtEntry = planColumn !== undefined && atEntry != null && atEntry.riskFromEntry.equals(unsigned(planColumn.atStop)) && atEntry.rewardFromEntry.equals(planColumn.atTarget);
   // U6: the list sits by the Action; the card's top line says the last decision wherever the list is not visible: the Action is not offered
   // (Marks to enter, a contract to settle) or another panel is the open one.
-  const listShown = panelOf(progress, 'Marks').needed === 0 && settlementOf(progress) === undefined;
+  const listShown = panelOf(progress, 'Marks').needed === 0 && expiring === undefined;
   const listVisible = listShown && open === 'Action';
   // Marks still to enter for the Review Date (A304): the figures are the session before's, as the "Now" box reads them.
   const marksToGo = panelOf(progress, 'Marks').needed;
@@ -428,6 +422,8 @@ function CardBody({ facade, trade, progress, name, go, stillHolding, onStillHold
           </dl>
         </div>
       )}
+      {/* The sale form is the ActionForm's own, so the block is what it shows while no sale is being recorded. */}
+      {expiring && <ActionForm facade={facade} form={trade.form} binding={trade.saveBinding} onSaved={onSaved} onRefresh={onRefresh} onDirtyChange={report} pending={pending} planExit={trade.planExit} saleRequest={saleAsk} {...(now && { now })} {...(onLeftSold && { onLeftSold })} onClosedSale={onClosedSale} onHandle={offerForm} idle={<ExpirationBlock facade={facade} item={expiring} underlying={trade.underlying} standing={trade.expirationStanding} binding={trade.saveBinding} settledLater={trade.form.kind === 'Saved' && trade.form.action.action === 'Settle Later'} onSaved={onSaved} pending={pending} onSell={askSale} onDirtyChange={report} onForm={offerForm} onClosedSale={onClosedSale} onRefresh={onRefresh} {...(onLeftSold && { onLeftSold })} />} />}
       {/* Every panel stays mounted, so a panel left open keeps its drafts; only the open one is shown. */}
       {panels.map((name) => (
         <div key={name} className="review-panel">
@@ -443,7 +439,6 @@ function CardBody({ facade, trade, progress, name, go, stillHolding, onStillHold
           </h4>
           <div id={`${uid}-${name}`} hidden={open !== name}>
             {name === 'Reflections' && <ReviewReflections facade={facade} reviewDate={trade.saveBinding.reviewDate} reflections={trade.reflections} onReview={onReflectionResolved} onNoneRemaining={finishPanel} onEntryDirty={onEntryDirty} onForm={offerReflection} />}
-            {name === 'Settlement' && <SettlementPanel tradeId={trade.tradeId} items={trade.settlement} timeZone={timeZone ?? 'UTC'} />}
             {name === 'Action' && trade.replay && (
               <button ref={replayButton} type="button" className="pill secondary review-card-replay" onClick={openReplay}>
                 Replay

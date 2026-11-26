@@ -9,7 +9,7 @@ import { expiredOptionTrade, OC_CONTRACT } from '../../../tests/support/option-t
 import type { UiFacade } from '../../app/compose.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { RuntimeContext } from '../runtime.tsx';
-import { ExpirationFormRoute } from './ExpirationForm.tsx';
+import { ExpirationForm, ExpirationFormRoute } from './ExpirationForm.tsx';
 
 afterEach(cleanup);
 fixClock();
@@ -44,7 +44,7 @@ function renderForm(facade: UiFacade = exitFormFacade(dueDetail), search = '') {
 }
 
 describe('rendering A113', () => {
-  it('should show the contract, quantity, and settlement time read-only, the reflection disposition and the Close Review disposition each with Reflect now selected, no Close Reason, and the note explaining why none is needed', async () => {
+  it('should show the contract, quantity, and settlement time read-only, with no reflection or Close Review choice and no Close Reason', async () => {
     renderForm();
     expect(await screen.findByRole('heading', { level: 1, name: 'Expiration' })).toBeTruthy();
     const terms = screen.getByRole('region', { name: 'Expiration' });
@@ -55,11 +55,8 @@ describe('rendering A113', () => {
     expect(within(terms).getByText('The close of the expiration session.')).toBeTruthy();
     expect(within(terms).queryAllByRole('textbox')).toEqual([]);
 
-    const reflection = screen.getByRole('region', { name: 'Reflection on this expiration' });
-    expect(within(reflection).getByRole('radio', { name: 'Reflect now' })).toHaveProperty('checked', true);
-    const closing = screen.getByRole('region', { name: 'Closing the Trade' });
-    expect(within(closing).getByRole('radio', { name: 'Reflect now' })).toHaveProperty('checked', true);
-    expect(within(closing).getByText('No Close Reason is needed, because the contract expired rather than being closed by your decision.')).toBeTruthy();
+    expect(screen.queryByLabelText('Reflect now')).toBeNull();
+    expect(screen.queryByRole('region', { name: 'Closing the Trade' })).toBeNull();
     expect(screen.queryByText('Close Reason')).toBeNull();
     expect(screen.getByRole('button', { name: 'Save expiration' })).toBeTruthy();
   });
@@ -82,20 +79,19 @@ function expirationResult() {
 }
 
 describe('submission', () => {
-  it('should submit one Expiration member with the items quantity and settlement time and both dispositions, and render the Closed Trade, Terminal Disposition, Option Disposition Timing, and both reflection outcomes from the result alone', async () => {
+  it('should submit one Expiration member with the items quantity and settlement time, a completed reflection and a deferred Close Review, and render the Closed Trade, Terminal Disposition, Option Disposition Timing, and both reflection outcomes from the result alone', async () => {
     const facade = renderForm();
     vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(expirationResult() as never);
     const user = userEvent.setup();
     await user.click(await screen.findByRole('button', { name: 'Save expiration' }));
     const [command] = vi.mocked(facade.TradeWorkflows.recordPositionChange).mock.calls[0]!;
-    const complete: unknown = expect.objectContaining({ kind: 'Complete' });
     expect(command).toEqual(
       expect.objectContaining({
         originTradeId: 'trade-1',
         trades: [{ tradeId: 'trade-1', expectedFactRevision: 4 }],
         members: [{ kind: 'Expiration', tradeId: 'trade-1', instrument: OC_CONTRACT, quantity: '1', economicTime: SETTLEMENT_TIME }],
-        reflection: complete,
-        closeReview: complete,
+        reflection: { kind: 'Complete', form: { definitionId: 'def-pcr-1', answers: {} } },
+        closeReview: { kind: 'Defer' },
       }),
     );
     expect(command).not.toHaveProperty('closeReasonId');
@@ -154,7 +150,7 @@ describe('the form around the save', () => {
     await save(exitFormFacade(dueDetail), { kind: 'Conflict', changed: ['trade:trade-1'] });
     const banner = await screen.findByRole('region', { name: 'This Trade changed after you opened this form' });
     expect(within(banner).getByText('Nothing was saved. The Trade changed after this expiration was offered, so review the Trade before recording it. Your choices are kept below.')).toBeTruthy();
-    expect(screen.getByRole('region', { name: 'Reflection on this expiration' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Save expiration' })).toBeTruthy();
   });
 });
 
@@ -169,6 +165,9 @@ describe('load, dirtiness, and another Trade', () => {
 
   it('should report no unsaved values once the expiration is recorded', async () => {
     const facade = exitFormFacade(dueDetail);
+    vi.mocked(facade.Journal.getDefinitions).mockImplementation((request) =>
+      Promise.resolve({ kind: 'Found', definition: ('latestFor' in request && request.latestFor === 'entry-type.close-review' ? closeReviewDefinition : reflectionDefinition6) as never }),
+    );
     vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(expirationResult() as never);
     const onDirtyChange = vi.fn();
     render(
@@ -181,8 +180,10 @@ describe('load, dirtiness, and another Trade', () => {
       </RuntimeContext.Provider>,
     );
     const user = userEvent.setup();
-    const reflection = await screen.findByRole('region', { name: 'Reflection on this expiration' });
-    await user.click(within(reflection).getByRole('radio', { name: 'Decline to reflect' }));
+    // The workflow's refusal asks the reason; typing it is the one value the form holds.
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValueOnce({ kind: 'Rejected', issues: [{ source: 'TradeWorkflows', field: 'prompt.position-change-reflection.expiration-reason', code: 'ExpirationReasonRequired' }] } as never);
+    await user.click(await screen.findByRole('button', { name: 'Save expiration' }));
+    await user.type(await screen.findByRole('textbox', { name: 'Why did it expire worthless?' }), 'Broker showed it expired.');
     expect(onDirtyChange).toHaveBeenLastCalledWith(true);
     await user.click(screen.getByRole('button', { name: 'Save expiration' }));
     await screen.findByRole('heading', { name: 'Expiration recorded' });
@@ -216,7 +217,32 @@ describe('load, dirtiness, and another Trade', () => {
   });
 });
 
-describe('the workflow prompts (T95.42, A322)', () => {
+describe('the form placed in a Review card (T95.52)', () => {
+  it('should offer its own save to the card while it is shown, and take it back when it goes', async () => {
+    const facade = exitFormFacade(dueDetail);
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(expirationResult() as never);
+    const onForm = vi.fn();
+    const onRecorded = vi.fn();
+    const shown = render(
+      <RuntimeContext.Provider value={{ writable: true, report: () => undefined }}>
+        <MemoryRouter>
+          <ExpirationForm facade={facade} tradeId="trade-1" timeZone="America/New_York" onDirtyChange={() => undefined} onDone={() => undefined} backLabel="Back to the Review" fromReview card={{ onRecorded, onDismiss: () => undefined, onForm }} />
+        </MemoryRouter>
+      </RuntimeContext.Provider>,
+    );
+    await screen.findByRole('button', { name: 'Save expiration' });
+
+    // The Review's "Save it" (W128) saves through the handle, and the card hears of the recording.
+    const handle = onForm.mock.calls.at(-1)![0] as { save: () => Promise<boolean> };
+    expect(await handle.save()).toBe(true);
+    expect(vi.mocked(facade.TradeWorkflows.recordPositionChange)).toHaveBeenCalledOnce();
+    expect(onRecorded).toHaveBeenCalledOnce();
+    shown.unmount();
+    expect(onForm).toHaveBeenLastCalledWith(undefined);
+  });
+});
+
+describe('the same form from Trade Detail (T95.52)', () => {
   it('should leave the two workflow prompts out of today expiration form', async () => {
     const facade = exitFormFacade(dueDetail);
     vi.mocked(facade.Journal.getDefinitions).mockImplementation((request) =>
@@ -227,5 +253,35 @@ describe('the workflow prompts (T95.42, A322)', () => {
     expect(within(reflection).getByRole('radiogroup', { name: 'Decision mode' })).toBeTruthy();
     expect(within(reflection).queryByLabelText('Why did you leave the Plan?')).toBeNull();
     expect(within(reflection).queryByLabelText('Why did it expire worthless?')).toBeNull();
+    // The reflection's own choice is gone: it is always completed (A312).
+    expect(within(reflection).queryByRole('radiogroup', { name: 'Reflection' })).toBeNull();
+    expect(screen.queryByLabelText('Reflect now')).toBeNull();
+  });
+
+  it('should show the same form from Trade Detail with no reflection or Close Review choice, asking the reason only once the workflow requires it', async () => {
+    const facade = exitFormFacade(dueDetail);
+    vi.mocked(facade.Journal.getDefinitions).mockImplementation((request) =>
+      Promise.resolve({ kind: 'Found', definition: ('latestFor' in request && request.latestFor === 'entry-type.close-review' ? closeReviewDefinition : reflectionDefinition6) as never }),
+    );
+    renderForm(facade);
+    const user = userEvent.setup();
+    await screen.findByRole('button', { name: 'Save expiration' });
+    expect(screen.queryByLabelText('Reflect now')).toBeNull();
+    expect(screen.queryByRole('textbox', { name: 'Why did it expire worthless?' })).toBeNull();
+
+    // In the money with no reason: the workflow refuses, and the form asks for the Expiration Reason it places itself.
+    const reasonPrompt = 'prompt.position-change-reflection.expiration-reason';
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValueOnce({ kind: 'Rejected', issues: [{ source: 'TradeWorkflows', field: reasonPrompt, code: 'ExpirationReasonRequired' }] } as never);
+    await user.click(screen.getByRole('button', { name: 'Save expiration' }));
+    const why = await screen.findByRole('textbox', { name: 'Why did it expire worthless?' });
+    expect(document.getElementById(why.getAttribute('aria-describedby')!)?.textContent).toBe('Say why.');
+    expect(screen.queryByLabelText('Why did you leave the Plan?')).toBeNull();
+
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValueOnce(expirationResult() as never);
+    await user.type(why, 'Broker showed it expired.');
+    await user.click(screen.getByRole('button', { name: 'Save expiration' }));
+    expect(vi.mocked(facade.TradeWorkflows.recordPositionChange)).toHaveBeenLastCalledWith(
+      expect.objectContaining({ reflection: { kind: 'Complete', form: { definitionId: 'def-pcr-3', answers: { [reasonPrompt]: { kind: 'Text', text: 'Broker showed it expired.' } } } } }),
+    );
   });
 });

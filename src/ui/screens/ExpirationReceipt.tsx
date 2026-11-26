@@ -5,6 +5,7 @@ import { Badge } from '../Badge.tsx';
 import { calculation, signed } from '../figures.ts';
 import { localTime, money, rMultiple } from '../format.ts';
 import { PageTitle } from '../PageTitle.tsx';
+import { CardTitle } from './CardTitle.tsx';
 import { expirationLine } from './execution-line.ts';
 import { LotMatchesTable } from './LotMatchesTable.tsx';
 import { closedViaOption, timingWords } from './option-disposition.ts';
@@ -17,11 +18,14 @@ export interface ExpirationReceiptProps {
   readonly timeZone: string;
   // The form was opened from the Review (conflict K14), so the receipt offers the way back to it.
   readonly fromReview: boolean;
+  // Present when a Review card shows the receipt: its way back is the card's, not the Trade's.
+  readonly onDismiss?: () => void;
 }
 
 // The saved Expiration, rendered from the command's post-commit result alone (AC-RESP-001). It has no
 // Close Reason: the contract expired rather than being closed by the trader's decision (row 21.16).
-export function ExpirationReceipt({ result, timeZone, fromReview }: ExpirationReceiptProps) {
+export function ExpirationReceipt({ result, timeZone, fromReview, onDismiss }: ExpirationReceiptProps) {
+  const Title = onDismiss ? CardTitle : PageTitle;
   const headingRef = useRef<HTMLHeadingElement>(null);
   useEffect(() => headingRef.current?.focus(), []);
   const { receipt, postCommit } = result;
@@ -34,9 +38,9 @@ export function ExpirationReceipt({ result, timeZone, fromReview }: ExpirationRe
 
   return (
     <section className="card" aria-labelledby="receipt-heading">
-      <PageTitle id="receipt-heading" ref={headingRef} tabIndex={-1}>
+      <Title id="receipt-heading" ref={headingRef} tabIndex={-1}>
         Expiration recorded
-      </PageTitle>
+      </Title>
       <section aria-labelledby="saved-change-heading">
         <h2 id="saved-change-heading">
           Position Change at <span className="nowrap">{localTime(saved.economicTime, timeZone)}</span>
@@ -79,10 +83,18 @@ export function ExpirationReceipt({ result, timeZone, fromReview }: ExpirationRe
         {closeMessage && <p>{closeMessage}</p>}
         {closeReview?.kind === 'Debt' && <Badge tone="warning">Close Review owed</Badge>}
       </section>
-      <Link className="pill primary" to={`/trades/${receipt.tradeId}`}>
-        Back to the Trade
-      </Link>
-      {fromReview && <Link className="pill secondary" to="/review">Back to the Review</Link>}
+      {onDismiss ? (
+        <button type="button" className="pill primary" onClick={onDismiss}>
+          Back to the Review
+        </button>
+      ) : (
+        <>
+          <Link className="pill primary" to={`/trades/${receipt.tradeId}`}>
+            Back to the Trade
+          </Link>
+          {fromReview && <Link className="pill secondary" to="/review">Back to the Review</Link>}
+        </>
+      )}
     </section>
   );
 }

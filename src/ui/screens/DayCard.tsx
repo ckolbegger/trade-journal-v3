@@ -100,8 +100,8 @@ function heldPast({ pastLine, chosen }: NonNullable<DaySummary['finished']>, und
 
 const STEPS = ['1 Marks', '2 Trades', '3 The day'] as const;
 
-// A Mark is entered in the Marks step, not in the card.
-const PANEL_OF = { Reflection: 'Reflections', SayWhy: 'Reflections', Settlement: 'Settlement', Action: 'Action' } as const satisfies Partial<Record<DaySummary['lines'][number]['needs'][number], PanelName>>;
+// A Mark is entered in the Marks step, not in the card; an expiration's block (the settlement) is not a panel, so its link names none.
+const PANEL_OF: Partial<Record<DaySummary['lines'][number]['needs'][number], PanelName>> = { Reflection: 'Reflections', SayWhy: 'Reflections', Action: 'Action' };
 
 // The Trade the day card sends the trader to next: the first line, in the card's order, that still needs something (W98).
 const nextLine = (day: DaySummary) => day.lines.find((line) => line.needs.length > 0);

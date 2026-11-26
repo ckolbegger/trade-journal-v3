@@ -1,5 +1,5 @@
 import {
-  answerIn, closeReviewGroup, completion, createSettlementFixture, createShortPutTrade, detail, expect, factsOf, firstPage, FRIDAY_NOV_1700, launchAt, onboardedAt, openDrawer, openReview, openSettlement, probe, LAUNCH, test,
+  answerIn, completion, createSettlementFixture, createShortPutTrade, detail, expect, factsOf, firstPage, FRIDAY_NOV_1700, launchAt, onboardedAt, openDrawer, openReview, openExpiration, probe, LAUNCH, test,
   tradesOf, TUESDAY_1030, workspaceOf,
 } from './support.ts';
 
@@ -38,13 +38,13 @@ test.describe('B7.10 Recovery Only (faults build)', () => {
     await expect(page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'New Plan' })).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Confirm Plan' })).toHaveCount(0);
 
-    // The Review and its settlement family are readable, with no Record expiration on a card.
+    // The Review and its expiration blocks are readable, with no choice to record on a card.
     await openReview(page);
     await expect(completion(page)).toHaveText('Incomplete');
-    const panel = await openSettlement(page, t1);
-    await expect(panel).toContainText('XYZ Nov 20 $55 Call');
-    await expect(panel.getByRole('link', { name: 'Record expiration' })).toHaveCount(0);
-    await expect((await openSettlement(page, t3)).getByRole('link', { name: 'Record expiration' })).toHaveCount(0);
+    const block = await openExpiration(page, t1);
+    await expect(block).toContainText('Expired Fri Nov 20 · no Action needed');
+    await expect(block.getByRole('button')).toHaveCount(0);
+    await expect((await openExpiration(page, t3)).getByRole('button')).toHaveCount(0);
 
     expect(await probe(page)).toEqual(before);
     await context.close();
@@ -66,7 +66,6 @@ test.describe('B7.11 Mid-session failure (faults build, AC-DEL-006)', () => {
     await expect(page.getByRole('heading', { name: 'Expiration', level: 1 })).toBeVisible(LAUNCH);
     const reflection = page.getByRole('region', { name: 'Reflection on this expiration' });
     await answerIn(reflection);
-    await closeReviewGroup(page).getByLabel('Reflect later').check();
     const before = workspaceOf(await probe(page))!;
 
     await page.evaluate(() => window.__tjFaults?.set(['inventory']));
@@ -79,7 +78,6 @@ test.describe('B7.11 Mid-session failure (faults build, AC-DEL-006)', () => {
     await expect(page.getByRole('heading', { name: 'Expiration', level: 1 })).toBeVisible();
     await expect(reflection.getByRole('radiogroup', { name: 'Decision mode' }).getByLabel('As Planned')).toBeChecked();
     await expect(reflection.getByRole('radiogroup', { name: 'Primary emotion' }).getByLabel('Calm')).toBeChecked();
-    await expect(closeReviewGroup(page).getByLabel('Reflect later')).toBeChecked();
     await expect(page.getByRole('heading', { name: 'Expiration recorded', level: 1 })).toHaveCount(0);
     const workspace = workspaceOf(await probe(page))!;
     const [trade] = tradesOf(workspace);

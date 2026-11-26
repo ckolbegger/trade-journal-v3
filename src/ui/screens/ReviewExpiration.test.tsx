@@ -10,7 +10,6 @@ import { exitFormFacade, plannedDetail, reflectionDefinition } from '../../../te
 import type { DailyTradeReview, OpenDailyReviewResult, OwedReflection, OwedReflectionsCard, ReviewBinding, WalkedTrade } from '../../app/types.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { RuntimeContext } from '../runtime.tsx';
-import { ExpirationFormRoute } from './ExpirationForm.tsx';
 import { ReviewView } from './ReviewView.tsx';
 
 afterEach(cleanup);
@@ -133,38 +132,37 @@ function expirationResult() {
 }
 
 describe('record expiration from the Review (A113, conflict K14)', () => {
-  it('should open the expiration form from the Settlement panel and, after Save, offer Back to the Review, where the recorded Expiration shows on the Trade owed reflection, with no Refresh Review', async () => {
+  it('should record the expiration in the card, then offer Back to the Review, where the recorded Expiration shows on the Trade owed reflection, with no Refresh Review', async () => {
     const user = userEvent.setup();
     const facade = exitFormFacade(dueDetail);
+    // XYZ finished at $54.00 under its $55.00 call strike: out of the money, so Record expiration is the main button.
+    const outOfTheMoney = { kind: 'Value', value: { underlyingPrice: Rational.of(54n), strike: Rational.of(55n), inTheMoney: false, amount: Rational.of(1n), worth: Rational.of(0n), ifSettled: { dollars: Rational.of(-200n), r: Rational.of(-1n) }, ifExpiredWorthless: { dollars: Rational.of(-200n), r: Rational.of(-1n) } } } as const;
     vi.mocked(facade.DailyReview.open).mockResolvedValueOnce(duringReview).mockResolvedValueOnce(afterReview);
-    vi.mocked(facade.DailyReview.getTrade).mockResolvedValueOnce({ kind: 'Ready', reviewDate: DATE, cutoff: CUTOFF, trade }).mockResolvedValueOnce({ kind: 'ReflectionsOwed', reviewDate: DATE, cutoff: CUTOFF, card: owedCard });
+    vi.mocked(facade.DailyReview.getTrade).mockResolvedValueOnce({ kind: 'Ready', reviewDate: DATE, cutoff: CUTOFF, trade: { ...trade, expirationStanding: outOfTheMoney } }).mockResolvedValueOnce({ kind: 'ReflectionsOwed', reviewDate: DATE, cutoff: CUTOFF, card: owedCard });
     vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(expirationResult() as never);
     render(
       <RuntimeContext.Provider value={{ writable: true, timeZone: 'America/New_York', report: () => undefined }}>
         <MemoryRouter initialEntries={['/review']}>
           <Routes>
             <Route path="/review" element={<ReviewView facade={facade} now={() => '2026-11-20T22:00:00Z'} onDirtyChange={() => undefined} />} />
-            <Route path="/trades/:tradeId/record-expiration" element={<ExpirationFormRoute facade={facade} timeZone="America/New_York" onDirtyChange={() => undefined} />} />
           </Routes>
         </MemoryRouter>
       </RuntimeContext.Provider>,
     );
 
-    // The Settlement panel's link opens the form on its own page.
+    // The block's button opens the Trade's own form inside the card; the Review stays on screen.
     const card = await screen.findByRole('region', { name: 'XYZ review' });
-    await user.click(within(card).getByRole('link', { name: 'Record expiration' }));
-    expect(await screen.findByRole('heading', { level: 1, name: 'Expiration' })).toBeTruthy();
-    expect(screen.queryByRole('region', { name: 'XYZ review' })).toBeNull();
+    await user.click(within(card).getByRole('button', { name: 'Record expiration' }));
+    expect(await within(card).findByRole('heading', { name: 'Expiration' })).toBeTruthy();
 
     // Its receipt offers the way back, and no refresh of the Review.
-    await user.click(await screen.findByRole('button', { name: 'Save expiration' }));
-    expect(await screen.findByRole('heading', { level: 1, name: 'Expiration recorded' })).toBeTruthy();
+    await user.click(await within(card).findByRole('button', { name: 'Record expiration' }));
+    expect(await within(card).findByRole('heading', { name: 'Expiration recorded' })).toBeTruthy();
     expect(screen.queryByText('Refresh Review')).toBeNull();
-    await user.click(screen.getByRole('link', { name: 'Back to the Review' }));
+    await user.click(within(card).getByRole('button', { name: 'Back to the Review' }));
 
     // The Review is read again: the Trade has left the walk, and its owed reflection names the recorded Expiration.
-    const owedTrade = await screen.findByRole('region', { name: 'XYZ review' });
-    expect(within(owedTrade).getByText('Expiration of 1 XYZ Nov 20 $55 Call, no price or fee')).toBeTruthy();
-    expect(screen.queryByRole('link', { name: 'Record expiration' })).toBeNull();
+    const owedTrade = await screen.findByText('Expiration of 1 XYZ Nov 20 $55 Call, no price or fee');
+    expect(within(owedTrade.closest('section')!).queryByRole('button', { name: 'Record expiration' })).toBeNull();
   });
 });

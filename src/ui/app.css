@@ -990,6 +990,23 @@ ul.rows > li {
   text-decoration: underline;
   cursor: pointer;
 }
+/* The expiration block's choices: a row on a desktop, one column on a phone (T95.52, U1). */
+.expiration-choices {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+@media (max-width: 479.98px) {
+  .expiration-choices {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .expiration-choices > button {
+    width: 100%;
+  }
+}
 @container (max-width: 39.99rem) {
   .marks-step-table,
   .marks-step-table tbody {

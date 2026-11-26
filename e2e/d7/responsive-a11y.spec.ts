@@ -1,7 +1,7 @@
 import type { Locator, Page } from '@playwright/test';
 import {
-  closeReviewGroup, completion, createSettlementFixture, createShortPutTrade, currentTradeId, detail, expect, expectAccessible, expectPayoffChart, expectPayoffNotApplicable,
-  fillOptionPlan, firstPage, FRIDAY_NOV_1700, launchAt, MONDAY_NOV_1700, onboardedAt, openDrawer, openEntryForm, openReview, openSettlement, receiptResult, LAUNCH, test, tabTo, TUESDAY_1030, valueOf,
+  completion, createSettlementFixture, createShortPutTrade, currentTradeId, detail, expect, expectAccessible, expectPayoffChart, expectPayoffNotApplicable,
+  fillOptionPlan, firstPage, FRIDAY_NOV_1700, launchAt, MONDAY_NOV_1700, onboardedAt, openDrawer, openEntryForm, openReview, openExpiration, receiptResult, LAUNCH, test, tabTo, TUESDAY_1030, valueOf,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
@@ -114,10 +114,10 @@ test.describe('B7.13 Responsive and accessible', () => {
 
     await openReview(due);
     await expect(completion(due)).toHaveText('Incomplete');
-    const settlement = await openSettlement(due, t3);
-    await expect(settlement).toContainText('MNO Nov 20 $45 Put');
-    await expect(settlement.getByRole('link', { name: 'Record expiration' })).toBeVisible();
-    await accessibleAtBothWidths(due, 'Review settlement panel');
+    const block = await openExpiration(due, t3);
+    await expect(block).toContainText('Expired Fri Nov 20 · no Action needed');
+    await expect(block.getByRole('button', { name: 'Assigned: record later' })).toBeVisible();
+    await accessibleAtBothWidths(due, 'Review expiration block');
     await friday.close();
   });
 
@@ -235,6 +235,7 @@ test.describe('B7.13 Responsive and accessible', () => {
     await tabTo(page, detail.recordExpirationLink(page));
     await page.keyboard.press('Enter');
     await expect(page.getByRole('heading', { name: 'Expiration', level: 1 })).toBeVisible();
+    // The form has no reflection or Close Review choice, only the reflection's own questions.
     const reflection = page.getByRole('region', { name: 'Reflection on this expiration' });
     await tabTo(page, reflection.getByRole('radiogroup', { name: 'Decision mode' }).getByLabel('As Planned'));
     await page.keyboard.press('Space');
@@ -250,9 +251,6 @@ test.describe('B7.13 Responsive and accessible', () => {
       await page.keyboard.type('Expired out of the money.');
       await expect(reason).toHaveValue('Expired out of the money.');
     }
-    await tabTo(page, closeReviewGroup(page).getByLabel('Reflect now'));
-    await page.keyboard.press('ArrowRight');
-    await expect(closeReviewGroup(page).getByLabel('Reflect later')).toBeChecked();
     await tabTo(page, page.getByRole('button', { name: 'Save expiration' }));
     await page.keyboard.press('Enter');
     await expect(page.getByRole('heading', { name: 'Expiration recorded', level: 1 })).toBeVisible();

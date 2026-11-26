@@ -3,7 +3,7 @@
 // every contract expires Friday 2026-11-20 (EST, UTC-5).
 import { answerSlipQuestions, expectMarksSaved, marksStepOf } from '../d4/support.ts';
 import type { Locator, Page } from '@playwright/test';
-import { answerIn, answerSaleIn, chooseCell, closeReasonGroup, closeReviewGroup, completeReflection, createTradeAt, currentTradeId, detail, executionRow, expect, openDrawer, openEntryForm, PLAN, reachCard, reachPanel, LAUNCH, savedUnlessRefused, tradeCard, type CardRef, type ProbedDatabase, type TradeRef, test as d1Test, type Row } from '../d6/support.ts'; // d6's test, whose automatic fixture serves current
+import { answerIn, answerSaleIn, chooseCell, closeReasonGroup, completeReflection, createTradeAt, currentTradeId, detail, executionRow, expect, openDrawer, openEntryForm, PLAN, reachCard, reachPanel, LAUNCH, savedUnlessRefused, tradeCard, type CardRef, type ProbedDatabase, type TradeRef, test as d1Test, type Row } from '../d6/support.ts'; // d6's test, whose automatic fixture serves current
 
 export * from '../d6/support.ts';
 
@@ -135,29 +135,40 @@ export async function savedOptionMarkRow(page: Page, card: CardRef, label: strin
   return optionMarkRow(page, card, label, date);
 }
 
-// A card's Settlement panel header and its content, and the panel opened.
-export const settlementHeader = (page: Page, card: CardRef): Locator => tradeCard(page, card).getByRole('button', { name: /^Settlement\b/ });
-export async function openSettlement(page: Page, card: CardRef): Promise<Locator> {
+// A card's expiration block (T95.52): the card opened, and the block that stands where the Settlement panel and the Action did.
+export async function openExpiration(page: Page, card: CardRef): Promise<Locator> {
   await reachCard(page, card);
-  const header = settlementHeader(page, card);
-  if ((await header.getAttribute('aria-expanded')) !== 'true') await header.click();
-  await expect(header).toHaveAttribute('aria-expanded', 'true');
-  return tradeCard(page, card).getByRole('region', { name: 'Settlement', exact: true });
+  const block = tradeCard(page, card).getByRole('region', { name: 'Expired contract', exact: true });
+  await expect(block).toBeVisible();
+  return block;
 }
 
-// On the expiration form: answers the expiration's own reflection with a fixed Expiration Reason (where the form asks for
-// one), puts the Close Review off (Reflect later: an expiration settles nothing else at the change, D9.5 A312), and saves.
-// The Close Reason is never asked for an Expiration (row 21.16).
+// Presses the form's Save: the form is the Trade's own, with no choice of how to meet the reflection or the Close Review (D9.5 A312). In the
+// money with no reason the workflow refuses and the form asks for one, which is answered with a fixed Expiration Reason and saved again.
+async function saveExpiration(scope: Page | Locator, saveName: string, recorded: Locator): Promise<void> {
+  const reason = scope.getByLabel(/^Why did it expire worthless\?/);
+  await scope.getByRole('button', { name: saveName }).click();
+  await expect(recorded.or(reason)).toBeVisible();
+  if ((await reason.count()) > 0 && !(await recorded.isVisible())) {
+    await reason.fill('Expired out of the money.');
+    await scope.getByRole('button', { name: saveName }).click();
+  }
+  await expect(recorded).toBeVisible();
+}
+
+// On Trade Detail's expiration form (the route): saves, and waits for the receipt.
 export async function recordExpiration(page: Page): Promise<void> {
   await expect(page.getByRole('heading', { name: 'Expiration', level: 1 })).toBeVisible();
-  const reflection = page.getByRole('region', { name: 'Reflection on this expiration' });
-  await answerIn(reflection);
-  const reason = reflection.getByLabel(/^Why did it expire worthless\?/);
-  if ((await reason.count()) > 0) await reason.fill('Expired out of the money.');
+  await answerIn(page.getByRole('region', { name: 'Reflection on this expiration' }));
   await expect(closeReasonGroup(page)).toHaveCount(0);
-  await closeReviewGroup(page).getByLabel('Reflect later').check();
-  await page.getByRole('button', { name: 'Save expiration' }).click();
-  await expect(page.getByRole('heading', { name: 'Expiration recorded', level: 1 })).toBeVisible();
+  await saveExpiration(page, 'Save expiration', page.getByRole('heading', { name: 'Expiration recorded', level: 1 }));
+}
+
+// In a Review card: the block's main button opens the Trade's own form, which saves in the card; the receipt waits.
+export async function recordExpirationInCard(block: Locator, opener: string): Promise<void> {
+  await block.getByRole('button', { name: opener, exact: true }).click();
+  await expect(block.getByRole('heading', { name: 'Expiration', exact: true })).toBeVisible();
+  await saveExpiration(block, opener, block.getByRole('heading', { name: 'Expiration recorded' }));
 }
 
 // A payoff line with a value: the drawer's one chart (named by the captions of the tables it draws) and the table that is that line's text

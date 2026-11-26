@@ -232,7 +232,7 @@ describe('the day card', () => {
     const items = within(screen.getByRole('list', { name: 'Trade lines' })).getAllByRole('listitem');
     expect(items.map((item) => item.textContent)).toEqual(['AXIO Past Stop To do: 2 Marks, Action', 'DALE To do: Settle', 'CORV At Target Done', 'EARL Closed To do: Close Review']);
     expect(within(items[0]!).getByRole('link', { name: 'AXIO' }).getAttribute('href')).toBe('/review?trade=t1&instrument=AXIO');
-    expect(within(items[1]!).getByRole('link', { name: 'DALE' }).getAttribute('href')).toBe('/review?trade=t2&panel=Settlement');
+    expect(within(items[1]!).getByRole('link', { name: 'DALE' }).getAttribute('href')).toBe('/review?trade=t2');
     await user.click(within(items[3]!).getByRole('link', { name: 'EARL' }));
     expect(openCard).toHaveBeenCalledExactlyOnceWith('t9', 'Reflections');
     // A line whose first need is a Mark goes to its cell in the Marks step, not to a card.
