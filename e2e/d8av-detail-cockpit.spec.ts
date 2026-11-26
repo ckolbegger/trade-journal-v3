@@ -150,6 +150,37 @@ test('should suppress derived drawers and figures when facts cannot be replayed'
   await expect(page.getByTestId('complete-detail')).toContainText('Figures unavailable')
 })
 
+test('should show a Review-recorded underlying Mark in the cockpit without fabricating a Call Mark', async ({ page }) => {
+  await onboardWithCall(page)
+  await page.getByRole('button', { name: 'Back to trades' }).click()
+  await page.getByRole('region', { name: 'Planned trades' }).locator('.trade-row').filter({ hasText: 'AAPL' }).click()
+  await page.getByRole('button', { name: 'Add execution' }).click()
+  await page.getByLabel('Execution 1 instrument').fill('AAPL 190Call 2026-12-18 x100')
+  await page.getByLabel('Execution 1 quantity').fill('2')
+  await page.getByLabel('Execution 1 price').fill('3.00')
+  await page.getByLabel('Execution 1 fee').fill('1.00')
+  await page.getByLabel('Execution 1 economic time').fill('2026-11-23T20:00:00Z')
+  await page.getByRole('radio', { name: 'Defer reflection' }).check()
+  await page.getByRole('button', { name: 'Record position change' }).click()
+  await page.getByRole('button', { name: 'Review', exact: true }).click()
+  await page.getByLabel('Review mark price').fill('90')
+  await page.getByRole('button', { name: 'Record mark for review' }).click()
+  await expect(page.getByTestId('review-mark-status')).toContainText('Available')
+
+  await page.getByRole('button', { name: 'Trades', exact: true }).click()
+  await page.getByRole('button', { name: /Complete detail for AAPL/ }).first().click()
+  await expect(page.getByTestId('complete-detail')).toBeVisible()
+  await expect(page.getByRole('complementary', { name: 'State of play' })).toContainText('Underlying Mark: 90 on 2026-11-23')
+
+  await page.getByRole('tab', { name: /Price History/ }).click()
+  const history = page.locator('table.history-grid')
+  await expect(history.locator('tbody tr').first().locator('th')).toHaveText('Underlying Mark')
+  await expect(history.locator('tbody tr').first()).toContainText('90')
+
+  await page.getByRole('tab', { name: /Today/ }).click()
+  await expect(page.getByRole('tabpanel')).toContainText('No Marks yet')
+})
+
 test('should keep the Journal tab inside the viewport at narrow width', async ({ page }) => {
   await onboardWithCall(page)
   await page.setViewportSize({ width: 480, height: 900 })

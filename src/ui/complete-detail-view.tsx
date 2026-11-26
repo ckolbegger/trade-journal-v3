@@ -134,12 +134,15 @@ function SessionRail({
 export function CompleteDetailView({ loaded, replayIndex, onSelectReplay, onOpenReview }: Props) {
   const [drawer, setDrawer] = useState<Drawer>('Today')
   if (loaded.status !== 'Ready') return <p role="status">Trade not found.</p>
-  const { detail, series, advisory } = loaded
+  const { detail, series, underlyingSeries, advisory } = loaded
   const current = series.sessions[Math.min(replayIndex, Math.max(0, series.sessions.length - 1))]
   const { figures } = detail
   const drawers = visibleDrawers(detail.integrity.agreement)
   const activeDrawer = drawers.includes(drawer) ? drawer : drawers[0]
   const hasMark = hasObservedMark(detail.earlierMarks)
+  const underlyingMark = underlyingSeries.sessions.find(
+    s => s.status === 'Available' && s.price !== undefined,
+  )
   const values = [
     detail.stopsAndTargets.stop, detail.stopsAndTargets.target,
     detail.todayAgainst.entry, detail.todayAgainst.previous, detail.todayAgainst.current,
@@ -223,9 +226,12 @@ export function CompleteDetailView({ loaded, replayIndex, onSelectReplay, onOpen
               <li><span className="badge b-stop">Stop</span><span className="what">{detail.stopsAndTargets.stop}</span></li>
               <li><span className="badge b-target">Target</span><span className="what">{detail.stopsAndTargets.target}</span></li>
             </ul>
+            {underlyingMark && (
+              <p className="small">Underlying Mark: {underlyingMark.price} on {underlyingMark.date}</p>
+            )}
             <div className="tracks">
               <Track title="Option price" bounds={bounds} entry={num(detail.todayAgainst.entry)} previous={hasMark ? num(detail.todayAgainst.previous) : undefined} current={hasMark ? num(detail.todayAgainst.current) : undefined} />
-              <Track title="Underlying" bounds={trackBounds([])} note="Underlying Mark is not available in this view." />
+              <Track title="Underlying" bounds={trackBounds([])} note={underlyingMark ? undefined : 'Underlying Mark is not available in this view.'} />
             </div>
           </div>
           <div className="card">
@@ -331,6 +337,12 @@ export function CompleteDetailView({ loaded, replayIndex, onSelectReplay, onOpen
                       </tr>
                     </thead>
                     <tbody>
+                      <tr>
+                        <th scope="row">Underlying Mark</th>
+                        {[...underlyingSeries.sessions].reverse().map(session => (
+                          <td key={session.date}>{session.status === 'Available' ? session.price : '—'}</td>
+                        ))}
+                      </tr>
                       <tr>
                         <th scope="row">Call Mark</th>
                         {[...detail.earlierMarks].reverse().map(session => (

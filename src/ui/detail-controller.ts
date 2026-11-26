@@ -18,7 +18,13 @@ import {
 
 export type LoadedDetail =
   | { status: 'NotFound' }
-  | { status: 'Ready'; detail: CompleteDetail; series: SessionSeries; advisory: AdvisoryResult | null }
+  | {
+    status: 'Ready'
+    detail: CompleteDetail
+    series: SessionSeries
+    underlyingSeries: SessionSeries
+    advisory: AdvisoryResult | null
+  }
 
 export type LoadDetailRequest = {
   tradeId: string
@@ -59,6 +65,19 @@ export async function loadCompleteTradeDetail(
   const series = readSessionSeries({
     tradeId: stored.id, stop: stored.plan.stop, framesResult,
   })
+  // The Review records Marks against the underlying. An option trade also has
+  // its own Call Mark series above; exposing both keeps the cockpit honest
+  // about which instrument each figure comes from.
+  const underlyingFramesResult = resolveFrames({
+    instrument: stored.plan.underlying,
+    fromDate: from.toISOString().slice(0, 10),
+    toDate: expectedDate,
+    now: request.now,
+    records,
+  })
+  const underlyingSeries = readSessionSeries({
+    tradeId: stored.id, stop: stored.plan.stop, framesResult: underlyingFramesResult,
+  })
   // Canonical normalisation lives in the Trade read module; this adapter only
   // lifts the frozen Planned Leg from the Plan to the payoff seam's input.
   const tradeForDetail = stored.plan.plannedLeg && !stored.plannedLeg
@@ -74,7 +93,7 @@ export async function loadCompleteTradeDetail(
   })
 
   return {
-    status: 'Ready', detail, series,
+    status: 'Ready', detail, series, underlyingSeries,
     advisory: buildAdvisory({
       trade: stored, series, records, installed: request.advisoryInstalled,
     }),
