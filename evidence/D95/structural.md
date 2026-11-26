@@ -1517,3 +1517,7 @@ ocr of T95.60 (session 16a47510): complete, 19 files reviewed, 4 findings, all V
 Commit `80a8e8df`: each `pressesToResolve` helper asserts the save happened (Trade Detail: `Journal.save` once; DebtForm: the adapter once). Shown first with the decline's confirm made a no-op: both tests passed before the assertion, failed after; restored. Both files 66 passed; typecheck, tsc6, lint, lint:deps exit 0.
 
 ocr of T95.60-B1 (session 5a04e17c): complete, 2 files, no findings. `evidence/D95/ocr/T95.60-B1-80a8e8df.json`.
+
+Run `t95.60-declining` (browser-task; at `e3c3ec82`): unit 268 files, 3258 passed; integration 158 files, 364 passed; browser 58 passed; 14 of 14 checks exit 0; run-complete. Passed. T95.60 parked on Q13 (its ocr findings 1 and 2 wait on the answer); T95.61 goes ahead.
+
+## T95.61
