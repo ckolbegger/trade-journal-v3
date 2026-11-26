@@ -34,6 +34,13 @@ describe('error meaning', () => {
       .toBe('Create an institution and account first.')
   })
 
+  it('should explain the required expiration format instead of echoing the raw token', () => {
+    expect(messageFor({ issues: ['Expiration'] }))
+      .toBe('Enter the expiration as YYYY-MM-DD.')
+    expect(messageFor({ kind: 'Validation', issues: ['Strike', 'Expiration'] }))
+      .toBe('Strike. Enter the expiration as YYYY-MM-DD.')
+  })
+
   it('should read a bare issues-only failure as Validation like pure domain commands return', () => {
     expect(messageFor({ issues: ['Invalidation', 'Strike'] })).toBe('Invalidation is required. Strike.')
     expect(surfaceFor({ issues: ['Thesis'] })).toBe('field')

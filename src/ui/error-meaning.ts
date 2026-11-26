@@ -11,6 +11,7 @@ const COPY: Record<string, string> = {
   DecisionConfidence: 'Decision confidence must be between 1 and 5.',
   Note: 'The note is not valid.',
   Invalidation: 'Invalidation is required.',
+  Expiration: 'Enter the expiration as YYYY-MM-DD.',
   Thesis: 'Thesis is required.',
   InvalidExecution: 'Check the quantity, price and fee for every execution.',
   InstrumentMismatch: 'The instrument must match the planned underlying unless explicitly unplanned.',

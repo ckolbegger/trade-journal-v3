@@ -34,6 +34,12 @@ describe('option Strategy shapes', () => {
     expect(parseOptionContract({ ...draft, kind: 'Future' as 'Call' })).toMatchObject({ ok: false, error: { issues: ['OptionKind'] } })
   })
 
+  it('should reject a US-formatted expiration instead of silently coercing it', () => {
+    expect(parseOptionContract({ ...draft, expiration: '12/16/2026' }))
+      .toMatchObject({ ok: false, error: { issues: ['Expiration'] } })
+    expect(parseOptionContract({ ...draft, expiration: '2026-12-16' }).ok).toBe(true)
+  })
+
   it('should reject an unseeded or multi-leg Strategy shape', () => {
     expect(resolveStrategyShape('seed-iron-condor')).toMatchObject({ ok: false, error: { issue: 'UnsupportedShape' } })
     expect(resolveStrategyShape('custom')).toMatchObject({ ok: false, error: { issue: 'UnknownStrategy' } })

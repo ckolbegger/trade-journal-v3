@@ -748,7 +748,10 @@ export function App() {
                         <label htmlFor="strike">Strike</label>
                         <input id="strike" value={draft.strike ?? ''} onChange={e => setDraft({ ...draft, strike: e.target.value })} />
                         <label htmlFor="expiration">Expiration</label>
-                        <input id="expiration" value={draft.expiration ?? ''} onChange={e => setDraft({ ...draft, expiration: e.target.value })} />
+                        <input
+                          id="expiration" type="date" value={draft.expiration ?? ''}
+                          onChange={e => setDraft({ ...draft, expiration: e.target.value })}
+                        />
                         <label htmlFor="multiplier">Multiplier</label>
                         <input id="multiplier" value={draft.multiplier ?? '100'} onChange={e => setDraft({ ...draft, multiplier: e.target.value })} />
                       </>

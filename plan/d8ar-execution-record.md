@@ -2,6 +2,13 @@
 
 Scope: all six architecture deepening opportunities from `plan/d8ar-task-breakdown.md`, one at a time, test-first, each verified by a fresh browser critic. Frozen `specs/` and plan files read-only; DEV-001 loopback evidence only.
 
+## Post-release fix — Expiration date picker (user-reported)
+A user entered `12/16/2026` in the plain-text Expiration field and got `Expiration.` because `parseOptionContract` strictly requires ISO `YYYY-MM-DD` (`option-contract.ts:33`). The field gave no format hint and the error echoed the raw token.
+
+RED tests first: `tests/unit/option-contract.test.ts` (US-formatted date rejected, ISO accepted), `tests/unit/error-meaning.test.ts` (friendly Expiration prose), and `e2e/expiration-date-picker.spec.ts` (`type=date`, valid confirmation, corrupted-draft error). GREEN: `App.tsx` Expiration input is now `type="date"`; `error-meaning.ts` maps `Expiration` to `Enter the expiration as YYYY-MM-DD.` No parser coercion was added — an exact contract keeps its explicit ISO expiration.
+
+Suites: 343 Vitest, 64 integration, 59 browser, 1 offline, lint, both typechecks, build. Offline Release Inventory `sha256-b496ffce0631e841f4b5e71177a763355818891ab3fa2016d5369b20bffb7edd`. Critic: `plan/expiration-date-picker-critic-brief.md` — **4/4 PASS** (Chrome 158.0.8127.37 / macOS 26.6.2, loopback). Verified `type=date`, contract `AAPL 190Call 2026-12-16 x100` with the ISO value persisted and no banner, the corrupted-draft alert `Enter the expiration as YYYY-MM-DD.` with no Trade written, and regression confirmation of a second Long Call plus a Long Stock plan. This fix is committed separately from D8aR, per the one-commit-per-task rule.
+
 ## Release
 All six improvements complete: R1 read assembly, R2 payoff seam, R3 advisory frames, R4 Position Change commit, R5 obligation read, R6 error meaning. Fresh critic verdicts: R1 5/5, R2 4/4, R3 4/4, R4 4/4 (readiness not-covered), R5 4/4, R6 5/5 — **0 FAIL across all six**. Final cumulative suites after the last source edit: 341 Vitest, 64 integration, 57 browser, 1 offline, lint, typecheck, typecheck:6, build. Offline Release Inventory `sha256-a6f967664f504b41696a586ff879e7a68c698aa63013aab606d9eb3e9f75cac7`. Released as `refactor(d8ar): ...` with tag `hy4-flash-d8ar-complete`, pushed and verified with `git ls-remote`. No D9 research, planning or code started.
 
