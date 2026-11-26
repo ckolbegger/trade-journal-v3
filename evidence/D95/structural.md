@@ -1239,3 +1239,8 @@ Commit `ebd31554`: the finished day reads "Complete, settlement to record" in am
 ocr of T95.53 (session 46f2ff1d): 7 files, 0 findings. `evidence/D95/ocr/T95.53-ebd31554.json`. Next: run `t95.53-settlement-day` (browser-task, Standard).
 
 Run `t95.53-settlement-day` (browser-task): unit 3158, integration 364, browser 5 and 49, checks 14 of 14. Passed. T95.53 done.
+
+### T95.54
+
+Commit `9f69da24`: new `keyMoments(sessions: readonly ReplayedSession[]): readonly KeyMoment[]` (`KeyMoment = { date; kinds }`, `KeyMomentKind = 'Entry' | 'Low' | 'Stop' | 'Target' | 'High' | 'Sale' | 'Now' | 'End'`), exported from trade-analysis' index; not yet carried on `replayTrade` or `getTrade` (T95.55). Cases 1-5 red then green; case 7 first passed by insertion order, strengthened (a Low after a later sale), then red and green with a sort by date; case 6 first-run pass, flagged, mutation (key by date and kind) failed, restored. trade-analysis 303 passed; typecheck, tsc6, lint (2 pre-existing warnings), lint:deps exit 0.
+- Assumptions: Entry is the series' first session; Low and High by `tradePnl` dollars over Value sessions, a tie keeps the earliest (all equal: day 1 is Entry, Low and High); Stop and Target from the last session's `crossings.stop.first` and `crossings.target.first`; a Sale is a session whose markers hold an Execution that Reduced or Closed (a buy to close a short counts; an Expiration doesn't); Now when the last session holds a Position, else End; kinds in the fixed order Entry, Low, Stop, Target, High, Sale, Now, End.
