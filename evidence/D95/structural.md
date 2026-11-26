@@ -1223,3 +1223,7 @@ Commit `6a7034e6` (18 files): `ReviewSettlement.tsx` becomes `ExpirationBlock`: 
 ocr of T95.52 (session 5946152c): 17 files, 2 findings. `evidence/D95/ocr/T95.52-6a7034e6.json`.
 - **T95.52-B1** (Valid, `src/ui/screens/ReviewSettlement.tsx:105`): while the "record later" save is in flight only its own button is disabled; the sale, "Record expiration" and "It expired worthless" buttons stay enabled, and a form opened in that window loses its draft without warning when the save finishes and the card moves on (`ReviewView.saved` excludes `action:<tradeId>` from its dirty-form check). Cases: it should disable the block's other choices while "record later" is saving; it should enable them again when the save is refused.
 - Style only (tech-debt.md): `ReviewCard.tsx:271` the open-panel `useState` initializer nests a ternary inside `??`.
+
+### T95.52-B1
+
+Commit `73ea3b70`: `disabled={saving}` on the sale button, "Record expiration" and both "It expired worthless" buttons. Case 1 red ("Sold before the close" enabled), green. Case 2 first-run pass, flagged; mutation (no `setSaving(false)` in `recordLater`'s finally) failed `expected true to be false`, restored; a green row was logged before the fix (ordering slip, explained in a note row). ReviewSettlement and ReviewCard tests 198 passed; typecheck, tsc6, lint (2 pre-existing warnings), lint:deps exit 0; e2e/d7/review-expiration 1 passed.
