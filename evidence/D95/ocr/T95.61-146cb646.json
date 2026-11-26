@@ -1,0 +1,199 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 8 selected item(s).",
+  "summary": {
+    "files_reviewed": 8,
+    "comments": 2,
+    "total_tokens": 386830,
+    "input_tokens": 383695,
+    "output_tokens": 3135,
+    "cache_read_tokens": 58240,
+    "elapsed": "57s"
+  },
+  "tool_calls": {
+    "total": 41,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 10,
+      "file_find": 2,
+      "file_read": 23,
+      "file_read_diff": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/ReviewView.tsx",
+      "content": "The completion focus request has no target when the receipt refresh returns `Empty`. Recording a sale/expiration can remove the last walked trade; `reopenAndApply` then sets `empty`, and `focusNext` increments `dayFocus`, but this branch unmounts `DayCard` and renders an unfocusable `EmptyReview` that does not consume the request. Focus falls back to the document body instead of a completion summary. Give the empty summary an equivalent focus target (or retain a focusable day summary), and cover dismissing the final trade's receipt with an `Empty` refresh result.",
+      "existing_code": "      {empty ? \u003cEmptyReview date={review.reviewDate} /\u003e : \u003cDayCard focus={dayFocus} review={review} name={name} openCard={openCard} openMarks={openMarks} openSkipped={openSkipped} holding={new Set([...holding, ...soldOut])} onStillHolding={stillHolding} /\u003e}",
+      "start_line": 582,
+      "end_line": 582,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/ReviewView.tsx",
+      "content": "Guard this focus request against a changed card selection while the receipt refresh is pending. After pressing Back to the Review, the trader can open another card before `onRefresh()` resolves; the receipt callback still calls `focusNext`, which moves focus away from that newly selected card (or an input in it). `refreshTrade` already guards its shown-card updates with `selection.current`, but this callback bypasses that protection. Capture the receipt's opening/selection and only advance focus if it is still current, as the Action-save path does.",
+      "existing_code": "  const focusNext = () =\u003e {\n    const held = latest.current.review;",
+      "start_line": 362,
+      "end_line": 363,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Action form updates",
+      "files": [
+        "src/ui/screens/ActionForm.tsx"
+      ]
+    },
+    {
+      "label": "Day and review card rendering and tests",
+      "files": [
+        "src/ui/screens/DayCard.tsx",
+        "src/ui/screens/ReviewCard.tsx",
+        "src/ui/screens/ReviewCards.test.tsx"
+      ]
+    },
+    {
+      "label": "Review view, owed balances, and settlement flows",
+      "files": [
+        "src/ui/screens/ReviewOwed.test.tsx",
+        "src/ui/screens/ReviewSettlement.test.tsx",
+        "src/ui/screens/ReviewSettlement.tsx",
+        "src/ui/screens/ReviewView.tsx"
+      ]
+    }
+  ],
+  "session_id": "ec9450d6-6dfe-4216-8a31-80ca707af6e1",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "ec9450d6-6dfe-4216-8a31-80ca707af6e1",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "146cb646",
+      "resolved_base": "71743f02b5927feab78d280cc3deba5eb8c8a873",
+      "resolved_head": "146cb6463d0e83ca3acf7c6dd632a86860516cf7",
+      "exact_range": "71743f02b5927feab78d280cc3deba5eb8c8a873..146cb6463d0e83ca3acf7c6dd632a86860516cf7",
+      "source_artifact_sha256": "731adca5bda72f8bd36dd696392e9b0b8e14143b5717bb98a44b97ceafb7202b"
+    },
+    "execution": {
+      "ocr_version": "v1.14.4",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "06129f7bc0959665459bced5dd2b2fe42e6eefa20b943b5bcb22e15d914c46d2",
+          "path": "src/ui/screens/ReviewCards.test.tsx",
+          "fingerprint": "674a0a664cfffa2b76be5192359b2a6bf497701324142485599e5017c5e7c76c"
+        },
+        {
+          "item_id": "28d9dac30140868b5ff82f3128fe52a527534ffce26da1ec10da0741844bd9af",
+          "path": "src/ui/screens/ActionForm.tsx",
+          "fingerprint": "bc20ee0e1b3a3ab44d99cf763cebae4741ae518fc1b98056ec64a62f24d8f1e3"
+        },
+        {
+          "item_id": "360f0c0c6a08d59bdc50988ff729f8031fe5275eeb735bbc6c714ef5915fa7f8",
+          "path": "src/ui/screens/DayCard.tsx",
+          "fingerprint": "989554d8c635e7d43dfe5c4f7dc3097e507be2bb39ebafc4e182e461a4923113"
+        },
+        {
+          "item_id": "6376131ed368e5ac2277c2f7a6073ab00b06d8dcc7fa59c84c1807d7587ffa40",
+          "path": "src/ui/screens/ReviewSettlement.tsx",
+          "fingerprint": "887b995cecc5d8c3f1d21dfce671efe8e06a86f0f13326e24cc5a0f0b08f0a49"
+        },
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "a442863e89750c588857f6b3d8fc5d7ee5687b85c9bccb57adbaf5a18f0b02dd"
+        },
+        {
+          "item_id": "ca830210571b3c1c130132730f3b5ff5e6224fd42856b0400a111e121dfb1fc8",
+          "path": "src/ui/screens/ReviewSettlement.test.tsx",
+          "fingerprint": "d8f4b3a095403ce81aaca2ee55734ce8def4f34b68966940355ff3f3afbd1425"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "d6b8f1df1a54127b5566bbe0e7d795536fabebec827163f24e289a4ef955abb4"
+        },
+        {
+          "item_id": "f60d40a2fcf211e72668946f9d6c2357941e916774d36dd5cb14b2a35255d3a9",
+          "path": "src/ui/screens/ReviewOwed.test.tsx",
+          "fingerprint": "1b1e19acf56aa6526ebbeba9391ee215393406fec3fea56365074dca9275527b"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "06129f7bc0959665459bced5dd2b2fe42e6eefa20b943b5bcb22e15d914c46d2",
+          "path": "src/ui/screens/ReviewCards.test.tsx",
+          "fingerprint": "674a0a664cfffa2b76be5192359b2a6bf497701324142485599e5017c5e7c76c"
+        },
+        {
+          "item_id": "28d9dac30140868b5ff82f3128fe52a527534ffce26da1ec10da0741844bd9af",
+          "path": "src/ui/screens/ActionForm.tsx",
+          "fingerprint": "bc20ee0e1b3a3ab44d99cf763cebae4741ae518fc1b98056ec64a62f24d8f1e3"
+        },
+        {
+          "item_id": "360f0c0c6a08d59bdc50988ff729f8031fe5275eeb735bbc6c714ef5915fa7f8",
+          "path": "src/ui/screens/DayCard.tsx",
+          "fingerprint": "989554d8c635e7d43dfe5c4f7dc3097e507be2bb39ebafc4e182e461a4923113"
+        },
+        {
+          "item_id": "6376131ed368e5ac2277c2f7a6073ab00b06d8dcc7fa59c84c1807d7587ffa40",
+          "path": "src/ui/screens/ReviewSettlement.tsx",
+          "fingerprint": "887b995cecc5d8c3f1d21dfce671efe8e06a86f0f13326e24cc5a0f0b08f0a49"
+        },
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "a442863e89750c588857f6b3d8fc5d7ee5687b85c9bccb57adbaf5a18f0b02dd"
+        },
+        {
+          "item_id": "ca830210571b3c1c130132730f3b5ff5e6224fd42856b0400a111e121dfb1fc8",
+          "path": "src/ui/screens/ReviewSettlement.test.tsx",
+          "fingerprint": "d8f4b3a095403ce81aaca2ee55734ce8def4f34b68966940355ff3f3afbd1425"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "d6b8f1df1a54127b5566bbe0e7d795536fabebec827163f24e289a4ef955abb4"
+        },
+        {
+          "item_id": "f60d40a2fcf211e72668946f9d6c2357941e916774d36dd5cb14b2a35255d3a9",
+          "path": "src/ui/screens/ReviewOwed.test.tsx",
+          "fingerprint": "1b1e19acf56aa6526ebbeba9391ee215393406fec3fea56365074dca9275527b"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "80e4353b832053803617df04e0b3d7d3c166fc2aeb382036f7be45feba29a6fa",
+          "path": "evidence/D95/tdd-log/T95.61.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 56580
+  }
+}
