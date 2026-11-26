@@ -1,0 +1,340 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 20 selected item(s).",
+  "summary": {
+    "files_reviewed": 20,
+    "comments": 3,
+    "total_tokens": 705314,
+    "input_tokens": 699717,
+    "output_tokens": 5597,
+    "cache_read_tokens": 69376,
+    "elapsed": "1m40s"
+  },
+  "tool_calls": {
+    "total": 71,
+    "by_tool": {
+      "code_comment": 3,
+      "code_search": 26,
+      "file_find": 1,
+      "file_read": 38,
+      "file_read_diff": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/replay/frame.tsx",
+      "content": "Action cells are positioned by their array index, but the charts position each session using `s.plot.slot` (calculated from weekdays since the first date). If sessions have a gap—for example Monday followed by Wednesday—the Wednesday Action appears in Tuesday's column rather than under Wednesday's chart point. Preserve each session's plot slot in the cells and use that slot for grid placement; add an alignment case with non-consecutive session dates.",
+      "existing_code": "      {actionKey \u0026\u0026 \u003cActionRow actionKey={actionKey} slots={plotBase.axis.slots} cells={sessions.slice(0, current + 1).map((s) =\u003e ({ dateLabel: s.dateLabel, ...(s.actionMark \u0026\u0026 { mark: s.actionMark }) }))} /\u003e}",
+      "start_line": 118,
+      "end_line": 118,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/cockpit/replay/action-row.tsx",
+      "content": "Position cells using each session's plot slot rather than its array index. `plotSessionOf` counts weekdays and deliberately leaves holiday slots blank, whereas `i + 2` packs all sessions consecutively. After a weekday market holiday, every subsequent Action mark will therefore appear under an earlier chart date. Pass `session.plot.slot` into each cell and use `slot + 2` for its grid column; add a holiday-gap alignment test.",
+      "existing_code": "          \u003cli key={dateLabel} style={{ gridColumn: i + 2 }} {...(!mark \u0026\u0026 { 'aria-hidden': true })}\u003e",
+      "start_line": 11,
+      "end_line": 11,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/cockpit/replay/day-words.props.ts",
+      "content": "`heldQuantity` is the signed sum across instruments, so an open spread with one long and one short contract has a zero value even though both positions remain open. Such sessions fall through to “Nothing recorded.” (or fills only), losing both the missed-Review mark and the newest-session “Action: not chosen yet.” message. Check whether any individual position has a nonzero quantity instead, and add coverage for offsetting legs.",
+      "existing_code": "  if (!session.heldQuantity.equals(ZERO) \u0026\u0026 (view.pending !== null || !newest)) {",
+      "start_line": 34,
+      "end_line": 34,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Replay day content, data contracts, and behavior tests",
+      "files": [
+        "e2e/d95/replay-day.spec.ts",
+        "src/ui/cockpit/replay/action-row.tsx",
+        "src/ui/cockpit/replay/day-card.tsx",
+        "src/ui/cockpit/replay/day-words.props.ts",
+        "src/ui/cockpit/replay/key-moments.props.ts",
+        "src/ui/cockpit/replay/key-moments.tsx",
+        "src/ui/cockpit/replay/replay.props.ts",
+        "src/ui/cockpit/replay/replay.types.ts",
+        "src/ui/cockpit/replay/what-you-did.test.tsx"
+      ]
+    },
+    {
+      "label": "Replay frame layout, styling, and accessibility",
+      "files": [
+        "e2e/d9/replay.spec.ts",
+        "e2e/d9ar/responsive-a11y.spec.ts",
+        "src/ui/cockpit/replay/frame.tsx",
+        "src/ui/cockpit/replay/readout.tsx",
+        "src/ui/cockpit/replay/touch-targets.test.ts",
+        "src/ui/cockpit/styles/replay-frame.css"
+      ]
+    },
+    {
+      "label": "Review card and trade detail regression coverage",
+      "files": [
+        "e2e/d9/review.spec.ts",
+        "e2e/d9ar/review.spec.ts",
+        "src/ui/screens/ReviewCard.test.tsx",
+        "src/ui/screens/ReviewCard.tsx",
+        "src/ui/screens/TradeDetail.test.tsx"
+      ]
+    }
+  ],
+  "session_id": "98fd0298-8117-4e1e-b788-4dd15530e091",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "98fd0298-8117-4e1e-b788-4dd15530e091",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "26626d39",
+      "resolved_base": "2d34deddfbdb31b8f5f8030745946b16e8f3fdb0",
+      "resolved_head": "26626d39815761023fb0fdc23abe1539b8b582a7",
+      "exact_range": "2d34deddfbdb31b8f5f8030745946b16e8f3fdb0..26626d39815761023fb0fdc23abe1539b8b582a7",
+      "source_artifact_sha256": "903ba01d8cce3566668b0a176128bbec5d034fec1d92def2b03637b00b0ed241"
+    },
+    "execution": {
+      "ocr_version": "v1.14.4",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0525a5586d888ddffdf87da21e5460e362c03d97c530a9e23686c93a5a0fd774",
+          "path": "src/ui/cockpit/replay/key-moments.props.ts",
+          "fingerprint": "2140874d0e5f180e7a2c13a1edeccfe1a59b85bd87070a36b30a4eb032f4a4cb"
+        },
+        {
+          "item_id": "1e9818d41ff29d7730ea06bdd1d154959f0a952a460b3d5f13d2bde01ff86492",
+          "path": "src/ui/cockpit/replay/frame.tsx",
+          "fingerprint": "6262d31434f07e5508d156e942cc20fd1290ed16b4bf9c68262a389f49749337"
+        },
+        {
+          "item_id": "347917e3fc99ea10df3899c14b251305db47c31ef851de4417dcd15cdba0c770",
+          "path": "e2e/d9/review.spec.ts",
+          "fingerprint": "ed53ef02305296745c463e4c12f22b64f05861265a9ec330d14aba0a94980b8f"
+        },
+        {
+          "item_id": "41a5a0eec891ad3fedc983f44937bc44813435b19e80e27871b68a0bd0acc242",
+          "path": "src/ui/cockpit/replay/key-moments.tsx",
+          "fingerprint": "43ee1d9c920bc5befbe73ddf32ec1273923c533e416a3796cbef632b45915a43"
+        },
+        {
+          "item_id": "4d061a48434c6088fc28388241ae61f9c345d2f278e56b2b7f845f542f3b4e61",
+          "path": "src/ui/cockpit/replay/replay.types.ts",
+          "fingerprint": "21378da53204a39e3de4820da71fac2fdc078d57d8a0be8d87e0bf2460ed534e"
+        },
+        {
+          "item_id": "6d86b77abf8fdc8225b334a55d2bb3f62131271add4d139cb41a499b1d9c9a07",
+          "path": "src/ui/cockpit/replay/readout.tsx",
+          "fingerprint": "40a3a8edf7f4ed081e5d4f1cbc2a59c15319d005df8318bf584d2b2237dcb7ee"
+        },
+        {
+          "item_id": "6df88abee787701d1472bcd78d887222432bb5aa455ed0c25cdb7c3725898576",
+          "path": "src/ui/cockpit/replay/action-row.tsx",
+          "fingerprint": "74cbae0d0d7af41844ceb6c11e448642d422d3ae81f2f32dac68652610aa0b08"
+        },
+        {
+          "item_id": "8303bd665d3dd32df6f3f063e4691f5ac45a3c8b7df30b0004df8234dc2fed2a",
+          "path": "src/ui/cockpit/styles/replay-frame.css",
+          "fingerprint": "965a3bc1e2a05968cba13d4e30ef7577ed4e38851220338e3e3c4b8b12685f7b"
+        },
+        {
+          "item_id": "87638b8e40a8471b5a00443528a3c98bf4752f964c11c4b564b6258d593b8716",
+          "path": "src/ui/screens/TradeDetail.test.tsx",
+          "fingerprint": "145c76edd873998955f7b7886c5a3111066f3a376a8ec6111a6f6e75d61882e2"
+        },
+        {
+          "item_id": "a50e78b43d9da674ed99eaeeda80fea2f24b5f39189d6f4650878a33f631ea72",
+          "path": "e2e/d9/replay.spec.ts",
+          "fingerprint": "eff1a44be405546e256126e4520e42cc8e35affb790d7141e5b780e6e1922a2e"
+        },
+        {
+          "item_id": "a83706f3444e16c14ac613c874f7293d7adce6354226bde7d7b9b892fce05701",
+          "path": "src/ui/screens/ReviewCard.test.tsx",
+          "fingerprint": "335f77e30740240e551a0f309561cf29ad53e5f6801a958f7b5a6787a4acc630"
+        },
+        {
+          "item_id": "a8a46d080f9ee5495268c4b68293165d61eba30ccea3f13e9657eaf8477e0460",
+          "path": "src/ui/cockpit/replay/touch-targets.test.ts",
+          "fingerprint": "cae56bc12afa085f97f7989875a66b594cc2bcd980a76c2b988cac9e3ed4156b"
+        },
+        {
+          "item_id": "d94a34108544938c402399ae39d8e7caaee3de397dd4049a5e086d922c0dfa0e",
+          "path": "src/ui/cockpit/replay/what-you-did.test.tsx",
+          "fingerprint": "3f952baa44787f37bd47d412ff6d687f2ddf8edceff397c9f4100337dd37a11c"
+        },
+        {
+          "item_id": "e3b0a1e2ab1e05e87232b350fb704211bf11916cc3274b4ce04df51ddd38b2ea",
+          "path": "src/ui/cockpit/replay/day-card.tsx",
+          "fingerprint": "e6be4185c6e629224f1d098fc7a9325139213b2a52f6ca5d0a1f0f008294276b"
+        },
+        {
+          "item_id": "ea03ecbf36e42899eb18f897fb8983e3c8efff8a23ee606ee3aa718ee2111f66",
+          "path": "src/ui/cockpit/replay/replay.props.ts",
+          "fingerprint": "a66e176bbbaddb03107aaa1e128693e88ad25bbca68eedebbee2f7cd3a5750b3"
+        },
+        {
+          "item_id": "ebef621173879d1b2a28370a853363ab8f719c3f1698ee8b0a0b99bd0f29695a",
+          "path": "e2e/d95/replay-day.spec.ts",
+          "fingerprint": "077aa7d542c6c01aab354e0e44c802da9a400e6f54a8b638dcbab8ba4654b87c"
+        },
+        {
+          "item_id": "f1a58c2ac82e96acd4231fa5075ffe7bd94eeb6c5d0d4069288ed6d7e6faa433",
+          "path": "e2e/d9ar/responsive-a11y.spec.ts",
+          "fingerprint": "016598596c526ec5c9f47db490c1227c78407053935e73aeb91a06222fe4c23e"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "e97dc999b063f947313da028020259be8c0a09e96583b36c8255a635e2e6280d"
+        },
+        {
+          "item_id": "f7406ef2881011b62532c827cd87807e71f1ffb772c241794158f993a5a0fd38",
+          "path": "e2e/d9ar/review.spec.ts",
+          "fingerprint": "97e54dae2fcbe66f1158cc06a70118963a64fbfd4d76a103706d1904740f4ffe"
+        },
+        {
+          "item_id": "fbd4fc996ede5628ca3d8a0c43aa150b1f2d120bf39696e95afbcc239c9b1f8e",
+          "path": "src/ui/cockpit/replay/day-words.props.ts",
+          "fingerprint": "a3ed8448340d5c97847f7288a1f2f5aad18b7249bee1ebb028287bf1d1ca8828"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0525a5586d888ddffdf87da21e5460e362c03d97c530a9e23686c93a5a0fd774",
+          "path": "src/ui/cockpit/replay/key-moments.props.ts",
+          "fingerprint": "2140874d0e5f180e7a2c13a1edeccfe1a59b85bd87070a36b30a4eb032f4a4cb"
+        },
+        {
+          "item_id": "1e9818d41ff29d7730ea06bdd1d154959f0a952a460b3d5f13d2bde01ff86492",
+          "path": "src/ui/cockpit/replay/frame.tsx",
+          "fingerprint": "6262d31434f07e5508d156e942cc20fd1290ed16b4bf9c68262a389f49749337"
+        },
+        {
+          "item_id": "347917e3fc99ea10df3899c14b251305db47c31ef851de4417dcd15cdba0c770",
+          "path": "e2e/d9/review.spec.ts",
+          "fingerprint": "ed53ef02305296745c463e4c12f22b64f05861265a9ec330d14aba0a94980b8f"
+        },
+        {
+          "item_id": "41a5a0eec891ad3fedc983f44937bc44813435b19e80e27871b68a0bd0acc242",
+          "path": "src/ui/cockpit/replay/key-moments.tsx",
+          "fingerprint": "43ee1d9c920bc5befbe73ddf32ec1273923c533e416a3796cbef632b45915a43"
+        },
+        {
+          "item_id": "4d061a48434c6088fc28388241ae61f9c345d2f278e56b2b7f845f542f3b4e61",
+          "path": "src/ui/cockpit/replay/replay.types.ts",
+          "fingerprint": "21378da53204a39e3de4820da71fac2fdc078d57d8a0be8d87e0bf2460ed534e"
+        },
+        {
+          "item_id": "6d86b77abf8fdc8225b334a55d2bb3f62131271add4d139cb41a499b1d9c9a07",
+          "path": "src/ui/cockpit/replay/readout.tsx",
+          "fingerprint": "40a3a8edf7f4ed081e5d4f1cbc2a59c15319d005df8318bf584d2b2237dcb7ee"
+        },
+        {
+          "item_id": "6df88abee787701d1472bcd78d887222432bb5aa455ed0c25cdb7c3725898576",
+          "path": "src/ui/cockpit/replay/action-row.tsx",
+          "fingerprint": "74cbae0d0d7af41844ceb6c11e448642d422d3ae81f2f32dac68652610aa0b08"
+        },
+        {
+          "item_id": "8303bd665d3dd32df6f3f063e4691f5ac45a3c8b7df30b0004df8234dc2fed2a",
+          "path": "src/ui/cockpit/styles/replay-frame.css",
+          "fingerprint": "965a3bc1e2a05968cba13d4e30ef7577ed4e38851220338e3e3c4b8b12685f7b"
+        },
+        {
+          "item_id": "87638b8e40a8471b5a00443528a3c98bf4752f964c11c4b564b6258d593b8716",
+          "path": "src/ui/screens/TradeDetail.test.tsx",
+          "fingerprint": "145c76edd873998955f7b7886c5a3111066f3a376a8ec6111a6f6e75d61882e2"
+        },
+        {
+          "item_id": "a50e78b43d9da674ed99eaeeda80fea2f24b5f39189d6f4650878a33f631ea72",
+          "path": "e2e/d9/replay.spec.ts",
+          "fingerprint": "eff1a44be405546e256126e4520e42cc8e35affb790d7141e5b780e6e1922a2e"
+        },
+        {
+          "item_id": "a83706f3444e16c14ac613c874f7293d7adce6354226bde7d7b9b892fce05701",
+          "path": "src/ui/screens/ReviewCard.test.tsx",
+          "fingerprint": "335f77e30740240e551a0f309561cf29ad53e5f6801a958f7b5a6787a4acc630"
+        },
+        {
+          "item_id": "a8a46d080f9ee5495268c4b68293165d61eba30ccea3f13e9657eaf8477e0460",
+          "path": "src/ui/cockpit/replay/touch-targets.test.ts",
+          "fingerprint": "cae56bc12afa085f97f7989875a66b594cc2bcd980a76c2b988cac9e3ed4156b"
+        },
+        {
+          "item_id": "d94a34108544938c402399ae39d8e7caaee3de397dd4049a5e086d922c0dfa0e",
+          "path": "src/ui/cockpit/replay/what-you-did.test.tsx",
+          "fingerprint": "3f952baa44787f37bd47d412ff6d687f2ddf8edceff397c9f4100337dd37a11c"
+        },
+        {
+          "item_id": "e3b0a1e2ab1e05e87232b350fb704211bf11916cc3274b4ce04df51ddd38b2ea",
+          "path": "src/ui/cockpit/replay/day-card.tsx",
+          "fingerprint": "e6be4185c6e629224f1d098fc7a9325139213b2a52f6ca5d0a1f0f008294276b"
+        },
+        {
+          "item_id": "ea03ecbf36e42899eb18f897fb8983e3c8efff8a23ee606ee3aa718ee2111f66",
+          "path": "src/ui/cockpit/replay/replay.props.ts",
+          "fingerprint": "a66e176bbbaddb03107aaa1e128693e88ad25bbca68eedebbee2f7cd3a5750b3"
+        },
+        {
+          "item_id": "ebef621173879d1b2a28370a853363ab8f719c3f1698ee8b0a0b99bd0f29695a",
+          "path": "e2e/d95/replay-day.spec.ts",
+          "fingerprint": "077aa7d542c6c01aab354e0e44c802da9a400e6f54a8b638dcbab8ba4654b87c"
+        },
+        {
+          "item_id": "f1a58c2ac82e96acd4231fa5075ffe7bd94eeb6c5d0d4069288ed6d7e6faa433",
+          "path": "e2e/d9ar/responsive-a11y.spec.ts",
+          "fingerprint": "016598596c526ec5c9f47db490c1227c78407053935e73aeb91a06222fe4c23e"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "e97dc999b063f947313da028020259be8c0a09e96583b36c8255a635e2e6280d"
+        },
+        {
+          "item_id": "f7406ef2881011b62532c827cd87807e71f1ffb772c241794158f993a5a0fd38",
+          "path": "e2e/d9ar/review.spec.ts",
+          "fingerprint": "97e54dae2fcbe66f1158cc06a70118963a64fbfd4d76a103706d1904740f4ffe"
+        },
+        {
+          "item_id": "fbd4fc996ede5628ca3d8a0c43aa150b1f2d120bf39696e95afbcc239c9b1f8e",
+          "path": "src/ui/cockpit/replay/day-words.props.ts",
+          "fingerprint": "a3ed8448340d5c97847f7288a1f2f5aad18b7249bee1ebb028287bf1d1ca8828"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "898eddd0a0af457b1cfc766710b076340d189ff488e31d8fea2ae61a21710c09",
+          "path": "evidence/D95/tdd-log/T95.57.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 100168
+  }
+}
