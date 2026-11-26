@@ -3,6 +3,9 @@ import { closedTradeReviewFixture, TUESDAY_1700 } from '../../../tests/support/c
 import { MONDAY_1700, REVIEW_DATE, reviewStack } from '../../../tests/support/review-fixture.ts';
 import { countRequests } from '../../../tests/support/request-counter.ts';
 import { Rational } from '../../domain/values/index.ts';
+import type { MarketDataReadSession } from '../../modules/market-data/index.ts';
+import type { TradeReplayView } from '../trade-views/index.ts';
+import { replayStripOf } from './replay-strip.ts';
 
 // T95.56, decision 131: the figures the Replay strip's words say, counted by the coordinator from the replay a card already holds.
 describe('the Replay strip figures of a card (T95.56, W146)', () => {
@@ -53,4 +56,32 @@ describe('the Replay strip figures of a card (T95.56, W146)', () => {
     if (open.kind !== 'ReflectionsOwed') throw new Error(`expected ReflectionsOwed, got ${open.kind}`);
     expect(open.card.replay?.tradeId).toBe(trades.Q);
   }, 60_000);
+});
+
+// T95.67-B1: a closing sale measured at its own price (trade-workflows, "measured against the Plan Exit"): a Stop or Target the sale reached is reached.
+describe('the Stop and Target a closing sale reached (T95.67-B1)', () => {
+  type Against = { line: 'Entry' | 'Stop' | 'Target'; side: 'At' | 'Above' | 'Below' };
+  // A Long stock Trade's replay: no Mark crossed either line; one sale on 2026-10-13, measured against the Plan as the replay's marker gives it.
+  const sold = (against: Against | undefined): TradeReplayView => ({
+    sessions: [
+      { date: '2026-10-12', crossings: { stop: { conditions: [] }, target: { conditions: [] } }, markers: [] },
+      { date: '2026-10-13', crossings: { stop: { conditions: [] }, target: { conditions: [] } }, markers: [{ id: 'sale', kind: 'Execution', effect: 'Closed', fills: [{ action: 'Sell', ...(against && { againstPlan: { ...against, distance: Rational.of(0n) } }) }] }] },
+    ],
+    planColumn: { terms: { legs: [{ side: 'Long' }] } },
+  }) as unknown as TradeReplayView;
+  const read = {} as MarketDataReadSession;
+
+  it('should say the Stop was reached, on the sale date, when a closing sale price is at or past the Stop', () => {
+    expect(replayStripOf(sold({ line: 'Stop', side: 'Below' }), read, '2026-10-13')?.stop).toEqual({ first: '2026-10-13' });
+  });
+
+  it('should say the Target was reached, on the sale date, when a closing sale price is at or past the Target', () => {
+    expect(replayStripOf(sold({ line: 'Target', side: 'At' }), read, '2026-10-13')?.target).toEqual({ first: '2026-10-13' });
+  });
+
+  it('should still say Never reached when neither the Marks nor the sale reached the line', () => {
+    const strip = replayStripOf(sold({ line: 'Target', side: 'Below' }), read, '2026-10-13');
+    expect(strip?.stop).toEqual({});
+    expect(strip?.target).toEqual({});
+  });
 });

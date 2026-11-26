@@ -10,9 +10,15 @@ export function replayStripOf(replay: TradeReplayView, read: MarketDataReadSessi
   const last = replay.sessions.at(-1);
   if (!last) return undefined;
   const reaches = last.date === reviewDate;
-  const role = ({ first, since }: Crossings['stop']): ReplayStripRole => {
+  // A sale measured at its own price (trade-workflows, "measured against the Plan Exit"): a Stop or Target a closing sale's price reached counts as reached
+  // on the sale's session, when no Mark reached it earlier. A long Trade's Target is reached at or above it, a short Trade's at or below.
+  const long = replay.planColumn?.terms.legs[0]?.side !== 'Short';
+  const soldAt = (line: 'Stop' | 'Target'): string | undefined =>
+    replay.sessions.find((s) => s.markers?.some((m) => m.fills.some((f) => f.againstPlan?.line === line && (line === 'Stop' || f.againstPlan.side === 'At' || f.againstPlan.side === (long ? 'Above' : 'Below')))))?.date;
+  const role = ({ first, since }: Crossings['stop'], sale: string | undefined): ReplayStripRole => {
     const dates = reaches && since ? read.sessionDatesBetween(since.date, reviewDate) : undefined;
-    return { ...(first && { first: first.date }), ...(reaches && since && { since: since.date }), ...(dates?.kind === 'Sessions' && { sessions: dates.dates.length }) };
+    const firstDate = [first?.date, sale].filter((d): d is string => d !== undefined).sort()[0];
+    return { ...(firstDate && { first: firstDate }), ...(reaches && since && { since: since.date }), ...(dates?.kind === 'Sessions' && { sessions: dates.dates.length }) };
   };
   const moment = (kind: 'Low' | 'High') => {
     const date = replay.keyMoments?.find((m) => m.kinds.includes(kind))?.date;
@@ -25,6 +31,6 @@ export function replayStripOf(replay: TradeReplayView, read: MarketDataReadSessi
     sessions: replay.sessions.length,
     ...(low && { low }),
     ...(high && { high }),
-    ...(last.crossings && { stop: role(last.crossings.stop), target: role(last.crossings.target) }),
+    ...(last.crossings && { stop: role(last.crossings.stop, soldAt('Stop')), target: role(last.crossings.target, soldAt('Target')) }),
   };
 }
