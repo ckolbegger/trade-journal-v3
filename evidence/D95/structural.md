@@ -1558,3 +1558,5 @@ Commit `39c4e305`: Part C integration suites I95.13 (settle-later, 9 cases), I95
 - **Found, asked as Q14:** the owed card's replay (`assembleOwedCard`, `daily-review.ts` 902, decision 136) carries no session Actions, so the Replay opened from a closed Trade's card (and the Close Review walk) shows no saved Hold under "What you did that day" (W147), while `replayTrade` and the walked card show it. I95.15 compares only dates, Plan Calls and key moments for the owed card.
 
 ocr of T95.65 (session 792f187e): complete, 5 files, no findings. `evidence/D95/ocr/T95.65-39c4e305.json`.
+
+Run `t95.65-integration-c` (browser-task; at `f259ba25`): unit 268 files, 3270 passed; integration 163 files, 393 passed; browser 58 passed; 14 of 14 checks exit 0; run-complete. Passed. T95.65 done.
