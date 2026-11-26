@@ -1560,3 +1560,7 @@ Commit `39c4e305`: Part C integration suites I95.13 (settle-later, 9 cases), I95
 ocr of T95.65 (session 792f187e): complete, 5 files, no findings. `evidence/D95/ocr/T95.65-39c4e305.json`.
 
 Run `t95.65-integration-c` (browser-task; at `f259ba25`): unit 268 files, 3270 passed; integration 163 files, 393 passed; browser 58 passed; 14 of 14 checks exit 0; run-complete. Passed. T95.65 done.
+
+### T95.65-D1
+
+Commit `5bc996f5`: `assembleOwedCard` reads the Trade's saved Actions (`queryActions({ reviewDate, tradeId })`, the walked card's read and shape) and passes them to the replay. Case 1 red then green (the owed card's sessions' Actions equal `replayTrade`'s; I95.15's owed-card case now compares the full projection); case 2 red then green (a new pin in `query-count.test.ts`: the closed Trade's owed card reads its Journal entries 2 times before, 3 after; no existing pin moved); case 3 first-run pass, flagged, mutation (`day-words.props.ts` Action branch unreachable) failed, restored. No frozen fixture changed. src/coordinators and tests/integration 1036 passed; src/ui/screens and src/ui/cockpit 1430 passed; typecheck, tsc6, lint (2 pre-existing warnings), lint:deps exit 0; browser d95 replay-strip, closed-card and d6 close-review 3 passed.
