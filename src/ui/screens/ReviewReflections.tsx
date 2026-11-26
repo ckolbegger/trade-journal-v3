@@ -78,7 +78,8 @@ function ReflectionRow({ reflection, timeZone, isOpen, resolved, blocked, submit
           {closeReview ? 'Write the Close Review' : `Reflect on ${when}`}
         </button>
       )}
-      {!resolved && !isOpen && closeReview && reflection.classification !== 'Due' && <p>Not due until the next Review.</p>}
+      {!resolved && !isOpen && closeReview && reflection.classification === 'DueInNextReview' && <p>Not due until the next Review.</p>}
+      {!resolved && !isOpen && closeReview && reflection.classification === 'DueInReviewAfterNext' && <p>{DUE_TEXT.DueInReviewAfterNext}.</p>}
       {(isOpen || resolved) && <DebtForm definition={reflection.definition} binding={reflection.saveBinding} requires={reflection.requires} submit={submit} onResolved={onResolved} onCancel={resolved ? undefined : onClose} onDirtyChange={dirty} onHandle={offer} />}
     </li>
   );

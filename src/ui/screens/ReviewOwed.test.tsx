@@ -296,6 +296,21 @@ describe('the closed card offers the Close Review (T95.58, W151)', () => {
     expect(within(later).getByText('Not due until the next Review.')).toBeTruthy();
     expect(within(later).getByRole('button', { name: 'Write the Close Review' })).toBeTruthy();
   });
+
+  it('should say the Review after next for a Close Review due then', async () => {
+    const after = await openCard(cardWith(closeReview('DueInReviewAfterNext')));
+    expect(within(after).getByText('Due in the Review after next.')).toBeTruthy();
+    expect(within(after).getByRole('button', { name: 'Write the Close Review' })).toBeTruthy();
+  });
+
+  it('should say Not due until the next Review only for a Close Review due in the next Review', async () => {
+    const after = await openCard(cardWith(closeReview('DueInReviewAfterNext')));
+    expect(within(after).queryByText('Not due until the next Review.')).toBeNull();
+    cleanup();
+    const next = await openCard(cardWith(closeReview('DueInNextReview')));
+    expect(within(next).getByText('Not due until the next Review.')).toBeTruthy();
+    expect(within(next).queryByText('Due in the Review after next.')).toBeNull();
+  });
 });
 
 describe('the closed card keeps a Position Change Reflection answerable (T95.58, A90)', () => {
