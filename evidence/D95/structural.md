@@ -1334,3 +1334,10 @@ Commit `d27ebbd1`: `closeAbc` in e2e/d95/closed-card.spec.ts clicked "Save exit"
 ocr of T95.58-F1 (session fb5fcd4c): complete, 1 file, no findings. `evidence/D95/ocr/T95.58-F1-d27ebbd1.json`.
 
 Run `t95.58-f1-closed-card` (browser-auto 3d9cddb1, full tier; at `b1bf2862`): unit 264 files, 3203 passed; integration 158 files, 364 passed; browser-1 127, browser-2 79, browser-3 55, browser-4 163 passed, 4 skipped; 14 of 14 checks exit 0; run-complete. Passed. T95.58 and T95.58-F1 done.
+
+## T95.62
+
+Commit `b8b817c6`: Part C's capability variants. `DailyReview.open` adds `SettlementToRecord` (the `CompleteWithSettlementToRecord` completion kind it returns); `DailyReview.getTrade` adds `ExpirationStanding`, `SessionActions`, `KeyMoments`; `DailyReview.save` adds `SettleLater`; `replayTrade` (and the trade-detail route's entry) adds `SessionActions`, `KeyMoments`; `recordPositionChange` (and the record-entry route) drops `CloseReviewComplete`, `CloseReviewDecline`, keeps `CloseReviewDefer`. I95.7's case renamed to name Part C; red (`open` lacked `SettlementToRecord`) then green; no first-run passes. workspace.test.ts's lists updated list-only.
+- Departure from the plan's list (from the handoff note of T95.49): `ExpirationStanding` is named under `getTrade`, not `open`: the field is on `getTrade`'s card and `open` reads no replay; no read added, no pending decision.
+- Level kept Standard: `capabilities.ts` sits under src/coordinators but the plan names it as this task's file (as for T95.23 and T95.43, both Standard), and only string lists changed.
+- Checks: src/coordinators/workspace and d95 capabilities 141 passed; verify:capabilities, typecheck, tsc6, lint (2 pre-existing warnings), lint:deps exit 0. No e2e spec edited.
