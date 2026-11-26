@@ -1169,3 +1169,5 @@ Diff: 4 files, 16 insertions, 32 deletions. Green: `npm run verify:fixtures` OK 
 
 
 ocr of T95.49-F1 (session 5ae0de35, with a scratch rule including the fixture views): 4 files, 0 findings. `evidence/D95/ocr/T95.49-F1-8cc523bf.json`. Next: run `t95.49-settle-later` (browser-auto bb67fedd).
+
+Run `t95.49-settle-later` (browser-auto bb67fedd, full tier: first matching path src/ui/screens/DayCard.tsx): unit 3127, integration 364, browser 127, 79, 55 and 160 (4 skipped), checks 14 of 14. Passed. T95.49 done.
