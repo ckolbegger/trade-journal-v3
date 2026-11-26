@@ -1285,3 +1285,7 @@ ocr of T95.57 (session 98fd0298): 20 files, 3 findings (2 Valid, the same defect
 ### T95.57-B1
 
 Commit `774642b4`: each Action row cell takes `slot` (from `s.plot.slot` in frame.tsx); the grid column is `slot + 2`. Both cases red then green (Mon Nov 2, Tue Nov 3, Thu Nov 5, Fri Nov 6; Wed Nov 4 the holiday). src/ui/cockpit/replay 275 passed; typecheck, tsc6, lint (2 pre-existing warnings), lint:deps exit 0; d95/replay-day 2 passed.
+
+### T95.57-B2
+
+Commit `92f7c50b`: day-words.props.ts reads `session.positions.length > 0` (positions already reach the props; no coordinator data). Both cases red ("Nothing recorded.") then green. The test double `day()` gives a held-0 session an empty `positions` list (the real view lists only open lots); new `spread()` double. src/ui/cockpit/replay 277 passed; typecheck, tsc6, lint (2 pre-existing warnings), lint:deps exit 0; d95/replay-day 2 passed.
