@@ -1779,6 +1779,41 @@ describe('the sale in the card (T95.40)', () => {
     // The Review it returned lists DEF first among the cards that still need something.
     await waitFor(() => expect(document.activeElement).toBe(screen.getByRole('button', { name: /^Review DEF/ })));
   });
+
+  // The sale closes ABC; its receipt is dismissed while the Review is still being read again.
+  async function dismissReceiptWithReadPending() {
+    const facade = saleFacade();
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(closedExitResult({ reflection: { kind: 'Debt', debt: { debtId: 'debt-1' } }, closeReview: { kind: 'Debt', debt: { debtId: 'debt-2' } } }) as never);
+    const { user, card } = await sellAllOnAbc(facade);
+    await within(card).findByText('Recorded. XYZ is closed. Its Close Review is due in the next Review.');
+    let release!: () => void;
+    const after = review({ families: [review().families[0]!, { family: 'Trades', trades: WALK.filter((t) => t.tradeId !== 't-b') }], owed: [owedB] });
+    vi.mocked(facade.DailyReview.open).mockImplementation(() => new Promise((resolve) => { release = () => resolve(after); }));
+    await user.click(within(card).getByRole('button', { name: 'Back to the Review' }));
+    await waitFor(() => expect(release).toBeTypeOf('function'));
+    return { user, release };
+  }
+
+  it('should leave focus where it is when the trader opened another card during the re-read', async () => {
+    const { user, release } = await dismissReceiptWithReadPending();
+    const opened = headers().find((h) => /^Review XYZ/.test(h.textContent ?? '') || /^Review XYZ/.test(h.getAttribute('aria-label') ?? ''))!;
+    await user.click(opened);
+
+    release();
+
+    await screen.findByRole('list', { name: 'Trades with owed reflections' });
+    expect(screen.getByRole('region', { name: 'XYZ review' })).toBeTruthy();
+    expect(document.activeElement).not.toBe(screen.getByRole('button', { name: /^Review DEF/ }));
+  });
+
+  it('should still move focus when the selection is unchanged', async () => {
+    const { release } = await dismissReceiptWithReadPending();
+
+    release();
+
+    await screen.findByRole('list', { name: 'Trades with owed reflections' });
+    await waitFor(() => expect(document.activeElement).toBe(screen.getByRole('button', { name: /^Review DEF/ })));
+  });
 });
 
 describe('focus after each save (T95.61, A327)', () => {

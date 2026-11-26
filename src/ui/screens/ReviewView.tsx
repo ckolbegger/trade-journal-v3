@@ -362,8 +362,14 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
     }
     setAfterSave(next.kind === 'MarkNotHeld' ? AFTER_SAVE.Mark : undefined);
   };
+  // How many times the trader pressed a card open or closed, and the count when the card was last read again for a receipt:
+  // focus moves on only if it is unchanged once the read resolves (the Review's own collapse of a card that left is no choice).
+  const picks = useRef(0);
+  const readAt = useRef(0);
   // The first card, in the held order, that still needs something takes focus; with none left, the day card does.
   const focusNext = () => {
+    // A card the trader opened while the Review was read again keeps the focus it took.
+    if (picks.current !== readAt.current) return;
     const held = latest.current.review;
     const needing = [...walkedTrades(held), ...held.owed].find((t) => !t.progress.done);
     if (needing) setReveal((current) => ({ tradeId: needing.tradeId, count: current.count + 1 }));
@@ -470,6 +476,7 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
     else {
       // A card opened by its header answers no earlier link.
       setGo({ tradeId: undefined, go: NO_GO });
+      picks.current += 1;
       if (tradeId === openId) collapse();
       else void select(tradeId, true);
     }
@@ -613,7 +620,7 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
                 onClosedSale={() => closedSale(trade.tradeId)}
                 onSaved={(result) => saved(result, shown?.opening ?? -1)}
                 onReflectionResolved={reflectionResolved}
-                onRefresh={() => refreshTrade(trade.tradeId).then((ok) => { setFailed(!ok); return ok; })}
+                onRefresh={() => { readAt.current = picks.current; return refreshTrade(trade.tradeId).then((ok) => { setFailed(!ok); return ok; }); }}
                 refusal={refusalFor(trade.tradeId)}
                 pending={rereading}
                 onEntryDirty={onEntryDirty}
