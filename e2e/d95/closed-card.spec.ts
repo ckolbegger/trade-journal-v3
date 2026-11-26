@@ -19,6 +19,7 @@ async function closeAbc(page: Page): Promise<void> {
   await fillRows(page, [sell('100', '27.60', '1.00', '2026-10-12T11:00')]);
   await closeReasonGroup(page).getByRole('radio', { name: 'Stop Triggered', exact: true }).check();
   await page.locator('form.plan-form').getByRole('button', { name: 'Save exit' }).click();
+  await expect(page.getByText('Recorded. ABC is closed. Its Close Review is due in the next Review.', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Back to the Review' }).click();
 }
 
