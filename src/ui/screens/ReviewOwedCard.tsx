@@ -23,11 +23,13 @@ function remainsText(trade: OwedReflectionsTrade, detail: OwedDetail | undefined
   const { dueNow, later } = panelOf(trade.progress, 'Reflections');
   const closeReview = trade.owed.find((item) => item.entryTypeKey === 'entry-type.close-review');
   if (closeReview?.classification === 'Due') return 'Close Review due';
-  if (dueNow > 0) return `${plural(dueNow, 'reflection', 'reflections')} due`;
-  if (closeReview?.classification === 'DueInNextReview') return 'Close Review · next Review';
   const outcome = typeof detail === 'object' && detail.card.summary?.kind === 'Closed' ? detail.card.summary.closeReviewOutcome?.kind : undefined;
-  if (!closeReview && outcome === 'Entry') return 'Close Review saved';
-  if (!closeReview && outcome === 'Decline') return 'Close Review declined';
+  let closeState: string | undefined;
+  if (closeReview?.classification === 'DueInNextReview') closeState = 'Close Review · next Review';
+  else if (!closeReview && outcome === 'Entry') closeState = 'Close Review saved';
+  else if (!closeReview && outcome === 'Decline') closeState = 'Close Review declined';
+  if (dueNow > 0) return [`${plural(dueNow, 'reflection', 'reflections')} due`, closeState].filter(Boolean).join(' · ');
+  if (closeState) return closeState;
   return later > 0 ? `${later} not yet due` : 'Done';
 }
 

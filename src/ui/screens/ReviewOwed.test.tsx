@@ -271,6 +271,23 @@ describe('the closed card is labelled by its Close Review (T95.58, W151)', () =>
     expect(await headerOf([{ ...later, owed: [otherReflection] }], answered({ kind: 'Entry', id: 'e-1' }))).toContain('Close Review saved');
     expect(await headerOf([{ ...later, owed: [otherReflection] }], answered({ kind: 'Decline', id: 'x-1' }))).toContain('Close Review declined');
   });
+
+  it('should show the Close Review state beside the reflections due on a closed card with a Position Change Reflection due', async () => {
+    const base = { ...owedTrade(CLOSED_CARD), progress: reflectionsOwedProgress(1, 1) };
+    const pcrDue = { ...otherReflection, classification: 'Due' as const };
+    const answered = (closeReviewOutcome: NonNullable<typeof closedSummary.closeReviewOutcome>): OwedReflectionsCard => ({ ...CLOSED_CARD, summary: { ...closedSummary, closeReviewOutcome } });
+    expect(await headerOf([{ ...base, owed: [pcrDue, closeReviewDebt('DueInNextReview')] }])).toContain('1 reflection due · Close Review · next Review');
+    expect(await headerOf([{ ...base, owed: [pcrDue] }], answered({ kind: 'Entry', id: 'e-1' }))).toContain('1 reflection due · Close Review saved');
+    expect(await headerOf([{ ...base, owed: [pcrDue] }], answered({ kind: 'Decline', id: 'x-1' }))).toContain('1 reflection due · Close Review declined');
+  });
+
+  it('should keep Close Review due when the Close Review itself is due beside a reflection due', async () => {
+    const base = { ...owedTrade(CLOSED_CARD), progress: reflectionsOwedProgress(2, 0) };
+    const pcrDue = { ...otherReflection, classification: 'Due' as const };
+    const text = await headerOf([{ ...base, owed: [pcrDue, closeReviewDebt('Due')] }]);
+    expect(text).toContain('Close Review due');
+    expect(text).not.toContain('reflection');
+  });
 });
 
 describe('the closed card offers the Close Review (T95.58, W151)', () => {
