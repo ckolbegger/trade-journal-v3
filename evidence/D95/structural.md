@@ -1281,3 +1281,7 @@ Commit `26626d39`: the Replay opens from a Review card on the first crossing's s
 ocr of T95.57 (session 98fd0298): 20 files, 3 findings (2 Valid, the same defect, one bug task; 1 Doubtful). `evidence/D95/ocr/T95.57-26626d39.json`.
 - **T95.57-B1** (Valid, `action-row.tsx:11` and `frame.tsx:118`): the Action row puts each cell in grid column `i + 2` by array index, but the chart places sessions by weekday `slot` (`plot.props.ts:82-83`, holiday slots blank, A256), so after a gap or holiday the marks sit under earlier dates. Cases: it should place each session's Action mark in its session's slot column after a holiday gap; it should leave the holiday's column empty.
 - **T95.57-B2** (Doubtful, `day-words.props.ts:34`): the missed-Review rule reads `heldQuantity`, a signed sum, so a Trade with offsetting legs gets "Nothing recorded." instead of "No Review this session." or "Action: not chosen yet." (same shape as T95.54-B1). Cases: it should read "No Review this session." for a session with no Action while offsetting legs are held; it should read "Action: not chosen yet." on such an Open Trade's last session.
+
+### T95.57-B1
+
+Commit `774642b4`: each Action row cell takes `slot` (from `s.plot.slot` in frame.tsx); the grid column is `slot + 2`. Both cases red then green (Mon Nov 2, Tue Nov 3, Thu Nov 5, Fri Nov 6; Wed Nov 4 the holiday). src/ui/cockpit/replay 275 passed; typecheck, tsc6, lint (2 pre-existing warnings), lint:deps exit 0; d95/replay-day 2 passed.
