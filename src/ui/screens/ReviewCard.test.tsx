@@ -1988,6 +1988,36 @@ describe('Review card: the Replay button (decision 3)', () => {
   });
 });
 
+// T95.57, A318: the Replay opens on the session of the first crossing of the line the Trade is past now, and on the newest session otherwise.
+const crossed = (first: string, since?: string) => ({ conditions: [], first: { date: first, afterGap: false }, ...(since && { since: { date: since, afterGap: false } }) });
+const withCrossings = (dates: readonly string[], last: { stop?: ReturnType<typeof crossed>; target?: ReturnType<typeof crossed> }) =>
+  replayTo(...dates.map((date, i) => ({ ...replaySession(date, '50.00', 0n), ...(i === dates.length - 1 && { crossings: { stop: last.stop ?? { conditions: [] }, target: last.target ?? { conditions: [] } } }) })));
+const FOUR_DAYS = ['2026-10-07', '2026-10-08', '2026-10-09', '2026-10-12'];
+
+describe('Review card: where the Replay opens (T95.57, A318)', () => {
+  const opened = async (replay: DailyTradeReview['replay']) => {
+    const user = userEvent.setup();
+    renderWalk(walkFacade(ready([item('t1', 'XYZ')]), tradeReview('t1', 'XYZ', { replay })));
+    const card = await openTrade(user, 'XYZ');
+    await user.click(within(card).getByRole('button', { name: 'Replay' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Replay, XYZ' });
+    return within(dialog).getByRole('slider', { name: 'Session' }).getAttribute('aria-valuetext')!;
+  };
+
+  it('should open from a Review card on the session of the first crossing when the Trade is past a line, and on the newest session otherwise', async () => {
+    // Past the Stop now, first crossed on Thu Oct 8 and held there since Fri Oct 9: the Replay opens on Thu Oct 8, in the address too.
+    expect(await opened(withCrossings(FOUR_DAYS, { stop: crossed('2026-10-08', '2026-10-09') }))).toMatch(/^Thu Oct 8 · 2 of 4/);
+    expect(here.address).toContain('session=2026-10-08');
+    cleanup();
+    // Past the Target now: the Target's first crossing.
+    expect(await opened(withCrossings(FOUR_DAYS, { target: crossed('2026-10-09', '2026-10-12') }))).toMatch(/^Fri Oct 9 · 3 of 4/);
+    cleanup();
+    // The Stop was crossed once and the Trade is back inside: nothing is past a line now, so the newest session.
+    expect(await opened(withCrossings(FOUR_DAYS, { stop: crossed('2026-10-08') }))).toMatch(/^Mon Oct 12 · 4 of 4/);
+    expect(here.address).not.toContain('session=');
+  });
+});
+
 describe('The last decision line', () => {
   const decisions: NonNullable<DailyTradeReview['decisions']> = {
     recent: [{ date: '2026-10-09', action: 'Hold', reason: 'Up today. One more day.', tradePnl: value(-930n) }],

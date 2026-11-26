@@ -1,9 +1,19 @@
+import type { Locator } from '@playwright/test';
 import {
   BREN, cardRows, chartText, expect, going, headline, hits, openDrawer, pastLine, pnlChart, priceStrip, readoutPnl, readoutR, readoutValue, replay, seek, sessionCard, sessionCards, sessionLabels, slider, sliderValue, stake, test,
 } from './support.ts';
 import { openStandardDetail } from '../d9ar/support.ts';
 
 test.use({ actionTimeout: 15_000 });
+
+// T95.57 (W148): the Key moments drop-down lists every moment of the Trade, later ones too, with their dates; the reveal rule (P145) is about the charts, the
+// cards and the readout, so what is checked for later sessions is the overlay without that drop-down.
+const withoutMoments = (scope: Locator) =>
+  scope.evaluate((dialog) => {
+    const copy = dialog.cloneNode(true) as HTMLElement;
+    for (const moments of copy.querySelectorAll('.replay-moments')) moments.remove();
+    return copy.textContent ?? '';
+  });
 
 // B9.1 (plan section 7.2): R-BREN-U through the UI to Mon 11-16, the Replay overlay opened, the slider moved back by keyboard to Thu 11-12 and to Mon 11-02. Every figure and word is plan
 // section 5's or W36 to W43's: the headline, how it is going and what is at stake for each session, the two lines stepping at the sale, the banked band from Thu 11-12, and nothing of a
@@ -84,7 +94,7 @@ test.describe('B9.1 Replay in Trade Detail', () => {
     // Back on Thu 11-12: nothing of Fri 11-13 or Mon 11-16 anywhere in the overlay.
     await seek(page, scope, 'ArrowRight');
     await expect(sliderValue(scope)).toHaveText('Thu Nov 12 · 9 of 11');
-    for (const later of LATER['Thu Nov 12']) await expect(scope).not.toContainText(later);
+    for (const later of LATER['Thu Nov 12']) expect(await withoutMoments(scope), `${later} is not in the overlay`).not.toContain(later);
     await expect(sessionCards(scope)).toHaveCount(9);
     await expect(hits(scope).getByRole('button')).toHaveCount(9);
     await context.close();
@@ -122,7 +132,7 @@ test.describe('B9.1 Replay in Trade Detail', () => {
     await expect(readoutPnl(scope, 'At Target')).toHaveText('+$956.00');
     expect(await chartText(pnlChart(scope))).toEqual(expect.arrayContaining(['Stop −$324', 'Target +$956', 'Current Risk $352', 'Remaining Reward $928']));
     await expect(pnlChart(scope).locator('path.banked-band')).toHaveCount(0);
-    for (const later of LATER['Mon Nov 2']) await expect(scope).not.toContainText(later);
+    for (const later of LATER['Mon Nov 2']) expect(await withoutMoments(scope), `${later} is not in the overlay`).not.toContain(later);
     await expect(sessionCards(scope)).toHaveCount(1);
     await expect(hits(scope).getByRole('button')).toHaveCount(1);
     await expect(slider(scope)).toHaveAttribute('aria-valuetext', 'Mon Nov 2 · 1 of 11. +$28.00 · 0.09R');

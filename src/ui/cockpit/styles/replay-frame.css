@@ -98,6 +98,8 @@
 .replay-slider input[type='range'] {
   flex: 1 1 140px;
   min-width: 0;
+  /* U12: the chart's own tap target is about 12px, so the slider and the step buttons are the 44px route on a phone. */
+  min-height: 44px;
   accent-color: var(--ink);
 }
 
@@ -187,3 +189,91 @@
   font-weight: 600;
 }
 
+/* W148: the key moments' drop-down, above the slider; its name and the drop-down on one line, the sentence under them. */
+.replay-moments {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  margin: 8px 0 0;
+}
+
+.replay-moments select {
+  min-height: 44px;
+  max-width: 100%;
+  font: inherit;
+}
+
+.replay-moments p {
+  flex: 1 0 100%;
+  margin: 0;
+  color: var(--muted);
+}
+
+/* W149: the Action row sits under the chart in the chart's own columns: the plot's left room (49 px on a phone, 50 otherwise) and right room (8 px). */
+.replay-action-row {
+  display: grid;
+  grid-template-columns: repeat(var(--action-columns), minmax(0, 1fr));
+  margin: 0;
+  padding: 0 8px 0 50px;
+  list-style: none;
+  font-weight: 600;
+  text-align: center;
+}
+
+.replay-action-row li {
+  min-height: 1.4em;
+}
+
+.replay-action-key {
+  margin: 2px 0 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+/* W147: what the trader did that day, first in the readout's column. A Review not written reads amber: a gap to fill, not a loss. */
+.replay-day p {
+  margin: 0 0 4px;
+}
+
+.replay-day-action[data-kind='Missed'] {
+  color: var(--warning-text);
+  font-weight: 600;
+}
+
+.replay-day-action[data-kind='Waiting'],
+.replay-day-action[data-kind='Nothing'] {
+  color: var(--muted);
+}
+
+.replay-day-action[data-kind='Chosen'] .replay-day-reason {
+  font-style: italic;
+}
+
+/* A275, wide: the Action row stands in the charts' column. */
+.replay-overlay .replay-card > .replay-action-row-box {
+  grid-column: 1;
+}
+
+@media (max-width: 860px) {
+  /* The Action row follows the chart whatever the order of what comes after it; the key moments follow the row, so the header, headline and both charts still fit one phone screen (B9AR.7). */
+  .replay-card > .replay-action-row-box {
+    order: 0;
+  }
+
+  .replay-card > .replay-moments {
+    order: 2;
+  }
+}
+
+@media (max-width: 459px) {
+  .replay-action-row {
+    padding-left: 49px;
+  }
+}
+
+@media (max-width: 480px) {
+  .replay-moments select {
+    flex: 1 0 100%;
+  }
+}

@@ -6,6 +6,8 @@ import { cardOf } from './cards.props.ts';
 import { plotBaseOf, plotSessionOf } from './plot.props.ts';
 import { marksGroup, planBlockOf, readoutOf } from './readout.props.ts';
 import type { ReadoutGroup, ReplayFrameSession, ReplayProps } from './replay.types.ts';
+import { ACTION_KEY, dayOf } from './day-words.props.ts';
+import { keyMomentsOf } from './key-moments.props.ts';
 import { markerWords, sessionWords } from './session-words.props.ts';
 
 // The adapter selects and formats finished values from the view; it works out no figure (ADR 0001, A256). This file is the assembly:
@@ -54,16 +56,20 @@ function frameSessionOf(view: TradeReplayView, index: number): ReplayFrameSessio
     plot: plotSessionOf(view, index),
     hover: hoverOf(session, marks, words.headline.figure),
     hasMarker: (session.markers ?? []).length > 0,
+    ...dayOf(view, index),
   };
 }
 
 // A255: the whole view as the frame's props, from finished values only; no figure is worked out here (ADR 0001, A256).
 export function replayProps(view: TradeReplayView, { Plot, initialSession, onSessionChange }: ReplayOptions): ReplayProps {
   const plan = planBlockOf(view);
+  const moments = keyMomentsOf(view);
   return {
     tradeKey: view.tradeId,
     sessions: view.sessions.map((_, index) => frameSessionOf(view, index)),
     ...(initialSession !== undefined && { initialSession }),
+    actionKey: ACTION_KEY,
+    ...(moments && { keyMoments: moments }),
     sliderLabel: 'Session',
     previousLabel: 'Previous session',
     nextLabel: 'Next session',

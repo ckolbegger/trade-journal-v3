@@ -225,6 +225,8 @@ export interface PlanBlock {
 // What the readout takes: the slider session's groups.
 export interface ReadoutProps {
   readonly groups: readonly ReadoutGroup[];
+  // T95.57: what stands above the groups in the readout's column ("What you did that day").
+  readonly lead?: ReactNode;
 }
 
 // A277: one row of a session card, top to bottom: the Marks, Trade P&L, Realized, the stake rows, Events.
@@ -290,6 +292,33 @@ export interface ReplayOverlayProps {
   readonly children: ReactNode;
 }
 
+// T95.57, A317, W147: what the trader did on a session, as words. "Chosen" is a saved Action with its reason (or "no reason given"); "Missed" a
+// session that owed a Review and has none; "Waiting" the newest session of an Open Trade with no Action yet; "Expired" a Settle Later on an
+// expiration; "Nothing" a session with no fill and nothing owed.
+export interface DayWords {
+  // "Bought 4 at $1.61." The session's fills; absent when it had none.
+  readonly fills?: string;
+  // Absent on a session with fills and no Review owed (the Trade was sold out in it).
+  readonly action?: { readonly kind: 'Chosen' | 'Missed' | 'Waiting' | 'Expired' | 'Nothing'; readonly text: string; readonly reason?: string };
+}
+
+// W149: a session's mark in the Action row: its letter and the words a screen reader hears after the date.
+export interface ActionMark {
+  readonly letter: string;
+  readonly name: string;
+}
+
+// W148: the Replay's key moments in a drop-down, in session order; the label of each is finished ("2. Stop + Sale · Wed Nov 4").
+export interface KeyMomentsWords {
+  // "Key moments", the drop-down's name.
+  readonly label: string;
+  // "Choose a moment": what the drop-down reads on a session that is no moment.
+  readonly placeholder: string;
+  // "No key moment this session.", said under the drop-down on a session that is no moment.
+  readonly none: string;
+  readonly moments: readonly { readonly date: string; readonly label: string }[];
+}
+
 // Everything the frame shows for one session. The frame reveals sessions up to the slider's and drops the rest from
 // the page, so nothing here is read for a later one.
 export interface ReplayFrameSession {
@@ -323,6 +352,9 @@ export interface ReplayFrameSession {
   readonly hover: readonly string[];
   // Whether a Position Change falls in this session, for the "Position" link.
   readonly hasMarker: boolean;
+  // T95.57: what the trader did that day, and the Action row's mark; a view that carries no Actions gives neither.
+  readonly day?: DayWords;
+  readonly actionMark?: ActionMark;
 }
 
 // What `ReplayFrame` takes (A255): the headline, stake sentence, slider, readout, session cards, plot and the slots.
@@ -351,4 +383,8 @@ export interface ReplayProps {
   readonly renderChips?: (session: { readonly date: string }) => ReactNode;
   // Called when the slider's session changes, so the screen can keep it (A257).
   readonly onSessionChange?: (date: string) => void;
+  // W149: the Action row's key, "H Hold · E Exit · R Roll · A Adjust · – no Review"; the row is drawn only when it is given.
+  readonly actionKey?: string;
+  // W148: the key moments; absent when the view lists none.
+  readonly keyMoments?: KeyMomentsWords;
 }

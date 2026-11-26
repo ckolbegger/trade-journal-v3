@@ -73,9 +73,10 @@ function StakeGridTable({ grid }: { grid: StakeGrid }) {
 }
 
 // W43: the slider's session as text, every figure the charts draw; the rows are finished, nothing is added up here.
-export function Readout({ groups }: ReadoutProps) {
+export function Readout({ groups, lead }: ReadoutProps) {
   return (
     <div className="replay-readout" data-testid="readout">
+      {lead}
       {groups.map((group) => (
         <section key={group.title} className={group.grid ? 'replay-readout-group replay-readout-group-stake' : 'replay-readout-group'}>
           <h3>{group.title}</h3>

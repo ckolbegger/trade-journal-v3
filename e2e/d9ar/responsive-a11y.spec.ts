@@ -92,6 +92,8 @@ const navAtFoot = (page: Page): Promise<boolean> =>
 // One surface through the sizes with the slider moved to Thu 11-12: each size's checks, and back to the first. The overlay stays open throughout.
 async function throughSizes(page: Page, surface: string): Promise<void> {
   const scope = replay(page);
+  // A318: a Review card's overlay opens on the Trade's first crossing, so every surface starts from the newest session.
+  await seek(page, scope, 'End');
   await seek(page, scope, 'ArrowLeft', 2);
   await expect(sliderValue(scope)).toHaveText('Thu Nov 12 · 9 of 11');
   for (const size of [...SIZES, SIZES[0]]) {
@@ -323,7 +325,8 @@ test.describe('B9AR.7 Responsive, touch, accessible and offline', () => {
       await reachCard(page, trade);
       await cardReplayButton(page, trade).tap();
       const scope = replay(page);
-      await expect(sliderValue(scope)).toHaveText('Mon Nov 16 · 11 of 11');
+      // A318: BREN is past its Target, first reached on Thu 11-12, so the Replay opens there.
+      await expect(sliderValue(scope)).toHaveText('Thu Nov 12 · 9 of 11');
       await expect(scope.getByTestId('hover'), 'no hover box on open').toHaveCount(0);
       await expect(scope.locator('rect.hover-column'), 'no hover band on open').toHaveCount(0);
       await expect(scope.locator('.replay-hit[data-hovered]'), 'no hit marked hovered on open').toHaveCount(0);
@@ -349,7 +352,7 @@ test.describe('B9AR.7 Responsive, touch, accessible and offline', () => {
       await openReview(page);
       await reachCard(page, trade);
       await cardReplayButton(page, trade).tap();
-      await expect(sliderValue(replay(page))).toHaveText('Mon Nov 16 · 11 of 11');
+      await expect(sliderValue(replay(page))).toHaveText('Thu Nov 12 · 9 of 11');
       await expectTall(replay(page).getByRole('link', { name: 'Price History' }), 'the Review overlay’s Price History link');
       await context.close();
     });

@@ -42,7 +42,9 @@ test.describe('B9AR.2 The overlay in the Review, and the summary', () => {
       // Moved from the dropped "keep a started Action across the overlay" case: open, move and Close once, before the round trip.
       const section = await openCardReplay(page, trade);
       await expect(tradeCard(page, trade).locator('.replay-card')).toHaveCount(0);
-      if (trade === bren) await expect(headline(section)).toHaveText('+$988.00 · 3.05R');
+      // A318: BREN is past its Target, first reached on Thu 11-12, so its Replay opens there; the moves start from the newest session.
+      if (trade === bren) await expect(headline(section)).toHaveText('+$982.00 · 3.03R');
+      await seek(page, section, 'End');
       await seek(page, section, 'ArrowLeft', 2);
       await expect(sliderValue(section)).toHaveText('Thu Nov 12 · 9 of 11');
       await closeButton(section).click();
@@ -114,6 +116,7 @@ test.describe('B9AR.2 The overlay in the Review, and the summary', () => {
     const axio = trades[1]!;
     await reachCard(page, axio);
     const section = await openCardReplay(page, axio);
+    await seek(page, section, 'End');
     await seek(page, section, 'ArrowLeft', 5);
     await expect(sliderValue(section)).toHaveText(/^Mon Nov 9 · /);
     await section.getByRole('link', { name: 'Price History' }).click();

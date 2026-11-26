@@ -237,6 +237,13 @@ export function reflectionsStatus(due: number, owed: number): string {
   return 'None';
 }
 
+// A318: a Trade past a line opens its Replay on the session that line was first crossed in; any other Trade, on the newest session.
+function openingSessionOf(replay: DailyTradeReview['replay']): string | undefined {
+  const crossings = replay?.sessions.at(-1)?.crossings;
+  if (crossings?.stop.since) return crossings.stop.first?.date;
+  return crossings?.target.since ? crossings.target.first?.date : undefined;
+}
+
 function panelHeaders(trade: DailyTradeReview, progress: CardProgress): Record<PanelName, PanelHeader> {
   const { dueNow: due, later } = panelOf(progress, 'Reflections');
   const owed = due + later;
@@ -296,7 +303,9 @@ function CardBody({ facade, trade, progress, name, go, stillHolding, onStillHold
     named.delete('session');
     const overlay = new URLSearchParams(card);
     overlay.set('replay', 'open');
-    if (sliderAt.current !== undefined) overlay.set('session', sliderAt.current);
+    // A318: where the slider was left, else the session of the first crossing of the line the Trade is past now (read when the button is pressed, since a save can put it past one).
+    const opensAt = sliderAt.current ?? openingSessionOf(trade.replay);
+    if (opensAt !== undefined) overlay.set('session', opensAt);
     if (named.size > 0 && named.toString() !== card.toString()) void navigate({ search: card.toString() }, { replace: true });
     void navigate({ search: overlay.toString() });
   };

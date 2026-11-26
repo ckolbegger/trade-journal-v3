@@ -455,6 +455,20 @@ describe('Trade Detail: the Replay overlay (decision 3)', () => {
     expect(addressNow()).toBe('/trades/trade-1?replay=open');
   });
 
+  it('should still open on the newest session from Trade Detail when the Trade is past a line', async () => {
+    const user = userEvent.setup();
+    const base = replay([debt], true);
+    const [first, ...rest] = base.sessions;
+    const crossings = { stop: { conditions: [], first: { date: '2026-10-13', afterGap: false }, since: { date: '2026-10-14', afterGap: false } }, target: { conditions: [] } };
+    const pastStop = { ...base, sessions: [first, ...rest.slice(0, -1), { ...rest.at(-1), crossings }] } as unknown as TradeReplayView;
+    renderWith(facadeOf({ replayResult: { kind: 'Ready', view: pastStop, binding: BINDING } }), '/trades/trade-1');
+    await user.click(await screen.findByRole('button', { name: 'Replay' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Replay, XYZ' });
+    // A318: the first crossing's session is the Review card's opening; Trade Detail's button is unchanged.
+    expect(within(dialog).getByRole('slider', { name: 'Session' }).getAttribute('aria-valuetext')).toMatch(/^Thu Oct 15 · 4 of 4/);
+    expect(addressNow()).toBe('/trades/trade-1?replay=open');
+  });
+
   it('should close it on Close, on Escape and on the browser\'s Back, staying on the Trade, with focus back on the Replay button', async () => {
     const user = userEvent.setup();
     show();

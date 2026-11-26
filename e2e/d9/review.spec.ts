@@ -26,9 +26,10 @@ test.describe('B9.3 Replay in the Review, and the round trip', () => {
     expect(order).toBe('replay first');
     await expect(replay(page)).toHaveCount(0);
     const section = await openCardReplay(page, trade);
-    await expect(headline(section)).toHaveText('+$988.00 · 3.05R');
-    await expect(going(section)).toHaveText('Target reached, $32.00 past it.');
-    await expect(sliderValue(section)).toHaveText('Mon Nov 16 · 11 of 11');
+    // A318: the Trade is past its Target, first reached on Thu 11-12, so the Replay opens there and not on the newest session.
+    await expect(sliderValue(section)).toHaveText('Thu Nov 12 · 9 of 11');
+    await expect(headline(section)).toHaveText('+$982.00 · 3.03R');
+    await expect(going(section)).toHaveText('Target reached, $26.00 past it.');
     // The card's replay places no Journal items and links only to Price History.
     await expect(section.getByRole('link')).toHaveText(['Price History']);
     await expect(section.getByRole('button', { name: /^(Position|Journal)$/ })).toHaveCount(0);
@@ -44,13 +45,17 @@ test.describe('B9.3 Replay in the Review, and the round trip', () => {
     await openReview(page);
     await reachCard(page, trade);
     const section = await openCardReplay(page, trade);
-    await seek(page, section, 'ArrowLeft', 2);
+    // A318: it opens on Thu 11-12; the slider moves away to Wed 11-11 and back.
+    await expect(sliderValue(section)).toHaveText('Thu Nov 12 · 9 of 11');
+    await seek(page, section, 'ArrowLeft');
+    await expect(sliderValue(section)).toHaveText('Wed Nov 11 · 8 of 11');
+    await seek(page, section, 'ArrowRight');
     await expect(sliderValue(section)).toHaveText('Thu Nov 12 · 9 of 11');
     await expect(headline(section)).toHaveText('+$982.00 · 3.03R');
     await expect(readoutValue(section, 'Realized')).toHaveText('+$478.00');
-    // Moving the slider writes nothing and does not leave the Review; the address names only the open overlay.
+    // Moving the slider writes nothing and does not leave the Review; the address names the open overlay and the session it opened on.
     expect(new URL(page.url()).pathname).toBe('/review');
-    expect(Object.fromEntries(new URL(page.url()).searchParams)).toEqual({ trade: trade.tradeId, panel: 'Action', replay: 'open' });
+    expect(Object.fromEntries(new URL(page.url()).searchParams)).toEqual({ trade: trade.tradeId, panel: 'Action', replay: 'open', session: '2026-11-12' });
 
     await section.getByRole('link', { name: 'Price History' }).click();
     await expect(detail.heading(page, 'BREN')).toBeVisible(LAUNCH);

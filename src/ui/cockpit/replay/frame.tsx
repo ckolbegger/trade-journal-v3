@@ -1,12 +1,15 @@
 import { useState, type KeyboardEvent } from 'react';
 import { Link } from 'react-router';
 import { Words } from './figure-words.tsx';
+import { ActionRow } from './action-row.tsx';
+import { DayCard } from './day-card.tsx';
+import { KeyMoments } from './key-moments.tsx';
 import { Readout } from './readout.tsx';
 import type { ReplayProps } from './replay.types.ts';
 import { SessionCards } from './session-cards.tsx';
 
 // A255: the frame owns the headline, the slider and the reveal rule. It selects finished values; it works out none.
-export function ReplayFrame({ tradeKey, sessions, initialSession, sliderLabel, previousLabel, nextLabel, cardsWords, plan, plotBase, Plot, renderSince, renderChips, renderLinks, onSessionChange }: ReplayProps) {
+export function ReplayFrame({ tradeKey, sessions, initialSession, sliderLabel, previousLabel, nextLabel, cardsWords, plan, plotBase, Plot, actionKey, keyMoments, renderSince, renderChips, renderLinks, onSessionChange }: ReplayProps) {
   const last = sessions.length - 1;
   // A257: the slider's session is a date held with the Trade it belongs to, so a longer replay of the same Trade keeps it and another Trade starts afresh.
   const [held, setHeld] = useState({ tradeKey, date: initialSession });
@@ -86,6 +89,7 @@ export function ReplayFrame({ tradeKey, sessions, initialSession, sliderLabel, p
           )}
         </p>
       )}
+      {keyMoments && <KeyMoments words={keyMoments} current={session.date} onChoose={(date) => move(sessions.findIndex((s) => s.date === date))} />}
       <div className="replay-slider">
         <button type="button" aria-label={previousLabel} disabled={current === 0} onClick={() => move(current - 1)}>
           ‹
@@ -110,11 +114,13 @@ export function ReplayFrame({ tradeKey, sessions, initialSession, sliderLabel, p
           </div>
         )}
       </div>
+      {/* W149: each session's Action, in a row under the chart. */}
+      {actionKey && <ActionRow actionKey={actionKey} slots={plotBase.axis.slots} cells={sessions.slice(0, current + 1).map((s) => ({ dateLabel: s.dateLabel, ...(s.actionMark && { mark: s.actionMark }) }))} />}
       {/* W47: the chips sit under the charts (the overlay's stylesheet puts them in the charts' column on a wide screen). */}
       {renderChips?.(session)}
       {/* W48: the "since the session before" line follows the chips, in the charts' column. */}
       {renderSince?.(session)}
-      <Readout groups={session.readout} />
+      <Readout groups={session.readout} {...(session.day && { lead: <DayCard day={session.day} /> })} />
       {/* W46: the screen's links for the slider's session, under the readout. */}
       {renderLinks?.(session)}
       {/* Decision 5: the Plan's own terms, fixed above the cards whichever session the slider is on. */}
