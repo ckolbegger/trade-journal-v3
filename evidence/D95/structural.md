@@ -1511,3 +1511,7 @@ Commit `0e243169`: "Decline…" as a link apart from "Write the Close Review" (W
 ocr of T95.60 (session 16a47510): complete, 19 files reviewed, 4 findings, all Valid. `evidence/D95/ocr/T95.60-0e243169.json`.
 - Findings 1 and 2 (`ReviewReflections.tsx:108`, `OwedDebtItem.tsx:208`): declining a Close Review takes 2 presses, no more than answering (also for the plain Debt form fallback: "Write the Close Review" then "Answer"). This is Q13; whether they become bug tasks waits on the user's answer.
 - **T95.60-B1** (Valid, `TradeDetail.test.tsx:446` and `DebtForm.test.tsx:406`, the same pattern): the `pressesToResolve` helpers return the count when they reach their press cap (6, 5) without checking the save was made, so a broken decline would count as "more presses" and pass. Cases: it should fail when the decline never saves (the helper asserts the save happened); it should still count the presses for a decline that does save, on Trade Detail and in DebtForm.
+
+### T95.60-B1
+
+Commit `80a8e8df`: each `pressesToResolve` helper asserts the save happened (Trade Detail: `Journal.save` once; DebtForm: the adapter once). Shown first with the decline's confirm made a no-op: both tests passed before the assertion, failed after; restored. Both files 66 passed; typecheck, tsc6, lint, lint:deps exit 0.
