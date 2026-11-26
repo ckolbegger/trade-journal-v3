@@ -69,6 +69,9 @@ describe('owed-reflection cards (A90)', () => {
       closeReason: { id: closeReason.id, label: closeReason.label },
       closeReviewOutcome: { kind: 'Debt', id: debtOf('M').debtId },
       terminalTime: '2026-10-12T19:00:00Z',
+      plan: expect.any(Object) as unknown,
+      fills: expect.any(Array) as unknown,
+      expirations: [],
     });
     expect(derivedM.realizedR.kind).toBe('Value');
     const debtM = debtOf('M');
@@ -76,6 +79,7 @@ describe('owed-reflection cards (A90)', () => {
       {
         debtId: debtM.debtId,
         entryType: 'Close Review',
+        entryTypeKey: 'entry-type.close-review',
         definition: expect.objectContaining({ id: debtM.definitionId }) as unknown,
         economicTime: debtM.momentTime,
         executions: [expect.objectContaining({ action: 'Sell', quantity: '100', price: '41.00' }) as unknown],
@@ -101,6 +105,7 @@ describe('owed-reflection cards (A90)', () => {
       {
         debtId: debtQ.debtId,
         entryType: 'Position Change Reflection',
+        entryTypeKey: 'entry-type.position-change-reflection',
         definition: expect.objectContaining({ id: debtQ.definitionId }) as unknown,
         economicTime: debtQ.momentTime,
         executions: [expect.objectContaining({ action: 'Buy', quantity: '100', price: '10.00' }) as unknown],
@@ -203,6 +208,38 @@ async function relabelCloseReviewEntryType(stack: ReviewStack, label: string): P
   });
   db.close();
 }
+
+describe('the closed card Plan and what happened (T95.58, W150)', () => {
+  it('should carry on a closed card the Plan leg with its Stop and Target and planned result, and each fill with its price and time, from the facts it already reads', async () => {
+    const { stack, trades } = await closedTradeReviewFixture({ only: ['M'] });
+    const found = await stack.tradeRecord.getRecord({ tradeId: trades.M!, projection: 'AnalysisInput' });
+    if (found.kind !== 'Found') throw new Error('no Trade');
+    const stored = found.projection as TradeAnalysisRecord;
+    const derived = derive({ record: stored });
+    if (derived.kind !== 'Derived') throw new Error('T-M facts are coherent');
+    const leg = stored.plan.legs[0]!;
+
+    const card = owedCard(await cardOf(stack, await openTuesday(stack), trades.M!));
+
+    if (card.summary?.kind !== 'Closed') throw new Error('expected a Closed summary');
+    expect(card.summary.plan).toEqual({
+      side: 'Long',
+      instrument: leg.instrument,
+      quantity: '100',
+      intendedEntry: leg.intendedEntry,
+      stops: stored.plan.stops.map(({ kind, price }) => ({ kind, price })),
+      targets: stored.plan.targets.map(({ kind, price }) => ({ kind, price })),
+      plannedReward: derived.baseline.originalPlannedReward,
+      plannedR: derived.baseline.rewardRiskRatio,
+    });
+    // Bought 100 at 40.00, sold 100 at 41.00 at the terminal time; no expiration.
+    expect(card.summary.fills).toEqual([
+      { action: 'Buy', quantity: '100', price: '40.00', economicTime: derived.exposureStart },
+      { action: 'Sell', quantity: '100', price: '41.00', economicTime: '2026-10-12T19:00:00Z' },
+    ]);
+    expect(card.summary.expirations).toEqual([]);
+  }, 60_000);
+});
 
 describe('Close Review outcome by Entry Type key (A90)', () => {
   it('should find the Close Review outcome by its Entry Type key when the Entry Type label differs', async () => {

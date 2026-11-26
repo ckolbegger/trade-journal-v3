@@ -32,7 +32,7 @@ async function openOwedCard(page: Page, symbol: string): Promise<Locator> {
 // Answers the Close Review of an owed card.
 async function answerCloseReviewOnCard(page: Page, symbol: string): Promise<void> {
   const item = await openOwedCard(page, symbol);
-  await item.getByRole('button', { name: /^Reflect on / }).click();
+  await item.getByRole('button', { name: 'Write the Close Review' }).click();
   await answerCloseReviewIn(debtForm(page));
   await answerDebt(page, undefined, 'page');
 }

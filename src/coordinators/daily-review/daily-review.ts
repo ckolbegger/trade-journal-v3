@@ -331,6 +331,7 @@ function owedSummary(lifecycle: LifecycleState, state: DerivedTradeState, analys
     const position = openTradeSummary(analysis.plan.legs[0]!.instrument, state);
     return { kind: 'Open', ...(position && { position }), entryResolution: state.entryResolution };
   }
+  const leg = analysis.plan.legs[0]!;
   return {
     kind: 'Closed',
     realizedPnl: state.realizedToDate,
@@ -340,6 +341,18 @@ function owedSummary(lifecycle: LifecycleState, state: DerivedTradeState, analys
     ...(closeReason && { closeReason }),
     ...(closeReviewOutcome && { closeReviewOutcome }),
     ...(analysis.terminalTime && { terminalTime: analysis.terminalTime }),
+    plan: {
+      side: leg.side,
+      instrument: leg.instrument,
+      quantity: leg.quantity,
+      intendedEntry: leg.intendedEntry,
+      stops: analysis.plan.stops.map(({ kind, price }) => ({ kind, price })),
+      targets: analysis.plan.targets.map(({ kind, price }) => ({ kind, price })),
+      plannedReward: state.baseline.originalPlannedReward,
+      plannedR: state.baseline.rewardRiskRatio,
+    },
+    fills: state.facts.map(({ action, quantity, price, economicTime }) => ({ action, quantity, price, economicTime })),
+    expirations: analysis.positionChanges.flatMap(({ settlements = [] }) => settlements.map(({ quantity, economicTime }) => ({ quantity, economicTime }))),
   };
 }
 
@@ -824,6 +837,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
       reflections.push({
         debtId: debt.debtId,
         entryType: entryTypes.get(debt.debtId) ?? debt.entryTypeKey,
+        entryTypeKey: debt.entryTypeKey,
         definition: definition.definition,
         economicTime: debt.momentTime,
         executions: positionChange?.executions ?? [],

@@ -1453,6 +1453,66 @@ ul.rows > li {
   }
 }
 
+/* The closed card's Plan and What happened columns (T95.58, W150): side by side, and one above the other where the card is under 40rem wide (the same width as A162's). */
+.plan-result {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.5rem 0 0.75rem;
+}
+.plan-result th,
+.plan-result td {
+  text-align: left;
+  vertical-align: top;
+  padding: 0.3rem 0.75rem 0.3rem 0;
+  border-bottom: 1px solid var(--line);
+  font-weight: 400;
+}
+.plan-result thead th,
+.plan-result tbody th {
+  font-weight: 650;
+}
+@container (max-width: 39.99rem) {
+  .plan-result thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .plan-result tr,
+  .plan-result th,
+  .plan-result td {
+    display: block;
+  }
+  .plan-result tr {
+    padding: 0.3rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .plan-result th,
+  .plan-result td {
+    padding: 0.1rem 0;
+    border: 0;
+  }
+  .plan-result td {
+    position: relative;
+    padding-left: 7.5rem;
+  }
+  .plan-result td::before {
+    position: absolute;
+    left: 0;
+    color: var(--muted);
+  }
+  .plan-result td:nth-of-type(1)::before {
+    content: 'Plan';
+  }
+  .plan-result td:nth-of-type(2)::before {
+    content: 'What happened';
+  }
+  .plan-result td:empty {
+    display: none;
+  }
+}
+
 /* "Your last decisions" (T95.19, W115) and the card's top line (W114). */
 .review-card-last {
   margin: 0.4rem 0;

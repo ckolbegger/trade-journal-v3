@@ -3,10 +3,10 @@ import { flushSync } from 'react-dom';
 import type { UiFacade } from '../../app/compose.ts';
 import type { OwedReflectionsCard, OwedReflectionsTrade, OwedTradeSummary, PostSaveReview } from '../../app/types.ts';
 import { Badge } from '../Badge.tsx';
-import { calculation, closedViaSale, signed } from '../figures.ts';
-import { money, rMultiple, tradeSummary } from '../format.ts';
+import { localTime, shortDate, tradeSummary } from '../format.ts';
+import { useRuntime } from '../runtime.tsx';
 import { panelOf, plural, reflectionsStatus, type Go } from './ReviewCard.tsx';
-import { closedViaOption } from './option-disposition.ts';
+import { howEnded, planResultRows, type ClosedSummary } from './closed-card.ts';
 import { shownFirst, type FormRegister } from './form-handle.ts';
 import { Refusal, type RefusalProps } from './Refusal.tsx';
 import { ReviewReflections } from './ReviewReflections.tsx';
@@ -18,39 +18,67 @@ export type OwedDetail = 'Loading' | 'Unavailable' | { readonly card: OwedReflec
 const NOTHING_NEXT = () => undefined;
 
 // "2 reflections due", "1 not yet due", or Done once nothing is owed now: the words of the progress record (A164, A167).
-function remainsText(trade: OwedReflectionsTrade): string {
+// The Close Review names the card when it is owed now, from the next Review, answered or declined (W151); the last two are read from the opened card.
+function remainsText(trade: OwedReflectionsTrade, detail: OwedDetail | undefined): string {
   const { dueNow, later } = panelOf(trade.progress, 'Reflections');
+  const closeReview = trade.owed.find((item) => item.entryTypeKey === 'entry-type.close-review');
+  if (closeReview?.classification === 'Due') return 'Close Review due';
   if (dueNow > 0) return `${plural(dueNow, 'reflection', 'reflections')} due`;
-  // A Close Review that waits for the next Review is named by that (W151).
-  if (trade.owed.some((item) => item.entryTypeKey === 'entry-type.close-review' && item.classification === 'DueInNextReview')) return 'Close Review · next Review';
+  if (closeReview?.classification === 'DueInNextReview') return 'Close Review · next Review';
+  const outcome = typeof detail === 'object' && detail.card.summary?.kind === 'Closed' ? detail.card.summary.closeReviewOutcome?.kind : undefined;
+  if (!closeReview && outcome === 'Entry') return 'Close Review saved';
+  if (!closeReview && outcome === 'Decline') return 'Close Review declined';
   return later > 0 ? `${later} not yet due` : 'Done';
+}
+
+// How a Closed Trade ended (W150): the words, the date and the Close Reason, then its result.
+function Ended({ summary }: { readonly summary: ClosedSummary }) {
+  const { timeZone = 'UTC' } = useRuntime();
+  const date = summary.terminalTime && shortDate(localTime(summary.terminalTime, timeZone).slice(0, 10));
+  const reason = summary.closeReason && (summary.closeReason.label || summary.closeReason.id);
+  return (
+    <section aria-label="How it ended">
+      <p>
+        How it ended: {howEnded(summary)}
+        {date && `, ${date}`}.{reason && ` ${reason}.`}
+      </p>
+      <table className="plan-result" aria-label="Plan and what happened">
+        <thead>
+          <tr>
+            <td />
+            <th scope="col">Plan</th>
+            <th scope="col">What happened</th>
+          </tr>
+        </thead>
+        <tbody>
+          {planResultRows(summary, timeZone).map((row) => (
+            <tr key={row.label}>
+              <th scope="row">{row.label}</th>
+              <td>{row.plan}</td>
+              <td>
+                {row.happened.map((line) => (
+                  <div key={line}>{line}</div>
+                ))}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </section>
+  );
 }
 
 // The Trade's summary for its lifecycle (A90): how a Closed Trade ended, or what an Open Trade holds.
 function Summary({ card }: { readonly card: OwedReflectionsCard }) {
   const summary: OwedTradeSummary | undefined = card.summary;
-  const optionSide = summary?.kind === 'Closed' ? summary.optionSide : undefined;
+  if (summary?.kind === 'Closed') return <Ended summary={summary} />;
+  // A Closed Trade whose facts cannot be replayed has nothing to say of how it ended.
+  if (card.lifecycle === 'Closed') return null;
   return (
     <section aria-label="Result">
       <dl>
         <dt>Lifecycle</dt>
         <dd>{card.lifecycle}</dd>
-        {summary?.kind === 'Closed' && (
-          <>
-            <dt>Realized P&L</dt>
-            <dd className="number">{signed(money)(summary.realizedPnl)}</dd>
-            <dt>Realized R</dt>
-            <dd className="number">{calculation(summary.realizedR, signed(rMultiple))}</dd>
-            <dt>Terminal Disposition</dt>
-            <dd>{calculation(summary.terminalDisposition, optionSide ? (mechanisms) => closedViaOption(optionSide, mechanisms) : closedViaSale)}</dd>
-            {summary.closeReason && (
-              <>
-                <dt>Close Reason</dt>
-                <dd>{summary.closeReason.label || summary.closeReason.id}</dd>
-              </>
-            )}
-          </>
-        )}
         {summary?.kind === 'Open' && (
           <>
             {summary.position && (
@@ -102,7 +130,7 @@ export function OwedCard({ facade, trade, reviewDate, expanded, detail, reveal, 
       <div className="review-card-head">
         <h3>
           <button type="button" ref={header} aria-expanded={expanded} onClick={onToggle}>
-            <span className="visually-hidden">Review</span> <span className="review-card-name">{trade.underlying}</span> <span className="review-card-remains">{remainsText(trade)}</span> <Badge tone="neutral">{trade.lifecycle}</Badge>
+            <span className="visually-hidden">Review</span> <span className="review-card-name">{trade.underlying}</span> <span className="review-card-remains">{remainsText(trade, detail)}</span> <Badge tone="neutral">{trade.lifecycle}</Badge>
           </button>
         </h3>
       </div>

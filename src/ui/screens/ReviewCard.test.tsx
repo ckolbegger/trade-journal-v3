@@ -1978,7 +1978,7 @@ describe('Review card: the Replay button (decision 3)', () => {
     );
     renderWalk(facade);
     const owedCard = await openTrade(user, 'ABC');
-    expect(within(owedCard).getByRole('region', { name: 'Result' })).toBeTruthy();
+    expect(within(owedCard).getByRole('button', { name: /^Reflections\b/ })).toBeTruthy();
     expect(within(owedCard).queryByRole('button', { name: 'Replay' })).toBeNull();
     // A card with no replay in its Trade keeps its other panels and the Action form.
     const card = await openTrade(user, 'XYZ');

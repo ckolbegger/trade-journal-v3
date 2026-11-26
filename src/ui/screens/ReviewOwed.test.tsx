@@ -72,6 +72,12 @@ const CLOSED_CARD: OwedReflectionsCard = {
     terminalDisposition: { kind: 'Value', value: [{ mechanism: 'Executions', quantity: rational(100n) }] },
     closeReason: { id: 'cr-1', label: 'Target Reached' },
     terminalTime: '2026-10-12T18:00:00Z',
+    plan: { side: 'Long', instrument: symbol, quantity: '100', intendedEntry: '50.00', stops: [{ kind: 'UnderlyingPrice', price: '48.00' }], targets: [{ kind: 'UnderlyingPrice', price: '55.00' }], plannedReward: rational(500n), plannedR: rational(3n) },
+    fills: [
+      { action: 'Buy', quantity: '100', price: '50.00', economicTime: '2026-10-09T14:30:00Z' },
+      { action: 'Sell', quantity: '100', price: '52.48', economicTime: '2026-10-12T18:00:00Z' },
+    ],
+    expirations: [],
   },
   reflections: [reflection('d-close', 'Due', '2026-10-12T18:00:00Z')],
   progress: reflectionsOwedProgress(1, 0),
@@ -166,23 +172,152 @@ function renderReview(facade: UiFacade, at = '/review') {
 
 const GROUP = 'Trades with owed reflections';
 
-describe('owed card Terminal Disposition, row 23.12', () => {
-  it('should say Closed via sale of 1 contract and expiration of 1 contract on the owed card of an option Trade closed by a sale and an expiration', async () => {
-    const facade = reviewFacade(ready());
-    const card: OwedReflectionsCard = {
+describe('the closed card (T95.58, W103, W150)', () => {
+  it('should head the group Trades with owed reflections and not say how an open Trade ended', async () => {
+    const user = userEvent.setup();
+    renderReview(reviewFacade(ready()));
+    expect(await screen.findByRole('heading', { name: 'Trades with owed reflections', level: 2 })).toBeTruthy();
+    await user.click(await screen.findByRole('button', { name: /^Review DEF/ }));
+    const open = await screen.findByRole('region', { name: 'DEF review' });
+    expect(within(open).queryByText(/How it ended/)).toBeNull();
+  });
+});
+
+describe('the closed card says how it ended (T95.58, W150)', () => {
+  it('should say how the Trade ended in plain words, with the date and the result', async () => {
+    renderReview(reviewFacade(ready()));
+    const closed = await screen.findByRole('region', { name: 'ABC review' });
+    expect(within(closed).getByText('How it ended: sold all 100 shares, Mon Oct 12.', { exact: false }).textContent).toBe('How it ended: sold all 100 shares, Mon Oct 12. Target Reached.');
+    expect(within(closed).getAllByText('+$248.00 · +1.50R')).toHaveLength(1);
+  });
+
+  it('should say a long option sold and expired as the contracts sold and the ones that expired worthless, and a short one bought back', async () => {
+    const closed = CLOSED_CARD.summary as Extract<OwedTradeSummary, { kind: 'Closed' }>;
+    const optionCard = (side: 'Long' | 'Short', mechanisms: { mechanism: 'Executions' | 'Expiration'; quantity: Rational }[]): OwedReflectionsCard => ({
       ...CLOSED_CARD,
-      labels: { ...CLOSED_CARD.labels, strategy: 'Long Call' },
-      summary: {
-        ...(CLOSED_CARD.summary as Extract<OwedTradeSummary, { kind: 'Closed' }>),
-        optionSide: 'Long',
-        terminalDisposition: { kind: 'Value', value: [{ mechanism: 'Executions', quantity: rational(1n) }, { mechanism: 'Expiration', quantity: rational(1n) }] },
-      },
+      summary: { ...closed, optionSide: side, plan: { ...closed.plan, side, instrument: { kind: 'Option', symbol: 'ABC', root: 'ABC', expiration: '2026-11-20', strike: '50', right: 'Call', multiplier: 100 } }, terminalDisposition: { kind: 'Value', value: mechanisms } },
+    });
+    const sentenceOf = async (card: OwedReflectionsCard): Promise<string> => {
+      const facade = reviewFacade(ready());
+      vi.mocked(facade.DailyReview.getTrade).mockResolvedValue({ kind: 'ReflectionsOwed', reviewDate: DATE, cutoff: CUTOFF, card });
+      renderReview(facade);
+      const region = await screen.findByRole('region', { name: 'ABC review' });
+      const text = within(region).getByText(/^How it ended: /).textContent;
+      cleanup();
+      return text;
     };
+    expect(await sentenceOf(optionCard('Long', [{ mechanism: 'Executions', quantity: rational(4n) }]))).toBe('How it ended: sold all 4 contracts, Mon Oct 12. Target Reached.');
+    expect(await sentenceOf(optionCard('Short', [{ mechanism: 'Executions', quantity: rational(1n) }]))).toBe('How it ended: bought back all 1 contract, Mon Oct 12. Target Reached.');
+    expect(await sentenceOf(optionCard('Long', [{ mechanism: 'Expiration', quantity: rational(2n) }]))).toBe('How it ended: expired worthless, Mon Oct 12. Target Reached.');
+    expect(await sentenceOf(optionCard('Long', [{ mechanism: 'Executions', quantity: rational(2n) }, { mechanism: 'Expiration', quantity: rational(2n) }]))).toBe('How it ended: sold 2 contracts, 2 expired worthless, Mon Oct 12. Target Reached.');
+  });
+});
+
+describe('the closed card sets the Plan beside what happened (T95.58, W150)', () => {
+  it('should set the Plan beside what happened: Entry, Stop, Target, Exit, Result', async () => {
+    renderReview(reviewFacade(ready()));
+    const closed = await screen.findByRole('region', { name: 'ABC review' });
+    const table = within(closed).getByRole('table', { name: 'Plan and what happened' });
+    expect(within(table).getAllByRole('columnheader').map((h) => h.textContent)).toEqual(['Plan', 'What happened']);
+    const rows = within(table).getAllByRole('row').slice(1).map((row) => [within(row).getByRole('rowheader').textContent, ...within(row).getAllByRole('cell').map((c) => c.textContent)]);
+    expect(rows).toEqual([
+      ['Entry', '100 shares at $50.00', 'Bought 100 at $50.00, Fri Oct 9'],
+      ['Stop', '$48.00', ''],
+      ['Target', '$55.00', ''],
+      ['Exit', 'All at the Stop or the Target', 'Sold 100 at $52.48, Mon Oct 12'],
+      ['Result', '$500.00 · 3.00R', '+$248.00 · +1.50R'],
+    ]);
+  });
+});
+
+describe('the closed card drops the lifecycle words and shows dates as dates (T95.58, W150, X13)', () => {
+  it('should show no Lifecycle or Terminal Disposition on the closed card, and each date of what it says as a date', async () => {
+    renderReview(reviewFacade(ready()));
+    const closed = await screen.findByRole('region', { name: 'ABC review' });
+    expect(within(closed).queryByText('Lifecycle')).toBeNull();
+    expect(within(closed).queryByText('Terminal Disposition')).toBeNull();
+    expect(within(closed).queryByText(/Closed via/)).toBeNull();
+    const ended = within(closed).getByRole('region', { name: 'How it ended' });
+    expect(ended.textContent).toContain('Mon Oct 12');
+    expect(ended.textContent).toContain('Fri Oct 9');
+    expect(ended.textContent).not.toMatch(/\d{4}-\d{2}-\d{2}|T\d{2}:\d{2}/);
+  });
+});
+
+describe('the closed card is labelled by its Close Review (T95.58, W151)', () => {
+  const closeReviewDebt = (classification: 'Due' | 'DueInNextReview') => ({ debtId: 'd-cr', entryTypeKey: 'entry-type.close-review', dueAnchor: '2026-10-12T18:00:00Z' as never, classification });
+  async function headerOf(owed: OwedReflectionsTrade[], card?: OwedReflectionsCard): Promise<string> {
+    const facade = reviewFacade(ready({ owed }));
+    if (card) vi.mocked(facade.DailyReview.getTrade).mockResolvedValue({ kind: 'ReflectionsOwed', reviewDate: DATE, cutoff: CUTOFF, card });
+    renderReview(facade);
+    const button = await screen.findByRole('button', { name: /^Review ABC/ });
+    const text = button.textContent;
+    if (button.getAttribute('aria-expanded') !== 'true') await userEvent.click(button);
+    await screen.findByRole('region', { name: 'ABC review' });
+    const loaded = screen.getByRole('button', { name: /^Review ABC/ }).textContent;
+    cleanup();
+    return card ? loaded : text;
+  }
+  const closedSummary = CLOSED_CARD.summary as Extract<OwedTradeSummary, { kind: 'Closed' }>;
+  // A Position Change Reflection keeps a Trade whose Close Review is answered or declined in the group.
+  const otherReflection = { debtId: 'd-pcr', entryTypeKey: 'entry-type.position-change-reflection', dueAnchor: '2026-10-12T18:00:00Z' as never, classification: 'DueInNextReview' as const };
+
+  it('should label the card by its Close Review: due, next Review, saved or declined', async () => {
+    const base = owedTrade(CLOSED_CARD);
+    const later = { ...base, progress: reflectionsOwedProgress(0, 1) };
+    expect(await headerOf([{ ...base, owed: [closeReviewDebt('Due')] }])).toContain('Close Review due');
+    expect(await headerOf([{ ...later, owed: [closeReviewDebt('DueInNextReview')] }])).toContain('Close Review · next Review');
+    const answered = (closeReviewOutcome: NonNullable<typeof closedSummary.closeReviewOutcome>): OwedReflectionsCard => ({ ...CLOSED_CARD, summary: { ...closedSummary, closeReviewOutcome } });
+    expect(await headerOf([{ ...later, owed: [otherReflection] }], answered({ kind: 'Entry', id: 'e-1' }))).toContain('Close Review saved');
+    expect(await headerOf([{ ...later, owed: [otherReflection] }], answered({ kind: 'Decline', id: 'x-1' }))).toContain('Close Review declined');
+  });
+});
+
+describe('the closed card offers the Close Review (T95.58, W151)', () => {
+  const closeReview = (classification: OwedReflection['classification']): OwedReflection => ({ ...reflection('d-cr', classification, '2026-10-12T18:00:00Z', 'Close Review'), entryTypeKey: 'entry-type.close-review' });
+  const cardWith = (...reflections: OwedReflection[]): OwedReflectionsCard => ({ ...CLOSED_CARD, reflections });
+  async function openCard(card: OwedReflectionsCard) {
+    const facade = reviewFacade(ready());
     vi.mocked(facade.DailyReview.getTrade).mockResolvedValue({ kind: 'ReflectionsOwed', reviewDate: DATE, cutoff: CUTOFF, card });
     renderReview(facade);
+    return screen.findByRole('region', { name: 'ABC review' });
+  }
+
+  it('should offer Write the Close Review when it is due, and say when it is not yet due', async () => {
+    const user = userEvent.setup();
+    const due = await openCard(cardWith(closeReview('Due')));
+    expect(within(due).queryByText('Not due until the next Review.')).toBeNull();
+    expect(within(due).queryByRole('button', { name: /^Reflect on/ })).toBeNull();
+    await user.click(within(due).getByRole('button', { name: 'Write the Close Review' }));
+    expect(within(due).getByRole('form', { name: 'Reflection' })).toBeTruthy();
+    cleanup();
+
+    const later = await openCard(cardWith(closeReview('DueInNextReview')));
+    expect(within(later).getByText('Not due until the next Review.')).toBeTruthy();
+    expect(within(later).getByRole('button', { name: 'Write the Close Review' })).toBeTruthy();
+  });
+});
+
+describe('the closed card keeps a Position Change Reflection answerable (T95.58, A90)', () => {
+  it('should keep an owed Position Change Reflection answerable on a closed card beside its Close Review', async () => {
+    const user = userEvent.setup();
+    const pcr = { ...reflection('d-pcr', 'DueInNextReview', '2026-10-12T18:00:00Z'), entryTypeKey: 'entry-type.position-change-reflection' };
+    const close = { ...reflection('d-cr', 'DueInNextReview', '2026-10-12T18:00:00Z', 'Close Review'), entryTypeKey: 'entry-type.close-review' };
+    const card: OwedReflectionsCard = { ...CLOSED_CARD, reflections: [close, pcr] };
+    const facade = reviewFacade(ready());
+    vi.mocked(facade.DailyReview.getTrade).mockResolvedValue({ kind: 'ReflectionsOwed', reviewDate: DATE, cutoff: CUTOFF, card });
+    const post = { kind: 'Ready', cards: [], progress: { tradesWithAction: 1, tradesEligible: 1 }, completion: ready().completion, nextStep: { kind: 'Done' }, binding, day: ready().day } as const;
+    vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'DebtResolved', decline: { id: 'decl-1', reason: 'Not now.', authoredTime: '2026-10-13T21:05:00Z' } as never, debt: { debtId: 'd-pcr', status: 'Settled', revision: 'd-pcr-rev-2' } as never, review: post });
+    renderReview(facade);
     const closed = await screen.findByRole('region', { name: 'ABC review' });
-    const result = within(closed).getByRole('region', { name: 'Result' });
-    expect(within(result).getByText('Terminal Disposition').nextElementSibling?.textContent).toBe('Closed via sale of 1 contract and expiration of 1 contract');
+
+    await user.click(within(closed).getByRole('button', { name: /^Reflect on/ }));
+    await user.type(within(closed).getByLabelText('Reason for declining (optional)'), 'Not now.');
+    await user.click(within(closed).getByRole('button', { name: 'Decline' }));
+
+    expect(facade.DailyReview.save).toHaveBeenCalledWith({ kind: 'ResolveReviewDebt', reviewDate: DATE, binding: pcr.saveBinding, resolution: { kind: 'Decline', reason: 'Not now.' } });
+    expect(await within(closed).findByText('Declined to reflect. Reason: Not now.')).toBeTruthy();
+    expect(within(closed).getByRole('button', { name: 'Write the Close Review' })).toBeTruthy();
   });
 });
 
@@ -235,12 +370,9 @@ describe('owed-reflection group (P19, P20)', () => {
     // The first card with a reflection due opens on load, as a walked card does.
     const closed = await screen.findByRole('region', { name: 'ABC review' });
     expect(facade.DailyReview.getTrade).toHaveBeenCalledWith({ reviewDate: DATE, tradeId: 't-x', binding });
-    const result = within(closed).getByRole('region', { name: 'Result' });
-    expect(within(result).getByText('Closed')).toBeTruthy();
-    expect(within(result).getByText('Closed via sale of 100 shares')).toBeTruthy();
-    expect(within(result).getByText('Target Reached')).toBeTruthy();
-    expect(within(result).getByText('+$248.00')).toBeTruthy();
-    expect(within(result).getByText('+1.50R')).toBeTruthy();
+    const ended = within(closed).getByRole('region', { name: 'How it ended' });
+    expect(ended.textContent).toContain('How it ended: sold all 100 shares, Mon Oct 12. Target Reached.');
+    expect(within(ended).getByText('+$248.00 · +1.50R')).toBeTruthy();
     expect(within(closed).getByRole('region', { name: 'Reflections' })).toBeTruthy();
     expect(within(closed).getByRole('button', { name: /^Reflect on/ })).toBeTruthy();
     // No Action panel or form, and no Marks panel.

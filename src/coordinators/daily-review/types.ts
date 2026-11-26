@@ -322,6 +322,8 @@ export interface OwedReflection {
   readonly debtId: string;
   // The Entry Type's label, as Trade Detail shows it ("Close Review", "Position Change Reflection").
   readonly entryType: string;
+  // The Entry Type's key ("entry-type.close-review"), which names the reflection where the label could be renamed; absent on a hand-built card.
+  readonly entryTypeKey?: string;
   readonly definition: EntryDefinitionRecord;
   readonly economicTime: Instant;
   readonly executions: readonly ExecutionFact[];
@@ -425,6 +427,21 @@ export type OwedTradeSummary =
       // The current outcome of the Trade's Close Review obligation: a completed Entry, a decline, or the Debt still owed.
       readonly closeReviewOutcome?: ObligationOutcome;
       readonly terminalTime?: Instant;
+      // The Plan the Trade set out with, for the closed card's Plan column (W150): the leg, its Stop and Target conditions, and the
+      // planned result (the Plan Baseline's original reward and its reward-to-risk ratio in R).
+      readonly plan: {
+        readonly side: 'Long' | 'Short';
+        readonly instrument: Instrument;
+        readonly quantity: string;
+        readonly intendedEntry: string;
+        readonly stops: readonly { readonly kind: 'UnderlyingPrice' | 'StructureValue'; readonly price: string }[];
+        readonly targets: readonly { readonly kind: 'UnderlyingPrice' | 'StructureValue'; readonly price: string }[];
+        readonly plannedReward: Rational;
+        readonly plannedR: Rational;
+      };
+      // What happened: each effective fill in Fact Order and each expiration the Trade recorded, one line each (never summed).
+      readonly fills: readonly { readonly action: 'Buy' | 'Sell'; readonly quantity: string; readonly price: string; readonly economicTime: Instant }[];
+      readonly expirations: readonly { readonly quantity: string; readonly economicTime: Instant }[];
     }
   | { readonly kind: 'Open'; readonly position?: TradeSummary; readonly entryResolution: EntryResolution };
 

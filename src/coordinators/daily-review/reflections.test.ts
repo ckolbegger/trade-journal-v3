@@ -53,6 +53,7 @@ describe('owed reflections (A68)', () => {
       expected.map(({ name, time, quantity, price, classification }) => ({
         debtId: debts[name].debtId,
         entryType: 'Position Change Reflection',
+        entryTypeKey: 'entry-type.position-change-reflection',
         definition: definition.definition,
         economicTime: time,
         executions: [expect.objectContaining({ quantity, price }) as unknown],

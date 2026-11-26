@@ -23,7 +23,7 @@ type Reading = Extract<Evaluation['conditions'][number]['result'], { readonly ki
 
 // A Plan's Stops or Targets, one line per condition in Plan order (W6): a stock's is its price in dollars; an option's reads "MNO at or below
 // 41.00" for an Underlying price (C3) and "Option at or above $3.60" for an option price.
-function conditionLines(role: 'Stop' | 'Target', conditions: readonly Condition[], leg: Leg | undefined, symbol: string): readonly string[] {
+export function conditionLines(role: 'Stop' | 'Target', conditions: readonly Pick<Condition, 'kind' | 'price'>[], leg: Pick<Leg, 'instrument' | 'side'> | undefined, symbol: string): readonly string[] {
   const option = leg?.instrument.kind === 'Option' ? { right: leg.instrument.right, side: leg.side } : undefined;
   return conditions.map((condition) => {
     if (!option) return price(condition.price);

@@ -186,7 +186,7 @@ test.describe('B6.12 Responsive and accessible', () => {
     if ((await header.getAttribute('aria-expanded')) !== 'true') await header.click();
     await expect(header).toHaveAttribute('aria-expanded', 'true');
     await accessibleAtBothWidths(page, 'Review owed-reflection card, open');
-    await card.getByRole('button', { name: /^Reflect on / }).click();
+    await card.getByRole('button', { name: 'Write the Close Review' }).click();
     await expect(debtForm(page)).toBeVisible();
     await accessibleAtBothWidths(page, 'Review owed-reflection card with the Close Review form');
     await context.close();

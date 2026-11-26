@@ -41,6 +41,8 @@ function ReflectionRow({ reflection, timeZone, isOpen, resolved, blocked, submit
   const dirty = useCallback((isDirty: boolean) => onEntryDirty(`debt:${debtId}`, isDirty), [debtId, onEntryDirty]);
   const offer = useCallback((handle: Parameters<FormRegister>[1]) => onForm(`debt:${debtId}`, handle), [debtId, onForm]);
   const when = localTime(reflection.economicTime, timeZone);
+  // A Close Review is written, not "reflected on" (W151).
+  const closeReview = reflection.entryTypeKey === 'entry-type.close-review';
   const row = useRef<HTMLLIElement>(null);
   const button = useRef<HTMLButtonElement | null>(null);
   const wasOpen = useRef(false);
@@ -73,9 +75,10 @@ function ReflectionRow({ reflection, timeZone, isOpen, resolved, blocked, submit
             buttonRef(element);
           }}
           className="pill secondary" disabled={blocked} onClick={onOpen}>
-          Reflect on {when}
+          {closeReview ? 'Write the Close Review' : `Reflect on ${when}`}
         </button>
       )}
+      {!resolved && !isOpen && closeReview && reflection.classification !== 'Due' && <p>Not due until the next Review.</p>}
       {(isOpen || resolved) && <DebtForm definition={reflection.definition} binding={reflection.saveBinding} requires={reflection.requires} submit={submit} onResolved={onResolved} onCancel={resolved ? undefined : onClose} onDirtyChange={dirty} onHandle={offer} />}
     </li>
   );
