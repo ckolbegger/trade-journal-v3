@@ -109,29 +109,32 @@ html:has(.shell:not([data-layout='wide'])) {
   font-weight: 600;
 }
 
-.shell[data-layout='wide'] {
-  grid-template-columns: 220px 1fr;
-}
+/* The wide layout is the stylesheet's own media query, so a resize changes the grid in the same frame; the shell's data-layout follows by script. */
+@media (min-width: 960px) {
+  .shell {
+    grid-template-columns: 220px 1fr;
+  }
 
-.shell[data-layout='wide'] > * {
-  grid-column: 2;
-}
+  .shell > * {
+    grid-column: 2;
+  }
 
-.shell[data-layout='wide'] > .nav {
-  grid-column: 1;
-  grid-row: 1 / -1;
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  flex-direction: column;
-  justify-content: flex-start;
-  border-top: none;
-  border-right: 1px solid var(--line);
-  padding: 1.5rem 1rem;
-}
+  .shell > .nav {
+    grid-column: 1;
+    grid-row: 1 / -1;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    flex-direction: column;
+    justify-content: flex-start;
+    border-top: none;
+    border-right: 1px solid var(--line);
+    padding: 1.5rem 1rem;
+  }
 
-.shell[data-layout='wide'] > .content {
-  padding-bottom: 2rem;
+  .shell > .content {
+    padding-bottom: 2rem;
+  }
 }
 
 /* Cards, banners, and states. */
