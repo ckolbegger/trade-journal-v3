@@ -144,7 +144,7 @@ T95.16 stopped before writing. The collapsed card header (U3, breakdown line 85)
 
 **Answer (2026-11-26):** (1), "Please load the replay". Decision 136, plan revision 125; T95.56 gains cases 9 and 10. **Status:** answered; T95.56 resumes, then T95.59.
 
-## Q11 (T95.57): the Key moments drop-down lists moments after the slider's session — queued 2026-11-26 (to ask after Q10)
+## Q11 (T95.57): the Key moments drop-down lists moments after the slider's session — asked 2026-11-26 (queued earlier, asked after Q10)
 
 **Plain words.** T95.57 case 6 lists the key moments in a drop-down (W148, as the mockup draws it). The list shows every moment with its date, including ones after the session the slider is on (e.g. "4. High · Fri Nov 13" while on Thu Nov 12). D9's reveal rule (A276) says the Replay shows nothing of a later session. To keep `e2e/d9/replay.spec.ts` passing, T95.57 narrowed its "nothing of a later session" check to ignore the drop-down (committed in `26626d39`).
 
