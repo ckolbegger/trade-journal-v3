@@ -1542,3 +1542,7 @@ ocr of T95.61-B1 and T95.61-B2 (range `6af3aa53^..2a58109d`, session 50faeaea): 
 - **T95.61-B3** (Valid, medium, `ReviewView.tsx:372`): B2's `picks` guard counts only header presses (`toggle`); a card opened through `openCard` (a day-card link, or a changed address) doesn't bump it, so a re-read finishing after that still moves focus away. Cases: it should leave focus on a card opened from a day-card link during the re-read; it should still move focus after the Review's own advance to the next card.
 
 Run `t95.61-focus` (browser-task; unit at `0a39d2b2`, browser and checks at `f48dde20`, with T95.61-B3's work in progress beside it): unit 268 files, 3269 passed; integration 158 files, 364 passed; browser 58 passed; 14 of 14 checks exit 0; run-complete. Passed. T95.61 waits on T95.61-B3.
+
+### T95.61-B3
+
+Commit `02d8ef62`: `openCard` bumps `picks` (after the unsaved-drafts refusal, so a refused press doesn't count). `openCard` is reached only from the day-card links and the changed-address effect, never from the Review's own advance. Case 1 red then green; case 2 is B2's "should still move focus when the selection is unchanged", a first-run pass, flagged, mutation (`reopenAndApply` bumps `picks`) failed, restored. src/ui/screens 954 passed; typecheck, tsc6, lint (2 pre-existing warnings), lint:deps exit 0; browser d95/sale and d7/review-expiration 9 passed.
