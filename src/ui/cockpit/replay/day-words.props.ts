@@ -28,10 +28,10 @@ export function dayOf(view: TradeReplayView, index: number): Pick<ReplayFrameSes
       ...(letter && { actionMark: { letter, name: action.action } }),
     };
   }
-  // A317: a session that held a Position owed a Review, except the last one of a Trade with nothing to come: a contract due for settlement owes no Action (A315).
+  // A317: a session that held a Position (any open lot, so offsetting legs count) owed a Review, except the last one of a Trade with nothing to come: a contract due for settlement owes no Action (A315).
   // The newest session of an Open Trade is the one still to come.
   const newest = index === view.sessions.length - 1;
-  if (!session.heldQuantity.equals(ZERO) && (view.pending !== null || !newest)) {
+  if (session.positions.length > 0 && (view.pending !== null || !newest)) {
     const waiting = view.pending !== null && newest;
     return waiting
       ? { day: { ...words, action: { kind: 'Waiting', text: 'Action: not chosen yet.' } } }

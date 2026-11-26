@@ -5,7 +5,7 @@ import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it } from 'vitest';
 import { ReplayDrawer } from '../drawers/replay.tsx';
 import type { ReplayView } from './replay.props.ts';
-import { BREN, session, usd, view, type Session } from './view-doubles.props.ts';
+import { BREN, DALE, session, usd, view, type Session } from './view-doubles.props.ts';
 
 afterEach(cleanup);
 
@@ -13,7 +13,10 @@ afterEach(cleanup);
 // The view is finished; the drawer draws it through the adapter.
 const buy = { id: 'pc-1', kind: 'Execution', effect: 'Opened', fills: [{ instrument: BREN, action: 'Buy', quantity: usd(4), price: usd(1.61) }] } as const;
 const sell = { id: 'pc-2', kind: 'Execution', effect: 'Reduced', fills: [{ instrument: BREN, action: 'Sell', quantity: usd(2), price: usd(4) }] } as const;
-const day = (date: string, extra: Partial<Session> = {}, held = 4): Session => ({ ...session({ date, pnl: 100, held }), ...extra });
+// A session that holds nothing carries no position (the view lists open lots only).
+const day = (date: string, extra: Partial<Session> = {}, held = 4): Session => ({ ...session({ date, pnl: 100, held }), ...(held === 0 && { positions: [] }), ...extra });
+// An open spread whose legs offset: two positions, net quantity zero.
+const spread = (date: string): Session => ({ ...day(date, {}, 0), positions: [{ instrument: BREN, quantity: usd(1) }, { instrument: DALE, quantity: usd(-1) }] });
 
 const DATES = ['2026-11-02', '2026-11-03', '2026-11-04', '2026-11-05'];
 const openView = (sessions: readonly Session[], extra: Partial<ReplayView> = {}): ReplayView => ({ ...view(sessions), pending: { date: '2026-11-06', journal: [] }, ...extra });
@@ -127,6 +130,18 @@ describe('Replay: What you did that day (T95.57, W147)', () => {
     show(settle(-4), DATES[1]);
     expect(said()).toContain('Expired. You chose Assigned: record later.');
     expect(said()).not.toContain('Settle Later');
+  });
+
+  it('should say No Review this session. for a session with no Action while offsetting legs are held', () => {
+    show(openView([spread(DATES[0]!), spread(DATES[1]!), spread(DATES[2]!)]), DATES[1]);
+    expect(said()).toContain('No Review this session.');
+    expect(said()).not.toContain('Nothing recorded.');
+  });
+
+  it('should say Action: not chosen yet. on the last session of an Open Trade whose offsetting legs are held', () => {
+    show(openView([spread(DATES[0]!), spread(DATES[1]!)]), DATES[1]);
+    expect(said()).toContain('Action: not chosen yet.');
+    expect(said()).not.toContain('Nothing recorded.');
   });
 
   it('should say no reason given, No Review this session. or Action: not chosen yet. as the case is', () => {
