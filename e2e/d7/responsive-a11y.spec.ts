@@ -243,6 +243,13 @@ test.describe('B7.13 Responsive and accessible', () => {
     await tabTo(page, reflection.getByRole('radiogroup', { name: 'Decision confidence' }).getByLabel('1', { exact: true }));
     for (let n = 0; n < 3; n++) await page.keyboard.press('ArrowRight');
     await expect(reflection.getByRole('radiogroup', { name: 'Decision confidence' }).getByLabel('4')).toBeChecked();
+    // The Expiration Reason is asked only where the form shows it (as recordExpiration does); then it is typed by keyboard too.
+    const reason = reflection.getByLabel(/^Why did it expire worthless\?/);
+    if ((await reason.count()) > 0) {
+      await tabTo(page, reason);
+      await page.keyboard.type('Expired out of the money.');
+      await expect(reason).toHaveValue('Expired out of the money.');
+    }
     await tabTo(page, closeReviewGroup(page).getByLabel('Reflect now'));
     await page.keyboard.press('ArrowRight');
     await expect(closeReviewGroup(page).getByLabel('Reflect later')).toBeChecked();
