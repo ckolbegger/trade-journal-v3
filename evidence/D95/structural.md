@@ -1531,3 +1531,5 @@ ocr of T95.61 (session ec9450d6): complete, 8 files, 2 findings, both Valid. `ev
 ### T95.61-B1
 
 Commit `6af3aa53`: when the re-read after a receipt is Empty, focus goes to the empty Review's section (`EmptyReview` takes the same `focus` count as DayCard and is `tabIndex=-1`; it has no heading, and adding one would be a new screen word). Case 1 red (focus on body) then green; case 2 first-run pass (built by T95.61), flagged, mutation (DayCard focus guard) failed, restored. src/ui/screens 951 passed; typecheck, tsc6, lint (2 pre-existing warnings), lint:deps exit 0; browser d95/sale and d7/review-expiration 9 passed.
+
+Q13 answered (2026-11-26), option 1: decision 139, plan revision 128. T95.60's case 6 reworded (never fewer presses to decline than to answer; declining always asks to confirm). ocr findings 1 and 2 dismissed by that decision (the Close Review's 2-press decline meets the reworded case). No code change. T95.60 done.

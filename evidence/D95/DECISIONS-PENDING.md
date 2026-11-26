@@ -173,3 +173,5 @@ Not parked: T95.62 is built as option 1, which needs no approval; option 2 would
 1. *Recommend:* accept it for the Close Review: answering takes at least as many presses as declining, plus the walk and the typed answers; case 6 is reworded to "never fewer presses to decline than to answer, and declining always asks to confirm". No code change.
 2. Add a third decline step for the Close Review (for example, declining only from inside the walk after the moments are seen, or a required reason, which changes W153's "Why? (optional)").
 **Parked:** T95.60's completion; its ocr and run go ahead.
+
+**Answer (2026-11-26):** (1). Decision 139, plan revision 128; T95.60's case 6 reworded; no code change; T95.60 done. **Status:** answered.
