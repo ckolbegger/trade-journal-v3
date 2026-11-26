@@ -1591,3 +1591,25 @@ Commit `bf4b8fd6`: item 5 (12 files, 25 insertions, 178 deletions). `open` no lo
 - Totals for T95.66.5: unit 3271 → 3258 (13 cases), integration 395 → 394 (1 case), about 670 lines removed.
 
 Run `t95.66.5-stale` (browser-auto 5bbbb304, which chose the full tier: `src/app/routes.ts` changed; at `bf4b8fd6`): unit 267 files, 3258 passed; integration 163 files, 394 passed; browser-1 127 passed (5.5 min), browser-2 79 passed (4.4 min), browser-3 55 passed (3.2 min), browser-4 191 passed, 4 skipped (5.5 min); 14 of 14 checks exit 0; run-complete. Passed. T95.66.5 done.
+
+## T95.67
+
+Final gate, from `63075cf9`.
+1. Complete cumulative run: run `t95.66.5-stale` (full tier, all 14 checks, which include `verify:fixtures`, `verify:capabilities`, `verify:capacity`, `verify:wording` and `verify:releases`) at `bf4b8fd6` stands as the gate's run: every commit since touches only plan and evidence files (`git diff --stat bf4b8fd6 HEAD -- src e2e tests tools bench package.json` empty). Main-session decision, recorded for review.
+2. `acceptance-commands.sh plan/D09.5-daily-review-redesign.md`: 43 commands checked, 0 failed.
+3. Critic C1 (fresh general-purpose, effort medium) over every flow in section 8 (C95.1, C95.2, C95.3, C95.4, C95.5, C95.6, C95.7, C95.8, C95.9, C95.10, C95.11, C95.12), with the screen reader pass, a real phone width, a day Complete with Unavailable Marks and a reflection owed on an open Trade: started.
+
+T95.67 critic C1 (fresh general-purpose, effort medium; report `evidence/D95/critic-c1.md`): **PASS**, every flow C95.1, C95.2, C95.3, C95.4, C95.5, C95.6, C95.7, C95.8, C95.9, C95.10, C95.11, C95.12, the screen reader pass, the phone width, a day Complete with Unavailable Marks and a reflection owed on an open Trade. Cost: 364,982 tokens, 638 tool calls, 33.9 min; brief built from the critic template and the handoff's gate list; defects found.
+
+| Critic | Tokens | Tool calls | Time | Defects |
+|---|---|---|---|---|
+| critic-c1 | 364,982 | 638 | 33.9 min | 5 moderate, 4 low |
+
+Moderate defects, each a bug task (failing test first):
+- **T95.67-B1** (defect 1): a closed card's Stop cell says "Never reached" for a sale through the Stop (ABC sold at $27.60, Stop $28.00, Stop Triggered); T95.56 case 10 and `specs/design/trade-workflows.md:90` measure the sale at its own price. Cases: it should say the Stop was reached, with the sale's date, when a closing sale's price is at or past the Stop; the same for the Target.
+- **T95.67-B2** (defect 2): on the day after an Exit not carried out, a Trade past its Target is labelled "100% to Target" (day line, card header, hidden reason) instead of "At Target" (A302, W102). Case: it should label a Trade at or past its Target "At Target" on the day after an Exit not carried out, as on any other day.
+- **T95.67-B3** (defect 3): the worthless expiration of a partly sold long contract says "You lose the $101.95 paid." (the Trade's result) instead of the expiring contracts' cost (W141; the receipt's −$190.65). Case: it should name what was paid for the contracts that expire.
+- **T95.67-B4** (defect 4): "Sold before the close" on the expiration block fills the Economic Time with the evening (17:00, after the 16:00 settlement) and saves it; on a later Review it fills a date the form refuses. Case: it should fill the expiration day before the close.
+- **T95.67-B5** (defect 5, accessibility): focus falls to the page body after "It expired worthless", "Record expiration", "Back to the Review", Cancel on the sale form, the grid's "No price", the walk's last "Next moment", "Save the Close Review" and "Decline the Close Review" (A327, T95.61; WCAG 2.4.3). Case per control: it should leave focus on a named element in place.
+
+Low defects 6, 7, 8 and 9 and the minor observations → `tech-debt.md`.

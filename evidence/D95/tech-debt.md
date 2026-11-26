@@ -80,3 +80,19 @@ Stale-code audit, 2026-11-26 (at `eb51a427`; the user's direction: record, don't
 - `WalkedTrade.figures` and `SliderFigures` (`src/coordinators/daily-review`): no screen reads them since the meter replaced the slider. Tests: 2 unit cases; figures assertions in `tests/integration/d5r/range-and-baseline.test.ts` and `shared-mark.test.ts`; 1,442 lines in 10 frozen `expected-views.json` files.
 - `PnlChart` (`replay/corridor-pnl.tsx`) and `PriceStrip` (`replay/price-strip.tsx`): wrappers nothing renders (T9AR.10). No tests.
 - `settlementTimeOf` (`src/coordinators/valuation/settlement.ts` and its re-export): no caller (T7SP.8). No tests.
+
+- Critic C1 (T95.67), low: W136's second sentence, "Expired today: nothing left to decide, only how it settled.", appears nowhere; only the heading "Expired Fri Nov 20 · no Action needed" shows.
+- Critic C1, low: on expiration day with an earlier session Missing, Enter after the last Fri Nov 20 input goes to "XYZ Mark, Thu Nov 19" and opens its editor, not "Save Marks" (T95.15 case 1).
+- Critic C1, low: the next day's settlement card says the choice twice: "Fri Nov 20 you chose Settle Later, no reason given." and W144's "Fri Nov 20 you chose Exercised: record later…" (U2).
+- Critic C1, low: "Tomorrow: Sell BREN, DALE, CORV, then record the sales." names a short put's buy-back a sale.
+Critic C1's minor observations (T95.67):
+- The Now box measures expired contracts on the expiration evening (to Stop, Worst case), as the mockup draws; Trade Detail that evening says "The contract expired, so its conditions are no longer measured." Needs a ruling at user review.
+- A sale with the Underlying acknowledged Unavailable still says "Neither the Stop nor the Target is reached."
+- The day card's visually hidden reasons are read as one run-on after the Trade list as well as each link's description.
+- The Now box's key is an unnamed list.
+- After Save Marks, focus lands on the first header while another card stays open; the next Tab goes into that card.
+- The day card's counts: "1 Trade · … 1 Close Review to go" with two lines listed; "0 Trades · 2 Close Reviews and 1 reflection to go" with "Day so far: $0.00" when no Trade is open.
+- The Settle Later session has no mark in the Replay's Action row.
+- A buy-back is named "Sale" in Key moments.
+- After "Still holding", the card's subline still reads "You chose Exit and it is not recorded".
+- The grid's previous-session column shows stock Marks without "$" in one Workspace and with it in another.
