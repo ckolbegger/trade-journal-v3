@@ -1151,3 +1151,5 @@ Commit `4a1f86b6` (DayCard.tsx, DayCard.test.tsx): the existing Unavailable bloc
 ### T95.49-B2
 
 Commit `f4b9314a` (daily-review.ts, settle-later.test.ts): `expirationStanding` reads the Underlying Mark at the settling session, `missedSessions(read, replay.sessions[0].date, expiration).at(-1)` (the expiration date itself when it is a session, else the session before); the calendar call and the replay are already in hand, no store read added. Case 1 red (Unavailable vs Value), green; case 2 first-run pass, flagged, mutation (a missing Underlying Mark falls back to 46.00) failed, restored. Test fixture `expiryFixture` gained `expiration` and `mnoMark` options. daily-review 252 passed; typecheck, tsc6, lint (2 pre-existing warnings), lint:deps exit 0.
+
+ocr of T95.49-B1, T95.49-B2 (session 97a17144, range 4a1f86b6^..f4b9314a): 4 files, 0 findings. `evidence/D95/ocr/T95.49-B1-B2-f4b9314a.json`. Next: T95.49-F1.
