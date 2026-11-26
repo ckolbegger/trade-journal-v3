@@ -694,6 +694,26 @@ describe('the Close Review walk from the closed card (T95.59, W152)', () => {
   const card: OwedReflectionsCard = { ...CLOSED_CARD, reflections: [closeReview], replay };
   const trade: OwedReflectionsTrade = { ...owedTrade(card), owed: [{ debtId: 'd-cr', entryTypeKey: 'entry-type.close-review', dueAnchor: '2026-10-12T18:00:00Z', classification: 'Due' }] };
 
+  it('should close the walk on Escape or Close and return focus to the button that opened it', async () => {
+    const user = userEvent.setup();
+    const facade = reviewFacade(ready({ owed: [trade] }));
+    vi.mocked(facade.DailyReview.getTrade).mockResolvedValue({ kind: 'ReflectionsOwed', reviewDate: DATE, cutoff: CUTOFF, card });
+    renderReview(facade);
+    const closed = await screen.findByRole('region', { name: 'ABC review' });
+    const write = () => within(closed).getByRole('button', { name: 'Write the Close Review' });
+
+    await user.click(write());
+    await screen.findByRole('dialog', { name: 'Replay, ABC' });
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(document.activeElement).toBe(write());
+
+    await user.click(write());
+    await user.click(within(await screen.findByRole('dialog', { name: 'Replay, ABC' })).getByRole('button', { name: 'Close' }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(document.activeElement).toBe(write());
+  });
+
   it('should resolve the Debt through ResolveReviewDebt on Save the Close Review and mark the card Close Review saved', async () => {
     const user = userEvent.setup();
     const facade = reviewFacade(ready({ owed: [trade] }));

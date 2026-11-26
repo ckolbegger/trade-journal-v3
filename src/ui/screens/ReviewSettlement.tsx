@@ -33,6 +33,8 @@ export interface ExpirationBlockProps {
   readonly onClosedSale: () => void;
   readonly onRefresh: () => Promise<boolean>;
   readonly onLeftSold?: () => void;
+  // The recorded expiration's receipt was dismissed and the card read again: the Review moves focus on.
+  readonly onReceiptDone?: () => void;
 }
 
 const ZERO = Rational.of(0n);
@@ -56,7 +58,7 @@ function kept(result: Rational, long: boolean): string {
 }
 
 // The expired contract's block on the card (W136): an expired contract owes no Action, only a word on how it settled.
-export function ExpirationBlock({ facade, item, underlying, standing, binding, settledLater, settledLaterOn, onSaved, pending, onSell, onDirtyChange, onForm, onClosedSale, onRefresh, onLeftSold }: ExpirationBlockProps) {
+export function ExpirationBlock({ facade, item, underlying, standing, binding, settledLater, settledLaterOn, onSaved, pending, onSell, onDirtyChange, onForm, onClosedSale, onRefresh, onLeftSold, onReceiptDone }: ExpirationBlockProps) {
   const { writable, report, timeZone } = useRuntime();
   const finished = standing?.kind === 'Value' ? standing.value : undefined;
   const long = item.quantity.compare(Rational.of(0n)) > 0;
@@ -191,7 +193,9 @@ export function ExpirationBlock({ facade, item, underlying, standing, binding, s
               },
               onDismiss: () => {
                 void onRefresh().then((read) => {
-                  if (read) readOwed.current = false;
+                  if (!read) return;
+                  readOwed.current = false;
+                  onReceiptDone?.();
                 });
               },
               onForm,

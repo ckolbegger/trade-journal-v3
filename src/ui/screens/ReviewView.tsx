@@ -172,6 +172,8 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
   };
   // The card the trader pressed, and how many times a card has been asked for: it scrolls into view and takes focus.
   const [reveal, setReveal] = useState({ tradeId: link?.tradeId ?? '', count: link ? 1 : 0 });
+  // How many times nothing was left to do after a save: the day card takes focus.
+  const [dayFocus, setDayFocus] = useState(0);
   // The card whose Marks were saved but whose figures could not be read under them (ChangedDuringAssembly).
   const [stale, setStale] = useState(false);
   // What follows a save when no Trade is next, and a refresh that could not be made.
@@ -350,8 +352,18 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
       // The first owed card not done follows the walk (A90): it opens from the step's card, as the next walked Trade does.
       setReveal((current) => ({ tradeId: next.card.tradeId, count: current.count + 1 }));
       show(next.card.tradeId, { card: next.card });
-    } else collapse();
+    } else {
+      collapse();
+      if (next.kind === 'Done') setDayFocus((n) => n + 1);
+    }
     setAfterSave(next.kind === 'MarkNotHeld' ? AFTER_SAVE.Mark : undefined);
+  };
+  // The first card, in the held order, that still needs something takes focus; with none left, the day card does.
+  const focusNext = () => {
+    const held = latest.current.review;
+    const needing = [...walkedTrades(held), ...held.owed].find((t) => !t.progress.done);
+    if (needing) setReveal((current) => ({ tradeId: needing.tradeId, count: current.count + 1 }));
+    else setDayFocus((n) => n + 1);
   };
   // A resolved reflection leaves the card open to show it resolved, so only the overview's completion and binding follow the result.
   const reflectionResolved = (post: PostSaveReview) => apply({ kind: 'DebtResolved', review: post });
@@ -567,7 +579,7 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
   }, [firstId, read]);
   return (
     <>
-      {empty ? <EmptyReview date={review.reviewDate} /> : <DayCard review={review} name={name} openCard={openCard} openMarks={openMarks} openSkipped={openSkipped} holding={new Set([...holding, ...soldOut])} onStillHolding={stillHolding} />}
+      {empty ? <EmptyReview date={review.reviewDate} /> : <DayCard focus={dayFocus} review={review} name={name} openCard={openCard} openMarks={openMarks} openSkipped={openSkipped} holding={new Set([...holding, ...soldOut])} onStillHolding={stillHolding} />}
       {failed && (
         <div role="alert" className="banner warning">
           <p>We couldn’t refresh the Review. Nothing was changed.</p>
@@ -603,6 +615,7 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
                 onEntryDirty={onEntryDirty}
                 onForm={onForm}
                 now={now}
+                onReceiptDone={focusNext}
                 onLeftSold={() => void reopenAndApply().then((next) => next === undefined && setFailed(true))}
               />
             ))}

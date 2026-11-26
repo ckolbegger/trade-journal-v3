@@ -426,6 +426,45 @@ describe('the expiration block on the card (T95.52)', () => {
     expect(within(card).queryByRole('link', { name: 'Back to the Trade' })).toBeNull();
   });
 
+  it('should move focus to the next card that still needs something after Record expiration and Back to the Review', async () => {
+    const user = userEvent.setup();
+    const lost = standing({ mark: 81n, inTheMoney: false, amount: 1n, worth: 0n, settled: -633n, settledR: Rational.of(-199n, 100n), worthless: -633n, worthlessR: Rational.of(-199n, 100n) });
+    const trade = walked(CORV_ITEM, 'CORV', cardProgress(0, 0, { settlement: true, owed: false }));
+    const overview = review({ families: [{ family: 'Marks', earlierMarks: [], today: [], earlier: [] }, { family: 'Trades', trades: [trade, T3] }] });
+    const facade = withForm(walkFacade(overview, tradeReview(trade, CORV_ITEM, { expirationStanding: lost })));
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(expirationResult() as never);
+    renderReview(facade);
+    const card = await screen.findByRole('region', { name: 'CORV review' });
+    await user.click(within(card).getByRole('button', { name: 'Record expiration' }));
+    await user.click(await within(card).findByRole('button', { name: 'Record expiration' }));
+    await within(card).findByRole('heading', { name: 'Expiration recorded' });
+    // The Review read again no longer lists CORV; MNO is the first card that still needs something.
+    vi.mocked(facade.DailyReview.open).mockResolvedValue(review({ families: [{ family: 'Marks', earlierMarks: [], today: [], earlier: [] }, { family: 'Trades', trades: [T3] }] }));
+
+    await user.click(within(card).getByRole('button', { name: 'Back to the Review' }));
+
+    await waitFor(() => expect(document.activeElement).toBe(screen.getByRole('button', { name: /^Review MNO/ })));
+  });
+
+  it('should move focus to the next card that still needs something after Settle Later', async () => {
+    const user = userEvent.setup();
+    const trade = walked(CORV_ITEM, 'CORV', cardProgress(0, 0, { settlement: true, owed: false }));
+    const overview = review({ families: [{ family: 'Marks', earlierMarks: [], today: [], earlier: [] }, { family: 'Trades', trades: [trade, T3] }] });
+    const facade = walkFacade(overview, tradeReview(trade, CORV_ITEM, { expirationStanding: IN_THE_MONEY }));
+    vi.mocked(facade.DailyReview.save).mockResolvedValue({
+      kind: 'Saved',
+      action: settleLater(),
+      review: { kind: 'Ready', cards: [], progress: { tradesWithAction: 1, tradesEligible: 2 }, completion: overview.completion, nextStep: { kind: 'Trade', trade: tradeReview(T3, MNO_ITEM) }, binding },
+    });
+    renderReview(facade);
+    const card = await screen.findByRole('region', { name: 'CORV review' });
+
+    await user.click(within(card).getByRole('button', { name: 'Exercised: record later' }));
+
+    await screen.findByRole('region', { name: 'MNO review' });
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: /^Review MNO/ }));
+  });
+
   it('should say nothing was saved when the Review changed under a record later, and offer Refresh to read it again', async () => {
     const user = userEvent.setup();
     const trade = walked(CORV_ITEM, 'CORV', cardProgress(0, 0, { settlement: true, owed: false }));

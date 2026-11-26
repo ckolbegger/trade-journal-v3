@@ -1765,4 +1765,59 @@ describe('the sale in the card (T95.40)', () => {
     expect(vi.mocked(facade.TradeWorkflows.recordPositionChange)).not.toHaveBeenCalled();
     expect(screen.queryByText("ABC's note isn't saved.")).toBeNull();
   });
+
+  it('should move focus to the next card that still needs something once the receipt of a closing sale is dismissed', async () => {
+    const facade = saleFacade();
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(closedExitResult({ reflection: { kind: 'Debt', debt: { debtId: 'debt-1' } }, closeReview: { kind: 'Debt', debt: { debtId: 'debt-2' } } }) as never);
+    const { user, card } = await sellAllOnAbc(facade);
+    await within(card).findByText('Recorded. XYZ is closed. Its Close Review is due in the next Review.');
+    vi.mocked(facade.DailyReview.open).mockResolvedValue(review({ families: [review().families[0]!, { family: 'Trades', trades: WALK.filter((t) => t.tradeId !== 't-b') }], owed: [owedB] }));
+
+    await user.click(within(card).getByRole('button', { name: 'Back to the Review' }));
+
+    await screen.findByRole('list', { name: 'Trades with owed reflections' });
+    // The Review it returned lists DEF first among the cards that still need something.
+    await waitFor(() => expect(document.activeElement).toBe(screen.getByRole('button', { name: /^Review DEF/ })));
+  });
+});
+
+describe('focus after each save (T95.61, A327)', () => {
+  const savedPost = (nextStep: unknown) => ({ kind: 'Ready', cards: [], progress: { tradesWithAction: 1, tradesEligible: 5 }, completion: MONDAY_COMPLETION, nextStep, binding }) as never;
+
+  it('should move focus to the next card that still needs something after an Action is saved', async () => {
+    const user = userEvent.setup();
+    const facade = cardFacade();
+    vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'Saved', action: {} as never, review: savedPost({ kind: 'Trade', trade: tradeReview(TF) }) });
+    renderReview(facade);
+    const abc = await screen.findByRole('region', { name: 'ABC review' });
+
+    await user.click(within(abc).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
+
+    await screen.findByRole('region', { name: 'XYZ review' });
+    expect(document.activeElement).toBe(headers()[2]);
+  });
+
+  it('should return focus to the card header after Discard', async () => {
+    const user = userEvent.setup();
+    renderReview(cardFacade());
+    const abc = await screen.findByRole('region', { name: 'ABC review' });
+    await user.click(within(abc).getByRole('radio', { name: 'Exit' }));
+
+    await user.click(within(abc).getByRole('button', { name: 'Discard' }));
+
+    expect(document.activeElement).toBe(headers()[0]);
+  });
+
+  it('should move focus to The day when nothing is left', async () => {
+    const user = userEvent.setup();
+    const facade = cardFacade();
+    vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'Saved', action: {} as never, review: savedPost({ kind: 'Done' }) });
+    renderReview(facade);
+    const abc = await screen.findByRole('region', { name: 'ABC review' });
+
+    await user.click(within(abc).getByRole('button', { name: /^Save( Hold| Exit| Roll| Adjust)?$/ }));
+
+    await waitFor(() => expect(screen.queryByRole('region', { name: 'ABC review' })).toBeNull());
+    expect(document.activeElement).toBe(screen.getByRole('region', { name: 'The day' }));
+  });
 });

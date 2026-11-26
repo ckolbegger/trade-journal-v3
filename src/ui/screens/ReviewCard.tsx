@@ -96,10 +96,12 @@ export interface ReviewCardProps {
   // A sale closed this Trade and its receipt is shown: the open-position state is left out until the Review is read again; the view keeps it, for the day card too.
   readonly soldOut: boolean;
   readonly onClosedSale: () => void;
+  // A sale's or an expiration's receipt was dismissed and the Review read again: focus goes to the next card that needs something.
+  readonly onReceiptDone?: () => void;
 }
 
 // One position of the Review: a collapsed header (Underlying, what remains, band, meter) over its content.
-export function ReviewCard({ facade, trade, line, expanded, detail, reveal, go, onToggle, stillHolding, onStillHolding, onSaved, onReflectionResolved, onRefresh, refusal, pending, onEntryDirty, onForm, now, onLeftSold, soldOut, onClosedSale }: ReviewCardProps) {
+export function ReviewCard({ facade, trade, line, expanded, detail, reveal, go, onToggle, stillHolding, onStillHolding, onSaved, onReflectionResolved, onRefresh, refusal, pending, onEntryDirty, onForm, now, onLeftSold, soldOut, onClosedSale, onReceiptDone }: ReviewCardProps) {
   const item = useRef<HTMLLIElement>(null);
   const header = useRef<HTMLButtonElement>(null);
   const { timeZone } = useRuntime();
@@ -189,6 +191,8 @@ export function ReviewCard({ facade, trade, line, expanded, detail, reveal, go, 
           {...(now && { now })}
           {...(onLeftSold && { onLeftSold })}
           onClosedSale={onClosedSale}
+          {...(onReceiptDone && { onReceiptDone })}
+          onDiscard={() => header.current?.focus({ preventScroll: true })}
           soldOut={soldOut}
         />
       )}
@@ -217,6 +221,9 @@ interface CardBodyProps {
   readonly now?: () => string;
   readonly onLeftSold?: () => void;
   readonly onClosedSale: () => void;
+  readonly onReceiptDone?: () => void;
+  // The Action form was discarded: focus returns to the card's header.
+  readonly onDiscard: () => void;
   // A closing sale's receipt is shown: the Now box's open-position figures are left out.
   readonly soldOut: boolean;
 }
@@ -254,7 +261,7 @@ function panelHeaders(trade: DailyTradeReview, progress: CardProgress): Record<P
 }
 
 // The open card: its figures, then the three panels in the spec's work order (P36, A152), one open at a time.
-function CardBody({ facade, trade, progress, name, go, stillHolding, onStillHolding, onSaved, onReflectionResolved, onRefresh, pending, onEntryDirty, onForm, meter, now, onLeftSold, onClosedSale, soldOut }: CardBodyProps) {
+function CardBody({ facade, trade, progress, name, go, stillHolding, onStillHolding, onSaved, onReflectionResolved, onRefresh, pending, onEntryDirty, onForm, meter, now, onLeftSold, onClosedSale, onReceiptDone, onDiscard, soldOut }: CardBodyProps) {
   const uid = useId();
   const headers = panelHeaders(trade, progress);
   // A contract due for settlement owes no Action (A315): the expiration block stands where the Action panel would.
@@ -371,7 +378,7 @@ function CardBody({ facade, trade, progress, name, go, stillHolding, onStillHold
         </div>
       )}
       {/* The sale form is the ActionForm's own, so the block is what it shows while no sale is being recorded. */}
-      {expiring && <ActionForm facade={facade} form={trade.form} binding={trade.saveBinding} onSaved={onSaved} onRefresh={onRefresh} onDirtyChange={report} pending={pending} planExit={trade.planExit} saleRequest={saleAsk} {...(now && { now })} {...(onLeftSold && { onLeftSold })} onClosedSale={onClosedSale} onHandle={offerForm} idle={<ExpirationBlock facade={facade} item={expiring} underlying={trade.underlying} standing={trade.expirationStanding} binding={trade.saveBinding} settledLater={trade.form.kind === 'Saved' && trade.form.action.action === 'Settle Later'} settledLaterOn={trade.settledLaterOn} onSaved={onSaved} pending={pending} onSell={askSale} onDirtyChange={report} onForm={offerForm} onClosedSale={onClosedSale} onRefresh={onRefresh} {...(onLeftSold && { onLeftSold })} />} />}
+      {expiring && <ActionForm facade={facade} form={trade.form} binding={trade.saveBinding} onSaved={onSaved} onRefresh={onRefresh} onDirtyChange={report} pending={pending} planExit={trade.planExit} saleRequest={saleAsk} {...(now && { now })} {...(onLeftSold && { onLeftSold })} onClosedSale={onClosedSale} {...(onReceiptDone && { onReceiptDone })} onHandle={offerForm} idle={<ExpirationBlock facade={facade} item={expiring} underlying={trade.underlying} standing={trade.expirationStanding} binding={trade.saveBinding} settledLater={trade.form.kind === 'Saved' && trade.form.action.action === 'Settle Later'} settledLaterOn={trade.settledLaterOn} onSaved={onSaved} pending={pending} onSell={askSale} onDirtyChange={report} onForm={offerForm} onClosedSale={onClosedSale} onRefresh={onRefresh} {...(onReceiptDone && { onReceiptDone })} {...(onLeftSold && { onLeftSold })} />} />}
       {/* T95.56: the Replay strip is on every card, whichever panel is open; the overlay it opens sits over the page. */}
       {trade.replay && <CardReplay tradeId={trade.tradeId} underlying={trade.underlying} replay={trade.replay} strip={trade.strip} exitNotCarriedOut={trade.attention.exitCarry !== undefined} panel={open} session={go.session} />}
       {/* Every panel stays mounted, so a panel left open keeps its drafts; only the open one is shown. */}
@@ -390,7 +397,7 @@ function CardBody({ facade, trade, progress, name, go, stillHolding, onStillHold
           <div id={`${uid}-${name}`} hidden={open !== name}>
             {name === 'Reflections' && <ReviewReflections facade={facade} reviewDate={trade.saveBinding.reviewDate} reflections={trade.reflections} onReview={onReflectionResolved} onNoneRemaining={finishPanel} onEntryDirty={onEntryDirty} onForm={offerReflection} />}
             {name === 'Action' && trade.decisions && listShown && <LastDecisions decisions={trade.decisions} />}
-            {name === 'Action' && <ActionForm facade={facade} form={trade.form} binding={trade.saveBinding} onSaved={onSaved} onRefresh={onRefresh} onDirtyChange={report} pending={pending} marksToGo={marksToGo} planCall={trade.planCall} replay={trade.replay} planExit={trade.planExit} saleRequest={saleAsk} {...(now && { now })} {...(onLeftSold && { onLeftSold })} onClosedSale={onClosedSale} decidingOn={waitingOn} onHandle={offerForm} />}
+            {name === 'Action' && <ActionForm facade={facade} form={trade.form} binding={trade.saveBinding} onSaved={onSaved} onRefresh={onRefresh} onDirtyChange={report} pending={pending} marksToGo={marksToGo} planCall={trade.planCall} replay={trade.replay} planExit={trade.planExit} saleRequest={saleAsk} {...(now && { now })} {...(onLeftSold && { onLeftSold })} onClosedSale={onClosedSale} {...(onReceiptDone && { onReceiptDone })} onDiscard={onDiscard} decidingOn={waitingOn} onHandle={offerForm} />}
           </div>
         </div>
       ))}

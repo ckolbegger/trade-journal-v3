@@ -1,4 +1,4 @@
-import { Fragment, useId, type ReactNode } from 'react';
+import { Fragment, useEffect, useId, useRef, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import type { OpenDailyReviewResult, ReviewCompletion } from '../../app/types.ts';
 import { Badge } from '../Badge.tsx';
@@ -35,6 +35,8 @@ export interface DayCardProps {
   // The Trades whose Exit banner "Still holding" hid in this view, and the press that hides one (A313).
   readonly holding: ReadonlySet<string>;
   readonly onStillHolding: (tradeId: string) => void;
+  // How many times the card has been asked for focus (nothing is left to do): it takes focus when the count grows.
+  readonly focus?: number;
 }
 
 // A link that opens the card; it stays a real link, so it can be opened in a new tab.
@@ -107,8 +109,12 @@ const PANEL_OF: Partial<Record<DaySummary['lines'][number]['needs'][number], Pan
 // The Trade the day card sends the trader to next: the first line, in the card's order, that still needs something (W98).
 const nextLine = (day: DaySummary) => day.lines.find((line) => line.needs.length > 0);
 
-export function DayCard({ review, name, openCard, openMarks, openSkipped, holding, onStillHolding }: DayCardProps) {
+export function DayCard({ review, name, openCard, openMarks, openSkipped, holding, onStillHolding, focus = 0 }: DayCardProps) {
   const { day, completion } = review;
+  const section = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (focus > 0) section.current?.focus();
+  }, [focus]);
   const { timeZone } = useRuntime();
   const reasonId = useId();
   let disclosure: Extract<ReviewCompletion, { kind: 'CompleteWithSettlementToRecord' }>['unavailable'];
@@ -141,7 +147,7 @@ export function DayCard({ review, name, openCard, openMarks, openSkipped, holdin
   const next = day && (day.toGo.marks > 0 ? day.lines.find((line) => line.marks > 0) : nextLine(day));
   const nextText = day && day.toGo.marks > 0 ? 'Enter the Marks' : next && `Next: ${underlyingOf(next.tradeId)}${next.needs[0] === 'Reflection' && next.closeReview ? "'s Close Review" : ''}`;
   return (
-    <section className="card day-card" aria-label="The day">
+    <section className="card day-card" aria-label="The day" tabIndex={-1} ref={section}>
       <div className="day-top">
         <div>
           <p>

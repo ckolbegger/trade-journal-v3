@@ -45,6 +45,10 @@ export interface ActionFormProps {
   readonly onLeftSold?: () => void;
   // A sale closed the Trade: the card's open-position figures no longer describe it while the receipt is shown.
   readonly onClosedSale?: () => void;
+  // The sale's receipt was dismissed and the card read again: the Review moves focus on.
+  readonly onReceiptDone?: () => void;
+  // The form was discarded: its Discard button is disabled again, so the host moves focus.
+  readonly onDiscard?: () => void;
   // The session whose figures the card shows when the Review Date has no price (the Now box's dated close); absent when it has one.
   readonly decidingOn?: string;
   // Offers the form to the Review while it is mounted; undefined when it goes (W128).
@@ -131,7 +135,7 @@ function returnedValues(form: ActionFormState): Values {
 }
 
 // The Action for one Trade on the Review Date. Hold is preselected as view state only; nothing is recorded until Save.
-export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyChange, pending = false, marksToGo = 0, planCall, replay, planExit, saleRequest = 0, now = () => new Date().toISOString(), onLeftSold, onClosedSale, decidingOn, onHandle, idle }: ActionFormProps) {
+export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyChange, pending = false, marksToGo = 0, planCall, replay, planExit, saleRequest = 0, now = () => new Date().toISOString(), onLeftSold, onClosedSale, onReceiptDone, onDiscard, decidingOn, onHandle, idle }: ActionFormProps) {
   const { writable, report, timeZone } = useRuntime();
   // The sale of a saved Exit is recorded in place of the Action (W127); the form reports its own values under the Action's id.
   const [selling, setSelling] = useState(false);
@@ -145,9 +149,18 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
   // A sale that closed the Trade moves it out of the walk when the Review is read again: that waits until the receipt is dismissed.
   const refreshOwed = useRef(false);
   const leftSold = useRef(onLeftSold);
+  const receiptDone = useRef(onReceiptDone);
   useEffect(() => {
     leftSold.current = onLeftSold;
+    receiptDone.current = onReceiptDone;
   });
+  // The receipt was dismissed: focus moves on once the card has been read again, even when this form has gone by then.
+  const dismissed = useRef(false);
+  const focusOn = () => {
+    if (!dismissed.current) return;
+    dismissed.current = false;
+    receiptDone.current?.();
+  };
   // A read in flight, and what was asked of it meanwhile: another read once it fails (receipt dismissed), or the Review's own (card left).
   const reading = useRef(false);
   const retry = useRef(false);
@@ -174,7 +187,7 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
       reading.current = false;
     }
     refreshOwed.current = !read;
-    if (read) return;
+    if (read) return focusOn();
     if (gone.current) leftSold.current?.();
     else if (retry.current) void readAfterSale();
   };
@@ -314,6 +327,7 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
     setConsidered(returned.considered);
     setNote(returned.note);
     setIssues([]);
+    onDiscard?.();
   };
   // A form opened read only has no entry controls. One that held values when the shell turned read only stays, disabled, so the values are visibly kept.
   const readOnlyEmpty = !writable && !dirty;
@@ -336,7 +350,8 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
         onForm: onHandle ?? noForm,
         onDismiss: () => {
           setSelling(false);
-          if (!refreshOwed.current) return;
+          dismissed.current = true;
+          if (!refreshOwed.current) return focusOn();
           if (reading.current) retry.current = true;
           else void readAfterSale();
         },
