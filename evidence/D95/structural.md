@@ -1576,3 +1576,10 @@ Commit `2db9736a`: Part C browser suites B95.11 expiration (9 cases), B95.12 set
 - For the critic (agent's observation): Tab right after Enter on a card header, before the card has loaded, once landed on the page body; the spec waits for the Action panel.
 
 Run `t95.66-browser-c` (browser-task; at `18cf089b`): unit 268 files, 3271 passed; integration 163 files, 395 passed; browser 85 passed; 14 of 14 checks exit 0; run-complete. Passed. T95.66 waits on its ocr.
+
+## T95.66.5
+
+The user's direction (2026-11-26), decision 141: deletions only; no ocr and no critic; unit, integration and browser runs only. Level Full (touches a coordinator).
+
+Commit `afd2f36e`: items 1, 2, 3, 4 and 6 (11 files, 59 insertions, 489 deletions). Session grid read-only (`session-grid.test.tsx`, 10 cases, deleted; unused CSS rules removed, the ones `MarksGrid` and `app.css` use kept); "Closing the Trade"'s Close Review choices removed, `reasons` made required and `PositionChangeFormBody.tsx` renders it only when `closeReasons` is set (always so when it shows; the one non-deletion line); `marksOf` and its kin removed (1 case); the record-expiration route no longer reads `?from=review` (1 case); the old blocker helpers removed. typecheck, tsc6, lint (2 pre-existing warnings), lint:deps, verify:capabilities, verify:fixtures exit 0; unit 3259, integration 395 passed; browser 40 passed (d8r/history, d9r2/history, d6/exit, d95/sale, d7/review-expiration, d95/expiration, d95/settle-later, d95/card, d95/day-card, d95/marks-step).
+- Item 5 stopped: `verify:fixtures` failed on the seed-6 expected views; asked as Q16, answered option 1.

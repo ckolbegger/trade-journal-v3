@@ -193,3 +193,11 @@ Not parked: T95.62 is built as option 1, which needs no approval; option 2 would
 3. Remove only the Plan Call copy (no reads saved).
 
 **Answer (2026-11-26):** (1). Decision 141, plan revision 130; follow-on T95.66.5, run before T95.67. **Status:** answered.
+
+## Q16 (T95.66.5): may the frozen seed-6 fixtures' saved Review views drop the removed fields? — asked 2026-11-26
+
+**Plain words.** With item 5 removed, `verify:fixtures` fails: the `workspace-v7-seed6` and `backup-v7-seed6` expected views still hold each walked Trade's `planCall` (and the standing fields), which `open` no longer returns. The saved data (Trades, Marks, Actions) is untouched.
+1. *Recommend:* strip the fields from those expected views, as decisions 115 and 117 did for `nearest` and `rangePosition`.
+2. Leave the fixtures and drop item 5.
+
+**Answer (2026-11-26):** (1). Folded into decision 141 and plan revision 130 (the tag moved to the amended commit; local only). **Status:** answered.
