@@ -1126,3 +1126,5 @@ Commit `a43299b9` (`e2e/d7/responsive-a11y.spec.ts` +7): the keyboard case tabs 
 - For T95.50: if it refuses an expiration with no Mark, this case needs a saved Mark first.
 
 ocr of T95.48-B1 (session 9e1ec8bf): 1 file, 0 findings. `evidence/D95/ocr/T95.48-B1-a43299b9.json`. Next: run `t95.48-expiration-helpers` (browser-task).
+
+Run `t95.48-expiration-helpers` (browser-task, task tier): unit 3113, integration 364, browser 5 and 49, checks 14 of 14. Passed. T95.48 done.
