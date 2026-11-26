@@ -9,6 +9,7 @@ import {
   readCloseReasonLabels, strategyIdOf, toStoredClosedTrade, toStoredOpenTrade,
 } from './trade-read'
 import { readCloseReviewState } from './obligation-read'
+import { TradeSticker } from './trade-sticker'
 import { queryClosedTrades, queryOpenTrades, type StoredClosedTrade, type StoredOpenTrade } from '../domain/open-views'
 import { recordOpeningPositionChange } from './position-controller'
 import { recordClosePositionChange } from './close-controller'
@@ -128,7 +129,6 @@ function closeDispositionOf(form: CloseForm): ReflectionDisposition {
   return { kind: 'Defer' }
 }
 
-const monogram = (label: string) => label.slice(0, 2).toUpperCase()
 const completionLabel = (state: string) =>
   state === 'CompleteWithUnavailableMarks' ? 'Complete with unavailable Marks' : state
 // Explicit View Moment: noon Tuesday resolves Monday as the Expected Mark Date.
@@ -783,7 +783,7 @@ export function App() {
                             setExecutingId(null)
                             setPlan({ ...plan, screen: 'detail', selected: t })
                           }}>
-                            <span className="monogram" aria-hidden="true">{monogram(t.trade.plan.underlying)}</span>
+                            <TradeSticker underlying={t.trade.plan.underlying} />
                             <span className="row-main">
                               <span className="row-title">{t.trade.plan.underlying}</span>
                               <span className="row-sub">{strategyLabel(strategyIdOf(t.trade.plan))} · 1R {t.trade.plan.oneR}</span>
@@ -803,7 +803,7 @@ export function App() {
                       {openTrades.map(t => (
                         <li key={t.id}>
                           <button type="button" className="trade-row" onClick={() => { void showOpen(t) }}>
-                            <span className="monogram" aria-hidden="true">{monogram(t.plan.underlying)}</span>
+                            <TradeSticker underlying={t.plan.underlying} />
                             <span className="row-main">
                               <span className="row-title">{t.plan.underlying}</span>
                               <span className="row-sub">{strategyLabel(strategyIdOf(t.plan))} · {t.lots.length} lots</span>
@@ -824,7 +824,7 @@ export function App() {
                       {closedTrades.map(t => (
                         <li key={t.id}>
                           <button type="button" className="trade-row" onClick={() => showClosed(t)}>
-                            <span className="monogram" aria-hidden="true">{monogram(t.plan.underlying)}</span>
+                            <TradeSticker underlying={t.plan.underlying} />
                             <span className="row-main">
                               <span className="row-title">{t.plan.underlying}</span>
                               <span className="row-sub">{strategyLabel(strategyIdOf(t.plan))} · {t.lotMatches.length} lot matches</span>

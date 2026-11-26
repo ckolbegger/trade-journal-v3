@@ -31,10 +31,10 @@ test('should offer a date picker for Expiration and save a Long Call with the ch
 
   await expect(page.getByRole('alert')).toHaveCount(0)
   await page.getByRole('button', { name: 'Confirm plan' }).click()
-  await expect(page.getByRole('region', { name: 'Planned trades' }).getByText('AAPL')).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Planned trades' }).locator('.trade-row').filter({ hasText: 'AAPL' })).toBeVisible()
   await expect(page.getByTestId('global-error')).toHaveCount(0)
 
-  await page.getByRole('region', { name: 'Planned trades' }).getByText('AAPL').click()
+  await page.getByRole('region', { name: 'Planned trades' }).locator('.trade-row').filter({ hasText: 'AAPL' }).click()
   await expect(page.getByText('AAPL 190Call 2026-12-16 x100')).toBeVisible()
 })
 

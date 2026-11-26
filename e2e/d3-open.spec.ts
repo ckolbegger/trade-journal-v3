@@ -21,8 +21,8 @@ async function seedAndConfirm(page: Page) {
   await page.getByLabel('Thesis').fill('Why now')
   await page.getByLabel('Invalidation').fill('Close below 50d')
   await page.getByRole('button', { name: 'Confirm plan' }).click()
-  await expect(page.getByRole('region', { name: 'Planned trades' }).getByText('AAPL')).toBeVisible()
-  await page.getByRole('region', { name: 'Planned trades' }).getByText('AAPL').click()
+  await expect(page.getByRole('region', { name: 'Planned trades' }).locator('.trade-row').filter({ hasText: 'AAPL' })).toBeVisible()
+  await page.getByRole('region', { name: 'Planned trades' }).locator('.trade-row').filter({ hasText: 'AAPL' }).click()
 }
 
 async function fillExecution(page: Page, row: number, quantity: string, price: string, fee: string) {
@@ -42,8 +42,8 @@ test('should record several executions as one decision and show Open position, l
   await page.getByRole('radio', { name: 'Defer reflection' }).check()
   await page.getByRole('button', { name: 'Record position change' }).click()
   const open = page.getByRole('region', { name: 'Open trades' })
-  await expect(open.getByText('AAPL')).toBeVisible()
-  await open.getByText('AAPL').click()
+  await expect(open.locator('.trade-row').filter({ hasText: 'AAPL' })).toBeVisible()
+  await open.locator('.trade-row').filter({ hasText: 'AAPL' }).click()
   await expect(page.getByTestId('trade-lifecycle')).toHaveText('Open')
   await expect(page.getByTestId('open-position')).toHaveText('10')
   await expect(page.getByTestId('open-fees')).toHaveText('5.00')
@@ -60,7 +60,7 @@ test('should defer reflection without a blank Entry and keep the recorded fact',
   await fillExecution(page, 1, '10', '100', '5')
   await page.getByRole('radio', { name: 'Defer reflection' }).check()
   await page.getByRole('button', { name: 'Record position change' }).click()
-  await expect(page.getByRole('region', { name: 'Open trades' }).getByText('AAPL')).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Open trades' }).locator('.trade-row').filter({ hasText: 'AAPL' })).toBeVisible()
 
   const journal = await page.evaluate(async () => {
     const db = await new Promise<IDBDatabase>((resolve, reject) => {
@@ -91,7 +91,7 @@ test('should validate a completed reflection and accept an explicit decline', as
   await page.getByRole('radio', { name: 'Decline reflection' }).check()
   await page.getByLabel('Decline reason').fill('No time')
   await page.getByRole('button', { name: 'Record position change' }).click()
-  await expect(page.getByRole('region', { name: 'Open trades' }).getByText('AAPL')).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Open trades' }).locator('.trade-row').filter({ hasText: 'AAPL' })).toBeVisible()
 })
 
 test('should keep the Add execution action clear of bottom navigation at narrow width', async ({ page }) => {

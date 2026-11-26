@@ -21,7 +21,7 @@ async function seedConfirmAndRecord(page: Page) {
   await page.getByLabel('Thesis').fill('Why now')
   await page.getByLabel('Invalidation').fill('Close below 50d')
   await page.getByRole('button', { name: 'Confirm plan' }).click()
-  await page.getByRole('region', { name: 'Planned trades' }).getByText('AAPL').click()
+  await page.getByRole('region', { name: 'Planned trades' }).locator('.trade-row').filter({ hasText: 'AAPL' }).click()
   await page.getByRole('button', { name: 'Add execution' }).click()
   await page.getByLabel('Execution 1 instrument').fill('AAPL')
   await page.getByLabel('Execution 1 quantity').fill('10')
@@ -55,7 +55,7 @@ test('should present Open Trades and detail with prototype cards, small-caps lab
   const sectionLabel = page.locator('.section-label').first()
   expect(await sectionLabel.evaluate(el => getComputedStyle(el).textTransform)).toBe('uppercase')
 
-  await page.getByRole('region', { name: 'Open trades' }).getByText('AAPL').click()
+  await page.getByRole('region', { name: 'Open trades' }).locator('.trade-row').filter({ hasText: 'AAPL' }).click()
   const figure = page.getByTestId('open-position')
   expect(await figure.evaluate(el => getComputedStyle(el).textAlign)).toBe('right')
   expect(await figure.evaluate(el => getComputedStyle(el).fontVariantNumeric)).toContain('tabular-nums')
@@ -82,7 +82,7 @@ test('should present Add Execution as a sheet with pill action chips', async ({ 
   await page.getByLabel('Thesis').fill('Why now')
   await page.getByLabel('Invalidation').fill('Close below 50d')
   await page.getByRole('button', { name: 'Confirm plan' }).click()
-  await page.getByRole('region', { name: 'Planned trades' }).getByText('AAPL').click()
+  await page.getByRole('region', { name: 'Planned trades' }).locator('.trade-row').filter({ hasText: 'AAPL' }).click()
   await page.getByRole('button', { name: 'Add execution' }).click()
 
   const sheet = page.getByRole('form', { name: 'Add execution' })

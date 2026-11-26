@@ -21,7 +21,7 @@ async function setupOpenTrade(page: Page) {
   await page.getByLabel('Thesis').fill('Why now')
   await page.getByLabel('Invalidation').fill('Close below 50d')
   await page.getByRole('button', { name: 'Confirm plan' }).click()
-  await page.getByRole('region', { name: 'Planned trades' }).getByText('AAPL').click()
+  await page.getByRole('region', { name: 'Planned trades' }).locator('.trade-row').filter({ hasText: 'AAPL' }).click()
   await page.getByRole('button', { name: 'Add execution' }).click()
   await page.getByLabel('Execution 1 instrument').fill('AAPL')
   await page.getByLabel('Execution 1 quantity').fill('6')
@@ -114,7 +114,7 @@ test('should discard an unsubmitted Close draft on leave and offer a Cancel cont
 
   await page.getByRole('button', { name: 'Review', exact: true }).click()
   await page.getByRole('button', { name: 'Trades' }).click()
-  await page.getByRole('region', { name: 'Open trades' }).getByText('AAPL').click()
+  await page.getByRole('region', { name: 'Open trades' }).locator('.trade-row').filter({ hasText: 'AAPL' }).click()
   await expect(page.getByRole('form', { name: 'Close position' })).toHaveCount(0)
   await page.getByRole('button', { name: 'Close position' }).click()
   const fresh = page.getByRole('form', { name: 'Close position' })
@@ -139,7 +139,7 @@ test('should keep the reflection outcome independent of closure and survive a re
   await page.reload()
   await expect(page.locator('main')).toHaveAttribute('data-view', 'ready')
   await page.getByRole('button', { name: 'Trades' }).click()
-  await page.getByRole('region', { name: 'Closed trades' }).getByText('AAPL').click()
+  await page.getByRole('region', { name: 'Closed trades' }).locator('.trade-row').filter({ hasText: 'AAPL' }).click()
   await expect(page.getByTestId('closed-realized-pnl')).toHaveText('81.00')
   await expect(page.getByTestId('closed-reason')).toContainText('Target Reached')
   const journals = await page.evaluate(async () => {

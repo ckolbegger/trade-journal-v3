@@ -21,7 +21,7 @@ async function setupOpenTrade(page: Page) {
   await page.getByLabel('Thesis').fill('Why now')
   await page.getByLabel('Invalidation').fill('Close below 50d')
   await page.getByRole('button', { name: 'Confirm plan' }).click()
-  await page.getByRole('region', { name: 'Planned trades' }).getByText('AAPL').click()
+  await page.getByRole('region', { name: 'Planned trades' }).locator('.trade-row').filter({ hasText: 'AAPL' }).click()
   await page.getByRole('button', { name: 'Add execution' }).click()
   await page.getByLabel('Execution 1 instrument').fill('AAPL')
   await page.getByLabel('Execution 1 quantity').fill('10')

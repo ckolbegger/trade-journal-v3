@@ -31,7 +31,7 @@ test('should confirm a Long Call even when crypto.randomUUID is unavailable', as
     Object.defineProperty(crypto, 'randomUUID', { value: undefined, configurable: true })
   })
   await page.getByRole('button', { name: 'Confirm plan' }).click()
-  await expect(page.getByRole('region', { name: 'Planned trades' }).getByText('AAPL')).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Planned trades' }).locator('.trade-row').filter({ hasText: 'AAPL' })).toBeVisible()
   await expect(page.getByRole('alert')).toHaveCount(0)
 })
 

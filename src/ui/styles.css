@@ -141,8 +141,10 @@ ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.5rem; }
 }
 .trade-row:hover { border-color: #b9b1a0; }
 .monogram {
-  flex: 0 0 2.25rem;
+  flex: 0 0 auto;
+  min-width: 2.25rem;
   height: 2.25rem;
+  padding: 0 0.35rem;
   border-radius: 999px;
   background: #efe9d9;
   color: #4b463e;
@@ -150,6 +152,11 @@ ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.5rem; }
   place-items: center;
   font-size: 0.7rem;
   font-weight: 700;
+  white-space: nowrap;
+}
+.monogram.compact {
+  font-size: 0.6rem;
+  max-width: 10rem;
 }
 .trade-row .row-main { flex: 1; min-width: 0; display: grid; gap: 0.1rem; }
 .trade-row .row-title { display: block; font-weight: 650; }
