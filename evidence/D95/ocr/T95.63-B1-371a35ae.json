@@ -1,0 +1,101 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 0,
+    "total_tokens": 52347,
+    "input_tokens": 52054,
+    "output_tokens": 293,
+    "cache_read_tokens": 8320,
+    "elapsed": "15s"
+  },
+  "tool_calls": {
+    "total": 6,
+    "by_tool": {
+      "code_search": 2,
+      "file_read": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "tools/fixture-views.test.ts",
+        "tools/fixture-views.ts"
+      ]
+    }
+  ],
+  "session_id": "6bc2024e-c236-4f89-9df9-31ebd19ceefc",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "6bc2024e-c236-4f89-9df9-31ebd19ceefc",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "371a35ae",
+      "resolved_base": "f2cbfcd94b66c2533e032ca1e93d8d52a13ce9b4",
+      "resolved_head": "371a35ae641ce480894b71d1177755f7aa779dce",
+      "exact_range": "f2cbfcd94b66c2533e032ca1e93d8d52a13ce9b4..371a35ae641ce480894b71d1177755f7aa779dce",
+      "source_artifact_sha256": "f530ab2dab50a79e242228a078c40a54a20fd9414993eb68a1a7dc14e7230acd"
+    },
+    "execution": {
+      "ocr_version": "v1.14.4",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "184a0b6d6f5bd952d7fb39aca04ab4433fb499d6bf761263f347fda8d032440a",
+          "path": "tools/fixture-views.ts",
+          "fingerprint": "bca4b10873c403d55728e105d73d8bd779ef03d074812876e3c36d5f762d1bf7"
+        },
+        {
+          "item_id": "2775a2c8d6a9f2c2f4a6734ec373bd9d66c1000efa53080eed8c8a9b31bd6824",
+          "path": "tools/fixture-views.test.ts",
+          "fingerprint": "9e97b6c112c8183bfc3bda6b546e36470c8badcd24962f64d930a1c99c293bec"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "184a0b6d6f5bd952d7fb39aca04ab4433fb499d6bf761263f347fda8d032440a",
+          "path": "tools/fixture-views.ts",
+          "fingerprint": "bca4b10873c403d55728e105d73d8bd779ef03d074812876e3c36d5f762d1bf7"
+        },
+        {
+          "item_id": "2775a2c8d6a9f2c2f4a6734ec373bd9d66c1000efa53080eed8c8a9b31bd6824",
+          "path": "tools/fixture-views.test.ts",
+          "fingerprint": "9e97b6c112c8183bfc3bda6b546e36470c8badcd24962f64d930a1c99c293bec"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "7c95c7d8c8e7b0e2861df3141f450c8b54805de96d67543994561a7c09a3e032",
+          "path": "evidence/D95/tdd-log/T95.63-B1.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 14539
+  }
+}

@@ -1380,3 +1380,5 @@ ocr of T95.63 (session a8ac4d3d): complete, 7 files reviewed (8 generated fixtur
 ### T95.63-B1
 
 Commit `371a35ae`: the seed-6 check needs an Entry (not a Debt) of `entry-type.close-review` minted by the seed-6 freeze (id prefix `fx6-`; `fx6-0060`, answered from Debt `fx6-0043`). The views carry no form revision on an Entry, and the earlier-form Entries also hold a key lesson, so the freeze's id prefix is what tells the new-form answer apart (an assumption: it holds while the freeze answers no earlier-form Close Review). Cases 1, 2 red then green; case 3 first-run pass, flagged, mutation (`fx6-` to `fx9-`) failed, restored. tools 129 passed; verify:fixtures, typecheck, tsc6, lint (2 pre-existing warnings), lint:deps exit 0.
+
+ocr of T95.63-B1 (session 6bc2024e): complete, 2 files, no findings. `evidence/D95/ocr/T95.63-B1-371a35ae.json`.
