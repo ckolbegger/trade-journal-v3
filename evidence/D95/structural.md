@@ -1440,3 +1440,7 @@ ocr of T95.56 (session ecf2dbfe): complete, 20 files reviewed (4 excluded), 2 fi
 ### T95.56-B1
 
 Commit `e365c63d`: the Replay's Price History link ends `&from=review&panel=<panel>`; Trade Detail reads `panel` once on load and "Back to the Review" uses it, falling back to Action. Three cases red then green (Back to Reflections; the link carries Reflections; the link still carries Action); the default-to-Action case was already covered. ReviewCard and TradeDetail tests 137 passed; typecheck, tsc6, lint (2 pre-existing warnings), lint:deps exit 0; d9ar/review 5 passed.
+
+### T95.56-B2
+
+Commit `24ffd1de`: `StripChart` gains `dots`, one per run of exactly one valid P&L point, drawn as a small circle in the line's colour (the full Replay draws every session as a circle, `corridor-pnl.tsx`). Cases 1, 2 red then green; a two-point run draws no dot. ReplayStrip tests 8 passed; typecheck, tsc6, lint (2 pre-existing warnings), lint:deps exit 0. No browser spec covers the strip chart.
