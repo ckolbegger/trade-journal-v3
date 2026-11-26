@@ -1,0 +1,351 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 20 selected item(s).",
+  "summary": {
+    "files_reviewed": 20,
+    "comments": 2,
+    "total_tokens": 526077,
+    "input_tokens": 520224,
+    "output_tokens": 5853,
+    "cache_read_tokens": 62208,
+    "elapsed": "1m24s"
+  },
+  "tool_calls": {
+    "total": 63,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 22,
+      "file_find": 2,
+      "file_read": 34,
+      "file_read_diff": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/replay-strip.props.ts",
+      "content": "A run containing only one valid P\u0026L observation produces only an SVG `M` command, which draws nothing. Consequently, one-session trades (and isolated observations separated by missing marks) show reference lines but no visible trade P\u0026L. Render a point marker for singleton runs, and add coverage for one-session and missing/valid/missing histories.",
+      "existing_code": "    path += `${broken ? 'M' : 'L'}${at(time.x(i))} ${at(value.y(pnl))}`;\n    broken = false;",
+      "start_line": 56,
+      "end_line": 57,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/CardReplay.tsx",
+      "content": "Replay can now be opened from Reflections, but this Price History link does not carry the originating panel. TradeDetail's “Back to the Review” link still hardcodes `panel=Action` (`TradeDetail.tsx:178`), so opening Replay from a walked card's Reflections panel, visiting Price History, and returning switches the card to Action. Carry the current `panel` through the Detail URL and use it in the return link, with a round-trip test starting from Reflections.",
+      "existing_code": "          \u003cReplayDrawer replay={replay} {...(params.get('session') !== null \u0026\u0026 { initialSession: params.get('session')! })} onSessionChange={onSliderMove} links={({ date }) =\u003e \u003cp className=\"replay-links\"\u003e\u003cLink className=\"pill secondary\" to={`/trades/${tradeId}?drawer=price-history\u0026session=${date}\u0026from=review`}\u003ePrice History\u003c/Link\u003e\u003c/p\u003e} /\u003e",
+      "start_line": 92,
+      "end_line": 92,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Daily review replay-strip model and coordinator integration",
+      "files": [
+        "src/app/types.ts",
+        "src/coordinators/daily-review/daily-review.ts",
+        "src/coordinators/daily-review/index.ts",
+        "src/coordinators/daily-review/replay-strip.test.ts",
+        "src/coordinators/daily-review/replay-strip.ts",
+        "src/coordinators/daily-review/types.ts"
+      ]
+    },
+    {
+      "label": "Replay-strip UI, props, styling, and end-to-end coverage",
+      "files": [
+        "e2e/d95/replay-strip.spec.ts",
+        "src/ui/app.css",
+        "src/ui/screens/ReplayStrip.test.tsx",
+        "src/ui/screens/ReplayStrip.tsx",
+        "src/ui/screens/replay-strip.props.ts"
+      ]
+    },
+    {
+      "label": "Shared card replay rendering and review-card behavior",
+      "files": [
+        "e2e/d9/review.spec.ts",
+        "e2e/d9/support.ts",
+        "src/ui/screens/CardReplay.tsx",
+        "src/ui/screens/ReviewCard.test.tsx",
+        "src/ui/screens/ReviewCard.tsx",
+        "src/ui/screens/ReviewOwed.test.tsx",
+        "src/ui/screens/ReviewOwedCard.tsx",
+        "src/ui/screens/closed-card.test.ts",
+        "src/ui/screens/closed-card.ts"
+      ]
+    }
+  ],
+  "session_id": "ecf2dbfe-6937-4690-8ac3-d4507daf96d2",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "ecf2dbfe-6937-4690-8ac3-d4507daf96d2",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "801cd4bd",
+      "resolved_base": "e85661ea272f7a7b1d60c0fdc5bfc9d884b2d248",
+      "resolved_head": "801cd4bdc64781adf4b95f72578f3dd366dedd3d",
+      "exact_range": "e85661ea272f7a7b1d60c0fdc5bfc9d884b2d248..801cd4bdc64781adf4b95f72578f3dd366dedd3d",
+      "source_artifact_sha256": "974295d0d199d96d908ba4e2dcb954c4ec9935fab4a3adaeaea286522e20a4f4"
+    },
+    "execution": {
+      "ocr_version": "v1.14.4",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "a9bbcb5002dd367eccf0a31fdb5aa5b69959fdf1e82d33465aec76be66056040"
+        },
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "27ccc54e50ed8bdcdbb1eea67bd191a252c002ae0b29805bb5fd853b68dce151"
+        },
+        {
+          "item_id": "1aac744a31b2b1b396962eef9155317565c881ac6b66925776936383572db7da",
+          "path": "e2e/d95/replay-strip.spec.ts",
+          "fingerprint": "1654c5fcf63b543635785d5e90630f0a78b6e70977d475c8c46132e093b1061d"
+        },
+        {
+          "item_id": "3458d81d380a333445a50ff88f07623df4f6fd60ebda78b88583a71242ec34be",
+          "path": "src/ui/screens/ReplayStrip.test.tsx",
+          "fingerprint": "acc830c510b75697fd6ffcda79dfbd8827d1dd9e7dcd91935ca57b649d4d984c"
+        },
+        {
+          "item_id": "347917e3fc99ea10df3899c14b251305db47c31ef851de4417dcd15cdba0c770",
+          "path": "e2e/d9/review.spec.ts",
+          "fingerprint": "029e58cb0c361095ac52f3be4ca36d9efbdb6a3e13f2b1a335c57aa0c3da7242"
+        },
+        {
+          "item_id": "41e5b5fd9120773618275de28795e788717356305ec8adf32df169ba69aacacb",
+          "path": "src/app/types.ts",
+          "fingerprint": "fc38da33ace4e963ec8fe70b1849094d2c55477a030b68994652985089ed1e6d"
+        },
+        {
+          "item_id": "658cacd7d8755bc419d3c8b2dc3f0b93468308fa9e366c831087e003312a3c83",
+          "path": "src/ui/screens/ReviewOwedCard.tsx",
+          "fingerprint": "0121f44577ae7699a5517556351fee329b26e734056cb32208f31f767261a812"
+        },
+        {
+          "item_id": "6ed6d6038e0647026944586306a1a4685a2f55598fb92bdfac65706dd2dbabaf",
+          "path": "src/coordinators/daily-review/replay-strip.ts",
+          "fingerprint": "f3d1ff4f01c32f99024c335739481b8d9e45a2ffc5ca61af8bd4e7177755952f"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "1b7ab2279b9cc21027ae59825fe9044d4a1bd53063bf39833754c497792e9c4c"
+        },
+        {
+          "item_id": "9d0cf82d90e3897816db46674ed8cc0958ff80d1d4532d8c6cbd0e39209a3311",
+          "path": "src/ui/screens/ReplayStrip.tsx",
+          "fingerprint": "84de24c17f044dd8a59a9725e1bd7369b74782800b58308e9f1624c1be6a6367"
+        },
+        {
+          "item_id": "9d20a796225851b81f880f1d146ba251d198e8aa712f6f6be090422a42ed8150",
+          "path": "src/coordinators/daily-review/index.ts",
+          "fingerprint": "3af7c5e32d6828571ef5d8ae1137b5e302ceb301e2c66c64aa5bf7dd5072ca96"
+        },
+        {
+          "item_id": "a5bcd9b1c7f5ff289f1844382d50798ee66cc46e1c8835cb0110733fad703979",
+          "path": "src/ui/screens/replay-strip.props.ts",
+          "fingerprint": "75208443243578f19bf6dc4aac837d7f1ca3f863534af3dea7a8b3567ee251b2"
+        },
+        {
+          "item_id": "a83706f3444e16c14ac613c874f7293d7adce6354226bde7d7b9b892fce05701",
+          "path": "src/ui/screens/ReviewCard.test.tsx",
+          "fingerprint": "3544b9e786bc5aa18a98a7864a62c6acdcaefb014379e7e965e1dcc4754eb5a7"
+        },
+        {
+          "item_id": "ac53509d1a1e414f3340d69ca414b962ebc62bd7f43d0bae046572ef7201b25f",
+          "path": "src/coordinators/daily-review/replay-strip.test.ts",
+          "fingerprint": "a1a378e08263051c415d074e855a37c72fceff1c969eaf0b9c61c5ff9c1995d6"
+        },
+        {
+          "item_id": "ad31c51e12ceeeb4102a024e23cd34c878fad430a8a062778a9fa5aefe65fc89",
+          "path": "src/ui/screens/closed-card.ts",
+          "fingerprint": "40de58638d64c3651c9e8c6a51c015f457be5ba97cf1dd0f2cfa21a79442105c"
+        },
+        {
+          "item_id": "afb481bb4cba2dde003d8612c9d1b632dfbaebcf86b1d803500513f648266a88",
+          "path": "src/ui/screens/CardReplay.tsx",
+          "fingerprint": "96589f45cbe2f7367ef8ee205ca2b3f1989dd212456d2c106212f4e160adba64"
+        },
+        {
+          "item_id": "d0126439061216e58eb2b1a6bab019f2d20601558a9531d4100a29b4b9c5c3f9",
+          "path": "e2e/d9/support.ts",
+          "fingerprint": "54e0956aa520caccbd34bdf4c61aa8c9587cff73b1a784ecd2e822bf3be2cc40"
+        },
+        {
+          "item_id": "e39f65cfe378937a72cf3eb89fd37537135f67d4955f43685034696af03b6d8e",
+          "path": "src/ui/screens/closed-card.test.ts",
+          "fingerprint": "767dd1d24a62d796ea53b42e7805b23272a49a1ef6469f3d8055ff00ee1ef091"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "83aacb7dcb6a7d60c92313ef986fcbee495f3315af799095b43b6cf42414ae6e"
+        },
+        {
+          "item_id": "f60d40a2fcf211e72668946f9d6c2357941e916774d36dd5cb14b2a35255d3a9",
+          "path": "src/ui/screens/ReviewOwed.test.tsx",
+          "fingerprint": "73cd7f642f2f55b7e154327c1119d79eecbef090ecb993f33963850a406ffc80"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "a9bbcb5002dd367eccf0a31fdb5aa5b69959fdf1e82d33465aec76be66056040"
+        },
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "27ccc54e50ed8bdcdbb1eea67bd191a252c002ae0b29805bb5fd853b68dce151"
+        },
+        {
+          "item_id": "1aac744a31b2b1b396962eef9155317565c881ac6b66925776936383572db7da",
+          "path": "e2e/d95/replay-strip.spec.ts",
+          "fingerprint": "1654c5fcf63b543635785d5e90630f0a78b6e70977d475c8c46132e093b1061d"
+        },
+        {
+          "item_id": "3458d81d380a333445a50ff88f07623df4f6fd60ebda78b88583a71242ec34be",
+          "path": "src/ui/screens/ReplayStrip.test.tsx",
+          "fingerprint": "acc830c510b75697fd6ffcda79dfbd8827d1dd9e7dcd91935ca57b649d4d984c"
+        },
+        {
+          "item_id": "347917e3fc99ea10df3899c14b251305db47c31ef851de4417dcd15cdba0c770",
+          "path": "e2e/d9/review.spec.ts",
+          "fingerprint": "029e58cb0c361095ac52f3be4ca36d9efbdb6a3e13f2b1a335c57aa0c3da7242"
+        },
+        {
+          "item_id": "41e5b5fd9120773618275de28795e788717356305ec8adf32df169ba69aacacb",
+          "path": "src/app/types.ts",
+          "fingerprint": "fc38da33ace4e963ec8fe70b1849094d2c55477a030b68994652985089ed1e6d"
+        },
+        {
+          "item_id": "658cacd7d8755bc419d3c8b2dc3f0b93468308fa9e366c831087e003312a3c83",
+          "path": "src/ui/screens/ReviewOwedCard.tsx",
+          "fingerprint": "0121f44577ae7699a5517556351fee329b26e734056cb32208f31f767261a812"
+        },
+        {
+          "item_id": "6ed6d6038e0647026944586306a1a4685a2f55598fb92bdfac65706dd2dbabaf",
+          "path": "src/coordinators/daily-review/replay-strip.ts",
+          "fingerprint": "f3d1ff4f01c32f99024c335739481b8d9e45a2ffc5ca61af8bd4e7177755952f"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "1b7ab2279b9cc21027ae59825fe9044d4a1bd53063bf39833754c497792e9c4c"
+        },
+        {
+          "item_id": "9d0cf82d90e3897816db46674ed8cc0958ff80d1d4532d8c6cbd0e39209a3311",
+          "path": "src/ui/screens/ReplayStrip.tsx",
+          "fingerprint": "84de24c17f044dd8a59a9725e1bd7369b74782800b58308e9f1624c1be6a6367"
+        },
+        {
+          "item_id": "9d20a796225851b81f880f1d146ba251d198e8aa712f6f6be090422a42ed8150",
+          "path": "src/coordinators/daily-review/index.ts",
+          "fingerprint": "3af7c5e32d6828571ef5d8ae1137b5e302ceb301e2c66c64aa5bf7dd5072ca96"
+        },
+        {
+          "item_id": "a5bcd9b1c7f5ff289f1844382d50798ee66cc46e1c8835cb0110733fad703979",
+          "path": "src/ui/screens/replay-strip.props.ts",
+          "fingerprint": "75208443243578f19bf6dc4aac837d7f1ca3f863534af3dea7a8b3567ee251b2"
+        },
+        {
+          "item_id": "a83706f3444e16c14ac613c874f7293d7adce6354226bde7d7b9b892fce05701",
+          "path": "src/ui/screens/ReviewCard.test.tsx",
+          "fingerprint": "3544b9e786bc5aa18a98a7864a62c6acdcaefb014379e7e965e1dcc4754eb5a7"
+        },
+        {
+          "item_id": "ac53509d1a1e414f3340d69ca414b962ebc62bd7f43d0bae046572ef7201b25f",
+          "path": "src/coordinators/daily-review/replay-strip.test.ts",
+          "fingerprint": "a1a378e08263051c415d074e855a37c72fceff1c969eaf0b9c61c5ff9c1995d6"
+        },
+        {
+          "item_id": "ad31c51e12ceeeb4102a024e23cd34c878fad430a8a062778a9fa5aefe65fc89",
+          "path": "src/ui/screens/closed-card.ts",
+          "fingerprint": "40de58638d64c3651c9e8c6a51c015f457be5ba97cf1dd0f2cfa21a79442105c"
+        },
+        {
+          "item_id": "afb481bb4cba2dde003d8612c9d1b632dfbaebcf86b1d803500513f648266a88",
+          "path": "src/ui/screens/CardReplay.tsx",
+          "fingerprint": "96589f45cbe2f7367ef8ee205ca2b3f1989dd212456d2c106212f4e160adba64"
+        },
+        {
+          "item_id": "d0126439061216e58eb2b1a6bab019f2d20601558a9531d4100a29b4b9c5c3f9",
+          "path": "e2e/d9/support.ts",
+          "fingerprint": "54e0956aa520caccbd34bdf4c61aa8c9587cff73b1a784ecd2e822bf3be2cc40"
+        },
+        {
+          "item_id": "e39f65cfe378937a72cf3eb89fd37537135f67d4955f43685034696af03b6d8e",
+          "path": "src/ui/screens/closed-card.test.ts",
+          "fingerprint": "767dd1d24a62d796ea53b42e7805b23272a49a1ef6469f3d8055ff00ee1ef091"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "83aacb7dcb6a7d60c92313ef986fcbee495f3315af799095b43b6cf42414ae6e"
+        },
+        {
+          "item_id": "f60d40a2fcf211e72668946f9d6c2357941e916774d36dd5cb14b2a35255d3a9",
+          "path": "src/ui/screens/ReviewOwed.test.tsx",
+          "fingerprint": "73cd7f642f2f55b7e154327c1119d79eecbef090ecb993f33963850a406ffc80"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "44e22aaf708e6205d1474f160b9699478d8b9b16f40931c7b411c460660433d2",
+          "path": "evidence/D95/data-additions.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "83342d951e7f242de524a0ebb63dc0cc4bc21a09cfe19dfbbc3a62a356389ef3",
+          "path": "evidence/D95/words-changed.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "9cb1a797774d02950cc071d8d999024e890e80edbfdf05f415f708917949c2e7",
+          "path": "evidence/D95/structural.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "d54eb3b4d027853a18b4354d0f1f8d1c8663176d17c0607223df07d59690cd24",
+          "path": "evidence/D95/tdd-log/T95.56.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "d7940bcff282aa5345d9129acbcc2747a9c1323d1372c93124db122b1101fae7",
+          "path": "evidence/D95/new-words.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 83611
+  }
+}
