@@ -1326,3 +1326,7 @@ Commit `a81e038f`: a short Plan's Entry cell names the count without its sign ("
 ocr of T95.58-B3 (session 48d34c6f): complete, 2 files, no findings. `evidence/D95/ocr/T95.58-B3-a81e038f.json`.
 
 Run `t95.58-closed-card` (browser-auto 3d9cddb1, full tier; at `4ecc2c20`): unit 264 files, 3203 passed; integration 158 files, 364 passed; browser-1 127 passed, browser-2 79 passed, browser-3 55 passed, browser-4 1 failed, 4 skipped, 162 passed; 14 of 14 checks exit 0; run-complete. The failure: `e2e/d95/closed-card.spec.ts:26` (T95.58's own spec, which passed alone in T95.58, B2 and B3) found no "Trades with owed reflections" group at 1280. Its snapshot shows ABC still open with an Exit chosen and the Mark not saved, so the sale had not landed when the spec went back to the Review: a likely race in the spec's `closeAbc`. Follow-on **T95.58-F1**: reproduce under load (`--repeat-each`), fix the cause, then rerun.
+
+### T95.58-F1
+
+Commit `d27ebbd1`: `closeAbc` in e2e/d95/closed-card.spec.ts clicked "Save exit" then "Back to the Review" at once, so the Review could open before the sale saved. It now waits for "Recorded. ABC is closed. Its Close Review is due in the next Review." first, as sale.spec.ts does. No app fault seen. Reproduced 1 failed of 10 (`--repeat-each 10`, workers 1); after the fix 20 of 20 passed. Test-only; kept at Full (its row was opened at Full, and a level isn't lowered).
