@@ -1247,3 +1247,7 @@ Commit `9f69da24`: new `keyMoments(sessions: readonly ReplayedSession[]): readon
 
 ocr of T95.54 (session 96871c81): 3 files, 1 finding, Valid, bug task. `evidence/D95/ocr/T95.54-9f69da24.json`.
 - **T95.54-B1** (Valid, `key-moments.ts:36`): Now/End is read from `heldQuantity`, a signed net sum (`replay-series.ts:216`, `derive.ts:169`), so an open spread whose legs offset reads zero and its last session is End instead of Now. Cases: it should give Now for an open Trade whose positions' quantities sum to zero; it should give End when no position is held.
+
+### T95.54-B1
+
+Commit `1499c00f`: the last session reads End when `last.positions.length === 0` (positions holds only open lots), else Now; unused `ZERO` removed. Case 1 red (legs +1 and −1, heldQuantity 0; a first red on a stray High in the fixture was not genuine, fixed, reverted, genuine red), green. Case 2 first-run pass, flagged, mutation (End and Now swapped) failed, restored. trade-analysis 305 passed; typecheck, tsc6, lint (2 pre-existing warnings), lint:deps exit 0.
