@@ -1,0 +1,340 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 21 selected item(s).",
+  "summary": {
+    "files_reviewed": 21,
+    "comments": 2,
+    "total_tokens": 382297,
+    "input_tokens": 379586,
+    "output_tokens": 2711,
+    "cache_read_tokens": 47616,
+    "elapsed": "51s"
+  },
+  "tool_calls": {
+    "total": 54,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 11,
+      "file_read": 40,
+      "file_read_diff": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "tests/support/replay-series-app.ts",
+      "content": "This nests the expiration ternary inside the sale ternary, contrary to the requested no-nested-ternaries rule. Select the reflection with explicit branches so the three cases remain easy to follow and only the selected async helper is called.",
+      "existing_code": "      reflection: selling ? await completeSale(app) : await (expiring ? completeExpiration(app) : complete(app)),",
+      "start_line": 68,
+      "end_line": 68,
+      "category": "maintainability",
+      "severity": "low"
+    },
+    {
+      "path": "e2e/d7/responsive-a11y.spec.ts",
+      "content": "This keyboard-only path still submits the expiration reflection without an Expiration Reason. Unlike `recordExpiration`, it never fills `Why did it expire worthless?` when that prompt is present, so it does not satisfy the requirement that every expiration carry a fixed reason and will fail if T95.50 requires one for this fixture. Before moving to Close Review, conditionally tab to the reason field and type the fixed answer, preserving keyboard-only interaction.",
+      "existing_code": "    await tabTo(page, closeReviewGroup(page).getByLabel('Reflect now'));",
+      "start_line": 246,
+      "end_line": 246,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "D7 end-to-end tests and shared support",
+      "files": [
+        "e2e/d7/kill.spec.ts",
+        "e2e/d7/responsive-a11y.spec.ts",
+        "e2e/d7/support.ts"
+      ]
+    },
+    {
+      "label": "D7 lifecycle, expiration, review, and settlement integration tests",
+      "files": [
+        "tests/integration/d7/expiration-close-review.test.ts",
+        "tests/integration/d7/lifecycle.test.ts",
+        "tests/integration/d7/rebuild.test.ts",
+        "tests/integration/d7/review.test.ts",
+        "tests/integration/d7/settlement-due.test.ts",
+        "tests/integration/d7/support.ts"
+      ]
+    },
+    {
+      "label": "D7 trading, rejection, retry, and write-gate integration tests",
+      "files": [
+        "tests/integration/d7/payoff.test.ts",
+        "tests/integration/d7/rejections.test.ts",
+        "tests/integration/d7/retries.test.ts",
+        "tests/integration/d7/short-put.test.ts",
+        "tests/integration/d7/write-gate.test.ts"
+      ]
+    },
+    {
+      "label": "Replay-series fixtures and downstream integration tests",
+      "files": [
+        "tests/integration/d7sp/trade-detail-finished.test.ts",
+        "tests/integration/d8p/detail.test.ts",
+        "tests/integration/d9/lifetime.test.ts",
+        "tests/integration/d9ar/final.test.ts",
+        "tests/support/replay-series-app.ts",
+        "tests/support/replay-series-stack.ts",
+        "tests/support/review-fixture.ts"
+      ]
+    }
+  ],
+  "session_id": "8456bb31-9dbc-4ad2-b2d3-f2b04014c64c",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "8456bb31-9dbc-4ad2-b2d3-f2b04014c64c",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "30301fad",
+      "resolved_base": "884838b840be4ec293d69f8b5ec7e649f966c127",
+      "resolved_head": "30301fadbb55f2b029fa6541be908d89a168eb26",
+      "exact_range": "884838b840be4ec293d69f8b5ec7e649f966c127..30301fadbb55f2b029fa6541be908d89a168eb26",
+      "source_artifact_sha256": "3f1e525dd0de38c76e77166db7dcf778eebcb40d0074c8a396f6f1ace9e2f9b0"
+    },
+    "execution": {
+      "ocr_version": "v1.14.4",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "06e1cdd037b01c80957665cff02223fa09c243c41ffb2e21b89ce1ca3e3967d8",
+          "path": "tests/integration/d7/short-put.test.ts",
+          "fingerprint": "9cb93716dd6d6450b21b0f0a61497c94eb6fafafc02c7dfd40e7d69f7ddbb2f6"
+        },
+        {
+          "item_id": "0a6f8f51de976de8fdc8f6a4a2fc34a13c069d618c41bc171b32f8f39aff5ade",
+          "path": "tests/integration/d7/rejections.test.ts",
+          "fingerprint": "d06a45f738dea79fb6e54089fc697eb79bfe164ee4ace7a7136081ee4cc8065d"
+        },
+        {
+          "item_id": "17f81f1c6edfaa6ba945e70c4be78d7522ac2c31042a6e915dc1ba9f8ea6ba55",
+          "path": "tests/integration/d7/lifecycle.test.ts",
+          "fingerprint": "4227a1d7faae6193791c8734aa35d679ca40ddc3cc1f950eae4d265dbf28ebfb"
+        },
+        {
+          "item_id": "1e601d1a56ad3fee323589674806fd60bb94a71af11b7eb969142cdabfb1a93b",
+          "path": "tests/support/replay-series-app.ts",
+          "fingerprint": "327999cc0957c9c9c46f82ac5cd1ba16d092d07efc58dde69ff6aa29f6b97865"
+        },
+        {
+          "item_id": "23226b4da133e6b541971a092cfd31970e4f09ec2f11a97f893664b3fc043ea5",
+          "path": "tests/integration/d7sp/trade-detail-finished.test.ts",
+          "fingerprint": "2dd1fd973b300b6df140a3ccd7165a76600993444fb3f408a27bb303c919a68e"
+        },
+        {
+          "item_id": "362bf25e333b5a0c58e4967b3c38cad306dae2391b34906c162a24975db2ef77",
+          "path": "tests/integration/d7/retries.test.ts",
+          "fingerprint": "6e859ad61a874fe36edf0a7c29f789f1a90f9f7862cf9db7280260df351f097e"
+        },
+        {
+          "item_id": "4b9fadd3d5bd8cee14f60df670c85c90c9aa10deaead2a1084151c24c9231db1",
+          "path": "tests/integration/d7/support.ts",
+          "fingerprint": "0a97a0b3d7df7b93d87954d177c7fe6d73aecf12d894b4b5bbbed975803d20a7"
+        },
+        {
+          "item_id": "4e995098d3a2739c27d7614956fdc9064c2736a0d40ad8a2991a03a83a3e6552",
+          "path": "e2e/d7/responsive-a11y.spec.ts",
+          "fingerprint": "0c9f5f3675c897bc94871d3d72d209d1fbef1a2af92295411c7259080a2a1740"
+        },
+        {
+          "item_id": "5ee14afc5ed4f81e9e986dc0193e7a09ec1f9124a2060aed5e5fe510724365fd",
+          "path": "tests/support/replay-series-stack.ts",
+          "fingerprint": "87276bb9a8325aedcafacbe2dceb2698fe1cc47e71a6e6c15fdad9baa62a47fc"
+        },
+        {
+          "item_id": "61e43bd8e48acd4959e9fd119f2b8443b589b06f0842f96fcb6c10cc21c56361",
+          "path": "tests/integration/d7/review.test.ts",
+          "fingerprint": "9688281c19f600c190f76f951a6aeebd77fe5a4cd62b7df6f7a70ffa02e42638"
+        },
+        {
+          "item_id": "962e129931a5460d2bb99ed4f59e82a0ae12b1bd47d8c37dcd8174d86d602241",
+          "path": "tests/integration/d9/lifetime.test.ts",
+          "fingerprint": "5f79b01fb084469d0cd0691bccfec6ae5040c3f78244892d9df41c6abe9dac54"
+        },
+        {
+          "item_id": "99c596ee1732c530a194c9499667a3a11331103a4114e4c1d962b6235c95f741",
+          "path": "e2e/d7/support.ts",
+          "fingerprint": "d1dce5ffbf94f69fbccaffd283e19b1605112d1e8cda93621e2f81353eaa96cc"
+        },
+        {
+          "item_id": "9ad66fd8c39886ef41a20df1b7cb091b03db33514271d691dae84abfe9d63728",
+          "path": "tests/integration/d7/payoff.test.ts",
+          "fingerprint": "e7b67e26d38fb59c85d3baa053933054cacc3036984f66936051d614c76d1b12"
+        },
+        {
+          "item_id": "9c97e65e1aa2b5d89b5575bf94750014cd81da8b83a8cba79db3450534d891d3",
+          "path": "tests/integration/d7/expiration-close-review.test.ts",
+          "fingerprint": "9cf82749d115d741dd8799ba975da9a13cd8c747b6f034efbfeb80cd86e030dc"
+        },
+        {
+          "item_id": "9fcc9106e1f1d3b34a703c3af12c8e441b2327bf74a78dbb4748f627b9a5c7a9",
+          "path": "tests/support/review-fixture.ts",
+          "fingerprint": "a2d5490fdbe027846adc0152d5a3f7d22f0ba1f2c8e56795ff58095b6fa7ac1d"
+        },
+        {
+          "item_id": "a0a771db91e638593845d682003fc81180609832f3f43ec02619d35a07ddb1c5",
+          "path": "tests/integration/d8p/detail.test.ts",
+          "fingerprint": "e329707d1985decc0300ad21d316c565bf06fb2bd8aeff024ce1fd23ed41097a"
+        },
+        {
+          "item_id": "cb3c995a8557b830c73ccb6f1aeb114e161a5b755768692aab293d17899b23d8",
+          "path": "tests/integration/d7/settlement-due.test.ts",
+          "fingerprint": "933faa9273e7b5e8e9fff9de7690fb7f6d5682cea59b04b90991d7ff1bc65c1d"
+        },
+        {
+          "item_id": "d1b7c2d196e7678482b261471640427ee30e4fb7fb2f5e13ac6544d29d1ce0f0",
+          "path": "tests/integration/d7/rebuild.test.ts",
+          "fingerprint": "5813116883e18de3192db31a48adf3615745109c70033a0e375dbf7dece73941"
+        },
+        {
+          "item_id": "d7eacf5122313598de9e95c89effd50e6e782ff566ce22a9a641b4c4c3fa4550",
+          "path": "tests/integration/d7/write-gate.test.ts",
+          "fingerprint": "ba29822cb10d8342559687af6e348686c398450b52b2e723d75bc17996d7d361"
+        },
+        {
+          "item_id": "df3fce92186686a1989ef386c4eff0be281d90130113a1eb9e00411513583bf0",
+          "path": "e2e/d7/kill.spec.ts",
+          "fingerprint": "0bc0e09ed88f2e03545830605b47a0311a4c50def7a84ce1e6d76b1b29f51953"
+        },
+        {
+          "item_id": "fe5b159a3a50a1bc1328a64c2ef704e3c50e9d5196b811044e4802bbc81b74d4",
+          "path": "tests/integration/d9ar/final.test.ts",
+          "fingerprint": "3928da67ca490c53549425e0090ced8e1a6592b9d0c9b811dd5e2bdbd747d092"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "06e1cdd037b01c80957665cff02223fa09c243c41ffb2e21b89ce1ca3e3967d8",
+          "path": "tests/integration/d7/short-put.test.ts",
+          "fingerprint": "9cb93716dd6d6450b21b0f0a61497c94eb6fafafc02c7dfd40e7d69f7ddbb2f6"
+        },
+        {
+          "item_id": "0a6f8f51de976de8fdc8f6a4a2fc34a13c069d618c41bc171b32f8f39aff5ade",
+          "path": "tests/integration/d7/rejections.test.ts",
+          "fingerprint": "d06a45f738dea79fb6e54089fc697eb79bfe164ee4ace7a7136081ee4cc8065d"
+        },
+        {
+          "item_id": "17f81f1c6edfaa6ba945e70c4be78d7522ac2c31042a6e915dc1ba9f8ea6ba55",
+          "path": "tests/integration/d7/lifecycle.test.ts",
+          "fingerprint": "4227a1d7faae6193791c8734aa35d679ca40ddc3cc1f950eae4d265dbf28ebfb"
+        },
+        {
+          "item_id": "1e601d1a56ad3fee323589674806fd60bb94a71af11b7eb969142cdabfb1a93b",
+          "path": "tests/support/replay-series-app.ts",
+          "fingerprint": "327999cc0957c9c9c46f82ac5cd1ba16d092d07efc58dde69ff6aa29f6b97865"
+        },
+        {
+          "item_id": "23226b4da133e6b541971a092cfd31970e4f09ec2f11a97f893664b3fc043ea5",
+          "path": "tests/integration/d7sp/trade-detail-finished.test.ts",
+          "fingerprint": "2dd1fd973b300b6df140a3ccd7165a76600993444fb3f408a27bb303c919a68e"
+        },
+        {
+          "item_id": "362bf25e333b5a0c58e4967b3c38cad306dae2391b34906c162a24975db2ef77",
+          "path": "tests/integration/d7/retries.test.ts",
+          "fingerprint": "6e859ad61a874fe36edf0a7c29f789f1a90f9f7862cf9db7280260df351f097e"
+        },
+        {
+          "item_id": "4b9fadd3d5bd8cee14f60df670c85c90c9aa10deaead2a1084151c24c9231db1",
+          "path": "tests/integration/d7/support.ts",
+          "fingerprint": "0a97a0b3d7df7b93d87954d177c7fe6d73aecf12d894b4b5bbbed975803d20a7"
+        },
+        {
+          "item_id": "4e995098d3a2739c27d7614956fdc9064c2736a0d40ad8a2991a03a83a3e6552",
+          "path": "e2e/d7/responsive-a11y.spec.ts",
+          "fingerprint": "0c9f5f3675c897bc94871d3d72d209d1fbef1a2af92295411c7259080a2a1740"
+        },
+        {
+          "item_id": "5ee14afc5ed4f81e9e986dc0193e7a09ec1f9124a2060aed5e5fe510724365fd",
+          "path": "tests/support/replay-series-stack.ts",
+          "fingerprint": "87276bb9a8325aedcafacbe2dceb2698fe1cc47e71a6e6c15fdad9baa62a47fc"
+        },
+        {
+          "item_id": "61e43bd8e48acd4959e9fd119f2b8443b589b06f0842f96fcb6c10cc21c56361",
+          "path": "tests/integration/d7/review.test.ts",
+          "fingerprint": "9688281c19f600c190f76f951a6aeebd77fe5a4cd62b7df6f7a70ffa02e42638"
+        },
+        {
+          "item_id": "962e129931a5460d2bb99ed4f59e82a0ae12b1bd47d8c37dcd8174d86d602241",
+          "path": "tests/integration/d9/lifetime.test.ts",
+          "fingerprint": "5f79b01fb084469d0cd0691bccfec6ae5040c3f78244892d9df41c6abe9dac54"
+        },
+        {
+          "item_id": "99c596ee1732c530a194c9499667a3a11331103a4114e4c1d962b6235c95f741",
+          "path": "e2e/d7/support.ts",
+          "fingerprint": "d1dce5ffbf94f69fbccaffd283e19b1605112d1e8cda93621e2f81353eaa96cc"
+        },
+        {
+          "item_id": "9ad66fd8c39886ef41a20df1b7cb091b03db33514271d691dae84abfe9d63728",
+          "path": "tests/integration/d7/payoff.test.ts",
+          "fingerprint": "e7b67e26d38fb59c85d3baa053933054cacc3036984f66936051d614c76d1b12"
+        },
+        {
+          "item_id": "9c97e65e1aa2b5d89b5575bf94750014cd81da8b83a8cba79db3450534d891d3",
+          "path": "tests/integration/d7/expiration-close-review.test.ts",
+          "fingerprint": "9cf82749d115d741dd8799ba975da9a13cd8c747b6f034efbfeb80cd86e030dc"
+        },
+        {
+          "item_id": "9fcc9106e1f1d3b34a703c3af12c8e441b2327bf74a78dbb4748f627b9a5c7a9",
+          "path": "tests/support/review-fixture.ts",
+          "fingerprint": "a2d5490fdbe027846adc0152d5a3f7d22f0ba1f2c8e56795ff58095b6fa7ac1d"
+        },
+        {
+          "item_id": "a0a771db91e638593845d682003fc81180609832f3f43ec02619d35a07ddb1c5",
+          "path": "tests/integration/d8p/detail.test.ts",
+          "fingerprint": "e329707d1985decc0300ad21d316c565bf06fb2bd8aeff024ce1fd23ed41097a"
+        },
+        {
+          "item_id": "cb3c995a8557b830c73ccb6f1aeb114e161a5b755768692aab293d17899b23d8",
+          "path": "tests/integration/d7/settlement-due.test.ts",
+          "fingerprint": "933faa9273e7b5e8e9fff9de7690fb7f6d5682cea59b04b90991d7ff1bc65c1d"
+        },
+        {
+          "item_id": "d1b7c2d196e7678482b261471640427ee30e4fb7fb2f5e13ac6544d29d1ce0f0",
+          "path": "tests/integration/d7/rebuild.test.ts",
+          "fingerprint": "5813116883e18de3192db31a48adf3615745109c70033a0e375dbf7dece73941"
+        },
+        {
+          "item_id": "d7eacf5122313598de9e95c89effd50e6e782ff566ce22a9a641b4c4c3fa4550",
+          "path": "tests/integration/d7/write-gate.test.ts",
+          "fingerprint": "ba29822cb10d8342559687af6e348686c398450b52b2e723d75bc17996d7d361"
+        },
+        {
+          "item_id": "df3fce92186686a1989ef386c4eff0be281d90130113a1eb9e00411513583bf0",
+          "path": "e2e/d7/kill.spec.ts",
+          "fingerprint": "0bc0e09ed88f2e03545830605b47a0311a4c50def7a84ce1e6d76b1b29f51953"
+        },
+        {
+          "item_id": "fe5b159a3a50a1bc1328a64c2ef704e3c50e9d5196b811044e4802bbc81b74d4",
+          "path": "tests/integration/d9ar/final.test.ts",
+          "fingerprint": "3928da67ca490c53549425e0090ced8e1a6592b9d0c9b811dd5e2bdbd747d092"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": []
+    },
+    "elapsed_ms": 51324
+  }
+}

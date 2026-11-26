@@ -65,3 +65,5 @@ Critic B3's minor observations (T95.46):
 - The T95.46-B4 agent note on backdated sales above is now bug task T95.46-B6.
 - T95.46-B8 (agent note): a sold-out card's region label ("XYZ Long 2 shares @ $50.10 review") still carries the position summary after the sale.
 - ocr (T95.46-B5 to B9), style: `src/ui/screens/ExitReceipt.tsx:58-59` the `when` helper nests a ternary in a template literal inside a ternary; an early return for Due reads more simply.
+
+- ocr (T95.48), style: `tests/support/replay-series-app.ts:68` nests the expiration ternary inside the sale ternary; explicit branches read more simply.

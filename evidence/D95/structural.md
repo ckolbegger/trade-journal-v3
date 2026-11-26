@@ -1114,3 +1114,8 @@ Commit `30301fad` (21 files, tests and fixtures only; src/ untouched). New `comp
 - Checks: vitest 416 files, 3477 tests passed; browser specs touched 34 passed, the one failure (d7 keyboard case) fixed, 4 of 4 after; typecheck, tsc6, lint, lint:deps exit 0.
 - Notes for T95.50: tools/fixtures-freeze.ts, tools/capacity/measure-page.ts, src/app/bench-generator.ts and src/ tests record expirations through the coordinator outside this Files line; they may need a reason. For T95.52: check the label regex /^Why did it expire worthless\?/ against W140.
 - Paused here at the user's request (2026-11-25): ocr of 30301fad and its suite run not yet started.
+
+ocr of T95.48 (session 8456bb31, after a ChatGPT usage-limit wait; earlier sessions 8661607f and 7a874c0a failed on every file with the limit): 21 files, 2 findings. `evidence/D95/ocr/T95.48-30301fad.json`.
+- **T95.48-B1** (Doubtful, `e2e/d7/responsive-a11y.spec.ts:246`): the keyboard-only expiration case never fills "Why did it expire worthless?", unlike `recordExpiration`, so it may fail once T95.50 requires the reason. Reviewer's reading: T95.50 asks the reason only for an in-the-money expiration, and this case saves no Mark first; it becomes real if T95.50 also refuses an expiration with no Mark. Cases: it should fill "Why did it expire worthless?" by keyboard when the prompt is shown; it should still record the expiration by keyboard alone when the prompt is absent.
+- Style only (tech-debt.md): `tests/support/replay-series-app.ts:68` nests the expiration ternary inside the sale ternary.
+- Reviewer's note (not an ocr finding): it did not check the S6 and S7 lists for expiration tests the commit missed.
