@@ -1437,9 +1437,47 @@ ul.rows > li {
 .review-panel-name {
   font-weight: 700;
 }
-/* The Replay button above the Action form (decision 3). */
+/* The Replay strip on a card (T95.56, W146): a small chart, one line of words and the Replay button; stronger when the Trade is past a line or an Exit is not carried out. */
+.replay-strip {
+  display: grid;
+  grid-template-columns: minmax(8rem, 15rem) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  margin: 0.5rem 0 1rem;
+  padding: 0.5rem 0.75rem;
+  border-left: 1px solid var(--line);
+}
+.replay-strip p {
+  margin: 0;
+}
+.replay-strip-strong {
+  border-left: 4px solid var(--warning-line);
+  background: var(--warning-ground);
+}
+.replay-strip-chart {
+  width: 100%;
+  height: auto;
+}
+.replay-strip-pnl {
+  stroke: currentColor;
+  stroke-width: 1.5;
+}
+.replay-strip-zero {
+  stroke: var(--line);
+}
+.replay-strip-stop,
+.replay-strip-target {
+  stroke-dasharray: 3 3;
+  stroke-width: 1;
+}
+.replay-strip-stop {
+  stroke: var(--stop);
+}
+.replay-strip-target {
+  stroke: var(--target);
+}
 .review-card-replay {
-  margin-bottom: 1rem;
+  margin: 0;
 }
 .review-panel-summary {
   color: var(--muted);
@@ -1450,6 +1488,13 @@ ul.rows > li {
     grid-template-columns: minmax(0, 1fr);
     gap: 0;
     padding-bottom: 0.5rem;
+  }
+}
+
+/* The Replay strip's chart sits above its words and button where the card is under 40rem wide (T95.56). */
+@container (max-width: 39.99rem) {
+  .replay-strip {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 

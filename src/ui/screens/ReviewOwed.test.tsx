@@ -230,6 +230,23 @@ describe('the closed card sets the Plan beside what happened (T95.58, W150)', ()
   });
 });
 
+describe('the closed card fills What happened for the Stop and the Target (T95.56, decision 136)', () => {
+  it('should say Never reached, or Reached with the date, from the card strip', async () => {
+    const facade = reviewFacade(ready());
+    const original = vi.mocked(facade.DailyReview.getTrade).getMockImplementation()!;
+    vi.mocked(facade.DailyReview.getTrade).mockImplementation(async (request) => {
+      const got = await original(request);
+      return got.kind === 'ReflectionsOwed' && got.card.tradeId === 't-x' ? { ...got, card: { ...got.card, strip: { sessions: 3, stop: {}, target: { first: '2026-10-12', since: '2026-10-12', sessions: 1 } } } } : got;
+    });
+    renderReview(facade);
+    const closed = await screen.findByRole('region', { name: 'ABC review' });
+    const table = within(closed).getByRole('table', { name: 'Plan and what happened' });
+    const happened = (label: string) => within(within(table).getByRole('rowheader', { name: label }).closest('tr')!).getAllByRole('cell')[1]!.textContent;
+    expect(happened('Stop')).toBe('Never reached');
+    expect(happened('Target')).toBe('Reached Mon Oct 12');
+  });
+});
+
 describe('the closed card drops the lifecycle words and shows dates as dates (T95.58, W150, X13)', () => {
   it('should show no Lifecycle or Terminal Disposition on the closed card, and each date of what it says as a date', async () => {
     renderReview(reviewFacade(ready()));

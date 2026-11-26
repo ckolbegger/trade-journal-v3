@@ -367,6 +367,8 @@ export interface DailyTradeReview {
   // A254: the Trade's replay to the Review Date, the view `replayTrade` returns, with no Journal items placed; absent when the Trade's facts
   // cannot be replayed. `open` does not read it.
   readonly replay?: TradeReplayView;
+  // What the Replay strip says of that replay (T95.56); present with it.
+  readonly strip?: ReplayStripFigures;
   // The Trade's band and reasons, as the overview lists them.
   readonly attention: ReviewTradeItem;
   // The Plan Call at the Review Date's Marks and the condition that made it (A306); absent when the Trade's facts cannot be replayed.
@@ -411,6 +413,26 @@ export interface DailyTradeReview {
   readonly saveBinding: TradeSaveBinding;
 }
 
+// T95.56, decision 131: what the Replay strip's words say, counted by the coordinator from the replay the card already holds. Dates are
+// trading dates. A role is absent when the replay carries no crossings.
+export interface ReplayStripRole {
+  // The session the line was first crossed.
+  readonly first?: string;
+  // The start of the unbroken run past the line that holds the Review Date, and the sessions in it through the Review Date.
+  readonly since?: string;
+  readonly sessions?: number;
+}
+
+export interface ReplayStripFigures {
+  // The sessions of the Trade's replay, through the Review Date or the Trade's last.
+  readonly sessions: number;
+  // The worst and best Trade P&L by session (the replay's Low and High key moments); absent with no figure.
+  readonly low?: { readonly date: string; readonly value: Rational };
+  readonly high?: { readonly date: string; readonly value: Rational };
+  readonly stop?: ReplayStripRole;
+  readonly target?: ReplayStripRole;
+}
+
 // A Trade summary for its lifecycle on an owed-reflection card, derived from all the Trade's facts, with no cutoff (A90).
 // Absent when the facts cannot be replayed.
 export type OwedTradeSummary =
@@ -453,6 +475,9 @@ export interface OwedReflectionsCard {
   readonly lifecycle: LifecycleState;
   readonly labels: { readonly strategy: string; readonly account: string; readonly institution: string };
   readonly summary?: OwedTradeSummary;
+  // The Trade's replay to the Review Date with no Journal items, and what the Replay strip says of it (decision 136); absent when the facts cannot be replayed.
+  readonly replay?: TradeReplayView;
+  readonly strip?: ReplayStripFigures;
   // The Trade's Outstanding reflections in due-anchor order, each with its snapshot form and save binding.
   readonly reflections: readonly OwedReflection[];
   readonly progress: CardProgress;

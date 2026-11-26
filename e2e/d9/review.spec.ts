@@ -5,25 +5,19 @@ import { openStandardDetail } from '../d9ar/support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
-// B9.3 (plan section 7.2): R-BREN-U with Mon 11-16's Marks saved; the Review card opened. The Replay section sits above the Action form in the card's Action panel and links only to Price
+// B9.3 (plan section 7.2): R-BREN-U with Mon 11-16's Marks saved; the Review card opened. The Replay strip sits above the card's panels and its overlay links only to Price
 // History; the slider moves (the Review's address and the Trade's facts are unchanged); Price History opens on the slider's session; "Back to the Review" returns to the same card,
 // panel and session (/review?trade=<id>&panel=Action&session=<date>).
 test.describe('B9.3 Replay in the Review, and the round trip', () => {
-  test('should show the Replay button above the Action form, opening the replay with Price History as its only link', async ({ profile, copySetup }) => {
+  test('should show the Replay button in the strip, not in the Action panel, opening the replay with Price History as its only link', async ({ profile, copySetup }) => {
     test.setTimeout(240_000);
     const { context, page, trade } = await openStandardDetail(profile, copySetup, BREN);
     await page.goto('/');
     await openReview(page);
     await reachCard(page, trade);
-    // Above the Action form, both in the Action panel, and no replay inside the card until the button is pressed.
-    const action = tradeCard(page, trade).locator('[id$="-Action"]');
-    await expect(action.locator('button.review-card-replay')).toHaveCount(1);
-    const order = await action.evaluate((panel) => {
-      const button = panel.querySelector('button.review-card-replay')!;
-      const form = panel.querySelector('form[aria-label="Action"]')!;
-      return button.nextElementSibling === form ? 'replay first' : 'form first';
-    });
-    expect(order).toBe('replay first');
+    // T95.56: in the card's Replay strip, none in the Action panel, and no replay inside the card until the button is pressed.
+    await expect(tradeCard(page, trade).getByRole('region', { name: 'Replay strip' }).locator('button.review-card-replay')).toHaveCount(1);
+    await expect(tradeCard(page, trade).locator('[id$="-Action"]').locator('button.review-card-replay')).toHaveCount(0);
     await expect(replay(page)).toHaveCount(0);
     const section = await openCardReplay(page, trade);
     // A318: the Trade is past its Target, first reached on Thu 11-12, so the Replay opens there and not on the newest session.

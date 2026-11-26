@@ -13,6 +13,7 @@ import { beginSemanticTransaction, type Persistence, type WorkspaceSnapshotBindi
 import type { MutationGuard } from '../mutation-guard.ts';
 import { payoffOf, standingOf } from '../settlement.ts';
 import { assembleReplay } from '../replay/index.ts';
+import { replayStripOf } from './replay-strip.ts';
 import { lastDecisionsOf } from './decisions.ts';
 import { exitCarryOf } from './exit-carry.ts';
 import { attentionOf, byAttention, meterReadingOf, planExitFactsOf, unavailableFamilies, valueTrade, type TradeValuation } from '../valuation/index.ts';
@@ -873,6 +874,9 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     const closeReason = await closeReasonOf(analysis.closeReason?.closeReasonId);
     const state = derive({ record: analysis });
     const closeReviewOutcome = summary.lifecycle === 'Closed' ? await closeReviewOutcomeOf(tradeId) : undefined;
+    // Decision 136: the Trade's replay from the read session this card holds, with no Journal items: one series read for each Instrument.
+    const replayed = state.kind === 'Derived' && analysis.positionChanges.length > 0 ? await assembleReplay(deps, analysis, state, read, { withJournal: false }) : undefined;
+    const replay = replayed && !('kind' in replayed) ? replayed : undefined;
     const due = reflections.filter((reflection) => reflection.classification === 'Due').length;
     return {
       kind: 'ReflectionsOwed',
@@ -884,6 +888,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
         lifecycle: summary.lifecycle,
         labels,
         ...(state.kind === 'Derived' && { summary: owedSummary(summary.lifecycle, state, analysis, closeReason, closeReviewOutcome) }),
+        ...(replay && { replay, strip: replayStripOf(replay, read, reviewDate) }),
         reflections,
         progress: owedCardProgress({ due, later: reflections.length - due }),
       },
@@ -974,7 +979,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
           ...(standing && { expirationStanding: standing }),
           ...(settledLaterOn && { settledLaterOn }),
           ...(payoff && { payoff }),
-          ...(replay && { replay }),
+          ...(replay && { replay, strip: replayStripOf(replay, read, reviewDate) }),
           ...(planExit && { planExit }),
           reflections,
           progress,

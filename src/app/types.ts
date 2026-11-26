@@ -214,6 +214,9 @@ export type {
   // The card of one such Trade (D6 A90).
   OwedReflectionsCard,
   OwedTradeSummary,
+  // What a card's Replay strip says of its replay (T95.56).
+  ReplayStripFigures,
+  ReplayStripRole,
   // The meter's reading on a walked Trade (A260, T9.31).
   MeterReading,
   // The walked Trade's slider figures, unformatted; the slider's own props type is also called SliderFigures.

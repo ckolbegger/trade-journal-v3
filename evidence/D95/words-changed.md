@@ -26,3 +26,6 @@ The user approved every entry above as it stands, after the T95.26 gate. "More f
 ## Part C
 
 - T95.52: W136's second sentence ("Expired Fri Nov 20: nothing left to decide, only how it settled.") not rendered; the heading alone. Per Q6, the mockup's "does not expire worthless" line and "Only if your broker shows it expired" dropped.
+
+## T95.56
+- No words shortened: W146's four phrases are used as approved. (The Replay button's visible words stay "Replay"; the phrase's closing sentence is kept.)

@@ -222,7 +222,7 @@ export async function openDrawer(page: Page, name: Parameters<typeof openDetailD
   if ((await replay(page).count()) === 0) await page.locator('.trade-detail').getByRole('button', { name: 'Replay', exact: true }).click();
   await replay(page).waitFor();
 }
-// T9AR.9: the Review card's "Replay" button, in its Action panel directly above the Action form; the overlay it opens is the Detail's, read with `replay(page)`.
+// T9AR.9, T95.56: the Review card's "Replay" button, in the card's Replay strip (above its panels, whichever is open); the overlay it opens is the Detail's, read with `replay(page)`.
 export const cardReplayButton = (page: Page, card: TradeRef): Locator => tradeCard(page, card).locator('button.review-card-replay');
 export async function openCardReplay(page: Page, card: TradeRef): Promise<Locator> {
   if ((await replay(page).count()) === 0) await cardReplayButton(page, card).click();

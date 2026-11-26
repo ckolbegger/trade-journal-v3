@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
+import { useSearchParams } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
 import type { OwedReflectionsCard, OwedReflectionsTrade, OwedTradeSummary, PostSaveReview } from '../../app/types.ts';
 import { Badge } from '../Badge.tsx';
 import { localTime, shortDate, tradeSummary } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
 import { panelOf, plural, reflectionsStatus, type Go } from './ReviewCard.tsx';
+import { CardReplay } from './CardReplay.tsx';
 import { howEnded, planResultRows, type ClosedSummary } from './closed-card.ts';
 import { shownFirst, type FormRegister } from './form-handle.ts';
 import { Refusal, type RefusalProps } from './Refusal.tsx';
@@ -34,7 +36,7 @@ function remainsText(trade: OwedReflectionsTrade, detail: OwedDetail | undefined
 }
 
 // How a Closed Trade ended (W150): the words, the date and the Close Reason, then its result.
-function Ended({ summary }: { readonly summary: ClosedSummary }) {
+function Ended({ summary, strip }: { readonly summary: ClosedSummary; readonly strip: OwedReflectionsCard['strip'] }) {
   const { timeZone = 'UTC' } = useRuntime();
   const date = summary.terminalTime && shortDate(localTime(summary.terminalTime, timeZone).slice(0, 10));
   const reason = summary.closeReason && (summary.closeReason.label || summary.closeReason.id);
@@ -53,7 +55,7 @@ function Ended({ summary }: { readonly summary: ClosedSummary }) {
           </tr>
         </thead>
         <tbody>
-          {planResultRows(summary, timeZone).map((row) => (
+          {planResultRows(summary, timeZone, strip).map((row) => (
             <tr key={row.label}>
               <th scope="row">{row.label}</th>
               <td>{row.plan}</td>
@@ -73,7 +75,7 @@ function Ended({ summary }: { readonly summary: ClosedSummary }) {
 // The Trade's summary for its lifecycle (A90): how a Closed Trade ended, or what an Open Trade holds.
 function Summary({ card }: { readonly card: OwedReflectionsCard }) {
   const summary: OwedTradeSummary | undefined = card.summary;
-  if (summary?.kind === 'Closed') return <Ended summary={summary} />;
+  if (summary?.kind === 'Closed') return <Ended summary={summary} strip={card.strip} />;
   // A Closed Trade whose facts cannot be replayed has nothing to say of how it ended.
   if (card.lifecycle === 'Closed') return null;
   return (
@@ -169,12 +171,15 @@ function OwedBody({ facade, card, progress, reviewDate, go, onReflectionResolved
   // A link to a card that is already open opens its Reflections panel again, if the trader has closed it, and takes focus (A161).
   const panelButton = useRef<HTMLButtonElement>(null);
   const [focusPanel, setFocusPanel] = useState<object>();
+  const [params] = useSearchParams();
+  const replayOpen = params.get('replay') === 'open';
   const [handledGo, setHandledGo] = useState(go.count);
   if (go.count !== handledGo) {
     setHandledGo(go.count);
     if (go.panel === 'Reflections') {
       setOpen(true);
-      setFocusPanel({});
+      // The Replay button's own address asks for this card again while its overlay is open: focus stays in the overlay.
+      if (!replayOpen) setFocusPanel({});
     }
   }
   useEffect(() => {
@@ -188,6 +193,8 @@ function OwedBody({ facade, card, progress, reviewDate, go, onReflectionResolved
         {card.labels.strategy} · {card.labels.account} · {card.labels.institution}
       </p>
       <Summary card={card} />
+      {/* T95.56, decision 136: the owed card carries its Trade's replay, so the strip stands here as on a walked card. */}
+      {card.replay && <CardReplay tradeId={card.tradeId} underlying={card.underlying} replay={card.replay} strip={card.strip} closed={card.lifecycle === 'Closed'} panel="Reflections" session={go.session} />}
       <div className="review-panel">
         <h4>
           <button type="button" ref={panelButton} aria-expanded={open} aria-controls={`${uid}-Reflections`} onClick={() => setOpen(!open)}>

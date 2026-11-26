@@ -1,4 +1,4 @@
-import type { OwedTradeSummary } from '../../app/types.ts';
+import type { OwedTradeSummary, ReplayStripFigures } from '../../app/types.ts';
 import { parseDecimal, Rational } from '../../domain/values/index.ts';
 import { calculation, signed } from '../figures.ts';
 import { conditionLines } from '../cockpit/drawers/plan-risk.props.ts';
@@ -28,13 +28,13 @@ export function howEnded(summary: ClosedSummary): string {
 export interface PlanResultRow {
   readonly label: string;
   readonly plan: string;
-  // One line for each fill or expiration; a Stop or Target that no Mark was read for has none.
+  // One line for each fill or expiration; a Stop or Target has one when the replay says whether it was reached.
   readonly happened: readonly string[];
 }
 
 // The Plan beside what happened (W150): Entry, Stop, Target, Exit and Result, from the Plan's leg and conditions and each fill. Dates are the
 // Workspace zone's calendar dates; each fill is a line of its own, never summed.
-export function planResultRows(summary: ClosedSummary, timeZone: string): readonly PlanResultRow[] {
+export function planResultRows(summary: ClosedSummary, timeZone: string, strip?: ReplayStripFigures): readonly PlanResultRow[] {
   const { plan } = summary;
   const [one, many] = plan.instrument.kind === 'Option' ? ['contract', 'contracts'] : ['share', 'shares'];
   const date = (instant: string): string => shortDate(localTime(instant, timeZone).slice(0, 10));
@@ -46,14 +46,18 @@ export function planResultRows(summary: ClosedSummary, timeZone: string): readon
   const planned = parsed.ok ? signless(parsed.value) : undefined;
   const units = planned?.compare(ONE) === 0 ? one : many;
   const leg = { instrument: plan.instrument, side: plan.side };
+  // Decision 136: from the replay's crossings, "Never reached" or "Reached" with the session it was first reached; nothing for a line the Plan lacks or with no replay.
+  const reached = (stated: string, role: ReplayStripFigures['stop']): readonly string[] => (stated === '' || !role ? [] : [role.first ? `Reached ${shortDate(role.first)}` : 'Never reached']);
+  const stops = conditionLines('Stop', plan.stops, leg, plan.instrument.symbol).join(', ');
+  const targets = conditionLines('Target', plan.targets, leg, plan.instrument.symbol).join(', ');
   const exits = [
     ...summary.fills.filter((fill) => fill.action !== opening).map((fill) => fillLine(plan.side === 'Long' ? 'Sold' : 'Bought back', fill)),
     ...summary.expirations.map((expiration) => `${expiration.quantity} expired worthless, ${date(expiration.economicTime)}`),
   ];
   return [
     { label: 'Entry', plan: `${plan.side === 'Short' ? 'Sell ' : ''}${planned ? quantity(planned) : plan.quantity} ${units} at ${price(plan.intendedEntry)}`, happened: summary.fills.filter((fill) => fill.action === opening).map((fill) => fillLine(plan.side === 'Long' ? 'Bought' : 'Sold', fill)) },
-    { label: 'Stop', plan: conditionLines('Stop', plan.stops, leg, plan.instrument.symbol).join(', '), happened: [] },
-    { label: 'Target', plan: conditionLines('Target', plan.targets, leg, plan.instrument.symbol).join(', '), happened: [] },
+    { label: 'Stop', plan: stops, happened: reached(stops, strip?.stop) },
+    { label: 'Target', plan: targets, happened: reached(targets, strip?.target) },
     { label: 'Exit', plan: 'All at the Stop or the Target', happened: exits },
     { label: 'Result', plan: `${money(plan.plannedReward)} · ${rMultiple(plan.plannedR)}`, happened: [`${signed(money)(summary.realizedPnl)} · ${calculation(summary.realizedR, signed(rMultiple))}`] },
   ];

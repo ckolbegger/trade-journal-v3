@@ -1669,12 +1669,23 @@ const replayTo = (...sessions: ReturnType<typeof replaySession>[]) => ({ tradeId
 const THURSDAY_AND_MONDAY = replayTo(replaySession('2026-10-08', '50.00', 0n), replaySession('2026-10-12', '52.00', 582n));
 
 describe('Review card: the Replay button (decision 3)', () => {
-  it('should show a Replay button directly above the Action form, and no replay inside the card', async () => {
+  it('should open the Replay from the strip, and show no Replay button inside the Action', async () => {
     const user = userEvent.setup();
-    renderWalk(walkFacade(ready([item('t1', 'XYZ')]), tradeReview('t1', 'XYZ', { replay: THURSDAY_AND_MONDAY })));
+    renderWalk(walkFacade(ready([item('t1', 'XYZ')]), tradeReview('t1', 'XYZ', { replay: THURSDAY_AND_MONDAY, strip: { sessions: 2, stop: {}, target: {} } })));
     const card = await openTrade(user, 'XYZ');
-    const button = within(card).getByRole('button', { name: 'Replay' });
-    expect(button.nextElementSibling).toBe(within(card).getByRole('form', { name: 'Action' }));
+    // T95.56: the button sits in the card's strip, whichever panel is open, and not in the Action panel.
+    const strip = within(card).getByRole('region', { name: 'Replay strip' });
+    const actionPanel = within(card).getByRole('form', { name: 'Action' }).parentElement!;
+    expect(within(actionPanel).queryByRole('button', { name: 'Replay' })).toBeNull();
+    await user.click(within(card).getByRole('button', { name: /^Reflections\b/ }));
+    expect(within(card).getByRole('button', { name: /^Reflections\b/ }).getAttribute('aria-expanded')).toBe('true');
+    await user.click(within(strip).getByRole('button', { name: 'Replay' }));
+    await screen.findByRole('dialog', { name: 'Replay, XYZ' });
+    // The entry names the panel that was open, not always the Action's.
+    expect(here.address).toContain('panel=Reflections');
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(document.activeElement).toBe(within(strip).getByRole('button', { name: 'Replay' }));
     expect(within(card).queryByRole('region', { name: 'Replay' })).toBeNull();
     expect(within(card).queryByRole('slider', { name: 'Session' })).toBeNull();
     expect(screen.queryByRole('dialog')).toBeNull();
@@ -1967,10 +1978,10 @@ describe('Review card: the Replay button (decision 3)', () => {
     expect(here.address).toBe(before);
   });
 
-  it('should show no Replay button on a card that only owes reflections, or one whose Trade facts cannot be replayed', async () => {
+  it('should show the strip on a card that owes only a reflection, and none on a card whose Trade facts cannot be replayed', async () => {
     const user = userEvent.setup();
     const progress = reflectionsOwedProgress(1, 0);
-    const owed = { tradeId: 't9', underlying: 'ABC', lifecycle: 'Closed', labels: { strategy: 'Long Stock', account: 'Main', institution: 'Broker' }, reflections: [], progress, replay: THURSDAY_AND_MONDAY } as unknown as OwedReflectionsCard;
+    const owed = { tradeId: 't9', underlying: 'ABC', lifecycle: 'Closed', labels: { strategy: 'Long Stock', account: 'Main', institution: 'Broker' }, reflections: [], progress, replay: THURSDAY_AND_MONDAY, strip: { sessions: 2, low: { date: '2026-10-08', value: Rational.of(0n) }, stop: {}, target: {} } } as unknown as OwedReflectionsCard;
     const review = ready([item('t1', 'XYZ')], [], { owed: [{ tradeId: 't9', underlying: 'ABC', lifecycle: 'Closed', owed: [], progress }] });
     const facade = walkFacade(review);
     vi.mocked(facade.DailyReview.getTrade).mockImplementation(({ tradeId }) =>
@@ -1979,7 +1990,15 @@ describe('Review card: the Replay button (decision 3)', () => {
     renderWalk(facade);
     const owedCard = await openTrade(user, 'ABC');
     expect(within(owedCard).getByRole('button', { name: /^Reflections\b/ })).toBeTruthy();
-    expect(within(owedCard).queryByRole('button', { name: 'Replay' })).toBeNull();
+    // Decision 136: the owed card carries its Trade's replay, so its strip says the sessions and the low, and the button opens the Replay.
+    const strip = within(owedCard).getByRole('region', { name: 'Replay strip' });
+    expect(within(strip).getByText('2 sessions · low $0.00 on Thu Oct 8. Walk it before you write.')).toBeTruthy();
+    await user.click(within(strip).getByRole('button', { name: 'Replay' }));
+    await screen.findByRole('dialog', { name: 'Replay, ABC' });
+    expect(here.address).toContain('panel=Reflections');
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(document.activeElement).toBe(within(strip).getByRole('button', { name: 'Replay' }));
     // A card with no replay in its Trade keeps its other panels and the Action form.
     const card = await openTrade(user, 'XYZ');
     expect(within(card).queryByRole('button', { name: 'Replay' })).toBeNull();
