@@ -1454,3 +1454,5 @@ Run `t95.56-replay-strip` (browser-auto 10616873, full tier; at `57cc5e46`): uni
 ### T95.56-F1
 
 Commit `e40840f8`: `e2e/d9/review.spec.ts:58` expects Trade Detail's address `{ drawer, session, from: 'review', panel: 'Action' }` (exact equality kept). The only other check of that address, `e2e/d9ar/review.spec.ts:124`, is an unanchored regex and still matches. d9/review and d9ar/review 7 passed.
+
+ocr of T95.56-F1 (session b8e3ccac): complete, 1 file, no findings. `evidence/D95/ocr/T95.56-F1-e40840f8.json`.
