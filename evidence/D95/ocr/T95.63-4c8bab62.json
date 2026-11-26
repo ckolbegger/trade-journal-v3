@@ -1,0 +1,211 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 7 selected item(s).",
+  "summary": {
+    "files_reviewed": 7,
+    "comments": 2,
+    "total_tokens": 259498,
+    "input_tokens": 257107,
+    "output_tokens": 2391,
+    "cache_read_tokens": 34176,
+    "elapsed": "1m19s"
+  },
+  "tool_calls": {
+    "total": 27,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 5,
+      "file_read": 20
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "tools/fixture-views.ts",
+      "content": "This counts outstanding debts as answered Close Reviews: `details[].journal` contains both `kind: 'Entry'` and `kind: 'Debt'` records with this entryTypeKey. The frozen snapshot already has four Close Review debts, so removing the manifest-6 answered review (or even all answered reviews) still satisfies this check. Filter to answered entries and identify the new-form answer, for example through its required key-lesson response, rather than relying on the total record count. Add a mutation test that removes that answer and expects this violation.",
+      "existing_code": "    ['Close Review answered', entries.filter((entry) =\u003e entry.entryTypeKey === 'entry-type.close-review').length \u003e= 3],",
+      "start_line": 190,
+      "end_line": 190,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "tools/fixture-views.ts",
+      "content": "T95.63 requires an Action of each kind both with and without a reason, but Roll and Adjust are only checked for existence. The seed generator currently saves just one Roll and one Adjust, both with reasons, so this check accepts a fixture missing both reason-free variants. Check both reason states for Roll and Adjust (as for Hold and Exit), and add corresponding fixture content and negative tests.",
+      "existing_code": "    ['Roll', actions.some((a) =\u003e a.action === 'Roll')],\n    ['Adjust', actions.some((a) =\u003e a.action === 'Adjust')],",
+      "start_line": 182,
+      "end_line": 183,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Fixture schemas, views, freezing, and verification",
+      "files": [
+        "tools/fixture-schemas.ts",
+        "tools/fixture-views.test.ts",
+        "tools/fixture-views.ts",
+        "tools/fixtures-freeze-backup.ts",
+        "tools/fixtures-freeze.ts",
+        "tools/verify-fixtures.test.ts",
+        "tools/verify-fixtures.ts"
+      ]
+    }
+  ],
+  "session_id": "a8ac4d3d-8cd8-4df0-8138-a36e764e0473",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "a8ac4d3d-8cd8-4df0-8138-a36e764e0473",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "4c8bab62",
+      "resolved_base": "6ad700f95d31ae2dcf37f4b809e7d01b9acccbc5",
+      "resolved_head": "4c8bab623a66b9b395ea0161ff44619e6aa9e1de",
+      "exact_range": "6ad700f95d31ae2dcf37f4b809e7d01b9acccbc5..4c8bab623a66b9b395ea0161ff44619e6aa9e1de",
+      "source_artifact_sha256": "9eddbcd18e157f5b09283380ce133d542151618b7fd03bc50590074e6c2380d1"
+    },
+    "execution": {
+      "ocr_version": "v1.14.4",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "184a0b6d6f5bd952d7fb39aca04ab4433fb499d6bf761263f347fda8d032440a",
+          "path": "tools/fixture-views.ts",
+          "fingerprint": "e99e2ef216ca13ef586a186b3cd19872e95a61487cfd2848f7842c2c38cc296a"
+        },
+        {
+          "item_id": "2775a2c8d6a9f2c2f4a6734ec373bd9d66c1000efa53080eed8c8a9b31bd6824",
+          "path": "tools/fixture-views.test.ts",
+          "fingerprint": "ca0547652add3c37167a71542ddaa0b1b3c847b9bfdc387f1a8ca00bb4f383b9"
+        },
+        {
+          "item_id": "2fa77d6dd97b3157f4e714276b8684a668f71aa3cce39d221720eb368b284c5d",
+          "path": "tools/fixtures-freeze-backup.ts",
+          "fingerprint": "a5f86b8ae3012d295dfaa623501906982d9285d7bcd626018627b12af87b5ae3"
+        },
+        {
+          "item_id": "3532c6b0422439763c01a2526fdcffd9bc1164a5c905da0e13e9e4c85f95ddec",
+          "path": "tools/fixtures-freeze.ts",
+          "fingerprint": "51dce0a1cfbe74553b3527981c1d5ce29aaa179250836c104541d4c7a17ef787"
+        },
+        {
+          "item_id": "3af4d018e5d547fee434f2a29ef8609fb7516d2c6933db694543bde72e498558",
+          "path": "tools/verify-fixtures.test.ts",
+          "fingerprint": "5741be24ac72c9d0effe644229f3702e90bee7345b571241eae78bb7dd4cfe3a"
+        },
+        {
+          "item_id": "48741bc7bf5691e1181bb0baed846fead94d878548a1d33191a3814c27f6102b",
+          "path": "tools/fixture-schemas.ts",
+          "fingerprint": "06168ea680699bd97d0b28e9e9e412e717ce2d6d5bd1494a725f577b69e71193"
+        },
+        {
+          "item_id": "8ce87f8a73f8a4627d9c0cc173b9fcf6befcd9709c44c120ef136169c5a71ac0",
+          "path": "tools/verify-fixtures.ts",
+          "fingerprint": "744d2c48247c49a3bd9691549cd35a9652d9712bf3d493a68bae1add06e027ab"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "184a0b6d6f5bd952d7fb39aca04ab4433fb499d6bf761263f347fda8d032440a",
+          "path": "tools/fixture-views.ts",
+          "fingerprint": "e99e2ef216ca13ef586a186b3cd19872e95a61487cfd2848f7842c2c38cc296a"
+        },
+        {
+          "item_id": "2775a2c8d6a9f2c2f4a6734ec373bd9d66c1000efa53080eed8c8a9b31bd6824",
+          "path": "tools/fixture-views.test.ts",
+          "fingerprint": "ca0547652add3c37167a71542ddaa0b1b3c847b9bfdc387f1a8ca00bb4f383b9"
+        },
+        {
+          "item_id": "2fa77d6dd97b3157f4e714276b8684a668f71aa3cce39d221720eb368b284c5d",
+          "path": "tools/fixtures-freeze-backup.ts",
+          "fingerprint": "a5f86b8ae3012d295dfaa623501906982d9285d7bcd626018627b12af87b5ae3"
+        },
+        {
+          "item_id": "3532c6b0422439763c01a2526fdcffd9bc1164a5c905da0e13e9e4c85f95ddec",
+          "path": "tools/fixtures-freeze.ts",
+          "fingerprint": "51dce0a1cfbe74553b3527981c1d5ce29aaa179250836c104541d4c7a17ef787"
+        },
+        {
+          "item_id": "3af4d018e5d547fee434f2a29ef8609fb7516d2c6933db694543bde72e498558",
+          "path": "tools/verify-fixtures.test.ts",
+          "fingerprint": "5741be24ac72c9d0effe644229f3702e90bee7345b571241eae78bb7dd4cfe3a"
+        },
+        {
+          "item_id": "48741bc7bf5691e1181bb0baed846fead94d878548a1d33191a3814c27f6102b",
+          "path": "tools/fixture-schemas.ts",
+          "fingerprint": "06168ea680699bd97d0b28e9e9e412e717ce2d6d5bd1494a725f577b69e71193"
+        },
+        {
+          "item_id": "8ce87f8a73f8a4627d9c0cc173b9fcf6befcd9709c44c120ef136169c5a71ac0",
+          "path": "tools/verify-fixtures.ts",
+          "fingerprint": "744d2c48247c49a3bd9691549cd35a9652d9712bf3d493a68bae1add06e027ab"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "32b5ad5a49d940b5f25ab57b35068f34d973f8e19b9326b789c8c819cdeeb813",
+          "path": "evidence/D95/tdd-log/T95.63.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "4e57c7a5bed80bf578aa6a053d339199c5223c51e4549581b10e1895c6154b8a",
+          "path": "tools/fixtures/freeze-seed6.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "824bd3a17bc43502bbce947146fd1f6bd38c398cfc4a72cbdfd24a4a86ba5bc5",
+          "path": "tests/fixtures/workspace-v7-seed6/expected-views.json",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "9cb1a797774d02950cc071d8d999024e890e80edbfdf05f415f708917949c2e7",
+          "path": "evidence/D95/structural.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "9ce22950c2fdb56b1b1173e6c9dc7c69f6c55d0002aa1f2578a0b52d141e646d",
+          "path": "tests/fixtures/backup-v7-seed6/downloaded.json",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "a2a3538b0909a6df5eb03a1ddf5802665cd0fe3fd52cdc78608a04816267a3c1",
+          "path": "tests/fixtures/workspace-v7-seed6/dump.json",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "c9a90de3b820b0eecc6a6b46714d0df0fc2ae6f1e634e967b8b545a67912ecb7",
+          "path": "tests/fixtures/backup-v7-seed6/expected-views.json",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "dd516ae8d8553af6c53476b1257cbafadc68bcf12b8fdb565b97c74dc82de252",
+          "path": "tests/fixtures/backup-v7-seed6/backup.tjbackup",
+          "exclude_reason": "binary"
+        }
+      ]
+    },
+    "elapsed_ms": 79172
+  }
+}

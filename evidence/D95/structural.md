@@ -1372,3 +1372,7 @@ T95.63 (main session's notes on commit `4c8bab62`):
 - No older folder's `dump.json`, `backup.tjbackup` or `expected-views.json` changed (`git diff -- tests/fixtures` empty for them).
 - The seed-6 Workspace's Review Date is Friday 2026-11-20 (for T95.64, T95.65).
 - The subagent ended the commit with a Co-Authored-By naming Claude Sonnet 5.5 (the model it ran on) rather than the brief's line; left as it is.
+
+ocr of T95.63 (session a8ac4d3d): complete, 7 files reviewed (8 generated fixture files excluded), 2 findings. `evidence/D95/ocr/T95.63-4c8bab62.json`.
+- **T95.63-B1** (Valid, `tools/fixture-views.ts:190`): the "Close Review answered" check counts every `entry-type.close-review` journal record, owed Debts included (the seed-6 views hold 3 answered Entries and 4 Debts), so `>= 3` passes with no answered Close Review at all. Cases: it should name the answered Close Review when the views hold only owed Close Review Debts; it should name it when the only answered Close Reviews are under the earlier form (the one answered under revision 2 is missing); it should pass on the frozen seed-6 views.
+- Dismissed (Wrong, `fixture-views.ts:182-183`): Roll and Adjust are checked only for existence, not with and without a reason. A308 and T95.31, T95.32, T95.33: a Roll or Adjust without a reason is refused (`IntentRequired`), so there is none to freeze.
