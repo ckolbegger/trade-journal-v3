@@ -1,0 +1,308 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 16 selected item(s).",
+  "summary": {
+    "files_reviewed": 16,
+    "comments": 2,
+    "total_tokens": 475825,
+    "input_tokens": 470918,
+    "output_tokens": 4907,
+    "cache_read_tokens": 77824,
+    "elapsed": "1m22s"
+  },
+  "tool_calls": {
+    "total": 51,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 12,
+      "file_find": 1,
+      "file_read": 36,
+      "file_read_diff": 1
+    },
+    "failure": 1,
+    "failure_by_tool": {
+      "file_read": 1
+    },
+    "failure_details": [
+      {
+        "tool_call_number": 40,
+        "tool_name": "file_read",
+        "file_path": "src/ui/cockpit/drawers/replay.tsx,src/ui/cockpit/index.css,src/ui/cockpit/replay/close-review-walk.test.tsx,src/ui/cockpit/replay/close-review-walk.tsx,src/ui/cockpit/replay/key-moments.props.ts,src/ui/cockpit/replay/key-moments.tsx,src/ui/cockpit/replay/replay.props.ts,src/ui/cockpit/replay/replay.types.ts,src/ui/cockpit/styles/close-review-walk.css",
+        "arguments": "{\"file_path\": \"src/ui/cockpit/replay/replay.tsx\"}",
+        "error": "file \"src/ui/cockpit/replay/replay.tsx\" not found: git show c26c6c70e0765695c002ee6a31ed120d5173e8c5:src/ui/cockpit/replay/replay.tsx: exit status 128: fatal: path 'src/ui/cockpit/replay/replay.tsx' does not exist in 'c26c6c70e0765695c002ee6a31ed120d5173e8c5'\n"
+      }
+    ]
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/replay/close-review-walk.tsx",
+      "content": "Guard the save handler against read-only state as well as disabling the normal submit button. After answers have been entered, the runtime can become non-writable (for example following a rejected write). Closing the walk still opens `Refusal`, whose “Save it” action calls this handler and is disabled only while pending, so it can issue another write while the shell is read-only. Return without submitting when `!writable` (and when locked), and cover changing the runtime to read-only before choosing “Save it”.",
+      "existing_code": "  const save = async () =\u003e {\n    const missing = definition.prompts.filter((p) =\u003e p.required \u0026\u0026 isBlank(answers[p.id]));",
+      "start_line": 73,
+      "end_line": 74,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/cockpit/replay/close-review-walk.tsx",
+      "content": "The answer controls remain editable while a save is pending. `submit` receives the answers from the start of the request, but the user can subsequently change the lesson or selected option; when that request resolves, the parent replaces the walk with the saved reflection, silently losing those edits. Include `pending` in the controls' disabled condition and add a deferred-submit test verifying that answers cannot change before the request finishes.",
+      "suggestion_code": "          \u003cReflectionPrompts definition={definition} answers={answers} onChange={setAnswers} errors={errors} disabled={locked || !writable || pending} /\u003e",
+      "existing_code": "          \u003cReflectionPrompts definition={definition} answers={answers} onChange={setAnswers} errors={errors} disabled={locked || !writable} /\u003e",
+      "start_line": 112,
+      "end_line": 112,
+      "category": "bug",
+      "severity": "high"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Cockpit replay close-review walkthrough and integration",
+      "files": [
+        "src/ui/cockpit/drawers/replay.tsx",
+        "src/ui/cockpit/index.css",
+        "src/ui/cockpit/replay/close-review-walk.test.tsx",
+        "src/ui/cockpit/replay/close-review-walk.tsx",
+        "src/ui/cockpit/replay/key-moments.props.ts",
+        "src/ui/cockpit/replay/key-moments.tsx",
+        "src/ui/cockpit/replay/replay.props.ts",
+        "src/ui/cockpit/replay/replay.types.ts",
+        "src/ui/cockpit/styles/close-review-walk.css"
+      ]
+    },
+    {
+      "label": "Close-review and responsive accessibility end-to-end coverage",
+      "files": [
+        "e2e/d6/close-review.spec.ts",
+        "e2e/d6/responsive-a11y.spec.ts",
+        "e2e/d6/support.ts"
+      ]
+    },
+    {
+      "label": "Debt and review screen updates with regression coverage",
+      "files": [
+        "src/ui/screens/DebtForm.tsx",
+        "src/ui/screens/ReviewOwed.test.tsx",
+        "src/ui/screens/ReviewOwedCard.tsx",
+        "src/ui/screens/ReviewReflections.tsx"
+      ]
+    }
+  ],
+  "session_id": "b8c0ad71-3960-4e4f-86eb-5040138c2763",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "b8c0ad71-3960-4e4f-86eb-5040138c2763",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "c26c6c70",
+      "resolved_base": "cda507d53c1646492c70569c2ff90f832c3dc5ea",
+      "resolved_head": "c26c6c70e0765695c002ee6a31ed120d5173e8c5",
+      "exact_range": "cda507d53c1646492c70569c2ff90f832c3dc5ea..c26c6c70e0765695c002ee6a31ed120d5173e8c5",
+      "source_artifact_sha256": "d644f5b24d37bb18bc1830d0138c7ed8743124bdf73b6c44b4b6e1d297358bf0"
+    },
+    "execution": {
+      "ocr_version": "v1.14.4",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "02d2b522fc8ad50e6ef168e466ec06ab756cf8ca676015178a348d1e1a98f989",
+          "path": "src/ui/screens/ReviewReflections.tsx",
+          "fingerprint": "7801ec3a77b771da00f1c7af92c2bf8cb0856408ae90e9b3b8befc395e0ede82"
+        },
+        {
+          "item_id": "0525a5586d888ddffdf87da21e5460e362c03d97c530a9e23686c93a5a0fd774",
+          "path": "src/ui/cockpit/replay/key-moments.props.ts",
+          "fingerprint": "a1313ca96f4a14d877db68b90ba999820d2b82c08db32bc02723db2d5f043fe4"
+        },
+        {
+          "item_id": "0db0c382b1e88a4f0d77204dd6e715a250ade6135af2584704ed7ae1561e6156",
+          "path": "src/ui/cockpit/drawers/replay.tsx",
+          "fingerprint": "6c94fbceb8f35a8c47b0dc60e26de6369ac5312eddad854da5131b85c923f458"
+        },
+        {
+          "item_id": "150741dcc4cc2f3b9795937c853b6881d9158f89b78c2fa680263d1a4ef46829",
+          "path": "src/ui/screens/DebtForm.tsx",
+          "fingerprint": "0682893d974413be1a0a0a9b46c758e2d9c1fdbca1c96c5e381d316b8ac027d5"
+        },
+        {
+          "item_id": "24130375af365892078c5278d207f29c6a19460b3f37d71486e36571ba82b0b5",
+          "path": "e2e/d6/close-review.spec.ts",
+          "fingerprint": "5f70bb84bc2f96640d153a66825038d7818bbf25114bf6affaa2e03b5d01a1ba"
+        },
+        {
+          "item_id": "31d44f685aa4a2c24e316e1f051e995cfa50e50ecf25310e8e9017d7f35d5147",
+          "path": "src/ui/cockpit/index.css",
+          "fingerprint": "8e3d29803756c8ce4f5f6134aaa6d69cf65b29be47035b83678cb39dfddb5d53"
+        },
+        {
+          "item_id": "3cc06a9ba3a68b33a2c84295a91e804dc9ed6fc70ec40afa3b1535836b06f35e",
+          "path": "src/ui/cockpit/styles/close-review-walk.css",
+          "fingerprint": "368b01d3c40c7e14b11c6b5d623104fd22c003d02db6c407ebc361a2efe1fd52"
+        },
+        {
+          "item_id": "3d50678c1bc5da1fa44af54c36b0fe1f1d03cb6c0c76d8556d0021ea6b6a6792",
+          "path": "src/ui/cockpit/replay/close-review-walk.test.tsx",
+          "fingerprint": "1221daeb90155747083f8ba5bf0a4a3e0d7242e7a9c2d6a664780183cd76c85d"
+        },
+        {
+          "item_id": "41a5a0eec891ad3fedc983f44937bc44813435b19e80e27871b68a0bd0acc242",
+          "path": "src/ui/cockpit/replay/key-moments.tsx",
+          "fingerprint": "89b4b9ca89f1cd5086b1a02e9b76c2ed0a31777b78efbaf37ef2e67bf8050b35"
+        },
+        {
+          "item_id": "42b58eea0e5f000f63b6a9c3c24ac44a84b91196ca48804afea34e6a7d81e1e1",
+          "path": "e2e/d6/support.ts",
+          "fingerprint": "238c0bd2f336b16d81c8fd77c69909d0dfb6b7cb4258b3dbd4b49ff6b3ce4274"
+        },
+        {
+          "item_id": "4d061a48434c6088fc28388241ae61f9c345d2f278e56b2b7f845f542f3b4e61",
+          "path": "src/ui/cockpit/replay/replay.types.ts",
+          "fingerprint": "b622c66924bec3b720f73ac689464660011ffb48c0502e183fced0bd6d831c67"
+        },
+        {
+          "item_id": "658cacd7d8755bc419d3c8b2dc3f0b93468308fa9e366c831087e003312a3c83",
+          "path": "src/ui/screens/ReviewOwedCard.tsx",
+          "fingerprint": "3b61a25f26e9f517457ca563309732445b5d2d3ee69e24d86df7a4e20f5708ea"
+        },
+        {
+          "item_id": "6b92ae03127ea1ddc8532533fdfc76fdf696232c1bae7ac3a7aad01397addece",
+          "path": "src/ui/cockpit/replay/close-review-walk.tsx",
+          "fingerprint": "dbca1b3bc6348ce2f18a7753e181dcb9f87e6c233dcc2f42d87c6773aaac7802"
+        },
+        {
+          "item_id": "c2fd486111638d00f0d387a09d3b1d932d274fd2e5443262caf354d5c4d2756f",
+          "path": "e2e/d6/responsive-a11y.spec.ts",
+          "fingerprint": "f6060344044b110f0d48da84d40285225e98fd18e73bdc2c1930cf1cf66dad13"
+        },
+        {
+          "item_id": "ea03ecbf36e42899eb18f897fb8983e3c8efff8a23ee606ee3aa718ee2111f66",
+          "path": "src/ui/cockpit/replay/replay.props.ts",
+          "fingerprint": "d98412e67e4e67a7165b74a84db33633012e76a79dd2410cc4c5fe26b043b34b"
+        },
+        {
+          "item_id": "f60d40a2fcf211e72668946f9d6c2357941e916774d36dd5cb14b2a35255d3a9",
+          "path": "src/ui/screens/ReviewOwed.test.tsx",
+          "fingerprint": "e7f23e5c8ec963cfaefca7f8ce78afb2b015ca0c3947cadd9c077aafbff63abd"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "02d2b522fc8ad50e6ef168e466ec06ab756cf8ca676015178a348d1e1a98f989",
+          "path": "src/ui/screens/ReviewReflections.tsx",
+          "fingerprint": "7801ec3a77b771da00f1c7af92c2bf8cb0856408ae90e9b3b8befc395e0ede82"
+        },
+        {
+          "item_id": "0525a5586d888ddffdf87da21e5460e362c03d97c530a9e23686c93a5a0fd774",
+          "path": "src/ui/cockpit/replay/key-moments.props.ts",
+          "fingerprint": "a1313ca96f4a14d877db68b90ba999820d2b82c08db32bc02723db2d5f043fe4"
+        },
+        {
+          "item_id": "0db0c382b1e88a4f0d77204dd6e715a250ade6135af2584704ed7ae1561e6156",
+          "path": "src/ui/cockpit/drawers/replay.tsx",
+          "fingerprint": "6c94fbceb8f35a8c47b0dc60e26de6369ac5312eddad854da5131b85c923f458"
+        },
+        {
+          "item_id": "150741dcc4cc2f3b9795937c853b6881d9158f89b78c2fa680263d1a4ef46829",
+          "path": "src/ui/screens/DebtForm.tsx",
+          "fingerprint": "0682893d974413be1a0a0a9b46c758e2d9c1fdbca1c96c5e381d316b8ac027d5"
+        },
+        {
+          "item_id": "24130375af365892078c5278d207f29c6a19460b3f37d71486e36571ba82b0b5",
+          "path": "e2e/d6/close-review.spec.ts",
+          "fingerprint": "5f70bb84bc2f96640d153a66825038d7818bbf25114bf6affaa2e03b5d01a1ba"
+        },
+        {
+          "item_id": "31d44f685aa4a2c24e316e1f051e995cfa50e50ecf25310e8e9017d7f35d5147",
+          "path": "src/ui/cockpit/index.css",
+          "fingerprint": "8e3d29803756c8ce4f5f6134aaa6d69cf65b29be47035b83678cb39dfddb5d53"
+        },
+        {
+          "item_id": "3cc06a9ba3a68b33a2c84295a91e804dc9ed6fc70ec40afa3b1535836b06f35e",
+          "path": "src/ui/cockpit/styles/close-review-walk.css",
+          "fingerprint": "368b01d3c40c7e14b11c6b5d623104fd22c003d02db6c407ebc361a2efe1fd52"
+        },
+        {
+          "item_id": "3d50678c1bc5da1fa44af54c36b0fe1f1d03cb6c0c76d8556d0021ea6b6a6792",
+          "path": "src/ui/cockpit/replay/close-review-walk.test.tsx",
+          "fingerprint": "1221daeb90155747083f8ba5bf0a4a3e0d7242e7a9c2d6a664780183cd76c85d"
+        },
+        {
+          "item_id": "41a5a0eec891ad3fedc983f44937bc44813435b19e80e27871b68a0bd0acc242",
+          "path": "src/ui/cockpit/replay/key-moments.tsx",
+          "fingerprint": "89b4b9ca89f1cd5086b1a02e9b76c2ed0a31777b78efbaf37ef2e67bf8050b35"
+        },
+        {
+          "item_id": "42b58eea0e5f000f63b6a9c3c24ac44a84b91196ca48804afea34e6a7d81e1e1",
+          "path": "e2e/d6/support.ts",
+          "fingerprint": "238c0bd2f336b16d81c8fd77c69909d0dfb6b7cb4258b3dbd4b49ff6b3ce4274"
+        },
+        {
+          "item_id": "4d061a48434c6088fc28388241ae61f9c345d2f278e56b2b7f845f542f3b4e61",
+          "path": "src/ui/cockpit/replay/replay.types.ts",
+          "fingerprint": "b622c66924bec3b720f73ac689464660011ffb48c0502e183fced0bd6d831c67"
+        },
+        {
+          "item_id": "658cacd7d8755bc419d3c8b2dc3f0b93468308fa9e366c831087e003312a3c83",
+          "path": "src/ui/screens/ReviewOwedCard.tsx",
+          "fingerprint": "3b61a25f26e9f517457ca563309732445b5d2d3ee69e24d86df7a4e20f5708ea"
+        },
+        {
+          "item_id": "6b92ae03127ea1ddc8532533fdfc76fdf696232c1bae7ac3a7aad01397addece",
+          "path": "src/ui/cockpit/replay/close-review-walk.tsx",
+          "fingerprint": "dbca1b3bc6348ce2f18a7753e181dcb9f87e6c233dcc2f42d87c6773aaac7802"
+        },
+        {
+          "item_id": "c2fd486111638d00f0d387a09d3b1d932d274fd2e5443262caf354d5c4d2756f",
+          "path": "e2e/d6/responsive-a11y.spec.ts",
+          "fingerprint": "f6060344044b110f0d48da84d40285225e98fd18e73bdc2c1930cf1cf66dad13"
+        },
+        {
+          "item_id": "ea03ecbf36e42899eb18f897fb8983e3c8efff8a23ee606ee3aa718ee2111f66",
+          "path": "src/ui/cockpit/replay/replay.props.ts",
+          "fingerprint": "d98412e67e4e67a7165b74a84db33633012e76a79dd2410cc4c5fe26b043b34b"
+        },
+        {
+          "item_id": "f60d40a2fcf211e72668946f9d6c2357941e916774d36dd5cb14b2a35255d3a9",
+          "path": "src/ui/screens/ReviewOwed.test.tsx",
+          "fingerprint": "e7f23e5c8ec963cfaefca7f8ce78afb2b015ca0c3947cadd9c077aafbff63abd"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "83342d951e7f242de524a0ebb63dc0cc4bc21a09cfe19dfbbc3a62a356389ef3",
+          "path": "evidence/D95/words-changed.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "b7be96c7f666441d505c5ddc47289e7dbf8475ca260961d7b73025bfe9d890cb",
+          "path": "evidence/D95/tdd-log/T95.59.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "d7940bcff282aa5345d9129acbcc2747a9c1323d1372c93124db122b1101fae7",
+          "path": "evidence/D95/new-words.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 81831
+  }
+}

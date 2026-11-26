@@ -1476,3 +1476,7 @@ Commit `c26c6c70`: the Close Review walk (`close-review-walk.tsx`): the Replay o
 - Notes for T95.60, T95.61, T95.66 added to the handoff (no Decline in the walk yet; the walk's state is not in the address).
 - The subagent ended the commit with a Co-Authored-By naming Claude Sonnet 5.5 rather than the brief's line; left as it is.
 - Checks: src/ui 1576, src/coordinators 641 passed; typecheck, tsc6, lint (2 pre-existing warnings), lint:deps exit 0. Browser: d6 close-review, responsive-a11y, d95 closed-card, replay-strip, replay-day 9 passed.
+
+ocr of T95.59 (session b8c0ad71): complete, 16 files reviewed (3 excluded), 2 findings, both Valid. `evidence/D95/ocr/T95.59-c26c6c70.json`.
+- **T95.59-B1** (Valid, `close-review-walk.tsx:112`): the answer controls stay editable while a save is pending (`disabled` is only `locked || !writable`), and `onResolved` replaces the walk with the answers sent, so anything typed after "Save the Close Review" is lost. Cases: it should not let the answers change while the save is pending; it should keep the answers editable again after a refused save.
+- **T95.59-B2** (Valid, `close-review-walk.tsx:73`): `save` doesn't check `writable`, so the leave-ask's "Save it" can send a write while the Workspace is read-only (`DebtForm`'s ask-save blocks on `pending || !writable`). Cases: it should not save from the leave-ask when the Workspace is not writable; it should still let the trader leave or go back from the ask.
