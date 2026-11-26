@@ -57,8 +57,8 @@ const OPERATIONS: Readonly<Record<string, readonly string[]>> = {
   // D2 A18: opening and increase Buys of a Stock serving its Planned Leg, every member in one
   // Trade, with the Position Change Reflection completed or declined. D5: or deferred.
   // D6: a Sell reduces or closes the Position; the exit that leaves nothing open carries a Close Reason
-  // and a Close Review (Source Trade Close), completed, declined or deferred. The Trade Close Source is
-  // reached only through these three Close Review variants.
+  // and a Close Review (Source Trade Close), always put off (D9.5 A312). The Trade Close Source is
+  // reached only through the Close Review variant.
   'TradeWorkflows.recordPositionChange': [
     'Opening',
     'Increase',
@@ -71,8 +71,6 @@ const OPERATIONS: Readonly<Record<string, readonly string[]>> = {
     'Close',
     'Sell',
     'CloseReason',
-    'CloseReviewComplete',
-    'CloseReviewDecline',
     'CloseReviewDefer',
     // D7: option Executions in both roles, and the Expiration member.
     'Option',
@@ -90,7 +88,7 @@ const OPERATIONS: Readonly<Record<string, readonly string[]>> = {
   // D08P A212: a Trade's replay by session, its own read (P95).
   // D9 A263: the replay carries each Session's condition status and the markers (no new operation).
   // D9A-R A272: and the Plan's terms and odds, each fill against the Plan, and each first crossing.
-  'TradeViewsAndReporting.replayTrade': ['ConditionStatus', 'Markers', 'PlanComparison', 'Odds'],
+  'TradeViewsAndReporting.replayTrade': ['ConditionStatus', 'Markers', 'PlanComparison', 'Odds', 'SessionActions', 'KeyMoments'],
   // D4: Manual Marks, acknowledgments, and withdrawals of Stock Instruments; point-context frames
   // and the session a context names; recovery from stored observations (no provider adapter).
   'MarketData.save': ['RecordInitialManualMark', 'CorrectMark', 'AssertUnavailable', 'WithdrawAcknowledgment', 'Stock', 'Option'],
@@ -104,11 +102,11 @@ const OPERATIONS: Readonly<Record<string, readonly string[]>> = {
   // is not an operation (P37).
   // D6 P20: the Trades outside the walk with a reflection owed form a group after it, whose cards are the
   // ReflectionsOwed kind; there is still no DailyReview.getDebt.
-  'DailyReview.open': ['LatestCompleted', 'OwedReflections', 'Meter', 'GapTrades', 'OwedReflectionGroup', 'SettlementFamily', 'DaySummary', 'PlanOrder', 'LastAction', 'PlanCall'],
+  'DailyReview.open': ['LatestCompleted', 'OwedReflections', 'Meter', 'GapTrades', 'OwedReflectionGroup', 'SettlementFamily', 'DaySummary', 'PlanOrder', 'LastAction', 'PlanCall', 'SettlementToRecord'],
   // D9 A263: the card carries the Trade's Replay. D9A-R A272: and the estimated odds.
-  'DailyReview.getTrade': ['OwedReflections', 'PlanBaseline', 'RewardRiskNow', 'ReflectionsOwed', 'ExpirationPayoff', 'SettlementDue', 'Replay', 'Odds', 'LastDecisions', 'PlanCall', 'PlanExit'],
+  'DailyReview.getTrade': ['OwedReflections', 'PlanBaseline', 'RewardRiskNow', 'ReflectionsOwed', 'ExpirationPayoff', 'SettlementDue', 'Replay', 'Odds', 'LastDecisions', 'PlanCall', 'PlanExit', 'ExpirationStanding', 'SessionActions', 'KeyMoments'],
   // D9.5 A303: SaveReviewMarksPage saves the page's Marks in one commit; MarksFirst refuses an Action before its Marks.
-  'DailyReview.save': ['SaveTradeAction', 'ResolveReviewDebt', 'SaveReviewMarks', 'SaveReviewMarksPage', 'MarksFirst', 'PlanRule'],
+  'DailyReview.save': ['SaveTradeAction', 'ResolveReviewDebt', 'SaveReviewMarks', 'SaveReviewMarksPage', 'MarksFirst', 'PlanRule', 'SettleLater'],
   // D8 A145: a backup of a Workspace in normal use (Normal) or of a database a blocked view offers a
   // copy of (BlockedDatabase); its verification; and the two steps of Restore. The fact modules' Restore operations are internal.
   'Workspace.exportBackup': ['Normal', 'BlockedDatabase'],

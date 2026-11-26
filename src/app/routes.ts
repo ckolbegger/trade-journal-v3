@@ -44,9 +44,9 @@ export const ROUTES = [
     variants: {
       // D5 P17: each Trade's card lists its owed reflections and resolves them (no Debt family).
       // D6 P20, A89, A90: the group of Trades outside the walk with a reflection owed, and its cards.
-      'DailyReview.open': ['LatestCompleted', 'OwedReflections', 'Meter', 'GapTrades', 'OwedReflectionGroup', 'SettlementFamily', 'DaySummary', 'PlanOrder', 'LastAction', 'PlanCall'],
-      'DailyReview.getTrade': ['OwedReflections', 'PlanBaseline', 'RewardRiskNow', 'ReflectionsOwed', 'ExpirationPayoff', 'SettlementDue', 'Replay', 'Odds', 'LastDecisions', 'PlanCall', 'PlanExit'],
-      'DailyReview.save': ['SaveTradeAction', 'ResolveReviewDebt', 'SaveReviewMarks', 'SaveReviewMarksPage', 'MarksFirst', 'PlanRule'],
+      'DailyReview.open': ['LatestCompleted', 'OwedReflections', 'Meter', 'GapTrades', 'OwedReflectionGroup', 'SettlementFamily', 'DaySummary', 'PlanOrder', 'LastAction', 'PlanCall', 'SettlementToRecord'],
+      'DailyReview.getTrade': ['OwedReflections', 'PlanBaseline', 'RewardRiskNow', 'ReflectionsOwed', 'ExpirationPayoff', 'SettlementDue', 'Replay', 'Odds', 'LastDecisions', 'PlanCall', 'PlanExit', 'ExpirationStanding', 'SessionActions', 'KeyMoments'],
+      'DailyReview.save': ['SaveTradeAction', 'ResolveReviewDebt', 'SaveReviewMarks', 'SaveReviewMarksPage', 'MarksFirst', 'PlanRule', 'SettleLater'],
       'MarketData.save': ['RecordInitialManualMark', 'CorrectMark', 'AssertUnavailable', 'WithdrawAcknowledgment', 'Stock', 'Option'],
       'MarketData.query': ['ResolveFrames', 'ResolveSession', 'Current', 'Review', 'Historical', 'PreviousClose', 'Option'],
     },
@@ -62,7 +62,7 @@ export const ROUTES = [
     requires: ['TradeViewsAndReporting.getTradeDetail', 'TradeViewsAndReporting.replayTrade', 'MarketData.query', 'Journal.query', 'Journal.save'],
     variants: {
       'TradeViewsAndReporting.getTradeDetail': ['Planned', 'Open', 'Closed', 'CurrentEvaluation', 'Debt', 'ExpirationPayoff', 'SettlementDue', 'PlanExit'],
-      'TradeViewsAndReporting.replayTrade': ['ConditionStatus', 'Markers', 'PlanComparison', 'Odds'],
+      'TradeViewsAndReporting.replayTrade': ['ConditionStatus', 'Markers', 'PlanComparison', 'Odds', 'SessionActions', 'KeyMoments'],
       'MarketData.query': ['ReadSeries'],
       'Journal.query': ['TradeNarrative', 'OutstandingDebt'],
       'Journal.save': ['ResolveDebt', 'Answer', 'Decline', 'TradeDetailSource'],
@@ -97,8 +97,6 @@ export const ROUTES = [
         'Close',
         'Sell',
         'CloseReason',
-        'CloseReviewComplete',
-        'CloseReviewDecline',
         'CloseReviewDefer',
         'Option',
         'SellToOpen',
