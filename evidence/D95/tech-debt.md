@@ -73,3 +73,10 @@ Critic B3's minor observations (T95.46):
 
 - **T95.59-B1, ocr (low, test style; `close-review-walk.test.tsx:195`):** the held save is settled outside `act` on the test's last line; no act warning seen. Wrap the settle in `act`.
 - **T95.59-B1, main session:** DebtForm's answer prompts stay editable while a save is pending (the gap fixed in the walk by T95.59-B1); ocr has not raised it there.
+
+Stale-code audit, 2026-11-26 (at `eb51a427`; the user's direction: record, don't remove yet). Unused code from before the D9 tag, each proven by deleting it in a scratch copy (typecheck, lint, unit, integration green):
+- `src/ui/screens/PayoffView.tsx` (whole file) and `lastRayText` in `payoff-text.ts`: no importer since T8P.27. Tests: `PayoffView.test.tsx` (9 cases).
+- `src/ui/screens/MarkEntry.tsx`: the `offerEntry` prop and the Enter and "Can't get a price" forms; the only caller passes `offerEntry={false}` since T5R.9. Tests: 4 cases to delete in `MarkEntry.test.tsx`; 13 cases use Enter only to reach live behaviour and must move onto Correct.
+- `WalkedTrade.figures` and `SliderFigures` (`src/coordinators/daily-review`): no screen reads them since the meter replaced the slider. Tests: 2 unit cases; figures assertions in `tests/integration/d5r/range-and-baseline.test.ts` and `shared-mark.test.ts`; 1,442 lines in 10 frozen `expected-views.json` files.
+- `PnlChart` (`replay/corridor-pnl.tsx`) and `PriceStrip` (`replay/price-strip.tsx`): wrappers nothing renders (T9AR.10). No tests.
+- `settlementTimeOf` (`src/coordinators/valuation/settlement.ts` and its re-export): no caller (T7SP.8). No tests.

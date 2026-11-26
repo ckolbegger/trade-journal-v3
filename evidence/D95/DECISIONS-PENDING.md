@@ -184,3 +184,12 @@ Not parked: T95.62 is built as option 1, which needs no approval; option 2 would
 **Not parked:** T95.65's review and run go ahead; T95.66 and T95.67 wait only if the answer is 1 (the follow-on runs before them).
 
 **Answer (2026-11-26):** (1). Decision 140, plan revision 129; follow-on T95.65-D1, run after T95.65 and before T95.66. **Status:** answered.
+
+## Q15 (T95.66.5): should opening the Review stop carrying each Trade's Plan Call and expired contract's standing? — asked 2026-11-26
+
+**Plain words.** When the Review opens, it works out each Trade's Plan Call and, for a Trade whose option expired and waits to be settled, how the expired contract finished. No screen reads either one there: each card works them out again when it loads and shows that copy. Decision 138 (Q12, option 2) put the standing on `open`. The manifest names both under `DailyReview.open`.
+1. *Recommend:* remove both from `open`: 5 fewer stored reads per Settlement Due Trade on every Review open, nothing on screen changes; the manifest keeps both under `getTrade` only; reverses decision 138's `open` half.
+2. Keep both; T95.66.5 does the five pure deletions only.
+3. Remove only the Plan Call copy (no reads saved).
+
+**Answer (2026-11-26):** (1). Decision 141, plan revision 130; follow-on T95.66.5, run before T95.67. **Status:** answered.
