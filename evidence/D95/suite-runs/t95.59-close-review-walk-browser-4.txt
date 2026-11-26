@@ -1,0 +1,358 @@
+
+> trade-journal-v3@0.0.0 test:e2e:4
+> npm run build:faults && npm run build:releases && playwright test e2e/d9 --grep-invert @release-history
+
+
+> trade-journal-v3@0.0.0 build:faults
+> vite build --mode faults --outDir dist-faults
+
+vite v8.3.4 building client environment for faults...
+transforming...
+✓ 418 modules transformed.
+rendering chunks...
+computing gzip size...
+dist-faults/index.html                            0.50 kB │ gzip:   0.30 kB
+dist-faults/assets/backup-export-DZ9hPuyv.js    194.82 kB
+dist-faults/assets/index-0LlpMm_A.css            51.83 kB │ gzip:  10.46 kB
+dist-faults/assets/faults-BUwHmucj.js             2.65 kB │ gzip:   1.18 kB
+dist-faults/assets/index-BaibYplL.js          1,126.71 kB │ gzip: 338.21 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 192ms
+
+> trade-journal-v3@0.0.0 build:releases
+> node tools/build-releases.ts
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+build:releases: d1 reused from /var/folders/ks/n63g0mm937v5rdb147g4txg40000gn/T/tj-release-d1-402b94835793 (claude-opus-5.5-d1 at 402b94835793587df2d10de1f3564e276843618b)
+build:releases: d2 reused from /var/folders/ks/n63g0mm937v5rdb147g4txg40000gn/T/tj-release-d2-de3fa276a263 (claude-opus-5.5-d2 at de3fa276a2632b568296040fd56efd2825708a39)
+build:releases: d4 reused from /var/folders/ks/n63g0mm937v5rdb147g4txg40000gn/T/tj-release-d4-4ab43d58931f (claude-opus-5.5-d4 at 4ab43d58931f2966d6a2d05f6b41be9bc239dd1c)
+build:releases: d5r2 reused from /var/folders/ks/n63g0mm937v5rdb147g4txg40000gn/T/tj-release-d5r2-765ac1ea59f3 (claude-opus-5.5-d5r2 at 765ac1ea59f36e7d9923362f655c94bbef90e404)
+build:releases: d9r2 reused from /var/folders/ks/n63g0mm937v5rdb147g4txg40000gn/T/tj-release-d9r2-73a4856731e4 (claude-opus-5.5-d9r2 at 73a4856731e4f8942ea4a92eff1976c3e3596c42)
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+build:releases OK: v1, v2, v2-corrupt, d1, d2, d4, d5r2, d9r2, current in /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/dist-releases; v2-corrupt alters /assets/index-0LlpMm_A.css
+
+Running 168 tests using 1 worker
+
+CHIP CHART 375 px: box 314.0 x 112.7, drawing 296.0 x 94.7
+  ✓    1 [chromium] › e2e/d9/estimates-a11y.spec.ts:19:5 › B9.7 The estimates, accessible, at 375 px › should keep the chip's small chart inside the overlay with no sideways scroll and no axe violation at 375 px (6.5s)
+CHIP CHART 320 px: box 259.0 x 95.1, drawing 241.0 x 77.1
+  ✓    2 [chromium] › e2e/d9/estimates-a11y.spec.ts:19:5 › B9.7 The estimates, accessible, at 320 px › should keep the chip's small chart inside the overlay with no sideways scroll and no axe violation at 320 px (1.4s)
+
+  ✓    3 [chromium] › e2e/d9/estimates.spec.ts:33:3 › B9.6 The estimates › should show W47’s chips for R-BREN-U on Mon 11-16, each estimate tagged, and open the volatility chip’s chart by keyboard (1.4s)
+
+  ✓    4 [chromium] › e2e/d9/estimates.spec.ts:76:3 › B9.6 The estimates › should read W48’s line under the charts at Mon 11-09 and Wed 11-11, split into the Underlying’s move, time and volatility (743ms)
+  ✓    5 [chromium] › e2e/d9/estimates.spec.ts:102:3 › B9.6 The estimates › should say Unavailable with W49’s reason after R-CORV-D’s missing Mark, and keep the not-split sentence on Wed 11-11 (2.3s)
+
+  ✓    6 [chromium] › e2e/d9/estimates.spec.ts:146:3 › B9.6 The estimates › should show no interest rate and no formula beside the chart, and state them once on the About page (W50) (902ms)
+  ✓    7 [chromium] › e2e/d9/gaps.spec.ts:9:3 › B9.2 A gap, a breach and a sale below the Stop › should show No Mark on Tue 11-10 with the two results kept and no figure carried, and Wed 11-11 measured from Mon 11-09 (2.1s)
+  ✓    8 [chromium] › e2e/d9/gaps.spec.ts:54:3 › B9.2 A gap, a breach and a sale below the Stop › should read Past the Stop by $180.00 (0.30R) on Mon 11-09 with the sale as banked loss, in the readout and on its card (2.3s)
+  ✓    9 [chromium] › e2e/d9/gaps.spec.ts:83:3 › B9.2 A gap, a breach and a sale below the Stop › should label the banked loss "Realized −$440" in the P&L chart on Mon 11-09 (2.2s)
+
+  ✓   10 [chromium] › e2e/d9/meter-a11y.spec.ts:89:3 › B9.11 The meter, responsive and accessible › should keep one named meter per Open row, on a Review card and in the rail at 1280, 375 and 320 px, with no sideways scroll and no WCAG 2.1 AA violation (17.5s)
+
+  ✓   11 [chromium] › e2e/d9/meter-a11y.spec.ts:96:3 › B9.11 The meter, responsive and accessible › should say what each meter shows in shape and words as well as colour, at 375 px (688ms)
+
+  ✓   12 [chromium] › e2e/d9/meter-a11y.spec.ts:122:3 › B9.11 The meter, responsive and accessible › should show the square pointer, the hatch and the outlined open fill in the rendered styles, not only in attributes (709ms)
+
+  ✓   13 [chromium] › e2e/d9/meter-detail.spec.ts:11:3 › B9.10 The meter on Trade Detail › should show the meter at the top of the Conditions card, named by its figures, with no visible words (619ms)
+
+  ✓   14 [chromium] › e2e/d9/meter-detail.spec.ts:33:3 › B9.10 The meter on Trade Detail › should show the dashed track on a day with a missing Mark, named by the reason, with the lines and the session before kept (698ms)
+
+  ✓   15 [chromium] › e2e/d9/open-list.spec.ts:22:3 › B9.9 The Open list › should list the Open Trades in the Review’s order under the line In the Review’s order, each row’s meter named per W51 (770ms)
+  ✓   16 [chromium] › e2e/d9/open-list.spec.ts:52:3 › B9.9 The Open list › should show the dashed track on a Settlement Due row (2.8s)
+
+  ✓   17 [chromium] › e2e/d9/replay.spec.ts:28:3 › B9.1 Replay in Trade Detail › should show Mon 11-16 with the headline, how it is going, what is at stake and the labels W36 to W41 name (724ms)
+
+  ✓   18 [chromium] › e2e/d9/replay.spec.ts:64:3 › B9.1 Replay in Trade Detail › should step back to Thu 11-12 by keyboard with its own figures, the Stop line stepped at the sale and the banked band begun, and nothing of a later session (813ms)
+
+  ✓   19 [chromium] › e2e/d9/replay.spec.ts:103:3 › B9.1 Replay in Trade Detail › should hold the chart’s Worst case figure in the readout’s At Worst case row and on its card (C9.2) (709ms)
+
+  ✓   20 [chromium] › e2e/d9/replay.spec.ts:119:3 › B9.1 Replay in Trade Detail › should step back to Mon 11-02 by keyboard with the first session, no band and no sale, and nothing of a later session (763ms)
+
+  ✓   21 [chromium] › e2e/d9/replay.spec.ts:142:3 › B9.1 Replay in Trade Detail › should name each revealed session as a button, mark the hovered one in both charts and move to the one pressed (822ms)
+
+  ✓   22 [chromium] › e2e/d9/review.spec.ts:12:3 › B9.3 Replay in the Review, and the round trip › should show the Replay button in the strip, not in the Action panel, opening the replay with Price History as its only link (992ms)
+
+  ✓   23 [chromium] › e2e/d9/review.spec.ts:35:3 › B9.3 Replay in the Review, and the round trip › should move the slider on the card, open Price History on that session and return to the same card, panel and session (1.2s)
+
+  ✓   24 [chromium] › e2e/d9/session-cards.spec.ts:8:3 › T9AR.17 session cards, looked up across pages › should find a newer card after an older one when the cards span pages (1.3s)
+  ✓   25 [chromium] › e2e/d95/action-form.spec.ts:6:3 › B95.12 The Action form › should put the choices on two rows at 375 wide with every field kept (2.0s)
+
+  ✓   26 [chromium] › e2e/d95/action.spec.ts:10:3 › B95.6 The Action form on the Review (AC-REV-007, AC-REV-003) › should preselect Hold inside the lines, ask no reason, and show the saved Hold as one line with Change (3.4s)
+
+  ✓   27 [chromium] › e2e/d95/action.spec.ts:41:3 › B95.6 The Action form on the Review (AC-REV-007, AC-REV-003) › should save the Hold and discard a Roll at 375 wide, with every click made at that width (1.2s)
+
+  ✓   28 [chromium] › e2e/d95/action.spec.ts:64:3 › B95.6 The Action form on the Review (AC-REV-007, AC-REV-003) › should preselect nothing past the Stop, refuse a save with no Action or no reason in words, and let an Exit save with none (1.8s)
+
+  ✓   29 [chromium] › e2e/d95/action.spec.ts:111:3 › B95.6 The Action form on the Review (AC-REV-007, AC-REV-003) › should keep what you decided against and the Note behind Add more, and empty the form on Discard back to the preselection (1.1s)
+
+  ✓   30 [chromium] › e2e/d95/action.spec.ts:147:3 › B95.6 The Action form on the Review (AC-REV-007, AC-REV-003) › should store nothing of a half-typed reason, and show the form empty again after a reload (AC-JOUR-001) (1.2s)
+  ✓   31 [chromium] › e2e/d95/card.spec.ts:11:3 › B95.4 The card › should wrap a long unbroken Thesis inside the Plan box at 375 wide with no sideways scroll (1.6s)
+  ✓   32 [chromium] › e2e/d95/card.spec.ts:24:3 › B95.4 The card › should wrap Entry, Stop and Target to two lines at 375 wide and keep every value (1.7s)
+  ✓   33 [chromium] › e2e/d95/card.spec.ts:54:3 › B95.4 The card › should draw the Now box with its labels, arrows and captions whole inside the viewport at 1280, 375 and 320 wide (2.0s)
+  ✓   34 [chromium] › e2e/d95/card.spec.ts:92:3 › B95.4 The card › should keep the Stop and Target labels apart when the two lines sit close on the meter at 1280 and 375 wide (2.1s)
+
+  ✓   35 [chromium] › e2e/d95/card.spec.ts:128:3 › B95.4 The card › should show the Plan box and the Now box of a long option past its Target, a stock and a short option past their Stops, with the figures Trade Detail gives (6.7s)
+
+  ✓   36 [chromium] › e2e/d95/card.spec.ts:168:3 › B95.4 The card › should keep every signed figure in the Now box whole on one line at 320 wide (796ms)
+
+  ✓   37 [chromium] › e2e/d95/card.spec.ts:196:3 › B95.4 The card › should say the figures wait for today's Marks and offer no Action until the Mark is in, at 1280 and 375 wide (5.0s)
+  ✓   38 [chromium] › e2e/d95/card.spec.ts:217:3 › B95.4 The card › should list the last four decisions and fold the older three behind "3 earlier decisions" at 375 wide (4.2s)
+
+  ✓   39 [chromium] › e2e/d95/closed-card.spec.ts:27:3 › B95.58 The closed card (W103, W150, W151) › should say how ABC ended, set the Plan beside what happened, label the Close Review and stack the two columns at 375 wide (1.5s)
+
+  ✓   40 [chromium] › e2e/d95/day-card.spec.ts:9:3 › B95.1 The day card › should show the counts, the steps, one button and the labels, and no list of missing items, at 1280 and 375 wide (793ms)
+  ✓   41 [chromium] › e2e/d95/day-card.spec.ts:40:3 › B95.1 The day card › should list the finished day: what is past a line, what was chosen, what comes due and the next Review Date, at 1280 and 375 wide (4.6s)
+
+  ✓   42 [chromium] › e2e/d95/exit-banner.spec.ts:42:3 › B95.9 An Exit not carried out (AC-REV-007) › should say on the card and on the day card that an Exit was chosen, on which day, and what is still held, with the two answers (3.3s)
+
+  ✓   43 [chromium] › e2e/d95/exit-banner.spec.ts:60:3 › B95.9 An Exit not carried out (AC-REV-007) › should hide the banner on Still holding, save nothing, and show it again after a fresh open (855ms)
+
+  ✓   44 [chromium] › e2e/d95/exit-banner.spec.ts:77:3 › B95.9 An Exit not carried out (AC-REV-007) › should open the sale form on I sold: record it, and say how much was sold since once part is recorded (878ms)
+
+  ✓   45 [chromium] › e2e/d95/exit-banner.spec.ts:98:3 › B95.9 An Exit not carried out (AC-REV-007) › should leave no banner, To do, Needed or day card note beside the receipt of a closing sale recorded from I sold: record it, at both widths (909ms)
+
+  ✓   46 [chromium] › e2e/d95/exit-banner.spec.ts:117:3 › B95.9 An Exit not carried out (AC-REV-007) › should hide the banner on Still holding pressed at 375 wide (720ms)
+
+  ✓   47 [chromium] › e2e/d95/exit-banner.spec.ts:129:3 › B95.9 An Exit not carried out (AC-REV-007) › should record a part sale from I sold: record it, every click made at 375 wide (794ms)
+
+  ✓   48 [chromium] › e2e/d95/exit-banner.spec.ts:147:3 › B95.9 An Exit not carried out (AC-REV-007) › should show no banner for an earlier Roll (3.3s)
+
+  ✓   49 [chromium] › e2e/d95/last-decisions.spec.ts:7:3 › B95.4 Your last decisions › should keep every signed figure in Your last decisions whole on one line at 320 wide (1.6s)
+  ✓   50 [chromium] › e2e/d95/marks-keys.spec.ts:9:3 › B95.3 The grid keys › should show the key hint at 375 wide, and take Enter, the arrow keys and N in the grid (2.7s)
+  ✓   51 [chromium] › e2e/d95/marks-step.spec.ts:13:3 › B95.2 The Marks step › should stack each row at 375 wide: the Instrument and its input, then the previous Mark and Can't get a price beneath (2.9s)
+
+  ✓   52 [chromium] › e2e/d95/marks-step.spec.ts:61:31 › B95.2 The Marks step › should keep nothing typed after a reload, save once and fold, re-sort the Trades with focus on the first, fix a saved Mark in place with no reason, and show an acknowledged Mark as no price and a gap as a gap, at 1280 wide (1.8s)
+
+  ✓   53 [chromium] › e2e/d95/marks-step.spec.ts:61:31 › B95.2 The Marks step › should keep nothing typed after a reload, save once and fold, re-sort the Trades with focus on the first, fix a saved Mark in place with no reason, and show an acknowledged Mark as no price and a gap as a gap, at 375 wide (1.5s)
+  ✓   54 [chromium] › e2e/d95/open-list.spec.ts:14:3 › B95.5 The Open list follows the Review order › should list the Open Trades past the Stop, then at the Target, and an Exit not carried out first, at 1280 and 375 wide (4.2s)
+
+  ✓   55 [chromium] › e2e/d95/pressure-label.spec.ts:7:3 › B95.4 The pressure label › should word the header pill with the same share as the line under the symbol on a Trade with a partial sale (1.2s)
+
+  ✓   56 [chromium] › e2e/d95/refusal.spec.ts:24:3 › B95.7 The refusal on the Trade pressed (AC-REV-001) › should name the Trade whose form is unsaved, offer its three choices with Save it focused, and keep the Trade pressed shut (1.0s)
+
+  ✓   57 [chromium] › e2e/d95/refusal.spec.ts:41:3 › B95.7 The refusal on the Trade pressed (AC-REV-001) › should return to the unsaved form with its values on Back to ABC (1.1s)
+
+  ✓   58 [chromium] › e2e/d95/refusal.spec.ts:57:3 › B95.7 The refusal on the Trade pressed (AC-REV-001) › should save the form on Save it and then open the Trade pressed (1.1s)
+
+  ✓   59 [chromium] › e2e/d95/refusal.spec.ts:74:3 › B95.7 The refusal on the Trade pressed (AC-REV-001) › should show the form own refusal, and stay on it, when Save it cannot save (1.2s)
+
+  ✓   60 [chromium] › e2e/d95/refusal.spec.ts:93:3 › B95.7 The refusal on the Trade pressed (AC-REV-001) › should save the form on Save it and open the Trade pressed, with the choice pressed at 375 wide (1.1s)
+
+  ✓   61 [chromium] › e2e/d95/refusal.spec.ts:108:3 › B95.7 The refusal on the Trade pressed (AC-REV-001) › should let the form go on Discard it at 375 wide and open the Trade pressed (1.1s)
+
+  ✓   62 [chromium] › e2e/d95/refusal.spec.ts:120:3 › B95.7 The refusal on the Trade pressed (AC-REV-001) › should let the form go on Discard it and open the Trade pressed (1.2s)
+
+  ✓   63 [chromium] › e2e/d95/refusal.spec.ts:139:3 › B95.7 The refusal on the Trade pressed (AC-REV-001) › should not refuse when only the Marks step holds typed Marks (997ms)
+
+  ✓   64 [chromium] › e2e/d95/replay-day.spec.ts:10:3 › T95.57 The Replay: what you did that day, the Action row, Key moments › should open on the first crossing and show what you did that day, the Action row and the key moments at both widths (1.4s)
+
+  ✓   65 [chromium] › e2e/d95/replay-day.spec.ts:56:3 › T95.57 The Replay: what you did that day, the Action row, Key moments › should show a saved Action with its reason, its letter in the Action row, and the newest session still waiting for one at both widths (1.7s)
+
+  ✓   66 [chromium] › e2e/d95/replay-strip.spec.ts:8:3 › T95.56 The Replay strip on a card › should show the chart, the words and the Replay button, stacked at 375 wide, and open the Replay from the button (1.2s)
+  ✓   67 [chromium] › e2e/d95/sale-form.spec.ts:6:3 › T95.40 The sale form in the Review card › should lay the form out in one column at 375 wide with every field kept (2.2s)
+
+  ✓   68 [chromium] › e2e/d95/sale.spec.ts:45:5 › B95.8 The sale measured against the Plan Exit (AC-REV-008, AC-POS-004) › should say the whole sale at the Stop follows the Plan, ask nothing, and ask the Close Reason of a closing sale, from the Review (1.7s)
+
+  ✓   69 [chromium] › e2e/d95/sale.spec.ts:45:5 › B95.8 The sale measured against the Plan Exit (AC-REV-008, AC-POS-004) › should say the whole sale at the Stop follows the Plan, ask nothing, and ask the Close Reason of a closing sale, from Trade Detail (1.4s)
+
+  ✓   70 [chromium] › e2e/d95/sale.spec.ts:106:5 › B95.8 The sale measured against the Plan Exit (AC-REV-008, AC-POS-004) › should ask Why only part? of a sale of part of the Position at the Stop, and record it with the answer, from the Review (1.5s)
+
+  ✓   71 [chromium] › e2e/d95/sale.spec.ts:106:5 › B95.8 The sale measured against the Plan Exit (AC-REV-008, AC-POS-004) › should ask Why only part? of a sale of part of the Position at the Stop, and record it with the answer, from Trade Detail (1.0s)
+
+  ✓   72 [chromium] › e2e/d95/sale.spec.ts:141:3 › B95.8 The sale measured against the Plan Exit (AC-REV-008, AC-POS-004) › should refuse a closing sale with no Close Reason, then record it, every click made at 375 wide (973ms)
+
+  ✓   73 [chromium] › e2e/d95/sale.spec.ts:159:3 › B95.8 The sale measured against the Plan Exit (AC-REV-008, AC-POS-004) › should carry the Exit reason of a whole sale before the lines and ask nothing more (1.5s)
+
+  ✓   74 [chromium] › e2e/d95/sale.spec.ts:179:3 › B95.8 The sale measured against the Plan Exit (AC-REV-008, AC-POS-004) › should say the Close Review is due in the Review after next when the sale is dated after the close (1.4s)
+
+  ✓   75 [chromium] › e2e/d95/sale.spec.ts:196:3 › B95.8 The sale measured against the Plan Exit (AC-REV-008, AC-POS-004) › should save a sale at once on Say why later and ask for the reason in the next Review (2.0s)
+  ✓   76 [chromium] › e2e/d95/slip-questions.spec.ts:7:3 › B95.2 The slip questions › should question a ten-times slip, take the reading pressed, and save only the price (3.1s)
+
+  ✓   77 [chromium] › e2e/d95/upgrade.spec.ts:31:3 › B95.10 A Workspace made by the D9 release opens in this one (AC-JOUR-007) › should keep the form of a reflection owed on an open Trade and save a new Action under the new form (6.1s)
+
+  ✓   78 [chromium] › e2e/d9ar/cards.spec.ts:105:3 › B9AR.4 The Plan block and the cards › should step R-AXIO-D from the first session to the last with one card each, then page the cards and press an earlier card (1.8s)
+
+  ✓   79 [chromium] › e2e/d9ar/cards.spec.ts:159:3 › B9AR.4 The Plan block and the cards › should show R-BREN-U’s Plan block and W63’s words on its entry and its sale (1.6s)
+  ✓   80 [chromium] › e2e/d9ar/cards.spec.ts:183:3 › B9AR.4 The Plan block and the cards › should show R-CORV-D’s first crossing on Fri 11-06, Mon 11-09 and Wed 11-11, and none before (2.7s)
+
+  ✓   81 [chromium] › e2e/d9ar/cards.spec.ts:240:5 › T9AR.24-B1 Figures on the session cards › should keep every figure on a session card on one line, sign with its number, at 1280, 1440, 375 and 320, DALE-hold (2.1s)
+
+  ✓   82 [chromium] › e2e/d9ar/cards.spec.ts:240:5 › T9AR.24-B1 Figures on the session cards › should keep every figure on a session card on one line, sign with its number, at 1280, 1440, 375 and 320, AXIO (2.2s)
+
+  ✓   83 [chromium] › e2e/d9ar/cards.spec.ts:240:5 › T9AR.24-B1 Figures on the session cards › should keep every figure on a session card on one line, sign with its number, at 1280, 1440, 375 and 320, BREN (2.2s)
+
+  ✓   84 [chromium] › e2e/d9ar/chart.spec.ts:42:3 › B9AR.5 The chart › should list in the key only what R-BREN-U has drawn, at Mon 11-02 and Thu 11-12 (822ms)
+
+  ✓   85 [chromium] › e2e/d9ar/chart.spec.ts:65:3 › B9AR.5 The chart › should end a stock’s time axis with nothing at the right, and keep the cursor clear of text on its entry session (847ms)
+
+  ✓   86 [chromium] › e2e/d9ar/chart.spec.ts:78:3 › B9AR.5 The chart › should name DALE-hold’s Worst case at the bottom edge with an arrow, with every line labelled and the Stop breached flagged (806ms)
+  ✓   87 [chromium] › e2e/d9ar/chart.spec.ts:104:3 › B9AR.5 The chart › should shade the session with no Mark on R-CORV-D, join nothing across it and flag the Target reached (1.9s)
+
+  ✓   88 [chromium] › e2e/d9ar/chart.spec.ts:127:3 › B9AR.5 The chart › should draw each stake bar and hatch on AXIO Mon Nov 16 with its label and no label over another, and name both in the key, at 1280 and 1440 (747ms)
+
+  ✓   89 [chromium] › e2e/d9ar/chart.spec.ts:167:3 › B9AR.5 The chart › should keep AXIO’s Stop breached flag on the P&L chart and in the key on every session from Mon Nov 9 to Mon Nov 16, and none before (1.3s)
+
+  ✓   90 [chromium] › e2e/d9ar/chart.spec.ts:221:5 › B9AR.5 The chart › should draw no label over a y-axis figure or another label on BREN Mon Nov 2 at 1280, 1366, 1440, 1536 and 1920 (899ms)
+  ✓   91 [chromium] › e2e/d9ar/chart.spec.ts:221:5 › B9AR.5 The chart › should draw no label over a y-axis figure or another label on CORV Mon Nov 2 at 1280, 1366, 1440, 1536 and 1920 (2.5s)
+
+  ✓   92 [chromium] › e2e/d9ar/chart.spec.ts:250:3 › B9AR.5 The chart › should name the hatch and the stake bar in the key on BREN, where both are drawn with their labels (693ms)
+
+  ✓   93 [chromium] › e2e/d9ar/chart.spec.ts:262:3 › B9AR.5 The chart › should leave the top of the readout where it is when a session is hovered (860ms)
+
+  ✓   94 [chromium] › e2e/d9ar/chart.spec.ts:306:5 › B9AR.5 The chart › should keep BREN’s key on one line at 1280, 1440 and 1920 on every session (1.4s)
+
+  ✓   95 [chromium] › e2e/d9ar/chart.spec.ts:306:5 › B9AR.5 The chart › should keep AXIO’s key on one line at 1280, 1440 and 1920 on every session (1.3s)
+
+  ✓   96 [chromium] › e2e/d9ar/chart.spec.ts:306:5 › B9AR.5 The chart › should keep DALE-hold’s key on one line at 1280, 1440 and 1920 on every session (1.4s)
+  ✓   97 [chromium] › e2e/d9ar/chart.spec.ts:306:5 › B9AR.5 The chart › should keep CORV’s key on one line at 1280, 1440 and 1920 on every session (2.5s)
+  ✓   98 [chromium] › e2e/d9ar/chart.spec.ts:315:3 › B9AR.5 The chart › should keep R-DALE-U’s key on one line on every session, and name no Execution after the Expiration, which is the only marker drawn (4.2s)
+
+  ✓   99 [chromium] › e2e/d9ar/crossing-position.spec.ts:10:3 › T9AR.18-D1 Where the first-crossing sentence sits › should put the first-crossing sentence after the charts on a phone and after the status line on a wide screen (844ms)
+  -  100 [chromium] › e2e/d9ar/label-sweep.spec.ts:23:3 › D9AR-retro-1 should list every chart label drawn over something, at every session, BREN
+  -  101 [chromium] › e2e/d9ar/label-sweep.spec.ts:23:3 › D9AR-retro-1 should list every chart label drawn over something, at every session, AXIO
+  -  102 [chromium] › e2e/d9ar/label-sweep.spec.ts:23:3 › D9AR-retro-1 should list every chart label drawn over something, at every session, DALE_HOLD
+  -  103 [chromium] › e2e/d9ar/label-sweep.spec.ts:23:3 › D9AR-retro-1 should list every chart label drawn over something, at every session, CORV
+
+  ✓  104 [chromium] › e2e/d9ar/overlay.spec.ts:11:3 › B9AR.1 The overlay on Trade Detail › should open the overlay from the Replay button beside six drawers, named and headed as W53 says (676ms)
+
+  ✓  105 [chromium] › e2e/d9ar/overlay.spec.ts:29:3 › B9AR.1 The overlay on Trade Detail › should close by Escape, by Close and by the browser’s Back, each leaving the Trade’s page with focus on the Replay button (857ms)
+
+  ✓  106 [chromium] › e2e/d9ar/overlay.spec.ts:54:3 › B9AR.1 The overlay on Trade Detail › should reopen on a reload inside the overlay, and let Price History close it and focus that session’s column (869ms)
+
+  ✓  107 [chromium] › e2e/d9ar/overlay.spec.ts:76:3 › B9AR.1 The overlay on Trade Detail › should put the readout beside the charts at 1280 (746ms)
+
+  ✓  108 [chromium] › e2e/d9ar/readout.spec.ts:29:3 › B9AR.3 The readout › should show R-BREN-U’s grid at Wed 11-11 and its past-the-Target row, Marks and odds at Mon 11-16 (771ms)
+
+  ✓  109 [chromium] › e2e/d9ar/readout.spec.ts:66:3 › B9AR.3 The readout › should draw the From here sentence in the status line’s colour (799ms)
+
+  ✓  110 [chromium] › e2e/d9ar/readout.spec.ts:76:3 › B9AR.3 The readout › should show R-AXIO-D past the Stop on Mon 11-16 with a realized loss, a grey Worst case and axe clean; and Mon 11-09 as the first crossing (1.4s)
+
+  ✓  111 [chromium] › e2e/d9ar/readout.spec.ts:114:3 › B9AR.3 The readout › should show DALE-hold at Wed 11-11 with full-strength extremes, the odds with the Plan’s, and the change line only under Trade P&L and the Marks (748ms)
+
+  ✓  112 [chromium] › e2e/d9ar/readout.spec.ts:140:3 › B9AR.3 The readout › should word R-AXIO-D’s sale below the Stop against the Plan in the Position group (719ms)
+
+  ✓  113 [chromium] › e2e/d9ar/readout.spec.ts:152:3 › B9AR.3 The readout › should word R-BREN-U’s entry and its sale at the Target against the Plan in the Position group (796ms)
+  ✓  114 [chromium] › e2e/d9ar/readout.spec.ts:169:3 › B9AR.3 The readout › should show R-CORV-D at Mon 11-09 with the extremes smaller and grey (2.1s)
+
+  ✓  115 [chromium] › e2e/d9ar/readout.spec.ts:239:5 › T9AR.24-B2 Figures in the readout and the overlay header › should keep every figure in the readout and the header on one line, sign with its number, at 1280, 1440, 1920, 375 and 320, DALE-hold Mon Nov 16 (876ms)
+
+  ✓  116 [chromium] › e2e/d9ar/readout.spec.ts:239:5 › T9AR.24-B2 Figures in the readout and the overlay header › should keep every figure in the readout and the header on one line, sign with its number, at 1280, 1440, 1920, 375 and 320, AXIO Mon Nov 16 (894ms)
+
+  ✓  117 [chromium] › e2e/d9ar/readout.spec.ts:239:5 › T9AR.24-B2 Figures in the readout and the overlay header › should keep every figure in the readout and the header on one line, sign with its number, at 1280, 1440, 1920, 375 and 320, DALE-hold Thu Nov 12 (920ms)
+
+  ✓  118 [chromium] › e2e/d9ar/readout.spec.ts:239:5 › T9AR.24-B2 Figures in the readout and the overlay header › should keep every figure in the readout and the header on one line, sign with its number, at 1280, 1440, 1920, 375 and 320, DALE-hold Fri Nov 13 (925ms)
+
+  ✓  119 [chromium] › e2e/d9ar/readout.spec.ts:239:5 › T9AR.24-B2 Figures in the readout and the overlay header › should keep every figure in the readout and the header on one line, sign with its number, at 1280, 1440, 1920, 375 and 320, BREN Wed 11-11 (979ms)
+  ✓  120 [chromium] › e2e/d9ar/readout.spec.ts:239:5 › T9AR.24-B2 Figures in the readout and the overlay header › should keep every figure in the readout and the header on one line, sign with its number, at 1280, 1440, 1920, 375 and 320, CORV Mon 11-09 (2.3s)
+
+  ✓  121 [chromium] › e2e/d9ar/responsive-a11y.spec.ts:126:3 › B9AR.7 Responsive, touch, accessible and offline › should fit the Detail overlay on one screen at every size, keeping the session across each resize (4.7s)
+
+  ✓  122 [chromium] › e2e/d9ar/responsive-a11y.spec.ts:134:3 › B9AR.7 Responsive, touch, accessible and offline › should fit the Review card’s overlay on one screen at every size, keeping the session across each resize (4.6s)
+
+  ✓  123 [chromium] › e2e/d9ar/responsive-a11y.spec.ts:144:5 › B9AR.7 Responsive, touch, accessible and offline › should fit the Detail overlay’s header, headline and both charts on one 320 by 667 screen (820ms)
+
+  ✓  124 [chromium] › e2e/d9ar/responsive-a11y.spec.ts:144:5 › B9AR.7 Responsive, touch, accessible and offline › should fit the Review card overlay’s header, headline and both charts on one 320 by 667 screen (870ms)
+
+  ✓  125 [chromium] › e2e/d9ar/responsive-a11y.spec.ts:165:3 › B9AR.7 Responsive, touch, accessible and offline › should draw the P&L chart at least 800 wide at 1280 and wider at 1440 and 1920, with its text the same size at each (792ms)
+
+  ✓  126 [chromium] › e2e/d9ar/responsive-a11y.spec.ts:188:5 › B9AR.7 Responsive, touch, accessible and offline › should keep the P&L chart 800 wide and still, and each stake grid inside the readout, at every session of R-BREN-U, R-AXIO-D, R-CORV-D and R-DALE-D at 1280 (4.3s)
+  ✓  127 [chromium] › e2e/d9ar/responsive-a11y.spec.ts:188:5 › B9AR.7 Responsive, touch, accessible and offline › should keep the P&L chart 800 wide and still, and each stake grid inside the readout, at every session of R-DALE-U at 1280 (2.7s)
+
+  ✓  128 [chromium] › e2e/d9ar/responsive-a11y.spec.ts:204:3 › B9AR.7 Responsive, touch, accessible and offline › should keep Tab inside the overlay, from either end, at 1280 and on a phone (1.5s)
+
+  ✓  129 [chromium] › e2e/d9ar/responsive-a11y.spec.ts:232:3 › B9AR.7 Responsive, touch, accessible and offline › should show the page in the new width’s layout after Close, with a started Action still there (1.1s)
+
+  ✓  130 [chromium] › e2e/d9ar/responsive-a11y.spec.ts:262:3 › B9AR.7 Responsive, touch, accessible and offline › should make the phone’s Replay buttons, paging buttons and card headings at least 44 pixels high (978ms)
+
+  ✓  131 [chromium] › e2e/d9ar/responsive-a11y.spec.ts:279:3 › B9AR.7 Responsive, touch, accessible and offline › should make the overlay’s Close button at least 44 pixels high on a phone (803ms)
+
+  ✓  132 [chromium] › e2e/d9ar/responsive-a11y.spec.ts:290:3 › B9AR.7 Responsive, touch, accessible and offline › should move the slider by a tap on a session and a tap on a card’s heading (910ms)
+
+  ✓  133 [chromium] › e2e/d9ar/responsive-a11y.spec.ts:317:5 › B9AR.7 Responsive, touch, accessible and offline › should show no hover box or band from the Review card's Replay tap and after two taps on sessions at 320 (894ms)
+
+  ✓  134 [chromium] › e2e/d9ar/responsive-a11y.spec.ts:345:5 › B9AR.7 Responsive, touch, accessible and offline › should make the Review overlay's Price History link at least 44 pixels high at 375 (818ms)
+
+  ✓  135 [chromium] › e2e/d9ar/responsive-a11y.spec.ts:345:5 › B9AR.7 Responsive, touch, accessible and offline › should make the Review overlay's Price History link at least 44 pixels high at 320 (869ms)
+
+  ✓  136 [chromium] › e2e/d9ar/responsive-a11y.spec.ts:361:3 › B9AR.7 Responsive, touch, accessible and offline › should leave the slider’s value uncovered by any chart element for DALE from Trade Detail at 320 (698ms)
+
+  ✓  137 [chromium] › e2e/d9ar/responsive-a11y.spec.ts:379:3 › B9AR.7 Responsive, touch, accessible and offline › should read the overlay offline after a cold restart with the server stopped (AC-DEL-001) (741ms)
+
+  ✓  138 [chromium] › e2e/d9ar/responsive-a11y.spec.ts:397:3 › B9AR.7 Responsive, touch, accessible and offline › should leave a staged update’s notice in place and unchanged when the overlay is opened and closed (2.7s)
+
+  ✓  139 [chromium] › e2e/d9ar/review.spec.ts:28:3 › B9AR.2 The overlay in the Review, and the summary › should restore a started Action on each card after the Price History round trip, and save exactly it with one press (2.1s)
+
+  ✓  140 [chromium] › e2e/d9ar/review.spec.ts:84:3 › B9AR.2 The overlay in the Review, and the summary › should keep a started Action when the browser goes Forward to Price History and Back again after a round trip (1.3s)
+
+  ✓  141 [chromium] › e2e/d9ar/review.spec.ts:113:3 › B9AR.2 The overlay in the Review, and the summary › should arrive at Price History from the Review with the slider session column header focused and inside its scroller (884ms)
+
+  ✓  142 [chromium] › e2e/d9ar/review.spec.ts:135:3 › B9AR.2 The overlay in the Review, and the summary › should return focus to Replay on Close after a reload of the Price History address with Replay open (1.1s)
+
+  ✓  143 [chromium] › e2e/d9ar/review.spec.ts:154:3 › B9AR.2 The overlay in the Review, and the summary › should caption the line each card has passed in the Now box, with no zero Overrun (897ms)
+  ✓  144 [chromium] › e2e/d9ar/states.spec.ts:12:3 › B9AR.6 How a replay ends, and a session with no Mark › should end K-sale on a Final result with its header, cards to the final session and nothing at stake (3.1s)
+  ✓  145 [chromium] › e2e/d9ar/states.spec.ts:48:3 › B9AR.6 How a replay ends, and a session with no Mark › should end R-DALE-U with no Mark while Settlement Due, then with a Final result and an Expiration, not an Execution, once it is recorded (3.4s)
+  ✓  146 [chromium] › e2e/d9ar/states.spec.ts:96:3 › B9AR.6 How a replay ends, and a session with no Mark › should show no Replay button on a Planned Trade (1.2s)
+  ✓  147 [chromium] › e2e/d9ar/states.spec.ts:105:3 › B9AR.6 How a replay ends, and a session with no Mark › should say No Mark once on Tue 11-10 with Add the Mark and a dash where the Mark is needed, then word an acknowledged Mark as the acknowledgment (2.7s)
+
+  ✓  148 [chromium] › e2e/d9ar/sweep.spec.ts:24:5 › D9AR-retro-1 Figure sweep over every session of the replay › should find no broken or unmarked figure anywhere in the replay at any session, BREN (1.8s)
+
+  ✓  149 [chromium] › e2e/d9ar/sweep.spec.ts:24:5 › D9AR-retro-1 Figure sweep over every session of the replay › should find no broken or unmarked figure anywhere in the replay at any session, AXIO (1.7s)
+
+  ✓  150 [chromium] › e2e/d9ar/sweep.spec.ts:24:5 › D9AR-retro-1 Figure sweep over every session of the replay › should find no broken or unmarked figure anywhere in the replay at any session, DALE_HOLD (1.8s)
+  ✓  151 [chromium] › e2e/d9ar/sweep.spec.ts:24:5 › D9AR-retro-1 Figure sweep over every session of the replay › should find no broken or unmarked figure anywhere in the replay at any session, CORV (3.8s)
+
+  ✓  152 [chromium] › e2e/d9r2/drafts.spec.ts:26:3 › B9R2.3 Drafts belong to the Review › should keep drafts across cards and pages, count them on Save Marks and empty them all with Discard (3.8s)
+
+  ✓  153 [chromium] › e2e/d9r2/drafts.spec.ts:77:3 › B9R2.3 Drafts belong to the Review › should save every draft of every session in one Save Marks, one Mark for the key two Trades share (1.1s)
+
+  ✓  154 [chromium] › e2e/d9r2/drafts.spec.ts:116:3 › B9R2.3 Drafts belong to the Review › should hold leaving the page while a draft exists, and store nothing when the page is reloaded with drafts typed (AC-JOUR-001) (1.2s)
+
+  ✓  155 [chromium] › e2e/d9r2/drafts.spec.ts:147:3 › B9R2.3 Drafts belong to the Review › should ask before a route change while a draft exists, stay on Cancel, leave on OK, and mark the page for the browser prompt (T9R2.17-B9) (782ms)
+
+  ✓  156 [chromium] › e2e/d9r2/drafts.spec.ts:175:3 › B9R2.3 Drafts belong to the Review › should raise the browser leave prompt on a real page close while a draft exists, keep the page on dismiss, close on accept, and raise none without a draft (T9R2.17-B11) (1.7s)
+
+  ✓  157 [chromium] › e2e/d9r2/editor.spec.ts:9:3 › B9R2.4 The cell editor › should ask for a reason with Can't get a price, correct an earlier Mark, offer Withdraw on the Review Date only, and complete with Unavailable Marks from the Review Date alone (2.5s)
+
+  ✓  158 [chromium] › e2e/d9r2/editor.spec.ts:66:3 › B9R2.4 The cell editor › should name a conflict, and after a refused save open the first refused cell with focus in its input (1.2s)
+
+  ✓  159 [chromium] › e2e/d9r2/editor.spec.ts:90:3 › B9R2.4 The cell editor › should read a card that was not open after another tab saved a Mark, and open the refused cell of a closed card with focus in its input (T9R2.17-B8) (1.7s)
+
+  ✓  160 [chromium] › e2e/d9r2/editor.spec.ts:122:3 › B9R2.4 The cell editor › should open the first refused cell, on its page, with its issue and focus in the input (1.0s)
+
+  ✓  161 [chromium] › e2e/d9r2/grid.spec.ts:11:3 › B9R2.2 The Marks grid › should show the previous session and the Review Date, the skipped sessions as optional columns on request, 20 sessions a page with the fixed columns, W72, one row for the Instrument two Trades share, and a Missing-Mark link that focuses the Review Date cell (856ms)
+  ✓  162 [chromium] › e2e/d9r2/grid.spec.ts:70:3 › B9R2.2 The Marks grid › should put a session with one Missing Mark and one Available Mark in a mixed column, and move Enter down a session, to the next older session, then to Save Marks (2.1s)
+
+  ✓  163 [chromium] › e2e/d9r2/history.spec.ts:21:3 › B9R2.1 Price History and Journal: acknowledged sessions › should show an acknowledged session as Acknowledged Unavailable, count only Missing sessions on the tab, name both counts under the table, colour gains and losses, show the acknowledged Mark on a Journal card and head the Review card At the Fri Oct 9 Marks (1.1s)
+
+  ✓  164 [chromium] › e2e/d9r2/responsive-a11y.spec.ts:16:3 › B9R2.5 Responsive and accessible › should keep drafts, the chosen cell and the focus through a live resize, show no sideways scroll at 390 px and report no WCAG 2.1 AA violations in each state (2.6s)
+
+  ✓  165 [chromium] › e2e/d9r2/responsive-a11y.spec.ts:58:5 › B9R2.5 Responsive and accessible › should fit the Marks step at 390 px with no sideways scroll, no clipped text and 44 px cells on a touch screen (1.3s)
+
+  ✓  166 [chromium] › e2e/d9r2/responsive-a11y.spec.ts:58:5 › B9R2.5 Responsive and accessible › should fit the Marks step at 375 px with no sideways scroll, no clipped text and 44 px cells on a touch screen (1.4s)
+
+  ✓  167 [chromium] › e2e/d9r2/responsive-a11y.spec.ts:58:5 › B9R2.5 Responsive and accessible › should fit the Marks step at 320 px with no sideways scroll, no clipped text and 44 px cells on a touch screen (1.4s)
+
+  ✓  168 [chromium] › e2e/d9r2/responsive-a11y.spec.ts:86:3 › B9R2.5 Responsive and accessible › should take the whole flow by keyboard: choose a cell, type, Enter through the cells, add the skipped sessions, press an acknowledged cell and save, with a visible focus ring (1.6s)
+
+  4 skipped
+  164 passed (4.9m)
+EXIT 0
