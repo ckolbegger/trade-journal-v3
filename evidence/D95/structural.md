@@ -1346,3 +1346,7 @@ ocr of T95.62 (session 3aa11e3f): complete, 4 files, 1 finding. `evidence/D95/oc
 - Doubtful (`capabilities.ts:105`): `ExpirationStanding` is under `getTrade`, not `open` as the plan names. It is this task's recorded departure; making it match the plan would add a read to `open` (decision 131 covers only fields from data already read), so it is a pending decision, queued as Q12 (recommend: keep `getTrade`, correct the plan's wording), not a bug task. T95.62 is not parked: it is built as the recommended option.
 
 Run `t95.62-capabilities` (browser-task; at `06f282e7`): unit 264 files, 3203 passed; integration 2 failed, 362 passed; browser 57 passed; 14 of 14 checks exit 0; run-complete. Failures: `tests/integration/d9/capabilities.test.ts` (I9.7) and `tests/integration/d9ar/capabilities.test.ts` (I9AR.3) assert the exact `replayTrade` list, which T95.62 lengthened by `SessionActions` and `KeyMoments` (the reported "4 more" counts both lists' compare). T95.62 updated only workspace.test.ts and the d95 test. Follow-on **T95.62-F1**: those two tests take Part C's list.
+
+### T95.62-F1
+
+Commit `88ab7b8f`: I9.7 (the manifest's and the trade-detail route's `replayTrade` lists) and I9AR.3 (its manifest list; its route check is `arrayContaining`) take Part C's list, extended in place as `f327db49` did. No other stale exact list in tests/ or src/. Integration 158 files, 364 passed; typecheck, tsc6, lint (2 pre-existing warnings) exit 0.
