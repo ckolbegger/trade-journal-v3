@@ -1147,3 +1147,7 @@ ocr of T95.49 (session a946bc84): 10 files, 2 findings, both Valid, bug tasks. `
 ### T95.49-B1
 
 Commit `4a1f86b6` (DayCard.tsx, DayCard.test.tsx): the existing Unavailable block renders from one `disclosure` value, the Unavailable kind's own fields or the new kind's `unavailable`; no word changed. Case 1 red (no group "Unavailable Marks"), green; case 2 first-run pass, flagged, mutation (an empty disclosure when `unavailable` is absent) failed `expected <div role="group" …> to be null`, restored. DayCard 20 passed; typecheck, tsc6, lint (2 pre-existing warnings), lint:deps exit 0.
+
+### T95.49-B2
+
+Commit `f4b9314a` (daily-review.ts, settle-later.test.ts): `expirationStanding` reads the Underlying Mark at the settling session, `missedSessions(read, replay.sessions[0].date, expiration).at(-1)` (the expiration date itself when it is a session, else the session before); the calendar call and the replay are already in hand, no store read added. Case 1 red (Unavailable vs Value), green; case 2 first-run pass, flagged, mutation (a missing Underlying Mark falls back to 46.00) failed, restored. Test fixture `expiryFixture` gained `expiration` and `mnoMark` options. daily-review 252 passed; typecheck, tsc6, lint (2 pre-existing warnings), lint:deps exit 0.
