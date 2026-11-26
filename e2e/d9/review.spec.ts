@@ -55,7 +55,7 @@ test.describe('B9.3 Replay in the Review, and the round trip', () => {
     await expect(detail.heading(page, 'BREN')).toBeVisible(LAUNCH);
     const url = new URL(page.url());
     expect(url.pathname).toBe(`/trades/${trade.tradeId}`);
-    expect(Object.fromEntries(url.searchParams)).toEqual({ drawer: 'price-history', session: '2026-11-12', from: 'review' });
+    expect(Object.fromEntries(url.searchParams)).toEqual({ drawer: 'price-history', session: '2026-11-12', from: 'review', panel: 'Action' });
     // Price History is the selected drawer (with its Thu Nov 12 column), and the address names that session for the Replay overlay too (A257).
     await expect(page.getByRole('tablist', { name: 'Detail' }).getByRole('tab', { selected: true })).toHaveText(/^Price History/);
     await expect(page.locator('#drawer-panel-price-history th[data-session="2026-11-12"]')).toHaveText('ThuNov 12');
