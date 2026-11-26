@@ -1265,3 +1265,7 @@ Commit `8630e82d` (assemble-replay.ts, replay-view.ts, daily-review.ts, two test
 ocr of T95.55 (session a3418e8b): 5 files, 0 findings. `evidence/D95/ocr/T95.55-8630e82d.json`. Next: run `t95.55-replay-actions` (browser-auto b1bf44fa).
 
 Run `t95.55-replay-actions` (browser-auto b1bf44fa, task tier: no changed path on the full-tier list): unit 3174, integration 364, browser 5 and 49, checks 14 of 14. Passed. T95.55 done.
+
+### T95.56 — parked (pending decision Q10)
+
+The tdd-task built nothing. Cases 6 and 7 need a replay on the owed card (`assembleOwedCard`, `daily-review.ts` ~841), which reads no Marks; only walked cards assemble one, and decision 131 covers no new read. Options put to the user: (1) the owed card reads its replay with `withJournal: false` (one replay read per owed card, pins change, recorded) (recommended); (2) words only on an owed card; (3) walked cards only, cases 6 and 7 moved. Findings for the resumed task: the replay carries what the chart needs (reuse `replay.props.ts` and `geometry.ts`); no field gives the sessions past a line or the session number and total, to be added as card fields under decision 131 the way `pastLineOf` counts them (`read.sessionDatesBetween(since, reviewDate)`); low and high from `keyMoments` and `tradePnl`; the Replay button sits in the Action panel (`ReviewCard.tsx` ~443) and `openReplay` hard-codes `panel=Action`; the mockup's "never under water" branch has no W row; X15's specs: e2e/d8p/responsive-a11y, d9/states, d9ar/review, d9ar/states. Carrying on with T95.57 meanwhile.

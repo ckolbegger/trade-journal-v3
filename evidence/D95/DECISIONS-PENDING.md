@@ -127,3 +127,19 @@
 T95.16 stopped before writing. The collapsed card header (U3, breakdown line 85) shows Trade P&L in dollars and R with the day's change, but `WalkedTrade` carries only dollars (`figures.pnl`); R and each Trade's change since the session before are on no field, and the UI may not divide or subtract (ADR 0001). **Recommendation (a):** follow-on T95.16-D2 before T95.16 adds `pnl: { dollars, planR, change }` to `WalkedTrade`, built in `open` from the evaluation it already reads (`currentMarkedPnlInPlanR`; now and session-before P&L, as the day total already does); no new store read. Cases: each walked Trade carries P&L in dollars and R; its change since the session before; both Unavailable as the evaluation's are; request counts hold. **(b):** drop R and the change from the header (changes U3 and case 1). **Parked:** T95.16, T95.17, T95.18, T95.19, T95.20, T95.25. **Status:** asked.
 
 **Answer (2026-11-23):** (a), plus standing approval for prototype data (listed in `data-additions.md`). Decision 131, plan revision 121 (P178); follow-on T95.16-D2 before T95.16. **Status:** answered.
+
+
+## Q10 (T95.56): the strip on a closed or reflection-only card needs that card's replay, an added read — asked 2026-11-26
+
+**Plain words.** T95.56 puts a Replay strip (a small Trade P&L chart, one line of words, the Replay button) on every card. Cases 6 and 7 put it on a closed Trade's card ("with the sessions and the low", W146) and on a card that owes only a reflection. Those cards are built by `assembleOwedCard` (`daily-review.ts` ~841), which reads the stored summary, the analysis, the Debts and the frames but never the Trade's Marks, so it has no replay. Only walked cards (`assembleTrade`) assemble one. Decision 131's standing approval covers fields built from data already read, not a new read. No task names a source; A318, W146 and T95.59 case 1 (the walk opens the Replay from the closed card) all assume one. The task stopped before writing code.
+
+**Options.**
+- (1) The owed card reads its replay: `assembleReplay` with `withJournal: false` from the read session it already holds (and its saved Actions, for T95.57 and T95.59). Cost: one replay read per owed card, the same read an open card makes; the owed card's request-count pins change by that read, recorded. Recorded as a decision like 133.
+- (2) The strip on an owed card has words only, no chart and no Replay button (cases 5 and 6 not met; the walk in T95.59 would have no Replay to open).
+- (3) T95.56 builds the strip on walked cards only; cases 6 and 7 move to a later task once a read is approved.
+
+**Recommendation:** (1). The walk (T95.59) needs this replay anyway, and the read is the one an open card already makes.
+
+**Parked meanwhile:** T95.56. T95.57 and T95.58 carry on; T95.59 waits on this answer if it needs the owed card's replay.
+
+**Status:** asked.
