@@ -1291,3 +1291,5 @@ Commit `774642b4`: each Action row cell takes `slot` (from `s.plot.slot` in fram
 Commit `92f7c50b`: day-words.props.ts reads `session.positions.length > 0` (positions already reach the props; no coordinator data). Both cases red ("Nothing recorded.") then green. The test double `day()` gives a held-0 session an empty `positions` list (the real view lists only open lots); new `spread()` double. src/ui/cockpit/replay 277 passed; typecheck, tsc6, lint (2 pre-existing warnings), lint:deps exit 0; d95/replay-day 2 passed.
 
 ocr of T95.57-B1, T95.57-B2 (session 3a455706, range 774642b4^..92f7c50b): 4 files, 0 findings. `evidence/D95/ocr/T95.57-B1-B2-92f7c50b.json`. Next: run `t95.57-replay-day` (browser-auto c0890903).
+
+Run `t95.57-replay-day` (browser-auto c0890903, full tier: first matching path e2e/d9/replay.spec.ts): unit 3189, integration 364, browser 127, 79, 55 and 162 (4 skipped), checks 14 of 14. Passed. T95.57 done.
