@@ -127,6 +127,18 @@ describe('the day card on a finished day', () => {
     expect(rows()['Next Review']).toBe('Tue Nov 17, after the close.');
   });
 
+  it('should show the Unavailable disclosure when the day is Complete with a settlement to record and Marks are unavailable', () => {
+    const completion: ReviewCompletion = { kind: 'CompleteWithSettlementToRecord', trades: ['t1'], unavailable: { instruments: [{ kind: 'Stock', symbol: 'AXIO' }], trades: ['t1'], families: ['Valuation', 'Risk'] } };
+    renderCard(review({ completion, day: finishedDay() }));
+    const group = screen.getByRole('group', { name: 'Unavailable Marks' });
+    expect(within(group).getAllByText(/./).map((p) => p.textContent)).toEqual(['Instruments: AXIO', 'Trades: t1', 'Not calculated: Valuation, Risk']);
+  });
+
+  it('should show no Unavailable disclosure when the day is Complete with a settlement to record and carries none', () => {
+    renderCard(review({ completion: { kind: 'CompleteWithSettlementToRecord', trades: ['t1'] }, day: finishedDay() }));
+    expect(screen.queryByRole('group', { name: 'Unavailable Marks' })).toBeNull();
+  });
+
   it("should link record the sale to the Trade's card", async () => {
     const user = userEvent.setup();
     const { openCard } = renderCard(review({ completion: { kind: 'Complete' }, day: finishedDay({ chosen: [{ tradeId: 't4', action: 'Exit' }], due: { sales: ['t4'], expirations: [] } }) }));

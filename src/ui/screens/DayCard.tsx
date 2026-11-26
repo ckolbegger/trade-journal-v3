@@ -110,6 +110,9 @@ export function DayCard({ review, name, openCard, openMarks, openSkipped, holdin
   const { day, completion } = review;
   const { timeZone } = useRuntime();
   const reasonId = useId();
+  let disclosure: Extract<ReviewCompletion, { kind: 'CompleteWithSettlementToRecord' }>['unavailable'];
+  if (completion.kind === 'CompleteWithUnavailableMarks') disclosure = completion;
+  else if (completion.kind === 'CompleteWithSettlementToRecord') disclosure = completion.unavailable;
   // Trades whose recorded facts disagree or cannot be read together: no line of the day can say more, so the card names them.
   const facts = completion.kind === 'Incomplete' ? completion.reasons.filter((reason) => reason.code === 'IntegrityDisagreement' || reason.code === 'IncoherentFacts') : [];
   const underlyingOf = (tradeId: string): string => [...review.families.flatMap((f) => (f.family === 'Trades' ? f.trades : [])), ...review.owed].find((t) => t.tradeId === tradeId)?.underlying ?? tradeId;
@@ -305,11 +308,11 @@ export function DayCard({ review, name, openCard, openMarks, openSkipped, holdin
           {day.lines.flatMap((line) => labelsFor(line.tradeId).map(({ reason }, i) => reason && <span key={`${line.tradeId}-${i}`} id={`${reasonId}-${line.tradeId}-${i}`} className="visually-hidden">{reason}</span>))}
         </>
       )}
-      {completion.kind === 'CompleteWithUnavailableMarks' && (
+      {disclosure && (
         <div role="group" aria-label="Unavailable Marks">
-          <p>Instruments: {completion.instruments.map((instrument) => instrumentLabel(instrument, timeZone)).join(', ')}</p>
-          <p>Trades: {completion.trades.map(name).join(', ')}</p>
-          <p>Not calculated: {completion.families.map((family) => FAMILY_TEXT[family]).join(', ')}</p>
+          <p>Instruments: {disclosure.instruments.map((instrument) => instrumentLabel(instrument, timeZone)).join(', ')}</p>
+          <p>Trades: {disclosure.trades.map(name).join(', ')}</p>
+          <p>Not calculated: {disclosure.families.map((family) => FAMILY_TEXT[family]).join(', ')}</p>
         </div>
       )}
       {facts.length > 0 && (
