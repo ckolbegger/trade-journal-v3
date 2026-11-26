@@ -1,0 +1,358 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 4 finding(s) across 19 selected item(s).",
+  "summary": {
+    "files_reviewed": 19,
+    "comments": 4,
+    "total_tokens": 540749,
+    "input_tokens": 534396,
+    "output_tokens": 6353,
+    "cache_read_tokens": 52224,
+    "elapsed": "1m13s"
+  },
+  "tool_calls": {
+    "total": 54,
+    "by_tool": {
+      "code_comment": 3,
+      "code_search": 5,
+      "file_find": 1,
+      "file_read": 39,
+      "file_read_diff": 6
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/TradeDetail.test.tsx",
+      "content": "The helper returns a count even when the six-press limit is reached without saving. If the decline confirmation button stops submitting, this path returns 6 while answering still returns 2, so the test passes despite declining being broken. Assert that Journal.save was called exactly once with the expected resolution kind (and ideally that the saved state appeared) before returning the count.",
+      "existing_code": "    while (vi.mocked(facade.Journal.save).mock.calls.length === 0 \u0026\u0026 presses \u003c 6) {\n      await press(within(form).queryByRole('button', { name: how === 'answer' ? 'Answer' : 'Decline the reflection' }) ?? within(form).getByRole('button', { name: 'Decline…' }));\n    }\n    cleanup();\n    return presses;",
+      "start_line": 446,
+      "end_line": 450,
+      "category": "test",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/ReviewReflections.tsx",
+      "content": "This shortcut makes declining a Close Review take only two presses (Decline… → Decline the Close Review). Answering through the fallback Debt form also takes two presses (Write the Close Review → Answer), and answering through a multi-moment replay walk takes more. This violates the requirement that declining any owed reflection take more presses than answering it. Preserve the separate link, but adjust the confirmation flow to satisfy that constraint, and extend the press-count test to include Close Reviews both with and without a replay; it currently exercises only a Position Change Reflection.",
+      "existing_code": "          onClick={() =\u003e {\n            setDeclining(true);\n            onOpen();\n          }}",
+      "start_line": 108,
+      "end_line": 111,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/OwedDebtItem.tsx",
+      "content": "The walkable Close Review path reverses requirement 6: declining takes only two clicks (this link and confirmation), while answering takes the opener, navigation through the key moments, required choice selection, and Save. The new press-count tests only exercise the DebtForm fallback, so they miss this case. Reconcile the walk/decline interaction with the required ordering and add a press-count test using a walkable Close Review.",
+      "existing_code": "            \u003cbutton type=\"button\" className=\"link-button\" disabled={blocked} onClick={() =\u003e void open(false, true)}\u003e\n              Decline…\n            \u003c/button\u003e",
+      "start_line": 208,
+      "end_line": 210,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/DebtForm.test.tsx",
+      "content": "Assert that submission/resolution actually occurred before returning the count. If the decline controls become disabled or otherwise stop submitting, the loop reaches five clicks and the comparison still passes (5 \u003e 1), incorrectly accepting a broken decline flow. Check the adapter call and saved-result UI, or fail explicitly when the limit is reached.",
+      "existing_code": "    cleanup();\n    return presses;",
+      "start_line": 406,
+      "end_line": 407,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "End-to-end test support and durability scenarios",
+      "files": [
+        "e2e/d5/faults.spec.ts",
+        "e2e/d5/no-save.spec.ts",
+        "e2e/d5/support.ts",
+        "e2e/d5r/durability.spec.ts",
+        "e2e/d6/support.ts",
+        "e2e/support/detail/rail-b.ts"
+      ]
+    },
+    {
+      "label": "Debt form and owed debt item interactions",
+      "files": [
+        "src/ui/screens/DebtForm.test.tsx",
+        "src/ui/screens/DebtForm.tsx",
+        "src/ui/screens/OwedDebtItem.tsx"
+      ]
+    },
+    {
+      "label": "Review cards and owed debt review",
+      "files": [
+        "src/ui/screens/ReviewCard.test.tsx",
+        "src/ui/screens/ReviewCards.test.tsx",
+        "src/ui/screens/ReviewOwed.test.tsx",
+        "src/ui/screens/ReviewOwedCard.tsx"
+      ]
+    },
+    {
+      "label": "Review reflections and tests",
+      "files": [
+        "src/ui/screens/ReviewReflections.test.tsx",
+        "src/ui/screens/ReviewReflections.tsx"
+      ]
+    },
+    {
+      "label": "Trade detail cockpit and journal",
+      "files": [
+        "src/ui/screens/TradeDetail.test.tsx",
+        "src/ui/screens/trade-detail/Cockpit.test.tsx",
+        "src/ui/screens/trade-detail/Cockpit.tsx",
+        "src/ui/screens/trade-detail/Journal.test.tsx"
+      ]
+    }
+  ],
+  "session_id": "16a47510-13c9-4b15-a26a-92feb240d40b",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "16a47510-13c9-4b15-a26a-92feb240d40b",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "0e243169",
+      "resolved_base": "cc952f87cb56f45617f93a11f3566f308a0244f2",
+      "resolved_head": "0e24316943f8114e2c5d0911214c38b5793ca6ad",
+      "exact_range": "cc952f87cb56f45617f93a11f3566f308a0244f2..0e24316943f8114e2c5d0911214c38b5793ca6ad",
+      "source_artifact_sha256": "1f63e522119839ce8e976f69ce7673aec8bd41c9401c2e35971f1a0069d68947"
+    },
+    "execution": {
+      "ocr_version": "v1.14.4",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "02d2b522fc8ad50e6ef168e466ec06ab756cf8ca676015178a348d1e1a98f989",
+          "path": "src/ui/screens/ReviewReflections.tsx",
+          "fingerprint": "16b5eec0d3d14d155c2cc53bf1e31e02cbe51f85c307d2fb90866969767ab9b8"
+        },
+        {
+          "item_id": "06129f7bc0959665459bced5dd2b2fe42e6eefa20b943b5bcb22e15d914c46d2",
+          "path": "src/ui/screens/ReviewCards.test.tsx",
+          "fingerprint": "b02f3b73947206d05d530dc30849d3f72a06842683d29fa62c26ff1079288117"
+        },
+        {
+          "item_id": "12f8d33ae57db509336618f70d5433f9e94127f7db546b8539f31cbd601f05b6",
+          "path": "src/ui/screens/trade-detail/Cockpit.test.tsx",
+          "fingerprint": "89b410c485069ec517bbbcb9e28155d61778805cc113ec90f9de910005583f70"
+        },
+        {
+          "item_id": "150741dcc4cc2f3b9795937c853b6881d9158f89b78c2fa680263d1a4ef46829",
+          "path": "src/ui/screens/DebtForm.tsx",
+          "fingerprint": "b3d01e78a03921de847585c9b1f714e45639c27ae81cba6289050d27b0c4fb54"
+        },
+        {
+          "item_id": "35f705e28b89183ef7a49c76b0290a9fcaf1e10bd9454be251c3ff8cd0154be7",
+          "path": "e2e/d5/no-save.spec.ts",
+          "fingerprint": "a23317ded0508f6eb5a56f8021ddfb051e9e5631ecb2460e20e94266be6ec721"
+        },
+        {
+          "item_id": "3df9978f80fb8df171ba8e17242db730208f672e38c000fe3710ec250b5cf2b3",
+          "path": "e2e/d5/support.ts",
+          "fingerprint": "750280d19d166bf2f3f9fe9525bf3192ea46adfea2d4c6ac5c7d63f84e674164"
+        },
+        {
+          "item_id": "42b58eea0e5f000f63b6a9c3c24ac44a84b91196ca48804afea34e6a7d81e1e1",
+          "path": "e2e/d6/support.ts",
+          "fingerprint": "6ab12927bbcdc07226b3adb2d77c0834ccbd32d2badc941a860c6a5a2f34aafe"
+        },
+        {
+          "item_id": "658cacd7d8755bc419d3c8b2dc3f0b93468308fa9e366c831087e003312a3c83",
+          "path": "src/ui/screens/ReviewOwedCard.tsx",
+          "fingerprint": "5ee809935d0983c9092ed0002698a6ff15a7f2f418530dfaebdbf01fec92f27a"
+        },
+        {
+          "item_id": "710ba1a8ebaf3134eff8729095ed7a9840ac0dae47b51f10fb69b069ca0ff95b",
+          "path": "src/ui/screens/OwedDebtItem.tsx",
+          "fingerprint": "e329db25a8dbfbdae53346a9c927790a1520a59d11aa27cd66ecff9f4c22e9a8"
+        },
+        {
+          "item_id": "87638b8e40a8471b5a00443528a3c98bf4752f964c11c4b564b6258d593b8716",
+          "path": "src/ui/screens/TradeDetail.test.tsx",
+          "fingerprint": "8b246e30aa4af79989864e918a99f79ebcd668aaf233f0ca2862615669bf05eb"
+        },
+        {
+          "item_id": "a83706f3444e16c14ac613c874f7293d7adce6354226bde7d7b9b892fce05701",
+          "path": "src/ui/screens/ReviewCard.test.tsx",
+          "fingerprint": "85a321855693e5d9eb7485f5ca351bc8d5d91bcd52f44318ba03582aadde6dcf"
+        },
+        {
+          "item_id": "b8e6ac3141c78f3f98db87b2baec46cc291fc1cf7872f6920033a9237484e1e1",
+          "path": "src/ui/screens/ReviewReflections.test.tsx",
+          "fingerprint": "645c67ab84dd656c039372147c0eae296d1d9f6610fa521960344949517229a7"
+        },
+        {
+          "item_id": "b92e16500abd20dbbb59c0cc55fbda79143a842d0e5653c18c442a0e869dc7f5",
+          "path": "e2e/support/detail/rail-b.ts",
+          "fingerprint": "2810ce972f1e1879b2c29c796ed6f857787fa870679d50473bd7b287b461731d"
+        },
+        {
+          "item_id": "bad5c69b3d1e03bf54bd2b1b2b13ff5e5a0dabd158881300fc1e86a4a591bb75",
+          "path": "src/ui/screens/trade-detail/Cockpit.tsx",
+          "fingerprint": "b1d068a65b9a975eb5ac30d98e07c2fd43cc96fd973e3ef71d7d2ea0a47e76a3"
+        },
+        {
+          "item_id": "cdb6bf19adef0a54a3abd6fa99897d6bace154a0ebff900a7b8e2c69883a9622",
+          "path": "src/ui/screens/DebtForm.test.tsx",
+          "fingerprint": "2a99c89a7c66d9a6a20d6fa2f05aa9612c0e9124804ddf0f0f73b5503f5f1eb6"
+        },
+        {
+          "item_id": "ceb6a0a7475d5fae8b65f77a60dafe24c3b2295fb0053a87dc8271232d06cbe3",
+          "path": "e2e/d5/faults.spec.ts",
+          "fingerprint": "138cc78f4169e4d768ed18bb7e92837275ca7540dd9c01363b195c4df4130c3b"
+        },
+        {
+          "item_id": "d1b0434436125f95b927cdbf8d883e22b28d270f07bb22b34419537cdd21677a",
+          "path": "src/ui/screens/trade-detail/Journal.test.tsx",
+          "fingerprint": "73173ad1fdf0a329ece4219110e01228757a57e537520929c2c2bb7cbc697404"
+        },
+        {
+          "item_id": "f293e207e9d62bb3a1147b0c02824d6e01749fe2220ab94a9c11d82317c664b9",
+          "path": "e2e/d5r/durability.spec.ts",
+          "fingerprint": "1ddb931e0c343407370e96435e8ed8e5d9cd3b3ce6509643f85121a5be905e6f"
+        },
+        {
+          "item_id": "f60d40a2fcf211e72668946f9d6c2357941e916774d36dd5cb14b2a35255d3a9",
+          "path": "src/ui/screens/ReviewOwed.test.tsx",
+          "fingerprint": "77a956770dfb4b65853b69a9be491c7c1d78a63efcadae78067070d907c28f12"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "02d2b522fc8ad50e6ef168e466ec06ab756cf8ca676015178a348d1e1a98f989",
+          "path": "src/ui/screens/ReviewReflections.tsx",
+          "fingerprint": "16b5eec0d3d14d155c2cc53bf1e31e02cbe51f85c307d2fb90866969767ab9b8"
+        },
+        {
+          "item_id": "06129f7bc0959665459bced5dd2b2fe42e6eefa20b943b5bcb22e15d914c46d2",
+          "path": "src/ui/screens/ReviewCards.test.tsx",
+          "fingerprint": "b02f3b73947206d05d530dc30849d3f72a06842683d29fa62c26ff1079288117"
+        },
+        {
+          "item_id": "12f8d33ae57db509336618f70d5433f9e94127f7db546b8539f31cbd601f05b6",
+          "path": "src/ui/screens/trade-detail/Cockpit.test.tsx",
+          "fingerprint": "89b410c485069ec517bbbcb9e28155d61778805cc113ec90f9de910005583f70"
+        },
+        {
+          "item_id": "150741dcc4cc2f3b9795937c853b6881d9158f89b78c2fa680263d1a4ef46829",
+          "path": "src/ui/screens/DebtForm.tsx",
+          "fingerprint": "b3d01e78a03921de847585c9b1f714e45639c27ae81cba6289050d27b0c4fb54"
+        },
+        {
+          "item_id": "35f705e28b89183ef7a49c76b0290a9fcaf1e10bd9454be251c3ff8cd0154be7",
+          "path": "e2e/d5/no-save.spec.ts",
+          "fingerprint": "a23317ded0508f6eb5a56f8021ddfb051e9e5631ecb2460e20e94266be6ec721"
+        },
+        {
+          "item_id": "3df9978f80fb8df171ba8e17242db730208f672e38c000fe3710ec250b5cf2b3",
+          "path": "e2e/d5/support.ts",
+          "fingerprint": "750280d19d166bf2f3f9fe9525bf3192ea46adfea2d4c6ac5c7d63f84e674164"
+        },
+        {
+          "item_id": "42b58eea0e5f000f63b6a9c3c24ac44a84b91196ca48804afea34e6a7d81e1e1",
+          "path": "e2e/d6/support.ts",
+          "fingerprint": "6ab12927bbcdc07226b3adb2d77c0834ccbd32d2badc941a860c6a5a2f34aafe"
+        },
+        {
+          "item_id": "658cacd7d8755bc419d3c8b2dc3f0b93468308fa9e366c831087e003312a3c83",
+          "path": "src/ui/screens/ReviewOwedCard.tsx",
+          "fingerprint": "5ee809935d0983c9092ed0002698a6ff15a7f2f418530dfaebdbf01fec92f27a"
+        },
+        {
+          "item_id": "710ba1a8ebaf3134eff8729095ed7a9840ac0dae47b51f10fb69b069ca0ff95b",
+          "path": "src/ui/screens/OwedDebtItem.tsx",
+          "fingerprint": "e329db25a8dbfbdae53346a9c927790a1520a59d11aa27cd66ecff9f4c22e9a8"
+        },
+        {
+          "item_id": "87638b8e40a8471b5a00443528a3c98bf4752f964c11c4b564b6258d593b8716",
+          "path": "src/ui/screens/TradeDetail.test.tsx",
+          "fingerprint": "8b246e30aa4af79989864e918a99f79ebcd668aaf233f0ca2862615669bf05eb"
+        },
+        {
+          "item_id": "a83706f3444e16c14ac613c874f7293d7adce6354226bde7d7b9b892fce05701",
+          "path": "src/ui/screens/ReviewCard.test.tsx",
+          "fingerprint": "85a321855693e5d9eb7485f5ca351bc8d5d91bcd52f44318ba03582aadde6dcf"
+        },
+        {
+          "item_id": "b8e6ac3141c78f3f98db87b2baec46cc291fc1cf7872f6920033a9237484e1e1",
+          "path": "src/ui/screens/ReviewReflections.test.tsx",
+          "fingerprint": "645c67ab84dd656c039372147c0eae296d1d9f6610fa521960344949517229a7"
+        },
+        {
+          "item_id": "b92e16500abd20dbbb59c0cc55fbda79143a842d0e5653c18c442a0e869dc7f5",
+          "path": "e2e/support/detail/rail-b.ts",
+          "fingerprint": "2810ce972f1e1879b2c29c796ed6f857787fa870679d50473bd7b287b461731d"
+        },
+        {
+          "item_id": "bad5c69b3d1e03bf54bd2b1b2b13ff5e5a0dabd158881300fc1e86a4a591bb75",
+          "path": "src/ui/screens/trade-detail/Cockpit.tsx",
+          "fingerprint": "b1d068a65b9a975eb5ac30d98e07c2fd43cc96fd973e3ef71d7d2ea0a47e76a3"
+        },
+        {
+          "item_id": "cdb6bf19adef0a54a3abd6fa99897d6bace154a0ebff900a7b8e2c69883a9622",
+          "path": "src/ui/screens/DebtForm.test.tsx",
+          "fingerprint": "2a99c89a7c66d9a6a20d6fa2f05aa9612c0e9124804ddf0f0f73b5503f5f1eb6"
+        },
+        {
+          "item_id": "ceb6a0a7475d5fae8b65f77a60dafe24c3b2295fb0053a87dc8271232d06cbe3",
+          "path": "e2e/d5/faults.spec.ts",
+          "fingerprint": "138cc78f4169e4d768ed18bb7e92837275ca7540dd9c01363b195c4df4130c3b"
+        },
+        {
+          "item_id": "d1b0434436125f95b927cdbf8d883e22b28d270f07bb22b34419537cdd21677a",
+          "path": "src/ui/screens/trade-detail/Journal.test.tsx",
+          "fingerprint": "73173ad1fdf0a329ece4219110e01228757a57e537520929c2c2bb7cbc697404"
+        },
+        {
+          "item_id": "f293e207e9d62bb3a1147b0c02824d6e01749fe2220ab94a9c11d82317c664b9",
+          "path": "e2e/d5r/durability.spec.ts",
+          "fingerprint": "1ddb931e0c343407370e96435e8ed8e5d9cd3b3ce6509643f85121a5be905e6f"
+        },
+        {
+          "item_id": "f60d40a2fcf211e72668946f9d6c2357941e916774d36dd5cb14b2a35255d3a9",
+          "path": "src/ui/screens/ReviewOwed.test.tsx",
+          "fingerprint": "77a956770dfb4b65853b69a9be491c7c1d78a63efcadae78067070d907c28f12"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "4b2edcc5036ed70fe0b9a494f05c6452de8d523520b66500f12ec0d5cc6f76d2",
+          "path": "evidence/D95/tdd-log/T95.60.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "83342d951e7f242de524a0ebb63dc0cc4bc21a09cfe19dfbbc3a62a356389ef3",
+          "path": "evidence/D95/words-changed.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "d7940bcff282aa5345d9129acbcc2747a9c1323d1372c93124db122b1101fae7",
+          "path": "evidence/D95/new-words.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 72954
+  }
+}
