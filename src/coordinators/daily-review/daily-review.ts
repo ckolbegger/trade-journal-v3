@@ -910,7 +910,9 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     const saved = actions.actions[analysis.tradeId];
     // A314: where the contract finished, from the Underlying's Mark the replay already read for the expiration session; no read of its own.
     const dueContract = settlement[0]?.instrument;
-    const underlyingMark = replay?.sessions.find(({ date }) => date === dueContract?.expiration)?.marks.find(({ instrument }) => instrument.kind === 'Stock' && instrument.symbol === dueContract?.symbol)?.resolution;
+    // An expiration on a weekend or holiday has no session of its own: the session that settles it is the latest one before it, as for the settlement time.
+    const finishSession = dueContract && replay?.sessions[0] ? missedSessions(read, replay.sessions[0].date, dueContract.expiration).at(-1) : undefined;
+    const underlyingMark = replay?.sessions.find(({ date }) => date === finishSession)?.marks.find(({ instrument }) => instrument.kind === 'Stock' && instrument.symbol === dueContract?.symbol)?.resolution;
     const standing = valuation && dueContract ? standingOf(valuation.state, dueContract, underlyingMark?.kind === 'Available' ? underlyingMark.mark.price : undefined) : undefined;
     const settledLaterOn = actions.earlier?.findLast(({ action }) => action === 'Settle Later')?.reviewDate;
     const since = await unreviewedSince(read, actions.earlier?.at(-1)?.reviewDate, valuation?.state.exposureStart);

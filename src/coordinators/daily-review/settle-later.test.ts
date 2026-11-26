@@ -17,11 +17,12 @@ const OC_10 = '2026-10-12T14:00:00Z';
 const WEEK_PLAN = '2026-11-16T14:00:00Z';
 const WEEK_10 = '2026-11-16T15:00:00Z';
 
-const MNO_PUT = { kind: 'Option', symbol: 'MNO', root: 'MNO', expiration: '2026-11-20', right: 'Put', strike: '45', multiplier: 100 } as const satisfies OptionInstrument;
+const MNO_PUT_FRIDAY = { kind: 'Option', symbol: 'MNO', root: 'MNO', expiration: '2026-11-20', right: 'Put', strike: '45', multiplier: 100 } as const satisfies OptionInstrument;
 const KLM = { kind: 'Stock', symbol: 'KLM' } as const;
 
 // A short put that expires Friday (Settlement Due) and a stock Trade that does not.
-async function expiryFixture(now: string, options: { readonly klmMark?: boolean } = {}) {
+async function expiryFixture(now: string, options: { readonly klmMark?: boolean; readonly expiration?: string; readonly mnoMark?: boolean } = {}) {
+  const MNO_PUT: OptionInstrument = { ...MNO_PUT_FRIDAY, expiration: options.expiration ?? MNO_PUT_FRIDAY.expiration };
   const stack = await reviewStack(now);
   await stack.catalog.seedDefaults(D7_CATALOG_MANIFEST);
   const planReflection = {
@@ -49,7 +50,7 @@ async function expiryFixture(now: string, options: { readonly klmMark?: boolean 
   const klm = await confirm('strategy.long-stock', WEEK_PLAN, { underlying: 'KLM', legs: [{ side: 'Long', instrument: KLM, quantity: '100', intendedEntry: '20.00' }], stops: [{ kind: 'UnderlyingPrice', price: '19.00' }], targets: [{ kind: 'UnderlyingPrice', price: '25.00' }] });
   await record(klm, (legId) => ({ kind: 'Execution', tradeId: klm, action: 'Buy', instrument: KLM, intent: { kind: 'ServesPlannedLeg', plannedLegId: legId }, quantity: '100', price: '20.00', fee: '1.00', economicTime: WEEK_10 }));
   await stack.saveMark(instrumentKey(MNO_PUT), '0.00', FRIDAY);
-  await stack.saveMark('MNO', '46.00', FRIDAY);
+  if (options.mnoMark !== false) await stack.saveMark('MNO', '46.00', FRIDAY);
   if (options.klmMark !== false) await stack.saveMark('KLM', '20.50', FRIDAY);
   return { stack, mno, klm };
 }
@@ -183,7 +184,7 @@ describe('a Trade with Settlement Due owes no Action (A315, A316)', () => {
     const recorded = await stack.tradeWorkflows.recordPositionChange({
       originTradeId: mno,
       trades: [{ tradeId: mno, expectedFactRevision: current.factRevision }],
-      members: [{ kind: 'Expiration', tradeId: mno, instrument: MNO_PUT, quantity: '2', economicTime: FRIDAY_CLOSE }],
+      members: [{ kind: 'Expiration', tradeId: mno, instrument: MNO_PUT_FRIDAY, quantity: '2', economicTime: FRIDAY_CLOSE }],
       reflection: stack.expirationReflection,
       closeReview: { kind: 'Defer' },
     });
@@ -212,5 +213,22 @@ describe('a Trade with Settlement Due owes no Action (A315, A316)', () => {
     // The expiration day's own card reads the same finish from that session's Mark.
     expect(friday.expirationStanding).toEqual(monday.expirationStanding);
     expect((await cardOf(stack, MONDAY_1700, klm)).expirationStanding).toBeUndefined();
+  }, 60_000);
+
+  it('should give the standing at the session that settles an expiration on a weekend', async () => {
+    const { stack, mno } = await expiryFixture(MONDAY_1700, { expiration: '2026-11-21' });
+
+    const card = await cardOf(stack, MONDAY_1700, mno);
+
+    // Saturday has no session: the contract finished at Friday's Mark of 46.
+    expect(card.expirationStanding).toEqual({ kind: 'Value', value: expect.objectContaining({ underlyingPrice: Rational.of(46n), strike: Rational.of(45n), inTheMoney: false }) as unknown });
+  }, 60_000);
+
+  it('should stay Unavailable when the session that settles a weekend expiration has no Underlying Mark', async () => {
+    const { stack, mno } = await expiryFixture(MONDAY_1700, { expiration: '2026-11-21', mnoMark: false });
+
+    const card = await cardOf(stack, MONDAY_1700, mno);
+
+    expect(card.expirationStanding).toEqual(expect.objectContaining({ kind: 'Unavailable', reason: 'MarkMissing' }));
   }, 60_000);
 });
