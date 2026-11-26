@@ -80,6 +80,7 @@ export {
   type ExpirationStandingInput,
   type TradeResultAt,
 } from './expiration-standing.ts';
+export { keyMoments, type KeyMoment, type KeyMomentKind } from './key-moments.ts';
 export { headlineConditionsOf, planCall, type PlanCall, type PlanCallCondition } from './plan-call.ts';
 export {
   evaluate,
