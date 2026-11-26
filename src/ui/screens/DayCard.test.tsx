@@ -3,7 +3,7 @@ import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { MarkRow, OpenDailyReviewResult, ReviewCompletion, WalkedTrade } from '../../app/types.ts';
+import type { MarkRow, OpenDailyReviewResult, ReviewCompletion, SettlementItem, WalkedTrade } from '../../app/types.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { RuntimeContext } from '../runtime.tsx';
 import { cardProgress, reflectionsOwedProgress } from '../../../tests/support/card-progress.ts';
@@ -35,13 +35,14 @@ const day = (over: Partial<DaySummary> = {}): DaySummary => ({
 });
 const missingRow = (instrumentKey: string, trades: readonly string[]): MarkRow => ({ instrumentKey, instrument: { kind: 'Stock', symbol: instrumentKey }, tradingDate: '2026-11-16', trades, resolution: { kind: 'Missing' }, resolutionRevision: 'None', task: 'Manual' });
 const gapOf = (instrumentKey: string, tradeId: string): Extract<Ready['families'][number], { family: 'Marks' }>['earlier'][number] => ({ instrumentKey, instrument: { kind: 'Stock', symbol: instrumentKey }, trades: [{ tradeId, from: '2026-11-13' }], missing: ['2026-11-18'], acknowledged: [], revisions: {}, acknowledgments: {}, blocking: false });
-function review(over: { day?: DaySummary; trades?: readonly WalkedTrade[]; completion?: ReviewCompletion; today?: readonly MarkRow[]; owed?: Ready['owed']; earlier?: Extract<Ready['families'][number], { family: 'Marks' }>['earlier'] } = {}): Ready {
+function review(over: { day?: DaySummary; trades?: readonly WalkedTrade[]; completion?: ReviewCompletion; today?: readonly MarkRow[]; owed?: Ready['owed']; settlement?: readonly SettlementItem[]; earlier?: Extract<Ready['families'][number], { family: 'Marks' }>['earlier'] } = {}): Ready {
   return {
     kind: 'Ready',
     reviewDate: '2026-11-16',
     cutoff: '2026-11-16T21:00:00Z',
     families: [
       { family: 'Marks', earlierMarks: [], today: over.today ?? [], earlier: over.earlier ?? [] },
+      ...(over.settlement ? [{ family: 'Settlement' as const, items: over.settlement }] : []),
       { family: 'Trades', trades: over.trades ?? [walked('t1', 'AXIO'), walked('t2', 'DALE'), walked('t3', 'CORV'), walked('t4', 'BREN')] },
     ],
     owed: over.owed ?? [],
@@ -76,6 +77,35 @@ const finishedDay = (over: Partial<NonNullable<DaySummary['finished']>> = {}, re
 const rows = () => Object.fromEntries([...document.querySelectorAll('.day-rows dt')].map((dt) => [dt.textContent, dt.nextElementSibling?.textContent]));
 
 describe('the day card on a finished day', () => {
+  // T95.53: CORV's put, expired Fri Nov 20, its settlement put off with Settle Later.
+  const CORV_PUT = { kind: 'Option', symbol: 'CORV', root: 'CORV', expiration: '2026-11-20', right: 'Put', strike: '80', multiplier: 100 } as const;
+  const corvItem = (quantity: bigint): SettlementItem => ({ tradeId: 't3', instrument: CORV_PUT, quantity: Rational.of(quantity), expiration: '2026-11-20', settlementTime: { kind: 'Value', value: '2026-11-20T21:00:00Z' } });
+
+  it('should read Complete, settlement to record in amber with a To record row naming the Trade', () => {
+    renderCard(review({ completion: { kind: 'CompleteWithSettlementToRecord', trades: ['t3'] }, day: finishedDay(), settlement: [corvItem(3n)] }));
+    const card = screen.getByRole('region', { name: 'The day' });
+    const heading = within(card).getByText('Complete, settlement to record');
+    expect(heading.tagName).toBe('STRONG');
+    expect(heading.getAttribute('data-tone')).toBe('warning');
+    expect(rows()['To record']).toBe('CORV: the exercise of 3 contracts, expired Fri Nov 20.');
+    // A short contract is an assignment, and a plain Complete day has no To record row.
+    cleanup();
+    renderCard(review({ completion: { kind: 'CompleteWithSettlementToRecord', trades: ['t3'] }, day: finishedDay(), settlement: [corvItem(-1n)] }));
+    expect(rows()['To record']).toBe('CORV: the assignment of 1 contract, expired Fri Nov 20.');
+    cleanup();
+    renderCard(review({ completion: { kind: 'Complete' }, day: finishedDay() }));
+    expect(screen.getByText('Complete').getAttribute('data-tone')).toBeNull();
+    expect(rows()['To record']).toBeUndefined();
+  });
+
+  it('should count expirations to settle in the day card heading', () => {
+    renderCard(review({ day: day({ trades: 2, toGo: { marks: 0, actions: 0, expirations: 2, closeReviews: 0, reflections: 0 } }) }));
+    expect(screen.getByText('2 Trades · 2 expirations to settle to go')).toBeTruthy();
+    cleanup();
+    renderCard(review({ day: day({ trades: 2, toGo: { marks: 0, actions: 0, expirations: 1, closeReviews: 0, reflections: 0 } }) }));
+    expect(screen.getByText('2 Trades · 1 expiration to settle to go')).toBeTruthy();
+  });
+
   it('should show Complete with the Review Date when nothing is to go', () => {
     renderCard(review({ completion: { kind: 'Complete' }, day: finishedDay() }));
     const card = screen.getByRole('region', { name: 'The day' });

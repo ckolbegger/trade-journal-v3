@@ -310,6 +310,12 @@ describe('the "Now" box (T95.17)', () => {
     expect(row(stock.container)).toBeUndefined();
   });
 
+  it('should show its Expiration row as Fri Nov 20 · expired', () => {
+    const atClose = { kind: 'Value', value: { underlyingPrice: rational(5320n, 100n), value: rational(-2016n) } };
+    const { container } = render(<Box trade={trade({ underlying: 'DALE', expiration: { date: '2026-11-20' }, settlement: [{ tradeId: 't1' }] as never, evaluation: evaluation({ expirationValueAtUnderlyingClose: atClose }) })} />);
+    expect(within(container).getByText('Expiration', { selector: 'dt' }).nextElementSibling?.textContent).toBe('Fri Nov 20 · expired');
+  });
+
   it('should show the key in words', () => {
     const { container } = render(<Box trade={trade()} />);
     expect([...container.querySelectorAll('.now-key li')].map((item) => item.textContent)).toEqual(['Realized', 'open', 'past the line', 'session before', 'now', 'Stop', 'Target']);

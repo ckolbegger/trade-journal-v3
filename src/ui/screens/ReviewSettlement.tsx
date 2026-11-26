@@ -19,6 +19,8 @@ export interface ExpirationBlockProps {
   readonly binding: TradeSaveBinding;
   // A Settle Later is already saved for the Review Date.
   readonly settledLater: boolean;
+  // The Review Date of an earlier Settle Later, which this Review asks again (W144); absent when there is none.
+  readonly settledLaterOn: DailyTradeReview['settledLaterOn'];
   readonly onSaved: (saved: SavedAction) => void;
   // The Review is being read again, so a save would present the old binding.
   readonly pending: boolean;
@@ -54,7 +56,7 @@ function kept(result: Rational, long: boolean): string {
 }
 
 // The expired contract's block on the card (W136): an expired contract owes no Action, only a word on how it settled.
-export function ExpirationBlock({ facade, item, underlying, standing, binding, settledLater, onSaved, pending, onSell, onDirtyChange, onForm, onClosedSale, onRefresh, onLeftSold }: ExpirationBlockProps) {
+export function ExpirationBlock({ facade, item, underlying, standing, binding, settledLater, settledLaterOn, onSaved, pending, onSell, onDirtyChange, onForm, onClosedSale, onRefresh, onLeftSold }: ExpirationBlockProps) {
   const { writable, report, timeZone } = useRuntime();
   const finished = standing?.kind === 'Value' ? standing.value : undefined;
   const long = item.quantity.compare(Rational.of(0n)) > 0;
@@ -131,6 +133,11 @@ export function ExpirationBlock({ facade, item, underlying, standing, binding, s
         </p>
       )}
       {!finished && <p>No price for {underlying}, so the app can&apos;t say where it finished. What happened?</p>}
+      {settledLaterOn && !settledLater && (
+        <p>
+          {shortDate(settledLaterOn)} you chose {long ? 'Exercised' : 'Assigned'}: record later. It is still to settle, so this Review asks again.
+        </p>
+      )}
       {settledLater && <p>{long ? 'Exercised' : 'Assigned'}, to record later. Today&apos;s Review can finish. The next Review asks again.</p>}
       {refused === 'Failed' && <p role="alert">This could not be saved. Nothing was saved.</p>}
       {refused === 'Changed' && (

@@ -2,9 +2,10 @@ import { Fragment, useId, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import type { OpenDailyReviewResult, ReviewCompletion } from '../../app/types.ts';
 import { Badge } from '../Badge.tsx';
+import { Rational } from '../../domain/values/index.ts';
 import { instrumentLabel, text, unavailableWords } from '../calculation-words.ts';
 import { signed } from '../figures.ts';
-import { money, plural, shortDate } from '../format.ts';
+import { money, plural, quantity, shortDate } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
 import type { PanelName } from './ReviewCard.tsx';
 import { ExitDayNote } from './ExitBanner.tsx';
@@ -12,7 +13,7 @@ import { describedLabelsOf } from './review-attention.ts';
 import { todoText } from './todo-text.ts';
 
 type Ready = Extract<OpenDailyReviewResult, { kind: 'Ready' }>;
-const COMPLETION_TEXT = { Incomplete: 'Incomplete', Complete: 'Complete', CompleteWithUnavailableMarks: 'Complete with Unavailable Marks', CompleteWithSettlementToRecord: 'Complete' } as const;
+const COMPLETION_TEXT = { Incomplete: 'Incomplete', Complete: 'Complete', CompleteWithUnavailableMarks: 'Complete with Unavailable Marks', CompleteWithSettlementToRecord: 'Complete, settlement to record' } as const;
 
 type CalculationFamily = Extract<ReviewCompletion, { kind: 'CompleteWithUnavailableMarks' }>['families'][number];
 const FAMILY_TEXT: Record<CalculationFamily, string> = { Valuation: 'Valuation', Risk: 'Risk', Reward: 'Reward', ConditionStatus: 'Condition status' };
@@ -128,6 +129,8 @@ export function DayCard({ review, name, openCard, openMarks, openSkipped, holdin
     if (line.needs[0] === 'Marks') openMarks(instrument);
     else openCard(line.tradeId, panel);
   };
+  // W145: each contract whose settlement the Review Date's Settle Later put off, as the Trade's card names it.
+  const toRecord = completion.kind === 'CompleteWithSettlementToRecord' ? review.families.flatMap((f) => (f.family === 'Settlement' ? f.items.filter((item) => completion.trades.includes(item.tradeId)) : [])) : [];
   // "Add them" opens the Marks step's skipped-session columns, when the Review lists a gap.
   const gap = marksFamily?.family === 'Marks' ? marksFamily.earlier[0] : undefined;
   const labelsFor = (tradeId: string): { label: string; reason: string | undefined }[] => {
@@ -158,7 +161,7 @@ export function DayCard({ review, name, openCard, openMarks, openSkipped, holdin
         )}
       </div>
       <p>
-        <strong>{COMPLETION_TEXT[completion.kind]}</strong>
+        <strong data-tone={completion.kind === 'CompleteWithSettlementToRecord' ? 'warning' : undefined}>{COMPLETION_TEXT[completion.kind]}</strong>
       </p>
       {(nextText || (day?.change.kind === 'Value' && !day.finished)) && (
         <div className="day-next">
@@ -211,6 +214,21 @@ export function DayCard({ review, name, openCard, openMarks, openSkipped, holdin
                 {ACTION_ORDER.filter((action) => day.finished!.chosen.some((c) => c.action === action))
                   .map((action) => `${action} ${day.finished!.chosen.filter((c) => c.action === action).map((c) => underlyingOf(c.tradeId)).join(', ')}`)
                   .join(' · ')}
+              </dd>
+            </div>
+          )}
+          {toRecord.length > 0 && (
+            <div>
+              <dt>To record</dt>
+              <dd>
+                {toRecord.map((item) => {
+                  const count = item.quantity.compare(Rational.of(0n)) < 0 ? item.quantity.mul(Rational.of(-1n)) : item.quantity;
+                  return (
+                    <p key={`${item.tradeId}-${item.instrument.strike}-${item.instrument.right}`}>
+                      {underlyingOf(item.tradeId)}: the {item.quantity.compare(Rational.of(0n)) > 0 ? 'exercise' : 'assignment'} of {quantity(count)} {count.compare(Rational.of(1n)) === 0 ? 'contract' : 'contracts'}, expired {shortDate(item.expiration)}.
+                    </p>
+                  );
+                })}
               </dd>
             </div>
           )}

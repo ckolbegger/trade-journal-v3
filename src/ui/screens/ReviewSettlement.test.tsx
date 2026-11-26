@@ -338,6 +338,29 @@ describe('the expiration block on the card (T95.52)', () => {
     expect(within(card).queryByRole('button', { name: 'Exercised: record later' })).toBeNull();
   });
 
+  it('should say on the next Review card that record later was chosen and that it asks again', async () => {
+    const long = await openBlock({ expirationStanding: IN_THE_MONEY, settledLaterOn: '2026-11-20' });
+    expect(within(long.card).getByText('Fri Nov 20 you chose Exercised: record later. It is still to settle, so this Review asks again.')).toBeTruthy();
+    cleanup();
+
+    const short = await openBlock({ expirationStanding: IN_THE_MONEY, settledLaterOn: '2026-11-20' }, { item: itemOf('t5', CORV_PUT, -3n) });
+    expect(within(short.card).getByText('Fri Nov 20 you chose Assigned: record later. It is still to settle, so this Review asks again.')).toBeTruthy();
+    cleanup();
+
+    // The expiration day's own card has no earlier choice to recall.
+    const day = await openBlock({ expirationStanding: IN_THE_MONEY });
+    expect(within(day.card).queryByText(/you chose/)).toBeNull();
+  });
+
+  it('should label that card Expired: settle and ask no Marks for it', async () => {
+    const { card } = await openBlock({ expirationStanding: IN_THE_MONEY, settledLaterOn: '2026-11-20' });
+    const header = screen.getByRole('button', { name: /^Review CORV/ });
+    expect(within(header).getByText('Expired: settle')).toBeTruthy();
+    expect(header.textContent).toContain('To do: Settle');
+    expect(header.textContent).not.toMatch(/Mark/);
+    expect(within(card).queryByRole('button', { name: /Marks/ })).toBeNull();
+  });
+
   it('should offer It expired worthless as a link that states what it would book and asks why before Record expiration anyway', async () => {
     const user = userEvent.setup();
     const { card } = await openBlock({ expirationStanding: IN_THE_MONEY });

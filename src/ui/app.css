@@ -1106,6 +1106,9 @@ ul.rows > li {
 .day-rows dd p {
   margin: 0;
 }
+.day-card strong[data-tone='warning'] {
+  color: var(--warning-text);
+}
 .day-lines li a {
   display: inline-flex;
   align-items: center;
