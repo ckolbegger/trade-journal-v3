@@ -1392,3 +1392,5 @@ First attempt (no commit): the generator is already on manifest 6 (T95.28) at ve
 - The generator's disposition mix (declined and completed sale reflections, Close Reviews completed or declined at the close) stays as it is. The plan asks only that its Actions carry reasons. The generated history is read as data from before Part C's rules, which existing Workspaces also hold. Not a pending decision.
 
 Q10 answered 2026-11-26: option 1 (the owed card reads its replay). Decision 136, plan revision 125 (tag `claude-opus-5.5-plan-r125`); T95.56 gains cases 9 and 10. Noted: revisions 122, 123 and 124 (decisions 132 to 135) have rows in implementation-plan.md's decision table but no entry in revisions.md and no tag; left for the final report.
+
+Q11 answered 2026-11-26: option 1 (keep the full Key moments list). Decision 137, plan revision 126 (tag `claude-opus-5.5-plan-r126`); T95.57 case 6 notes the exception to A276.

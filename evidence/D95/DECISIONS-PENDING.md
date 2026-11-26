@@ -156,7 +156,7 @@ T95.16 stopped before writing. The collapsed card header (U3, breakdown line 85)
 
 **Blocks:** nothing now (built as option 1); T95.59 follows whichever is chosen.
 
-**Status:** queued.
+**Answer (2026-11-26):** (1), "Keep the full list". Decision 137, plan revision 126. **Status:** answered.
 
 ## Q12 (queued, to be asked after Q10 and Q11): which Review operation names the expired contract's standing?
 
