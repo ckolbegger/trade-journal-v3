@@ -83,34 +83,11 @@ export interface CardMarkRows {
   readonly earlier: readonly GapGroup[];
 }
 
-export function marksOf(held: Held, tradeId: string): CardMarkRows {
-  const family = held.review.families.find((f) => f.family === 'Marks');
-  if (family?.family !== 'Marks') return { today: [], earlier: [] };
-  const earlier = family.earlier.flatMap((group) => {
-    const from = group.trades.find((t) => t.tradeId === tradeId)?.from;
-    if (from === undefined) return [];
-    const missing = group.missing.filter((date) => date >= from);
-    const acknowledged = group.acknowledged.filter((date) => date >= from);
-    return missing.length + acknowledged.length > 0 ? [{ ...group, missing, acknowledged }] : [];
-  });
-  return { today: family.today.filter((row) => row.trades.includes(tradeId)), earlier };
-}
-
 // What the Review holds of earlier sessions for one card's Trade (A288): the session before the Review Date, and each Instrument the
 // Trade held before it, with the session the Trade held it from and the Available Marks the Review lists.
 export interface CardEarlierMarks {
   readonly previousSession?: string;
   readonly instruments: readonly { readonly instrumentKey: string; readonly instrument: Instrument; readonly from: string; readonly marks: EarlierMarksGroup['marks'] }[];
-}
-
-export function earlierMarksOf(held: Held, tradeId: string): CardEarlierMarks {
-  const family = held.review.families.find((f) => f.family === 'Marks');
-  if (family?.family !== 'Marks') return { instruments: [] };
-  const instruments = family.earlierMarks.flatMap((group) => {
-    const from = group.trades.find((t) => t.tradeId === tradeId)?.from;
-    return from === undefined ? [] : [{ instrumentKey: group.instrumentKey, instrument: group.instrument, from, marks: group.marks }];
-  });
-  return { ...(family.previousSession !== undefined && { previousSession: family.previousSession }), instruments };
 }
 
 // The Instrument a key names, from whichever list of the Review holds it: today's rows, the gap groups or the earlier Marks. A draft typed in

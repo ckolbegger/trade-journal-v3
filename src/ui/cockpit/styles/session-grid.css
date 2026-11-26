@@ -1,12 +1,4 @@
-/* The shared session grid's editable cells and turned layout (P158 to P161). Price History's cells hold none of these, so it is unchanged. */
-.price-history thead th em,
-.price-history tbody th em {
-  display: block;
-  font-style: normal;
-  font-size: 0.7rem;
-  letter-spacing: 0.05em;
-  color: var(--info-ink);
-}
+/* The session grid's cells that hold a control: the Marks grid's price inputs and its pressable cells. */
 .session-grid-control {
   box-sizing: border-box;
   width: 5rem;
@@ -18,7 +10,7 @@
   font: inherit;
   text-align: right;
 }
-/* A Mark or an acknowledged one reads as plain text until it is chosen; a draft from another Trade is the blue chip. */
+/* A Mark or an acknowledged one reads as plain text until it is chosen. */
 button.session-grid-press {
   width: auto;
   border-color: transparent;
@@ -26,50 +18,14 @@ button.session-grid-press {
   color: inherit;
   cursor: pointer;
 }
-button.session-grid-draft {
-  border: 1.5px dashed var(--focus);
-  background: var(--info-ground);
-  color: var(--info-ink);
-  font-weight: 600;
-  cursor: pointer;
-}
-.session-grid-draft small {
-  display: block;
-  font-size: 0.7rem;
-  font-weight: 500;
-}
 .session-grid-control[aria-pressed='true'] {
   outline: 3px solid var(--focus);
   outline-offset: 1px;
 }
-/* Turned: sessions down the side, so each row head is a date and its tag. */
-.price-history[data-layout='turned'] tbody th span {
-  display: inline-block;
-  margin-right: 0.35rem;
-}
-/* P161: a turned grid wraps its header and cell text rather than scrolling or clipping, so a one-leg Trade fits at 320 px. The control fills its cell. */
-.price-history[data-layout='turned'] {
-  width: 100%;
-}
-.price-history[data-layout='turned'] th,
-.price-history[data-layout='turned'] td {
-  padding: 0.25rem 0.4rem;
-  white-space: normal;
-  overflow-wrap: anywhere;
-}
-.price-history[data-layout='turned'] .session-grid-control {
-  width: 100%;
-  min-width: 0;
-  white-space: normal;
-}
-/* Touch screens: every cell is at least 44 px high. */
+/* Touch screens: every control is at least 44 px high. */
 @media (pointer: coarse) {
   .session-grid-control {
     min-height: 44px;
-  }
-  /* A cell with no control (Not held, a plain value) is as tall as its neighbours; a table cell's height is its minimum. */
-  .price-history[data-editable] td {
-    height: 44px;
   }
 }
 @media (forced-colors: active) {

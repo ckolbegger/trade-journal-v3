@@ -1,5 +1,5 @@
 import type { IncoherentFact, NotApplicableReason, UnavailableReason } from '../domain/calculation-result/index.ts';
-import type { IncompleteReason, ReviewTradeItem } from '../app/types.ts';
+import type { ReviewTradeItem } from '../app/types.ts';
 import type { Instrument } from '../domain/instrument/index.ts';
 import { toWorkspaceLocal } from '../domain/time/index.ts';
 import { parseDecimal } from '../domain/values/index.ts';
@@ -176,10 +176,6 @@ type MarkLackingReason = Extract<UnavailableReason, { readonly reason: 'MarkMiss
 export const isMarkMissing = <R extends UnavailableReason>(reason: R): reason is Extract<R, MarkMissingReason> => reason.reason === 'MarkMissing';
 // The result lacks its Mark, or the trader acknowledged that none can be had.
 export const isMarkLacking = <R extends UnavailableReason>(reason: R): reason is Extract<R, MarkLackingReason> => reason.reason === 'MarkMissing' || reason.reason === 'AcknowledgedUnavailable';
-// A Review blocker for a Mark that is missing.
-export const isMarkMissingBlocker = (blocker: IncompleteReason): blocker is Extract<IncompleteReason, { readonly code: 'MarkMissing' }> => blocker.code === 'MarkMissing';
-// A Review blocker for a contract whose settlement is due, and the same reason in a Trade's attention (row 24.5).
-export const isSettlementDueBlocker = (blocker: IncompleteReason): blocker is Extract<IncompleteReason, { readonly code: 'SettlementDue' }> => blocker.code === 'SettlementDue';
 // A Trade's attention reason: the trader acknowledged that no Mark can be had for the Review Date.
 export const isAcknowledgedUnavailableAttention = (reason: ReviewTradeItem['reasons'][number]): boolean => reason.code === 'Unavailable' && reason.reason === 'AcknowledgedUnavailable';
 export const isSettlementDueAttention = (reason: ReviewTradeItem['reasons'][number]): reason is Extract<ReviewTradeItem['reasons'][number], { readonly code: 'SettlementDue' }> => reason.code === 'SettlementDue';

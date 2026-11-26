@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
+import { Link, useNavigate, useParams } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
 import type { EntryDefinitionRecord, PositionChangeResult, TradeDetailView } from '../../app/types.ts';
 import { toWorkspaceLocal } from '../../domain/time/index.ts';
@@ -201,10 +201,9 @@ export function ExpirationForm({ facade, tradeId, timeZone, onDirtyChange, onDon
   );
 }
 
-// The route screen: the Trade comes from the path, and `?from=review` marks a form opened from the Review.
+// The route screen: the Trade comes from the path.
 export function ExpirationFormRoute(props: Pick<ExpirationFormProps, 'facade' | 'timeZone' | 'onDirtyChange'>) {
   const { tradeId = '' } = useParams();
-  const fromReview = useSearchParams()[0].get('from') === 'review';
   const navigate = useNavigate();
-  return <ExpirationForm {...props} tradeId={tradeId} onDone={() => void navigate(`/trades/${tradeId}`)} backLabel="Back to the Trade" fromReview={fromReview} />;
+  return <ExpirationForm {...props} tradeId={tradeId} onDone={() => void navigate(`/trades/${tradeId}`)} backLabel="Back to the Trade" fromReview={false} />;
 }

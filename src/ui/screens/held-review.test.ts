@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { cardProgress, reflectionsOwedProgress } from '../../../tests/support/card-progress.ts';
 import type { DailyTradeReview, IncompleteReason, MarkResolution, MarkRow, OpenDailyReviewResult, OwedReflectionsTrade, PostMarksReview, PostSaveReview, ReviewBinding, ReviewCompletion, ReviewNextStep, SavedMark, WalkedTrade } from '../../app/types.ts';
 import { Rational } from '../../domain/values/index.ts';
-import { fold, instrumentOf, marksOf, nextCard, standing, type Held, type Standing } from './held-review.ts';
+import { fold, instrumentOf, nextCard, standing, type Held, type Standing } from './held-review.ts';
 
 type Ready = Extract<OpenDailyReviewResult, { kind: 'Ready' }>;
 type Earlier = Extract<Ready['families'][number], { family: 'Marks' }>['earlier'];
@@ -316,16 +316,6 @@ describe('nextCard (P50)', () => {
 
     expect(nextCard(held(), { kind: 'Trade', trade })).toEqual({ kind: 'Trade', trade });
     expect(nextCard(held(), { kind: 'Done' })).toEqual({ kind: 'Done' });
-  });
-});
-
-describe('marksOf (A153)', () => {
-  it('should list T-A XYZ row and Friday session, and T-F XYZ row with no Friday session', () => {
-    const xyz = missingRow('XYZ', ['t-a', 't-f']);
-
-    expect(marksOf(held(), 't-a')).toEqual({ today: [xyz], earlier: [xyzGap] });
-    expect(marksOf(held(), 't-f')).toEqual({ today: [xyz], earlier: [] });
-    expect(marksOf(held(), 't-c')).toEqual({ today: [missingRow('DEF', ['t-c'])], earlier: [] });
   });
 });
 

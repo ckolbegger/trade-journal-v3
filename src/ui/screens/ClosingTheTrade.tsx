@@ -1,7 +1,4 @@
 import type { ReactNode } from 'react';
-import type { EntryDefinitionRecord } from '../../app/types.ts';
-import { ChoiceGroup, type Choice } from './reflection-choice.tsx';
-import { ReflectionPrompts, type Answers } from './ReflectionPrompts.tsx';
 
 export interface CloseReasonOption {
   readonly id: string;
@@ -9,62 +6,32 @@ export interface CloseReasonOption {
 }
 
 export interface ClosingTheTradeProps {
-  // The selectable Close Reasons, in the order the Catalog lists them. A close that needs none (an
-  // Expiration) gives `noReasonNote` in their place.
-  readonly reasons?: readonly CloseReasonOption[];
+  // The selectable Close Reasons, in the order the Catalog lists them.
+  readonly reasons: readonly CloseReasonOption[];
   readonly reasonId?: string;
-  readonly onReason?: (id: string) => void;
-  readonly noReasonNote?: string;
-  // The Close Review's own disposition. A closing sale always puts it off, so it asks nothing and gives none of these.
-  readonly definition?: EntryDefinitionRecord;
-  readonly choice?: Choice;
-  readonly onChoice?: (choice: Choice) => void;
-  readonly declineReason?: string;
-  readonly onDeclineReason?: (reason: string) => void;
-  readonly answers?: Answers;
-  readonly onAnswers?: (answers: Answers) => void;
+  readonly onReason: (id: string) => void;
   // Issue messages beside their fields, from the form's issue handling.
   readonly fieldError: (field: string) => ReactNode;
   readonly describedBy: (field: string) => object;
-  readonly promptErrors?: Readonly<Record<string, string>>;
 }
 
-// What closing the Trade asks for (P21): the Close Reason, and the Close Review with its own
-// disposition, apart from the exit's reflection.
+// What closing the Trade asks for (P21): the Close Reason. A closing sale always puts its Close Review off.
 export function ClosingTheTrade(props: ClosingTheTradeProps) {
-  const { reasons, reasonId, definition, choice, answers, fieldError, describedBy } = props;
-  const asksReview = definition !== undefined && choice !== undefined && props.onChoice !== undefined;
+  const { reasons, reasonId, fieldError, describedBy } = props;
   return (
     <section className="card" aria-labelledby="closing-heading">
       <h2 id="closing-heading">Closing the Trade</h2>
-      {reasons ? (
-        <>
-          <fieldset role="radiogroup" aria-labelledby="close-reason-legend" className="choices" {...describedBy('closeReasonId')}>
-            <legend id="close-reason-legend">Close Reason</legend>
-            {reasons.map((reason) => (
-              <label key={reason.id} className="chip">
-                <input type="radio" name="close-reason" checked={reasonId === reason.id} onChange={() => props.onReason?.(reason.id)} />
-                {reason.label}
-              </label>
-            ))}
-          </fieldset>
-          {fieldError('closeReasonId')}
-        </>
-      ) : (
-        <p>{props.noReasonNote}</p>
-      )}
-      {asksReview && <ChoiceGroup legend="Close Review" name="close-review-disposition" value={choice} onChange={props.onChoice} describedBy={describedBy('closeReview')} />}
-      {fieldError('closeReview')}
-      {asksReview && choice === 'decline' && (
-        <div className="field">
-          <label>
-            Reason for declining the Close Review (optional)
-            <textarea value={props.declineReason ?? ''} onChange={(e) => props.onDeclineReason?.(e.target.value)} {...describedBy('closeReviewReason')} />
+      <fieldset role="radiogroup" aria-labelledby="close-reason-legend" className="choices" {...describedBy('closeReasonId')}>
+        <legend id="close-reason-legend">Close Reason</legend>
+        {reasons.map((reason) => (
+          <label key={reason.id} className="chip">
+            <input type="radio" name="close-reason" checked={reasonId === reason.id} onChange={() => props.onReason(reason.id)} />
+            {reason.label}
           </label>
-          {fieldError('closeReviewReason')}
-        </div>
-      )}
-      {asksReview && choice === 'now' && <ReflectionPrompts definition={definition} answers={answers ?? {}} onChange={props.onAnswers!} errors={props.promptErrors ?? {}} />}
+        ))}
+      </fieldset>
+      {fieldError('closeReasonId')}
+      {fieldError('closeReview')}
     </section>
   );
 }

@@ -627,7 +627,7 @@ export function PositionChangeFormBody({ facade, tradeId, exit, onDone, backLabe
           <ReflectionPrompts definition={definition} answers={answers} onChange={setAnswers} errors={promptErrors(definition)} />
         )}
       </section>
-      {showClosing && (
+      {showClosing && closeReasons && (
         <ClosingTheTrade
           reasons={closeReasons}
           reasonId={closeReasonId}

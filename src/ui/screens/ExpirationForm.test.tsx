@@ -116,15 +116,6 @@ describe('the form around the save', () => {
     await userEvent.setup().click(await screen.findByRole('button', { name: 'Save expiration' }));
   };
 
-  it('should offer Back to the Review on the receipt only when opened from the Review', async () => {
-    await save(exitFormFacade(dueDetail), expirationResult(), '?from=review');
-    expect(await screen.findByRole('link', { name: 'Back to the Review' })).toBeTruthy();
-    cleanup();
-    await save(exitFormFacade(dueDetail), expirationResult());
-    await screen.findByRole('heading', { name: 'Expiration recorded' });
-    expect(screen.queryByRole('link', { name: 'Back to the Review' })).toBeNull();
-  });
-
   it('should say a Trade with no contract due for settlement has none', async () => {
     renderForm(exitFormFacade({ ...dueDetail, settlement: [] }));
     expect(await screen.findByText('This Trade has no contract due for settlement.')).toBeTruthy();
