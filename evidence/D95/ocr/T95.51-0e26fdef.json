@@ -1,0 +1,138 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 1,
+    "total_tokens": 42374,
+    "input_tokens": 42010,
+    "output_tokens": 364,
+    "cache_read_tokens": 12032,
+    "elapsed": "19s"
+  },
+  "tool_calls": {
+    "total": 3,
+    "by_tool": {
+      "code_comment": 1,
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/ExpirationForm.tsx",
+      "content": "The new `onDone` callback is never read or invoked: the back control still always navigates to `/trades/${tradeId}`. When this component is embedded in a Review card with `backLabel=\"Back to the Review\"`, clicking it will leave the Review for the Trade rather than let the parent dismiss the form. Destructure `onDone` and wire the back control to it (for example, a non-submit button); the route wrapper already supplies the Trade navigation callback.",
+      "existing_code": "      \u003cLink to={`/trades/${tradeId}`}\u003e{backLabel}\u003c/Link\u003e",
+      "start_line": 148,
+      "end_line": 148,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Expiration workflow updates and related tests",
+      "files": [
+        "src/main.tsx",
+        "src/ui/screens/ExpirationForm.test.tsx",
+        "src/ui/screens/ExpirationForm.tsx",
+        "src/ui/screens/ReviewExpiration.test.tsx"
+      ]
+    }
+  ],
+  "session_id": "2aaed851-f3e1-477a-920b-800bcf9ac444",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "2aaed851-f3e1-477a-920b-800bcf9ac444",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "0e26fdef",
+      "resolved_base": "00972cbcf135e48564d2320a462999736354d6e4",
+      "resolved_head": "0e26fdef2dcc2318c2d097c824f40e67025df970",
+      "exact_range": "00972cbcf135e48564d2320a462999736354d6e4..0e26fdef2dcc2318c2d097c824f40e67025df970",
+      "source_artifact_sha256": "6f94ba866b312c0da9ee7093c168e128a3d169bff473c244e732af8ecdc7d3a8"
+    },
+    "execution": {
+      "ocr_version": "v1.14.4",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "2cea7a8f0a615fab36f0772e4ab911b1ac0ac370d3fd3b63456d0f119394ed5e",
+          "path": "src/main.tsx",
+          "fingerprint": "df8395d733dd4fcc9e5b1850ef38f884445059a82347d6d14560a3594f858fa5"
+        },
+        {
+          "item_id": "41e36b2fc461f001fd3da3ef154d234ed6312c47fd74d522eb021fe693bb95a6",
+          "path": "src/ui/screens/ExpirationForm.test.tsx",
+          "fingerprint": "ab85b95cd562bf19ff81676baf6a4d9986035dae5cfd13f48bfef8ba2a0019ce"
+        },
+        {
+          "item_id": "65bccfc98e101dd12c3c3c7d1e445313eab5ae6feae6a2b9a027d8ea4143e4db",
+          "path": "src/ui/screens/ReviewExpiration.test.tsx",
+          "fingerprint": "dfcc47f96bc16f062bee945de2b91e0fcc3ee5ac58525f02d68fa54035cdb95e"
+        },
+        {
+          "item_id": "8f669bf40c4e0581202e35b0025c05599ce1cb413cf1791b9979e09d426e5d54",
+          "path": "src/ui/screens/ExpirationForm.tsx",
+          "fingerprint": "c4c2d381a7af40c0923ad139793d1bae546596efdb6446909d017188575ae88b"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "2cea7a8f0a615fab36f0772e4ab911b1ac0ac370d3fd3b63456d0f119394ed5e",
+          "path": "src/main.tsx",
+          "fingerprint": "df8395d733dd4fcc9e5b1850ef38f884445059a82347d6d14560a3594f858fa5"
+        },
+        {
+          "item_id": "41e36b2fc461f001fd3da3ef154d234ed6312c47fd74d522eb021fe693bb95a6",
+          "path": "src/ui/screens/ExpirationForm.test.tsx",
+          "fingerprint": "ab85b95cd562bf19ff81676baf6a4d9986035dae5cfd13f48bfef8ba2a0019ce"
+        },
+        {
+          "item_id": "65bccfc98e101dd12c3c3c7d1e445313eab5ae6feae6a2b9a027d8ea4143e4db",
+          "path": "src/ui/screens/ReviewExpiration.test.tsx",
+          "fingerprint": "dfcc47f96bc16f062bee945de2b91e0fcc3ee5ac58525f02d68fa54035cdb95e"
+        },
+        {
+          "item_id": "8f669bf40c4e0581202e35b0025c05599ce1cb413cf1791b9979e09d426e5d54",
+          "path": "src/ui/screens/ExpirationForm.tsx",
+          "fingerprint": "c4c2d381a7af40c0923ad139793d1bae546596efdb6446909d017188575ae88b"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "116ab58d41e0d4aa47f5f233e1f9d023db1128cc94be09c3c9354fd1f1ec74bb",
+          "path": "evidence/D95/tdd-log/T95.51.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "9cb1a797774d02950cc071d8d999024e890e80edbfdf05f415f708917949c2e7",
+          "path": "evidence/D95/structural.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 18938
+  }
+}
