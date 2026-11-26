@@ -12,7 +12,7 @@ describe('I9AR.3 The manifest (AC-CAP-001)', () => {
 
     if (status.kind !== 'Ready') throw new Error(`getStatus: ${status.kind}`);
     const { operations } = status.installedCapabilities;
-    expect(operations['TradeViewsAndReporting.replayTrade']).toEqual(['ConditionStatus', 'Markers', 'PlanComparison', 'Odds']);
+    expect(operations['TradeViewsAndReporting.replayTrade']).toEqual(['ConditionStatus', 'Markers', 'PlanComparison', 'Odds', 'SessionActions', 'KeyMoments']);
     expect(operations['DailyReview.getTrade']).toContain('Odds');
     // The routes that present the replay and the odds require those variants.
     const routes: readonly RouteDefinition[] = ROUTES;
