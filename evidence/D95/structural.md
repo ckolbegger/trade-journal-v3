@@ -1550,3 +1550,9 @@ Commit `02d8ef62`: `openCard` bumps `picks` (after the unsaved-drafts refusal, s
 ocr of T95.61-B3 (session f80ce36f): complete, 2 files, no findings. `evidence/D95/ocr/T95.61-B3-02d8ef62.json`.
 
 Run `t95.61-b3-focus` (browser-task; unit at `5560b8df`, the rest at `8e36cb57`, evidence-only between): unit 268 files, 3270 passed; integration 158 files, 364 passed; browser 58 passed; 14 of 14 checks exit 0; run-complete. Passed. T95.61 done.
+
+## T95.65
+
+Commit `39c4e305`: Part C integration suites I95.13 (settle-later, 9 cases), I95.14 (expiration-reason, 7), I95.15 (replay-actions, 5), I95.16 (close-review, 4), I95.17 (not-writable, 4: a Writable control, then the page Marks save, an Action under the rule, Settle Later). I95.7: no case added; `capabilities.test.ts` already asserts Part C's lists exactly (T95.62, T95.62-D1); its two Part C assertions mutation-checked. Every case a first-run pass (the code existed), each mutation-checked and restored (`git diff -- src` empty). tests/integration 393 passed; typecheck, tsc6, lint (2 pre-existing warnings), lint:deps exit 0. The commit's Co-Authored-By names Claude Sonnet 5.5; left as it is.
+- Gaps recorded: `RuntimeNotWritable` is gated twice (the guard and the commit), so the Marks case needed both mutated to fail; I95.16's "no Entry" half has no mutation that reaches it (covered by an unchanged-entries assertion); a Settle Later saved after the expiry session has no replay session, so I95.15 saves it on the expiry day.
+- **Found, asked as Q14:** the owed card's replay (`assembleOwedCard`, `daily-review.ts` 902, decision 136) carries no session Actions, so the Replay opened from a closed Trade's card (and the Close Review walk) shows no saved Hold under "What you did that day" (W147), while `replayTrade` and the walked card show it. I95.15 compares only dates, Plan Calls and key moments for the owed card.
