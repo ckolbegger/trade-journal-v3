@@ -147,4 +147,30 @@ describe('an expiration and its reason', () => {
     expect(issuesOf(partial)).toEqual([expect.objectContaining({ source: 'TradeAnalysis', member: 0, field: 'quantity', code: 'ExpirationMustSettleAllOpen' })]);
     expect(issuesOf(wrongTime)).toEqual([expect.objectContaining({ source: 'TradeAnalysis', member: 0, code: 'SettlementTimeInvalid' })]);
   }, 60_000);
+
+  it('should return ExpirationMustSettleAllOpen together with ExpirationReasonRequired for an in-the-money expiration with no reason that settles part of the open quantity', async () => {
+    const held = await shortPut({ mark: '40.00' });
+
+    const result = await expire(held, noAnswers(held.stack), { kind: 'Defer' }, { quantity: '1' });
+
+    expect(issuesOf(result)).toEqual(
+      expect.arrayContaining([
+        { source: 'TradeWorkflows', field: REASON, code: 'ExpirationReasonRequired' },
+        expect.objectContaining({ source: 'TradeAnalysis', member: 0, field: 'quantity', code: 'ExpirationMustSettleAllOpen' }),
+      ]),
+    );
+  }, 60_000);
+
+  it('should return SettlementTimeInvalid together with ExpirationReasonRequired for an in-the-money expiration with no reason at a wrong settlement time', async () => {
+    const held = await shortPut({ mark: '40.00', now: MONDAY_1700 });
+
+    const result = await expire(held, noAnswers(held.stack), { kind: 'Defer' }, { economicTime: '2026-11-21T15:00:00Z' });
+
+    expect(issuesOf(result)).toEqual(
+      expect.arrayContaining([
+        { source: 'TradeWorkflows', field: REASON, code: 'ExpirationReasonRequired' },
+        expect.objectContaining({ source: 'TradeAnalysis', member: 0, code: 'SettlementTimeInvalid' }),
+      ]),
+    );
+  }, 60_000);
 });

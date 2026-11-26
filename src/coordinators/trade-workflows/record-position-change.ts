@@ -494,7 +494,8 @@ async function attemptPositionChange(deps: TradeWorkflowsDeps, command: Position
   }
   if (expirationMember !== undefined) issues.push(...(await expirationIssues(deps, command, expirationMember, beforeDerived.kind === 'Derived' ? beforeDerived : undefined)));
   // Values that do not parse cannot be replayed, so the candidate is analysed only when every member is valid.
-  const candidateDerived = issues.some((i) => i.source === 'TradeWorkflows')
+  // A missing Expiration Reason is no unreadable value, so it does not stop the derivation's own findings.
+  const candidateDerived = issues.some((i) => i.source === 'TradeWorkflows' && i.code !== 'ExpirationReasonRequired')
     ? undefined
     : derive({ record: prepared.analysisInput, candidate: { digest: prepared.digest, before: prepared.beforeAnalysisInput! } });
   // Findings the stored Trade already has are its facts, not this change's fault (P7), so they stay an
