@@ -182,3 +182,5 @@ Not parked: T95.62 is built as option 1, which needs no approval; option 2 would
 1. *Recommend:* add the Actions: follow-on T95.65-D1, one more Journal read per closed or reflection-only card; the request-count pins change by that read alone, recorded. The Close Review walk then shows what you chose each day.
 2. Leave it: the closed card's Replay shows prices, fills and key moments only; I95.15's wording is narrowed to the open Trade's card.
 **Not parked:** T95.65's review and run go ahead; T95.66 and T95.67 wait only if the answer is 1 (the follow-on runs before them).
+
+**Answer (2026-11-26):** (1). Decision 140, plan revision 129; follow-on T95.65-D1, run after T95.65 and before T95.66. **Status:** answered.
