@@ -1444,3 +1444,5 @@ Commit `e365c63d`: the Replay's Price History link ends `&from=review&panel=<pan
 ### T95.56-B2
 
 Commit `24ffd1de`: `StripChart` gains `dots`, one per run of exactly one valid P&L point, drawn as a small circle in the line's colour (the full Replay draws every session as a circle, `corridor-pnl.tsx`). Cases 1, 2 red then green; a two-point run draws no dot. ReplayStrip tests 8 passed; typecheck, tsc6, lint (2 pre-existing warnings), lint:deps exit 0. No browser spec covers the strip chart.
+
+ocr of T95.56-B1 and T95.56-B2 (range `e365c63d^..24ffd1de`, session 0ce8cfb3): complete, 8 files, no findings. `evidence/D95/ocr/T95.56-B1-B2-24ffd1de.json`.

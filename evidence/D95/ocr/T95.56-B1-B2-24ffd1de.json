@@ -1,0 +1,183 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 8 selected item(s).",
+  "summary": {
+    "files_reviewed": 8,
+    "comments": 0,
+    "total_tokens": 57494,
+    "input_tokens": 56862,
+    "output_tokens": 632,
+    "cache_read_tokens": 8320,
+    "elapsed": "17s"
+  },
+  "tool_calls": {
+    "total": 11,
+    "by_tool": {
+      "file_read": 9,
+      "file_read_diff": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Replay strip styling, props, and card integration tests",
+      "files": [
+        "src/ui/app.css",
+        "src/ui/screens/CardReplay.tsx",
+        "src/ui/screens/ReplayStrip.test.tsx",
+        "src/ui/screens/ReplayStrip.tsx",
+        "src/ui/screens/ReviewCard.test.tsx",
+        "src/ui/screens/replay-strip.props.ts"
+      ]
+    },
+    {
+      "label": "Trade detail screen and tests",
+      "files": [
+        "src/ui/screens/TradeDetail.test.tsx",
+        "src/ui/screens/TradeDetail.tsx"
+      ]
+    }
+  ],
+  "session_id": "0ce8cfb3-0eab-474c-a2f6-4aef75484c4e",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "0ce8cfb3-0eab-474c-a2f6-4aef75484c4e",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "e365c63d^",
+      "requested_head": "24ffd1de",
+      "resolved_base": "16996694a51d545d1660c2df6bd1563b61ef7f0c",
+      "resolved_head": "24ffd1ded50e520a45e466f35bc05ec93d241801",
+      "exact_range": "16996694a51d545d1660c2df6bd1563b61ef7f0c..24ffd1ded50e520a45e466f35bc05ec93d241801",
+      "source_artifact_sha256": "707ee1ff75cc6cd8116b6fa04db4cb2f52a66f65df99d312f5f07295f09f4bf0"
+    },
+    "execution": {
+      "ocr_version": "v1.14.4",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "1d58560f7a0500f10b8a583d9ca678b78d69898b8cbbf9a345de745beeb70d66",
+          "path": "src/ui/screens/CardReplay.tsx",
+          "fingerprint": "d00b7533c6580ad712ffc570ce36cee5d5905e24898d59affceb1d41f40a517f"
+        },
+        {
+          "item_id": "4bef282ec0dc6c7cd0fa2bf6f5db680b17ce8a78b337af77eba2134fd8d9a3f5",
+          "path": "src/ui/screens/TradeDetail.tsx",
+          "fingerprint": "be6f651d7b3bbeade8e44ea4b3e81bb20c4cc5cf80be7b32ca28112b896bd4d2"
+        },
+        {
+          "item_id": "7a6b66edcfdf4d351178b4026545647c2c6148a04069f6f4fb265dbe12a39b41",
+          "path": "src/ui/screens/TradeDetail.test.tsx",
+          "fingerprint": "22825e030444e1294c521d44fd9ec84701af7dae3ab9aaf2242c0dc4ed2d35d4"
+        },
+        {
+          "item_id": "86bd057eaa6ea9a77e8bdf3197d497830977b494dcfe642b4961ac0a7269dbf8",
+          "path": "src/ui/screens/ReviewCard.test.tsx",
+          "fingerprint": "d5d3ef6d5a6e349a4c73d7dba603ab85884c3c130ab9b9077d9d79c45761575c"
+        },
+        {
+          "item_id": "a2b509a941bbf57bbe9d334918ed2cfaf1dbc6d57b24b12f081e318961165e46",
+          "path": "src/ui/screens/replay-strip.props.ts",
+          "fingerprint": "59147f356ee0eec62c1cc36dbdc19ba6e7029c6ff3a1ad655ddc15d5219fe345"
+        },
+        {
+          "item_id": "aa02a05b4881073ca1bb3f85ff78ad8713a1b6996978e8ecdf490c815750997f",
+          "path": "src/ui/app.css",
+          "fingerprint": "5801b3b43a645a2a216922a634b5923c6c900d829d2c603b703de7b9dac35e9c"
+        },
+        {
+          "item_id": "ea887b235b0a5d03f45f9e4aef495610a9828291cbec60dae000cabfc881f9e8",
+          "path": "src/ui/screens/ReplayStrip.tsx",
+          "fingerprint": "8ad960a44e7b79abbe200289ef9b8397085caa79d38663e410abe28d234b1e9f"
+        },
+        {
+          "item_id": "f1b2551787db5d150ba68777fb3803b831bb9a738a51f5ee37cd175aff33cc0a",
+          "path": "src/ui/screens/ReplayStrip.test.tsx",
+          "fingerprint": "ed064a7a16937e4bdfa1c61cd9ae444bb9497286063ea116897a82d1d81f508d"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "1d58560f7a0500f10b8a583d9ca678b78d69898b8cbbf9a345de745beeb70d66",
+          "path": "src/ui/screens/CardReplay.tsx",
+          "fingerprint": "d00b7533c6580ad712ffc570ce36cee5d5905e24898d59affceb1d41f40a517f"
+        },
+        {
+          "item_id": "4bef282ec0dc6c7cd0fa2bf6f5db680b17ce8a78b337af77eba2134fd8d9a3f5",
+          "path": "src/ui/screens/TradeDetail.tsx",
+          "fingerprint": "be6f651d7b3bbeade8e44ea4b3e81bb20c4cc5cf80be7b32ca28112b896bd4d2"
+        },
+        {
+          "item_id": "7a6b66edcfdf4d351178b4026545647c2c6148a04069f6f4fb265dbe12a39b41",
+          "path": "src/ui/screens/TradeDetail.test.tsx",
+          "fingerprint": "22825e030444e1294c521d44fd9ec84701af7dae3ab9aaf2242c0dc4ed2d35d4"
+        },
+        {
+          "item_id": "86bd057eaa6ea9a77e8bdf3197d497830977b494dcfe642b4961ac0a7269dbf8",
+          "path": "src/ui/screens/ReviewCard.test.tsx",
+          "fingerprint": "d5d3ef6d5a6e349a4c73d7dba603ab85884c3c130ab9b9077d9d79c45761575c"
+        },
+        {
+          "item_id": "a2b509a941bbf57bbe9d334918ed2cfaf1dbc6d57b24b12f081e318961165e46",
+          "path": "src/ui/screens/replay-strip.props.ts",
+          "fingerprint": "59147f356ee0eec62c1cc36dbdc19ba6e7029c6ff3a1ad655ddc15d5219fe345"
+        },
+        {
+          "item_id": "aa02a05b4881073ca1bb3f85ff78ad8713a1b6996978e8ecdf490c815750997f",
+          "path": "src/ui/app.css",
+          "fingerprint": "5801b3b43a645a2a216922a634b5923c6c900d829d2c603b703de7b9dac35e9c"
+        },
+        {
+          "item_id": "ea887b235b0a5d03f45f9e4aef495610a9828291cbec60dae000cabfc881f9e8",
+          "path": "src/ui/screens/ReplayStrip.tsx",
+          "fingerprint": "8ad960a44e7b79abbe200289ef9b8397085caa79d38663e410abe28d234b1e9f"
+        },
+        {
+          "item_id": "f1b2551787db5d150ba68777fb3803b831bb9a738a51f5ee37cd175aff33cc0a",
+          "path": "src/ui/screens/ReplayStrip.test.tsx",
+          "fingerprint": "ed064a7a16937e4bdfa1c61cd9ae444bb9497286063ea116897a82d1d81f508d"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "1c7778f35bc4aa4ee3e3dae4be5b86b97108acfe16143e03f08a1581ad07a94e",
+          "path": "evidence/D95/tdd-log/T95.56-B1.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "533d0e334832af051bed0273af13b7b6973ebdddd1c6a80b551c5fc5850f7748",
+          "path": "evidence/D95/tdd-log/T95.56-B2.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ab47bc811f23c17f4c6317a43b1bf19eff8f2b20af07649acc55f19159f8bebc",
+          "path": "evidence/D95/structural.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 17436
+  }
+}
