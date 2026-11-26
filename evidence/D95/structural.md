@@ -1448,3 +1448,5 @@ Commit `24ffd1de`: `StripChart` gains `dots`, one per run of exactly one valid P
 ocr of T95.56-B1 and T95.56-B2 (range `e365c63d^..24ffd1de`, session 0ce8cfb3): complete, 8 files, no findings. `evidence/D95/ocr/T95.56-B1-B2-24ffd1de.json`.
 
 Q12 answered 2026-11-26: option 2 (`open` gives each Settlement Due Trade its standing, one replay read per such Trade). Decision 138, plan revision 127 (tag `claude-opus-5.5-plan-r127`); follow-on T95.62-D1 (Full: coordinator), after T95.56.
+
+Run `t95.56-replay-strip` (browser-auto 10616873, full tier; at `57cc5e46`): unit 266 files, 3227 passed; integration 158 files, 364 passed; browser-1 127, browser-2 79, browser-3 55 passed; browser-4 1 failed, 4 skipped, 163 passed; 14 of 14 checks exit 0; run-complete. The failure: `e2e/d9/review.spec.ts:35` (B9.3's round trip) checks Trade Detail's address holds exactly `drawer`, `session` and `from`; since T95.56-B1 the Price History link also carries `panel` (here Action). T95.56-B1 ran only d9ar/review. Follow-on **T95.56-F1**: the spec expects `panel` too.
