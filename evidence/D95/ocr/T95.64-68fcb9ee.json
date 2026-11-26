@@ -1,0 +1,108 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 0,
+    "total_tokens": 13415,
+    "input_tokens": 13267,
+    "output_tokens": 148,
+    "cache_read_tokens": 3328,
+    "elapsed": "7s"
+  },
+  "tool_calls": {
+    "total": 0,
+    "by_tool": {},
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "bench/capacity-baseline.json",
+      "files": [
+        "bench/capacity-baseline.json"
+      ]
+    },
+    {
+      "label": "bench/dataset.json",
+      "files": [
+        "bench/dataset.json"
+      ]
+    }
+  ],
+  "session_id": "3fdb0a1c-7062-4e41-9468-5b9346acaa1f",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "3fdb0a1c-7062-4e41-9468-5b9346acaa1f",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "68fcb9ee",
+      "resolved_base": "6de095f555892dc60d7cffff53b7a557937495ba",
+      "resolved_head": "68fcb9ee81c59234bb970b05f0502efdd114efe2",
+      "exact_range": "6de095f555892dc60d7cffff53b7a557937495ba..68fcb9ee81c59234bb970b05f0502efdd114efe2",
+      "source_artifact_sha256": "bca85f6dd3727c69308067785cdb9947eecd7acc8ceef148b4b05591eafd1011"
+    },
+    "execution": {
+      "ocr_version": "v1.14.4",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "339eb170e5d163f075658943fb39760b45a7d90a7c15cf7e77d12024c391a1a6",
+          "path": "bench/capacity-baseline.json",
+          "fingerprint": "cdd5f427ea4572e2fdf2299a312fade0cf29ca139eaa1af209aa1fb7a58b0e5a"
+        },
+        {
+          "item_id": "aa3e4a72f80298efe28fad403901f85f2118b945cd9d7aa4046cd1684288de51",
+          "path": "bench/dataset.json",
+          "fingerprint": "02ba838dacbc2f9864f70769f573f39b7b766997954432c6acd0046827bc5ede"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "339eb170e5d163f075658943fb39760b45a7d90a7c15cf7e77d12024c391a1a6",
+          "path": "bench/capacity-baseline.json",
+          "fingerprint": "cdd5f427ea4572e2fdf2299a312fade0cf29ca139eaa1af209aa1fb7a58b0e5a"
+        },
+        {
+          "item_id": "aa3e4a72f80298efe28fad403901f85f2118b945cd9d7aa4046cd1684288de51",
+          "path": "bench/dataset.json",
+          "fingerprint": "02ba838dacbc2f9864f70769f573f39b7b766997954432c6acd0046827bc5ede"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "463770c2dcb73189aa3c0e5b2dbf0837834dce08931d2753c00dce9d35dc5181",
+          "path": "bench/expected-open-rows.json",
+          "exclude_reason": "too_large"
+        },
+        {
+          "item_id": "9cb1a797774d02950cc071d8d999024e890e80edbfdf05f415f708917949c2e7",
+          "path": "evidence/D95/structural.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 7284
+  }
+}
