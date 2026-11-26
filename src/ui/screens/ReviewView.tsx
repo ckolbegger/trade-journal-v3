@@ -499,6 +499,8 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
       }
       void select(tradeId, true);
     }
+    // A card the trader asked for (a day-card link, or a changed address) is a pick, as a header press is.
+    picks.current += 1;
     setGo((current) => ({ tradeId, go: { panel, ...(sale && { sale }), count: current.go.count + 1 } }));
   };
   // A change of the search params while the Review is mounted (a navigate, browser history) opens the card they name, as a link

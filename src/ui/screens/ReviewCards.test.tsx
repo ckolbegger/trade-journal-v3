@@ -1806,6 +1806,17 @@ describe('the sale in the card (T95.40)', () => {
     expect(document.activeElement).not.toBe(screen.getByRole('button', { name: /^Review DEF/ }));
   });
 
+  it('should leave focus on a card the trader opened from a day-card link during the re-read', async () => {
+    const { user, release } = await dismissReceiptWithReadPending();
+    await user.click(within(within(screen.getByRole('region', { name: 'The day' })).getByRole('list', { name: 'Trade lines' })).getAllByRole('link', { name: 'XYZ' })[0]!);
+
+    release();
+
+    await screen.findByRole('list', { name: 'Trades with owed reflections' });
+    expect(screen.getByRole('region', { name: 'XYZ review' })).toBeTruthy();
+    expect(document.activeElement).not.toBe(screen.getByRole('button', { name: /^Review DEF/ }));
+  });
+
   it('should still move focus when the selection is unchanged', async () => {
     const { release } = await dismissReceiptWithReadPending();
 
