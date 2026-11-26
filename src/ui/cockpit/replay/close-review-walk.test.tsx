@@ -36,14 +36,16 @@ function open(options: { submit?: (request: never) => Promise<DebtSubmitResult>;
   const submit = vi.fn(options.submit ?? (() => Promise.resolve(resolved)));
   const onResolved = options.onResolved ?? vi.fn();
   const onClose = options.onClose ?? vi.fn();
-  render(
+  const replayView = replay();
+  const walk = (writable: boolean) => (
     <MemoryRouter>
-      <RuntimeContext.Provider value={{ writable: true, report: () => undefined }}>
-        <CloseReviewWalk replay={replay()} underlying="BREN" definition={options.definition ?? closeReviewDefinition} binding={binding} submit={submit as never} onResolved={onResolved as never} onClose={onClose} {...(options.onDirtyChange && { onDirtyChange: options.onDirtyChange })} />
+      <RuntimeContext.Provider value={{ writable, report: () => undefined }}>
+        <CloseReviewWalk replay={replayView} underlying="BREN" definition={options.definition ?? closeReviewDefinition} binding={binding} submit={submit as never} onResolved={onResolved as never} onClose={onClose} {...(options.onDirtyChange && { onDirtyChange: options.onDirtyChange })} />
       </RuntimeContext.Provider>
-    </MemoryRouter>,
+    </MemoryRouter>
   );
-  return { submit, onResolved, onClose };
+  const { rerender } = render(walk(true));
+  return { submit, onResolved, onClose, setWritable: (writable: boolean) => rerender(walk(writable)) };
 }
 const form = () => screen.getByRole('form', { name: 'Close Review' });
 const slider = () => screen.getByRole('slider', { name: 'Session' });
@@ -304,5 +306,30 @@ describe('the Close Review walk: leaving (T95.59)', () => {
     expect(submit).toHaveBeenCalledTimes(1);
     expect(onResolved).toHaveBeenCalledTimes(1);
     expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('should not save from the leave-ask when the Workspace is not writable', async () => {
+    const { user, submit, onResolved, setWritable } = await openUnlocked();
+    await user.click(within(form()).getByLabelText('Unsure'));
+    await user.type(within(form()).getByLabelText('What is the key lesson?'), 'Wait.');
+    await user.click(screen.getByRole('button', { name: 'Close' }));
+    setWritable(false);
+    await user.click(screen.getByRole('button', { name: 'Save it' }));
+    expect(submit).not.toHaveBeenCalled();
+    expect(onResolved).not.toHaveBeenCalled();
+  });
+
+  it('should still let the trader leave or go back from the ask', async () => {
+    const { user, submit, onClose, setWritable } = await openUnlocked();
+    await user.type(within(form()).getByLabelText('What is the key lesson?'), 'Wait.');
+    await user.click(screen.getByRole('button', { name: 'Close' }));
+    setWritable(false);
+    // Go back: the ask goes. Read-only, Close then leaves at once.
+    await user.click(screen.getByRole('button', { name: 'Back to BREN' }));
+    expect(screen.queryByText("BREN's note isn't saved.")).toBeNull();
+    await user.click(screen.getByRole('button', { name: 'Close' }));
+    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText("BREN's note isn't saved.")).toBeNull();
+    expect(submit).not.toHaveBeenCalled();
   });
 });

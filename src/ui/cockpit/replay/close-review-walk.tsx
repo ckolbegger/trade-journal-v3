@@ -66,11 +66,12 @@ export function CloseReviewWalk({ replay, underlying, definition, binding, submi
   const [asks, setAsks] = useState(0);
   const [asking, setAsking] = useState(false);
   const leave = () => {
-    if (!dirty) return onClose();
+    if (!dirty || !writable) return onClose();
     setAsking(true);
     setAsks((n) => n + 1);
   };
   const save = async () => {
+    if (!writable) return;
     const missing = definition.prompts.filter((p) => p.required && isBlank(answers[p.id]));
     setErrors(Object.fromEntries(missing.map((p) => [p.id, missingText(p)])));
     if (missing.length > 0 || inFlight.current) return;
