@@ -1,0 +1,133 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 1,
+    "total_tokens": 49546,
+    "input_tokens": 49056,
+    "output_tokens": 490,
+    "cache_read_tokens": 13568,
+    "elapsed": "23s"
+  },
+  "tool_calls": {
+    "total": 3,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/coordinators/workspace/capabilities.ts",
+      "content": "T95.62 requires `ExpirationStanding` on `DailyReview.open`, but this list only adds `SettlementToRecord`; `ExpirationStanding` is added to `getTrade` instead. Consequently, the installed manifest does not advertise the required open variant. Add it to `DailyReview.open` here and in the Review route, and update both manifest tests to assert it there (retaining the getTrade variant if it is also supported).",
+      "existing_code": "  'DailyReview.open': ['LatestCompleted', 'OwedReflections', 'Meter', 'GapTrades', 'OwedReflectionGroup', 'SettlementFamily', 'DaySummary', 'PlanOrder', 'LastAction', 'PlanCall', 'SettlementToRecord'],",
+      "start_line": 105,
+      "end_line": 105,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Workspace capabilities routing and tests",
+      "files": [
+        "src/app/routes.ts",
+        "src/coordinators/workspace/capabilities.ts",
+        "src/coordinators/workspace/workspace.test.ts",
+        "tests/integration/d95/capabilities.test.ts"
+      ]
+    }
+  ],
+  "session_id": "3aa11e3f-28d4-41eb-978c-48092d9fb71d",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "3aa11e3f-28d4-41eb-978c-48092d9fb71d",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "b8b817c6",
+      "resolved_base": "dc80f3ac371294717efeb1489713416a7b946a1d",
+      "resolved_head": "b8b817c6cfe3238f07ed097028999224f1a6d212",
+      "exact_range": "dc80f3ac371294717efeb1489713416a7b946a1d..b8b817c6cfe3238f07ed097028999224f1a6d212",
+      "source_artifact_sha256": "6a7c64491325b5b3c249bac77600f34e61f826fa00bef9c627329f479d7fb457"
+    },
+    "execution": {
+      "ocr_version": "v1.14.4",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0f41d19ccbb61d1a664235ee5301f06784615cdc8ddb16035e108900527ee722",
+          "path": "src/app/routes.ts",
+          "fingerprint": "5382dfb862ee0770d842baa67a737a330c76efbca4db9138f3a1aee94f78223f"
+        },
+        {
+          "item_id": "3f548f1ae81ab4049dfea9d702e6a61b509722ca36f81ecd61e08037be77aa16",
+          "path": "src/coordinators/workspace/capabilities.ts",
+          "fingerprint": "8ceeb647c477597125ff6648dc26ee8d8cb21973409e17cfc146747b4c4a965e"
+        },
+        {
+          "item_id": "6c0a9060a31bf3ba57c05369b276def7b239838a93c46585ef412fe0536e8181",
+          "path": "src/coordinators/workspace/workspace.test.ts",
+          "fingerprint": "606d6224ad9e7c928fc0b39f87eb7d68c743e7be6c75934c732cb6a3ba174bff"
+        },
+        {
+          "item_id": "7e32b333adace5236c817180e9c0dde2bcdabb3d697d89d92f66ff642acb59e7",
+          "path": "tests/integration/d95/capabilities.test.ts",
+          "fingerprint": "eb1b16e034226494eac88077ebee735d376d52cb5365563d13e14ffebe935770"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0f41d19ccbb61d1a664235ee5301f06784615cdc8ddb16035e108900527ee722",
+          "path": "src/app/routes.ts",
+          "fingerprint": "5382dfb862ee0770d842baa67a737a330c76efbca4db9138f3a1aee94f78223f"
+        },
+        {
+          "item_id": "3f548f1ae81ab4049dfea9d702e6a61b509722ca36f81ecd61e08037be77aa16",
+          "path": "src/coordinators/workspace/capabilities.ts",
+          "fingerprint": "8ceeb647c477597125ff6648dc26ee8d8cb21973409e17cfc146747b4c4a965e"
+        },
+        {
+          "item_id": "6c0a9060a31bf3ba57c05369b276def7b239838a93c46585ef412fe0536e8181",
+          "path": "src/coordinators/workspace/workspace.test.ts",
+          "fingerprint": "606d6224ad9e7c928fc0b39f87eb7d68c743e7be6c75934c732cb6a3ba174bff"
+        },
+        {
+          "item_id": "7e32b333adace5236c817180e9c0dde2bcdabb3d697d89d92f66ff642acb59e7",
+          "path": "tests/integration/d95/capabilities.test.ts",
+          "fingerprint": "eb1b16e034226494eac88077ebee735d376d52cb5365563d13e14ffebe935770"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "f40e896c9f0895fe7f42d7cdbb87949fd963efbf6479e53af4af98ea6f446583",
+          "path": "evidence/D95/tdd-log/T95.62.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 22550
+  }
+}

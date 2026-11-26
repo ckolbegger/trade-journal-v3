@@ -157,3 +157,10 @@ T95.16 stopped before writing. The collapsed card header (U3, breakdown line 85)
 **Blocks:** nothing now (built as option 1); T95.59 follows whichever is chosen.
 
 **Status:** queued.
+
+## Q12 (queued, to be asked after Q10 and Q11): which Review operation names the expired contract's standing?
+
+From ocr of T95.62 (Doubtful, `capabilities.ts:105`). The plan's T95.62 bullet puts the `ExpirationStanding` variant under `DailyReview.open`, but the expired contract's standing is built only on the Trade's card that `getTrade` returns; `open` reads no replay. T95.62 named it under `getTrade`.
+1. *Recommend:* keep it under `getTrade` and correct the plan's wording (a slip in the list; the manifest then says what each operation returns). No read added.
+2. Give `open` the standing too: one replay read per Settlement Due Trade when the Review opens, then name it under `open`.
+Not parked: T95.62 is built as option 1, which needs no approval; option 2 would be a follow-on.

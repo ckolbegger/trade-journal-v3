@@ -1341,3 +1341,6 @@ Commit `b8b817c6`: Part C's capability variants. `DailyReview.open` adds `Settle
 - Departure from the plan's list (from the handoff note of T95.49): `ExpirationStanding` is named under `getTrade`, not `open`: the field is on `getTrade`'s card and `open` reads no replay; no read added, no pending decision.
 - Level kept Standard: `capabilities.ts` sits under src/coordinators but the plan names it as this task's file (as for T95.23 and T95.43, both Standard), and only string lists changed.
 - Checks: src/coordinators/workspace and d95 capabilities 141 passed; verify:capabilities, typecheck, tsc6, lint (2 pre-existing warnings), lint:deps exit 0. No e2e spec edited.
+
+ocr of T95.62 (session 3aa11e3f): complete, 4 files, 1 finding. `evidence/D95/ocr/T95.62-b8b817c6.json`.
+- Doubtful (`capabilities.ts:105`): `ExpirationStanding` is under `getTrade`, not `open` as the plan names. It is this task's recorded departure; making it match the plan would add a read to `open` (decision 131 covers only fields from data already read), so it is a pending decision, queued as Q12 (recommend: keep `getTrade`, correct the plan's wording), not a bug task. T95.62 is not parked: it is built as the recommended option.
