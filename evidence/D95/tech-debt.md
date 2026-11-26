@@ -70,3 +70,6 @@ Critic B3's minor observations (T95.46):
 - ocr (T95.52), style: `src/ui/screens/ReviewCard.tsx:271` the open-panel useState initializer nests a ternary inside `??`; a helper with early returns reads more simply.
 
 - **T95.62-D1, ocr (Doubtful, performance; `daily-review.ts:682` and `pastLineOf` ~535):** for a Settlement Due Trade whose Stop or Target is crossed on the expiration session, `open` assembles the same replay twice (once for the standing, once in `pastLineOf`). Both go through the same read session, so no store read repeats and the pins hold; only the in-memory assembly repeats. Fix: assemble once per Trade and share it.
+
+- **T95.59-B1, ocr (low, test style; `close-review-walk.test.tsx:195`):** the held save is settled outside `act` on the test's last line; no act warning seen. Wrap the settle in `act`.
+- **T95.59-B1, main session:** DebtForm's answer prompts stay editable while a save is pending (the gap fixed in the walk by T95.59-B1); ocr has not raised it there.

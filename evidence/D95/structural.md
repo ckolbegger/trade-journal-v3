@@ -1488,3 +1488,5 @@ Commit `8f2d92f6`: the walk's answer prompts are disabled while the save is pend
 ### T95.59-B2
 
 Commit `9d0926e8`: `save` returns early when not writable; `leave()` closes at once when nothing is typed or the Workspace is not writable (nothing could be saved, so no ask). Case 1 red then green; case 2 first-run pass (built by case 1), flagged, mutation failed, restored. src/ui/cockpit and ReviewOwed 503 passed; typecheck, tsc6, lint (2 pre-existing warnings), lint:deps exit 0; d6/close-review 1 passed.
+
+ocr of T95.59-B1 and T95.59-B2 (range `8f2d92f6^..9d0926e8`, session 3b412f57): complete, 2 files, 1 finding: low, test style only (a settle outside `act`), sent to tech-debt.md. `evidence/D95/ocr/T95.59-B1-B2-9d0926e8.json`.

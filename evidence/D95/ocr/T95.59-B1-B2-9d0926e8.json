@@ -1,0 +1,123 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 1,
+    "total_tokens": 64877,
+    "input_tokens": 64078,
+    "output_tokens": 799,
+    "cache_read_tokens": 13440,
+    "elapsed": "33s"
+  },
+  "tool_calls": {
+    "total": 5,
+    "by_tool": {
+      "code_comment": 1,
+      "file_read": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/replay/close-review-walk.test.tsx",
+      "content": "Resolving this promise resumes `save()`, which calls `onResolved` and `setPending(false)`, but the test ends without flushing those React updates. This can produce an update-outside-`act` warning and leaves save completion unsynchronized with cleanup. Import `act` from Testing Library and resolve the held save inside `await act(async () =\u003e { held.settle(resolved); });`.",
+      "suggestion_code": "    await act(async () =\u003e { held.settle(resolved); });",
+      "existing_code": "    held.settle(resolved);",
+      "start_line": 195,
+      "end_line": 195,
+      "category": "test",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/cockpit/replay/close-review-walk.test.tsx",
+        "src/ui/cockpit/replay/close-review-walk.tsx"
+      ]
+    }
+  ],
+  "session_id": "3b412f57-ff8c-4a1b-9f9c-ef18775c4ea8",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "3b412f57-ff8c-4a1b-9f9c-ef18775c4ea8",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "8f2d92f6^",
+      "requested_head": "9d0926e8",
+      "resolved_base": "b5ab945cc25b6577472c0ae823f4efbec281f2fc",
+      "resolved_head": "9d0926e8c8eb61e8ba3000bb5f7d7bebf42d3346",
+      "exact_range": "b5ab945cc25b6577472c0ae823f4efbec281f2fc..9d0926e8c8eb61e8ba3000bb5f7d7bebf42d3346",
+      "source_artifact_sha256": "3917b593e6b3abd84cbf7fd318ae5de5c970928849b7a4dad50046dc546e6383"
+    },
+    "execution": {
+      "ocr_version": "v1.14.4",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "c344c129e1eb0053ed9210b7a67880792e81ee9abbbf7c565a10abb147ec8efd",
+          "path": "src/ui/cockpit/replay/close-review-walk.test.tsx",
+          "fingerprint": "3307307dac0605700df0c7c75285e5ccec98c47f9245e469170bbc2ef4b5a3c0"
+        },
+        {
+          "item_id": "dc7256723c2d0e2861bc0ba3b9763ca34ec989e5345a3d82066dd9f78be6354d",
+          "path": "src/ui/cockpit/replay/close-review-walk.tsx",
+          "fingerprint": "e6e173162e8c3b7e5b1bc0523c1401e0352f485d9df97b6c1ba00b3cd9a0e613"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "c344c129e1eb0053ed9210b7a67880792e81ee9abbbf7c565a10abb147ec8efd",
+          "path": "src/ui/cockpit/replay/close-review-walk.test.tsx",
+          "fingerprint": "3307307dac0605700df0c7c75285e5ccec98c47f9245e469170bbc2ef4b5a3c0"
+        },
+        {
+          "item_id": "dc7256723c2d0e2861bc0ba3b9763ca34ec989e5345a3d82066dd9f78be6354d",
+          "path": "src/ui/cockpit/replay/close-review-walk.tsx",
+          "fingerprint": "e6e173162e8c3b7e5b1bc0523c1401e0352f485d9df97b6c1ba00b3cd9a0e613"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "85dbb4e057aad3db2efd01a37ea8ed460ee9f7c5298cdf3588e8d6d72d3fe57d",
+          "path": "evidence/D95/tdd-log/T95.59-B2.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ab47bc811f23c17f4c6317a43b1bf19eff8f2b20af07649acc55f19159f8bebc",
+          "path": "evidence/D95/structural.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "e75e05b078dfe98b18329defac1f1de8d0c9122415439b10cb67a1a1c15db480",
+          "path": "evidence/D95/tdd-log/T95.59-B1.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 33327
+  }
+}
