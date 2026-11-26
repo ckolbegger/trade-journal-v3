@@ -1330,3 +1330,5 @@ Run `t95.58-closed-card` (browser-auto 3d9cddb1, full tier; at `4ecc2c20`): unit
 ### T95.58-F1
 
 Commit `d27ebbd1`: `closeAbc` in e2e/d95/closed-card.spec.ts clicked "Save exit" then "Back to the Review" at once, so the Review could open before the sale saved. It now waits for "Recorded. ABC is closed. Its Close Review is due in the next Review." first, as sale.spec.ts does. No app fault seen. Reproduced 1 failed of 10 (`--repeat-each 10`, workers 1); after the fix 20 of 20 passed. Test-only; kept at Full (its row was opened at Full, and a level isn't lowered).
+
+ocr of T95.58-F1 (session fb5fcd4c): complete, 1 file, no findings. `evidence/D95/ocr/T95.58-F1-d27ebbd1.json`.
