@@ -127,6 +127,22 @@ describe('seed-6 content check (D9.5 T95.63)', () => {
     expect(seed6ContentViolations(frozen())).toEqual([]);
   });
 
+  // Owed Debts and Entries answered before manifest 6 are in the views too; only the Entry the seed-6 freeze minted (fx6- identity) was answered under the new form.
+  const closeReview = (kind: 'Debt' | 'Entry', id: string) => ({ kind, id, entryTypeKey: 'entry-type.close-review', responses: kind === 'Entry' ? [{ prompt: 'What is the key lesson?', answer: { kind: 'Text' } }] : undefined });
+  const withoutAnswerUnderNewForm = (journal: unknown[]) => seed6ContentViolations({ ...frozen(), details: [{ journal }] });
+
+  it('should name the answered Close Review when the views hold only owed Close Review Debts', () => {
+    expect(withoutAnswerUnderNewForm([closeReview('Debt', 'fx6-0015'), closeReview('Debt', 'fx-0172'), closeReview('Debt', 'fx6-0058')])).toContain('Close Review answered');
+  });
+
+  it('should name it when the only answered Close Reviews are under the earlier form', () => {
+    expect(withoutAnswerUnderNewForm([closeReview('Entry', 'fx-0216'), closeReview('Entry', 'fx-0158'), closeReview('Entry', 'fx-0300')])).toContain('Close Review answered');
+  });
+
+  it('should pass on the frozen seed-6 views', () => {
+    expect(seed6ContentViolations(frozen())).not.toContain('Close Review answered');
+  });
+
   it('should name the Roll when the frozen views lose their only Roll', () => {
     const views = frozen();
     views.reviewTrades = views.reviewTrades.filter((trade) => trade.form.action?.action !== 'Roll');

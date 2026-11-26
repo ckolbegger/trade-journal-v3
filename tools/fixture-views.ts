@@ -163,7 +163,7 @@ export function seed6ContentViolations(expected: unknown): string[] {
   type Response = { prompt: string; answer: { kind: string } };
   const held = expected as {
     reviewTrades?: { form?: { action?: { action: string; responses: Response[] } } }[];
-    details?: { journal?: { entryTypeKey?: string; responses?: Response[] }[] }[];
+    details?: { journal?: { kind?: string; id: string; entryTypeKey?: string; responses?: Response[] }[] }[];
     debts?: { entryTypeKey: string; definitionId: string }[];
   };
   const actions = (held.reviewTrades ?? []).flatMap((trade) => (trade.form?.action ? [trade.form.action] : []));
@@ -186,8 +186,9 @@ export function seed6ContentViolations(expected: unknown): string[] {
     ['Expiration Reason answered', answersOf('Why did it expire worthless?') >= 1],
     ['Close Review owed under the earlier form', closeDebts.some((debt) => !isNewForm(debt))],
     ['Close Review owed under manifest 6', closeDebts.some(isNewForm)],
-    // Two answered Close Reviews came from workspace-v7; the third is the one answered under manifest 6's form.
-    ['Close Review answered', entries.filter((entry) => entry.entryTypeKey === 'entry-type.close-review').length >= 3],
+    // An answered Entry carries no form revision in the views, so the one answered under manifest 6's form is told by the identity the
+    // seed-6 freeze minted for it (fx6-); the two from workspace-v7 and every owed Debt keep the dump's.
+    ['Close Review answered', entries.some((entry) => entry.kind === 'Entry' && entry.entryTypeKey === 'entry-type.close-review' && entry.id.startsWith('fx6-'))],
   ];
   return missing.filter(([, held]) => !held).map(([name]) => name);
 }
