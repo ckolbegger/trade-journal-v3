@@ -1,0 +1,259 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 14 selected item(s).",
+  "summary": {
+    "files_reviewed": 14,
+    "comments": 2,
+    "total_tokens": 370469,
+    "input_tokens": 366745,
+    "output_tokens": 3724,
+    "cache_read_tokens": 36864,
+    "elapsed": "1m30s"
+  },
+  "tool_calls": {
+    "total": 47,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 19,
+      "file_read": 25,
+      "file_read_diff": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/ReviewOwedCard.tsx",
+      "content": "Close Review statuses are still overridden by the preceding `dueNow \u003e 0` return. A closed trade with an overdue Position Change Reflection and a next-review, saved, or declined Close Review will display only “1 reflection due”, even after its detail loads. Resolve all available Close Review statuses before falling back to the generic reflection count, and cover these cases with a currently due Position Change Reflection.",
+      "existing_code": "  if (closeReview?.classification === 'DueInNextReview') return 'Close Review · next Review';",
+      "start_line": 27,
+      "end_line": 27,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/closed-card.ts",
+      "content": "Short plans store signed negative quantities (for example, the cash-secured-put fixture uses `quantity: '-2'`). Using that value directly below renders “Sell -2 contracts”, and a one-contract short is incorrectly pluralized because `-1 !== 1`. Format the absolute planned quantity for both the unit selection and Entry text while retaining `side` to describe the direction; add a short-plan test using the actual signed representation.",
+      "existing_code": "  const units = Number(plan.quantity) === 1 ? one : many;",
+      "start_line": 42,
+      "end_line": 42,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Daily review card types, coordination, and dependent props",
+      "files": [
+        "src/coordinators/daily-review/card-kinds.test.ts",
+        "src/coordinators/daily-review/daily-review.ts",
+        "src/coordinators/daily-review/reflections.test.ts",
+        "src/coordinators/daily-review/types.ts",
+        "src/ui/cockpit/drawers/plan-risk.props.ts"
+      ]
+    },
+    {
+      "label": "Closed review card UI, styling, and regression coverage",
+      "files": [
+        "e2e/d6/close-review.spec.ts",
+        "e2e/d6/responsive-a11y.spec.ts",
+        "e2e/d95/closed-card.spec.ts",
+        "src/ui/app.css",
+        "src/ui/screens/ReviewCard.test.tsx",
+        "src/ui/screens/ReviewOwed.test.tsx",
+        "src/ui/screens/ReviewOwedCard.tsx",
+        "src/ui/screens/ReviewReflections.tsx",
+        "src/ui/screens/closed-card.ts"
+      ]
+    }
+  ],
+  "session_id": "c1007ee8-6eb3-45fe-b2ef-5741e70fa09c",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "c1007ee8-6eb3-45fe-b2ef-5741e70fa09c",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "f6f84ca9",
+      "resolved_base": "2876680ac943608500fb21ff8ca74fd81099e62b",
+      "resolved_head": "f6f84ca9ca312d6e5bbab2b94d9a3724edac346d",
+      "exact_range": "2876680ac943608500fb21ff8ca74fd81099e62b..f6f84ca9ca312d6e5bbab2b94d9a3724edac346d",
+      "source_artifact_sha256": "9a60fef7ec88cf967b85824539d08e93405522d126c98b403ba32ea316c419d7"
+    },
+    "execution": {
+      "ocr_version": "v1.14.4",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "02d2b522fc8ad50e6ef168e466ec06ab756cf8ca676015178a348d1e1a98f989",
+          "path": "src/ui/screens/ReviewReflections.tsx",
+          "fingerprint": "1a3b1bb4c503b830d733cc680f64307b6f01320fcf86208a36f95fc87488d8ee"
+        },
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "4b6eaf275bbcf682373ac64e08becf2a01554296af4d605b46dbffe3abab34dc"
+        },
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "882e4f3a6a529ae4d0516eb351048f85baa1c12c3bb64158418539ee4e1f1297"
+        },
+        {
+          "item_id": "24130375af365892078c5278d207f29c6a19460b3f37d71486e36571ba82b0b5",
+          "path": "e2e/d6/close-review.spec.ts",
+          "fingerprint": "693092a540391fe574aa02c82c58d7894468a8e164075235aefa0b869acf094e"
+        },
+        {
+          "item_id": "34389de7fa3bd2f69514549c5c8c4748066e3e4a508111acaa078ca3479c689d",
+          "path": "src/coordinators/daily-review/reflections.test.ts",
+          "fingerprint": "5dc9eca032bfbf71a25e5d8b6daf40a1ba7675a997a530f09f07e36d4c6f8330"
+        },
+        {
+          "item_id": "658cacd7d8755bc419d3c8b2dc3f0b93468308fa9e366c831087e003312a3c83",
+          "path": "src/ui/screens/ReviewOwedCard.tsx",
+          "fingerprint": "763a595970109a08d8303074af2d957adc596a816bc74242da3b9b1a331c3900"
+        },
+        {
+          "item_id": "7d52817b344dd207a000b72fdf2b00107f0ea680c42437c4597db4dfd540b0c1",
+          "path": "e2e/d95/closed-card.spec.ts",
+          "fingerprint": "29982952697956a9b384d345d51f9de83e0ed0ae36afb9477f703715ff8e4b65"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "a34b037e60bda071071adb7bdbe04da48465c750c493907fb7ced40a52a7f19f"
+        },
+        {
+          "item_id": "a83706f3444e16c14ac613c874f7293d7adce6354226bde7d7b9b892fce05701",
+          "path": "src/ui/screens/ReviewCard.test.tsx",
+          "fingerprint": "169e684dc389b6fb25208ccffc0eddce32fab1ad4ddb5fb6370774de1f901077"
+        },
+        {
+          "item_id": "ad31c51e12ceeeb4102a024e23cd34c878fad430a8a062778a9fa5aefe65fc89",
+          "path": "src/ui/screens/closed-card.ts",
+          "fingerprint": "cdb7635de2f49e60eba37e0e950cba88892fb8426e3e49ced20b368bf391c753"
+        },
+        {
+          "item_id": "bc0243c3f6d1e7459e2f145a2f56c7b96f61591d0ab01ce04fe2d9d0e13cfeeb",
+          "path": "src/ui/cockpit/drawers/plan-risk.props.ts",
+          "fingerprint": "a7ad6f9ff51eeae4b5d9e55cf910d2069dd3771f301765592c98987b1fb1af3d"
+        },
+        {
+          "item_id": "c2fd486111638d00f0d387a09d3b1d932d274fd2e5443262caf354d5c4d2756f",
+          "path": "e2e/d6/responsive-a11y.spec.ts",
+          "fingerprint": "d701daa3a5e407fbcbe111ad62373cdbf71e8c22c32b82a27bb3ef90fe0d90a9"
+        },
+        {
+          "item_id": "f60d40a2fcf211e72668946f9d6c2357941e916774d36dd5cb14b2a35255d3a9",
+          "path": "src/ui/screens/ReviewOwed.test.tsx",
+          "fingerprint": "d11e1eae10b9b4eaa197ad935343e66c943e77e970efb857904c5a8ac0c37d4d"
+        },
+        {
+          "item_id": "faf221cf31623695ce2612116b2cc352b77033b2c58ea5ad80739fb16860f12c",
+          "path": "src/coordinators/daily-review/card-kinds.test.ts",
+          "fingerprint": "fb68c26db7b5edd2b382d6391163fb67345e9c4396142eef507832ffc45f30ba"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "02d2b522fc8ad50e6ef168e466ec06ab756cf8ca676015178a348d1e1a98f989",
+          "path": "src/ui/screens/ReviewReflections.tsx",
+          "fingerprint": "1a3b1bb4c503b830d733cc680f64307b6f01320fcf86208a36f95fc87488d8ee"
+        },
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "4b6eaf275bbcf682373ac64e08becf2a01554296af4d605b46dbffe3abab34dc"
+        },
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "882e4f3a6a529ae4d0516eb351048f85baa1c12c3bb64158418539ee4e1f1297"
+        },
+        {
+          "item_id": "24130375af365892078c5278d207f29c6a19460b3f37d71486e36571ba82b0b5",
+          "path": "e2e/d6/close-review.spec.ts",
+          "fingerprint": "693092a540391fe574aa02c82c58d7894468a8e164075235aefa0b869acf094e"
+        },
+        {
+          "item_id": "34389de7fa3bd2f69514549c5c8c4748066e3e4a508111acaa078ca3479c689d",
+          "path": "src/coordinators/daily-review/reflections.test.ts",
+          "fingerprint": "5dc9eca032bfbf71a25e5d8b6daf40a1ba7675a997a530f09f07e36d4c6f8330"
+        },
+        {
+          "item_id": "658cacd7d8755bc419d3c8b2dc3f0b93468308fa9e366c831087e003312a3c83",
+          "path": "src/ui/screens/ReviewOwedCard.tsx",
+          "fingerprint": "763a595970109a08d8303074af2d957adc596a816bc74242da3b9b1a331c3900"
+        },
+        {
+          "item_id": "7d52817b344dd207a000b72fdf2b00107f0ea680c42437c4597db4dfd540b0c1",
+          "path": "e2e/d95/closed-card.spec.ts",
+          "fingerprint": "29982952697956a9b384d345d51f9de83e0ed0ae36afb9477f703715ff8e4b65"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "a34b037e60bda071071adb7bdbe04da48465c750c493907fb7ced40a52a7f19f"
+        },
+        {
+          "item_id": "a83706f3444e16c14ac613c874f7293d7adce6354226bde7d7b9b892fce05701",
+          "path": "src/ui/screens/ReviewCard.test.tsx",
+          "fingerprint": "169e684dc389b6fb25208ccffc0eddce32fab1ad4ddb5fb6370774de1f901077"
+        },
+        {
+          "item_id": "ad31c51e12ceeeb4102a024e23cd34c878fad430a8a062778a9fa5aefe65fc89",
+          "path": "src/ui/screens/closed-card.ts",
+          "fingerprint": "cdb7635de2f49e60eba37e0e950cba88892fb8426e3e49ced20b368bf391c753"
+        },
+        {
+          "item_id": "bc0243c3f6d1e7459e2f145a2f56c7b96f61591d0ab01ce04fe2d9d0e13cfeeb",
+          "path": "src/ui/cockpit/drawers/plan-risk.props.ts",
+          "fingerprint": "a7ad6f9ff51eeae4b5d9e55cf910d2069dd3771f301765592c98987b1fb1af3d"
+        },
+        {
+          "item_id": "c2fd486111638d00f0d387a09d3b1d932d274fd2e5443262caf354d5c4d2756f",
+          "path": "e2e/d6/responsive-a11y.spec.ts",
+          "fingerprint": "d701daa3a5e407fbcbe111ad62373cdbf71e8c22c32b82a27bb3ef90fe0d90a9"
+        },
+        {
+          "item_id": "f60d40a2fcf211e72668946f9d6c2357941e916774d36dd5cb14b2a35255d3a9",
+          "path": "src/ui/screens/ReviewOwed.test.tsx",
+          "fingerprint": "d11e1eae10b9b4eaa197ad935343e66c943e77e970efb857904c5a8ac0c37d4d"
+        },
+        {
+          "item_id": "faf221cf31623695ce2612116b2cc352b77033b2c58ea5ad80739fb16860f12c",
+          "path": "src/coordinators/daily-review/card-kinds.test.ts",
+          "fingerprint": "fb68c26db7b5edd2b382d6391163fb67345e9c4396142eef507832ffc45f30ba"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "74431c8dac8afbc7c48b7e3f5544458d5d5fa9c76cd4be5eea10be7ee63d6421",
+          "path": "evidence/D95/tdd-log/T95.58.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 90019
+  }
+}

@@ -1312,3 +1312,9 @@ Commit `57a35542`: a Close Review classified `DueInReviewAfterNext` shows "Due i
 ### T95.58-B2
 
 Commit `0f1a0faa`: a closed card owing a due Position Change Reflection reads "N reflection(s) due · " plus W151's Close Review state ("Close Review · next Review", "saved", "declined"); a due Close Review still reads only "Close Review due"; `DueInReviewAfterNext` isn't named on the label (W151 has no words). Case 1 red then green; case 2 first-run pass (built by T95.40), flagged, mutation (due check only when `dueNow === 0`) failed, restored. src/ui/screens 913 passed; typecheck, tsc6, lint (2 pre-existing warnings), lint:deps exit 0; browser d95 closed-card, sale, d6 close-review: 10 passed, exit 0 (per-spec lines for two not separately seen). Waiting: ChatGPT usage limit (hit 2026-11-26 ~10:52Z) for the rerun of T95.58's ocr over the 8 failed files and the ocr of B1 and B2.
+
+ocr of T95.58, rerun over the whole commit (session c1007ee8): complete, no failed items; 14 files reviewed, 2 findings. `evidence/D95/ocr/T95.58-f6f84ca9.json`.
+- Finding 2 (`ReviewOwedCard.tsx:27`, the `dueNow > 0` return hides the Close Review state) is the same defect as T95.58-B2, fixed at `0f1a0faa`; no new task.
+- **T95.58-B3** (Valid, `closed-card.ts:42`): a short Plan stores a signed quantity (`'-2'`, copied from the leg by `daily-review.ts`), so the Plan's Entry cell reads "Sell -2 contracts" and a one-contract short (`'-1'`) gets the plural unit. Cases: it should show a short Plan's quantity without its sign ("Sell 2 contracts"); it should use the singular unit for a one-contract short ("Sell 1 contract").
+
+ocr of T95.58-B1 and T95.58-B2 (range `57a35542^..0f1a0faa`, session defa83ef): complete, 3 files, no findings. `evidence/D95/ocr/T95.58-B1-B2-0f1a0faa.json`.
