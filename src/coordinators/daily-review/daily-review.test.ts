@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { breakFirstExecution, cardFixture, fiveTradeFixture, rawEditTrade, MONDAY_1615, MONDAY_1700, MONDAY_CUTOFF, reviewStack, ELEVEN_AM, TEN_AM, type ReviewStack } from '../../../tests/support/review-fixture.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { dumpAll } from '../../../tests/support/stack.ts';
@@ -7,6 +7,7 @@ import { createDailyReview, type OpenDailyReviewResult, type ReflectionSaveBindi
 import { seriesStack } from '../../../tests/support/replay-series-stack.ts';
 import { BREN_CALL, CORV_PUT, K_SALE, R_BREN_U, R_CORV_D } from '../../domain/trade-analysis/option-trade.ts';
 import { instrumentKey } from '../../domain/instrument/index.ts';
+import { beginSemanticTransaction } from '../../persistence/index.ts';
 import { REPLAY_SESSION_DATES } from '../../domain/trade-analysis/reference-trade.ts';
 
 const open = (stack: ReviewStack, asOf: string) => stack.dailyReview.open({ date: { kind: 'LatestCompleted' }, asOf });
@@ -1248,6 +1249,54 @@ async function replayCard(stack: ReviewStack, tradeId: string, asOf: string) {
   if (card.kind !== 'Ready') throw new Error(`expected Ready, got ${card.kind}`);
   return card.trade;
 }
+
+// A Daily Trade Review Action saved for a Review Date, as a save writes it: the chosen Action and, when given, its reason.
+async function saveReviewAction(stack: ReviewStack, tradeId: string, reviewDate: string, action: string, intent?: string) {
+  const definition = await stack.journal.getDefinitions({ latestFor: 'entry-type.daily-trade-review' });
+  if (definition.kind !== 'Found') throw new Error('no Daily Trade Review definition');
+  const prepared = await stack.journal.prepareEffects({
+    obligation: 'DailyTradeReview',
+    disposition: { kind: 'Complete', form: { definitionId: definition.definition.id, answers: { 'prompt.daily-trade-review.action': { kind: 'Option', optionId: `option.daily-trade-review.action.${action}` }, ...(intent !== undefined && { 'prompt.daily-trade-review.intent': { kind: 'Text', text: intent } }) } } },
+    anchor: { kind: 'Trade', ref: tradeId },
+    origin: { kind: 'DailyReview', ref: tradeId, reviewDate },
+    momentTime: '2026-11-16T22:00:00Z',
+  });
+  if (prepared.kind !== 'Prepared') throw new Error(`expected Prepared, got ${JSON.stringify(prepared)}`);
+  const tx = beginSemanticTransaction();
+  stack.journal.applyPreparedEffects(tx, prepared, {});
+  const committed = await stack.persistence.commit(tx.close());
+  if (committed.kind !== 'Committed') throw new Error(`expected Committed, got ${committed.kind}`);
+}
+
+describe("getTrade: the card's replay carries each session's Action (P171, A317)", () => {
+  it('should carry the Actions on the Review card\'s replay with no narrative read', async () => {
+    const { stack, tradeId } = await seriesStack(R_BREN_U, 'strategy.long-call', MON_1116_1700, { marksThrough: 10 });
+    await saveReviewAction(stack, tradeId, REPLAY_SESSION_DATES[3], 'hold');
+    await saveReviewAction(stack, tradeId, REPLAY_SESSION_DATES[10], 'exit', 'The Stop was crossed.');
+    const query = vi.spyOn(stack.journal, 'query');
+
+    const { replay } = await replayCard(stack, tradeId, MON_1116_1700);
+
+    const expected = new Map<string, { action: string; intent?: string }>([[REPLAY_SESSION_DATES[3], { action: 'Hold' }], [REPLAY_SESSION_DATES[10], { action: 'Exit', intent: 'The Stop was crossed.' }]]);
+    expect(replay?.sessions.map((s) => s.action)).toEqual(REPLAY_SESSION_DATES.slice(0, 11).map((date) => expected.get(date)));
+    expect(query.mock.calls.filter(([q]) => q.scope === 'TradeNarrative')).toEqual([]);
+  }, 60_000);
+
+  it("should carry the key moments and each session's Plan Call, equal on the card and on replayTrade", async () => {
+    const { stack, tradeId, replay: replayTrade } = await seriesStack(R_BREN_U, 'strategy.long-call', MON_1116_1700, { marksThrough: 10 });
+    await saveReviewAction(stack, tradeId, REPLAY_SESSION_DATES[10], 'hold');
+
+    const { replay } = await replayCard(stack, tradeId, MON_1116_1700);
+
+    const detail = await replayTrade();
+    if (detail.kind !== 'Ready' || !('sessions' in detail.view)) throw new Error('expected a replay');
+    expect(replay?.keyMoments?.length).toBeGreaterThan(0);
+    expect(replay?.keyMoments).toEqual(detail.view.keyMoments);
+    expect(replay?.sessions.map((s) => s.planCall)).toEqual(detail.view.sessions.map((s) => s.planCall));
+    expect(replay?.sessions.every((s) => s.planCall !== undefined)).toBe(true);
+    expect(replay?.sessions.map((s) => s.action)).toEqual(detail.view.sessions.map((s) => s.action));
+  }, 60_000);
+});
 
 describe("getTrade: the card's replay (A254)", () => {
   it("should return R-BREN-U's replay ending at the Review Date, with that session's figures", async () => {

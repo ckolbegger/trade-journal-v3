@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { instrumentKey, type Instrument } from '../../domain/instrument/index.ts';
 import { BREN_CALL, DALE_PUT, OC2_CONTRACT, K_SALE, R_BREN_U, R_DALE_U } from '../../domain/trade-analysis/option-trade.ts';
 import { REPLAY_SESSION_DATES, type ReplayTestSeries } from '../../domain/trade-analysis/reference-trade.ts';
@@ -23,7 +23,7 @@ const DATES = { mon: '2026-10-12', tue: '2026-10-13', wed: '2026-10-14', thu: '2
 const frac = (r: Rational) => `${r.numerator}/${r.denominator}`;
 const q = (n: bigint, d = 1n) => frac(Rational.of(n, d));
 
-async function oc3Stack(now = THURSDAY_1700) {
+async function oc3Stack(now = THURSDAY_1700, thursday: { readonly action: string; readonly intent?: string } = { action: 'hold' }) {
   const stack = await reviewStack(now);
   await stack.catalog.seedDefaults(D7_CATALOG_MANIFEST);
   await stack.journal.seedDefaults(D6_JOURNAL_MANIFEST);
@@ -81,12 +81,12 @@ async function oc3Stack(now = THURSDAY_1700) {
   };
 
   // A Daily Trade Review Action for a Review Date, saved at `momentTime`.
-  const saveAction = async (reviewDate: string, momentTime: string) => {
+  const saveAction = async (reviewDate: string, momentTime: string, own: { readonly action: string; readonly intent?: string } = { action: 'hold' }) => {
     const definition = await stack.journal.getDefinitions({ latestFor: 'entry-type.daily-trade-review' });
     if (definition.kind !== 'Found') throw new Error('no Daily Trade Review definition');
     const prepared = await stack.journal.prepareEffects({
       obligation: 'DailyTradeReview',
-      disposition: { kind: 'Complete', form: { definitionId: definition.definition.id, answers: { 'prompt.daily-trade-review.action': { kind: 'Option', optionId: 'option.daily-trade-review.action.hold' } } } },
+      disposition: { kind: 'Complete', form: { definitionId: definition.definition.id, answers: { 'prompt.daily-trade-review.action': { kind: 'Option', optionId: `option.daily-trade-review.action.${own.action}` }, ...(own.intent !== undefined && { 'prompt.daily-trade-review.intent': { kind: 'Text', text: own.intent } }) } } },
       anchor: { kind: 'Trade', ref: tradeId },
       origin: { kind: 'DailyReview', ref: tradeId, reviewDate },
       momentTime,
@@ -111,7 +111,7 @@ async function oc3Stack(now = THURSDAY_1700) {
   await markBoth(DATES.wed, '57.40', '2.90');
   await markBoth(DATES.thu, '57.90', '3.20');
   await saveAction(DATES.tue, '2026-10-14T12:00:00Z');
-  await saveAction(DATES.thu, '2026-10-15T22:00:00Z');
+  await saveAction(DATES.thu, '2026-10-15T22:00:00Z', thursday);
 
   const views = createTradeViews(stack);
   const detail = async () => {
@@ -249,6 +249,53 @@ describe('replayTrade (A212, A213)', () => {
 
 // T8P.23-B13-B1: a mixed Trade (a Covered Call) has no cut while a leg is still live. No mixed fixture is built at the coordinator
 // seam, so the helper is tested directly with mixed positions.
+describe("replayTrade: each session's Action (P171, A317)", () => {
+  it('should place each saved Action on its Review Date\'s session, with its reason', async () => {
+    const { replay } = await oc3Stack(THURSDAY_1700, { action: 'exit', intent: 'The target is near.' });
+    const view = ready(await replay());
+
+    expect(view.sessions[1]!.action).toEqual({ action: 'Hold' });
+    expect(view.sessions[3]!.action).toEqual({ action: 'Exit', intent: 'The target is near.' });
+  });
+
+  it('should leave a session with no saved Action without one', async () => {
+    const { replay } = await oc3Stack();
+    const view = ready(await replay());
+
+    expect(view.sessions[0]).not.toHaveProperty('action');
+    expect(view.sessions[2]).not.toHaveProperty('action');
+  });
+
+  it('should place a Settle Later on its session', async () => {
+    const { replay } = await oc3Stack(THURSDAY_1700, { action: 'settle-later' });
+    const view = ready(await replay());
+
+    expect(view.sessions[3]!.action).toEqual({ action: 'Settle Later' });
+  });
+
+  it("should carry the Actions on Trade Detail's replay from the narrative read it already makes", async () => {
+    const { stack, views, tradeId, detail } = await oc3Stack(THURSDAY_1700, { action: 'exit', intent: 'The target is near.' });
+    const { binding } = await detail();
+    const query = vi.spyOn(stack.journal, 'query');
+    const queryActions = vi.spyOn(stack.journal, 'queryActions');
+    const view = ready(await views.replayTrade({ tradeId, binding }));
+
+    expect(view.sessions.map((s) => s.action?.action)).toEqual([undefined, 'Hold', undefined, 'Exit']);
+    expect(query.mock.calls.filter(([q]) => q.scope === 'TradeNarrative')).toHaveLength(1);
+    expect(queryActions).not.toHaveBeenCalled();
+  });
+
+  it("should carry the key moments and each session's Plan Call", async () => {
+    const { replay } = await oc3Stack();
+    const view = ready(await replay());
+
+    expect(view.keyMoments?.[0]?.date).toBe(DATES.mon);
+    expect(view.keyMoments?.[0]?.kinds).toContain('Entry');
+    expect(view.keyMoments?.at(-1)).toEqual({ date: DATES.thu, kinds: expect.arrayContaining(['Now']) as unknown });
+    expect(view.sessions.every((s) => s.planCall !== undefined)).toBe(true);
+  });
+});
+
 describe('settlementExpirationOf (A212, revision 98)', () => {
   const lot = [{}] as unknown as InstrumentPosition['openLots'];
   const held = (instrument: Instrument): InstrumentPosition => ({ instrument, quantity: Rational.of(1n), openLots: lot });

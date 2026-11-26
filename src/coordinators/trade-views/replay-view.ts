@@ -1,5 +1,5 @@
 import type { Instrument, OptionInstrument } from '../../domain/instrument/index.ts';
-import type { CalculationResult, IncoherentFact, ReplayedSession, ReplayResult } from '../../domain/trade-analysis/index.ts';
+import type { CalculationResult, IncoherentFact, KeyMoment, PlanCall, ReplayedSession, ReplayResult } from '../../domain/trade-analysis/index.ts';
 import type { Rational } from '../../domain/values/index.ts';
 import type { AcknowledgmentVersion } from '../../modules/market-data/index.ts';
 import type { MeterReading } from '../valuation/index.ts';
@@ -68,6 +68,12 @@ export type ReplayEstimates = NonNullable<ReplayedSession['estimates']>;
 // A253: how a Closed Trade ended.
 export type ReplayFinal = { readonly kind: 'Sold' } | { readonly kind: 'Expired'; readonly contract: OptionInstrument };
 
+// A317: the Action saved for a session's Review Date, with its reason (the Intent) when one was given.
+export interface ReplayAction {
+  readonly action: string;
+  readonly intent?: string;
+}
+
 export interface ReplaySession {
   // The session's trading date.
   readonly date: string;
@@ -86,6 +92,10 @@ export interface ReplaySession {
   readonly journal: readonly TradeDetailNarrativeItem[];
   // A250: this session's figures.
   readonly figures?: ReplayFigures;
+  // A317: the Action saved for this session's Review Date; absent when none was saved.
+  readonly action?: ReplayAction;
+  // A306: what the Plan Exit calls for on this session's Marks.
+  readonly planCall?: PlanCall;
   // A251: the Position Changes in this session.
   readonly markers?: readonly ReplayMarker[];
   // A271: each role's first crossing and current run.
@@ -111,6 +121,8 @@ export interface TradeReplayView {
   readonly pending: { readonly date: string; readonly journal: readonly TradeDetailNarrativeItem[] } | null;
   // A252: the Plan column. Named `planColumn` because `plan` above already holds the pre-exposure Journal items.
   readonly planColumn?: ReplayPlanColumn;
+  // The sessions worth jumping to (Entry, Low, Stop, Target, High, Sale, Now or End), in session order.
+  readonly keyMoments?: readonly KeyMoment[];
   // A260: the meter's reading of an Open Trade at its latest session, with the session before's result from this replay (P130). Absent for a
   // Closed Trade and for one with a contract due for settlement. Additive.
   readonly meter?: MeterReading;

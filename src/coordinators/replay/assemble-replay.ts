@@ -1,10 +1,10 @@
 import { Temporal } from 'temporal-polyfill';
 import { instrumentKey, settlementDueOn, type Instrument } from '../../domain/instrument/index.ts';
-import { replay, terminalPositionChangeOf, type DerivedTradeState, type InstrumentPosition, type ObservationFrame, type ReplayedSession, type ReplaySessionInput, type TradeAnalysisRecord } from '../../domain/trade-analysis/index.ts';
+import { keyMoments, replay, terminalPositionChangeOf, type DerivedTradeState, type InstrumentPosition, type ObservationFrame, type ReplayedSession, type ReplaySessionInput, type TradeAnalysisRecord } from '../../domain/trade-analysis/index.ts';
 import type { Instant } from '../../domain/time/index.ts';
-import type { Journal, TradeNarrativeItem } from '../../modules/journal/index.ts';
+import type { HistoryAction, Journal, TradeNarrativeItem } from '../../modules/journal/index.ts';
 import type { MarketDataReadSession, SeriesPoint } from '../../modules/market-data/index.ts';
-import type { ReplayMarkResolution, ReplayFinal, ReplayNotApplicable, ReplayPlanColumn, TradeReplayView } from '../trade-views/replay-view.ts';
+import type { ReplayAction, ReplayMarkResolution, ReplayFinal, ReplayNotApplicable, ReplayPlanColumn, TradeReplayView } from '../trade-views/replay-view.ts';
 
 const before = (a: Instant, b: Instant) => Temporal.Instant.compare(a, b) < 0;
 
@@ -119,6 +119,12 @@ function finalOf(analysis: TradeAnalysisRecord, terminalTime: Instant | null): R
   return contract?.kind === 'Option' ? { kind: 'Expired', contract } : { kind: 'Sold' };
 }
 
+// A317: a session carries the Action saved for its Review Date, with the reason when one was given.
+function actionOn(actions: readonly HistoryAction[], date: string): { readonly action?: ReplayAction } {
+  const saved = actions.find((candidate) => candidate.reviewDate === date);
+  return saved ? { action: { action: saved.action, ...(saved.reason !== undefined && { intent: saved.reason }) } } : {};
+}
+
 export function replayView(
   tradeId: string,
   instruments: readonly Instrument[],
@@ -128,6 +134,7 @@ export function replayView(
   pendingDate: string | undefined,
   ended: boolean,
   final: ReplayFinal | undefined,
+  actions: readonly HistoryAction[] = [],
 ): TradeReplayView {
   return {
     tradeId,
@@ -136,18 +143,20 @@ export function replayView(
       ...session,
       marks: session.marks.map((mark, j) => ({ ...mark, resolution: resolutionOf(sessions.points[i]![j]) })),
       journal: journal.sessions[i]!,
+      ...actionOn(actions, session.date),
       ...(final && i === replayed.sessions.length - 1 && { final }),
     })),
     plan: journal.plan,
     pending: ended || pendingDate === undefined ? null : { date: pendingDate, journal: journal.pending },
     ...(replayed.plan && { planColumn: replayed.plan }),
+    keyMoments: keyMoments(replayed.sessions),
   };
 }
 
 // The lifetime, the series reads and the call to `replay`, shared by the Trade Detail's replay and the Review card's (P127). The
 // facts are already known to derive (`whole`) and to include a Position Change. One read session: each Instrument's series is
 // one read, whatever the number of sessions replayed.
-export async function assembleReplay(deps: { readonly journal: Journal }, analysis: TradeAnalysisRecord, whole: DerivedTradeState, session: MarketDataReadSession, options: { readonly withJournal?: boolean } = {}): Promise<TradeReplayView | ReplayNotApplicable> {
+export async function assembleReplay(deps: { readonly journal: Journal }, analysis: TradeAnalysisRecord, whole: DerivedTradeState, session: MarketDataReadSession, options: { readonly withJournal?: boolean; readonly actions?: readonly HistoryAction[] } = {}): Promise<TradeReplayView | ReplayNotApplicable> {
   const { terminalTime } = whole;
   const instruments = replayInstruments(analysis);
   const firstExposure = firstExposureOf(analysis);
@@ -156,8 +165,10 @@ export async function assembleReplay(deps: { readonly journal: Journal }, analys
   const sessions = replaySessions(instruments, series, firstExposure, terminalTime, expiration);
   const replayed = replay({ record: analysis, sessions: sessions.inputs });
   if (replayed.kind === 'NotApplicable') return replayed;
-  // The Review card places no Journal items (`withJournal: false`), so it skips the narrative read.
-  const items = options.withJournal === false ? [] : (await deps.journal.query({ scope: 'TradeNarrative', tradeId: analysis.tradeId })).items;
+  // The Review card places no Journal items (`withJournal: false`), so it skips the narrative read; it passes the Trade's saved Actions from its own read (P171).
+  const page = options.withJournal === false ? undefined : await deps.journal.query({ scope: 'TradeNarrative', tradeId: analysis.tradeId });
+  const items = page?.items ?? [];
+  const actions = options.actions ?? page?.actions ?? [];
   // A253: only a session closing at or after the terminal fill is final; a Trade closed after the last completed session has not
   // ended yet there (no final, a pending column, and no later Journal item on the last session).
   const last = sessions.inputs.at(-1);
@@ -165,5 +176,5 @@ export async function assembleReplay(deps: { readonly journal: Journal }, analys
   const ended = (terminalTime !== null && !closedLater) || expiration !== null;
   const journal = placeJournal(items, sessions.inputs, firstExposure, ended);
   const final = closedLater ? undefined : finalOf(analysis, terminalTime);
-  return replayView(analysis.tradeId, instruments, replayed, sessions, journal, session.nextSessionDate, ended, final);
+  return replayView(analysis.tradeId, instruments, replayed, sessions, journal, session.nextSessionDate, ended, final, actions);
 }

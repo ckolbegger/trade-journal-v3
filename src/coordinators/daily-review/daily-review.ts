@@ -904,8 +904,10 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     const contract = valuation?.state.positions.find(({ instrument, openLots }) => instrument.kind === 'Option' && openLots.length > 0)?.instrument;
     const sessions = contract?.kind === 'Option' && !settlementDueOn(contract, reviewDate) ? read.sessionDatesBetween(dayAfter(reviewDate), contract.expiration) : undefined;
     const payoff = entry.derivation.kind === 'Derived' ? payoffOf(analysis, entry.derivation) : undefined;
+    // The Trade's saved Actions, the Review Date's own included: the replay places them on their sessions from this one read (P171).
+    const history = [...(actions.earlier ?? []), ...(actions.onDate ? [actions.onDate] : [])];
     // A254: the Trade's replay to the Review Date, the read session's date; the whole-lifetime derivation is the integrity one.
-    const replayed = found.integrity.kind === 'Derived' && analysis.positionChanges.length > 0 ? await assembleReplay(deps, analysis, found.integrity, read, { withJournal: false }) : undefined;
+    const replayed = found.integrity.kind === 'Derived' && analysis.positionChanges.length > 0 ? await assembleReplay(deps, analysis, found.integrity, read, { withJournal: false, actions: history }) : undefined;
     const replay = replayed && !('kind' in replayed) ? replayed : undefined;
     const saved = actions.actions[analysis.tradeId];
     // A314: where the contract finished, from the Underlying's Mark the replay already read for the expiration session; no read of its own.
@@ -918,7 +920,6 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     const since = await unreviewedSince(read, actions.earlier?.at(-1)?.reviewDate, valuation?.state.exposureStart);
     // A309: the Plan Exit facts. What is held is the whole lifetime's; the conditions' status is at the Review Date's Marks; a Hold counts before the Review Date,
     // and the Exit is the most recent Action, the Review Date's own included.
-    const history = [...(actions.earlier ?? []), ...(actions.onDate ? [actions.onDate] : [])];
     const planExit = valuation && found.integrity.kind === 'Derived' ? planExitFactsOf({ state: found.integrity, evaluation: valuation.evaluation, sessions: replay?.sessions, history, before: reviewDate }) : undefined;
     const decisions = lastDecisionsOf(actions.earlier ?? [], replay, reviewDate, since === undefined ? [] : missedSessions(read, since, dayBefore(reviewDate)));
     // The Trade's Outstanding Debt, each classified against the closes around the Review Date (A63).
