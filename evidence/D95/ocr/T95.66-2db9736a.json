@@ -1,0 +1,168 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 8 selected item(s).",
+  "summary": {
+    "files_reviewed": 8,
+    "comments": 0,
+    "total_tokens": 210123,
+    "input_tokens": 208127,
+    "output_tokens": 1996,
+    "cache_read_tokens": 11648,
+    "elapsed": "56s"
+  },
+  "tool_calls": {
+    "total": 22,
+    "by_tool": {
+      "code_search": 10,
+      "file_find": 2,
+      "file_read": 10
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "D95 end-to-end scenarios and shared test support",
+      "files": [
+        "e2e/d95/close-review.spec.ts",
+        "e2e/d95/expiration.spec.ts",
+        "e2e/d95/keyboard-day.spec.ts",
+        "e2e/d95/offline.spec.ts",
+        "e2e/d95/replay.spec.ts",
+        "e2e/d95/resize.spec.ts",
+        "e2e/d95/settle-later.spec.ts",
+        "e2e/d95/support.ts"
+      ]
+    }
+  ],
+  "session_id": "83ec01ec-53b4-4d97-a034-0462a1d3ab40",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "83ec01ec-53b4-4d97-a034-0462a1d3ab40",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "2db9736a",
+      "resolved_base": "bd5ff290e5a289e6221476a06654f6ea677b02bb",
+      "resolved_head": "2db9736af51fb5db908ae61d3b1a25c6953c2f48",
+      "exact_range": "bd5ff290e5a289e6221476a06654f6ea677b02bb..2db9736af51fb5db908ae61d3b1a25c6953c2f48",
+      "source_artifact_sha256": "75e83599c704e703ba9eda150889b86c0f8a9b1ee12207c6032b83d439d818b0"
+    },
+    "execution": {
+      "ocr_version": "v1.14.4",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "04db696dd5d8255296c3877d453ff8c7d6e358d228966377a69a5b5538790d26",
+          "path": "e2e/d95/expiration.spec.ts",
+          "fingerprint": "3a39c4eab98b2a6e095575b27adff377fd57ed029ff9c0b5297b61311d8db153"
+        },
+        {
+          "item_id": "4be62bd8d16af035b895d768f8c24c94d51fa92252b8bb1dd84773063cfa85d2",
+          "path": "e2e/d95/replay.spec.ts",
+          "fingerprint": "85f3d3a9cb376eaa78218c0128f9115b669b93e47e0879bb300e21ed1dc26711"
+        },
+        {
+          "item_id": "55d8f6830ea095cda73fd26a2cc8df3a62dd161da15b7555906569c2f6a6fdce",
+          "path": "e2e/d95/keyboard-day.spec.ts",
+          "fingerprint": "7f6b6d931d9f537226497a678687cefbfc3ce01590fd5ad25970be71396b496a"
+        },
+        {
+          "item_id": "8b273ad8141720c01dab4c42e4caef3d2c00f624511161c37c85de39c9cf118c",
+          "path": "e2e/d95/offline.spec.ts",
+          "fingerprint": "35215ec91e40a181aec7a0c52ee703366e48eb8aaa3c36f1c91613cf51d84667"
+        },
+        {
+          "item_id": "a54d291cb3ce831d4fd6f139351cc7b598a31850136de8e6401fef9574ba8f9d",
+          "path": "e2e/d95/resize.spec.ts",
+          "fingerprint": "99a292a19e777d37871ac8d6d6e13c670e0f567a7e76e2e4fe5e9f80fd76d440"
+        },
+        {
+          "item_id": "c117cf17536293069d5824c0f3c004f7c5687aac2e601a5b7fdaa1005c5f45c3",
+          "path": "e2e/d95/settle-later.spec.ts",
+          "fingerprint": "e32c039142037d9cdcd5e8838eb5ecb4cbe573c95e300d264caafdd5d41a46be"
+        },
+        {
+          "item_id": "dc774d70236dfa8cffd0a2079f8dc2c3ee1639f6c0cd0bc46c998c675058ec43",
+          "path": "e2e/d95/support.ts",
+          "fingerprint": "07e5435508f1c9ac826434f47b907e75e635825874241247bdfcb904fc1726df"
+        },
+        {
+          "item_id": "ec4ddd2df46ae8694b7a91d207e69e7ecd57ab79bf211c73a2a5b68f9f51ad90",
+          "path": "e2e/d95/close-review.spec.ts",
+          "fingerprint": "383486b881db0b4703474fc75aa6c4f6e5981364bea228985a42c1cfc040af7c"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "04db696dd5d8255296c3877d453ff8c7d6e358d228966377a69a5b5538790d26",
+          "path": "e2e/d95/expiration.spec.ts",
+          "fingerprint": "3a39c4eab98b2a6e095575b27adff377fd57ed029ff9c0b5297b61311d8db153"
+        },
+        {
+          "item_id": "4be62bd8d16af035b895d768f8c24c94d51fa92252b8bb1dd84773063cfa85d2",
+          "path": "e2e/d95/replay.spec.ts",
+          "fingerprint": "85f3d3a9cb376eaa78218c0128f9115b669b93e47e0879bb300e21ed1dc26711"
+        },
+        {
+          "item_id": "55d8f6830ea095cda73fd26a2cc8df3a62dd161da15b7555906569c2f6a6fdce",
+          "path": "e2e/d95/keyboard-day.spec.ts",
+          "fingerprint": "7f6b6d931d9f537226497a678687cefbfc3ce01590fd5ad25970be71396b496a"
+        },
+        {
+          "item_id": "8b273ad8141720c01dab4c42e4caef3d2c00f624511161c37c85de39c9cf118c",
+          "path": "e2e/d95/offline.spec.ts",
+          "fingerprint": "35215ec91e40a181aec7a0c52ee703366e48eb8aaa3c36f1c91613cf51d84667"
+        },
+        {
+          "item_id": "a54d291cb3ce831d4fd6f139351cc7b598a31850136de8e6401fef9574ba8f9d",
+          "path": "e2e/d95/resize.spec.ts",
+          "fingerprint": "99a292a19e777d37871ac8d6d6e13c670e0f567a7e76e2e4fe5e9f80fd76d440"
+        },
+        {
+          "item_id": "c117cf17536293069d5824c0f3c004f7c5687aac2e601a5b7fdaa1005c5f45c3",
+          "path": "e2e/d95/settle-later.spec.ts",
+          "fingerprint": "e32c039142037d9cdcd5e8838eb5ecb4cbe573c95e300d264caafdd5d41a46be"
+        },
+        {
+          "item_id": "dc774d70236dfa8cffd0a2079f8dc2c3ee1639f6c0cd0bc46c998c675058ec43",
+          "path": "e2e/d95/support.ts",
+          "fingerprint": "07e5435508f1c9ac826434f47b907e75e635825874241247bdfcb904fc1726df"
+        },
+        {
+          "item_id": "ec4ddd2df46ae8694b7a91d207e69e7ecd57ab79bf211c73a2a5b68f9f51ad90",
+          "path": "e2e/d95/close-review.spec.ts",
+          "fingerprint": "383486b881db0b4703474fc75aa6c4f6e5981364bea228985a42c1cfc040af7c"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "c2bb11ec5973cda55a48154e42ba281c90ac3b2e1c47bedf7a4bd9f09eb57487",
+          "path": "evidence/D95/tdd-log/T95.66.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 56401
+  }
+}

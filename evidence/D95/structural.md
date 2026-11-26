@@ -1577,6 +1577,8 @@ Commit `2db9736a`: Part C browser suites B95.11 expiration (9 cases), B95.12 set
 
 Run `t95.66-browser-c` (browser-task; at `18cf089b`): unit 268 files, 3271 passed; integration 163 files, 395 passed; browser 85 passed; 14 of 14 checks exit 0; run-complete. Passed. T95.66 waits on its ocr.
 
+ocr of T95.66 (session 83ec01ec): complete, 8 files, no findings. `evidence/D95/ocr/T95.66-2db9736a.json`. The first attempt (session f724c899) failed on every item with a provider error while ChatGPT usage was limited; the agent waited about 3 hours (`ocr-usage-wait.sh`) and reran it. T95.66 done.
+
 ## T95.66.5
 
 The user's direction (2026-11-26), decision 141: deletions only; no ocr and no critic; unit, integration and browser runs only. Level Full (touches a coordinator).
