@@ -446,6 +446,7 @@ describe('Trade Detail: declining any owed reflection (T95.60, W153)', () => {
     while (vi.mocked(facade.Journal.save).mock.calls.length === 0 && presses < 6) {
       await press(within(form).queryByRole('button', { name: how === 'answer' ? 'Answer' : 'Decline the reflection' }) ?? within(form).getByRole('button', { name: 'Decline…' }));
     }
+    expect(facade.Journal.save).toHaveBeenCalledTimes(1);
     cleanup();
     return presses;
   }

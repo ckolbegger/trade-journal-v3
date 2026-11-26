@@ -403,6 +403,7 @@ describe('declining takes more presses than answering (T95.60, W153)', () => {
       await user.click(next);
       presses += 1;
     }
+    expect(adapter).toHaveBeenCalledTimes(1);
     cleanup();
     return presses;
   }
