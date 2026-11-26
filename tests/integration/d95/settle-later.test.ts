@@ -3,9 +3,8 @@
 // A call on XYZ expired Friday 10-09 with no settlement recorded, and two stock Trades inside their lines (JKL, KLM); Monday 10-12 is the Review Date.
 import { describe, expect, it } from 'vitest';
 import type { Application } from '../../../src/app/compose.ts';
-import { Rational } from '../../../src/domain/values/index.ts';
 import { closeReviewDisposition, device, dumpAll, onboarded, optionPlanCommand, planStock, record, recordExpiration, recordOption, resolveCloseReview, saveMark, XYZ_CALL } from '../d7/support.ts';
-import { FRIDAY, MON_1700, MONDAY, onDay, openOn, saveActionOn, walkOf } from './support.ts';
+import { FRIDAY, MON_1700, MONDAY, onDay, openOn, saveActionOn } from './support.ts';
 
 const MON_1000 = '2026-10-12T14:00:00Z';
 const TUE_1700 = '2026-10-13T21:00:00Z';
@@ -211,26 +210,5 @@ describe('I95.13 AC-SET-005 Settle Later finishes one Review only', () => {
 
     // Catches a disclosure lost with the settlement: the same Instrument and Trade, with no Trade to record.
     expect((await openOn(book.app, MON_1700)).completion).toEqual({ kind: 'CompleteWithUnavailableMarks', instruments: [{ kind: 'Stock', symbol: 'KLM' }], trades: [book.ids.klm], families: expect.any(Array) as unknown });
-  });
-
-  it('should give a Settlement Due Trade in open its standing and the date of its Settle Later, equal to its card, and no other Trade any', { timeout: 120_000 }, async () => {
-    const book = await settlementBook();
-    await settleLater(book.app, MON_1700, book.ids.xyz);
-    book.app.persistence.close();
-
-    await onDay(book.d, TUE_1700, async (app) => {
-      const walked = walkOf(await openOn(app, TUE_1700));
-      const card = await cardOf(app, TUE_1700, book.ids.xyz);
-
-      // XYZ finished Friday at 60 against a 55 strike: a call in the money by 5, worth 500. Catches an open that gives no standing or one that differs from the card's.
-      const due = walked.find((t) => t.tradeId === book.ids.xyz);
-      expect(due?.expirationStanding).toEqual({ kind: 'Value', value: expect.objectContaining({ underlyingPrice: Rational.of(60n), strike: Rational.of(55n), inTheMoney: true, amount: Rational.of(5n), worth: Rational.of(500n) }) as unknown });
-      expect(due?.expirationStanding).toEqual(card.expirationStanding);
-      expect(due?.settledLaterOn).toBe(MONDAY);
-      expect(card.settledLaterOn).toBe(MONDAY);
-      const other = walked.find((t) => t.tradeId === book.ids.jkl);
-      expect(other?.expirationStanding).toBeUndefined();
-      expect(other?.settledLaterOn).toBeUndefined();
-    });
   });
 });

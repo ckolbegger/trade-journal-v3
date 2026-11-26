@@ -16386,9 +16386,6 @@
               ],
               "done": true
             },
-            "planCall": {
-              "call": "Hold"
-            },
             "meter": {
               "stop": {
                 "kind": "Value",
@@ -16515,14 +16512,6 @@
               "done": false
             },
             "expiresOnReviewDate": true,
-            "planCall": {
-              "call": "Out",
-              "condition": {
-                "id": "stop-1",
-                "role": "Stop",
-                "boundary": "48"
-              }
-            },
             "meter": {
               "stop": {
                 "kind": "Value",
@@ -16680,14 +16669,6 @@
               ],
               "done": true
             },
-            "planCall": {
-              "call": "Out",
-              "condition": {
-                "id": "stop-1",
-                "role": "Stop",
-                "boundary": "47.5"
-              }
-            },
             "meter": {
               "stop": {
                 "kind": "Value",
@@ -16800,14 +16781,6 @@
               ],
               "done": true
             },
-            "planCall": {
-              "call": "Out",
-              "condition": {
-                "id": "stop-2",
-                "role": "Stop",
-                "boundary": "3.6"
-              }
-            },
             "meter": {
               "stop": {
                 "kind": "Value",
@@ -16909,9 +16882,6 @@
                 }
               ],
               "done": true
-            },
-            "planCall": {
-              "call": "Hold"
             },
             "meter": {
               "stop": {
@@ -17020,9 +16990,6 @@
               ],
               "done": false
             },
-            "planCall": {
-              "call": "Hold"
-            },
             "meter": {
               "stop": {
                 "kind": "Value",
@@ -17125,9 +17092,6 @@
               ],
               "done": false
             },
-            "planCall": {
-              "call": "Hold"
-            },
             "meter": {
               "stop": {
                 "kind": "Value",
@@ -17229,9 +17193,6 @@
                 }
               ],
               "done": true
-            },
-            "planCall": {
-              "call": "Hold"
             },
             "meter": {
               "stop": {

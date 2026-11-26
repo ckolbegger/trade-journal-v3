@@ -673,26 +673,12 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
       const needed = rows.filter((row) => row.task === 'Manual').length;
       return cardProgress({ resolved: rows.length - needed, needed }, reflectionsOf(tradeId), tradeId in actions.actions, settlementTrades.has(tradeId) ? { settledLater: settledLater.has(tradeId) } : undefined);
     };
-    // Decision 138: a Settlement Due Trade's expired contract's standing and its latest earlier Settle Later, as its card carries them; the one
-    // replay read of that Trade (no Journal items) is what gives the Underlying's Mark for the expiration session.
-    const standings = new Map<string, Pick<WalkedTrade, 'expirationStanding' | 'settledLaterOn'>>(
-      await Promise.all(
-        settlement.map(async ({ tradeId, instrument }) => {
-          const entry = derivations.find(({ analysis }) => analysis.tradeId === tradeId)!;
-          const replayed = entry.integrity.kind === 'Derived' && entry.analysis.positionChanges.length > 0 ? await assembleReplay(deps, entry.analysis, entry.integrity, read, { withJournal: false }) : undefined;
-          const standing = expirationStandingOf(read, replayed && !('kind' in replayed) ? replayed : undefined, entry.valuation, instrument);
-          const settledLaterOn = savedActions?.earlier?.findLast((saved) => saved.tradeId === tradeId && saved.action === 'Settle Later')?.reviewDate;
-          return [tradeId, { ...(standing && { expirationStanding: standing }), ...(settledLaterOn && { settledLaterOn }) }] as const;
-        }),
-      ),
-    );
     const walked = ranked.map(
       ({ item, valuation, before }): WalkedTrade => ({
         ...item,
-        ...standings.get(item.tradeId),
         progress: progressOf(item.tradeId),
         ...(valuation?.state.contractStatuses.some(({ status }) => status === 'DueToday') && { expiresOnReviewDate: true as const }),
-        ...(valuation && { planCall: planCall(valuation.evaluation), meter: meterReadingOf(valuation.evaluation, before), figures: { riskToStop: valuation.evaluation.ongoingRiskToStop, pnl: valuation.evaluation.currentMarkedPnl, rewardRiskNow: valuation.evaluation.rewardRiskNow }, pnl: { dollars: valuation.evaluation.currentMarkedPnl, planR: valuation.evaluation.currentMarkedPnlInPlanR, change: dayChangeOf([{ valuation, before }], false, reviewDate, read.previousSessionDate !== undefined) } }),
+        ...(valuation && { meter: meterReadingOf(valuation.evaluation, before), figures: { riskToStop: valuation.evaluation.ongoingRiskToStop, pnl: valuation.evaluation.currentMarkedPnl, rewardRiskNow: valuation.evaluation.rewardRiskNow }, pnl: { dollars: valuation.evaluation.currentMarkedPnl, planR: valuation.evaluation.currentMarkedPnlInPlanR, change: dayChangeOf([{ valuation, before }], false, reviewDate, read.previousSessionDate !== undefined) } }),
       }),
     );
     const families: ReviewFamily[] = [

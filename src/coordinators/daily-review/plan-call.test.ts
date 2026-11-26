@@ -24,22 +24,14 @@ async function card(stack: ReviewStack, tradeId: string) {
   return result.trade;
 }
 
-function walked(opened: Awaited<ReturnType<typeof open>>, tradeId: string) {
-  const family = opened.families.find((f) => f.family === 'Trades');
-  if (!family) throw new Error('no Trades family');
-  return family.trades.find((t) => t.tradeId === tradeId)!;
-}
-
 describe('getTrade: the Plan Call and the new Action view state (A306, A307)', () => {
-  it('should carry the Plan Call and its condition on the card and on each page item', async () => {
+  it('should carry the Plan Call and its condition on the card', async () => {
     const { stack, tradeId } = await heldTrade();
     await stack.saveMark('XYZ', '47.00');
 
     const trade = await card(stack, tradeId);
-    const item = walked(await open(stack), tradeId);
 
     expect(trade.planCall).toMatchObject({ call: 'Out', condition: { id: 'stop-1', role: 'Stop' } });
-    expect(item.planCall).toEqual(trade.planCall);
   }, 60_000);
 
   it('should return Hold selected for a new Action when the call is Hold', async () => {

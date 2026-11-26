@@ -12,7 +12,7 @@ describe('I95.7 The manifest (AC-CAP-001)', () => {
     if (status.kind !== 'Ready') throw new Error(`getStatus: ${status.kind}`);
     const { operations } = status.installedCapabilities;
     expect(operations['DailyReview.open']).toEqual([
-      'LatestCompleted', 'OwedReflections', 'Meter', 'GapTrades', 'OwedReflectionGroup', 'SettlementFamily', 'DaySummary', 'PlanOrder', 'LastAction', 'PlanCall', 'SettlementToRecord', 'ExpirationStanding',
+      'LatestCompleted', 'OwedReflections', 'Meter', 'GapTrades', 'OwedReflectionGroup', 'SettlementFamily', 'DaySummary', 'PlanOrder', 'LastAction', 'SettlementToRecord',
     ]);
     expect(operations['DailyReview.getTrade']).toEqual([
       'OwedReflections', 'PlanBaseline', 'RewardRiskNow', 'ReflectionsOwed', 'ExpirationPayoff', 'SettlementDue', 'Replay', 'Odds', 'LastDecisions', 'PlanCall', 'PlanExit', 'ExpirationStanding', 'SessionActions', 'KeyMoments',

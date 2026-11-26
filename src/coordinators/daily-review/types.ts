@@ -83,11 +83,6 @@ export interface WalkedTrade extends ReviewTradeItem {
   readonly meter?: MeterReading;
   // The Trade's P&L at the Review Date in dollars and in planned R, with its change since the session before (P178, decision 131). Absent with the figures.
   readonly pnl?: WalkedPnl;
-  // What the Plan Exit calls for on the Review Date's Marks, with the condition that made it (A306). Absent with the figures.
-  readonly planCall?: PlanCall;
-  // A Settlement Due Trade's expired contract's standing and the Review Date of its latest earlier Settle Later: the figures its card carries (decision 138).
-  readonly expirationStanding?: CalculationResult<ExpirationStandingFigures>;
-  readonly settledLaterOn?: string;
 }
 
 export interface WalkedPnl {

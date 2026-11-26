@@ -102,7 +102,7 @@ const OPERATIONS: Readonly<Record<string, readonly string[]>> = {
   // is not an operation (P37).
   // D6 P20: the Trades outside the walk with a reflection owed form a group after it, whose cards are the
   // ReflectionsOwed kind; there is still no DailyReview.getDebt.
-  'DailyReview.open': ['LatestCompleted', 'OwedReflections', 'Meter', 'GapTrades', 'OwedReflectionGroup', 'SettlementFamily', 'DaySummary', 'PlanOrder', 'LastAction', 'PlanCall', 'SettlementToRecord', 'ExpirationStanding'],
+  'DailyReview.open': ['LatestCompleted', 'OwedReflections', 'Meter', 'GapTrades', 'OwedReflectionGroup', 'SettlementFamily', 'DaySummary', 'PlanOrder', 'LastAction', 'SettlementToRecord'],
   // D9 A263: the card carries the Trade's Replay. D9A-R A272: and the estimated odds.
   'DailyReview.getTrade': ['OwedReflections', 'PlanBaseline', 'RewardRiskNow', 'ReflectionsOwed', 'ExpirationPayoff', 'SettlementDue', 'Replay', 'Odds', 'LastDecisions', 'PlanCall', 'PlanExit', 'ExpirationStanding', 'SessionActions', 'KeyMoments'],
   // D9.5 A303: SaveReviewMarksPage saves the page's Marks in one commit; MarksFirst refuses an Action before its Marks.
