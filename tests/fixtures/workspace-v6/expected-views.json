@@ -11458,8 +11458,8 @@
                 },
                 {
                   "panel": "Action",
-                  "done": false,
-                  "owed": true
+                  "done": true,
+                  "owed": false
                 }
               ],
               "done": false
@@ -11997,10 +11997,6 @@
         {
           "code": "ActionMissing",
           "tradeId": "fx-0075"
-        },
-        {
-          "code": "ActionMissing",
-          "tradeId": "fx-0174"
         },
         {
           "code": "ActionMissing",
@@ -13201,8 +13197,8 @@
           },
           {
             "panel": "Action",
-            "done": false,
-            "owed": true
+            "done": true,
+            "owed": false
           }
         ],
         "done": false

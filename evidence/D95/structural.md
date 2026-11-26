@@ -1153,3 +1153,16 @@ Commit `4a1f86b6` (DayCard.tsx, DayCard.test.tsx): the existing Unavailable bloc
 Commit `f4b9314a` (daily-review.ts, settle-later.test.ts): `expirationStanding` reads the Underlying Mark at the settling session, `missedSessions(read, replay.sessions[0].date, expiration).at(-1)` (the expiration date itself when it is a session, else the session before); the calendar call and the replay are already in hand, no store read added. Case 1 red (Unavailable vs Value), green; case 2 first-run pass, flagged, mutation (a missing Underlying Mark falls back to 46.00) failed, restored. Test fixture `expiryFixture` gained `expiration` and `mnoMark` options. daily-review 252 passed; typecheck, tsc6, lint (2 pre-existing warnings), lint:deps exit 0.
 
 ocr of T95.49-B1, T95.49-B2 (session 97a17144, range 4a1f86b6^..f4b9314a): 4 files, 0 findings. `evidence/D95/ocr/T95.49-B1-B2-f4b9314a.json`. Next: T95.49-F1.
+
+### T95.49-F1
+
+Updated the frozen `expected-views.json` of four fixtures for T95.49 (A316 case 2; decision 127's standing direction: a derived view the redesign changes, no figure or computation changed; `dump.json` and `backup.tjbackup` untouched). Cause: a Trade with Settlement Due owes no Action, so its Action panel is done and not owed, and its `ActionMissing` reason leaves `review.completion.reasons`. Before the edit `npm run verify:fixtures` failed on exactly four fixtures, and every differing path was one of: `review.families[2].trades[1].progress.panels[3].done`/`.owed`, `reviewTrades[1].progress.panels[3].done`/`.owed`, and `review.completion.reasons` (length one shorter, plus the tradeId, code and debtIds of later entries as they shifted up one index). No figure, band, order or other count differed. The Trade is fx-0174 in all four. No tool regenerates a single value, so the edit was a parse, change and rewrite of the same JSON (2-space indent, round trip checked byte-equal beforehand).
+
+| Fixture | Action panel (families[2].trades[1], reviewTrades[1]) | reasons |
+| --- | --- | --- |
+| workspace-v6 | done false to true, owed true to false, both places | 15 to 14: `ActionMissing` fx-0174 (index 8) removed |
+| workspace-v7 | same | 16 to 15: same, index 8 |
+| backup-v6-blocked | same | 15 to 14: same, index 8 |
+| backup-v7 | same | 16 to 15: same, index 8 |
+
+Diff: 4 files, 16 insertions, 32 deletions. Green: `npm run verify:fixtures` OK (all workspace and backup folders views equal); integration d7, d7s, d8, d8r plus tools fixture-views and verify-fixtures tests: 49 files, 133 tests passed.
