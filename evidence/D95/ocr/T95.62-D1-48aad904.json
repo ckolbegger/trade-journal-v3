@@ -1,0 +1,201 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 8 selected item(s).",
+  "summary": {
+    "files_reviewed": 8,
+    "comments": 1,
+    "total_tokens": 291139,
+    "input_tokens": 289372,
+    "output_tokens": 1767,
+    "cache_read_tokens": 48256,
+    "elapsed": "1m3s"
+  },
+  "tool_calls": {
+    "total": 30,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 7,
+      "file_find": 2,
+      "file_read": 20
+    },
+    "failure": 2,
+    "failure_by_tool": {
+      "file_read": 2
+    },
+    "failure_details": [
+      {
+        "tool_call_number": 15,
+        "tool_name": "file_read",
+        "file_path": "src/coordinators/daily-review/daily-review.ts,src/coordinators/daily-review/settle-later.test.ts,src/coordinators/daily-review/types.ts,tests/integration/d7/query-count.test.ts",
+        "arguments": "{\"file_path\": \"src/coordinators/replay/assemble.ts\", \"start_line\": 1, \"end_line\": 50}",
+        "error": "file \"src/coordinators/replay/assemble.ts\" not found: git show 48aad9045fed7322f428b0a0c53ea916ec7d4b98:src/coordinators/replay/assemble.ts: exit status 128: fatal: path 'src/coordinators/replay/assemble.ts' does not exist in '48aad9045fed7322f428b0a0c53ea916ec7d4b98'\n"
+      },
+      {
+        "tool_call_number": 26,
+        "tool_name": "file_read",
+        "file_path": "src/coordinators/daily-review/daily-review.ts,src/coordinators/daily-review/settle-later.test.ts,src/coordinators/daily-review/types.ts,tests/integration/d7/query-count.test.ts",
+        "arguments": "{\"file_path\": \"src/coordinators/replay/assemble.ts\", \"start_line\": 1, \"end_line\": 40}",
+        "error": "file \"src/coordinators/replay/assemble.ts\" not found: git show 48aad9045fed7322f428b0a0c53ea916ec7d4b98:src/coordinators/replay/assemble.ts: exit status 128: fatal: path 'src/coordinators/replay/assemble.ts' does not exist in '48aad9045fed7322f428b0a0c53ea916ec7d4b98'\n"
+      }
+    ]
+  },
+  "comments": [
+    {
+      "path": "src/coordinators/daily-review/daily-review.ts",
+      "content": "Reuse this replay in `pastLineOf` rather than assembling it again there. On the expiration session a Settlement Due trade still has normal condition evaluations, so if its Stop or Target is crossed, this call replays it once and `pastLineOf` (called later when building `day`) replays the same trade again. That violates the once-per-Settlement-Due-trade requirement and duplicates the full replay computation even though the read session caches the storage requests. Share a per-trade replay cache between both consumers and cover an expiration-day trade with a crossed condition; the current request-count fixtures cannot detect duplicate assembly when reads are cached.",
+      "existing_code": "          const replayed = entry.integrity.kind === 'Derived' \u0026\u0026 entry.analysis.positionChanges.length \u003e 0 ? await assembleReplay(deps, entry.analysis, entry.integrity, read, { withJournal: false }) : undefined;",
+      "start_line": 682,
+      "end_line": 682,
+      "category": "performance",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Daily review coordination and query-count coverage",
+      "files": [
+        "src/coordinators/daily-review/daily-review.ts",
+        "src/coordinators/daily-review/settle-later.test.ts",
+        "src/coordinators/daily-review/types.ts",
+        "tests/integration/d7/query-count.test.ts"
+      ]
+    },
+    {
+      "label": "Workspace capabilities and route integration",
+      "files": [
+        "src/app/routes.ts",
+        "src/coordinators/workspace/capabilities.ts",
+        "src/coordinators/workspace/workspace.test.ts",
+        "tests/integration/d95/capabilities.test.ts"
+      ]
+    }
+  ],
+  "session_id": "3e37a973-4a7f-4f18-84f1-587a0ae5d844",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "3e37a973-4a7f-4f18-84f1-587a0ae5d844",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "48aad904",
+      "resolved_base": "3e2fe299a833f70727fab57f382f1b5fefa006cb",
+      "resolved_head": "48aad9045fed7322f428b0a0c53ea916ec7d4b98",
+      "exact_range": "3e2fe299a833f70727fab57f382f1b5fefa006cb..48aad9045fed7322f428b0a0c53ea916ec7d4b98",
+      "source_artifact_sha256": "f0819b536eaf3b6bdb2d0481c82b0a21bb3e8e52fec90907388bfe9a2b4156a3"
+    },
+    "execution": {
+      "ocr_version": "v1.14.4",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "ac84ab788a7f614f0588b2bc3d1ac811549b4bfe2367259848a1efb76e6e1d2d"
+        },
+        {
+          "item_id": "0f41d19ccbb61d1a664235ee5301f06784615cdc8ddb16035e108900527ee722",
+          "path": "src/app/routes.ts",
+          "fingerprint": "3fd814af17dc81f76426d72b1988fd3fc94c63e5aa9ddc4f0209ec52993bfd52"
+        },
+        {
+          "item_id": "3f548f1ae81ab4049dfea9d702e6a61b509722ca36f81ecd61e08037be77aa16",
+          "path": "src/coordinators/workspace/capabilities.ts",
+          "fingerprint": "30d4c422c0d8561d4a70f1de0aa62bea7b7317f8a8ac46933d910209edb16539"
+        },
+        {
+          "item_id": "6c0a9060a31bf3ba57c05369b276def7b239838a93c46585ef412fe0536e8181",
+          "path": "src/coordinators/workspace/workspace.test.ts",
+          "fingerprint": "0b00ea60b307647456cc07ddc5060a78449c3697c8aca7903a2b9d1e20234adb"
+        },
+        {
+          "item_id": "723567e5a302ad9eb7d8af62d290e13f3b520a68185568784622c46201a4c790",
+          "path": "tests/integration/d7/query-count.test.ts",
+          "fingerprint": "8e251e0bbe833d362aeee37a3f1ec346cbfbf0dda035b0cc31a6d336ddbc82a3"
+        },
+        {
+          "item_id": "7e32b333adace5236c817180e9c0dde2bcdabb3d697d89d92f66ff642acb59e7",
+          "path": "tests/integration/d95/capabilities.test.ts",
+          "fingerprint": "3c2829d3ca62531627e2da79671bb6fc9ca5c87e6bd66828fd5235d23ea16585"
+        },
+        {
+          "item_id": "899f6b6c1da617c3d60a9004af67f10628660ac9e0db750a9649f638d6f8eef8",
+          "path": "src/coordinators/daily-review/settle-later.test.ts",
+          "fingerprint": "678b6f0c5939dc9498888b9346c37aa74c2ef1cb5c32ea4526190e702acde7c4"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "9126411e7123031b61b32f220de9a5fc181a9921525ff782ae615078b85a0168"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "ac84ab788a7f614f0588b2bc3d1ac811549b4bfe2367259848a1efb76e6e1d2d"
+        },
+        {
+          "item_id": "0f41d19ccbb61d1a664235ee5301f06784615cdc8ddb16035e108900527ee722",
+          "path": "src/app/routes.ts",
+          "fingerprint": "3fd814af17dc81f76426d72b1988fd3fc94c63e5aa9ddc4f0209ec52993bfd52"
+        },
+        {
+          "item_id": "3f548f1ae81ab4049dfea9d702e6a61b509722ca36f81ecd61e08037be77aa16",
+          "path": "src/coordinators/workspace/capabilities.ts",
+          "fingerprint": "30d4c422c0d8561d4a70f1de0aa62bea7b7317f8a8ac46933d910209edb16539"
+        },
+        {
+          "item_id": "6c0a9060a31bf3ba57c05369b276def7b239838a93c46585ef412fe0536e8181",
+          "path": "src/coordinators/workspace/workspace.test.ts",
+          "fingerprint": "0b00ea60b307647456cc07ddc5060a78449c3697c8aca7903a2b9d1e20234adb"
+        },
+        {
+          "item_id": "723567e5a302ad9eb7d8af62d290e13f3b520a68185568784622c46201a4c790",
+          "path": "tests/integration/d7/query-count.test.ts",
+          "fingerprint": "8e251e0bbe833d362aeee37a3f1ec346cbfbf0dda035b0cc31a6d336ddbc82a3"
+        },
+        {
+          "item_id": "7e32b333adace5236c817180e9c0dde2bcdabb3d697d89d92f66ff642acb59e7",
+          "path": "tests/integration/d95/capabilities.test.ts",
+          "fingerprint": "3c2829d3ca62531627e2da79671bb6fc9ca5c87e6bd66828fd5235d23ea16585"
+        },
+        {
+          "item_id": "899f6b6c1da617c3d60a9004af67f10628660ac9e0db750a9649f638d6f8eef8",
+          "path": "src/coordinators/daily-review/settle-later.test.ts",
+          "fingerprint": "678b6f0c5939dc9498888b9346c37aa74c2ef1cb5c32ea4526190e702acde7c4"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "9126411e7123031b61b32f220de9a5fc181a9921525ff782ae615078b85a0168"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "e48723d11dd7b449eff5dd02a51b083a901dfcb0f5cd67722009b41d4d5d9f28",
+          "path": "evidence/D95/tdd-log/T95.62-D1.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 62568
+  }
+}

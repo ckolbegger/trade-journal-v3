@@ -68,3 +68,5 @@ Critic B3's minor observations (T95.46):
 
 - ocr (T95.48), style: `tests/support/replay-series-app.ts:68` nests the expiration ternary inside the sale ternary; explicit branches read more simply.
 - ocr (T95.52), style: `src/ui/screens/ReviewCard.tsx:271` the open-panel useState initializer nests a ternary inside `??`; a helper with early returns reads more simply.
+
+- **T95.62-D1, ocr (Doubtful, performance; `daily-review.ts:682` and `pastLineOf` ~535):** for a Settlement Due Trade whose Stop or Target is crossed on the expiration session, `open` assembles the same replay twice (once for the standing, once in `pastLineOf`). Both go through the same read session, so no store read repeats and the pins hold; only the in-memory assembly repeats. Fix: assemble once per Trade and share it.
