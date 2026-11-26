@@ -1418,3 +1418,7 @@ Cause: generator version 8 to 9 (T95.28 and T95.28-B2 changed the walk order and
 T95.64 (main session's notes on commit `68fcb9ee`): regenerated bench/dataset.json and expected-open-rows.json (generator 9, digest c8e03c99…, was 6d819703…) and re-measured the basis (`bench:setup`, `measure:capacity`, `measure:capacity:reset-baseline`, port 4175). Restored usage 195,202,647 to 186,166,742; usage over projection 0.250 to 0.238 (limit 1.10); second-Restore peak over M 0.519 to 0.476 (below 3); baseline 206,540,122 to 186,166,742 (usage over baseline 1.000, limit 1.50); required quota unchanged (2,737,548,396). Cause: generator version 8 to 9 (T95.28, T95.28-B2: walk order and Open rows). No limit exceeded or loosened. No bench-generator.ts change. A note for T95.65 and T95.67 added to the handoff (the benchmark history predates Part C's rules).
 
 ocr of T95.64 (session 3fdb0a1c): complete, 2 files reviewed (bench/expected-open-rows.json too large, structural.md excluded by rule), no findings. `evidence/D95/ocr/T95.64-68fcb9ee.json`.
+
+Run `t95.64-bench` (browser-task; at `50e4e5f6`): unit 264 files, 3212 passed; integration 158 files, 364 passed; browser 57 passed; 14 of 14 checks exit 0; run-complete. Passed. T95.64 done.
+
+### T95.56 — resumed (decision 136)
