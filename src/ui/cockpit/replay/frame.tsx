@@ -115,7 +115,7 @@ export function ReplayFrame({ tradeKey, sessions, initialSession, sliderLabel, p
         )}
       </div>
       {/* W149: each session's Action, in a row under the chart. */}
-      {actionKey && <ActionRow actionKey={actionKey} slots={plotBase.axis.slots} cells={sessions.slice(0, current + 1).map((s) => ({ dateLabel: s.dateLabel, ...(s.actionMark && { mark: s.actionMark }) }))} />}
+      {actionKey && <ActionRow actionKey={actionKey} slots={plotBase.axis.slots} cells={sessions.slice(0, current + 1).map((s) => ({ dateLabel: s.dateLabel, slot: s.plot.slot, ...(s.actionMark && { mark: s.actionMark }) }))} />}
       {/* W47: the chips sit under the charts (the overlay's stylesheet puts them in the charts' column on a wide screen). */}
       {renderChips?.(session)}
       {/* W48: the "since the session before" line follows the chips, in the charts' column. */}

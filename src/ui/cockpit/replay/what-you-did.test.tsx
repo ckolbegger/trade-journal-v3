@@ -83,6 +83,23 @@ describe('Replay: the Action row (T95.57, W149)', () => {
   });
 });
 
+// T95.57-B1: the chart puts a session by its weekday slot, so a holiday leaves one slot blank (A256); the Action row follows the same columns (the Plan's column first).
+describe('Replay: the Action row after a holiday gap (T95.57-B1)', () => {
+  const GAP = ['2026-11-02', '2026-11-03', '2026-11-05', '2026-11-06'];
+  const columns = () => within(screen.getByRole('list', { name: 'Action by session' })).getAllByRole('listitem').map((li) => [li.textContent?.[0], li.style.gridColumn]);
+  const gapView = () => openView(GAP.map((date) => day(date, { action: { action: 'Hold' } })));
+
+  it('should place each session Action mark in its session slot column after a holiday gap', () => {
+    show(gapView(), GAP[3]);
+    expect(columns()).toEqual([['H', '2'], ['H', '3'], ['H', '5'], ['H', '6']]);
+  });
+
+  it('should leave the holiday column empty', () => {
+    show(gapView(), GAP[3]);
+    expect(columns().map(([, column]) => column)).not.toContain('4');
+  });
+});
+
 describe('Replay: What you did that day (T95.57, W147)', () => {
   // Added beyond the planned cases (advisor review): a contract due for settlement owes no Action (A315), so its last session is no missed Review.
   it('should not call the last session of a contract due for settlement a missed Review', () => {
