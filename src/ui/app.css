@@ -1462,6 +1462,9 @@ ul.rows > li {
   stroke: currentColor;
   stroke-width: 1.5;
 }
+.replay-strip-dot {
+  fill: currentColor;
+}
 .replay-strip-zero {
   stroke: var(--line);
 }

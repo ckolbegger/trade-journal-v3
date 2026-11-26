@@ -33,6 +33,8 @@ export interface StripChart {
   readonly width: number;
   readonly height: number;
   readonly path: string;
+  // A run of one point has no line to draw, so it is a dot.
+  readonly dots: readonly { readonly x: number; readonly y: number }[];
   readonly zeroY: number;
   readonly stopY?: number;
   readonly targetY?: number;
@@ -48,13 +50,16 @@ export function stripChart(replay: TradeReplayView): StripChart {
   const value = valueAxis(pnlRange([...pnls.filter((p): p is number => p !== null), ...(stop === undefined ? [] : [stop]), ...(target === undefined ? [] : [target])]), TOP, FLOOR);
   let path = '';
   let broken = true;
+  const dots: { x: number; y: number }[] = [];
   pnls.forEach((pnl, i) => {
     if (pnl === null) {
       broken = true;
       return;
     }
+    const lone = (i === 0 || pnls[i - 1] === null) && (i === pnls.length - 1 || pnls[i + 1] === null);
+    if (lone) dots.push({ x: time.x(i), y: value.y(pnl) });
     path += `${broken ? 'M' : 'L'}${at(time.x(i))} ${at(value.y(pnl))}`;
     broken = false;
   });
-  return { width: WIDTH, height: HEIGHT, path, zeroY: value.y(0), ...(stop !== undefined && { stopY: value.y(stop) }), ...(target !== undefined && { targetY: value.y(target) }), left: time.left, right: time.right };
+  return { width: WIDTH, height: HEIGHT, path, dots, zeroY: value.y(0), ...(stop !== undefined && { stopY: value.y(stop) }), ...(target !== undefined && { targetY: value.y(target) }), left: time.left, right: time.right };
 }

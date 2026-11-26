@@ -25,6 +25,9 @@ export function ReplayStrip({ replay, strip, closed = false, exitNotCarriedOut =
         {chart.targetY !== undefined && <line className="replay-strip-target" x1={chart.left} x2={chart.right} y1={chart.targetY} y2={chart.targetY} />}
         {chart.stopY !== undefined && <line className="replay-strip-stop" x1={chart.left} x2={chart.right} y1={chart.stopY} y2={chart.stopY} />}
         <path className="replay-strip-pnl" d={chart.path} fill="none" />
+        {chart.dots.map((dot) => (
+          <circle key={dot.x} className="replay-strip-dot" cx={dot.x} cy={dot.y} r={2.5} />
+        ))}
       </svg>
       <p id={words}>{strip && stripWords(strip, closed)}</p>
       <button ref={buttonRef} type="button" className="pill secondary review-card-replay" aria-describedby={words} onClick={onOpen}>

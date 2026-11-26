@@ -32,6 +32,25 @@ describe('the Replay strip (T95.56, W146)', () => {
     expect(within(strip).getByRole('button', { name: 'Replay' })).toBeTruthy();
   });
 
+  it('should draw a visible mark for a Trade with one session', () => {
+    renderStrip({ replay: view([session({ date: '2026-11-02', pnl: -100 })]) });
+    const chart = screen.getByRole('img', { name: 'Trade P&L by session' });
+    // A path of one point draws nothing, so the lone point is a dot.
+    expect(chart.querySelectorAll('circle.replay-strip-dot')).toHaveLength(1);
+  });
+
+  it('should draw a lone point between missing Marks', () => {
+    renderStrip({
+      replay: view([session({ date: '2026-11-02', pnl: -100 }), session({ date: '2026-11-03', pnl: null }), session({ date: '2026-11-04', pnl: -50 }), session({ date: '2026-11-05', pnl: null })]),
+    });
+    const chart = screen.getByRole('img', { name: 'Trade P&L by session' });
+    expect(chart.querySelectorAll('circle.replay-strip-dot')).toHaveLength(2);
+    // A run of two or more points is a line and needs no dot.
+    cleanup();
+    renderStrip();
+    expect(screen.getByRole('img', { name: 'Trade P&L by session' }).querySelectorAll('circle.replay-strip-dot')).toHaveLength(0);
+  });
+
   it('should show the strip more strongly when the Trade is past a line or an Exit is not carried out', () => {
     const strong = () => screen.getByRole('region', { name: 'Replay strip' }).classList.contains('replay-strip-strong');
     renderStrip();
