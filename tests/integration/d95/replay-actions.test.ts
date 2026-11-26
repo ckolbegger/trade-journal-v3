@@ -106,12 +106,10 @@ describe('I95.15 The Replay carries each session Action, key moments and Plan Ca
 
     const owed = await app.DailyReview.getTrade({ reviewDate: opened.reviewDate, tradeId, binding: opened.binding });
 
-    // Catches an owed card with no replay (decision 136), or one whose Plan Calls or key moments differ from the Trade's own replay. The owed card assembles
-    // its replay with no Journal read (decision 136), so its sessions carry no Action; that is left unasserted here.
+    // Catches an owed card with no replay (decision 136), or one whose Actions, Plan Calls or key moments differ from the Trade's own replay (decision 140).
     if (owed.kind !== 'ReflectionsOwed' || !owed.card.replay) throw new Error(`getTrade: ${owed.kind}`);
-    const withoutActions = (replay: ReplayLike) => ({ ...projectionOf(replay), sessions: projectionOf(replay).sessions.map(({ date, planCall }) => ({ date, planCall })) });
-    const fromCard = withoutActions(owed.card.replay);
-    expect(fromCard).toEqual(withoutActions(await detailReplay(app, tradeId)));
+    const fromCard = projectionOf(owed.card.replay);
+    expect(fromCard).toEqual(projectionOf(await detailReplay(app, tradeId)));
     // The closed Trade holds nothing at its last session, so that session has no call to make.
     expect(fromCard.sessions.map((s) => s.planCall)).toEqual(['Hold', 'Out', 'Out', 'Out', 'Out', 'Unknown']);
     expect(fromCard.keyMoments).toEqual([
@@ -120,6 +118,24 @@ describe('I95.15 The Replay carries each session Action, key moments and Plan Ca
       // The sale's fee puts the last session's Trade P&L (-402) below 10-07's (-401).
       { date: MONDAY, kinds: ['Low', 'Sale', 'End'] },
     ]);
+  });
+
+  it('should give the owed card of a closed Trade each saved Action on its session, equal to what replayTrade carries', { timeout: 120_000 }, async () => {
+    const { app, tradeId } = await held();
+    await recordExit(app, tradeId, [{ quantity: '100', price: '46.00', economicTime: '2026-10-12T19:00:00Z', fee: '1.00' }], { closeReasonId: await closeReasonId(app, 'Target Reached'), closeReview: await closeReviewDisposition(app, 'Defer') });
+    const opened = await app.DailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: MON_1700 });
+    if (opened.kind !== 'Empty') throw new Error(`open: ${opened.kind}`);
+
+    const owed = await app.DailyReview.getTrade({ reviewDate: opened.reviewDate, tradeId, binding: opened.binding });
+
+    // Catches an owed card whose replay has no Action, or places one on the wrong session or without its reason.
+    if (owed.kind !== 'ReflectionsOwed' || !owed.card.replay) throw new Error(`getTrade: ${owed.kind}`);
+    const fromCard = owed.card.replay.sessions.filter((s) => s.action).map((s) => [s.date, s.action]);
+    expect(fromCard).toEqual([
+      ['2026-10-06', { action: 'Hold', intent: 'Held on 2026-10-06.' }],
+      ['2026-10-08', { action: 'Hold', intent: 'Held on 2026-10-08.' }],
+    ]);
+    expect(fromCard).toEqual((await detailReplay(app, tradeId)).sessions.filter((s) => s.action).map((s) => [s.date, s.action]));
   });
 
   it('should place a Settle Later on its session, from the Review card and from replayTrade', { timeout: 120_000 }, async () => {

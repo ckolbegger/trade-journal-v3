@@ -687,6 +687,28 @@ describe('owed card links (T6.20-B1)', () => {
   });
 });
 
+describe('the Replay opened from a closed Trade card (T95.65-D1, decision 140)', () => {
+  it('should show What you did that day and the Action row in the Replay opened from the closed card', async () => {
+    const user = userEvent.setup();
+    const dates = ['2026-10-09', '2026-10-12'];
+    const replay: ReplayView = { ...view(dates.map((date) => ({ ...session({ date, pnl: 100, held: 4 }), ...(date === dates[0] && { action: { action: 'Hold', intent: 'Wait for the bounce.' } }) }))), keyMoments: [{ date: dates[0]!, kinds: ['Entry'] }, { date: dates[1]!, kinds: ['Sale'] }] as unknown as ReplayView['keyMoments'] };
+    const closeReview: OwedReflection = { ...reflection('d-cr', 'Due', '2026-10-12T18:00:00Z', 'Close Review'), entryTypeKey: 'entry-type.close-review', definition: closeReviewDefinition, saveBinding: { debtId: 'd-cr', debtRevision: 'd-cr-rev-1', definitionRevision: 'def-cr-1' } };
+    const card: OwedReflectionsCard = { ...CLOSED_CARD, reflections: [closeReview], replay };
+    const trade: OwedReflectionsTrade = { ...owedTrade(card), owed: [{ debtId: 'd-cr', entryTypeKey: 'entry-type.close-review', dueAnchor: '2026-10-12T18:00:00Z', classification: 'Due' }] };
+    const facade = reviewFacade(ready({ owed: [trade] }));
+    vi.mocked(facade.DailyReview.getTrade).mockResolvedValue({ kind: 'ReflectionsOwed', reviewDate: DATE, cutoff: CUTOFF, card });
+    renderReview(facade);
+    const closed = await screen.findByRole('region', { name: 'ABC review' });
+
+    await user.click(within(closed).getByRole('button', { name: 'Write the Close Review' }));
+
+    // Catches a Replay that draws no Action: the closed card's replay carries each session's saved Action.
+    const dialog = await screen.findByRole('dialog', { name: 'Replay, ABC' });
+    expect(within(dialog).getByRole('region', { name: 'What you did that day' }).textContent).toContain('Wait for the bounce.');
+    expect(within(dialog).getByRole('list', { name: 'Action by session' })).toBeTruthy();
+  });
+});
+
 describe('the Close Review walk from the closed card (T95.59, W152)', () => {
   const dates = ['2026-10-09', '2026-10-12'];
   const replay: ReplayView = { ...view(dates.map((date) => session({ date, pnl: 100, held: 4 }))), keyMoments: [{ date: dates[0]!, kinds: ['Entry'] }, { date: dates[1]!, kinds: ['Sale'] }] as unknown as ReplayView['keyMoments'] };

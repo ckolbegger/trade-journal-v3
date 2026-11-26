@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { Application } from '../../../src/app/compose.ts';
 import type { MarketDataPrepareEntry } from '../../../src/modules/market-data/index.ts';
 import { countRequests, type CountedRequest } from '../../support/request-counter.ts';
-import { confirmOption, OC_PC1, OC_PC2, onboardedAt, planStock, record, recordOption, saveMark, TUESDAY_1700, XYZ_CALL } from '../d7/support.ts';
+import { closeReasonId, closeReviewDisposition, confirmOption, OC_PC1, OC_PC2, onboardedAt, planStock, record, recordExit, recordOption, saveMark, TUESDAY_1700, XYZ_CALL } from '../d7/support.ts';
 import { instrumentKey } from '../../../src/domain/instrument/index.ts';
 import { heldTrade, MARKS, MON_1700, MONDAY, openOn } from './support.ts';
 
@@ -56,6 +56,22 @@ describe('I95.6 The request pins of the Review (section 1.6)', () => {
     expect(entries(without.requests)).toEqual(entries(with5.requests));
     // R5: the card's reads of Marks do not grow with the Actions either.
     expect(with5.requests.filter((r) => r.store === 'observations')).toEqual(without.requests.filter((r) => r.store === 'observations'));
+  });
+
+  it('should read the Trade Actions once more in getTrade of an owed card of a closed Trade, the read the walked card makes', { timeout: 120_000 }, async () => {
+    const { app, tradeId } = await heldTrade(MARKS, ['2026-10-06', '2026-10-08']);
+    await recordExit(app, tradeId, [{ quantity: '100', price: '46.00', economicTime: '2026-10-12T19:00:00Z', fee: '1.00' }], { closeReasonId: await closeReasonId(app, 'Target Reached'), closeReview: await closeReviewDisposition(app, 'Defer') });
+    const opened = await app.DailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: MON_1700 });
+    if (opened.kind !== 'Empty') throw new Error(`open: ${opened.kind}`);
+
+    const owed = await countRequests(() => app.DailyReview.getTrade({ reviewDate: opened.reviewDate, tradeId, binding: opened.binding }));
+
+    // The measured reads are those of a card that was built, not of a refused one.
+    expect(owed.result.kind).toBe('ReflectionsOwed');
+    // Catches an owed card with no Actions read, or with two (decision 140). Its two other reads (its Outstanding Debt and its Close Review outcome) are unchanged;
+    // the third is the Trade's saved Actions, the one read the walked card makes (R4).
+    const byAnchor = { on: 'index', store: 'journalEntries', index: 'byAnchorTrade', method: 'getAll' };
+    expect(entries(owed.requests)).toEqual([byAnchor, byAnchor, byAnchor]);
   });
 
   it('should add one observations read for an option dated last-close line in getTrade whatever the number of Actions', { timeout: 120_000 }, async () => {

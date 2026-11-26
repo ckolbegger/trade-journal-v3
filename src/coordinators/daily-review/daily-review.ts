@@ -898,8 +898,11 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     const closeReason = await closeReasonOf(analysis.closeReason?.closeReasonId);
     const state = derive({ record: analysis });
     const closeReviewOutcome = summary.lifecycle === 'Closed' ? await closeReviewOutcomeOf(tradeId) : undefined;
+    // Decision 140: the Trade's saved Actions from one read, the shape the walked card passes (Review Date's own included), so each session carries its Action.
+    const actions = await deps.journal.queryActions({ reviewDate, tradeId });
+    const history = [...(actions.earlier ?? []), ...(actions.onDate ? [actions.onDate] : [])];
     // Decision 136: the Trade's replay from the read session this card holds, with no Journal items: one series read for each Instrument.
-    const replayed = state.kind === 'Derived' && analysis.positionChanges.length > 0 ? await assembleReplay(deps, analysis, state, read, { withJournal: false }) : undefined;
+    const replayed = state.kind === 'Derived' && analysis.positionChanges.length > 0 ? await assembleReplay(deps, analysis, state, read, { withJournal: false, actions: history }) : undefined;
     const replay = replayed && !('kind' in replayed) ? replayed : undefined;
     const due = reflections.filter((reflection) => reflection.classification === 'Due').length;
     return {
