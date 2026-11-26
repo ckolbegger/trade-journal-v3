@@ -1,0 +1,112 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 1,
+    "total_tokens": 171110,
+    "input_tokens": 169190,
+    "output_tokens": 1920,
+    "cache_read_tokens": 18816,
+    "elapsed": "1m3s"
+  },
+  "tool_calls": {
+    "total": 20,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 6,
+      "file_read": 13
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/coordinators/trade-workflows/record-position-change.ts",
+      "content": "Adding the missing-reason issue here suppresses candidate derivation immediately below, so an in-the-money expiration with an invalid quantity or settlement time now returns only ExpirationReasonRequired instead of the existing ExpirationMustSettleAllOpen / SettlementTimeInvalid diagnostics. The new regression test misses this because it uses an out-of-the-money mark. Keep semantic reflection issues separate from member parse errors so candidate analysis can still report these settlement errors, and cover the in-the-money cases.",
+      "existing_code": "  if (expirationMember !== undefined) issues.push(...(await expirationIssues(deps, command, expirationMember, beforeDerived.kind === 'Derived' ? beforeDerived : undefined)));",
+      "start_line": 495,
+      "end_line": 495,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/coordinators/trade-workflows/record-expiration-reason.test.ts",
+        "src/coordinators/trade-workflows/record-position-change.ts"
+      ]
+    }
+  ],
+  "session_id": "ec694ec2-85af-4964-9471-48ee4cb6c62c",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "ec694ec2-85af-4964-9471-48ee4cb6c62c",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "cfdb6088",
+      "resolved_base": "c7d31919a30a15e17d32fdd399cf1743a2b912f8",
+      "resolved_head": "cfdb60880ccae05b7358938408b41fdf45820c3d",
+      "exact_range": "c7d31919a30a15e17d32fdd399cf1743a2b912f8..cfdb60880ccae05b7358938408b41fdf45820c3d",
+      "source_artifact_sha256": "1000871811e6e78726a17853e36bc8b64c36a250adda96d340fea3fe36762d58"
+    },
+    "execution": {
+      "ocr_version": "v1.14.4",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "5d1ad06aad6fa408c0e6315d46de3cb9d1555f599b17e83709c316a431cd7c69",
+          "path": "src/coordinators/trade-workflows/record-expiration-reason.test.ts",
+          "fingerprint": "962c66f78aa1503e9c943065ecf65920962789cfbb8fc6847cb027fc96f1d359"
+        },
+        {
+          "item_id": "f5361c4fd75f977f1898251826a612f6ea83d6729570ae276fdef8fb7944213f",
+          "path": "src/coordinators/trade-workflows/record-position-change.ts",
+          "fingerprint": "5cb06ac8a8d223b7a057ce64fe202f9a0c34eb0ca05bd5cbffff22c53c937e3c"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "5d1ad06aad6fa408c0e6315d46de3cb9d1555f599b17e83709c316a431cd7c69",
+          "path": "src/coordinators/trade-workflows/record-expiration-reason.test.ts",
+          "fingerprint": "962c66f78aa1503e9c943065ecf65920962789cfbb8fc6847cb027fc96f1d359"
+        },
+        {
+          "item_id": "f5361c4fd75f977f1898251826a612f6ea83d6729570ae276fdef8fb7944213f",
+          "path": "src/coordinators/trade-workflows/record-position-change.ts",
+          "fingerprint": "5cb06ac8a8d223b7a057ce64fe202f9a0c34eb0ca05bd5cbffff22c53c937e3c"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "2f620dc3fb3e07a06c9a423d16697dc7183b5109cc6d0568a9c4461f3dfe1e55",
+          "path": "evidence/D95/tdd-log/T95.50.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 62985
+  }
+}
