@@ -1251,3 +1251,5 @@ ocr of T95.54 (session 96871c81): 3 files, 1 finding, Valid, bug task. `evidence
 ### T95.54-B1
 
 Commit `1499c00f`: the last session reads End when `last.positions.length === 0` (positions holds only open lots), else Now; unused `ZERO` removed. Case 1 red (legs +1 and −1, heldQuantity 0; a first red on a stray High in the fixture was not genuine, fixed, reverted, genuine red), green. Case 2 first-run pass, flagged, mutation (End and Now swapped) failed, restored. trade-analysis 305 passed; typecheck, tsc6, lint (2 pre-existing warnings), lint:deps exit 0.
+
+ocr of T95.54-B1 (session 73da9999): 2 files, 0 findings. `evidence/D95/ocr/T95.54-B1-1499c00f.json`. Next: run `t95.54-key-moments` (browser-task, Standard).
