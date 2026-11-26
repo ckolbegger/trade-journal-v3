@@ -215,6 +215,25 @@ describe('a Trade with Settlement Due owes no Action (A315, A316)', () => {
     expect((await cardOf(stack, MONDAY_1700, klm)).expirationStanding).toBeUndefined();
   }, 60_000);
 
+  it('should give each Settlement Due Trade in open its standing and Settle Later date, equal to its card', async () => {
+    const { stack, mno, klm } = await expiryFixture(FRIDAY_1700);
+    const friday = await cardOf(stack, FRIDAY_1700, mno);
+    const settled = await stack.dailyReview.save({ kind: 'SettleLater', binding: friday.saveBinding });
+    if (settled.kind !== 'Saved') throw new Error(`expected Saved, got ${JSON.stringify(settled)}`);
+    stack.clock.now = () => MONDAY_1700;
+
+    const walked = (await open(stack, MONDAY_1700)).kind === 'Ready' ? ready(await open(stack, MONDAY_1700)).families.flatMap((f) => (f.family === 'Trades' ? f.trades : [])) : [];
+    const card = await cardOf(stack, MONDAY_1700, mno);
+
+    const due = walked.find((t) => t.tradeId === mno);
+    expect(due?.expirationStanding).toEqual(card.expirationStanding);
+    expect(due?.expirationStanding).toEqual({ kind: 'Value', value: expect.objectContaining({ underlyingPrice: Rational.of(46n), strike: Rational.of(45n), inTheMoney: false }) as unknown });
+    expect(due?.settledLaterOn).toBe(FRIDAY);
+    const other = walked.find((t) => t.tradeId === klm);
+    expect(other?.expirationStanding).toBeUndefined();
+    expect(other?.settledLaterOn).toBeUndefined();
+  }, 60_000);
+
   it('should give the standing at the session that settles an expiration on a weekend', async () => {
     const { stack, mno } = await expiryFixture(MONDAY_1700, { expiration: '2026-11-21' });
 

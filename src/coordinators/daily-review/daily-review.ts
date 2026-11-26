@@ -13,6 +13,7 @@ import { beginSemanticTransaction, type Persistence, type WorkspaceSnapshotBindi
 import type { MutationGuard } from '../mutation-guard.ts';
 import { payoffOf, standingOf } from '../settlement.ts';
 import { assembleReplay } from '../replay/index.ts';
+import type { TradeReplayView } from '../trade-views/index.ts';
 import { replayStripOf } from './replay-strip.ts';
 import { lastDecisionsOf } from './decisions.ts';
 import { exitCarryOf } from './exit-carry.ts';
@@ -164,6 +165,15 @@ const dayBefore = (date: string) => shiftDay(date, -1);
 
 // The session dates from `from` to `to`, both included, as the Review's calendar names them. A range that starts before the calendar's
 // coverage is counted from the first covered date (P8: never a guessed session); none when it ends before that, or past the coverage's end.
+// A314: where an expired contract finished, from the Underlying's Mark the replay holds for the expiration session. An expiration on a weekend or
+// holiday has no session of its own: the session that settles it is the latest one before it, as for the settlement time.
+function expirationStandingOf(read: MarketDataReadSession, replay: TradeReplayView | undefined, valuation: ValuedTrade | undefined, dueContract: OptionInstrument | undefined) {
+  if (!valuation || !dueContract) return undefined;
+  const finishSession = replay?.sessions[0] ? missedSessions(read, replay.sessions[0].date, dueContract.expiration).at(-1) : undefined;
+  const underlyingMark = replay?.sessions.find(({ date }) => date === finishSession)?.marks.find(({ instrument }) => instrument.kind === 'Stock' && instrument.symbol === dueContract.symbol)?.resolution;
+  return standingOf(valuation.state, dueContract, underlyingMark?.kind === 'Available' ? underlyingMark.mark.price : undefined);
+}
+
 function missedSessions(read: MarketDataReadSession, from: string, to: string): readonly string[] {
   if (from > to) return [];
   const found = read.sessionDatesBetween(from, to);
@@ -663,9 +673,23 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
       const needed = rows.filter((row) => row.task === 'Manual').length;
       return cardProgress({ resolved: rows.length - needed, needed }, reflectionsOf(tradeId), tradeId in actions.actions, settlementTrades.has(tradeId) ? { settledLater: settledLater.has(tradeId) } : undefined);
     };
+    // Decision 138: a Settlement Due Trade's expired contract's standing and its latest earlier Settle Later, as its card carries them; the one
+    // replay read of that Trade (no Journal items) is what gives the Underlying's Mark for the expiration session.
+    const standings = new Map<string, Pick<WalkedTrade, 'expirationStanding' | 'settledLaterOn'>>(
+      await Promise.all(
+        settlement.map(async ({ tradeId, instrument }) => {
+          const entry = derivations.find(({ analysis }) => analysis.tradeId === tradeId)!;
+          const replayed = entry.integrity.kind === 'Derived' && entry.analysis.positionChanges.length > 0 ? await assembleReplay(deps, entry.analysis, entry.integrity, read, { withJournal: false }) : undefined;
+          const standing = expirationStandingOf(read, replayed && !('kind' in replayed) ? replayed : undefined, entry.valuation, instrument);
+          const settledLaterOn = savedActions?.earlier?.findLast((saved) => saved.tradeId === tradeId && saved.action === 'Settle Later')?.reviewDate;
+          return [tradeId, { ...(standing && { expirationStanding: standing }), ...(settledLaterOn && { settledLaterOn }) }] as const;
+        }),
+      ),
+    );
     const walked = ranked.map(
       ({ item, valuation, before }): WalkedTrade => ({
         ...item,
+        ...standings.get(item.tradeId),
         progress: progressOf(item.tradeId),
         ...(valuation?.state.contractStatuses.some(({ status }) => status === 'DueToday') && { expiresOnReviewDate: true as const }),
         ...(valuation && { planCall: planCall(valuation.evaluation), meter: meterReadingOf(valuation.evaluation, before), figures: { riskToStop: valuation.evaluation.ongoingRiskToStop, pnl: valuation.evaluation.currentMarkedPnl, rewardRiskNow: valuation.evaluation.rewardRiskNow }, pnl: { dollars: valuation.evaluation.currentMarkedPnl, planR: valuation.evaluation.currentMarkedPnlInPlanR, change: dayChangeOf([{ valuation, before }], false, reviewDate, read.previousSessionDate !== undefined) } }),
@@ -929,12 +953,8 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     const replayed = found.integrity.kind === 'Derived' && analysis.positionChanges.length > 0 ? await assembleReplay(deps, analysis, found.integrity, read, { withJournal: false, actions: history }) : undefined;
     const replay = replayed && !('kind' in replayed) ? replayed : undefined;
     const saved = actions.actions[analysis.tradeId];
-    // A314: where the contract finished, from the Underlying's Mark the replay already read for the expiration session; no read of its own.
-    const dueContract = settlement[0]?.instrument;
-    // An expiration on a weekend or holiday has no session of its own: the session that settles it is the latest one before it, as for the settlement time.
-    const finishSession = dueContract && replay?.sessions[0] ? missedSessions(read, replay.sessions[0].date, dueContract.expiration).at(-1) : undefined;
-    const underlyingMark = replay?.sessions.find(({ date }) => date === finishSession)?.marks.find(({ instrument }) => instrument.kind === 'Stock' && instrument.symbol === dueContract?.symbol)?.resolution;
-    const standing = valuation && dueContract ? standingOf(valuation.state, dueContract, underlyingMark?.kind === 'Available' ? underlyingMark.mark.price : undefined) : undefined;
+    // A314: where the contract finished, from the replay's Mark for the expiration session; no read of its own.
+    const standing = expirationStandingOf(read, replay, valuation, settlement[0]?.instrument);
     const settledLaterOn = actions.earlier?.findLast(({ action }) => action === 'Settle Later')?.reviewDate;
     const since = await unreviewedSince(read, actions.earlier?.at(-1)?.reviewDate, valuation?.state.exposureStart);
     // A309: the Plan Exit facts. What is held is the whole lifetime's; the conditions' status is at the Review Date's Marks; a Hold counts before the Review Date,

@@ -45,8 +45,6 @@ async function reviewOpen(friday: number, early: number, due = true) {
   return { requests: review.requests, items };
 }
 
-const on = (requests: readonly CountedRequest[], store: string) => requests.filter((r) => r.store === store);
-const GET_ALL = { on: 'store', store: 'observations', method: 'getAll' };
 
 describe('T7.29 query count: the Review open and Trade Detail with Settlement Due', () => {
   // DEVIATION from the plan's wording (reported with T7.29): the plan (A111, T7.29) says the Review open adds exactly one Historical
@@ -81,23 +79,32 @@ describe('T7.29 query count: the Review open and Trade Detail with Settlement Du
     // It is the count D6's Review open had in source: by reading the source, `daily-review.ts` has added no stored read since tag claude-opus-5.5-d6.
     // Its new settlement code asks Market Data for a calendar answer, not the store.
     // No test measures that claim, and no D6 build can open option Trades, so D6 never measured this count.
-    const tally: Record<string, number> = {};
-    for (const r of twoTrades.requests) tally[`${r.store}.${r.method}`] = (tally[`${r.store}.${r.method}`] ?? 0) + 1;
-    // D9 T9.31 (P133): the meter's session before adds one date-wide observations.getAll and its snapshot's meta.get (13 and 1 before).
-    expect(tally).toEqual({ 'meta.get': 14, 'trades.getAll': 2, 'observations.getAll': 2, 'journalDebts.getAll': 1, 'journalDefinitions.getAll': 1, 'journalEntries.getAll': 1, 'journalObligations.getAll': 1, 'journalTypes.getAll': 1 });
-    // D9 T9.31 (P133): the meter's session before reads its date-wide getAll and that snapshot's meta.get in both runs, but the baseline's
-    // Instruments make the two meta.get run ahead of the two getAll, the due runs interleave them. So these three compare the same
-    // requests (any extra or missing one still fails), not their order.
-    const unordered = (requests: readonly CountedRequest[]) => requests.map((r) => JSON.stringify(r)).sort();
-    expect(unordered(twoTrades.requests)).toEqual(unordered(withoutMarkReads(baselineTwo.requests)));
-    expect(unordered(fourTrades.requests)).toEqual(unordered(withoutMarkReads(baselineFour.requests)));
-    expect(unordered(twoDates.requests)).toEqual(unordered(withoutMarkReads(baselineTwoDates.requests)));
-    // Nothing per Trade: twice the due Trades on the one date issue the same requests.
+    const tallyOf = (requests: readonly CountedRequest[]) => {
+      const t: Record<string, number> = {};
+      for (const r of requests) t[`${r.store}.${r.method}`] = (t[`${r.store}.${r.method}`] ?? 0) + 1;
+      return t;
+    };
+    // D7's measured count is pinned per store and method.
+    // T95.62-D1 (decision 138): plus the Settlement Due Trades' replay read, once for the Trade's Instruments (the option and its Underlying): 1 meta.get,
+    // 3 observations.getAll and 2 observations.openCursor over the 14 meta.get and 2 getAll that D9 T9.31 (P133) pinned (the meter's session before's getAll and meta.get).
+    expect(tallyOf(twoTrades.requests)).toEqual({ 'meta.get': 15, 'trades.getAll': 2, 'observations.getAll': 5, 'observations.openCursor': 2, 'journalDebts.getAll': 1, 'journalDefinitions.getAll': 1, 'journalEntries.getAll': 1, 'journalObligations.getAll': 1, 'journalTypes.getAll': 1 });
+    // Each due run issues the baseline's requests (bar the mark reads) and that replay read alone; the replay's requests are compared per store and
+    // method, since their order differs from the baseline's.
+    const REPLAY_READ = { 'meta.get': 1, 'observations.getAll': 3, 'observations.openCursor': 2 };
+    const added = (due: readonly CountedRequest[], baseline: readonly CountedRequest[], extra: Record<string, number>) => {
+      const expected = tallyOf(withoutMarkReads(baseline));
+      for (const [key, n] of Object.entries(extra)) expected[key] = (expected[key] ?? 0) + n;
+      return { due: tallyOf(due), expected };
+    };
+    for (const [run, baseline, extra] of [[twoTrades, baselineTwo, REPLAY_READ], [fourTrades, baselineFour, REPLAY_READ], [twoDates, baselineTwoDates, { ...REPLAY_READ, 'observations.getAll': 4, 'observations.openCursor': 3 }]] as const) {
+      const { due, expected } = added(run.requests, baseline.requests, extra);
+      expect(due).toEqual(expected);
+    }
+    // One replay read per Settlement Due Trade and no more: Trades on the same Instruments share one read session, so twice the due Trades on the one
+    // date issue the same requests.
     expect(fourTrades.requests).toEqual(twoTrades.requests);
-    // Nothing per distinct date: a second due date issues the same requests too, and D6's one getAll on observations is all there is.
-    expect(twoDates.requests).toEqual(twoTrades.requests);
-    // D9 T9.31 (P133): plus the meter's session before, one more date-wide getAll.
-    expect(on(twoDates.requests, 'observations')).toEqual([GET_ALL, GET_ALL]);
+    // A second due expiration date is a second option Instrument: one more series read, a cursor open and a getAll.
+    expect(tallyOf(twoDates.requests)).toEqual({ ...tallyOf(twoTrades.requests), 'observations.getAll': 6, 'observations.openCursor': 3 });
   });
 
   it('should issue the same Trade Detail requests, bar the frame reads and the Underlying series read, for an expired and a live contract at one clock', { timeout: 120_000 }, async () => {
