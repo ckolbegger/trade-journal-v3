@@ -1,0 +1,135 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 0,
+    "total_tokens": 252135,
+    "input_tokens": 250581,
+    "output_tokens": 1554,
+    "cache_read_tokens": 30080,
+    "elapsed": "51s"
+  },
+  "tool_calls": {
+    "total": 17,
+    "by_tool": {
+      "code_search": 7,
+      "file_find": 1,
+      "file_read": 9
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "D95 integration tests for review lifecycle, expiration, writability, action replay, and deferred settlement",
+      "files": [
+        "tests/integration/d95/close-review.test.ts",
+        "tests/integration/d95/expiration-reason.test.ts",
+        "tests/integration/d95/not-writable.test.ts",
+        "tests/integration/d95/replay-actions.test.ts",
+        "tests/integration/d95/settle-later.test.ts"
+      ]
+    }
+  ],
+  "session_id": "792f187e-7b59-4801-b04e-8caadd2fafea",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "792f187e-7b59-4801-b04e-8caadd2fafea",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "39c4e305",
+      "resolved_base": "1cfa4932db28629e375af68af9160a93dc82b7e2",
+      "resolved_head": "39c4e3053a1234e33324dcf94d58e0b29b845eb0",
+      "exact_range": "1cfa4932db28629e375af68af9160a93dc82b7e2..39c4e3053a1234e33324dcf94d58e0b29b845eb0",
+      "source_artifact_sha256": "3000a0d21f92845935041b8659df5f1ec8ed5dac44c3773be88f2174b7fbae60"
+    },
+    "execution": {
+      "ocr_version": "v1.14.4",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "64f940c5bd2b8562a3428748c887a04b5b2b96fbedfaf0e143a0c4fda9b24185",
+          "path": "tests/integration/d95/not-writable.test.ts",
+          "fingerprint": "90b59c7979e2858ea228155e1dbd109c6300f2e7d5b7efab03cb53f6180cbbb1"
+        },
+        {
+          "item_id": "8c36472aa14d790dd2cfb2777bcdf23c44ce70457ba92ad33ca0df8ee6114871",
+          "path": "tests/integration/d95/replay-actions.test.ts",
+          "fingerprint": "aa1d7c57471823e7631942d7c6187e620c088a297506ffc442baf92b8cecd435"
+        },
+        {
+          "item_id": "bb6d2706cfc8f0b8304842ff649e35f67c16a424cef80a878c08edf26fa8c0fd",
+          "path": "tests/integration/d95/close-review.test.ts",
+          "fingerprint": "eee56a22c5a1b9c7bff047ba4339d726cee367315ebc5eb1adbcea39d9da4d43"
+        },
+        {
+          "item_id": "cf2bc47d515e02a1f6520e8c9beb16773224c6ddf6a745ff94f58c5fbda4ca6e",
+          "path": "tests/integration/d95/expiration-reason.test.ts",
+          "fingerprint": "a827685f93bcd150a07d05c3019bbae8103b625337ca2580871ac07a79c5517c"
+        },
+        {
+          "item_id": "d2a219165a366d379e14f7c7ca93cf9dfe13e042aef9dab50a8a01390a5e0cc5",
+          "path": "tests/integration/d95/settle-later.test.ts",
+          "fingerprint": "59d42f4db683ca4cdaefc113ccb7a9c480f3997f01607d58b9ddc43f3b891556"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "64f940c5bd2b8562a3428748c887a04b5b2b96fbedfaf0e143a0c4fda9b24185",
+          "path": "tests/integration/d95/not-writable.test.ts",
+          "fingerprint": "90b59c7979e2858ea228155e1dbd109c6300f2e7d5b7efab03cb53f6180cbbb1"
+        },
+        {
+          "item_id": "8c36472aa14d790dd2cfb2777bcdf23c44ce70457ba92ad33ca0df8ee6114871",
+          "path": "tests/integration/d95/replay-actions.test.ts",
+          "fingerprint": "aa1d7c57471823e7631942d7c6187e620c088a297506ffc442baf92b8cecd435"
+        },
+        {
+          "item_id": "bb6d2706cfc8f0b8304842ff649e35f67c16a424cef80a878c08edf26fa8c0fd",
+          "path": "tests/integration/d95/close-review.test.ts",
+          "fingerprint": "eee56a22c5a1b9c7bff047ba4339d726cee367315ebc5eb1adbcea39d9da4d43"
+        },
+        {
+          "item_id": "cf2bc47d515e02a1f6520e8c9beb16773224c6ddf6a745ff94f58c5fbda4ca6e",
+          "path": "tests/integration/d95/expiration-reason.test.ts",
+          "fingerprint": "a827685f93bcd150a07d05c3019bbae8103b625337ca2580871ac07a79c5517c"
+        },
+        {
+          "item_id": "d2a219165a366d379e14f7c7ca93cf9dfe13e042aef9dab50a8a01390a5e0cc5",
+          "path": "tests/integration/d95/settle-later.test.ts",
+          "fingerprint": "59d42f4db683ca4cdaefc113ccb7a9c480f3997f01607d58b9ddc43f3b891556"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "dfcad4b8869ba5433a3dff41947bcfd581bdd21472df93e4c11a91449d3daa24",
+          "path": "evidence/D95/tdd-log/T95.65.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 50633
+  }
+}
