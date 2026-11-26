@@ -1166,3 +1166,6 @@ Updated the frozen `expected-views.json` of four fixtures for T95.49 (A316 case 
 | backup-v7 | same | 16 to 15: same, index 8 |
 
 Diff: 4 files, 16 insertions, 32 deletions. Green: `npm run verify:fixtures` OK (all workspace and backup folders views equal); integration d7, d7s, d8, d8r plus tools fixture-views and verify-fixtures tests: 49 files, 133 tests passed.
+
+
+ocr of T95.49-F1 (session 5ae0de35, with a scratch rule including the fixture views): 4 files, 0 findings. `evidence/D95/ocr/T95.49-F1-8cc523bf.json`. Next: run `t95.49-settle-later` (browser-auto bb67fedd).
