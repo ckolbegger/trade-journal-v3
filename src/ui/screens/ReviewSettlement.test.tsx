@@ -446,6 +446,46 @@ describe('the expiration block on the card (T95.52)', () => {
     await waitFor(() => expect(document.activeElement).toBe(screen.getByRole('button', { name: /^Review MNO/ })));
   });
 
+  it('should put focus on the empty Review when the re-read after a receipt is Empty', async () => {
+    const user = userEvent.setup();
+    const lost = standing({ mark: 81n, inTheMoney: false, amount: 1n, worth: 0n, settled: -633n, settledR: Rational.of(-199n, 100n), worthless: -633n, worthlessR: Rational.of(-199n, 100n) });
+    const trade = walked(CORV_ITEM, 'CORV', cardProgress(0, 0, { settlement: true, owed: false }));
+    const overview = review({ families: [{ family: 'Marks', earlierMarks: [], today: [], earlier: [] }, { family: 'Trades', trades: [trade] }] });
+    const facade = withForm(walkFacade(overview, tradeReview(trade, CORV_ITEM, { expirationStanding: lost })));
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(expirationResult() as never);
+    renderReview(facade);
+    const card = await screen.findByRole('region', { name: 'CORV review' });
+    await user.click(within(card).getByRole('button', { name: 'Record expiration' }));
+    await user.click(await within(card).findByRole('button', { name: 'Record expiration' }));
+    await within(card).findByRole('heading', { name: 'Expiration recorded' });
+    vi.mocked(facade.DailyReview.open).mockResolvedValue({ kind: 'Empty', reviewDate: overview.reviewDate, cutoff: overview.cutoff, owed: [], binding });
+
+    await user.click(within(card).getByRole('button', { name: 'Back to the Review' }));
+
+    await screen.findByText(/No Trades were open at this session's close/);
+    await waitFor(() => expect(document.activeElement).toBe(screen.getByText(/No Trades were open at this session's close/).closest('section')));
+  });
+
+  it('should still focus The day when the Review is not empty and nothing is left after a receipt', async () => {
+    const user = userEvent.setup();
+    const lost = standing({ mark: 81n, inTheMoney: false, amount: 1n, worth: 0n, settled: -633n, settledR: Rational.of(-199n, 100n), worthless: -633n, worthlessR: Rational.of(-199n, 100n) });
+    const trade = walked(CORV_ITEM, 'CORV', cardProgress(0, 0, { settlement: true, owed: false }));
+    const overview = review({ families: [{ family: 'Marks', earlierMarks: [], today: [], earlier: [] }, { family: 'Trades', trades: [trade] }] });
+    const facade = withForm(walkFacade(overview, tradeReview(trade, CORV_ITEM, { expirationStanding: lost })));
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(expirationResult() as never);
+    renderReview(facade);
+    const card = await screen.findByRole('region', { name: 'CORV review' });
+    await user.click(within(card).getByRole('button', { name: 'Record expiration' }));
+    await user.click(await within(card).findByRole('button', { name: 'Record expiration' }));
+    await within(card).findByRole('heading', { name: 'Expiration recorded' });
+    const done = walked(MNO_ITEM, 'MNO', cardProgress(0, 0, { owed: false }));
+    vi.mocked(facade.DailyReview.open).mockResolvedValue(review({ families: [{ family: 'Marks', earlierMarks: [], today: [], earlier: [] }, { family: 'Trades', trades: [done] }] }));
+
+    await user.click(within(card).getByRole('button', { name: 'Back to the Review' }));
+
+    await waitFor(() => expect(document.activeElement).toBe(screen.getByRole('region', { name: 'The day' })));
+  });
+
   it('should move focus to the next card that still needs something after Settle Later', async () => {
     const user = userEvent.setup();
     const trade = walked(CORV_ITEM, 'CORV', cardProgress(0, 0, { settlement: true, owed: false }));

@@ -108,9 +108,13 @@ type ViewState =
   | { readonly kind: 'Empty'; readonly review: Extract<OpenDailyReviewResult, { kind: 'Empty' }> }
   | { readonly kind: 'Error' };
 
-function EmptyReview({ date }: { readonly date: string }) {
+function EmptyReview({ date, focus = 0 }: { readonly date: string; readonly focus?: number }) {
+  const section = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (focus > 0) section.current?.focus();
+  }, [focus]);
   return (
-    <section className="card empty">
+    <section ref={section} tabIndex={-1} className="card empty">
       <ReviewDate date={date} />
       <p>No Trades were open at this session's close</p>
     </section>
@@ -579,7 +583,7 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
   }, [firstId, read]);
   return (
     <>
-      {empty ? <EmptyReview date={review.reviewDate} /> : <DayCard focus={dayFocus} review={review} name={name} openCard={openCard} openMarks={openMarks} openSkipped={openSkipped} holding={new Set([...holding, ...soldOut])} onStillHolding={stillHolding} />}
+      {empty ? <EmptyReview date={review.reviewDate} focus={dayFocus} /> : <DayCard focus={dayFocus} review={review} name={name} openCard={openCard} openMarks={openMarks} openSkipped={openSkipped} holding={new Set([...holding, ...soldOut])} onStillHolding={stillHolding} />}
       {failed && (
         <div role="alert" className="banner warning">
           <p>We couldn’t refresh the Review. Nothing was changed.</p>
