@@ -1515,3 +1515,5 @@ ocr of T95.60 (session 16a47510): complete, 19 files reviewed, 4 findings, all V
 ### T95.60-B1
 
 Commit `80a8e8df`: each `pressesToResolve` helper asserts the save happened (Trade Detail: `Journal.save` once; DebtForm: the adapter once). Shown first with the decline's confirm made a no-op: both tests passed before the assertion, failed after; restored. Both files 66 passed; typecheck, tsc6, lint, lint:deps exit 0.
+
+ocr of T95.60-B1 (session 5a04e17c): complete, 2 files, no findings. `evidence/D95/ocr/T95.60-B1-80a8e8df.json`.
