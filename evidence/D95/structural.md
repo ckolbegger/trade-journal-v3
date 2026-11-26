@@ -1384,3 +1384,9 @@ Commit `371a35ae`: the seed-6 check needs an Entry (not a Debt) of `entry-type.c
 ocr of T95.63-B1 (session 6bc2024e): complete, 2 files, no findings. `evidence/D95/ocr/T95.63-B1-371a35ae.json`.
 
 Run `t95.63-fixtures` (browser-auto 956f7a3c, which picked the task tier: no changed path is on the full-tier list; at `ae0bd7bb`): unit 264 files, 3212 passed; integration 158 files, 364 passed; browser 57 passed; 14 of 14 checks exit 0; run-complete. Passed. T95.63 done.
+
+## T95.64
+
+First attempt (no commit): the generator is already on manifest 6 (T95.28) at version 9 (T95.28-B2), and its Actions already carry reasons as the new rule requires (Exit, Roll, Adjust carry an Intent; Hold none). But the committed `bench/dataset.json` and `bench/expected-open-rows.json` are still version 8; regenerated (about 14 minutes) they fail `bench:verify-capacity` until the basis is re-measured, which the brief had forbidden (`bench:setup`). Main session's calls, recorded as assumptions:
+- The re-measure is part of this task: the plan's verification ("bench:verify-capacity passes; a changed basis is recorded with its cause") needs it. `bench:setup` and `measure:capacity` run on 4175, the benchmark's port.
+- The generator's disposition mix (declined and completed sale reflections, Close Reviews completed or declined at the close) stays as it is. The plan asks only that its Actions carry reasons. The generated history is read as data from before Part C's rules, which existing Workspaces also hold. Not a pending decision.
