@@ -845,6 +845,7 @@ export function App() {
                         loaded={completeDetail}
                         replayIndex={replayIndex}
                         onSelectReplay={setReplayIndex}
+                        onOpenReview={() => { void onOpenReview() }}
                       />
                     </>
                   )}

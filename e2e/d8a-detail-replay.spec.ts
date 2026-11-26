@@ -67,12 +67,21 @@ test('should present one complete Trade Detail with all required sections and de
   await seedMarks(page)
   await openDetail(page)
   const detail = page.getByTestId('complete-detail')
-  for (const section of [
-    'Identity', 'Today against yesterday/entry', 'Stops and Targets',
-    'Position and Plan/entry', 'Payoff at expiration', 'Earlier Marks',
-    'Journal narrative', 'Needs you', 'Session timeline', 'Integrity',
-  ]) {
-    await expect(detail.getByRole('heading', { name: section })).toBeVisible()
+  const sections: { name: string; drawer?: string }[] = [
+    { name: 'Identity' },
+    { name: 'Today against yesterday/entry', drawer: 'Today' },
+    { name: 'Stops and Targets' },
+    { name: 'Position and Plan/entry', drawer: 'Position' },
+    { name: 'Payoff at expiration', drawer: 'Payoff' },
+    { name: 'Earlier Marks', drawer: 'Price History' },
+    { name: 'Journal narrative', drawer: 'Journal' },
+    { name: 'Needs you' },
+    { name: 'Session timeline', drawer: 'Journal' },
+    { name: 'Integrity' },
+  ]
+  for (const section of sections) {
+    if (section.drawer) await page.getByRole('tab', { name: new RegExp(section.drawer) }).click()
+    await expect(detail.getByRole('heading', { name: section.name })).toBeVisible()
   }
   const figures = page.getByTestId('detail-figures')
   await expect(figures).toContainText('Planned Leg Fulfillment')
@@ -95,6 +104,7 @@ test('should replay session by session with a slider, explicit gaps and no inter
   await confirmLongCall(page)
   await seedMarks(page)
   await openDetail(page)
+  await page.getByRole('tab', { name: /Journal/ }).click()
   const slider = page.getByTestId('replay-slider')
   await expect(slider).toBeVisible()
   const timeline = page.getByTestId('session-timeline')
@@ -158,6 +168,7 @@ test('should keep navigation read-only and write no Trade or Journal fact from d
     })
   })
   await openDetail(page)
+  await page.getByRole('tab', { name: /Journal/ }).click()
   await page.getByTestId('replay-slider').fill('2')
   const nav = await page.getByRole('navigation', { name: 'Primary' }).innerText()
   expect(nav).toBe('Accounts\nStatus\nNew Plan\nTrades\nReview')
