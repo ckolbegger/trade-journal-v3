@@ -1436,3 +1436,7 @@ The owed card (`assembleOwedCard`) assembles its Trade's replay (`withJournal: f
 ocr of T95.56 (session ecf2dbfe): complete, 20 files reviewed (4 excluded), 2 findings, both Valid. `evidence/D95/ocr/T95.56-801cd4bd.json`.
 - **T95.56-B1** (Valid, `CardReplay.tsx:92`, `TradeDetail.tsx:178`): the Replay's Price History link doesn't carry the card's open panel and Trade Detail's "Back to the Review" always returns to `panel=Action`; safe while the Replay button sat only in the Action panel, wrong now that the strip is on every panel. Cases: it should return to the panel the Replay was opened from (e.g. Reflections) after Price History and "Back to the Review"; it should still return to Action when opened from Action.
 - **T95.56-B2** (Valid, `replay-strip.props.ts:56`): a run of one P&L point yields only an SVG `M` command, which draws nothing, so a one-session Trade (or a lone point between missing Marks) shows the lines but no Trade P&L. Cases: it should draw a visible mark for a Trade with one session; it should draw a lone point between missing Marks.
+
+### T95.56-B1
+
+Commit `e365c63d`: the Replay's Price History link ends `&from=review&panel=<panel>`; Trade Detail reads `panel` once on load and "Back to the Review" uses it, falling back to Action. Three cases red then green (Back to Reflections; the link carries Reflections; the link still carries Action); the default-to-Action case was already covered. ReviewCard and TradeDetail tests 137 passed; typecheck, tsc6, lint (2 pre-existing warnings), lint:deps exit 0; d9ar/review 5 passed.
