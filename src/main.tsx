@@ -1,11 +1,19 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { App } from './ui/App'
+import { GlobalErrorBanner } from './ui/global-error-banner'
+import { GlobalErrorBoundary } from './ui/global-error-boundary'
+import { installGlobalErrorHandlers } from './ui/global-errors'
 import './ui/styles.css'
+
+installGlobalErrorHandlers()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <GlobalErrorBanner />
+    <GlobalErrorBoundary>
+      <App />
+    </GlobalErrorBoundary>
   </StrictMode>,
 )
 

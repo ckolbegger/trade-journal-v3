@@ -17,6 +17,18 @@ main { min-height: 100vh; }
   margin: 0.75rem 0;
 }
 .card + .card { margin-top: 0.75rem; }
+.global-error {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 0 0.75rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid #b6462e;
+  border-radius: 12px;
+  background: #fff3ef;
+  color: #7d2410;
+}
 .section-label {
   font-size: 0.7rem;
   font-weight: 700;
