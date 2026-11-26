@@ -1568,3 +1568,9 @@ Commit `5bc996f5`: `assembleOwedCard` reads the Trade's saved Actions (`queryAct
 ocr of T95.65-D1 (session aaa49ff5): complete, 4 files, no findings. `evidence/D95/ocr/T95.65-D1-5bc996f5.json`.
 
 Run `t95.65-d1-owed-actions` (browser-auto, which chose the task tier: no changed path on the full-tier list; unit at `040e3fca`, the rest at `301bb786`): unit 268 files, 3271 passed; integration 163 files, 395 passed; browser 58 passed; 14 of 14 checks exit 0; run-complete. Passed. T95.65-D1 done.
+
+## T95.66
+
+Commit `2db9736a`: Part C browser suites B95.11 expiration (9 cases), B95.12 settle-later (2), B95.13 replay (4), B95.14 close-review (6), B95.15 keyboard-day (2), B95.16 offline (2), B95.17 resize (2), each at 1280 and 375 with every press at the width under test; support helpers added in `e2e/d95/support.ts`. Every case a first-run pass, each mutation-checked and restored (list in `tdd-log/T95.66.md`); two weak checks strengthened ("Keep it writes nothing" now waits, compares and reloads; Escape focus needs both restores removed). No defect found. The handoff's T95.66 notes are covered (the in-the-money block at 375, the settlement-to-record day, the day-after card and the amber heading at both widths, the walk at 375 in the browser). e2e/d95 80 passed (2 min 35 s); typecheck, tsc6, lint (2 pre-existing warnings), lint:deps exit 0. The commit's Co-Authored-By names Claude Sonnet 5.5; left as it is.
+- Gaps recorded: AC-SET-003's "nothing inferred" and Settle Later's "no Trade fact" and the offline second restart have no mutation of their own (I95.13 owns the first); resize's open-card and half-typed-Action claims are covered only through the remount mutation.
+- For the critic (agent's observation): Tab right after Enter on a card header, before the card has loaded, once landed on the page body; the spec waits for the Action panel.
