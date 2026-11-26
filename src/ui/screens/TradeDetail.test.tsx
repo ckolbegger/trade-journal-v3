@@ -684,6 +684,16 @@ describe('Replay: the round trip from the Review (P129)', () => {
   });
 });
 
+describe('Replay: the way back to the panel the Replay opened from', () => {
+  useFixedClock();
+
+  it('should return to the panel the Replay was opened from after following Price History and pressing Back to the Review', async () => {
+    renderWith(facadeOf(), '/trades/trade-1?drawer=price-history&session=2026-10-13&from=review&panel=Reflections');
+    await screen.findByRole('region', { name: 'State of play' });
+    expect(screen.getByRole('link', { name: 'Back to the Review' }).getAttribute('href')).toBe('/review?trade=trade-1&panel=Reflections&replay=open&session=2026-10-13');
+  });
+});
+
 describe('Replay: audit navigation (W46)', () => {
   useFixedClock();
   const open = async (session: string) => {

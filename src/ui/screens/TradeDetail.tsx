@@ -52,7 +52,7 @@ function TradeDetailOf({ facade, timeZone, onDirtyChange }: TradeDetailProps) {
   // A257: the drawer and the Replay session the address names are read once, on load; the slider and the tabs are state after that.
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
-  const [address] = useState(() => ({ drawer: drawerNamed(params.get('drawer')), session: params.get('session'), from: params.get('from') }));
+  const [address] = useState(() => ({ drawer: drawerNamed(params.get('drawer')), session: params.get('session'), from: params.get('from'), panel: params.get('panel') }));
   // The Replay slider's session, for the way back to the Review (P129): the address's until the slider moves.
   const [session, setSession] = useState(address.session);
   // A274: the overlay is open while the address holds `replay=open`. Opening pushes one history entry, so Back closes it; Close and Escape go
@@ -175,7 +175,7 @@ function TradeDetailOf({ facade, timeZone, onDirtyChange }: TradeDetailProps) {
   return (
     <article className="trade-detail">
       {address.from === 'review' && (
-        <Link className="back-link" to={`/review?trade=${tradeId}&panel=Action&replay=open${session ? `&session=${session}` : ''}`}>
+        <Link className="back-link" to={`/review?trade=${tradeId}&panel=${encodeURIComponent(address.panel ?? 'Action')}&replay=open${session ? `&session=${session}` : ''}`}>
           <BackIcon />
           Back to the Review
         </Link>

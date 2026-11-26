@@ -1777,12 +1777,26 @@ describe('Review card: the Replay button (decision 3)', () => {
     renderWalk(walkFacade(ready([item('t1', 'XYZ')]), tradeReview('t1', 'XYZ', { replay: THURSDAY_AND_MONDAY })));
     await user.click(within(await openTrade(user, 'XYZ')).getByRole('button', { name: 'Replay' }));
     const dialog = await screen.findByRole('dialog', { name: 'Replay, XYZ' });
-    expect(within(dialog).getByRole('link', { name: 'Price History' }).getAttribute('href')).toBe('/trades/t1?drawer=price-history&session=2026-10-12&from=review');
+    expect(within(dialog).getByRole('link', { name: 'Price History' }).getAttribute('href')).toBe('/trades/t1?drawer=price-history&session=2026-10-12&from=review&panel=Action');
     // The link follows the slider, and the overlay offers no link to the Journal or the Position here.
     await user.click(within(dialog).getByRole('button', { name: 'Previous session' }));
-    expect(within(dialog).getByRole('link', { name: 'Price History' }).getAttribute('href')).toBe('/trades/t1?drawer=price-history&session=2026-10-08&from=review');
+    expect(within(dialog).getByRole('link', { name: 'Price History' }).getAttribute('href')).toBe('/trades/t1?drawer=price-history&session=2026-10-08&from=review&panel=Action');
     expect(within(dialog).queryByRole('link', { name: 'Journal' })).toBeNull();
     expect(within(dialog).queryByRole('link', { name: 'Position' })).toBeNull();
+  });
+
+  it('should carry the open panel on the Price History link, Reflections here', async () => {
+    renderWalk(walkFacade(ready([item('t1', 'XYZ')]), tradeReview('t1', 'XYZ', { replay: THURSDAY_AND_MONDAY })), { address: '/review?trade=t1&panel=Reflections&replay=open' });
+    const dialog = await screen.findByRole('dialog', { name: 'Replay, XYZ' });
+    expect(within(dialog).getByRole('link', { name: 'Price History' }).getAttribute('href')).toBe('/trades/t1?drawer=price-history&session=2026-10-12&from=review&panel=Reflections');
+  });
+
+  it('should still carry Action on the Price History link when the Replay was opened from Action', async () => {
+    const user = userEvent.setup();
+    renderWalk(walkFacade(ready([item('t1', 'XYZ')]), tradeReview('t1', 'XYZ', { replay: THURSDAY_AND_MONDAY })));
+    await user.click(within(await openTrade(user, 'XYZ')).getByRole('button', { name: 'Replay' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Replay, XYZ' });
+    expect(within(dialog).getByRole('link', { name: 'Price History' }).getAttribute('href')).toBe('/trades/t1?drawer=price-history&session=2026-10-12&from=review&panel=Action');
   });
 
   it("should keep each card's Price History link once the Marks are saved and the grid is folded", async () => {
@@ -1808,7 +1822,7 @@ describe('Review card: the Replay button (decision 3)', () => {
     // The card's own Replay still offers it.
     await user.click(await within(card).findByRole('button', { name: 'Replay' }));
     const dialog = await screen.findByRole('dialog', { name: 'Replay, XYZ' });
-    expect(within(dialog).getByRole('link', { name: 'Price History' }).getAttribute('href')).toBe('/trades/t1?drawer=price-history&session=2026-10-12&from=review');
+    expect(within(dialog).getByRole('link', { name: 'Price History' }).getAttribute('href')).toBe('/trades/t1?drawer=price-history&session=2026-10-12&from=review&panel=Action');
   });
 
   it('should reopen the overlay on the named session when the address names the card with replay=open', async () => {

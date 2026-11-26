@@ -89,7 +89,7 @@ export function CardReplay({ tradeId, underlying, replay, strip, closed, exitNot
       {replayOpen && (
         <ReplayOverlay {...overlayWordsOf(underlying, replay)} onClose={closeReplay}>
           {/* P129: the one link out; the address carries the drawer, the session and the way back. */}
-          <ReplayDrawer replay={replay} {...(params.get('session') !== null && { initialSession: params.get('session')! })} onSessionChange={onSliderMove} links={({ date }) => <p className="replay-links"><Link className="pill secondary" to={`/trades/${tradeId}?drawer=price-history&session=${date}&from=review`}>Price History</Link></p>} />
+          <ReplayDrawer replay={replay} {...(params.get('session') !== null && { initialSession: params.get('session')! })} onSessionChange={onSliderMove} links={({ date }) => <p className="replay-links"><Link className="pill secondary" to={`/trades/${tradeId}?drawer=price-history&session=${date}&from=review&panel=${encodeURIComponent(panel)}`}>Price History</Link></p>} />
         </ReplayOverlay>
       )}
     </>
