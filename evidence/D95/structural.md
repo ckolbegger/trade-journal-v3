@@ -1318,3 +1318,7 @@ ocr of T95.58, rerun over the whole commit (session c1007ee8): complete, no fail
 - **T95.58-B3** (Valid, `closed-card.ts:42`): a short Plan stores a signed quantity (`'-2'`, copied from the leg by `daily-review.ts`), so the Plan's Entry cell reads "Sell -2 contracts" and a one-contract short (`'-1'`) gets the plural unit. Cases: it should show a short Plan's quantity without its sign ("Sell 2 contracts"); it should use the singular unit for a one-contract short ("Sell 1 contract").
 
 ocr of T95.58-B1 and T95.58-B2 (range `57a35542^..0f1a0faa`, session defa83ef): complete, 3 files, no findings. `evidence/D95/ocr/T95.58-B1-B2-0f1a0faa.json`.
+
+### T95.58-B3
+
+Commit `a81e038f`: a short Plan's Entry cell names the count without its sign ("Sell 2 contracts", "Sell 1 contract"); the stored quantity is parsed with `parseDecimal` and its sign dropped (Rational has no absolute value), falling back to the raw text if it doesn't parse. New `closed-card.test.ts`. Cases 1 and 2 red then green; no first-run passes. src/ui/screens 915 passed (before a lint refactor), closed-card and ReviewOwed 28 passed after; typecheck, tsc6, lint (2 pre-existing warnings), lint:deps exit 0; d95/closed-card 1 passed.
