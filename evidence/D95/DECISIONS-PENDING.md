@@ -175,3 +175,10 @@ Not parked: T95.62 is built as option 1, which needs no approval; option 2 would
 **Parked:** T95.60's completion; its ocr and run go ahead.
 
 **Answer (2026-11-26):** (1). Decision 139, plan revision 128; T95.60's case 6 reworded; no code change; T95.60 done. **Status:** answered.
+
+## Q14 (T95.65): should a closed Trade's Replay show what you did each day? — asked 2026-11-26
+
+**Plain words.** The Replay opened from a closed Trade's card (and the Close Review walk, which uses it) has no saved Actions, so it shows no "What you did that day" and no Action row (W147, W149). Opening the same Trade's Replay from Trade Detail, or from an open Trade's card, shows them. Decision 136 gave the closed card its replay with one read; the Actions need one more Journal read per closed card (the same read the open Trade's card makes). Found by T95.65's integration suite; I95.15 says the replay is "equal from the Review card and from `replayTrade`".
+1. *Recommend:* add the Actions: follow-on T95.65-D1, one more Journal read per closed or reflection-only card; the request-count pins change by that read alone, recorded. The Close Review walk then shows what you chose each day.
+2. Leave it: the closed card's Replay shows prices, fills and key moments only; I95.15's wording is narrowed to the open Trade's card.
+**Not parked:** T95.65's review and run go ahead; T95.66 and T95.67 wait only if the answer is 1 (the follow-on runs before them).
