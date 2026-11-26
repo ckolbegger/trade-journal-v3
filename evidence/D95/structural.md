@@ -1394,3 +1394,23 @@ First attempt (no commit): the generator is already on manifest 6 (T95.28) at ve
 Q10 answered 2026-11-26: option 1 (the owed card reads its replay). Decision 136, plan revision 125 (tag `claude-opus-5.5-plan-r125`); T95.56 gains cases 9 and 10. Noted: revisions 122, 123 and 124 (decisions 132 to 135) have rows in implementation-plan.md's decision table but no entry in revisions.md and no tag; left for the final report.
 
 Q11 answered 2026-11-26: option 1 (keep the full Key moments list). Decision 137, plan revision 126 (tag `claude-opus-5.5-plan-r126`); T95.57 case 6 notes the exception to A276.
+
+## T95.64 Benchmark generator and capacity on manifest 6
+
+Commands and results (benchmark port 4175, free before and after each run):
+- `npm run build:bench`, `npm run bench:generate`: generator 9, schema 7, 25,000 Trades, artifact 21,173,324 bytes, digest c8e03c999d4c40ea0ecdedaa8e7eaaec989b66496139680906cd8a026ca811ed (old: 6d819703928c5aa37ec3e9181b4ba164b325846296cf015f9412715cc894304b, generator 8). Writes bench/dataset.json and bench/expected-open-rows.json.
+- `npm run bench:setup`: first-run Restore, 0 issues, 0 repairs.
+- `npm run measure:capacity` then `npm run measure:capacity:reset-baseline` (the way T8.19-F1 first recorded the baseline; main session's call to run it).
+- `npm run bench:verify-capacity`: pass. `npm run verify:capacity`: pass (required quota 2,737,548,396 = 3 x 912,516,132, unchanged).
+
+Figures, old (D9 gate, evidence/D09/bench.md) to new:
+| Figure | Old | New | Limit |
+|---|---|---|---|
+| Restored usage | 195,202,647 | 186,166,742 | |
+| Usage over projection | 0.250 | 0.238 (projection 781,961,664) | 1.10 |
+| Second Restore peak over M | 0.519 (473,280,928) | 0.476 (434,009,382) | below 3 |
+| Baseline (bench/capacity-baseline.json) | 206,540,122, artifact 6d819703... | 186,166,742, artifact c8e03c99... | usage <= 1.50 x |
+| Usage over baseline | 0.945 | 1.000 | 1.50 |
+| Required quota | 2,737,548,396 | 2,737,548,396 | |
+
+Cause: generator version 8 to 9 (T95.28 and T95.28-B2 changed the walk order and the Open rows), so the stored artifact, and with it the baseline's digest, changed; usage fell by about 4.6 percent. No limit was exceeded or loosened. No code change in bench-generator.ts was needed: its Actions already carry reasons as the new rule requires, and its disposition mix is unchanged (see above).
