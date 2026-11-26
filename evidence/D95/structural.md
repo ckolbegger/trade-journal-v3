@@ -1204,3 +1204,6 @@ Structural task; no red/green rows.
 - Tests: `ExpirationForm.test.tsx` (9) and `ReviewExpiration.test.tsx` (2): only the render call's component name changed to `ExpirationFormRoute`; `npx vitest run src/ui/screens/ExpirationForm src/ui/screens/ReviewExpiration`: 2 files, 11 passed.
 - `.claude/scripts/with-browser-lock.sh npm run test:e2e:specs -- e2e/d7/kill.spec.ts no-save.spec.ts review-expiration.spec.ts runtime-failure.spec.ts settlement-due.spec.ts responsive-a11y.spec.ts offline.spec.ts`: 11 passed. Ports 5175, 9341, 9342 clear before and after.
 - typecheck, tsc6, lint, lint:deps: exit 0.
+
+
+T95.51 main-session note: commit `0e26fdef`; `ExpirationForm` takes `onDone`, `backLabel` and an added `fromReview` (the receipt needs it); new `ExpirationFormRoute` in the same file reads `tradeId` and `?from=review`, "Back to the Trade"; main.tsx places it. `onDone` unused until T95.52. Render-call name changes in ExpirationForm.test.tsx and also ReviewExpiration.test.tsx (not in the brief). Unit 11 passed; d7 kill, no-save, review-expiration, runtime-failure, settlement-due, responsive-a11y, offline 11 passed unchanged; d8p, d9ar, d8r callers of recordExpiration not run (the suite run covers them). No words changed.
