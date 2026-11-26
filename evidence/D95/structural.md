@@ -1498,3 +1498,7 @@ Run `t95.59-close-review-walk` (browser-auto 6a4f6492, full tier): unit 267 file
 Commit `0eb14865`: the cause was not T95.59. The shell's wide layout (220px sidebar plus content) followed `.shell[data-layout='wide']`, set by a JS resize listener (`useWide`, AppShell.tsx), so for a moment after a resize to 375 the wide grid stayed (one capture: `220px 155px`, scrollWidth 409) and a spec measuring at once saw a sideways scroll; reproduced 2 failures in 5 runs. The wide-layout rules (sidebar grid, nav, content padding) moved into one `@media (min-width: 960px)` block on plain `.shell`, so the grid follows the viewport in the same frame; `data-layout` and `data-placement` still follow by script. New `src/ui/shell-layout.test.ts` (red then green). d7/review-expiration 10 of 10 after; d6 close-review, responsive-a11y, d95 closed-card, replay-day, replay-strip 9 passed; typecheck, tsc6, lint (2 pre-existing warnings), lint:deps exit 0. A pre-existing race (since the shell's sidebar), so other specs that measure right after a resize benefit too.
 
 ocr of T95.59-F1 (session 80746115): complete, 2 files, no findings. `evidence/D95/ocr/T95.59-F1-0eb14865.json`.
+
+Run `t95.59-f1-close-review-walk` (browser-auto 6a4f6492, full tier; at `cf4f140a`): unit 268 files, 3245 passed; integration 158 files, 364 passed; browser-1 127, browser-2 79, browser-3 55, browser-4 164 passed (4 skipped); 14 of 14 checks exit 0; run-complete. Passed. T95.59 and T95.59-F1 done.
+
+## T95.60
