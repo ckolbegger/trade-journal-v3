@@ -143,3 +143,17 @@ T95.16 stopped before writing. The collapsed card header (U3, breakdown line 85)
 **Parked meanwhile:** T95.56. T95.57 and T95.58 carry on; T95.59 waits on this answer if it needs the owed card's replay.
 
 **Status:** asked.
+
+## Q11 (T95.57): the Key moments drop-down lists moments after the slider's session — queued 2026-11-26 (to ask after Q10)
+
+**Plain words.** T95.57 case 6 lists the key moments in a drop-down (W148, as the mockup draws it). The list shows every moment with its date, including ones after the session the slider is on (e.g. "4. High · Fri Nov 13" while on Thu Nov 12). D9's reveal rule (A276) says the Replay shows nothing of a later session. To keep `e2e/d9/replay.spec.ts` passing, T95.57 narrowed its "nothing of a later session" check to ignore the drop-down (committed in `26626d39`).
+
+**Options.**
+- (1) Keep the full list (built). The reveal rule gains one exception: the key moments' names and dates. T95.59's walk counts every moment and lets the trader jump to any.
+- (2) List only the moments up to the slider's session; the old check returns unchanged. Choosing a later moment is then not possible from the list; "Next moment" in T95.59 would step forward instead.
+
+**Recommendation:** (1): the walk is for a closed Trade, where the whole path is known, and the list names only dates and kinds, no figures.
+
+**Blocks:** nothing now (built as option 1); T95.59 follows whichever is chosen.
+
+**Status:** queued.
