@@ -1,7 +1,5 @@
-import { Rational } from '../values/index.ts';
+import type { Rational } from '../values/index.ts';
 import type { ReplayedSession } from './replay-series.ts';
-
-const ZERO = Rational.of(0n);
 
 export type KeyMomentKind = 'Entry' | 'Low' | 'Stop' | 'Target' | 'High' | 'Sale' | 'Now' | 'End';
 
@@ -33,7 +31,7 @@ export function keyMoments(sessions: readonly ReplayedSession[]): readonly KeyMo
   if (last.crossings?.target.first) add(last.crossings.target.first.date, 'Target');
   // A sale is a Position Change that reduces or closes the Position; an Expiration is not one.
   for (const s of sessions) if (s.markers?.some((m) => m.kind === 'Execution' && (m.effect === 'Reduced' || m.effect === 'Closed'))) add(s.date, 'Sale');
-  add(last.date, last.heldQuantity.compare(ZERO) === 0 ? 'End' : 'Now');
+  add(last.date, last.positions.length === 0 ? 'End' : 'Now');
   if (low) add(low.date, 'Low');
   if (high) add(high.date, 'High');
   return [...kindsByDate]

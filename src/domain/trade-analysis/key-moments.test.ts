@@ -9,6 +9,7 @@ interface Spec {
   readonly date: string;
   readonly pnl: number;
   readonly held?: number;
+  readonly legs?: readonly number[];
   readonly effect?: 'Opened' | 'Added' | 'Reduced' | 'Closed';
   readonly stopFirst?: string;
   readonly targetFirst?: string;
@@ -17,7 +18,7 @@ interface Spec {
 function session(s: Spec): ReplayedSession {
   return {
     date: s.date,
-    positions: [],
+    positions: (s.legs ?? (s.held === 0 ? [] : [s.held ?? 10])).map((q) => ({ instrument: { kind: 'Stock' as const, symbol: 'AAA' }, quantity: n(q) })),
     heldQuantity: n(s.held ?? 10),
     realizedPnl: n(0),
     tradePnl: { kind: 'Value', value: n(s.pnl) },
@@ -72,6 +73,16 @@ describe('keyMoments', () => {
     expect(open.at(-1)).toEqual({ date: '2026-11-04', kinds: ['Now'] });
     const closed = keyMoments(series({ date: '2026-11-02', pnl: 0, effect: 'Opened' }, { date: '2026-11-03', pnl: 4 }, { date: '2026-11-04', pnl: 2, held: 0 }));
     expect(closed.at(-1)).toEqual({ date: '2026-11-04', kinds: ['End'] });
+  });
+
+  it('should give Now for an open Trade whose positions quantities sum to zero', () => {
+    const spread = keyMoments(series({ date: '2026-11-02', pnl: 0, effect: 'Opened' }, { date: '2026-11-03', pnl: 0, held: 0, legs: [1, -1] }));
+    expect(spread.at(-1)).toEqual({ date: '2026-11-03', kinds: ['Now'] });
+  });
+
+  it('should give End when no position is held', () => {
+    const done = keyMoments(series({ date: '2026-11-02', pnl: 0, effect: 'Opened' }, { date: '2026-11-03', pnl: 0, held: 0, legs: [] }));
+    expect(done.at(-1)).toEqual({ date: '2026-11-03', kinds: ['End'] });
   });
 
   it('should give one moment, naming both, for a session that is two things', () => {
