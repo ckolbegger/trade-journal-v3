@@ -1352,3 +1352,5 @@ Run `t95.62-capabilities` (browser-task; at `06f282e7`): unit 264 files, 3203 pa
 Commit `88ab7b8f`: I9.7 (the manifest's and the trade-detail route's `replayTrade` lists) and I9AR.3 (its manifest list; its route check is `arrayContaining`) take Part C's list, extended in place as `f327db49` did. No other stale exact list in tests/ or src/. Integration 158 files, 364 passed; typecheck, tsc6, lint (2 pre-existing warnings) exit 0.
 
 ocr of T95.62-F1 (session f9624c73): complete, 2 files, no findings. `evidence/D95/ocr/T95.62-F1-88ab7b8f.json`.
+
+Run `t95.62-f1-capabilities` (browser-task; at `8cd2bb5a`): unit 264 files, 3203 passed; integration 158 files, 364 passed; browser 57 passed; 14 of 14 checks exit 0; run-complete. Passed. T95.62 and T95.62-F1 done.
