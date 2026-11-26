@@ -9,7 +9,7 @@ import { expiredOptionTrade, OC_CONTRACT } from '../../../tests/support/option-t
 import type { UiFacade } from '../../app/compose.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { RuntimeContext } from '../runtime.tsx';
-import { ExpirationForm } from './ExpirationForm.tsx';
+import { ExpirationFormRoute } from './ExpirationForm.tsx';
 
 afterEach(cleanup);
 fixClock();
@@ -35,7 +35,7 @@ function renderForm(facade: UiFacade = exitFormFacade(dueDetail), search = '') {
     <RuntimeContext.Provider value={{ writable: true, report: () => undefined }}>
       <MemoryRouter initialEntries={[`/trades/trade-1/record-expiration${search}`]}>
         <Routes>
-          <Route path="/trades/:tradeId/record-expiration" element={<ExpirationForm facade={facade} timeZone="America/New_York" onDirtyChange={() => undefined} />} />
+          <Route path="/trades/:tradeId/record-expiration" element={<ExpirationFormRoute facade={facade} timeZone="America/New_York" onDirtyChange={() => undefined} />} />
         </Routes>
       </MemoryRouter>
     </RuntimeContext.Provider>,
@@ -175,7 +175,7 @@ describe('load, dirtiness, and another Trade', () => {
       <RuntimeContext.Provider value={{ writable: true, report: () => undefined }}>
         <MemoryRouter initialEntries={['/trades/trade-1/record-expiration']}>
           <Routes>
-            <Route path="/trades/:tradeId/record-expiration" element={<ExpirationForm facade={facade} timeZone="America/New_York" onDirtyChange={onDirtyChange} />} />
+            <Route path="/trades/:tradeId/record-expiration" element={<ExpirationFormRoute facade={facade} timeZone="America/New_York" onDirtyChange={onDirtyChange} />} />
           </Routes>
         </MemoryRouter>
       </RuntimeContext.Provider>,
@@ -201,7 +201,7 @@ describe('load, dirtiness, and another Trade', () => {
         <MemoryRouter initialEntries={['/trades/trade-1/record-expiration']}>
           <Link to="/trades/trade-2/record-expiration">Other Trade</Link>
           <Routes>
-            <Route path="/trades/:tradeId/record-expiration" element={<ExpirationForm facade={facade} timeZone="America/New_York" onDirtyChange={() => undefined} />} />
+            <Route path="/trades/:tradeId/record-expiration" element={<ExpirationFormRoute facade={facade} timeZone="America/New_York" onDirtyChange={() => undefined} />} />
           </Routes>
         </MemoryRouter>
       </RuntimeContext.Provider>,

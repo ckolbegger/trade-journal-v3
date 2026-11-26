@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
 import type { EntryDefinitionRecord, PositionChangeResult, TradeDetailView } from '../../app/types.ts';
 import { toWorkspaceLocal } from '../../domain/time/index.ts';
@@ -19,7 +19,14 @@ import { plural } from './ReviewCard.tsx';
 
 export interface ExpirationFormProps {
   readonly facade: UiFacade;
+  readonly tradeId: string;
   readonly timeZone: string;
+  // Leaves the form without recording anything (a Review card's placement, T95.52, uses it).
+  readonly onDone: () => void;
+  // The words of the link back to the Trade.
+  readonly backLabel: string;
+  // Opened from the Review, so the receipt offers the way back (conflict K14).
+  readonly fromReview: boolean;
   // Reports whether any value differs from its initial value (update deferral, D1 A5).
   readonly onDirtyChange: (dirty: boolean) => void;
 }
@@ -38,11 +45,9 @@ const settlementWords = (instant: string, timeZone: string): string => {
 };
 
 // Records the Expiration of the one contract a Trade holds at or past its expiration date (D7 A113): the
-// quantity and the settlement time come from the Settlement Due item, never from entry (P26).
-export function ExpirationForm({ facade, timeZone, onDirtyChange }: ExpirationFormProps) {
-  const { tradeId = '' } = useParams();
-  // Opened from the Review by `?from=review`; the receipt then offers the way back (conflict K14).
-  const fromReview = useSearchParams()[0].get('from') === 'review';
+// quantity and the settlement time come from the Settlement Due item, never from entry (P26). A component
+// any screen can place, taking the Trade, what to do on leaving and the words of the way back.
+export function ExpirationForm({ facade, tradeId, timeZone, onDirtyChange, backLabel, fromReview }: ExpirationFormProps) {
   const { writable, report } = useRuntime();
   const [view, setView] = useState<TradeDetailView | undefined>();
   const [definition, setDefinition] = useState<EntryDefinitionRecord | undefined>();
@@ -140,7 +145,7 @@ export function ExpirationForm({ facade, timeZone, onDirtyChange }: ExpirationFo
 
   return (
     <form className="plan-form" noValidate onSubmit={(event) => void submit(event)}>
-      <Link to={`/trades/${tradeId}`}>Back to the Trade</Link>
+      <Link to={`/trades/${tradeId}`}>{backLabel}</Link>
       {conflict && (
         <section ref={conflictRef} tabIndex={-1} className="banner warning" aria-labelledby="expiration-conflict-heading">
           <h2 id="expiration-conflict-heading">This Trade changed after you opened this form</h2>
@@ -191,4 +196,12 @@ export function ExpirationForm({ facade, timeZone, onDirtyChange }: ExpirationFo
       </button>
     </form>
   );
+}
+
+// The route screen: the Trade comes from the path, and `?from=review` marks a form opened from the Review.
+export function ExpirationFormRoute(props: Pick<ExpirationFormProps, 'facade' | 'timeZone' | 'onDirtyChange'>) {
+  const { tradeId = '' } = useParams();
+  const fromReview = useSearchParams()[0].get('from') === 'review';
+  const navigate = useNavigate();
+  return <ExpirationForm {...props} tradeId={tradeId} onDone={() => void navigate(`/trades/${tradeId}`)} backLabel="Back to the Trade" fromReview={fromReview} />;
 }

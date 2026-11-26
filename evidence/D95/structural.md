@@ -1195,3 +1195,12 @@ Commit `8d3aadcd` (tests only, plus `eslint-suppressions.json`: a stale `no-nest
 ocr of T95.50-B1, T95.50-F1 (session be279bde, range 9b8e9c38^..8d3aadcd): 7 files, 0 findings. `evidence/D95/ocr/T95.50-B1-F1-8d3aadcd.json`. Next: run `t95.50-expiration-reason` (browser-auto 9e348856).
 
 Run `t95.50-expiration-reason` (browser-auto 9e348856, task tier: no changed path on the full-tier list): unit 3136, integration 364, browser 5 and 49, checks 14 of 14. Passed. T95.50 done.
+
+## T95.51 — The expiration form becomes a component
+
+Structural task; no red/green rows.
+
+- Split: `ExpirationForm` (component, props facade, tradeId, timeZone, onDirtyChange, onDone, backLabel, fromReview) and `ExpirationFormRoute` (route screen reading the path's tradeId and `?from=review`, wrapping it with onDone navigating to the Trade and backLabel "Back to the Trade"), both in `src/ui/screens/ExpirationForm.tsx`. `src/main.tsx` now places `ExpirationFormRoute`. `onDone` is accepted and unused until T95.52 places the card variant (as ExitForm's was until T95.40). No screen words changed; no Expiration Reason shown (T95.52).
+- Tests: `ExpirationForm.test.tsx` (9) and `ReviewExpiration.test.tsx` (2): only the render call's component name changed to `ExpirationFormRoute`; `npx vitest run src/ui/screens/ExpirationForm src/ui/screens/ReviewExpiration`: 2 files, 11 passed.
+- `.claude/scripts/with-browser-lock.sh npm run test:e2e:specs -- e2e/d7/kill.spec.ts no-save.spec.ts review-expiration.spec.ts runtime-failure.spec.ts settlement-due.spec.ts responsive-a11y.spec.ts offline.spec.ts`: 11 passed. Ports 5175, 9341, 9342 clear before and after.
+- typecheck, tsc6, lint, lint:deps: exit 0.

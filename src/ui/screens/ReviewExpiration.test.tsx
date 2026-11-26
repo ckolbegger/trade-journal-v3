@@ -10,7 +10,7 @@ import { exitFormFacade, plannedDetail, reflectionDefinition } from '../../../te
 import type { DailyTradeReview, OpenDailyReviewResult, OwedReflection, OwedReflectionsCard, ReviewBinding, WalkedTrade } from '../../app/types.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { RuntimeContext } from '../runtime.tsx';
-import { ExpirationForm } from './ExpirationForm.tsx';
+import { ExpirationFormRoute } from './ExpirationForm.tsx';
 import { ReviewView } from './ReviewView.tsx';
 
 afterEach(cleanup);
@@ -144,7 +144,7 @@ describe('record expiration from the Review (A113, conflict K14)', () => {
         <MemoryRouter initialEntries={['/review']}>
           <Routes>
             <Route path="/review" element={<ReviewView facade={facade} now={() => '2026-11-20T22:00:00Z'} onDirtyChange={() => undefined} />} />
-            <Route path="/trades/:tradeId/record-expiration" element={<ExpirationForm facade={facade} timeZone="America/New_York" onDirtyChange={() => undefined} />} />
+            <Route path="/trades/:tradeId/record-expiration" element={<ExpirationFormRoute facade={facade} timeZone="America/New_York" onDirtyChange={() => undefined} />} />
           </Routes>
         </MemoryRouter>
       </RuntimeContext.Provider>,
