@@ -1484,3 +1484,7 @@ ocr of T95.59 (session b8c0ad71): complete, 16 files reviewed (3 excluded), 2 fi
 ### T95.59-B1
 
 Commit `8f2d92f6`: the walk's answer prompts are disabled while the save is pending. Case 1 red then green; case 2 first-run pass (the save's `finally` already clears pending), flagged, mutation failed, restored. DebtForm doesn't disable its prompts while pending (it was not changed; the same gap there is noted for the final report). src/ui/cockpit and ReviewOwed 501 passed; typecheck, tsc6, lint (2 pre-existing warnings), lint:deps exit 0; d6/close-review 1 passed.
+
+### T95.59-B2
+
+Commit `9d0926e8`: `save` returns early when not writable; `leave()` closes at once when nothing is typed or the Workspace is not writable (nothing could be saved, so no ask). Case 1 red then green; case 2 first-run pass (built by case 1), flagged, mutation failed, restored. src/ui/cockpit and ReviewOwed 503 passed; typecheck, tsc6, lint (2 pre-existing warnings), lint:deps exit 0; d6/close-review 1 passed.
