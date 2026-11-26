@@ -12,6 +12,7 @@ type Props = {
   replayIndex: number
   onSelectReplay: (index: number) => void
   onOpenReview: () => void
+  onOpenReplay: () => void
 }
 
 function figure(label: string, value: string) {
@@ -131,11 +132,10 @@ function SessionRail({
   )
 }
 
-export function CompleteDetailView({ loaded, replayIndex, onSelectReplay, onOpenReview }: Props) {
+export function CompleteDetailView({ loaded, replayIndex, onSelectReplay, onOpenReview, onOpenReplay }: Props) {
   const [drawer, setDrawer] = useState<Drawer>('Today')
   if (loaded.status !== 'Ready') return <p role="status">Trade not found.</p>
-  const { detail, series, underlyingSeries, advisory } = loaded
-  const current = series.sessions[Math.min(replayIndex, Math.max(0, series.sessions.length - 1))]
+  const { detail, series, underlyingSeries } = loaded
   const { figures } = detail
   const drawers = visibleDrawers(detail.integrity.agreement)
   const activeDrawer = drawers.includes(drawer) ? drawer : drawers[0]
@@ -377,21 +377,7 @@ export function CompleteDetailView({ loaded, replayIndex, onSelectReplay, onOpen
                 </ul>
                 <h3 className="sec-title">Session timeline</h3>
                 <SessionRail series={series} index={replayIndex} onSelect={onSelectReplay} />
-                <ul className="detail-list" data-testid="session-timeline">
-                  {series.sessions.map(session => (
-                    <li key={session.date} data-gap={session.gap}>
-                      <span>{session.date}</span>
-                      <span>{session.gap ? `gap · ${session.status}` : session.price}</span>
-                      {session.keyMoments.length > 0 && <span className="muted">{session.keyMoments.join(', ')}</span>}
-                    </li>
-                  ))}
-                </ul>
-                <input
-                  aria-label="Replay session" data-testid="replay-slider" type="range"
-                  min={0} max={Math.max(0, series.sessions.length - 1)} value={replayIndex}
-                  onChange={e => onSelectReplay(Number(e.target.value))}
-                />
-                <p data-testid="replay-session">{current?.date ?? 'No sessions'} · {current?.gap ? `gap · ${current.status}` : current?.price ?? '—'}</p>
+                <button type="button" className="detail-link" onClick={onOpenReplay}>Open replay</button>
               </>
             )}
             {activeDrawer === 'Payoff' && (
@@ -408,26 +394,6 @@ export function CompleteDetailView({ loaded, replayIndex, onSelectReplay, onOpen
           </div>
         </section>
       </div>
-      {advisory && (
-        <div data-testid="advisory-explanation" className="advisory-block">
-          <p>Advisory implied volatility: {advisory.iv?.kind === 'Value'
-            ? advisory.iv.vol.toFixed(4)
-            : advisory.iv?.kind === 'Unavailable' ? advisory.iv.reason : 'Not available'}</p>
-          <p>Share equivalent: {advisory.shareEquivalent?.kind === 'Value'
-            ? advisory.shareEquivalent.shares
-            : advisory.shareEquivalent?.kind === 'Unavailable' ? advisory.shareEquivalent.reason : 'Not available'}</p>
-          {advisory.decomposition?.kind === 'Value' ? (
-            <ul className="detail-list">
-              <li>Estimate · Underlying {advisory.decomposition.fromUnderlying.toFixed(2)}</li>
-              <li>Estimate · Time {advisory.decomposition.fromTime.toFixed(2)}</li>
-              <li>Estimate · Volatility {advisory.decomposition.fromVolatility.toFixed(2)}</li>
-            </ul>
-          ) : (
-            <p>{advisory.decomposition?.kind === 'Unavailable' ? advisory.decomposition.reason : 'Not available'}</p>
-          )}
-          <p className="muted">Estimate only. Never used for valuation, risk or the expiration payoff.</p>
-        </div>
-      )}
     </section>
   )
 }

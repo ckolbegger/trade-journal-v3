@@ -24,6 +24,7 @@ export type LoadedDetail =
     series: SessionSeries
     underlyingSeries: SessionSeries
     advisory: AdvisoryResult | null
+    advisorySeries: { date: string; iv: number | null; shares: number | null }[]
   }
 
 export type LoadDetailRequest = {
@@ -92,10 +93,27 @@ export async function loadCompleteTradeDetail(
     },
   })
 
+  const advisory = buildAdvisory({
+    trade: stored, series, records, installed: request.advisoryInstalled,
+  })
+  // One advisory estimate per session that actually has a Mark. Prefix reads
+  // reuse the same domain formula; gaps are omitted rather than interpolated.
+  const advisorySeries = request.advisoryInstalled
+    ? series.sessions.flatMap((session, i) => {
+      if (session.status !== 'Available' || session.price === undefined) return []
+      const frame = buildAdvisory({
+        trade: stored, series: { ...series, sessions: series.sessions.slice(0, i + 1) },
+        records, installed: true,
+      })
+      return [{
+        date: session.date,
+        iv: frame?.iv?.kind === 'Value' ? frame.iv.vol : null,
+        shares: frame?.shareEquivalent?.kind === 'Value' ? frame.shareEquivalent.shares : null,
+      }]
+    })
+    : []
+
   return {
-    status: 'Ready', detail, series, underlyingSeries,
-    advisory: buildAdvisory({
-      trade: stored, series, records, installed: request.advisoryInstalled,
-    }),
+    status: 'Ready', detail, series, underlyingSeries, advisory, advisorySeries,
   }
 }

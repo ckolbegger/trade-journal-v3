@@ -95,7 +95,7 @@ test('should render session rail and read-only integrity banner without writing'
   const before = await storeCounts(page)
   await page.getByRole('tab', { name: /Journal/ }).click()
   await expect(page.locator('.rail-x')).toBeVisible()
-  await expect(page.getByTestId('session-timeline')).toHaveCount(1)
+  await expect(page.getByRole('button', { name: 'Open replay' })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Earlier sessions' })).toBeVisible()
   await expect(page.getByTestId('detail-integrity')).toHaveText('Agreement')
   expect(await storeCounts(page)).toEqual(before)

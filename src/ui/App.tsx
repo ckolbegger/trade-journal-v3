@@ -30,6 +30,7 @@ import { resolveStrategyShape } from '../domain/strategy-shapes'
 import { recordOptionPositionChange, recordOptionClose } from './option-controller'
 import { loadCompleteTradeDetail, type LoadedDetail } from './detail-controller'
 import { CompleteDetailView } from './complete-detail-view'
+import { ReplayView } from './replay-view'
 import { payoffForPlan } from '../domain/complete-detail'
 import { D8A_CAPABILITIES } from '../domain/capabilities-d8a'
 
@@ -223,6 +224,7 @@ export function App() {
   const [reviewMessage, setReviewMessage] = useState('')
   const [reviewError, setReviewError] = useState('')
   const [completeDetail, setCompleteDetail] = useState<LoadedDetail | null>(null)
+  const [replayOpen, setReplayOpen] = useState(false)
   const [replayIndex, setReplayIndex] = useState(0)
 
   useEffect(() => {
@@ -281,6 +283,7 @@ export function App() {
       advisoryInstalled: D8A_CAPABILITIES.some(c => c === 'TradeAnalysis.advisoryExplanation(IV)'),
     }))
     setReplayIndex(0)
+    setReplayOpen(false)
   }, [])
 
   const onConfirmPlan = useCallback(async () => {
@@ -840,13 +843,28 @@ export function App() {
 
                   {completeDetail && (
                     <>
-                      <button type="button" className="detail-link" onClick={() => setCompleteDetail(null)}>Back to trades</button>
-                      <CompleteDetailView
-                        loaded={completeDetail}
-                        replayIndex={replayIndex}
-                        onSelectReplay={setReplayIndex}
-                        onOpenReview={() => { void onOpenReview() }}
-                      />
+                      <button type="button" className="detail-link" onClick={() => { setCompleteDetail(null); setReplayOpen(false) }}>Back to trades</button>
+                      {replayOpen ? (
+                        <ReplayView
+                          loaded={completeDetail}
+                          index={replayIndex}
+                          onSelect={setReplayIndex}
+                          onBack={() => setReplayOpen(false)}
+                        />
+                      ) : (
+                        <CompleteDetailView
+                          loaded={completeDetail}
+                          replayIndex={replayIndex}
+                          onSelectReplay={setReplayIndex}
+                          onOpenReview={() => { void onOpenReview() }}
+                          onOpenReplay={() => {
+                            if (completeDetail.status === 'Ready') {
+                              setReplayIndex(Math.max(0, completeDetail.series.sessions.length - 1))
+                            }
+                            setReplayOpen(true)
+                          }}
+                        />
+                      )}
                     </>
                   )}
 

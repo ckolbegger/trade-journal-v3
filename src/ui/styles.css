@@ -217,6 +217,64 @@ ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.5rem; }
 .pill-option:has(input:checked) { background: #111; color: #fff; border-color: #111; }
 .sheet-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 0.75rem; }
 
+/* D8aV V2 — session replay (1. Corridor prototype) */
+.replay-controls { position: sticky; top: 0; z-index: 4; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; background: #fffdf8; padding: 0.5rem 0; border-bottom: 1px solid #e6e0d2; }
+.replay-controls button { border: 1px solid #d8cdb0; background: #fff; border-radius: 999px; cursor: pointer; font: inherit; font-size: 0.8rem; padding: 0.25rem 0.6rem; }
+.replay-controls input[type="range"] { flex: 1 1 10rem; min-width: 8rem; }
+.replay-controls span { font-size: 0.78rem; color: #6b6559; }
+.seg { display: inline-flex; border: 1px solid #d8cdb0; border-radius: 999px; overflow: hidden; }
+.seg button { border: 0 !important; border-radius: 0 !important; }
+.seg button[aria-pressed="true"] { background: #111; color: #fff; }
+.viz-tabs { display: flex; gap: 0.3rem; flex-wrap: wrap; margin: 0.6rem 0; }
+.viz-tabs button { border: 1px solid #d8cdb0; background: #fff; border-radius: 999px; padding: 0.25rem 0.65rem; font: inherit; font-size: 0.78rem; cursor: pointer; }
+.viz-tabs button[aria-selected="true"] { background: #efe9d9; font-weight: 700; }
+.viz-tabs button[aria-disabled="true"] { color: #9b9486; cursor: not-allowed; }
+.replay-layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 0.9rem; align-items: start; }
+.replay-layout > * { min-width: 0; }
+.replay-hero { display: grid; gap: 0.7rem; }
+.replay-status { border-left: 4px solid #14663f; background: #eaf7ef; border-radius: 8px; padding: 0.7rem 0.9rem; }
+.replay-status.down { border-color: #8a3220; background: #fff1ec; }
+.replay-status strong { font-size: 1.8rem; }
+.replay-status p { margin: 0.25rem 0; font-size: 0.85rem; }
+.corridor { width: 100%; height: auto; cursor: crosshair; }
+.corridor .plot-bg { fill: #fffdf8; stroke: #e0d9c8; }
+.corridor .rail { stroke-width: 1.5; stroke-dasharray: 4 3; }
+.corridor .rail-target { stroke: #14663f; }
+.corridor .rail-stop { stroke: #8a3220; }
+.corridor .rail-label { font-size: 8px; fill: #6b6559; }
+.corridor .mark-line { fill: none; stroke: #163b75; stroke-width: 2; }
+.corridor.bearish .mark-line { stroke: #8a3220; }
+.corridor .mark-dot { fill: #163b75; stroke: #fff; stroke-width: 1; }
+.corridor .cursor { stroke: #1c1b19; stroke-width: 1; }
+.replay-move { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; font-size: 0.8rem; }
+.split-bar { display: inline-flex; align-items: center; gap: 0.4rem; }
+.split-bar .segment { display: inline-block; height: 12px; min-width: 4px; border: 1px solid #55524b; }
+.seg-und { background: #163b75; }
+.seg-time { background: repeating-linear-gradient(45deg, #d8cdb0, #d8cdb0 3px, #f7f1df 3px, #f7f1df 6px); }
+.seg-volatility { background: repeating-linear-gradient(-45deg, #a9d6bd, #a9d6bd 3px, #eaf7ef 3px, #eaf7ef 6px); }
+.replay-chips { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+.chip-wrap { position: relative; }
+.chip { border: 1px solid #d8cdb0; background: #fff; border-radius: 999px; padding: 0.3rem 0.6rem; font: inherit; font-size: 0.78rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem; }
+.chip svg { width: 52px; height: 18px; }
+.chip svg polyline, .pop svg polyline { fill: none; stroke: #163b75; stroke-width: 1.5; }
+.pop { display: none; position: absolute; z-index: 8; top: calc(100% + 0.3rem); left: 0; width: min(320px, 80vw); background: #fff; border: 1px solid #d8cdb0; border-radius: 10px; padding: 0.7rem; box-shadow: 0 6px 20px #0002; }
+.pop.open { display: block; }
+.pop svg { width: 100%; height: 90px; }
+.b-est { border-color: #d8cdb0; background: #f7f1df; color: #6a5417; }
+.replan-line { font-size: 0.78rem; color: #6b6559; }
+.replay-readout { position: sticky; top: 1rem; display: grid; gap: 0.7rem; border: 1px solid #e6e0d2; border-radius: 12px; background: #fffdf8; padding: 0.8rem; }
+.replay-readout .kv-group h4 { margin: 0 0 0.3rem; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; color: #6b6559; }
+.session-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+.session-table th, .session-table td { border-bottom: 1px solid #ece6d8; padding: 0.3rem 0.4rem; text-align: left; }
+.session-table thead th { color: #6b6559; font-size: 0.72rem; }
+.session-table .plan-row { background: #f7f1df; }
+.session-table td { white-space: nowrap; }
+
+@media (max-width: 900px) {
+  .replay-layout { grid-template-columns: 1fr; }
+  .replay-readout { position: static; }
+}
+
 /* D8aV V1 — Trade Detail cockpit (C. Cockpit prototype) */
 .cockpit { display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 0.9rem; align-items: start; }
 .cockpit > * { min-width: 0; }
