@@ -51,12 +51,6 @@ async function optionStack(now: string) {
     if (!found) throw new Error(`no ${productKey}`);
     return found;
   };
-  const closeReview = await stack.journal.getDefinitions({ latestFor: 'entry-type.close-review' });
-  if (closeReview.kind !== 'Found') throw new Error('no Close Review definition');
-  const closeReviewForm: ReflectionDisposition = {
-    kind: 'Complete',
-    form: { definitionId: closeReview.definition.id, answers: { 'prompt.close-review.take-again': { kind: 'Option', optionId: 'option.close-review.take-again.yes-as-planned' }, 'prompt.close-review.key-lesson': { kind: 'Text', text: 'Size down into earnings.' } } },
-  };
   const planReflection = {
     definitionId: stack.definition.id,
     answers: { 'prompt.plan-reflection.thesis': { kind: 'Text', text: 'The setup is worth the risk.' }, 'prompt.plan-reflection.invalidation': { kind: 'Text', text: 'A close beyond the stop.' } },
@@ -115,13 +109,13 @@ async function optionStack(now: string) {
   };
   const closeLongCall = async () => {
     const tradeId = await openLongCall();
-    await record(tradeId, expire(tradeId, XYZ_CALL, '1'), closeReviewForm);
+    await record(tradeId, expire(tradeId, XYZ_CALL, '1'), { kind: 'Defer' });
     return tradeId;
   };
   // O-S through S1 and E-S: both contracts expired.
   const closeCashSecuredPut = async () => {
     const tradeId = await openCashSecuredPut();
-    await record(tradeId, expire(tradeId, MNO_PUT, '2'), closeReviewForm);
+    await record(tradeId, expire(tradeId, MNO_PUT, '2'), { kind: 'Defer' });
     return tradeId;
   };
   return { stack, tradeViews: createTradeViews(stack), strategyOf, confirm, record, fill, planOC, openCashSecuredPut, openLongCall, openLongCallAtMonday, closeLongCall, closeCashSecuredPut };

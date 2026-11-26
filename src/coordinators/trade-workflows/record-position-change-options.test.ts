@@ -219,11 +219,11 @@ const ocBeforeExpiration = (ref: Ref) =>
 
 describe('Expiration (AC-POS-004, A107)', () => {
   it('should commit E1 with no Close Reason, the Open-to-Closed move, the terminal time, the reflection outcome, and the Close Review outcome for each disposition in one semantic commit, returning the Terminal Disposition, Option Disposition Timing, Realized R, and both Journal projections', async () => {
-    for (const kind of ['Complete', 'Decline', 'Defer'] as const) {
+    // A312: an expiration's Close Review is always Defer; its Complete and Decline subjects moved to a sale (T95.50-F1 pairing row).
+    for (const kind of ['Defer'] as const) {
       const ref = await optionTrade('LongCall', FRIDAY_17);
       const revision = await ocBeforeExpiration(ref);
-      const disposition: ReflectionDisposition =
-        kind === 'Complete' ? closeReviewForm(ref) : kind === 'Decline' ? { kind, definitionId: ref.closeReviewDefinitionId, reason: 'Nothing to add.' } : { kind };
+      const disposition: ReflectionDisposition = { kind };
       const before = workspaceStores(await dumpAll(ref.stack.factory));
       const result = await ref.stack.tradeWorkflows.recordPositionChange(command(ref, revision, [expiration(ref, FRIDAY_16, '1')], { closeReview: disposition }));
       if (result.kind !== 'Recorded') throw new Error(`expected Recorded for ${kind}, got ${JSON.stringify(result)}`);
@@ -285,11 +285,11 @@ describe('Expiration (AC-POS-004, A107)', () => {
     const revision = await recordAll(ref, [[fill(ref, 'Sell', MONDAY_10, '2', '1.25', '1.30')]]);
     const before = await dumpAll(ref.stack.factory);
     const withReason = await ref.stack.tradeWorkflows.recordPositionChange(
-      command(ref, revision, [expiration(ref, FRIDAY_16, '2')], { closeReasonId: ref.closeReasonId, closeReview: closeReviewForm(ref) }),
+      command(ref, revision, [expiration(ref, FRIDAY_16, '2')], { closeReasonId: ref.closeReasonId, closeReview: { kind: 'Defer' } }),
     );
     expect(withReason).toEqual(expect.objectContaining({ kind: 'Rejected', issues: [{ source: 'TradeWorkflows', field: 'closeReasonId', code: 'CloseReasonNotApplicable' }] }));
     const mixed = await ref.stack.tradeWorkflows.recordPositionChange(
-      command(ref, revision, [fill(ref, 'Buy', TUESDAY_10, '1', '0.60', '0.65'), expiration(ref, FRIDAY_16, '1')], { closeReview: closeReviewForm(ref) }),
+      command(ref, revision, [fill(ref, 'Buy', TUESDAY_10, '1', '0.60', '0.65'), expiration(ref, FRIDAY_16, '1')], { closeReview: { kind: 'Defer' } }),
     );
     expect(mixed.kind).toBe('VariantNotInstalled');
     expect(await dumpAll(ref.stack.factory)).toEqual(before);

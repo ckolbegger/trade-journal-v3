@@ -340,16 +340,18 @@ async function seriesStack(series: ReplayTestSeries, strategyKey: string, now: s
     // A sale that closes the Trade names a Close Reason and reviews it; an Expiration closes it with the review alone.
     const closing = options.closes === true && i === changes.length - 1;
     const expiring = members.some((m) => m.kind === 'Expiration');
+    const selling = members.some((m) => m.kind === 'Execution' && m.action === (leg.side === 'Short' ? 'Buy' : 'Sell'));
+    const nonSale = expiring ? stack.expirationReflection : stack.reflection;
     const result = await stack.tradeWorkflows.recordPositionChange({
       originTradeId: tradeId,
       trades: [{ tradeId, expectedFactRevision: current.factRevision }],
       members,
-      reflection: members.some((m) => m.kind === 'Execution' && m.action === (leg.side === 'Short' ? 'Buy' : 'Sell')) ? stack.saleReflection : stack.reflection,
-      // A closing sale only puts its Close Review off (A312); an Expiration still answers it (T95.48 moves that).
-      ...(closing && { ...(!expiring && { closeReasonId: reasons.items[0]!.id }), closeReview: expiring ? closeReviewForm : ({ kind: 'Defer' } as const) }),
+      reflection: selling ? stack.saleReflection : nonSale,
+      // A closing sale or expiration only puts its Close Review off (A312) and answers it afterwards through the Debt.
+      ...(closing && { ...(!expiring && { closeReasonId: reasons.items[0]!.id }), closeReview: { kind: 'Defer' } as const }),
     });
     if (result.kind !== 'Recorded') throw new Error(`expected Recorded, got ${JSON.stringify(result)}`);
-    if (closing && !expiring) await stack.resolveCloseReview(tradeId, closeReviewForm);
+    if (closing) await stack.resolveCloseReview(tradeId, closeReviewForm);
   }
   const held = leg.instrument;
   const underlying: Instrument = { kind: 'Stock', symbol: plan.underlying };

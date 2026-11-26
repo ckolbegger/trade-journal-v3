@@ -54,11 +54,6 @@
       "count": 2
     }
   },
-  "src/coordinators/trade-workflows/record-position-change-options.test.ts": {
-    "no-nested-ternary": {
-      "count": 1
-    }
-  },
   "src/coordinators/workspace/backup.test.ts": {
     "no-nested-ternary": {
       "count": 1

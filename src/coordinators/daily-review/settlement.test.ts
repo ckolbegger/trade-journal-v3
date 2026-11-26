@@ -290,7 +290,7 @@ describe('settlement items outside and inside calendar coverage (D7 Q1)', () => 
     expect(family(result, 'Trades').trades.map((trade) => trade.tradeId)).toContain(old.tradeId);
   }, 60_000);
 
-  it('should carry the recorded Expiration on the owed reflection of the Position Change that settled the Trade', async () => {
+  it('should carry the recorded Expiration on the owed Close Review of the Position Change that settled the Trade', async () => {
     const { stack, t3 } = await settlementFixture(MONDAY_NEXT_1700, false);
     const current = await stack.tradeRecord.getRecord({ tradeId: t3, projection: 'AnalysisInput' });
     if (current.kind !== 'Found') throw new Error('no Trade');
@@ -298,7 +298,7 @@ describe('settlement items outside and inside calendar coverage (D7 Q1)', () => 
       originTradeId: t3,
       trades: [{ tradeId: t3, expectedFactRevision: current.factRevision }],
       members: [{ kind: 'Expiration', tradeId: t3, instrument: MNO_PUT, quantity: '2', economicTime: FRIDAY_CLOSE.value }],
-      reflection: { kind: 'Defer' },
+      reflection: stack.expirationReflection,
       closeReview: { kind: 'Defer' },
     });
     if (recorded.kind !== 'Recorded') throw new Error(`expected Recorded, got ${JSON.stringify(recorded)}`);
@@ -307,10 +307,10 @@ describe('settlement items outside and inside calendar coverage (D7 Q1)', () => 
     const card = await stack.dailyReview.getTrade({ reviewDate: review.reviewDate, tradeId: t3, binding: review.binding });
 
     if (card.kind !== 'ReflectionsOwed') throw new Error(`expected ReflectionsOwed, got ${card.kind}`);
-    // The Position Change Reflection and the Close Review both follow that Position Change, so each carries its Expiration.
+    // The reflection was completed with the expiration (A312), so only the Close Review is owed; it follows that Position Change and carries its Expiration.
     const expirations = card.card.reflections.map((reflection) => (reflection.settlements ?? []).map(({ instrument, quantity, economicTime }) => ({ instrument: instrumentKey(instrument), quantity, economicTime })));
     const expired = { instrument: 'MNO261120P00045000', quantity: '2', economicTime: FRIDAY_CLOSE.value };
-    expect(expirations).toEqual([[expired], [expired]]);
+    expect(expirations).toEqual([[expired]]);
   }, 60_000);
 });
 
