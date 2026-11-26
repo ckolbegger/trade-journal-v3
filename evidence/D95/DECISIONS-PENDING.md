@@ -164,3 +164,5 @@ From ocr of T95.62 (Doubtful, `capabilities.ts:105`). The plan's T95.62 bullet p
 1. *Recommend:* keep it under `getTrade` and correct the plan's wording (a slip in the list; the manifest then says what each operation returns). No read added.
 2. Give `open` the standing too: one replay read per Settlement Due Trade when the Review opens, then name it under `open`.
 Not parked: T95.62 is built as option 1, which needs no approval; option 2 would be a follow-on.
+
+**Answer (2026-11-26):** (2). Decision 138, plan revision 127; follow-on T95.62-D1, run after T95.56. **Status:** answered.
