@@ -1546,3 +1546,5 @@ Run `t95.61-focus` (browser-task; unit at `0a39d2b2`, browser and checks at `f48
 ### T95.61-B3
 
 Commit `02d8ef62`: `openCard` bumps `picks` (after the unsaved-drafts refusal, so a refused press doesn't count). `openCard` is reached only from the day-card links and the changed-address effect, never from the Review's own advance. Case 1 red then green; case 2 is B2's "should still move focus when the selection is unchanged", a first-run pass, flagged, mutation (`reopenAndApply` bumps `picks`) failed, restored. src/ui/screens 954 passed; typecheck, tsc6, lint (2 pre-existing warnings), lint:deps exit 0; browser d95/sale and d7/review-expiration 9 passed.
+
+ocr of T95.61-B3 (session f80ce36f): complete, 2 files, no findings. `evidence/D95/ocr/T95.61-B3-02d8ef62.json`.
