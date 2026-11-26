@@ -1,0 +1,102 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 0,
+    "total_tokens": 51435,
+    "input_tokens": 51130,
+    "output_tokens": 305,
+    "cache_read_tokens": 6656,
+    "elapsed": "15s"
+  },
+  "tool_calls": {
+    "total": 8,
+    "by_tool": {
+      "code_search": 1,
+      "file_find": 2,
+      "file_read": 5
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/app.css",
+        "src/ui/shell-layout.test.ts"
+      ]
+    }
+  ],
+  "session_id": "80746115-a894-4c8d-a8e5-f8bf42ac99ee",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "80746115-a894-4c8d-a8e5-f8bf42ac99ee",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "0eb14865",
+      "resolved_base": "125d2c2e701fa5c7f4383eefb91e3f42765a8678",
+      "resolved_head": "0eb14865d08be7c7f5c5a6799367fed5519d2f49",
+      "exact_range": "125d2c2e701fa5c7f4383eefb91e3f42765a8678..0eb14865d08be7c7f5c5a6799367fed5519d2f49",
+      "source_artifact_sha256": "66718150857627b53f1c6dcf86818a3a26bc7c177cd8b1235f8475787386a8cf"
+    },
+    "execution": {
+      "ocr_version": "v1.14.4",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "a9429ad34ac3d4e64fd75dfff47b6b384b0bd514502ff7dfd72538c046ac71e3"
+        },
+        {
+          "item_id": "d3fd8bcf8311016bfac0b4fa756235a5f58e235445a8992ca68feaa97a556989",
+          "path": "src/ui/shell-layout.test.ts",
+          "fingerprint": "3e1ff9ec1ee5023ff09161525412c75d755f7cd29e7500e12054d902cead23f6"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "a9429ad34ac3d4e64fd75dfff47b6b384b0bd514502ff7dfd72538c046ac71e3"
+        },
+        {
+          "item_id": "d3fd8bcf8311016bfac0b4fa756235a5f58e235445a8992ca68feaa97a556989",
+          "path": "src/ui/shell-layout.test.ts",
+          "fingerprint": "3e1ff9ec1ee5023ff09161525412c75d755f7cd29e7500e12054d902cead23f6"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "67613bb79ddd3f21a0c5cd6e619c28bd673a4308b6d75b7de493b464ddff62e1",
+          "path": "evidence/D95/tdd-log/T95.59-F1.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 14866
+  }
+}
