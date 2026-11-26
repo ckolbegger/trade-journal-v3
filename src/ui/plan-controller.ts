@@ -5,6 +5,8 @@ import { parseOptionContract } from '../domain/option-contract'
 import { confirmOptionPlan } from './option-controller'
 import { openDb, repo, transaction } from '../persistence/db'
 import type { Account, Institution } from '../domain/types'
+import { plannedResultFrom, readPlannedTrades } from './trade-read'
+import { messageFor } from './error-meaning'
 
 export type PlanDraft = {
   accountId: string
@@ -98,32 +100,19 @@ export async function confirmPlanFromDraft(
       underlying: draft.underlying, kind: draft.optionKind ?? '',
       strike: draft.strike ?? '', expiration: draft.expiration ?? '', multiplier: draft.multiplier ?? '',
     })
-    if (!parsed.ok) return { error: parsed.error.issues.join(', ') }
+    if (!parsed.ok) return { error: messageFor(parsed.error) }
     const result = await confirmOptionPlan({
       account, definitionRevision: 'D1', strategyId: draft.strategyId, contract: parsed.value,
       quantity: Number(draft.quantity), entry: draft.entry, stop: draft.stop, target: draft.target,
       reflection: { thesis: draft.thesis, invalidation: draft.invalidation },
       economicTime: '2026-11-24T20:00:00Z', readiness: { outcome: 'Writable', passed: true, failedChecks: [], protection: { kind: 'BestEffort', reason: 'ui' } },
     })
-    if (!result.ok) return { error: result.error.kind === 'Validation' ? result.error.issues.join(', ') : 'Writes are disabled.' }
-    return {
-      result: {
-        trade: {
-          id: result.value.trade.id, lifecycle: 'Planned',
-          plan: result.value.trade.plan as ConfirmPlanResult['value']['trade']['plan'],
-          economicTime: result.value.trade.economicTime,
-        },
-        entry: result.value.entry,
-        revisions: { trade: '1', entry: '1', catalog: '1' },
-        postCommit: { trade: result.value.trade, entry: result.value.entry },
-        affectedScopes: [],
-      },
-      error: '',
-    }
+    if (!result.ok) return { error: messageFor(result.error) }
+    return { result: plannedResultFrom(result.value.trade, result.value.entry), error: '' }
   }
   const strategy = { id: 'seed-long-stock', label: 'Long Stock', active: true, revision: '1' }
   const result = confirmPlan(buildCommand(draft, 'D1', '2026-11-24T20:00:00Z', institutions, strategy, account))
-  if (!result.ok) return { error: result.error.issues.join(', ') }
+  if (!result.ok) return { error: messageFor(result.error) }
 
   const db = await openDb()
   await transaction(db, ['trade', 'journal'], 'readwrite', async tx => {
@@ -134,26 +123,7 @@ export async function confirmPlanFromDraft(
 }
 
 export async function loadPlannedTrades(): Promise<ConfirmPlanResult['value'][]> {
-  const db = await openDb()
-  // The trade store holds the flattened Trade projection (id + trade fields),
-  // written atomically with the Entry in the journal store.
-  const rows = await repo.all<Record<string, unknown> & { id: string }>(db, 'trade')
-  const result: ConfirmPlanResult['value'][] = []
-  for (const r of rows) {
-    if (!r.plan || r.lifecycle !== 'Planned') continue
-    const entry = (await repo.get<ConfirmPlanResult['value']['entry']>(db, 'journal', `entry-${r.id}`)) ?? { snapshot: {} }
-    result.push({
-      trade: {
-        id: r.id,
-        lifecycle: (r.lifecycle ?? 'Planned') as 'Planned',
-        plan: r.plan as ConfirmPlanResult['value']['trade']['plan'],
-        economicTime: String(r.economicTime ?? ''),
-      },
-      entry,
-      revisions: { trade: '1', entry: '1', catalog: '1' },
-      postCommit: { trade: r, entry: {} },
-      affectedScopes: [],
-    })
-  }
-  return result
+  // Lifecycle membership and journal linkage are resolved by the canonical
+  // Trade read, not by this controller.
+  return readPlannedTrades(await openDb())
 }

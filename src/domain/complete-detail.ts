@@ -1,11 +1,49 @@
 import Decimal from 'decimal.js'
-import { expirationPayoff, type PayoffResult } from './expiration-payoff'
+import { expirationPayoff, type PayoffLeg, type PayoffResult } from './expiration-payoff'
 import { buildTradeNarrative, type NarrativeItem, type NarrativeRow } from './journal-narrative'
+import type { OptionContract } from './option-contract'
 import { resolveStrategyShape } from './strategy-shapes'
 import type { SessionPoint, SessionSeries } from './session-series'
 
 // TradeViewsAndReporting.getTradeDetail(Complete). A read-only projection:
 // it assembles already-persisted facts and never writes a fact or a draft.
+export type PlannedLegForPayoff = {
+  contract: OptionContract
+  quantity: number
+  openingAction: 'Buy' | 'Sell'
+}
+
+export type PayoffPlanInput = {
+  entry: string
+  plannedLeg?: PlannedLegForPayoff
+  legs?: PayoffLeg[]
+}
+
+// One payoff seam for both the Complete detail and the standalone panel. It
+// delegates to the existing intrinsic implementation; no theoretical price or
+// advisory value is accepted as an input.
+export function payoffForPlan(
+  plan: PayoffPlanInput,
+  view: 'Planned' | 'Current' = 'Planned',
+  realizedToDate?: string,
+): PayoffResult {
+  const legs = plan.legs ?? (plan.plannedLeg
+    ? [{
+        contract: plan.plannedLeg.contract,
+        openingAction: plan.plannedLeg.openingAction,
+        entry: plan.entry,
+        quantity: plan.plannedLeg.quantity,
+      }]
+    : [])
+  if (legs.length === 0) return expirationPayoff({ view, legs: [], stockOnly: true })
+  return expirationPayoff({
+    view, legs,
+    ...(view === 'Current' && realizedToDate !== undefined
+      ? { realizedToDate, unconsumedOpeningFees: '0.00' }
+      : {}),
+  })
+}
+
 export type CompleteDetailTrade = {
   id: string
   lifecycle: string
@@ -18,6 +56,7 @@ export type CompleteDetailTrade = {
   lots: { id: string; instrument: string; quantity: string; basis: string; allocatedOpeningFee: string }[]
   executions: { id: string; instrument: string; action: string; quantity: string; price: string; fee: string; economicTime: string }[]
   realizedToDate: string
+  plannedLeg?: PlannedLegForPayoff
   fulfillment?: string
   deviations?: { category: string; fingerprint: string }[]
   agreement?: { lifecycle: boolean; lots: boolean; findings: string[] }
@@ -88,7 +127,7 @@ export function buildCompleteTradeDetail(input: CompleteDetailInput): CompleteDe
   const current = available.at(-1)?.price ?? trade.plan.entry
   const previous = available.at(-2)?.price ?? trade.plan.entry
 
-  const payoff = expirationPayoff({ view: 'Planned', legs: [], stockOnly: true })
+  const payoff = payoffForPlan({ entry: trade.plan.entry, plannedLeg: trade.plannedLeg })
   const journal = buildTradeNarrative(
     journalRows, trade.id, trade.executions.map(e => e.id),
   )

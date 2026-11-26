@@ -1,6 +1,8 @@
 import { openDb, repo, transaction, type Db } from '../persistence/db'
 import { guardWrite } from '../domain/write-gate'
-import { parseOptionContract, type OptionContract } from '../domain/option-contract'
+import {
+  parseOptionContract, canonicalInstrument, type OptionContract,
+} from '../domain/option-contract'
 import { resolveStrategyShape } from '../domain/strategy-shapes'
 import { assessOptionPlan } from '../domain/option-plan'
 import {
@@ -10,11 +12,17 @@ import { preparePlanReflection } from '../domain/plan-reflection'
 import {
   preparePositionChangeReflection, type ReflectionDisposition, type ReflectionOutcome,
 } from '../domain/position-change-reflection'
-import { resolveCloseReason, type SeededReason } from '../domain/close'
-import { LIFECYCLE_INDEX_ID, writeLifecycleIndexInTx, type LifecycleIndex } from '../domain/open-views'
-import type { ReadinessEvidence, Result, RuntimeNotWritable } from '../domain/types'
-
-type Account = { id: string; institutionId: string; label: string; active: boolean; revision: string; history: unknown[] }
+import {
+  resolveCloseReason, deriveTerminalDisposition, deriveCloseReasonRequirement,
+  type SeededReason, type TerminalDisposition, type CloseReasonRequirement,
+} from '../domain/close'
+import { derive, type ExecutionFact } from '../domain/derive'
+import type {
+  Account, ReadinessEvidence, Result, RuntimeNotWritable,
+} from '../domain/types'
+import {
+  commitPositionChange, type PositionChangeError, type PreparedPositionChange,
+} from './position-change-commit'
 
 export type ConfirmOptionPlanRequest = {
   account: Account
@@ -94,8 +102,6 @@ export async function confirmOptionPlan(
 
   const c = request.contract
   // Identical Plans confirmed on the same day must remain distinct Trades.
-  // A short uniqueness token keeps the readable contract prefix while never
-  // overwriting an earlier confirmation of the same exact contract.
   const id = `trade-${c.underlying.toLowerCase()}-${c.kind.toLowerCase()}-${c.strike}-${c.expiration}-${request.economicTime.slice(0, 10)}-${tradeIdToken()}`
   const trade: OptionPlanProjection = {
     id, lifecycle: 'Planned', revision: '1', economicTime: request.economicTime,
@@ -124,6 +130,9 @@ type StoredOptionTrade = OptionPlanProjection & {
   fulfillment?: string
   deviations?: unknown[]
   positionChangeId?: string
+  agreement?: { lifecycle: boolean; lots: boolean; findings: string[] }
+  terminalDisposition?: TerminalDisposition
+  closeReasonRequirement?: CloseReasonRequirement
 }
 
 function positionChangeReflection(
@@ -134,34 +143,37 @@ function positionChangeReflection(
   })
 }
 
-async function commitPositionChange(
-  handle: Db, trade: StoredOptionTrade, position: OptionPosition,
-  positionChangeId: string, journalOutcome: ReflectionOutcome, journalId: string,
-  bucket: 'Open' | 'Closed',
-  executions: OptionExecution[],
-  closeReason?: { id: string; label: string },
-): Promise<void> {
-  const storedTrade = {
-    id: trade.id, lifecycle: bucket === 'Open' ? 'Open' : 'Closed',
-    revision: String(Number(trade.revision) + 1), economicTime: trade.economicTime, plan: trade.plan,
-    positionChangeId, executions,
-    lots: position.lots, lotMatches: position.lotMatches,
-    positions: position.positions, realizedToDate: position.realizedToDate,
-    ...(closeReason ? { closeReason } : {}),
-    fulfillment: position.fulfillment, deviations: position.deviations,
-    agreement: { lifecycle: true, lots: true, findings: [] },
-  }
-  await transaction(handle, ['trade', 'journal'], 'readwrite', async tx => {
-    await repo.putInTx(tx, 'trade', storedTrade)
-    await repo.putInTx(tx, 'journal', { id: journalId, ...journalOutcome })
-    const index = await repo.getInTx<LifecycleIndex>(tx, 'trade', LIFECYCLE_INDEX_ID)
-    const members = index?.members ?? { Planned: [], Open: [], Closed: [], Abandoned: [] }
-    for (const key of ['Planned', 'Open', 'Closed', 'Abandoned'] as const) {
-      members[key] = members[key].filter(id => id !== trade.id)
-    }
-    members[bucket].push(trade.id)
-    await writeLifecycleIndexInTx(tx, members)
+// Agreement and Terminal Disposition are derived from the effective Execution
+// facts (ADR 0003); the option path never fabricates a clean agreement.
+function deriveFactState(
+  trade: StoredOptionTrade, executions: OptionExecution[], positionChangeId: string,
+  storedLifecycle: string, closed: boolean,
+) {
+  const facts: ExecutionFact[] = executions.map(e => ({
+    id: e.id, tradeId: trade.id, positionChangeId,
+    instrument: canonicalInstrument(e.contract),
+    action: e.action, quantity: e.quantity, price: e.price, fee: e.fee,
+    economicTime: e.economicTime, recordedSequence: e.recordedSequence,
+    plannedLegId: e.plannedLegId,
+  }))
+  const derived = derive({
+    tradeId: trade.id,
+    storedLifecycle,
+    plan: {
+      underlying: trade.plan.underlying, quantity: trade.plan.quantity,
+      entry: trade.plan.entry, stop: trade.plan.stop, target: trade.plan.target,
+      oneR: trade.plan.oneR, baseline: trade.plan.baseline,
+    },
+    executions: facts,
   })
+  return {
+    facts,
+    agreement: derived.ok
+      ? derived.value.agreement
+      : { lifecycle: false, lots: false, findings: derived.error.issues },
+    terminalDisposition: deriveTerminalDisposition(facts, closed),
+    closeReasonRequirement: deriveCloseReasonRequirement(facts, closed),
+  }
 }
 
 export type OptionPositionChangeRequest = {
@@ -180,34 +192,50 @@ export type OptionPositionChangeRequest = {
 export async function recordOptionPositionChange(
   request: OptionPositionChangeRequest,
   db?: Db,
-): Promise<Result<{ trade: StoredOptionTrade; position: OptionPosition; journalOutcome: ReflectionOutcome }, ErrorResult>> {
-  const gate = guardWrite(request.readiness, 'TradeWorkflows.recordPositionChange')
-  if (!gate.ok) return { ok: false, error: { kind: 'RuntimeNotWritable', runtimeNotWritable: gate.error.runtimeNotWritable } }
-  const handle = db ?? await openDb()
-  const stored = await repo.get<StoredOptionTrade>(handle, 'trade', request.tradeId)
-  if (!stored) return { ok: false, error: { kind: 'Validation', issues: ['NotFound'] } }
-  if (stored.revision !== request.expectedRevision) return { ok: false, error: { kind: 'Validation', issues: ['StaleRevision'] } }
-  if (stored.lifecycle !== 'Planned') return { ok: false, error: { kind: 'Validation', issues: ['NotPlanned'] } }
+): Promise<Result<
+  { trade: StoredOptionTrade; position: OptionPosition; journalOutcome: ReflectionOutcome },
+  PositionChangeError
+>> {
+  type Value = { trade: StoredOptionTrade; position: OptionPosition; journalOutcome: ReflectionOutcome }
+  return commitPositionChange<Value>({
+    db, readiness: request.readiness, operation: 'TradeWorkflows.recordPositionChange',
+    prepare: async handle => {
+      const stored = await repo.get<StoredOptionTrade>(handle, 'trade', request.tradeId)
+      if (!stored) return { ok: false, error: { kind: 'Validation', issues: ['NotFound'] } }
+      if (stored.revision !== request.expectedRevision) return { ok: false, error: { kind: 'Validation', issues: ['StaleRevision'] } }
+      if (stored.lifecycle !== 'Planned') return { ok: false, error: { kind: 'Validation', issues: ['NotPlanned'] } }
 
-  const executions: OptionExecution[] = request.executions.map((e, index) => ({
-    ...e, plannedLegId: 'leg-1', recordedSequence: index + 1,
-  }))
-  const position = deriveOptionPosition({
-    tradeId: stored.id, plannedLeg: stored.plan.plannedLeg, executions,
+      const executions: OptionExecution[] = request.executions.map((e, index) => ({
+        ...e, plannedLegId: 'leg-1', recordedSequence: index + 1,
+      }))
+      const position = deriveOptionPosition({
+        tradeId: stored.id, plannedLeg: stored.plan.plannedLeg, executions,
+      })
+      if (!position.ok) return { ok: false, error: { kind: 'Validation', issues: position.error.issues } }
+      if (position.value.expectedLifecycle !== 'Open') return { ok: false, error: { kind: 'Validation', issues: ['NotOpen'] } }
+      const reflection = positionChangeReflection(stored.id, request.positionChangeId, request.reflection.disposition)
+      if (!reflection.ok) return { ok: false, error: { kind: 'Validation', issues: reflection.error.issues } }
+
+      const derived = deriveFactState(stored, executions, request.positionChangeId, 'Open', false)
+      const journalId = `${reflection.value.kind === 'Decline' ? 'decline' : reflection.value.kind}-${request.positionChangeId}`
+      const trade: StoredOptionTrade = {
+        id: stored.id, lifecycle: 'Open', revision: String(Number(stored.revision) + 1),
+        economicTime: stored.economicTime, plan: stored.plan,
+        positionChangeId: request.positionChangeId, executions,
+        lots: position.value.lots, lotMatches: position.value.lotMatches,
+        positions: position.value.positions, realizedToDate: position.value.realizedToDate,
+        fulfillment: position.value.fulfillment, deviations: position.value.deviations,
+        agreement: derived.agreement,
+        terminalDisposition: derived.terminalDisposition,
+        closeReasonRequirement: derived.closeReasonRequirement,
+      }
+      const change: PreparedPositionChange<Value> = {
+        trade, journalOutcome: { id: journalId, ...reflection.value }, bucket: 'Open',
+        result: { trade, position: position.value, journalOutcome: reflection.value },
+      }
+      return { ok: true, value: change }
+    },
   })
-  if (!position.ok) return { ok: false, error: { kind: 'Validation', issues: position.error.issues } }
-  if (position.value.expectedLifecycle !== 'Open') return { ok: false, error: { kind: 'Validation', issues: ['NotOpen'] } }
-  const reflection = positionChangeReflection(stored.id, request.positionChangeId, request.reflection.disposition)
-  if (!reflection.ok) return { ok: false, error: { kind: 'Validation', issues: reflection.error.issues } }
-
-  const journalId = `${reflection.value.kind === 'Decline' ? 'decline' : reflection.value.kind}-${request.positionChangeId}`
-  await commitPositionChange(handle, stored, position.value, request.positionChangeId, reflection.value, journalId, 'Open', executions)
-  const trade: StoredOptionTrade = {
-    ...stored, lifecycle: 'Open', revision: String(Number(stored.revision) + 1),
-    executions, lots: position.value.lots, positions: position.value.positions,
-    realizedToDate: position.value.realizedToDate, positionChangeId: request.positionChangeId,
-  }
-  return { ok: true, value: { trade, position: position.value, journalOutcome: reflection.value } }
 }
 
 export type OptionCloseRequest = {
@@ -227,40 +255,60 @@ export type OptionCloseRequest = {
 export async function recordOptionClose(
   request: OptionCloseRequest,
   db?: Db,
-): Promise<Result<{ trade: StoredOptionTrade; position: OptionPosition; closeReason: { id: string; label: string }; journalOutcome: ReflectionOutcome }, ErrorResult>> {
-  const gate = guardWrite(request.readiness, 'TradeWorkflows.recordPositionChange')
-  if (!gate.ok) return { ok: false, error: { kind: 'RuntimeNotWritable', runtimeNotWritable: gate.error.runtimeNotWritable } }
-  const handle = db ?? await openDb()
-  const stored = await repo.get<StoredOptionTrade>(handle, 'trade', request.tradeId)
-  if (!stored) return { ok: false, error: { kind: 'Validation', issues: ['NotFound'] } }
-  if (stored.revision !== request.expectedRevision) return { ok: false, error: { kind: 'Validation', issues: ['StaleRevision'] } }
-  if (stored.lifecycle !== 'Open') return { ok: false, error: { kind: 'Validation', issues: ['NotOpen'] } }
-  const catalog = await repo.get<{ closeReasons: SeededReason[] }>(handle, 'catalog', 'catalog-1')
-  const reason = resolveCloseReason(request.closeReason, catalog)
-  if (!reason.ok) return { ok: false, error: { kind: 'Validation', issues: [reason.error.issue] } }
-
-  const prior = stored.executions ?? []
-  const closing: OptionExecution[] = request.executions.map((e, index) => ({
-    ...e, plannedLegId: 'leg-1', recordedSequence: prior.length + index + 1,
-  }))
-  const position = deriveOptionPosition({
-    tradeId: stored.id, plannedLeg: stored.plan.plannedLeg,
-    executions: [...prior, ...closing], closed: true,
-  })
-  if (!position.ok) return { ok: false, error: { kind: 'Validation', issues: position.error.issues } }
-  if (position.value.expectedLifecycle !== 'Closed') return { ok: false, error: { kind: 'Validation', issues: ['NotFlat'] } }
-  const reflection = positionChangeReflection(stored.id, request.positionChangeId, request.reflection.disposition)
-  if (!reflection.ok) return { ok: false, error: { kind: 'Validation', issues: reflection.error.issues } }
-
-  const journalId = `${reflection.value.kind === 'Decline' ? 'decline' : reflection.value.kind}-${request.positionChangeId}`
-  await commitPositionChange(handle, stored, position.value, request.positionChangeId, reflection.value, journalId, 'Closed', [...prior, ...closing], reason.value)
-  const trade: StoredOptionTrade = {
-    ...stored, lifecycle: 'Closed', revision: String(Number(stored.revision) + 1),
-    executions: [...prior, ...closing], lots: position.value.lots,
-    lotMatches: position.value.lotMatches,
-    positions: position.value.positions, realizedToDate: position.value.realizedToDate,
-    positionChangeId: request.positionChangeId,
-    closeReason: reason.value,
+): Promise<Result<
+  {
+    trade: StoredOptionTrade; position: OptionPosition
+    closeReason: { id: string; label: string }; journalOutcome: ReflectionOutcome
+  },
+  PositionChangeError
+>> {
+  type Value = {
+    trade: StoredOptionTrade; position: OptionPosition
+    closeReason: { id: string; label: string }; journalOutcome: ReflectionOutcome
   }
-  return { ok: true, value: { trade, position: position.value, closeReason: reason.value, journalOutcome: reflection.value } }
+  return commitPositionChange<Value>({
+    db, readiness: request.readiness, operation: 'TradeWorkflows.recordPositionChange',
+    prepare: async handle => {
+      const stored = await repo.get<StoredOptionTrade>(handle, 'trade', request.tradeId)
+      if (!stored) return { ok: false, error: { kind: 'Validation', issues: ['NotFound'] } }
+      if (stored.revision !== request.expectedRevision) return { ok: false, error: { kind: 'Validation', issues: ['StaleRevision'] } }
+      if (stored.lifecycle !== 'Open') return { ok: false, error: { kind: 'Validation', issues: ['NotOpen'] } }
+      const catalog = await repo.get<{ closeReasons: SeededReason[] }>(handle, 'catalog', 'catalog-1')
+      const reason = resolveCloseReason(request.closeReason, catalog)
+      if (!reason.ok) return { ok: false, error: { kind: 'Validation', issues: [reason.error.issue] } }
+
+      const prior = stored.executions ?? []
+      const closing: OptionExecution[] = request.executions.map((e, index) => ({
+        ...e, plannedLegId: 'leg-1', recordedSequence: prior.length + index + 1,
+      }))
+      const position = deriveOptionPosition({
+        tradeId: stored.id, plannedLeg: stored.plan.plannedLeg,
+        executions: [...prior, ...closing], closed: true,
+      })
+      if (!position.ok) return { ok: false, error: { kind: 'Validation', issues: position.error.issues } }
+      if (position.value.expectedLifecycle !== 'Closed') return { ok: false, error: { kind: 'Validation', issues: ['NotFlat'] } }
+      const reflection = positionChangeReflection(stored.id, request.positionChangeId, request.reflection.disposition)
+      if (!reflection.ok) return { ok: false, error: { kind: 'Validation', issues: reflection.error.issues } }
+
+      const derived = deriveFactState(stored, [...prior, ...closing], request.positionChangeId, 'Closed', true)
+      const journalId = `${reflection.value.kind === 'Decline' ? 'decline' : reflection.value.kind}-${request.positionChangeId}`
+      const trade: StoredOptionTrade = {
+        id: stored.id, lifecycle: 'Closed', revision: String(Number(stored.revision) + 1),
+        economicTime: stored.economicTime, plan: stored.plan,
+        executions: [...prior, ...closing], lots: position.value.lots,
+        lotMatches: position.value.lotMatches, positions: position.value.positions,
+        realizedToDate: position.value.realizedToDate, positionChangeId: request.positionChangeId,
+        fulfillment: position.value.fulfillment, deviations: position.value.deviations,
+        closeReason: reason.value,
+        agreement: derived.agreement,
+        terminalDisposition: derived.terminalDisposition,
+        closeReasonRequirement: derived.closeReasonRequirement,
+      }
+      const change: PreparedPositionChange<Value> = {
+        trade, journalOutcome: { id: journalId, ...reflection.value }, bucket: 'Closed',
+        result: { trade, position: position.value, closeReason: reason.value, journalOutcome: reflection.value },
+      }
+      return { ok: true, value: change }
+    },
+  })
 }

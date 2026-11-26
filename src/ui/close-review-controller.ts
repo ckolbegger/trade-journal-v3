@@ -5,6 +5,7 @@ import {
   prepareCloseReview, type CloseReviewDisposition, type CloseReviewForm, type CloseReviewOutcome,
 } from '../domain/close-review'
 import type { ReadinessEvidence, Result, RuntimeNotWritable } from '../domain/types'
+import { readObligation } from './obligation-read'
 
 export type SaveCloseReviewRequest = {
   tradeId: string
@@ -25,14 +26,6 @@ export type SaveCloseReviewResult = {
   outcome: CloseReviewOutcome
   revisions: { journal: string }
   postCommit: { outcome: CloseReviewOutcome }
-}
-
-async function currentOutcome(handle: Db, obligationKey: string): Promise<CloseReviewOutcome | undefined> {
-  for (const id of [`entry-${obligationKey}`, `debt-${obligationKey}`, `decline-${obligationKey}`]) {
-    const row = await repo.get<CloseReviewOutcome>(handle, 'journal', id)
-    if (row) return row
-  }
-  return undefined
 }
 
 async function commit(handle: Db, outcome: CloseReviewOutcome): Promise<void> {
@@ -64,7 +57,7 @@ export async function saveCloseReview(
   })
   if (!prepared.ok) return { ok: false, error: { kind: 'Validation', issues: prepared.error.issues } }
 
-  const current = await currentOutcome(handle, obligationKey)
+  const current = (await readObligation(handle, obligationKey)).effective
   const applied = applyCloseReviewOutcome(current, prepared.value, prepared.value.id, request.expectedObligationRevision)
   if (!applied.ok) return { ok: false, error: { kind: 'Conflict', issue: applied.error.issue } }
 
@@ -96,9 +89,8 @@ export async function answerDeferredCloseReview(
     return { ok: false, error: { kind: 'RuntimeNotWritable', runtimeNotWritable: gate.error.runtimeNotWritable } }
   }
   const handle = db ?? await openDb()
-  const debt = await repo.get<Extract<CloseReviewOutcome, { kind: 'Debt' }>>(
-    handle, 'journal', `debt-${request.obligationKey}`,
-  )
+  const obligation = await readObligation(handle, request.obligationKey)
+  const debt = obligation.debt
   if (!debt || debt.kind !== 'Debt') {
     return { ok: false, error: { kind: 'Validation', issues: ['NotFound'] } }
   }
@@ -107,8 +99,9 @@ export async function answerDeferredCloseReview(
 
   // An answered Debt is itself the current outcome; only an existing Entry or
   // decline would make this a duplicate.
-  const existing = await repo.get(handle, 'journal', `entry-${request.obligationKey}`)
-  if (existing) return { ok: false, error: { kind: 'Conflict', issue: 'ObligationAlreadySettled' } }
+  if (obligation.effective && obligation.effective.kind !== 'Debt') {
+    return { ok: false, error: { kind: 'Conflict', issue: 'ObligationAlreadySettled' } }
+  }
   await commit(handle, prepared.value)
   return {
     ok: true,

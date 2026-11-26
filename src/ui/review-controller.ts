@@ -5,6 +5,7 @@ import { queryOpenTrades, type StoredOpenTrade } from '../domain/open-views'
 import { evaluateOpenTrade } from './market-controller'
 import { resolveFrames } from '../domain/market-frames'
 import { replay, type ReplayResult } from '../domain/replay'
+import { readObligation } from './obligation-read'
 import type { Frame } from '../domain/market-frames'
 import type { TradeEvaluation } from '../domain/evaluate'
 import type { ObservationRecord } from '../domain/market-data'
@@ -233,8 +234,8 @@ export async function resolveReviewDebt(
   const handle = db ?? await openDb()
   const debt = await repo.get<Record<string, unknown> & { id: string }>(handle, 'journal', request.debtId)
   if (!debt) return { ok: false, error: { kind: 'NotFound' } }
-  if (String(debt.settlementRoute ?? '').includes('TradeWorkflows') ||
-      String(debt.obligationKey ?? '').startsWith('ManagementRevision:')) {
+  const obligation = await readObligation(handle, String(debt.obligationKey ?? debt.id))
+  if (obligation.needsTradeWorkflow) {
     return { ok: false, error: { kind: 'NeedsTradeWorkflow' } }
   }
   if (String(debt.obligationKey ?? '').startsWith('CloseReview:')) {

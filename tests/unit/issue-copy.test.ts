@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatIssues } from '../../src/ui/issue-copy'
+import { formatIssues } from '../../src/ui/error-meaning'
 
 describe('user-facing validation copy', () => {
   it('should translate reflection tokens into human-readable prose', () => {

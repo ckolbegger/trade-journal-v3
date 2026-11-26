@@ -4,13 +4,17 @@ import {
   confirmPlanFromDraft, initialPlanState, loadPlannedTrades, previewPlan,
   type PlanDraft, type PlanState,
 } from './plan-controller'
-import { openDb, repo, type Db } from '../persistence/db'
+import { openDb } from '../persistence/db'
+import {
+  readCloseReasonLabels, strategyIdOf, toStoredClosedTrade, toStoredOpenTrade,
+} from './trade-read'
+import { readCloseReviewState } from './obligation-read'
 import { queryClosedTrades, queryOpenTrades, type StoredClosedTrade, type StoredOpenTrade } from '../domain/open-views'
 import { recordOpeningPositionChange } from './position-controller'
 import { recordClosePositionChange } from './close-controller'
 import { saveCloseReview } from './close-review-controller'
-import { buildTradeNarrative, type NarrativeItem } from '../domain/journal-narrative'
-import { formatIssues } from './issue-copy'
+import type { NarrativeItem } from '../domain/journal-narrative'
+import { messageFor } from './error-meaning'
 import { requestDurability } from '../domain/workspace'
 import { evaluateOpenTrade, saveManualMark } from './market-controller'
 import {
@@ -22,10 +26,10 @@ import type { CalculationResult } from '../domain/calculation'
 import type { ReflectionDisposition } from '../domain/position-change-reflection'
 import { canonicalInstrument, type OptionContract } from '../domain/option-contract'
 import { resolveStrategyShape } from '../domain/strategy-shapes'
-import { expirationPayoff, type PayoffLeg } from '../domain/expiration-payoff'
 import { recordOptionPositionChange, recordOptionClose } from './option-controller'
 import { loadCompleteTradeDetail, type LoadedDetail } from './detail-controller'
 import { CompleteDetailView } from './complete-detail-view'
+import { payoffForPlan } from '../domain/complete-detail'
 import { D8A_CAPABILITIES } from '../domain/capabilities-d8a'
 
 const SINGLE_LEG_OPTION_IDS = ['seed-long-call', 'seed-long-put', 'seed-cash-secured-put']
@@ -124,23 +128,6 @@ function closeDispositionOf(form: CloseForm): ReflectionDisposition {
   return { kind: 'Defer' }
 }
 
-async function loadCloseReviewState(
-  trade: { id: string; executions: { id: string }[] },
-  db: Db,
-) {
-  const rows = await repo.all<Record<string, unknown> & { id: string; obligationKey?: string; kind?: string; status?: string }>(db, 'journal')
-  const own = rows.filter(r => r.obligationKey === `CloseReview:${trade.id}`)
-  // A settled Debt and its settlement Entry share the key; the effective
-  // outcome wins over the historical obligation row.
-  const effective = own.find(r => r.kind === 'Entry')
-    ?? own.find(r => r.kind === 'JournalDecline')
-    ?? own.find(r => r.kind === 'Debt' && r.status !== 'Settled')
-  return {
-    status: effective?.kind === 'Entry' ? 'Saved' : effective?.kind === 'JournalDecline' ? 'Declined' : effective ? 'Outstanding Debt' : '',
-    narrative: buildTradeNarrative(rows, trade.id, trade.executions.map(e => e.id)),
-  }
-}
-
 const monogram = (label: string) => label.slice(0, 2).toUpperCase()
 const completionLabel = (state: string) =>
   state === 'CompleteWithUnavailableMarks' ? 'Complete with unavailable Marks' : state
@@ -157,17 +144,11 @@ function resultText(result: CalculationResult<string>, testId: string) {
 }
 
 function OptionPayoffPanel({ plan, realizedToDate }: { plan: OptionPlanFields; realizedToDate?: string }) {
-  const leg: PayoffLeg = {
-    contract: plan.contract,
-    openingAction: plan.plannedLeg.openingAction,
-    entry: plan.entry,
-    quantity: plan.plannedLeg.quantity,
-  }
-  const payoff = expirationPayoff({
-    view: realizedToDate === undefined ? 'Planned' : 'Current',
-    legs: [leg],
-    ...(realizedToDate === undefined ? {} : { realizedToDate, unconsumedOpeningFees: '0.00' }),
-  })
+  const payoff = payoffForPlan(
+    { entry: plan.entry, plannedLeg: plan.plannedLeg },
+    realizedToDate === undefined ? 'Planned' : 'Current',
+    realizedToDate,
+  )
   return (
     <section aria-label="Expiration payoff" data-testid="payoff-panel" className="card">
       <p className="section-label">Expiration payoff</p>
@@ -248,8 +229,7 @@ export function App() {
     void establish().then(async s => {
       setState(s)
       setDraft(d => ({ ...d, accountId: s.accounts[0]?.id ?? '' }))
-      const catalog = await repo.get<{ closeReasons?: { label: string }[] }>(await openDb(), 'catalog', 'catalog-1')
-      setCloseReasons((catalog?.closeReasons ?? []).map(r => r.label))
+      setCloseReasons(await readCloseReasonLabels(await openDb()))
     })
     const onResize = () => setState(s => ({ ...s, layout: window.innerWidth >= 900 ? 'wide' : 'narrow' }))
     window.addEventListener('resize', onResize)
@@ -334,7 +314,7 @@ export function App() {
     // A deferred Close Review can be answered in Review while this detail is
     // still mounted; re-derive its status and narrative on the way back.
     if (selectedClosed) {
-      const state = await loadCloseReviewState(selectedClosed, db)
+      const state = await readCloseReviewState(db, selectedClosed)
       setCloseReviewStatus(state.status)
       setNarrative(state.narrative)
     }
@@ -374,9 +354,7 @@ export function App() {
       readiness: state.readiness,
     })
     if (!result.ok) {
-      setMarkError(result.error.kind === 'Validation'
-        ? formatIssues(result.error.issues)
-        : 'Writes are disabled until Runtime Readiness is Writable.')
+      setMarkError(messageFor(result.error))
       return
     }
     setMarkError('')
@@ -420,7 +398,7 @@ export function App() {
       readiness: state.readiness,
     })
     if (!result.ok) {
-      setReviewError(result.error.kind === 'Validation' ? formatIssues(result.error.issues) : 'Writes are disabled until Runtime Readiness is Writable.')
+      setReviewError(messageFor(result.error))
       return
     }
     setReviewError('')
@@ -441,13 +419,7 @@ export function App() {
       readiness: state.readiness, now: VIEW_MOMENT,
     })
     if (!result.ok) {
-      setReviewError(result.error.kind === 'Validation'
-        ? formatIssues(result.error.issues)
-        : result.error.kind === 'MarkMissing'
-          ? 'An exact Mark is required before saving an Action.'
-          : result.error.kind === 'ReviewChanged'
-            ? 'Evidence changed; review it and save again.'
-            : 'The Action could not be saved.')
+      setReviewError(messageFor(result.error))
       if (result.error.kind === 'ReviewChanged') setReview(result.error.refreshed)
       return
     }
@@ -461,11 +433,7 @@ export function App() {
       debtId, form: { text, ...(answers ? { answers } : {}) }, readiness: state.readiness,
     })
     if (!result.ok) {
-      setReviewError(result.error.kind === 'NeedsTradeWorkflow'
-        ? 'This Debt must be resolved in its Trade Workflow.'
-        : result.error.kind === 'Validation'
-          ? 'Answer the Close Review against its original definition.'
-          : 'The Debt could not be resolved.')
+      setReviewError(messageFor(result.error))
       return
     }
     setReviewError('')
@@ -503,16 +471,14 @@ export function App() {
         readiness: state.readiness,
       })
       if (!result.ok) {
-        setPositionError(result.error.kind === 'Validation'
-          ? formatIssues(result.error.issues)
-          : 'Writes are disabled until Runtime Readiness is Writable.')
+        setPositionError(messageFor(result.error))
         return
       }
       setPositionError('')
       setExecutingId(null)
       setPositionForm(emptyPositionForm())
       await refreshTrades()
-      await showOpen(result.value.trade as unknown as StoredOpenTrade)
+      await showOpen(toStoredOpenTrade(result.value.trade))
       return
     }
     const result = await recordOpeningPositionChange({
@@ -534,9 +500,7 @@ export function App() {
       readiness: state.readiness,
     })
     if (!result.ok) {
-      setPositionError(result.error.kind === 'Validation'
-        ? formatIssues(result.error.issues)
-        : 'Writes are disabled until Runtime Readiness is Writable.')
+      setPositionError(messageFor(result.error))
       return
     }
     setPositionError('')
@@ -557,7 +521,7 @@ export function App() {
     setCloseReviewOpen(null)
     setCloseReviewForm(emptyCloseReviewForm())
     setCloseReviewError('')
-    const state = await loadCloseReviewState(trade, await openDb())
+    const state = await readCloseReviewState(await openDb(), trade)
     setCloseReviewStatus(state.status)
     setNarrative(state.narrative)
   }, [])
@@ -593,9 +557,7 @@ export function App() {
         readiness: state.readiness,
       })
       if (!result.ok) {
-        setCloseError(result.error.kind === 'Validation'
-          ? formatIssues(result.error.issues)
-          : 'Writes are disabled until Runtime Readiness is Writable.')
+        setCloseError(messageFor(result.error))
         return
       }
       setCloseError('')
@@ -607,7 +569,7 @@ export function App() {
       setCloseReviewError('')
       setCloseReviewStatus('')
       setNarrative([])
-      setSelectedClosed(result.value.trade as unknown as StoredClosedTrade)
+      setSelectedClosed(toStoredClosedTrade(result.value.trade))
       await refreshTrades()
       return
     }
@@ -626,9 +588,7 @@ export function App() {
       readiness: state.readiness,
     })
     if (!result.ok) {
-      setCloseError(result.error.kind === 'Validation'
-        ? formatIssues(result.error.issues)
-        : 'Writes are disabled until Runtime Readiness is Writable.')
+      setCloseError(messageFor(result.error))
       return
     }
     setCloseError('')
@@ -668,11 +628,7 @@ export function App() {
       disposition, readiness: state.readiness,
     })
     if (!result.ok) {
-      setCloseReviewError(result.error.kind === 'Conflict'
-        ? 'This Close Review already has an outcome.'
-        : result.error.kind === 'Validation'
-          ? formatIssues(result.error.issues)
-          : 'Writes are disabled until Runtime Readiness is Writable.')
+      setCloseReviewError(messageFor(result.error))
       return
     }
     setCloseReviewError('')
@@ -827,7 +783,7 @@ export function App() {
                             <span className="monogram" aria-hidden="true">{monogram(t.trade.plan.underlying)}</span>
                             <span className="row-main">
                               <span className="row-title">{t.trade.plan.underlying}</span>
-                              <span className="row-sub">{strategyLabel((t.trade.plan as unknown as { strategyId?: string }).strategyId)} · 1R {t.trade.plan.oneR}</span>
+                              <span className="row-sub">{strategyLabel(strategyIdOf(t.trade.plan))} · 1R {t.trade.plan.oneR}</span>
                             </span>
                             <span className="badge badge-planned">Planned</span>
                           </button>
@@ -847,7 +803,7 @@ export function App() {
                             <span className="monogram" aria-hidden="true">{monogram(t.plan.underlying)}</span>
                             <span className="row-main">
                               <span className="row-title">{t.plan.underlying}</span>
-                              <span className="row-sub">{strategyLabel((t.plan as unknown as { strategyId?: string }).strategyId)} · {t.lots.length} lots</span>
+                              <span className="row-sub">{strategyLabel(strategyIdOf(t.plan))} · {t.lots.length} lots</span>
                             </span>
                             <span className="num positive">{t.realizedToDate}</span>
                             <span className="badge badge-open">Open</span>
@@ -868,7 +824,7 @@ export function App() {
                             <span className="monogram" aria-hidden="true">{monogram(t.plan.underlying)}</span>
                             <span className="row-main">
                               <span className="row-title">{t.plan.underlying}</span>
-                              <span className="row-sub">{strategyLabel((t.plan as unknown as { strategyId?: string }).strategyId)} · {t.lotMatches.length} lot matches</span>
+                              <span className="row-sub">{strategyLabel(strategyIdOf(t.plan))} · {t.lotMatches.length} lot matches</span>
                             </span>
                             <span className="num">{t.realizedToDate}</span>
                             <span className="badge badge-closed">Closed</span>
@@ -903,7 +859,7 @@ export function App() {
                         <div className="figure-grid">
                           <div><p className="section-label">1R</p><p className="figure-value num" data-testid="trade-one-r">{plan.selected.trade.plan.oneR}</p></div>
                           <div><p className="section-label">Plan R:R</p><p className="figure-value num">{plan.selected.trade.plan.baseline}</p></div>
-                          <div><p className="section-label">Strategy</p><p className="figure-value">{strategyLabel((plan.selected.trade.plan as unknown as { strategyId?: string }).strategyId)}</p></div>
+                          <div><p className="section-label">Strategy</p><p className="figure-value">{strategyLabel(strategyIdOf(plan.selected.trade.plan))}</p></div>
                         </div>
                       </section>
                       <section aria-label="Plan Reflection" data-testid="plan-reflection" className="card">
@@ -1023,7 +979,7 @@ export function App() {
                       <section className="card">
                         <div className="sheet-header">
                           <div>
-                            <p className="section-label">{strategyLabel((selectedOpen.plan as unknown as { strategyId?: string }).strategyId)} · open</p>
+                            <p className="section-label">{strategyLabel(strategyIdOf(selectedOpen.plan))} · open</p>
                             <h3>{selectedOpen.plan.underlying}</h3>
                             {optionPlanFields(selectedOpen.plan) && (
                               <p data-testid="option-contract">{canonicalInstrument(optionPlanFields(selectedOpen.plan)!.contract)}</p>
@@ -1253,7 +1209,7 @@ export function App() {
                       <section className="card">
                         <div className="sheet-header">
                           <div>
-                            <p className="section-label">{strategyLabel((selectedClosed.plan as unknown as { strategyId?: string }).strategyId)} · closed</p>
+                            <p className="section-label">{strategyLabel(strategyIdOf(selectedClosed.plan))} · closed</p>
                             <h3>{selectedClosed.plan.underlying}</h3>
                           </div>
                           <span className="badge badge-closed" data-testid="trade-lifecycle">{selectedClosed.lifecycle}</span>

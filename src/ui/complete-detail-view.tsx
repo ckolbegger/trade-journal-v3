@@ -40,6 +40,16 @@ export function CompleteDetailView({ loaded, replayIndex, onSelectReplay }: Prop
 
       <h4>Payoff at expiration</h4>
       <p data-testid="detail-payoff">{detail.payoff.kind === 'Value' ? 'Available' : `${detail.payoff.kind}: ${'reason' in detail.payoff ? detail.payoff.reason : ''}`}</p>
+      {detail.payoff.kind === 'Value' && (
+        <>
+          <p data-testid="detail-payoff-break-even">Break-even: {detail.payoff.value.breakEven.join(', ') || '—'}</p>
+          <ul className="detail-list">
+            {detail.payoff.value.extrema.map((e, index) => (
+              <li key={index}>{e.kind}: {e.value} on {e.attainedOn}</li>
+            ))}
+          </ul>
+        </>
+      )}
 
       <div className="figure-grid" data-testid="detail-figures">
         {figure('Planned Leg Fulfillment', figures.plannedLegFulfillment)}

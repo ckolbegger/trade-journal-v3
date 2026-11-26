@@ -1,3 +1,5 @@
+import { messageFor } from './error-meaning'
+
 // Last-resort error surface. React error boundaries do not see rejections
 // from async event handlers (`void onSave()`), so the window listeners below
 // catch anything uncaught anywhere in the app and make it visible rather than
@@ -33,16 +35,13 @@ export function installGlobalErrorHandlers(): void {
   window.addEventListener('error', event => {
     if (event.target !== window) return
     reportGlobalError({
-      message: event.message || 'Unexpected error',
+      message: messageFor(event.message || new Error('Unexpected error')),
       source: 'unhandled',
     })
   })
 
   window.addEventListener('unhandledrejection', event => {
     const reason: unknown = event.reason
-    reportGlobalError({
-      message: reason instanceof Error ? reason.message : String(reason ?? 'Unexpected error'),
-      source: 'unhandled',
-    })
+    reportGlobalError({ message: messageFor(reason), source: 'unhandled' })
   })
 }

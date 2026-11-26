@@ -1,5 +1,6 @@
-// Presentation-only translation of typed domain tokens. The domain results
-// keep their stable keys; the UI owes the trader understandable prose.
+// D8aR R6 — one home for error meaning. Controllers keep typed failures;
+// handlers ask this module for wording and surface. Both local field alerts
+// and the global banner adapters use the same interface.
 const COPY: Record<string, string> = {
   Reflection: 'Decision mode is required.',
   'Reflection:DecisionMode': 'Decision mode is required.',
@@ -33,6 +34,49 @@ const COPY: Record<string, string> = {
   NoDisposingFacts: 'Record at least one disposing Execution.',
 }
 
+export type ErrorSurface = 'field' | 'global'
+
+export type ControllerFailure = {
+  kind: string
+  issues?: string[]
+  message?: string
+  reason?: string
+}
+
+const KIND_MESSAGE: Record<string, string> = {
+  RuntimeNotWritable: 'Writes are disabled until Runtime Readiness is Writable.',
+  Conflict: 'This Close Review already has an outcome.',
+  MarkMissing: 'An exact Mark is required before saving an Action.',
+  ReviewChanged: 'Evidence changed; review it and save again.',
+  NeedsTradeWorkflow: 'This Debt must be resolved in its Trade Workflow.',
+}
+
 export function formatIssues(issues: string[]): string {
   return issues.map(issue => COPY[issue] ?? `${issue}.`).join(' ')
+}
+
+function failureOf(value: unknown): ControllerFailure | undefined {
+  if (typeof value !== 'object' || value === null) return undefined
+  const candidate = value as Partial<ControllerFailure>
+  if (typeof candidate.kind === 'string') return candidate as ControllerFailure
+  // Pure domain commands return a bare { issues } failure without a kind.
+  if (Array.isArray(candidate.issues)) return { kind: 'Validation', issues: candidate.issues }
+  return undefined
+}
+
+export function messageFor(value: unknown): string {
+  if (value instanceof Error) return value.message || 'Unexpected error'
+  if (typeof value === 'string') return value || 'Unexpected error'
+  const failure = failureOf(value)
+  if (!failure) return 'Unexpected error'
+  if (failure.kind === 'Validation') return formatIssues(failure.issues ?? [])
+  if (failure.kind === 'NotFound') return COPY.NotFound
+  return KIND_MESSAGE[failure.kind] ?? failure.message ?? failure.reason ?? `${failure.kind}.`
+}
+
+export function surfaceFor(value: unknown): ErrorSurface {
+  const failure = failureOf(value)
+  if (!failure) return 'global'
+  if (failure.kind === 'Validation') return 'field'
+  return failure.kind in KIND_MESSAGE || failure.kind === 'NotFound' ? 'field' : 'global'
 }
