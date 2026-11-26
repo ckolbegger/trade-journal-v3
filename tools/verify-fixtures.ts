@@ -9,10 +9,10 @@ import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { SCHEMA_VERSION } from '../src/persistence/schema.ts';
 import { sequentialIds } from '../tests/support/workspace.ts';
-import { closeViolations, debtViolations, openStructureValueCount, optionViolations, withWalkedReflections } from './fixture-views.ts';
-import { missingFixtureSchemas } from './fixture-schemas.ts';
+import { closeViolations, debtViolations, openStructureValueCount, optionViolations, seed6ContentViolations, withWalkedReflections } from './fixture-views.ts';
+import { missingFixtureSchemas, workspaceFixtureName } from './fixture-schemas.ts';
 import { compareSnapshot } from './fixtures/snapshot-compare.ts';
-import { BACKUP_SCHEMAS, backupFixtureName, restoredViews } from './fixtures-freeze-backup.ts';
+import { BACKUP_FIXTURES, restoredViews } from './fixtures-freeze-backup.ts';
 import { closedViewsOf, debtViewsOf, FIXTURES_DIR, launchOn, loadDump, viewsOf, type WorkspaceDump } from './fixtures/workspace-fixture.ts';
 
 // The D4 fields of an Open list row: the Mark's resolution and every figure and condition result.
@@ -60,6 +60,9 @@ if (fixtures.length === 0) problems.push(`no Workspace fixtures in ${FIXTURES_DI
 // Every schema from 1 to the current one has a fixture (decision 112).
 for (const schema of missingFixtureSchemas(fixtures, SCHEMA_VERSION)) {
   problems.push(`workspace-v${schema}: no fixture for schema ${schema}; run npm run fixtures:freeze -- --schema ${schema}`);
+}
+if (!fixtures.includes(workspaceFixtureName(SCHEMA_VERSION, 6))) {
+  problems.push(`${workspaceFixtureName(SCHEMA_VERSION, 6)}: no fixture; run npm run fixtures:freeze -- --schema ${SCHEMA_VERSION} --seed 6`);
 }
 for (const name of fixtures) {
   const dir = path.join(FIXTURES_DIR, name);
@@ -144,6 +147,14 @@ for (const name of fixtures) {
       continue;
     }
   }
+  if (name === workspaceFixtureName(SCHEMA_VERSION, 6)) {
+    // The seed-6 snapshot must hold what T95.63 froze (P174), so a snapshot emptied of it cannot pass by comparing nothing.
+    const absent = seed6ContentViolations(expected);
+    if (absent.length > 0) {
+      problems.push(`${name}: expected-views.json lacks the seed-6 content: ${absent.join(', ')}`);
+      continue;
+    }
+  }
   const differences = compareSnapshot(views, expected);
   if (differences.length > 0) {
     problems.push(`${name}: views differ from expected-views.json at ${differences.join(', ')}`);
@@ -156,8 +167,7 @@ for (const name of fixtures) {
 // fixture gives (A121). Only workspace-v<n> names count as Workspace fixtures above, so these folders do not
 // affect decision 112's check.
 const backupFolders = (await readdir(FIXTURES_DIR)).filter((name) => name.startsWith('backup-')).sort();
-for (const schema of BACKUP_SCHEMAS) {
-  const { name } = backupFixtureName(schema);
+for (const { name, schema, workspace } of BACKUP_FIXTURES) {
   if (!backupFolders.includes(name)) {
     problems.push(`${name}: no backup fixture for schema ${schema}; run npm run fixtures:freeze-backup`);
     continue;
@@ -177,10 +187,10 @@ for (const schema of BACKUP_SCHEMAS) {
       problems.push(`${name}: restored views differ from expected-views.json at ${differences.join(', ')}`);
       continue;
     }
-    const migrated: unknown = JSON.parse(await readFile(path.join(FIXTURES_DIR, `workspace-v${schema}`, 'expected-views.json'), 'utf8'));
+    const migrated: unknown = JSON.parse(await readFile(path.join(FIXTURES_DIR, workspace, 'expected-views.json'), 'utf8'));
     const migratedDifferences = compareSnapshot(restored.views, migrated);
     if (migratedDifferences.length > 0) {
-      problems.push(`${name}: restored views differ from workspace-v${schema} views at ${migratedDifferences.join(', ')}`);
+      problems.push(`${name}: restored views differ from ${workspace} views at ${migratedDifferences.join(', ')}`);
       continue;
     }
     verified.push(`${name}: schema ${schema}, restored with no repairs, views equal`);

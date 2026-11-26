@@ -155,3 +155,39 @@ export function openStructureValueCount(expected: unknown): number {
   const held = expected as { details?: { lifecycle?: { stored?: string }; plan?: { stops?: { kind?: string }[]; targets?: { kind?: string }[] } }[] };
   return (held.details ?? []).filter((detail) => detail.lifecycle?.stored === 'Open').flatMap((detail) => [...(detail.plan?.stops ?? []), ...(detail.plan?.targets ?? [])]).filter((condition) => condition.kind === 'StructureValue').length;
 }
+
+// What the seed-6 fixture holds that a snapshot emptied of it could not (D9.5 T95.63): the Review Date's saved Actions of each kind with
+// and without a reason, a Settle Later, the Plan Departure Reason and the Expiration Reason answered, and Close Reviews owed under the
+// earlier form and under manifest 6's and answered. Each missing item is named.
+export function seed6ContentViolations(expected: unknown): string[] {
+  type Response = { prompt: string; answer: { kind: string } };
+  const held = expected as {
+    reviewTrades?: { form?: { action?: { action: string; responses: Response[] } } }[];
+    details?: { journal?: { entryTypeKey?: string; responses?: Response[] }[] }[];
+    debts?: { entryTypeKey: string; definitionId: string }[];
+  };
+  const actions = (held.reviewTrades ?? []).flatMap((trade) => (trade.form?.action ? [trade.form.action] : []));
+  const answered = (responses: Response[], prompt: string) => responses.some((r) => r.prompt === prompt && r.answer.kind === 'Text');
+  const withReason = (name: string, yes: boolean) => actions.some((a) => a.action === name && answered(a.responses, 'Why?') === yes);
+  const entries = (held.details ?? []).flatMap((detail) => detail.journal ?? []);
+  const answersOf = (prompt: string) => entries.filter((entry) => answered(entry.responses ?? [], prompt)).length;
+  const closeDebts = (held.debts ?? []).filter((debt) => debt.entryTypeKey === 'entry-type.close-review');
+  // A form revision a manifest added is named `<type>.revision-<n>`; the earlier ones keep the identity they were seeded with.
+  const isNewForm = (debt: { definitionId: string }) => /\.revision-\d+$/.test(debt.definitionId);
+  const missing: [string, boolean][] = [
+    ['Hold with a reason', withReason('Hold', true)],
+    ['Hold without a reason', withReason('Hold', false)],
+    ['Exit with a reason', withReason('Exit', true)],
+    ['Exit without a reason', withReason('Exit', false)],
+    ['Roll', actions.some((a) => a.action === 'Roll')],
+    ['Adjust', actions.some((a) => a.action === 'Adjust')],
+    ['Settle Later', actions.some((a) => a.action === 'Settle Later')],
+    ['Plan Departure Reason answered twice', answersOf('Why did you leave the Plan?') >= 2],
+    ['Expiration Reason answered', answersOf('Why did it expire worthless?') >= 1],
+    ['Close Review owed under the earlier form', closeDebts.some((debt) => !isNewForm(debt))],
+    ['Close Review owed under manifest 6', closeDebts.some(isNewForm)],
+    // Two answered Close Reviews came from workspace-v7; the third is the one answered under manifest 6's form.
+    ['Close Review answered', entries.filter((entry) => entry.entryTypeKey === 'entry-type.close-review').length >= 3],
+  ];
+  return missing.filter(([, held]) => !held).map(([name]) => name);
+}

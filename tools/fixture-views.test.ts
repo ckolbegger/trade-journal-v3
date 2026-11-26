@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { closeViolations, debtViolations, openStructureValueCount, optionViolations, withWalkedReflections } from './fixture-views.ts';
+import { closeViolations, debtViolations, openStructureValueCount, optionViolations, seed6ContentViolations, withWalkedReflections } from './fixture-views.ts';
 
 const viewsWithPanel = (panel: Record<string, unknown>) => ({
   debts: [],
@@ -110,5 +110,26 @@ describe('v7 content check', () => {
   it('should count the two StructureValue conditions on the frozen v7 Open detail', () => {
     const frozen: unknown = JSON.parse(readFileSync(new URL('../tests/fixtures/workspace-v7/expected-views.json', import.meta.url), 'utf8'));
     expect(openStructureValueCount(frozen)).toBeGreaterThanOrEqual(2);
+  });
+});
+
+describe('seed-6 content check (D9.5 T95.63)', () => {
+  const frozen = (): { reviewTrades: { form: { action?: { action: string; responses: { prompt: string; answer: { kind: string } }[] } } }[] } =>
+    JSON.parse(readFileSync(new URL('../tests/fixtures/workspace-v7-seed6/expected-views.json', import.meta.url), 'utf8')) as ReturnType<typeof frozen>;
+
+  it('should name everything the seed-6 content holds when the snapshot holds none of it', () => {
+    expect(seed6ContentViolations({ reviewTrades: [], details: [], debts: [] })).toEqual(
+      expect.arrayContaining(['Hold with a reason', 'Hold without a reason', 'Exit with a reason', 'Exit without a reason', 'Roll', 'Adjust', 'Settle Later', 'Plan Departure Reason answered twice', 'Expiration Reason answered', 'Close Review owed under the earlier form', 'Close Review owed under manifest 6', 'Close Review answered']),
+    );
+  });
+
+  it('should find the seed-6 content in the frozen workspace-v7-seed6 views', () => {
+    expect(seed6ContentViolations(frozen())).toEqual([]);
+  });
+
+  it('should name the Roll when the frozen views lose their only Roll', () => {
+    const views = frozen();
+    views.reviewTrades = views.reviewTrades.filter((trade) => trade.form.action?.action !== 'Roll');
+    expect(seed6ContentViolations(views)).toEqual(['Roll']);
   });
 });

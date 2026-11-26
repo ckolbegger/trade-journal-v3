@@ -9,6 +9,7 @@
 // through X1 (Settlement Due), O-S expired with a deferred Close Review, O-P closed by Q1, and a Planned
 // Long Call with Exercise Intent Authorized. Schema 7 (D7S T7S.13, A204) adds O-S2 (Cash-Secured Put on MNO, 45 Put expiring
 // 2026-12-18, two Stops and two Targets of both kinds) after S1', with Friday 11-20 Marks of MNO 44.60 and the put 3.65.
+// With --seed 6 (D9.5 T95.63) it writes workspace-v7-seed6 instead: the frozen workspace-v7 opened by this release plus Part B and C content.
 import { existsSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -16,6 +17,7 @@ import { IDBFactory } from 'fake-indexeddb';
 import type { ExpirationMember } from '../src/coordinators/trade-workflows/index.ts';
 import type { ConfirmPlanResult, PositionChangeMember, ReflectionDisposition } from '../src/app/types.ts';
 import { SCHEMA_VERSION } from '../src/persistence/schema.ts';
+import { workspaceFixtureName } from './fixture-schemas.ts';
 import { dumpDatabases, FIXTURES_DIR, GENERATOR_VERSION, launchOn, viewsOf, type WorkspaceDump } from './fixtures/workspace-fixture.ts';
 
 // Schemas 1 and 2 were frozen at Friday 17:00 America/New_York; schema 3 is frozen at the following
@@ -33,10 +35,24 @@ if (flag < 0 || schema !== SCHEMA_VERSION) {
   console.error(`fixtures:freeze: --schema must be the current schema version, ${SCHEMA_VERSION}`);
   process.exit(1);
 }
-const dir = path.join(FIXTURES_DIR, `workspace-v${schema}`);
+// --seed 6 (D9.5 T95.63, P174): the schema-7 Workspace seeded at Journal manifest 6, built by freeze-seed6.ts on the frozen workspace-v7.
+const seedFlag = process.argv.indexOf('--seed');
+const seed = seedFlag < 0 ? undefined : Number(process.argv[seedFlag + 1]);
+let dir: string;
+try {
+  dir = path.join(FIXTURES_DIR, workspaceFixtureName(schema, seed));
+} catch (error) {
+  console.error(`fixtures:freeze: ${error instanceof Error ? error.message : String(error)}`);
+  process.exit(1);
+}
 if (existsSync(dir)) {
   console.error(`fixtures:freeze: ${dir} exists; committed fixtures are never regenerated`);
   process.exit(1);
+}
+
+if (seed !== undefined) {
+  await (await import('./fixtures/freeze-seed6.ts')).freezeSeed6(dir);
+  process.exit(0);
 }
 
 const factory = new IDBFactory();

@@ -16,6 +16,7 @@ import { testStack } from '../tests/support/stack.ts';
 import { sequentialIds } from '../tests/support/workspace.ts';
 import { workspaceOf } from '../src/coordinators/workspace/restore-test-support.ts';
 import { withWalkedReflections } from './fixture-views.ts';
+import { workspaceFixtureName } from './fixture-schemas.ts';
 import { FIXTURES_DIR, launchOn, loadDump, viewsOf, type WorkspaceDump } from './fixtures/workspace-fixture.ts';
 
 // Friday 2026-11-20 18:00 in New York, the instant the v7 fixture is exported at.
@@ -26,10 +27,17 @@ export interface BackupFixtureName {
   readonly name: string;
   readonly schema: number;
   readonly blocked: boolean;
+  // The Workspace fixture the artifact is exported from and its views are compared with.
+  readonly workspace: string;
 }
 
-export const backupFixtureName = (schema: number): BackupFixtureName =>
-  schema === 7 ? { name: 'backup-v7', schema, blocked: false } : { name: `backup-v${schema}-blocked`, schema, blocked: true };
+export const backupFixtureName = (schema: number, seed?: number): BackupFixtureName =>
+  schema === 7
+    ? { name: seed === undefined ? 'backup-v7' : `backup-v7-seed${seed}`, schema, blocked: false, workspace: workspaceFixtureName(schema, seed) }
+    : { name: `backup-v${schema}-blocked`, schema, blocked: true, workspace: workspaceFixtureName(schema) };
+
+// Every backup fixture, in the order they are frozen: one per schema, then schema 7 seeded at Journal manifest 6 (D9.5 T95.63, P174).
+export const BACKUP_FIXTURES: readonly BackupFixtureName[] = [...BACKUP_SCHEMAS.map((schema) => backupFixtureName(schema)), backupFixtureName(7, 6)];
 
 export interface ExportedBackup {
   readonly fileName: string;
@@ -74,11 +82,15 @@ export async function restoredViews(bytes: Uint8Array, schema: number, asOf: str
 }
 
 if (import.meta.main) {
-  for (const schema of BACKUP_SCHEMAS) {
-    const { name, blocked } = backupFixtureName(schema);
+  // A committed fixture is never regenerated: a folder that exists is left alone, and a run that writes nothing fails.
+  let written = 0;
+  for (const { name, schema, blocked, workspace } of BACKUP_FIXTURES) {
     const dir = path.join(FIXTURES_DIR, name);
-    if (existsSync(dir)) throw new Error(`${dir} exists: a committed fixture is never regenerated`);
-    const dump = JSON.parse(await readFile(path.join(FIXTURES_DIR, `workspace-v${schema}`, 'dump.json'), 'utf8')) as WorkspaceDump;
+    if (existsSync(dir)) {
+      console.error(`fixtures:freeze-backup: ${dir} exists; a committed fixture is never regenerated`);
+      continue;
+    }
+    const dump = JSON.parse(await readFile(path.join(FIXTURES_DIR, workspace, 'dump.json'), 'utf8')) as WorkspaceDump;
     const exported = await exportFixtureBackup(dump);
     const asOf = dump.asOf;
     const restored = await restoredViews(exported.bytes, schema, asOf);
@@ -88,5 +100,7 @@ if (import.meta.main) {
     await writeFile(path.join(dir, 'downloaded.json'), `${JSON.stringify({ fileName: exported.fileName, asOf, ...exported.downloaded }, null, 2)}\n`);
     await writeFile(path.join(dir, 'expected-views.json'), `${JSON.stringify(restored.views, null, 2)}\n`);
     console.log(`fixtures:freeze-backup: ${dir} (${blocked ? 'blocked-database' : 'normal'} export of schema ${schema}, ${exported.bytes.length} bytes)`);
+    written += 1;
   }
+  if (written === 0) process.exit(1);
 }

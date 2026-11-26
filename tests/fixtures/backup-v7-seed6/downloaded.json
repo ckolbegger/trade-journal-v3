@@ -1,0 +1,22 @@
+{
+  "fileName": "trade-journal-2026-11-20-1800-0559732f.tjbackup",
+  "asOf": "2026-11-20T22:00:00Z",
+  "kind": "Downloaded",
+  "sourceBinding": {
+    "databaseName": "tj-ws-fx-0013",
+    "contentRevision": 92
+  },
+  "fullDigest": "0559732f55dc2c551f18765859253d3f678add36f768d995a56f81a7597b3ff2",
+  "manifestDigest": "bc9b0cd873a05240a4a69e617f3b70eff15f1aa22f5d2ec5168ad837c07a2b27",
+  "counts": {
+    "catalog": 13,
+    "observations": 15,
+    "trades": 21,
+    "journalTypes": 9,
+    "journalDefinitions": 7,
+    "journalEntries": 52,
+    "journalDeclines": 14,
+    "journalDebts": 9
+  },
+  "byteSize": 11949
+}

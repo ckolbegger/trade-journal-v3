@@ -1354,3 +1354,14 @@ Commit `88ab7b8f`: I9.7 (the manifest's and the trade-detail route's `replayTrad
 ocr of T95.62-F1 (session f9624c73): complete, 2 files, no findings. `evidence/D95/ocr/T95.62-F1-88ab7b8f.json`.
 
 Run `t95.62-f1-capabilities` (browser-task; at `8cd2bb5a`): unit 264 files, 3203 passed; integration 158 files, 364 passed; browser 57 passed; 14 of 14 checks exit 0; run-complete. Passed. T95.62 and T95.62-F1 done.
+
+## T95.63
+
+Fixtures frozen for manifest 6 (structural; the naming and content checks were written red first, rows in `tdd-log/T95.63.md`).
+- Route: `workspace-v7-seed6` is built by `tools/fixtures/freeze-seed6.ts`, not by rerunning the old script. It loads the frozen `workspace-v7/dump.json` (read only), launches this release on it (the app delivers the three Journal revisions, named in its receipt: position-change-reflection, daily-trade-review, close-review; the Catalog adds nothing), then records the new content through the facade under ids prefixed `fx6-`. The old script cannot run on this release (a closing sale must defer its Close Review, a sale or expiration cannot be declined). The Debts of SYY and O-S supply the Close Reviews owed under the earlier form.
+- Content (Friday 2026-11-20 Review Date): Hold with a reason (KO) and without (CSCO, Plan Call agrees); Exit with a reason (PFE) and without (XYZ at its Stop); Roll (QRS) and Adjust (MNO) with reasons (Roll and Adjust are refused without one, so those kinds exist only with); Settle Later (the XYZ call); PDR, a whole sale inside its Stop and Target with its Plan Departure Reason; PRT, a part sale with its reason; CLA, sold at its Target, its Close Review answered under the new form including its required key lesson; DEF, a short put expired in the money at Friday's Mark with its Expiration Reason. Close Reviews owed: two under the earlier form, two under revision 2 (PDR, DEF).
+- `npm run fixtures:freeze -- --schema 7 --seed 6`: wrote tests/fixtures/workspace-v7-seed6; a second run exit 1, "exists; committed fixtures are never regenerated".
+- `npm run fixtures:freeze-backup`: wrote tests/fixtures/backup-v7-seed6 (11949 bytes, Restore made 0 repairs); the five existing folders were reported as existing and left alone. A second run exit 1. Assumption: with several folders, existing ones are skipped and the run fails only when it writes nothing (the earlier loop threw at the first existing folder and so could never add one).
+- `npm run verify:fixtures`: exit 0 for workspace-v1 to v7, workspace-v7-seed6, backup-v3 to v6 blocked, backup-v7 and backup-v7-seed6.
+- `git diff -- tests/fixtures`: empty (no existing folder touched; no expected-views.json changed); only the two new folders are untracked.
+- Checks: tools tests 126 passed; d8 round-trip and d8r restore integration (loop BACKUP_SCHEMAS) passed; typecheck, tsc6, lint (2 pre-existing warnings), lint:deps exit 0. No e2e spec edited.
