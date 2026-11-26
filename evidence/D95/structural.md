@@ -1365,3 +1365,10 @@ Fixtures frozen for manifest 6 (structural; the naming and content checks were w
 - `npm run verify:fixtures`: exit 0 for workspace-v1 to v7, workspace-v7-seed6, backup-v3 to v6 blocked, backup-v7 and backup-v7-seed6.
 - `git diff -- tests/fixtures`: empty (no existing folder touched; no expected-views.json changed); only the two new folders are untracked.
 - Checks: tools tests 126 passed; d8 round-trip and d8r restore integration (loop BACKUP_SCHEMAS) passed; typecheck, tsc6, lint (2 pre-existing warnings), lint:deps exit 0. No e2e spec edited.
+
+T95.63 (main session's notes on commit `4c8bab62`):
+- Level raised from Standard to Full: the commit writes frozen fixtures and the fixture tools (decision 122 lists fixtures under Full).
+- Built by loading `workspace-v7/dump.json` read-only, launching this release on it (three revisions delivered, named in the receipt), then recording the seed-6 content through the facade: the old rebuild script can't run on this release (a closing sale must defer its Close Review; a sale or expiration can't be declined). `fixtures:freeze-backup` now skips existing folders and exits 1 only when it writes nothing.
+- No older folder's `dump.json`, `backup.tjbackup` or `expected-views.json` changed (`git diff -- tests/fixtures` empty for them).
+- The seed-6 Workspace's Review Date is Friday 2026-11-20 (for T95.64, T95.65).
+- The subagent ended the commit with a Co-Authored-By naming Claude Sonnet 5.5 (the model it ran on) rather than the brief's line; left as it is.
