@@ -93,10 +93,10 @@ describe('I7.13 Rebuild equivalence', () => {
     await recordExpiration(app, c, '2', FRIDAY_1600);
 
     // I7.7: the Settlement Review fixture, XYZ's Mark, E1 for T-1 with its Close Review deferred, and the Actions.
-    const { t1, t2, t3, t4, t5 } = await settlementTrades(app, true);
+    const { t1, t2, t4, t5 } = await settlementTrades(app, true);
     await saveMark(app, 'XYZ', FRIDAY_DATE, '52.00');
     await recordExpiration(app, t1, '1', FRIDAY_1600);
-    for (const tradeId of [t2, t3, t4, t5]) await saveAction(app, d, tradeId);
+    for (const tradeId of [t2, t4, t5]) await saveAction(app, d, tradeId);
 
     const databaseName = await currentDatabase(d.factory);
     // Every private index and private field: the Trade indexes, the obligation store, the Debt indexes, and the stored Trades

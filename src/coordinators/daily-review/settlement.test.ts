@@ -140,11 +140,11 @@ describe('after the expiration session (P25, A110)', () => {
 
     if (completion.kind !== 'Incomplete') throw new Error(`expected Incomplete, got ${completion.kind}`);
     const codes = completion.reasons.map((reason) => (reason.code === 'MarkMissing' ? `MarkMissing:${instrumentKey(reason.instrument)}` : `${reason.code}:${'tradeId' in reason ? reason.tradeId : ''}`));
-    // Marks first, then the settlements by Trade, then the walk's Actions and reflections.
+    // Marks first, then the settlements by Trade, then the walk's Actions and reflections. A Trade with Settlement Due owes no Action (T95.49).
     expect(codes.slice(0, 3)).toEqual(['MarkMissing:XYZ', `SettlementDue:${t1}`, `SettlementDue:${t3}`]);
-    expect(codes.slice(3).filter((code) => code.startsWith('ActionMissing')).sort()).toEqual([t1, t2, t3, t4, t5].map((id) => `ActionMissing:${id}`).sort());
+    expect(codes.slice(3).filter((code) => code.startsWith('ActionMissing')).sort()).toEqual([t2, t4, t5].map((id) => `ActionMissing:${id}`).sort());
     expect(codes).toContain(`ReflectionDue:${t5}`);
-    expect(codes).toHaveLength(9);
+    expect(codes).toHaveLength(7);
   }, 60_000);
 
   it('should return, in order, the Marks family naming T-1 and T-2 for XYZ, the settlement family with T-1 then T-3, the walk with T-1 and T-3 in the blocker band, and an empty owed-reflection group', async () => {

@@ -11,7 +11,7 @@ import type { ReferenceCatalog } from '../../modules/reference-catalog/index.ts'
 import type { BrowseRecord, TradeRecord } from '../../modules/trade-record/index.ts';
 import { beginSemanticTransaction, type Persistence, type WorkspaceSnapshotBinding } from '../../persistence/index.ts';
 import type { MutationGuard } from '../mutation-guard.ts';
-import { payoffOf } from '../settlement.ts';
+import { payoffOf, standingOf } from '../settlement.ts';
 import { assembleReplay } from '../replay/index.ts';
 import { lastDecisionsOf } from './decisions.ts';
 import { exitCarryOf } from './exit-carry.ts';
@@ -56,6 +56,8 @@ import type {
   SaveReviewMarksRequest,
   SaveReviewMarksResult,
   SaveTradeActionRequest,
+  SettleLaterRequest,
+  UnavailableDisclosure,
   TradeSaveBinding,
 } from './types.ts';
 
@@ -224,12 +226,15 @@ type ReflectionCounts = { readonly due: number; readonly later: number };
 const reflectionsPanel = (reflections: ReflectionCounts): PanelProgress => ({ panel: 'Reflections', done: reflections.due === 0, dueNow: reflections.due, later: reflections.later });
 
 // A card's panels in work order; it is done when every panel is (A164).
-function cardProgress(marks: { readonly resolved: number; readonly needed: number }, reflections: ReflectionCounts, owed: boolean, settlementDue: boolean): CardProgress {
+function cardProgress(marks: { readonly resolved: number; readonly needed: number }, reflections: ReflectionCounts, hasAction: boolean, settlement?: { readonly settledLater: boolean }): CardProgress {
+  // A Trade with Settlement Due owes no Action (A316).
+  const owed = !hasAction && settlement === undefined;
   const panels: PanelProgress[] = [
     { panel: 'Marks', done: marks.needed === 0, resolved: marks.resolved, needed: marks.needed },
     reflectionsPanel(reflections),
     // Between Reflections and Action, only while a contract's settlement is due (A112, decision 81).
-    ...(settlementDue ? [{ panel: 'Settlement' as const, done: false, needed: true }] : []),
+    // It is done for the Review Date once a Settle Later is saved for it (A316).
+    ...(settlement ? [{ panel: 'Settlement' as const, done: settlement.settledLater, needed: true }] : []),
     { panel: 'Action', done: !owed, owed },
   ];
   return { kind: 'Walked', panels, done: panels.every((panel) => panel.done) };
@@ -301,7 +306,7 @@ export interface DailyReview {
   // The Action and Debt saves keep their results; a Marks save (or any request) may also answer a bare ReviewChanged.
   // A property of overloaded call signatures, not a method, so the facade can forward it unbound.
   readonly save: {
-    (request: SaveTradeActionRequest | ResolveReviewDebtRequest): Promise<SaveDailyReviewResult>;
+    (request: SaveTradeActionRequest | SettleLaterRequest | ResolveReviewDebtRequest): Promise<SaveDailyReviewResult>;
     (request: SaveDailyReviewRequest): Promise<SaveReviewMarksResult>;
   };
 }
@@ -558,6 +563,8 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     const lastActions = lastActionsOf(savedActions?.earlier ?? []);
     const ranked = derivations.map((entry) => reviewItem(entry, lastActions.get(entry.summary.tradeId))).sort((a, b) => byAttention(a.item, b.item));
     const settlement = settlementItems(ranked);
+    // A Trade with Settlement Due owes no Action (A316).
+    const settlementTrades = new Set(settlement.map((item) => item.tradeId));
     const earlier = gaps
       .filter((g) => g.missing.length + g.acknowledged.length > 0)
       .map(
@@ -635,15 +642,17 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
       return { due, later: outstanding.filter((debt) => debt.anchor.tradeId === tradeId).length - due };
     };
     const actions = savedActions ?? (await deps.journal.queryActions({ reviewDate }));
-    const progressOf = (tradeId: string, settlementDue: boolean): CardProgress => {
+    // Settlement is resolved for this Review Date by a Settle Later saved for it; the next Review Date asks again (A316).
+    const settledLater = new Set([...settlementTrades].filter((tradeId) => actions.actions[tradeId]?.action === 'Settle Later'));
+    const progressOf = (tradeId: string): CardProgress => {
       const rows = today.filter((row) => row.trades.includes(tradeId));
       const needed = rows.filter((row) => row.task === 'Manual').length;
-      return cardProgress({ resolved: rows.length - needed, needed }, reflectionsOf(tradeId), !(tradeId in actions.actions), settlementDue);
+      return cardProgress({ resolved: rows.length - needed, needed }, reflectionsOf(tradeId), tradeId in actions.actions, settlementTrades.has(tradeId) ? { settledLater: settledLater.has(tradeId) } : undefined);
     };
     const walked = ranked.map(
       ({ item, valuation, before }): WalkedTrade => ({
         ...item,
-        progress: progressOf(item.tradeId, settlement.some((s) => s.tradeId === item.tradeId)),
+        progress: progressOf(item.tradeId),
         ...(valuation?.state.contractStatuses.some(({ status }) => status === 'DueToday') && { expiresOnReviewDate: true as const }),
         ...(valuation && { planCall: planCall(valuation.evaluation), meter: meterReadingOf(valuation.evaluation, before), figures: { riskToStop: valuation.evaluation.ongoingRiskToStop, pnl: valuation.evaluation.currentMarkedPnl, rewardRiskNow: valuation.evaluation.rewardRiskNow }, pnl: { dollars: valuation.evaluation.currentMarkedPnl, planR: valuation.evaluation.currentMarkedPnlInPlanR, change: dayChangeOf([{ valuation, before }], false, reviewDate, read.previousSessionDate !== undefined) } }),
       }),
@@ -659,14 +668,14 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
         .filter((row) => row.task === 'Manual')
         .map((row): IncompleteReason => ({ code: 'MarkMissing', instrument: row.instrument, tradingDate: row.tradingDate, trades: row.trades })),
       // Then each due settlement (A112), before the walk.
-      ...settlement.map((item): IncompleteReason => ({ code: 'SettlementDue', ...item })),
+      ...settlement.filter((item) => !settledLater.has(item.tradeId)).map((item): IncompleteReason => ({ code: 'SettlementDue', ...item })),
       ...walked.flatMap((item): IncompleteReason[] => [
         ...item.reasons.flatMap((reason): IncompleteReason[] => {
           if (reason.code === 'IntegrityDisagreement') return [{ ...reason, tradeId: item.tradeId }];
           if (reason.code === 'Unavailable' && reason.reason === 'FactsIncoherent') return [{ code: 'IncoherentFacts', tradeId: item.tradeId, findings: reason.findings }];
           return [];
         }),
-        ...(item.tradeId in actions.actions ? [] : [{ code: 'ActionMissing' as const, tradeId: item.tradeId }]),
+        ...(item.tradeId in actions.actions || settlementTrades.has(item.tradeId) ? [] : [{ code: 'ActionMissing' as const, tradeId: item.tradeId }]),
         ...(dueDebtIds(item.tradeId).length > 0 ? [{ code: 'ReflectionDue' as const, tradeId: item.tradeId, debtIds: dueDebtIds(item.tradeId) }] : []),
       ]),
       // Then the owed-reflection group, in its order (P20).
@@ -679,16 +688,18 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     const affected = ranked.filter(({ item }) => acknowledged.some((row) => row.trades.includes(item.tradeId)));
     const completionOf = (): ReviewCompletion => {
       if (reasons.length > 0) return { kind: 'Incomplete', reasons };
-      if (acknowledged.length === 0) return { kind: 'Complete' };
-      return {
-        kind: 'CompleteWithUnavailableMarks',
-        instruments: acknowledged.map((row) => row.instrument),
-        trades: affected.map(({ item }) => item.tradeId),
-        families: unavailableFamilies(affected.flatMap(({ valuation }) => (valuation ? [valuation.evaluation] : []))),
-      };
+      const unavailable: UnavailableDisclosure | undefined =
+        acknowledged.length === 0
+          ? undefined
+          : {
+              instruments: acknowledged.map((row) => row.instrument),
+              trades: affected.map(({ item }) => item.tradeId),
+              families: unavailableFamilies(affected.flatMap(({ valuation }) => (valuation ? [valuation.evaluation] : []))),
+            };
+      if (settledLater.size > 0) return { kind: 'CompleteWithSettlementToRecord', trades: [...settledLater], ...(unavailable && { unavailable }) };
+      return unavailable ? { kind: 'CompleteWithUnavailableMarks', ...unavailable } : { kind: 'Complete' };
     };
     const completion = completionOf();
-    const settlementTrades = new Set(settlement.map((item) => item.tradeId));
     const dueDebts = outstanding.filter((debt) => classifyDue(debt.dueAnchor, closes) === 'Due');
     const marksToGo = today.filter((row) => row.task === 'Manual').length;
     const closeReviewTrades = new Set(dueDebts.filter((debt) => debt.entryTypeKey === 'entry-type.close-review').map((debt) => debt.anchor.tradeId));
@@ -724,7 +735,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
       toGo: {
         marks: marksToGo,
         actions: walked.filter((item) => !(item.tradeId in actions.actions) && !settlementTrades.has(item.tradeId)).length,
-        expirations: settlement.length,
+        expirations: settlement.filter((item) => !settledLater.has(item.tradeId)).length,
         closeReviews: dueDebts.filter((debt) => debt.entryTypeKey === 'entry-type.close-review').length,
         reflections: dueDebts.filter((debt) => debt.entryTypeKey !== 'entry-type.close-review').length,
       },
@@ -737,7 +748,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
           needs: progress.panels.flatMap((panel): DayNeed[] => {
             if (panel.panel === 'Marks') return panel.done ? [] : ['Marks'];
             if (panel.panel === 'Reflections') return panel.done ? [] : reflectionNeeds(tradeId);
-            if (panel.panel === 'Settlement') return ['Settlement'];
+            if (panel.panel === 'Settlement') return panel.done ? [] : ['Settlement'];
             return panel.done || settlementTrades.has(tradeId) ? [] : ['Action'];
           }),
         })),
@@ -897,6 +908,11 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     const replayed = found.integrity.kind === 'Derived' && analysis.positionChanges.length > 0 ? await assembleReplay(deps, analysis, found.integrity, read, { withJournal: false }) : undefined;
     const replay = replayed && !('kind' in replayed) ? replayed : undefined;
     const saved = actions.actions[analysis.tradeId];
+    // A314: where the contract finished, from the Underlying's Mark the replay already read for the expiration session; no read of its own.
+    const dueContract = settlement[0]?.instrument;
+    const underlyingMark = replay?.sessions.find(({ date }) => date === dueContract?.expiration)?.marks.find(({ instrument }) => instrument.kind === 'Stock' && instrument.symbol === dueContract?.symbol)?.resolution;
+    const standing = valuation && dueContract ? standingOf(valuation.state, dueContract, underlyingMark?.kind === 'Available' ? underlyingMark.mark.price : undefined) : undefined;
+    const settledLaterOn = actions.earlier?.findLast(({ action }) => action === 'Settle Later')?.reviewDate;
     const since = await unreviewedSince(read, actions.earlier?.at(-1)?.reviewDate, valuation?.state.exposureStart);
     // A309: the Plan Exit facts. What is held is the whole lifetime's; the conditions' status is at the Review Date's Marks; a Hold counts before the Review Date,
     // and the Exit is the most recent Action, the Review Date's own included.
@@ -912,7 +928,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     const rows = frames.frames.filter((frame) => held.has(frame.instrumentKey));
     const needed = rows.filter((frame) => frame.resolution.kind === 'Missing').length;
     const due = reflections.filter((reflection) => reflection.classification === 'Due').length;
-    const progress = cardProgress({ resolved: rows.length - needed, needed }, { due, later: reflections.length - due }, !saved, settlement.length > 0);
+    const progress = cardProgress({ resolved: rows.length - needed, needed }, { due, later: reflections.length - due }, saved !== undefined, settlement.length > 0 ? { settledLater: saved?.action === 'Settle Later' } : undefined);
     const planCallNow = valuation && planCall(valuation.evaluation);
     const form: ActionForm = saved ? { kind: 'Saved', action: saved } : { kind: 'New', viewState: planCallNow?.call === 'Hold' ? { selectedAction: 'Hold' } : {} };
     // A saved Action's form is the Entry's first version's definition; a new form takes the latest.
@@ -938,6 +954,8 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
           ...figures,
           settlement,
           ...(contract?.kind === 'Option' && { expiration: { date: contract.expiration, ...(sessions?.kind === 'Sessions' && { sessionsLeft: sessions.dates.length }) } }),
+          ...(standing && { expirationStanding: standing }),
+          ...(settledLaterOn && { settledLaterOn }),
           ...(payoff && { payoff }),
           ...(replay && { replay }),
           ...(planExit && { planExit }),
@@ -1000,8 +1018,16 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
   // An optional Text answer: blank is unanswered, and the text is trimmed.
   const optionalText = (promptId: string, text: string | undefined) => (text === undefined || text.trim() === '' ? {} : { [promptId]: { kind: 'Text' as const, text: text.trim() } });
 
+  // The definition's other answers to an Action: the Intent, Conviction now, the Anything-considered text and the Note.
+  const answersOf = (request: SaveTradeActionRequest) => ({
+    ...(request.intent === undefined ? {} : { [INTENT_PROMPT]: { kind: 'Text' as const, text: request.intent } }),
+    ...(request.conviction === undefined ? {} : { [CONVICTION_PROMPT]: { kind: 'Scale' as const, value: request.conviction } }),
+    ...optionalText(CONSIDERED_PROMPT, request.considered),
+    ...optionalText(NOTE_PROMPT, request.note),
+  });
+
   // The Trade's facts and the Review-date evidence as they are now, against what the form was rendered from.
-  type Checked = { readonly kind: 'Checked'; readonly cutoff: string; readonly evidenceBinding: EvidenceBinding; readonly unresolved: readonly Instrument[]; readonly planCall?: PlanCall } | Extract<SaveDailyReviewResult, { kind: 'ReviewChanged' | 'Rejected' }>;
+  type Checked = { readonly kind: 'Checked'; readonly cutoff: string; readonly evidenceBinding: EvidenceBinding; readonly unresolved: readonly Instrument[]; readonly settlementDue: boolean; readonly planCall?: PlanCall } | Extract<SaveDailyReviewResult, { kind: 'ReviewChanged' | 'Rejected' }>;
   // `needsCall`: the reason rule turns on the Plan Call at the Review Date's Marks (A308), so the one Trade is valued then and only then.
   async function checkBinding(binding: TradeSaveBinding, needsCall = false): Promise<Attempt<Checked>> {
     const session = await deps.marketData.query({ kind: 'ResolveSession', context: { kind: 'Review', reviewDate: binding.reviewDate } });
@@ -1022,6 +1048,8 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     const missing = new Set(frames.frames.filter((frame) => frame.resolution.kind === 'Missing').map((frame) => frame.instrumentKey));
     const unresolved = new Map<string, Instrument>();
     for (const { instrument } of entry ? observationNeeds([entry]).requirements : []) if (missing.has(instrumentKey(instrument))) unresolved.set(instrumentKey(instrument), instrument);
+    // An open option contract at or past its expiration date: the same rule as the evaluation's Due items.
+    const settlementDue = entry?.derivation.kind === 'Derived' && entry.derivation.contractStatuses.some(({ status }) => status !== 'Live');
     const valued = needsCall && !stale && unresolved.size === 0 && entry && entry.derivation.kind === 'Derived' && entry.integrity.kind === 'Derived' ? await valueTrade(read, entry.analysis, { factsAtClose: true, skipDatedLine: true }) : undefined;
     let call: PlanCall | undefined;
     if (valued?.kind === 'Valued') call = planCall(valued.evaluation);
@@ -1031,12 +1059,12 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
       settle: ({ workspace }) =>
         stale || workspace.databaseName !== binding.databaseName
           ? { kind: 'ReviewChanged', evidence }
-          : { kind: 'Checked', cutoff: session.closeInstant, evidenceBinding: frames.evidenceBinding, unresolved: [...unresolved.values()], ...(call && { planCall: call }) },
+          : { kind: 'Checked', cutoff: session.closeInstant, evidenceBinding: frames.evidenceBinding, unresolved: [...unresolved.values()], settlementDue, ...(call && { planCall: call }) },
     };
   }
 
   // A commit refused on a binding re-reads and re-validates, so the answer names what changed; bounded (ADR 0011).
-  async function saveTradeAction(request: SaveTradeActionRequest): Promise<SaveDailyReviewResult> {
+  async function saveTradeAction(request: SaveTradeActionRequest | SettleLaterRequest): Promise<SaveDailyReviewResult> {
     for (let i = 0; i < ASSEMBLY_ATTEMPTS; i++) {
       const result = await attemptSave(request);
       if (result.kind !== 'Retry') return result;
@@ -1044,13 +1072,18 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     return { kind: 'Conflict' };
   }
 
-  async function attemptSave(request: SaveTradeActionRequest): Promise<SaveDailyReviewResult | { readonly kind: 'Retry' }> {
+  async function attemptSave(request: SaveTradeActionRequest | SettleLaterRequest): Promise<SaveDailyReviewResult | { readonly kind: 'Retry' }> {
     const { binding } = request;
-    const needsCall = (request.action === 'Hold' || request.action === 'Exit') && (request.intent ?? '').trim() === '';
+    const needsCall = request.kind === 'SaveTradeAction' && (request.action === 'Hold' || request.action === 'Exit') && (request.intent ?? '').trim() === '';
     const checked = await coherently(() => checkBinding(binding, needsCall));
     if (checked.kind !== 'Checked') return checked;
-    if (checked.unresolved.length > 0) return { kind: 'Rejected', issues: [{ code: 'ReviewMarksUnresolved', instruments: checked.unresolved }] };
-    if (reasonOwed(request.action, checked.planCall?.call) && (request.intent ?? '').trim() === '') return { kind: 'Rejected', issues: [{ code: 'IntentRequired' }] };
+    // A Trade with Settlement Due accepts no Action (A315). Settle Later records no figure, so it needs no Mark.
+    if (checked.settlementDue && request.kind === 'SaveTradeAction') return { kind: 'Rejected', issues: [{ code: 'ActionNotOwed' }] };
+    if (request.kind === 'SettleLater' && !checked.settlementDue) return { kind: 'Rejected', issues: [{ code: 'SettleLaterNotApplicable' }] };
+    if (request.kind === 'SaveTradeAction') {
+      if (checked.unresolved.length > 0) return { kind: 'Rejected', issues: [{ code: 'ReviewMarksUnresolved', instruments: checked.unresolved }] };
+      if (reasonOwed(request.action, checked.planCall?.call) && (request.intent ?? '').trim() === '') return { kind: 'Rejected', issues: [{ code: 'IntentRequired' }] };
+    }
     const prepared = await deps.journal.prepareEffects({
       obligation: 'DailyTradeReview',
       disposition: {
@@ -1058,11 +1091,8 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
         form: {
           definitionId: binding.definitionRevision,
           answers: {
-            [ACTION_PROMPT]: { kind: 'Option', optionId: `option.daily-trade-review.action.${request.action.toLowerCase()}` },
-            ...(request.intent === undefined ? {} : { [INTENT_PROMPT]: { kind: 'Text', text: request.intent } }),
-            ...(request.conviction === undefined ? {} : { [CONVICTION_PROMPT]: { kind: 'Scale', value: request.conviction } }),
-            ...optionalText(CONSIDERED_PROMPT, request.considered),
-            ...optionalText(NOTE_PROMPT, request.note),
+            [ACTION_PROMPT]: { kind: 'Option', optionId: `option.daily-trade-review.action.${request.kind === 'SettleLater' ? 'settle-later' : request.action.toLowerCase()}` },
+            ...(request.kind === 'SettleLater' ? {} : answersOf(request)),
           },
         },
       },
@@ -1234,7 +1264,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
   }
 
   // The overloads (see the interface) narrow the result by request kind; the body answers the widest.
-  function save(request: SaveTradeActionRequest | ResolveReviewDebtRequest): Promise<SaveDailyReviewResult>;
+  function save(request: SaveTradeActionRequest | SettleLaterRequest | ResolveReviewDebtRequest): Promise<SaveDailyReviewResult>;
   function save(request: SaveDailyReviewRequest): Promise<SaveReviewMarksResult>;
   function save(request: SaveDailyReviewRequest): Promise<SaveReviewMarksResult> {
     return deps.guard.run('DailyReview.save', () => {

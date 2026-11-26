@@ -76,8 +76,8 @@ describe('I7.7 Review end to end with settlement', () => {
       [t1, 'Closed', [['entry-type.close-review', FRIDAY_1600, 'DueInNextReview']]],
     ]);
 
-    // Actions for T-2 to T-5, and T-5's reflection answered.
-    for (const tradeId of [t2, t3, t4, t5]) await saveAction(app, d, tradeId);
+    // Actions for T-2, T-4 and T-5 (T-3 has Settlement Due and owes none, T95.49), and T-5's reflection answered.
+    for (const tradeId of [t2, t4, t5]) await saveAction(app, d, tradeId);
     await answerReflection(app, d, t5);
     const worked = await reviewAt(app, FRIDAY_1700);
     if (worked.kind !== 'Ready') throw new Error(`open: ${worked.kind}`);

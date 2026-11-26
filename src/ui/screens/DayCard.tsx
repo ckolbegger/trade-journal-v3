@@ -12,7 +12,7 @@ import { describedLabelsOf } from './review-attention.ts';
 import { todoText } from './todo-text.ts';
 
 type Ready = Extract<OpenDailyReviewResult, { kind: 'Ready' }>;
-const COMPLETION_TEXT = { Incomplete: 'Incomplete', Complete: 'Complete', CompleteWithUnavailableMarks: 'Complete with Unavailable Marks' } as const;
+const COMPLETION_TEXT = { Incomplete: 'Incomplete', Complete: 'Complete', CompleteWithUnavailableMarks: 'Complete with Unavailable Marks', CompleteWithSettlementToRecord: 'Complete' } as const;
 
 type CalculationFamily = Extract<ReviewCompletion, { kind: 'CompleteWithUnavailableMarks' }>['families'][number];
 const FAMILY_TEXT: Record<CalculationFamily, string> = { Valuation: 'Valuation', Risk: 'Risk', Reward: 'Reward', ConditionStatus: 'Condition status' };

@@ -2,7 +2,7 @@ import type { RuntimeNotWritable } from '../../delivery/runtime-not-writable.ts'
 import type { DueClassification } from '../../domain/journal-debt/index.ts';
 import type { Instrument, OptionInstrument } from '../../domain/instrument/index.ts';
 import type { Instant } from '../../domain/time/index.ts';
-import type { CalculationResult, EntryResolution, ExecutionFact, ExpirationFact, ExpirationPayoffs, IncoherentFacts, IntegrityFinding, LifecycleState, NotApplicableReason, PlanCall, TerminalDisposition, TradeEvaluation } from '../../domain/trade-analysis/index.ts';
+import type { CalculationResult, EntryResolution, ExecutionFact, ExpirationFact, ExpirationPayoffs, ExpirationStandingFigures, IncoherentFacts, IntegrityFinding, LifecycleState, NotApplicableReason, PlanCall, TerminalDisposition, TradeEvaluation } from '../../domain/trade-analysis/index.ts';
 import type { TradeSummary } from '../../domain/trade-summary.ts';
 import type { Rational } from '../../domain/values/index.ts';
 import type { WorkspaceSnapshotBinding } from '../../persistence/index.ts';
@@ -186,15 +186,20 @@ export type IncompleteReason =
   | { readonly code: 'IntegrityDisagreement'; readonly tradeId: string; readonly findings: readonly IntegrityFinding[] }
   | { readonly code: 'IncoherentFacts'; readonly tradeId: string; readonly findings: IncoherentFacts['findings'] };
 
+// What an acknowledged Unavailable Mark leaves uncalculated, as a completed Review discloses it.
+export interface UnavailableDisclosure {
+  readonly instruments: readonly Instrument[];
+  readonly trades: readonly string[];
+  readonly families: readonly CalculationFamily[];
+}
+
 // Derived from facts each time; nothing about it is stored (Daily Review, "Completion and resumption").
 export type ReviewCompletion = { readonly kind: 'Incomplete'; readonly reasons: readonly IncompleteReason[] } | { readonly kind: 'Complete' }
   // Every obligation is resolved, but a required Instrument has only an acknowledgment, never a price.
-  | {
-      readonly kind: 'CompleteWithUnavailableMarks';
-      readonly instruments: readonly Instrument[];
-      readonly trades: readonly string[];
-      readonly families: readonly CalculationFamily[];
-    };
+  | ({ readonly kind: 'CompleteWithUnavailableMarks' } & UnavailableDisclosure)
+  // Every obligation is resolved, but the Review Date's Settle Later stands in for an expiration still to record (A316): the trades it
+  // names. The Unavailable disclosure rides along when an acknowledged Mark leaves figures uncalculated too.
+  | { readonly kind: 'CompleteWithSettlementToRecord'; readonly trades: readonly string[]; readonly unavailable?: UnavailableDisclosure };
 
 // What is still to go on the day, counted from the same facts as the completion's reasons (A300). An expiration to settle owes no Action
 // (decision 125), so a Trade with Settlement Due is not counted in `actions`.
@@ -381,6 +386,11 @@ export interface DailyTradeReview {
   // The option contracts the Trade still holds at or past expiration; empty otherwise. The signed quantity carries the
   // assignment or exercise explanation, the settlement time the Record expiration route (A111, A112, decision 88).
   readonly settlement: readonly SettlementItem[];
+  // Where the contract settlement is due on finished, from the Underlying's Mark for the expiration session (A314); present only with a settlement
+  // item and absent when the Trade's facts cannot be replayed. Unavailable when that session has no Mark for the Underlying.
+  readonly expirationStanding?: CalculationResult<ExpirationStandingFigures>;
+  // The Review Date of the latest Settle Later saved before this one; absent when there is none (A315).
+  readonly settledLaterOn?: string;
   // The Planned and Current Expiration Payoff views, kept apart from every Mark-dependent figure (A122).
   // Absent when the Trade's facts cannot be replayed.
   readonly payoff?: ExpirationPayoffs;
@@ -477,7 +487,14 @@ export interface SaveReviewMarksRequest {
   readonly entries: readonly MarketDataPrepareEntry[];
 }
 
-export type SaveDailyReviewRequest = SaveTradeActionRequest | ResolveReviewDebtRequest | SaveReviewMarksRequest;
+// SettleLater: the Review Date's Daily Trade Review Entry for a Trade with Settlement Due, holding the protected option and nothing else (A315).
+// The binding is the card's. It creates no Trade fact and finishes this Review only; the next Review Date asks again.
+export interface SettleLaterRequest {
+  readonly kind: 'SettleLater';
+  readonly binding: TradeSaveBinding;
+}
+
+export type SaveDailyReviewRequest = SaveTradeActionRequest | SettleLaterRequest | ResolveReviewDebtRequest | SaveReviewMarksRequest;
 
 // How many of the eligible Trades have an Action for the Review Date.
 export interface ReviewProgress {
@@ -554,7 +571,10 @@ export interface RefreshedEvidence {
 }
 
 // Daily Review's own issues (P166). The Action is not saved until each Instrument its figures require has its Review Date Mark saved or acknowledged Unavailable.
-export type DailyReviewIssue = { readonly code: 'ReviewMarksUnresolved'; readonly instruments: readonly Instrument[] } | { readonly code: 'IntentRequired' };
+export type DailyReviewIssue = { readonly code: 'ReviewMarksUnresolved'; readonly instruments: readonly Instrument[] } | { readonly code: 'IntentRequired' }
+  // A Trade with Settlement Due owes no Action (A315); Settle Later is for that Trade alone.
+  | { readonly code: 'ActionNotOwed' }
+  | { readonly code: 'SettleLaterNotApplicable' };
 
 export type SaveDailyReviewResult =
   | { readonly kind: 'Saved'; readonly action: DailyAction; readonly review: PostSaveReview }
