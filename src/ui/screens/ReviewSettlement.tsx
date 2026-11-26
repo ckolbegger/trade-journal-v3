@@ -102,7 +102,7 @@ export function ExpirationBlock({ facade, item, underlying, standing, binding, s
     }
   };
   const sellButton = (words: string) => (
-    <button type="button" className="pill secondary" onClick={onSell}>
+    <button type="button" className="pill secondary" disabled={saving} onClick={onSell}>
       {words} before the close
     </button>
   );
@@ -146,7 +146,7 @@ export function ExpirationBlock({ facade, item, underlying, standing, binding, s
           {finished?.inTheMoney && laterButton(true)}
           {finished?.inTheMoney && sellButton(long ? 'Sold' : 'Bought back')}
           {finished && !finished.inTheMoney && recordable && (
-            <button type="button" className="pill primary" onClick={() => setOpened('plain')}>
+            <button type="button" className="pill primary" disabled={saving} onClick={() => setOpened('plain')}>
               Record expiration
             </button>
           )}
@@ -154,12 +154,12 @@ export function ExpirationBlock({ facade, item, underlying, standing, binding, s
           {!finished && laterButton(false)}
           {!finished && sellButton(long ? 'Sold' : 'Bought back')}
           {!finished && recordable && (
-            <button type="button" className="pill secondary" onClick={() => setOpened('plain')}>
+            <button type="button" className="pill secondary" disabled={saving} onClick={() => setOpened('plain')}>
               It expired worthless
             </button>
           )}
           {finished?.inTheMoney && recordable && (
-            <button type="button" className="link-button" onClick={() => setOpened('why')}>
+            <button type="button" className="link-button" disabled={saving} onClick={() => setOpened('why')}>
               It expired worthless
             </button>
           )}

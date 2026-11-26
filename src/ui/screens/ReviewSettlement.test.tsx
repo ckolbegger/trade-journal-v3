@@ -422,6 +422,39 @@ describe('the expiration block on the card (T95.52)', () => {
     await waitFor(() => expect(within(card).queryByRole('alert')).toBeNull());
   });
 
+  it('should disable the other choices while record later is saving', async () => {
+    const user = userEvent.setup();
+    const trade = walked(CORV_ITEM, 'CORV', cardProgress(0, 0, { settlement: true, owed: false }));
+    const first = tradeReview(trade, CORV_ITEM, { expirationStanding: IN_THE_MONEY });
+    const facade = walkFacade(review({ families: [{ family: 'Marks', earlierMarks: [], today: [], earlier: [] }, { family: 'Trades', trades: [trade] }] }), first, first);
+    vi.mocked(facade.DailyReview.save).mockReturnValue(new Promise(() => {}) as never);
+    renderReview(facade);
+    const card = await screen.findByRole('region', { name: 'CORV review' });
+
+    await user.click(within(card).getByRole('button', { name: 'Exercised: record later' }));
+
+    for (const name of ['Sold before the close', 'It expired worthless']) {
+      expect(within(card).getByRole('button', { name })).toHaveProperty('disabled', true);
+    }
+  });
+
+  it('should enable the other choices again when the record later save is refused', async () => {
+    const user = userEvent.setup();
+    const trade = walked(CORV_ITEM, 'CORV', cardProgress(0, 0, { settlement: true, owed: false }));
+    const first = tradeReview(trade, CORV_ITEM, { expirationStanding: IN_THE_MONEY });
+    const facade = walkFacade(review({ families: [{ family: 'Marks', earlierMarks: [], today: [], earlier: [] }, { family: 'Trades', trades: [trade] }] }), first, first);
+    vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'ReviewChanged', evidence: {} as never });
+    renderReview(facade);
+    const card = await screen.findByRole('region', { name: 'CORV review' });
+
+    await user.click(within(card).getByRole('button', { name: 'Exercised: record later' }));
+    await within(card).findByRole('alert');
+
+    for (const name of ['Sold before the close', 'It expired worthless']) {
+      expect(within(card).getByRole('button', { name })).toHaveProperty('disabled', false);
+    }
+  });
+
   it('should still offer the other two choices after a saved record later, and no undo', async () => {
     const { card } = await openBlock({ expirationStanding: IN_THE_MONEY, form: { kind: 'Saved', action: settleLater() } });
 
