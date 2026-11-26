@@ -1,0 +1,154 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 1,
+    "total_tokens": 171675,
+    "input_tokens": 170835,
+    "output_tokens": 840,
+    "cache_read_tokens": 24064,
+    "elapsed": "38s"
+  },
+  "tool_calls": {
+    "total": 12,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 6,
+      "file_read": 5
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/ReviewView.tsx",
+      "content": "This guard only detects header toggles: `picks` is incremented in `toggle`, but day-card links (and changed URL parameters) select a different card through `openCard` without incrementing it. If the trader follows one of those links while the receipt refresh is pending, `focusNext` still moves focus to the next incomplete card when the read finishes, overriding the trader's selection. Track these explicit navigation paths too, and add a pending-refresh test that opens a card through a day link.",
+      "existing_code": "    if (picks.current !== readAt.current) return;",
+      "start_line": 372,
+      "end_line": 372,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/screens/ReviewCards.test.tsx",
+        "src/ui/screens/ReviewSettlement.test.tsx",
+        "src/ui/screens/ReviewView.tsx"
+      ]
+    }
+  ],
+  "session_id": "50faeaea-b528-4ca4-a6a7-64e86524ad10",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "50faeaea-b528-4ca4-a6a7-64e86524ad10",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "6af3aa53^",
+      "requested_head": "2a58109d",
+      "resolved_base": "5997eb5436a16fef9a5555ee2b7972416b677399",
+      "resolved_head": "2a58109d851be9d3db303a5d63647d119190523c",
+      "exact_range": "5997eb5436a16fef9a5555ee2b7972416b677399..2a58109d851be9d3db303a5d63647d119190523c",
+      "source_artifact_sha256": "34187b54f4ad8179a8f4cfac1eeedd88e3cc7d63a68ff579315aca8365262dda"
+    },
+    "execution": {
+      "ocr_version": "v1.14.4",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "2aa0341444a1921ffd05d33525a1cd8b52950e6319bf29824d81bde09d8b550f",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "ca8605c251e0a4264b82c2a5dad0045e54efe72fe7d635ded0f3e7c87bdf4beb"
+        },
+        {
+          "item_id": "38aeef0f163feea36a51abec7a5682a7d56670f177c89e58c49bb45f7f22563e",
+          "path": "src/ui/screens/ReviewCards.test.tsx",
+          "fingerprint": "ed94192b8f2dded5afdf46dfb764be6d556b09f228199f4e76be989482113d5d"
+        },
+        {
+          "item_id": "c6d803ce7904d6560d5e93c204db4c04f5b9987e4caceee14ca91a440ed4ce90",
+          "path": "src/ui/screens/ReviewSettlement.test.tsx",
+          "fingerprint": "de89f72062e9bea4a5b3a132d364e8ec048d82ed41203767f6aa26a02859ab1a"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "2aa0341444a1921ffd05d33525a1cd8b52950e6319bf29824d81bde09d8b550f",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "ca8605c251e0a4264b82c2a5dad0045e54efe72fe7d635ded0f3e7c87bdf4beb"
+        },
+        {
+          "item_id": "38aeef0f163feea36a51abec7a5682a7d56670f177c89e58c49bb45f7f22563e",
+          "path": "src/ui/screens/ReviewCards.test.tsx",
+          "fingerprint": "ed94192b8f2dded5afdf46dfb764be6d556b09f228199f4e76be989482113d5d"
+        },
+        {
+          "item_id": "c6d803ce7904d6560d5e93c204db4c04f5b9987e4caceee14ca91a440ed4ce90",
+          "path": "src/ui/screens/ReviewSettlement.test.tsx",
+          "fingerprint": "de89f72062e9bea4a5b3a132d364e8ec048d82ed41203767f6aa26a02859ab1a"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "2f5db93ffbc421fd0865836479e1f2041324a5ed4bc5bfe85e02d9fd6c481916",
+          "path": "evidence/D95/DECISIONS-PENDING.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "875256170a44a91b5da739ac405595f9b5d1db29f5345fc971d11ee8b61ce008",
+          "path": "plan/implementation-plan.md",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "ab47bc811f23c17f4c6317a43b1bf19eff8f2b20af07649acc55f19159f8bebc",
+          "path": "evidence/D95/structural.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "b4a0e981ce39aed37f0e01db2e27233461dc404c45831043cbb497bf0e8c24da",
+          "path": "evidence/D95/tdd-log/T95.61-B2.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "b9b8e7306e539931e8a54f1fce83abadc69ddba283fee9614bcf3835ff568074",
+          "path": "evidence/D95/tdd-log/T95.61-B1.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "bdaa6a8f3a1c74ef01710214fbbba243318d24075e7bad7af449524a46b8878c",
+          "path": "plan/revisions.md",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "be94009331ab8bc34c207c3a513f5d2899e33a818db6f1c12356c498f61c8da6",
+          "path": "plan/D09.5-daily-review-redesign.md",
+          "exclude_reason": "unsupported_ext"
+        }
+      ]
+    },
+    "elapsed_ms": 38453
+  }
+}
