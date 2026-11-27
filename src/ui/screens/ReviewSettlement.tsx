@@ -73,6 +73,13 @@ export function ExpirationBlock({ facade, item, underlying, standing, binding, s
   const [refreshing, setRefreshing] = useState(false);
   // "It expired worthless" in the money: what it would book, and the form that asks why.
   const [opened, setOpened] = useState<'plain' | 'why' | undefined>();
+  // Leaving the form puts focus back on the button that opened it (A327); only one of the three is ever shown.
+  const opener = useRef<HTMLButtonElement>(null);
+  const wasOpened = useRef(false);
+  useEffect(() => {
+    if (opened === undefined && wasOpened.current) opener.current?.focus();
+    wasOpened.current = opened !== undefined;
+  }, [opened]);
   // A recorded expiration is read again once the receipt is dismissed; a card left first has the Review read at once.
   const readOwed = useRef(false);
   const leftSold = useRef(onLeftSold);
@@ -108,7 +115,7 @@ export function ExpirationBlock({ facade, item, underlying, standing, binding, s
     }
   };
   const sellButton = (words: string) => (
-    <button type="button" className="pill secondary" disabled={saving} onClick={() => onSell(item.settlementTime.kind === 'Value' ? beforeClose(item.settlementTime.value) : undefined)}>
+    <button type="button" className="pill secondary" data-sale-opener disabled={saving} onClick={() => onSell(item.settlementTime.kind === 'Value' ? beforeClose(item.settlementTime.value) : undefined)}>
       {words} before the close
     </button>
   );
@@ -157,7 +164,7 @@ export function ExpirationBlock({ facade, item, underlying, standing, binding, s
           {finished?.inTheMoney && laterButton(true)}
           {finished?.inTheMoney && sellButton(long ? 'Sold' : 'Bought back')}
           {finished && !finished.inTheMoney && recordable && (
-            <button type="button" className="pill primary" disabled={saving} onClick={() => setOpened('plain')}>
+            <button type="button" ref={opener} className="pill primary" disabled={saving} onClick={() => setOpened('plain')}>
               Record expiration
             </button>
           )}
@@ -165,12 +172,12 @@ export function ExpirationBlock({ facade, item, underlying, standing, binding, s
           {!finished && laterButton(false)}
           {!finished && sellButton(long ? 'Sold' : 'Bought back')}
           {!finished && recordable && (
-            <button type="button" className="pill secondary" disabled={saving} onClick={() => setOpened('plain')}>
+            <button type="button" ref={opener} className="pill secondary" disabled={saving} onClick={() => setOpened('plain')}>
               It expired worthless
             </button>
           )}
           {finished?.inTheMoney && recordable && (
-            <button type="button" className="link-button" disabled={saving} onClick={() => setOpened('why')}>
+            <button type="button" ref={opener} className="link-button" disabled={saving} onClick={() => setOpened('why')}>
               It expired worthless
             </button>
           )}

@@ -16,9 +16,6 @@ import { ReviewReflections } from './ReviewReflections.tsx';
 // What the open owed card shows while its Trade is read, or when it could not be.
 export type OwedDetail = 'Loading' | 'Unavailable' | { readonly card: OwedReflectionsCard };
 
-// The card has no further panel to move on to when its reflections are answered.
-const NOTHING_NEXT = () => undefined;
-
 // "2 reflections due", "1 not yet due", or Done once nothing is owed now: the words of the progress record (A164, A167).
 // The Close Review names the card when it is owed now, from the next Review, answered or declined (W151); the last two are read from the opened card.
 // A Close Review saved or declined on the card is named from the save's own answer, with no read.
@@ -127,6 +124,8 @@ export function OwedCard({ facade, trade, reviewDate, expanded, detail, reveal, 
   const item = useRef<HTMLLIElement>(null);
   const header = useRef<HTMLButtonElement>(null);
   const [closed, setClosed] = useState<'saved' | 'declined'>();
+  // The card has no further panel to move on to when its reflections are answered: focus goes to its header, which then says the result (A327).
+  const focusHeader = useCallback(() => header.current?.focus({ preventScroll: true }), []);
   useEffect(() => {
     if (reveal === 0) return;
     item.current?.scrollIntoView?.({ block: 'start' });
@@ -151,7 +150,7 @@ export function OwedCard({ facade, trade, reviewDate, expanded, detail, reveal, 
           </button>
         </div>
       )}
-      {expanded && typeof detail === 'object' && <OwedBody facade={facade} card={detail.card} progress={trade.progress} reviewDate={reviewDate} go={go} onReflectionResolved={onReflectionResolved} onClosed={setClosed} onEntryDirty={onEntryDirty} onForm={onForm} />}
+      {expanded && typeof detail === 'object' && <OwedBody facade={facade} card={detail.card} progress={trade.progress} reviewDate={reviewDate} go={go} onReflectionResolved={onReflectionResolved} onClosed={setClosed} onNoneRemaining={focusHeader} onEntryDirty={onEntryDirty} onForm={onForm} />}
     </li>
   );
 }
@@ -164,11 +163,12 @@ interface OwedBodyProps {
   readonly go: Go;
   readonly onReflectionResolved: (review: PostSaveReview) => void;
   readonly onClosed: (outcome: 'saved' | 'declined') => void;
+  readonly onNoneRemaining: () => void;
   readonly onEntryDirty: (id: string, dirty: boolean) => void;
   readonly onForm: FormRegister;
 }
 
-function OwedBody({ facade, card, progress, reviewDate, go, onReflectionResolved, onClosed, onEntryDirty, onForm }: OwedBodyProps) {
+function OwedBody({ facade, card, progress, reviewDate, go, onReflectionResolved, onClosed, onNoneRemaining, onEntryDirty, onForm }: OwedBodyProps) {
   const uid = useId();
   const [open, setOpen] = useState(true);
   const offerReflection = useCallback<FormRegister>((id, handle) => onForm(id, shownFirst(() => flushSync(() => setOpen(true)), handle)), [onForm, setOpen]);
@@ -206,7 +206,7 @@ function OwedBody({ facade, card, progress, reviewDate, go, onReflectionResolved
           </button>
         </h4>
         <div id={`${uid}-Reflections`} hidden={!open}>
-          <ReviewReflections facade={facade} reviewDate={reviewDate} reflections={card.reflections} onReview={onReflectionResolved} onNoneRemaining={NOTHING_NEXT} onEntryDirty={onEntryDirty} onForm={offerReflection} walk={{ underlying: card.underlying, onClosed, ...(card.replay && { replay: card.replay }) }} />
+          <ReviewReflections facade={facade} reviewDate={reviewDate} reflections={card.reflections} onReview={onReflectionResolved} onNoneRemaining={onNoneRemaining} onEntryDirty={onEntryDirty} onForm={offerReflection} walk={{ underlying: card.underlying, onClosed, ...(card.replay && { replay: card.replay }) }} />
         </div>
       </div>
     </section>

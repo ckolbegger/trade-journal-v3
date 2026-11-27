@@ -99,6 +99,14 @@ describe('the Close Review walk (T95.59)', () => {
     const controls = [...within(form()).getAllByRole('radio'), ...within(form()).getAllByRole('textbox'), within(form()).getByRole('button', { name: 'Save the Close Review' })];
     expect(controls.every((control) => !(control as HTMLInputElement).disabled)).toBe(true);
   });
+
+  it('should leave focus on the All seen line when the last Next moment goes', async () => {
+    const user = userEvent.setup();
+    open();
+    for (let seen = 0; seen < 3; seen += 1) await user.click(screen.getByRole('button', { name: 'Next moment' }));
+    expect(screen.queryByRole('button', { name: 'Next moment' })).toBeNull();
+    expect(document.activeElement).toBe(screen.getByText('All 4 seen. Now write.'));
+  });
 });
 
 // Opens the walk and shows every moment, so the questions are unlocked.

@@ -141,6 +141,14 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
   const { writable, report, timeZone } = useRuntime();
   // The sale of a saved Exit is recorded in place of the Action (W127); the form reports its own values under the Action's id.
   const [selling, setSelling] = useState(false);
+  // Leaving the sale form unrecorded (Cancel, Back to the Review) puts focus on the button that opened it, in the idle block it came from (A327).
+  const idleArea = useRef<HTMLDivElement>(null);
+  const leftUnrecorded = useRef(false);
+  useEffect(() => {
+    if (selling || !leftUnrecorded.current) return;
+    leftUnrecorded.current = false;
+    idleArea.current?.querySelector<HTMLElement>('[data-sale-opener]')?.focus();
+  }, [selling]);
   // Whether the sale form holds typed values: the Action draft stays unsaved behind it, so either one holds the Trade.
   const [saleDirty, setSaleDirty] = useState(false);
   const [handledSale, setHandledSale] = useState(0);
@@ -338,10 +346,13 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
   // A saved Exit is carried out by the sale (W127): a short Position is closed by a buy-back.
   const held = planExit?.positions[0];
   const saleWords = saleOf(form, held);
-  if (idle !== undefined && !selling) return idle;
+  if (idle !== undefined && !selling) return <div ref={idleArea}>{idle}</div>;
   if (readOnlyEmpty && form.kind === 'New') return <p>No Action saved.</p>;
   // The sale does not wait for the Marks: a sale is recorded whatever the day's Marks (A313).
-  if (selling) return <ExitForm facade={facade} tradeId={binding.tradeId} timeZone={timeZone ?? 'UTC'} now={saleAt ? () => saleAt : now} onDirtyChange={setSaleDirty} onDone={() => setSelling(false)} backLabel="Back to the Review" card={{
+  if (selling) return <ExitForm facade={facade} tradeId={binding.tradeId} timeZone={timeZone ?? 'UTC'} now={saleAt ? () => saleAt : now} onDirtyChange={setSaleDirty} onDone={() => {
+      leftUnrecorded.current = true;
+      setSelling(false);
+    }} backLabel="Back to the Review" card={{
         onRecorded: (result) => {
           if (result.postCommit.trade.storedLifecycle === 'Closed') {
             refreshOwed.current = true;

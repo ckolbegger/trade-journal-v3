@@ -267,6 +267,17 @@ describe('the Marks step (T95.12)', () => {
     expect(within(row).getByRole('button', { name: /^Can't get a price/ })).toBeTruthy();
   });
 
+  it('should leave focus on Undo after No price holds the reason', async () => {
+    renderReview(cardFacade(gridReview({ earlierMarks: [xyzMarks({ [FRIDAY]: markAt('45.10') })] })));
+    const user = userEvent.setup();
+    const step = await marksPanel();
+    const row = within(gridOf(step)).getByRole('rowheader', { name: 'XYZ' }).closest('tr')!;
+    await user.click(within(row).getByRole('button', { name: /^Can't get a price/ }));
+    await user.type(within(row).getByPlaceholderText('Why no price? Halted, no quote…'), 'Halted');
+    await user.click(within(row).getByRole('button', { name: 'No price' }));
+    expect(document.activeElement).toBe(within(row).getByRole('button', { name: 'Undo' }));
+  });
+
   it('should add the skipped sessions as optional columns on request, and not before', async () => {
     const xyzThursday: Earlier[number] = { ...xyzGap, trades: [{ tradeId: 't-a', from: THURSDAY }, { tradeId: 't-f', from: MONDAY }], missing: [THURSDAY], revisions: { [THURSDAY]: 'None' } };
     renderReview(cardFacade(gridReview({ earlier: [xyzThursday], earlierMarks: [xyzMarks({ [FRIDAY]: markAt('51') }, THURSDAY)] })));

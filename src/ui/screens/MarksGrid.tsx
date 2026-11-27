@@ -85,6 +85,8 @@ export function MarksGrid({ model, reviewDate, writable, showEarlier, draftOf, n
     reasonField.current = field;
     field?.focus();
   }, []);
+  // "No price" replaces itself with the reason and its Undo: that Undo, for the cell named, takes the focus as it appears (A327).
+  const noPriced = useRef<string | undefined>(undefined);
   const undone = useRef<string | undefined>(undefined);
   useEffect(() => {
     if (undone.current === undefined) return;
@@ -297,7 +299,12 @@ export function MarksGrid({ model, reviewDate, writable, showEarlier, draftOf, n
                     {writable && draft?.kind === 'CantGetPrice' && !asked && (
                       <>
                         <span>{draft.reason}</span>{' '}
-                        <button type="button" className="link-button" onClick={() => {
+                        <button type="button" className="link-button" ref={(button) => {
+                          if (button && noPriced.current === todayId) {
+                            noPriced.current = undefined;
+                            button.focus();
+                          }
+                        }} onClick={() => {
                           undone.current = fieldOf(todayKey).id;
                           onUndo(todayKey);
                         }}>
@@ -319,6 +326,7 @@ export function MarksGrid({ model, reviewDate, writable, showEarlier, draftOf, n
                               reasonField.current?.focus();
                               return;
                             }
+                            noPriced.current = todayId;
                             setAsking(undefined);
                           }}>
                           No price

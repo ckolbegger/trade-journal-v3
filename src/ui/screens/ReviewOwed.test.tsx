@@ -716,6 +716,40 @@ describe('the Close Review walk from the closed card (T95.59, W152)', () => {
   const card: OwedReflectionsCard = { ...CLOSED_CARD, reflections: [closeReview], replay };
   const trade: OwedReflectionsTrade = { ...owedTrade(card), owed: [{ debtId: 'd-cr', entryTypeKey: 'entry-type.close-review', dueAnchor: '2026-10-12T18:00:00Z', classification: 'Due' }] };
 
+  const post = { kind: 'Ready', cards: [], progress: { tradesWithAction: 1, tradesEligible: 1 }, completion: ready().completion, nextStep: { kind: 'Done' }, binding, day: ready().day } as const;
+  const resolvedDebt = { debtId: 'd-cr', status: 'Settled', revision: 'd-cr-rev-2' } as never;
+
+  it('should leave focus on the card header after Save the Close Review, with the walk gone', async () => {
+    const user = userEvent.setup();
+    const facade = reviewFacade(ready({ owed: [trade] }));
+    vi.mocked(facade.DailyReview.getTrade).mockResolvedValue({ kind: 'ReflectionsOwed', reviewDate: DATE, cutoff: CUTOFF, card });
+    vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'DebtResolved', entry: { id: 'e-cr', responses: [] } as never, debt: resolvedDebt, review: post });
+    renderReview(facade);
+    const closed = await screen.findByRole('region', { name: 'ABC review' });
+    await user.click(within(closed).getByRole('button', { name: 'Write the Close Review' }));
+    const dialog = screen.getByRole('dialog', { name: 'Replay, ABC' });
+    await user.selectOptions(within(dialog).getByRole('combobox', { name: 'Key moments' }), '2. Sale · Mon Oct 12');
+    const form = within(dialog).getByRole('form', { name: 'Close Review' });
+    await user.click(within(form).getByLabelText('Yes, as planned'));
+    await user.type(within(form).getByLabelText('What is the key lesson?'), 'Sell into strength.');
+    await user.click(within(form).getByRole('button', { name: 'Save the Close Review' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: /^Review ABC/ }));
+  });
+
+  it('should leave focus on the card header after Decline the Close Review', async () => {
+    const user = userEvent.setup();
+    const facade = reviewFacade(ready({ owed: [trade] }));
+    vi.mocked(facade.DailyReview.getTrade).mockResolvedValue({ kind: 'ReflectionsOwed', reviewDate: DATE, cutoff: CUTOFF, card });
+    vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'DebtResolved', decline: { id: 'decl-1', authoredTime: '2026-10-13T21:05:00Z' } as never, debt: resolvedDebt, review: post });
+    renderReview(facade);
+    const closed = await screen.findByRole('region', { name: 'ABC review' });
+    await user.click(within(closed).getByRole('button', { name: 'Decline…' }));
+    await user.click(within(closed).getByRole('button', { name: 'Decline the Close Review' }));
+    await within(closed).findByText('Declined to reflect.');
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: /^Review ABC/ }));
+  });
+
   it('should close the walk on Escape or Close and return focus to the button that opened it', async () => {
     const user = userEvent.setup();
     const facade = reviewFacade(ready({ owed: [trade] }));

@@ -63,6 +63,13 @@ export function ExpirationForm({ facade, tradeId, timeZone, onDirtyChange, onDon
   useEffect(() => {
     if (conflict) conflictRef.current?.focus();
   }, [conflict]);
+  // A card's form replaces the button that opened it (A327): once it has loaded, focus goes to its heading.
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const inCard = card !== undefined;
+  const loaded = view !== undefined && definition !== undefined;
+  useEffect(() => {
+    if (inCard && loaded) titleRef.current?.focus();
+  }, [inCard, loaded]);
   const [recorded, setRecorded] = useState<Extract<PositionChangeResult, { kind: 'Recorded' }> | undefined>();
   const [failed, setFailed] = useState(false);
   // The reason is asked once the card says so, or once the workflow has required it.
@@ -178,7 +185,9 @@ export function ExpirationForm({ facade, tradeId, timeZone, onDirtyChange, onDon
       )}
       <IssueSummary id="expiration-issues-heading" heading="This expiration can’t be saved yet" issues={issues} />
       <section className="card" aria-labelledby="expiration-heading">
-        <Title id="expiration-heading">Expiration</Title>
+        <Title id="expiration-heading" ref={titleRef} tabIndex={-1}>
+          Expiration
+        </Title>
         <dl>
           <dt>Contract</dt>
           <dd>{instrumentLabel(item.instrument, timeZone)}</dd>

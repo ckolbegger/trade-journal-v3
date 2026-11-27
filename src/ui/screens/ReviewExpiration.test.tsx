@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -164,5 +164,67 @@ describe('record expiration from the Review (A113, conflict K14)', () => {
     // The Review is read again: the Trade has left the walk, and its owed reflection names the recorded Expiration.
     const owedTrade = await screen.findByText('Expiration of 1 XYZ Nov 20 $55 Call, no price or fee');
     expect(within(owedTrade.closest('section')!).queryByRole('button', { name: 'Record expiration' })).toBeNull();
+  });
+});
+
+// T95.67-B5 (A327, WCAG 2.4.3): after each press in the expiration block, focus is on a named element, never the page body.
+const worthlessStanding = { kind: 'Value', value: { underlyingPrice: Rational.of(54n), strike: Rational.of(55n), inTheMoney: false, amount: Rational.of(1n), worth: Rational.of(0n), ifSettled: { dollars: Rational.of(-200n), r: Rational.of(-1n) }, ifExpiredWorthless: { dollars: Rational.of(-200n), r: Rational.of(-1n) }, contractsCost: Rational.of(200n) } } as const;
+const inTheMoneyStanding = { kind: 'Value', value: { ...worthlessStanding.value, underlyingPrice: Rational.of(57n), inTheMoney: true, amount: Rational.of(2n), worth: Rational.of(200n) } } as const;
+
+async function openCard(standing: typeof worthlessStanding | typeof inTheMoneyStanding) {
+  const user = userEvent.setup();
+  const facade = exitFormFacade(dueDetail);
+  vi.mocked(facade.DailyReview.open).mockResolvedValueOnce(duringReview).mockResolvedValueOnce(afterReview);
+  vi.mocked(facade.DailyReview.getTrade).mockResolvedValueOnce({ kind: 'Ready', reviewDate: DATE, cutoff: CUTOFF, trade: { ...trade, expirationStanding: standing } }).mockResolvedValueOnce({ kind: 'ReflectionsOwed', reviewDate: DATE, cutoff: CUTOFF, card: owedCard });
+  vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(expirationResult() as never);
+  render(
+    <RuntimeContext.Provider value={{ writable: true, timeZone: 'America/New_York', report: () => undefined }}>
+      <MemoryRouter initialEntries={['/review']}>
+        <Routes>
+          <Route path="/review" element={<ReviewView facade={facade} now={() => '2026-11-20T22:00:00Z'} onDirtyChange={() => undefined} />} />
+        </Routes>
+      </MemoryRouter>
+    </RuntimeContext.Provider>,
+  );
+  return { user, card: await screen.findByRole('region', { name: 'XYZ review' }) };
+}
+
+describe('focus in the expiration block (T95.67-B5)', () => {
+  it('should leave focus on the Expiration heading after It expired worthless opens the form', async () => {
+    const { user, card } = await openCard(inTheMoneyStanding);
+    await user.click(within(card).getByRole('button', { name: 'It expired worthless' }));
+    const heading = await within(card).findByRole('heading', { name: 'Expiration' });
+    expect(document.activeElement).toBe(heading);
+  });
+
+  it('should leave focus on the Expiration heading after Record expiration opens the form, then on the receipt heading once it is recorded', async () => {
+    const { user, card } = await openCard(worthlessStanding);
+    await user.click(within(card).getByRole('button', { name: 'Record expiration' }));
+    expect(document.activeElement).toBe(await within(card).findByRole('heading', { name: 'Expiration' }));
+    await user.click(within(card).getByRole('button', { name: 'Record expiration' }));
+    expect(document.activeElement).toBe(await within(card).findByRole('heading', { name: 'Expiration recorded' }));
+  });
+
+  it('should leave focus on the Record expiration button after Back to the Review leaves the form', async () => {
+    const { user, card } = await openCard(worthlessStanding);
+    await user.click(within(card).getByRole('button', { name: 'Record expiration' }));
+    await user.click(await within(card).findByRole('button', { name: 'Back to the Review' }));
+    expect(document.activeElement).toBe(within(card).getByRole('button', { name: 'Record expiration' }));
+  });
+
+  it('should leave focus on the owed card header after Back to the Review leaves the receipt', async () => {
+    const { user, card } = await openCard(worthlessStanding);
+    await user.click(within(card).getByRole('button', { name: 'Record expiration' }));
+    await user.click(await within(card).findByRole('button', { name: 'Record expiration' }));
+    await user.click(await within(card).findByRole('button', { name: 'Back to the Review' }));
+    const header = await screen.findByRole('button', { name: /^Review XYZ/ });
+    await waitFor(() => expect(document.activeElement).toBe(header));
+  });
+
+  it('should leave focus on the Sold it before the close button after Cancel leaves the sale form', async () => {
+    const { user, card } = await openCard(worthlessStanding);
+    await user.click(within(card).getByRole('button', { name: 'Sold it before the close' }));
+    await user.click(await within(card).findByRole('button', { name: 'Cancel' }));
+    expect(document.activeElement).toBe(within(card).getByRole('button', { name: 'Sold it before the close' }));
   });
 });

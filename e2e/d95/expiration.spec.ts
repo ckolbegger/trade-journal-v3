@@ -69,6 +69,24 @@ test.describe('B95.11 The expiration block (AC-SET-003)', () => {
     await context.close();
   });
 
+  test('should keep focus on a named element through the expiration form, its receipt and the way back (A327, T95.67-B5)', async ({ profile, copySetup }) => {
+    test.setTimeout(240_000);
+    const { context, page, t1 } = await openSettlement(profile, copySetup);
+    await openReview(page);
+    await enterMark(page, t1, FRIDAY_NOV, '52.00');
+    const block = await openExpiration(page, t1);
+    await button(block, 'Record expiration').click();
+    await expect(block.getByRole('heading', { name: 'Expiration', exact: true }), 'the form opens with its heading focused').toBeFocused();
+    await button(block, 'Back to the Review').click();
+    await expect(button(block, 'Record expiration'), 'leaving the form returns to the button that opened it').toBeFocused();
+    await button(block, 'Record expiration').click();
+    await button(block, 'Record expiration').click();
+    await expect(block.getByRole('heading', { name: 'Expiration recorded' }), 'the receipt heading is focused').toBeFocused();
+    await button(block, 'Back to the Review').click();
+    await expect.poll(() => page.evaluate(() => document.activeElement?.tagName), 'focus is not on the page body after the receipt').not.toBe('BODY');
+    await context.close();
+  });
+
   for (const width of WIDTHS) {
     test(`should say a contract out of the money expired worthless, infer no expiration, and record it through the form in the card at ${width}`, async ({ profile, copySetup }) => {
       test.setTimeout(240_000);
