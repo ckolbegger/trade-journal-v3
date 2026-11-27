@@ -1620,3 +1620,9 @@ Commit `61c95ca5`: `replayStripOf` counts a closing sale's fill against the Stop
 
 ocr of T95.67-B1 (session 79044970): complete, 2 files, no findings. `evidence/D95/ocr/T95.67-B1-61c95ca5.json`.
 - Main-session decision: the five critic bug tasks run one after another, each with its own ocr; one `browser-task` run covers them all after the last, then the full run before critic C2 (as one run covered T95.28-F2 and T95.45).
+
+### T95.67-B2
+
+Commit `82920e50`: the "Exit not carried out" group's reasons now keep the lines a Trade is at or past (`attentionOf`; its rank unchanged), and `describedLabelsOf` reads the label from them (Past Stop over At Target). Coordinator cases (Target, Stop) and label cases 1 and 2 red then green; the inside-the-lines coordinator case and label case 3 first-run passes, flagged, each mutation-checked and restored. The hidden "100% of the way from entry to the Target" goes with the old label; the reason reads "Target reached". `verify:fixtures` exit 0 (main session, after the commit). src/ui/screens and src/coordinators 1602 passed; typecheck, tsc6, lint (2 pre-existing warnings), lint:deps exit 0; browser day-card, card, action 15 passed.
+
+ocr of T95.67-B2 (session aeda8eac): complete, 4 files, no findings. `evidence/D95/ocr/T95.67-B2-82920e50.json`.
