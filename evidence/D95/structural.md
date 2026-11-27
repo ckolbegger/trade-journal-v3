@@ -1690,3 +1690,5 @@ ocr of T95.67-B6 (session 38ca71a5): 2 files, 2 findings, both Valid. `evidence/
 ### T95.67-B6-B1
 
 Commit `e2bb9fa2`: `step()` records which step button should take focus and an effect moves it after the render that disables the pressed one, so the other button is enabled when `focus()` runs (any number of sessions). Cases 1 and 2 (two sessions) red then green; case 3, a browser case in `e2e/d95/replay.spec.ts` (ABC_WALK, 2 sessions, 1280 and 375: Previous session, Escape, focus on "Replay"), first-run pass, flagged, mutation (direct `focus()`) failed, restored. Replay folder 298 passed; typecheck, tsc6, lint (2 pre-existing warnings), lint:deps exit 0; browser replay, replay-strip, replay-day, keyboard-day, close-review 16 passed, twice.
+
+ocr of T95.67-B6-B1 (session 2af034d4): complete, 3 files, no findings. `evidence/D95/ocr/T95.67-B6-B1-e2bb9fa2.json`.
