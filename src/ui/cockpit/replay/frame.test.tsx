@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import type { ComponentType } from 'react';
+import { useState, type ComponentType } from 'react';
 import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ReplayFrame } from './frame.tsx';
@@ -161,19 +161,31 @@ describe('Replay frame: focus at the ends (A327)', () => {
     expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Previous session' }));
   });
 
-  it('should close the Replay on Escape right after, and return focus to the Replay button', async () => {
+  it('should return focus to the button that opened the Replay after Escape at an end', async () => {
     const user = userEvent.setup();
-    const onClose = vi.fn();
-    render(
-      <MemoryRouter>
-        <ReplayOverlay name="Replay, BREN" header="BREN" onClose={onClose}>
-          <ReplayFrame {...props({ initialSession: '2026-11-03' })} />
-        </ReplayOverlay>
-      </MemoryRouter>,
-    );
+    function Host() {
+      const [open, setOpen] = useState(false);
+      return (
+        <MemoryRouter>
+          <button type="button" onClick={() => setOpen(true)}>
+            Replay
+          </button>
+          {open && (
+            <ReplayOverlay name="Replay, BREN" header="BREN" onClose={() => setOpen(false)}>
+              <ReplayFrame {...props({ initialSession: '2026-11-03' })} />
+            </ReplayOverlay>
+          )}
+        </MemoryRouter>
+      );
+    }
+    render(<Host />);
+    const opener = screen.getByRole('button', { name: 'Replay' });
+    await user.click(opener);
     await user.click(screen.getByRole('button', { name: 'Previous session' }));
+    expect(screen.getByTestId('session-date').textContent).toBe('Mon Nov 2');
     await user.keyboard('{Escape}');
-    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(document.activeElement).toBe(opener);
   });
 });
 
