@@ -1,0 +1,90 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 24316,
+    "input_tokens": 24182,
+    "output_tokens": 134,
+    "cache_read_tokens": 8320,
+    "elapsed": "10s"
+  },
+  "tool_calls": {
+    "total": 3,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "e2e/d95/expiration.spec.ts",
+      "files": [
+        "e2e/d95/expiration.spec.ts"
+      ]
+    }
+  ],
+  "session_id": "a4fcbe46-f412-4d67-af4a-f3dc61af3c08",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "a4fcbe46-f412-4d67-af4a-f3dc61af3c08",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "ad4e19bc",
+      "resolved_base": "fc7ca631bac01cf5e74a6189a3f844d9f9c309e9",
+      "resolved_head": "ad4e19bcde247f6a7d7b2d22a287dc019fae2ae5",
+      "exact_range": "fc7ca631bac01cf5e74a6189a3f844d9f9c309e9..ad4e19bcde247f6a7d7b2d22a287dc019fae2ae5",
+      "source_artifact_sha256": "7ad42f86285f766951063955f3ffaba66f2426c5080a0d14c8b161426b43bf46"
+    },
+    "execution": {
+      "ocr_version": "v1.14.4",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "04db696dd5d8255296c3877d453ff8c7d6e358d228966377a69a5b5538790d26",
+          "path": "e2e/d95/expiration.spec.ts",
+          "fingerprint": "6401c4be51fa6d2b3c204b80303325f299ded4d456dc63ff5a770ef6da9d0397"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "04db696dd5d8255296c3877d453ff8c7d6e358d228966377a69a5b5538790d26",
+          "path": "e2e/d95/expiration.spec.ts",
+          "fingerprint": "6401c4be51fa6d2b3c204b80303325f299ded4d456dc63ff5a770ef6da9d0397"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "71b7024fd48e4b81e2ff10aba2f3192367e7bc33c0eb15e5209dea01edd5aa07",
+          "path": "evidence/D95/tdd-log/T95.67-B5-B2.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 9933
+  }
+}

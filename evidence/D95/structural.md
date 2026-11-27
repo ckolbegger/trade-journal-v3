@@ -1665,3 +1665,5 @@ ocr of T95.67-B5-B1 (session b3e783fc): 3 files, 1 finding, **Wrong, dismissed**
 ### T95.67-B5-B2
 
 Commit `ad4e19bc` (tests only): the expiration case now waits for the "Expiration recorded" receipt to go and asserts focus on MNO's card header (the next card that needs something, A327). Green against the current code; mutation (`focusNext` returns early) failed with the named-element assertion, restored. Browser expiration 10 passed. typecheck, tsc6, lint (2 pre-existing warnings), lint:deps exit 0.
+
+ocr of T95.67-B5-B2 (session a4fcbe46): complete, 1 file, no findings. `evidence/D95/ocr/T95.67-B5-B2-ad4e19bc.json`. T95.67-B1, T95.67-B2, T95.67-B4 (with B4-B1) and T95.67-B5 (with B5-B1, B5-B2) are reviewed clean; T95.67-B3 waits on Q17.
