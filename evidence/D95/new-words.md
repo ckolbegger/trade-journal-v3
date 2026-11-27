@@ -81,3 +81,10 @@ The user approved every entry above as it stands, after the T95.26 gate. "More f
 - T95.42's temporary "Decline anyway" is gone: the ask replaces it for every owed reflection.
 - The decline-only form's accessible name: "Decline" (the Close Review link's ask; the full form stays "Reflection").
 - Trade Detail and the Review card offer no "Decline…" link while the shell is read only; "Keep it" stays in an ask that can no longer save.
+
+## Approved (2026-11-27)
+
+The user approved every Part B and Part C entry above as it stands, with the main session's recommendations on three:
+- T95.34: left as built (W128 names the Underlying; two Trades on one Underlying are rare until D10).
+- T95.53: the saved "record later" card header reads W101's "Settle later", not "Settle Later" — a wording change still to make in code (`todoText`), recorded in `tech-debt.md`.
+- T95.46-B6: "Its Close Review is due now." and "Why you left the Plan is owed now." approved.
