@@ -2,7 +2,7 @@ import type { Locator } from '@playwright/test';
 import { cardHeader, expect, openExpiration, openReview, reachCard, test, tradeCard } from '../d7/support.ts';
 import { setWidth } from '../d7p/support.ts';
 import { boxOf, closeButton, replay, sliderValue } from '../d9ar/support.ts';
-import { atBothWidths, enterExpiryMarks, openAbcClosed, openSettlement, WIDTHS } from './support.ts';
+import { atBothWidths, enterExpiryMarks, openAbcClosed, openAbcWalk, openSettlement, WIDTHS } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -52,6 +52,30 @@ test.describe('B95.13 The Replay from every kind of card (decisions 136, 140)', 
       await expect(moments.getByRole('option')).toHaveText(['Choose a moment', '1. Entry + Low + High + Sale + End · Mon Oct 12']);
       await expectTouchTargets(scope, width);
       // Escape closes it and focus returns to the button that opened it.
+      await page.keyboard.press('Escape');
+      await expect(scope, `closed by Escape at ${width}`).toHaveCount(0);
+      await expect(strip.getByRole('button', { name: 'Replay', exact: true }), `focus back on the Replay button at ${width}`).toBeFocused();
+    });
+    await context.close();
+  });
+
+  test('should keep focus in the Replay when Previous session reaches the first of two sessions, so Escape closes it and focus returns to Replay at both widths', async ({ profile, copySetup }) => {
+    test.setTimeout(240_000);
+    const { context, page, ids } = await openAbcWalk(profile, copySetup);
+    const card = page.locator(`li.review-card[data-trade-id="${ids.ABC}"]`);
+    const header = card.getByRole('button', { name: /^Review ABC/ });
+    await atBothWidths(page, async (width) => {
+      if ((await header.getAttribute('aria-expanded')) !== 'true') await header.click();
+      const strip = card.getByRole('region', { name: 'Replay strip' });
+      await strip.getByRole('button', { name: 'Replay', exact: true }).click();
+      const scope = replay(page);
+      // The second pass reopens where the first one left it, on the first session.
+      if (width === WIDTHS[0]) await expect(sliderValue(scope), `where it opens at ${width}`).toHaveText('Tue Oct 13 · 2 of 2');
+      else await scope.getByRole('button', { name: 'Next session' }).click();
+      await expect(sliderValue(scope), `the newest session at ${width}`).toHaveText('Tue Oct 13 · 2 of 2');
+      await scope.getByRole('button', { name: 'Previous session' }).click();
+      await expect(sliderValue(scope), `the first session at ${width}`).toHaveText('Mon Oct 12 · 1 of 2');
+      await expect(scope.getByRole('button', { name: 'Next session' }), `focus handed to Next session at ${width}`).toBeFocused();
       await page.keyboard.press('Escape');
       await expect(scope, `closed by Escape at ${width}`).toHaveCount(0);
       await expect(strip.getByRole('button', { name: 'Replay', exact: true }), `focus back on the Replay button at ${width}`).toBeFocused();

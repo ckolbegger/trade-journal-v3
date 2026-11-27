@@ -1,4 +1,4 @@
-import { useRef, useState, type KeyboardEvent } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { Link } from 'react-router';
 import { Words } from './figure-words.tsx';
 import { ActionRow } from './action-row.tsx';
@@ -13,6 +13,12 @@ export function ReplayFrame({ tradeKey, sessions, initialSession, sliderLabel, p
   const last = sessions.length - 1;
   const previousRef = useRef<HTMLButtonElement>(null);
   const nextRef = useRef<HTMLButtonElement>(null);
+  // The hand-over waits for the render that disables the button, so with two sessions the other one is already enabled when it takes focus.
+  const handOver = useRef<{ current: HTMLButtonElement | null } | null>(null);
+  useEffect(() => {
+    handOver.current?.current?.focus();
+    handOver.current = null;
+  });
   // A257: the slider's session is a date held with the Trade it belongs to, so a longer replay of the same Trade keeps it and another Trade starts afresh.
   const [held, setHeld] = useState({ tradeKey, date: initialSession });
   // The session under the pointer or the keyboard's focus, which the plot reports and the frame shows.
@@ -39,7 +45,7 @@ export function ReplayFrame({ tradeKey, sessions, initialSession, sliderLabel, p
   };
   // A327: a step button about to be disabled at an end hands focus to the other one, so focus stays in the dialog and Escape still closes it.
   const step = (to: number, other: { current: HTMLButtonElement | null }) => {
-    if (to <= 0 || to >= last) other.current?.focus();
+    if (to <= 0 || to >= last) handOver.current = other;
     move(to);
   };
   // The keys are handled here so every browser steps the same way; the native step is cancelled.

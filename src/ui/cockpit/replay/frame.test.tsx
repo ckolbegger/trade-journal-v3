@@ -144,6 +144,23 @@ describe('Replay frame: focus at the ends (A327)', () => {
     expect(container.contains(document.activeElement)).toBe(true);
   });
 
+  it('should move focus to Next session with two sessions after Previous session reaches the first', async () => {
+    const user = userEvent.setup();
+    render(<ReplayFrame {...props({}, 2)} />);
+    await user.click(screen.getByRole('button', { name: 'Previous session' }));
+    expect(screen.getByTestId('session-date').textContent).toBe('Mon Nov 2');
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Next session' }));
+  });
+
+  it('should move focus to Previous session with two sessions after Next session reaches the newest', async () => {
+    const user = userEvent.setup();
+    render(<ReplayFrame {...props({}, 2)} />);
+    await user.click(screen.getByRole('button', { name: 'Previous session' }));
+    await user.click(screen.getByRole('button', { name: 'Next session' }));
+    expect(value()).toBe('1');
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Previous session' }));
+  });
+
   it('should close the Replay on Escape right after, and return focus to the Replay button', async () => {
     const user = userEvent.setup();
     const onClose = vi.fn();
