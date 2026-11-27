@@ -35,3 +35,7 @@ The user approved every entry above as it stands, after the T95.26 gate. "More f
 
 ## T95.60
 - The Debt form's decline: "Reason for declining (optional)", always shown beside "Answer" and "Decline" → the reason appears only after "Decline…", labelled W153's "Why? (optional)" under "Decline this reflection? The Journal will show it as declined." (a Close Review: "Decline this Close Review? …"). W153's other words are used as approved.
+
+## Approved (2026-11-27)
+
+The user approved every Part B and Part C entry above as it stands. W136's second sentence stays dropped (critic C1's low defect 6 is answered by this).

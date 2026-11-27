@@ -81,7 +81,7 @@ Stale-code audit, 2026-11-26 (at `eb51a427`; the user's direction: record, don't
 - `PnlChart` (`replay/corridor-pnl.tsx`) and `PriceStrip` (`replay/price-strip.tsx`): wrappers nothing renders (T9AR.10). No tests.
 - `settlementTimeOf` (`src/coordinators/valuation/settlement.ts` and its re-export): no caller (T7SP.8). No tests.
 
-- Critic C1 (T95.67), low: W136's second sentence, "Expired today: nothing left to decide, only how it settled.", appears nowhere; only the heading "Expired Fri Nov 20 · no Action needed" shows.
+- (Answered 2026-11-27: stays dropped, the user's word review.) Critic C1 (T95.67), low: W136's second sentence, "Expired today: nothing left to decide, only how it settled.", appears nowhere; only the heading "Expired Fri Nov 20 · no Action needed" shows.
 - Critic C1, low: on expiration day with an earlier session Missing, Enter after the last Fri Nov 20 input goes to "XYZ Mark, Thu Nov 19" and opens its editor, not "Save Marks" (T95.15 case 1).
 - Critic C1, low: the next day's settlement card says the choice twice: "Fri Nov 20 you chose Settle Later, no reason given." and W144's "Fri Nov 20 you chose Exercised: record later…" (U2).
 - Critic C1, low: "Tomorrow: Sell BREN, DALE, CORV, then record the sales." names a short put's buy-back a sale.
