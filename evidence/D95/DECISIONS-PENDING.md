@@ -209,3 +209,5 @@ Not parked: T95.62 is built as option 1, which needs no approval; option 2 would
 2. Keep the Trade's result and change the words to say so, for example "expired worthless. The Trade loses $101.95." (new words), and revert B3.
 3. Revert B3 and keep W141 as approved; the defect goes to tech debt.
 **Parked:** T95.67-B3 (its ocr waits for the answer). T95.67-B4 and T95.67-B5 go ahead.
+
+**Answer (2026-11-27):** none of the three; the user's own wording (word-only, decision 122; recorded in `word-decisions.md`): "Your loss on the trade is $X" with nothing sold, "Your net loss (gain) on the trade is $X" after a part sale or buy-back, "You keep $X" for a short with nothing bought back. The figure stays the Trade's result, so T95.67-B3's figure change is undone by follow-on T95.67-B3-D1. **Status:** answered.
