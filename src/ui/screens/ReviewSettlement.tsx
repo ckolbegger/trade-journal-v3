@@ -25,7 +25,7 @@ export interface ExpirationBlockProps {
   // The Review is being read again, so a save would present the old binding.
   readonly pending: boolean;
   // "Sold before the close": the card's sale form opens in place of the block.
-  readonly onSell: () => void;
+  readonly onSell: (before: string | undefined) => void;
   // The expiration form's values and its own save, for the card's unsaved-form rules (W128).
   readonly onDirtyChange: (dirty: boolean) => void;
   readonly onForm: (handle: FormHandle | undefined) => void;
@@ -42,6 +42,9 @@ const unsigned = (amount: Rational): Rational => (amount.compare(ZERO) < 0 ? amo
 
 // A refused save that read the Review again would not repeat itself; any other refusal could not write at all.
 const refusalOf = (kind: string): 'Changed' | 'Failed' => (['ReviewChanged', 'ChangedDuringAssembly', 'Conflict'].includes(kind) ? 'Changed' : 'Failed');
+
+// The minute before the settlement: the time a sale "before the close" is dated.
+const beforeClose = (settlement: string): string => new Date(Date.parse(settlement) - 60000).toISOString().replace('.000Z', 'Z');
 
 // Where the Underlying finished against the strike, in words.
 function sideOf(price: Rational, strike: Rational): string {
@@ -105,7 +108,7 @@ export function ExpirationBlock({ facade, item, underlying, standing, binding, s
     }
   };
   const sellButton = (words: string) => (
-    <button type="button" className="pill secondary" disabled={saving} onClick={onSell}>
+    <button type="button" className="pill secondary" disabled={saving} onClick={() => onSell(item.settlementTime.kind === 'Value' ? beforeClose(item.settlementTime.value) : undefined)}>
       {words} before the close
     </button>
   );

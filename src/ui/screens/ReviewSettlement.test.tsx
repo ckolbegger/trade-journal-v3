@@ -121,11 +121,11 @@ function walkFacade(overview: Ready, ...trades: DailyTradeReview[]): UiFacade {
   return facade;
 }
 
-function renderReview(facade: UiFacade, options: { writable?: boolean } = {}) {
+function renderReview(facade: UiFacade, options: { writable?: boolean; now?: string } = {}) {
   render(
     <RuntimeContext.Provider value={{ writable: options.writable ?? true, timeZone: 'America/New_York', report: () => undefined }}>
       <MemoryRouter initialEntries={['/review']}>
-        <ReviewView facade={facade} now={() => '2026-11-20T22:00:00Z'} onDirtyChange={() => undefined} />
+        <ReviewView facade={facade} now={() => options.now ?? '2026-11-20T22:00:00Z'} onDirtyChange={() => undefined} />
       </MemoryRouter>
     </RuntimeContext.Provider>,
   );
@@ -255,7 +255,7 @@ function withForm(facade: UiFacade): UiFacade {
 }
 
 describe('the expiration block on the card (T95.52)', () => {
-  const openBlock = async (over: Partial<DailyTradeReview> = {}, options: { writable?: boolean; item?: SettlementItem } = {}) => {
+  const openBlock = async (over: Partial<DailyTradeReview> = {}, options: { writable?: boolean; item?: SettlementItem; now?: string } = {}) => {
     const item = options.item ?? CORV_ITEM;
     const trade = walked(item, 'CORV', cardProgress(0, 0, { settlement: true, owed: false }));
     const facade = withForm(walkFacade(review({ families: [{ family: 'Marks', earlierMarks: [], today: [], earlier: [] }, { family: 'Trades', trades: [trade] }] }), tradeReview(trade, item, over)));
@@ -387,6 +387,20 @@ describe('the expiration block on the card (T95.52)', () => {
     const short = await openBlock({ expirationStanding: IN_THE_MONEY }, { item: itemOf('t5', CORV_PUT, -3n) });
     await user.click(within(short.card).getByRole('button', { name: 'Bought back before the close' }));
     expect(await within(short.card).findByRole('heading', { name: 'Record exit' })).toBeTruthy();
+  });
+
+  it('should prefill the expiration day before the close when Sold before the close is pressed on expiration day', async () => {
+    const user = userEvent.setup();
+    const { card } = await openBlock({ expirationStanding: IN_THE_MONEY });
+    await user.click(within(card).getByRole('button', { name: 'Sold before the close' }));
+    expect((await within(card).findByLabelText<HTMLInputElement>('Economic Time')).value).toBe('2026-11-20T15:59');
+  });
+
+  it('should prefill the expiration day before the close when pressed on a later Review', async () => {
+    const user = userEvent.setup();
+    const { card } = await openBlock({ expirationStanding: IN_THE_MONEY, settledLaterOn: '2026-11-20' }, { now: '2026-11-23T22:00:00Z' });
+    await user.click(within(card).getByRole('button', { name: 'Sold before the close' }));
+    expect((await within(card).findByLabelText<HTMLInputElement>('Economic Time')).value).toBe('2026-11-20T15:59');
   });
 
   it('should offer all three with no main button when the Underlying has no Mark', async () => {

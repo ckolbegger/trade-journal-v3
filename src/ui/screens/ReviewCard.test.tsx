@@ -2197,6 +2197,12 @@ describe('An Exit not carried out (T95.41)', () => {
     expect(within(card).getByText('Back to the Review')).toBeTruthy();
   });
 
+  it('should keep the ordinary sale form default time outside the expiration block', async () => {
+    const { user, card } = await openExited();
+    await user.click(within(within(card).getByRole('group', { name: 'Exit not carried out' })).getByRole('button', { name: 'I sold: record it' }));
+    expect((await within(card).findByLabelText<HTMLInputElement>('Economic Time')).value).toBe('2026-10-12T17:00');
+  });
+
   it('should open the sale form from I sold: record it on the day card', async () => {
     const { user, card } = await openExited({ toGo: 1 });
     const day = screen.getByRole('region', { name: 'The day' });

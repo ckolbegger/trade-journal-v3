@@ -284,7 +284,10 @@ function CardBody({ facade, trade, progress, name, go, stillHolding, onStillHold
   }, [focusPanel]);
   // "I sold: record it" opens the sale form in the Action panel (A313): the form takes the request by its count. A card opened for it asks at once.
   const [saleAsk, setSaleAsk] = useState(go.sale ? 1 : 0);
-  const askSale = () => {
+  // The time the sale form fills in when it is not now: "Sold before the close" dates it before the contract's close.
+  const [saleAt, setSaleAt] = useState<string | undefined>();
+  const askSale = (at?: string) => {
+    setSaleAt(at);
     flushSync(() => setOpen((now) => (panels.includes('Action') ? 'Action' : now)));
     setSaleAsk((count) => count + 1);
   };
@@ -339,7 +342,7 @@ function CardBody({ facade, trade, progress, name, go, stillHolding, onStillHold
   return (
     <section aria-label={`${name} review`}>
       {/* A313: the Exit chosen on an earlier Review Date, not yet carried out, is said first. */}
-      {trade.attention.exitCarry && trade.attention.lastAction && trade.form.kind === 'New' && !stillHolding && !soldOut && <ExitBanner reviewDate={trade.attention.lastAction.reviewDate} carry={trade.attention.exitCarry} onSold={askSale} onHolding={onStillHolding} />}
+      {trade.attention.exitCarry && trade.attention.lastAction && trade.form.kind === 'New' && !stillHolding && !soldOut && <ExitBanner reviewDate={trade.attention.lastAction.reviewDate} carry={trade.attention.exitCarry} onSold={() => askSale()} onHolding={onStillHolding} />}
       <p>
         {trade.labels.strategy} · {trade.labels.account} · {trade.labels.institution}
       </p>
@@ -378,7 +381,7 @@ function CardBody({ facade, trade, progress, name, go, stillHolding, onStillHold
         </div>
       )}
       {/* The sale form is the ActionForm's own, so the block is what it shows while no sale is being recorded. */}
-      {expiring && <ActionForm facade={facade} form={trade.form} binding={trade.saveBinding} onSaved={onSaved} onRefresh={onRefresh} onDirtyChange={report} pending={pending} planExit={trade.planExit} saleRequest={saleAsk} {...(now && { now })} {...(onLeftSold && { onLeftSold })} onClosedSale={onClosedSale} {...(onReceiptDone && { onReceiptDone })} onHandle={offerForm} idle={<ExpirationBlock facade={facade} item={expiring} underlying={trade.underlying} standing={trade.expirationStanding} binding={trade.saveBinding} settledLater={trade.form.kind === 'Saved' && trade.form.action.action === 'Settle Later'} settledLaterOn={trade.settledLaterOn} onSaved={onSaved} pending={pending} onSell={askSale} onDirtyChange={report} onForm={offerForm} onClosedSale={onClosedSale} onRefresh={onRefresh} {...(onReceiptDone && { onReceiptDone })} {...(onLeftSold && { onLeftSold })} />} />}
+      {expiring && <ActionForm facade={facade} form={trade.form} binding={trade.saveBinding} onSaved={onSaved} onRefresh={onRefresh} onDirtyChange={report} pending={pending} planExit={trade.planExit} saleRequest={saleAsk} {...(saleAt && { saleAt })} {...(now && { now })} {...(onLeftSold && { onLeftSold })} onClosedSale={onClosedSale} {...(onReceiptDone && { onReceiptDone })} onHandle={offerForm} idle={<ExpirationBlock facade={facade} item={expiring} underlying={trade.underlying} standing={trade.expirationStanding} binding={trade.saveBinding} settledLater={trade.form.kind === 'Saved' && trade.form.action.action === 'Settle Later'} settledLaterOn={trade.settledLaterOn} onSaved={onSaved} pending={pending} onSell={askSale} onDirtyChange={report} onForm={offerForm} onClosedSale={onClosedSale} onRefresh={onRefresh} {...(onReceiptDone && { onReceiptDone })} {...(onLeftSold && { onLeftSold })} />} />}
       {/* T95.56: the Replay strip is on every card, whichever panel is open; the overlay it opens sits over the page. */}
       {trade.replay && <CardReplay tradeId={trade.tradeId} underlying={trade.underlying} replay={trade.replay} strip={trade.strip} exitNotCarriedOut={trade.attention.exitCarry !== undefined} panel={open} session={go.session} />}
       {/* Every panel stays mounted, so a panel left open keeps its drafts; only the open one is shown. */}

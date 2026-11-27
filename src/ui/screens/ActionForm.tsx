@@ -39,6 +39,8 @@ export interface ActionFormProps {
   readonly planExit?: DailyTradeReview['planExit'];
   // A count that grows each time the card asks for the sale form (the banner's "I sold: record it").
   readonly saleRequest?: number;
+  // The time the sale form fills in instead of now.
+  readonly saleAt?: string;
   // The current instant, for the sale form's default time.
   readonly now?: () => string;
   // A sale that closed the Trade was left on screen without its receipt being dismissed: the Review is read again (the Trade has left the walk).
@@ -135,7 +137,7 @@ function returnedValues(form: ActionFormState): Values {
 }
 
 // The Action for one Trade on the Review Date. Hold is preselected as view state only; nothing is recorded until Save.
-export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyChange, pending = false, marksToGo = 0, planCall, replay, planExit, saleRequest = 0, now = () => new Date().toISOString(), onLeftSold, onClosedSale, onReceiptDone, onDiscard, decidingOn, onHandle, idle }: ActionFormProps) {
+export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyChange, pending = false, marksToGo = 0, planCall, replay, planExit, saleRequest = 0, saleAt, now = () => new Date().toISOString(), onLeftSold, onClosedSale, onReceiptDone, onDiscard, decidingOn, onHandle, idle }: ActionFormProps) {
   const { writable, report, timeZone } = useRuntime();
   // The sale of a saved Exit is recorded in place of the Action (W127); the form reports its own values under the Action's id.
   const [selling, setSelling] = useState(false);
@@ -339,7 +341,7 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
   if (idle !== undefined && !selling) return idle;
   if (readOnlyEmpty && form.kind === 'New') return <p>No Action saved.</p>;
   // The sale does not wait for the Marks: a sale is recorded whatever the day's Marks (A313).
-  if (selling) return <ExitForm facade={facade} tradeId={binding.tradeId} timeZone={timeZone ?? 'UTC'} now={now} onDirtyChange={setSaleDirty} onDone={() => setSelling(false)} backLabel="Back to the Review" card={{
+  if (selling) return <ExitForm facade={facade} tradeId={binding.tradeId} timeZone={timeZone ?? 'UTC'} now={saleAt ? () => saleAt : now} onDirtyChange={setSaleDirty} onDone={() => setSelling(false)} backLabel="Back to the Review" card={{
         onRecorded: (result) => {
           if (result.postCommit.trade.storedLifecycle === 'Closed') {
             refreshOwed.current = true;
