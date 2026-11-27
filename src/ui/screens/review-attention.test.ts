@@ -40,6 +40,22 @@ describe('each label has its own reason (A302)', () => {
   });
 });
 
+describe('the label the day after an Exit not carried out (T95.67-B2)', () => {
+  const exitNotCarriedOut = { code: 'ExitNotCarriedOut' };
+  const basis = pressure(100n, 'Target');
+  it('should label a Trade at or past its Target At Target on the day after an Exit not carried out', () => {
+    const reasons = [exitNotCarriedOut, { code: 'TargetReached', conditionId: 'c1' }];
+    expect(describedLabelsOf(trade({ band: 'ExitNotCarriedOut', reasons, basis }), 'UTC')[0]!.label).toBe('At Target');
+  });
+  it('should label a Trade at or past its Stop Past Stop on the day after an Exit not carried out', () => {
+    const reasons = [exitNotCarriedOut, { code: 'StopBreached', conditionId: 'c1' }];
+    expect(describedLabelsOf(trade({ band: 'ExitNotCarriedOut', reasons, basis: pressure(100n, 'Stop') }), 'UTC')[0]!.label).toBe('Past Stop');
+  });
+  it('should keep the share label for a Trade inside its lines on the day after an Exit not carried out', () => {
+    expect(describedLabelsOf(trade({ band: 'ExitNotCarriedOut', reasons: [exitNotCarriedOut], basis: pressure(63n, 'Target') }), 'UTC')).toEqual([{ label: '63% to Target', reason: '63% of the way from entry to the Target' }]);
+  });
+});
+
 describe('the share label of a partly sold Trade (T95.26-B3)', () => {
   it('should word the label percent with the pressure share of the open Lots and not the meter share that counts the realized P&L', () => {
     const basis = (side: 'Losing' | 'Winning', share: Rational) => ({ kind: 'Value', value: { side, share, atEntry: Rational.of(300n), now: Rational.of(100n) } });

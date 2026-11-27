@@ -142,14 +142,15 @@ export function attentionOf(state: DerivedTradeState, evaluation: TradeEvaluatio
   // A due settlement outranks the figures, whatever they are (A112); it is its own band, behind the factual blockers.
   const due = evaluation.settlement.filter((s) => s.status === 'Due').map((s): AttentionReason => ({ code: 'SettlementDue', instrument: s.instrument, quantity: s.quantity, expiration: s.expiration }));
   if (findings.length > 0) return { band: 'Blocker', reasons: [{ code: 'IntegrityDisagreement', findings }, ...due], basis };
-  if (lastAction?.action === 'Exit') return { band: 'ExitNotCarriedOut', reasons: [{ code: 'ExitNotCarriedOut' }, ...due], basis };
-  if (due.length > 0) return { band: 'SettlementDue', reasons: due, basis };
   // A line the Underlying's Mark alone shows crossed counts too, while the contract's Mark is unavailable (A110); it has no dollar figure to carry.
   const crossed = evaluation.conditions.flatMap((c) => {
     const code = c.role === 'Stop' ? ('StopBreached' as const) : ('TargetReached' as const);
     if (c.result.kind === 'Value') return c.result.value.status !== 'Active' && c.result.value.overrun ? [{ code, conditionId: c.id, overrun: c.result.value.overrun.dollars }] : [];
     return c.underlyingReading && c.underlyingReading.status !== 'Active' ? [{ code, conditionId: c.id }] : [];
   });
+  // The lines the Trade is at or past stay in the reasons, so its label says so as it does on any other day.
+  if (lastAction?.action === 'Exit') return { band: 'ExitNotCarriedOut', reasons: [{ code: 'ExitNotCarriedOut' }, ...crossed, ...due], basis };
+  if (due.length > 0) return { band: 'SettlementDue', reasons: due, basis };
   if (crossed.length > 0) {
     // The deepest Stop passed, in Plan R, orders the Trades of the StopReached band.
     const stopOverrunsR = evaluation.conditions.flatMap((c) => (c.role === 'Stop' && c.result.kind === 'Value' && c.result.value.status !== 'Active' && c.result.value.overrun ? [c.result.value.overrun.planR] : []));

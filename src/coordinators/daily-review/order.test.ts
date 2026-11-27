@@ -182,6 +182,33 @@ describe('open: the last Action (A305)', () => {
 
 });
 
+describe('open: a Trade past a line the day after an Exit not carried out (T95.67-B2)', () => {
+  const exiting = async (mark: string) => {
+    const stack = await reviewStack(MONDAY_1700);
+    const planned = await stack.confirm({ symbol: 'ABC', shares: '100', entry: '30.00', stop: '28.00', target: '36.00', planTime: '2026-10-05T13:00:00Z' });
+    await stack.fill(planned, '2026-10-05T14:00:00Z', '100', '30.00');
+    await stack.saveMark('ABC', mark);
+    await stack.saveAction(planned.tradeId, 'Exit', '2026-10-09');
+    return walk(await open(stack))[0]!;
+  };
+
+  it('should carry the Target the Trade is at or past in the reasons of an Exit not carried out', async () => {
+    const trade = await exiting('36.50');
+    expect(trade.band).toBe('ExitNotCarriedOut');
+    expect(trade.reasons.map((r) => r.code)).toEqual(['ExitNotCarriedOut', 'TargetReached']);
+  }, 60_000);
+
+  it('should carry the Stop the Trade is at or past in the reasons of an Exit not carried out', async () => {
+    const trade = await exiting('27.50');
+    expect(trade.reasons.map((r) => r.code)).toEqual(['ExitNotCarriedOut', 'StopBreached']);
+  }, 60_000);
+
+  it('should carry no line in the reasons of an Exit not carried out for a Trade inside its lines', async () => {
+    const trade = await exiting('32.00');
+    expect(trade.reasons.map((r) => r.code)).toEqual(['ExitNotCarriedOut']);
+  }, 60_000);
+});
+
 describe('the order across saves (A301)', () => {
   it('should keep the order when an Action is saved, and return a new order from a Marks save', async () => {
     const stack = await reviewStack(MONDAY_1700);

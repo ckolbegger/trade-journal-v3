@@ -8,6 +8,7 @@ const shortDay = (date: string): string => new Date(`${date}T12:00:00Z`).toLocal
 // The bands that read as a label of their own: a due settlement outranks the Marks; a crossed line follows them.
 const SETTLEMENT_LABEL: Partial<Record<ReviewTradeItem['band'], string>> = { SettlementDue: 'Expired: settle' };
 const BOUNDARY_LABEL: Partial<Record<ReviewTradeItem['band'], string>> = { StopReached: 'Past Stop', TargetReached: 'At Target' };
+const CROSSED_LABEL = { StopBreached: 'Past Stop', TargetReached: 'At Target' } as const;
 const STANDING_TEXT = { Between: undefined, PastStop: 'Past Stop', PastTarget: 'At Target' } as const;
 
 type Reason = ReviewTradeItem['reasons'][number];
@@ -30,7 +31,9 @@ export function describedLabelsOf(trade: LabelledTrade, timeZone: string): { lab
       ...(before && standing ? [{ label: `${standing} ${shortDay(before.tradingDate)}`, reason: `${standing} at the close on ${shortDay(before.tradingDate)}` }] : []),
     ];
   }
-  const boundary = BOUNDARY_LABEL[trade.band];
+  // An Exit not carried out keeps its band; the line the Trade is at or past is in its reasons (A302).
+  const crossedLine = (['StopBreached', 'TargetReached'] as const).filter((code) => trade.reasons.some((reason) => reason.code === code)).map((code) => CROSSED_LABEL[code])[0];
+  const boundary = BOUNDARY_LABEL[trade.band] ?? (trade.band === 'ExitNotCarriedOut' ? crossedLine : undefined);
   if (boundary) return [{ label: boundary, reason: why(trade.reasons.filter((reason) => reason.code === 'StopBreached' || reason.code === 'TargetReached')) }];
   const acknowledged = trade.reasons.filter(isAcknowledgedUnavailableAttention);
   if (acknowledged.length > 0) return [{ label: 'No price today', reason: why(acknowledged) }];
