@@ -1678,3 +1678,7 @@ T95.67 critic C2 (fresh general-purpose, effort medium; report `evidence/D95/cri
 
 - **T95.67-B6** (defect 1, moderate): in the Replay, pressing "Previous session" at the first session or "Next session" at the newest disables the pressed button and focus falls to the page body; Escape then does nothing until a Tab lands back in the dialog (A327: Escape closes the Replay and returns focus to its opener). On the Review card and Trade Detail, at 1280 and 375. Cases: it should keep focus inside the Replay when a step button becomes disabled (on the other step button, or the slider); Escape should then close the Replay and return focus to "Replay".
 - Low defect 2 and the minor observations → `tech-debt.md`.
+
+### T95.67-B6
+
+Commit `301ca1e0`: `ReplayFrame` moves focus to the other step button when a step lands on the first or newest session, so focus stays in the dialog and Escape reaches the overlay (Review card and Trade Detail share it). Cases 1, 2 and 3 red then green; no first-run pass. Replay folder 296 passed; browser replay, replay-strip, replay-day, keyboard-day, close-review 15 passed (none drives the new focus path; the critic re-checks it).
