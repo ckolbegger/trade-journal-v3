@@ -72,7 +72,7 @@ At the user's direction, six pieces of D9.5-era code nothing reached were remove
 
 Eighteen questions were asked (`evidence/D95/DECISIONS-PENDING.md`, Q1 to Q18 listed by number there); all are answered, none pending. Plan decisions 127, 128, 129, 130, 131, 136, 137, 138, 139, 140 and 141 (revisions 116, 117, 118, 120, 121, 125, 126, 127, 128, 129 and 130). Q17 was a word-only answer (W141: "Your loss on the trade is $X" / "Your net loss (gain) on the trade is $X" / "You keep $X"; `evidence/D95/word-decisions.md`). Q18: the benchmark's `bench:run` gap goes to tech debt.
 
-Main-session decisions recorded for review: T95.66.5's full run stood as the final gate's run (no code changed between); the five critic C1 bug tasks shared one test run after the last; T95.67-B3's own ocr was covered by T95.67-B3-D1's review (it rewrote everything B3 changed).
+Main-session decisions recorded for review: T95.66.5's full run stood as the final gate's run (no code changed between); the five critic C1 bug tasks shared one test run after the last; T95.67-B3's own ocr was covered by T95.67-B3-D1's review (it rewrote everything B3 changed). **Accepted by the user, 2026-11-27.**
 
 ## Critics
 
