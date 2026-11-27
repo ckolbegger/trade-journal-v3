@@ -1661,3 +1661,7 @@ Commit `1dd74e13`: the saved Action's "Record the sale" / "Record the buy-back" 
 
 ocr of T95.67-B5-B1 (session b3e783fc): 3 files, 1 finding, **Wrong, dismissed**. `evidence/D95/ocr/T95.67-B5-B1-1dd74e13.json`. The finding (`ActionForm.tsx:157`: with a saved Exit, the banner's "I sold: record it" would return focus to the saved section's button) needs a state the UI cannot reach: `ReviewCard.tsx:345` shows the banner only when `trade.form.kind === 'New'`, when no saved section is rendered (checked against the cited lines by the main session). Listed in the open questions.
 - Reviewer's note: a sale opened by `saleRequest` on a card that opens with the sale form may remember the page body as its opener; the guards keep it safe; not checked in a browser.
+
+### T95.67-B5-B2
+
+Commit `ad4e19bc` (tests only): the expiration case now waits for the "Expiration recorded" receipt to go and asserts focus on MNO's card header (the next card that needs something, A327). Green against the current code; mutation (`focusNext` returns early) failed with the named-element assertion, restored. Browser expiration 10 passed. typecheck, tsc6, lint (2 pre-existing warnings), lint:deps exit 0.
