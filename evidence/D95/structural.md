@@ -1696,3 +1696,5 @@ ocr of T95.67-B6-B1 (session 2af034d4): complete, 3 files, no findings. `evidenc
 ### T95.67-B6-B2
 
 Commit `7e4ba4ca` (tests only): the Escape case renders a real "Replay" opener whose `onClose` unmounts the overlay, steps to the first session, presses Escape and asserts the dialog is gone and focus is on the opener. First-run pass, flagged, mutation (`opener?.focus()` removed in `overlay.tsx`) failed, restored. typecheck, tsc6, lint (2 pre-existing warnings), lint:deps exit 0; browser replay 5 passed.
+
+ocr of T95.67-B6-B2 (session dc86ba5e): complete, 1 file, no findings. `evidence/D95/ocr/T95.67-B6-B2-7e4ba4ca.json`. T95.67-B6 done.
