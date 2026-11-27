@@ -76,6 +76,27 @@ describe('An expired contract standing (A314)', () => {
     expect(frac(figures(expirationStanding(short)).ifExpiredWorthless.dollars)).toBe(frac(r(240)));
   });
 
+  it('should name the cost of the contracts that expire, not the Trade result, when part of the position was sold before', () => {
+    // R-O-C: 1 of 2 calls sold earlier at +88.70; the open call cost 1.90 with fee 0.65 is 190.65, while the Trade result is -101.95.
+    const OC = contract('XYZ', '55', 'Call');
+    const held = { contract: OC, exposure: { lots: [{ instrument: OC, quantity: r(1), basis: r(19, 10), unconsumedOpeningFee: r(13, 20) }], realizedToDate: r(8870, 100) }, oneR: r(400), underlyingMark: '54.00' };
+    const standing = figures(expirationStanding(held));
+    expect(frac(standing.ifExpiredWorthless.dollars)).toBe(frac(r(-10195, 100)));
+    expect(frac(standing.contractsCost)).toBe(frac(r(19065, 100)));
+  });
+
+  it('should name the whole cost when nothing was sold', () => {
+    expect(frac(figures(expirationStanding(corv('83.50'))).contractsCost)).toBe(frac(r(633)));
+  });
+
+  it('should name what was received for the short contracts that expire, with a part buy-back, as a negative cost', () => {
+    const MNO_PUT = contract('MNO', '45', 'Put');
+    const short = { ...corv('46.00'), contract: MNO_PUT, oneR: r(480), exposure: { lots: [{ instrument: MNO_PUT, quantity: r(-2), basis: r(6, 5), unconsumedOpeningFee: r(0) }], realizedToDate: r(-50) } };
+    const standing = figures(expirationStanding(short));
+    expect(frac(standing.ifExpiredWorthless.dollars)).toBe(frac(r(190)));
+    expect(frac(standing.contractsCost)).toBe(frac(r(-240)));
+  });
+
   it('should be Unavailable with no Underlying Mark for the expiration session', () => {
     expect(expirationStanding(corv())).toEqual({ kind: 'Unavailable', reason: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'CORV' }, date: '2026-11-20' });
   });

@@ -50,11 +50,10 @@ function sideOf(price: Rational, strike: Rational): string {
   return order > 0 ? 'above' : 'below';
 }
 
-// What the Trade's result if recorded as expired worthless means to the trader: a long contract loses what was paid, a short one keeps what was received.
-function kept(result: Rational, long: boolean): string {
-  const amount = money(unsigned(result));
-  if (result.compare(ZERO) < 0) return long ? `You lose the ${amount} paid.` : `You lose ${amount}.`;
-  return `You keep ${amount}.`;
+// What expiring worthless means to the trader, from the cost of the contracts that expire: a long contract loses what was paid, a short one keeps what was received.
+function kept(cost: Rational): string {
+  const amount = money(unsigned(cost));
+  return cost.compare(ZERO) > 0 ? `You lose the ${amount} paid.` : `You keep ${amount}.`;
 }
 
 // The expired contract's block on the card (W136): an expired contract owes no Action, only a word on how it settled.
@@ -131,7 +130,7 @@ export function ExpirationBlock({ facade, item, underlying, standing, binding, s
       )}
       {finished && !finished.inTheMoney && (
         <p>
-          {underlying} {money(finished.underlyingPrice)}, {sideOf(finished.underlyingPrice, finished.strike)} the {money(finished.strike)} strike: expired worthless. {kept(finished.ifExpiredWorthless.dollars, long)}
+          {underlying} {money(finished.underlyingPrice)}, {sideOf(finished.underlyingPrice, finished.strike)} the {money(finished.strike)} strike: expired worthless. {kept(finished.contractsCost)}
         </p>
       )}
       {!finished && <p>No price for {underlying}, so the app can&apos;t say where it finished. What happened?</p>}

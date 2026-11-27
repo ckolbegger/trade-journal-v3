@@ -77,7 +77,7 @@ test.describe('B95.11 The expiration block (AC-SET-003)', () => {
       await openReview(page);
       await enterMark(page, t1, FRIDAY_NOV, '52.00');
       const block = await openExpiration(page, t1);
-      await expect(block.getByText('XYZ $52.00, below the $55.00 strike: expired worthless. You lose the $101.95 paid.', { exact: true })).toBeVisible();
+      await expect(block.getByText('XYZ $52.00, below the $55.00 strike: expired worthless. You lose the $190.65 paid.', { exact: true })).toBeVisible();
       await expect(button(block, 'Record expiration'), 'the main button').toHaveClass(/primary/);
       await expect(button(block, 'Sold it before the close')).toBeVisible();
       // Opening the Review recorded nothing; nor does Trade Detail after the date.

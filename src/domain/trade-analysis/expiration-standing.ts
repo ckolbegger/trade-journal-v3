@@ -30,6 +30,8 @@ export interface ExpirationStandingFigures {
   readonly worth: Rational;
   readonly ifSettled: TradeResultAt;
   readonly ifExpiredWorthless: TradeResultAt;
+  // What the held contracts cost with their unconsumed opening fees, signed: positive is paid (long), negative is received (short).
+  readonly contractsCost: Rational;
 }
 
 export function expirationStanding(input: ExpirationStandingInput): CalculationResult<ExpirationStandingFigures> {
@@ -45,11 +47,15 @@ export function expirationStanding(input: ExpirationStandingInput): CalculationR
     const position = positionOf(lot.instrument, lot.quantity, lot.basis);
     return sum.add(position.contracts.mul(position.multiplier).mul(intrinsic(position, mark.value)));
   }, ZERO);
+  const contractsCost = input.exposure.lots.reduce((sum, lot) => {
+    const position = positionOf(lot.instrument, lot.quantity, lot.basis);
+    return sum.add(position.contracts.mul(position.multiplier).mul(position.basis)).add(lot.unconsumedOpeningFee);
+  }, ZERO);
   const view = currentExpirationView(input.exposure);
   const resultAt = (dollars: Rational): TradeResultAt => ({ dollars, r: dollars.div(input.oneR) });
   const ifSettled = resultAt(expirationValueAt(view, mark.value));
   return {
     kind: 'Value',
-    value: { underlyingPrice: mark.value, strike: strike.value, inTheMoney, amount: inTheMoney ? margin : ZERO.sub(margin), worth, ifSettled, ifExpiredWorthless: resultAt(ifSettled.dollars.sub(worth)) },
+    value: { underlyingPrice: mark.value, strike: strike.value, inTheMoney, amount: inTheMoney ? margin : ZERO.sub(margin), worth, ifSettled, ifExpiredWorthless: resultAt(ifSettled.dollars.sub(worth)), contractsCost },
   };
 }
