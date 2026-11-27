@@ -106,3 +106,12 @@ Critic C2's minor observations (T95.67):
 - Nothing is announced to a screen reader after Save Marks or an Action; only focus moves.
 - At 320 the Replay's Action row for a 30-session Trade is unreadable; the Key moments select is cut off.
 - The "Missed" list runs to 29 dates; the next-day Now box shows "Settlement Due: …" as row values.
+
+- Critic C3 (T95.67), low: after an expiration is recorded inside the card, the block above the receipt and the day card stay stale ("no Action needed", "2 expirations to settle", "To do: Settle") until "Back to the Review" (the expiration twin of critic B3's closing-sale item).
+Critic C3's minor observations (T95.67):
+- An in-the-money short's "Worth $400.00 at expiration" names the trader's liability as "worth".
+- "It expired worthless" with no Underlying Mark shows no "This books …" line, though the amount does not depend on the Mark.
+- The expiration receipt in the card has no sentence on when the Close Review is due (a sale's receipt has one, W135).
+- The closed card offers "Write the Close Review" and "Decline…" beside "Not due until the next Review."
+- "Record the sale" and "I sold: record it" outside the expiration block prefill 17:00 (after the close), giving "…due in the Review after next".
+- "Back to BREN" puts focus on the first radio.

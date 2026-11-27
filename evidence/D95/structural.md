@@ -1707,3 +1707,11 @@ Commit `77c3c491` (the user's answer to Q17): `contractsCost` removed; `Expirati
 ocr of T95.67-B3-D1 (session 3ecfee07): complete, 8 files, no findings. `evidence/D95/ocr/T95.67-B3-D1-77c3c491.json`. T95.67-B3 done. Every critic C2 fix is reviewed clean; full run next, then critic C3 (the third and last at this gate).
 
 Run `t95.67-fixes-2` (browser-full, at `4669d28a`; covers T95.67-B6, T95.67-B6-B1, T95.67-B6-B2, T95.67-B3-D1): unit 268 files, 3295 passed; integration 163 files, 394 passed; browser-1 127 passed (5.7 min), browser-2 79 passed (4.5 min), browser-3 55 passed (3.2 min), browser-4 193 passed, 4 skipped (6.0 min); 14 of 14 checks exit 0; run complete. Passed. Critic C3 next.
+
+T95.67 critic C3 (the third; fresh general-purpose, effort medium; report `evidence/D95/critic-c3.md`): **PASS**, every flow C95.1, C95.2, C95.3, C95.4, C95.5, C95.6, C95.7, C95.8, C95.9, C95.10, C95.11, C95.12, the screen reader pass, the phone width, a day Complete with Unavailable Marks and a reflection owed on an open Trade; every C1 and C2 fix confirmed, and every W141 variant matches hand totals. Cost: 350,625 tokens, 346 tool calls, 37.2 min; brief C1's plus both rounds' fixes. One low defect, no high or moderate.
+
+| Critic | Tokens | Tool calls | Time | Defects |
+|---|---|---|---|---|
+| critic-c3 | 350,625 | 346 | 37.2 min | 1 low |
+
+Low defect and minor observations → `tech-debt.md`. **The T95.67 gate is closed:** run `t95.67-fixes-2` passed, `acceptance-commands.sh` 43 of 43, critic C3 passed with a low defect only. Benchmark next.
