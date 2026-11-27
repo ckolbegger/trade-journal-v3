@@ -1,0 +1,241 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 11 selected item(s).",
+  "summary": {
+    "files_reviewed": 11,
+    "comments": 2,
+    "total_tokens": 319707,
+    "input_tokens": 316789,
+    "output_tokens": 2918,
+    "cache_read_tokens": 39936,
+    "elapsed": "56s"
+  },
+  "tool_calls": {
+    "total": 34,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 4,
+      "file_read": 26,
+      "file_read_diff": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/ActionForm.tsx",
+      "content": "Focus restoration only works for the expiration `idle` block. A sale can also be opened from the saved Action's sale button (the `setSelling(true)` button below), where `idle` is undefined and `idleArea.current` is null. Cancel or Back to the Review then unmounts the focused sale control without focusing anything, so focus still falls to BODY in that supported flow. Keep a ref to the normal sale opener too and restore focus to whichever opener launched the sale; cover both entry paths in a cancellation test.",
+      "existing_code": "    idleArea.current?.querySelector\u003cHTMLElement\u003e('[data-sale-opener]')?.focus();",
+      "start_line": 150,
+      "end_line": 150,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "e2e/d95/expiration.spec.ts",
+      "content": "This assertion can succeed before receipt dismissal finishes: the handler awaits an asynchronous Review refresh, so the clicked “Back to the Review” button can still be mounted and focused on the first poll. The test then passes even if focus drops to BODY when that button is subsequently removed. Wait for the refreshed card and assert that its expected header is focused (as the component test does), rather than only excluding BODY.",
+      "existing_code": "    await expect.poll(() =\u003e page.evaluate(() =\u003e document.activeElement?.tagName), 'focus is not on the page body after the receipt').not.toBe('BODY');",
+      "start_line": 86,
+      "end_line": 86,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Expiration form and review coverage",
+      "files": [
+        "e2e/d95/expiration.spec.ts",
+        "src/ui/screens/ExpirationForm.tsx",
+        "src/ui/screens/ReviewExpiration.test.tsx"
+      ]
+    },
+    {
+      "label": "Replay key moments and close-review flow",
+      "files": [
+        "src/ui/cockpit/replay/close-review-walk.test.tsx",
+        "src/ui/cockpit/replay/key-moments.tsx"
+      ]
+    },
+    {
+      "label": "Action form and owed review",
+      "files": [
+        "src/ui/screens/ActionForm.tsx",
+        "src/ui/screens/ReviewOwed.test.tsx",
+        "src/ui/screens/ReviewOwedCard.tsx"
+      ]
+    },
+    {
+      "label": "Marks grid and step coverage",
+      "files": [
+        "src/ui/screens/MarksGrid.tsx",
+        "src/ui/screens/MarksStep.test.tsx"
+      ]
+    },
+    {
+      "label": "Settlement review",
+      "files": [
+        "src/ui/screens/ReviewSettlement.tsx"
+      ]
+    }
+  ],
+  "session_id": "d45026a7-4014-4081-95d9-69d133927e59",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "d45026a7-4014-4081-95d9-69d133927e59",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "e590c2a4",
+      "resolved_base": "fa035ebcf92c770c04a0442ab0038ea78aca9715",
+      "resolved_head": "e590c2a4ad5126d42aacc75cbc916655f0ed0afa",
+      "exact_range": "fa035ebcf92c770c04a0442ab0038ea78aca9715..e590c2a4ad5126d42aacc75cbc916655f0ed0afa",
+      "source_artifact_sha256": "ea9066a057ad45093432d0abc73daf1b0c7b15cbee848032511f59694984050d"
+    },
+    "execution": {
+      "ocr_version": "v1.14.4",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "04db696dd5d8255296c3877d453ff8c7d6e358d228966377a69a5b5538790d26",
+          "path": "e2e/d95/expiration.spec.ts",
+          "fingerprint": "9d4c548c066d8e05369153b38fa5364481dc131129051057fa2615e832fcd8bc"
+        },
+        {
+          "item_id": "1a8b204813f2ba42444221ccf71dd5d66d82adae9a0ef7d191f74dc7f17e40e2",
+          "path": "src/ui/screens/MarksStep.test.tsx",
+          "fingerprint": "04da250908df4edfa87a4fcd5c7f2258bf27922ad07dc32f9cc532be2a140382"
+        },
+        {
+          "item_id": "28d9dac30140868b5ff82f3128fe52a527534ffce26da1ec10da0741844bd9af",
+          "path": "src/ui/screens/ActionForm.tsx",
+          "fingerprint": "50dc58f1bc8582b706a182d7dcdeb1ddaa30fb2c284b1e1713e04b312582485f"
+        },
+        {
+          "item_id": "3d50678c1bc5da1fa44af54c36b0fe1f1d03cb6c0c76d8556d0021ea6b6a6792",
+          "path": "src/ui/cockpit/replay/close-review-walk.test.tsx",
+          "fingerprint": "5bfb43709d4e8ae16aa0f47b72460462bd03ae99ca485b4a7f4dffdd7708092b"
+        },
+        {
+          "item_id": "41a5a0eec891ad3fedc983f44937bc44813435b19e80e27871b68a0bd0acc242",
+          "path": "src/ui/cockpit/replay/key-moments.tsx",
+          "fingerprint": "bbf844c4a0cff843e2638074343850b02ec2b2ba3a615e02f92c1b2349ff9c26"
+        },
+        {
+          "item_id": "6376131ed368e5ac2277c2f7a6073ab00b06d8dcc7fa59c84c1807d7587ffa40",
+          "path": "src/ui/screens/ReviewSettlement.tsx",
+          "fingerprint": "03fa08b32b3a05c0b42cb630df53bc445cf6ca3e6a2a039b47cbb7901deb885e"
+        },
+        {
+          "item_id": "658cacd7d8755bc419d3c8b2dc3f0b93468308fa9e366c831087e003312a3c83",
+          "path": "src/ui/screens/ReviewOwedCard.tsx",
+          "fingerprint": "98fe0b05e1ad906f7144f4a5f1493902ceb4f5ea1ffbd7533ba3780230710001"
+        },
+        {
+          "item_id": "65bccfc98e101dd12c3c3c7d1e445313eab5ae6feae6a2b9a027d8ea4143e4db",
+          "path": "src/ui/screens/ReviewExpiration.test.tsx",
+          "fingerprint": "0bd63227771679c8b916a9a56f31be7f21b814d441ef0896bbdff7ba44d28e31"
+        },
+        {
+          "item_id": "6b3ea2ff8de74765e3af18e89799b9b10bb04a902bac37f58df69f7eda81b1bd",
+          "path": "src/ui/screens/MarksGrid.tsx",
+          "fingerprint": "2c4a196b3bd4255f5fc79771ed83f21dc79872c17d300e6f2086a8a5ddb3e3fb"
+        },
+        {
+          "item_id": "8f669bf40c4e0581202e35b0025c05599ce1cb413cf1791b9979e09d426e5d54",
+          "path": "src/ui/screens/ExpirationForm.tsx",
+          "fingerprint": "585b7c7b0df4b6079173ee1f29c9ec7150938b5603e9cd9a92b17c76ef2af042"
+        },
+        {
+          "item_id": "f60d40a2fcf211e72668946f9d6c2357941e916774d36dd5cb14b2a35255d3a9",
+          "path": "src/ui/screens/ReviewOwed.test.tsx",
+          "fingerprint": "59b36b976395dce767980976976d7fb6b258c6f11dc7c8fe0dbfb79ab8d8b6d6"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "04db696dd5d8255296c3877d453ff8c7d6e358d228966377a69a5b5538790d26",
+          "path": "e2e/d95/expiration.spec.ts",
+          "fingerprint": "9d4c548c066d8e05369153b38fa5364481dc131129051057fa2615e832fcd8bc"
+        },
+        {
+          "item_id": "1a8b204813f2ba42444221ccf71dd5d66d82adae9a0ef7d191f74dc7f17e40e2",
+          "path": "src/ui/screens/MarksStep.test.tsx",
+          "fingerprint": "04da250908df4edfa87a4fcd5c7f2258bf27922ad07dc32f9cc532be2a140382"
+        },
+        {
+          "item_id": "28d9dac30140868b5ff82f3128fe52a527534ffce26da1ec10da0741844bd9af",
+          "path": "src/ui/screens/ActionForm.tsx",
+          "fingerprint": "50dc58f1bc8582b706a182d7dcdeb1ddaa30fb2c284b1e1713e04b312582485f"
+        },
+        {
+          "item_id": "3d50678c1bc5da1fa44af54c36b0fe1f1d03cb6c0c76d8556d0021ea6b6a6792",
+          "path": "src/ui/cockpit/replay/close-review-walk.test.tsx",
+          "fingerprint": "5bfb43709d4e8ae16aa0f47b72460462bd03ae99ca485b4a7f4dffdd7708092b"
+        },
+        {
+          "item_id": "41a5a0eec891ad3fedc983f44937bc44813435b19e80e27871b68a0bd0acc242",
+          "path": "src/ui/cockpit/replay/key-moments.tsx",
+          "fingerprint": "bbf844c4a0cff843e2638074343850b02ec2b2ba3a615e02f92c1b2349ff9c26"
+        },
+        {
+          "item_id": "6376131ed368e5ac2277c2f7a6073ab00b06d8dcc7fa59c84c1807d7587ffa40",
+          "path": "src/ui/screens/ReviewSettlement.tsx",
+          "fingerprint": "03fa08b32b3a05c0b42cb630df53bc445cf6ca3e6a2a039b47cbb7901deb885e"
+        },
+        {
+          "item_id": "658cacd7d8755bc419d3c8b2dc3f0b93468308fa9e366c831087e003312a3c83",
+          "path": "src/ui/screens/ReviewOwedCard.tsx",
+          "fingerprint": "98fe0b05e1ad906f7144f4a5f1493902ceb4f5ea1ffbd7533ba3780230710001"
+        },
+        {
+          "item_id": "65bccfc98e101dd12c3c3c7d1e445313eab5ae6feae6a2b9a027d8ea4143e4db",
+          "path": "src/ui/screens/ReviewExpiration.test.tsx",
+          "fingerprint": "0bd63227771679c8b916a9a56f31be7f21b814d441ef0896bbdff7ba44d28e31"
+        },
+        {
+          "item_id": "6b3ea2ff8de74765e3af18e89799b9b10bb04a902bac37f58df69f7eda81b1bd",
+          "path": "src/ui/screens/MarksGrid.tsx",
+          "fingerprint": "2c4a196b3bd4255f5fc79771ed83f21dc79872c17d300e6f2086a8a5ddb3e3fb"
+        },
+        {
+          "item_id": "8f669bf40c4e0581202e35b0025c05599ce1cb413cf1791b9979e09d426e5d54",
+          "path": "src/ui/screens/ExpirationForm.tsx",
+          "fingerprint": "585b7c7b0df4b6079173ee1f29c9ec7150938b5603e9cd9a92b17c76ef2af042"
+        },
+        {
+          "item_id": "f60d40a2fcf211e72668946f9d6c2357941e916774d36dd5cb14b2a35255d3a9",
+          "path": "src/ui/screens/ReviewOwed.test.tsx",
+          "fingerprint": "59b36b976395dce767980976976d7fb6b258c6f11dc7c8fe0dbfb79ab8d8b6d6"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "4b550cf3b52c3f9c25f0f6c187883de4c857ede41905d15adf4c1335e36a0fcc",
+          "path": "evidence/D95/tdd-log/T95.67-B5.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 56166
+  }
+}
