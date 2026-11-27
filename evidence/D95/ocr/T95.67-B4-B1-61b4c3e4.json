@@ -1,0 +1,156 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 7 selected item(s).",
+  "summary": {
+    "files_reviewed": 7,
+    "comments": 0,
+    "total_tokens": 41620,
+    "input_tokens": 41206,
+    "output_tokens": 414,
+    "cache_read_tokens": 6656,
+    "elapsed": "18s"
+  },
+  "tool_calls": {
+    "total": 7,
+    "by_tool": {
+      "code_search": 2,
+      "file_read": 5
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Daily review settlement types, coordination, and UI",
+      "files": [
+        "src/app/types.ts",
+        "src/coordinators/daily-review/daily-review.ts",
+        "src/coordinators/daily-review/index.ts",
+        "src/coordinators/daily-review/settlement.test.ts",
+        "src/coordinators/daily-review/types.ts",
+        "src/ui/screens/ReviewSettlement.test.tsx",
+        "src/ui/screens/ReviewSettlement.tsx"
+      ]
+    }
+  ],
+  "session_id": "146beb98-2006-4879-82b1-d5ae1b68783b",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "146beb98-2006-4879-82b1-d5ae1b68783b",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "61b4c3e4",
+      "resolved_base": "769ae7c6625f6448479076194e17eadfd49ba9a6",
+      "resolved_head": "61b4c3e4658d815a775f0c431be5fc896aaef768",
+      "exact_range": "769ae7c6625f6448479076194e17eadfd49ba9a6..61b4c3e4658d815a775f0c431be5fc896aaef768",
+      "source_artifact_sha256": "137f7d82590be181463053eb1aa0af3903b54834a2efec2d58bf208a92ab9c45"
+    },
+    "execution": {
+      "ocr_version": "v1.14.4",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829514e9ebcf564cdcea43d0578fb98446a6725c5784b4860790649d15a26d39",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "891d8954bb08aa2f952d8cb288cf9cadbeef70793f27ab0d0a77888bd48bd6d6"
+        },
+        {
+          "item_id": "18b6b01ed98f6d00b64a2e2fe8392a7b542a29a5e4bd0cb775cefb4bbb11a1ab",
+          "path": "src/coordinators/daily-review/settlement.test.ts",
+          "fingerprint": "b4f5382e4214baa41cc06756840e72d240dc6f21ebfa3ea87a8e17f553bf5dab"
+        },
+        {
+          "item_id": "41e5b5fd9120773618275de28795e788717356305ec8adf32df169ba69aacacb",
+          "path": "src/app/types.ts",
+          "fingerprint": "7f5399301157a549f820742d543bb1441d6dcbd69c263dcac0e0fad1c8846440"
+        },
+        {
+          "item_id": "6376131ed368e5ac2277c2f7a6073ab00b06d8dcc7fa59c84c1807d7587ffa40",
+          "path": "src/ui/screens/ReviewSettlement.tsx",
+          "fingerprint": "d012eee7b37cf0a725eca299fb3a5ebba7d66ae8e6433340dff408990ac2a09f"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "4b67d0d7476e0c1124927a46732fb08bb7917c0c788d17717a0c3e632ee69b64"
+        },
+        {
+          "item_id": "9d20a796225851b81f880f1d146ba251d198e8aa712f6f6be090422a42ed8150",
+          "path": "src/coordinators/daily-review/index.ts",
+          "fingerprint": "d6a2811f6b433a653f0959c03dcc744c4c2eb3fcf475e211adc135be60f462ee"
+        },
+        {
+          "item_id": "ca830210571b3c1c130132730f3b5ff5e6224fd42856b0400a111e121dfb1fc8",
+          "path": "src/ui/screens/ReviewSettlement.test.tsx",
+          "fingerprint": "e85139ae3ed57609d9ec97f4b8c916cca5b4a34bb26e322e9da0f66b11e45f7d"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "891d8954bb08aa2f952d8cb288cf9cadbeef70793f27ab0d0a77888bd48bd6d6"
+        },
+        {
+          "item_id": "18b6b01ed98f6d00b64a2e2fe8392a7b542a29a5e4bd0cb775cefb4bbb11a1ab",
+          "path": "src/coordinators/daily-review/settlement.test.ts",
+          "fingerprint": "b4f5382e4214baa41cc06756840e72d240dc6f21ebfa3ea87a8e17f553bf5dab"
+        },
+        {
+          "item_id": "41e5b5fd9120773618275de28795e788717356305ec8adf32df169ba69aacacb",
+          "path": "src/app/types.ts",
+          "fingerprint": "7f5399301157a549f820742d543bb1441d6dcbd69c263dcac0e0fad1c8846440"
+        },
+        {
+          "item_id": "6376131ed368e5ac2277c2f7a6073ab00b06d8dcc7fa59c84c1807d7587ffa40",
+          "path": "src/ui/screens/ReviewSettlement.tsx",
+          "fingerprint": "d012eee7b37cf0a725eca299fb3a5ebba7d66ae8e6433340dff408990ac2a09f"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "4b67d0d7476e0c1124927a46732fb08bb7917c0c788d17717a0c3e632ee69b64"
+        },
+        {
+          "item_id": "9d20a796225851b81f880f1d146ba251d198e8aa712f6f6be090422a42ed8150",
+          "path": "src/coordinators/daily-review/index.ts",
+          "fingerprint": "d6a2811f6b433a653f0959c03dcc744c4c2eb3fcf475e211adc135be60f462ee"
+        },
+        {
+          "item_id": "ca830210571b3c1c130132730f3b5ff5e6224fd42856b0400a111e121dfb1fc8",
+          "path": "src/ui/screens/ReviewSettlement.test.tsx",
+          "fingerprint": "e85139ae3ed57609d9ec97f4b8c916cca5b4a34bb26e322e9da0f66b11e45f7d"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "4b1af6ade179ef8eb214e0c4ffa06856bab349fcfa2bf3f86c73dba294d60154",
+          "path": "evidence/D95/tdd-log/T95.67-B4-B1.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 17507
+  }
+}

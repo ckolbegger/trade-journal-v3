@@ -1651,3 +1651,6 @@ ocr of T95.67-B5 (session d45026a7): 11 files, 2 findings, both Valid. `evidence
 ### T95.67-B4-B1
 
 Commit `61b4c3e4`: the "Sold before the close" time (`beforeCloseTime`, the settlement instant minus one minute) is worked out in `daily-review.ts` and carried on a new Review-only `ReviewSettlementItem` (the shared `SettlementItem`, and so the frozen expected views, unchanged); the screen only passes it on. Both cases red then green; no first-run pass. src/ui/screens, src/coordinators/daily-review, src/app and tests/integration pass; typecheck, tsc6, lint (2 pre-existing warnings), lint:deps exit 0; browser expiration, settle-later 13 passed, d7 review-expiration 1 passed.
+
+ocr of T95.67-B4-B1 (session 146beb98): complete, 7 files, no findings. `evidence/D95/ocr/T95.67-B4-B1-61b4c3e4.json`. T95.67-B4 done.
+- Reviewer's notes (not ocr findings): `beforeTheClose` sits between the comment "A card's panels in work order…" and `cardProgress`, separating them (style); a settlement time that is not a value gives no prefill, untested.
