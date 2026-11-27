@@ -1669,3 +1669,12 @@ Commit `ad4e19bc` (tests only): the expiration case now waits for the "Expiratio
 ocr of T95.67-B5-B2 (session a4fcbe46): complete, 1 file, no findings. `evidence/D95/ocr/T95.67-B5-B2-ad4e19bc.json`. T95.67-B1, T95.67-B2, T95.67-B4 (with B4-B1) and T95.67-B5 (with B5-B1, B5-B2) are reviewed clean; T95.67-B3 waits on Q17.
 
 Run `t95.67-fixes` (browser-full, at `cc540fda`; covers T95.67-B1, T95.67-B2, T95.67-B3, T95.67-B4, T95.67-B4-B1, T95.67-B5, T95.67-B5-B1, T95.67-B5-B2): unit 267 files, 3289 passed; integration 163 files, 394 passed; browser-1 127 passed (5.3 min), browser-2 79 passed (4.3 min), browser-3 55 passed (3.0 min), browser-4 192 passed, 4 skipped (5.3 min); 14 of 14 checks exit 0; run complete. Passed. Critic C2 next (T95.67-B3's figure still under Q17; the critic sees the fix as committed).
+
+T95.67 critic C2 (fresh general-purpose, effort medium; report `evidence/D95/critic-c2.md`): **FAIL** on C95.10, every other flow PASS; critic C1's five defects confirmed fixed (B3's "You lose the $190.65 paid." checked as the open lot's net cost). Cost: 87,565 tokens, 295 tool calls, 39.9 min; brief C1's plus the fixes; defects found.
+
+| Critic | Tokens | Tool calls | Time | Defects |
+|---|---|---|---|---|
+| critic-c2 | 87,565 | 295 | 39.9 min | 1 moderate, 1 low |
+
+- **T95.67-B6** (defect 1, moderate): in the Replay, pressing "Previous session" at the first session or "Next session" at the newest disables the pressed button and focus falls to the page body; Escape then does nothing until a Tab lands back in the dialog (A327: Escape closes the Replay and returns focus to its opener). On the Review card and Trade Detail, at 1280 and 375. Cases: it should keep focus inside the Replay when a step button becomes disabled (on the other step button, or the slider); Escape should then close the Replay and return focus to "Replay".
+- Low defect 2 and the minor observations → `tech-debt.md`.

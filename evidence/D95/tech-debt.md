@@ -96,3 +96,13 @@ Critic C1's minor observations (T95.67):
 - A buy-back is named "Sale" in Key moments.
 - After "Still holding", the card's subline still reads "You chose Exit and it is not recorded".
 - The grid's previous-session column shows stock Marks without "$" in one Workspace and with it in another.
+
+- Critic C2 (T95.67), low: on a day with both a settlement to record and Unavailable Marks, the finished day reads only "Complete, settlement to record"; the Unavailable Marks lines show unheaded (the group is labelled for screen readers only; A316, T95.49 case 7).
+Critic C2's minor observations (T95.67):
+- The Replay headline "+$98.05 · 0.25R" has no "+" on the R; the card shows "+0.25R".
+- The closed option card's Plan column reads "XYZ at or below 48.00" with no "$".
+- The grid: after "Can't get a price" then Cancel, focus falls to the page body; after "No price" focus stays on "Undo".
+- Saving the Close Review from Trade Detail leaves focus on a DIV.
+- Nothing is announced to a screen reader after Save Marks or an Action; only focus moves.
+- At 320 the Replay's Action row for a 30-session Trade is unreadable; the Key moments select is cut off.
+- The "Missed" list runs to 29 dates; the next-day Now box shows "Settlement Due: …" as row values.
